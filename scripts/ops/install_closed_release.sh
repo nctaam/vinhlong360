@@ -80,6 +80,10 @@ canonical_executable_path() {
     *) return 1 ;;
   esac
   canonical="$(/usr/bin/readlink -f -- "$candidate")" || return 1
+  if [ -x /usr/bin/cygpath ]; then
+    canonical="$(/usr/bin/cygpath -u \
+      "$(/usr/bin/cygpath -w -- "$canonical")")" || return 1
+  fi
   case "$canonical" in
     /*) ;;
     *) return 1 ;;
@@ -152,6 +156,31 @@ invoke_python() {
     "$PYTHON_EXECUTOR" "$@"
   fi
 }
+executable_sha256() {
+  invoke_python - "$1" <<'PY'
+from hashlib import sha256
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+if path.is_symlink() or not path.is_file():
+    raise SystemExit(1)
+print(sha256(path.read_bytes()).hexdigest())
+PY
+}
+executable_identity() {
+  invoke_python - "$1" <<'PY'
+from pathlib import Path
+import stat
+import sys
+
+path = Path(sys.argv[1])
+observed = path.lstat()
+if path.is_symlink() or not stat.S_ISREG(observed.st_mode):
+    raise SystemExit(1)
+print(f"{observed.st_dev}:{observed.st_ino}")
+PY
+}
 if [ "$EARLY_REQUIRED_ARGUMENTS_VALID" = true ] \
   && ! invoke_python -c \
     'import ssl; from dotenv.parser import parse_stream' >/dev/null 2>&1; then
@@ -162,17 +191,54 @@ BASH_EXECUTOR="$(canonical_executable_path "$BASH")" || {
   printf 'install_closed_release: bash-executor-authority-required\n' >&2
   exit 2
 }
+RM_EXECUTOR_CANDIDATE=/usr/bin/rm
+if [ -n "${VL360_LOCAL_RM_EXECUTOR:-}" ] \
+  && [ "$EARLY_REQUIRED_ARGUMENTS_VALID" = true ]; then
+  [ "$EARLY_LOCAL_REHEARSAL" = true ] || {
+    printf 'install_closed_release: local-rm-executor-live-forbidden\n' >&2
+    exit 2
+  }
+  RM_EXECUTOR_CANDIDATE="$VL360_LOCAL_RM_EXECUTOR"
+  [ "$(/usr/bin/readlink -f -- "$RM_EXECUTOR_CANDIDATE" 2>/dev/null)" \
+    = "$RM_EXECUTOR_CANDIDATE" ] || {
+    printf 'install_closed_release: rm-executor-authority-required\n' >&2
+    exit 2
+  }
+fi
+RM_EXECUTOR="$(canonical_executable_path "$RM_EXECUTOR_CANDIDATE")" || {
+  printf 'install_closed_release: rm-executor-authority-required\n' >&2
+  exit 2
+}
+RM_EXECUTOR_SHA256="$(executable_sha256 "$RM_EXECUTOR")" || {
+  printf 'install_closed_release: rm-executor-authority-required\n' >&2
+  exit 2
+}
+RM_EXECUTOR_IDENTITY="$(executable_identity "$RM_EXECUTOR")" || {
+  printf 'install_closed_release: rm-executor-authority-required\n' >&2
+  exit 2
+}
+unset VL360_LOCAL_RM_EXECUTOR
+ENV_EXECUTOR="$(canonical_executable_path /usr/bin/env)" || {
+  printf 'install_closed_release: env-executor-authority-required\n' >&2
+  exit 2
+}
+invoke_rm() {
+  [ "$(canonical_executable_path "$RM_EXECUTOR")" = "$RM_EXECUTOR" ] \
+    && [ "$(executable_sha256 "$RM_EXECUTOR")" = "$RM_EXECUTOR_SHA256" ] \
+    && [ "$(executable_identity "$RM_EXECUTOR")" = "$RM_EXECUTOR_IDENTITY" ] \
+    || return 126
+  "$RM_EXECUTOR" "$@"
+}
 if [[ "$OSTYPE" = linux* ]]; then
   [ "$BASH_EXECUTOR" -ef "/proc/$BASHPID/exe" ] || {
     printf 'install_closed_release: bash-executor-identity-mismatch\n' >&2
     exit 2
   }
-  BASH_PIN_AUTHORITY="$BASH_EXECUTOR"
-else
-  BASH_PIN_AUTHORITY=''
 fi
+BASH_PIN_AUTHORITY="$BASH_EXECUTOR"
 readonly PYTHON_EXECUTOR_LOGICAL PYTHON_EXECUTOR_AUTHORITY PYTHON_EXECUTOR \
-  PYTHON_EXECUTOR_FD BASH_EXECUTOR BASH_PIN_AUTHORITY
+  PYTHON_EXECUTOR_FD BASH_EXECUTOR BASH_PIN_AUTHORITY RM_EXECUTOR \
+  RM_EXECUTOR_SHA256 RM_EXECUTOR_IDENTITY ENV_EXECUTOR
 
 fsync_directories() {
   (($# > 0)) || return 0
@@ -204,7 +270,7 @@ remove_private_directory() {
   local target="$1"
   local parent="$2"
   local cleanup_status=0
-  if rm -rf -- "$target" >/dev/null 2>&1; then
+  if invoke_rm -rf -- "$target" >/dev/null 2>&1; then
     :
   else
     cleanup_status=$?
@@ -255,6 +321,7 @@ reset_mutable_evidence() {
     "$root/systemd-unit-cleanup.json" \
     "$root/install-lock.json" \
     "$root/findmnt-before.json" \
+    "$root/findmnt-after-umount.json" \
     "$root/findmnt-after.json" \
     "$root/findmnt-recovery.json" \
     "$root/persistent-before.json" \
@@ -264,7 +331,8 @@ reset_mutable_evidence() {
   rm -rf -- \
     "$root/package" \
     "$root/staged" \
-    "$root/installed" || return 1
+    "$root/installed" \
+    "$root/installed-recovery" || return 1
   fsync_directories "$root" "$(dirname -- "$root")" || return 1
 }
 
@@ -1300,7 +1368,15 @@ PERSISTENT_AGENT_DATA_ROOT="$PERSISTENT_PARENT/$PERSISTENT_NAME"
 SNAPSHOT_BEFORE="$EVIDENCE_DIR/persistent-before.json"
 SNAPSHOT_AFTER="$EVIDENCE_DIR/persistent-after.json"
 SNAPSHOT_RECOVERY="$EVIDENCE_DIR/persistent-recovery.json"
+CANDIDATE_RELEASE_TOPOLOGY_SNAPSHOT="$EVIDENCE_DIR/candidate-release-topology.json"
+SOURCE_RELEASE_TOPOLOGY_SNAPSHOT="$EVIDENCE_DIR/source-release-topology.json"
 MUTATION_STATE="$EVIDENCE_DIR/install-mutation-state.json"
+CANDIDATE_MANIFEST_SHA256=''
+CANDIDATE_RELEASE_TOPOLOGY_SHA256=''
+CANDIDATE_RELEASE_ROOT_IDENTITY=''
+PERSISTENT_SNAPSHOT_SHA256=''
+SOURCE_RELEASE_TOPOLOGY_SHA256=''
+SOURCE_RELEASE_ROOT_IDENTITY=''
 STALE_RELEASE_ROOT=''
 STALE_PERSISTENT_ROOT=''
 STALE_RELEASE_KEY=''
@@ -1315,6 +1391,328 @@ STALE_STAGE=''
 STALE_PID=''
 STALE_ATTEMPT_ID=''
 STALE_LOCAL_REHEARSAL=''
+STALE_SCHEMA_VERSION=''
+STALE_CANDIDATE_MANIFEST_SHA256=''
+STALE_CANDIDATE_RELEASE_TOPOLOGY_SHA256=''
+STALE_CANDIDATE_RELEASE_ROOT_IDENTITY=''
+STALE_ENVIRONMENT_AUTHORITY_SHA256=''
+STALE_PERSISTENT_SNAPSHOT_SHA256=''
+STALE_SOURCE_RELEASE_TOPOLOGY_SHA256=''
+STALE_SOURCE_RELEASE_ROOT_IDENTITY=''
+
+regular_file_sha256() {
+  invoke_python - "$1" <<'PY'
+from hashlib import sha256
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+if path.is_symlink() or not path.is_file():
+    raise SystemExit(1)
+print(sha256(path.read_bytes()).hexdigest())
+PY
+}
+
+source_release_topology_payload() {
+  invoke_python - "$1" <<'PY'
+import json
+import os
+from hashlib import sha256
+from pathlib import Path
+import stat
+import sys
+
+raw_root = os.path.abspath(sys.argv[1])
+if os.name == "nt" and not raw_root.startswith("\\\\?\\"):
+    raw_root = "\\\\?\\" + raw_root
+root = Path(raw_root)
+if root.is_symlink() or not root.is_dir():
+    raise SystemExit(1)
+entries = []
+
+def visit(path, relative):
+    if relative == "agent/data" or relative.startswith("agent/data/"):
+        return
+    observed = path.lstat()
+    mode = stat.S_IMODE(observed.st_mode)
+    if stat.S_ISLNK(observed.st_mode):
+        entries.append((relative, "symlink", mode, os.readlink(path)))
+        return
+    if stat.S_ISREG(observed.st_mode):
+        raw = path.read_bytes()
+        entries.append((relative, "file", mode, sha256(raw).hexdigest(), len(raw)))
+        return
+    if stat.S_ISDIR(observed.st_mode):
+        entries.append((relative, "directory", mode))
+        for child in sorted(path.iterdir(), key=lambda item: item.name):
+            child_relative = child.name if relative == "." else f"{relative}/{child.name}"
+            visit(child, child_relative)
+        return
+    raise SystemExit(1)
+
+visit(root, ".")
+print(json.dumps(entries, separators=(",", ":"), ensure_ascii=True))
+PY
+}
+
+source_release_topology_sha256() {
+  local payload="$1"
+  payload="$(source_release_topology_payload "$payload")" || return 1
+  VL360_TOPOLOGY_PAYLOAD="$payload" invoke_python - <<'PY'
+from hashlib import sha256
+import os
+print(sha256((os.environ["VL360_TOPOLOGY_PAYLOAD"] + "\n").encode()).hexdigest())
+PY
+}
+
+source_release_topology_snapshot() {
+  local root="$1"
+  local target="$2"
+  local payload
+  payload="$(source_release_topology_payload "$root")" || return 1
+  write_durable_text_file "$target" "$payload"$'\n'
+}
+
+source_release_topology_subset() {
+  invoke_python - "$1" "$2" <<'PY'
+import json
+from hashlib import sha256
+import os
+from pathlib import Path
+import stat
+import sys
+
+raw_root = os.path.abspath(sys.argv[1])
+raw_snapshot = os.path.abspath(sys.argv[2])
+if os.name == "nt":
+    if not raw_root.startswith("\\\\?\\"):
+        raw_root = "\\\\?\\" + raw_root
+    if not raw_snapshot.startswith("\\\\?\\"):
+        raw_snapshot = "\\\\?\\" + raw_snapshot
+root = Path(raw_root)
+snapshot = Path(raw_snapshot)
+if root.is_symlink() or not root.is_dir() or snapshot.is_symlink() or not snapshot.is_file():
+    raise SystemExit(1)
+expected = {
+    tuple(item)
+    for item in json.loads(snapshot.read_text(encoding="utf-8"))
+}
+observed = []
+
+def visit(path, relative):
+    if relative == "agent/data" or relative.startswith("agent/data/"):
+        return
+    current = path.lstat()
+    mode = stat.S_IMODE(current.st_mode)
+    if stat.S_ISLNK(current.st_mode):
+        observed.append((relative, "symlink", mode, os.readlink(path)))
+        return
+    if stat.S_ISREG(current.st_mode):
+        raw = path.read_bytes()
+        observed.append((relative, "file", mode, sha256(raw).hexdigest(), len(raw)))
+        return
+    if stat.S_ISDIR(current.st_mode):
+        observed.append((relative, "directory", mode))
+        for child in sorted(path.iterdir(), key=lambda item: item.name):
+            child_relative = child.name if relative == "." else f"{relative}/{child.name}"
+            visit(child, child_relative)
+        return
+    raise SystemExit(1)
+
+visit(root, ".")
+if not set(observed) <= expected:
+    raise SystemExit(1)
+PY
+}
+
+tree_root_identity() {
+  invoke_python - "$1" <<'PY'
+import os
+from pathlib import Path
+import stat
+import sys
+
+raw_root = os.path.abspath(sys.argv[1])
+if os.name == "nt" and not raw_root.startswith("\\\\?\\"):
+    raw_root = "\\\\?\\" + raw_root
+root = Path(raw_root)
+observed = root.lstat()
+if root.is_symlink() or not stat.S_ISDIR(observed.st_mode):
+    raise SystemExit(1)
+print(f"{observed.st_dev}:{observed.st_ino}")
+PY
+}
+
+tree_matches_bound_topology() {
+  local root="$1"
+  local expected_identity="$2"
+  local snapshot="$3"
+  local allow_subset="${4:-false}"
+  [ "$(tree_root_identity "$root")" = "$expected_identity" ] || return 1
+  if [ "$allow_subset" = true ]; then
+    source_release_topology_subset "$root" "$snapshot"
+  else
+    [ "$(source_release_topology_sha256 "$root")" \
+      = "$(regular_file_sha256 "$snapshot")" ]
+  fi
+}
+
+write_cleanup_owner_marker() {
+  local marker="$1"
+  local role="$2"
+  local attempt_id="$3"
+  local root_identity="$4"
+  local topology_sha256="$5"
+  local payload
+  payload="$(invoke_python - "$role" "$attempt_id" "$root_identity" \
+    "$topology_sha256" <<'PY'
+import json
+import re
+import sys
+
+if sys.argv[1] not in ("candidate", "staging", "retired"):
+    raise SystemExit(1)
+if re.fullmatch(r"[0-9a-f]{32}", sys.argv[2]) is None:
+    raise SystemExit(1)
+if re.fullmatch(r"[0-9]+:[0-9]+", sys.argv[3]) is None:
+    raise SystemExit(1)
+if re.fullmatch(r"[0-9a-f]{64}", sys.argv[4]) is None:
+    raise SystemExit(1)
+print(json.dumps({
+    "attempt_id": sys.argv[2],
+    "role": sys.argv[1],
+    "root_identity": sys.argv[3],
+    "topology_sha256": sys.argv[4],
+}, separators=(",", ":"), sort_keys=True))
+PY
+  )" || return 1
+  write_durable_atomic_json "$marker" "$payload"
+}
+
+verify_cleanup_owner_marker() {
+  invoke_python - "$1" "$2" "$3" "$4" "$5" <<'PY'
+import json
+from pathlib import Path
+import sys
+
+marker = Path(sys.argv[1])
+if marker.is_symlink() or not marker.is_file():
+    raise SystemExit(1)
+expected = {
+    "attempt_id": sys.argv[3],
+    "role": sys.argv[2],
+    "root_identity": sys.argv[4],
+    "topology_sha256": sys.argv[5],
+}
+if json.loads(marker.read_text(encoding="utf-8")) != expected:
+    raise SystemExit(1)
+PY
+}
+
+new_private_staging_nonce() {
+  invoke_python -c 'import secrets; print(secrets.token_hex(32))'
+}
+
+write_private_staging_owner_marker() {
+  local marker="$1"
+  local attempt_id="$2"
+  local pid="$3"
+  local root_identity="$4"
+  local nonce="$5"
+  local payload
+  payload="$(invoke_python - "$attempt_id" "$pid" "$root_identity" \
+    "$nonce" <<'PY'
+import json
+import re
+import sys
+
+if re.fullmatch(r"[0-9a-f]{32}", sys.argv[1]) is None:
+    raise SystemExit(1)
+if re.fullmatch(r"[1-9][0-9]*", sys.argv[2]) is None:
+    raise SystemExit(1)
+if re.fullmatch(r"[0-9]+:[0-9]+", sys.argv[3]) is None:
+    raise SystemExit(1)
+if re.fullmatch(r"[0-9a-f]{64}", sys.argv[4]) is None:
+    raise SystemExit(1)
+print(json.dumps({
+    "attempt_id": sys.argv[1],
+    "nonce": sys.argv[4],
+    "pid": int(sys.argv[2]),
+    "role": "private-staging",
+    "root_identity": sys.argv[3],
+}, separators=(",", ":"), sort_keys=True))
+PY
+  )" || return 1
+  write_durable_atomic_json "$marker" "$payload"
+}
+
+verify_private_staging_owner_marker() {
+  invoke_python - "$1" "$2" "$3" "$4" "$5" "$6" <<'PY'
+import json
+import os
+from pathlib import Path
+import re
+import stat
+import sys
+
+marker = Path(sys.argv[1])
+stage = Path(sys.argv[2])
+if marker.is_symlink() or not marker.is_file():
+    raise SystemExit(1)
+expected = {
+    "attempt_id": sys.argv[3],
+    "nonce": sys.argv[6],
+    "pid": int(sys.argv[4]),
+    "role": "private-staging",
+    "root_identity": sys.argv[5],
+}
+if json.loads(marker.read_text(encoding="utf-8")) != expected:
+    raise SystemExit(1)
+if os.path.lexists(stage):
+    observed = stage.lstat()
+    if stage.is_symlink() or not stat.S_ISDIR(observed.st_mode):
+        raise SystemExit(1)
+    if f"{observed.st_dev}:{observed.st_ino}" != sys.argv[5]:
+        raise SystemExit(1)
+PY
+}
+
+verify_observed_private_staging_owner_marker() {
+  invoke_python - "$1" "$2" "$3" "$4" "$5" <<'PY'
+import json
+import os
+from pathlib import Path
+import re
+import stat
+import sys
+
+marker = Path(sys.argv[1])
+stage = Path(sys.argv[2])
+if marker.is_symlink() or not marker.is_file():
+    raise SystemExit(1)
+payload = json.loads(marker.read_text(encoding="utf-8"))
+if set(payload) != {"attempt_id", "nonce", "pid", "role", "root_identity"}:
+    raise SystemExit(1)
+if payload != {
+    "attempt_id": sys.argv[3],
+    "nonce": payload["nonce"],
+    "pid": int(sys.argv[4]),
+    "role": "private-staging",
+    "root_identity": sys.argv[5],
+}:
+    raise SystemExit(1)
+if not isinstance(payload["nonce"], str) or re.fullmatch(
+    r"[0-9a-f]{64}", payload["nonce"]
+) is None:
+    raise SystemExit(1)
+if os.path.lexists(stage):
+    observed = stage.lstat()
+    if stage.is_symlink() or not stat.S_ISDIR(observed.st_mode):
+        raise SystemExit(1)
+    if f"{observed.st_dev}:{observed.st_ino}" != sys.argv[5]:
+        raise SystemExit(1)
+PY
+}
 
 write_durable_atomic_json() {
   local path="$1"
@@ -1373,12 +1771,27 @@ write_mutation_state() {
     VL360_STATE_SYSTEMD_UNIT_ATTEMPT_ROOT="$UNIT_ATTEMPT_ROOT" \
     VL360_STATE_LOCAL_REHEARSAL="$LOCAL_REHEARSAL" \
     invoke_python - "$MUTATION_STATE" "$stage" "$ATTEMPT_ID" "$$" \
-      "$release_key" "$persistent_key" "$CURRENT_SYSTEMD_KEY" <<'PY'
+      "$release_key" "$persistent_key" "$CURRENT_SYSTEMD_KEY" \
+      "$CANDIDATE_MANIFEST_SHA256" "$ENVIRONMENT_AUTHORITY_SHA256" \
+      "$PERSISTENT_SNAPSHOT_SHA256" "$SOURCE_RELEASE_TOPOLOGY_SHA256" \
+      "$CANDIDATE_RELEASE_TOPOLOGY_SHA256" \
+      "$SOURCE_RELEASE_ROOT_IDENTITY" "$CANDIDATE_RELEASE_ROOT_IDENTITY" <<'PY'
 import json
 import os
+import re
 import sys
+for value in sys.argv[8:13]:
+    if re.fullmatch(r"[0-9a-f]{64}", value) is None:
+        raise SystemExit(1)
+for value in sys.argv[13:15]:
+    if re.fullmatch(r"[0-9]+:[0-9]+", value) is None:
+        raise SystemExit(1)
 payload = {
     "attempt_id": sys.argv[3],
+    "candidate_manifest_sha256": sys.argv[8],
+    "candidate_release_root_identity": sys.argv[14],
+    "candidate_release_topology_sha256": sys.argv[12],
+    "environment_authority_sha256": sys.argv[9],
     "local_rehearsal": os.environ["VL360_STATE_LOCAL_REHEARSAL"] == "true",
     "old_root": os.environ["VL360_STATE_OLD_ROOT"],
     "persistent_key_sha256": sys.argv[6],
@@ -1387,7 +1800,10 @@ payload = {
     "release_key_sha256": sys.argv[5],
     "release_root": os.environ["VL360_STATE_RELEASE_ROOT"],
     "retired_root": os.environ["VL360_STATE_RETIRED_ROOT"],
-    "schema_version": 3,
+    "persistent_snapshot_sha256": sys.argv[10],
+    "schema_version": 4,
+    "source_release_root_identity": sys.argv[13],
+    "source_release_topology_sha256": sys.argv[11],
     "stage": sys.argv[2],
     "staging_root": os.environ["VL360_STATE_STAGING_ROOT"],
     "systemd_key_sha256": sys.argv[7],
@@ -1423,7 +1839,7 @@ import sys
 
 attempt_id_re = re.compile(r"^[0-9a-f]{32}$")
 sha256_re = re.compile(r"^[0-9a-f]{64}$")
-expected_keys = {
+v3_keys = {
     "attempt_id",
     "local_rehearsal",
     "old_root",
@@ -1440,11 +1856,23 @@ expected_keys = {
     "systemd_unit_attempt_root",
     "systemd_unit_destination",
 }
+v4_keys = v3_keys | {
+    "candidate_manifest_sha256",
+    "candidate_release_root_identity",
+    "candidate_release_topology_sha256",
+    "environment_authority_sha256",
+    "persistent_snapshot_sha256",
+    "source_release_root_identity",
+    "source_release_topology_sha256",
+}
 try:
     payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-    if type(payload) is not dict or set(payload) != expected_keys:
+    if type(payload) is not dict:
         raise ValueError
-    if type(payload["schema_version"]) is not int or payload["schema_version"] != 3:
+    schema_version = payload.get("schema_version")
+    if type(schema_version) is not int or schema_version not in (3, 4):
+        raise ValueError
+    if set(payload) != (v4_keys if schema_version == 4 else v3_keys):
         raise ValueError
     attempt_id = payload["attempt_id"]
     pid = payload["pid"]
@@ -1460,6 +1888,21 @@ try:
     release_key = payload["release_key_sha256"]
     persistent_key = payload["persistent_key_sha256"]
     systemd_key = payload["systemd_key_sha256"]
+    candidate_manifest_sha256 = payload.get("candidate_manifest_sha256", "")
+    candidate_release_root_identity = payload.get(
+        "candidate_release_root_identity", ""
+    )
+    candidate_release_topology_sha256 = payload.get(
+        "candidate_release_topology_sha256", ""
+    )
+    environment_authority_sha256 = payload.get(
+        "environment_authority_sha256", ""
+    )
+    persistent_snapshot_sha256 = payload.get("persistent_snapshot_sha256", "")
+    source_release_root_identity = payload.get("source_release_root_identity", "")
+    source_release_topology_sha256 = payload.get(
+        "source_release_topology_sha256", ""
+    )
     values = (
         release_root,
         persistent_root,
@@ -1474,6 +1917,7 @@ try:
         or type(pid) is not int
         or pid <= 0
         or type(stage) is not str
+        or any(c in stage for c in "\n|")
         or type(local_rehearsal) is not bool
         or any(type(value) is not str for value in values)
         or type(systemd_attempt_root) is not str
@@ -1484,6 +1928,27 @@ try:
         or not sha256_re.fullmatch(release_key)
         or not sha256_re.fullmatch(persistent_key)
         or not sha256_re.fullmatch(systemd_key)
+        or (
+            schema_version == 4
+            and (
+                any(
+                    sha256_re.fullmatch(value) is None
+                    for value in (
+                        candidate_manifest_sha256,
+                        candidate_release_topology_sha256,
+                        environment_authority_sha256,
+                        persistent_snapshot_sha256,
+                        source_release_topology_sha256,
+                    )
+                )
+                or re.fullmatch(
+                    r"[0-9]+:[0-9]+", candidate_release_root_identity
+                ) is None
+                or re.fullmatch(
+                    r"[0-9]+:[0-9]+", source_release_root_identity
+                ) is None
+            )
+        )
     ):
         raise ValueError
     authority_paths = (
@@ -1532,8 +1997,9 @@ try:
 except (FileNotFoundError, KeyError, TypeError, ValueError, json.JSONDecodeError):
     raise SystemExit(1)
 print(
-    "\t".join(
+    "|".join(
         (
+            str(schema_version),
             stage,
             str(pid),
             attempt_id,
@@ -1548,16 +2014,27 @@ print(
             systemd_destination,
             systemd_key,
             systemd_attempt_root,
+            candidate_manifest_sha256,
+            candidate_release_topology_sha256,
+            candidate_release_root_identity,
+            environment_authority_sha256,
+            persistent_snapshot_sha256,
+            source_release_topology_sha256,
+            source_release_root_identity,
         )
     )
 )
 PY
   )" || return 1
-  IFS=$'\t' read -r STALE_STAGE STALE_PID STALE_ATTEMPT_ID \
+  IFS='|' read -r STALE_SCHEMA_VERSION STALE_STAGE STALE_PID STALE_ATTEMPT_ID \
     STALE_LOCAL_REHEARSAL STALE_RELEASE_ROOT STALE_PERSISTENT_ROOT \
     STALE_RELEASE_KEY STALE_PERSISTENT_KEY STALE_STAGING_ROOT STALE_OLD_ROOT \
     STALE_RETIRED_ROOT STALE_SYSTEMD_UNIT_DESTINATION STALE_SYSTEMD_KEY \
-    STALE_SYSTEMD_UNIT_ATTEMPT_ROOT \
+    STALE_SYSTEMD_UNIT_ATTEMPT_ROOT STALE_CANDIDATE_MANIFEST_SHA256 \
+    STALE_CANDIDATE_RELEASE_TOPOLOGY_SHA256 \
+    STALE_CANDIDATE_RELEASE_ROOT_IDENTITY \
+    STALE_ENVIRONMENT_AUTHORITY_SHA256 STALE_PERSISTENT_SNAPSHOT_SHA256 \
+    STALE_SOURCE_RELEASE_TOPOLOGY_SHA256 STALE_SOURCE_RELEASE_ROOT_IDENTITY \
     <<< "$state"
   local stale_authority canonical_authority
   for stale_authority in "$STALE_RELEASE_ROOT" "$STALE_PERSISTENT_ROOT" \
@@ -1766,7 +2243,14 @@ write_stale_mutation_state() {
     VL360_STALE_SYSTEMD_UNIT_ATTEMPT_ROOT="$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" \
     invoke_python - "$MUTATION_STATE" "$stage" "$STALE_STAGE" \
       "$STALE_ATTEMPT_ID" "$STALE_PID" "$STALE_LOCAL_REHEARSAL" \
-      "$STALE_RELEASE_KEY" "$STALE_PERSISTENT_KEY" "$STALE_SYSTEMD_KEY" <<'PY'
+      "$STALE_RELEASE_KEY" "$STALE_PERSISTENT_KEY" "$STALE_SYSTEMD_KEY" \
+      "$STALE_SCHEMA_VERSION" "$STALE_CANDIDATE_MANIFEST_SHA256" \
+      "$STALE_CANDIDATE_RELEASE_TOPOLOGY_SHA256" \
+      "$STALE_CANDIDATE_RELEASE_ROOT_IDENTITY" \
+      "$STALE_ENVIRONMENT_AUTHORITY_SHA256" \
+      "$STALE_PERSISTENT_SNAPSHOT_SHA256" \
+      "$STALE_SOURCE_RELEASE_TOPOLOGY_SHA256" \
+      "$STALE_SOURCE_RELEASE_ROOT_IDENTITY" <<'PY'
 import json
 import os
 from pathlib import Path
@@ -1784,13 +2268,25 @@ expected = {
     "release_key_sha256": sys.argv[7],
     "release_root": os.environ["VL360_STALE_RELEASE_ROOT"],
     "retired_root": os.environ["VL360_STALE_RETIRED_ROOT"],
-    "schema_version": 3,
+    "schema_version": int(sys.argv[10]),
     "stage": sys.argv[3],
     "staging_root": os.environ["VL360_STALE_STAGING_ROOT"],
     "systemd_key_sha256": sys.argv[9],
     "systemd_unit_attempt_root": os.environ["VL360_STALE_SYSTEMD_UNIT_ATTEMPT_ROOT"],
     "systemd_unit_destination": os.environ["VL360_STALE_SYSTEMD_UNIT_DESTINATION"],
 }
+if expected["schema_version"] == 4:
+    expected.update(
+        {
+            "candidate_manifest_sha256": sys.argv[11],
+            "candidate_release_topology_sha256": sys.argv[12],
+            "candidate_release_root_identity": sys.argv[13],
+            "environment_authority_sha256": sys.argv[14],
+            "persistent_snapshot_sha256": sys.argv[15],
+            "source_release_topology_sha256": sys.argv[16],
+            "source_release_root_identity": sys.argv[17],
+        }
+    )
 if payload != expected:
     raise SystemExit(1)
 payload["stage"] = sys.argv[2]
@@ -1811,9 +2307,229 @@ stale_tree_state() {
   return 3
 }
 
+remove_empty_directory_durably() {
+  local directory="$1"
+  local remove_status=0
+  if rmdir -- "$directory"; then
+    :
+  else
+    remove_status=$?
+  fi
+  if [ ! -e "$directory" ] && [ ! -L "$directory" ]; then
+    fsync_directories "$(dirname -- "$directory")" || return $?
+    return "$remove_status"
+  fi
+  [ "$remove_status" -ne 0 ] && return "$remove_status"
+  return 1
+}
+
+remove_file_durably() {
+  local path="$1"
+  local remove_status=0 fsync_status=0
+  if invoke_rm -f -- "$path"; then
+    :
+  else
+    remove_status=$?
+  fi
+  if [ ! -e "$path" ] && [ ! -L "$path" ]; then
+    if fsync_directories "$(dirname -- "$path")"; then
+      :
+    else
+      fsync_status=$?
+      [ "$remove_status" -ne 0 ] || remove_status="$fsync_status"
+    fi
+    return "$remove_status"
+  fi
+  [ "$remove_status" -ne 0 ] && return "$remove_status"
+  return 1
+}
+
+write_durable_text_file() {
+  local path="$1"
+  local content="$2"
+  invoke_python - "$path" "$content" <<'PY'
+import os
+import sys
+import tempfile
+from pathlib import Path
+
+target = Path(sys.argv[1])
+raw = sys.argv[2]
+descriptor, name = tempfile.mkstemp(
+    prefix=f".{target.name}.", suffix=".tmp", dir=target.parent
+)
+temporary = Path(name)
+try:
+    with os.fdopen(descriptor, "w", encoding="utf-8", newline="") as stream:
+        descriptor = -1
+        stream.write(raw)
+        stream.flush()
+        os.fsync(stream.fileno())
+    os.replace(temporary, target)
+    if os.name != "nt":
+        directory = os.open(
+            target.parent,
+            os.O_RDONLY | getattr(os, "O_DIRECTORY", 0),
+        )
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
+finally:
+    if descriptor != -1:
+        os.close(descriptor)
+    temporary.unlink(missing_ok=True)
+PY
+}
+
+sweep_stale_staging_attempts() {
+  [ ! -e "$MUTATION_STATE" ] && [ ! -L "$MUTATION_STATE" ] || return 1
+  local inventory prefix="$RELEASE_PARENT/.${RELEASE_NAME}.closed-stage."
+  inventory="$(invoke_python - "$RELEASE_PARENT" "$RELEASE_NAME" <<'PY'
+import os
+import json
+import re
+import sys
+from pathlib import Path
+
+parent = Path(sys.argv[1])
+release_name = sys.argv[2]
+if parent.is_symlink() or not parent.is_dir():
+    raise SystemExit(1)
+parent = Path(os.path.realpath(parent))
+prefix = f".{release_name}.closed-stage."
+stages = {}
+owners = {}
+with os.scandir(parent) as entries:
+    for entry in entries:
+        if not entry.name.startswith(prefix):
+            continue
+        if entry.is_symlink():
+            raise SystemExit(1)
+        suffix = entry.name[len(prefix):]
+        kind = "owner" if suffix.endswith(".owner") else "stage"
+        attempt = suffix[:-6] if kind == "owner" else suffix
+        if (
+            re.fullmatch(r"[0-9]+", attempt) is None
+            or int(attempt) <= 0
+            or str(int(attempt)) != attempt
+        ):
+            raise SystemExit(1)
+        path = Path(entry.path)
+        if kind == "stage":
+            if not entry.is_dir(follow_symlinks=False):
+                raise SystemExit(1)
+            stages[attempt] = path
+        else:
+            if not entry.is_file(follow_symlinks=False):
+                raise SystemExit(1)
+            try:
+                payload = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, json.JSONDecodeError):
+                raise SystemExit(1)
+            if set(payload) != {
+                "attempt_id", "nonce", "pid", "role", "root_identity"
+            }:
+                raise SystemExit(1)
+            if (
+                not isinstance(payload["attempt_id"], str)
+                or re.fullmatch(r"[0-9a-f]{32}", payload["attempt_id"]) is None
+                or not isinstance(payload["nonce"], str)
+                or re.fullmatch(r"[0-9a-f]{64}", payload["nonce"]) is None
+                or type(payload["pid"]) is not int
+                or payload["pid"] != int(attempt)
+                or payload["role"] != "private-staging"
+                or not isinstance(payload["root_identity"], str)
+                or re.fullmatch(r"[0-9]+:[0-9]+", payload["root_identity"]) is None
+            ):
+                raise SystemExit(1)
+            owners[attempt] = payload
+for attempt in stages:
+    if attempt not in owners:
+        raise SystemExit(1)
+    observed = stages[attempt].stat()
+    if f"{observed.st_dev}:{observed.st_ino}" != owners[attempt]["root_identity"]:
+        raise SystemExit(1)
+for attempt in sorted(set(stages) | set(owners), key=int):
+    print(attempt)
+PY
+  )" || return $?
+  local attempt stage owner
+  while IFS= read -r attempt; do
+    [ -n "$attempt" ] || continue
+    stage="$prefix$attempt"
+    owner="$stage.owner"
+    if [ -e "$stage" ] || [ -L "$stage" ]; then
+      verify_observed_private_staging_owner_marker "$owner" "$stage" \
+        "$(invoke_python - "$owner" <<'PY'
+import json
+from pathlib import Path
+import sys
+print(json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))["attempt_id"])
+PY
+        )" "$attempt" "$(tree_root_identity "$stage")" || return 1
+      remove_private_directory "$stage" "$RELEASE_PARENT" || return $?
+    fi
+    remove_file_durably "$owner" || return $?
+  done <<< "$inventory"
+}
+
+verify_installed_release_authority() {
+  local installed_root="$1"
+  local persistent_root="$2"
+  local systemd_root="$3"
+  local evidence_root="$4"
+  local mount_evidence="${5:-}"
+  local rehearsal="$6"
+  local -a mount_args=()
+  if [ "$rehearsal" = true ]; then
+    mount_args+=(--local-rehearsal)
+  else
+    [ -n "$mount_evidence" ] || return 1
+    mount_args+=(--persistent-mount-evidence "$mount_evidence")
+  fi
+  invoke_python "$VERIFY_SCRIPT" \
+    --installed-root "$installed_root" \
+    --persistent-agent-data-root "$persistent_root" \
+    --verify-config-ingress-unit-digests \
+    --verify-persistent-agent-data-mount \
+    --systemd-unit-root "$systemd_root" \
+    --verify-systemd-unit-destination \
+    --environment-authority "$PINNED_ENVIRONMENT_AUTHORITY" \
+    --verify-environment-authority \
+    "${mount_args[@]}" \
+    --require-closed --evidence-dir "$evidence_root"
+}
+
+verify_stale_journal_bindings() {
+  local committed="$1"
+  local candidate_root="${2:-}"
+  if [ "$STALE_SCHEMA_VERSION" = 3 ]; then
+    return 1
+  fi
+  [ "$STALE_SCHEMA_VERSION" = 4 ] || return 1
+  [ "$(regular_file_sha256 "$SOURCE_RELEASE_TOPOLOGY_SNAPSHOT")" \
+    = "$STALE_SOURCE_RELEASE_TOPOLOGY_SHA256" ] || return 1
+  [ "$(regular_file_sha256 "$CANDIDATE_RELEASE_TOPOLOGY_SNAPSHOT")" \
+    = "$STALE_CANDIDATE_RELEASE_TOPOLOGY_SHA256" ] || return 1
+  [ "$(regular_file_sha256 "$SNAPSHOT_BEFORE")" \
+    = "$STALE_PERSISTENT_SNAPSHOT_SHA256" ] || return 1
+  if [ -n "$candidate_root" ]; then
+    [ "$(regular_file_sha256 \
+      "$candidate_root/launch-release-manifest.json")" \
+      = "$STALE_CANDIDATE_MANIFEST_SHA256" ] || return 1
+  fi
+  if [ "$committed" = true ]; then
+    [ "$ENVIRONMENT_AUTHORITY_SHA256" \
+      = "$STALE_ENVIRONMENT_AUTHORITY_SHA256" ] || return 1
+    [ "$(regular_file_sha256 "$PINNED_ENVIRONMENT_AUTHORITY")" \
+      = "$STALE_ENVIRONMENT_AUTHORITY_SHA256" ] || return 1
+  fi
+}
+
 inspect_stale_mount() {
   local target="$1"
-  if invoke_mount_authority findmnt --json --target "$target" \
+  if invoke_mount_authority findmnt --json --mountpoint "$target" \
     > "$EVIDENCE_DIR/findmnt-recovery.json"; then
     if invoke_python - "$VERIFY_SCRIPT" "$EVIDENCE_DIR/findmnt-recovery.json" \
       "$STALE_PERSISTENT_ROOT" "$target" <<'PY'
@@ -1853,9 +2569,16 @@ reconcile_stale_install_attempt() {
   local entry_stage="$STALE_STAGE"
   local stale_stage_owner="$STALE_STAGING_ROOT.owner"
   local current_data="$STALE_RELEASE_ROOT/agent/data"
-  local current_state persistent_state mount_state
-  local old_present=false retired_present=false release_present=false
+  local current_state persistent_state mount_state rename_status
+  local candidate_root source_root
+  local candidate_cleanup_root staging_delete_root retired_cleanup_root
+  local candidate_cleanup_owner staging_delete_owner retired_cleanup_owner
+  local old_present=false retired_present=false release_present=false staging_present=false
+  local candidate_cleanup_present=false staging_delete_present=false retired_cleanup_present=false
+  local candidate_cleanup_owner_present=false staging_delete_owner_present=false
+  local retired_cleanup_owner_present=false
   local mount_verified=false committed_recovery=false
+  local observed_root_topology_requires_fsync=false
   case "$STALE_STAGE" in
     detach-agent-data-armed|persistent-detached|swap-release-root-armed|\
     root-swapped|restore-bind-agent-data-armed|persistent-restored|\
@@ -1876,6 +2599,17 @@ reconcile_stale_install_attempt() {
     "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" "$stale_stage_owner"; do
     [ ! -L "$candidate" ] || return 1
   done
+  candidate_cleanup_root="$(dirname -- "$STALE_RELEASE_ROOT")/.${RELEASE_NAME}.closed-candidate-cleanup.${STALE_ATTEMPT_ID}"
+  staging_delete_root="$(dirname -- "$STALE_RELEASE_ROOT")/.${RELEASE_NAME}.closed-staging-cleanup.${STALE_ATTEMPT_ID}"
+  retired_cleanup_root="$(dirname -- "$STALE_RELEASE_ROOT")/.${RELEASE_NAME}.closed-retired-cleanup.${STALE_ATTEMPT_ID}"
+  candidate_cleanup_owner="$candidate_cleanup_root.owner"
+  staging_delete_owner="$staging_delete_root.owner"
+  retired_cleanup_owner="$retired_cleanup_root.owner"
+  for cleanup_root in "$candidate_cleanup_root" "$staging_delete_root" \
+    "$retired_cleanup_root" "$candidate_cleanup_owner" \
+    "$staging_delete_owner" "$retired_cleanup_owner"; do
+    [ ! -L "$cleanup_root" ] || return 1
+  done
   if [ -e "$STALE_OLD_ROOT" ]; then
     [ -d "$STALE_OLD_ROOT" ] || return 1
     old_present=true
@@ -1890,6 +2624,55 @@ reconcile_stale_install_attempt() {
   fi
   if [ -e "$STALE_STAGING_ROOT" ]; then
     [ -d "$STALE_STAGING_ROOT" ] || return 1
+    staging_present=true
+  fi
+  if [ -e "$candidate_cleanup_root" ]; then
+    [ -d "$candidate_cleanup_root" ] || return 1
+    candidate_cleanup_present=true
+  fi
+  if [ -e "$candidate_cleanup_owner" ]; then
+    [ -f "$candidate_cleanup_owner" ] || return 1
+    candidate_cleanup_owner_present=true
+  fi
+  if [ -e "$staging_delete_root" ]; then
+    [ -d "$staging_delete_root" ] || return 1
+    staging_delete_present=true
+  fi
+  if [ -e "$staging_delete_owner" ]; then
+    [ -f "$staging_delete_owner" ] || return 1
+    staging_delete_owner_present=true
+  fi
+  if [ -e "$retired_cleanup_root" ]; then
+    [ -d "$retired_cleanup_root" ] || return 1
+    retired_cleanup_present=true
+  fi
+  if [ -e "$retired_cleanup_owner" ]; then
+    [ -f "$retired_cleanup_owner" ] || return 1
+    retired_cleanup_owner_present=true
+  fi
+  if [ "$candidate_cleanup_present" = true ] \
+    || [ "$candidate_cleanup_owner_present" = true ]; then
+    [ "$entry_stage" = recovery-remove-release-root-armed ] || return 1
+  fi
+  if [ "$release_present" = true ] \
+    && [ "$candidate_cleanup_present" = true ]; then
+    return 1
+  fi
+  if [ "$staging_delete_present" = true ] \
+    || [ "$staging_delete_owner_present" = true ]; then
+    [ "$entry_stage" = recovery-remove-staging-armed ] || return 1
+  fi
+  if [ "$staging_present" = true ] \
+    && [ "$staging_delete_present" = true ]; then
+    return 1
+  fi
+  if [ "$retired_cleanup_present" = true ] \
+    || [ "$retired_cleanup_owner_present" = true ]; then
+    [ "$entry_stage" = committed-cleanup ] || return 1
+  fi
+  if [ "$retired_present" = true ] \
+    && [ "$retired_cleanup_present" = true ]; then
+    return 1
   fi
 
   case "$entry_stage" in
@@ -1900,14 +2683,28 @@ reconcile_stale_install_attempt() {
     systemd-backup-preparing|\
     systemd-units-armed|\
     recovery-remove-empty-persistent-root-armed|\
-    recovery-detach-persistent-armed|recovery-remove-release-root-armed)
+    recovery-detach-persistent-armed)
       [ "$old_present" = true ] || return 1
+      ;;
+    swap-release-root-armed)
+      case "$old_present:$release_present:$staging_present" in
+        false:true:true|true:false:true) ;;
+        true:true:false) observed_root_topology_requires_fsync=true ;;
+        *) return 1 ;;
+      esac
+      ;;
+    recovery-remove-release-root-armed)
+      [ "$old_present" = true ] || return 1
+      if [ "$release_present" = false ]; then
+        observed_root_topology_requires_fsync=true
+      fi
       ;;
     retire-old-root-armed)
       if [ "$old_present" = true ] && [ "$retired_present" = false ]; then
         :
       elif [ "$old_present" = false ] && [ "$retired_present" = true ]; then
         committed_recovery=true
+        observed_root_topology_requires_fsync=true
       else
         return 1
       fi
@@ -1915,29 +2712,86 @@ reconcile_stale_install_attempt() {
     committed-cleanup)
       [ "$old_present" = false ] || return 1
       committed_recovery=true
+      if [ "$retired_present" = false ]; then
+        observed_root_topology_requires_fsync=true
+      fi
       ;;
-    recovery-restore-persistent-armed|recovery-create-persistent-root-armed|\
-    recovery-remove-staging-armed|recovery-remove-staging-owner-armed|\
+    recovery-create-persistent-root-armed|recovery-remove-staging-armed|\
+    recovery-remove-staging-owner-armed|\
     recovery-remove-systemd-attempt-armed|rollback-restored)
       [ "$old_present" = false ] || return 1
       ;;
+    recovery-restore-persistent-armed)
+      [ "$release_present" = true ] || return 1
+      ;;
+    recovery-restore-old-root-armed)
+      if [ "$old_present" = true ] && [ "$release_present" = false ]; then
+        :
+      elif [ "$old_present" = false ] && [ "$release_present" = true ]; then
+        observed_root_topology_requires_fsync=true
+      else
+        return 1
+      fi
+      ;;
   esac
 
+  candidate_root=''
+  if [ "$staging_present" = true ]; then
+    candidate_root="$STALE_STAGING_ROOT"
+  elif [ "$old_present" = true ] && [ "$release_present" = true ]; then
+    candidate_root="$STALE_RELEASE_ROOT"
+  elif [ "$committed_recovery" = true ] && [ "$release_present" = true ]; then
+    candidate_root="$STALE_RELEASE_ROOT"
+  fi
+  if [ "$committed_recovery" = true ]; then
+    if [ "$retired_present" = true ]; then
+      source_root="$STALE_RETIRED_ROOT"
+    else
+      source_root=''
+    fi
+  elif [ "$old_present" = true ]; then
+    source_root="$STALE_OLD_ROOT"
+  elif [ "$release_present" = true ]; then
+    source_root="$STALE_RELEASE_ROOT"
+  else
+    return 1
+  fi
+  if [ -n "$source_root" ]; then
+    tree_matches_bound_topology "$source_root" \
+      "$STALE_SOURCE_RELEASE_ROOT_IDENTITY" \
+      "$SOURCE_RELEASE_TOPOLOGY_SNAPSHOT" false || return 1
+  fi
+  verify_stale_journal_bindings "$committed_recovery" "$candidate_root" \
+    || return 1
+
+  if [ "$observed_root_topology_requires_fsync" = true ]; then
+    fsync_directories "$(dirname -- "$STALE_RELEASE_ROOT")" || return 1
+  fi
+
   if [ "$committed_recovery" = false ] && [ "$retired_present" = true ]; then
+    return 1
+  fi
+  if [ "$entry_stage" = rollback-restored ] \
+    && [ -n "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" ] \
+    && { [ -e "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" ] \
+      || [ -L "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" ]; }; then
     return 1
   fi
   if [ -n "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" ]; then
     if [ -e "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" ]; then
       [ -d "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" ] \
         && [ ! -L "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" ] || return 1
-      if [ -e "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT/armed" ]; then
-        [ "$committed_recovery" = true ] \
-          || restore_systemd_units_from "$STALE_SYSTEMD_UNIT_DESTINATION" \
-            "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" || return 1
+      if [ -e "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT/armed" ] \
+        && [ "$committed_recovery" = false ] \
+        && [ "$entry_stage" != rollback-restored ] \
+        && [ "$entry_stage" != recovery-remove-systemd-attempt-armed ]; then
+        restore_systemd_units_from "$STALE_SYSTEMD_UNIT_DESTINATION" \
+          "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" || return 1
       fi
     else
       [ "$entry_stage" = recovery-remove-systemd-attempt-armed ] \
-        || [ "$entry_stage" = committed-cleanup ] || return 1
+        || [ "$entry_stage" = committed-cleanup ] \
+        || [ "$entry_stage" = rollback-restored ] || return 1
     fi
   fi
 
@@ -1962,17 +2816,42 @@ reconcile_stale_install_attempt() {
             if [ "$persistent_state" -eq 2 ]; then
               write_stale_mutation_state \
                 recovery-remove-empty-persistent-root-armed || return 1
-              rmdir -- "$STALE_PERSISTENT_ROOT" || return 1
-              fsync_directories "$(dirname -- "$STALE_PERSISTENT_ROOT")" \
-                || return 1
+              remove_empty_directory_durably "$STALE_PERSISTENT_ROOT" \
+                || return $?
             fi
             write_stale_mutation_state recovery-detach-persistent-armed \
               || return 1
-            mv -- "$current_data" "$STALE_PERSISTENT_ROOT" || return 1
-            fsync_directories "$(dirname -- "$current_data")" \
-              "$(dirname -- "$STALE_PERSISTENT_ROOT")" || return 1
+            rename_status=0
+            if mv -- "$current_data" "$STALE_PERSISTENT_ROOT"; then
+              :
+            else
+              rename_status=$?
+            fi
+            if stale_tree_state "$current_data"; then
+              current_state=0
+            else
+              current_state=$?
+            fi
+            if stale_tree_state "$STALE_PERSISTENT_ROOT"; then
+              persistent_state=0
+            else
+              persistent_state=$?
+            fi
+            if [ "$current_state:$persistent_state" = 1:0 ]; then
+              fsync_directories "$(dirname -- "$current_data")" \
+                "$(dirname -- "$STALE_PERSISTENT_ROOT")" || return 1
+              [ "$rename_status" -eq 0 ] || return "$rename_status"
+            else
+              [ "$rename_status" -ne 0 ] && return "$rename_status"
+              return 1
+            fi
             ;;
-          1:0|2:0) ;;
+          1:0|2:0)
+            if [ "$entry_stage" = recovery-detach-persistent-armed ]; then
+              fsync_directories "$(dirname -- "$current_data")" \
+                "$(dirname -- "$STALE_PERSISTENT_ROOT")" || return 1
+            fi
+            ;;
           *) return 1 ;;
         esac
       else
@@ -1989,7 +2868,13 @@ reconcile_stale_install_attempt() {
           retire-old-root-armed:0|recovery-detach-persistent-armed:0)
             write_stale_mutation_state recovery-detach-persistent-armed \
               || return 1
-            invoke_mount_authority umount "$current_data" || return 1
+            invoke_mount_authority umount "$current_data" || true
+            if inspect_stale_mount "$current_data"; then
+              mount_state=0
+            else
+              mount_state=$?
+            fi
+            [ "$mount_state" -eq 1 ] || return 1
             fsync_directories "$current_data" "$(dirname -- "$current_data")" \
               || return 1
             ;;
@@ -2007,14 +2892,64 @@ reconcile_stale_install_attempt() {
           || return 1 ;;
       esac
       write_stale_mutation_state recovery-remove-release-root-armed || return 1
-      rm -rf -- "$STALE_RELEASE_ROOT" || return 1
+      tree_matches_bound_topology "$STALE_OLD_ROOT" \
+        "$STALE_SOURCE_RELEASE_ROOT_IDENTITY" \
+        "$SOURCE_RELEASE_TOPOLOGY_SNAPSHOT" false || return 1
+      tree_matches_bound_topology "$STALE_RELEASE_ROOT" \
+        "$STALE_CANDIDATE_RELEASE_ROOT_IDENTITY" \
+        "$CANDIDATE_RELEASE_TOPOLOGY_SNAPSHOT" false || return 1
+      [ "$(regular_file_sha256 \
+        "$STALE_RELEASE_ROOT/launch-release-manifest.json")" \
+        = "$STALE_CANDIDATE_MANIFEST_SHA256" ] || return 1
+      [ "$candidate_cleanup_present" = false ] || return 1
+      if [ "$candidate_cleanup_owner_present" = true ]; then
+        verify_cleanup_owner_marker "$candidate_cleanup_owner" candidate \
+          "$STALE_ATTEMPT_ID" "$STALE_CANDIDATE_RELEASE_ROOT_IDENTITY" \
+          "$STALE_CANDIDATE_RELEASE_TOPOLOGY_SHA256" || return 1
+      else
+        write_cleanup_owner_marker "$candidate_cleanup_owner" candidate \
+          "$STALE_ATTEMPT_ID" "$STALE_CANDIDATE_RELEASE_ROOT_IDENTITY" \
+          "$STALE_CANDIDATE_RELEASE_TOPOLOGY_SHA256" || return 1
+        candidate_cleanup_owner_present=true
+      fi
+      mv -- "$STALE_RELEASE_ROOT" "$candidate_cleanup_root" || return 1
       fsync_directories "$(dirname -- "$STALE_RELEASE_ROOT")" || return 1
+      [ ! -e "$STALE_RELEASE_ROOT" ] && [ ! -L "$STALE_RELEASE_ROOT" ] \
+        || return 1
       release_present=false
+      candidate_cleanup_present=true
+    fi
+    if [ "$candidate_cleanup_present" = true ]; then
+      [ "$candidate_cleanup_owner_present" = true ] || return 1
+      verify_cleanup_owner_marker "$candidate_cleanup_owner" candidate \
+        "$STALE_ATTEMPT_ID" "$STALE_CANDIDATE_RELEASE_ROOT_IDENTITY" \
+        "$STALE_CANDIDATE_RELEASE_TOPOLOGY_SHA256" || return 1
+      tree_matches_bound_topology "$candidate_cleanup_root" \
+        "$STALE_CANDIDATE_RELEASE_ROOT_IDENTITY" \
+        "$CANDIDATE_RELEASE_TOPOLOGY_SNAPSHOT" true || return 1
+      invoke_rm -rf -- "$candidate_cleanup_root" || return 1
+      [ ! -e "$candidate_cleanup_root" ] && [ ! -L "$candidate_cleanup_root" ] \
+        || return 1
+      fsync_directories "$(dirname -- "$STALE_RELEASE_ROOT")" || return 1
+      candidate_cleanup_present=false
+    fi
+    if [ "$candidate_cleanup_owner_present" = true ]; then
+      fsync_directories "$(dirname -- "$STALE_RELEASE_ROOT")" || return 1
+      remove_file_durably "$candidate_cleanup_owner" || return 1
+      [ ! -e "$candidate_cleanup_owner" ] \
+        && [ ! -L "$candidate_cleanup_owner" ] || return 1
+      candidate_cleanup_owner_present=false
     fi
     [ "$release_present" = false ] || return 1
+    tree_matches_bound_topology "$STALE_OLD_ROOT" \
+      "$STALE_SOURCE_RELEASE_ROOT_IDENTITY" \
+      "$SOURCE_RELEASE_TOPOLOGY_SNAPSHOT" false || return 1
     write_stale_mutation_state recovery-restore-old-root-armed || return 1
     mv -- "$STALE_OLD_ROOT" "$STALE_RELEASE_ROOT" || return 1
     fsync_directories "$(dirname -- "$STALE_RELEASE_ROOT")" || return 1
+    tree_matches_bound_topology "$STALE_RELEASE_ROOT" \
+      "$STALE_SOURCE_RELEASE_ROOT_IDENTITY" \
+      "$SOURCE_RELEASE_TOPOLOGY_SNAPSHOT" false || return 1
     old_present=false
     release_present=true
   fi
@@ -2037,13 +2972,24 @@ reconcile_stale_install_attempt() {
     fi
     case "$current_state:$persistent_state" in
       0:1)
+        case "$entry_stage" in
+          recovery-restore-persistent-armed|recovery-create-persistent-root-armed)
+            fsync_directories "$(dirname -- "$STALE_PERSISTENT_ROOT")" \
+              "$(dirname -- "$current_data")" || return 1
+            ;;
+        esac
         write_stale_mutation_state recovery-create-persistent-root-armed \
           || return 1
         mkdir -- "$STALE_PERSISTENT_ROOT" || return 1
         fsync_directories "$(dirname -- "$STALE_PERSISTENT_ROOT")" \
           "$STALE_PERSISTENT_ROOT" || return 1
         ;;
-      0:2) ;;
+      0:2)
+        if [ "$entry_stage" = recovery-create-persistent-root-armed ]; then
+          fsync_directories "$(dirname -- "$STALE_PERSISTENT_ROOT")" \
+            "$STALE_PERSISTENT_ROOT" "$(dirname -- "$current_data")" || return 1
+        fi
+        ;;
       1:0)
         [ -d "$(dirname -- "$current_data")" ] \
           && [ ! -L "$(dirname -- "$current_data")" ] || return 1
@@ -2093,42 +3039,142 @@ reconcile_stale_install_attempt() {
     tree_matches_snapshot "$current_data" "$SNAPSHOT_BEFORE" || return 1
   fi
 
+  if [ "$committed_recovery" = true ]; then
+    [ -f "$STALE_RELEASE_ROOT/launch-release-manifest.json" ] \
+      && [ ! -L "$STALE_RELEASE_ROOT/launch-release-manifest.json" ] \
+      || return 1
+    verify_installed_release_authority \
+      "$STALE_RELEASE_ROOT" "$STALE_PERSISTENT_ROOT" \
+      "$STALE_SYSTEMD_UNIT_DESTINATION" "$EVIDENCE_DIR/installed-recovery" \
+      "$EVIDENCE_DIR/findmnt-recovery.json" "$STALE_LOCAL_REHEARSAL" \
+      || return 1
+    invoke_pinned_executable unit-verify "$UNIT_VERIFY_HOOK_SHA256" -- \
+      --unit-root "$STALE_SYSTEMD_UNIT_DESTINATION" \
+      --manifest "$STALE_RELEASE_ROOT/launch-release-manifest.json" \
+      || return 1
+    write_stale_mutation_state committed-cleanup || return 1
+  fi
+
   local stage_owner_valid=false
   if [ -e "$stale_stage_owner" ]; then
-    [ -f "$stale_stage_owner" ] && [ ! -L "$stale_stage_owner" ] \
-      && grep -Fxq "$STALE_ATTEMPT_ID" "$stale_stage_owner" || return 1
+    verify_observed_private_staging_owner_marker "$stale_stage_owner" \
+      "$STALE_STAGING_ROOT" "$STALE_ATTEMPT_ID" "$STALE_PID" \
+      "$STALE_CANDIDATE_RELEASE_ROOT_IDENTITY" || return 1
     stage_owner_valid=true
   fi
   if [ -e "$STALE_STAGING_ROOT" ] || [ -L "$STALE_STAGING_ROOT" ]; then
     [ -d "$STALE_STAGING_ROOT" ] && [ ! -L "$STALE_STAGING_ROOT" ] || return 1
     [ "$stage_owner_valid" = true ] || return 1
-    write_stale_mutation_state recovery-remove-staging-armed || return 1
-    rm -rf -- "$STALE_STAGING_ROOT" || return 1
+    if [ "$committed_recovery" = false ]; then
+      write_stale_mutation_state recovery-remove-staging-armed || return 1
+    fi
+    tree_matches_bound_topology "$STALE_STAGING_ROOT" \
+      "$STALE_CANDIDATE_RELEASE_ROOT_IDENTITY" \
+      "$CANDIDATE_RELEASE_TOPOLOGY_SNAPSHOT" false || return 1
+    [ "$(regular_file_sha256 \
+      "$STALE_STAGING_ROOT/launch-release-manifest.json")" \
+      = "$STALE_CANDIDATE_MANIFEST_SHA256" ] || return 1
+    [ "$staging_delete_present" = false ] || return 1
+    if [ "$staging_delete_owner_present" = true ]; then
+      verify_cleanup_owner_marker "$staging_delete_owner" staging \
+        "$STALE_ATTEMPT_ID" "$STALE_CANDIDATE_RELEASE_ROOT_IDENTITY" \
+        "$STALE_CANDIDATE_RELEASE_TOPOLOGY_SHA256" || return 1
+    else
+      write_cleanup_owner_marker "$staging_delete_owner" staging \
+        "$STALE_ATTEMPT_ID" "$STALE_CANDIDATE_RELEASE_ROOT_IDENTITY" \
+        "$STALE_CANDIDATE_RELEASE_TOPOLOGY_SHA256" || return 1
+      staging_delete_owner_present=true
+    fi
+    mv -- "$STALE_STAGING_ROOT" "$staging_delete_root" || return 1
     fsync_directories "$(dirname -- "$STALE_STAGING_ROOT")" || return 1
+    [ ! -e "$STALE_STAGING_ROOT" ] && [ ! -L "$STALE_STAGING_ROOT" ] \
+      || return 1
+    staging_delete_present=true
+  fi
+  if [ "$staging_delete_present" = true ]; then
+    [ "$staging_delete_owner_present" = true ] || return 1
+    verify_cleanup_owner_marker "$staging_delete_owner" staging \
+      "$STALE_ATTEMPT_ID" "$STALE_CANDIDATE_RELEASE_ROOT_IDENTITY" \
+      "$STALE_CANDIDATE_RELEASE_TOPOLOGY_SHA256" || return 1
+    tree_matches_bound_topology "$staging_delete_root" \
+      "$STALE_CANDIDATE_RELEASE_ROOT_IDENTITY" \
+      "$CANDIDATE_RELEASE_TOPOLOGY_SNAPSHOT" true || return 1
+    invoke_rm -rf -- "$staging_delete_root" || return 1
+    [ ! -e "$staging_delete_root" ] && [ ! -L "$staging_delete_root" ] \
+      || return 1
+    fsync_directories "$(dirname -- "$STALE_STAGING_ROOT")" || return 1
+    staging_delete_present=false
+  fi
+  if [ "$staging_delete_owner_present" = true ]; then
+    [ "$staging_delete_present" = false ] || return 1
+    remove_file_durably "$staging_delete_owner" || return 1
+    [ ! -e "$staging_delete_owner" ] && [ ! -L "$staging_delete_owner" ] \
+      || return 1
+    staging_delete_owner_present=false
   fi
   if [ -e "$stale_stage_owner" ] || [ -L "$stale_stage_owner" ]; then
     [ "$stage_owner_valid" = true ] || return 1
-    write_stale_mutation_state recovery-remove-staging-owner-armed || return 1
-    rm -f -- "$stale_stage_owner" || return 1
+    if [ "$committed_recovery" = false ]; then
+      write_stale_mutation_state recovery-remove-staging-owner-armed || return 1
+    fi
+    remove_file_durably "$stale_stage_owner" || return 1
+    [ ! -e "$stale_stage_owner" ] && [ ! -L "$stale_stage_owner" ] \
+      || return 1
+    fsync_directories "$(dirname -- "$stale_stage_owner")" || return 1
+  elif [ "$entry_stage" = recovery-remove-staging-owner-armed ]; then
     fsync_directories "$(dirname -- "$stale_stage_owner")" || return 1
   fi
   if [ "$committed_recovery" = true ]; then
-    write_stale_mutation_state committed-cleanup || return 1
     if [ -e "$STALE_RETIRED_ROOT" ] || [ -L "$STALE_RETIRED_ROOT" ]; then
       [ -d "$STALE_RETIRED_ROOT" ] && [ ! -L "$STALE_RETIRED_ROOT" ] \
         || return 1
-      rm -rf -- "$STALE_RETIRED_ROOT" || return 1
+      tree_matches_bound_topology "$STALE_RETIRED_ROOT" \
+        "$STALE_SOURCE_RELEASE_ROOT_IDENTITY" \
+        "$SOURCE_RELEASE_TOPOLOGY_SNAPSHOT" false || return 1
+      [ "$retired_cleanup_present" = false ] || return 1
+      if [ "$retired_cleanup_owner_present" = true ]; then
+        verify_cleanup_owner_marker "$retired_cleanup_owner" retired \
+          "$STALE_ATTEMPT_ID" "$STALE_SOURCE_RELEASE_ROOT_IDENTITY" \
+          "$STALE_SOURCE_RELEASE_TOPOLOGY_SHA256" || return 1
+      else
+        write_cleanup_owner_marker "$retired_cleanup_owner" retired \
+          "$STALE_ATTEMPT_ID" "$STALE_SOURCE_RELEASE_ROOT_IDENTITY" \
+          "$STALE_SOURCE_RELEASE_TOPOLOGY_SHA256" || return 1
+        retired_cleanup_owner_present=true
+      fi
+      mv -- "$STALE_RETIRED_ROOT" "$retired_cleanup_root" || return 1
       fsync_directories "$(dirname -- "$STALE_RETIRED_ROOT")" || return 1
+      [ ! -e "$STALE_RETIRED_ROOT" ] && [ ! -L "$STALE_RETIRED_ROOT" ] \
+        || return 1
+      retired_cleanup_present=true
+      retired_present=false
     fi
     [ ! -e "$STALE_RETIRED_ROOT" ] && [ ! -L "$STALE_RETIRED_ROOT" ] \
       || return 1
-  fi
-  if [ -n "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" ]; then
-    if [ -e "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT/armed" ] \
-      && [ "$committed_recovery" = false ]; then
-      restore_systemd_units_from "$STALE_SYSTEMD_UNIT_DESTINATION" \
-        "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" || return 1
+    if [ "$retired_cleanup_present" = true ]; then
+      [ "$retired_cleanup_owner_present" = true ] || return 1
+      verify_cleanup_owner_marker "$retired_cleanup_owner" retired \
+        "$STALE_ATTEMPT_ID" "$STALE_SOURCE_RELEASE_ROOT_IDENTITY" \
+        "$STALE_SOURCE_RELEASE_TOPOLOGY_SHA256" || return 1
+      tree_matches_bound_topology "$retired_cleanup_root" \
+        "$STALE_SOURCE_RELEASE_ROOT_IDENTITY" \
+        "$SOURCE_RELEASE_TOPOLOGY_SNAPSHOT" true || return 1
+      invoke_rm -rf -- "$retired_cleanup_root" || return 1
+      [ ! -e "$retired_cleanup_root" ] && [ ! -L "$retired_cleanup_root" ] \
+        || return 1
+      fsync_directories "$(dirname -- "$STALE_RETIRED_ROOT")" || return 1
+      retired_cleanup_present=false
     fi
+    if [ "$retired_cleanup_owner_present" = true ]; then
+      [ "$retired_cleanup_present" = false ] || return 1
+      remove_file_durably "$retired_cleanup_owner" || return 1
+      [ ! -e "$retired_cleanup_owner" ] \
+        && [ ! -L "$retired_cleanup_owner" ] || return 1
+      retired_cleanup_owner_present=false
+    fi
+  fi
+  if [ -n "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" ] \
+    && [ "$entry_stage" != rollback-restored ]; then
     if [ "$committed_recovery" = false ]; then
       write_stale_mutation_state recovery-remove-systemd-attempt-armed || return 1
     fi
@@ -2332,10 +3378,30 @@ if [ "$LOCAL_REHEARSAL" != true ]; then
   MOUNT_AUTHORITY="$PINNED_MOUNT_AUTHORITY"
 fi
 
+run_with_sanitized_executable_environment() {
+  local -a command=(
+    "$ENV_EXECUTOR"
+    -u BASH_ENV
+    -u ENV
+    -u BASHOPTS
+    -u SHELLOPTS
+    -u BASH_COMPAT
+    -u POSIXLY_CORRECT
+  )
+  local entry name
+  while IFS= read -r -d '' entry; do
+    name="${entry%%=*}"
+    case "$name" in
+      BASH_FUNC_*%%) command+=(-u "$name") ;;
+    esac
+  done < <("$ENV_EXECUTOR" -0)
+  "${command[@]}" "$@"
+}
+
 invoke_pinned_executable() {
   local role="$1"
   local expected_sha256="$2"
-  local path platform_name executor_source
+  local path platform_name executor_source launch_kind
   shift 2
   [ "${1:-}" = -- ] || {
     printf 'install_closed_release: executable-authority-arguments-invalid\n' >&2
@@ -2369,7 +3435,39 @@ invoke_pinned_executable() {
       printf 'install_closed_release: executable-authority-digest-mismatch\n' >&2
       return 126
     fi
-    "$path" "$@"
+    launch_kind="$(invoke_python - "$path" <<'PY'
+from pathlib import Path
+import sys
+
+prefix = Path(sys.argv[1]).read_bytes()[:4096]
+if not prefix.startswith(b"#!"):
+    print("native")
+    raise SystemExit(0)
+line_end = prefix.find(b"\n")
+if line_end < 0:
+    raise SystemExit(1)
+shebang = prefix[:line_end].rstrip(b"\r")
+if shebang in (b"#!/usr/bin/env bash", b"#!/bin/bash", b"#!/usr/bin/bash"):
+    print("bash")
+elif shebang in (b"#!/bin/sh", b"#!/usr/bin/python3", b"#!/usr/local/bin/python3"):
+    print("native")
+else:
+    raise SystemExit(1)
+PY
+    )" || {
+      printf 'install_closed_release: executable-authority-shebang-forbidden\n' >&2
+      return 126
+    }
+    if [ "$launch_kind" = bash ]; then
+      if ! verify_pinned_executable "$BASH_EXECUTOR" "$BASH_EXECUTOR_SHA256"; then
+        printf 'install_closed_release: executable-authority-digest-mismatch\n' >&2
+        return 126
+      fi
+      run_with_sanitized_executable_environment \
+        "$BASH_EXECUTOR" -- "$path" "$@"
+    else
+      run_with_sanitized_executable_environment "$path" "$@"
+    fi
     return $?
   fi
   if [ "$platform_name" != posix ]; then
@@ -2400,6 +3498,14 @@ APPROVED_SHEBANGS = {
     b"#!/bin/sh",
     b"#!/usr/bin/python3",
     b"#!/usr/local/bin/python3",
+}
+UNSAFE_ENVIRONMENT_KEYS = {
+    "BASH_ENV",
+    "ENV",
+    "BASHOPTS",
+    "SHELLOPTS",
+    "BASH_COMPAT",
+    "POSIXLY_CORRECT",
 }
 
 
@@ -2450,6 +3556,15 @@ def validate_script_shebang(prefix):
     if shebang not in APPROVED_SHEBANGS:
         fail("executable-authority-shebang-forbidden")
     return "native"
+
+
+def sanitized_environment():
+    return {
+        key: value
+        for key, value in os.environ.items()
+        if key not in UNSAFE_ENVIRONMENT_KEYS
+        and not (key.startswith("BASH_FUNC_") and key.endswith("%%"))
+    }
 
 
 def open_canonical_executor(pin_root, role_filename):
@@ -2524,7 +3639,7 @@ def main():
     finally:
         os.close(pin_fd)
     argv = [pin_path, *sys.argv[8:]]
-    env = dict(os.environ)
+    env = sanitized_environment()
     os.set_inheritable(memfd_fd, True)
     if not os.get_inheritable(memfd_fd):
         os.close(memfd_fd)
@@ -2686,6 +3801,7 @@ if [ "$PENDING_STALE_RECOVERY" = true ]; then
   reset_mutable_evidence "$EVIDENCE_DIR" || die 'evidence-dir-reset-failed'
   PENDING_STALE_RECOVERY=false
 fi
+sweep_stale_staging_attempts || die 'stale-staging-cleanup-required'
 record_install_lock acquired 0
 
 case "${VL360_INSTALL_FAIL_AFTER:-}" in
@@ -2699,7 +3815,15 @@ PINNED_ARCHIVE_ROOT=''
 STAGING_ROOT=''
 OLD_ROOT=''
 RETIRED_ROOT=''
+CANDIDATE_CLEANUP_ROOT=''
+STAGING_DELETE_ROOT=''
+RETIRED_CLEANUP_ROOT=''
+CANDIDATE_CLEANUP_OWNER=''
+STAGING_DELETE_OWNER=''
+RETIRED_CLEANUP_OWNER=''
 STAGING_OWNER_MARKER=''
+STAGING_ROOT_IDENTITY=''
+STAGING_OWNER_NONCE=''
 STAGING_CLEANUP_ARMED=false
 cleanup_pinned_archive() {
   [ -n "$PINNED_ARCHIVE_ROOT" ] || return 0
@@ -2717,14 +3841,17 @@ cleanup_private_staging() {
   local expected="$RELEASE_PARENT/.${RELEASE_NAME}.closed-stage.$$"
   [ "$STAGING_ROOT" = "$expected" ] || return 1
   [ "$STAGING_OWNER_MARKER" = "$STAGING_ROOT.owner" ] || return 1
-  [ -f "$STAGING_OWNER_MARKER" ] && [ ! -L "$STAGING_OWNER_MARKER" ] \
-    && grep -Fxq "$ATTEMPT_ID" "$STAGING_OWNER_MARKER" || return 1
+  verify_private_staging_owner_marker "$STAGING_OWNER_MARKER" \
+    "$STAGING_ROOT" "$ATTEMPT_ID" "$$" "$STAGING_ROOT_IDENTITY" \
+    "$STAGING_OWNER_NONCE" || return 1
   if [ -e "$STAGING_ROOT" ] || [ -L "$STAGING_ROOT" ]; then
     [ -d "$STAGING_ROOT" ] && [ ! -L "$STAGING_ROOT" ] || return 1
-    rm -rf -- "$STAGING_ROOT" >/dev/null 2>&1 || return 1
+    remove_private_directory "$STAGING_ROOT" "$RELEASE_PARENT" || return $?
   fi
-  rm -f -- "$STAGING_OWNER_MARKER" >/dev/null 2>&1 || return 1
-  fsync_directories "$RELEASE_PARENT" >/dev/null 2>&1 || return 1
+  [ ! -e "$STAGING_ROOT" ] && [ ! -L "$STAGING_ROOT" ] || return 1
+  remove_file_durably "$STAGING_OWNER_MARKER" >/dev/null 2>&1 || return $?
+  [ ! -e "$STAGING_OWNER_MARKER" ] && [ ! -L "$STAGING_OWNER_MARKER" ] \
+    || return 1
   STAGING_CLEANUP_ARMED=false
 }
 cleanup_attempt_authorities() {
@@ -2776,6 +3903,12 @@ invoke_python "$VERIFY_SCRIPT" \
 STAGING_ROOT="$RELEASE_PARENT/.${RELEASE_NAME}.closed-stage.$$"
 OLD_ROOT="$RELEASE_PARENT/.${RELEASE_NAME}.closed-old.$$"
 RETIRED_ROOT="$RELEASE_PARENT/.${RELEASE_NAME}.closed-retired.$ATTEMPT_ID"
+CANDIDATE_CLEANUP_ROOT="$RELEASE_PARENT/.${RELEASE_NAME}.closed-candidate-cleanup.$ATTEMPT_ID"
+STAGING_DELETE_ROOT="$RELEASE_PARENT/.${RELEASE_NAME}.closed-staging-cleanup.$ATTEMPT_ID"
+RETIRED_CLEANUP_ROOT="$RELEASE_PARENT/.${RELEASE_NAME}.closed-retired-cleanup.$ATTEMPT_ID"
+CANDIDATE_CLEANUP_OWNER="$CANDIDATE_CLEANUP_ROOT.owner"
+STAGING_DELETE_OWNER="$STAGING_DELETE_ROOT.owner"
+RETIRED_CLEANUP_OWNER="$RETIRED_CLEANUP_ROOT.owner"
 STAGING_OWNER_MARKER="$STAGING_ROOT.owner"
 UNIT_ATTEMPT_ROOT=''
 UNIT_BACKUP_ROOT=''
@@ -2791,10 +3924,25 @@ fsync_directories "$EVIDENCE_DIR"
   && [ ! -e "$STAGING_OWNER_MARKER" ] && [ ! -L "$STAGING_OWNER_MARKER" ] \
   && [ ! -e "$OLD_ROOT" ] && [ ! -L "$OLD_ROOT" ] \
   && [ ! -e "$RETIRED_ROOT" ] && [ ! -L "$RETIRED_ROOT" ] \
+  && [ ! -e "$CANDIDATE_CLEANUP_ROOT" ] && [ ! -L "$CANDIDATE_CLEANUP_ROOT" ] \
+  && [ ! -e "$CANDIDATE_CLEANUP_OWNER" ] && [ ! -L "$CANDIDATE_CLEANUP_OWNER" ] \
+  && [ ! -e "$STAGING_DELETE_ROOT" ] && [ ! -L "$STAGING_DELETE_ROOT" ] \
+  && [ ! -e "$STAGING_DELETE_OWNER" ] && [ ! -L "$STAGING_DELETE_OWNER" ] \
+  && [ ! -e "$RETIRED_CLEANUP_ROOT" ] && [ ! -L "$RETIRED_CLEANUP_ROOT" ] \
+  && [ ! -e "$RETIRED_CLEANUP_OWNER" ] && [ ! -L "$RETIRED_CLEANUP_OWNER" ] \
   || die 'staging-path-exists'
 STAGING_CLEANUP_ARMED=true
-printf '%s\n' "$ATTEMPT_ID" > "$STAGING_OWNER_MARKER"
 mkdir -- "$STAGING_ROOT"
+STAGING_ROOT_IDENTITY="$(tree_root_identity "$STAGING_ROOT")" \
+  || die 'staging-root-identity-failed'
+STAGING_OWNER_NONCE="$(new_private_staging_nonce)" \
+  || die 'staging-owner-nonce-failed'
+write_private_staging_owner_marker "$STAGING_OWNER_MARKER" "$ATTEMPT_ID" \
+  "$$" "$STAGING_ROOT_IDENTITY" "$STAGING_OWNER_NONCE" || {
+    owner_write_status=$?
+    printf 'install_closed_release: staging-owner-write-failed\n' >&2
+    exit "$owner_write_status"
+  }
 fsync_directories "$RELEASE_PARENT" "$STAGING_ROOT"
 invoke_python "$VERIFY_SCRIPT" \
   --archive "$PINNED_ARCHIVE" --archive-digest-file "$PINNED_ARCHIVE_DIGEST_FILE" \
@@ -2807,6 +3955,9 @@ cleanup_pinned_archive
 invoke_python "$VERIFY_SCRIPT" \
   --installed-root "$STAGING_ROOT" --verify-config-ingress-unit-digests \
   --require-closed --evidence-dir "$EVIDENCE_DIR/staged"
+CANDIDATE_MANIFEST_SHA256="$(regular_file_sha256 \
+  "$STAGING_ROOT/launch-release-manifest.json")" \
+  || die 'candidate-manifest-digest-failed'
 
 record_authority_result() {
   local name="$1"
@@ -2814,8 +3965,10 @@ record_authority_result() {
   local code="$3"
   invoke_python - "$EVIDENCE_DIR/dependency-unit-checks.json" "$name" "$status" "$code" <<'PY'
 import json
+import os
 from pathlib import Path
 import sys
+import tempfile
 
 path = Path(sys.argv[1])
 try:
@@ -2833,35 +3986,75 @@ payload.setdefault("results", {})
 payload.setdefault("exit_codes", {})
 payload["results"][sys.argv[2]] = sys.argv[3]
 payload["exit_codes"][sys.argv[2]] = int(sys.argv[4])
-path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+descriptor, name = tempfile.mkstemp(
+    prefix=f".{path.name}.", suffix=".tmp", dir=path.parent
+)
+temporary = Path(name)
+try:
+    with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as stream:
+        descriptor = -1
+        stream.write(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+        stream.flush()
+        os.fsync(stream.fileno())
+    os.replace(temporary, path)
+    if os.name != "nt":
+        directory = os.open(path.parent, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
+finally:
+    if descriptor != -1:
+        os.close(descriptor)
+    temporary.unlink(missing_ok=True)
 PY
 }
 
 record_systemd_unit_cleanup() {
   local status="$1"
   local code="$2"
-  invoke_python - "$EVIDENCE_DIR/systemd-unit-cleanup.json" "$status" "$code" <<'PY'
+  local payload
+  payload="$(invoke_python - "$status" "$code" <<'PY'
 import json
-from pathlib import Path
 import sys
 
 payload = {
-    "exit_code": int(sys.argv[3]),
+    "exit_code": int(sys.argv[2]),
     "live_sla_proven": False,
     "observed_local_elapsed_seconds": 0.0,
     "schema_version": 1,
     "stage3_claim": False,
-    "status": sys.argv[2],
+    "status": sys.argv[1],
 }
-Path(sys.argv[1]).write_text(
-    json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-)
+print(json.dumps(payload, separators=(",", ":"), sort_keys=True))
 PY
+  )" || return 1
+  write_durable_atomic_json "$EVIDENCE_DIR/systemd-unit-cleanup.json" "$payload"
+}
+
+finalize_systemd_unit_cleanup() {
+  local cleanup_status=0 record_status=0 outcome=passed code=0
+  if remove_systemd_unit_attempt; then
+    :
+  else
+    cleanup_status=$?
+    outcome=failed
+    code="$cleanup_status"
+  fi
+  if record_systemd_unit_cleanup "$outcome" "$code"; then
+    :
+  else
+    record_status=$?
+    printf 'install_closed_release: systemd-unit-cleanup-record-failed:%s\n' \
+      "$record_status" >&2
+  fi
+  [ "$cleanup_status" -eq 0 ] || return "$cleanup_status"
+  return "$record_status"
 }
 
 run_authority_hook() {
   local name="$1"
-  local expected_sha256 role
+  local expected_sha256 role hook_status=0 record_status=0 outcome
   shift 2
   case "$name" in
     python-dependencies)
@@ -2879,13 +4072,20 @@ run_authority_hook() {
     *) return 126 ;;
   esac
   if invoke_pinned_executable "$role" "$expected_sha256" -- "$@"; then
-    record_authority_result "$name" passed 0
-    return 0
+    outcome=passed
   else
-    local code=$?
-    record_authority_result "$name" failed "$code" || true
-    return "$code"
+    hook_status=$?
+    outcome=failed
   fi
+  if record_authority_result "$name" "$outcome" "$hook_status"; then
+    :
+  else
+    record_status=$?
+    printf 'install_closed_release: authority-result-record-failed:%s:%s\n' \
+      "$name" "$record_status" >&2
+  fi
+  [ "$hook_status" -eq 0 ] || return "$hook_status"
+  return "$record_status"
 }
 
 run_authority_hook python-dependencies "$PYTHON_DEPENDENCY_HOOK" \
@@ -2893,12 +4093,23 @@ run_authority_hook python-dependencies "$PYTHON_DEPENDENCY_HOOK" \
 run_authority_hook nuxt-production-dependencies "$NUXT_DEPENDENCY_HOOK" \
   --project-root "$STAGING_ROOT/web-nuxt" --production-only
 
+# Dependency hooks may modify staging, so verify tracked bytes again before
+# making the candidate durable or touching the live release.
+invoke_python "$VERIFY_SCRIPT" \
+  --installed-root "$STAGING_ROOT" --verify-config-ingress-unit-digests \
+  --require-closed --evidence-dir "$EVIDENCE_DIR/staged"
+[ "$(regular_file_sha256 "$STAGING_ROOT/launch-release-manifest.json")" \
+  = "$CANDIDATE_MANIFEST_SHA256" ] \
+  || die 'candidate-manifest-changed-after-hooks'
+
 snapshot_tree() {
   invoke_python - "$1" "$2" <<'PY'
 from hashlib import sha256
 import json
+import os
 from pathlib import Path
 import sys
+import tempfile
 
 root = Path(sys.argv[1])
 result = {}
@@ -2914,7 +4125,92 @@ if root.exists():
                 "sha256": sha256(raw).hexdigest(),
                 "size": len(raw),
             }
-Path(sys.argv[2]).write_text(json.dumps(result, sort_keys=True) + "\n", encoding="utf-8")
+target = Path(sys.argv[2])
+
+def fsync_directory(directory):
+    if os.name == "nt":
+        return
+    descriptor = os.open(
+        directory,
+        os.O_RDONLY | getattr(os, "O_DIRECTORY", 0),
+    )
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+descriptor, name = tempfile.mkstemp(
+    prefix=f".{target.name}.", suffix=".tmp", dir=target.parent
+)
+temporary = Path(name)
+try:
+    with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as stream:
+        descriptor = -1
+        stream.write(json.dumps(result, sort_keys=True) + "\n")
+        stream.flush()
+        os.fsync(stream.fileno())
+    os.replace(temporary, target)
+    fsync_directory(target.parent)
+finally:
+    if descriptor != -1:
+        os.close(descriptor)
+    temporary.unlink(missing_ok=True)
+PY
+}
+
+fsync_tree_durably() {
+  invoke_python - "$1" <<'PY'
+import os
+import stat
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+if root.is_symlink() or not root.is_dir():
+    raise SystemExit(1)
+
+def fsync_file(path):
+    if os.name == "nt":
+        return
+    flags = os.O_RDONLY
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    descriptor = os.open(path, flags)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+def fsync_directory(path):
+    if os.name == "nt":
+        return
+    flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    descriptor = os.open(path, flags)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+def walk(directory):
+    child_directories = []
+    with os.scandir(directory) as entries:
+        for entry in entries:
+            mode = entry.stat(follow_symlinks=False).st_mode
+            if stat.S_ISLNK(mode):
+                raise SystemExit(1)
+            if stat.S_ISREG(mode):
+                fsync_file(entry.path)
+            elif stat.S_ISDIR(mode):
+                child_directories.append(Path(entry.path))
+            else:
+                raise SystemExit(1)
+    for child in child_directories:
+        walk(child)
+    fsync_directory(directory)
+
+walk(root)
 PY
 }
 
@@ -2932,30 +4228,33 @@ write_recovery_evidence() {
   local root_restored="$2"
   local persistent_restored="$3"
   local systemd_units_restored="$4"
-  invoke_python - "$EVIDENCE_DIR/install-recovery.json" "$status" \
-    "$INSTALL_FAILURE_POINT" "$root_restored" "$persistent_restored" \
+  local payload
+  payload="$(invoke_python - "$status" "$INSTALL_FAILURE_POINT" \
+    "$root_restored" "$persistent_restored" \
     "$systemd_units_restored" <<'PY'
 import json
-from pathlib import Path
 import sys
 
 payload = {
-    "failure_point": sys.argv[3],
+    "failure_point": sys.argv[2],
     "live_sla_proven": False,
     "observed_local_elapsed_seconds": 0.0,
-    "persistent_restored": sys.argv[5] == "true",
-    "root_restored": sys.argv[4] == "true",
+    "persistent_restored": sys.argv[4] == "true",
+    "root_restored": sys.argv[3] == "true",
     "schema_version": 1,
     "stage3_claim": False,
-    "status": sys.argv[2],
-    "systemd_units_restored": sys.argv[6] == "true",
+    "status": sys.argv[1],
+    "systemd_units_restored": sys.argv[5] == "true",
 }
-Path(sys.argv[1]).write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+print(json.dumps(payload, separators=(",", ":"), sort_keys=True))
 PY
+  )" || return 1
+  write_durable_atomic_json "$EVIDENCE_DIR/install-recovery.json" "$payload"
 }
 
 materialize_environment_authority() {
-  invoke_python - "$PINNED_ENVIRONMENT_AUTHORITY" "$RELEASE_ROOT/.env" \
+  local target_root="${1:-$RELEASE_ROOT}"
+  invoke_python - "$PINNED_ENVIRONMENT_AUTHORITY" "$target_root/.env" \
     "$ENVIRONMENT_AUTHORITY_SHA256" <<'PY'
 from hashlib import sha256
 import os
@@ -2992,8 +4291,20 @@ if target.is_symlink() or target.read_bytes() != raw:
 if os.name != "nt" and target.stat().st_mode & 0o077:
     raise SystemExit("environment authority materialization permissions are too broad")
 PY
-  fsync_directories "$RELEASE_ROOT"
+  fsync_directories "$target_root"
 }
+
+materialize_environment_authority "$STAGING_ROOT"
+source_release_topology_snapshot \
+  "$STAGING_ROOT" "$CANDIDATE_RELEASE_TOPOLOGY_SNAPSHOT" \
+  || die 'candidate-release-topology-snapshot-failed'
+CANDIDATE_RELEASE_TOPOLOGY_SHA256="$(regular_file_sha256 \
+  "$CANDIDATE_RELEASE_TOPOLOGY_SNAPSHOT")" \
+  || die 'candidate-release-topology-digest-failed'
+CANDIDATE_RELEASE_ROOT_IDENTITY="$(tree_root_identity "$STAGING_ROOT")" \
+  || die 'candidate-release-root-identity-failed'
+[ "$CANDIDATE_RELEASE_ROOT_IDENTITY" = "$STAGING_ROOT_IDENTITY" ] \
+  || die 'candidate-release-root-identity-changed'
 
 prepare_systemd_unit_attempt() {
   [ -z "$UNIT_ATTEMPT_ROOT" ] || return 1
@@ -3163,7 +4474,7 @@ restore_systemd_units() {
 
 inspect_current_mount() {
   local target="$RELEASE_ROOT/agent/data"
-  if invoke_mount_authority findmnt --json --target "$target" \
+  if invoke_mount_authority findmnt --json --mountpoint "$target" \
     > "$EVIDENCE_DIR/findmnt-recovery.json"; then
     verify_findmnt_file "$EVIDENCE_DIR/findmnt-recovery.json" \
       "$PERSISTENT_AGENT_DATA_ROOT" "$target" || return 2
@@ -3175,6 +4486,53 @@ inspect_current_mount() {
   fi
 }
 
+restore_old_root_for_recovery() {
+  local rename_status=0
+  tree_matches_bound_topology "$OLD_ROOT" "$SOURCE_RELEASE_ROOT_IDENTITY" \
+    "$SOURCE_RELEASE_TOPOLOGY_SNAPSHOT" false || return 1
+  write_mutation_state recovery-restore-old-root-armed || return $?
+  if mv -- "$OLD_ROOT" "$RELEASE_ROOT"; then
+    :
+  else
+    rename_status=$?
+  fi
+  if [ ! -e "$OLD_ROOT" ] && [ ! -L "$OLD_ROOT" ] \
+    && [ -d "$RELEASE_ROOT" ] && [ ! -L "$RELEASE_ROOT" ]; then
+    tree_matches_bound_topology "$RELEASE_ROOT" \
+      "$SOURCE_RELEASE_ROOT_IDENTITY" "$SOURCE_RELEASE_TOPOLOGY_SNAPSHOT" \
+      false || return 1
+    OLD_ROOT_READY=false
+    return 0
+  fi
+  [ "$rename_status" -ne 0 ] && return "$rename_status"
+  return 1
+}
+
+detach_local_persistent_for_recovery() {
+  local source="$RELEASE_ROOT/agent/data"
+  local rename_status=0
+  if mv -- "$source" "$PERSISTENT_AGENT_DATA_ROOT"; then
+    :
+  else
+    rename_status=$?
+  fi
+  if [ ! -e "$source" ] && [ ! -L "$source" ] \
+    && [ -d "$PERSISTENT_AGENT_DATA_ROOT" ] \
+    && [ ! -L "$PERSISTENT_AGENT_DATA_ROOT" ]; then
+    PERSISTENT_ATTACHED_TO_RELEASE=false
+    PERSISTENT_DETACHED=true
+    PERSISTENT_MOUNT_STATE_UNKNOWN=false
+    fsync_directories "$(dirname -- "$source")" \
+      "$(dirname -- "$PERSISTENT_AGENT_DATA_ROOT")" || return $?
+    return "$rename_status"
+  fi
+  PERSISTENT_ATTACHED_TO_RELEASE=true
+  PERSISTENT_DETACHED=false
+  PERSISTENT_MOUNT_STATE_UNKNOWN=false
+  [ "$rename_status" -ne 0 ] && return "$rename_status"
+  return 1
+}
+
 detach_persistent_from_release_for_recovery() {
   if [ "$LOCAL_REHEARSAL" = true ]; then
     if [ -e "$PERSISTENT_AGENT_DATA_ROOT" ] || [ -L "$PERSISTENT_AGENT_DATA_ROOT" ]; then
@@ -3182,16 +4540,13 @@ detach_persistent_from_release_for_recovery() {
         || return 1
       [ -z "$(find "$PERSISTENT_AGENT_DATA_ROOT" -mindepth 1 -print -quit)" ] \
         || return 1
-      rmdir -- "$PERSISTENT_AGENT_DATA_ROOT" || return $?
-      fsync_directories "$(dirname -- "$PERSISTENT_AGENT_DATA_ROOT")" \
+      write_mutation_state recovery-remove-empty-persistent-root-armed \
+        || return $?
+      remove_empty_directory_durably "$PERSISTENT_AGENT_DATA_ROOT" \
         || return $?
     fi
-    mv -- "$RELEASE_ROOT/agent/data" "$PERSISTENT_AGENT_DATA_ROOT" || return $?
-    PERSISTENT_ATTACHED_TO_RELEASE=false
-    PERSISTENT_DETACHED=true
-    PERSISTENT_MOUNT_STATE_UNKNOWN=false
-    fsync_directories "$RELEASE_ROOT/agent" \
-      "$(dirname -- "$PERSISTENT_AGENT_DATA_ROOT")" || return $?
+    write_mutation_state recovery-detach-persistent-armed || return $?
+    detach_local_persistent_for_recovery || return $?
   else
     local mount_state
     if inspect_current_mount; then
@@ -3202,12 +4557,34 @@ detach_persistent_from_release_for_recovery() {
     case "$mount_state" in
       0)
         write_mutation_state recovery-detach-persistent-armed || return $?
-        invoke_mount_authority umount "$RELEASE_ROOT/agent/data" || return $?
-        PERSISTENT_ATTACHED_TO_RELEASE=false
-        PERSISTENT_DETACHED=true
-        PERSISTENT_MOUNT_STATE_UNKNOWN=false
-        fsync_directories "$RELEASE_ROOT/agent/data" "$RELEASE_ROOT/agent" \
-          || return $?
+        invoke_mount_authority umount "$RELEASE_ROOT/agent/data" || true
+        PERSISTENT_MOUNT_STATE_UNKNOWN=true
+        if inspect_current_mount; then
+          mount_state=0
+        else
+          mount_state=$?
+        fi
+        case "$mount_state" in
+          0)
+            PERSISTENT_ATTACHED_TO_RELEASE=true
+            PERSISTENT_DETACHED=false
+            PERSISTENT_MOUNT_STATE_UNKNOWN=false
+            return 1
+            ;;
+          1)
+            PERSISTENT_ATTACHED_TO_RELEASE=false
+            PERSISTENT_DETACHED=true
+            PERSISTENT_MOUNT_STATE_UNKNOWN=false
+            fsync_directories "$RELEASE_ROOT/agent/data" "$RELEASE_ROOT/agent" \
+              || return $?
+            ;;
+          *)
+            PERSISTENT_ATTACHED_TO_RELEASE=true
+            PERSISTENT_DETACHED=false
+            PERSISTENT_MOUNT_STATE_UNKNOWN=true
+            return "$mount_state"
+            ;;
+        esac
         ;;
       1)
         PERSISTENT_ATTACHED_TO_RELEASE=false
@@ -3219,19 +4596,43 @@ detach_persistent_from_release_for_recovery() {
   fi
 }
 
+restore_local_persistent_for_recovery() {
+  local target="$RELEASE_ROOT/agent/data"
+  local rename_status=0
+  if mv -- "$PERSISTENT_AGENT_DATA_ROOT" "$target"; then
+    :
+  else
+    rename_status=$?
+  fi
+  if [ ! -e "$PERSISTENT_AGENT_DATA_ROOT" ] \
+    && [ ! -L "$PERSISTENT_AGENT_DATA_ROOT" ] \
+    && [ -d "$target" ] && [ ! -L "$target" ]; then
+    PERSISTENT_ATTACHED_TO_RELEASE=true
+    PERSISTENT_DETACHED=false
+    PERSISTENT_MOUNT_STATE_UNKNOWN=false
+    fsync_directories "$(dirname -- "$PERSISTENT_AGENT_DATA_ROOT")" \
+      "$(dirname -- "$target")" || return $?
+    return "$rename_status"
+  fi
+  PERSISTENT_ATTACHED_TO_RELEASE=false
+  PERSISTENT_DETACHED=true
+  PERSISTENT_MOUNT_STATE_UNKNOWN=false
+  [ "$rename_status" -ne 0 ] && return "$rename_status"
+  return 1
+}
+
 attach_persistent_to_release_for_recovery() {
   local target="$RELEASE_ROOT/agent/data"
   mkdir -p -- "$RELEASE_ROOT/agent" || return $?
+  write_mutation_state recovery-restore-persistent-armed || return $?
   if [ -e "$target" ] || [ -L "$target" ]; then
     [ -d "$target" ] && [ ! -L "$target" ] || return 1
     [ -z "$(find "$target" -mindepth 1 -print -quit)" ] || return 1
     rmdir -- "$target" || return $?
   fi
   if [ "$LOCAL_REHEARSAL" = true ]; then
-    mv -- "$PERSISTENT_AGENT_DATA_ROOT" "$target" || return $?
-    PERSISTENT_ATTACHED_TO_RELEASE=true
-    PERSISTENT_DETACHED=false
-    PERSISTENT_MOUNT_STATE_UNKNOWN=false
+    restore_local_persistent_for_recovery || return $?
+    write_mutation_state recovery-create-persistent-root-armed || return $?
     mkdir -- "$PERSISTENT_AGENT_DATA_ROOT" || return $?
     fsync_directories "$(dirname -- "$PERSISTENT_AGENT_DATA_ROOT")" \
       "$PERSISTENT_AGENT_DATA_ROOT" "$(dirname -- "$target")" || return $?
@@ -3255,13 +4656,106 @@ verify_recovered_persistent_state() {
     [ -z "$(find "$PERSISTENT_AGENT_DATA_ROOT" -mindepth 1 -print -quit)" ] \
       || return 1
   else
-    invoke_mount_authority findmnt --json --target "$RELEASE_ROOT/agent/data" \
+    invoke_mount_authority findmnt --json --mountpoint "$RELEASE_ROOT/agent/data" \
       > "$EVIDENCE_DIR/findmnt-recovery.json" || return $?
     verify_findmnt_file "$EVIDENCE_DIR/findmnt-recovery.json" \
       "$PERSISTENT_AGENT_DATA_ROOT" "$RELEASE_ROOT/agent/data" || return $?
   fi
   snapshot_tree "$RELEASE_ROOT/agent/data" "$SNAPSHOT_RECOVERY" || return $?
   cmp -s -- "$SNAPSHOT_BEFORE" "$SNAPSHOT_RECOVERY"
+}
+
+cleanup_recovery_staging() {
+  local staging_present=false staging_delete_present=false
+  local staging_delete_owner_present=false
+  local stage_owner_present=false
+  for authority in "$STAGING_ROOT" "$STAGING_DELETE_ROOT" \
+    "$STAGING_DELETE_OWNER" "$STAGING_OWNER_MARKER"; do
+    [ ! -L "$authority" ] || return 1
+  done
+  if [ -e "$STAGING_ROOT" ]; then
+    [ -d "$STAGING_ROOT" ] || return 1
+    staging_present=true
+  fi
+  if [ -e "$STAGING_DELETE_ROOT" ]; then
+    [ -d "$STAGING_DELETE_ROOT" ] || return 1
+    staging_delete_present=true
+  fi
+  if [ -e "$STAGING_DELETE_OWNER" ]; then
+    [ -f "$STAGING_DELETE_OWNER" ] || return 1
+    staging_delete_owner_present=true
+  fi
+  if [ -e "$STAGING_OWNER_MARKER" ]; then
+    verify_private_staging_owner_marker "$STAGING_OWNER_MARKER" \
+      "$STAGING_ROOT" "$ATTEMPT_ID" "$$" "$STAGING_ROOT_IDENTITY" \
+      "$STAGING_OWNER_NONCE" || return 1
+    stage_owner_present=true
+  fi
+  [ "$staging_present" = false ] || [ "$staging_delete_present" = false ] \
+    || return 1
+
+  if [ "$staging_present" = true ] \
+    || [ "$staging_delete_present" = true ] \
+    || [ "$staging_delete_owner_present" = true ]; then
+    write_mutation_state recovery-remove-staging-armed || return 1
+  fi
+  if [ "$staging_present" = true ]; then
+    [ "$stage_owner_present" = true ] || return 1
+    tree_matches_bound_topology "$STAGING_ROOT" \
+      "$CANDIDATE_RELEASE_ROOT_IDENTITY" \
+      "$CANDIDATE_RELEASE_TOPOLOGY_SNAPSHOT" false || return 1
+    [ "$(regular_file_sha256 \
+      "$STAGING_ROOT/launch-release-manifest.json")" \
+      = "$CANDIDATE_MANIFEST_SHA256" ] || return 1
+    if [ "$staging_delete_owner_present" = true ]; then
+      verify_cleanup_owner_marker "$STAGING_DELETE_OWNER" staging \
+        "$ATTEMPT_ID" "$CANDIDATE_RELEASE_ROOT_IDENTITY" \
+        "$CANDIDATE_RELEASE_TOPOLOGY_SHA256" || return 1
+    else
+      write_cleanup_owner_marker "$STAGING_DELETE_OWNER" staging \
+        "$ATTEMPT_ID" "$CANDIDATE_RELEASE_ROOT_IDENTITY" \
+        "$CANDIDATE_RELEASE_TOPOLOGY_SHA256" || return 1
+      staging_delete_owner_present=true
+    fi
+    mv -- "$STAGING_ROOT" "$STAGING_DELETE_ROOT" || return 1
+    fsync_directories "$RELEASE_PARENT" || return 1
+    [ ! -e "$STAGING_ROOT" ] && [ ! -L "$STAGING_ROOT" ] || return 1
+    staging_present=false
+    staging_delete_present=true
+  fi
+  if [ "$staging_delete_present" = true ]; then
+    [ "$staging_delete_owner_present" = true ] || return 1
+    verify_cleanup_owner_marker "$STAGING_DELETE_OWNER" staging \
+      "$ATTEMPT_ID" "$CANDIDATE_RELEASE_ROOT_IDENTITY" \
+      "$CANDIDATE_RELEASE_TOPOLOGY_SHA256" || return 1
+    tree_matches_bound_topology "$STAGING_DELETE_ROOT" \
+      "$CANDIDATE_RELEASE_ROOT_IDENTITY" \
+      "$CANDIDATE_RELEASE_TOPOLOGY_SNAPSHOT" true || return 1
+    invoke_rm -rf -- "$STAGING_DELETE_ROOT" || return 1
+    [ ! -e "$STAGING_DELETE_ROOT" ] && [ ! -L "$STAGING_DELETE_ROOT" ] \
+      || return 1
+    fsync_directories "$RELEASE_PARENT" || return 1
+    staging_delete_present=false
+  fi
+  if [ "$staging_delete_owner_present" = true ]; then
+    [ "$staging_delete_present" = false ] || return 1
+    remove_file_durably "$STAGING_DELETE_OWNER" || return 1
+    [ ! -e "$STAGING_DELETE_OWNER" ] && [ ! -L "$STAGING_DELETE_OWNER" ] \
+      || return 1
+    staging_delete_owner_present=false
+  fi
+  if [ "$stage_owner_present" = true ]; then
+    write_mutation_state recovery-remove-staging-owner-armed || return 1
+    remove_file_durably "$STAGING_OWNER_MARKER" || return 1
+    [ ! -e "$STAGING_OWNER_MARKER" ] && [ ! -L "$STAGING_OWNER_MARKER" ] \
+      || return 1
+    stage_owner_present=false
+  fi
+  [ "$staging_present" = false ] \
+    && [ "$staging_delete_present" = false ] \
+    && [ "$staging_delete_owner_present" = false ] \
+    && [ "$stage_owner_present" = false ] || return 1
+  STAGING_CLEANUP_ARMED=false
 }
 
 install_recovery() {
@@ -3272,6 +4766,9 @@ install_recovery() {
   local persistent_restored=true
   local systemd_units_restored=true
   local recovery_cleanup_status=0
+  local recovery_record_status=0
+  local evidence_status=0
+  local candidate_recovery_root=''
 
   if [ "$INSTALL_COMPLETE" != true ] && [ "$INSTALL_COMMITTED" != true ] \
     && [ "$MUTATION_STARTED" = true ]; then
@@ -3291,7 +4788,69 @@ install_recovery() {
           || [ "$PERSISTENT_MOUNT_STATE_UNKNOWN" = true ]; then
           root_restored=false
         else
-          rm -rf -- "$RELEASE_ROOT" >/dev/null 2>&1 || root_restored=false
+          write_mutation_state recovery-remove-release-root-armed \
+            >/dev/null 2>&1 || root_restored=false
+        fi
+        if [ "$root_restored" = true ]; then
+          if [ -d "$RELEASE_ROOT" ] && [ ! -L "$RELEASE_ROOT" ]; then
+            candidate_recovery_root="$RELEASE_ROOT"
+          elif [ -d "$STAGING_ROOT" ] && [ ! -L "$STAGING_ROOT" ]; then
+            candidate_recovery_root="$STAGING_ROOT"
+          else
+            root_restored=false
+          fi
+        fi
+        if [ "$root_restored" = true ]; then
+          if ! tree_matches_bound_topology "$OLD_ROOT" \
+              "$SOURCE_RELEASE_ROOT_IDENTITY" \
+              "$SOURCE_RELEASE_TOPOLOGY_SNAPSHOT" false \
+            || ! tree_matches_bound_topology "$candidate_recovery_root" \
+              "$CANDIDATE_RELEASE_ROOT_IDENTITY" \
+              "$CANDIDATE_RELEASE_TOPOLOGY_SNAPSHOT" false \
+            || [ "$(regular_file_sha256 \
+              "$candidate_recovery_root/launch-release-manifest.json")" \
+              != "$CANDIDATE_MANIFEST_SHA256" ]; then
+            root_restored=false
+          fi
+        fi
+        if [ "$root_restored" = true ] \
+          && [ "$candidate_recovery_root" = "$RELEASE_ROOT" ]; then
+          if [ -e "$CANDIDATE_CLEANUP_ROOT" ] \
+            || [ -L "$CANDIDATE_CLEANUP_ROOT" ] \
+            || [ -e "$CANDIDATE_CLEANUP_OWNER" ] \
+            || [ -L "$CANDIDATE_CLEANUP_OWNER" ]; then
+            root_restored=false
+          elif write_cleanup_owner_marker "$CANDIDATE_CLEANUP_OWNER" \
+              candidate "$ATTEMPT_ID" "$CANDIDATE_RELEASE_ROOT_IDENTITY" \
+              "$CANDIDATE_RELEASE_TOPOLOGY_SHA256" >/dev/null 2>&1 \
+            && mv -- "$RELEASE_ROOT" "$CANDIDATE_CLEANUP_ROOT" \
+            && fsync_directories "$RELEASE_PARENT" >/dev/null 2>&1 \
+            && [ ! -e "$RELEASE_ROOT" ] && [ ! -L "$RELEASE_ROOT" ] \
+            && tree_matches_bound_topology "$CANDIDATE_CLEANUP_ROOT" \
+              "$CANDIDATE_RELEASE_ROOT_IDENTITY" \
+              "$CANDIDATE_RELEASE_TOPOLOGY_SNAPSHOT" true; then
+            if verify_cleanup_owner_marker "$CANDIDATE_CLEANUP_OWNER" \
+                candidate "$ATTEMPT_ID" "$CANDIDATE_RELEASE_ROOT_IDENTITY" \
+                "$CANDIDATE_RELEASE_TOPOLOGY_SHA256" \
+              && invoke_rm -rf -- "$CANDIDATE_CLEANUP_ROOT" >/dev/null 2>&1 \
+              && [ ! -e "$CANDIDATE_CLEANUP_ROOT" ] \
+              && [ ! -L "$CANDIDATE_CLEANUP_ROOT" ] \
+              && fsync_directories "$RELEASE_PARENT" >/dev/null 2>&1 \
+              && remove_file_durably "$CANDIDATE_CLEANUP_OWNER" \
+                >/dev/null 2>&1 \
+              && [ ! -e "$CANDIDATE_CLEANUP_OWNER" ] \
+              && [ ! -L "$CANDIDATE_CLEANUP_OWNER" ]; then
+              :
+            else
+              root_restored=false
+            fi
+          else
+            root_restored=false
+          fi
+        fi
+        if [ "$root_restored" = true ] \
+          && { [ -e "$RELEASE_ROOT" ] || [ -L "$RELEASE_ROOT" ]; }; then
+          root_restored=false
         fi
         if [ "$root_restored" = true ]; then
           fsync_directories "$RELEASE_PARENT" >/dev/null 2>&1 \
@@ -3299,15 +4858,12 @@ install_recovery() {
         fi
         if [ "$root_restored" = true ] \
           && [ "$PERSISTENT_ATTACHED_TO_RELEASE" != true ]; then
-          mv -- "$OLD_ROOT" "$RELEASE_ROOT" >/dev/null 2>&1 \
+          restore_old_root_for_recovery >/dev/null 2>&1 \
             || root_restored=false
         fi
         if [ "$root_restored" = true ]; then
           fsync_directories "$RELEASE_PARENT" >/dev/null 2>&1 \
             || root_restored=false
-        fi
-        if [ "$root_restored" = true ]; then
-          OLD_ROOT_READY=false
         fi
       fi
 
@@ -3341,34 +4897,81 @@ install_recovery() {
     if [ "$root_restored" = true ] \
       && [ "$persistent_restored" = true ] \
       && [ "$systemd_units_restored" = true ]; then
-      if write_mutation_state rollback-restored >/dev/null 2>&1; then
-        if clear_mutation_state; then
-          write_recovery_evidence rolled-back true true true || true
+      if cleanup_recovery_staging >/dev/null 2>&1; then
+        if write_mutation_state rollback-restored >/dev/null 2>&1; then
+          if write_recovery_evidence rolled-back true true true; then
+            if clear_mutation_state; then
+              :
+            else
+              recovery_cleanup_status=$?
+              if write_recovery_evidence rollback-failed true true true; then
+                :
+              else
+                evidence_status=$?
+                recovery_record_status="$evidence_status"
+                printf 'install_closed_release: recovery-evidence-record-failed:rollback-failed:%s\n' \
+                  "$evidence_status" >&2
+              fi
+            fi
+          else
+            evidence_status=$?
+            recovery_record_status="$evidence_status"
+            printf 'install_closed_release: recovery-evidence-record-failed:rolled-back:%s\n' \
+              "$evidence_status" >&2
+          fi
         else
           recovery_cleanup_status=$?
-          write_recovery_evidence rollback-failed true true true || true
+          if write_recovery_evidence rollback-failed true true true; then
+            :
+          else
+            evidence_status=$?
+            recovery_record_status="$evidence_status"
+            printf 'install_closed_release: recovery-evidence-record-failed:rollback-failed:%s\n' \
+              "$evidence_status" >&2
+          fi
         fi
       else
         recovery_cleanup_status=$?
-        write_recovery_evidence rollback-failed true true true || true
+        if write_recovery_evidence rollback-failed true true true; then
+          :
+        else
+          evidence_status=$?
+          recovery_record_status="$evidence_status"
+          printf 'install_closed_release: recovery-evidence-record-failed:rollback-failed:%s\n' \
+            "$evidence_status" >&2
+        fi
       fi
     else
-      write_recovery_evidence rollback-failed "$root_restored" \
-        "$persistent_restored" "$systemd_units_restored" || true
+      if write_recovery_evidence rollback-failed "$root_restored" \
+          "$persistent_restored" "$systemd_units_restored"; then
+        :
+      else
+        evidence_status=$?
+        recovery_record_status="$evidence_status"
+        printf 'install_closed_release: recovery-evidence-record-failed:rollback-failed:%s\n' \
+          "$evidence_status" >&2
+      fi
     fi
   fi
 
-  if rm -rf -- "$STAGING_ROOT" >/dev/null 2>&1; then
-    fsync_directories "$RELEASE_PARENT" >/dev/null 2>&1 || true
-  fi
   if [ "$INSTALL_COMPLETE" = true ]; then
-    if rm -rf -- "$OLD_ROOT" >/dev/null 2>&1; then
-      fsync_directories "$RELEASE_PARENT" >/dev/null 2>&1 || true
+    if [ -e "$OLD_ROOT" ] || [ -L "$OLD_ROOT" ]; then
+      if tree_matches_bound_topology "$OLD_ROOT" \
+          "$SOURCE_RELEASE_ROOT_IDENTITY" "$SOURCE_RELEASE_TOPOLOGY_SNAPSHOT" \
+          false \
+        && invoke_rm -rf -- "$OLD_ROOT" >/dev/null 2>&1 \
+        && [ ! -e "$OLD_ROOT" ] && [ ! -L "$OLD_ROOT" ] \
+        && fsync_directories "$RELEASE_PARENT" >/dev/null 2>&1; then
+        :
+      else
+        recovery_cleanup_status=1
+      fi
     fi
   fi
   local cleanup_status=0
   cleanup_attempt_authorities || cleanup_status=$?
   [ "$cleanup_status" -ne 0 ] || cleanup_status="$recovery_cleanup_status"
+  [ "$cleanup_status" -ne 0 ] || cleanup_status="$recovery_record_status"
   [ "$status" -ne 0 ] || status="$cleanup_status"
   exit "$status"
 }
@@ -3381,6 +4984,9 @@ fail_after() {
     return 73
   fi
 }
+
+fsync_tree_durably "$STAGING_ROOT"
+fsync_directories "$RELEASE_PARENT"
 
 verify_findmnt_file() {
   local evidence="$1"
@@ -3405,14 +5011,25 @@ PY
 }
 
 CURRENT_DATA="$RELEASE_ROOT/agent/data"
+if [ -e "$RELEASE_ROOT/agent" ] || [ -L "$RELEASE_ROOT/agent" ]; then
+  [ -d "$RELEASE_ROOT/agent" ] && [ ! -L "$RELEASE_ROOT/agent" ] \
+    || die 'agent-data-symlink-forbidden'
+fi
 if [ -e "$CURRENT_DATA" ] || [ -L "$CURRENT_DATA" ]; then
   [ -d "$CURRENT_DATA" ] && [ ! -L "$CURRENT_DATA" ] || die 'agent-data-symlink-forbidden'
-  snapshot_tree "$CURRENT_DATA" "$SNAPSHOT_BEFORE"
+snapshot_tree "$CURRENT_DATA" "$SNAPSHOT_BEFORE"
+PERSISTENT_SNAPSHOT_SHA256="$(regular_file_sha256 "$SNAPSHOT_BEFORE")" \
+  || die 'persistent-snapshot-digest-failed'
+source_release_topology_snapshot \
+  "$RELEASE_ROOT" "$SOURCE_RELEASE_TOPOLOGY_SNAPSHOT" \
+  || die 'source-release-topology-snapshot-failed'
+SOURCE_RELEASE_TOPOLOGY_SHA256="$(regular_file_sha256 \
+  "$SOURCE_RELEASE_TOPOLOGY_SNAPSHOT")" \
+  || die 'source-release-topology-digest-failed'
+SOURCE_RELEASE_ROOT_IDENTITY="$(tree_root_identity "$RELEASE_ROOT")" \
+  || die 'source-release-root-identity-failed'
 else
-  mkdir -p -- "$(dirname -- "$CURRENT_DATA")"
-  mkdir -- "$CURRENT_DATA"
-  fsync_directories "$RELEASE_ROOT" "$(dirname -- "$CURRENT_DATA")"
-  snapshot_tree "$CURRENT_DATA" "$SNAPSHOT_BEFORE"
+  die 'agent-data-required'
 fi
 
 # detach-agent-data
@@ -3420,28 +5037,105 @@ write_mutation_state detach-agent-data-armed
 MUTATION_STARTED=true
 INSTALL_FAILURE_POINT=detach-agent-data
 if [ "$LOCAL_REHEARSAL" = true ]; then
+  detach_local_persistent_for_install() {
+    local rename_status=0
+    if mv -- "$CURRENT_DATA" "$PERSISTENT_AGENT_DATA_ROOT"; then
+      :
+    else
+      rename_status=$?
+    fi
+    if [ ! -e "$CURRENT_DATA" ] && [ ! -L "$CURRENT_DATA" ] \
+      && [ -d "$PERSISTENT_AGENT_DATA_ROOT" ] \
+      && [ ! -L "$PERSISTENT_AGENT_DATA_ROOT" ]; then
+      PERSISTENT_DETACHED=true
+      PERSISTENT_ATTACHED_TO_RELEASE=false
+      PERSISTENT_MOUNT_STATE_UNKNOWN=false
+      fsync_directories "$(dirname -- "$CURRENT_DATA")" \
+        "$(dirname -- "$PERSISTENT_AGENT_DATA_ROOT")" || return $?
+      return "$rename_status"
+    elif [ -d "$CURRENT_DATA" ] && [ ! -L "$CURRENT_DATA" ] \
+      && [ ! -e "$PERSISTENT_AGENT_DATA_ROOT" ] \
+      && [ ! -L "$PERSISTENT_AGENT_DATA_ROOT" ]; then
+      PERSISTENT_DETACHED=false
+      PERSISTENT_ATTACHED_TO_RELEASE=true
+      PERSISTENT_MOUNT_STATE_UNKNOWN=false
+      write_mutation_state recovery-create-persistent-root-armed || return $?
+      mkdir -- "$PERSISTENT_AGENT_DATA_ROOT" || return $?
+      fsync_directories "$(dirname -- "$CURRENT_DATA")" \
+        "$(dirname -- "$PERSISTENT_AGENT_DATA_ROOT")" \
+        "$PERSISTENT_AGENT_DATA_ROOT" || return $?
+      [ "$rename_status" -ne 0 ] && return "$rename_status"
+      return 1
+    fi
+    PERSISTENT_DETACHED=false
+    PERSISTENT_ATTACHED_TO_RELEASE=true
+    PERSISTENT_MOUNT_STATE_UNKNOWN=false
+    [ "$rename_status" -ne 0 ] && return "$rename_status"
+    return 1
+  }
   if [ -d "$PERSISTENT_AGENT_DATA_ROOT" ]; then
     [ -z "$(find "$PERSISTENT_AGENT_DATA_ROOT" -mindepth 1 -print -quit)" ] \
       || die 'local-persistent-authority-not-empty'
-    rmdir -- "$PERSISTENT_AGENT_DATA_ROOT"
-    fsync_directories "$(dirname -- "$PERSISTENT_AGENT_DATA_ROOT")"
+    remove_empty_directory_durably "$PERSISTENT_AGENT_DATA_ROOT"
   fi
-  mv -- "$CURRENT_DATA" "$PERSISTENT_AGENT_DATA_ROOT"
-  fsync_directories "$(dirname -- "$CURRENT_DATA")" "$(dirname -- "$PERSISTENT_AGENT_DATA_ROOT")"
+  detach_local_persistent_for_install
 else
-  invoke_mount_authority findmnt --json --target "$CURRENT_DATA" > "$EVIDENCE_DIR/findmnt-before.json"
+  invoke_mount_authority findmnt --json --mountpoint "$CURRENT_DATA" > "$EVIDENCE_DIR/findmnt-before.json"
   verify_findmnt_file "$EVIDENCE_DIR/findmnt-before.json" \
     "$PERSISTENT_AGENT_DATA_ROOT" "$CURRENT_DATA"
-  invoke_mount_authority umount "$CURRENT_DATA"
-  PERSISTENT_DETACHED=true
-  PERSISTENT_ATTACHED_TO_RELEASE=false
-  PERSISTENT_MOUNT_STATE_UNKNOWN=false
-  fsync_directories "$CURRENT_DATA" "$(dirname -- "$CURRENT_DATA")"
-fi
-if [ "$LOCAL_REHEARSAL" = true ]; then
-  PERSISTENT_DETACHED=true
-  PERSISTENT_ATTACHED_TO_RELEASE=false
-  PERSISTENT_MOUNT_STATE_UNKNOWN=false
+  detach_live_persistent_mount() {
+    local unmount_status=0 mount_state probe_status=0 fsync_status=0
+    if invoke_mount_authority umount "$CURRENT_DATA"; then
+      :
+    else
+      unmount_status=$?
+    fi
+    PERSISTENT_MOUNT_STATE_UNKNOWN=true
+    if invoke_mount_authority findmnt --json --mountpoint "$CURRENT_DATA" \
+      > "$EVIDENCE_DIR/findmnt-after-umount.json"; then
+      if verify_findmnt_file "$EVIDENCE_DIR/findmnt-after-umount.json" \
+        "$PERSISTENT_AGENT_DATA_ROOT" "$CURRENT_DATA"; then
+        mount_state=0
+      else
+        probe_status=$?
+        mount_state=2
+      fi
+    else
+      probe_status=$?
+      if [ "$probe_status" -eq 1 ]; then
+        mount_state=1
+      else
+        mount_state=2
+      fi
+    fi
+    case "$mount_state" in
+      0)
+        PERSISTENT_ATTACHED_TO_RELEASE=true
+        PERSISTENT_DETACHED=false
+        PERSISTENT_MOUNT_STATE_UNKNOWN=false
+        [ "$unmount_status" -ne 0 ] && return "$unmount_status"
+        return 1
+        ;;
+      1)
+        PERSISTENT_ATTACHED_TO_RELEASE=false
+        PERSISTENT_DETACHED=true
+        PERSISTENT_MOUNT_STATE_UNKNOWN=false
+        fsync_directories "$CURRENT_DATA" "$(dirname -- "$CURRENT_DATA")" \
+          || fsync_status=$?
+        [ "$unmount_status" -ne 0 ] && return "$unmount_status"
+        return "$fsync_status"
+        ;;
+      *)
+        PERSISTENT_ATTACHED_TO_RELEASE=true
+        PERSISTENT_DETACHED=false
+        PERSISTENT_MOUNT_STATE_UNKNOWN=true
+        [ "$unmount_status" -ne 0 ] && return "$unmount_status"
+        [ "$probe_status" -ne 0 ] && return "$probe_status"
+        return 1
+        ;;
+    esac
+  }
+  detach_live_persistent_mount
 fi
 write_mutation_state persistent-detached
 fail_after detach-agent-data
@@ -3450,13 +5144,53 @@ fail_after detach-agent-data
 write_mutation_state swap-release-root-armed
 INSTALL_FAILURE_POINT=swap-release-root
 [ -d "$RELEASE_ROOT" ] || die 'existing-release-root-required'
-mv -- "$RELEASE_ROOT" "$OLD_ROOT"
-OLD_ROOT_READY=true
+rename_release_root_to_old() {
+  local rename_status=0
+  if mv -- "$RELEASE_ROOT" "$OLD_ROOT"; then
+    :
+  else
+    rename_status=$?
+  fi
+  if [ ! -e "$RELEASE_ROOT" ] && [ ! -L "$RELEASE_ROOT" ] \
+    && [ -d "$OLD_ROOT" ] && [ ! -L "$OLD_ROOT" ]; then
+    OLD_ROOT_READY=true
+    return "$rename_status"
+  elif [ -d "$RELEASE_ROOT" ] && [ ! -L "$RELEASE_ROOT" ] \
+    && [ ! -e "$OLD_ROOT" ] && [ ! -L "$OLD_ROOT" ]; then
+    OLD_ROOT_READY=false
+    [ "$rename_status" -ne 0 ] && return "$rename_status"
+    return 1
+  else
+    [ "$rename_status" -ne 0 ] && return "$rename_status"
+    return 1
+  fi
+}
+rename_release_root_to_old
 fsync_directories "$RELEASE_PARENT"
-mv -- "$STAGING_ROOT" "$RELEASE_ROOT"
+activate_staging_root() {
+  local rename_status=0
+  if mv -- "$STAGING_ROOT" "$RELEASE_ROOT"; then
+    :
+  else
+    rename_status=$?
+  fi
+  if [ ! -e "$STAGING_ROOT" ] && [ ! -L "$STAGING_ROOT" ] \
+    && [ -d "$RELEASE_ROOT" ] && [ ! -L "$RELEASE_ROOT" ] \
+    && [ -d "$OLD_ROOT" ] && [ ! -L "$OLD_ROOT" ]; then
+    return "$rename_status"
+  elif [ -d "$STAGING_ROOT" ] && [ ! -L "$STAGING_ROOT" ] \
+    && [ ! -e "$RELEASE_ROOT" ] && [ ! -L "$RELEASE_ROOT" ] \
+    && [ -d "$OLD_ROOT" ] && [ ! -L "$OLD_ROOT" ]; then
+    [ "$rename_status" -ne 0 ] && return "$rename_status"
+    return 1
+  else
+    [ "$rename_status" -ne 0 ] && return "$rename_status"
+    return 1
+  fi
+}
+activate_staging_root
 fsync_directories "$RELEASE_PARENT"
-rm -f -- "$STAGING_OWNER_MARKER"
-fsync_directories "$RELEASE_PARENT"
+remove_file_durably "$STAGING_OWNER_MARKER"
 STAGING_CLEANUP_ARMED=false
 mkdir -p -- "$RELEASE_ROOT/agent"
 rm -rf -- "$RELEASE_ROOT/agent/data"
@@ -3465,15 +5199,15 @@ write_mutation_state root-swapped
 fail_after swap-release-root
 
 INSTALL_FAILURE_POINT=materialize-environment-authority
-materialize_environment_authority
+[ "$(regular_file_sha256 "$RELEASE_ROOT/.env")" \
+  = "$ENVIRONMENT_AUTHORITY_SHA256" ] \
+  || die 'materialized-environment-authority-changed'
 
 # restore-bind-agent-data
 INSTALL_FAILURE_POINT=restore-bind-agent-data
 if [ "$LOCAL_REHEARSAL" = true ]; then
-  mv -- "$PERSISTENT_AGENT_DATA_ROOT" "$RELEASE_ROOT/agent/data"
-  PERSISTENT_ATTACHED_TO_RELEASE=true
-  PERSISTENT_DETACHED=false
-  PERSISTENT_MOUNT_STATE_UNKNOWN=false
+  write_mutation_state recovery-restore-persistent-armed
+  restore_local_persistent_for_recovery
   mkdir -- "$PERSISTENT_AGENT_DATA_ROOT"
   fsync_directories "$(dirname -- "$PERSISTENT_AGENT_DATA_ROOT")" \
     "$PERSISTENT_AGENT_DATA_ROOT" "$RELEASE_ROOT/agent"
@@ -3494,7 +5228,7 @@ fi
 # verify-agent-data-mount, including agent/data/sitemap-bundles byte evidence.
 INSTALL_FAILURE_POINT=verify-agent-data-mount
 if [ "$LOCAL_REHEARSAL" != true ]; then
-  invoke_mount_authority findmnt --json --target "$RELEASE_ROOT/agent/data" > "$EVIDENCE_DIR/findmnt-after.json"
+  invoke_mount_authority findmnt --json --mountpoint "$RELEASE_ROOT/agent/data" > "$EVIDENCE_DIR/findmnt-after.json"
   verify_findmnt_file "$EVIDENCE_DIR/findmnt-after.json" \
     "$PERSISTENT_AGENT_DATA_ROOT" "$RELEASE_ROOT/agent/data"
 fi
@@ -3511,20 +5245,10 @@ run_authority_hook systemd-units "$UNIT_VERIFY_HOOK" \
   --unit-root "$SYSTEMD_UNIT_DESTINATION" \
   --manifest "$RELEASE_ROOT/launch-release-manifest.json"
 
-VERIFY_MOUNT_ARGS=()
-if [ "$LOCAL_REHEARSAL" = true ]; then
-  VERIFY_MOUNT_ARGS+=(--local-rehearsal)
-else
-  VERIFY_MOUNT_ARGS+=(--persistent-mount-evidence "$EVIDENCE_DIR/findmnt-after.json")
-fi
-invoke_python "$VERIFY_SCRIPT" \
-  --installed-root "$RELEASE_ROOT" --persistent-agent-data-root "$PERSISTENT_AGENT_DATA_ROOT" \
-  --verify-config-ingress-unit-digests --verify-persistent-agent-data-mount \
-  --systemd-unit-root "$SYSTEMD_UNIT_DESTINATION" --verify-systemd-unit-destination \
-  --environment-authority "$PINNED_ENVIRONMENT_AUTHORITY" \
-  --verify-environment-authority \
-  "${VERIFY_MOUNT_ARGS[@]}" \
-  --require-closed --evidence-dir "$EVIDENCE_DIR/installed"
+verify_installed_release_authority \
+  "$RELEASE_ROOT" "$PERSISTENT_AGENT_DATA_ROOT" \
+  "$SYSTEMD_UNIT_DESTINATION" "$EVIDENCE_DIR/installed" \
+  "$EVIDENCE_DIR/findmnt-after.json" "$LOCAL_REHEARSAL"
 
 invoke_python - "$EVIDENCE_DIR/install-summary.json" <<'PY'
 import json
@@ -3548,23 +5272,69 @@ PY
 
 INSTALL_FAILURE_POINT=retire-old-root
 write_mutation_state retire-old-root-armed
-mv -- "$OLD_ROOT" "$RETIRED_ROOT"
-OLD_ROOT_READY=false
-INSTALL_COMMITTED=true
+retire_old_root() {
+  local rename_status=0
+  if mv -- "$OLD_ROOT" "$RETIRED_ROOT"; then
+    :
+  else
+    rename_status=$?
+  fi
+  if [ ! -e "$OLD_ROOT" ] && [ ! -L "$OLD_ROOT" ] \
+    && [ -d "$RETIRED_ROOT" ] && [ ! -L "$RETIRED_ROOT" ] \
+    && [ -d "$RELEASE_ROOT" ] && [ ! -L "$RELEASE_ROOT" ]; then
+    OLD_ROOT_READY=false
+    INSTALL_COMMITTED=true
+    return "$rename_status"
+  elif [ -d "$OLD_ROOT" ] && [ ! -L "$OLD_ROOT" ] \
+    && [ ! -e "$RETIRED_ROOT" ] && [ ! -L "$RETIRED_ROOT" ] \
+    && [ -d "$RELEASE_ROOT" ] && [ ! -L "$RELEASE_ROOT" ]; then
+    OLD_ROOT_READY=true
+    INSTALL_COMMITTED=false
+    [ "$rename_status" -ne 0 ] && return "$rename_status"
+    return 1
+  else
+    [ "$rename_status" -ne 0 ] && return "$rename_status"
+    return 1
+  fi
+}
+retire_old_root
+[ "$(source_release_topology_sha256 "$RETIRED_ROOT")" \
+  = "$SOURCE_RELEASE_TOPOLOGY_SHA256" ] \
+  || die 'retired-root-topology-mismatch'
 fsync_directories "$RELEASE_PARENT"
 write_mutation_state committed-cleanup
 INSTALL_FAILURE_POINT=remove-retired-old-root
-rm -rf -- "$RETIRED_ROOT"
+tree_matches_bound_topology "$RETIRED_ROOT" \
+  "$SOURCE_RELEASE_ROOT_IDENTITY" "$SOURCE_RELEASE_TOPOLOGY_SNAPSHOT" false \
+  || die 'retired-root-topology-mismatch'
+[ ! -e "$RETIRED_CLEANUP_ROOT" ] && [ ! -L "$RETIRED_CLEANUP_ROOT" ] \
+  && [ ! -e "$RETIRED_CLEANUP_OWNER" ] \
+  && [ ! -L "$RETIRED_CLEANUP_OWNER" ] \
+  || die 'retired-cleanup-path-exists'
+write_cleanup_owner_marker "$RETIRED_CLEANUP_OWNER" retired "$ATTEMPT_ID" \
+  "$SOURCE_RELEASE_ROOT_IDENTITY" "$SOURCE_RELEASE_TOPOLOGY_SHA256" \
+  || die 'retired-cleanup-owner-write-failed'
+mv -- "$RETIRED_ROOT" "$RETIRED_CLEANUP_ROOT" \
+  || die 'retired-old-root-quarantine-failed'
 fsync_directories "$RELEASE_PARENT"
 [ ! -e "$RETIRED_ROOT" ] && [ ! -L "$RETIRED_ROOT" ] \
+  || die 'retired-old-root-quarantine-incomplete'
+verify_cleanup_owner_marker "$RETIRED_CLEANUP_OWNER" retired "$ATTEMPT_ID" \
+  "$SOURCE_RELEASE_ROOT_IDENTITY" "$SOURCE_RELEASE_TOPOLOGY_SHA256" \
+  || die 'retired-cleanup-owner-mismatch'
+tree_matches_bound_topology "$RETIRED_CLEANUP_ROOT" \
+  "$SOURCE_RELEASE_ROOT_IDENTITY" "$SOURCE_RELEASE_TOPOLOGY_SNAPSHOT" true \
+  || die 'retired-cleanup-topology-mismatch'
+invoke_rm -rf -- "$RETIRED_CLEANUP_ROOT" \
+  || die 'retired-old-root-cleanup-failed'
+[ ! -e "$RETIRED_CLEANUP_ROOT" ] && [ ! -L "$RETIRED_CLEANUP_ROOT" ] \
   || die 'retired-old-root-cleanup-incomplete'
-if remove_systemd_unit_attempt; then
-  record_systemd_unit_cleanup passed 0
-else
-  cleanup_status=$?
-  record_systemd_unit_cleanup failed "$cleanup_status" || true
-  exit "$cleanup_status"
-fi
+fsync_directories "$RELEASE_PARENT"
+remove_file_durably "$RETIRED_CLEANUP_OWNER" \
+  || die 'retired-cleanup-owner-remove-failed'
+[ ! -e "$RETIRED_CLEANUP_OWNER" ] && [ ! -L "$RETIRED_CLEANUP_OWNER" ] \
+  || die 'retired-cleanup-owner-remove-incomplete'
+finalize_systemd_unit_cleanup
 INSTALL_COMPLETE=true
 clear_mutation_state
 exit 0

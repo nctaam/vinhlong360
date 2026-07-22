@@ -56,9 +56,22 @@ detach and after remount. The old open tree is never a recovery source.
 
 Archive and sidecar verification completes before the watchdog, maintenance
 selector, service state, cache trees, or release root can change. Once that
-initial verification is recorded, the recovery trap is armed before the first
-watchdog stop or maintenance/Nginx mutation. A failure while establishing the
-drain therefore enters best-effort recovery without reopening traffic.
+initial verification is recorded, the recovery trap is armed before local
+selector-model preparation and before the first watchdog stop or
+maintenance/Nginx mutation. A failure while preparing or establishing the
+drain therefore enters best-effort recovery without reopening traffic. Local
+preparation failures are recorded as `prepare-local-maintenance-model`; they do
+not contradict the already-passed `record-and-verify-evidence` result or add a
+new successful phase to the normal phase sequence.
+
+The service operations inside those phases are ordered more narrowly than the
+phase names imply. `stop-vl-nuxt` stops Nuxt, proves Nuxt inactive, stops the
+Agent, and proves the Agent inactive before cache purge or package installation.
+After the package is installed, `verify-dependencies-units-daemon-reload` runs
+dependency/unit verification and `daemon-reload`, then starts and proves the
+Agent active before starting and proving Nuxt active. Readiness is not attempted
+until both active postconditions pass. The dependency/daemon helper itself does
+not start either service.
 
 The cache purge authority contains exactly `web-nuxt/.output`,
 `web-nuxt/.nuxt`, and `web-nuxt/.cache`. There is no dynamic readiness cache
@@ -76,14 +89,23 @@ Use disposable Git Bash paths, a synthetic Task 31 archive plus its sidecar,
 an external fake environment file with no unlock names, an external runtime
 authority directory, a release root, and a persistent data path. The local
 command model can stand in only for unavailable privileged commands such as
-`systemctl`, `nginx -t`, `findmnt`, and bind mount operations. It also models
+`systemctl`, `nginx -t`, exact `findmnt --json --mountpoint` calls, and bind
+mount operations. It deterministically models Agent and Nuxt service state,
 Nuxt readiness, the loopback-3000 listener transition, dependency status, and
-a combined public/operator maintenance probe from the state file; it never
-curls an unrelated host process. These authorities can be replaced for a
+independent public-status/operator-contract maintenance observations from the
+state file. It classifies `drained` only when public status is 503 and the
+operator contract passes, and it never curls an unrelated host process. These
+authorities can be replaced for a
 rehearsal with `LOCAL_READINESS_AUTHORITY`, `LOCAL_LISTENER_AUTHORITY`,
 `LOCAL_DEPENDENCY_AUTHORITY`, and `LOCAL_MAINTENANCE_AUTHORITY` executable
 paths. Archive verification, path/symlink checks, extraction, tree swap, phase
 recording, and persistent byte hashing always execute for real.
+
+Each injected authority's exit status is authoritative even when it emits
+valid-looking evidence. A failed selector command does not fall through to the
+stub; a failed dependency/pip check, installed-tree verifier, daemon reload, or
+listener authority prevents later service starts and is recorded with its exact
+status.
 
 ```bash
 mkdir -p /tmp/vl360/runtime
@@ -160,8 +182,10 @@ bash scripts/ops/rehearse_launch_rollback.sh --execute-on-host
 
 The watchdog timer's prior active state is recorded. It is restored only when
 it was active before the operation; an intentionally inactive timer remains
-inactive. The watchdog script independently checks the maintenance selector
-before probes and again immediately before any restart.
+inactive. If recovery has stopped release services but cannot re-establish all
+closed postconditions, watchdog restoration is recorded `skipped` so it cannot
+restart those services early. The watchdog script independently checks the
+maintenance selector before probes and again immediately before any restart.
 
 ## Failure and evidence semantics
 
@@ -171,6 +195,16 @@ the same verifier, installer, dependency/unit checks, readiness/listener proof,
 Nginx proof, and real browser proof using a corrected closed package or the
 known-good closed package. Recovery never disables maintenance or restores the
 candidate/open tree.
+
+Once traffic is proven drained, recovery attempts and records both service
+stops in Nuxt-then-Agent order and records a separate inactive postcondition for
+each. Reinstallation is skipped unless both inactive proofs pass. A successful
+install is followed by dependency/unit verification and `daemon-reload`, then
+recorded Agent start/active proof, recorded Nuxt start/active proof, readiness,
+listener, Nginx, and browser/cache proof. If a start or later closed
+postcondition fails, recovery stops and proves Nuxt inactive before doing the
+same for the Agent, records each cleanup result, keeps maintenance selected,
+and does not restore the watchdog timer early.
 
 After a reopen attempt, recovery first records maintenance enable, `nginx -t`,
 reload, and the full public-plus-operator maintenance probe as `passed`,

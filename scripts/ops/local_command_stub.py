@@ -25,6 +25,10 @@ ALLOWED_COMMANDS = {
     ("systemctl", "start", "vl-watchdog.timer"),
     ("systemctl", "stop", "vl-watchdog.service"),
     ("systemctl", "start", "vl-watchdog.service"),
+    ("systemctl", "is-active", "--quiet", "vl-agent"),
+    ("systemctl", "is-active", "--quiet", "vl-nuxt"),
+    ("systemctl", "stop", "vl-agent"),
+    ("systemctl", "start", "vl-agent"),
     ("systemctl", "stop", "vl-nuxt"),
     ("systemctl", "start", "vl-nuxt"),
     ("systemctl", "reload", "nginx"),
@@ -49,6 +53,7 @@ def _default_state() -> dict[str, Any]:
         "dependency_status": "passed",
         "services": {
             "nginx": "active",
+            "vl-agent": "active",
             "vl-nuxt": "active",
             "vl-watchdog.service": "inactive",
             "vl-watchdog.timer": "active",
@@ -65,7 +70,12 @@ def _load(path: Path) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError("local command state must be an object")
     base = _default_state()
+    services = value.pop("services", None)
     base.update(value)
+    if services is not None:
+        if not isinstance(services, dict):
+            raise ValueError("local command services must be an object")
+        base["services"].update(services)
     return base
 
 
@@ -92,7 +102,7 @@ def _validate(argv: tuple[str, ...]) -> None:
         return
     if not argv or argv[0] not in VARIABLE_COMMANDS:
         raise ValueError(f"local command is not allowlisted: {argv!r}")
-    if argv[0] == "findmnt" and len(argv) == 4 and argv[1:3] == ("--json", "--target"):
+    if argv[0] == "findmnt" and len(argv) == 4 and argv[1:3] == ("--json", "--mountpoint"):
         return
     if argv[0] == "mount" and len(argv) == 4 and argv[1] == "--bind":
         return
@@ -172,13 +182,21 @@ def _handle_local_authority(command: tuple[str, ...], state: dict[str, Any]) -> 
     if command == ("vl360-maintenance-probe",):
         maintenance = bool(state.get("maintenance"))
         nginx_active = state.get("services", {}).get("nginx") == "active"
+        default_proof = maintenance and nginx_active
+        public_status = state.get(
+            "maintenance_public_status", 503 if default_proof else 200
+        )
+        operator_passed = state.get(
+            "maintenance_operator_contract_passed", default_proof
+        ) is True
+        drained = public_status == 503 and operator_passed
         payload = {
-            "operator": {"contract_passed": maintenance and nginx_active},
-            "public": {"status": 503 if maintenance and nginx_active else 200},
-            "traffic_state": "drained" if maintenance and nginx_active else "unknown",
+            "operator": {"contract_passed": operator_passed},
+            "public": {"status": public_status},
+            "traffic_state": "drained" if drained else "unknown",
         }
         print(json.dumps(payload, sort_keys=True))
-        return 0 if payload["operator"]["contract_passed"] and payload["public"]["status"] == 503 else 1
+        return 0 if drained else 1
     return None
 
 

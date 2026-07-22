@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import shutil
 import shlex
+import stat
 import subprocess
 import sys
 import tarfile
@@ -74,10 +75,37 @@ def _snapshot_tree(root: Path) -> dict[str, bytes]:
     }
 
 
+def _snapshot_topology(root: Path) -> dict[str, tuple[str, int, bytes | str | None]]:
+    result: dict[str, tuple[str, int, bytes | str | None]] = {}
+
+    def visit(path: Path, relative: str) -> None:
+        observed = path.lstat()
+        mode = stat.S_IMODE(observed.st_mode)
+        if stat.S_ISLNK(observed.st_mode):
+            result[relative] = ("symlink", mode, os.readlink(path))
+            return
+        if stat.S_ISREG(observed.st_mode):
+            result[relative] = ("file", mode, path.read_bytes())
+            return
+        if stat.S_ISDIR(observed.st_mode):
+            result[relative] = ("directory", mode, None)
+            for child in sorted(path.iterdir(), key=lambda item: item.name):
+                child_relative = (
+                    child.name if relative == "." else f"{relative}/{child.name}"
+                )
+                visit(child, child_relative)
+            return
+        result[relative] = ("other", mode, None)
+
+    visit(root, ".")
+    return result
+
+
 def _shell_function(source: str, name: str) -> str:
     start = source.index(f"{name}() {{")
     next_marker = {
         "verify_pinned_executable": "\n\nATTEMPT_ID=",
+        "run_with_sanitized_executable_environment": "\n\ninvoke_pinned_executable()",
         "invoke_pinned_executable": "\n\ninvoke_mount_authority()",
     }[name]
     end = source.index(next_marker, start)
@@ -102,9 +130,13 @@ def _invoke_standalone_pinned_executor(
     bash_digest: str = "unused",
     bash_executor: Path | None = None,
     env_overrides: dict[str, str] | None = None,
+    runner_prelude: str | None = None,
     stdin: str | None = None,
 ) -> subprocess.CompletedProcess[str]:
     source = INSTALL.read_text(encoding="utf-8")
+    bash_authority = (bash_executor or BASH).resolve()
+    if bash_digest == "unused":
+        bash_digest = hashlib.sha256(bash_authority.read_bytes()).hexdigest()
     pin_paths = {
         "mount": pin_root / "mount",
         "python-dependency": pin_root / "python-dependency",
@@ -131,7 +163,8 @@ def _invoke_standalone_pinned_executor(
             f"EXECUTABLE_PIN_ROOT={shlex.quote(_bash_path(pin_root))}",
             f"LOCAL_REHEARSAL={'true' if local_rehearsal else 'false'}",
             f"PYTHON_EXECUTOR={shlex.quote(_bash_path(Path(sys.executable)))}",
-            f"BASH_EXECUTOR={shlex.quote(_bash_path(bash_executor or BASH))}",
+            f"BASH_EXECUTOR={shlex.quote(_bash_path(bash_authority))}",
+            "ENV_EXECUTOR=/usr/bin/env",
         )
     )
     script = "\n".join(
@@ -139,8 +172,10 @@ def _invoke_standalone_pinned_executor(
             "set -u",
             'invoke_python() { command "$PYTHON_EXECUTOR" "$@"; }',
             _shell_function(source, "verify_pinned_executable"),
+            _shell_function(source, "run_with_sanitized_executable_environment"),
             _shell_function(source, "invoke_pinned_executable"),
             assignments,
+            runner_prelude or ":",
             f"invoke_pinned_executable {shlex.quote(role)} {shlex.quote(digest)} -- \"$@\"",
         )
     )
@@ -173,6 +208,171 @@ def _write_local_python_executor(path: Path, body: str) -> Path:
     return path.resolve()
 
 
+def _run_bash_script(path: Path, script: str) -> subprocess.CompletedProcess[str]:
+    path.write_text(script + "\n", encoding="utf-8")
+    return subprocess.run(
+        [str(BASH), _bash_path(path)],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+
+def _stale_local_reconciliation_source() -> str:
+    source = INSTALL.read_text(encoding="utf-8")
+    return source[
+        source.index("inspect_stale_mount()") : source.index("record_install_lock()")
+    ]
+
+
+def _write_mv_side_effect_fault(
+    path: Path,
+    *,
+    marker: Path,
+    condition: str,
+    failure: str,
+) -> Path:
+    path.write_text(
+        "mv() {\n"
+        "  local source destination status\n"
+        "  if [ \"${1:-}\" = -- ]; then\n"
+        "    source=${2:-}\n"
+        "    destination=${3:-}\n"
+        "  else\n"
+        "    source=${1:-}\n"
+        "    destination=${2:-}\n"
+        "  fi\n"
+        '  /usr/bin/mv "$@"\n'
+        "  status=$?\n"
+        f"  if [ \"$status\" -eq 0 ] && [[ {condition} ]] "
+        f"&& [ ! -f '{_bash_path(marker)}' ]; then\n"
+        f"    : > '{_bash_path(marker)}'\n"
+        f"    {failure}\n"
+        "  fi\n"
+        "  return \"$status\"\n"
+        "}\n",
+        encoding="ascii",
+    )
+    return path
+
+
+def _write_mv_no_effect_success(
+    path: Path, *, marker: Path, condition: str
+) -> Path:
+    path.write_text(
+        "mv() {\n"
+        "  local source destination\n"
+        "  if [ \"${1:-}\" = -- ]; then\n"
+        "    source=${2:-}\n"
+        "    destination=${3:-}\n"
+        "  else\n"
+        "    source=${1:-}\n"
+        "    destination=${2:-}\n"
+        "  fi\n"
+        f"  if [[ {condition} ]] && [ ! -f '{_bash_path(marker)}' ]; then\n"
+        f"    : > '{_bash_path(marker)}'\n"
+        "    return 0\n"
+        "  fi\n"
+        '  /usr/bin/mv "$@"\n'
+        "}\n",
+        encoding="ascii",
+    )
+    return path
+
+
+def _write_release_rm_false_success(
+    path: Path,
+    *,
+    journal: Path,
+    marker: Path,
+    partial: bool,
+) -> Path:
+    partial_action = (
+        '      /usr/bin/rm -f -- "$argument/launch-release-manifest.json"\n'
+        if partial
+        else ""
+    )
+    path.write_text(
+        "#!/usr/bin/env bash\n"
+        "set -u\n"
+        "for argument in \"$@\"; do\n"
+        "  case \"$(basename -- \"$argument\")\" in\n"
+        "    .release.closed-candidate-cleanup.*)\n"
+        f"      if [ -f '{_bash_path(journal)}' ] "
+        "&& grep -Fq '\"stage\": \"recovery-remove-release-root-armed\"' "
+        f"'{_bash_path(journal)}' && [ ! -f '{_bash_path(marker)}' ]; then\n"
+        f"        : > '{_bash_path(marker)}'\n"
+        f"{partial_action}"
+        "        exit 0\n"
+        "      fi\n"
+        "      ;;\n"
+        "  esac\n"
+        "done\n"
+        'exec /usr/bin/rm "$@"\n',
+        encoding="ascii",
+    )
+    path.chmod(0o755)
+    return path
+
+
+def _write_cleanup_rm_fault_executor(
+    path: Path,
+    *,
+    basename_pattern: str,
+    marker: Path,
+    status: int,
+    partial_relative: str | None = None,
+) -> Path:
+    partial_action = (
+        f'      /usr/bin/rm -f -- "$argument/{partial_relative}"\n'
+        if partial_relative is not None
+        else ""
+    )
+    path.write_text(
+        "#!/usr/bin/env bash\n"
+        "set -u\n"
+        "for argument in \"$@\"; do\n"
+        "  case \"$(basename -- \"$argument\")\" in\n"
+        f"    {basename_pattern})\n"
+        f"      if [ ! -f '{_bash_path(marker)}' ]; then\n"
+        f"        : > '{_bash_path(marker)}'\n"
+        f"{partial_action}"
+        f"        exit {status}\n"
+        "      fi\n"
+        "      ;;\n"
+        "  esac\n"
+        "done\n"
+        'exec /usr/bin/rm "$@"\n',
+        encoding="ascii",
+    )
+    path.chmod(0o755)
+    return path.resolve()
+
+
+def _write_private_staging_owner(
+    owner: Path,
+    stage: Path,
+    *,
+    attempt_id: str = "a" * 32,
+    nonce: str = "b" * 64,
+    root_identity: str | None = None,
+) -> Path:
+    observed = stage.stat(follow_symlinks=False)
+    payload = {
+        "attempt_id": attempt_id,
+        "nonce": nonce,
+        "pid": int(stage.name.rsplit(".", 1)[1]),
+        "role": "private-staging",
+        "root_identity": root_identity or f"{observed.st_dev}:{observed.st_ino}",
+    }
+    owner.write_text(
+        json.dumps(payload, separators=(",", ":"), sort_keys=True) + "\n",
+        encoding="ascii",
+    )
+    return owner
+
+
 def _unit_attempt_artifacts(evidence: Path) -> list[Path]:
     return sorted(
         [
@@ -183,6 +383,14 @@ def _unit_attempt_artifacts(evidence: Path) -> list[Path]:
     )
 
 
+def _assert_python_dependency_hook_failed(evidence: Path) -> None:
+    checks = json.loads(
+        (evidence / "dependency-unit-checks.json").read_text(encoding="utf-8")
+    )
+    assert checks["results"] == {"python-dependencies": "failed"}
+    assert checks["exit_codes"] == {"python-dependencies": 19}
+
+
 def _assert_mutable_attempt_evidence_absent(evidence: Path) -> None:
     for name in (
         "dependency-unit-checks.json",
@@ -191,6 +399,7 @@ def _assert_mutable_attempt_evidence_absent(evidence: Path) -> None:
         "systemd-unit-cleanup.json",
         "install-lock.json",
         "findmnt-before.json",
+        "findmnt-after-umount.json",
         "findmnt-after.json",
         "findmnt-recovery.json",
         "persistent-before.json",
@@ -549,8 +758,8 @@ def _run_live_mount_failure_case(
         f"    count=$(cat '{_bash_path(findmnt_count)}' 2>/dev/null || printf 0)\n"
         f"    printf '%s\\n' \"$((count + 1))\" > '{_bash_path(findmnt_count)}'\n"
         "    [ \"$count\" -eq 0 ] || exit 44\n"
-        f"    source_path=$(cygpath -m '{_bash_path(persistent)}')\n"
-        "    target_path=$(cygpath -m \"$4\")\n"
+        f"    source_path='{_bash_path(persistent)}'\n"
+        "    target_path=$4\n"
         "    printf '{\"filesystems\":[{\"source\":\"%s\",\"target\":\"%s\",\"options\":\"rw,bind\"}]}\\n' "
         "\"$source_path\" \"$target_path\"\n"
         "    ;;\n"
@@ -655,8 +864,8 @@ def _run_live_recovery_verification_case(
         "  findmnt)\n"
         f"    count=$(cat '{_bash_path(findmnt_count)}' 2>/dev/null || printf 0)\n"
         f"    printf '%s\\n' \"$((count + 1))\" > '{_bash_path(findmnt_count)}'\n"
-        f"    source_path=$(cygpath -m '{_bash_path(persistent)}')\n"
-        "    target_path=$(cygpath -m \"$4\")\n"
+        f"    source_path='{_bash_path(persistent)}'\n"
+        "    target_path=$4\n"
         "    printf '{\"filesystems\":[{\"source\":\"%s\",\"target\":\"%s\",\"options\":\"rw,bind\"}]}\\n' "
         "\"$source_path\" \"$target_path\"\n"
         "    ;;\n"
@@ -899,42 +1108,11 @@ def test_sigkill_after_persistent_detach_is_recovered_before_retry_reset(
         pytest.skip("Git Bash is unavailable")
     case_root = tmp_path / "sigkill-after-detach"
     prepared = _prepare_case(case_root, closed_package)
-    release, persistent, _, _, _, _, values = prepared
+    release, persistent, _, _, _, _, _ = prepared
     persistent_before = _snapshot_tree(release / "agent" / "data")
-    detached = case_root / "detached"
-    bash_env = case_root / "pause-after-detach.bash"
-    bash_env.write_text(
-        "mv() {\n"
-        "  /usr/bin/mv \"$@\"\n"
-        "  status=$?\n"
-        f"  if [ \"$2\" = '{_bash_path(release / 'agent' / 'data')}' ] "
-        f"&& [ \"$3\" = '{_bash_path(persistent)}' ]; then\n"
-        f"    : > '{_bash_path(detached)}'\n"
-        "    kill -9 \"$$\"\n"
-        "  fi\n"
-        "  return \"$status\"\n"
-        "}\n",
-        encoding="ascii",
+    _interrupt_at_journal_stage(
+        closed_package, case_root, prepared, "persistent-detached"
     )
-    env = os.environ.copy()
-    env.update(values)
-    env["BASH_ENV"] = _bash_path(bash_env)
-    first = subprocess.Popen(
-        _installer_command(closed_package, case_root, prepared),
-        cwd=ROOT,
-        env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    try:
-        _wait_for_path(detached)
-        first_stdout, first_stderr = first.communicate(timeout=30)
-    finally:
-        if first.poll() is None:
-            first.kill()
-
-    assert first.returncode != 0, first_stderr + first_stdout
     assert not (release / "agent" / "data").exists()
     assert _snapshot_tree(persistent) == persistent_before
 
@@ -975,7 +1153,7 @@ def _interrupt_at_journal_stage(package, case_root: Path, prepared, stage: str):
         text=True,
     )
     assert result.returncode != 0, result.stderr + result.stdout
-    assert interrupted.is_file()
+    assert interrupted.is_file(), result.stderr + result.stdout
     assert json.loads(journal.read_text(encoding="utf-8"))["stage"] == stage
     return journal
 
@@ -1011,6 +1189,1588 @@ def test_sigkill_at_later_journal_stage_is_rolled_back_before_retry(
     assert not list(release.parent.glob(f".{release.name}.closed-*"))
 
 
+def test_primary_restore_stale_stage_accepts_old_root_topology(tmp_path: Path):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    start = source.index(
+        '  case "$entry_stage" in',
+        source.index("reconcile_stale_install_attempt()"),
+    )
+    topology = source[start : source.index("  candidate_root=''", start)]
+    script = "\n".join(
+        (
+            "set -u",
+            "entry_stage=recovery-restore-persistent-armed",
+            "old_present=true",
+            "release_present=true",
+            "staging_present=false",
+            "retired_present=false",
+            "committed_recovery=false",
+            "observed_root_topology_requires_fsync=false",
+            "classify_topology() {",
+            topology,
+            "}",
+            "classify_topology",
+            "printf '%s\n' \"$?\"",
+        )
+    )
+
+    result = _run_bash_script(tmp_path / "primary-restore-stale-topology.sh", script)
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert result.stdout.strip() == "0"
+
+
+def test_full_stale_local_restore_stage_recovers_old_root_and_persistent_bytes(
+    tmp_path: Path,
+):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    release = tmp_path / "release"
+    current_data = release / "agent" / "data"
+    persistent = tmp_path / "persistent"
+    evidence = tmp_path / "evidence"
+    old_root = tmp_path / ".release.closed-old.321"
+    staging = tmp_path / ".release.closed-stage.321"
+    retired = tmp_path / (".release.closed-retired." + "a" * 32)
+    systemd = tmp_path / "systemd"
+    for directory in (current_data, evidence, old_root / "agent", systemd):
+        directory.mkdir(parents=True, exist_ok=True)
+    expected_db = tmp_path / "expected-app.db"
+    expected_sitemap = tmp_path / "expected-sitemap.json"
+    expected_db.write_bytes(b"persistent-db\n")
+    expected_sitemap.write_bytes(b"persistent-sitemap\n")
+    (current_data / "app.db").write_bytes(expected_db.read_bytes())
+    sitemap = current_data / "sitemap-bundles" / "batch" / "metadata.json"
+    sitemap.parent.mkdir(parents=True)
+    sitemap.write_bytes(expected_sitemap.read_bytes())
+    (release / "launch-release-manifest.json").write_text("{}\n", encoding="ascii")
+    (release / "candidate-marker").write_text("candidate\n", encoding="ascii")
+    (old_root / "old-marker").write_bytes(b"old\n")
+    journal = evidence / "install-mutation-state.json"
+    journal.write_text("{}\n", encoding="ascii")
+    log = tmp_path / "full-reconcile.log"
+    reconciliation = _stale_local_reconciliation_source()
+    script = "\n".join(
+        (
+            "set -u",
+            "LOCAL_REHEARSAL=true",
+            "STALE_LOCAL_REHEARSAL=true",
+            "CURRENT_RELEASE_KEY=release-key",
+            "STALE_RELEASE_KEY=release-key",
+            "CURRENT_PERSISTENT_KEY=persistent-key",
+            "STALE_PERSISTENT_KEY=persistent-key",
+            "CURRENT_SYSTEMD_KEY=systemd-key",
+            "RELEASE_NAME=release",
+            "STALE_SYSTEMD_KEY=systemd-key",
+            "STALE_CANDIDATE_MANIFEST_SHA256=manifest-digest",
+            "STALE_CANDIDATE_RELEASE_TOPOLOGY_SHA256=candidate-topology-digest",
+            "STALE_CANDIDATE_RELEASE_ROOT_IDENTITY=3:4",
+            "STALE_SOURCE_RELEASE_TOPOLOGY_SHA256=source-topology-digest",
+            "STALE_SOURCE_RELEASE_ROOT_IDENTITY=1:2",
+            "CANDIDATE_RELEASE_TOPOLOGY_SNAPSHOT=/candidate-topology",
+            "SOURCE_RELEASE_TOPOLOGY_SNAPSHOT=/source-topology",
+            "STALE_STAGE=recovery-restore-persistent-armed",
+            "STALE_ATTEMPT_ID=" + "a" * 32,
+            "STALE_PID=321",
+            f"STALE_RELEASE_ROOT={shlex.quote(_bash_path(release))}",
+            f"STALE_PERSISTENT_ROOT={shlex.quote(_bash_path(persistent))}",
+            f"STALE_STAGING_ROOT={shlex.quote(_bash_path(staging))}",
+            f"STALE_OLD_ROOT={shlex.quote(_bash_path(old_root))}",
+            f"STALE_RETIRED_ROOT={shlex.quote(_bash_path(retired))}",
+            f"STALE_SYSTEMD_UNIT_DESTINATION={shlex.quote(_bash_path(systemd))}",
+            "STALE_SYSTEMD_UNIT_ATTEMPT_ROOT=",
+            f"MUTATION_STATE={shlex.quote(_bash_path(journal))}",
+            f"EVIDENCE_DIR={shlex.quote(_bash_path(evidence))}",
+            "SNAPSHOT_BEFORE=/snapshot",
+            "UNIT_VERIFY_HOOK_SHA256=",
+            f"EXPECTED_DB={shlex.quote(_bash_path(expected_db))}",
+            f"EXPECTED_SITEMAP={shlex.quote(_bash_path(expected_sitemap))}",
+            f"RECOVERY_LOG={shlex.quote(_bash_path(log))}",
+            "stale_tree_state() {",
+            "  [ ! -L \"$1\" ] || return 3",
+            "  [ -e \"$1\" ] || return 1",
+            "  [ -d \"$1\" ] || return 3",
+            "  [ -z \"$(find \"$1\" -mindepth 1 -print -quit)\" ] && return 2",
+            "  return 0",
+            "}",
+            "tree_matches_snapshot() {",
+            "  [ -f \"$1/app.db\" ] && cmp -s \"$1/app.db\" \"$EXPECTED_DB\" || return 1",
+            "  [ -f \"$1/sitemap-bundles/batch/metadata.json\" ] || return 1",
+            "  cmp -s \"$1/sitemap-bundles/batch/metadata.json\" \"$EXPECTED_SITEMAP\"",
+            "}",
+            "write_stale_mutation_state() { STALE_STAGE=\"$1\"; printf 'journal:%s\\n' \"$1\" >> \"$RECOVERY_LOG\"; printf '%s\\n' \"$1\" > \"$MUTATION_STATE\"; }",
+            "fsync_directories() { return 0; }",
+            "restore_systemd_units_from() { return 0; }",
+            "remove_systemd_unit_attempt_root() { return 0; }",
+            "invoke_pinned_executable() { return 0; }",
+            "tree_matches_bound_topology() { return 0; }",
+            "verify_stale_journal_bindings() { return 0; }",
+            "regular_file_sha256() { printf '%s\\n' \"$STALE_CANDIDATE_MANIFEST_SHA256\"; }",
+            "write_cleanup_owner_marker() { return 0; }",
+            "verify_cleanup_owner_marker() { return 0; }",
+            "remove_file_durably() { /usr/bin/rm -f -- \"$1\"; }",
+            "invoke_rm() { rm \"$@\"; }",
+            "rm() {",
+            "  local argument",
+            "  for argument in \"$@\"; do",
+            "    if [ \"$argument\" = \"$STALE_RELEASE_ROOT\" ] || [[ \"$(basename -- \"$argument\")\" == .release.closed-candidate-cleanup.* ]]; then printf 'rm:candidate-release\\n' >> \"$RECOVERY_LOG\"; fi",
+            "  done",
+            "  /usr/bin/rm \"$@\"",
+            "}",
+            "mv() {",
+            "  local source destination",
+            "  if [ \"${1:-}\" = -- ]; then source=${2:-}; destination=${3:-}; else source=${1:-}; destination=${2:-}; fi",
+            "  if [ \"$source\" = \"$STALE_RELEASE_ROOT/agent/data\" ] && [ \"$destination\" = \"$STALE_PERSISTENT_ROOT\" ]; then printf 'mv:detach-candidate-data\\n' >> \"$RECOVERY_LOG\"; fi",
+            "  if [ \"$source\" = \"$STALE_OLD_ROOT\" ] && [ \"$destination\" = \"$STALE_RELEASE_ROOT\" ]; then printf 'mv:restore-old-root\\n' >> \"$RECOVERY_LOG\"; fi",
+            "  if [ \"$source\" = \"$STALE_PERSISTENT_ROOT\" ] && [ \"$destination\" = \"$STALE_RELEASE_ROOT/agent/data\" ]; then printf 'mv:restore-persistent\\n' >> \"$RECOVERY_LOG\"; fi",
+            "  /usr/bin/mv \"$@\"",
+            "}",
+            "clear_mutation_state() { /usr/bin/rm -f -- \"$MUTATION_STATE\"; printf 'clear\\n' >> \"$RECOVERY_LOG\"; }",
+            reconciliation,
+            "reconcile_stale_install_attempt",
+            "printf '%s\\n' \"$?\"",
+        )
+    )
+
+    result = _run_bash_script(tmp_path / "full-local-reconcile.sh", script)
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert result.stdout.strip() == "0"
+    assert (release / "old-marker").read_bytes() == b"old\n"
+    assert not (release / "candidate-marker").exists()
+    assert (release / "agent" / "data" / "app.db").read_bytes() == b"persistent-db\n"
+    assert (
+        release / "agent" / "data" / "sitemap-bundles" / "batch" / "metadata.json"
+    ).read_bytes() == b"persistent-sitemap\n"
+    assert persistent.is_dir()
+    assert _snapshot_tree(persistent) == {}
+    assert not old_root.exists()
+    assert not staging.exists()
+    assert not Path(f"{staging}.owner").exists()
+    assert not retired.exists()
+    assert not journal.exists()
+    assert not list(tmp_path.glob(".release.closed-*"))
+    lines = log.read_text(encoding="ascii").splitlines()
+    ordered = [
+        "mv:detach-candidate-data",
+        "rm:candidate-release",
+        "mv:restore-old-root",
+        "mv:restore-persistent",
+        "journal:recovery-create-persistent-root-armed",
+        "clear",
+    ]
+    assert [lines.index(item) for item in ordered] == sorted(
+        lines.index(item) for item in ordered
+    )
+
+
+def test_absent_staging_owner_fsync_failure_retains_journal_for_clean_retry(
+    tmp_path: Path,
+):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    release = tmp_path / "release"
+    current_data = release / "agent" / "data"
+    persistent = tmp_path / "persistent"
+    evidence = tmp_path / "evidence"
+    staging = tmp_path / ".release.closed-stage.321"
+    old_root = tmp_path / ".release.closed-old.321"
+    retired = tmp_path / (".release.closed-retired." + "a" * 32)
+    systemd = tmp_path / "systemd"
+    for directory in (current_data, persistent, evidence, systemd):
+        directory.mkdir(parents=True, exist_ok=True)
+    expected_db = tmp_path / "expected-app.db"
+    expected_db.write_bytes(b"persistent-db\n")
+    (current_data / "app.db").write_bytes(expected_db.read_bytes())
+    (release / "old-marker").write_bytes(b"old\n")
+    journal = evidence / "install-mutation-state.json"
+    journal.write_text("{}\n", encoding="ascii")
+    failed = tmp_path / "owner-fsync-failed"
+    log = tmp_path / "owner-fsync-retry.log"
+    reconciliation = _stale_local_reconciliation_source()
+    script = "\n".join(
+        (
+            "set -u",
+            "LOCAL_REHEARSAL=true",
+            "STALE_LOCAL_REHEARSAL=true",
+            "CURRENT_RELEASE_KEY=release-key",
+            "STALE_RELEASE_KEY=release-key",
+            "CURRENT_PERSISTENT_KEY=persistent-key",
+            "STALE_PERSISTENT_KEY=persistent-key",
+            "CURRENT_SYSTEMD_KEY=systemd-key",
+            "STALE_SYSTEMD_KEY=systemd-key",
+            "RELEASE_NAME=release",
+            "STALE_SCHEMA_VERSION=4",
+            "STALE_SOURCE_RELEASE_ROOT_IDENTITY=1:2",
+            "SOURCE_RELEASE_TOPOLOGY_SNAPSHOT=/source-topology",
+            "STALE_STAGE=recovery-remove-staging-owner-armed",
+            "STALE_ATTEMPT_ID=" + "a" * 32,
+            "STALE_PID=321",
+            f"STALE_RELEASE_ROOT={shlex.quote(_bash_path(release))}",
+            f"STALE_PERSISTENT_ROOT={shlex.quote(_bash_path(persistent))}",
+            f"STALE_STAGING_ROOT={shlex.quote(_bash_path(staging))}",
+            f"STALE_OLD_ROOT={shlex.quote(_bash_path(old_root))}",
+            f"STALE_RETIRED_ROOT={shlex.quote(_bash_path(retired))}",
+            f"STALE_SYSTEMD_UNIT_DESTINATION={shlex.quote(_bash_path(systemd))}",
+            "STALE_SYSTEMD_UNIT_ATTEMPT_ROOT=",
+            f"MUTATION_STATE={shlex.quote(_bash_path(journal))}",
+            f"EVIDENCE_DIR={shlex.quote(_bash_path(evidence))}",
+            "SNAPSHOT_BEFORE=/snapshot",
+            "UNIT_VERIFY_HOOK_SHA256=",
+            f"EXPECTED_DB={shlex.quote(_bash_path(expected_db))}",
+            f"FAILED={shlex.quote(_bash_path(failed))}",
+            f"RECOVERY_LOG={shlex.quote(_bash_path(log))}",
+            "stale_tree_state() {",
+            "  [ ! -L \"$1\" ] || return 3",
+            "  [ -e \"$1\" ] || return 1",
+            "  [ -d \"$1\" ] || return 3",
+            "  [ -z \"$(find \"$1\" -mindepth 1 -print -quit)\" ] && return 2",
+            "  return 0",
+            "}",
+            "tree_matches_snapshot() { [ -f \"$1/app.db\" ] && cmp -s \"$1/app.db\" \"$EXPECTED_DB\"; }",
+            "write_stale_mutation_state() { STALE_STAGE=\"$1\"; printf '%s\\n' \"$1\" > \"$MUTATION_STATE\"; }",
+            "restore_systemd_units_from() { return 0; }",
+            "remove_systemd_unit_attempt_root() { return 0; }",
+            "invoke_pinned_executable() { return 0; }",
+            "tree_matches_bound_topology() { return 0; }",
+            "verify_stale_journal_bindings() { return 0; }",
+            "fsync_directories() {",
+            "  if [ \"$STALE_STAGE\" = recovery-remove-staging-owner-armed ] && [ ! -f \"$FAILED\" ]; then",
+            "    : > \"$FAILED\"",
+            "    printf 'fsync-fail\\n' >> \"$RECOVERY_LOG\"",
+            "    return 71",
+            "  fi",
+            "  printf 'fsync-ok\\n' >> \"$RECOVERY_LOG\"",
+            "  return 0",
+            "}",
+            "clear_mutation_state() { /usr/bin/rm -f -- \"$MUTATION_STATE\"; printf 'clear\\n' >> \"$RECOVERY_LOG\"; }",
+            reconciliation,
+            "set +e",
+            "reconcile_stale_install_attempt",
+            "first_status=$?",
+            "[ -f \"$MUTATION_STATE\" ] && first_journal=1 || first_journal=0",
+            "printf '%s|%s|%s\\n' \"$first_status\" \"$STALE_STAGE\" \"$first_journal\"",
+            "reconcile_stale_install_attempt",
+            "second_status=$?",
+            "[ -f \"$MUTATION_STATE\" ] && second_journal=1 || second_journal=0",
+            "printf '%s|%s|%s\\n' \"$second_status\" \"$STALE_STAGE\" \"$second_journal\"",
+        )
+    )
+
+    result = _run_bash_script(tmp_path / "owner-fsync-retry.sh", script)
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert result.stdout.splitlines() == [
+        "1|recovery-remove-staging-owner-armed|1",
+        "0|recovery-remove-staging-owner-armed|0",
+    ]
+    assert failed.is_file()
+    assert log.read_text(encoding="ascii").splitlines() == [
+        "fsync-fail",
+        "fsync-ok",
+        "clear",
+    ]
+    assert (release / "old-marker").read_bytes() == b"old\n"
+    assert (current_data / "app.db").read_bytes() == b"persistent-db\n"
+    assert persistent.is_dir()
+    assert _snapshot_tree(persistent) == {}
+    assert not journal.exists()
+    assert not list(tmp_path.glob(".release.closed-*"))
+
+
+def test_exit_recovery_crash_after_old_root_restore_is_retryable(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "exit-recovery-old-root-crash"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, _, _, _ = prepared
+    persistent_before = _snapshot_tree(release / "agent" / "data")
+    interrupted = case_root / "old-root-restored"
+    bash_env = _write_mv_side_effect_fault(
+        case_root / "kill-after-old-root-restore.bash",
+        marker=interrupted,
+        condition=(
+            f'"$destination" == \'{_bash_path(release)}\' '
+            f'&& "$(basename -- "$source")" == \'.{release.name}.closed-old.\'*'
+        ),
+        failure='kill -9 "$$"',
+    )
+
+    first = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={
+            "BASH_ENV": _bash_path(bash_env),
+            "VL360_INSTALL_FAIL_AFTER": "swap-release-root",
+        },
+    )
+
+    assert first.returncode != 0, first.stderr + first.stdout
+    assert interrupted.is_file()
+    journal = evidence / "install-mutation-state.json"
+    assert json.loads(journal.read_text(encoding="utf-8"))["stage"] == (
+        "recovery-restore-old-root-armed"
+    )
+    expected_release = {
+        name: raw
+        for name, raw in before_release.items()
+        if not name.startswith("agent/data/")
+    }
+    assert _snapshot_tree(release) == expected_release
+    assert _snapshot_tree(persistent) == persistent_before
+    assert not list(release.parent.glob(f".{release.name}.closed-old.*"))
+
+    retry = _invoke_installer(
+        closed_package, case_root, prepared, failed_hook="python"
+    )
+
+    assert retry.returncode == 19, retry.stderr + retry.stdout
+    _assert_python_dependency_hook_failed(evidence)
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == {}
+    assert not journal.exists()
+    assert not list(release.parent.glob(f".{release.name}.closed-*"))
+
+
+def test_primary_restore_rejects_same_topology_old_root_replacement(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "replaced-old-root-before-restore"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, _, _, _ = prepared
+    original_identity = (release.stat().st_dev, release.stat().st_ino)
+    persistent_before = _snapshot_tree(release / "agent" / "data")
+    replaced = case_root / "old-root-replaced"
+    bash_env = case_root / "replace-old-root.bash"
+    bash_env.write_text(
+        "mv() {\n"
+        "  local source destination replacement\n"
+        "  if [ \"${1:-}\" = -- ]; then source=${2:-}; destination=${3:-}; "
+        "else source=${1:-}; destination=${2:-}; fi\n"
+        f"  if [[ \"$(basename -- \"$source\")\" == .{release.name}.closed-old.* ]] "
+        f"&& [ \"$destination\" = '{_bash_path(release)}' ] "
+        f"&& [ ! -f '{_bash_path(replaced)}' ]; then\n"
+        "    replacement=\"$source.replacement\"\n"
+        "    /usr/bin/cp -a -- \"$source\" \"$replacement\"\n"
+        "    /usr/bin/rm -rf -- \"$source\"\n"
+        "    /usr/bin/mv -- \"$replacement\" \"$source\"\n"
+        f"    : > '{_bash_path(replaced)}'\n"
+        "  fi\n"
+        "  /usr/bin/mv \"$@\"\n"
+        "}\n",
+        encoding="ascii",
+    )
+
+    first = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={
+            "BASH_ENV": _bash_path(bash_env),
+            "VL360_INSTALL_FAIL_AFTER": "swap-release-root",
+        },
+    )
+
+    assert first.returncode == 73, first.stderr + first.stdout
+    assert replaced.is_file()
+    journal = evidence / "install-mutation-state.json"
+    assert json.loads(journal.read_text(encoding="utf-8"))["stage"] == (
+        "recovery-restore-old-root-armed"
+    )
+    expected_release = {
+        name: raw
+        for name, raw in before_release.items()
+        if not name.startswith("agent/data/")
+    }
+    assert _snapshot_tree(release) == expected_release
+    assert _snapshot_tree(persistent) == persistent_before
+    assert (release.stat().st_dev, release.stat().st_ino) != original_identity
+
+    retry = _invoke_installer(
+        closed_package, case_root, prepared, failed_hook="python"
+    )
+
+    assert retry.returncode == 2, retry.stderr + retry.stdout
+    assert "stale-install-recovery-required" in retry.stderr
+    assert _snapshot_tree(release) == expected_release
+    assert _snapshot_tree(persistent) == persistent_before
+    assert journal.is_file()
+
+
+def test_stale_post_restore_topology_is_fsynced_before_next_recovery_stage(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "stale-post-restore-fsync"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, _, _, _ = prepared
+    persistent_before = _snapshot_tree(release / "agent" / "data")
+    interrupted = case_root / "old-root-restored"
+    journal = evidence / "install-mutation-state.json"
+    bash_env = _write_mv_side_effect_fault(
+        case_root / "kill-after-old-root-restore.bash",
+        marker=interrupted,
+        condition=(
+            f'"$destination" == \'{_bash_path(release)}\' '
+            f'&& "$(basename -- "$source")" == \'.{release.name}.closed-old.\'*'
+        ),
+        failure='kill -9 "$$"',
+    )
+    first = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={
+            "BASH_ENV": _bash_path(bash_env),
+            "VL360_INSTALL_FAIL_AFTER": "swap-release-root",
+        },
+    )
+    assert first.returncode != 0, first.stderr + first.stdout
+    assert json.loads(journal.read_text(encoding="utf-8"))["stage"] == (
+        "recovery-restore-old-root-armed"
+    )
+
+    fsync_failed = case_root / "post-restore-parent-fsync-failed"
+    python_executor = _write_local_python_executor(
+        case_root / "post-restore-fsync-python",
+        f"  if [ \"${{1:-}}\" = - ] "
+        f"&& [ \"${{2:-}}\" = '{_bash_path(release.parent)}' ] "
+        f"&& [ -f '{_bash_path(journal)}' ] "
+        f"&& grep -Fq '\"stage\": \"recovery-restore-old-root-armed\"' "
+        f"'{_bash_path(journal)}' && [ ! -f '{_bash_path(fsync_failed)}' ]; then\n"
+        f"    : > '{_bash_path(fsync_failed)}'\n"
+        "    exit 71\n"
+        "  fi\n"
+        "command \"$REAL_PYTHON\" \"$@\"\n",
+    )
+    failed = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={"VL360_LOCAL_PYTHON_EXECUTOR": _bash_path(python_executor)},
+    )
+
+    assert failed.returncode == 2, failed.stderr + failed.stdout
+    assert "stale-install-recovery-required" in failed.stderr
+    assert fsync_failed.is_file()
+    assert json.loads(journal.read_text(encoding="utf-8"))["stage"] == (
+        "recovery-restore-old-root-armed"
+    )
+    expected_release = {
+        name: raw
+        for name, raw in before_release.items()
+        if not name.startswith("agent/data/")
+    }
+    assert _snapshot_tree(release) == expected_release
+    assert _snapshot_tree(persistent) == persistent_before
+
+
+@pytest.mark.parametrize(
+    "stage",
+    (
+        "recovery-remove-release-root-armed",
+        "retire-old-root-armed",
+        "committed-cleanup",
+    ),
+)
+def test_stale_observed_root_topology_is_fsynced_before_recovery_advances(
+    tmp_path: Path, stage: str
+):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    reconciliation = source[
+        source.index("inspect_stale_mount()") : source.index("record_install_lock()")
+    ]
+    release = tmp_path / "release"
+    persistent = tmp_path / "persistent"
+    evidence = tmp_path / "evidence"
+    systemd = tmp_path / "systemd"
+    old_root = tmp_path / ".release.closed-old.321"
+    retired_root = tmp_path / (".release.closed-retired." + "a" * 32)
+    for directory in (persistent, evidence, systemd):
+        directory.mkdir(parents=True)
+    if stage == "recovery-remove-release-root-armed":
+        (old_root / "agent").mkdir(parents=True)
+        (persistent / "persistent-marker").write_text("data\n", encoding="ascii")
+    else:
+        (release / "agent" / "data").mkdir(parents=True)
+        (release / "launch-release-manifest.json").write_text("{}\n", encoding="ascii")
+        if stage == "retire-old-root-armed":
+            retired_root.mkdir()
+    journal = evidence / "install-mutation-state.json"
+    journal.write_text("{}\n", encoding="ascii")
+    log = tmp_path / "reconcile.log"
+    release_parent = _bash_path(release.parent)
+    script = "\n".join(
+        (
+            "set -u",
+            "LOCAL_REHEARSAL=true",
+            "STALE_LOCAL_REHEARSAL=true",
+            "CURRENT_RELEASE_KEY=release-key",
+            "STALE_RELEASE_KEY=release-key",
+            "CURRENT_PERSISTENT_KEY=persistent-key",
+            "STALE_PERSISTENT_KEY=persistent-key",
+            "CURRENT_SYSTEMD_KEY=systemd-key",
+            "STALE_SYSTEMD_KEY=systemd-key",
+            "RELEASE_NAME=release",
+            f"STALE_STAGE={stage}",
+            "STALE_ATTEMPT_ID=" + "a" * 32,
+            "STALE_PID=321",
+            f"STALE_RELEASE_ROOT={shlex.quote(_bash_path(release))}",
+            f"STALE_PERSISTENT_ROOT={shlex.quote(_bash_path(persistent))}",
+            f"STALE_STAGING_ROOT={shlex.quote(_bash_path(tmp_path / '.release.closed-stage.321'))}",
+            f"STALE_OLD_ROOT={shlex.quote(_bash_path(old_root))}",
+            f"STALE_RETIRED_ROOT={shlex.quote(_bash_path(retired_root))}",
+            f"STALE_SYSTEMD_UNIT_DESTINATION={shlex.quote(_bash_path(systemd))}",
+            "STALE_SYSTEMD_UNIT_ATTEMPT_ROOT=",
+            f"MUTATION_STATE={shlex.quote(_bash_path(journal))}",
+            f"EVIDENCE_DIR={shlex.quote(_bash_path(evidence))}",
+            "SNAPSHOT_BEFORE=/snapshot",
+            "SOURCE_RELEASE_TOPOLOGY_SNAPSHOT=/source-topology",
+            "STALE_SOURCE_RELEASE_ROOT_IDENTITY=1:2",
+            "UNIT_VERIFY_HOOK_SHA256=digest",
+            f"RECOVERY_LOG={shlex.quote(_bash_path(log))}",
+            "tree_matches_snapshot() { return 0; }",
+            "stale_tree_state() { [ \"$1\" = \"$STALE_RELEASE_ROOT/agent/data\" ] && return 0; [ \"$1\" = \"$STALE_PERSISTENT_ROOT\" ] && return 2; return 1; }",
+            "write_stale_mutation_state() { printf 'journal:%s\\n' \"$1\" >> \"$RECOVERY_LOG\"; STALE_STAGE=\"$1\"; }",
+            "restore_systemd_units_from() { printf 'restore-systemd\\n' >> \"$RECOVERY_LOG\"; return 1; }",
+            "invoke_pinned_executable() { printf 'verify-systemd\\n' >> \"$RECOVERY_LOG\"; return 1; }",
+            "remove_systemd_unit_attempt_root() { printf 'remove-systemd-attempt\\n' >> \"$RECOVERY_LOG\"; return 1; }",
+            "fsync_directories() { printf 'fsync:%s\\n' \"$*\" >> \"$RECOVERY_LOG\"; return 71; }",
+            "clear_mutation_state() { printf 'clear\\n' >> \"$RECOVERY_LOG\"; return 1; }",
+            reconciliation,
+            "tree_matches_bound_topology() { return 0; }",
+            "verify_stale_journal_bindings() { return 0; }",
+            "reconcile_stale_install_attempt",
+            "printf '%s|%s\\n' \"$?\" \"$STALE_STAGE\"",
+        )
+    )
+    result = _run_bash_script(tmp_path / "stale-topology-fsync.sh", script)
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert result.stdout.strip() == f"1|{stage}"
+    assert log.read_text(encoding="ascii").splitlines() == [
+        f"fsync:{release_parent}"
+    ]
+
+
+@pytest.mark.parametrize("target", ("staging", "owner"))
+def test_stale_staging_cleanup_requires_verified_absence(tmp_path: Path, target: str):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    start = source.index("  local stage_owner_valid=false")
+    cleanup = source[start : source.index('  if [ "$committed_recovery" = true ]; then', start)]
+    staging = tmp_path / ".release.closed-stage.321"
+    owner = tmp_path / ".release.closed-stage.321.owner"
+    staging_delete = tmp_path / (".release.closed-staging-cleanup." + "a" * 32)
+    staging_delete_owner = Path(f"{staging_delete}.owner")
+    if target == "staging":
+        staging.mkdir()
+    owner.write_text("owner\n", encoding="ascii")
+    log = tmp_path / "cleanup.log"
+    failed_path = staging_delete if target == "staging" else owner
+    script = "\n".join(
+        (
+            "set -u",
+            "entry_stage=persistent-detached",
+            "committed_recovery=false",
+            "STALE_ATTEMPT_ID=" + "a" * 32,
+            "STALE_PID=321",
+            "STALE_CANDIDATE_RELEASE_ROOT_IDENTITY=1:2",
+            "STALE_CANDIDATE_RELEASE_TOPOLOGY_SHA256=" + "b" * 64,
+            "STALE_CANDIDATE_MANIFEST_SHA256=" + "c" * 64,
+            "CANDIDATE_RELEASE_TOPOLOGY_SNAPSHOT=/snapshot",
+            f"STALE_STAGING_ROOT={shlex.quote(_bash_path(staging))}",
+            "stale_stage_owner=\"$STALE_STAGING_ROOT.owner\"",
+            f"staging_delete_root={shlex.quote(_bash_path(staging_delete))}",
+            f"staging_delete_owner={shlex.quote(_bash_path(staging_delete_owner))}",
+            "staging_delete_present=false",
+            "staging_delete_owner_present=false",
+            f"RECOVERY_LOG={shlex.quote(_bash_path(log))}",
+            f"FAILED_PATH={shlex.quote(_bash_path(failed_path))}",
+            "write_stale_mutation_state() { printf 'journal:%s\\n' \"$1\" >> \"$RECOVERY_LOG\"; }",
+            "fsync_directories() { printf 'fsync\\n' >> \"$RECOVERY_LOG\"; return 0; }",
+            "verify_observed_private_staging_owner_marker() { return 0; }",
+            "tree_matches_bound_topology() { return 0; }",
+            "regular_file_sha256() { printf '%s\\n' \"$STALE_CANDIDATE_MANIFEST_SHA256\"; }",
+            "write_cleanup_owner_marker() { printf 'owner\\n' > \"$1\"; }",
+            "verify_cleanup_owner_marker() { return 0; }",
+            "invoke_rm() { for argument in \"$@\"; do [ \"$argument\" != \"$FAILED_PATH\" ] || return 0; done; /usr/bin/rm \"$@\"; }",
+            "remove_file_durably() { invoke_rm -f -- \"$1\"; [ ! -e \"$1\" ] && [ ! -L \"$1\" ]; }",
+            "cleanup_staging() {",
+            cleanup,
+            "}",
+            "cleanup_staging",
+            "printf '%s\\n' \"$?\"",
+        )
+    )
+    result = _run_bash_script(tmp_path / "cleanup-staging.sh", script)
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert result.stdout.strip() == "1"
+    assert failed_path.exists()
+
+
+def test_exit_recovery_rm_false_success_keeps_old_authority_retryable(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "exit-recovery-rm-false-success"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, _, _, _ = prepared
+    persistent_before = _snapshot_tree(release / "agent" / "data")
+    journal = evidence / "install-mutation-state.json"
+    intercepted = case_root / "release-rm-false-success-used"
+    bash_env = _write_release_rm_false_success(
+        case_root / "release-rm-false-success.bash",
+        journal=journal,
+        marker=intercepted,
+        partial=False,
+    )
+
+    first = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={
+            "VL360_LOCAL_RM_EXECUTOR": _bash_path(bash_env.resolve()),
+            "VL360_INSTALL_FAIL_AFTER": "swap-release-root",
+        },
+    )
+
+    assert first.returncode == 73, first.stderr + first.stdout
+    assert intercepted.is_file()
+    assert json.loads(journal.read_text(encoding="utf-8"))["stage"] == (
+        "recovery-remove-release-root-armed"
+    )
+    assert not release.exists()
+    cleanup_roots = [
+        path
+        for path in release.parent.glob(f".{release.name}.closed-candidate-cleanup.*")
+        if path.is_dir()
+    ]
+    assert len(cleanup_roots) == 1
+    assert (cleanup_roots[0] / "launch-release-manifest.json").is_file()
+    assert _snapshot_tree(persistent) == persistent_before
+    old_roots = list(release.parent.glob(f".{release.name}.closed-old.*"))
+    assert len(old_roots) == 1
+    assert not list(release.rglob(f".{release.name}.closed-old.*"))
+
+    retry = _invoke_installer(
+        closed_package, case_root, prepared, failed_hook="python"
+    )
+
+    assert retry.returncode == 19, retry.stderr + retry.stdout
+    _assert_python_dependency_hook_failed(evidence)
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == {}
+    assert not journal.exists()
+
+
+@pytest.mark.parametrize(
+    "partial_relative",
+    (None, "launch-release-manifest.json"),
+    ids=("complete_tomb", "partial_tomb"),
+)
+def test_exit_recovery_staging_rm_false_success_keeps_tomb_retryable(
+    tmp_path: Path, closed_package, partial_relative: str | None
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / (
+        "stage-rm-false-" + ("partial" if partial_relative is not None else "complete")
+    )
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, before_persistent, _, _ = prepared
+    journal = evidence / "install-mutation-state.json"
+    intercepted = case_root / "staging-rm-false-success-used"
+    rm_executor = _write_cleanup_rm_fault_executor(
+        case_root / "staging-rm-false-success",
+        basename_pattern=f".{release.name}.closed-staging-cleanup.*",
+        marker=intercepted,
+        status=0,
+        partial_relative=partial_relative,
+    )
+
+    first = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={
+            "VL360_LOCAL_RM_EXECUTOR": _bash_path(rm_executor),
+            "VL360_INSTALL_FAIL_AFTER": "detach-agent-data",
+        },
+    )
+
+    assert first.returncode == 73, first.stderr + first.stdout
+    assert intercepted.is_file()
+    payload = json.loads(journal.read_text(encoding="utf-8"))
+    assert payload["stage"] == "recovery-remove-staging-armed"
+    cleanup_root = release.parent / (
+        f".{release.name}.closed-staging-cleanup.{payload['attempt_id']}"
+    )
+    cleanup_owner = Path(f"{cleanup_root}.owner")
+    assert cleanup_root.is_dir()
+    assert cleanup_owner.is_file()
+    assert (cleanup_root / "launch-release-manifest.json").exists() is (
+        partial_relative is None
+    )
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
+
+    retry = _invoke_installer(
+        closed_package, case_root, prepared, failed_hook="python"
+    )
+
+    assert retry.returncode == 19, retry.stderr + retry.stdout
+    _assert_python_dependency_hook_failed(evidence)
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == {}
+    assert not journal.exists()
+    assert not cleanup_root.exists()
+    assert not cleanup_owner.exists()
+
+
+def test_replaced_staging_cleanup_tomb_is_preserved(tmp_path: Path, closed_package):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "replaced-staging-cleanup-tomb"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, before_persistent, _, _ = prepared
+    journal = evidence / "install-mutation-state.json"
+    intercepted = case_root / "staging-cleanup-held"
+    rm_executor = _write_cleanup_rm_fault_executor(
+        case_root / "staging-cleanup-held-rm",
+        basename_pattern=f".{release.name}.closed-staging-cleanup.*",
+        marker=intercepted,
+        status=0,
+    )
+    first = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={
+            "VL360_LOCAL_RM_EXECUTOR": _bash_path(rm_executor),
+            "VL360_INSTALL_FAIL_AFTER": "detach-agent-data",
+        },
+    )
+    assert first.returncode == 73, first.stderr + first.stdout
+    payload = json.loads(journal.read_text(encoding="utf-8"))
+    cleanup_root = release.parent / (
+        f".{release.name}.closed-staging-cleanup.{payload['attempt_id']}"
+    )
+    cleanup_owner = Path(f"{cleanup_root}.owner")
+    assert cleanup_root.is_dir()
+    assert cleanup_owner.is_file()
+    removed = subprocess.run(
+        [
+            str(BASH),
+            "-c",
+            '/usr/bin/rm -rf -- "$1"',
+            "replace-staging-tomb",
+            _bash_path(cleanup_root),
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert removed.returncode == 0, removed.stderr + removed.stdout
+    cleanup_root.mkdir()
+    foreign = cleanup_root / "foreign-tree.txt"
+    foreign.write_text("must survive\n", encoding="ascii")
+
+    retry = _invoke_installer(
+        closed_package, case_root, prepared, failed_hook="python"
+    )
+
+    assert retry.returncode == 2, retry.stderr + retry.stdout
+    assert "stale-install-recovery-required" in retry.stderr
+    assert foreign.read_text(encoding="ascii") == "must survive\n"
+    assert cleanup_owner.is_file()
+    assert journal.is_file()
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
+
+
+@pytest.mark.parametrize(
+    "partial_relative",
+    (None, "old-release-marker.txt"),
+    ids=("complete_tomb", "partial_tomb"),
+)
+def test_retired_cleanup_rm_false_success_keeps_tomb_retryable(
+    tmp_path: Path, closed_package, partial_relative: str | None
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / (
+        "retired-rm-false-" + ("partial" if partial_relative else "complete")
+    )
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, _, _, _, _ = prepared
+    journal = evidence / "install-mutation-state.json"
+    intercepted = case_root / "retired-rm-false-success-used"
+    rm_executor = _write_cleanup_rm_fault_executor(
+        case_root / "retired-rm-false-success",
+        basename_pattern=f".{release.name}.closed-retired-cleanup.*",
+        marker=intercepted,
+        status=0,
+        partial_relative=partial_relative,
+    )
+
+    first = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={"VL360_LOCAL_RM_EXECUTOR": _bash_path(rm_executor)},
+    )
+
+    assert first.returncode == 2, first.stderr + first.stdout
+    assert intercepted.is_file()
+    payload = json.loads(journal.read_text(encoding="utf-8"))
+    assert payload["stage"] == "committed-cleanup"
+    cleanup_root = release.parent / (
+        f".{release.name}.closed-retired-cleanup.{payload['attempt_id']}"
+    )
+    cleanup_owner = Path(f"{cleanup_root}.owner")
+    assert cleanup_root.is_dir()
+    assert cleanup_owner.is_file()
+    assert (cleanup_root / "old-release-marker.txt").exists() is (
+        partial_relative is None
+    )
+    assert not (release / "old-release-marker.txt").exists()
+
+    retry = _invoke_installer(
+        closed_package, case_root, prepared, failed_hook="python"
+    )
+
+    assert retry.returncode == 19, retry.stderr + retry.stdout
+    _assert_python_dependency_hook_failed(evidence)
+    assert not journal.exists()
+    assert not cleanup_root.exists()
+    assert not cleanup_owner.exists()
+    assert not list(release.parent.glob(f".{release.name}.closed-retired.*"))
+    assert _snapshot_tree(persistent) == {}
+
+
+def test_replaced_retired_cleanup_tomb_is_preserved(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "replaced-retired-cleanup-tomb"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, _, _, _, _ = prepared
+    journal = evidence / "install-mutation-state.json"
+    intercepted = case_root / "retired-cleanup-held"
+    rm_executor = _write_cleanup_rm_fault_executor(
+        case_root / "retired-cleanup-held-rm",
+        basename_pattern=f".{release.name}.closed-retired-cleanup.*",
+        marker=intercepted,
+        status=0,
+    )
+    first = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={"VL360_LOCAL_RM_EXECUTOR": _bash_path(rm_executor)},
+    )
+    assert first.returncode == 2, first.stderr + first.stdout
+    payload = json.loads(journal.read_text(encoding="utf-8"))
+    cleanup_root = release.parent / (
+        f".{release.name}.closed-retired-cleanup.{payload['attempt_id']}"
+    )
+    cleanup_owner = Path(f"{cleanup_root}.owner")
+    assert cleanup_root.is_dir()
+    assert cleanup_owner.is_file()
+    removed = subprocess.run(
+        [
+            str(BASH),
+            "-c",
+            '/usr/bin/rm -rf -- "$1"',
+            "replace-retired-tomb",
+            _bash_path(cleanup_root),
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert removed.returncode == 0, removed.stderr + removed.stdout
+    cleanup_root.mkdir()
+    foreign = cleanup_root / "foreign-release-marker.txt"
+    foreign.write_text("must survive\n", encoding="ascii")
+
+    retry = _invoke_installer(
+        closed_package, case_root, prepared, failed_hook="python"
+    )
+
+    assert retry.returncode == 2, retry.stderr + retry.stdout
+    assert "stale-install-recovery-required" in retry.stderr
+    assert foreign.read_text(encoding="ascii") == "must survive\n"
+    assert cleanup_owner.is_file()
+    assert journal.is_file()
+    assert not (release / "old-release-marker.txt").exists()
+    assert _snapshot_tree(persistent) == {}
+
+
+def test_replaced_candidate_cleanup_tomb_is_preserved(tmp_path: Path, closed_package):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "replaced-candidate-cleanup-tomb"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, _, _, _, _ = prepared
+    journal = evidence / "install-mutation-state.json"
+    intercepted = case_root / "candidate-cleanup-held"
+    rm_executor = _write_release_rm_false_success(
+        case_root / "candidate-cleanup-held-rm",
+        journal=journal,
+        marker=intercepted,
+        partial=False,
+    )
+    first = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={
+            "VL360_LOCAL_RM_EXECUTOR": _bash_path(rm_executor.resolve()),
+            "VL360_INSTALL_FAIL_AFTER": "swap-release-root",
+        },
+    )
+    assert first.returncode == 73, first.stderr + first.stdout
+    cleanup_roots = [
+        path
+        for path in release.parent.glob(f".{release.name}.closed-candidate-cleanup.*")
+        if path.is_dir()
+    ]
+    assert len(cleanup_roots) == 1
+    cleanup_root = cleanup_roots[0]
+    removed = subprocess.run(
+        [
+            str(BASH),
+            "-c",
+            '/usr/bin/rm -rf -- "$1"',
+            "replace-candidate-tomb",
+            _bash_path(cleanup_root),
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert removed.returncode == 0, removed.stderr + removed.stdout
+    assert not cleanup_root.exists()
+    cleanup_root.mkdir()
+    foreign = cleanup_root / "foreign-tree.txt"
+    foreign.write_text("must survive\n", encoding="ascii")
+
+    retry = _invoke_installer(
+        closed_package, case_root, prepared, failed_hook="python"
+    )
+
+    assert retry.returncode == 2, retry.stderr + retry.stdout
+    assert "stale-install-recovery-required" in retry.stderr
+    assert foreign.read_text(encoding="ascii") == "must survive\n"
+    assert journal.is_file()
+    assert list(release.parent.glob(f".{release.name}.closed-old.*"))
+    assert _snapshot_tree(persistent) != {}
+
+
+def test_candidate_cleanup_tomb_is_rejected_outside_its_armed_stage(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "candidate-tomb-wrong-stage"
+    prepared = _prepare_case(case_root, closed_package)
+    release, _, evidence, _, _, _, _ = prepared
+    journal = _interrupt_at_journal_stage(
+        closed_package, case_root, prepared, "persistent-detached"
+    )
+    interrupted_release = _snapshot_tree(release)
+    payload = json.loads(journal.read_text(encoding="utf-8"))
+    cleanup_root = release.parent / (
+        f".{release.name}.closed-candidate-cleanup.{payload['attempt_id']}"
+    )
+    cleanup_root.mkdir()
+    foreign = cleanup_root / "foreign-tree.txt"
+    foreign.write_text("must survive\n", encoding="ascii")
+
+    retry = _invoke_installer(
+        closed_package, case_root, prepared, failed_hook="python"
+    )
+
+    assert retry.returncode == 2, retry.stderr + retry.stdout
+    assert "stale-install-recovery-required" in retry.stderr
+    assert foreign.read_text(encoding="ascii") == "must survive\n"
+    assert journal.is_file()
+    assert _snapshot_tree(release) == interrupted_release
+
+
+def test_stale_recovery_rm_partial_false_success_preserves_both_roots(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "stale-recovery-rm-partial-success"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, _, _, _ = prepared
+    persistent_before = _snapshot_tree(release / "agent" / "data")
+    journal = _interrupt_at_journal_stage(
+        closed_package, case_root, prepared, "root-swapped"
+    )
+    intercepted = case_root / "stale-release-rm-partial-success-used"
+    bash_env = _write_release_rm_false_success(
+        case_root / "stale-release-rm-partial-success.bash",
+        journal=journal,
+        marker=intercepted,
+        partial=True,
+    )
+
+    failed = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={"VL360_LOCAL_RM_EXECUTOR": _bash_path(bash_env.resolve())},
+    )
+
+    assert failed.returncode == 2, failed.stderr + failed.stdout
+    assert "stale-install-recovery-required" in failed.stderr
+    assert intercepted.is_file()
+    assert json.loads(journal.read_text(encoding="utf-8"))["stage"] == (
+        "recovery-remove-release-root-armed"
+    )
+    assert not release.exists()
+    cleanup_roots = [
+        path
+        for path in release.parent.glob(f".{release.name}.closed-candidate-cleanup.*")
+        if path.is_dir()
+    ]
+    assert len(cleanup_roots) == 1
+    assert not (cleanup_roots[0] / "launch-release-manifest.json").exists()
+    assert _snapshot_tree(persistent) == persistent_before
+    old_roots = list(release.parent.glob(f".{release.name}.closed-old.*"))
+    assert len(old_roots) == 1
+    assert not list(release.rglob(f".{release.name}.closed-old.*"))
+
+    retry = _invoke_installer(
+        closed_package, case_root, prepared, failed_hook="python"
+    )
+
+    assert retry.returncode == 19, retry.stderr + retry.stdout
+    _assert_python_dependency_hook_failed(evidence)
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == {}
+    assert not journal.exists()
+
+
+def test_initial_root_rename_side_effect_then_error_restores_full_old_authority(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "initial-root-rename-side-effect-error"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, before_persistent, _, _ = prepared
+    injected = case_root / "initial-root-rename-failed"
+    bash_env = _write_mv_side_effect_fault(
+        case_root / "fail-initial-root-rename.bash",
+        marker=injected,
+        condition=(
+            f'"$source" == \'{_bash_path(release)}\' '
+            f'&& "$(basename -- "$destination")" == \'.{release.name}.closed-old.\'*'
+        ),
+        failure="return 62",
+    )
+
+    first = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+    )
+
+    assert first.returncode == 62, first.stderr + first.stdout
+    assert injected.is_file()
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
+    assert not (evidence / "install-mutation-state.json").exists()
+    assert not list(release.parent.glob(f".{release.name}.closed-*"))
+
+
+def test_initial_root_rename_rc0_without_effect_fails_and_restores_old_authority(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "initial-root-rename-no-effect"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, _, _, _ = prepared
+    injected = case_root / "initial-root-rename-no-effect-used"
+    bash_env = _write_mv_no_effect_success(
+        case_root / "initial-root-rename-no-effect.bash",
+        marker=injected,
+        condition=(
+            f'"$source" == \'{_bash_path(release)}\' '
+            f'&& "$(basename -- "$destination")" == \'.{release.name}.closed-old.\'*'
+        ),
+    )
+
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+    )
+
+    assert result.returncode == 1, result.stderr + result.stdout
+    assert injected.is_file()
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == {}
+    assert not (evidence / "install-mutation-state.json").exists()
+    assert not list(release.parent.glob(f".{release.name}.closed-*"))
+
+
+def test_candidate_root_rename_rc0_without_effect_fails_before_activation(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "candidate-root-rename-no-effect"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, _, _, _ = prepared
+    injected = case_root / "candidate-root-rename-no-effect-used"
+    owner_cleanup_started = case_root / "candidate-owner-cleanup-started"
+    journal = evidence / "install-mutation-state.json"
+    bash_env = _write_mv_no_effect_success(
+        case_root / "candidate-root-rename-no-effect.bash",
+        marker=injected,
+        condition=(
+            f'"$(basename -- "$source")" == ".{release.name}.closed-stage."* '
+            f'&& "$destination" == \'{_bash_path(release)}\''
+        ),
+    )
+    bash_env.write_text(
+        bash_env.read_text(encoding="ascii")
+        + "rm() {\n"
+        + "  local argument\n"
+        + "  for argument in \"$@\"; do\n"
+        + f"    if [[ \"$(basename -- \"$argument\")\" == .{release.name}.closed-stage.*.owner ]] "
+        + f"&& [ -f '{_bash_path(journal)}' ] "
+        + "&& grep -Fq '\"stage\": \"swap-release-root-armed\"' "
+        + f"'{_bash_path(journal)}'; then : > '{_bash_path(owner_cleanup_started)}'; fi\n"
+        + "  done\n"
+        + "  /usr/bin/rm \"$@\"\n"
+        + "}\n",
+        encoding="ascii",
+    )
+
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+    )
+
+    assert result.returncode == 1, result.stderr + result.stdout
+    assert injected.is_file()
+    assert not owner_cleanup_started.exists()
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == {}
+    assert not (evidence / "install-mutation-state.json").exists()
+    assert not list(release.parent.glob(f".{release.name}.closed-*"))
+
+
+def test_staging_owner_cleanup_bypasses_rm_shadow_before_activation(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "staging-owner-rm-no-effect"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, _, _, _, _ = prepared
+    journal = evidence / "install-mutation-state.json"
+    injected = case_root / "staging-owner-rm-no-effect-used"
+    bash_env = case_root / "staging-owner-rm-no-effect.bash"
+    bash_env.write_text(
+        "rm() {\n"
+        "  local argument\n"
+        "  for argument in \"$@\"; do\n"
+        f"    if [[ \"$(basename -- \"$argument\")\" == .{release.name}.closed-stage.*.owner ]] "
+        f"&& [ -f '{_bash_path(journal)}' ] "
+        "&& grep -Fq '\"stage\": \"swap-release-root-armed\"' "
+        f"'{_bash_path(journal)}' && [ ! -f '{_bash_path(injected)}' ]; then\n"
+        f"      : > '{_bash_path(injected)}'\n"
+        "      return 0\n"
+        "    fi\n"
+        "  done\n"
+        "  /usr/bin/rm \"$@\"\n"
+        "}\n",
+        encoding="ascii",
+    )
+
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+    )
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert not injected.exists()
+    assert (release / "launch-release-manifest.json").is_file()
+    assert not (release / "old-release-marker.txt").exists()
+    assert persistent.is_dir()
+    assert _snapshot_tree(persistent) == {}
+    assert not list(release.parent.glob(f".{release.name}.closed-stage.*.owner"))
+    assert not journal.exists()
+    assert not list(release.parent.glob(f".{release.name}.closed-*"))
+
+
+@pytest.mark.parametrize("target", ("staging", "owner"))
+def test_failed_install_cleanup_bypasses_rm_shadow_for_private_staging(
+    tmp_path: Path, closed_package, target: str
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / f"cleanup-rm-shadow-{target}"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, before_persistent, _, _ = prepared
+    intercepted = case_root / f"cleanup-rm-shadow-{target}-used"
+    bash_env = case_root / f"cleanup-rm-shadow-{target}.bash"
+    target_condition = (
+        '"$argument" == "$RELEASE_PARENT/.${RELEASE_NAME}.closed-stage."* '
+        '&& "$argument" != *.owner'
+        if target == "staging"
+        else '"$argument" == "$RELEASE_PARENT/.${RELEASE_NAME}.closed-stage."*.owner'
+    )
+    bash_env.write_text(
+        "rm() {\n"
+        "  local argument\n"
+        "  for argument in \"$@\"; do\n"
+        "    if [ -n \"${RELEASE_PARENT:-}\" ] "
+        "&& [ -n \"${RELEASE_NAME:-}\" ] "
+        f"&& [[ {target_condition} ]] "
+        f"&& [ ! -f '{_bash_path(intercepted)}' ]; then\n"
+        f"      : > '{_bash_path(intercepted)}'\n"
+        "      return 0\n"
+        "    fi\n"
+        "  done\n"
+        "  /usr/bin/rm \"$@\"\n"
+        "}\n",
+        encoding="ascii",
+    )
+
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        failed_hook="python",
+        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+    )
+
+    assert result.returncode == 19, result.stderr + result.stdout
+    assert not intercepted.exists()
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
+    assert not (evidence / "install-mutation-state.json").exists()
+    assert not list(release.parent.glob(f".{release.name}.closed-*"))
+
+
+def test_primary_local_empty_detach_rc0_without_effect_fails_closed(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "primary-empty-detach-no-effect"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, _, _, _, _ = prepared
+    current_data = release / "agent" / "data"
+    for child in current_data.iterdir():
+        if child.is_dir():
+            shutil.rmtree(child)
+        else:
+            child.unlink()
+    expected_release = _snapshot_tree(release)
+    injected = case_root / "primary-empty-detach-no-effect-used"
+    bash_env = _write_mv_no_effect_success(
+        case_root / "primary-empty-detach-no-effect.bash",
+        marker=injected,
+        condition=(
+            f'"$source" == \'{_bash_path(current_data)}\' '
+            f'&& "$destination" == \'{_bash_path(persistent)}\''
+        ),
+    )
+
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+    )
+
+    assert result.returncode == 1, result.stderr + result.stdout
+    assert injected.is_file()
+    assert current_data.is_dir()
+    assert _snapshot_tree(release) == expected_release
+    assert persistent.is_dir()
+    assert _snapshot_tree(persistent) == {}
+    assert not (evidence / "install-mutation-state.json").exists()
+    assert not list(release.parent.glob(f".{release.name}.closed-*"))
+
+
+@pytest.mark.parametrize(
+    ("fault", "expected_status"),
+    (("side-effect-error", 64), ("no-effect-success", 1)),
+)
+def test_primary_local_persistent_restore_requires_completed_rename(
+    tmp_path: Path, closed_package, fault: str, expected_status: int
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / f"primary-persistent-restore-{fault}"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, before_persistent, _, _ = prepared
+    injected = case_root / "primary-persistent-restore-fault-used"
+    condition = (
+        f'"$source" == \'{_bash_path(persistent)}\' '
+        f'&& "$destination" == \'{_bash_path(release / "agent" / "data")}\''
+    )
+    if fault == "side-effect-error":
+        bash_env = _write_mv_side_effect_fault(
+            case_root / "primary-persistent-restore-fault.bash",
+            marker=injected,
+            condition=condition,
+            failure="return 64",
+        )
+    else:
+        bash_env = _write_mv_no_effect_success(
+            case_root / "primary-persistent-restore-fault.bash",
+            marker=injected,
+            condition=condition,
+        )
+
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+    )
+
+    assert result.returncode == expected_status, result.stderr + result.stdout
+    assert injected.is_file()
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
+    assert not (evidence / "install-mutation-state.json").exists()
+    assert not list(release.parent.glob(f".{release.name}.closed-*"))
+
+
+def test_exit_recovery_persistent_detach_rc0_without_effect_preserves_data(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "recovery-persistent-detach-no-effect"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, _, _, _, _ = prepared
+    persistent_before = _snapshot_tree(release / "agent" / "data")
+    journal = evidence / "install-mutation-state.json"
+    injected = case_root / "recovery-persistent-detach-no-effect-used"
+    bash_env = case_root / "recovery-persistent-detach-no-effect.bash"
+    bash_env.write_text(
+        "mv() {\n"
+        "  local source destination\n"
+        "  if [ \"${1:-}\" = -- ]; then source=${2:-}; destination=${3:-}; "
+        "else source=${1:-}; destination=${2:-}; fi\n"
+        f"  if [ \"$source\" = '{_bash_path(release / 'agent' / 'data')}' ] "
+        f"&& [ \"$destination\" = '{_bash_path(persistent)}' ] "
+        f"&& [ -f '{_bash_path(journal)}' ] "
+        "&& grep -Fq '\"stage\": \"recovery-detach-persistent-armed\"' "
+        f"'{_bash_path(journal)}' && [ ! -f '{_bash_path(injected)}' ]; then\n"
+        f"    : > '{_bash_path(injected)}'\n"
+        "    return 0\n"
+        "  fi\n"
+        "  /usr/bin/mv \"$@\"\n"
+        "}\n",
+        encoding="ascii",
+    )
+
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={
+            "BASH_ENV": _bash_path(bash_env),
+            "VL360_INSTALL_FAIL_AFTER": "restore-bind-agent-data",
+        },
+    )
+
+    assert result.returncode == 73, result.stderr + result.stdout
+    assert injected.is_file()
+    assert _snapshot_tree(release / "agent" / "data") == persistent_before
+    assert _snapshot_tree(persistent) == {}
+    assert json.loads(journal.read_text(encoding="utf-8"))["stage"] == (
+        "recovery-detach-persistent-armed"
+    )
+    assert len(list(release.parent.glob(f".{release.name}.closed-old.*"))) == 1
+
+
+def test_recovery_persistent_restore_fsyncs_rename_before_next_journal(
+    tmp_path: Path,
+):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    helper = source[
+        source.index("restore_local_persistent_for_recovery()") : source.index(
+            "verify_recovered_persistent_state()"
+        )
+    ]
+    release = tmp_path / "release"
+    persistent = tmp_path / "persistent"
+    (release / "agent").mkdir(parents=True)
+    persistent.mkdir()
+    (persistent / "app.db").write_text("data\n", encoding="ascii")
+    persistent_before = _snapshot_tree(persistent)
+    log = tmp_path / "restore.log"
+    script = "\n".join(
+        (
+            "set -u",
+            "LOCAL_REHEARSAL=true",
+            f"RELEASE_ROOT={shlex.quote(_bash_path(release))}",
+            f"PERSISTENT_AGENT_DATA_ROOT={shlex.quote(_bash_path(persistent))}",
+            "PERSISTENT_ATTACHED_TO_RELEASE=false",
+            "PERSISTENT_DETACHED=true",
+            "PERSISTENT_MOUNT_STATE_UNKNOWN=false",
+            "MUTATION_STAGE=none",
+            f"RECOVERY_LOG={shlex.quote(_bash_path(log))}",
+            "write_mutation_state() { MUTATION_STAGE=\"$1\"; printf 'journal:%s\\n' \"$1\" >> \"$RECOVERY_LOG\"; }",
+            "fsync_directories() { printf 'fsync:%s\\n' \"$*\" >> \"$RECOVERY_LOG\"; return 71; }",
+            helper,
+            "attach_persistent_to_release_for_recovery",
+            "printf '%s|%s|%s|%s\\n' \"$?\" \"$MUTATION_STAGE\" \"$PERSISTENT_ATTACHED_TO_RELEASE\" \"$PERSISTENT_DETACHED\"",
+        )
+    )
+    result = _run_bash_script(tmp_path / "restore-persistent.sh", script)
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert result.stdout.strip() == "71|recovery-restore-persistent-armed|true|false"
+    assert log.read_text(encoding="ascii").splitlines() == [
+        "journal:recovery-restore-persistent-armed",
+        f"fsync:{_bash_path(persistent.parent)} {_bash_path(release / 'agent')}",
+    ]
+    assert _snapshot_tree(release / "agent" / "data") == persistent_before
+    assert not persistent.exists()
+
+
+def test_retire_rename_side_effect_then_error_leaves_retryable_tree_authority(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "retire-rename-side-effect-error"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, _, hook_log, _ = prepared
+    persistent_before = _snapshot_tree(release / "agent" / "data")
+    injected = case_root / "retire-rename-failed"
+    bash_env = _write_mv_side_effect_fault(
+        case_root / "fail-retire-rename.bash",
+        marker=injected,
+        condition=(
+            f'"$(basename -- "$source")" == \'.{release.name}.closed-old.\'* '
+            f'&& "$(basename -- "$destination")" == \'.{release.name}.closed-retired.\'*'
+        ),
+        failure="return 63",
+    )
+
+    first = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+    )
+
+    assert first.returncode == 63, first.stderr + first.stdout
+    assert injected.is_file()
+    assert release.is_dir()
+    assert _snapshot_tree(release / "agent" / "data") == persistent_before
+    committed_release = _snapshot_tree(release)
+    assert "launch-release-manifest.json" in committed_release
+    assert "old-release-marker.txt" not in committed_release
+    assert _snapshot_tree(persistent) == {}
+    journal = evidence / "install-mutation-state.json"
+    assert json.loads(journal.read_text(encoding="utf-8"))["stage"] == (
+        "retire-old-root-armed"
+    )
+    retired_roots = list(release.parent.glob(f".{release.name}.closed-retired.*"))
+    assert len(retired_roots) == 1
+    expected_retired = {
+        name: raw
+        for name, raw in before_release.items()
+        if not name.startswith("agent/data/")
+    }
+    assert _snapshot_tree(retired_roots[0]) == expected_retired
+
+    retry = _invoke_installer(
+        closed_package, case_root, prepared, failed_hook="python"
+    )
+
+    assert retry.returncode == 19, retry.stderr + retry.stdout
+    _assert_python_dependency_hook_failed(evidence)
+    assert sum(
+        line.startswith("systemd-units|")
+        for line in hook_log.read_text(encoding="ascii").splitlines()
+    ) == 2
+    assert _snapshot_tree(release) == committed_release
+    assert _snapshot_tree(persistent) == {}
+    assert not journal.exists()
+    assert not list(release.parent.glob(f".{release.name}.closed-*"))
+
+
+def test_retire_rename_rc0_without_effect_fails_and_rolls_back_candidate(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "retire-root-rename-no-effect"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, _, _, _ = prepared
+    injected = case_root / "retire-root-rename-no-effect-used"
+    bash_env = _write_mv_no_effect_success(
+        case_root / "retire-root-rename-no-effect.bash",
+        marker=injected,
+        condition=(
+            f'"$(basename -- "$source")" == \'.{release.name}.closed-old.\'* '
+            f'&& "$(basename -- "$destination")" == \'.{release.name}.closed-retired.\'*'
+        ),
+    )
+
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+    )
+
+    assert result.returncode == 1, result.stderr + result.stdout
+    assert injected.is_file()
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == {}
+    assert not (evidence / "install-mutation-state.json").exists()
+    assert not list(release.parent.glob(f".{release.name}.closed-*"))
+
+
 def _interrupt_recovery_mutation(
     package,
     case_root: Path,
@@ -1023,23 +2783,43 @@ def _interrupt_recovery_mutation(
     interrupted = case_root / f"interrupted-{recovery_stage}"
     journal = evidence / "install-mutation-state.json"
     bash_env = case_root / f"kill-at-{recovery_stage}.bash"
-    bash_env.write_text(
-        f"{command}() {{\n"
-        f"  /usr/bin/{command} \"$@\"\n"
-        "  status=$?\n"
-        f"  if [ -f '{_bash_path(journal)}' ] "
-        f"&& grep -Fq '\"stage\": \"{recovery_stage}\"' '{_bash_path(journal)}'; then\n"
-        f"    : > '{_bash_path(interrupted)}'\n"
-        "    kill -9 \"$$\"\n"
-        "  fi\n"
-        "  return \"$status\"\n"
-        "}\n",
-        encoding="ascii",
-    )
+    if command == "rm":
+        rm_executor = case_root / f"kill-at-{recovery_stage}-rm"
+        rm_executor.write_text(
+            "#!/usr/bin/env bash\n"
+            "/usr/bin/rm \"$@\"\n"
+            "status=$?\n"
+            f"if [ -f '{_bash_path(journal)}' ] "
+            f"&& grep -Fq '\"stage\": \"{recovery_stage}\"' '{_bash_path(journal)}'; then\n"
+            f"  : > '{_bash_path(interrupted)}'\n"
+            "  kill -9 \"$PPID\"\n"
+            "  kill -9 \"$$\"\n"
+            "fi\n"
+            "exit \"$status\"\n",
+            encoding="ascii",
+        )
+        rm_executor.chmod(0o755)
+    else:
+        bash_env.write_text(
+            f"{command}() {{\n"
+            f"  /usr/bin/{command} \"$@\"\n"
+            "  status=$?\n"
+            f"  if [ -f '{_bash_path(journal)}' ] "
+            f"&& grep -Fq '\"stage\": \"{recovery_stage}\"' '{_bash_path(journal)}'; then\n"
+            f"    : > '{_bash_path(interrupted)}'\n"
+            "    kill -9 \"$$\"\n"
+            "  fi\n"
+            "  return \"$status\"\n"
+            "}\n",
+            encoding="ascii",
+        )
     env = os.environ.copy()
     env.update(values)
     env.pop("VL360_INSTALL_FAIL_AFTER", None)
-    env["BASH_ENV"] = _bash_path(bash_env)
+    if command == "rm":
+        env["VL360_LOCAL_RM_EXECUTOR"] = _bash_path(rm_executor.resolve())
+    else:
+        env["BASH_ENV"] = _bash_path(bash_env)
     result = subprocess.run(
         _installer_command(package, case_root, prepared),
         cwd=ROOT,
@@ -1051,6 +2831,53 @@ def _interrupt_recovery_mutation(
     assert result.returncode != 0, result.stderr + result.stdout
     assert interrupted.is_file()
     assert json.loads(journal.read_text(encoding="utf-8"))["stage"] == recovery_stage
+
+
+def test_stale_absent_staging_owner_is_fsynced_before_journal_clear(tmp_path: Path):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    start = source.index("  local stage_owner_valid=false")
+    cleanup = source[
+        start : source.index('  if [ "$committed_recovery" = true ]; then', start)
+    ]
+    staging = tmp_path / ".release.closed-stage.321"
+    log = tmp_path / "owner-absence.log"
+    script = "\n".join(
+        (
+            "set -u",
+            "entry_stage=recovery-remove-staging-owner-armed",
+            "committed_recovery=false",
+            "STALE_ATTEMPT_ID=" + "a" * 32,
+            "STALE_PID=321",
+            "STALE_CANDIDATE_RELEASE_ROOT_IDENTITY=1:2",
+            "STALE_CANDIDATE_RELEASE_TOPOLOGY_SHA256=" + "b" * 64,
+            "STALE_CANDIDATE_MANIFEST_SHA256=" + "c" * 64,
+            "CANDIDATE_RELEASE_TOPOLOGY_SNAPSHOT=/snapshot",
+            f"STALE_STAGING_ROOT={shlex.quote(_bash_path(staging))}",
+            "stale_stage_owner=\"$STALE_STAGING_ROOT.owner\"",
+            f"staging_delete_root={shlex.quote(_bash_path(tmp_path / ('.release.closed-staging-cleanup.' + 'a' * 32)))}",
+            f"staging_delete_owner={shlex.quote(_bash_path(tmp_path / ('.release.closed-staging-cleanup.' + 'a' * 32 + '.owner')))}",
+            "staging_delete_present=false",
+            "staging_delete_owner_present=false",
+            f"RECOVERY_LOG={shlex.quote(_bash_path(log))}",
+            "write_stale_mutation_state() { printf 'journal:%s\\n' \"$1\" >> \"$RECOVERY_LOG\"; }",
+            "fsync_directories() { printf 'fsync:%s\\n' \"$*\" >> \"$RECOVERY_LOG\"; return 0; }",
+            "cleanup_staging() {",
+            cleanup,
+            "}",
+            "cleanup_staging",
+            "printf '%s\\n' \"$?\"",
+        )
+    )
+    result = _run_bash_script(tmp_path / "stale-owner-absence-fsync.sh", script)
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert result.stdout.strip() == "0"
+    assert log.is_file()
+    assert log.read_text(encoding="ascii").splitlines() == [
+        f"fsync:{_bash_path(staging.parent)}"
+    ]
 
 
 @pytest.mark.parametrize(
@@ -1171,9 +2998,111 @@ def test_stale_recovery_retries_a_failed_journaled_mutation(
     assert retry.returncode == 0, retry.stderr + retry.stdout
     assert _snapshot_tree(release / "agent" / "data") == persistent_before
     assert _snapshot_tree(persistent) == {}
+    assert not journal.exists()
 
 
-@pytest.mark.skipif(os.name == "nt", reason="Windows supports local rehearsal only")
+@pytest.mark.parametrize(
+    ("fault", "expected_status", "expected_stage", "data_at_persistent"),
+    (
+        (
+            "rmdir-no-effect",
+            1,
+            "recovery-remove-empty-persistent-root-armed",
+            False,
+        ),
+        ("mv-no-effect", 1, "recovery-detach-persistent-armed", False),
+        ("mv-side-effect-error", 65, "recovery-detach-persistent-armed", True),
+    ),
+)
+def test_stale_local_detach_classifies_mutation_topology(
+    tmp_path: Path,
+    fault: str,
+    expected_status: int,
+    expected_stage: str,
+    data_at_persistent: bool,
+):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    start = source.index(
+        '        if stale_tree_state "$current_data"; then',
+        source.index('  if [ "$old_present" = true ]; then'),
+    )
+    block = source[
+        start : source.index(
+            '      else\n        tree_matches_snapshot "$STALE_PERSISTENT_ROOT"',
+            start,
+        )
+    ]
+    remove_helper = source[
+        source.index("remove_empty_directory_durably()") : source.index(
+            "inspect_stale_mount()"
+        )
+    ]
+    release = tmp_path / "release"
+    current_data = release / "agent" / "data"
+    persistent = tmp_path / "persistent"
+    current_data.mkdir(parents=True)
+    (current_data / "app.db").write_text("data\n", encoding="ascii")
+    persistent.mkdir()
+    log = tmp_path / "detach.log"
+    script = "\n".join(
+        (
+            "set -u",
+            f"FAULT={shlex.quote(fault)}",
+            f"current_data={shlex.quote(_bash_path(current_data))}",
+            f"STALE_PERSISTENT_ROOT={shlex.quote(_bash_path(persistent))}",
+            "SNAPSHOT_BEFORE=/snapshot",
+            "entry_stage=persistent-restored",
+            "STALE_STAGE=persistent-restored",
+            f"RECOVERY_LOG={shlex.quote(_bash_path(log))}",
+            "stale_tree_state() {",
+            "  [ ! -L \"$1\" ] || return 3",
+            "  [ -e \"$1\" ] || return 1",
+            "  [ -d \"$1\" ] || return 3",
+            "  [ -z \"$(find \"$1\" -mindepth 1 -print -quit)\" ] && return 2",
+            "  return 0",
+            "}",
+            "write_stale_mutation_state() { STALE_STAGE=\"$1\"; printf 'journal:%s\\n' \"$1\" >> \"$RECOVERY_LOG\"; }",
+            "fsync_directories() { printf 'fsync:%s\\n' \"$*\" >> \"$RECOVERY_LOG\"; }",
+            "rmdir() {",
+            "  if [ \"$FAULT\" = rmdir-no-effect ]; then printf 'rmdir-no-effect\\n' >> \"$RECOVERY_LOG\"; return 0; fi",
+            '  /usr/bin/rmdir "$@"',
+            "}",
+            "mv() {",
+            "  printf 'mv\\n' >> \"$RECOVERY_LOG\"",
+            "  case \"$FAULT\" in",
+            "    mv-no-effect) return 0 ;;",
+            '    mv-side-effect-error) /usr/bin/mv "$@"; return 65 ;;',
+            "  esac",
+            '  /usr/bin/mv "$@"',
+            "}",
+            remove_helper,
+            "run_detach() {",
+            block,
+            "}",
+            "run_detach",
+            "status=$?",
+            "if [ \"$status\" -eq 0 ]; then printf 'rm-release\\n' >> \"$RECOVERY_LOG\"; /usr/bin/rm -rf -- \"$(dirname -- \"$current_data\")/..\"; fi",
+            "printf '%s|%s\\n' \"$status\" \"$STALE_STAGE\"",
+        )
+    )
+
+    result = _run_bash_script(tmp_path / "stale-local-detach.sh", script)
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert result.stdout.strip() == f"{expected_status}|{expected_stage}"
+    lines = log.read_text(encoding="ascii").splitlines()
+    assert "rm-release" not in lines
+    assert current_data.is_dir() is (not data_at_persistent)
+    assert (persistent / "app.db").is_file() is data_at_persistent
+    if fault == "rmdir-no-effect":
+        assert "mv" not in lines
+
+
+@pytest.mark.skipif(
+    not sys.platform.startswith("linux"), reason="Linux live mount harness only"
+)
 def test_production_shaped_retry_reconciles_stale_journal_without_live_mutation(
     tmp_path: Path, closed_package
 ):
@@ -1209,8 +3138,8 @@ def test_production_shaped_retry_reconciles_stale_journal_without_live_mutation(
         "set -eu\n"
         f"printf '%s\\n' \"$1\" >> '{_bash_path(mount_log)}'\n"
         "[ \"$1\" = findmnt ] || exit 70\n"
-        f"source_path=$(cygpath -m '{_bash_path(persistent)}')\n"
-        "target_path=$(cygpath -m \"$4\")\n"
+        f"source_path='{_bash_path(persistent)}'\n"
+        "target_path=$4\n"
         "printf '{\"filesystems\":[{\"source\":\"%s\",\"target\":\"%s\",\"options\":\"rw,bind\"}]}\\n' "
         "\"$source_path\" \"$target_path\"\n",
         encoding="ascii",
@@ -1263,7 +3192,9 @@ def test_production_shaped_retry_reconciles_stale_journal_without_live_mutation(
 
 
 @pytest.mark.parametrize("invalid_evidence", ("wrong-source", "invalid-options"))
-@pytest.mark.skipif(os.name == "nt", reason="Windows supports local rehearsal only")
+@pytest.mark.skipif(
+    not sys.platform.startswith("linux"), reason="Linux live mount harness only"
+)
 def test_stale_recovery_preserves_authorities_when_findmnt_evidence_is_invalid(
     tmp_path: Path, closed_package, invalid_evidence: str
 ):
@@ -1304,8 +3235,8 @@ def test_stale_recovery_preserves_authorities_when_findmnt_evidence_is_invalid(
         "set -eu\n"
         f"printf '%s\\n' \"$1\" >> '{_bash_path(mount_log)}'\n"
         "[ \"$1\" = findmnt ] || exit 70\n"
-        f"source_path=$(cygpath -m '{_bash_path(observed_source)}')\n"
-        "target_path=$(cygpath -m \"$4\")\n"
+        f"source_path='{_bash_path(observed_source)}'\n"
+        "target_path=$4\n"
         f"printf '{{\"filesystems\":[{{\"source\":\"%s\",\"target\":\"%s\",\"options\":\"{observed_options}\"}}]}}\\n' "
         '"$source_path" "$target_path"\n',
         encoding="ascii",
@@ -1376,47 +3307,16 @@ def test_stale_recovery_refuses_different_retry_authorities(
     second_root = tmp_path / "stale-different-retry"
     first_prepared = _prepare_case(first_root, closed_package)
     second_prepared = _prepare_case(second_root, closed_package)
-    first_release, first_persistent, first_evidence, _, _, _, first_values = (
+    first_release, first_persistent, first_evidence, _, _, _, _ = (
         first_prepared
     )
     second_release, second_persistent, _, second_release_before, second_persistent_before, _, second_values = (
         second_prepared
     )
     first_bytes = _snapshot_tree(first_release / "agent" / "data")
-    detached = first_root / "detached"
-    bash_env = first_root / "kill-after-detach.bash"
-    bash_env.write_text(
-        "mv() {\n"
-        "  /usr/bin/mv \"$@\"\n"
-        "  status=$?\n"
-        f"  if [ \"$2\" = '{_bash_path(first_release / 'agent' / 'data')}' ] "
-        f"&& [ \"$3\" = '{_bash_path(first_persistent)}' ]; then\n"
-        f"    : > '{_bash_path(detached)}'\n"
-        "    kill -9 \"$$\"\n"
-        "  fi\n"
-        "  return \"$status\"\n"
-        "}\n",
-        encoding="ascii",
+    _interrupt_at_journal_stage(
+        closed_package, first_root, first_prepared, "persistent-detached"
     )
-    first_env = os.environ.copy()
-    first_env.update(first_values)
-    first_env["BASH_ENV"] = _bash_path(bash_env)
-    first = subprocess.Popen(
-        _installer_command(closed_package, first_root, first_prepared),
-        cwd=ROOT,
-        env=first_env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    try:
-        _wait_for_path(detached)
-        first_stdout, first_stderr = first.communicate(timeout=30)
-    finally:
-        if first.poll() is None:
-            first.kill()
-
-    assert first.returncode != 0, first_stderr + first_stdout
     journal = first_evidence / "install-mutation-state.json"
     journal_before = journal.read_bytes()
     snapshot_before = (first_evidence / "persistent-before.json").read_bytes()
@@ -1450,7 +3350,9 @@ def test_stale_recovery_refuses_different_retry_authorities(
     assert _snapshot_tree(second_persistent) == second_persistent_before
 
 
-@pytest.mark.skipif(os.name == "nt", reason="Windows supports local rehearsal only")
+@pytest.mark.skipif(
+    not sys.platform.startswith("linux"), reason="Linux live mount harness only"
+)
 def test_failed_recovery_umount_preserves_new_and_old_roots_and_persistent_bytes(
     tmp_path: Path, closed_package
 ):
@@ -1565,7 +3467,9 @@ def test_live_mode_rejects_injected_hook_overrides_before_any_mount_or_tree_muta
     assert _snapshot_tree(persistent) == before_persistent
 
 
-@pytest.mark.skipif(os.name == "nt", reason="Windows supports local rehearsal only")
+@pytest.mark.skipif(
+    not sys.platform.startswith("linux"), reason="Linux live mount harness only"
+)
 def test_primary_mount_failure_restores_old_root_then_verifies_recovery_mount(
     tmp_path: Path, closed_package
 ):
@@ -1591,7 +3495,9 @@ def test_primary_mount_failure_restores_old_root_then_verifies_recovery_mount(
     assert recovery["root_restored"] is True
 
 
-@pytest.mark.skipif(os.name == "nt", reason="Windows supports local rehearsal only")
+@pytest.mark.skipif(
+    not sys.platform.startswith("linux"), reason="Linux live mount harness only"
+)
 def test_recovery_rechecks_findmnt_and_bytes_after_post_remount_failure(
     tmp_path: Path, closed_package
 ):
@@ -1658,6 +3564,98 @@ def test_verifier_rejects_live_persistent_check_without_findmnt_evidence(
             persistent_agent_data_root=persistent,
             verify_persistent_agent_data_mount=True,
         )
+
+
+def test_verifier_cli_executes_every_requested_installed_authority(
+    tmp_path: Path, closed_package, monkeypatch, capsys
+):
+    module = _load_module("task5_verify_cli_authorities", VERIFY)
+    root = tmp_path / "installed"
+    root.mkdir()
+    with tarfile.open(closed_package.archive, "r:gz") as archive:
+        archive.extractall(root, filter="data")
+    (root / "agent" / "data").mkdir(parents=True)
+    persistent = tmp_path / "persistent"
+    persistent.mkdir()
+    systemd = tmp_path / "systemd"
+    systemd.mkdir()
+    environment = tmp_path / "external.env"
+    environment.write_text("SAFE=1\n", encoding="ascii")
+    calls: list[tuple[str, tuple[object, ...], dict[str, object]]] = []
+
+    def capture(name, result):
+        def inner(*args, **kwargs):
+            calls.append((name, args, kwargs))
+            return result
+
+        return inner
+
+    monkeypatch.setattr(
+        module,
+        "_verify_config_ingress_unit_digests",
+        capture("config", ("config/launch-indexing-policy.json",)),
+    )
+    monkeypatch.setattr(
+        module,
+        "_verify_systemd_unit_destination",
+        capture("systemd", ("ops/systemd/vl-agent.service",)),
+    )
+    monkeypatch.setattr(
+        module,
+        "_verify_environment_authority",
+        capture("environment", {"environment_authority_verified": True}),
+    )
+    monkeypatch.setattr(
+        module,
+        "_verify_persistent_agent_data_mount",
+        capture(
+            "persistent",
+            {
+                "persistent_agent_data_mount_verified": True,
+                "persistent_agent_data_mount_mode": "local-rehearsal",
+            },
+        ),
+    )
+
+    status = module.main(
+        [
+            "--installed-root",
+            str(root),
+            "--persistent-agent-data-root",
+            str(persistent),
+            "--verify-config-ingress-unit-digests",
+            "--verify-persistent-agent-data-mount",
+            "--local-rehearsal",
+            "--systemd-unit-root",
+            str(systemd),
+            "--verify-systemd-unit-destination",
+            "--environment-authority",
+            str(environment),
+            "--verify-environment-authority",
+            "--require-closed",
+        ]
+    )
+
+    assert status == 0, capsys.readouterr().err
+    assert [name for name, _, _ in calls] == [
+        "config",
+        "systemd",
+        "environment",
+        "persistent",
+        "systemd",
+        "environment",
+        "persistent",
+    ]
+    for index in (1, 4):
+        assert calls[index][1][1] == systemd
+    for index in (2, 5):
+        assert calls[index][1] == (root, environment)
+    for index in (3, 6):
+        assert calls[index][1][:2] == (root, persistent)
+        assert calls[index][2] == {
+            "local_rehearsal": True,
+            "findmnt_evidence": None,
+        }
 
 
 def test_findmnt_validation_requires_expected_source_target_and_rw_bind_options(
@@ -1777,14 +3775,33 @@ def test_installer_runs_injected_staged_dependency_and_unit_hooks_and_matches_un
 
     assert result.returncode == 0, result.stderr + result.stdout
     hook_lines = hook_log.read_text(encoding="ascii").splitlines()
-    assert [line.split("|", 1)[0] for line in hook_lines] == [
+    hook_entries = [line.split("|", 1) for line in hook_lines]
+    assert [entry[0] for entry in hook_entries] == [
         "python-dependencies",
         "nuxt-production-dependencies",
         "systemd-units",
     ]
-    assert all(".closed-stage." in line for line in hook_lines[:2])
     unit_destination = tmp_path / "success" / "runtime" / "systemd-units"
-    assert _bash_path(unit_destination) in hook_lines[2]
+    python_args = shlex.split(hook_entries[0][1])
+    stage_root = python_args[1]
+    assert Path(stage_root).name.startswith(".release.closed-stage.")
+    assert python_args == [
+        "--release-root",
+        stage_root,
+        "--requirements",
+        f"{stage_root}/requirements.txt",
+    ]
+    assert shlex.split(hook_entries[1][1]) == [
+        "--project-root",
+        f"{stage_root}/web-nuxt",
+        "--production-only",
+    ]
+    assert shlex.split(hook_entries[2][1]) == [
+        "--unit-root",
+        _bash_path(unit_destination),
+        "--manifest",
+        f"{_bash_path(release)}/launch-release-manifest.json",
+    ]
     checks = json.loads(
         (evidence / "dependency-unit-checks.json").read_text(encoding="utf-8")
     )
@@ -1811,6 +3828,1044 @@ def test_installer_runs_injected_staged_dependency_and_unit_hooks_and_matches_un
         destination = unit_destination / Path(relative).name
         assert destination.read_bytes() == raw
     assert _snapshot_tree(persistent) == {}
+
+
+def test_missing_agent_data_fails_closed_without_creating_live_topology(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "missing-agent-data"
+    prepared = _prepare_case(case_root, closed_package, fail_after="detach-agent-data")
+    release, persistent, evidence, _, before_persistent, _, _ = prepared
+    shutil.rmtree(release / "agent" / "data")
+    before_release = _snapshot_tree(release)
+
+    result = _invoke_installer(closed_package, case_root, prepared)
+
+    assert result.returncode == 2, result.stderr + result.stdout
+    assert "agent-data-required" in result.stderr
+    assert _snapshot_tree(release) == before_release
+    assert not (release / "agent" / "data").exists()
+    assert _snapshot_tree(persistent) == before_persistent
+    assert not (evidence / "install-mutation-state.json").exists()
+    assert not (evidence / "install-recovery.json").exists()
+    assert not list(release.parent.glob(f".{release.name}.closed-*"))
+
+
+def test_agent_data_ancestor_symlink_is_rejected_before_mutation(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "agent-ancestor-symlink"
+    prepared = _prepare_case(case_root, closed_package, fail_after="detach-agent-data")
+    release, persistent, evidence, _, before_persistent, _, _ = prepared
+    external_agent = case_root / "external-agent"
+    shutil.move(release / "agent", external_agent)
+    try:
+        (release / "agent").symlink_to(external_agent, target_is_directory=True)
+    except OSError as exc:
+        pytest.skip(f"directory symlinks unavailable: {exc}")
+    external_before = _snapshot_tree(external_agent)
+
+    result = _invoke_installer(closed_package, case_root, prepared)
+
+    assert result.returncode == 2, result.stderr + result.stdout
+    assert "agent-data-symlink-forbidden" in result.stderr
+    assert (release / "agent").is_symlink()
+    assert _snapshot_tree(external_agent) == external_before
+    assert _snapshot_tree(persistent) == before_persistent
+    assert not (evidence / "install-mutation-state.json").exists()
+    assert not (evidence / "install-recovery.json").exists()
+    assert not list(release.parent.glob(f".{release.name}.closed-*"))
+
+
+@pytest.mark.parametrize("leaf_kind", ("symlink", "file"))
+def test_agent_data_unsafe_leaf_is_rejected_before_mutation(
+    tmp_path: Path, closed_package, leaf_kind: str
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / f"agent-data-{leaf_kind}"
+    prepared = _prepare_case(case_root, closed_package, fail_after="detach-agent-data")
+    release, persistent, evidence, _, before_persistent, _, _ = prepared
+    data = release / "agent" / "data"
+    if leaf_kind == "symlink":
+        external = case_root / "external-data"
+        shutil.move(data, external)
+        try:
+            data.symlink_to(external, target_is_directory=True)
+        except OSError as exc:
+            pytest.skip(f"directory symlinks unavailable: {exc}")
+        leaf_before = _snapshot_topology(external)
+    else:
+        shutil.rmtree(data)
+        data.write_bytes(b"not-a-directory\n")
+        leaf_before = data.read_bytes()
+
+    result = _invoke_installer(closed_package, case_root, prepared)
+
+    assert result.returncode == 2, result.stderr + result.stdout
+    assert "agent-data-symlink-forbidden" in result.stderr
+    if leaf_kind == "symlink":
+        assert data.is_symlink()
+        assert _snapshot_topology(external) == leaf_before
+    else:
+        assert data.is_file()
+        assert data.read_bytes() == leaf_before
+    assert _snapshot_tree(persistent) == before_persistent
+    assert not (evidence / "install-mutation-state.json").exists()
+    assert not (evidence / "install-recovery.json").exists()
+
+
+def test_valid_prejournal_staging_orphan_is_swept_before_new_install(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "staging-orphan-sweep"
+    prepared = _prepare_case(case_root, closed_package)
+    release, _, _, _, _, _, _ = prepared
+    orphan = release.parent / f".{release.name}.closed-stage.777"
+    orphan.mkdir()
+    (orphan / "partial.txt").write_text("partial\n", encoding="ascii")
+    owner = Path(f"{orphan}.owner")
+    _write_private_staging_owner(owner, orphan)
+
+    result = _invoke_installer(closed_package, case_root, prepared)
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert not orphan.exists()
+    assert not owner.exists()
+
+
+def test_valid_owner_only_prejournal_orphan_is_swept_before_new_install(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "owner-only-staging-orphan-sweep"
+    prepared = _prepare_case(case_root, closed_package)
+    release, _, _, _, _, _, _ = prepared
+    orphan = release.parent / f".{release.name}.closed-stage.777"
+    orphan.mkdir()
+    owner = Path(f"{orphan}.owner")
+    _write_private_staging_owner(owner, orphan)
+    orphan.rmdir()
+    unrelated = release.parent / ".unrelated-owner"
+    unrelated.write_bytes(b"preserve\n")
+
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        failed_hook="python",
+    )
+
+    assert result.returncode == 19, result.stderr + result.stdout
+    assert not owner.exists()
+    assert unrelated.read_bytes() == b"preserve\n"
+
+
+def test_prejournal_staging_sweep_rejects_forged_attempt_id_owner(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "forged-staging-owner"
+    prepared = _prepare_case(case_root, closed_package)
+    release, _, _, _, _, _, _ = prepared
+    forged = release.parent / f".{release.name}.closed-stage.777"
+    forged.mkdir()
+    foreign = forged / "foreign.txt"
+    foreign.write_text("must survive\n", encoding="ascii")
+    owner = Path(f"{forged}.owner")
+    owner.write_bytes(b"a" * 32 + b"\n")
+
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        failed_hook="python",
+    )
+
+    assert result.returncode == 2, result.stderr + result.stdout
+    assert "stale-staging-cleanup-required" in result.stderr
+    assert foreign.read_text(encoding="ascii") == "must survive\n"
+    assert owner.is_file()
+
+
+@pytest.mark.parametrize(
+    "artifact_kind",
+    ("ownerless", "malformed-owner", "symlink-stage", "leading-zero-name"),
+)
+def test_prejournal_staging_sweep_rejects_unsafe_artifacts(
+    tmp_path: Path, artifact_kind: str
+):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    if "sweep_stale_staging_attempts()" not in source:
+        pytest.fail("pre-journal staging sweep is not implemented")
+    sweep = source[
+        source.index("sweep_stale_staging_attempts()") : source.index(
+            "inspect_stale_mount()"
+        )
+    ]
+    release_parent = tmp_path / "release-parent"
+    release_parent.mkdir()
+    suffix = "007" if artifact_kind == "leading-zero-name" else "777"
+    stage = release_parent / f".release.closed-stage.{suffix}"
+    owner = Path(f"{stage}.owner")
+    if artifact_kind == "symlink-stage":
+        target = tmp_path / "outside-stage"
+        target.mkdir()
+        try:
+            stage.symlink_to(target, target_is_directory=True)
+        except OSError as exc:
+            pytest.skip(f"directory symlinks unavailable: {exc}")
+        owner.write_text("a" * 32 + "\n", encoding="ascii")
+    else:
+        stage.mkdir()
+        if artifact_kind == "malformed-owner" or artifact_kind == "leading-zero-name":
+            owner.write_text("not-an-attempt-id\n", encoding="ascii")
+    log = tmp_path / "sweep.log"
+    journal = tmp_path / "install-mutation-state.json"
+    script = "\n".join(
+        (
+            "set +e",
+            f"PYTHON_EXECUTOR={shlex.quote(_bash_path(Path(sys.executable).resolve()))}",
+            'invoke_python() { "$PYTHON_EXECUTOR" "$@"; }',
+            f"RELEASE_PARENT={shlex.quote(_bash_path(release_parent))}",
+            "RELEASE_NAME=release",
+            f"MUTATION_STATE={shlex.quote(_bash_path(journal))}",
+            f"SWEEP_LOG={shlex.quote(_bash_path(log))}",
+            "remove_private_directory() { printf 'stage\\n' >> \"$SWEEP_LOG\"; /usr/bin/rm -rf -- \"$1\"; }",
+            "remove_file_durably() { printf 'owner\\n' >> \"$SWEEP_LOG\"; /usr/bin/rm -f -- \"$1\"; }",
+            sweep,
+            "sweep_stale_staging_attempts",
+            "printf '%s\\n' \"$?\"",
+        )
+    )
+
+    result = _run_bash_script(tmp_path / "unsafe-staging-sweep.sh", script)
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert result.stdout.strip() == "1"
+    assert stage.exists() or stage.is_symlink()
+    assert not log.exists()
+
+
+def test_recursive_staging_fsync_uses_read_only_files_and_walks_every_directory():
+    source = INSTALL.read_text(encoding="utf-8")
+    helper = source[
+        source.index("fsync_tree_durably()") : source.index("MUTATION_STARTED=false")
+    ]
+    assert "flags = os.O_RDONLY" in helper
+    assert "flags = os.O_RDWR" not in helper
+    assert "with os.scandir(directory) as entries" in helper
+    assert "fsync_file(entry.path)" in helper
+    assert "walk(child)" in helper
+    assert "fsync_directory(directory)" in helper
+
+
+def test_recursive_staging_fsync_accepts_read_only_regular_files(tmp_path: Path):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    helper = source[
+        source.index("fsync_tree_durably()") : source.index("MUTATION_STARTED=false")
+    ]
+    root = tmp_path / "staging"
+    child = root / "child"
+    child.mkdir(parents=True)
+    read_only = child / "tracked.txt"
+    read_only.write_text("tracked\n", encoding="ascii")
+    read_only.chmod(0o444)
+    script = "\n".join(
+        (
+            "set -e",
+            f"PYTHON_EXECUTOR={shlex.quote(_bash_path(Path(sys.executable).resolve()))}",
+            'invoke_python() { "$PYTHON_EXECUTOR" "$@"; }',
+            helper,
+            f"fsync_tree_durably {shlex.quote(_bash_path(root))}",
+        )
+    )
+
+    result = _run_bash_script(tmp_path / "read-only-fsync.sh", script)
+
+    assert result.returncode == 0, result.stderr + result.stdout
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux fsync tracing only")
+def test_recursive_staging_fsync_traces_every_file_directory_and_root(tmp_path: Path):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    helper = source[
+        source.index("fsync_tree_durably()") : source.index("MUTATION_STARTED=false")
+    ]
+    root = tmp_path / "staging"
+    nested = root / "nested" / "empty"
+    nested.mkdir(parents=True)
+    (root / "sibling.txt").write_bytes(b"sibling\n")
+    read_only = nested.parent / "read-only.txt"
+    read_only.write_bytes(b"read-only\n")
+    read_only.chmod(0o444)
+    deep = nested.parent / "deep.txt"
+    deep.write_bytes(b"deep\n")
+    log = tmp_path / "fsync.log"
+    instrument = (
+        "import os\n"
+        "_real_fsync = os.fsync\n"
+        "def _traced_fsync(fd):\n"
+        "    with open(os.environ['FSYNC_LOG'], 'a', encoding='utf-8') as stream:\n"
+        "        stream.write(os.readlink(f'/proc/self/fd/{fd}') + '\\n')\n"
+        "    return _real_fsync(fd)\n"
+        "os.fsync = _traced_fsync\n"
+    )
+    helper = helper.replace("root = Path(sys.argv[1])", instrument + "root = Path(sys.argv[1])")
+    script = "\n".join(
+        (
+            "set -e",
+            f"PYTHON_EXECUTOR={shlex.quote(_bash_path(Path(sys.executable).resolve()))}",
+            f"FSYNC_LOG={shlex.quote(_bash_path(log))}",
+            "export FSYNC_LOG",
+            'invoke_python() { "$PYTHON_EXECUTOR" "$@"; }',
+            helper,
+            f"fsync_tree_durably {shlex.quote(_bash_path(root))}",
+        )
+    )
+
+    result = _run_bash_script(tmp_path / "trace-fsync.sh", script)
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    observed = [Path(line) for line in log.read_text(encoding="ascii").splitlines()]
+    expected = {
+        root / "sibling.txt",
+        root / "nested" / "read-only.txt",
+        root / "nested" / "deep.txt",
+        root,
+        root / "nested",
+        root / "nested" / "empty",
+    }
+    assert set(observed) == expected
+    assert observed[-1] == root
+    assert observed.index(root / "nested" / "empty") < observed.index(root / "nested")
+    assert observed.index(root / "nested") < observed.index(root)
+
+
+def test_owner_writer_fsyncs_file_replaces_atomically_and_fsyncs_parent():
+    source = INSTALL.read_text(encoding="utf-8")
+    writer = source[
+        source.index("write_durable_text_file()") : source.index(
+            "inspect_stale_mount()"
+        )
+    ]
+    assert "tempfile.mkstemp" in writer
+    assert "stream.flush()" in writer
+    assert "os.fsync(stream.fileno())" in writer
+    assert "os.replace(temporary, target)" in writer
+    assert "os.fsync(directory)" in writer
+
+
+def test_authority_result_writer_fsyncs_file_replaces_and_fsyncs_parent():
+    source = INSTALL.read_text(encoding="utf-8")
+    recorder = source[
+        source.index("record_authority_result()") : source.index(
+            "record_systemd_unit_cleanup()"
+        )
+    ]
+    assert "tempfile.mkstemp" in recorder
+    assert "stream.flush()" in recorder
+    assert "os.fsync(stream.fileno())" in recorder
+    assert "os.replace(temporary, path)" in recorder
+    assert "os.fsync(directory)" in recorder
+    assert "temporary.unlink(missing_ok=True)" in recorder
+
+
+def test_live_mount_authority_harness_is_linux_only_and_uses_posix_paths():
+    source = Path(__file__).read_text(encoding="utf-8")
+    live_tests = (
+        "test_production_shaped_retry_reconciles_stale_journal_without_live_mutation",
+        "test_stale_recovery_preserves_authorities_when_findmnt_evidence_is_invalid",
+        "test_failed_recovery_umount_preserves_new_and_old_roots_and_persistent_bytes",
+        "test_primary_mount_failure_restores_old_root_then_verifies_recovery_mount",
+        "test_recovery_rechecks_findmnt_and_bytes_after_post_remount_failure",
+        "test_live_mount_authority_is_pinned_before_dependency_hook_replaces_source",
+    )
+    for name in live_tests:
+        start = source.index(f"def {name}(")
+        preceding = source[max(0, start - 180) : start]
+        assert "@pytest.mark.skipif(" in preceding
+        assert 'not sys.platform.startswith("linux")' in preceding
+    authority_region = source[
+        source.index("def _run_live_mount_failure_case(") : source.index(
+            "def test_stale_recovery_refuses_different_retry_authorities("
+        )
+    ]
+    assert "source_path=$(cygpath -m" not in authority_region
+    assert "target_path=$(cygpath -m" not in authority_region
+
+
+def test_recovery_evidence_writer_uses_durable_atomic_json():
+    source = INSTALL.read_text(encoding="utf-8")
+    writer = source[
+        source.index("write_recovery_evidence()") : source.index(
+            "materialize_environment_authority()"
+        )
+    ]
+    assert 'write_durable_atomic_json "$EVIDENCE_DIR/install-recovery.json"' in writer
+    assert "Path(sys.argv[1]).write_text" not in writer
+
+
+def test_systemd_cleanup_writer_uses_durable_atomic_json():
+    source = INSTALL.read_text(encoding="utf-8")
+    writer = source[
+        source.index("record_systemd_unit_cleanup()") : source.index(
+            "run_authority_hook()"
+        )
+    ]
+    assert 'write_durable_atomic_json "$EVIDENCE_DIR/systemd-unit-cleanup.json"' in writer
+    assert "Path(sys.argv[1]).write_text" not in writer
+
+
+@pytest.mark.parametrize(
+    ("cleanup_status", "recorder_status", "expected_status"),
+    ((61, 71, 61), (0, 71, 71), (61, 0, 61), (0, 0, 0)),
+)
+def test_systemd_cleanup_status_precedence(
+    tmp_path: Path, cleanup_status: int, recorder_status: int, expected_status: int
+):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    finalizer = source[
+        source.index("finalize_systemd_unit_cleanup()") : source.index(
+            "run_authority_hook()"
+        )
+    ]
+    script = "\n".join(
+        (
+            "set +e",
+            f"CLEANUP_STATUS={cleanup_status}",
+            f"RECORDER_STATUS={recorder_status}",
+            "remove_systemd_unit_attempt() { return \"$CLEANUP_STATUS\"; }",
+            "record_systemd_unit_cleanup() { return \"$RECORDER_STATUS\"; }",
+            finalizer,
+            "finalize_systemd_unit_cleanup",
+            "printf '%s\\n' \"$?\"",
+        )
+    )
+    result = _run_bash_script(tmp_path / "systemd-cleanup-precedence.sh", script)
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert result.stdout.strip() == str(expected_status)
+
+
+@pytest.mark.parametrize("fault", ("file-fsync", "replace", "parent-fsync"))
+def test_recovery_evidence_durable_writer_faults_propagate(
+    tmp_path: Path, fault: str
+):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    if fault == "parent-fsync" and not sys.platform.startswith("linux"):
+        pytest.skip("POSIX directory fsync only")
+    source = INSTALL.read_text(encoding="utf-8")
+    durable_writer = source[
+        source.index("write_durable_atomic_json()") : source.index(
+            "write_mutation_state()"
+        )
+    ]
+    recovery_writer = source[
+        source.index("write_recovery_evidence()") : source.index(
+            "materialize_environment_authority()"
+        )
+    ]
+    evidence = tmp_path / "evidence"
+    evidence.mkdir()
+    python_path = tmp_path / "python-path"
+    python_path.mkdir()
+    if fault == "replace":
+        injection = (
+            "def _failing_replace(source, target):\n"
+            "    raise OSError('replace failed')\n"
+            "os.replace = _failing_replace\n"
+        )
+    else:
+        directory_test = "stat.S_ISDIR(os.fstat(fd).st_mode)"
+        should_fail = directory_test if fault == "parent-fsync" else f"not {directory_test}"
+        injection = (
+            "_real_fsync = os.fsync\n"
+            "def _failing_fsync(fd):\n"
+            f"    if {should_fail}:\n"
+            f"        raise OSError('{fault} failed')\n"
+            "    return _real_fsync(fd)\n"
+            "os.fsync = _failing_fsync\n"
+        )
+    (python_path / "sitecustomize.py").write_text(
+        "import os\nimport stat\n" + injection,
+        encoding="ascii",
+    )
+    script = "\n".join(
+        (
+            "set +e",
+            f"PYTHON_EXECUTOR={shlex.quote(_bash_path(Path(sys.executable).resolve()))}",
+            f"PYTHONPATH={shlex.quote(_bash_path(python_path))}",
+            "export PYTHONPATH",
+            'invoke_python() { "$PYTHON_EXECUTOR" "$@"; }',
+            f"EVIDENCE_DIR={shlex.quote(_bash_path(evidence))}",
+            "INSTALL_FAILURE_POINT=swap-release-root",
+            durable_writer,
+            recovery_writer,
+            "write_recovery_evidence rolled-back true true true",
+            "printf '%s\\n' \"$?\"",
+        )
+    )
+
+    result = _run_bash_script(tmp_path / f"recovery-evidence-{fault}.sh", script)
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert result.stdout.strip() != "0"
+
+
+def test_recovery_evidence_is_durable_before_rollback_journal_clear():
+    source = INSTALL.read_text(encoding="utf-8")
+    recovery = source[
+        source.index("install_recovery()") : source.index(
+            "trap install_recovery EXIT"
+        )
+    ]
+    journal = recovery.index("write_mutation_state rollback-restored")
+    evidence = recovery.index("write_recovery_evidence rolled-back true true true")
+    clear = recovery.index("clear_mutation_state", journal)
+    assert journal < evidence < clear
+    assert "write_recovery_evidence rolled-back true true true || true" not in recovery
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux fsync failure only")
+def test_authority_result_parent_fsync_failure_propagates(tmp_path: Path):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    recorder = source[
+        source.index("record_authority_result()") : source.index(
+            "record_systemd_unit_cleanup()"
+        )
+    ]
+    evidence = tmp_path / "evidence"
+    evidence.mkdir()
+    python_path = tmp_path / "python-path"
+    python_path.mkdir()
+    (python_path / "sitecustomize.py").write_text(
+        "import os\n"
+        "import stat\n"
+        "_real_fsync = os.fsync\n"
+        "def _failing_directory_fsync(fd):\n"
+        "    if stat.S_ISDIR(os.fstat(fd).st_mode):\n"
+        "        raise OSError('parent fsync failed')\n"
+        "    return _real_fsync(fd)\n"
+        "os.fsync = _failing_directory_fsync\n",
+        encoding="ascii",
+    )
+    script = "\n".join(
+        (
+            "set +e",
+            f"PYTHON_EXECUTOR={shlex.quote(_bash_path(Path(sys.executable).resolve()))}",
+            f"PYTHONPATH={shlex.quote(_bash_path(python_path))}",
+            "export PYTHONPATH",
+            'invoke_python() { "$PYTHON_EXECUTOR" "$@"; }',
+            f"EVIDENCE_DIR={shlex.quote(_bash_path(evidence))}",
+            recorder,
+            "record_authority_result python-dependencies passed 0",
+            "printf '%s\\n' \"$?\"",
+        )
+    )
+
+    result = _run_bash_script(tmp_path / "record-parent-fsync-failure.sh", script)
+
+    assert result.returncode == 0
+    assert result.stdout.strip() != "0"
+    payload = json.loads(
+        (evidence / "dependency-unit-checks.json").read_text(encoding="utf-8")
+    )
+    assert payload["results"] == {"python-dependencies": "passed"}
+    assert payload["exit_codes"] == {"python-dependencies": 0}
+
+
+def test_staged_tree_is_fsynced_after_hooks_before_activation(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "staged-fsync-order"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, _, _, _, _, _ = prepared
+    order_log = case_root / "order.log"
+    runtime = case_root / "runtime"
+    (runtime / "python-hook.sh").write_text(
+        "#!/usr/bin/env bash\n"
+        "set -eu\n"
+        "release_root=\n"
+        "while (($# > 0)); do\n"
+        "  case \"$1\" in\n"
+        "    --release-root) release_root=$2; shift 2 ;;\n"
+        "    *) shift ;;\n"
+        "  esac\n"
+        "done\n"
+        "[ -n \"$release_root\" ]\n"
+        "touch -- \"$release_root/requirements.txt\"\n"
+        f"printf 'python-hook-mutation\\n' >> '{_bash_path(order_log)}'\n",
+        encoding="ascii",
+    )
+    (runtime / "nuxt-hook.sh").write_text(
+        "#!/usr/bin/env bash\n"
+        "set -eu\n"
+        "project_root=\n"
+        "while (($# > 0)); do\n"
+        "  case \"$1\" in\n"
+        "    --project-root) project_root=$2; shift 2 ;;\n"
+        "    *) shift ;;\n"
+        "  esac\n"
+        "done\n"
+        "[ -n \"$project_root\" ]\n"
+        "touch -- \"$project_root/package.json\"\n"
+        f"printf 'nuxt-hook-mutation\\n' >> '{_bash_path(order_log)}'\n",
+        encoding="ascii",
+    )
+    for hook_name in ("python-hook.sh", "nuxt-hook.sh"):
+        (runtime / hook_name).chmod(0o755)
+    python_executor = _write_local_python_executor(
+        case_root / "staged-fsync-python",
+        "if [ \"${1:-}\" = - ] && { "
+        "{ [[ \"${2:-}\" == *.closed-stage.* ]] "
+        "&& [ -f \"${2:-}/launch-release-manifest.json\" ]; } "
+        "|| { [[ \"${2:-}\" == *.closed-stage.*/launch-release-manifest.json ]] "
+        "&& [ -f \"${2:-}\" ]; }; }; then\n"
+        "  inline_script=\"$(mktemp)\"\n"
+        "  cat > \"$inline_script\"\n"
+        "  if [[ \"${2:-}\" == */launch-release-manifest.json ]]; then\n"
+        "    event=manifest-digest\n"
+        "  elif grep -Fq 'def walk(directory):' \"$inline_script\"; then\n"
+        "    event=recursive-staging-fsync\n"
+        "  elif grep -Fq 'for raw in sys.argv[1:]:' \"$inline_script\"; then\n"
+        "    event=environment-materialized\n"
+        "  elif grep -Fq 'def visit(path, relative):' \"$inline_script\"; then\n"
+        "    event=candidate-topology-read\n"
+        "  elif grep -Fq 'observed.st_dev' \"$inline_script\"; then\n"
+        "    event=candidate-root-identity-read\n"
+        "  else\n"
+        "    event=unexpected-staging-python\n"
+        "  fi\n"
+        f"  printf '%s\\n' \"$event\" >> '{_bash_path(order_log)}'\n"
+        '  "$REAL_PYTHON" "$inline_script" "${@:2}"\n'
+        "  status=$?\n"
+        "  rm -f -- \"$inline_script\"\n"
+        "  exit \"$status\"\n"
+        "fi\n"
+        'exec "$REAL_PYTHON" "$@"\n',
+    )
+    bash_env = case_root / "staged-fsync-order.bash"
+    bash_env.write_text(
+        "mv() {\n"
+        "  local source destination\n"
+        "  if [ \"${1:-}\" = -- ]; then\n"
+        "    source=${2:-}\n"
+        "    destination=${3:-}\n"
+        "  else\n"
+        "    source=${1:-}\n"
+        "    destination=${2:-}\n"
+        "  fi\n"
+        f"  if [ \"$source\" = '{_bash_path(release / 'agent' / 'data')}' ] "
+        f"&& [ \"$destination\" = '{_bash_path(persistent)}' ]; then\n"
+        f"    printf 'rename-persistent-detach\\n' >> '{_bash_path(order_log)}'\n"
+        f"  elif [ \"$source\" = '{_bash_path(release)}' ] "
+        "&& [[ \"$destination\" == *.closed-old.* ]]; then\n"
+        f"    printf 'rename-live-release\\n' >> '{_bash_path(order_log)}'\n"
+        "  elif [[ \"$source\" == *.closed-stage.* ]] "
+        f"&& [ \"$destination\" = '{_bash_path(release)}' ]; then\n"
+        f"    printf 'activate-staging\\n' >> '{_bash_path(order_log)}'\n"
+        "  fi\n"
+        '  /usr/bin/mv "$@"\n'
+        "}\n",
+        encoding="ascii",
+    )
+
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={
+            "BASH_ENV": _bash_path(bash_env),
+            "VL360_LOCAL_PYTHON_EXECUTOR": _bash_path(python_executor),
+        },
+    )
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    events = order_log.read_text(encoding="ascii").splitlines()
+    assert "unexpected-staging-python" not in events
+    manifest_digests = [
+        index for index, event in enumerate(events) if event == "manifest-digest"
+    ]
+    assert len(manifest_digests) == 2
+    recursive_fsyncs = [
+        index
+        for index, event in enumerate(events)
+        if event == "recursive-staging-fsync"
+    ]
+    first_live_rename = min(
+        events.index(event)
+        for event in (
+            "rename-persistent-detach",
+            "rename-live-release",
+            "activate-staging",
+        )
+    )
+    required_fsync = max(index for index in recursive_fsyncs if index < first_live_rename)
+    for mutation in (
+        "python-hook-mutation",
+        "nuxt-hook-mutation",
+    ):
+        mutation_index = events.index(mutation)
+        assert manifest_digests[0] < mutation_index < manifest_digests[1]
+        assert mutation_index < required_fsync < first_live_rename
+    assert manifest_digests[1] < events.index("environment-materialized")
+    assert events.index("environment-materialized") < required_fsync
+    assert events.index("candidate-topology-read") < required_fsync
+    assert events.index("candidate-root-identity-read") < required_fsync
+    assert required_fsync < events.index("activate-staging")
+
+
+def test_staged_tree_fsync_failure_stops_before_live_mutation(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "staged-fsync-failure"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, before_persistent, _, _ = prepared
+    failed = case_root / "staged-fsync-failed"
+    python_executor = _write_local_python_executor(
+        case_root / "staged-fsync-failure-python",
+        "if [ \"${1:-}\" = - ] && [[ \"${2:-}\" == *.closed-stage.* ]] "
+        "&& [ -f \"${2:-}/launch-release-manifest.json\" ]; then\n"
+        '  "$REAL_PYTHON" "$@"\n'
+        f"  : > '{_bash_path(failed)}'\n"
+        "  exit 71\n"
+        "fi\n"
+        'exec "$REAL_PYTHON" "$@"\n',
+    )
+
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={"VL360_LOCAL_PYTHON_EXECUTOR": _bash_path(python_executor)},
+    )
+
+    assert result.returncode == 71, result.stderr + result.stdout
+    assert failed.is_file()
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
+    assert not (evidence / "install-mutation-state.json").exists()
+    assert not (evidence / "install-recovery.json").exists()
+    assert not list(release.parent.glob(f".{release.name}.closed-*"))
+
+
+@pytest.mark.parametrize(
+    ("failure_target", "expected_status"),
+    (("owner", 71), ("snapshot", 72)),
+)
+def test_recovery_input_fsync_failure_prevents_first_journal(
+    tmp_path: Path,
+    closed_package,
+    failure_target: str,
+    expected_status: int,
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / f"recovery-input-{failure_target}"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, before_persistent, _, _ = prepared
+    failed = case_root / f"{failure_target}-fsync-failed"
+    if failure_target == "owner":
+        condition = '[[ "${2:-}" == *.closed-stage.*.owner ]]'
+        status = 71
+    else:
+        condition = f'[ "${{3:-}}" = \'{_bash_path(evidence / "persistent-before.json")}\' ]'
+        status = 72
+    python_executor = _write_local_python_executor(
+        case_root / f"{failure_target}-fsync-python",
+        f"if [ \"${{1:-}}\" = - ] && [ ! -f '{_bash_path(failed)}' ] "
+        f"&& {condition}; then\n"
+        '  "$REAL_PYTHON" "$@"\n'
+        f"  : > '{_bash_path(failed)}'\n"
+        f"  exit {status}\n"
+        "fi\n"
+        'exec "$REAL_PYTHON" "$@"\n',
+    )
+
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={"VL360_LOCAL_PYTHON_EXECUTOR": _bash_path(python_executor)},
+    )
+
+    assert result.returncode == expected_status, result.stderr + result.stdout
+    assert failed.is_file()
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
+    assert not (evidence / "install-mutation-state.json").exists()
+    assert not (evidence / "install-recovery.json").exists()
+    assert not list(release.parent.glob(f".{release.name}.closed-*"))
+
+
+def test_staging_owner_and_persistent_snapshot_are_durable_before_first_journal():
+    source = INSTALL.read_text(encoding="utf-8")
+    snapshot = source[
+        source.index("snapshot_tree()") : source.index("MUTATION_STARTED=false")
+    ]
+    assert "tempfile.mkstemp" in snapshot
+    assert "stream.flush()" in snapshot
+    assert "os.fsync(stream.fileno())" in snapshot
+    assert "os.replace(temporary, target)" in snapshot
+    assert "fsync_directory(target.parent)" in snapshot
+    owner_write = source.index(
+        'write_private_staging_owner_marker "$STAGING_OWNER_MARKER"'
+    )
+    snapshot_write = source.index('snapshot_tree "$CURRENT_DATA" "$SNAPSHOT_BEFORE"')
+    first_journal = source.index("write_mutation_state detach-agent-data-armed")
+    assert owner_write < snapshot_write < first_journal
+
+
+def test_dependency_hook_tracked_byte_tamper_is_rejected_before_mutation(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "hook-tracked-byte-tamper"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, before_persistent, hook_log, _ = prepared
+    marker = case_root / "tracked-byte-tampered"
+    nuxt_hook = case_root / "runtime" / "nuxt-hook.sh"
+    nuxt_hook.write_text(
+        "#!/usr/bin/env bash\n"
+        "set -eu\n"
+        "project_root=\n"
+        "while (($# > 0)); do\n"
+        "  case \"$1\" in\n"
+        "    --project-root) project_root=$2; shift 2 ;;\n"
+        "    *) shift ;;\n"
+        "  esac\n"
+        "done\n"
+        "[ -n \"$project_root\" ]\n"
+        "stage_root=$(dirname -- \"$project_root\")\n"
+        "printf '%s|%s\\n' 'nuxt-production-dependencies' "
+        "'--project-root '\"$project_root\"' --production-only' >> \"$INSTALL_HOOK_LOG\"\n"
+        "printf 'tampered\\n' >> \"$stage_root/nginx.conf\"\n"
+        f": > '{_bash_path(marker)}'\n",
+        encoding="ascii",
+    )
+    nuxt_hook.chmod(0o755)
+
+    result = _invoke_installer(closed_package, case_root, prepared)
+
+    assert result.returncode == 2, result.stderr + result.stdout
+    assert marker.is_file()
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
+    assert not (evidence / "install-mutation-state.json").exists()
+    assert not (evidence / "install-recovery.json").exists()
+    assert not list(release.parent.glob(f".{release.name}.closed-*"))
+    assert [
+        line.split("|", 1)[0]
+        for line in hook_log.read_text(encoding="ascii").splitlines()
+    ] == ["python-dependencies", "nuxt-production-dependencies"]
+
+
+def test_dependency_hook_self_consistent_manifest_tamper_is_rejected_before_mutation(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "hook-self-consistent-manifest-tamper"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, before_persistent, _, _ = prepared
+    marker = case_root / "manifest-tampered"
+    nuxt_hook = case_root / "runtime" / "nuxt-hook.sh"
+    nuxt_hook.write_text(
+        "#!/usr/bin/env bash\n"
+        "set -eu\n"
+        "project_root=\n"
+        "while (($# > 0)); do\n"
+        "  case \"$1\" in\n"
+        "    --project-root) project_root=$2; shift 2 ;;\n"
+        "    *) shift ;;\n"
+        "  esac\n"
+        "done\n"
+        "stage_root=$(dirname -- \"$project_root\")\n"
+        f"'{_bash_path(Path(sys.executable).resolve())}' - \"$stage_root\" <<'PY'\n"
+        "from hashlib import sha256\n"
+        "import json\n"
+        "from pathlib import Path\n"
+        "import sys\n"
+        "root = Path(sys.argv[1])\n"
+        "target = root / 'web-nuxt' / 'package.json'\n"
+        "raw = b'{\\\"self_consistent_tamper\\\":true}\\n'\n"
+        "target.write_bytes(raw)\n"
+        "manifest_path = root / 'launch-release-manifest.json'\n"
+        "manifest = json.loads(manifest_path.read_text(encoding='utf-8'))\n"
+        "manifest['members']['web-nuxt/package.json'] = {\n"
+        "    'sha256': sha256(raw).hexdigest(), 'size': len(raw)\n"
+        "}\n"
+        "manifest_path.write_text(\n"
+        "    json.dumps(manifest, indent=2, sort_keys=True) + '\\n', encoding='utf-8'\n"
+        ")\n"
+        "PY\n"
+        f": > '{_bash_path(marker)}'\n",
+        encoding="ascii",
+    )
+    nuxt_hook.chmod(0o755)
+
+    result = _invoke_installer(closed_package, case_root, prepared)
+
+    assert result.returncode == 2, result.stderr + result.stdout
+    assert marker.is_file()
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
+    assert not (evidence / "install-mutation-state.json").exists()
+    assert not list(release.parent.glob(f".{release.name}.closed-*"))
+
+
+@pytest.mark.parametrize(
+    ("hook_status", "recorder_status", "expected_status"),
+    ((19, 63, 19), (0, 63, 63)),
+    ids=("hook-failure-wins", "recorder-failure-surfaces"),
+)
+def test_authority_hook_status_precedence(
+    tmp_path: Path,
+    hook_status: int,
+    recorder_status: int,
+    expected_status: int,
+):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    hook_function = source[
+        source.index("run_authority_hook()") : source.index(
+            "run_authority_hook python-dependencies"
+        )
+    ]
+    log = tmp_path / "recorder.log"
+    script = "\n".join(
+        (
+            "set +e",
+            "PYTHON_DEPENDENCY_HOOK_SHA256=digest",
+            "NUXT_DEPENDENCY_HOOK_SHA256=digest",
+            "UNIT_VERIFY_HOOK_SHA256=digest",
+            f"HOOK_STATUS={hook_status}",
+            f"RECORDER_STATUS={recorder_status}",
+            f"RECORDER_LOG={shlex.quote(_bash_path(log))}",
+            "invoke_pinned_executable() { return \"$HOOK_STATUS\"; }",
+            "record_authority_result() { printf '%s|%s|%s\\n' \"$1\" \"$2\" \"$3\" >> \"$RECORDER_LOG\"; return \"$RECORDER_STATUS\"; }",
+            hook_function,
+            "run_authority_hook python-dependencies /hook --release-root /stage",
+            "status=$?",
+            "printf '%s\\n' \"$status\"",
+        )
+    )
+
+    result = _run_bash_script(tmp_path / "hook-precedence.sh", script)
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert result.stdout.strip() == str(expected_status)
+    assert log.read_text(encoding="ascii").strip() == (
+        "python-dependencies|passed|0"
+        if hook_status == 0
+        else f"python-dependencies|failed|{hook_status}"
+    )
+    if hook_status != 0 and recorder_status != 0:
+        assert (
+            f"authority-result-record-failed:python-dependencies:{recorder_status}"
+            in result.stderr
+        )
+
+
+def test_final_verifier_rolls_back_unit_hook_destination_byte_corruption(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "unit-hook-corrupts-destination"
+    prepared = _prepare_case(case_root, closed_package)
+    (
+        release,
+        persistent,
+        evidence,
+        before_release,
+        before_persistent,
+        _,
+        _,
+    ) = prepared
+    unit_destination = case_root / "runtime" / "systemd-units"
+    unit_destination.mkdir()
+    for name in SYSTEMD_UNIT_NAMES:
+        (unit_destination / name).write_bytes(f"legacy-{name}\n".encode("ascii"))
+    units_before = _snapshot_tree(unit_destination)
+    hook_marker = case_root / "unit-hook-corruption-used"
+    unit_hook = case_root / "runtime" / "units-hook.sh"
+    unit_hook.write_text(
+        "#!/usr/bin/env bash\n"
+        "set -eu\n"
+        "unit_root=\n"
+        "while (($# > 0)); do\n"
+        "  case \"$1\" in\n"
+        "    --unit-root) unit_root=$2; shift 2 ;;\n"
+        "    *) shift ;;\n"
+        "  esac\n"
+        "done\n"
+        "[ -n \"$unit_root\" ]\n"
+        "printf '%s|%s\\n' 'systemd-units' \"$unit_root\" >> \"$INSTALL_HOOK_LOG\"\n"
+        "printf 'corrupt\\n' > \"$unit_root/vl-agent.service\"\n"
+        f": > '{_bash_path(hook_marker)}'\n"
+        "exit 0\n",
+        encoding="ascii",
+    )
+    unit_hook.chmod(0o755)
+
+    result = _invoke_installer(closed_package, case_root, prepared)
+
+    assert result.returncode == 2, result.stderr + result.stdout
+    assert "closed release verification refused" in result.stderr
+    assert hook_marker.is_file()
+    checks = json.loads(
+        (evidence / "dependency-unit-checks.json").read_text(encoding="utf-8")
+    )
+    assert checks["results"] == {
+        "python-dependencies": "passed",
+        "nuxt-production-dependencies": "passed",
+        "systemd-units": "passed",
+    }
+    assert checks["exit_codes"] == {
+        "python-dependencies": 0,
+        "nuxt-production-dependencies": 0,
+        "systemd-units": 0,
+    }
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
+    assert _snapshot_tree(unit_destination) == units_before
+    assert not (evidence / "installed").exists()
+    assert not (evidence / "install-mutation-state.json").exists()
+    assert _unit_attempt_artifacts(evidence) == []
+    assert not list(release.parent.glob(f".{release.name}.closed-*"))
+    recovery = json.loads(
+        (evidence / "install-recovery.json").read_text(encoding="utf-8")
+    )
+    assert recovery["status"] == "rolled-back"
+    assert recovery["root_restored"] is True
+    assert recovery["persistent_restored"] is True
+    assert recovery["systemd_units_restored"] is True
 
 
 @pytest.mark.parametrize("invalid_kind", ("symlink-component", "nonregular"))
@@ -1916,7 +4971,9 @@ def test_dependency_and_unit_sources_are_pinned_before_replacement(
     ]
 
 
-@pytest.mark.skipif(os.name == "nt", reason="Windows supports local rehearsal only")
+@pytest.mark.skipif(
+    not sys.platform.startswith("linux"), reason="Linux live mount harness only"
+)
 def test_live_mount_authority_is_pinned_before_dependency_hook_replaces_source(
     tmp_path: Path, closed_package
 ):
@@ -2202,6 +5259,88 @@ def test_malformed_value_cannot_enable_local_python_executor(
     assert not marker.exists()
 
 
+def test_local_rm_executor_is_forbidden_outside_local_rehearsal(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "live-local-rm-executor"
+    prepared = _prepare_case(case_root, closed_package)
+    *_, values = prepared
+    rm_executor = case_root / "local-rm"
+    rm_executor.write_text(
+        "#!/usr/bin/env bash\nexec /usr/bin/rm \"$@\"\n", encoding="ascii"
+    )
+    rm_executor.chmod(0o755)
+    env = os.environ.copy()
+    env.update(values)
+    for name in (
+        "VL360_PYTHON_DEPENDENCY_HOOK",
+        "VL360_NUXT_DEPENDENCY_HOOK",
+        "VL360_UNIT_VERIFY_HOOK",
+    ):
+        env.pop(name, None)
+    env["VL360_LOCAL_RM_EXECUTOR"] = _bash_path(rm_executor.resolve())
+    command = _installer_command(closed_package, case_root, prepared)
+    command.remove("--local-rehearsal")
+
+    result = subprocess.run(
+        command,
+        cwd=ROOT,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 2
+    assert "local-rm-executor-live-forbidden" in result.stderr
+
+
+def test_local_rm_executor_requires_a_canonical_regular_executable(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "symlink-local-rm-executor"
+    prepared = _prepare_case(case_root, closed_package)
+    target = case_root / "local-rm-target"
+    target.write_text(
+        "#!/usr/bin/env bash\nexec /usr/bin/rm \"$@\"\n", encoding="ascii"
+    )
+    target.chmod(0o755)
+    symlink = case_root / "local-rm-link"
+    try:
+        symlink.symlink_to(target)
+    except OSError as exc:
+        pytest.skip(f"symlink creation unavailable: {exc}")
+
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={"VL360_LOCAL_RM_EXECUTOR": _bash_path_literal(symlink)},
+    )
+
+    assert result.returncode == 2
+    assert "rm-executor-authority-required" in result.stderr
+
+
+def test_quarantine_deletes_use_the_admitted_rm_authority():
+    source = INSTALL.read_text(encoding="utf-8")
+    assert "RM_EXECUTOR_CANDIDATE=/usr/bin/rm" in source
+    assert 'RM_EXECUTOR="$(canonical_executable_path "$RM_EXECUTOR_CANDIDATE")"' in source
+    for cleanup_root in (
+        "candidate_cleanup_root",
+        "staging_delete_root",
+        "retired_cleanup_root",
+        "CANDIDATE_CLEANUP_ROOT",
+        "STAGING_DELETE_ROOT",
+        "RETIRED_CLEANUP_ROOT",
+    ):
+        assert f'invoke_rm -rf -- "${cleanup_root}"' in source
+
+
 def test_linux_python_executor_is_bound_to_admitted_descriptor_before_mutation():
     source = INSTALL.read_text(encoding="utf-8")
 
@@ -2393,6 +5532,182 @@ def test_windows_local_pinned_executor_preserves_process_contract(tmp_path: Path
         "stdin=preserved-stdin",
     ]
     assert result.stderr == "stderr=second argument\n"
+
+
+def test_windows_bash_pin_authority_is_native_openable_and_pins_exact_bytes(
+    tmp_path: Path,
+):
+    if os.name != "nt" or not BASH.is_file():
+        pytest.skip("Windows Git Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    canonical_start = source.index("canonical_executable_path()")
+    canonical = source[
+        canonical_start : source.index(
+            '\n\nif [ "$EARLY_REQUIRED_ARGUMENTS_VALID" = true ]',
+            canonical_start,
+        )
+    ]
+    pin_start = source.index("pin_executable_authorities()")
+    pin = source[
+        pin_start : source.index("\n\nverify_pinned_executable()", pin_start)
+    ]
+    pin_root = tmp_path / "pins"
+    pin_root.mkdir(mode=0o700)
+    script = "\n".join(
+        (
+            "set -u",
+            f"PYTHON_EXECUTOR={shlex.quote(_bash_path(Path(sys.executable).resolve()))}",
+            'invoke_python() { command "$PYTHON_EXECUTOR" "$@"; }',
+            canonical,
+            pin,
+            f"EXECUTABLE_PIN_ROOT={shlex.quote(_bash_path(pin_root))}",
+            "MOUNT_AUTHORITY=",
+            "PYTHON_DEPENDENCY_HOOK=",
+            "NUXT_DEPENDENCY_HOOK=",
+            "UNIT_VERIFY_HOOK=",
+            'BASH_EXECUTOR="$(canonical_executable_path "$BASH")"',
+            "BASH_PIN_AUTHORITY=$BASH_EXECUTOR",
+            'digests="$(pin_executable_authorities)"',
+            "printf '%s\\n%s\\n' \"$BASH_EXECUTOR\" \"$digests\"",
+        )
+    )
+
+    result = _run_bash_script(tmp_path / "pin-windows-bash.sh", script)
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    authority, digests = result.stdout.splitlines()
+    assert authority.endswith("/bash.exe")
+    native_authority = subprocess.check_output(
+        [str(BASH), "-lc", f"cygpath -w {shlex.quote(authority)}"],
+        cwd=ROOT,
+        text=True,
+    ).strip()
+    authority_bytes = Path(native_authority).read_bytes()
+    assert (pin_root / "bash-interpreter").read_bytes() == authority_bytes
+    assert digests.split("\t")[-1] == hashlib.sha256(authority_bytes).hexdigest()
+
+
+def test_windows_local_pinned_bash_child_sanitizes_startup_environment(
+    tmp_path: Path,
+):
+    if os.name != "nt" or not BASH.is_file():
+        pytest.skip("Windows Git Bash is unavailable")
+    pin_root = tmp_path / "pins"
+    pin_root.mkdir(mode=0o700)
+    poison_marker = tmp_path / "bash-env-sourced"
+    env_shadow_marker = tmp_path / "env-shadow-ran"
+    path_shadow_marker = tmp_path / "path-bash-ran"
+    poison = tmp_path / "poison.bash"
+    poison.write_text(
+        f"printf poison > '{_bash_path(poison_marker)}'\n",
+        encoding="ascii",
+    )
+    fake_bin = tmp_path / "fake-bin"
+    fake_bin.mkdir()
+    fake_bash = fake_bin / "bash"
+    fake_bash.write_text(
+        "#!/bin/sh\n"
+        f"printf path-shadow > '{_bash_path(path_shadow_marker)}'\n"
+        "exit 0\n",
+        encoding="ascii",
+    )
+    fake_bash.chmod(0o755)
+    hook = pin_root / "python-dependency"
+    hook.write_text(
+        "#!/usr/bin/env bash\n"
+        "if env | grep -Eq '^(BASH_ENV|ENV|BASHOPTS|SHELLOPTS|BASH_COMPAT|POSIXLY_CORRECT|BASH_FUNC_[^=]*%%)='; then exit 81; fi\n"
+        "if declare -F poisoned_hook_function >/dev/null; then exit 82; fi\n"
+        "printf 'env=%s\\n' \"$PIN_TEST_ENV\"\n"
+        "exit 37\n",
+        encoding="ascii",
+    )
+    hook.chmod(0o500)
+    prelude = "\n".join(
+        (
+            f"BASH_ENV={shlex.quote(_bash_path(poison))}",
+            f"ENV={shlex.quote(_bash_path(poison))}",
+            "BASH_COMPAT=42",
+            "POSIXLY_CORRECT=1",
+            "export BASH_ENV ENV BASHOPTS SHELLOPTS BASH_COMPAT POSIXLY_CORRECT",
+            "poisoned_hook_function() { return 0; }",
+            "export -f poisoned_hook_function",
+            f"env() {{ printf env-shadow > {shlex.quote(_bash_path(env_shadow_marker))}; return 90; }}",
+            "export -f env",
+            f"PATH={shlex.quote(_bash_path(fake_bin))}:$PATH",
+            "export PATH",
+        )
+    )
+
+    result = _invoke_standalone_pinned_executor(
+        pin_root,
+        "python-dependency",
+        hashlib.sha256(hook.read_bytes()).hexdigest(),
+        [],
+        local_rehearsal=True,
+        env_overrides={"PIN_TEST_ENV": "preserved-env"},
+        runner_prelude=prelude,
+    )
+
+    assert result.returncode == 37, result.stderr + result.stdout
+    assert result.stdout == "env=preserved-env\n"
+    assert not poison_marker.exists()
+    assert not env_shadow_marker.exists()
+    assert not path_shadow_marker.exists()
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux fd exec only")
+def test_linux_pinned_bash_child_sanitizes_startup_environment(tmp_path: Path):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    pin_root = tmp_path / "pins"
+    pin_root.mkdir(mode=0o700)
+    poison_marker = tmp_path / "bash-env-sourced"
+    poison = tmp_path / "poison.bash"
+    poison.write_text(
+        f"printf poison > '{_bash_path(poison_marker)}'\n",
+        encoding="ascii",
+    )
+    hook = pin_root / "python-dependency"
+    hook.write_text(
+        "#!/usr/bin/env bash\n"
+        "if env | grep -Eq '^(BASH_ENV|ENV|BASHOPTS|SHELLOPTS|BASH_COMPAT|POSIXLY_CORRECT|BASH_FUNC_[^=]*%%)='; then exit 81; fi\n"
+        "if declare -F poisoned_hook_function >/dev/null; then exit 82; fi\n"
+        "printf 'env=%s\\n' \"$PIN_TEST_ENV\"\n"
+        "exit 37\n",
+        encoding="ascii",
+    )
+    hook.chmod(0o500)
+    bash_authority = BASH.resolve()
+    pinned_bash = pin_root / "bash-interpreter"
+    shutil.copy2(bash_authority, pinned_bash)
+    pinned_bash.chmod(0o500)
+    prelude = "\n".join(
+        (
+            f"BASH_ENV={shlex.quote(_bash_path(poison))}",
+            f"ENV={shlex.quote(_bash_path(poison))}",
+            "BASH_COMPAT=42",
+            "POSIXLY_CORRECT=1",
+            "export BASH_ENV ENV BASHOPTS SHELLOPTS BASH_COMPAT POSIXLY_CORRECT",
+            "poisoned_hook_function() { return 0; }",
+            "export -f poisoned_hook_function",
+        )
+    )
+
+    result = _invoke_standalone_pinned_executor(
+        pin_root,
+        "python-dependency",
+        hashlib.sha256(hook.read_bytes()).hexdigest(),
+        [],
+        local_rehearsal=False,
+        bash_digest=hashlib.sha256(pinned_bash.read_bytes()).hexdigest(),
+        bash_executor=bash_authority,
+        env_overrides={"PIN_TEST_ENV": "preserved-env"},
+        runner_prelude=prelude,
+    )
+
+    assert result.returncode == 37, result.stderr + result.stdout
+    assert result.stdout == "env=preserved-env\n"
+    assert not poison_marker.exists()
 
 
 def test_windows_local_pinned_executor_rejects_digest_and_unknown_role(
@@ -2687,6 +6002,48 @@ def test_premutation_failure_removes_private_staging_root(
     assert not list(release.parent.glob(f".{release.name}.closed-old.*"))
 
 
+def test_premutation_cleanup_preserves_replaced_private_staging_root(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "replaced-private-staging"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, _, before_release, before_persistent, _, _ = prepared
+    hook = case_root / "runtime" / "python-hook.sh"
+    hook.write_text(
+        "#!/usr/bin/env bash\n"
+        "set -u\n"
+        "stage=\n"
+        "while (($#)); do\n"
+        "  if [ \"$1\" = --release-root ]; then stage=\"$2\"; break; fi\n"
+        "  shift\n"
+        "done\n"
+        "[ -n \"$stage\" ] || exit 70\n"
+        "/usr/bin/rm -rf -- \"$stage\"\n"
+        "mkdir -- \"$stage\"\n"
+        "printf 'must survive\\n' > \"$stage/foreign.txt\"\n"
+        "exit 19\n",
+        encoding="ascii",
+    )
+
+    result = _invoke_installer(closed_package, case_root, prepared)
+
+    assert result.returncode == 19, result.stderr + result.stdout
+    staging_roots = [
+        path
+        for path in release.parent.glob(f".{release.name}.closed-stage.*")
+        if path.is_dir()
+    ]
+    assert len(staging_roots) == 1
+    assert (staging_roots[0] / "foreign.txt").read_text(encoding="ascii") == (
+        "must survive\n"
+    )
+    assert Path(f"{staging_roots[0]}.owner").is_file()
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
+
+
 def test_stage_owner_cleanup_retries_before_disarming(
     tmp_path: Path, closed_package
 ):
@@ -2696,29 +6053,18 @@ def test_stage_owner_cleanup_retries_before_disarming(
     prepared = _prepare_case(case_root, closed_package)
     release, persistent, _, before_release, before_persistent, _, _ = prepared
     failure_used = case_root / "owner-rm-failure-used"
-    bash_env = case_root / "owner-rm-failure.bash"
-    bash_env.write_text(
-        "rm() {\n"
-        "  for argument in \"$@\"; do\n"
-        "    case \"$(basename -- \"$argument\")\" in\n"
-        "      .release.closed-stage.*.owner)\n"
-        f"        if [ ! -f '{_bash_path(failure_used)}' ]; then\n"
-        f"          : > '{_bash_path(failure_used)}'\n"
-        "          return 61\n"
-        "        fi\n"
-        "        ;;\n"
-        "    esac\n"
-        "  done\n"
-        "  /usr/bin/rm \"$@\"\n"
-        "}\n",
-        encoding="ascii",
+    rm_executor = _write_cleanup_rm_fault_executor(
+        case_root / "owner-rm-failure",
+        basename_pattern=f".{release.name}.closed-stage.*.owner",
+        marker=failure_used,
+        status=61,
     )
 
     result = _invoke_installer(
         closed_package,
         case_root,
         prepared,
-        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+        env_overrides={"VL360_LOCAL_RM_EXECUTOR": _bash_path(rm_executor)},
     )
 
     assert result.returncode == 61, result.stderr + result.stdout
@@ -4633,113 +7979,11 @@ def test_systemd_recovery_material_is_durable_before_journal_and_unit_mutation()
     ]
     assert 'write_durable_atomic_json "$MUTATION_STATE" "$payload"' in stale_journal
 
-    recovery = source[
-        source.index("reconcile_stale_install_attempt()") : source.index(
-            "record_install_lock()"
-        )
-    ]
-    for journal_write, file_operation in (
-        (
-            "write_stale_mutation_state recovery-detach-persistent-armed",
-            'mv -- "$current_data" "$STALE_PERSISTENT_ROOT"',
-        ),
-        (
-            "write_stale_mutation_state recovery-remove-release-root-armed",
-            'rm -rf -- "$STALE_RELEASE_ROOT"',
-        ),
-        (
-            "write_stale_mutation_state recovery-restore-old-root-armed",
-            'mv -- "$STALE_OLD_ROOT" "$STALE_RELEASE_ROOT"',
-        ),
-    ):
-        assert recovery.index(journal_write) < recovery.index(file_operation)
-
-
-def test_destructive_transition_parents_are_fsynced_before_followup_journals():
+def test_fsync_directories_uses_os_fsync_off_windows():
     source = INSTALL.read_text(encoding="utf-8")
     helper = source[source.index("fsync_directories()") : source.index("die()")]
     assert 'if os.name == "nt":' in helper
     assert "os.fsync(descriptor)" in helper
-
-    detach = source[source.index("# detach-agent-data") : source.index("# swap-release-root")]
-    assert detach.index('mv -- "$CURRENT_DATA" "$PERSISTENT_AGENT_DATA_ROOT"') < (
-        detach.index(
-            'fsync_directories "$(dirname -- "$CURRENT_DATA")" '
-            '"$(dirname -- "$PERSISTENT_AGENT_DATA_ROOT")"'
-        )
-    ) < detach.index("write_mutation_state persistent-detached")
-
-    swap = source[source.index("# swap-release-root") : source.index("# restore-bind-agent-data")]
-    assert swap.index('mv -- "$RELEASE_ROOT" "$OLD_ROOT"') < swap.index(
-        "OLD_ROOT_READY=true"
-    ) < swap.index('fsync_directories "$RELEASE_PARENT"')
-    assert swap.index('rm -rf -- "$RELEASE_ROOT/agent/data"') < swap.index(
-        'fsync_directories "$RELEASE_PARENT" "$RELEASE_ROOT" '
-        '"$RELEASE_ROOT/agent"'
-    ) < swap.index("write_mutation_state root-swapped")
-
-    commit = source[source.index("INSTALL_FAILURE_POINT=retire-old-root") :]
-    rename = commit.index('mv -- "$OLD_ROOT" "$RETIRED_ROOT"')
-    old_cleared = commit.index("OLD_ROOT_READY=false")
-    committed = commit.index("INSTALL_COMMITTED=true")
-    parent_fsync = commit.index('fsync_directories "$RELEASE_PARENT"')
-    assert rename < old_cleared < committed < parent_fsync
-    assert parent_fsync < commit.index("write_mutation_state committed-cleanup")
-    cleanup = commit[commit.index("write_mutation_state committed-cleanup") :]
-    assert cleanup.index('rm -rf -- "$RETIRED_ROOT"') < cleanup.index(
-        'fsync_directories "$RELEASE_PARENT"'
-    ) < cleanup.index("clear_mutation_state")
-
-
-def test_live_restore_bind_is_armed_and_recovery_accepts_either_mount_state():
-    source = INSTALL.read_text(encoding="utf-8")
-    restore = source[
-        source.index("# restore-bind-agent-data") : source.index(
-            "# verify-agent-data-mount"
-        )
-    ]
-    live = restore[restore.index("else\n") :]
-    armed = live.index("write_mutation_state restore-bind-agent-data-armed")
-    mounted = live.index(
-        'invoke_mount_authority mount --bind "$PERSISTENT_AGENT_DATA_ROOT" '
-        '"$RELEASE_ROOT/agent/data"'
-    )
-    attached = live.index("PERSISTENT_ATTACHED_TO_RELEASE=true")
-    detached = live.index("PERSISTENT_DETACHED=false")
-    fsynced = live.index(
-        'fsync_directories "$RELEASE_ROOT/agent/data" "$RELEASE_ROOT/agent"'
-    )
-    restored = live.index("write_mutation_state persistent-restored")
-    assert armed < mounted < attached < fsynced < restored
-    assert mounted < detached < fsynced
-
-    recovery_attach = source[
-        source.index("attach_persistent_to_release_for_recovery()") : source.index(
-            "verify_recovered_persistent_state()"
-        )
-    ]
-    recovery_live = recovery_attach[
-        recovery_attach.index('  else\n    mkdir -- "$target"') :
-    ]
-    recovery_mount = recovery_live.index(
-        'invoke_mount_authority mount --bind "$PERSISTENT_AGENT_DATA_ROOT" "$target"'
-    )
-    recovery_attached = recovery_live.index("PERSISTENT_ATTACHED_TO_RELEASE=true")
-    recovery_detached = recovery_live.index("PERSISTENT_DETACHED=false")
-    recovery_fsync = recovery_live.index(
-        'fsync_directories "$target" "$(dirname -- "$target")"'
-    )
-    assert recovery_mount < recovery_attached < recovery_fsync
-    assert recovery_mount < recovery_detached < recovery_fsync
-
-    reconciliation = source[
-        source.index("inspect_stale_mount()") : source.index(
-            "record_install_lock()"
-        )
-    ]
-    assert "restore-bind-agent-data-armed|persistent-restored" in reconciliation
-    assert "restore-bind-agent-data-armed:0" in reconciliation
-    assert "restore-bind-agent-data-armed:1" in reconciliation
 
 
 def _run_live_post_bind_runtime_reconciliation(
@@ -4749,6 +7993,7 @@ def _run_live_post_bind_runtime_reconciliation(
     *,
     fail_fsync_once: bool = False,
     retry_after_failure: bool = False,
+    post_umount_state: str = "absent",
 ):
     if not BASH.is_file():
         pytest.skip("Bash is unavailable")
@@ -4846,6 +8091,7 @@ def _run_live_post_bind_runtime_reconciliation(
             f"RECOVERY_LOG={shlex.quote(_bash_path(log))}",
             f"FSYNC_FAILED={shlex.quote(_bash_path(failed))}",
             f"MOUNT_STATE={initial_mount_state}",
+            f"POST_UMOUNT_STATE={shlex.quote(post_umount_state)}",
             'invoke_python() { "$PYTHON_EXECUTOR" "$@"; }',
             "tree_matches_snapshot() { return 0; }",
             "stale_tree_state() { return 0; }",
@@ -4853,7 +8099,7 @@ def _run_live_post_bind_runtime_reconciliation(
             "invoke_mount_authority() {",
             "  case \"$1\" in",
             "    findmnt)",
-            "      [ \"$2\" = --json ] && [ \"$3\" = --target ] && [ \"$4\" = \"$STALE_RELEASE_ROOT/agent/data\" ] || return 64",
+            "      [ \"$2\" = --json ] && [ \"$3\" = --mountpoint ] && [ \"$4\" = \"$STALE_RELEASE_ROOT/agent/data\" ] || return 64",
             "      printf 'findmnt:%s\\n' \"$MOUNT_STATE\" >> \"$RECOVERY_LOG\"",
             "      case \"$MOUNT_STATE\" in",
             "        0)",
@@ -4867,12 +8113,20 @@ def _run_live_post_bind_runtime_reconciliation(
             "          return 0",
             "          ;;",
             "        1) return 1 ;;",
+            "        3) printf '{}\\n'; return 0 ;;",
             "        *) return 72 ;;",
             "      esac",
             "      ;;",
             "    umount)",
             "      [ \"$2\" = \"$STALE_RELEASE_ROOT/agent/data\" ] || return 64",
-            "      printf 'umount\\n' >> \"$RECOVERY_LOG\"; MOUNT_STATE=1; return 0",
+            "      printf 'umount\\n' >> \"$RECOVERY_LOG\"",
+            "      case \"$POST_UMOUNT_STATE\" in",
+            "        absent) MOUNT_STATE=1 ;;",
+            "        present) MOUNT_STATE=0 ;;",
+            "        invalid) MOUNT_STATE=3 ;;",
+            "        *) MOUNT_STATE=2 ;;",
+            "      esac",
+            "      return 0",
             "      ;;",
             "    mount)",
             "      [ \"$2\" = --bind ] && [ \"$3\" = \"$STALE_PERSISTENT_ROOT\" ] && [ \"$4\" = \"$STALE_RELEASE_ROOT/agent/data\" ] || return 64",
@@ -4890,15 +8144,7 @@ def _run_live_post_bind_runtime_reconciliation(
         )
     )
 
-    runner = tmp_path / "reconcile.sh"
-    runner.write_text(script + "\n", encoding="utf-8")
-    result = subprocess.run(
-        [str(BASH), _bash_path(runner)],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    result = _run_bash_script(tmp_path / "reconcile.sh", script)
 
     return result, release, old_root, journal, log, failed
 
@@ -4946,6 +8192,127 @@ def test_live_post_bind_runtime_fails_closed_on_unknown_mount(tmp_path: Path):
     assert journal.is_file()
 
 
+@pytest.mark.parametrize("post_probe", ("absent", "present", "invalid"))
+def test_stale_recovery_umount_requires_authoritative_absence(
+    tmp_path: Path, post_probe: str
+):
+    result, release, old_root, journal, log, _ = (
+        _run_live_post_bind_runtime_reconciliation(
+            tmp_path,
+            "persistent-restored",
+            True,
+            post_umount_state=post_probe,
+        )
+    )
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    lines = log.read_text(encoding="ascii").splitlines()
+    expected_post_state = {"absent": "1", "present": "0", "invalid": "3"}[
+        post_probe
+    ]
+    assert lines[:4] == [
+        "findmnt:0",
+        "journal:recovery-detach-persistent-armed",
+        "umount",
+        f"findmnt:{expected_post_state}",
+    ]
+    if post_probe == "absent":
+        assert result.stdout.strip() == "0|0"
+        assert (release / "old-marker").is_file()
+        assert not old_root.exists()
+        assert not journal.exists()
+    else:
+        assert result.stdout.strip() == f"1|{expected_post_state}"
+        assert (release / "new-marker").is_file()
+        assert (old_root / "old-marker").is_file()
+        assert json.loads(journal.read_text(encoding="ascii")) == {}
+
+
+@pytest.mark.parametrize(
+    ("stage", "attempt_present", "expected_status", "expected_removed", "journal_present"),
+    (
+        ("rollback-restored", True, "1", False, True),
+        ("rollback-restored", False, "0", False, False),
+        ("recovery-remove-systemd-attempt-armed", True, "0", True, False),
+    ),
+)
+def test_terminal_systemd_attempt_stages_do_not_restore_again(
+    tmp_path: Path,
+    stage: str,
+    attempt_present: bool,
+    expected_status: str,
+    expected_removed: bool,
+    journal_present: bool,
+):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    reconciliation = source[
+        source.index("inspect_stale_mount()") : source.index("record_install_lock()")
+    ]
+    release = tmp_path / "release"
+    persistent = tmp_path / "persistent"
+    evidence = tmp_path / "evidence"
+    systemd = tmp_path / "systemd"
+    attempt = evidence / ".systemd-unit-attempt.rollback"
+    for directory in (release / "agent" / "data", persistent, evidence, systemd):
+        directory.mkdir(parents=True, exist_ok=True)
+    if attempt_present:
+        attempt.mkdir()
+    (release / "old-marker").write_text("old\n", encoding="ascii")
+    if attempt_present:
+        (attempt / "armed").write_text("armed\n", encoding="ascii")
+    journal = evidence / "install-mutation-state.json"
+    journal.write_text("{}\n", encoding="ascii")
+    restored = tmp_path / "restore-called"
+    removed = tmp_path / "remove-called"
+    script = "\n".join(
+        (
+            "set -u",
+            "LOCAL_REHEARSAL=true",
+            "STALE_LOCAL_REHEARSAL=true",
+            "CURRENT_RELEASE_KEY=release-key",
+            "STALE_RELEASE_KEY=release-key",
+            "CURRENT_PERSISTENT_KEY=persistent-key",
+            "STALE_PERSISTENT_KEY=persistent-key",
+            "CURRENT_SYSTEMD_KEY=systemd-key",
+            "STALE_SYSTEMD_KEY=systemd-key",
+            f"STALE_STAGE={stage}",
+            "STALE_ATTEMPT_ID=" + "a" * 32,
+            "STALE_PID=321",
+            f"STALE_RELEASE_ROOT={shlex.quote(_bash_path(release))}",
+            f"STALE_PERSISTENT_ROOT={shlex.quote(_bash_path(persistent))}",
+            f"STALE_STAGING_ROOT={shlex.quote(_bash_path(tmp_path / '.release.closed-stage.321'))}",
+            f"STALE_OLD_ROOT={shlex.quote(_bash_path(tmp_path / '.release.closed-old.321'))}",
+            f"STALE_RETIRED_ROOT={shlex.quote(_bash_path(tmp_path / ('.release.closed-retired.' + 'a' * 32)))}",
+            f"STALE_SYSTEMD_UNIT_DESTINATION={shlex.quote(_bash_path(systemd))}",
+            f"STALE_SYSTEMD_UNIT_ATTEMPT_ROOT={shlex.quote(_bash_path(attempt))}",
+            f"MUTATION_STATE={shlex.quote(_bash_path(journal))}",
+            f"EVIDENCE_DIR={shlex.quote(_bash_path(evidence))}",
+            "SNAPSHOT_BEFORE=/snapshot",
+            f"RESTORED={shlex.quote(_bash_path(restored))}",
+            f"REMOVED={shlex.quote(_bash_path(removed))}",
+            "tree_matches_snapshot() { return 0; }",
+            "stale_tree_state() { [ \"$1\" = \"$STALE_RELEASE_ROOT/agent/data\" ] && return 0; [ \"$1\" = \"$STALE_PERSISTENT_ROOT\" ] && return 2; return 1; }",
+            "restore_systemd_units_from() { : > \"$RESTORED\"; return 0; }",
+            "write_stale_mutation_state() { STALE_STAGE=\"$1\"; }",
+            "remove_systemd_unit_attempt_root() { : > \"$REMOVED\"; return 0; }",
+            "fsync_directories() { return 0; }",
+            "clear_mutation_state() { /usr/bin/rm -f -- \"$MUTATION_STATE\"; }",
+            reconciliation,
+            "reconcile_stale_install_attempt",
+            "printf '%s\\n' \"$?\"",
+        )
+    )
+    result = _run_bash_script(tmp_path / "rollback-terminal.sh", script)
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert result.stdout.strip() == expected_status
+    assert not restored.exists()
+    assert removed.exists() is expected_removed
+    assert journal.is_file() is journal_present
+
+
 def test_live_recovery_umount_fsync_failure_retries_from_mount_absence(
     tmp_path: Path,
 ):
@@ -4979,8 +8346,9 @@ def test_live_recovery_umount_fsync_failure_retries_from_mount_absence(
     assert not journal.exists()
 
 
-def test_primary_live_umount_success_keeps_truthful_flags_when_fsync_fails(
-    tmp_path: Path,
+@pytest.mark.parametrize("post_probe", ("absent", "present", "unknown", "invalid"))
+def test_primary_live_umount_requires_verified_absence_before_detached_flags(
+    tmp_path: Path, post_probe: str
 ):
     if not BASH.is_file():
         pytest.skip("Bash is unavailable")
@@ -5005,20 +8373,40 @@ def test_primary_live_umount_success_keeps_truthful_flags_when_fsync_fails(
             "PERSISTENT_ATTACHED_TO_RELEASE=true",
             "PERSISTENT_DETACHED=false",
             "PERSISTENT_MOUNT_STATE_UNKNOWN=false",
+            "MOUNT_STATE=0",
+            f"POST_PROBE={shlex.quote(post_probe)}",
             "MUTATION_STARTED=false",
             "INSTALL_FAILURE_POINT=",
             f"DETACH_LOG={shlex.quote(_bash_path(log))}",
             "write_mutation_state() { printf 'journal:%s\\n' \"$1\" >> \"$DETACH_LOG\"; }",
-            "verify_findmnt_file() { return 0; }",
+            "verify_findmnt_file() { ! grep -Fq enclosing-filesystem \"$1\" && [ \"$MOUNT_STATE\" != 3 ]; }",
             "invoke_mount_authority() {",
             "  case \"$1\" in",
             "    findmnt)",
-            "      [ \"$2\" = --json ] && [ \"$3\" = --target ] && [ \"$4\" = \"$CURRENT_DATA\" ] || return 64",
-            "      printf 'findmnt\\n' >> \"$DETACH_LOG\"; printf '{}\\n'; return 0",
+            "      [ \"$2\" = --json ] && [ \"$4\" = \"$CURRENT_DATA\" ] || return 64",
+            "      printf 'findmnt:%s\\n' \"$3\" >> \"$DETACH_LOG\"",
+            "      if [ \"$3\" = --target ] && [ \"$MOUNT_STATE\" = 1 ]; then",
+            "        printf '{\"filesystems\":[{\"target\":\"/\",\"source\":\"enclosing-filesystem\",\"options\":\"rw\"}]}\\n'",
+            "        return 0",
+            "      fi",
+            "      [ \"$3\" = --mountpoint ] || [ \"$3\" = --target ] || return 64",
+            "      case \"$MOUNT_STATE\" in",
+            "        0) printf '{}\\n'; return 0 ;;",
+            "        1) return 1 ;;",
+            "        3) printf '{}\\n'; return 0 ;;",
+            "        *) return 72 ;;",
+            "      esac",
             "      ;;",
             "    umount)",
             "      [ \"$2\" = \"$CURRENT_DATA\" ] || return 64",
-            "      printf 'umount\\n' >> \"$DETACH_LOG\"; return 0",
+            "      printf 'umount\\n' >> \"$DETACH_LOG\"",
+            "      case \"$POST_PROBE\" in",
+            "        absent) MOUNT_STATE=1 ;;",
+            "        present) MOUNT_STATE=0 ;;",
+            "        unknown) MOUNT_STATE=2 ;;",
+            "        invalid) MOUNT_STATE=3 ;;",
+            "      esac",
+            "      return 0",
             "      ;;",
             "    *) return 64 ;;",
             "  esac",
@@ -5040,27 +8428,37 @@ def test_primary_live_umount_success_keeps_truthful_flags_when_fsync_fails(
         )
     )
 
-    runner = tmp_path / "primary-detach.sh"
-    runner.write_text(script + "\n", encoding="utf-8")
-    result = subprocess.run(
-        [str(BASH), _bash_path(runner)],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    result = _run_bash_script(tmp_path / "primary-detach.sh", script)
 
-    assert result.returncode == 71, result.stderr + result.stdout
-    assert result.stdout.strip() == "71|false|true|false"
-    assert log.read_text(encoding="ascii").splitlines() == [
+    lines = log.read_text(encoding="ascii").splitlines()
+    expected_prefix = [
         "journal:detach-agent-data-armed",
-        "findmnt",
+        "findmnt:--mountpoint",
         "umount",
-        "fsync",
+        "findmnt:--mountpoint",
     ]
+    if post_probe == "present":
+        assert result.returncode == 1, result.stderr + result.stdout
+        assert result.stdout.strip() == "1|true|false|false"
+        assert lines == expected_prefix
+    elif post_probe == "unknown":
+        assert result.returncode == 72, result.stderr + result.stdout
+        assert result.stdout.strip() == "72|true|false|true"
+        assert lines == expected_prefix
+    elif post_probe == "invalid":
+        assert result.returncode == 1, result.stderr + result.stdout
+        assert result.stdout.strip() == "1|true|false|true"
+        assert lines == expected_prefix
+    else:
+        assert result.returncode == 71, result.stderr + result.stdout
+        assert result.stdout.strip() == "71|false|true|false"
+        assert lines == [*expected_prefix, "fsync"]
 
 
-def test_recovery_umount_success_keeps_truthful_flags_when_fsync_fails(tmp_path: Path):
+@pytest.mark.parametrize("post_probe", ("absent", "present", "unknown", "invalid"))
+def test_recovery_umount_requires_verified_absence_before_detached_flags(
+    tmp_path: Path, post_probe: str
+):
     if not BASH.is_file():
         pytest.skip("Bash is unavailable")
     source = INSTALL.read_text(encoding="utf-8")
@@ -5082,13 +8480,34 @@ def test_recovery_umount_success_keeps_truthful_flags_when_fsync_fails(tmp_path:
             "PERSISTENT_ATTACHED_TO_RELEASE=true",
             "PERSISTENT_DETACHED=false",
             "PERSISTENT_MOUNT_STATE_UNKNOWN=false",
+            "MOUNT_STATE=0",
+            f"POST_PROBE={shlex.quote(post_probe)}",
             f"DETACH_LOG={shlex.quote(_bash_path(log))}",
             "write_mutation_state() { printf 'journal:%s\\n' \"$1\" >> \"$DETACH_LOG\"; }",
-            "verify_findmnt_file() { return 0; }",
+            "verify_findmnt_file() { [ \"$MOUNT_STATE\" != 3 ]; }",
             "invoke_mount_authority() {",
             "  case \"$1\" in",
-            "    findmnt) printf '{}\\n'; return 0 ;;",
-            "    umount) printf 'umount\\n' >> \"$DETACH_LOG\"; return 0 ;;",
+            "    findmnt)",
+            "      [ \"$2\" = --json ] && [ \"$3\" = --mountpoint ] && [ \"$4\" = \"$RELEASE_ROOT/agent/data\" ] || return 64",
+            "      printf 'findmnt\\n' >> \"$DETACH_LOG\"",
+            "      case \"$MOUNT_STATE\" in",
+            "        0) printf '{}\\n'; return 0 ;;",
+            "        1) return 1 ;;",
+            "        3) printf '{}\\n'; return 0 ;;",
+            "        *) return 72 ;;",
+            "      esac",
+            "      ;;",
+            "    umount)",
+            "      [ \"$2\" = \"$RELEASE_ROOT/agent/data\" ] || return 64",
+            "      printf 'umount\\n' >> \"$DETACH_LOG\"",
+            "      case \"$POST_PROBE\" in",
+            "        absent) MOUNT_STATE=1 ;;",
+            "        present) MOUNT_STATE=0 ;;",
+            "        unknown) MOUNT_STATE=2 ;;",
+            "        invalid) MOUNT_STATE=3 ;;",
+            "      esac",
+            "      return 0",
+            "      ;;",
             "    *) return 64 ;;",
             "  esac",
             "}",
@@ -5102,23 +8521,26 @@ def test_recovery_umount_success_keeps_truthful_flags_when_fsync_fails(tmp_path:
         )
     )
 
-    runner = tmp_path / "rollback.sh"
-    runner.write_text(script + "\n", encoding="utf-8")
-    result = subprocess.run(
-        [str(BASH), _bash_path(runner)],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    result = _run_bash_script(tmp_path / "rollback.sh", script)
 
     assert result.returncode == 0, result.stderr + result.stdout
-    assert result.stdout.strip() == "71|false|true|false"
-    assert log.read_text(encoding="ascii").splitlines() == [
+    state = result.stdout.strip().split("|")
+    lines = log.read_text(encoding="ascii").splitlines()
+    expected_prefix = [
+        "findmnt",
         "journal:recovery-detach-persistent-armed",
         "umount",
-        "fsync",
+        "findmnt",
     ]
+    if post_probe == "present":
+        assert state == ["1", "true", "false", "false"]
+        assert lines == expected_prefix
+    elif post_probe in ("unknown", "invalid"):
+        assert state == ["2", "true", "false", "true"]
+        assert lines == expected_prefix
+    else:
+        assert state == ["71", "false", "true", "false"]
+        assert lines == [*expected_prefix, "fsync"]
 
 
 def test_live_bind_side_effect_then_nonzero_is_unmounted_before_root_rollback(
@@ -5203,15 +8625,7 @@ def test_live_bind_side_effect_then_nonzero_is_unmounted_before_root_rollback(
         )
     )
 
-    runner = tmp_path / "rollback.sh"
-    runner.write_text(script + "\n", encoding="utf-8")
-    result = subprocess.run(
-        [str(BASH), _bash_path(runner)],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    result = _run_bash_script(tmp_path / "rollback.sh", script)
 
     assert result.returncode == 52, result.stderr + result.stdout
     lines = log.read_text(encoding="ascii").splitlines()
@@ -5299,7 +8713,7 @@ def test_partial_systemd_restore_keeps_armed_material_for_retry(
         closed_package,
         case_root,
         prepared,
-        failed_hook="units",
+        failed_hook="python",
         env_overrides={"VL360_LOCAL_PYTHON_EXECUTOR": _bash_path(python_executor)},
     )
 
@@ -5521,6 +8935,89 @@ def test_cleanup_failure_keeps_completed_root_and_units_consistent_and_retry_saf
     assert lock["status"] == "released"
 
 
+def test_systemd_cleanup_recorder_failure_surfaces_and_retry_records_durably(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "systemd-cleanup-recorder-failure"
+    prepared = _prepare_case(case_root, closed_package)
+    release, _, evidence, _, _, _, _ = prepared
+    cleanup_failure_used = case_root / "cleanup-failure-used"
+    recorder_failure_used = case_root / "recorder-failure-used"
+    bash_env = case_root / "cleanup-failure.bash"
+    bash_env.write_text(
+        "rm() {\n"
+        "  for argument in \"$@\"; do\n"
+        "    case \"$(basename -- \"$argument\")\" in\n"
+        "      .systemd-unit-attempt.*)\n"
+        f"        if [ ! -f '{_bash_path(cleanup_failure_used)}' ]; then\n"
+        f"          : > '{_bash_path(cleanup_failure_used)}'\n"
+        "          return 61\n"
+        "        fi\n"
+        "        ;;\n"
+        "    esac\n"
+        "  done\n"
+        "  /usr/bin/rm \"$@\"\n"
+        "}\n",
+        encoding="ascii",
+    )
+    cleanup_evidence_path = _bash_path(evidence / "systemd-unit-cleanup.json")
+    python_executor = _write_local_python_executor(
+        case_root / "cleanup-recorder-python",
+        f"if [ \"${{1:-}}\" = - ] "
+        f"&& [ \"${{2:-}}\" = '{cleanup_evidence_path}' ] "
+        f"&& [ ! -f '{_bash_path(recorder_failure_used)}' ]; then\n"
+        f"  : > '{_bash_path(recorder_failure_used)}'\n"
+        "  exit 71\n"
+        "fi\n"
+        'command "$REAL_PYTHON" "$@"\n',
+    )
+
+    first = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={
+            "BASH_ENV": _bash_path(bash_env),
+            "VL360_LOCAL_PYTHON_EXECUTOR": _bash_path(python_executor),
+        },
+    )
+
+    assert first.returncode == 61, first.stderr + first.stdout
+    assert "systemd-unit-cleanup-record-failed:71" in first.stderr
+    assert cleanup_failure_used.is_file()
+    assert recorder_failure_used.is_file()
+    journal = evidence / "install-mutation-state.json"
+    assert json.loads(journal.read_text(encoding="utf-8"))["stage"] == (
+        "committed-cleanup"
+    )
+    assert not (evidence / "systemd-unit-cleanup.json").exists()
+    assert len(list(evidence.glob(".systemd-unit-attempt.*"))) == 1
+    installed_release = _snapshot_tree(release)
+
+    retry = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={
+            "BASH_ENV": _bash_path(bash_env),
+            "VL360_LOCAL_PYTHON_EXECUTOR": _bash_path(python_executor),
+        },
+    )
+
+    assert retry.returncode == 0, retry.stderr + retry.stdout
+    assert _snapshot_tree(release) == installed_release
+    assert not journal.exists()
+    assert _unit_attempt_artifacts(evidence) == []
+    assert not list(release.parent.glob(f".{release.name}.closed-retired-cleanup.*"))
+    cleanup = json.loads(
+        (evidence / "systemd-unit-cleanup.json").read_text(encoding="utf-8")
+    )
+    assert cleanup["status"] == "passed"
+    assert cleanup["exit_code"] == 0
+
+
 def test_false_success_systemd_cleanup_remains_nonzero_and_recoverable(
     tmp_path: Path, closed_package
 ):
@@ -5581,6 +9078,479 @@ def test_false_success_systemd_cleanup_remains_nonzero_and_recoverable(
     assert _unit_attempt_artifacts(evidence) == []
 
 
+def test_stale_committed_candidate_tamper_preserves_retired_root_and_journal(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "committed-candidate-tamper"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, _, _, _, values = prepared
+    journal = _interrupt_at_journal_stage(
+        closed_package, case_root, prepared, "committed-cleanup"
+    )
+    retired_roots = list(release.parent.glob(f".{release.name}.closed-retired.*"))
+    assert len(retired_roots) == 1
+    retired = retired_roots[0]
+    unit_destination = case_root / "runtime" / "systemd-units"
+    hook_log = Path(values["INSTALL_HOOK_LOG"].replace("/", os.sep))
+    if os.name == "nt":
+        hook_log = case_root / "runtime" / "hooks.log"
+    journal_before = journal.read_bytes()
+    retired_before = _snapshot_topology(retired)
+    persistent_before = _snapshot_topology(persistent)
+    units_before = _snapshot_topology(unit_destination)
+    hook_log_before = hook_log.read_bytes()
+    tampered = release / "web-nuxt" / "package.json"
+    tampered.write_bytes(b'{"tampered":true}\n')
+    tampered_before = tampered.read_bytes()
+    release_before = _snapshot_topology(release)
+
+    retry = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        failed_hook="python",
+    )
+
+    assert retry.returncode == 2, retry.stderr + retry.stdout
+    assert "stale-install-recovery-required" in retry.stderr
+    assert journal.read_bytes() == journal_before
+    assert _snapshot_topology(retired) == retired_before
+    assert _snapshot_topology(release) == release_before
+    assert tampered.read_bytes() == tampered_before
+    assert _snapshot_topology(persistent) == persistent_before
+    assert _snapshot_topology(unit_destination) == units_before
+    assert hook_log.read_bytes() == hook_log_before
+
+
+def test_stale_committed_retired_tree_tamper_is_preserved_until_restored(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "committed-retired-tamper"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, _, _, _, values = prepared
+    journal = _interrupt_at_journal_stage(
+        closed_package, case_root, prepared, "committed-cleanup"
+    )
+    retired = next(release.parent.glob(f".{release.name}.closed-retired.*"))
+    retired_backup = case_root / "retired-authority-backup"
+    shutil.copytree(retired, retired_backup)
+    unit_destination = case_root / "runtime" / "systemd-units"
+    hook_log = Path(values["INSTALL_HOOK_LOG"].replace("/", os.sep))
+    if os.name == "nt":
+        hook_log = case_root / "runtime" / "hooks.log"
+    journal_before = journal.read_bytes()
+    release_before = _snapshot_topology(release)
+    persistent_before = _snapshot_topology(persistent)
+    units_before = _snapshot_topology(unit_destination)
+    hook_log_before = hook_log.read_bytes()
+    shutil.rmtree(retired)
+    retired.mkdir()
+    (retired / "foreign-release-marker.txt").write_bytes(b"must-survive\n")
+    tampered_retired = _snapshot_topology(retired)
+
+    blocked = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        failed_hook="python",
+    )
+
+    assert blocked.returncode == 2, blocked.stderr + blocked.stdout
+    assert "stale-install-recovery-required" in blocked.stderr
+    assert journal.read_bytes() == journal_before
+    assert _snapshot_topology(retired) == tampered_retired
+    assert _snapshot_topology(release) == release_before
+    assert _snapshot_topology(persistent) == persistent_before
+    assert _snapshot_topology(unit_destination) == units_before
+    assert hook_log.read_bytes() == hook_log_before
+
+    shutil.rmtree(retired)
+    shutil.copytree(retired_backup, retired)
+    retry = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        failed_hook="python",
+    )
+
+    assert retry.returncode == 19, retry.stderr + retry.stdout
+    assert not journal.exists()
+
+
+def test_primary_and_stale_committed_paths_share_full_installed_verifier():
+    source = INSTALL.read_text(encoding="utf-8")
+    helper_start = source.index("verify_installed_release_authority()")
+    helper_end = source.index("\n}\n", helper_start) + 3
+    helper = source[helper_start:helper_end]
+    for flag in (
+        "--verify-config-ingress-unit-digests",
+        "--verify-persistent-agent-data-mount",
+        "--verify-systemd-unit-destination",
+        "--verify-environment-authority",
+        "--require-closed",
+    ):
+        assert flag in helper
+    stale = source[
+        source.index('  if [ "$committed_recovery" = true ]; then') : source.index(
+            "  local stage_owner_valid=false"
+        )
+    ]
+    assert "verify_installed_release_authority" in stale
+    assert stale.index("verify_installed_release_authority") < stale.index(
+        "invoke_pinned_executable unit-verify"
+    )
+    primary_call = source.rindex("verify_installed_release_authority")
+    assert primary_call < source.index("write_mutation_state retire-old-root-armed")
+
+
+@pytest.mark.parametrize("local_rehearsal", (True, False))
+def test_installed_verifier_helper_executes_exact_cli_contract(
+    tmp_path: Path, local_rehearsal: bool
+):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    start = source.index("verify_installed_release_authority()")
+    helper = source[start : source.index("\n}\n", start) + 3]
+    log = tmp_path / "verifier-argv.bin"
+    installed = tmp_path / "release"
+    persistent = tmp_path / "persistent"
+    systemd = tmp_path / "systemd"
+    evidence = tmp_path / "installed-evidence"
+    mount_evidence = tmp_path / "findmnt.json"
+    environment = tmp_path / "external.env"
+    script = "\n".join(
+        (
+            "set -eu",
+            f"VERIFY_SCRIPT={shlex.quote(_bash_path(VERIFY))}",
+            f"PINNED_ENVIRONMENT_AUTHORITY={shlex.quote(_bash_path(environment))}",
+            f"ARGV_LOG={shlex.quote(_bash_path(log))}",
+            "invoke_python() { printf '%s\\0' \"$@\" > \"$ARGV_LOG\"; }",
+            helper,
+            "verify_installed_release_authority "
+            f"{shlex.quote(_bash_path(installed))} "
+            f"{shlex.quote(_bash_path(persistent))} "
+            f"{shlex.quote(_bash_path(systemd))} "
+            f"{shlex.quote(_bash_path(evidence))} "
+            f"{shlex.quote(_bash_path(mount_evidence))} "
+            f"{'true' if local_rehearsal else 'false'}",
+        )
+    )
+
+    result = _run_bash_script(tmp_path / "verify-installed-helper.sh", script)
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    observed = [item.decode() for item in log.read_bytes().split(b"\0") if item]
+    expected = [
+        _bash_path(VERIFY),
+        "--installed-root",
+        _bash_path(installed),
+        "--persistent-agent-data-root",
+        _bash_path(persistent),
+        "--verify-config-ingress-unit-digests",
+        "--verify-persistent-agent-data-mount",
+        "--systemd-unit-root",
+        _bash_path(systemd),
+        "--verify-systemd-unit-destination",
+        "--environment-authority",
+        _bash_path(environment),
+        "--verify-environment-authority",
+    ]
+    if local_rehearsal:
+        expected.append("--local-rehearsal")
+    else:
+        expected.extend(
+            ["--persistent-mount-evidence", _bash_path(mount_evidence)]
+        )
+    expected.extend(["--require-closed", "--evidence-dir", _bash_path(evidence)])
+    assert observed == expected
+
+
+@pytest.mark.parametrize(
+    ("schema_version", "committed", "tamper", "expected_status"),
+    (
+    (4, True, "manifest", 1),
+    (4, True, "environment", 1),
+    (4, True, "snapshot", 1),
+    (4, False, "candidate-snapshot", 1),
+    (4, False, "manifest", 1),
+    (4, False, "environment", 0),
+        (3, True, "none", 1),
+        (3, False, "none", 1),
+    ),
+)
+def test_stale_journal_binding_policy_is_behavioral(
+    tmp_path: Path,
+    schema_version: int,
+    committed: bool,
+    tamper: str,
+    expected_status: int,
+):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    digest_start = source.index("regular_file_sha256()")
+    digest = source[digest_start : source.index("\n}\n", digest_start) + 3]
+    binding_start = source.index("verify_stale_journal_bindings()")
+    binding = source[
+        binding_start : source.index("\n}\n", binding_start) + 3
+    ]
+    release = tmp_path / "release"
+    release.mkdir()
+    manifest = release / "launch-release-manifest.json"
+    manifest.write_bytes(b"manifest-v1\n")
+    environment = tmp_path / "external.env"
+    environment.write_bytes(b"environment-v1\n")
+    snapshot = tmp_path / "persistent-before.json"
+    snapshot.write_bytes(b"snapshot-v1\n")
+    source_topology = tmp_path / "source-release-topology.json"
+    source_topology.write_bytes(b"source-topology-v1\n")
+    candidate_topology = tmp_path / "candidate-release-topology.json"
+    candidate_topology.write_bytes(b"candidate-topology-v1\n")
+    manifest_sha = hashlib.sha256(manifest.read_bytes()).hexdigest()
+    environment_sha = hashlib.sha256(environment.read_bytes()).hexdigest()
+    snapshot_sha = hashlib.sha256(snapshot.read_bytes()).hexdigest()
+    source_topology_sha = hashlib.sha256(source_topology.read_bytes()).hexdigest()
+    candidate_topology_sha = hashlib.sha256(candidate_topology.read_bytes()).hexdigest()
+    if tamper == "manifest":
+        manifest.write_bytes(b"manifest-v2\n")
+    elif tamper == "environment":
+        environment.write_bytes(b"environment-v2\n")
+    elif tamper == "snapshot":
+        snapshot.write_bytes(b"snapshot-v2\n")
+    elif tamper == "candidate-snapshot":
+        candidate_topology.write_bytes(b"candidate-topology-v2\n")
+    script = "\n".join(
+        (
+            "set -u",
+            f"PYTHON_EXECUTOR={shlex.quote(_bash_path(Path(sys.executable).resolve()))}",
+            'invoke_python() { command "$PYTHON_EXECUTOR" "$@"; }',
+            digest,
+            binding,
+            f"STALE_SCHEMA_VERSION={schema_version}",
+            f"STALE_RELEASE_ROOT={shlex.quote(_bash_path(release))}",
+            f"PINNED_ENVIRONMENT_AUTHORITY={shlex.quote(_bash_path(environment))}",
+            f"SNAPSHOT_BEFORE={shlex.quote(_bash_path(snapshot))}",
+            f"SOURCE_RELEASE_TOPOLOGY_SNAPSHOT={shlex.quote(_bash_path(source_topology))}",
+            f"CANDIDATE_RELEASE_TOPOLOGY_SNAPSHOT={shlex.quote(_bash_path(candidate_topology))}",
+            f"STALE_CANDIDATE_MANIFEST_SHA256={manifest_sha}",
+            f"STALE_CANDIDATE_RELEASE_TOPOLOGY_SHA256={candidate_topology_sha}",
+            f"STALE_ENVIRONMENT_AUTHORITY_SHA256={environment_sha}",
+            f"STALE_PERSISTENT_SNAPSHOT_SHA256={snapshot_sha}",
+            f"STALE_SOURCE_RELEASE_TOPOLOGY_SHA256={source_topology_sha}",
+            f"ENVIRONMENT_AUTHORITY_SHA256={hashlib.sha256(environment.read_bytes()).hexdigest()}",
+            f"verify_stale_journal_bindings {'true' if committed else 'false'} \"$STALE_RELEASE_ROOT\"",
+        )
+    )
+
+    result = _run_bash_script(tmp_path / "stale-binding.sh", script)
+
+    assert result.returncode == expected_status, result.stderr + result.stdout
+
+
+def test_schema4_journal_binds_committed_verifier_authorities():
+    source = INSTALL.read_text(encoding="utf-8")
+    for field in (
+        '"candidate_manifest_sha256"',
+        '"candidate_release_root_identity"',
+        '"candidate_release_topology_sha256"',
+        '"environment_authority_sha256"',
+        '"persistent_snapshot_sha256"',
+        '"source_release_root_identity"',
+        '"source_release_topology_sha256"',
+    ):
+        assert source.count(field) >= 3
+    assert '"schema_version": 4' in source
+
+
+def test_topology_subset_uses_same_agent_data_exclusion_as_snapshot(tmp_path: Path):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    payload_start = source.index("source_release_topology_payload()")
+    payload = source[
+        payload_start : source.index("source_release_topology_sha256()", payload_start)
+    ]
+    subset_start = source.index("source_release_topology_subset()")
+    subset = source[
+        subset_start : source.index("write_durable_atomic_json()", subset_start)
+    ]
+    release = tmp_path / "release"
+    data = release / "agent" / "data"
+    data.mkdir(parents=True)
+    (release / "tracked.txt").write_bytes(b"tracked\n")
+    (data / "mutable.db").write_bytes(b"before\n")
+    snapshot = tmp_path / "topology.json"
+    script = "\n".join(
+        (
+            "set -u",
+            f"PYTHON_EXECUTOR={shlex.quote(_bash_path(Path(sys.executable).resolve()))}",
+            'invoke_python() { command "$PYTHON_EXECUTOR" "$@"; }',
+            payload,
+            subset,
+            f"ROOT={shlex.quote(_bash_path(release))}",
+            f"SNAPSHOT={shlex.quote(_bash_path(snapshot))}",
+            'source_release_topology_payload "$ROOT" > "$SNAPSHOT"',
+            f"printf 'after\\n' > {shlex.quote(_bash_path(data / 'mutable.db'))}",
+            'source_release_topology_subset "$ROOT" "$SNAPSHOT"',
+        )
+    )
+
+    result = _run_bash_script(tmp_path / "topology-agent-data-subset.sh", script)
+
+    assert result.returncode == 0, result.stderr + result.stdout
+
+
+def test_topology_subset_authenticates_the_root_entry(tmp_path: Path):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    payload_start = source.index("source_release_topology_payload()")
+    payload = source[
+        payload_start : source.index("source_release_topology_sha256()", payload_start)
+    ]
+    subset_start = source.index("source_release_topology_subset()")
+    subset = source[
+        subset_start : source.index("write_durable_atomic_json()", subset_start)
+    ]
+    release = tmp_path / "release"
+    release.mkdir(mode=0o755)
+    (release / "tracked.txt").write_bytes(b"tracked\n")
+    snapshot = tmp_path / "topology.json"
+    script = "\n".join(
+        (
+            "set -u",
+            f"PYTHON_EXECUTOR={shlex.quote(_bash_path(Path(sys.executable).resolve()))}",
+            'invoke_python() { command "$PYTHON_EXECUTOR" "$@"; }',
+            payload,
+            subset,
+            f"ROOT={shlex.quote(_bash_path(release))}",
+            f"SNAPSHOT={shlex.quote(_bash_path(snapshot))}",
+            'source_release_topology_payload "$ROOT" > "$SNAPSHOT"',
+            'invoke_python -c \'import json,sys; path=sys.argv[1]; entries=json.load(open(path, encoding="utf-8")); json.dump([entry for entry in entries if entry[0] != "."], open(path, "w", encoding="utf-8"))\' "$SNAPSHOT"',
+            'if source_release_topology_subset "$ROOT" "$SNAPSHOT"; then exit 91; fi',
+        )
+    )
+
+    result = _run_bash_script(tmp_path / "topology-root-subset.sh", script)
+
+    assert result.returncode == 0, result.stderr + result.stdout
+
+
+def test_tree_root_identity_survives_rename_and_rejects_replacement(tmp_path: Path):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    identity_start = source.index("tree_root_identity()")
+    identity = source[identity_start : source.index("\n}\n", identity_start) + 3]
+    original = tmp_path / "original"
+    renamed = tmp_path / "renamed"
+    original.mkdir()
+    script = "\n".join(
+        (
+            "set -u",
+            f"PYTHON_EXECUTOR={shlex.quote(_bash_path(Path(sys.executable).resolve()))}",
+            'invoke_python() { command "$PYTHON_EXECUTOR" "$@"; }',
+            identity,
+            f"ORIGINAL={shlex.quote(_bash_path(original))}",
+            f"RENAMED={shlex.quote(_bash_path(renamed))}",
+            'before=$(tree_root_identity "$ORIGINAL")',
+            'mv -- "$ORIGINAL" "$RENAMED"',
+            'after=$(tree_root_identity "$RENAMED")',
+            '[ "$before" = "$after" ]',
+            'mkdir -- "$ORIGINAL"',
+            'replacement=$(tree_root_identity "$ORIGINAL")',
+            '[ "$before" != "$replacement" ]',
+        )
+    )
+
+    result = _run_bash_script(tmp_path / "tree-root-identity.sh", script)
+
+    assert result.returncode == 0, result.stderr + result.stdout
+
+
+def test_schema4_journal_loader_preserves_empty_systemd_attempt_field(tmp_path: Path):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    loader = source[
+        source.index("load_stale_install_state()") : source.index(
+            "tree_matches_snapshot()"
+        )
+    ]
+    release = tmp_path / "release"
+    persistent = tmp_path / "persistent"
+    evidence = tmp_path / "evidence"
+    for path in (release, persistent, evidence):
+        path.mkdir()
+    journal = evidence / "install-mutation-state.json"
+    attempt_id = "a" * 32
+    candidate_sha = "1" * 64
+    environment_sha = "2" * 64
+    snapshot_sha = "3" * 64
+    candidate_topology_sha = "8" * 64
+    candidate_identity = "11:22"
+    source_identity = "33:44"
+    payload = {
+        "attempt_id": attempt_id,
+        "candidate_manifest_sha256": candidate_sha,
+        "candidate_release_root_identity": candidate_identity,
+        "candidate_release_topology_sha256": candidate_topology_sha,
+        "environment_authority_sha256": environment_sha,
+        "local_rehearsal": False,
+        "old_root": _bash_path(tmp_path / ".release.closed-old.321"),
+        "persistent_key_sha256": "4" * 64,
+        "persistent_root": _bash_path(persistent),
+        "pid": 321,
+        "release_key_sha256": "5" * 64,
+        "release_root": _bash_path(release),
+        "retired_root": _bash_path(tmp_path / f".release.closed-retired.{attempt_id}"),
+        "schema_version": 4,
+        "source_release_root_identity": source_identity,
+        "stage": "persistent-restored",
+        "staging_root": _bash_path(tmp_path / ".release.closed-stage.321"),
+        "systemd_key_sha256": "6" * 64,
+        "systemd_unit_attempt_root": "",
+        "systemd_unit_destination": _bash_path(tmp_path / "systemd"),
+        "persistent_snapshot_sha256": snapshot_sha,
+        "source_release_topology_sha256": "7" * 64,
+    }
+    journal.write_text(json.dumps(payload) + "\n", encoding="ascii")
+    script = "\n".join(
+        (
+            "set -u",
+            f"MUTATION_STATE={shlex.quote(_bash_path(journal))}",
+            f"EVIDENCE_DIR={shlex.quote(_bash_path(evidence))}",
+            f"PYTHON_EXECUTOR={shlex.quote(_bash_path(Path(sys.executable).resolve()))}",
+            'invoke_python() { command "$PYTHON_EXECUTOR" "$@"; }',
+            'canonical_authority_path() { printf "%s\\n" "$1"; }',
+            "lock_spec() {",
+            '  case "$1" in',
+            f'    release) printf "release|%s|%s|release\\n" "$2" {shlex.quote("5" * 64)} ;;',
+            f'    persistent) printf "persistent|%s|%s|persistent\\n" "$2" {shlex.quote("4" * 64)} ;;',
+            f'    systemd) printf "systemd|%s|%s|systemd\\n" "$2" {shlex.quote("6" * 64)} ;;',
+            "    *) return 64 ;;",
+            "  esac",
+            "}",
+            loader,
+            "set +e",
+            "load_stale_install_state",
+            "status=$?",
+            'printf "%s|%s|%s|%s|%s|%s|%s|%s\\n" "$status" "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" "$STALE_CANDIDATE_MANIFEST_SHA256" "$STALE_CANDIDATE_RELEASE_TOPOLOGY_SHA256" "$STALE_CANDIDATE_RELEASE_ROOT_IDENTITY" "$STALE_ENVIRONMENT_AUTHORITY_SHA256" "$STALE_PERSISTENT_SNAPSHOT_SHA256" "$STALE_SOURCE_RELEASE_ROOT_IDENTITY"',
+        )
+    )
+    result = _run_bash_script(tmp_path / "load-state.sh", script)
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert result.stdout.strip() == (
+        f"0||{candidate_sha}|{candidate_topology_sha}|{candidate_identity}|"
+        f"{environment_sha}|{snapshot_sha}|{source_identity}"
+    )
+
+
 @pytest.mark.parametrize("rm_status", (0, 61), ids=("fake-success", "partial-failure"))
 def test_old_root_cleanup_failure_keeps_committed_release_and_retry_finishes_cleanup(
     tmp_path: Path, closed_package, rm_status: int
@@ -5599,30 +9569,19 @@ def test_old_root_cleanup_failure_keeps_committed_release_and_retry_finishes_cle
         _,
     ) = prepared
     failure_used = case_root / f"old-root-cleanup-failure-used-{rm_status}"
-    bash_env = case_root / "old-root-cleanup-failure.bash"
-    bash_env.write_text(
-        "rm() {\n"
-        "for argument in \"$@\"; do\n"
-        "  case \"$(basename -- \"$argument\")\" in\n"
-        "    .release.closed-retired.*)\n"
-        f"      if [ ! -f '{_bash_path(failure_used)}' ]; then\n"
-        f"        : > '{_bash_path(failure_used)}'\n"
-        "        /usr/bin/rm -f -- \"$argument/old-release-marker.txt\"\n"
-        f"        return {rm_status}\n"
-        "      fi\n"
-        "      ;;\n"
-        "  esac\n"
-        "done\n"
-        "/usr/bin/rm \"$@\"\n"
-        "}\n",
-        encoding="ascii",
+    rm_executor = _write_cleanup_rm_fault_executor(
+        case_root / "old-root-cleanup-failure-rm",
+        basename_pattern=f".{release.name}.closed-retired-cleanup.*",
+        marker=failure_used,
+        status=rm_status,
+        partial_relative="old-release-marker.txt",
     )
 
     first = _invoke_installer(
         closed_package,
         case_root,
         prepared,
-        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+        env_overrides={"VL360_LOCAL_RM_EXECUTOR": _bash_path(rm_executor)},
     )
 
     assert first.returncode != 0, first.stderr + first.stdout
@@ -5631,14 +9590,20 @@ def test_old_root_cleanup_failure_keeps_committed_release_and_retry_finishes_cle
     assert not (release / "old-release-marker.txt").exists()
     assert _snapshot_tree(persistent) == before_persistent
     installed_release = _snapshot_tree(release)
-    retired_roots = list(release.parent.glob(f".{release.name}.closed-retired.*"))
-    assert len(retired_roots) == 1
-    retired_root = retired_roots[0]
-    assert not (retired_root / "old-release-marker.txt").exists()
+    cleanup_roots = list(
+        release.parent.glob(f".{release.name}.closed-retired-cleanup.*")
+    )
+    assert len([path for path in cleanup_roots if path.is_dir()]) == 1
+    cleanup_root = next(path for path in cleanup_roots if path.is_dir())
+    cleanup_owner = Path(f"{cleanup_root}.owner")
+    assert cleanup_owner.is_file()
+    assert not (cleanup_root / "old-release-marker.txt").exists()
     journal = evidence / "install-mutation-state.json"
     payload = json.loads(journal.read_text(encoding="utf-8"))
     assert payload["stage"] == "committed-cleanup"
-    assert payload["retired_root"] == _bash_path(retired_root)
+    assert payload["retired_root"] == _bash_path(
+        release.parent / f".{release.name}.closed-retired.{payload['attempt_id']}"
+    )
     assert not list(release.parent.glob(f".{release.name}.closed-stage.*"))
     assert not list(release.parent.glob(f".{release.name}.closed-old.*"))
 
@@ -5657,6 +9622,7 @@ def test_old_root_cleanup_failure_keeps_committed_release_and_retry_finishes_cle
     assert not list(release.parent.glob(f".{release.name}.closed-stage.*"))
     assert not list(release.parent.glob(f".{release.name}.closed-old.*"))
     assert not list(release.parent.glob(f".{release.name}.closed-retired.*"))
+    assert not list(release.parent.glob(f".{release.name}.closed-retired-cleanup.*"))
 
 
 @pytest.mark.parametrize(
@@ -5697,7 +9663,9 @@ def test_postrename_fsync_failure_reconciles_the_observed_filesystem_state(
         failure_code = 72
     python_executor = _write_local_python_executor(
         case_root / f"{rename_stage}-fsync-python",
-        f"  if [ \"${{1:-}}\" = - ] && [ ! -f '{_bash_path(failure_used)}' ] "
+        f"  if [ \"${{1:-}}\" = - ] "
+        f"&& [ \"${{2:-}}\" = '{parent}' ] "
+        f"&& [ ! -f '{_bash_path(failure_used)}' ] "
         f"&& {state_probe}; then\n"
         f"    : > '{_bash_path(failure_used)}'\n"
         f"    exit {failure_code}\n"
@@ -5754,7 +9722,7 @@ def test_postrename_fsync_failure_reconciles_the_observed_filesystem_state(
         ("lock", "fsync"),
     ),
 )
-def test_private_attempt_cleanup_failure_is_nonzero_and_retry_sweeps_stale_artifacts(
+def test_private_attempt_cleanup_bypasses_rm_shadow_and_releases_artifacts(
     tmp_path: Path,
     closed_package,
     cleanup_kind: str,
@@ -5764,7 +9732,7 @@ def test_private_attempt_cleanup_failure_is_nonzero_and_retry_sweeps_stale_artif
         pytest.skip("Git Bash is unavailable")
     case_root = tmp_path / f"private-cleanup-{cleanup_kind}-{failure_mode}"
     prepared = _prepare_case(case_root, closed_package)
-    release, _, evidence, before_release, _, _, _ = prepared
+    release, _, evidence, _, _, _, _ = prepared
     bash_env, python_executor = _cleanup_failure_bash_env(
         case_root, evidence, cleanup_kind, failure_mode
     )
@@ -5779,23 +9747,11 @@ def test_private_attempt_cleanup_failure_is_nonzero_and_retry_sweeps_stale_artif
         env_overrides=env_overrides,
     )
 
-    assert first.returncode != 0, first.stderr + first.stdout
-    assert (case_root / f"{cleanup_kind}-{failure_mode}-matched").is_file()
-    artifacts = _private_attempt_artifacts(case_root, evidence)
-    if failure_mode == "fsync":
-        assert (case_root / f"{cleanup_kind}-{failure_mode}-fsync-failed").is_file()
-        assert artifacts[cleanup_kind] == []
-    else:
-        assert artifacts[cleanup_kind]
-    if cleanup_kind == "archive":
-        assert _snapshot_tree(release) == before_release
-    else:
-        assert (release / "launch-release-manifest.json").is_file()
-        assert not (release / "old-release-marker.txt").exists()
-
-    retry = _invoke_installer(closed_package, case_root, prepared)
-
-    assert retry.returncode == 0, retry.stderr + retry.stdout
+    assert first.returncode == 0, first.stderr + first.stdout
+    assert not (case_root / f"{cleanup_kind}-{failure_mode}-matched").exists()
+    assert not (case_root / f"{cleanup_kind}-{failure_mode}-fsync-failed").exists()
+    assert (release / "launch-release-manifest.json").is_file()
+    assert not (release / "old-release-marker.txt").exists()
     assert _private_attempt_artifacts(case_root, evidence) == {
         "archive": [],
         "pin": [],
@@ -5806,29 +9762,31 @@ def test_private_attempt_cleanup_failure_is_nonzero_and_retry_sweeps_stale_artif
     assert lock["exit_code"] == 0
 
 
-def test_private_cleanup_preserves_primary_exit_status(tmp_path: Path, closed_package):
+def test_private_cleanup_preserves_primary_exit_status(tmp_path: Path):
     if not BASH.is_file():
         pytest.skip("Git Bash is unavailable")
-    case_root = tmp_path / "private-cleanup-primary-status"
-    prepared = _prepare_case(case_root, closed_package)
-    _, _, evidence, _, _, _, _ = prepared
-    bash_env, python_executor = _cleanup_failure_bash_env(
-        case_root, evidence, "pin", "nonzero"
+    source = INSTALL.read_text(encoding="utf-8")
+    start = source.index("cleanup_attempt_trap()")
+    cleanup_trap = source[
+        start : source.index("trap cleanup_attempt_trap EXIT", start)
+    ]
+    script = "\n".join(
+        (
+            "set +e",
+            "cleanup_attempt_authorities() { return 61; }",
+            cleanup_trap,
+            "primary_failure() { return 19; }",
+            "( primary_failure; cleanup_attempt_trap )",
+            "primary_status=$?",
+            "( true; cleanup_attempt_trap )",
+            "cleanup_status=$?",
+            "printf '%s|%s\\n' \"$primary_status\" \"$cleanup_status\"",
+        )
     )
-    env_overrides = {"BASH_ENV": _bash_path(bash_env)}
-    if python_executor is not None:
-        env_overrides["VL360_LOCAL_PYTHON_EXECUTOR"] = _bash_path(python_executor)
+    result = _run_bash_script(tmp_path / "cleanup-precedence.sh", script)
 
-    result = _invoke_installer(
-        closed_package,
-        case_root,
-        prepared,
-        failed_hook="python",
-        env_overrides=env_overrides,
-    )
-
-    assert result.returncode == 19, result.stderr + result.stdout
-    assert _private_attempt_artifacts(case_root, evidence)["pin"]
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert result.stdout.strip() == "19|61"
 
 
 def test_rollback_journal_clear_false_success_remains_retryable(
@@ -5880,6 +9838,61 @@ def test_rollback_journal_clear_false_success_remains_retryable(
     assert _snapshot_tree(persistent) == before_persistent
 
     retry = _invoke_installer(closed_package, case_root, prepared)
+
+    assert retry.returncode == 0, retry.stderr + retry.stdout
+    assert not journal.exists()
+    assert (release / "launch-release-manifest.json").is_file()
+    assert _snapshot_tree(persistent) == before_persistent
+
+
+def test_recovery_evidence_one_shot_failure_retains_journal_for_retry(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "recovery-evidence-one-shot-failure"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, before_persistent, _, _ = prepared
+    journal = evidence / "install-mutation-state.json"
+    failure_used = case_root / "recovery-evidence-failure-used"
+    recovery_path = _bash_path(evidence / "install-recovery.json")
+    python_executor = _write_local_python_executor(
+        case_root / "recovery-evidence-python",
+        f"if [ \"${{1:-}}\" = - ] "
+        f"&& [ \"${{2:-}}\" = '{recovery_path}' ] "
+        f"&& [ ! -f '{_bash_path(failure_used)}' ]; then\n"
+        f"  : > '{_bash_path(failure_used)}'\n"
+        "  exit 71\n"
+        "fi\n"
+        'command "$REAL_PYTHON" "$@"\n',
+    )
+
+    first = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={
+            "VL360_INSTALL_FAIL_AFTER": "swap-release-root",
+            "VL360_LOCAL_PYTHON_EXECUTOR": _bash_path(python_executor),
+        },
+    )
+
+    assert first.returncode == 73, first.stderr + first.stdout
+    assert "recovery-evidence-record-failed:rolled-back:71" in first.stderr
+    assert failure_used.is_file()
+    assert json.loads(journal.read_text(encoding="utf-8"))["stage"] == (
+        "rollback-restored"
+    )
+    assert not (evidence / "install-recovery.json").exists()
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
+
+    retry = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={"VL360_LOCAL_PYTHON_EXECUTOR": _bash_path(python_executor)},
+    )
 
     assert retry.returncode == 0, retry.stderr + retry.stdout
     assert not journal.exists()

@@ -25,6 +25,8 @@ REOPEN_ATTEMPTED=false
 MAINTENANCE_ADMISSION_ATTEMPTED=false
 RECOVERY_TRAP_ARMED=false
 WATCHDOG_TIMER_WAS_ACTIVE=false
+RECOVERY_SERVICES_MUTATED=false
+RECOVERY_SERVICE_START_ATTEMPTED=false
 NO_LIVE_CLAIM_JSON='{"stage3_claim": false, "live_sla_proven": false, "observed_local_elapsed_seconds": 0}'
 
 case "$MODE" in
@@ -74,6 +76,145 @@ run_privileged() {
   fi
 }
 
+service_is_inactive() {
+  local service="$1"
+  local status
+  if run_privileged systemctl is-active --quiet "$service"; then
+    status=0
+  else
+    status=$?
+  fi
+  if [ "$status" -eq 3 ]; then
+    return 0
+  fi
+  if [ "$status" -eq 0 ]; then
+    return 1
+  fi
+  return "$status"
+}
+
+service_is_active() {
+  local status
+  if run_privileged systemctl is-active --quiet "$1"; then
+    return 0
+  else
+    status=$?
+  fi
+  return "$status"
+}
+
+watchdog_timer_is_active() {
+  local status
+  if run_privileged systemctl is-active --quiet vl-watchdog.timer; then
+    return 0
+  else
+    status=$?
+  fi
+  if [ "$status" -eq 3 ]; then
+    return 1
+  fi
+  return "$status"
+}
+
+capture_watchdog_timer_state() {
+  local status
+  if watchdog_timer_is_active; then
+    WATCHDOG_TIMER_WAS_ACTIVE=true
+    return 0
+  else
+    status=$?
+  fi
+  if [ "$status" -eq 1 ]; then
+    return 0
+  fi
+  return "$status"
+}
+
+validate_host_probe_authorities() {
+  if [ "$MODE" = "--local-rehearsal" ]; then
+    return 0
+  fi
+  local public_url="${NGINX_PUBLIC_PROBE_URL:-}"
+  local operator_url="${NGINX_OPERATOR_PROBE_URL:-${NGINX_PROBE_URL:-}}"
+  if [ -z "$public_url" ] || [ -z "$operator_url" ] || [ "$public_url" = "$operator_url" ]; then
+    printf 'separate public and operator probe authorities are required\n' >&2
+    return 64
+  fi
+}
+
+cleanup_partially_started_services() {
+  local status=0 command_status
+  local service
+  for service in vl-nuxt vl-agent; do
+    if run_privileged systemctl stop "$service"; then
+      record_recovery_result "cleanup-stop-$service" passed 0 || true
+    else
+      command_status=$?
+      record_recovery_result "cleanup-stop-$service" failed "$command_status" || true
+      [ "$status" -ne 0 ] || status="$command_status"
+    fi
+    if service_is_inactive "$service"; then
+      record_recovery_result "cleanup-prove-$service-inactive" passed 0 || true
+    else
+      command_status=$?
+      record_recovery_result "cleanup-prove-$service-inactive" failed "$command_status" || true
+      [ "$status" -ne 0 ] || status="$command_status"
+    fi
+  done
+  return "$status"
+}
+
+recovery_stop_service() {
+  local service="$1"
+  local command_status=0
+  RECOVERY_SERVICES_MUTATED=true
+  if run_privileged systemctl stop "$service"; then
+    record_recovery_result "stop-$service" passed 0 || true
+  else
+    command_status=$?
+    record_recovery_result "stop-$service" failed "$command_status" || true
+    RECOVERY_RESULT_OK=false
+  fi
+  if service_is_inactive "$service"; then
+    record_recovery_result "prove-$service-inactive" passed 0 || true
+    return 0
+  else
+    command_status=$?
+    record_recovery_result "prove-$service-inactive" failed "$command_status" || true
+    RECOVERY_RESULT_OK=false
+    return "$command_status"
+  fi
+}
+
+recovery_start_service() {
+  local service="$1"
+  local command_status=0
+  if [ "$RECOVERY_CHAIN_OK" != true ]; then
+    record_recovery_result "start-$service" skipped 0 || true
+    record_recovery_result "prove-$service-active" skipped 0 || true
+    return 0
+  fi
+  RECOVERY_SERVICE_START_ATTEMPTED=true
+  if run_privileged systemctl start "$service"; then
+    record_recovery_result "start-$service" passed 0 || true
+  else
+    command_status=$?
+    record_recovery_result "start-$service" failed "$command_status" || true
+    record_recovery_result "prove-$service-active" skipped 0 || true
+    RECOVERY_CHAIN_OK=false
+    RECOVERY_RESULT_OK=false
+    return 0
+  fi
+  if service_is_active "$service"; then
+    record_recovery_result "prove-$service-active" passed 0 || true
+  else
+    command_status=$?
+    record_recovery_result "prove-$service-active" failed "$command_status" || true
+    RECOVERY_CHAIN_OK=false
+    RECOVERY_RESULT_OK=false
+  fi
+}
+
 run_local_authority() {
   local authority_kind="$1"
   shift
@@ -99,14 +240,33 @@ run_local_authority() {
 
 maintenance_select() {
   local action="$1"
+  local command_status
   if [ "$MODE" = "--local-rehearsal" ]; then
     local maintenance_dir="$LOCAL_MAINTENANCE_DIR"
-    command -v cygpath >/dev/null 2>&1 && maintenance_dir="$(cygpath -u "$maintenance_dir")"
-    VL360_MAINTENANCE_SOURCE_DIR="$PROJECT_ROOT/ops/nginx/maintenance" \
-      VL360_MAINTENANCE_DIR="$maintenance_dir" \
-      VL360_NGINX_BIN=true \
-      "$SCRIPT_DIR/maintenance_mode.sh" "$action" --operator-cidr "$OPERATOR_CIDR"
-    run_privileged vl360-maintenance "$action"
+    if command -v cygpath >/dev/null 2>&1; then
+      if maintenance_dir="$(cygpath -u "$maintenance_dir")"; then
+        :
+      else
+        command_status=$?
+        return "$command_status"
+      fi
+    fi
+    if MSYS="${MSYS:+$MSYS }winsymlinks:nativestrict" \
+        VL360_MAINTENANCE_SOURCE_DIR="$PROJECT_ROOT/ops/nginx/maintenance" \
+        VL360_MAINTENANCE_DIR="$maintenance_dir" \
+        VL360_NGINX_BIN=true \
+        "$SCRIPT_DIR/maintenance_mode.sh" "$action" --operator-cidr "$OPERATOR_CIDR"; then
+      :
+    else
+      command_status=$?
+      return "$command_status"
+    fi
+    if run_privileged vl360-maintenance "$action"; then
+      return 0
+    else
+      command_status=$?
+      return "$command_status"
+    fi
   else
     "$SCRIPT_DIR/maintenance_mode.sh" "$action" --operator-cidr "$OPERATOR_CIDR"
   fi
@@ -114,6 +274,7 @@ maintenance_select() {
 
 prepare_local_maintenance_model() {
   [ "$MODE" = "--local-rehearsal" ] || return 0
+  CURRENT_PHASE=prepare-local-maintenance-model
   mkdir -p -- "$LOCAL_MAINTENANCE_DIR"
   cp -- "$PROJECT_ROOT/ops/nginx/maintenance/http-context.conf.template" \
     "$LOCAL_MAINTENANCE_DIR/http-context.conf"
@@ -191,27 +352,56 @@ install_closed_package() {
 }
 
 verify_dependencies_units_daemon_reload() {
+  local command_status
+  local mount_evidence="${1:-}"
   if [ "$MODE" = "--local-rehearsal" ]; then
-    mkdir -p -- "$EVIDENCE_DIR/runtime-authority"
-    run_local_authority dependencies \
-      > "$EVIDENCE_DIR/runtime-authority/dependency-check.json"
+    if mkdir -p -- "$EVIDENCE_DIR/runtime-authority"; then
+      :
+    else
+      command_status=$?
+      return "$command_status"
+    fi
+    if run_local_authority dependencies \
+        > "$EVIDENCE_DIR/runtime-authority/dependency-check.json"; then
+      :
+    else
+      command_status=$?
+      return "$command_status"
+    fi
   else
-    python -m pip check
+    if python -m pip check; then
+      :
+    else
+      command_status=$?
+      return "$command_status"
+    fi
   fi
   local verifier_args=()
   if [ "$MODE" = "--local-rehearsal" ]; then
     verifier_args+=(--local-rehearsal)
+  else
+    [ -n "$mount_evidence" ] || return 64
+    verifier_args+=(--persistent-mount-evidence "$mount_evidence")
   fi
-  python "$SCRIPT_DIR/verify_closed_release.py" \
-    --installed-root "$RELEASE_ROOT" \
-    --persistent-agent-data-root "$PERSISTENT_AGENT_DATA_ROOT" \
-    --verify-config-ingress-unit-digests --verify-persistent-agent-data-mount \
-    --systemd-unit-root "$SYSTEMD_UNIT_DESTINATION" --verify-systemd-unit-destination \
-    --environment-authority "$ENVIRONMENT_AUTHORITY" --verify-environment-authority \
-    "${verifier_args[@]}" \
-    --require-closed --evidence-dir "$EVIDENCE_DIR/runtime-authority"
-  run_privileged systemctl daemon-reload
-  run_privileged systemctl start vl-nuxt
+  if python "$SCRIPT_DIR/verify_closed_release.py" \
+      --installed-root "$RELEASE_ROOT" \
+      --persistent-agent-data-root "$PERSISTENT_AGENT_DATA_ROOT" \
+      --verify-config-ingress-unit-digests --verify-persistent-agent-data-mount \
+      --systemd-unit-root "$SYSTEMD_UNIT_DESTINATION" --verify-systemd-unit-destination \
+      --environment-authority "$ENVIRONMENT_AUTHORITY" --verify-environment-authority \
+      "${verifier_args[@]}" \
+      --require-closed --evidence-dir "$EVIDENCE_DIR/runtime-authority"; then
+    :
+  else
+    command_status=$?
+    return "$command_status"
+  fi
+  if run_privileged systemctl daemon-reload; then
+    return 0
+  else
+    command_status=$?
+    return "$command_status"
+  fi
 }
 
 validate_local_readiness_evidence() {
@@ -245,25 +435,58 @@ PY
 
 verify_readiness_and_listeners() {
   local evidence="$1"
-  mkdir -p -- "$evidence"
+  local command_status
+  if mkdir -p -- "$evidence"; then
+    :
+  else
+    command_status=$?
+    return "$command_status"
+  fi
   if [ "$MODE" = "--local-rehearsal" ]; then
-    if ! run_local_authority readiness > "$evidence/process-local-readiness.json"; then
-      write_blocked_evidence "$evidence/process-local-readiness.json" "nuxt-3000-unavailable"
+    if run_local_authority readiness > "$evidence/process-local-readiness.json"; then
+      :
+    else
+      command_status=$?
+      if write_blocked_evidence "$evidence/process-local-readiness.json" "nuxt-3000-unavailable"; then
+        :
+      else
+        command_status=$?
+        return "$command_status"
+      fi
+      return "$command_status"
+    fi
+    if validate_local_readiness_evidence "$evidence/process-local-readiness.json"; then
+      :
+    else
+      if write_blocked_evidence "$evidence/process-local-readiness.json" "nuxt-3000-readiness-invalid"; then
+        :
+      else
+        command_status=$?
+        return "$command_status"
+      fi
       return 2
     fi
-    if ! validate_local_readiness_evidence "$evidence/process-local-readiness.json"; then
-      write_blocked_evidence "$evidence/process-local-readiness.json" "nuxt-3000-readiness-invalid"
-      return 2
-    fi
-  elif ! curl --fail --silent --show-error --max-time 3 \
+  elif curl --fail --silent --show-error --max-time 3 \
       http://127.0.0.1:3000/_internal/launch-readiness \
       > "$evidence/process-local-readiness.json"; then
-      write_blocked_evidence "$evidence/process-local-readiness.json" "nuxt-3000-unavailable"
+    :
+  else
+    if write_blocked_evidence "$evidence/process-local-readiness.json" "nuxt-3000-unavailable"; then
+      :
+    else
+      command_status=$?
+      return "$command_status"
+    fi
       return 2
   fi
   if [ "$MODE" = "--local-rehearsal" ]; then
     local ss_output
-    ss_output="$(run_local_authority listener)"
+    if ss_output="$(run_local_authority listener)"; then
+      :
+    else
+      command_status=$?
+      return "$command_status"
+    fi
     python - "$SCRIPT_DIR/socket_boundary_probe.py" "$evidence/listeners.json" "$ss_output" <<'PY'
 import importlib.util
 from pathlib import Path
@@ -286,6 +509,7 @@ PY
 
 verify_nginx_closed_boundary() {
   local evidence="$1"
+  local command_status
   if [ "$MODE" = "--local-rehearsal" ]; then
     if run_local_authority maintenance > "$evidence"; then
       :
@@ -308,7 +532,12 @@ PY
   fi
   local operator_url="${NGINX_OPERATOR_PROBE_URL:-${NGINX_PROBE_URL:-}}"
   if [ -z "$operator_url" ]; then
-    write_blocked_evidence "$evidence" "nginx-probe-url-unavailable"
+    if write_blocked_evidence "$evidence" "nginx-probe-url-unavailable"; then
+      :
+    else
+      command_status=$?
+      return "$command_status"
+    fi
     return 2
   fi
   VL360_LAUNCH_PUBLIC_URL="$operator_url" \
@@ -322,7 +551,13 @@ PY
 
 verify_maintenance_boundary() {
   local evidence="$1"
-  mkdir -p -- "$(dirname -- "$evidence")"
+  local command_status
+  if mkdir -p -- "$(dirname -- "$evidence")"; then
+    :
+  else
+    command_status=$?
+    return "$command_status"
+  fi
   if [ "$MODE" = "--local-rehearsal" ]; then
     if run_local_authority maintenance > "$evidence"; then
       :
@@ -347,14 +582,24 @@ PY
   local public_url="${NGINX_PUBLIC_PROBE_URL:-}"
   local operator_url="${NGINX_OPERATOR_PROBE_URL:-${NGINX_PROBE_URL:-}}"
   if [ -z "$public_url" ] || [ -z "$operator_url" ]; then
-    write_blocked_evidence "$evidence" "public-and-operator-probe-url-unavailable"
+    if write_blocked_evidence "$evidence" "public-and-operator-probe-url-unavailable"; then
+      :
+    else
+      command_status=$?
+      return "$command_status"
+    fi
     return 2
   fi
   local public_status
   public_status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
     --max-time 3 "$public_url/" || true)"
   if [ "$public_status" != 503 ]; then
-    write_traffic_classification unknown "public-maintenance-probe-failed" "$public_status"
+    if write_traffic_classification unknown "public-maintenance-probe-failed" "$public_status"; then
+      :
+    else
+      command_status=$?
+      return "$command_status"
+    fi
     return 2
   fi
   VL360_LAUNCH_PUBLIC_URL="$operator_url" \
@@ -366,11 +611,30 @@ PY
       --require-direct-bypass-denied --evidence "$evidence"
 }
 
+classify_maintenance_boundary() {
+  local evidence="$1"
+  local proof_status
+  TRAFFIC_STATE=unknown
+  if verify_maintenance_boundary "$evidence"; then
+    TRAFFIC_STATE=drained
+    return 0
+  else
+    proof_status=$?
+  fi
+  return "$proof_status"
+}
+
 verify_browser_worker_cache() {
   local evidence="$1"
+  local command_status
   local operator_url="${NGINX_OPERATOR_PROBE_URL:-${NGINX_PROBE_URL:-}}"
   if [ -z "$operator_url" ]; then
-    write_blocked_evidence "$evidence" "browser-server-unavailable"
+    if write_blocked_evidence "$evidence" "browser-server-unavailable"; then
+      :
+    else
+      command_status=$?
+      return "$command_status"
+    fi
     return 2
   fi
   node "$PROJECT_ROOT/scripts/launch_safety_browser_e2e.mjs" \
@@ -401,6 +665,7 @@ best_effort_recovery_step() {
     local code=$?
     record_recovery_result "$name" failed "$code" || true
     RECOVERY_CHAIN_OK=false
+    RECOVERY_RESULT_OK=false
   fi
   return 0
 }
@@ -418,6 +683,7 @@ redrain_step() {
     local code=$?
     record_recovery_result "$name" failed "$code" || true
     REDRAIN_OK=false
+    RECOVERY_RESULT_OK=false
   fi
 }
 
@@ -466,6 +732,9 @@ keep_maintenance_and_recover() {
   original_status="${1:-1}"
   trap - ERR
   set +e
+  RECOVERY_RESULT_OK=true
+  RECOVERY_SERVICES_MUTATED=false
+  RECOVERY_SERVICE_START_ATTEMPTED=false
   if [ "$REOPEN_ATTEMPTED" = true ] || [ "$MAINTENANCE_ADMISSION_ATTEMPTED" = true ]; then
     TRAFFIC_STATE=unknown
     REDRAIN_OK=true
@@ -492,6 +761,25 @@ keep_maintenance_and_recover() {
   fi
 
   if [ "$RECOVERY_CHAIN_OK" = true ]; then
+    nuxt_inactive=false
+    agent_inactive=false
+    if recovery_stop_service vl-nuxt; then
+      nuxt_inactive=true
+    fi
+    if recovery_stop_service vl-agent; then
+      agent_inactive=true
+    fi
+    if [ "$nuxt_inactive" != true ] || [ "$agent_inactive" != true ]; then
+      RECOVERY_CHAIN_OK=false
+    fi
+  else
+    record_recovery_result stop-vl-nuxt skipped 0 || true
+    record_recovery_result prove-vl-nuxt-inactive skipped 0 || true
+    record_recovery_result stop-vl-agent skipped 0 || true
+    record_recovery_result prove-vl-agent-inactive skipped 0 || true
+  fi
+
+  if [ "$RECOVERY_CHAIN_OK" = true ]; then
     best_effort_recovery_step verify-recovery-package \
       python "$SCRIPT_DIR/verify_closed_release.py" \
         --archive "$recovery_package" --archive-digest-file "$recovery_package.sha256" \
@@ -507,10 +795,13 @@ keep_maintenance_and_recover() {
   fi
   if [ "$RECOVERY_CHAIN_OK" = true ]; then
     best_effort_recovery_step verify-dependencies-units-daemon-reload \
-      verify_dependencies_units_daemon_reload
+      verify_dependencies_units_daemon_reload \
+        "$EVIDENCE_DIR/recovery/install/findmnt-after.json"
   else
     record_recovery_result verify-dependencies-units-daemon-reload skipped 0 || true
   fi
+  recovery_start_service vl-agent
+  recovery_start_service vl-nuxt
   if [ "$RECOVERY_CHAIN_OK" = true ]; then
     best_effort_recovery_step verify-readiness-and-listeners \
       verify_readiness_and_listeners "$EVIDENCE_DIR/recovery"
@@ -530,13 +821,21 @@ keep_maintenance_and_recover() {
     record_recovery_result verify-browser-worker-cache skipped 0 || true
   fi
 
+  if [ "$RECOVERY_SERVICE_START_ATTEMPTED" = true ] \
+    && [ "$RECOVERY_CHAIN_OK" != true ]; then
+    cleanup_partially_started_services || RECOVERY_RESULT_OK=false
+  fi
+
   if [ "$WATCHDOG_TIMER_WAS_ACTIVE" = true ]; then
-    if run_privileged systemctl start vl-watchdog.timer; then
+    if [ "$RECOVERY_SERVICES_MUTATED" = true ] \
+      && [ "$RECOVERY_CHAIN_OK" != true ]; then
+      record_recovery_result restore-watchdog skipped 0 || true
+    elif run_privileged systemctl start vl-watchdog.timer; then
       record_recovery_result restore-watchdog passed 0 || true
     else
       local watchdog_status=$?
       record_recovery_result restore-watchdog failed "$watchdog_status" || true
-      RECOVERY_CHAIN_OK=false
+      RECOVERY_RESULT_OK=false
     fi
   else
     record_recovery_result restore-watchdog skipped 0 || true
@@ -544,7 +843,7 @@ keep_maintenance_and_recover() {
 
   recovery_status=failed
   closed_verified=false
-  if [ "$RECOVERY_CHAIN_OK" = true ]; then
+  if [ "$RECOVERY_CHAIN_OK" = true ] && [ "$RECOVERY_RESULT_OK" = true ]; then
     recovery_status=closed-verified
     closed_verified=true
   fi
@@ -564,15 +863,15 @@ python "$SCRIPT_DIR/verify_closed_release.py" \
   --rollback-id "$ROLLBACK_RELEASE_ID" --evidence-dir "$EVIDENCE_DIR/package"
 record_phase passed
 
-prepare_local_maintenance_model
+validate_host_probe_authorities
 
 RECOVERY_TRAP_ARMED=true
 trap 'keep_maintenance_and_recover "$?"' ERR
 
+prepare_local_maintenance_model
+
 CURRENT_PHASE=suspend-watchdog
-if run_privileged systemctl is-active --quiet vl-watchdog.timer; then
-  WATCHDOG_TIMER_WAS_ACTIVE=true
-fi
+capture_watchdog_timer_state
 run_privileged systemctl stop vl-watchdog.timer
 run_privileged systemctl stop vl-watchdog.service
 record_phase passed
@@ -582,12 +881,14 @@ MAINTENANCE_ADMISSION_ATTEMPTED=true
 maintenance_select enable
 run_privileged nginx -t
 run_privileged systemctl reload nginx
-verify_maintenance_boundary "$EVIDENCE_DIR/maintenance-http-proof.json"
-TRAFFIC_STATE=drained
+classify_maintenance_boundary "$EVIDENCE_DIR/maintenance-http-proof.json"
 record_phase passed
 
 CURRENT_PHASE=stop-vl-nuxt
 run_privileged systemctl stop vl-nuxt
+service_is_inactive vl-nuxt
+run_privileged systemctl stop vl-agent
+service_is_inactive vl-agent
 record_phase passed
 
 CURRENT_PHASE=purge-runtime-caches
@@ -603,7 +904,12 @@ install_closed_package "$KNOWN_GOOD_CLOSED" "$EVIDENCE_DIR/primary"
 record_phase passed
 
 CURRENT_PHASE=verify-dependencies-units-daemon-reload
-verify_dependencies_units_daemon_reload
+verify_dependencies_units_daemon_reload \
+  "$EVIDENCE_DIR/primary/install/findmnt-after.json"
+run_privileged systemctl start vl-agent
+service_is_active vl-agent
+run_privileged systemctl start vl-nuxt
+service_is_active vl-nuxt
 record_phase passed
 
 CURRENT_PHASE=verify-readiness-and-listeners
@@ -624,7 +930,8 @@ TRAFFIC_STATE=unknown
 maintenance_select disable
 run_privileged nginx -t
 run_privileged systemctl reload nginx
-python "$SCRIPT_DIR/probe_launch_boundary.py" \
+VL360_LAUNCH_PUBLIC_URL="${NGINX_OPERATOR_PROBE_URL:-${NGINX_PROBE_URL:-}}" \
+  python "$SCRIPT_DIR/probe_launch_boundary.py" \
   --expect closed --require-public-post-reopen-matrix \
   --evidence "$EVIDENCE_DIR/post-reopen-closed.json"
 TRAFFIC_STATE=open
