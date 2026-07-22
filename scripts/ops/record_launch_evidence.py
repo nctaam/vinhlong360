@@ -230,6 +230,19 @@ class EvidenceDocument:
         )
         os.replace(temporary, self.path)
 
+    def _validate_opt_in_sections(self) -> None:
+        for name in OPT_IN_SECTIONS:
+            evidence = self.sections[name]
+            if evidence.status == "skip" and evidence.summary not in OPT_IN_SKIP_REASONS[name]:
+                raise ValueError(
+                    f"opt-in section has invalid skip reason: {name}/{evidence.summary}"
+                )
+
+    def _validate_external_section(self) -> None:
+        external = self.sections["external-gates"]
+        if external.status != "skip" or external.summary != EXTERNAL_GATE_SUMMARY:
+            raise ValueError("external gates must be exact informational evidence")
+
     def validate_final(self) -> None:
         missing = set(REQUIRED_SECTIONS) - set(self.sections)
         if missing:
@@ -248,15 +261,8 @@ class EvidenceDocument:
         )
         if failed:
             raise ValueError("failed evidence section: " + ", ".join(failed))
-        for name in OPT_IN_SECTIONS:
-            evidence = self.sections[name]
-            if evidence.status == "skip" and evidence.summary not in OPT_IN_SKIP_REASONS[name]:
-                raise ValueError(
-                    f"opt-in section has invalid skip reason: {name}/{evidence.summary}"
-                )
-        external = self.sections["external-gates"]
-        if external.status != "skip" or external.summary != EXTERNAL_GATE_SUMMARY:
-            raise ValueError("external gates must be exact informational evidence")
+        self._validate_opt_in_sections()
+        self._validate_external_section()
 
     def render(self, *, final: bool = False) -> str:
         if final:
