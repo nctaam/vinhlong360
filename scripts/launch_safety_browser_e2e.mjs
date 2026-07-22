@@ -38,6 +38,7 @@ function usage() {
   return `Usage: node scripts/launch_safety_browser_e2e.mjs [options]
 
 Options:
+  --probe-browser                           Check browser availability without side effects
   --base-url <url>                         Public Nuxt origin to exercise
   --profile <directory>                    Chrome user-data directory to reuse
   --install-legacy-worker-first            Install and seed the legacy worker
@@ -118,8 +119,12 @@ function sleep(ms) {
 }
 
 function findChrome() {
+  if (Object.prototype.hasOwnProperty.call(process.env, 'CHROME_PATH')) {
+    return process.env.CHROME_PATH && existsSync(process.env.CHROME_PATH)
+      ? process.env.CHROME_PATH
+      : undefined
+  }
   const candidates = [
-    process.env.CHROME_PATH,
     'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
     'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
     process.env.LOCALAPPDATA ? path.join(process.env.LOCALAPPDATA, 'Google\\Chrome\\Application\\chrome.exe') : '',
@@ -491,6 +496,11 @@ async function writeEvidence(file, payload) {
 }
 
 async function main(argv = process.argv.slice(2)) {
+  if (argv.includes('--probe-browser')) {
+    if (argv.length !== 1) return 2
+    return findChrome() ? 0 : 3
+  }
+
   let args
   try {
     args = parseArgs(argv)
@@ -554,8 +564,7 @@ async function main(argv = process.argv.slice(2)) {
     }
     if (args.activateCurrentWorker) {
       await activateCurrentWorker(cdp, origin)
-      // Reload once so clients.claim() makes the current worker the controller
-      // for the page used by the offline replay assertion.
+      // Reload once so clients.claim() controls the page used for offline replay.
       await navigate(cdp, args.baseUrl)
       evidence.assertions.current_worker_activated = true
     }

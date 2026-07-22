@@ -82,3 +82,141 @@ finally {
   Remove-Item -LiteralPath $stubRoot -Recurse -Force
 }
 
+. (Join-Path $repoRoot 'scripts/ops/release_gate_browser_harness.ps1')
+
+$browserEnvironmentNames = @('HOST', 'NITRO_HOST', 'PORT', 'NITRO_PORT', 'SMOKE_BASE_URL')
+$browserEnvironmentSnapshot = @{}
+foreach ($name in $browserEnvironmentNames) {
+  $exists = Test-Path -LiteralPath "Env:$name"
+  $browserEnvironmentSnapshot[$name] = [pscustomobject]@{
+    Exists = $exists
+    Value = if ($exists) { (Get-Item -LiteralPath "Env:$name").Value } else { $null }
+  }
+}
+
+try {
+  $env:HOST = 'pre-existing-host'
+  Remove-Item Env:NITRO_HOST -ErrorAction SilentlyContinue
+  $env:PORT = '3100'
+  Remove-Item Env:NITRO_PORT -ErrorAction SilentlyContinue
+  $env:SMOKE_BASE_URL = 'http://pre-existing.invalid'
+
+  $browserCases = @(
+    @{ Name = 'browser-pass'; Primary = 0; Cleanup = 0; Recorder = 0; Expected = 0 },
+    @{ Name = 'browser-cleanup-fail'; Primary = 0; Cleanup = 9; Recorder = 0; Expected = 9 },
+    @{ Name = 'browser-primary-and-cleanup-fail'; Primary = 37; Cleanup = 9; Recorder = 0; Expected = 37 },
+    @{ Name = 'browser-recorder-fail'; Primary = 0; Cleanup = 0; Recorder = 13; Expected = 13 }
+  )
+
+  foreach ($case in $browserCases) {
+    $events = [System.Collections.ArrayList]::new()
+    $observed = @{}
+    $result = @(Invoke-LaunchSafetyBrowserHarness `
+      -Root $repoRoot `
+      -Node 'node' `
+      -Npm 'npm' `
+      -SelectPort { return 18443 } `
+      -StartPreview {
+        param($EntryPoint, $WorkingDirectory)
+        $null = $events.Add('preview-start')
+        $observed.EntryPoint = $EntryPoint
+        $observed.WorkingDirectory = $WorkingDirectory
+        $observed.StartHost = $env:HOST
+        $observed.StartNitroHost = $env:NITRO_HOST
+        $observed.StartPort = $env:PORT
+        $observed.StartNitroPort = $env:NITRO_PORT
+        return [pscustomobject]@{ Id = 4242; HasExited = $false }
+      } `
+      -WaitForReady {
+        param($BaseUrl, $PreviewProcess)
+        $null = $events.Add('ready')
+        $observed.BaseUrl = $BaseUrl
+        return 0
+      } `
+      -RunSmoke {
+        param($WorkingDirectory)
+        $null = $events.Add('smoke')
+        $observed.SmokeBaseUrl = $env:SMOKE_BASE_URL
+        return [int]$case.Primary
+      } `
+      -StopPreview {
+        param($PreviewProcess)
+        $null = $events.Add('preview-stop')
+        return [int]$case.Cleanup
+      } `
+      -RecordEvidence {
+        param($Status, $ExitCode, $Summary, $Command)
+        $null = $events.Add('record')
+        $observed.RecordStatus = $Status
+        $observed.RecordExit = $ExitCode
+        return [int]$case.Recorder
+      })
+
+    Assert-Equal $result.Count 1 "$($case.Name) must emit exactly one pipeline object"
+    if ($result[0] -isnot [int]) { throw "$($case.Name) result must be System.Int32" }
+    Assert-Equal $result[0] $case.Expected "$($case.Name) exit precedence"
+    Assert-Equal $observed.EntryPoint (Join-Path $repoRoot 'web-nuxt/.output/server/index.mjs') "$($case.Name) uses real Nuxt output"
+    Assert-Equal $observed.WorkingDirectory (Join-Path $repoRoot 'web-nuxt') "$($case.Name) preview working directory"
+    Assert-Equal $observed.StartHost '127.0.0.1' "$($case.Name) binds loopback HOST"
+    Assert-Equal $observed.StartNitroHost '127.0.0.1' "$($case.Name) binds loopback NITRO_HOST"
+    Assert-Equal $observed.StartPort '18443' "$($case.Name) sets PORT"
+    Assert-Equal $observed.StartNitroPort '18443' "$($case.Name) sets NITRO_PORT"
+    Assert-Equal $observed.BaseUrl 'http://127.0.0.1:18443' "$($case.Name) readiness base URL"
+    if ([int]$case.Primary -eq 0) {
+      Assert-Equal $observed.SmokeBaseUrl 'http://127.0.0.1:18443' "$($case.Name) smoke base URL"
+    }
+    Assert-Equal ($events -join ',') 'preview-start,ready,smoke,preview-stop,record' "$($case.Name) lifecycle"
+    Assert-Equal $env:HOST 'pre-existing-host' "$($case.Name) restores HOST"
+    if (Test-Path Env:NITRO_HOST) { throw "$($case.Name) must restore NITRO_HOST to unset" }
+    Assert-Equal $env:PORT '3100' "$($case.Name) restores PORT"
+    if (Test-Path Env:NITRO_PORT) { throw "$($case.Name) must restore NITRO_PORT to unset" }
+    Assert-Equal $env:SMOKE_BASE_URL 'http://pre-existing.invalid' "$($case.Name) restores SMOKE_BASE_URL"
+  }
+
+  $retry = @{ Starts = 0; Stops = 0 }
+  $retryResult = @(Invoke-LaunchSafetyBrowserHarness `
+    -Root $repoRoot `
+    -SelectPort { return (18443 + $retry.Starts) } `
+    -StartPreview {
+      param($EntryPoint, $WorkingDirectory)
+      $retry.Starts += 1
+      return [pscustomobject]@{ Id = $retry.Starts; HasExited = $false }
+    } `
+    -WaitForReady {
+      param($BaseUrl, $PreviewProcess)
+      return $(if ($retry.Starts -eq 1) { 1 } else { 0 })
+    } `
+    -RunSmoke { param($WorkingDirectory); return 0 } `
+    -StopPreview { param($PreviewProcess); $retry.Stops += 1; return 0 } `
+    -RecordEvidence { param($Status, $ExitCode, $Summary, $Command); return 0 })
+  Assert-Equal $retryResult[0] 0 'readiness collision retries on a new bounded port'
+  Assert-Equal $retry.Starts 2 'readiness collision starts exactly one replacement preview'
+  Assert-Equal $retry.Stops 2 'readiness collision cleans both preview processes'
+
+  $cleanupRetry = @{ Starts = 0; Stops = 0 }
+  $cleanupRetryResult = @(Invoke-LaunchSafetyBrowserHarness `
+    -Root $repoRoot `
+    -SelectPort { return 18443 } `
+    -StartPreview {
+      param($EntryPoint, $WorkingDirectory)
+      $cleanupRetry.Starts += 1
+      return [pscustomobject]@{ Id = $cleanupRetry.Starts; HasExited = $false }
+    } `
+    -WaitForReady { param($BaseUrl, $PreviewProcess); return 1 } `
+    -RunSmoke { param($WorkingDirectory); return 0 } `
+    -StopPreview { param($PreviewProcess); $cleanupRetry.Stops += 1; return 9 } `
+    -RecordEvidence { param($Status, $ExitCode, $Summary, $Command); return 0 })
+  Assert-Equal $cleanupRetryResult[0] 9 'failed retry cleanup takes precedence'
+  Assert-Equal $cleanupRetry.Starts 1 'failed cleanup prevents another preview start'
+  Assert-Equal $cleanupRetry.Stops 1 'failed cleanup is attempted once'
+}
+finally {
+  foreach ($name in $browserEnvironmentNames) {
+    $prior = $browserEnvironmentSnapshot[$name]
+    if ($prior.Exists) {
+      Set-Item -LiteralPath "Env:$name" -Value $prior.Value
+    } else {
+      Remove-Item -LiteralPath "Env:$name" -ErrorAction SilentlyContinue
+    }
+  }
+}

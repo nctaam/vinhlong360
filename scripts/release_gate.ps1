@@ -24,6 +24,8 @@ $Script:Warnings = 0
 $Script:LaunchSafetyEvidenceEnabled = $false
 $Script:LaunchSafetyRevision = ""
 $Script:LaunchSafetyEvidenceOutputPath = ""
+$Script:LaunchSafetyEvidenceStateOwned = $false
+$Script:LaunchSafetyOptInExit = 0
 
 if (-not $LaunchSafetyEvidenceState -and $env:LAUNCH_SAFETY_EVIDENCE_STATE) {
   $LaunchSafetyEvidenceState = $env:LAUNCH_SAFETY_EVIDENCE_STATE
@@ -32,6 +34,12 @@ if (-not $LaunchSafetyEvidenceState -and $env:LAUNCH_SAFETY_EVIDENCE_STATE) {
 $Script:LaunchSafetyEvidenceEnabled = [bool]($LaunchSafetyEvidenceState -or
   $RunLaunchSafetyDockerOptIn -or $RunLaunchSafetyBrowserOptIn -or
   $RenderLaunchSafetyFinalEvidence)
+$Script:LaunchSafetyEvidenceStateOwned = $false
+if ($Script:LaunchSafetyEvidenceEnabled -and -not $LaunchSafetyEvidenceState) {
+  $LaunchSafetyEvidenceState = Join-Path ([System.IO.Path]::GetTempPath()) `
+    ("vinhlong360-launch-safety-evidence-" + [guid]::NewGuid().ToString("N") + ".json")
+  $Script:LaunchSafetyEvidenceStateOwned = $true
+}
 $Script:LaunchSafetyEvidenceOutputPath = if ($LaunchSafetyEvidenceOutput) {
   $LaunchSafetyEvidenceOutput
 } else {
@@ -138,7 +146,11 @@ function Invoke-LaunchSafetyRecord {
   try {
     & $Python @recordArgs
     if ($LASTEXITCODE -ne 0) {
-      throw "failed to record Launch Safety evidence for $Section (exit $LASTEXITCODE)"
+      $recordFailure = [System.Exception]::new(
+        "failed to record Launch Safety evidence for $Section (exit $LASTEXITCODE)"
+      )
+      $recordFailure.Data["ExitCode"] = [int]$LASTEXITCODE
+      throw $recordFailure
     }
   } finally {
     Pop-Location
@@ -321,6 +333,13 @@ function Invoke-LaunchSafetyOptIns {
     }
     return
   }
+  if (-not $RunLaunchSafetyDockerOptIn -and $Script:LaunchSafetyEvidenceEnabled) {
+    Invoke-LaunchSafetyRecord "postgres-opt-in" "skip" 0 "not-requested" "docker opt-in"
+    Invoke-LaunchSafetyRecord "compose-nginx-opt-in" "skip" 0 "not-requested" "docker opt-in"
+  }
+  if (-not $RunLaunchSafetyBrowserOptIn -and $Script:LaunchSafetyEvidenceEnabled) {
+    Invoke-LaunchSafetyRecord "browser-opt-in" "skip" 0 "not-requested" "browser opt-in"
+  }
   if ($Script:Failures -gt 0) {
     Write-Step "SKIP" "Launch Safety opt-ins" "default release gate has failures"
     return
@@ -390,18 +409,42 @@ function Invoke-LaunchSafetyOptIns {
     $probe = Join-Path $Root "scripts/launch_safety_browser_e2e.mjs"
     if (-not (Test-Path -LiteralPath $probe)) {
       Invoke-LaunchSafetyRecord "browser-opt-in" "fail" 1 "browser probe is missing" "node --probe-browser"
-      throw "Launch Safety browser probe is missing"
+      $Script:LaunchSafetyOptInExit = 1
+      return
     }
     & $Node $probe --probe-browser
     $probeExit = [int]$LASTEXITCODE
     if ($probeExit -eq 3) {
       Invoke-LaunchSafetyRecord "browser-opt-in" "skip" 0 "chrome-unavailable" "node --probe-browser"
       Write-Step "SKIP" "Launch Safety browser opt-in" "chrome-unavailable"
+      $Script:LaunchSafetyOptInExit = 0
+    } elseif ($probeExit -ne 0) {
+      Invoke-LaunchSafetyRecord "browser-opt-in" "fail" $probeExit "browser probe failed" "node --probe-browser"
+      Write-Step "FAIL" "Launch Safety browser opt-in" "browser probe exited with code $probeExit"
+      $Script:LaunchSafetyOptInExit = $probeExit
     } else {
-      $probeStatus = if ($probeExit -eq 0) { "pass" } else { "fail" }
-      Invoke-LaunchSafetyRecord "browser-opt-in" $probeStatus $probeExit "browser probe-only" "node --probe-browser"
-      if ($probeExit -ne 0) { throw "Launch Safety browser probe failed" }
-      Write-Step "OK" "Launch Safety browser opt-in"
+      . (Join-Path $Root "scripts/ops/release_gate_browser_harness.ps1")
+      $browserResult = @(Invoke-LaunchSafetyBrowserHarness `
+        -Root $Root `
+        -Node $Node `
+        -Npm "npm" `
+        -RecordEvidence {
+          param($Status, $ExitCode, $Summary, $Command)
+          Invoke-LaunchSafetyRecord "browser-opt-in" $Status $ExitCode $Summary $Command
+          return 0
+        }
+      )
+      if ($browserResult.Count -ne 1 -or $browserResult[0] -isnot [int]) {
+        $Script:LaunchSafetyOptInExit = 1
+        Invoke-LaunchSafetyRecord "browser-opt-in" "fail" 1 "browser harness returned a non-scalar result" "npm run smoke:launch-safety"
+      } else {
+        $Script:LaunchSafetyOptInExit = [int]$browserResult[0]
+        if ($Script:LaunchSafetyOptInExit -eq 0) {
+          Write-Step "OK" "Launch Safety browser opt-in"
+        } else {
+          Write-Step "FAIL" "Launch Safety browser opt-in" "browser harness exited with code $Script:LaunchSafetyOptInExit"
+        }
+      }
     }
   }
 }
@@ -410,6 +453,10 @@ function Invoke-LaunchSafetyFinalRender {
   if (-not $RenderLaunchSafetyFinalEvidence) { return }
   if ($Script:Failures -gt 0) {
     Write-Step "SKIP" "Launch Safety final evidence render" "required gate has failures"
+    return
+  }
+  if ($Script:LaunchSafetyOptInExit -ne 0) {
+    Write-Step "SKIP" "Launch Safety final evidence render" "opt-in gate has failures"
     return
   }
   $evidenceOutput = if ([System.IO.Path]::IsPathRooted($Script:LaunchSafetyEvidenceOutputPath)) {
@@ -436,6 +483,9 @@ function Invoke-LaunchSafetyFinalRender {
     Pop-Location
   }
   Write-Step "OK" "Launch Safety final evidence render" $evidenceOutput
+  if ($Script:LaunchSafetyEvidenceStateOwned) {
+    Remove-Item -LiteralPath $LaunchSafetyEvidenceState -Force -ErrorAction SilentlyContinue
+  }
 }
 
 Write-Host "VinhLong360 release gate"
@@ -566,6 +616,10 @@ Write-Host ""
 if ($Script:Failures -gt 0) {
   Write-Host "Result: FAIL ($Script:Failures failure(s), $Script:Warnings warning(s))"
   exit 1
+}
+if ($Script:LaunchSafetyOptInExit -ne 0) {
+  Write-Host "Result: FAIL (Launch Safety opt-in exit $Script:LaunchSafetyOptInExit)"
+  exit $Script:LaunchSafetyOptInExit
 }
 if ($Script:Warnings -gt 0) {
   Write-Host "Result: WARN ($Script:Warnings warning(s))"
