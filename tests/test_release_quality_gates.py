@@ -218,7 +218,7 @@ def test_itinerary_areas_schema_migration_contracts_exist():
     assert "itineraries_areas_column" in gate
 
 
-def test_release_gate_runs_migration_and_quality_budgets():
+def test_release_gate_owns_migrations_and_closed_deploy_excludes_them():
     gate = (ROOT / "scripts" / "release_gate.ps1").read_text(encoding="utf-8")
     deploy = (ROOT / "scripts" / "deploy.sh").read_text(encoding="utf-8")
 
@@ -226,18 +226,35 @@ def test_release_gate_runs_migration_and_quality_budgets():
     assert "scripts/apply_migrations.py" in gate
     assert "--db-check" in gate
     assert "quality_budget.py" in gate
-    assert "scripts/apply_migrations.py" in deploy
-    assert "apply_migrations.py --database-url" in deploy
-    assert "scripts/validate_data.py" in deploy
-    assert "scripts/restore_drill.py" in deploy
-    assert "quality_budget.py --data web/data.json --record-db" in deploy
-    assert "init.sql config web/data.json" in deploy
-    assert "snapshot_members=(agent web/data.json web/media web-nuxt/.output)" in deploy
-    assert '[ -d config ] && snapshot_members+=(config)' in deploy
-    assert r'"\${snapshot_members[@]}"' in deploy
-    assert "if ! tar -czf" in deploy
-    assert "mv -f" in deploy
-    assert 'tar -czf backups/pre-deploy-$TS.tar.gz' not in deploy
+    assert "destructive data and migration operations are not supported" in deploy
+    assert not any(
+        line.lstrip().startswith(("python scripts/apply_migrations.py", "python3 scripts/apply_migrations.py"))
+        for line in deploy.splitlines()
+    )
+    assert "scripts/validate_data.py" not in deploy
+    assert "scripts/restore_drill.py" not in deploy
+    assert "quality_budget.py --data web/data.json --record-db" not in deploy
+    assert "scripts/package_launch_release.py launch-release" in deploy
+    assert "scripts/ops/verify_closed_release.py" in deploy
+    assert "scripts/ops/install_closed_release.sh" in deploy
+    package_verify = deploy.index("archive-tools/verify_closed_release.py", deploy.index("# 5."))
+    migration_gate = deploy.index(
+        '"\\$MIGRATION_GATE_PYTHON" -I \\\n  "\\$LAUNCH_STAGE/migration-prerequisites/check_migration_gate.py"',
+        package_verify,
+    )
+    close_traffic = deploy.index("close_launch_admission", migration_gate)
+    post_close_gate = deploy.index(
+        '"\\$LAUNCH_STAGE/migration-prerequisites/check_migration_gate.py"',
+        close_traffic,
+    )
+    installer = deploy.index("archive-tools/install_closed_release.sh", post_close_gate)
+    assert package_verify < migration_gate < close_traffic < post_close_gate < installer
+    assert '--migrations "\\$LAUNCH_STAGE/migration-prerequisites/migrations"' in deploy
+    assert "--db-check" in deploy[migration_gate:close_traffic]
+    assert "--database-url" not in deploy[migration_gate:close_traffic]
+    assert "--reuse-environment-pin" in deploy[post_close_gate:installer]
+    assert "--migration-gate-evidence" in deploy[installer:]
+    assert "run scripts/apply_migrations.py before rerunning deploy" in deploy
     assert "for mf in agent/migrations/053_saved_kind_superadmin.sql" not in deploy
 
 def test_apply_migrations_runner_uses_legacy_baseline_and_latest_plan():

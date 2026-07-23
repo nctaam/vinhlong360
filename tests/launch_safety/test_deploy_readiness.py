@@ -160,9 +160,11 @@ def test_deploy_persists_success_evidence_atomically_before_stage_cleanup():
 
     assert '"$VPS:$LAUNCH_STAGE/evidence/operator-maintenance.json"' in script
     assert 'evidence_tmp="\\$(mktemp -d' in success_block
-    assert 'mv -T -- "\\$evidence_tmp" "\\$evidence_final"' in success_block
-    assert success_block.index("evidence_tmp=") < success_block.index("mv -T --")
-    assert success_block.index("mv -T --") < success_block.index(
+    assert "RENAME_NOREPLACE = 1" in success_block
+    assert "renameat2" in success_block
+    assert 'mv -T -- "\\$evidence_tmp" "\\$evidence_final"' not in success_block
+    assert success_block.index("evidence_tmp=") < success_block.index("renameat2")
+    assert success_block.index("renameat2") < success_block.index(
         'rm -rf -- "\\$LAUNCH_STAGE"'
     )
 
@@ -200,6 +202,48 @@ true
     assert result.returncode == 0, result.stderr
 
 
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="renameat2 is Linux-only")
+def test_evidence_publish_preserves_an_existing_destination(tmp_path: Path):
+    script = DEPLOY.read_text(encoding="utf-8")
+    reopen_index = script.index("reopen_launch_admission", script.index("# 6b."))
+    success_block = script[reopen_index : script.index("EOF", reopen_index)]
+    publish_start = success_block.index("env -i PATH=/usr/bin:/bin LANG=C.UTF-8 python3 -I -")
+    publish_end = success_block.index("\nPY", publish_start) + len("\nPY")
+    publisher = success_block[publish_start:publish_end].replace("\\$", "$")
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "evidence.json").write_text("new\n", encoding="ascii")
+    destination = tmp_path / "published"
+    destination.mkdir()
+    (destination / "existing.json").write_text("keep\n", encoding="ascii")
+    scenario = tmp_path / "collision.sh"
+    scenario.write_text(
+        f"""#!/usr/bin/env bash
+set -euo pipefail
+evidence_tmp={source.as_posix()!r}
+evidence_final={destination.as_posix()!r}
+set +e
+{publisher}
+status=$?
+set -e
+test "$status" -ne 0
+test "$(cat "$evidence_final/existing.json")" = keep
+""",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+    result = subprocess.run(
+        ["bash", str(scenario)],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+
+
 def test_deploy_probes_from_the_local_operator_before_remote_install():
     script = DEPLOY.read_text(encoding="utf-8")
     close_index = script.index("close_launch_admission")
@@ -220,13 +264,13 @@ def test_deploy_probes_from_the_local_operator_before_remote_install():
 
 def test_deploy_verifies_remote_archive_before_close_and_installs_only_after_probe():
     script = DEPLOY.read_text(encoding="utf-8")
-    remote_verify = script.index("verify_closed_release.py", script.index("# 5."))
+    remote_verify = script.index("archive-tools/verify_closed_release.py", script.index("# 5."))
     close = script.index("close_launch_admission", remote_verify)
     operator_probe = script.index("python scripts/ops/probe_launch_boundary.py", close)
-    installer = script.index("install_closed_release.sh", operator_probe)
+    installer = script.index("archive-tools/install_closed_release.sh", operator_probe)
 
     assert remote_verify < close < operator_probe < installer
-    assert '--archive-digest-file "\\$LAUNCH_STAGE/archives/vl360-launch-release.tar.gz.sha256"' in script
+    assert '--archive-digest-file "\\$LAUNCH_STAGE/admitted-release/vl360-launch-release.tar.gz.sha256"' in script
     assert "--require-closed" in script
 
 
@@ -250,7 +294,39 @@ def test_deploy_keeps_destructive_data_and_migration_flags_outside_closed_releas
         assert flag in script
     assert "destructive data and migration operations are not supported" in script
     assert "agent/database.py --replace" not in script
-    assert "scripts/apply_migrations.py" not in script
+    assert not any(
+        line.lstrip().startswith(("python scripts/apply_migrations.py", "python3 scripts/apply_migrations.py"))
+        for line in script.splitlines()
+    )
+
+
+def test_deploy_enforces_separate_migration_prerequisite_before_traffic_mutation():
+    script = DEPLOY.read_text(encoding="utf-8")
+
+    package_verify = script.index("archive-tools/verify_closed_release.py", script.index("# 5."))
+    migration_gate = script.index(
+        '"\\$MIGRATION_GATE_PYTHON" -I \\\n  "\\$LAUNCH_STAGE/migration-prerequisites/check_migration_gate.py"',
+        package_verify,
+    )
+    close_traffic = script.index("close_launch_admission", migration_gate)
+    post_close_gate = script.index(
+        '"\\$LAUNCH_STAGE/migration-prerequisites/check_migration_gate.py"',
+        close_traffic,
+    )
+    installer = script.index("archive-tools/install_closed_release.sh", post_close_gate)
+
+    assert "migration-prerequisites/check_migration_gate.py" in script
+    assert 'agent/migrations/*.sql "$VPS:$LAUNCH_STAGE/migrations/"' not in script
+    assert package_verify < migration_gate < close_traffic < post_close_gate < installer
+    assert '--migrations "\\$LAUNCH_STAGE/migration-prerequisites/migrations"' in script
+    assert "--db-check" in script[migration_gate:close_traffic]
+    assert "--database-url" not in script[migration_gate:close_traffic]
+    assert "--environment-pin" in script[migration_gate:close_traffic]
+    assert "--reuse-environment-pin" in script[post_close_gate:installer]
+    assert "--migration-gate-evidence" in script[installer:]
+    assert "scripts/ops/verify_closed_release.py" not in script[script.index("LAUNCH_FILES=(") : script.index("MAINTENANCE_FILES=(")]
+    assert "scripts/ops/install_closed_release.sh" not in script[script.index("LAUNCH_FILES=(") : script.index("MAINTENANCE_FILES=(")]
+    assert "run scripts/apply_migrations.py before rerunning deploy" in script
 
 
 def test_launch_admission_uses_only_nuxt_readiness_and_listener_isolation():

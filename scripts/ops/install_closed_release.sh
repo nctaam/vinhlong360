@@ -12,6 +12,7 @@ EARLY_RELEASE_ROOT_PRESENT=false
 EARLY_RELEASE_ROOT_VALUE=''
 EARLY_PERSISTENT_ROOT_PRESENT=false
 EARLY_ENVIRONMENT_AUTHORITY_PRESENT=false
+EARLY_MIGRATION_GATE_EVIDENCE_PRESENT=false
 EARLY_RUNTIME_AUTHORITY_PRESENT=false
 EARLY_EVIDENCE_DIR_PRESENT=false
 EARLY_REQUIRE_CLOSED=false
@@ -20,7 +21,8 @@ while ((early_index < ${#EARLY_ARGUMENTS[@]})); do
   early_argument="${EARLY_ARGUMENTS[$early_index]}"
   case "$early_argument" in
     --archive|--archive-digest-file|--release-root|--persistent-agent-data-root|\
-    --environment-authority|--runtime-authority|--mount-authority|--evidence-dir)
+    --environment-authority|--runtime-authority|--mount-authority|--evidence-dir|\
+    --migration-gate-evidence)
       early_value_index=$((early_index + 1))
       if ((early_value_index >= ${#EARLY_ARGUMENTS[@]})); then
         EARLY_ARGUMENTS_VALID=false
@@ -39,6 +41,7 @@ while ((early_index < ${#EARLY_ARGUMENTS[@]})); do
           ;;
         --persistent-agent-data-root) EARLY_PERSISTENT_ROOT_PRESENT=true ;;
         --environment-authority) EARLY_ENVIRONMENT_AUTHORITY_PRESENT=true ;;
+        --migration-gate-evidence) EARLY_MIGRATION_GATE_EVIDENCE_PRESENT=true ;;
         --runtime-authority) EARLY_RUNTIME_AUTHORITY_PRESENT=true ;;
         --evidence-dir) EARLY_EVIDENCE_DIR_PRESENT=true ;;
       esac
@@ -298,6 +301,7 @@ ARCHIVE_DIGEST_FILE=''
 RELEASE_ROOT=''
 PERSISTENT_AGENT_DATA_ROOT=''
 ENVIRONMENT_AUTHORITY=''
+MIGRATION_GATE_EVIDENCE=''
 RUNTIME_AUTHORITY=''
 MOUNT_AUTHORITY=''
 EVIDENCE_DIR=''
@@ -317,6 +321,7 @@ reset_mutable_evidence() {
   rm -f -- \
     "$root/dependency-unit-checks.json" \
     "$root/install-summary.json" \
+    "$root/migration-gate-evidence.json" \
     "$root/install-recovery.json" \
     "$root/systemd-unit-cleanup.json" \
     "$root/install-lock.json" \
@@ -1062,6 +1067,7 @@ DISCOVERED_EVIDENCE_DIR=''
 DISCOVERED_RELEASE_ROOT=''
 DISCOVERED_PERSISTENT_ROOT=''
 DISCOVERED_ENVIRONMENT_AUTHORITY=''
+DISCOVERED_MIGRATION_GATE_EVIDENCE=''
 DISCOVERED_RUNTIME_AUTHORITY=''
 DISCOVERY_AUTHORITIES_VALID=false
 for ((discovery_index = 0; discovery_index < ${#ORIGINAL_ARGS[@]}; discovery_index++)); do
@@ -1069,6 +1075,7 @@ for ((discovery_index = 0; discovery_index < ${#ORIGINAL_ARGS[@]}; discovery_ind
   case "$discovery_option" in
     --evidence-dir|--release-root|--persistent-agent-data-root|\
     --environment-authority|--runtime-authority) ;;
+    --migration-gate-evidence) ;;
     *) continue ;;
   esac
   discovery_value_index=$((discovery_index + 1))
@@ -1082,6 +1089,7 @@ for ((discovery_index = 0; discovery_index < ${#ORIGINAL_ARGS[@]}; discovery_ind
     --release-root) DISCOVERED_RELEASE_ROOT="$discovery_value" ;;
     --persistent-agent-data-root) DISCOVERED_PERSISTENT_ROOT="$discovery_value" ;;
     --environment-authority) DISCOVERED_ENVIRONMENT_AUTHORITY="$discovery_value" ;;
+    --migration-gate-evidence) DISCOVERED_MIGRATION_GATE_EVIDENCE="$discovery_value" ;;
     --runtime-authority) DISCOVERED_RUNTIME_AUTHORITY="$discovery_value" ;;
   esac
 done
@@ -1218,6 +1226,11 @@ while (($#)); do
       ENVIRONMENT_AUTHORITY="$2"
       shift 2
       ;;
+    --migration-gate-evidence)
+      require_option_value "$1" "$#" "${2:-}"
+      MIGRATION_GATE_EVIDENCE="$2"
+      shift 2
+      ;;
     --runtime-authority)
       require_option_value "$1" "$#" "${2:-}"
       RUNTIME_AUTHORITY="$2"
@@ -1247,12 +1260,16 @@ done
 [ -n "$RUNTIME_AUTHORITY" ] || die 'runtime-authority-required'
 [ -n "$EVIDENCE_DIR" ] || die 'evidence-dir-required'
 [ "$REQUIRE_CLOSED" = true ] || die 'require-closed-required'
+if [ "$LOCAL_REHEARSAL" != true ] && [ -z "$MIGRATION_GATE_EVIDENCE" ]; then
+  die 'migration-gate-evidence-required'
+fi
 if [ "$LOCAL_REHEARSAL" = true ] && command -v cygpath >/dev/null 2>&1; then
   ARCHIVE="$(cygpath -u "$ARCHIVE")"
   ARCHIVE_DIGEST_FILE="$(cygpath -u "$ARCHIVE_DIGEST_FILE")"
   RELEASE_ROOT="$(cygpath -u "$RELEASE_ROOT")"
   PERSISTENT_AGENT_DATA_ROOT="$(cygpath -u "$PERSISTENT_AGENT_DATA_ROOT")"
   ENVIRONMENT_AUTHORITY="$(cygpath -u "$ENVIRONMENT_AUTHORITY")"
+  [ -z "$MIGRATION_GATE_EVIDENCE" ] || MIGRATION_GATE_EVIDENCE="$(cygpath -u "$MIGRATION_GATE_EVIDENCE")"
   RUNTIME_AUTHORITY="$(cygpath -u "$RUNTIME_AUTHORITY")"
   [ -z "$MOUNT_AUTHORITY" ] || MOUNT_AUTHORITY="$(cygpath -u "$MOUNT_AUTHORITY")"
   EVIDENCE_DIR="$(cygpath -u "$EVIDENCE_DIR")"
@@ -1327,6 +1344,23 @@ else
   environment_status=$?
   [ "$environment_status" -eq 3 ] || die 'environment-authority-pin-failed'
   die 'unlock-keys-forbidden'
+fi
+MIGRATION_GATE_EVIDENCE_SHA256=''
+MIGRATION_GATE_MIGRATION_SET_SHA256=''
+MIGRATION_GATE_LATEST_VERSION=''
+MIGRATION_GATE_LATEST_MIGRATION=''
+MIGRATION_GATE_OBSERVED_VERSION=''
+MIGRATION_GATE_OBSERVED_MIGRATION=''
+if [ -n "$MIGRATION_GATE_EVIDENCE" ]; then
+  if canonical_migration_gate_evidence="$(
+      canonical_authority_path "$MIGRATION_GATE_EVIDENCE" "$LOCAL_REHEARSAL"
+    )"; then
+    MIGRATION_GATE_EVIDENCE="$canonical_migration_gate_evidence"
+  else
+    die 'migration-gate-evidence-authority-required'
+  fi
+  [ -f "$MIGRATION_GATE_EVIDENCE" ] && [ ! -L "$MIGRATION_GATE_EVIDENCE" ] \
+    || die 'migration-gate-evidence-regular-file-required'
 fi
 if [ "$LOCAL_REHEARSAL" = true ]; then
   PYTHON_DEPENDENCY_HOOK="${VL360_PYTHON_DEPENDENCY_HOOK:-$RUNTIME_AUTHORITY/install-python-dependencies}"
@@ -3899,6 +3933,237 @@ chmod 0600 -- "$PINNED_ARCHIVE" "$PINNED_ARCHIVE_DIGEST_FILE"
 invoke_python "$VERIFY_SCRIPT" \
   --archive "$PINNED_ARCHIVE" --archive-digest-file "$PINNED_ARCHIVE_DIGEST_FILE" \
   --require-closed --evidence-dir "$EVIDENCE_DIR/package"
+PINNED_ARCHIVE_SHA256="$(regular_file_sha256 "$PINNED_ARCHIVE")" \
+  || die 'pinned-archive-digest-failed'
+if [ -n "$MIGRATION_GATE_EVIDENCE" ]; then
+  MIGRATION_GATE_EVIDENCE_PIN="$EVIDENCE_DIR/migration-gate-evidence.json"
+  if migration_gate_values="$(invoke_python - \
+      "$MIGRATION_GATE_EVIDENCE" "$MIGRATION_GATE_EVIDENCE_PIN" \
+      "$EVIDENCE_DIR/package/closed-release.json" \
+      "$PINNED_ARCHIVE_SHA256" "$ENVIRONMENT_AUTHORITY_SHA256" <<'PY'
+import json
+import os
+import re
+import stat
+import sys
+import tempfile
+from hashlib import sha256
+from pathlib import Path
+
+
+class Reject(SystemExit):
+    def __init__(self, code: int):
+        super().__init__(code)
+        self.code = code
+
+
+def read_pinned_regular(
+    path: Path, *, invalid_code: int = 20, io_code: int = 23
+) -> bytes:
+    absolute = Path(os.path.abspath(path))
+    if absolute.is_symlink() or os.path.normcase(os.path.realpath(absolute)) != os.path.normcase(str(absolute)):
+        raise Reject(invalid_code)
+    flags = (
+        os.O_RDONLY
+        | getattr(os, "O_NOFOLLOW", 0)
+        | getattr(os, "O_BINARY", 0)
+    )
+    try:
+        descriptor = os.open(absolute, flags)
+    except OSError:
+        raise Reject(io_code)
+    try:
+        observed = os.fstat(descriptor)
+        if not stat.S_ISREG(observed.st_mode) or observed.st_size > 4 * 1024 * 1024:
+            raise Reject(invalid_code)
+        raw = bytearray()
+        while True:
+            chunk = os.read(descriptor, 1024 * 1024)
+            if not chunk:
+                break
+            raw.extend(chunk)
+        return bytes(raw)
+    finally:
+        os.close(descriptor)
+
+
+def object_without_duplicate_keys(pairs, invalid_code):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise Reject(invalid_code)
+        result[key] = value
+    return result
+
+
+def load_object(raw, invalid_code):
+    try:
+        payload = json.loads(
+            raw.decode("utf-8"),
+            object_pairs_hook=lambda pairs: object_without_duplicate_keys(
+                pairs, invalid_code
+            ),
+        )
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        raise Reject(invalid_code)
+    if not isinstance(payload, dict):
+        raise Reject(invalid_code)
+    return payload
+
+
+def digest(payload, key, invalid_code=20):
+    value = payload.get(key)
+    if not isinstance(value, str) or re.fullmatch(r"[0-9a-f]{64}", value) is None:
+        raise Reject(invalid_code)
+    return value
+
+
+def migration_tuple(payload, key, invalid_code=20):
+    value = payload.get(key)
+    if not isinstance(value, dict) or set(value) != {"version", "migration"}:
+        raise Reject(invalid_code)
+    version = value["version"]
+    migration = value["migration"]
+    if (
+        isinstance(version, bool)
+        or not isinstance(version, int)
+        or version < 1
+        or not isinstance(migration, str)
+        or re.fullmatch(r"[0-9]{3}_[a-z0-9_]+\.sql", migration) is None
+        or int(migration[:3]) != version
+    ):
+        raise Reject(invalid_code)
+    return version, migration
+
+
+source = Path(sys.argv[1])
+destination = Path(sys.argv[2])
+package_evidence_source = Path(sys.argv[3])
+expected_archive = sys.argv[4]
+expected_environment = sys.argv[5]
+package_payload = load_object(
+    read_pinned_regular(package_evidence_source, invalid_code=25, io_code=25),
+    25,
+)
+if digest(package_payload, "archive_sha256", 25) != expected_archive:
+    raise Reject(25)
+package_migrations = package_payload.get("migration_prerequisites")
+if not isinstance(package_migrations, dict):
+    raise Reject(25)
+if digest(package_migrations, "archive_sha256", 25) != expected_archive:
+    raise Reject(25)
+expected_migration_set = digest(package_migrations, "migration_set_sha256", 25)
+expected_latest = migration_tuple(package_migrations, "migration_latest", 25)
+expected_tools = tuple(
+    digest(package_migrations, key, 25)
+    for key in ("verifier_sha256", "checker_sha256", "installer_sha256")
+)
+raw = read_pinned_regular(source)
+payload = load_object(raw, 20)
+allowed_keys = {
+    "schema_version",
+    "status",
+    "timestamp",
+    "archive_sha256",
+    "verifier_sha256",
+    "checker_sha256",
+    "installer_sha256",
+    "migration_set_sha256",
+    "migration_latest",
+    "observed_database",
+    "environment_pin_sha256",
+}
+if set(payload) - allowed_keys:
+    raise Reject(20)
+if payload.get("schema_version") != 1 or payload.get("status") != "passed":
+    raise Reject(20)
+if "timestamp" in payload and not isinstance(payload["timestamp"], str):
+    raise Reject(20)
+observed_tools = tuple(
+    digest(payload, key)
+    for key in ("verifier_sha256", "checker_sha256", "installer_sha256")
+)
+archive_sha = digest(payload, "archive_sha256")
+environment_sha = digest(payload, "environment_pin_sha256")
+migration_set_sha = digest(payload, "migration_set_sha256")
+latest_version, latest_migration = migration_tuple(payload, "migration_latest")
+observed_version, observed_migration = migration_tuple(payload, "observed_database")
+if archive_sha != expected_archive:
+    raise Reject(21)
+if environment_sha != expected_environment:
+    raise Reject(22)
+if (latest_version, latest_migration) != (observed_version, observed_migration):
+    raise Reject(24)
+if migration_set_sha != expected_migration_set:
+    raise Reject(26)
+if (latest_version, latest_migration) != expected_latest:
+    raise Reject(27)
+if observed_tools != expected_tools:
+    raise Reject(28)
+
+parent = destination.parent
+if parent.is_symlink() or not parent.is_dir():
+    raise Reject(23)
+temporary = None
+try:
+    descriptor, temporary = tempfile.mkstemp(
+        prefix=".migration-gate-evidence.", dir=str(parent)
+    )
+    try:
+        os.fchmod(descriptor, 0o600)
+        offset = 0
+        while offset < len(raw):
+            offset += os.write(descriptor, raw[offset:])
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+    os.replace(temporary, destination)
+    temporary = None
+except OSError:
+    raise Reject(23)
+finally:
+    if temporary is not None:
+        try:
+            os.unlink(temporary)
+        except OSError:
+            pass
+if destination.is_symlink() or not destination.is_file() or destination.read_bytes() != raw:
+    raise Reject(23)
+print(
+    "\t".join(
+        (
+            sha256(raw).hexdigest(),
+            migration_set_sha,
+            str(latest_version),
+            latest_migration,
+            str(observed_version),
+            observed_migration,
+        )
+    )
+)
+PY
+    )"; then
+    IFS=$'\t' read -r MIGRATION_GATE_EVIDENCE_SHA256 \
+      MIGRATION_GATE_MIGRATION_SET_SHA256 \
+      MIGRATION_GATE_LATEST_VERSION MIGRATION_GATE_LATEST_MIGRATION \
+      MIGRATION_GATE_OBSERVED_VERSION MIGRATION_GATE_OBSERVED_MIGRATION \
+      <<< "$migration_gate_values"
+    fsync_directories "$EVIDENCE_DIR" || die 'migration-gate-evidence-pin-failed'
+  else
+    migration_gate_status=$?
+    case "$migration_gate_status" in
+      21) die 'migration-gate-archive-mismatch' ;;
+      22) die 'migration-gate-environment-mismatch' ;;
+      24) die 'migration-gate-observed-mismatch' ;;
+      25) die 'migration-gate-package-evidence-invalid' ;;
+      26) die 'migration-gate-migration-set-mismatch' ;;
+      27) die 'migration-gate-latest-mismatch' ;;
+      28) die 'migration-gate-tool-digest-mismatch' ;;
+      23) die 'migration-gate-evidence-pin-failed' ;;
+      *) die 'migration-gate-evidence-invalid' ;;
+    esac
+  fi
+fi
 
 STAGING_ROOT="$RELEASE_PARENT/.${RELEASE_NAME}.closed-stage.$$"
 OLD_ROOT="$RELEASE_PARENT/.${RELEASE_NAME}.closed-old.$$"
@@ -5250,11 +5515,29 @@ verify_installed_release_authority \
   "$SYSTEMD_UNIT_DESTINATION" "$EVIDENCE_DIR/installed" \
   "$EVIDENCE_DIR/findmnt-after.json" "$LOCAL_REHEARSAL"
 
-invoke_python - "$EVIDENCE_DIR/install-summary.json" <<'PY'
+invoke_python - "$EVIDENCE_DIR/install-summary.json" \
+  "$PINNED_ARCHIVE_SHA256" "$ENVIRONMENT_AUTHORITY_SHA256" \
+  "$MIGRATION_GATE_EVIDENCE_SHA256" "$MIGRATION_GATE_MIGRATION_SET_SHA256" \
+  "$MIGRATION_GATE_LATEST_VERSION" "$MIGRATION_GATE_LATEST_MIGRATION" \
+  "$MIGRATION_GATE_OBSERVED_VERSION" "$MIGRATION_GATE_OBSERVED_MIGRATION" <<'PY'
 import json
 from pathlib import Path
 import sys
 
+def optional(value):
+    return value or None
+
+(
+    summary_path,
+    archive_sha256,
+    environment_pin_sha256,
+    migration_gate_evidence_sha256,
+    migration_set_sha256,
+    latest_version,
+    latest_migration,
+    observed_version,
+    observed_migration,
+) = sys.argv[1:]
 payload = {
     "closed_verified": True,
     "live_sla_proven": False,
@@ -5266,8 +5549,22 @@ payload = {
         "verify-agent-data-mount",
     ],
     "stage3_claim": False,
+    "archive_sha256": archive_sha256,
+    "environment_pin_sha256": environment_pin_sha256,
+    "migration_gate_evidence_sha256": optional(migration_gate_evidence_sha256),
+    "migration_set_sha256": optional(migration_set_sha256),
+    "migration_latest": (
+        {"version": int(latest_version), "migration": latest_migration}
+        if latest_version and latest_migration
+        else None
+    ),
+    "observed_database": (
+        {"version": int(observed_version), "migration": observed_migration}
+        if observed_version and observed_migration
+        else None
+    ),
 }
-Path(sys.argv[1]).write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+Path(summary_path).write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 PY
 
 INSTALL_FAILURE_POINT=retire-old-root

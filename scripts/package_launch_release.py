@@ -964,6 +964,7 @@ def collect_launch_release_payload(
         "init.sql",
         "nginx.conf",
         "nginx-ssl.conf",
+        "scripts/check_migration_gate.py",
     ):
         payload.append(_collect_launch_file(root, relative))
     for relative in ("config", "ops/systemd", "ops/nginx/maintenance", "scripts/ops"):

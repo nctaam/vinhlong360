@@ -10,11 +10,15 @@ import tarfile
 
 import pytest
 
+from scripts.package_launch_release import build_launch_release
 from tests.launch_safety.test_rollback_runbook import _build_closed_package
 
 
 ROOT = Path(__file__).resolve().parents[2]
 VERIFY = ROOT / "scripts" / "ops" / "verify_closed_release.py"
+CHECK_MIGRATION_GATE_MEMBER = "scripts/check_migration_gate.py"
+ARCHIVED_VERIFIER_MEMBER = "scripts/ops/verify_closed_release.py"
+MIGRATION_MEMBER_PREFIX = "agent/migrations/"
 
 
 def _load_verifier():
@@ -26,6 +30,21 @@ def _load_verifier():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def _read_migration_prerequisite_members(archive: Path) -> dict[str, bytes]:
+    with tarfile.open(archive, "r:gz") as bundle:
+        names = bundle.getnames()
+        selected = [
+            name
+            for name in names
+            if name == CHECK_MIGRATION_GATE_MEMBER
+            or (
+                name.startswith(MIGRATION_MEMBER_PREFIX)
+                and name.endswith(".sql")
+            )
+        ]
+        return {name: bundle.extractfile(name).read() for name in selected}
 
 
 @pytest.fixture(scope="module")
@@ -93,6 +112,172 @@ def test_archive_verifier_parses_admitted_bytes_after_atomic_path_replacement(
     assert path_replaced is True
     assert archive.read_bytes() == replacement_bytes
     assert evidence["archive_sha256"] == admitted_digest
+
+
+def test_archive_verifier_materializes_migration_prerequisites_from_admitted_members(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    verifier = _load_verifier()
+    package = _build_closed_package(tmp_path)
+    archived = _read_migration_prerequisite_members(package.archive)
+    assert CHECK_MIGRATION_GATE_MEMBER in archived
+    migration_members = {
+        name: raw
+        for name, raw in archived.items()
+        if name.startswith(MIGRATION_MEMBER_PREFIX)
+    }
+    assert migration_members
+
+    source = tmp_path / "source"
+    (source / CHECK_MIGRATION_GATE_MEMBER).write_bytes(b"mutated checker source\n")
+    for migration in (source / "agent" / "migrations").glob("*.sql"):
+        migration.write_bytes(b"mutated migration source\n")
+
+    replacement = b"replacement live archive bytes\n"
+    real_tarfile_open = verifier.tarfile.open
+    path_replaced = False
+
+    def replace_live_archive_after_admission(*args, **kwargs):
+        nonlocal path_replaced
+        package.archive.write_bytes(replacement)
+        path_replaced = True
+        return real_tarfile_open(*args, **kwargs)
+
+    monkeypatch.setattr(verifier.tarfile, "open", replace_live_archive_after_admission)
+    destination = tmp_path / "migration-prerequisites"
+
+    verifier.verify_archive(
+        package.archive,
+        package.digest_file,
+        migration_prerequisite_dir=destination,
+    )
+
+    assert path_replaced is True
+    assert package.archive.read_bytes() == replacement
+    assert (destination / "check_migration_gate.py").read_bytes() == archived[
+        CHECK_MIGRATION_GATE_MEMBER
+    ]
+    assert {
+        f"{MIGRATION_MEMBER_PREFIX}{path.name}": path.read_bytes()
+        for path in (destination / "migrations").glob("*.sql")
+    } == migration_members
+
+
+def test_archive_verifier_refuses_migration_materialization_when_self_bytes_differ(
+    tmp_path: Path,
+):
+    verifier = _load_verifier()
+    _build_closed_package(tmp_path)
+    source = tmp_path / "source"
+    (source / ARCHIVED_VERIFIER_MEMBER).write_bytes(
+        b"#!/usr/bin/env python3\n# verifier identity mismatch\n"
+    )
+    package = build_launch_release(
+        source,
+        tmp_path / "mismatched-verifier.tar.gz",
+        compose_network_audit=source / "build" / "compose-network-audit.json",
+        source_revision="reviewed-source-revision",
+    )
+    destination = tmp_path / "migration-prerequisites"
+    before = set(tmp_path.iterdir())
+
+    with pytest.raises(
+        ValueError,
+        match="running verifier bytes do not match archived verifier",
+    ):
+        verifier.verify_archive(
+            package.archive,
+            package.digest_file,
+            migration_prerequisite_dir=destination,
+        )
+
+    assert not destination.exists()
+    assert set(tmp_path.iterdir()) == before
+
+
+def test_archive_verifier_refuses_existing_migration_prerequisite_destination(
+    tmp_path: Path,
+    closed_package,
+):
+    verifier = _load_verifier()
+    destination = tmp_path / "migration-prerequisites"
+    destination.mkdir()
+    sentinel = destination / "keep.txt"
+    sentinel.write_bytes(b"keep existing destination\n")
+    before = set(tmp_path.iterdir())
+
+    with pytest.raises(FileExistsError):
+        verifier.verify_archive(
+            closed_package.archive,
+            closed_package.digest_file,
+            migration_prerequisite_dir=destination,
+        )
+
+    assert list(destination.iterdir()) == [sentinel]
+    assert sentinel.read_bytes() == b"keep existing destination\n"
+    assert set(tmp_path.iterdir()) == before
+
+
+def test_archive_verifier_refuses_symlink_migration_prerequisite_destination(
+    tmp_path: Path,
+    closed_package,
+):
+    verifier = _load_verifier()
+    victim = tmp_path / "victim"
+    victim.mkdir()
+    sentinel = victim / "keep.txt"
+    sentinel.write_bytes(b"keep symlink target\n")
+    destination = tmp_path / "migration-prerequisites"
+    try:
+        destination.symlink_to(victim, target_is_directory=True)
+    except OSError as exc:
+        pytest.skip(f"symlink creation unavailable: {exc}")
+    before = set(tmp_path.iterdir())
+
+    with pytest.raises(OSError):
+        verifier.verify_archive(
+            closed_package.archive,
+            closed_package.digest_file,
+            migration_prerequisite_dir=destination,
+        )
+
+    assert destination.is_symlink()
+    assert list(victim.iterdir()) == [sentinel]
+    assert sentinel.read_bytes() == b"keep symlink target\n"
+    assert set(tmp_path.iterdir()) == before
+
+
+def test_materialization_cleanup_never_deletes_a_replacement_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    verifier = _load_verifier()
+    destination = tmp_path / "migration-prerequisites"
+    moved = tmp_path / "moved-created-directory"
+    sentinel = destination / "competitor.txt"
+
+    def swap_destination_then_fail(*_args, **_kwargs) -> None:
+        destination.rename(moved)
+        destination.mkdir()
+        sentinel.write_bytes(b"competitor-owned\n")
+        raise OSError("injected materialization failure")
+
+    monkeypatch.setattr(
+        verifier, "_write_exclusive_regular", swap_destination_then_fail
+    )
+    members = {
+        verifier.CHECK_MIGRATION_GATE_MEMBER: b"checker\n",
+        f"{verifier.MIGRATION_MEMBER_PREFIX}070_gate.sql": b"-- migration\n",
+    }
+    evidence = {"migrations": [{"name": "070_gate.sql"}]}
+
+    with pytest.raises(OSError, match="injected materialization failure"):
+        verifier._materialize_migration_prerequisites(
+            destination, members, evidence
+        )
+
+    assert sentinel.read_bytes() == b"competitor-owned\n"
+    assert moved.is_dir()
 
 
 def test_archive_snapshot_rejects_bytes_beyond_configured_resource_bound(

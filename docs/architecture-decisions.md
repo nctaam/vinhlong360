@@ -78,7 +78,10 @@ Redis
 
 15. **PostgreSQL schema changes are migration-only** (2026-07-02).
     - FastAPI startup verifies the required PostgreSQL schema but does not run `ALTER TABLE` or create indexes.
-    - Deploys must run `scripts/apply_migrations.py` before restarting `vl-agent`.
+    - Migrations run as a separate, explicitly authorized prerequisite via `scripts/apply_migrations.py`; the closed-release deploy never mutates PostgreSQL.
+    - A closed deploy never mutates PostgreSQL: it uses a verified archive, materializes the checker/migrations from admitted archive bytes, and checks the exact read-only `public.schema_version` tuple against that archive.
+    - The deploy pins the external environment authority before the first check, reuses the same 0600 bytes for the post-close check and installer, and fails closed before traffic or release mutation on any mismatch.
+    - Both checks use one dependency-bearing Python authority whose resolved target and digest are pinned before traffic closes and rechecked afterward.
     - `schema_version` is the release gate source for production readiness. Legacy databases without `schema_version` are treated as baseline 052, then migrations 053+ are applied by the runner.
     - `VL360_ALLOW_PG_SCHEMA_DRIFT=true` is an emergency bypass only; it must not be used as a normal deploy path.
 

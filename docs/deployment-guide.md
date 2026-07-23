@@ -122,14 +122,37 @@ chmod +x /etc/letsencrypt/renewal-hooks/post/reload-nginx.sh
 
 ## Regular Deployment (scripts/deploy.sh)
 
-The deploy script handles the full flow: build → pack → backup → ship → extract → restart → verify.
+The deploy script installs one verified closed-release archive. Database migration is a separate prerequisite and is never run implicitly by the closed deploy.
+
+### Migration prerequisite
+
+Only run this workflow after the owner explicitly authorizes the production migration. Create a PostgreSQL backup first; the closed deploy does not create one automatically:
+
+```bash
+cd /opt/vinhlong360
+python scripts/backup_data.py \
+  --target pg \
+  --database-url-env DATABASE_URL \
+  --out-dir /var/lib/vinhlong360/backups \
+  --label before-migration
+
+# Run the owner-authorized migration command separately.
+python scripts/apply_migrations.py --migrations agent/migrations
+
+# Optional local gate check: DATABASE_URL is read from the environment only.
+python scripts/check_migration_gate.py \
+  --migrations agent/migrations \
+  --db-check
+```
+
+Do not source `.env` in a deploy command or put a DSN in process arguments. `scripts/deploy.sh` admits the verified archive, materializes its checker and canonical migration set from the archive bytes, pins the external environment authority as a 0600 snapshot, and runs the exact read-only DB gate before traffic closes and again immediately before installation. Both checks use the existing release venv at `$REMOTE/venv/bin/python` by default, require `psycopg2`, and bind the resolved interpreter digest across the traffic-close boundary; `VL360_DEPLOY_MIGRATION_GATE_PYTHON` may select another reviewed absolute interpreter path. If production is behind or any pinned authority/evidence does not match, deploy stops before release mutation; it never applies migrations itself.
 
 ### Common commands
 
 ```bash
 # From repo root (Git Bash on Windows):
 
-# Full deploy (frontend + backend + data)
+# Full closed-release deploy (frontend + backend; no data mutation)
 scripts/deploy.sh --all
 
 # Frontend only (after CSS/template changes)
@@ -138,28 +161,22 @@ scripts/deploy.sh --frontend
 # Backend only (after Python code changes)
 scripts/deploy.sh --backend
 
-# Backend + re-import data.json into PostgreSQL (DESTRUCTIVE)
-scripts/deploy.sh --backend --data --replace
-
 # Skip build (if .output is already fresh)
 scripts/deploy.sh --frontend --skip-build
 ```
 
 ### What the script does
 
-1. **Pre-flight:** SSH to VPS, check `vl-agent`/`vl-nuxt` are active
-2. **Build:** `npm run build` in `web-nuxt/` (with `NODE_OPTIONS=--max-old-space-size=4096` for OOM prevention)
-3. **Pack:** Create tarballs of `agent/*.py` + `web/data.json` and/or `web-nuxt/.output`
-4. **Backup:** `pg_dump` + code snapshot → `backups/` (auto-rotates, keeps newest 6)
-5. **Ship:** SCP tarballs to VPS `/tmp/`
-6. **Extract:** Unpack on VPS; `pip install` for backend; `npm install --omit=dev` for frontend
-7. **Replace (optional):** `database.py --replace` with `ALLOW_DESTRUCTIVE_DB_REPLACE=1`
-8. **Restart:** `systemctl restart vl-agent` and/or `vl-nuxt`
-9. **Verify:** Poll `/health` (up to 30s), check HTTP status, scan error logs
+1. **Build and audit:** build Nuxt, audit Compose, and create the source-bound combined archive plus SHA-256 sidecar.
+2. **Admit and verify:** upload the archive and sidecar; a trusted bootstrap snapshots them from one descriptor, verifies the sidecar, and extracts only archive-bound verifier/installer helpers.
+3. **Migration prerequisite gate:** materialize the checker and canonical migrations from the admitted archive, pin the external environment authority, and compare the exact read-only `public.schema_version` tuple before traffic mutation and again after traffic closes.
+4. **Close traffic:** enable maintenance and prove the closed public/operator boundary.
+5. **Install atomically:** invoke `install_closed_release.sh` with the external environment/runtime/mount authorities.
+6. **Restart and verify:** restart systemd services, verify Nuxt-to-agent proxy readiness, then reopen traffic.
 
 ### Rollback
 
-Every deploy creates a rollback snapshot:
+Keep a known-good code archive and PostgreSQL backup before a production change. The closed deploy does not create either backup automatically:
 
 ```bash
 # On VPS:
@@ -168,9 +185,10 @@ cd /opt/vinhlong360
 # Restore code
 tar -xzf backups/pre-deploy-YYYYMMDD-HHMMSS.tar.gz
 
-# Restore database from deploy custom dump
+# Restore database from an owner-selected custom dump. Use libpq environment
+# (PGHOST/PGPORT/PGUSER/PGDATABASE/PGPASSWORD or a service file), never a DSN argument.
 pg_restore --clean --if-exists --no-owner --no-privileges \
-  --dbname "$DATABASE_URL" backups/db-pre-deploy-YYYYMMDD-HHMMSS.dump
+  --dbname vinhlong360 backups/db-pre-deploy-YYYYMMDD-HHMMSS.dump
 
 # Restart
 systemctl restart vl-agent vl-nuxt
@@ -260,10 +278,10 @@ See `.env.example` for the full list. Critical ones:
 
 ## Backup Strategy
 
-- **Automatic:** Every deploy creates `backups/pre-deploy-*.tar.gz` + `backups/db-pre-deploy-*.dump`
-- **Rotation:** Keeps 6 newest auto-backups per type
-- **Manual:** `python scripts/backup_data.py` creates `scratch/backups/<timestamp>/` with data.json + manifest
-- **Database:** `pg_dump` via deploy script; also possible manually:
+- **Before migration:** Run `python scripts/backup_data.py --target pg --database-url-env DATABASE_URL --out-dir /var/lib/vinhlong360/backups --label before-migration`.
+- **Rotation:** The backup command retains the configured backup history; review the resulting manifest before proceeding.
+- **Manual local snapshot:** `python scripts/backup_data.py` creates `scratch/backups/<timestamp>/` with data.json + manifest.
+- **Database:** Use the owner-approved libpq environment/service configuration; the deploy script does not call `pg_dump`:
   ```bash
-  pg_dump -Fc "$DATABASE_URL" -f /tmp/manual-backup.dump
+  pg_dump -Fc --dbname=vinhlong360 -f /tmp/manual-backup.dump
   ```

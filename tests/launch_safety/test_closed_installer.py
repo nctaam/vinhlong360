@@ -537,6 +537,71 @@ def _cleanup_failure_bash_env(
     return bash_env, python_executor
 
 
+def _write_migration_gate_evidence(
+    path: Path,
+    package,
+    environment: Path,
+    *,
+    archive_sha256: str | None = None,
+    environment_pin_sha256: str | None = None,
+) -> dict[str, object]:
+    with tarfile.open(package.archive, "r:gz") as archive:
+        tool_digests = {}
+        for name, key in (
+            ("scripts/ops/verify_closed_release.py", "verifier_sha256"),
+            ("scripts/check_migration_gate.py", "checker_sha256"),
+            ("scripts/ops/install_closed_release.sh", "installer_sha256"),
+        ):
+            stream = archive.extractfile(name)
+            assert stream is not None
+            tool_digests[key] = hashlib.sha256(stream.read()).hexdigest()
+        migrations = sorted(
+            member.name
+            for member in archive.getmembers()
+            if member.isfile()
+            and member.name.startswith("agent/migrations/")
+            and member.name.endswith(".sql")
+        )
+        records = []
+        for name in migrations:
+            stream = archive.extractfile(name)
+            assert stream is not None
+            raw = stream.read()
+            records.append(
+                {
+                    "name": name.removeprefix("agent/migrations/"),
+                    "sha256": hashlib.sha256(raw).hexdigest(),
+                    "size": len(raw),
+                }
+            )
+    assert records
+    latest_name = str(records[-1]["name"])
+    latest = {
+        "version": int(latest_name.split("_", 1)[0]),
+        "migration": latest_name,
+    }
+    migration_set = json.dumps(
+        records,
+        ensure_ascii=True,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("ascii")
+    payload: dict[str, object] = {
+        "schema_version": 1,
+        "status": "passed",
+        "archive_sha256": archive_sha256
+        or hashlib.sha256(package.archive.read_bytes()).hexdigest(),
+        "environment_pin_sha256": environment_pin_sha256
+        or hashlib.sha256(environment.read_bytes()).hexdigest(),
+        "migration_set_sha256": hashlib.sha256(migration_set).hexdigest(),
+        "migration_latest": latest,
+        "observed_database": dict(latest),
+        **tool_digests,
+    }
+    path.write_text(json.dumps(payload) + "\n", encoding="ascii")
+    return payload
+
+
 def _prepare_case(tmp_path: Path, package, *, fail_after: str | None = None):
     release = tmp_path / "release"
     persistent = tmp_path / "persistent"
@@ -581,11 +646,14 @@ def _prepare_case(tmp_path: Path, package, *, fail_after: str | None = None):
 
     environment = tmp_path / "external.env"
     environment.write_text("SAFE_LOCAL=1\n", encoding="ascii")
+    migration_gate_evidence = tmp_path / "migration-gate.json"
+    _write_migration_gate_evidence(migration_gate_evidence, package, environment)
     env = {
         "KNOWN_GOOD_CLOSED": _bash_path(package.archive),
         "RELEASE_ROOT": _bash_path(release),
         "PERSISTENT_AGENT_DATA_ROOT": _bash_path(persistent),
         "ENVIRONMENT_AUTHORITY": _bash_path(environment),
+        "MIGRATION_GATE_EVIDENCE": _bash_path(migration_gate_evidence),
         "RUNTIME_AUTHORITY": _bash_path(runtime),
         "EVIDENCE_DIR": _bash_path(evidence),
         "INSTALL_HOOK_LOG": _bash_path(hook_log),
@@ -635,10 +703,11 @@ def _installer_command(
     *,
     evidence_arg: str | None = None,
     environment_arg: str | None = None,
+    migration_gate_evidence_arg: str | None = None,
     runtime_arg: str | None = None,
 ) -> list[str]:
     release, persistent, evidence, *_ = prepared
-    return [
+    command = [
         str(BASH),
         "scripts/ops/install_closed_release.sh",
         "--archive",
@@ -657,11 +726,20 @@ def _installer_command(
         ),
         "--runtime-authority",
         _bash_path(case_root / "runtime") if runtime_arg is None else runtime_arg,
-        "--evidence-dir",
-        _bash_path(evidence) if evidence_arg is None else evidence_arg,
-        "--require-closed",
-        "--local-rehearsal",
     ]
+    if migration_gate_evidence_arg is not None:
+        command.extend(
+            ["--migration-gate-evidence", migration_gate_evidence_arg]
+        )
+    command.extend(
+        [
+            "--evidence-dir",
+            _bash_path(evidence) if evidence_arg is None else evidence_arg,
+            "--require-closed",
+            "--local-rehearsal",
+        ]
+    )
+    return command
 
 
 def _invoke_installer(
@@ -674,6 +752,7 @@ def _invoke_installer(
     env_overrides: dict[str, str] | None = None,
     evidence_arg: str | None = None,
     environment_arg: str | None = None,
+    migration_gate_evidence_arg: str | None = None,
     runtime_arg: str | None = None,
 ):
     release, persistent, evidence, before_release, before_persistent, _, values = prepared
@@ -698,6 +777,7 @@ def _invoke_installer(
         prepared,
         evidence_arg=evidence_arg,
         environment_arg=environment_arg,
+        migration_gate_evidence_arg=migration_gate_evidence_arg,
         runtime_arg=runtime_arg,
     )
     result = subprocess.run(
@@ -807,6 +887,8 @@ def _run_live_mount_failure_case(
             _bash_path(runtime),
             "--mount-authority",
             _bash_path(mount_authority),
+            "--migration-gate-evidence",
+            _bash_path(case_root / "migration-gate.json"),
             "--evidence-dir",
             _bash_path(evidence),
             "--require-closed",
@@ -909,6 +991,8 @@ def _run_live_recovery_verification_case(
             _bash_path(runtime),
             "--mount-authority",
             _bash_path(mount_authority),
+            "--migration-gate-evidence",
+            _bash_path(case_root / "migration-gate.json"),
             "--evidence-dir",
             _bash_path(evidence),
             "--require-closed",
@@ -1053,6 +1137,8 @@ def test_live_retry_recovers_interruption_immediately_after_bind_mount(
         _bash_path(runtime),
         "--mount-authority",
         _bash_path(mount_authority),
+        "--migration-gate-evidence",
+        _bash_path(case_root / "migration-gate.json"),
         "--evidence-dir",
         _bash_path(evidence),
         "--require-closed",
@@ -3172,6 +3258,8 @@ def test_production_shaped_retry_reconciles_stale_journal_without_live_mutation(
             _bash_path(runtime),
             "--mount-authority",
             _bash_path(mount_authority),
+            "--migration-gate-evidence",
+            _bash_path(case_root / "migration-gate.json"),
             "--evidence-dir",
             _bash_path(evidence),
             "--require-closed",
@@ -3276,6 +3364,8 @@ def test_stale_recovery_preserves_authorities_when_findmnt_evidence_is_invalid(
             _bash_path(runtime),
             "--mount-authority",
             _bash_path(mount_authority),
+            "--migration-gate-evidence",
+            _bash_path(case_root / "migration-gate.json"),
             "--evidence-dir",
             _bash_path(evidence),
             "--require-closed",
@@ -3448,6 +3538,8 @@ def test_live_mode_rejects_injected_hook_overrides_before_any_mount_or_tree_muta
             _bash_path(runtime),
             "--mount-authority",
             _bash_path(mount_authority),
+            "--migration-gate-evidence",
+            _bash_path(case_root / "migration-gate.json"),
             "--evidence-dir",
             _bash_path(evidence),
             "--require-closed",
@@ -3827,6 +3919,123 @@ def test_installer_runs_injected_staged_dependency_and_unit_hooks_and_matches_un
         destination = unit_destination / Path(relative).name
         assert destination.read_bytes() == raw
     assert _snapshot_tree(persistent) == {}
+
+
+@pytest.mark.parametrize(
+    ("field", "expected_error"),
+    (
+        ("archive_sha256", "migration-gate-archive-mismatch"),
+        ("environment_pin_sha256", "migration-gate-environment-mismatch"),
+    ),
+)
+def test_migration_gate_binding_fails_before_fresh_install_mutation(
+    tmp_path: Path,
+    closed_package,
+    field: str,
+    expected_error: str,
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / field
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, before_persistent, hook_log, _ = prepared
+    migration_gate = case_root / "migration-gate.json"
+    payload = _write_migration_gate_evidence(migration_gate, closed_package, case_root / "external.env")
+    payload[field] = "0" * 64
+    migration_gate.write_text(json.dumps(payload) + "\n", encoding="ascii")
+
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        migration_gate_evidence_arg=_bash_path(migration_gate),
+    )
+
+    assert result.returncode == 2
+    assert expected_error in result.stderr
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
+    assert not hook_log.exists()
+    assert not (evidence / "install-mutation-state.json").exists()
+    assert not list(case_root.glob(".release.closed-stage.*"))
+    assert not (evidence / "migration-gate-evidence.json").exists()
+
+
+@pytest.mark.parametrize(
+    ("field", "expected_error"),
+    (
+        ("migration_set_sha256", "migration-gate-migration-set-mismatch"),
+        ("migration_latest", "migration-gate-latest-mismatch"),
+        ("verifier_sha256", "migration-gate-tool-digest-mismatch"),
+        ("checker_sha256", "migration-gate-tool-digest-mismatch"),
+        ("installer_sha256", "migration-gate-tool-digest-mismatch"),
+    ),
+)
+def test_migration_gate_binding_rejects_release_authority_mismatch_before_mutation(
+    tmp_path: Path,
+    closed_package,
+    field: str,
+    expected_error: str,
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / field
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, before_persistent, hook_log, _ = prepared
+    migration_gate = case_root / "migration-gate.json"
+    payload = _write_migration_gate_evidence(
+        migration_gate, closed_package, case_root / "external.env"
+    )
+    if field == "migration_latest":
+        payload[field] = {"version": 69, "migration": "069_forged.sql"}
+        payload["observed_database"] = dict(payload[field])
+    else:
+        payload[field] = "0" * 64
+    migration_gate.write_text(json.dumps(payload) + "\n", encoding="ascii")
+
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        migration_gate_evidence_arg=_bash_path(migration_gate),
+    )
+
+    assert result.returncode == 2
+    assert expected_error in result.stderr
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
+    assert not hook_log.exists()
+    assert not (evidence / "install-mutation-state.json").exists()
+    assert not list(case_root.glob(".release.closed-stage.*"))
+    assert not (evidence / "migration-gate-evidence.json").exists()
+
+
+def test_migration_gate_binding_is_carried_into_success_summary(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "migration-gate-success"
+    prepared = _prepare_case(case_root, closed_package)
+    _, _, evidence, _, _, _, _ = prepared
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        migration_gate_evidence_arg=_bash_path(case_root / "migration-gate.json"),
+    )
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    summary = json.loads((evidence / "install-summary.json").read_text(encoding="utf-8"))
+    gate = json.loads((case_root / "migration-gate.json").read_text(encoding="ascii"))
+    assert summary["archive_sha256"] == gate["archive_sha256"]
+    assert summary["environment_pin_sha256"] == gate["environment_pin_sha256"]
+    assert summary["migration_gate_evidence_sha256"] == hashlib.sha256(
+        (case_root / "migration-gate.json").read_bytes()
+    ).hexdigest()
+    assert summary["migration_set_sha256"] == gate["migration_set_sha256"]
+    assert summary["migration_latest"] == gate["migration_latest"]
+    assert summary["observed_database"] == gate["observed_database"]
 
 
 def test_missing_agent_data_fails_closed_without_creating_live_topology(
@@ -7297,6 +7506,8 @@ def test_same_evidence_retry_resets_before_live_override_rejection(
             _bash_path(case_root / "runtime"),
             "--mount-authority",
             _bash_path(mount_authority),
+            "--migration-gate-evidence",
+            _bash_path(case_root / "migration-gate.json"),
             "--evidence-dir",
             _bash_path(evidence),
             "--require-closed",

@@ -45,6 +45,9 @@ REQUIRED_MEMBERS = frozenset(
         "ops/systemd/vl-bot.service",
         "ops/systemd/vl-watchdog.service",
         "ops/systemd/vl-watchdog.timer",
+        "scripts/check_migration_gate.py",
+        "scripts/ops/verify_closed_release.py",
+        "scripts/ops/install_closed_release.sh",
     }
 )
 PERSISTENT_PATHS = ["agent/data", "agent/data/sitemap-bundles"]
@@ -111,6 +114,12 @@ EXPECTED_CACHE_PURGE = {
 MAX_ARCHIVE_SNAPSHOT_BYTES = 2 * 1024 * 1024 * 1024
 MAX_ARCHIVE_MEMBER_BYTES = 128 * 1024 * 1024
 MAX_ARCHIVE_EXPANDED_BYTES = 512 * 1024 * 1024
+CHECK_MIGRATION_GATE_MEMBER = "scripts/check_migration_gate.py"
+ARCHIVED_VERIFIER_MEMBER = "scripts/ops/verify_closed_release.py"
+ARCHIVED_INSTALLER_MEMBER = "scripts/ops/install_closed_release.sh"
+MIGRATION_MEMBER_PREFIX = "agent/migrations/"
+MIGRATION_MEMBER_RE = re.compile(r"^agent/migrations/(\d{3})_[a-z0-9_]+\.sql$")
+MAX_MIGRATION_PREREQUISITE_BYTES = 16 * 1024 * 1024
 
 
 if os.name == "nt":
@@ -717,7 +726,164 @@ def _validate_loopback_units(members: Mapping[str, bytes]) -> None:
             raise ValueError(f"loopback systemd unit evidence mismatch: {relative}")
 
 
-def verify_archive(archive: Path, digest_file: Path | None = None) -> dict[str, Any]:
+def _fsync_directory(path: Path) -> None:
+    if os.name == "nt":
+        return
+    descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def _write_exclusive_regular(path: Path, raw: bytes, mode: int) -> None:
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+    flags |= getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_BINARY", 0)
+    descriptor = os.open(path, flags, mode)
+    try:
+        view = memoryview(raw)
+        while view:
+            written = os.write(descriptor, view)
+            if written <= 0:
+                raise OSError(f"migration prerequisite write made no progress: {path}")
+            view = view[written:]
+        os.fsync(descriptor)
+        os.fchmod(descriptor, mode)
+    finally:
+        os.close(descriptor)
+
+
+def _directory_matches_identity(path: Path, expected: os.stat_result) -> bool:
+    try:
+        observed = path.lstat()
+    except OSError:
+        return False
+    return (
+        stat.S_ISDIR(observed.st_mode)
+        and not stat.S_ISLNK(observed.st_mode)
+        and os.path.samestat(expected, observed)
+    )
+
+
+def _require_directory_identity(path: Path, expected: os.stat_result) -> None:
+    if not _directory_matches_identity(path, expected):
+        raise OSError("migration prerequisite directory identity changed")
+
+
+def _migration_prerequisite_evidence(
+    members: Mapping[str, bytes], archive_sha256: str
+) -> dict[str, Any]:
+    missing_authorities = {
+        CHECK_MIGRATION_GATE_MEMBER,
+        ARCHIVED_VERIFIER_MEMBER,
+        ARCHIVED_INSTALLER_MEMBER,
+    } - members.keys()
+    if missing_authorities:
+        raise ValueError(
+            "closed package is missing migration authorities: "
+            f"{sorted(missing_authorities)}"
+        )
+    migration_names: list[str] = []
+    for name in members:
+        if not name.startswith(MIGRATION_MEMBER_PREFIX):
+            continue
+        if MIGRATION_MEMBER_RE.fullmatch(name) is None:
+            raise ValueError(f"malformed migration prerequisite member: {name}")
+        migration_names.append(name)
+    migration_names.sort()
+    if not migration_names:
+        raise ValueError("closed package has no migration prerequisite members")
+    total_size = sum(len(members[name]) for name in migration_names)
+    if total_size > MAX_MIGRATION_PREREQUISITE_BYTES:
+        raise ValueError("migration prerequisite set exceeds maximum expanded size")
+    latest_match = MIGRATION_MEMBER_RE.fullmatch(migration_names[-1])
+    assert latest_match is not None
+    migration_records = [
+        {
+            "name": name.removeprefix(MIGRATION_MEMBER_PREFIX),
+            "sha256": _sha256(members[name]),
+            "size": len(members[name]),
+        }
+        for name in migration_names
+    ]
+    migration_set_sha256 = _sha256(
+        json.dumps(
+            migration_records,
+            ensure_ascii=True,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("ascii")
+    )
+    return {
+        "archive_sha256": archive_sha256,
+        "verifier_sha256": _sha256(members[ARCHIVED_VERIFIER_MEMBER]),
+        "checker_sha256": _sha256(members[CHECK_MIGRATION_GATE_MEMBER]),
+        "installer_sha256": _sha256(members[ARCHIVED_INSTALLER_MEMBER]),
+        "migration_count": len(migration_names),
+        "migration_latest": {
+            "version": int(latest_match.group(1)),
+            "migration": migration_names[-1].removeprefix(MIGRATION_MEMBER_PREFIX),
+        },
+        "migration_set_sha256": migration_set_sha256,
+        "migrations": migration_records,
+    }
+
+
+def _materialize_migration_prerequisites(
+    destination: Path,
+    members: Mapping[str, bytes],
+    evidence: Mapping[str, Any],
+) -> None:
+    destination = Path(os.path.abspath(os.fspath(destination)))
+    if os.path.lexists(destination):
+        if destination.is_symlink():
+            raise OSError("migration prerequisite destination must not be a symlink")
+        raise FileExistsError(destination)
+    parent = destination.parent
+    if parent.is_symlink() or not parent.is_dir():
+        raise OSError("migration prerequisite parent must be a real directory")
+    created_identity: os.stat_result | None = None
+    try:
+        destination.mkdir(mode=0o700)
+        created_identity = destination.lstat()
+        destination.chmod(0o700)
+        _require_directory_identity(destination, created_identity)
+        migrations_dir = destination / "migrations"
+        migrations_dir.mkdir(mode=0o700)
+        migrations_dir.chmod(0o700)
+        migrations_identity = migrations_dir.lstat()
+        _require_directory_identity(destination, created_identity)
+        _write_exclusive_regular(
+            destination / "check_migration_gate.py",
+            members[CHECK_MIGRATION_GATE_MEMBER],
+            0o600,
+        )
+        for item in evidence["migrations"]:
+            _require_directory_identity(destination, created_identity)
+            _require_directory_identity(migrations_dir, migrations_identity)
+            name = item["name"]
+            _write_exclusive_regular(
+                migrations_dir / name,
+                members[f"{MIGRATION_MEMBER_PREFIX}{name}"],
+                0o600,
+            )
+        _require_directory_identity(destination, created_identity)
+        _require_directory_identity(migrations_dir, migrations_identity)
+        _fsync_directory(migrations_dir)
+        _fsync_directory(destination)
+        _fsync_directory(parent)
+    except BaseException:
+        # Leave the partial destination for the caller's private-stage cleanup;
+        # path-based deletion after a race could destroy a replacement tree.
+        raise
+
+
+def verify_archive(
+    archive: Path,
+    digest_file: Path | None = None,
+    *,
+    migration_prerequisite_dir: Path | None = None,
+) -> dict[str, Any]:
     """Verify the archive and return sanitized evidence; sidecar is checked first."""
     started = time.monotonic()
     archive = Path(archive)
@@ -741,6 +907,19 @@ def verify_archive(archive: Path, digest_file: Path | None = None) -> dict[str, 
     )
     _validate_network_audit(members["compose-network-audit.json"])
     _validate_loopback_units(members)
+    migration_evidence = _migration_prerequisite_evidence(members, archive_sha256)
+    if migration_prerequisite_dir is not None:
+        try:
+            running_verifier = Path(__file__).read_bytes()
+        except OSError as exc:
+            raise ValueError("running verifier bytes cannot be read") from exc
+        if running_verifier != members[ARCHIVED_VERIFIER_MEMBER]:
+            raise ValueError("running verifier bytes do not match archived verifier")
+        _materialize_migration_prerequisites(
+            migration_prerequisite_dir,
+            members,
+            migration_evidence,
+        )
     return {
         "archive": str(archive),
         "archive_sha256": archive_sha256,
@@ -754,6 +933,7 @@ def verify_archive(archive: Path, digest_file: Path | None = None) -> dict[str, 
         "canonical_digests": manifest["canonical_artifacts"],
         "readiness_digest": manifest["readiness_manifest"]["sha256"],
         "network_audit_digest": manifest["network_audit"]["sha256"],
+        "migration_prerequisites": migration_evidence,
         "stage3_claim": False,
         "live_sla_proven": False,
         "observed_local_elapsed_seconds": round(time.monotonic() - started, 6),
@@ -1703,6 +1883,7 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--archive", type=Path)
     parser.add_argument("--archive-digest-file", type=Path)
+    parser.add_argument("--migration-prerequisite-dir", type=Path)
     parser.add_argument("--installed-root", type=Path)
     parser.add_argument("--persistent-agent-data-root", type=Path)
     parser.add_argument("--verify-config-ingress-unit-digests", action="store_true")
@@ -1727,7 +1908,11 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit("supply exactly one of --archive or --installed-root")
     try:
         if args.archive is not None:
-            evidence = verify_archive(args.archive, args.archive_digest_file)
+            evidence = verify_archive(
+                args.archive,
+                args.archive_digest_file,
+                migration_prerequisite_dir=args.migration_prerequisite_dir,
+            )
         else:
             evidence = verify_installed_root(
                 args.installed_root,

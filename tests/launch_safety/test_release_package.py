@@ -198,11 +198,16 @@ def test_unpacked_release_loaders_read_exact_packaged_bytes(tmp_path: Path):
 def _write_launch_fixture(root: Path) -> Path:
     """Create a small reviewed closed-release tree without building Nuxt."""
     (root / "agent" / "data" / "sitemap-bundles").mkdir(parents=True)
+    (root / "agent" / "migrations").mkdir(parents=True)
     (root / "agent" / "tests").mkdir(parents=True)
     (root / "agent" / "server.py").write_bytes(b"agent\n")
     (root / "agent" / "data" / "runtime.sqlite").write_bytes(b"persistent\n")
     (root / "agent" / "tests" / "test_server.py").write_bytes(b"excluded\n")
     (root / "agent" / ".env").write_bytes(b"SECRET=excluded\n")
+    for migration in sorted((ROOT / "agent" / "migrations").glob("*.sql")):
+        (root / "agent" / "migrations" / migration.name).write_bytes(
+            migration.read_bytes()
+        )
 
     (root / "config").mkdir(parents=True)
     for name in ("launch-indexing-policy.json", "ai-disclosure.json"):
@@ -281,7 +286,13 @@ def _write_launch_fixture(root: Path) -> Path:
     (root / "ops" / "nginx" / "maintenance").mkdir(parents=True)
     (root / "ops" / "nginx" / "maintenance" / "server-enabled.conf").write_bytes(b"if (1) { return 503; }\n")
     (root / "scripts" / "ops").mkdir(parents=True)
+    (root / "scripts" / "check_migration_gate.py").write_bytes(
+        (ROOT / "scripts" / "check_migration_gate.py").read_bytes()
+    )
     (root / "scripts" / "ops" / "deploy.sh").write_bytes(b"#!/bin/sh\n")
+    (root / "scripts" / "ops" / "verify_closed_release.py").write_bytes(
+        (ROOT / "scripts" / "ops" / "verify_closed_release.py").read_bytes()
+    )
 
     compose_names = (
         "docker-compose.dev.yml",
@@ -383,6 +394,56 @@ def test_build_launch_release_has_closed_manifest_and_deterministic_sidecar(tmp_
         "canonical_artifacts", "readiness_manifest", "network_audit",
         "developer_override", "persistent_paths", "members",
     }
+
+
+def test_build_launch_release_includes_migration_prerequisites_with_manifest_digests(
+    tmp_path: Path,
+):
+    root = tmp_path / "source"
+    audit = _write_launch_fixture(root)
+    package = build_launch_release(
+        root,
+        tmp_path / "release.tar.gz",
+        compose_network_audit=audit,
+        source_revision="reviewed-source-revision",
+    )
+    expected = {
+        "scripts/check_migration_gate.py": root
+        / "scripts"
+        / "check_migration_gate.py",
+        "scripts/ops/verify_closed_release.py": root
+        / "scripts"
+        / "ops"
+        / "verify_closed_release.py",
+        **{
+            f"agent/migrations/{source.name}": source
+            for source in sorted((root / "agent" / "migrations").glob("*.sql"))
+        },
+    }
+
+    with tarfile.open(package.archive, "r:gz") as bundle:
+        manifest = json.loads(
+            bundle.extractfile("launch-release-manifest.json").read()
+        )
+        archived = {
+            member.name: bundle.extractfile(member).read()
+            for member in bundle.getmembers()
+            if member.isfile() and member.name in expected
+        }
+
+    missing = set(expected) - set(archived)
+    unexpected = set(archived) - set(expected)
+    assert not missing, f"missing migration prerequisite archive members: {sorted(missing)}"
+    assert not unexpected, (
+        f"unexpected migration prerequisite archive members: {sorted(unexpected)}"
+    )
+    for name, source in expected.items():
+        raw = source.read_bytes()
+        assert archived[name] == raw
+        assert manifest["members"][name] == {
+            "sha256": hashlib.sha256(raw).hexdigest(),
+            "size": len(raw),
+        }
 
 
 @pytest.mark.parametrize(
