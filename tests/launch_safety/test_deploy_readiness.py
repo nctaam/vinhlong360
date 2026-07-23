@@ -72,10 +72,17 @@ def test_deploy_sources_admission_and_closes_before_remote_mutation():
     script = DEPLOY.read_text(encoding="utf-8")
 
     assert "deploy_launch_admission.sh" in script
+    assert "scripts/package_launch_release.py launch-release" in script
+    assert "verify_closed_release.py" in script
+    assert "install_closed_release.sh" in script
+    assert "vl-deploy.tar.gz" not in script
+    assert "vl-nuxt-output.tar.gz" not in script
+    assert "tar -xzf" not in script
+    assert "rm -rf $REMOTE/web-nuxt/.output" not in script
     block = _deploy_remote_install_block(script)
-    assert block.index("close_launch_admission") < block.index("tar -xzf")
-    assert block.index("close_launch_admission") < block.index("pip install")
-    assert block.index("close_launch_admission") < block.index("npm install")
+    assert block.index("close_launch_admission") < block.index(
+        "install_closed_release.sh"
+    )
     assert block.index("close_launch_admission") < block.index("systemctl restart")
     assert "maintenance_mode.sh disable" not in script
 
@@ -102,8 +109,11 @@ def test_deploy_uses_a_unique_remote_stage_with_per_stage_archives_and_evidence(
     ) in stage
 
     upload = script[stage_end : script.index("# 6a.", stage_end)]
-    assert '"$VPS:$LAUNCH_STAGE/archives/vl-deploy.tar.gz"' in upload
-    assert '"$VPS:$LAUNCH_STAGE/archives/vl-nuxt-output.tar.gz"' in upload
+    assert '"$VPS:$LAUNCH_STAGE/archives/vl360-launch-release.tar.gz"' in upload
+    assert (
+        '"$VPS:$LAUNCH_STAGE/archives/vl360-launch-release.tar.gz.sha256"'
+        in upload
+    )
     assert '"$VPS:/tmp/"' not in upload
 
     remote_setup = script[script.index("export READINESS_EVIDENCE") :]
@@ -180,7 +190,7 @@ true
     )
 
     result = subprocess.run(
-        [_git_bash(), str(scenario)],
+        [_git_bash(), "--login", str(scenario)],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -197,8 +207,8 @@ def test_deploy_probes_from_the_local_operator_before_remote_install():
     operator_probe = script.index(
         "python scripts/ops/probe_launch_boundary.py", close_session_end
     )
-    install_session = script.index('"${SSH[@]}" "DO_FRONTEND=', operator_probe)
-    install_index = script.index("tar -xzf", install_session)
+    install_session = script.index('"${SSH[@]}" "OPERATOR_CIDR=', operator_probe)
+    install_index = script.index("install_closed_release.sh", install_session)
 
     assert close_index < close_session_end < operator_probe
     assert operator_probe < install_session < install_index
@@ -206,6 +216,41 @@ def test_deploy_probes_from_the_local_operator_before_remote_install():
     assert "--expect maintenance" in operator_block
     assert "--operator-source" in operator_block
     assert "--base-url https://vinhlong360.vn" in operator_block
+
+
+def test_deploy_verifies_remote_archive_before_close_and_installs_only_after_probe():
+    script = DEPLOY.read_text(encoding="utf-8")
+    remote_verify = script.index("verify_closed_release.py", script.index("# 5."))
+    close = script.index("close_launch_admission", remote_verify)
+    operator_probe = script.index("python scripts/ops/probe_launch_boundary.py", close)
+    installer = script.index("install_closed_release.sh", operator_probe)
+
+    assert remote_verify < close < operator_probe < installer
+    assert '--archive-digest-file "\\$LAUNCH_STAGE/archives/vl360-launch-release.tar.gz.sha256"' in script
+    assert "--require-closed" in script
+
+
+def test_systemd_release_bakes_loopback_api_origin_and_gates_proxy_before_reopen():
+    script = DEPLOY.read_text(encoding="utf-8")
+    build = script[script.index("# 1. Build") : script.index("# 2.")]
+    restart = script.index("systemctl restart vl-nuxt", script.index("# 6b."))
+    reopen = script.index("reopen_launch_admission", restart)
+    restart_to_reopen = script[restart:reopen]
+
+    assert "API_BASE=http://127.0.0.1:8360" in build
+    assert "API_BASE=http://agent:8360" not in build
+    assert "http://127.0.0.1:3000/api/homepage" in restart_to_reopen
+    assert "nuxt-api-proxy.json" in restart_to_reopen
+
+
+def test_deploy_keeps_destructive_data_and_migration_flags_outside_closed_release():
+    script = DEPLOY.read_text(encoding="utf-8")
+
+    for flag in ("--data", "--replace", "--migrate"):
+        assert flag in script
+    assert "destructive data and migration operations are not supported" in script
+    assert "agent/database.py --replace" not in script
+    assert "scripts/apply_migrations.py" not in script
 
 
 def test_launch_admission_uses_only_nuxt_readiness_and_listener_isolation():
@@ -226,7 +271,6 @@ def test_deploy_backend_diagnostics_are_not_a_post_reopen_gate():
     remote_install = _deploy_remote_install_block(script)
     diagnostics = script[script.index("# 7. Post-admission diagnostics") :]
 
-    assert "/health" not in remote_install
     assert "/api/search" not in remote_install
     assert '"$agent" = 200' not in diagnostics
     assert '"$ready" = 200' not in diagnostics
@@ -301,7 +345,7 @@ reopen_launch_admission
         newline="\n",
     )
     result = subprocess.run(
-        [_git_bash(), str(scenario)],
+        [_git_bash(), "--login", str(scenario)],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -737,7 +781,7 @@ def test_probe_refuses_wrong_mode_or_source_contract(argv: list[str]):
 def test_shell_scripts_are_syntax_valid():
     for script in (DEPLOY, ADMISSION):
         result = subprocess.run(
-            [_git_bash(), "-n", str(script)],
+            [_git_bash(), "--login", "-n", str(script)],
             cwd=ROOT,
             capture_output=True,
             text=True,

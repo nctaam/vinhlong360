@@ -88,10 +88,11 @@ services:
       dockerfile: web-nuxt/Dockerfile
       args:
         BUILD_REVISION: ${BUILD_REVISION:-}
+        API_BASE: http://agent:8360
     expose:
       - "3000"
     environment:
-      API_BASE: http://agent:8360
+      NUXT_API_BASE: http://agent:8360
       HOST: 0.0.0.0
       NITRO_HOST: 0.0.0.0
       PORT: 3000
@@ -102,6 +103,23 @@ services:
       timeout: 10s
       retries: 3
 
+  maintenance-runtime-init:
+    image: alpine:3.20
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        set -eu
+        install -d -m 0755 /etc/nginx/vl360-maintenance
+        sed 's#__OPERATOR_CIDR__#127.0.0.1/32#' /opt/vl360-maintenance-source/http-context.conf.template > /etc/nginx/vl360-maintenance/http-context.conf
+        install -m 0644 /opt/vl360-maintenance-source/server-enabled.conf /etc/nginx/vl360-maintenance/server-enabled.conf
+        install -m 0644 /opt/vl360-maintenance-source/server-disabled.conf /etc/nginx/vl360-maintenance/server-disabled.conf
+        ln -sfn server-disabled.conf /etc/nginx/vl360-maintenance/active-server.conf
+    volumes:
+      - ./ops/nginx/maintenance:/opt/vl360-maintenance-source:ro
+      - "/etc/nginx/vl360-maintenance:/etc/nginx/vl360-maintenance"
+    restart: "no"
+
   nginx:
     image: nginx:alpine
     ports:
@@ -111,7 +129,10 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./web:/var/www/html:ro
       - ./ssl:/etc/nginx/ssl:ro
+      - "/etc/nginx/vl360-maintenance:/etc/nginx/vl360-maintenance"
     depends_on:
+      maintenance-runtime-init:
+        condition: service_completed_successfully
       nuxt:
         condition: service_healthy
     restart: unless-stopped

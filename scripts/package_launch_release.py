@@ -61,12 +61,15 @@ _AUDIT_CHECK_NAMES = (
     "container_names_absent",
     "developer_added_publications_loopback",
     "exact_healthcheck_commands",
+    "maintenance_initializer_exact",
+    "maintenance_runtime_shared_with_host",
     "non_nginx_services_unpublished",
     "no_external_or_host_network",
     "nginx_exclusive_public_endpoints",
-    "nginx_depends_on_healthy_nuxt_only",
+    "nginx_depends_on_healthy_nuxt_and_completed_maintenance_init",
     "nuxt_backend_independent_readiness",
     "nuxt_bind_host",
+    "nuxt_compose_api_origins",
     "no_launch_unlock_environment",
     "required_services_present",
     "shared_private_bridge_network",
@@ -837,7 +840,7 @@ def _validate_network_audit_header(audit: dict[str, object]) -> None:
     )
     if audit["schema_version"] != 1 or type(audit["schema_version"]) is not int:
         raise ValueError("compose network audit schema mismatch")
-    if audit["revision"] != "compose-network-audit-v1":
+    if audit["revision"] != "compose-network-audit-v2":
         raise ValueError("compose network audit revision mismatch")
     expected_checks = sorted(_AUDIT_CHECK_NAMES)
     if audit["check_names"] != expected_checks:

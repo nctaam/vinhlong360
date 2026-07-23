@@ -23,7 +23,7 @@ from typing import Any, Mapping, NamedTuple, Sequence
 
 
 SCHEMA_VERSION = 1
-AUDIT_REVISION = "compose-network-audit-v1"
+AUDIT_REVISION = "compose-network-audit-v2"
 CHECK_NAMES = (
     "agent_bind_host",
     "bot_bind_host_and_agent_url",
@@ -33,9 +33,12 @@ CHECK_NAMES = (
     "non_nginx_services_unpublished",
     "no_external_or_host_network",
     "nginx_exclusive_public_endpoints",
-    "nginx_depends_on_healthy_nuxt_only",
+    "maintenance_initializer_exact",
+    "maintenance_runtime_shared_with_host",
+    "nginx_depends_on_healthy_nuxt_and_completed_maintenance_init",
     "nuxt_backend_independent_readiness",
     "nuxt_bind_host",
+    "nuxt_compose_api_origins",
     "no_launch_unlock_environment",
     "required_services_present",
     "shared_private_bridge_network",
@@ -47,6 +50,7 @@ INTERNAL_SERVICES = {
     "agent",
     "bot-gateway",
     "nuxt",
+    "maintenance-runtime-init",
     "prometheus",
     "grafana",
     "loki",
@@ -73,7 +77,25 @@ SNAPSHOT_FILE_NAMES = (
     "docker-compose.systemd-deps.yml",
 )
 LAUNCH_NETWORK_SERVICES = ("agent", "bot-gateway", "nuxt", "nginx")
-NUXT_ALLOWED_ENV_KEYS = {"API_BASE", "HOST", "NITRO_HOST", "PORT"}
+NUXT_ALLOWED_ENV_KEYS = {"HOST", "NITRO_HOST", "NUXT_API_BASE", "PORT"}
+EXPECTED_NUXT_API_BASE = "http://agent:8360"
+MAINTENANCE_RUNTIME_TARGET = "/etc/nginx/vl360-maintenance"
+MAINTENANCE_SOURCE_TARGET = "/opt/vl360-maintenance-source"
+MAINTENANCE_SOURCE_SUFFIX = "/ops/nginx/maintenance"
+EXPECTED_MAINTENANCE_INIT_COMMAND = (
+    "/bin/sh",
+    "-ec",
+    "set -eu\n"
+    "install -d -m 0755 /etc/nginx/vl360-maintenance\n"
+    "sed 's#__OPERATOR_CIDR__#127.0.0.1/32#' "
+    "/opt/vl360-maintenance-source/http-context.conf.template "
+    "> /etc/nginx/vl360-maintenance/http-context.conf\n"
+    "install -m 0644 /opt/vl360-maintenance-source/server-enabled.conf "
+    "/etc/nginx/vl360-maintenance/server-enabled.conf\n"
+    "install -m 0644 /opt/vl360-maintenance-source/server-disabled.conf "
+    "/etc/nginx/vl360-maintenance/server-disabled.conf\n"
+    "ln -sfn server-disabled.conf /etc/nginx/vl360-maintenance/active-server.conf\n",
+)
 EXPECTED_DEVELOPER_ENDPOINTS = {
     ("postgres", "127.0.0.1", 5432, 5432, "tcp"),
     ("redis", "127.0.0.1", 6379, 6379, "tcp"),
@@ -308,7 +330,9 @@ def _nginx_endpoints(model: Mapping[str, Any]) -> list[Mapping[str, Any]] | None
     return [endpoint for endpoint in endpoints if endpoint is not None]
 
 
-def validate_production_model(model: Mapping[str, Any]) -> list[str]:
+def validate_production_model(
+    model: Mapping[str, Any], *, compose_root: Path | None = None
+) -> list[str]:
     """Return stable issue strings for a rendered production Compose model."""
 
     issues: list[str] = []
@@ -318,6 +342,7 @@ def validate_production_model(model: Mapping[str, Any]) -> list[str]:
     issues.extend(_production_required_issues(model, services))
     issues.extend(_production_service_issues(services))
     issues.extend(_production_nuxt_issues(services))
+    issues.extend(_production_maintenance_issues(services, compose_root=compose_root))
     issues.extend(_production_healthcheck_issues(services))
     issues.extend(_production_nginx_issues(services))
     return sorted(set(issues))
@@ -399,7 +424,17 @@ def _production_nuxt_issues(services: Mapping[str, Any]) -> list[str]:
     if not isinstance(nuxt, Mapping):
         return []
     nuxt_env = _environment(nuxt)
-    return _nuxt_runtime_issues(nuxt, nuxt_env)
+    issues = _nuxt_runtime_issues(nuxt, nuxt_env)
+    build = nuxt.get("build", {})
+    build_args = build.get("args", {}) if isinstance(build, Mapping) else {}
+    if (
+        not isinstance(build_args, Mapping)
+        or build_args.get("API_BASE") != EXPECTED_NUXT_API_BASE
+    ):
+        issues.append("nuxt build API_BASE must target agent:8360")
+    if nuxt_env.get("NUXT_API_BASE") != EXPECTED_NUXT_API_BASE:
+        issues.append("nuxt runtime NUXT_API_BASE must target agent:8360")
+    return issues
 
 
 def _nuxt_runtime_issues(
@@ -421,6 +456,125 @@ def _nuxt_runtime_issues(
     return issues
 
 
+def _volume_at_target(service: object, target: str) -> Mapping[str, Any] | None:
+    if not isinstance(service, Mapping):
+        return None
+    volumes = service.get("volumes", ())
+    if not isinstance(volumes, Sequence) or isinstance(volumes, (str, bytes)):
+        return None
+    matches = [
+        volume
+        for volume in volumes
+        if isinstance(volume, Mapping) and volume.get("target") == target
+    ]
+    return matches[0] if len(matches) == 1 else None
+
+
+def _maintenance_command_is_exact(initializer: Mapping[str, Any]) -> bool:
+    command = initializer.get("command", ())
+    if (
+        not isinstance(command, Sequence)
+        or isinstance(command, (str, bytes))
+        or not all(isinstance(item, str) for item in command)
+    ):
+        return False
+    return tuple(command) == EXPECTED_MAINTENANCE_INIT_COMMAND
+
+
+def _maintenance_source_is_exact(
+    volume: Mapping[str, Any] | None, *, compose_root: Path | None
+) -> bool:
+    if (
+        volume is None
+        or volume.get("type") != "bind"
+        or volume.get("read_only") is not True
+    ):
+        return False
+    source = volume.get("source")
+    if not isinstance(source, str):
+        return False
+    normalized = source.replace("\\", "/").rstrip("/")
+    relative_source = MAINTENANCE_SOURCE_SUFFIX.removeprefix("/")
+    if normalized == relative_source:
+        return True
+    if compose_root is None:
+        return False
+    expected = str(compose_root / relative_source).replace("\\", "/").rstrip("/")
+    return normalized.casefold() == expected.casefold()
+
+
+def _canonical_writable_bind(volume: Mapping[str, Any] | None) -> bool:
+    return (
+        volume is not None
+        and volume.get("type") == "bind"
+        and volume.get("source") == MAINTENANCE_RUNTIME_TARGET
+        and volume.get("read_only") is not True
+    )
+
+
+def _maintenance_runtime_mount_issues(
+    initialized_runtime: Mapping[str, Any] | None,
+    nginx_runtime: Mapping[str, Any] | None,
+) -> list[str]:
+    issues: list[str] = []
+    if not _canonical_writable_bind(initialized_runtime):
+        issues.append(
+            "maintenance runtime initializer must use the writable host bind authority"
+        )
+    if not _canonical_writable_bind(nginx_runtime):
+        issues.append("maintenance runtime nginx must use the writable host bind authority")
+    if (
+        initialized_runtime is not None
+        and nginx_runtime is not None
+        and initialized_runtime.get("source") != nginx_runtime.get("source")
+    ):
+        issues.append("maintenance runtime host bind must be shared with nginx")
+    return issues
+
+
+def _initializer_volume_targets_are_exact(initializer: Mapping[str, Any]) -> bool:
+    volumes = initializer.get("volumes", ())
+    if not isinstance(volumes, Sequence) or isinstance(volumes, (str, bytes)):
+        return False
+    targets = [
+        volume.get("target")
+        for volume in volumes
+        if isinstance(volume, Mapping)
+    ]
+    return len(volumes) == 2 and set(targets) == {
+        MAINTENANCE_SOURCE_TARGET,
+        MAINTENANCE_RUNTIME_TARGET,
+    }
+
+
+def _production_maintenance_issues(
+    services: Mapping[str, Any], *, compose_root: Path | None
+) -> list[str]:
+    initializer = services.get("maintenance-runtime-init")
+    nginx = services.get("nginx")
+    if not isinstance(initializer, Mapping):
+        return ["maintenance runtime initializer is missing"]
+
+    issues: list[str] = []
+    source = _volume_at_target(initializer, MAINTENANCE_SOURCE_TARGET)
+    initialized_runtime = _volume_at_target(initializer, MAINTENANCE_RUNTIME_TARGET)
+    nginx_runtime = _volume_at_target(nginx, MAINTENANCE_RUNTIME_TARGET)
+    if not _maintenance_source_is_exact(source, compose_root=compose_root):
+        issues.append("maintenance runtime source must be the reviewed read-only bind")
+    issues.extend(_maintenance_runtime_mount_issues(initialized_runtime, nginx_runtime))
+    if (
+        initializer.get("restart") != "no"
+        or not _initializer_volume_targets_are_exact(initializer)
+        or not _maintenance_command_is_exact(initializer)
+    ):
+        issues.append("maintenance runtime initializer contract must be exact")
+    if not isinstance(nginx, Mapping) or not _nginx_dependencies_are_exact(
+        nginx.get("depends_on", {})
+    ):
+        issues.append("maintenance runtime initialization must complete before nginx")
+    return issues
+
+
 def _production_healthcheck_issues(services: Mapping[str, Any]) -> list[str]:
     issues: list[str] = []
     for service_name, expected_command in EXPECTED_HEALTHCHECKS.items():
@@ -437,16 +591,23 @@ def _production_nginx_issues(services: Mapping[str, Any]) -> list[str]:
     if isinstance(nginx, Mapping) and not _nginx_dependencies_are_exact(
         nginx.get("depends_on", {})
     ):
-        return ["nginx must depend on healthy nuxt only"]
+        return [
+            "nginx must depend on healthy nuxt and completed maintenance initialization"
+        ]
     return []
 
 
 def _nginx_dependencies_are_exact(depends_on: object) -> bool:
     if not isinstance(depends_on, Mapping):
         return False
-    if set(depends_on) != {"nuxt"}:
+    if set(depends_on) != {"maintenance-runtime-init", "nuxt"}:
         return False
-    return _dependency_is_exact(depends_on.get("nuxt", {}), "service_healthy")
+    return _dependency_is_exact(
+        depends_on.get("nuxt", {}), "service_healthy"
+    ) and _dependency_is_exact(
+        depends_on.get("maintenance-runtime-init", {}),
+        "service_completed_successfully",
+    )
 
 
 def _dependency_is_exact(dependency: object, condition: str) -> bool:
@@ -665,10 +826,11 @@ def build_audit_artifact(
     systemd_model: Mapping[str, Any],
     source_files: Sequence[Path] | None = None,
     source_snapshots: Sequence[SourceSnapshot] | None = None,
+    compose_root: Path | None = None,
 ) -> dict[str, Any]:
     """Build the canonical, model-free audit evidence document."""
 
-    issues = validate_production_model(rendered_model)
+    issues = validate_production_model(rendered_model, compose_root=compose_root)
     issues.extend(validate_developer_model(developer_model))
     issues.extend(validate_systemd_dependency_model(systemd_model))
     if issues:
@@ -912,6 +1074,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 developer_model=developer_model,
                 systemd_model=systemd_model,
                 source_snapshots=source_snapshots,
+                compose_root=root,
             )
         write_audit_artifact(output, artifact, root=root)
     except (OSError, RuntimeError, ValueError) as exc:

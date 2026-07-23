@@ -7,7 +7,9 @@ RUN npm ci
 FROM node:22-alpine AS build
 
 ARG BUILD_REVISION
+ARG API_BASE
 ENV BUILD_REVISION=${BUILD_REVISION}
+ENV API_BASE=${API_BASE}
 
 WORKDIR /app/web-nuxt
 COPY --from=deps /app/web-nuxt/node_modules ./node_modules

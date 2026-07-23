@@ -67,6 +67,26 @@ ROUTE_REVISION = "launch-indexing-policy-v1"
 DISCLOSURE_REVISION = "ai-disclosure-v1"
 READINESS_PATH = "web-nuxt/.output/server/launch-readiness-manifest.json"
 ROUTE_CLASSES = ["public-html", "public-api", "root-seo", "internal-readiness"]
+AUDIT_CHECK_NAMES = (
+    "agent_bind_host",
+    "bot_bind_host_and_agent_url",
+    "container_names_absent",
+    "developer_added_publications_loopback",
+    "exact_healthcheck_commands",
+    "maintenance_initializer_exact",
+    "maintenance_runtime_shared_with_host",
+    "nginx_depends_on_healthy_nuxt_and_completed_maintenance_init",
+    "nginx_exclusive_public_endpoints",
+    "no_external_or_host_network",
+    "no_launch_unlock_environment",
+    "non_nginx_services_unpublished",
+    "nuxt_backend_independent_readiness",
+    "nuxt_bind_host",
+    "nuxt_compose_api_origins",
+    "required_services_present",
+    "shared_private_bridge_network",
+    "systemd_dependency_topology",
+)
 CANONICAL_ARTIFACTS = (
     ("route_manifest", "config/launch-indexing-policy.json", ROUTE_REVISION),
     ("ai_disclosure", "config/ai-disclosure.json", DISCLOSURE_REVISION),
@@ -666,11 +686,14 @@ def _validate_readiness(
 
 def _validate_network_audit(raw: bytes) -> None:
     audit = _safe_json(raw, "compose network audit")
-    if audit.get("schema_version") != 1 or audit.get("revision") != "compose-network-audit-v1":
+    if audit.get("schema_version") != 1 or audit.get("revision") != "compose-network-audit-v2":
         raise ValueError("compose network audit revision mismatch")
+    expected_checks = sorted(AUDIT_CHECK_NAMES)
     checks = audit.get("checks")
-    if not isinstance(checks, dict) or not checks or any(value != "passed" for value in checks.values()):
-        raise ValueError("compose network audit is not fully passed")
+    if audit.get("check_names") != expected_checks or checks != {
+        name: "passed" for name in expected_checks
+    }:
+        raise ValueError("compose network audit check inventory mismatch")
     ports = audit.get("published_ports")
     if not isinstance(ports, list) or len(ports) != 2 or {
         (item.get("service"), item.get("published"), item.get("target"), item.get("protocol"))

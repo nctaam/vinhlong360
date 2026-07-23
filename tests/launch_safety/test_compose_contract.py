@@ -13,6 +13,20 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "ops" / "compose_network_audit.py"
+MAINTENANCE_RUNTIME = "/etc/nginx/vl360-maintenance"
+MAINTENANCE_SOURCE = "/opt/vl360-maintenance-source"
+MAINTENANCE_INIT_COMMAND = (
+    "set -eu\n"
+    "install -d -m 0755 /etc/nginx/vl360-maintenance\n"
+    "sed 's#__OPERATOR_CIDR__#127.0.0.1/32#' "
+    "/opt/vl360-maintenance-source/http-context.conf.template "
+    "> /etc/nginx/vl360-maintenance/http-context.conf\n"
+    "install -m 0644 /opt/vl360-maintenance-source/server-enabled.conf "
+    "/etc/nginx/vl360-maintenance/server-enabled.conf\n"
+    "install -m 0644 /opt/vl360-maintenance-source/server-disabled.conf "
+    "/etc/nginx/vl360-maintenance/server-disabled.conf\n"
+    "ln -sfn server-disabled.conf /etc/nginx/vl360-maintenance/active-server.conf\n"
+)
 
 
 def _load_audit():
@@ -78,14 +92,43 @@ def _expected_closed_model() -> dict[str, object]:
                 },
             },
             "nuxt": {
+                "build": {
+                    "args": {
+                        "API_BASE": "http://agent:8360",
+                        "BUILD_REVISION": "revision",
+                    }
+                },
                 "expose": ["3000"],
-                "environment": {"HOST": "0.0.0.0", "NITRO_HOST": "0.0.0.0"},
+                "environment": {
+                    "HOST": "0.0.0.0",
+                    "NITRO_HOST": "0.0.0.0",
+                    "NUXT_API_BASE": "http://agent:8360",
+                    "PORT": "3000",
+                },
                 "healthcheck": {
                     "test": [
                         "CMD-SHELL",
                         "wget -qO- http://127.0.0.1:3000/_internal/launch-readiness >/dev/null",
                     ]
                 },
+            },
+            "maintenance-runtime-init": {
+                "command": ["/bin/sh", "-ec", MAINTENANCE_INIT_COMMAND],
+                "restart": "no",
+                "volumes": [
+                    {
+                        "type": "bind",
+                        "source": "ops/nginx/maintenance",
+                        "target": MAINTENANCE_SOURCE,
+                        "read_only": True,
+                    },
+                    {
+                        "type": "bind",
+                        "source": MAINTENANCE_RUNTIME,
+                        "target": MAINTENANCE_RUNTIME,
+                        "read_only": False,
+                    },
+                ],
             },
             "nginx": {
                 "ports": [
@@ -102,7 +145,20 @@ def _expected_closed_model() -> dict[str, object]:
                         "protocol": "tcp",
                     },
                 ],
-                "depends_on": {"nuxt": {"condition": "service_healthy"}},
+                "depends_on": {
+                    "maintenance-runtime-init": {
+                        "condition": "service_completed_successfully"
+                    },
+                    "nuxt": {"condition": "service_healthy"},
+                },
+                "volumes": [
+                    {
+                        "type": "bind",
+                        "source": MAINTENANCE_RUNTIME,
+                        "target": MAINTENANCE_RUNTIME,
+                        "read_only": False,
+                    }
+                ],
             },
             "prometheus": {"expose": ["9090"]},
             "grafana": {"expose": ["3000"]},
@@ -185,13 +241,42 @@ def test_nuxt_and_nginx_compose_dependencies_are_backend_independent():
     assert "http://127.0.0.1:3000/_internal/launch-readiness" in nuxt
     assert "HOST: 0.0.0.0" in nuxt
     assert "NITRO_HOST: 0.0.0.0" in nuxt
+    assert "API_BASE: http://agent:8360" in nuxt
+    assert "NUXT_API_BASE: http://agent:8360" in nuxt
     assert _source_healthcheck_command(nuxt) == [
         "CMD-SHELL",
         "wget -qO- http://127.0.0.1:3000/_internal/launch-readiness >/dev/null",
     ]
     assert nginx.count("depends_on:") == 1
     assert "nuxt:" in nginx and "condition: service_healthy" in nginx
+    assert "maintenance-runtime-init:" in nginx
+    assert "condition: service_completed_successfully" in nginx
     assert "agent:" not in nginx
+
+
+def test_compose_populates_writable_maintenance_runtime_before_nginx():
+    compose = (ROOT / "docker-compose.yml").read_text(encoding="utf-8")
+    initializer = _service_block(compose, "maintenance-runtime-init", "nginx")
+    nginx = _service_block(compose, "nginx", "prometheus")
+
+    assert "./ops/nginx/maintenance:/opt/vl360-maintenance-source:ro" in initializer
+    assert "/etc/nginx/vl360-maintenance:/etc/nginx/vl360-maintenance" in initializer
+    assert "http-context.conf.template" in initializer
+    assert "server-enabled.conf" in initializer
+    assert "server-disabled.conf" in initializer
+    assert "active-server.conf" in initializer
+    assert "server-disabled.conf" in initializer
+    assert "/etc/nginx/vl360-maintenance:/etc/nginx/vl360-maintenance" in nginx
+
+
+def test_compose_maintenance_runtime_matches_host_helper_authority():
+    compose = (ROOT / "docker-compose.yml").read_text(encoding="utf-8")
+    shared_bind = "/etc/nginx/vl360-maintenance:/etc/nginx/vl360-maintenance"
+
+    assert compose.count(shared_bind) == 2
+    assert "VL360_MAINTENANCE_DIR" not in compose
+    assert "maintenance-runtime:/etc/nginx/vl360-maintenance" not in compose
+    assert "\n  maintenance-runtime:\n" not in compose
 
 
 def test_container_bind_hosts_and_internal_agent_url_are_explicit():
@@ -296,6 +381,87 @@ def test_production_validator_accepts_compose_default_dependency_metadata():
     assert audit.validate_production_model(model) == []
 
 
+def test_production_validator_requires_canonical_nuxt_api_origins():
+    audit = _load_audit()
+    model = _expected_closed_model()
+    model["services"]["nuxt"]["build"]["args"]["API_BASE"] = "http://localhost:8360"
+    model["services"]["nuxt"]["environment"]["NUXT_API_BASE"] = "http://public.invalid"
+
+    issues = audit.validate_production_model(model)
+    assert "nuxt build API_BASE must target agent:8360" in issues
+    assert "nuxt runtime NUXT_API_BASE must target agent:8360" in issues
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "missing-init",
+        "missing-nginx-dependency",
+        "readonly-nginx-runtime",
+        "unshared-runtime",
+        "arbitrary-shared-runtime",
+        "unpopulated-runtime",
+    ],
+)
+def test_production_validator_requires_initialized_writable_maintenance_runtime(
+    mutation,
+):
+    audit = _load_audit()
+    model = _expected_closed_model()
+    if mutation == "missing-init":
+        del model["services"]["maintenance-runtime-init"]
+    elif mutation == "missing-nginx-dependency":
+        del model["services"]["nginx"]["depends_on"]["maintenance-runtime-init"]
+    elif mutation == "readonly-nginx-runtime":
+        model["services"]["nginx"]["volumes"][0]["read_only"] = True
+    elif mutation == "unshared-runtime":
+        model["services"]["maintenance-runtime-init"]["volumes"][1]["source"] = (
+            "/different-runtime"
+        )
+    elif mutation == "arbitrary-shared-runtime":
+        model["services"]["maintenance-runtime-init"]["volumes"][1]["source"] = (
+            "/tmp/vl360-maintenance"
+        )
+        model["services"]["nginx"]["volumes"][0]["source"] = (
+            "/tmp/vl360-maintenance"
+        )
+    else:
+        model["services"]["maintenance-runtime-init"]["command"] = [
+            "/bin/sh",
+            "-ec",
+            "true",
+        ]
+
+    assert any(
+        "maintenance runtime" in issue
+        for issue in audit.validate_production_model(model)
+    )
+
+
+@pytest.mark.parametrize(
+    "decoy", ["token-noop", "arbitrary-source", "lookalike-source"]
+)
+def test_production_validator_rejects_decoy_maintenance_population_contracts(decoy):
+    audit = _load_audit()
+    model = _expected_closed_model()
+    initializer = model["services"]["maintenance-runtime-init"]
+    if decoy == "token-noop":
+        initializer["command"] = [
+            "/bin/sh",
+            "-ec",
+            "printf '%s' 'http-context.conf.template http-context.conf "
+            "server-enabled.conf server-disabled.conf active-server.conf "
+            "ln -sfn server-disabled.conf' >/dev/null",
+        ]
+    elif decoy == "arbitrary-source":
+        initializer["volumes"][0]["source"] = "arbitrary-read-only-bind"
+    else:
+        initializer["volumes"][0]["source"] = "/tmp/ops/nginx/maintenance"
+
+    issues = audit.validate_production_model(model)
+    assert any("maintenance runtime" in issue for issue in issues)
+
+
 def test_production_validator_rejects_any_nuxt_dependency():
     audit = _load_audit()
     model = _expected_closed_model()
@@ -367,7 +533,8 @@ def test_production_validator_rejects_noncanonical_nginx_dependency_metadata(
     model = _expected_closed_model()
     model["services"]["nginx"]["depends_on"]["nuxt"][field] = value
     assert any(
-        "nginx must depend on healthy nuxt only" in issue
+        "nginx must depend on healthy nuxt and completed maintenance initialization"
+        in issue
         for issue in audit.validate_production_model(model)
     )
 
@@ -614,7 +781,7 @@ def test_audit_artifact_is_canonical_source_bound_and_has_no_raw_model(tmp_path:
         source_files=[source],
     )
     assert artifact["schema_version"] == 1
-    assert artifact["revision"] == "compose-network-audit-v1"
+    assert artifact["revision"] == "compose-network-audit-v2"
     assert set(artifact) == {
         "schema_version",
         "revision",
@@ -630,13 +797,16 @@ def test_audit_artifact_is_canonical_source_bound_and_has_no_raw_model(tmp_path:
         "container_names_absent",
         "developer_added_publications_loopback",
         "exact_healthcheck_commands",
-        "nginx_depends_on_healthy_nuxt_only",
+        "maintenance_initializer_exact",
+        "maintenance_runtime_shared_with_host",
+        "nginx_depends_on_healthy_nuxt_and_completed_maintenance_init",
         "nginx_exclusive_public_endpoints",
         "no_external_or_host_network",
         "no_launch_unlock_environment",
         "non_nginx_services_unpublished",
         "nuxt_backend_independent_readiness",
         "nuxt_bind_host",
+        "nuxt_compose_api_origins",
         "required_services_present",
         "shared_private_bridge_network",
         "systemd_dependency_topology",
@@ -873,6 +1043,50 @@ def test_cli_supports_planned_paths_and_sibling_source_defaults(
         "docker-compose.systemd-deps.yml",
         "docker-compose.yml",
     ]
+
+
+def test_cli_validates_rendered_bind_against_real_project_root(
+    monkeypatch, tmp_path: Path
+):
+    audit = _load_audit()
+    for name in (
+        "docker-compose.yml",
+        "docker-compose.prod.yml",
+        "docker-compose.dev.yml",
+        "docker-compose.systemd-deps.yml",
+    ):
+        (tmp_path / name).write_text(f"# {name}\n", encoding="utf-8")
+
+    model = _expected_closed_model()
+    model["services"]["maintenance-runtime-init"]["volumes"][0]["source"] = str(
+        (tmp_path / "ops" / "nginx" / "maintenance").resolve()
+    )
+    monkeypatch.setattr(audit, "render_production_compose", lambda *_args: model)
+    monkeypatch.setattr(
+        audit,
+        "render_developer_compose",
+        lambda *_args: _expected_developer_model(),
+    )
+    monkeypatch.setattr(
+        audit,
+        "render_systemd_dependency_compose",
+        lambda *_args: _expected_systemd_model(),
+    )
+    monkeypatch.chdir(tmp_path)
+
+    result = audit.main(
+        [
+            "--compose",
+            "docker-compose.yml",
+            "--production",
+            "docker-compose.prod.yml",
+            "--output",
+            "build/compose-network-audit.json",
+        ]
+    )
+
+    assert result == 0
+    assert (tmp_path / "build" / "compose-network-audit.json").is_file()
 
 
 def test_cli_renders_immutable_snapshots_when_live_source_mutates_and_restores(
