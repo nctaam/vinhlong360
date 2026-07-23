@@ -489,18 +489,15 @@ class TestCollections:
 # ═══════════════════════════════════════════════════════════════════════════
 
 class TestSeoRobotsTxt:
-    def test_robots_txt_200(self):
+    def test_robots_txt_is_not_owned_by_seo_router(self):
         resp = _seo_client().get("/robots.txt")
-        assert resp.status_code == 200
-        body = resp.text
-        assert "User-agent: *" in body
-        assert "Disallow: /admin" in body
-        assert "Sitemap:" in body
+        assert resp.status_code == 404
+        assert resp.json() == {"detail": "Not Found"}
 
-    def test_robots_allows_google(self):
-        body = _seo_client().get("/robots.txt").text
-        assert "User-agent: Googlebot" in body
-        assert "User-agent: GPTBot" in body
+    def test_robots_txt_does_not_leak_legacy_body(self):
+        resp = _seo_client().get("/robots.txt")
+        assert resp.status_code == 404
+        assert "User-agent:" not in resp.text
 
 
 class TestSeoSitemap:
@@ -508,10 +505,9 @@ class TestSeoSitemap:
         resp = _seo_client().get("/sitemap.xml")
         assert resp.status_code == 404
 
-    def test_sitemap_index_200(self):
+    def test_sitemap_index_is_not_owned_by_seo_router(self):
         resp = _seo_client().get("/sitemap-index.xml")
-        assert resp.status_code == 200
-        assert "application/xml" in resp.headers.get("content-type", "")
+        assert resp.status_code == 404
 
 
 class TestSeoFavicon:
@@ -529,7 +525,8 @@ class TestSeoOgMeta:
         assert data["og:locale"] == "vi_VN"
         assert "og:title" in data
         assert "og:description" in data
-        assert "og:image" in data
+        assert "og:image" not in data
+        assert "twitter:image" not in data
         assert "twitter:card" in data
 
     def test_entity_og_meta_not_found(self):

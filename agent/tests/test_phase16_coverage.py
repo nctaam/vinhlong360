@@ -1227,15 +1227,15 @@ class TestMediumFixesBatch2:
             "TRUSTED_PROXIES must strip whitespace from entries"
 
     def test_db_conn_putconn_safety(self):
-        """DB _conn() must catch putconn exceptions to prevent pool leak."""
+        """The pool-return helper must close connections when putconn fails."""
         import inspect
         from database import Database
 
-        block = inspect.getsource(Database._conn)
-        assert "putconn" in block, "_conn must use putconn"
+        block = inspect.getsource(Database._return_connection_to_pool)
+        assert "putconn" in block, "pool-return helper must use putconn"
         after_putconn = block.split("putconn")[1][:200]
         assert "except" in after_putconn or "conn.close()" in after_putconn, \
-            "_conn must wrap putconn in try/except to prevent pool leak"
+            "pool-return helper must wrap putconn and close on cleanup failure"
 
     def test_nearby_entities_early_break(self):
         """nearby_entities first loop must break when limit reached."""

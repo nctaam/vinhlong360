@@ -225,7 +225,8 @@ def test_admin_activity_feed_empty(tmp_path, monkeypatch):
 def test_og_meta_site_default():
     meta = seo.build_og_meta()
     assert meta["og:site_name"] == "VinhLong360"
-    assert "og:image" in meta
+    assert "og:image" not in meta
+    assert "twitter:image" not in meta
     assert meta["og:type"] == "website"
 
 
@@ -235,11 +236,12 @@ def test_og_meta_entity_with_image():
         "name": "Cam sành",
         "type": "product",
         "summary": "Cam sành ngon lắm",
-        "images": ["https://example.com/cam.jpg", "https://example.com/cam2.jpg"],
+        "images": ["/img/entities/cam-sanh.webp", "/img/entities/cam-sanh-2.webp"],
     }
     meta = seo.build_og_meta(entity)
     assert meta["og:title"] == "Cam sành"
-    assert meta["og:image"] == "https://example.com/cam.jpg"
+    assert meta["og:image"] == "https://vinhlong360.vn/img/entities/cam-sanh.webp"
+    assert meta["twitter:image"] == meta["og:image"]
     assert meta["og:type"] == "article"
     assert "Cam sành" in meta["og:description"]
 
@@ -247,7 +249,8 @@ def test_og_meta_entity_with_image():
 def test_og_meta_entity_no_image():
     entity = {"id": "bun-mam", "name": "Bún mắm", "type": "dish", "images": []}
     meta = seo.build_og_meta(entity)
-    assert meta["og:image"] == seo.DEFAULT_OG_IMAGE
+    assert "og:image" not in meta
+    assert "twitter:image" not in meta
 
 
 def test_twitter_card_meta_site_default():
@@ -255,7 +258,7 @@ def test_twitter_card_meta_site_default():
     assert meta["twitter:card"] == "summary_large_image"
     assert meta["twitter:title"] == meta["og:title"]
     assert meta["twitter:description"] == meta["og:description"]
-    assert meta["twitter:image"] == meta["og:image"]
+    assert "twitter:image" not in meta
 
 
 def test_twitter_card_meta_entity():
@@ -264,13 +267,14 @@ def test_twitter_card_meta_entity():
         "name": "Test Entity",
         "type": "attraction",
         "summary": "A test attraction",
-        "images": ["https://example.com/photo.jpg"],
+        "images": ["/img/entities/test-entity.webp"],
     }
     meta = seo.build_og_meta(entity)
     assert meta["twitter:card"] == "summary_large_image"
     assert meta["twitter:title"] == "Test Entity"
     assert meta["twitter:description"] == "A test attraction"
-    assert meta["twitter:image"] == "https://example.com/photo.jpg"
+    assert meta["twitter:image"] == "https://vinhlong360.vn/img/entities/test-entity.webp"
+    assert meta["og:image"] == meta["twitter:image"]
 
 
 def test_og_meta_escapes_html_in_entity_fields():
@@ -610,7 +614,7 @@ def test_pg_connect_timeout_set():
     """Verify connect_timeout parameter is used in database.py."""
     import inspect
     from database import Database
-    src = inspect.getsource(Database._conn)
+    src = inspect.getsource(Database._pg_conn)
     assert "connect_timeout" in src
 
 
@@ -786,16 +790,23 @@ def test_to_minimal_fields():
     import public_api
     entity = {
         "id": "test", "name": "Test", "type": "dish", "summary": "Good",
-        "images": ["img1.jpg", "img2.jpg", "img3.jpg"],
+        "images": [
+            "/img/entities/test.webp",
+            "/img/entities/test-2.webp",
+            "/img/entities/test-3.webp",
+        ],
         "description": "Long desc", "attributes": {"rating": 4.5, "review_count": 10},
         "relationships": [{"type": "near"}], "coordinates": [10.2, 106.0],
         "place_name": "Xã A", "place_area": "Vĩnh Long",
     }
-    minimal = public_api._to_minimal(entity)
+    minimal = public_api._to_minimal(public_api._project_public_entity_media(entity))
     assert minimal["id"] == "test"
     assert minimal["rating"] == 4.5
     assert minimal["review_count"] == 10
-    assert len(minimal["images"]) == 1
+    assert [item["url"] for item in minimal["image_descriptors"]] == [
+        "/img/entities/test.webp"
+    ]
+    assert "images" not in minimal
     assert "description" not in minimal
     assert "relationships" not in minimal
 
@@ -824,7 +835,7 @@ def test_fields_minimal_response():
     from unittest.mock import patch
     entities = [
         {"id": "a", "name": "A", "type": "dish", "summary": "Good",
-         "images": ["img1.jpg", "img2.jpg"], "description": "Long",
+         "images": ["/img/entities/a.webp", "/img/entities/a-2.webp"], "description": "Long",
          "attributes": {"rating": 4.5, "review_count": 3},
          "coordinates": [10.2, 106.0]},
     ]
@@ -836,7 +847,8 @@ def test_fields_minimal_response():
     data = resp.json()
     e = data["entities"][0]
     assert e["rating"] == 4.5
-    assert len(e["images"]) == 1
+    assert [item["url"] for item in e["image_descriptors"]] == ["/img/entities/a.webp"]
+    assert "images" not in e
     assert "description" not in e
 
 
@@ -855,8 +867,7 @@ def test_gallery_endpoint_mounted():
 
 
 def test_gallery_entity_images():
-    """Gallery should return only strict AI editorial descriptors."""
-    from ai_disclosure import CANONICAL_ENTITY_AI
+    """Gallery must suppress unknown external entity images."""
     import public_api
     from unittest.mock import patch
     entity = {
@@ -868,34 +879,7 @@ def test_gallery_entity_images():
         client = _public_client()
         resp = client.get("/api/entities/test-gallery/gallery")
     assert resp.status_code == 200
-    assert resp.json() == {
-        "images": [
-            {
-                "url": "https://img1.jpg",
-                "alt": "Test — ảnh minh họa 1",
-                "source_class": "ai-generated",
-                "source_kind": "entity-editorial",
-                "disclosure_key": "entity-ai",
-                "short_label": CANONICAL_ENTITY_AI.short_label,
-                "full_disclosure": CANONICAL_ENTITY_AI.full_disclosure,
-                "credit": None,
-                "width": None,
-                "height": None,
-            },
-            {
-                "url": "https://img2.jpg",
-                "alt": "Test — ảnh minh họa 2",
-                "source_class": "ai-generated",
-                "source_kind": "entity-editorial",
-                "disclosure_key": "entity-ai",
-                "short_label": CANONICAL_ENTITY_AI.short_label,
-                "full_disclosure": CANONICAL_ENTITY_AI.full_disclosure,
-                "credit": None,
-                "width": None,
-                "height": None,
-            },
-        ],
-    }
+    assert resp.json() == {"images": []}
 
 
 def test_gallery_no_entity_404():

@@ -761,20 +761,27 @@ class TestBE17EntityImage:
 # ═══════════════════════════════════════════════════════════════════════
 
 class TestBE18SeoOgImage:
-    def test_og_site_default_has_image(self):
+    def test_og_site_default_omits_unverified_image(self):
         meta = seo.build_og_meta()
-        assert "og:image" in meta
-        assert meta["og:image"].startswith("http")
+        assert "og:image" not in meta
+        assert "twitter:image" not in meta
 
-    def test_og_entity_uses_first_image(self):
-        entity = {"id": "e1", "name": "Test", "type": "attraction", "images": ["https://a.com/1.jpg", "https://a.com/2.jpg"]}
+    def test_og_entity_uses_first_canonical_ai_image(self):
+        entity = {
+            "id": "e1",
+            "name": "Test",
+            "type": "attraction",
+            "images": ["/img/entities/e1.webp", "/img/entities/e1-alt.webp"],
+        }
         meta = seo.build_og_meta(entity)
-        assert meta["og:image"] == "https://a.com/1.jpg"
+        assert meta["og:image"] == "https://vinhlong360.vn/img/entities/e1.webp"
+        assert meta["twitter:image"] == meta["og:image"]
 
-    def test_og_entity_fallback_when_no_images(self):
+    def test_og_entity_without_ai_image_has_no_image_meta(self):
         entity = {"id": "e2", "name": "Test", "type": "dish", "images": []}
         meta = seo.build_og_meta(entity)
-        assert meta["og:image"] == seo.DEFAULT_OG_IMAGE
+        assert "og:image" not in meta
+        assert "twitter:image" not in meta
 
     def test_og_escapes_entity_name(self):
         entity = {"id": "xss", "name": '<script>alert("x")</script>', "type": "attraction"}
@@ -784,7 +791,8 @@ class TestBE18SeoOgImage:
     def test_twitter_card_present(self):
         meta = seo.build_og_meta()
         assert meta["twitter:card"] == "summary_large_image"
-        assert "twitter:image" in meta
+        assert meta["twitter:title"] == meta["og:title"]
+        assert "twitter:image" not in meta
 
     def test_og_endpoint_returns_200(self):
         app = FastAPI()
@@ -792,18 +800,24 @@ class TestBE18SeoOgImage:
         client = TestClient(app)
         resp = client.get("/seo/og")
         assert resp.status_code == 200
-        assert "og:image" in resp.json()
+        assert "og:image" not in resp.json()
+        assert "twitter:image" not in resp.json()
 
     def test_jsonld_image_object_for_entity_with_image(self):
         entity = {"id": "e3", "name": "Photo Place", "type": "attraction",
-                  "images": ["https://example.com/photo.jpg"]}
+                  "images": ["/img/entities/e3.webp"]}
         ld = seo.build_entity_jsonld(entity, {})
-        if "image" in ld:
-            img = ld["image"]
-            if isinstance(img, dict):
-                assert img.get("@type") == "ImageObject"
-            elif isinstance(img, str):
-                assert img.startswith("http")
+        assert ld["image"] == [{
+            "@type": "ImageObject",
+            "url": "https://vinhlong360.vn/img/entities/e3.webp",
+            "contentUrl": "https://vinhlong360.vn/img/entities/e3.webp",
+            "name": "Photo Place — 1",
+            "caption": "Ảnh minh họa do AI dựng — không phải ảnh chụp tại chỗ.",
+            "description": (
+                "Photo Place — ảnh minh họa 1 — "
+                "Ảnh minh họa do AI dựng — không phải ảnh chụp tại chỗ."
+            ),
+        }]
 
 
 # ═══════════════════════════════════════════════════════════════════════

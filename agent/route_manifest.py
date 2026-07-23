@@ -334,8 +334,10 @@ def _validate_ingress_exceptions(manifest: Mapping[str, Any]) -> list[dict[str, 
         item = _record(raw, f"backend_ingress_exceptions[{index}]")
         _exact_keys(item, INGRESS_KEYS, f"backend_ingress_exceptions[{index}]")
         prefix = _canonical_path(item["prefix"], "ingress prefix")
+        if prefix == "/":
+            raise ValueError("route manifest ingress prefix cannot be root")
         review_reason = item["review_reason"]
-        if prefix == "/" or type(review_reason) is not str or not review_reason.strip(JS_TRIM_CHARACTERS):
+        if type(review_reason) is not str or not review_reason.strip(JS_TRIM_CHARACTERS):
             raise ValueError("route manifest ingress exception mismatch")
         exceptions.append(
             {
