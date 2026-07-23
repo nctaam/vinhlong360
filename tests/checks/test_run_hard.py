@@ -33,6 +33,25 @@ def test_hard_violation_blocks(tmp_path):
     assert code == 1 and any("HARD RX.1" in m for m in msgs)
 
 
+def test_run_binds_supplied_root_to_checks(tmp_path, monkeypatch):
+    _mk(tmp_path, "docs/a.md", "BAD\n")
+    check = common.RegexCheck(
+        name="h", level="hard", rule="RX.1", patterns=[r"BAD"],
+        globs=["*.md"], roots=["docs"],
+    )
+
+    def unexpected_repo_root():
+        raise AssertionError("check resolved repo root instead of using runner root")
+
+    monkeypatch.setattr(common, "repo_root", unexpected_repo_root)
+    code, msgs = run_hard.run(
+        None, checks=[check], root=tmp_path, baseline={}, skips=set(),
+    )
+
+    assert code == 1 and any("HARD RX.1" in message for message in msgs)
+    assert check._root is None
+
+
 def test_ratchet_increase_blocks_equal_passes(tmp_path):
     _mk(tmp_path, "docs/a.md", "MEH\nMEH\n")
     chk = _soft_ratchet_check(tmp_path)

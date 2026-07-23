@@ -341,14 +341,24 @@ try {
   $priorErrorActionPreference = $ErrorActionPreference
   try {
     $ErrorActionPreference = 'Continue'
-    $releaseOutput = @(& $powershell -NoProfile -File `
-      (Join-Path $repoRoot 'scripts/release_gate.ps1') `
-      -SkipBackend -SkipFrontend -SkipData `
-      -Python (Join-Path $releaseStubRoot 'python.cmd') `
-      -Node (Join-Path $releaseStubRoot 'node.cmd') `
-      -LaunchSafetyEvidenceState $releaseState `
-      -RunLaunchSafetyDockerOptIn `
-      -RunLaunchSafetyBrowserOptIn 2>&1)
+    $releaseOutput = @(& $powershell -NoProfile -Command {
+      param($root, $stubRoot, $python, $node, $state)
+      $env:PATH = "$stubRoot;$env:PATH"
+      & (Join-Path $root 'scripts/release_gate.ps1') `
+        -SkipBackend -SkipFrontend -SkipData `
+        -Python $python `
+        -Node $node `
+        -LaunchSafetyEvidenceState $state `
+        -RunLaunchSafetyDockerOptIn `
+        -RunLaunchSafetyBrowserOptIn
+      exit $LASTEXITCODE
+    } -args @(
+      $repoRoot,
+      $releaseStubRoot,
+      (Join-Path $releaseStubRoot 'python.cmd'),
+      (Join-Path $releaseStubRoot 'node.cmd'),
+      $releaseState
+    ) 2>&1)
     $releaseExit = [int]$LASTEXITCODE
   }
   finally {

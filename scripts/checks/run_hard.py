@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import argparse
+from copy import copy
 import os
 import sys
 from datetime import datetime
@@ -99,6 +100,14 @@ def _ratchet_messages(blockers: list, skips: set[str], lvl: dict) -> tuple[bool,
     return blocked, messages
 
 
+def _bind_checks_to_root(checks: list, root: Path) -> list:
+    bound = [copy(check) if hasattr(check, "_root") else check for check in checks]
+    for check in bound:
+        if hasattr(check, "_root"):
+            check._root = root
+    return bound
+
+
 def run(files: list[str] | None, checks: list | None = None, root: Path | None = None,
         baseline: dict | None = None, skips: set[str] | None = None) -> tuple[int, list[str]]:
     """Trả (exit_code, messages). Tách tham số để test được."""
@@ -106,6 +115,7 @@ def run(files: list[str] | None, checks: list | None = None, root: Path | None =
     root = root or common.repo_root()
     baseline = baseline if baseline is not None else common.load_baseline(root=root)
     skips = skips if skips is not None else set()
+    checks = _bind_checks_to_root(checks, root)
     results = [c.run(files) for c in checks]
     messages: list[str] = []
     hard_blocked, hard_msgs = _hard_messages(results)

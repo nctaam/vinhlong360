@@ -190,8 +190,12 @@ function Invoke-RecordedLaunchSafetySection {
 function Resolve-LaunchSafetyRevision {
   Push-Location $Root
   try {
-    $revision = (& git rev-parse HEAD | Select-Object -First 1).Trim()
-    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($revision)) {
+    $revisionOutput = @(& git rev-parse HEAD)
+    $revisionExit = $LASTEXITCODE
+    $revision = if ($revisionOutput.Count -gt 0) {
+      ([string]$revisionOutput[0]).Trim()
+    } else { "" }
+    if ($revisionExit -ne 0 -or [string]::IsNullOrWhiteSpace($revision)) {
       throw "unable to resolve clean-head revision"
     }
     return [string]$revision
