@@ -2,7 +2,7 @@
 
 > STATUS: active/partial - approved remediation direction from the 2026-07-20 repository audit; no deploy, production mutation, secret change, or live indexing authorization.
 
-> **Progress truth (2026-07-23, refreshed):** Tasks 1, 2, 3, 6, 7 and the Task 8 ratchet work are integrated on `codex/ls-remed-rollback` through commits `bce3690`, `8d11d8b`, and `fc143cf`, with independent spec review passed. Integrated evidence is `945 passed, 9 skipped` for the backend remediation matrix, `293 passed` for the serial frontend matrix, Nuxt typecheck pass, PowerShell harness pass, and `run_hard.py --all` green (`hard=0`, no ratchet increase). The release-gate wrapper now resolves system/user Git Bash and preserves native exit `120`; its executable contract passes. A fresh revision-bound Nuxt build completed for revision `29aec9d` and generated the readiness manifest; browser availability probe passed, but the real Chrome smoke is blocked by `cdp-timeout`. The default full backend regression also exceeded the 20-minute bound, so final evidence rendering remains blocked; no deploy, production mutation, secret change, or indexing enablement is authorized.
+> **Progress truth (2026-07-23, refreshed after `50786d1`):** Tasks 1-8 implementation machinery is integrated on `codex/ls-remed-rollback`; the P1 migration prerequisite extension is committed in `50786d1`. It admits one archive snapshot, materializes checker/verifier/installer/migrations from admitted bytes, binds gate evidence to verified package digests, uses the dependency-bearing release Python venv for both read-only DB gates, and fails closed on authority races. Fresh P1 evidence is `34 passed, 391 deselected` focused, `68 passed, 1 skipped` deploy/readiness/quality, `24 passed` verifier/checker, Bash syntax clean, and `run_hard.py --all` green (`hard=0`, no ratchet increase). Historical backend/frontend/build/browser evidence remains as previously recorded: the default full backend regression exceeded its bound and Chrome smoke is blocked by `cdp-timeout`; Docker/PostgreSQL opt-ins and final Task 45 rendering remain pending. No deploy, production mutation, secret change, or indexing enablement is authorized.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -31,7 +31,7 @@ Every task follows RED -> GREEN -> focused verification -> self-review -> commit
 - Modify: `web-nuxt/utils/imageDescriptors.ts`
 - Test: `agent/tests/test_media_policy.py`, existing image/admin tests, `web-nuxt/tests/image-descriptors.test.ts`
 
-- [ ] **Step 1: Write failing backend tests**
+- [x] **Step 1: Write failing backend tests**
 
 ```python
 def test_legacy_entity_images_require_canonical_ai_path():
@@ -46,22 +46,22 @@ def test_admin_non_ai_ingest_is_rejected_without_mutation(client_mocked):
 
 Cover URL add, file upload, suggestion approval, entity create/update with non-empty raw images, social upload/post/draft images, and unchanged DB/storage/network state. Pydantic shape errors remain 422.
 
-- [ ] **Step 2: Write failing frontend tests**
+- [x] **Step 2: Write failing frontend tests**
 
 Assert unknown legacy URLs return no descriptor; user-uploaded/unknown descriptors never become AI; public helpers suppress review/post sources.
 
-- [ ] **Step 3: Run RED**
+- [x] **Step 3: Run RED**
 
 ```powershell
 python -m pytest agent/tests/test_media_policy.py agent/tests/test_image_descriptor.py agent/tests/test_admin_mutations.py -q
 cd web-nuxt; npm test -- --run tests/image-descriptors.test.ts tests/image-adapters.test.ts
 ```
 
-- [ ] **Step 4: Implement minimal policy**
+- [x] **Step 4: Implement minimal policy**
 
 `agent/media_policy.py` owns exact source triples and `AI_ONLY_MEDIA_DETAIL = {"code": "ai_only_media", ...}`. Legacy entity strings are trusted only when they match `/img/entities/<lowercase-slug>.webp` with no query/fragment. Explicit renderable entity descriptors require `ai-generated/entity-editorial/entity-ai`; placeholders remain allowed. Unknown/UGC media is suppressed, never relabeled. Admin/social non-AI ingest returns 400 before storage, network or DB mutation. Existing stored values are not rewritten or deleted.
 
-- [ ] **Step 5: Run GREEN and commit**
+- [x] **Step 5: Run GREEN and commit**
 
 ```powershell
 python -m pytest agent/tests/test_media_policy.py agent/tests/test_image_descriptor.py agent/tests/test_admin_mutations.py -q
@@ -78,22 +78,22 @@ git commit -m "fix: enforce ai-only media provenance"
 - Modify: `web-nuxt/config/entity-image-renderers.json`, `scripts/checks/check_entity_image_renderers.py`
 - Test: image metadata, SEO, renderer inventory and guard suites
 
-- [ ] **Step 1: Write RED tests**
+- [x] **Step 1: Write RED tests**
 
 Assert public gallery/list/detail/JSON-LD/OG/media sitemap contain only AI editorial or placeholder descriptors. Review/post photos are absent from public image arrays. Root `/robots.txt`, `/sitemap-media.xml`, and `/sitemap-index.xml` are not registered on `seo.router`. Registry rows use `render_policy: render` for AI/placeholder and `render_policy: suppress` plus `no-image-invariant` for UGC.
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 ```powershell
 python -m pytest agent/tests/test_seo.py agent/tests/test_seo_structured.py agent/tests/test_image_metadata_disclosure.py tests/launch_safety/test_entity_image_renderer_guard.py -q
 cd web-nuxt; npm test -- --run tests/image-metadata-disclosure.test.ts tests/ugc-image-classification.test.ts tests/image-renderer-inventory.test.ts
 ```
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Remove review-row appending from the public entity gallery while retaining moderation data. Gate every SEO image object through the shared AI predicate and remove raw URL/legacy-credit fallbacks. Remove public FastAPI root SEO decorators; immutable internal launch sitemap routes remain. Update renderer inventory/checker so suppressed rows fail if a public `<img>`, background, OG or JSON-LD sink reappears.
 
-- [ ] **Step 4: Verify and commit**
+- [x] **Step 4: Verify and commit**
 
 ```powershell
 python -m pytest agent/tests/test_seo.py agent/tests/test_seo_structured.py agent/tests/test_image_metadata_disclosure.py tests/launch_safety/test_entity_image_renderer_guard.py -q
@@ -108,21 +108,21 @@ git commit -m "fix: suppress non-ai public media"
 - Modify: `agent/sitemap_render.py`, `agent/index_policy.py`, `docs/api-contract.md`
 - Test: `agent/tests/test_sitemap_render.py`, `agent/tests/test_sitemap_snapshot.py`
 
-- [ ] **Step 1: Add RED divergence test**
+- [x] **Step 1: Add RED divergence test**
 
 Create a snapshot where `located_in` points to ward A while child `placeId` points to ward B; assert the sitemap count follows the snapshot relationship.
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 ```powershell
 python -m pytest agent/tests/test_sitemap_render.py::test_ward_child_counts_use_relationship_snapshot -q
 ```
 
-- [ ] **Step 3: Implement and document**
+- [x] **Step 3: Implement and document**
 
 Pass `snapshot.relationships` into the ward count authority and count only valid `located_in` edges. Update `docs/api-contract.md` for all three immutable sitemap documents and exact query validation.
 
-- [ ] **Step 4: Verify and commit**
+- [x] **Step 4: Verify and commit**
 
 ```powershell
 python -m pytest agent/tests/test_sitemap_render.py agent/tests/test_sitemap_snapshot.py -q
@@ -137,21 +137,21 @@ git commit -m "fix: count ward children from snapshot relations"
 - Modify: `docs/runbooks/launch-safety-rollback.md`
 - Test: `tests/launch_safety/test_rollback_runbook.py`, `tests/launch_safety/test_watchdog_contract.py`
 
-- [ ] **Step 1: Write runtime RED tests**
+- [x] **Step 1: Write runtime RED tests**
 
 Cover failure while stopping watchdog, enabling maintenance, reloading Nginx, and probing the closed boundary. Assert recovery is armed before the first mutation; original exit status is preserved; all later recovery phases are recorded passed/failed/skipped; `drained` requires both public and operator-source proof. The local stub must model service/listener/readiness transitions and must not curl an unrelated host process.
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 ```powershell
 python -m pytest tests/launch_safety/test_rollback_runbook.py tests/launch_safety/test_watchdog_contract.py -q
 ```
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Arm the recovery trap before watchdog/selector/Nginx mutation. Replace unconditional `TRAFFIC_STATE=drained` with the existing full boundary classifier. Make local readiness/listener/dependency authorities injectable and deterministic; keep the reviewed Task 31 listener contract at loopback port 3000 unless the package contract explicitly requires an agent listener.
 
-- [ ] **Step 4: Verify and commit**
+- [x] **Step 4: Verify and commit**
 
 ```powershell
 python -m pytest tests/launch_safety/test_rollback_runbook.py tests/launch_safety/test_watchdog_contract.py -q
@@ -167,21 +167,21 @@ git commit -m "fix: make rollback recovery fail closed"
 - Create: `tests/launch_safety/test_closed_installer.py`
 - Test: `tests/launch_safety/test_rollback_runbook.py`, `tests/launch_safety/test_closed_installer.py`
 
-- [ ] **Step 1: Write RED tests**
+- [x] **Step 1: Write RED tests**
 
 Force a failure after persistent-data detach and after release-root swap; assert old root, mount and bytes are restored. Assert verifier flags for config/ingress/unit digests and persistent mount are executed, not only parsed. Assert dependency checks cover staged Python and Nuxt production dependencies and installed unit bytes match the package manifest.
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 ```powershell
 python -m pytest tests/launch_safety/test_rollback_runbook.py tests/launch_safety/test_closed_installer.py -q
 ```
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Replace explicit `die; exit` paths after mutation with error propagation through one rollback authority. Verify `findmnt` source/options, package digests and unit bytes before activation. Run injected/local-safe dependency and unit installation hooks; record exact results without live claims.
 
-- [ ] **Step 4: Verify and commit**
+- [x] **Step 4: Verify and commit**
 
 ```powershell
 python -m pytest tests/launch_safety/test_rollback_runbook.py tests/launch_safety/test_closed_installer.py -q
@@ -197,21 +197,21 @@ git commit -m "fix: make closed release installation atomic"
 - Modify: `scripts/ops/compose_network_audit.py`
 - Test: `tests/launch_safety/test_deploy_readiness.py`, `tests/launch_safety/test_release_package.py`, `tests/launch_safety/test_compose_contract.py`
 
-- [ ] **Step 1: Write RED deploy/Compose tests**
+- [x] **Step 1: Write RED deploy/Compose tests**
 
 Assert deploy uses the combined launch archive, sidecar, verifier and installer; reject `vl-deploy.tar.gz`, `vl-nuxt-output.tar.gz`, direct release `tar -xzf`, and `rm -rf .output`. Assert Compose provides a writable/populated maintenance runtime before Nginx startup. Assert Nuxt receives build-time `API_BASE=http://agent:8360` and runtime `NUXT_API_BASE=http://agent:8360`.
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 ```powershell
 python -m pytest tests/launch_safety/test_deploy_readiness.py tests/launch_safety/test_release_package.py tests/launch_safety/test_compose_contract.py -q
 ```
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Make deploy produce/upload the existing combined release package and `.sha256`, run remote verification, then invoke the closed installer. Keep destructive data/migration flags outside this closed-release path. Add Compose runtime initialization/mount shared with `maintenance_mode.sh`; preserve exclusive ingress/network checks. Pass API origin at both build and runtime layers.
 
-- [ ] **Step 4: Verify and commit**
+- [x] **Step 4: Verify and commit**
 
 ```powershell
 python -m pytest tests/launch_safety/test_deploy_readiness.py tests/launch_safety/test_release_package.py tests/launch_safety/test_compose_contract.py -q
@@ -226,11 +226,11 @@ git commit -m "fix: deploy the canonical closed release"
 - Modify: `agent/tests/test_route_manifest_parity.py`, `web-nuxt/nuxt.config.ts`
 - Test: existing route-parity and noindex guard tests
 
-- [ ] **Step 1: Add RED guard assertions**
+- [x] **Step 1: Add RED guard assertions**
 
 Add fixtures allowing only the exact reviewed `$agent_upstream$request_uri`, bot and Nuxt variable targets; arbitrary variables remain rejected. Preserve HTTP/HTTPS parity, admin rewrite and segment-boundary assertions. Keep the noindex AST guard fail-closed.
 
-- [ ] **Step 2: Reproduce RED**
+- [x] **Step 2: Reproduce RED**
 
 ```powershell
 python -m pytest agent/tests/test_route_manifest_parity.py tests/test_entity_status_migration_guardrails.py::test_global_noindex_default_and_authoritative_header_are_executable_code -q
@@ -238,11 +238,11 @@ python -m pytest agent/tests/test_route_manifest_parity.py tests/test_entity_sta
 
 Expected: seven variable-proxy failures and one security-header object-literal failure.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Resolve only approved variable targets to audited upstream identities in the test parser. Inline the `nitro.routeRules['/**'].headers` object literal, or teach the AST guard to resolve one immutable local constant without accepting dynamic expressions. Do not broaden variable handling or remove noindex behavior.
 
-- [ ] **Step 4: Verify and commit**
+- [x] **Step 4: Verify and commit**
 
 ```powershell
 python -m pytest agent/tests/test_route_manifest_parity.py tests/test_entity_status_migration_guardrails.py::test_global_noindex_default_and_authoritative_header_are_executable_code -q
@@ -257,19 +257,19 @@ git commit -m "fix: align launch guards with reviewed ingress"
 - Replace net-new R30.3 literals in `web-nuxt/components/ImageLightbox.vue`, `web-nuxt/components/PhotoGallery.vue`, `web-nuxt/components/PostCard.vue`, `web-nuxt/pages/admin/entities.vue`, `web-nuxt/pages/admin/media.vue`, `web-nuxt/pages/bai-viet/[id].vue`, `web-nuxt/pages/dia-diem/[id].vue`, and `web-nuxt/pages/index.vue`.
 - Test: `tests/checks/test_hard_checks.py`
 
-- [ ] **Step 1: Capture RED**
+- [x] **Step 1: Capture RED**
 
 ```powershell
 python scripts/checks/run_hard.py --all
 ```
 
-Expected current blockers: R20.8 `22 > 3`; R30.3 `324 > 306`.
+Historical RED captured before the ratchet refactor: R20.8 and R30.3 exceeded their baselines.
 
-- [ ] **Step 2: Refactor by independent file group**
+- [x] **Step 2: Refactor by independent file group**
 
 Extract validation/normalization helpers until `run_hard.py --all` reports R20.8 at or below the committed baseline of 3. Replace new literal colors with existing semantic tokens until R30.3 is at or below 306. Do not update the baseline to hide debt.
 
-- [ ] **Step 3: Verify and commit**
+- [x] **Step 3: Verify and commit**
 
 ```powershell
 python -m pytest tests/checks/test_hard_checks.py -q
@@ -292,11 +292,11 @@ Task 9 is blocked until `python scripts/checks/run_hard.py --all` exits 0. Do no
 - Modify: `scripts/release_gate.ps1`, `scripts/launch_safety_browser_e2e.mjs`, `.github/workflows/ci.yml`
 - Reference: `docs/superpowers/specs/2026-07-20-launch-safety-task45-correction-design.md`
 
-- [ ] **Step 1: Correct plan authority before execution**
+- [x] **Step 1: Correct plan authority before execution**
 
 Update status, current worktree/branch and completed/partial task tracking. Link this remediation plan and the Task 45 correction amendment. Do not mark Docker/PG/build evidence complete when it was skipped.
 
-- [ ] **Step 2: Write and run RED contracts**
+- [x] **Step 2: Write and run RED contracts**
 
 Test twelve required sections, external gates `{H1: blocked, H2: blocked, owner: not-authorized}`, idempotent temp-state upsert, final-pass requirements, primary/cleanup/recorder precedence, explicit Docker/browser opt-in, environment restoration, one `System.Int32`, and `--probe-browser` parity.
 
@@ -307,12 +307,12 @@ $powershell = (Get-Command pwsh,powershell -ErrorAction Stop | Select-Object -Fi
 if ($LASTEXITCODE -eq 0) { throw 'PowerShell RED contract unexpectedly passed' }
 ```
 
-- [ ] **Step 3: Implement recorder, harness and browser probe**
+- [x] **Step 3: Implement recorder, harness and browser probe**
 
 Use temp JSON state, canonical final rendering, test-owned Nginx Compose, disposable PostgreSQL port 55432, and a real local Nuxt preview for browser smoke. Default invocation starts no Docker/browser resources.
 
 
-- [ ] **Step 4: Run focused GREEN**
+- [x] **Step 4: Run focused GREEN**
 
 ```powershell
 python -m pytest tests/launch_safety/test_evidence_record.py tests/launch_safety/test_launch_matrix_contract.py -q
@@ -321,7 +321,7 @@ $powershell = (Get-Command pwsh,powershell -ErrorAction Stop | Select-Object -Fi
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 ```
 
-- [ ] **Step 5: Commit clean Commit A**
+- [x] **Step 5: Commit clean Commit A**
 
 ```powershell
 git add docs/superpowers/plans/2026-07-13-launch-safety-gate.md scripts/ops/record_launch_evidence.py scripts/ops/release_gate_harness.ps1 scripts/release_gate.ps1 scripts/launch_safety_browser_e2e.mjs .github/workflows/ci.yml tests/launch_safety/test_evidence_record.py tests/launch_safety/powershell/test_release_gate_harness.ps1 tests/launch_safety/test_launch_matrix_contract.py
@@ -345,4 +345,4 @@ git commit -m "test: record launch safety gate evidence"
 - [ ] Spec-compliance review for each lane; fix and re-review all Important/Critical findings.
 - [ ] Code-quality review after spec compliance.
 - [ ] Fresh focused tests, `git diff --check`, `run_hard.py --all`, full pytest, Nuxt typecheck/build, and available Docker/PG/browser opt-ins.
-- [ ] No push, deploy, secret change, production-data mutation, or live indexing enablement.
+- [x] No push, deploy, secret change, production-data mutation, or live indexing enablement.
