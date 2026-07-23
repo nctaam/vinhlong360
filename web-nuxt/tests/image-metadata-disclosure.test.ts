@@ -110,9 +110,12 @@ describe('ShareButton image disclosure behavior', () => {
 })
 
 describe('metadata consumers', () => {
-  it('derives post OG/Twitter metadata from the classified UGC descriptor', () => {
+  it('keeps public post metadata image-free even when legacy UGC rows still carry photos', () => {
     const source = readFileSync(resolve(process.cwd(), 'pages/bai-viet/[id].vue'), 'utf8')
-    expect(source).toContain('buildImageMeta(postImageDescriptors.value[0])')
+    expect(source).toContain('data-image-surface="post-metadata"')
+    expect(source).toContain('data-entity-image-policy="no-image-invariant"')
+    expect(source).not.toContain('buildImageMeta(postImageDescriptors.value[0])')
+    expect(source).not.toContain('articleLd.image')
     expect(source).not.toContain('entityOgImage(post.value?.images)')
   })
 

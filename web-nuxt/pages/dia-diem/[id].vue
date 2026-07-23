@@ -77,13 +77,19 @@
     </div>
 
     <!-- Photo Gallery (asymmetric grid for 2+ images) -->
-    <LazyPhotoGallery
-      v-if="hasEntityImages && entityImageDescriptors.length >= 2"
-      :images="entityImageDescriptors"
-      :alt="entity.name"
+    <div
+      v-if="hasEntityGallery"
       class="detail-gallery"
-      @open-lightbox="openCoverLightbox"
-    />
+      data-image-surface="mixed-gallery"
+      data-source-class="user-uploaded"
+      data-entity-image-policy="no-image-invariant"
+    >
+      <LazyPhotoGallery
+        :images="entityImageDescriptors"
+        :alt="entity.name"
+        @open-lightbox="openCoverLightbox"
+      />
+    </div>
 
     <LazyImageLightbox v-if="entityImageDescriptors.length" v-model="lightboxOpen" :images="entityImageDescriptors" :start-index="lbIndex" />
 
@@ -483,7 +489,7 @@ import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables
 import { entityStoryTeaser } from '~/composables/useEntityStory'
 import { aiDisclosure } from '~/utils/aiDisclosure'
 import { currentGalleryDescriptors, type GalleryDescriptorCarrier } from '~/utils/entityGallery'
-import { normalizeRenderableImageUrl, parseGalleryDescriptor } from '~/utils/imageDescriptors'
+import { describeEntityImages, parseGalleryDescriptor } from '~/utils/imageDescriptors'
 
 interface LaunchEntityCarrier extends Entity {
   readonly __launchGeneration: number
@@ -634,7 +640,7 @@ const { data: galleryCarrier } = await useAsyncData(
       if (!response || !Array.isArray(response.images)) return { requestId, descriptors: [] }
       const descriptors = response.images.flatMap((raw) => {
         const descriptor = parseGalleryDescriptor(raw)
-        return descriptor ? [descriptor] : []
+        return descriptor && descriptor.source_class !== 'user-uploaded' ? [descriptor] : []
       })
       return { requestId, descriptors }
     } catch { return { requestId, descriptors: [] } }
@@ -705,27 +711,8 @@ const areaName = computed(() => {
 
 const entityImageDescriptors = computed<ImageDescriptor[]>(() => {
   if (galleryDescriptors.value?.length) return [...galleryDescriptors.value]
-
-  const legacy = Array.isArray(entity.value?.images)
-    ? entity.value.images.flatMap((raw, index) => {
-        const url = normalizeRenderableImageUrl(raw)
-        if (!url) return []
-        const name = entity.value?.name || 'Địa điểm'
-        return [Object.freeze({
-          url,
-          alt: `${name} — ảnh minh họa ${index + 1}`,
-          source_class: 'ai-generated' as const,
-          source_kind: 'entity-editorial' as const,
-          disclosure_key: 'entity-ai' as const,
-          short_label: aiDisclosure.entity_ai.short_label,
-          full_disclosure: aiDisclosure.entity_ai.full_disclosure,
-          credit: null,
-          width: null,
-          height: null,
-        })]
-      })
-    : []
-  return legacy.length ? legacy : [createPlaceholderDescriptor()]
+  const descriptors = describeEntityImages(entity.value || {})
+  return descriptors.length ? descriptors : [createPlaceholderDescriptor()]
 })
 
 function createPlaceholderDescriptor(): Readonly<ImageDescriptor> {
@@ -747,6 +734,9 @@ function createPlaceholderDescriptor(): Readonly<ImageDescriptor> {
 const heroDescriptor = computed(() => entityImageDescriptors.value[0] || createPlaceholderDescriptor())
 const hasEntityImages = computed(() => (
   entityImageDescriptors.value.some(descriptor => descriptor.url !== null)
+))
+const hasEntityGallery = computed(() => (
+  hasEntityImages.value && entityImageDescriptors.value.length !== 1
 ))
 
 const coverImage = computed(() => heroDescriptor.value.url || '')

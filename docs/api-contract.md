@@ -125,16 +125,21 @@ every public Nginx server returns 404 for `/_internal/` descendants without prox
 them upstream. This internal attestation does not change the global `noindex` launch
 state.
 
-`GET /_internal/launch-sitemaps/{document}` currently serves only the immutable
-main document name `sitemap.xml` and requires a pinned `batch` value. It loads
-only that requested publication revision and returns the stored bytes with
-`X-Launch-Sitemap-Batch-Revision`, and never refreshes, generates, publishes, or
-falls back to the active batch during a request. Missing, malformed, unknown,
-unsupported, or corrupt state is sanitized as HTTP 503. Success and failure both
-use the registered no-store/no-validator contract and never return HTTP 304. The
-route remains private-network-only and does not change the global `noindex` state.
-Task 17 does not yet guarantee exact single-query shape: rejection of duplicate
-`batch` keys or unrelated extra query keys is deferred to Task 19.
+`GET /_internal/launch-sitemaps/{document}` serves exactly the three immutable
+documents `sitemap-index.xml`, `sitemap.xml`, and `sitemap-media.xml`. Every
+successful request returns stored bundle bytes and never refreshes, generates,
+publishes, or repairs sitemap state during the request. An unpinned
+`sitemap-index.xml` request must have an empty raw query string and loads the
+active bundle. Any document may instead be pinned with the exact ASCII query
+`batch=<64 lowercase hexadecimal characters>`; the two child documents require
+that pinned query. Duplicate keys, extra keys, empty or uppercase revisions,
+percent-encoded variants, trailing separators, and every other raw query shape
+are rejected. Pinned responses include `X-Launch-Sitemap-Requested-Batch`; all
+successful responses include the matching `X-Launch-Sitemap-Batch-Revision`.
+Missing, malformed, unknown, unsupported, mismatched, or corrupt state is
+sanitized as HTTP 503. Success and failure both use the registered
+no-store/no-validator contract and never return HTTP 304. The route remains
+private-network-only and does not change the global `noindex` state.
 
 ### Chat
 
@@ -258,9 +263,9 @@ Responses are `no-store` and preserve the launch policy/evidence headers. The
 site-wide global `noindex` gate remains active, so the Nuxt responses stay in
 their closed/empty form until selective indexing is explicitly admitted.
 
-The immutable main bytes used for launch evidence remain available only through
-the pinned internal launch-sitemap route; that private route is not a second
-public sitemap owner.
+The immutable index, main, and media bytes used for launch evidence remain
+available only through the internal launch-sitemap route and its exact query
+contract; that private route is not a second public sitemap owner.
 
 ### Admin (`/admin`, requires admin key; exposed publicly as `/admin-api/*` via nginx proxy)
 

@@ -20,6 +20,12 @@ const aiDescriptor: ImageDescriptor = {
   height: null,
 }
 
+const secondAiDescriptor: ImageDescriptor = {
+  ...aiDescriptor,
+  url: '/img/entity-2.webp',
+  alt: 'Chùa Vàm Ray — ảnh minh họa 2',
+}
+
 const reviewDescriptor: ImageDescriptor = {
   url: '/img/review.jpg',
   alt: 'Chùa Vàm Ray — ảnh đánh giá',
@@ -64,21 +70,18 @@ function activeCaption() {
 describe('ImageLightbox disclosure navigation', () => {
   it('keeps the active descriptor caption through click, keyboard, swipe, and reopen', async () => {
     const wrapper = await mountSuspended(ImageLightbox, {
-      props: { modelValue: true, images: [aiDescriptor, reviewDescriptor], startIndex: 0 },
+      props: { modelValue: true, images: [aiDescriptor, secondAiDescriptor], startIndex: 0 },
     })
     mountedWrappers.push(wrapper)
     await nextTick()
 
     let state = activeCaption()
     expect(state.caption.text()).toContain(aiDescriptor.full_disclosure)
-    expect(state.dialog.text()).not.toContain(reviewDescriptor.full_disclosure)
 
     await state.dialog.get('[data-next]').trigger('click')
     state = activeCaption()
-    expect(state.media.attributes('src')).toBe(reviewDescriptor.url)
-    expect(state.caption.text()).toContain(reviewDescriptor.full_disclosure)
-    expect(state.caption.text()).toContain(reviewDescriptor.credit)
-    expect(state.dialog.text()).not.toContain(aiDescriptor.short_label)
+    expect(state.media.attributes('src')).toBe(secondAiDescriptor.url)
+    expect(state.caption.text()).toContain(secondAiDescriptor.full_disclosure)
     expect(state.dialog.get('[data-counter]').text()).toBe('2 / 2')
 
     await state.dialog.get('[data-prev]').trigger('click')
@@ -87,7 +90,7 @@ describe('ImageLightbox disclosure navigation', () => {
 
     await state.dialog.trigger('keydown', { key: 'ArrowRight' })
     state = activeCaption()
-    expect(state.media.attributes('src')).toBe(reviewDescriptor.url)
+    expect(state.media.attributes('src')).toBe(secondAiDescriptor.url)
 
     await state.dialog.trigger('keydown', { key: 'ArrowLeft' })
     state = activeCaption()
@@ -100,7 +103,7 @@ describe('ImageLightbox disclosure navigation', () => {
     await state.dialog.trigger('touchend')
     await nextTick()
     state = activeCaption()
-    expect(state.media.attributes('src')).toBe(reviewDescriptor.url)
+    expect(state.media.attributes('src')).toBe(secondAiDescriptor.url)
 
     await wrapper.setProps({ modelValue: false })
     await wrapper.setProps({ modelValue: true, startIndex: 0 })
@@ -114,6 +117,23 @@ describe('ImageLightbox disclosure navigation', () => {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
     await nextTick()
     expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([false])
+  })
+
+  it('suppresses user-uploaded descriptors from the public lightbox', async () => {
+    const wrapper = await mountSuspended(ImageLightbox, {
+      props: { modelValue: true, images: [aiDescriptor, reviewDescriptor], startIndex: 1 },
+    })
+    mountedWrappers.push(wrapper)
+    await nextTick()
+
+    const state = activeCaption()
+    expect(state.media.attributes('src')).toBe(aiDescriptor.url)
+    expect(state.dialog.get('[data-counter]').text()).toBe('1 / 1')
+    expect(state.dialog.find('[data-next]').exists()).toBe(false)
+    expect(state.dialog.text()).not.toContain(reviewDescriptor.full_disclosure)
+    const invariant = state.dialog.get('[data-image-surface="image-lightbox"]')
+    expect(invariant.attributes('data-entity-image-policy')).toBe('no-image-invariant')
+    expect(invariant.classes()).toContain('lightbox')
   })
 
   it('renders a placeholder media surface without an empty image and skips null prefetches', async () => {
@@ -134,47 +154,44 @@ describe('ImageLightbox disclosure navigation', () => {
 
     await state.dialog.get('[data-next]').trigger('click')
     state = activeCaption()
-    expect(state.media.attributes('src')).toBe(reviewDescriptor.url)
+    expect(state.media.attributes('src')).toBe(aiDescriptor.url)
     const prefetched = [...document.head.querySelectorAll('link[rel="prefetch"]')]
       .map(link => link.getAttribute('href'))
-    expect(prefetched).toEqual([aiDescriptor.url])
+    expect(prefetched).toEqual([])
     expect(prefetched).not.toContain(null)
     expect(prefetched).not.toContain('')
   })
 })
 
 describe('PhotoGallery descriptor boundary', () => {
-  it('renders full disclosure and credit beside their original descriptor media', async () => {
+  it('renders AI disclosure while suppressing user-uploaded public gallery media', async () => {
     const wrapper = await mountSuspended(PhotoGallery, {
       props: { images: [aiDescriptor, reviewDescriptor], alt: 'Chùa Vàm Ray' },
     })
     mountedWrappers.push(wrapper)
 
-    const mainMedia = wrapper.get('.pg-main [data-gallery-media]')
+    const mainMedia = wrapper.get('[data-gallery-media]')
     const mainDescriptionId = mainMedia.attributes('aria-describedby')
     expect(wrapper.get(`#${mainDescriptionId}`).text()).toContain(aiDescriptor.full_disclosure)
     expect(mainMedia.attributes('src')).toBe(aiDescriptor.url)
 
-    const reviewMedia = wrapper.get('.pg-thumb [data-gallery-media]')
-    const reviewDescriptionId = reviewMedia.attributes('aria-describedby')
-    const reviewCaption = wrapper.get(`#${reviewDescriptionId}`)
-    expect(reviewCaption.text()).toContain(reviewDescriptor.full_disclosure)
-    expect(reviewCaption.text()).toContain(reviewDescriptor.credit)
-    expect(reviewMedia.attributes('src')).toBe(reviewDescriptor.url)
-    expect(reviewCaption.text()).not.toContain(aiDescriptor.short_label)
+    expect(wrapper.find('.pg-thumb').exists()).toBe(false)
+    expect(wrapper.find(`[src="${reviewDescriptor.url}"]`).exists()).toBe(false)
+    const invariant = wrapper.get('[data-image-surface="photo-gallery"]')
+    expect(invariant.attributes('data-entity-image-policy')).toBe('no-image-invariant')
+    expect(invariant.classes()).toContain('pg-root')
   })
 
   it('keeps standalone open-lightbox indices aligned with descriptor order', async () => {
     const wrapper = await mountSuspended(PhotoGallery, {
-      props: { images: [aiDescriptor, reviewDescriptor], alt: 'Chùa Vàm Ray', standalone: true },
+      props: { images: [aiDescriptor, secondAiDescriptor], alt: 'Chùa Vàm Ray', standalone: true },
     })
     mountedWrappers.push(wrapper)
 
     await wrapper.get('.pg-thumb').trigger('click')
     const dialog = new DOMWrapper(document.body).get('[role="dialog"]')
-    expect(dialog.get('[data-active-media]').attributes('src')).toBe(reviewDescriptor.url)
-    expect(dialog.get('[data-full-disclosure]').text()).toContain(reviewDescriptor.full_disclosure)
-    expect(dialog.get('[data-full-disclosure]').text()).toContain(reviewDescriptor.credit)
+    expect(dialog.get('[data-active-media]').attributes('src')).toBe(secondAiDescriptor.url)
+    expect(dialog.get('[data-full-disclosure]').text()).toContain(secondAiDescriptor.full_disclosure)
   })
 
   it('does not render an empty image for a standalone placeholder', async () => {

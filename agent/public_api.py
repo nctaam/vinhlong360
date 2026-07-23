@@ -41,9 +41,11 @@ from auth_middleware import validate_path_id, require_pg, require_user, require_
 if __package__:
     from .ai_disclosure import load_ai_disclosure
     from .image_descriptor import describe_entity_images, describe_review_image
+    from .media_policy import is_renderable_entity_descriptor
 else:
     from ai_disclosure import load_ai_disclosure
     from image_descriptor import describe_entity_images, describe_review_image
+    from media_policy import is_renderable_entity_descriptor
 
 if __package__:
     from .index_policy import (
@@ -151,7 +153,10 @@ def _entity_detail_index_policy(entity: dict) -> IndexPolicyDecision:
 
 
 def _public_facilities_by_place(place_id: str | None = None) -> list[dict]:
-    return _filter_public_entities(db.facilities_by_place(place_id))
+    return [
+        _project_public_entity_media(entity)
+        for entity in _filter_public_entities(db.facilities_by_place(place_id))
+    ]
 
 
 def _itinerary_stop_entity_id(stop) -> str:
@@ -680,15 +685,16 @@ def _profile_next_actions(profile: dict) -> list[dict]:
 
 
 def _candidate_card(entity: dict, reasons: list[str]) -> dict:
+    projected = _project_public_entity_media(entity, limit=2)
     return {
-        "id": entity.get("id"),
-        "name": entity.get("name", ""),
-        "type": entity.get("type", ""),
-        "place": entity.get("place", ""),
-        "place_name": entity.get("place_name"),
-        "place_area": entity.get("place_area") or entity.get("area"),
-        "summary": (entity.get("summary") or "")[:240],
-        "images": (entity.get("images") or [])[:2],
+        "id": projected.get("id"),
+        "name": projected.get("name", ""),
+        "type": projected.get("type", ""),
+        "place": projected.get("place", ""),
+        "place_name": projected.get("place_name"),
+        "place_area": projected.get("place_area") or projected.get("area"),
+        "summary": (projected.get("summary") or "")[:240],
+        "image_descriptors": projected["image_descriptors"],
         "attributes": {
             "rating": (entity.get("attributes") or {}).get("rating"),
             "review_count": (entity.get("attributes") or {}).get("review_count"),
@@ -964,15 +970,25 @@ def _enrich_entity_place(entity: dict):
         entity["place_area"] = explicit_area
 
 
-_MINIMAL_FIELDS = {"id", "name", "type", "summary", "images", "place_name",
+_MINIMAL_FIELDS = {"id", "name", "type", "summary", "image_descriptors", "place_name",
                     "place_area", "coordinates", "attributes"}
+
+
+def _project_public_entity_media(entity: dict, *, limit: int | None = None) -> dict:
+    """Return an owned public projection with descriptor-only entity media."""
+    projected = dict(entity)
+    for key in ("image", "images", "image_url", "image_urls", "image_descriptor", "image_descriptors"):
+        projected.pop(key, None)
+    descriptors = _gallery_editorial_images(entity)
+    projected["image_descriptors"] = descriptors[:limit] if limit is not None else descriptors
+    return projected
 
 
 def _to_minimal(entity: dict) -> dict:
     out = {k: entity[k] for k in _MINIMAL_FIELDS if k in entity}
-    imgs = entity.get("images")
-    if imgs and isinstance(imgs, list):
-        out["images"] = imgs[:1]
+    descriptors = entity.get("image_descriptors")
+    if isinstance(descriptors, list):
+        out["image_descriptors"] = descriptors[:1]
     attrs = entity.get("attributes") or {}
     out["rating"] = attrs.get("rating")
     out["review_count"] = attrs.get("review_count", 0)
@@ -995,21 +1011,17 @@ def _first_entity_image(entity: dict) -> str:
     return str(image) if image else ""
 
 def _entity_card_shape(entity: dict, *, score: float | None = None, reason_vi: str = "") -> dict:
-    area = entity.get("place_area") or entity.get("area") or entity.get("legacyArea") or ""
-    place = entity.get("place") or entity.get("place_name") or ""
-    image = _first_entity_image(entity)
-    images = entity.get("images") if isinstance(entity.get("images"), list) else []
-    if image and image not in images:
-        images = [image, *images]
+    projected = _project_public_entity_media(entity, limit=2)
+    area = projected.get("place_area") or projected.get("area") or projected.get("legacyArea") or ""
+    place = projected.get("place") or projected.get("place_name") or ""
     return {
-        "id": entity.get("id"),
-        "name": entity.get("name", ""),
-        "type": entity.get("type", ""),
-        "summary": entity.get("summary", ""),
-        "image": image,
-        "images": images[:2],
+        "id": projected.get("id"),
+        "name": projected.get("name", ""),
+        "type": projected.get("type", ""),
+        "summary": projected.get("summary", ""),
+        "image_descriptors": projected["image_descriptors"],
         "place": place,
-        "place_name": entity.get("place_name") or place,
+        "place_name": projected.get("place_name") or place,
         "place_area": area,
         "area": area,
         "score": round(float(score or 0), 4),
@@ -1147,6 +1159,7 @@ async def list_entities(
         results = await asyncio.to_thread(db.list_entities, entity_type=single_type, area=area, limit=limit, offset=offset, entity_types=entity_types, public_only=True, sort=db_sort, month=db_month)
         total = await asyncio.to_thread(db.count_entities_filtered, entity_type=single_type, area=area, entity_types=entity_types, public_only=True, month=db_month)
     await asyncio.to_thread(_enrich_place, results)
+    results = [_project_public_entity_media(entity) for entity in results]
     if fields == "minimal":
         results = [_to_minimal(e) for e in results]
     return {"total": total, "entities": results}
@@ -1203,15 +1216,16 @@ async def get_featured_entities(response: Response):
         for eid in entity_ids:
             entity = batch.get(eid)
             if entity:
+                projected = _project_public_entity_media(entity, limit=1)
                 attrs = entity.get("attributes") or {}
                 result.append({
-                    "id": entity["id"],
-                    "name": entity["name"],
-                    "type": entity.get("type"),
-                    "summary": entity.get("summary", ""),
-                    "images": entity.get("images", [])[:1],
+                    "id": projected["id"],
+                    "name": projected["name"],
+                    "type": projected.get("type"),
+                    "summary": projected.get("summary", ""),
+                    "image_descriptors": projected["image_descriptors"],
                     "rating": attrs.get("rating"),
-                    "coordinates": entity.get("coordinates"),
+                    "coordinates": projected.get("coordinates"),
                 })
         return {"featured": result}
     return await asyncio.to_thread(_query)
@@ -1272,7 +1286,7 @@ async def get_entity(
         e["quality"] = entity_quality(e)
         e["source_freshness"] = _build_source_freshness(e)
         e["practical_facts"] = _build_practical_facts(e)
-        return e
+        return _project_public_entity_media(e)
     entity = await asyncio.to_thread(_query)
     if not entity:
         return _err(404, "not_found")
@@ -1383,17 +1397,10 @@ async def get_entity_rating_breakdown(entity_id: str, response: Response):
 
 
 def _shape_review_row(rd: dict) -> dict:
-    images = rd.get("images", [])
-    if isinstance(images, str):
-        try:
-            images = json.loads(images)
-        except (json.JSONDecodeError, ValueError, TypeError):
-            images = []
     return {
         "id": str(rd["id"]),
         "content": rd["content"],
         "rating": rd.get("rating"),
-        "images": images,
         "like_count": rd.get("like_count", 0),
         "comment_count": rd.get("comment_count", 0),
         "created_at": str(rd.get("created_at", "")),
@@ -1547,13 +1554,14 @@ async def place_overview(place_id: str, response: Response):
         for e in ents:
             t = e.get("type")
             placed = False
+            projected = _project_public_entity_media(e)
             for g, types in _WARD_GROUPS.items():
                 if t in types:
-                    groups[g].append(e)
+                    groups[g].append(projected)
                     placed = True
                     break
             if not placed:
-                groups["other"].append(e)
+                groups["other"].append(projected)
         return {
             "place": {"id": p["id"], "name": p.get("name"), "area": p.get("area"),
                       "level": p.get("level"), "summary": p.get("summary"),
@@ -1766,6 +1774,7 @@ async def search(
     results = await asyncio.to_thread(db.search_entities, q=q, entity_type=type, area=area, limit=entity_limit, public_only=True)
     await asyncio.to_thread(_enrich_place, results)
     results = _rank_search_entities(results, q)
+    results = [_project_public_entity_media(entity) for entity in results]
     total = await asyncio.to_thread(db.count_entities_filtered, entity_type=type, area=area, q=q, public_only=True)
     safe_q = re.sub(r"<[^>]+>", "", q)
     posts, post_total = await asyncio.to_thread(_search_posts_for_contract, safe_q, user, social_limit)
@@ -2188,6 +2197,15 @@ def _finalize_homepage_sections(sections: list[list[dict]], upcoming_events: lis
         e["days_until"] = e.pop("_days_until", None)
 
 
+def _project_public_entity_media_sections(
+    *sections: list[dict],
+) -> tuple[list[dict], ...]:
+    return tuple(
+        [_project_public_entity_media(entity) for entity in section]
+        for section in sections
+    )
+
+
 async def _build_homepage_payload(month: int) -> dict:
     all_ents = await asyncio.to_thread(db.list_entities, limit=5000, offset=0, public_only=True)
     public = [e for e in all_ents if not _event_is_past(e)]
@@ -2245,6 +2263,22 @@ async def _build_homepage_payload(month: int) -> dict:
 
     # Trending: entities with highest chat/search hit counts
     trending = _build_homepage_trending(public)
+
+    (
+        seasonal,
+        experiences,
+        products,
+        top_dishes,
+        trending,
+        upcoming_events,
+    ) = _project_public_entity_media_sections(
+        seasonal,
+        experiences,
+        products,
+        top_dishes,
+        trending,
+        upcoming_events,
+    )
 
     return {
         "seasonal": seasonal,
@@ -2546,13 +2580,15 @@ async def report_stale_field(entity_id: str, payload: ReportStaleIn, request: Re
 # ── Entity gallery (entity images + review images) ───────────────────
 
 def _gallery_editorial_images(entity: dict) -> list[dict]:
-    return [
-        asdict(descriptor)
-        for descriptor in describe_entity_images(
-            entity,
-            disclosure=_GALLERY_DISCLOSURE,
-        )
-    ]
+    images = []
+    for descriptor in describe_entity_images(
+        entity,
+        disclosure=_GALLERY_DISCLOSURE,
+    ):
+        serialized = asdict(descriptor)
+        if is_renderable_entity_descriptor(serialized):
+            images.append(serialized)
+    return images
 
 
 def _append_review_gallery_images(images: list[dict], review_rows: list[dict], entity_name: str) -> None:
@@ -2592,28 +2628,6 @@ async def get_entity_gallery(entity_id: str, response: Response):
         return _err(404, "not_found")
 
     images = _gallery_editorial_images(entity)
-
-    if db._use_pg:
-        ph = db._ph
-        def _review_images():
-            with db._conn() as conn:
-                rows = db._fetchall(conn, f"""
-                    SELECT p.images, u.display_name
-                    FROM posts p
-                    JOIN users u ON u.id = p.user_id
-                    WHERE p.entity_id = {ph} AND p.post_type = 'review'
-                        AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
-                        AND p.images IS NOT NULL
-                    ORDER BY p.created_at DESC
-                    LIMIT 50
-                """, (entity_id,))
-            return [db._row_to_dict(r) for r in rows]
-
-        try:
-            review_rows = await asyncio.to_thread(_review_images)
-            _append_review_gallery_images(images, review_rows, entity["name"])
-        except Exception:
-            logger.exception("gallery review-images query failed for %s", entity_id)
 
     return {"images": images}
 
@@ -3148,8 +3162,12 @@ async def get_collection_by_slug(slug: str, response: Response):
         entity_ids = col.get("entity_ids") or []
         if isinstance(entity_ids, str):
             entity_ids = json.loads(entity_ids)
-        entities = _get_public_entities_batch(entity_ids) if entity_ids else []
-        col["entities"] = entities
+        entities = _get_public_entities_batch(entity_ids) if entity_ids else {}
+        col["entities"] = [
+            _project_public_entity_media(entities[entity_id])
+            for entity_id in entity_ids
+            if entity_id in entities
+        ]
         return col
     result = await asyncio.to_thread(_query)
     if not result:
@@ -3196,14 +3214,15 @@ def _coords_in_bbox(lat, lng, north, south, east, west) -> bool:
 
 
 def _map_search_shape(e: dict, coords: list) -> dict:
+    projected = _project_public_entity_media(e, limit=1)
     return {
-        "id": e.get("id"),
-        "name": e.get("name"),
-        "type": e.get("type"),
+        "id": projected.get("id"),
+        "name": projected.get("name"),
+        "type": projected.get("type"),
         "coordinates": coords,
-        "place": e.get("place"),
-        "summary": (e.get("summary") or "")[:150],
-        "images": (e.get("images") or [])[:1],
+        "place": projected.get("place"),
+        "summary": (projected.get("summary") or "")[:150],
+        "image_descriptors": projected["image_descriptors"],
     }
 
 
@@ -3283,13 +3302,14 @@ async def entities_trending(
                 continue
             if entity_type and e.get("type") != entity_type:
                 continue
+            projected = _project_public_entity_media(e, limit=1)
             results.append({
                 "entity_id": c["entity_id"],
-                "name": e.get("name"),
-                "type": e.get("type"),
-                "place": e.get("place"),
-                "coordinates": e.get("coordinates"),
-                "images": (e.get("images") or [])[:1],
+                "name": projected.get("name"),
+                "type": projected.get("type"),
+                "place": projected.get("place"),
+                "coordinates": projected.get("coordinates"),
+                "image_descriptors": projected["image_descriptors"],
                 "activity_count": c["activity_count"],
                 "review_count": c["review_count"],
                 "avg_rating": round(float(c["avg_rating"]), 1),
@@ -3377,6 +3397,7 @@ async def compare_entities(
             e = batch.get(eid)
             if not e:
                 continue
+            projected = _project_public_entity_media(e, limit=3)
             attrs = e.get("attributes", {})
             if isinstance(attrs, str):
                 try:
@@ -3384,12 +3405,12 @@ async def compare_entities(
                 except (json.JSONDecodeError, ValueError):
                     attrs = {}
             results.append({
-                "id": e["id"], "name": e.get("name", ""),
-                "type": e.get("type", ""),
-                "place": e.get("place", ""),
-                "summary": (e.get("summary") or "")[:300],
-                "images": e.get("images", [])[:3],
-                "coordinates": e.get("coordinates"),
+                "id": projected["id"], "name": projected.get("name", ""),
+                "type": projected.get("type", ""),
+                "place": projected.get("place", ""),
+                "summary": (projected.get("summary") or "")[:300],
+                "image_descriptors": projected["image_descriptors"],
+                "coordinates": projected.get("coordinates"),
                 "attributes": {
                     "hours": attrs.get("hours"),
                     "phone": attrs.get("phone"),
@@ -3428,12 +3449,13 @@ def _score_popular_entity(e: dict) -> float:
 
 
 def _shape_popular_entity(e: dict) -> dict:
+    projected = _project_public_entity_media(e, limit=2)
     return {
-        "id": e["id"], "name": e.get("name", ""),
-        "type": e.get("type", ""),
-        "place": e.get("place", ""),
-        "summary": (e.get("summary") or "")[:200],
-        "images": e.get("images", [])[:2],
+        "id": projected["id"], "name": projected.get("name", ""),
+        "type": projected.get("type", ""),
+        "place": projected.get("place", ""),
+        "summary": (projected.get("summary") or "")[:200],
+        "image_descriptors": projected["image_descriptors"],
         "rating_count": e.get("rating_count", 0) or 0,
         "rating_avg": round(float(e.get("rating_avg", 0) or 0), 1),
         "quality_score": entity_quality(e),
@@ -3503,6 +3525,7 @@ async def entity_search(
     total = len(all_entities)
     page_items = all_entities[offset:offset + limit]
     _enrich_place(page_items)
+    page_items = [_project_public_entity_media(entity) for entity in page_items]
     response.headers["Cache-Control"] = "public, max-age=30, stale-while-revalidate=60"
     return {
         "entities": page_items, "total": total,

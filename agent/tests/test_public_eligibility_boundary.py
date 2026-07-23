@@ -108,13 +108,22 @@ def test_places_directory_filters_hidden_rows(monkeypatch):
 
 def test_facilities_directory_filters_hidden_rows(monkeypatch):
     monkeypatch.setattr(public_api.db, "facilities_by_place", lambda _place: [
-        _entity("public-facility", type="facility"),
+        _entity(
+            "public-facility",
+            type="facility",
+            images=["/img/entities/facility.webp"],
+            phone="0270-123456",
+        ),
         _entity("hidden-facility", type="facility", status="provisional"),
     ])
 
     result = asyncio.run(public_api.list_facilities(Response(), place=None))
 
     assert [item["id"] for item in result["facilities"]] == ["public-facility"]
+    facility = result["facilities"][0]
+    assert "images" not in facility
+    assert facility["image_descriptors"][0]["source_class"] == "ai-generated"
+    assert facility["phone"] == "0270-123456"
 
 
 def test_place_overview_filters_parent_children_and_facilities(monkeypatch):
@@ -126,7 +135,12 @@ def test_place_overview_filters_parent_children_and_facilities(monkeypatch):
         _entity("hidden-child", verified=0),
     ])
     monkeypatch.setattr(public_api.db, "facilities_by_place", lambda _id: [
-        _entity("public-facility", type="facility"),
+        _entity(
+            "public-facility",
+            type="facility",
+            images=["/img/entities/facility-overview.webp"],
+            phone="0270-654321",
+        ),
         _entity("hidden-facility", type="facility", status="provisional"),
     ])
 
@@ -134,6 +148,10 @@ def test_place_overview_filters_parent_children_and_facilities(monkeypatch):
 
     assert [item["id"] for item in result["tourism"]] == ["public-child"]
     assert [item["id"] for item in result["facilities"]] == ["public-facility"]
+    facility = result["facilities"][0]
+    assert "images" not in facility
+    assert facility["image_descriptors"][0]["source_class"] == "ai-generated"
+    assert facility["phone"] == "0270-654321"
     assert result["counts"]["tourism"] == 1
 
 
@@ -177,7 +195,8 @@ def test_collection_expansion_filters_hidden_entities(monkeypatch):
 
     result = asyncio.run(public_api.get_collection_by_slug("public-collection", Response()))
 
-    assert list(result["entities"]) == ["public"]
+    assert [entity["id"] for entity in result["entities"]] == ["public"]
+    assert "images" not in result["entities"][0]
 
 
 def test_collection_list_filters_hidden_entity_ids(monkeypatch):

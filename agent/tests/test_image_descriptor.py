@@ -98,14 +98,14 @@ def test_normalize_renderable_image_url_preserves_ip_authority_boundaries():
 
 def test_describe_entity_image_returns_the_exact_frozen_ai_editorial_contract():
     descriptor = describe_entity_image(
-        " /media/entity.webp ",
+        "/img/entities/chua-phuoc-hau.webp",
         entity_name="Chùa Phước Hậu",
         index=2,
         disclosure=DISCLOSURE,
     )
 
     assert descriptor == ImageDescriptor(
-        url="/media/entity.webp",
+        url="/img/entities/chua-phuoc-hau.webp",
         alt="Chùa Phước Hậu — ảnh minh họa 3",
         source_class="ai-generated",
         source_kind="entity-editorial",
@@ -122,7 +122,7 @@ def test_describe_entity_image_returns_the_exact_frozen_ai_editorial_contract():
 
 def test_describe_entity_image_accepts_zero_based_index_and_formats_alt_one_based():
     descriptor = describe_entity_image(
-        "/media/first.webp",
+        "/img/entities/first.webp",
         entity_name="Chùa Phước Hậu",
         index=0,
         disclosure=DISCLOSURE,
@@ -173,12 +173,19 @@ def test_describe_entity_images_preserves_source_positions_and_skips_invalid_url
     descriptors = describe_entity_images(
         {
             "name": "Vườn trái cây",
-            "images": ["/one.webp", "http://unsafe.example/two.webp", "/three.webp"],
+            "images": [
+                "/img/entities/one.webp",
+                "https://cdn.example/two.webp",
+                "/img/entities/three.webp",
+            ],
         },
         disclosure=DISCLOSURE,
     )
 
-    assert tuple(item.url for item in descriptors) == ("/one.webp", "/three.webp")
+    assert tuple(item.url for item in descriptors) == (
+        "/img/entities/one.webp",
+        "/img/entities/three.webp",
+    )
     assert tuple(item.alt for item in descriptors) == (
         "Vườn trái cây — ảnh minh họa 1",
         "Vườn trái cây — ảnh minh họa 3",
@@ -226,6 +233,50 @@ def test_describe_entity_images_accepts_structured_lists_and_https_urls():
     assert descriptors == (ImageDescriptor(**supplied),)
 
 
+def test_describe_entity_images_allows_an_explicit_canonical_placeholder():
+    supplied = {
+        "url": None,
+        "alt": "Vườn trái cây — chưa có ảnh riêng",
+        "source_class": "placeholder",
+        "source_kind": "generated-placeholder",
+        "disclosure_key": "entity-placeholder",
+        "short_label": DISCLOSURE.placeholder.short_label,
+        "full_disclosure": DISCLOSURE.placeholder.full_disclosure,
+        "credit": None,
+        "width": None,
+        "height": None,
+    }
+
+    descriptors = describe_entity_images(
+        {"name": "Vườn trái cây", "image_descriptor": supplied},
+        disclosure=DISCLOSURE,
+    )
+
+    assert descriptors == (ImageDescriptor(**supplied),)
+
+
+def test_describe_entity_images_suppresses_ugc_without_relabeling_it_as_ai():
+    supplied = asdict(
+        describe_review_image(
+            "/img/review.jpg",
+            entity_name="Vườn trái cây",
+            credit="Lan",
+            disclosure=DISCLOSURE,
+        )
+    )
+
+    descriptors = describe_entity_images(
+        {
+            "name": "Vườn trái cây",
+            "images": ["/img/entities/fallback.webp"],
+            "image_descriptor": supplied,
+        },
+        disclosure=DISCLOSURE,
+    )
+
+    assert descriptors == ()
+
+
 @pytest.mark.parametrize(
     "supplied",
     [
@@ -253,7 +304,7 @@ def test_describe_entity_images_fails_closed_for_invalid_supplied_descriptors(
 
 def test_entity_and_review_images_have_distinct_source_classes():
     entity = describe_entity_image(
-        "/img/entity.webp",
+        "/img/entities/entity.webp",
         entity_name="Chùa Vàm Ray",
         index=0,
         disclosure=DISCLOSURE,
@@ -390,7 +441,10 @@ def test_gallery_helpers_keep_entity_images_before_review_images():
 
     images = public_api._gallery_editorial_images({
         "name": "Chùa Vàm Ray",
-        "images": ["/img/entity.webp", "http://unsafe.example/entity.webp"],
+        "images": [
+            "/img/entities/entity.webp",
+            "https://cdn.example/entity.webp",
+        ],
     })
     public_api._append_review_gallery_images(
         images,
@@ -403,6 +457,18 @@ def test_gallery_helpers_keep_entity_images_before_review_images():
         "review-ugc",
     ]
     assert GalleryResponse.model_validate({"images": images}).model_dump()["images"] == images
+
+
+def test_public_editorial_helper_suppresses_explicit_ugc_descriptors():
+    import public_api
+
+    images = public_api._gallery_editorial_images({
+        "name": "Chùa Vàm Ray",
+        "image_descriptor": _valid_api_descriptor(),
+        "images": ["/img/entities/fallback.webp"],
+    })
+
+    assert images == []
 
 
 @pytest.mark.parametrize("display_name", [None, "", "   ", 7, object()])

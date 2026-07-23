@@ -115,13 +115,19 @@ def test_collection_excludes_non_public_entities(sample_data):
 
 def test_image_object_only_when_images_present(sample_entities):
     by_id = _by_id(sample_entities)
-    # cam-sanh has one real http image -> ImageObject[]
+    # Unknown legacy HTTPS media is not enough to establish AI provenance.
     cam = seo.build_entity_jsonld(by_id["cam-sanh-vinh-long"], by_id)
-    assert "image" in cam
-    img = cam["image"]
+    assert "image" not in cam
+
+    editorial = {
+        "id": "editorial",
+        "name": "Ảnh minh họa",
+        "type": "attraction",
+        "images": ["/img/entities/editorial.webp"],
+    }
+    img = seo.build_entity_jsonld(editorial, {})["image"]
     assert isinstance(img, list) and img[0]["@type"] == "ImageObject"
-    assert img[0]["url"] == "https://example.com/cam.jpg"
-    # no fabricated attribution when entity carries none (B6)
+    assert img[0]["url"] == f"{seo.SITE}/img/entities/editorial.webp"
     assert "author" not in img[0]
     assert "license" not in img[0]
 
@@ -130,13 +136,13 @@ def test_image_object_only_when_images_present(sample_entities):
     assert "image" not in bun
 
 
-def test_image_object_includes_attribution_when_present():
+def test_image_object_ignores_legacy_attribution_fallbacks():
     by_id = {}
     entity = {
         "id": "lang-nghe",
         "name": "Làng nghề",
         "type": "craft_village",
-        "images": ["https://example.com/a.jpg"],
+        "images": ["/img/entities/lang-nghe.webp"],
         "attributes": {
             "image_author": "Nguyễn Văn A",
             "image_license": "https://creativecommons.org/licenses/by/4.0/",
@@ -144,9 +150,9 @@ def test_image_object_includes_attribution_when_present():
     }
     ld = seo.build_entity_jsonld(entity, by_id)
     img = ld["image"][0]
-    assert img["author"] == "Nguyễn Văn A"
-    assert img["copyrightHolder"] == "Nguyễn Văn A"
-    assert img["license"] == "https://creativecommons.org/licenses/by/4.0/"
+    assert "author" not in img
+    assert "copyrightHolder" not in img
+    assert "license" not in img
 
 
 def test_image_object_skips_non_http_values():
@@ -154,12 +160,12 @@ def test_image_object_skips_non_http_values():
     assert out == []
 
 
-def test_image_object_reads_per_url_image_credits():
+def test_image_object_does_not_read_per_url_legacy_credits():
     entity = {
         "id": "lang-nghe",
         "name": "Lang nghe",
         "type": "craft_village",
-        "images": ["https://cdn.example.com/a.webp"],
+        "images": ["/img/entities/a.webp"],
         "attributes": {
             "image_credits": [
                 {
@@ -173,9 +179,9 @@ def test_image_object_reads_per_url_image_credits():
     }
     ld = seo.build_entity_jsonld(entity, {})
     img = ld["image"][0]
-    assert img["author"] == "Tran A"
-    assert img["license"] == "https://creativecommons.org/licenses/by-sa/4.0/"
-    assert img["creditText"] == "https://commons.wikimedia.org/wiki/File:A.webp"
+    assert "author" not in img
+    assert "license" not in img
+    assert "creditText" not in img
 
 
 # ── TYPE_SCHEMA coverage ────────────────────────────────────────────────────
@@ -606,7 +612,7 @@ def test_media_sitemap_includes_image_title(monkeypatch):
     data = {
         "entities": [
             {"id": "e1", "name": "Test Entity", "type": "attraction", "status": "published",
-             "verified": True, "summary": "chữ " * 130, "images": ["https://example.com/img.jpg"]},
+             "verified": True, "summary": "chữ " * 130, "images": ["/img/entities/img.webp"]},
         ],
         "relationships": [],
         "itineraries": [],
@@ -616,10 +622,10 @@ def test_media_sitemap_includes_image_title(monkeypatch):
     resp = seo.sitemap_media()
     xml = resp.body.decode()
     assert "<image:title>Test Entity</image:title>" in xml
-    assert "<image:loc>https://example.com/img.jpg</image:loc>" in xml
+    assert f"<image:loc>{seo.SITE}/img/entities/img.webp</image:loc>" in xml
 
 
-def test_media_sitemap_includes_license_from_image_credits(monkeypatch):
+def test_media_sitemap_ignores_legacy_license_credits(monkeypatch):
     data = {
         "entities": [
             {
@@ -630,11 +636,11 @@ def test_media_sitemap_includes_license_from_image_credits(monkeypatch):
                 "verified": True,
                 "summary": "chữ " * 130,
                 "area": "vinh-long",
-                "images": ["https://example.com/img.jpg"],
+                "images": ["/img/entities/img.webp"],
                 "attributes": {
                     "image_credits": [
                         {
-                            "url": "https://example.com/img.jpg",
+                            "url": "/img/entities/img.webp",
                             "license": "CC BY 4.0",
                             "author": "Photo Author",
                             "source_url": "https://commons.wikimedia.org/wiki/File:Img.jpg",
@@ -649,7 +655,7 @@ def test_media_sitemap_includes_license_from_image_credits(monkeypatch):
     monkeypatch.setattr(seo, "_load", lambda: data)
     monkeypatch.setattr(seo, "_load_db_data", lambda: None)  # ep fallback JSON (endpoint gio DB-first)
     xml = seo.sitemap_media().body.decode()
-    assert "<image:license>https://creativecommons.org/licenses/by/4.0/</image:license>" in xml
+    assert "<image:license>" not in xml
     assert f"<image:geo_location>{seo.AREA_NAMES['vinh-long']}</image:geo_location>" in xml
     return
     assert "<image:geo_location>VÄ©nh Long</image:geo_location>" in xml
@@ -659,9 +665,9 @@ def test_media_sitemap_excludes_non_public(monkeypatch):
     data = {
         "entities": [
             {"id": "e1", "name": "OK", "type": "attraction", "status": "published", "verified": True,
-             "summary": "chữ " * 130, "images": ["https://example.com/a.jpg"]},
+             "summary": "chữ " * 130, "images": ["/img/entities/a.webp"]},
             {"id": "e2", "name": "Hidden", "type": "attraction", "status": "provisional", "verified": True,
-             "summary": "chữ " * 130, "images": ["https://example.com/b.jpg"]},
+             "summary": "chữ " * 130, "images": ["/img/entities/b.webp"]},
         ],
         "relationships": [],
         "itineraries": [],
@@ -970,13 +976,31 @@ def test_entity_jsonld_mixed_images_filtered():
         "id": "mixed-img",
         "name": "Test",
         "type": "attraction",
-        "images": ["https://example.com/ok.jpg", None, 42, "/relative.jpg", "data:image/png;base64,xxx"],
+        "images": ["https://example.com/unknown.jpg", None, 42, "/img/entities/ok.webp", "data:image/png;base64,xxx"],
     }
     ld = seo.build_entity_jsonld(entity, {})
     assert [image["url"] for image in ld["image"]] == [
-        "https://example.com/ok.jpg",
-        "https://vinhlong360.vn/relative.jpg",
+        "https://vinhlong360.vn/img/entities/ok.webp",
     ]
+
+
+def test_og_meta_uses_only_classified_ai_entity_media():
+    unknown = seo.build_og_meta({
+        "id": "unknown",
+        "name": "Unknown",
+        "images": ["https://cdn.example/user-upload.webp"],
+    })
+    assert "og:image" not in unknown
+    assert "twitter:image" not in unknown
+
+    editorial = seo.build_og_meta({
+        "id": "editorial",
+        "name": "Editorial",
+        "images": ["/img/entities/editorial.webp"],
+    })
+    expected = f"{seo.SITE}/img/entities/editorial.webp"
+    assert editorial["og:image"] == expected
+    assert editorial["twitter:image"] == expected
 
 
 def test_itinerary_jsonld_string_stops_skipped():
@@ -2180,7 +2204,7 @@ def test_sitemap_media_has_caption(monkeypatch):
             {"id": "cap-e", "name": "Captioned", "type": "attraction",
              "status": "published", "verified": True,
              "summary": "Beautiful place in VL", "description": "chữ " * 130, "confidence": 0.9,
-             "images": ["https://example.com/img.jpg"]},
+             "images": ["/img/entities/cap-e.webp"]},
         ],
         "relationships": [],
         "itineraries": [],

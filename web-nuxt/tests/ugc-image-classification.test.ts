@@ -1,5 +1,4 @@
 import { mountSuspended } from '@nuxt/test-utils/runtime'
-import { DOMWrapper } from '@vue/test-utils'
 import { defineComponent, h, nextTick } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import EntityFeed from '../components/EntityFeed.vue'
@@ -198,7 +197,7 @@ describe('UGC image descriptor producers', () => {
 })
 
 describe('PostCard UGC disclosure', () => {
-  it('omits unsafe media and binds exact disclosure plus credit to the grid and lightbox', async () => {
+  it('keeps legacy post photos out of the public card and lightbox sinks', async () => {
     const wrapper = await mountSuspended(PostCard, {
       props: {
         post: {
@@ -214,32 +213,17 @@ describe('PostCard UGC disclosure', () => {
     })
     mountedWrappers.push(wrapper)
 
-    const media = wrapper.get('.thread-img-wrap img')
-    expect(media.attributes('src')).toBe('/media/community.webp')
-    expect(wrapper.find('img[src^="javascript:"]').exists()).toBe(false)
-    expect(wrapper.get('[data-source-class]').attributes('data-source-class')).toBe('user-uploaded')
-
-    const disclosureId = media.attributes('aria-describedby')
-    expect(disclosureId).toBeTruthy()
-    expect(wrapper.get(`[data-full-disclosure][id="${disclosureId}"]`).text())
-      .toBe(aiDisclosure.ugc_photo.full_disclosure)
-    expect(wrapper.get('[data-short-label]').text()).toBe(aiDisclosure.ugc_photo.short_label)
-    expect(wrapper.get('[data-credit]').text()).toBe('Lan Nguyễn')
-
-    await wrapper.get('.thread-img-wrap').trigger('click')
-    const dialog = new DOMWrapper(document.body).get('[role="dialog"]')
-    const lightboxMedia = dialog.get('.lb-img')
-    expect(lightboxMedia.attributes('src')).toBe('/media/community.webp')
-    const lightboxDisclosureId = lightboxMedia.attributes('aria-describedby')
-    expect(lightboxDisclosureId).toBeTruthy()
-    expect(dialog.get(`[data-full-disclosure][id="${lightboxDisclosureId}"]`).text())
-      .toBe(`${aiDisclosure.ugc_photo.full_disclosure} — Lan Nguyễn`)
-    expect(dialog.text()).not.toContain('Minh họa AI')
+    const invariant = wrapper.get('[data-image-surface="post-grid"]')
+    expect(invariant.attributes('data-entity-image-policy')).toBe('no-image-invariant')
+    expect(invariant.classes()).toContain('thread-post')
+    expect(wrapper.find('.thread-images').exists()).toBe(false)
+    expect(wrapper.find('[role="dialog"]').exists()).toBe(false)
+    expect(wrapper.find('img[src="/media/community.webp"]').exists()).toBe(false)
   })
 })
 
 describe('ReviewCard UGC disclosure', () => {
-  it('renders only safe review media with canonical full disclosure and credit', async () => {
+  it('keeps legacy review photos out of the public review card', async () => {
     const wrapper = await mountSuspended(ReviewCard, {
       props: {
         review: {
@@ -259,19 +243,16 @@ describe('ReviewCard UGC disclosure', () => {
     })
     mountedWrappers.push(wrapper)
 
-    const surface = wrapper.get('.ri-images')
-    expectCanonicalUgcSurface(surface, {
-      src: '/media/review.webp',
-      disclosureId: 'review-image-review-1-0-disclosure',
-      credit: 'Lan Nguyễn',
-    })
-    expect(wrapper.find('img[src^="javascript:"]').exists()).toBe(false)
-    expect(surface.find('[data-short-label]').text()).toBe(aiDisclosure.ugc_photo.short_label)
+    const invariant = wrapper.get('[data-image-surface="review-card"]')
+    expect(invariant.attributes('data-entity-image-policy')).toBe('no-image-invariant')
+    expect(invariant.classes()).toContain('review-item')
+    expect(wrapper.find('.ri-images').exists()).toBe(false)
+    expect(wrapper.find('img[src="/media/review.webp"]').exists()).toBe(false)
   })
 })
 
 describe('EntityFeed UGC disclosure', () => {
-  it('dispatches its feed URL and renders only safe community thumbnails', async () => {
+  it('dispatches its feed URL without rendering community thumbnails', async () => {
     fetchMock.mockImplementation((url: unknown) => {
       if (String(url).startsWith('/api/entities/entity-1/feed?')) {
         return Promise.resolve({
@@ -297,18 +278,16 @@ describe('EntityFeed UGC disclosure', () => {
     await flushUi()
 
     expect(fetchMock).toHaveBeenCalledWith('/api/entities/entity-1/feed?limit=5')
-    const surface = wrapper.get('.ef-media')
-    expectCanonicalUgcSurface(surface, {
-      src: '/media/feed.webp',
-      disclosureId: 'entity-feed-feed-1-disclosure',
-      credit: 'Lan Nguyễn',
-    })
-    expect(wrapper.find('img[src^="//"]').exists()).toBe(false)
+    const invariant = wrapper.get('[data-image-surface="entity-feed"]')
+    expect(invariant.attributes('data-entity-image-policy')).toBe('no-image-invariant')
+    expect(invariant.classes()).toContain('entity-feed')
+    expect(wrapper.find('.ef-media').exists()).toBe(false)
+    expect(wrapper.find('img[src="/media/feed.webp"]').exists()).toBe(false)
   })
 })
 
 describe('UGC disclosure surfaces', () => {
-  it('mounts the home community strip with a safe thumbnail and no unsafe sibling', async () => {
+  it('mounts the home community strip without public UGC thumbnails', async () => {
     apiFetchMock.mockImplementation((url: unknown) => {
       const path = String(url)
       if (path === '/api/homepage') {
@@ -344,16 +323,14 @@ describe('UGC disclosure surfaces', () => {
     mountedWrappers.push(wrapper)
     await flushUi()
 
-    const surface = wrapper.get('.cm-img')
-    expectCanonicalUgcSurface(surface, {
-      src: '/media/home.webp',
-      disclosureId: 'home-post-home-1-disclosure',
-      credit: 'Lan Nguyễn',
-    })
-    expect(wrapper.find('img[src^="javascript:"]').exists()).toBe(false)
+    const invariant = wrapper.get('[data-image-surface="home-community"]')
+    expect(invariant.attributes('data-entity-image-policy')).toBe('no-image-invariant')
+    expect(invariant.classes()).toContain('block')
+    expect(wrapper.find('.cm-img').exists()).toBe(false)
+    expect(wrapper.find('img[src="/media/home.webp"]').exists()).toBe(false)
   })
 
-  it('mounts post-detail related media and emits UGC disclosure in rendered JSON-LD', async () => {
+  it('mounts post detail without related, OG, or JSON-LD UGC image sinks', async () => {
     apiFetchMock.mockImplementation((url: unknown) => {
       if (String(url) === '/api/posts/post-1') {
         return Promise.resolve({
@@ -396,24 +373,23 @@ describe('UGC disclosure surfaces', () => {
     mountedWrappers.push(wrapper)
     await flushUi()
 
-    const surface = wrapper.get('.related-media')
-    expectCanonicalUgcSurface(surface, {
-      src: '/media/related.webp',
-      disclosureId: 'related-post-related-1-disclosure',
-      credit: 'Mai Nguyễn',
-    })
-    expect(wrapper.find('img[src^="//"]').exists()).toBe(false)
+    const relatedInvariant = wrapper.get('[data-image-surface="related-post"]')
+    expect(relatedInvariant.attributes('data-entity-image-policy')).toBe('no-image-invariant')
+    expect(relatedInvariant.classes()).toContain('related-section')
+    const metadataInvariant = wrapper.get('[data-image-surface="post-metadata"]')
+    expect(metadataInvariant.attributes('data-entity-image-policy')).toBe('no-image-invariant')
+    expect(metadataInvariant.classes()).toContain('thread-detail-page')
+    const detailInvariant = wrapper.get('[data-image-surface="post-detail-card"]')
+    expect(detailInvariant.attributes('data-entity-image-policy')).toBe('no-image-invariant')
+    expect(detailInvariant.classes()).toContain('thread-detail')
+    expect(wrapper.find('.related-media').exists()).toBe(false)
+    expect(wrapper.find('img[src="/media/related.webp"]').exists()).toBe(false)
 
     const article = [...document.head.querySelectorAll('script[type="application/ld+json"]')]
       .map(script => JSON.parse(script.textContent || '{}'))
       .find(value => value['@type'] === 'Review')
     expect(article).toBeDefined()
-    expect(article.image).toEqual([expect.objectContaining({
-      '@type': 'ImageObject',
-      contentUrl: '/media/detail.webp',
-      description: aiDisclosure.ugc_photo.full_disclosure,
-      creditText: 'Lan Nguyễn',
-    })])
+    expect(article).not.toHaveProperty('image')
     expect(JSON.stringify(article)).not.toMatch(aiWording)
   })
 

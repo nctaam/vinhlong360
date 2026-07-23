@@ -37,6 +37,7 @@ def test_load_reloads_when_data_file_changes(tmp_path, monkeypatch):
 
 def test_mutable_main_sitemap_ownership_is_retired():
     source = Path(seo.__file__).read_text(encoding="utf-8")
+    registered_paths = {route.path for route in seo.router.routes}
 
     assert not hasattr(seo, "sitemap")
     assert '@router.get("/sitemap.xml"' not in source
@@ -50,8 +51,11 @@ def test_mutable_main_sitemap_ownership_is_retired():
     ):
         assert not hasattr(seo, retired_name)
 
-    assert hasattr(seo, "sitemap_media")
-    assert hasattr(seo, "sitemap_index")
+    assert {
+        "/robots.txt",
+        "/sitemap-media.xml",
+        "/sitemap-index.xml",
+    }.isdisjoint(registered_paths)
 
 
 def test_seo_has_no_legacy_entity_indexability_authority():

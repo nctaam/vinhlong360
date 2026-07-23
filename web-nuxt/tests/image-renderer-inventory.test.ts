@@ -10,6 +10,7 @@ type Renderer = {
   access_path: string
   source_class: 'ai-generated' | 'placeholder' | 'user-uploaded' | 'none'
   descriptor_producer: string
+  render_policy: 'render' | 'suppress'
   presentation: 'short' | 'full' | 'short-and-full' | 'none'
   accessibility: string
   test_file: string
@@ -103,7 +104,7 @@ const requiredBoundaries = [
 const key = (row: Pick<Renderer, 'file' | 'surface' | 'source_class'>) => `${row.file}|${row.surface}|${row.source_class}`
 
 describe('entity image renderer inventory', () => {
-  it('uses schema version 1 and exact eight-key rows', () => {
+  it('uses schema version 1 and exact nine-key rows', () => {
     expect(registry.schema_version).toBe(1)
     for (const row of registry.renderers) {
       expect(Object.keys(row).sort()).toEqual([
@@ -112,10 +113,27 @@ describe('entity image renderer inventory', () => {
         'descriptor_producer',
         'file',
         'presentation',
+        'render_policy',
         'source_class',
         'surface',
         'test_file',
       ])
+    }
+  })
+
+  it('renders only AI/placeholder rows and suppresses public UGC with no-image invariants', () => {
+    for (const row of registry.renderers) {
+      if (row.source_class === 'ai-generated' || row.source_class === 'placeholder') {
+        expect(row.render_policy).toBe('render')
+      }
+      if (row.source_class === 'user-uploaded' && !row.file.includes('/admin/') && !row.surface.includes('upload-preview')) {
+        expect(row).toEqual(expect.objectContaining({
+          render_policy: 'suppress',
+          descriptor_producer: 'no-image-invariant',
+          presentation: 'none',
+          accessibility: 'no-image-invariant',
+        }))
+      }
     }
   })
 

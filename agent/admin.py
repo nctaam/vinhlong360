@@ -45,6 +45,20 @@ except Exception:  # noqa: BLE001
     _HAS_COST = False
 from auth_middleware import get_current_user, validate_path_id, require_csrf, require_pg
 from middleware import admin_limiter, verify_admin_key, get_client_ip
+from media_policy import (
+    AI_ONLY_MEDIA_DETAIL,
+    entity_images_are_ai_only,
+    is_canonical_legacy_entity_image,
+)
+
+
+def _reject_non_ai_media() -> None:
+    raise HTTPException(status_code=400, detail=AI_ONLY_MEDIA_DETAIL)
+
+
+def _require_ai_only_entity_images(images: list[str] | None) -> None:
+    if images is not None and not entity_images_are_ai_only(images):
+        _reject_non_ai_media()
 
 
 def _sync_kb():
@@ -915,6 +929,7 @@ async def get_entity(entity_id: str):
             description="Updates an entity's fields. Logs changes to entity history and invalidates relevant caches.")
 async def update_entity(entity_id: str, update: EntityUpdate):
     """Cập nhật entity."""
+    _require_ai_only_entity_images(update.images)
     entity_id = validate_path_id(entity_id, "entity_id")
     def _query():
         existing = db.get_entity(entity_id)
@@ -965,6 +980,7 @@ async def get_entity_schema():
              description="Creates a new entity. Returns 409 if an entity with the same ID already exists.")
 async def create_entity(entity: EntityCreate):
     """Tạo entity mới."""
+    _require_ai_only_entity_images(entity.images)
     def _query():
         if db.get_entity(entity.id):
             raise HTTPException(409, "Entity đã tồn tại")
@@ -1014,6 +1030,8 @@ async def add_entity_image_url(entity_id: str, body: _EntityImageURL):
     """GĐ8.4: thêm ảnh entity theo URL (chỉ nguồn cấp phép — B6)."""
     entity_id = validate_path_id(entity_id, "entity_id")
     url = (body.url or "").strip()
+    if not is_canonical_legacy_entity_image(url):
+        _reject_non_ai_media()
     if url.startswith("/"):
         pass
     else:
@@ -1042,6 +1060,7 @@ async def upload_entity_image(entity_id: str, file: UploadFile = File(...)):
     """GĐ8.4: upload file ảnh → WebP 3 cỡ → R2 (fallback đĩa) → entity.images.
     Lưu URL cỡ md (800px) làm ảnh hiển thị; sm/lg cũng được upload để dùng srcset sau."""
     entity_id = validate_path_id(entity_id, "entity_id")
+    _reject_non_ai_media()
     from fastapi.concurrency import run_in_threadpool
     from storage import storage, MAX_IMAGE_SIZE
 
@@ -2225,6 +2244,7 @@ async def approve_image_suggestion(suggestion_id: str):
     """Duyệt 1 ứng viên: tải ảnh → WebP 3 cỡ → R2 → gắn vào entity.images + lưu
     license/author/source vào attributes.image_credits (B6). Chỉ xử lý khi đang 'pending'."""
     validate_path_id(suggestion_id, "suggestion_id")
+    _reject_non_ai_media()
     from fastapi.concurrency import run_in_threadpool
     from storage import storage, MAX_IMAGE_SIZE
 

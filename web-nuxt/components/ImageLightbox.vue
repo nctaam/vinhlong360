@@ -10,7 +10,9 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>()
 
-function normalizeIndex(value: number, length = props.images.length): number {
+const renderableImages = computed(() => props.images.filter(image => image.source_class !== 'user-uploaded'))
+
+function normalizeIndex(value: number, length = renderableImages.value.length): number {
   if (!length) return 0
   const candidate = Number.isInteger(value) ? value : 0
   return ((candidate % length) + length) % length
@@ -28,7 +30,7 @@ const prefetched = new Set<string>()
 const prefetchLinks: HTMLLinkElement[] = []
 const lightboxId = `lightbox-${useId().replace(/[^A-Za-z0-9_-]+/g, '-')}`
 
-const active = computed(() => props.images[index.value] ?? null)
+const active = computed(() => renderableImages.value[index.value] ?? null)
 const captionId = computed(() => `${lightboxId}-disclosure-${index.value}`)
 
 function close() { emit('update:modelValue', false) }
@@ -45,24 +47,24 @@ watch(() => props.modelValue, (open) => {
   }
 })
 
-watch(() => props.images.length, (length) => {
+watch(() => renderableImages.value.length, (length) => {
   index.value = normalizeIndex(index.value, length)
 })
 
 function prev() {
-  const len = props.images.length
+  const len = renderableImages.value.length
   if (!len) return
   index.value = (index.value - 1 + len) % len
 }
 function next() {
-  const len = props.images.length
+  const len = renderableImages.value.length
   if (!len) return
   index.value = (index.value + 1) % len
 }
 
 watch(index, (idx) => {
   if (!props.modelValue || !import.meta.client) return
-  const imgs = props.images
+  const imgs = renderableImages.value
   if (!imgs || imgs.length <= 1) return
   const len = imgs.length
   for (const offset of [1, -1]) {
@@ -127,12 +129,15 @@ onUnmounted(() => {
 <template>
   <Teleport to="body">
     <Transition name="lb-fade">
-      <div v-if="modelValue" class="lightbox" role="dialog" aria-modal="true" aria-label="Xem ảnh"
-        @click.self="close" @keydown.left="prev" @keydown.right="next"
+      <div v-if="modelValue" role="dialog" aria-modal="true" aria-label="Xem ảnh"
+        @keydown.left="prev" @keydown.right="next"
         ref="dialogEl"
         @touchstart.passive="onTouchStart" @touchmove.passive="onTouchMove" @touchend="onTouchEnd">
+        <div class="lightbox"
+          data-image-surface="image-lightbox" data-source-class="user-uploaded" data-entity-image-policy="no-image-invariant"
+          @click.self="close">
         <button type="button" class="lb-close" aria-label="Đóng" @click="close">&times;</button>
-        <button type="button" v-if="images.length > 1" class="lb-prev" data-prev aria-label="Ảnh trước" @click="prev">&#8249;</button>
+        <button type="button" v-if="renderableImages.length > 1" class="lb-prev" data-prev aria-label="Ảnh trước" @click="prev">&#8249;</button>
         <template v-if="active">
           <img
             v-if="active.url"
@@ -164,8 +169,9 @@ onUnmounted(() => {
             <span v-if="active.credit" data-credit class="lb-credit">{{ active.credit }}</span>
           </span>
         </template>
-        <button type="button" v-if="images.length > 1" class="lb-next" data-next aria-label="Ảnh tiếp" @click="next">&#8250;</button>
-        <div class="lb-counter" data-counter aria-live="polite">{{ images.length ? index + 1 : 0 }} / {{ images.length }}</div>
+        <button type="button" v-if="renderableImages.length > 1" class="lb-next" data-next aria-label="Ảnh tiếp" @click="next">&#8250;</button>
+        <div class="lb-counter" data-counter aria-live="polite">{{ renderableImages.length ? index + 1 : 0 }} / {{ renderableImages.length }}</div>
+        </div>
       </div>
     </Transition>
   </Teleport>

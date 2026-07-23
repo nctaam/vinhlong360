@@ -1,5 +1,11 @@
 <template>
-  <article class="thread-post" :class="{ 'has-replies': hasReplies }">
+  <article
+    class="thread-post"
+    :class="{ 'has-replies': hasReplies }"
+    data-image-surface="post-grid"
+    data-source-class="user-uploaded"
+    data-entity-image-policy="no-image-invariant"
+  >
     <div class="thread-left">
       <NuxtLink v-if="post.user_id" :to="userPath(post.username || post.user_id)" class="thread-avatar-link">
         <span class="avatar thread-avatar">
@@ -12,7 +18,12 @@
       <div v-if="hasReplies" class="thread-line"></div>
     </div>
 
-    <div class="thread-right">
+    <div
+      class="thread-right"
+      data-image-surface="post-lightbox"
+      data-source-class="user-uploaded"
+      data-entity-image-policy="no-image-invariant"
+    >
       <div class="thread-head">
         <NuxtLink v-if="post.user_id" :to="userPath(post.username || post.user_id)" class="thread-author">
           {{ post.display_name || post.phone || 'Người dùng' }}
@@ -60,20 +71,6 @@
         <span v-else class="tre-deleted"><span class="emoji-chip" aria-hidden="true">🔁</span> Bài viết gốc đã bị xoá</span>
       </NuxtLink>
 
-      <div v-if="postImageDescriptors.length" class="thread-images" :class="imgLayoutClass" data-source-class="user-uploaded">
-        <button type="button"
-          v-for="(img, i) in displayImages"
-          :key="img.url || i"
-          class="thread-img-wrap"
-          @click="openLightbox(i)"
-        >
-          <NuxtImg v-if="img.url && isRemoteUrl(img.url)" :src="img.url" :alt="img.alt" :aria-describedby="postImageDisclosureId(i)" loading="lazy" decoding="async" width="400" height="300" sizes="sm:100vw md:50vw lg:400px" @error="onImgError" />
-          <img v-else-if="img.url" :src="img.url" :alt="img.alt" :aria-describedby="postImageDisclosureId(i)" loading="lazy" decoding="async" width="400" height="300" @error="onImgError" />
-          <ImageDisclosure :id="postImageDisclosureId(i)" :descriptor="img" presentation="short" />
-          <span v-if="i === 3 && extraCount > 0" class="thread-img-more">+{{ extraCount }}</span>
-        </button>
-      </div>
-
       <div class="thread-actions">
         <button type="button" :class="['thread-act', { active: post.user_liked, 'like-pop': likePop }]" @click="onLike" :aria-label="post.user_liked ? 'Bỏ thích' : 'Thích'">
           <svg v-if="!post.user_liked" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
@@ -106,39 +103,10 @@
       </NuxtLink>
     </div>
 
-    <Teleport to="body">
-      <div v-if="lbOpen" ref="lbEl" class="lightbox" role="dialog" aria-modal="true" aria-label="Xem ảnh" @click.self="closeLightbox">
-        <button type="button" class="lb-close" aria-label="Đóng" @click="closeLightbox">&times;</button>
-        <button type="button" v-if="postImageDescriptors.length > 1" class="lb-prev" aria-label="Ảnh trước" @click="lbPrev">&#8249;</button>
-        <img
-          v-if="activeImage?.url"
-          :key="lbIdx"
-          :src="activeImage.url"
-          class="lb-img"
-          :alt="activeImage.alt"
-          :aria-describedby="lightboxDisclosureId"
-          loading="eager"
-          decoding="async"
-          :style="lbDragStyle"
-          @touchstart.passive="onLbTouchStart"
-          @touchmove.passive="onLbTouchMove"
-          @touchend="onLbTouchEnd"
-          @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')"
-        />
-        <span v-if="activeImage" :id="lightboxDisclosureId" class="lb-caption" data-full-disclosure>
-          {{ activeImage.full_disclosure }}<span v-if="activeImage.credit" data-credit> — {{ activeImage.credit }}</span>
-        </span>
-        <button type="button" v-if="postImageDescriptors.length > 1" class="lb-next" aria-label="Ảnh tiếp" @click="lbNext">&#8250;</button>
-        <span class="lb-counter">{{ lbIdx + 1 }} / {{ postImageDescriptors.length }}</span>
-      </div>
-    </Teleport>
   </article>
 </template>
 
 <script setup lang="ts">
-import ImageDisclosure from '~/components/ImageDisclosure.vue'
-import { describePostImages } from '~/utils/imageDescriptors'
-
 const props = defineProps<{
   post: Record<string, any>
   hasReplies?: boolean
@@ -199,14 +167,6 @@ function onLike() {
   }
 }
 
-function onImgError(e: Event | string) {
-  if (typeof e === 'string') return
-  const el = e.target as HTMLImageElement | null
-  if (!el) return
-  el.style.opacity = '.15'
-  el.alt = 'Không tải được ảnh'
-}
-
 const { show: showToast } = useToast()
 const { confirmDialog } = useConfirm()
 
@@ -236,86 +196,6 @@ const authorInitial = computed(() => {
   return name.charAt(0).toUpperCase()
 })
 
-const postDisclosurePrefix = computed(() => {
-  const token = String(props.post?.id || 'post').replace(/[^A-Za-z0-9_-]+/g, '-')
-  return `post-image-${token || 'post'}`
-})
-function postImageDisclosureId(index: number): string {
-  return `${postDisclosurePrefix.value}-${index}-disclosure`
-}
-
-const postImageDescriptors = computed(() => describePostImages(props.post))
-const displayImages = computed(() => postImageDescriptors.value.slice(0, 4))
-const extraCount = computed(() => Math.max(0, postImageDescriptors.value.length - 4))
-
-const imgLayoutClass = computed(() => {
-  const len = postImageDescriptors.value.length
-  if (len === 1) return 'img-grid-1'
-  if (len === 2) return 'img-grid-2'
-  if (len === 3) return 'img-grid-3'
-  return 'img-grid-4'
-})
-
-const lbOpen = ref(false)
-const lbIdx = ref(0)
-const lbEl = ref<HTMLElement | null>(null)
-const activeImage = computed(() => postImageDescriptors.value[lbIdx.value] ?? null)
-const lightboxDisclosureId = computed(() => `${postDisclosurePrefix.value}-lightbox-${lbIdx.value}-disclosure`)
-
-function openLightbox(i: number) {
-  lbIdx.value = i
-  lbOpen.value = true
-}
-function closeLightbox() {
-  lbOpen.value = false
-}
-useModalA11y(lbOpen, lbEl, { onClose: closeLightbox })
-function lbPrev() { lbIdx.value = (lbIdx.value - 1 + postImageDescriptors.value.length) % postImageDescriptors.value.length }
-function lbNext() { lbIdx.value = (lbIdx.value + 1) % postImageDescriptors.value.length }
-
-const lbTouchX = ref(0)
-const lbTouchDX = ref(0)
-const lbSwiping = ref(false)
-
-const lbDragStyle = computed(() => {
-  if (!lbSwiping.value || !lbTouchDX.value) return {}
-  const dx = lbTouchDX.value
-  const opacity = Math.max(0.4, 1 - Math.abs(dx) / 400)
-  return { transform: `translateX(${dx}px) scale(${opacity > 0.7 ? 1 : 0.95})`, opacity, transition: 'none' }
-})
-
-function onLbTouchStart(e: TouchEvent) {
-  const touch = e.touches[0]
-  if (!touch) return
-  lbTouchX.value = touch.clientX
-  lbTouchDX.value = 0
-  lbSwiping.value = true
-}
-function onLbTouchMove(e: TouchEvent) {
-  if (!lbSwiping.value) return
-  const touch = e.touches[0]
-  if (!touch) return
-  lbTouchDX.value = touch.clientX - lbTouchX.value
-}
-function onLbTouchEnd() {
-  if (Math.abs(lbTouchDX.value) > 80) {
-    if (lbTouchDX.value < 0) lbNext()
-    else lbPrev()
-  }
-  lbSwiping.value = false
-  lbTouchDX.value = 0
-}
-
-function onLbKey(e: KeyboardEvent) {
-  if (!lbOpen.value) return
-  if (e.key === 'ArrowLeft') lbPrev()
-  else if (e.key === 'ArrowRight') lbNext()
-}
-watch(lbOpen, (v) => {
-  if (v) window.addEventListener('keydown', onLbKey)
-  else window.removeEventListener('keydown', onLbKey)
-})
-
 if (import.meta.client) {
   const onClick = (e: Event) => { showMenu.value = false; repostMenu.value = false }
   watch(() => showMenu.value || repostMenu.value, (open) => {
@@ -326,7 +206,6 @@ if (import.meta.client) {
 }
 
 onUnmounted(() => {
-  window.removeEventListener('keydown', onLbKey)
   if (likePopTimer) clearTimeout(likePopTimer)
 })
 
@@ -402,29 +281,5 @@ const { timeAgo } = useTimeAgo()
   background: var(--bg-alt);
   font-size: .9em;
   line-height: 1.4;
-}
-.thread-img-wrap :deep(.image-disclosure) {
-  position: absolute;
-  left: var(--space-2);
-  bottom: var(--space-2);
-  z-index: 1;
-  padding: 3px 7px;
-  border-radius: 999px;
-  background: rgba(var(--black-rgb), .66);
-  color: var(--text-on-dark);
-}
-.lb-caption {
-  position: absolute;
-  left: 50%;
-  bottom: calc(var(--space-5) + 48px);
-  transform: translateX(-50%);
-  width: min(720px, calc(100vw - 48px));
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-md);
-  background: rgba(var(--black-rgb), .68);
-  color: var(--text-on-dark);
-  font-size: var(--text-sm);
-  line-height: 1.4;
-  text-align: center;
 }
 </style>

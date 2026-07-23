@@ -220,8 +220,7 @@ def _ward_child_identity(child: Mapping[str, object]) -> tuple[str, str] | None:
     return place_id, child_id
 
 
-def public_ward_child_counts(entities: Iterable[object]) -> dict[str, int]:
-    """Count unique, strictly identified public non-place children by ward."""
+def _place_id_ward_child_counts(entities: Iterable[object]) -> dict[str, int]:
     child_ids_by_ward: dict[str, set[str]] = {}
     for child in entities:
         if not isinstance(child, Mapping):
@@ -237,6 +236,93 @@ def public_ward_child_counts(entities: Iterable[object]) -> dict[str, int]:
         ward_id: len(child_ids)
         for ward_id, child_ids in child_ids_by_ward.items()
     }
+
+
+def _is_snapshot_identifier(value: object) -> bool:
+    return type(value) is str and bool(value) and value.strip() == value
+
+
+def _snapshot_entities_by_id(
+    entities: Iterable[object],
+) -> dict[str, Mapping[str, object]]:
+    entities_by_id: dict[str, Mapping[str, object]] = {}
+    ambiguous_ids: set[str] = set()
+    for entity in entities:
+        if not isinstance(entity, Mapping):
+            continue
+        entity_id = entity.get("id")
+        if not _is_snapshot_identifier(entity_id) or entity_id in ambiguous_ids:
+            continue
+        previous = entities_by_id.get(entity_id)
+        if previous is None:
+            entities_by_id[entity_id] = entity
+        elif previous != entity:
+            entities_by_id.pop(entity_id)
+            ambiguous_ids.add(entity_id)
+    return entities_by_id
+
+
+def _located_in_identity(
+    relationship: object,
+) -> tuple[str, str] | None:
+    if not isinstance(relationship, Mapping):
+        return None
+    relationship_type = relationship.get("type")
+    if type(relationship_type) is not str or relationship_type != "located_in":
+        return None
+    source_id = relationship.get("source_id")
+    target_id = relationship.get("target_id")
+    if not _is_snapshot_identifier(source_id):
+        return None
+    if not _is_snapshot_identifier(target_id):
+        return None
+    return source_id, target_id
+
+
+def _is_public_non_place_child(child: Mapping[str, object]) -> bool:
+    child_type = child.get("type")
+    return (
+        type(child_type) is str
+        and bool(child_type)
+        and child_type.strip() == child_type
+        and child_type != "place"
+        and is_publicly_eligible(child)
+    )
+
+
+def _relationship_ward_child_counts(
+    entities: Iterable[object], relationships: Iterable[object]
+) -> dict[str, int]:
+    entities_by_id = _snapshot_entities_by_id(entities)
+    child_ids_by_ward: dict[str, set[str]] = {}
+    for relationship in relationships:
+        identity = _located_in_identity(relationship)
+        if identity is None:
+            continue
+        child_id, ward_id = identity
+        child = entities_by_id.get(child_id)
+        ward = entities_by_id.get(ward_id)
+        if child is None or ward is None or child_id == ward_id:
+            continue
+        if type(ward.get("type")) is not str or ward.get("type") != "place":
+            continue
+        if not _is_public_non_place_child(child):
+            continue
+        child_ids_by_ward.setdefault(ward_id, set()).add(child_id)
+    return {
+        ward_id: len(child_ids)
+        for ward_id, child_ids in child_ids_by_ward.items()
+    }
+
+
+def public_ward_child_counts(
+    entities: Iterable[object],
+    relationships: Iterable[object] | None = None,
+) -> dict[str, int]:
+    """Count unique public non-place children from relations when supplied."""
+    if relationships is not None:
+        return _relationship_ward_child_counts(entities, relationships)
+    return _place_id_ward_child_counts(entities)
 
 
 def _unicode_word_count(value: object) -> int:

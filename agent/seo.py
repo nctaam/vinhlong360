@@ -14,6 +14,7 @@ import logging
 import re
 import threading
 import time
+from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -23,18 +24,20 @@ from xml.sax.saxutils import escape as xml_escape
 logger = logging.getLogger(__name__)
 
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import PlainTextResponse, Response
+from fastapi.responses import Response
 
 if __package__:
     from .ai_disclosure import LoadedAiDisclosure, load_ai_disclosure
     from .image_descriptor import ImageDescriptor, describe_entity_images
     from .index_policy import decide_entity
     from .launch_evidence import PolicyEvidence, current_policy_evidence
+    from .media_policy import is_renderable_entity_descriptor
 else:
     from ai_disclosure import LoadedAiDisclosure, load_ai_disclosure
     from image_descriptor import ImageDescriptor, describe_entity_images
     from index_policy import decide_entity
     from launch_evidence import PolicyEvidence, current_policy_evidence
+    from media_policy import is_renderable_entity_descriptor
 
 router = APIRouter()
 
@@ -421,25 +424,9 @@ def _image_credit_for_url(attrs: dict[str, Any], img_url: str, raw_image: Any = 
 def _build_image_objects(
     images: Any, entity_name: str, attrs: dict[str, Any]
 ) -> list[dict[str, Any]]:
-    """Build a schema.org ImageObject[] from real image URLs only.
-
-    B6: never fabricate attribution. We only attach ``author``/``license``/
-    ``copyrightHolder`` when those values are actually present on the entity's
-    attributes (image_author / image_license / image_credit). Entities with no
-    real ``images`` (the common case today) produce an empty list and the
-    caller falls back to leaving image off entirely.
-    """
-    if not isinstance(images, list):
-        images = [images] if images else []
-    out: list[dict[str, Any]] = []
-    for idx, raw_image in enumerate(images):
-        img_url = _image_url(raw_image)
-        if not img_url:
-            continue
-        credit_meta = _image_credit_for_url(attrs, img_url, raw_image)
-        obj = _image_object(img_url, entity_name, idx, credit_meta)
-        out.append({k: v for k, v in obj.items() if v not in (None, "", [], {})})
-    return out
+    """Legacy raw media cannot establish AI provenance."""
+    del images, entity_name, attrs
+    return []
 
 
 def _valid_jsonld_descriptor_dimensions(width: object, height: object) -> bool:
@@ -464,11 +451,7 @@ def _is_jsonld_entity_image_identity(
         return False
     if not descriptor.alt.strip():
         return False
-    if (descriptor.source_class, descriptor.source_kind, descriptor.disclosure_key) != (
-        "ai-generated",
-        "entity-editorial",
-        "entity-ai",
-    ):
+    if not is_renderable_entity_descriptor(asdict(descriptor)):
         return False
     if descriptor.short_label != copy.short_label:
         return False
@@ -506,12 +489,11 @@ def _build_descriptor_image_objects(
         )
         if img_url is None:
             continue
-        credit_meta = _image_credit_for_url(attrs, img_url)
         obj = _image_object(
             img_url,
             entity_name,
             index,
-            credit_meta,
+            {},
             descriptor=descriptor,
         )
         out.append({key: value for key, value in obj.items() if value not in (None, "", [], {})})
@@ -521,9 +503,7 @@ def _build_descriptor_image_objects(
 def _image_object(img_url: str, entity_name: str, idx: int,
                   credit_meta: dict[str, Any], *,
                   descriptor: ImageDescriptor | None = None) -> dict[str, Any]:
-    author = credit_meta.get("author") or credit_meta.get("credit")
-    license_url = _normalise_license_url(credit_meta.get("license"))
-    source_url = credit_meta.get("source_url")
+    del credit_meta
     obj: dict[str, Any] = {
         "@type": "ImageObject",
         "url": img_url,
@@ -533,13 +513,6 @@ def _image_object(img_url: str, entity_name: str, idx: int,
     if descriptor is not None:
         obj["caption"] = descriptor.full_disclosure
         obj["description"] = f"{descriptor.alt} — {descriptor.full_disclosure}"
-    if isinstance(author, str) and author.strip():
-        obj["author"] = author.strip()
-        obj["copyrightHolder"] = author.strip()
-    if isinstance(license_url, str) and license_url.strip():
-        obj["license"] = license_url.strip()
-    if isinstance(source_url, str) and _is_valid_url(source_url):
-        obj["creditText"] = source_url.strip()
     return obj
 
 
@@ -1294,23 +1267,23 @@ def collection_jsonld(collection_type: str):
     return result
 
 
-@router.get("/sitemap-media.xml", response_class=Response,
-            summary="Image Sitemap",
-            description="Returns an image sitemap for Google Images indexing. Lists entity detail URLs with their associated image URLs, titles, and captions.")
-def _media_image_tag(img: Any, attrs: dict[str, Any], ename: str,
+def _descriptor_image_url(descriptor: ImageDescriptor) -> str | None:
+    if not is_renderable_entity_descriptor(asdict(descriptor)) or descriptor.url is None:
+        return None
+    return f"{SITE}{descriptor.url}" if descriptor.url.startswith("/") else descriptor.url
+
+
+def _media_image_tag(descriptor: ImageDescriptor, attrs: dict[str, Any], ename: str,
                      caption_tag: str, geo_tag: str) -> str:
-    img_url = _image_url(img)
+    del attrs
+    img_url = _descriptor_image_url(descriptor)
     if not img_url:
         return ""
-    credit_meta = _image_credit_for_url(attrs, img_url, img)
-    license_url = _normalise_license_url(credit_meta.get("license"))
-    license_tag = f"<image:license>{xml_escape(license_url)}</image:license>" if license_url else ""
     return (f"\n    <image:image>"
             f"<image:loc>{xml_escape(img_url)}</image:loc>"
             f"<image:title>{ename}</image:title>"
             f"{caption_tag}"
             f"{geo_tag}"
-            f"{license_tag}"
             f"</image:image>")
 
 
@@ -1334,8 +1307,8 @@ def _media_entity_url(entity: Any, evidence: PolicyEvidence) -> str | None:
         return None
     if not decide_entity(entity, evidence).indexable:
         return None
-    imgs = entity.get("images")
-    if not isinstance(imgs, list) or not imgs:
+    descriptors = describe_entity_images(entity, disclosure=_JSONLD_DISCLOSURE)
+    if not descriptors:
         return None
     ename = xml_escape(entity.get("name") or str(entity["id"]))
     attrs = entity.get("attributes") if isinstance(entity.get("attributes"), dict) else {}
@@ -1343,8 +1316,8 @@ def _media_entity_url(entity: Any, evidence: PolicyEvidence) -> str | None:
     caption_tag = _media_caption_tag(entity)
     loc = _entity_url(str(entity["id"]))
     tags = ""
-    for img in imgs[:20]:
-        tags += _media_image_tag(img, attrs, ename, caption_tag, geo_tag)
+    for descriptor in descriptors[:20]:
+        tags += _media_image_tag(descriptor, attrs, ename, caption_tag, geo_tag)
     if tags:
         return f"  <url>\n    <loc>{xml_escape(loc)}</loc>{tags}\n  </url>"
     return None
@@ -1373,9 +1346,6 @@ def sitemap_media():
     )
 
 
-@router.get("/sitemap-index.xml", response_class=Response,
-            summary="Sitemap Index",
-            description="Returns a sitemap index file pointing to the main sitemap and image sitemap. Entry point for search engine crawlers.")
 def sitemap_index():
     """Sitemap index pointing to the main and media sitemaps."""
     now = datetime.now(UTC).strftime("%Y-%m-%d")
@@ -1398,9 +1368,6 @@ def favicon():
     return Response(status_code=204)
 
 
-@router.get("/robots.txt", response_class=PlainTextResponse,
-            summary="Robots.txt",
-            description="Returns the robots.txt file with crawl directives. Allows major search engines and AI bots, blocks admin and API paths.")
 def robots():
     return f"""User-agent: *
 Allow: /
@@ -1431,18 +1398,12 @@ Sitemap: {SITE}/sitemap-index.xml
 """
 
 
-DEFAULT_OG_IMAGE = f"{SITE}/og-default.png"
-
-
 def build_og_meta(entity: dict[str, Any] | None = None) -> dict[str, str]:
     """Open Graph + Twitter Card + Zalo meta data."""
     meta: dict[str, str] = {
         "og:site_name": "VinhLong360",
         "og:locale": "vi_VN",
         "og:type": "website",
-        "og:image": DEFAULT_OG_IMAGE,
-        "og:image:width": "1200",
-        "og:image:height": "630",
         "twitter:card": "summary_large_image",
         "twitter:site": "@vinhlong360",
     }
@@ -1454,7 +1415,6 @@ def build_og_meta(entity: dict[str, Any] | None = None) -> dict[str, str]:
         meta["og:url"] = SITE
         meta["twitter:title"] = title
         meta["twitter:description"] = desc
-        meta["twitter:image"] = DEFAULT_OG_IMAGE
         return meta
 
     entity_id = str(entity.get("id", ""))
@@ -1475,14 +1435,12 @@ def build_og_meta(entity: dict[str, Any] | None = None) -> dict[str, str]:
     meta["og:description"] = desc
     meta["twitter:description"] = desc
 
-    images = entity.get("images")
-    if isinstance(images, list):
-        for img in images:
-            if isinstance(img, str) and img.startswith("http"):
-                meta["og:image"] = img
-                meta["twitter:image"] = img
-                break
-    meta["twitter:image"] = meta.get("twitter:image", meta["og:image"])
+    for descriptor in describe_entity_images(entity, disclosure=_JSONLD_DISCLOSURE):
+        img_url = _descriptor_image_url(descriptor)
+        if img_url:
+            meta["og:image"] = img_url
+            meta["twitter:image"] = img_url
+            break
     return meta
 
 

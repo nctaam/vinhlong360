@@ -34,6 +34,13 @@ const ALLOWED_SOURCE_COMBINATIONS = new Set([
   'user-uploaded|post-ugc|ugc-photo',
 ])
 
+const RENDERABLE_ENTITY_SOURCE_COMBINATIONS = new Set([
+  'ai-generated|entity-editorial|entity-ai',
+  'placeholder|generated-placeholder|entity-placeholder',
+])
+
+const CANONICAL_LEGACY_ENTITY_IMAGE_PATTERN = /^\/img\/entities\/[a-z0-9]+(?:-[a-z0-9]+)*\.webp$/
+
 function isValidPort(port: string): boolean {
   if (port.length > 5 || !/^[0-9]+$/.test(port)) return false
   const value = Number(port)
@@ -206,6 +213,18 @@ export function parseGalleryDescriptor(value: unknown): Readonly<ImageDescriptor
   if ((descriptor.width === null) !== (descriptor.height === null)) return null
 
   return Object.freeze({ ...descriptor, url: normalizedUrl }) as unknown as ImageDescriptor
+}
+
+function isRenderableEntityDescriptor(descriptor: Readonly<ImageDescriptor>): boolean {
+  return RENDERABLE_ENTITY_SOURCE_COMBINATIONS.has([
+    descriptor.source_class,
+    descriptor.source_kind,
+    descriptor.disclosure_key,
+  ].join('|'))
+}
+
+function isCanonicalLegacyEntityImage(value: unknown): value is string {
+  return typeof value === 'string' && CANONICAL_LEGACY_ENTITY_IMAGE_PATTERN.test(value)
 }
 
 const ENTITY_EDITORIAL_UPLOAD_ERROR = [
@@ -473,7 +492,7 @@ function suppliedEntityDescriptors(entity: EntityImageLike): {
   ]
   const descriptors = supplied.flatMap(value => {
     const parsed = parseGalleryDescriptor(value)
-    return parsed ? [parsed] : []
+    return parsed && isRenderableEntityDescriptor(parsed) ? [parsed] : []
   })
   return { present: hasMany || hasOne, descriptors }
 }
@@ -489,10 +508,9 @@ export function describeEntityImages(entity: EntityImageLike): ImageDescriptor[]
       ? [entity.image]
       : []
   return legacy.flatMap(value => {
-    const url = normalizeRenderableImageUrl(value)
-    if (!url) return []
+    if (!isCanonicalLegacyEntityImage(value)) return []
     return [{
-      url,
+      url: value,
       alt: descriptorAlt(entity),
       source_class: 'ai-generated',
       source_kind: 'entity-editorial',

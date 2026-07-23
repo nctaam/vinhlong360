@@ -553,7 +553,7 @@ class TestUnifiedSearchAndRecommendationContracts:
         card_src = inspect.getsource(public_api._entity_card_shape)
         assert "_entity_card_shape" in src
         assert "_similar_reason_vi" in src
-        assert '"image"' in card_src
+        assert '"image_descriptors"' in card_src
         assert '"area"' in card_src
         assert '"score"' in card_src
         assert '"reason_vi"' in card_src

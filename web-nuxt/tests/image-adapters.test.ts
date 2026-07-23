@@ -12,7 +12,7 @@ import { normalizeSavedImageSnapshot } from '../utils/savedImageDescriptors'
 import type { ImageDescriptor } from '../types/image'
 
 const aiDescriptor: ImageDescriptor = {
-  url: '/img/entity.webp',
+  url: '/img/entities/entity.webp',
   alt: 'Điểm đến — ảnh minh họa',
   source_class: 'ai-generated',
   source_kind: 'entity-editorial',
@@ -52,21 +52,24 @@ describe('saved image descriptor snapshots', () => {
   })
 
   it('migrates a legacy entity image URL to an AI descriptor snapshot', () => {
-    const migrated = normalizeSavedImageSnapshot(entity({ image: '/img/entity.webp' }))
+    const migrated = normalizeSavedImageSnapshot(entity({ image: '/img/entities/entity.webp' }))
 
     expect(migrated.image_descriptor).toEqual(aiDescriptor)
     expect(migrated.descriptor_revision).toBe('ai-disclosure-v1')
     expect(migrated).not.toHaveProperty('image')
   })
 
-  it('preserves valid remote UGC provenance without relabeling it as AI', () => {
+  it('suppresses valid remote UGC provenance without relabeling it as AI', () => {
     const normalized = normalizeSavedImageSnapshot(entity({
       image: '/conflicting.webp',
       image_descriptor: reviewDescriptor,
     }))
 
-    expect(normalized.image_descriptor).toEqual(reviewDescriptor)
-    expect(normalized.image_descriptor.source_class).toBe('user-uploaded')
+    expect(normalized.image_descriptor).toEqual(expect.objectContaining({
+      url: null,
+      source_class: 'placeholder',
+      disclosure_key: 'entity-placeholder',
+    }))
     expect(normalized).not.toHaveProperty('image')
   })
 
@@ -184,32 +187,38 @@ describe('favorite, recent, and recommendation adapters', () => {
   it('stores descriptors in favorite snapshots', () => {
     const favorite = createFavoriteItem(entity({ image_descriptor: reviewDescriptor }), '2026-07-19T00:00:00.000Z')
 
-    expect(favorite.image_descriptor).toEqual(reviewDescriptor)
+    expect(favorite.image_descriptor).toEqual(expect.objectContaining({
+      url: null,
+      source_class: 'placeholder',
+    }))
     expect(favorite.descriptor_revision).toBe('ai-disclosure-v1')
     expect(favorite).not.toHaveProperty('image')
   })
 
   it('stores descriptors in recently viewed snapshots', () => {
-    const recent = createRecentItem(entity({ images: ['/img/entity.webp'] }), 123)
+    const recent = createRecentItem(entity({ images: ['/img/entities/entity.webp'] }), 123)
 
     expect(recent.image_descriptor).toEqual(aiDescriptor)
     expect(recent.descriptor_revision).toBe('ai-disclosure-v1')
     expect(recent).not.toHaveProperty('image')
   })
 
-  it('preserves descriptors while normalizing contextual recommendation images', () => {
+  it('suppresses UGC descriptors while normalizing contextual recommendation images', () => {
     const [recommendation] = normalizeRecommendationItems([
       entity({ image: '/conflicting.webp', image_descriptor: reviewDescriptor }),
     ])
 
-    expect(recommendation?.image_descriptor).toEqual(reviewDescriptor)
+    expect(recommendation?.image_descriptor).toEqual(expect.objectContaining({
+      url: null,
+      source_class: 'placeholder',
+    }))
     expect(recommendation?.descriptor_revision).toBe('ai-disclosure-v1')
     expect(recommendation).not.toHaveProperty('image')
   })
 })
 
 describe('saved-card and search rendering', () => {
-  it('renders a saved descriptor with an accessible disclosure association', async () => {
+  it('suppresses a saved UGC descriptor and renders the accessible placeholder', async () => {
     const NuxtImgStub = defineComponent({
       inheritAttrs: false,
       props: { src: { type: String, required: true }, alt: { type: String, required: true } },
@@ -222,11 +231,11 @@ describe('saved-card and search rendering', () => {
       global: { stubs: { NuxtImg: NuxtImgStub } },
     })
 
-    const image = wrapper.get('img')
     const disclosure = wrapper.get('[data-full-disclosure]')
-    expect(image.attributes('src')).toBe(reviewDescriptor.url)
-    expect(image.attributes('aria-describedby')).toBe(disclosure.attributes('id'))
-    expect(wrapper.get('[data-image-disclosure]').text()).toContain(aiDisclosure.ugc_photo.short_label)
+    expect(wrapper.find('img').exists()).toBe(false)
+    expect(wrapper.get('[data-image-disclosure]').text()).toContain(aiDisclosure.placeholder.full_disclosure)
+    expect(disclosure.attributes('id')).toBeTruthy()
+    expect(wrapper.text()).not.toContain(aiDisclosure.ugc_photo.short_label || '')
     expect(wrapper.text()).not.toContain(aiDisclosure.entity_ai.short_label || '')
   })
 

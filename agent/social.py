@@ -29,6 +29,7 @@ from notifications import create_notification
 from storage import storage
 from ratelimit import check_rate, check_rate_ip
 from text_utils import normalize_name
+from media_policy import AI_ONLY_MEDIA_DETAIL
 
 logger = logging.getLogger("social")
 
@@ -63,6 +64,15 @@ _POST_COLS = ("p.id, p.user_id, p.content, p.mentions, p.hashtags, p.best_answer
 _COMMENT_COLS = "c.id, c.user_id, c.content, c.mentions, c.parent_id, c.created_at"
 
 router = APIRouter(prefix="/api", tags=["social"], dependencies=[Depends(_require_pg)])
+
+
+def _reject_non_ai_media() -> None:
+    raise HTTPException(status_code=400, detail=AI_ONLY_MEDIA_DETAIL)
+
+
+def _reject_social_images(images: list[str]) -> None:
+    if images:
+        _reject_non_ai_media()
 
 
 def _block_sql(user: dict | None, column: str = "u.id") -> tuple[str, list]:
@@ -430,6 +440,7 @@ def _notify_new_post(mentions, user, post_id, content, entity_id, orig_author_id
              summary="Create a post",
              description="Create a community post (review, share, question, tip, or repost). Runs content moderation, extracts hashtags/mentions, and sends notifications to tagged users.")
 async def create_post(body: CreatePost, user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
+    _reject_social_images(body.images)
     check_rate(f"post:{user['id']}", RL_POST_LIMIT, RL_POST_WINDOW,
                "Bạn đăng bài quá nhanh. Vui lòng đợi ít phút rồi thử lại.")
     check_rate(f"post-day:{user['id']}", RL_POST_DAILY_LIMIT, RL_POST_DAILY_WINDOW,
@@ -495,6 +506,7 @@ class DraftPost(BaseModel):
              summary="Save a draft",
              description="Save a post as a draft for later editing or publishing. Each user can have up to 20 drafts.")
 async def save_draft(body: DraftPost, user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
+    _reject_social_images(body.images)
     check_rate(f"draft:{user['id']}", 20, 300, "Lưu nháp quá nhanh. Vui lòng đợi.")
     ph = db._ph
     uid = str(user["id"])
@@ -556,6 +568,7 @@ async def list_drafts(
             summary="Update a draft",
             description="Update the content, type, entity, rating, or images of an existing draft. Returns the updated draft.")
 async def update_draft(draft_id: str, body: DraftPost, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    _reject_social_images(body.images)
     draft_id = validate_path_id(draft_id, "draft_id")
     check_rate(f"draft:{user['id']}", 20, 300, "Lưu nháp quá nhanh. Vui lòng đợi.")
     ph = db._ph
@@ -3462,6 +3475,7 @@ async def pin_post_to_profile(post_id: str, user=Depends(require_user), _csrf=De
              summary="Upload an image",
              description="Upload an image for use in posts. Validates file type via magic bytes (JPEG/PNG/GIF/WebP only), enforces 5MB limit. Returns the uploaded image URL.")
 async def upload_image(file: UploadFile = File(...), user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
+    _reject_non_ai_media()
     check_rate(f"upload:{user['id']}", RL_UPLOAD_LIMIT, RL_UPLOAD_WINDOW,
                "Bạn tải ảnh quá nhanh. Vui lòng đợi chút rồi thử lại.")
     max_bytes = 5 * 1024 * 1024
@@ -4350,16 +4364,26 @@ def _format_post_jobj(val):
     return val if isinstance(val, dict) else None
 
 
-def _format_post(row: dict) -> dict:
-    images = row.get("images", [])
-    if isinstance(images, str):
-        try:
-            images = json.loads(images)
-        except (json.JSONDecodeError, ValueError, TypeError):
-            images = []
+_PUBLIC_MEDIA_KEYS = frozenset({"image", "images", "image_url", "image_urls"})
 
+
+def _strip_public_media(value):
+    """Copy nested public payloads while removing stored UGC media fields."""
+    if isinstance(value, dict):
+        return {
+            key: _strip_public_media(nested)
+            for key, nested in value.items()
+            if key not in _PUBLIC_MEDIA_KEYS
+        }
+    if isinstance(value, list):
+        return [_strip_public_media(item) for item in value]
+    return value
+
+
+def _format_post(row: dict) -> dict:
     mentions = _format_post_jlist(row.get("mentions"))
     hashtags = _format_post_jlist(row.get("hashtags"))
+    repost = _strip_public_media(_format_post_jobj(row.get("repost_snapshot")))
 
     return {
         "id": str(row["id"]),
@@ -4372,11 +4396,10 @@ def _format_post(row: dict) -> dict:
         "is_pinned": bool(row.get("is_pinned")),
         "share_count": row.get("share_count", 0) or 0,
         "repost_of": str(row["repost_of"]) if row.get("repost_of") else None,
-        "repost": _format_post_jobj(row.get("repost_snapshot")),
+        "repost": repost,
         "post_type": row.get("post_type", "share"),
         "post_type_label": POST_TYPE_LABELS.get(row.get("post_type", "share"), "Chia sẻ"),
         "rating": row.get("rating"),
-        "images": images,
         "like_count": row.get("like_count", 0),
         "likes": row.get("like_count", 0),
         "comment_count": row.get("comment_count", 0),

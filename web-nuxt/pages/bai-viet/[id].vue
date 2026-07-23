@@ -1,9 +1,19 @@
 <template>
-  <section class="page thread-detail-page">
+  <section
+    class="page thread-detail-page"
+    data-image-surface="post-metadata"
+    data-source-class="user-uploaded"
+    data-entity-image-policy="no-image-invariant"
+  >
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng', to: '/cong-dong' }, { label: 'Bài viết' }]" />
     <h1 class="sr-only">{{ post?.display_name ? `Bài viết của ${post.display_name}` : 'Bài viết' }}</h1>
-
-    <div v-if="post" class="thread-detail reveal">
+    <div
+      v-if="post"
+      class="thread-detail reveal"
+      data-image-surface="post-detail-card"
+      data-source-class="user-uploaded"
+      data-entity-image-policy="no-image-invariant"
+    >
       <div v-if="editing" class="post-edit-form">
         <h2 class="pef-title">Sửa bài viết</h2>
         <textarea v-model="editContent" class="textarea" maxlength="5000" rows="6" aria-label="Nội dung bài viết"></textarea>
@@ -14,7 +24,6 @@
         </div>
       </div>
       <PostCard v-else :post="post" :has-replies="comments.length > 0" @like="toggleLike" @comment="scrollToCompose" @bookmark="toggleBookmark" @report="reportPost" @repost="repost" @quote="quote" @edit="startEdit" @delete="deletePost" />
-
       <!-- Comment thread -->
       <div class="thread-comments">
         <div class="replies-header">
@@ -128,15 +137,16 @@
 
       <!-- Related posts -->
       <ClientOnly>
-        <div v-if="relatedPosts.length" class="related-section">
+        <div
+          v-if="relatedPosts.length"
+          class="related-section"
+          data-image-surface="related-post"
+          data-source-class="user-uploaded"
+          data-entity-image-policy="no-image-invariant"
+        >
           <h2 class="related-title">Bài viết liên quan</h2>
           <div class="related-grid">
-            <NuxtLink v-for="rp in relatedCards" :key="rp.id" :to="postPath(rp.id)" class="related-card">
-              <div v-if="rp.ugcImage?.url" class="related-media" data-source-class="user-uploaded">
-                <NuxtImg v-if="isRemoteUrl(rp.ugcImage.url)" :src="rp.ugcImage.url" :alt="rp.ugcImage.alt" :aria-describedby="`related-post-${rp.id}-disclosure`" class="related-thumb" loading="lazy" decoding="async" width="400" height="100" sizes="(max-width: 480px) 90vw, (max-width: 780px) 45vw, 300px" format="webp" @error="(e: string | Event) => { ((e as Event).target as HTMLImageElement).style.display = 'none' }" />
-                <img v-else :src="rp.ugcImage.url" :alt="rp.ugcImage.alt" :aria-describedby="`related-post-${rp.id}-disclosure`" class="related-thumb" loading="lazy" decoding="async" width="400" height="100" @error="(e: string | Event) => { ((e as Event).target as HTMLImageElement).style.display = 'none' }" />
-                <ImageDisclosure :id="`related-post-${rp.id}-disclosure`" :descriptor="rp.ugcImage" presentation="short" />
-              </div>
+            <NuxtLink v-for="rp in relatedPosts" :key="rp.id" :to="postPath(rp.id)" class="related-card">
               <div class="related-body">
                 <span class="related-author">{{ rp.display_name }}</span>
                 <p class="related-text">{{ (rp.content || '').slice(0, 80) }}{{ (rp.content || '').length > 80 ? '…' : '' }}</p>
@@ -171,8 +181,6 @@
 
 <script setup lang="ts">
 import type { Comment, Post, User } from '~/types'
-import ImageDisclosure from '~/components/ImageDisclosure.vue'
-import { describePostImages } from '~/utils/imageDescriptors'
 useReveal()
 const route = useRoute()
 const postId = computed(() => normalizeRouteParam(route.params.id))
@@ -398,12 +406,6 @@ function toggleBookmark(id: string) {
 const { timeAgo } = useTimeAgo()
 
 const relatedPosts = ref<any[]>([])
-const relatedCards = computed(() => relatedPosts.value.map((relatedPost: any) => ({
-  ...relatedPost,
-  ugcImage: describePostImages(relatedPost)[0] ?? null,
-})))
-const postImageDescriptors = computed(() => describePostImages(post.value))
-const postImageMeta = computed(() => buildImageMeta(postImageDescriptors.value[0]))
 async function fetchRelated() {
   try {
     // declutter-3 T3: 4→2 — related là engagement-driver nhưng 4 card đè phần bình luận
@@ -467,10 +469,6 @@ useSeoMeta({
   description: () => (post.value?.content || '').substring(0, 160),
   ogTitle: () => `${post.value?.display_name || 'Bài viết'} — vinhlong360`,
   ogDescription: () => (post.value?.content || '').substring(0, 160),
-  ogImage: () => postImageMeta.value.ogImage,
-  ogImageAlt: () => postImageMeta.value.ogImageAlt,
-  twitterImage: () => postImageMeta.value.twitterImage,
-  twitterImageAlt: () => postImageMeta.value.twitterImageAlt,
 })
 
 useHead({
@@ -491,15 +489,6 @@ useHead({
         ...(p.user_id ? { url: `https://vinhlong360.vn${userPath(p.user_id)}` } : {}),
       },
       publisher: { '@type': 'Organization', name: 'vinhlong360', url: 'https://vinhlong360.vn' },
-    }
-    if (postImageDescriptors.value.length) {
-      articleLd.image = postImageDescriptors.value.map(descriptor => ({
-        '@type': 'ImageObject',
-        contentUrl: descriptor.url,
-        caption: descriptor.alt,
-        description: descriptor.full_disclosure,
-        ...(descriptor.credit ? { creditText: descriptor.credit } : {}),
-      }))
     }
     if (p.post_type === 'review' && p.rating) {
       articleLd.reviewRating = { '@type': 'Rating', ratingValue: p.rating, bestRating: 5 }
@@ -671,9 +660,6 @@ useHead({
   transition: border-color .2s, transform .2s var(--ease-spring-gentle);
 }
 .related-card:hover { border-color: var(--primary-fg); transform: translateY(-1px); }
-.related-media { position: relative; }
-.related-thumb { width: 100%; height: 100px; object-fit: cover; }
-.related-media :deep(.image-disclosure) { position: absolute; left: var(--space-2); bottom: var(--space-2); padding: 3px 7px; border-radius: 999px; background: rgba(var(--black-rgb), .66); color: var(--text-on-dark); }
 .related-body { padding: var(--space-2) var(--space-3); display: flex; flex-direction: column; gap: .2rem; }
 .related-author { font-size: var(--text-xs); font-weight: var(--weight-semibold); }
 .related-text { margin: 0; font-size: var(--text-xs); color: var(--ink-secondary, var(--ink)); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }

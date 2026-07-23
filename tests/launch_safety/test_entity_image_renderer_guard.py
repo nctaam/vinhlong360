@@ -37,6 +37,7 @@ def _entry(**overrides: str) -> dict[str, str]:
         "access_path": "entity.images",
         "source_class": "ai-generated",
         "descriptor_producer": "describeEntityImages",
+        "render_policy": "render",
         "presentation": "short",
         "accessibility": "aria-describedby-full-copy",
         "test_file": "tests/registered.test.ts",
@@ -221,7 +222,7 @@ map.on('click', () => popup.setHTML(popupHTML(name)))
 <style>.decorative { background-image: url('/img/map.png'); }</style>
 """,
     )
-    registry = [_entry(file="pages/ban-do.vue", surface="map-popup", access_path="popup", source_class="none", descriptor_producer="no-image-invariant", presentation="none", accessibility="no-image-invariant", test_file="tests/map.test.ts")]
+    registry = [_entry(file="pages/ban-do.vue", surface="map-popup", access_path="popup", source_class="none", descriptor_producer="no-image-invariant", render_policy="suppress", presentation="none", accessibility="no-image-invariant", test_file="tests/map.test.ts")]
     assert "BROKEN_NO_IMAGE_INVARIANT" not in _codes(scan_entity_image_renderers(tmp_path, registry))
 
     _mk(tmp_path, "pages/ban-do.vue", "<script>function popupHTML(){return '<img src=\"x\">'}; popup.setHTML(popupHTML())</script>")
@@ -238,6 +239,7 @@ map.on('click', () => popup.setHTML(popupHTML(name)))
         _entry(file="/pages/evil.vue"),
         _entry(file="components-not-a-root/pages/evil.vue"),
         _entry(source_class="invalid"),
+        _entry(render_policy="invalid"),
         _entry(presentation="none"),
         _entry(accessibility="no-image-invariant"),
     ],
@@ -371,6 +373,310 @@ def test_post_detail_boundary_requires_postcard_delegation(tmp_path: Path):
 
     _mk(tmp_path, entry["file"], '<template><PostCard :post="post" /></template>')
     assert "MISSING_DELEGATION_PROOF" not in _codes(scan_entity_image_renderers(tmp_path, [entry]))
+
+
+@pytest.mark.parametrize(
+    "sink",
+    [
+        '<img :src="descriptor.url" />',
+        '<div :style="{ backgroundImage: `url(${descriptor.url})` }" />',
+        '<script setup>useSeoMeta({ ogImage: descriptor.url })</script>',
+        '<script setup>const articleLd = { image: descriptor.url }</script>',
+    ],
+)
+def test_suppressed_public_ugc_row_rejects_every_public_image_sink(tmp_path: Path, sink: str):
+    entry = _entry(
+        file="components/suppressed.vue",
+        surface="public-ugc",
+        access_path="post.images",
+        source_class="user-uploaded",
+        descriptor_producer="no-image-invariant",
+        render_policy="suppress",
+        presentation="none",
+        accessibility="no-image-invariant",
+        test_file="tests/suppressed.test.ts",
+    )
+    _mk(
+        tmp_path,
+        entry["file"],
+        f'''<template>
+<section data-image-surface="public-ugc" data-source-class="user-uploaded" data-entity-image-policy="no-image-invariant">
+{sink}
+</section>
+</template>''',
+    )
+
+    assert "BROKEN_NO_IMAGE_INVARIANT" in _codes(
+        scan_entity_image_renderers(tmp_path, [entry])
+    )
+
+
+def test_suppressed_public_ugc_row_rejects_an_empty_no_image_scope(tmp_path: Path):
+    entry = _entry(
+        file="components/suppressed.vue",
+        surface="public-ugc",
+        access_path="post.images",
+        source_class="user-uploaded",
+        descriptor_producer="no-image-invariant",
+        render_policy="suppress",
+        presentation="none",
+        accessibility="no-image-invariant",
+        test_file="tests/suppressed.test.ts",
+    )
+    _mk(
+        tmp_path,
+        entry["file"],
+        '''<template><section data-image-surface="public-ugc" data-source-class="user-uploaded" data-entity-image-policy="no-image-invariant"></section></template>''',
+    )
+
+    assert "BROKEN_NO_IMAGE_INVARIANT" in _codes(
+        scan_entity_image_renderers(tmp_path, [entry])
+    )
+
+
+@pytest.mark.parametrize(
+    "sibling_sink",
+    [
+        '<img :src="descriptor.url" />',
+        '<div :style="{ backgroundImage: `url(${descriptor.url})` }" />',
+        '<script setup>useSeoMeta({ ogImage: descriptor.url })</script>',
+        '<script setup>const articleLd = { image: descriptor.url }</script>',
+    ],
+)
+def test_suppressed_public_ugc_row_rejects_decoy_scope_with_sibling_sink(
+    tmp_path: Path,
+    sibling_sink: str,
+):
+    entry = _entry(
+        file="components/suppressed.vue",
+        surface="public-ugc",
+        access_path="post.images",
+        source_class="user-uploaded",
+        descriptor_producer="no-image-invariant",
+        render_policy="suppress",
+        presentation="none",
+        accessibility="no-image-invariant",
+        test_file="tests/suppressed.test.ts",
+    )
+    _mk(
+        tmp_path,
+        entry["file"],
+        f'''<template>
+<section data-image-surface="public-ugc" data-source-class="user-uploaded" data-entity-image-policy="no-image-invariant">
+  <p>Public community content</p>
+</section>
+{sibling_sink}
+</template>''',
+    )
+
+    assert "BROKEN_NO_IMAGE_INVARIANT" in _codes(
+        scan_entity_image_renderers(tmp_path, [entry])
+    )
+
+
+def test_mixed_ai_surface_accepts_real_scope_with_explicit_ugc_filter(tmp_path: Path):
+    source_file = "components/mixed.vue"
+    _mk(
+        tmp_path,
+        source_file,
+        '''<template>
+<section data-image-surface="mixed" data-source-class="user-uploaded" data-entity-image-policy="no-image-invariant">
+  <img v-if="active?.url" :src="active.url" :aria-describedby="'copy'" />
+  <ImageDisclosure id="copy" :descriptor="active" presentation="full" />
+</section>
+</template>
+<script setup lang="ts">
+const renderableImages = computed(() => props.images.filter(image => image.source_class !== 'user-uploaded'))
+const active = computed(() => renderableImages.value[0])
+</script>''',
+    )
+    registry = [
+        _entry(
+            file=source_file,
+            surface="mixed",
+            access_path="images",
+            source_class="ai-generated",
+            descriptor_producer="renderableImages",
+            render_policy="render",
+            presentation="full",
+            accessibility="visible-full-copy",
+            test_file="tests/mixed.test.ts",
+        ),
+        _entry(
+            file=source_file,
+            surface="mixed",
+            access_path="images",
+            source_class="user-uploaded",
+            descriptor_producer="no-image-invariant",
+            render_policy="suppress",
+            presentation="none",
+            accessibility="no-image-invariant",
+            test_file="tests/mixed.test.ts",
+        ),
+    ]
+
+    assert "BROKEN_NO_IMAGE_INVARIANT" not in _codes(
+        scan_entity_image_renderers(tmp_path, registry)
+    )
+
+
+def test_mixed_gallery_scope_balances_nested_container_tags(tmp_path: Path):
+    source_file = "components/mixed-gallery.vue"
+    _mk(
+        tmp_path,
+        source_file,
+        '''<template>
+<div data-image-surface="mixed-gallery" data-source-class="user-uploaded" data-entity-image-policy="no-image-invariant">
+  <div class="empty-state"><p>Nothing renderable yet</p></div>
+  <img v-if="active?.url" :src="active.url" :aria-describedby="'copy'" />
+  <ImageDisclosure id="copy" :descriptor="active" presentation="full" />
+</div>
+</template>
+<script setup lang="ts">
+const renderableImages = computed(() => props.images.filter(image => image.source_class !== 'user-uploaded'))
+const active = computed(() => renderableImages.value[0])
+</script>''',
+    )
+    registry = [
+        _entry(
+            file=source_file,
+            surface="mixed-gallery",
+            access_path="images",
+            source_class="ai-generated",
+            descriptor_producer="renderableImages",
+            render_policy="render",
+            presentation="full",
+            accessibility="visible-full-copy",
+            test_file="tests/mixed-gallery.test.ts",
+        ),
+        _entry(
+            file=source_file,
+            surface="mixed-gallery",
+            access_path="images",
+            source_class="user-uploaded",
+            descriptor_producer="no-image-invariant",
+            render_policy="suppress",
+            presentation="none",
+            accessibility="no-image-invariant",
+            test_file="tests/mixed-gallery.test.ts",
+        ),
+    ]
+
+    assert "BROKEN_NO_IMAGE_INVARIANT" not in _codes(
+        scan_entity_image_renderers(tmp_path, registry)
+    )
+
+
+def test_sink_free_ugc_scope_accepts_descriptor_proven_non_ugc_siblings(tmp_path: Path):
+    source_file = "pages/mixed-home.vue"
+    _mk(
+        tmp_path,
+        source_file,
+        '''<template>
+<section data-image-surface="ai-surface" data-source-class="ai-generated">
+  <img :src="active.url" :aria-describedby="'copy'" />
+  <ImageDisclosure id="copy" :descriptor="active" presentation="full" />
+</section>
+<section data-image-surface="public-ugc" data-source-class="user-uploaded" data-entity-image-policy="no-image-invariant">
+  <p>Public community content</p>
+</section>
+</template>
+<script setup lang="ts">
+const active = computed(() => describeEntityImages(entity)[0])
+useSeoMeta({ ogImage: ss('branding.og_image', '/img/share.webp') })
+</script>
+<style>.decorative { background-image: url('/img/grain.webp'); }</style>''',
+    )
+    registry = [
+        _entry(
+            file=source_file,
+            surface="ai-surface",
+            access_path="entity.images",
+            source_class="ai-generated",
+            descriptor_producer="describeEntityImages",
+            render_policy="render",
+            presentation="full",
+            accessibility="visible-full-copy",
+            test_file="tests/mixed-home.test.ts",
+        ),
+        _entry(
+            file=source_file,
+            surface="public-ugc",
+            access_path="post.images",
+            source_class="user-uploaded",
+            descriptor_producer="no-image-invariant",
+            render_policy="suppress",
+            presentation="none",
+            accessibility="no-image-invariant",
+            test_file="tests/mixed-home.test.ts",
+        ),
+    ]
+
+    assert "BROKEN_NO_IMAGE_INVARIANT" not in _codes(
+        scan_entity_image_renderers(tmp_path, registry)
+    )
+
+
+@pytest.mark.parametrize(
+    "sibling_sink",
+    [
+        '<img :src="leaked.url" />',
+        '<div :style="{ backgroundImage: `url(${leaked.url})` }" />',
+        '<script setup>useSeoMeta({ ogImage: leaked.url })</script>',
+        '<script setup>const articleLd = { image: leaked.url }</script>',
+    ],
+)
+def test_unrelated_render_row_and_filter_do_not_exempt_ugc_sibling_sink(
+    tmp_path: Path,
+    sibling_sink: str,
+):
+    source_file = "components/mixed-decoy.vue"
+    _mk(
+        tmp_path,
+        source_file,
+        f'''<template>
+<section data-image-surface="ai-surface" data-source-class="ai-generated">
+  <img :src="active.url" :aria-describedby="'copy'" />
+  <ImageDisclosure id="copy" :descriptor="active" presentation="full" />
+</section>
+<section data-image-surface="public-ugc" data-source-class="user-uploaded" data-entity-image-policy="no-image-invariant">
+  <p>Public community content</p>
+</section>
+{sibling_sink}
+</template>
+<script setup lang="ts">
+const renderableAi = computed(() => props.aiImages.filter(image => image.source_class !== 'user-uploaded'))
+const active = computed(() => renderableAi.value[0])
+</script>''',
+    )
+    registry = [
+        _entry(
+            file=source_file,
+            surface="ai-surface",
+            access_path="aiImages",
+            source_class="ai-generated",
+            descriptor_producer="renderableAi",
+            render_policy="render",
+            presentation="full",
+            accessibility="visible-full-copy",
+            test_file="tests/mixed-decoy.test.ts",
+        ),
+        _entry(
+            file=source_file,
+            surface="public-ugc",
+            access_path="post.images",
+            source_class="user-uploaded",
+            descriptor_producer="no-image-invariant",
+            render_policy="suppress",
+            presentation="none",
+            accessibility="no-image-invariant",
+            test_file="tests/mixed-decoy.test.ts",
+        ),
+    ]
+
+    assert "BROKEN_NO_IMAGE_INVARIANT" in _codes(
+        scan_entity_image_renderers(tmp_path, registry)
+    )
 
 
 @pytest.mark.parametrize(

@@ -1,5 +1,11 @@
 <template>
-  <section v-if="loading || posts.length" class="entity-feed reveal">
+  <section
+    v-if="loading || posts.length"
+    class="entity-feed reveal"
+    data-image-surface="entity-feed"
+    data-source-class="user-uploaded"
+    data-entity-image-policy="no-image-invariant"
+  >
     <div class="sediment-head ef-head">
       <h2 class="ef-title">Cộng đồng chia sẻ về {{ entityName }}</h2>
     </div>
@@ -8,7 +14,7 @@
       <div v-for="i in 2" :key="i" class="ef-sk-item"><div class="ef-sk-avatar"></div><div class="ef-sk-lines"><div class="ef-sk-line w60"></div><div class="ef-sk-line w90"></div><div class="ef-sk-line w40"></div></div></div>
     </div>
     <ul class="ef-list">
-      <li v-for="p in feedPosts" :key="p.id" class="ef-item">
+      <li v-for="p in posts" :key="p.id" class="ef-item">
         <NuxtLink :to="postPath(p.id)" class="ef-link">
           <span class="ef-avatar">{{ (p.display_name || '?')[0].toUpperCase() }}</span>
           <div class="ef-body">
@@ -20,11 +26,6 @@
               <time :datetime="p.created_at">{{ timeAgo(p.created_at) }}</time>
             </span>
           </div>
-          <span v-if="p.ugcImage?.url" class="ef-media" data-source-class="user-uploaded">
-            <NuxtImg v-if="isRemoteUrl(p.ugcImage.url)" :src="p.ugcImage.url" :alt="p.ugcImage.alt" :aria-describedby="`entity-feed-${p.id}-disclosure`" class="ef-thumb" loading="lazy" decoding="async" width="80" height="80" sizes="80px" @error="hideImage" />
-            <img v-else :src="p.ugcImage.url" :alt="p.ugcImage.alt" :aria-describedby="`entity-feed-${p.id}-disclosure`" class="ef-thumb" loading="lazy" decoding="async" width="80" height="80" @error="hideImage" />
-            <ImageDisclosure :id="`entity-feed-${p.id}-disclosure`" :descriptor="p.ugcImage" presentation="short" />
-          </span>
         </NuxtLink>
       </li>
     </ul>
@@ -35,9 +36,6 @@
 </template>
 
 <script setup lang="ts">
-import ImageDisclosure from '~/components/ImageDisclosure.vue'
-import { describePostImages } from '~/utils/imageDescriptors'
-
 const props = defineProps<{ entityId: string; entityName: string }>()
 const { timeAgo } = useTimeAgo()
 
@@ -46,10 +44,6 @@ const posts = ref<any[]>([])
 const total = ref(0)
 const loading = ref(true)
 const communityEntityPath = computed(() => `/cong-dong?entity=${encodeURIComponent(props.entityId)}`)
-const feedPosts = computed(() => posts.value.map(post => ({
-  ...post,
-  ugcImage: describePostImages(post)[0] ?? null,
-})))
 
 onMounted(async () => {
   try {
@@ -60,13 +54,6 @@ onMounted(async () => {
   } catch { /* non-critical */ } finally { loading.value = false }
 })
 
-
-
-function hideImage(payload: Event | string) {
-  if (typeof payload === 'string') return
-  const img = payload.target
-  if (img instanceof HTMLImageElement) img.style.display = 'none'
-}
 </script>
 
 <style scoped>
@@ -123,18 +110,11 @@ function hideImage(payload: Event | string) {
 .ef-author { font-weight: var(--weight-semibold); font-size: var(--text-sm); }
 .ef-text { margin: 0; font-size: var(--text-sm); color: var(--ink-secondary, var(--ink)); line-height: var(--leading-relaxed); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .ef-meta { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-xs); color: var(--muted); flex-wrap: wrap; }
-.ef-media { width: 72px; flex-shrink: 0; display: flex; flex-direction: column; gap: var(--space-1); }
-.ef-thumb { width: 56px; height: 56px; border-radius: var(--radius-md); object-fit: cover; align-self: flex-end; }
-.ef-media :deep(.image-disclosure) { justify-content: flex-end; text-align: right; }
 .ef-more { display: block; text-align: center; padding: var(--space-3); font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--primary-fg); text-decoration: none; border: .5px solid var(--line); border-radius: var(--radius-lg); margin-top: var(--space-2); transition: background .2s; }
 .ef-more:hover { background: rgba(var(--primary-rgb), .04); }
 
 .dark .ef-link { background: var(--bg-alt); }
 .dark .ef-more:hover { background: rgba(var(--white-rgb),.04); }
-
-@media (max-width: 600px) {
-  .ef-thumb { width: 48px; height: 48px; }
-}
 
 .ef-skeleton { display: flex; flex-direction: column; gap: var(--space-2); }
 .ef-sk-item { display: flex; gap: var(--space-3); padding: var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg); }

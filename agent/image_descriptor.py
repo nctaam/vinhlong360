@@ -9,8 +9,22 @@ import re
 
 if __package__:
     from .ai_disclosure import LoadedAiDisclosure
+    from .media_policy import (
+        ENTITY_AI_SOURCE,
+        ENTITY_PLACEHOLDER_SOURCE,
+        descriptor_source,
+        is_canonical_legacy_entity_image,
+        is_renderable_entity_descriptor,
+    )
 else:
     from ai_disclosure import LoadedAiDisclosure
+    from media_policy import (
+        ENTITY_AI_SOURCE,
+        ENTITY_PLACEHOLDER_SOURCE,
+        descriptor_source,
+        is_canonical_legacy_entity_image,
+        is_renderable_entity_descriptor,
+    )
 
 
 @dataclass(frozen=True)
@@ -177,6 +191,8 @@ def describe_entity_image(
         or index < 0
     ):
         return None
+    if not is_canonical_legacy_entity_image(raw):
+        return None
     url = normalize_renderable_image_url(raw)
     if url is None:
         return None
@@ -240,6 +256,19 @@ def _valid_descriptor_dimensions(width: object, height: object) -> bool:
     )
 
 
+def _supplied_entity_descriptor_copy(
+    raw: dict,
+    source: tuple[object, object, object] | None,
+    disclosure: LoadedAiDisclosure,
+) -> tuple[str | None, object] | None:
+    if source == ENTITY_AI_SOURCE:
+        url = normalize_renderable_image_url(raw.get("url"))
+        return (url, disclosure.entity_ai) if url is not None else None
+    if source == ENTITY_PLACEHOLDER_SOURCE and raw.get("url") is None:
+        return None, disclosure.placeholder
+    return None
+
+
 def _parse_supplied_entity_descriptor(
     raw: object,
     *,
@@ -247,30 +276,28 @@ def _parse_supplied_entity_descriptor(
 ) -> ImageDescriptor | None:
     if type(raw) is not dict or set(raw) != _IMAGE_DESCRIPTOR_KEYS:
         return None
-    url = normalize_renderable_image_url(raw.get("url"))
     alt = raw.get("alt")
-    source_class = raw.get("source_class")
-    source_kind = raw.get("source_kind")
-    disclosure_key = raw.get("disclosure_key")
+    source = descriptor_source(raw)
     short_label = raw.get("short_label")
     full_disclosure = raw.get("full_disclosure")
     credit = raw.get("credit")
     width = raw.get("width")
     height = raw.get("height")
-    if url is None or type(alt) is not str or not alt.strip():
+    if type(alt) is not str or not alt.strip():
         return None
-    if (source_class, source_kind, disclosure_key) != (
-        "ai-generated",
-        "entity-editorial",
-        "entity-ai",
-    ):
+    if not is_renderable_entity_descriptor(raw):
         return None
-    if short_label != disclosure.entity_ai.short_label:
+    normalized = _supplied_entity_descriptor_copy(raw, source, disclosure)
+    if normalized is None:
         return None
-    if full_disclosure != disclosure.entity_ai.full_disclosure:
+    url, copy = normalized
+    if short_label != copy.short_label:
+        return None
+    if full_disclosure != copy.full_disclosure:
         return None
     if credit is not None or not _valid_descriptor_dimensions(width, height):
         return None
+    source_class, source_kind, disclosure_key = source
     return ImageDescriptor(
         url=url,
         alt=alt,

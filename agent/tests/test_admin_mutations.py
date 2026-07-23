@@ -105,6 +105,164 @@ def test_update_entity():
     assert r.status_code == 200
 
 
+def _assert_ai_only_response(response):
+    assert response.status_code == 400
+    assert response.json()["detail"]["code"] == "ai_only_media"
+
+
+def test_create_entity_rejects_non_ai_images_without_mutation(isolated_sqlite_db):
+    response = client.post("/admin/entities", json={
+        "id": "test-mutation-non-ai-create",
+        "name": "Non AI create",
+        "type": "attraction",
+        "images": ["https://cdn.example/photo.jpg"],
+    }, headers=H)
+
+    _assert_ai_only_response(response)
+    assert isolated_sqlite_db.get_entity("test-mutation-non-ai-create") is None
+
+
+def test_update_entity_rejects_non_ai_images_without_mutation(isolated_sqlite_db):
+    isolated_sqlite_db.upsert_entity({
+        "id": "test-mutation-non-ai-update",
+        "name": "Before",
+        "type": "attraction",
+        "images": ["/legacy/existing.jpg"],
+    })
+
+    response = client.put("/admin/entities/test-mutation-non-ai-update", json={
+        "name": "After",
+        "images": ["/uploads/new-photo.jpg"],
+    }, headers=H)
+
+    _assert_ai_only_response(response)
+    saved = isolated_sqlite_db.get_entity("test-mutation-non-ai-update")
+    assert saved["name"] == "Before"
+    assert saved["images"] == ["/legacy/existing.jpg"]
+
+
+def test_entity_image_url_rejects_non_ai_before_network_or_database_mutation(
+    isolated_sqlite_db,
+    monkeypatch,
+):
+    import admin
+
+    isolated_sqlite_db.upsert_entity({
+        "id": "test-mutation-image-url",
+        "name": "Image URL",
+        "type": "attraction",
+        "images": [],
+    })
+    network_calls: list[str] = []
+    monkeypatch.setattr(admin, "_assert_public_url", network_calls.append)
+
+    response = client.post(
+        "/admin/entities/test-mutation-image-url/images",
+        json={"url": "https://cdn.example/photo.jpg"},
+        headers=H,
+    )
+
+    _assert_ai_only_response(response)
+    assert network_calls == []
+    assert isolated_sqlite_db.get_entity("test-mutation-image-url")["images"] == []
+
+
+def test_entity_image_upload_rejects_non_ai_before_storage_or_database_mutation(
+    isolated_sqlite_db,
+    monkeypatch,
+):
+    import storage
+
+    isolated_sqlite_db.upsert_entity({
+        "id": "test-mutation-image-upload",
+        "name": "Image upload",
+        "type": "attraction",
+        "images": [],
+    })
+    storage_calls: list[str] = []
+    monkeypatch.setattr(storage.storage, "sniff_image_type", lambda _data: "image/jpeg")
+    monkeypatch.setattr(
+        storage.storage,
+        "upload_image_set",
+        lambda *_args: storage_calls.append("upload") or {
+            "md": "/img/entities/uploaded.webp",
+        },
+    )
+
+    response = client.post(
+        "/admin/entities/test-mutation-image-upload/images/upload",
+        files={"file": ("photo.jpg", b"not-really-an-image", "image/jpeg")},
+        headers=H,
+    )
+
+    _assert_ai_only_response(response)
+    assert storage_calls == []
+    assert isolated_sqlite_db.get_entity("test-mutation-image-upload")["images"] == []
+
+
+def test_suggestion_approval_rejects_non_ai_before_network_storage_or_mutation(
+    isolated_sqlite_db,
+    monkeypatch,
+):
+    import admin
+    import storage
+
+    isolated_sqlite_db.upsert_entity({
+        "id": "test-mutation-suggestion",
+        "name": "Suggestion",
+        "type": "attraction",
+        "images": [],
+    })
+    side_effects: list[str] = []
+    monkeypatch.setattr(admin._imgq, "get_suggestion", lambda _id: {
+        "id": "suggestion-1",
+        "entity_id": "test-mutation-suggestion",
+        "candidate_url": "https://cdn.example/photo.jpg",
+        "status": "pending",
+    })
+    monkeypatch.setattr(admin._imgq, "mark_status", lambda *_args, **_kwargs: side_effects.append("status"))
+    monkeypatch.setattr(admin, "_assert_public_url", lambda _url: side_effects.append("network"))
+
+    async def fetched(*_args, **_kwargs):
+        side_effects.append("fetch")
+        return b"image"
+
+    monkeypatch.setattr(admin, "_approve_fetch_image_data", fetched)
+    monkeypatch.setattr(
+        storage.storage,
+        "upload_image_set",
+        lambda *_args: side_effects.append("storage") or {
+            "md": "/img/entities/suggestion.webp",
+        },
+    )
+
+    response = client.post(
+        "/admin/image-suggestions/suggestion-1/approve",
+        headers=H,
+    )
+
+    _assert_ai_only_response(response)
+    assert side_effects == []
+    assert isolated_sqlite_db.get_entity("test-mutation-suggestion")["images"] == []
+
+
+def test_media_policy_keeps_pydantic_shape_errors_as_422():
+    create_response = client.post("/admin/entities", json={
+        "id": "test-mutation-shape",
+        "name": "Shape",
+        "type": "attraction",
+        "images": "not-a-list",
+    }, headers=H)
+    url_response = client.post(
+        "/admin/entities/test-mutation-shape/images",
+        json={"url": ["not-a-string"]},
+        headers=H,
+    )
+
+    assert create_response.status_code == 422
+    assert url_response.status_code == 422
+
+
 def test_admin_update_does_not_erase_publication_fields(isolated_sqlite_db):
     isolated_sqlite_db.upsert_entity({
         "id": "test-mutation-status",

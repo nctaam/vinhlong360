@@ -16,9 +16,10 @@ const activeSlide = ref(0)
 const lbOpen = ref(false)
 const lbStart = ref(0)
 const galleryId = `gallery-${useId().replace(/[^A-Za-z0-9_-]+/g, '-')}`
+const renderableImages = computed(() => props.images.filter(image => image.source_class !== 'user-uploaded'))
 
 function openLightbox(idx: number) {
-  if (!props.images[idx]) return
+  if (!renderableImages.value[idx]) return
   if (props.standalone) {
     lbStart.value = idx
     lbOpen.value = true
@@ -27,10 +28,10 @@ function openLightbox(idx: number) {
   }
 }
 
-const thumbImages = computed(() => props.images.slice(1, props.maxThumbs + 1))
-const extraCount = computed(() => Math.max(0, props.images.length - props.maxThumbs - 1))
-const firstImage = computed(() => props.images[0] ?? null)
-const hasRenderableImages = computed(() => props.images.some(image => Boolean(image.url)))
+const thumbImages = computed(() => renderableImages.value.slice(1, props.maxThumbs + 1))
+const extraCount = computed(() => Math.max(0, renderableImages.value.length - props.maxThumbs - 1))
+const firstImage = computed(() => renderableImages.value[0] ?? null)
+const hasRenderableImages = computed(() => renderableImages.value.some(image => Boolean(image.url)))
 
 function disclosureId(surface: string, index: number): string {
   return `${galleryId}-${surface}-${index}`
@@ -50,7 +51,7 @@ function onScroll() {
   const el = carouselRef.value
   if (!el) return
   const idx = Math.round(el.scrollLeft / el.offsetWidth)
-  activeSlide.value = Math.min(idx, props.images.length - 1)
+  activeSlide.value = Math.min(idx, renderableImages.value.length - 1)
 }
 
 function goToSlide(idx: number) {
@@ -59,6 +60,12 @@ function goToSlide(idx: number) {
 </script>
 
 <template>
+  <div
+    class="pg-root"
+    data-image-surface="photo-gallery"
+    data-source-class="user-uploaded"
+    data-entity-image-policy="no-image-invariant"
+  >
   <!-- No images: placeholder -->
   <div v-if="!hasRenderableImages" class="pg-empty" role="img" :aria-label="firstImage?.alt || alt" :aria-describedby="firstImage ? disclosureId('empty', 0) : undefined">
     <span class="pg-empty-grain" aria-hidden="true"></span>
@@ -75,7 +82,7 @@ function goToSlide(idx: number) {
   </div>
 
   <!-- Single image -->
-  <div v-else-if="images.length === 1 && firstImage" class="pg-single">
+  <div v-else-if="renderableImages.length === 1 && firstImage" class="pg-single">
     <button type="button" class="pg-img-btn" @click="openLightbox(0)" :aria-label="`Xem ảnh ${firstImage.alt}`">
       <NuxtImg v-if="firstImage.url && isRemote(firstImage.url)" data-gallery-media :src="firstImage.url" :alt="firstImage.alt" class="pg-main-img" :aria-describedby="disclosureId('single', 0)" loading="eager" fetchpriority="high" width="960" height="640" sizes="sm:100vw md:100vw lg:960px" decoding="async" @error="onImgError" />
       <img v-else-if="firstImage.url" data-gallery-media :src="firstImage.url" :alt="firstImage.alt" class="pg-main-img" :aria-describedby="disclosureId('single', 0)" loading="eager" fetchpriority="high" width="960" height="640" decoding="async" @error="onImgError" />
@@ -115,17 +122,17 @@ function goToSlide(idx: number) {
         </span>
       </button>
     </div>
-    <button v-if="images.length > 1" type="button" class="pg-show-all" @click="openLightbox(0)">
+    <button v-if="renderableImages.length > 1" type="button" class="pg-show-all" @click="openLightbox(0)">
       <span class="pg-show-icon" aria-hidden="true">&#128247;</span>
-      Xem trọn bộ {{ images.length }} ảnh
+      Xem trọn bộ {{ renderableImages.length }} ảnh
     </button>
   </div>
 
   <!-- Mobile: carousel -->
-  <div v-if="images.length > 1" class="pg-carousel-wrap">
+  <div v-if="renderableImages.length > 1" class="pg-carousel-wrap">
     <div ref="carouselRef" class="pg-carousel" @scroll.passive="onScroll" role="group" :aria-label="`Bộ ảnh ${alt}`">
       <button
-        v-for="(descriptor, i) in images"
+        v-for="(descriptor, i) in renderableImages"
         :key="`${descriptor.url || descriptor.alt}-slide-${i}`"
         type="button"
         class="pg-slide"
@@ -141,9 +148,9 @@ function goToSlide(idx: number) {
         </span>
       </button>
     </div>
-    <div v-if="images.length <= 8" class="pg-dots" aria-hidden="true">
+    <div v-if="renderableImages.length <= 8" class="pg-dots" aria-hidden="true">
       <button
-        v-for="(_, i) in images"
+        v-for="(_, i) in renderableImages"
         :key="i"
         type="button"
         tabindex="-1"
@@ -152,10 +159,11 @@ function goToSlide(idx: number) {
         @click="goToSlide(i)"
       />
     </div>
-    <span v-else class="pg-counter">{{ activeSlide + 1 }}/{{ images.length }}</span>
+    <span v-else class="pg-counter">{{ activeSlide + 1 }}/{{ renderableImages.length }}</span>
   </div>
 
-  <ImageLightbox v-if="standalone && images.length" v-model="lbOpen" :images="images" :start-index="lbStart" />
+  <ImageLightbox v-if="standalone && renderableImages.length" v-model="lbOpen" :images="renderableImages" :start-index="lbStart" />
+  </div>
 </template>
 
 <style scoped>

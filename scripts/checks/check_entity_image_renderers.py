@@ -21,12 +21,14 @@ ROW_KEYS = frozenset(
         "access_path",
         "source_class",
         "descriptor_producer",
+        "render_policy",
         "presentation",
         "accessibility",
         "test_file",
     }
 )
 SOURCE_CLASSES = frozenset({"ai-generated", "placeholder", "user-uploaded", "none"})
+RENDER_POLICIES = frozenset({"render", "suppress"})
 PRESENTATIONS = frozenset({"short", "full", "short-and-full", "none"})
 ACCESSIBILITY = frozenset(
     {
@@ -157,7 +159,7 @@ def _registry_shape_error(entry: object, label: str) -> Finding | None:
         return _finding(
             "INVALID_ENTITY_IMAGE_REGISTRY",
             REGISTRY_PATH,
-            f"{label} must contain exactly the eight renderer keys",
+            f"{label} must contain exactly the nine renderer keys",
         )
     if not all(isinstance(entry[key], str) and entry[key].strip() for key in ROW_KEYS):
         return _finding(
@@ -197,6 +199,8 @@ def _registry_test_error(entry: dict, label: str) -> Finding | None:
 def _registry_enum_error(entry: dict, label: str) -> Finding | None:
     if entry["source_class"] not in SOURCE_CLASSES:
         return _finding("INVALID_ENTITY_IMAGE_REGISTRY", REGISTRY_PATH, f"{label} has invalid source_class")
+    if entry["render_policy"] not in RENDER_POLICIES:
+        return _finding("INVALID_ENTITY_IMAGE_REGISTRY", REGISTRY_PATH, f"{label} has invalid render_policy")
     if entry["presentation"] not in PRESENTATIONS or entry["accessibility"] not in ACCESSIBILITY:
         return _finding(
             "INVALID_ENTITY_IMAGE_REGISTRY",
@@ -208,23 +212,39 @@ def _registry_enum_error(entry: dict, label: str) -> Finding | None:
 
 def _is_no_image_combination(entry: dict) -> bool:
     return (
-        entry["access_path"] == "popup"
-        and entry["descriptor_producer"] == "no-image-invariant"
+        entry["descriptor_producer"] == "no-image-invariant"
+        and entry["render_policy"] == "suppress"
         and entry["presentation"] == "none"
         and entry["accessibility"] == "no-image-invariant"
     )
 
 
 def _registry_combination_error(entry: dict, label: str) -> Finding | None:
-    invariant = entry["source_class"] == "none"
-    if invariant != _is_no_image_combination(entry):
+    source_class = entry["source_class"]
+    no_image = _is_no_image_combination(entry)
+    if source_class == "none":
+        no_image = no_image and entry["access_path"] == "popup"
+    if entry["render_policy"] == "suppress":
+        valid_suppression = source_class in {"user-uploaded", "none"} and no_image
+        if valid_suppression:
+            return None
         return _finding(
             "INVALID_ENTITY_IMAGE_REGISTRY",
             REGISTRY_PATH,
             f"{label} uses an invalid no-image-invariant combination",
         )
-    if invariant:
-        return None
+    if source_class in {"ai-generated", "placeholder", "none"} and entry["render_policy"] != "render":
+        return _finding(
+            "INVALID_ENTITY_IMAGE_REGISTRY",
+            REGISTRY_PATH,
+            f"{label} uses an invalid render policy for {source_class}",
+        )
+    if source_class == "none" or _is_no_image_combination(entry):
+        return _finding(
+            "INVALID_ENTITY_IMAGE_REGISTRY",
+            REGISTRY_PATH,
+            f"{label} uses an invalid no-image-invariant combination",
+        )
     expected = {
         "short": {"aria-describedby-full-copy", "aria-and-visible-full-copy"},
         "full": {"visible-full-copy", "aria-and-visible-full-copy"},
@@ -598,11 +618,29 @@ def _disclosures(text: str) -> list[dict[str, str]]:
     return [_attrs(match.group("attrs")) for match in DISCLOSURE_RE.finditer(text)]
 
 
+def _scoped_tag_body(text: str, opening: re.Match) -> str:
+    """Return a marker body without truncating at a nested tag of the same type."""
+    tag = opening.group("tag")
+    tag_re = re.compile(rf"</?{re.escape(tag)}\b[^>]*>", re.I | re.S)
+    depth = 1
+    for match in tag_re.finditer(text, opening.end()):
+        token = match.group(0)
+        if token.startswith("</"):
+            depth -= 1
+        elif not token.rstrip().endswith("/>"):
+            depth += 1
+        if depth == 0:
+            return text[opening.end() : match.start()]
+    return text[opening.end() :]
+
+
 def _scoped_proof_text(text: str, entry: dict) -> str | None:
     """Return the explicit surface/source marker scope, if the file declares one."""
     scopes: list[tuple[str, str, str]] = []
     for match in SCOPED_OPEN_RE.finditer(text):
         attrs = _attrs(match.group("attrs"))
+        if entry.get("render_policy") == "render" and attrs.get("data-entity-image-policy") == "no-image-invariant":
+            continue
         surface = next(
             (attrs.get(name, "") for name in ("data-image-surface", "data-renderer-surface", "data-surface") if attrs.get(name)),
             "",
@@ -617,9 +655,7 @@ def _scoped_proof_text(text: str, entry: dict) -> str | None:
         )
         if not surface or not source_class:
             continue
-        close = text.find(f"</{match.group('tag')}>", match.end())
-        body = text[match.end() : close if close >= 0 else len(text)]
-        scopes.append((surface, source_class, body))
+        scopes.append((surface, source_class, _scoped_tag_body(text, match)))
     if not scopes:
         return None
     matches = [body for surface, source_class, body in scopes if source_class == entry["source_class"] and surface == entry["surface"]]
@@ -1105,14 +1141,129 @@ def _raw_sink_findings(analysis: _SourceAnalysis) -> list[Finding]:
     ]
 
 
+def _explicitly_excludes_public_ugc(text: str) -> bool:
+    return bool(
+        re.search(
+            r"\.source_class\s*!==?\s*['\"]user-uploaded['\"]",
+            text,
+        )
+    )
+
+
+def _public_media_sinks(text: str) -> list[_Sink]:
+    """Keep image sinks while ignoring avatars and unrelated share metadata."""
+    sinks: list[_Sink] = []
+    for sink in find_image_render_sinks(text):
+        expression = sink.expression.lower()
+        if sink.kind == "image":
+            sinks.append(sink)
+            continue
+        if sink.kind == "gallery" and re.search(
+            r":(?:images?|thumbnail|cover|poster)\s*=",
+            expression,
+        ):
+            sinks.append(sink)
+            continue
+        if sink.kind == "background":
+            if ":style" in expression or ".style." in expression:
+                sinks.append(sink)
+            continue
+        if any(
+            token in expression
+            for token in (
+                "ogimage",
+                "twitterimage",
+                "descriptor.url",
+                "image:",
+                "images:",
+                "image_url",
+                "image_urls",
+            )
+        ):
+            sinks.append(sink)
+    return sinks
+
+
+def _sink_source_classes(sink: _Sink, aliases: dict[str, set[str]]) -> set[str]:
+    expression = sink.expression.lower()
+    return {
+        source_class
+        for alias, source_classes in aliases.items()
+        if _contains_name(expression, alias)
+        for source_class in source_classes
+    }
+
+
+def _static_public_sink(sink: _Sink) -> bool:
+    expression = sink.expression
+    if sink.kind == "image":
+        return re.search(r"\s:(?:src|images?|thumbnail|cover|poster)\s*=", expression, re.I) is None
+    if sink.kind != "script" or ".url" in expression.lower():
+        return False
+    return bool(
+        re.search(r"\b(?:ogImage|twitterImage|image)\s*:\s*['\"]", expression, re.I)
+        or re.search(r"\b(?:ogImage|twitterImage)\s*:\s*(?:ss|useRuntimeConfig)\s*\(", expression, re.I)
+    )
+
+
+def _registered_non_ugc_sink(analysis: _SourceAnalysis, sink: _Sink) -> bool:
+    source_classes = _sink_source_classes(sink, analysis.descriptor_aliases)
+    registered = {
+        candidate["source_class"]
+        for candidate in analysis.entries
+        if candidate.get("render_policy") == "render"
+    }
+    return bool(source_classes & registered) and "user-uploaded" not in source_classes
+
+
+def _has_public_ugc_invariant_marker(text: str, surface: str) -> bool:
+    return re.search(
+        rf'<[A-Za-z][\w.-]*\b(?=[^>]*data-image-surface=["\']{re.escape(surface)}["\'])'
+        rf'(?=[^>]*data-source-class=["\']user-uploaded["\'])'
+        r'(?=[^>]*data-entity-image-policy=["\']no-image-invariant["\'])[^>]*>',
+        text,
+        re.I | re.S,
+    ) is not None
+
+
+def _public_ugc_invariant_ok(analysis: _SourceAnalysis, entry: dict) -> bool:
+    scoped = _scoped_proof_text(analysis.text, entry)
+    if (
+        scoped is None
+        or not scoped.strip()
+        or not _has_public_ugc_invariant_marker(analysis.text, entry["surface"])
+    ):
+        return False
+    scoped_sinks = _public_media_sinks(scoped)
+    has_same_surface_render_policy = any(
+        candidate.get("render_policy") == "render"
+        and candidate.get("surface") == entry.get("surface")
+        for candidate in analysis.entries
+    )
+    if not scoped_sinks:
+        return all(
+            _registered_non_ugc_sink(analysis, sink) or _static_public_sink(sink)
+            for sink in _public_media_sinks(analysis.text)
+        )
+    return (
+        has_same_surface_render_policy
+        and _explicitly_excludes_public_ugc(analysis.text)
+    )
+
+
 def _invariant_entry_findings(analysis: _SourceAnalysis, entry: dict) -> list[Finding]:
-    if _map_invariant_ok(analysis.text):
+    if entry["source_class"] == "none" and _map_invariant_ok(analysis.text):
+        return []
+    if (
+        entry["source_class"] == "user-uploaded"
+        and _public_ugc_invariant_ok(analysis, entry)
+    ):
         return []
     return [
         _finding(
             "BROKEN_NO_IMAGE_INVARIANT",
             analysis.relative,
-            f"{entry['surface']} must keep popupHTML and every setHTML caller image-free",
+            f"{entry['surface']} must keep its no-image-invariant scope image-free",
         )
     ]
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import sys
 from dataclasses import asdict
 from pathlib import Path
@@ -123,8 +124,28 @@ def test_main_sitemap_is_absolute_sorted_deduplicated_and_permutation_stable():
     ward = _ward("a-ward")
     child_a = _entity("child-a", placeId="a-ward")
     child_b = _entity("child-b", placeId="a-ward")
-    first = _snapshot(rich, duplicate, ward, child_b, child_a)
-    second = _snapshot(child_a, ward, rich, child_b, duplicate)
+    first = _snapshot(
+        rich,
+        duplicate,
+        ward,
+        child_b,
+        child_a,
+        relationships=(
+            {"source_id": "child-b", "target_id": "a-ward", "type": "located_in"},
+            {"source_id": "child-a", "target_id": "a-ward", "type": "located_in"},
+        ),
+    )
+    second = _snapshot(
+        child_a,
+        ward,
+        rich,
+        child_b,
+        duplicate,
+        relationships=(
+            {"source_id": "child-a", "target_id": "a-ward", "type": "located_in"},
+            {"source_id": "child-b", "target_id": "a-ward", "type": "located_in"},
+        ),
+    )
 
     first_xml = render_main_sitemap(first, manifest, EVIDENCE)
     second_xml = render_main_sitemap(second, manifest, EVIDENCE)
@@ -166,7 +187,25 @@ def test_main_sitemap_delegates_non_places_and_wards_to_index_policy():
 
     locs = _locs(
         render_main_sitemap(
-            _snapshot(thin, draft, weak_ward, strong_ward, *children),
+            _snapshot(
+                thin,
+                draft,
+                weak_ward,
+                strong_ward,
+                *children,
+                relationships=(
+                    {
+                        "source_id": "one",
+                        "target_id": "strong-ward",
+                        "type": "located_in",
+                    },
+                    {
+                        "source_id": "two",
+                        "target_id": "strong-ward",
+                        "type": "located_in",
+                    },
+                ),
+            ),
             manifest,
             EVIDENCE,
         )
@@ -198,37 +237,41 @@ def test_policy_contract_exceptions_abort_render(monkeypatch):
         )
 
 
-def test_shared_ward_child_counts_are_exact_unique_and_relationship_independent():
-    ward = "ward"
-    eligible = _entity("eligible", placeId=ward)
-    duplicate = dict(eligible)
-    entities: tuple[object, ...] = (
-        eligible,
-        duplicate,
-        _entity("second", placeId=ward),
-        _entity("draft", placeId=ward, status="draft"),
-        _entity("other", placeId="other-ward"),
-        _entity("ward", placeId=ward),
-        _ward("nested-place", placeId=ward),
-        _entity("blank-id", placeId=" "),
-        _entity(" ", placeId=ward),
-        _entity(7, placeId=ward),
-        _entity("numeric-place", placeId=7),
-        object(),
-    )
-
+def test_ward_child_counts_use_relationship_snapshot():
+    ward_a = "ward-a"
+    ward_b = "ward-b"
     snapshot = _snapshot(
-        _ward(ward),
-        *entities,
+        _ward(ward_a),
+        _ward(ward_b),
+        _entity("one", placeId=ward_b),
+        _entity("one", placeId=ward_b),
+        _entity("two", placeId=ward_b),
+        _entity("draft", placeId=ward_b, status="draft"),
+        _ward("nested-place", placeId=ward_b),
+        object(),
         relationships=(
-            {"source_id": "ghost", "target_id": ward, "type": "located_in"},
+            {"source_id": "one", "target_id": ward_a, "type": "located_in"},
+            {"source_id": "one", "target_id": ward_a, "type": "located_in"},
+            {"source_id": "two", "target_id": ward_a, "type": "located_in"},
+            {"source_id": "draft", "target_id": ward_a, "type": "located_in"},
+            {
+                "source_id": "nested-place",
+                "target_id": ward_a,
+                "type": "located_in",
+            },
+            {"source_id": "ghost", "target_id": ward_a, "type": "located_in"},
+            {"source_id": "one", "target_id": "ghost", "type": "located_in"},
+            {"source_id": "one", "target_id": ward_b, "type": "near"},
+            {"source_id": "", "target_id": ward_a, "type": "located_in"},
+            {"source_id": "two", "target_id": None, "type": "located_in"},
+            object(),
         ),
     )
-    counts = public_ward_child_counts(snapshot)
 
-    assert counts == {ward: 2, "other-ward": 1}
+    assert public_ward_child_counts(snapshot) == {ward_a: 2}
     locs = _locs(render_main_sitemap(snapshot, load_route_manifest(), EVIDENCE))
-    assert any(loc.endswith(f"/xa-phuong/{ward}") for loc in locs)
+    assert any(loc.endswith(f"/xa-phuong/{ward_a}") for loc in locs)
+    assert not any(loc.endswith(f"/xa-phuong/{ward_b}") for loc in locs)
 
 
 @pytest.mark.parametrize(
@@ -284,8 +327,8 @@ def test_media_serializer_matches_utf8_fixture_with_two_disclosed_images():
         "two-images",
         name="Two images",
         images=[
-            "/media/z-local.webp",
-            "https://cdn.example.test/media/a-absolute.webp",
+            "/img/entities/z-local.webp",
+            "/img/entities/a-local.webp",
             "http://cdn.example.test/media/rejected.webp",
         ],
     )
@@ -329,15 +372,34 @@ def test_media_sitemap_uses_structured_entity_descriptor_without_legacy_images()
     assert DISCLOSURE.entity_ai.full_disclosure.encode() in xml
 
 
+@pytest.mark.parametrize(
+    "raw",
+    [
+        "/media/arbitrary.webp",
+        "https://cdn.example.test/arbitrary.webp",
+    ],
+)
+def test_media_sitemap_never_relabels_arbitrary_raw_urls_as_ai(raw: str):
+    xml = render_media_sitemap(
+        _snapshot(_entity("untrusted-raw", name="Untrusted raw", images=[raw])),
+        load_route_manifest(),
+        EVIDENCE,
+        DISCLOSURE,
+    )
+
+    assert _media_entries(xml) == []
+    assert raw.encode() not in xml
+
+
 def test_media_sitemap_is_sorted_deduplicated_and_permutation_stable():
     manifest = load_route_manifest()
     first_entity = _entity(
         "z-entity",
         name="Z entity",
         images=[
-            "https://cdn.example/z.webp",
-            "/media/a.webp",
-            "https://cdn.example/z.webp",
+            "/img/entities/z.webp",
+            "/img/entities/a.webp",
+            "/img/entities/z.webp",
         ],
     )
     duplicate = dict(first_entity)
@@ -345,7 +407,7 @@ def test_media_sitemap_is_sorted_deduplicated_and_permutation_stable():
     second_entity = _entity(
         "a-entity",
         name="A entity",
-        images=("/media/ứ.webp?x=1&y=2",),
+        images=("/img/entities/u.webp",),
     )
 
     first_xml = render_media_sitemap(
@@ -373,22 +435,20 @@ def test_media_sitemap_is_sorted_deduplicated_and_permutation_stable():
         for _page, images in entries
         for _loc, caption in images
     )
-    assert b"&amp;" in first_xml
-    assert "ứ".encode() in first_xml
 
 
 def test_media_sitemap_has_exact_main_policy_parity_including_ward_paths():
     manifest = load_route_manifest()
-    rich = _entity("rich", name="Rich", images=["/rich.webp"])
-    thin = _entity("thin", name="Thin", summary=_words(129), images=["/thin.webp"])
-    draft = _entity("draft", name="Draft", status="draft", images=["/draft.webp"])
+    rich = _entity("rich", name="Rich", images=["/img/entities/rich.webp"])
+    thin = _entity("thin", name="Thin", summary=_words(129), images=["/img/entities/thin.webp"])
+    draft = _entity("draft", name="Draft", status="draft", images=["/img/entities/draft.webp"])
     unverified = _entity(
-        "unverified", name="Unverified", verified=False, images=["/unverified.webp"]
+        "unverified", name="Unverified", verified=False, images=["/img/entities/unverified.webp"]
     )
     private = _entity(
-        "private", name="Private", is_private=True, images=["/private.webp"]
+        "private", name="Private", is_private=True, images=["/img/entities/private.webp"]
     )
-    ward = _ward("ward", name="Ward", images=["/ward.webp"])
+    ward = _ward("ward", name="Ward", images=["/img/entities/ward.webp"])
     child_a = _entity("child-a", name="Child A", placeId="ward")
     child_b = _entity("child-b", name="Child B", placeId="ward")
 
@@ -404,6 +464,18 @@ def test_media_sitemap_has_exact_main_policy_parity_including_ward_paths():
                 child_a,
                 child_b,
                 object(),
+                relationships=(
+                    {
+                        "source_id": "child-a",
+                        "target_id": "ward",
+                        "type": "located_in",
+                    },
+                    {
+                        "source_id": "child-b",
+                        "target_id": "ward",
+                        "type": "located_in",
+                    },
+                ),
             ),
             manifest,
             EVIDENCE,
@@ -422,7 +494,7 @@ def test_media_sitemap_uses_only_entity_editorial_images_and_minimal_tags():
     entity = _entity(
         "rich",
         name="Rich",
-        images=["/editorial.webp"],
+        images=["/img/entities/editorial.webp"],
         placeholder="PLACEHOLDER-SENTINEL",
         posts=[{"images": ["POST-SENTINEL"]}],
         reviews=[{"images": ["REVIEW-SENTINEL"]}],
@@ -501,6 +573,14 @@ def test_media_sitemap_requires_exact_ai_editorial_descriptor_before_page_node(
     )
 
     assert entries == []
+
+
+def test_sitemap_descriptor_gate_uses_shared_media_policy_contract():
+    source = inspect.getsource(sitemap_render)
+
+    assert "_SITEMAP_IMAGE_TRIPLE" not in source
+    assert "ENTITY_AI_SOURCE" in source
+    assert "is_renderable_entity_descriptor" in source
 
 
 @pytest.mark.parametrize(
@@ -642,7 +722,7 @@ def test_media_sitemap_empty_output_is_valid_and_contains_no_static_pages():
 def test_media_sitemap_sorts_pages_before_enforcing_shared_limit(monkeypatch):
     monkeypatch.setattr(sitemap_render, "MAX_SITEMAP_URLS", 2)
     entities = tuple(
-        _entity(entity_id, name=entity_id, images=[f"/{entity_id}.webp"])
+        _entity(entity_id, name=entity_id, images=[f"/img/entities/{entity_id}.webp"])
         for entity_id in ("z", "a", "m")
     )
 

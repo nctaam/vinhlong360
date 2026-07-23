@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from dataclasses import asdict
 from hashlib import sha256
 from re import fullmatch
 from urllib.parse import quote, urlsplit
@@ -17,6 +18,7 @@ if __package__:
         public_ward_child_counts as _index_policy_ward_child_counts,
     )
     from .launch_evidence import PolicyEvidence
+    from .media_policy import ENTITY_AI_SOURCE, is_renderable_entity_descriptor
     from .route_manifest import (
         LoadedRouteManifest,
         extract_static_sitemap_paths,
@@ -31,6 +33,7 @@ else:
         public_ward_child_counts as _index_policy_ward_child_counts,
     )
     from launch_evidence import PolicyEvidence
+    from media_policy import ENTITY_AI_SOURCE, is_renderable_entity_descriptor
     from route_manifest import (
         LoadedRouteManifest,
         extract_static_sitemap_paths,
@@ -42,7 +45,6 @@ SITEMAP_NAMESPACE = "http://www.sitemaps.org/schemas/sitemap/0.9"
 IMAGE_NAMESPACE = "http://www.google.com/schemas/sitemap-image/1.1"
 MAX_SITEMAP_URLS = 50_000
 _BATCH_REVISION_PATTERN = r"[0-9a-f]{64}"
-_SITEMAP_IMAGE_TRIPLE = ("ai-generated", "entity-editorial", "entity-ai")
 
 
 def compute_batch_revision(
@@ -126,7 +128,10 @@ def render_sitemap_index(origin: str, batch: str) -> bytes:
 
 def public_ward_child_counts(snapshot) -> dict[str, int]:
     """Expose ward counts through the immutable sitemap snapshot contract."""
-    return _index_policy_ward_child_counts(snapshot.entities)
+    return _index_policy_ward_child_counts(
+        snapshot.entities,
+        snapshot.relationships,
+    )
 
 
 def canonical_detail_url(
@@ -205,13 +210,17 @@ def _is_sitemap_image_descriptor(value: object) -> bool:
     """Allow only canonical AI editorial descriptors into the media sitemap."""
     return (
         type(value) is ImageDescriptor
-        and (
-            value.source_class,
-            value.source_kind,
-            value.disclosure_key,
-        )
-        == _SITEMAP_IMAGE_TRIPLE
+        and is_renderable_entity_descriptor(asdict(value))
+        and (value.source_class, value.source_kind, value.disclosure_key)
+        == ENTITY_AI_SOURCE
     )
+
+
+def _describe_sitemap_entity_images(
+    entity: object,
+    disclosure: LoadedAiDisclosure,
+) -> tuple[ImageDescriptor, ...]:
+    return describe_entity_images(entity, disclosure=disclosure)
 
 
 def serialize_image_urlset(
@@ -299,7 +308,7 @@ def render_media_sitemap(
         )
         if page_url is None:
             continue
-        for descriptor in describe_entity_images(entity, disclosure=disclosure):
+        for descriptor in _describe_sitemap_entity_images(entity, disclosure):
             if not _is_sitemap_image_descriptor(descriptor):
                 continue
             image_url = resolve_sitemap_image_url(descriptor.url, manifest)

@@ -220,7 +220,14 @@
          payload, so SSR (v-else story) ≠ client (v-if feed) = hydration mismatch. Rendering
          this volatile below-fold region client-only removes the mismatch at its source. -->
     <ClientOnly>
-      <section v-if="communityPosts.length" class="block reveal" aria-label="Cộng đồng">
+      <section
+        v-if="communityPosts.length"
+        class="block reveal"
+        aria-label="Cộng đồng"
+        data-image-surface="home-community"
+        data-source-class="user-uploaded"
+        data-entity-image-policy="no-image-invariant"
+      >
         <div class="section-head">
           <div class="sh-text">
             <h2>Từ <em class="ac-leaf">cộng đồng</em></h2>
@@ -243,12 +250,7 @@
             <IconLine name="trophy" /> <NuxtLink to="/bang-xep-hang">Xem thành viên tích cực →</NuxtLink>
           </p>
           <div class="scroll-row" role="region" aria-label="Bài viết cộng đồng mới" tabindex="0">
-            <NuxtLink v-for="p in communityCards" :key="p.id" :to="postPath(p.id)" class="cm-card">
-              <div v-if="p.ugcImage?.url" class="cm-img" data-source-class="user-uploaded">
-                <NuxtImg v-if="isRemoteUrl(p.ugcImage.url)" :src="p.ugcImage.url" :alt="p.ugcImage.alt" :aria-describedby="`home-post-${p.id}-disclosure`" loading="lazy" decoding="async" width="280" height="150" sizes="sm:280px" @error="onImgError" />
-                <img v-else :src="p.ugcImage.url" :alt="p.ugcImage.alt" :aria-describedby="`home-post-${p.id}-disclosure`" loading="lazy" decoding="async" width="280" height="150" @error="onImgError" />
-                <ImageDisclosure :id="`home-post-${p.id}-disclosure`" :descriptor="p.ugcImage" presentation="short" />
-              </div>
+            <NuxtLink v-for="p in communityPosts" :key="p.id" :to="postPath(p.id)" class="cm-card">
               <div class="cm-body">
                 <div class="cm-author">
                   <span class="cm-avatar">{{ (p.display_name || '?').charAt(0).toUpperCase() }}</span>
@@ -320,7 +322,8 @@ import { useJourneyActions } from '~/composables/useJourneyActions'
 import EntityFeature from '~/components/home/EntityFeature.vue'
 import StorySpread from '~/components/home/StorySpread.vue'
 import ImageDisclosure from '~/components/ImageDisclosure.vue'
-import { describeEntityImages, describeEntityPlaceholder, describePostImages } from '~/utils/imageDescriptors'
+import { describeEntityImages, describeEntityPlaceholder } from '~/utils/imageDescriptors'
+import { aiDisclosure } from '~/utils/aiDisclosure'
 import type { ImageDescriptor } from '~/types/image'
 import { useId } from 'vue'
 
@@ -338,11 +341,18 @@ const FEATURE_EXPERIENCE = {
   ctaText: 'Khám phá trải nghiệm',
   ctaTo: '/du-lich',
 }
-const FEATURE_EXPERIENCE_IMAGE = describeEntityImages({
-  id: 'home-feature-experience',
-  name: 'Trải nghiệm miệt vườn',
-  images: ['/img/features/trai-nghiem.webp'],
-})[0]!
+const FEATURE_EXPERIENCE_IMAGE: ImageDescriptor = {
+  url: '/img/features/trai-nghiem.webp',
+  alt: 'Trải nghiệm miệt vườn — ảnh minh họa',
+  source_class: 'ai-generated',
+  source_kind: 'entity-editorial',
+  disclosure_key: 'entity-ai',
+  short_label: aiDisclosure.entity_ai.short_label,
+  full_disclosure: aiDisclosure.entity_ai.full_disclosure,
+  credit: null,
+  width: null,
+  height: null,
+}
 
 // Full-bleed signature moment (StorySpread). Discover-only CTA — never an order/price
 // form, per project invariants.
@@ -419,15 +429,11 @@ const { data: communityData } = await useAsyncData('home-community', async () =>
     apiFetch<any>('/api/community/trending-tags?limit=8').catch(() => ({ tags: [] })),
   ])
   const posts = (feed.posts || [])
-    .filter((p: any) => ((p.content || '').trim().length > 0) || (p.images && p.images.length))
+    .filter((p: any) => (p.content || '').trim().length > 0)
     .slice(0, 6)
   return { posts, stats: cstats, leaders: lb.leaders || [], tags: tags.tags || [] }
 }, { lazy: true })
 const communityPosts = computed(() => communityData.value?.posts || [])
-const communityCards = computed(() => communityPosts.value.map((post: any) => ({
-  ...post,
-  ugcImage: describePostImages(post)[0] ?? null,
-})))
 const communityStats = computed(() => communityData.value?.stats || null)
 const topMembers = computed(() => communityData.value?.leaders || [])
 const trendingTags = computed(() => communityData.value?.tags || [])
@@ -1286,10 +1292,6 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .cm-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--border); }
 .cm-card:active { transform: scale(.98); transition-duration: .1s; }
 .cm-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-.cm-img { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: var(--bg-alt); }
-.cm-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s var(--ease-out); }
-.cm-img :deep(.image-disclosure) { position: absolute; left: var(--space-2); bottom: var(--space-2); padding: 3px 7px; border-radius: 999px; background: rgba(var(--black-rgb), .66); color: var(--text-on-dark); }
-.cm-card:hover .cm-img img { transform: scale(var(--img-hover-scale)); }
 .cm-body { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3) var(--space-4) var(--space-4); }
 .cm-author { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
 .cm-avatar { width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--text-on-dark, var(--white)); font-size: var(--text-xs); font-weight: var(--weight-semibold); flex-shrink: 0; }
@@ -1365,7 +1367,6 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   .hf-card:hover { transform: none; }
   .event-mini:hover { transform: none; }
   .cm-card:hover, .cm-card:active { transform: none; }
-  .cm-card:hover .cm-img img { transform: none; }
   .sk-heading { animation: none; }
   .spotlight:hover .spot-visual { transform: none; }
   .dish-item:hover, .dish-item:active { transform: none; }

@@ -11,7 +11,7 @@ import {
 } from '../utils/imageDescriptors'
 
 const apiEntityImage = {
-  url: '/img/entity.webp',
+  url: '/img/entities/entity.webp',
   alt: 'Chùa Vàm Ray — ảnh minh họa 1',
   source_class: 'ai-generated',
   source_kind: 'entity-editorial',
@@ -99,10 +99,10 @@ describe('renderable image URL normalization', () => {
 })
 
 describe('entity image descriptor producers', () => {
-  it('classifies every safe legacy entity image with canonical AI disclosure', () => {
-    expect(describeEntityImages({ id: 'entity-1', name: 'Điểm đến', images: ['/legacy.webp'] })).toEqual([
+  it('classifies only canonical legacy entity images with canonical AI disclosure', () => {
+    expect(describeEntityImages({ id: 'entity-1', name: 'Điểm đến', images: ['/img/entities/diem-den.webp'] })).toEqual([
       expect.objectContaining({
-        url: '/legacy.webp',
+        url: '/img/entities/diem-den.webp',
         alt: 'Điểm đến — ảnh minh họa',
         source_class: 'ai-generated',
         source_kind: 'entity-editorial',
@@ -111,6 +111,15 @@ describe('entity image descriptor producers', () => {
         full_disclosure: aiDisclosure.entity_ai.full_disclosure,
       }),
     ])
+    expect(describeEntityImages({
+      id: 'entity-1',
+      name: 'Điểm đến',
+      images: [
+        'https://cdn.example/entity.webp',
+        '/img/entities/UPPER.webp',
+        '/img/entities/diem-den.webp?size=md',
+      ],
+    })).toEqual([])
   })
 
   it('omits unsafe legacy URLs and emits a canonical placeholder when no image remains', () => {
@@ -153,7 +162,7 @@ describe('entity image descriptor producers', () => {
     })).toEqual([apiEntityImage])
   })
 
-  it('preserves a structured UGC descriptor without assigning AI disclosure', () => {
+  it('suppresses a structured UGC descriptor without assigning AI disclosure', () => {
     const descriptors = describeEntityImages({
       id: 'entity-1',
       name: 'Điểm đến',
@@ -161,9 +170,15 @@ describe('entity image descriptor producers', () => {
       image_descriptors: [apiReviewImage],
     })
 
-    expect(descriptors).toEqual([apiReviewImage])
-    expect(descriptors[0]?.source_class).toBe('user-uploaded')
-    expect(descriptors[0]?.short_label).not.toBe(aiDisclosure.entity_ai.short_label)
+    expect(descriptors).toEqual([])
+  })
+
+  it('allows an explicit canonical placeholder descriptor', () => {
+    expect(describeEntityImages({
+      id: 'entity-1',
+      name: 'Điểm đến',
+      image_descriptor: apiPlaceholderImage,
+    })).toEqual([apiPlaceholderImage])
   })
 })
 
