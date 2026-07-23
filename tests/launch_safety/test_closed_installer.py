@@ -397,7 +397,6 @@ def _assert_mutable_attempt_evidence_absent(evidence: Path) -> None:
         "install-summary.json",
         "install-recovery.json",
         "systemd-unit-cleanup.json",
-        "install-lock.json",
         "findmnt-before.json",
         "findmnt-after-umount.json",
         "findmnt-after.json",
@@ -7230,6 +7229,9 @@ def test_same_evidence_retry_resets_before_local_admission_failure(
         "{}\n", encoding="ascii"
     )
     forensic_before = _snapshot_tree(forensic_attempt)
+    lock_before = json.loads(
+        (evidence / "install-lock.json").read_text(encoding="utf-8")
+    )
 
     if invalid_authority == "environment":
         (case_root / "external.env").unlink()
@@ -7244,6 +7246,16 @@ def test_same_evidence_retry_resets_before_local_admission_failure(
     assert expected_error in second.stderr
     _assert_mutable_attempt_evidence_absent(evidence)
     assert _snapshot_tree(forensic_attempt) == forensic_before
+    if invalid_authority in {"environment", "runtime"}:
+        assert not (evidence / "install-lock.json").exists()
+    else:
+        # Hook rejection rewrites the lock with the narrowed authority set.
+        lock_after = json.loads(
+            (evidence / "install-lock.json").read_text(encoding="utf-8")
+        )
+        assert lock_after["status"] == "released"
+        assert lock_after["exit_code"] == 0
+        assert lock_after != lock_before
 
 
 def test_same_evidence_retry_resets_before_live_override_rejection(
@@ -7300,6 +7312,7 @@ def test_same_evidence_retry_resets_before_live_override_rejection(
     assert "live-hook-override-forbidden" in second.stderr
     _assert_mutable_attempt_evidence_absent(evidence)
     assert _snapshot_tree(forensic_attempt) == forensic_before
+    assert not (evidence / "install-lock.json").exists()
 
 
 def test_retry_rejects_symlinked_evidence_dir_without_deleting_target(
@@ -7368,6 +7381,7 @@ def test_same_evidence_retry_resets_before_strict_parse_failure(
     raw_args: tuple[str, ...],
     expected_error: str,
 ):
+    # Keep this node name for continuation replay; malformed discovery preserves evidence.
     if not BASH.is_file():
         pytest.skip("Git Bash is unavailable")
     case_root = tmp_path / case_name
@@ -7380,6 +7394,7 @@ def test_same_evidence_retry_resets_before_strict_parse_failure(
     forensic_attempt.mkdir()
     (forensic_attempt / "armed").write_text("armed\n", encoding="ascii")
     forensic_before = _snapshot_tree(forensic_attempt)
+    evidence_before = _snapshot_tree(evidence)
     evidence_arg = _bash_path_literal(evidence)
     args = [evidence_arg if value == "{evidence}" else value for value in raw_args]
 
@@ -7387,7 +7402,7 @@ def test_same_evidence_retry_resets_before_strict_parse_failure(
 
     assert second.returncode == 2
     assert expected_error in second.stderr
-    _assert_mutable_attempt_evidence_absent(evidence)
+    assert _snapshot_tree(evidence) == evidence_before
     assert _snapshot_tree(forensic_attempt) == forensic_before
 
 
@@ -8067,12 +8082,20 @@ def _run_live_post_bind_runtime_reconciliation(
             "set -u",
             "LOCAL_REHEARSAL=false",
             "STALE_LOCAL_REHEARSAL=false",
+            "RELEASE_NAME=release",
             "CURRENT_RELEASE_KEY=release-key",
             "STALE_RELEASE_KEY=release-key",
             "CURRENT_PERSISTENT_KEY=persistent-key",
             "STALE_PERSISTENT_KEY=persistent-key",
             "CURRENT_SYSTEMD_KEY=systemd-key",
             "STALE_SYSTEMD_KEY=systemd-key",
+            "STALE_CANDIDATE_MANIFEST_SHA256=manifest-digest",
+            "STALE_CANDIDATE_RELEASE_TOPOLOGY_SHA256=candidate-topology-digest",
+            "STALE_CANDIDATE_RELEASE_ROOT_IDENTITY=3:4",
+            "STALE_SOURCE_RELEASE_TOPOLOGY_SHA256=source-topology-digest",
+            "STALE_SOURCE_RELEASE_ROOT_IDENTITY=1:2",
+            "CANDIDATE_RELEASE_TOPOLOGY_SNAPSHOT=/candidate-topology",
+            "SOURCE_RELEASE_TOPOLOGY_SNAPSHOT=/source-topology",
             f"STALE_STAGE={shlex.quote(stage)}",
             "STALE_ATTEMPT_ID=" + "a" * 32,
             "STALE_PID=321",
@@ -8094,6 +8117,13 @@ def _run_live_post_bind_runtime_reconciliation(
             f"POST_UMOUNT_STATE={shlex.quote(post_umount_state)}",
             'invoke_python() { "$PYTHON_EXECUTOR" "$@"; }',
             "tree_matches_snapshot() { return 0; }",
+            "tree_matches_bound_topology() { return 0; }",
+            "verify_stale_journal_bindings() { return 0; }",
+            "regular_file_sha256() { printf '%s\\n' \"$STALE_CANDIDATE_MANIFEST_SHA256\"; }",
+            "write_cleanup_owner_marker() { return 0; }",
+            "verify_cleanup_owner_marker() { return 0; }",
+            "remove_file_durably() { /usr/bin/rm -f -- \"$1\"; }",
+            "invoke_rm() { rm \"$@\"; }",
             "stale_tree_state() { return 0; }",
             "write_stale_mutation_state() { STALE_STAGE=\"$1\"; printf 'journal:%s\\n' \"$1\" >> \"$RECOVERY_LOG\"; printf '{}\\n' > \"$MUTATION_STATE\"; }",
             "invoke_mount_authority() {",
@@ -8271,12 +8301,20 @@ def test_terminal_systemd_attempt_stages_do_not_restore_again(
             "set -u",
             "LOCAL_REHEARSAL=true",
             "STALE_LOCAL_REHEARSAL=true",
+            "RELEASE_NAME=release",
             "CURRENT_RELEASE_KEY=release-key",
             "STALE_RELEASE_KEY=release-key",
             "CURRENT_PERSISTENT_KEY=persistent-key",
             "STALE_PERSISTENT_KEY=persistent-key",
             "CURRENT_SYSTEMD_KEY=systemd-key",
             "STALE_SYSTEMD_KEY=systemd-key",
+            "STALE_CANDIDATE_MANIFEST_SHA256=manifest-digest",
+            "STALE_CANDIDATE_RELEASE_TOPOLOGY_SHA256=candidate-topology-digest",
+            "STALE_CANDIDATE_RELEASE_ROOT_IDENTITY=3:4",
+            "STALE_SOURCE_RELEASE_TOPOLOGY_SHA256=source-topology-digest",
+            "STALE_SOURCE_RELEASE_ROOT_IDENTITY=1:2",
+            "CANDIDATE_RELEASE_TOPOLOGY_SNAPSHOT=/candidate-topology",
+            "SOURCE_RELEASE_TOPOLOGY_SNAPSHOT=/source-topology",
             f"STALE_STAGE={stage}",
             "STALE_ATTEMPT_ID=" + "a" * 32,
             "STALE_PID=321",
@@ -8293,6 +8331,8 @@ def test_terminal_systemd_attempt_stages_do_not_restore_again(
             f"RESTORED={shlex.quote(_bash_path(restored))}",
             f"REMOVED={shlex.quote(_bash_path(removed))}",
             "tree_matches_snapshot() { return 0; }",
+            "tree_matches_bound_topology() { return 0; }",
+            "verify_stale_journal_bindings() { return 0; }",
             "stale_tree_state() { [ \"$1\" = \"$STALE_RELEASE_ROOT/agent/data\" ] && return 0; [ \"$1\" = \"$STALE_PERSISTENT_ROOT\" ] && return 2; return 1; }",
             "restore_systemd_units_from() { : > \"$RESTORED\"; return 0; }",
             "write_stale_mutation_state() { STALE_STAGE=\"$1\"; }",
@@ -8588,6 +8628,20 @@ def test_live_bind_side_effect_then_nonzero_is_unmounted_before_root_rollback(
             f"SNAPSHOT_RECOVERY={shlex.quote(_bash_path(recovery_snapshot))}",
             f"RELEASE_PARENT={shlex.quote(_bash_path(tmp_path))}",
             "STAGING_ROOT=/nonexistent-staging",
+            "RELEASE_NAME=release",
+            "ATTEMPT_ID=777",
+            "CANDIDATE_RELEASE_ROOT_IDENTITY=3:4",
+            "CANDIDATE_RELEASE_TOPOLOGY_SHA256=candidate-topology-digest",
+            "CANDIDATE_RELEASE_TOPOLOGY_SNAPSHOT=/candidate-topology",
+            "SOURCE_RELEASE_ROOT_IDENTITY=1:2",
+            "SOURCE_RELEASE_TOPOLOGY_SNAPSHOT=/source-topology",
+            "CANDIDATE_MANIFEST_SHA256=candidate-manifest-digest",
+            f"CANDIDATE_CLEANUP_ROOT={shlex.quote(_bash_path(tmp_path / '.release.closed-candidate-cleanup.777'))}",
+            f"CANDIDATE_CLEANUP_OWNER={shlex.quote(_bash_path(tmp_path / '.release.closed-candidate-cleanup.777.owner'))}",
+            "STAGING_DELETE_ROOT=/nonexistent-staging-delete",
+            "STAGING_DELETE_OWNER=/nonexistent-staging-delete.owner",
+            "STAGING_OWNER_MARKER=/nonexistent-staging-owner",
+            "STAGING_CLEANUP_ARMED=false",
             "UNIT_ATTEMPT_ROOT=",
             "UNIT_MUTATION_MARKER=",
             "INSTALL_COMPLETE=false",
@@ -8608,6 +8662,12 @@ def test_live_bind_side_effect_then_nonzero_is_unmounted_before_root_rollback(
             "remove_systemd_unit_attempt() { return 0; }",
             "restore_systemd_units() { return 0; }",
             "verify_findmnt_file() { return 0; }",
+            "tree_matches_bound_topology() { return 0; }",
+            "regular_file_sha256() { printf '%s\\n' \"$CANDIDATE_MANIFEST_SHA256\"; }",
+            "write_cleanup_owner_marker() { : > \"$1\"; return 0; }",
+            "verify_cleanup_owner_marker() { return 0; }",
+            "remove_file_durably() { /usr/bin/rm -f -- \"$1\"; }",
+            "invoke_rm() { printf 'rm-release\\n' >> \"$ROLLBACK_LOG\"; /usr/bin/rm \"$@\"; }",
             "snapshot_tree() { /usr/bin/cp -- \"$SNAPSHOT_BEFORE\" \"$2\"; }",
             "fsync_directories() { return 0; }",
             "invoke_mount_authority() {",
@@ -8659,9 +8719,9 @@ def test_sigkill_before_systemd_journal_leaves_attempt_journal_bound(
         case_root / "prejournal-python",
         '  if [ "$1" = "-" ] && [ "${3:-}" = "systemd-units-armed" ]; then\n'
         f"    : > '{_bash_path(reached)}'\n"
-        '    kill -9 "$PPID"\n'
+        '    kill -9 "$5"\n'
         '    kill -9 "$$"\n'
-        "  fi\n"
+        '  fi\n'
         'command "$REAL_PYTHON" "$@"\n',
     )
 
@@ -8713,7 +8773,7 @@ def test_partial_systemd_restore_keeps_armed_material_for_retry(
         closed_package,
         case_root,
         prepared,
-        failed_hook="python",
+        failed_hook="units",
         env_overrides={"VL360_LOCAL_PYTHON_EXECUTOR": _bash_path(python_executor)},
     )
 
@@ -9137,7 +9197,7 @@ def test_stale_committed_retired_tree_tamper_is_preserved_until_restored(
     )
     retired = next(release.parent.glob(f".{release.name}.closed-retired.*"))
     retired_backup = case_root / "retired-authority-backup"
-    shutil.copytree(retired, retired_backup)
+    retired.rename(retired_backup)
     unit_destination = case_root / "runtime" / "systemd-units"
     hook_log = Path(values["INSTALL_HOOK_LOG"].replace("/", os.sep))
     if os.name == "nt":
@@ -9147,7 +9207,6 @@ def test_stale_committed_retired_tree_tamper_is_preserved_until_restored(
     persistent_before = _snapshot_topology(persistent)
     units_before = _snapshot_topology(unit_destination)
     hook_log_before = hook_log.read_bytes()
-    shutil.rmtree(retired)
     retired.mkdir()
     (retired / "foreign-release-marker.txt").write_bytes(b"must-survive\n")
     tampered_retired = _snapshot_topology(retired)
@@ -9169,7 +9228,7 @@ def test_stale_committed_retired_tree_tamper_is_preserved_until_restored(
     assert hook_log.read_bytes() == hook_log_before
 
     shutil.rmtree(retired)
-    shutil.copytree(retired_backup, retired)
+    retired_backup.rename(retired)
     retry = _invoke_installer(
         closed_package,
         case_root,
