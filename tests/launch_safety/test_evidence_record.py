@@ -338,6 +338,17 @@ def test_release_gate_records_default_sections_and_renders_canonical_result() ->
     assert '"--output", $evidenceOutput' in source
 
 
+def test_release_gate_uses_resolved_bash_and_fails_closed_when_unavailable() -> None:
+    gate = Path(__file__).resolve().parents[2] / "scripts" / "release_gate.ps1"
+    source = gate.read_text(encoding="utf-8")
+
+    assert '. (Join-Path $Root "scripts/ops/release_gate_harness.ps1")' in source
+    assert "$bashAuthority = Resolve-LaunchSafetyBash" in source
+    assert '& "bash"' not in source
+    assert '"bash-interpreter-unavailable"' in source
+    assert '"rollback-local-rehearsal" "skip"' in source
+
+
 def test_release_gate_requires_clean_head_before_docker_prerequisites() -> None:
     gate = Path(__file__).resolve().parents[2] / "scripts" / "release_gate.ps1"
     source = gate.read_text(encoding="utf-8")
@@ -374,3 +385,10 @@ def test_release_gate_preserves_browser_primary_cleanup_recorder_exit_code() -> 
     )
     render_command = source.index('"render", "--final"', render)
     assert render_opt_in_guard < render_command
+
+
+def test_release_gate_preserves_native_exit_codes_for_evidence_sections() -> None:
+    gate = Path(__file__).resolve().parents[2] / "scripts" / "release_gate.ps1"
+    source = gate.read_text(encoding="utf-8")
+
+    assert 'Data["ExitCode"] = [int]$code' in source

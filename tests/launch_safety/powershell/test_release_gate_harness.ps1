@@ -27,6 +27,39 @@ function Assert-True($Condition, [string]$Message) {
   if (-not $Condition) { throw $Message }
 }
 
+. (Join-Path $repoRoot 'scripts/ops/release_gate_harness.ps1')
+
+$bashAuthorityPath = Join-Path $stubRoot 'bash.cmd'
+$bashPriorPath = $env:PATH
+$bashPriorProgramFiles = $env:ProgramFiles
+$bashPriorProgramFilesX86 = ${env:ProgramFiles(x86)}
+$bashPriorLocalAppData = $env:LOCALAPPDATA
+try {
+  $env:PATH = $stubRoot
+  $env:ProgramFiles = Join-Path $stubRoot 'missing-program-files'
+  ${env:ProgramFiles(x86)} = Join-Path $stubRoot 'missing-program-files-x86'
+  $env:LOCALAPPDATA = Join-Path $stubRoot 'missing-local-app-data'
+  Remove-Item -LiteralPath $bashAuthorityPath -Force -ErrorAction SilentlyContinue
+  Assert-Equal (Resolve-LaunchSafetyBash) $null 'missing bash must resolve to null'
+
+  $userBash = Join-Path $env:LOCALAPPDATA 'Programs/Git/bin/bash.exe'
+  New-Item -ItemType Directory -Path (Split-Path $userBash) -Force | Out-Null
+  '' | Set-Content -LiteralPath $userBash -Encoding Ascii
+  Assert-Equal (Resolve-LaunchSafetyBash) $userBash 'bash resolver must include user-scope Git for Windows'
+  Remove-Item -LiteralPath $userBash -Force
+
+  "@echo off`r`nexit /b 0`r`n" |
+    Set-Content -LiteralPath $bashAuthorityPath -Encoding Ascii
+  $resolvedBash = Resolve-LaunchSafetyBash
+  Assert-True ($resolvedBash -eq $bashAuthorityPath) 'bash resolver must return the discovered executable authority'
+}
+finally {
+  $env:PATH = $bashPriorPath
+  if ($null -eq $bashPriorProgramFiles) { Remove-Item Env:ProgramFiles -ErrorAction SilentlyContinue } else { $env:ProgramFiles = $bashPriorProgramFiles }
+  if ($null -eq $bashPriorProgramFilesX86) { Remove-Item Env:'ProgramFiles(x86)' -ErrorAction SilentlyContinue } else { ${env:ProgramFiles(x86)} = $bashPriorProgramFilesX86 }
+  if ($null -eq $bashPriorLocalAppData) { Remove-Item Env:LOCALAPPDATA -ErrorAction SilentlyContinue } else { $env:LOCALAPPDATA = $bashPriorLocalAppData }
+}
+
 $priorPath = $env:PATH
 $priorChromeExists = Test-Path Env:CHROME_PATH
 $priorChrome = $env:CHROME_PATH
@@ -108,6 +141,83 @@ try {
 }
 finally {
   Remove-Item -LiteralPath $noiseScript -Force -ErrorAction SilentlyContinue
+}
+
+$exit120StubRoot = Join-Path ([System.IO.Path]::GetTempPath()) (
+  'launch-gate-exit120-' + [guid]::NewGuid().ToString('N')
+)
+$exit120State = Join-Path $exit120StubRoot 'evidence.json'
+$realPython = (Get-Command python -ErrorAction Stop).Source
+New-Item -ItemType Directory -Path $exit120StubRoot | Out-Null
+
+@"
+@echo off
+if "%1"=="scripts/ops/record_launch_evidence.py" (
+  "$realPython" %*
+  exit /b %errorlevel%
+)
+if "%*"=="-m pytest -q" exit /b 120
+exit /b 0
+"@ | Set-Content -LiteralPath (Join-Path $exit120StubRoot 'python.cmd') -Encoding Ascii
+
+@'
+@echo off
+if "%1"=="rev-parse" echo 0123456789abcdef0123456789abcdef01234567
+exit /b 0
+'@ | Set-Content -LiteralPath (Join-Path $exit120StubRoot 'git.cmd') -Encoding Ascii
+
+foreach ($name in @('npx.cmd', 'npm.cmd', 'bash.cmd', 'pwsh.cmd')) {
+  "@echo off`r`nexit /b 0`r`n" |
+    Set-Content -LiteralPath (Join-Path $exit120StubRoot $name) -Encoding Ascii
+}
+
+$exit120PriorPath = $env:PATH
+$exit120DatabaseUrlExists = Test-Path Env:DATABASE_URL
+$exit120DatabaseUrl = $env:DATABASE_URL
+try {
+  $env:PATH = "$exit120StubRoot;$exit120PriorPath"
+  Remove-Item Env:DATABASE_URL -ErrorAction SilentlyContinue
+  $powershell = [System.Diagnostics.Process]::GetCurrentProcess().MainModule.FileName
+  $priorErrorActionPreference = $ErrorActionPreference
+  try {
+    $ErrorActionPreference = 'Continue'
+    $exit120Output = @(& $powershell -NoProfile -Command {
+      param($root, $stubRoot, $python, $state)
+      $env:PATH = "$stubRoot;$env:PATH"
+      & (Join-Path $root 'scripts/release_gate.ps1') `
+        -SkipBackend -SkipFrontend -SkipData `
+        -Python $python `
+        -LaunchSafetyEvidenceState $state
+      exit $LASTEXITCODE
+    } -args @(
+      $repoRoot,
+      $exit120StubRoot,
+      (Join-Path $exit120StubRoot 'python.cmd'),
+      $exit120State
+    ) 2>&1)
+    $exit120GateExit = [int]$LASTEXITCODE
+  }
+  finally {
+    $ErrorActionPreference = $priorErrorActionPreference
+  }
+
+  Assert-Equal $exit120GateExit 1 (
+    'required section exit 120 must fail the release gate; output=' +
+    ($exit120Output -join ' | ')
+  )
+  $exit120Evidence = Get-Content -LiteralPath $exit120State -Raw | ConvertFrom-Json
+  $backendFullEvidence = $exit120Evidence.sections.'backend-full-regression'
+  Assert-Equal $backendFullEvidence.status 'fail' 'backend full exit 120 evidence status'
+  Assert-Equal ([int]$backendFullEvidence.exit_code) 120 'backend full exit 120 evidence code'
+}
+finally {
+  $env:PATH = $exit120PriorPath
+  if ($exit120DatabaseUrlExists) {
+    $env:DATABASE_URL = $exit120DatabaseUrl
+  } else {
+    Remove-Item Env:DATABASE_URL -ErrorAction SilentlyContinue
+  }
+  Remove-Item -LiteralPath $exit120StubRoot -Recurse -Force -ErrorAction SilentlyContinue
 }
 
 $browserEnvironmentNames = @('HOST', 'NITRO_HOST', 'PORT', 'NITRO_PORT', 'SMOKE_BASE_URL')

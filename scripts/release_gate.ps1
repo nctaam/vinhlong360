@@ -19,6 +19,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 $Root = Resolve-Path (Join-Path $PSScriptRoot "..")
+. (Join-Path $Root "scripts/ops/release_gate_harness.ps1")
 $Script:Failures = 0
 $Script:Warnings = 0
 $Script:LaunchSafetyEvidenceEnabled = $false
@@ -84,7 +85,11 @@ function Invoke-Native {
     & $File @Arguments
     $code = $LASTEXITCODE
     if ($code -ne 0) {
-      throw "$File $($Arguments -join ' ') exited with code $code"
+      $errorRecord = [System.Exception]::new(
+        "$File $($Arguments -join ' ') exited with code $code"
+      )
+      $errorRecord.Data["ExitCode"] = [int]$code
+      throw $errorRecord
     }
   } finally {
     Pop-Location
@@ -255,15 +260,24 @@ function Invoke-LaunchSafetyRequiredEvidence {
       ) $webDir
     }
 
-  Invoke-RecordedLaunchSafetySection "rollback-local-rehearsal" `
-    "bash scripts/ops/rehearse_launch_rollback.sh --local-rehearsal" {
-      & "bash" "scripts/ops/rehearse_launch_rollback.sh" "--local-rehearsal"
-      if ($LASTEXITCODE -ne 0) {
-        $errorRecord = [System.Exception]::new("rollback rehearsal failed")
-        $errorRecord.Data["ExitCode"] = [int]$LASTEXITCODE
-        throw $errorRecord
+  $bashAuthority = Resolve-LaunchSafetyBash
+  if ($null -eq $bashAuthority) {
+    $bashSkipReason = "bash-interpreter-unavailable"
+    Write-Step "SKIP" "Launch Safety evidence: rollback-local-rehearsal" $bashSkipReason
+    Invoke-LaunchSafetyRecord "rollback-local-rehearsal" "skip" 0 `
+      $bashSkipReason "bash scripts/ops/rehearse_launch_rollback.sh --local-rehearsal"
+    $Script:Failures++
+  } else {
+    Invoke-RecordedLaunchSafetySection "rollback-local-rehearsal" `
+      "$bashAuthority scripts/ops/rehearse_launch_rollback.sh --local-rehearsal" {
+        & $bashAuthority "scripts/ops/rehearse_launch_rollback.sh" "--local-rehearsal"
+        if ($LASTEXITCODE -ne 0) {
+          $errorRecord = [System.Exception]::new("rollback rehearsal failed")
+          $errorRecord.Data["ExitCode"] = [int]$LASTEXITCODE
+          throw $errorRecord
+        }
       }
-    }
+  }
 
   Invoke-RecordedLaunchSafetySection "backend-full-regression" `
     "python -m pytest -q" {

@@ -4,13 +4,6 @@ import { createLaunchRawArtifactPlugin } from './build/launchRawArtifactPlugin'
 
 const apiBase = process.env.API_BASE || 'http://localhost:8360'
 const siteNoindex = process.env.NUXT_PUBLIC_SITE_NOINDEX !== 'false'
-const SECURITY_HEADERS = {
-  'X-Content-Type-Options': 'nosniff',
-  'X-Frame-Options': 'SAMEORIGIN',
-  'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'Permissions-Policy': 'geolocation=(), microphone=(), camera=(), payment=()',
-  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
-} as const
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
@@ -199,7 +192,15 @@ export default defineNuxtConfig({
     },
     routeRules: {
       '/_nuxt/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
-      '/**': { headers: SECURITY_HEADERS },
+      '/**': {
+        headers: {
+          'X-Content-Type-Options': 'nosniff',
+          'X-Frame-Options': 'SAMEORIGIN',
+          'Referrer-Policy': 'strict-origin-when-cross-origin',
+          'Permissions-Policy': 'geolocation=(), microphone=(), camera=(), payment=()',
+          'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+        },
+      },
     },
   },
 })

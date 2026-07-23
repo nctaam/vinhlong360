@@ -108,3 +108,34 @@ function Invoke-RecordedComposeHarness {
   return [int]$result
 }
 
+function Resolve-LaunchSafetyBash {
+  [OutputType([string])]
+  param()
+
+  $command = Get-Command bash -ErrorAction SilentlyContinue |
+    Where-Object { $_.CommandType -eq 'Application' } |
+    Select-Object -First 1
+  if ($null -ne $command -and -not [string]::IsNullOrWhiteSpace([string]$command.Source)) {
+    return [string]$command.Source
+  }
+
+  $installRoots = @(
+    [pscustomobject]@{ Base = $env:ProgramFiles; GitDirectory = 'Git' },
+    [pscustomobject]@{ Base = ${env:ProgramFiles(x86)}; GitDirectory = 'Git' },
+    [pscustomobject]@{ Base = $env:LOCALAPPDATA; GitDirectory = 'Programs/Git' }
+  )
+  foreach ($installRoot in $installRoots) {
+    $base = $installRoot.Base
+    if ([string]::IsNullOrWhiteSpace([string]$base)) { continue }
+    foreach ($candidate in @(
+      (Join-Path $base "$($installRoot.GitDirectory)/bin/bash.exe"),
+      (Join-Path $base "$($installRoot.GitDirectory)/usr/bin/bash.exe")
+    )) {
+      if (Test-Path -LiteralPath $candidate -PathType Leaf) {
+        return (Resolve-Path -LiteralPath $candidate).Path
+      }
+    }
+  }
+  return $null
+}
+
