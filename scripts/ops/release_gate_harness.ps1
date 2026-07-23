@@ -10,20 +10,36 @@ function Invoke-RecordedComposeHarness {
     [string]$Python = "python"
   )
 
+  $composeControlEnvironmentNames = @(
+    'COMPOSE_FILE',
+    'COMPOSE_PROJECT_NAME',
+    'COMPOSE_PROFILES',
+    'COMPOSE_ENV_FILES',
+    'COMPOSE_DISABLE_ENV_FILE'
+  )
+  $environmentNamesToRestore = @(
+    $EnvironmentNames + $composeControlEnvironmentNames |
+      Select-Object -Unique
+  )
   $environmentSnapshot = @{}
-  foreach ($name in $EnvironmentNames) {
+  foreach ($name in $environmentNamesToRestore) {
     $exists = Test-Path -LiteralPath "Env:$name"
     $environmentSnapshot[$name] = [pscustomobject]@{
       Exists = $exists
       Value = if ($exists) { (Get-Item -LiteralPath "Env:$name").Value } else { $null }
     }
   }
+  foreach ($name in $composeControlEnvironmentNames) {
+    Remove-Item -LiteralPath "Env:$name" -ErrorAction SilentlyContinue
+  }
+  $env:COMPOSE_DISABLE_ENV_FILE = '1'
+  $composeProject = 'vl360launch' + [guid]::NewGuid().ToString('N')
 
   $primaryExit = 0
   $cleanupExit = 0
   $recordExit = 0
   try {
-    $upArgs = @('compose', '-f', $ComposeFile, 'up', '-d')
+    $upArgs = @('compose', '-p', $composeProject, '-f', $ComposeFile, 'up', '-d')
     if ($Build) { $upArgs += '--build' }
     $upArgs += '--wait'
     $priorErrorActionPreference = $ErrorActionPreference
@@ -58,7 +74,7 @@ function Invoke-RecordedComposeHarness {
       $priorErrorActionPreference = $ErrorActionPreference
       try {
         $ErrorActionPreference = 'Continue'
-        & docker compose -f $ComposeFile down -v --remove-orphans 2>&1 | Out-Host
+        & docker compose -p $composeProject -f $ComposeFile down -v --remove-orphans 2>&1 | Out-Host
         $cleanupExit = [int]$LASTEXITCODE
       }
       finally {
@@ -69,7 +85,7 @@ function Invoke-RecordedComposeHarness {
       $cleanupExit = 1
     }
     finally {
-      foreach ($name in $EnvironmentNames) {
+      foreach ($name in $environmentNamesToRestore) {
         $prior = $environmentSnapshot[$name]
         if ($prior.Exists) {
           Set-Item -LiteralPath "Env:$name" -Value $prior.Value

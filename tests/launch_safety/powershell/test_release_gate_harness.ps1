@@ -7,6 +7,12 @@ New-Item -ItemType Directory -Path $stubRoot | Out-Null
 @echo off
 echo docker stdout %*
 echo docker stderr %* 1>&2
+echo CALL:%*>>"%STUB_DOCKER_LOG%"
+echo ENV:COMPOSE_FILE=[%COMPOSE_FILE%]>>"%STUB_DOCKER_LOG%"
+echo ENV:COMPOSE_PROJECT_NAME=[%COMPOSE_PROJECT_NAME%]>>"%STUB_DOCKER_LOG%"
+echo ENV:COMPOSE_PROFILES=[%COMPOSE_PROFILES%]>>"%STUB_DOCKER_LOG%"
+echo ENV:COMPOSE_ENV_FILES=[%COMPOSE_ENV_FILES%]>>"%STUB_DOCKER_LOG%"
+echo ENV:COMPOSE_DISABLE_ENV_FILE=[%COMPOSE_DISABLE_ENV_FILE%]>>"%STUB_DOCKER_LOG%"
 echo %* | findstr /C:" down " >nul
 if %errorlevel%==0 exit /b %STUB_DOWN_EXIT%
 exit /b %STUB_UP_EXIT%
@@ -65,6 +71,24 @@ $priorChromeExists = Test-Path Env:CHROME_PATH
 $priorChrome = $env:CHROME_PATH
 $priorNginxExists = Test-Path Env:NGINX_PROBE_URL
 $priorNginx = $env:NGINX_PROBE_URL
+$priorDockerLogExists = Test-Path Env:STUB_DOCKER_LOG
+$priorDockerLog = $env:STUB_DOCKER_LOG
+$composeControlNames = @(
+  'COMPOSE_FILE',
+  'COMPOSE_PROJECT_NAME',
+  'COMPOSE_PROFILES',
+  'COMPOSE_ENV_FILES',
+  'COMPOSE_DISABLE_ENV_FILE'
+)
+$composeControlSnapshot = @{}
+foreach ($name in $composeControlNames) {
+  $exists = Test-Path -LiteralPath "Env:$name"
+  $composeControlSnapshot[$name] = [pscustomobject]@{
+    Exists = $exists
+    Value = if ($exists) { (Get-Item -LiteralPath "Env:$name").Value } else { $null }
+  }
+}
+$dockerLog = Join-Path $stubRoot 'docker-invocations.log'
 try {
   $env:PATH = "$stubRoot;$priorPath"
   . (Join-Path $repoRoot 'scripts/ops/release_gate_harness.ps1')
@@ -77,14 +101,24 @@ try {
     @{ Name = 'evidence-fail'; Up = 0; Body = 0; Down = 0; Evidence = 13; Expected = 13 }
   )
   $executedCases = 0
+  $ownedProjects = [System.Collections.Generic.HashSet[string]]::new(
+    [System.StringComparer]::Ordinal
+  )
 
   foreach ($case in $cases) {
+    Remove-Item -LiteralPath $dockerLog -Force -ErrorAction SilentlyContinue
+    $env:STUB_DOCKER_LOG = $dockerLog
     $env:STUB_UP_EXIT = [string]$case.Up
     $env:STUB_DOWN_EXIT = [string]$case.Down
     $env:STUB_EVIDENCE_EXIT = [string]$case.Evidence
     $env:CHROME_PATH = 'C:\pre-existing\chrome.exe'
     Remove-Item Env:NGINX_PROBE_URL -ErrorAction SilentlyContinue
     $env:STUB_BODY_EXIT = [string]$case.Body
+    $env:COMPOSE_FILE = 'external-compose.yml'
+    $env:COMPOSE_PROJECT_NAME = 'external-project'
+    $env:COMPOSE_PROFILES = 'external-profile'
+    $env:COMPOSE_ENV_FILES = 'external.env'
+    $env:COMPOSE_DISABLE_ENV_FILE = 'external-disable-setting'
 
     $result = @(Invoke-RecordedComposeHarness `
       -Section $case.Name `
@@ -108,14 +142,90 @@ try {
     Assert-Equal $result[0] $case.Expected "$($case.Name) exit precedence"
     Assert-Equal $env:CHROME_PATH 'C:\pre-existing\chrome.exe' "$($case.Name) restores existing CHROME_PATH"
     if (Test-Path Env:NGINX_PROBE_URL) { throw "$($case.Name) must restore NGINX_PROBE_URL to unset" }
+    Assert-Equal $env:COMPOSE_FILE 'external-compose.yml' "$($case.Name) restores COMPOSE_FILE"
+    Assert-Equal $env:COMPOSE_PROJECT_NAME 'external-project' "$($case.Name) restores COMPOSE_PROJECT_NAME"
+    Assert-Equal $env:COMPOSE_PROFILES 'external-profile' "$($case.Name) restores COMPOSE_PROFILES"
+    Assert-Equal $env:COMPOSE_ENV_FILES 'external.env' "$($case.Name) restores COMPOSE_ENV_FILES"
+    Assert-Equal $env:COMPOSE_DISABLE_ENV_FILE 'external-disable-setting' "$($case.Name) restores COMPOSE_DISABLE_ENV_FILE"
+
+    $dockerLines = @(Get-Content -LiteralPath $dockerLog)
+    $calls = @($dockerLines | Where-Object { $_.StartsWith('CALL:') })
+    Assert-Equal $calls.Count 2 "$($case.Name) must invoke compose up and down exactly once"
+    $upMatch = [regex]::Match(
+      $calls[0],
+      '^CALL:compose -p ([a-z0-9][a-z0-9_-]*) -f noisy-stub\.yml up -d --wait$'
+    )
+    $downMatch = [regex]::Match(
+      $calls[1],
+      '^CALL:compose -p ([a-z0-9][a-z0-9_-]*) -f noisy-stub\.yml down -v --remove-orphans$'
+    )
+    Assert-True $upMatch.Success "$($case.Name) compose up must use an invocation-owned project"
+    Assert-True $downMatch.Success "$($case.Name) compose down must use an invocation-owned project"
+    Assert-Equal $downMatch.Groups[1].Value $upMatch.Groups[1].Value "$($case.Name) cleanup must use the same project"
+    Assert-True ($ownedProjects.Add($upMatch.Groups[1].Value)) "$($case.Name) project must be unique per invocation"
+
+    foreach ($name in @('COMPOSE_FILE', 'COMPOSE_PROJECT_NAME', 'COMPOSE_PROFILES', 'COMPOSE_ENV_FILES')) {
+      Assert-Equal @($dockerLines | Where-Object { $_ -eq "ENV:$name=[]" }).Count 2 (
+        "$($case.Name) must hide inherited $name from both compose calls"
+      )
+    }
+    Assert-Equal @($dockerLines | Where-Object { $_ -eq 'ENV:COMPOSE_DISABLE_ENV_FILE=[1]' }).Count 2 (
+      "$($case.Name) must disable automatic Compose env files for both calls"
+    )
     $executedCases += 1
   }
   Assert-Equal $executedCases $cases.Count 'noisy stub matrix must execute every case'
+
+  Remove-Item -LiteralPath $dockerLog -Force -ErrorAction SilentlyContinue
+  $env:STUB_DOCKER_LOG = $dockerLog
+  $env:STUB_UP_EXIT = '0'
+  $env:STUB_DOWN_EXIT = '0'
+  $env:STUB_EVIDENCE_EXIT = '0'
+  foreach ($name in $composeControlNames) {
+    Remove-Item -LiteralPath "Env:$name" -ErrorAction SilentlyContinue
+  }
+
+  $unsetResult = @(Invoke-RecordedComposeHarness `
+    -Section 'unset-compose-controls' `
+    -ComposeFile 'noisy-stub.yml' `
+    -EnvironmentNames @('NGINX_PROBE_URL') `
+    -Python 'python' `
+    -Body {})
+
+  Assert-Equal $unsetResult.Count 1 'unset Compose controls must emit exactly one result'
+  Assert-Equal $unsetResult[0] 0 'unset Compose controls harness result'
+  foreach ($name in $composeControlNames) {
+    if (Test-Path -LiteralPath "Env:$name") {
+      throw "unset Compose controls must restore $name to unset"
+    }
+  }
+  $unsetDockerLines = @(Get-Content -LiteralPath $dockerLog)
+  foreach ($name in @('COMPOSE_FILE', 'COMPOSE_PROJECT_NAME', 'COMPOSE_PROFILES', 'COMPOSE_ENV_FILES')) {
+    Assert-Equal @($unsetDockerLines | Where-Object { $_ -eq "ENV:$name=[]" }).Count 2 (
+      "unset Compose controls must hide $name from both compose calls"
+    )
+  }
+  Assert-Equal @(
+    $unsetDockerLines | Where-Object { $_ -eq 'ENV:COMPOSE_DISABLE_ENV_FILE=[1]' }
+  ).Count 2 'unset Compose controls must disable automatic env files for both calls'
 }
 finally {
   $env:PATH = $priorPath
   if ($priorChromeExists) { $env:CHROME_PATH = $priorChrome } else { Remove-Item Env:CHROME_PATH -ErrorAction SilentlyContinue }
   if ($priorNginxExists) { $env:NGINX_PROBE_URL = $priorNginx } else { Remove-Item Env:NGINX_PROBE_URL -ErrorAction SilentlyContinue }
+  foreach ($name in $composeControlNames) {
+    $prior = $composeControlSnapshot[$name]
+    if ($prior.Exists) {
+      Set-Item -LiteralPath "Env:$name" -Value $prior.Value
+    } else {
+      Remove-Item -LiteralPath "Env:$name" -ErrorAction SilentlyContinue
+    }
+  }
+  if ($priorDockerLogExists) {
+    $env:STUB_DOCKER_LOG = $priorDockerLog
+  } else {
+    Remove-Item Env:STUB_DOCKER_LOG -ErrorAction SilentlyContinue
+  }
   Remove-Item -LiteralPath $stubRoot -Recurse -Force
 }
 
