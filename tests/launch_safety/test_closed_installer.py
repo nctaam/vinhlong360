@@ -58,6 +58,21 @@ def closed_package(tmp_path_factory: pytest.TempPathFactory):
     return _build_closed_package(tmp_path_factory.mktemp("task5-package"))
 
 
+@pytest.fixture
+def tmp_path(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    return tmp_path_factory.mktemp("case")
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows legacy path budget only")
+def test_closed_installer_temp_root_reserves_windows_legacy_path_budget(
+    tmp_path: Path,
+):
+    authority = tmp_path / "private-cleanup-archive-false-success" / "external.env"
+    authority_pin = _authority_lock_path("environment", authority) / "env"
+
+    assert len(os.fspath(authority_pin)) < 260
+
+
 def _load_module(name: str, path: Path):
     spec = importlib.util.spec_from_file_location(name, path)
     assert spec is not None and spec.loader is not None
@@ -1309,7 +1324,8 @@ def test_journal_interruption_is_owned_and_terminated_outside_installer_tree(
     interrupted = case_root / f"interrupted-{stage}"
     executor_bodies: list[str] = []
     popen_calls: list[tuple[list[str], dict[str, object]]] = []
-    cleanup_calls: list[list[str]] = []
+    taskkill_calls: list[list[str]] = []
+    owned_handle_kills: list[object] = []
 
     class FakeProcess:
         pid = 2468
@@ -1324,7 +1340,9 @@ def test_journal_interruption_is_owned_and_terminated_outside_installer_tree(
             return "captured stdout", "captured stderr"
 
         def kill(self):
+            owned_handle_kills.append(self)
             self.returncode = -9
+            raise ProcessLookupError(self.pid)
 
     process = FakeProcess()
 
@@ -1339,10 +1357,7 @@ def test_journal_interruption_is_owned_and_terminated_outside_installer_tree(
         return process
 
     def fake_run(command: list[str], **kwargs: object):
-        assert command == ["taskkill", "/PID", str(process.pid), "/T", "/F"], (
-            "installer must be started through an owned Popen boundary"
-        )
-        cleanup_calls.append(command)
+        taskkill_calls.append(command)
         process.returncode = 1
         return subprocess.CompletedProcess(command, 0)
 
@@ -1395,12 +1410,12 @@ def test_journal_interruption_is_owned_and_terminated_outside_installer_tree(
         assert kwargs["creationflags"] == getattr(
             subprocess, "CREATE_NEW_PROCESS_GROUP", 0x00000200
         )
-        assert cleanup_calls == [
-            ["taskkill", "/PID", str(process.pid), "/T", "/F"]
-        ]
+        assert owned_handle_kills == [process]
+        assert taskkill_calls == []
     else:
         assert kwargs["start_new_session"] is True
-        assert cleanup_calls == []
+        assert owned_handle_kills == []
+        assert taskkill_calls == []
     assert len(executor_bodies) == 1
     assert 'kill -9 "$PPID"' not in executor_bodies[0]
     assert 'kill -9 "$$"' not in executor_bodies[0]
@@ -1501,10 +1516,20 @@ def _wait_for_journal_interruption(
 
 def _terminate_owned_installer_process(
     process: subprocess.Popen[str],
+    *,
+    windows_job_supervisor: bool = False,
 ) -> tuple[str, str, list[str]]:
     errors: list[str] = []
     if process.poll() is None:
-        if os.name == "nt":
+        if os.name == "nt" and windows_job_supervisor:
+            try:
+                process.kill()
+            except Exception as exc:
+                if process.poll() is None:
+                    errors.append(
+                        f"owned-handle kill failed: {type(exc).__name__}: {exc}"
+                    )
+        elif os.name == "nt":
             try:
                 completed = subprocess.run(
                     ["taskkill", "/PID", str(process.pid), "/T", "/F"],
@@ -1514,9 +1539,10 @@ def _terminate_owned_installer_process(
                     stderr=subprocess.DEVNULL,
                 )
             except Exception as exc:
-                errors.append(f"taskkill failed: {type(exc).__name__}: {exc}")
+                if process.poll() is None:
+                    errors.append(f"taskkill failed: {type(exc).__name__}: {exc}")
             else:
-                if completed.returncode != 0:
+                if completed.returncode != 0 and process.poll() is None:
                     errors.append(f"taskkill exited {completed.returncode}")
         else:
             try:
@@ -1601,7 +1627,9 @@ def _interrupt_at_journal_stage(package, case_root: Path, prepared, stage: str):
         except AssertionError as exc:
             wait_error = str(exc)
         finally:
-            _, _, cleanup_errors = _terminate_owned_installer_process(process)
+            _, _, cleanup_errors = _terminate_owned_installer_process(
+                process, windows_job_supervisor=os.name == "nt"
+            )
     stdout = stdout_path.read_text(encoding="utf-8", errors="replace")
     stderr = stderr_path.read_text(encoding="utf-8", errors="replace")
     result = subprocess.CompletedProcess(
