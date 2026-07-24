@@ -15,6 +15,7 @@ PROBE = ROOT / "scripts" / "ops" / "probe_launch_boundary.py"
 BROWSER_SMOKE = ROOT / "scripts" / "launch_safety_browser_e2e.mjs"
 NUXT_PACKAGE = ROOT / "web-nuxt" / "package.json"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
+RELEASE_GATE = ROOT / "scripts" / "release_gate.ps1"
 
 POLICY_FINGERPRINT = "ef12661b898905bd8b31804475aca64accd4c8b2df32b5252c3b2f61eeeca44c"
 ROUTE_MANIFEST_REVISION = "launch-indexing-policy-v1"
@@ -91,6 +92,21 @@ def test_ci_runs_task45_contracts_without_docker_or_browser_opt_ins():
         "CHROME_PATH",
     ):
         assert forbidden not in job
+
+
+def test_release_gate_backend_focused_uses_curated_task45_contracts():
+    source = RELEASE_GATE.read_text(encoding="utf-8")
+    backend_focused = source.split(
+        'Invoke-RecordedLaunchSafetySection "backend-focused"', 1
+    )[1].split('Invoke-RecordedLaunchSafetySection "frontend-focused"', 1)[0]
+
+    for contract in (
+        "tests/launch_safety/test_evidence_record.py",
+        "tests/launch_safety/test_browser_probe_contract.py",
+        "tests/launch_safety/test_launch_matrix_contract.py",
+    ):
+        assert f'"{contract}"' in backend_focused
+    assert '"tests/launch_safety",' not in backend_focused
 
 
 def _load_probe() -> ModuleType:

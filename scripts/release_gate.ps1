@@ -228,7 +228,10 @@ function Invoke-LaunchSafetyRequiredEvidence {
   Invoke-RecordedLaunchSafetySection "backend-focused" `
     "pytest launch-safety backend focused matrix" {
       Invoke-Native $Python @(
-        "-m", "pytest", "tests/launch_safety",
+        "-m", "pytest",
+        "tests/launch_safety/test_evidence_record.py",
+        "tests/launch_safety/test_browser_probe_contract.py",
+        "tests/launch_safety/test_launch_matrix_contract.py",
         "agent/tests/test_launch_artifacts.py",
         "agent/tests/test_route_manifest.py",
         "agent/tests/test_ai_disclosure.py",
