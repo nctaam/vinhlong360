@@ -889,6 +889,55 @@ def _run_rehearsal_prefix_harness(
     )
 
 
+def test_install_closed_package_omits_empty_mount_authority_and_preserves_value(
+    tmp_path: Path,
+):
+    fake_scripts = tmp_path / "fake-scripts"
+    fake_scripts.mkdir()
+    installer = fake_scripts / "install_closed_release.sh"
+    installer.write_text(
+        "#!/usr/bin/env bash\nprintf '%s\\0' \"$@\" > \"$ARGV_CAPTURE\"\n",
+        encoding="ascii",
+    )
+    installer.chmod(0o755)
+    empty_capture = tmp_path / "empty-argv"
+    host_capture = tmp_path / "host-argv"
+    mount_authority = tmp_path / "mount authority"
+
+    result = _run_rehearsal_prefix_harness(
+        tmp_path,
+        r'''
+SCRIPT_DIR="$FAKE_SCRIPT_DIR"
+MOUNT_AUTHORITY=
+ARGV_CAPTURE="$EMPTY_CAPTURE" install_closed_package \
+  "$KNOWN_GOOD_CLOSED" "$EVIDENCE_DIR/empty"
+MODE=--execute-on-host
+MOUNT_AUTHORITY="$EXACT_MOUNT_AUTHORITY"
+ARGV_CAPTURE="$HOST_CAPTURE" install_closed_package \
+  "$KNOWN_GOOD_CLOSED" "$EVIDENCE_DIR/host"
+''',
+        extra_env={
+            "EMPTY_CAPTURE": _bash_path(empty_capture),
+            "EXACT_MOUNT_AUTHORITY": _bash_path(mount_authority),
+            "FAKE_SCRIPT_DIR": _bash_path(fake_scripts),
+            "HOST_CAPTURE": _bash_path(host_capture),
+            "MOUNT_AUTHORITY": "",
+        },
+        name="install-closed-package-argv.sh",
+    )
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    empty_args = empty_capture.read_bytes().split(b"\0")[:-1]
+    host_args = host_capture.read_bytes().split(b"\0")[:-1]
+    assert b"--mount-authority" not in empty_args
+    mount_index = host_args.index(b"--mount-authority")
+    assert host_args[mount_index : mount_index + 3] == [
+        b"--mount-authority",
+        os.fsencode(_bash_path(mount_authority)),
+        b"--require-closed",
+    ]
+
+
 def test_local_maintenance_selector_preserves_real_selector_failure_before_stub(
     tmp_path: Path,
 ):

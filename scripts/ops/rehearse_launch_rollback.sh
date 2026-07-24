@@ -339,7 +339,9 @@ PY
 install_closed_package() {
   local package="$1"
   local evidence="$2"
+  local mount_args=()
   local_args=()
+  [ -z "$MOUNT_AUTHORITY" ] || mount_args+=(--mount-authority "$MOUNT_AUTHORITY")
   [ "$MODE" != "--local-rehearsal" ] || local_args+=(--local-rehearsal)
   "$SCRIPT_DIR/install_closed_release.sh" \
     --archive "$package" --archive-digest-file "$package.sha256" \
@@ -347,7 +349,7 @@ install_closed_package() {
     --persistent-agent-data-root "$PERSISTENT_AGENT_DATA_ROOT" \
     --environment-authority "$ENVIRONMENT_AUTHORITY" \
     --runtime-authority "$RUNTIME_AUTHORITY" \
-    --mount-authority "$MOUNT_AUTHORITY" \
+    "${mount_args[@]}" \
     --require-closed --evidence-dir "$evidence/install" "${local_args[@]}"
 }
 
