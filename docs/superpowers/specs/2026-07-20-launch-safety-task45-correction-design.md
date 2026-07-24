@@ -46,7 +46,7 @@ Docker path chỉ chạy khi có `-RunLaunchSafetyDockerOptIn`. Trước setup, 
 - Thiếu CLI: ghi `docker-cli-unavailable` cho hai Docker section và không setup.
 - Daemon không dùng được: ghi `docker-daemon-unavailable` cho hai Docker section và không setup.
 - PostgreSQL: `Invoke-RecordedComposeHarness` sở hữu `docker-compose.postgres.yml`, chỉ publish `127.0.0.1:55432`, snapshot/restore env và ưu tiên exit `primary > cleanup > recorder`.
-- Nginx/network: pytest integration tự sở hữu Compose và cổng `127.0.0.1:18080`; release gate không start outer Compose. Clean-tree preflight ở gate bảo đảm cả test dùng `ComposeProject` lẫn `test_nginx_boundary.py` trực tiếp đều đọc đúng Commit A.
+- Nginx/network: pytest integration tự sở hữu Compose và cổng `127.0.0.1:18080`; release gate không start outer Compose. Clean-tree preflight ở gate bảo đảm cả test dùng `ComposeProject` lẫn `test_nginx_boundary.py` trực tiếp đều đọc đúng clean current committed HEAD đã bind với current full revision.
 
 ### 3.3 Browser opt-in
 
