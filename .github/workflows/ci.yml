@@ -124,10 +124,10 @@ jobs:
           node-version: "24"
 
       - name: Install contract test dependencies
-        run: python -m pip install pytest
+        run: python -m pip install pytest -r requirements-dev.txt
 
       - name: Run Task 45 Python contracts
-        run: python -m pytest tests/launch_safety/test_evidence_record.py tests/launch_safety/test_browser_probe_contract.py tests/launch_safety/test_launch_matrix_contract.py -q
+        run: python -m pytest tests/launch_safety/test_backend_regression_runner.py tests/launch_safety/test_evidence_record.py tests/launch_safety/test_browser_probe_contract.py tests/launch_safety/test_launch_matrix_contract.py -q
 
       - name: Run PowerShell release-gate contract
         shell: pwsh

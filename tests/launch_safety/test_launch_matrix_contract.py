@@ -16,6 +16,8 @@ BROWSER_SMOKE = ROOT / "scripts" / "launch_safety_browser_e2e.mjs"
 NUXT_PACKAGE = ROOT / "web-nuxt" / "package.json"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
 RELEASE_GATE = ROOT / "scripts" / "release_gate.ps1"
+BACKEND_RUNNER = ROOT / "scripts" / "ops" / "run_backend_regression.py"
+REQUIREMENTS_DEV = ROOT / "requirements-dev.txt"
 
 POLICY_FINGERPRINT = "ef12661b898905bd8b31804475aca64accd4c8b2df32b5252c3b2f61eeeca44c"
 ROUTE_MANIFEST_REVISION = "launch-indexing-policy-v1"
@@ -75,8 +77,10 @@ def test_ci_runs_task45_contracts_without_docker_or_browser_opt_ins():
     assert "runs-on: windows-latest" in job
     assert "actions/setup-python@v5" in job
     assert "actions/setup-node@v4" in job
+    assert "python -m pip install pytest -r requirements-dev.txt" in job
     assert (
-        "python -m pytest tests/launch_safety/test_evidence_record.py "
+        "python -m pytest tests/launch_safety/test_backend_regression_runner.py "
+        "tests/launch_safety/test_evidence_record.py "
         "tests/launch_safety/test_browser_probe_contract.py "
         "tests/launch_safety/test_launch_matrix_contract.py -q"
     ) in job
@@ -101,12 +105,39 @@ def test_release_gate_backend_focused_uses_curated_task45_contracts():
     )[1].split('Invoke-RecordedLaunchSafetySection "frontend-focused"', 1)[0]
 
     for contract in (
+        "tests/launch_safety/test_backend_regression_runner.py",
         "tests/launch_safety/test_evidence_record.py",
         "tests/launch_safety/test_browser_probe_contract.py",
         "tests/launch_safety/test_launch_matrix_contract.py",
     ):
         assert f'"{contract}"' in backend_focused
     assert '"tests/launch_safety"' not in backend_focused
+
+
+def test_dev_requirements_include_bounded_two_worker_xdist() -> None:
+    assert (
+        "pytest-xdist>=3.6,<4  # bounded two-worker closed-installer regression"
+        in REQUIREMENTS_DEV.read_text(encoding="utf-8").splitlines()
+    )
+
+
+def test_release_gate_backend_full_uses_the_bounded_two_phase_runner() -> None:
+    source = RELEASE_GATE.read_text(encoding="utf-8")
+    backend_full = source.split(
+        'Invoke-RecordedLaunchSafetySection "backend-full-regression"', 1
+    )[1].split(
+        'Invoke-RecordedLaunchSafetySection "frontend-serial-regression"', 1
+    )[0]
+
+    assert '"scripts/ops/run_backend_regression.py"' in backend_full
+    assert '"--deadline-seconds", "7000"' in backend_full
+    assert "Invoke-Native $Python" in backend_full
+    assert '@("-m", "pytest", "-q")' not in backend_full
+
+    runner_source = " ".join(BACKEND_RUNNER.read_text(encoding="utf-8").split())
+    assert '"-n", "2"' in runner_source
+    assert '"--dist=load"' in runner_source
+    assert '"--max-worker-restart=0"' in runner_source
 
 
 def test_release_gate_frontend_focused_allows_nuxt_cold_start():

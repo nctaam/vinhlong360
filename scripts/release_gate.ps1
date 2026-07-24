@@ -229,6 +229,7 @@ function Invoke-LaunchSafetyRequiredEvidence {
     "pytest launch-safety backend focused matrix" {
       Invoke-Native $Python @(
         "-m", "pytest",
+        "tests/launch_safety/test_backend_regression_runner.py",
         "tests/launch_safety/test_evidence_record.py",
         "tests/launch_safety/test_browser_probe_contract.py",
         "tests/launch_safety/test_launch_matrix_contract.py",
@@ -284,8 +285,11 @@ function Invoke-LaunchSafetyRequiredEvidence {
   }
 
   Invoke-RecordedLaunchSafetySection "backend-full-regression" `
-    "python -m pytest -q" {
-      Invoke-Native $Python @("-m", "pytest", "-q")
+    "python scripts/ops/run_backend_regression.py --deadline-seconds 7000" {
+      Invoke-Native $Python @(
+        "scripts/ops/run_backend_regression.py",
+        "--deadline-seconds", "7000"
+      )
     }
 
   Invoke-RecordedLaunchSafetySection "frontend-serial-regression" `

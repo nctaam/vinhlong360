@@ -253,12 +253,12 @@ finally {
   Remove-Item -LiteralPath $noiseScript -Force -ErrorAction SilentlyContinue
 }
 
-$exit120StubRoot = Join-Path ([System.IO.Path]::GetTempPath()) (
-  'launch-gate-exit120-' + [guid]::NewGuid().ToString('N')
+$timeout124StubRoot = Join-Path ([System.IO.Path]::GetTempPath()) (
+  'launch-gate-timeout124-' + [guid]::NewGuid().ToString('N')
 )
-$exit120State = Join-Path $exit120StubRoot 'evidence.json'
+$timeout124State = Join-Path $timeout124StubRoot 'evidence.json'
 $realPython = (Get-Command python -ErrorAction Stop).Source
-New-Item -ItemType Directory -Path $exit120StubRoot | Out-Null
+New-Item -ItemType Directory -Path $timeout124StubRoot | Out-Null
 
 @"
 @echo off
@@ -266,32 +266,32 @@ if "%1"=="scripts/ops/record_launch_evidence.py" (
   "$realPython" %*
   exit /b %errorlevel%
 )
-if "%*"=="-m pytest -q" exit /b 120
+if "%*"=="scripts/ops/run_backend_regression.py --deadline-seconds 7000" exit /b 124
 exit /b 0
-"@ | Set-Content -LiteralPath (Join-Path $exit120StubRoot 'python.cmd') -Encoding Ascii
+"@ | Set-Content -LiteralPath (Join-Path $timeout124StubRoot 'python.cmd') -Encoding Ascii
 
 @'
 @echo off
 if "%1"=="rev-parse" echo 0123456789abcdef0123456789abcdef01234567
 exit /b 0
-'@ | Set-Content -LiteralPath (Join-Path $exit120StubRoot 'git.cmd') -Encoding Ascii
+'@ | Set-Content -LiteralPath (Join-Path $timeout124StubRoot 'git.cmd') -Encoding Ascii
 
 foreach ($name in @('npx.cmd', 'npm.cmd', 'bash.cmd', 'pwsh.cmd')) {
   "@echo off`r`nexit /b 0`r`n" |
-    Set-Content -LiteralPath (Join-Path $exit120StubRoot $name) -Encoding Ascii
+    Set-Content -LiteralPath (Join-Path $timeout124StubRoot $name) -Encoding Ascii
 }
 
-$exit120PriorPath = $env:PATH
-$exit120DatabaseUrlExists = Test-Path Env:DATABASE_URL
-$exit120DatabaseUrl = $env:DATABASE_URL
+$timeout124PriorPath = $env:PATH
+$timeout124DatabaseUrlExists = Test-Path Env:DATABASE_URL
+$timeout124DatabaseUrl = $env:DATABASE_URL
 try {
-  $env:PATH = "$exit120StubRoot;$exit120PriorPath"
+  $env:PATH = "$timeout124StubRoot;$timeout124PriorPath"
   Remove-Item Env:DATABASE_URL -ErrorAction SilentlyContinue
   $powershell = [System.Diagnostics.Process]::GetCurrentProcess().MainModule.FileName
   $priorErrorActionPreference = $ErrorActionPreference
   try {
     $ErrorActionPreference = 'Continue'
-    $exit120Output = @(& $powershell -NoProfile -Command {
+    $timeout124Output = @(& $powershell -NoProfile -Command {
       param($root, $stubRoot, $python, $state)
       $env:PATH = "$stubRoot;$env:PATH"
       & (Join-Path $root 'scripts/release_gate.ps1') `
@@ -301,33 +301,40 @@ try {
       exit $LASTEXITCODE
     } -args @(
       $repoRoot,
-      $exit120StubRoot,
-      (Join-Path $exit120StubRoot 'python.cmd'),
-      $exit120State
+      $timeout124StubRoot,
+      (Join-Path $timeout124StubRoot 'python.cmd'),
+      $timeout124State
     ) 2>&1)
-    $exit120GateExit = [int]$LASTEXITCODE
+    $timeout124GateExit = [int]$LASTEXITCODE
   }
   finally {
     $ErrorActionPreference = $priorErrorActionPreference
   }
 
-  Assert-Equal $exit120GateExit 1 (
-    'required section exit 120 must fail the release gate; output=' +
-    ($exit120Output -join ' | ')
+  Assert-Equal $timeout124GateExit 1 (
+    'runner timeout 124 must fail the release gate; output=' +
+    ($timeout124Output -join ' | ')
   )
-  $exit120Evidence = Get-Content -LiteralPath $exit120State -Raw | ConvertFrom-Json
-  $backendFullEvidence = $exit120Evidence.sections.'backend-full-regression'
-  Assert-Equal $backendFullEvidence.status 'fail' 'backend full exit 120 evidence status'
-  Assert-Equal ([int]$backendFullEvidence.exit_code) 120 'backend full exit 120 evidence code'
+  $timeout124Evidence = Get-Content -LiteralPath $timeout124State -Raw | ConvertFrom-Json
+  $backendFullEvidence = $timeout124Evidence.sections.'backend-full-regression'
+  Assert-Equal $backendFullEvidence.status 'fail' 'backend full timeout evidence status'
+  Assert-Equal ([int]$backendFullEvidence.exit_code) 124 'backend full timeout evidence code'
+  Assert-Equal $backendFullEvidence.command `
+    'python scripts/ops/run_backend_regression.py --deadline-seconds 7000' `
+    'backend full timeout evidence command'
+  Assert-Equal $timeout124Evidence.sections.'frontend-serial-regression'.status 'pass' `
+    'frontend serial regression must still run after backend timeout'
+  Assert-Equal $timeout124Evidence.sections.'source-scans'.status 'pass' `
+    'later required sections must still run after backend timeout'
 }
 finally {
-  $env:PATH = $exit120PriorPath
-  if ($exit120DatabaseUrlExists) {
-    $env:DATABASE_URL = $exit120DatabaseUrl
+  $env:PATH = $timeout124PriorPath
+  if ($timeout124DatabaseUrlExists) {
+    $env:DATABASE_URL = $timeout124DatabaseUrl
   } else {
     Remove-Item Env:DATABASE_URL -ErrorAction SilentlyContinue
   }
-  Remove-Item -LiteralPath $exit120StubRoot -Recurse -Force -ErrorAction SilentlyContinue
+  Remove-Item -LiteralPath $timeout124StubRoot -Recurse -Force -ErrorAction SilentlyContinue
 }
 
 $browserEnvironmentNames = @('HOST', 'NITRO_HOST', 'PORT', 'NITRO_PORT', 'SMOKE_BASE_URL')
