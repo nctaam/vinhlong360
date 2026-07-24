@@ -259,7 +259,8 @@ function Invoke-LaunchSafetyRequiredEvidence {
         "tests/launch-root-seo.test.ts",
         "tests/launch-readiness.test.ts",
         "tests/image-renderer-inventory.test.ts",
-        "tests/image-metadata-disclosure.test.ts"
+        "tests/image-metadata-disclosure.test.ts",
+        "--testTimeout=30000", "--hookTimeout=30000"
       ) $webDir
     }
 

@@ -109,6 +109,16 @@ def test_release_gate_backend_focused_uses_curated_task45_contracts():
     assert '"tests/launch_safety"' not in backend_focused
 
 
+def test_release_gate_frontend_focused_allows_nuxt_cold_start():
+    source = RELEASE_GATE.read_text(encoding="utf-8")
+    frontend_focused = source.split(
+        'Invoke-RecordedLaunchSafetySection "frontend-focused"', 1
+    )[1].split('Invoke-RecordedLaunchSafetySection "rollback-local-rehearsal"', 1)[0]
+
+    assert '"--testTimeout=30000"' in frontend_focused
+    assert '"--hookTimeout=30000"' in frontend_focused
+
+
 def _load_probe() -> ModuleType:
     spec = importlib.util.spec_from_file_location("launch_matrix_probe", PROBE)
     assert spec is not None and spec.loader is not None
