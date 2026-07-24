@@ -428,6 +428,94 @@ def _wait_for_path(path: Path, timeout: float = 60.0) -> None:
     raise AssertionError(f"timed out waiting for {path}")
 
 
+def _start_file_backed_process(
+    command: list[str], *, case_root: Path, env: dict[str, str]
+) -> tuple[subprocess.Popen[str], Path, Path]:
+    stdout_path = case_root / "background-installer.stdout"
+    stderr_path = case_root / "background-installer.stderr"
+    with (
+        stdout_path.open("w", encoding="utf-8", errors="replace") as stdout_stream,
+        stderr_path.open("w", encoding="utf-8", errors="replace") as stderr_stream,
+    ):
+        popen_kwargs: dict[str, object] = {}
+        if os.name == "nt":
+            popen_kwargs["creationflags"] = getattr(
+                subprocess, "CREATE_NEW_PROCESS_GROUP", 0x00000200
+            )
+        else:
+            popen_kwargs["start_new_session"] = True
+        process = subprocess.Popen(
+            command,
+            cwd=ROOT,
+            env=env,
+            stdout=stdout_stream,
+            stderr=stderr_stream,
+            text=True,
+            **popen_kwargs,
+        )
+    return process, stdout_path, stderr_path
+
+
+def _read_file_backed_output(
+    stdout_path: Path, stderr_path: Path
+) -> tuple[str, str]:
+    return (
+        stdout_path.read_text(encoding="utf-8", errors="replace"),
+        stderr_path.read_text(encoding="utf-8", errors="replace"),
+    )
+
+
+def _finish_file_backed_process(
+    process: subprocess.Popen[str],
+    stdout_path: Path,
+    stderr_path: Path,
+    *,
+    timeout: float,
+) -> tuple[str, str, list[str]]:
+    errors: list[str] = []
+    try:
+        process.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        errors.append(
+            f"background installer did not exit within {timeout:g} seconds"
+        )
+        try:
+            _, _, cleanup_errors = _terminate_owned_installer_process(process)
+        except Exception as exc:
+            errors.append(f"owned cleanup failed: {type(exc).__name__}: {exc}")
+        else:
+            errors.extend(cleanup_errors)
+    except Exception as exc:
+        errors.append(f"background installer wait failed: {type(exc).__name__}: {exc}")
+        try:
+            _, _, cleanup_errors = _terminate_owned_installer_process(process)
+        except Exception as cleanup_exc:
+            errors.append(
+                "owned cleanup failed: "
+                f"{type(cleanup_exc).__name__}: {cleanup_exc}"
+            )
+        else:
+            errors.extend(cleanup_errors)
+    try:
+        stdout, stderr = _read_file_backed_output(stdout_path, stderr_path)
+    except OSError as exc:
+        errors.append(f"background output read failed: {type(exc).__name__}: {exc}")
+        stdout, stderr = "", ""
+    return stdout, stderr, errors
+
+
+def _finish_file_backed_processes(
+    records: list[tuple[subprocess.Popen[str], Path, Path]], *, timeout: float
+) -> list[tuple[subprocess.Popen[str], str, str, list[str]]]:
+    completed = []
+    for process, stdout_path, stderr_path in records:
+        stdout, stderr, errors = _finish_file_backed_process(
+            process, stdout_path, stderr_path, timeout=timeout
+        )
+        completed.append((process, stdout, stderr, errors))
+    return completed
+
+
 def _authority_lock_path(_kind: str, authority: Path) -> Path:
     canonical = os.path.normcase(os.path.realpath(authority))
     digest = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
@@ -1317,6 +1405,71 @@ def test_journal_interruption_is_owned_and_terminated_outside_installer_tree(
     assert 'kill -9 "$PPID"' not in executor_bodies[0]
     assert 'kill -9 "$$"' not in executor_bodies[0]
     assert "while :; do" in executor_bodies[0]
+
+
+def test_file_backed_process_timeout_is_cleaned_and_keeps_diagnostics(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    stdout_path = tmp_path / "background.stdout"
+    stderr_path = tmp_path / "background.stderr"
+    stdout_path.write_text("captured stdout", encoding="utf-8")
+    stderr_path.write_text("captured stderr", encoding="utf-8")
+    cleaned: list[object] = []
+
+    class FakeProcess:
+        def communicate(self, timeout: float):
+            raise subprocess.TimeoutExpired(["installer"], timeout)
+
+    process = FakeProcess()
+
+    def fake_terminate(owned_process):
+        cleaned.append(owned_process)
+        return "", "", []
+
+    monkeypatch.setattr(
+        sys.modules[__name__],
+        "_terminate_owned_installer_process",
+        fake_terminate,
+    )
+
+    stdout, stderr, errors = _finish_file_backed_process(
+        process, stdout_path, stderr_path, timeout=3
+    )
+
+    assert cleaned == [process]
+    assert stdout == "captured stdout"
+    assert stderr == "captured stderr"
+    assert errors == ["background installer did not exit within 3 seconds"]
+
+
+def test_finishing_file_backed_processes_cleans_every_started_process(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    first = object()
+    second = object()
+    calls: list[object] = []
+    records = [
+        (first, tmp_path / "first.stdout", tmp_path / "first.stderr"),
+        (second, tmp_path / "second.stdout", tmp_path / "second.stderr"),
+    ]
+
+    def fake_finish(process, _stdout_path, _stderr_path, *, timeout):
+        assert timeout == 7
+        calls.append(process)
+        errors = ["first failed"] if process is first else []
+        return f"stdout-{len(calls)}", f"stderr-{len(calls)}", errors
+
+    monkeypatch.setattr(
+        sys.modules[__name__], "_finish_file_backed_process", fake_finish
+    )
+
+    completed = _finish_file_backed_processes(records, timeout=7)
+
+    assert calls == [first, second]
+    assert completed == [
+        (first, "stdout-1", "stderr-1", ["first failed"]),
+        (second, "stdout-2", "stderr-2", []),
+    ]
 
 
 def _wait_for_journal_interruption(
@@ -6623,13 +6776,10 @@ def test_same_target_concurrent_attempt_is_rejected_and_lock_is_released(
     hook.chmod(0o755)
     env = os.environ.copy()
     env.update(values)
-    first = subprocess.Popen(
+    first, first_stdout_path, first_stderr_path = _start_file_backed_process(
         _installer_command(closed_package, case_root, prepared),
-        cwd=ROOT,
+        case_root=case_root,
         env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
     )
     try:
         _wait_for_path(entered)
@@ -6650,12 +6800,15 @@ def test_same_target_concurrent_attempt_is_rejected_and_lock_is_released(
         )
     finally:
         release_hook.touch()
-        try:
-            first_stdout, first_stderr = first.communicate(timeout=60)
-        except subprocess.TimeoutExpired:
-            first.kill()
-            first_stdout, first_stderr = first.communicate()
+        first_stdout, first_stderr, first_cleanup_errors = (
+            _finish_file_backed_process(
+                first, first_stdout_path, first_stderr_path, timeout=60
+            )
+        )
 
+    assert not first_cleanup_errors, (
+        "; ".join(first_cleanup_errors) + "\n" + first_stderr + first_stdout
+    )
     assert second.returncode == 2, second.stderr + second.stdout
     assert "install-target-locked" in second.stderr
     assert not second_hook_entered.exists()
@@ -6896,13 +7049,10 @@ def test_attempts_sharing_any_destructive_authority_are_excluded(
 
     first_env = os.environ.copy()
     first_env.update(first_values)
-    first = subprocess.Popen(
+    first, first_stdout_path, first_stderr_path = _start_file_backed_process(
         _installer_command(closed_package, first_root, first_prepared),
-        cwd=ROOT,
+        case_root=first_root,
         env=first_env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
     )
     try:
         _wait_for_path(entered)
@@ -6923,8 +7073,15 @@ def test_attempts_sharing_any_destructive_authority_are_excluded(
         )
     finally:
         release_hook.touch()
-        first_stdout, first_stderr = first.communicate(timeout=60)
+        first_stdout, first_stderr, first_cleanup_errors = (
+            _finish_file_backed_process(
+                first, first_stdout_path, first_stderr_path, timeout=60
+            )
+        )
 
+    assert not first_cleanup_errors, (
+        "; ".join(first_cleanup_errors) + "\n" + first_stderr + first_stdout
+    )
     assert second.returncode == 2, second.stderr + second.stdout
     assert "install-target-locked" in second.stderr
     second_lock = json.loads(
@@ -7015,13 +7172,10 @@ def test_same_canonical_authority_is_excluded_across_roles(
 
     first_env = os.environ.copy()
     first_env.update(first_values)
-    first = subprocess.Popen(
+    first, first_stdout_path, first_stderr_path = _start_file_backed_process(
         _installer_command(closed_package, first_root, first_prepared),
-        cwd=ROOT,
+        case_root=first_root,
         env=first_env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
     )
     try:
         _wait_for_path(entered)
@@ -7039,8 +7193,15 @@ def test_same_canonical_authority_is_excluded_across_roles(
         shared_after = _snapshot_tree(shared_authority)
     finally:
         release_hook.touch()
-        first_stdout, first_stderr = first.communicate(timeout=60)
+        first_stdout, first_stderr, first_cleanup_errors = (
+            _finish_file_backed_process(
+                first, first_stdout_path, first_stderr_path, timeout=60
+            )
+        )
 
+    assert not first_cleanup_errors, (
+        "; ".join(first_cleanup_errors) + "\n" + first_stderr + first_stdout
+    )
     assert second.returncode == 2, second.stderr + second.stdout
     assert "install-target-locked" in second.stderr
     assert not second_hook_entered.exists()
@@ -7076,13 +7237,10 @@ def test_same_evidence_rejection_does_not_erase_active_attempt_evidence(
     hook.chmod(0o755)
     env = os.environ.copy()
     env.update(values)
-    first = subprocess.Popen(
+    first, first_stdout_path, first_stderr_path = _start_file_backed_process(
         _installer_command(closed_package, case_root, prepared),
-        cwd=ROOT,
+        case_root=case_root,
         env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
     )
     try:
         _wait_for_path(entered)
@@ -7098,8 +7256,15 @@ def test_same_evidence_rejection_does_not_erase_active_attempt_evidence(
         evidence_after_rejection = _snapshot_tree(evidence)
     finally:
         release_hook.touch()
-        first_stdout, first_stderr = first.communicate(timeout=60)
+        first_stdout, first_stderr, first_cleanup_errors = (
+            _finish_file_backed_process(
+                first, first_stdout_path, first_stderr_path, timeout=60
+            )
+        )
 
+    assert not first_cleanup_errors, (
+        "; ".join(first_cleanup_errors) + "\n" + first_stderr + first_stdout
+    )
     assert second.returncode == 2, second.stderr + second.stdout
     assert "install-evidence-locked" in second.stderr
     assert not second_hook_entered.exists()
@@ -7360,6 +7525,7 @@ def test_distinct_target_attempts_can_hold_install_locks_concurrently(
     processes = []
     releases = []
     prepared_cases = []
+    completed = []
     try:
         for index in range(2):
             case_root = tmp_path / f"distinct-target-{index}"
@@ -7378,15 +7544,12 @@ def test_distinct_target_attempts_can_hold_install_locks_concurrently(
             *_, values = prepared
             env = os.environ.copy()
             env.update(values)
-            process = subprocess.Popen(
+            process, stdout_path, stderr_path = _start_file_backed_process(
                 _installer_command(closed_package, case_root, prepared),
-                cwd=ROOT,
+                case_root=case_root,
                 env=env,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
             )
-            processes.append(process)
+            processes.append((process, stdout_path, stderr_path))
             releases.append(release_hook)
             prepared_cases.append((prepared, entered))
         for _, entered in prepared_cases:
@@ -7394,9 +7557,14 @@ def test_distinct_target_attempts_can_hold_install_locks_concurrently(
     finally:
         for release_hook in releases:
             release_hook.touch()
+        completed = _finish_file_backed_processes(processes, timeout=60)
 
-    for process, (prepared, _) in zip(processes, prepared_cases, strict=True):
-        stdout, stderr = process.communicate(timeout=60)
+    for (process, stdout, stderr, cleanup_errors), (prepared, _) in zip(
+        completed, prepared_cases, strict=True
+    ):
+        assert not cleanup_errors, (
+            "; ".join(cleanup_errors) + "\n" + stderr + stdout
+        )
         assert process.returncode == 19, stderr + stdout
         release, persistent, evidence, before_release, before_persistent, _, _ = prepared
         lock = json.loads((evidence / "install-lock.json").read_text(encoding="utf-8"))
@@ -7495,21 +7663,21 @@ def test_environment_authority_bytes_are_pinned_before_dependency_hooks(
     hook.chmod(0o755)
     env = os.environ.copy()
     env.update(values)
-    process = subprocess.Popen(
+    process, stdout_path, stderr_path = _start_file_backed_process(
         _installer_command(closed_package, case_root, prepared),
-        cwd=ROOT,
+        case_root=case_root,
         env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
     )
     try:
         _wait_for_path(entered)
         external.write_text("INDEXING_UNLOCK_KEY=opened\n", encoding="ascii")
     finally:
         release_hook.touch()
-        stdout, stderr = process.communicate(timeout=60)
+        stdout, stderr, cleanup_errors = _finish_file_backed_process(
+            process, stdout_path, stderr_path, timeout=60
+        )
 
+    assert not cleanup_errors, "; ".join(cleanup_errors) + "\n" + stderr + stdout
     assert process.returncode == 0, stderr + stdout
     assert (release / ".env").read_bytes() == admitted
     assert b"opened" not in (release / ".env").read_bytes()

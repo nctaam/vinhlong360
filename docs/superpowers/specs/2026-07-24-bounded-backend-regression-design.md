@@ -12,7 +12,7 @@ The goal is to preserve the same backend coverage while making the full regressi
 
 1. Keep the backend regression sequential at the phase level. Phase A runs the complete suite except `tests/launch_safety/test_closed_installer.py` with the existing serial pytest semantics.
 2. Run only `tests/launch_safety/test_closed_installer.py` in Phase B with fixed `pytest-xdist` settings: `-n 2 --dist=load --max-worker-restart=0`.
-3. Enforce one monotonic global deadline of 7,000 seconds across both phases. The runner must not reset the deadline between phases.
+3. Enforce one monotonic global deadline of 7,000 seconds across both production runner phases. The runner must not reset the deadline between phases. This release-gate deadline does not cap the one-time serial reference run used to validate xdist equivalence.
 4. On timeout, terminate the complete child process tree, return exit code `124`, and leave enough diagnostic output for the release gate to record a failed section. Never convert a timeout into a skip or pass.
 5. Preserve fail-closed phase semantics: Phase B starts only after Phase A passes; a Phase A failure is returned unchanged. A Phase B failure or timeout is returned as the backend section's exit code.
 6. Keep the release gate's evidence interface unchanged. The runner is an implementation detail behind the existing `backend-full-regression` command evidence row.
@@ -48,14 +48,16 @@ Extend the PowerShell release-gate harness to recognize the runner command and p
 Run an equivalence check before accepting the optimization:
 
 1. Collect node IDs for the installer module with the serial command and the two-worker command, then compare the normalized sets.
-2. Run the installer module serially and with two workers using separate JUnit XML outputs.
-3. Compare collected IDs and per-node outcomes; any mismatch blocks adoption and restores serial execution.
+2. Run the installer module serially and with two workers using separate JUnit XML outputs and independent finite process-tree watchdogs. The xdist run is limited to 7,000 seconds; the slower serial reference is limited to 21,000 seconds. These verification limits do not change the production runner's single shared 7,000-second deadline.
+3. Run both comparison commands even when one exits nonzero so diagnostic equivalence can still be calculated. A watchdog timeout or incomplete/unparseable JUnit file is inconclusive, not evidence of inequivalence.
+4. Compare collected IDs and per-node outcomes. Adoption requires both commands to exit `0`, each JUnit file to contain every unique collected case, and all outcomes to match. Identical failures are diagnostic equivalence only; any completed mismatch blocks adoption and restores serial execution.
+5. After equivalence passes, run the actual two-phase production runner and require exit `0` within its single shared 7,000-second deadline.
 
 Focused contracts must pass before the official matrix. The official matrix then runs the new runner from a clean worktree with an outer command timeout greater than the 7,000-second internal deadline. Docker, browser, deploy, production mutation, secret, and indexing behavior remain unchanged.
 
 ## 5. Scope and non-goals
 
-- Modify only the runner, release-gate invocation, test-only dependency and CI installation, related Python/PowerShell contract lists, and the remediation/original-plan/spec references required to describe the bounded execution and its narrow exception to the serial-only rule.
+- Modify only the runner, release-gate invocation, test-only dependency and CI installation, related Python/PowerShell contract lists, and the remediation/original-plan/spec references required to describe the bounded execution and its narrow exception to the serial-only rule. If equivalence diagnostics prove that an existing background installer test deadlocks on undrained `stdout`/`stderr` pipes, `tests/launch_safety/test_closed_installer.py` may replace only those pipe captures with per-case file-backed output; production installer behavior and assertions remain unchanged.
 - Do not mark the timed-out matrix as successful and do not render evidence from its partial state.
 - Do not exclude installer tests, mark them slow, weaken assertions, reuse temporary roots, or parallelize unrelated backend tests.
 - Do not add production runtime services, paid dependencies, deploy steps, or production-data mutations.

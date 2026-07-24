@@ -20,6 +20,7 @@
 - Modify `tests/launch_safety/test_launch_matrix_contract.py`: require runner/CI wiring and reject the old direct full-suite invocation.
 - Modify `tests/launch_safety/powershell/test_release_gate_harness.ps1`: simulate runner timeout `124`, assert exact evidence, and prove later required sections still run.
 - Modify `requirements-dev.txt` and `.github/workflows/ci.yml`: install `pytest-xdist>=3.6,<4` only in test/tooling environments and execute the new contracts.
+- Modify `tests/launch_safety/test_closed_installer.py` only when a focused RED run proves an undrained-pipe deadlock in a background installer fixture; use per-case file-backed output without changing production installer behavior or test assertions.
 - Modify the approved launch plans/specs only where their serial-matrix wording or command is superseded by this narrow two-worker exception.
 
 ## Task 1: Implement the bounded backend runner with TDD
@@ -742,13 +743,22 @@ Expected: hard checks report `hard=0`; neither Task 9 Step 6 nor Step 7 is marke
 ## Task 4: Prove serial/two-worker equivalence
 
 **Files:**
-- No repository files during the comparison; outputs go under `%TEMP%`.
+- Modify only for a proven comparison blocker: `tests/launch_safety/test_closed_installer.py`.
+- Comparison outputs go under `%TEMP%`.
+
+- [ ] **Step 0: Remove proven background-output deadlocks without weakening tests**
+
+If a focused installer node times out waiting for a marker and the marker appears only after `communicate()` starts draining `stdout`/`stderr`, preserve that RED evidence and replace only the affected background installer `PIPE` captures with per-case file-backed streams. Keep the same marker wait, exit-code assertions, authority snapshots, and process ownership. Run every affected node serially under the Windows Job supervisor or POSIX process-group owner before continuing.
 
 - [ ] **Step 1: Install the approved test-only dependency**
 
-Run:
+Task 4's watchdog requires PowerShell 7+ for `ProcessStartInfo.ArgumentList` and owned-tree `Process.Kill($true)`. Run:
 
 ```powershell
+$pwsh = (Get-Command pwsh -CommandType Application -ErrorAction Stop).Source
+if ($PSVersionTable.PSVersion.Major -lt 7) {
+  throw "rerun Task 4 with PowerShell 7+: $pwsh"
+}
 python -m pip install -r requirements-dev.txt
 python -c "import xdist; print(xdist.__version__)"
 ```
@@ -783,29 +793,135 @@ Expected: both normalized files contain the same node IDs and `Compare-Object` i
 
 - [ ] **Step 3: Run full serial and two-worker installer outcomes**
 
-Run with separate JUnit outputs:
+Run both exact commands with separate JUnit outputs and independent finite process-tree watchdogs. The executable PowerShell harness below launches the Windows command through `scripts/ops/run_backend_regression.py --windows-job-supervisor --`; on POSIX it launches through `setsid`. It continuously drains both output streams, terminates only the owned tree/group on timeout, and returns exit `124`. Use a 21,000-second limit for the serial reference and a 7,000-second limit for xdist. These are validation limits, not the production runner's shared deadline.
 
 ```powershell
+function Invoke-OwnedBoundedPython {
+  param(
+    [Parameter(Mandatory)][string[]]$Arguments,
+    [Parameter(Mandatory)][int]$TimeoutSeconds,
+    [Parameter(Mandatory)][string]$StdoutPath,
+    [Parameter(Mandatory)][string]$StderrPath
+  )
+
+  $python = (Get-Command python -ErrorAction Stop).Source
+  $onWindows = $env:OS -eq 'Windows_NT'
+  $start = [System.Diagnostics.ProcessStartInfo]::new()
+  $start.UseShellExecute = $false
+  $start.RedirectStandardOutput = $true
+  $start.RedirectStandardError = $true
+  $start.WorkingDirectory = (Get-Location).Path
+  if ($onWindows) {
+    $start.FileName = $python
+    $launchArguments = @(
+      'scripts/ops/run_backend_regression.py',
+      '--windows-job-supervisor', '--', $python
+    ) + $Arguments
+  } else {
+    $start.FileName = (Get-Command setsid -CommandType Application -ErrorAction Stop).Source
+    $launchArguments = @($python) + $Arguments
+  }
+  foreach ($argument in $launchArguments) { $null = $start.ArgumentList.Add($argument) }
+
+  $process = [System.Diagnostics.Process]::new()
+  $process.StartInfo = $start
+  $timer = [System.Diagnostics.Stopwatch]::StartNew()
+  if (-not $process.Start()) { throw 'failed to start bounded Python command' }
+  $stdoutRead = $process.StandardOutput.ReadToEndAsync()
+  $stderrRead = $process.StandardError.ReadToEndAsync()
+  $completed = $process.WaitForExit([int]($TimeoutSeconds * 1000))
+  if ($completed) {
+    $process.WaitForExit()
+    $exitCode = $process.ExitCode
+  } else {
+    if ($onWindows) {
+      try { $process.Kill($true) } catch {
+        if (-not $process.HasExited) { throw }
+      }
+    } else {
+      $kill = (Get-Command kill -CommandType Application -ErrorAction Stop).Source
+      $null = & $kill -TERM -- "-$($process.Id)" 2>&1
+      $termDeadline = [DateTime]::UtcNow.AddSeconds(5)
+      do {
+        $null = $process.HasExited
+        $null = & $kill -0 -- "-$($process.Id)" 2>&1
+        $groupExists = $LASTEXITCODE -eq 0
+        if ($groupExists) { Start-Sleep -Milliseconds 100 }
+      } while ($groupExists -and [DateTime]::UtcNow -lt $termDeadline)
+      if ($groupExists) {
+        $null = & $kill -KILL -- "-$($process.Id)" 2>&1
+        $killDeadline = [DateTime]::UtcNow.AddSeconds(15)
+        do {
+          $null = $process.HasExited
+          $null = & $kill -0 -- "-$($process.Id)" 2>&1
+          $groupExists = $LASTEXITCODE -eq 0
+          if ($groupExists) { Start-Sleep -Milliseconds 100 }
+        } while ($groupExists -and [DateTime]::UtcNow -lt $killDeadline)
+        if ($groupExists) {
+          throw 'owned comparison process group survived SIGKILL cleanup'
+        }
+      }
+    }
+    if (-not $process.WaitForExit(15000)) {
+      try { $process.Kill($true) } catch {}
+      if (-not $process.WaitForExit(15000)) {
+        throw 'owned comparison process tree survived timeout cleanup'
+      }
+    }
+    $exitCode = 124
+  }
+  $timer.Stop()
+
+  $utf8 = [System.Text.UTF8Encoding]::new($false)
+  [System.IO.File]::WriteAllText(
+    $StdoutPath, $stdoutRead.GetAwaiter().GetResult(), $utf8
+  )
+  [System.IO.File]::WriteAllText(
+    $StderrPath, $stderrRead.GetAwaiter().GetResult(), $utf8
+  )
+  [pscustomobject]@{
+    ExitCode = $exitCode
+    ElapsedSeconds = $timer.Elapsed.TotalSeconds
+  }
+}
+
 $serialXml = Join-Path $eq 'serial.xml'
 $parallelXml = Join-Path $eq 'parallel.xml'
-$serialTiming = Measure-Command {
-  python -m pytest tests/launch_safety/test_closed_installer.py -q --junitxml=$serialXml
-  if ($LASTEXITCODE -ne 0) { throw "serial installer suite exited $LASTEXITCODE" }
-}
-$parallelTiming = Measure-Command {
-  python -m pytest tests/launch_safety/test_closed_installer.py -q -n 2 --dist=load --max-worker-restart=0 --junitxml=$parallelXml
-  if ($LASTEXITCODE -ne 0) { throw "parallel installer suite exited $LASTEXITCODE" }
-}
+$serialStdout = Join-Path $eq 'serial.stdout.txt'
+$serialStderr = Join-Path $eq 'serial.stderr.txt'
+$parallelStdout = Join-Path $eq 'parallel.stdout.txt'
+$parallelStderr = Join-Path $eq 'parallel.stderr.txt'
+$serialCommand = @(
+  '-m', 'pytest', 'tests/launch_safety/test_closed_installer.py', '-q',
+  "--junitxml=$serialXml"
+)
+$parallelCommand = @(
+  '-m', 'pytest', 'tests/launch_safety/test_closed_installer.py', '-q',
+  '-n', '2', '--dist=load', '--max-worker-restart=0',
+  "--junitxml=$parallelXml"
+)
+
+$serialResult = Invoke-OwnedBoundedPython $serialCommand -TimeoutSeconds 21000 `
+  -StdoutPath $serialStdout -StderrPath $serialStderr
+$parallelResult = Invoke-OwnedBoundedPython $parallelCommand -TimeoutSeconds 7000 `
+  -StdoutPath $parallelStdout -StderrPath $parallelStderr
 ```
+
+The harness runs both commands even if the first is nonzero. Do not shard, filter, rerun, add markers, use `--maxfail`, or change pytest timeout behavior.
 
 Compare per-node outcomes:
 
 ```powershell
 function Read-JUnitOutcomes([string]$Path) {
-  [xml]$xml = Get-Content -LiteralPath $Path -Raw
+  try {
+    [xml]$xml = Get-Content -LiteralPath $Path -Raw -ErrorAction Stop
+  } catch {
+    throw "equivalence inconclusive: unreadable JUnit $Path"
+  }
   $outcomes = @{}
   foreach ($case in @($xml.SelectNodes('//testcase'))) {
-    $key = "$($case.classname)::$($case.name)"
+    $module = ([string]$case.classname).Replace('.', '/') + '.py'
+    $key = "$module::$($case.name)"
     if ($outcomes.ContainsKey($key)) { throw "duplicate JUnit case: $key" }
     $outcome = if ($case.failure) { 'failure' } elseif ($case.error) { 'error' } elseif ($case.skipped) { 'skipped' } else { 'passed' }
     $outcomes[$key] = $outcome
@@ -813,8 +929,24 @@ function Read-JUnitOutcomes([string]$Path) {
   return $outcomes
 }
 
+$inconclusive = @()
+if ($serialResult.ExitCode -eq 124) { $inconclusive += 'serial watchdog timeout' }
+if ($parallelResult.ExitCode -eq 124) { $inconclusive += 'xdist watchdog timeout' }
+if (-not (Test-Path -LiteralPath $serialXml)) { $inconclusive += 'serial JUnit missing' }
+if (-not (Test-Path -LiteralPath $parallelXml)) { $inconclusive += 'xdist JUnit missing' }
+if ($inconclusive.Count) {
+  throw ('equivalence inconclusive: ' + ($inconclusive -join '; '))
+}
+
 $serialOutcomes = Read-JUnitOutcomes $serialXml
 $parallelOutcomes = Read-JUnitOutcomes $parallelXml
+$serialExpected = @(Get-Content -LiteralPath $serialNodes | Sort-Object -Unique)
+$parallelExpected = @(Get-Content -LiteralPath $parallelNodes | Sort-Object -Unique)
+$serialCaseDiff = @(Compare-Object $serialExpected @($serialOutcomes.Keys | Sort-Object))
+$parallelCaseDiff = @(Compare-Object $parallelExpected @($parallelOutcomes.Keys | Sort-Object))
+if ($serialCaseDiff.Count -or $parallelCaseDiff.Count) {
+  throw 'equivalence inconclusive: JUnit case IDs do not match collected node IDs'
+}
 $outcomeDiff = @(Compare-Object `
   @($serialOutcomes.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" } | Sort-Object) `
   @($parallelOutcomes.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" } | Sort-Object))
@@ -822,13 +954,28 @@ if ($outcomeDiff.Count) { $outcomeDiff | Format-Table; throw 'serial/xdist outco
 
 [pscustomobject]@{
   Cases = $serialOutcomes.Count
-  SerialSeconds = [math]::Round($serialTiming.TotalSeconds, 3)
-  ParallelSeconds = [math]::Round($parallelTiming.TotalSeconds, 3)
-  Speedup = [math]::Round($serialTiming.TotalSeconds / $parallelTiming.TotalSeconds, 3)
+  SerialSeconds = [math]::Round($serialResult.ElapsedSeconds, 3)
+  ParallelSeconds = [math]::Round($parallelResult.ElapsedSeconds, 3)
+  Speedup = [math]::Round($serialResult.ElapsedSeconds / $parallelResult.ElapsedSeconds, 3)
 } | Format-List
+
+if ($serialResult.ExitCode -ne 0 -or $parallelResult.ExitCode -ne 0) {
+  throw "equivalence matched diagnostically but adoption requires both runs to pass: serial=$($serialResult.ExitCode) parallel=$($parallelResult.ExitCode)"
+}
 ```
 
-Expected: identical case count and outcomes. Any mismatch blocks Task 5 and requires returning to Task 1; do not weaken or exclude tests.
+Expected: both commands exit `0` with identical complete case sets and outcomes. A completed mismatch blocks Task 5 and requires returning to Task 1. A timeout or incomplete JUnit file leaves equivalence unproven and also blocks Task 5; do not weaken or exclude tests.
+
+- [ ] **Step 4: Prove the production runner meets its own deadline**
+
+After the comparison passes, run:
+
+```powershell
+python scripts/ops/run_backend_regression.py --deadline-seconds 7000
+if ($LASTEXITCODE -ne 0) { throw "bounded backend runner exited $LASTEXITCODE" }
+```
+
+Expected: Phase A and Phase B both pass within the runner's one shared 7,000-second deadline.
 
 ## Task 5: Final verification, reviews, and clean candidate commit
 
