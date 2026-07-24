@@ -106,7 +106,7 @@ def test_release_gate_backend_focused_uses_curated_task45_contracts():
         "tests/launch_safety/test_launch_matrix_contract.py",
     ):
         assert f'"{contract}"' in backend_focused
-    assert '"tests/launch_safety",' not in backend_focused
+    assert '"tests/launch_safety"' not in backend_focused
 
 
 def _load_probe() -> ModuleType:
