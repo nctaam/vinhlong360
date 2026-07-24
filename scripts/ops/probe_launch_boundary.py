@@ -21,7 +21,7 @@ from types import MappingProxyType
 from typing import Any
 from urllib.error import HTTPError
 from urllib.parse import urlsplit, urlunsplit
-from urllib.request import HTTPRedirectHandler, Request, build_opener
+from urllib.request import HTTPRedirectHandler, ProxyHandler, Request, build_opener
 import xml.etree.ElementTree as ET
 
 
@@ -249,10 +249,14 @@ def _make_requester(
     base_url: str,
     *,
     host_header: str | None = None,
+    disable_proxy: bool = False,
 ) -> Callable[[str, float], HttpResponse]:
     split = urlsplit(base_url)
     base = urlunsplit((split.scheme, split.netloc, split.path.rstrip("/"), "", ""))
-    opener = build_opener(_NoRedirect)
+    handlers: list[object] = [_NoRedirect]
+    if disable_proxy:
+        handlers.insert(0, ProxyHandler({}))
+    opener = build_opener(*handlers)
 
     def request_path(path: str, timeout_seconds: float) -> HttpResponse:
         url = f"{base}{path}"
@@ -687,6 +691,11 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--operator-source", action="store_true")
     parser.add_argument("--require-public-post-reopen-matrix", action="store_true")
     parser.add_argument(
+        "--local-rehearsal-base-url",
+        action="store_true",
+        help="Allow an HTTP 127.0.0.1 origin for local rehearsal only.",
+    )
+    parser.add_argument(
         "--maintenance-probe",
         action="store_true",
         help="Compatibility alias for the operator-source closed maintenance probe.",
@@ -772,6 +781,52 @@ def _validate_process_local_args(
         parser.error("process-local-readiness requires complete check set")
 
 
+def _is_local_rehearsal_base_url(value: str) -> bool:
+    try:
+        split = urlsplit(value)
+        port = split.port
+    except ValueError:
+        return False
+    if (
+        split.scheme != "http"
+        or not split.netloc
+        or split.username
+        or split.password
+        or split.path != ""
+        or split.query
+        or split.fragment
+    ):
+        return False
+    return (
+        split.hostname == "127.0.0.1"
+        and port is not None
+        and 1024 <= port <= 65535
+        and value == f"http://127.0.0.1:{port}"
+    )
+
+
+def _local_rehearsal_has_disallowed_flags(args: argparse.Namespace) -> bool:
+    return any(
+        (
+            args.maintenance_probe,
+            args.require_complete_check_set,
+            args.require_rich_html,
+            args.require_thin_html,
+            args.require_meta_robots,
+            args.require_rich_thin_html,
+            args.require_meta_header_noindex,
+            args.require_no_sitemap,
+            args.require_three_empty_sitemaps,
+            args.require_robots_without_sitemap,
+            args.require_three_empty_sitemap_shapes,
+            args.require_no_store,
+            args.require_no_evidence,
+            args.require_no_discovery,
+            args.require_direct_bypass_denied,
+        )
+    )
+
+
 def _validate_non_process_mode(
     parser: argparse.ArgumentParser,
     args: argparse.Namespace,
@@ -795,7 +850,20 @@ def _validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) ->
         _validate_process_local_args(parser, args)
     else:
         _validate_non_process_mode(parser, args)
-    if args.base_url != DEFAULT_BASE_URL:
+    if args.local_rehearsal_base_url:
+        if (
+            args.expect != "closed"
+            or args.operator_source
+            or args.process_local_readiness is not None
+            or not args.require_public_post_reopen_matrix
+            or not args.require_public_internal_404
+            or _local_rehearsal_has_disallowed_flags(args)
+            or not _is_local_rehearsal_base_url(args.base_url)
+        ):
+            parser.error(
+                "local rehearsal base URL is limited to closed post-reopen mode"
+            )
+    elif args.base_url != DEFAULT_BASE_URL:
         parser.error(f"base URL must be exactly {DEFAULT_BASE_URL}")
 
 
@@ -813,7 +881,12 @@ def _probe_public_mode(
     args: argparse.Namespace,
     requester: Callable[[str, float], HttpResponse] | None,
 ) -> tuple[list[str], dict[str, dict[str, object]]]:
-    request = requester or _make_requester(args.base_url.rstrip("/"))
+    if requester is not None:
+        request = requester
+    elif args.local_rehearsal_base_url:
+        request = _make_requester(args.base_url.rstrip("/"), disable_proxy=True)
+    else:
+        request = _make_requester(args.base_url.rstrip("/"))
     initial_errors, observations = probe_closed_matrix(
         requester=request,
         timeout_seconds=args.timeout_seconds,

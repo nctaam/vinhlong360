@@ -932,9 +932,17 @@ TRAFFIC_STATE=unknown
 maintenance_select disable
 run_privileged nginx -t
 run_privileged systemctl reload nginx
+post_reopen_probe_args=(
+  --expect closed
+  --require-public-post-reopen-matrix
+)
+if [ "$MODE" = "--local-rehearsal" ]; then
+  post_reopen_probe_args+=(--local-rehearsal-base-url)
+  post_reopen_probe_args+=(--require-public-internal-404)
+fi
 VL360_LAUNCH_PUBLIC_URL="${NGINX_OPERATOR_PROBE_URL:-${NGINX_PROBE_URL:-}}" \
   python "$SCRIPT_DIR/probe_launch_boundary.py" \
-  --expect closed --require-public-post-reopen-matrix \
+  "${post_reopen_probe_args[@]}" \
   --evidence "$EVIDENCE_DIR/post-reopen-closed.json"
 TRAFFIC_STATE=open
 if [ "$WATCHDOG_TIMER_WAS_ACTIVE" = true ]; then

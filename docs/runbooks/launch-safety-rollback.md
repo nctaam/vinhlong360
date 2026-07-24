@@ -101,6 +101,19 @@ rehearsal with `LOCAL_READINESS_AUTHORITY`, `LOCAL_LISTENER_AUTHORITY`,
 paths. Archive verification, path/symlink checks, extraction, tree swap, phase
 recording, and persistent byte hashing always execute for real.
 
+The disposable release root must model an existing installation before the
+rehearsal starts. Extract the reviewed closed archive into it, then create and
+seed a real `release/agent/data` tree; the archive intentionally excludes those
+persistent bytes. Leave the external persistent authority absent or empty so
+the installer can detach the seeded live data into it.
+
+A passing local post-reopen phase also requires a real closed public boundary
+and the controlled Chrome worker. Set `NGINX_OPERATOR_PROBE_URL` to an exact
+unprivileged `http://127.0.0.1:<port>` origin that serves the closed matrix and
+denies public `/_internal/**` routes. The rehearsal enables that loopback origin
+only for local closed post-reopen proof. Host execution still accepts only the
+canonical `https://vinhlong360.vn` public authority.
+
 Each injected authority's exit status is authoritative even when it emits
 valid-looking evidence. A failed selector command does not fall through to the
 stub; a failed dependency/pip check, installed-tree verifier, daemon reload, or
@@ -108,8 +121,15 @@ listener authority prevents later service starts and is recorded with its exact
 status.
 
 ```bash
-mkdir -p /tmp/vl360/runtime
+mkdir -p /tmp/vl360/runtime /tmp/vl360/release \
+  /tmp/vl360/persistent-agent-data
+tar -xzf /tmp/vl360/known-good-closed.tar.gz -C /tmp/vl360/release
+mkdir -p /tmp/vl360/release/agent/data/sitemap-bundles
+printf 'synthetic-persistent-data\n' \
+  > /tmp/vl360/release/agent/data/runtime.sqlite
 printf 'vinhlong360-local-rehearsal-v1\n' > /tmp/vl360/.vl360-local-rehearsal
+printf 'SAFE_LOCAL=1\n' > /tmp/vl360/external.env && \
+  chmod 0600 /tmp/vl360/external.env
 
 cat > /tmp/vl360/runtime/install-python-dependencies <<'SH'
 #!/usr/bin/env bash
@@ -148,6 +168,7 @@ OPERATOR=local-reviewer \
 OPERATOR_CIDR=127.0.0.1/32 \
 CANDIDATE_RELEASE_ID=local-candidate \
 ROLLBACK_RELEASE_ID=local-known-good \
+NGINX_OPERATOR_PROBE_URL=http://127.0.0.1:3100 \
 bash scripts/ops/rehearse_launch_rollback.sh --local-rehearsal
 ```
 

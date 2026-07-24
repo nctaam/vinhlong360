@@ -1901,6 +1901,23 @@ def test_local_rehearsal_uses_injected_authorities_instead_of_host_curl_or_pip()
     assert '"${verifier_args[@]}"' in dependencies
 
 
+def test_local_rehearsal_allows_only_loopback_post_reopen_probe():
+    source = REHEARSE.read_text(encoding="utf-8")
+    post_reopen = source.split("CURRENT_PHASE=reopen-and-recover-watchdog", 1)[1].split(
+        "trap - ERR", 1
+    )[0]
+    base_args, local_branch = post_reopen.split(
+        'if [ "$MODE" = "--local-rehearsal" ]', 1
+    )
+    local_branch = local_branch.split("fi", 1)[0]
+
+    assert "--local-rehearsal-base-url" not in base_args
+    assert "--require-public-internal-404" not in base_args
+    assert "post_reopen_probe_args+=(--local-rehearsal-base-url)" in local_branch
+    assert "post_reopen_probe_args+=(--require-public-internal-404)" in local_branch
+    assert '"${post_reopen_probe_args[@]}"' in post_reopen
+
+
 def test_recovery_records_dependent_phases_as_skipped_after_redrain_failure():
     source = REHEARSE.read_text(encoding="utf-8")
     recovery = source.split("keep_maintenance_and_recover()", 1)[1].split(

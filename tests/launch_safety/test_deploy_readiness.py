@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import sys
 from types import ModuleType
+from urllib.request import ProxyHandler
 
 import pytest
 
@@ -707,6 +708,213 @@ def test_probe_cli_rejects_every_noncanonical_production_origin(base_url: str):
                 base_url,
             ],
             requester=lambda _path, _timeout: None,
+        )
+
+
+@pytest.mark.parametrize(
+    "base_url",
+    [
+        "http://127.0.0.1:1024",
+        "http://127.0.0.1:3100",
+        "http://127.0.0.1:65535",
+    ],
+)
+def test_probe_accepts_loopback_only_for_explicit_local_rehearsal(
+    tmp_path: Path,
+    base_url: str,
+):
+    probe = _load_probe()
+    responses = _closed_responses(probe)
+    responses.update(
+        {
+            path: probe.HttpResponse(path=path, status=404, headers={}, body=b"")
+            for path in probe._PUBLIC_INTERNAL_PATHS
+        }
+    )
+    evidence = tmp_path / "local-probe.json"
+
+    result = probe.main(
+        [
+            "--expect",
+            "closed",
+            "--require-public-post-reopen-matrix",
+            "--require-public-internal-404",
+            "--local-rehearsal-base-url",
+            "--base-url",
+            base_url,
+            "--evidence",
+            str(evidence),
+        ],
+        requester=lambda path, _timeout: responses[path],
+    )
+
+    assert result == 0
+    assert json.loads(evidence.read_text(encoding="utf-8"))["verdict"] == "pass"
+
+
+def test_local_rehearsal_requester_disables_environment_proxy(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    probe = _load_probe()
+    responses = _closed_responses(probe)
+    responses.update(
+        {
+            path: probe.HttpResponse(path=path, status=404, headers={}, body=b"")
+            for path in probe._PUBLIC_INTERNAL_PATHS
+        }
+    )
+    monkeypatch.setenv("HTTP_PROXY", "http://proxy.invalid:8080")
+    monkeypatch.delenv("NO_PROXY", raising=False)
+    monkeypatch.delenv("no_proxy", raising=False)
+
+    captured_handlers: list[tuple[object, ...]] = []
+    original_make_requester = probe._make_requester
+
+    def capture_build_opener(*handlers: object):
+        captured_handlers.append(handlers)
+        return object()
+
+    monkeypatch.setattr(probe, "build_opener", capture_build_opener)
+    requester_modes: list[bool] = []
+
+    def requester_factory(
+        base_url: str,
+        *,
+        host_header: str | None = None,
+        disable_proxy: bool = False,
+    ):
+        requester_modes.append(disable_proxy)
+        original_make_requester(
+            base_url,
+            host_header=host_header,
+            disable_proxy=disable_proxy,
+        )
+        return lambda path, _timeout: responses[path]
+
+    monkeypatch.setattr(probe, "_make_requester", requester_factory)
+    result = probe.main(
+        [
+            "--expect",
+            "closed",
+            "--require-public-post-reopen-matrix",
+            "--require-public-internal-404",
+            "--local-rehearsal-base-url",
+            "--base-url",
+            "http://127.0.0.1:3100",
+        ]
+    )
+
+    assert result == 0
+    assert requester_modes == [True]
+    assert len(captured_handlers) == 1
+    proxy_handlers = [
+        handler
+        for handler in captured_handlers[0]
+        if isinstance(handler, ProxyHandler)
+    ]
+    assert len(proxy_handlers) == 1
+    assert proxy_handlers[0].proxies == {}
+
+
+@pytest.mark.parametrize(
+    "base_url",
+    [
+        "http://localhost:3100",
+        "http://[::1]:3100",
+        "http://0.0.0.0:3100",
+        "http://127.0.0.1:80",
+        "http://127.0.0.1:1023",
+        "http://127.0.0.1:65536",
+        "http://127.0.0.1",
+        "http://127.0.0.1:",
+        "http://operator@127.0.0.1:3100",
+        "https://127.0.0.1:3100",
+        "http://127.0.0.1:3100/",
+        "http://127.0.0.1:3100/closed",
+        "http://127.0.0.1:3100?proof=1",
+        "http://127.0.0.1:3100#proof",
+        "http://127.0.0.1:3100?",
+        "http://127.0.0.1:3100#",
+        " http://127.0.0.1:3100",
+        "http://127.0.0.1:03100",
+        "http://[127.0.0.1:3100",
+    ],
+)
+def test_local_rehearsal_probe_rejects_unsafe_origins(base_url: str):
+    probe = _load_probe()
+
+    with pytest.raises(SystemExit):
+        probe.main(
+            [
+                "--expect",
+                "closed",
+                "--require-public-post-reopen-matrix",
+                "--require-public-internal-404",
+                "--local-rehearsal-base-url",
+                "--base-url",
+                base_url,
+            ],
+            requester=lambda _path, _timeout: None,
+        )
+
+
+def test_local_rehearsal_probe_requires_public_internal_404():
+    probe = _load_probe()
+
+    with pytest.raises(SystemExit):
+        probe.main(
+            [
+                "--expect",
+                "closed",
+                "--require-public-post-reopen-matrix",
+                "--local-rehearsal-base-url",
+                "--base-url",
+                "http://127.0.0.1:3100",
+            ],
+            requester=lambda _path, _timeout: pytest.fail(
+                "validation must reject before probing"
+            ),
+        )
+
+
+@pytest.mark.parametrize(
+    "flag",
+    [
+        "--maintenance-probe",
+        "--require-complete-check-set",
+        "--require-rich-html",
+        "--require-thin-html",
+        "--require-meta-robots",
+        "--require-rich-thin-html",
+        "--require-meta-header-noindex",
+        "--require-no-sitemap",
+        "--require-three-empty-sitemaps",
+        "--require-robots-without-sitemap",
+        "--require-three-empty-sitemap-shapes",
+        "--require-no-store",
+        "--require-no-evidence",
+        "--require-no-discovery",
+        "--require-direct-bypass-denied",
+    ],
+)
+def test_local_rehearsal_probe_rejects_unrelated_compatibility_flags(flag: str):
+    probe = _load_probe()
+
+    with pytest.raises(SystemExit):
+        probe.main(
+            [
+                "--expect",
+                "closed",
+                "--require-public-post-reopen-matrix",
+                "--require-public-internal-404",
+                "--local-rehearsal-base-url",
+                "--base-url",
+                "http://127.0.0.1:3100",
+                flag,
+            ],
+            requester=lambda _path, _timeout: pytest.fail(
+                "validation must reject before probing"
+            ),
         )
 
 
