@@ -2,7 +2,7 @@
 
 > STATUS: active/partial - approved remediation direction from the 2026-07-20 repository audit; no deploy, production mutation, secret change, or live indexing authorization.
 
-> **Progress truth (2026-07-23, refreshed after `50786d1`):** Tasks 1-8 implementation machinery is integrated on `codex/ls-remed-rollback`; the P1 migration prerequisite extension is committed in `50786d1`. It admits one archive snapshot, materializes checker/verifier/installer/migrations from admitted bytes, binds gate evidence to verified package digests, uses the dependency-bearing release Python venv for both read-only DB gates, and fails closed on authority races. Fresh P1 evidence is `34 passed, 391 deselected` focused, `68 passed, 1 skipped` deploy/readiness/quality, `24 passed` verifier/checker, Bash syntax clean, and `run_hard.py --all` green (`hard=0`, no ratchet increase). Historical backend/frontend/build/browser evidence remains as previously recorded: the default full backend regression exceeded its bound and Chrome smoke is blocked by `cdp-timeout`; Docker/PostgreSQL opt-ins and final Task 45 rendering remain pending. No deploy, production mutation, secret change, or indexing enablement is authorized.
+> **Progress truth (2026-07-23, refreshed after `50786d1`):** Tasks 1-8 implementation machinery is integrated on `codex/ls-remed-rollback`; the P1 migration prerequisite extension is committed in `50786d1`. It admits one archive snapshot, materializes checker/verifier/installer/migrations from admitted bytes, binds gate evidence to verified package digests, uses the dependency-bearing release Python venv for both read-only DB gates, and fails closed on authority races. Fresh P1 evidence is `34 passed, 391 deselected` focused, `68 passed, 1 skipped` deploy/readiness/quality, `24 passed` verifier/checker, Bash syntax clean, and `run_hard.py --all` green (`hard=0`, no ratchet increase). Historical backend/frontend/build/browser evidence remains as previously recorded: the 2026-07-24 matrix reached the external two-hour bound during the old monolithic backend regression and produced only partial diagnostic state; Chrome smoke is blocked by `cdp-timeout`; Docker/PostgreSQL opt-ins and final Task 45 rendering remain pending. No deploy, production mutation, secret change, or indexing enablement is authorized.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -290,7 +290,9 @@ Task 9 is blocked until `python scripts/checks/run_hard.py --all` exits 0. Do no
 - Modify: `tests/launch_safety/test_launch_matrix_contract.py`
 - Create: `docs/superpowers/results/2026-07-20-launch-safety-gate-evidence.md`
 - Modify: `scripts/release_gate.ps1`, `scripts/launch_safety_browser_e2e.mjs`, `.github/workflows/ci.yml`
-- Reference: `docs/superpowers/specs/2026-07-20-launch-safety-task45-correction-design.md`
+- Create: `scripts/ops/run_backend_regression.py`, `tests/launch_safety/test_backend_regression_runner.py`
+- Modify: `requirements-dev.txt`
+- Reference: `docs/superpowers/specs/2026-07-20-launch-safety-task45-correction-design.md`, `docs/superpowers/specs/2026-07-24-bounded-backend-regression-design.md`
 
 - [x] **Step 1: Correct plan authority before execution**
 
@@ -328,9 +330,9 @@ git add docs/superpowers/plans/2026-07-13-launch-safety-gate.md scripts/ops/reco
 git commit -m "test: add launch safety evidence gate"
 ```
 
-- [ ] **Step 6: Run the final matrix serially from clean Commit A**
+- [ ] **Step 6: Run the final matrix phase-sequentially from clean Commit A**
 
-Run backend focused/full pytest, frontend focused/full serial tests, typecheck, build, `run_hard.py --all`, PowerShell contract, rollback local rehearsal and explicit opt-ins. Record exact prerequisite skips. Do not render final evidence if any required functional section fails.
+The 2026-07-24 matrix reached the external two-hour bound during the old monolithic backend command and produced only partial diagnostic state; this is not final evidence. Run backend focused tests, then the bounded backend runner `python scripts/ops/run_backend_regression.py --deadline-seconds 7000` (Phase A serial with only `tests/launch_safety/test_closed_installer.py` in Phase B using exactly two xdist workers), followed by frontend focused/full serial tests, typecheck, build, `run_hard.py --all`, PowerShell contract, rollback local rehearsal and explicit opt-ins. Use an outer execution timeout greater than 7,000 seconds. Record exact prerequisite skips. Do not render final evidence if any required functional section fails.
 
 - [ ] **Step 7: Render and commit evidence B**
 

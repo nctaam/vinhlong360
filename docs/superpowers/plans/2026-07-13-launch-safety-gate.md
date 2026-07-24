@@ -2,7 +2,7 @@
 
 > STATUS: superseded/partial - the original implementation plan is retained as historical authority; active remediation is tracked in `docs/superpowers/plans/2026-07-20-launch-safety-remediation.md` on `codex/ls-remed-rollback`. Global `noindex` and all external launch blockers remain active. Task 45 evidence is not final until a clean revision-bound matrix passes and evidence-only Commit B is rendered.
 
-> Current implementation authority: see the remediation plan and commits on `codex/ls-remed-rollback` through `bce3690`, `8d11d8b`, `fc143cf`, and P1 `50786d1`. The current Nuxt build and readiness manifest are fresh, while live Chrome acceptance is blocked by a local `cdp-timeout`; the default full backend regression also exceeded its bounded run. Do not mark skipped/unrun evidence as pass.
+> Current implementation authority: see the remediation plan and commits on `codex/ls-remed-rollback` through `bce3690`, `8d11d8b`, `fc143cf`, and P1 `50786d1`. The current Nuxt build and readiness manifest are fresh, while live Chrome acceptance is blocked by a local `cdp-timeout`; the 2026-07-24 matrix reached the external two-hour bound during the old monolithic backend regression and produced only partial diagnostic state. Do not mark skipped/unrun evidence as pass.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -22,7 +22,7 @@
 - Every numbered task starts with a fresh implementer agent. The implementer records RED, makes the smallest GREEN change, runs focused checks, self-reviews, and commits.
 - A fresh spec-compliance reviewer checks the task against this plan and the approved design. The implementer fixes every Critical or Important finding and requests re-review.
 - Only after spec compliance passes does a separate fresh quality reviewer run. The implementer fixes every Critical or Important finding and requests re-review before the next task starts.
-- Backend and frontend test commands run serially unless a task explicitly exercises concurrency. The known concurrent frontend/backend resource timeout is evidence, not permission to weaken assertions.
+- Backend and frontend phases run sequentially. Backend tests remain serial except the approved bounded Phase B for `tests/launch_safety/test_closed_installer.py`, which uses exactly two xdist workers under `docs/superpowers/specs/2026-07-24-bounded-backend-regression-design.md`. No other suite gains parallel permission.
 - If implementation reveals a cross-task contract change, stop and update this plan before editing outside the current task boundary.
 
 ## Locked File Structure
@@ -6226,7 +6226,7 @@ function Invoke-RecordedComposeHarness {
 }
 ```
 
-- [ ] **Step 4: Run the final verification matrix serially**
+- [ ] **Step 4: Run the final verification matrix phase-sequentially**
 
 Run backend focused tests:
 
@@ -6237,10 +6237,10 @@ python -m pytest tests/launch_safety agent/tests/test_launch_artifacts.py agent/
 Run backend full regression:
 
 ```powershell
-python -m pytest -q
+python scripts/ops/run_backend_regression.py --deadline-seconds 7000
 ```
 
-Expected: no new failure relative to `6168 passed, 47 skipped, 78 deselected, 1 xfailed, 1 warning`; new tests increase totals.
+Expected: no new failure relative to `6168 passed, 47 skipped, 78 deselected, 1 xfailed, 1 warning`; new tests increase totals. Runner exit `124` is a blocking functional failure, not a skip or pass.
 
 Run frontend focused and full serial regression:
 

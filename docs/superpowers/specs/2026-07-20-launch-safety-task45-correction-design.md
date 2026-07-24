@@ -1,4 +1,4 @@
-> STATUS: active - amendment approved in session 2026-07-20; supersedes only Task 45 execution details in `2026-07-13-launch-safety-gate-design.md` and plan lines 5926-6383.
+> STATUS: active - amendment approved in session 2026-07-20; supersedes only Task 45 execution details in `2026-07-13-launch-safety-gate-design.md` and plan lines 5926-6383. The bounded backend extension is defined in `docs/superpowers/specs/2026-07-24-bounded-backend-regression-design.md`.
 
 # Thiết kế sửa Task 45 - evidence gate không tự xung đột
 
@@ -14,6 +14,7 @@ Giữ nguyên mục tiêu Launch Safety: ghi bằng chứng có thể tái lập
 4. **Task 45 dùng hai commit có chủ đích.** Commit A chứa recorder, harness, tests và CI/release wiring. Từ clean Commit A chạy ma trận cuối. Commit B chỉ chứa evidence Markdown được render từ kết quả thật. Không amend/squash tự động.
 5. **Giữ nguyên interface release gate cũ.** Các tham số, helper, warning semantics, migration/data/auth/E2E checks hiện có vẫn hoạt động. Launch Safety gate được thêm theo hướng additive. Default gate tiếp tục tổng hợp lỗi và trả `1`; opt-in chỉ chạy sau khi default gate xanh, và lỗi opt-in trả nguyên exit code sau khi đã record + cleanup.
 6. **Opt-in phải được yêu cầu tường minh.** Thêm hai switch độc lập `-RunLaunchSafetyDockerOptIn` và `-RunLaunchSafetyBrowserOptIn`; invocation mặc định không start Docker, Chrome hay preview. Final evidence invocation truyền cả hai switch.
+7. **Backend full regression dùng extension bounded đã duyệt.** `backend-full-regression` vẫn là một evidence row duy nhất và gọi `python scripts/ops/run_backend_regression.py --deadline-seconds 7000`; `pytest-xdist>=3.6,<4` chỉ là dev/test dependency trong `requirements-dev.txt`, không vào production package.
 
 ## 3. Topology thực thi
 
@@ -32,6 +33,8 @@ Release gate chạy tuần tự và ghi các section:
 - `external-gates`
 
 `source-scans` dùng `python scripts/checks/run_hard.py --all`, quality-gate tests, PowerShell harness contract và `git diff --check`. `known-resource-timeout` chỉ ghi chú timeout tài nguyên đã biết khi chạy song song; nó không nới functional expectation. `external-gates` luôn giữ `H1=blocked`, `H2=blocked`, `owner=not-authorized`.
+
+`backend-full-regression` vẫn là một evidence row duy nhất và được thực thi bằng bounded two-phase runner đã duyệt: Phase A chạy serial toàn bộ suite trừ `tests/launch_safety/test_closed_installer.py`; Phase B chỉ chạy module đó với đúng hai xdist workers. Không suite backend nào khác được phép chạy song song.
 
 Default gate chạy hết để ghi đủ chẩn đoán và giữ contract tổng hợp hiện tại. Nếu bất kỳ functional section mặc định nào đỏ, script trả `1`, không chạy opt-in và không cho render final evidence.
 
@@ -88,7 +91,7 @@ Không thay Compose harness, integration fixture, Nginx config hay service-worke
 1. Viết Python/PowerShell contract tests, chạy và thấy RED vì recorder/harness chưa tồn tại.
 2. Implement tối thiểu tới GREEN.
 3. Commit A khi focused tests, browser probe contract, source checks và diff-check xanh.
-4. Từ clean Commit A chạy ma trận tuần tự: backend focused, full pytest, frontend focused, full serial Vitest, typecheck, build, source/config gates, rồi gọi release gate với cả hai opt-in switch. Docker/browser unavailable được ghi skip chính xác; `not-requested` không được chấp nhận.
+4. Từ clean Commit A chạy ma trận theo phase tuần tự: backend focused, backend full qua bounded runner (Phase A serial; chỉ `test_closed_installer.py` dùng đúng hai xdist workers), frontend focused/full serial, typecheck, build, source/config gates, rồi gọi release gate với cả hai opt-in switch. Docker/browser unavailable được ghi skip chính xác; `not-requested` không được chấp nhận.
 5. Render evidence từ state thật, tự kiểm completeness/redaction, commit B chỉ chứa result document.
 6. Review spec-compliance, code quality và whole-workstream trước khi kết thúc nhánh.
 
