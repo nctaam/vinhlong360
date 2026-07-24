@@ -16,7 +16,7 @@
 
 ## Execution lanes
 
-- **Session baseline:** run `python -m pytest -q` once before workers begin and record every known failure. Current known failures are the seven Nginx route-parity tests and the noindex AST guard; any additional failure stops execution.
+- **Session baseline:** run `python scripts/ops/run_backend_regression.py --deadline-seconds 7000` once before workers begin and record every known failure. The runner keeps phases sequential: Phase A is serial, and only `tests/launch_safety/test_closed_installer.py` runs in Phase B with exactly two xdist workers. Current known failures are the seven Nginx route-parity tests and the noindex AST guard; any additional failure stops execution.
 - **First wave:** Tasks 1, 3, 4 and 7 are file-disjoint and may run concurrently.
 - **Second wave:** Task 2 depends on Task 1; Task 5 follows Task 4 because they share rollback tests; Task 6 depends on Task 5; Task 8 runs after Tasks 1-7.
 - **Task 9 - Task 45 evidence:** starts only after Tasks 1-8 pass review and functional/hard gates are green on a clean commit.
@@ -346,5 +346,5 @@ git commit -m "test: record launch safety gate evidence"
 
 - [ ] Spec-compliance review for each lane; fix and re-review all Important/Critical findings.
 - [ ] Code-quality review after spec compliance.
-- [ ] Fresh focused tests, `git diff --check`, `run_hard.py --all`, full pytest, Nuxt typecheck/build, and available Docker/PG/browser opt-ins.
+- [ ] Fresh focused tests, `git diff --check`, `run_hard.py --all`, bounded backend regression via `python scripts/ops/run_backend_regression.py --deadline-seconds 7000`, Nuxt typecheck/build, and available Docker/PG/browser opt-ins.
 - [x] No push, deploy, secret change, production-data mutation, or live indexing enablement.
