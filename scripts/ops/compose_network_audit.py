@@ -443,7 +443,7 @@ def _nuxt_runtime_issues(
     issues: list[str] = []
     if nuxt.get("depends_on", {}):
         issues.append("nuxt must not declare dependencies")
-    if "command" in nuxt or "entrypoint" in nuxt:
+    if nuxt.get("command") is not None or nuxt.get("entrypoint") is not None:
         issues.append("nuxt command or entrypoint override is forbidden")
     if "env_file" in nuxt:
         issues.append("nuxt env_file is forbidden")

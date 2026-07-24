@@ -539,6 +539,17 @@ def test_production_validator_rejects_noncanonical_nginx_dependency_metadata(
     )
 
 
+def test_production_validator_accepts_compose_null_startup_defaults():
+    audit = _load_audit()
+    model = _expected_closed_model()
+    model["services"]["nuxt"]["command"] = None
+    model["services"]["nuxt"]["entrypoint"] = None
+
+    assert "nuxt command or entrypoint override is forbidden" not in (
+        audit.validate_production_model(model)
+    )
+
+
 def test_production_validator_rejects_a_missing_required_service():
     audit = _load_audit()
     model = _expected_closed_model()
