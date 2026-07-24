@@ -1422,6 +1422,49 @@ def test_journal_interruption_is_owned_and_terminated_outside_installer_tree(
     assert "while :; do" in executor_bodies[0]
 
 
+@pytest.mark.skipif(os.name != "nt", reason="Windows taskkill cleanup only")
+@pytest.mark.parametrize(
+    ("failure_mode", "expected_error"),
+    (
+        ("exception", "taskkill failed: OSError: taskkill unavailable"),
+        ("nonzero", "taskkill exited 255"),
+    ),
+)
+def test_default_windows_cleanup_preserves_taskkill_failures_after_parent_exit(
+    monkeypatch: pytest.MonkeyPatch,
+    failure_mode: str,
+    expected_error: str,
+):
+    class FakeProcess:
+        pid = 2468
+        returncode: int | None = None
+
+        def poll(self):
+            return self.returncode
+
+        def communicate(self, timeout: float):
+            assert timeout > 0
+            assert self.returncode is not None
+            return "captured stdout", "captured stderr"
+
+    process = FakeProcess()
+
+    def fake_run(command: list[str], **kwargs: object):
+        assert command == ["taskkill", "/PID", str(process.pid), "/T", "/F"]
+        process.returncode = 1
+        if failure_mode == "exception":
+            raise OSError("taskkill unavailable")
+        return subprocess.CompletedProcess(command, 255)
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    stdout, stderr, errors = _terminate_owned_installer_process(process)
+
+    assert stdout == "captured stdout"
+    assert stderr == "captured stderr"
+    assert errors == [expected_error]
+
+
 def test_file_backed_process_timeout_is_cleaned_and_keeps_diagnostics(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
@@ -1539,10 +1582,9 @@ def _terminate_owned_installer_process(
                     stderr=subprocess.DEVNULL,
                 )
             except Exception as exc:
-                if process.poll() is None:
-                    errors.append(f"taskkill failed: {type(exc).__name__}: {exc}")
+                errors.append(f"taskkill failed: {type(exc).__name__}: {exc}")
             else:
-                if completed.returncode != 0 and process.poll() is None:
+                if completed.returncode != 0:
                     errors.append(f"taskkill exited {completed.returncode}")
         else:
             try:
