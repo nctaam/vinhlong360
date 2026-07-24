@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import shutil
 import shlex
+import signal
 import stat
 import subprocess
 import sys
@@ -1209,6 +1210,188 @@ def test_sigkill_after_persistent_detach_is_recovered_before_retry_reset(
     assert not list(release.parent.glob(f".{release.name}.closed-*"))
 
 
+def test_journal_interruption_is_owned_and_terminated_outside_installer_tree(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    case_root = tmp_path / "supervised-interruption"
+    evidence = case_root / "evidence"
+    evidence.mkdir(parents=True)
+    stage = "persistent-detached"
+    journal = evidence / "install-mutation-state.json"
+    interrupted = case_root / f"interrupted-{stage}"
+    executor_bodies: list[str] = []
+    popen_calls: list[tuple[list[str], dict[str, object]]] = []
+    cleanup_calls: list[list[str]] = []
+
+    class FakeProcess:
+        pid = 2468
+        returncode: int | None = None
+
+        def poll(self):
+            return self.returncode
+
+        def communicate(self, timeout: float):
+            assert timeout > 0
+            assert self.returncode is not None
+            return "captured stdout", "captured stderr"
+
+        def kill(self):
+            self.returncode = -9
+
+    process = FakeProcess()
+
+    def fake_write_executor(path: Path, body: str) -> Path:
+        executor_bodies.append(body)
+        return path
+
+    def fake_popen(command: list[str], **kwargs: object) -> FakeProcess:
+        popen_calls.append((command, kwargs))
+        journal.write_text(json.dumps({"stage": stage}), encoding="utf-8")
+        interrupted.touch()
+        return process
+
+    def fake_run(command: list[str], **kwargs: object):
+        assert command == ["taskkill", "/PID", str(process.pid), "/T", "/F"], (
+            "installer must be started through an owned Popen boundary"
+        )
+        cleanup_calls.append(command)
+        process.returncode = 1
+        return subprocess.CompletedProcess(command, 0)
+
+    def fake_killpg(process_group_id: int, _signal: int) -> None:
+        assert process_group_id == process.pid
+        process.returncode = -9
+
+    monkeypatch.setattr(
+        sys.modules[__name__], "_write_local_python_executor", fake_write_executor
+    )
+    monkeypatch.setattr(
+        sys.modules[__name__],
+        "_installer_command",
+        lambda *_args, **_kwargs: ["installer-under-test"],
+    )
+    monkeypatch.setattr(subprocess, "Popen", fake_popen)
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    monkeypatch.setattr(os, "killpg", fake_killpg, raising=False)
+
+    prepared = (
+        case_root / "release",
+        case_root / "persistent",
+        evidence,
+        {},
+        {},
+        case_root / "runtime",
+        {},
+    )
+    returned_journal = _interrupt_at_journal_stage(
+        object(), case_root, prepared, stage
+    )
+
+    assert returned_journal == journal
+    assert len(popen_calls) == 1
+    command, kwargs = popen_calls[0]
+    if os.name == "nt":
+        assert command == [
+            sys.executable,
+            str(OPS / "run_backend_regression.py"),
+            "--windows-job-supervisor",
+            "--",
+            "installer-under-test",
+        ]
+    else:
+        assert command == ["installer-under-test"]
+    assert kwargs["stdout"] != subprocess.PIPE
+    assert kwargs["stderr"] != subprocess.PIPE
+    assert kwargs["text"] is True
+    if os.name == "nt":
+        assert kwargs["creationflags"] == getattr(
+            subprocess, "CREATE_NEW_PROCESS_GROUP", 0x00000200
+        )
+        assert cleanup_calls == [
+            ["taskkill", "/PID", str(process.pid), "/T", "/F"]
+        ]
+    else:
+        assert kwargs["start_new_session"] is True
+        assert cleanup_calls == []
+    assert len(executor_bodies) == 1
+    assert 'kill -9 "$PPID"' not in executor_bodies[0]
+    assert 'kill -9 "$$"' not in executor_bodies[0]
+    assert "while :; do" in executor_bodies[0]
+
+
+def _wait_for_journal_interruption(
+    process: subprocess.Popen[str], journal: Path, interrupted: Path, stage: str
+) -> None:
+    deadline = time.monotonic() + 120.0
+    observed_stage = None
+    while time.monotonic() < deadline:
+        if interrupted.is_file() and journal.is_file():
+            try:
+                observed_stage = json.loads(
+                    journal.read_text(encoding="utf-8")
+                ).get("stage")
+            except (OSError, json.JSONDecodeError):
+                pass
+            if observed_stage == stage:
+                return
+        if process.poll() is not None:
+            raise AssertionError(
+                f"installer exited before interruption stage {stage}; "
+                f"last journal stage was {observed_stage!r}"
+            )
+        time.sleep(0.05)
+    raise AssertionError(
+        f"timed out waiting for interruption stage {stage}; "
+        f"last journal stage was {observed_stage!r}"
+    )
+
+
+def _terminate_owned_installer_process(
+    process: subprocess.Popen[str],
+) -> tuple[str, str, list[str]]:
+    errors: list[str] = []
+    if process.poll() is None:
+        if os.name == "nt":
+            try:
+                completed = subprocess.run(
+                    ["taskkill", "/PID", str(process.pid), "/T", "/F"],
+                    check=False,
+                    timeout=15,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+            except Exception as exc:
+                errors.append(f"taskkill failed: {type(exc).__name__}: {exc}")
+            else:
+                if completed.returncode != 0:
+                    errors.append(f"taskkill exited {completed.returncode}")
+        else:
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            except Exception as exc:
+                errors.append(f"killpg failed: {type(exc).__name__}: {exc}")
+
+    stdout = ""
+    stderr = ""
+    try:
+        stdout, stderr = process.communicate(timeout=15)
+    except subprocess.TimeoutExpired:
+        errors.append("owned process did not exit within cleanup timeout")
+        try:
+            process.kill()
+        except Exception as exc:
+            errors.append(f"owned-handle kill failed: {type(exc).__name__}: {exc}")
+        try:
+            stdout, stderr = process.communicate(timeout=15)
+        except Exception as exc:
+            errors.append(f"owned-handle wait failed: {type(exc).__name__}: {exc}")
+    except Exception as exc:
+        errors.append(f"owned process wait failed: {type(exc).__name__}: {exc}")
+    return stdout or "", stderr or "", errors
+
+
 def _interrupt_at_journal_stage(package, case_root: Path, prepared, stage: str):
     *_, evidence, _, _, _, values = prepared
     interrupted = case_root / f"interrupted-{stage}"
@@ -1220,8 +1403,7 @@ def _interrupt_at_journal_stage(package, case_root: Path, prepared, stage: str):
         f"  if [ -f '{_bash_path(journal)}' ] "
         f"&& grep -Fq '\"stage\": \"{stage}\"' '{_bash_path(journal)}'; then\n"
         f"    : > '{_bash_path(interrupted)}'\n"
-        "    kill -9 \"$PPID\"\n"
-        "    kill -9 \"$$\"\n"
+        "    while :; do sleep 1; done\n"
         "  fi\n"
         "exit \"$status\"\n",
     )
@@ -1229,14 +1411,54 @@ def _interrupt_at_journal_stage(package, case_root: Path, prepared, stage: str):
     env.update(values)
     env.pop("VL360_PYTHON_EXECUTOR", None)
     env["VL360_LOCAL_PYTHON_EXECUTOR"] = _bash_path(python_executor)
-    result = subprocess.run(
-        _installer_command(package, case_root, prepared),
-        cwd=ROOT,
-        env=env,
-        check=False,
-        capture_output=True,
-        text=True,
+    installer_command = _installer_command(package, case_root, prepared)
+    if os.name == "nt":
+        command = [
+            sys.executable,
+            str(OPS / "run_backend_regression.py"),
+            "--windows-job-supervisor",
+            "--",
+            *installer_command,
+        ]
+    else:
+        command = installer_command
+    stdout_path = case_root / f"interrupt-{stage}.stdout"
+    stderr_path = case_root / f"interrupt-{stage}.stderr"
+    popen_kwargs: dict[str, object] = {
+        "cwd": ROOT,
+        "env": env,
+        "text": True,
+    }
+    if os.name == "nt":
+        popen_kwargs["creationflags"] = getattr(
+            subprocess, "CREATE_NEW_PROCESS_GROUP", 0x00000200
+        )
+    else:
+        popen_kwargs["start_new_session"] = True
+    with (
+        stdout_path.open("w", encoding="utf-8", errors="replace") as stdout_stream,
+        stderr_path.open("w", encoding="utf-8", errors="replace") as stderr_stream,
+    ):
+        popen_kwargs["stdout"] = stdout_stream
+        popen_kwargs["stderr"] = stderr_stream
+        process = subprocess.Popen(command, **popen_kwargs)
+        wait_error = None
+        try:
+            _wait_for_journal_interruption(process, journal, interrupted, stage)
+        except AssertionError as exc:
+            wait_error = str(exc)
+        finally:
+            _, _, cleanup_errors = _terminate_owned_installer_process(process)
+    stdout = stdout_path.read_text(encoding="utf-8", errors="replace")
+    stderr = stderr_path.read_text(encoding="utf-8", errors="replace")
+    result = subprocess.CompletedProcess(
+        command,
+        process.returncode if process.returncode is not None else -1,
+        stdout,
+        stderr,
     )
+    assert not cleanup_errors, "; ".join(cleanup_errors) + "\n" + stderr + stdout
+    assert wait_error is None, wait_error + "\n" + stderr + stdout
     assert result.returncode != 0, result.stderr + result.stdout
     assert interrupted.is_file(), result.stderr + result.stdout
     assert json.loads(journal.read_text(encoding="utf-8"))["stage"] == stage

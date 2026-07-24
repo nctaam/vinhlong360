@@ -274,16 +274,65 @@ def test_popen_uses_root_inherited_output_and_process_group(
 
     assert len(calls) == 1
     command, kwargs = calls[0]
-    assert command == phase.command
     assert kwargs["cwd"] == runner.ROOT == ROOT
     assert kwargs["stdout"] is None
     assert kwargs["stderr"] is None
     if is_windows:
+        assert command == runner._windows_job_supervisor_command(phase.command)
         assert kwargs["creationflags"] == runner.CREATE_NEW_PROCESS_GROUP
         assert "start_new_session" not in kwargs
     else:
+        assert command == phase.command
         assert kwargs["start_new_session"] is True
         assert "creationflags" not in kwargs
+
+
+def test_windows_job_supervisor_assigns_job_before_spawning_child(
+    runner: ModuleType, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    events: list[object] = []
+
+    class SupervisorChild:
+        def wait(self) -> int:
+            events.append("wait")
+            return 17
+
+    def fake_create_job() -> int:
+        events.append("assign-job")
+        return 9753
+
+    def fake_popen(command: tuple[str, ...]) -> SupervisorChild:
+        events.append(("spawn", command))
+        return SupervisorChild()
+
+    monkeypatch.setattr(runner, "_create_windows_kill_on_close_job", fake_create_job)
+    monkeypatch.setattr(runner.subprocess, "Popen", fake_popen)
+
+    result = runner._run_windows_job_supervisor(("child", "argument"))
+
+    assert result == 17
+    assert events == [
+        "assign-job",
+        ("spawn", ("child", "argument")),
+        "wait",
+    ]
+
+
+def test_cli_routes_private_windows_job_supervisor_mode(
+    runner: ModuleType, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls: list[tuple[str, ...]] = []
+    monkeypatch.setattr(
+        runner,
+        "_run_windows_job_supervisor",
+        lambda command: calls.append(command) or 23,
+        raising=False,
+    )
+
+    assert runner.main(
+        ["--windows-job-supervisor", "--", "child", "argument"]
+    ) == 23
+    assert calls == [("child", "argument")]
 
 
 def test_windows_cleanup_targets_live_child_with_exact_taskkill(

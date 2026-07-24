@@ -65,6 +65,102 @@ def _diagnose(message: str) -> None:
     print(line, file=sys.stderr, flush=True)
 
 
+def _windows_job_supervisor_command(command: tuple[str, ...]) -> tuple[str, ...]:
+    return (
+        sys.executable,
+        str(Path(__file__).resolve()),
+        "--windows-job-supervisor",
+        "--",
+        *command,
+    )
+
+
+def _create_windows_kill_on_close_job() -> int:
+    import ctypes
+    from ctypes import wintypes
+
+    job_object_limit_kill_on_close = 0x00002000
+    job_object_extended_limit_information = 9
+
+    class IoCounters(ctypes.Structure):
+        _fields_ = [
+            ("ReadOperationCount", ctypes.c_ulonglong),
+            ("WriteOperationCount", ctypes.c_ulonglong),
+            ("OtherOperationCount", ctypes.c_ulonglong),
+            ("ReadTransferCount", ctypes.c_ulonglong),
+            ("WriteTransferCount", ctypes.c_ulonglong),
+            ("OtherTransferCount", ctypes.c_ulonglong),
+        ]
+
+    class BasicLimitInformation(ctypes.Structure):
+        _fields_ = [
+            ("PerProcessUserTimeLimit", ctypes.c_longlong),
+            ("PerJobUserTimeLimit", ctypes.c_longlong),
+            ("LimitFlags", wintypes.DWORD),
+            ("MinimumWorkingSetSize", ctypes.c_size_t),
+            ("MaximumWorkingSetSize", ctypes.c_size_t),
+            ("ActiveProcessLimit", wintypes.DWORD),
+            ("Affinity", ctypes.c_size_t),
+            ("PriorityClass", wintypes.DWORD),
+            ("SchedulingClass", wintypes.DWORD),
+        ]
+
+    class ExtendedLimitInformation(ctypes.Structure):
+        _fields_ = [
+            ("BasicLimitInformation", BasicLimitInformation),
+            ("IoInfo", IoCounters),
+            ("ProcessMemoryLimit", ctypes.c_size_t),
+            ("JobMemoryLimit", ctypes.c_size_t),
+            ("PeakProcessMemoryUsed", ctypes.c_size_t),
+            ("PeakJobMemoryUsed", ctypes.c_size_t),
+        ]
+
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel32.CreateJobObjectW.argtypes = [ctypes.c_void_p, wintypes.LPCWSTR]
+    kernel32.CreateJobObjectW.restype = wintypes.HANDLE
+    kernel32.SetInformationJobObject.argtypes = [
+        wintypes.HANDLE,
+        ctypes.c_int,
+        ctypes.c_void_p,
+        wintypes.DWORD,
+    ]
+    kernel32.SetInformationJobObject.restype = wintypes.BOOL
+    kernel32.GetCurrentProcess.restype = wintypes.HANDLE
+    kernel32.AssignProcessToJobObject.argtypes = [wintypes.HANDLE, wintypes.HANDLE]
+    kernel32.AssignProcessToJobObject.restype = wintypes.BOOL
+    kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+    kernel32.CloseHandle.restype = wintypes.BOOL
+
+    job = kernel32.CreateJobObjectW(None, None)
+    if not job:
+        raise ctypes.WinError(ctypes.get_last_error())
+    try:
+        limits = ExtendedLimitInformation()
+        limits.BasicLimitInformation.LimitFlags = job_object_limit_kill_on_close
+        if not kernel32.SetInformationJobObject(
+            job,
+            job_object_extended_limit_information,
+            ctypes.byref(limits),
+            ctypes.sizeof(limits),
+        ):
+            raise ctypes.WinError(ctypes.get_last_error())
+        if not kernel32.AssignProcessToJobObject(
+            job, kernel32.GetCurrentProcess()
+        ):
+            raise ctypes.WinError(ctypes.get_last_error())
+    except Exception:
+        kernel32.CloseHandle(job)
+        raise
+    return int(job)
+
+
+def _run_windows_job_supervisor(command: tuple[str, ...]) -> int:
+    # The OS closes this non-inheritable handle on supervisor exit, killing leftovers.
+    _job = _create_windows_kill_on_close_job()
+    process = subprocess.Popen(command)
+    return process.wait()
+
+
 def _start_phase(phase: Phase) -> subprocess.Popen:
     kwargs: dict[str, object] = {
         "cwd": ROOT,
@@ -73,10 +169,12 @@ def _start_phase(phase: Phase) -> subprocess.Popen:
     }
     if IS_WINDOWS:
         kwargs["creationflags"] = CREATE_NEW_PROCESS_GROUP
+        command = _windows_job_supervisor_command(phase.command)
     else:
         kwargs["start_new_session"] = True
+        command = phase.command
     # Explicit None preserves the parent's stdout/stderr streams.
-    return subprocess.Popen(phase.command, **kwargs)
+    return subprocess.Popen(command, **kwargs)
 
 
 def _wait_for_owned_process(process: subprocess.Popen) -> bool:
@@ -246,13 +344,22 @@ def _positive_finite_seconds(value: str) -> float:
 
 
 def main(argv: list[str] | None = None) -> int:
+    arguments = sys.argv[1:] if argv is None else argv
+    if arguments[:1] == ["--windows-job-supervisor"]:
+        command = arguments[1:]
+        if command[:1] == ["--"]:
+            command = command[1:]
+        if not command:
+            raise SystemExit("Windows Job Object supervisor requires a command")
+        return _run_windows_job_supervisor(tuple(command))
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--deadline-seconds",
         type=_positive_finite_seconds,
         default=DEFAULT_DEADLINE_SECONDS,
     )
-    args = parser.parse_args(argv)
+    args = parser.parse_args(arguments)
     return run_backend_regression(
         sys.executable, deadline_seconds=args.deadline_seconds
     )
