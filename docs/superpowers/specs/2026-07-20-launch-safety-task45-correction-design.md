@@ -11,7 +11,7 @@ Giữ nguyên mục tiêu Launch Safety: ghi bằng chứng có thể tái lập
 1. **Không bọc Nginx integration trong một Compose thứ hai.** `test_nginx_boundary.py` và các fixture integration tiếp tục tự sở hữu Compose/project/cleanup. Release gate chạy trực tiếp pytest integration rồi ghi kết quả `compose-nginx-opt-in`.
 2. **Browser smoke chạy trên Nuxt output thật.** Sau `npm run build`, release gate khởi động trực tiếp `.output/server/index.mjs` trên loopback port tạm, chờ `/` và `/sw.js`, đặt `SMOKE_BASE_URL`, chạy `npm run smoke:launch-safety`, rồi dừng đúng process. Không dùng text-only `stub_upstream.py` làm browser target.
 3. **Evidence tích luỹ ngoài worktree.** Mỗi command ghi/upsert vào state JSON tạm ngoài repo. Chỉ sau khi toàn bộ required/opt-in gate kết thúc mới render Markdown canonical. Nhờ vậy Docker integration luôn archive một clean committed `HEAD`, không bị result document đang đổi làm fail source-safety.
-4. **Task 45 dùng hai commit có chủ đích.** Commit A chứa recorder, harness, tests và CI/release wiring. Từ clean Commit A chạy ma trận cuối. Commit B chỉ chứa evidence Markdown được render từ kết quả thật. Không amend/squash tự động.
+4. **Task 45 giữ evidence-only Commit B có chủ đích.** Commit A chứa recorder, harness, tests và CI/release wiring làm nền; các remediation follow-up đã duyệt có thể nâng current HEAD trước matrix. Ma trận cuối luôn chạy từ clean current HEAD và bind current full revision. Commit B chỉ chứa evidence Markdown được render từ kết quả thật. Không amend/squash tự động.
 5. **Giữ nguyên interface release gate cũ.** Các tham số, helper, warning semantics, migration/data/auth/E2E checks hiện có vẫn hoạt động. Launch Safety gate được thêm theo hướng additive. Default gate tiếp tục tổng hợp lỗi và trả `1`; opt-in chỉ chạy sau khi default gate xanh, và lỗi opt-in trả nguyên exit code sau khi đã record + cleanup.
 6. **Opt-in phải được yêu cầu tường minh.** Thêm hai switch độc lập `-RunLaunchSafetyDockerOptIn` và `-RunLaunchSafetyBrowserOptIn`; invocation mặc định không start Docker, Chrome hay preview. Final evidence invocation truyền cả hai switch.
 7. **Backend full regression dùng extension bounded đã duyệt.** `backend-full-regression` vẫn là một evidence row duy nhất và gọi `python scripts/ops/run_backend_regression.py --deadline-seconds 7000`; `pytest-xdist>=3.6,<4` chỉ là dev/test dependency trong `requirements-dev.txt`, không vào production package.
@@ -79,10 +79,12 @@ State mặc định nằm trong thư mục temp; release gate truyền path tư�
 
 ### 5.1 Scope delta so với plan cũ
 
-Ngoài bảy file Task 45 đã liệt kê, amendment cho phép sửa đúng hai surface cần thiết để loại duplicate browser resolver:
+Trong phạm vi amendment 2026-07-20 ban đầu, ngoài bảy file Task 45 đã liệt kê, amendment cho phép sửa đúng hai surface cần thiết để loại duplicate browser resolver:
 
 - `scripts/launch_safety_browser_e2e.mjs`: thêm `--probe-browser`, không đổi behavior smoke hiện có.
 - `tests/launch_safety/test_launch_matrix_contract.py`: test probe-only không tạo browser/profile/network và giữ nguyên script `smoke:launch-safety` hiện có.
+
+Phạm vi bổ sung cho runner, runner contracts, dev-only xdist dependency, CI/release wiring và authority documents được điều chỉnh bởi `docs/superpowers/specs/2026-07-24-bounded-backend-regression-design.md`; phạm vi đó không bị giới hạn bởi clause hai surface của amendment 2026-07-20 ở trên.
 
 Không thay Compose harness, integration fixture, Nginx config hay service-worker production code.
 
@@ -91,7 +93,7 @@ Không thay Compose harness, integration fixture, Nginx config hay service-worke
 1. Viết Python/PowerShell contract tests, chạy và thấy RED vì recorder/harness chưa tồn tại.
 2. Implement tối thiểu tới GREEN.
 3. Commit A khi focused tests, browser probe contract, source checks và diff-check xanh.
-4. Từ clean Commit A chạy ma trận theo phase tuần tự: backend focused, backend full qua bounded runner (Phase A serial; chỉ `test_closed_installer.py` dùng đúng hai xdist workers), frontend focused/full serial, typecheck, build, source/config gates, rồi gọi release gate với cả hai opt-in switch. Docker/browser unavailable được ghi skip chính xác; `not-requested` không được chấp nhận.
+4. Từ clean current HEAD, bind state với current full revision rồi chạy ma trận theo phase tuần tự: backend focused, backend full qua bounded runner (Phase A serial; chỉ `test_closed_installer.py` dùng đúng hai xdist workers), frontend focused/full serial, typecheck, build, source/config gates, rồi gọi release gate với cả hai opt-in switch. Docker/browser unavailable được ghi skip chính xác; `not-requested` không được chấp nhận.
 5. Render evidence từ state thật, tự kiểm completeness/redaction, commit B chỉ chứa result document.
 6. Review spec-compliance, code quality và whole-workstream trước khi kết thúc nhánh.
 

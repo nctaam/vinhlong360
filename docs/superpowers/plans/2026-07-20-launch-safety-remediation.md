@@ -16,7 +16,7 @@
 
 ## Execution lanes
 
-- **Session baseline:** run `python scripts/ops/run_backend_regression.py --deadline-seconds 7000` once before workers begin and record every known failure. The runner keeps phases sequential: Phase A is serial, and only `tests/launch_safety/test_closed_installer.py` runs in Phase B with exactly two xdist workers. Current known failures are the seven Nginx route-parity tests and the noindex AST guard; any additional failure stops execution.
+- **Session baseline:** run `python scripts/ops/run_backend_regression.py --deadline-seconds 7000` once before workers begin and record every known failure. The runner keeps phases sequential: Phase A is serial, and only `tests/launch_safety/test_closed_installer.py` runs in Phase B with exactly two xdist workers. The seven Nginx route-parity failures and the noindex AST guard failure were historical RED findings and are remediated; fresh full-suite status/evidence remains pending, and any newly observed failure stops execution.
 - **First wave:** Tasks 1, 3, 4 and 7 are file-disjoint and may run concurrently.
 - **Second wave:** Task 2 depends on Task 1; Task 5 follows Task 4 because they share rollback tests; Task 6 depends on Task 5; Task 8 runs after Tasks 1-7.
 - **Task 9 - Task 45 evidence:** starts only after Tasks 1-8 pass review and functional/hard gates are green on a clean commit.
@@ -330,9 +330,9 @@ git add docs/superpowers/plans/2026-07-13-launch-safety-gate.md scripts/ops/reco
 git commit -m "test: add launch safety evidence gate"
 ```
 
-- [ ] **Step 6: Run the final matrix phase-sequentially from clean Commit A**
+- [ ] **Step 6: Run the final matrix phase-sequentially from clean current HEAD**
 
-The 2026-07-24 matrix reached the external two-hour bound during the old monolithic backend command and produced only partial diagnostic state; this is not final evidence. Run backend focused tests, then the bounded backend runner `python scripts/ops/run_backend_regression.py --deadline-seconds 7000` (Phase A serial with only `tests/launch_safety/test_closed_installer.py` in Phase B using exactly two xdist workers), followed by frontend focused/full serial tests, typecheck, build, `run_hard.py --all`, PowerShell contract, rollback local rehearsal and explicit opt-ins. Use an outer execution timeout greater than 7,000 seconds. Record exact prerequisite skips. Do not render final evidence if any required functional section fails.
+The 2026-07-24 matrix reached the external two-hour bound during the old monolithic backend command and produced only partial diagnostic state; this is not final evidence. From a clean current HEAD, bind the matrix state to the current full revision. Run backend focused tests, then the bounded backend runner `python scripts/ops/run_backend_regression.py --deadline-seconds 7000` (Phase A serial with only `tests/launch_safety/test_closed_installer.py` in Phase B using exactly two xdist workers), followed by frontend focused/full serial tests, typecheck, build, `run_hard.py --all`, PowerShell contract, rollback local rehearsal and explicit opt-ins. Use an outer execution timeout greater than 7,000 seconds. Record exact prerequisite skips. Do not render final evidence if any required functional section fails.
 
 - [ ] **Step 7: Render and commit evidence B**
 
