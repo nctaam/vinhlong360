@@ -40,6 +40,7 @@ class FakeProcess:
         self.pid = pid
         self.times_out = times_out
         self.wait_timeouts: list[float] = []
+        self.kill_calls = 0
         self._poll_results = iter(poll_results or [None])
 
     def wait(self, timeout: float) -> int:
@@ -50,6 +51,9 @@ class FakeProcess:
 
     def poll(self) -> int | None:
         return next(self._poll_results)
+
+    def kill(self) -> None:
+        self.kill_calls += 1
 
 
 def _install_processes(
@@ -116,7 +120,7 @@ def test_run_reuses_one_absolute_deadline_and_shrinks_wait_budget(
 ) -> None:
     processes = [FakeProcess(), FakeProcess()]
     calls = _install_processes(runner, monkeypatch, processes)
-    clock = iter([100.0, 100.0, 104.0])
+    clock = iter([100.0, 100.0, 100.0, 104.0, 104.0])
     monkeypatch.setattr(runner.time, "monotonic", lambda: next(clock))
 
     result = runner.run_backend_regression(
@@ -138,7 +142,7 @@ def test_phase_a_failure_prevents_phase_b(
     runner: ModuleType, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     calls = _install_processes(runner, monkeypatch, [FakeProcess(returncode=9)])
-    clock = iter([20.0, 20.0])
+    clock = iter([20.0, 20.0, 20.0])
     monkeypatch.setattr(runner.time, "monotonic", lambda: next(clock))
 
     result = runner.run_backend_regression("python-under-test", deadline_seconds=5.0)
@@ -155,7 +159,7 @@ def test_phase_b_nonzero_is_returned_after_phase_a_passes(
         monkeypatch,
         [FakeProcess(returncode=0), FakeProcess(returncode=17)],
     )
-    clock = iter([30.0, 30.0, 31.0])
+    clock = iter([30.0, 30.0, 30.0, 31.0, 31.0])
     monkeypatch.setattr(runner.time, "monotonic", lambda: next(clock))
 
     result = runner.run_backend_regression("python-under-test", deadline_seconds=5.0)
@@ -171,7 +175,7 @@ def test_timeout_cleans_exact_owned_process_and_returns_124(
 ) -> None:
     process = FakeProcess(times_out=True)
     _install_processes(runner, monkeypatch, [process])
-    clock = iter([40.0, 40.0])
+    clock = iter([40.0, 40.0, 40.0])
     monkeypatch.setattr(runner.time, "monotonic", lambda: next(clock))
     cleaned: list[FakeProcess] = []
     monkeypatch.setattr(runner, "_cleanup_process", cleaned.append)
@@ -191,7 +195,7 @@ def test_cleanup_failure_is_bounded_warning_and_timeout_stays_124(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     _install_processes(runner, monkeypatch, [FakeProcess(times_out=True)])
-    clock = iter([50.0, 50.0])
+    clock = iter([50.0, 50.0, 50.0])
     monkeypatch.setattr(runner.time, "monotonic", lambda: next(clock))
 
     def fail_cleanup(_process: FakeProcess) -> None:
@@ -224,6 +228,28 @@ def test_expired_deadline_before_phase_start_does_not_spawn(
 
     assert result == 124
     assert "deadline exhausted before phase A" in capsys.readouterr().err
+
+
+def test_deadline_exhausted_during_spawn_cleans_child_without_waiting(
+    runner: ModuleType,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    process = FakeProcess()
+    _install_processes(runner, monkeypatch, [process])
+    clock = iter([80.0, 80.0, 82.0])
+    monkeypatch.setattr(runner.time, "monotonic", lambda: next(clock))
+    cleaned: list[FakeProcess] = []
+    monkeypatch.setattr(runner, "_cleanup_process", cleaned.append)
+
+    result = runner.run_backend_regression("python-under-test", deadline_seconds=1.0)
+
+    assert result == 124
+    assert process.wait_timeouts == []
+    assert cleaned == [process]
+    diagnostics = capsys.readouterr().err
+    assert "deadline exceeded during phase A startup" in diagnostics
+    assert "phase A cleanup complete" in diagnostics
 
 
 @pytest.mark.parametrize("is_windows", [False, True])
@@ -316,24 +342,151 @@ def test_windows_cleanup_never_targets_exited_child(
     runner._cleanup_process(process)
 
 
-def test_posix_cleanup_is_bounded_and_escalates_to_kill(
-    runner: ModuleType, monkeypatch: pytest.MonkeyPatch
+def test_windows_taskkill_nonzero_falls_back_to_owned_handle_and_warns(
+    runner: ModuleType,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
 ) -> None:
-    class PosixProcess(FakeProcess):
+    class TimeoutThenExitProcess(FakeProcess):
         def __init__(self) -> None:
-            super().__init__(pid=9753, poll_results=[None, None])
+            super().__init__(pid=8642)
             self.wait_calls = 0
+
+        def poll(self) -> None:
+            return None
 
         def wait(self, timeout: float) -> int:
             self.wait_timeouts.append(timeout)
             self.wait_calls += 1
             if self.wait_calls == 1:
                 raise subprocess.TimeoutExpired(["pytest"], timeout)
-            return -9
+            return 0
 
-    process = PosixProcess()
+    process = TimeoutThenExitProcess()
+    _install_processes(runner, monkeypatch, [process])
+    clock = iter([90.0, 90.0, 90.0])
+    monkeypatch.setattr(runner.time, "monotonic", lambda: next(clock))
+    monkeypatch.setattr(runner, "IS_WINDOWS", True)
+    monkeypatch.setattr(
+        runner.subprocess,
+        "run",
+        lambda *_args, **_kwargs: subprocess.CompletedProcess([], 7),
+    )
+
+    result = runner.run_backend_regression("python-under-test", deadline_seconds=2.0)
+
+    assert result == 124
+    assert process.kill_calls == 1
+    assert process.wait_timeouts == [2.0, runner.CLEANUP_TIMEOUT_SECONDS]
+    diagnostics = capsys.readouterr().err
+    assert "taskkill exited 7" in diagnostics
+    assert "cleanup complete" not in diagnostics
+
+
+@pytest.mark.parametrize(
+    "taskkill_error",
+    [
+        OSError("taskkill unavailable"),
+        subprocess.TimeoutExpired(["taskkill"], 5.0),
+    ],
+)
+def test_windows_taskkill_exception_falls_back_and_timeout_stays_124(
+    runner: ModuleType,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    taskkill_error: Exception,
+) -> None:
+    class TimeoutThenExitProcess(FakeProcess):
+        def __init__(self) -> None:
+            super().__init__(pid=8643)
+            self.wait_calls = 0
+
+        def poll(self) -> None:
+            return None
+
+        def wait(self, timeout: float) -> int:
+            self.wait_timeouts.append(timeout)
+            self.wait_calls += 1
+            if self.wait_calls == 1:
+                raise subprocess.TimeoutExpired(["pytest"], timeout)
+            return 0
+
+    process = TimeoutThenExitProcess()
+    _install_processes(runner, monkeypatch, [process])
+    clock = iter([100.0, 100.0, 100.0])
+    monkeypatch.setattr(runner.time, "monotonic", lambda: next(clock))
+    monkeypatch.setattr(runner, "IS_WINDOWS", True)
+
+    def fail_taskkill(*_args: object, **_kwargs: object) -> None:
+        raise taskkill_error
+
+    monkeypatch.setattr(runner.subprocess, "run", fail_taskkill)
+
+    result = runner.run_backend_regression("python-under-test", deadline_seconds=2.0)
+
+    assert result == 124
+    assert process.kill_calls == 1
+    assert process.wait_timeouts == [2.0, runner.CLEANUP_TIMEOUT_SECONDS]
+    diagnostics = capsys.readouterr().err
+    assert "taskkill" in diagnostics
+    assert "cleanup complete" not in diagnostics
+
+
+def test_windows_wait_timeout_uses_owned_handle_fallback(
+    runner: ModuleType, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    class WaitTimeoutProcess(FakeProcess):
+        def __init__(self) -> None:
+            super().__init__(pid=8644)
+            self.wait_calls = 0
+
+        def poll(self) -> None:
+            return None
+
+        def wait(self, timeout: float) -> int:
+            self.wait_timeouts.append(timeout)
+            self.wait_calls += 1
+            if self.wait_calls == 1:
+                raise subprocess.TimeoutExpired(["taskkill"], timeout)
+            return 0
+
+    process = WaitTimeoutProcess()
+    monkeypatch.setattr(runner, "IS_WINDOWS", True)
+    monkeypatch.setattr(
+        runner.subprocess,
+        "run",
+        lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0),
+    )
+
+    runner._cleanup_process(process)
+
+    assert process.kill_calls == 1
+    assert process.wait_timeouts == [
+        runner.CLEANUP_TIMEOUT_SECONDS,
+        runner.CLEANUP_TIMEOUT_SECONDS,
+    ]
+
+
+def test_posix_cleanup_is_bounded_and_escalates_to_kill(
+    runner: ModuleType, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    process = FakeProcess(pid=9753, poll_results=[0])
     signals: list[tuple[int, object]] = []
+    group_states = iter([True, True])
+    waits: list[tuple[FakeProcess, int]] = []
     monkeypatch.setattr(runner, "IS_WINDOWS", False)
+    monkeypatch.setattr(
+        runner,
+        "_process_group_exists",
+        lambda _pgid: next(group_states),
+    )
+    wait_results = iter([False, True])
+    monkeypatch.setattr(
+        runner,
+        "_wait_for_process_group_exit",
+        lambda owned_process, pgid: waits.append((owned_process, pgid))
+        or next(wait_results),
+    )
     monkeypatch.setattr(
         runner.os,
         "killpg",
@@ -347,9 +500,40 @@ def test_posix_cleanup_is_bounded_and_escalates_to_kill(
         (process.pid, runner.signal.SIGTERM),
         (process.pid, runner.SIGKILL),
     ]
-    assert process.wait_timeouts == [
-        runner.CLEANUP_TIMEOUT_SECONDS,
-        runner.CLEANUP_TIMEOUT_SECONDS,
+    assert waits == [(process, process.pid), (process, process.pid)]
+    assert process.wait_timeouts == []
+
+
+def test_posix_cleanup_kills_owned_group_when_leader_already_exited(
+    runner: ModuleType, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    process = FakeProcess(pid=9754, poll_results=[0])
+    signals: list[tuple[int, object]] = []
+    group_states = iter([True, True])
+    monkeypatch.setattr(runner, "IS_WINDOWS", False)
+    monkeypatch.setattr(
+        runner,
+        "_process_group_exists",
+        lambda _pgid: next(group_states),
+    )
+    wait_results = iter([False, True])
+    monkeypatch.setattr(
+        runner,
+        "_wait_for_process_group_exit",
+        lambda _process, _pgid: next(wait_results),
+    )
+    monkeypatch.setattr(
+        runner.os,
+        "killpg",
+        lambda pgid, sig: signals.append((pgid, sig)),
+        raising=False,
+    )
+
+    runner._cleanup_process(process)
+
+    assert signals == [
+        (process.pid, runner.signal.SIGTERM),
+        (process.pid, runner.SIGKILL),
     ]
 
 
@@ -357,7 +541,7 @@ def test_native_exit_code_is_preserved(
     runner: ModuleType, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     _install_processes(runner, monkeypatch, [FakeProcess(returncode=-15)])
-    clock = iter([70.0, 70.0])
+    clock = iter([70.0, 70.0, 70.0])
     monkeypatch.setattr(runner.time, "monotonic", lambda: next(clock))
 
     assert (
