@@ -73,6 +73,67 @@ def test_closed_installer_temp_root_reserves_windows_legacy_path_budget(
     assert len(os.fspath(authority_pin)) < 260
 
 
+@pytest.mark.skipif(os.name != "nt", reason="Git Bash process identity shim only")
+def test_windows_process_identity_env_stabilizes_cross_process_stat_without_faking_liveness(
+    tmp_path: Path,
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    env = os.environ.copy()
+    env.update(_windows_process_identity_env(tmp_path))
+    identity_file = tmp_path / "holder-identity"
+    stop_file = tmp_path / "stop-holder"
+    probe_command = (
+        'kill -0 "$1" 2>/dev/null || exit 73; '
+        "awk '{print $22}' \"/proc/$1/stat\""
+    )
+    holder = subprocess.Popen(
+        [
+            str(BASH),
+            "-lc",
+            (
+                f"printf '%s %s\\n' \"$$\" \"$(awk '{{print $22}}' /proc/$$/stat)\" "
+                f"> '{_bash_path(identity_file)}'; "
+                f"while [ ! -f '{_bash_path(stop_file)}' ]; do sleep 0.05; done"
+            ),
+        ],
+        cwd=ROOT,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    try:
+        _wait_for_path(identity_file)
+        pid_text, recorded_identity = identity_file.read_text(
+            encoding="ascii"
+        ).split()
+        live_probe = subprocess.run(
+            [str(BASH), "-lc", probe_command, "identity-probe", pid_text],
+            cwd=ROOT,
+            env=env,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        dead_probe = subprocess.run(
+            [str(BASH), "-lc", probe_command, "identity-probe", "999999"],
+            cwd=ROOT,
+            env=env,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    finally:
+        stop_file.touch()
+        holder_stdout, holder_stderr = holder.communicate(timeout=30)
+
+    assert holder.returncode == 0, holder_stderr + holder_stdout
+    assert live_probe.returncode == 0, live_probe.stderr + live_probe.stdout
+    assert live_probe.stdout.strip() == recorded_identity
+    assert dead_probe.returncode == 73, dead_probe.stderr + dead_probe.stdout
+
+
 def _load_module(name: str, path: Path):
     spec = importlib.util.spec_from_file_location(name, path)
     assert spec is not None and spec.loader is not None
@@ -432,6 +493,29 @@ def _bash_path_literal(path: Path) -> str:
     if len(raw) >= 3 and raw[1:3] == ":/":
         return f"/{raw[0].lower()}/{raw[3:]}"
     return raw
+
+
+def _windows_process_identity_env(case_root: Path) -> dict[str, str]:
+    bash_env = case_root / "stable-process-identity.bash"
+    bash_env.write_text(
+        "awk() {\n"
+        "  if [ \"$#\" -eq 2 ] && [ \"$1\" = '{print $22}' ]; then\n"
+        "    case \"$2\" in\n"
+        "      /proc/[0-9]*/stat)\n"
+        "        local pid=${2#/proc/}\n"
+        "        pid=${pid%/stat}\n"
+        "        case \"$pid\" in\n"
+        "          ''|*[!0-9]*) ;;\n"
+        "          *) printf 'vl360-test-pid-%s\\n' \"$pid\"; return 0 ;;\n"
+        "        esac\n"
+        "        ;;\n"
+        "    esac\n"
+        "  fi\n"
+        "  command awk \"$@\"\n"
+        "}\n",
+        encoding="ascii",
+    )
+    return {"BASH_ENV": _bash_path(bash_env)}
 
 
 def _wait_for_path(path: Path, timeout: float = 60.0) -> None:
@@ -7307,6 +7391,8 @@ def test_same_evidence_rejection_does_not_erase_active_attempt_evidence(
     hook.chmod(0o755)
     env = os.environ.copy()
     env.update(values)
+    if os.name == "nt":
+        env.update(_windows_process_identity_env(case_root))
     first, first_stdout_path, first_stderr_path = _start_file_backed_process(
         _installer_command(closed_package, case_root, prepared),
         case_root=case_root,
