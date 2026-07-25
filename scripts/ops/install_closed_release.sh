@@ -1490,21 +1490,19 @@ PY
 }
 
 source_release_topology_sha256() {
-  local payload="$1"
-  payload="$(source_release_topology_payload "$payload")" || return 1
-  VL360_TOPOLOGY_PAYLOAD="$payload" invoke_python - <<'PY'
+  local root="$1"
+  source_release_topology_payload "$root" | invoke_python -c '
 from hashlib import sha256
-import os
-print(sha256((os.environ["VL360_TOPOLOGY_PAYLOAD"] + "\n").encode()).hexdigest())
-PY
+import sys
+print(sha256(sys.stdin.buffer.read()).hexdigest())
+'
 }
 
 source_release_topology_snapshot() {
   local root="$1"
   local target="$2"
-  local payload
-  payload="$(source_release_topology_payload "$root")" || return 1
-  write_durable_text_file "$target" "$payload"$'\n'
+  source_release_topology_payload "$root" \
+    | write_durable_text_file_from_stdin "$target"
 }
 
 source_release_topology_subset() {
@@ -2414,6 +2412,43 @@ finally:
         os.close(descriptor)
     temporary.unlink(missing_ok=True)
 PY
+}
+
+write_durable_text_file_from_stdin() {
+  local path="$1"
+  invoke_python -c '
+import os
+import sys
+import tempfile
+from pathlib import Path
+
+target = Path(sys.argv[1])
+raw = sys.stdin.buffer.read()
+descriptor, name = tempfile.mkstemp(
+    prefix=f".{target.name}.", suffix=".tmp", dir=target.parent
+)
+temporary = Path(name)
+try:
+    with os.fdopen(descriptor, "wb") as stream:
+        descriptor = -1
+        stream.write(raw)
+        stream.flush()
+        os.fsync(stream.fileno())
+    os.replace(temporary, target)
+    if os.name != "nt":
+        directory = os.open(
+            target.parent,
+            os.O_RDONLY | getattr(os, "O_DIRECTORY", 0),
+        )
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
+finally:
+    if descriptor != -1:
+        os.close(descriptor)
+    temporary.unlink(missing_ok=True)
+' "$path"
 }
 
 sweep_stale_staging_attempts() {

@@ -4938,6 +4938,62 @@ def test_owner_writer_fsyncs_file_replaces_atomically_and_fsyncs_parent():
     assert "os.fsync(directory)" in writer
 
 
+def test_topology_payload_streams_without_argv_or_environment_handoff():
+    source = INSTALL.read_text(encoding="utf-8")
+    start = source.index("source_release_topology_sha256()")
+    region = source[start : source.index("source_release_topology_subset()", start)]
+
+    assert 'source_release_topology_payload "$root"' in region
+    assert '| write_durable_text_file_from_stdin "$target"' in region
+    assert 'source_release_topology_payload "$root" | invoke_python -c' in region
+    assert "VL360_TOPOLOGY_PAYLOAD" not in region
+    assert 'payload="$(source_release_topology_payload' not in region
+
+
+def test_large_topology_snapshot_and_digest_stream_through_stdin(tmp_path: Path):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    payload_start = source.index("source_release_topology_payload()")
+    payload = source[
+        payload_start : source.index("source_release_topology_subset()", payload_start)
+    ]
+    writer_start = source.index("write_durable_text_file_from_stdin()")
+    writer = source[
+        writer_start : source.index("sweep_stale_staging_attempts()", writer_start)
+    ]
+    root = tmp_path / "release"
+    root.mkdir()
+    for index in range(1200):
+        (root / f"tracked-entry-{index:04d}-with-a-long-name.txt").write_bytes(b"x\n")
+    snapshot = tmp_path / "snapshot.json"
+    expected = tmp_path / "expected.json"
+    script = "\n".join(
+        (
+            "set -Eeuo pipefail",
+            f"PYTHON_EXECUTOR={shlex.quote(_bash_path(Path(sys.executable).resolve()))}",
+            "export PYTHON_EXECUTOR",
+            'invoke_python() { "$PYTHON_EXECUTOR" "$@"; }',
+            payload,
+            writer,
+            f"ROOT={shlex.quote(_bash_path(root))}",
+            f"SNAPSHOT={shlex.quote(_bash_path(snapshot))}",
+            f"EXPECTED={shlex.quote(_bash_path(expected))}",
+            'source_release_topology_snapshot "$ROOT" "$SNAPSHOT"',
+            'source_release_topology_payload "$ROOT" > "$EXPECTED"',
+            'cmp -s "$EXPECTED" "$SNAPSHOT"',
+            'actual="$(source_release_topology_sha256 "$ROOT")"',
+            'expected_hash="$(invoke_python -c \'from hashlib import sha256; import sys; from pathlib import Path; print(sha256(Path(sys.argv[1]).read_bytes()).hexdigest())\' "$SNAPSHOT")"',
+            '[ "$actual" = "$expected_hash" ]',
+        )
+    )
+
+    result = _run_bash_script(tmp_path / "large-topology-stream.sh", script)
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert snapshot.stat().st_size > 32 * 1024
+
+
 def test_authority_result_writer_fsyncs_file_replaces_and_fsyncs_parent():
     source = INSTALL.read_text(encoding="utf-8")
     recorder = source[
