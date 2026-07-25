@@ -7699,6 +7699,8 @@ def test_distinct_target_attempts_can_hold_install_locks_concurrently(
             hook.chmod(0o755)
             lock_barrier = case_root / "lock-barrier.bash"
             lock_barrier.write_text(
+                "shopt -u extdebug\n"
+                "set +T\n"
                 "__vl360_lock_barrier_state=waiting\n"
                 "__vl360_lock_barrier() {\n"
                 "  if [ \"$__vl360_lock_barrier_state\" = armed ]; then\n"
