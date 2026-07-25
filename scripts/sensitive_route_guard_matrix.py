@@ -76,6 +76,8 @@ ENDPOINT_CHECKS = [
 def _target_contains_name(target: ast.expr, name: str) -> bool:
     if isinstance(target, ast.Name):
         return target.id == name
+    if isinstance(target, ast.Starred):
+        return _target_contains_name(target.value, name)
     if isinstance(target, (ast.List, ast.Tuple)):
         return any(_target_contains_name(item, name) for item in target.elts)
     return False
@@ -232,6 +234,10 @@ class _ModuleAssignmentCollector(ast.NodeVisitor):
             self.nodes.append(node)
         self.generic_visit(node)
 
+    def visit_TypeAlias(self, node: ast.TypeAlias) -> None:
+        self._record_targets(node, [node.name])
+        self.generic_visit(node)
+
 
 def _literal_path_table(
     module: ast.Module, name: str, failures: list[str]
@@ -249,7 +255,7 @@ def _literal_path_table(
         and len(assignment.targets) == 1
         and isinstance(assignment.targets[0], ast.Name)
         and assignment.targets[0].id == name
-        and isinstance(assignment.value, (ast.List, ast.Tuple, ast.Set))
+        and isinstance(assignment.value, ast.Tuple)
         and all(
             isinstance(item, ast.Constant) and isinstance(item.value, str)
             for item in assignment.value.elts
@@ -437,6 +443,32 @@ def _matching_gate_branches(
     ]
 
 
+class _EffectfulCallFinder(ast.NodeVisitor):
+    def __init__(self) -> None:
+        self.found = False
+
+    def visit_Call(self, node: ast.Call) -> None:
+        self.found = True
+
+    visit_Await = visit_Call
+
+    def visit_Raise(self, node: ast.Raise) -> None:
+        return
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        return
+
+    visit_AsyncFunctionDef = visit_FunctionDef
+    visit_ClassDef = visit_FunctionDef
+    visit_Lambda = visit_FunctionDef
+
+
+def _contains_effectful_call(statement: ast.stmt) -> bool:
+    finder = _EffectfulCallFinder()
+    finder.visit(statement)
+    return finder.found
+
+
 class _FunctionExitFinder(ast.NodeVisitor):
     def __init__(self) -> None:
         self.found = False
@@ -467,6 +499,15 @@ def _reachable_block_prefix(body: list[ast.stmt]) -> list[ast.stmt]:
     return reachable
 
 
+def _effectful_call_precedes(body: list[ast.stmt], target: ast.stmt) -> bool:
+    for statement in _reachable_block_prefix(body):
+        if statement is target:
+            return False
+        if _contains_effectful_call(statement):
+            return True
+    return False
+
+
 def _check_gate_integrity(module: ast.Module, failures: list[str]) -> None:
     _check_gate_helper(module, failures)
     gate = _gate_middleware(module)
@@ -477,14 +518,18 @@ def _check_gate_integrity(module: ast.Module, failures: list[str]) -> None:
         failures.append("gate_internal_endpoints must be registered as HTTP middleware")
 
     gated_branches = _matching_gate_branches(gate.body, _matches_gate_condition)
-    if len(gated_branches) != 1:
+    if len(gated_branches) != 1 or _effectful_call_precedes(
+        gate.body, gated_branches[0]
+    ):
         failures.append("gate_internal_endpoints must enforce the gated-path 404 branch")
         return
 
     admin_branches = _matching_gate_branches(
         gated_branches[0].body, _matches_admin_rejection
     )
-    if len(admin_branches) != 1:
+    if len(admin_branches) != 1 or _effectful_call_precedes(
+        gated_branches[0].body, admin_branches[0]
+    ):
         failures.append("gate_internal_endpoints must verify the admin key")
         return
     if not any(
@@ -524,6 +569,15 @@ def _matches_endpoint_guard(statement: ast.stmt, scope: str) -> bool:
     )
 
 
+def _has_dominating_endpoint_guard(body: list[ast.stmt], scope: str) -> bool:
+    for statement in _reachable_block_prefix(body):
+        if _matches_endpoint_guard(statement, scope):
+            return True
+        if _contains_effectful_call(statement):
+            return False
+    return False
+
+
 def _check_endpoint_guards(module: ast.Module, failures: list[str]) -> None:
     for check in ENDPOINT_CHECKS:
         functions = _top_level_functions(module, check.function)
@@ -534,10 +588,7 @@ def _check_endpoint_guards(module: ast.Module, failures: list[str]) -> None:
                 _matches_app_decorator(decorator, check.method, check.route)
                 for decorator in function.decorator_list
             )
-            and any(
-                _matches_endpoint_guard(statement, check.scope)
-                for statement in _reachable_block_prefix(function.body)
-            )
+            and _has_dominating_endpoint_guard(function.body, check.scope)
         )
         print(f"{'OK' if ok else 'FAIL'} {check.route:20} {check.reason}")
         if not ok:

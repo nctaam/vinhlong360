@@ -92,6 +92,29 @@ def _endpoint_source(route: str, method: str, function: str, mode: str) -> str:
             "        pass\n"
             '    await require_admin_scope(request, "ops.deploy")'
         )
+    elif mode == "guard-after-call":
+        guard = (
+            "    spend_llm_budget()\n"
+            '    await require_admin_scope(request, "ops.deploy")'
+        )
+    elif mode == "guard-after-await":
+        guard = (
+            "    await spend_llm_budget()\n"
+            '    await require_admin_scope(request, "ops.deploy")'
+        )
+    elif mode == "harmless-prefix":
+        guard = (
+            '    """Protected endpoint."""\n'
+            "    from admin import require_admin_scope\n"
+            '    await require_admin_scope(request, "ops.deploy")'
+        )
+    elif mode == "nested-scope-prefix":
+        guard = (
+            "    def deferred_work():\n"
+            "        spend_llm_budget()\n"
+            "    deferred_lambda = lambda: spend_llm_budget()\n"
+            '    await require_admin_scope(request, "ops.deploy")'
+        )
     elif mode == "missing-decorator":
         decorator = ""
     elif mode == "wrong-route":
@@ -167,6 +190,34 @@ def _server_source(
             '        raise ValueError("probe")\n'
             "    except ValueError:\n"
             "        pass\n"
+            "    if _is_gated_path(request.url.path):\n"
+            "        from middleware import verify_admin_key\n"
+            "        if not verify_admin_key(request):\n"
+            "            return JSONResponse(status_code=404)\n"
+            "    return await call_next(request)"
+        )
+    elif gate_mode == "dispatch-before-gate":
+        gate_body = (
+            "    await call_next(request)\n"
+            "    if _is_gated_path(request.url.path):\n"
+            "        from middleware import verify_admin_key\n"
+            "        if not verify_admin_key(request):\n"
+            "            return JSONResponse(status_code=404)\n"
+            "    return await call_next(request)"
+        )
+    elif gate_mode == "call-before-admin":
+        gate_body = (
+            "    if _is_gated_path(request.url.path):\n"
+            "        load_admin_policy()\n"
+            "        from middleware import verify_admin_key\n"
+            "        if not verify_admin_key(request):\n"
+            "            return JSONResponse(status_code=404)\n"
+            "    return await call_next(request)"
+        )
+    elif gate_mode == "harmless-prefix":
+        gate_body = (
+            '    """Gate sensitive routes."""\n'
+            "    from middleware import gate_settings\n"
             "    if _is_gated_path(request.url.path):\n"
             "        from middleware import verify_admin_key\n"
             "        if not verify_admin_key(request):\n"
@@ -447,6 +498,262 @@ def test_matrix_accepts_local_pattern_route_table_shadowing(
     )
 
     result, _ = _run_matrix(monkeypatch, tmp_path, source)
+
+    assert result == 0, capsys.readouterr().out
+
+
+@pytest.mark.parametrize(
+    ("binding", "table_name"),
+    (
+        ("*_GATED_EXACT_PATHS, = []", "_GATED_EXACT_PATHS"),
+        ("for *_GATED_PREFIX_PATHS, in []:\n    pass", "_GATED_PREFIX_PATHS"),
+        (
+            "with context() as [*_GATED_EXACT_PATHS]:\n    pass",
+            "_GATED_EXACT_PATHS",
+        ),
+    ),
+)
+def test_matrix_round2_rejects_starred_module_route_table_rebind(
+    monkeypatch, tmp_path: Path, capsys, binding: str, table_name: str
+):
+    result, _ = _run_matrix(
+        monkeypatch,
+        tmp_path,
+        _server_source(later_assignment=binding),
+    )
+    output = capsys.readouterr().out
+
+    assert result == 1
+    assert f"{table_name} must have one literal assignment" in output
+
+
+@pytest.mark.parametrize(
+    "binding",
+    (
+        (
+            "def rebind():\n"
+            "    global _GATED_EXACT_PATHS\n"
+            "    *_GATED_EXACT_PATHS, = []"
+        ),
+        (
+            "class Rebind:\n"
+            "    global _GATED_EXACT_PATHS\n"
+            "    with context() as [*_GATED_EXACT_PATHS]:\n"
+            "        pass"
+        ),
+    ),
+)
+def test_matrix_round2_rejects_starred_global_route_table_rebind(
+    monkeypatch, tmp_path: Path, capsys, binding: str
+):
+    result, _ = _run_matrix(
+        monkeypatch,
+        tmp_path,
+        _server_source(later_assignment=binding),
+    )
+    output = capsys.readouterr().out
+
+    assert result == 1
+    assert "_GATED_EXACT_PATHS must have one literal assignment" in output
+
+
+@pytest.mark.parametrize(
+    "binding",
+    (
+        "def local_shadow():\n    *_GATED_EXACT_PATHS, = []",
+        (
+            "class LocalShadow:\n"
+            "    with context() as [*_GATED_EXACT_PATHS]:\n"
+            "        pass"
+        ),
+    ),
+)
+def test_matrix_round2_accepts_starred_local_route_table_shadowing(
+    monkeypatch, tmp_path: Path, capsys, binding: str
+):
+    result, _ = _run_matrix(
+        monkeypatch,
+        tmp_path,
+        _server_source(later_assignment=binding),
+    )
+
+    assert result == 0, capsys.readouterr().out
+
+
+@pytest.mark.parametrize(
+    "binding",
+    (
+        "type _GATED_EXACT_PATHS = tuple[str, ...]",
+        (
+            "def rebind():\n"
+            "    global _GATED_EXACT_PATHS\n"
+            "    type _GATED_EXACT_PATHS = tuple[str, ...]"
+        ),
+        (
+            "class Rebind:\n"
+            "    global _GATED_EXACT_PATHS\n"
+            "    type _GATED_EXACT_PATHS = tuple[str, ...]"
+        ),
+    ),
+)
+def test_matrix_round2_rejects_type_alias_route_table_rebind(
+    monkeypatch, tmp_path: Path, capsys, binding: str
+):
+    result, _ = _run_matrix(
+        monkeypatch,
+        tmp_path,
+        _server_source(later_assignment=binding),
+    )
+    output = capsys.readouterr().out
+
+    assert result == 1
+    assert "_GATED_EXACT_PATHS must have one literal assignment" in output
+
+
+@pytest.mark.parametrize(
+    "binding",
+    (
+        (
+            "def local_shadow():\n"
+            "    type _GATED_EXACT_PATHS = tuple[str, ...]"
+        ),
+        (
+            "class LocalShadow:\n"
+            "    type _GATED_EXACT_PATHS = tuple[str, ...]"
+        ),
+    ),
+)
+def test_matrix_round2_accepts_local_type_alias_shadowing(
+    monkeypatch, tmp_path: Path, capsys, binding: str
+):
+    result, _ = _run_matrix(
+        monkeypatch,
+        tmp_path,
+        _server_source(later_assignment=binding),
+    )
+
+    assert result == 0, capsys.readouterr().out
+
+
+@pytest.mark.parametrize(
+    ("exact_assignment", "prefix_assignment", "mutation", "table_name"),
+    (
+        (
+            '_GATED_EXACT_PATHS = ["/metrics", "/vectors/stats"]',
+            None,
+            "_GATED_EXACT_PATHS.clear()",
+            "_GATED_EXACT_PATHS",
+        ),
+        (
+            '_GATED_EXACT_PATHS = ["/metrics", "/vectors/stats"]',
+            None,
+            "_GATED_EXACT_PATHS.pop()",
+            "_GATED_EXACT_PATHS",
+        ),
+        (
+            None,
+            f"_GATED_PREFIX_PATHS = {list(PREFIX_PATHS)!r}",
+            '_GATED_PREFIX_PATHS.remove("/freshness")',
+            "_GATED_PREFIX_PATHS",
+        ),
+        (
+            '_GATED_EXACT_PATHS = {"/metrics", "/vectors/stats"}',
+            None,
+            '_GATED_EXACT_PATHS.discard("/metrics")',
+            "_GATED_EXACT_PATHS",
+        ),
+    ),
+)
+def test_matrix_round2_rejects_mutable_route_table_literals(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+    exact_assignment: str | None,
+    prefix_assignment: str | None,
+    mutation: str,
+    table_name: str,
+):
+    result, _ = _run_matrix(
+        monkeypatch,
+        tmp_path,
+        _server_source(
+            exact_assignment=exact_assignment,
+            prefix_assignment=prefix_assignment,
+            later_assignment=mutation,
+        ),
+    )
+    output = capsys.readouterr().out
+
+    assert result == 1
+    assert f"{table_name} must have one literal assignment" in output
+
+
+def test_matrix_round2_rejects_middleware_dispatch_before_gate(
+    monkeypatch, tmp_path: Path, capsys
+):
+    result, _ = _run_matrix(
+        monkeypatch,
+        tmp_path,
+        _server_source(gate_mode="dispatch-before-gate"),
+    )
+    output = capsys.readouterr().out
+
+    assert result == 1
+    assert "gate_internal_endpoints must enforce the gated-path 404 branch" in output
+
+
+def test_matrix_round2_rejects_middleware_call_before_admin_check(
+    monkeypatch, tmp_path: Path, capsys
+):
+    result, _ = _run_matrix(
+        monkeypatch,
+        tmp_path,
+        _server_source(gate_mode="call-before-admin"),
+    )
+    output = capsys.readouterr().out
+
+    assert result == 1
+    assert "gate_internal_endpoints must verify the admin key" in output
+
+
+@pytest.mark.parametrize("mode", ("guard-after-call", "guard-after-await"))
+def test_matrix_round2_rejects_endpoint_work_before_guard(
+    monkeypatch, tmp_path: Path, capsys, mode: str
+):
+    result, _ = _run_matrix(
+        monkeypatch,
+        tmp_path,
+        _server_source(endpoint_modes={"build_vectors": mode}),
+    )
+    output = capsys.readouterr().out
+
+    assert result == 1
+    assert "FAIL /vectors/build" in output
+
+
+def test_matrix_round2_accepts_harmless_guard_prefixes(
+    monkeypatch, tmp_path: Path, capsys
+):
+    result, _ = _run_matrix(
+        monkeypatch,
+        tmp_path,
+        _server_source(
+            gate_mode="harmless-prefix",
+            endpoint_modes={"build_vectors": "harmless-prefix"},
+        ),
+    )
+
+    assert result == 0, capsys.readouterr().out
+
+
+def test_matrix_round2_accepts_deferred_nested_scope_work_before_guard(
+    monkeypatch, tmp_path: Path, capsys
+):
+    result, _ = _run_matrix(
+        monkeypatch,
+        tmp_path,
+        _server_source(endpoint_modes={"build_vectors": "nested-scope-prefix"}),
+    )
 
     assert result == 0, capsys.readouterr().out
 
