@@ -43,6 +43,12 @@ def _endpoint_source(route: str, method: str, function: str, mode: str) -> str:
             "    return public_response()\n"
             '    await require_admin_scope(request, "ops.deploy")'
         )
+    elif mode == "guard-after-conditional-return":
+        guard = (
+            "    if True:\n"
+            "        return public_response()\n"
+            '    await require_admin_scope(request, "ops.deploy")'
+        )
     elif mode == "missing-decorator":
         decorator = ""
     elif mode == "wrong-route":
@@ -97,6 +103,16 @@ def _server_source(
         gate_body = (
             "    if _is_gated_path(request.url.path):\n"
             "        return await call_next(request)\n"
+            "        from middleware import verify_admin_key\n"
+            "        if not verify_admin_key(request):\n"
+            "            return JSONResponse(status_code=404)\n"
+            "    return await call_next(request)"
+        )
+    elif gate_mode == "guard-after-conditional-return":
+        gate_body = (
+            "    if True:\n"
+            "        return await call_next(request)\n"
+            "    if _is_gated_path(request.url.path):\n"
             "        from middleware import verify_admin_key\n"
             "        if not verify_admin_key(request):\n"
             "            return JSONResponse(status_code=404)\n"
@@ -243,6 +259,57 @@ def test_matrix_rejects_called_global_route_table_rebind(
     assert "_GATED_PREFIX_PATHS must have one literal assignment" in output
 
 
+def test_matrix_accepts_function_local_route_table_shadowing(
+    monkeypatch, tmp_path: Path, capsys
+):
+    source = _server_source(
+        later_assignment=(
+            "def harmless_local_shadow():\n"
+            "    _GATED_EXACT_PATHS = ()\n"
+            "    _GATED_PREFIX_PATHS = ()\n"
+            "    return _GATED_EXACT_PATHS, _GATED_PREFIX_PATHS\n\n"
+            "harmless_local_shadow()"
+        )
+    )
+
+    result, _ = _run_matrix(monkeypatch, tmp_path, source)
+
+    assert result == 0, capsys.readouterr().out
+
+
+def test_matrix_accepts_class_local_route_table_shadowing(
+    monkeypatch, tmp_path: Path, capsys
+):
+    source = _server_source(
+        later_assignment=(
+            "class HarmlessShadow:\n"
+            "    _GATED_EXACT_PATHS = ()\n"
+            "    _GATED_PREFIX_PATHS = ()"
+        )
+    )
+
+    result, _ = _run_matrix(monkeypatch, tmp_path, source)
+
+    assert result == 0, capsys.readouterr().out
+
+
+def test_matrix_accepts_global_declaration_without_rebind(
+    monkeypatch, tmp_path: Path, capsys
+):
+    source = _server_source(
+        later_assignment=(
+            "def inspect_guards():\n"
+            "    global _GATED_EXACT_PATHS, _GATED_PREFIX_PATHS\n"
+            "    return _GATED_EXACT_PATHS, _GATED_PREFIX_PATHS\n\n"
+            "inspect_guards()"
+        )
+    )
+
+    result, _ = _run_matrix(monkeypatch, tmp_path, source)
+
+    assert result == 0, capsys.readouterr().out
+
+
 @pytest.mark.parametrize(
     ("gate_mode", "expected"),
     (
@@ -279,6 +346,20 @@ def test_matrix_rejects_middleware_guard_after_terminal_return(
     assert "gate_internal_endpoints must verify the admin key" in output
 
 
+def test_matrix_rejects_middleware_guard_after_conditional_return(
+    monkeypatch, tmp_path: Path, capsys
+):
+    result, _ = _run_matrix(
+        monkeypatch,
+        tmp_path,
+        _server_source(gate_mode="guard-after-conditional-return"),
+    )
+    output = capsys.readouterr().out
+
+    assert result == 1
+    assert "gate_internal_endpoints must enforce the gated-path 404 branch" in output
+
+
 def test_matrix_rejects_dead_helper_decoys(monkeypatch, tmp_path: Path, capsys):
     result, _ = _run_matrix(
         monkeypatch,
@@ -313,6 +394,22 @@ def test_matrix_rejects_endpoint_guard_after_terminal_return(
         monkeypatch,
         tmp_path,
         _server_source(endpoint_modes={"build_vectors": "guard-after-return"}),
+    )
+    output = capsys.readouterr().out
+
+    assert result == 1
+    assert "FAIL /vectors/build" in output
+
+
+def test_matrix_rejects_endpoint_guard_after_conditional_return(
+    monkeypatch, tmp_path: Path, capsys
+):
+    result, _ = _run_matrix(
+        monkeypatch,
+        tmp_path,
+        _server_source(
+            endpoint_modes={"build_vectors": "guard-after-conditional-return"}
+        ),
     )
     output = capsys.readouterr().out
 

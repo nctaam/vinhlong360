@@ -81,62 +81,137 @@ def _target_contains_name(target: ast.expr, name: str) -> bool:
     return False
 
 
+class _GlobalDeclarationFinder(ast.NodeVisitor):
+    def __init__(self, name: str) -> None:
+        self.name = name
+        self.found = False
+
+    def visit_Global(self, node: ast.Global) -> None:
+        if self.name in node.names:
+            self.found = True
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        return
+
+    visit_AsyncFunctionDef = visit_FunctionDef
+    visit_ClassDef = visit_FunctionDef
+    visit_Lambda = visit_FunctionDef
+
+
+def _scope_declares_global(body: list[ast.stmt], name: str) -> bool:
+    finder = _GlobalDeclarationFinder(name)
+    for statement in body:
+        finder.visit(statement)
+    return finder.found
+
+
 class _ModuleAssignmentCollector(ast.NodeVisitor):
-    """Collect every binding that could replace a protected route table."""
+    """Collect bindings that can replace a protected module route table."""
 
     def __init__(self, name: str) -> None:
         self.name = name
         self.nodes: list[ast.AST] = []
+        self._module_binding_scope = [True]
+
+    @property
+    def _changes_module(self) -> bool:
+        return self._module_binding_scope[-1]
+
+    def _record_targets(self, node: ast.AST, targets: list[ast.expr]) -> None:
+        if self._changes_module and any(
+            _target_contains_name(target, self.name) for target in targets
+        ):
+            self.nodes.append(node)
+
+    def _visit_outer_scope_fields(self, node: ast.AST) -> None:
+        for field, value in ast.iter_fields(node):
+            if field == "body":
+                continue
+            if isinstance(value, list):
+                for item in value:
+                    if isinstance(item, ast.AST):
+                        self.visit(item)
+            elif isinstance(value, ast.AST):
+                self.visit(value)
+
+    def _visit_nested_scope(self, body: list[ast.stmt]) -> None:
+        self._module_binding_scope.append(_scope_declares_global(body, self.name))
+        for statement in body:
+            self.visit(statement)
+        self._module_binding_scope.pop()
 
     def visit_Assign(self, node: ast.Assign) -> None:
-        if any(_target_contains_name(target, self.name) for target in node.targets):
-            self.nodes.append(node)
+        self._record_targets(node, node.targets)
         self.visit(node.value)
 
     def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
-        if _target_contains_name(node.target, self.name):
-            self.nodes.append(node)
+        self._record_targets(node, [node.target])
         if node.value is not None:
             self.visit(node.value)
 
     def visit_AugAssign(self, node: ast.AugAssign) -> None:
-        if _target_contains_name(node.target, self.name):
-            self.nodes.append(node)
+        self._record_targets(node, [node.target])
         self.visit(node.value)
 
     def visit_NamedExpr(self, node: ast.NamedExpr) -> None:
-        if _target_contains_name(node.target, self.name):
-            self.nodes.append(node)
+        self._record_targets(node, [node.target])
         self.visit(node.value)
 
     def visit_For(self, node: ast.For) -> None:
-        if _target_contains_name(node.target, self.name):
-            self.nodes.append(node)
+        self._record_targets(node, [node.target])
         self.visit(node.iter)
         for statement in (*node.body, *node.orelse):
             self.visit(statement)
 
     visit_AsyncFor = visit_For
 
+    def visit_With(self, node: ast.With) -> None:
+        targets = [item.optional_vars for item in node.items if item.optional_vars]
+        self._record_targets(node, targets)
+        for item in node.items:
+            self.visit(item.context_expr)
+        for statement in node.body:
+            self.visit(statement)
+
+    visit_AsyncWith = visit_With
+
+    def visit_Delete(self, node: ast.Delete) -> None:
+        self._record_targets(node, node.targets)
+
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
-        if node.name == self.name:
+        if self._changes_module and node.name == self.name:
             self.nodes.append(node)
-        self.generic_visit(node)
+        self._visit_outer_scope_fields(node)
+        self._visit_nested_scope(node.body)
 
     visit_AsyncFunctionDef = visit_FunctionDef
 
     def visit_ClassDef(self, node: ast.ClassDef) -> None:
-        if node.name == self.name:
+        if self._changes_module and node.name == self.name:
             self.nodes.append(node)
-        self.generic_visit(node)
+        self._visit_outer_scope_fields(node)
+        self._visit_nested_scope(node.body)
 
-    def visit_Global(self, node: ast.Global) -> None:
-        if self.name in node.names:
+    def visit_Lambda(self, node: ast.Lambda) -> None:
+        self._visit_outer_scope_fields(node)
+
+    def visit_Import(self, node: ast.Import) -> None:
+        bound_names = [alias.asname or alias.name.split(".", 1)[0] for alias in node.names]
+        if self._changes_module and self.name in bound_names:
             self.nodes.append(node)
 
-    def visit_Name(self, node: ast.Name) -> None:
-        if node.id == self.name and isinstance(node.ctx, (ast.Store, ast.Del)):
+    def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
+        bound_names = [alias.asname or alias.name for alias in node.names]
+        if self._changes_module and (self.name in bound_names or "*" in bound_names):
             self.nodes.append(node)
+
+    def visit_ExceptHandler(self, node: ast.ExceptHandler) -> None:
+        if self._changes_module and node.name == self.name:
+            self.nodes.append(node)
+        if node.type is not None:
+            self.visit(node.type)
+        for statement in node.body:
+            self.visit(statement)
 
 
 def _literal_path_table(
@@ -343,11 +418,34 @@ def _matching_gate_branches(
     ]
 
 
+class _FunctionExitFinder(ast.NodeVisitor):
+    def __init__(self) -> None:
+        self.found = False
+
+    def visit_Return(self, node: ast.Return) -> None:
+        self.found = True
+
+    visit_Raise = visit_Return
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        return
+
+    visit_AsyncFunctionDef = visit_FunctionDef
+    visit_ClassDef = visit_FunctionDef
+    visit_Lambda = visit_FunctionDef
+
+
+def _contains_function_exit(statement: ast.stmt) -> bool:
+    finder = _FunctionExitFinder()
+    finder.visit(statement)
+    return finder.found
+
+
 def _reachable_block_prefix(body: list[ast.stmt]) -> list[ast.stmt]:
     reachable: list[ast.stmt] = []
     for statement in body:
         reachable.append(statement)
-        if isinstance(statement, (ast.Return, ast.Raise, ast.Break, ast.Continue)):
+        if _contains_function_exit(statement):
             break
     return reachable
 
