@@ -1406,7 +1406,7 @@ def test_journal_interruption_is_owned_and_terminated_outside_installer_tree(
     stage = "persistent-detached"
     journal = evidence / "install-mutation-state.json"
     interrupted = case_root / f"interrupted-{stage}"
-    executor_bodies: list[str] = []
+    direct_python = _bash_path((case_root / "direct-python").resolve())
     popen_calls: list[tuple[list[str], dict[str, object]]] = []
     taskkill_calls: list[list[str]] = []
     owned_handle_kills: list[object] = []
@@ -1430,10 +1430,6 @@ def test_journal_interruption_is_owned_and_terminated_outside_installer_tree(
 
     process = FakeProcess()
 
-    def fake_write_executor(path: Path, body: str) -> Path:
-        executor_bodies.append(body)
-        return path
-
     def fake_popen(command: list[str], **kwargs: object) -> FakeProcess:
         popen_calls.append((command, kwargs))
         journal.write_text(json.dumps({"stage": stage}), encoding="utf-8")
@@ -1450,9 +1446,6 @@ def test_journal_interruption_is_owned_and_terminated_outside_installer_tree(
         process.returncode = -9
 
     monkeypatch.setattr(
-        sys.modules[__name__], "_write_local_python_executor", fake_write_executor
-    )
-    monkeypatch.setattr(
         sys.modules[__name__],
         "_installer_command",
         lambda *_args, **_kwargs: ["installer-under-test"],
@@ -1468,7 +1461,7 @@ def test_journal_interruption_is_owned_and_terminated_outside_installer_tree(
         {},
         {},
         case_root / "runtime",
-        {},
+        {"VL360_PYTHON_EXECUTOR": direct_python},
     )
     returned_journal = _interrupt_at_journal_stage(
         object(), case_root, prepared, stage
@@ -1490,6 +1483,34 @@ def test_journal_interruption_is_owned_and_terminated_outside_installer_tree(
     assert kwargs["stdout"] != subprocess.PIPE
     assert kwargs["stderr"] != subprocess.PIPE
     assert kwargs["text"] is True
+    env = kwargs["env"]
+    assert isinstance(env, dict)
+    assert env["VL360_PYTHON_EXECUTOR"] == direct_python
+    assert "VL360_LOCAL_PYTHON_EXECUTOR" not in env
+    barrier_path = case_root / f"interrupt-at-{stage}.bash"
+    assert env["BASH_ENV"] == _bash_path(barrier_path.resolve())
+    barrier = barrier_path.read_text(encoding="ascii")
+    stage_command = f"write_mutation_state {stage}"
+    armed_check = '[ "$__vl360_journal_barrier_state" = armed ]'
+    stage_check = f'[ "${{BASH_COMMAND-}}" = {shlex.quote(stage_command)} ]'
+    journal_exists = f"[ -f {shlex.quote(_bash_path(journal))} ]"
+    journal_check = f"grep -Fq {shlex.quote(json.dumps({'stage': stage})[1:-1])}"
+    assert barrier_path.parent == case_root
+    assert "shopt -u extdebug" in barrier
+    assert "set +T" in barrier
+    assert "__vl360_journal_barrier_state=waiting" in barrier
+    assert armed_check in barrier
+    assert stage_check in barrier
+    assert barrier.index(armed_check) < barrier.index(stage_check)
+    assert "__vl360_journal_barrier_state=armed" in barrier
+    assert journal_exists in barrier
+    assert journal_check in barrier
+    assert barrier.index(journal_exists) < barrier.index(journal_check)
+    assert barrier.index(journal_check) < barrier.index(f": > {shlex.quote(_bash_path(interrupted))}")
+    assert barrier.index(journal_check) < barrier.index("while :; do")
+    assert "trap - DEBUG" in barrier
+    assert "trap '__vl360_journal_barrier' DEBUG" in barrier
+    assert "kill -9" not in barrier
     if os.name == "nt":
         assert kwargs["creationflags"] == getattr(
             subprocess, "CREATE_NEW_PROCESS_GROUP", 0x00000200
@@ -1500,10 +1521,6 @@ def test_journal_interruption_is_owned_and_terminated_outside_installer_tree(
         assert kwargs["start_new_session"] is True
         assert owned_handle_kills == []
         assert taskkill_calls == []
-    assert len(executor_bodies) == 1
-    assert 'kill -9 "$PPID"' not in executor_bodies[0]
-    assert 'kill -9 "$$"' not in executor_bodies[0]
-    assert "while :; do" in executor_bodies[0]
 
 
 @pytest.mark.skipif(os.name != "nt", reason="Windows taskkill cleanup only")
@@ -1701,21 +1718,35 @@ def _interrupt_at_journal_stage(package, case_root: Path, prepared, stage: str):
     *_, evidence, _, _, _, values = prepared
     interrupted = case_root / f"interrupted-{stage}"
     journal = evidence / "install-mutation-state.json"
-    python_executor = _write_local_python_executor(
-        case_root / f"kill-at-{stage}-python",
-        "command \"$REAL_PYTHON\" \"$@\"\n"
-        "  status=$?\n"
-        f"  if [ -f '{_bash_path(journal)}' ] "
-        f"&& grep -Fq '\"stage\": \"{stage}\"' '{_bash_path(journal)}'; then\n"
-        f"    : > '{_bash_path(interrupted)}'\n"
-        "    while :; do sleep 1; done\n"
+    barrier = case_root / f"interrupt-at-{stage}.bash"
+    stage_command = f"write_mutation_state {stage}"
+    stage_fragment = json.dumps({"stage": stage})[1:-1]
+    barrier.write_text(
+        "shopt -u extdebug\n"
+        "set +T\n"
+        "__vl360_journal_barrier_state=waiting\n"
+        "__vl360_journal_barrier() {\n"
+        '  if [ "$__vl360_journal_barrier_state" = armed ]; then\n'
+        f"    if [ -f {shlex.quote(_bash_path(journal))} ] "
+        f"&& grep -Fq {shlex.quote(stage_fragment)} "
+        f"{shlex.quote(_bash_path(journal))}; then\n"
+        "      trap - DEBUG\n"
+        f"      : > {shlex.quote(_bash_path(interrupted))}\n"
+        "      while :; do sleep 1; done\n"
+        "    fi\n"
+        "    return 0\n"
         "  fi\n"
-        "exit \"$status\"\n",
+        f'  if [ "${{BASH_COMMAND-}}" = {shlex.quote(stage_command)} ]; then\n'
+        "    __vl360_journal_barrier_state=armed\n"
+        "  fi\n"
+        "  return 0\n"
+        "}\n"
+        "trap '__vl360_journal_barrier' DEBUG\n",
+        encoding="ascii",
     )
     env = os.environ.copy()
     env.update(values)
-    env.pop("VL360_PYTHON_EXECUTOR", None)
-    env["VL360_LOCAL_PYTHON_EXECUTOR"] = _bash_path(python_executor)
+    env["BASH_ENV"] = _bash_path(barrier.resolve())
     installer_command = _installer_command(package, case_root, prepared)
     if os.name == "nt":
         command = [
