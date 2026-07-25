@@ -49,6 +49,20 @@ def _endpoint_source(route: str, method: str, function: str, mode: str) -> str:
             "        return public_response()\n"
             '    await require_admin_scope(request, "ops.deploy")'
         )
+    elif mode == "guard-after-caught-raise":
+        guard = (
+            "    try:\n"
+            '        raise ValueError("probe")\n'
+            "    except ValueError:\n"
+            "        pass\n"
+            '    await require_admin_scope(request, "ops.deploy")'
+        )
+    elif mode == "guard-after-conditional-raise":
+        guard = (
+            "    if True:\n"
+            '        raise ValueError("probe")\n'
+            '    await require_admin_scope(request, "ops.deploy")'
+        )
     elif mode == "missing-decorator":
         decorator = ""
     elif mode == "wrong-route":
@@ -112,6 +126,18 @@ def _server_source(
         gate_body = (
             "    if True:\n"
             "        return await call_next(request)\n"
+            "    if _is_gated_path(request.url.path):\n"
+            "        from middleware import verify_admin_key\n"
+            "        if not verify_admin_key(request):\n"
+            "            return JSONResponse(status_code=404)\n"
+            "    return await call_next(request)"
+        )
+    elif gate_mode == "guard-after-caught-raise":
+        gate_body = (
+            "    try:\n"
+            '        raise ValueError("probe")\n'
+            "    except ValueError:\n"
+            "        pass\n"
             "    if _is_gated_path(request.url.path):\n"
             "        from middleware import verify_admin_key\n"
             "        if not verify_admin_key(request):\n"
@@ -360,6 +386,18 @@ def test_matrix_rejects_middleware_guard_after_conditional_return(
     assert "gate_internal_endpoints must enforce the gated-path 404 branch" in output
 
 
+def test_matrix_accepts_middleware_guard_after_caught_raise(
+    monkeypatch, tmp_path: Path, capsys
+):
+    result, _ = _run_matrix(
+        monkeypatch,
+        tmp_path,
+        _server_source(gate_mode="guard-after-caught-raise"),
+    )
+
+    assert result == 0, capsys.readouterr().out
+
+
 def test_matrix_rejects_dead_helper_decoys(monkeypatch, tmp_path: Path, capsys):
     result, _ = _run_matrix(
         monkeypatch,
@@ -409,6 +447,34 @@ def test_matrix_rejects_endpoint_guard_after_conditional_return(
         tmp_path,
         _server_source(
             endpoint_modes={"build_vectors": "guard-after-conditional-return"}
+        ),
+    )
+    output = capsys.readouterr().out
+
+    assert result == 1
+    assert "FAIL /vectors/build" in output
+
+
+def test_matrix_accepts_endpoint_guard_after_caught_raise(
+    monkeypatch, tmp_path: Path, capsys
+):
+    result, _ = _run_matrix(
+        monkeypatch,
+        tmp_path,
+        _server_source(endpoint_modes={"build_vectors": "guard-after-caught-raise"}),
+    )
+
+    assert result == 0, capsys.readouterr().out
+
+
+def test_matrix_rejects_endpoint_guard_after_unhandled_conditional_raise(
+    monkeypatch, tmp_path: Path, capsys
+):
+    result, _ = _run_matrix(
+        monkeypatch,
+        tmp_path,
+        _server_source(
+            endpoint_modes={"build_vectors": "guard-after-conditional-raise"}
         ),
     )
     output = capsys.readouterr().out

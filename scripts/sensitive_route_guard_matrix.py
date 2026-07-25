@@ -418,14 +418,63 @@ def _matching_gate_branches(
     ]
 
 
+def _exception_type_name(node: ast.AST | None) -> str | None:
+    if isinstance(node, ast.Call):
+        return _exception_type_name(node.func)
+    if isinstance(node, ast.Name):
+        return node.id
+    if isinstance(node, ast.Attribute):
+        return node.attr
+    return None
+
+
+def _handler_catches_raise(handler: ast.ExceptHandler, node: ast.Raise) -> bool:
+    if handler.type is None:
+        return True
+    raised_name = _exception_type_name(node.exc)
+    if raised_name is None:
+        return False
+    handled_types = (
+        handler.type.elts if isinstance(handler.type, ast.Tuple) else [handler.type]
+    )
+    handled_names = {_exception_type_name(item) for item in handled_types}
+    return bool(
+        raised_name in handled_names
+        or "BaseException" in handled_names
+        or (
+            "Exception" in handled_names
+            and raised_name
+            not in {"BaseException", "GeneratorExit", "KeyboardInterrupt", "SystemExit"}
+        )
+    )
+
+
 class _FunctionExitFinder(ast.NodeVisitor):
     def __init__(self) -> None:
         self.found = False
+        self._raise_handlers: list[list[ast.ExceptHandler]] = []
 
     def visit_Return(self, node: ast.Return) -> None:
         self.found = True
 
-    visit_Raise = visit_Return
+    def visit_Raise(self, node: ast.Raise) -> None:
+        if not any(
+            _handler_catches_raise(handler, node)
+            for handlers in reversed(self._raise_handlers)
+            for handler in handlers
+        ):
+            self.found = True
+
+    def visit_Try(self, node: ast.Try) -> None:
+        self._raise_handlers.append(node.handlers)
+        for statement in node.body:
+            self.visit(statement)
+        self._raise_handlers.pop()
+        for handler in node.handlers:
+            for statement in handler.body:
+                self.visit(statement)
+        for statement in (*node.orelse, *node.finalbody):
+            self.visit(statement)
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         return
