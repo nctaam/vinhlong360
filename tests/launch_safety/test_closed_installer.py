@@ -4994,6 +4994,85 @@ def test_large_topology_snapshot_and_digest_stream_through_stdin(tmp_path: Path)
     assert snapshot.stat().st_size > 32 * 1024
 
 
+def test_topology_digest_suppresses_output_when_stream_producer_fails(
+    tmp_path: Path,
+):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    start = source.index("source_release_topology_sha256()")
+    digest_function = source[
+        start : source.index("source_release_topology_snapshot()", start)
+    ]
+    output = tmp_path / "digest-output"
+    status = tmp_path / "digest-status"
+    script = "\n".join(
+        (
+            "set -Euo pipefail",
+            f"PYTHON_EXECUTOR={shlex.quote(_bash_path(Path(sys.executable).resolve()))}",
+            "export PYTHON_EXECUTOR",
+            'invoke_python() { "$PYTHON_EXECUTOR" "$@"; }',
+            "source_release_topology_payload() { printf 'partial-topology'; return 73; }",
+            digest_function,
+            "set +e",
+            'digest="$(source_release_topology_sha256 ignored)"',
+            "result=$?",
+            "set -e",
+            f"printf '%s' \"$digest\" > {shlex.quote(_bash_path(output))}",
+            f"printf '%s\\n' \"$result\" > {shlex.quote(_bash_path(status))}",
+        )
+    )
+
+    result = _run_bash_script(tmp_path / "topology-digest-failure.sh", script)
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert status.read_text(encoding="ascii").strip() == "73"
+    assert output.read_bytes() == b""
+
+
+def test_topology_snapshot_failure_preserves_target_and_cleans_staging(
+    tmp_path: Path,
+):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    snapshot_start = source.index("source_release_topology_snapshot()")
+    snapshot_function = source[
+        snapshot_start : source.index("source_release_topology_subset()", snapshot_start)
+    ]
+    writer_start = source.index("write_durable_text_file_from_stdin()")
+    writer = source[
+        writer_start : source.index("sweep_stale_staging_attempts()", writer_start)
+    ]
+    target = tmp_path / "topology.json"
+    original = b"reviewed-topology\n"
+    target.write_bytes(original)
+    status = tmp_path / "snapshot-status"
+    script = "\n".join(
+        (
+            "set -Euo pipefail",
+            f"PYTHON_EXECUTOR={shlex.quote(_bash_path(Path(sys.executable).resolve()))}",
+            "export PYTHON_EXECUTOR",
+            'invoke_python() { "$PYTHON_EXECUTOR" "$@"; }',
+            "source_release_topology_payload() { printf 'partial-topology'; return 73; }",
+            snapshot_function,
+            writer,
+            "set +e",
+            f"source_release_topology_snapshot ignored {shlex.quote(_bash_path(target))}",
+            "result=$?",
+            "set -e",
+            f"printf '%s\\n' \"$result\" > {shlex.quote(_bash_path(status))}",
+        )
+    )
+
+    result = _run_bash_script(tmp_path / "topology-snapshot-failure.sh", script)
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert status.read_text(encoding="ascii").strip() == "73"
+    assert target.read_bytes() == original
+    assert list(tmp_path.glob(f".{target.name}.*.tmp")) == []
+
+
 def test_authority_result_writer_fsyncs_file_replaces_and_fsyncs_parent():
     source = INSTALL.read_text(encoding="utf-8")
     recorder = source[

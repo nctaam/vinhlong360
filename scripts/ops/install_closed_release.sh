@@ -1491,18 +1491,32 @@ PY
 
 source_release_topology_sha256() {
   local root="$1"
-  source_release_topology_payload "$root" | invoke_python -c '
+  local digest status
+  digest="$(source_release_topology_payload "$root" | invoke_python -c '
 from hashlib import sha256
 import sys
 print(sha256(sys.stdin.buffer.read()).hexdigest())
-'
+')" || {
+    status=$?
+    return "$status"
+  }
+  printf '%s\n' "$digest"
 }
 
 source_release_topology_snapshot() {
   local root="$1"
   local target="$2"
-  source_release_topology_payload "$root" \
-    | write_durable_text_file_from_stdin "$target"
+  local staging status
+  staging="$(source_release_topology_payload "$root" \
+    | write_durable_text_file_from_stdin "$target")" || {
+    status=$?
+    if [ -n "$staging" ]; then
+      finish_durable_text_file_from_stdin "$target" "$staging" discard \
+        || true
+    fi
+    return "$status"
+  }
+  finish_durable_text_file_from_stdin "$target" "$staging" promote
 }
 
 source_release_topology_subset() {
@@ -2428,13 +2442,54 @@ descriptor, name = tempfile.mkstemp(
     prefix=f".{target.name}.", suffix=".tmp", dir=target.parent
 )
 temporary = Path(name)
+completed = False
 try:
     with os.fdopen(descriptor, "wb") as stream:
         descriptor = -1
         stream.write(raw)
         stream.flush()
         os.fsync(stream.fileno())
-    os.replace(temporary, target)
+    print(temporary, flush=True)
+    completed = True
+finally:
+    if descriptor != -1:
+        os.close(descriptor)
+    if not completed:
+        temporary.unlink(missing_ok=True)
+' "$path"
+}
+
+finish_durable_text_file_from_stdin() {
+  local path="$1"
+  local staging="$2"
+  local action="$3"
+  invoke_python -c '
+import os
+from pathlib import Path
+import stat
+import sys
+
+target = Path(sys.argv[1])
+temporary = Path(sys.argv[2])
+action = sys.argv[3]
+expected_parent = os.path.normcase(os.path.abspath(target.parent))
+actual_parent = os.path.normcase(os.path.abspath(temporary.parent))
+observed = temporary.lstat()
+if (
+    actual_parent != expected_parent
+    or not temporary.name.startswith(f".{target.name}.")
+    or not temporary.name.endswith(".tmp")
+    or temporary.is_symlink()
+    or not stat.S_ISREG(observed.st_mode)
+):
+    raise SystemExit(1)
+try:
+    if action == "promote":
+        os.replace(temporary, target)
+    elif action == "discard":
+        temporary.unlink()
+    else:
+        raise SystemExit(1)
     if os.name != "nt":
         directory = os.open(
             target.parent,
@@ -2445,10 +2500,8 @@ try:
         finally:
             os.close(directory)
 finally:
-    if descriptor != -1:
-        os.close(descriptor)
     temporary.unlink(missing_ok=True)
-' "$path"
+' "$path" "$staging" "$action"
 }
 
 sweep_stale_staging_attempts() {
