@@ -81,6 +81,18 @@ def _target_contains_name(target: ast.expr, name: str) -> bool:
     return False
 
 
+def _pattern_contains_name(pattern: ast.AST, name: str) -> bool:
+    if isinstance(pattern, (ast.MatchAs, ast.MatchStar)) and pattern.name == name:
+        return True
+    if isinstance(pattern, ast.MatchMapping) and pattern.rest == name:
+        return True
+    return any(
+        isinstance(child, ast.pattern)
+        and _pattern_contains_name(child, name)
+        for child in ast.iter_child_nodes(pattern)
+    )
+
+
 class _GlobalDeclarationFinder(ast.NodeVisitor):
     def __init__(self, name: str) -> None:
         self.name = name
@@ -212,6 +224,13 @@ class _ModuleAssignmentCollector(ast.NodeVisitor):
             self.visit(node.type)
         for statement in node.body:
             self.visit(statement)
+
+    def visit_Match(self, node: ast.Match) -> None:
+        if self._changes_module and any(
+            _pattern_contains_name(case.pattern, self.name) for case in node.cases
+        ):
+            self.nodes.append(node)
+        self.generic_visit(node)
 
 
 def _literal_path_table(

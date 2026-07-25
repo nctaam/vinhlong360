@@ -366,6 +366,92 @@ def test_matrix_accepts_global_declaration_without_rebind(
 
 
 @pytest.mark.parametrize(
+    ("pattern", "table_name"),
+    (
+        ("_GATED_EXACT_PATHS", "_GATED_EXACT_PATHS"),
+        ("[*_GATED_PREFIX_PATHS]", "_GATED_PREFIX_PATHS"),
+        ("{**_GATED_EXACT_PATHS}", "_GATED_EXACT_PATHS"),
+        ("[(_GATED_EXACT_PATHS,)]", "_GATED_EXACT_PATHS"),
+    ),
+)
+def test_matrix_rejects_module_pattern_route_table_rebind(
+    monkeypatch, tmp_path: Path, capsys, pattern: str, table_name: str
+):
+    source = _server_source(
+        later_assignment=(
+            "match ():\n"
+            f"    case {pattern}:\n"
+            "        pass\n"
+        )
+    )
+
+    result, _ = _run_matrix(monkeypatch, tmp_path, source)
+    output = capsys.readouterr().out
+
+    assert result == 1
+    assert f"{table_name} must have one literal assignment" in output
+
+
+@pytest.mark.parametrize(
+    ("scope", "pattern", "table_name"),
+    (
+        ("function", "_GATED_EXACT_PATHS", "_GATED_EXACT_PATHS"),
+        ("class", "[*_GATED_PREFIX_PATHS]", "_GATED_PREFIX_PATHS"),
+        ("function", "{**_GATED_EXACT_PATHS}", "_GATED_EXACT_PATHS"),
+    ),
+)
+def test_matrix_rejects_global_pattern_route_table_rebind(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+    scope: str,
+    pattern: str,
+    table_name: str,
+):
+    declaration = "def rebind():" if scope == "function" else "class Rebind:"
+    source = _server_source(
+        later_assignment=(
+            f"{declaration}\n"
+            f"    global {table_name}\n"
+            "    match ():\n"
+            f"        case {pattern}:\n"
+            "            pass\n"
+        )
+    )
+
+    result, _ = _run_matrix(monkeypatch, tmp_path, source)
+    output = capsys.readouterr().out
+
+    assert result == 1
+    assert f"{table_name} must have one literal assignment" in output
+
+
+@pytest.mark.parametrize(
+    ("scope", "pattern"),
+    (
+        ("function", "_GATED_EXACT_PATHS"),
+        ("class", "{**_GATED_PREFIX_PATHS}"),
+    ),
+)
+def test_matrix_accepts_local_pattern_route_table_shadowing(
+    monkeypatch, tmp_path: Path, capsys, scope: str, pattern: str
+):
+    declaration = "def harmless_pattern_shadow():" if scope == "function" else "class HarmlessPatternShadow:"
+    source = _server_source(
+        later_assignment=(
+            f"{declaration}\n"
+            "    match ():\n"
+            f"        case {pattern}:\n"
+            "            pass\n"
+        )
+    )
+
+    result, _ = _run_matrix(monkeypatch, tmp_path, source)
+
+    assert result == 0, capsys.readouterr().out
+
+
+@pytest.mark.parametrize(
     ("gate_mode", "expected"),
     (
         ("dead-decoy", "gate_internal_endpoints must enforce the gated-path 404 branch"),
