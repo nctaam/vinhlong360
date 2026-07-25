@@ -7697,9 +7697,29 @@ def test_distinct_target_attempts_can_hold_install_locks_concurrently(
                 encoding="ascii",
             )
             hook.chmod(0o755)
+            lock_barrier = case_root / "lock-barrier.bash"
+            lock_barrier.write_text(
+                "__vl360_lock_barrier_state=waiting\n"
+                "__vl360_lock_barrier() {\n"
+                "  if [ \"$__vl360_lock_barrier_state\" = armed ]; then\n"
+                "    trap - DEBUG\n"
+                f"    : > {shlex.quote(_bash_path(entered))}\n"
+                "    while [ ! -f "
+                f"{shlex.quote(_bash_path(release_hook))} ]; do sleep 0.05; done\n"
+                "    return 0\n"
+                "  fi\n"
+                "  if [ \"${BASH_COMMAND-}\" = 'record_install_lock acquired 0' ]; then\n"
+                "    __vl360_lock_barrier_state=armed\n"
+                "  fi\n"
+                "  return 0\n"
+                "}\n"
+                "trap '__vl360_lock_barrier' DEBUG\n",
+                encoding="ascii",
+            )
             *_, values = prepared
             env = os.environ.copy()
             env.update(values)
+            env["BASH_ENV"] = _bash_path(lock_barrier)
             process, stdout_path, stderr_path = _start_file_backed_process(
                 _installer_command(closed_package, case_root, prepared),
                 case_root=case_root,
@@ -7708,8 +7728,13 @@ def test_distinct_target_attempts_can_hold_install_locks_concurrently(
             processes.append((process, stdout_path, stderr_path))
             releases.append(release_hook)
             prepared_cases.append((prepared, entered))
-        for _, entered in prepared_cases:
+        for prepared, entered in prepared_cases:
             _wait_for_path(entered)
+            _, _, evidence, *_ = prepared
+            lock = json.loads(
+                (evidence / "install-lock.json").read_text(encoding="utf-8")
+            )
+            assert lock["status"] == "acquired"
     finally:
         for release_hook in releases:
             release_hook.touch()
