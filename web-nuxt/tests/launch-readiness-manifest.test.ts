@@ -137,6 +137,18 @@ describe('launch readiness manifest', () => {
     })
   })
 
+  it('preserves canonical raw digests when validating final build evidence', () => {
+    const validated = validateReadinessManifestEvidence(validManifest, {
+      routeDigest,
+      disclosureDigest,
+      serviceWorkerDigest: '3'.repeat(64),
+    })
+
+    expect(validated.artifacts.route_manifest.sha256).toBe(routeDigest)
+    expect(validated.artifacts.ai_disclosure.sha256).toBe(disclosureDigest)
+    expect(validated.service_worker.rule_digest).toBe('3'.repeat(64))
+  })
+
   it('rejects symbol and accessor keys instead of evaluating them', () => {
     const symbolCandidate = { ...validManifest, [Symbol('hidden')]: true }
     expect(() => validateReadinessManifest(symbolCandidate)).toThrow(/root keys mismatch/i)
