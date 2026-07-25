@@ -38,6 +38,11 @@ def _endpoint_source(route: str, method: str, function: str, mode: str) -> str:
         guard = '    require_admin_scope(request, "ops.deploy")'
     elif mode == "missing-guard":
         guard = "    pass"
+    elif mode == "guard-after-return":
+        guard = (
+            "    return public_response()\n"
+            '    await require_admin_scope(request, "ops.deploy")'
+        )
     elif mode == "missing-decorator":
         decorator = ""
     elif mode == "wrong-route":
@@ -83,6 +88,15 @@ def _server_source(
         gate_body = (
             "    observed = _is_gated_path(request.url.path)\n"
             "    if False:\n"
+            "        from middleware import verify_admin_key\n"
+            "        if not verify_admin_key(request):\n"
+            "            return JSONResponse(status_code=404)\n"
+            "    return await call_next(request)"
+        )
+    elif gate_mode == "guard-after-return":
+        gate_body = (
+            "    if _is_gated_path(request.url.path):\n"
+            "        return await call_next(request)\n"
             "        from middleware import verify_admin_key\n"
             "        if not verify_admin_key(request):\n"
             "            return JSONResponse(status_code=404)\n"
@@ -208,6 +222,27 @@ def test_matrix_rejects_dynamic_or_reassigned_path_tables(
     assert f"{table_name} must have one literal assignment" in output
 
 
+def test_matrix_rejects_called_global_route_table_rebind(
+    monkeypatch, tmp_path: Path, capsys
+):
+    source = _server_source(
+        later_assignment=(
+            "def disable_guards():\n"
+            "    global _GATED_EXACT_PATHS, _GATED_PREFIX_PATHS\n"
+            "    _GATED_EXACT_PATHS = ()\n"
+            "    _GATED_PREFIX_PATHS = ()\n\n"
+            "disable_guards()"
+        )
+    )
+
+    result, _ = _run_matrix(monkeypatch, tmp_path, source)
+    output = capsys.readouterr().out
+
+    assert result == 1
+    assert "_GATED_EXACT_PATHS must have one literal assignment" in output
+    assert "_GATED_PREFIX_PATHS must have one literal assignment" in output
+
+
 @pytest.mark.parametrize(
     ("gate_mode", "expected"),
     (
@@ -230,6 +265,20 @@ def test_matrix_rejects_invalid_middleware_control_flow(
     assert expected in output
 
 
+def test_matrix_rejects_middleware_guard_after_terminal_return(
+    monkeypatch, tmp_path: Path, capsys
+):
+    result, _ = _run_matrix(
+        monkeypatch,
+        tmp_path,
+        _server_source(gate_mode="guard-after-return"),
+    )
+    output = capsys.readouterr().out
+
+    assert result == 1
+    assert "gate_internal_endpoints must verify the admin key" in output
+
+
 def test_matrix_rejects_dead_helper_decoys(monkeypatch, tmp_path: Path, capsys):
     result, _ = _run_matrix(
         monkeypatch,
@@ -250,6 +299,20 @@ def test_matrix_rejects_invalid_endpoint_guard_shape(
         monkeypatch,
         tmp_path,
         _server_source(endpoint_modes={"build_vectors": mode}),
+    )
+    output = capsys.readouterr().out
+
+    assert result == 1
+    assert "FAIL /vectors/build" in output
+
+
+def test_matrix_rejects_endpoint_guard_after_terminal_return(
+    monkeypatch, tmp_path: Path, capsys
+):
+    result, _ = _run_matrix(
+        monkeypatch,
+        tmp_path,
+        _server_source(endpoint_modes={"build_vectors": "guard-after-return"}),
     )
     output = capsys.readouterr().out
 

@@ -82,7 +82,7 @@ def _target_contains_name(target: ast.expr, name: str) -> bool:
 
 
 class _ModuleAssignmentCollector(ast.NodeVisitor):
-    """Collect assignments without descending into local scopes."""
+    """Collect every binding that could replace a protected route table."""
 
     def __init__(self, name: str) -> None:
         self.name = name
@@ -121,11 +121,21 @@ class _ModuleAssignmentCollector(ast.NodeVisitor):
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         if node.name == self.name:
             self.nodes.append(node)
+        self.generic_visit(node)
 
     visit_AsyncFunctionDef = visit_FunctionDef
 
     def visit_ClassDef(self, node: ast.ClassDef) -> None:
         if node.name == self.name:
+            self.nodes.append(node)
+        self.generic_visit(node)
+
+    def visit_Global(self, node: ast.Global) -> None:
+        if self.name in node.names:
+            self.nodes.append(node)
+
+    def visit_Name(self, node: ast.Name) -> None:
+        if node.id == self.name and isinstance(node.ctx, (ast.Store, ast.Del)):
             self.nodes.append(node)
 
 
@@ -328,9 +338,18 @@ def _matching_gate_branches(
 ) -> list[ast.If]:
     return [
         statement
-        for statement in body
+        for statement in _reachable_block_prefix(body)
         if isinstance(statement, ast.If) and predicate(statement.test)
     ]
+
+
+def _reachable_block_prefix(body: list[ast.stmt]) -> list[ast.stmt]:
+    reachable: list[ast.stmt] = []
+    for statement in body:
+        reachable.append(statement)
+        if isinstance(statement, (ast.Return, ast.Raise, ast.Break, ast.Continue)):
+            break
+    return reachable
 
 
 def _check_gate_integrity(module: ast.Module, failures: list[str]) -> None:
@@ -353,7 +372,10 @@ def _check_gate_integrity(module: ast.Module, failures: list[str]) -> None:
     if len(admin_branches) != 1:
         failures.append("gate_internal_endpoints must verify the admin key")
         return
-    if not any(_returns_status_code(statement, 404) for statement in admin_branches[0].body):
+    if not any(
+        _returns_status_code(statement, 404)
+        for statement in _reachable_block_prefix(admin_branches[0].body)
+    ):
         failures.append("gate_internal_endpoints must hide sensitive paths with 404")
 
 
@@ -399,7 +421,7 @@ def _check_endpoint_guards(module: ast.Module, failures: list[str]) -> None:
             )
             and any(
                 _matches_endpoint_guard(statement, check.scope)
-                for statement in function.body
+                for statement in _reachable_block_prefix(function.body)
             )
         )
         print(f"{'OK' if ok else 'FAIL'} {check.route:20} {check.reason}")
