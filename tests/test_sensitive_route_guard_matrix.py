@@ -57,10 +57,39 @@ def _endpoint_source(route: str, method: str, function: str, mode: str) -> str:
             "        pass\n"
             '    await require_admin_scope(request, "ops.deploy")'
         )
+    elif mode == "guard-after-subclass-catch":
+        guard = (
+            "    try:\n"
+            '        raise KeyError("probe")\n'
+            "    except LookupError:\n"
+            "        pass\n"
+            '    await require_admin_scope(request, "ops.deploy")'
+        )
+    elif mode == "guard-after-nested-reraise":
+        guard = (
+            "    try:\n"
+            "        try:\n"
+            '            raise ValueError("probe")\n'
+            "        except ValueError:\n"
+            "            raise\n"
+            "    except ValueError:\n"
+            "        pass\n"
+            '    await require_admin_scope(request, "ops.deploy")'
+        )
     elif mode == "guard-after-conditional-raise":
         guard = (
             "    if True:\n"
             '        raise ValueError("probe")\n'
+            '    await require_admin_scope(request, "ops.deploy")'
+        )
+    elif mode == "guard-after-custom-base-exception":
+        guard = (
+            "    class Abort(BaseException):\n"
+            "        pass\n"
+            "    try:\n"
+            '        raise Abort("probe")\n'
+            "    except Exception:\n"
+            "        pass\n"
             '    await require_admin_scope(request, "ops.deploy")'
         )
     elif mode == "missing-decorator":
@@ -467,7 +496,33 @@ def test_matrix_accepts_endpoint_guard_after_caught_raise(
     assert result == 0, capsys.readouterr().out
 
 
-def test_matrix_rejects_endpoint_guard_after_unhandled_conditional_raise(
+def test_matrix_accepts_endpoint_guard_after_subclass_catch(
+    monkeypatch, tmp_path: Path, capsys
+):
+    result, _ = _run_matrix(
+        monkeypatch,
+        tmp_path,
+        _server_source(
+            endpoint_modes={"build_vectors": "guard-after-subclass-catch"}
+        ),
+    )
+
+    assert result == 0, capsys.readouterr().out
+
+
+def test_matrix_accepts_endpoint_guard_after_nested_reraise(
+    monkeypatch, tmp_path: Path, capsys
+):
+    result, _ = _run_matrix(
+        monkeypatch,
+        tmp_path,
+        _server_source(endpoint_modes={"build_vectors": "guard-after-nested-reraise"}),
+    )
+
+    assert result == 0, capsys.readouterr().out
+
+
+def test_matrix_accepts_endpoint_guard_after_unhandled_conditional_raise(
     monkeypatch, tmp_path: Path, capsys
 ):
     result, _ = _run_matrix(
@@ -477,10 +532,22 @@ def test_matrix_rejects_endpoint_guard_after_unhandled_conditional_raise(
             endpoint_modes={"build_vectors": "guard-after-conditional-raise"}
         ),
     )
-    output = capsys.readouterr().out
 
-    assert result == 1
-    assert "FAIL /vectors/build" in output
+    assert result == 0, capsys.readouterr().out
+
+
+def test_matrix_accepts_endpoint_guard_after_custom_base_exception(
+    monkeypatch, tmp_path: Path, capsys
+):
+    result, _ = _run_matrix(
+        monkeypatch,
+        tmp_path,
+        _server_source(
+            endpoint_modes={"build_vectors": "guard-after-custom-base-exception"}
+        ),
+    )
+
+    assert result == 0, capsys.readouterr().out
 
 
 @pytest.mark.parametrize("route,method,function", ENDPOINTS)
