@@ -959,6 +959,8 @@ def _invoke_installer(
         if "VL360_LOCAL_PYTHON_EXECUTOR" in env_overrides:
             env.pop("VL360_PYTHON_EXECUTOR", None)
         env.update(env_overrides)
+    if not include_sentinel:
+        env.pop("VL360_LOCAL_REHEARSAL_SENTINEL", None)
     args = _installer_command(
         package,
         case_root,
@@ -4034,10 +4036,19 @@ def test_failed_recovery_umount_preserves_new_and_old_roots_and_persistent_bytes
 
 
 def test_local_rehearsal_requires_a_sentinel_beside_the_disposable_release_root(
-    tmp_path: Path, closed_package
+    tmp_path: Path, closed_package, monkeypatch: pytest.MonkeyPatch
 ):
     if not BASH.is_file():
         pytest.skip("Git Bash is unavailable")
+    inherited_root = tmp_path / "inherited-local-rehearsal"
+    inherited_root.mkdir()
+    inherited_sentinel = inherited_root / ".vl360-local-rehearsal"
+    inherited_sentinel.write_text(
+        "vinhlong360-local-rehearsal-v1\n", encoding="ascii"
+    )
+    monkeypatch.setenv(
+        "VL360_LOCAL_REHEARSAL_SENTINEL", _bash_path(inherited_sentinel)
+    )
     result, prepared = _run_installer(
         closed_package,
         tmp_path / "missing-sentinel",

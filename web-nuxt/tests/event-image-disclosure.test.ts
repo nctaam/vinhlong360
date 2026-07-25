@@ -5,10 +5,26 @@ import { defineComponent, h } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import LeHoiPage from '../pages/le-hoi.vue'
 import SuKienPage from '../pages/su-kien.vue'
+import type { ImageDescriptor } from '../types/image'
 import { aiDisclosure } from '../utils/aiDisclosure'
 
 const apiFetchMock = vi.hoisted(() => vi.fn())
 vi.mock('../utils/apiFetch', () => ({ apiFetch: apiFetchMock }))
+
+function aiEventDescriptor(url: string, name: string): ImageDescriptor {
+  return {
+    url,
+    alt: `${name} — ảnh minh họa`,
+    source_class: 'ai-generated',
+    source_kind: 'entity-editorial',
+    disclosure_key: 'entity-ai',
+    short_label: aiDisclosure.entity_ai.short_label,
+    full_disclosure: aiDisclosure.entity_ai.full_disclosure,
+    credit: null,
+    width: null,
+    height: null,
+  }
+}
 
 const fixtureEvents = [
   {
@@ -16,7 +32,7 @@ const fixtureEvents = [
     type: 'event',
     name: 'Lễ hội ảnh địa phương',
     summary: 'Ảnh nội bộ',
-    images: ['/img/events/local.webp'],
+    image_descriptors: [aiEventDescriptor('/img/entities/le-hoi-local.webp', 'Lễ hội ảnh địa phương')],
     attributes: { category: 'le-hoi', date_start: '2099-01-02', date_end: '2099-01-03' },
   },
   {
@@ -24,7 +40,7 @@ const fixtureEvents = [
     type: 'event',
     name: 'Lễ hội ảnh từ xa',
     summary: 'Ảnh CDN',
-    images: ['https://cdn.example.test/events/remote.webp'],
+    image_descriptors: [aiEventDescriptor('https://cdn.example.test/events/remote.webp', 'Lễ hội ảnh từ xa')],
     attributes: { category: 'le-hoi', date_start: '2099-02-02', date_end: '2099-02-03' },
   },
   {
@@ -55,17 +71,24 @@ const fixtureEvents = [
     attributes: { category: 'le-hoi', date_start: '2099-04-06', date_end: '2099-04-07' },
   },
   {
+    id: 'unknown/event-thirteen',
+    type: 'event',
+    name: 'Lễ hội ảnh chưa xác minh',
+    images: ['https://cdn.example.test/events/unreviewed.webp'],
+    attributes: { category: 'le-hoi', date_start: '2099-04-07', date_end: '2099-04-08' },
+  },
+  {
     id: 'event/five',
     type: 'event',
     name: 'Sự kiện minh họa',
-    images: ['/img/events/event.webp'],
+    image_descriptors: [aiEventDescriptor('/img/entities/su-kien-event.webp', 'Sự kiện minh họa')],
     attributes: { category: 'su-kien', date_start: '2099-05-02', date_end: '2099-05-03' },
   },
   {
     id: 'remote/event-six',
     type: 'event',
     name: 'Sự kiện ảnh từ xa',
-    images: ['https://cdn.example.test/events/event-remote.webp'],
+    image_descriptors: [aiEventDescriptor('https://cdn.example.test/events/event-remote.webp', 'Sự kiện ảnh từ xa')],
     attributes: { category: 'su-kien', date_start: '2099-06-02', date_end: '2099-06-03' },
   },
   {
@@ -94,6 +117,13 @@ const fixtureEvents = [
     name: 'Sự kiện ảnh rỗng',
     images: ['   '],
     attributes: { category: 'su-kien', date_start: '2099-10-02', date_end: '2099-10-03' },
+  },
+  {
+    id: 'unknown/event-fourteen',
+    type: 'event',
+    name: 'Sự kiện ảnh chưa xác minh',
+    images: ['https://cdn.example.test/events/unreviewed-event.webp'],
+    attributes: { category: 'su-kien', date_start: '2099-10-04', date_end: '2099-10-05' },
   },
 ]
 
@@ -140,14 +170,14 @@ describe.each([
   [
     'le-hoi',
     LeHoiPage,
-    ['/img/events/local.webp', 'https://cdn.example.test/events/remote.webp'],
-    ['Lễ hội ảnh không an toàn', 'Lễ hội chưa có ảnh', 'Lễ hội ảnh sai định dạng', 'Lễ hội ảnh rỗng'],
+    ['/img/entities/le-hoi-local.webp', 'https://cdn.example.test/events/remote.webp'],
+    ['Lễ hội ảnh không an toàn', 'Lễ hội chưa có ảnh', 'Lễ hội ảnh sai định dạng', 'Lễ hội ảnh rỗng', 'Lễ hội ảnh chưa xác minh'],
   ],
   [
     'su-kien',
     SuKienPage,
-    ['/img/events/event.webp', 'https://cdn.example.test/events/event-remote.webp'],
-    ['Sự kiện ảnh không an toàn', 'Sự kiện chưa có ảnh', 'Sự kiện ảnh sai định dạng', 'Sự kiện ảnh rỗng'],
+    ['/img/entities/su-kien-event.webp', 'https://cdn.example.test/events/event-remote.webp'],
+    ['Sự kiện ảnh không an toàn', 'Sự kiện chưa có ảnh', 'Sự kiện ảnh sai định dạng', 'Sự kiện ảnh rỗng', 'Sự kiện ảnh chưa xác minh'],
   ],
  ] as const)('%s event imagery disclosure', (_name, Page, expectedUrls, invalidNames) => {
   it('renders canonical local and HTTPS URLs with visible AI label and exact full disclosure association', async () => {

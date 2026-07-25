@@ -31,7 +31,8 @@ mockNuxtImport('useAdminPrefs', () => () => ({
 mockNuxtImport('useModalA11y', () => () => undefined)
 
 const safeEntityUrl = 'https://safe.example/entity.webp'
-const safeMediaUrl = 'https://safe.example/media.webp'
+const canonicalEntityUrl = '/img/entities/dia-diem-thu.webp'
+const canonicalMediaUrl = '/img/entities/dia-diem-thu-media.webp'
 const invalidJavascript = 'javascript:alert(1)'
 const invalidObject = { url: 'not-a-url', note: '<script>bad</script>' }
 
@@ -39,10 +40,11 @@ interface FetchDispatchOptions {
   entityImages?: string[]
   addedImages?: string[]
   uploadedImages?: string[]
+  uploadError?: unknown
 }
 
 function installFetchDispatch(options: FetchDispatchOptions = {}) {
-  const entityImages = options.entityImages ?? [safeEntityUrl]
+  const entityImages = options.entityImages ?? [canonicalEntityUrl]
   mocks.fetch.mockImplementation((input: unknown, init?: { method?: string }) => {
     const url = String(input)
     if (url === '/admin-api/entity-schema') return Promise.resolve({ types: {} })
@@ -57,14 +59,15 @@ function installFetchDispatch(options: FetchDispatchOptions = {}) {
     if (url.startsWith('/api/entities/entity-1/relationships')) return Promise.resolve({ relationships: [] })
     if (url === '/admin-api/entities/entity-1/history') return Promise.resolve({ history: [] })
     if (url === '/admin-api/entities/entity-1/images' && init?.method === 'POST') {
-      return Promise.resolve({ images: options.addedImages ?? [...entityImages, safeMediaUrl] })
+      return Promise.resolve({ images: options.addedImages ?? [...entityImages, canonicalMediaUrl] })
     }
     if (url === '/admin-api/entities/entity-1/images/upload' && init?.method === 'POST') {
-      return Promise.resolve({ images: options.uploadedImages ?? [...entityImages, safeMediaUrl] })
+      if (options.uploadError !== undefined) return Promise.reject(options.uploadError)
+      return Promise.resolve({ images: options.uploadedImages ?? [...entityImages, canonicalMediaUrl] })
     }
     if (url.startsWith('/admin-api/media?')) {
       return Promise.resolve({
-        items: [{ url: safeMediaUrl, entity_id: 'entity-1', entity_name: 'Địa điểm thử', entity_type: 'experience', credit: '', license: '', usage_count: 1 }],
+        items: [{ url: canonicalMediaUrl, entity_id: 'entity-1', entity_name: 'Địa điểm thử', entity_type: 'experience', credit: '', license: '', usage_count: 1 }],
         total: 1,
         stats: { total_images: 1, duplicates: 0, missing_credit: 1 },
       })
@@ -79,7 +82,7 @@ function installFetchDispatch(options: FetchDispatchOptions = {}) {
             name: 'Entity tự học',
             type: 'experience',
             summary: 'Nội dung cần duyệt',
-            images: [safeEntityUrl, invalidJavascript, invalidObject],
+            images: [canonicalEntityUrl, invalidJavascript, invalidObject],
           },
         }],
       })
@@ -113,7 +116,7 @@ describe('admin entity/media/self-learning image disclosure', () => {
     await flushUi()
 
     const thumbnail = entities.get('.ent-thumb img')
-    expect(thumbnail.attributes('src')).toBe(safeEntityUrl)
+    expect(thumbnail.attributes('src')).toBe(canonicalEntityUrl)
     expect(thumbnail.attributes('aria-describedby')).toBeTruthy()
     expect(entities.get(`[id="${thumbnail.attributes('aria-describedby')}"]`).text()).toBe(aiDisclosure.entity_ai.full_disclosure)
     expect(entities.text()).toContain(aiDisclosure.entity_ai.short_label)
@@ -123,7 +126,7 @@ describe('admin entity/media/self-learning image disclosure', () => {
     const grid = media.get('[data-admin-media-grid]')
     const card = grid.get('[data-open-preview]')
     const cardImage = card.get('img')
-    expect(cardImage.attributes('src')).toBe(safeMediaUrl)
+    expect(cardImage.attributes('src')).toBe(canonicalMediaUrl)
     expect(cardImage.attributes('aria-describedby')).toBeTruthy()
     expect(media.get(`[id="${cardImage.attributes('aria-describedby')}"]`).text()).toBe(aiDisclosure.entity_ai.full_disclosure)
     await card.trigger('click')
@@ -142,11 +145,11 @@ describe('admin entity/media/self-learning image disclosure', () => {
     await entities.get('button[aria-label="Sửa Địa điểm thử"]').trigger('click')
     await flushUi()
     expect(entities.get('[data-expanded-preview]').text()).toContain(aiDisclosure.entity_ai.full_disclosure)
-    await entities.get('input[aria-label="URL ảnh AI biên tập mới"]').setValue(safeMediaUrl)
+    await entities.get('input[aria-label="URL ảnh AI biên tập mới"]').setValue(canonicalMediaUrl)
     await entities.findAll('button').find(button => button.text() === 'Thêm ảnh')!.trigger('click')
     await flushUi()
     expect(mocks.fetch).toHaveBeenCalledWith('/admin-api/entities/entity-1/images', expect.objectContaining({
-      body: { url: safeMediaUrl },
+      body: { url: canonicalMediaUrl },
     }))
 
     const media = await mountSuspended(MediaPage)
@@ -169,7 +172,7 @@ describe('admin entity/media/self-learning image disclosure', () => {
     await flushUi()
 
     expect(provisional.findAll('img')).toHaveLength(0)
-    expect(provisional.findAll('[data-provisional-image-link]').map(node => node.attributes('href'))).toEqual([safeEntityUrl])
+    expect(provisional.findAll('[data-provisional-image-link]').map(node => node.attributes('href'))).toEqual([canonicalEntityUrl])
     expect(provisional.text()).toContain(invalidJavascript)
     expect(provisional.text()).toContain(JSON.stringify(invalidObject, null, 2))
     expect(provisional.findAll('pre').some(node => node.text().includes(invalidJavascript))).toBe(true)
@@ -179,8 +182,8 @@ describe('admin entity/media/self-learning image disclosure', () => {
 
   it('keeps a successful URL add truthful when the response includes a malformed legacy entry', async () => {
     installFetchDispatch({
-      entityImages: [safeEntityUrl, invalidJavascript],
-      addedImages: [safeEntityUrl, invalidJavascript, safeMediaUrl],
+      entityImages: [canonicalEntityUrl, invalidJavascript],
+      addedImages: [canonicalEntityUrl, invalidJavascript, canonicalMediaUrl],
     })
     const entities = await mountSuspended(EntitiesPage, {
       global: { stubs: { LazyAdminKindCompleteness: true } },
@@ -190,24 +193,34 @@ describe('admin entity/media/self-learning image disclosure', () => {
     await flushUi()
 
     const input = entities.get('input[aria-label="URL ảnh AI biên tập mới"]')
-    await input.setValue(safeMediaUrl)
+    await input.setValue(canonicalMediaUrl)
     await entities.findAll('button').find(button => button.text() === 'Thêm ảnh')!.trigger('click')
     await flushUi()
 
     expect((input.element as HTMLInputElement).value).toBe('')
     expect(mocks.showToast).toHaveBeenCalledWith('Đã thêm ảnh', 'success')
     expect(entities.findAll('[data-admin-entity-image-row] img').map(node => node.attributes('src'))).toEqual([
-      safeEntityUrl,
-      safeMediaUrl,
+      canonicalEntityUrl,
+      canonicalMediaUrl,
     ])
     expect(entities.findAll('[data-admin-entity-image-row] pre').map(node => node.text())).toContain(invalidJavascript)
     entities.unmount()
   })
 
-  it('keeps a successful file upload truthful when the response includes a malformed legacy entry', async () => {
+  it('rejects unproven file uploads with ai_only_media without changing the image rows', async () => {
     installFetchDispatch({
-      entityImages: [safeEntityUrl, invalidJavascript],
-      uploadedImages: [safeEntityUrl, invalidJavascript, safeMediaUrl],
+      entityImages: [canonicalEntityUrl, invalidJavascript],
+      uploadError: {
+        response: {
+          status: 400,
+          _data: {
+            detail: {
+              code: 'ai_only_media',
+              message: 'Only canonical AI-generated entity media is accepted.',
+            },
+          },
+        },
+      },
     })
     const entities = await mountSuspended(EntitiesPage, {
       global: { stubs: { LazyAdminKindCompleteness: true } },
@@ -224,10 +237,12 @@ describe('admin entity/media/self-learning image disclosure', () => {
     await input.trigger('change')
     await flushUi()
 
-    expect(mocks.showToast).toHaveBeenCalledWith('Đã tải & tối ưu ảnh', 'success')
+    expect(mocks.showToast).toHaveBeenCalledWith({
+      code: 'ai_only_media',
+      message: 'Only canonical AI-generated entity media is accepted.',
+    }, 'error')
     expect(entities.findAll('[data-admin-entity-image-row] img').map(node => node.attributes('src'))).toEqual([
-      safeEntityUrl,
-      safeMediaUrl,
+      canonicalEntityUrl,
     ])
     expect(entities.findAll('[data-admin-entity-image-row] pre').map(node => node.text())).toContain(invalidJavascript)
     entities.unmount()

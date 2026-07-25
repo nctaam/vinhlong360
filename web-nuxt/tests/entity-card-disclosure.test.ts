@@ -62,7 +62,7 @@ describe('EntityCard image disclosure', () => {
   it('uses a supplied descriptor over a conflicting legacy URL and associates the full copy', async () => {
     const supplied = ai('/descriptor.webp')
     const wrapper = await mountSuspended(EntityCard, {
-      props: { entity: entity({ images: ['/legacy.webp'], image_descriptor: supplied }) },
+      props: { entity: entity({ images: ['/img/entities/legacy.webp'], image_descriptor: supplied }) },
       global: globals,
     })
 
@@ -76,11 +76,11 @@ describe('EntityCard image disclosure', () => {
 
   it('classifies legacy entity images as AI with the exact canonical copy', async () => {
     const wrapper = await mountSuspended(EntityCard, {
-      props: { entity: entity({ images: ['/legacy.webp'] }) },
+      props: { entity: entity({ images: ['/img/entities/legacy.webp'] }) },
       global: globals,
     })
 
-    expect(wrapper.get('img').attributes('src')).toBe('/legacy.webp')
+    expect(wrapper.get('img').attributes('src')).toBe('/img/entities/legacy.webp')
     expect(wrapper.get('[data-full-disclosure]').text()).toBe(aiDisclosure.entity_ai.full_disclosure)
     expect(wrapper.get('[data-image-disclosure]').text()).toContain('Minh họa AI')
   })
@@ -110,8 +110,8 @@ describe('EntityCard image disclosure', () => {
     expect(wrapper.get('img').attributes('src')).toBe('/local.webp')
   })
 
-  it('renders the canonical placeholder, without an AI label, for no-image and unsafe-image entities', async () => {
-    for (const images of [undefined, ['javascript:alert(1)']]) {
+  it('renders the canonical placeholder, without an AI label, for no-image, unsafe, and unknown-image entities', async () => {
+    for (const images of [undefined, ['javascript:alert(1)'], ['/legacy.webp']]) {
       const wrapper = await mountSuspended(EntityCard, {
         props: { entity: entity({ images }) },
         global: globals,

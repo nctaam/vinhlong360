@@ -35,7 +35,7 @@ const review = {
     summary: longSummary,
     source: { title: 'Nguồn object', entries: ['mảng nguồn', 'chuỗi nguồn'] },
     coordinates: [10.253, 106.012],
-    images: ['https://safe.example/image.webp', 'javascript:alert(1)', { label: '<script>bad</script>' }],
+    images: ['/img/entities/provisional.webp', 'javascript:alert(1)', { label: '<script>bad</script>' }],
     attributes: { phone: '0900000000', address: '12 đường Thử Nghiệm' },
     address: '12 đường Thử Nghiệm, Vĩnh Long',
     area: 'vinh-long',
@@ -95,7 +95,7 @@ describe('admin provisional review snapshot', () => {
     expect(wrapper.text()).toContain('javascript:alert(1)')
     expect(wrapper.find('img').exists()).toBe(false)
     expect(wrapper.findAll('a').map(link => link.attributes('href')).filter(Boolean)).toEqual([
-      'https://safe.example/image.webp',
+      '/img/entities/provisional.webp',
     ])
 
     const details = wrapper.get('details')
