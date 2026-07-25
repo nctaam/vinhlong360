@@ -642,17 +642,21 @@ def _validate_readiness_artifacts(
 def _expected_policy_fingerprint(artifacts: Mapping[str, Any]) -> str:
     route = artifacts["route_manifest"]
     disclosure = artifacts["ai_disclosure"]
+    route_digest = _require_digest(route["sha256"], "route artifact digest")
+    disclosure_digest = _require_digest(
+        disclosure["sha256"], "disclosure artifact digest"
+    )
     payload = {
         "cache_isolation": "launch-cache-isolation-v1",
         "disclosure_artifact": {
             "revision": DISCLOSURE_REVISION,
-            "sha256": _sha256(str(disclosure["sha256"]).encode("ascii")),
+            "sha256": disclosure_digest,
         },
         "index_policy": "index-policy-v1",
         "response_matrix": "launch-safety-matrix-v1",
         "route_artifact": {
             "revision": ROUTE_REVISION,
-            "sha256": _sha256(str(route["sha256"]).encode("ascii")),
+            "sha256": route_digest,
         },
         "sitemap_protocol": "pinned-sitemap-bundle-v1",
     }

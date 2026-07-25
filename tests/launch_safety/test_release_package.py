@@ -6,6 +6,7 @@ import tarfile
 
 import pytest
 
+from agent.launch_evidence import build_policy_fingerprint
 from ai_disclosure import load_ai_disclosure
 from route_manifest import load_route_manifest
 from scripts import package_launch_release as release_package
@@ -21,6 +22,30 @@ from scripts.package_launch_release import (
 
 ROOT = Path(__file__).resolve().parents[2]
 DEPLOY = ROOT / "scripts" / "deploy.sh"
+
+
+def test_release_policy_fingerprint_matches_backend_contract():
+    artifacts = {
+        "route_manifest": {
+            "revision": "launch-indexing-policy-v1",
+            "sha256": "a" * 64,
+        },
+        "ai_disclosure": {
+            "revision": "ai-disclosure-v1",
+            "sha256": "b" * 64,
+        },
+    }
+    expected = build_policy_fingerprint(
+        route_revision="launch-indexing-policy-v1",
+        route_digest="a" * 64,
+        disclosure_revision="ai-disclosure-v1",
+        disclosure_digest="b" * 64,
+    )
+
+    assert {
+        "packager": release_package._policy_fingerprint(artifacts),
+        "verifier": closed_release_verifier._expected_policy_fingerprint(artifacts),
+    } == {"packager": expected, "verifier": expected}
 
 
 def _network_audit_header(revision: str) -> dict[str, object]:
@@ -228,23 +253,12 @@ def _write_launch_fixture(root: Path) -> Path:
     disclosure_raw = (root / "config" / "ai-disclosure.json").read_bytes()
     route_digest = hashlib.sha256(route_raw).hexdigest()
     disclosure_digest = hashlib.sha256(disclosure_raw).hexdigest()
-    fingerprint_payload = {
-        "cache_isolation": "launch-cache-isolation-v1",
-        "disclosure_artifact": {
-            "revision": "ai-disclosure-v1",
-            "sha256": hashlib.sha256(disclosure_digest.encode("ascii")).hexdigest(),
-        },
-        "index_policy": "index-policy-v1",
-        "response_matrix": "launch-safety-matrix-v1",
-        "route_artifact": {
-            "revision": "launch-indexing-policy-v1",
-            "sha256": hashlib.sha256(route_digest.encode("ascii")).hexdigest(),
-        },
-        "sitemap_protocol": "pinned-sitemap-bundle-v1",
-    }
-    policy_fingerprint = hashlib.sha256(
-        json.dumps(fingerprint_payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    ).hexdigest()
+    policy_fingerprint = build_policy_fingerprint(
+        route_revision="launch-indexing-policy-v1",
+        route_digest=route_digest,
+        disclosure_revision="ai-disclosure-v1",
+        disclosure_digest=disclosure_digest,
+    )
     readiness = {
         "schema_version": 1,
         "build_revision": "reviewed-source-revision",

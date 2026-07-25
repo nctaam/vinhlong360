@@ -684,8 +684,10 @@ def _policy_fingerprint(canonical_artifacts: Mapping[str, object]) -> str:
     disclosure = canonical_artifacts["ai_disclosure"]
     if not isinstance(route, dict) or not isinstance(disclosure, dict):
         raise ValueError("canonical artifact evidence is invalid")
-    route_digest = _sha256_bytes(str(route["sha256"]).encode("ascii"))
-    disclosure_digest = _sha256_bytes(str(disclosure["sha256"]).encode("ascii"))
+    route_digest = _require_sha256(route["sha256"], "route artifact digest")
+    disclosure_digest = _require_sha256(
+        disclosure["sha256"], "disclosure artifact digest"
+    )
     payload = {
         "cache_isolation": "launch-cache-isolation-v1",
         "disclosure_artifact": {
