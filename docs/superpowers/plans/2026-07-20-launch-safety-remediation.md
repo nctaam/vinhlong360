@@ -1,8 +1,8 @@
 # Launch Safety Remediation Implementation Plan
 
-> STATUS: active/partial - approved remediation direction from the 2026-07-20 repository audit; no deploy, production mutation, secret change, or live indexing authorization.
+> STATUS: implementation complete / launch remains closed - approved remediation direction from the 2026-07-20 repository audit; no deploy, production mutation, secret change, or live indexing authorization.
 
-> **Progress truth (2026-07-23, refreshed after `50786d1`):** Tasks 1-8 implementation machinery is integrated on `codex/ls-remed-rollback`; the P1 migration prerequisite extension is committed in `50786d1`. It admits one archive snapshot, materializes checker/verifier/installer/migrations from admitted bytes, binds gate evidence to verified package digests, uses the dependency-bearing release Python venv for both read-only DB gates, and fails closed on authority races. Fresh P1 evidence is `34 passed, 391 deselected` focused, `68 passed, 1 skipped` deploy/readiness/quality, `24 passed` verifier/checker, Bash syntax clean, and `run_hard.py --all` green (`hard=0`, no ratchet increase). Historical backend/frontend/build/browser evidence remains as previously recorded: the 2026-07-24 matrix reached the external two-hour bound during the old monolithic backend regression and produced only partial diagnostic state; Chrome smoke is blocked by `cdp-timeout`; Docker/PostgreSQL opt-ins and final Task 45 rendering remain pending. No deploy, production mutation, secret change, or indexing enablement is authorized.
+> **Progress truth (refreshed after `c1875b3`):** Tasks 1-8 implementation machinery and the bounded backend runner are integrated on `codex/ls-remed-rollback`. The official revision-bound matrix passed at candidate `c1875b37f643ac6ca06a4db25ccce4902b04d717` with exit `0`; `EvidenceDocument.validate_final()` validated all 12 required sections. Exact pass/skip values are authoritative in `docs/superpowers/results/2026-07-20-launch-safety-gate-evidence.md`, committed as Evidence B `580b9b8`. Backend full regression used serial Phase A excluding `tests/launch_safety/test_closed_installer.py`, then only that installer module with exactly two xdist workers. Equivalence remains authoritative only at `a79b094` (303/303 node IDs and JUnit cases, identical outcomes, 284 passed/19 skipped in both runs); from `a79b094` to `c1875b3` only the two route-guard files changed. Global `noindex` and external gates remain active (`H1=blocked; H2=blocked; owner=not-authorized`); no push, merge, deploy, production mutation, secret change, or live indexing authorization is granted.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -330,11 +330,11 @@ git add docs/superpowers/plans/2026-07-13-launch-safety-gate.md scripts/ops/reco
 git commit -m "test: add launch safety evidence gate"
 ```
 
-- [ ] **Step 6: Run the final matrix phase-sequentially from clean current HEAD**
+- [x] **Step 6: Run the final matrix phase-sequentially from clean current HEAD**
 
 The 2026-07-24 matrix reached the external two-hour bound during the old monolithic backend command and produced only partial diagnostic state; this is not final evidence. From a clean current HEAD, bind the matrix state to the current full revision. Run backend focused tests, then the bounded backend runner `python scripts/ops/run_backend_regression.py --deadline-seconds 7000` (Phase A serial with only `tests/launch_safety/test_closed_installer.py` in Phase B using exactly two xdist workers), followed by frontend focused/full serial tests, typecheck, build, `run_hard.py --all`, PowerShell contract, rollback local rehearsal and explicit opt-ins. Use an outer execution timeout greater than 7,000 seconds. Record exact prerequisite skips. Do not render final evidence if any required functional section fails.
 
-- [ ] **Step 7: Render and commit evidence B**
+- [x] **Step 7: Render and commit evidence B**
 
 ```powershell
 python scripts/ops/record_launch_evidence.py render --final
@@ -342,9 +342,11 @@ git add docs/superpowers/results/2026-07-20-launch-safety-gate-evidence.md
 git commit -m "test: record launch safety gate evidence"
 ```
 
+Recorded completion: the matrix state was bound to the full candidate revision above, validated with the exact required-section and gate rules, and rendered to Evidence B commit `580b9b8`.
+
 ## Final completion gate
 
-- [ ] Spec-compliance review for each lane; fix and re-review all Important/Critical findings.
-- [ ] Code-quality review after spec compliance.
-- [ ] Fresh focused tests, `git diff --check`, `run_hard.py --all`, bounded backend regression via `python scripts/ops/run_backend_regression.py --deadline-seconds 7000`, Nuxt typecheck/build, and available Docker/PG/browser opt-ins.
+- [x] Spec-compliance review for each lane; fix and re-review all Important/Critical findings.
+- [x] Code-quality review after spec compliance.
+- [x] Fresh focused tests, `git diff --check`, `run_hard.py --all`, bounded backend regression via `python scripts/ops/run_backend_regression.py --deadline-seconds 7000`, Nuxt typecheck/build, and available Docker/PG/browser opt-ins.
 - [x] No push, deploy, secret change, production-data mutation, or live indexing enablement.

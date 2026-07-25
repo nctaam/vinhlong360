@@ -1,6 +1,8 @@
 # Bounded Backend Regression Implementation Plan
 
-> STATUS: active - approved design is `docs/superpowers/specs/2026-07-24-bounded-backend-regression-design.md`; no deploy, production mutation, secret change, or live indexing authorization.
+> STATUS: implementation and verification complete - approved design is `docs/superpowers/specs/2026-07-24-bounded-backend-regression-design.md`; no deploy, production mutation, secret change, or live indexing authorization.
+
+> **Completion truth:** Candidate `c1875b37f643ac6ca06a4db25ccce4902b04d717` passed the official matrix and the single `backend-full-regression` evidence row with exit `0`; Phase A was serial and excluded `tests/launch_safety/test_closed_installer.py`, while Phase B ran only that module with `-n 2 --dist=load --max-worker-restart=0`. Serial/xdist equivalence is authoritative at `a79b094` only: 303/303 node IDs and JUnit cases matched, outcomes were identical, and each run recorded 284 passed/19 skipped. From `a79b094` to `c1875b3` only the two route-guard files changed. Evidence B is `580b9b8`; final section truth is in `docs/superpowers/results/2026-07-20-launch-safety-gate-evidence.md`. The exact approved known-resource skip and blocked external gates remain unchanged; global `noindex` remains active and no push, merge, deploy, production mutation, secret change, or indexing authorization occurred.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
