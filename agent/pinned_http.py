@@ -2,8 +2,9 @@
 
 This module implements a complete shared outbound HTTP egress boundary:
 immutable dataclass contracts, the exception hierarchy, URL parsing/authority
-policy, the public-address resolver (including IPv6 transition-form
-rejection), a pinned-socket httpx transport that dials only pre-approved
+policy, the public-address resolver (rejecting IPv6 transition forms and
+reserved/deprecated ranges that ipaddress.is_global still reports as global),
+a pinned-socket httpx transport that dials only pre-approved
 addresses and verifies the connected peer, and `PinnedHTTPClient` — the
 public synchronous GET entry point with a manual, per-hop-revalidating
 redirect loop. Every redirect hop is re-resolved and re-checked against the
@@ -108,6 +109,25 @@ _NAT64_NETWORKS = (
     ipaddress.ip_network("64:ff9b::/96"),
     ipaddress.ip_network("64:ff9b:1::/48"),
 )
+# RFC 2765 IPv4-translated. Deliberately distinct from the IPv4-mapped
+# ::ffff:0:0/96 that IPv6Address.ipv4_mapped reports: these are two different
+# networks, and .ipv4_mapped is None throughout this one, so the mapped check
+# below does not cover it even though it also embeds an IPv4 address.
+_IPV4_TRANSLATED_NETWORK = ipaddress.ip_network("::ffff:0:0:0/96")
+# Ranges that reach somewhere internal or unexpected but that
+# ipaddress.is_global reports as global, so the is_global test cannot catch
+# them. Mixing address families is safe: ip_network.__contains__ returns False
+# for an address of the other version rather than raising.
+_DENIED_NETWORKS = (
+    # RFC 3879 deprecated IPv6 site-local. CPython 3.14 dropped this from
+    # ipaddress._private_networks, so is_global became True for the whole /10 —
+    # including fec0:0:0:ffff::/64, the historical Windows default resolvers.
+    ipaddress.ip_network("fec0::/10"),
+    # RFC 7526 deprecated 6to4 relay anycast: the IPv4 peer of the 2002::/16
+    # form that IPv6Address.sixtofour already rejects. sixtofour only ever sees
+    # the IPv6 side, so denying it alone left the mechanism half-open.
+    ipaddress.ip_network("192.88.99.0/24"),
+)
 
 
 def _parse_url(url: str) -> httpx.URL:
@@ -137,6 +157,7 @@ def _is_isatap(address: ipaddress.IPv6Address) -> bool:
 def _is_transition_address(address: ipaddress.IPv6Address) -> bool:
     return (
         address.ipv4_mapped is not None
+        or address in _IPV4_TRANSLATED_NETWORK
         or address in ipaddress.ip_network("::/96")
         or any(address in network for network in _NAT64_NETWORKS)
         or address.sixtofour is not None
@@ -145,9 +166,15 @@ def _is_transition_address(address: ipaddress.IPv6Address) -> bool:
     )
 
 
+def _is_denied_network(address: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
+    return any(address in network for network in _DENIED_NETWORKS)
+
+
 def _require_allowed_ip(address: ipaddress.IPv4Address | ipaddress.IPv6Address) -> None:
     if isinstance(address, ipaddress.IPv6Address) and _is_transition_address(address):
         raise BlockedAddressError(f"IPv6 transition address denied: {address}")
+    if _is_denied_network(address):
+        raise BlockedAddressError(f"reserved or deprecated address denied: {address}")
     if address.is_multicast or address.is_unspecified or not address.is_global:
         raise BlockedAddressError(f"non-global address denied: {address}")
 
