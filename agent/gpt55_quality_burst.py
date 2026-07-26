@@ -50,6 +50,10 @@ try:
 except Exception:
     requests = None  # type: ignore[assignment]
 
+from pinned_http import PinnedHTTPClient, PinnedResponse
+
+_PINNED_HTTP = PinnedHTTPClient()
+
 try:
     import geocode as geo
 except Exception:
@@ -642,14 +646,32 @@ def text_matches_entity(entity: dict[str, Any], text: str) -> bool:
     return hits >= max(2, math.ceil(len(tokens) * 0.6))
 
 
+def _decode_pinned_requests_text(response: PinnedResponse) -> str:
+    assert requests is not None
+    offline = requests.Response()
+    offline.status_code = response.status_code
+    offline.url = response.url
+    offline.headers = requests.structures.CaseInsensitiveDict(response.headers)
+    offline._content = response.content
+    offline._content_consumed = True
+    offline.encoding = requests.utils.get_encoding_from_headers(offline.headers)
+    return offline.text
+
+
 def fetch_url_text(url: str, *, timeout: int = 12, disabled: bool = False) -> str:
     if disabled or not is_valid_http_url(url) or requests is None:
         return ""
     try:
-        response = requests.get(url, headers={"User-Agent": "vinhlong360-quality-burst/1.0"}, timeout=timeout)
+        response = _PINNED_HTTP.get(
+            url,
+            user_agent="vinhlong360-quality-burst/1.0",
+            timeout=timeout,
+            max_redirects=5,
+        )
         if response.status_code >= 400:
             return ""
-        return compact_text(re.sub(r"<[^>]+>", " ", response.text or ""), 5000)
+        text = _decode_pinned_requests_text(response)
+        return compact_text(re.sub(r"<[^>]+>", " ", text or ""), 5000)
     except Exception:
         return ""
 
