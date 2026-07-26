@@ -178,16 +178,24 @@ def test_entity_image_management(client_mocked):
     from middleware import ADMIN_API_KEY as _ADMIN_KEY
     hdr = {"X-Admin-Key": _ADMIN_KEY}
     eid = "img-test-ent"
+    canonical_image = "/img/entities/img-test-ent.webp"
     try:
         db.upsert_entity({"id": eid, "type": "attraction", "name": "Ảnh test"})
         # URL sai -> 400
         assert client_mocked.post(f"/admin/entities/{eid}/images", headers=hdr, json={"url": "ftp://x"}).status_code == 400
+        remote = client_mocked.post(
+            f"/admin/entities/{eid}/images",
+            headers=hdr,
+            json={"url": "https://ex.com/a.jpg"},
+        )
+        assert remote.status_code == 400
+        assert remote.json()["detail"]["code"] == "ai_only_media"
         # add hợp lệ
-        r = client_mocked.post(f"/admin/entities/{eid}/images", headers=hdr, json={"url": "https://ex.com/a.jpg"})
-        assert r.status_code == 201 and "https://ex.com/a.jpg" in r.json()["images"]  # add image = create → 201
+        r = client_mocked.post(f"/admin/entities/{eid}/images", headers=hdr, json={"url": canonical_image})
+        assert r.status_code == 201 and canonical_image in r.json()["images"]  # add image = create → 201
         # remove index 0
         d = client_mocked.delete(f"/admin/entities/{eid}/images/0", headers=hdr)
-        assert d.status_code == 200 and "https://ex.com/a.jpg" not in d.json().get("images", [])
+        assert d.status_code == 200 and canonical_image not in d.json().get("images", [])
     finally:
         db.delete_entity(eid)
 
