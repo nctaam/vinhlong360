@@ -608,7 +608,7 @@ def _report_failures(failures: list[str]) -> int:
 
 
 def main() -> int:
-    source = SERVER.read_text(encoding="utf-8", errors="replace")
+    source = SERVER.read_text(encoding="utf-8-sig", errors="replace")
     print("Sensitive route guard matrix")
     print("============================")
     try:

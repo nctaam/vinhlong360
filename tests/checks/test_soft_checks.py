@@ -106,3 +106,22 @@ def test_bare_except_flagged_typed_ok(tmp_path):
     _mk(tmp_path, "agent/e.py", "try:\n    x = 1\nexcept:\n    pass\ntry:\n    y = 1\nexcept ValueError:\n    pass\n")
     r = BareExceptCheck(root=tmp_path).run()
     assert r["count"] == 1
+
+
+def test_complexity_still_scans_file_with_utf8_bom(tmp_path):
+    """BOM sống sót qua utf-8 thuần → ast.parse ném SyntaxError → file bị bỏ qua âm thầm."""
+    body = "\n".join(f"    if x > {i}: x += {i}" for i in range(15))
+    path = _mk(tmp_path, "agent/deep.py", f"﻿def f(x):\n{body}\n    return x\n")
+    assert path.read_bytes().startswith(b"\xef\xbb\xbf")  # chốt chặn: BOM thật
+
+    r = ComplexityCheck(root=tmp_path).run()
+
+    assert r["count"] == 1 and "f()" in r["violations"][0]["msg"]
+
+
+def test_bare_except_still_scans_file_with_utf8_bom(tmp_path):
+    _mk(tmp_path, "agent/e.py", "﻿try:\n    x = 1\nexcept:\n    pass\n")
+
+    r = BareExceptCheck(root=tmp_path).run()
+
+    assert r["count"] == 1
