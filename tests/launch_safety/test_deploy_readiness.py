@@ -69,6 +69,49 @@ def _deploy_remote_install_block(script: str) -> str:
     return script[start:end]
 
 
+def _deploy_source_attribution_block(script: str) -> str:
+    start = script.index("if command -v git")
+    end = script.index('TS="', start)
+    return script[start:end]
+
+
+def test_git_status_failure_with_empty_output_fails_closed_without_path_leak(
+    tmp_path: Path,
+):
+    secret_path = "/private/release/source"
+    scenario = tmp_path / "git-status-failure.sh"
+    scenario.write_text(
+        "#!/usr/bin/env bash\nset -euo pipefail\n"
+        "ALLOW_DIRTY=0\n"
+        "git() {\n"
+        "  case \"$*\" in\n"
+        "    'rev-parse --is-inside-work-tree') return 0 ;;\n"
+        "    'status --porcelain --untracked-files=all') return 17 ;;\n"
+        "    'status --porcelain') return 17 ;;\n"
+        "    *) return 19 ;;\n"
+        "  esac\n"
+        "}\n"
+        f"export SECRET_SOURCE_PATH={secret_path!r}\n"
+        + _deploy_source_attribution_block(DEPLOY.read_text(encoding="utf-8"))
+        + "\nprintf 'release-attribution-continued\\n'\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+    result = subprocess.run(
+        [_git_bash(), str(scenario)],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 2
+    assert "git status failed during release attribution (exit 17)" in result.stderr
+    assert "release-attribution-continued" not in result.stdout
+    assert secret_path not in result.stdout + result.stderr
+
+
 def test_deploy_sources_admission_and_closes_before_remote_mutation():
     script = DEPLOY.read_text(encoding="utf-8")
 

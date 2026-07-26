@@ -84,9 +84,19 @@ done
 }
 
 if command -v git >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-  if [ "$ALLOW_DIRTY" = 0 ] && [ -n "$(git status --porcelain)" ]; then
-    echo "Working tree is dirty. Commit/stash changes or pass --allow-dirty intentionally." >&2
-    exit 2
+  if [ "$ALLOW_DIRTY" = 0 ]; then
+    source_status=""
+    if source_status="$(git status --porcelain --untracked-files=all)"; then
+      :
+    else
+      status_code=$?
+      echo "git status failed during release attribution (exit $status_code)" >&2
+      exit 2
+    fi
+    if [ -n "$source_status" ]; then
+      echo "Working tree is dirty. Commit/stash changes or pass --allow-dirty intentionally." >&2
+      exit 2
+    fi
   fi
 fi
 
