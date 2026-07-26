@@ -1,3 +1,5 @@
+> **STATUS (2026-07-11): ARCHIVED — nội dung đã gộp vào `docs/developer-setup.md` §10 (Kích hoạt module & env flags). Giữ để tra cứu.**
+
 # Module Activation Guide — vinhlong360
 
 > **STATUS (2026-07-07): active — đã truth-sync.** The 2026-06-27 version described a "dormant modules / HAS_* env flag" mechanism that never existed — this rewrite documents the real mechanism (try-import) and the env flags that actually work; the old tier/activation-order content is superseded.

@@ -214,7 +214,7 @@ Số lượng trang KHÔNG phải điều kiện vi phạm. **TỶ LỆ trang gi
 - **CÁCH SỬA:**
   1. Layout: bỏ centered card → left-align trên grid bất đối xứng, title serif lớn overlap mép ảnh (z-index). Bỏ gimmick italic-1-từ, thay bằng tương phản scale/weight.
   2. Ảnh: thay bằng ảnh AI-gen ĐẶC THÙ địa danh thật (lò gạch Mang Thít / chùa Khmer / cù lao An Bình) qua `scripts/gen_image.py`; đặt tên file theo địa danh (mang-thit-lo-gach.webp), KHÔNG "song-nuoc". Storyland-card ảnh RIÊNG khớp story đang xoay (thêm field `image` vào STORIES[]).
-  3. Subtitle: bỏ filler → câu cụ-thể-Vĩnh-Long. **Đã verify data:** Chợ nổi Trà Ôn THUỘC Vĩnh Long (docs/data-verification-report.md:708); Cái Bè thuộc Tiền Giang → ĐỪNG gán.
+  3. Subtitle: bỏ filler → câu cụ-thể-Vĩnh-Long. **Đã verify data:** Chợ nổi Trà Ôn THUỘC Vĩnh Long (`docs/research/thvl_du_lich_urls.csv`, line 98); Cái Bè thuộc Tiền Giang → ĐỪNG gán.
   4. §B1 backup asset; giữ srcset 640/1024/1536.
 
 ---

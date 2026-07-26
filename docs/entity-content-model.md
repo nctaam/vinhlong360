@@ -1,5 +1,5 @@
 # Entity content-model — nghiên cứu & lộ trình (2026-07)
-> STATUS (2026-07-10): active — nghiên cứu + lộ trình entity content-model, tham chiếu.
+> STATUS (2026-07-10): superseded-by docs/superpowers/specs/2026-07-02-entity-split-per-kind-design.md — spec done này ghi nhận rollout CTI đang live.
 
 
 > Nguồn: deep-research đa-agent (9 agent: map codebase + taxonomy thực nghiệm +
@@ -38,8 +38,9 @@ nhau cho phù hợp**, nâng cấp AdminCP quản lý toàn diện, phát triể
 Chủ dự án ban đầu chọn "tách bảng vật lý theo loại". Nhưng **hai nguồn độc lập cùng
 bác bỏ** phương án đó:
 
-1. **Kiến trúc đã chốt của dự án** (`kien-truc-va-lo-trinh.md` §2.2 + design principle
-   #2): *"Đặc sản, trải nghiệm, sự kiện, homestay… không phải bảng riêng… Tránh nở
+1. **Historical provenance, không phải quyết định kiến trúc hiện hành**
+   (`docs/archive/kien-truc-va-lo-trinh.md` §2.2 + design principle #2): *"Đặc sản,
+   trải nghiệm, sự kiện, homestay… không phải bảng riêng… Tránh nở
    bảng. Chỉ tách bảng phụ khi một loại có truy vấn nặng đặc thù."*
 2. **Nghiên cứu best-practice** (Fowler PoEAA + Postgres, ở đúng quy mô 1730 dòng/17
    type nạp RAM): tách bảng *"buys almost nothing and costs a great deal"* — phá vỡ

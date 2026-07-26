@@ -14,7 +14,7 @@
 | **Việc dài hạn / backlog** | `ROADMAP.md` (sổ track + backlog — KHÔNG còn là danh sách tuần tự) |
 | **Code FE/BE** | `implementation-specs.md` + `api-contract.md` |
 | **Viết/sửa content** | `content-creation-guide.md` + `toi-uu-chong-ai-va-google-spam-playbook.md` |
-| **Deploy VPS** | `deployment-guide.md` + `deploy-runbook-waves-2fa-dark.md` |
+| **Deploy VPS** | `deployment-guide.md` |
 | **Setup dev local** | `developer-setup.md` |
 | **Sự cố prod** | `incident-runbook.md` |
 
@@ -30,17 +30,15 @@
 - **`ROADMAP.md`** — sổ track dài hạn + Backlog phát sinh (nhiều GĐ đã xong; Track-H = việc con người)
 - **`architecture-decisions.md`** — ADR: DB-as-SoT, Nuxt-only, PG UGC, ảnh AI-only, định vị, governance
 - **`api-contract.md`** — data shapes FastAPI ↔ Nuxt
-- **`ugc-postgres.md`** — decision record UGC = Postgres-only
 - **`entity-content-model.md`** — 17 type, STI-with-registry
 - **`don-vi-hanh-chinh-vinh-long.md`** — tham chiếu 124 xã/phường tỉnh MỚI (35p + 89x)
 - **`HANDOFF.md`** — onboarding session mới
 
 ### Vận hành
-- **`deployment-guide.md`**, **`deploy-runbook-waves-2fa-dark.md`** — deploy tarball/systemd (SSH hiện tại: root@, key vinhlong_vps)
-- **`developer-setup.md`** — dev local (⚠️ `--replace` chỉ cho fresh clone, backup trước)
+- **`deployment-guide.md`** — deploy tarball/systemd (SSH hiện tại: root@, key vinhlong_vps); runbook các đợt deploy đã qua ở `archive/`
+- **`developer-setup.md`** — dev local + **§10 kích hoạt module & env flags THẬT** (HAS_* = try-import) (⚠️ `--replace` chỉ cho fresh clone, backup trước)
 - **`security-hardening.md`** — posture + kế hoạch harden (khối SSH có TIỀN ĐỀ bắt buộc — đọc kỹ)
 - **`incident-runbook.md`** — ứng phó sự cố (⚠️ bẫy TOTP_ENC_KEY khi rotate)
-- **`module-activation-guide.md`** — trạng thái THẬT các module backend (HAS_* = try-import, phần lớn đang bật)
 - **`parallel-session-guide.md`** — chạy nhiều session song song
 
 ### Nội dung & chiến lược
@@ -55,7 +53,7 @@
 - **`implementation-specs.md`** — specs FE/BE/Content trích từ nghiên cứu
 
 ### Nghiên cứu văn hoá (`research/`)
-- 4 báo cáo + 16 CSV/GeoJSON — corpus quý cho content. **Header giới hạn:** viết thời 3-tỉnh; KHÔNG dùng khung định vị/đơn vị hành chính cũ/khuyến nghị bán tour từ đây.
+- **`research/corpus-van-hoa-du-lich-vl-2026-06.md`** — chỉ mục + tổng hợp 4 báo cáo (**cửa vào duy nhất**) + 16 CSV/GeoJSON. Toàn văn 4 báo cáo gốc đã chuyển `archive/`. **Header giới hạn:** viết thời 3-tỉnh; KHÔNG dùng khung định vị/đơn vị hành chính cũ/khuyến nghị bán tour từ đây.
 
 ### Specs & plans đang sống (`superpowers/`)
 - `specs/2026-07-06-ui-declutter-design.md` — ĐÃ THỰC THI XONG (3 plans kết quả cùng thư mục plans/)
@@ -63,4 +61,4 @@
 - `plans/` — plan + kết quả thực thi từng đợt (lịch sử thi công, tin được)
 
 ## `archive/` — KHÔNG làm theo
-25 file lịch sử (codex prompts, blueprints 01/07, audit/QA reports, kien-truc-va-lo-trinh gốc, monitoring-setup container...). Mỗi file có header ARCHIVED ghi rõ vì sao + điểm nguy hiểm. Xem `archive/README.md`.
+32 file lịch sử (codex prompts, blueprints 01/07, audit/QA reports, kien-truc-va-lo-trinh gốc, monitoring-setup container...; + đợt gộp 2026-07-11: 4 báo cáo research gốc, `deploy-runbook-waves-2fa-dark`, `ugc-postgres`, `module-activation-guide`). Mỗi file có header ARCHIVED ghi rõ vì sao + điểm nguy hiểm. Xem `archive/README.md`.

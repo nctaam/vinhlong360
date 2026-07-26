@@ -1386,4 +1386,4 @@ Generally available 2025. Connects Figma to AI tools (Claude Code, Cursor, VS Co
 
 ---
 
-*Tài liệu này là tham chiếu thiết kế tĩnh. Không chứa code implementation. Sử dụng cùng `docs/design-research-2026-06-27.md` cho context đầy đủ.*
+*Tài liệu này là tham chiếu thiết kế tĩnh. Không chứa code implementation. Authority triển khai hiện hành là `docs/design-rulebook.md` và `docs/standards/40-ui-design.md`.*

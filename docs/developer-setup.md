@@ -212,3 +212,44 @@ curl -X POST http://localhost:8360/chat \
 | Nuxt build OOM | Set `NODE_OPTIONS=--max-old-space-size=4096` |
 | Tests fail on `test_config` | Missing `.env`; ensure `LLM_API_KEY` is set |
 | `DESTRUCTIVE_OPS_LOCKED` error | The lock is intentional (CLAUDE.md B7). Only bypass with `ALLOW_DESTRUCTIVE_DB_REPLACE=1` on a fresh clone or after `python scripts/backup_data.py` |
+
+---
+
+## 10. Kích hoạt module & env flags (cơ chế THẬT)
+
+> Gộp từ `docs/archive/module-activation-guide.md` (nay archived). Đây là cơ chế đã verify với code, không phải mô tả cũ.
+
+**Không có "dormant module".** Các tên `HAS_*` là **biến Python, KHÔNG phải env var**. `agent/server.py` đặt mỗi cờ qua try-import guard:
+
+```python
+try:
+    from guardrails import injection_detector, pii_masker, ...
+    HAS_GUARDRAILS = True
+except ImportError:
+    HAS_GUARDRAILS = False
+```
+
+Hệ quả:
+- **Không chỗ nào trong `agent/` đọc `HAS_*` từ môi trường.** Đặt `HAS_X=true/false` trong `.env` là **no-op**.
+- Trên codebase hiện tại, **cả 26 module guarded đều import sạch → mọi `HAS_*` = `True` → tất cả đang BẬT** (dev lẫn prod): guardrails (PII masking + injection detection, live trên chat path), metrics, vector_search, semantic_cache, orchestrator, checkpoints, self_optimizer, dynamic_agents...
+- **Cách duy nhất tắt một module là sửa code** (bỏ/guard import hoặc xoá file module) + redeploy. Không có toggle runtime.
+
+### Env flags THẬT có tác dụng (default verify ở `agent/config.py` / `server.py`)
+
+| Env var | Default | Tác dụng |
+|---------|---------|----------|
+| `LLM_JUDGE_ENABLED` | `false` | Judge chất lượng phản hồi. Chỉ chạy khi module import OK **và** flag `true`. Tốn +1 LLM call/chat — giữ off trừ khi dư ngân sách. |
+| `AUTONOMOUS_AGENT_ENABLED` | `false` | Opt-in vòng lặp LLM nền (CLAUDE.md §B8: opt-in + cap cứng + kill-switch). Đọc trực tiếp bởi `agent/autonomous_budget.py`. |
+| `AUTONOMOUS_AGENT_MAX_CALLS_PER_DAY` | `20` | Cap cứng/ngày cho vòng lặp nền (`autonomous_budget.py`). |
+| `SCHEDULER_ENABLED` | `true` | Scheduler nền in-process. Đặt `false` cho smoke test local. |
+| `SCHEDULER_ENABLE_AUTONOMOUS_TASKS` | `false` | Job autonomous learn/discovery cũ. Giữ `false` (§B8). |
+| `BUILD_SEARCH_INDEXES` | `true` | Build BM25/vector index lúc khởi động. `false` để chạy nhanh local. |
+| `BACKGROUND_INDEX_BUILD` | `true` | Build index ở nền thay vì chặn readiness. |
+
+### Đính chính vài hiểu nhầm cũ
+
+- **`/metrics` KHÔNG mở tự do.** Middleware `gate_internal_endpoints` yêu cầu header `X-Admin-Key` hợp lệ ở **mọi** môi trường, fail-close 404. `curl /metrics` không header → 404 **theo thiết kế** (không phải module hỏng). Prometheus scrape phải gửi `X-Admin-Key`.
+- **`semantic_cache` KHÔNG cần Redis.** Nó là L1 in-memory LRU + L2 disk JSON (`agent/data/semantic_cache/entries.json`). Reset L2 = xoá file JSON, không phải `redis-cli`.
+- **Rollback bằng `HAS_X=false` chưa bao giờ hoạt động.** Trong sự cố, đừng phí thời gian sửa `.env` cho `HAS_*` — không đổi gì.
+
+Quy trình ops VPS (SSH/systemctl restart) xem `docs/deployment-guide.md` + `docs/incident-runbook.md`.

@@ -1,17 +1,23 @@
 # Đơn vị hành chính tỉnh Vĩnh Long (mới) — tham chiếu
 
-> **STATUS (2026-07-07): active — đã truth-sync.** Số liệu khớp `web/data.json` hiện hành (125 place = 1 tỉnh + **35 phường + 89 xã**); đã cập nhật đợt 16 xã lên phường 09/06/2026 (data migrate xong 2026-06-18, local + prod).
+> **STATUS (2026-07-11): active — danh mục vận hành đã truth-sync.** Số liệu khớp `web/data.json` hiện hành (125 place = 1 tỉnh + **35 phường + 89 xã**).
 
-> **Nguồn:** Cổng "Xây dựng chính sách" – chinhphu.vn, theo **Nghị quyết 1687/NQ-UBTVQH15**.
-> URL: https://xaydungchinhsach.chinhphu.vn/sap-xep-dvhc-danh-sach-124-xa-phuong-cua-tinh-vinh-long-moi-119250623091001322.htm
+> **Căn cứ pháp lý nền:** **Nghị quyết 1687/NQ-UBTVQH15**, được Cổng "Xây dựng chính sách" – chinhphu.vn tổng hợp tại:
+> https://xaydungchinhsach.chinhphu.vn/sap-xep-dvhc-danh-sach-124-xa-phuong-cua-tinh-vinh-long-moi-119250623091001322.htm
+>
+> **Nguồn chuyển tiếp 2026 (thứ cấp):** Tuổi Trẻ, bài về 15 xã giữ nguyên tên khi lên phường và xã Trung Thành đổi thành phường Vũng Liêm:
+> https://tuoitre.vn/15-xa-o-vinh-long-giu-nguyen-ten-len-phuong-xa-trung-thanh-doi-thanh-phuong-vung-liem-20260611113842232.htm
+>
+> Kho mã hiện **chưa lưu số hiệu và bản toàn văn của nghị quyết/quyết định chính thức năm 2026** cho đợt chuyển đổi này. Vì vậy, Nghị quyết 1687 chỉ được dùng để xác nhận mốc pháp lý ban đầu **19 phường + 105 xã**; cơ cấu **35 phường + 89 xã** được ghi nhận là danh mục vận hành hiện hành, có dẫn nguồn chuyển tiếp riêng và cần bổ sung văn bản chính thức khi xác minh được.
 
 ## Tổng quan
 
 - Hiệu lực: **mô hình 2 cấp (tỉnh → xã/phường), bỏ cấp huyện** từ 1/7/2025.
 - Vĩnh Long mới = **Vĩnh Long (cũ) + Bến Tre + Trà Vinh**.
-- Tổng hiện hành: **124 đơn vị cấp xã = 35 phường + 89 xã**.
+- Tổng trong danh mục vận hành hiện hành: **124 đơn vị cấp xã = 35 phường + 89 xã**.
   - Theo NQ 1687 ban đầu: 19 phường + 105 xã (101 sắp xếp + 4 giữ nguyên).
-  - Ngày **09/06/2026**, **16 xã được nâng lên phường** (VL 5 · BT 6 · TV 5 — đều là trung tâm huyện lỵ cũ đủ tiêu chí đô thị) → 35 phường + 89 xã. Dữ liệu hệ thống **migrate hoàn tất 2026-06-18** (SQLite local + Postgres prod, script `scripts/migrate_sap_nhap.py` — script đã xoá sau khi hoàn tất, cleanup 2026-06-27 `c8e0e74`).
+  - Theo nguồn chuyển tiếp thứ cấp nêu trên, đợt công bố tháng 06/2026 chuyển **16 xã thành phường** (15 xã giữ nguyên tên và xã Trung Thành đổi thành phường Vũng Liêm) → 35 phường + 89 xã.
+  - Chưa coi NQ 1687 là căn cứ trực tiếp cho cơ cấu 35 + 89; cần bổ sung số hiệu văn bản chính thức năm 2026 sau khi xác minh.
 - DB là nguồn sự thật; `web/data.json` (bản export/prerender) đã nạp đầy đủ 124 đơn vị làm thực thể `place`: id `p-*` (phường), `xa-*` (xã), cộng 1 entity `vinh-long` cấp tỉnh; **cả 124 đơn vị có `parentId=vinh-long`** (không cấp trung gian).
 
 ## 35 phường

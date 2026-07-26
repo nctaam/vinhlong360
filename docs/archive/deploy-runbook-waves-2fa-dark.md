@@ -1,3 +1,5 @@
+> **STATUS (2026-07-11): ARCHIVED — runbook đợt deploy User-System waves + 2FA đã hoàn tất. Deploy hiện hành: `docs/deployment-guide.md` + `docs/HANDOFF.md`.**
+
 # Deploy Runbook — User System Waves 2–4 + AdminCP polish (2FA shipped DARK)
 > STATUS (2026-07-10): done — runbook đợt deploy User-System waves 2–4 + 2FA + dark đã hoàn tất; deploy hiện tại xem docs/HANDOFF.md.
 

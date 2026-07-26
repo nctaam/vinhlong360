@@ -19,6 +19,9 @@ Status: Accepted — reflects decisions through 2026-07-07
    - Docker Compose provisions PostgreSQL as `vl360-postgres`.
    - SQLite is a local/dev cache for the knowledge base only.
    - **UGC/auth is Postgres-only** (GĐ3.1 decision): `_require_pg` guards on 3 UGC routers return 503 on SQLite. No SQLite port for users/posts/comments/notifications/follows/reviews. Rationale: dev/prod parity, avoid maintaining 2 SQL dialects.
+     - Behavior: on SQLite (`DATABASE_URL` unset), `/auth/*` and `/api/*` community routes return **HTTP 503** with a clear message; knowledge/chat routes (`/chat`, `/api/entities`, `/api/itineraries`) work normally. On Postgres (`DATABASE_URL=postgresql://…`), UGC is fully live.
+     - Dev setup for community features: `docs/developer-setup.md` §2. Tests: `test_ugc_degrades_to_503_on_sqlite` (integration), `test_create_user_unavailable_on_sqlite_by_design` (xfail by design).
+     - *(This decision absorbed the former `docs/archive/ugc-postgres.md`, now archived.)*
 
 4. **Database is the source of truth** (DB-as-SoT, finalized GĐ3).
    - `web/data.json` is an **export** from the database, not the source. It serves as a tracked seed for rebuilding SQLite dev cache and as a prerender data source.

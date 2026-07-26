@@ -2230,3 +2230,50 @@ def test_quality_score_itinerary_without_placeId_or_area() -> None:
     }
     score = validate_data.entity_quality_score(entity)
     assert score == 100
+
+
+def test_tracked_data_uses_current_124_unit_roster() -> None:
+    data = json.loads((ROOT / "web" / "data.json").read_text(encoding="utf-8"))
+    units = [
+        entity
+        for entity in data["entities"]
+        if entity.get("type") == "place" and entity.get("level") in {"phuong", "xa"}
+    ]
+    unit_ids = {entity["id"] for entity in units}
+    stale_ids = {"xa-cai-ngang", "xa-trung-thanh"}
+
+    assert sum(entity["level"] == "phuong" for entity in units) == 35
+    assert sum(entity["level"] == "xa" for entity in units) == 89
+    assert len(units) == 124
+    assert stale_ids.isdisjoint(unit_ids)
+    assert {"xa-hau-loc", "p-vung-liem"} <= unit_ids
+    assert all(entity.get("placeId") not in stale_ids for entity in data["entities"])
+
+
+def test_remapped_hotel_uses_current_name_and_preserves_legacy_provenance() -> None:
+    data = json.loads((ROOT / "web" / "data.json").read_text(encoding="utf-8"))
+    hotel = next(
+        entity for entity in data["entities"] if entity["id"] == "khach-san-tan-thanh-6"
+    )
+
+    assert {
+        "placeId": hotel["placeId"],
+        "summary": hotel["summary"],
+        "address": hotel["attributes"]["address"],
+        "description": hotel["description"],
+    } == {
+        "placeId": "p-vung-liem",
+        "summary": (
+            "Khách sạn 1 sao tại số 162 Nam Kỳ Khởi Nghĩa, Phường Vũng Liêm, "
+            "Vĩnh Long. Nguồn hiện có ghi theo tên cũ: xã Trung Thành."
+        ),
+        "address": (
+            "Số 162 Nam Kỳ Khởi Nghĩa, Phường Vũng Liêm "
+            "(nguồn hiện có ghi: xã Trung Thành)"
+        ),
+        "description": (
+            "Khách sạn 1 sao tại số 162 Nam Kỳ Khởi Nghĩa, Phường Vũng Liêm, "
+            "Vĩnh Long. Nguồn hiện có ghi theo tên cũ: xã Trung Thành.\n\n"
+            "Liên hệ: 0703979888."
+        ),
+    }

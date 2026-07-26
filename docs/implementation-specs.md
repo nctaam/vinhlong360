@@ -2,12 +2,15 @@
 > STATUS (2026-07-10): active — tổng hợp spec từ nghiên cứu, tham chiếu.
 
 
-> **File này tổng hợp các specs HÀNH ĐỘNG từ 3 tài liệu nghiên cứu gốc.**
-> Sessions đọc file này để biết CẦN LÀM GÌ. Đọc file gốc chỉ khi cần hiểu sâu hơn.
+> **File này tổng hợp các specs HÀNH ĐỘNG từ nguồn thiết kế đang hoạt động và tư liệu lịch sử.**
+> Các distilled requirements nằm trong file `STATUS: active` này là yêu cầu đã được tiếp nhận.
+> Khi implementation, phải đối chiếu authority sống ở `docs/design-rulebook.md` và
+> `docs/standards/40-ui-design.md`; mọi citation trong `archive/` chỉ là historical provenance
+> để hiểu bối cảnh, **không phải backlog** hay authority triển khai hiện hành.
 >
 > Nguồn gốc:
 > - `design-guidelines-apple-google-figma.md` (1384 dòng) — Apple HIG + M3 + Figma specs
-> - `design-research-2026-06-27.md` (1033 dòng) — Gap analysis vs Apple/M3/WCAG
+> - `archive/design-research-2026-06-27.md` (1033 dòng, **ARCHIVED**) — provenance của gap analysis vs Apple/M3/WCAG; không dùng làm backlog
 > - `travel-platform-ux-research.md` (904 dòng) — UX 5 nền tảng du lịch
 
 ---
@@ -111,7 +114,7 @@
 --bp-2xl: 1440px;
 ```
 
-### A4. Gap fixes — Accessibility & Polish (từ design-research §2.2, §12)
+### A4. Gap fixes — Accessibility & Polish (provenance lịch sử: `archive/design-research-2026-06-27.md` §2.2, §12)
 
 | ID | Fix | Chi tiết |
 |----|-----|----------|
@@ -124,7 +127,7 @@
 | DS-FE-20 | Touch targets | Tất cả targets >= 24x24 CSS px (WCAG 2.5.8) |
 | DS-FE-1 | High contrast | `@media (prefers-contrast: more)` support |
 
-### A5. Performance (từ design-research §15-16)
+### A5. Performance (provenance lịch sử: `archive/design-research-2026-06-27.md` §15-16)
 
 | ID | Fix | Chi tiết |
 |----|-----|----------|
@@ -161,7 +164,7 @@
 
 ## B. BACKEND SPECS
 
-### B1. Structured Data / JSON-LD (từ design-research §21)
+### B1. Structured Data / JSON-LD (provenance lịch sử: `archive/design-research-2026-06-27.md` §21)
 
 | Schema | Required fields |
 |--------|----------------|
@@ -171,16 +174,16 @@
 | `AggregateRating` + `Review` | `author.name`, `itemReviewed.name`, `reviewRating.ratingValue` (decimal dot, không comma) |
 | `Article`/`BlogPosting` | Community posts, `image` >=696px wide, `headline` <110 chars |
 
-### B2. SEO Vietnamese (từ design-research §21.8)
+### B2. SEO Vietnamese (provenance lịch sử: `archive/design-research-2026-06-27.md` §21.8)
 
 - URL slugs: ASCII only (không dấu). Giữ dấu trong content/titles.
 - Schema types ưu tiên cho AI citation (GEO): FAQPage > HowTo > Article+BreadcrumbList > TouristAttraction > LocalBusiness
 
-### B3. Middleware (từ design-research §15)
+### B3. Middleware (provenance lịch sử: `archive/design-research-2026-06-27.md` §15)
 
 - `Save-Data` middleware: detect `Save-Data: on` header → return smaller images / skip gallery. Phải set `Vary: Save-Data`
 
-### B4. A11y Backend (từ design-research §2.2)
+### B4. A11y Backend (provenance lịch sử: `archive/design-research-2026-06-27.md` §2.2)
 
 - OTP input: support paste + `autocomplete="one-time-code"`, `inputmode="numeric"`, KHÔNG `type="number"`
 - Chat/Zalo CTA: consistent DOM order across pages (WCAG 3.2.6)
@@ -190,14 +193,14 @@
 
 ## C. CONTENT SPECS
 
-### C1. Ngôn ngữ (từ design-research §19.7)
+### C1. Ngôn ngữ (provenance lịch sử: `archive/design-research-2026-06-27.md` §19.7)
 
 - Heading: dùng Hán-Việt (SEO value)
 - Body text: dùng thuần Việt
 - ~~Câu < 15 từ, đoạn 3-4 câu max~~ **[OVERRIDE 2026-07-07: nhịp câu ĐA DẠNG (ngắn xen dài) — trần cứng 15-từ công thức hoá văn, ngược mục tiêu chống đọc-như-AI]**
 - Thay: tham quan→đi xem, ẩm thực→đồ ăn, lưu trú→nơi ở, giao thông→đi lại
 
-### C2. Cognitive Accessibility (từ design-research §19.2-19.6)
+### C2. Cognitive Accessibility (provenance lịch sử: `archive/design-research-2026-06-27.md` §19.2-19.6)
 
 - ADHD: chunked content < 1 ý/section
 - Dyslexia: 16px+, line-height 1.5+, max-width 70ch, letter-spacing 0.05em, left-align only
@@ -219,6 +222,6 @@
 | File | Dòng | Nội dung | Khi nào đọc |
 |------|------|----------|-------------|
 | `design-guidelines-apple-google-figma.md` | 1384 | Apple HIG values, M3 component specs, Figma patterns | Cần giá trị cụ thể (spacing, color, typography) |
-| `design-research-2026-06-27.md` | 1033 | Gap analysis — mọi điểm chưa đạt vs Apple/M3/WCAG | Cần hiểu WHY của một fix |
+| `archive/design-research-2026-06-27.md` (**ARCHIVED**) | 1033 | Historical provenance của gap analysis vs Apple/M3/WCAG | Chỉ tra cứu WHY lịch sử; không lấy làm backlog |
 | `travel-platform-ux-research.md` | 904 | So sánh 5 platforms (GYG/Klook/Google/TA/Airbnb) | Cần context pattern nào platform nào dùng |
 | `research/` (thư mục) | 1260 | Nghiên cứu văn hóa-du lịch 3 tỉnh (BVL corpus, 6 tầng, 12 chiều) | Cần enrichment content cho entities |

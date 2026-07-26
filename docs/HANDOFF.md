@@ -13,7 +13,7 @@ Bạn đang tiếp quản dự án **vinhlong360**. Hãy đọc kỹ phần dư�
 
 1. Đọc `CLAUDE.md` (hiến pháp thực thi — bất biến + giao thức, OVERRIDE mọi mặc định).
 2. Đọc `docs/ROADMAP.md` (sổ track dài hạn + **mục "Backlog phát sinh" ở cuối** = việc tồn đọng mới nhất). Thứ bậc nguồn việc: **chỉ đạo chủ trong phiên > spec/plan đã duyệt (`docs/superpowers/`) > ROADMAP backlog** (CLAUDE.md §3).
-3. Lướt `docs/architecture-decisions.md`, `docs/README.md` (bản đồ tài liệu), `docs/deployment-guide.md`, `docs/incident-runbook.md`, `docs/ugc-postgres.md`.
+3. Lướt `docs/architecture-decisions.md` (ADR — gồm quyết định UGC/auth Postgres-only #3), `docs/README.md` (bản đồ tài liệu), `docs/deployment-guide.md`, `docs/incident-runbook.md`.
 4. Chạy `python -m pytest -q` để biết baseline test. **Baseline hiện có fail-đã-biết** — đối chiếu danh sách ở `docs/ROADMAP.md` mục "[Test-debt]" (Backlog phát sinh); chỉ coi là sự cố khi có fail MỚI ngoài danh sách đó.
 
 > ⚠️ Memory của tài-khoản cũ KHÔNG đi theo bạn. Mọi tri-thức vận-hành quan-trọng đã được chép vào file này + các docs in-repo. Tin docs in-repo; verify code hiện tại trước khi khẳng định.

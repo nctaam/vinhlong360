@@ -319,4 +319,4 @@ A photograph of [tên entity], [vị trí cụ thể — xã/phường thật], 
 Nếu gặp vấn đề khi nhập liệu hoặc cần hỗ trợ:
 - Kiểm tra `docs/developer-setup.md` cho hướng dẫn cài đặt
 - Chạy `python scripts/validate_data.py` để phát hiện lỗi dữ liệu
-- Xem `docs/data-quality-report.md` cho tình trạng chất lượng dữ liệu hiện tại
+- Xem `docs/ROADMAP.md`, mục `Backlog phát sinh`, cho các khoản nợ dữ liệu/nội dung hiện tại

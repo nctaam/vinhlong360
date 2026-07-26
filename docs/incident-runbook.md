@@ -32,5 +32,5 @@
   nhạy cảm → cân nhắc bổ nhiệm DPO + nộp hồ sơ DPIA (hiện được miễn cho SME <100k, tới ~2031).
 
 ## Liên quan
-- `docs/ugc-postgres.md` · `CLAUDE.md` §4 (điều kiện dừng) · pháp lý: NĐ147/2024, Luật 91/2025, NĐ356/2025.
+- `docs/architecture-decisions.md` #3 (UGC/auth Postgres-only) · `CLAUDE.md` §4 (điều kiện dừng) · pháp lý: NĐ147/2024, Luật 91/2025, NĐ356/2025.
 - Track-H (cần con người): pháp nhân + đăng ký NĐ147 + luật sư ICT trước khi ra mắt công khai.

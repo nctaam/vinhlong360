@@ -60,7 +60,7 @@ Use these short keys inside rules. Full URLs are repeated here to keep individua
 | DR | DataReportal Vietnam digital reports: https://datareportal.com |
 | SC | StatCounter Vietnam stats: https://gs.statcounter.com |
 | GSMA | GSMArena device specs: https://www.gsmarena.com |
-| BASE | `docs/design-guidelines-apple-google-figma.md`, `docs/design-research-2026-06-27.md`, `docs/travel-platform-ux-research.md`, `docs/implementation-specs.md` |
+| BASE | `docs/design-guidelines-apple-google-figma.md`, `docs/travel-platform-ux-research.md`, `docs/implementation-specs.md` |
 | TOKENS | `web-nuxt/assets/css/variables.css`, `web-nuxt/assets/css/dark-overrides.css` |
 
 ## Vietnam Context
