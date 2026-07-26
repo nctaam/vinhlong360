@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Parallel GPT-5.5 quality burst for vinhlong360.
 
 Report-first workflow: build a shard manifest, run report-only streams, merge

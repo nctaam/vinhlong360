@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import logging
 import re
 from pathlib import Path
@@ -365,3 +366,20 @@ def test_verify_source_url_no_web_passes_disabled_without_network(
         no_web=True,
     ) == (False, "URL could not be fetched")
     assert calls == [("https://example.com/a", True)]
+
+
+def test_module_source_has_no_bom_and_is_parseable() -> None:
+    """Regression guard: a UTF-8 BOM here is not cosmetic.
+
+    This file previously began with a UTF-8 BOM sitting *before* the shebang.
+    Two standards checkers (`scripts/checks/check_complexity.py` and
+    `scripts/checks/check_test_pairing.py`) read sources with `encoding="utf-8"`
+    and `ast.parse` them inside `except SyntaxError: continue`, so the BOM
+    decoded to U+FEFF, parsing failed, and the module was skipped in silence --
+    hiding 11 pre-existing R20.8 complexity violations from the ratchet. The BOM
+    also defeated the shebang, since the kernel never saw `#!` in byte zero.
+    """
+    raw = Path(q.__file__).read_bytes()
+    assert not raw.startswith(b"\xef\xbb\xbf"), "UTF-8 BOM re-introduced"
+    assert raw.startswith(b"#!"), "shebang must occupy the first bytes"
+    ast.parse(raw.decode("utf-8"))
