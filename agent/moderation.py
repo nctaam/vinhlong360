@@ -35,6 +35,15 @@ _TEXT_MODERATION_CATEGORIES = frozenset({
     "self-harm/instructions", "harassment/threatening", "violence",
     "illicit", "illicit/violent",
 })
+_VISION_REQUIRED_CATEGORIES = ("adult", "spoof", "medical", "violence", "racy")
+_VISION_SCORED_CATEGORIES = ("adult", "violence", "racy")
+_VISION_LIKELIHOOD_SCORES = {
+    "VERY_UNLIKELY": 0.0,
+    "UNLIKELY": 0.1,
+    "POSSIBLE": 0.4,
+    "LIKELY": 0.7,
+    "VERY_LIKELY": 0.95,
+}
 
 
 async def moderate_content(content: str, image_urls: list[str] = None) -> dict:
@@ -153,6 +162,61 @@ def _check_links(content: str) -> dict:
     return {"score": score, "reasons": reasons}
 
 
+def _valid_text_category_scores(categories: object) -> bool:
+    if not isinstance(categories, dict) or not categories:
+        return False
+    for name, score in categories.items():
+        if not isinstance(name, str):
+            return False
+        if isinstance(score, bool) or not isinstance(score, (int, float)):
+            return False
+        if not math.isfinite(score) or not 0.0 <= score <= 1.0:
+            return False
+    return True
+
+
+def _valid_text_category_flags(flagged: object, categories: object) -> bool:
+    if not isinstance(flagged, bool):
+        return False
+    if not isinstance(categories, dict) or not categories:
+        return False
+    return all(isinstance(name, str) and isinstance(value, bool)
+               for name, value in categories.items())
+
+
+def _parse_text_moderation_payload(data: object) -> dict:
+    if "results" not in data or not data["results"]:
+        return {
+            "score": 0.0,
+            "reasons": ["moderation API returned no results"],
+            "categories": {},
+            "available": False,
+        }
+
+    result = data["results"][0]
+    if not isinstance(result, dict):
+        raise ValueError("moderation API returned an invalid result")
+    categories = result.get("category_scores")
+    flagged_cats = result.get("categories")
+    category_keys = set(categories) if isinstance(categories, dict) else set()
+    flag_keys = set(flagged_cats) if isinstance(flagged_cats, dict) else set()
+    if (
+        not _valid_text_category_scores(categories)
+        or not _valid_text_category_flags(result.get("flagged"), flagged_cats)
+        or category_keys != flag_keys
+        or not _TEXT_MODERATION_CATEGORIES.issubset(category_keys)
+    ):
+        raise ValueError("moderation API returned invalid category structures")
+
+    reasons = [cat for cat, flagged in flagged_cats.items() if flagged]
+    return {
+        "score": max(categories.values()),
+        "reasons": [f"text:{reason}" for reason in reasons],
+        "categories": categories,
+        "available": True,
+    }
+
+
 async def _moderate_text(content: str) -> dict:
     """Step 1: OpenAI Moderation API (free, excellent Vietnamese support)."""
     if not content or not content.strip():
@@ -170,61 +234,43 @@ async def _moderate_text(content: str) -> dict:
             )
             data = resp.json()
 
-        if "results" not in data or not data["results"]:
-            return {
-                "score": 0.0,
-                "reasons": ["moderation API returned no results"],
-                "categories": {},
-                "available": False,
-            }
-
-        result = data["results"][0]
-        if not isinstance(result, dict):
-            raise ValueError("moderation API returned an invalid result")
-        categories = result.get("category_scores")
-        flagged_cats = result.get("categories")
-        flagged = result.get("flagged")
-        valid_scores = (
-            isinstance(categories, dict)
-            and bool(categories)
-            and all(
-                isinstance(name, str)
-                and isinstance(score, (int, float))
-                and not isinstance(score, bool)
-                and math.isfinite(score)
-                and 0.0 <= score <= 1.0
-                for name, score in categories.items()
-            )
-        )
-        valid_flags = (
-            isinstance(flagged_cats, dict)
-            and bool(flagged_cats)
-            and isinstance(flagged, bool)
-            and all(isinstance(name, str) and isinstance(value, bool)
-                    for name, value in flagged_cats.items())
-        )
-        category_keys = set(categories) if isinstance(categories, dict) else set()
-        flag_keys = set(flagged_cats) if isinstance(flagged_cats, dict) else set()
-        if (
-            not valid_scores
-            or not valid_flags
-            or category_keys != flag_keys
-            or not _TEXT_MODERATION_CATEGORIES.issubset(category_keys)
-        ):
-            raise ValueError("moderation API returned invalid category structures")
-
-        max_score = max(categories.values()) if categories else 0.0
-        reasons = [cat for cat, flagged in flagged_cats.items() if flagged]
-
-        return {
-            "score": max_score,
-            "reasons": [f"text:{r}" for r in reasons],
-            "categories": categories,
-            "available": True,
-        }
+        return _parse_text_moderation_payload(data)
     except Exception as e:
         logger.warning("Text moderation error: %s", e)
         return {"score": 0.0, "reasons": [f"error: {e}"], "categories": {}, "available": False}
+
+
+def _parse_safe_search_annotation(data: object) -> dict | None:
+    responses = data.get("responses", [])
+    if not responses:
+        return None
+    response = responses[0]
+    if not isinstance(response, dict):
+        return None
+    safe = response.get("safeSearchAnnotation", {})
+    if not isinstance(safe, dict) or not safe:
+        return None
+    if any(
+        category not in safe or safe[category] not in _VISION_LIKELIHOOD_SCORES
+        for category in _VISION_REQUIRED_CATEGORIES
+    ):
+        return None
+    return safe
+
+
+def _score_safe_search_annotation(safe: dict) -> tuple[float, list[str], dict]:
+    max_score = 0.0
+    reasons = []
+    categories = {}
+    for category in _VISION_SCORED_CATEGORIES:
+        likelihood = safe[category]
+        score = _VISION_LIKELIHOOD_SCORES[likelihood]
+        categories[f"image_{category}"] = score
+        if score > max_score:
+            max_score = score
+        if score >= QUEUE_THRESHOLD:
+            reasons.append(f"image:{category}={likelihood}")
+    return max_score, reasons, categories
 
 
 async def _moderate_images(image_urls: list[str]) -> dict:
@@ -240,14 +286,6 @@ async def _moderate_images(image_urls: list[str]) -> dict:
     all_categories = {}
     provider_available = True
 
-    likelihood_scores = {
-        "VERY_UNLIKELY": 0.0,
-        "UNLIKELY": 0.1,
-        "POSSIBLE": 0.4,
-        "LIKELY": 0.7,
-        "VERY_LIKELY": 0.95,
-    }
-
     try:
         async with httpx.AsyncClient(timeout=15) as client:
             for url in image_urls[:4]:
@@ -261,34 +299,14 @@ async def _moderate_images(image_urls: list[str]) -> dict:
                     },
                 )
                 data = resp.json()
-                responses = data.get("responses", [])
-                if not responses:
+                safe = _parse_safe_search_annotation(data)
+                if safe is None:
                     provider_available = False
                     continue
-
-                response = responses[0]
-                if not isinstance(response, dict):
-                    provider_available = False
-                    continue
-                safe = response.get("safeSearchAnnotation", {})
-                if not isinstance(safe, dict) or not safe:
-                    provider_available = False
-                    continue
-                required_categories = ("adult", "spoof", "medical", "violence", "racy")
-                if any(
-                    category not in safe or safe[category] not in likelihood_scores
-                    for category in required_categories
-                ):
-                    provider_available = False
-                    continue
-                for category in ("adult", "violence", "racy"):
-                    likelihood = safe[category]
-                    score = likelihood_scores[likelihood]
-                    all_categories[f"image_{category}"] = score
-                    if score > max_score:
-                        max_score = score
-                    if score >= QUEUE_THRESHOLD:
-                        all_reasons.append(f"image:{category}={likelihood}")
+                image_score, reasons, categories = _score_safe_search_annotation(safe)
+                max_score = max(max_score, image_score)
+                all_reasons.extend(reasons)
+                all_categories.update(categories)
     except Exception as e:
         logger.warning("Image moderation error: %s", e)
         provider_available = False
