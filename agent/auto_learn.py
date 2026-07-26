@@ -164,32 +164,36 @@ CATEGORIES = {
 
 PLACE_KEYWORDS = {
     "an bình": "xa-an-binh", "cù lao an bình": "xa-an-binh",
-    "long hồ": "xa-long-ho", "nhơn phú": "xa-nhon-phu", "mang thít": "xa-nhon-phu",
-    "trà ôn": "xa-tra-on", "lục sĩ thành": "xa-luc-si-thanh",
-    "tam bình": "xa-tam-binh", "vũng liêm": "xa-trung-thanh",
-    "bình minh": "p-binh-minh", "bình tân": "xa-tan-quoi",
+    "long hồ": "p-long-ho", "nhơn phú": "xa-nhon-phu", "mang thít": "xa-nhon-phu",
+    "trà ôn": "p-tra-on", "lục sĩ thành": "xa-luc-si-thanh",
+    "tam bình": "p-tam-binh", "vũng liêm": "p-vung-liem",
+    "bình minh": "p-binh-minh", "bình tân": "p-tan-quoi",
     "tp vĩnh long": "p-long-chau", "thành phố vĩnh long": "p-long-chau",
     "vĩnh long": "p-long-chau",
     "thanh đức": "p-thanh-duc", "long châu": "p-long-chau",
     "phước hậu": "p-phuoc-hau", "tân hạnh": "p-tan-hanh",
-    "cái vồn": "p-cai-von", "mỏ cày": "xa-mo-cay",
+    "cái vồn": "p-cai-von", "mỏ cày": "p-mo-cay",
     "chợ lách": "xa-cho-lach", "bến tre": "p-ben-tre",
     "tp bến tre": "p-ben-tre", "thành phố bến tre": "p-ben-tre",
     "trà vinh": "p-tra-vinh", "tp trà vinh": "p-tra-vinh",
     "cầu kè": "xa-cau-ke", "duyên hải": "p-duyen-hai",
     "trà cú": "xa-tra-cu", "long đức": "p-long-duc",
-    "tiểu cần": "xa-tieu-can", "càng long": "xa-cang-long",
+    "tiểu cần": "p-tieu-can", "càng long": "p-cang-long",
     "cầu ngang": "xa-cau-ngang", "châu thành": "xa-chau-thanh",
-    "ba tri": "xa-ba-tri", "giồng trôm": "xa-giong-trom",
-    "bình đại": "xa-binh-dai", "thạnh phú": "xa-thanh-phu",
+    "ba tri": "p-ba-tri", "giồng trôm": "xa-giong-trom",
+    "bình đại": "p-binh-dai", "thạnh phú": "xa-thanh-phu",
 }
+PROVINCE_FALLBACK_KEYWORDS = {"vĩnh long", "bến tre", "trà vinh"}
 
 
 def guess_place_id(text: str) -> str | None:
     if not text:
         return None
     t = text.lower()
-    for key, pid in sorted(PLACE_KEYWORDS.items(), key=lambda x: -len(x[0])):
+    for key, pid in sorted(
+        PLACE_KEYWORDS.items(),
+        key=lambda item: (item[0] in PROVINCE_FALLBACK_KEYWORDS, -len(item[0])),
+    ):
         if key in t:
             return pid
     return None

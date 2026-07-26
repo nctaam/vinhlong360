@@ -43,16 +43,16 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 PLACE_MAPPING = {
     "an bình": "xa-an-binh",
     "cù lao an bình": "xa-an-binh",
-    "long hồ": "xa-long-ho",
+    "long hồ": "p-long-ho",
     "nhơn phú": "xa-nhon-phu",
     "mang thít": "xa-nhon-phu",
-    "trà ôn": "xa-tra-on",
+    "trà ôn": "p-tra-on",
     "lục sĩ thành": "xa-luc-si-thanh",
     "lục sỹ thành": "xa-luc-si-thanh",
-    "tam bình": "xa-tam-binh",
-    "vũng liêm": "xa-trung-thanh",
+    "tam bình": "p-tam-binh",
+    "vũng liêm": "p-vung-liem",
     "bình minh": "p-binh-minh",
-    "bình tân": "xa-tan-quoi",
+    "bình tân": "p-tan-quoi",
     "tp vĩnh long": "p-long-chau",
     "thành phố vĩnh long": "p-long-chau",
     "thanh đức": "p-thanh-duc",
@@ -61,13 +61,14 @@ PLACE_MAPPING = {
     "tân hạnh": "p-tan-hanh",
     "tân ngãi": "p-tan-ngai",
     "cái vồn": "p-cai-von",
-    "mỏ cày": "xa-mo-cay",
+    "mỏ cày": "p-mo-cay",
     "chợ lách": "xa-cho-lach",
     "bến tre": "p-ben-tre",
     "trà vinh": "p-tra-vinh",
     "cầu kè": "xa-cau-ke",
     "duyên hải": "p-duyen-hai",
 }
+PROVINCE_FALLBACK_KEYWORDS = {"vĩnh long", "bến tre", "trà vinh"}
 
 
 def guess_place_id(address: str) -> str | None:
@@ -75,7 +76,10 @@ def guess_place_id(address: str) -> str | None:
     if not address:
         return None
     addr_lower = address.lower()
-    for key, pid in PLACE_MAPPING.items():
+    for key, pid in sorted(
+        PLACE_MAPPING.items(),
+        key=lambda item: (item[0] in PROVINCE_FALLBACK_KEYWORDS, -len(item[0])),
+    ):
         if key in addr_lower:
             return pid
     return None
