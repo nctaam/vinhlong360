@@ -32,16 +32,52 @@ _BLOCKED_IPS = (
     "192.0.2.1",
     "224.0.0.1",
     "240.0.0.1",
+    # RFC 7526 6to4 relay anycast: the IPv4 peer of the 2002::/16 form below.
+    # IPv6Address.sixtofour only catches the IPv6 side of the same mechanism.
+    "192.88.99.1",
+    "192.88.99.255",
     "::",
     "::1",
     "::127.0.0.1",
     "::ffff:127.0.0.1",
+    # RFC 2765 IPv4-translated (::ffff:0:0:0/96). This is a DIFFERENT network
+    # from the IPv4-mapped ::ffff:0:0/96 entry above and .ipv4_mapped is None
+    # here, so the mapped check does not cover it.
+    "::ffff:0:7f00:1",
+    "::ffff:0:a00:1",
     "64:ff9b::7f00:1",
     "64:ff9b:1::7f00:1",
     "2002:7f00:1::",
     "2001:0000:4136:e378:8000:63bf:3fff:fdd2",
     "2001:db8:1:2:0:5efe:7f00:1",
+    # IPv6 internal scopes. is_global already rejects ULA and link-local, but
+    # CPython 3.14 dropped the RFC 3879 site-local fec0::/10 from
+    # _private_networks, so is_global returns True across that whole range.
+    "fc00::1",
+    "fd12:3456:789a::1",
+    "fe80::1",
+    "fec0::1",
+    "fec0:0:0:ffff::1",
+    "feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
 )
+
+# Additive-denial guard: every tightening of the address policy must leave
+# these genuinely public destinations reachable.
+_ALLOWED_IPS = (
+    "1.1.1.1",
+    "8.8.8.8",
+    "93.184.216.34",
+    # Immediately either side of the 6to4 relay anycast /24 that is denied.
+    "192.88.98.255",
+    "192.88.100.0",
+    "2606:2800:220:1:248:1893:25c8:1946",
+    "2001:4860:4860::8888",
+)
+
+
+@pytest.mark.parametrize("ip", _ALLOWED_IPS)
+def test_public_addresses_stay_allowed(ip: str) -> None:
+    ph._require_allowed_ip(ph.ipaddress.ip_address(ip))
 
 
 @pytest.mark.parametrize(
@@ -108,10 +144,7 @@ def test_resolver_translates_dns_failure(monkeypatch: pytest.MonkeyPatch) -> Non
         ph.resolve_public_addresses("example.com", 443)
 
 
-@pytest.mark.parametrize(
-    "ip",
-    ["93.184.216.34", "2606:2800:220:1:248:1893:25c8:1946"],
-)
+@pytest.mark.parametrize("ip", _ALLOWED_IPS)
 def test_public_literal_ip_never_calls_dns(
     monkeypatch: pytest.MonkeyPatch,
     ip: str,
@@ -263,12 +296,10 @@ def test_backend_closes_and_rejects_peer_mismatch() -> None:
 
 def test_backend_fallback_uses_one_connect_budget() -> None:
     hop = _resolved_hop("https://example.com/x", "93.184.216.34", "93.184.216.35")
-    sockets = iter(
-        [
-            FakeSocket(("93.184.216.34", 443), connect_error=OSError("refused")),
-            FakeSocket(("93.184.216.35", 443)),
-        ]
-    )
+    first = FakeSocket(("93.184.216.34", 443), connect_error=OSError("refused"))
+    second = FakeSocket(("93.184.216.35", 443))
+    sockets = iter([first, second])
+    # One reading to stamp the deadline, then one per address attempt.
     times = iter([10.0, 11.0, 12.0])
     backend = ph._PinnedNetworkBackend(
         hop,
@@ -277,6 +308,45 @@ def test_backend_fallback_uses_one_connect_budget() -> None:
     )
     stream = backend.connect_tcp("example.com", 443, timeout=5.0)
     assert stream.get_extra_info("server_addr") == ("93.184.216.35", 443)
+    # deadline = 10.0 + 5.0 = 15.0. The attempt at t=11.0 may spend 4.0s and the
+    # fallback at t=12.0 only the REMAINING 3.0s. A per-address timeout reset
+    # would hand 5.0s to each address and let N addresses stretch the caller's
+    # 5s budget to N*5s, so assert the exact remaining budget, not just reach.
+    assert first.timeouts == [4.0]
+    assert second.timeouts == [3.0]
+    assert second.timeouts[0] < first.timeouts[0] < 5.0
+
+
+def test_transport_wires_the_pinned_network_backend(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured: dict[str, object] = {}
+
+    class FakePool:
+        def close(self) -> None:
+            pass
+
+    def pool_factory(**kwargs: object) -> FakePool:
+        captured.update(kwargs)
+        return FakePool()
+
+    monkeypatch.setattr(ph.httpcore, "ConnectionPool", pool_factory)
+    hop = _resolved_hop("https://example.com/x", "93.184.216.34")
+    ph._PinnedHTTPTransport(hop)
+
+    backend = captured.get("network_backend")
+    # Without this kwarg httpcore falls back to SyncBackend, which dials via
+    # socket.create_connection() and performs its own unpoliced DNS resolution
+    # at connect time — every pinning guarantee in this module would vanish.
+    assert isinstance(backend, ph._PinnedNetworkBackend)
+
+    # ...and it must carry THIS hop: only the hop's origin is dialable, and it
+    # is dialed at the exact pre-approved sockaddr rather than by name.
+    fake = FakeSocket(("93.184.216.34", 443))
+    backend._socket_factory = lambda *_args: fake
+    stream = backend.connect_tcp("example.com", 443, timeout=5.0)
+    assert fake.connected_to == ("93.184.216.34", 443)
+    assert stream.get_extra_info("server_addr") == ("93.184.216.34", 443)
+    with pytest.raises(ph.PeerMismatchError):
+        backend.connect_tcp("other.example", 443, timeout=5.0)
 
 
 def test_stream_tls_uses_original_hostname() -> None:
