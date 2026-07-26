@@ -189,7 +189,19 @@ def _run_code(cmd: list, runner=None) -> tuple[int, str]:
 
 
 def check_standards_hard(branches, runner=None):
-    """6. run_hard --all: hard = 0 và ratchet không tăng (docs/standards/)."""
+    """6. Generate fresh coverage, then run_hard --all."""
+    coverage_cmd = [
+        sys.executable, "-m", "pytest", "tests", "agent/tests",
+        "-m", "not slow",
+        "--ignore=tests/launch_safety/test_closed_installer.py",
+        "--cov=agent",
+        "--cov-report=json:coverage.json",
+        "--cov-report=",
+    ]
+    coverage_code, coverage_out = _run_code(coverage_cmd, runner)
+    if coverage_code != 0:
+        tail = "\n".join(f"    {ln}" for ln in coverage_out.strip().splitlines()[-12:])
+        return [f"  [standards] coverage generation FAIL — fresh coverage.json is REQUIRED before merge:\n{tail}"]
     code, out = _run_code([sys.executable, "scripts/checks/run_hard.py", "--all"], runner)
     if code != 0:
         tail = "\n".join(f"    {ln}" for ln in out.strip().splitlines()[-12:])

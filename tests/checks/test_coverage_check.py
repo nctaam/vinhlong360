@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Test check_coverage (R20.4) — graceful-skip khi vắng coverage.json + ngưỡng."""
+"""Test check_coverage (R20.4) — staged skip, full enforcement, and thresholds."""
 import json
 import sys
 from pathlib import Path
@@ -22,9 +22,15 @@ def test_level_rule():
     assert c.level == "soft-ratchet" and c.rule == "R20.4"
 
 
-def test_skip_when_no_coverage_json(tmp_path):
-    # Không có coverage.json → count 0 (hook staged không chặn).
-    assert CoverageCheck(root=tmp_path).run()["count"] == 0
+def test_skip_when_no_coverage_json_for_staged_hook(tmp_path):
+    result = CoverageCheck(root=tmp_path).run(files=["agent/server.py"])
+    assert result["count"] == 0
+
+
+def test_missing_coverage_json_fails_full_gate(tmp_path):
+    result = CoverageCheck(root=tmp_path).run(files=None)
+    assert result["count"] == 1
+    assert "coverage.json" in result["violations"][0]["msg"]
 
 
 def test_below_thresholds_flagged(tmp_path):
@@ -66,3 +72,9 @@ def test_sibling_basename_does_not_shadow_core_module(tmp_path):
     _write(tmp_path, cov, thr)
     # server.py 21.5% > 20% → KHÔNG vi phạm (nếu _pct che nhầm mcp_server 0% → sẽ fail)
     assert CoverageCheck(root=tmp_path).run()["count"] == 0
+
+
+def test_ci_generates_json_and_runs_full_gate():
+    workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    assert "--cov-report=json:coverage.json" in workflow
+    assert "python scripts/checks/run_hard.py --all" in workflow

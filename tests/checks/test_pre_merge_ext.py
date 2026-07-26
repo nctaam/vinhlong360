@@ -16,13 +16,41 @@ def _mock_runner(code, out=""):
     return fn
 
 
+def _sequence_runner(responses, calls):
+    pending = list(responses)
+
+    def fn(cmd):
+        calls.append(cmd)
+        code, out = pending.pop(0)
+        return types.SimpleNamespace(returncode=code, stdout=out, stderr="")
+
+    return fn
+
+
 def test_standards_hard_fail_is_required():
-    issues = pmc.check_standards_hard([], runner=_mock_runner(1, "✖ HARD R70.1"))
+    runner = _sequence_runner([(0, "coverage ready"), (1, "✖ HARD R70.1")], [])
+    issues = pmc.check_standards_hard([], runner=runner)
     assert issues and "REQUIRED" in issues[0]
 
 
 def test_standards_hard_clean():
     assert pmc.check_standards_hard([], runner=_mock_runner(0, "✓")) == []
+
+
+def test_standards_hard_generates_coverage_before_gate():
+    calls = []
+    runner = _sequence_runner([(0, "coverage ready"), (0, "clean")], calls)
+
+    assert pmc.check_standards_hard([], runner=runner) == []
+    assert calls[0][:3] == [sys.executable, "-m", "pytest"]
+    assert "--cov-report=json:coverage.json" in calls[0]
+    assert "--ignore=tests/launch_safety/test_closed_installer.py" in calls[0]
+    assert calls[1] == [sys.executable, "scripts/checks/run_hard.py", "--all"]
+
+
+def test_standards_hard_fails_when_coverage_generation_fails():
+    issues = pmc.check_standards_hard([], runner=_mock_runner(1, "coverage failed"))
+    assert issues and "coverage" in issues[0].lower() and "REQUIRED" in issues[0]
 
 
 def test_scorecard_regression_fail():

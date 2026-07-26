@@ -90,7 +90,11 @@ jobs:
             --tb=short \
             --cov=agent \
             --cov-report=term-missing \
-            --cov-report=xml:coverage.xml
+            --cov-report=xml:coverage.xml \
+            --cov-report=json:coverage.json
+
+      - name: Enforce standards and coverage ratchet
+        run: python scripts/checks/run_hard.py --all
 
       - name: Validate data.json
         run: python scripts/validate_data.py
@@ -101,7 +105,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: coverage.xml
+          path: |
+            coverage.xml
+            coverage.json
           retention-days: 14
 
   # Task 45 unit/static contracts use Windows command stubs and must run

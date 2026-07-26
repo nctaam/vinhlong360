@@ -2,9 +2,9 @@
 """R20.4 — coverage gate (SP3 Backend). Đọc coverage.json (sinh bởi
 `pytest --cov=agent --cov-report=json`), so ngưỡng agent-total + core-4 module.
 
-Gate KHÔNG chạy pytest (chậm/nặng) — chỉ đọc coverage.json có sẵn; vắng file →
-count 0 (graceful skip, không chặn hook staged). Enforce ở pre_merge/CI nơi
-coverage.json được sinh trước.
+Gate KHÔNG chạy pytest (chậm/nặng) — chỉ đọc coverage.json có sẵn. Hook staged
+được graceful-skip khi thiếu artifact; full/pre-merge gate fail-closed vì CI và
+pre-merge phải sinh coverage.json trước khi gọi check.
 
 Ngưỡng ratchet đọc từ docs/standards/coverage-thresholds.json (nâng dần, không tụt):
   {"agent": 60, "core": {"database.py": 80, "auth.py": 80, "social.py": 80, "server.py": 80}}
@@ -55,7 +55,14 @@ class CoverageCheck:
     def run(self, files: list[str] | None = None) -> dict:
         cov = self._load(COV_JSON)
         if cov is None:
-            return self._result([])  # vắng coverage.json → skip
+            if files is not None:
+                return self._result([])  # hook staged không chạy pytest
+            return self._result([{
+                "file": COV_JSON,
+                "line": 0,
+                "rule": self.rule,
+                "msg": "coverage.json missing or unreadable; generate a fresh JSON coverage report",
+            }])
         thr = self._load(THRESHOLDS) or {"agent": 60, "core": {c: 80 for c in CORE}}
         cfiles = cov.get("files", {})
         violations = []
