@@ -1,9 +1,9 @@
 # BÀN GIAO DỰ ÁN vinhlong360 — Prompt tiếp quản cho Claude Code
 
-> **STATUS (2026-07-07): active — đã truth-sync.** Bản gốc 2026-06-24; đã sửa các mục lỗi thời (flow data §7, chính sách ảnh B6, trạng thái homepage §9, backlog §10, baseline test). Mâu thuẫn với `CLAUDE.md` → CLAUDE.md thắng.
+> **STATUS (2026-07-26): active — đã truth-sync.** Bản gốc 2026-06-24; đã cập nhật flow data, baseline regression, remote Git và security/CI remediation. Mâu thuẫn với `CLAUDE.md` → CLAUDE.md thắng.
 
 > Dán toàn bộ file này làm tin nhắn đầu tiên cho phiên/tài-khoản Claude Code mới.
-> Cập nhật lần cuối: 2026-07-07 (truth-sync trên bản bàn giao 2026-06-24). Nhánh chính: `main`. Prod: https://vinhlong360.vn (healthy).
+> Cập nhật lần cuối: 2026-07-26. Nhánh chính: `main`; `origin` đã cấu hình. Tranche hiện tại chưa push/deploy và không tái-xác minh health prod.
 
 Bạn đang tiếp quản dự án **vinhlong360**. Hãy đọc kỹ phần dưới TRƯỚC khi làm gì.
 
@@ -14,7 +14,7 @@ Bạn đang tiếp quản dự án **vinhlong360**. Hãy đọc kỹ phần dư�
 1. Đọc `CLAUDE.md` (hiến pháp thực thi — bất biến + giao thức, OVERRIDE mọi mặc định).
 2. Đọc `docs/ROADMAP.md` (sổ track dài hạn + **mục "Backlog phát sinh" ở cuối** = việc tồn đọng mới nhất). Thứ bậc nguồn việc: **chỉ đạo chủ trong phiên > spec/plan đã duyệt (`docs/superpowers/`) > ROADMAP backlog** (CLAUDE.md §3).
 3. Lướt `docs/architecture-decisions.md` (ADR — gồm quyết định UGC/auth Postgres-only #3), `docs/README.md` (bản đồ tài liệu), `docs/deployment-guide.md`, `docs/incident-runbook.md`.
-4. Chạy `python -m pytest -q` để biết baseline test. **Baseline hiện có fail-đã-biết** — đối chiếu danh sách ở `docs/ROADMAP.md` mục "[Test-debt]" (Backlog phát sinh); chỉ coi là sự cố khi có fail MỚI ngoài danh sách đó.
+4. Chạy `python scripts/ops/run_backend_regression.py --deadline-seconds 7000` để xác lập baseline backend hiện tại (Phase A serial; chỉ `tests/launch_safety/test_closed_installer.py` ở Phase B với `-n 2`). Hiện không có fail-đã-biết; mọi failure mới phải triage như regression.
 
 > ⚠️ Memory của tài-khoản cũ KHÔNG đi theo bạn. Mọi tri-thức vận-hành quan-trọng đã được chép vào file này + các docs in-repo. Tin docs in-repo; verify code hiện tại trước khi khẳng định.
 
@@ -52,7 +52,7 @@ MXH du lịch / OCOP / cộng đồng cho **tỉnh Vĩnh Long mới** (sáp nh�
 - Windows + **PowerShell** (primary) **và Git Bash** (cho `scripts/deploy.sh`, lệnh POSIX). Mỗi cái cú-pháp riêng.
 - Lệnh hay dùng:
   ```
-  python -m pytest -q                 # test (đối chiếu fail-đã-biết ở ROADMAP [Test-debt])
+  python scripts/ops/run_backend_regression.py --deadline-seconds 7000  # baseline backend: Phase A serial, installer Phase B -n 2
   python scripts/validate_data.py     # kiểm data (phải exit 0)
   python scripts/backup_data.py       # BẮT BUỘC trước thao-tác data
   python scripts/install_hooks.py     # cài pre-commit TIÊU CHUẨN (1 lần/máy — docs/standards/)
@@ -97,10 +97,10 @@ const { data } = await useAsyncData('key', () => apiFetch('/api/...'))
 
 ## 7. Data flow (DB là nguồn sự-thật)
 
-- **DB là nguồn sự-thật.** `web/data.json` chỉ là **export/backup + nguồn build prerender**, và **đã phân kỳ với DB prod** (cơ chế export tự-động DB→data.json chưa tái lập; chỉ có admin `POST /export` tải tay).
+- **DB là nguồn sự-thật.** `web/data.json` chỉ là **export/backup + nguồn build prerender**, và **đã phân kỳ với DB prod**. Export thủ công có hai đường: admin `POST /export` tải file và `python scripts/export_data.py --dry-run`/chế độ ghi có backup; cơ chế export tự động DB→data.json chưa tái lập.
 - **Flow sửa dữ liệu chuẩn:** `python scripts/backup_data.py` → sửa qua **AdminCP** (write-through vào DB) hoặc script có backup → `python scripts/validate_data.py` (exit 0).
 - **CẤM:** `normalize_data.py` (đã XOÁ khỏi repo) và `deploy.sh --replace` từ data.json cũ — **đè mất edit AdminCP trên prod PG** (B7; chỉ khi chủ chỉ đạo trực tiếp + backup trước). (`export_data.py` đã **HỒI SINH 2026-07-07** — export DB→data.json thủ công, atomic, backup trước; xem §4/§5, KHÔNG còn bị cấm.)
-- **UGC/auth (users/posts/comments/follow/...) = Postgres-only.** Dev cộng-đồng: `docker compose up postgres`. Endpoint UGC trên SQLite trả 503 cố-ý. KHÔNG port UGC sang SQLite.
+- **UGC/auth (users/posts/comments/follow/...) = Postgres-only.** Dev cộng-đồng: `docker compose up postgres`. Endpoint UGC trên SQLite trả 503 cố-ý. KHÔNG port UGC sang SQLite. CI `test-pg` hiện chạy migrations → seed knowledge bằng `database.py --replace` → pytest với destructive flags chỉ ở seed step; đây mới là static wiring contract, vẫn cần Actions runtime proof và chưa được bỏ PG-only skips.
 - `--replace` cần `ALLOW_DESTRUCTIVE_DB_REPLACE=1` (deploy.sh tự set khi `--replace`) + restart vl-agent để reload RAM cache.
 - **Số xã/phường ĐÚNG = 124** (89 xã + 35 phường). `/api/places` = 125 (124 + 1 tỉnh). Thống-kê "Xã phường" đếm `level IN (xa,phuong)`.
 
@@ -110,7 +110,7 @@ const { data } = await useAsyncData('key', () => apiFetch('/api/...'))
 - Duyệt ảnh ở `/admin/duyệt-ảnh` là **cổng người** — Claude có-thể TỪ-CHỐI ảnh không hợp-lệ nhưng KHÔNG tự duyệt.
 - Tham-chiếu LLM/Image API: dùng nội-bộ (ChatGPT-compatible) — xem code `agent/` + scripts `gen_image.py`. KHÔNG thêm provider trả-phí.
 
-## 9. Trạng thái HIỆN TẠI (truth-sync 2026-07-07)
+## 9. Trạng thái HIỆN TẠI (truth-sync 2026-07-26)
 
 **Trang chủ (index.vue) — sau cinematic-editorial + declutter đợt 1–3 (2026-07-07):** hero masthead editorial (serif voice) · **StorySpread** full-bleed signature moment (ảnh đặc thù Vĩnh Long) · 1 feature-block/trang · leaderboard → 1 link teaser · section cá-nhân chỉ hiện khi CÓ tín hiệu thật (đã xem/đã lưu) · line-icon (`IconLine.vue`) thay emoji chức-năng · dark-mode chuẩn + prefers-reduced-motion. **KHÔNG còn** bento "3 vùng", interstitial "Ba dòng sông", strip "Lịch trình gợi ý" — đã bỏ theo chốt 1-tỉnh + declutter; **đừng khôi phục**.
 
@@ -131,7 +131,7 @@ const { data } = await useAsyncData('key', () => apiFetch('/api/...'))
 
 - **[Nội-dung, giá-trị cao] ~42 entity mô-tả mỏng (<120 ký-tự)** (đã giảm từ 341 → 42; 41 place + 1 product) — cần chủ bổ sung nội dung thật, KHÔNG bịa fact HC/địa-chỉ (dùng skill `viet-content-optimizer` nếu có).
 - **[Ảnh] phần lớn entity chưa có ảnh** — sinh bằng `scripts/gen_image.py` (**CHỈ AI-gen**, xem B6), duyệt qua cổng người `/admin/duyệt-ảnh`.
-- **[Test-debt] 4 test đỏ-đã-biết trên main** — xem ROADMAP "[Test-debt]"; sửa TEST theo hành vi mới, không yếu assertion.
+- **[Test baseline] Không còn fail-đã-biết từ nhóm cost-tracker/SEO cũ** — focused recheck 40 passed; dùng bounded backend runner ở §0/§4 và triage mọi failure mới như regression.
 - **[Low] report-ugc/block guard target · site-settings plugin→apiFetch** (verify còn cần không trước khi làm).
 - **Đã GIẢI / HỦY (đừng làm lại):** sitemap-media 404 → nay **phục vụ 200 trên prod**; "~372 mô-tả mỏng" → còn 42; "nhân bố-cục bento/band sang catalog" → **HỦY** theo hướng declutter.
 
@@ -154,7 +154,7 @@ const { data } = await useAsyncData('key', () => apiFetch('/api/...'))
 4. **Cloudflare** — account (bucket R2 `vinhlong360`, CDN `cdn.vinhlong360.vn`). Secret: `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`.
 5. **Prod `.env`** (`/opt/vinhlong360/.env`, đã có sẵn trên VPS) — gồm các key (TÊN): `DATABASE_URL` (mật-khẩu Postgres user `vl360`), `LLM_API_KEY`+`LLM_BASE_URL`+`LLM_MODEL` (LLM provider ChatGPT-compatible), `IMAGE_API_KEY` (gen ảnh), `R2_*`, `ADMIN_API_KEY` (đăng-nhập /admin), `ESMS_API_KEY`/`ESMS_SECRET`/`ESMS_BRANDNAME` (OTP SMS — eSMS.vn), `ZALO_OA_ID`/`ZALO_OA_SECRET` (bot Zalo, nếu dùng), `MEMORY_ENCRYPTION_KEY`, `CORS_ORIGINS`, `ENVIRONMENT=production`.
 6. **Provider accounts** sau LLM/Image API, **eSMS.vn** (OTP), **Zalo OA** — login chủ (để rotate/billing).
-7. **Git remote**: HIỆN không có remote (deploy bằng tarball). Nếu muốn push GitHub → chủ tạo repo + cấp URL/quyền (Claude không tự push — §4).
+7. **Git remote:** `origin` đã cấu hình tới GitHub và `main` theo dõi `origin/main`; không tự push khi chưa được chủ duyệt (§4). Deploy production vẫn dùng tarball, VPS không cần Git.
 
 **Khi muốn CẮT quyền tài-khoản/người cũ (rotate):** chủ tự làm — gỡ SSH key cũ khỏi `authorized_keys`; xoay `R2` keys (Cloudflare), `ADMIN_API_KEY`, mật-khẩu Postgres (cập-nhật `DATABASE_URL`), `LLM_API_KEY`, `ESMS`/`ZALO` secret; sửa prod `.env` rồi `systemctl restart vl-agent`. **Lưu-ý:** sai cú-pháp `.env` = crash-loop vl-agent (xem incident-runbook) → backup `.env` trước khi sửa.
 

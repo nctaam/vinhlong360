@@ -1,5 +1,5 @@
 # vinhlong360 — ROADMAP thực thi tự động
-> STATUS (2026-07-10): active — sổ track dài hạn + backlog thực thi.
+> STATUS (2026-07-26): active — sổ track dài hạn + backlog thực thi; security/CI remediation tranche đã hoàn tất local qua `4d2c96b4`.
 
 
 > **Cách dùng (đọc kỹ trước khi làm):** Tuân thủ `../CLAUDE.md`. Làm task **đúng thứ tự**. Mỗi task: thực hiện → chạy *Verify* → đạt *Nghiệm thu* mới tick `[x]` và commit. Cuối mỗi Giai đoạn phải pass **Cổng DoD** mới sang giai đoạn sau. Gặp mục 🛑 (Track-H) hoặc tình huống trong §4 CLAUDE.md → **DỪNG, hỏi người**.
@@ -16,7 +16,7 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 
 - 🛑 **H1. Pháp nhân + đăng ký NĐ147/2024** (Giấy xác nhận thông báo, hoặc Giấy phép MXH nếu ≥10k lượt/tháng hoặc >1k user thường xuyên). Cần doanh nghiệp/tổ chức VN; cá nhân thường không đứng tên được. **Đây là blocker launch lớn nhất.**
 - 🛑 **H2. Luật sư ICT/dữ liệu** rà: phân loại "MXH + trang tổng hợp" kết hợp; nghĩa vụ chuyển dữ liệu xuyên biên khi host nước ngoài.
-- 🛑 **H3. Cung cấp URL remote git** (để push) + quyết định nơi host (ưu tiên VN cho PDPL).
+- [x] **H3. Remote git đã cấu hình:** `origin` trỏ GitHub; `git push` vẫn cần chỉ đạo trực tiếp của chủ. Hosting hiện tại vẫn là VPS Vultr đã ghi trong HANDOFF.
 - 🛑 **H4. Rotate/đặt giá trị secret thật** (`ADMIN_API_KEY`, `LLM_API_KEY`, `TELEGRAM_BOT_TOKEN`) — con người đặt giá trị, Claude chỉ chuẩn bị chỗ. *(Cập nhật 2026-07-07: secret thật ĐÃ đặt trên prod bởi chủ dự án — mục này giờ chỉ còn nghĩa "rotate định kỳ"; lưu ý bẫy `TOTP_ENC_KEY` khi 2FA bật, xem CLAUDE.md §4.)*
 - 🛑 **H5. Mua domain / DNS / verify Search Console (DNS TXT) / deploy public.** *(Cập nhật 2026-07-07: domain vinhlong360.vn ĐÃ mua, prod ĐÃ live trên VPS Vultr — do chủ dự án tự thực hiện. Phần còn mở: verify Search Console; và ra-mắt-công-khai đúng nghĩa vẫn chờ H1/H2 pháp lý + đang noindex toàn site chủ động.)*
 
@@ -389,7 +389,7 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 - ~~**[Low/SEO] `/sitemap-media.xml` + 4 child sitemap** 404~~ ĐÃ HẾT HIỆU LỰC (trùng 8.5: prod đã phục vụ 200 — gạch 2026-07-07, trước đó mục này mâu thuẫn với dòng 148).
 - ✅ **[Low] ĐÃ FIX (commit f0acf13):** `toggle_follow` guard entity tồn-tại trước khi follow (chống bản-ghi rác).
 - **[Content] ~42 entity mô tả mỏng (<120 ký tự)** — đã giảm từ 341→203→42 (2026-06-25): 41 place + 1 product. Place descriptions generated from child entities (đúng pattern). Còn lại cần chủ dự án bổ sung nội dung — KHÔNG bịa (§1.4).
-- ~~**[Low/Coupling] `export_data.py` dùng private DB methods**~~ ĐÃ XÓA: file bị dọn trong dead-code cleanup 2026-06-26.
+- ✅ **[Low/Coupling] `export_data.py` đã phục hồi an toàn:** exporter thủ công hiện có dry-run, ghi atomic và yêu cầu backup trước khi ghi thật; nợ còn lại là tự động hóa freshness DB→data.json.
 - **[Low/Safety] `freshness.py` ghi `refresh_queue.json` không atomic** — dùng `open("w")` trực tiếp, crash giữa chừng sẽ corrupt file. Nên chuyển sang pattern `.tmp` + `os.replace()`. (Phát hiện: backend-infra session 2026-06-26)
 - ✅ **[Arch/Done] Entity content-model + CTI:** GĐ-A/B/C đã hoàn tất; `entities` vẫn là bảng xương sống và 9 bảng CTI đang live. `docs/superpowers/specs/2026-07-02-entity-split-per-kind-design.md` là authority hiện hành.
 
@@ -397,14 +397,13 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 - **[Content/Pipeline] KBYG data rỗng toàn cục**: golden_hours/kbyg_tips/checklist/amenity_badges = 0% trên 1730 entity — khối KnowBeforeYouGo hầu như không render. Cần pipeline content đổ data (A8a HOÃN vô hạn tới lúc đó).
 - **[Đo rồi mới cắt] chat-DAU + interstitial-CTR**: quyết định mở rộng ẩn ChatWidget sang detail khác (lich-trinh/xa-phuong/bai-viet) và số phận CatalogInterstitial cần số liệu sử dụng thật trước.
 - **[Hỏi chủ] wards-row khu-vuc bỏ hẳn?**: Đợt 3 đã thu gọn thành <details> (giữ 124 link hub-spoke trong DOM cho crawler). Muốn xoá hẳn khỏi DOM cần chủ duyệt riêng (đánh đổi SEO hub-spoke).
-- **[Test-debt] 4 test đỏ-trên-main (không do declutter)**: 3× test_cost_tracker TestBudgetManagerCheckBudget (test dùng local-date, module đã UTC — commit 180a1fd; chỉ đỏ 00:00–07:00 VN) + 1× test_seo sitemap (mock entity mỏng bị cổng index P0-1 loại — test assert hành vi trước-gate). Cần sửa TEST theo hành vi mới.
+- ✅ **[Test-debt resolved 2026-07-26]** 3 lỗi cost-tracker UTC-boundary đã sửa ở `3e707bff`; sitemap mock/index-policy drift đã sửa ở `40cc226e`. Focused recheck `tests/test_cost_tracker.py tests/test_seo.py`: 40 passed; không còn fail-đã-biết từ nhóm này.
 - **[A11y/Redesign] season-ring theo-mua tap-target <44px**: 12 notch trên vòng 76px mobile — hình học không cho phép 44px không-chồng-lấn (đo 11/12 tap sai khi nới). Muốn đạt chuẩn phải phóng vòng ≥170px (redesign hero). month-grid hiện là fallback a11y — GIỮ.
 
 ### Backlog phát sinh — Truth-sync docs (2026-07-07, audit 89+6 finding)
 - **[P0/Data] Campaign sửa ~513 text 	ỉnh Bến Tre/Trà Vinh trong data** (hệ quả DF-02 chạy 06/2026, nay ngược chiều): rewrite CÓ NGỮ CẢNH (hiện-tại → 	ỉnh Vĩnh Long; lịch sử → thêm cũ/trước 7-2025), KHÔNG batch-replace mù. Bắt buộc: backup B1 + sửa trên DB (SoT) + đồng bộ prod PG + regenerate data.json. Cần plan riêng.
 - **[P1/Content] Sweep filler miền Tây trong copy site** (editorial du-lich/san-pham/theo-mua, eyebrow ĐBSCL · VL—BT—TV…): thay bằng đặc-thù-Vĩnh-Long theo playbook — đi cùng campaign trên.
-- **[P1/Infra] Tái lập export DB→data.json** (một chiều, có kiểm tra diff) — hiện data.json phân kỳ (1.730 vs 1.780) và không có cơ chế làm tươi ngoài POST /export tải tay.
-- **[P2/Test] 4 test đỏ-trên-main** (đã ghi ở backlog Declutter Đợt 3 — cost_tracker UTC-date + test_seo sau cổng index).
+- **[P1/Infra] Tự động hóa freshness DB→data.json** (một chiều, có kiểm tra diff) — exporter thủ công đã phục hồi qua `scripts/export_data.py` và admin `POST /export`, nhưng chưa có cơ chế tự động đồng bộ từ PostgreSQL prod.
 - **[P2/Docs] b2g-pitch cần chủ duyệt lại TOÀN VĂN trước khi gửi bất kỳ đối tác nào** (đã sửa claim khống nhưng đây là tài liệu đối ngoại — CLAUDE.md §4).
 
 ### Backlog phát sinh — SP6 Content (2026-07-07)
@@ -415,4 +414,8 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 ### Backlog phát sinh — Chuẩn-hoá R20.8 server.py (2026-07-10)
 - **[XONG 2026-07-10] Phục hồi chat integration coverage** (test_chat_smoke.py + test_chat_tools.py): fixture `server.client` lỗi thời → sửa patch `server.get_client`; lifespan không reset `_draining` lúc startup → reset (defensive). test_chat_tools 14/14 + test_chat_smoke 22/22 pass (34 test, 7 stale-drift sửa khớp hành-vi-thật: 4× create→201, gate all-env, W6.2 detail-shape, bulk-delete body, source shape-agnostic). Nhờ đó refactor an toàn _build_messages (R20.8 4→3, golden byte-identical). **Ghi chú:** test_chat_smoke KHÔNG cần PG cho 22 test này (admin/entity/relationship chạy SQLite; UGC/auth vẫn 503-degrade đúng thiết kế). 6 test PG-index (test_session_be TestPhase14PgIndexes) vẫn cần Postgres — known-baseline.
 - **[P3/Defer có-lý-do] R20.8 = 3: chat(111)/chat_stream(97)/event_stream(62)** — request/stream handler essential-complexity (event_stream = async-generator 10-yield, state đan xen; ép ≤12 = nhiều sub-generator = helper-soup nuốt-context, khó golden-test streaming). Chỉ mở nếu có nhu cầu thực + cách verify streaming an toàn. Xem 90-exceptions-log.md.
+
+### Security/CI remediation tranche (2026-07-26)
+- ✅ **Hoàn tất local, final review READY:** fail-closed moderation/publication (`391ad233`, `5fd633cd`, `4d2c96b4`), truthful rollback (`bbb0c51a`), metrics cold-start (`2b8770bc`), coverage ratchet (`be8c0d33`), R20.7 test pairing (`7cc7edce`), CSV formula neutralization (`573f1c6a`), và PostgreSQL knowledge seed wiring (`74e8d85d`). Không push/deploy.
+- **PostgreSQL runtime gap:** CI static contract đã khóa thứ tự migrations → `python agent/database.py --replace` → pytest, với destructive flags chỉ scoped ở seed step. Vẫn cần GitHub Actions `test-pg` làm runtime proof trước khi bỏ các PG-only skip.
 
