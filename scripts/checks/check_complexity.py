@@ -51,7 +51,9 @@ class ComplexityCheck:
             if not p.exists():
                 continue
             try:
-                tree = ast.parse(p.read_text(encoding="utf-8", errors="replace"))
+                # utf-8-sig: BOM sống sót qua utf-8 thuần thành U+FEFF và làm ast.parse
+                # ném SyntaxError → file bị bỏ qua âm thầm (R20.8/R20.3 không được thực thi).
+                tree = ast.parse(p.read_text(encoding="utf-8-sig", errors="replace"))
             except SyntaxError:
                 continue
             for node in ast.walk(tree):
@@ -82,7 +84,9 @@ class BareExceptCheck:
             if not p.exists():
                 continue
             try:
-                tree = ast.parse(p.read_text(encoding="utf-8", errors="replace"))
+                # utf-8-sig: BOM sống sót qua utf-8 thuần thành U+FEFF và làm ast.parse
+                # ném SyntaxError → file bị bỏ qua âm thầm (R20.8/R20.3 không được thực thi).
+                tree = ast.parse(p.read_text(encoding="utf-8-sig", errors="replace"))
             except SyntaxError:
                 continue
             for node in ast.walk(tree):

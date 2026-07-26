@@ -17,21 +17,36 @@ class TestPairingCheck:
     def __init__(self, root: Path | None = None):
         self._root = root
 
-    def _test_candidates(self, files: list[str]) -> dict[str, ast.Module]:
+    def _test_candidates(self, files: list[str]) -> tuple[dict[str, ast.Module], list[str]]:
+        """(ứng viên parse được, file không parse được).
+
+        Đọc bằng `utf-8-sig` để bóc BOM: với `utf-8` thuần, BOM sống sót thành U+FEFF
+        và `ast.parse` ném SyntaxError → file rơi khỏi tập ứng viên trong im lặng,
+        R20.7 coi như KHÔNG được thực thi cho file đó.
+
+        "Không đọc được" (OSError) ≠ "không phải Python hợp lệ": cái sau là defect,
+        phải báo lên chứ không nuốt.
+        """
         root = self._root or Path.cwd()
         candidates: dict[str, ast.Module] = {}
+        unparseable: list[str] = []
         for relative_path in files:
             path = Path(relative_path)
             in_tests = relative_path.startswith("tests/") or "/tests/" in relative_path
             if not in_tests or not path.name.startswith("test_") or path.suffix != ".py":
                 continue
             try:
-                candidates[relative_path] = ast.parse(
-                    (root / relative_path).read_text(encoding="utf-8")
-                )
-            except (OSError, SyntaxError, UnicodeError):
+                source = (root / relative_path).read_text(encoding="utf-8-sig")
+            except UnicodeError:  # đọc được nhưng không giải mã được → defect
+                unparseable.append(relative_path)
                 continue
-        return candidates
+            except OSError:  # không đọc được (đã xoá/đổi tên/quyền) → không phải defect
+                continue
+            try:
+                candidates[relative_path] = ast.parse(source)
+            except (SyntaxError, ValueError):  # ValueError: source chứa null byte
+                unparseable.append(relative_path)
+        return candidates, unparseable
 
     @staticmethod
     def _filename_pairs(module: str, test_path: str) -> bool:
@@ -60,7 +75,12 @@ class TestPairingCheck:
         if files:  # chỉ có nghĩa ở chế độ staged
             norm = [f.replace("\\", "/") for f in files]
             agent_py = [f for f in norm if f.startswith("agent/") and f.endswith(".py") and "/tests/" not in f]
-            tests = self._test_candidates(norm)
+            tests, unparseable = self._test_candidates(norm)
+            violations.extend(
+                {"file": broken, "line": 0, "rule": self.rule,
+                 "msg": "test staged không parse được (encoding/cú pháp) — không đối chiếu được R20.7"}
+                for broken in unparseable
+            )
             unpaired = [
                 source for source in agent_py
                 if not any(
