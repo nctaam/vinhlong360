@@ -140,6 +140,26 @@ def test_regexcheck_staged_mode_only_scans_given_files(tmp_path):
     assert chk.run(files=["src/x.py"])["count"] == 0
 
 
+def test_regexcheck_staged_mode_respects_exclude_path_boundaries(tmp_path):
+    _mk(tmp_path, "docs/exact.md", "Wikimedia\n")
+    _mk(tmp_path, "docs/standards/skip.md", "Wikimedia\n")
+    _mk(tmp_path, "docs/standards-v2/keep.md", "Wikimedia\n")
+    chk = common.RegexCheck(
+        name="banned", level="hard", rule="R50.1",
+        patterns=[r"Wikimedia"], globs=["*.md"], roots=["docs"],
+        exclude_paths=["docs/exact.md", "docs\\standards"], root=tmp_path,
+    )
+
+    result = chk.run(files=[
+        "docs/exact.md",
+        "docs/standards/skip.md",
+        "docs/standards-v2/keep.md",
+    ])
+
+    assert result["count"] == 1
+    assert result["violations"][0]["file"] == "docs/standards-v2/keep.md"
+
+
 def test_ratchet_blocks_increase_allows_equal_and_decrease(tmp_path):
     baseline = {"R10.7": 2}
     res_inc = [{"check": "tinh_cu", "level": "hard-ratchet", "rule": "R10.7", "count": 3, "violations": []}]

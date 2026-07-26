@@ -150,9 +150,10 @@ class RegexCheck:
         if files is None:
             return iter_text_files(self.root, self.globs, self.roots, self.exclude_paths)
         picked = []
+        normalized_excludes = tuple(_norm(path).rstrip("/") for path in self.exclude_paths)
         for f in files:
             rel = _norm(f)
-            if any(rel.startswith(_norm(e)) for e in self.exclude_paths):
+            if _is_excluded(rel, normalized_excludes):
                 continue
             if not any(rel == _norm(b) or rel.startswith(_norm(b) + "/") for b in self.roots):
                 continue
