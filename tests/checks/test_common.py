@@ -16,6 +16,46 @@ def _mk(tmp_path: Path, rel: str, text: str) -> Path:
     return p
 
 
+def test_iter_text_files_prunes_skipped_directories_before_visiting_files(
+    tmp_path, monkeypatch
+):
+    _mk(tmp_path, "web-nuxt/app.ts", "export {}\n")
+    ignored = _mk(
+        tmp_path,
+        "web-nuxt/node_modules/package/ignored.js",
+        "const secret = true\n",
+    )
+    original_is_file = Path.is_file
+
+    def reject_skipped_file(path: Path) -> bool:
+        if path == ignored:
+            raise AssertionError("iter_text_files descended into node_modules")
+        return original_is_file(path)
+
+    monkeypatch.setattr(Path, "is_file", reject_skipped_file)
+
+    assert common.iter_text_files(
+        tmp_path,
+        ["*.ts", "*.js"],
+        ["web-nuxt"],
+        [],
+    ) == ["web-nuxt/app.ts"]
+
+
+def test_iter_text_files_returns_sorted_filtered_repo_relative_paths(tmp_path):
+    _mk(tmp_path, "web-nuxt/z.vue", "<template />\n")
+    _mk(tmp_path, "web-nuxt/a.ts", "export {}\n")
+    _mk(tmp_path, "web-nuxt/generated/skip.ts", "export {}\n")
+    _mk(tmp_path, "web-nuxt/readme.md", "ignored\n")
+
+    assert common.iter_text_files(
+        tmp_path,
+        ["*.ts", "*.vue"],
+        ["web-nuxt"],
+        ["web-nuxt/generated"],
+    ) == ["web-nuxt/a.ts", "web-nuxt/z.vue"]
+
+
 def test_regexcheck_catches_pattern_and_reports_line(tmp_path):
     _mk(tmp_path, "docs/a.md", "dòng sạch\nảnh lấy từ Wikimedia nhé\n")
     chk = common.RegexCheck(

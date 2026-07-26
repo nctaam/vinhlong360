@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import fnmatch
 import json
+import os
 import re
 import subprocess
 from pathlib import Path
@@ -44,24 +45,71 @@ def _norm(rel: str) -> str:
     return rel.replace("\\", "/")
 
 
+def _is_excluded(relative: str, excluded_paths: tuple[str, ...]) -> bool:
+    return any(relative.startswith(excluded) for excluded in excluded_paths)
+
+
+def _prune_walk_directories(
+    root: Path,
+    current_path: Path,
+    directories: list[str],
+    excluded_paths: tuple[str, ...],
+) -> None:
+    kept_directories = []
+    for dirname in sorted(directories):
+        relative = _norm(str((current_path / dirname).relative_to(root)))
+        if dirname in _SKIP_DIRS or _is_excluded(relative, excluded_paths):
+            continue
+        kept_directories.append(dirname)
+    directories[:] = kept_directories
+
+
+def _matching_walk_files(
+    root: Path,
+    current_path: Path,
+    filenames: list[str],
+    globs: list[str],
+    excluded_paths: tuple[str, ...],
+) -> list[str]:
+    matched = []
+    for filename in sorted(filenames):
+        path = current_path / filename
+        if not path.is_file():
+            continue
+        relative = _norm(str(path.relative_to(root)))
+        if _is_excluded(relative, excluded_paths):
+            continue
+        if any(fnmatch.fnmatch(path.name, glob) for glob in globs):
+            matched.append(relative)
+    return matched
+
+
 def iter_text_files(root: Path, globs: list[str], roots: list[str], exclude_paths: list[str]) -> list[str]:
     """Liệt kê file repo-relative khớp globs dưới roots, bỏ exclude + thư mục hệ thống."""
     found: list[str] = []
+    normalized_excludes = tuple(_norm(path) for path in exclude_paths)
     for base in roots:
         base_dir = root / base
         if not base_dir.exists():
             continue
-        for p in base_dir.rglob("*"):
-            if not p.is_file():
-                continue
-            if any(part in _SKIP_DIRS for part in p.parts):
-                continue
-            rel = _norm(str(p.relative_to(root)))
-            if any(rel.startswith(_norm(e)) for e in exclude_paths):
-                continue
-            if any(fnmatch.fnmatch(p.name, g) for g in globs):
-                found.append(rel)
-    return found
+        for current, directories, filenames in os.walk(base_dir, topdown=True):
+            current_path = Path(current)
+            _prune_walk_directories(
+                root,
+                current_path,
+                directories,
+                normalized_excludes,
+            )
+            found.extend(
+                _matching_walk_files(
+                    root,
+                    current_path,
+                    filenames,
+                    globs,
+                    normalized_excludes,
+                )
+            )
+    return sorted(found)
 
 
 class RegexCheck:
