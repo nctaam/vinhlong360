@@ -3284,8 +3284,9 @@ async def metrics_endpoint(request: Request):
     await require_admin(request)
     if not HAS_METRICS:
         return _error_response(501, "Metrics module not available")
+    knowledge._ensure()
     set_gauge("cache_size", len(cache._cache) if hasattr(cache, '_cache') else 0)
-    set_gauge("entities_total", len(knowledge._entities))
+    set_gauge("entities_total", len(knowledge._entities or {}))
     from fastapi.responses import Response
     return Response(content=generate_metrics(), media_type="text/plain; charset=utf-8")
 

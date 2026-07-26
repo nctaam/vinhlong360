@@ -122,6 +122,25 @@ def test_metrics_content_type(client, admin_headers):
     assert "text/plain" in response.headers.get("content-type", "")
 
 
+def test_metrics_endpoint_initializes_cold_knowledge(client, admin_headers, monkeypatch):
+    import server
+
+    monkeypatch.setattr(server.knowledge, "_entities", None)
+    ensure_called = {"value": False}
+
+    def ensure_knowledge():
+        ensure_called["value"] = True
+        server.knowledge._entities = {}
+
+    monkeypatch.setattr(server.knowledge, "_ensure", ensure_knowledge)
+
+    response = client.get("/metrics", headers=admin_headers)
+    if response.status_code == 501:
+        pytest.skip("Metrics module not available")
+    assert response.status_code == 200
+    assert ensure_called["value"] is True
+
+
 # ── /chat ────────────────────────────────────────────
 
 
@@ -207,11 +226,16 @@ def test_ab_experiments_endpoint(client, admin_headers):
     assert isinstance(data["experiments"], list)
 
 
-def test_ab_experiments_have_expected_fields(client):
-    response = client.get("/ab-testing/experiments")
+def test_ab_experiments_have_expected_fields(client, admin_headers):
+    response = client.get("/ab-testing/experiments", headers=admin_headers)
     data = response.json()
-    if "error" in data or not data.get("experiments"):
-        pytest.skip("A/B testing not available or no experiments")
+    if response.status_code == 503:
+        pytest.skip("A/B testing optional feature is not available")
+    assert response.status_code == 200
+    assert "experiments" in data
+    assert isinstance(data["experiments"], list)
+    if not data["experiments"]:
+        pytest.skip("A/B testing optional feature has no configured experiments")
     exp = data["experiments"][0]
     assert "name" in exp
     assert "metric_name" in exp
