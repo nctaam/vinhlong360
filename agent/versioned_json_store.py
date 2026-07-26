@@ -9,7 +9,7 @@ import tempfile
 import threading
 import time
 from collections.abc import Callable, Iterator
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from pathlib import Path
 from typing import TypeVar
 
@@ -26,10 +26,25 @@ def _canonical_path(path: Path) -> str:
     return os.path.normcase(canonical) if os.name == "nt" else canonical
 
 
-def _path_lock(path: Path) -> threading.Lock:
-    key = _canonical_path(path)
+def _path_lock(key: str) -> threading.Lock:
     with _locks_guard:
         return _path_locks.setdefault(key, threading.Lock())
+
+
+def _ordered_lock_paths(paths: tuple[Path, ...]) -> list[Path]:
+    """Collapse aliases and return the one acquisition order every caller must use."""
+    unique: dict[str, Path] = {}
+    for path in paths:
+        unique.setdefault(_canonical_path(path), Path(path))
+    return [unique[key] for key in sorted(unique)]
+
+
+def _held_keys() -> set[str]:
+    keys = getattr(_held_path_locks, "keys", None)
+    if keys is None:
+        keys = set()
+        _held_path_locks.keys = keys
+    return keys
 
 
 def _lock_path(path: Path) -> Path:
@@ -108,26 +123,39 @@ def _cross_process_lock_file(lock_path: Path) -> Iterator[None]:
 
 
 @contextmanager
-def _thread_locked(path: Path) -> Iterator[None]:
-    key = _canonical_path(path)
-    held = getattr(_held_path_locks, "keys", set())
-    if key in held:
+def _thread_locked(*paths: Path) -> Iterator[None]:
+    """Take every path lock in canonical order so no AB-BA cycle can form."""
+    keys = [_canonical_path(path) for path in _ordered_lock_paths(paths)]
+    if not keys:
+        raise ValueError("at least one lock path is required")
+    held = _held_keys()
+    if held.intersection(keys):
         raise RuntimeError("path locks are non-reentrant")
-    with _path_lock(path):
-        held.add(key)
-        _held_path_locks.keys = held
+    if held and keys[0] < max(held):
+        raise RuntimeError(
+            "path locks must be taken in canonical order; pass every path to one "
+            "publication_lock() call instead of nesting them"
+        )
+    with ExitStack() as stack:
+        for key in keys:
+            stack.enter_context(_path_lock(key))
+        held.update(keys)
         try:
             yield
         finally:
-            held.remove(key)
+            held.difference_update(keys)
 
 
 @contextmanager
-def publication_lock(lock_path: Path) -> Iterator[None]:
-    """Lock one explicit persistent file across threads and processes."""
-    lock_path = Path(lock_path)
-    with _thread_locked(lock_path):
-        with _cross_process_lock_file(lock_path):
+def publication_lock(*lock_paths: Path) -> Iterator[None]:
+    """Lock explicit persistent files across threads and processes."""
+    ordered = _ordered_lock_paths(lock_paths)
+    if not ordered:
+        raise ValueError("at least one lock path is required")
+    with _thread_locked(*ordered):
+        with ExitStack() as stack:
+            for lock_path in ordered:
+                stack.enter_context(_cross_process_lock_file(lock_path))
             yield
 
 
