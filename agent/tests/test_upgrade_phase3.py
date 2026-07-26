@@ -202,9 +202,12 @@ class TestContactFunnel:
         assert '"map"' in src
 
     def test_contact_funnel_export_csv(self):
-        src = inspect.getsource(__import__("admin").contact_funnel_export)
+        _admin = __import__("admin")
+        src = inspect.getsource(_admin.contact_funnel_export)
         assert "text/csv" in src
-        assert "entity_id,name,zalo,phone,website,map,total" in src
+        assert _admin._csv_row([
+            "entity_id", "name", "zalo", "phone", "website", "map", "total",
+        ]) == "entity_id,name,zalo,phone,website,map,total\n"
 
     def test_contact_funnel_sorts_by_total(self):
         _admin = __import__("admin")

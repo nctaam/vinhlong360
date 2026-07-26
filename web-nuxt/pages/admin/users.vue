@@ -418,8 +418,9 @@ async function changeRole(id: string, role: string) {
 const formatDate = formatDateVN
 
 function csvCell(v: unknown) {
-  const s = String(v ?? '')
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
+  let s = String(v ?? '')
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`
+  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
 }
 function exportCSV() {
   const header = ['ID', 'Tên', 'SĐT', 'Role', 'Trạng thái', 'Ngày tạo']

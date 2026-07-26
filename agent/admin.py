@@ -12,6 +12,8 @@ Mount vào FastAPI app chính qua router.
 """
 
 import asyncio
+import csv
+import io
 import json
 import logging
 import os
@@ -92,6 +94,23 @@ def _safe(fn, default):
     except Exception:
         logger.debug("_safe(%s) failed, returning default", getattr(fn, "__name__", fn), exc_info=True)
         return default
+
+
+_CSV_FORMULA_PREFIXES = ("=", "+", "-", "@", "\t", "\r")
+
+
+def _csv_cell(value: Any) -> str:
+    cell = "" if value is None else str(value)
+    if cell.startswith(_CSV_FORMULA_PREFIXES):
+        return "'" + cell
+    return cell
+
+
+def _csv_row(values) -> str:
+    output = io.StringIO()
+    csv.writer(output, lineterminator="\n").writerow([_csv_cell(value) for value in values])
+    return output.getvalue()
+
 
 # ── Auth dependency ──
 
@@ -1866,10 +1885,12 @@ async def contact_funnel_export(days: int = Query(30, ge=1, le=365)):
                     counts[eid][action] = counts[eid].get(action, 0) + 1
                     counts[eid]["total"] += 1
         ent_dict = knowledge._entities if getattr(knowledge, "_entities", None) else {}
-        yield "entity_id,name,zalo,phone,website,map,total\n"
+        yield _csv_row(["entity_id", "name", "zalo", "phone", "website", "map", "total"])
         for eid, c in sorted(counts.items(), key=lambda x: -x[1]["total"]):
-            name = (ent_dict.get(eid, {}).get("name") or eid).replace(",", " ")
-            yield f"{eid},{name},{c['zalo']},{c['phone']},{c['website']},{c['map']},{c['total']}\n"
+            name = ent_dict.get(eid, {}).get("name") or eid
+            yield _csv_row([
+                eid, name, c["zalo"], c["phone"], c["website"], c["map"], c["total"],
+            ])
 
     return StreamingResponse(_generate(), media_type="text/csv",
                              headers={"Content-Disposition": "attachment; filename=contact_funnel.csv"})
@@ -3467,14 +3488,18 @@ async def export_users_csv():
                 ORDER BY u.created_at DESC
                 LIMIT 50000
             """, ())
-        yield "id,phone,display_name,role,is_active,reputation,created_at,post_count,follower_count\n"
+        yield _csv_row([
+            "id", "phone", "display_name", "role", "is_active", "reputation",
+            "created_at", "post_count", "follower_count",
+        ])
         for r in rows:
             d = db._row_to_dict(r)
             phone = _mask(d.get("phone") or "")
-            name = (d.get("display_name") or "").replace(",", " ").replace('"', "'")
-            yield (f'{d["id"]},{phone},"{name}",{d.get("role","user")},'
-                   f'{d.get("is_active",True)},{d.get("reputation",0)},'
-                   f'{d.get("created_at","")},{d["post_count"]},{d["follower_count"]}\n')
+            yield _csv_row([
+                d["id"], phone, d.get("display_name") or "", d.get("role", "user"),
+                d.get("is_active", True), d.get("reputation", 0), d.get("created_at", ""),
+                d["post_count"], d["follower_count"],
+            ])
 
     return StreamingResponse(_generate(), media_type="text/csv",
                              headers={"Content-Disposition": "attachment; filename=users.csv"})
@@ -3512,14 +3537,18 @@ async def export_posts_csv(
                 ORDER BY p.created_at DESC
                 LIMIT 50000
             """, tuple(params))
-        yield "id,user_id,author_name,post_type,rating,like_count,comment_count,share_count,status,entity_id,created_at\n"
+        yield _csv_row([
+            "id", "user_id", "author_name", "post_type", "rating", "like_count",
+            "comment_count", "share_count", "status", "entity_id", "created_at",
+        ])
         for r in rows:
             d = db._row_to_dict(r)
-            name = (d.get("author_name") or "").replace(",", " ").replace('"', "'")
-            yield (f'{d["id"]},{d.get("user_id","")},"{name}",'
-                   f'{d.get("post_type","")},{d.get("rating","")},{d.get("like_count",0)},'
-                   f'{d.get("comment_count",0)},{d.get("share_count",0)},'
-                   f'{d.get("moderation_status","")},{d.get("entity_id","")},{d.get("created_at","")}\n')
+            yield _csv_row([
+                d["id"], d.get("user_id", ""), d.get("author_name") or "",
+                d.get("post_type", ""), d.get("rating", ""), d.get("like_count", 0),
+                d.get("comment_count", 0), d.get("share_count", 0),
+                d.get("moderation_status", ""), d.get("entity_id", ""), d.get("created_at", ""),
+            ])
 
     return StreamingResponse(_generate(), media_type="text/csv",
                              headers={"Content-Disposition": "attachment; filename=posts.csv"})

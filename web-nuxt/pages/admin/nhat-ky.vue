@@ -120,7 +120,10 @@ function applyFilterImmediate() {
 function exportCSV() {
   const rows = entries.value
   if (!rows.length) return
-  const csvCell = (v: string) => /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v
+  const csvCell = (v: string) => {
+    const safe = /^[=+\-@\t\r]/.test(v) ? `'${v}` : v
+    return /[",\r\n]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe
+  }
   const header = 'Thời gian,Method,Path,Actor,IP'
   const lines = rows.map(e => [e.ts, e.method, e.path, e.actor, e.ip].map(v => csvCell(String(v || ''))).join(','))
   downloadBlob(new Blob(['﻿' + header + '\n' + lines.join('\n')], { type: 'text/csv;charset=utf-8' }), `audit-log-${new Date().toISOString().slice(0, 10)}.csv`)
