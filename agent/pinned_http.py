@@ -8,8 +8,18 @@ a pinned-socket httpx transport that dials only pre-approved
 addresses and verifies the connected peer, and `PinnedHTTPClient` — the
 public synchronous GET entry point with a manual, per-hop-revalidating
 redirect loop. Every redirect hop is re-resolved and re-checked against the
-same public-address policy before it is followed. Nothing in the codebase
-consumes this module yet; that wiring happens in later tasks.
+same public-address policy before it is followed.
+
+Consumers wired to this boundary (see tests/test_pinned_http_consumers.py,
+which locks the mapping):
+
+- ``admin._approve_fetch_image_data`` — admin image-suggestion review
+- ``auto_learn.fetch_url`` — auto-learn source ingestion
+- ``gpt55_quality_burst.fetch_url_text`` — quality-burst source verification
+
+Other outbound callers (crawler, geocode, realtime, bot, moderation, DDGS,
+OpenAI clients) are deliberately NOT routed through here yet; that migration
+is tracked as residual egress debt, not an oversight.
 """
 
 from __future__ import annotations
