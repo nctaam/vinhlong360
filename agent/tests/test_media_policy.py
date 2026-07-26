@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 import pytest
-from fastapi import HTTPException
+from fastapi import HTTPException, Response
 
 
 AGENT = Path(__file__).resolve().parent.parent
@@ -159,3 +159,38 @@ def test_social_upload_is_rejected_before_reading_or_storing_the_file(monkeypatc
             user={"id": "00000000-0000-0000-0000-000000000001"},
         )
     )
+
+
+def test_public_events_project_entity_media_before_response(monkeypatch):
+    import public_api
+
+    source = {
+        "id": "event-1",
+        "name": "Su kien cong khai",
+        "type": "event",
+        "status": "published",
+        "verified": True,
+        "images": [
+            "https://cdn.example/user.webp",
+            "/img/entities/event-1.webp",
+        ],
+        "attributes": {"date_start_iso": "2099-01-01"},
+    }
+    monkeypatch.setattr(public_api.db, "list_entities", lambda **_kwargs: [source])
+
+    result = asyncio.run(public_api.list_events(
+        Response(),
+        area=None,
+        include_past=True,
+        limit=50,
+    ))
+
+    event = result["events"][0]
+    assert "images" not in event
+    assert [descriptor["url"] for descriptor in event["image_descriptors"]] == [
+        "/img/entities/event-1.webp",
+    ]
+    assert source["images"] == [
+        "https://cdn.example/user.webp",
+        "/img/entities/event-1.webp",
+    ]

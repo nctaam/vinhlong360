@@ -2473,7 +2473,8 @@ async def list_events(
 
     events = [e for e in events if _event_date_reliable(e)]
     events.sort(key=lambda e: _event_sort_key(e, today))
-    return {"total": len(events), "events": events[:limit]}
+    public_events = [_project_public_entity_media(event) for event in events[:limit]]
+    return {"total": len(events), "events": public_events}
 
 
 _REPORT_FIELD_OPTIONS = {"phone", "hours", "address", "source", "name", "price", "images", "other"}
