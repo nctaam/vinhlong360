@@ -46,7 +46,10 @@ def _norm(rel: str) -> str:
 
 
 def _is_excluded(relative: str, excluded_paths: tuple[str, ...]) -> bool:
-    return any(relative.startswith(excluded) for excluded in excluded_paths)
+    return any(
+        relative == excluded or relative.startswith(excluded + "/")
+        for excluded in excluded_paths
+    )
 
 
 def _prune_walk_directories(
@@ -87,7 +90,7 @@ def _matching_walk_files(
 def iter_text_files(root: Path, globs: list[str], roots: list[str], exclude_paths: list[str]) -> list[str]:
     """Liệt kê file repo-relative khớp globs dưới roots, bỏ exclude + thư mục hệ thống."""
     found: list[str] = []
-    normalized_excludes = tuple(_norm(path) for path in exclude_paths)
+    normalized_excludes = tuple(_norm(path).rstrip("/") for path in exclude_paths)
     for base in roots:
         base_dir = root / base
         if not base_dir.exists():

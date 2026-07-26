@@ -56,6 +56,43 @@ def test_iter_text_files_returns_sorted_filtered_repo_relative_paths(tmp_path):
     ) == ["web-nuxt/a.ts", "web-nuxt/z.vue"]
 
 
+def test_iter_text_files_excludes_only_exact_paths_and_descendants(tmp_path):
+    _mk(tmp_path, "web-nuxt/generated/skip.ts", "export {}\n")
+    _mk(tmp_path, "web-nuxt/generated2/keep.ts", "export {}\n")
+    _mk(tmp_path, "web-nuxt/generated-manifest.ts", "export {}\n")
+
+    assert common.iter_text_files(
+        tmp_path,
+        ["*.ts"],
+        ["web-nuxt"],
+        ["web-nuxt/generated"],
+    ) == [
+        "web-nuxt/generated-manifest.ts",
+        "web-nuxt/generated2/keep.ts",
+    ]
+
+
+def test_iter_text_files_trims_exclude_separators_before_pruning(
+    tmp_path, monkeypatch
+):
+    ignored = _mk(tmp_path, "web-nuxt/generated/skip.ts", "export {}\n")
+    original_is_file = Path.is_file
+
+    def reject_excluded_file(path: Path) -> bool:
+        if path == ignored:
+            raise AssertionError("iter_text_files descended into an excluded directory")
+        return original_is_file(path)
+
+    monkeypatch.setattr(Path, "is_file", reject_excluded_file)
+
+    assert common.iter_text_files(
+        tmp_path,
+        ["*.ts"],
+        ["web-nuxt"],
+        ["web-nuxt\\generated\\"],
+    ) == []
+
+
 def test_regexcheck_catches_pattern_and_reports_line(tmp_path):
     _mk(tmp_path, "docs/a.md", "dòng sạch\nảnh lấy từ Wikimedia nhé\n")
     chk = common.RegexCheck(
