@@ -3127,8 +3127,13 @@ def _media_resolve_credit(img, credit_meta):
 
 def _media_item_from_image(img, e, credits_by_url):
     """Build one media-gallery item from an image + its credit metadata; None if no URL."""
-    url = img if isinstance(img, str) else img.get("url", "")
-    if not url:
+    if isinstance(img, str):
+        url = img
+    elif isinstance(img, dict):
+        url = img.get("url", "")
+    else:
+        return None
+    if not isinstance(url, str) or not url:
         return None
     credit_meta = credits_by_url.get(url, {})
     credit, license_info = _media_resolve_credit(img, credit_meta)

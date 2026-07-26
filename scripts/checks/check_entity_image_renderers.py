@@ -665,6 +665,7 @@ def _scoped_proof_text(text: str, entry: dict) -> str | None:
 PRODUCER_SOURCE_CLASSES = {
     "describeEntityImages": {"ai-generated"},
     "describeEntityPlaceholder": {"placeholder"},
+    "describeAdminRawMedia": {"ai-generated", "placeholder", "user-uploaded"},
     "createPlaceholderDescriptor": {"placeholder"},
     "describePostImages": {"user-uploaded"},
     "describeReviewImages": {"user-uploaded"},

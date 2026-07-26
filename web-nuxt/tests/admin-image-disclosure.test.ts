@@ -41,6 +41,7 @@ interface FetchDispatchOptions {
   addedImages?: string[]
   uploadedImages?: string[]
   uploadError?: unknown
+  mediaItems?: Array<Record<string, unknown>>
 }
 
 function installFetchDispatch(options: FetchDispatchOptions = {}) {
@@ -61,13 +62,19 @@ function installFetchDispatch(options: FetchDispatchOptions = {}) {
     if (url === '/admin-api/entities/entity-1/images' && init?.method === 'POST') {
       return Promise.resolve({ images: options.addedImages ?? [...entityImages, canonicalMediaUrl] })
     }
+    if (url === '/admin-api/entities/entity-1' && !init?.method) {
+      return Promise.resolve({ id: 'entity-1', name: 'Địa điểm thử', images: entityImages })
+    }
+    if (url === '/admin-api/entities/entity-1/images/0' && init?.method === 'DELETE') {
+      return Promise.resolve({ status: 'removed', images: entityImages.slice(1) })
+    }
     if (url === '/admin-api/entities/entity-1/images/upload' && init?.method === 'POST') {
       if (options.uploadError !== undefined) return Promise.reject(options.uploadError)
       return Promise.resolve({ images: options.uploadedImages ?? [...entityImages, canonicalMediaUrl] })
     }
     if (url.startsWith('/admin-api/media?')) {
       return Promise.resolve({
-        items: [{ url: canonicalMediaUrl, entity_id: 'entity-1', entity_name: 'Địa điểm thử', entity_type: 'experience', credit: '', license: '', usage_count: 1 }],
+        items: options.mediaItems ?? [{ url: canonicalMediaUrl, entity_id: 'entity-1', entity_name: 'Địa điểm thử', entity_type: 'experience', credit: '', license: '', usage_count: 1 }],
         total: 1,
         stats: { total_images: 1, duplicates: 0, missing_credit: 1 },
       })
@@ -165,6 +172,29 @@ describe('admin entity/media/self-learning image disclosure', () => {
     entities.unmount()
     media.unmount()
     provisional.unmount()
+  })
+
+  it('keeps noncanonical stored media inspectable and removable in admin moderation', async () => {
+    const rawMediaUrl = '/uploads/community-photo.webp'
+    installFetchDispatch({
+      entityImages: [rawMediaUrl],
+      mediaItems: [{ url: rawMediaUrl, entity_id: 'entity-1', entity_name: 'Địa điểm thử', entity_type: 'experience', credit: '', license: '', usage_count: 1 }],
+    })
+
+    const media = await mountSuspended(MediaPage)
+    await flushUi()
+    const card = media.get('[data-open-preview]')
+    expect(card.get('img').attributes('src')).toBe(rawMediaUrl)
+    await card.trigger('click')
+    await nextTick()
+    await media.get('.media-preview-actions button').trigger('click')
+    await flushUi()
+
+    expect(mocks.fetch).toHaveBeenCalledWith('/admin-api/entities/entity-1/images/0', expect.objectContaining({
+      method: 'DELETE',
+    }))
+    expect(media.find('[data-expanded-preview]').exists()).toBe(false)
+    media.unmount()
   })
 
   it('fails closed for malformed provisional values while preserving an audit trail', async () => {

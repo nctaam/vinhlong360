@@ -223,7 +223,7 @@ function isRenderableEntityDescriptor(descriptor: Readonly<ImageDescriptor>): bo
   ].join('|'))
 }
 
-function isCanonicalLegacyEntityImage(value: unknown): value is string {
+export function isCanonicalLegacyEntityImageUrl(value: unknown): value is string {
   return typeof value === 'string' && CANONICAL_LEGACY_ENTITY_IMAGE_PATTERN.test(value)
 }
 
@@ -508,7 +508,7 @@ export function describeEntityImages(entity: EntityImageLike): ImageDescriptor[]
       ? [entity.image]
       : []
   return legacy.flatMap(value => {
-    if (!isCanonicalLegacyEntityImage(value)) return []
+    if (!isCanonicalLegacyEntityImageUrl(value)) return []
     return [{
       url: value,
       alt: descriptorAlt(entity),

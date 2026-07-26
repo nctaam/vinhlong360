@@ -488,6 +488,69 @@ def test_audit_log_endpoint():
     assert r.status_code == 200
 
 
+def test_admin_media_keeps_legacy_raw_images_inspectable_and_removable(
+    isolated_sqlite_db,
+):
+    import admin
+
+    entity_id = "test-admin-raw-media"
+    isolated_sqlite_db.upsert_entity({
+        "id": entity_id,
+        "name": "Admin raw media",
+        "type": "attraction",
+        "images": [
+            "https://cdn.example/user-upload.webp",
+            "/img/entities/test-admin-raw-media.webp",
+        ],
+    })
+    admin._media_cache.update(ts=0.0, data=None)
+
+    gallery = client.get("/admin/media?limit=200", headers=H)
+
+    assert gallery.status_code == 200
+    raw_item = next(
+        item for item in gallery.json()["items"]
+        if item["url"] == "https://cdn.example/user-upload.webp"
+    )
+    assert raw_item["entity_id"] == entity_id
+    assert raw_item["usage_count"] == 1
+
+    removed = client.delete(f"/admin/entities/{entity_id}/images/0", headers=H)
+
+    assert removed.status_code == 200
+    assert removed.json()["images"] == ["/img/entities/test-admin-raw-media.webp"]
+    assert isolated_sqlite_db.get_entity(entity_id)["images"] == [
+        "/img/entities/test-admin-raw-media.webp",
+    ]
+
+
+def test_admin_media_skips_malformed_persisted_image_elements(isolated_sqlite_db):
+    import admin
+
+    isolated_sqlite_db.upsert_entity({
+        "id": "test-admin-malformed-media",
+        "name": "Admin malformed media",
+        "type": "attraction",
+        "images": [
+            None,
+            42,
+            ["nested"],
+            {"unexpected": "shape"},
+            {"url": 42},
+            {"url": ["nested"]},
+            "https://cdn.example/valid-raw.webp",
+        ],
+    })
+    admin._media_cache.update(ts=0.0, data=None)
+
+    response = client.get("/admin/media?limit=200", headers=H)
+
+    assert response.status_code == 200
+    assert [item["url"] for item in response.json()["items"]] == [
+        "https://cdn.example/valid-raw.webp",
+    ]
+
+
 def test_media_endpoint():
     r = client.get("/admin/media?limit=5", headers=H)
     assert r.status_code == 200

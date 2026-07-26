@@ -122,8 +122,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ImageDescriptor } from '~/types/image'
-import { describeEntityImages, describeEntityPlaceholder } from '~/utils/imageDescriptors'
+import { adminRawMediaUrl, describeAdminRawMedia } from '~/utils/adminMediaDescriptors'
 
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 useHead({ title: 'Thư viện ảnh — Admin' })
@@ -161,13 +160,12 @@ const mediaModalOpen = computed(() => !!previewItem.value)
 useModalA11y(mediaModalOpen, mediaModalRef, { onClose: () => { previewItem.value = null } })
 const removing = ref(false)
 
-function mediaDescriptor(item: AdminMediaItem): ImageDescriptor {
-  const entity = {
-    id: item.entity_id,
-    name: item.entity_name,
-    images: [item.url],
-  }
-  return describeEntityImages(entity)[0] ?? describeEntityPlaceholder(entity)
+function mediaDescriptor(item: AdminMediaItem) {
+  return describeAdminRawMedia({
+    url: item.url,
+    entity_name: item.entity_name,
+    credit: item.credit,
+  })
 }
 
 function mediaToken(value: unknown): string {
@@ -232,17 +230,17 @@ function onImgError(e: Event) {
 }
 
 async function removeFromEntity(item: AdminMediaItem) {
-  const targetUrl = mediaDescriptor(item).url
+  const targetUrl = adminRawMediaUrl(item.url)
   if (!item.entity_id || !targetUrl) return
   if (!await confirmDialog('Xóa ảnh này khỏi entity?', { danger: true })) return
   removing.value = true
   try {
     const entity = await $fetch<any>(`/admin-api/entities/${item.entity_id}`, { headers: authHeaders() })
     const images: unknown[] = Array.isArray(entity.images) ? entity.images : []
-    const idx = images.findIndex(candidate => describeEntityImages({ name: item.entity_name, images: [candidate] })[0]?.url === targetUrl)
+    const idx = images.findIndex(candidate => adminRawMediaUrl(candidate) === targetUrl)
     if (idx === -1) { showToast('Không tìm thấy ảnh trong entity', 'error'); return }
     await $fetch(`/admin-api/entities/${item.entity_id}/images/${idx}`, { method: 'DELETE', headers: authHeaders() })
-    items.value = items.value.filter(candidate => !(mediaDescriptor(candidate).url === targetUrl && candidate.entity_id === item.entity_id))
+    items.value = items.value.filter(candidate => !(adminRawMediaUrl(candidate.url) === targetUrl && candidate.entity_id === item.entity_id))
     total.value = Math.max(0, total.value - 1)
     previewItem.value = null
     showToast('Đã xóa ảnh khỏi entity', 'success')
