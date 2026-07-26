@@ -241,7 +241,7 @@ class TestSeoHelpers:
 # ═══════════════════════════════════════════════════════════════════════
 
 class TestPhase17ModerationAutoEscalation:
-    """Phase 17: Stale pending posts auto-approved after 48h."""
+    """Phase 17: Stale pending posts remain non-public without review."""
 
     def test_scheduler_has_moderation_escalation_task(self):
         src = (Path(__file__).resolve().parent.parent / "scheduler.py").read_text(encoding="utf-8")
@@ -254,16 +254,18 @@ class TestPhase17ModerationAutoEscalation:
         block = src[idx:idx+200]
         assert "6 * 3600" in block
 
-    def test_escalation_uses_48h_threshold(self):
-        src = (Path(__file__).resolve().parent.parent / "scheduler.py").read_text(encoding="utf-8")
-        assert "48 hours" in src
-
-    def test_escalation_only_pending_status(self):
+    def test_escalation_does_not_auto_approve(self):
         src = (Path(__file__).resolve().parent.parent / "scheduler.py").read_text(encoding="utf-8")
         idx = src.find("task_moderation_auto_escalation")
         block = src[idx:idx+500]
-        assert "pending" in block
-        assert "approved" in block
+        assert "never turn an unmoderated post into public content" in block
+
+    def test_escalation_requires_explicit_review(self):
+        src = (Path(__file__).resolve().parent.parent / "scheduler.py").read_text(encoding="utf-8")
+        idx = src.find("task_moderation_auto_escalation")
+        block = src[idx:idx+500]
+        assert "pending posts require explicit review" in block
+        assert "UPDATE posts SET moderation_status = 'approved'" not in block
 
 
 class TestPhase17AccountHardDelete:

@@ -46,7 +46,10 @@ async def moderate_content(content: str, image_urls: list[str] = None) -> dict:
               link_result["reasons"] + spam_result["reasons"]
 
     if max_score < AUTO_APPROVE_THRESHOLD:
-        status = "approved"
+        # A clean score is publishable only when every required provider ran.
+        # Provider outages must fail closed instead of looking like a zero score.
+        unavailable = not text_result.get("available", True) or not image_result.get("available", True)
+        status = "pending" if unavailable else "approved"
     elif max_score < QUEUE_THRESHOLD:
         status = "pending"
     else:
@@ -58,6 +61,7 @@ async def moderate_content(content: str, image_urls: list[str] = None) -> dict:
         "reasons": reasons,
         "text_scores": text_result.get("categories", {}),
         "image_scores": image_result.get("categories", {}),
+        "moderation_available": text_result.get("available", True) and image_result.get("available", True),
     }
 
 
@@ -143,10 +147,10 @@ def _check_links(content: str) -> dict:
 async def _moderate_text(content: str) -> dict:
     """Step 1: OpenAI Moderation API (free, excellent Vietnamese support)."""
     if not content or not content.strip():
-        return {"score": 0.0, "reasons": [], "categories": {}}
+        return {"score": 0.0, "reasons": [], "categories": {}, "available": True}
 
     if not OPENAI_API_KEY:
-        return {"score": 0.0, "reasons": ["[dev] No moderation API key"], "categories": {}}
+        return {"score": 0.0, "reasons": ["[dev] No moderation API key"], "categories": {}, "available": False}
 
     try:
         async with httpx.AsyncClient(timeout=10) as client:
@@ -158,7 +162,12 @@ async def _moderate_text(content: str) -> dict:
             data = resp.json()
 
         if "results" not in data or not data["results"]:
-            return {"score": 0.0, "reasons": ["moderation API returned no results"], "categories": {}}
+            return {
+                "score": 0.0,
+                "reasons": ["moderation API returned no results"],
+                "categories": {},
+                "available": False,
+            }
 
         result = data["results"][0]
         categories = result.get("category_scores", {})
@@ -171,23 +180,25 @@ async def _moderate_text(content: str) -> dict:
             "score": max_score,
             "reasons": [f"text:{r}" for r in reasons],
             "categories": categories,
+            "available": True,
         }
     except Exception as e:
         logger.warning("Text moderation error: %s", e)
-        return {"score": 0.0, "reasons": [f"error: {e}"], "categories": {}}
+        return {"score": 0.0, "reasons": [f"error: {e}"], "categories": {}, "available": False}
 
 
 async def _moderate_images(image_urls: list[str]) -> dict:
     """Step 2: Google Vision SafeSearch (free 1k/month)."""
     if not image_urls:
-        return {"score": 0.0, "reasons": [], "categories": {}}
+        return {"score": 0.0, "reasons": [], "categories": {}, "available": True}
 
     if not VISION_API_KEY:
-        return {"score": 0.0, "reasons": ["[dev] No Vision API key"], "categories": {}}
+        return {"score": 0.0, "reasons": ["[dev] No Vision API key"], "categories": {}, "available": False}
 
     max_score = 0.0
     all_reasons = []
     all_categories = {}
+    provider_available = True
 
     likelihood_scores = {
         "VERY_UNLIKELY": 0.0,
@@ -212,9 +223,13 @@ async def _moderate_images(image_urls: list[str]) -> dict:
                 data = resp.json()
                 responses = data.get("responses", [])
                 if not responses:
+                    provider_available = False
                     continue
 
                 safe = responses[0].get("safeSearchAnnotation", {})
+                if not isinstance(safe, dict) or not safe:
+                    provider_available = False
+                    continue
                 for category in ("adult", "violence", "racy"):
                     likelihood = safe.get(category, "VERY_UNLIKELY")
                     score = likelihood_scores.get(likelihood, 0.0)
@@ -225,11 +240,13 @@ async def _moderate_images(image_urls: list[str]) -> dict:
                         all_reasons.append(f"image:{category}={likelihood}")
     except Exception as e:
         logger.warning("Image moderation error: %s", e)
+        provider_available = False
 
     return {
         "score": max_score,
         "reasons": all_reasons,
         "categories": all_categories,
+        "available": provider_available,
     }
 
 
@@ -1371,7 +1388,10 @@ async def moderate_content_enhanced(
 
     # Re-evaluate status with trust level
     trust = get_user_trust_level(user_id)
-    status = _enhanced_status(final_score, trust)
+    if not base_result.get("moderation_available", True):
+        status = "flagged" if final_score >= QUEUE_THRESHOLD else base_result["status"]
+    else:
+        status = _enhanced_status(final_score, trust)
 
     return {
         **base_result,
@@ -1386,6 +1406,7 @@ async def moderate_content_enhanced(
             "coordinated": user_id and detect_coordinated_behavior(content, user_id, ip).get("is_coordinated", False),
             "high_entropy": deep["high_entropy"],
         },
+        "moderation_available": base_result.get("moderation_available", True),
     }
 
 

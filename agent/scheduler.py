@@ -806,20 +806,13 @@ def _hard_delete_stale_posts(db, conn):
 
 
 def task_moderation_auto_escalation():
-    """Auto-approve pending posts older than 48h (solo admin can't review everything)."""
+    """Keep stale pending posts non-public until moderation is available.
+
+    This task remains scheduled for compatibility/observability, but it must
+    never turn an unmoderated post into public content.
+    """
     try:
-        from database import db
-        if not db._use_pg:
-            return
-        with db._conn() as conn:
-            result = db._execute(conn, """
-                UPDATE posts SET moderation_status = 'approved'
-                WHERE moderation_status = 'pending'
-                AND created_at < NOW() - INTERVAL '48 hours'
-            """, ())
-            rowcount = getattr(result, 'rowcount', 0)
-            if rowcount and rowcount > 0:
-                _sched_logger.info("Moderation auto-escalation: approved %d stale pending posts", rowcount)
+        _sched_logger.info("Moderation auto-escalation disabled: pending posts require explicit review")
     except Exception as e:
         _sched_logger.error("Moderation auto-escalation error: %s", e)
 

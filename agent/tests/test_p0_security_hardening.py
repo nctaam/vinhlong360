@@ -416,13 +416,13 @@ class TestModerationPipelineForComments:
         assert result["status"] != "approved", \
             "Comment with 3+ URLs should not be auto-approved"
 
-    def test_clean_comment_approved(self):
-        """Normal comment without URLs or bad content should be approved."""
+    def test_clean_comment_pending_without_provider(self):
+        """Normal content stays pending when the external provider is unavailable."""
         import asyncio
         from moderation import moderate_content
         result = asyncio.run(moderate_content("Trải nghiệm tuyệt vời, cảm ơn bạn!", []))
-        # Without an API key (test env), text moderation returns score 0
-        assert result["status"] == "approved"
+        # A missing provider must not be treated as a clean zero score.
+        assert result["status"] == "pending"
 
     def test_empty_comment_approved(self):
         """Empty content should pass moderation."""
