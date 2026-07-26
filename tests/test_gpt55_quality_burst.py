@@ -1,8 +1,13 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
+import logging
+import re
 from pathlib import Path
 
+import pytest
+
 import gpt55_quality_burst as q
+import pinned_http as ph
 
 
 def sample_data() -> dict:
@@ -154,3 +159,209 @@ def test_merge_enforces_low_confidence_reject(tmp_path: Path) -> None:
     queue = q.merge_outputs(tmp_path)
     assert queue["counts"]["needs_review"] == 0
     assert queue["counts"]["reject"] == 1
+
+
+def _pinned_response(
+    *,
+    status: int = 200,
+    content: bytes = b"",
+    headers: tuple[tuple[str, str], ...] = (("content-type", "text/html; charset=utf-8"),),
+) -> ph.PinnedResponse:
+    return ph.PinnedResponse(status, "https://example.com/final", headers, content, ())
+
+
+def test_fetch_url_text_uses_pinned_options_and_tag_only_cleanup(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[tuple[str, dict]] = []
+    body = b"<script>keep_me()</script><style>.keep{}</style><h1>Vinh Long</h1>"
+    monkeypatch.setattr(
+        q._PINNED_HTTP,
+        "get",
+        lambda url, **kwargs: calls.append((url, kwargs)) or _pinned_response(content=body),
+    )
+    text = q.fetch_url_text("https://example.com/a", timeout=12)
+    assert "keep_me()" in text
+    assert ".keep{}" in text
+    assert "Vinh Long" in text
+    assert calls == [(
+        "https://example.com/a",
+        {
+            "user_agent": "vinhlong360-quality-burst/1.0",
+            "timeout": 12,
+            "max_redirects": 5,
+        },
+    )]
+
+
+@pytest.mark.parametrize("status, expected", [(200, True), (399, True), (400, False), (500, False)])
+def test_fetch_url_text_preserves_status_contract(
+    monkeypatch: pytest.MonkeyPatch,
+    status: int,
+    expected: bool,
+) -> None:
+    monkeypatch.setattr(
+        q._PINNED_HTTP,
+        "get",
+        lambda *_args, **_kwargs: _pinned_response(status=status, content=b"body"),
+    )
+    assert bool(q.fetch_url_text("https://example.com/a")) is expected
+
+
+def test_fetch_url_text_skips_client_when_requests_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(q, "requests", None)
+    monkeypatch.setattr(
+        q._PINNED_HTTP,
+        "get",
+        lambda *_args, **_kwargs: pytest.fail("pinned client called"),
+    )
+    assert q.fetch_url_text("https://example.com/a") == ""
+
+
+def test_fetch_url_text_keeps_requests_charset_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
+    content = "café".encode("iso-8859-1")
+    monkeypatch.setattr(
+        q._PINNED_HTTP,
+        "get",
+        lambda *_args, **_kwargs: _pinned_response(
+            content=content,
+            headers=(("content-type", "text/html; charset=iso-8859-1"),),
+        ),
+    )
+    assert q.fetch_url_text("https://example.com/a") == "café"
+
+
+def test_fetch_url_text_does_not_redecode_http_decoded_content(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    decoded = "Nội dung đã giải nén".encode("utf-8")
+    monkeypatch.setattr(
+        q._PINNED_HTTP,
+        "get",
+        lambda *_args, **_kwargs: _pinned_response(
+            content=decoded,
+            headers=(
+                ("content-type", "text/html; charset=utf-8"),
+                ("content-encoding", "gzip"),
+                ("content-length", "12"),
+            ),
+        ),
+    )
+    assert q.fetch_url_text("https://example.com/a") == "Nội dung đã giải nén"
+
+
+@pytest.mark.parametrize(
+    ("url", "disabled"),
+    [
+        ("https://example.com/a", True),
+        ("not-a-url", False),
+    ],
+)
+def test_fetch_url_text_guards_skip_pinned_client(
+    monkeypatch: pytest.MonkeyPatch,
+    url: str,
+    disabled: bool,
+) -> None:
+    monkeypatch.setattr(
+        q._PINNED_HTTP,
+        "get",
+        lambda *_args, **_kwargs: pytest.fail("pinned client called"),
+    )
+    assert q.fetch_url_text(url, disabled=disabled) == ""
+
+
+def test_fetch_url_text_without_content_type_matches_requests_apparent_encoding(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    assert q.requests is not None
+    content = ("Café déjà vu, façade et élève. " * 20).encode("cp1252")
+    monkeypatch.setattr(
+        q._PINNED_HTTP,
+        "get",
+        lambda *_args, **_kwargs: _pinned_response(content=content, headers=()),
+    )
+    offline = q.requests.Response()
+    offline.headers = q.requests.structures.CaseInsensitiveDict()
+    offline._content = content
+    offline._content_consumed = True
+    offline.encoding = q.requests.utils.get_encoding_from_headers(offline.headers)
+    expected = q.compact_text(re.sub(r"<[^>]+>", " ", offline.text or ""), 5000)
+    assert q.fetch_url_text("https://example.com/a") == expected
+
+
+def test_fetch_url_text_silently_returns_empty_on_transport_failure(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    monkeypatch.setattr(
+        q._PINNED_HTTP,
+        "get",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            ph.PinnedTransportError("connect failed")
+        ),
+    )
+    with caplog.at_level(logging.WARNING):
+        assert q.fetch_url_text("https://example.com/a") == ""
+    assert caplog.records == []
+
+
+def test_fetch_url_text_truncates_to_exactly_5000_characters(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        q._PINNED_HTTP,
+        "get",
+        lambda *_args, **_kwargs: _pinned_response(content=("x" * 5005).encode()),
+    )
+    result = q.fetch_url_text("https://example.com/a")
+    assert result == "x" * 5000
+    assert len(result) == 5000
+
+
+def test_verify_source_url_preserves_all_messages(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    entity = {"name": "Vinh Long"}
+    assert q.verify_source_url("not-a-url", entity) == (False, "invalid URL")
+
+    monkeypatch.setattr(q, "fetch_url_text", lambda *_args, **_kwargs: "")
+    assert q.verify_source_url("https://example.com/a", entity) == (
+        False,
+        "URL could not be fetched",
+    )
+
+    monkeypatch.setattr(
+        q,
+        "fetch_url_text",
+        lambda *_args, **_kwargs: "Tourism information for Vinh Long",
+    )
+    assert q.verify_source_url("https://example.com/a", entity) == (
+        True,
+        "URL opens and page text matches entity name",
+    )
+
+    monkeypatch.setattr(
+        q,
+        "fetch_url_text",
+        lambda *_args, **_kwargs: "Completely unrelated page",
+    )
+    assert q.verify_source_url("https://example.com/a", entity) == (
+        False,
+        "URL opens but page text does not clearly match entity",
+    )
+
+
+def test_verify_source_url_no_web_passes_disabled_without_network(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[str, bool]] = []
+
+    def fetch(url: str, *, disabled: bool = False, **_kwargs) -> str:
+        calls.append((url, disabled))
+        return ""
+
+    monkeypatch.setattr(q, "fetch_url_text", fetch)
+    assert q.verify_source_url(
+        "https://example.com/a",
+        {"name": "Vinh Long"},
+        no_web=True,
+    ) == (False, "URL could not be fetched")
+    assert calls == [("https://example.com/a", True)]
