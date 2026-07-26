@@ -2838,9 +2838,14 @@ class TestAdminUserStatefix:
 class TestAsyncCorrectnessFixes:
     """Blocking calls must not run in the event loop."""
 
-    def test_assert_public_url_wrapped_in_to_thread(self):
-        src = (AGENT_DIR / "admin.py").read_text(encoding="utf-8")
-        assert "asyncio.to_thread(_assert_public_url" in src
+    def test_image_url_validation_and_fetch_are_offloaded(self):
+        import admin
+
+        validation_src = inspect.getsource(admin.add_entity_image_url)
+        fetch_src = inspect.getsource(admin._approve_fetch_image_data)
+        assert "await asyncio.to_thread(_validate_public_image_url" in validation_src
+        assert "await run_in_threadpool(" in fetch_src
+        assert "_PINNED_HTTP.get(" in fetch_src
 
     def test_round_exhaustion_uses_queue(self):
         src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")

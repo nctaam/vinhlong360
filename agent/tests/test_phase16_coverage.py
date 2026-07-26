@@ -801,12 +801,12 @@ class TestSecurityPosture:
                     assert "le=" in line, f"{module}.py:{line_no} page without upper bound: {line.strip()}"
 
     def test_ssrf_protection_on_entity_image_url(self):
-        """add_entity_image_url must call _assert_public_url for external URLs."""
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
         idx = src.find("def add_entity_image_url")
         assert idx > 0
-        block = src[idx:idx + 500]
-        assert "_assert_public_url" in block, "add_entity_image_url missing SSRF validation"
+        block = src[idx:idx + 700]
+        assert "_validate_public_image_url" in block
+        assert "asyncio.to_thread" in block
 
     def test_social_cache_invalidation_on_mutations(self):
         """Post create/update/delete must invalidate trending + leaderboard caches."""

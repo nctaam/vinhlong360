@@ -154,7 +154,7 @@ def test_entity_image_url_rejects_non_ai_before_network_or_database_mutation(
         "images": [],
     })
     network_calls: list[str] = []
-    monkeypatch.setattr(admin, "_assert_public_url", network_calls.append)
+    monkeypatch.setattr(admin, "_validate_public_image_url", network_calls.append)
 
     response = client.post(
         "/admin/entities/test-mutation-image-url/images",
@@ -221,7 +221,11 @@ def test_suggestion_approval_rejects_non_ai_before_network_storage_or_mutation(
         "status": "pending",
     })
     monkeypatch.setattr(admin._imgq, "mark_status", lambda *_args, **_kwargs: side_effects.append("status"))
-    monkeypatch.setattr(admin, "_assert_public_url", lambda _url: side_effects.append("network"))
+    monkeypatch.setattr(
+        admin._PINNED_HTTP,
+        "get",
+        lambda *_args, **_kwargs: side_effects.append("network"),
+    )
 
     async def fetched(*_args, **_kwargs):
         side_effects.append("fetch")

@@ -52,15 +52,6 @@ def test_badges_and_dashboard_count_pg_reports():
     assert "/admin/khieu-nai" not in alerts_src
 
 
-def test_image_suggestion_fetch_revalidates_redirect_targets():
-    fetch_src = inspect.getsource(admin._fetch_public_url)
-    approve_src = inspect.getsource(admin.approve_image_suggestion)
-    assert "follow_redirects=False" in fetch_src
-    assert "_assert_public_url(current_url)" in fetch_src
-    assert "urljoin" in fetch_src
-    assert "follow_redirects=True" not in approve_src
-
-
 def test_media_gallery_reads_entity_image_credits():
     # The credit-reading logic (image_credits -> credits_by_url -> author/license) lives
     # in the _extract_media_items helper that media_gallery calls to build the gallery.

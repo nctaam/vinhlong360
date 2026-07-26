@@ -25,6 +25,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Optional
 
+import httpx
 from fastapi import APIRouter, HTTPException, Query, Request, Depends, UploadFile, File
 from fastapi import Path as PathParam
 from fastapi.responses import StreamingResponse
@@ -38,6 +39,17 @@ import text_utils
 logger = logging.getLogger("admin")
 import site_settings
 from database import db, escape_like as _escape_like
+from pinned_http import (
+    DestinationPolicyError,
+    InvalidDestinationError,
+    PinnedHTTPClient,
+    PinnedTransportError,
+    RedirectPolicyError,
+    ResolutionError,
+    validate_public_url,
+)
+
+_PINNED_HTTP = PinnedHTTPClient()
 
 try:
     from cost_tracker import get_cost_report as _get_cost_report
@@ -1054,7 +1066,7 @@ async def add_entity_image_url(entity_id: str, body: _EntityImageURL):
     if url.startswith("/"):
         pass
     else:
-        await asyncio.to_thread(_assert_public_url, url)
+        await asyncio.to_thread(_validate_public_image_url, url)
     def _query():
         entity = db.get_entity(entity_id)
         if not entity:
@@ -2176,63 +2188,54 @@ async def create_image_suggestion_batch(body: ImageSuggestionBatch):
     return await asyncio.to_thread(_query)
 
 
-def _is_blocked_ip(ip) -> bool:
-    return (ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved
-            or ip.is_multicast or ip.is_unspecified)
+def _image_policy_http_error(exc: Exception) -> HTTPException:
+    if isinstance(exc, InvalidDestinationError):
+        return HTTPException(400, "URL ảnh không hợp lệ (chỉ http/https)")
+    if isinstance(exc, ResolutionError):
+        return HTTPException(400, "Không phân giải được host ảnh")
+    if isinstance(exc, RedirectPolicyError):
+        return HTTPException(400, "URL ảnh chuyển hướng quá nhiều lần")
+    return HTTPException(400, "Host ảnh trỏ địa chỉ nội bộ — từ chối (SSRF)")
 
 
-def _assert_public_url(url: str) -> None:
+def _validate_public_image_url(url: str) -> None:
     """P0-13: chặn SSRF — chỉ http(s) tới host phân giải ra IP CÔNG KHAI
     (chặn 169.254.169.254, localhost, 10/172.16/192.168, link-local…)."""
-    import ipaddress
-    import socket
-    from urllib.parse import urlparse
-    p = urlparse(url or "")
-    if p.scheme not in ("http", "https") or not p.hostname:
-        raise HTTPException(400, "URL ảnh không hợp lệ (chỉ http/https)")
     try:
-        infos = socket.getaddrinfo(p.hostname, p.port or (443 if p.scheme == "https" else 80))
-    except Exception:
-        raise HTTPException(400, "Không phân giải được host ảnh")
-    for info in infos:
-        ip = ipaddress.ip_address(info[4][0])
-        if _is_blocked_ip(ip):
-            raise HTTPException(400, "Host ảnh trỏ địa chỉ nội bộ — từ chối (SSRF)")
+        validate_public_url(url)
+    except DestinationPolicyError as exc:
+        raise _image_policy_http_error(exc) from exc
 
-
-def _fetch_public_url(url: str, headers: dict[str, str], timeout: int = 25, max_redirects: int = 5):
-    """Fetch a public URL while re-validating every redirect target."""
-    import httpx
-    from urllib.parse import urljoin
-
-    current_url = url
-    for _ in range(max_redirects + 1):
-        _assert_public_url(current_url)
-        resp = httpx.get(current_url, headers=headers, timeout=timeout, follow_redirects=False)
-        if 300 <= resp.status_code < 400 and resp.headers.get("location"):
-            current_url = urljoin(str(resp.url), resp.headers["location"])
-            continue
-        _assert_public_url(str(resp.url))
-        return resp
-    raise HTTPException(400, "URL ảnh chuyển hướng quá nhiều lần")
 
 async def _approve_fetch_image_data(candidate_url, run_in_threadpool, max_image_size):
     """Fetch + validate the candidate image bytes for approve_image_suggestion."""
     try:
-        headers = {"User-Agent": "vinhlong360-image-review/1.0 (+https://vinhlong360.vn)"}
-        resp = await run_in_threadpool(
-            lambda: _fetch_public_url(candidate_url, headers=headers, timeout=25)
+        result = await run_in_threadpool(
+            lambda: _PINNED_HTTP.get(
+                candidate_url,
+                user_agent="vinhlong360-image-review/1.0 (+https://vinhlong360.vn)",
+                timeout=25,
+                max_redirects=5,
+            )
         )
-        resp.raise_for_status()
-        data = resp.content
-    except HTTPException:
-        raise
-    except Exception as e:  # noqa: BLE001 — network/404 → 502 with retry note
-        logger.warning("Suggestion image fetch failed for %s: %s", candidate_url, e)
-        raise HTTPException(502, "Không tải được ảnh nguồn, vui lòng thử lại sau")
+        status_response = httpx.Response(
+            result.status_code,
+            headers=result.headers,
+            request=httpx.Request("GET", result.url),
+        )
+        status_response.raise_for_status()
+        data = result.content
+    except (DestinationPolicyError, RedirectPolicyError) as exc:
+        raise _image_policy_http_error(exc) from exc
+    except (PinnedTransportError, httpx.HTTPStatusError) as exc:
+        logger.warning("Suggestion image fetch failed for %s: %s", candidate_url, exc)
+        raise HTTPException(502, "Không tải được ảnh nguồn, vui lòng thử lại sau") from exc
 
     if not data or len(data) > max_image_size:
-        raise HTTPException(400, f"Ảnh nguồn rỗng hoặc quá lớn (tối đa {max_image_size // 1024 // 1024}MB)")
+        raise HTTPException(
+            400,
+            f"Ảnh nguồn rỗng hoặc quá lớn (tối đa {max_image_size // 1024 // 1024}MB)",
+        )
     return data
 
 
@@ -2285,8 +2288,11 @@ async def approve_image_suggestion(suggestion_id: str):
 
     # Fetch the candidate from its licensed source (Commons etc.). Bounded + guarded.
     candidate_url = s["candidate_url"]
-    await asyncio.to_thread(_assert_public_url, candidate_url)  # P0-13: chặn SSRF tới host nội bộ
-    data = await _approve_fetch_image_data(candidate_url, run_in_threadpool, MAX_IMAGE_SIZE)
+    data = await _approve_fetch_image_data(
+        candidate_url,
+        run_in_threadpool,
+        MAX_IMAGE_SIZE,
+    )
 
     try:
         urls = await run_in_threadpool(storage.upload_image_set, data, "entities", s["entity_id"])

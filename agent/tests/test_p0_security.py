@@ -27,7 +27,7 @@ def test_hash_token_distinct_inputs_distinct_hash():
     assert _hash_token(_generate_token()) != _hash_token(_generate_token())
 
 
-# ── P0-13: SSRF guard (_assert_public_url) ──
+# ── P0-13: SSRF guard (_validate_public_image_url) ──
 
 @pytest.mark.parametrize("bad_url", [
     "http://169.254.169.254/latest/meta-data/",  # cloud metadata (link-local)
@@ -41,7 +41,8 @@ def test_hash_token_distinct_inputs_distinct_hash():
     "notaurl",                                    # không host
     "",                                           # rỗng
 ])
-def test_assert_public_url_rejects_internal_and_bad(bad_url):
-    from admin import _assert_public_url
+def test_validate_public_image_url_rejects_internal_and_bad(bad_url):
+    from admin import _validate_public_image_url
+
     with pytest.raises(HTTPException):
-        _assert_public_url(bad_url)
+        _validate_public_image_url(bad_url)
