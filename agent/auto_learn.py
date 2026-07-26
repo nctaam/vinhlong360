@@ -41,6 +41,8 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from ddgs import DDGS
 
+from pinned_http import PinnedHTTPClient, PinnedResponse
+
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 client = OpenAI(
@@ -48,6 +50,26 @@ client = OpenAI(
     base_url=os.environ["LLM_BASE_URL"],
     timeout=30,
 )
+
+_PINNED_HTTP = PinnedHTTPClient()
+_HTTP_ENTITY_HEADERS = {"content-encoding", "content-length", "transfer-encoding"}
+
+
+def _decode_pinned_httpx_text(response: PinnedResponse) -> str:
+    headers = [
+        (name, value)
+        for name, value in response.headers
+        if name.lower() not in _HTTP_ENTITY_HEADERS
+    ]
+    offline = httpx.Response(
+        status_code=response.status_code,
+        headers=headers,
+        content=response.content,
+        request=httpx.Request("GET", response.url),
+    )
+    return offline.text
+
+
 MODEL = os.environ.get("LLM_MODEL", "cx/gpt-5.4")
 MODEL_MINI = os.environ.get("LLM_MODEL_MINI", "cx/gpt-5.4-mini")
 
@@ -241,11 +263,15 @@ def web_search(query: str, max_results: int = 5) -> list[dict]:
 def fetch_url(url: str) -> str | None:
     """Fetch và clean HTML → text."""
     try:
-        resp = httpx.get(url, timeout=15, follow_redirects=True,
-                         headers={"User-Agent": "vinhlong360-learner/1.0"})
-        if resp.status_code != 200:
+        response = _PINNED_HTTP.get(
+            url,
+            user_agent="vinhlong360-learner/1.0",
+            timeout=15,
+            max_redirects=5,
+        )
+        if response.status_code != 200:
             return None
-        text = resp.text
+        text = _decode_pinned_httpx_text(response)
         text = re.sub(r"<script[^>]*>.*?</script>", "", text, flags=re.S)
         text = re.sub(r"<style[^>]*>.*?</style>", "", text, flags=re.S)
         text = re.sub(r"<[^>]+>", " ", text)
