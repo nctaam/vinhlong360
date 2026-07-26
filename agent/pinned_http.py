@@ -1,10 +1,14 @@
 """Shared DNS-pinned, redirect-safe synchronous HTTP GET client — destination policy.
 
-This module lays the foundation for a shared outbound HTTP egress boundary:
+This module implements a complete shared outbound HTTP egress boundary:
 immutable dataclass contracts, the exception hierarchy, URL parsing/authority
-policy, and the public-address resolver (including IPv6 transition-form
-rejection). Nothing in the codebase consumes this module yet; the pinned
-socket backend and manual redirect client are added in later tasks.
+policy, the public-address resolver (including IPv6 transition-form
+rejection), a pinned-socket httpx transport that dials only pre-approved
+addresses and verifies the connected peer, and `PinnedHTTPClient` — the
+public synchronous GET entry point with a manual, per-hop-revalidating
+redirect loop. Every redirect hop is re-resolved and re-checked against the
+same public-address policy before it is followed. Nothing in the codebase
+consumes this module yet; that wiring happens in later tasks.
 """
 
 from __future__ import annotations
@@ -456,3 +460,106 @@ class _PinnedHTTPTransport(httpx.BaseTransport):
 
 def build_pinned_transport(hop: ResolvedHop) -> httpx.BaseTransport:
     return _PinnedHTTPTransport(hop)
+
+
+def _resolve_hop(url: str | httpx.URL, resolver: Resolver) -> ResolvedHop:
+    parsed = _parse_url(str(url))
+    port = parsed.port or _HTTP_PORTS[parsed.scheme]
+    host = _ascii_host(parsed)
+    addresses = resolver(host, port)
+    if not addresses:
+        raise ResolutionError("resolver returned no usable addresses")
+    return ResolvedHop(url=parsed, host=host, port=port, addresses=addresses)
+
+
+def _fetch_hop(
+    hop: ResolvedHop,
+    *,
+    user_agent: str,
+    timeout: float | httpx.Timeout,
+    transport_factory: TransportFactory,
+) -> tuple[int, tuple[tuple[str, str], ...], bytes, str | None]:
+    try:
+        transport = transport_factory(hop)
+        with httpx.Client(
+            transport=transport,
+            follow_redirects=False,
+            trust_env=False,
+            headers={"User-Agent": user_agent},
+        ) as client:
+            # Built via the client (for default-header merging and timeout-extension
+            # conversion) but dispatched straight to the transport: httpx.Client.send()
+            # unconditionally pre-builds the (unfollowed) redirect request whenever a
+            # response carries a redirect status + Location header, even with
+            # follow_redirects=False, and raises RemoteProtocolError for a malformed
+            # Location before this function ever sees it. Calling the transport
+            # directly keeps this module the sole arbiter of redirect-target validity.
+            request = client.build_request("GET", str(hop.url), timeout=timeout)
+            response = transport.handle_request(request)
+            try:
+                location = response.headers.get("location")
+                if response.status_code in {301, 302, 303, 307, 308} and location and location.strip():
+                    return response.status_code, tuple(response.headers.multi_items()), b"", location.strip()
+                content = response.read()
+                return response.status_code, tuple(response.headers.multi_items()), content, None
+            finally:
+                response.close()
+    except PinnedHTTPError:
+        raise
+    except (
+        OSError,
+        httpx.HTTPError,
+        httpcore.NetworkError,
+        httpcore.TimeoutException,
+        httpcore.ProtocolError,
+    ) as exc:
+        raise PinnedTransportError(str(exc)) from exc
+
+
+def _redirect_target(current: httpx.URL, location: str) -> httpx.URL:
+    try:
+        return _parse_url(str(current.join(location)))
+    except (InvalidDestinationError, ValueError, httpx.InvalidURL) as exc:
+        raise RedirectPolicyError("redirect target is invalid") from exc
+
+
+class PinnedHTTPClient:
+    def __init__(
+        self,
+        *,
+        resolver: Resolver = resolve_public_addresses,
+        transport_factory: TransportFactory = build_pinned_transport,
+    ) -> None:
+        self._resolver = resolver
+        self._transport_factory = transport_factory
+
+    def get(
+        self,
+        url: str,
+        *,
+        user_agent: str,
+        timeout: float | httpx.Timeout = 15.0,
+        max_redirects: int = 5,
+    ) -> PinnedResponse:
+        current = _parse_url(url)
+        visited: set[tuple[str, str, int, bytes]] = set()
+        redirects: list[RedirectHop] = []
+        while True:
+            key = _canonical_url_key(current)
+            if key in visited:
+                raise RedirectPolicyError("redirect loop detected")
+            visited.add(key)
+            hop = _resolve_hop(current, self._resolver)
+            status, headers, content, location = _fetch_hop(
+                hop,
+                user_agent=user_agent,
+                timeout=timeout,
+                transport_factory=self._transport_factory,
+            )
+            if location is None:
+                return PinnedResponse(status, str(hop.url), headers, content, tuple(redirects))
+            if len(redirects) >= max_redirects:
+                raise RedirectPolicyError("redirect limit exceeded")
+            next_url = _redirect_target(hop.url, location)
+            redirects.append(RedirectHop(str(hop.url), status, location, str(next_url)))
+            current = next_url

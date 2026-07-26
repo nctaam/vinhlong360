@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import gzip
 import socket
 import ssl
+from concurrent.futures import ThreadPoolExecutor
 
 import httpcore
 import httpx
@@ -455,3 +457,370 @@ def test_transport_preserves_ascii_host_duplicate_headers_and_stream_close(
     assert captured[0].url.host == b"xn--bcher-kva.example"
     assert (b"Host", b"xn--bcher-kva.example") in captured[0].headers
     assert closed == [True]
+
+
+def _public_resolver(host: str, port: int) -> tuple[ph.ResolvedAddress, ...]:
+    octet = 34 + (sum(host.encode("ascii")) % 20)
+    ip = ph.ipaddress.ip_address(f"93.184.216.{octet}")
+    return (
+        ph.ResolvedAddress(
+            ip=ip,
+            port=port,
+            family=socket.AF_INET,
+            socktype=socket.SOCK_STREAM,
+            protocol=socket.IPPROTO_TCP,
+            sockaddr=(str(ip), port),
+        ),
+    )
+
+
+def test_client_returns_immutable_decoded_response_and_user_agent() -> None:
+    seen: list[tuple[str, str]] = []
+
+    def factory(hop: ph.ResolvedHop) -> httpx.BaseTransport:
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append((request.headers["host"], request.headers["user-agent"]))
+            return httpx.Response(200, headers={"content-type": "text/plain; charset=utf-8"}, content="xin chao".encode())
+        return httpx.MockTransport(handler)
+
+    client = ph.PinnedHTTPClient(resolver=_public_resolver, transport_factory=factory)
+    result = client.get("https://example.com/a", user_agent="ua/1", timeout=3, max_redirects=5)
+    assert result.status_code == 200
+    assert result.content == b"xin chao"
+    assert seen == [("example.com", "ua/1")]
+
+
+def test_redirect_re_resolves_every_hop_and_blocks_private_target() -> None:
+    calls: list[tuple[str, int]] = []
+
+    def resolver(host: str, port: int) -> tuple[ph.ResolvedAddress, ...]:
+        calls.append((host, port))
+        if host == "internal.example":
+            raise ph.BlockedAddressError("mixed or private destination")
+        return _public_resolver(host, port)
+
+    def factory(hop: ph.ResolvedHop) -> httpx.BaseTransport:
+        return httpx.MockTransport(
+            lambda _request: httpx.Response(302, headers={"location": "https://internal.example/secret"})
+        )
+
+    client = ph.PinnedHTTPClient(resolver=resolver, transport_factory=factory)
+    with pytest.raises(ph.BlockedAddressError):
+        client.get("https://public.example/start", user_agent="ua/1")
+    assert calls == [("public.example", 443), ("internal.example", 443)]
+
+
+@pytest.mark.parametrize("ip", _BLOCKED_IPS)
+def test_redirect_to_blocked_literal_is_rejected(ip: str) -> None:
+    target = f"https://[{ip}]/secret" if ":" in ip else f"https://{ip}/secret"
+
+    def factory(hop: ph.ResolvedHop) -> httpx.BaseTransport:
+        return httpx.MockTransport(
+            lambda _request: httpx.Response(302, headers={"location": target})
+        )
+
+    client = ph.PinnedHTTPClient(
+        resolver=ph.resolve_public_addresses,
+        transport_factory=factory,
+    )
+    with pytest.raises(ph.BlockedAddressError):
+        client.get("https://93.184.216.34/start", user_agent="ua/1")
+
+
+def test_redirect_to_mixed_dns_answer_is_rejected(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[str] = []
+
+    def getaddrinfo(host: str, *_args, **_kwargs):
+        calls.append(host)
+        if host == "mixed.example":
+            return [_answer("93.184.216.34"), _answer("127.0.0.1")]
+        return [_answer("93.184.216.34")]
+
+    monkeypatch.setattr(ph.socket, "getaddrinfo", getaddrinfo)
+
+    def factory(_hop: ph.ResolvedHop) -> httpx.BaseTransport:
+        return httpx.MockTransport(
+            lambda _request: httpx.Response(
+                302,
+                headers={"location": "https://mixed.example/secret"},
+            )
+        )
+
+    client = ph.PinnedHTTPClient(
+        resolver=ph.resolve_public_addresses,
+        transport_factory=factory,
+    )
+    with pytest.raises(ph.BlockedAddressError):
+        client.get("https://public.example/start", user_agent="ua/1")
+    assert calls == ["public.example", "mixed.example"]
+
+
+def test_five_redirects_allowed_sixth_rejected() -> None:
+    visited: list[str] = []
+
+    def factory(hop: ph.ResolvedHop) -> httpx.BaseTransport:
+        def handler(_request: httpx.Request) -> httpx.Response:
+            visited.append(str(hop.url))
+            index = int(hop.url.path.rsplit("/", 1)[-1])
+            if index < 6:
+                return httpx.Response(302, headers={"location": f"/{index + 1}"})
+            return httpx.Response(200, content=b"done")
+        return httpx.MockTransport(handler)
+
+    client = ph.PinnedHTTPClient(resolver=_public_resolver, transport_factory=factory)
+    with pytest.raises(ph.RedirectPolicyError):
+        client.get("https://example.com/0", user_agent="ua/1", max_redirects=5)
+    assert len(visited) == 6
+
+
+@pytest.mark.parametrize(
+    ("start", "location", "expected"),
+    [
+        ("https://a.example/start", "/next", "https://a.example/next"),
+        ("https://a.example/start", "next", "https://a.example/next"),
+        ("https://a.example/start", "https://b.example/next", "https://b.example/next"),
+        ("https://a.example/start", "//b.example/next", "https://b.example/next"),
+        ("http://a.example/start", "https://a.example/next", "https://a.example/next"),
+        ("https://a.example/start", "http://a.example/next", "http://a.example/next"),
+    ],
+)
+def test_client_supports_all_approved_redirect_forms(
+    start: str,
+    location: str,
+    expected: str,
+) -> None:
+    def factory(hop: ph.ResolvedHop) -> httpx.BaseTransport:
+        def handler(_request: httpx.Request) -> httpx.Response:
+            if hop.url.path == "/start":
+                return httpx.Response(302, headers={"location": location})
+            return httpx.Response(200, content=b"done")
+
+        return httpx.MockTransport(handler)
+
+    result = ph.PinnedHTTPClient(
+        resolver=_public_resolver,
+        transport_factory=factory,
+    ).get(start, user_agent="ua/1")
+    assert result.url == expected
+    assert len(result.redirects) == 1
+
+
+@pytest.mark.parametrize(
+    ("status", "location"),
+    [(302, ""), (302, "   "), (300, "/next"), (304, "/next")],
+)
+def test_blank_or_nonstandard_redirect_is_final(status: int, location: str) -> None:
+    transport = httpx.MockTransport(
+        lambda _request: httpx.Response(status, headers={"location": location})
+    )
+    client = ph.PinnedHTTPClient(
+        resolver=_public_resolver,
+        transport_factory=lambda _hop: transport,
+    )
+    result = client.get("https://example.com/a", user_agent="ua/1")
+    assert result.status_code == status
+    assert result.redirects == ()
+
+
+@pytest.mark.parametrize(
+    "location",
+    ["#different-fragment", "https://example.com:443/a"],
+)
+def test_fragment_and_default_port_redirect_loops_are_rejected(location: str) -> None:
+    transport = httpx.MockTransport(
+        lambda _request: httpx.Response(302, headers={"location": location})
+    )
+    client = ph.PinnedHTTPClient(
+        resolver=_public_resolver,
+        transport_factory=lambda _hop: transport,
+    )
+    with pytest.raises(ph.RedirectPolicyError):
+        client.get("https://example.com/a#initial", user_agent="ua/1")
+
+
+def test_unicode_and_ascii_idna_redirect_loop_is_rejected() -> None:
+    transport = httpx.MockTransport(
+        lambda _request: httpx.Response(
+            302,
+            headers={"location": "https://xn--bcher-kva.example/a"},
+        )
+    )
+    client = ph.PinnedHTTPClient(
+        resolver=_public_resolver,
+        transport_factory=lambda _hop: transport,
+    )
+    with pytest.raises(ph.RedirectPolicyError):
+        client.get("https://BÜCHER.example/a", user_agent="ua/1")
+
+
+def test_malformed_redirect_target_is_translated() -> None:
+    transport = httpx.MockTransport(
+        lambda _request: httpx.Response(302, headers={"location": "http://[::1"})
+    )
+    client = ph.PinnedHTTPClient(
+        resolver=_public_resolver,
+        transport_factory=lambda _hop: transport,
+    )
+    with pytest.raises(ph.RedirectPolicyError):
+        client.get("https://example.com/a", user_agent="ua/1")
+
+
+def test_percent_encoded_and_literal_paths_are_distinct() -> None:
+    def factory(hop: ph.ResolvedHop) -> httpx.BaseTransport:
+        if hop.url.raw_path == b"/a%2Fb":
+            response = httpx.Response(302, headers={"location": "/a/b"})
+        else:
+            response = httpx.Response(200, content=b"done")
+        return httpx.MockTransport(lambda _request: response)
+
+    result = ph.PinnedHTTPClient(
+        resolver=_public_resolver,
+        transport_factory=factory,
+    ).get("https://example.com/a%2Fb", user_agent="ua/1")
+    assert result.url == "https://example.com/a/b"
+    assert len(result.redirects) == 1
+
+
+def test_each_redirect_hop_resolves_once_and_gets_a_fresh_transport() -> None:
+    resolutions: list[tuple[str, int]] = []
+    transports: list[str] = []
+
+    def resolver(host: str, port: int) -> tuple[ph.ResolvedAddress, ...]:
+        resolutions.append((host, port))
+        return _public_resolver(host, port)
+
+    def factory(hop: ph.ResolvedHop) -> httpx.BaseTransport:
+        transports.append(str(hop.url))
+        if hop.host == "a.example":
+            response = httpx.Response(
+                302,
+                headers={"location": "https://b.example/final"},
+            )
+        else:
+            response = httpx.Response(200, content=b"done")
+        return httpx.MockTransport(lambda _request: response)
+
+    result = ph.PinnedHTTPClient(
+        resolver=resolver,
+        transport_factory=factory,
+    ).get("https://a.example/start", user_agent="ua/1")
+    assert result.content == b"done"
+    assert resolutions == [("a.example", 443), ("b.example", 443)]
+    assert transports == [
+        "https://a.example/start",
+        "https://b.example/final",
+    ]
+
+
+def test_environment_proxies_are_not_used(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("HTTP_PROXY", "http://127.0.0.1:9")
+    monkeypatch.setenv("HTTPS_PROXY", "http://127.0.0.1:9")
+    monkeypatch.setenv("NO_PROXY", "")
+    handled: list[str] = []
+
+    def factory(_hop: ph.ResolvedHop) -> httpx.BaseTransport:
+        def handler(request: httpx.Request) -> httpx.Response:
+            handled.append(str(request.url))
+            return httpx.Response(200, content=b"direct")
+
+        return httpx.MockTransport(handler)
+
+    result = ph.PinnedHTTPClient(
+        resolver=_public_resolver,
+        transport_factory=factory,
+    ).get("https://example.com/a", user_agent="ua/1")
+    assert result.content == b"direct"
+    assert handled == ["https://example.com/a"]
+
+
+def test_client_translates_transport_factory_failure() -> None:
+    def factory(_hop: ph.ResolvedHop) -> httpx.BaseTransport:
+        raise OSError("TLS context construction failed")
+
+    client = ph.PinnedHTTPClient(
+        resolver=_public_resolver,
+        transport_factory=factory,
+    )
+    with pytest.raises(ph.PinnedTransportError):
+        client.get("https://example.com/a", user_agent="ua/1")
+
+
+@pytest.mark.parametrize(
+    "error_factory",
+    [
+        lambda request: httpx.ConnectError("connect", request=request),
+        lambda request: httpx.ReadError("read", request=request),
+        lambda request: httpx.RemoteProtocolError("protocol", request=request),
+        lambda _request: httpcore.ConnectError("tls"),
+    ],
+)
+def test_client_translates_transport_failures(error_factory) -> None:
+    def factory(_hop: ph.ResolvedHop) -> httpx.BaseTransport:
+        def handler(request: httpx.Request) -> httpx.Response:
+            raise error_factory(request)
+
+        return httpx.MockTransport(handler)
+
+    client = ph.PinnedHTTPClient(
+        resolver=_public_resolver,
+        transport_factory=factory,
+    )
+    with pytest.raises(ph.PinnedTransportError):
+        client.get("https://example.com/a", user_agent="ua/1")
+
+
+class _OneChunkStream(httpx.SyncByteStream):
+    def __init__(self, content: bytes) -> None:
+        self._content = content
+
+    def __iter__(self):
+        yield self._content
+
+
+def test_shared_layer_decodes_gzip_exactly_once() -> None:
+    encoded = gzip.compress("Vĩnh Long".encode("utf-8"))
+
+    def factory(_hop: ph.ResolvedHop) -> httpx.BaseTransport:
+        return httpx.MockTransport(
+            lambda _request: httpx.Response(
+                200,
+                headers={"content-encoding": "gzip"},
+                stream=_OneChunkStream(encoded),
+            )
+        )
+
+    result = ph.PinnedHTTPClient(
+        resolver=_public_resolver,
+        transport_factory=factory,
+    ).get("https://example.com/a", user_agent="ua/1")
+    assert result.content == "Vĩnh Long".encode("utf-8")
+    assert result.content != encoded
+
+
+def test_concurrent_calls_do_not_leak_pinned_hops() -> None:
+    observed: list[tuple[str, str]] = []
+
+    def factory(hop: ph.ResolvedHop) -> httpx.BaseTransport:
+        approved = str(hop.addresses[0].ip)
+
+        def handler(_request: httpx.Request) -> httpx.Response:
+            observed.append((hop.host, approved))
+            return httpx.Response(200, content=hop.host.encode("ascii"))
+
+        return httpx.MockTransport(handler)
+
+    client = ph.PinnedHTTPClient(
+        resolver=_public_resolver,
+        transport_factory=factory,
+    )
+    hosts = [f"h{index}.example" for index in range(12)]
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        results = list(
+            executor.map(
+                lambda host: client.get(f"https://{host}/", user_agent="ua/1"),
+                hosts,
+            )
+        )
+    assert [result.content.decode("ascii") for result in results] == hosts
+    assert {host for host, _approved in observed} == set(hosts)
+    assert len(observed) == len(hosts)
