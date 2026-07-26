@@ -10,10 +10,15 @@ socket backend and manual redirect client are added in later tasks.
 from __future__ import annotations
 
 import ipaddress
+import select
 import socket
+import ssl
+import time
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from typing import Protocol
 
+import httpcore
 import httpx
 
 
@@ -218,3 +223,236 @@ def validate_public_url(
     port = parsed.port or _HTTP_PORTS[parsed.scheme]
     if not resolver(_ascii_host(parsed), port):
         raise ResolutionError("resolver returned no usable addresses")
+
+
+class _PinnedNetworkStream(httpcore.NetworkStream):
+    def __init__(self, sock: socket.socket) -> None:
+        self._socket = sock
+
+    def read(self, max_bytes: int, timeout: float | None = None) -> bytes:
+        try:
+            self._socket.settimeout(timeout)
+            return self._socket.recv(max_bytes)
+        except socket.timeout as exc:
+            raise httpcore.ReadTimeout(str(exc)) from exc
+        except OSError as exc:
+            raise httpcore.ReadError(str(exc)) from exc
+
+    def write(self, buffer: bytes, timeout: float | None = None) -> None:
+        try:
+            while buffer:
+                self._socket.settimeout(timeout)
+                written = self._socket.send(buffer)
+                if written == 0:
+                    raise OSError("socket connection broken")
+                buffer = buffer[written:]
+        except socket.timeout as exc:
+            raise httpcore.WriteTimeout(str(exc)) from exc
+        except OSError as exc:
+            raise httpcore.WriteError(str(exc)) from exc
+
+    def close(self) -> None:
+        self._socket.close()
+
+    def start_tls(
+        self,
+        ssl_context: ssl.SSLContext,
+        server_hostname: str | None = None,
+        timeout: float | None = None,
+    ) -> httpcore.NetworkStream:
+        try:
+            self._socket.settimeout(timeout)
+            wrapped = ssl_context.wrap_socket(
+                self._socket,
+                server_hostname=server_hostname,
+            )
+        except socket.timeout as exc:
+            self.close()
+            raise httpcore.ConnectTimeout(str(exc)) from exc
+        except (ssl.SSLError, OSError) as exc:
+            self.close()
+            raise httpcore.ConnectError(str(exc)) from exc
+        return _PinnedNetworkStream(wrapped)
+
+    def get_extra_info(self, info: str) -> object:
+        if info == "server_addr":
+            return self._socket.getpeername()
+        if info == "client_addr":
+            return self._socket.getsockname()
+        if info == "socket":
+            return self._socket
+        if info == "ssl_object" and isinstance(self._socket, ssl.SSLSocket):
+            return self._socket._sslobj
+        if info == "is_readable":
+            readable, _, _ = select.select([self._socket], [], [], 0)
+            return bool(readable)
+        return None
+
+
+SocketOption = (
+    tuple[int, int, int]
+    | tuple[int, int, bytes | bytearray]
+    | tuple[int, int, None, int]
+)
+SocketFactory = Callable[[int, int, int], socket.socket]
+MonotonicClock = Callable[[], float]
+
+
+def _normalize_peer(
+    peer: tuple,
+) -> tuple[ipaddress.IPv4Address | ipaddress.IPv6Address, int]:
+    return ipaddress.ip_address(peer[0].split("%", 1)[0]), int(peer[1])
+
+
+def _check_requested_origin(host: str, port: int, hop: ResolvedHop) -> None:
+    if host != hop.host or port != hop.port:
+        raise PeerMismatchError("httpcore requested an origin outside the pinned hop")
+
+
+def _remaining_timeout(deadline: float | None, monotonic: MonotonicClock) -> float | None:
+    return None if deadline is None else max(0.0, deadline - monotonic())
+
+
+def _configure_connecting_socket(
+    sock: socket.socket,
+    remaining: float | None,
+    local_address: str | None,
+    socket_options: Iterable[SocketOption] | None,
+) -> None:
+    sock.settimeout(remaining)
+    if local_address is not None:
+        sock.bind((local_address, 0))
+    for option in socket_options or ():
+        sock.setsockopt(*option)
+    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+
+
+def _check_peer_matches_approved(
+    sock: socket.socket,
+    approved: set[tuple[ipaddress.IPv4Address | ipaddress.IPv6Address, int]],
+) -> None:
+    peer_ip, peer_port = _normalize_peer(sock.getpeername())
+    if (peer_ip, peer_port) not in approved:
+        raise PeerMismatchError(f"peer {peer_ip}:{peer_port} is outside the pinned set")
+
+
+def _raise_pinned_connect_error(last_error: Exception | None) -> None:
+    if isinstance(last_error, httpcore.TimeoutException):
+        raise last_error
+    if isinstance(last_error, httpcore.NetworkError):
+        raise last_error
+    raise httpcore.ConnectError("all pinned addresses failed")
+
+
+class _PinnedNetworkBackend(httpcore.NetworkBackend):
+    def __init__(
+        self,
+        hop: ResolvedHop,
+        *,
+        socket_factory: SocketFactory = socket.socket,
+        monotonic: MonotonicClock = time.monotonic,
+    ) -> None:
+        self._hop = hop
+        self._socket_factory = socket_factory
+        self._monotonic = monotonic
+
+    def connect_unix_socket(
+        self,
+        path: str,
+        timeout: float | None = None,
+        socket_options: Iterable[SocketOption] | None = None,
+    ) -> httpcore.NetworkStream:
+        raise httpcore.UnsupportedProtocol("pinned HTTP supports TCP only")
+
+    def connect_tcp(
+        self,
+        host: str,
+        port: int,
+        timeout: float | None = None,
+        local_address: str | None = None,
+        socket_options: Iterable[SocketOption] | None = None,
+    ) -> httpcore.NetworkStream:
+        _check_requested_origin(host, port, self._hop)
+        deadline = None if timeout is None else self._monotonic() + timeout
+        approved = {(item.ip, item.port) for item in self._hop.addresses}
+        last_error: Exception | None = None
+        for address in self._hop.addresses:
+            remaining = _remaining_timeout(deadline, self._monotonic)
+            if remaining == 0.0:
+                raise httpcore.ConnectTimeout("pinned connect budget exhausted")
+            sock: socket.socket | None = None
+            try:
+                sock = self._socket_factory(address.family, address.socktype, address.protocol)
+                _configure_connecting_socket(sock, remaining, local_address, socket_options)
+                sock.connect(address.sockaddr)
+                _check_peer_matches_approved(sock, approved)
+                return _PinnedNetworkStream(sock)
+            except PeerMismatchError:
+                if sock is not None:
+                    sock.close()
+                raise
+            except socket.timeout as exc:
+                last_error = httpcore.ConnectTimeout(str(exc))
+                if sock is not None:
+                    sock.close()
+            except OSError as exc:
+                last_error = httpcore.ConnectError(str(exc))
+                if sock is not None:
+                    sock.close()
+        _raise_pinned_connect_error(last_error)
+
+
+class _CoreResponseStream(httpx.SyncByteStream):
+    def __init__(self, stream: Iterable[bytes]) -> None:
+        self._stream = stream
+
+    def __iter__(self):
+        yield from self._stream
+
+    def close(self) -> None:
+        close = getattr(self._stream, "close", None)
+        if close is not None:
+            close()
+
+
+class _PinnedHTTPTransport(httpx.BaseTransport):
+    def __init__(self, hop: ResolvedHop) -> None:
+        self._pool = httpcore.ConnectionPool(
+            ssl_context=httpx.create_ssl_context(verify=True, trust_env=False),
+            max_connections=1,
+            max_keepalive_connections=0,
+            http1=True,
+            http2=False,
+            retries=0,
+            network_backend=_PinnedNetworkBackend(hop),
+        )
+
+    def handle_request(self, request: httpx.Request) -> httpx.Response:
+        if not isinstance(request.stream, httpx.SyncByteStream):
+            raise TypeError("pinned HTTP requires a synchronous request stream")
+        core_request = httpcore.Request(
+            method=request.method,
+            url=httpcore.URL(
+                scheme=request.url.raw_scheme,
+                host=request.url.raw_host,
+                port=request.url.port,
+                target=request.url.raw_path,
+            ),
+            headers=request.headers.raw,
+            content=request.stream,
+            extensions=request.extensions,
+        )
+        response = self._pool.handle_request(core_request)
+        return httpx.Response(
+            status_code=response.status,
+            headers=response.headers,
+            stream=_CoreResponseStream(response.stream),
+            extensions=response.extensions,
+        )
+
+    def close(self) -> None:
+        self._pool.close()
+
+
+def build_pinned_transport(hop: ResolvedHop) -> httpx.BaseTransport:
+    return _PinnedHTTPTransport(hop)
