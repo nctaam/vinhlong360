@@ -11,6 +11,7 @@ Chỉ gửi nội dung bài (không kèm định danh user) sang API nước ngo
 
 import json
 import logging
+import math
 import os
 import re
 
@@ -28,6 +29,12 @@ VISION_API_KEY = os.getenv("VISION_API_KEY", "")
 
 AUTO_APPROVE_THRESHOLD = 0.3
 QUEUE_THRESHOLD = 0.7
+_TEXT_MODERATION_CATEGORIES = frozenset({
+    "sexual", "hate", "harassment", "self-harm", "sexual/minors",
+    "hate/threatening", "violence/graphic", "self-harm/intent",
+    "self-harm/instructions", "harassment/threatening", "violence",
+    "illicit", "illicit/violent",
+})
 
 
 async def moderate_content(content: str, image_urls: list[str] = None) -> dict:
@@ -48,7 +55,7 @@ async def moderate_content(content: str, image_urls: list[str] = None) -> dict:
     if max_score < AUTO_APPROVE_THRESHOLD:
         # A clean score is publishable only when every required provider ran.
         # Provider outages must fail closed instead of looking like a zero score.
-        unavailable = not text_result.get("available", True) or not image_result.get("available", True)
+        unavailable = text_result.get("available") is not True or image_result.get("available") is not True
         status = "pending" if unavailable else "approved"
     elif max_score < QUEUE_THRESHOLD:
         status = "pending"
@@ -61,7 +68,9 @@ async def moderate_content(content: str, image_urls: list[str] = None) -> dict:
         "reasons": reasons,
         "text_scores": text_result.get("categories", {}),
         "image_scores": image_result.get("categories", {}),
-        "moderation_available": text_result.get("available", True) and image_result.get("available", True),
+        "moderation_available": (
+            text_result.get("available") is True and image_result.get("available") is True
+        ),
     }
 
 
@@ -170,8 +179,39 @@ async def _moderate_text(content: str) -> dict:
             }
 
         result = data["results"][0]
-        categories = result.get("category_scores", {})
-        flagged_cats = result.get("categories", {})
+        if not isinstance(result, dict):
+            raise ValueError("moderation API returned an invalid result")
+        categories = result.get("category_scores")
+        flagged_cats = result.get("categories")
+        flagged = result.get("flagged")
+        valid_scores = (
+            isinstance(categories, dict)
+            and bool(categories)
+            and all(
+                isinstance(name, str)
+                and isinstance(score, (int, float))
+                and not isinstance(score, bool)
+                and math.isfinite(score)
+                and 0.0 <= score <= 1.0
+                for name, score in categories.items()
+            )
+        )
+        valid_flags = (
+            isinstance(flagged_cats, dict)
+            and bool(flagged_cats)
+            and isinstance(flagged, bool)
+            and all(isinstance(name, str) and isinstance(value, bool)
+                    for name, value in flagged_cats.items())
+        )
+        category_keys = set(categories) if isinstance(categories, dict) else set()
+        flag_keys = set(flagged_cats) if isinstance(flagged_cats, dict) else set()
+        if (
+            not valid_scores
+            or not valid_flags
+            or category_keys != flag_keys
+            or not _TEXT_MODERATION_CATEGORIES.issubset(category_keys)
+        ):
+            raise ValueError("moderation API returned invalid category structures")
 
         max_score = max(categories.values()) if categories else 0.0
         reasons = [cat for cat, flagged in flagged_cats.items() if flagged]
@@ -226,13 +266,24 @@ async def _moderate_images(image_urls: list[str]) -> dict:
                     provider_available = False
                     continue
 
-                safe = responses[0].get("safeSearchAnnotation", {})
+                response = responses[0]
+                if not isinstance(response, dict):
+                    provider_available = False
+                    continue
+                safe = response.get("safeSearchAnnotation", {})
                 if not isinstance(safe, dict) or not safe:
                     provider_available = False
                     continue
+                required_categories = ("adult", "spoof", "medical", "violence", "racy")
+                if any(
+                    category not in safe or safe[category] not in likelihood_scores
+                    for category in required_categories
+                ):
+                    provider_available = False
+                    continue
                 for category in ("adult", "violence", "racy"):
-                    likelihood = safe.get(category, "VERY_UNLIKELY")
-                    score = likelihood_scores.get(likelihood, 0.0)
+                    likelihood = safe[category]
+                    score = likelihood_scores[likelihood]
                     all_categories[f"image_{category}"] = score
                     if score > max_score:
                         max_score = score
@@ -1388,8 +1439,9 @@ async def moderate_content_enhanced(
 
     # Re-evaluate status with trust level
     trust = get_user_trust_level(user_id)
-    if not base_result.get("moderation_available", True):
-        status = "flagged" if final_score >= QUEUE_THRESHOLD else base_result["status"]
+    moderation_available = base_result.get("moderation_available") is True
+    if not moderation_available:
+        status = "flagged" if final_score >= QUEUE_THRESHOLD else "pending"
     else:
         status = _enhanced_status(final_score, trust)
 
@@ -1406,7 +1458,7 @@ async def moderate_content_enhanced(
             "coordinated": user_id and detect_coordinated_behavior(content, user_id, ip).get("is_coordinated", False),
             "high_entropy": deep["high_entropy"],
         },
-        "moderation_available": base_result.get("moderation_available", True),
+        "moderation_available": moderation_available,
     }
 
 

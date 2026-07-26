@@ -1257,6 +1257,17 @@ async def _persist_profile_fields(user_id: str, fields: dict) -> dict:
         raise HTTPException(500, "Cập nhật hồ sơ thất bại")
 
 
+def _require_profile_moderation_approved(mod: dict, flagged_detail: str) -> None:
+    status = mod.get("status")
+    if status == "approved":
+        return
+    if status == "flagged":
+        raise HTTPException(400, flagged_detail)
+    if mod.get("moderation_available") is False:
+        raise HTTPException(503, "Hệ thống kiểm duyệt tạm thời không khả dụng. Vui lòng thử lại sau.")
+    raise HTTPException(400, "Nội dung hồ sơ chưa được phê duyệt để công khai")
+
+
 async def _profile_apply_full_name(body: "ProfileUpdate", fields: dict) -> None:
     """Kiểm duyệt + escape họ tên (trích nguyên văn nhánh full_name của update_profile)."""
     from moderation import moderate_content
@@ -1264,8 +1275,7 @@ async def _profile_apply_full_name(body: "ProfileUpdate", fields: dict) -> None:
     if fname and len(fname) < 2:
         raise HTTPException(400, "Họ tên phải từ 2 ký tự trở lên")
     mod = await moderate_content(fname)
-    if mod["status"] == "flagged":
-        raise HTTPException(400, "Họ tên chứa nội dung không phù hợp")
+    _require_profile_moderation_approved(mod, "Họ tên chứa nội dung không phù hợp")
     fields["full_name"] = _html.escape(fname) if fname else None
 
 
@@ -1294,8 +1304,7 @@ async def update_profile(body: ProfileUpdate, request: Request, _csrf=Depends(_r
         if len(name) < 2:
             raise HTTPException(400, "Tên hiển thị phải từ 2 ký tự trở lên")
         mod = await moderate_content(name)
-        if mod["status"] == "flagged":
-            raise HTTPException(400, "Tên hiển thị chứa nội dung không phù hợp")
+        _require_profile_moderation_approved(mod, "Tên hiển thị chứa nội dung không phù hợp")
         fields["display_name"] = _html.escape(name)
     if body.full_name is not None:
         await _profile_apply_full_name(body, fields)
@@ -1303,8 +1312,7 @@ async def update_profile(body: ProfileUpdate, request: Request, _csrf=Depends(_r
         bio_text = body.bio.strip()[:300]
         if bio_text:
             mod = await moderate_content(bio_text)
-            if mod["status"] == "flagged":
-                raise HTTPException(400, "Tiểu sử chứa nội dung không phù hợp")
+            _require_profile_moderation_approved(mod, "Tiểu sử chứa nội dung không phù hợp")
         fields["bio"] = _html.escape(bio_text)
     if body.email is not None:
         _profile_apply_email(body, fields)

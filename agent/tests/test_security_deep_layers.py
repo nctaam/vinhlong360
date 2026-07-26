@@ -1120,12 +1120,14 @@ class TestEnhancedModerationPipeline:
         _reset_moderation_history()
         _reset_coordinated_behavior()
 
-    def test_clean_content_approved(self):
-        from moderation import moderate_content_enhanced
+    def test_clean_content_pending_without_provider(self, monkeypatch):
+        import moderation
+        monkeypatch.setattr(moderation, "OPENAI_API_KEY", "")
         result = asyncio.run(
-            moderate_content_enhanced("Du lịch Vĩnh Long rất đẹp!", user_id="user1")
+            moderation.moderate_content_enhanced("Du lịch Vĩnh Long rất đẹp!", user_id="user1")
         )
-        assert result["status"] == "approved"
+        assert result["status"] == "pending"
+        assert result["moderation_available"] is False
         assert "trust_level" in result
         assert "deep_layers" in result
 

@@ -3095,18 +3095,31 @@ class CreateCollection(BaseModel):
     is_public: bool = False
 
 
+def _require_collection_publishable(mod: dict, is_public: bool, flagged_detail: str) -> None:
+    status = mod.get("status")
+    if status == "flagged":
+        raise HTTPException(400, flagged_detail)
+    if not is_public or status == "approved":
+        return
+    if mod.get("moderation_available") is False:
+        raise HTTPException(503, "Hệ thống kiểm duyệt tạm thời không khả dụng. Vui lòng thử lại sau.")
+    raise HTTPException(400, "Nội dung danh sách chưa được phê duyệt để công khai")
+
+
 @router.post("/me/collections",
              summary="Create a collection",
              description="Create a themed post collection (public or private). Runs content moderation on the name and description. Max 20 collections per user.")
 async def create_collection(body: CreateCollection, user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
     check_rate(f"coll:{user['id']}", 10, 300, "Tạo danh sách quá nhanh. Vui lòng đợi chút.")
     mod = await moderate_content(body.name.strip())
-    if mod["status"] == "flagged":
-        raise HTTPException(400, "Tên danh sách chứa nội dung không phù hợp")
+    _require_collection_publishable(
+        mod, body.is_public, "Tên danh sách chứa nội dung không phù hợp"
+    )
     if body.description.strip():
         mod_desc = await moderate_content(body.description.strip())
-        if mod_desc["status"] == "flagged":
-            raise HTTPException(400, "Mô tả danh sách chứa nội dung không phù hợp")
+        _require_collection_publishable(
+            mod_desc, body.is_public, "Mô tả danh sách chứa nội dung không phù hợp"
+        )
     ph = db._ph
     uid = str(user["id"])
 
