@@ -194,3 +194,73 @@ def test_public_events_project_entity_media_before_response(monkeypatch):
         "https://cdn.example/user.webp",
         "/img/entities/event-1.webp",
     ]
+
+
+def _scoring_entity(entity_id: str, images: list[str]) -> dict:
+    return {
+        "id": entity_id,
+        "name": f"Entity {entity_id}",
+        "type": "attraction",
+        "summary": "",
+        "images": images,
+        "attributes": {},
+        "rating_count": 0,
+        "rating_avg": 0,
+    }
+
+
+def test_public_media_scoring_ignores_ugc_only_images(monkeypatch):
+    import public_api
+    import smart_rank
+
+    empty = _scoring_entity("empty", [])
+    ugc = _scoring_entity("ugc", ["https://cdn.example/user.webp"])
+    ai = _scoring_entity("ai", ["/img/entities/ai.webp"])
+    monkeypatch.setattr(smart_rank, "smart_score", lambda *_args, **_kwargs: 0.0)
+
+    empty_candidate, _ = public_api._score_candidate(empty, {}, "home", None, "")
+    ugc_candidate, _ = public_api._score_candidate(ugc, {}, "home", None, "")
+    assert ugc_candidate == empty_candidate
+    assert public_api._score_query_and_attrs(ugc, {}, "", []) == 0
+    assert public_api._score_popular_entity(ugc) == public_api._score_popular_entity(empty)
+    assert public_api._homepage_score(ugc, 7) == public_api._homepage_score(empty, 7)
+    assert public_api._score_one_itinerary(
+        {"stops": [{"entityId": "ugc"}]},
+        {"ugc": ugc},
+        7,
+    ) == public_api._score_one_itinerary(
+        {"stops": [{"entityId": "empty"}]},
+        {"empty": empty},
+        7,
+    )
+    assert public_api._public_entity_has_media(ai) is True
+
+
+def test_entity_search_has_image_uses_public_media_presence(monkeypatch):
+    import public_api
+    import ratelimit
+
+    rows = [
+        _scoring_entity("empty", []),
+        _scoring_entity("ugc", ["https://cdn.example/user.webp"]),
+        _scoring_entity("ai", ["/img/entities/ai.webp"]),
+    ]
+    monkeypatch.setattr(
+        public_api.db,
+        "search_entities",
+        lambda **_kwargs: [dict(row) for row in rows],
+    )
+    monkeypatch.setattr(ratelimit, "check_rate", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(public_api, "get_client_ip", lambda _request: "test")
+
+    with_image = asyncio.run(public_api.entity_search(
+        object(), Response(), q="", entity_type=None, area=None,
+        has_image=True, sort="relevance", page=1, limit=20,
+    ))
+    without_image = asyncio.run(public_api.entity_search(
+        object(), Response(), q="", entity_type=None, area=None,
+        has_image=False, sort="relevance", page=1, limit=20,
+    ))
+
+    assert [item["id"] for item in with_image["entities"]] == ["ai"]
+    assert [item["id"] for item in without_image["entities"]] == ["empty", "ugc"]

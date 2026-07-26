@@ -738,7 +738,7 @@ def _score_query_and_attrs(entity: dict, attrs: dict, query: str, reasons: list[
             score += 18
             reasons.append("Liên quan trực tiếp tới tìm kiếm")
 
-    if entity.get("images"):
+    if _public_entity_has_media(entity):
         score += 2
     try:
         score += min(float(attrs.get("rating") or 0), 5)
@@ -982,6 +982,11 @@ def _project_public_entity_media(entity: dict, *, limit: int | None = None) -> d
     descriptors = _gallery_editorial_images(entity)
     projected["image_descriptors"] = descriptors[:limit] if limit is not None else descriptors
     return projected
+
+
+def _public_entity_has_media(entity: dict) -> bool:
+    """Return whether the public projection contains renderable entity media."""
+    return bool(_project_public_entity_media(entity, limit=1)["image_descriptors"])
 
 
 def _to_minimal(entity: dict) -> dict:
@@ -1926,7 +1931,7 @@ _GENERIC_NAMES = {"tắm sông", "đi ghe", "đi đò", "tham quan", "du lịch"
 def _homepage_score(e: dict, month: int) -> float:
     from smart_rank import smart_score
     s = smart_score(e, month=month, q_match_level="none")
-    if e.get("images"):
+    if _public_entity_has_media(e):
         s += 2.0
     if len(e.get("summary", "") or "") > 80:
         s += 1.0
@@ -2053,7 +2058,7 @@ def _score_one_itinerary(it: dict, public_by_id: dict, month: int) -> float:
         if matched:
             if _entity_in_season(matched, month):
                 it_score += 2.0
-            if matched.get("images"):
+            if _public_entity_has_media(matched):
                 it_score += 0.5
     dur = it.get("duration") or ""
     if dur:
@@ -3443,7 +3448,7 @@ def _filter_popular_entities(all_entities: list[dict], entity_type: str | None, 
 def _score_popular_entity(e: dict) -> float:
     rc = e.get("rating_count", 0) or 0
     avg = e.get("rating_avg", 0) or 0
-    has_img = 1 if e.get("images") else 0
+    has_img = 1 if _public_entity_has_media(e) else 0
     eq = entity_quality(e)
     eq_score = eq.get("score", 0) if isinstance(eq, dict) else eq
     return rc * 2 + avg * 3 + has_img * 5 + eq_score * 0.1
@@ -3516,9 +3521,9 @@ async def entity_search(
         limit=500, public_only=True
     )
     if has_image is True:
-        all_entities = [e for e in all_entities if e.get("images")]
+        all_entities = [e for e in all_entities if _public_entity_has_media(e)]
     elif has_image is False:
-        all_entities = [e for e in all_entities if not e.get("images")]
+        all_entities = [e for e in all_entities if not _public_entity_has_media(e)]
     if sort == "name":
         all_entities.sort(key=lambda e: e.get("name", "").lower())
     elif sort == "newest":
