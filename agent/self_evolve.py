@@ -103,12 +103,16 @@ def _post_apply_version(name: str) -> str | None:
 
 
 def _maybe_rollback(decision: str, snap, expected_version: str | None):
-    """Roll back + reload when the gate rejected the change (verbatim phase 6)."""
+    """Roll back + reload when the gate rejected the change."""
     rollback_result = None
     if decision == "rolled_back" and snap is not None:
         if expected_version is None:
-            return {"restored": False, "error": "post_apply_version_unavailable"}
-        rollback_result = kb_versioning.rollback(snap["id"], expected_version=expected_version)
+            return {"restored": False, "error": "rollback_failed", "reason": "post_apply_version_unavailable"}
+        try:
+            rollback_result = kb_versioning.rollback(snap["id"], expected_version=expected_version)
+        except Exception as exc:
+            _logger.error("Rollback failed for snapshot %s: %s", snap.get("id"), exc)
+            return {"restored": False, "error": "rollback_failed", "reason": str(exc)}
         if rollback_result.get("restored"):
             _reload_kb("rollback")
     return rollback_result
@@ -156,6 +160,14 @@ def guarded_evolve(name: str, apply_fn, snapshot_id: str | None = None,
 
     # 6. Rollback if needed
     rollback_result = _maybe_rollback(decision, snap, post_apply_version)
+    if decision == "rolled_back":
+        if rollback_result is None:
+            decision = "rollback_failed"
+            reason = "rollback_failed: no snapshot available"
+        elif not rollback_result.get("restored"):
+            error = rollback_result.get("error")
+            decision = "rollback_conflict" if error == "rollback_conflict" else "rollback_failed"
+            reason = f"{decision}: {error or 'rollback did not restore the snapshot'}"
 
     summary = {
         "name": name,

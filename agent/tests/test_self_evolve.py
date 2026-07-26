@@ -214,8 +214,30 @@ class TestGuardedEvolve:
         result = self_evolve.guarded_evolve("test", apply_bad_change, snapshot_id="snap_conflict")
 
         persisted = json.loads(data_json.read_text(encoding="utf-8"))
-        assert result["decision"] == "rolled_back"
+        assert result["decision"] == "rollback_conflict"
         assert result["rollback"] == {"restored": False, "error": "rollback_conflict"}
         assert persisted["entities"][0]["attributes"]["phone"] == "0911111111"
         assert {entity["id"] for entity in persisted["entities"]} == {"a", "bad"}
         assert reloads == ["reload"]
+
+    def test_rollback_exception_reports_rollback_failed(self, monkeypatch, tmp_path):
+        monkeypatch.setattr(self_evolve.self_eval, "compute_fitness", lambda *a, **k: {
+            "composite": 0.9, "recall_at_5": 1.0, "dup_ratio": 0.01,
+        })
+        monkeypatch.setattr(self_evolve.kb_versioning, "snapshot", lambda **k: {"id": "s1"})
+        monkeypatch.setattr(self_evolve.knowledge, "reload", lambda: None)
+        monkeypatch.setattr(self_evolve, "AUDIT_LOG", tmp_path / "audit.jsonl")
+
+        def rollback_error(*_args, **_kwargs):
+            raise RuntimeError("rollback storage unavailable")
+
+        monkeypatch.setattr(self_evolve.kb_versioning, "rollback", rollback_error)
+
+        def boom():
+            raise RuntimeError("apply failed")
+
+        result = self_evolve.guarded_evolve("test", boom)
+
+        assert result["decision"] == "rollback_failed"
+        assert result["rollback"]["restored"] is False
+        assert result["rollback"]["error"] == "rollback_failed"
