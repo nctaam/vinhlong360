@@ -79,12 +79,11 @@ def test_thin_content_counts_under_threshold(tmp_path):
     assert r["count"] == 1 and r["level"] == "soft"
 
 
-def test_test_pairing_blocks_agent_without_tests():
-    r = TestPairingCheck().run(files=["agent/server.py"])
+def test_test_pairing_blocks_agent_without_tests(tmp_path):
+    r = TestPairingCheck(root=tmp_path).run(files=["agent/server.py"])
     assert r["count"] == 1
-    assert TestPairingCheck().run(files=["agent/server.py", "tests/test_x.py"])["count"] == 0
-    assert TestPairingCheck().run(files=["docs/a.md"])["count"] == 0
-    assert TestPairingCheck().run(files=None)["count"] == 0  # --all: không áp
+    assert TestPairingCheck(root=tmp_path).run(files=["docs/a.md"])["count"] == 0
+    assert TestPairingCheck(root=tmp_path).run(files=None)["count"] == 0  # --all: không áp
 
 
 def test_complexity_flags_deep_function(tmp_path):

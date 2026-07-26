@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
-"""R20.7 — agent/*.py đổi mà không có test nào staged cùng (SOFT-RATCHET per-commit).
+"""R20.7 — mỗi agent/*.py đổi phải có test staged tương ứng.
 
 Baseline = 0 → mọi commit vi phạm bị chặn; thoát hiểm hợp lệ = SKIP_CHECKS (soft, có log).
 """
 from __future__ import annotations
 
+import ast
 from pathlib import Path
+import re
 
 
 class TestPairingCheck:
@@ -15,15 +17,60 @@ class TestPairingCheck:
     def __init__(self, root: Path | None = None):
         self._root = root
 
+    def _test_candidates(self, files: list[str]) -> dict[str, ast.Module]:
+        root = self._root or Path.cwd()
+        candidates: dict[str, ast.Module] = {}
+        for relative_path in files:
+            path = Path(relative_path)
+            in_tests = relative_path.startswith("tests/") or "/tests/" in relative_path
+            if not in_tests or not path.name.startswith("test_") or path.suffix != ".py":
+                continue
+            try:
+                candidates[relative_path] = ast.parse(
+                    (root / relative_path).read_text(encoding="utf-8")
+                )
+            except (OSError, SyntaxError, UnicodeError):
+                continue
+        return candidates
+
+    @staticmethod
+    def _filename_pairs(module: str, test_path: str) -> bool:
+        test_stem = Path(test_path).stem
+        return re.search(rf"(?:^|_){re.escape(module)}(?:_|$)", test_stem) is not None
+
+    @staticmethod
+    def _ast_pairs(module: str, tree: ast.Module) -> bool:
+        import_names = {module, f"agent.{module}"}
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                if any(alias.name in import_names for alias in node.names):
+                    return True
+            elif isinstance(node, ast.ImportFrom):
+                if node.module in import_names:
+                    return True
+                if node.module == "agent" and any(alias.name == module for alias in node.names):
+                    return True
+        return False
+
+    def _test_pairs(self, module: str, test_path: str, tree: ast.Module) -> bool:
+        return self._filename_pairs(module, test_path) or self._ast_pairs(module, tree)
+
     def run(self, files: list[str] | None = None) -> dict:
         violations = []
         if files:  # chỉ có nghĩa ở chế độ staged
             norm = [f.replace("\\", "/") for f in files]
             agent_py = [f for f in norm if f.startswith("agent/") and f.endswith(".py") and "/tests/" not in f]
-            has_tests = any(f.startswith("tests/") or "/tests/" in f for f in norm)
-            if agent_py and not has_tests:
-                violations.append({"file": agent_py[0], "line": 0, "rule": self.rule,
-                                   "msg": f"{len(agent_py)} file agent/ đổi nhưng không test nào staged (R20.7/B3)"})
+            tests = self._test_candidates(norm)
+            unpaired = [
+                source for source in agent_py
+                if not any(
+                    self._test_pairs(Path(source).stem, test, tree)
+                    for test, tree in tests.items()
+                )
+            ]
+            if unpaired:
+                violations.append({"file": unpaired[0], "line": 0, "rule": self.rule,
+                                   "msg": f"{len(unpaired)} file agent/ đổi nhưng chưa có test staged tương ứng (R20.7/B3)"})
         return {"check": self.name, "level": self.level, "rule": self.rule,
                 "count": len(violations), "violations": violations}
 
