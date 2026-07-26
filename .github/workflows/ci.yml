@@ -194,6 +194,12 @@ jobs:
       - name: Apply schema + migrations
         run: python scripts/apply_migrations.py --init-baseline
 
+      - name: Seed knowledge data in disposable Postgres
+        env:
+          DESTRUCTIVE_OPS_LOCKED: "0"
+          ALLOW_DESTRUCTIVE_DB_REPLACE: "1"
+        run: python agent/database.py --replace
+
       - name: Run tests against Postgres (prod-parity)
         env:
           # Dummy để module đọc env lúc import không crash (không gọi API thật).
