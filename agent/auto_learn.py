@@ -41,7 +41,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from ddgs import DDGS
 
-from pinned_http import PinnedHTTPClient, PinnedResponse
+from pinned_http import EgressPolicy, PinnedHTTPClient, PinnedResponse
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
@@ -52,6 +52,14 @@ client = OpenAI(
 )
 
 _PINNED_HTTP = PinnedHTTPClient()
+_AUTO_LEARN_EGRESS_POLICY = EgressPolicy(
+    max_encoded_bytes=2 * 1024 * 1024,
+    max_decoded_bytes=2 * 1024 * 1024,
+    accepted_encodings=("gzip", "identity"),
+    inactivity_timeout_seconds=15.0,
+    total_timeout_seconds=15.0,
+    max_redirects=5,
+)
 _HTTP_ENTITY_HEADERS = {"content-encoding", "content-length", "transfer-encoding"}
 
 
@@ -266,8 +274,7 @@ def fetch_url(url: str) -> str | None:
         response = _PINNED_HTTP.get(
             url,
             user_agent="vinhlong360-learner/1.0",
-            timeout=15,
-            max_redirects=5,
+            policy=_AUTO_LEARN_EGRESS_POLICY,
         )
         if response.status_code != 200:
             return None

@@ -187,8 +187,14 @@ def test_fetch_url_text_uses_pinned_options_and_tag_only_cleanup(monkeypatch: py
         "https://example.com/a",
         {
             "user_agent": "vinhlong360-quality-burst/1.0",
-            "timeout": 12,
-            "max_redirects": 5,
+            "policy": ph.EgressPolicy(
+                max_encoded_bytes=2 * 1024 * 1024,
+                max_decoded_bytes=2 * 1024 * 1024,
+                accepted_encodings=("gzip", "identity"),
+                inactivity_timeout_seconds=12.0,
+                total_timeout_seconds=12.0,
+                max_redirects=5,
+            ),
         },
     )]
 
@@ -288,16 +294,24 @@ def test_fetch_url_text_without_content_type_matches_requests_apparent_encoding(
     assert q.fetch_url_text("https://example.com/a") == expected
 
 
-def test_fetch_url_text_silently_returns_empty_on_transport_failure(
+@pytest.mark.parametrize(
+    "error",
+    [
+        ph.PinnedBodyLimitError("large"),
+        ph.PinnedContentEncodingError("encoding"),
+        ph.PinnedDeadlineExceeded("deadline"),
+        ph.ResolverSaturatedError("dns busy"),
+    ],
+)
+def test_fetch_url_text_silently_returns_empty_on_bounded_failure(
     monkeypatch: pytest.MonkeyPatch,
     caplog: pytest.LogCaptureFixture,
+    error: Exception,
 ) -> None:
     monkeypatch.setattr(
         q._PINNED_HTTP,
         "get",
-        lambda *_args, **_kwargs: (_ for _ in ()).throw(
-            ph.PinnedTransportError("connect failed")
-        ),
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(error),
     )
     with caplog.at_level(logging.WARNING):
         assert q.fetch_url_text("https://example.com/a") == ""

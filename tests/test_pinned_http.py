@@ -1684,9 +1684,12 @@ def test_egress_policy_rejects_invalid_limits(overrides: dict) -> None:
         ph.EgressPolicy(**values)
 
 
-def test_get_policy_is_keyword_only() -> None:
-    parameter = inspect.signature(ph.PinnedHTTPClient.get).parameters["policy"]
-    assert parameter.kind is inspect.Parameter.KEYWORD_ONLY
+def test_pinned_client_public_get_requires_policy_only() -> None:
+    parameters = inspect.signature(ph.PinnedHTTPClient.get).parameters
+    assert list(parameters) == ["self", "url", "user_agent", "policy"]
+    assert parameters["user_agent"].kind is inspect.Parameter.KEYWORD_ONLY
+    assert parameters["policy"].kind is inspect.Parameter.KEYWORD_ONLY
+    assert parameters["policy"].default is inspect.Parameter.empty
 
 
 def test_identity_body_accepts_exact_encoded_and_decoded_boundaries() -> None:
@@ -1913,7 +1916,11 @@ def test_client_returns_immutable_decoded_response_and_user_agent() -> None:
         return httpx.MockTransport(handler)
 
     client = ph.PinnedHTTPClient(resolver=_public_resolver, transport_factory=factory)
-    result = client.get("https://example.com/a", user_agent="ua/1", timeout=3, max_redirects=5)
+    result = client.get(
+        "https://example.com/a",
+        user_agent="ua/1",
+        policy=_policy(inactivity_timeout_seconds=3.0, total_timeout_seconds=3.0),
+    )
     assert result.status_code == 200
     assert result.content == b"xin chao"
     assert seen == [("example.com", "ua/1")]
@@ -1945,7 +1952,11 @@ def test_redirect_re_resolves_every_hop_and_blocks_private_target() -> None:
 
     client = ph.PinnedHTTPClient(resolver=resolver, transport_factory=factory)
     with pytest.raises(ph.BlockedAddressError):
-        client.get("https://public.example/start", user_agent="ua/1")
+        client.get(
+            "https://public.example/start",
+            user_agent="ua/1",
+            policy=_policy(),
+        )
     assert calls == [("public.example", 443), ("internal.example", 443)]
     assert budgets[0] is budgets[1]
 
@@ -2095,7 +2106,11 @@ def test_redirect_to_blocked_literal_is_rejected(ip: str) -> None:
         transport_factory=factory,
     )
     with pytest.raises(ph.BlockedAddressError):
-        client.get("https://93.184.216.34/start", user_agent="ua/1")
+        client.get(
+            "https://93.184.216.34/start",
+            user_agent="ua/1",
+            policy=_policy(),
+        )
 
 
 def test_redirect_to_mixed_dns_answer_is_rejected(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -2126,7 +2141,11 @@ def test_redirect_to_mixed_dns_answer_is_rejected(monkeypatch: pytest.MonkeyPatc
         transport_factory=factory,
     )
     with pytest.raises(ph.BlockedAddressError):
-        client.get("https://public.example/start", user_agent="ua/1")
+        client.get(
+            "https://public.example/start",
+            user_agent="ua/1",
+            policy=_policy(),
+        )
     assert calls == ["public.example", "mixed.example"]
 
 
@@ -2148,7 +2167,11 @@ def test_five_redirects_allowed_sixth_rejected() -> None:
 
     client = ph.PinnedHTTPClient(resolver=_public_resolver, transport_factory=factory)
     with pytest.raises(ph.RedirectPolicyError):
-        client.get("https://example.com/0", user_agent="ua/1", max_redirects=5)
+        client.get(
+            "https://example.com/0",
+            user_agent="ua/1",
+            policy=_policy(max_redirects=5),
+        )
     assert len(visited) == 6
 
 
@@ -2183,7 +2206,7 @@ def test_client_supports_all_approved_redirect_forms(
     result = ph.PinnedHTTPClient(
         resolver=_public_resolver,
         transport_factory=factory,
-    ).get(start, user_agent="ua/1")
+    ).get(start, user_agent="ua/1", policy=_policy())
     assert result.url == expected
     assert len(result.redirects) == 1
 
@@ -2204,7 +2227,11 @@ def test_blank_or_nonstandard_redirect_is_final(status: int, location: str) -> N
         resolver=_public_resolver,
         transport_factory=lambda _hop, _policy, _budget: transport,
     )
-    result = client.get("https://example.com/a", user_agent="ua/1")
+    result = client.get(
+        "https://example.com/a",
+        user_agent="ua/1",
+        policy=_policy(),
+    )
     assert result.status_code == status
     assert result.redirects == ()
 
@@ -2222,7 +2249,11 @@ def test_fragment_and_default_port_redirect_loops_are_rejected(location: str) ->
         transport_factory=lambda _hop, _policy, _budget: transport,
     )
     with pytest.raises(ph.RedirectPolicyError):
-        client.get("https://example.com/a#initial", user_agent="ua/1")
+        client.get(
+            "https://example.com/a#initial",
+            user_agent="ua/1",
+            policy=_policy(),
+        )
 
 
 def test_unicode_and_ascii_idna_redirect_loop_is_rejected() -> None:
@@ -2237,7 +2268,11 @@ def test_unicode_and_ascii_idna_redirect_loop_is_rejected() -> None:
         transport_factory=lambda _hop, _policy, _budget: transport,
     )
     with pytest.raises(ph.RedirectPolicyError):
-        client.get("https://BÜCHER.example/a", user_agent="ua/1")
+        client.get(
+            "https://BÜCHER.example/a",
+            user_agent="ua/1",
+            policy=_policy(),
+        )
 
 
 def test_malformed_redirect_target_is_translated() -> None:
@@ -2249,7 +2284,11 @@ def test_malformed_redirect_target_is_translated() -> None:
         transport_factory=lambda _hop, _policy, _budget: transport,
     )
     with pytest.raises(ph.RedirectPolicyError):
-        client.get("https://example.com/a", user_agent="ua/1")
+        client.get(
+            "https://example.com/a",
+            user_agent="ua/1",
+            policy=_policy(),
+        )
 
 
 def test_percent_encoded_and_literal_paths_are_distinct() -> None:
@@ -2267,7 +2306,7 @@ def test_percent_encoded_and_literal_paths_are_distinct() -> None:
     result = ph.PinnedHTTPClient(
         resolver=_public_resolver,
         transport_factory=factory,
-    ).get("https://example.com/a%2Fb", user_agent="ua/1")
+    ).get("https://example.com/a%2Fb", user_agent="ua/1", policy=_policy())
     assert result.url == "https://example.com/a/b"
     assert len(result.redirects) == 1
 
@@ -2302,7 +2341,7 @@ def test_each_redirect_hop_resolves_once_and_gets_a_fresh_transport() -> None:
     result = ph.PinnedHTTPClient(
         resolver=resolver,
         transport_factory=factory,
-    ).get("https://a.example/start", user_agent="ua/1")
+    ).get("https://a.example/start", user_agent="ua/1", policy=_policy())
     assert result.content == b"done"
     assert resolutions == [("a.example", 443), ("b.example", 443)]
     assert transports == [
@@ -2331,7 +2370,7 @@ def test_environment_proxies_are_not_used(monkeypatch: pytest.MonkeyPatch) -> No
     result = ph.PinnedHTTPClient(
         resolver=_public_resolver,
         transport_factory=factory,
-    ).get("https://example.com/a", user_agent="ua/1")
+    ).get("https://example.com/a", user_agent="ua/1", policy=_policy())
     assert result.content == b"direct"
     assert handled == ["https://example.com/a"]
 
@@ -2349,7 +2388,11 @@ def test_client_translates_transport_factory_failure() -> None:
         transport_factory=factory,
     )
     with pytest.raises(ph.PinnedTransportError):
-        client.get("https://example.com/a", user_agent="ua/1")
+        client.get(
+            "https://example.com/a",
+            user_agent="ua/1",
+            policy=_policy(),
+        )
 
 
 @pytest.mark.parametrize(
@@ -2377,7 +2420,11 @@ def test_client_translates_transport_failures(error_factory) -> None:
         transport_factory=factory,
     )
     with pytest.raises(ph.PinnedTransportError):
-        client.get("https://example.com/a", user_agent="ua/1")
+        client.get(
+            "https://example.com/a",
+            user_agent="ua/1",
+            policy=_policy(),
+        )
 
 
 class _OneChunkStream(httpx.SyncByteStream):
@@ -2411,7 +2458,7 @@ def test_shared_layer_decodes_gzip_exactly_once() -> None:
     result = ph.PinnedHTTPClient(
         resolver=_public_resolver,
         transport_factory=factory,
-    ).get("https://example.com/a", user_agent="ua/1")
+    ).get("https://example.com/a", user_agent="ua/1", policy=_policy())
     assert result.content == "Vĩnh Long".encode("utf-8")
     assert result.content != encoded
 
@@ -2440,7 +2487,11 @@ def test_concurrent_calls_do_not_leak_pinned_hops() -> None:
     with ThreadPoolExecutor(max_workers=4) as executor:
         results = list(
             executor.map(
-                lambda host: client.get(f"https://{host}/", user_agent="ua/1"),
+                lambda host: client.get(
+                    f"https://{host}/",
+                    user_agent="ua/1",
+                    policy=_policy(),
+                ),
                 hosts,
             )
         )

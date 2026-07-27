@@ -54,12 +54,11 @@ def test_mapped_fetcher_registry_scope_is_exact() -> None:
     }
 
 
-def test_every_mapped_module_imports_pinned_http_client() -> None:
+def test_every_mapped_module_imports_pinned_http_client_and_policy() -> None:
     for relative_path in MAPPED_FETCHERS:
         imported = _module_pinned_http_imports(ROOT / relative_path)
-        assert "PinnedHTTPClient" in imported, (
-            f"{relative_path} does not import PinnedHTTPClient"
-        )
+        for name in ("PinnedHTTPClient", "EgressPolicy"):
+            assert name in imported, f"{relative_path} does not import {name}"
 
 
 # Every function in agent/ that still reaches the network through a

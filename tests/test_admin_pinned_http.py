@@ -29,7 +29,9 @@ def _response(
     )
 
 
-def test_admin_fetch_passes_fixed_pinned_options(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_admin_fetch_passes_dynamic_image_egress_policy(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     calls: list[tuple[str, dict]] = []
     monkeypatch.setattr(
         admin._PINNED_HTTP,
@@ -42,8 +44,14 @@ def test_admin_fetch_passes_fixed_pinned_options(monkeypatch: pytest.MonkeyPatch
         "https://cdn.example/a",
         {
             "user_agent": "vinhlong360-image-review/1.0 (+https://vinhlong360.vn)",
-            "timeout": 25,
-            "max_redirects": 5,
+            "policy": ph.EgressPolicy(
+                max_encoded_bytes=12 * 1024 * 1024,
+                max_decoded_bytes=12 * 1024 * 1024,
+                accepted_encodings=("identity",),
+                inactivity_timeout_seconds=25.0,
+                total_timeout_seconds=25.0,
+                max_redirects=5,
+            ),
         },
     )]
 
@@ -215,12 +223,27 @@ def test_admin_fetch_executes_pinned_get_inside_threadpool(
     [
         (ph.BlockedAddressError("blocked"), 400),
         (ph.RedirectPolicyError("loop"), 400),
+        (ph.PinnedBodyLimitError("large"), 400),
+        (ph.PinnedContentEncodingError("encoding"), 400),
+        (ph.PinnedDeadlineExceeded("deadline"), 502),
+        (ph.ResolverSaturatedError("dns busy"), 502),
         (ph.PinnedTransportError("connect"), 502),
         (_response(status=404), 502),
         (_response(content=b""), 400),
         (_response(content=b"12345"), 400),
     ],
-    ids=["blocked", "redirect", "transport", "http-status", "empty", "oversize"],
+    ids=[
+        "blocked",
+        "redirect",
+        "body-limit",
+        "encoding",
+        "deadline",
+        "dns-saturated",
+        "transport",
+        "http-status",
+        "empty",
+        "oversize",
+    ],
 )
 def test_approval_fetch_failures_leave_all_state_untouched(
     monkeypatch: pytest.MonkeyPatch,

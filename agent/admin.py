@@ -41,13 +41,30 @@ import site_settings
 from database import db, escape_like as _escape_like
 from pinned_http import (
     DestinationPolicyError,
+    EgressPolicy,
     InvalidDestinationError,
+    PinnedBodyLimitError,
+    PinnedContentEncodingError,
+    PinnedDeadlineExceeded,
     PinnedHTTPClient,
     PinnedTransportError,
     RedirectPolicyError,
     ResolutionError,
+    ResolverSaturatedError,
     validate_public_url,
 )
+
+
+def _admin_image_egress_policy(max_image_size: int) -> EgressPolicy:
+    return EgressPolicy(
+        max_encoded_bytes=max_image_size,
+        max_decoded_bytes=max_image_size,
+        accepted_encodings=("identity",),
+        inactivity_timeout_seconds=25.0,
+        total_timeout_seconds=25.0,
+        max_redirects=5,
+    )
+
 
 _PINNED_HTTP = PinnedHTTPClient()
 
@@ -2214,8 +2231,7 @@ async def _approve_fetch_image_data(candidate_url, run_in_threadpool, max_image_
             lambda: _PINNED_HTTP.get(
                 candidate_url,
                 user_agent="vinhlong360-image-review/1.0 (+https://vinhlong360.vn)",
-                timeout=25,
-                max_redirects=5,
+                policy=_admin_image_egress_policy(max_image_size),
             )
         )
         status_response = httpx.Response(
@@ -2227,7 +2243,17 @@ async def _approve_fetch_image_data(candidate_url, run_in_threadpool, max_image_
         data = result.content
     except (DestinationPolicyError, RedirectPolicyError) as exc:
         raise _image_policy_http_error(exc) from exc
-    except (PinnedTransportError, httpx.HTTPStatusError) as exc:
+    except (PinnedBodyLimitError, PinnedContentEncodingError) as exc:
+        raise HTTPException(
+            400,
+            f"Ảnh nguồn rỗng hoặc quá lớn (tối đa {max_image_size // 1024 // 1024}MB)",
+        ) from exc
+    except (
+        PinnedDeadlineExceeded,
+        ResolverSaturatedError,
+        PinnedTransportError,
+        httpx.HTTPStatusError,
+    ) as exc:
         logger.warning("Suggestion image fetch failed for %s: %s", candidate_url, exc)
         raise HTTPException(502, "Không tải được ảnh nguồn, vui lòng thử lại sau") from exc
 

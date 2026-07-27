@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import logging
-
 import pytest
 
 import auto_learn
@@ -34,8 +32,14 @@ def test_fetch_url_uses_pinned_options_and_preserves_cleanup(monkeypatch: pytest
         "https://example.com/a",
         {
             "user_agent": "vinhlong360-learner/1.0",
-            "timeout": 15,
-            "max_redirects": 5,
+            "policy": ph.EgressPolicy(
+                max_encoded_bytes=2 * 1024 * 1024,
+                max_decoded_bytes=2 * 1024 * 1024,
+                accepted_encodings=("gzip", "identity"),
+                inactivity_timeout_seconds=15.0,
+                total_timeout_seconds=15.0,
+                max_redirects=5,
+            ),
         },
     )]
 
@@ -64,18 +68,33 @@ def test_fetch_url_keeps_httpx_charset_behavior(monkeypatch: pytest.MonkeyPatch)
     assert "café" in auto_learn.fetch_url("https://example.com/a")
 
 
-def test_fetch_url_logs_and_returns_none_on_failure(
+@pytest.mark.parametrize(
+    "error",
+    [
+        ph.PinnedBodyLimitError("large"),
+        ph.PinnedContentEncodingError("encoding"),
+        ph.PinnedDeadlineExceeded("deadline"),
+        ph.ResolverSaturatedError("dns busy"),
+    ],
+)
+def test_fetch_url_logs_once_and_returns_none_on_bounded_failure(
     monkeypatch: pytest.MonkeyPatch,
-    caplog: pytest.LogCaptureFixture,
+    error: Exception,
 ) -> None:
+    warnings: list[str] = []
     monkeypatch.setattr(
         auto_learn._PINNED_HTTP,
         "get",
-        lambda *_args, **_kwargs: (_ for _ in ()).throw(ph.PinnedTransportError("boom")),
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(error),
     )
-    with caplog.at_level(logging.WARNING):
-        assert auto_learn.fetch_url("https://example.com/a") is None
-    assert "https://example.com/a" in caplog.text
+    monkeypatch.setattr(
+        auto_learn.logger,
+        "warning",
+        lambda message, *args: warnings.append(message % args),
+    )
+    assert auto_learn.fetch_url("https://example.com/a") is None
+    assert len(warnings) == 1
+    assert "https://example.com/a" in warnings[0]
 
 
 def test_fetch_url_missing_charset_uses_httpx_utf8_fallback(

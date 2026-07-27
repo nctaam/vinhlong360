@@ -863,7 +863,6 @@ def _fetch_hop(
     user_agent: str,
     policy: EgressPolicy,
     budget: DeadlineBudget,
-    timeout: float | httpx.Timeout | None = None,
     transport_factory: TransportFactory,
     monotonic: MonotonicClock = time.monotonic,
 ) -> tuple[int, tuple[tuple[str, str], ...], bytes, str | None]:
@@ -927,22 +926,6 @@ def _redirect_target(current: httpx.URL, location: str) -> httpx.URL:
         raise RedirectPolicyError("redirect target is invalid") from exc
 
 
-def _transitional_policy(
-    *,
-    timeout: float | httpx.Timeout | None,
-    max_redirects: int | None,
-) -> EgressPolicy:
-    seconds = float(timeout) if isinstance(timeout, (int, float)) else 15.0
-    return EgressPolicy(
-        max_encoded_bytes=12 * 1024 * 1024,
-        max_decoded_bytes=12 * 1024 * 1024,
-        accepted_encodings=("gzip", "identity"),
-        inactivity_timeout_seconds=max(seconds, 0.001),
-        total_timeout_seconds=max(seconds, 0.001),
-        max_redirects=max(0, max_redirects if max_redirects is not None else 5),
-    )
-
-
 class PinnedHTTPClient:
     def __init__(
         self,
@@ -960,12 +943,8 @@ class PinnedHTTPClient:
         url: str,
         *,
         user_agent: str,
-        policy: EgressPolicy | None = None,
-        timeout: float | httpx.Timeout | None = None,
-        max_redirects: int | None = None,
+        policy: EgressPolicy,
     ) -> PinnedResponse:
-        if policy is None:
-            policy = _transitional_policy(timeout=timeout, max_redirects=max_redirects)
         budget = DeadlineBudget.start(
             policy.total_timeout_seconds,
             monotonic=self._monotonic,
@@ -985,7 +964,6 @@ class PinnedHTTPClient:
                 user_agent=user_agent,
                 policy=policy,
                 budget=budget,
-                timeout=timeout,
                 transport_factory=self._transport_factory,
                 monotonic=self._monotonic,
             )

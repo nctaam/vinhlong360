@@ -50,7 +50,7 @@ try:
 except Exception:
     requests = None  # type: ignore[assignment]
 
-from pinned_http import PinnedHTTPClient, PinnedResponse
+from pinned_http import EgressPolicy, PinnedHTTPClient, PinnedResponse
 
 _PINNED_HTTP = PinnedHTTPClient()
 
@@ -658,6 +658,17 @@ def _decode_pinned_requests_text(response: PinnedResponse) -> str:
     return offline.text
 
 
+def _quality_burst_egress_policy(timeout: int) -> EgressPolicy:
+    return EgressPolicy(
+        max_encoded_bytes=2 * 1024 * 1024,
+        max_decoded_bytes=2 * 1024 * 1024,
+        accepted_encodings=("gzip", "identity"),
+        inactivity_timeout_seconds=float(timeout),
+        total_timeout_seconds=float(timeout),
+        max_redirects=5,
+    )
+
+
 def fetch_url_text(url: str, *, timeout: int = 12, disabled: bool = False) -> str:
     if disabled or not is_valid_http_url(url) or requests is None:
         return ""
@@ -665,8 +676,7 @@ def fetch_url_text(url: str, *, timeout: int = 12, disabled: bool = False) -> st
         response = _PINNED_HTTP.get(
             url,
             user_agent="vinhlong360-quality-burst/1.0",
-            timeout=timeout,
-            max_redirects=5,
+            policy=_quality_burst_egress_policy(timeout),
         )
         if response.status_code >= 400:
             return ""
