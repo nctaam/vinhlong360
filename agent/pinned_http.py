@@ -28,6 +28,7 @@ import ipaddress
 import select
 import socket
 import ssl
+import threading
 import time
 import zlib
 from collections.abc import Callable, Iterable
@@ -187,7 +188,12 @@ class PinnedResponse:
 
 
 class Resolver(Protocol):
-    def __call__(self, host: str, port: int) -> tuple[ResolvedAddress, ...]:
+    def __call__(
+        self,
+        host: str,
+        port: int,
+        budget: DeadlineBudget,
+    ) -> tuple[ResolvedAddress, ...]:
         raise NotImplementedError
 
 
@@ -197,6 +203,8 @@ class TransportFactory(Protocol):
 
 
 _HTTP_PORTS = {"http": 80, "https": 443}
+_MAX_RESOLVER_THREADS = 4
+_RESOLVER_SLOTS = threading.BoundedSemaphore(_MAX_RESOLVER_THREADS)
 _NAT64_NETWORKS = (
     ipaddress.ip_network("64:ff9b::/96"),
     ipaddress.ip_network("64:ff9b:1::/48"),
@@ -302,7 +310,58 @@ def _resolved_address(
     )
 
 
-def resolve_public_addresses(host: str, port: int) -> tuple[ResolvedAddress, ...]:
+def _gated_getaddrinfo(
+    host: str,
+    port: int,
+    budget: DeadlineBudget,
+) -> list[tuple]:
+    try:
+        acquired = _RESOLVER_SLOTS.acquire(timeout=budget.remaining())
+    except PinnedDeadlineExceeded as exc:
+        raise ResolverSaturatedError("resolver gate deadline exceeded") from exc
+    if not acquired:
+        raise ResolverSaturatedError("resolver capacity exhausted")
+
+    completed = threading.Event()
+    state: dict[str, object] = {}
+
+    def resolve() -> None:
+        try:
+            state["answers"] = socket.getaddrinfo(
+                host,
+                port,
+                type=socket.SOCK_STREAM,
+                proto=socket.IPPROTO_TCP,
+            )
+        except BaseException as exc:
+            state["error"] = exc
+        finally:
+            _RESOLVER_SLOTS.release()
+            completed.set()
+
+    try:
+        threading.Thread(
+            target=resolve,
+            name="vinhlong360-pinned-dns",
+            daemon=True,
+        ).start()
+    except BaseException:
+        _RESOLVER_SLOTS.release()
+        raise
+
+    if not completed.wait(timeout=budget.remaining()):
+        raise PinnedDeadlineExceeded("DNS resolution deadline exceeded")
+    error = state.get("error")
+    if error is not None:
+        raise ResolutionError(f"failed to resolve {host}") from error
+    return list(state["answers"])
+
+
+def resolve_public_addresses(
+    host: str,
+    port: int,
+    budget: DeadlineBudget,
+) -> tuple[ResolvedAddress, ...]:
     try:
         literal = ipaddress.ip_address(host)
     except ValueError:
@@ -314,15 +373,7 @@ def resolve_public_addresses(host: str, port: int) -> tuple[ResolvedAddress, ...
         sockaddr = (str(literal), port, 0, 0) if family == socket.AF_INET6 else (str(literal), port)
         return (_resolved_address(family, socket.SOCK_STREAM, socket.IPPROTO_TCP, sockaddr),)
 
-    try:
-        answers = socket.getaddrinfo(
-            host,
-            port,
-            type=socket.SOCK_STREAM,
-            proto=socket.IPPROTO_TCP,
-        )
-    except OSError as exc:
-        raise ResolutionError(f"failed to resolve {host}") from exc
+    answers = _gated_getaddrinfo(host, port, budget)
 
     resolved: list[ResolvedAddress] = []
     seen: set[tuple[int, tuple]] = set()
@@ -341,10 +392,12 @@ def validate_public_url(
     url: str,
     *,
     resolver: Resolver = resolve_public_addresses,
+    budget: DeadlineBudget | None = None,
 ) -> None:
+    active_budget = budget or DeadlineBudget.start(15.0)
     parsed = _parse_url(url)
     port = parsed.port or _HTTP_PORTS[parsed.scheme]
-    if not resolver(_ascii_host(parsed), port):
+    if not resolver(_ascii_host(parsed), port, active_budget):
         raise ResolutionError("resolver returned no usable addresses")
 
 
@@ -580,11 +633,15 @@ def build_pinned_transport(hop: ResolvedHop) -> httpx.BaseTransport:
     return _PinnedHTTPTransport(hop)
 
 
-def _resolve_hop(url: str | httpx.URL, resolver: Resolver) -> ResolvedHop:
+def _resolve_hop(
+    url: str | httpx.URL,
+    resolver: Resolver,
+    budget: DeadlineBudget,
+) -> ResolvedHop:
     parsed = _parse_url(str(url))
     port = parsed.port or _HTTP_PORTS[parsed.scheme]
     host = _ascii_host(parsed)
-    addresses = resolver(host, port)
+    addresses = resolver(host, port, budget)
     if not addresses:
         raise ResolutionError("resolver returned no usable addresses")
     return ResolvedHop(url=parsed, host=host, port=port, addresses=addresses)
@@ -799,7 +856,7 @@ class PinnedHTTPClient:
             if key in visited:
                 raise RedirectPolicyError("redirect loop detected")
             visited.add(key)
-            hop = _resolve_hop(current, self._resolver)
+            hop = _resolve_hop(current, self._resolver, budget)
             status, headers, content, location = _fetch_hop(
                 hop,
                 user_agent=user_agent,

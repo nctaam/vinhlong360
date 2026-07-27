@@ -4,6 +4,7 @@ import gzip
 import inspect
 import socket
 import ssl
+import threading
 from concurrent.futures import ThreadPoolExecutor
 
 import httpcore
@@ -96,12 +97,12 @@ def test_public_addresses_stay_allowed(ip: str) -> None:
 )
 def test_validate_public_url_rejects_invalid_authority(url: str) -> None:
     with pytest.raises(ph.InvalidDestinationError):
-        ph.validate_public_url(url, resolver=lambda _host, _port: ())
+        ph.validate_public_url(url, resolver=lambda _host, _port, _budget: ())
 
 
 def test_resolver_allows_and_deduplicates_public_answers(monkeypatch: pytest.MonkeyPatch) -> None:
     _install_dns(monkeypatch, "93.184.216.34", "2606:2800:220:1:248:1893:25c8:1946", "93.184.216.34")
-    result = ph.resolve_public_addresses("example.com", 443)
+    result = ph.resolve_public_addresses("example.com", 443, ph.DeadlineBudget.start(1.0))
     assert [str(item.ip) for item in result] == [
         "93.184.216.34",
         "2606:2800:220:1:248:1893:25c8:1946",
@@ -118,13 +119,13 @@ def test_resolver_rejects_blocked_and_transition_answers(
 ) -> None:
     _install_dns(monkeypatch, ip)
     with pytest.raises(ph.BlockedAddressError):
-        ph.resolve_public_addresses("example.com", 443)
+        ph.resolve_public_addresses("example.com", 443, ph.DeadlineBudget.start(1.0))
 
 
 def test_resolver_rejects_mixed_answer_set(monkeypatch: pytest.MonkeyPatch) -> None:
     _install_dns(monkeypatch, "93.184.216.34", "127.0.0.1")
     with pytest.raises(ph.BlockedAddressError):
-        ph.resolve_public_addresses("example.com", 443)
+        ph.resolve_public_addresses("example.com", 443, ph.DeadlineBudget.start(1.0))
 
 
 def test_resolver_translates_malformed_answers(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -133,7 +134,7 @@ def test_resolver_translates_malformed_answers(monkeypatch: pytest.MonkeyPatch) 
     ]
     monkeypatch.setattr(ph.socket, "getaddrinfo", lambda *_args, **_kwargs: malformed)
     with pytest.raises(ph.ResolutionError):
-        ph.resolve_public_addresses("example.com", 443)
+        ph.resolve_public_addresses("example.com", 443, ph.DeadlineBudget.start(1.0))
 
 
 def test_resolver_translates_dns_failure(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -142,7 +143,97 @@ def test_resolver_translates_dns_failure(monkeypatch: pytest.MonkeyPatch) -> Non
 
     monkeypatch.setattr(ph.socket, "getaddrinfo", fail)
     with pytest.raises(ph.ResolutionError):
-        ph.resolve_public_addresses("example.com", 443)
+        ph.resolve_public_addresses("example.com", 443, ph.DeadlineBudget.start(1.0))
+
+
+def test_dns_gate_limits_active_resolvers_to_four(monkeypatch: pytest.MonkeyPatch) -> None:
+    entered = threading.Barrier(5)
+    release = threading.Event()
+    active = 0
+    peak = 0
+    lock = threading.Lock()
+
+    def blocked_getaddrinfo(*_args, **_kwargs):
+        nonlocal active, peak
+        with lock:
+            active += 1
+            peak = max(peak, active)
+        entered.wait(timeout=2.0)
+        release.wait(timeout=2.0)
+        with lock:
+            active -= 1
+        return [_answer("93.184.216.34")]
+
+    monkeypatch.setattr(ph.socket, "getaddrinfo", blocked_getaddrinfo)
+    budgets = [ph.DeadlineBudget.start(10.0) for _ in range(4)]
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        futures = [
+            executor.submit(ph.resolve_public_addresses, "example.com", 443, budget)
+            for budget in budgets
+        ]
+        try:
+            entered.wait(timeout=2.0)
+            with pytest.raises(ph.ResolverSaturatedError):
+                ph.resolve_public_addresses(
+                    "fifth.example",
+                    443,
+                    ph.DeadlineBudget.start(0.01),
+                )
+            assert peak == 4
+        finally:
+            release.set()
+        assert all(future.result() for future in futures)
+
+
+def test_timed_out_dns_threads_hold_slots_until_os_returns(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    entered = threading.Barrier(5)
+    release = threading.Event()
+    call_count = 0
+    lock = threading.Lock()
+
+    def blocked_getaddrinfo(*_args, **_kwargs):
+        nonlocal call_count
+        with lock:
+            call_count += 1
+            current = call_count
+        if current <= 4:
+            entered.wait(timeout=2.0)
+            release.wait(timeout=2.0)
+        return [_answer("93.184.216.34")]
+
+    monkeypatch.setattr(ph.socket, "getaddrinfo", blocked_getaddrinfo)
+    try:
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            futures = [
+                executor.submit(
+                    ph.resolve_public_addresses,
+                    f"blocked-{index}.example",
+                    443,
+                    ph.DeadlineBudget.start(0.05),
+                )
+                for index in range(4)
+            ]
+            entered.wait(timeout=2.0)
+            for future in futures:
+                with pytest.raises(ph.PinnedDeadlineExceeded):
+                    future.result(timeout=1.0)
+            with pytest.raises(ph.ResolverSaturatedError):
+                ph.resolve_public_addresses(
+                    "fifth.example",
+                    443,
+                    ph.DeadlineBudget.start(0.01),
+                )
+        release.set()
+        recovered = ph.resolve_public_addresses(
+            "recovered.example",
+            443,
+            ph.DeadlineBudget.start(1.0),
+        )
+        assert str(recovered[0].ip) == "93.184.216.34"
+    finally:
+        release.set()
 
 
 @pytest.mark.parametrize("ip", _ALLOWED_IPS)
@@ -151,7 +242,7 @@ def test_public_literal_ip_never_calls_dns(
     ip: str,
 ) -> None:
     monkeypatch.setattr(ph.socket, "getaddrinfo", lambda *_args, **_kwargs: pytest.fail("DNS called"))
-    addresses = ph.resolve_public_addresses(ip, 443)
+    addresses = ph.resolve_public_addresses(ip, 443, ph.DeadlineBudget.start(1.0))
     assert addresses[0].ip == ph.ipaddress.ip_address(ip)
 
 
@@ -162,14 +253,19 @@ def test_blocked_literal_ip_never_calls_dns(
 ) -> None:
     monkeypatch.setattr(ph.socket, "getaddrinfo", lambda *_args, **_kwargs: pytest.fail("DNS called"))
     with pytest.raises(ph.BlockedAddressError):
-        ph.resolve_public_addresses(ip, 443)
+        ph.resolve_public_addresses(ip, 443, ph.DeadlineBudget.start(1.0))
 
 
 def test_validate_public_url_uses_injected_resolver() -> None:
-    calls: list[tuple[str, int]] = []
+    calls: list[tuple[str, int, ph.DeadlineBudget]] = []
+    budget = ph.DeadlineBudget.start(1.0)
 
-    def resolver(host: str, port: int) -> tuple[ph.ResolvedAddress, ...]:
-        calls.append((host, port))
+    def resolver(
+        host: str,
+        port: int,
+        received_budget: ph.DeadlineBudget,
+    ) -> tuple[ph.ResolvedAddress, ...]:
+        calls.append((host, port, received_budget))
         return (
             ph.ResolvedAddress(
                 ip=ph.ipaddress.ip_address("93.184.216.34"),
@@ -181,14 +277,22 @@ def test_validate_public_url_uses_injected_resolver() -> None:
             ),
         )
 
-    ph.validate_public_url("https://Example.COM/path#fragment", resolver=resolver)
-    assert calls == [("example.com", 443)]
+    ph.validate_public_url(
+        "https://Example.COM/path#fragment",
+        resolver=resolver,
+        budget=budget,
+    )
+    assert calls == [("example.com", 443, budget)]
 
 
 def test_validate_public_url_uses_ascii_idna_host() -> None:
     calls: list[tuple[str, int]] = []
 
-    def resolver(host: str, port: int) -> tuple[ph.ResolvedAddress, ...]:
+    def resolver(
+        host: str,
+        port: int,
+        _budget: ph.DeadlineBudget,
+    ) -> tuple[ph.ResolvedAddress, ...]:
         calls.append((host, port))
         return (
             ph.ResolvedAddress(
@@ -203,6 +307,25 @@ def test_validate_public_url_uses_ascii_idna_host() -> None:
 
     ph.validate_public_url("https://BÜCHER.example/path", resolver=resolver)
     assert calls == [("xn--bcher-kva.example", 443)]
+
+
+def test_validate_public_url_default_budget_is_bounded(monkeypatch: pytest.MonkeyPatch) -> None:
+    start = 123.0
+    received: list[ph.DeadlineBudget] = []
+    monkeypatch.setattr(ph.time, "monotonic", lambda: start)
+
+    def resolver(
+        _host: str,
+        _port: int,
+        budget: ph.DeadlineBudget,
+    ) -> tuple[ph.ResolvedAddress, ...]:
+        received.append(budget)
+        return _public_resolver("example.com", 443, budget)
+
+    monkeypatch.setattr(ph, "resolve_public_addresses", resolver)
+    ph.validate_public_url("https://example.com", resolver=ph.resolve_public_addresses)
+
+    assert received[0].expires_at - start == pytest.approx(15.0)
 
 
 class FakeSocket:
@@ -530,7 +653,11 @@ def test_transport_preserves_ascii_host_duplicate_headers_and_stream_close(
     assert closed == [True]
 
 
-def _public_resolver(host: str, port: int) -> tuple[ph.ResolvedAddress, ...]:
+def _public_resolver(
+    host: str,
+    port: int,
+    _budget: ph.DeadlineBudget,
+) -> tuple[ph.ResolvedAddress, ...]:
     octet = 34 + (sum(host.encode("ascii")) % 20)
     ip = ph.ipaddress.ip_address(f"93.184.216.{octet}")
     return (
@@ -584,8 +711,8 @@ def _client_for_raw_response(
     headers: tuple[tuple[str, str], ...] = (),
     chunks: list[bytes] | None = None,
 ) -> ph.PinnedHTTPClient:
-    def resolver(host: str, port: int):
-        return _public_resolver(host, port)
+    def resolver(host: str, port: int, budget: ph.DeadlineBudget):
+        return _public_resolver(host, port, budget)
 
     def factory(_hop):
         raw_stream = _ChunkStream(chunks if chunks is not None else [body])
@@ -604,8 +731,8 @@ def _client_for_raw_response(
 
 
 def _client_for_redirect_stream(stream: _ChunkStream) -> ph.PinnedHTTPClient:
-    def resolver(host: str, port: int):
-        return _public_resolver(host, port)
+    def resolver(host: str, port: int, budget: ph.DeadlineBudget):
+        return _public_resolver(host, port, budget)
 
     calls = 0
 
@@ -859,12 +986,18 @@ def test_client_returns_immutable_decoded_response_and_user_agent() -> None:
 
 def test_redirect_re_resolves_every_hop_and_blocks_private_target() -> None:
     calls: list[tuple[str, int]] = []
+    budgets: list[ph.DeadlineBudget] = []
 
-    def resolver(host: str, port: int) -> tuple[ph.ResolvedAddress, ...]:
+    def resolver(
+        host: str,
+        port: int,
+        budget: ph.DeadlineBudget,
+    ) -> tuple[ph.ResolvedAddress, ...]:
         calls.append((host, port))
+        budgets.append(budget)
         if host == "internal.example":
             raise ph.BlockedAddressError("mixed or private destination")
-        return _public_resolver(host, port)
+        return _public_resolver(host, port, budget)
 
     def factory(hop: ph.ResolvedHop) -> httpx.BaseTransport:
         return httpx.MockTransport(
@@ -875,6 +1008,7 @@ def test_redirect_re_resolves_every_hop_and_blocks_private_target() -> None:
     with pytest.raises(ph.BlockedAddressError):
         client.get("https://public.example/start", user_agent="ua/1")
     assert calls == [("public.example", 443), ("internal.example", 443)]
+    assert budgets[0] is budgets[1]
 
 
 @pytest.mark.parametrize("ip", _BLOCKED_IPS)
@@ -1056,9 +1190,13 @@ def test_each_redirect_hop_resolves_once_and_gets_a_fresh_transport() -> None:
     resolutions: list[tuple[str, int]] = []
     transports: list[str] = []
 
-    def resolver(host: str, port: int) -> tuple[ph.ResolvedAddress, ...]:
+    def resolver(
+        host: str,
+        port: int,
+        budget: ph.DeadlineBudget,
+    ) -> tuple[ph.ResolvedAddress, ...]:
         resolutions.append((host, port))
-        return _public_resolver(host, port)
+        return _public_resolver(host, port, budget)
 
     def factory(hop: ph.ResolvedHop) -> httpx.BaseTransport:
         transports.append(str(hop.url))
