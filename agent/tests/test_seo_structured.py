@@ -1987,10 +1987,11 @@ def test_product_offers_includes_url():
 # ── aggregateRating ──────────────────────────────────────────────────
 
 
-def test_entity_jsonld_aggregate_rating():
+def test_entity_jsonld_aggregate_rating_from_own_reviews():
+    """Đánh giá của CHÍNH site (avg_rating/rating_count) vẫn được phát."""
     entity = {
         "id": "rated", "name": "Rated", "type": "attraction",
-        "attributes": {"rating": 4.5, "review_count": 120},
+        "attributes": {"avg_rating": 4.5, "rating_count": 120},
     }
     ld = seo.build_entity_jsonld(entity, {})
     assert "aggregateRating" in ld
@@ -2004,7 +2005,7 @@ def test_entity_jsonld_aggregate_rating():
 def test_entity_jsonld_no_aggregate_rating_below_min_count():
     entity = {
         "id": "rated-no-cnt", "name": "Rated", "type": "restaurant",
-        "attributes": {"rating": 3.8, "review_count": 2},
+        "attributes": {"avg_rating": 3.8, "rating_count": 2},
     }
     ld = seo.build_entity_jsonld(entity, {})
     assert "aggregateRating" not in ld
@@ -2013,13 +2014,28 @@ def test_entity_jsonld_no_aggregate_rating_below_min_count():
 def test_entity_jsonld_aggregate_rating_at_min_count():
     entity = {
         "id": "rated-min", "name": "Rated", "type": "restaurant",
-        "attributes": {"rating": 3.8, "review_count": 3},
+        "attributes": {"avg_rating": 3.8, "rating_count": 3},
     }
     ld = seo.build_entity_jsonld(entity, {})
     assert "aggregateRating" in ld
     agg = ld["aggregateRating"]
     assert agg["ratingValue"] == 3.8
     assert agg["ratingCount"] == 3
+
+
+def test_entity_jsonld_never_emits_third_party_rating():
+    """attrs.rating là điểm sao bên thứ ba (foody.vn) — KHÔNG được thành aggregateRating.
+
+    Đây là claim máy-đọc-được: phát nó là nói với máy tìm kiếm rằng vinhlong360 sở hữu
+    đánh giá tổng hợp, trong khi site không thu thập đánh giá nào. Regression guard.
+    """
+    entity = {
+        "id": "third-party", "name": "Quán cà phê", "type": "restaurant",
+        "source": [{"title": "foody.vn"}],
+        "attributes": {"rating": 4.5, "review_count": 120},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "aggregateRating" not in ld
 
 
 def test_entity_jsonld_no_aggregate_rating_when_zero():

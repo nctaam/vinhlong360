@@ -456,9 +456,9 @@ const sections: Section[] = [
     ],
     faqs: [
       { q: 'Tìm kiếm có hỗ trợ tiếng Anh không?', a: 'Hiện tại nội dung chủ yếu bằng tiếng Việt. Bạn có thể tìm bằng tên riêng tiếng Anh (như "homestay", "Cai Be") và hệ thống sẽ trả kết quả phù hợp.' },
-      { q: 'Tại sao một số địa điểm không có ảnh?', a: 'Ảnh chỉ hiển thị khi có nguồn bản quyền hợp lệ (UGC, Pexels, Unsplash). Bạn có thể đóng góp ảnh qua bài viết cộng đồng.' },
+      { q: 'Tại sao một số địa điểm không có ảnh?', a: 'Ảnh minh hoạ trên vinhlong360 do AI dựng và luôn được ghi nhãn minh hoạ — tụi mình không dùng ảnh stock, không cào ảnh từ báo hay trang chính quyền. Hiện phần lớn địa điểm chưa có ảnh; tụi mình bổ sung dần và thà để trống còn hơn gắn ảnh không đúng nơi.' },
       { q: 'Kết quả tìm kiếm có bao gồm bài viết cộng đồng không?', a: 'Có. Trang kết quả đầy đủ (nhấn Enter) hiển thị cả bài viết, đánh giá từ cộng đồng và hồ sơ người dùng.' },
-      { q: 'Có bao nhiêu địa điểm trên hệ thống?', a: 'Hiện có hơn 1.700 địa điểm và 9.500 mối quan hệ liên kết, trải rộng Vĩnh Long, Bến Tre, Trà Vinh. Dữ liệu liên tục được bổ sung.' },
+      { q: 'Có bao nhiêu địa điểm trên hệ thống?', a: 'Hiện có hơn 1.700 địa điểm và hơn 12.000 mối quan hệ liên kết, trải khắp tỉnh Vĩnh Long mới — tỉnh hợp nhất từ Vĩnh Long, Bến Tre và Trà Vinh cũ hồi tháng 7-2025. Dữ liệu liên tục được bổ sung.' },
     ],
   },
 

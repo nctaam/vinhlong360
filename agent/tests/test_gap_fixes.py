@@ -1027,22 +1027,24 @@ class TestNotificationTypeMappings:
 
 
 class TestAggregateRatingDedup:
-    """Second aggregateRating block must not overwrite the first (UGC-based)."""
+    """aggregateRating chỉ được sinh từ đánh giá của chính site."""
 
-    def test_fallback_guarded_by_not_in_ld(self):
-        # Refactor R20.8: guard dời sang seo._jsonld_ratings (build_entity_jsonld gọi nó).
+    def test_ratings_helper_is_wired(self):
         seo = __import__("seo")
         assert "_jsonld_ratings" in inspect.getsource(seo.build_entity_jsonld)
-        assert '"aggregateRating" not in ld' in inspect.getsource(seo._jsonld_ratings)
 
-    def test_fallback_uses_ratingCount_not_reviewCount(self):
-        # Refactor R20.8: fallback dời sang seo._jsonld_rating_fallback — phải emit
-        # ratingCount (qua _rating_dict), KHÔNG được lộ reviewCount ra schema.
+    def test_third_party_rating_fallback_is_gone(self):
+        # Nhánh fallback đọc attrs.rating (điểm sao foody.vn) đã bị gỡ: phát nó là
+        # khẳng định site sở hữu đánh giá tổng hợp mà nó không hề thu thập.
         seo = __import__("seo")
-        src = inspect.getsource(seo._jsonld_rating_fallback)
+        assert not hasattr(seo, "_jsonld_rating_fallback")
+        assert "_jsonld_rating_primary" in inspect.getsource(seo._jsonld_ratings)
+
+    def test_rating_dict_emits_ratingCount_not_reviewCount(self):
+        seo = __import__("seo")
+        src = inspect.getsource(seo._rating_dict)
+        assert "ratingCount" in src
         assert "reviewCount" not in src
-        assert "_rating_dict" in src  # _rating_dict phát "ratingCount"
-        assert "ratingCount" in inspect.getsource(seo._rating_dict)
 
     def test_ugc_rating_block_still_exists(self):
         # Refactor R20.8: block avg_rating/rating_count dời sang _jsonld_rating_primary.

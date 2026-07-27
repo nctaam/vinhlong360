@@ -8,7 +8,7 @@
         <p class="bm-eyebrow"><span class="bm-tick" aria-hidden="true"></span>Liên hệ</p>
         <h1>{{ pc('hero_title') }}</h1>
         <p class="bm-sub">{{ pc('hero_subtitle') }}</p>
-        <p class="bm-sla"><span aria-hidden="true">●</span> Thường trả lời trong 24–48 giờ — hai người đọc từng tin nhắn, không phải chatbot.</p>
+        <p class="bm-sla"><span aria-hidden="true">●</span> Thường trả lời trong 24–48 giờ — người thật đọc từng tin nhắn, không phải chatbot.</p>
       </div>
       <svg class="bm-motif" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
         <path d="M44 30c-10 6-16 18-14 30 2 13 12 22 25 24" fill="none" stroke-width="1.6" stroke-linecap="round" />

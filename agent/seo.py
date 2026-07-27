@@ -753,21 +753,18 @@ def _jsonld_rating_primary(ld: dict[str, Any], entity: dict[str, Any], attrs: di
         ld["aggregateRating"] = _rating_dict(round(rv, 1), rc)
 
 
-def _jsonld_rating_fallback(ld: dict[str, Any], attrs: dict[str, Any]) -> None:
-    rating_val = attrs.get("rating")
-    if not isinstance(rating_val, (int, float)) or not (0 < rating_val <= 5):
-        return
-    review_count = attrs.get("review_count")
-    rc_attr = int(review_count) if isinstance(review_count, int) and review_count > 0 else 0
-    if rc_attr >= AGGREGATE_RATING_MIN_COUNT:
-        ld["aggregateRating"] = _rating_dict(round(float(rating_val), 1), rc_attr)
-
-
 def _jsonld_ratings(ld: dict[str, Any], entity: dict[str, Any], attrs: dict[str, Any]) -> None:
-    """aggregateRating: ưu tiên avg_rating/rating_count (entity/attrs), fallback attrs.rating."""
+    """aggregateRating CHỈ từ đánh giá của chính site (avg_rating/rating_count).
+
+    Nhánh fallback cũ đọc `attrs.rating`/`attrs.review_count` — dữ liệu điểm sao của
+    bên thứ ba (125/126 mục ghi nguồn "foody.vn", chỉ 2 mục có URL). Phát chúng dưới
+    dạng AggregateRating là khẳng định với máy tìm kiếm rằng vinhlong360 sở hữu đánh
+    giá tổng hợp đó, trong khi site không thu thập đánh giá nào — đo lúc gỡ: 0 entity
+    có avg_rating/rating_count riêng, 115 entity kích hoạt fallback bên thứ ba.
+    Vi phạm §1.7 (không claim thứ dữ liệu không đỡ được) và §B6 (không re-host nội
+    dung bên thứ ba). Chỉ có đường UGC ở dưới, và nó tự bật khi có đánh giá thật.
+    """
     _jsonld_rating_primary(ld, entity, attrs)
-    if "aggregateRating" not in ld:
-        _jsonld_rating_fallback(ld, attrs)
 
 
 def _jsonld_season(ld: dict[str, Any], entity: dict[str, Any]) -> None:
