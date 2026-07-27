@@ -593,6 +593,7 @@ class _PinnedNetworkBackend(httpcore.NetworkBackend):
         approved = {(item.ip, item.port) for item in self._hop.addresses}
         last_error: Exception | None = None
         for address in self._hop.addresses:
+            self._budget.remaining(monotonic=self._monotonic)
             sock: socket.socket | None = None
             try:
                 sock = self._socket_factory(address.family, address.socktype, address.protocol)
@@ -615,6 +616,10 @@ class _PinnedNetworkBackend(httpcore.NetworkBackend):
                     budget=self._budget,
                     monotonic=self._monotonic,
                 )
+            except PinnedDeadlineExceeded:
+                if sock is not None:
+                    sock.close()
+                raise
             except PeerMismatchError:
                 if sock is not None:
                     sock.close()
@@ -815,7 +820,13 @@ def _read_bounded_body(
     if encoding not in policy.accepted_encodings:
         raise PinnedContentEncodingError("response content encoding is not accepted")
     # Mock transports may return an already-buffered response body.
-    chunks = [response.content] if response.is_stream_consumed else _bounded_raw_chunks(response, policy)
+    if response.is_stream_consumed:
+        buffered = response.content
+        if len(buffered) > policy.max_encoded_bytes:
+            raise PinnedBodyLimitError("encoded response body exceeds policy")
+        chunks = [buffered]
+    else:
+        chunks = _bounded_raw_chunks(response, policy)
     if encoding == "identity":
         return _decode_identity(chunks, policy, budget, monotonic)
     return _decode_gzip(chunks, policy, budget, monotonic)

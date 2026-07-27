@@ -468,7 +468,7 @@ def test_backend_fallback_uses_one_connect_budget() -> None:
     first = FakeSocket(("93.184.216.34", 443), connect_error=OSError("refused"))
     second = FakeSocket(("93.184.216.35", 443))
     sockets = iter([first, second])
-    times = iter([11.0, 12.0])
+    times = iter([11.0, 11.0, 12.0, 12.0])
     backend = ph._PinnedNetworkBackend(
         hop,
         policy=_policy(inactivity_timeout_seconds=5.0),
@@ -478,13 +478,56 @@ def test_backend_fallback_uses_one_connect_budget() -> None:
     )
     stream = backend.connect_tcp("example.com", 443, timeout=5.0)
     assert stream.get_extra_info("server_addr") == ("93.184.216.35", 443)
-    # deadline = 10.0 + 5.0 = 15.0. The attempt at t=11.0 may spend 4.0s and the
-    # fallback at t=12.0 only the REMAINING 3.0s. A per-address timeout reset
-    # would hand 5.0s to each address and let N addresses stretch the caller's
-    # 5s budget to N*5s, so assert the exact remaining budget, not just reach.
+    # The attempt at t=11.0 may spend 4.0s and the fallback at t=12.0 only the
+    # REMAINING 3.0s. A per-address timeout reset would hand 5.0s to each
+    # address and let N addresses stretch the caller's 5s budget to N*5s, so
+    # assert the exact remaining budget, not just reach.
     assert first.timeouts == [4.0]
     assert second.timeouts == [3.0]
     assert second.timeouts[0] < first.timeouts[0] < 5.0
+
+
+def test_backend_skips_socket_factory_when_deadline_is_expired() -> None:
+    hop = _resolved_hop("https://example.com/x", "93.184.216.34")
+    calls = 0
+
+    def socket_factory(*_args):
+        nonlocal calls
+        calls += 1
+        return FakeSocket(("93.184.216.34", 443))
+
+    backend = ph._PinnedNetworkBackend(
+        hop,
+        policy=_policy(inactivity_timeout_seconds=5.0),
+        budget=ph.DeadlineBudget(expires_at=5.0),
+        socket_factory=socket_factory,
+        monotonic=lambda: 5.0,
+    )
+
+    with pytest.raises(ph.PinnedDeadlineExceeded):
+        backend.connect_tcp("example.com", 443, timeout=5.0)
+
+    assert calls == 0
+
+
+def test_backend_closes_socket_when_deadline_expires_after_factory() -> None:
+    hop = _resolved_hop("https://example.com/x", "93.184.216.34")
+    fake = FakeSocket(("93.184.216.34", 443))
+    times = iter([1.0, 6.0])
+
+    backend = ph._PinnedNetworkBackend(
+        hop,
+        policy=_policy(inactivity_timeout_seconds=5.0),
+        budget=ph.DeadlineBudget(expires_at=5.0),
+        socket_factory=lambda *_args: fake,
+        monotonic=lambda: next(times),
+    )
+
+    with pytest.raises(ph.PinnedDeadlineExceeded):
+        backend.connect_tcp("example.com", 443, timeout=5.0)
+
+    assert fake.closed is True
+    assert fake.connected_to is None
 
 
 def test_transport_wires_the_pinned_network_backend(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -1043,6 +1086,23 @@ def test_content_length_over_encoded_limit_is_rejected_early() -> None:
         )
 
 
+def test_buffered_response_still_enforces_encoded_limit() -> None:
+    response = httpx.Response(
+        200,
+        stream=httpx.ByteStream(b"x" * 1025),
+        request=httpx.Request("GET", "https://example.com/a"),
+    )
+    response.read()
+
+    with pytest.raises(ph.PinnedBodyLimitError):
+        ph._read_bounded_body(
+            response,
+            policy=_policy(max_encoded_bytes=1024),
+            budget=ph.DeadlineBudget(expires_at=10.0),
+            monotonic=lambda: 1.0,
+        )
+
+
 def test_final_response_headers_and_accept_encoding_are_preserved() -> None:
     seen: list[str] = []
 
@@ -1254,6 +1314,70 @@ def test_redirects_reuse_one_deadline_budget() -> None:
     )
 
     assert len({id(item) for item in budgets}) == 1
+
+
+def test_one_deadline_budget_reaches_transport_backend_stream_and_decode(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    budgets: dict[str, ph.DeadlineBudget] = {}
+    original_read = ph._read_bounded_body
+
+    def read_bounded_body(
+        response: httpx.Response,
+        *,
+        policy: ph.EgressPolicy,
+        budget: ph.DeadlineBudget,
+        monotonic=ph.time.monotonic,
+    ) -> bytes:
+        budgets["decode"] = budget
+        return original_read(response, policy=policy, budget=budget, monotonic=monotonic)
+
+    monkeypatch.setattr(ph, "_read_bounded_body", read_bounded_body)
+
+    def resolver(host: str, port: int, budget: ph.DeadlineBudget):
+        budgets["resolver"] = budget
+        return _public_resolver(host, port, budget)
+
+    def factory(
+        hop: ph.ResolvedHop,
+        policy: ph.EgressPolicy,
+        budget: ph.DeadlineBudget,
+    ) -> httpx.BaseTransport:
+        budgets["factory"] = budget
+        fake = FakeSocket(hop.addresses[0].sockaddr)
+        transport = ph._PinnedHTTPTransport(
+            hop,
+            policy=policy,
+            budget=budget,
+            socket_factory=lambda *_args: fake,
+            monotonic=lambda: 1.0,
+        )
+        backend = transport._pool._network_backend
+        budgets["backend"] = backend._budget
+        stream = backend.connect_tcp(hop.host, hop.port, timeout=5.0)
+        budgets["stream"] = stream._budget
+        stream.close()
+        transport.close()
+
+        return httpx.MockTransport(
+            lambda request: httpx.Response(
+                200,
+                stream=_ChunkStream([b"done"]),
+                request=request,
+            )
+        )
+
+    result = ph.PinnedHTTPClient(
+        resolver=resolver,
+        transport_factory=factory,
+    ).get(
+        "https://one.example/start",
+        user_agent="test",
+        policy=_policy(),
+    )
+
+    assert result.content == b"done"
+    assert {id(item) for item in budgets.values()} == {id(budgets["resolver"])}
 
 
 def test_redirect_processing_stops_on_original_deadline() -> None:
