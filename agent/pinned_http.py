@@ -29,12 +29,16 @@ import select
 import socket
 import ssl
 import time
+import zlib
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from typing import Protocol
 
 import httpcore
 import httpx
+
+
+MonotonicClock = Callable[[], float]
 
 
 class PinnedHTTPError(Exception):
@@ -67,6 +71,84 @@ class RedirectPolicyError(PinnedHTTPError):
 
 class PinnedTransportError(PinnedHTTPError):
     pass
+
+
+class PinnedBodyLimitError(PinnedHTTPError):
+    pass
+
+
+class PinnedContentEncodingError(PinnedHTTPError):
+    pass
+
+
+class PinnedDeadlineExceeded(PinnedTransportError):
+    pass
+
+
+class ResolverSaturatedError(PinnedTransportError):
+    pass
+
+
+@dataclass(frozen=True)
+class EgressPolicy:
+    max_encoded_bytes: int
+    max_decoded_bytes: int
+    accepted_encodings: tuple[str, ...]
+    inactivity_timeout_seconds: float
+    total_timeout_seconds: float
+    max_redirects: int
+
+    def __post_init__(self) -> None:
+        if self.max_encoded_bytes <= 0 or self.max_decoded_bytes <= 0:
+            raise ValueError("egress byte limits must be positive")
+        if self.inactivity_timeout_seconds <= 0 or self.total_timeout_seconds <= 0:
+            raise ValueError("egress timeouts must be positive")
+        if self.max_redirects < 0:
+            raise ValueError("max_redirects cannot be negative")
+        if not self.accepted_encodings:
+            raise ValueError("at least one content encoding is required")
+        if len(set(self.accepted_encodings)) != len(self.accepted_encodings):
+            raise ValueError("content encodings must be unique")
+        if any(token not in {"identity", "gzip"} for token in self.accepted_encodings):
+            raise ValueError("unsupported content encoding policy")
+
+
+@dataclass(frozen=True)
+class DeadlineBudget:
+    expires_at: float
+
+    @classmethod
+    def start(
+        cls,
+        total_timeout_seconds: float,
+        *,
+        monotonic: MonotonicClock | None = None,
+    ) -> "DeadlineBudget":
+        clock = monotonic or time.monotonic
+        return cls(clock() + total_timeout_seconds)
+
+    def remaining(
+        self,
+        *,
+        monotonic: MonotonicClock | None = None,
+    ) -> float:
+        clock = monotonic or time.monotonic
+        remaining = self.expires_at - clock()
+        if remaining <= 0:
+            raise PinnedDeadlineExceeded("pinned egress deadline exceeded")
+        return remaining
+
+    def socket_timeout(
+        self,
+        requested_timeout: float | None,
+        inactivity_timeout_seconds: float,
+        *,
+        monotonic: MonotonicClock | None = None,
+    ) -> float:
+        values = [inactivity_timeout_seconds, self.remaining(monotonic=monotonic)]
+        if requested_timeout is not None:
+            values.append(requested_timeout)
+        return min(values)
 
 
 @dataclass(frozen=True)
@@ -336,7 +418,6 @@ SocketOption = (
     | tuple[int, int, None, int]
 )
 SocketFactory = Callable[[int, int, int], socket.socket]
-MonotonicClock = Callable[[], float]
 
 
 def _normalize_peer(
@@ -509,11 +590,114 @@ def _resolve_hop(url: str | httpx.URL, resolver: Resolver) -> ResolvedHop:
     return ResolvedHop(url=parsed, host=host, port=port, addresses=addresses)
 
 
+def _response_encoding(headers: httpx.Headers) -> str:
+    values = headers.get_list("content-encoding")
+    if not values:
+        return "identity"
+    tokens = [token.strip().lower() for value in values for token in value.split(",")]
+    if len(tokens) != 1 or not tokens[0]:
+        raise PinnedContentEncodingError("stacked or malformed content encoding")
+    return tokens[0]
+
+
+def _content_length_hint(headers: httpx.Headers) -> int | None:
+    value = headers.get("content-length")
+    if value is None:
+        return None
+    try:
+        parsed = int(value, 10)
+    except ValueError:
+        return None
+    return parsed if parsed >= 0 else None
+
+
+def _bounded_raw_chunks(response: httpx.Response, policy: EgressPolicy):
+    encoded = 0
+    for chunk in response.iter_raw():
+        encoded += len(chunk)
+        if encoded > policy.max_encoded_bytes:
+            raise PinnedBodyLimitError("encoded response body exceeds policy")
+        yield chunk
+
+
+def _append_decoded(output: bytearray, chunk: bytes, limit: int) -> None:
+    if len(chunk) > limit - len(output):
+        raise PinnedBodyLimitError("decoded response body exceeds policy")
+    output.extend(chunk)
+
+
+def _decode_identity(
+    chunks: Iterable[bytes],
+    policy: EgressPolicy,
+    budget: DeadlineBudget,
+    monotonic: MonotonicClock,
+) -> bytes:
+    output = bytearray()
+    for chunk in chunks:
+        budget.remaining(monotonic=monotonic)
+        _append_decoded(output, chunk, policy.max_decoded_bytes)
+    return bytes(output)
+
+
+def _decode_gzip(
+    chunks: Iterable[bytes],
+    policy: EgressPolicy,
+    budget: DeadlineBudget,
+    monotonic: MonotonicClock,
+) -> bytes:
+    decoder = zlib.decompressobj(16 + zlib.MAX_WBITS)
+    output = bytearray()
+    try:
+        for chunk in chunks:
+            budget.remaining(monotonic=monotonic)
+            remaining = policy.max_decoded_bytes - len(output)
+            decoded = decoder.decompress(chunk, remaining + 1)
+            if len(decoded) > remaining or decoder.unconsumed_tail:
+                raise PinnedBodyLimitError("decoded response body exceeds policy")
+            _append_decoded(output, decoded, policy.max_decoded_bytes)
+            if decoder.unused_data:
+                raise PinnedContentEncodingError("gzip has trailing or concatenated data")
+        budget.remaining(monotonic=monotonic)
+        remaining = policy.max_decoded_bytes - len(output)
+        tail = decoder.flush(remaining + 1)
+    except zlib.error as exc:
+        raise PinnedContentEncodingError("malformed gzip response") from exc
+    if len(tail) > remaining:
+        raise PinnedBodyLimitError("decoded response body exceeds policy")
+    _append_decoded(output, tail, policy.max_decoded_bytes)
+    if not decoder.eof:
+        raise PinnedContentEncodingError("truncated gzip response")
+    if decoder.unused_data:
+        raise PinnedContentEncodingError("gzip has trailing or concatenated data")
+    return bytes(output)
+
+
+def _read_bounded_body(
+    response: httpx.Response,
+    *,
+    policy: EgressPolicy,
+    budget: DeadlineBudget,
+    monotonic: MonotonicClock = time.monotonic,
+) -> bytes:
+    hint = _content_length_hint(response.headers)
+    if hint is not None and hint > policy.max_encoded_bytes:
+        raise PinnedBodyLimitError("content-length exceeds encoded policy")
+    encoding = _response_encoding(response.headers)
+    if encoding not in policy.accepted_encodings:
+        raise PinnedContentEncodingError("response content encoding is not accepted")
+    chunks = _bounded_raw_chunks(response, policy)
+    if encoding == "identity":
+        return _decode_identity(chunks, policy, budget, monotonic)
+    return _decode_gzip(chunks, policy, budget, monotonic)
+
+
 def _fetch_hop(
     hop: ResolvedHop,
     *,
     user_agent: str,
-    timeout: float | httpx.Timeout,
+    policy: EgressPolicy,
+    budget: DeadlineBudget,
+    timeout: float | httpx.Timeout | None = None,
     transport_factory: TransportFactory,
 ) -> tuple[int, tuple[tuple[str, str], ...], bytes, str | None]:
     try:
@@ -522,7 +706,10 @@ def _fetch_hop(
             transport=transport,
             follow_redirects=False,
             trust_env=False,
-            headers={"User-Agent": user_agent},
+            headers={
+                "User-Agent": user_agent,
+                "Accept-Encoding": ", ".join(policy.accepted_encodings),
+            },
         ) as client:
             # Built via the client (for default-header merging and timeout-extension
             # conversion) but dispatched straight to the transport: httpx.Client.send()
@@ -531,14 +718,20 @@ def _fetch_hop(
             # follow_redirects=False, and raises RemoteProtocolError for a malformed
             # Location before this function ever sees it. Calling the transport
             # directly keeps this module the sole arbiter of redirect-target validity.
-            request = client.build_request("GET", str(hop.url), timeout=timeout)
+            requested_timeout = timeout if isinstance(timeout, (int, float)) else None
+            request_timeout = budget.socket_timeout(
+                requested_timeout,
+                policy.inactivity_timeout_seconds,
+            )
+            request = client.build_request("GET", str(hop.url), timeout=request_timeout)
             response = transport.handle_request(request)
             try:
                 location = response.headers.get("location")
                 if response.status_code in {301, 302, 303, 307, 308} and location and location.strip():
                     return response.status_code, tuple(response.headers.multi_items()), b"", location.strip()
-                content = response.read()
-                return response.status_code, tuple(response.headers.multi_items()), content, None
+                headers = tuple(response.headers.multi_items())
+                content = _read_bounded_body(response, policy=policy, budget=budget)
+                return response.status_code, headers, content, None
             finally:
                 response.close()
     except PinnedHTTPError:
@@ -560,6 +753,22 @@ def _redirect_target(current: httpx.URL, location: str) -> httpx.URL:
         raise RedirectPolicyError("redirect target is invalid") from exc
 
 
+def _transitional_policy(
+    *,
+    timeout: float | httpx.Timeout | None,
+    max_redirects: int | None,
+) -> EgressPolicy:
+    seconds = float(timeout) if isinstance(timeout, (int, float)) else 15.0
+    return EgressPolicy(
+        max_encoded_bytes=12 * 1024 * 1024,
+        max_decoded_bytes=12 * 1024 * 1024,
+        accepted_encodings=("gzip", "identity"),
+        inactivity_timeout_seconds=max(seconds, 0.001),
+        total_timeout_seconds=max(seconds, 0.001),
+        max_redirects=max(0, max_redirects if max_redirects is not None else 5),
+    )
+
+
 class PinnedHTTPClient:
     def __init__(
         self,
@@ -575,9 +784,13 @@ class PinnedHTTPClient:
         url: str,
         *,
         user_agent: str,
-        timeout: float | httpx.Timeout = 15.0,
-        max_redirects: int = 5,
+        policy: EgressPolicy | None = None,
+        timeout: float | httpx.Timeout | None = None,
+        max_redirects: int | None = None,
     ) -> PinnedResponse:
+        if policy is None:
+            policy = _transitional_policy(timeout=timeout, max_redirects=max_redirects)
+        budget = DeadlineBudget.start(policy.total_timeout_seconds)
         current = _parse_url(url)
         visited: set[tuple[str, str, int, bytes]] = set()
         redirects: list[RedirectHop] = []
@@ -590,12 +803,14 @@ class PinnedHTTPClient:
             status, headers, content, location = _fetch_hop(
                 hop,
                 user_agent=user_agent,
+                policy=policy,
+                budget=budget,
                 timeout=timeout,
                 transport_factory=self._transport_factory,
             )
             if location is None:
                 return PinnedResponse(status, str(hop.url), headers, content, tuple(redirects))
-            if len(redirects) >= max_redirects:
+            if len(redirects) >= policy.max_redirects:
                 raise RedirectPolicyError("redirect limit exceeded")
             next_url = _redirect_target(hop.url, location)
             redirects.append(RedirectHop(str(hop.url), status, location, str(next_url)))

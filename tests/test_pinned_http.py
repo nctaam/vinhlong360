@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import gzip
+import inspect
 import socket
 import ssl
 from concurrent.futures import ThreadPoolExecutor
@@ -544,13 +545,309 @@ def _public_resolver(host: str, port: int) -> tuple[ph.ResolvedAddress, ...]:
     )
 
 
+def _policy(
+    *,
+    max_encoded_bytes: int = 1024,
+    max_decoded_bytes: int = 2048,
+    accepted_encodings: tuple[str, ...] = ("gzip", "identity"),
+    inactivity_timeout_seconds: float = 2.0,
+    total_timeout_seconds: float = 5.0,
+    max_redirects: int = 5,
+) -> ph.EgressPolicy:
+    return ph.EgressPolicy(
+        max_encoded_bytes=max_encoded_bytes,
+        max_decoded_bytes=max_decoded_bytes,
+        accepted_encodings=accepted_encodings,
+        inactivity_timeout_seconds=inactivity_timeout_seconds,
+        total_timeout_seconds=total_timeout_seconds,
+        max_redirects=max_redirects,
+    )
+
+
+class _ChunkStream(httpx.SyncByteStream):
+    def __init__(self, chunks: list[bytes]) -> None:
+        self.chunks = chunks
+        self.iterated = False
+        self.closed = False
+
+    def __iter__(self):
+        self.iterated = True
+        yield from self.chunks
+
+    def close(self) -> None:
+        self.closed = True
+
+
+def _client_for_raw_response(
+    body: bytes,
+    *,
+    headers: tuple[tuple[str, str], ...] = (),
+    chunks: list[bytes] | None = None,
+) -> ph.PinnedHTTPClient:
+    def resolver(host: str, port: int):
+        return _public_resolver(host, port)
+
+    def factory(_hop):
+        raw_stream = _ChunkStream(chunks if chunks is not None else [body])
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(
+                200,
+                headers=headers,
+                stream=raw_stream,
+                request=request,
+            )
+
+        return httpx.MockTransport(handler)
+
+    return ph.PinnedHTTPClient(resolver=resolver, transport_factory=factory)
+
+
+def _client_for_redirect_stream(stream: _ChunkStream) -> ph.PinnedHTTPClient:
+    def resolver(host: str, port: int):
+        return _public_resolver(host, port)
+
+    calls = 0
+
+    def factory(_hop):
+        nonlocal calls
+        calls += 1
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            if calls == 1:
+                return httpx.Response(
+                    302,
+                    headers=(("location", "https://example.com/final"),),
+                    stream=stream,
+                    request=request,
+                )
+            return httpx.Response(
+                200,
+                stream=_ChunkStream([b"final"]),
+                request=request,
+            )
+
+        return httpx.MockTransport(handler)
+
+    return ph.PinnedHTTPClient(resolver=resolver, transport_factory=factory)
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"max_encoded_bytes": 0},
+        {"max_decoded_bytes": 0},
+        {"inactivity_timeout_seconds": 0},
+        {"total_timeout_seconds": 0},
+        {"max_redirects": -1},
+        {"accepted_encodings": ()},
+        {"accepted_encodings": ("gzip", "gzip")},
+        {"accepted_encodings": ("br",)},
+        {"accepted_encodings": ("GZIP",)},
+    ],
+)
+def test_egress_policy_rejects_invalid_limits(overrides: dict) -> None:
+    values = {
+        "max_encoded_bytes": 1024,
+        "max_decoded_bytes": 2048,
+        "accepted_encodings": ("gzip", "identity"),
+        "inactivity_timeout_seconds": 2.0,
+        "total_timeout_seconds": 5.0,
+        "max_redirects": 5,
+    }
+    values.update(overrides)
+    with pytest.raises(ValueError):
+        ph.EgressPolicy(**values)
+
+
+def test_get_policy_is_keyword_only() -> None:
+    parameter = inspect.signature(ph.PinnedHTTPClient.get).parameters["policy"]
+    assert parameter.kind is inspect.Parameter.KEYWORD_ONLY
+
+
+def test_identity_body_accepts_exact_encoded_and_decoded_boundaries() -> None:
+    body = b"x" * 1024
+    result = _client_for_raw_response(body).get(
+        "https://example.com/a",
+        user_agent="test",
+        policy=_policy(max_encoded_bytes=1024, max_decoded_bytes=1024),
+    )
+    assert result.content == body
+
+
+def test_identity_body_rejects_encoded_boundary_plus_one() -> None:
+    with pytest.raises(ph.PinnedBodyLimitError):
+        _client_for_raw_response(b"x" * 1025).get(
+            "https://example.com/a",
+            user_agent="test",
+            policy=_policy(max_encoded_bytes=1024),
+        )
+
+
+@pytest.mark.parametrize(
+    "headers",
+    [
+        (("content-encoding", "br"),),
+        (("content-encoding", "deflate"),),
+        (("content-encoding", "gzip, identity"),),
+        (("content-encoding", "gzip,,identity"),),
+    ],
+)
+def test_unsupported_or_stacked_content_encoding_is_rejected(headers) -> None:
+    with pytest.raises(ph.PinnedContentEncodingError):
+        _client_for_raw_response(b"body", headers=headers).get(
+            "https://example.com/a",
+            user_agent="test",
+            policy=_policy(),
+        )
+
+
+def test_false_small_content_length_cannot_bypass_actual_encoded_limit() -> None:
+    with pytest.raises(ph.PinnedBodyLimitError):
+        _client_for_raw_response(
+            b"x" * 1025,
+            headers=(("content-length", "1"),),
+        ).get(
+            "https://example.com/a",
+            user_agent="test",
+            policy=_policy(max_encoded_bytes=1024),
+        )
+
+
+def test_content_length_over_encoded_limit_is_rejected_early() -> None:
+    with pytest.raises(ph.PinnedBodyLimitError):
+        _client_for_raw_response(
+            b"x",
+            headers=(("content-length", "1025"),),
+        ).get(
+            "https://example.com/a",
+            user_agent="test",
+            policy=_policy(max_encoded_bytes=1024),
+        )
+
+
+def test_final_response_headers_and_accept_encoding_are_preserved() -> None:
+    seen: list[str] = []
+
+    def factory(_hop):
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append(request.headers["accept-encoding"])
+            return httpx.Response(
+                200,
+                headers=(("x-original", "kept"), ("x-original", "duplicate")),
+                stream=_ChunkStream([b"body"]),
+                request=request,
+            )
+
+        return httpx.MockTransport(handler)
+
+    result = ph.PinnedHTTPClient(
+        resolver=_public_resolver,
+        transport_factory=factory,
+    ).get(
+        "https://example.com/a",
+        user_agent="test",
+        policy=_policy(accepted_encodings=("gzip", "identity")),
+    )
+    assert result.headers == (("x-original", "kept"), ("x-original", "duplicate"))
+    assert seen == ["gzip, identity"]
+
+
+def test_redirect_body_is_closed_without_iteration() -> None:
+    stream = _ChunkStream([b"redirect body must not be read"])
+    client = _client_for_redirect_stream(stream)
+    result = client.get(
+        "https://example.com/a",
+        user_agent="test",
+        policy=_policy(max_redirects=1),
+    )
+    assert result.url == "https://example.com/final"
+    assert stream.closed is True
+    assert stream.iterated is False
+
+
+def test_gzip_body_accepts_split_chunks() -> None:
+    decoded = b"gzip body"
+    encoded = gzip.compress(decoded)
+    midpoint = len(encoded) // 2
+    result = _client_for_raw_response(
+        encoded,
+        headers=(("content-encoding", "gzip"),),
+        chunks=[encoded[:midpoint], encoded[midpoint:]],
+    ).get("https://example.com/a", user_agent="test", policy=_policy())
+    assert result.content == decoded
+
+
+@pytest.mark.parametrize(
+    "encoded",
+    [
+        b"not gzip",
+        gzip.compress(b"truncated")[:-1],
+        gzip.compress(b"trailing") + b"tail",
+        gzip.compress(b"first") + gzip.compress(b"second"),
+    ],
+)
+def test_gzip_rejects_malformed_truncated_trailing_or_concatenated(encoded: bytes) -> None:
+    with pytest.raises(ph.PinnedContentEncodingError):
+        _client_for_raw_response(
+            encoded,
+            headers=(("content-encoding", "gzip"),),
+        ).get("https://example.com/a", user_agent="test", policy=_policy())
+
+
+def test_gzip_body_rejects_decoded_boundary_plus_one() -> None:
+    encoded = gzip.compress(b"x" * 1025)
+    with pytest.raises(ph.PinnedBodyLimitError):
+        _client_for_raw_response(
+            encoded,
+            headers=(("content-encoding", "gzip"),),
+        ).get(
+            "https://example.com/a",
+            user_agent="test",
+            policy=_policy(max_encoded_bytes=len(encoded), max_decoded_bytes=1024),
+        )
+
+
+def test_gzip_bomb_allocation_is_policy_relative() -> None:
+    import tracemalloc
+
+    decoded_size = 32 * 1024 * 1024
+    decoded_cap = 1024 * 1024
+    encoded = gzip.compress(b"A" * decoded_size, compresslevel=9)
+    client = _client_for_raw_response(
+        encoded,
+        headers=(("content-encoding", "gzip"),),
+    )
+
+    tracemalloc.start()
+    try:
+        with pytest.raises(ph.PinnedBodyLimitError):
+            client.get(
+                "https://example.com/bomb",
+                user_agent="test",
+                policy=_policy(
+                    max_encoded_bytes=len(encoded),
+                    max_decoded_bytes=decoded_cap,
+                ),
+            )
+        _current, peak = tracemalloc.get_traced_memory()
+    finally:
+        tracemalloc.stop()
+
+    assert peak <= 8 * decoded_cap
+
+
 def test_client_returns_immutable_decoded_response_and_user_agent() -> None:
     seen: list[tuple[str, str]] = []
 
     def factory(hop: ph.ResolvedHop) -> httpx.BaseTransport:
         def handler(request: httpx.Request) -> httpx.Response:
             seen.append((request.headers["host"], request.headers["user-agent"]))
-            return httpx.Response(200, headers={"content-type": "text/plain; charset=utf-8"}, content="xin chao".encode())
+            return httpx.Response(
+                200,
+                headers={"content-type": "text/plain; charset=utf-8"},
+                stream=_ChunkStream([b"xin chao"]),
+            )
         return httpx.MockTransport(handler)
 
     client = ph.PinnedHTTPClient(resolver=_public_resolver, transport_factory=factory)
@@ -634,7 +931,7 @@ def test_five_redirects_allowed_sixth_rejected() -> None:
             index = int(hop.url.path.rsplit("/", 1)[-1])
             if index < 6:
                 return httpx.Response(302, headers={"location": f"/{index + 1}"})
-            return httpx.Response(200, content=b"done")
+            return httpx.Response(200, stream=_ChunkStream([b"done"]))
         return httpx.MockTransport(handler)
 
     client = ph.PinnedHTTPClient(resolver=_public_resolver, transport_factory=factory)
@@ -663,7 +960,7 @@ def test_client_supports_all_approved_redirect_forms(
         def handler(_request: httpx.Request) -> httpx.Response:
             if hop.url.path == "/start":
                 return httpx.Response(302, headers={"location": location})
-            return httpx.Response(200, content=b"done")
+            return httpx.Response(200, stream=_ChunkStream([b"done"]))
 
         return httpx.MockTransport(handler)
 
@@ -681,7 +978,11 @@ def test_client_supports_all_approved_redirect_forms(
 )
 def test_blank_or_nonstandard_redirect_is_final(status: int, location: str) -> None:
     transport = httpx.MockTransport(
-        lambda _request: httpx.Response(status, headers={"location": location})
+        lambda _request: httpx.Response(
+            status,
+            headers={"location": location},
+            stream=_ChunkStream([b""]),
+        )
     )
     client = ph.PinnedHTTPClient(
         resolver=_public_resolver,
@@ -740,7 +1041,7 @@ def test_percent_encoded_and_literal_paths_are_distinct() -> None:
         if hop.url.raw_path == b"/a%2Fb":
             response = httpx.Response(302, headers={"location": "/a/b"})
         else:
-            response = httpx.Response(200, content=b"done")
+            response = httpx.Response(200, stream=_ChunkStream([b"done"]))
         return httpx.MockTransport(lambda _request: response)
 
     result = ph.PinnedHTTPClient(
@@ -767,7 +1068,7 @@ def test_each_redirect_hop_resolves_once_and_gets_a_fresh_transport() -> None:
                 headers={"location": "https://b.example/final"},
             )
         else:
-            response = httpx.Response(200, content=b"done")
+            response = httpx.Response(200, stream=_ChunkStream([b"done"]))
         return httpx.MockTransport(lambda _request: response)
 
     result = ph.PinnedHTTPClient(
@@ -791,7 +1092,7 @@ def test_environment_proxies_are_not_used(monkeypatch: pytest.MonkeyPatch) -> No
     def factory(_hop: ph.ResolvedHop) -> httpx.BaseTransport:
         def handler(request: httpx.Request) -> httpx.Response:
             handled.append(str(request.url))
-            return httpx.Response(200, content=b"direct")
+            return httpx.Response(200, stream=_ChunkStream([b"direct"]))
 
         return httpx.MockTransport(handler)
 
@@ -842,9 +1143,13 @@ def test_client_translates_transport_failures(error_factory) -> None:
 class _OneChunkStream(httpx.SyncByteStream):
     def __init__(self, content: bytes) -> None:
         self._content = content
+        self.closed = False
 
     def __iter__(self):
         yield self._content
+
+    def close(self) -> None:
+        self.closed = True
 
 
 def test_shared_layer_decodes_gzip_exactly_once() -> None:
@@ -875,7 +1180,7 @@ def test_concurrent_calls_do_not_leak_pinned_hops() -> None:
 
         def handler(_request: httpx.Request) -> httpx.Response:
             observed.append((hop.host, approved))
-            return httpx.Response(200, content=hop.host.encode("ascii"))
+            return httpx.Response(200, stream=_ChunkStream([hop.host.encode("ascii")]))
 
         return httpx.MockTransport(handler)
 
