@@ -139,6 +139,19 @@ class DeadlineBudget:
             raise PinnedDeadlineExceeded("pinned egress deadline exceeded")
         return remaining
 
+    def socket_timeout_details(
+        self,
+        requested_timeout: float | None,
+        inactivity_timeout_seconds: float,
+        *,
+        monotonic: MonotonicClock | None = None,
+    ) -> tuple[float, bool]:
+        remaining = self.remaining(monotonic=monotonic)
+        non_deadline_timeout = inactivity_timeout_seconds
+        if requested_timeout is not None:
+            non_deadline_timeout = min(non_deadline_timeout, requested_timeout)
+        return min(non_deadline_timeout, remaining), remaining <= non_deadline_timeout
+
     def socket_timeout(
         self,
         requested_timeout: float | None,
@@ -146,10 +159,11 @@ class DeadlineBudget:
         *,
         monotonic: MonotonicClock | None = None,
     ) -> float:
-        values = [inactivity_timeout_seconds, self.remaining(monotonic=monotonic)]
-        if requested_timeout is not None:
-            values.append(requested_timeout)
-        return min(values)
+        return self.socket_timeout_details(
+            requested_timeout,
+            inactivity_timeout_seconds,
+            monotonic=monotonic,
+        )[0]
 
 
 @dataclass(frozen=True)
@@ -422,13 +436,10 @@ class _PinnedNetworkStream(httpcore.NetworkStream):
 
     def read(self, max_bytes: int, timeout: float | None = None) -> bytes:
         try:
-            operation_timeout = self._budget.socket_timeout(
+            operation_timeout, deadline_limited = self._budget.socket_timeout_details(
                 timeout,
                 self._policy.inactivity_timeout_seconds,
                 monotonic=self._monotonic,
-            )
-            deadline_limited = operation_timeout < self._policy.inactivity_timeout_seconds and (
-                timeout is None or operation_timeout < timeout
             )
             self._socket.settimeout(operation_timeout)
             return self._socket.recv(max_bytes)

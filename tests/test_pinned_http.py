@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import gzip
 import inspect
+import math
 import socket
 import ssl
 import threading
@@ -795,20 +796,81 @@ def test_stream_socket_timeout_reports_total_deadline_exhaustion(operation: str)
             stream.write(b"x", timeout=9.0)
 
 
-def test_stream_deadline_limited_read_timeout_maps_to_deadline() -> None:
-    times = iter([1.0, 4.999])
+@pytest.mark.parametrize(
+    ("inactivity_timeout", "requested_timeout"),
+    [(4.0, 8.0), (8.0, 4.0), (4.0, 4.0)],
+    ids=["ties-inactivity", "ties-requested", "ties-both"],
+)
+def test_stream_read_timeout_maps_exact_deadline_ties_to_deadline(
+    inactivity_timeout: float,
+    requested_timeout: float,
+) -> None:
+    times = iter([0.0, 3.999])
     stream = ph._PinnedNetworkStream(
         FakeSocket(
             ("93.184.216.34", 443),
-            recv_error=socket.timeout("deadline-limited read timeout"),
+            recv_error=socket.timeout("deadline-tied read timeout"),
         ),
-        policy=_policy(inactivity_timeout_seconds=8.0),
-        budget=ph.DeadlineBudget(expires_at=5.0),
+        policy=_policy(inactivity_timeout_seconds=inactivity_timeout),
+        budget=ph.DeadlineBudget(expires_at=4.0),
         monotonic=lambda: next(times),
     )
 
     with pytest.raises(ph.PinnedDeadlineExceeded):
-        stream.read(16, timeout=9.0)
+        stream.read(16, timeout=requested_timeout)
+
+
+@pytest.mark.parametrize(
+    ("total_remaining", "expected_error"),
+    [
+        (math.nextafter(4.0, 0.0), ph.PinnedDeadlineExceeded),
+        (math.nextafter(4.0, math.inf), httpcore.ReadTimeout),
+    ],
+    ids=["total-one-ulp-shorter", "inactivity-one-ulp-shorter"],
+)
+def test_stream_read_timeout_respects_float_boundary_precision(
+    total_remaining: float,
+    expected_error: type[Exception],
+) -> None:
+    times = iter([0.0, total_remaining - 0.001])
+    stream = ph._PinnedNetworkStream(
+        FakeSocket(
+            ("93.184.216.34", 443),
+            recv_error=socket.timeout("near-boundary read timeout"),
+        ),
+        policy=_policy(inactivity_timeout_seconds=4.0),
+        budget=ph.DeadlineBudget(expires_at=total_remaining),
+        monotonic=lambda: next(times),
+    )
+
+    with pytest.raises(expected_error) as exc_info:
+        stream.read(16, timeout=4.0)
+
+    assert type(exc_info.value) is expected_error
+
+
+@pytest.mark.parametrize(
+    ("inactivity_timeout", "requested_timeout"),
+    [(3.0, 8.0), (8.0, 3.0)],
+    ids=["shorter-inactivity", "shorter-requested"],
+)
+def test_stream_shorter_non_deadline_read_timeout_stays_read_timeout(
+    inactivity_timeout: float,
+    requested_timeout: float,
+) -> None:
+    times = iter([0.0, 3.999])
+    stream = ph._PinnedNetworkStream(
+        FakeSocket(
+            ("93.184.216.34", 443),
+            recv_error=socket.timeout("non-deadline read timeout"),
+        ),
+        policy=_policy(inactivity_timeout_seconds=inactivity_timeout),
+        budget=ph.DeadlineBudget(expires_at=4.0),
+        monotonic=lambda: next(times),
+    )
+
+    with pytest.raises(httpcore.ReadTimeout):
+        stream.read(16, timeout=requested_timeout)
 
 
 def test_backend_applies_requested_options_and_tcp_nodelay() -> None:
@@ -1022,8 +1084,48 @@ class SocketPairClient:
         return self.sock.fileno()
 
     def close(self) -> None:
+        if self.closed:
+            return
         self.closed = True
         self.sock.close()
+
+
+class RealTransportHarness:
+    def __init__(
+        self,
+        client: ph.PinnedHTTPClient,
+        received: list[bytes],
+        wrapped: SocketPairClient,
+        server: threading.Thread,
+        response_gate: threading.Event | None,
+        transports: list[ph._PinnedHTTPTransport],
+        transport_close_calls: list[ph._PinnedHTTPTransport],
+    ) -> None:
+        self.client = client
+        self.received = received
+        self.wrapped = wrapped
+        self.server = server
+        self.response_gate = response_gate
+        self.transports = transports
+        self.transport_close_calls = transport_close_calls
+        self._cleaned = False
+        self._transport_closed_before_cleanup = False
+
+    def cleanup(self) -> bool:
+        if self._cleaned:
+            return self._transport_closed_before_cleanup
+        if self.response_gate is not None:
+            self.response_gate.set()
+        self._transport_closed_before_cleanup = bool(self.transport_close_calls)
+        try:
+            for transport in self.transports:
+                transport.close()
+        finally:
+            self.wrapped.close()
+            self.server.join(timeout=2.0)
+            assert not self.server.is_alive()
+            self._cleaned = True
+        return self._transport_closed_before_cleanup
 
 
 def _serve_http(
@@ -1062,7 +1164,7 @@ def _real_transport_client(
     max_send: int | None = None,
     zero_send: bool = False,
     response_gate: threading.Event | None = None,
-) -> tuple[ph.PinnedHTTPClient, list[bytes], SocketPairClient, threading.Thread]:
+) -> RealTransportHarness:
     client_socket, server_socket = socket.socketpair()
     wrapped = SocketPairClient(
         client_socket,
@@ -1071,6 +1173,8 @@ def _real_transport_client(
         zero_send=zero_send,
     )
     received: list[bytes] = []
+    transports: list[ph._PinnedHTTPTransport] = []
+    transport_close_calls: list[ph._PinnedHTTPTransport] = []
     server = threading.Thread(
         target=_serve_http,
         args=(server_socket, response_chunks, received, response_gate),
@@ -1099,18 +1203,35 @@ def _real_transport_client(
         policy: ph.EgressPolicy,
         budget: ph.DeadlineBudget,
     ) -> ph._PinnedHTTPTransport:
-        return ph._PinnedHTTPTransport(
+        transport = ph._PinnedHTTPTransport(
             hop,
             policy=policy,
             budget=budget,
             socket_factory=lambda *_args: wrapped,
         )
+        original_close = transport.close
+
+        def close_transport() -> None:
+            transport_close_calls.append(transport)
+            original_close()
+
+        transport.close = close_transport
+        transports.append(transport)
+        return transport
 
     client = ph.PinnedHTTPClient(
         resolver=resolver,
         transport_factory=factory,
     )
-    return client, received, wrapped, server
+    return RealTransportHarness(
+        client,
+        received,
+        wrapped,
+        server,
+        response_gate,
+        transports,
+        transport_close_calls,
+    )
 
 
 def _fixed_http_response(
@@ -1131,11 +1252,11 @@ def _fixed_http_response(
 
 
 def test_real_httpcore_emits_request_line_host_and_reads_fixed_length() -> None:
-    client, received, wrapped, server = _real_transport_client(
+    harness = _real_transport_client(
         (b"HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nhello",)
     )
     try:
-        result = client.get(
+        result = harness.client.get(
             "http://example.com/path?q=1",
             user_agent="test-agent",
             policy=_policy(
@@ -1145,102 +1266,113 @@ def test_real_httpcore_emits_request_line_host_and_reads_fixed_length() -> None:
             ),
         )
     finally:
-        server.join(timeout=2.0)
-        assert not server.is_alive()
+        transport_closed = harness.cleanup()
 
-    assert received[0].startswith(b"GET /path?q=1 HTTP/1.1\r\n")
-    assert b"\r\nHost: example.com\r\n" in received[0]
-    assert b"\r\nUser-Agent: test-agent\r\n" in received[0]
-    assert received[0].endswith(b"\r\n\r\n")
+    assert transport_closed is True
+    assert harness.received[0].startswith(b"GET /path?q=1 HTTP/1.1\r\n")
+    assert b"\r\nHost: example.com\r\n" in harness.received[0]
+    assert b"\r\nUser-Agent: test-agent\r\n" in harness.received[0]
+    assert harness.received[0].endswith(b"\r\n\r\n")
     assert result.content == b"hello"
-    assert wrapped.closed is True
+    assert harness.wrapped.closed is True
 
 
 def test_real_httpcore_reads_chunked_body() -> None:
-    client, received, wrapped, server = _real_transport_client(
+    harness = _real_transport_client(
         (
             b"HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhel",
             b"lo\r\n0\r\n\r\n",
         )
     )
     try:
-        result = client.get(
+        result = harness.client.get(
             "http://example.com/path?q=1",
             user_agent="test-agent",
             policy=_policy(accepted_encodings=("identity",)),
         )
     finally:
-        server.join(timeout=2.0)
-        assert not server.is_alive()
+        transport_closed = harness.cleanup()
 
-    assert received[0].startswith(b"GET /path?q=1 HTTP/1.1\r\n")
-    assert b"\r\nHost: example.com\r\n" in received[0]
+    assert transport_closed is True
+    assert harness.received[0].startswith(b"GET /path?q=1 HTTP/1.1\r\n")
+    assert b"\r\nHost: example.com\r\n" in harness.received[0]
     assert result.content == b"hello"
-    assert wrapped.closed is True
+    assert harness.wrapped.closed is True
 
 
 def test_real_httpcore_partial_send_completes_request() -> None:
-    client, received, wrapped, server = _real_transport_client(
+    harness = _real_transport_client(
         _fixed_http_response(b"ok"),
         max_send=3,
     )
     try:
-        result = client.get(
+        result = harness.client.get(
             "http://example.com/path?q=1",
             user_agent="test-agent",
             policy=_policy(accepted_encodings=("identity",)),
         )
     finally:
-        server.join(timeout=2.0)
-        assert not server.is_alive()
+        transport_closed = harness.cleanup()
 
-    assert received[0].startswith(b"GET /path?q=1 HTTP/1.1\r\n")
-    assert b"\r\nHost: example.com\r\n" in received[0]
-    assert received[0].endswith(b"\r\n\r\n")
+    assert transport_closed is True
+    assert harness.received[0].startswith(b"GET /path?q=1 HTTP/1.1\r\n")
+    assert b"\r\nHost: example.com\r\n" in harness.received[0]
+    assert harness.received[0].endswith(b"\r\n\r\n")
     assert result.content == b"ok"
-    assert wrapped.closed is True
+    assert harness.wrapped.closed is True
 
 
 def test_real_httpcore_zero_send_raises_pinned_transport_error() -> None:
-    client, received, wrapped, server = _real_transport_client(
+    harness = _real_transport_client(
         _fixed_http_response(b"unused"),
         zero_send=True,
     )
     try:
         with pytest.raises(ph.PinnedTransportError) as exc_info:
-            client.get(
+            harness.client.get(
                 "http://example.com/path?q=1",
                 user_agent="test-agent",
                 policy=_policy(accepted_encodings=("identity",)),
             )
     finally:
-        server.join(timeout=2.0)
-        assert not server.is_alive()
+        transport_closed = harness.cleanup()
 
+    assert transport_closed is True
     assert type(exc_info.value) is ph.PinnedTransportError
-    assert received == [b""]
-    assert wrapped.closed is True
+    assert harness.received == [b""]
+    assert harness.wrapped.closed is True
 
 
 def test_real_httpcore_peer_mismatch_prevents_request_bytes() -> None:
-    client, received, wrapped, server = _real_transport_client(
+    harness = _real_transport_client(
         _fixed_http_response(b"unused"),
         peer=("127.0.0.1", 80),
     )
     try:
         with pytest.raises(ph.PeerMismatchError) as exc_info:
-            client.get(
+            harness.client.get(
                 "http://example.com/path?q=1",
                 user_agent="test-agent",
                 policy=_policy(accepted_encodings=("identity",)),
             )
     finally:
-        server.join(timeout=2.0)
-        assert not server.is_alive()
+        transport_closed = harness.cleanup()
 
+    assert transport_closed is True
     assert type(exc_info.value) is ph.PeerMismatchError
-    assert received == [b""]
-    assert wrapped.closed is True
+    assert harness.received == [b""]
+    assert harness.wrapped.closed is True
+
+
+def test_real_httpcore_harness_cleanup_is_idempotent() -> None:
+    harness = _real_transport_client(_fixed_http_response(b"unused"))
+
+    try:
+        assert harness.cleanup() is False
+        assert harness.cleanup() is False
+    finally:
+        harness.cleanup()
+    assert harness.wrapped.closed is True
 
 
 def test_closed_readability_is_terminal() -> None:
@@ -1402,43 +1534,43 @@ def test_real_httpcore_body_and_encoding_boundaries(
     expected_content: bytes | None,
     expected_error: type[ph.PinnedHTTPError] | None,
 ) -> None:
-    client, _received, wrapped, server = _real_transport_client(response_chunks)
+    harness = _real_transport_client(response_chunks)
     result: ph.PinnedResponse | None = None
     try:
         if expected_error is None:
-            result = client.get(
+            result = harness.client.get(
                 "http://example.com/body",
                 user_agent="test-agent",
                 policy=policy,
             )
         else:
             with pytest.raises(expected_error) as exc_info:
-                client.get(
+                harness.client.get(
                     "http://example.com/body",
                     user_agent="test-agent",
                     policy=policy,
                 )
     finally:
-        server.join(timeout=2.0)
-        assert not server.is_alive()
+        transport_closed = harness.cleanup()
 
+    assert transport_closed is True
     if expected_error is None:
         assert result is not None
         assert result.content == expected_content
     else:
         assert type(exc_info.value) is expected_error
-    assert wrapped.closed is True
+    assert harness.wrapped.closed is True
 
 
 def test_real_httpcore_total_deadline_expires_while_response_is_withheld() -> None:
     response_gate = threading.Event()
-    client, received, wrapped, server = _real_transport_client(
+    harness = _real_transport_client(
         _fixed_http_response(b"late"),
         response_gate=response_gate,
     )
     try:
         with pytest.raises(ph.PinnedDeadlineExceeded) as exc_info:
-            client.get(
+            harness.client.get(
                 "http://example.com/slow",
                 user_agent="test-agent",
                 policy=_policy(
@@ -1448,13 +1580,12 @@ def test_real_httpcore_total_deadline_expires_while_response_is_withheld() -> No
                 ),
             )
     finally:
-        response_gate.set()
-        server.join(timeout=2.0)
-        assert not server.is_alive()
+        transport_closed = harness.cleanup()
 
+    assert transport_closed is True
     assert type(exc_info.value) is ph.PinnedDeadlineExceeded
-    assert received[0].startswith(b"GET /slow HTTP/1.1\r\n")
-    assert wrapped.closed is True
+    assert harness.received[0].startswith(b"GET /slow HTTP/1.1\r\n")
+    assert harness.wrapped.closed is True
 
 
 class _ChunkStream(httpx.SyncByteStream):
