@@ -2,6 +2,8 @@
 
 > STATUS: draft-for-review - snapshot 2026-07-27.
 
+> Nền tảng thị giác, kết quả rà soát dấu hiệu giao diện do AI tạo hàng loạt và đặc tả bốn pilot đã được mở rộng trong `2026-07-27-vinhlong360-professional-ui-research-design.md`. Khi có khác biệt, tài liệu chuyên sâu này được ưu tiên cho định hướng thị giác, token, shell và pilot P1.
+
 ## 1. Mục tiêu
 
 Nâng cấp và hoàn thiện giao diện toàn bộ vinhlong360 trước khi triển khai các năng lực UX/super app nâng cao. UI mới phải có bản sắc riêng, nhất quán trên toàn hệ thống, hỗ trợ cả người địa phương và khách du lịch, đồng thời giữ nguyên hành vi, route, API, SEO policy và quyền truy cập hiện tại.
