@@ -407,7 +407,7 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 - **[P2/Docs] b2g-pitch cần chủ duyệt lại TOÀN VĂN trước khi gửi bất kỳ đối tác nào** (đã sửa claim khống nhưng đây là tài liệu đối ngoại — CLAUDE.md §4).
 
 ### Backlog phát sinh — SP6 Content (2026-07-07)
-- **[P1/Test-hygiene] test_kb_curation.py ghi fixture vào DB THẬT**: pytest full-suite tạo `prov-1`, `test-mutation-create`, `test-mutation-update` trong agent/data/vinhlong360.db (phát hiện khi SP6-T1 đếm 1776≠1773; đã xoá 3 fixture). Sửa test dùng tmp DB (pattern tests/test_export_data.py) — mỗi lần chạy pytest hiện lại đẻ rác vào SoT local.
+- ✅ **[P1/Test-hygiene resolved] test_kb_curation.py không còn ghi fixture vào DB thật:** `af37bb5a` chuyển write-through test sang `isolated_sqlite_db`; `23b9803b`/`343ca3f8` khóa guard test-isolation. Recheck 2026-07-27: `agent/tests/test_kb_curation.py` + `tests/test_entity_test_isolation.py` đạt `45 passed`; chạy riêng curation đạt `17 passed` và SHA-256 `agent/data/vinhlong360.db` giữ nguyên `74F220A681B7F1F7BC1B297C1D3AE84DCE21C7EE0106BF6E03FABFCFAA0B4121` trước/sau.
 - **[P2/SEO] SP6.2 siết is_index_worthy lên 150 từ**: cần làm dày 159 trang dải 130-149 trước, tránh sitemap co đột ngột.
 - **[P2/Data] Đổi id chom-chom-binh-hoa-phuoc-rambutan → chom-chom-binh-hoa-phuoc** (slot đã trống sau xoá HOLD): ảnh hưởng URL/prerender/sitemap — task riêng.
 
