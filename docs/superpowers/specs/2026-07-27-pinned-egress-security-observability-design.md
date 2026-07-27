@@ -1,6 +1,6 @@
 # Pinned Egress Security Observability
 
-> STATUS: done - implemented and verified locally at revision `8e4bf9bef3c6c6949c4d22185ca8518591eef276`; production observation still requires a separately authorized deployment.
+> STATUS: done - implemented and verified locally through code/test revision `15f7124a16745d0315ae4e249ce4b4dd7187c5fb`; production observation still requires a separately authorized deployment.
 
 ## Decision
 
@@ -184,8 +184,10 @@ After all gates pass:
 - Scoped commits: `f2b50bbbb3ec76dedb1ac0fb80ee11dc2ca5f46c`
   (`feat: add pinned egress security denial observability`) and
   `8e4bf9bef3c6c6949c4d22185ca8518591eef276` (`test: isolate full-suite chat
-  state`). `git rev-parse HEAD` returned
-  `8e4bf9bef3c6c6949c4d22185ca8518591eef276` for the verified candidate.
+  state`), followed by review-fix `15f7124a16745d0315ae4e249ce4b4dd7187c5fb`
+  (`test: lock auto-learn denial log cardinality`). The official long-running
+  gates below were measured on `8e4bf9be`; `15f7124a` changes only one assertion
+  and passed the final focused and hard gates.
 - The full pre-merge coverage command `python -m pytest -q tests agent/tests -m
   "not slow" --ignore=tests/launch_safety/test_closed_installer.py --cov=agent
   --cov-report=json:coverage.json --cov-report=` exited `0`: `8726 passed, 66
@@ -200,6 +202,10 @@ After all gates pass:
   checks passed!`. `python scripts/checks/run_hard.py --all` exited `0` with
   `hard=0`, no ratchet increase, and R50.3 improved to `7 < baseline 8`. `git
   diff --check` exited `0`.
+- The final assertion-only review fix was mutation-checked: temporarily removing
+  auto-learn's typed security-denial catch made the focused test fail on its raw
+  `Failed to fetch <URL>` warning; restoring the catch made the complete focused
+  suite pass `319` tests and the hard gate return `hard=0`.
 - The official bounded command `python scripts/ops/run_backend_regression.py
   --deadline-seconds 7000` exited `0` in `5024.4s`. Phase A exited `0` with
   `8649 passed, 58 skipped, 111 deselected, 1 xfailed, 1 warning` in `1069.44s`;
