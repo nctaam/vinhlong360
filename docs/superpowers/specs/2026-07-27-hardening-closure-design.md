@@ -533,8 +533,10 @@ revision, command lines, and durable receipt hashes.
   `dab4877163280a6476180e0ad285280e405af1b4`. The final documentation record was
   added in `2aa6b584cd2037bfe380e45da9ab5338563670bd` and its frontend evidence was
   corrected without changing implementation in
-  `aca4ff2b3022b29c2ebc171ba46e4581a4d6f2f7`. Final execution evidence below was
-  measured on `dab48771`; documentation truth is corrected through `aca4ff2b`.
+  `aca4ff2b3022b29c2ebc171ba46e4581a4d6f2f7`. Frontend test ownership and Nuxt
+  setup-hook headroom were then corrected in `de7efa3fbc26cb04430bc3e6f98afe50fef48724`.
+  Backend execution evidence below remains measured on `dab48771`; the final
+  combined revision is `de7efa3f`.
   This spec's later docs-only commit with subject `docs: close hardening umbrella
   spec` is the completion authority for the umbrella status; its exact revision is
   recorded in the companion final-fix report.
@@ -542,15 +544,13 @@ revision, command lines, and durable receipt hashes.
   tests/test_admin_pinned_http.py tests/test_auto_learn_fetch.py
   tests/test_gpt55_quality_burst.py tests/test_pinned_http_consumers.py -q` -> exit
   `0`; `303 passed in 22.36s`.
-- Final frontend gates from `web-nuxt`: the first exact `npm test` exited `1` with
-  `1 failed | 36 passed (37)` files and `906 passed | 6 skipped (912)` tests in
-  `38.72s` after the Nuxt setup hook timed out in `tests/entityStory.test.ts`;
-  without code or test changes, one exact rerun exited `0` with `37 passed (37)`
-  files and `912 passed (912)` tests in `28.66s`. `npm run typecheck` exited `0`
-  with no diagnostics. `npm run build` exited `0` with `746 modules transformed`,
-  `Σ Total size: 6.45 MB (1.62 MB gzip)`, and a launch-readiness manifest for
-  `dab4877163280a6476180e0ad285280e405af1b4`; the existing sourcemap, chunk-size,
-  and Node `DEP0155` warnings were non-fatal.
+- Final frontend gates from `web-nuxt` on `de7efa3f`: `npm test` exited `0` with
+  `37 passed (37)` files and `912 passed (912)` tests in `30.49s`; the two pure
+  composable tests now use the Node environment and genuine Nuxt setup keeps
+  `30_000ms` hook headroom. `npm run typecheck` exited `0` with no diagnostics.
+  `npm run build` exited `0` with `746 modules transformed`, `Σ Total size: 6.45 MB
+  (1.62 MB gzip)`, and a launch-readiness manifest for `de7efa3f`; the existing
+  sourcemap, chunk-size, and Node `DEP0155` warnings were non-fatal.
 - Final repository gates: `python scripts/checks/run_hard.py --all` -> exit `0`,
   `hard=0`, ratchet không tăng, with R50.3 improved to `7 < baseline 8`; `git diff
   --check` -> exit `0`.
