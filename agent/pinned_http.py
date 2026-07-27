@@ -427,9 +427,14 @@ class _PinnedNetworkStream(httpcore.NetworkStream):
                 self._policy.inactivity_timeout_seconds,
                 monotonic=self._monotonic,
             )
+            deadline_limited = operation_timeout < self._policy.inactivity_timeout_seconds and (
+                timeout is None or operation_timeout < timeout
+            )
             self._socket.settimeout(operation_timeout)
             return self._socket.recv(max_bytes)
         except socket.timeout as exc:
+            if deadline_limited:
+                raise PinnedDeadlineExceeded("pinned egress deadline exceeded") from exc
             self._budget.remaining(monotonic=self._monotonic)
             raise httpcore.ReadTimeout(str(exc)) from exc
         except OSError as exc:

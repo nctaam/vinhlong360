@@ -795,6 +795,22 @@ def test_stream_socket_timeout_reports_total_deadline_exhaustion(operation: str)
             stream.write(b"x", timeout=9.0)
 
 
+def test_stream_deadline_limited_read_timeout_maps_to_deadline() -> None:
+    times = iter([1.0, 4.999])
+    stream = ph._PinnedNetworkStream(
+        FakeSocket(
+            ("93.184.216.34", 443),
+            recv_error=socket.timeout("deadline-limited read timeout"),
+        ),
+        policy=_policy(inactivity_timeout_seconds=8.0),
+        budget=ph.DeadlineBudget(expires_at=5.0),
+        monotonic=lambda: next(times),
+    )
+
+    with pytest.raises(ph.PinnedDeadlineExceeded):
+        stream.read(16, timeout=9.0)
+
+
 def test_backend_applies_requested_options_and_tcp_nodelay() -> None:
     hop = _resolved_hop("https://example.com/x", "93.184.216.34")
     fake = FakeSocket(("93.184.216.34", 443))
