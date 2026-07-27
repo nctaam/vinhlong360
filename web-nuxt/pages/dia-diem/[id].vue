@@ -956,9 +956,10 @@ const trustNote = computed(() => {
 // P0-7: chỉ hiện trust-card khi CÓ nguồn công khai thật (đừng quảng cáo "chưa có nguồn").
 const trustVisible = computed(() => !!trustSourceUrl.value)
 
-// P0-5: byline biên tập (Who) — LUÔN hiện, mọi trang. Trung thực theo verifiedAt thật
-// (người đặt tay); hiện chưa entity nào có → mặc định "chưa kiểm chứng thực địa".
-const entityVerifiedAt = computed(() => entity.value?.verifiedAt || '')
+// P0-5: byline biên tập (Who) — LUÔN hiện, mọi trang. Trung thực theo
+// attributes.verifiedAt (người đặt tay); hiện chưa entity nào có → mặc định
+// "chưa kiểm chứng thực địa".
+const entityVerifiedAt = computed(() => sourceFreshness.value?.verified_at || '')
 const bylineText = computed(() => entityVerifiedAt.value
   ? `Biên tập & kiểm chứng thực địa · ${formatDateVN(entityVerifiedAt.value)}`
   : 'Tổng hợp & biên tập từ nguồn công khai — chưa kiểm chứng thực địa')

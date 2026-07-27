@@ -13,7 +13,9 @@ class TestSourceFreshness:
         from datetime import datetime, timezone, timedelta
         from public_api import _build_source_freshness
         entity = {
-            "verifiedAt": (datetime.now(timezone.utc) - timedelta(days=30)).isoformat(),
+            "attributes": {
+                "verifiedAt": (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+            },
             "source": {"title": "Test", "url": "https://example.com"},
         }
         result = _build_source_freshness(entity)
@@ -26,14 +28,22 @@ class TestSourceFreshness:
     def test_build_source_freshness_aging(self):
         from datetime import datetime, timezone, timedelta
         from public_api import _build_source_freshness
-        entity = {"verifiedAt": (datetime.now(timezone.utc) - timedelta(days=120)).isoformat()}
+        entity = {
+            "attributes": {
+                "verifiedAt": (datetime.now(timezone.utc) - timedelta(days=120)).isoformat()
+            }
+        }
         result = _build_source_freshness(entity)
         assert result["freshness_status"] == "aging"
 
     def test_build_source_freshness_stale(self):
         from datetime import datetime, timezone, timedelta
         from public_api import _build_source_freshness
-        entity = {"verifiedAt": (datetime.now(timezone.utc) - timedelta(days=200)).isoformat()}
+        entity = {
+            "attributes": {
+                "verifiedAt": (datetime.now(timezone.utc) - timedelta(days=200)).isoformat()
+            }
+        }
         result = _build_source_freshness(entity)
         assert result["freshness_status"] == "stale"
         assert result["days_since_verified"] >= 200

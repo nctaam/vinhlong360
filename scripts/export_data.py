@@ -42,7 +42,7 @@ FLAT_COLS = ("address", "phone", "website", "hours", "price_range", "sub_categor
 
 
 def normalize_entity_shape(e: dict) -> dict:
-    out = {k: v for k, v in e.items() if k not in FLAT_COLS}
+    out = {k: v for k, v in e.items() if k not in FLAT_COLS and k != "verifiedAt"}
     if "createdAt" not in out and out.get("created_at") is not None:
         out["createdAt"] = out["created_at"]
     return out

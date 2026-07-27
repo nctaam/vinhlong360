@@ -15,6 +15,7 @@ export interface EntitySourceFreshness {
   source_title?: string | null
   source_url?: string | null
   updated_at?: string | null
+  verified_at?: string | null
   days_since_update?: number | null
   freshness_status?: 'fresh' | 'aging' | 'stale' | 'unknown' | string
 }
@@ -111,9 +112,6 @@ export interface Entity {
   quality?: EntityQuality
   source_freshness?: EntitySourceFreshness
   verified?: boolean
-  /** Ngày kiểm-chứng-thực-địa thật (người đặt tay) — top-level, backend serialize từ
-   * attributes.verifiedAt (xem agent/database.py). Trống nếu chưa kiểm chứng. */
-  verifiedAt?: string
 }
 
 export interface Relationship {

@@ -33,7 +33,7 @@ from api_schemas import (  # W6.3: response_model (extra="allow" — không stri
     GalleryResponse,
     TrendingResponse,
 )
-from database import db
+from database import canonical_verified_at, db
 from data_quality import entity_quality
 from middleware import report_limiter, get_client_ip
 from auth_middleware import validate_path_id, require_pg, require_user, require_csrf, get_current_user
@@ -222,12 +222,13 @@ def _days_since(iso: str | None) -> int | None:
 
 def _build_source_freshness(entity: dict) -> dict:
     """Source freshness for entity detail. P0-6: freshness_status phản ánh NGÀY
-    KIỂM-CHỨNG-THỰC-ĐỊA thật (verifiedAt) — KHÔNG bao giờ dùng updatedAt (timestamp
-    import) — nên re-import hàng loạt không thể giả badge "mới kiểm chứng"."""
+    KIỂM-CHỨNG-THỰC-ĐỊA thật (attributes.verifiedAt) — KHÔNG bao giờ dùng
+    updatedAt (timestamp import) — nên re-import hàng loạt không thể giả badge
+    "mới kiểm chứng"."""
     from data_quality import source_info
     src = source_info(entity)
     updated_at = entity.get("updatedAt")
-    verified_at = entity.get("verifiedAt")
+    verified_at = canonical_verified_at(entity)
     days_since_update = _days_since(updated_at)
     days_since_verified = _days_since(verified_at)
     if days_since_verified is None:
@@ -979,6 +980,7 @@ def _project_public_entity_media(entity: dict, *, limit: int | None = None) -> d
     projected = dict(entity)
     for key in ("image", "images", "image_url", "image_urls", "image_descriptor", "image_descriptors"):
         projected.pop(key, None)
+    projected.pop("verifiedAt", None)
     descriptors = _gallery_editorial_images(entity)
     projected["image_descriptors"] = descriptors[:limit] if limit is not None else descriptors
     return projected

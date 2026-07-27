@@ -124,6 +124,22 @@ def test_export_normalizes_shape_no_flat_cols_and_createdAt(tmp_db, tmp_path, mo
     assert e["createdAt"] == "2026-07-07"
 
 
+def test_export_keeps_only_attribute_verified_at(tmp_db, tmp_path, monkeypatch) -> None:
+    from export_data import export
+
+    entities = tmp_db.all_entities()
+    entities[0]["verifiedAt"] = "2026-07-27T00:00:00Z"
+    entities[0]["attributes"] = {"verifiedAt": "2026-06-08T00:00:00Z"}
+    monkeypatch.setattr(tmp_db, "all_entities", lambda: entities)
+    output = tmp_path / "out.json"
+
+    export(tmp_db, str(output), dry_run=False)
+
+    exported = json.loads(output.read_text(encoding="utf-8"))["entities"][0]
+    assert "verifiedAt" not in exported
+    assert exported["attributes"]["verifiedAt"] == "2026-06-08T00:00:00Z"
+
+
 def test_export_roundtrip_stable(tmp_db, tmp_path, monkeypatch):
     """Round-trip: replace_from_json(export) → export lại ≡ lần 1 (entities theo id)."""
     import database

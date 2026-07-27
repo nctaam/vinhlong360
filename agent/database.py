@@ -18,6 +18,7 @@ import math
 import os
 import sqlite3
 import time
+from collections.abc import Mapping
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
@@ -1802,13 +1803,31 @@ def _coerce_iso_date(value) -> str | None:
         return candidate + ("T00:00:00Z" if "T" not in candidate else "Z")
 
 
+def canonical_verified_at(entity: Mapping[str, object]) -> str | None:
+    """Return normalized field-verification time from attributes only."""
+    attributes = entity.get("attributes")
+    if not isinstance(attributes, Mapping):
+        return None
+    raw = attributes.get("verifiedAt")
+    if not isinstance(raw, str) or not raw.strip():
+        return None
+    candidate = raw.strip()
+    try:
+        parsed = datetime.fromisoformat(candidate.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    else:
+        parsed = parsed.astimezone(timezone.utc)
+    return parsed.isoformat(timespec="seconds").replace("+00:00", "Z")
+
+
 def _normalize_entity_timestamps(d: dict) -> dict:
     """Đảm bảo entity luôn phơi ra mốc thời gian ổn định, KHÔNG bịa.
 
     - updatedAt: chuẩn hoá ISO-8601 UTC. Nếu thiếu → suy từ created_at (DB luôn có).
     - createdAt: phơi created_at của DB (audit) nếu chưa có.
-    - verifiedAt: mặc định = updatedAt (lần cập nhật gần nhất ngụ ý lần kiểm gần nhất);
-      nếu sau này có attributes.verifiedAt riêng thì giữ cái đó.
     Tất cả nguồn đều là field DB/data sẵn có — không dùng ngày hiện tại.
     """
     if not isinstance(d, dict):
@@ -1828,16 +1847,7 @@ def _normalize_entity_timestamps(d: dict) -> dict:
         if iso_created:
             d["createdAt"] = iso_created
 
-    # verifiedAt — ưu tiên giá trị tường minh trong attributes (admin có thể set sau)
-    attrs = d.get("attributes")
-    explicit_verified = attrs.get("verifiedAt") if isinstance(attrs, dict) else None
-    if explicit_verified:
-        coerced = _coerce_iso_date(explicit_verified)
-        if coerced:
-            d["verifiedAt"] = coerced
-    # P0-6: KHÔNG fallback verifiedAt = updatedAt. updatedAt là timestamp import;
-    # verifiedAt phải phản ánh ngày kiểm-chứng-thực-địa thật (người đặt) hoặc để trống.
-
+    d.pop("verifiedAt", None)
     return d
 
 

@@ -27,6 +27,7 @@ from database import (  # noqa: E402
     _coords_in_region,
     _coerce_iso_date,
     _normalize_entity_timestamps,
+    canonical_verified_at,
 )
 import os  # noqa: E402
 
@@ -657,6 +658,31 @@ class TestCoerceIsoDate:
         assert _coerce_iso_date(12345) is None
 
 
+def test_canonical_verified_at_reads_only_attribute() -> None:
+    entity = {
+        "verifiedAt": "2026-07-27T00:00:00Z",
+        "attributes": {"verifiedAt": "2026-06-08T07:00:00+07:00"},
+    }
+
+    assert canonical_verified_at(entity) == "2026-06-08T00:00:00Z"
+
+
+@pytest.mark.parametrize(
+    "entity",
+    [
+        {"verifiedAt": "2026-07-27T00:00:00Z"},
+        {"updatedAt": "2026-07-27T00:00:00Z"},
+        {"verified": True},
+        {"attributes": {"verifiedAt": ""}},
+        {"attributes": {"verifiedAt": "not-a-date"}},
+        {"attributes": {"verifiedAt": 123}},
+        {"attributes": "not-an-object"},
+    ],
+)
+def test_canonical_verified_at_rejects_legacy_or_invalid_values(entity: dict) -> None:
+    assert canonical_verified_at(entity) is None
+
+
 class TestNormalizeEntityTimestamps:
     def test_sets_updated_no_verified_fallback(self):
         # P0-6: updatedAt is an IMPORT timestamp, not a field-verification date.
@@ -680,7 +706,19 @@ class TestNormalizeEntityTimestamps:
     def test_explicit_verified_at_in_attributes(self):
         d = {"updatedAt": "2026-06-10", "attributes": {"verifiedAt": "2026-06-08T00:00:00Z"}}
         result = _normalize_entity_timestamps(d)
-        assert result["verifiedAt"] == "2026-06-08T00:00:00Z"
+        assert result["attributes"]["verifiedAt"] == "2026-06-08T00:00:00Z"
+        assert "verifiedAt" not in result
+
+    def test_removes_legacy_top_level_without_mirroring_attribute(self):
+        entity = {
+            "verifiedAt": "2026-07-27T00:00:00Z",
+            "attributes": {"verifiedAt": "2026-06-08T00:00:00Z"},
+        }
+
+        result = _normalize_entity_timestamps(entity)
+
+        assert "verifiedAt" not in result
+        assert result["attributes"]["verifiedAt"] == "2026-06-08T00:00:00Z"
 
     def test_non_dict_returns_as_is(self):
         assert _normalize_entity_timestamps("not a dict") == "not a dict"
