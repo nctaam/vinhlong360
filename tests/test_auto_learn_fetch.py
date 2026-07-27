@@ -56,6 +56,7 @@ def test_fetch_url_real_blocked_literal_logs_only_central_security_event(
 
     records = [record for record in caplog.records if record.name == "security.egress"]
     assert len(records) == 1
+    assert [record for record in caplog.records if record.name == auto_learn.__name__] == []
     record = records[0]
     assert record.name == "security.egress"
     assert record.getMessage() == (
