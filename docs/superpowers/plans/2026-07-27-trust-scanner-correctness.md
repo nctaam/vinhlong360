@@ -1,6 +1,6 @@
 # Trust and Scanner Correctness Implementation Plan
 
-> STATUS: active - approved umbrella design is `docs/superpowers/specs/2026-07-27-hardening-closure-design.md`; implementation has not started.
+> STATUS: done - approved umbrella design is `docs/superpowers/specs/2026-07-27-hardening-closure-design.md`; Plan A implementation and verification are complete.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -652,3 +652,13 @@ git commit -m "docs: record trust scanner verification"
 ```
 
 Expected: the commit succeeds and Plan B can start from this verified revision.
+
+## KẾT QUẢ
+
+- Revision verified: `git rev-parse HEAD` -> `f5b26a6160da71330cff92484f43e5c99fe818fd`.
+- Implementation commits: `fe84a09ed090bfc8198cb49b267b7896567ec0b9 fix: make field verification attribute-authoritative`; `f5b26a6160da71330cff92484f43e5c99fe818fd fix: scope release artifact scanners to owned inputs`.
+- Backend focused gate: `python -m pytest agent/tests/test_database.py agent/tests/test_public_api.py agent/tests/test_upgrade_phase1.py tests/test_export_data.py tests/launch_safety/test_artifact_packaging.py tests/launch_safety/test_release_package.py -q` -> exit `0`; `248 passed, 1 skipped, 1 xfailed in 43.53s` (the skip and xfail are existing platform/design cases; no Task 3 assertions were changed).
+- Frontend gates: `npm test` -> exit `0`; `37` test files passed and `912` tests passed in `34.33s`; `npm run typecheck` -> exit `0`; `nuxt typecheck` completed with no diagnostics; `npm run build` -> exit `0`; `746 modules transformed`, `Σ Total size: 6.45 MB (1.62 MB gzip)`, `Build complete!`, and launch-readiness manifest generated for `f5b26a6160da71330cff92484f43e5c99fe818fd`. Existing Nuxt/Vite sourcemap, >500 kB chunk-size, and Node `DEP0155` dependency warnings were observed; no implementation or assertion failure occurred.
+- Repository gates: `python scripts/checks/run_hard.py --all` -> exit `0`, `hard=0`, ratchet không tăng (the output also reports R50.3 `7 < baseline 8`); `git diff --check` -> exit `0`; `git status --short` -> only `?? agent/knowledge.db-shm` and `?? agent/knowledge.db-wal`.
+- Data/operations: no DB or `web/data.json` rewrite, no push, no deploy, no production mutation; pre-existing WAL/SHM files remain untouched.
+- Next dependency: execute `docs/superpowers/plans/2026-07-27-bound-complete-pinned-egress.md`.
