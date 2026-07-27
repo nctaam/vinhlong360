@@ -191,19 +191,33 @@ def test_timed_out_dns_threads_hold_slots_until_os_returns(
     entered = threading.Barrier(5)
     release = threading.Event()
     call_count = 0
+    resolved_hosts: list[str] = []
+    resolver_threads: list[threading.Thread] = []
     lock = threading.Lock()
 
-    def blocked_getaddrinfo(*_args, **_kwargs):
+    def blocked_getaddrinfo(host: str, *_args, **_kwargs):
         nonlocal call_count
         with lock:
             call_count += 1
             current = call_count
+            resolved_hosts.append(host)
         if current <= 4:
             entered.wait(timeout=2.0)
             release.wait(timeout=2.0)
         return [_answer("93.184.216.34")]
 
     monkeypatch.setattr(ph.socket, "getaddrinfo", blocked_getaddrinfo)
+
+    original_thread = ph.threading.Thread
+
+    def capture_resolver_thread(*args, **kwargs):
+        thread = original_thread(*args, **kwargs)
+        if kwargs.get("name") == "vinhlong360-pinned-dns":
+            with lock:
+                resolver_threads.append(thread)
+        return thread
+
+    monkeypatch.setattr(ph.threading, "Thread", capture_resolver_thread)
     try:
         with ThreadPoolExecutor(max_workers=4) as executor:
             futures = [
@@ -226,14 +240,21 @@ def test_timed_out_dns_threads_hold_slots_until_os_returns(
                     ph.DeadlineBudget.start(0.01),
                 )
         release.set()
+        for thread in resolver_threads:
+            thread.join(timeout=2.0)
+        assert len(resolver_threads) == 4
+        assert all(not thread.is_alive() for thread in resolver_threads)
         recovered = ph.resolve_public_addresses(
             "recovered.example",
             443,
             ph.DeadlineBudget.start(1.0),
         )
         assert str(recovered[0].ip) == "93.184.216.34"
+        assert "fifth.example" not in resolved_hosts
     finally:
         release.set()
+        for thread in resolver_threads:
+            thread.join(timeout=2.0)
 
 
 @pytest.mark.parametrize("ip", _ALLOWED_IPS)
