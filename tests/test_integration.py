@@ -483,6 +483,12 @@ def test_chat_stream_concurrent_non_blocking():
                     codes = await asyncio.gather(one(1), one(2))
                     return codes
 
-    codes = asyncio.run(_run())
+    import server
+
+    initial_draining = server._draining
+    try:
+        codes = asyncio.run(_run())
+    finally:
+        server._draining = initial_draining
     assert all(c == 200 for c in codes), codes
     assert max_active_calls >= 2, "provider calls were serialized instead of overlapping"

@@ -84,7 +84,7 @@ def test_valid_reply_with_su_co_not_clobbered(kb_ctx):
     fake = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(
         create=lambda *a, **k: _completion(valid))))
     with patch.object(server, "get_client", lambda: fake):
-        r = kb_ctx.post("/chat", json={"message": "kể về giao thông", "session_id": "tc107"})
+        r = kb_ctx.post("/chat", json={"message": "kể về giao thông"})
     assert r.status_code == 200, r.text
     reply = r.json().get("reply", "")
     assert "giao thông" in reply and "bảo trì" not in reply, f"reply bị clobber: {reply[:120]}"
