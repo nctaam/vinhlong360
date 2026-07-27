@@ -370,6 +370,69 @@ def _assert_manifest_matches_archive_members(archive: Path) -> dict[str, object]
     return manifest
 
 
+def test_launch_release_ignores_ambient_non_member_duplicate(tmp_path: Path) -> None:
+    root = tmp_path / "source"
+    audit = _write_launch_fixture(root)
+    ambient = root / "docs" / "launch-indexing-policy.json"
+    ambient.parent.mkdir()
+    ambient.write_bytes(b"not packaged")
+
+    package = build_launch_release(
+        root,
+        tmp_path / "release.tar.gz",
+        compose_network_audit=audit,
+        source_revision="reviewed-source-revision",
+    )
+
+    with tarfile.open(package.archive, "r:gz") as bundle:
+        assert "docs/launch-indexing-policy.json" not in bundle.getnames()
+
+
+def test_launch_release_rejects_duplicate_snapshot_member_without_outputs(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    root = tmp_path / "source"
+    audit = _write_launch_fixture(root)
+    destination = tmp_path / "release.tar.gz"
+    real_snapshot = release_package._snapshot_launch_release
+
+    def duplicate_snapshot(root_path, payload):
+        snapshot = real_snapshot(root_path, payload)
+        canonical = next(
+            member
+            for member in snapshot.members
+            if member.arcname == "config/launch-indexing-policy.json"
+        )
+        duplicate = release_package._SnapshotMember(
+            canonical.source,
+            "web-nuxt/launch-indexing-policy.json",
+        )
+        return release_package._LaunchReleaseSnapshot(
+            snapshot.root,
+            snapshot.members + (duplicate,),
+            snapshot.sources,
+        )
+
+    monkeypatch.setattr(
+        release_package,
+        "_snapshot_launch_release",
+        duplicate_snapshot,
+    )
+
+    with pytest.raises(ValueError, match="duplicate canonical"):
+        build_launch_release(
+            root,
+            destination,
+            compose_network_audit=audit,
+            source_revision="reviewed-source-revision",
+        )
+
+    assert not destination.exists()
+    assert not destination.with_name(destination.name + ".sha256").exists()
+    assert list(tmp_path.glob(".*.tmp")) == []
+
+
 def test_build_launch_release_has_closed_manifest_and_deterministic_sidecar(tmp_path: Path):
     root = tmp_path / "source"
     audit = _write_launch_fixture(root)

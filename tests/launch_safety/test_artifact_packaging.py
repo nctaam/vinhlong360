@@ -1,6 +1,7 @@
 import hashlib
 import os
 from pathlib import Path
+import subprocess
 import tarfile
 
 import pytest
@@ -9,6 +10,7 @@ from scripts.package_launch_release import (
     CANONICAL_ARTIFACTS,
     build_backend_archive,
     find_duplicate_artifacts,
+    find_tracked_duplicate_artifacts,
 )
 
 
@@ -30,45 +32,99 @@ def _sha256(path: Path) -> str:
 
 
 def test_repository_has_no_duplicate_canonical_artifacts():
-    assert find_duplicate_artifacts(REPO_ROOT) == []
+    assert find_tracked_duplicate_artifacts(REPO_ROOT) == []
 
 
-def test_canonical_artifacts_may_exist_only_under_root_config(tmp_path: Path):
-    root = tmp_path
-    (root / "config").mkdir()
-    (root / "web-nuxt").mkdir()
+def test_candidate_scanner_rejects_alias_symlink_and_non_file(tmp_path: Path) -> None:
+    canonical = tmp_path / "config" / "launch-indexing-policy.json"
+    canonical.parent.mkdir()
+    canonical.write_bytes(b"{}")
+    alias = tmp_path / "web-nuxt" / canonical.name
+    alias.parent.mkdir()
+    alias.symlink_to(canonical)
+    directory = tmp_path / "config" / "ai-disclosure.json"
+    directory.mkdir()
+
+    assert find_duplicate_artifacts(
+        (
+            ("config/launch-indexing-policy.json", canonical),
+            ("web-nuxt/launch-indexing-policy.json", alias),
+            ("config/ai-disclosure.json", directory),
+        )
+    ) == ["config/ai-disclosure.json", "web-nuxt/launch-indexing-policy.json"]
+
+
+def test_candidate_scanner_rejects_duplicate_canonical_member(tmp_path: Path) -> None:
+    canonical = tmp_path / "config" / "launch-indexing-policy.json"
+    canonical.parent.mkdir()
+    canonical.write_bytes(b"{}")
+
+    assert find_duplicate_artifacts(
+        (
+            ("config/launch-indexing-policy.json", canonical),
+            ("config/launch-indexing-policy.json", canonical),
+        )
+    ) == ["config/launch-indexing-policy.json"]
+
+
+def _git_root(tmp_path: Path) -> Path:
+    root = tmp_path / "repo"
+    (root / "config").mkdir(parents=True)
     for name in CANONICAL_ARTIFACTS:
-        (root / "config" / name).write_text("{}", encoding="utf-8")
-    (root / "web-nuxt" / "launch-indexing-policy.json").write_text(
-        "{}", encoding="utf-8"
-    )
+        (root / "config" / name).write_bytes(b"{}")
+    subprocess.run(["git", "init", "-q", str(root)], check=True)
+    subprocess.run(["git", "-C", str(root), "add", "config"], check=True)
+    return root
 
-    assert find_duplicate_artifacts(root) == [
-        root / "web-nuxt" / "launch-indexing-policy.json",
+
+def test_tracked_scanner_detects_staged_duplicate(tmp_path: Path) -> None:
+    root = _git_root(tmp_path)
+    duplicate = root / "web-nuxt" / "launch-indexing-policy.json"
+    duplicate.parent.mkdir()
+    duplicate.write_bytes(b"{}")
+    subprocess.run(["git", "-C", str(root), "add", "web-nuxt"], check=True)
+
+    assert find_tracked_duplicate_artifacts(root) == [
+        "web-nuxt/launch-indexing-policy.json"
     ]
 
 
-def test_duplicate_detection_uses_lexical_location_for_symlink_alias(tmp_path: Path):
-    root = tmp_path
-    (root / "config").mkdir()
-    (root / "web-nuxt").mkdir()
-    canonical = root / "config" / "launch-indexing-policy.json"
-    canonical.write_text("{}", encoding="utf-8")
-    alias = root / "web-nuxt" / "launch-indexing-policy.json"
-    alias.symlink_to(canonical)
+def test_tracked_scanner_detects_committed_duplicate(tmp_path: Path) -> None:
+    root = _git_root(tmp_path)
+    duplicate = root / "web-nuxt" / "launch-indexing-policy.json"
+    duplicate.parent.mkdir()
+    duplicate.write_bytes(b"{}")
+    subprocess.run(["git", "-C", str(root), "add", "web-nuxt"], check=True)
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(root),
+            "-c",
+            "user.name=Scanner Test",
+            "-c",
+            "user.email=scanner@example.invalid",
+            "commit",
+            "-qm",
+            "fixture",
+        ],
+        check=True,
+    )
 
-    assert find_duplicate_artifacts(root) == [alias]
+    assert find_tracked_duplicate_artifacts(root) == [
+        "web-nuxt/launch-indexing-policy.json"
+    ]
 
 
-def test_canonical_artifact_must_be_a_regular_non_symlink_file(tmp_path: Path):
-    root = tmp_path
-    (root / "config").mkdir()
-    target = root / "policy-target.json"
-    target.write_text("{}", encoding="utf-8")
-    canonical = root / "config" / "launch-indexing-policy.json"
-    canonical.symlink_to(target)
+def test_tracked_scanner_ignores_untracked_nested_worktree_noise(
+    tmp_path: Path,
+) -> None:
+    root = _git_root(tmp_path)
+    noise = root / ".claude" / "worktrees" / "task" / "config"
+    noise.mkdir(parents=True)
+    (noise / "launch-indexing-policy.json").write_bytes(b"{}")
 
-    assert find_duplicate_artifacts(root) == [canonical]
+    assert find_tracked_duplicate_artifacts(root) == []
 
 
 def test_backend_archive_rejects_duplicate_artifacts_before_writing(tmp_path: Path):
@@ -76,10 +132,8 @@ def test_backend_archive_rejects_duplicate_artifacts_before_writing(tmp_path: Pa
     (root / "config" / "launch-indexing-policy.json").write_text(
         "{}", encoding="utf-8"
     )
-    (root / "web-nuxt").mkdir()
-    (root / "web-nuxt" / "launch-indexing-policy.json").write_text(
-        "{}", encoding="utf-8"
-    )
+    duplicate = root / "agent" / "launch-indexing-policy.json"
+    duplicate.write_text("{}", encoding="utf-8")
     destination = tmp_path / "backend.tar.gz"
     destination.write_bytes(b"previous archive")
 

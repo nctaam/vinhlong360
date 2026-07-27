@@ -8,12 +8,13 @@ import json
 import os
 import re
 import stat
+import subprocess
 import sys
 import tarfile
 import tempfile
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from types import MappingProxyType
-from typing import Mapping
+from typing import Iterable, Mapping
 
 
 CANONICAL_ARTIFACTS = (
@@ -131,18 +132,57 @@ def _lexical_path(path: Path) -> Path:
     return Path(os.path.abspath(os.fspath(path)))
 
 
-def find_duplicate_artifacts(root: Path) -> list[Path]:
+def find_duplicate_artifacts(
+    candidates: Iterable[tuple[str, Path]],
+) -> list[str]:
+    invalid: set[str] = set()
+    canonical_counts = {name: 0 for name in CANONICAL_ARTIFACTS}
+    for logical_path, source_path in candidates:
+        logical = PurePosixPath(logical_path.replace("\\", "/"))
+        name = logical.name
+        if name not in canonical_counts:
+            continue
+        expected = PurePosixPath("config") / name
+        if logical == expected:
+            canonical_counts[name] += 1
+            if canonical_counts[name] > 1:
+                invalid.add(logical.as_posix())
+        else:
+            invalid.add(logical.as_posix())
+        if source_path.is_symlink() or not source_path.is_file():
+            invalid.add(logical.as_posix())
+    return sorted(invalid)
+
+
+def find_tracked_duplicate_artifacts(root: Path) -> list[str]:
     root = _lexical_path(root)
-    invalid: set[Path] = set()
-    for name in CANONICAL_ARTIFACTS:
-        canonical = root / "config" / name
-        if canonical.is_symlink() or (canonical.exists() and not canonical.is_file()):
-            invalid.add(canonical)
-        for path in root.rglob(name):
-            lexical = _lexical_path(path)
-            if lexical != canonical or path.is_symlink() or not path.is_file():
-                invalid.add(lexical)
-    return sorted(invalid, key=lambda path: path.as_posix())
+    completed = subprocess.run(
+        ["git", "-C", str(root), "ls-files", "-z", "--cached"],
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    logical_paths = [
+        os.fsdecode(raw)
+        for raw in completed.stdout.split(b"\0")
+        if raw
+    ]
+    return find_duplicate_artifacts(
+        (
+            logical,
+            root.joinpath(*PurePosixPath(logical).parts),
+        )
+        for logical in logical_paths
+    )
+
+
+def find_snapshot_duplicate_artifacts(
+    snapshot: _LaunchReleaseSnapshot,
+) -> list[str]:
+    return find_duplicate_artifacts(
+        (member.arcname, member.source.path)
+        for member in snapshot.members
+    )
 
 
 def _is_within(path: Path, root: Path) -> bool:
@@ -280,11 +320,6 @@ def _preflight(root: Path, destination: Path) -> None:
     if _is_within(destination, root):
         raise ValueError("release destination must be outside source root")
 
-    duplicates = find_duplicate_artifacts(root)
-    if duplicates:
-        details = ", ".join(path.as_posix() for path in duplicates)
-        raise ValueError(f"duplicate canonical launch artifacts: {details}")
-
 
 def _collect_payload(root: Path) -> list[tuple[Path, str]]:
     payload = _collect_tree(
@@ -359,7 +394,12 @@ def build_backend_archive(root: Path, destination: Path) -> Path:
     root = _lexical_path(root)
     destination = _lexical_path(destination)
     _preflight(root, destination)
-    payload = _collect_payload(root)
+    snapshot = _snapshot_tar_payload(_collect_payload(root))
+    duplicates = find_snapshot_duplicate_artifacts(snapshot)
+    if duplicates:
+        raise ValueError(
+            "duplicate canonical launch artifacts: " + ", ".join(duplicates)
+        )
 
     descriptor, temporary_name = tempfile.mkstemp(
         prefix=f".{destination.name}.", suffix=".tmp", dir=destination.parent
@@ -367,7 +407,7 @@ def build_backend_archive(root: Path, destination: Path) -> Path:
     os.close(descriptor)
     temporary = Path(temporary_name)
     try:
-        _write_archive(temporary, payload)
+        write_deterministic_tar_gz(temporary, snapshot, {})
         os.replace(temporary, destination)
     except BaseException:
         temporary.unlink(missing_ok=True)
@@ -620,10 +660,11 @@ def _sha256_bytes(raw: bytes) -> str:
 def _validated_canonical_artifacts(
     root: Path, snapshot: _LaunchReleaseSnapshot
 ) -> dict[str, object]:
-    duplicates = find_duplicate_artifacts(root)
+    duplicates = find_snapshot_duplicate_artifacts(snapshot)
     if duplicates:
-        details = ", ".join(path.as_posix() for path in duplicates)
-        raise ValueError(f"duplicate canonical launch artifacts: {details}")
+        raise ValueError(
+            "duplicate canonical launch artifacts: " + ", ".join(duplicates)
+        )
     result: dict[str, object] = {}
     definitions = (
         (
