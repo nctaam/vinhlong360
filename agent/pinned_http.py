@@ -498,7 +498,12 @@ class _PinnedNetworkStream(httpcore.NetworkStream):
         if info == "ssl_object" and isinstance(self._socket, ssl.SSLSocket):
             return self._socket._sslobj
         if info == "is_readable":
-            readable, _, _ = select.select([self._socket], [], [], 0)
+            try:
+                if self._socket.fileno() < 0:
+                    return True
+                readable, _, _ = select.select([self._socket], [], [], 0)
+            except (OSError, ValueError):
+                return True
             return bool(readable)
         return None
 

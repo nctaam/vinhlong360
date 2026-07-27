@@ -959,6 +959,488 @@ def _policy(
     )
 
 
+class SocketPairClient:
+    def __init__(
+        self,
+        sock: socket.socket,
+        *,
+        peer: tuple[str, int] = ("93.184.216.34", 80),
+        max_send: int | None = None,
+        zero_send: bool = False,
+    ) -> None:
+        self.sock = sock
+        self.peer = peer
+        self.max_send = max_send
+        self.zero_send = zero_send
+        self.closed = False
+
+    def connect(self, _sockaddr: tuple) -> None:
+        return None
+
+    def send(self, buffer: bytes) -> int:
+        if self.zero_send:
+            self.zero_send = False
+            return 0
+        payload = buffer if self.max_send is None else buffer[: self.max_send]
+        return self.sock.send(payload)
+
+    def recv(self, max_bytes: int) -> bytes:
+        return self.sock.recv(max_bytes)
+
+    def settimeout(self, value: float | None) -> None:
+        self.sock.settimeout(value)
+
+    def setsockopt(self, *_args) -> None:
+        return None
+
+    def bind(self, address: tuple) -> None:
+        self.sock.bind(address)
+
+    def getpeername(self) -> tuple[str, int]:
+        return self.peer
+
+    def getsockname(self) -> tuple[str, int]:
+        return ("192.0.2.10", 49152)
+
+    def fileno(self) -> int:
+        return self.sock.fileno()
+
+    def close(self) -> None:
+        self.closed = True
+        self.sock.close()
+
+
+def _serve_http(
+    peer: socket.socket,
+    response_chunks: tuple[bytes, ...],
+    received: list[bytes],
+    response_gate: threading.Event | None,
+) -> None:
+    request = bytearray()
+    request_recorded = False
+    try:
+        peer.settimeout(2.0)
+        while b"\r\n\r\n" not in request:
+            chunk = peer.recv(4096)
+            if not chunk:
+                break
+            request.extend(chunk)
+        received.append(bytes(request))
+        request_recorded = True
+        if response_gate is not None:
+            response_gate.wait(timeout=2.0)
+        for chunk in response_chunks:
+            peer.sendall(chunk)
+    except OSError:
+        pass
+    finally:
+        if not request_recorded:
+            received.append(bytes(request))
+        peer.close()
+
+
+def _real_transport_client(
+    response_chunks: tuple[bytes, ...],
+    *,
+    peer: tuple[str, int] = ("93.184.216.34", 80),
+    max_send: int | None = None,
+    zero_send: bool = False,
+    response_gate: threading.Event | None = None,
+) -> tuple[ph.PinnedHTTPClient, list[bytes], SocketPairClient, threading.Thread]:
+    client_socket, server_socket = socket.socketpair()
+    wrapped = SocketPairClient(
+        client_socket,
+        peer=peer,
+        max_send=max_send,
+        zero_send=zero_send,
+    )
+    received: list[bytes] = []
+    server = threading.Thread(
+        target=_serve_http,
+        args=(server_socket, response_chunks, received, response_gate),
+        daemon=True,
+    )
+    server.start()
+
+    def resolver(
+        _host: str,
+        port: int,
+        _budget: ph.DeadlineBudget,
+    ) -> tuple[ph.ResolvedAddress, ...]:
+        return (
+            ph.ResolvedAddress(
+                ip=ph.ipaddress.ip_address("93.184.216.34"),
+                port=port,
+                family=socket.AF_INET,
+                socktype=socket.SOCK_STREAM,
+                protocol=socket.IPPROTO_TCP,
+                sockaddr=("93.184.216.34", port),
+            ),
+        )
+
+    def factory(
+        hop: ph.ResolvedHop,
+        policy: ph.EgressPolicy,
+        budget: ph.DeadlineBudget,
+    ) -> ph._PinnedHTTPTransport:
+        return ph._PinnedHTTPTransport(
+            hop,
+            policy=policy,
+            budget=budget,
+            socket_factory=lambda *_args: wrapped,
+        )
+
+    client = ph.PinnedHTTPClient(
+        resolver=resolver,
+        transport_factory=factory,
+    )
+    return client, received, wrapped, server
+
+
+def _fixed_http_response(
+    body: bytes,
+    *,
+    headers: tuple[bytes, ...] = (),
+) -> tuple[bytes, ...]:
+    head = b"\r\n".join(
+        (
+            b"HTTP/1.1 200 OK",
+            f"Content-Length: {len(body)}".encode("ascii"),
+            *headers,
+            b"",
+            b"",
+        )
+    )
+    return (head + body,)
+
+
+def test_real_httpcore_emits_request_line_host_and_reads_fixed_length() -> None:
+    client, received, wrapped, server = _real_transport_client(
+        (b"HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nhello",)
+    )
+    try:
+        result = client.get(
+            "http://example.com/path?q=1",
+            user_agent="test-agent",
+            policy=_policy(
+                accepted_encodings=("identity",),
+                inactivity_timeout_seconds=1.0,
+                total_timeout_seconds=2.0,
+            ),
+        )
+    finally:
+        server.join(timeout=2.0)
+        assert not server.is_alive()
+
+    assert received[0].startswith(b"GET /path?q=1 HTTP/1.1\r\n")
+    assert b"\r\nHost: example.com\r\n" in received[0]
+    assert b"\r\nUser-Agent: test-agent\r\n" in received[0]
+    assert received[0].endswith(b"\r\n\r\n")
+    assert result.content == b"hello"
+    assert wrapped.closed is True
+
+
+def test_real_httpcore_reads_chunked_body() -> None:
+    client, received, wrapped, server = _real_transport_client(
+        (
+            b"HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhel",
+            b"lo\r\n0\r\n\r\n",
+        )
+    )
+    try:
+        result = client.get(
+            "http://example.com/path?q=1",
+            user_agent="test-agent",
+            policy=_policy(accepted_encodings=("identity",)),
+        )
+    finally:
+        server.join(timeout=2.0)
+        assert not server.is_alive()
+
+    assert received[0].startswith(b"GET /path?q=1 HTTP/1.1\r\n")
+    assert b"\r\nHost: example.com\r\n" in received[0]
+    assert result.content == b"hello"
+    assert wrapped.closed is True
+
+
+def test_real_httpcore_partial_send_completes_request() -> None:
+    client, received, wrapped, server = _real_transport_client(
+        _fixed_http_response(b"ok"),
+        max_send=3,
+    )
+    try:
+        result = client.get(
+            "http://example.com/path?q=1",
+            user_agent="test-agent",
+            policy=_policy(accepted_encodings=("identity",)),
+        )
+    finally:
+        server.join(timeout=2.0)
+        assert not server.is_alive()
+
+    assert received[0].startswith(b"GET /path?q=1 HTTP/1.1\r\n")
+    assert b"\r\nHost: example.com\r\n" in received[0]
+    assert received[0].endswith(b"\r\n\r\n")
+    assert result.content == b"ok"
+    assert wrapped.closed is True
+
+
+def test_real_httpcore_zero_send_raises_pinned_transport_error() -> None:
+    client, received, wrapped, server = _real_transport_client(
+        _fixed_http_response(b"unused"),
+        zero_send=True,
+    )
+    try:
+        with pytest.raises(ph.PinnedTransportError) as exc_info:
+            client.get(
+                "http://example.com/path?q=1",
+                user_agent="test-agent",
+                policy=_policy(accepted_encodings=("identity",)),
+            )
+    finally:
+        server.join(timeout=2.0)
+        assert not server.is_alive()
+
+    assert type(exc_info.value) is ph.PinnedTransportError
+    assert received == [b""]
+    assert wrapped.closed is True
+
+
+def test_real_httpcore_peer_mismatch_prevents_request_bytes() -> None:
+    client, received, wrapped, server = _real_transport_client(
+        _fixed_http_response(b"unused"),
+        peer=("127.0.0.1", 80),
+    )
+    try:
+        with pytest.raises(ph.PeerMismatchError) as exc_info:
+            client.get(
+                "http://example.com/path?q=1",
+                user_agent="test-agent",
+                policy=_policy(accepted_encodings=("identity",)),
+            )
+    finally:
+        server.join(timeout=2.0)
+        assert not server.is_alive()
+
+    assert type(exc_info.value) is ph.PeerMismatchError
+    assert received == [b""]
+    assert wrapped.closed is True
+
+
+def test_closed_readability_is_terminal() -> None:
+    client_socket, server_socket = socket.socketpair()
+    wrapped = SocketPairClient(client_socket)
+    wrapped.close()
+    try:
+        stream = ph._PinnedNetworkStream(
+            wrapped,
+            policy=_policy(),
+            budget=ph.DeadlineBudget.start(1.0),
+        )
+        assert stream.get_extra_info("is_readable") is True
+    finally:
+        server_socket.close()
+
+
+@pytest.mark.parametrize(
+    "fileno_value",
+    [ValueError("closed descriptor"), -1],
+    ids=["raises-value-error", "returns-negative-one"],
+)
+def test_closed_readability_is_terminal_for_invalid_fileno(
+    fileno_value: ValueError | int,
+) -> None:
+    class InvalidFilenoSocket:
+        def fileno(self) -> int:
+            if isinstance(fileno_value, ValueError):
+                raise fileno_value
+            return fileno_value
+
+    stream = ph._PinnedNetworkStream(
+        InvalidFilenoSocket(),
+        policy=_policy(),
+        budget=ph.DeadlineBudget.start(1.0),
+    )
+
+    assert stream.get_extra_info("is_readable") is True
+
+
+@pytest.mark.parametrize(
+    ("response_chunks", "policy", "expected_content", "expected_error"),
+    [
+        (
+            _fixed_http_response(b"x" * 16),
+            _policy(
+                max_encoded_bytes=16,
+                max_decoded_bytes=16,
+                accepted_encodings=("identity",),
+            ),
+            b"x" * 16,
+            None,
+        ),
+        (
+            _fixed_http_response(b"x" * 17),
+            _policy(
+                max_encoded_bytes=16,
+                max_decoded_bytes=32,
+                accepted_encodings=("identity",),
+            ),
+            None,
+            ph.PinnedBodyLimitError,
+        ),
+        (
+            _fixed_http_response(
+                gzip.compress(b"x" * 16),
+                headers=(b"Content-Encoding: gzip",),
+            ),
+            _policy(
+                max_encoded_bytes=64,
+                max_decoded_bytes=16,
+                accepted_encodings=("gzip",),
+            ),
+            b"x" * 16,
+            None,
+        ),
+        (
+            _fixed_http_response(
+                gzip.compress(b"x" * 17),
+                headers=(b"Content-Encoding: gzip",),
+            ),
+            _policy(
+                max_encoded_bytes=64,
+                max_decoded_bytes=16,
+                accepted_encodings=("gzip",),
+            ),
+            None,
+            ph.PinnedBodyLimitError,
+        ),
+        (
+            _fixed_http_response(
+                b"not gzip",
+                headers=(b"Content-Encoding: gzip",),
+            ),
+            _policy(accepted_encodings=("gzip",)),
+            None,
+            ph.PinnedContentEncodingError,
+        ),
+        (
+            _fixed_http_response(
+                gzip.compress(b"truncated")[:-1],
+                headers=(b"Content-Encoding: gzip",),
+            ),
+            _policy(accepted_encodings=("gzip",)),
+            None,
+            ph.PinnedContentEncodingError,
+        ),
+        (
+            _fixed_http_response(
+                b"body",
+                headers=(b"Content-Encoding: br",),
+            ),
+            _policy(accepted_encodings=("identity",)),
+            None,
+            ph.PinnedContentEncodingError,
+        ),
+        (
+            _fixed_http_response(
+                gzip.compress(b"body"),
+                headers=(b"Content-Encoding: gzip, identity",),
+            ),
+            _policy(accepted_encodings=("gzip", "identity")),
+            None,
+            ph.PinnedContentEncodingError,
+        ),
+        (
+            (
+                b"HTTP/1.1 200 OK\r\n"
+                b"Content-Length: 1\r\n"
+                b"Transfer-Encoding: chunked\r\n\r\n"
+                b"11\r\n"
+                + b"x" * 17
+                + b"\r\n0\r\n\r\n",
+            ),
+            _policy(
+                max_encoded_bytes=16,
+                max_decoded_bytes=32,
+                accepted_encodings=("identity",),
+            ),
+            None,
+            ph.PinnedBodyLimitError,
+        ),
+    ],
+    ids=[
+        "identity-exact-cap",
+        "identity-cap-plus-one",
+        "gzip-exact-decoded-cap",
+        "gzip-decoded-cap-plus-one",
+        "malformed-gzip",
+        "truncated-gzip",
+        "unsupported-br",
+        "stacked-gzip-identity",
+        "false-small-content-length",
+    ],
+)
+def test_real_httpcore_body_and_encoding_boundaries(
+    response_chunks: tuple[bytes, ...],
+    policy: ph.EgressPolicy,
+    expected_content: bytes | None,
+    expected_error: type[ph.PinnedHTTPError] | None,
+) -> None:
+    client, _received, wrapped, server = _real_transport_client(response_chunks)
+    result: ph.PinnedResponse | None = None
+    try:
+        if expected_error is None:
+            result = client.get(
+                "http://example.com/body",
+                user_agent="test-agent",
+                policy=policy,
+            )
+        else:
+            with pytest.raises(expected_error) as exc_info:
+                client.get(
+                    "http://example.com/body",
+                    user_agent="test-agent",
+                    policy=policy,
+                )
+    finally:
+        server.join(timeout=2.0)
+        assert not server.is_alive()
+
+    if expected_error is None:
+        assert result is not None
+        assert result.content == expected_content
+    else:
+        assert type(exc_info.value) is expected_error
+    assert wrapped.closed is True
+
+
+def test_real_httpcore_total_deadline_expires_while_response_is_withheld() -> None:
+    response_gate = threading.Event()
+    client, received, wrapped, server = _real_transport_client(
+        _fixed_http_response(b"late"),
+        response_gate=response_gate,
+    )
+    try:
+        with pytest.raises(ph.PinnedDeadlineExceeded) as exc_info:
+            client.get(
+                "http://example.com/slow",
+                user_agent="test-agent",
+                policy=_policy(
+                    accepted_encodings=("identity",),
+                    inactivity_timeout_seconds=2.0,
+                    total_timeout_seconds=1.0,
+                ),
+            )
+    finally:
+        response_gate.set()
+        server.join(timeout=2.0)
+        assert not server.is_alive()
+
+    assert type(exc_info.value) is ph.PinnedDeadlineExceeded
+    assert received[0].startswith(b"GET /slow HTTP/1.1\r\n")
+    assert wrapped.closed is True
+
+
 class _ChunkStream(httpx.SyncByteStream):
     def __init__(self, chunks: list[bytes]) -> None:
         self.chunks = chunks
