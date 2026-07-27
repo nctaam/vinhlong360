@@ -1,6 +1,6 @@
 # Hardening Closure: verifiedAt, Release Scanner, and Bounded Egress
 
-> STATUS: active - initial design and four optimization amendments approved by the project owner on 2026-07-27; awaiting final spec review before implementation planning. Source changes are not yet authorized.
+> STATUS: done - the approved design was implemented and verified through Plan A and Plan B; `## KẾT QUẢ` is the authoritative completion record.
 
 ## Decision
 
@@ -519,3 +519,55 @@ revision, command lines, and durable receipt hashes.
 - Consent-cookie redirect gates remain unsupported.
 - Production behavior remains unproven until a separately authorized deployment
   and observation pass; this design authorizes neither.
+
+## KẾT QUẢ
+
+- Plan A completed the attribute-authoritative verification and owned-input scanner
+  contracts in `fe84a09ed090bfc8198cb49b267b7896567ec0b9` and
+  `f5b26a6160da71330cff92484f43e5c99fe818fd`; its result authority is
+  `61a140034f332ad8349d23ae1f3472fd8c261963` (`docs: record trust scanner
+  verification`). Its focused backend gate passed with `248 passed, 1 skipped, 1
+  xfailed in 43.53s`; its independent frontend test, typecheck, build, hard, and
+  diff gates all exited `0` as recorded in the Plan A result.
+- Plan B's verified implementation revision is
+  `dab4877163280a6476180e0ad285280e405af1b4`. The final documentation record was
+  added in `2aa6b584cd2037bfe380e45da9ab5338563670bd` and its frontend evidence was
+  corrected without changing implementation in
+  `aca4ff2b3022b29c2ebc171ba46e4581a4d6f2f7`. Final execution evidence below was
+  measured on `dab48771`; documentation truth is corrected through `aca4ff2b`.
+  This spec's later docs-only commit with subject `docs: close hardening umbrella
+  spec` is the completion authority for the umbrella status; its exact revision is
+  recorded in the companion final-fix report.
+- Final focused pinned gate: `python -m pytest tests/test_pinned_http.py
+  tests/test_admin_pinned_http.py tests/test_auto_learn_fetch.py
+  tests/test_gpt55_quality_burst.py tests/test_pinned_http_consumers.py -q` -> exit
+  `0`; `303 passed in 22.36s`.
+- Final frontend gates from `web-nuxt`: the first exact `npm test` exited `1` with
+  `1 failed | 36 passed (37)` files and `906 passed | 6 skipped (912)` tests in
+  `38.72s` after the Nuxt setup hook timed out in `tests/entityStory.test.ts`;
+  without code or test changes, one exact rerun exited `0` with `37 passed (37)`
+  files and `912 passed (912)` tests in `28.66s`. `npm run typecheck` exited `0`
+  with no diagnostics. `npm run build` exited `0` with `746 modules transformed`,
+  `Σ Total size: 6.45 MB (1.62 MB gzip)`, and a launch-readiness manifest for
+  `dab4877163280a6476180e0ad285280e405af1b4`; the existing sourcemap, chunk-size,
+  and Node `DEP0155` warnings were non-fatal.
+- Final repository gates: `python scripts/checks/run_hard.py --all` -> exit `0`,
+  `hard=0`, ratchet không tăng, with R50.3 improved to `7 < baseline 8`; `git diff
+  --check` -> exit `0`.
+- Official bounded backend gate: `python scripts/ops/run_backend_regression.py
+  --deadline-seconds 7000` under a `7200s` outer timeout -> exit `0` in `6901.2s`.
+  Phase A exited `0` with `8633 passed, 58 skipped, 111 deselected, 1 xfailed, 1
+  warning in 1152.25s`; Phase B exited `0` with `284 passed, 19 skipped in
+  5739.98s`. Captured UTF-8/CRLF receipts: stdout `10840` bytes, SHA-256
+  `f11b8db7d11fe8925c9ce582eff85e73ab546a8578d82f75628d8a80ac5e8b2a`; stderr
+  `300` bytes, SHA-256
+  `adf1dff1272e2cc714b37a623c093f3234de49875a91888173ed88b6b1e48169`.
+- Remaining residuals: a stuck OS `getaddrinfo()` may retain one of the four DNS
+  slots until it returns; the initial 2 MiB text cap may reject an unusually large
+  legitimate page; Brotli/deflate and cookie/consent flows fail closed; egress
+  denials remain operationally silent; explicitly excluded outbound callers remain
+  unmigrated; production behavior remains unobserved pending separately authorized
+  deployment.
+- Operational non-actions: no DB or `web/data.json` rewrite, data or production
+  mutation, push, deploy, secret change, indexing change, paid service, or external
+  network test; pre-existing WAL/SHM files remained untouched.
