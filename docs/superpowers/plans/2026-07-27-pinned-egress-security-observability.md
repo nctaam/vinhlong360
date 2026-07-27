@@ -25,15 +25,16 @@
 
 ---
 
-### Task 1: Central Security-Denial Logging
+### Task 1: Central Security-Denial Logging And Consumer Migration
 
 **Files:**
 - Modify: `agent/pinned_http.py` near the exception hierarchy and `PinnedHTTPClient.get()`.
-- Test: `tests/test_pinned_http.py`.
+- Modify: `agent/admin.py`, `agent/auto_learn.py`, `agent/gpt55_quality_burst.py`.
+- Test: `tests/test_pinned_http.py`, `tests/test_admin_pinned_http.py`, `tests/test_auto_learn_fetch.py`, `tests/test_gpt55_quality_burst.py`, `tests/test_pinned_http_consumers.py`.
 
 **Interfaces:**
 - Consumes: existing `PinnedHTTPError` subclasses and `PinnedHTTPClient.get(url, user_agent, policy)` flow.
-- Produces: `PinnedHTTPClient.get(url, *, user_agent, policy, audit_context)`; module logger `security.egress`; helpers that return sanitized context, origin, and stable reason code.
+- Produces: `PinnedHTTPClient.get(url, *, user_agent, policy, audit_context)`; module logger `security.egress`; helpers that return sanitized context, origin, and stable reason code; fixed audit contexts at all three mapped call sites; no duplicate auto-learn raw-URL warning for security denials.
 
 - [ ] **Step 1: Add RED tests for the audit-context and event contract.**
 
@@ -78,12 +79,20 @@
   and keyword-only. Update every raw-response, redirect, deadline, and
   transport call in the file to pass `audit_context="test"`.
 
+  Capture the keyword arguments in each consumer's pinned-client fake and assert
+  the exact contexts `admin_image_review`, `auto_learn`, and `quality_burst`.
+  Add an auto-learn blocked-address test that returns `None`, records exactly one
+  `security.egress` warning, and emits no second raw-URL warning. Add real,
+  no-network blocked-literal tests proving admin still maps to HTTP 400 and
+  quality-burst still returns an empty string. Extend the AST consumer registry
+  test to lock the exact audit-context literal for every mapped function.
+
 - [ ] **Step 2: Run the RED tests and verify the failure is the missing contract.**
 
   Run:
 
   ```powershell
-  python -m pytest tests/test_pinned_http.py -q -k "audit_context or security_egress or denial_log"
+  python -m pytest tests/test_pinned_http.py tests/test_admin_pinned_http.py tests/test_auto_learn_fetch.py tests/test_gpt55_quality_burst.py tests/test_pinned_http_consumers.py -q -k "audit_context or security_egress or denial_log or egress or silent"
   ```
 
   Expected: failures show the missing `audit_context` parameter or absent
@@ -101,100 +110,33 @@
   5. Add `_log_security_denial(audit_context: str, target: httpx.URL | str, hop: int, exc: BaseException) -> None` using logger argument substitution and no exception text.
   6. Add required keyword-only `audit_context: str` to `PinnedHTTPClient.get()`. Keep the current loop intact, track the current URL and accepted-redirect count, and wrap the loop with a catch for only `BlockedAddressError`, `PeerMismatchError`, and `RedirectPolicyError`; log once, then `raise` unchanged. Do not catch or log other failures.
 
+  Pass the exact audit-context keyword from the three production consumers. In
+  `agent/auto_learn.py`, import the three security-denial classes, catch them
+  before the broad warning handler, return `None`, and retain the broad warning
+  unchanged for non-security exceptions. Do not add a consumer logger to
+  quality-burst and do not change admin's localized HTTP mappings.
+
 - [ ] **Step 4: Run the focused green suite and mutation-check the boundary.**
 
   Run:
 
   ```powershell
-  python -m pytest tests/test_pinned_http.py -q -k "audit_context or security_egress or denial_log"
-  python -m pytest tests/test_pinned_http.py -q
+  python -m pytest tests/test_pinned_http.py tests/test_admin_pinned_http.py tests/test_auto_learn_fetch.py tests/test_gpt55_quality_burst.py tests/test_pinned_http_consumers.py -q -k "audit_context or security_egress or denial_log or egress or silent"
+  python -m pytest tests/test_pinned_http.py tests/test_admin_pinned_http.py tests/test_auto_learn_fetch.py tests/test_gpt55_quality_burst.py tests/test_pinned_http_consumers.py -q
   ```
 
   Expected: the new tests pass, the full pinned client file remains green, and
   mutating any reason code, removing the catch, or logging raw target data makes
   at least one new assertion fail.
 
-- [ ] **Step 5: Commit the central boundary.**
+- [ ] **Step 5: Commit the working central boundary and all required callers.**
 
   ```powershell
-  git add agent/pinned_http.py tests/test_pinned_http.py
-  git commit -m "feat: add sanitized pinned egress denial events"
+  git add agent/pinned_http.py agent/admin.py agent/auto_learn.py agent/gpt55_quality_burst.py tests/test_pinned_http.py tests/test_admin_pinned_http.py tests/test_auto_learn_fetch.py tests/test_gpt55_quality_burst.py tests/test_pinned_http_consumers.py
+  git commit -m "feat: add pinned egress security denial observability"
   ```
 
-### Task 2: Consumer Contexts And Duplicate-Log Prevention
-
-**Files:**
-- Modify: `agent/admin.py`, `agent/auto_learn.py`, `agent/gpt55_quality_burst.py`.
-- Test: `tests/test_admin_pinned_http.py`, `tests/test_auto_learn_fetch.py`, `tests/test_gpt55_quality_burst.py`, `tests/test_pinned_http_consumers.py`.
-
-**Interfaces:**
-- Consumes: Task 1 `PinnedHTTPClient.get(..., audit_context=...)` and `security.egress` event contract.
-- Produces: fixed audit contexts at all three mapped call sites and no duplicate raw-URL warning for auto-learn security denials.
-
-- [ ] **Step 1: Add RED consumer contract tests.**
-
-  Capture the keyword arguments in each consumer's pinned-client fake and assert
-  these exact values:
-
-  ```python
-  assert calls[0]["audit_context"] == "admin_image_review"
-  assert calls[0]["audit_context"] == "auto_learn"
-  assert calls[0]["audit_context"] == "quality_burst"
-  ```
-
-  Add an auto-learn test that raises `BlockedAddressError`, captures both the
-  `security.egress` logger and `auto_learn` logger, and asserts the function
-  returns `None`, exactly one security record exists, and no raw-URL warning is
-  emitted. Add no-new-network blocked-literal tests for admin and quality-burst
-  that preserve HTTP 400 and empty-string behavior respectively while observing
-  one central security record from the real pinned client. Extend
-  `tests/test_pinned_http_consumers.py` to assert each mapped function passes its
-  fixed context and remains in the exact three-consumer registry.
-
-- [ ] **Step 2: Run the RED consumer tests.**
-
-  ```powershell
-  python -m pytest tests/test_admin_pinned_http.py tests/test_auto_learn_fetch.py tests/test_gpt55_quality_burst.py tests/test_pinned_http_consumers.py -q -k "audit_context or egress or denial or silent"
-  ```
-
-  Expected: failures identify missing context kwargs or the duplicate
-  auto-learn warning; existing status/return tests must remain green.
-
-- [ ] **Step 3: Pass fixed contexts and split auto-learn security errors.**
-
-  Add the exact keyword to the three production calls:
-
-  ```python
-  audit_context="admin_image_review"
-  audit_context="auto_learn"
-  audit_context="quality_burst"
-  ```
-
-  In `agent/auto_learn.py`, import `BlockedAddressError`, `PeerMismatchError`,
-  and `RedirectPolicyError`, catch that tuple before the existing broad warning
-  handler, return `None`, and leave the broad warning handler unchanged for all
-  non-security exceptions. Do not add consumer logging to quality-burst, and do
-  not change admin's HTTP exception mapping.
-
-- [ ] **Step 4: Run consumer green suites and inspect logs for leakage/duplication.**
-
-  ```powershell
-  python -m pytest tests/test_admin_pinned_http.py tests/test_auto_learn_fetch.py tests/test_gpt55_quality_burst.py tests/test_pinned_http_consumers.py -q
-  python -m pytest tests/test_pinned_http.py tests/test_admin_pinned_http.py tests/test_auto_learn_fetch.py tests/test_gpt55_quality_burst.py tests/test_pinned_http_consumers.py -q
-  ```
-
-  Expected: all focused tests pass; blocked-literal paths never touch external
-  network; security events have one record, fixed context/reason, and origin-only
-  target; auto-learn has no second raw-URL warning.
-
-- [ ] **Step 5: Commit the consumer migration.**
-
-  ```powershell
-  git add agent/admin.py agent/auto_learn.py agent/gpt55_quality_burst.py tests/test_admin_pinned_http.py tests/test_auto_learn_fetch.py tests/test_gpt55_quality_burst.py tests/test_pinned_http_consumers.py
-  git commit -m "feat: identify pinned egress security denials"
-  ```
-
-### Task 3: Documentation Truth-Sync And Final Verification
+### Task 2: Documentation Truth-Sync And Final Verification
 
 **Files:**
 - Modify: `docs/superpowers/specs/2026-07-27-pinned-egress-security-observability-design.md`.
@@ -202,7 +144,7 @@
 - Test: repository focused gates and bounded backend baseline.
 
 **Interfaces:**
-- Consumes: Task 1 and Task 2 commits plus measured command output.
+- Consumes: Task 1 implementation commit plus measured command output.
 - Produces: revision-bound `STATUS: done` design result and removal of the operationally-silent egress residual while retaining genuine residuals.
 
 - [ ] **Step 1: Run the complete verification set before editing result docs.**
