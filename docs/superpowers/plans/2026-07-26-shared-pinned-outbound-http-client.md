@@ -1,6 +1,6 @@
 # Shared Pinned Outbound HTTP Client Implementation Plan
 
-> STATUS: active - approved design at `docs/superpowers/specs/2026-07-26-shared-pinned-outbound-http-client-design.md`; implementation not started.
+> STATUS: done - implementation, adversarial correction, bounded follow-up, and final local verification are complete.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -2853,3 +2853,15 @@ Expected: clean worktree on the implementation branch, all task commits visible,
 - `python scripts/ops/run_backend_regression.py --deadline-seconds 7000` exits 0.
 - `docs/ROADMAP.md` and `docs/HANDOFF.md` state the completed P1 scope and the explicit Workstream 10 residual debt.
 - Worktree is clean; implementation is committed locally; nothing is pushed or deployed.
+
+## KẾT QUẢ
+
+- Historical implementation lineage: destination policy `660ec004`; pinned sockets and peer verification `073a50e6`; redirect-safe client `c46c936d`; admin adapter `21930353`; auto-learn adapter `e4f54a01`; quality-burst adapter `2e67ca0b`; adversarial address-policy correction `fabb156b`; consumer registry `9f314e32` plus enforcement correction `59d0009b`; verification truth-sync `407c7a13`.
+- Bound-complete follow-up lineage: body/decompression bounds `ea2822d1`; bounded DNS `8ae23153` plus saturation coverage `271e2653`; whole-chain deadline `286c021a`, boundary correction `a05d6784`, and connect-timeout recomputation `6d3e43fb`; real transport edges `a83e48fd`, deadline-limited read mapping `6387a246`, and timeout/cleanup correction `be94c629`; explicit consumer profiles `dab48771`.
+- Final verified implementation revision: `dab4877163280a6476180e0ad285280e405af1b4`.
+- Focused pinned gate: `python -m pytest tests/test_pinned_http.py tests/test_admin_pinned_http.py tests/test_auto_learn_fetch.py tests/test_gpt55_quality_burst.py tests/test_pinned_http_consumers.py -q` -> exit `0`; `303 passed in 22.36s`.
+- Frontend gates from `web-nuxt`: `npm test` -> exit `0`, `37` files and `912` tests passed in `28.66s`; `npm run typecheck` -> exit `0`, no diagnostics; `npm run build` -> exit `0`, `746 modules transformed`, `Σ Total size: 6.45 MB (1.62 MB gzip)`, launch-readiness manifest generated for `dab4877163280a6476180e0ad285280e405af1b4` (existing sourcemap, chunk-size, and Node `DEP0155` warnings remain non-fatal).
+- Repository gates: `python scripts/checks/run_hard.py --all` -> exit `0`, `hard=0`, ratchet không tăng (R50.3 improved from baseline `8` to `7`); `git diff --check` -> exit `0`.
+- Official bounded backend gate: `python scripts/ops/run_backend_regression.py --deadline-seconds 7000` -> exit `0` in `6901.2s`; Phase A exit `0`, `8633 passed, 58 skipped, 111 deselected, 1 xfailed, 1 warning in 1152.25s`; Phase B exit `0`, `284 passed, 19 skipped in 5739.98s`. Captured UTF-8/CRLF receipts: stdout `10840` bytes, SHA-256 `f11b8db7d11fe8925c9ce582eff85e73ab546a8578d82f75628d8a80ac5e8b2a`; stderr `300` bytes, SHA-256 `adf1dff1272e2cc714b37a623c093f3234de49875a91888173ed88b6b1e48169`.
+- Genuine residuals: blocked destinations, peer mismatches, and redirect denials remain operationally silent; cookie/consent redirect gates that require a cookie jar remain incompatible; outbound callers excluded by this GET-only spec remain unmigrated; production behavior remains unobserved until a separately authorized deployment.
+- Operational non-actions: no DB or `web/data.json` rewrite, no secret or indexing change, no push, no deploy, and no production mutation; pre-existing `agent/knowledge.db-shm` and `agent/knowledge.db-wal` remained untouched.

@@ -1,6 +1,6 @@
 # Bound-Complete Pinned Egress Implementation Plan
 
-> STATUS: active - starts only after `docs/superpowers/plans/2026-07-27-trust-scanner-correctness.md` is done and verified; approved umbrella design is `docs/superpowers/specs/2026-07-27-hardening-closure-design.md`.
+> STATUS: done - Plan A dependency, implementation, review corrections, and final local verification are complete; approved umbrella design is `docs/superpowers/specs/2026-07-27-hardening-closure-design.md`.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -1550,3 +1550,15 @@ Expected: all implementation and truth-sync commits are visible on the local bra
 - Focused backend, frontend test/typecheck/build, hard checks, diff hygiene, and the official bounded backend regression all pass on the final candidate revision.
 - The old pinned-client plan and both new plans report truthful completion; ROADMAP and HANDOFF retain only genuine residuals.
 - No data file, database, secret, production service, indexing posture, remote branch, or deployment is changed.
+
+## KẾT QUẢ
+
+- Verified implementation revision: `dab4877163280a6476180e0ad285280e405af1b4`; Plan A result commit `61a14003` precedes this plan.
+- Implementation commits: `ea2822d1` body/decompression bounds; `8ae23153` bounded DNS; `271e2653` saturation-test hardening; `286c021a` whole-chain deadline; `a05d6784` deadline-boundary correction; `6d3e43fb` connect-timeout recomputation; `a83e48fd` real transport edge hardening; `6387a246` deadline-limited read mapping; `be94c629` timeout-tie and cleanup hardening; `dab48771` explicit admin/auto-learn/quality-burst profiles.
+- Focused pinned gate: `python -m pytest tests/test_pinned_http.py tests/test_admin_pinned_http.py tests/test_auto_learn_fetch.py tests/test_gpt55_quality_burst.py tests/test_pinned_http_consumers.py -q` -> exit `0`; `303 passed in 22.36s`.
+- Frontend gates from `web-nuxt`: `npm test` -> exit `0`, `37` files and `912` tests passed in `28.66s`; `npm run typecheck` -> exit `0`, no diagnostics; `npm run build` -> exit `0`, `746 modules transformed`, `Σ Total size: 6.45 MB (1.62 MB gzip)`, launch-readiness manifest generated for `dab4877163280a6476180e0ad285280e405af1b4`; existing sourcemap, chunk-size, and Node `DEP0155` warnings were non-fatal.
+- Repository gates: `python scripts/checks/run_hard.py --all` -> exit `0`, `hard=0`, ratchet không tăng (R50.3 `7 < baseline 8`); `git diff --check` -> exit `0`.
+- Official bounded backend gate: `python scripts/ops/run_backend_regression.py --deadline-seconds 7000` with a `7200s` outer timeout -> exit `0` in `6901.2s`; Phase A exit `0`, `8633 passed, 58 skipped, 111 deselected, 1 xfailed, 1 warning in 1152.25s`; Phase B exit `0`, `284 passed, 19 skipped in 5739.98s`. Captured UTF-8/CRLF receipts: stdout `10840` bytes, SHA-256 `f11b8db7d11fe8925c9ce582eff85e73ab546a8578d82f75628d8a80ac5e8b2a`; stderr `300` bytes, SHA-256 `adf1dff1272e2cc714b37a623c093f3234de49875a91888173ed88b6b1e48169`.
+- Resulting contract: each mapped pinned GET has explicit encoded/decoded caps, bounded identity/gzip decoding, four-slot deadline-aware DNS admission, one absolute monotonic deadline, and deterministic local-socket coverage of the actual `_PinnedHTTPTransport` plus `httpcore.ConnectionPool` composition.
+- Genuine residuals: egress denials remain operationally silent; cookie/consent redirect gates requiring a cookie jar remain incompatible; explicitly excluded outbound callers remain unmigrated; production behavior remains unobserved pending separately authorized deployment.
+- Operational non-actions: no DB or `web/data.json` rewrite, no push, deploy, production mutation, secret change, or indexing change; pre-existing WAL/SHM files remained untouched.
