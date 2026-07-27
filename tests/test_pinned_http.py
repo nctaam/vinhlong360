@@ -510,6 +510,41 @@ def test_backend_skips_socket_factory_when_deadline_is_expired() -> None:
     assert calls == 0
 
 
+def test_backend_recomputes_socket_timeout_before_and_after_factory() -> None:
+    hop = _resolved_hop("https://example.com/x", "93.184.216.34")
+    fake = FakeSocket(("93.184.216.34", 443))
+
+    class RecordingBudget:
+        def __init__(self) -> None:
+            self.calls: list[tuple[float | None, float]] = []
+
+        def socket_timeout(
+            self,
+            requested_timeout: float | None,
+            inactivity_timeout_seconds: float,
+            *,
+            monotonic,
+        ) -> float:
+            self.calls.append((requested_timeout, inactivity_timeout_seconds))
+            return min(requested_timeout or inactivity_timeout_seconds, inactivity_timeout_seconds)
+
+        def remaining(self, *, monotonic):
+            raise AssertionError("pre-address check must use socket_timeout")
+
+    budget = RecordingBudget()
+    backend = ph._PinnedNetworkBackend(
+        hop,
+        policy=_policy(inactivity_timeout_seconds=5.0),
+        budget=budget,
+        socket_factory=lambda *_args: fake,
+        monotonic=lambda: 1.0,
+    )
+
+    backend.connect_tcp("example.com", 443, timeout=5.0)
+
+    assert budget.calls == [(5.0, 5.0), (5.0, 5.0)]
+
+
 def test_backend_closes_socket_when_deadline_expires_after_factory() -> None:
     hop = _resolved_hop("https://example.com/x", "93.184.216.34")
     fake = FakeSocket(("93.184.216.34", 443))

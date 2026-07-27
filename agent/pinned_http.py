@@ -593,7 +593,11 @@ class _PinnedNetworkBackend(httpcore.NetworkBackend):
         approved = {(item.ip, item.port) for item in self._hop.addresses}
         last_error: Exception | None = None
         for address in self._hop.addresses:
-            self._budget.remaining(monotonic=self._monotonic)
+            self._budget.socket_timeout(
+                timeout,
+                self._policy.inactivity_timeout_seconds,
+                monotonic=self._monotonic,
+            )
             sock: socket.socket | None = None
             try:
                 sock = self._socket_factory(address.family, address.socktype, address.protocol)
