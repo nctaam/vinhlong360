@@ -25,6 +25,8 @@ is tracked as residual egress debt, not an oversight.
 from __future__ import annotations
 
 import ipaddress
+import logging
+import re
 import select
 import socket
 import ssl
@@ -88,6 +90,57 @@ class PinnedDeadlineExceeded(PinnedTransportError):
 
 class ResolverSaturatedError(PinnedTransportError):
     pass
+
+
+security_logger = logging.getLogger("security.egress")
+
+
+def _sanitize_audit_context(value: str) -> str:
+    ascii_text = str(value).encode("ascii", "ignore").decode("ascii").lower()
+    sanitized = re.sub(r"[^a-z0-9._-]+", "_", ascii_text).strip("._-")[:64]
+    return sanitized or "unknown"
+
+
+def _safe_origin(url: httpx.URL | str) -> str:
+    try:
+        parsed = url if isinstance(url, httpx.URL) else httpx.URL(url)
+        scheme = parsed.scheme.lower()
+        if scheme not in _HTTP_PORTS:
+            return "<invalid>"
+        host = parsed.raw_host.decode("ascii").lower()
+        if not host:
+            return "<invalid>"
+        port = parsed.port or _HTTP_PORTS[scheme]
+        rendered_host = f"[{host}]" if ":" in host else host
+        return f"{scheme}://{rendered_host}:{port}"
+    except (TypeError, ValueError, UnicodeError, httpx.InvalidURL):
+        return "<invalid>"
+
+
+def _security_denial_reason(exc: BaseException) -> str | None:
+    return {
+        BlockedAddressError: "blocked_address",
+        PeerMismatchError: "peer_mismatch",
+        RedirectPolicyError: "redirect_policy",
+    }.get(type(exc))
+
+
+def _log_security_denial(
+    audit_context: str,
+    target: httpx.URL | str,
+    hop: int,
+    exc: BaseException,
+) -> None:
+    reason = _security_denial_reason(exc)
+    if reason is None:
+        return
+    security_logger.warning(
+        "Pinned egress denied consumer=%s reason=%s target=%s hop=%d",
+        _sanitize_audit_context(audit_context),
+        reason,
+        _safe_origin(target),
+        hop,
+    )
 
 
 @dataclass(frozen=True)
@@ -944,6 +997,7 @@ class PinnedHTTPClient:
         *,
         user_agent: str,
         policy: EgressPolicy,
+        audit_context: str,
     ) -> PinnedResponse:
         budget = DeadlineBudget.start(
             policy.total_timeout_seconds,
@@ -952,27 +1006,31 @@ class PinnedHTTPClient:
         current = _parse_url(url)
         visited: set[tuple[str, str, int, bytes]] = set()
         redirects: list[RedirectHop] = []
-        while True:
-            budget.remaining(monotonic=self._monotonic)
-            key = _canonical_url_key(current)
-            if key in visited:
-                raise RedirectPolicyError("redirect loop detected")
-            visited.add(key)
-            hop = _resolve_hop(current, self._resolver, budget)
-            status, headers, content, location = _fetch_hop(
-                hop,
-                user_agent=user_agent,
-                policy=policy,
-                budget=budget,
-                transport_factory=self._transport_factory,
-                monotonic=self._monotonic,
-            )
-            if location is None:
+        try:
+            while True:
                 budget.remaining(monotonic=self._monotonic)
-                return PinnedResponse(status, str(hop.url), headers, content, tuple(redirects))
-            if len(redirects) >= policy.max_redirects:
-                raise RedirectPolicyError("redirect limit exceeded")
-            budget.remaining(monotonic=self._monotonic)
-            next_url = _redirect_target(hop.url, location)
-            redirects.append(RedirectHop(str(hop.url), status, location, str(next_url)))
-            current = next_url
+                key = _canonical_url_key(current)
+                if key in visited:
+                    raise RedirectPolicyError("redirect loop detected")
+                visited.add(key)
+                hop = _resolve_hop(current, self._resolver, budget)
+                status, headers, content, location = _fetch_hop(
+                    hop,
+                    user_agent=user_agent,
+                    policy=policy,
+                    budget=budget,
+                    transport_factory=self._transport_factory,
+                    monotonic=self._monotonic,
+                )
+                if location is None:
+                    budget.remaining(monotonic=self._monotonic)
+                    return PinnedResponse(status, str(hop.url), headers, content, tuple(redirects))
+                if len(redirects) >= policy.max_redirects:
+                    raise RedirectPolicyError("redirect limit exceeded")
+                budget.remaining(monotonic=self._monotonic)
+                next_url = _redirect_target(hop.url, location)
+                redirects.append(RedirectHop(str(hop.url), status, location, str(next_url)))
+                current = next_url
+        except (BlockedAddressError, PeerMismatchError, RedirectPolicyError) as exc:
+            _log_security_denial(audit_context, current, len(redirects), exc)
+            raise

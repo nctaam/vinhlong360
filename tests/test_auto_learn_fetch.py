@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+
 import pytest
 
 import auto_learn
@@ -40,8 +42,27 @@ def test_fetch_url_uses_pinned_options_and_preserves_cleanup(monkeypatch: pytest
                 total_timeout_seconds=15.0,
                 max_redirects=5,
             ),
+            "audit_context": "auto_learn",
         },
     )]
+
+
+def test_fetch_url_real_blocked_literal_logs_only_central_security_event(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    url = "https://127.0.0.1/private?token=secret"
+    with caplog.at_level(logging.WARNING):
+        assert auto_learn.fetch_url(url) is None
+
+    records = [record for record in caplog.records if record.name == "security.egress"]
+    assert len(records) == 1
+    record = records[0]
+    assert record.name == "security.egress"
+    assert record.getMessage() == (
+        "Pinned egress denied consumer=auto_learn reason=blocked_address "
+        "target=https://127.0.0.1:443 hop=0"
+    )
+    assert url not in record.getMessage()
 
 
 @pytest.mark.parametrize("status", [199, 204, 302, 399, 400, 500])

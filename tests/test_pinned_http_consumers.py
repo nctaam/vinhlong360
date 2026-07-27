@@ -10,6 +10,11 @@ MAPPED_FETCHERS = {
     "agent/auto_learn.py": {"fetch_url"},
     "agent/gpt55_quality_burst.py": {"fetch_url_text"},
 }
+EXPECTED_AUDIT_CONTEXTS = {
+    ("agent/admin.py", "_approve_fetch_image_data"): "admin_image_review",
+    ("agent/auto_learn.py", "fetch_url"): "auto_learn",
+    ("agent/gpt55_quality_burst.py", "fetch_url_text"): "quality_burst",
+}
 
 
 def _calls_in_function(path: Path, function_name: str) -> set[str]:
@@ -59,6 +64,31 @@ def test_every_mapped_module_imports_pinned_http_client_and_policy() -> None:
         imported = _module_pinned_http_imports(ROOT / relative_path)
         for name in ("PinnedHTTPClient", "EgressPolicy"):
             assert name in imported, f"{relative_path} does not import {name}"
+
+
+def _audit_context_literals(path: Path, function_name: str) -> set[str]:
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    function = next(
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == function_name
+    )
+    contexts: set[str] = set()
+    for node in ast.walk(function):
+        if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Attribute):
+            continue
+        if node.func.attr != "get":
+            continue
+        keyword = next((item for item in node.keywords if item.arg == "audit_context"), None)
+        assert keyword is not None, f"{path}::{function_name} missing audit_context"
+        assert isinstance(keyword.value, ast.Constant) and isinstance(keyword.value.value, str)
+        contexts.add(keyword.value.value)
+    return contexts
+
+
+def test_mapped_fetchers_use_exact_audit_context_literals() -> None:
+    for (relative_path, function_name), expected in EXPECTED_AUDIT_CONTEXTS.items():
+        assert _audit_context_literals(ROOT / relative_path, function_name) == {expected}
 
 
 # Every function in agent/ that still reaches the network through a
