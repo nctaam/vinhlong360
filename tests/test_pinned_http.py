@@ -398,6 +398,20 @@ class FakeSocket:
         self.closed = True
 
 
+class PartialSendSocket(FakeSocket):
+    def __init__(self, peer: tuple, send_sizes: list[int]) -> None:
+        super().__init__(peer)
+        self.send_sizes = iter(send_sizes)
+
+    def send(self, _buffer: bytes) -> int:
+        return next(self.send_sizes)
+
+
+class ZeroSendSocket(FakeSocket):
+    def send(self, _buffer: bytes) -> int:
+        return 0
+
+
 def _resolved_hop(url: str, *ips: str) -> ph.ResolvedHop:
     parsed = ph._parse_url(url)
     port = parsed.port or (443 if parsed.scheme == "https" else 80)
@@ -424,7 +438,12 @@ def test_backend_connects_exact_sockaddr_without_dns(monkeypatch: pytest.MonkeyP
     hop = _resolved_hop("https://example.com/x", "93.184.216.34")
     fake = FakeSocket(("93.184.216.34", 443))
     monkeypatch.setattr(ph.socket, "getaddrinfo", lambda *_args, **_kwargs: pytest.fail("DNS called"))
-    backend = ph._PinnedNetworkBackend(hop, socket_factory=lambda *_args: fake)
+    backend = ph._PinnedNetworkBackend(
+        hop,
+        policy=_policy(),
+        budget=ph.DeadlineBudget.start(5.0),
+        socket_factory=lambda *_args: fake,
+    )
     stream = backend.connect_tcp("example.com", 443, timeout=5.0)
     assert fake.connected_to == ("93.184.216.34", 443)
     assert stream.get_extra_info("server_addr") == ("93.184.216.34", 443)
@@ -433,7 +452,12 @@ def test_backend_connects_exact_sockaddr_without_dns(monkeypatch: pytest.MonkeyP
 def test_backend_closes_and_rejects_peer_mismatch() -> None:
     hop = _resolved_hop("https://example.com/x", "93.184.216.34")
     fake = FakeSocket(("127.0.0.1", 443))
-    backend = ph._PinnedNetworkBackend(hop, socket_factory=lambda *_args: fake)
+    backend = ph._PinnedNetworkBackend(
+        hop,
+        policy=_policy(),
+        budget=ph.DeadlineBudget.start(5.0),
+        socket_factory=lambda *_args: fake,
+    )
     with pytest.raises(ph.PeerMismatchError):
         backend.connect_tcp("example.com", 443, timeout=5.0)
     assert fake.closed is True
@@ -444,10 +468,11 @@ def test_backend_fallback_uses_one_connect_budget() -> None:
     first = FakeSocket(("93.184.216.34", 443), connect_error=OSError("refused"))
     second = FakeSocket(("93.184.216.35", 443))
     sockets = iter([first, second])
-    # One reading to stamp the deadline, then one per address attempt.
-    times = iter([10.0, 11.0, 12.0])
+    times = iter([11.0, 12.0])
     backend = ph._PinnedNetworkBackend(
         hop,
+        policy=_policy(inactivity_timeout_seconds=5.0),
+        budget=ph.DeadlineBudget(expires_at=15.0),
         socket_factory=lambda *_args: next(sockets),
         monotonic=lambda: next(times),
     )
@@ -475,7 +500,11 @@ def test_transport_wires_the_pinned_network_backend(monkeypatch: pytest.MonkeyPa
 
     monkeypatch.setattr(ph.httpcore, "ConnectionPool", pool_factory)
     hop = _resolved_hop("https://example.com/x", "93.184.216.34")
-    ph._PinnedHTTPTransport(hop)
+    ph._PinnedHTTPTransport(
+        hop,
+        policy=_policy(),
+        budget=ph.DeadlineBudget.start(5.0),
+    )
 
     backend = captured.get("network_backend")
     # Without this kwarg httpcore falls back to SyncBackend, which dials via
@@ -504,10 +533,47 @@ def test_stream_tls_uses_original_hostname() -> None:
             seen.append(server_hostname)
             return fake
 
-    stream = ph._PinnedNetworkStream(fake)
+    stream = ph._PinnedNetworkStream(
+        fake,
+        policy=_policy(),
+        budget=ph.DeadlineBudget.start(5.0),
+    )
     stream.start_tls(FakeSSLContext(), server_hostname="example.com", timeout=5.0)
     assert seen == ["example.com"]
-    assert fake.timeouts[-1] == 5.0
+    assert fake.timeouts[-1] == 2.0
+
+
+@pytest.mark.parametrize(
+    ("requested", "inactivity", "expires_at", "now", "expected"),
+    [
+        (3.0, 8.0, 10.0, 1.0, 3.0),
+        (9.0, 4.0, 10.0, 1.0, 4.0),
+        (9.0, 8.0, 10.0, 3.0, 7.0),
+    ],
+)
+def test_tls_uses_minimum_requested_inactivity_and_remaining_deadline(
+    requested: float,
+    inactivity: float,
+    expires_at: float,
+    now: float,
+    expected: float,
+) -> None:
+    fake = FakeSocket(("93.184.216.34", 443))
+
+    class FakeSSLContext:
+        def wrap_socket(self, sock: FakeSocket, *, server_hostname: str | None) -> FakeSocket:
+            return sock
+
+    stream = ph._PinnedNetworkStream(
+        fake,
+        policy=_policy(inactivity_timeout_seconds=inactivity),
+        budget=ph.DeadlineBudget(expires_at=expires_at),
+        monotonic=lambda: now,
+    )
+
+    stream.start_tls(FakeSSLContext(), server_hostname="example.com", timeout=requested)
+
+    assert fake.timeouts == [expected]
 
 
 @pytest.mark.parametrize(
@@ -517,7 +583,12 @@ def test_stream_tls_uses_original_hostname() -> None:
 def test_backend_rejects_httpcore_origin_mismatch(host: str, port: int) -> None:
     hop = _resolved_hop("https://example.com/x", "93.184.216.34")
     fake = FakeSocket(("93.184.216.34", 443))
-    backend = ph._PinnedNetworkBackend(hop, socket_factory=lambda *_args: fake)
+    backend = ph._PinnedNetworkBackend(
+        hop,
+        policy=_policy(),
+        budget=ph.DeadlineBudget.start(5.0),
+        socket_factory=lambda *_args: fake,
+    )
     with pytest.raises(ph.PeerMismatchError):
         backend.connect_tcp(host, port, timeout=5.0)
     assert fake.connected_to is None
@@ -526,7 +597,12 @@ def test_backend_rejects_httpcore_origin_mismatch(host: str, port: int) -> None:
 def test_backend_translates_connect_timeout() -> None:
     hop = _resolved_hop("https://example.com/x", "93.184.216.34")
     fake = FakeSocket(("93.184.216.34", 443), connect_error=socket.timeout("timed out"))
-    backend = ph._PinnedNetworkBackend(hop, socket_factory=lambda *_args: fake)
+    backend = ph._PinnedNetworkBackend(
+        hop,
+        policy=_policy(),
+        budget=ph.DeadlineBudget.start(5.0),
+        socket_factory=lambda *_args: fake,
+    )
     with pytest.raises(httpcore.ConnectTimeout):
         backend.connect_tcp("example.com", 443, timeout=5.0)
     assert fake.closed is True
@@ -538,7 +614,12 @@ def test_backend_translates_socket_creation_failure() -> None:
     def fail_socket(*_args):
         raise OSError("socket creation failed")
 
-    backend = ph._PinnedNetworkBackend(hop, socket_factory=fail_socket)
+    backend = ph._PinnedNetworkBackend(
+        hop,
+        policy=_policy(),
+        budget=ph.DeadlineBudget.start(5.0),
+        socket_factory=fail_socket,
+    )
     with pytest.raises(httpcore.ConnectError):
         backend.connect_tcp("example.com", 443, timeout=5.0)
 
@@ -562,7 +643,11 @@ def test_stream_translates_io_errors(
         recv_error=error if operation == "read" else None,
         send_error=error if operation == "write" else None,
     )
-    stream = ph._PinnedNetworkStream(fake)
+    stream = ph._PinnedNetworkStream(
+        fake,
+        policy=_policy(),
+        budget=ph.DeadlineBudget.start(5.0),
+    )
     with pytest.raises(expected):
         if operation == "read":
             stream.read(16, timeout=2.0)
@@ -570,10 +655,77 @@ def test_stream_translates_io_errors(
             stream.write(b"x", timeout=2.0)
 
 
+def test_partial_write_recomputes_remaining_deadline() -> None:
+    sock = PartialSendSocket(("93.184.216.34", 443), [2, 2])
+    times = iter([1.0, 3.0])
+    stream = ph._PinnedNetworkStream(
+        sock,
+        policy=_policy(inactivity_timeout_seconds=8.0),
+        budget=ph.DeadlineBudget(expires_at=10.0),
+        monotonic=lambda: next(times),
+    )
+
+    stream.write(b"abcd", timeout=9.0)
+
+    assert sock.timeouts == [8.0, 7.0]
+
+
+def test_read_uses_smaller_remaining_deadline_than_inactivity_timeout() -> None:
+    sock = FakeSocket(("93.184.216.34", 443))
+    stream = ph._PinnedNetworkStream(
+        sock,
+        policy=_policy(inactivity_timeout_seconds=8.0),
+        budget=ph.DeadlineBudget(expires_at=10.0),
+        monotonic=lambda: 3.0,
+    )
+
+    assert stream.read(16, timeout=9.0) == b"data"
+    assert sock.timeouts == [7.0]
+
+
+def test_zero_send_raises_write_error() -> None:
+    stream = ph._PinnedNetworkStream(
+        ZeroSendSocket(("93.184.216.34", 443)),
+        policy=_policy(),
+        budget=ph.DeadlineBudget(expires_at=10.0),
+        monotonic=lambda: 1.0,
+    )
+
+    with pytest.raises(httpcore.WriteError, match="socket connection broken"):
+        stream.write(b"x", timeout=2.0)
+
+
+@pytest.mark.parametrize("operation", ["read", "write"])
+def test_stream_socket_timeout_reports_total_deadline_exhaustion(operation: str) -> None:
+    times = iter([1.0, 6.0])
+    fake = FakeSocket(
+        ("93.184.216.34", 443),
+        recv_error=socket.timeout("read timeout") if operation == "read" else None,
+        send_error=socket.timeout("write timeout") if operation == "write" else None,
+    )
+    stream = ph._PinnedNetworkStream(
+        fake,
+        policy=_policy(inactivity_timeout_seconds=8.0),
+        budget=ph.DeadlineBudget(expires_at=5.0),
+        monotonic=lambda: next(times),
+    )
+
+    with pytest.raises(ph.PinnedDeadlineExceeded):
+        if operation == "read":
+            stream.read(16, timeout=9.0)
+        else:
+            stream.write(b"x", timeout=9.0)
+
+
 def test_backend_applies_requested_options_and_tcp_nodelay() -> None:
     hop = _resolved_hop("https://example.com/x", "93.184.216.34")
     fake = FakeSocket(("93.184.216.34", 443))
-    backend = ph._PinnedNetworkBackend(hop, socket_factory=lambda *_args: fake)
+    backend = ph._PinnedNetworkBackend(
+        hop,
+        policy=_policy(),
+        budget=ph.DeadlineBudget.start(5.0),
+        socket_factory=lambda *_args: fake,
+    )
     keepalive = (socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
     backend.connect_tcp("example.com", 443, timeout=5.0, socket_options=(keepalive,))
     assert keepalive in fake.options
@@ -582,7 +734,11 @@ def test_backend_applies_requested_options_and_tcp_nodelay() -> None:
 
 def test_backend_rejects_unix_sockets() -> None:
     hop = _resolved_hop("https://example.com/x", "93.184.216.34")
-    backend = ph._PinnedNetworkBackend(hop)
+    backend = ph._PinnedNetworkBackend(
+        hop,
+        policy=_policy(),
+        budget=ph.DeadlineBudget.start(5.0),
+    )
     with pytest.raises(httpcore.UnsupportedProtocol):
         backend.connect_unix_socket("/tmp/pinned.sock")
 
@@ -599,7 +755,11 @@ def test_stream_tls_failure_closes_without_insecure_retry() -> None:
             raise ssl.SSLError("certificate verify failed")
 
     with pytest.raises(httpcore.ConnectError):
-        ph._PinnedNetworkStream(fake).start_tls(
+        ph._PinnedNetworkStream(
+            fake,
+            policy=_policy(),
+            budget=ph.DeadlineBudget.start(5.0),
+        ).start_tls(
             FailingSSLContext(),
             server_hostname="example.com",
             timeout=2.5,
@@ -623,7 +783,11 @@ def test_transport_builds_verified_non_proxy_http1_pool(
 
     monkeypatch.setattr(ph.httpcore, "ConnectionPool", pool_factory)
     hop = _resolved_hop("https://example.com/x", "93.184.216.34")
-    ph._PinnedHTTPTransport(hop)
+    ph._PinnedHTTPTransport(
+        hop,
+        policy=_policy(),
+        budget=ph.DeadlineBudget.start(5.0),
+    )
 
     context = captured["ssl_context"]
     assert isinstance(context, ssl.SSLContext)
@@ -664,7 +828,12 @@ def test_transport_preserves_ascii_host_duplicate_headers_and_stream_close(
 
     monkeypatch.setattr(ph.httpcore, "ConnectionPool", lambda **_kwargs: FakePool())
     hop = _resolved_hop("https://BÜCHER.example/x", "93.184.216.34")
-    with httpx.Client(transport=ph._PinnedHTTPTransport(hop), trust_env=False) as client:
+    transport = ph._PinnedHTTPTransport(
+        hop,
+        policy=_policy(),
+        budget=ph.DeadlineBudget.start(5.0),
+    )
+    with httpx.Client(transport=transport, trust_env=False) as client:
         response = client.get("https://BÜCHER.example/x")
         assert response.content == b"ok"
         assert response.headers.get_list("set-cookie") == ["a=1", "b=2"]
@@ -735,7 +904,7 @@ def _client_for_raw_response(
     def resolver(host: str, port: int, budget: ph.DeadlineBudget):
         return _public_resolver(host, port, budget)
 
-    def factory(_hop):
+    def factory(_hop, _policy, _budget):
         raw_stream = _ChunkStream(chunks if chunks is not None else [body])
 
         def handler(request: httpx.Request) -> httpx.Response:
@@ -757,7 +926,7 @@ def _client_for_redirect_stream(stream: _ChunkStream) -> ph.PinnedHTTPClient:
 
     calls = 0
 
-    def factory(_hop):
+    def factory(_hop, _policy, _budget):
         nonlocal calls
         calls += 1
 
@@ -877,7 +1046,7 @@ def test_content_length_over_encoded_limit_is_rejected_early() -> None:
 def test_final_response_headers_and_accept_encoding_are_preserved() -> None:
     seen: list[str] = []
 
-    def factory(_hop):
+    def factory(_hop, _policy, _budget):
         def handler(request: httpx.Request) -> httpx.Response:
             seen.append(request.headers["accept-encoding"])
             return httpx.Response(
@@ -985,10 +1154,31 @@ def test_gzip_bomb_allocation_is_policy_relative() -> None:
     assert peak <= 8 * decoded_cap
 
 
+def test_decode_stops_when_total_deadline_expires() -> None:
+    response = httpx.Response(
+        200,
+        stream=_ChunkStream([b"a", b"b"]),
+        request=httpx.Request("GET", "https://example.com/a"),
+    )
+    times = iter([1.0, 6.0])
+
+    with pytest.raises(ph.PinnedDeadlineExceeded):
+        ph._read_bounded_body(
+            response,
+            policy=_policy(),
+            budget=ph.DeadlineBudget(expires_at=5.0),
+            monotonic=lambda: next(times),
+        )
+
+
 def test_client_returns_immutable_decoded_response_and_user_agent() -> None:
     seen: list[tuple[str, str]] = []
 
-    def factory(hop: ph.ResolvedHop) -> httpx.BaseTransport:
+    def factory(
+        hop: ph.ResolvedHop,
+        _policy: ph.EgressPolicy,
+        _budget: ph.DeadlineBudget,
+    ) -> httpx.BaseTransport:
         def handler(request: httpx.Request) -> httpx.Response:
             seen.append((request.headers["host"], request.headers["user-agent"]))
             return httpx.Response(
@@ -1020,7 +1210,11 @@ def test_redirect_re_resolves_every_hop_and_blocks_private_target() -> None:
             raise ph.BlockedAddressError("mixed or private destination")
         return _public_resolver(host, port, budget)
 
-    def factory(hop: ph.ResolvedHop) -> httpx.BaseTransport:
+    def factory(
+        hop: ph.ResolvedHop,
+        _policy: ph.EgressPolicy,
+        _budget: ph.DeadlineBudget,
+    ) -> httpx.BaseTransport:
         return httpx.MockTransport(
             lambda _request: httpx.Response(302, headers={"location": "https://internal.example/secret"})
         )
@@ -1032,11 +1226,78 @@ def test_redirect_re_resolves_every_hop_and_blocks_private_target() -> None:
     assert budgets[0] is budgets[1]
 
 
+def test_redirects_reuse_one_deadline_budget() -> None:
+    budgets: list[ph.DeadlineBudget] = []
+
+    def resolver(host: str, port: int, budget: ph.DeadlineBudget):
+        budgets.append(budget)
+        return _public_resolver(host, port, budget)
+
+    def factory(hop, policy, budget):
+        budgets.append(budget)
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            if hop.host == "one.example":
+                return httpx.Response(
+                    302,
+                    headers=(("location", "https://two.example/final"),),
+                    request=request,
+                )
+            return httpx.Response(200, content=b"done", request=request)
+
+        return httpx.MockTransport(handler)
+
+    ph.PinnedHTTPClient(resolver=resolver, transport_factory=factory).get(
+        "https://one.example/start",
+        user_agent="test",
+        policy=_policy(max_redirects=2),
+    )
+
+    assert len({id(item) for item in budgets}) == 1
+
+
+def test_redirect_processing_stops_on_original_deadline() -> None:
+    resolved: list[str] = []
+    times = iter([0.0, 1.0, 2.0, 6.0])
+
+    def resolver(host: str, port: int, budget: ph.DeadlineBudget):
+        resolved.append(host)
+        return _public_resolver(host, port, budget)
+
+    def factory(_hop, _policy, _budget):
+        return httpx.MockTransport(
+            lambda request: httpx.Response(
+                302,
+                headers=(("location", "https://two.example/final"),),
+                request=request,
+            )
+        )
+
+    client = ph.PinnedHTTPClient(
+        resolver=resolver,
+        transport_factory=factory,
+        monotonic=lambda: next(times),
+    )
+
+    with pytest.raises(ph.PinnedDeadlineExceeded):
+        client.get(
+            "https://one.example/start",
+            user_agent="test",
+            policy=_policy(total_timeout_seconds=5.0),
+        )
+
+    assert resolved == ["one.example"]
+
+
 @pytest.mark.parametrize("ip", _BLOCKED_IPS)
 def test_redirect_to_blocked_literal_is_rejected(ip: str) -> None:
     target = f"https://[{ip}]/secret" if ":" in ip else f"https://{ip}/secret"
 
-    def factory(hop: ph.ResolvedHop) -> httpx.BaseTransport:
+    def factory(
+        hop: ph.ResolvedHop,
+        _policy: ph.EgressPolicy,
+        _budget: ph.DeadlineBudget,
+    ) -> httpx.BaseTransport:
         return httpx.MockTransport(
             lambda _request: httpx.Response(302, headers={"location": target})
         )
@@ -1060,7 +1321,11 @@ def test_redirect_to_mixed_dns_answer_is_rejected(monkeypatch: pytest.MonkeyPatc
 
     monkeypatch.setattr(ph.socket, "getaddrinfo", getaddrinfo)
 
-    def factory(_hop: ph.ResolvedHop) -> httpx.BaseTransport:
+    def factory(
+        _hop: ph.ResolvedHop,
+        _policy: ph.EgressPolicy,
+        _budget: ph.DeadlineBudget,
+    ) -> httpx.BaseTransport:
         return httpx.MockTransport(
             lambda _request: httpx.Response(
                 302,
@@ -1080,7 +1345,11 @@ def test_redirect_to_mixed_dns_answer_is_rejected(monkeypatch: pytest.MonkeyPatc
 def test_five_redirects_allowed_sixth_rejected() -> None:
     visited: list[str] = []
 
-    def factory(hop: ph.ResolvedHop) -> httpx.BaseTransport:
+    def factory(
+        hop: ph.ResolvedHop,
+        _policy: ph.EgressPolicy,
+        _budget: ph.DeadlineBudget,
+    ) -> httpx.BaseTransport:
         def handler(_request: httpx.Request) -> httpx.Response:
             visited.append(str(hop.url))
             index = int(hop.url.path.rsplit("/", 1)[-1])
@@ -1111,7 +1380,11 @@ def test_client_supports_all_approved_redirect_forms(
     location: str,
     expected: str,
 ) -> None:
-    def factory(hop: ph.ResolvedHop) -> httpx.BaseTransport:
+    def factory(
+        hop: ph.ResolvedHop,
+        _policy: ph.EgressPolicy,
+        _budget: ph.DeadlineBudget,
+    ) -> httpx.BaseTransport:
         def handler(_request: httpx.Request) -> httpx.Response:
             if hop.url.path == "/start":
                 return httpx.Response(302, headers={"location": location})
@@ -1141,7 +1414,7 @@ def test_blank_or_nonstandard_redirect_is_final(status: int, location: str) -> N
     )
     client = ph.PinnedHTTPClient(
         resolver=_public_resolver,
-        transport_factory=lambda _hop: transport,
+        transport_factory=lambda _hop, _policy, _budget: transport,
     )
     result = client.get("https://example.com/a", user_agent="ua/1")
     assert result.status_code == status
@@ -1158,7 +1431,7 @@ def test_fragment_and_default_port_redirect_loops_are_rejected(location: str) ->
     )
     client = ph.PinnedHTTPClient(
         resolver=_public_resolver,
-        transport_factory=lambda _hop: transport,
+        transport_factory=lambda _hop, _policy, _budget: transport,
     )
     with pytest.raises(ph.RedirectPolicyError):
         client.get("https://example.com/a#initial", user_agent="ua/1")
@@ -1173,7 +1446,7 @@ def test_unicode_and_ascii_idna_redirect_loop_is_rejected() -> None:
     )
     client = ph.PinnedHTTPClient(
         resolver=_public_resolver,
-        transport_factory=lambda _hop: transport,
+        transport_factory=lambda _hop, _policy, _budget: transport,
     )
     with pytest.raises(ph.RedirectPolicyError):
         client.get("https://BÜCHER.example/a", user_agent="ua/1")
@@ -1185,14 +1458,18 @@ def test_malformed_redirect_target_is_translated() -> None:
     )
     client = ph.PinnedHTTPClient(
         resolver=_public_resolver,
-        transport_factory=lambda _hop: transport,
+        transport_factory=lambda _hop, _policy, _budget: transport,
     )
     with pytest.raises(ph.RedirectPolicyError):
         client.get("https://example.com/a", user_agent="ua/1")
 
 
 def test_percent_encoded_and_literal_paths_are_distinct() -> None:
-    def factory(hop: ph.ResolvedHop) -> httpx.BaseTransport:
+    def factory(
+        hop: ph.ResolvedHop,
+        _policy: ph.EgressPolicy,
+        _budget: ph.DeadlineBudget,
+    ) -> httpx.BaseTransport:
         if hop.url.raw_path == b"/a%2Fb":
             response = httpx.Response(302, headers={"location": "/a/b"})
         else:
@@ -1219,7 +1496,11 @@ def test_each_redirect_hop_resolves_once_and_gets_a_fresh_transport() -> None:
         resolutions.append((host, port))
         return _public_resolver(host, port, budget)
 
-    def factory(hop: ph.ResolvedHop) -> httpx.BaseTransport:
+    def factory(
+        hop: ph.ResolvedHop,
+        _policy: ph.EgressPolicy,
+        _budget: ph.DeadlineBudget,
+    ) -> httpx.BaseTransport:
         transports.append(str(hop.url))
         if hop.host == "a.example":
             response = httpx.Response(
@@ -1248,7 +1529,11 @@ def test_environment_proxies_are_not_used(monkeypatch: pytest.MonkeyPatch) -> No
     monkeypatch.setenv("NO_PROXY", "")
     handled: list[str] = []
 
-    def factory(_hop: ph.ResolvedHop) -> httpx.BaseTransport:
+    def factory(
+        _hop: ph.ResolvedHop,
+        _policy: ph.EgressPolicy,
+        _budget: ph.DeadlineBudget,
+    ) -> httpx.BaseTransport:
         def handler(request: httpx.Request) -> httpx.Response:
             handled.append(str(request.url))
             return httpx.Response(200, stream=_ChunkStream([b"direct"]))
@@ -1264,7 +1549,11 @@ def test_environment_proxies_are_not_used(monkeypatch: pytest.MonkeyPatch) -> No
 
 
 def test_client_translates_transport_factory_failure() -> None:
-    def factory(_hop: ph.ResolvedHop) -> httpx.BaseTransport:
+    def factory(
+        _hop: ph.ResolvedHop,
+        _policy: ph.EgressPolicy,
+        _budget: ph.DeadlineBudget,
+    ) -> httpx.BaseTransport:
         raise OSError("TLS context construction failed")
 
     client = ph.PinnedHTTPClient(
@@ -1285,7 +1574,11 @@ def test_client_translates_transport_factory_failure() -> None:
     ],
 )
 def test_client_translates_transport_failures(error_factory) -> None:
-    def factory(_hop: ph.ResolvedHop) -> httpx.BaseTransport:
+    def factory(
+        _hop: ph.ResolvedHop,
+        _policy: ph.EgressPolicy,
+        _budget: ph.DeadlineBudget,
+    ) -> httpx.BaseTransport:
         def handler(request: httpx.Request) -> httpx.Response:
             raise error_factory(request)
 
@@ -1314,7 +1607,11 @@ class _OneChunkStream(httpx.SyncByteStream):
 def test_shared_layer_decodes_gzip_exactly_once() -> None:
     encoded = gzip.compress("Vĩnh Long".encode("utf-8"))
 
-    def factory(_hop: ph.ResolvedHop) -> httpx.BaseTransport:
+    def factory(
+        _hop: ph.ResolvedHop,
+        _policy: ph.EgressPolicy,
+        _budget: ph.DeadlineBudget,
+    ) -> httpx.BaseTransport:
         return httpx.MockTransport(
             lambda _request: httpx.Response(
                 200,
@@ -1334,7 +1631,11 @@ def test_shared_layer_decodes_gzip_exactly_once() -> None:
 def test_concurrent_calls_do_not_leak_pinned_hops() -> None:
     observed: list[tuple[str, str]] = []
 
-    def factory(hop: ph.ResolvedHop) -> httpx.BaseTransport:
+    def factory(
+        hop: ph.ResolvedHop,
+        _policy: ph.EgressPolicy,
+        _budget: ph.DeadlineBudget,
+    ) -> httpx.BaseTransport:
         approved = str(hop.addresses[0].ip)
 
         def handler(_request: httpx.Request) -> httpx.Response:

@@ -198,7 +198,12 @@ class Resolver(Protocol):
 
 
 class TransportFactory(Protocol):
-    def __call__(self, hop: ResolvedHop) -> httpx.BaseTransport:
+    def __call__(
+        self,
+        hop: ResolvedHop,
+        policy: EgressPolicy,
+        budget: DeadlineBudget,
+    ) -> httpx.BaseTransport:
         raise NotImplementedError
 
 
@@ -402,14 +407,30 @@ def validate_public_url(
 
 
 class _PinnedNetworkStream(httpcore.NetworkStream):
-    def __init__(self, sock: socket.socket) -> None:
+    def __init__(
+        self,
+        sock: socket.socket,
+        *,
+        policy: EgressPolicy,
+        budget: DeadlineBudget,
+        monotonic: MonotonicClock = time.monotonic,
+    ) -> None:
         self._socket = sock
+        self._policy = policy
+        self._budget = budget
+        self._monotonic = monotonic
 
     def read(self, max_bytes: int, timeout: float | None = None) -> bytes:
         try:
-            self._socket.settimeout(timeout)
+            operation_timeout = self._budget.socket_timeout(
+                timeout,
+                self._policy.inactivity_timeout_seconds,
+                monotonic=self._monotonic,
+            )
+            self._socket.settimeout(operation_timeout)
             return self._socket.recv(max_bytes)
         except socket.timeout as exc:
+            self._budget.remaining(monotonic=self._monotonic)
             raise httpcore.ReadTimeout(str(exc)) from exc
         except OSError as exc:
             raise httpcore.ReadError(str(exc)) from exc
@@ -417,12 +438,18 @@ class _PinnedNetworkStream(httpcore.NetworkStream):
     def write(self, buffer: bytes, timeout: float | None = None) -> None:
         try:
             while buffer:
-                self._socket.settimeout(timeout)
+                operation_timeout = self._budget.socket_timeout(
+                    timeout,
+                    self._policy.inactivity_timeout_seconds,
+                    monotonic=self._monotonic,
+                )
+                self._socket.settimeout(operation_timeout)
                 written = self._socket.send(buffer)
                 if written == 0:
-                    raise OSError("socket connection broken")
+                    raise httpcore.WriteError("socket connection broken")
                 buffer = buffer[written:]
         except socket.timeout as exc:
+            self._budget.remaining(monotonic=self._monotonic)
             raise httpcore.WriteTimeout(str(exc)) from exc
         except OSError as exc:
             raise httpcore.WriteError(str(exc)) from exc
@@ -437,18 +464,29 @@ class _PinnedNetworkStream(httpcore.NetworkStream):
         timeout: float | None = None,
     ) -> httpcore.NetworkStream:
         try:
-            self._socket.settimeout(timeout)
+            operation_timeout = self._budget.socket_timeout(
+                timeout,
+                self._policy.inactivity_timeout_seconds,
+                monotonic=self._monotonic,
+            )
+            self._socket.settimeout(operation_timeout)
             wrapped = ssl_context.wrap_socket(
                 self._socket,
                 server_hostname=server_hostname,
             )
         except socket.timeout as exc:
             self.close()
+            self._budget.remaining(monotonic=self._monotonic)
             raise httpcore.ConnectTimeout(str(exc)) from exc
         except (ssl.SSLError, OSError) as exc:
             self.close()
             raise httpcore.ConnectError(str(exc)) from exc
-        return _PinnedNetworkStream(wrapped)
+        return _PinnedNetworkStream(
+            wrapped,
+            policy=self._policy,
+            budget=self._budget,
+            monotonic=self._monotonic,
+        )
 
     def get_extra_info(self, info: str) -> object:
         if info == "server_addr":
@@ -524,10 +562,14 @@ class _PinnedNetworkBackend(httpcore.NetworkBackend):
         self,
         hop: ResolvedHop,
         *,
+        policy: EgressPolicy,
+        budget: DeadlineBudget,
         socket_factory: SocketFactory = socket.socket,
         monotonic: MonotonicClock = time.monotonic,
     ) -> None:
         self._hop = hop
+        self._policy = policy
+        self._budget = budget
         self._socket_factory = socket_factory
         self._monotonic = monotonic
 
@@ -548,25 +590,37 @@ class _PinnedNetworkBackend(httpcore.NetworkBackend):
         socket_options: Iterable[SocketOption] | None = None,
     ) -> httpcore.NetworkStream:
         _check_requested_origin(host, port, self._hop)
-        deadline = None if timeout is None else self._monotonic() + timeout
         approved = {(item.ip, item.port) for item in self._hop.addresses}
         last_error: Exception | None = None
         for address in self._hop.addresses:
-            remaining = _remaining_timeout(deadline, self._monotonic)
-            if remaining == 0.0:
-                raise httpcore.ConnectTimeout("pinned connect budget exhausted")
             sock: socket.socket | None = None
             try:
                 sock = self._socket_factory(address.family, address.socktype, address.protocol)
-                _configure_connecting_socket(sock, remaining, local_address, socket_options)
+                operation_timeout = self._budget.socket_timeout(
+                    timeout,
+                    self._policy.inactivity_timeout_seconds,
+                    monotonic=self._monotonic,
+                )
+                _configure_connecting_socket(
+                    sock,
+                    operation_timeout,
+                    local_address,
+                    socket_options,
+                )
                 sock.connect(address.sockaddr)
                 _check_peer_matches_approved(sock, approved)
-                return _PinnedNetworkStream(sock)
+                return _PinnedNetworkStream(
+                    sock,
+                    policy=self._policy,
+                    budget=self._budget,
+                    monotonic=self._monotonic,
+                )
             except PeerMismatchError:
                 if sock is not None:
                     sock.close()
                 raise
             except socket.timeout as exc:
+                self._budget.remaining(monotonic=self._monotonic)
                 last_error = httpcore.ConnectTimeout(str(exc))
                 if sock is not None:
                     sock.close()
@@ -591,7 +645,15 @@ class _CoreResponseStream(httpx.SyncByteStream):
 
 
 class _PinnedHTTPTransport(httpx.BaseTransport):
-    def __init__(self, hop: ResolvedHop) -> None:
+    def __init__(
+        self,
+        hop: ResolvedHop,
+        *,
+        policy: EgressPolicy,
+        budget: DeadlineBudget,
+        socket_factory: SocketFactory = socket.socket,
+        monotonic: MonotonicClock = time.monotonic,
+    ) -> None:
         self._pool = httpcore.ConnectionPool(
             ssl_context=httpx.create_ssl_context(verify=True, trust_env=False),
             max_connections=1,
@@ -599,7 +661,13 @@ class _PinnedHTTPTransport(httpx.BaseTransport):
             http1=True,
             http2=False,
             retries=0,
-            network_backend=_PinnedNetworkBackend(hop),
+            network_backend=_PinnedNetworkBackend(
+                hop,
+                policy=policy,
+                budget=budget,
+                socket_factory=socket_factory,
+                monotonic=monotonic,
+            ),
         )
 
     def handle_request(self, request: httpx.Request) -> httpx.Response:
@@ -629,8 +697,12 @@ class _PinnedHTTPTransport(httpx.BaseTransport):
         self._pool.close()
 
 
-def build_pinned_transport(hop: ResolvedHop) -> httpx.BaseTransport:
-    return _PinnedHTTPTransport(hop)
+def build_pinned_transport(
+    hop: ResolvedHop,
+    policy: EgressPolicy,
+    budget: DeadlineBudget,
+) -> httpx.BaseTransport:
+    return _PinnedHTTPTransport(hop, policy=policy, budget=budget)
 
 
 def _resolve_hop(
@@ -742,7 +814,8 @@ def _read_bounded_body(
     encoding = _response_encoding(response.headers)
     if encoding not in policy.accepted_encodings:
         raise PinnedContentEncodingError("response content encoding is not accepted")
-    chunks = _bounded_raw_chunks(response, policy)
+    # Mock transports may return an already-buffered response body.
+    chunks = [response.content] if response.is_stream_consumed else _bounded_raw_chunks(response, policy)
     if encoding == "identity":
         return _decode_identity(chunks, policy, budget, monotonic)
     return _decode_gzip(chunks, policy, budget, monotonic)
@@ -756,9 +829,11 @@ def _fetch_hop(
     budget: DeadlineBudget,
     timeout: float | httpx.Timeout | None = None,
     transport_factory: TransportFactory,
+    monotonic: MonotonicClock = time.monotonic,
 ) -> tuple[int, tuple[tuple[str, str], ...], bytes, str | None]:
     try:
-        transport = transport_factory(hop)
+        budget.remaining(monotonic=monotonic)
+        transport = transport_factory(hop, policy, budget)
         with httpx.Client(
             transport=transport,
             follow_redirects=False,
@@ -775,19 +850,25 @@ def _fetch_hop(
             # follow_redirects=False, and raises RemoteProtocolError for a malformed
             # Location before this function ever sees it. Calling the transport
             # directly keeps this module the sole arbiter of redirect-target validity.
-            requested_timeout = timeout if isinstance(timeout, (int, float)) else None
-            request_timeout = budget.socket_timeout(
-                requested_timeout,
-                policy.inactivity_timeout_seconds,
+            request = client.build_request(
+                "GET",
+                str(hop.url),
+                timeout=httpx.Timeout(policy.inactivity_timeout_seconds),
             )
-            request = client.build_request("GET", str(hop.url), timeout=request_timeout)
             response = transport.handle_request(request)
             try:
                 location = response.headers.get("location")
                 if response.status_code in {301, 302, 303, 307, 308} and location and location.strip():
+                    budget.remaining(monotonic=monotonic)
                     return response.status_code, tuple(response.headers.multi_items()), b"", location.strip()
+                budget.remaining(monotonic=monotonic)
                 headers = tuple(response.headers.multi_items())
-                content = _read_bounded_body(response, policy=policy, budget=budget)
+                content = _read_bounded_body(
+                    response,
+                    policy=policy,
+                    budget=budget,
+                    monotonic=monotonic,
+                )
                 return response.status_code, headers, content, None
             finally:
                 response.close()
@@ -832,9 +913,11 @@ class PinnedHTTPClient:
         *,
         resolver: Resolver = resolve_public_addresses,
         transport_factory: TransportFactory = build_pinned_transport,
+        monotonic: MonotonicClock = time.monotonic,
     ) -> None:
         self._resolver = resolver
         self._transport_factory = transport_factory
+        self._monotonic = monotonic
 
     def get(
         self,
@@ -847,11 +930,15 @@ class PinnedHTTPClient:
     ) -> PinnedResponse:
         if policy is None:
             policy = _transitional_policy(timeout=timeout, max_redirects=max_redirects)
-        budget = DeadlineBudget.start(policy.total_timeout_seconds)
+        budget = DeadlineBudget.start(
+            policy.total_timeout_seconds,
+            monotonic=self._monotonic,
+        )
         current = _parse_url(url)
         visited: set[tuple[str, str, int, bytes]] = set()
         redirects: list[RedirectHop] = []
         while True:
+            budget.remaining(monotonic=self._monotonic)
             key = _canonical_url_key(current)
             if key in visited:
                 raise RedirectPolicyError("redirect loop detected")
@@ -864,11 +951,14 @@ class PinnedHTTPClient:
                 budget=budget,
                 timeout=timeout,
                 transport_factory=self._transport_factory,
+                monotonic=self._monotonic,
             )
             if location is None:
+                budget.remaining(monotonic=self._monotonic)
                 return PinnedResponse(status, str(hop.url), headers, content, tuple(redirects))
             if len(redirects) >= policy.max_redirects:
                 raise RedirectPolicyError("redirect limit exceeded")
+            budget.remaining(monotonic=self._monotonic)
             next_url = _redirect_target(hop.url, location)
             redirects.append(RedirectHop(str(hop.url), status, location, str(next_url)))
             current = next_url
