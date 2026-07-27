@@ -1,6 +1,6 @@
 # Hardening Closure: verifiedAt, Release Scanner, and Bounded Egress
 
-> STATUS: active - design approved by the project owner on 2026-07-27; implementation plan and source changes are not yet authorized.
+> STATUS: active - initial design and four optimization amendments approved by the project owner on 2026-07-27; awaiting final spec review before implementation planning. Source changes are not yet authorized.
 
 ## Decision
 
@@ -14,6 +14,11 @@ The work remains one coordinated hardening tranche because all three changes are
 required before the branch can claim a trustworthy green baseline. Each workstream
 has an isolated contract, focused tests, and its own implementation commit. No data
 migration, production mutation, push, or deployment is part of this design.
+
+Planning is deliberately split after this umbrella decision: Plan A closes the
+trust and scanner contracts, while Plan B completes egress and final truth-sync.
+This keeps the small correctness fixes reviewable without placing the complete
+transport change into the same execution context.
 
 ## Evidence Basis
 
@@ -101,9 +106,14 @@ top-level `verifiedAt` field and never falls back to another timestamp.
 The accessor belongs beside the existing timestamp normalization contract in
 `agent/database.py`, so internal serializers and the public API share one meaning.
 The stale `_normalize_entity_timestamps()` documentation that says verified time
-defaults to updated time must be corrected. Existing internal compatibility output
-will continue to mirror a genuine attribute to top-level `verifiedAt`, but that
-mirror is never authoritative and is removed at the public projection boundary.
+defaults to updated time must be corrected. Timestamp normalization stops creating
+top-level `verifiedAt`, including when a genuine attribute exists, and removes a
+legacy top-level value from normalized output. The attribute remains unchanged as
+the single stored representation.
+
+Future DB exports therefore carry field verification only inside `attributes`.
+This tranche does not rewrite the already-divergent `web/data.json`; its legacy
+top-level values remain historical input that all new code must ignore.
 
 ### Public API
 
@@ -112,8 +122,8 @@ mirror is never authoritative and is removed at the public projection boundary.
 
 The owned public projection removes top-level `verifiedAt` before returning an
 entity. This is a defense-in-depth boundary: even if legacy input or an internal
-serializer contains a stale top-level value, public clients cannot accidentally
-adopt it as a second verification contract.
+caller contains a stale top-level value, public clients cannot accidentally adopt
+it as a second verification contract.
 
 `updated_at` remains a separate content/source update signal. It may affect an
 "updated" label, but it cannot affect field-verification status or wording.
@@ -139,6 +149,8 @@ Tests must prove all of the following:
 - recent `updatedAt` without the attribute cannot produce a fresh status;
 - `verified = true` cannot produce a field-verification claim;
 - malformed or blank attribute values remain unknown;
+- timestamp normalization never creates a top-level mirror and removes a supplied
+  legacy top-level value without changing `attributes.verifiedAt`;
 - the public projection never exposes top-level `verifiedAt`;
 - the frontend claim is driven by `source_freshness.verified_at`, not by a legacy
   field.
@@ -315,20 +327,24 @@ Body, encoding, deadline, resolution saturation, and transport failures use stab
 
 ### Bounded DNS Resolution
 
-System `getaddrinfo()` cannot be interrupted reliably. Resolution therefore runs in
-one process-wide bounded daemon worker pool with four workers and a maximum of 16
-queued jobs, for a hard maximum of 20 running-or-queued resolutions. Submission
-saturation fails closed immediately with a stable resolution exception.
+System `getaddrinfo()` cannot be interrupted reliably. Resolution therefore uses one
+process-wide four-slot gate backed by a bounded semaphore. There is no background
+job queue and no executor. Waiting to acquire a slot consumes the caller's remaining
+deadline; failure to acquire before expiry fails closed with a stable resolution
+exception.
 
-The calling request waits only for its remaining deadline. A timed-out resolver job
-may finish later, but daemon workers, pending jobs, and retained results remain
-strictly bounded. Results completed after their request deadline are discarded. The
-existing rule that every returned address must pass public-address validation stays
-unchanged.
+After acquiring a slot, the resolver starts one daemon thread for that resolution
+and returns its result through a single-result handoff. The caller waits only for
+the remaining request budget. If the request expires first, it discards any later
+result; the daemon keeps its slot until `getaddrinfo()` finishes and releases it in
+a `finally` path. At most four resolver threads can therefore exist, including when
+system DNS is stuck, and no expired request can leave a queued DNS job that starts
+later.
 
-No unbounded per-request thread creation or `ThreadPoolExecutor` shutdown wait is
-permitted. Pool sizing is a module constant rather than a new deployment service or
-paid dependency.
+The existing rule that every returned address must pass public-address validation
+stays unchanged. No unbounded per-request thread creation or
+`ThreadPoolExecutor` shutdown wait is permitted. The four-slot limit is a module
+constant rather than a new deployment service or paid dependency.
 
 ### Deadline Propagation Through Transport
 
@@ -372,18 +388,31 @@ Required coverage includes:
   encoding.
 
 The 32 MiB gzip reproducer is converted into a regression test with a 1 MiB decoded
-test policy. Peak traced allocation must remain below 4 MiB for that focused test,
-leaving explicit decoder and Python object slack without allowing proportional bomb
-allocation.
+test policy. The compressed fixture is created before allocation tracing begins.
+The test requires exact rejection at the decoded cap and peak traced allocation no
+greater than eight times `max_decoded_bytes` (8 MiB for this policy). The relative
+ceiling tolerates Python allocator differences while still failing any regression
+whose memory use scales with the bomb's 32 MiB decoded size.
 
-## Implementation Boundaries and Commit Order
+## Implementation Boundaries, Plan Split, and Commit Order
 
-The future implementation plan must preserve this sequence and leave the repository
-green after every commit:
+Two implementation plans will be written from this spec after final owner approval.
+
+- **Plan A - Trust and scanner correctness:** commits 1 and 2 below. It ends with
+  focused backend/frontend tests, Nuxt typecheck/build, and hard checks. Its owned
+  diff is fully committed; unrelated user or runtime files remain untouched and are
+  reported rather than treated as plan output.
+- **Plan B - Bound-complete egress:** commits 3 through 7 below. It starts only after
+  Plan A is complete and verified, then owns the fresh official backend regression
+  and final documentation truth-sync.
+
+Both plans must preserve this overall sequence and leave the repository green after
+every commit:
 
 1. `fix: make field verification attribute-authoritative`
    - failing backend and frontend contract tests first;
-   - canonical accessor, API projection, frontend byline, type and stale comments;
+   - canonical accessor, no-mirror normalization/export contract, API projection,
+     frontend byline, type and stale comments;
    - no data files.
 2. `fix: scope release artifact scanners to owned inputs`
    - failing tracked-path and snapshot-member tests first;
@@ -393,18 +422,24 @@ green after every commit:
 4. `fix: bound pinned response bodies and decompression`
    - policy contract, raw reader, identity and bounded gzip decoding.
 5. `fix: enforce one pinned egress deadline`
-   - resolver pool, per-call budget, backend/stream propagation, transport edges.
+   - resolver gate, per-call budget, backend/stream propagation, transport edges.
 6. `refactor: migrate pinned egress consumer profiles`
    - admin, auto-learn, and quality-burst adapters with preserved outward behavior.
 7. `docs: close pinned hardening follow-ups`
    - plan result truth, ROADMAP, HANDOFF, exact verification receipts and residuals.
 
 If a commit changes production behavior, it must include its paired tests as
-required by the repository standards. The implementation plan may split a listed
-commit further if necessary, but it may not combine independent workstreams into a
-single production commit.
+required by the repository standards. Either plan may split a listed commit further
+if necessary, but neither may combine independent workstreams into a single
+production commit or move egress work into Plan A.
 
 ## Verification
+
+Plan A uses focused trust, scanner, frontend, and hard-check gates. Plan B reruns its
+focused transport/consumer suites and then owns the one fresh full frontend and
+official bounded-backend baseline for the final candidate. The split avoids paying
+the roughly 90-minute backend baseline after both plans while retaining one
+revision-bound final proof.
 
 ### Focused Backend
 
@@ -413,6 +448,7 @@ Run the affected suites, including:
 - `agent/tests/test_public_api.py`
 - `agent/tests/test_upgrade_phase1.py`
 - `agent/tests/test_database.py`
+- `tests/test_export_data.py`
 - `tests/launch_safety/test_artifact_packaging.py`
 - `tests/launch_safety/test_release_package.py`
 - `tests/test_pinned_http.py`
@@ -449,6 +485,7 @@ revision, command lines, and durable receipt hashes.
 
 - No public rendering or API contract treats top-level `verifiedAt` as field
   verification.
+- Timestamp normalization and future DB exports do not emit top-level `verifiedAt`.
 - An adversarial legacy top-level value cannot produce a verified byline or fresh
   verification status.
 - No entity/data file is rewritten as part of the trust fix.
@@ -457,21 +494,26 @@ revision, command lines, and durable receipt hashes.
 - Nested untracked worktrees cannot create false scanner failures.
 - Every pinned GET has explicit encoded and decoded caps and a fresh absolute
   monotonic deadline.
-- DNS resolver concurrency and pending work are bounded and fail closed on
-  saturation.
+- DNS resolution has at most four active daemon threads, no background job queue,
+  and fails closed when a slot cannot be acquired inside the request deadline.
 - Admin images accept identity only; text accepts identity and bounded gzip only.
 - The default production transport composition runs under real httpcore in tests.
+- The gzip-bomb allocation test uses a policy-relative ceiling and cannot pass if
+  memory scales with the bomb's decoded size.
 - Destination validation, exact-sockaddr dialing, peer verification, TLS hostname
   verification, and redirect revalidation remain covered and unchanged.
 - Focused backend, frontend tests, typecheck, build, hard checks, and the official
   bounded backend regression all pass on the final candidate revision.
 - The prior pinned-client plan truthfully reports completion and remaining
   residuals.
+- Plan A completes and verifies trust/scanner work before Plan B begins egress and
+  final truth-sync.
 
 ## Residual Risks
 
-- A system DNS call may remain blocked after its request times out; the bounded
-  daemon pool contains resource use but cannot cancel the OS resolver call.
+- A system DNS call may remain blocked after its request times out. Its resolver
+  slot remains occupied until the OS call returns; four stuck calls therefore make
+  later resolutions fail closed until capacity recovers.
 - The initial 2 MiB text cap may reject an unusually large legitimate page.
 - Sites that ignore `Accept-Encoding` or require Brotli/deflate will fail closed.
 - Consent-cookie redirect gates remain unsupported.
