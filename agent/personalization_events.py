@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import tempfile
 from collections.abc import Mapping
 from datetime import datetime, timedelta, timezone
@@ -20,6 +21,66 @@ from versioned_json_store import fsync_directory, publication_lock
 MAX_EVENT_LIMIT = 300
 MAX_INTEREST_KEYS = 12
 EVENT_TTL_DAYS = 90
+PERSONALIZATION_EVENT_TYPES = frozenset(
+    {
+        "community_view",
+        "entity_view",
+        "itinerary_view",
+        "map_focus",
+        "post_view",
+        "save_add",
+        "save_remove",
+        "search",
+        "search_submit",
+        "visit_mark",
+    }
+)
+PERSONALIZATION_CONTEXTS = frozenset(
+    {"community", "entity", "home", "itinerary", "map", "saved", "search", "unknown"}
+)
+PERSONALIZATION_ENTITY_TYPES = frozenset(
+    {
+        "accommodation",
+        "attraction",
+        "cafe",
+        "craft_village",
+        "dish",
+        "drink",
+        "event",
+        "experience",
+        "facility",
+        "history",
+        "itinerary",
+        "nature",
+        "organization",
+        "person",
+        "place",
+        "product",
+        "restaurant",
+    }
+)
+PERSONALIZATION_INTEREST_KEYS = frozenset(
+    {"craft", "culture", "food", "garden", "local_products", "stay"}
+)
+_NORMALIZED_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,199}$")
+_LEGACY_EVENT_FIELDS = frozenset(
+    {
+        "ts",
+        "occurred_at",
+        "user_id",
+        "event_type",
+        "context",
+        "entity_id",
+        "entity_type",
+        "entity_name",
+        "area",
+        "area_id",
+        "interest_keys",
+        "query",
+        "metadata",
+        "ip_hash",
+    }
+)
 LEGACY_EVENTS_PATH = Path(__file__).resolve().parent / "data" / "user_events.jsonl"
 LEGACY_EVENTS_LOCK_PATH = LEGACY_EVENTS_PATH.with_name(
     ".user_events.personalization.publication.lock"
@@ -47,11 +108,30 @@ def _bounded_text(value: Any, maximum: int, *, lower: bool = False) -> str | Non
     return normalized[:maximum]
 
 
-def _required_key(value: Any, field: str) -> str:
+def _controlled_key(value: Any, field: str, allowed: frozenset[str]) -> str:
     normalized = _bounded_text(value, 64, lower=True)
-    if normalized is None:
-        raise PersonalizationEventError(f"{field} is required")
+    if normalized is None or normalized not in allowed:
+        raise PersonalizationEventError(f"Invalid {field}")
     return normalized
+
+
+def _optional_identifier(value: Any, field: str) -> str | None:
+    if value is not None and len(str(value).strip()) > 200:
+        raise PersonalizationEventError(f"Invalid {field}")
+    normalized = _bounded_text(value, 200, lower=True)
+    if normalized is None:
+        return None
+    if not _NORMALIZED_ID_RE.fullmatch(normalized):
+        raise PersonalizationEventError(f"Invalid {field}")
+    return normalized
+
+
+def _optional_controlled_key(
+    value: Any, field: str, allowed: frozenset[str]
+) -> str | None:
+    if value is None:
+        return None
+    return _controlled_key(value, field, allowed)
 
 
 def _timestamp(value: Any, default: datetime) -> datetime:
@@ -72,13 +152,17 @@ def _timestamp(value: Any, default: datetime) -> datetime:
 
 
 def _interest_keys(value: Any) -> list[str]:
-    if not isinstance(value, (list, tuple)):
+    if value is None:
         return []
+    if not isinstance(value, (list, tuple)):
+        raise PersonalizationEventError("Invalid interest_keys")
     normalized: list[str] = []
     seen: set[str] = set()
     for raw in value:
         key = _bounded_text(raw, 64, lower=True)
-        if key is None or key in seen:
+        if key is None or key not in PERSONALIZATION_INTEREST_KEYS:
+            raise PersonalizationEventError("Invalid interest_keys")
+        if key in seen:
             continue
         seen.add(key)
         normalized.append(key)
@@ -95,11 +179,17 @@ def _normalized_event(event: Mapping[str, Any]) -> dict[str, Any]:
         event.get("expires_at"), occurred_at + timedelta(days=EVENT_TTL_DAYS)
     )
     return {
-        "event_type": _required_key(event.get("event_type"), "event_type"),
-        "context": _required_key(event.get("context") or "unknown", "context"),
-        "entity_id": _bounded_text(event.get("entity_id"), 200),
-        "entity_type": _bounded_text(event.get("entity_type"), 64, lower=True),
-        "area_id": _bounded_text(event.get("area_id"), 200, lower=True),
+        "event_type": _controlled_key(
+            event.get("event_type"), "event_type", PERSONALIZATION_EVENT_TYPES
+        ),
+        "context": _controlled_key(
+            event.get("context") or "unknown", "context", PERSONALIZATION_CONTEXTS
+        ),
+        "entity_id": _optional_identifier(event.get("entity_id"), "entity_id"),
+        "entity_type": _optional_controlled_key(
+            event.get("entity_type"), "entity_type", PERSONALIZATION_ENTITY_TYPES
+        ),
+        "area_id": _optional_identifier(event.get("area_id"), "area_id"),
         "interest_keys": _interest_keys(event.get("interest_keys")),
         "occurred_at": occurred_at,
         "expires_at": expires_at,
@@ -204,23 +294,47 @@ def _legacy_timestamp(row: Mapping[str, Any]) -> datetime | None:
 
 
 def _legacy_projection(row: Mapping[str, Any]) -> dict[str, Any] | None:
+    if set(row) - _LEGACY_EVENT_FIELDS:
+        return None
     occurred_at = _legacy_timestamp(row)
     if occurred_at is None:
         return None
     try:
-        event_type = _required_key(row.get("event_type"), "event_type")
-        context = _required_key(row.get("context") or "unknown", "context")
+        event_type = _controlled_key(
+            row.get("event_type"), "event_type", PERSONALIZATION_EVENT_TYPES
+        )
+        context = _controlled_key(
+            row.get("context") or "unknown", "context", PERSONALIZATION_CONTEXTS
+        )
     except PersonalizationEventError:
         return None
+    try:
+        entity_id = _optional_identifier(row.get("entity_id"), "entity_id")
+    except PersonalizationEventError:
+        entity_id = None
+    try:
+        entity_type = _optional_controlled_key(
+            row.get("entity_type"), "entity_type", PERSONALIZATION_ENTITY_TYPES
+        )
+    except PersonalizationEventError:
+        entity_type = None
+    try:
+        area_id = _optional_identifier(
+            row.get("area_id", row.get("area")), "area_id"
+        )
+    except PersonalizationEventError:
+        area_id = None
+    try:
+        interest_keys = _interest_keys(row.get("interest_keys"))
+    except PersonalizationEventError:
+        interest_keys = []
     return {
         "event_type": event_type,
         "context": context,
-        "entity_id": _bounded_text(row.get("entity_id"), 200),
-        "entity_type": _bounded_text(row.get("entity_type"), 64, lower=True),
-        "area_id": _bounded_text(
-            row.get("area_id", row.get("area")), 200, lower=True
-        ),
-        "interest_keys": _interest_keys(row.get("interest_keys")),
+        "entity_id": entity_id,
+        "entity_type": entity_type,
+        "area_id": area_id,
+        "interest_keys": interest_keys,
         "occurred_at": occurred_at,
     }
 
@@ -267,7 +381,13 @@ def read_legacy_events_if_allowed(
 def _legacy_row_matches(
     row: Mapping[str, Any], owner: str | None, boundary: datetime | None
 ) -> bool:
-    if owner is not None and str(row.get("user_id")) != owner:
+    if _legacy_projection(row) is None:
+        return False
+    try:
+        row_owner = _owner_id(row.get("user_id"))
+    except PersonalizationEventError:
+        return False
+    if owner is not None and row_owner != owner:
         return False
     if boundary is None:
         return owner is not None
@@ -331,25 +451,32 @@ def purge_legacy_events(
         return removed
 
 
-def purge_user_personalization(user_id: str) -> None:
+def _purge_user_personalization_in_connection(conn, owner: str) -> None:
+    db._execute(
+        conn,
+        "DELETE FROM user_personalization_events WHERE user_id = %s::uuid",
+        (owner,),
+    )
+    db._execute(
+        conn,
+        "DELETE FROM user_preference_consents WHERE user_id = %s::uuid",
+        (owner,),
+    )
+    db._execute(
+        conn,
+        "DELETE FROM user_preferences WHERE user_id = %s::uuid",
+        (owner,),
+    )
+
+
+def purge_user_personalization(user_id: str, *, conn=None) -> None:
     """Delete preference, consent, and event rows for final account purge."""
     owner = _owner_id(user_id)
+    if conn is not None:
+        _purge_user_personalization_in_connection(conn, owner)
+        return
     with db._conn() as conn:
-        db._execute(
-            conn,
-            "DELETE FROM user_personalization_events WHERE user_id = %s::uuid",
-            (owner,),
-        )
-        db._execute(
-            conn,
-            "DELETE FROM user_preference_consents WHERE user_id = %s::uuid",
-            (owner,),
-        )
-        db._execute(
-            conn,
-            "DELETE FROM user_preferences WHERE user_id = %s::uuid",
-            (owner,),
-        )
+        _purge_user_personalization_in_connection(conn, owner)
 
 
 def record_recommendation_reset(user_id: str) -> PreferenceSnapshot:

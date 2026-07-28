@@ -769,7 +769,7 @@ def task_session_cleanup():
             """, ())
             stale_user_ids = [str(db._row_to_dict(row)["id"]) for row in stale_users]
             for user_id in stale_user_ids:
-                purge_user_personalization(user_id)
+                purge_user_personalization(user_id, conn=conn)
                 purge_legacy_events(user_id=user_id)
             result = db._execute(conn, """
                 DELETE FROM users WHERE deleted_at IS NOT NULL

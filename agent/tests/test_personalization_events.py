@@ -259,6 +259,8 @@ def pg_db(monkeypatch):
     monkeypatch.setattr(database_module, "db", adapter)
     monkeypatch.setattr(auth, "db", adapter)
     monkeypatch.setattr(scheduler, "db", adapter, raising=False)
+    monkeypatch.setattr(auth_middleware, "db", adapter)
+    monkeypatch.setattr(public_api, "db", adapter)
     with adapter._conn() as conn:
         adapter._execute(
             conn,
@@ -382,6 +384,7 @@ def auth_client(pg_db, users, monkeypatch):
     monkeypatch.setattr(auth_middleware, "_get_current_user_or_none", current_user)
     app = FastAPI()
     app.include_router(auth.router)
+    app.include_router(public_api.router)
     headers = {"Authorization": f"Bearer {session_token}"}
     with TestClient(app) as client:
         yield SimpleNamespace(
@@ -427,6 +430,131 @@ def test_event_writer_drops_sensitive_and_arbitrary_fields(pg_db, users):
         "expires_at": row["expires_at"],
     }
     assert row["expires_at"] > row["occurred_at"]
+
+
+_SMUGGLED_VALUES = (
+    "so dien thoai rieng tu",
+    "203.0.113.8",
+    "2001:db8::1",
+    "10.25,105.97",
+    '{"metadata":"private"}',
+)
+
+
+@pytest.mark.parametrize(
+    "carrier",
+    ("event_type", "context", "entity_id", "entity_type", "area_id", "interest_keys"),
+)
+@pytest.mark.parametrize("smuggled", _SMUGGLED_VALUES)
+def test_direct_writer_rejects_sensitive_text_in_every_allowed_carrier(
+    pg_db, users, carrier, smuggled
+):
+    owner, _ = users
+    event = {
+        "event_type": "entity_view",
+        "context": "entity",
+        "entity_id": "entity-1",
+        "entity_type": "dish",
+        "area_id": "province-vl",
+        "interest_keys": ["food"],
+    }
+    event[carrier] = [smuggled] if carrier == "interest_keys" else smuggled
+
+    with pytest.raises(personalization_events.PersonalizationEventError):
+        write_personalization_event(owner, event)
+
+    with pg_db._conn(commit_on_success=False) as conn:
+        row = pg_db._fetchone(
+            conn, "SELECT COUNT(*) AS count FROM user_personalization_events"
+        )
+    assert pg_db._row_to_dict(row)["count"] == 0
+
+
+@pytest.mark.parametrize(
+    ("carrier", "smuggled"),
+    (
+        ("event_type", "so dien thoai rieng tu"),
+        ("context", "203.0.113.8"),
+        ("entity_id", "2001:db8::1"),
+        ("entity_type", "10.25,105.97"),
+        ("area_id", '{"metadata":"private"}'),
+        ("interest_keys", "so dien thoai rieng tu"),
+    ),
+)
+def test_event_route_rejects_smuggling_without_storage_export_or_scoring(
+    auth_client, pg_db, carrier, smuggled
+):
+    _set_preferences(pg_db, auth_client.owner, personalization_enabled=True)
+    payload = {
+        "event_type": "entity_view",
+        "context": "entity",
+        "entity_id": "entity-1",
+        "entity_type": "dish",
+        "area_id": "province-vl",
+        "interest_keys": ["food"],
+    }
+    payload[carrier] = [smuggled] if carrier == "interest_keys" else smuggled
+
+    response = auth_client.client.post(
+        "/api/me/events", json=payload, headers=auth_client.csrf_headers
+    )
+    exported = auth_client.client.get(
+        "/auth/export-data", headers=auth_client.headers
+    )
+    profile = public_api._build_user_interest_profile(auth_client.owner)
+
+    assert response.status_code == 422
+    assert response.json() == {"detail": "Invalid personalization event"}
+    assert smuggled not in response.text
+    assert exported.status_code == 200
+    assert exported.json()["personalization"]["events"] == []
+    assert profile["interests"] == []
+    assert profile["areas"] == []
+    assert profile["types"] == []
+
+
+@pytest.mark.parametrize(
+    "entity_id", ("entity-with-many---hyphens", "b63c1f9d-41ca-43b7-9b30-c3910b893af3")
+)
+def test_direct_writer_accepts_normalized_slug_and_uuid_identifiers(
+    pg_db, users, entity_id
+):
+    owner, _ = users
+
+    write_personalization_event(
+        owner,
+        {
+            "event_type": "entity_view",
+            "context": "entity",
+            "entity_id": entity_id,
+            "entity_type": "dish",
+            "area_id": "province-vl",
+            "interest_keys": ["food"],
+        },
+    )
+
+    assert read_personalization_events(owner, cutoff=None)[0]["entity_id"] == entity_id
+
+
+@pytest.mark.parametrize("carrier", ("entity_id", "area_id"))
+def test_direct_writer_rejects_oversized_identifiers_instead_of_truncating(
+    pg_db, users, carrier
+):
+    owner, _ = users
+    event = {
+        "event_type": "entity_view",
+        "context": "entity",
+        "entity_id": "entity-1",
+        "entity_type": "dish",
+        "area_id": "province-vl",
+        "interest_keys": ["food"],
+    }
+    event[carrier] = "a" * 201
+
+    with pytest.raises(personalization_events.PersonalizationEventError):
+        write_personalization_event(owner, event)
+
+    assert read_personalization_events(owner, cutoff=None) == []
 
 
 def test_event_reader_uses_strict_cutoff_expiry_and_hard_limit(pg_db, users):
@@ -594,6 +722,72 @@ def test_legacy_purge_preserves_unrecognized_lines(tmp_path, monkeypatch, users)
 
     assert "unrecognized legacy line" in path.read_text(encoding="utf-8")
     assert f'"user_id": "{other}"' in path.read_text(encoding="utf-8")
+
+
+def test_legacy_purge_preserves_valid_unknown_json_objects(
+    tmp_path, monkeypatch, users
+):
+    owner, other = users
+    path = tmp_path / "legacy-events.jsonl"
+    seed_legacy_events(path, [owner, other])
+    unknown = {
+        "user_id": owner,
+        "ts": "2026-07-01T00:00:00+00:00",
+        "event_type": "entity_view",
+        "context": "entity",
+        "record_type": "future_workspace_record",
+        "payload": {"keep": True},
+    }
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(unknown) + "\n")
+    monkeypatch.setattr(personalization_events, "LEGACY_EVENTS_PATH", path)
+    monkeypatch.setattr(
+        personalization_events,
+        "LEGACY_EVENTS_LOCK_PATH",
+        tmp_path / ".legacy-events.publication.lock",
+    )
+
+    assert purge_legacy_events(user_id=owner) == 1
+
+    rows = read_all_legacy_events(path)
+    assert unknown in rows
+    recognized = [row for row in rows if row != unknown]
+    assert [row["user_id"] for row in recognized] == [other]
+
+
+def test_legacy_purge_user_and_before_filters_only_recognized_events(
+    tmp_path, monkeypatch, users
+):
+    owner, other = users
+    path = tmp_path / "legacy-events.jsonl"
+    seed_legacy_events(path, [owner, owner, other])
+    unknown = {
+        "user_id": owner,
+        "ts": "2026-07-01T00:00:00+00:00",
+        "event_type": "entity_view",
+        "context": "entity",
+        "record_type": "future_workspace_record",
+    }
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(unknown) + "\n")
+    monkeypatch.setattr(personalization_events, "LEGACY_EVENTS_PATH", path)
+    monkeypatch.setattr(
+        personalization_events,
+        "LEGACY_EVENTS_LOCK_PATH",
+        tmp_path / ".legacy-events.publication.lock",
+    )
+
+    removed_before = purge_legacy_events(
+        before=datetime(2026, 7, 1, 12, tzinfo=timezone.utc)
+    )
+    removed_owner = purge_legacy_events(user_id=owner)
+
+    assert removed_before == 1
+    assert removed_owner == 1
+    rows = read_all_legacy_events(path)
+    assert unknown in rows
+    recognized = [row for row in rows if row != unknown]
+    assert [row["user_id"] for row in recognized] == [other]
 
 
 def test_repeated_reset_route_keeps_one_monotonic_cutoff(logged_in_client, pg_db):
@@ -1023,6 +1217,81 @@ def test_scheduler_ttl_cleanup_deletes_only_expired_events(pg_db, users):
         )
     assert pg_db._row_to_dict(count)["count"] == 1
     assert any(task.name == "personalization-cleanup" for task in scheduler.TASKS)
+
+
+def test_scheduler_legacy_failure_rolls_back_user_and_postgres_purge_for_retry(
+    pg_db, users, tmp_path, monkeypatch
+):
+    stale, active = users
+    with pg_db._conn() as conn:
+        pg_db._execute(
+            conn,
+            "UPDATE users SET deleted_at = NOW() - INTERVAL '31 days', "
+            "is_active = FALSE WHERE id = %s::uuid",
+            (stale,),
+        )
+    for user_id in (stale, active):
+        _set_preferences(pg_db, user_id, personalization_enabled=True)
+        with pg_db._conn() as conn:
+            pg_db._execute(
+                conn,
+                "INSERT INTO user_preference_consents "
+                "(id, user_id, consent_type, state, version) "
+                "VALUES (%s, %s::uuid, 'personalization', 'granted', 'privacy-v1')",
+                (str(uuid4()), user_id),
+            )
+        write_personalization_event(
+            user_id, {"event_type": "entity_view", "context": "entity"}
+        )
+    path = tmp_path / "legacy-events.jsonl"
+    lock_path = tmp_path / ".legacy-events.publication.lock"
+    seed_legacy_events(path, [stale, active])
+    monkeypatch.setattr(personalization_events, "LEGACY_EVENTS_PATH", path)
+    monkeypatch.setattr(personalization_events, "LEGACY_EVENTS_LOCK_PATH", lock_path)
+
+    with monkeypatch.context() as failure_patch:
+        failure_patch.setattr(
+            personalization_events,
+            "purge_legacy_events",
+            lambda **_kwargs: (_ for _ in ()).throw(OSError("legacy purge failed")),
+        )
+        scheduler.task_session_cleanup()
+
+    with pg_db._conn(commit_on_success=False) as conn:
+        failed_counts = pg_db._fetchone(
+            conn,
+            "SELECT "
+            "(SELECT COUNT(*) FROM users) AS users, "
+            "(SELECT COUNT(*) FROM user_preferences) AS preferences, "
+            "(SELECT COUNT(*) FROM user_preference_consents) AS consents, "
+            "(SELECT COUNT(*) FROM user_personalization_events) AS events",
+        )
+    assert pg_db._row_to_dict(failed_counts) == {
+        "users": 2,
+        "preferences": 2,
+        "consents": 2,
+        "events": 2,
+    }
+    assert [row["user_id"] for row in read_all_legacy_events(path)] == [stale, active]
+
+    scheduler.task_session_cleanup()
+
+    with pg_db._conn(commit_on_success=False) as conn:
+        successful_counts = pg_db._fetchone(
+            conn,
+            "SELECT "
+            "(SELECT COUNT(*) FROM users) AS users, "
+            "(SELECT COUNT(*) FROM user_preferences) AS preferences, "
+            "(SELECT COUNT(*) FROM user_preference_consents) AS consents, "
+            "(SELECT COUNT(*) FROM user_personalization_events) AS events",
+        )
+    assert pg_db._row_to_dict(successful_counts) == {
+        "users": 1,
+        "preferences": 1,
+        "consents": 1,
+        "events": 1,
+    }
+    assert [row["user_id"] for row in read_all_legacy_events(path)] == [active]
 
 
 def test_scheduler_final_delete_purges_only_matching_legacy_rows(

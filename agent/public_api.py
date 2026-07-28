@@ -66,6 +66,9 @@ from location_resolver import (
     resolve_ip,
 )
 from personalization_events import (
+    PERSONALIZATION_CONTEXTS,
+    PERSONALIZATION_EVENT_TYPES,
+    PersonalizationEventError,
     read_legacy_events_if_allowed,
     read_personalization_events,
     record_recommendation_reset,
@@ -366,11 +369,8 @@ def _log_search_query(q: str, entity_type: str | None, area: str | None, total: 
         logger.debug("search log write failed", exc_info=True)
 
 
-_VALID_USER_EVENT_TYPES = {
-    "entity_view", "search", "save_add", "save_remove", "visit_mark",
-    "community_view", "post_view", "map_focus", "itinerary_view",
-}
-_VALID_RECOMMENDATION_CONTEXTS = {"home", "entity", "search", "saved", "map", "itinerary", "community"}
+_VALID_USER_EVENT_TYPES = PERSONALIZATION_EVENT_TYPES
+_VALID_RECOMMENDATION_CONTEXTS = PERSONALIZATION_CONTEXTS - {"unknown"}
 _EVENT_WEIGHTS = {
     "save_add": 5.0,
     "visit_mark": 4.0,
@@ -1106,34 +1106,25 @@ async def resolve_my_location(
              summary="Track a user experience event",
              description="Stores a bounded first-party event for personalized recommendations. Requires login and CSRF.")
 async def track_user_event(
-    body: UserEventIn,
     response: Response,
+    body: Any = Body(...),
     user=Depends(require_user),
     _csrf=Depends(require_csrf),
 ):
     from ratelimit import check_rate
-    event_type = (body.event_type or "").strip().lower()
-    if event_type not in _VALID_USER_EVENT_TYPES:
-        raise HTTPException(400, "event_type khong hop le")
-    context = _clean_short_text(body.context, 64) or "unknown"
-    if context not in _VALID_RECOMMENDATION_CONTEXTS and context != "search_submit":
-        context = "home"
-    entity_id = (
-        validate_path_id(body.entity_id, "entity_id") if body.entity_id else None
-    )
+    try:
+        validated = UserEventIn.model_validate(body)
+    except ValidationError:
+        raise HTTPException(422, "Invalid personalization event") from None
     check_rate(f"user-event:{user['id']}", 120, 300, "Too many events")
-    await asyncio.to_thread(
-        write_personalization_event,
-        str(user["id"]),
-        {
-            "event_type": event_type,
-            "context": context,
-            "entity_id": entity_id,
-            "entity_type": body.entity_type,
-            "area_id": body.area_id,
-            "interest_keys": body.interest_keys,
-        },
-    )
+    try:
+        await asyncio.to_thread(
+            write_personalization_event,
+            str(user["id"]),
+            validated.model_dump(),
+        )
+    except PersonalizationEventError:
+        raise HTTPException(422, "Invalid personalization event") from None
     response.headers["Cache-Control"] = "no-store"
     return {"accepted": True}
 
