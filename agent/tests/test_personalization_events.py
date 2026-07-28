@@ -557,6 +557,136 @@ def test_direct_writer_rejects_oversized_identifiers_instead_of_truncating(
     assert read_personalization_events(owner, cutoff=None) == []
 
 
+_IDENTIFIER_SHAPED_SENSITIVE_VALUES = (
+    "0901234567",
+    "203-0-113-8",
+    "10-2500-105-9700",
+)
+
+
+@pytest.mark.parametrize("carrier", ("entity_id", "area_id"))
+@pytest.mark.parametrize("sensitive", _IDENTIFIER_SHAPED_SENSITIVE_VALUES)
+def test_direct_writer_rejects_identifier_shaped_sensitive_values(
+    pg_db, users, carrier, sensitive
+):
+    owner, _ = users
+    event = {
+        "event_type": "entity_view",
+        "context": "entity",
+        "entity_id": "entity-1",
+        "entity_type": "dish",
+        "area_id": "province-vl",
+        "interest_keys": ["food"],
+    }
+    event[carrier] = sensitive
+
+    with pytest.raises(personalization_events.PersonalizationEventError):
+        write_personalization_event(owner, event)
+
+    assert read_personalization_events(owner, cutoff=None) == []
+
+
+@pytest.mark.parametrize("carrier", ("entity_id", "area_id"))
+@pytest.mark.parametrize("sensitive", _IDENTIFIER_SHAPED_SENSITIVE_VALUES)
+def test_event_route_rejects_identifier_shaped_sensitive_values_without_use(
+    auth_client, pg_db, carrier, sensitive
+):
+    _set_preferences(pg_db, auth_client.owner, personalization_enabled=True)
+    payload = {
+        "event_type": "entity_view",
+        "context": "entity",
+        "entity_id": "entity-1",
+        "entity_type": "dish",
+        "area_id": "province-vl",
+        "interest_keys": ["food"],
+    }
+    payload[carrier] = sensitive
+
+    response = auth_client.client.post(
+        "/api/me/events", json=payload, headers=auth_client.csrf_headers
+    )
+    exported = auth_client.client.get(
+        "/auth/export-data", headers=auth_client.headers
+    )
+    profile = public_api._build_user_interest_profile(auth_client.owner)
+
+    assert response.status_code == 422
+    assert response.json() == {"detail": "Invalid personalization event"}
+    assert sensitive not in response.text
+    assert exported.status_code == 200
+    assert exported.json()["personalization"]["events"] == []
+    assert profile["signal_count"] == 0
+    assert profile["recent_entity_ids"] == []
+    assert profile["areas"] == []
+    assert profile["types"] == []
+
+
+@pytest.mark.parametrize(
+    ("payload", "expected"),
+    (
+        (
+            {
+                "event_type": "search",
+                "context": "search_trending",
+                "query": "bun nuoc leo",
+                "metadata": {},
+            },
+            {
+                "event_type": "search",
+                "context": "search_trending",
+                "entity_id": None,
+                "entity_type": None,
+                "area_id": None,
+            },
+        ),
+        (
+            {
+                "event_type": "search",
+                "context": "search_submit",
+                "query": "buoi nam roi",
+                "metadata": {},
+            },
+            {
+                "event_type": "search",
+                "context": "search_submit",
+                "entity_id": None,
+                "entity_type": None,
+                "area_id": None,
+            },
+        ),
+        (
+            {
+                "event_type": "entity_view",
+                "context": "entity",
+                "entity_id": "craft_village_x",
+                "entity_type": "economy",
+                "entity_name": "Canonical entity",
+                "area": "province-vl",
+                "metadata": {},
+            },
+            {
+                "event_type": "entity_view",
+                "context": "entity",
+                "entity_id": "craft_village_x",
+                "entity_type": "economy",
+                "area_id": None,
+            },
+        ),
+    ),
+)
+def test_event_route_accepts_live_frontend_and_canonical_entity_contracts(
+    auth_client, payload, expected
+):
+    response = auth_client.client.post(
+        "/api/me/events", json=payload, headers=auth_client.csrf_headers
+    )
+
+    assert response.status_code == 202, response.text
+    assert response.headers["Cache-Control"] == "no-store"
+    row = read_personalization_events(auth_client.owner, cutoff=None)[0]
+    assert {key: row[key] for key in expected} == expected
+
+
 def test_event_reader_uses_strict_cutoff_expiry_and_hard_limit(pg_db, users):
     owner, _ = users
     cutoff = datetime(2026, 2, 1, tzinfo=timezone.utc)

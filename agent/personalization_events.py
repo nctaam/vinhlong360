@@ -14,6 +14,7 @@ from uuid import UUID, uuid4
 
 from config import settings
 from database import db
+from entity_schemas import valid_types
 from user_preferences import PreferenceSnapshot, _row_snapshot
 from versioned_json_store import fsync_directory, publication_lock
 
@@ -36,33 +37,28 @@ PERSONALIZATION_EVENT_TYPES = frozenset(
     }
 )
 PERSONALIZATION_CONTEXTS = frozenset(
-    {"community", "entity", "home", "itinerary", "map", "saved", "search", "unknown"}
-)
-PERSONALIZATION_ENTITY_TYPES = frozenset(
     {
-        "accommodation",
-        "attraction",
-        "cafe",
-        "craft_village",
-        "dish",
-        "drink",
-        "event",
-        "experience",
-        "facility",
-        "history",
+        "community",
+        "entity",
+        "home",
         "itinerary",
-        "nature",
-        "organization",
-        "person",
-        "place",
-        "product",
-        "restaurant",
+        "map",
+        "saved",
+        "search",
+        "search_submit",
+        "search_trending",
+        "unknown",
     }
 )
+PERSONALIZATION_ENTITY_TYPES = frozenset(valid_types())
 PERSONALIZATION_INTEREST_KEYS = frozenset(
     {"craft", "culture", "food", "garden", "local_products", "stay"}
 )
-_NORMALIZED_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,199}$")
+_NORMALIZED_ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,199}$")
+_PHONE_LIKE_ID_RE = re.compile(r"^\d{8,15}$")
+_ENCODED_NUMERIC_ID_RE = re.compile(
+    r"^(\d{1,3})[-_](\d{1,6})[-_](\d{1,3})[-_](\d{1,6})$"
+)
 _LEGACY_EVENT_FIELDS = frozenset(
     {
         "ts",
@@ -121,9 +117,23 @@ def _optional_identifier(value: Any, field: str) -> str | None:
     normalized = _bounded_text(value, 200, lower=True)
     if normalized is None:
         return None
-    if not _NORMALIZED_ID_RE.fullmatch(normalized):
+    if not _NORMALIZED_ID_RE.fullmatch(normalized) or _looks_sensitive_id(normalized):
         raise PersonalizationEventError(f"Invalid {field}")
     return normalized
+
+
+def _looks_sensitive_id(value: str) -> bool:
+    if _PHONE_LIKE_ID_RE.fullmatch(value):
+        return True
+    match = _ENCODED_NUMERIC_ID_RE.fullmatch(value)
+    if match is None:
+        return False
+    first, first_fraction, second, second_fraction = match.groups()
+    if all(int(part) <= 255 for part in match.groups()):
+        return True
+    latitude = float(f"{first}.{first_fraction}")
+    longitude = float(f"{second}.{second_fraction}")
+    return latitude <= 90 and longitude <= 180
 
 
 def _optional_controlled_key(
