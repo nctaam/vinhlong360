@@ -420,6 +420,42 @@ def test_numeric_region_label_matching_coordinate_is_preserved():
     assert result.region_label == "Phuong 1"
 
 
+def test_provider_cannot_echo_integer_gps_pair_in_result():
+    echoed_coordinates = "near 1 and 106"
+    result = resolve_gps(
+        1.0,
+        106.0,
+        reverse_geocoder=lambda *_: {
+            "region_id": "ward-1",
+            "region_label": echoed_coordinates,
+        },
+    )
+
+    assert echoed_coordinates not in repr(result)
+
+
+def test_provider_cannot_echo_integer_gps_pair_in_route_response(
+    client, logged_in_user
+):
+    echoed_coordinates = "near 1 and 106"
+    client.app.dependency_overrides[public_api.get_reverse_geocoder] = lambda: (
+        lambda *_: {
+            "region_id": "ward-1",
+            "region_label": echoed_coordinates,
+        }
+    )
+
+    response = client.post(
+        "/api/me/location/resolve",
+        json={"mode": "gps", "latitude": 1, "longitude": 106},
+        headers=logged_in_user.csrf_headers,
+    )
+
+    assert response.status_code == 200
+    assert echoed_coordinates not in response.text
+    assert {"latitude", "longitude"}.isdisjoint(response.json())
+
+
 def test_provider_cannot_echo_expanded_ipv6_representation():
     expanded_ip = "2001:0db8:0000:0000:0000:0000:0000:0001"
     result = resolve_ip(

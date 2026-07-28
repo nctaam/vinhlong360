@@ -20,9 +20,15 @@ MAX_REGION_LABEL_LENGTH = 160
 REGION_SCOPES = frozenset({"ward", "district", "province", "all", "unknown"})
 LOCATION_ACCURACIES = frozenset({"ward", "district", "province", "unknown"})
 _REGION_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$")
+_NUMBER_PATTERN = r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?"
 _NUMBER_RE = re.compile(
-    r"(?<![A-Za-z0-9_.])[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?"
-    r"(?![A-Za-z0-9_.])"
+    rf"(?<![A-Za-z0-9_.]){_NUMBER_PATTERN}(?![A-Za-z0-9_.])"
+)
+_COORDINATE_PAIR_RE = re.compile(
+    rf"(?<![A-Za-z0-9_.])(?P<first>{_NUMBER_PATTERN})(?![A-Za-z0-9_.])"
+    rf"\s*(?:,|;|/|\band\b|\bva\b|\bvà\b)\s*"
+    rf"(?<![A-Za-z0-9_.])(?P<second>{_NUMBER_PATTERN})(?![A-Za-z0-9_.])",
+    re.IGNORECASE,
 )
 _DMS_RE = re.compile(
     r"(?P<degrees>[+-]?\d{1,3})\s*[°º]\s*"
@@ -133,6 +139,21 @@ def _matches_coordinate(candidate: float, coordinates: tuple[float, float]) -> b
     return any(math.isclose(candidate, value, abs_tol=1e-9) for value in coordinates)
 
 
+def _matches_coordinate_pair(
+    first: float,
+    second: float,
+    coordinates: tuple[float, float],
+) -> bool:
+    latitude, longitude = coordinates
+    return (
+        math.isclose(first, latitude, abs_tol=1e-9)
+        and math.isclose(second, longitude, abs_tol=1e-9)
+    ) or (
+        math.isclose(first, longitude, abs_tol=1e-9)
+        and math.isclose(second, latitude, abs_tol=1e-9)
+    )
+
+
 def _coordinate_value(value: Any, minimum: float, maximum: float) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise LocationInputError("Invalid location input")
@@ -150,6 +171,11 @@ def _contains_gps_echo(
 ) -> bool:
     coordinates = (latitude, longitude)
     for text in _returned_text(resolution):
+        for match in _COORDINATE_PAIR_RE.finditer(text):
+            first = float(match.group("first"))
+            second = float(match.group("second"))
+            if _matches_coordinate_pair(first, second, coordinates):
+                return True
         for match in _DMS_RE.finditer(text):
             degrees = float(match.group("degrees"))
             minutes = float(match.group("minutes"))
