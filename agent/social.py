@@ -3862,6 +3862,10 @@ def _profile_is_follower(conn, ph, is_self, vis, viewer_id, resolved_id):
     return False
 
 
+_PROFILE_PRIVACY_LOAD_FAILED = object()
+_PROFILE_PRIVACY_LOAD_FAILED_VISIBILITY = "privacy_load_failed"
+
+
 def _profile_load_privacy(conn, ph, resolved_id):
     """Nạp privacy settings cho profile (extract-method thuần từ get_user_profile._query)."""
     try:
@@ -3869,7 +3873,11 @@ def _profile_load_privacy(conn, ph, resolved_id):
         if prow:
             return db._row_to_dict(prow)
     except Exception:
-        logger.warning("Failed to load privacy settings for user %s", resolved_id)
+        logger.warning(
+            "Failed to load privacy settings for user %s", resolved_id,
+            exc_info=True,
+        )
+        return _PROFILE_PRIVACY_LOAD_FAILED
     return None
 
 
@@ -3924,10 +3932,15 @@ def _profile_query(ph, user_id, _is_uuid, viewer_id):
             WHERE follower_id::text = {ph} AND target_type = 'user'
         """, (resolved_id,))
 
-        privacy = _profile_load_privacy(conn, ph, resolved_id)
-
-        vis = privacy["profile_visibility"] if privacy else ("public" if is_self else "followers_only")
-        is_follower = _profile_is_follower(conn, ph, is_self, vis, viewer_id, resolved_id)
+        privacy_result = _profile_load_privacy(conn, ph, resolved_id)
+        if privacy_result is _PROFILE_PRIVACY_LOAD_FAILED:
+            privacy = None
+            vis = "public" if is_self else _PROFILE_PRIVACY_LOAD_FAILED_VISIBILITY
+            is_follower = False
+        else:
+            privacy = privacy_result
+            vis = privacy["profile_visibility"] if privacy else ("public" if is_self else "followers_only")
+            is_follower = _profile_is_follower(conn, ph, is_self, vis, viewer_id, resolved_id)
 
         viewer_following = False
         viewer_blocked = False
@@ -4288,30 +4301,6 @@ def get_trending_posts(limit: int = 10, entity_type: str = None) -> list[dict]:
             LIMIT {ph}
         """, params)
     return [db._row_to_dict(r) for r in rows]
-
-
-# ── Format helpers ──
-
-
-def _check_show_activity(target_uid: str, viewer_uid: str | None) -> bool:
-    """Return True if target user's activity is hidden from viewer (privacy enforcement)."""
-    ph = db._ph
-    with db._conn() as conn:
-        prow = db._fetchone(conn, f"""
-            SELECT show_activity FROM user_privacy WHERE user_id = {ph}::uuid
-        """, (target_uid,))
-        if not prow:
-            return False
-        d = db._row_to_dict(prow)
-        if d.get("show_activity", True) in (True, None):
-            return False
-        if not viewer_uid:
-            return True
-        follower = db._fetchone(conn, f"""
-            SELECT 1 FROM follows
-            WHERE follower_id = {ph}::uuid AND target_type = 'user' AND target_id = {ph}
-        """, (viewer_uid, target_uid))
-        return follower is None
 
 
 def _resolve_user_id(user_id: str) -> str | None:

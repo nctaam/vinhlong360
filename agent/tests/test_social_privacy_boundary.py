@@ -86,6 +86,68 @@ def _deny_data_queries(monkeypatch, module):
     monkeypatch.setattr(module.db, "_fetchall", _unexpected_query)
 
 
+def _stub_profile_query_dependencies(monkeypatch, *, is_self, privacy_outcome):
+    profile = {
+        "id": USER_ID,
+        "username": "privacy-profile",
+        "display_name": "Privacy Profile",
+        "avatar_url": "/avatar.webp",
+        "cover_url": "/cover.webp",
+        "bio": "Visible only when privacy policy allows it.",
+        "created_at": "2026-07-12T08:30:00+00:00",
+        "login_streak": 9,
+    }
+    privacy_row = {
+        "profile_visibility": "public",
+        "show_activity": True,
+        "show_saved": True,
+    }
+    fetch_count = 0
+
+    def _fetchone(_conn, _sql, _params):
+        nonlocal fetch_count
+        fetch_count += 1
+        if fetch_count == 1:
+            return {"total": 12, "reviews": 3}
+        if fetch_count == 2:
+            return {"c": 4}
+        if fetch_count == 3:
+            if privacy_outcome == "fetch_error":
+                raise RuntimeError("privacy fetch failed")
+            if privacy_outcome == "missing":
+                return None
+            return privacy_row
+        raise AssertionError("unexpected profile query")
+
+    def _row_to_dict(row):
+        if privacy_outcome == "conversion_error" and row is privacy_row:
+            raise ValueError("privacy row conversion failed")
+        return row
+
+    follower_checks = {"count": 0}
+
+    def _is_follower(*_args):
+        follower_checks["count"] += 1
+        return True
+
+    monkeypatch.setattr(social.db, "_conn", _fake_conn)
+    monkeypatch.setattr(social.db, "_fetchone", _fetchone)
+    monkeypatch.setattr(social.db, "_row_to_dict", _row_to_dict)
+    monkeypatch.setattr(
+        social,
+        "_profile_resolve",
+        lambda *_args: (profile, USER_ID, is_self, False),
+    )
+    monkeypatch.setattr(social, "_reputation", lambda *_args: {"followers": 7})
+    monkeypatch.setattr(social, "_profile_is_follower", _is_follower)
+    monkeypatch.setattr(
+        social, "_profile_viewer_rel", lambda *_args: (True, False, False)
+    )
+    monkeypatch.setattr(social, "_profile_view_count_7d", lambda *_args: 0)
+    monkeypatch.setattr(social, "_log_profile_view_threaded", lambda *_args: None)
+    return profile, follower_checks
+
+
 class _FetchSequence:
     def __init__(self, *rows):
         self._rows = list(rows)
@@ -328,7 +390,6 @@ def test_missing_privacy_defaults_to_follower_relationships_without_activity(
 
 def test_hidden_user_posts_returns_existing_empty_shape(monkeypatch):
     monkeypatch.setattr(social, "_resolve_user_id", lambda _user_id: USER_ID)
-    monkeypatch.setattr(social, "_check_show_activity", lambda *_args: False)
     _stub_profile_decision(
         monkeypatch,
         social,
@@ -347,7 +408,6 @@ def test_hidden_user_posts_returns_existing_empty_shape(monkeypatch):
 
 def test_hidden_user_reviews_returns_existing_empty_shape(monkeypatch):
     monkeypatch.setattr(social, "_resolve_user_id", lambda _user_id: USER_ID)
-    monkeypatch.setattr(social, "_check_show_activity", lambda *_args: False)
     _stub_profile_decision(
         monkeypatch,
         social,
@@ -426,16 +486,20 @@ def test_anonymous_hidden_engagement_returns_zero_shape(monkeypatch):
     )
     _deny_data_queries(monkeypatch, public_api)
 
+    response = Response()
     result = asyncio.run(
         public_api.user_engagement_stats(
             USER_ID,
             request=_request(None),
-            response=Response(),
+            response=response,
             user=None,
         )
     )
 
     assert result == HIDDEN_ENGAGEMENT
+    assert response.headers["Cache-Control"] == (
+        "public, max-age=60, stale-while-revalidate=120"
+    )
 
 
 def test_authorized_follower_engagement_returns_approved_stats(monkeypatch):
@@ -567,6 +631,52 @@ def test_get_user_profile_restricts_followers_visibility_for_nonfollower(monkeyp
     assert result["user"]["stats"]["posts"] == 0
     assert result["user"]["stats"]["reviews"] == 0
     assert result["user"]["reputation"] is None
+
+
+@pytest.mark.parametrize("privacy_outcome", ["fetch_error", "conversion_error"])
+def test_profile_privacy_load_failure_restricts_nonself_follower(
+    monkeypatch, privacy_outcome
+):
+    profile, follower_checks = _stub_profile_query_dependencies(
+        monkeypatch, is_self=False, privacy_outcome=privacy_outcome
+    )
+
+    result = asyncio.run(
+        social.get_user_profile(profile["id"], user={"id": VIEWER_ID})
+    )
+
+    assert result["user"]["is_private"] is True
+    assert result["user"]["bio"] == ""
+    assert result["user"]["stats"]["posts"] == 0
+    assert follower_checks["count"] == 0
+
+
+def test_profile_missing_privacy_keeps_follower_fallback(monkeypatch):
+    profile, follower_checks = _stub_profile_query_dependencies(
+        monkeypatch, is_self=False, privacy_outcome="missing"
+    )
+
+    result = asyncio.run(
+        social.get_user_profile(profile["id"], user={"id": VIEWER_ID})
+    )
+
+    assert result["user"].get("is_private") is not True
+    assert result["user"]["bio"] == profile["bio"]
+    assert follower_checks["count"] == 1
+
+
+def test_profile_privacy_load_failure_keeps_self_compatible(monkeypatch):
+    profile, follower_checks = _stub_profile_query_dependencies(
+        monkeypatch, is_self=True, privacy_outcome="fetch_error"
+    )
+
+    result = asyncio.run(
+        social.get_user_profile(profile["id"], user={"id": USER_ID})
+    )
+
+    assert result["user"].get("is_private") is not True
+    assert result["user"]["bio"] == profile["bio"]
+    assert follower_checks["count"] == 0
 
 
 @pytest.mark.parametrize(

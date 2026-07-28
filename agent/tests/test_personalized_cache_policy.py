@@ -34,11 +34,14 @@ def _vary_parts(response):
     return {part.strip().lower() for part in response.headers["Vary"].split(",")}
 
 
-def test_authenticated_api_response_overrides_public_cache():
-    request = _request("/api/search")
+def test_authenticated_engagement_response_overrides_public_cache():
+    request = _request(f"/api/users/{USER_ID}/engagement")
     request.state.authenticated_user_id = USER_ID
     response = Response(
-        headers={"Cache-Control": "public, max-age=30", "Vary": "Accept-Encoding"}
+        headers={
+            "Cache-Control": "public, max-age=60, stale-while-revalidate=120",
+            "Vary": "Accept-Encoding",
+        }
     )
 
     server._apply_final_cache_policy(request, response)
@@ -52,15 +55,20 @@ def test_authenticated_api_response_overrides_public_cache():
     }
 
 
-def test_anonymous_public_api_cache_survives():
-    request = _request("/api/entities/map")
+def test_anonymous_engagement_cache_ttl_survives():
+    request = _request(f"/api/users/{USER_ID}/engagement")
     response = Response(
-        headers={"Cache-Control": "public, max-age=30", "Vary": "Accept-Encoding"}
+        headers={
+            "Cache-Control": "public, max-age=60, stale-while-revalidate=120",
+            "Vary": "Accept-Encoding",
+        }
     )
 
     server._apply_final_cache_policy(request, response)
 
-    assert response.headers["Cache-Control"] == "public, max-age=30"
+    assert response.headers["Cache-Control"] == (
+        "public, max-age=60, stale-while-revalidate=120"
+    )
     assert _vary_parts(response) == {
         "accept-encoding",
         "authorization",

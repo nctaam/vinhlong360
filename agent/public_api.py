@@ -3400,8 +3400,7 @@ async def user_engagement_stats(
             "followers": 0,
             "total_likes_received": 0,
         }
-    # Access depends on the authenticated viewer, so shared caches must not reuse it.
-    response.headers["Cache-Control"] = "private, no-store"
+    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
     return result
 
 
