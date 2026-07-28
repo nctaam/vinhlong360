@@ -36,6 +36,15 @@ from pydantic import BaseModel, Field, field_validator
 
 from config import settings as _cfg
 from database import db
+from personalization_events import (
+    read_legacy_events_if_allowed,
+    read_personalization_events,
+)
+from user_preferences import (
+    load_preference_consents,
+    load_preferences,
+    recommendation_cutoff,
+)
 
 
 async def _require_csrf_lazy(request: Request) -> None:
@@ -1648,7 +1657,7 @@ async def update_privacy(body: PrivacyUpdate, request: Request, _csrf=Depends(_r
 @router.get("/export-data",
             summary="Export all user data",
             description="Exports all data associated with the authenticated user for GDPR compliance. Includes profile, posts, comments, likes, bookmarks, follows, visits, reactions, collections, blocks, and mutes.")
-async def export_user_data(request: Request):
+async def export_user_data(request: Request, response: Response):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
@@ -1728,11 +1737,29 @@ async def export_user_data(request: Request):
         }
 
     ugc = await asyncio.to_thread(_query)
+    preferences = await asyncio.to_thread(load_preferences, uid)
+    preference_consents = await asyncio.to_thread(load_preference_consents, uid)
+    personalization_events = await asyncio.to_thread(
+        read_personalization_events, uid, None
+    )
+    legacy_events = await asyncio.to_thread(
+        read_legacy_events_if_allowed,
+        uid,
+        recommendation_cutoff(preferences),
+        datetime.now(timezone.utc),
+    )
     profile = _safe_user(user)
     profile["bio"] = user.get("bio", "")
+    response.headers["Cache-Control"] = "no-store"
     return {
         "profile": profile,
         "data": ugc,
+        "personalization": {
+            "preferences": preferences,
+            "consents": preference_consents,
+            "events": personalization_events,
+            "legacy_events": legacy_events,
+        },
         "exported_at": datetime.now(timezone.utc).isoformat(),
     }
 

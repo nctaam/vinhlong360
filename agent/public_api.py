@@ -54,6 +54,7 @@ from user_preferences import (
     load_preference_consents,
     load_preferences,
     patch_preferences_with_consents,
+    recommendation_cutoff,
 )
 from location_resolver import (
     IpGeocoder,
@@ -63,6 +64,12 @@ from location_resolver import (
     get_reverse_geocoder,
     resolve_gps,
     resolve_ip,
+)
+from personalization_events import (
+    read_legacy_events_if_allowed,
+    read_personalization_events,
+    record_recommendation_reset,
+    write_personalization_event,
 )
 
 if __package__:
@@ -317,7 +324,6 @@ def invalidate_place_cache():
 # admin xem qua /admin/reports để xử lý (takedown/sửa). KHÔNG dùng DB/dịch vụ trả phí.
 REPORTS_FILE = Path(__file__).resolve().parent / "data" / "reports.jsonl"
 SEARCH_LOG_FILE = Path(__file__).resolve().parent / "data" / "search_queries.jsonl"
-USER_EVENTS_FILE = Path(__file__).resolve().parent / "data" / "user_events.jsonl"
 _VALID_TARGET_TYPES = {"facility", "entity", "post", "comment", "other"}
 
 _JSONL_MAX_LINES = 5000
@@ -376,6 +382,7 @@ _EVENT_WEIGHTS = {
     "post_view": 1.0,
     "save_remove": -2.0,
 }
+_EXPLICIT_INTEREST_BASE_SCORE = 1_000_000.0
 _INTEREST_RULES: dict[str, dict[str, Any]] = {
     "food": {
         "label": "Ẩm thực",
@@ -410,18 +417,20 @@ _INTEREST_RULES: dict[str, dict[str, Any]] = {
 }
 
 
-class UserEventIn(BaseModel):
-    event_type: str = Field(max_length=40)
-    context: Optional[str] = Field(None, max_length=40)
-    entity_id: Optional[str] = Field(None, max_length=200)
-    entity_type: Optional[str] = Field(None, max_length=60)
-    entity_name: Optional[str] = Field(None, max_length=300)
-    area: Optional[str] = Field(None, max_length=120)
-    query: Optional[str] = Field(None, max_length=200)
-    metadata: dict[str, Any] = Field(default_factory=dict)
-
-
 PreferenceInterest = Annotated[str, Field(max_length=64)]
+
+
+class UserEventIn(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    event_type: str = Field(max_length=64)
+    context: Optional[str] = Field(None, max_length=64)
+    entity_id: Optional[str] = Field(None, max_length=200)
+    entity_type: Optional[str] = Field(None, max_length=64)
+    area_id: Optional[str] = Field(None, max_length=200)
+    interest_keys: list[PreferenceInterest] = Field(default_factory=list, max_length=12)
+
+
 PreferenceTimestamp = Annotated[
     str, Field(max_length=MAX_RECOMMENDATION_RESET_AT_LENGTH)
 ]
@@ -471,25 +480,6 @@ def _clean_short_text(value: Any, max_len: int = 200) -> str | None:
     return text[:max_len]
 
 
-def _safe_event_metadata(value: Any) -> dict[str, Any]:
-    if not isinstance(value, dict):
-        return {}
-    out: dict[str, Any] = {}
-    for key, raw in list(value.items())[:12]:
-        k = _clean_short_text(key, 50)
-        if not k or k.startswith("__"):
-            continue
-        if isinstance(raw, (str, int, float, bool)) or raw is None:
-            out[k] = raw if not isinstance(raw, str) else raw[:300]
-        elif isinstance(raw, (list, tuple)):
-            out[k] = [str(x)[:120] for x in raw[:8]]
-        elif isinstance(raw, dict):
-            out[k] = {str(sk)[:50]: str(sv)[:120] for sk, sv in list(raw.items())[:8]}
-        else:
-            out[k] = str(raw)[:120]
-    return out
-
-
 def _entity_area(entity: dict | None) -> str:
     if not entity:
         return ""
@@ -528,56 +518,23 @@ def _label_for_interest(key: str) -> str:
     return str(rule.get("label") or key)
 
 
-def _log_user_event(user_id: str, body: UserEventIn, request: Request) -> None:
-    record = {
-        "ts": datetime.now(timezone.utc).isoformat(),
-        "user_id": str(user_id),
-        "event_type": body.event_type,
-        "context": body.context,
-        "entity_id": body.entity_id,
-        "entity_type": body.entity_type,
-        "entity_name": body.entity_name,
-        "area": body.area,
-        "query": body.query,
-        "metadata": _safe_event_metadata(body.metadata),
-        "ip_hash": hashlib.sha256(get_client_ip(request).encode("utf-8")).hexdigest()[:16],
-    }
-    with _jsonl_lock:
-        USER_EVENTS_FILE.parent.mkdir(exist_ok=True)
-        with open(USER_EVENTS_FILE, "a", encoding="utf-8") as f:
-            f.write(json.dumps(record, ensure_ascii=False) + "\n")
-        _maybe_rotate_jsonl(USER_EVENTS_FILE)
-
-
-def _read_user_events(user_id: str, limit: int = 300) -> list[dict]:
-    try:
-        if not USER_EVENTS_FILE.exists():
-            return []
-        rows: list[dict] = []
-        for line in reversed(USER_EVENTS_FILE.read_text(encoding="utf-8").splitlines()):
-            if not line.strip():
-                continue
-            try:
-                item = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            if str(item.get("user_id")) != str(user_id):
-                continue
-            rows.append(item)
-            if len(rows) >= limit:
-                break
-        return rows
-    except Exception:
-        logger.debug("user event read failed", exc_info=True)
-        return []
-
-
-def _load_user_signal_entities(user_id: str, limit: int = 80) -> list[tuple[dict, str]]:
+def _load_user_signal_entities(
+    user_id: str, cutoff: datetime | None = None, limit: int = 80
+) -> list[tuple[dict, str]]:
     if not db._use_pg:
         return []
     ph = db._ph
     uid = str(user_id)
     signals: list[tuple[dict, str]] = []
+    saved_cutoff = f" AND s.created_at > {ph}" if cutoff is not None else ""
+    visit_cutoff = f" AND v.created_at > {ph}" if cutoff is not None else ""
+    saved_params: list[Any] = [uid]
+    visit_params: list[Any] = [uid]
+    if cutoff is not None:
+        saved_params.append(cutoff)
+        visit_params.append(cutoff)
+    saved_params.append(limit // 2)
+    visit_params.append(limit // 2)
     try:
         with db._conn() as conn:
             saved_rows = db._fetchall(conn, f"""
@@ -586,18 +543,20 @@ def _load_user_signal_entities(user_id: str, limit: int = 80) -> list[tuple[dict
                 WHERE s.user_id = {ph}::uuid
                   AND COALESCE(e.status, '') != 'provisional'
                   AND (e.verified IS NULL OR e.verified != 0)
+                  {saved_cutoff}
                 ORDER BY s.created_at DESC
                 LIMIT {ph}
-            """, (uid, limit // 2))
+            """, saved_params)
             visit_rows = db._fetchall(conn, f"""
                 SELECT e.* FROM user_visits v
                 JOIN entities e ON e.id = v.entity_id
                 WHERE v.user_id = {ph}::uuid
                   AND COALESCE(e.status, '') != 'provisional'
                   AND (e.verified IS NULL OR e.verified != 0)
+                  {visit_cutoff}
                 ORDER BY v.created_at DESC
                 LIMIT {ph}
-            """, (uid, limit // 2))
+            """, visit_params)
         for row in saved_rows:
             ent = db._parse_entity(row)
             if ent and _is_public(ent):
@@ -648,10 +607,12 @@ def _apply_event_fallback(acc: "_InterestAccumulator", event: dict, weight: floa
     entity_type = _clean_short_text(event.get("entity_type"), 60)
     if entity_type:
         acc.type_scores[entity_type] += weight
-    if area := _clean_short_text(event.get("area"), 120):
+    if area := _clean_short_text(event.get("area_id"), 200):
         acc.area_scores[area] += weight
-    text = " ".join(str(event.get(k) or "") for k in ("entity_name", "query", "context"))
-    acc.interest_scores.update({k: v * weight for k, v in _interest_hits_from_text(text, entity_type).items()})
+    for key in event.get("interest_keys") or []:
+        normalized = _clean_short_text(key, 64)
+        if normalized:
+            acc.interest_scores[normalized] += weight
 
 
 def _apply_events_to_profile(acc: "_InterestAccumulator", events: list[dict], event_entities: dict) -> None:
@@ -660,23 +621,31 @@ def _apply_events_to_profile(acc: "_InterestAccumulator", events: list[dict], ev
         weight = float(_EVENT_WEIGHTS.get(etype, 1.0))
         if weight == 0:
             continue
+        for key in event.get("interest_keys") or []:
+            normalized = _clean_short_text(key, 64)
+            if normalized:
+                acc.interest_scores[normalized] += weight
         entity_id = str(event.get("entity_id") or "")
         entity = event_entities.get(entity_id) if entity_id else None
         if entity and _is_public(entity):
             _apply_event_entity(acc, entity, entity_id, weight)
         else:
-            _apply_event_fallback(acc, event, weight)
+            fallback = dict(event)
+            fallback["interest_keys"] = []
+            _apply_event_fallback(acc, fallback, weight)
         if len(acc.recent_intents) < 8:
             acc.recent_intents.append({
                 "event_type": etype,
                 "context": event.get("context"),
                 "entity_id": entity_id or None,
-                "query": event.get("query"),
+                "interest_keys": list(event.get("interest_keys") or [])[:12],
             })
 
 
-def _apply_signals_to_profile(acc: "_InterestAccumulator", user_id: str) -> None:
-    for entity, source in _load_user_signal_entities(user_id):
+def _apply_signals_to_profile(
+    acc: "_InterestAccumulator", user_id: str, cutoff: datetime | None
+) -> None:
+    for entity, source in _load_user_signal_entities(user_id, cutoff=cutoff):
         weight = 5.0 if source == "saved" else 4.0
         acc.type_scores[str(entity.get("type") or "")] += weight
         if area := _entity_area(entity):
@@ -697,15 +666,64 @@ def _apply_query_and_context(acc: "_InterestAccumulator", query: str | None, con
         acc.interest_scores.update({k: v * 1.5 for k, v in _interest_hits_from_entity(context_entity).items()})
 
 
+def _apply_preference_profile(
+    acc: "_InterestAccumulator", preferences: dict, *, include_interests: bool
+) -> int:
+    signal_count = 0
+    source = preferences.get("location_source")
+    location_allowed = source == "manual" or (
+        source in {"gps", "ip"} and preferences.get("location_enabled") is True
+    )
+    if location_allowed:
+        region = preferences.get("region_id") or preferences.get("region_label")
+        if region:
+            acc.area_scores[str(region)] += 50.0
+            signal_count += 1
+    if include_interests:
+        for index, key in enumerate(preferences.get("explicit_interests") or []):
+            normalized = _clean_short_text(key, 64)
+            if normalized:
+                acc.interest_scores[normalized] += (
+                    _EXPLICIT_INTEREST_BASE_SCORE - index
+                )
+                signal_count += 1
+    return signal_count
+
+
 def _build_user_interest_profile(user_id: str, query: str | None = None, context_entity: dict | None = None) -> dict:
     acc = _InterestAccumulator()
-    events = _read_user_events(user_id)
+    preferences = load_preferences(user_id)
+    personalization_enabled = preferences.get("personalization_enabled") is True
+    preference_signal_count = _apply_preference_profile(
+        acc, preferences, include_interests=personalization_enabled
+    )
+    if not personalization_enabled:
+        return {
+            "interests": [],
+            "areas": _top_counter(acc.area_scores),
+            "types": [],
+            "interest_scores": {},
+            "area_scores": dict(acc.area_scores),
+            "type_scores": {},
+            "recent_entity_ids": [],
+            "recent_intents": [],
+            "confidence": round(min(1.0, preference_signal_count / 20), 2),
+            "signal_count": preference_signal_count,
+            "personalization_enabled": False,
+        }
+
+    cutoff = recommendation_cutoff(preferences)
+    events = read_personalization_events(user_id, cutoff=cutoff)
+    legacy = read_legacy_events_if_allowed(
+        user_id, cutoff=cutoff, now=datetime.now(timezone.utc)
+    )
+    events = (events + legacy)[:300]
 
     event_entity_ids = [str(e.get("entity_id")) for e in events if e.get("entity_id")]
     event_entities = db.get_entities_batch(event_entity_ids[:80]) if event_entity_ids else {}
 
     _apply_events_to_profile(acc, events, event_entities)
-    _apply_signals_to_profile(acc, user_id)
+    _apply_signals_to_profile(acc, user_id, cutoff)
     _apply_query_and_context(acc, query, context_entity)
 
     interest_scores = acc.interest_scores
@@ -713,7 +731,7 @@ def _build_user_interest_profile(user_id: str, query: str | None = None, context
     area_scores = acc.area_scores
     recent_entity_ids = acc.recent_entity_ids
     recent_intents = acc.recent_intents
-    signal_count = len(events) + len(recent_entity_ids)
+    signal_count = preference_signal_count + len(events) + len(recent_entity_ids)
     labels = {key: _label_for_interest(key) for key in _INTEREST_RULES}
     return {
         "interests": _top_counter(interest_scores, labels=labels),
@@ -726,6 +744,7 @@ def _build_user_interest_profile(user_id: str, query: str | None = None, context
         "recent_intents": recent_intents,
         "confidence": round(min(1.0, signal_count / 20), 2),
         "signal_count": signal_count,
+        "personalization_enabled": True,
     }
 
 
@@ -851,6 +870,13 @@ def _add_profile_type_candidates(candidates: dict[str, dict], profile: dict, ent
             for area in top_areas:
                 _add_candidates(candidates, db.search_entities(entity_type=entity_type, area=area, limit=30, public_only=True), entity_id)
         _add_candidates(candidates, db.list_entities(entity_type=entity_type, limit=40, public_only=True, sort="rating"), entity_id)
+    if top_areas and not top_types:
+        for area in top_areas:
+            _add_candidates(
+                candidates,
+                db.search_entities(area=area, limit=40, public_only=True),
+                entity_id,
+            )
 
 
 def _gather_recommendation_candidates(profile: dict, current: dict | None, entity_id: str | None, query: str) -> dict[str, dict]:
@@ -874,11 +900,18 @@ def _gather_recommendation_candidates(profile: dict, current: dict | None, entit
 def _contextual_recommendations(user_id: str, context: str, entity_id: str | None, query: str, limit: int) -> dict:
     current = _get_public_entity(entity_id) if entity_id else None
     profile = _build_user_interest_profile(user_id, query=query, context_entity=current)
-    candidates = _gather_recommendation_candidates(profile, current, entity_id, query)
+    personalized = profile.get("personalization_enabled") is True
+    scoring_current = current if personalized else None
+    scoring_query = query if personalized else ""
+    candidates = _gather_recommendation_candidates(
+        profile, scoring_current, entity_id, scoring_query
+    )
 
     scored = []
     for entity in candidates.values():
-        score, reasons = _score_candidate(entity, profile, context, current, query)
+        score, reasons = _score_candidate(
+            entity, profile, context, scoring_current, scoring_query
+        )
         if not reasons:
             reasons = ["Được cộng đồng quan tâm"]
         scored.append((score, entity, reasons))
@@ -905,6 +938,7 @@ def _contextual_recommendations(user_id: str, context: str, entity_id: str | Non
 PREFERENCE_READ_RATE_LIMIT = 120
 PREFERENCE_PATCH_RATE_LIMIT = 30
 LOCATION_RESOLVE_RATE_LIMIT = 30
+RECOMMENDATION_RESET_RATE_LIMIT = 5
 
 
 @router.get(
@@ -995,6 +1029,30 @@ async def get_my_preference_consents(
 
 
 @router.post(
+    "/me/recommendations/reset",
+    summary="Reset recommendation history",
+    description="Advances the recommendation cutoff without deleting workspace data.",
+)
+async def reset_my_recommendations(
+    response: Response,
+    user=Depends(require_user),
+    _csrf=Depends(require_csrf),
+):
+    from ratelimit import check_rate
+
+    owner = str(user["id"])
+    check_rate(
+        f"recommendations-reset:{owner}",
+        RECOMMENDATION_RESET_RATE_LIMIT,
+        3600,
+        "Too many recommendation resets",
+    )
+    snapshot = await asyncio.to_thread(record_recommendation_reset, owner)
+    response.headers["Cache-Control"] = "no-store"
+    return snapshot
+
+
+@router.post(
     "/me/location/resolve",
     summary="Resolve current user location",
     description="Returns a transient normalized region suggestion without persisting it.",
@@ -1047,23 +1105,36 @@ async def resolve_my_location(
              dependencies=[Depends(require_pg)],
              summary="Track a user experience event",
              description="Stores a bounded first-party event for personalized recommendations. Requires login and CSRF.")
-async def track_user_event(body: UserEventIn, request: Request, user=Depends(require_user), _csrf=Depends(require_csrf)):
+async def track_user_event(
+    body: UserEventIn,
+    response: Response,
+    user=Depends(require_user),
+    _csrf=Depends(require_csrf),
+):
     from ratelimit import check_rate
     event_type = (body.event_type or "").strip().lower()
     if event_type not in _VALID_USER_EVENT_TYPES:
         raise HTTPException(400, "event_type khong hop le")
-    body.event_type = event_type
-    body.context = _clean_short_text(body.context, 40)
-    if body.context and body.context not in _VALID_RECOMMENDATION_CONTEXTS and body.context != "search_submit":
-        body.context = "home"
-    if body.entity_id:
-        body.entity_id = validate_path_id(body.entity_id, "entity_id")
-    body.entity_type = _clean_short_text(body.entity_type, 60)
-    body.entity_name = _clean_short_text(body.entity_name, 300)
-    body.area = _clean_short_text(body.area, 120)
-    body.query = _clean_short_text(body.query, 200)
+    context = _clean_short_text(body.context, 64) or "unknown"
+    if context not in _VALID_RECOMMENDATION_CONTEXTS and context != "search_submit":
+        context = "home"
+    entity_id = (
+        validate_path_id(body.entity_id, "entity_id") if body.entity_id else None
+    )
     check_rate(f"user-event:{user['id']}", 120, 300, "Too many events")
-    await asyncio.to_thread(_log_user_event, str(user["id"]), body, request)
+    await asyncio.to_thread(
+        write_personalization_event,
+        str(user["id"]),
+        {
+            "event_type": event_type,
+            "context": context,
+            "entity_id": entity_id,
+            "entity_type": body.entity_type,
+            "area_id": body.area_id,
+            "interest_keys": body.interest_keys,
+        },
+    )
+    response.headers["Cache-Control"] = "no-store"
     return {"accepted": True}
 
 

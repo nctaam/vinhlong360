@@ -750,6 +750,10 @@ def task_session_cleanup():
         from database import db
         if not db._use_pg:
             return
+        from personalization_events import (
+            purge_legacy_events,
+            purge_user_personalization,
+        )
         with db._conn() as conn:
             db._execute(conn, "DELETE FROM user_sessions WHERE expires_at < NOW()", ())
             db._execute(conn, "DELETE FROM otp_sessions WHERE expires_at < NOW()", ())
@@ -759,6 +763,14 @@ def task_session_cleanup():
                     AND deleted_at < NOW() - INTERVAL '30 days'
                 )
             """, ())
+            stale_users = db._fetchall(conn, """
+                SELECT id FROM users WHERE deleted_at IS NOT NULL
+                AND deleted_at < NOW() - INTERVAL '30 days'
+            """, ())
+            stale_user_ids = [str(db._row_to_dict(row)["id"]) for row in stale_users]
+            for user_id in stale_user_ids:
+                purge_user_personalization(user_id)
+                purge_legacy_events(user_id=user_id)
             result = db._execute(conn, """
                 DELETE FROM users WHERE deleted_at IS NOT NULL
                 AND deleted_at < NOW() - INTERVAL '30 days'
@@ -777,6 +789,23 @@ def task_session_cleanup():
         _sched_logger.info("Session cleanup: purged expired sessions and OTPs")
     except Exception as e:
         _sched_logger.error("Session cleanup error: %s", e)
+
+
+def task_personalization_cleanup():
+    """Purge personalization events after their database TTL expires."""
+    try:
+        from database import db
+        if not db._use_pg:
+            return
+        from personalization_events import purge_personalization_events
+
+        removed = purge_personalization_events(before=datetime.now(timezone.utc))
+        if removed:
+            _sched_logger.info(
+                "Personalization cleanup: purged %d expired events", removed
+            )
+    except Exception as exc:
+        _sched_logger.error("Personalization cleanup error: %s", exc)
 
 
 def _hard_delete_stale_posts(db, conn):
@@ -932,6 +961,7 @@ TASKS = [
     ScheduledTask("optimizer-check",   task_optimizer_check,      interval_seconds=6 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),   # 6h
     ScheduledTask("guardrails-cleanup",task_guardrails_cleanup,   interval_seconds=12 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 12h
     ScheduledTask("session-cleanup", task_session_cleanup,       interval_seconds=6 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 6h
+    ScheduledTask("personalization-cleanup", task_personalization_cleanup, interval_seconds=6 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),
     ScheduledTask("notification-cleanup", task_notification_cleanup, interval_seconds=24 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 24h
     ScheduledTask("event-reminders",    task_event_reminders,      interval_seconds=6 * 3600, run_immediately=False),  # 6h
     ScheduledTask("ratelimit-gc",  task_ratelimit_gc,          interval_seconds=300),        # 5min
