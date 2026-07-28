@@ -50,7 +50,7 @@ UI dùng các screen hiện có trong project Stitch làm visual source-of-truth
 
 ## 4. Nguồn thiết kế Stitch
 
-Project Stitch `18117519291023488351` có 52 screen tại thời điểm audit. NP-1 lấy năm screen không thuộc Hybrid P1.2 làm reference chính:
+Project Stitch `18117519291023488351` có 63 screen tại lần xác minh 2026-07-28 (bản audit thiết kế ban đầu ghi 52 screen). NP-1 lấy năm screen không thuộc Hybrid P1.2 làm reference chính:
 
 | Vai trò | Screen Stitch | Screen ID | Cách dùng |
 |---|---|---|---|
