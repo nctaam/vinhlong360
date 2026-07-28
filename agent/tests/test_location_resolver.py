@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import auth_middleware
 import location_resolver
+import middleware
 import public_api
 import user_preferences
 from auth_middleware import generate_csrf_token
@@ -114,8 +115,15 @@ def test_ip_resolver_does_not_return_raw_ip():
 
 
 def test_ambiguous_resolution_requires_confirmation_without_persisting(
-    client, logged_in_user
+    client, logged_in_user, monkeypatch
 ):
+    provider_calls = []
+    monkeypatch.delenv("LOCATION_REVERSE_GEOCODER_URL", raising=False)
+    client.app.dependency_overrides[public_api.get_reverse_geocoder] = lambda: (
+        lambda latitude, longitude: provider_calls.append((latitude, longitude))
+        or {"ambiguous": True, "region_id": "ward-1"}
+    )
+
     response = client.post(
         "/api/me/location/resolve",
         json={"mode": "gps", "latitude": 10.25, "longitude": 105.97},
@@ -124,6 +132,7 @@ def test_ambiguous_resolution_requires_confirmation_without_persisting(
 
     assert response.status_code == 200
     assert response.json()["location_accuracy"] == "unknown"
+    assert provider_calls == [(10.25, 105.97)]
     assert load_preferences(logged_in_user.user_id)["region_id"] is None
 
 
@@ -156,6 +165,24 @@ def test_location_resolution_requires_csrf_before_provider(client, logged_in_use
 
     assert response.status_code == 403
     assert provider_calls == []
+
+
+def test_location_csrf_failure_does_not_retain_raw_ip(
+    client, logged_in_user, monkeypatch
+):
+    raw_ip = "198.51.100.24"
+    monkeypatch.setattr(middleware, "get_client_ip", lambda _request: raw_ip)
+
+    response = client.post(
+        "/api/me/location/resolve",
+        json={"mode": "gps", "latitude": 10.25, "longitude": 105.97},
+        headers=logged_in_user.headers,
+    )
+
+    event = middleware.security_logger.recent(event_type="csrf_failure")[-1]
+    assert response.status_code == 403
+    assert event["endpoint"] == "/api/me/location/resolve"
+    assert raw_ip not in repr(event)
 
 
 def test_malformed_json_is_authenticated_before_validation(client, logged_in_user):
@@ -246,6 +273,26 @@ def test_location_resolution_rejects_boolean_coordinates_without_echoing_them(
     assert response.json() == {"detail": "Invalid location input"}
 
 
+def test_location_resolution_rejects_huge_integer_without_echoing_it(
+    client, logged_in_user
+):
+    huge_coordinate = 10**400
+    with TestClient(client.app, raise_server_exceptions=False) as response_client:
+        response = response_client.post(
+            "/api/me/location/resolve",
+            json={
+                "mode": "gps",
+                "latitude": huge_coordinate,
+                "longitude": 105.97,
+            },
+            headers=logged_in_user.csrf_headers,
+        )
+
+    assert response.status_code == 422
+    assert response.json() == {"detail": "Invalid location input"}
+    assert str(huge_coordinate) not in response.text
+
+
 def test_provider_failure_returns_unknown_without_input_or_error_disclosure(
     client, logged_in_user, caplog
 ):
@@ -333,9 +380,36 @@ def test_provider_cannot_echo_dms_gps_representation():
     assert "105°58′12″E" not in repr(result)
 
 
+def test_provider_cannot_echo_decimal_minute_gps_representation():
+    result = resolve_gps(
+        10.25,
+        105.97,
+        reverse_geocoder=lambda *_: {
+            "region_id": "ward-1",
+            "region_label": "10°15'N, 105°58.2'E",
+        },
+    )
+
+    assert "10°15'N" not in repr(result)
+    assert "105°58.2'E" not in repr(result)
+
+
 def test_numeric_region_label_without_coordinates_is_preserved():
     result = resolve_gps(
         10.25,
+        105.97,
+        reverse_geocoder=lambda *_: {
+            "region_id": "ward-1",
+            "region_label": "Phuong 1",
+        },
+    )
+
+    assert result.region_label == "Phuong 1"
+
+
+def test_numeric_region_label_matching_coordinate_is_preserved():
+    result = resolve_gps(
+        1.0,
         105.97,
         reverse_geocoder=lambda *_: {
             "region_id": "ward-1",
@@ -357,6 +431,19 @@ def test_provider_cannot_echo_expanded_ipv6_representation():
     )
 
     assert expanded_ip not in repr(result)
+
+
+def test_provider_cannot_echo_ipv4_mapped_ipv6_representation():
+    mapped_ip = "::ffff:203.0.113.8"
+    result = resolve_ip(
+        "203.0.113.8",
+        ip_geocoder=lambda _value: {
+            "region_id": "province-vl",
+            "region_label": f"lookup for {mapped_ip}",
+        },
+    )
+
+    assert mapped_ip not in repr(result)
 
 
 def test_ip_route_never_returns_or_persists_raw_client_ip(

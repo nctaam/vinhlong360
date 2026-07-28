@@ -524,8 +524,13 @@ class SecurityEventLogger:
     @staticmethod
     def _mask_pii(entry: dict) -> dict:
         masked = dict(entry)
-        if "ip" in masked:
-            masked["ip"] = _mask_ip(masked["ip"])
+        primary_ip = masked.get("ip")
+        masked_primary_ip = _mask_ip(primary_ip) if primary_ip else ""
+        for key, value in tuple(masked.items()):
+            if isinstance(value, str) and primary_ip and primary_ip in value:
+                masked[key] = value.replace(primary_ip, masked_primary_ip)
+            if key == "ip" or key.endswith("_ip"):
+                masked[key] = _mask_ip(str(value))
         for k in ("phone", "user_phone"):
             if k in masked:
                 masked[k] = _mask_phone(masked[k])
@@ -538,9 +543,10 @@ class SecurityEventLogger:
             "ts": datetime.now(timezone.utc).isoformat(),
             **details,
         }
-        self._log.log("security", f"[SEC] {event_type}", **self._mask_pii(entry))
+        safe_entry = self._mask_pii(entry)
+        self._log.log("security", f"[SEC] {event_type}", **safe_entry)
         with self._lock:
-            self._recent_events.append(entry)
+            self._recent_events.append(safe_entry)
             if len(self._recent_events) > self._max_recent:
                 self._recent_events = self._recent_events[-self._max_recent:]
 

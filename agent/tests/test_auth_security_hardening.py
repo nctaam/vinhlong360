@@ -261,20 +261,23 @@ class TestSecurityEventLogger:
     def test_auth_failure_logged(self):
         from middleware import security_logger
         initial = len(security_logger.recent())
-        security_logger.auth_failure("10.0.0.1", "invalid_token", endpoint="/auth/login")
+        raw_ip = "10.0.0.1"
+        security_logger.auth_failure(raw_ip, "invalid_token", endpoint="/auth/login")
         events = security_logger.recent()
         assert len(events) > initial
         last = events[-1]
         assert last["event"] == "auth_failure"
-        assert last["ip"] == "10.0.0.1"
+        assert raw_ip not in repr(last)
         assert last["reason"] == "invalid_token"
 
     def test_rate_limit_hit_logged(self):
         from middleware import security_logger
-        security_logger.rate_limit_hit("10.0.0.2", "/chat", key="chat:10.0.0.2")
+        raw_ip = "10.0.0.2"
+        security_logger.rate_limit_hit(raw_ip, "/chat", key=f"chat:{raw_ip}")
         last = security_logger.recent()[-1]
         assert last["event"] == "rate_limit_hit"
         assert last["endpoint"] == "/chat"
+        assert raw_ip not in repr(last)
 
     def test_suspicious_input_logged(self):
         from middleware import security_logger
@@ -300,16 +303,22 @@ class TestSecurityEventLogger:
 
     def test_csrf_failure_logged(self):
         from middleware import security_logger
-        security_logger.csrf_failure("10.0.0.6", endpoint="/api/posts")
+        raw_ip = "10.0.0.6"
+        security_logger.csrf_failure(raw_ip, endpoint="/api/posts")
         last = security_logger.recent()[-1]
         assert last["event"] == "csrf_failure"
+        assert raw_ip not in repr(last)
 
     def test_session_anomaly_logged(self):
         from middleware import security_logger
-        security_logger.session_anomaly("10.0.0.7", "ip_changed", old_ip="1.2.3.4")
+        current_ip = "10.0.0.7"
+        old_ip = "1.2.3.4"
+        security_logger.session_anomaly(current_ip, "ip_changed", old_ip=old_ip)
         last = security_logger.recent()[-1]
         assert last["event"] == "session_anomaly"
         assert last["reason"] == "ip_changed"
+        assert current_ip not in repr(last)
+        assert old_ip not in repr(last)
 
     def test_filter_by_event_type(self):
         from middleware import security_logger

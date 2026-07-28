@@ -26,8 +26,8 @@ _NUMBER_RE = re.compile(
 )
 _DMS_RE = re.compile(
     r"(?P<degrees>[+-]?\d{1,3})\s*[°º]\s*"
-    r"(?P<minutes>\d{1,2})\s*['′]\s*"
-    r"(?P<seconds>\d{1,2}(?:\.\d+)?)\s*[\"″]?\s*"
+    r"(?P<minutes>\d{1,2}(?:\.\d+)?)\s*['′]\s*"
+    r"(?:(?P<seconds>\d{1,2}(?:\.\d+)?)\s*[\"″]\s*)?"
     r"(?P<hemisphere>[NSEW])?",
     re.IGNORECASE,
 )
@@ -133,6 +133,16 @@ def _matches_coordinate(candidate: float, coordinates: tuple[float, float]) -> b
     return any(math.isclose(candidate, value, abs_tol=1e-9) for value in coordinates)
 
 
+def _coordinate_value(value: Any, minimum: float, maximum: float) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise LocationInputError("Invalid location input")
+    if value < minimum or value > maximum:
+        raise LocationInputError("Invalid location input")
+    if isinstance(value, float) and not math.isfinite(value):
+        raise LocationInputError("Invalid location input")
+    return float(value)
+
+
 def _contains_gps_echo(
     resolution: LocationResolution,
     latitude: float,
@@ -143,7 +153,9 @@ def _contains_gps_echo(
         for match in _DMS_RE.finditer(text):
             degrees = float(match.group("degrees"))
             minutes = float(match.group("minutes"))
-            seconds = float(match.group("seconds"))
+            seconds = float(match.group("seconds") or 0)
+            if minutes >= 60 or seconds >= 60:
+                continue
             candidate = abs(degrees) + minutes / 60 + seconds / 3600
             hemisphere = (match.group("hemisphere") or "").upper()
             if degrees < 0 or hemisphere in {"S", "W"}:
@@ -151,8 +163,11 @@ def _contains_gps_echo(
             if _matches_coordinate(candidate, coordinates):
                 return True
         for match in _NUMBER_RE.finditer(text):
+            token = match.group()
+            if not any(marker in token for marker in (".", "e", "E", "+", "-")):
+                continue
             try:
-                candidate = float(match.group())
+                candidate = float(token)
             except ValueError:
                 continue
             if math.isfinite(candidate) and _matches_coordinate(candidate, coordinates):
@@ -162,11 +177,16 @@ def _contains_gps_echo(
 
 def _contains_ip_echo(resolution: LocationResolution, client_ip: str) -> bool:
     target = ipaddress.ip_address(client_ip)
+    if isinstance(target, ipaddress.IPv6Address) and target.ipv4_mapped is not None:
+        target = target.ipv4_mapped
     for text in _returned_text(resolution):
         for match in _IP_CANDIDATE_RE.finditer(text):
             candidate = match.group().strip(".,;()[]{}")
             try:
-                if candidate and ipaddress.ip_address(candidate) == target:
+                parsed = ipaddress.ip_address(candidate)
+                if isinstance(parsed, ipaddress.IPv6Address) and parsed.ipv4_mapped:
+                    parsed = parsed.ipv4_mapped
+                if candidate and parsed == target:
                     return True
             except ValueError:
                 continue
@@ -197,23 +217,14 @@ def resolve_gps(
     longitude: float,
     reverse_geocoder: ReverseGeocoder,
 ) -> LocationResolution:
-    if (
-        isinstance(latitude, bool)
-        or isinstance(longitude, bool)
-        or not isinstance(latitude, (int, float))
-        or not isinstance(longitude, (int, float))
-        or not math.isfinite(latitude)
-        or not math.isfinite(longitude)
-        or not -90 <= latitude <= 90
-        or not -180 <= longitude <= 180
-    ):
-        raise LocationInputError("Invalid location input")
+    normalized_latitude = _coordinate_value(latitude, -90, 90)
+    normalized_longitude = _coordinate_value(longitude, -180, 180)
     try:
-        provider_result = reverse_geocoder(float(latitude), float(longitude))
+        provider_result = reverse_geocoder(normalized_latitude, normalized_longitude)
     except Exception:
         return _unknown("gps")
     resolution = _normalize_provider_result(provider_result, "gps")
-    return _redact_gps_echo(resolution, float(latitude), float(longitude))
+    return _redact_gps_echo(resolution, normalized_latitude, normalized_longitude)
 
 
 def resolve_ip(client_ip: str, ip_geocoder: IpGeocoder) -> LocationResolution:
