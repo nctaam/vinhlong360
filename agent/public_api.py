@@ -55,6 +55,7 @@ if __package__:
         public_ward_child_counts,
     )
     from .launch_evidence import current_policy_evidence
+    from .profile_access import resolve_profile_access
 else:
     from index_policy import (
         IndexPolicyDecision,
@@ -63,6 +64,7 @@ else:
         public_ward_child_counts,
     )
     from launch_evidence import current_policy_evidence
+    from profile_access import resolve_profile_access
 
 router = APIRouter(prefix="/api", tags=["public"])
 
@@ -3334,37 +3336,47 @@ async def entities_trending(
 @router.get("/users/{user_id}/engagement",
             summary="Get user engagement stats",
             description="Returns engagement metrics for a user profile: total posts, reviews, questions, average rating, follower count, and likes received. Requires Postgres.")
-async def user_engagement_stats(user_id: str, response: Response):
+async def user_engagement_stats(
+    user_id: str,
+    request: Request,
+    response: Response,
+    user=Depends(get_current_user),
+):
     """Lightweight engagement stats for a user profile card."""
     validate_path_id(user_id, "user_id")
     require_pg()
     ph = db._ph
+    viewer_id = str(user["id"]) if user else None
 
     def _query():
         with db._conn() as conn:
-            user_check = db._fetchone(conn, f"SELECT id FROM users WHERE id::text = {ph} AND is_active = TRUE", (user_id,))
-            if not user_check:
-                raise HTTPException(404, "Người dùng không tồn tại")
+            # The shared resolver owns active (is_active), deletion, and privacy checks.
+            access = resolve_profile_access(
+                conn, user_id, viewer_id, require_activity=True
+            )
+            if access.status != "ok":
+                return access, None
+            target_id = access.target_id or user_id
             stats = db._fetchone(conn, f"""
                 SELECT
                     COUNT(*) FILTER (WHERE moderation_status = 'approved') as total_posts,
                     COUNT(*) FILTER (WHERE post_type = 'review' AND moderation_status = 'approved') as total_reviews,
                     COALESCE(AVG(rating) FILTER (WHERE post_type = 'review' AND rating IS NOT NULL), 0) as avg_rating,
-                    COUNT(*) FILTER (WHERE post_type = 'question') as total_questions,
+                    COUNT(*) FILTER (WHERE post_type = 'question' AND moderation_status = 'approved') as total_questions,
                     COUNT(DISTINCT entity_id) FILTER (WHERE entity_id IS NOT NULL AND moderation_status = 'approved') as entities_reviewed
                 FROM posts WHERE user_id::text = {ph} AND deleted_at IS NULL
-            """, (user_id,))
+            """, (target_id,))
             stats_d = db._row_to_dict(stats) if stats else {}
             followers = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM follows
                 WHERE target_type = 'user' AND target_id = {ph}
-            """, (user_id,))
+            """, (target_id,))
             likes = db._fetchone(conn, f"""
                 SELECT COALESCE(SUM(like_count), 0) as total_likes
                 FROM posts WHERE user_id::text = {ph} AND moderation_status = 'approved' AND deleted_at IS NULL
-            """, (user_id,))
-        return {
-            "user_id": user_id,
+            """, (target_id,))
+        return access, {
+            "user_id": target_id,
             "total_posts": stats_d.get("total_posts", 0),
             "total_reviews": stats_d.get("total_reviews", 0),
             "avg_rating": round(float(stats_d.get("avg_rating", 0)), 1),
@@ -3374,7 +3386,20 @@ async def user_engagement_stats(user_id: str, response: Response):
             "total_likes_received": db._row_to_dict(likes)["total_likes"] if likes else 0,
         }
 
-    result = await asyncio.to_thread(_query)
+    access, result = await asyncio.to_thread(_query)
+    if access.status == "not_found":
+        raise HTTPException(404, "Người dùng không tồn tại")
+    if access.status == "hidden":
+        result = {
+            "user_id": user_id,
+            "total_posts": 0,
+            "total_reviews": 0,
+            "avg_rating": 0.0,
+            "total_questions": 0,
+            "entities_reviewed": 0,
+            "followers": 0,
+            "total_likes_received": 0,
+        }
     response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
     return result
 

@@ -1,4 +1,5 @@
 import type { User } from '~/types'
+import { apiFetch } from '~/utils/apiFetch'
 
 export type { User }
 
@@ -32,16 +33,20 @@ export function useAuth() {
     return headers
   }
 
-  async function fetchCsrf() {
+  async function requestCsrf() {
     if (csrfToken.value) return csrfToken.value
+    const url = authEndpoint('/auth/csrf')
+    const res = await apiFetch<{ csrf_token?: string }>(url, {
+      credentials: 'include',
+      headers: authTransportHeaders(),
+    })
+    csrfToken.value = res.csrf_token || null
+    return csrfToken.value
+  }
+
+  async function fetchCsrf() {
     try {
-      const url = authEndpoint('/auth/csrf')
-      const res = await $fetch<{ csrf_token?: string }>(url, {
-        credentials: 'include',
-        headers: authTransportHeaders(),
-      })
-      csrfToken.value = res.csrf_token || null
-      return csrfToken.value
+      return await requestCsrf()
     } catch (e: unknown) {
       csrfToken.value = null
       if (getStatusCode(e) === 401) {
@@ -54,26 +59,29 @@ export function useAuth() {
 
   async function fetchMe() {
     try {
-      // SSR: wildcard proxy rule '/auth/**' doesn't resolve for internal $fetch
+      // SSR: wildcard proxy rule '/auth/**' does not resolve for internal requests.
       // (same known issue as /api/**) — use absolute backend URL during SSR
       const url = authEndpoint('/auth/me')
-      const res = await $fetch<{ user: User }>(url, {
+      const res = await apiFetch<{ user: User }>(url, {
         credentials: 'include',
         headers: authTransportHeaders(),
       })
       user.value = res.user
       await fetchCsrf()
     } catch (e: unknown) {
-      user.value = null
-      csrfToken.value = null
       if (getStatusCode(e) === 401) {
+        user.value = null
+        csrfToken.value = null
         token.value = null
+      } else if (!user.value && !token.value) {
+        user.value = null
+        csrfToken.value = null
       }
     }
   }
 
   async function requestOtp(phone: string) {
-    return await $fetch<{ success: boolean; message?: string }>('/auth/request-otp', {
+    return await apiFetch<{ success: boolean; message?: string }>('/auth/request-otp', {
       method: 'POST',
       body: { phone },
     })
@@ -82,7 +90,7 @@ export function useAuth() {
   async function verifyOtp(phone: string, code: string, consent?: boolean, registration?: {
     full_name?: string; username?: string; password?: string; date_of_birth?: string
   }) {
-    const res = await $fetch<{ token?: string; user?: User; has_password?: boolean; error?: string; two_factor_required?: boolean; challenge_id?: string }>('/auth/verify-otp', {
+    const res = await apiFetch<{ token?: string; user?: User; has_password?: boolean; error?: string; two_factor_required?: boolean; challenge_id?: string }>('/auth/verify-otp', {
       method: 'POST',
       credentials: 'include',
       body: { phone, code, consent: consent ?? false, ...registration },
@@ -100,14 +108,14 @@ export function useAuth() {
   }
 
   async function checkPhone(phone: string) {
-    return await $fetch<{ exists: boolean }>('/auth/check-phone', {
+    return await apiFetch<{ exists: boolean }>('/auth/check-phone', {
       method: 'POST',
       body: { phone },
     })
   }
 
   async function login(phone: string, password: string) {
-    const res = await $fetch<{ token?: string; user?: User; error?: string; two_factor_required?: boolean; challenge_id?: string }>('/auth/login', {
+    const res = await apiFetch<{ token?: string; user?: User; error?: string; two_factor_required?: boolean; challenge_id?: string }>('/auth/login', {
       method: 'POST',
       credentials: 'include',
       body: { phone, password },
@@ -125,7 +133,7 @@ export function useAuth() {
   }
 
   async function verifyTwoFactor(challengeId: string, code: string, opts?: { recovery?: boolean; remember_device?: boolean }) {
-    const res = await $fetch<{ token?: string; user?: User; error?: string }>('/auth/2fa/verify', {
+    const res = await apiFetch<{ token?: string; user?: User; error?: string }>('/auth/2fa/verify', {
       method: 'POST',
       credentials: 'include',
       body: {
@@ -145,7 +153,7 @@ export function useAuth() {
   }
 
   async function setPassword(password: string) {
-    return await $fetch<{ success: boolean }>('/auth/set-password', {
+    return await apiFetch<{ success: boolean }>('/auth/set-password', {
       method: 'POST',
       credentials: 'include',
       headers: authHeaders(),
@@ -154,17 +162,16 @@ export function useAuth() {
   }
 
   async function logout() {
-    try {
-      await fetchCsrf()
-      await $fetch('/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-        headers: authHeaders(),
-      })
-    } catch { /* ignore */ }
+    await requestCsrf()
+    await apiFetch('/auth/logout', {
+      method: 'POST',
+      credentials: 'include',
+      headers: authHeaders(),
+    })
     token.value = null
     user.value = null
     csrfToken.value = null
+    twoFactorChallenge.value = null
   }
 
   function authHeaders(): Record<string, string> {
@@ -190,9 +197,9 @@ export function useAuth() {
     setTimeout(() => { sessionExpiredFired = false }, 2000)
   }
 
-  async function authFetch<T>(url: string, opts: Parameters<typeof $fetch>[1] = {}): Promise<T> {
+  async function authFetch<T>(url: string, opts: Parameters<typeof apiFetch>[1] = {}): Promise<T> {
     try {
-      return await $fetch<T, string>(url, {
+      return await apiFetch<T>(url, {
         ...opts,
         credentials: 'include',
         headers: { ...authHeaders(), ...(opts.headers as Record<string, string> || {}) },

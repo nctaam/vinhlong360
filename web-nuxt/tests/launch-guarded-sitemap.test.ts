@@ -388,6 +388,30 @@ describe('internal sitemap fetcher', () => {
     runtimeConfigState.apiBase = 'http://agent.internal:8360'
   })
 
+  it('aborts a never-settling sitemap transport after 5 seconds', async () => {
+    vi.useFakeTimers()
+    try {
+      let transportSignal: AbortSignal | undefined
+      const rawFetcher = vi.fn((_request, options) => {
+        transportSignal = (options as typeof options & { signal?: AbortSignal }).signal
+        return new Promise<never>((_resolve, reject) => {
+          transportSignal?.addEventListener('abort', () => reject(new Error('aborted')))
+        })
+      })
+      const fetchRaw = createInternalSitemapFetcher({} as never, rawFetcher)
+      const pending = fetchRaw('sitemap-index.xml', null)
+
+      expect(transportSignal).toBeInstanceOf(AbortSignal)
+      const rejected = expect(pending).rejects.toThrow(/5000/)
+      await vi.advanceTimersByTimeAsync(5_000)
+
+      await rejected
+      expect(transportSignal?.aborted).toBe(true)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('uses private runtime apiBase, exact internal route, canonical query, and manual redirects', async () => {
     const rawFetcher = vi.fn().mockResolvedValue({
       status: 200,

@@ -51,4 +51,29 @@ describe('backend launch attestation client', () => {
       fetcher: vi.fn().mockRejectedValue(new Error('503')),
     })).rejects.toThrow(/unavailable/i)
   })
+
+  it('aborts a never-settling attestation transport after 3 seconds', async () => {
+    vi.useFakeTimers()
+    try {
+      let transportSignal: AbortSignal | undefined
+      const pending = fetchBackendAttestation({
+        baseURL: 'http://agent.internal:8360',
+        fetcher: vi.fn((_request, options) => {
+          transportSignal = (options as typeof options & { signal?: AbortSignal }).signal
+          return new Promise((_resolve, reject) => {
+            transportSignal?.addEventListener('abort', () => reject(new Error('aborted')))
+          })
+        }),
+      })
+
+      expect(transportSignal).toBeInstanceOf(AbortSignal)
+      const rejected = expect(pending).rejects.toThrow(/unavailable/i)
+      await vi.advanceTimersByTimeAsync(3_000)
+
+      await rejected
+      expect(transportSignal?.aborted).toBe(true)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
 })

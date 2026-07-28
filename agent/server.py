@@ -1087,6 +1087,49 @@ app.add_middleware(
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 
+def _merge_vary_header(response, *members: str) -> None:
+    """Merge Vary members case-insensitively without duplicate directives."""
+    existing = []
+    for name, value in getattr(response, "raw_headers", []):
+        if name.lower() == b"vary":
+            existing.extend(value.decode("latin-1").split(","))
+    existing.extend(response.headers.get("Vary", "").split(","))
+    existing.extend(members)
+
+    merged = []
+    seen = set()
+    for member in existing:
+        normalized = member.strip()
+        if not normalized:
+            continue
+        key = normalized.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        merged.append(normalized)
+
+    response.raw_headers = [
+        (name, value)
+        for name, value in getattr(response, "raw_headers", [])
+        if name.lower() != b"vary"
+    ]
+    if merged:
+        response.headers["Vary"] = ", ".join(merged)
+
+
+def _apply_final_cache_policy(request, response) -> None:
+    """Apply the last cache classification after endpoint processing."""
+    path = request.url.path
+    if not path.startswith(("/api/", "/admin/", "/auth/")):
+        return
+
+    _merge_vary_header(response, "Authorization", "Cookie", "Accept")
+    if path.startswith("/api/") and getattr(
+        request.state, "authenticated_user_id", None
+    ):
+        response.headers["Cache-Control"] = "private, no-store"
+
+
 @app.middleware("http")
 async def security_headers(request, call_next):
     from auth_middleware import generate_csp_nonce, build_csp, get_security_headers
@@ -1097,12 +1140,11 @@ async def security_headers(request, call_next):
         response.headers[k] = v
     response.headers["Content-Security-Policy"] = build_csp(nonce)
     response.headers["X-API-Version"] = "1.0"
-    # Vary: phản hồi /api|/admin|/auth phụ thuộc Authorization → cache đúng theo user
-    # (salvage session-be af90dbb: tránh cache lẫn giữa các phiên đăng nhập).
-    if request.url.path.startswith(("/api/", "/admin/", "/auth/")):
-        response.headers["Vary"] = "Authorization, Accept"
     if request.method == "GET" and "cache-control" not in response.headers:
         response.headers["Cache-Control"] = "private, max-age=30"
+    # Finalize after endpoint headers are known so personalized API data cannot
+    # retain an endpoint-provided public cache classification.
+    _apply_final_cache_policy(request, response)
     return response
 
 
