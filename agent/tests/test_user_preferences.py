@@ -179,6 +179,32 @@ def test_disabling_location_clears_only_resolver_derived_region(location_source)
     }
 
 
+@pytest.mark.parametrize("location_source", ["gps", "ip"])
+def test_disabling_location_with_explicit_default_clears_resolver_region(
+    location_source,
+):
+    merged = merge_preference_patch(
+        current={
+            "region_id": "province-vl",
+            "region_label": "Vinh Long",
+            "region_scope": "province",
+            "location_source": location_source,
+            "location_accuracy": "province",
+            "location_enabled": True,
+            "revision": 4,
+        },
+        patch={"location_enabled": False, "location_source": "default"},
+        expected_revision=4,
+    )
+
+    assert merged["region_id"] is None
+    assert merged["region_label"] is None
+    assert merged["region_scope"] == "unknown"
+    assert merged["location_source"] == "default"
+    assert merged["location_accuracy"] == "unknown"
+    assert merged["location_enabled"] is False
+
+
 def test_disabling_location_preserves_manual_region():
     merged = merge_preference_patch(
         current={
@@ -318,7 +344,7 @@ def test_postgres_update_clears_resolver_region_and_rejects_stale_revision(
 
     disabled = patch_preferences(
         postgres_preference_user,
-        {"location_enabled": False},
+        {"location_enabled": False, "location_source": "default"},
         expected_revision=first["revision"],
     )
 

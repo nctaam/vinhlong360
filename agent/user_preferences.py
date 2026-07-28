@@ -261,7 +261,7 @@ def merge_preference_patch(
     disabling_existing_resolver = (
         normalized.get("location_enabled") is False
         and current_source in {"gps", "ip"}
-        and patch_source in {"gps", "ip"}
+        and patch_source != "manual"
     )
     if disabling_existing_resolver:
         normalized.update(
