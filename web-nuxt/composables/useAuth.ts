@@ -154,17 +154,16 @@ export function useAuth() {
   }
 
   async function logout() {
-    try {
-      await fetchCsrf()
-      await $fetch('/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-        headers: authHeaders(),
-      })
-    } catch { /* ignore */ }
+    await fetchCsrf()
+    await $fetch('/auth/logout', {
+      method: 'POST',
+      credentials: 'include',
+      headers: authHeaders(),
+    })
     token.value = null
     user.value = null
     csrfToken.value = null
+    twoFactorChallenge.value = null
   }
 
   function authHeaders(): Record<string, string> {
