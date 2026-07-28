@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import { useState } from '#app'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -28,6 +30,7 @@ mockNuxtImport('useNotifications', () => () => ({ unreadCount: mocks.unreadCount
 mockNuxtImport('useDropdown', () => () => ({ onMenuKeydown: vi.fn() }))
 
 const wrappers: Array<{ unmount: () => void }> = []
+const authSource = readFileSync(resolve(process.cwd(), 'composables/useAuth.ts'), 'utf8')
 
 beforeAll(async () => {
   const actual = await vi.importActual<AuthComposable>('../composables/useAuth')
@@ -66,6 +69,37 @@ afterEach(() => {
 })
 
 describe('useAuth logout', () => {
+  it('routes every auth transport through apiFetch', () => {
+    expect(authSource).not.toContain('$fetch')
+    expect(authSource.match(/\bapiFetch(?:<[^>]+>)?\s*\(/gu)).toHaveLength(10)
+  })
+
+  it.each([
+    ['deadline', new Error('Request deadline exceeded after 10000ms')],
+    ['network', new Error('network unavailable')],
+    ['5xx', Object.assign(new Error('service unavailable'), { response: { status: 503 } })],
+  ])('preserves established auth when fetchMe fails from %s', async (_label, error) => {
+    const auth = seedAuthState()
+    mocks.fetch.mockRejectedValueOnce(error)
+
+    await auth.fetchMe()
+
+    expect(auth.user.value?.id).toBe('user-1')
+    expect(auth.token.value).toBe('session-token')
+  })
+
+  it('clears established auth when fetchMe receives 401', async () => {
+    const auth = seedAuthState()
+    mocks.fetch.mockRejectedValueOnce(Object.assign(new Error('unauthorized'), {
+      response: { status: 401 },
+    }))
+
+    await auth.fetchMe()
+
+    expect(auth.user.value).toBeNull()
+    expect(auth.token.value).toBeNull()
+  })
+
   it('rejects and preserves auth state when the CSRF preflight fails', async () => {
     const auth = seedAuthState()
     csrfState().value = null

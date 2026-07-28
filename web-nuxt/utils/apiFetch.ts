@@ -1,3 +1,5 @@
+import { DEFAULT_API_TIMEOUT_MS } from './requestDeadline'
+
 // SSR-safe API fetch.
 //
 // Server-side relative $fetch('/api/...') can miss Nitro proxy route rules in
@@ -15,8 +17,9 @@ function getServerApiBase() {
 }
 
 export function apiFetch<T = unknown>(url: string, opts: Record<string, unknown> = {}): Promise<T> {
-  if (/^https?:\/\//i.test(url)) return $fetch<T, string>(url, opts)
+  const requestOptions = { timeout: DEFAULT_API_TIMEOUT_MS, ...opts }
+  if (/^https?:\/\//i.test(url)) return $fetch<T, string>(url, requestOptions)
   const requestUrl = url.startsWith('/') ? url : `/${url}`
   const baseURL = import.meta.server ? getServerApiBase() : ''
-  return $fetch<T, string>(requestUrl, baseURL ? { baseURL, ...opts } : opts)
+  return $fetch<T, string>(requestUrl, baseURL ? { baseURL, ...requestOptions } : requestOptions)
 }
