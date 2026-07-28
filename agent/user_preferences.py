@@ -23,6 +23,8 @@ MAX_INTEREST_LENGTH = 64
 MAX_REGION_ID_LENGTH = 128
 MAX_REGION_LABEL_LENGTH = 160
 MAX_CONSENT_VERSION_LENGTH = 64
+MAX_RECOMMENDATION_RESET_AT_LENGTH = 64
+MAX_PREFERENCE_REVISION = 2_147_483_647
 
 _SOURCE_PRIORITY = {"default": 0, "ip": 1, "gps": 2, "manual": 3}
 _REGION_FIELDS = frozenset(
@@ -154,7 +156,7 @@ def _revision_value(value: Any) -> int:
         raise PreferenceValidationError("revision must be a non-negative integer")
     if isinstance(value, str) and str(revision) != value.strip():
         raise PreferenceValidationError("revision must be a non-negative integer")
-    if revision < 0:
+    if revision < 0 or revision > MAX_PREFERENCE_REVISION:
         raise PreferenceValidationError("revision must be a non-negative integer")
     return revision
 
@@ -181,6 +183,8 @@ def parse_utc_timestamp(value: Any) -> datetime:
     if isinstance(value, datetime):
         parsed = value
     elif isinstance(value, str):
+        if len(value) > MAX_RECOMMENDATION_RESET_AT_LENGTH:
+            raise PreferenceValidationError("Invalid UTC timestamp")
         try:
             parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
         except ValueError as exc:
@@ -268,7 +272,11 @@ def merge_preference_patch(
     disabling_existing_resolver = (
         normalized.get("location_enabled") is False
         and current_source in {"gps", "ip"}
-        and patch_source != "manual"
+        and not (
+            patch_source == "manual"
+            and "region_id" in normalized
+            and normalized["region_id"] is not None
+        )
     )
     if disabling_existing_resolver:
         normalized.update(
@@ -288,6 +296,8 @@ def merge_preference_patch(
 
     merged = dict(current_snapshot)
     merged.update(normalized)
+    if current_snapshot["revision"] == MAX_PREFERENCE_REVISION:
+        raise PreferenceValidationError("Preference revision limit reached")
     merged["revision"] = current_snapshot["revision"] + 1
     return merged
 
@@ -346,8 +356,41 @@ def _write_values(snapshot: PreferenceSnapshot) -> tuple[list[Any], str]:
     return values, ", ".join(placeholders)
 
 
+def _consent_policy_version() -> str:
+    # Lazy import keeps the persistence module independent during auth startup.
+    from auth import CONSENT_VERSION
+
+    version = _bounded_optional_text(
+        CONSENT_VERSION, "consent version", MAX_CONSENT_VERSION_LENGTH
+    )
+    if version is None:
+        raise PreferenceValidationError("consent version is required")
+    return version
+
+
+def _preference_consent_changes(
+    current: PreferenceSnapshot, snapshot: PreferenceSnapshot
+) -> list[tuple[str, str]]:
+    changes: list[tuple[str, str]] = []
+    if current["location_consent_state"] != snapshot["location_consent_state"]:
+        changes.append(("location", snapshot["location_consent_state"]))
+    if current["personalization_enabled"] != snapshot["personalization_enabled"]:
+        changes.append(
+            (
+                "personalization",
+                "granted" if snapshot["personalization_enabled"] else "off",
+            )
+        )
+    return changes
+
+
 def _patch_preferences_in_connection(
-    conn, owner: str, patch: Mapping[str, Any], expected: int
+    conn,
+    owner: str,
+    patch: Mapping[str, Any],
+    expected: int,
+    *,
+    consent_version_fallback: str | None = None,
 ) -> tuple[PreferenceSnapshot, PreferenceSnapshot]:
     if not patch:
         raise PreferenceValidationError("Preference patch must not be empty")
@@ -355,6 +398,12 @@ def _patch_preferences_in_connection(
     row = _select_preferences(conn, owner, for_update=True)
     current = _row_snapshot(row) if row is not None else _default_snapshot()
     merged = merge_preference_patch(current, patch, expected)
+    if (
+        consent_version_fallback is not None
+        and _preference_consent_changes(current, merged)
+        and merged["consent_version"] is None
+    ):
+        merged["consent_version"] = consent_version_fallback
     values, value_placeholders = _write_values(merged)
     if row is None:
         inserted = db._fetchone(
@@ -427,19 +476,13 @@ def patch_preferences_with_consents(
     expected = _revision_value(expected_revision)
     with db._conn() as conn:
         current, snapshot = _patch_preferences_in_connection(
-            conn, owner, patch, expected
+            conn,
+            owner,
+            patch,
+            expected,
+            consent_version_fallback=_consent_policy_version(),
         )
-        consent_changes: list[tuple[str, str]] = []
-        if current["location_consent_state"] != snapshot["location_consent_state"]:
-            consent_changes.append(("location", snapshot["location_consent_state"]))
-        if current["personalization_enabled"] != snapshot["personalization_enabled"]:
-            consent_changes.append(
-                (
-                    "personalization",
-                    "granted" if snapshot["personalization_enabled"] else "off",
-                )
-            )
-        for consent_type, state in consent_changes:
+        for consent_type, state in _preference_consent_changes(current, snapshot):
             _insert_preference_consent(
                 conn,
                 owner,

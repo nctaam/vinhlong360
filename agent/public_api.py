@@ -39,6 +39,8 @@ from data_quality import entity_quality
 from middleware import report_limiter, get_client_ip
 from auth_middleware import validate_path_id, require_pg, require_user, require_csrf, get_current_user
 from user_preferences import (
+    MAX_PREFERENCE_REVISION,
+    MAX_RECOMMENDATION_RESET_AT_LENGTH,
     PreferenceRevisionConflict,
     PreferenceValidationError,
     load_preference_consents,
@@ -403,12 +405,15 @@ class UserEventIn(BaseModel):
 
 
 PreferenceInterest = Annotated[str, Field(max_length=64)]
+PreferenceTimestamp = Annotated[
+    str, Field(max_length=MAX_RECOMMENDATION_RESET_AT_LENGTH)
+]
 
 
 class PreferencePatchIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    revision: StrictInt = Field(ge=0)
+    revision: StrictInt = Field(ge=0, le=MAX_PREFERENCE_REVISION)
     region_id: Optional[str] = Field(None, max_length=128)
     region_label: Optional[str] = Field(None, max_length=160)
     region_scope: Optional[str] = Field(None, max_length=16)
@@ -420,7 +425,7 @@ class PreferencePatchIn(BaseModel):
     explicit_interests: Optional[list[PreferenceInterest]] = Field(
         None, max_length=12
     )
-    recommendation_reset_at: datetime | str | None = None
+    recommendation_reset_at: PreferenceTimestamp | None = None
     consent_version: Optional[str] = Field(None, max_length=64)
 
 

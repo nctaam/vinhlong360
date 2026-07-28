@@ -11,6 +11,7 @@ from fastapi.testclient import TestClient
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+import auth
 import auth_middleware
 import public_api
 import user_preferences
@@ -23,6 +24,7 @@ from user_preferences import (
     merge_preference_patch,
     normalize_preference_patch,
     patch_preferences,
+    patch_preferences_with_consents,
     recommendation_cutoff,
     record_preference_consent,
 )
@@ -114,6 +116,28 @@ def test_revision_is_normalized_to_an_integer():
 
     assert patch["revision"] == 7
     assert isinstance(patch["revision"], int)
+
+
+def test_revision_rejects_values_above_postgres_integer_range():
+    with pytest.raises(PreferenceValidationError):
+        normalize_preference_patch({"revision": 2_147_483_648})
+
+
+def test_merge_rejects_revision_increment_past_postgres_integer_range():
+    with pytest.raises(PreferenceValidationError):
+        merge_preference_patch(
+            {"revision": 2_147_483_647},
+            {"explicit_interests": ["food"]},
+            expected_revision=2_147_483_647,
+        )
+
+
+def test_recommendation_reset_rejects_oversized_iso_input():
+    oversized = "2026-07-28T03:04:05." + ("1" * 39) + "+00:00"
+    assert len(oversized) == 65
+
+    with pytest.raises(PreferenceValidationError):
+        normalize_preference_patch({"recommendation_reset_at": oversized})
 
 
 def test_revision_mismatch_is_rejected():
@@ -208,6 +232,62 @@ def test_disabling_location_with_explicit_default_clears_resolver_region(
     assert merged["region_scope"] == "unknown"
     assert merged["location_source"] == "default"
     assert merged["location_accuracy"] == "unknown"
+    assert merged["location_enabled"] is False
+
+
+@pytest.mark.parametrize("location_source", ["gps", "ip"])
+def test_disabling_location_cannot_launder_resolver_region_as_manual(
+    location_source,
+):
+    merged = merge_preference_patch(
+        current={
+            "region_id": "province-vl",
+            "region_label": "Vinh Long",
+            "region_scope": "province",
+            "location_source": location_source,
+            "location_accuracy": "province",
+            "location_enabled": True,
+            "revision": 4,
+        },
+        patch={"location_enabled": False, "location_source": "manual"},
+        expected_revision=4,
+    )
+
+    assert merged["region_id"] is None
+    assert merged["region_label"] is None
+    assert merged["region_scope"] == "unknown"
+    assert merged["location_source"] == "default"
+    assert merged["location_accuracy"] == "unknown"
+    assert merged["location_enabled"] is False
+
+
+def test_disabling_location_accepts_an_explicit_manual_region():
+    merged = merge_preference_patch(
+        current={
+            "region_id": "province-vl",
+            "region_label": "Vinh Long",
+            "region_scope": "province",
+            "location_source": "gps",
+            "location_accuracy": "province",
+            "location_enabled": True,
+            "revision": 4,
+        },
+        patch={
+            "region_id": "province-bt",
+            "region_label": "Ben Tre",
+            "region_scope": "province",
+            "location_source": "manual",
+            "location_accuracy": "province",
+            "location_enabled": False,
+        },
+        expected_revision=4,
+    )
+
+    assert merged["region_id"] == "province-bt"
+    assert merged["region_label"] == "Ben Tre"
+    assert merged["region_scope"] == "province"
+    assert merged["location_source"] == "manual"
+    assert merged["location_accuracy"] == "province"
     assert merged["location_enabled"] is False
 
 
@@ -403,6 +483,71 @@ def test_postgres_update_clears_resolver_region_and_rejects_stale_revision(
         )
     assert conflict.value.current_revision == 2
     assert load_preferences(postgres_preference_user) == disabled
+
+
+@pg_only
+def test_postgres_consent_patch_persists_snapshot_and_event_atomically(
+    postgres_preference_user,
+):
+    snapshot = patch_preferences_with_consents(
+        postgres_preference_user,
+        {"personalization_enabled": True},
+        expected_revision=0,
+    )
+
+    with live_db._conn(commit_on_success=False) as conn:
+        rows = live_db._fetchall(
+            conn,
+            "SELECT consent_type, state, version FROM user_preference_consents "
+            f"WHERE user_id = {live_db._ph}::uuid",
+            (postgres_preference_user,),
+        )
+
+    assert snapshot["personalization_enabled"] is True
+    assert snapshot["consent_version"] == auth.CONSENT_VERSION
+    assert snapshot["revision"] == 1
+    assert load_preferences(postgres_preference_user) == snapshot
+    assert [
+        (
+            live_db._row_to_dict(row)["consent_type"],
+            live_db._row_to_dict(row)["state"],
+            live_db._row_to_dict(row)["version"],
+        )
+        for row in rows
+    ] == [("personalization", "granted", auth.CONSENT_VERSION)]
+
+
+@pg_only
+def test_postgres_consent_failure_rolls_back_preference_snapshot(
+    postgres_preference_user, monkeypatch
+):
+    real_execute = live_db._execute
+
+    def fail_consent_insert(conn, sql, params=None):
+        if "INSERT INTO user_preference_consents" in sql:
+            raise RuntimeError("injected postgres consent failure")
+        return real_execute(conn, sql, params)
+
+    monkeypatch.setattr(live_db, "_execute", fail_consent_insert)
+    with pytest.raises(RuntimeError, match="injected postgres consent failure"):
+        patch_preferences_with_consents(
+            postgres_preference_user,
+            {
+                "location_consent_state": "granted",
+                "consent_version": "privacy-v1",
+            },
+            expected_revision=0,
+        )
+
+    assert load_preferences(postgres_preference_user)["revision"] == 0
+    with live_db._conn(commit_on_success=False) as conn:
+        row = live_db._fetchone(
+            conn,
+            "SELECT COUNT(*) AS count FROM user_preference_consents "
+            f"WHERE user_id = {live_db._ph}::uuid",
+            (postgres_preference_user,),
+        )
+    assert live_db._row_to_dict(row)["count"] == 0
 
 
 def test_load_preferences_returns_privacy_safe_public_defaults(preference_database):
@@ -614,6 +759,122 @@ def test_preferences_patch_records_changed_consents_and_returns_safe_history(
         )
         for item in history.json()["consents"]
     )
+
+
+@pytest.mark.parametrize(
+    ("preference_patch", "expected_type", "expected_state"),
+    [
+        ({"personalization_enabled": True}, "personalization", "granted"),
+        ({"location_consent_state": "granted"}, "location", "granted"),
+    ],
+)
+def test_preferences_initial_consent_toggle_uses_server_policy_version(
+    client,
+    logged_in_user,
+    preference_patch,
+    expected_type,
+    expected_state,
+):
+    response = client.patch(
+        "/api/me/preferences",
+        json={"revision": 0, **preference_patch},
+        headers=logged_in_user.csrf_headers,
+    )
+
+    assert response.status_code == 200
+    assert response.json()["consent_version"] == auth.CONSENT_VERSION
+    history = client.get(
+        "/api/me/preferences/consents", headers=logged_in_user.headers
+    )
+    assert [
+        (item["consent_type"], item["state"], item["version"])
+        for item in history.json()["consents"]
+    ] == [(expected_type, expected_state, auth.CONSENT_VERSION)]
+
+
+@pytest.mark.parametrize("location_source", ["gps", "ip"])
+def test_preferences_location_off_rejects_manual_source_laundering(
+    client, logged_in_user, location_source
+):
+    first = client.patch(
+        "/api/me/preferences",
+        json={
+            "revision": 0,
+            "region_id": "province-vl",
+            "region_label": "Vinh Long",
+            "region_scope": "province",
+            "location_source": location_source,
+            "location_accuracy": "province",
+            "location_enabled": True,
+        },
+        headers=logged_in_user.csrf_headers,
+    )
+    assert first.status_code == 200
+
+    response = client.patch(
+        "/api/me/preferences",
+        json={
+            "revision": 1,
+            "location_enabled": False,
+            "location_source": "manual",
+        },
+        headers=logged_in_user.csrf_headers,
+    )
+
+    assert response.status_code == 200
+    assert response.json()["region_id"] is None
+    assert response.json()["region_label"] is None
+    assert response.json()["region_scope"] == "unknown"
+    assert response.json()["location_source"] == "default"
+    assert response.json()["location_accuracy"] == "unknown"
+
+
+@pytest.mark.parametrize(
+    ("revision", "expected_status"),
+    [
+        (2_147_483_647, 409),
+        (2_147_483_648, 422),
+    ],
+)
+def test_preferences_revision_is_bounded_for_postgres_integer(
+    client, logged_in_user, revision, expected_status
+):
+    response = client.patch(
+        "/api/me/preferences",
+        json={"revision": revision, "explicit_interests": ["food"]},
+        headers=logged_in_user.csrf_headers,
+    )
+
+    assert response.status_code == expected_status
+    assert str(revision) not in response.text
+    assert load_preferences("user-1")["revision"] == 0
+
+
+@pytest.mark.parametrize(
+    ("fraction_digits", "expected_status"),
+    [
+        (38, 200),
+        (39, 422),
+    ],
+)
+def test_preferences_recommendation_reset_iso_input_is_bounded(
+    client, logged_in_user, fraction_digits, expected_status
+):
+    timestamp = "2026-07-28T03:04:05." + ("1" * fraction_digits) + "+00:00"
+    assert len(timestamp) == (64 if fraction_digits == 38 else 65)
+
+    response = client.patch(
+        "/api/me/preferences",
+        json={"revision": 0, "recommendation_reset_at": timestamp},
+        headers=logged_in_user.csrf_headers,
+    )
+
+    assert response.status_code == expected_status
+    if expected_status == 200:
+        assert response.json()["revision"] == 1
+    else:
+        assert timestamp not in response.text
+        assert load_preferences("user-1")["revision"] == 0
 
 
 def test_preferences_patch_rejects_unbounded_or_sensitive_fields(
