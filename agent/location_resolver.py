@@ -6,6 +6,7 @@ import ipaddress
 import json
 import math
 import os
+import re
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any, Protocol
@@ -18,6 +19,19 @@ MAX_REGION_ID_LENGTH = 128
 MAX_REGION_LABEL_LENGTH = 160
 REGION_SCOPES = frozenset({"ward", "district", "province", "all", "unknown"})
 LOCATION_ACCURACIES = frozenset({"ward", "district", "province", "unknown"})
+_REGION_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$")
+_NUMBER_RE = re.compile(
+    r"(?<![A-Za-z0-9_.])[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?"
+    r"(?![A-Za-z0-9_.])"
+)
+_DMS_RE = re.compile(
+    r"(?P<degrees>[+-]?\d{1,3})\s*[°º]\s*"
+    r"(?P<minutes>\d{1,2})\s*['′]\s*"
+    r"(?P<seconds>\d{1,2}(?:\.\d+)?)\s*[\"″]?\s*"
+    r"(?P<hemisphere>[NSEW])?",
+    re.IGNORECASE,
+)
+_IP_CANDIDATE_RE = re.compile(r"[0-9A-Fa-f:.]+")
 
 
 class LocationInputError(ValueError):
@@ -75,14 +89,25 @@ def _bounded_text(value: Any, maximum: int) -> str | None:
     return normalized
 
 
+def _normalized_region_id(value: Any) -> str | None:
+    region_id = _bounded_text(value, MAX_REGION_ID_LENGTH)
+    if region_id is not None and not _REGION_ID_RE.fullmatch(region_id):
+        raise LocationProviderError("Location provider unavailable")
+    return region_id
+
+
+def _normalized_region_label(value: Any) -> str | None:
+    return _bounded_text(value, MAX_REGION_LABEL_LENGTH)
+
+
 def _normalize_provider_result(value: Any, source: str) -> LocationResolution:
     if not isinstance(value, Mapping):
         return _unknown(source)
     try:
         if value.get("ambiguous") is True:
             return _unknown(source)
-        region_id = _bounded_text(value.get("region_id"), MAX_REGION_ID_LENGTH)
-        region_label = _bounded_text(value.get("region_label"), MAX_REGION_LABEL_LENGTH)
+        region_id = _normalized_region_id(value.get("region_id"))
+        region_label = _normalized_region_label(value.get("region_label"))
         region_scope = value.get("region_scope", "unknown")
         accuracy = value.get("location_accuracy", value.get("accuracy", "unknown"))
         if region_scope not in REGION_SCOPES or accuracy not in LOCATION_ACCURACIES:
@@ -100,14 +125,70 @@ def _normalize_provider_result(value: Any, source: str) -> LocationResolution:
     )
 
 
-def _redact_echoed_input(
+def _returned_text(resolution: LocationResolution) -> tuple[str, str]:
+    return resolution.region_id or "", resolution.region_label or ""
+
+
+def _matches_coordinate(candidate: float, coordinates: tuple[float, float]) -> bool:
+    return any(math.isclose(candidate, value, abs_tol=1e-9) for value in coordinates)
+
+
+def _contains_gps_echo(
     resolution: LocationResolution,
-    source: str,
-    sensitive_values: tuple[str, ...],
+    latitude: float,
+    longitude: float,
+) -> bool:
+    coordinates = (latitude, longitude)
+    for text in _returned_text(resolution):
+        for match in _DMS_RE.finditer(text):
+            degrees = float(match.group("degrees"))
+            minutes = float(match.group("minutes"))
+            seconds = float(match.group("seconds"))
+            candidate = abs(degrees) + minutes / 60 + seconds / 3600
+            hemisphere = (match.group("hemisphere") or "").upper()
+            if degrees < 0 or hemisphere in {"S", "W"}:
+                candidate = -candidate
+            if _matches_coordinate(candidate, coordinates):
+                return True
+        for match in _NUMBER_RE.finditer(text):
+            try:
+                candidate = float(match.group())
+            except ValueError:
+                continue
+            if math.isfinite(candidate) and _matches_coordinate(candidate, coordinates):
+                return True
+    return False
+
+
+def _contains_ip_echo(resolution: LocationResolution, client_ip: str) -> bool:
+    target = ipaddress.ip_address(client_ip)
+    for text in _returned_text(resolution):
+        for match in _IP_CANDIDATE_RE.finditer(text):
+            candidate = match.group().strip(".,;()[]{}")
+            try:
+                if candidate and ipaddress.ip_address(candidate) == target:
+                    return True
+            except ValueError:
+                continue
+    return False
+
+
+def _redact_gps_echo(
+    resolution: LocationResolution,
+    latitude: float,
+    longitude: float,
 ) -> LocationResolution:
-    returned_text = (resolution.region_id or "", resolution.region_label or "")
-    if any(value and value in text for value in sensitive_values for text in returned_text):
-        return _unknown(source)
+    if _contains_gps_echo(resolution, latitude, longitude):
+        return _unknown("gps")
+    return resolution
+
+
+def _redact_ip_echo(
+    resolution: LocationResolution,
+    client_ip: str,
+) -> LocationResolution:
+    if _contains_ip_echo(resolution, client_ip):
+        return _unknown("ip")
     return resolution
 
 
@@ -132,11 +213,7 @@ def resolve_gps(
     except Exception:
         return _unknown("gps")
     resolution = _normalize_provider_result(provider_result, "gps")
-    return _redact_echoed_input(
-        resolution,
-        "gps",
-        (str(float(latitude)), str(float(longitude))),
-    )
+    return _redact_gps_echo(resolution, float(latitude), float(longitude))
 
 
 def resolve_ip(client_ip: str, ip_geocoder: IpGeocoder) -> LocationResolution:
@@ -151,17 +228,21 @@ def resolve_ip(client_ip: str, ip_geocoder: IpGeocoder) -> LocationResolution:
     except Exception:
         return _unknown("ip")
     resolution = _normalize_provider_result(provider_result, "ip")
-    return _redact_echoed_input(resolution, "ip", (normalized_ip,))
+    return _redact_ip_echo(resolution, normalized_ip)
 
 
 def _provider_url(endpoint: str, parameters: Mapping[str, str]) -> str:
     try:
         parsed = urlsplit(endpoint)
+        if parsed.scheme.lower() != "https" or not parsed.netloc:
+            raise LocationProviderError("Location provider unavailable")
         query = parse_qsl(parsed.query, keep_blank_values=True)
         query.extend(parameters.items())
         return urlunsplit(
             (parsed.scheme, parsed.netloc, parsed.path, urlencode(query), "")
         )
+    except LocationProviderError:
+        raise
     except (TypeError, ValueError):
         raise LocationProviderError("Location provider unavailable") from None
 

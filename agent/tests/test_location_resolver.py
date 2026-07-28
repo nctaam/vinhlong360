@@ -16,6 +16,8 @@ from auth_middleware import generate_csrf_token
 from database import Database
 from location_resolver import (
     LocationInputError,
+    LocationProviderError,
+    configured_ip_geocoder,
     configured_reverse_geocoder,
     resolve_gps,
     resolve_ip,
@@ -156,6 +158,22 @@ def test_location_resolution_requires_csrf_before_provider(client, logged_in_use
     assert provider_calls == []
 
 
+def test_malformed_json_is_authenticated_before_validation(client, logged_in_user):
+    anonymous = client.post(
+        "/api/me/location/resolve",
+        content="{",
+        headers={"Content-Type": "application/json"},
+    )
+    missing_csrf = client.post(
+        "/api/me/location/resolve",
+        content="{",
+        headers={**logged_in_user.headers, "Content-Type": "application/json"},
+    )
+
+    assert anonymous.status_code == 401
+    assert missing_csrf.status_code == 403
+
+
 def test_location_resolution_is_rate_limited_before_provider_egress(
     client, logged_in_user, monkeypatch
 ):
@@ -179,6 +197,20 @@ def test_location_resolution_is_rate_limited_before_provider_egress(
     assert first.status_code == 200
     assert blocked.status_code == 429
     assert provider_calls == [True]
+
+
+def test_location_rate_limit_runs_before_malformed_json_validation(
+    client, logged_in_user, monkeypatch
+):
+    monkeypatch.setattr(public_api, "LOCATION_RESOLVE_RATE_LIMIT", 1)
+    headers = {**logged_in_user.csrf_headers, "Content-Type": "application/json"}
+
+    first = client.post("/api/me/location/resolve", content="{", headers=headers)
+    blocked = client.post("/api/me/location/resolve", content="{", headers=headers)
+
+    assert first.status_code == 422
+    assert first.json() == {"detail": "Invalid location input"}
+    assert blocked.status_code == 429
 
 
 def test_location_resolution_rejects_user_id_and_never_persists(
@@ -273,6 +305,60 @@ def test_provider_cannot_echo_raw_gps_into_result():
     assert "105.97" not in repr(result)
 
 
+def test_provider_cannot_echo_alternate_gps_representation():
+    result = resolve_gps(
+        10.25,
+        105.97,
+        reverse_geocoder=lambda *_: {
+            "region_id": "ward-1",
+            "region_label": "near 1.025e1 and 1.0597e2",
+        },
+    )
+
+    assert "1.025e1" not in repr(result)
+    assert "1.0597e2" not in repr(result)
+
+
+def test_provider_cannot_echo_dms_gps_representation():
+    result = resolve_gps(
+        10.25,
+        105.97,
+        reverse_geocoder=lambda *_: {
+            "region_id": "ward-1",
+            "region_label": "10°15′0″N, 105°58′12″E",
+        },
+    )
+
+    assert "10°15′0″N" not in repr(result)
+    assert "105°58′12″E" not in repr(result)
+
+
+def test_numeric_region_label_without_coordinates_is_preserved():
+    result = resolve_gps(
+        10.25,
+        105.97,
+        reverse_geocoder=lambda *_: {
+            "region_id": "ward-1",
+            "region_label": "Phuong 1",
+        },
+    )
+
+    assert result.region_label == "Phuong 1"
+
+
+def test_provider_cannot_echo_expanded_ipv6_representation():
+    expanded_ip = "2001:0db8:0000:0000:0000:0000:0000:0001"
+    result = resolve_ip(
+        "2001:db8::1",
+        ip_geocoder=lambda _value: {
+            "region_id": "province-vl",
+            "region_label": f"lookup for {expanded_ip}",
+        },
+    )
+
+    assert expanded_ip not in repr(result)
+
+
 def test_ip_route_never_returns_or_persists_raw_client_ip(
     client, logged_in_user, monkeypatch
 ):
@@ -322,3 +408,39 @@ def test_configured_reverse_geocoder_uses_pinned_http_boundary(
     assert len(calls) == 1
     assert calls[0][0].startswith("https://geo.example/resolve?")
     assert isinstance(calls[0][2], EgressPolicy)
+
+
+@pytest.mark.parametrize(
+    ("environment_name", "resolver_call", "raw_value"),
+    [
+        (
+            "LOCATION_REVERSE_GEOCODER_URL",
+            lambda: configured_reverse_geocoder(10.25, 105.97),
+            "10.25",
+        ),
+        (
+            "LOCATION_IP_GEOCODER_URL",
+            lambda: configured_ip_geocoder("203.0.113.8"),
+            "203.0.113.8",
+        ),
+    ],
+)
+def test_configured_location_providers_reject_plaintext_http_before_egress(
+    monkeypatch, environment_name, resolver_call, raw_value
+):
+    calls = []
+
+    class FakePinnedClient:
+        def get(self, url, *, user_agent, policy):
+            calls.append(url)
+            raise AssertionError("plaintext provider must not be called")
+
+    monkeypatch.setenv(environment_name, "http://geo.example/resolve")
+    monkeypatch.setattr(location_resolver, "_PINNED_HTTP", FakePinnedClient())
+
+    with pytest.raises(LocationProviderError) as error:
+        resolver_call()
+
+    assert str(error.value) == "Location provider unavailable"
+    assert raw_value not in repr(error.value)
+    assert calls == []

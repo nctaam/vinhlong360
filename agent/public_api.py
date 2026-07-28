@@ -1002,7 +1002,6 @@ async def get_my_preference_consents(
 async def resolve_my_location(
     request: Request,
     response: Response,
-    body: Any = Body(...),
     user=Depends(require_user),
     _csrf=Depends(require_csrf),
     reverse_geocoder: ReverseGeocoder = Depends(get_reverse_geocoder),
@@ -1018,6 +1017,7 @@ async def resolve_my_location(
         "Too many location resolution requests",
     )
     try:
+        body = await request.json()
         validated = LocationResolveIn.model_validate(body)
         if validated.mode == "gps":
             if validated.latitude is None or validated.longitude is None:
@@ -1036,7 +1036,7 @@ async def resolve_my_location(
                 get_client_ip(request),
                 ip_geocoder,
             )
-    except (LocationInputError, ValidationError):
+    except (LocationInputError, ValidationError, ValueError):
         raise HTTPException(422, "Invalid location input") from None
     response.headers["Cache-Control"] = "no-store"
     return asdict(resolution)
