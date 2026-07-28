@@ -59,25 +59,14 @@ def require_pg():
 
 # ── Auth Dependencies ──
 
-def _mark_authenticated_request(request: Request, user: dict | None) -> None:
-    """Record the resolved user for final response cache classification."""
-    if user and user.get("id") is not None:
-        request.state.authenticated_user_id = str(user["id"])
-    elif hasattr(request.state, "authenticated_user_id"):
-        del request.state.authenticated_user_id
-
-
 async def get_current_user(request: Request) -> dict | None:
     """Returns current user or None. Does NOT raise."""
-    user = await _get_current_user_or_none(request)
-    _mark_authenticated_request(request, user)
-    return user
+    return await _get_current_user_or_none(request)
 
 
 async def require_user(request: Request) -> dict:
     """Requires authenticated user. Raises 401 if not logged in."""
     user = await _get_current_user_or_none(request)
-    _mark_authenticated_request(request, user)
     if not user:
         raise HTTPException(401, "Vui lòng đăng nhập để thực hiện thao tác này")
     return user
@@ -87,7 +76,6 @@ def require_role(*roles: str):
     """Factory: requires user with one of the given roles."""
     async def dep(request: Request) -> dict:
         user = await _get_current_user_or_none(request)
-        _mark_authenticated_request(request, user)
         if not user:
             raise HTTPException(401, "Vui lòng đăng nhập")
         if user.get("role") not in roles:
