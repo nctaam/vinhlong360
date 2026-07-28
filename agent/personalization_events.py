@@ -55,10 +55,6 @@ PERSONALIZATION_INTEREST_KEYS = frozenset(
     {"craft", "culture", "food", "garden", "local_products", "stay"}
 )
 _NORMALIZED_ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,199}$")
-_PHONE_LIKE_ID_RE = re.compile(r"^\d{8,15}$")
-_ENCODED_NUMERIC_ID_RE = re.compile(
-    r"^(\d{1,3})[-_](\d{1,6})[-_](\d{1,3})[-_](\d{1,6})$"
-)
 _LEGACY_EVENT_FIELDS = frozenset(
     {
         "ts",
@@ -117,23 +113,9 @@ def _optional_identifier(value: Any, field: str) -> str | None:
     normalized = _bounded_text(value, 200, lower=True)
     if normalized is None:
         return None
-    if not _NORMALIZED_ID_RE.fullmatch(normalized) or _looks_sensitive_id(normalized):
+    if not _NORMALIZED_ID_RE.fullmatch(normalized):
         raise PersonalizationEventError(f"Invalid {field}")
     return normalized
-
-
-def _looks_sensitive_id(value: str) -> bool:
-    if _PHONE_LIKE_ID_RE.fullmatch(value):
-        return True
-    match = _ENCODED_NUMERIC_ID_RE.fullmatch(value)
-    if match is None:
-        return False
-    first, first_fraction, second, second_fraction = match.groups()
-    if all(int(part) <= 255 for part in match.groups()):
-        return True
-    latitude = float(f"{first}.{first_fraction}")
-    longitude = float(f"{second}.{second_fraction}")
-    return latitude <= 90 and longitude <= 180
 
 
 def _optional_controlled_key(
@@ -181,6 +163,30 @@ def _interest_keys(value: Any) -> list[str]:
     return normalized
 
 
+def _canonical_area_id(entity: Mapping[str, Any]) -> str | None:
+    for key in ("placeId", "area", "legacyArea"):
+        try:
+            area_id = _optional_identifier(entity.get(key), "area_id")
+        except PersonalizationEventError:
+            continue
+        if area_id is not None:
+            return area_id
+    return None
+
+
+def _canonical_entity_fields(entity_id: str) -> tuple[str, str, str | None]:
+    entity = db.get_entity(entity_id)
+    if entity is None:
+        raise PersonalizationEventError("Invalid entity_id")
+    canonical_id = _optional_identifier(entity.get("id"), "entity_id")
+    canonical_type = _controlled_key(
+        entity.get("type"), "entity_type", PERSONALIZATION_ENTITY_TYPES
+    )
+    if canonical_id is None:
+        raise PersonalizationEventError("Invalid entity_id")
+    return canonical_id, canonical_type, _canonical_area_id(entity)
+
+
 def _normalized_event(event: Mapping[str, Any]) -> dict[str, Any]:
     if not isinstance(event, Mapping):
         raise PersonalizationEventError("Event must be an object")
@@ -188,6 +194,11 @@ def _normalized_event(event: Mapping[str, Any]) -> dict[str, Any]:
     expires_at = _timestamp(
         event.get("expires_at"), occurred_at + timedelta(days=EVENT_TTL_DAYS)
     )
+    entity_id = _optional_identifier(event.get("entity_id"), "entity_id")
+    entity_type: str | None = None
+    area_id: str | None = None
+    if entity_id is not None:
+        entity_id, entity_type, area_id = _canonical_entity_fields(entity_id)
     return {
         "event_type": _controlled_key(
             event.get("event_type"), "event_type", PERSONALIZATION_EVENT_TYPES
@@ -195,11 +206,9 @@ def _normalized_event(event: Mapping[str, Any]) -> dict[str, Any]:
         "context": _controlled_key(
             event.get("context") or "unknown", "context", PERSONALIZATION_CONTEXTS
         ),
-        "entity_id": _optional_identifier(event.get("entity_id"), "entity_id"),
-        "entity_type": _optional_controlled_key(
-            event.get("entity_type"), "entity_type", PERSONALIZATION_ENTITY_TYPES
-        ),
-        "area_id": _optional_identifier(event.get("area_id"), "area_id"),
+        "entity_id": entity_id,
+        "entity_type": entity_type,
+        "area_id": area_id,
         "interest_keys": _interest_keys(event.get("interest_keys")),
         "occurred_at": occurred_at,
         "expires_at": expires_at,

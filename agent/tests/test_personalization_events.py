@@ -398,7 +398,29 @@ def auth_client(pg_db, users, monkeypatch):
         )
 
 
-def test_event_writer_drops_sensitive_and_arbitrary_fields(pg_db, users):
+@pytest.fixture
+def canonical_event_entities(pg_db):
+    entities = {
+        "entity-1": ("dish", "province-vl"),
+        "craft_village_x": ("economy", "ward-economy"),
+        "0901234567": ("dish", "ward-numeric"),
+        "2024-01-02-01": ("product", "ward-four-part"),
+    }
+    for entity_id, (entity_type, place_id) in entities.items():
+        _seed_entity(
+            pg_db,
+            entity_id,
+            name=f"Canonical {entity_id}",
+            entity_type=entity_type,
+            area=f"Label {place_id}",
+            place_id=place_id,
+        )
+    return entities
+
+
+def test_event_writer_drops_sensitive_and_arbitrary_fields(
+    pg_db, users, canonical_event_entities
+):
     owner, _ = users
     write_personalization_event(
         owner,
@@ -443,11 +465,11 @@ _SMUGGLED_VALUES = (
 
 @pytest.mark.parametrize(
     "carrier",
-    ("event_type", "context", "entity_id", "entity_type", "area_id", "interest_keys"),
+    ("event_type", "context", "entity_id", "interest_keys"),
 )
 @pytest.mark.parametrize("smuggled", _SMUGGLED_VALUES)
-def test_direct_writer_rejects_sensitive_text_in_every_allowed_carrier(
-    pg_db, users, carrier, smuggled
+def test_direct_writer_rejects_sensitive_text_in_every_validated_carrier(
+    pg_db, users, canonical_event_entities, carrier, smuggled
 ):
     owner, _ = users
     event = {
@@ -476,13 +498,11 @@ def test_direct_writer_rejects_sensitive_text_in_every_allowed_carrier(
         ("event_type", "so dien thoai rieng tu"),
         ("context", "203.0.113.8"),
         ("entity_id", "2001:db8::1"),
-        ("entity_type", "10.25,105.97"),
-        ("area_id", '{"metadata":"private"}'),
         ("interest_keys", "so dien thoai rieng tu"),
     ),
 )
 def test_event_route_rejects_smuggling_without_storage_export_or_scoring(
-    auth_client, pg_db, carrier, smuggled
+    auth_client, pg_db, canonical_event_entities, carrier, smuggled
 ):
     _set_preferences(pg_db, auth_client.owner, personalization_enabled=True)
     payload = {
@@ -520,6 +540,14 @@ def test_direct_writer_accepts_normalized_slug_and_uuid_identifiers(
     pg_db, users, entity_id
 ):
     owner, _ = users
+    _seed_entity(
+        pg_db,
+        entity_id,
+        name=f"Canonical {entity_id}",
+        entity_type="dish",
+        area="Vinh Long",
+        place_id="province-vl",
+    )
 
     write_personalization_event(
         owner,
@@ -536,20 +564,18 @@ def test_direct_writer_accepts_normalized_slug_and_uuid_identifiers(
     assert read_personalization_events(owner, cutoff=None)[0]["entity_id"] == entity_id
 
 
-@pytest.mark.parametrize("carrier", ("entity_id", "area_id"))
-def test_direct_writer_rejects_oversized_identifiers_instead_of_truncating(
-    pg_db, users, carrier
+def test_direct_writer_rejects_oversized_entity_id_instead_of_truncating(
+    pg_db, users
 ):
     owner, _ = users
     event = {
         "event_type": "entity_view",
         "context": "entity",
-        "entity_id": "entity-1",
+        "entity_id": "a" * 201,
         "entity_type": "dish",
         "area_id": "province-vl",
         "interest_keys": ["food"],
     }
-    event[carrier] = "a" * 201
 
     with pytest.raises(personalization_events.PersonalizationEventError):
         write_personalization_event(owner, event)
@@ -557,50 +583,50 @@ def test_direct_writer_rejects_oversized_identifiers_instead_of_truncating(
     assert read_personalization_events(owner, cutoff=None) == []
 
 
-_IDENTIFIER_SHAPED_SENSITIVE_VALUES = (
-    "0901234567",
-    "203-0-113-8",
-    "10-2500-105-9700",
+_NON_MEMBER_IDENTIFIERS = (
+    "090-123-4567",
+    "phone-0901234567",
+    "ip-203-0-113-8",
+    "gps-10-2500-105-9700",
+    "safe-looking-slug",
 )
 
 
-@pytest.mark.parametrize("carrier", ("entity_id", "area_id"))
-@pytest.mark.parametrize("sensitive", _IDENTIFIER_SHAPED_SENSITIVE_VALUES)
-def test_direct_writer_rejects_identifier_shaped_sensitive_values(
-    pg_db, users, carrier, sensitive
+@pytest.mark.parametrize("entity_id", _NON_MEMBER_IDENTIFIERS)
+def test_direct_writer_rejects_every_non_member_entity_identifier(
+    pg_db, users, entity_id
 ):
     owner, _ = users
-    event = {
-        "event_type": "entity_view",
-        "context": "entity",
-        "entity_id": "entity-1",
-        "entity_type": "dish",
-        "area_id": "province-vl",
-        "interest_keys": ["food"],
-    }
-    event[carrier] = sensitive
 
     with pytest.raises(personalization_events.PersonalizationEventError):
-        write_personalization_event(owner, event)
+        write_personalization_event(
+            owner,
+            {
+                "event_type": "entity_view",
+                "context": "entity",
+                "entity_id": entity_id,
+                "entity_type": "dish",
+                "area_id": "client-area",
+                "interest_keys": ["food"],
+            },
+        )
 
     assert read_personalization_events(owner, cutoff=None) == []
 
 
-@pytest.mark.parametrize("carrier", ("entity_id", "area_id"))
-@pytest.mark.parametrize("sensitive", _IDENTIFIER_SHAPED_SENSITIVE_VALUES)
-def test_event_route_rejects_identifier_shaped_sensitive_values_without_use(
-    auth_client, pg_db, carrier, sensitive
+@pytest.mark.parametrize("entity_id", _NON_MEMBER_IDENTIFIERS)
+def test_event_route_rejects_every_non_member_identifier_without_use(
+    auth_client, pg_db, entity_id
 ):
     _set_preferences(pg_db, auth_client.owner, personalization_enabled=True)
     payload = {
         "event_type": "entity_view",
         "context": "entity",
-        "entity_id": "entity-1",
+        "entity_id": entity_id,
         "entity_type": "dish",
-        "area_id": "province-vl",
+        "area_id": "client-area",
         "interest_keys": ["food"],
     }
-    payload[carrier] = sensitive
 
     response = auth_client.client.post(
         "/api/me/events", json=payload, headers=auth_client.csrf_headers
@@ -612,7 +638,7 @@ def test_event_route_rejects_identifier_shaped_sensitive_values_without_use(
 
     assert response.status_code == 422
     assert response.json() == {"detail": "Invalid personalization event"}
-    assert sensitive not in response.text
+    assert entity_id not in response.text
     assert exported.status_code == 200
     assert exported.json()["personalization"]["events"] == []
     assert profile["signal_count"] == 0
@@ -622,69 +648,100 @@ def test_event_route_rejects_identifier_shaped_sensitive_values_without_use(
 
 
 @pytest.mark.parametrize(
-    ("payload", "expected"),
+    ("entity_id", "canonical_type", "canonical_area"),
     (
-        (
-            {
-                "event_type": "search",
-                "context": "search_trending",
-                "query": "bun nuoc leo",
-                "metadata": {},
-            },
-            {
-                "event_type": "search",
-                "context": "search_trending",
-                "entity_id": None,
-                "entity_type": None,
-                "area_id": None,
-            },
-        ),
-        (
-            {
-                "event_type": "search",
-                "context": "search_submit",
-                "query": "buoi nam roi",
-                "metadata": {},
-            },
-            {
-                "event_type": "search",
-                "context": "search_submit",
-                "entity_id": None,
-                "entity_type": None,
-                "area_id": None,
-            },
-        ),
-        (
-            {
-                "event_type": "entity_view",
-                "context": "entity",
-                "entity_id": "craft_village_x",
-                "entity_type": "economy",
-                "entity_name": "Canonical entity",
-                "area": "province-vl",
-                "metadata": {},
-            },
-            {
-                "event_type": "entity_view",
-                "context": "entity",
-                "entity_id": "craft_village_x",
-                "entity_type": "economy",
-                "area_id": None,
-            },
-        ),
+        ("craft_village_x", "economy", "ward-economy"),
+        ("0901234567", "dish", "ward-numeric"),
+        ("2024-01-02-01", "product", "ward-four-part"),
     ),
 )
-def test_event_route_accepts_live_frontend_and_canonical_entity_contracts(
-    auth_client, payload, expected
+def test_direct_writer_derives_fields_from_canonical_entity_membership(
+    pg_db,
+    users,
+    canonical_event_entities,
+    entity_id,
+    canonical_type,
+    canonical_area,
+):
+    owner, _ = users
+    write_personalization_event(
+        owner,
+        {
+            "event_type": "entity_view",
+            "context": "entity",
+            "entity_id": entity_id,
+            "entity_type": "person",
+            "area_id": "spoofed-client-area",
+            "interest_keys": ["food"],
+        },
+    )
+
+    row = read_personalization_events(owner, cutoff=None)[0]
+    assert row["entity_id"] == entity_id
+    assert row["entity_type"] == canonical_type
+    assert row["area_id"] == canonical_area
+
+
+@pytest.mark.parametrize(
+    ("entity_id", "canonical_type", "canonical_area"),
+    (
+        ("craft_village_x", "economy", "ward-economy"),
+        ("0901234567", "dish", "ward-numeric"),
+        ("2024-01-02-01", "product", "ward-four-part"),
+    ),
+)
+def test_event_route_derives_fields_from_canonical_entity_membership(
+    auth_client,
+    canonical_event_entities,
+    entity_id,
+    canonical_type,
+    canonical_area,
 ):
     response = auth_client.client.post(
-        "/api/me/events", json=payload, headers=auth_client.csrf_headers
+        "/api/me/events",
+        json={
+            "event_type": "entity_view",
+            "context": "entity",
+            "entity_id": entity_id,
+            "entity_type": "person",
+            "area_id": "spoofed-client-area",
+            "entity_name": "Spoofed client name",
+            "metadata": {},
+        },
+        headers=auth_client.csrf_headers,
     )
 
     assert response.status_code == 202, response.text
     assert response.headers["Cache-Control"] == "no-store"
     row = read_personalization_events(auth_client.owner, cutoff=None)[0]
-    assert {key: row[key] for key in expected} == expected
+    assert row["entity_id"] == entity_id
+    assert row["entity_type"] == canonical_type
+    assert row["area_id"] == canonical_area
+
+
+@pytest.mark.parametrize("context", ("search_trending", "search_submit"))
+def test_search_route_accepts_without_entity_and_drops_client_entity_fields(
+    auth_client, context
+):
+    response = auth_client.client.post(
+        "/api/me/events",
+        json={
+            "event_type": "search",
+            "context": context,
+            "query": "bun nuoc leo",
+            "entity_type": "economy",
+            "area_id": "090-123-4567",
+            "metadata": {},
+        },
+        headers=auth_client.csrf_headers,
+    )
+
+    assert response.status_code == 202, response.text
+    row = read_personalization_events(auth_client.owner, cutoff=None)[0]
+    assert row["context"] == context
+    assert row["entity_id"] is None
+    assert row["entity_type"] is None
+    assert row["area_id"] is None
 
 
 def test_event_reader_uses_strict_cutoff_expiry_and_hard_limit(pg_db, users):
@@ -949,7 +1006,7 @@ def test_repeated_reset_route_keeps_one_monotonic_cutoff(logged_in_client, pg_db
 
 
 def test_event_route_persists_safe_owner_event_without_legacy_jsonl(
-    logged_in_client, users, tmp_path, monkeypatch
+    logged_in_client, users, canonical_event_entities, tmp_path, monkeypatch
 ):
     owner, other = users
     legacy_path = tmp_path / "new-write-must-not-use-legacy.jsonl"
@@ -1043,13 +1100,22 @@ def _set_preferences(pg_db, user_id: str, **values) -> None:
         )
 
 
-def _seed_entity(pg_db, entity_id: str, *, name: str, entity_type: str, area: str):
+def _seed_entity(
+    pg_db,
+    entity_id: str,
+    *,
+    name: str,
+    entity_type: str,
+    area: str,
+    place_id: str | None = None,
+):
     with pg_db._conn() as conn:
         pg_db._execute(
             conn,
-            "INSERT INTO entities (id, type, name, summary, area, status, verified) "
-            "VALUES (%s, %s, %s, %s, %s, 'published', 1)",
-            (entity_id, entity_type, name, name, area),
+            "INSERT INTO entities "
+            "(id, type, name, summary, area, \"placeId\", status, verified) "
+            "VALUES (%s, %s, %s, %s, %s, %s, 'published', 1)",
+            (entity_id, entity_type, name, name, area, place_id),
         )
 
 
