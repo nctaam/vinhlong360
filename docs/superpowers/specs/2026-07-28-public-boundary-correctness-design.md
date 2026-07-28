@@ -70,17 +70,23 @@ permission. Self access is always allowed.
 
 ### Personalized cache policy
 
-Introduce one response helper for endpoints that are public for anonymous users
-but personalized for authenticated users:
+Centralize the final response classification in middleware rather than relying
+on every endpoint to select the correct header. Successful optional-auth
+resolution records the authenticated viewer on request state; invalid or absent
+credentials do not. The final response policy then applies:
 
 - anonymous response: retain the endpoint's existing short public cache policy;
 - authenticated response: `Cache-Control: private, no-store`;
 - API/auth/admin responses: preserve existing `Vary` members and include both
-  `Authorization` and `Cookie`.
+  `Authorization` and `Cookie`;
+- any authenticated API response: override an endpoint-level public header with
+  `Cache-Control: private, no-store`.
 
-Apply it to entity reviews, search, and user engagement. This keeps anonymous
-performance while preventing `my_review`, block/mute filtering, reactions, or
-privacy decisions from entering a shared cache.
+Entity reviews, search, and user engagement already use optional authentication
+and therefore become protected without duplicating cache decisions inside those
+handlers. This keeps anonymous performance while preventing `my_review`,
+block/mute filtering, reactions, or privacy decisions from entering a shared
+cache. Deployment must purge any previously shared cached variants.
 
 ### Truthful logout
 
@@ -94,6 +100,8 @@ privacy decisions from entering a shared cache.
 
 `UserMenu` catches the rejection and shows an error toast stating that logout
 did not complete. It must not navigate or present a logged-out state on failure.
+A generic CSRF `403` is not authoritative sign-out because the backend session
+may still be active.
 
 ### Frontend backend deadlines
 
@@ -108,6 +116,11 @@ override. SSR auth initialization uses the same bounded transport. Launch
 attestation and sitemap proxying use their narrower deadlines because they gate
 HTML or crawler responses. Deadline errors flow through existing degraded or
 fail-closed handling; no new retry loop is added.
+
+Authentication probes distinguish an authoritative `401` from transient
+deadline, network, and `5xx` failures. Only an authoritative absent/expired
+session clears previously established client auth state; transient failures
+preserve it.
 
 ## Compatibility
 
@@ -129,8 +142,8 @@ fail-closed handling; no new retry loop is added.
 - Backend deadline expiration uses the existing fetch error paths: launch
   attestation remains unavailable/fail-closed, guarded sitemap remains degraded,
   and ordinary callers receive their existing error handling.
-- Cache helpers merge `Vary` values case-insensitively and never remove a value
-  already set by an endpoint.
+- Final response policy merges `Vary` values case-insensitively and never removes
+  a value already set by an endpoint.
 
 ## Testing
 
