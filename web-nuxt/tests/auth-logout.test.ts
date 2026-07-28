@@ -66,6 +66,24 @@ afterEach(() => {
 })
 
 describe('useAuth logout', () => {
+  it('rejects and preserves auth state when the CSRF preflight fails', async () => {
+    const auth = seedAuthState()
+    csrfState().value = null
+    const csrfError = Object.assign(new Error('csrf preflight rejected'), {
+      response: { status: 401 },
+    })
+    mocks.fetch.mockRejectedValueOnce(csrfError)
+
+    await expect(auth.logout()).rejects.toThrow('csrf preflight rejected')
+
+    expect(mocks.fetch).toHaveBeenCalledTimes(1)
+    expect(mocks.fetch).not.toHaveBeenCalledWith('/auth/logout', expect.anything())
+    expect(auth.user.value?.id).toBe('user-1')
+    expect(auth.token.value).toBe('session-token')
+    expect(csrfState().value).toBeNull()
+    expect(auth.twoFactorChallenge.value).toEqual({ challenge_id: 'challenge-1' })
+  })
+
   it('rejects and preserves every auth state value when the backend rejects logout', async () => {
     const auth = seedAuthState()
     mocks.fetch.mockRejectedValueOnce(new Error('csrf rejected'))

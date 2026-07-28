@@ -32,16 +32,20 @@ export function useAuth() {
     return headers
   }
 
-  async function fetchCsrf() {
+  async function requestCsrf() {
     if (csrfToken.value) return csrfToken.value
+    const url = authEndpoint('/auth/csrf')
+    const res = await $fetch<{ csrf_token?: string }>(url, {
+      credentials: 'include',
+      headers: authTransportHeaders(),
+    })
+    csrfToken.value = res.csrf_token || null
+    return csrfToken.value
+  }
+
+  async function fetchCsrf() {
     try {
-      const url = authEndpoint('/auth/csrf')
-      const res = await $fetch<{ csrf_token?: string }>(url, {
-        credentials: 'include',
-        headers: authTransportHeaders(),
-      })
-      csrfToken.value = res.csrf_token || null
-      return csrfToken.value
+      return await requestCsrf()
     } catch (e: unknown) {
       csrfToken.value = null
       if (getStatusCode(e) === 401) {
@@ -154,7 +158,7 @@ export function useAuth() {
   }
 
   async function logout() {
-    await fetchCsrf()
+    await requestCsrf()
     await $fetch('/auth/logout', {
       method: 'POST',
       credentials: 'include',
