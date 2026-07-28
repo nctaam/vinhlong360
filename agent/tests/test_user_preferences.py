@@ -2,13 +2,14 @@ import sqlite3
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from uuid import uuid4
 
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import user_preferences
-from database import Database
+from database import Database, db as live_db
 from user_preferences import (
     PreferenceRevisionConflict,
     PreferenceValidationError,
@@ -18,6 +19,10 @@ from user_preferences import (
     patch_preferences,
     recommendation_cutoff,
     record_preference_consent,
+)
+
+pg_only = pytest.mark.skipif(
+    not live_db._use_pg, reason="PostgreSQL preference contract requires DATABASE_URL."
 )
 
 
@@ -138,6 +143,65 @@ def test_disabled_location_does_not_accept_resolver_regions(location_source):
     assert merged["location_source"] == "default"
 
 
+@pytest.mark.parametrize("location_source", ["gps", "ip"])
+def test_disabling_location_clears_only_resolver_derived_region(location_source):
+    merged = merge_preference_patch(
+        current={
+            "region_id": "province-vl",
+            "region_label": "Vinh Long",
+            "region_scope": "province",
+            "location_source": location_source,
+            "location_accuracy": "province",
+            "location_consent_state": "granted",
+            "location_enabled": True,
+            "personalization_enabled": True,
+            "explicit_interests": ["food"],
+            "consent_version": "v1",
+            "revision": 4,
+        },
+        patch={"location_enabled": False},
+        expected_revision=4,
+    )
+
+    assert merged == {
+        "region_id": None,
+        "region_label": None,
+        "region_scope": "unknown",
+        "location_source": "default",
+        "location_accuracy": "unknown",
+        "location_consent_state": "granted",
+        "location_enabled": False,
+        "personalization_enabled": True,
+        "explicit_interests": ["food"],
+        "recommendation_reset_at": None,
+        "consent_version": "v1",
+        "revision": 5,
+    }
+
+
+def test_disabling_location_preserves_manual_region():
+    merged = merge_preference_patch(
+        current={
+            "region_id": "province-vl",
+            "region_label": "Vinh Long",
+            "region_scope": "province",
+            "location_source": "manual",
+            "location_accuracy": "province",
+            "location_enabled": True,
+            "revision": 4,
+        },
+        patch={"location_enabled": False},
+        expected_revision=4,
+    )
+
+    assert merged["region_id"] == "province-vl"
+    assert merged["region_label"] == "Vinh Long"
+    assert merged["region_scope"] == "province"
+    assert merged["location_source"] == "manual"
+    assert merged["location_accuracy"] == "province"
+    assert merged["location_enabled"] is False
+
+
 def test_recommendation_cutoff_parses_utc_timestamp():
     cutoff = recommendation_cutoff(
         {"recommendation_reset_at": "2026-07-28T03:04:05Z"}
@@ -187,6 +251,92 @@ def preference_database(tmp_path, monkeypatch):
         )
     monkeypatch.setattr(user_preferences, "db", database)
     return database
+
+
+@pytest.fixture
+def postgres_preference_user():
+    if not live_db._use_pg:
+        pytest.skip("PostgreSQL preference contract requires DATABASE_URL.")
+    user_id = str(uuid4())
+    with live_db._conn() as conn:
+        live_db._execute(
+            conn,
+            f"INSERT INTO users (id, phone, display_name) "
+            f"VALUES ({live_db._ph}::uuid, {live_db._ph}, {live_db._ph})",
+            (user_id, f"np1-{user_id}", "NP1 preference test"),
+        )
+    try:
+        yield user_id
+    finally:
+        with live_db._conn() as conn:
+            live_db._execute(
+                conn,
+                f"DELETE FROM users WHERE id = {live_db._ph}::uuid",
+                (user_id,),
+            )
+
+
+@pg_only
+def test_postgres_patch_round_trips_uuid_jsonb_and_returned_snapshot(
+    postgres_preference_user,
+):
+    snapshot = patch_preferences(
+        postgres_preference_user,
+        {
+            "region_id": "province-vl",
+            "region_label": "Vinh Long",
+            "region_scope": "province",
+            "location_source": "manual",
+            "explicit_interests": ["food", "culture"],
+        },
+        expected_revision=0,
+    )
+
+    assert snapshot["region_id"] == "province-vl"
+    assert snapshot["explicit_interests"] == ["food", "culture"]
+    assert snapshot["revision"] == 1
+    assert load_preferences(postgres_preference_user) == snapshot
+
+
+@pg_only
+def test_postgres_update_clears_resolver_region_and_rejects_stale_revision(
+    postgres_preference_user,
+):
+    first = patch_preferences(
+        postgres_preference_user,
+        {
+            "region_id": "province-vl",
+            "region_label": "Vinh Long",
+            "region_scope": "province",
+            "location_source": "gps",
+            "location_accuracy": "province",
+            "location_enabled": True,
+            "explicit_interests": ["food"],
+        },
+        expected_revision=0,
+    )
+
+    disabled = patch_preferences(
+        postgres_preference_user,
+        {"location_enabled": False},
+        expected_revision=first["revision"],
+    )
+
+    assert disabled["region_id"] is None
+    assert disabled["region_label"] is None
+    assert disabled["region_scope"] == "unknown"
+    assert disabled["location_source"] == "default"
+    assert disabled["location_accuracy"] == "unknown"
+    assert disabled["explicit_interests"] == ["food"]
+    assert disabled["revision"] == 2
+    with pytest.raises(PreferenceRevisionConflict) as conflict:
+        patch_preferences(
+            postgres_preference_user,
+            {"personalization_enabled": True},
+            expected_revision=1,
+        )
+    assert conflict.value.current_revision == 2
+    assert load_preferences(postgres_preference_user) == disabled
 
 
 def test_load_preferences_returns_privacy_safe_public_defaults(preference_database):

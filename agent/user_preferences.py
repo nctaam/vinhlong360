@@ -258,7 +258,22 @@ def merge_preference_patch(
         "location_enabled", current_snapshot["location_enabled"]
     )
     resolver_disabled = not location_enabled and patch_source in {"gps", "ip"}
-    if region_change and (
+    disabling_existing_resolver = (
+        normalized.get("location_enabled") is False
+        and current_source in {"gps", "ip"}
+        and patch_source in {"gps", "ip"}
+    )
+    if disabling_existing_resolver:
+        normalized.update(
+            {
+                "region_id": None,
+                "region_label": None,
+                "region_scope": "unknown",
+                "location_source": "default",
+                "location_accuracy": "unknown",
+            }
+        )
+    elif region_change and (
         resolver_disabled or (current_snapshot["region_id"] and lower_quality)
     ):
         for field in _REGION_FIELDS:
