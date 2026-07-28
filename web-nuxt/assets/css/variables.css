@@ -5,6 +5,72 @@
 
 :root {
   color-scheme: light;  /* native UI (thanh cuộn, form, ô chọn) khớp theme sáng */
+  /* ── MEKONG SIGNAL ATLAS: primitive sRGB floor for old/Zalo webviews ── */
+  --alluvial-paper: #F9F7F1;
+  --surface-white: #FDFCF9;
+  --mekong-ink: #081A16;
+  --mekong-muted: #415450;
+  --river-700: #00434E;
+  --mangthit-600: #95402B;
+  --mangthit-700: #722B1A;
+  --orchard-600: #255D34;
+  --harvest-600: #B07A20;
+  --coral-error: #BD413F;
+  --alluvial-line: #DBD7CD;
+  --night-canvas: #071210;
+  --night-surface: #111D1B;
+  --night-raised: #1D2927;
+  --night-text: #EDEBE5;
+  --night-muted: #A4B1AE;
+  --night-river: #7DAEBA;
+  --night-clay: #C78575;
+  --night-leaf: #7CA483;
+  --night-amber: #CEA770;
+  --night-error: #DF7F78;
+
+  /* Semantic roles consumed by all new shell and component work. */
+  --color-canvas: var(--alluvial-paper);
+  --color-surface: var(--surface-white);
+  --color-surface-subtle: #F1EEE6;
+  --color-surface-raised: var(--surface-white);
+  --color-text: var(--mekong-ink);
+  --color-text-muted: var(--mekong-muted);
+  --color-border: var(--alluvial-line);
+  --color-action: var(--river-600);
+  --color-action-hover: var(--river-700);
+  --color-brand: var(--mangthit-600);
+  --color-focus: var(--river-600);
+  --color-success: var(--orchard-600);
+  --color-warning: var(--harvest-600);
+  --color-error: var(--coral-error);
+  --color-source-official: var(--river-600);
+  --color-source-verified: var(--mangthit-600);
+  --color-source-community: var(--orchard-600);
+  --color-admin-chrome: #09231E;
+  --color-admin-chrome-dark: #061713;
+  --color-admin-text: #EDF4F0;
+  --color-admin-text-muted: #B9CBC5;
+  --color-admin-label: #8EAAA1;
+  --color-admin-action: #7DAEBA;
+  --color-admin-action-strong: #9CC7D0;
+  --color-admin-brand: #D39A87;
+  --color-admin-badge: #9C3F3D;
+  --color-admin-avatar: #315E55;
+  --color-admin-divider: rgba(255, 255, 255, .1);
+  --color-admin-border: rgba(255, 255, 255, .18);
+  --color-admin-hover-border: rgba(255, 255, 255, .08);
+  --color-admin-hover: rgba(255, 255, 255, .055);
+  --color-admin-active-border: rgba(125, 174, 186, .28);
+  --color-admin-active: rgba(125, 174, 186, .12);
+  --color-shell-scrim: rgba(0, 0, 0, .52);
+
+  /* Shell/component contracts. */
+  --radius-control: 8px;
+  --radius-surface: 12px;
+  --radius-sheet: 20px;
+  --shell-public-header-height: 150px;
+  --shell-admin-sidebar-width: 272px;
+  --shell-admin-sidebar-collapsed-width: 76px;
   /* ── TẦNG 1: PRIMITIVE — thang màu thô, đặt tên theo cảnh quan Tây Nam Bộ ── */
   /* Clay (gạch nung Mang Thít) */
   --clay-50:  #F7E9E3;
@@ -24,7 +90,7 @@
   --leaf-700: #1F5C41;
   /* River (sông nước phù sa) */
   --river-100: #DCEAEC;
-  --river-600: #33646E;
+  --river-600: #035A69;
   /* Sand (nền ấm) + Ink (chữ) — neutral */
   --sand-50:  #FAF4E8;
   --sand-100: #F5EDD9;
@@ -36,15 +102,15 @@
   --white:    #FFFFFF;
 
   /* ── TẦNG 2: SEMANTIC — alias ngữ nghĩa (giữ tên cũ để tương thích) ── */
-  --primary: var(--clay-600);
-  --primary-dark: var(--clay-700);
+  --primary: var(--color-brand);
+  --primary-dark: var(--mangthit-700);
   --primary-light: var(--clay-400);
   --accent: var(--amber-500);
   --accent-dark: var(--amber-600);
   --accent-text: #9A6612;  /* amber dark enough for AA when used as TEXT on light bg */
-  --secondary: var(--leaf-600);
+  --secondary: var(--color-success);
   --secondary-dark: var(--leaf-700);
-  --tertiary: var(--river-600);
+  --tertiary: var(--color-action);
   /* Brand foreground (dùng làm CHỮ) — light = base; dark lighten (xem .dark) để đạt WCAG trên nền tối */
   --primary-fg: var(--primary);
   --primary-fg-strong: var(--primary-dark);
@@ -69,24 +135,24 @@
   --error-container: color-mix(in oklch, var(--error) 10%, var(--card));
   --on-error-container: #8B1A10;
 
-  --bg: var(--sand-50);
+  --bg: var(--color-canvas);
   --bg-warm: var(--sand-100);
   --bg-alt: var(--sand-200);
-  --ink: var(--ink-900);
-  --muted: var(--ink-700);
+  --ink: var(--color-text);
+  --muted: var(--color-text-muted);
   --ink-secondary: var(--ink-700);
   --ink-tertiary: #6B6B70;
-  --line: var(--sand-300);
+  --line: var(--color-border);
   --border: var(--sand-400);
   --border-input: #8F8676; /* viền control (input/select) — WCAG 1.4.11 ≥3:1 trên nền trắng */
-  --card: var(--white);
+  --card: var(--color-surface);
   --surface-translucent: rgba(255, 255, 255, .94); /* topbar/journey-bar/save-btn (blur) */
   /* alias semantic rõ nghĩa (tiện dùng dần ở component mới) */
   --surface: var(--card);
   --text: var(--ink);
   --text-muted: var(--muted);
   /* Status / feedback */
-  --success: #2E7D32;
+  --success: var(--color-success);
   --on-success: #FFFFFF;
   --success-bg: rgba(46, 125, 50, .08);
   --success-border: rgba(46, 125, 50, .25);
@@ -94,11 +160,11 @@
   --on-info: #FFFFFF;
   --info-bg: rgba(21, 101, 192, .08);
   --info-border: rgba(21, 101, 192, .25);
-  --warning: #e67e22;
+  --warning: var(--color-warning);
   --on-warning: #FFFFFF;
   --warning-bg: rgba(230, 126, 34, .08);
   --warning-border: rgba(230, 126, 34, .25);
-  --error: #D94F3D;
+  --error: var(--color-error);
   --danger: var(--error); /* alias: --danger was undefined; pages use var(--danger)/(--danger,#hex) */
   --error-bg: rgba(217, 79, 61, .08);
   --error-border: rgba(217, 79, 61, .25);
@@ -177,7 +243,7 @@
   --primary-focus: color-mix(in oklab, var(--primary) 92%, transparent);
 
   /* ── Typography scale (Apple HIG-inspired, base 16px) ── */
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display', system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-sans: 'Be Vietnam Pro', 'Segoe UI', system-ui, sans-serif;
   --font-display: var(--font-sans);
   /* ── Editorial / cinematic layer. Display = a DISTINCTIVE humanist old-style serif
      (Palatino/Iowan family — more character than Georgia) via a zero-download system stack,
@@ -463,20 +529,66 @@
   --cat-accommodation-accent: #5b6cc4;
 }
 
+/* Modern browsers receive perceptually uniform colors; the sRGB values above
+   remain the computed floor for stale Android and in-app Zalo webviews. */
+@supports (color: oklch(0% 0 0)) {
+  :root {
+    --alluvial-paper: oklch(97.5% 0.008 90);
+    --surface-white: oklch(99% 0.004 90);
+    --mekong-ink: oklch(20% 0.025 180);
+    --mekong-muted: oklch(43% 0.025 180);
+    --river-600: oklch(43% 0.075 215);
+    --river-700: oklch(35% 0.06 215);
+    --mangthit-600: oklch(48% 0.12 35);
+    --mangthit-700: oklch(39% 0.105 35);
+    --orchard-600: oklch(43% 0.09 150);
+    --harvest-600: oklch(62% 0.12 75);
+    --coral-error: oklch(55% 0.16 25);
+    --alluvial-line: oklch(88% 0.015 90);
+    --night-canvas: oklch(17% 0.018 180);
+    --night-surface: oklch(22% 0.018 180);
+    --night-raised: oklch(27% 0.018 180);
+    --night-text: oklch(94% 0.008 90);
+    --night-muted: oklch(75% 0.015 180);
+    --night-river: oklch(72% 0.055 215);
+    --night-clay: oklch(68% 0.085 35);
+    --night-leaf: oklch(68% 0.065 150);
+    --night-amber: oklch(75% 0.085 75);
+    --night-error: oklch(70% 0.12 25);
+  }
+}
+
 /* ── Dark mode: @nuxtjs/color-mode thêm class .dark vào <html>.
    Remap semantic tokens + lighten brand-foreground cho đạt WCAG trên nền tối.
    (preference 'system' → tự áp .dark theo OS; nút toggle ở header ghi đè.) ── */
 .dark {
   color-scheme: dark;  /* thanh cuộn/native-UI tối khớp theme (sửa: trước là 'normal') */
-  --bg: #232328;
-  --bg-warm: #2c2c32;
-  --bg-alt: #3c3c42;
-  --ink: #f5f5f7;
-  --muted: #b0b0b6;
-  --line: #4a4a50;
-  --border: #5e5e64;
+  --color-canvas: var(--night-canvas);
+  --color-surface: var(--night-surface);
+  --color-surface-subtle: #172320;
+  --color-surface-raised: var(--night-raised);
+  --color-text: var(--night-text);
+  --color-text-muted: var(--night-muted);
+  --color-border: #34423F;
+  --color-action: var(--night-river);
+  --color-action-hover: #9BC2CB;
+  --color-brand: var(--night-clay);
+  --color-focus: var(--night-river);
+  --color-success: var(--night-leaf);
+  --color-warning: var(--night-amber);
+  --color-error: var(--night-error);
+  --color-source-official: var(--color-action);
+  --color-source-verified: var(--color-brand);
+  --color-source-community: var(--color-success);
+  --bg: var(--color-canvas);
+  --bg-warm: var(--color-surface-subtle);
+  --bg-alt: var(--color-surface-raised);
+  --ink: var(--color-text);
+  --muted: var(--color-text-muted);
+  --line: var(--color-border);
+  --border: #50605C;
   --border-input: #8e8e94;
-  --card: #2e2e34;
+  --card: var(--color-surface);
   --surface-translucent: rgba(32, 32, 36, .88);
   --shadow: 0 1px 3px rgba(0, 0, 0, .3), 0 8px 32px rgba(0, 0, 0, .35);
   --shadow-xs: 0 1px 2px rgba(0,0,0,.15);
@@ -520,9 +632,9 @@
   --glass-light: rgba(255, 255, 255, .08);
   --glass-border: rgba(255, 255, 255, .14);
   --glass-medium: rgba(255, 255, 255, .16);
-  --warning: #f0a050;
+  --warning: var(--color-warning);
   --warning-bg: rgba(240, 160, 80, .12);
-  --error: #FF6961;
+  --error: var(--color-error);
   --danger: var(--error); /* alias (dark) — keeps var(--danger) on the dark error color */
   --error-bg: rgba(255, 105, 97, .12);
   --save-red: #FF6961;
@@ -554,7 +666,7 @@
   --error-container: color-mix(in oklch, var(--error) 18%, var(--card));
   --on-error-container: #FFB4AB;
   /* Status (dark) */
-  --success: #66BB6A;
+  --success: var(--color-success);
   --on-success: #1B3A1C;
   --success-bg: rgba(102, 187, 106, .12);
   --success-border: rgba(102, 187, 106, .3);
@@ -608,6 +720,25 @@
   --cat-dish-accent: #ef6f5e;
   --cat-craft-accent: #d4863e;
   --cat-accommodation-accent: #7b8ce0;
+}
+
+@supports (color: oklch(0% 0 0)) {
+  .dark {
+    --color-canvas: oklch(17% 0.018 180);
+    --color-surface: oklch(22% 0.018 180);
+    --color-surface-subtle: oklch(24% 0.018 180);
+    --color-surface-raised: oklch(27% 0.018 180);
+    --color-text: oklch(94% 0.008 90);
+    --color-text-muted: oklch(75% 0.015 180);
+    --color-border: oklch(36% 0.018 180);
+    --color-action: oklch(72% 0.055 215);
+    --color-action-hover: oklch(80% 0.045 215);
+    --color-brand: oklch(68% 0.085 35);
+    --color-focus: oklch(72% 0.055 215);
+    --color-success: oklch(68% 0.065 150);
+    --color-warning: oklch(75% 0.085 75);
+    --color-error: oklch(70% 0.12 25);
+  }
 }
 
 /* === Travel Platform UX Tokens (2026-06-27) === */

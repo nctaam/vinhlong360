@@ -1,112 +1,66 @@
 <template>
   <div class="admin-shell">
     <a href="#admin-main" class="skip-link">Chuyển đến nội dung chính</a>
-    <aside class="admin-sidebar" :class="{ collapsed: sidebarCollapsed }" aria-label="Menu quản trị">
+    <button
+      v-if="mobileSidebarOpen"
+      type="button"
+      class="admin-drawer-backdrop"
+      aria-label="Đóng menu quản trị"
+      @click="closeMobileSidebar"
+    ></button>
+    <aside
+      id="admin-mobile-drawer"
+      ref="mobileSidebar"
+      class="admin-sidebar"
+      :class="{ collapsed: sidebarCollapsed, 'mobile-open': mobileSidebarOpen }"
+      :role="mobileSidebarOpen ? 'dialog' : undefined"
+      :aria-modal="mobileSidebarOpen ? 'true' : undefined"
+      aria-label="Menu quản trị"
+    >
       <div class="admin-sidebar-head">
         <NuxtLink class="admin-brand" to="/admin">
           <span class="logo">vinhlong<span class="dot">360</span></span>
-          <small v-if="!sidebarCollapsed">Admin</small>
+          <small v-if="!sidebarCollapsed || mobileSidebarOpen">Bàn điều phối</small>
         </NuxtLink>
-        <button type="button" class="sidebar-toggle" aria-label="Thu gọn menu" @click="sidebarCollapsed = !sidebarCollapsed">
-          <span class="toggle-icon" :class="{ rotated: sidebarCollapsed }">&#9776;</span>
+        <button type="button" class="sidebar-toggle" :aria-label="sidebarCollapsed ? 'Mở rộng menu' : 'Thu gọn menu'" @click="sidebarCollapsed = !sidebarCollapsed">
+          <IconLine :name="sidebarCollapsed ? 'panel-left-open' : 'panel-left-close'" />
+        </button>
+        <button type="button" class="admin-mobile-close" aria-label="Đóng menu quản trị" @click="closeMobileSidebar">
+          <IconLine name="x" />
         </button>
       </div>
 
       <nav class="admin-nav" aria-label="Menu quản trị">
-        <div class="admin-nav-group">
-          <span class="admin-nav-group-label" v-if="!sidebarCollapsed">Tổng quan</span>
-          <NuxtLink to="/admin" :class="{ active: route.path === '/admin' }" :title="sidebarCollapsed ? 'Dashboard' : undefined">
-            <span class="nav-icon">&#128202;</span>
-            <span class="nav-text" v-if="!sidebarCollapsed">Dashboard</span>
-          </NuxtLink>
-          <NuxtLink to="/admin/thong-ke" :class="{ active: route.path === '/admin/thong-ke' }" :title="sidebarCollapsed ? 'Thống kê' : undefined">
-            <span class="nav-icon">&#128200;</span>
-            <span class="nav-text" v-if="!sidebarCollapsed">Thống kê</span>
-          </NuxtLink>
-        </div>
-
-        <div class="admin-nav-group">
-          <span class="admin-nav-group-label" v-if="!sidebarCollapsed">Nội dung</span>
-          <NuxtLink to="/admin/entities" :class="{ active: route.path === '/admin/entities' && !route.query.kind }" :title="sidebarCollapsed ? 'Tất cả entities' : undefined">
-            <span class="nav-icon">&#128203;</span>
-            <span class="nav-text" v-if="!sidebarCollapsed">Tất cả entities</span>
-          </NuxtLink>
-          <NuxtLink v-for="k in ADMIN_KINDS" :key="k.kind" class="nav-sub"
-            :to="{ path: '/admin/entities', query: { kind: k.kind } }"
-            :class="{ active: route.path === '/admin/entities' && route.query.kind === k.kind }"
-            :title="sidebarCollapsed ? k.label : undefined">
-            <span class="nav-icon">{{ k.emoji }}</span>
-            <span class="nav-text" v-if="!sidebarCollapsed">{{ k.label }}</span>
-          </NuxtLink>
-          <NuxtLink to="/admin/chua-phan-loai" :class="{ active: route.path === '/admin/chua-phan-loai' }" :title="sidebarCollapsed ? 'Chưa phân loại' : undefined">
-            <span class="nav-icon">&#128205;</span>
-            <span class="nav-text" v-if="!sidebarCollapsed">Chưa phân loại</span>
-            <span v-if="badges.unclassified" class="nav-badge">{{ badges.unclassified }}</span>
-          </NuxtLink>
-          <NuxtLink to="/admin/danh-ba" :class="{ active: route.path === '/admin/danh-ba' }" :title="sidebarCollapsed ? 'Danh bạ HC' : undefined">
-            <span class="nav-icon">&#127963;</span>
-            <span class="nav-text" v-if="!sidebarCollapsed">Danh bạ HC</span>
-          </NuxtLink>
-          <NuxtLink to="/admin/lich-trinh" :class="{ active: route.path === '/admin/lich-trinh' }" :title="sidebarCollapsed ? 'Lịch trình' : undefined">
-            <span class="nav-icon">&#128506;</span>
-            <span class="nav-text" v-if="!sidebarCollapsed">Lịch trình</span>
-          </NuxtLink>
-          <NuxtLink to="/admin/data-quality" :class="{ active: route.path === '/admin/data-quality' }" :title="sidebarCollapsed ? 'Chất lượng DL' : undefined">
-            <span class="nav-icon">&#128269;</span>
-            <span class="nav-text" v-if="!sidebarCollapsed">Chất lượng DL</span>
-          </NuxtLink>
-          <NuxtLink to="/admin/media" :class="{ active: route.path === '/admin/media' }" :title="sidebarCollapsed ? 'Thư viện ảnh' : undefined">
-            <span class="nav-icon">&#128444;</span>
-            <span class="nav-text" v-if="!sidebarCollapsed">Thư viện ảnh</span>
-          </NuxtLink>
-        </div>
-
-        <div class="admin-nav-group">
-          <span class="admin-nav-group-label" v-if="!sidebarCollapsed">Cộng đồng</span>
-          <NuxtLink to="/admin/kiem-duyet" :class="{ active: route.path === '/admin/kiem-duyet' }" :title="sidebarCollapsed ? 'Kiểm duyệt' : undefined">
-            <span class="nav-icon">&#128737;</span>
-            <span class="nav-text" v-if="!sidebarCollapsed">Kiểm duyệt</span>
-            <span v-if="badges.moderation" class="nav-badge">{{ badges.moderation }}</span>
-          </NuxtLink>
-          <NuxtLink to="/admin/duyet-anh" :class="{ active: route.path === '/admin/duyet-anh' }" :title="sidebarCollapsed ? 'Duyệt ảnh' : undefined">
-            <span class="nav-icon">&#128247;</span>
-            <span class="nav-text" v-if="!sidebarCollapsed">Duyệt ảnh</span>
-            <span v-if="badges.images" class="nav-badge">{{ badges.images }}</span>
-          </NuxtLink>
-          <NuxtLink to="/admin/users" :class="{ active: route.path === '/admin/users' }" :title="sidebarCollapsed ? 'Users' : undefined">
-            <span class="nav-icon">&#128101;</span>
-            <span class="nav-text" v-if="!sidebarCollapsed">Users</span>
-          </NuxtLink>
-          <NuxtLink to="/admin/bao-cao" :class="{ active: route.path === '/admin/bao-cao' }" :title="sidebarCollapsed ? 'Báo cáo' : undefined">
-            <span class="nav-icon">&#128681;</span>
-            <span class="nav-text" v-if="!sidebarCollapsed">Báo cáo</span>
-            <span v-if="badges.reports" class="nav-badge">{{ badges.reports }}</span>
-          </NuxtLink>
-        </div>
-
-        <div class="admin-nav-group">
-          <span class="admin-nav-group-label" v-if="!sidebarCollapsed">Hệ thống</span>
-          <NuxtLink to="/admin/duyet-tu-hoc" :class="{ active: route.path === '/admin/duyet-tu-hoc' }" :title="sidebarCollapsed ? 'Duyệt & Tools' : undefined">
-            <span class="nav-icon">&#129514;</span>
-            <span class="nav-text" v-if="!sidebarCollapsed">Duyệt & Tools</span>
-            <span v-if="badges.provisional" class="nav-badge">{{ badges.provisional }}</span>
-          </NuxtLink>
-          <NuxtLink to="/admin/ai" :class="{ active: route.path === '/admin/ai' }" :title="sidebarCollapsed ? 'Knowledge Agent' : undefined">
-            <span class="nav-icon">&#129302;</span>
-            <span class="nav-text" v-if="!sidebarCollapsed">Knowledge Agent</span>
-          </NuxtLink>
-          <NuxtLink to="/admin/nhat-ky" :class="{ active: route.path === '/admin/nhat-ky' }" :title="sidebarCollapsed ? 'Nhật ký' : undefined">
-            <span class="nav-icon">&#128220;</span>
-            <span class="nav-text" v-if="!sidebarCollapsed">Nhật ký</span>
-          </NuxtLink>
-          <NuxtLink to="/admin/cai-dat" :class="{ active: route.path.startsWith('/admin/cai-dat') }" :title="sidebarCollapsed ? 'Cài đặt trang' : undefined">
-            <span class="nav-icon">&#9881;</span>
-            <span class="nav-text" v-if="!sidebarCollapsed">Cài đặt trang</span>
-          </NuxtLink>
+        <div v-for="group in ADMIN_NAV_GROUPS" :key="group.id" class="admin-nav-group">
+          <span v-if="!sidebarCollapsed || mobileSidebarOpen" class="admin-nav-group-label">{{ group.label }}</span>
+          <template v-for="item in group.items" :key="item.id">
+            <NuxtLink
+              :to="item.to"
+              :class="{ active: isNavActive(item) }"
+              :title="sidebarCollapsed && !mobileSidebarOpen ? item.label : undefined"
+              @click="closeMobileSidebar"
+            >
+              <IconLine class="nav-icon" :name="item.icon" />
+              <span v-if="!sidebarCollapsed || mobileSidebarOpen" class="nav-text">{{ item.label }}</span>
+              <span v-if="item.badge && badges[item.badge]" class="nav-badge">{{ badges[item.badge] }}</span>
+            </NuxtLink>
+            <NuxtLink
+              v-for="child in item.children || []"
+              :key="child.id"
+              class="nav-sub"
+              :to="child.to"
+              :class="{ active: isNavActive(child) }"
+              :title="sidebarCollapsed && !mobileSidebarOpen ? child.label : undefined"
+              @click="closeMobileSidebar"
+            >
+              <IconLine class="nav-icon" :name="child.icon" />
+              <span v-if="!sidebarCollapsed || mobileSidebarOpen" class="nav-text">{{ child.label }}</span>
+            </NuxtLink>
+          </template>
         </div>
       </nav>
 
-      <div class="admin-sidebar-footer" v-if="!sidebarCollapsed">
+      <div v-if="!sidebarCollapsed || mobileSidebarOpen" class="admin-sidebar-footer">
         <div v-if="user" class="admin-user-info">
           <div class="admin-user-avatar">{{ user.display_name?.[0] || 'A' }}</div>
           <div class="admin-user-meta">
@@ -114,14 +68,25 @@
             <span class="admin-user-role">{{ user.role }}</span>
           </div>
         </div>
-        <NuxtLink to="/" class="back-link">&#8592; Về trang chủ</NuxtLink>
+        <NuxtLink to="/" class="back-link"><IconLine name="arrow-left" /> Về trang chủ</NuxtLink>
         <button type="button" class="dark-toggle" :aria-label="isDark ? 'Chế độ sáng' : 'Chế độ tối'" :title="isDark ? 'Chế độ sáng' : 'Chế độ tối'" @click="toggleDark">
-          {{ isDark ? '☀️' : '🌙' }}
+          <IconLine :name="isDark ? 'sun' : 'moon'" />
+          <span>{{ isDark ? 'Giao diện sáng' : 'Giao diện tối' }}</span>
         </button>
       </div>
     </aside>
     <main id="admin-main" class="admin-main">
       <div class="admin-topbar">
+        <button
+          type="button"
+          class="admin-mobile-menu"
+          :aria-expanded="mobileSidebarOpen"
+          aria-controls="admin-mobile-drawer"
+          aria-label="Mở menu quản trị"
+          @click="openMobileSidebar"
+        >
+          <IconLine name="menu" />
+        </button>
         <nav class="admin-crumbs" aria-label="Đường dẫn">
           <NuxtLink to="/admin" class="admin-crumb-root">AdminCP</NuxtLink>
           <template v-if="currentPageLabel">
@@ -129,6 +94,15 @@
             <span class="admin-crumb-current" aria-current="page">{{ currentPageLabel }}</span>
           </template>
         </nav>
+        <div class="admin-workstream" aria-label="Nhóm công việc hiện tại">
+          <span>Luồng việc</span>
+          <strong>{{ currentWorkstreamLabel }}</strong>
+        </div>
+        <button type="button" class="admin-command-trigger" aria-label="Mở bảng lệnh" @click="openCommandPalette">
+          <IconLine name="search" />
+          <span>Tìm nhanh</span>
+          <kbd>Ctrl K</kbd>
+        </button>
       </div>
       <NuxtErrorBoundary>
         <slot />
@@ -144,17 +118,41 @@
         </template>
       </NuxtErrorBoundary>
     </main>
-    <ClientOnly><LazyCommandPalette /></ClientOnly>
+    <ClientOnly><LazyCommandPalette ref="commandPalette" /></ClientOnly>
     <ClientOnly><LazyToastContainer /></ClientOnly>
     <ClientOnly><LazyConfirmDialog /></ClientOnly>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ADMIN_KINDS } from '~/utils/adminKinds'
+import {
+  ADMIN_NAV_GROUPS,
+  isAdminNavItemActive,
+  resolveAdminPageLabel,
+  type AdminNavItem,
+} from '~/utils/adminNavigation'
+
 const route = useRoute()
 const { user, fetchMe, authHeaders } = useAuth()
 const { prefs, setPref } = useAdminPrefs()
+const mobileSidebarOpen = ref(false)
+const mobileSidebar = ref<HTMLElement | null>(null)
+const commandPalette = ref<{ open: boolean } | null>(null)
+
+function openMobileSidebar() {
+  mobileSidebarOpen.value = true
+}
+
+function closeMobileSidebar() {
+  mobileSidebarOpen.value = false
+}
+
+function openCommandPalette() {
+  if (commandPalette.value) commandPalette.value.open = true
+}
+
+useModalA11y(mobileSidebarOpen, mobileSidebar, { onClose: closeMobileSidebar })
+
 const sidebarCollapsed = computed({
   get: () => prefs.value.sidebarCollapsed,
   set: (v: boolean) => setPref('sidebarCollapsed', v),
@@ -168,35 +166,21 @@ async function loadBadges() {
   } catch { /* ignore */ }
 }
 
-const ADMIN_PAGE_LABELS: Record<string, string> = {
-  '/admin/thong-ke': 'Thống kê',
-  '/admin/entities': 'Entities',
-  '/admin/chua-phan-loai': 'Chưa phân loại',
-  '/admin/danh-ba': 'Danh bạ HC',
-  '/admin/lich-trinh': 'Lịch trình',
-  '/admin/data-quality': 'Chất lượng DL',
-  '/admin/kiem-duyet': 'Kiểm duyệt',
-  '/admin/duyet-anh': 'Duyệt ảnh',
-  '/admin/users': 'Users',
-  '/admin/bao-cao': 'Báo cáo',
-  '/admin/duyet-tu-hoc': 'Duyệt & Tools',
-  '/admin/ai': 'Knowledge Agent',
-  '/admin/nhat-ky': 'Nhật ký',
-  '/admin/media': 'Thư viện ảnh',
-  '/admin/cai-dat': 'Cài đặt trang',
+const currentKind = computed(() => {
+  const value = route.query.kind
+  return Array.isArray(value) ? value[0] || '' : String(value || '')
+})
+const currentPageLabel = computed(() => resolveAdminPageLabel(route.path, currentKind.value))
+
+function isNavActive(item: AdminNavItem) {
+  return isAdminNavItemActive(item, route.path, currentKind.value)
 }
-const currentPageLabel = computed(() => {
-  const path = route.path
-  if (path === '/admin' || path === '/admin/') return ''
-  if (path === '/admin/entities' && route.query.kind) {
-    const k = ADMIN_KINDS.find(kd => kd.kind === route.query.kind)
-    return k ? `${k.emoji} ${k.label}` : 'Entities'
-  }
-  if (ADMIN_PAGE_LABELS[path]) return ADMIN_PAGE_LABELS[path]
-  const match = Object.keys(ADMIN_PAGE_LABELS)
-    .filter(k => path.startsWith(k + '/'))
-    .sort((a, b) => b.length - a.length)[0]
-  return match ? ADMIN_PAGE_LABELS[match] : ''
+
+const currentWorkstreamLabel = computed(() => {
+  const activeGroup = ADMIN_NAV_GROUPS.find(group => group.items.some(item =>
+    isNavActive(item) || item.children?.some(child => isNavActive(child)),
+  ))
+  return activeGroup?.label || 'Tổng quan'
 })
 
 const isDark = ref(false)
@@ -211,11 +195,13 @@ function _badgeTick() { if (!document.hidden) loadBadges() }
 function _onVisChange() { if (!document.hidden) loadBadges() }
 onMounted(async () => {
   if (!user.value) await fetchMe()
-  if (window.innerWidth < 1024) sidebarCollapsed.value = true
   isDark.value = document.documentElement.classList.contains('dark')
   loadBadges()
   badgeInterval = setInterval(_badgeTick, 60_000)
   document.addEventListener('visibilitychange', _onVisChange)
+})
+watch(() => route.fullPath, () => {
+  closeMobileSidebar()
 })
 onUnmounted(() => {
   if (badgeInterval) clearInterval(badgeInterval)

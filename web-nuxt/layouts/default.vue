@@ -1,56 +1,77 @@
 <template>
-  <div>
+  <div class="public-shell">
     <a href="#main-content" class="skip-link">Bỏ qua điều hướng</a>
-    <header class="topbar" role="banner" :class="{ scrolled: topbarScrolled }">
-      <div class="topbar-inner">
-        <NuxtLink class="brand" to="/">
-          <span class="logo">{{ ss('branding.site_name', 'vinhlong360').replace('360', '') }}<span class="dot">360</span></span>
-          <span class="tld">{{ ss('branding.logo_suffix', '.vn') }}</span>
-        </NuxtLink>
-        <button type="button" class="nav-toggle" :aria-expanded="mobileNav" aria-haspopup="true" aria-controls="main-nav" aria-label="Menu" @click="mobileNav ? closeNav() : (mobileNav = true)">
-          <span></span><span></span><span></span>
-        </button>
-        <div class="nav-backdrop" :class="{ show: mobileNav, closing: navClosing }" aria-hidden="true" @click="closeNav"></div>
-        <nav id="main-nav" class="main-nav" aria-label="Menu chính" :class="{ open: mobileNav, closing: navClosing }" @keydown="onNavKeydown">
-          <template v-for="(g, i) in navGroups" :key="g.label">
-            <NuxtLink v-if="g.to" :to="g.to" :class="{ active: isActive(g) }" :aria-current="isActive(g) ? 'page' : undefined" @click="closeAll">{{ g.label }}</NuxtLink>
-            <div v-else class="nav-group" :class="{ open: openGroup === i }">
-              <button type="button" class="nav-group-btn" :class="{ active: isActive(g) }" :aria-expanded="openGroup === i" @click="toggleGroup(i)">
-                {{ g.label }}<span class="caret" aria-hidden="true">▾</span>
+    <div class="public-shell-chrome" :class="{ scrolled: topbarScrolled }">
+      <ShellPublicContextBar />
+      <header class="public-shell-header" role="banner">
+        <div class="public-shell-command-row">
+          <NuxtLink class="brand" to="/" aria-label="Về trang chủ vinhlong360">
+            <span class="logo">{{ ss('branding.site_name', 'vinhlong360').replace('360', '') }}<span class="dot">360</span></span>
+            <span class="tld">{{ ss('branding.logo_suffix', '.vn') }}</span>
+          </NuxtLink>
+
+          <SearchAutocomplete class="topbar-search public-shell-search" />
+
+          <div class="auth-area">
+            <template v-if="clientReady">
+              <button type="button" class="theme-toggle" :aria-label="colorMode.value === 'dark' ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'" :title="colorMode.value === 'dark' ? 'Giao diện sáng' : 'Giao diện tối'" @click="toggleColorMode">
+                <IconLine v-if="colorMode.value === 'dark'" name="sun" />
+                <IconLine v-else name="moon" />
               </button>
-              <div class="nav-panel" :class="{ open: openGroup === i }">
-                <NuxtLink v-for="c in g.children" :key="c.to" :to="c.to" :class="{ active: route.path === c.to }" :aria-current="route.path === c.to ? 'page' : undefined" @click="closeAll">{{ c.label }}</NuxtLink>
-              </div>
-            </div>
-          </template>
-        </nav>
-        <SearchAutocomplete class="topbar-search" />
-        <div class="auth-area">
-          <template v-if="clientReady">
-            <button type="button" class="theme-toggle" :aria-label="colorMode.value === 'dark' ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'" :title="colorMode.value === 'dark' ? 'Giao diện sáng' : 'Giao diện tối'" @click="toggleColorMode">
-              <IconLine v-if="colorMode.value === 'dark'" name="sun" />
-              <IconLine v-else name="moon" />
-            </button>
-            <template v-if="isLoggedIn">
-              <LazyNotificationBell />
-              <LazyUserMenu />
+              <template v-if="isLoggedIn">
+                <LazyNotificationBell />
+                <LazyUserMenu />
+              </template>
+              <span v-else-if="hasAuthSession" class="auth-user auth-user-snapshot" aria-label="Tài khoản">
+                <span class="avatar avatar-sm">{{ headerInitial }}</span>
+                <span class="auth-user-name">{{ headerDisplayName }}</span>
+              </span>
+              <button type="button" v-else class="auth-btn" @click="showAuth = true">Đăng nhập</button>
             </template>
-            <span v-else-if="hasAuthSession" class="auth-user auth-user-snapshot" aria-label="Tài khoản">
-              <span class="avatar avatar-sm">{{ headerInitial }}</span>
-              <span class="auth-user-name">{{ headerDisplayName }}</span>
-            </span>
-            <button type="button" v-else class="auth-btn" @click="showAuth = true">Đăng nhập</button>
-          </template>
-          <template v-else>
-            <button type="button" class="theme-toggle" aria-label="Đổi giao diện sáng/tối"><IconLine name="moon" /></button>
-            <span class="auth-user auth-user-snapshot auth-user-loading" aria-hidden="true">
-              <span class="avatar avatar-sm">?</span>
-              <span class="auth-user-name">Tài khoản</span>
-            </span>
-          </template>
+            <template v-else>
+              <button type="button" class="theme-toggle" aria-label="Đổi giao diện sáng/tối"><IconLine name="moon" /></button>
+              <span class="auth-user auth-user-snapshot auth-user-loading" aria-hidden="true">
+                <span class="avatar avatar-sm">?</span>
+                <span class="auth-user-name">Tài khoản</span>
+              </span>
+            </template>
+          </div>
+
+          <button type="button" class="nav-toggle public-shell-menu-button" :aria-expanded="mobileNav" aria-haspopup="true" aria-controls="main-nav" aria-label="Mở danh mục" @click="mobileNav ? closeNav() : (mobileNav = true)">
+            <IconLine :name="mobileNav ? 'x' : 'menu'" />
+          </button>
         </div>
-      </div>
-    </header>
+
+        <div class="public-shell-task-row">
+          <nav class="public-shell-task-nav" aria-label="Tác vụ chính">
+            <NuxtLink
+              v-for="item in primaryNavItems"
+              :key="item.to"
+              :to="item.to"
+              :class="{ active: isPrimaryActive(item.to) }"
+              :aria-current="isPrimaryActive(item.to) ? 'page' : undefined"
+            >
+              {{ item.label }}
+            </NuxtLink>
+          </nav>
+          <button type="button" class="public-shell-catalog-button" :class="{ active: catalogOpen }" :aria-expanded="catalogOpen" aria-controls="main-nav" @click="catalogOpen = !catalogOpen">
+            Danh mục
+            <IconLine name="chevron-down" aria-hidden="true" />
+          </button>
+        </div>
+
+        <div class="nav-backdrop" :class="{ show: mobileNav, closing: navClosing }" aria-hidden="true" @click="closeNav()"></div>
+        <nav id="main-nav" class="public-shell-catalog" aria-label="Danh mục nội dung" :class="{ open: mobileNav || catalogOpen, closing: navClosing }" @keydown="onNavKeydown">
+          <section v-for="g in navGroups" :key="g.label" class="public-shell-catalog-group">
+            <NuxtLink v-if="g.to" :to="g.to" class="public-shell-catalog-heading" :class="{ active: isActive(g) }" :aria-current="isActive(g) ? 'page' : undefined" @click="closeAll">{{ g.label }}</NuxtLink>
+            <template v-else>
+              <h2>{{ g.label }}</h2>
+              <NuxtLink v-for="c in g.children" :key="c.to" :to="c.to" :class="{ active: route.path === c.to }" :aria-current="route.path === c.to ? 'page' : undefined" @click="closeAll">{{ c.label }}</NuxtLink>
+            </template>
+          </section>
+        </nav>
+      </header>
+    </div>
 
     <noscript class="noscript-banner">Trang web này cần JavaScript để hoạt động. Vui lòng bật JavaScript trong trình duyệt.</noscript>
 
@@ -102,6 +123,7 @@
         </div>
       </div>
     </footer>
+    <ShellPublicBottomNav />
   </div>
 </template>
 
@@ -155,6 +177,18 @@ const DEFAULT_NAV_GROUPS: Array<{ label: string; to?: string; children?: { to: s
   ] },
 ]
 const navGroups = computed(() => ss('navigation.nav_groups', DEFAULT_NAV_GROUPS) as typeof DEFAULT_NAV_GROUPS)
+const primaryNavItems = [
+  { to: '/', label: 'Trang chủ' },
+  { to: '/du-lich', label: 'Khám phá' },
+  { to: '/ban-do', label: 'Gần bạn' },
+  { to: '/cong-dong', label: 'Cộng đồng' },
+  { to: '/lich-trinh', label: 'Lịch trình' },
+] as const
+
+function isPrimaryActive(path: string) {
+  if (path === '/') return route.path === '/'
+  return route.path === path || route.path.startsWith(`${path}/`)
+}
 
 const DEFAULT_FOOTER_COLUMNS = [
   // declutter-2 A3b: 7 link → 4 curated (ocop tới được từ san-pham + nav; luu-tru/su-kien
@@ -220,20 +254,25 @@ const themeOverrideCss = computed(() => {
 })
 useHead({ style: [{ innerHTML: themeOverrideCss }] })
 
-const openGroup = ref<number | null>(null)
-function toggleGroup(i: number) { openGroup.value = openGroup.value === i ? null : i }
+const catalogOpen = ref(false)
 const navClosing = ref(false)
 
-function closeNav() {
+function closeNav(restoreFocus = true) {
   if (!mobileNav.value || navClosing.value) return
   navClosing.value = true
   setTimeout(() => {
     mobileNav.value = false
     navClosing.value = false
+    if (restoreFocus) {
+      nextTick(() => document.querySelector<HTMLElement>('.public-shell-menu-button')?.focus())
+    }
   }, 250)
 }
 
-function closeAll() { openGroup.value = null; closeNav() }
+function closeAll() {
+  catalogOpen.value = false
+  closeNav(false)
+}
 function isActive(g: { to?: string; children?: { to: string }[] }) {
   if (g.to) return route.path === g.to
   return !!g.children?.some(c => route.path === c.to || route.path.startsWith(c.to + '/'))
@@ -285,8 +324,15 @@ function onPageScroll() {
   if (!scrollRaf) scrollRaf = requestAnimationFrame(() => { scrollRaf = 0; topbarScrolled.value = window.scrollY > 8 })
 }
 
-const onDoc = (e: MouseEvent) => { if (!(e.target as HTMLElement)?.closest('.main-nav')) openGroup.value = null }
-const onEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') { openGroup.value = null; closeNav() } }
+const onDoc = (e: MouseEvent) => {
+  if (!(e.target as HTMLElement)?.closest('.public-shell-header')) catalogOpen.value = false
+}
+const onEsc = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') {
+    catalogOpen.value = false
+    closeNav()
+  }
+}
 onMounted(() => {
   document.addEventListener('click', onDoc)
   document.addEventListener('keydown', onEsc)
@@ -302,41 +348,3 @@ onUnmounted(() => {
 })
 
 </script>
-
-<style scoped>
-/* ── Chrome editorial pass (Wave 6): footer as the publication's colophon ── */
-/* Phù-sa crown — the river→amber→clay signature hairline across the footer top */
-.site-footer { position: relative; }
-.site-footer::before {
-  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px; z-index: 1;
-  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 50%, var(--clay-600) 100%);
-  opacity: .55;
-}
-.dark .site-footer::before {
-  background: linear-gradient(90deg, #74ABB5 0%, var(--amber-500) 50%, var(--clay-400) 100%);
-  opacity: .65;
-}
-/* Footer column headings → serif section labels with a small phù-sa tick */
-.footer-col h2 {
-  font-family: var(--font-editorial);
-  font-weight: 600;
-  font-size: var(--text-base);
-  position: relative;
-  padding-left: var(--space-3);
-}
-.footer-col h2::before {
-  content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  width: 3px; height: 1em; border-radius: var(--radius-full);
-  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
-}
-.dark .footer-col h2::before {
-  background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%);
-}
-/* Tagline → editorial serif italic, reads like a masthead motto */
-.footer-brand p {
-  font-family: var(--font-editorial);
-  font-style: italic;
-  font-size: var(--text-base);
-  line-height: var(--leading-relaxed);
-}
-</style>

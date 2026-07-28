@@ -21,8 +21,8 @@ export default defineNuxtConfig({
 
   // Self-host font (bỏ Google CDN) — giảm latency bên thứ 3 + CLS (font-metric optimization).
   fonts: {
-    defaults: { weights: [400, 600, 700, 800], subsets: ['vietnamese', 'latin', 'latin-ext'] },
-    families: [{ name: 'Inter', provider: 'google' }],
+    defaults: { weights: [400, 500, 600, 700], subsets: ['vietnamese', 'latin', 'latin-ext'] },
+    families: [{ name: 'Be Vietnam Pro', provider: 'google' }],
   },
 
   // Ảnh: provider weserv (miễn phí, transcode WebP off-VPS) — KHÔNG dùng IPX
@@ -39,6 +39,7 @@ export default defineNuxtConfig({
     '~/assets/css/fonts.css',
     '~/assets/css/variables.css',
     '~/assets/css/base.css',
+    '~/assets/css/shell.css',
     '~/assets/css/components.css',
     '~/assets/css/cards.css',
     // detail.css KHÔNG global: chỉ 3 trang chi tiết (dia-diem/xa-phuong/lich-trinh) dùng

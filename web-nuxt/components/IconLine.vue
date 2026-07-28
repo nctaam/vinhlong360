@@ -1,5 +1,5 @@
 <template>
-  <span class="line-icon" :class="`li-${name}`" v-html="svg" />
+  <i class="line-icon" :class="`li-${resolvedName}`" v-html="svg" />
 </template>
 
 <script setup lang="ts">
@@ -12,6 +12,30 @@ const W = (inner: string) =>
   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`
 
 const ICONS: Record<string, string> = {
+  'circle-help': W('<circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.5 2.5 0 1 1 4.4 1.7c-.9.9-2.1 1.3-2.1 3.3"/><path d="M12 18h.01"/>'),
+  menu: W('<path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/>'),
+  'chevron-down': W('<path d="m6 9 6 6 6-6"/>'),
+  search: W('<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>'),
+  locate: W('<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3"/><path d="M12 19v3"/><path d="M2 12h3"/><path d="M19 12h3"/>'),
+  'alert-triangle': W('<path d="m12 3 10 18H2Z"/><path d="M12 9v5"/><path d="M12 18h.01"/>'),
+  'layout-dashboard': W('<rect x="3" y="3" width="7" height="8" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="15" width="7" height="6" rx="1"/>'),
+  chart: W('<path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/>'),
+  'clipboard-list': W('<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5V3h6v1.5"/><path d="M9 10h6"/><path d="M9 14h6"/><path d="M9 18h4"/>'),
+  'shield-check': W('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/>'),
+  images: W('<rect x="3" y="5" width="18" height="15" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="m5 18 5-5 3 3 2-2 4 4"/>'),
+  users: W('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/>'),
+  flag: W('<path d="M5 22V4"/><path d="M5 5h11l-1 4 1 4H5"/>'),
+  flask: W('<path d="M9 3h6"/><path d="M10 3v5l-5.5 9.5A2.3 2.3 0 0 0 6.5 21h11a2.3 2.3 0 0 0 2-3.5L14 8V3"/><path d="M7.5 16h9"/>'),
+  bot: W('<rect x="4" y="7" width="16" height="13" rx="3"/><path d="M12 3v4"/><circle cx="12" cy="2.5" r=".5"/><path d="M8 12h.01"/><path d="M16 12h.01"/><path d="M9 16h6"/>'),
+  'file-text': W('<path d="M6 2h8l4 4v16H6Z"/><path d="M14 2v5h5"/><path d="M9 12h6"/><path d="M9 16h6"/>'),
+  settings: W('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/>'),
+  'arrow-left': W('<path d="m15 18-6-6 6-6"/><path d="M9 12h12"/>'),
+  'panel-left-close': W('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="m15 9-3 3 3 3"/>'),
+  'panel-left-open': W('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="m13 9 3 3-3 3"/>'),
+  route: W('<circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h3a4 4 0 0 0 4-4v-4a4 4 0 0 1 3-4"/>'),
+  database: W('<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>'),
+  wand: W('<path d="m15 4 5 5L8 21l-5-5Z"/><path d="m6 13 5 5"/><path d="M6 3v3"/><path d="M4.5 4.5h3"/><path d="M18 15v4"/><path d="M16 17h4"/>'),
+  briefcase: W('<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V4h6v3"/><path d="M3 12h18"/><path d="M10 12v2h4v-2"/>'),
   pin: W('<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>'),
   map: W('<path d="m9 3-6 3v15l6-3 6 3 6-3V3l-6 3Z"/><path d="M9 3v15"/><path d="M15 6v15"/>'),
   list: W('<path d="M11 6h9"/><path d="M11 12h9"/><path d="M11 18h9"/><path d="m3.5 6 1 1 2-2"/><path d="m3.5 12 1 1 2-2"/><path d="m3.5 18 1 1 2-2"/>'),
@@ -53,7 +77,8 @@ const ICONS: Record<string, string> = {
   repeat: W('<path d="M17 2.5 21 6l-4 3.5"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 21.5 3 18l4-3.5"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>'),
 }
 
-const svg = computed(() => ICONS[props.name] || '')
+const resolvedName = computed(() => ICONS[props.name] ? props.name : 'circle-help')
+const svg = computed(() => ICONS[resolvedName.value])
 </script>
 
 <style scoped>
