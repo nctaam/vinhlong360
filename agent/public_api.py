@@ -18,14 +18,22 @@ import unicodedata
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Annotated, Any, Optional
+from typing import Annotated, Any, Literal, Optional
 
 logger = logging.getLogger(__name__)
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, ValidationError
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    StrictBool,
+    StrictFloat,
+    StrictInt,
+    ValidationError,
+)
 from api_schemas import (  # W6.3: response_model (extra="allow" — không strip field FE)
     AreasResponse, AutocompleteResponse, CollectionsResponse, CompareResponse,
     EntityDetailResponse, EntityListResponse, EntityMapResponse, EntityTypesResponse,
@@ -46,6 +54,15 @@ from user_preferences import (
     load_preference_consents,
     load_preferences,
     patch_preferences_with_consents,
+)
+from location_resolver import (
+    IpGeocoder,
+    LocationInputError,
+    ReverseGeocoder,
+    get_ip_geocoder,
+    get_reverse_geocoder,
+    resolve_gps,
+    resolve_ip,
 )
 
 if __package__:
@@ -427,6 +444,14 @@ class PreferencePatchIn(BaseModel):
     )
     recommendation_reset_at: PreferenceTimestamp | None = None
     consent_version: Optional[str] = Field(None, max_length=64)
+
+
+class LocationResolveIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    mode: Literal["gps", "ip"]
+    latitude: StrictFloat | StrictInt | None = None
+    longitude: StrictFloat | StrictInt | None = None
 
 
 def _fold_text(value: Any) -> str:
@@ -879,6 +904,7 @@ def _contextual_recommendations(user_id: str, context: str, entity_id: str | Non
 
 PREFERENCE_READ_RATE_LIMIT = 120
 PREFERENCE_PATCH_RATE_LIMIT = 30
+LOCATION_RESOLVE_RATE_LIMIT = 30
 
 
 @router.get(
@@ -966,6 +992,54 @@ async def get_my_preference_consents(
     response.headers["Cache-Control"] = "no-store"
     consents = await asyncio.to_thread(load_preference_consents, owner)
     return {"consents": consents}
+
+
+@router.post(
+    "/me/location/resolve",
+    summary="Resolve current user location",
+    description="Returns a transient normalized region suggestion without persisting it.",
+)
+async def resolve_my_location(
+    request: Request,
+    response: Response,
+    body: Any = Body(...),
+    user=Depends(require_user),
+    _csrf=Depends(require_csrf),
+    reverse_geocoder: ReverseGeocoder = Depends(get_reverse_geocoder),
+    ip_geocoder: IpGeocoder = Depends(get_ip_geocoder),
+):
+    from ratelimit import check_rate
+
+    owner = str(user["id"])
+    check_rate(
+        f"location-resolve:{owner}",
+        LOCATION_RESOLVE_RATE_LIMIT,
+        300,
+        "Too many location resolution requests",
+    )
+    try:
+        validated = LocationResolveIn.model_validate(body)
+        if validated.mode == "gps":
+            if validated.latitude is None or validated.longitude is None:
+                raise LocationInputError("Invalid location input")
+            resolution = await asyncio.to_thread(
+                resolve_gps,
+                validated.latitude,
+                validated.longitude,
+                reverse_geocoder,
+            )
+        else:
+            if validated.latitude is not None or validated.longitude is not None:
+                raise LocationInputError("Invalid location input")
+            resolution = await asyncio.to_thread(
+                resolve_ip,
+                get_client_ip(request),
+                ip_geocoder,
+            )
+    except (LocationInputError, ValidationError):
+        raise HTTPException(422, "Invalid location input") from None
+    response.headers["Cache-Control"] = "no-store"
+    return asdict(resolution)
 
 
 @router.post("/me/events",
