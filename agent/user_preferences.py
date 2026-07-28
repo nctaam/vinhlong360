@@ -75,6 +75,13 @@ class PreferencePatch(TypedDict, total=False):
     revision: int
 
 
+class PreferenceConsentEntry(TypedDict):
+    consent_type: str
+    state: str
+    version: str
+    created_at: datetime | str
+
+
 class PreferenceError(ValueError):
     """Base error for invalid or conflicting preference mutations."""
 
@@ -339,58 +346,64 @@ def _write_values(snapshot: PreferenceSnapshot) -> tuple[list[Any], str]:
     return values, ", ".join(placeholders)
 
 
+def _patch_preferences_in_connection(
+    conn, owner: str, patch: Mapping[str, Any], expected: int
+) -> tuple[PreferenceSnapshot, PreferenceSnapshot]:
+    if not patch:
+        raise PreferenceValidationError("Preference patch must not be empty")
+
+    row = _select_preferences(conn, owner, for_update=True)
+    current = _row_snapshot(row) if row is not None else _default_snapshot()
+    merged = merge_preference_patch(current, patch, expected)
+    values, value_placeholders = _write_values(merged)
+    if row is None:
+        inserted = db._fetchone(
+            conn,
+            f"INSERT INTO user_preferences (user_id, {_preference_columns()}) "
+            f"VALUES ({_user_param()}, {value_placeholders}) "
+            f"ON CONFLICT (user_id) DO NOTHING RETURNING {_preference_columns()}",
+            [owner, *values],
+        )
+        if inserted is None:
+            latest = _select_preferences(conn, owner)
+            current_revision = _row_snapshot(latest)["revision"] if latest else 0
+            raise PreferenceRevisionConflict(expected, current_revision)
+        return current, _row_snapshot(inserted)
+
+    assignments = []
+    for field in _SNAPSHOT_FIELDS:
+        placeholder = db._ph
+        if field == "explicit_interests" and db._use_pg:
+            placeholder += "::jsonb"
+        assignments.append(f"{field} = {placeholder}")
+    assignments.append("updated_at = NOW()" if db._use_pg else "updated_at = CURRENT_TIMESTAMP")
+    updated = db._fetchone(
+        conn,
+        f"UPDATE user_preferences SET {', '.join(assignments)} "
+        f"WHERE user_id = {_user_param()} AND revision = {db._ph} "
+        f"RETURNING {_preference_columns()}",
+        [*values, owner, expected],
+    )
+    if updated is None:
+        latest = _select_preferences(conn, owner)
+        current_revision = _row_snapshot(latest)["revision"] if latest else 0
+        raise PreferenceRevisionConflict(expected, current_revision)
+    return current, _row_snapshot(updated)
+
+
 def patch_preferences(
     user_id: str, patch: Mapping[str, Any], expected_revision: int
 ) -> PreferenceSnapshot:
     owner = _user_id(user_id)
     expected = _revision_value(expected_revision)
-    if not patch:
-        raise PreferenceValidationError("Preference patch must not be empty")
-
     with db._conn() as conn:
-        row = _select_preferences(conn, owner, for_update=True)
-        current = _row_snapshot(row) if row is not None else _default_snapshot()
-        merged = merge_preference_patch(current, patch, expected)
-        values, value_placeholders = _write_values(merged)
-        if row is None:
-            inserted = db._fetchone(
-                conn,
-                f"INSERT INTO user_preferences (user_id, {_preference_columns()}) "
-                f"VALUES ({_user_param()}, {value_placeholders}) "
-                f"ON CONFLICT (user_id) DO NOTHING RETURNING {_preference_columns()}",
-                [owner, *values],
-            )
-            if inserted is None:
-                latest = _select_preferences(conn, owner)
-                current_revision = _row_snapshot(latest)["revision"] if latest else 0
-                raise PreferenceRevisionConflict(expected, current_revision)
-            return _row_snapshot(inserted)
-
-        assignments = []
-        for field in _SNAPSHOT_FIELDS:
-            placeholder = db._ph
-            if field == "explicit_interests" and db._use_pg:
-                placeholder += "::jsonb"
-            assignments.append(f"{field} = {placeholder}")
-        assignments.append("updated_at = NOW()" if db._use_pg else "updated_at = CURRENT_TIMESTAMP")
-        updated = db._fetchone(
-            conn,
-            f"UPDATE user_preferences SET {', '.join(assignments)} "
-            f"WHERE user_id = {_user_param()} AND revision = {db._ph} "
-            f"RETURNING {_preference_columns()}",
-            [*values, owner, expected],
-        )
-        if updated is None:
-            latest = _select_preferences(conn, owner)
-            current_revision = _row_snapshot(latest)["revision"] if latest else 0
-            raise PreferenceRevisionConflict(expected, current_revision)
-        return _row_snapshot(updated)
+        _, snapshot = _patch_preferences_in_connection(conn, owner, patch, expected)
+    return snapshot
 
 
-def record_preference_consent(
-    user_id: str, consent_type: str, state: str, version: str
+def _insert_preference_consent(
+    conn, owner: str, consent_type: str, state: str, version: str
 ) -> None:
-    owner = _user_id(user_id)
     normalized_type = _enum_value(consent_type, "consent_type", CONSENT_TYPES)
     normalized_state = _enum_value(state, "consent state", CONSENT_EVENT_STATES)
     normalized_version = _bounded_optional_text(
@@ -398,11 +411,64 @@ def record_preference_consent(
     )
     if normalized_version is None:
         raise PreferenceValidationError("consent version is required")
+    db._execute(
+        conn,
+        "INSERT INTO user_preference_consents "
+        f"(id, user_id, consent_type, state, version) VALUES ({db._ph}, {_user_param()}, "
+        f"{db._ph}, {db._ph}, {db._ph})",
+        (str(uuid4()), owner, normalized_type, normalized_state, normalized_version),
+    )
+
+
+def patch_preferences_with_consents(
+    user_id: str, patch: Mapping[str, Any], expected_revision: int
+) -> PreferenceSnapshot:
+    owner = _user_id(user_id)
+    expected = _revision_value(expected_revision)
     with db._conn() as conn:
-        db._execute(
-            conn,
-            "INSERT INTO user_preference_consents "
-            f"(id, user_id, consent_type, state, version) VALUES ({db._ph}, {_user_param()}, "
-            f"{db._ph}, {db._ph}, {db._ph})",
-            (str(uuid4()), owner, normalized_type, normalized_state, normalized_version),
+        current, snapshot = _patch_preferences_in_connection(
+            conn, owner, patch, expected
         )
+        consent_changes: list[tuple[str, str]] = []
+        if current["location_consent_state"] != snapshot["location_consent_state"]:
+            consent_changes.append(("location", snapshot["location_consent_state"]))
+        if current["personalization_enabled"] != snapshot["personalization_enabled"]:
+            consent_changes.append(
+                (
+                    "personalization",
+                    "granted" if snapshot["personalization_enabled"] else "off",
+                )
+            )
+        for consent_type, state in consent_changes:
+            _insert_preference_consent(
+                conn,
+                owner,
+                consent_type,
+                state,
+                snapshot["consent_version"],
+            )
+    return snapshot
+
+
+def record_preference_consent(
+    user_id: str, consent_type: str, state: str, version: str
+) -> None:
+    owner = _user_id(user_id)
+    with db._conn() as conn:
+        _insert_preference_consent(
+            conn, owner, consent_type, state, version
+        )
+
+
+def load_preference_consents(user_id: str) -> list[PreferenceConsentEntry]:
+    owner = _user_id(user_id)
+    with db._conn(commit_on_success=False) as conn:
+        rows = db._fetchall(
+            conn,
+            "SELECT consent_type, state, version, created_at "
+            "FROM user_preference_consents "
+            f"WHERE user_id = {_user_param()} "
+            "ORDER BY created_at DESC, id DESC LIMIT 100",
+            (owner,),
+        )
+    return [db._row_to_dict(row) for row in rows]

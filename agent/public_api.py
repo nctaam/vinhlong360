@@ -18,13 +18,14 @@ import unicodedata
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Optional
+from typing import Annotated, Any, Optional
 
 logger = logging.getLogger(__name__)
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, Response
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, ValidationError
 from api_schemas import (  # W6.3: response_model (extra="allow" — không strip field FE)
     AreasResponse, AutocompleteResponse, CollectionsResponse, CompareResponse,
     EntityDetailResponse, EntityListResponse, EntityMapResponse, EntityTypesResponse,
@@ -37,6 +38,13 @@ from database import canonical_verified_at, db
 from data_quality import entity_quality
 from middleware import report_limiter, get_client_ip
 from auth_middleware import validate_path_id, require_pg, require_user, require_csrf, get_current_user
+from user_preferences import (
+    PreferenceRevisionConflict,
+    PreferenceValidationError,
+    load_preference_consents,
+    load_preferences,
+    patch_preferences_with_consents,
+)
 
 if __package__:
     from .ai_disclosure import load_ai_disclosure
@@ -392,6 +400,28 @@ class UserEventIn(BaseModel):
     area: Optional[str] = Field(None, max_length=120)
     query: Optional[str] = Field(None, max_length=200)
     metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+PreferenceInterest = Annotated[str, Field(max_length=64)]
+
+
+class PreferencePatchIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    revision: StrictInt = Field(ge=0)
+    region_id: Optional[str] = Field(None, max_length=128)
+    region_label: Optional[str] = Field(None, max_length=160)
+    region_scope: Optional[str] = Field(None, max_length=16)
+    location_source: Optional[str] = Field(None, max_length=16)
+    location_accuracy: Optional[str] = Field(None, max_length=16)
+    location_consent_state: Optional[str] = Field(None, max_length=16)
+    location_enabled: Optional[StrictBool] = None
+    personalization_enabled: Optional[StrictBool] = None
+    explicit_interests: Optional[list[PreferenceInterest]] = Field(
+        None, max_length=12
+    )
+    recommendation_reset_at: datetime | str | None = None
+    consent_version: Optional[str] = Field(None, max_length=64)
 
 
 def _fold_text(value: Any) -> str:
@@ -840,6 +870,97 @@ def _contextual_recommendations(user_id: str, context: str, entity_id: str | Non
             "signal_count": profile.get("signal_count", 0),
         },
     }
+
+
+PREFERENCE_READ_RATE_LIMIT = 120
+PREFERENCE_PATCH_RATE_LIMIT = 30
+
+
+@router.get(
+    "/me/preferences",
+    summary="Get current user preferences",
+    description="Returns the authenticated user's privacy-safe preference snapshot.",
+)
+async def get_my_preferences(response: Response, user=Depends(require_user)):
+    from ratelimit import check_rate
+
+    owner = str(user["id"])
+    check_rate(
+        f"preferences-read:{owner}",
+        PREFERENCE_READ_RATE_LIMIT,
+        300,
+        "Too many preference requests",
+    )
+    response.headers["Cache-Control"] = "no-store"
+    return await asyncio.to_thread(load_preferences, owner)
+
+
+@router.patch(
+    "/me/preferences",
+    summary="Update current user preferences",
+    description="Applies a bounded optimistic preference patch and records consent changes atomically.",
+)
+async def update_my_preferences(
+    response: Response,
+    body: Any = Body(...),
+    user=Depends(require_user),
+    _csrf=Depends(require_csrf),
+):
+    from ratelimit import check_rate
+
+    owner = str(user["id"])
+    check_rate(
+        f"preferences-patch:{owner}",
+        PREFERENCE_PATCH_RATE_LIMIT,
+        300,
+        "Too many preference updates",
+    )
+    try:
+        validated = PreferencePatchIn.model_validate(body)
+    except ValidationError:
+        raise HTTPException(422, "Invalid preference patch") from None
+    values = validated.model_dump(exclude_unset=True)
+    expected_revision = values.pop("revision")
+    try:
+        snapshot = await asyncio.to_thread(
+            patch_preferences_with_consents,
+            owner,
+            values,
+            expected_revision,
+        )
+    except PreferenceRevisionConflict:
+        current = await asyncio.to_thread(load_preferences, owner)
+        return JSONResponse(
+            status_code=409,
+            content=jsonable_encoder(current),
+            headers={"Cache-Control": "no-store"},
+        )
+    except PreferenceValidationError:
+        raise HTTPException(422, "Invalid preference patch") from None
+    response.headers["Cache-Control"] = "no-store"
+    return snapshot
+
+
+@router.get(
+    "/me/preferences/consents",
+    summary="Get current user preference consent history",
+    description="Returns bounded consent decisions without IP or location coordinates.",
+)
+async def get_my_preference_consents(
+    response: Response, user=Depends(require_user)
+):
+    from ratelimit import check_rate
+
+    owner = str(user["id"])
+    check_rate(
+        f"preferences-consents:{owner}",
+        PREFERENCE_READ_RATE_LIMIT,
+        300,
+        "Too many preference requests",
+    )
+    response.headers["Cache-Control"] = "no-store"
+    consents = await asyncio.to_thread(load_preference_consents, owner)
+    return {"consents": consents}
 
 
 @router.post("/me/events",

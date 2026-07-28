@@ -2,13 +2,19 @@ import sqlite3
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from types import SimpleNamespace
 from uuid import uuid4
 
 import pytest
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+import auth_middleware
+import public_api
 import user_preferences
+from auth_middleware import generate_csrf_token
 from database import Database, db as live_db
 from user_preferences import (
     PreferenceRevisionConflict,
@@ -280,6 +286,40 @@ def preference_database(tmp_path, monkeypatch):
 
 
 @pytest.fixture
+def logged_in_user(monkeypatch):
+    session_token = "preference-route-session"
+    user = {
+        "id": "user-1",
+        "display_name": "Preference owner",
+        "date_of_birth": "1990-01-02",
+        "ip": "203.0.113.9",
+    }
+
+    async def current_user(request):
+        bearer = request.headers.get("Authorization", "").removeprefix("Bearer ").strip()
+        return user if bearer == session_token else None
+
+    monkeypatch.setattr(auth_middleware, "_get_current_user_or_none", current_user)
+    headers = {"Authorization": f"Bearer {session_token}"}
+    return SimpleNamespace(
+        user=user,
+        headers=headers,
+        csrf_headers={
+            **headers,
+            "X-CSRF-Token": generate_csrf_token(session_token),
+        },
+    )
+
+
+@pytest.fixture
+def client(preference_database, logged_in_user):
+    app = FastAPI()
+    app.include_router(public_api.router)
+    with TestClient(app) as test_client:
+        yield test_client
+
+
+@pytest.fixture
 def postgres_preference_user():
     if not live_db._use_pg:
         pytest.skip("PostgreSQL preference contract requires DATABASE_URL.")
@@ -451,6 +491,197 @@ def test_record_preference_consent_rejects_unknown_state(preference_database):
     with pytest.raises(PreferenceValidationError):
         record_preference_consent("user-1", "location", "accepted", "v1")
 
+    with sqlite3.connect(preference_database.db_path) as conn:
+        count = conn.execute("SELECT COUNT(*) FROM user_preference_consents").fetchone()[0]
+    assert count == 0
+
+
+def test_preferences_default_snapshot_is_safe(client, logged_in_user):
+    response = client.get("/api/me/preferences", headers=logged_in_user.headers)
+
+    assert response.status_code == 200
+    assert response.headers["Cache-Control"] == "no-store"
+    assert response.json()["location_enabled"] is False
+    assert response.json()["region_id"] is None
+    assert {
+        "date_of_birth",
+        "dob",
+        "ip",
+        "latitude",
+        "longitude",
+        "coordinates",
+    }.isdisjoint(response.json())
+
+
+def test_preferences_get_requires_authenticated_owner(client):
+    response = client.get("/api/me/preferences")
+
+    assert response.status_code == 401
+
+
+def test_preferences_patch_requires_revision_and_csrf(client, logged_in_user):
+    response = client.patch(
+        "/api/me/preferences",
+        json={"location_enabled": True},
+        headers=logged_in_user.headers,
+    )
+
+    assert response.status_code == 403
+
+
+def test_preferences_patch_missing_revision_after_valid_csrf(client, logged_in_user):
+    response = client.patch(
+        "/api/me/preferences",
+        json={"location_enabled": True},
+        headers=logged_in_user.csrf_headers,
+    )
+
+    assert response.status_code == 422
+
+
+def test_preferences_revision_conflict_returns_current_snapshot(
+    client, logged_in_user
+):
+    first = client.patch(
+        "/api/me/preferences",
+        json={"revision": 0, "explicit_interests": ["food"]},
+        headers=logged_in_user.csrf_headers,
+    )
+    assert first.status_code == 200
+
+    response = client.patch(
+        "/api/me/preferences",
+        json={"revision": 0, "explicit_interests": ["culture"]},
+        headers=logged_in_user.csrf_headers,
+    )
+
+    assert response.status_code == 409
+    assert response.headers["Cache-Control"] == "no-store"
+    assert response.json()["revision"] == 1
+    assert response.json()["explicit_interests"] == ["food"]
+
+
+def test_preferences_patch_uses_authenticated_owner_not_client_user_id(
+    client, logged_in_user, preference_database
+):
+    response = client.patch(
+        "/api/me/preferences",
+        json={
+            "revision": 0,
+            "user_id": "user-2",
+            "personalization_enabled": True,
+        },
+        headers=logged_in_user.csrf_headers,
+    )
+
+    assert response.status_code == 422
+    assert load_preferences("user-1")["revision"] == 0
+    assert load_preferences("user-2")["revision"] == 0
+
+
+def test_preferences_patch_records_changed_consents_and_returns_safe_history(
+    client, logged_in_user
+):
+    response = client.patch(
+        "/api/me/preferences",
+        json={
+            "revision": 0,
+            "location_consent_state": "granted",
+            "location_enabled": True,
+            "personalization_enabled": True,
+            "consent_version": "privacy-v1",
+        },
+        headers=logged_in_user.csrf_headers,
+    )
+
+    assert response.status_code == 200
+    assert response.json()["revision"] == 1
+    history = client.get(
+        "/api/me/preferences/consents", headers=logged_in_user.headers
+    )
+    assert history.status_code == 200
+    assert history.headers["Cache-Control"] == "no-store"
+    assert {
+        (item["consent_type"], item["state"], item["version"])
+        for item in history.json()["consents"]
+    } == {
+        ("location", "granted", "privacy-v1"),
+        ("personalization", "granted", "privacy-v1"),
+    }
+    assert all(
+        {"ip", "latitude", "longitude", "coordinates", "date_of_birth"}.isdisjoint(
+            item
+        )
+        for item in history.json()["consents"]
+    )
+
+
+def test_preferences_patch_rejects_unbounded_or_sensitive_fields(
+    client, logged_in_user
+):
+    response = client.patch(
+        "/api/me/preferences",
+        json={
+            "revision": 0,
+            "region_id": "x" * 129,
+            "coordinates": {"latitude": 10.1, "longitude": 106.2},
+            "date_of_birth": "1990-01-02",
+        },
+        headers=logged_in_user.csrf_headers,
+    )
+
+    assert response.status_code == 422
+    assert "coordinates" not in response.text
+    assert "10.1" not in response.text
+    assert "106.2" not in response.text
+    assert "1990-01-02" not in response.text
+    assert load_preferences("user-1")["revision"] == 0
+
+
+def test_preferences_patch_is_rate_limited(client, logged_in_user, monkeypatch):
+    monkeypatch.setattr(public_api, "PREFERENCE_PATCH_RATE_LIMIT", 2, raising=False)
+    for revision in range(2):
+        response = client.patch(
+            "/api/me/preferences",
+            json={"revision": revision, "explicit_interests": [f"interest-{revision}"]},
+            headers=logged_in_user.csrf_headers,
+        )
+        assert response.status_code == 200
+
+    blocked = client.patch(
+        "/api/me/preferences",
+        json={"revision": 2, "explicit_interests": ["blocked"]},
+        headers=logged_in_user.csrf_headers,
+    )
+
+    assert blocked.status_code == 429
+    assert load_preferences("user-1")["explicit_interests"] == ["interest-1"]
+
+
+def test_preferences_patch_rolls_back_snapshot_when_consent_insert_fails(
+    client, logged_in_user, preference_database, monkeypatch
+):
+    real_execute = preference_database._execute
+
+    def fail_consent_insert(conn, sql, params=None):
+        if "INSERT INTO user_preference_consents" in sql:
+            raise RuntimeError("injected consent failure")
+        return real_execute(conn, sql, params)
+
+    monkeypatch.setattr(preference_database, "_execute", fail_consent_insert)
+    with TestClient(client.app, raise_server_exceptions=False) as response_client:
+        response = response_client.patch(
+            "/api/me/preferences",
+            json={
+                "revision": 0,
+                "location_consent_state": "granted",
+                "consent_version": "privacy-v1",
+            },
+            headers=logged_in_user.csrf_headers,
+        )
+
+    assert response.status_code == 500
+    assert load_preferences("user-1")["revision"] == 0
     with sqlite3.connect(preference_database.db_path) as conn:
         count = conn.execute("SELECT COUNT(*) FROM user_preference_consents").fetchone()[0]
     assert count == 0
