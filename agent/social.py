@@ -1929,6 +1929,11 @@ async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100
     bc, bc_p = _block_sql(user)
     def _query():
         with db._conn() as conn:
+            access = resolve_profile_access(
+                conn, uid, str(user["id"]) if user else None, require_activity=False
+            )
+            if access.status != "ok":
+                return access, [], None
             total_row = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM follows f JOIN users u ON u.id::text = f.target_id
                 WHERE f.follower_id = {ph}::uuid AND f.target_type = 'user' AND u.is_active = TRUE {bc}
@@ -1941,8 +1946,12 @@ async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100
                 {bc}
                 ORDER BY f.created_at DESC LIMIT {ph} OFFSET {ph}
             """, (uid,) + tuple(bc_p) + (limit, offset))
-            return rows, total
-    rows, total = await asyncio.to_thread(_query)
+            return access, rows, total
+    access, rows, total = await asyncio.to_thread(_query)
+    if access.status == "not_found":
+        raise HTTPException(404, "Người dùng không tồn tại")
+    if access.status == "hidden":
+        return {"users": [], "total": 0, "offset": offset, "has_more": False}
     users = []
     for r in rows:
         d = db._row_to_dict(r)
@@ -1964,6 +1973,11 @@ async def list_followers(user_id: str, limit: int = Query(50, ge=1, le=100), off
     bc, bc_p = _block_sql(user)
     def _query():
         with db._conn() as conn:
+            access = resolve_profile_access(
+                conn, uid, str(user["id"]) if user else None, require_activity=False
+            )
+            if access.status != "ok":
+                return access, [], None
             total_row = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM follows f JOIN users u ON u.id = f.follower_id
                 WHERE f.target_type = 'user' AND f.target_id = {ph} AND u.is_active = TRUE {bc}
@@ -1976,8 +1990,12 @@ async def list_followers(user_id: str, limit: int = Query(50, ge=1, le=100), off
                 {bc}
                 ORDER BY f.created_at DESC LIMIT {ph} OFFSET {ph}
             """, (uid,) + tuple(bc_p) + (limit, offset))
-            return rows, total
-    rows, total = await asyncio.to_thread(_query)
+            return access, rows, total
+    access, rows, total = await asyncio.to_thread(_query)
+    if access.status == "not_found":
+        raise HTTPException(404, "Người dùng không tồn tại")
+    if access.status == "hidden":
+        return {"users": [], "total": 0, "offset": offset, "has_more": False}
     users = []
     for r in rows:
         d = db._row_to_dict(r)
@@ -3973,20 +3991,21 @@ async def get_user_posts(
     if not uid:
         raise HTTPException(404, "Người dùng không tồn tại")
     viewer_id = str(user["id"]) if user else None
-    is_self = viewer_id == uid
-    if not is_self:
-        privacy_hidden = await asyncio.to_thread(_check_show_activity, uid, viewer_id)
-        if privacy_hidden:
-            return {"posts": [], "total": 0, "page": page, "has_more": False}
     bc, bc_p = _block_sql(user, "p.user_id")
     seed_filter, seed_params = _prod_seed_post_filter("p")
     offset = (page - 1) * limit
     def _query():
         with db._conn() as conn:
+            access = resolve_profile_access(
+                conn, uid, viewer_id, require_activity=True
+            )
+            if access.status != "ok":
+                return access, [], None
+            target_id = access.target_id or uid
             total_row = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM posts p
                 WHERE p.user_id::text = {ph} AND p.moderation_status = 'approved' AND p.deleted_at IS NULL {bc} {seed_filter}
-            """, (uid, *bc_p, *seed_params))
+            """, (target_id, *bc_p, *seed_params))
             total = db._row_to_dict(total_row)["c"] if total_row else 0
             rows = db._fetchall(conn, f"""
                 SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
@@ -3998,9 +4017,13 @@ async def get_user_posts(
                 {bc} {seed_filter}
                 ORDER BY COALESCE(p.is_pinned, FALSE) DESC, p.created_at DESC
                 LIMIT {ph} OFFSET {ph}
-            """, (uid, *bc_p, *seed_params, limit, offset))
-            return rows, total
-    rows, total = await asyncio.to_thread(_query)
+                """, (target_id, *bc_p, *seed_params, limit, offset))
+            return access, rows, total
+    access, rows, total = await asyncio.to_thread(_query)
+    if access.status == "not_found":
+        raise HTTPException(404, "Người dùng không tồn tại")
+    if access.status == "hidden":
+        return {"posts": [], "total": 0, "page": page, "has_more": False}
     posts = [db._row_to_dict(r) for r in rows]
     await asyncio.to_thread(_enrich_reactions, posts)
     posts = [_format_post(p) for p in posts]
@@ -4021,20 +4044,22 @@ async def get_user_reviews(
     if not uid:
         raise HTTPException(404, "Người dùng không tồn tại")
     viewer_id = str(user["id"]) if user else None
-    if viewer_id != uid:
-        privacy_hidden = await asyncio.to_thread(_check_show_activity, uid, viewer_id)
-        if privacy_hidden:
-            return {"reviews": [], "total": 0, "page": page, "has_more": False}
     bc, bc_p = _block_sql(user, "p.user_id")
     seed_filter, seed_params = _prod_seed_post_filter("p")
     offset = (page - 1) * limit
     def _query():
         with db._conn() as conn:
+            access = resolve_profile_access(
+                conn, uid, viewer_id, require_activity=True
+            )
+            if access.status != "ok":
+                return access, [], None
+            target_id = access.target_id or uid
             total_row = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM posts p
                 WHERE p.user_id::text = {ph} AND p.post_type = 'review'
                   AND p.moderation_status = 'approved' AND p.deleted_at IS NULL {bc} {seed_filter}
-            """, (uid, *bc_p, *seed_params))
+            """, (target_id, *bc_p, *seed_params))
             total = db._row_to_dict(total_row)["c"] if total_row else 0
             rows = db._fetchall(conn, f"""
                 SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
@@ -4047,9 +4072,13 @@ async def get_user_reviews(
                 {bc} {seed_filter}
                 ORDER BY p.created_at DESC
                 LIMIT {ph} OFFSET {ph}
-            """, (uid, *bc_p, *seed_params, limit, offset))
-            return rows, total
-    rows, total = await asyncio.to_thread(_query)
+                """, (target_id, *bc_p, *seed_params, limit, offset))
+            return access, rows, total
+    access, rows, total = await asyncio.to_thread(_query)
+    if access.status == "not_found":
+        raise HTTPException(404, "Người dùng không tồn tại")
+    if access.status == "hidden":
+        return {"reviews": [], "total": 0, "page": page, "has_more": False}
     posts = [db._row_to_dict(r) for r in rows]
     await asyncio.to_thread(_enrich_reactions, posts)
     posts = [_format_post(p) for p in posts]
@@ -4191,6 +4220,11 @@ async def get_activity_heatmap(user_id: str, user=Depends(get_current_user)):
 
     def _query():
         with db._conn() as conn:
+            access = resolve_profile_access(
+                conn, user_id, str(user["id"]) if user else None, require_activity=True
+            )
+            if access.status != "ok":
+                return access, []
             rows = db._fetchall(conn, f"""
                 SELECT DATE(created_at) AS d, COUNT(*) AS c
                 FROM posts
@@ -4200,9 +4234,13 @@ async def get_activity_heatmap(user_id: str, user=Depends(get_current_user)):
                 GROUP BY DATE(created_at)
                 ORDER BY d
             """, (user_id,))
-            return [db._row_to_dict(r) for r in rows]
+            return access, [db._row_to_dict(r) for r in rows]
 
-    rows = await asyncio.to_thread(_query)
+    access, rows = await asyncio.to_thread(_query)
+    if access.status == "not_found":
+        raise HTTPException(404, "Người dùng không tồn tại")
+    if access.status == "hidden":
+        return {"days": [], "total": 0, "max": 0}
     days = [{"date": str(r["d"]), "count": int(r["c"])} for r in rows]
     total = sum(d["count"] for d in days)
     mx = max((d["count"] for d in days), default=0)

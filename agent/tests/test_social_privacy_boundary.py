@@ -3,13 +3,18 @@ import uuid
 from contextlib import contextmanager
 
 import pytest
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.testclient import TestClient
 
+import public_api
 import social
 from auth_middleware import get_current_user, require_user
 from database import db
-from profile_access import can_view_profile_audience, resolve_profile_access
+from profile_access import (
+    ProfileAccessDecision,
+    can_view_profile_audience,
+    resolve_profile_access,
+)
 
 
 pg_only = pytest.mark.skipif(
@@ -17,10 +22,68 @@ pg_only = pytest.mark.skipif(
     reason="Friend-saves behavior requires PostgreSQL UGC tables.",
 )
 
+USER_ID = "11111111-1111-1111-1111-111111111111"
+VIEWER_ID = "22222222-2222-2222-2222-222222222222"
+
+HIDDEN_ENGAGEMENT = {
+    "user_id": USER_ID,
+    "total_posts": 0,
+    "total_reviews": 0,
+    "avg_rating": 0.0,
+    "total_questions": 0,
+    "entities_reviewed": 0,
+    "followers": 0,
+    "total_likes_received": 0,
+}
+
 
 @contextmanager
 def _fake_conn():
     yield object()
+
+
+def _request(_user=None):
+    return Request(
+        {
+            "type": "http",
+            "method": "GET",
+            "path": "/api/test",
+            "headers": [],
+            "query_string": b"",
+            "scheme": "http",
+            "server": ("testserver", 80),
+            "client": ("testclient", 50000),
+        }
+    )
+
+
+def _unexpected_query(*_args, **_kwargs):
+    raise AssertionError("profile section queried data after access was denied")
+
+
+def _stub_profile_decision(
+    monkeypatch,
+    module,
+    decision,
+    *,
+    viewer_id,
+    require_activity,
+):
+    expected_require_activity = require_activity
+
+    def _resolve(_conn, target_id, actual_viewer_id, *, require_activity: bool):
+        assert target_id == USER_ID
+        assert actual_viewer_id == viewer_id
+        assert require_activity is expected_require_activity
+        return decision
+
+    monkeypatch.setattr(module, "resolve_profile_access", _resolve, raising=False)
+
+
+def _deny_data_queries(monkeypatch, module):
+    monkeypatch.setattr(module.db, "_conn", _fake_conn)
+    monkeypatch.setattr(module.db, "_fetchone", _unexpected_query)
+    monkeypatch.setattr(module.db, "_fetchall", _unexpected_query)
 
 
 class _FetchSequence:
@@ -261,6 +324,213 @@ def test_missing_privacy_defaults_to_follower_relationships_without_activity(
     assert activity.status == "hidden"
     assert activity.can_view_activity is False
     activity_fetch.assert_consumed()
+
+
+def test_hidden_user_posts_returns_existing_empty_shape(monkeypatch):
+    monkeypatch.setattr(social, "_resolve_user_id", lambda _user_id: USER_ID)
+    monkeypatch.setattr(social, "_check_show_activity", lambda *_args: False)
+    _stub_profile_decision(
+        monkeypatch,
+        social,
+        ProfileAccessDecision("hidden", USER_ID),
+        viewer_id=None,
+        require_activity=True,
+    )
+    _deny_data_queries(monkeypatch, social)
+
+    result = asyncio.run(
+        social.get_user_posts(USER_ID, _request(None), page=2, limit=20)
+    )
+
+    assert result == {"posts": [], "total": 0, "page": 2, "has_more": False}
+
+
+def test_hidden_user_reviews_returns_existing_empty_shape(monkeypatch):
+    monkeypatch.setattr(social, "_resolve_user_id", lambda _user_id: USER_ID)
+    monkeypatch.setattr(social, "_check_show_activity", lambda *_args: False)
+    _stub_profile_decision(
+        monkeypatch,
+        social,
+        ProfileAccessDecision("hidden", USER_ID),
+        viewer_id=None,
+        require_activity=True,
+    )
+    _deny_data_queries(monkeypatch, social)
+
+    result = asyncio.run(
+        social.get_user_reviews(USER_ID, _request(None), page=3, limit=20)
+    )
+
+    assert result == {"reviews": [], "total": 0, "page": 3, "has_more": False}
+
+
+def test_hidden_following_returns_existing_empty_shape(monkeypatch):
+    monkeypatch.setattr(social, "_resolve_user_id", lambda _user_id: USER_ID)
+    _stub_profile_decision(
+        monkeypatch,
+        social,
+        ProfileAccessDecision("hidden", USER_ID),
+        viewer_id=None,
+        require_activity=False,
+    )
+    _deny_data_queries(monkeypatch, social)
+
+    result = asyncio.run(
+        social.list_following_users(USER_ID, limit=25, offset=50, user=None)
+    )
+
+    assert result == {"users": [], "total": 0, "offset": 50, "has_more": False}
+
+
+def test_hidden_followers_returns_existing_empty_shape(monkeypatch):
+    monkeypatch.setattr(social, "_resolve_user_id", lambda _user_id: USER_ID)
+    _stub_profile_decision(
+        monkeypatch,
+        social,
+        ProfileAccessDecision("hidden", USER_ID),
+        viewer_id=None,
+        require_activity=False,
+    )
+    _deny_data_queries(monkeypatch, social)
+
+    result = asyncio.run(
+        social.list_followers(USER_ID, limit=25, offset=75, user=None)
+    )
+
+    assert result == {"users": [], "total": 0, "offset": 75, "has_more": False}
+
+
+def test_hidden_activity_heatmap_returns_existing_empty_shape(monkeypatch):
+    _stub_profile_decision(
+        monkeypatch,
+        social,
+        ProfileAccessDecision("hidden", USER_ID),
+        viewer_id=None,
+        require_activity=True,
+    )
+    _deny_data_queries(monkeypatch, social)
+
+    result = asyncio.run(social.get_activity_heatmap(USER_ID, user=None))
+
+    assert result == {"days": [], "total": 0, "max": 0}
+
+
+def test_anonymous_hidden_engagement_returns_zero_shape(monkeypatch):
+    monkeypatch.setattr(public_api, "require_pg", lambda: None)
+    _stub_profile_decision(
+        monkeypatch,
+        public_api,
+        ProfileAccessDecision("hidden", USER_ID),
+        viewer_id=None,
+        require_activity=True,
+    )
+    _deny_data_queries(monkeypatch, public_api)
+
+    result = asyncio.run(
+        public_api.user_engagement_stats(
+            USER_ID,
+            request=_request(None),
+            response=Response(),
+            user=None,
+        )
+    )
+
+    assert result == HIDDEN_ENGAGEMENT
+
+
+def test_authorized_follower_engagement_returns_approved_stats(monkeypatch):
+    monkeypatch.setattr(public_api, "require_pg", lambda: None)
+    _stub_profile_decision(
+        monkeypatch,
+        public_api,
+        ProfileAccessDecision("ok", USER_ID, False, True),
+        viewer_id=VIEWER_ID,
+        require_activity=True,
+    )
+    fetch = _FetchSequence(
+        {
+            "total_posts": 5,
+            "total_reviews": 2,
+            "avg_rating": 4.24,
+            "total_questions": 1,
+            "entities_reviewed": 2,
+        },
+        {"c": 3},
+        {"total_likes": 9},
+    )
+    monkeypatch.setattr(public_api.db, "_conn", _fake_conn)
+    monkeypatch.setattr(public_api.db, "_fetchone", fetch)
+    monkeypatch.setattr(public_api.db, "_row_to_dict", lambda row: row)
+
+    result = asyncio.run(
+        public_api.user_engagement_stats(
+            USER_ID,
+            request=_request(VIEWER_ID),
+            response=Response(),
+            user={"id": VIEWER_ID},
+        )
+    )
+
+    assert result == {
+        "user_id": USER_ID,
+        "total_posts": 5,
+        "total_reviews": 2,
+        "avg_rating": 4.2,
+        "total_questions": 1,
+        "entities_reviewed": 2,
+        "followers": 3,
+        "total_likes_received": 9,
+    }
+    stats_sql = " ".join(fetch.calls[0][0].split())
+    assert "post_type = 'question' AND moderation_status = 'approved'" in stats_sql
+    fetch.assert_consumed()
+
+
+def test_blocked_viewer_engagement_returns_zero_shape(monkeypatch):
+    monkeypatch.setattr(public_api, "require_pg", lambda: None)
+    _stub_profile_decision(
+        monkeypatch,
+        public_api,
+        ProfileAccessDecision("hidden", USER_ID),
+        viewer_id=VIEWER_ID,
+        require_activity=True,
+    )
+    _deny_data_queries(monkeypatch, public_api)
+
+    result = asyncio.run(
+        public_api.user_engagement_stats(
+            USER_ID,
+            request=_request(VIEWER_ID),
+            response=Response(),
+            user={"id": VIEWER_ID},
+        )
+    )
+
+    assert result == HIDDEN_ENGAGEMENT
+
+
+def test_missing_target_engagement_returns_404(monkeypatch):
+    monkeypatch.setattr(public_api, "require_pg", lambda: None)
+    _stub_profile_decision(
+        monkeypatch,
+        public_api,
+        ProfileAccessDecision("not_found"),
+        viewer_id=None,
+        require_activity=True,
+    )
+    _deny_data_queries(monkeypatch, public_api)
+
+    with pytest.raises(HTTPException) as exc_info:
+        asyncio.run(
+            public_api.user_engagement_stats(
+                USER_ID,
+                request=_request(None),
+                response=Response(),
+                user=None,
+            )
+        )
+
+    assert exc_info.value.status_code == 404
 
 
 def test_get_user_profile_restricts_followers_visibility_for_nonfollower(monkeypatch):
