@@ -1,6 +1,6 @@
 # Public Boundary Correctness Design
 
-> STATUS: proposed
+> STATUS: approved
 
 ## Goal
 
@@ -33,8 +33,9 @@ logout boundaries.
    activity heatmap from non-self viewers.
 4. Existing audience semantics remain compatible: `public` allows non-blocked
    viewers; `followers`, legacy `followers_only`, and `private` allow only self
-   or a current follower. Unknown or unavailable privacy state fails closed for
-   non-self viewers.
+   or a current follower. Unknown visibility fails closed. A missing privacy row
+   keeps the existing `followers_only` audience fallback, while missing activity
+   permission fails closed for activity-bearing sections.
 5. Personalized cookie/session responses are never reusable by a shared cache.
 6. Frontend logout clears local authentication state only after the backend has
    successfully revoked the server session.
@@ -55,8 +56,10 @@ and returns a small immutable decision containing:
 - whether activity-bearing sections may be returned.
 
 The pure audience predicate is shared with the full-profile endpoint so the
-profile card and its child endpoints cannot drift. Missing/invalid privacy data
-is fail-closed for non-self viewers, preserving the existing profile contract.
+profile card and its child endpoints cannot drift. Invalid visibility is
+fail-closed; a missing row preserves the existing non-self `followers_only`
+fallback while activity-bearing sections require an explicit positive activity
+permission.
 
 Posts, reviews, timeline, heatmap, following, followers, and engagement call the
 same decision boundary before querying protected data. Hidden collection
