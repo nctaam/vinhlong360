@@ -21,6 +21,7 @@ export interface KindDef {
   kind: string        // giá trị kind backend (KIND_OF_TYPE)
   slug: string        // nhãn URL thân thiện (dự phòng)
   label: string
+  icon: string        // IconLine name — dùng cho shell và điều hướng chức năng
   emoji: string
   types: string[]     // types thành viên — khớp KIND_OF_TYPE backend
   columns: KindColumn[]
@@ -41,7 +42,7 @@ const OFFICE_KINDS = ['ubnd', 'cong_an', 'y_te', 'truong_hoc', 'buu_dien', 'tu_p
 
 export const ADMIN_KINDS: KindDef[] = [
   {
-    kind: 'place', slug: 'dia-diem', label: 'Địa điểm', emoji: '🛕',
+    kind: 'place', slug: 'dia-diem', label: 'Địa điểm', icon: 'landmark', emoji: '🛕',
     types: ['attraction', 'nature', 'history'],
     columns: [
       { key: 'sub_category', label: 'Phân loại', widget: 'text' },
@@ -55,7 +56,7 @@ export const ADMIN_KINDS: KindDef[] = [
     ],
   },
   {
-    kind: 'experience', slug: 'trai-nghiem', label: 'Trải nghiệm', emoji: '🌾',
+    kind: 'experience', slug: 'trai-nghiem', label: 'Trải nghiệm', icon: 'sprout', emoji: '🌾',
     types: ['experience'],
     columns: [
       { key: 'duration', label: 'Thời lượng', widget: 'text' },
@@ -68,7 +69,7 @@ export const ADMIN_KINDS: KindDef[] = [
     ],
   },
   {
-    kind: 'product', slug: 'san-pham', label: 'Sản phẩm & OCOP', emoji: '🍊',
+    kind: 'product', slug: 'san-pham', label: 'Sản phẩm & OCOP', icon: 'fruit', emoji: '🍊',
     types: ['product', 'craft_village'],
     columns: [
       { key: 'ocop_star', label: 'Sao OCOP', widget: 'select', options: ['1', '2', '3', '4', '5'] },
@@ -82,7 +83,7 @@ export const ADMIN_KINDS: KindDef[] = [
     ],
   },
   {
-    kind: 'food', slug: 'am-thuc', label: 'Ẩm thực & Ăn uống', emoji: '🍲',
+    kind: 'food', slug: 'am-thuc', label: 'Ẩm thực & Ăn uống', icon: 'bowl', emoji: '🍲',
     types: ['dish', 'drink', 'restaurant', 'cafe'],
     columns: [
       { key: 'price_range', label: 'Giá', widget: 'text' },
@@ -96,7 +97,7 @@ export const ADMIN_KINDS: KindDef[] = [
     ],
   },
   {
-    kind: 'lodging', slug: 'luu-tru', label: 'Lưu trú', emoji: '🏡',
+    kind: 'lodging', slug: 'luu-tru', label: 'Lưu trú', icon: 'home', emoji: '🏡',
     types: ['accommodation'],
     columns: [
       { key: 'accommodation_type', label: 'Loại hình', widget: 'select', options: ACCOM_TYPES },
@@ -109,7 +110,7 @@ export const ADMIN_KINDS: KindDef[] = [
     ],
   },
   {
-    kind: 'event', slug: 'su-kien', label: 'Sự kiện & Lễ hội', emoji: '🎉',
+    kind: 'event', slug: 'su-kien', label: 'Sự kiện & Lễ hội', icon: 'calendar', emoji: '🎉',
     types: ['event'],
     columns: [
       { key: 'date_start', label: 'Bắt đầu', widget: 'text' },
@@ -122,7 +123,7 @@ export const ADMIN_KINDS: KindDef[] = [
     ],
   },
   {
-    kind: 'facility', slug: 'co-quan', label: 'Cơ quan & Tiện ích', emoji: '🏛️',
+    kind: 'facility', slug: 'co-quan', label: 'Cơ quan & Tiện ích', icon: 'building', emoji: '🏛️',
     types: ['facility'],
     columns: [
       { key: 'office_kind', label: 'Loại cơ quan', widget: 'select', options: OFFICE_KINDS },
@@ -135,7 +136,7 @@ export const ADMIN_KINDS: KindDef[] = [
     ],
   },
   {
-    kind: 'person', slug: 'nhan-vat', label: 'Nhân vật', emoji: '👤',
+    kind: 'person', slug: 'nhan-vat', label: 'Nhân vật', icon: 'user', emoji: '👤',
     types: ['person'],
     columns: [
       { key: 'role', label: 'Vai trò', widget: 'text' },
@@ -147,7 +148,7 @@ export const ADMIN_KINDS: KindDef[] = [
     ],
   },
   {
-    kind: 'admin_place', slug: 'xa-phuong', label: 'Xã/Phường', emoji: '📍',
+    kind: 'admin_place', slug: 'xa-phuong', label: 'Xã/Phường', icon: 'pin', emoji: '📍',
     types: ['place'],
     columns: [
       { key: 'former_district', label: 'Huyện cũ', widget: 'text' },
