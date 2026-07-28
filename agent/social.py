@@ -30,6 +30,10 @@ from storage import storage
 from ratelimit import check_rate, check_rate_ip
 from text_utils import normalize_name
 from media_policy import AI_ONLY_MEDIA_DETAIL
+from profile_access import (
+    can_view_profile_audience as _profile_can_view_full,
+    resolve_profile_access,
+)
 
 logger = logging.getLogger("social")
 
@@ -3762,14 +3766,6 @@ def _profile_private_response(profile, follower_count):
     }
 
 
-def _profile_can_view_full(vis: str, is_self: bool, is_follower: bool) -> bool:
-    if is_self or vis == "public":
-        return True
-    if vis in {"followers", "followers_only", "private"}:
-        return is_follower
-    return False
-
-
 def _profile_full_response(profile, posts_n, reviews_n, follower_count, following_row,
                            reputation, privacy, view_count_7d, is_self,
                            viewer_following, viewer_blocked, viewer_muted):
@@ -4060,64 +4056,16 @@ async def get_user_reviews(
     return {"reviews": posts, "total": total, "page": page, "has_more": offset + limit < total}
 
 
-def _timeline_blocked(conn, ph, viewer_id, resolved_id):
-    """Chặn 2 chiều giữa viewer và target — extract-method thuần."""
-    # Chặn 2 chiều — mirror get_user_profile (dòng ~3350-3357): SQL
-    # text 2 nhánh OR trông giống hệt nhau nhưng param bind khác vị trí
-    # (viewer_id, resolved_id, resolved_id, viewer_id) nên vẫn đúng
-    # 2 chiều (viewer chặn target HOẶC target chặn viewer).
-    return db._fetchone(conn, f"""
-        SELECT 1 FROM blocks
-        WHERE (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
-           OR (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
-    """, (viewer_id, resolved_id, resolved_id, viewer_id)) is not None
-
-
-def _timeline_followers_hidden(conn, ph, target, is_self, viewer_id, resolved_id):
-    """True nếu target là 'followers-only' và viewer không đủ điều kiện xem — extract-method thuần."""
-    is_follower = False
-    if not is_self and target.get("profile_visibility") == "followers" and viewer_id:
-        frow = db._fetchone(conn, f"""
-            SELECT 1 FROM follows
-            WHERE follower_id = {ph}::uuid AND target_type = 'user' AND target_id = {ph}
-        """, (viewer_id, resolved_id))
-        is_follower = frow is not None
-    return target.get("profile_visibility") == "followers" and not is_self and not is_follower
-
-
 def _timeline_visibility_gate(conn, ph, user_id, viewer_id):
     """Cổng kiểm hiển thị timeline — extract-method thuần từ get_user_timeline._query.
     Trả (status, resolved_id): 'notfound' | 'hidden' | 'ok'."""
-    # Không có cột users.is_private — độ hiển thị hồ sơ nằm ở
-    # user_privacy.profile_visibility (3 tier: public/followers/private,
-    # giống get_user_profile). Lấy giá trị thô thay vì rút gọn thành bool
-    # để còn phân biệt được tier 'followers'.
-    target = db._fetchone(conn, f"""
-        SELECT u.id, COALESCE(pv.profile_visibility, 'public') AS profile_visibility
-        FROM users u
-        LEFT JOIN user_privacy pv ON pv.user_id = u.id
-        WHERE u.id::text = {ph} AND u.is_active = TRUE AND u.deleted_at IS NULL
-    """, (user_id,))
-    if not target:
-        return "notfound", None
-    target = db._row_to_dict(target)
-    resolved_id = str(target["id"])
-    is_self = bool(viewer_id) and viewer_id == resolved_id
-    is_private = target.get("profile_visibility") == "private"
-
-    if not is_self and viewer_id and _timeline_blocked(conn, ph, viewer_id, resolved_id):
-        return "hidden", resolved_id
-
-    if is_private and not is_self:
-        return "hidden", resolved_id
-
-    if _timeline_followers_hidden(conn, ph, target, is_self, viewer_id, resolved_id):
-        return "hidden", resolved_id
-
-    if not is_self and _check_show_activity(resolved_id, viewer_id):
-        return "hidden", resolved_id
-
-    return "ok", resolved_id
+    # The shared decision owns profile_visibility/is_private, follower, block,
+    # and show_activity policy; this adapter preserves the legacy status spelling.
+    decision = resolve_profile_access(
+        conn, user_id, viewer_id, require_activity=True
+    )
+    status = "notfound" if decision.status == "not_found" else decision.status
+    return status, decision.target_id
 
 
 def _timeline_fetch(conn, ph, user_id, user, limit, offset):

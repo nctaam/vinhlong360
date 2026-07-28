@@ -9,6 +9,7 @@ from fastapi.testclient import TestClient
 import social
 from auth_middleware import get_current_user, require_user
 from database import db
+from profile_access import can_view_profile_audience, resolve_profile_access
 
 
 pg_only = pytest.mark.skipif(
@@ -20,6 +21,246 @@ pg_only = pytest.mark.skipif(
 @contextmanager
 def _fake_conn():
     yield object()
+
+
+class _FetchSequence:
+    def __init__(self, *rows):
+        self._rows = list(rows)
+        self.calls = []
+
+    def __call__(self, _conn, sql, params):
+        self.calls.append((sql, params))
+        if not self._rows:
+            raise AssertionError("unexpected profile access query")
+        return self._rows.pop(0)
+
+    def assert_consumed(self):
+        assert self._rows == []
+
+
+@pytest.mark.parametrize(
+    ("visibility", "is_self", "is_follower", "expected"),
+    [
+        ("public", False, False, True),
+        ("followers", False, False, False),
+        ("followers", False, True, True),
+        ("followers_only", False, True, True),
+        ("private", False, True, True),
+        ("private", False, False, False),
+        ("unknown", False, False, False),
+        ("public", True, False, True),
+    ],
+)
+def test_profile_access_audience_matrix(
+    visibility, is_self, is_follower, expected
+):
+    assert can_view_profile_audience(visibility, is_self, is_follower) is expected
+
+
+@pytest.mark.parametrize("filtered_target", ["inactive", "deleted"])
+def test_resolve_profile_access_returns_not_found_for_filtered_target(
+    monkeypatch, filtered_target
+):
+    fetch = _FetchSequence(None)
+    monkeypatch.setattr("profile_access.db._fetchone", fetch)
+
+    decision = resolve_profile_access(
+        object(), "target-1", "viewer-1", require_activity=False
+    )
+
+    assert decision.status == "not_found", filtered_target
+    assert decision.target_id is None
+    assert decision.is_self is False
+    assert decision.can_view_activity is False
+    fetch.assert_consumed()
+
+
+def test_resolve_profile_access_hides_bidirectional_block(monkeypatch):
+    fetch = _FetchSequence(
+        {
+            "id": "target-1",
+            "profile_visibility": "public",
+            "show_activity": True,
+        },
+        {"blocked": 1},
+    )
+    monkeypatch.setattr("profile_access.db._fetchone", fetch)
+    monkeypatch.setattr("profile_access.db._row_to_dict", lambda row: row)
+
+    decision = resolve_profile_access(
+        object(), "target-1", "viewer-1", require_activity=False
+    )
+
+    assert decision.status == "hidden"
+    assert decision.target_id == "target-1"
+    assert fetch.calls[1][1] == (
+        "viewer-1",
+        "target-1",
+        "target-1",
+        "viewer-1",
+    )
+    fetch.assert_consumed()
+
+
+@pytest.mark.parametrize(
+    ("visibility", "follower_row"),
+    [
+        ("followers", None),
+        ("unknown", {"follows": 1}),
+    ],
+)
+def test_resolve_profile_access_hides_unauthorized_audience(
+    monkeypatch, visibility, follower_row
+):
+    fetch = _FetchSequence(
+        {
+            "id": "target-1",
+            "profile_visibility": visibility,
+            "show_activity": True,
+        },
+        None,
+        follower_row,
+    )
+    monkeypatch.setattr("profile_access.db._fetchone", fetch)
+    monkeypatch.setattr("profile_access.db._row_to_dict", lambda row: row)
+
+    decision = resolve_profile_access(
+        object(), "target-1", "viewer-1", require_activity=False
+    )
+
+    assert decision.status == "hidden"
+    assert decision.target_id == "target-1"
+    fetch.assert_consumed()
+
+
+@pytest.mark.parametrize("show_activity", [False, None])
+def test_resolve_profile_access_requires_explicit_activity_permission(
+    monkeypatch, show_activity
+):
+    fetch = _FetchSequence(
+        {
+            "id": "target-1",
+            "profile_visibility": "public",
+            "show_activity": show_activity,
+        },
+        None,
+    )
+    monkeypatch.setattr("profile_access.db._fetchone", fetch)
+    monkeypatch.setattr("profile_access.db._row_to_dict", lambda row: row)
+
+    decision = resolve_profile_access(
+        object(), "target-1", "viewer-1", require_activity=True
+    )
+
+    assert decision.status == "hidden"
+    assert decision.can_view_activity is False
+    fetch.assert_consumed()
+
+
+def test_resolve_profile_access_allows_self_without_relationship_queries(monkeypatch):
+    fetch = _FetchSequence(
+        {
+            "id": "target-1",
+            "profile_visibility": None,
+            "show_activity": None,
+        }
+    )
+    monkeypatch.setattr("profile_access.db._fetchone", fetch)
+    monkeypatch.setattr("profile_access.db._row_to_dict", lambda row: row)
+
+    decision = resolve_profile_access(
+        object(), "target-1", "target-1", require_activity=True
+    )
+
+    assert decision.status == "ok"
+    assert decision.target_id == "target-1"
+    assert decision.is_self is True
+    assert decision.can_view_activity is True
+    assert len(fetch.calls) == 1
+    fetch.assert_consumed()
+
+
+def test_resolve_profile_access_allows_authorized_follower_activity(monkeypatch):
+    fetch = _FetchSequence(
+        {
+            "id": "target-1",
+            "profile_visibility": "followers",
+            "show_activity": True,
+        },
+        None,
+        {"follows": 1},
+    )
+    monkeypatch.setattr("profile_access.db._fetchone", fetch)
+    monkeypatch.setattr("profile_access.db._row_to_dict", lambda row: row)
+
+    decision = resolve_profile_access(
+        object(), "target-1", "viewer-1", require_activity=True
+    )
+
+    assert decision.status == "ok"
+    assert decision.target_id == "target-1"
+    assert decision.is_self is False
+    assert decision.can_view_activity is True
+    fetch.assert_consumed()
+
+
+def test_missing_privacy_defaults_to_follower_relationships_without_activity(
+    monkeypatch,
+):
+    anonymous_fetch = _FetchSequence(
+        {
+            "id": "target-1",
+            "profile_visibility": None,
+            "show_activity": None,
+        }
+    )
+    monkeypatch.setattr("profile_access.db._fetchone", anonymous_fetch)
+    monkeypatch.setattr("profile_access.db._row_to_dict", lambda row: row)
+
+    anonymous = resolve_profile_access(
+        object(), "target-1", None, require_activity=False
+    )
+
+    assert anonymous.status == "hidden"
+    anonymous_fetch.assert_consumed()
+
+    follower_fetch = _FetchSequence(
+        {
+            "id": "target-1",
+            "profile_visibility": None,
+            "show_activity": None,
+        },
+        None,
+        {"follows": 1},
+    )
+    monkeypatch.setattr("profile_access.db._fetchone", follower_fetch)
+
+    relationships = resolve_profile_access(
+        object(), "target-1", "viewer-1", require_activity=False
+    )
+
+    assert relationships.status == "ok"
+    assert relationships.can_view_activity is False
+    follower_fetch.assert_consumed()
+
+    activity_fetch = _FetchSequence(
+        {
+            "id": "target-1",
+            "profile_visibility": None,
+            "show_activity": None,
+        },
+        None,
+        {"follows": 1},
+    )
+    monkeypatch.setattr("profile_access.db._fetchone", activity_fetch)
+
+    activity = resolve_profile_access(
+        object(), "target-1", "viewer-1", require_activity=True
+    )
+
+    assert activity.status == "hidden"
+    assert activity.can_view_activity is False
+    activity_fetch.assert_consumed()
 
 
 def test_get_user_profile_restricts_followers_visibility_for_nonfollower(monkeypatch):
