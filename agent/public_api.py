@@ -79,10 +79,12 @@ if __package__:
     from .ai_disclosure import load_ai_disclosure
     from .image_descriptor import describe_entity_images, describe_review_image
     from .media_policy import is_renderable_entity_descriptor
+    from .trust_policy import build_explanation, derive_freshness, derive_source_tier
 else:
     from ai_disclosure import load_ai_disclosure
     from image_descriptor import describe_entity_images, describe_review_image
     from media_policy import is_renderable_entity_descriptor
+    from trust_policy import build_explanation, derive_freshness, derive_source_tier
 
 if __package__:
     from .index_policy import (
@@ -268,14 +270,7 @@ def _build_source_freshness(entity: dict) -> dict:
     verified_at = canonical_verified_at(entity)
     days_since_update = _days_since(updated_at)
     days_since_verified = _days_since(verified_at)
-    if days_since_verified is None:
-        status = "unknown"
-    elif days_since_verified <= 90:
-        status = "fresh"
-    elif days_since_verified <= 180:
-        status = "aging"
-    else:
-        status = "stale"
+    status = derive_freshness({"verified_at": verified_at})
     return {
         "source_title": src.get("title") or None,
         "source_url": src.get("url") or None,
@@ -710,6 +705,8 @@ def _build_user_interest_profile(user_id: str, query: str | None = None, context
             "confidence": round(min(1.0, preference_signal_count / 20), 2),
             "signal_count": preference_signal_count,
             "personalization_enabled": False,
+            "explicit_interests": [],
+            "preference_snapshot": preferences,
         }
 
     cutoff = recommendation_cutoff(preferences)
@@ -745,6 +742,8 @@ def _build_user_interest_profile(user_id: str, query: str | None = None, context
         "confidence": round(min(1.0, signal_count / 20), 2),
         "signal_count": signal_count,
         "personalization_enabled": True,
+        "explicit_interests": list(preferences.get("explicit_interests") or []),
+        "preference_snapshot": preferences,
     }
 
 
@@ -764,8 +763,11 @@ def _profile_next_actions(profile: dict) -> list[dict]:
     return actions[:3]
 
 
-def _candidate_card(entity: dict, reasons: list[str]) -> dict:
+def _candidate_card(
+    entity: dict, reasons: list[str], preference_snapshot: dict | None = None
+) -> dict:
     projected = _project_public_entity_media(entity, limit=2)
+    reason_vi = reasons[0] if reasons else ""
     return {
         "id": projected.get("id"),
         "name": projected.get("name", ""),
@@ -780,6 +782,10 @@ def _candidate_card(entity: dict, reasons: list[str]) -> dict:
             "review_count": (entity.get("attributes") or {}).get("review_count"),
         },
         "recommendation_reasons": reasons[:2],
+        "reason_vi": reason_vi,
+        "explanation": build_explanation(entity, reasons, preference_snapshot),
+        "source_tier": derive_source_tier(entity),
+        "freshness_status": derive_freshness(entity),
         "quality_score": entity_quality(entity),
     }
 
@@ -787,13 +793,22 @@ def _candidate_card(entity: dict, reasons: list[str]) -> dict:
 def _score_interest_hits(entity: dict, profile: dict, reasons: list[str]) -> float:
     score = 0.0
     hits = _interest_hits_from_entity(entity)
+    explicit_keys = [str(key) for key in profile.get("explicit_interests") or []]
+    explicit_set = set(explicit_keys)
+    matched_explicit: set[str] = set()
+    inferred_match = False
     for key, hit_score in hits.items():
         pref = float(profile.get("interest_scores", {}).get(key, 0) or 0)
         if pref > 0 and hit_score > 0:
             score += min(pref * 0.8 + hit_score, 20)
-            label = _label_for_interest(key)
-            if label and len(reasons) < 2:
-                reasons.append(f"Khớp sở thích {label.lower()}")
+            if key in explicit_set:
+                matched_explicit.add(key)
+            else:
+                inferred_match = True
+    for key in reversed([key for key in explicit_keys if key in matched_explicit]):
+        reasons.insert(0, f"Khớp sở thích {_label_for_interest(key).lower()}")
+    if inferred_match and len(reasons) < 2:
+        reasons.append("Hợp với nội dung bạn quan tâm")
     return score
 
 
@@ -920,7 +935,11 @@ def _contextual_recommendations(user_id: str, context: str, entity_id: str | Non
     selected = [entity for _, entity, _ in scored[:limit]]
     if selected:
         _enrich_place(selected)
-    items = [_candidate_card(entity, reasons) for _, entity, reasons in scored[:limit]]
+    preference_snapshot = profile.get("preference_snapshot")
+    items = [
+        _candidate_card(entity, reasons, preference_snapshot)
+        for _, entity, reasons in scored[:limit]
+    ]
     return {
         "context": context,
         "items": items,
@@ -1283,6 +1302,7 @@ def _entity_card_shape(entity: dict, *, score: float | None = None, reason_vi: s
     projected = _project_public_entity_media(entity, limit=2)
     area = projected.get("place_area") or projected.get("area") or projected.get("legacyArea") or ""
     place = projected.get("place") or projected.get("place_name") or ""
+    explanation = build_explanation(entity, [reason_vi] if reason_vi else [], None)
     return {
         "id": projected.get("id"),
         "name": projected.get("name", ""),
@@ -1295,6 +1315,9 @@ def _entity_card_shape(entity: dict, *, score: float | None = None, reason_vi: s
         "area": area,
         "score": round(float(score or 0), 4),
         "reason_vi": reason_vi,
+        "explanation": explanation,
+        "source_tier": derive_source_tier(entity),
+        "freshness_status": derive_freshness(entity),
     }
 
 def _similar_reason_vi(reason: str) -> str:
