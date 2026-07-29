@@ -433,11 +433,7 @@ def _extend_label(
     if travel_minutes is None:
         return None
 
-    arrival_minute = (
-        float(options.day_start_minute)
-        if label.path == (0,)
-        else label.finish_minute + travel_minutes
-    )
+    arrival_minute = label.finish_minute + travel_minutes
     placed = _place_stop(target.stop, arrival_minute, options)
     if placed is None:
         return None

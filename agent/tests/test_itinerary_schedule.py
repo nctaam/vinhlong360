@@ -39,7 +39,7 @@ def test_exact_solver_waits_for_opening_and_keeps_endpoints():
         ScheduleOptions(day_start_minute=480, day_end_minute=900),
     )
     assert result.ordered_ids == ("start", "early", "late", "end")
-    assert result.placements[1].start_visit_minute == 480
+    assert result.placements[1].start_visit_minute == 490
     assert result.placements[2].start_visit_minute >= 600
     assert result.overtime_minutes == 0
 
@@ -126,14 +126,32 @@ def test_result_reports_time_and_geometry_diagnostics():
         ScheduleOptions(day_start_minute=480, day_end_minute=900),
     )
 
-    assert result.placements[1].arrival_minute == 480
+    assert result.placements[1].arrival_minute == 490
     assert result.placements[1].start_visit_minute == 500
     assert result.placements[1].finish_visit_minute == 520
-    assert result.waiting_minutes == 20
+    assert result.waiting_minutes == 10
     assert result.minimum_slack_minutes == 80
     assert result.geometric_distance_km > 0
     assert result.backtrack_ratio == pytest.approx(0.0, abs=1e-9)
     assert result.matrix_source == "test"
+
+
+def test_first_hop_travel_can_make_a_required_stop_infeasible():
+    stops = [
+        ScheduleStop("start", (10.0, 106.0), 0),
+        ScheduleStop("middle", (10.0, 106.1), 30),
+        ScheduleStop("end", (10.0, 106.2), 0),
+    ]
+
+    with pytest.raises(NoFeasibleScheduleError, match="middle"):
+        schedule_stop_order(
+            stops,
+            matrix(
+                ["start", "middle", "end"],
+                [[0, 50, 70], [50, 0, 20], [70, 20, 0]],
+            ),
+            ScheduleOptions(day_start_minute=480, day_end_minute=540),
+        )
 
 
 def test_blocked_edge_names_required_stop_that_cannot_be_reached():
@@ -169,6 +187,64 @@ def test_local_repair_improves_a_narrow_beam_route():
 
     assert result.ordered_ids == ("start", "b", "a", "end")
     assert result.total_travel_minutes == 4
+
+
+def test_local_repair_uses_single_stop_relocate_for_a_nonadjacent_move():
+    stops = [
+        ScheduleStop("start", (10.0, 106.0), 0),
+        ScheduleStop("a", (10.0, 106.1), 0),
+        ScheduleStop("b", (10.0, 106.2), 0),
+        ScheduleStop("c", (10.0, 106.3), 0),
+        ScheduleStop("d", (10.0, 106.4), 0),
+        ScheduleStop("end", (10.0, 106.5), 0),
+    ]
+    result = schedule_stop_order(
+        stops,
+        matrix(
+            ["start", "a", "b", "c", "d", "end"],
+            [
+                [0, 0, 10, 100, 100, 100],
+                [100, 0, 1, 100, 100, 1],
+                [100, 100, 0, 1, 100, 1],
+                [100, 100, 100, 0, 1, 100],
+                [100, 1, 100, 100, 0, 100],
+                [100, 100, 100, 100, 100, 0],
+            ],
+        ),
+        ScheduleOptions(exact_limit=0, beam_width=1, station_tolerance=1.0),
+    )
+
+    assert result.ordered_ids == ("start", "b", "c", "d", "a", "end")
+    assert result.total_travel_minutes == 14
+
+
+def test_local_repair_uses_two_stop_or_opt_to_escape_relocate_local_optimum():
+    stops = [
+        ScheduleStop("start", (10.0, 106.0), 0),
+        ScheduleStop("a", (10.0, 106.1), 0),
+        ScheduleStop("b", (10.0, 106.2), 0),
+        ScheduleStop("c", (10.0, 106.3), 0),
+        ScheduleStop("d", (10.0, 106.4), 0),
+        ScheduleStop("end", (10.0, 106.5), 0),
+    ]
+    result = schedule_stop_order(
+        stops,
+        matrix(
+            ["start", "a", "b", "c", "d", "end"],
+            [
+                [0, 0, 100, 10, 100, 100],
+                [100, 0, 1, 100, 100, 100],
+                [100, 100, 0, 1, 100, 1],
+                [100, 100, 100, 0, 1, 100],
+                [100, 1, 100, 100, 0, 100],
+                [100, 100, 100, 100, 100, 0],
+            ],
+        ),
+        ScheduleOptions(exact_limit=0, beam_width=1, station_tolerance=1.0),
+    )
+
+    assert result.ordered_ids == ("start", "c", "d", "a", "b", "end")
+    assert result.total_travel_minutes == 14
 
 
 def test_optional_drop_prefers_the_highest_burden():
