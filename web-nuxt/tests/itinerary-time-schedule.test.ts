@@ -12,6 +12,8 @@ import {
   applySchedulePlacements,
   buildPlannerScheduleEnvelope,
   collectRoutableStops,
+  commitPlannerOptimizationResult,
+  enrichPlannerStopFromDetail,
   formatScheduledInterval,
   getCachedRouteTable,
   invalidatePlannerInputs,
@@ -503,7 +505,36 @@ describe('manual planner schedule integration', () => {
     expect(schedules[0]?.stops[1]?.requested_time).toBe('09:00-09:30')
   })
 
-  it('discards an in-flight optimization outcome after planner inputs change', async () => {
+  it('commits a current result through the page mutation callbacks in order', async () => {
+    const routed = collectRoutableStops([
+      { id: 'start', coords: [11.11, 107.11] as [number, number], time: '' },
+      { id: 'middle', coords: [11.12, 107.12] as [number, number], time: '' },
+      { id: 'end', coords: [11.13, 107.13] as [number, number], time: '' },
+    ])
+    const result = await runPlannerOptimization({
+      scheduleEnabled: false,
+      routed,
+      metadataByStop: new WeakMap<object, PlannerScheduleMetadata>(),
+      inputState: { version: 0 },
+      mode: 'driving',
+      fetchTable: async () => cachedTable,
+      requestOptimization: async ordered => orderResponse(ordered.map(item => item.key)),
+      route: async coordinates => routeWithoutUturns(coordinates.length),
+    })
+    const mutations: string[] = []
+
+    const committed = await commitPlannerOptimizationResult(result, {
+      applyPlacements: () => { mutations.push('placements') },
+      reorderStops: () => { mutations.push('reorder') },
+      applyRoute: () => { mutations.push('route') },
+      updateMap: async () => { mutations.push('map') },
+    })
+
+    expect(committed).toBe(result)
+    expect(mutations).toEqual(['placements', 'reorder', 'route', 'map'])
+  })
+
+  it('keeps every page mutation untouched when an in-flight result becomes stale', async () => {
     const stops = [
       { id: 'start', coords: [12.01, 108.01] as [number, number], time: '' },
       { id: 'middle', coords: [12.02, 108.02] as [number, number], time: '' },
@@ -537,15 +568,27 @@ describe('manual planner schedule integration', () => {
     invalidatePlannerInputs(inputState, stops, metadataByStop)
     resolveRequest(orderResponse(routed.map(item => item.key)))
 
-    await expect(pending).resolves.toEqual({ status: 'stale' })
+    const result = await pending
+    const mutations: string[] = []
+    const committed = await commitPlannerOptimizationResult(result, {
+      applyPlacements: () => { mutations.push('placements') },
+      reorderStops: () => { mutations.push('reorder') },
+      applyRoute: () => { mutations.push('route') },
+      updateMap: async () => { mutations.push('map') },
+    })
+
+    expect(result).toEqual({ status: 'stale' })
+    expect(committed).toBeNull()
+    expect(mutations).toEqual([])
     expect(inputState.version).toBe(5)
   })
 
-  it('clears a placed interval and bumps input version when detail enrichment invalidates it', () => {
-    const stop = { id: 'favorite', coords: null }
+  it('invalidates before applying changed coordinates and metadata from deferred detail enrichment', async () => {
+    const stop = { id: 'favorite', coords: null as [number, number] | null }
+    const stops = [stop]
     const metadataByStop = new WeakMap<object, PlannerScheduleMetadata>()
     const inputState: PlannerInputState = { version: 9 }
-    metadataByStop.set(stop, {
+    const originalMetadata: PlannerScheduleMetadata = {
       visitMinutes: 60,
       openingHours: null,
       warnings: ['opening-hours-unknown'],
@@ -555,15 +598,95 @@ describe('manual planner schedule integration', () => {
         start_visit_minute: 540,
         end_visit_minute: 600,
       },
+    }
+    metadataByStop.set(stop, originalMetadata)
+    let resolveDetail!: (value: {
+      coordinates: [number, number]
+      metadata: PlannerScheduleMetadata
+    }) => void
+    const detail = new Promise<{
+      coordinates: [number, number]
+      metadata: PlannerScheduleMetadata
+    }>((resolve) => { resolveDetail = resolve })
+
+    const pending = enrichPlannerStopFromDetail({
+      stop,
+      fetchDetail: () => detail,
+      isCurrentStop: candidate => stops.includes(candidate),
+      coordinatesFromDetail: value => value.coordinates,
+      metadataFromDetail: value => value.metadata,
+      metadataByStop,
+      invalidate: () => {
+        expect(stop.coords).toBeNull()
+        expect(metadataByStop.get(stop)).toBe(originalMetadata)
+        invalidatePlannerInputs(inputState, stops, metadataByStop)
+      },
     })
 
-    expect(formatScheduledInterval(metadataByStop.get(stop)?.placement))
-      .toBe('09:00-10:00')
+    resolveDetail({
+      coordinates: [10.25, 106.75],
+      metadata: {
+        visitMinutes: 90,
+        openingHours: '08:00-17:00',
+        warnings: [],
+      },
+    })
 
-    invalidatePlannerInputs(inputState, [stop], metadataByStop)
+    await expect(pending).resolves.toBe('updated')
 
     expect(inputState.version).toBe(10)
+    expect(stop.coords).toEqual([10.25, 106.75])
+    expect(metadataByStop.get(stop)).toEqual({
+      visitMinutes: 90,
+      openingHours: '08:00-17:00',
+      warnings: [],
+    })
     expect(formatScheduledInterval(metadataByStop.get(stop)?.placement)).toBe('')
+  })
+
+  it('does not invalidate or enrich a stop removed before its deferred detail resolves', async () => {
+    const stop = { id: 'removed-favorite', coords: null as [number, number] | null }
+    const stops = [stop]
+    const metadataByStop = new WeakMap<object, PlannerScheduleMetadata>()
+    const inputState: PlannerInputState = { version: 3 }
+    const originalMetadata: PlannerScheduleMetadata = {
+      visitMinutes: 60,
+      openingHours: null,
+      warnings: ['opening-hours-unknown'],
+    }
+    metadataByStop.set(stop, originalMetadata)
+    let resolveDetail!: (value: {
+      coordinates: [number, number]
+      metadata: PlannerScheduleMetadata
+    }) => void
+    const detail = new Promise<{
+      coordinates: [number, number]
+      metadata: PlannerScheduleMetadata
+    }>((resolve) => { resolveDetail = resolve })
+    const pending = enrichPlannerStopFromDetail({
+      stop,
+      fetchDetail: () => detail,
+      isCurrentStop: candidate => stops.includes(candidate),
+      coordinatesFromDetail: value => value.coordinates,
+      metadataFromDetail: value => value.metadata,
+      metadataByStop,
+      invalidate: () => invalidatePlannerInputs(inputState, stops, metadataByStop),
+    })
+
+    stops.splice(0, 1)
+    resolveDetail({
+      coordinates: [10.5, 106.5],
+      metadata: {
+        visitMinutes: 120,
+        openingHours: '09:00-18:00',
+        warnings: [],
+      },
+    })
+
+    await expect(pending).resolves.toBe('removed')
+    expect(inputState.version).toBe(3)
+    expect(stop.coords).toBeNull()
+    expect(metadataByStop.get(stop)).toBe(originalMetadata)
   })
 
   it('omits an invalid manual time from scheduling without mutating it', () => {

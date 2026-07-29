@@ -213,6 +213,8 @@ import { fetchRoute, fetchRouteTable, formatDistance, formatDuration, type Trans
 import {
   applySchedulePlacements,
   collectRoutableStops,
+  commitPlannerOptimizationResult,
+  enrichPlannerStopFromDetail,
   formatScheduledInterval,
   invalidatePlannerInputs,
   mergeOptimizedStops,
@@ -417,25 +419,18 @@ async function addStop(entity: Entity) {
   // stop can be routed/mapped. Falls back silently (stop still listed) on error.
   if (!stop.coords && entity.id) {
     try {
-      const res = await publicApi.getEntity(entity.id)
-      const c = normalizeCoords(res?.coordinates)
-      if (!stops.value.includes(stop)) return
-      const currentMetadata = plannerScheduleMetadata.get(stop)
-      const nextMetadata = plannerMetadataForEntity(
-        res?.type || stop.type,
-        res?.attributes,
-      )
-      const coordinatesChanged = Boolean(c) && (
-        !stop.coords
-        || stop.coords[0] !== c?.[0]
-        || stop.coords[1] !== c?.[1]
-      )
-      const metadataChanged = !samePlannerMetadata(currentMetadata, nextMetadata)
-      if (coordinatesChanged || metadataChanged) {
-        invalidatePlannerSchedule()
-        if (c) stop.coords = c
-        plannerScheduleMetadata.set(stop, nextMetadata)
-      }
+      await enrichPlannerStopFromDetail({
+        stop,
+        fetchDetail: () => publicApi.getEntity(entity.id),
+        isCurrentStop: currentStop => stops.value.includes(currentStop),
+        coordinatesFromDetail: detail => normalizeCoords(detail?.coordinates),
+        metadataFromDetail: detail => plannerMetadataForEntity(
+          detail?.type || stop.type,
+          detail?.attributes,
+        ),
+        metadataByStop: plannerScheduleMetadata,
+        invalidate: invalidatePlannerSchedule,
+      })
     } catch { /* coords stay null */ }
   }
 }
@@ -648,15 +643,6 @@ function plannerRouteLeg(stopIndex: number) {
   )
 }
 
-function samePlannerMetadata(
-  current: PlannerScheduleMetadata | undefined,
-  next: PlannerScheduleMetadata,
-): boolean {
-  return current?.visitMinutes === next.visitMinutes
-    && current.openingHours === next.openingHours
-    && current.warnings.join('|') === next.warnings.join('|')
-}
-
 function invalidatePlannerSchedule() {
   invalidatePlannerInputs(
     plannerInputState,
@@ -727,34 +713,41 @@ async function optimizePlanRoute() {
         : requestOptimizedOrder(ordered, blockedEdges),
       route: coordinates => fetchRoute(coordinates, transportMode.value),
     })
-    if (plannerResult.status === 'stale') {
+    const committedResult = await commitPlannerOptimizationResult(plannerResult, {
+      applyPlacements: (result) => {
+        const schedule = result.outcome.optimization.schedule
+        if (schedule) {
+          applySchedulePlacements(
+            routed,
+            schedule.placements,
+            plannerScheduleMetadata,
+            plannerInputState,
+          )
+        }
+        else if (itineraryScheduleV2) {
+          applySchedulePlacements(routed, [], plannerScheduleMetadata, plannerInputState)
+        }
+      },
+      reorderStops: (orderedKeys) => {
+        stops.value = mergeOptimizedStops(stops.value, routed, orderedKeys)
+      },
+      applyRoute: (route) => {
+        routeResult.value = route
+        routeError.value = !route
+      },
+      updateMap: async (route) => {
+        await nextTick()
+        await updateMap(route)
+      },
+    })
+    if (!committedResult) {
       optimizationMessage.value = 'Lịch trình đã thay đổi trong lúc tối ưu. Vui lòng bấm "Tối ưu tuyến" lại.'
       stopAnnounce.value = ''
       await nextTick()
       stopAnnounce.value = optimizationMessage.value
       return
     }
-    const { outcome } = plannerResult
-    if (outcome.optimization.schedule) {
-      applySchedulePlacements(
-        routed,
-        outcome.optimization.schedule.placements,
-        plannerScheduleMetadata,
-        plannerInputState,
-      )
-    }
-    else if (itineraryScheduleV2) {
-      applySchedulePlacements(routed, [], plannerScheduleMetadata, plannerInputState)
-    }
-    stops.value = mergeOptimizedStops(
-      stops.value,
-      routed,
-      outcome.ordered.map(item => item.key),
-    )
-    routeResult.value = outcome.route
-    routeError.value = !outcome.route
-    await nextTick()
-    await updateMap(outcome.route)
+    const { outcome } = committedResult
 
     const messages: string[] = []
     if (outcome.optimization.saved_distance_km > 0.05) {
@@ -771,7 +764,7 @@ async function optimizePlanRoute() {
     if (outcome.route && !outcome.unresolvedUturn) {
       messages.push('OSRM không phát hiện thao tác quay đầu trên tuyến cuối.')
     }
-    messages.push(...plannerResult.scheduleWarnings.map(warning => (
+    messages.push(...committedResult.scheduleWarnings.map(warning => (
       plannerWarningMessage(warning, routed)
     )))
     const schedule = outcome.optimization.schedule

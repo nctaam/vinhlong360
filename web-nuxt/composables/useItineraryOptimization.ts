@@ -79,6 +79,24 @@ export interface PlannerInputState {
   version: number
 }
 
+export interface PlannerStopDetailEnrichmentOptions<
+  T extends StopWithCoords,
+  TDetail,
+> {
+  stop: T
+  fetchDetail: () => Promise<TDetail>
+  isCurrentStop: (stop: T) => boolean
+  coordinatesFromDetail: (detail: TDetail) => Coordinates | null
+  metadataFromDetail: (detail: TDetail) => PlannerScheduleMetadata
+  metadataByStop: WeakMap<object, PlannerScheduleMetadata>
+  invalidate: () => void
+}
+
+export type PlannerStopDetailEnrichmentResult =
+  | 'updated'
+  | 'unchanged'
+  | 'removed'
+
 export interface SavedPlanStopShape {
   id: string
   name: string
@@ -158,6 +176,13 @@ export interface StalePlannerOptimizationResult {
 export type PlannerOptimizationResult<T extends StopWithCoords> =
   | CurrentPlannerOptimizationResult<T>
   | StalePlannerOptimizationResult
+
+export interface PlannerOptimizationCommitCallbacks<T extends StopWithCoords> {
+  applyPlacements: (result: CurrentPlannerOptimizationResult<T>) => void
+  reorderStops: (orderedKeys: string[]) => void
+  applyRoute: (route: RouteResult | null) => void
+  updateMap: (route: RouteResult | null) => Promise<void> | void
+}
 
 type RouteTableCacheEntry = {
   expiresAt: number | null
@@ -310,6 +335,41 @@ export function invalidatePlannerInputs<T extends object>(
   inputState.version += 1
 }
 
+function samePlannerMetadata(
+  current: PlannerScheduleMetadata | undefined,
+  next: PlannerScheduleMetadata,
+): boolean {
+  return current?.visitMinutes === next.visitMinutes
+    && current.openingHours === next.openingHours
+    && current.warnings.join('|') === next.warnings.join('|')
+}
+
+export async function enrichPlannerStopFromDetail<
+  T extends StopWithCoords,
+  TDetail,
+>(
+  options: PlannerStopDetailEnrichmentOptions<T, TDetail>,
+): Promise<PlannerStopDetailEnrichmentResult> {
+  const detail = await options.fetchDetail()
+  if (!options.isCurrentStop(options.stop)) return 'removed'
+
+  const coordinates = options.coordinatesFromDetail(detail)
+  const nextMetadata = options.metadataFromDetail(detail)
+  const currentMetadata = options.metadataByStop.get(options.stop)
+  const coordinatesChanged = Boolean(coordinates) && (
+    !options.stop.coords
+    || options.stop.coords[0] !== coordinates?.[0]
+    || options.stop.coords[1] !== coordinates?.[1]
+  )
+  const metadataChanged = !samePlannerMetadata(currentMetadata, nextMetadata)
+  if (!coordinatesChanged && !metadataChanged) return 'unchanged'
+
+  options.invalidate()
+  if (coordinates) options.stop.coords = coordinates
+  options.metadataByStop.set(options.stop, nextMetadata)
+  return 'updated'
+}
+
 export function applySchedulePlacements<T extends StopWithCoords>(
   routed: RoutableStop<T>[],
   placements: OptimizeSchedulePlacement[],
@@ -425,6 +485,20 @@ export async function runPlannerOptimization<
   )
   if (options.inputState.version !== inputVersion) return { status: 'stale' }
   return { status: 'current', outcome, scheduleEnvelope, scheduleWarnings }
+}
+
+export async function commitPlannerOptimizationResult<
+  T extends StopWithCoords,
+>(
+  result: PlannerOptimizationResult<T>,
+  callbacks: PlannerOptimizationCommitCallbacks<T>,
+): Promise<CurrentPlannerOptimizationResult<T> | null> {
+  if (result.status === 'stale') return null
+  callbacks.applyPlacements(result)
+  callbacks.reorderStops(result.outcome.ordered.map(item => item.key))
+  callbacks.applyRoute(result.outcome.route)
+  await callbacks.updateMap(result.outcome.route)
+  return result
 }
 
 function isCoordinates(value: StopWithCoords['coords']): value is Coordinates {
