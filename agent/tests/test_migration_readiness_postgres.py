@@ -64,13 +64,13 @@ def fresh_migrated_database():
 def test_fresh_migration_chain_reaches_release_readiness(fresh_migrated_database):
     adapter, applied = fresh_migrated_database
 
-    assert [migration.version for migration in applied][-2:] == [71, 72]
+    assert [migration.version for migration in applied][-3:] == [71, 72, 73]
     with adapter._conn(commit_on_success=False) as conn:
         adapter._verify_pg_schema(conn)
     status = adapter.pg_schema_status()
     assert status == {
         "backend": "postgresql",
         "ok": True,
-        "schema_version": 72,
-        "required_schema_version": 72,
+        "schema_version": 73,
+        "required_schema_version": 73,
     }

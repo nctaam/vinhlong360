@@ -94,6 +94,7 @@ PG_REQUIRED_COLUMNS = {
         "location_source", "location_accuracy", "location_consent_state",
         "location_enabled", "personalization_enabled", "explicit_interests",
         "recommendation_reset_at", "consent_version", "revision",
+        "location_reconfirm_required", "location_provenance_version",
         "created_at", "updated_at",
     },
     "user_preference_consents": {
@@ -109,7 +110,7 @@ PG_REQUIRED_COLUMNS = {
     "schema_version": {"component", "version", "migration", "updated_at"},
 }
 
-PG_REQUIRED_SCHEMA_VERSION = 72
+PG_REQUIRED_SCHEMA_VERSION = 73
 
 if USE_PG:
     import psycopg2

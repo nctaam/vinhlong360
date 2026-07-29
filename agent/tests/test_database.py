@@ -93,7 +93,7 @@ def test_pg_initialize_verifies_schema_before_legacy_repair_code():
     assert "CREATE INDEX" not in verify_src
 
 def test_pg_schema_contract_tracks_latest_release_tables():
-    assert PG_REQUIRED_SCHEMA_VERSION == 72
+    assert PG_REQUIRED_SCHEMA_VERSION == 73
     assert {"schema_version", "admin_audit_events", "shared_rate_limits", "request_idempotency_keys"} <= PG_REQUIRED_TABLES
     assert {"entity_changes", "site_settings_history"} <= PG_REQUIRED_TABLES
     assert {
@@ -109,6 +109,10 @@ def test_pg_schema_contract_tracks_latest_release_tables():
     assert {"key", "first_seen_at", "expires_at", "meta"} <= PG_REQUIRED_COLUMNS["request_idempotency_keys"]
     assert "bucket" not in PG_REQUIRED_COLUMNS["shared_rate_limits"]
     assert "response_json" not in PG_REQUIRED_COLUMNS["request_idempotency_keys"]
+    assert {
+        "location_reconfirm_required",
+        "location_provenance_version",
+    } <= PG_REQUIRED_COLUMNS["user_preferences"]
 
 
 _NP1_REQUIRED_COLUMNS = {
@@ -117,6 +121,7 @@ _NP1_REQUIRED_COLUMNS = {
         "location_source", "location_accuracy", "location_consent_state",
         "location_enabled", "personalization_enabled", "explicit_interests",
         "recommendation_reset_at", "consent_version", "revision",
+        "location_reconfirm_required", "location_provenance_version",
         "created_at", "updated_at",
     },
     "user_preference_consents": {
@@ -167,7 +172,7 @@ class _SchemaReadinessConnection:
         return self._cursor
 
 
-def _release_schema(*, version=72, missing_table=None, missing_column=None):
+def _release_schema(*, version=73, missing_table=None, missing_column=None):
     database_module.psycopg2 = SimpleNamespace(
         extras=SimpleNamespace(RealDictCursor=object)
     )
@@ -188,11 +193,11 @@ def _release_schema(*, version=72, missing_table=None, missing_column=None):
     )
 
 
-def test_pg_startup_rejects_schema_version_71():
+def test_pg_startup_rejects_schema_version_72():
     database = Database.__new__(Database)
 
-    with pytest.raises(RuntimeError, match=r"schema_version agent=71, expected >= 72"):
-        database._verify_pg_schema(_release_schema(version=71))
+    with pytest.raises(RuntimeError, match=r"schema_version agent=72, expected >= 73"):
+        database._verify_pg_schema(_release_schema(version=72))
 
 
 @pytest.mark.parametrize("table", sorted(_NP1_REQUIRED_COLUMNS))

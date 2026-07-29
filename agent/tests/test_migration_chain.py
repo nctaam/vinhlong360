@@ -128,3 +128,15 @@ def test_registry_typed_fields_have_column_in_right_table():
             col = KEY_TO_COLUMN.get(key, key)
             assert re.search(rf"\b{col}\b", table_cols[kind_to_table[kind]]), \
                 f"Bảng {kind_to_table[kind]} thiếu cột {col} (registry {etype}.{key})"
+
+
+def test_073_owns_location_remediation_contract():
+    migration = ROOT / "agent" / "migrations" / "073_location_preference_remediation.sql"
+    sql = migration.read_text(encoding="utf-8")
+
+    assert "location_reconfirm_required" in sql
+    assert "location_provenance_version" in sql
+    assert "location-confirmation" not in sql
+    assert "resolver-v2" in sql
+    assert "VALUES ('agent', 73," in sql
+    assert "CREATE TABLE" not in sql
