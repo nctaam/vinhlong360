@@ -399,22 +399,32 @@
             <h2 id="trust-card-title" class="sediment-head">Độ tin cậy dữ liệu</h2>
             <span :class="['trust-status', trustStatusTone]">{{ trustStatusLabel }}</span>
           </div>
-          <dl class="trust-list">
-            <div>
-              <dt>Nguồn</dt>
-              <dd>
-                <a v-if="trustSourceUrl" :href="safeUrl(trustSourceUrl)" target="_blank" rel="noopener nofollow">{{ trustSourceTitle }}</a>
-                <span v-else>{{ trustSourceTitle }}</span>
-              </dd>
-            </div>
-            <div>
-              <dt>Cập nhật</dt>
-              <dd>{{ trustUpdatedLabel }}</dd>
-            </div>
-          </dl>
-          <p class="trust-note">{{ trustNote }}</p>
-          <NuxtLink class="trust-report" :to="reportUrl">Báo sai hoặc bổ sung nguồn</NuxtLink>
+          <p class="trust-source"><IconLine :name="trustSourceTier === 'community' ? 'users' : 'shield-check'" aria-hidden="true" /> {{ trustSourceTitle }}</p>
+          <button
+            type="button"
+            class="trust-open"
+            data-action="open-source-trust"
+            aria-haspopup="dialog"
+            :aria-expanded="trustDrawerOpen"
+            @click="trustDrawerOpen = true"
+          >
+            Xem nguồn và cách đánh giá
+            <IconLine name="panel-left-open" aria-hidden="true" />
+          </button>
         </section>
+
+        <SourceTrustDrawer
+          :open="trustDrawerOpen"
+          :source-tier="trustSourceTier"
+          :source-title="trustSourceTitle"
+          :source-url="trustSourceUrl"
+          :verified-at="trustVerifiedAt"
+          :updated-at="trustUpdatedAt"
+          :freshness-status="trustStatus"
+          :community-context="trustCommunityContext"
+          @close="trustDrawerOpen = false"
+          @report="reportTrustIssue"
+        />
 
         <!-- declutter-3 T17 (B5c/D12): đúng 1 kênh Báo sai mỗi trang — trust-card ưu tiên;
              fallback này chỉ hiện khi entity KHÔNG có nguồn (trust-card ẩn) -->
@@ -490,6 +500,7 @@ import { entityStoryTeaser } from '~/composables/useEntityStory'
 import { aiDisclosure } from '~/utils/aiDisclosure'
 import { currentGalleryDescriptors, type GalleryDescriptorCarrier } from '~/utils/entityGallery'
 import { describeEntityImages, parseGalleryDescriptor } from '~/utils/imageDescriptors'
+import SourceTrustDrawer from '~/components/SourceTrustDrawer.vue'
 
 interface LaunchEntityCarrier extends Entity {
   readonly __launchGeneration: number
@@ -932,8 +943,9 @@ const reportUrl = computed(() => `/cong-dong?report=${encodeURIComponent(id.valu
 const sourceFreshness = computed(() => entity.value?.source_freshness)
 const trustSourceUrl = computed(() => sourceFreshness.value?.source_url || entity.value?.quality?.source_url || '')
 const trustSourceTitle = computed(() => sourceFreshness.value?.source_title || entity.value?.quality?.source_title || (trustSourceUrl.value ? 'Nguồn tham khảo' : 'Chưa có nguồn công khai'))
-const trustUpdatedAt = computed(() => sourceFreshness.value?.updated_at || entity.value?.quality?.verified_at || entity.value?.updatedAt || '')
-const trustUpdatedLabel = computed(() => trustUpdatedAt.value ? formatDateVN(trustUpdatedAt.value) : 'Chưa rõ')
+const trustUpdatedAt = computed(() => sourceFreshness.value?.updated_at || entity.value?.updatedAt || '')
+const trustVerifiedAt = computed(() => sourceFreshness.value?.verified_at || entity.value?.quality?.verified_at || '')
+const trustSourceTier = computed(() => String(entity.value?.quality?.source_tier || 'unknown'))
 const trustStatus = computed(() => sourceFreshness.value?.freshness_status || 'unknown')
 const trustStatusLabel = computed(() => {
   if (trustStatus.value === 'fresh') return 'Mới cập nhật'
@@ -947,14 +959,17 @@ const trustStatusTone = computed(() => {
   if (trustStatus.value === 'stale') return 'stale'
   return 'unknown'
 })
-const trustNote = computed(() => {
-  if (trustStatus.value === 'fresh') return 'Thông tin này có tín hiệu cập nhật gần đây.'
-  if (trustStatus.value === 'aging') return 'Thông tin vẫn dùng được nhưng nên kiểm tra lại nếu bạn sắp đi.'
-  if (trustStatus.value === 'stale') return 'Thông tin có thể đã cũ; hãy báo sai nếu bạn thấy khác thực tế.'
-  return 'Hệ thống chưa có đủ tín hiệu nguồn/ngày cập nhật cho mục này.'
-})
+const trustCommunityContext = computed(() => trustSourceTier.value === 'community'
+  ? 'Nguồn cộng đồng đã qua bước kiểm duyệt nội dung; không phải thông tin chính thức.'
+  : false)
 // P0-7: chỉ hiện trust-card khi CÓ nguồn công khai thật (đừng quảng cáo "chưa có nguồn").
 const trustVisible = computed(() => !!trustSourceUrl.value)
+const trustDrawerOpen = ref(false)
+
+async function reportTrustIssue() {
+  trustDrawerOpen.value = false
+  await navigateTo(reportUrl.value)
+}
 
 // P0-5: byline biên tập (Who) — LUÔN hiện, mọi trang. Trung thực theo
 // attributes.verifiedAt (người đặt tay); hiện chưa entity nào có → mặc định
@@ -1336,38 +1351,11 @@ useHead({
 .trust-status.aging { color: var(--warning); background: var(--warning-bg); border-color: var(--warning-border); }
 .trust-status.stale { color: var(--error); background: var(--error-bg); border-color: var(--error-border); }
 .trust-status.unknown { color: var(--muted); background: var(--bg-warm); }
-.trust-list {
-  display: grid;
-  gap: var(--space-2);
-  margin: 0;
-}
-.trust-list > div {
-  display: grid;
-  grid-template-columns: 88px minmax(0, 1fr);
-  gap: var(--space-2);
-}
-.trust-list dt {
-  color: var(--muted);
-  font-size: var(--text-sm);
-}
-.trust-list dd {
-  margin: 0;
-  min-width: 0;
-  font-size: var(--text-sm);
-  overflow-wrap: anywhere;
-}
-.trust-note {
-  margin: var(--space-3) 0 0;
-  color: var(--muted);
-  font-size: var(--text-sm);
-  line-height: 1.5;
-}
-.trust-report {
-  display: inline-flex;
-  margin-top: var(--space-3);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
-}
+.trust-source { display: flex; align-items: flex-start; gap: var(--space-2); margin: 0; color: var(--muted); font-size: var(--text-sm); line-height: var(--leading-snug); }
+.trust-source .line-icon { margin-top: .12rem; color: var(--primary-fg); }
+.trust-open { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); width: 100%; min-height: 44px; margin-top: var(--space-3); padding: 0 var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-sm); color: var(--primary-fg); background: var(--bg-warm); cursor: pointer; font: inherit; font-size: var(--text-sm); font-weight: var(--weight-semibold); text-align: left; }
+.trust-open:hover { border-color: var(--primary-fg); background: var(--bg-alt); }
+.trust-open:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* declutter-3 T17 (B5d): Save/Share dời từ hero về sidebar — 2 nút chia đều hàng.
    Sidebar stack dưới article trên mobile nên mọi viewport đều với tới. */

@@ -14,13 +14,39 @@
     <div v-else class="grid smart-rec-grid">
       <div v-for="entity in items" :key="entity.id" class="smart-rec-item">
         <EntityCard :entity="entity" />
-        <p v-if="reasonFor(entity.id)" class="smart-rec-reason">{{ reasonFor(entity.id) }}</p>
+        <button
+          v-if="explanationFor(entity)"
+          type="button"
+          class="smart-rec-reason"
+          data-action="why-this"
+          aria-haspopup="dialog"
+          :aria-expanded="whyOpen && selectedEntityId === entity.id"
+          @click="openExplanation(entity)"
+        >
+          <IconLine name="circle-help" aria-hidden="true" />
+          Vì sao gợi ý này?
+        </button>
       </div>
     </div>
+
+    <p v-if="drawerStatus" class="smart-rec-status" role="status" aria-live="polite">{{ drawerStatus }}</p>
+
+    <WhyThisDrawer
+      :open="whyOpen"
+      :explanation="selectedExplanation"
+      preference-href="/cai-dat#khu-vuc-de-xuat"
+      @close="closeExplanation"
+      @open-preferences="closeExplanation"
+      @reset="resetRecommendations"
+      @disable-personalization="disablePersonalization"
+    />
   </section>
 </template>
 
 <script setup lang="ts">
+import type { RecommendationCard, RecommendationExplanation } from '~/types/api'
+import WhyThisDrawer from './WhyThisDrawer.vue'
+
 const props = withDefaults(defineProps<{
   context?: string
   entityId?: string
@@ -34,12 +60,18 @@ const props = withDefaults(defineProps<{
 })
 
 const { enabled: ff } = useFeature()
-const { items, reasons, profile, loading, source } = useContextualRecommendations({
+const { items, reasons, profile, loading, source, refresh } = useContextualRecommendations({
   context: computed(() => props.context),
   entityId: computed(() => props.entityId),
   query: computed(() => props.query),
   limit: computed(() => props.limit),
 })
+const preferences = usePersonalizationPreferences()
+const whyOpen = ref(false)
+const selectedEntityId = ref('')
+const selectedExplanation = ref<Partial<RecommendationExplanation> | null>(null)
+const drawerStatus = ref('')
+const drawerActionPending = ref(false)
 
 const visible = computed(() => ff('ai_recommendations') && (loading.value || items.value.length > 0))
 const skeletonCount = computed(() => Math.min(Math.max(props.limit || 4, 1), 4))
@@ -52,6 +84,54 @@ const subtitle = computed(() => {
 
 function reasonFor(id: string) {
   return reasons.value[id]?.[0] || ''
+}
+
+function explanationFor(entity: RecommendationCard): Partial<RecommendationExplanation> | null {
+  const explanation = entity.explanation
+  const primary = explanation?.primary_reason?.trim()
+  if (explanation && primary) return explanation
+  const legacyReason = reasonFor(entity.id).trim()
+  return legacyReason ? { primary_reason: legacyReason, reasons: [legacyReason] } : null
+}
+
+function openExplanation(entity: RecommendationCard) {
+  const explanation = explanationFor(entity)
+  if (!explanation) return
+  selectedEntityId.value = entity.id
+  selectedExplanation.value = explanation
+  drawerStatus.value = ''
+  whyOpen.value = true
+}
+
+function closeExplanation() {
+  whyOpen.value = false
+}
+
+async function resetRecommendations() {
+  if (drawerActionPending.value) return
+  drawerActionPending.value = true
+  const result = await preferences.resetRecommendations()
+  if (result.ok) {
+    await refresh()
+    drawerStatus.value = 'Đã làm mới đề xuất.'
+  } else {
+    drawerStatus.value = preferences.error.value || 'Không thể làm mới đề xuất lúc này.'
+  }
+  drawerActionPending.value = false
+}
+
+async function disablePersonalization() {
+  if (drawerActionPending.value) return
+  drawerActionPending.value = true
+  const result = await preferences.patch({ personalization_enabled: false })
+  if (result.ok) {
+    await refresh()
+    drawerStatus.value = 'Đã tắt cá nhân hóa. Gợi ý chung vẫn được giữ lại.'
+    closeExplanation()
+  } else {
+    drawerStatus.value = preferences.error.value || 'Không thể tắt cá nhân hóa lúc này.'
+  }
+  drawerActionPending.value = false
 }
 </script>
 
@@ -91,11 +171,26 @@ function reasonFor(id: string) {
   min-width: 0;
 }
 .smart-rec-reason {
-  margin: .45rem 0 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  margin: .35rem 0 0;
+  padding: 0 var(--space-2);
+  border: 0;
+  border-radius: var(--radius-sm);
   color: var(--ink-700);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
   font-size: .82rem;
+  font-weight: var(--weight-semibold);
   line-height: 1.4;
 }
+.smart-rec-reason:hover { color: var(--primary-fg); background: var(--bg-warm); }
+.smart-rec-reason:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.smart-rec-reason .line-icon { color: var(--primary-fg); }
+.smart-rec-status { margin: var(--space-3) 0 0; color: var(--muted); font-size: var(--text-sm); }
 .smart-rec-skel {
   min-height: 260px;
   border-radius: var(--radius);
