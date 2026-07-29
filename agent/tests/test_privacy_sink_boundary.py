@@ -3,6 +3,7 @@
 import json
 import os
 import sys
+import threading
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -211,6 +212,117 @@ def test_tool_result_restoration_marker_cannot_be_injected(monkeypatch):
 
     assert safe.count(PUBLIC_PHONE) == 1
     assert marker in safe
+
+
+def test_tool_redaction_failure_does_not_publish_contact_provenance(monkeypatch):
+    monkeypatch.setattr(
+        server.knowledge,
+        "_entities",
+        {
+            "public-office": {
+                "id": "public-office",
+                "status": "published",
+                "verified": True,
+                "attributes": {"phone": PUBLIC_PHONE},
+            },
+        },
+    )
+    monkeypatch.setattr(
+        server,
+        "redact_payload",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            PrivacyBoundaryUnavailable("TOOL_REDACTION_FAILED")
+        ),
+    )
+    contacts = set()
+
+    with pytest.raises(PrivacyBoundaryUnavailable, match="TOOL_REDACTION_FAILED"):
+        server._safe_tool_result(
+            json.dumps({"id": "public-office", "phone": PUBLIC_PHONE}),
+            contacts,
+        )
+
+    assert contacts == set()
+
+
+@pytest.mark.parametrize("runner", ["orchestrated", "legacy"])
+def test_parallel_tool_redaction_serializes_contact_provenance(monkeypatch, runner):
+    state_lock = threading.Lock()
+    rendezvous = threading.Barrier(2)
+    state = {"active": 0, "overlap": False}
+
+    def redaction_probe(result, _contacts):
+        with state_lock:
+            state["active"] += 1
+            state["overlap"] = state["overlap"] or state["active"] > 1
+        try:
+            try:
+                rendezvous.wait(timeout=0.2)
+            except threading.BrokenBarrierError:
+                pass
+            return result
+        finally:
+            with state_lock:
+                state["active"] -= 1
+
+    monkeypatch.setattr(server, "HAS_PARALLEL", True)
+    monkeypatch.setattr(server, "_safe_tool_result", redaction_probe)
+    monkeypatch.setattr(server, "call_tool", lambda name, *_args: name)
+
+    if runner == "orchestrated":
+        class FakeOrchestrator:
+            def route(self, _message):
+                return (
+                    SimpleNamespace(value="general"),
+                    SimpleNamespace(use_mini=False, name="general"),
+                )
+
+            def run(self, **kwargs):
+                kwargs["tool_executor"].execute_parallel(
+                    [
+                        {"id": "one", "name": "first", "args": {}},
+                        {"id": "two", "name": "weather", "args": {}},
+                    ]
+                )
+                return {"reply": "done", "tools_used": [], "suggestions": []}
+
+        monkeypatch.setattr(server, "_get_orchestrator", lambda: FakeOrchestrator())
+        server._run_agent_orchestrated("hello", [], "sid", "system")
+    else:
+        tool_calls = [
+            SimpleNamespace(
+                id="one",
+                function=SimpleNamespace(name="search", arguments='{"q":"one"}'),
+            ),
+            SimpleNamespace(
+                id="two",
+                function=SimpleNamespace(name="weather", arguments="{}"),
+            ),
+        ]
+        responses = iter(
+            [
+                SimpleNamespace(
+                    choices=[SimpleNamespace(message=SimpleNamespace(
+                        content=None,
+                        tool_calls=tool_calls,
+                    ))]
+                ),
+                SimpleNamespace(
+                    choices=[SimpleNamespace(message=SimpleNamespace(
+                        content="done",
+                        tool_calls=None,
+                    ))]
+                ),
+            ]
+        )
+        completions = SimpleNamespace(create=lambda **_kwargs: next(responses))
+        client = SimpleNamespace(chat=SimpleNamespace(completions=completions))
+        monkeypatch.setattr(server, "HAS_CIRCUIT_BREAKER", False)
+        monkeypatch.setattr(server, "get_client", lambda: client)
+        monkeypatch.setattr(server, "get_model", lambda: "test-model")
+        server._run_agent([{"role": "user", "content": "hello"}], max_rounds=2)
+
+    assert state["overlap"] is False
 
 
 def test_post_provider_output_is_safe_before_every_personal_sink(monkeypatch, tmp_path):

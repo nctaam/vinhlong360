@@ -1947,17 +1947,21 @@ def _safe_tool_result(result, verified_public_contacts: set[str]) -> str:
         parsed = result
         was_json = False
 
-    verified_public_contacts.update(_verified_public_contacts_from_payload(parsed))
-    protected, restorations = _protect_public_contacts(parsed, verified_public_contacts)
+    new_contacts = _verified_public_contacts_from_payload(parsed)
+    effective_contacts = verified_public_contacts | new_contacts
+    protected, restorations = _protect_public_contacts(parsed, effective_contacts)
     safe_value = redact_payload(
         protected,
         source="untrusted_external",
-        verified_public_contacts=tuple(verified_public_contacts),
+        verified_public_contacts=tuple(effective_contacts),
     )
     safe_value = _restore_public_contacts(safe_value, restorations)
     if was_json:
-        return json.dumps(safe_value, ensure_ascii=False, default=str)
-    return str(safe_value)
+        serialized = json.dumps(safe_value, ensure_ascii=False, default=str)
+    else:
+        serialized = str(safe_value)
+    verified_public_contacts.update(new_contacts)
+    return serialized
 
 
 def _safe_delivered_reply(
@@ -2078,10 +2082,12 @@ def _run_agent_orchestrated(
         logger.info("Model routing: using MINI", category=_cat.value, agent=_agent.name)
 
     contacts = verified_public_contacts if verified_public_contacts is not None else set()
+    contacts_lock = threading.Lock()
 
     def _request_call_tool(name, args):
         result = call_tool(name, args, usage_accumulator)
-        return _safe_tool_result(result, contacts)
+        with contacts_lock:
+            return _safe_tool_result(result, contacts)
 
     result = orch.run(
         message=message,
@@ -2216,10 +2222,12 @@ def _run_agent(
     empty_results_count = 0
 
     contacts = verified_public_contacts if verified_public_contacts is not None else set()
+    contacts_lock = threading.Lock()
 
     def _request_call_tool(name, args):
         result = call_tool(name, args, usage_accumulator)
-        return _safe_tool_result(result, contacts)
+        with contacts_lock:
+            return _safe_tool_result(result, contacts)
 
     # Setup parallel executor if available
     parallel_exec = None
