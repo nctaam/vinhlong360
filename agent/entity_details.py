@@ -36,6 +36,7 @@ KIND_TABLE = {
     "person": "entity_person_details",
     "admin_place": "entity_adminplace_details",
 }
+DETAIL_TABLES = tuple(dict.fromkeys(KIND_TABLE.values()))
 INT_COLUMNS = {"founding_year", "scenic_rating", "review_count", "ocop_star",
                "households", "star_rating", "rooms", "month", "duration_days",
                "birth_year", "death_year", "population"}
@@ -172,7 +173,13 @@ def sync_entity_details(conn, is_pg: bool, entity_id: str, etype: str,
     # 2) Bảng CTI của kind (nếu có).
     kind = KIND_OF_TYPE.get(etype)
     table = KIND_TABLE.get(kind or "")
+    for stale_table in DETAIL_TABLES:
+        if stale_table != table:
+            _exec(conn, is_pg,
+                  f"DELETE FROM {stale_table} WHERE entity_id = {ph}",
+                  [entity_id])
     if not table:
+        _cache_put(entity_id, None)
         return
     cols = KIND_COLUMNS[kind]
     if not det:
@@ -196,7 +203,7 @@ def delete_entity_details(conn, is_pg: bool, entity_id: str) -> None:
     """Dọn detail rows khi xoá entity. PG có FK CASCADE nhưng SQLite dev thường
     không bật PRAGMA foreign_keys — dọn tường minh cho chắc cả hai."""
     ph = "%s" if is_pg else "?"
-    for table in KIND_TABLE.values():
+    for table in DETAIL_TABLES:
         _exec(conn, is_pg, f"DELETE FROM {table} WHERE entity_id = {ph}", [entity_id])
     _cache_put(entity_id, None)
 
@@ -288,7 +295,7 @@ def load_detail_cache(conn, is_pg: bool) -> int:
     """Nạp toàn bộ 9 bảng CTI vào cache {entity_id: {col: giá_trị_python}}."""
     global _DETAIL_CACHE
     cache: dict[str, dict] = {}
-    for table in KIND_TABLE.values():
+    for table in DETAIL_TABLES:
         if is_pg:
             cur = conn.cursor()
             cur.execute(f"SELECT * FROM {table}")
