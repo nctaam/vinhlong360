@@ -16,8 +16,10 @@ JSONB vẫn là nguồn sự thật cho mọi đường đọc (flip đọc = C2
 from __future__ import annotations
 
 import json
+from contextlib import contextmanager
 from dataclasses import dataclass
 from decimal import Decimal
+from threading import RLock
 from typing import Any, Iterable
 
 from config import settings
@@ -258,6 +260,14 @@ def norm_value(v: Any) -> Any:
 # sync/delete giữ cache tươi khi ghi. Đổi flag = restart service (chuẩn env var).
 
 _DETAIL_CACHE: dict[str, dict] | None = None
+_DETAIL_CACHE_WRITE_LOCK = RLock()
+
+
+@contextmanager
+def detail_cache_write_scope():
+    """Order detail SQL commit and cache publication as one process-local write."""
+    with _DETAIL_CACHE_WRITE_LOCK:
+        yield
 
 
 @dataclass(frozen=True)
@@ -275,15 +285,16 @@ def apply_detail_cache_mutations(
     mutations: Iterable[DetailCacheMutation], *, reset: bool = False
 ) -> None:
     global _DETAIL_CACHE
-    if _DETAIL_CACHE is None:
-        return
-    updated = {} if reset else dict(_DETAIL_CACHE)
-    for mutation in mutations:
-        if mutation.detail_items is None:
-            updated.pop(mutation.entity_id, None)
-        else:
-            updated[mutation.entity_id] = dict(mutation.detail_items)
-    _DETAIL_CACHE = updated
+    with _DETAIL_CACHE_WRITE_LOCK:
+        if _DETAIL_CACHE is None:
+            return
+        updated = {} if reset else dict(_DETAIL_CACHE)
+        for mutation in mutations:
+            if mutation.detail_items is None:
+                updated.pop(mutation.entity_id, None)
+            else:
+                updated[mutation.entity_id] = dict(mutation.detail_items)
+        _DETAIL_CACHE = updated
 
 
 _SCHEMA_KEYS: dict[str, list[str]] = {
@@ -298,7 +309,8 @@ def reads_enabled() -> bool:
 
 def reset_detail_cache() -> None:
     global _DETAIL_CACHE
-    _DETAIL_CACHE = None
+    with _DETAIL_CACHE_WRITE_LOCK:
+        _DETAIL_CACHE = None
 
 
 def _norm_col_value(col: str, v: Any) -> Any:
@@ -320,37 +332,38 @@ def _norm_col_value(col: str, v: Any) -> Any:
 def load_detail_cache(conn, is_pg: bool) -> int:
     """Nạp toàn bộ 9 bảng CTI vào cache {entity_id: {col: giá_trị_python}}."""
     global _DETAIL_CACHE
-    cache: dict[str, dict] = {}
-    locations: dict[str, str] = {}
-    duplicate_ids: set[str] = set()
-    duplicate_tables: set[str] = set()
-    for table in DETAIL_TABLES:
-        if is_pg:
-            cur = conn.cursor()
-            cur.execute(f"SELECT * FROM {table}")
-            raw_rows = cur.fetchall()
-            cols = [c[0] for c in cur.description]
-            rows = [r if isinstance(r, dict) else dict(zip(cols, r)) for r in raw_rows]
-        else:
-            fetched = conn.execute(f"SELECT * FROM {table}").fetchall()
-            rows = [{k: r[k] for k in r.keys()} for r in fetched]
-        for r in rows:
-            eid = r.pop("entity_id")
-            previous_table = locations.get(eid)
-            if previous_table is not None and previous_table != table:
-                duplicate_ids.add(eid)
-                duplicate_tables.update((previous_table, table))
+    with _DETAIL_CACHE_WRITE_LOCK:
+        cache: dict[str, dict] = {}
+        locations: dict[str, str] = {}
+        duplicate_ids: set[str] = set()
+        duplicate_tables: set[str] = set()
+        for table in DETAIL_TABLES:
+            if is_pg:
+                cur = conn.cursor()
+                cur.execute(f"SELECT * FROM {table}")
+                raw_rows = cur.fetchall()
+                cols = [c[0] for c in cur.description]
+                rows = [r if isinstance(r, dict) else dict(zip(cols, r)) for r in raw_rows]
             else:
-                locations[eid] = table
-            cache[eid] = {c: _norm_col_value(c, v) for c, v in r.items() if v is not None}
-    if duplicate_ids:
-        tables = ", ".join(sorted(duplicate_tables))
-        raise RuntimeError(
-            f"CTI cache load rejected: {len(duplicate_ids)} entities occur in "
-            f"multiple detail tables ({tables})"
-        )
-    _DETAIL_CACHE = cache
-    return len(cache)
+                fetched = conn.execute(f"SELECT * FROM {table}").fetchall()
+                rows = [{k: r[k] for k in r.keys()} for r in fetched]
+            for r in rows:
+                eid = r.pop("entity_id")
+                previous_table = locations.get(eid)
+                if previous_table is not None and previous_table != table:
+                    duplicate_ids.add(eid)
+                    duplicate_tables.update((previous_table, table))
+                else:
+                    locations[eid] = table
+                cache[eid] = {c: _norm_col_value(c, v) for c, v in r.items() if v is not None}
+        if duplicate_ids:
+            tables = ", ".join(sorted(duplicate_tables))
+            raise RuntimeError(
+                f"CTI cache load rejected: {len(duplicate_ids)} entities occur in "
+                f"multiple detail tables ({tables})"
+            )
+        _DETAIL_CACHE = cache
+        return len(cache)
 
 
 def rebuild_attributes(etype: str, attrs: Any, entity_row: dict) -> Any:

@@ -388,6 +388,105 @@ def test_replace_from_json_replaces_detail_cache_instead_of_merging(db, tmp_path
     assert (entity_details._DETAIL_CACHE or {})["new-cache"]["producer"] == "New"
 
 
+@pytest.mark.parametrize("later_operation", ["upsert", "delete", "replace"])
+def test_detail_cache_publication_follows_commit_order_across_mutating_paths(
+    db, tmp_path, monkeypatch, later_operation
+):
+    import threading
+
+    import entity_details
+    from config import settings
+
+    monkeypatch.setattr(settings, "ENTITY_DETAILS_TABLES", True)
+    db.reload_entity_details_cache()
+    entity_id = f"ordered-cache-{later_operation}"
+    db.upsert_entity(_entity(
+        eid=entity_id, etype="product", attributes={"producer": "Seed"}))
+
+    replacement_id = f"replacement-cache-{later_operation}"
+    replacement_path = tmp_path / f"replace-{later_operation}.json"
+    replacement_path.write_text(json.dumps({
+        "entities": [_entity(
+            eid=replacement_id,
+            etype="product",
+            attributes={"producer": "Replacement"},
+        )],
+        "relationships": [],
+        "itineraries": [],
+    }), encoding="utf-8")
+    monkeypatch.setenv("ALLOW_DESTRUCTIVE_DB_REPLACE", "1")
+
+    real_apply = entity_details.apply_detail_cache_mutations
+    first_apply_started = threading.Event()
+    later_apply_finished = threading.Event()
+    call_lock = threading.Lock()
+    call_count = 0
+
+    def pause_first_apply(*args, **kwargs):
+        nonlocal call_count
+        with call_lock:
+            call_index = call_count
+            call_count += 1
+        if call_index == 0:
+            first_apply_started.set()
+            later_apply_finished.wait(timeout=2)
+            return real_apply(*args, **kwargs)
+        try:
+            return real_apply(*args, **kwargs)
+        finally:
+            later_apply_finished.set()
+
+    monkeypatch.setattr(entity_details, "apply_detail_cache_mutations", pause_first_apply)
+    errors = []
+
+    def capture_error(operation):
+        try:
+            operation()
+        except BaseException as exc:  # pragma: no cover - asserted below
+            errors.append(exc)
+
+    first = threading.Thread(target=lambda: capture_error(lambda: db.upsert_entity(_entity(
+        eid=entity_id, etype="product", attributes={"producer": "First"}))))
+    first.start()
+    assert first_apply_started.wait(timeout=5)
+
+    def run_later_operation():
+        if later_operation == "upsert":
+            db.upsert_entity(_entity(
+                eid=entity_id, etype="product", attributes={"producer": "Second"}))
+        elif later_operation == "delete":
+            db.delete_entity(entity_id)
+        else:
+            db.replace_from_json(str(replacement_path))
+
+    later = threading.Thread(target=lambda: capture_error(run_later_operation))
+    later.start()
+    first.join(timeout=10)
+    later.join(timeout=10)
+
+    assert not first.is_alive() and not later.is_alive()
+    assert errors == []
+    cache = entity_details._DETAIL_CACHE or {}
+    with db._conn() as conn:
+        entity_exists = conn.execute(
+            "SELECT 1 FROM entities WHERE id = ?", (entity_id,)).fetchone()
+        detail = conn.execute(
+            "SELECT producer FROM entity_product_details WHERE entity_id = ?",
+            (entity_id,),
+        ).fetchone()
+
+    if later_operation == "upsert":
+        assert detail[0] == "Second"
+        assert cache[entity_id]["producer"] == "Second"
+    elif later_operation == "delete":
+        assert entity_exists is None
+        assert entity_id not in cache
+    else:
+        assert entity_exists is None
+        assert entity_id not in cache
+        assert cache[replacement_id]["producer"] == "Replacement"
+
+
 def test_replace_from_json_auto_backup_stays_next_to_custom_db(db, tmp_path, monkeypatch):
     import database
 

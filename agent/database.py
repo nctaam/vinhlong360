@@ -659,19 +659,20 @@ class Database:
             if self._initialized:
                 return
 
-            if self._use_pg:
+            with _entity_details.detail_cache_write_scope():
+                if self._use_pg:
+                    with self._conn() as conn:
+                        self._verify_pg_schema(conn)
+                        # GĐ-C C2: nạp cache detail khi flip đọc bật (đổi flag = restart)
+                        if _entity_details.reads_enabled():
+                            _entity_details.load_detail_cache(conn, True)
+                        self._initialized = True
+                        return
+
                 with self._conn() as conn:
-                    self._verify_pg_schema(conn)
-                    # GĐ-C C2: nạp cache detail khi flip đọc bật (đổi flag = restart)
-                    if _entity_details.reads_enabled():
-                        _entity_details.load_detail_cache(conn, True)
-                    self._initialized = True
-                    return
+                    self._init_sqlite_schema(conn)
 
-            with self._conn() as conn:
-                self._init_sqlite_schema(conn)
-
-            self._initialized = True
+                self._initialized = True
 
     def _init_sqlite_schema(self, conn) -> None:
         """Tạo bảng/index SQLite + migration cột (extract nguyên văn từ initialize —
@@ -802,14 +803,15 @@ class Database:
         season_val, attrs_val, source_val, images_val, coords_val, updated, attrs_store = \
             _normalize_upsert_fields(entity)
 
-        with self._conn() as conn:
-            self._write_entity_row(conn, entity, season_val, attrs_store,
-                                   source_val, images_val, coords_val, updated)
-            # GĐ-C dual-write: cột phổ quát + bảng CTI phản chiếu attrs (cùng transaction).
-            mutation = _entity_details.sync_entity_details(
-                conn, self._use_pg, entity["id"], entity["type"],
-                attrs_val if isinstance(attrs_val, dict) else {})
-        _entity_details.apply_detail_cache_mutations([mutation])
+        with _entity_details.detail_cache_write_scope():
+            with self._conn() as conn:
+                self._write_entity_row(conn, entity, season_val, attrs_store,
+                                       source_val, images_val, coords_val, updated)
+                # GĐ-C dual-write: cột phổ quát + bảng CTI phản chiếu attrs (cùng transaction).
+                mutation = _entity_details.sync_entity_details(
+                    conn, self._use_pg, entity["id"], entity["type"],
+                    attrs_val if isinstance(attrs_val, dict) else {})
+            _entity_details.apply_detail_cache_mutations([mutation])
 
     def _write_entity_row(self, conn, entity, season_val, attrs_store,
                           source_val, images_val, coords_val, updated) -> None:
@@ -903,8 +905,9 @@ class Database:
     def reload_entity_details_cache(self) -> int:
         """GĐ-C C2: nạp lại cache detail-rows (test + vận hành sau khi sửa DB tay)."""
         self.initialize()
-        with self._conn() as conn:
-            return _entity_details.load_detail_cache(conn, self._use_pg)
+        with _entity_details.detail_cache_write_scope():
+            with self._conn() as conn:
+                return _entity_details.load_detail_cache(conn, self._use_pg)
 
     def update_description(self, entity_id: str, description: str):
         """Update only the description field (won't be overwritten by upsert_entity)."""
@@ -937,20 +940,21 @@ class Database:
         """Delete entity and its relationships."""
         self.initialize()
         ph = self._ph
-        with self._conn() as conn:
-            cur = self._execute(conn, f"DELETE FROM entities WHERE id = {ph}", (entity_id,))
-            self._execute(conn, f"DELETE FROM relationships WHERE from_id = {ph} OR to_id = {ph}",
-                          (entity_id, entity_id))
-            # GĐ-C: dọn detail rows (PG có FK CASCADE; SQLite dev thường không bật pragma FK)
-            mutation = _entity_details.delete_entity_details(conn, self._use_pg, entity_id)
-            if not self._use_pg:
-                try:
-                    conn.execute("DELETE FROM entities_fts WHERE id = ?", (entity_id,))
-                except sqlite3.OperationalError:
-                    logger.debug("FTS5 delete skipped for entity %s", entity_id)
-            deleted = cur.rowcount > 0
-        _entity_details.apply_detail_cache_mutations([mutation])
-        return deleted
+        with _entity_details.detail_cache_write_scope():
+            with self._conn() as conn:
+                cur = self._execute(conn, f"DELETE FROM entities WHERE id = {ph}", (entity_id,))
+                self._execute(conn, f"DELETE FROM relationships WHERE from_id = {ph} OR to_id = {ph}",
+                              (entity_id, entity_id))
+                # GĐ-C: dọn detail rows (PG có FK CASCADE; SQLite dev thường không bật pragma FK)
+                mutation = _entity_details.delete_entity_details(conn, self._use_pg, entity_id)
+                if not self._use_pg:
+                    try:
+                        conn.execute("DELETE FROM entities_fts WHERE id = ?", (entity_id,))
+                    except sqlite3.OperationalError:
+                        logger.debug("FTS5 delete skipped for entity %s", entity_id)
+                deleted = cur.rowcount > 0
+            _entity_details.apply_detail_cache_mutations([mutation])
+            return deleted
 
     def search_entities(self, q: str = None, entity_type: str = None,
                         area: str = None, limit: int = 20, offset: int = 0,
@@ -1494,14 +1498,15 @@ class Database:
         # F1 (atomic): DELETE + INSERT trong CÙNG 1 transaction cho CẢ PG lẫn SQLite.
         # Crash giữa chừng → rollback → data CŨ còn nguyên (KHÔNG để DB rỗng). Trước đây
         # PG xoá ở transaction này rồi nạp ở migrate_from_json (transaction KHÁC) → không atomic.
-        with self._conn() as conn:
-            self._clear_knowledge_tables(conn)
-            result, mutations = self._bulk_load(conn, data)
-            if result.get("relationships_dropped", 0) > 0:
-                logger.warning("replace_from_json: %d quan he trung (from,to,type) bi bo khi luu "
-                               "(input %d -> stored %d)",
-                               result['relationships_dropped'], result['relationships'], result['relationships_stored'])
-        _entity_details.apply_detail_cache_mutations(mutations, reset=True)
+        with _entity_details.detail_cache_write_scope():
+            with self._conn() as conn:
+                self._clear_knowledge_tables(conn)
+                result, mutations = self._bulk_load(conn, data)
+                if result.get("relationships_dropped", 0) > 0:
+                    logger.warning("replace_from_json: %d quan he trung (from,to,type) bi bo khi luu "
+                                   "(input %d -> stored %d)",
+                                   result['relationships_dropped'], result['relationships'], result['relationships_stored'])
+            _entity_details.apply_detail_cache_mutations(mutations, reset=True)
 
         result["mode"] = "replace"
         if backup_path:
