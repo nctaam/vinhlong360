@@ -62,7 +62,7 @@ _INSERT_RE = re.compile(r"\binsert\s+into\s+entities\b", re.IGNORECASE)
 _UPDATE_RE = re.compile(r"\bupdate\s+entities\s+set\s+", re.IGNORECASE)
 _ATTRIBUTES_ASSIGNMENT_RE = re.compile(r"attributes\b\s*=", re.IGNORECASE)
 _DYNAMIC_ASSIGNMENT_RE = re.compile(
-    r'(?:\{\}|"\{\}"|`\{\}`|\[\{\}\])\s*=',
+    r'(?:\{\}|"\{\}"|`\{\}`|\[\{\}\])',
     re.IGNORECASE,
 )
 
@@ -103,19 +103,35 @@ class _WriteVisitor(ast.NodeVisitor):
         self.sites: list[WriteSite] = []
 
     def visit_ClassDef(self, node: ast.ClassDef) -> None:
-        self._visit_scope(node)
+        self._visit_nodes(node.decorator_list)
+        self._visit_nodes(node.bases)
+        self._visit_nodes(node.keywords)
+        self._visit_nodes(getattr(node, "type_params", []))
+        self._visit_scope_body(node.name, node.body)
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
-        self._visit_scope(node)
+        self._visit_function(node)
 
     def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
-        self._visit_scope(node)
+        self._visit_function(node)
 
-    def _visit_scope(
-        self, node: ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef
+    def _visit_function(
+        self, node: ast.FunctionDef | ast.AsyncFunctionDef
     ) -> None:
-        self.scopes.append(node.name)
-        self.generic_visit(node)
+        self._visit_nodes(node.decorator_list)
+        self.visit(node.args)
+        if node.returns is not None:
+            self.visit(node.returns)
+        self._visit_nodes(getattr(node, "type_params", []))
+        self._visit_scope_body(node.name, node.body)
+
+    def _visit_nodes(self, nodes: Iterable[ast.AST]) -> None:
+        for node in nodes:
+            self.visit(node)
+
+    def _visit_scope_body(self, name: str, body: Iterable[ast.AST]) -> None:
+        self.scopes.append(name)
+        self._visit_nodes(body)
         self.scopes.pop()
 
     def visit_Call(self, node: ast.Call) -> None:
@@ -156,7 +172,19 @@ def find_write_sites(root: Path) -> list[WriteSite]:
     sites: list[WriteSite] = []
     for path in _python_files(root):
         relative_path = path.relative_to(root).as_posix()
-        tree = ast.parse(path.read_text(encoding="utf-8"), filename=relative_path)
+        try:
+            source = path.read_text(encoding="utf-8")
+            tree = ast.parse(source, filename=relative_path)
+        except (OSError, SyntaxError, UnicodeError) as error:
+            sites.append(
+                WriteSite(
+                    path=relative_path,
+                    function="<module>",
+                    kind="parse-error",
+                    line=getattr(error, "lineno", 0) or 0,
+                )
+            )
+            continue
         visitor = _WriteVisitor(relative_path)
         visitor.visit(tree)
         sites.extend(visitor.sites)
