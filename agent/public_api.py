@@ -52,6 +52,7 @@ from user_preferences import (
     MAX_RECOMMENDATION_RESET_AT_LENGTH,
     PreferenceRevisionConflict,
     PreferenceValidationError,
+    _public_snapshot,
     load_preference_consents,
     load_preferences,
     patch_preferences_with_consents,
@@ -720,7 +721,7 @@ def _build_user_interest_profile(user_id: str, query: str | None = None, context
             "explicit_interests": [],
             "preference_snapshot": None,
         }
-    preferences = load_preferences(user_id)
+    preferences = _public_snapshot(load_preferences(user_id))
     personalization_enabled = preferences.get("personalization_enabled") is True
     preference_signal_count = _apply_preference_profile(
         acc, preferences, include_interests=personalization_enabled
@@ -1044,7 +1045,7 @@ async def get_my_preferences(response: Response, user=Depends(require_user)):
         "Too many preference requests",
     )
     response.headers["Cache-Control"] = "no-store"
-    return await asyncio.to_thread(load_preferences, owner)
+    return _public_snapshot(await asyncio.to_thread(load_preferences, owner))
 
 
 @router.patch(
@@ -1092,13 +1093,13 @@ async def update_my_preferences(
         current = await asyncio.to_thread(load_preferences, owner)
         return JSONResponse(
             status_code=409,
-            content=jsonable_encoder(current),
+            content=jsonable_encoder(_public_snapshot(current)),
             headers={"Cache-Control": "no-store"},
         )
     except (LocationConfirmationError, PreferenceValidationError):
         raise HTTPException(422, "Invalid preference patch") from None
     response.headers["Cache-Control"] = "no-store"
-    return snapshot
+    return _public_snapshot(snapshot)
 
 
 @router.get(
@@ -1146,7 +1147,7 @@ async def reset_my_recommendations(
     )
     snapshot = await asyncio.to_thread(record_recommendation_reset, owner)
     response.headers["Cache-Control"] = "no-store"
-    return snapshot
+    return _public_snapshot(snapshot)
 
 
 @router.post(

@@ -48,7 +48,9 @@ def preference_database(tmp_path, monkeypatch):
                 explicit_interests TEXT NOT NULL DEFAULT '[]',
                 recommendation_reset_at TEXT,
                 consent_version TEXT,
-                revision INTEGER NOT NULL DEFAULT 0,
+                location_reconfirm_required INTEGER NOT NULL DEFAULT 0,
+                location_provenance_version TEXT,
+                revision BIGINT NOT NULL DEFAULT 0,
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
             );

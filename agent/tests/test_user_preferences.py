@@ -30,6 +30,136 @@ from user_preferences import (
     record_preference_consent,
 )
 
+
+def test_manual_all_region_wins_over_valid_gps_confirmation():
+    merged = merge_preference_patch(
+        {
+            "region_id": None,
+            "region_label": None,
+            "region_scope": "all",
+            "location_source": "manual",
+            "location_accuracy": "unknown",
+            "revision": 4,
+        },
+        {
+            "region_id": "province-vl",
+            "region_label": "Vĩnh Long",
+            "region_scope": "province",
+            "location_source": "gps",
+            "location_accuracy": "province",
+            "location_enabled": True,
+        },
+        expected_revision=4,
+    )
+    assert merged["region_id"] is None
+    assert merged["region_scope"] == "all"
+    assert merged["location_source"] == "manual"
+
+
+@pytest.mark.parametrize(
+    ("snapshot", "reason"),
+    [
+        (
+            {
+                "region_id": "203.0.113.9",
+                "region_label": "Vĩnh Long",
+                "region_scope": "province",
+                "location_source": "manual",
+                "location_accuracy": "province",
+            },
+            "raw_shape",
+        ),
+        (
+            {
+                "region_id": "district-x",
+                "region_label": "Tự khai",
+                "region_scope": "district",
+                "location_source": "manual",
+                "location_accuracy": "district",
+            },
+            "manual_tuple",
+        ),
+        (
+            {
+                "region_id": "province-vl",
+                "region_label": "Vĩnh Long",
+                "region_scope": "province",
+                "location_source": "gps",
+                "location_accuracy": "province",
+                "location_enabled": True,
+                "location_consent_state": "granted",
+                "location_provenance_version": None,
+            },
+            "provenance",
+        ),
+    ],
+)
+def test_invalid_region_reason_is_bounded(snapshot, reason):
+    assert user_preferences.invalid_region_reason(
+        {**user_preferences._default_persisted_snapshot(), **snapshot}
+    ) == reason
+
+
+def test_quarantine_location_snapshot_drops_location_and_preserves_preferences():
+    snapshot = user_preferences.quarantine_location_snapshot(
+        {
+            **user_preferences._default_persisted_snapshot(),
+            "region_id": "203.0.113.9",
+            "region_label": "10.25, 105.97",
+            "region_scope": "province",
+            "location_source": "gps",
+            "location_accuracy": "province",
+            "location_consent_state": "granted",
+            "location_enabled": True,
+            "location_provenance_version": "resolver-v1",
+            "personalization_enabled": True,
+            "explicit_interests": ["food"],
+            "consent_version": "privacy-v1",
+            "revision": 7,
+        }
+    )
+
+    assert snapshot == {
+        "region_id": None,
+        "region_label": None,
+        "region_scope": "unknown",
+        "location_source": "default",
+        "location_accuracy": "unknown",
+        "location_consent_state": "off",
+        "location_enabled": False,
+        "personalization_enabled": True,
+        "explicit_interests": ["food"],
+        "recommendation_reset_at": None,
+        "consent_version": "privacy-v1",
+        "location_reconfirm_required": True,
+        "revision": 7,
+        "location_provenance_version": None,
+    }
+    assert user_preferences.invalid_region_reason(snapshot) is None
+    assert "203.0.113.9" not in repr(snapshot)
+    assert "10.25" not in repr(snapshot)
+    assert "105.97" not in repr(snapshot)
+
+
+@pytest.mark.parametrize(
+    "field",
+    ["location_reconfirm_required", "location_provenance_version"],
+)
+def test_remediation_fields_are_not_client_patchable(field):
+    with pytest.raises(PreferenceValidationError, match="Unknown preference fields"):
+        normalize_preference_patch({field: True})
+
+
+def test_revision_accepts_json_safe_bigint_boundary():
+    assert normalize_preference_patch(
+        {"revision": 9_007_199_254_740_991}
+    )["revision"] == 9_007_199_254_740_991
+
+
+def test_revision_rejects_value_above_json_safe_bigint_boundary():
+    with pytest.raises(PreferenceValidationError):
+        normalize_preference_patch({"revision": 9_007_199_254_740_992})
+
 pg_only = pytest.mark.skipif(
     not live_db._use_pg, reason="PostgreSQL preference contract requires DATABASE_URL."
 )
@@ -119,17 +249,17 @@ def test_revision_is_normalized_to_an_integer():
     assert isinstance(patch["revision"], int)
 
 
-def test_revision_rejects_values_above_postgres_integer_range():
+def test_revision_rejects_values_above_json_safe_integer_range():
     with pytest.raises(PreferenceValidationError):
-        normalize_preference_patch({"revision": 2_147_483_648})
+        normalize_preference_patch({"revision": 9_007_199_254_740_992})
 
 
-def test_merge_rejects_revision_increment_past_postgres_integer_range():
+def test_merge_rejects_revision_increment_past_json_safe_integer_range():
     with pytest.raises(PreferenceValidationError):
         merge_preference_patch(
-            {"revision": 2_147_483_647},
+            {"revision": 9_007_199_254_740_991},
             {"explicit_interests": ["food"]},
-            expected_revision=2_147_483_647,
+            expected_revision=9_007_199_254_740_991,
         )
 
 
@@ -206,7 +336,9 @@ def test_disabling_location_clears_only_resolver_derived_region(location_source)
         "explicit_interests": ["food"],
         "recommendation_reset_at": None,
         "consent_version": "v1",
+        "location_reconfirm_required": False,
         "revision": 5,
+        "location_provenance_version": None,
     }
 
 
@@ -348,7 +480,9 @@ def preference_database(tmp_path, monkeypatch):
                 explicit_interests TEXT NOT NULL DEFAULT '[]',
                 recommendation_reset_at TEXT,
                 consent_version TEXT,
-                revision INTEGER NOT NULL DEFAULT 0,
+                location_reconfirm_required INTEGER NOT NULL DEFAULT 0,
+                location_provenance_version TEXT,
+                revision BIGINT NOT NULL DEFAULT 0,
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
             );
@@ -582,6 +716,7 @@ def test_load_preferences_returns_privacy_safe_public_defaults(preference_databa
         "explicit_interests": [],
         "recommendation_reset_at": None,
         "consent_version": None,
+        "location_reconfirm_required": False,
         "revision": 0,
     }
 
@@ -718,6 +853,32 @@ def test_preference_profile_flag_allows_enabled_mutation(client, logged_in_user)
     assert response.json()["explicit_interests"] == ["food"]
 
 
+def test_recommendation_reset_projects_internal_location_metadata(
+    client, logged_in_user, monkeypatch
+):
+    snapshot = {
+        **user_preferences._default_persisted_snapshot(),
+        "recommendation_reset_at": "2026-07-29T08:00:00+00:00",
+        "location_provenance_version": "resolver-v2",
+        "revision": 3,
+    }
+    monkeypatch.setattr(
+        public_api,
+        "record_recommendation_reset",
+        lambda _owner: snapshot,
+    )
+
+    response = client.post(
+        "/api/me/recommendations/reset",
+        headers=logged_in_user.csrf_headers,
+    )
+
+    assert response.status_code == 200
+    assert response.json()["location_reconfirm_required"] is False
+    assert response.json()["revision"] == 3
+    assert "location_provenance_version" not in response.json()
+
+
 def test_preferences_patch_accepts_only_exact_canonical_manual_region(
     client, logged_in_user
 ):
@@ -781,7 +942,7 @@ def test_preferences_patch_rejects_forged_resolver_source_without_token(
 
 
 def test_resolver_confirmation_token_is_required_user_bound_and_transient(
-    client, logged_in_user, monkeypatch
+    client, preference_database, logged_in_user, monkeypatch
 ):
     now = datetime(2026, 7, 29, 8, tzinfo=timezone.utc)
     monkeypatch.setattr(location_resolver, "_utc_now", lambda: now, raising=False)
@@ -846,8 +1007,77 @@ def test_resolver_confirmation_token_is_required_user_bound_and_transient(
     assert confirmed.status_code == 200
     assert confirmed.json()["region_id"] == "province-vl"
     assert confirmed.json()["location_source"] == "gps"
+    assert confirmed.json()["location_reconfirm_required"] is False
+    assert "location_provenance_version" not in confirmed.json()
     assert "confirmation_token" not in confirmed.json()
-    assert "confirmation_token" not in repr(load_preferences("user-1"))
+    public_snapshot = load_preferences("user-1")
+    assert "location_provenance_version" not in public_snapshot
+    assert "confirmation_token" not in repr(public_snapshot)
+    with preference_database._conn(commit_on_success=False) as conn:
+        row = conn.execute(
+            "SELECT location_provenance_version FROM user_preferences "
+            "WHERE user_id = ?",
+            ("user-1",),
+        ).fetchone()
+    assert row["location_provenance_version"] == "resolver-v2"
+
+
+def test_manual_all_region_route_wins_over_resolver_confirmation(
+    client, preference_database, logged_in_user, monkeypatch
+):
+    selected = client.patch(
+        "/api/me/preferences",
+        json={
+            "revision": 0,
+            "region_id": None,
+            "region_label": None,
+            "region_scope": "all",
+            "location_source": "manual",
+            "location_accuracy": "unknown",
+        },
+        headers=logged_in_user.csrf_headers,
+    )
+    assert selected.status_code == 200
+
+    now = datetime(2026, 7, 29, 8, tzinfo=timezone.utc)
+    monkeypatch.setattr(location_resolver, "_utc_now", lambda: now, raising=False)
+    client.app.dependency_overrides[public_api.get_reverse_geocoder] = lambda: (
+        lambda *_: {
+            "region_id": "province-vl",
+            "region_label": "Vĩnh Long",
+            "region_scope": "province",
+            "location_accuracy": "province",
+        }
+    )
+    resolution = client.post(
+        "/api/me/location/resolve",
+        json={"mode": "gps", "latitude": 10.25, "longitude": 105.97},
+        headers=logged_in_user.csrf_headers,
+    )
+    token = resolution.json()["confirmation_token"]
+
+    confirmed = client.patch(
+        "/api/me/preferences",
+        json={
+            "revision": 1,
+            "location_confirmation_token": token,
+            "location_consent_state": "granted",
+            "location_enabled": True,
+        },
+        headers=logged_in_user.csrf_headers,
+    )
+
+    assert confirmed.status_code == 200
+    assert confirmed.json()["region_id"] is None
+    assert confirmed.json()["region_scope"] == "all"
+    assert confirmed.json()["location_source"] == "manual"
+    with preference_database._conn(commit_on_success=False) as conn:
+        row = conn.execute(
+            "SELECT location_provenance_version FROM user_preferences "
+            "WHERE user_id = ?",
+            ("user-1",),
+        ).fetchone()
+    assert row["location_provenance_version"] is None
 
 
 def test_resolver_confirmation_token_expires_at_the_short_lived_boundary(
@@ -1092,11 +1322,11 @@ def test_preferences_location_off_rejects_manual_source_laundering(
 @pytest.mark.parametrize(
     ("revision", "expected_status"),
     [
-        (2_147_483_647, 409),
-        (2_147_483_648, 422),
+        (9_007_199_254_740_991, 409),
+        (9_007_199_254_740_992, 422),
     ],
 )
-def test_preferences_revision_is_bounded_for_postgres_integer(
+def test_preferences_revision_is_bounded_for_json_safe_integer(
     client, logged_in_user, revision, expected_status
 ):
     response = client.patch(

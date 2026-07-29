@@ -25,7 +25,8 @@ MAX_REGION_ID_LENGTH = 128
 MAX_REGION_LABEL_LENGTH = 160
 MAX_CONSENT_VERSION_LENGTH = 64
 MAX_RECOMMENDATION_RESET_AT_LENGTH = 64
-MAX_PREFERENCE_REVISION = 2_147_483_647
+MAX_PREFERENCE_REVISION = 9_007_199_254_740_991
+LOCATION_PROVENANCE_RESOLVER_V2 = "resolver-v2"
 
 _SOURCE_PRIORITY = {"default": 0, "ip": 1, "gps": 2, "manual": 3}
 _REGION_FIELDS = frozenset(
@@ -61,7 +62,7 @@ _CANONICAL_MANUAL_REGIONS = {
         "location_accuracy": "unknown",
     },
 }
-_SNAPSHOT_FIELDS = (
+_PUBLIC_SNAPSHOT_FIELDS = (
     "region_id",
     "region_label",
     "region_scope",
@@ -73,9 +74,15 @@ _SNAPSHOT_FIELDS = (
     "explicit_interests",
     "recommendation_reset_at",
     "consent_version",
+    "location_reconfirm_required",
     "revision",
 )
-_PATCH_FIELDS = frozenset(_SNAPSHOT_FIELDS)
+_PERSISTED_FIELDS = (*_PUBLIC_SNAPSHOT_FIELDS, "location_provenance_version")
+_PATCH_FIELDS = frozenset(
+    field
+    for field in _PUBLIC_SNAPSHOT_FIELDS
+    if field not in {"location_reconfirm_required"}
+)
 
 
 class PreferenceSnapshot(TypedDict):
@@ -90,7 +97,12 @@ class PreferenceSnapshot(TypedDict):
     explicit_interests: list[str]
     recommendation_reset_at: datetime | str | None
     consent_version: str | None
+    location_reconfirm_required: bool
     revision: int
+
+
+class PersistedPreferenceSnapshot(PreferenceSnapshot):
+    location_provenance_version: str | None
 
 
 class PreferencePatch(TypedDict, total=False):
@@ -134,7 +146,7 @@ class PreferenceRevisionConflict(PreferenceError):
         )
 
 
-def _default_snapshot() -> PreferenceSnapshot:
+def _default_persisted_snapshot() -> PersistedPreferenceSnapshot:
     return {
         "region_id": None,
         "region_label": None,
@@ -147,8 +159,18 @@ def _default_snapshot() -> PreferenceSnapshot:
         "explicit_interests": [],
         "recommendation_reset_at": None,
         "consent_version": None,
+        "location_reconfirm_required": False,
         "revision": 0,
+        "location_provenance_version": None,
     }
+
+
+def _default_snapshot() -> PreferenceSnapshot:
+    return _public_snapshot(_default_persisted_snapshot())
+
+
+def _public_snapshot(snapshot: Mapping[str, Any]) -> PreferenceSnapshot:
+    return {field: snapshot[field] for field in _PUBLIC_SNAPSHOT_FIELDS}
 
 
 def _bounded_optional_text(value: Any, field: str, maximum: int) -> str | None:
@@ -315,14 +337,17 @@ def _authorize_region_patch(
     raise PreferenceValidationError("Resolver region confirmation is required")
 
 
-def _snapshot_from_mapping(value: Mapping[str, Any]) -> PreferenceSnapshot:
-    snapshot = _default_snapshot()
-    for field in _SNAPSHOT_FIELDS:
+def _snapshot_from_mapping(value: Mapping[str, Any]) -> PersistedPreferenceSnapshot:
+    snapshot = _default_persisted_snapshot()
+    for field in _PERSISTED_FIELDS:
         if field in value:
             snapshot[field] = value[field]
     snapshot["revision"] = _revision_value(snapshot["revision"])
     snapshot["location_enabled"] = bool(snapshot["location_enabled"])
     snapshot["personalization_enabled"] = bool(snapshot["personalization_enabled"])
+    snapshot["location_reconfirm_required"] = bool(
+        snapshot["location_reconfirm_required"]
+    )
     interests = snapshot["explicit_interests"]
     if isinstance(interests, str):
         try:
@@ -336,9 +361,104 @@ def _snapshot_from_mapping(value: Mapping[str, Any]) -> PreferenceSnapshot:
     return snapshot
 
 
+def _manual_region_tuple(snapshot: Mapping[str, Any]) -> bool:
+    region_id = snapshot.get("region_id")
+    canonical = _CANONICAL_MANUAL_REGIONS.get(region_id)
+    return (
+        snapshot.get("location_source") == "manual"
+        and snapshot.get("location_provenance_version") is None
+        and canonical is not None
+        and all(snapshot.get(field) == value for field, value in canonical.items())
+    )
+
+
+def _default_region_tuple(snapshot: Mapping[str, Any]) -> bool:
+    return (
+        snapshot.get("location_source") == "default"
+        and snapshot.get("region_id") is None
+        and snapshot.get("region_label") is None
+        and snapshot.get("region_scope") == "unknown"
+        and snapshot.get("location_accuracy") == "unknown"
+        and snapshot.get("location_provenance_version") is None
+    )
+
+
+def _quarantine_region_tuple(snapshot: Mapping[str, Any]) -> bool:
+    return (
+        _default_region_tuple(snapshot)
+        and snapshot.get("location_consent_state") == "off"
+        and snapshot.get("location_enabled") is False
+        and snapshot.get("location_reconfirm_required") is True
+    )
+
+
+def _resolver_region_tuple(snapshot: Mapping[str, Any]) -> bool:
+    return (
+        snapshot.get("location_source") in {"gps", "ip"}
+        and snapshot.get("region_id") is not None
+        and snapshot.get("region_scope") in {"ward", "district", "province"}
+        and snapshot.get("location_accuracy") in LOCATION_ACCURACIES
+        and snapshot.get("location_enabled") is True
+        and snapshot.get("location_consent_state") == "granted"
+    )
+
+
+def invalid_region_reason(snapshot: Mapping[str, Any]) -> str | None:
+    """Return the bounded remediation reason for a persisted location tuple."""
+    if contains_raw_location_value(
+        snapshot.get("region_id")
+    ) or contains_raw_location_value(snapshot.get("region_label")):
+        return "raw_shape"
+
+    source = snapshot.get("location_source")
+    if source == "manual":
+        if not _manual_region_tuple(snapshot):
+            return "manual_tuple"
+    elif source in {"gps", "ip"}:
+        if not _resolver_region_tuple(snapshot):
+            return "resolver_tuple"
+        if (
+            snapshot.get("location_provenance_version")
+            != LOCATION_PROVENANCE_RESOLVER_V2
+        ):
+            return "provenance"
+    elif source == "default":
+        if not _default_region_tuple(snapshot):
+            return "default_tuple"
+    else:
+        return "default_tuple"
+
+    if snapshot.get("location_reconfirm_required") and not _quarantine_region_tuple(
+        snapshot
+    ):
+        return "state_mismatch"
+    return None
+
+
+def quarantine_location_snapshot(
+    snapshot: Mapping[str, Any],
+) -> PersistedPreferenceSnapshot:
+    """Drop all location fields while preserving non-location preferences."""
+    current = _snapshot_from_mapping(snapshot)
+    current.update(
+        {
+            "region_id": None,
+            "region_label": None,
+            "region_scope": "unknown",
+            "location_source": "default",
+            "location_accuracy": "unknown",
+            "location_consent_state": "off",
+            "location_enabled": False,
+            "location_reconfirm_required": True,
+            "location_provenance_version": None,
+        }
+    )
+    return current
+
+
 def merge_preference_patch(
     current: Mapping[str, Any], patch: Mapping[str, Any], expected_revision: int
-) -> PreferenceSnapshot:
+) -> PersistedPreferenceSnapshot:
     expected = _revision_value(expected_revision)
     current_snapshot = _snapshot_from_mapping(current)
     if current_snapshot["revision"] != expected:
@@ -373,9 +493,7 @@ def merge_preference_patch(
                 "location_accuracy": "unknown",
             }
         )
-    elif region_change and (
-        resolver_disabled or (current_snapshot["region_id"] and lower_quality)
-    ):
+    elif region_change and (resolver_disabled or lower_quality):
         for field in _REGION_FIELDS:
             normalized.pop(field, None)
 
@@ -385,6 +503,26 @@ def merge_preference_patch(
         raise PreferenceValidationError("Preference revision limit reached")
     merged["revision"] = current_snapshot["revision"] + 1
     return merged
+
+
+def _apply_internal_location_metadata(
+    merged: PersistedPreferenceSnapshot,
+    *,
+    authorized_patch: Mapping[str, Any],
+    confirmed_location: LocationResolution | None,
+) -> None:
+    """Finalize remediation metadata after the public patch has been merged."""
+    if merged["location_source"] == "manual":
+        merged["location_provenance_version"] = None
+        if authorized_patch.get("location_source") == "manual":
+            merged["location_reconfirm_required"] = False
+        return
+    if merged["location_source"] in {"gps", "ip"} and confirmed_location is not None:
+        merged["location_provenance_version"] = LOCATION_PROVENANCE_RESOLVER_V2
+        merged["location_reconfirm_required"] = False
+        return
+    if merged["location_source"] == "default":
+        merged["location_provenance_version"] = None
 
 
 def recommendation_cutoff(snapshot: Mapping[str, Any]) -> datetime | None:
@@ -404,7 +542,7 @@ def _user_param() -> str:
 
 
 def _preference_columns() -> str:
-    return ", ".join(_SNAPSHOT_FIELDS)
+    return ", ".join(_PERSISTED_FIELDS)
 
 
 def _select_preferences(conn, user_id: str, *, for_update: bool = False):
@@ -417,7 +555,7 @@ def _select_preferences(conn, user_id: str, *, for_update: bool = False):
     )
 
 
-def _row_snapshot(row) -> PreferenceSnapshot:
+def _row_snapshot(row) -> PersistedPreferenceSnapshot:
     return _snapshot_from_mapping(db._row_to_dict(row))
 
 
@@ -425,19 +563,25 @@ def load_preferences(user_id: str) -> PreferenceSnapshot:
     owner = _user_id(user_id)
     with db._conn(commit_on_success=False) as conn:
         row = _select_preferences(conn, owner)
-    return _row_snapshot(row) if row is not None else _default_snapshot()
+    return (
+        _public_snapshot(_row_snapshot(row))
+        if row is not None
+        else _default_snapshot()
+    )
 
 
-def _write_values(snapshot: PreferenceSnapshot) -> tuple[list[Any], str]:
-    interests = json.dumps(snapshot["explicit_interests"], ensure_ascii=True)
-    values = [snapshot[field] for field in _SNAPSHOT_FIELDS]
-    values[_SNAPSHOT_FIELDS.index("explicit_interests")] = interests
-    reset_index = _SNAPSHOT_FIELDS.index("recommendation_reset_at")
-    if isinstance(values[reset_index], datetime):
-        values[reset_index] = values[reset_index].isoformat()
+def _write_values(snapshot: PersistedPreferenceSnapshot) -> tuple[list[Any], str]:
+    values = []
+    for field in _PERSISTED_FIELDS:
+        value = snapshot[field]
+        if field == "explicit_interests":
+            value = json.dumps(value, ensure_ascii=True)
+        elif field == "recommendation_reset_at" and isinstance(value, datetime):
+            value = value.isoformat()
+        values.append(value)
     placeholders = [db._ph] * len(values)
     if db._use_pg:
-        placeholders[_SNAPSHOT_FIELDS.index("explicit_interests")] += "::jsonb"
+        placeholders[_PERSISTED_FIELDS.index("explicit_interests")] += "::jsonb"
     return values, ", ".join(placeholders)
 
 
@@ -477,7 +621,7 @@ def _patch_preferences_in_connection(
     *,
     consent_version_fallback: str | None = None,
     confirmed_location: LocationResolution | None = None,
-) -> tuple[PreferenceSnapshot, PreferenceSnapshot]:
+) -> tuple[PersistedPreferenceSnapshot, PersistedPreferenceSnapshot]:
     if not patch:
         raise PreferenceValidationError("Preference patch must not be empty")
 
@@ -485,8 +629,13 @@ def _patch_preferences_in_connection(
         patch, confirmed_location=confirmed_location
     )
     row = _select_preferences(conn, owner, for_update=True)
-    current = _row_snapshot(row) if row is not None else _default_snapshot()
+    current = _row_snapshot(row) if row is not None else _default_persisted_snapshot()
     merged = merge_preference_patch(current, authorized_patch, expected)
+    _apply_internal_location_metadata(
+        merged,
+        authorized_patch=authorized_patch,
+        confirmed_location=confirmed_location,
+    )
     if (
         consent_version_fallback is not None
         and _preference_consent_changes(current, merged)
@@ -509,7 +658,7 @@ def _patch_preferences_in_connection(
         return current, _row_snapshot(inserted)
 
     assignments = []
-    for field in _SNAPSHOT_FIELDS:
+    for field in _PERSISTED_FIELDS:
         placeholder = db._ph
         if field == "explicit_interests" and db._use_pg:
             placeholder += "::jsonb"
@@ -536,7 +685,7 @@ def patch_preferences(
     expected = _revision_value(expected_revision)
     with db._conn() as conn:
         _, snapshot = _patch_preferences_in_connection(conn, owner, patch, expected)
-    return snapshot
+    return _public_snapshot(snapshot)
 
 
 def _insert_preference_consent(
@@ -584,7 +733,7 @@ def patch_preferences_with_consents(
                 state,
                 snapshot["consent_version"],
             )
-    return snapshot
+    return _public_snapshot(snapshot)
 
 
 def record_preference_consent(
