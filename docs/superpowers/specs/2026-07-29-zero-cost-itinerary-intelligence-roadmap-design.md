@@ -1,6 +1,6 @@
 # Lộ trình tối ưu lịch trình đa mục tiêu, không phát sinh chi phí
 
-> STATUS: proposed
+> STATUS: active
 > Ngày: 2026-07-29
 > Phạm vi: thiết kế các giai đoạn kế tiếp sau bộ tối ưu tuyến có hướng đợt 1
 
