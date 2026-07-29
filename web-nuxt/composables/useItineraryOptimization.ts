@@ -178,6 +178,7 @@ export type PlannerOptimizationResult<T extends StopWithCoords> =
   | StalePlannerOptimizationResult
 
 export interface PlannerOptimizationCommitCallbacks<T extends StopWithCoords> {
+  isActive?: () => boolean
   applyPlacements: (result: CurrentPlannerOptimizationResult<T>) => void
   reorderStops: (orderedKeys: string[]) => void
   applyRoute: (route: RouteResult | null) => void
@@ -585,10 +586,15 @@ export async function commitPlannerOptimizationResult<
   callbacks: PlannerOptimizationCommitCallbacks<T>,
 ): Promise<CurrentPlannerOptimizationResult<T> | null> {
   if (result.status === 'stale') return null
+  if (callbacks.isActive && !callbacks.isActive()) return null
   callbacks.applyPlacements(result)
+  if (callbacks.isActive && !callbacks.isActive()) return null
   callbacks.reorderStops(result.outcome.ordered.map(item => item.key))
+  if (callbacks.isActive && !callbacks.isActive()) return null
   callbacks.applyRoute(result.outcome.route)
+  if (callbacks.isActive && !callbacks.isActive()) return null
   await callbacks.updateMap(result.outcome.route)
+  if (callbacks.isActive && !callbacks.isActive()) return null
   return result
 }
 

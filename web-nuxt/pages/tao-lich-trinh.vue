@@ -312,6 +312,11 @@ const saving = ref(false)
 const stopAnnounce = ref('')
 const MAX_STOPS = 20
 let savePulseTimer: ReturnType<typeof setTimeout> | null = null
+let plannerLifecycleActive = true
+
+function isPlannerLifecycleActive() {
+  return plannerLifecycleActive
+}
 
 const currentRoutableStops = computed(() => collectRoutableStops(stops.value))
 const canOptimizeRoute = computed(() => {
@@ -713,10 +718,12 @@ async function optimizePlanRoute() {
         : requestOptimizedOrder(ordered, blockedEdges),
       route: coordinates => fetchRoute(coordinates, transportMode.value),
     })
+    if (!isPlannerLifecycleActive()) return
     const routeRequestBeforeCommit = latestAutoRouteRequest
     let reorderInputVersion: number | null = null
     let optimizerWatcherRequest: number | null = null
     const committedResult = await commitPlannerOptimizationResult(plannerResult, {
+      isActive: isPlannerLifecycleActive,
       applyPlacements: (result) => {
         const schedule = result.outcome.optimization.schedule
         if (schedule) {
@@ -741,6 +748,7 @@ async function optimizePlanRoute() {
       },
       updateMap: async (route) => {
         await nextTick()
+        if (!isPlannerLifecycleActive()) return
         if (
           reorderInputVersion !== null
           && plannerInputState.version === reorderInputVersion
@@ -748,10 +756,11 @@ async function optimizePlanRoute() {
         ) {
           optimizerWatcherRequest = latestAutoRouteRequest
         }
+        if (!isPlannerLifecycleActive()) return
         await updateMap(route)
       },
     })
-    if (!committedResult) {
+    if (!committedResult || !isPlannerLifecycleActive()) {
       return
     }
     autoRouteScheduler.discardPending(optimizerWatcherRequest)
@@ -793,16 +802,21 @@ async function optimizePlanRoute() {
       plannerWarningMessage(warning, routed)
     )))
     optimizationMessage.value = [...new Set(messages)].join(' ')
+    if (!isPlannerLifecycleActive()) return
     stopAnnounce.value = ''
     await nextTick()
+    if (!isPlannerLifecycleActive()) return
     stopAnnounce.value = optimizationMessage.value
   } catch (error: unknown) {
+    if (!isPlannerLifecycleActive()) return
     const message = extractErrorMessage(error, 'Không thể tối ưu tuyến lúc này')
     optimizationMessage.value = message
     showToast(message, 'error')
   } finally {
+    if (!isPlannerLifecycleActive()) return
     routeLoading.value = false
     await nextTick()
+    if (!isPlannerLifecycleActive()) return
     suspendAutoRoute.value = false
     autoRouteScheduler.resume()
     optimizing.value = false
@@ -856,7 +870,7 @@ function fitMapToCoords(coords: [number, number][]) {
 }
 
 async function updateMap(result: RouteResult | null) {
-  if (!import.meta.client) return
+  if (!import.meta.client || !isPlannerLifecycleActive()) return
   lastRouteResult = result
   if (updatingMap) { pendingUpdate = true; return }
 
@@ -870,12 +884,14 @@ async function updateMap(result: RouteResult | null) {
 
   if (!mapInstance) {
     const res = await createNDAMap(routeMapEl.value)
+    if (!isPlannerLifecycleActive()) return
     mapInstance = res.map
     maplibre = res.maplibregl
     mapInstance.on('styleimagemissing', (e: any) => {
       if (!mapInstance.hasImage(e.id)) mapInstance.addImage(e.id, { width: 1, height: 1, data: new Uint8Array(4) })
     })
     await new Promise<void>(r => mapInstance.on('load', r))
+    if (!isPlannerLifecycleActive()) return
   }
 
   markers.forEach(m => m.remove())
@@ -972,6 +988,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  plannerLifecycleActive = false
   autoRouteScheduler.dispose()
   if (addingTimer) clearTimeout(addingTimer)
   if (savePulseTimer) clearTimeout(savePulseTimer)
