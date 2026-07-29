@@ -91,8 +91,18 @@
         <!-- Transport mode selector -->
         <div v-if="stops.length >= 2" class="transport-mode">
           <span class="tm-label">Phương tiện:</span>
-          <button type="button" v-for="m in transportModes" :key="m.value" :class="['chip', { active: transportMode === m.value }]" :aria-pressed="transportMode === m.value" @click="transportMode = m.value">
+          <button type="button" v-for="m in transportModes" :key="m.value" :class="['chip', { active: transportMode === m.value }]" :aria-pressed="transportMode === m.value" :disabled="optimizing" @click="transportMode = m.value">
             {{ m.icon }} {{ m.label }}
+          </button>
+          <button
+            v-if="stops.length >= 3"
+            type="button"
+            class="btn btn-sm btn-outline optimize-route-btn"
+            :disabled="!canOptimizeRoute || optimizing"
+            :title="optimizeRouteTitle"
+            @click="optimizePlanRoute"
+          >
+            {{ optimizing ? 'Đang tối ưu…' : 'Tối ưu tuyến' }}
           </button>
           <div v-if="routeResult" class="route-total">
             {{ formatDistance(routeResult.totalDistance) }} · {{ formatDuration(routeResult.totalDuration) }}
@@ -100,6 +110,13 @@
           <div v-if="routeLoading" class="route-total route-loading">Đang tính...</div>
           <div v-else-if="routeError" class="route-total" role="status">⚠️ Chưa tính được lộ trình (thử lại sau)</div>
         </div>
+        <p
+          v-if="optimizationMessage || (stops.length >= 3 && !canOptimizeRoute)"
+          class="optimization-status"
+          role="status"
+        >
+          {{ optimizationMessage || optimizeRouteTitle }}
+        </p>
 
         <p v-if="stops.length >= 20" class="max-stops-warn" role="status">Đã đạt tối đa 20 điểm mỗi lịch trình.</p>
         <span class="sr-only" aria-live="polite" aria-atomic="true">{{ stopAnnounce }}</span>
@@ -144,10 +161,10 @@
               </div>
             </div>
             <!-- Route leg info between stops -->
-            <div v-if="idx < stops.length - 1 && routeResult?.legs[idx]" class="route-leg">
+            <div v-if="idx < stops.length - 1 && plannerRouteLeg(idx)" class="route-leg">
               <div class="route-leg-line"></div>
               <div class="route-leg-info">
-                {{ formatDistance(routeResult.legs[idx].distance) }} · {{ formatDuration(routeResult.legs[idx].duration) }}
+                {{ formatDistance(plannerRouteLeg(idx)?.distance || 0) }} · {{ formatDuration(plannerRouteLeg(idx)?.duration || 0) }}
               </div>
             </div>
           </template>
@@ -189,6 +206,13 @@ import type { EntityListResponse } from '~/types/api'
 import { usePublicApi } from '~/composables/usePublicApi'
 import { TYPE_META, CARD_TYPES, getTypeMeta } from '~/composables/useConstants'
 import { fetchRoute, formatDistance, formatDuration, type TransportMode, type RouteResult } from '~/composables/useRouting'
+import {
+  collectRoutableStops,
+  mergeOptimizedStops,
+  requestOptimizedOrder,
+  routeLegForStopIndex,
+  runBoundedOptimization,
+} from '~/composables/useItineraryOptimization'
 
 const LS_PLANS = 'vl360_plans'
 const route = useRoute()
@@ -257,6 +281,9 @@ const savedPlans = ref<SavedPlan[]>([])
 const transportMode = ref<TransportMode>('driving')
 const routeResult = ref<RouteResult | null>(null)
 const routeLoading = ref(false)
+const optimizing = ref(false)
+const optimizationMessage = ref('')
+const suspendAutoRoute = ref(false)
 const routeMapEl = ref<HTMLElement | null>(null)
 const addingId = ref<string | null>(null)
 let addingTimer: ReturnType<typeof setTimeout> | null = null
@@ -265,6 +292,20 @@ const saving = ref(false)
 const stopAnnounce = ref('')
 const MAX_STOPS = 20
 let savePulseTimer: ReturnType<typeof setTimeout> | null = null
+
+const currentRoutableStops = computed(() => collectRoutableStops(stops.value))
+const canOptimizeRoute = computed(() => {
+  const routed = currentRoutableStops.value
+  return routed.length >= 3
+    && routed[0]?.originalIndex === 0
+    && routed[routed.length - 1]?.originalIndex === stops.value.length - 1
+})
+const optimizeRouteTitle = computed(() => {
+  if (stops.value.length < 3) return 'Cần ít nhất 3 điểm để tối ưu thứ tự'
+  if (currentRoutableStops.value.length < 3) return 'Cần ít nhất 3 điểm có tọa độ'
+  if (!canOptimizeRoute.value) return 'Điểm đầu và điểm cuối cần có tọa độ hợp lệ'
+  return 'Giữ nguyên điểm đầu, điểm cuối và tối ưu các điểm ở giữa'
+})
 
 const { createMap: createNDAMap } = useNDAMap()
 let mapInstance: any = null
@@ -335,6 +376,7 @@ async function addStop(entity: Entity) {
     nextTick(() => { stopAnnounce.value = `Tối đa ${MAX_STOPS} điểm.` })
     return
   }
+  optimizationMessage.value = ''
   const stop = reactive<PlanStop>({
     id: entity.id,
     name: entity.name,
@@ -364,6 +406,7 @@ async function addStop(entity: Entity) {
 function removeStop(idx: number) {
   const name = stops.value[idx]?.name || ''
   stops.value.splice(idx, 1)
+  optimizationMessage.value = ''
   stopAnnounce.value = ''
   nextTick(() => { stopAnnounce.value = `Đã xóa ${name}. ${stops.value.length} điểm.` })
 }
@@ -376,6 +419,7 @@ function moveStop(idx: number, dir: number) {
   if (!temp || !targetStop) return
   stops.value[idx] = targetStop
   stops.value[target] = temp
+  optimizationMessage.value = ''
   stopAnnounce.value = ''
   nextTick(() => { stopAnnounce.value = `${temp.name} chuyển sang vị trí ${target + 1}.` })
 }
@@ -385,6 +429,7 @@ async function clearPlan() {
   stops.value = []
   planTitle.value = ''
   routeResult.value = null
+  optimizationMessage.value = ''
 }
 
 async function savePlan() {
@@ -433,6 +478,7 @@ async function loadPlan(idx: number) {
   if (!plan) return
   planTitle.value = plan.title
   stops.value = JSON.parse(JSON.stringify(plan.stops))
+  optimizationMessage.value = ''
 }
 
 async function deletePlan(idx: number) {
@@ -550,6 +596,76 @@ const formatDate = formatDateVN
 
 let routeTimer: ReturnType<typeof setTimeout> | null = null
 
+function plannerRouteLeg(stopIndex: number) {
+  return routeLegForStopIndex(
+    stopIndex,
+    currentRoutableStops.value,
+    routeResult.value?.legs || [],
+  )
+}
+
+async function optimizePlanRoute() {
+  if (!canOptimizeRoute.value || optimizing.value) {
+    optimizationMessage.value = optimizeRouteTitle.value
+    return
+  }
+
+  const routed = currentRoutableStops.value
+  optimizing.value = true
+  suspendAutoRoute.value = true
+  routeLoading.value = true
+  routeError.value = false
+  optimizationMessage.value = ''
+  if (routeTimer) clearTimeout(routeTimer)
+
+  try {
+    const outcome = await runBoundedOptimization(
+      routed,
+      (ordered, blockedEdges) => requestOptimizedOrder(ordered, blockedEdges),
+      coordinates => fetchRoute(coordinates, transportMode.value),
+    )
+    stops.value = mergeOptimizedStops(
+      stops.value,
+      routed,
+      outcome.ordered.map(item => item.key),
+    )
+    routeResult.value = outcome.route
+    routeError.value = !outcome.route
+    await nextTick()
+    await updateMap(outcome.route)
+
+    const messages: string[] = []
+    if (outcome.optimization.saved_distance_km > 0.05) {
+      messages.push(
+        `Đã giảm khoảng ${formatDistance(outcome.optimization.saved_distance_km * 1000)} theo ước tính hình học.`,
+      )
+    } else {
+      messages.push('Thứ tự hiện tại đã phù hợp với hướng tuyến.')
+    }
+    const missingCoordinates = stops.value.length - routed.length
+    if (missingCoordinates > 0) {
+      messages.push(`${missingCoordinates} điểm thiếu tọa độ được giữ nguyên vị trí.`)
+    }
+    if (outcome.route && !outcome.unresolvedUturn) {
+      messages.push('OSRM không phát hiện thao tác quay đầu trên tuyến cuối.')
+    }
+    messages.push(...outcome.warnings)
+    optimizationMessage.value = [...new Set(messages)].join(' ')
+    stopAnnounce.value = ''
+    await nextTick()
+    stopAnnounce.value = optimizationMessage.value
+  } catch (error: unknown) {
+    const message = extractErrorMessage(error, 'Không thể tối ưu tuyến lúc này')
+    optimizationMessage.value = message
+    showToast(message, 'error')
+  } finally {
+    routeLoading.value = false
+    await nextTick()
+    suspendAutoRoute.value = false
+    optimizing.value = false
+  }
+}
+
 async function computeRoute() {
   const coords = stops.value.map(s => s.coords).filter(Boolean) as [number, number][]
   if (coords.length < 2) {
@@ -567,6 +683,7 @@ async function computeRoute() {
 }
 
 function scheduleRouteCalc() {
+  if (suspendAutoRoute.value) return
   if (routeTimer) clearTimeout(routeTimer)
   routeTimer = setTimeout(computeRoute, 400)
 }
@@ -768,6 +885,13 @@ useHead({
 .title-counter { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: var(--text-xs); color: var(--muted); pointer-events: none; }
 .title-counter.warn { color: var(--error); font-weight: var(--weight-semibold); }
 .max-stops-warn { font-size: var(--text-sm); color: var(--warning); margin: var(--space-2) 0; }
+.optimization-status {
+  margin: calc(var(--space-2) * -1) 0 var(--space-4);
+  color: var(--muted);
+  font-size: var(--text-sm);
+  line-height: 1.55;
+}
+.optimize-route-btn { white-space: nowrap; }
 .stop-card-actions .btn-icon-sm { min-width: 44px; min-height: 44px; }
 @media (pointer: coarse) { .stop-card-actions .btn-icon-sm { min-width: 44px; min-height: 44px; } }
 .picker-list { max-height: 50vh; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }

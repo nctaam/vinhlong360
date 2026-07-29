@@ -136,9 +136,9 @@ describe('planner itinerary optimization helpers', () => {
         ordered_ids: blocked.length
           ? ['planner-stop-0', 'planner-stop-2', 'planner-stop-1', 'planner-stop-3']
           : ['planner-stop-0', 'planner-stop-1', 'planner-stop-2', 'planner-stop-3'],
-        distance_before_km: 10,
-        distance_after_km: 8,
-        saved_distance_km: 2,
+        distance_before_km: blocked.length ? 8 : 10,
+        distance_after_km: blocked.length ? 7 : 8,
+        saved_distance_km: blocked.length ? 1 : 2,
         backtrack_ratio: 0,
         solver: 'exact-dp' as const,
         warnings: [],
@@ -175,6 +175,9 @@ describe('planner itinerary optimization helpers', () => {
       'planner-stop-1',
       'planner-stop-3',
     ])
+    expect(result.optimization.distance_before_km).toBe(10)
+    expect(result.optimization.distance_after_km).toBe(7)
+    expect(result.optimization.saved_distance_km).toBe(3)
     expect(result.unresolvedUturn).toBe(false)
   })
 

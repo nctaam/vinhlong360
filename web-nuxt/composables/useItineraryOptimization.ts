@@ -198,15 +198,27 @@ export async function runBoundedOptimization<T extends StopWithCoords>(
       secondOptimization.ordered_ids,
     )
     const secondRoute = await route(secondOrdered.map(item => item.coordinates))
+    const combinedOptimization: OptimizeOrderResponse = {
+      ...secondOptimization,
+      distance_before_km: firstOptimization.distance_before_km,
+      saved_distance_km: Math.max(
+        0,
+        firstOptimization.distance_before_km - secondOptimization.distance_after_km,
+      ),
+      warnings: [...new Set([
+        ...firstOptimization.warnings,
+        ...secondOptimization.warnings,
+      ])],
+    }
     const unresolvedUturn = !secondRoute
       || blockedEdgesForUturns(secondOrdered, secondRoute).length > 0
-    const warnings = [...secondOptimization.warnings]
+    const warnings = [...combinedOptimization.warnings]
     if (!secondRoute) warnings.push(validationWarning())
     if (unresolvedUturn) warnings.push('Tuyến vẫn có thao tác quay đầu theo dữ liệu OSRM')
     return {
       ordered: secondOrdered,
       route: secondRoute,
-      optimization: secondOptimization,
+      optimization: combinedOptimization,
       attempts: 2,
       unresolvedUturn,
       warnings,
