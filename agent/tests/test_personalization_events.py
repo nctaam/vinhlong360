@@ -447,7 +447,7 @@ def test_event_writer_drops_sensitive_and_arbitrary_fields(
         "entity_id": "entity-1",
         "entity_type": "dish",
         "area_id": "province-vl",
-        "interest_keys": ["food", "culture"],
+        "interest_keys": ["food"],
         "occurred_at": row["occurred_at"],
         "expires_at": row["expires_at"],
     }
@@ -719,6 +719,292 @@ def test_event_route_derives_fields_from_canonical_entity_membership(
     assert row["area_id"] == canonical_area
 
 
+_ENTITY_REQUIRED_EVENTS = (
+    ("entity_view", "entity"),
+    ("save_add", "saved"),
+    ("save_remove", "saved"),
+    ("visit_mark", "entity"),
+    ("map_focus", "map"),
+    ("itinerary_view", "itinerary"),
+)
+
+
+@pytest.mark.parametrize(("event_type", "context"), _ENTITY_REQUIRED_EVENTS)
+def test_direct_writer_rejects_entity_bound_event_without_entity_id(
+    pg_db, users, event_type, context
+):
+    owner, _ = users
+
+    with pytest.raises(personalization_events.PersonalizationEventError):
+        write_personalization_event(
+            owner,
+            {
+                "event_type": event_type,
+                "context": context,
+                "entity_type": "dish",
+                "area_id": "client-area",
+                "interest_keys": ["food"],
+            },
+        )
+
+    assert read_personalization_events(owner, cutoff=None) == []
+
+
+@pytest.mark.parametrize(("event_type", "context"), _ENTITY_REQUIRED_EVENTS)
+def test_event_route_rejects_entity_bound_event_without_entity_id_or_signals(
+    auth_client, pg_db, event_type, context
+):
+    _set_preferences(pg_db, auth_client.owner, personalization_enabled=True)
+
+    response = auth_client.client.post(
+        "/api/me/events",
+        json={
+            "event_type": event_type,
+            "context": context,
+            "entity_type": "dish",
+            "area_id": "client-area",
+            "interest_keys": ["food"],
+        },
+        headers=auth_client.csrf_headers,
+    )
+    exported = auth_client.client.get(
+        "/auth/export-data", headers=auth_client.headers
+    )
+    profile = public_api._build_user_interest_profile(auth_client.owner)
+
+    assert response.status_code == 422
+    assert response.json() == {"detail": "Invalid personalization event"}
+    assert exported.status_code == 200
+    assert exported.json()["personalization"]["events"] == []
+    assert profile["signal_count"] == 0
+    assert profile["interests"] == []
+    assert profile["areas"] == []
+    assert profile["types"] == []
+
+
+_NON_PUBLIC_ENTITY_CASES = (
+    ("provisional", "provisional", 1),
+    ("verified-false", "published", False),
+    ("verified-zero", "published", 0),
+)
+
+
+@pytest.mark.parametrize(
+    ("case_name", "status", "verified"), _NON_PUBLIC_ENTITY_CASES
+)
+def test_direct_writer_rejects_non_public_canonical_entity(
+    pg_db, users, case_name, status, verified
+):
+    owner, _ = users
+    entity_id = f"non-public-{case_name}"
+    _seed_entity(
+        pg_db,
+        entity_id,
+        name="Bun nuoc leo private",
+        entity_type="dish",
+        area="Private area",
+        place_id="private-area",
+        status=status,
+        verified=verified,
+    )
+
+    with pytest.raises(personalization_events.PersonalizationEventError):
+        write_personalization_event(
+            owner,
+            {
+                "event_type": "entity_view",
+                "context": "entity",
+                "entity_id": entity_id,
+                "interest_keys": ["food"],
+            },
+        )
+
+    assert read_personalization_events(owner, cutoff=None) == []
+
+
+@pytest.mark.parametrize(
+    ("case_name", "status", "verified"), _NON_PUBLIC_ENTITY_CASES
+)
+def test_event_route_rejects_non_public_canonical_entity_without_signals(
+    auth_client, pg_db, case_name, status, verified
+):
+    entity_id = f"non-public-{case_name}"
+    _seed_entity(
+        pg_db,
+        entity_id,
+        name="Bun nuoc leo private",
+        entity_type="dish",
+        area="Private area",
+        place_id="private-area",
+        status=status,
+        verified=verified,
+    )
+    _set_preferences(pg_db, auth_client.owner, personalization_enabled=True)
+
+    response = auth_client.client.post(
+        "/api/me/events",
+        json={
+            "event_type": "entity_view",
+            "context": "entity",
+            "entity_id": entity_id,
+            "entity_type": "person",
+            "area_id": "client-area",
+            "interest_keys": ["culture"],
+        },
+        headers=auth_client.csrf_headers,
+    )
+    exported = auth_client.client.get(
+        "/auth/export-data", headers=auth_client.headers
+    )
+    profile = public_api._build_user_interest_profile(auth_client.owner)
+
+    assert response.status_code == 422
+    assert response.json() == {"detail": "Invalid personalization event"}
+    assert entity_id not in response.text
+    assert exported.status_code == 200
+    assert exported.json()["personalization"]["events"] == []
+    assert profile["signal_count"] == 0
+    assert profile["interests"] == []
+    assert profile["areas"] == []
+    assert profile["types"] == []
+
+
+@pytest.mark.parametrize(("case_name", "verified"), (("verified", 1), ("verified-null", None)))
+def test_direct_writer_derives_all_fields_from_public_canonical_entity(
+    pg_db, users, case_name, verified
+):
+    owner, _ = users
+    entity_id = f"public-{case_name}"
+    _seed_entity(
+        pg_db,
+        entity_id,
+        name="Bun nuoc leo canonical",
+        entity_type="dish",
+        area="Canonical area",
+        place_id="canonical-area",
+        verified=verified,
+    )
+
+    write_personalization_event(
+        owner,
+        {
+            "event_type": "entity_view",
+            "context": "entity",
+            "entity_id": entity_id,
+            "entity_type": "person",
+            "area_id": "client-area",
+            "interest_keys": ["culture"],
+        },
+    )
+
+    row = read_personalization_events(owner, cutoff=None)[0]
+    assert row["entity_id"] == entity_id
+    assert row["entity_type"] == "dish"
+    assert row["area_id"] == "canonical-area"
+    assert row["interest_keys"] == ["food"]
+
+
+@pytest.mark.parametrize(("case_name", "verified"), (("verified", 1), ("verified-null", None)))
+def test_event_route_derives_all_fields_from_public_canonical_entity(
+    auth_client, pg_db, case_name, verified
+):
+    entity_id = f"public-{case_name}"
+    _seed_entity(
+        pg_db,
+        entity_id,
+        name="Bun nuoc leo canonical",
+        entity_type="dish",
+        area="Canonical area",
+        place_id="canonical-area",
+        verified=verified,
+    )
+
+    response = auth_client.client.post(
+        "/api/me/events",
+        json={
+            "event_type": "entity_view",
+            "context": "entity",
+            "entity_id": entity_id,
+            "entity_type": "person",
+            "area_id": "client-area",
+            "interest_keys": ["culture"],
+        },
+        headers=auth_client.csrf_headers,
+    )
+
+    assert response.status_code == 202, response.text
+    row = read_personalization_events(auth_client.owner, cutoff=None)[0]
+    assert row["entity_id"] == entity_id
+    assert row["entity_type"] == "dish"
+    assert row["area_id"] == "canonical-area"
+    assert row["interest_keys"] == ["food"]
+
+
+_AGGREGATE_EVENTS = (
+    ("search", "search_submit"),
+    ("community_view", "community"),
+    ("post_view", "community"),
+)
+
+
+@pytest.mark.parametrize(("event_type", "context"), _AGGREGATE_EVENTS)
+def test_direct_writer_accepts_aggregate_event_without_entity_and_discards_client_signals(
+    pg_db, users, event_type, context
+):
+    owner, _ = users
+
+    write_personalization_event(
+        owner,
+        {
+            "event_type": event_type,
+            "context": context,
+            "entity_type": "dish",
+            "area_id": "client-area",
+            "interest_keys": ["food"],
+        },
+    )
+
+    row = read_personalization_events(owner, cutoff=None)[0]
+    assert row["entity_id"] is None
+    assert row["entity_type"] is None
+    assert row["area_id"] is None
+    assert row["interest_keys"] == []
+
+
+@pytest.mark.parametrize(("event_type", "context"), _AGGREGATE_EVENTS)
+def test_event_route_accepts_aggregate_event_without_entity_and_discards_client_signals(
+    auth_client, pg_db, event_type, context
+):
+    _set_preferences(pg_db, auth_client.owner, personalization_enabled=True)
+
+    response = auth_client.client.post(
+        "/api/me/events",
+        json={
+            "event_type": event_type,
+            "context": context,
+            "entity_type": "dish",
+            "area_id": "client-area",
+            "interest_keys": ["food"],
+        },
+        headers=auth_client.csrf_headers,
+    )
+    exported = auth_client.client.get(
+        "/auth/export-data", headers=auth_client.headers
+    )
+    profile = public_api._build_user_interest_profile(auth_client.owner)
+
+    assert response.status_code == 202, response.text
+    row = exported.json()["personalization"]["events"][0]
+    assert row["entity_id"] is None
+    assert row["entity_type"] is None
+    assert row["area_id"] is None
+    assert row["interest_keys"] == []
+    assert profile["signal_count"] == 1
+    assert profile["interests"] == []
+    assert profile["areas"] == []
+    assert profile["types"] == []
+
+
 @pytest.mark.parametrize("context", ("search_trending", "search_submit"))
 def test_search_route_accepts_without_entity_and_drops_client_entity_fields(
     auth_client, context
@@ -755,8 +1041,8 @@ def test_event_reader_uses_strict_cutoff_expiry_and_hard_limit(pg_db, users):
         write_personalization_event(
             owner,
             {
-                "event_type": "entity_view",
-                "context": "entity",
+                "event_type": "search",
+                "context": "search",
                 "occurred_at": occurred_at,
                 "expires_at": datetime(2027, 1, 1, tzinfo=timezone.utc),
             },
@@ -764,8 +1050,8 @@ def test_event_reader_uses_strict_cutoff_expiry_and_hard_limit(pg_db, users):
     write_personalization_event(
         owner,
         {
-            "event_type": "entity_view",
-            "context": "entity",
+            "event_type": "search",
+            "context": "search",
             "occurred_at": cutoff + timedelta(seconds=2),
             "expires_at": datetime(2026, 1, 1, tzinfo=timezone.utc),
         },
@@ -803,8 +1089,8 @@ def test_event_purge_targets_only_expired_or_matching_user(pg_db, users):
         write_personalization_event(
             user_id,
             {
-                "event_type": "entity_view",
-                "context": "entity",
+                "event_type": "search",
+                "context": "search",
                 "expires_at": expires_at,
             },
         )
@@ -1108,14 +1394,26 @@ def _seed_entity(
     entity_type: str,
     area: str,
     place_id: str | None = None,
+    status: str | None = "published",
+    verified: bool | int | None = 1,
 ):
+    stored_verified = int(verified) if isinstance(verified, bool) else verified
     with pg_db._conn() as conn:
         pg_db._execute(
             conn,
             "INSERT INTO entities "
             "(id, type, name, summary, area, \"placeId\", status, verified) "
-            "VALUES (%s, %s, %s, %s, %s, %s, 'published', 1)",
-            (entity_id, entity_type, name, name, area, place_id),
+            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+            (
+                entity_id,
+                entity_type,
+                name,
+                name,
+                area,
+                place_id,
+                status,
+                stored_verified,
+            ),
         )
 
 
@@ -1142,6 +1440,20 @@ def test_scoring_reset_excludes_old_events_saved_and_visit_signals(pg_db, users)
         entity_type="craft_village",
         area="old-area",
     )
+    _seed_entity(
+        pg_db,
+        "old-event-culture",
+        name="Di tich van hoa",
+        entity_type="attraction",
+        area="",
+    )
+    _seed_entity(
+        pg_db,
+        "new-event-food",
+        name="Bun nuoc leo",
+        entity_type="dish",
+        area="",
+    )
     with pg_db._conn() as conn:
         pg_db._execute(
             conn,
@@ -1160,6 +1472,7 @@ def test_scoring_reset_excludes_old_events_saved_and_visit_signals(pg_db, users)
         {
             "event_type": "entity_view",
             "context": "entity",
+            "entity_id": "old-event-culture",
             "interest_keys": ["culture"],
             "occurred_at": cutoff - timedelta(minutes=1),
         },
@@ -1169,6 +1482,7 @@ def test_scoring_reset_excludes_old_events_saved_and_visit_signals(pg_db, users)
         {
             "event_type": "entity_view",
             "context": "entity",
+            "entity_id": "new-event-food",
             "interest_keys": ["food"],
             "occurred_at": cutoff + timedelta(minutes=1),
         },
@@ -1178,8 +1492,8 @@ def test_scoring_reset_excludes_old_events_saved_and_visit_signals(pg_db, users)
 
     assert [item["key"] for item in profile["interests"]] == ["food"]
     assert profile["areas"] == []
-    assert profile["types"] == []
-    assert profile["signal_count"] == 1
+    assert profile["types"] == [{"key": "dish", "score": 2.2}]
+    assert profile["signal_count"] == 2
 
 
 def test_explicit_interests_outrank_inferred_event_interests(pg_db, users):
@@ -1213,6 +1527,13 @@ def test_personalization_off_uses_manual_region_only_and_drops_resolver_region(
     pg_db, users
 ):
     owner, _ = users
+    _seed_entity(
+        pg_db,
+        "ignored-food-event",
+        name="Bun nuoc leo",
+        entity_type="dish",
+        area="ignored-area",
+    )
     _set_preferences(
         pg_db,
         owner,
@@ -1229,6 +1550,7 @@ def test_personalization_off_uses_manual_region_only_and_drops_resolver_region(
         {
             "event_type": "entity_view",
             "context": "entity",
+            "entity_id": "ignored-food-event",
             "interest_keys": ["food"],
         },
     )
@@ -1304,7 +1626,7 @@ def test_export_includes_safe_preferences_consents_new_and_filtered_legacy_event
     assert [(row["consent_type"], row["state"]) for row in exported["consents"]] == [
         ("personalization", "granted")
     ]
-    assert exported["events"][0]["interest_keys"] == ["food"]
+    assert exported["events"][0]["interest_keys"] == []
     assert len(exported["legacy_events"]) == 1
     serialized = json.dumps(exported, ensure_ascii=True)
     assert "private-new-query" not in serialized
@@ -1319,7 +1641,7 @@ def test_scheduling_delete_only_inactivates_and_keeps_personalization(
     _set_preferences(pg_db, auth_client.owner, personalization_enabled=True)
     write_personalization_event(
         auth_client.owner,
-        {"event_type": "entity_view", "context": "entity"},
+        {"event_type": "search", "context": "search"},
     )
     path = tmp_path / "legacy-events.jsonl"
     seed_legacy_events(path, [auth_client.owner])
@@ -1361,7 +1683,7 @@ def test_final_personalization_purge_keeps_user_and_other_users_rows(pg_db, user
                 (str(uuid4()), user_id),
             )
         write_personalization_event(
-            user_id, {"event_type": "entity_view", "context": "entity"}
+            user_id, {"event_type": "search", "context": "search"}
         )
 
     purge_user_personalization(owner)
@@ -1391,16 +1713,16 @@ def test_scheduler_ttl_cleanup_deletes_only_expired_events(pg_db, users):
     write_personalization_event(
         owner,
         {
-            "event_type": "entity_view",
-            "context": "entity",
+            "event_type": "search",
+            "context": "search",
             "expires_at": now - timedelta(seconds=1),
         },
     )
     write_personalization_event(
         other,
         {
-            "event_type": "entity_view",
-            "context": "entity",
+            "event_type": "search",
+            "context": "search",
             "expires_at": now + timedelta(days=1),
         },
     )
@@ -1437,7 +1759,7 @@ def test_scheduler_legacy_failure_rolls_back_user_and_postgres_purge_for_retry(
                 (str(uuid4()), user_id),
             )
         write_personalization_event(
-            user_id, {"event_type": "entity_view", "context": "entity"}
+            user_id, {"event_type": "search", "context": "search"}
         )
     path = tmp_path / "legacy-events.jsonl"
     lock_path = tmp_path / ".legacy-events.publication.lock"
@@ -1504,7 +1826,7 @@ def test_scheduler_final_delete_purges_only_matching_legacy_rows(
     for user_id in (stale, active):
         _set_preferences(pg_db, user_id, personalization_enabled=True)
         write_personalization_event(
-            user_id, {"event_type": "entity_view", "context": "entity"}
+            user_id, {"event_type": "search", "context": "search"}
         )
     path = tmp_path / "legacy-events.jsonl"
     lock_path = tmp_path / ".legacy-events.publication.lock"

@@ -36,6 +36,16 @@ PERSONALIZATION_EVENT_TYPES = frozenset(
         "visit_mark",
     }
 )
+ENTITY_REQUIRED_EVENT_TYPES = frozenset(
+    {
+        "entity_view",
+        "itinerary_view",
+        "map_focus",
+        "save_add",
+        "save_remove",
+        "visit_mark",
+    }
+)
 PERSONALIZATION_CONTEXTS = frozenset(
     {
         "community",
@@ -53,6 +63,14 @@ PERSONALIZATION_CONTEXTS = frozenset(
 PERSONALIZATION_ENTITY_TYPES = frozenset(valid_types())
 PERSONALIZATION_INTEREST_KEYS = frozenset(
     {"craft", "culture", "food", "garden", "local_products", "stay"}
+)
+_ENTITY_TYPE_INTEREST_KEYS = (
+    ("food", frozenset({"dish", "restaurant", "cafe", "drink"})),
+    ("local_products", frozenset({"product"})),
+    ("garden", frozenset({"experience", "nature"})),
+    ("culture", frozenset({"attraction", "history", "event"})),
+    ("craft", frozenset({"craft_village", "organization"})),
+    ("stay", frozenset({"accommodation"})),
 )
 _NORMALIZED_ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,199}$")
 _LEGACY_EVENT_FIELDS = frozenset(
@@ -174,9 +192,27 @@ def _canonical_area_id(entity: Mapping[str, Any]) -> str | None:
     return None
 
 
-def _canonical_entity_fields(entity_id: str) -> tuple[str, str, str | None]:
+def _is_public_entity(entity: Mapping[str, Any]) -> bool:
+    return entity.get("status") != "provisional" and entity.get("verified") not in (
+        False,
+        0,
+    )
+
+
+def _canonical_interest_keys(entity: Mapping[str, Any]) -> list[str]:
+    canonical_type = _bounded_text(entity.get("type"), 64, lower=True)
+    return [
+        key
+        for key, entity_types in _ENTITY_TYPE_INTEREST_KEYS
+        if canonical_type in entity_types
+    ][:MAX_INTEREST_KEYS]
+
+
+def _canonical_entity_fields(
+    entity_id: str,
+) -> tuple[str, str, str | None, list[str]]:
     entity = db.get_entity(entity_id)
-    if entity is None:
+    if entity is None or not _is_public_entity(entity):
         raise PersonalizationEventError("Invalid entity_id")
     canonical_id = _optional_identifier(entity.get("id"), "entity_id")
     canonical_type = _controlled_key(
@@ -184,12 +220,20 @@ def _canonical_entity_fields(entity_id: str) -> tuple[str, str, str | None]:
     )
     if canonical_id is None:
         raise PersonalizationEventError("Invalid entity_id")
-    return canonical_id, canonical_type, _canonical_area_id(entity)
+    return (
+        canonical_id,
+        canonical_type,
+        _canonical_area_id(entity),
+        _canonical_interest_keys(entity),
+    )
 
 
 def _normalized_event(event: Mapping[str, Any]) -> dict[str, Any]:
     if not isinstance(event, Mapping):
         raise PersonalizationEventError("Event must be an object")
+    event_type = _controlled_key(
+        event.get("event_type"), "event_type", PERSONALIZATION_EVENT_TYPES
+    )
     occurred_at = _timestamp(event.get("occurred_at"), datetime.now(timezone.utc))
     expires_at = _timestamp(
         event.get("expires_at"), occurred_at + timedelta(days=EVENT_TTL_DAYS)
@@ -197,19 +241,23 @@ def _normalized_event(event: Mapping[str, Any]) -> dict[str, Any]:
     entity_id = _optional_identifier(event.get("entity_id"), "entity_id")
     entity_type: str | None = None
     area_id: str | None = None
+    interest_keys: list[str] = []
+    _interest_keys(event.get("interest_keys"))
+    if entity_id is None and event_type in ENTITY_REQUIRED_EVENT_TYPES:
+        raise PersonalizationEventError("Invalid entity_id")
     if entity_id is not None:
-        entity_id, entity_type, area_id = _canonical_entity_fields(entity_id)
+        entity_id, entity_type, area_id, interest_keys = _canonical_entity_fields(
+            entity_id
+        )
     return {
-        "event_type": _controlled_key(
-            event.get("event_type"), "event_type", PERSONALIZATION_EVENT_TYPES
-        ),
+        "event_type": event_type,
         "context": _controlled_key(
             event.get("context") or "unknown", "context", PERSONALIZATION_CONTEXTS
         ),
         "entity_id": entity_id,
         "entity_type": entity_type,
         "area_id": area_id,
-        "interest_keys": _interest_keys(event.get("interest_keys")),
+        "interest_keys": interest_keys,
         "occurred_at": occurred_at,
         "expires_at": expires_at,
     }
