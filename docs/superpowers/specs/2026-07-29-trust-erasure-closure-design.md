@@ -1,6 +1,6 @@
 # Trust And Erasure Closure Design
 
-> STATUS (2026-07-29): active - design approved; both implementation plans drafted and awaiting explicit plan approval before implementation.
+> STATUS (2026-07-29): active - Runtime Trust Boundary implementation is complete and locally verified; Verified Erasure Lifecycle remains pending, so the overall design is not complete.
 
 ## Goal
 
