@@ -19,6 +19,11 @@ const navigateToMock = vi.hoisted(() => vi.fn(() => Promise.resolve()))
 
 vi.mock('../utils/apiFetch', () => ({ apiFetch: apiFetchMock }))
 mockNuxtImport('navigateTo', () => navigateToMock)
+mockNuxtImport('useSiteSettings', () => () => ({
+  get: (key: string, fallback?: unknown) => key === 'features.flags'
+    ? { recommendation_explanations_v1: true, trust_drawer_v1: true }
+    : fallback,
+}))
 
 const wrappers: Array<{ unmount: () => void }> = []
 let userSequence = 0

@@ -21,6 +21,27 @@ from starlette.responses import Response
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 
+def test_identity_location_rollout_flags_default_off(monkeypatch):
+    for name in (
+        "PREFERENCE_PROFILE_V1",
+        "PERSONALIZATION_EVENTS_PG",
+        "LOCATION_RESOLVER_V1",
+        "RECOMMENDATION_EXPLANATIONS_V1",
+        "TRUST_DRAWER_V1",
+    ):
+        monkeypatch.delenv(name, raising=False)
+
+    from config import Settings
+
+    configured = Settings(_env_file=None)
+
+    assert configured.PREFERENCE_PROFILE_V1 is False
+    assert configured.PERSONALIZATION_EVENTS_PG is False
+    assert configured.LOCATION_RESOLVER_V1 is False
+    assert configured.RECOMMENDATION_EXPLANATIONS_V1 is False
+    assert configured.TRUST_DRAWER_V1 is False
+
+
 # ============================================================================
 #  T7: CSRF Protection
 # ============================================================================

@@ -963,7 +963,7 @@ const trustCommunityContext = computed(() => trustSourceTier.value === 'communit
   ? 'Nguồn cộng đồng đã qua bước kiểm duyệt nội dung; không phải thông tin chính thức.'
   : false)
 // P0-7: chỉ hiện trust-card khi CÓ nguồn công khai thật (đừng quảng cáo "chưa có nguồn").
-const trustVisible = computed(() => !!trustSourceUrl.value)
+const trustVisible = computed(() => ff('trust_drawer_v1') && !!trustSourceUrl.value)
 const trustDrawerOpen = ref(false)
 
 async function reportTrustIssue() {

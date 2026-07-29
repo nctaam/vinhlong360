@@ -1,6 +1,6 @@
 <template>
   <PersonalizeSetupSheet
-    v-if="ff('onboarding')"
+    v-if="ff('onboarding') && ff('preference_ui_v1')"
     v-model="personalizeVisible"
     @complete="dismissPersonalize"
     @skip="dismissPersonalize"
@@ -75,7 +75,7 @@ function scheduleWelcome() {
 }
 
 async function maybePromptPersonalization() {
-  if (!ff('onboarding')) return
+  if (!ff('onboarding') || !ff('preference_ui_v1')) return
   const owner = user.value?.id
   if (!isLoggedIn.value || !owner) return
   visible.value = false

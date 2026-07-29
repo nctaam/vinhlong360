@@ -22,6 +22,8 @@ import threading
 import traceback
 from datetime import datetime, timedelta, timezone
 
+from config import settings
+
 _VN_TZ = timezone(timedelta(hours=7))
 from pathlib import Path
 
@@ -67,6 +69,12 @@ DISCOVERY_INTERVAL    = _env_int("LEARN_INTERVAL_DISCOVERY", 3600)        # 1h (
 LEARNING_LOOP_INTERVAL = _env_int("LEARN_INTERVAL_LOOP", 3600)            # 1h
 AUTO_LEARN_INTERVAL   = _env_int("LEARN_INTERVAL_AUTOLEARN", 3 * 3600)    # 3h
 PROMOTION_INTERVAL    = _env_int("LEARN_INTERVAL_PROMOTION", 6 * 3600)    # 6h
+
+# Keep the worker's retention decision tied to the same configurable grace
+# period used by account deletion, rather than duplicating a literal 30 days.
+ACCOUNT_DELETE_GRACE_DAYS = max(
+    0, int(getattr(settings, "ACCOUNT_DELETE_GRACE_DAYS", 30))
+)
 
 # Adaptive bounds for continuous-discovery
 DISCOVERY_MIN_INTERVAL = 1800       # 30 phút khi đang "trúng mỏ"
@@ -754,26 +762,27 @@ def task_session_cleanup():
             purge_legacy_events,
             purge_user_personalization,
         )
+        grace_interval = f"INTERVAL '{ACCOUNT_DELETE_GRACE_DAYS} days'"
         with db._conn() as conn:
             db._execute(conn, "DELETE FROM user_sessions WHERE expires_at < NOW()", ())
             db._execute(conn, "DELETE FROM otp_sessions WHERE expires_at < NOW()", ())
-            db._execute(conn, """
+            db._execute(conn, f"""
                 DELETE FROM user_sessions WHERE user_id IN (
                     SELECT id FROM users WHERE deleted_at IS NOT NULL
-                    AND deleted_at < NOW() - INTERVAL '30 days'
+                    AND deleted_at < NOW() - {grace_interval}
                 )
             """, ())
-            stale_users = db._fetchall(conn, """
+            stale_users = db._fetchall(conn, f"""
                 SELECT id FROM users WHERE deleted_at IS NOT NULL
-                AND deleted_at < NOW() - INTERVAL '30 days'
+                AND deleted_at < NOW() - {grace_interval}
             """, ())
             stale_user_ids = [str(db._row_to_dict(row)["id"]) for row in stale_users]
             for user_id in stale_user_ids:
                 purge_user_personalization(user_id, conn=conn)
                 purge_legacy_events(user_id=user_id)
-            result = db._execute(conn, """
+            result = db._execute(conn, f"""
                 DELETE FROM users WHERE deleted_at IS NOT NULL
-                AND deleted_at < NOW() - INTERVAL '30 days'
+                AND deleted_at < NOW() - {grace_interval}
             """, ())
             hard_deleted = getattr(result, 'rowcount', 0)
             if hard_deleted and hard_deleted > 0:
@@ -795,15 +804,28 @@ def task_personalization_cleanup():
     """Purge personalization events after their database TTL expires."""
     try:
         from database import db
-        if not db._use_pg:
-            return
-        from personalization_events import purge_personalization_events
+        now = datetime.now(timezone.utc)
+        if db._use_pg:
+            from personalization_events import purge_personalization_events
 
-        removed = purge_personalization_events(before=datetime.now(timezone.utc))
-        if removed:
-            _sched_logger.info(
-                "Personalization cleanup: purged %d expired events", removed
-            )
+            removed = purge_personalization_events(before=now)
+            if removed:
+                _sched_logger.info(
+                    "Personalization cleanup: purged %d expired events", removed
+                )
+        from personalization_events import (
+            legacy_cutover_deadline,
+            purge_legacy_events,
+        )
+
+        deadline = legacy_cutover_deadline()
+        if deadline is not None and now > deadline:
+            removed_legacy = purge_legacy_events(before=now)
+            if removed_legacy:
+                _sched_logger.info(
+                    "Personalization cleanup: purged %d legacy events after cutover",
+                    removed_legacy,
+                )
     except Exception as exc:
         _sched_logger.error("Personalization cleanup error: %s", exc)
 

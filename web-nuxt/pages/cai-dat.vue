@@ -15,13 +15,13 @@
     <p class="settings-dek">Nơi giữ chìa khoá cho hồ sơ của bạn — đổi mật khẩu, bật bảo mật hai lớp, hoặc chọn ai được xem những gì bạn chia sẻ.</p>
 
     <div class="settings-hash-anchors" aria-hidden="true">
-      <span v-for="t in TABS.filter(tab => tab.key !== 'khu-vuc-de-xuat')" :id="t.key" :key="`anchor-${t.key}`"></span>
+      <span v-for="t in tabsForNavigation.filter(tab => tab.key !== 'khu-vuc-de-xuat')" :id="t.key" :key="`anchor-${t.key}`"></span>
     </div>
 
     <!-- Tab navigation -->
     <nav class="settings-tabs" role="tablist" aria-label="Cài đặt" aria-orientation="horizontal" @keydown="onTabKeydown">
       <button
-        v-for="t in TABS" :key="t.key" type="button" role="tab"
+        v-for="t in tabsForNavigation" :key="t.key" type="button" role="tab"
         :id="`tab-${t.key}`"
         class="settings-tab" :class="{ active: activeTab === t.key }"
         :aria-selected="activeTab === t.key"
@@ -357,6 +357,7 @@
 
     <!-- Tab: Khu vực & đề xuất -->
     <div
+      v-if="ff('preference_ui_v1')"
       v-show="activeTab === 'khu-vuc-de-xuat'"
       id="khu-vuc-de-xuat"
       class="settings-card card preference-card sediment-head"
@@ -601,6 +602,7 @@ import { usePersonalizationPreferences } from '~/composables/usePersonalizationP
 import type { PreferencePatch, PreferenceRegionChoice, PreferenceSnapshot } from '~/types/personalization'
 
 const { user, isLoggedIn, authHeaders, fetchMe, handleSessionExpired } = useAuth()
+const { enabled: ff } = useFeature()
 const { openAuth } = useAuthModal()
 const { show: showToast } = useToast()
 const colorModeState = useColorMode()
@@ -628,7 +630,8 @@ const TABS = [
 ] as const
 type TabKey = typeof TABS[number]['key']
 
-const validKeys = new Set(TABS.map(t => t.key))
+const tabsForNavigation = computed(() => TABS.filter(t => t.key !== 'khu-vuc-de-xuat' || ff('preference_ui_v1')))
+const validKeys = computed(() => new Set(tabsForNavigation.value.map(t => t.key)))
 const activeTab = ref<TabKey>('ho-so')
 
 const tabLoaded = reactive(new Set<TabKey>())
@@ -650,15 +653,16 @@ async function onTabKeydown(e: KeyboardEvent) {
   const keys = ['ArrowRight', 'ArrowLeft', 'Home', 'End']
   if (!keys.includes(e.key)) return
   e.preventDefault()
-  const current = TABS.findIndex(t => t.key === activeTab.value)
+  const navigationTabs = tabsForNavigation.value
+  const current = navigationTabs.findIndex(t => t.key === activeTab.value)
   const nextIndex = e.key === 'Home'
     ? 0
     : e.key === 'End'
-      ? TABS.length - 1
+      ? navigationTabs.length - 1
       : e.key === 'ArrowRight'
-        ? (current + 1) % TABS.length
-        : (current - 1 + TABS.length) % TABS.length
-  const nextKey = TABS[nextIndex]!.key
+        ? (current + 1) % navigationTabs.length
+        : (current - 1 + navigationTabs.length) % navigationTabs.length
+  const nextKey = navigationTabs[nextIndex]!.key
   const changed = await setTab(nextKey)
   if (changed) nextTick(() => document.getElementById(`tab-${nextKey}`)?.focus())
 }
@@ -928,7 +932,7 @@ async function onAvatarChange(e: Event) {
 // Prefill bio from the public profile (User type doesn't carry bio).
 onMounted(async () => {
   const hash = window.location.hash.slice(1) as TabKey
-  if (hash && validKeys.has(hash)) {
+  if (hash && validKeys.value.has(hash)) {
     activeTab.value = hash
   }
   lazyLoadTab(activeTab.value)
@@ -1404,7 +1408,7 @@ function onPreferenceConnectivityChange() {
 }
 function onPopState() {
   const hash = window.location.hash.slice(1) as TabKey
-  if (hash && TABS.some(t => t.key === hash)) {
+  if (hash && validKeys.value.has(hash)) {
     activeTab.value = hash
     lazyLoadTab(hash)
   }

@@ -15,7 +15,7 @@
       <div v-for="entity in items" :key="entity.id" class="smart-rec-item">
         <EntityCard :entity="entity" />
         <button
-          v-if="explanationFor(entity)"
+          v-if="ff('recommendation_explanations_v1') && explanationFor(entity)"
           type="button"
           class="smart-rec-reason"
           data-action="why-this"
@@ -32,6 +32,7 @@
     <p v-if="drawerStatus" class="smart-rec-status" role="status" aria-live="polite">{{ drawerStatus }}</p>
 
     <WhyThisDrawer
+      v-if="ff('recommendation_explanations_v1')"
       :open="whyOpen"
       :explanation="selectedExplanation"
       preference-href="/cai-dat#khu-vuc-de-xuat"
@@ -95,6 +96,7 @@ function explanationFor(entity: RecommendationCard): Partial<RecommendationExpla
 }
 
 function openExplanation(entity: RecommendationCard) {
+  if (!ff('recommendation_explanations_v1')) return
   const explanation = explanationFor(entity)
   if (!explanation) return
   selectedEntityId.value = entity.id

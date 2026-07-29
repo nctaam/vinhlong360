@@ -261,6 +261,14 @@ def pg_db(monkeypatch):
     monkeypatch.setattr(scheduler, "db", adapter, raising=False)
     monkeypatch.setattr(auth_middleware, "db", adapter)
     monkeypatch.setattr(public_api, "db", adapter)
+    monkeypatch.setattr(
+        personalization_events,
+        "settings",
+        SimpleNamespace(
+            PERSONALIZATION_EVENTS_PG=True,
+            LEGACY_EVENT_READ_UNTIL="",
+        ),
+    )
     with adapter._conn() as conn:
         adapter._execute(
             conn,
@@ -1139,6 +1147,49 @@ def test_legacy_reader_applies_cutoff_deadline_and_safe_projection(
     ) == []
 
 
+def test_legacy_reader_uses_exact_rollout_deadline_setting(
+    tmp_path, monkeypatch, users
+):
+    owner, _ = users
+    path = tmp_path / "legacy-events.jsonl"
+    seed_legacy_events(path, [owner])
+    monkeypatch.setattr(personalization_events, "LEGACY_EVENTS_PATH", path)
+    personalization_events.settings.LEGACY_EVENT_READ_UNTIL = (
+        "2026-08-01T00:00:00Z"
+    )
+
+    before = read_legacy_events_if_allowed(
+        owner,
+        cutoff=None,
+        now=datetime(2026, 7, 31, 23, 59, 59, tzinfo=timezone.utc),
+    )
+    after = read_legacy_events_if_allowed(
+        owner,
+        cutoff=None,
+        now=datetime(2026, 8, 2, tzinfo=timezone.utc),
+    )
+
+    assert [event["entity_id"] for event in before] == ["entity-0"]
+    assert after == []
+
+
+def test_personalization_pg_flag_prevents_new_storage_writes(pg_db, users):
+    owner, _ = users
+    personalization_events.settings.PERSONALIZATION_EVENTS_PG = False
+
+    write_personalization_event(
+        owner,
+        {"event_type": "search", "context": "search"},
+    )
+
+    with pg_db._conn(commit_on_success=False) as conn:
+        row = pg_db._fetchone(
+            conn,
+            "SELECT COUNT(*) AS count FROM user_personalization_events",
+        )
+    assert pg_db._row_to_dict(row)["count"] == 0
+
+
 def test_legacy_purge_waits_for_cross_process_lock_and_keeps_other_users(
     tmp_path, monkeypatch, users
 ):
@@ -1735,6 +1786,102 @@ def test_scheduler_ttl_cleanup_deletes_only_expired_events(pg_db, users):
         )
     assert pg_db._row_to_dict(count)["count"] == 1
     assert any(task.name == "personalization-cleanup" for task in scheduler.TASKS)
+
+
+def test_scheduler_purges_recognized_legacy_rows_only_after_cutover(
+    pg_db, users, tmp_path, monkeypatch
+):
+    owner, other = users
+    path = tmp_path / "legacy-events.jsonl"
+    lock_path = tmp_path / ".legacy-events.publication.lock"
+    seed_legacy_events(path, [owner, other])
+    workspace_row = {
+        "record_type": "workspace_state",
+        "workspace_id": "keep-this-workspace",
+    }
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(workspace_row) + "\n")
+    monkeypatch.setattr(personalization_events, "LEGACY_EVENTS_PATH", path)
+    monkeypatch.setattr(personalization_events, "LEGACY_EVENTS_LOCK_PATH", lock_path)
+    personalization_events.settings.LEGACY_EVENT_READ_UNTIL = (
+        "2026-08-01T00:00:00Z"
+    )
+
+    class BeforeCutoverDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls(2026, 7, 31, tzinfo=timezone.utc)
+
+    class AfterCutoverDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls(2026, 8, 2, tzinfo=timezone.utc)
+
+    monkeypatch.setattr(scheduler, "datetime", BeforeCutoverDateTime)
+    scheduler.task_personalization_cleanup()
+    assert len(read_all_legacy_events(path)) == 3
+
+    monkeypatch.setattr(scheduler, "datetime", AfterCutoverDateTime)
+    scheduler.task_personalization_cleanup()
+
+    assert read_all_legacy_events(path) == [workspace_row]
+
+
+def test_final_account_purge_waits_for_configured_grace_period(
+    pg_db, users, tmp_path, monkeypatch
+):
+    stale, active = users
+    monkeypatch.setattr(scheduler, "ACCOUNT_DELETE_GRACE_DAYS", 45, raising=False)
+    with pg_db._conn() as conn:
+        pg_db._execute(
+            conn,
+            "UPDATE users SET deleted_at = NOW() - INTERVAL '31 days', "
+            "is_active = FALSE WHERE id = %s::uuid",
+            (stale,),
+        )
+    for user_id in (stale, active):
+        _set_preferences(pg_db, user_id, personalization_enabled=True)
+        with pg_db._conn() as conn:
+            pg_db._execute(
+                conn,
+                "INSERT INTO user_preference_consents "
+                "(id, user_id, consent_type, state, version) "
+                "VALUES (%s, %s::uuid, 'personalization', 'granted', 'privacy-v1')",
+                (str(uuid4()), user_id),
+            )
+        write_personalization_event(
+            user_id, {"event_type": "search", "context": "search"}
+        )
+    path = tmp_path / "legacy-events.jsonl"
+    seed_legacy_events(path, [stale, active])
+    monkeypatch.setattr(personalization_events, "LEGACY_EVENTS_PATH", path)
+    monkeypatch.setattr(
+        personalization_events,
+        "LEGACY_EVENTS_LOCK_PATH",
+        tmp_path / ".legacy-events.publication.lock",
+    )
+
+    scheduler.task_session_cleanup()
+
+    with pg_db._conn(commit_on_success=False) as conn:
+        counts = pg_db._fetchone(
+            conn,
+            "SELECT "
+            "(SELECT COUNT(*) FROM users) AS users, "
+            "(SELECT COUNT(*) FROM user_preferences) AS preferences, "
+            "(SELECT COUNT(*) FROM user_preference_consents) AS consents, "
+            "(SELECT COUNT(*) FROM user_personalization_events) AS events",
+        )
+    assert pg_db._row_to_dict(counts) == {
+        "users": 2,
+        "preferences": 2,
+        "consents": 2,
+        "events": 2,
+    }
+    assert [row["user_id"] for row in read_all_legacy_events(path)] == [
+        stale,
+        active,
+    ]
 
 
 def test_scheduler_legacy_failure_rolls_back_user_and_postgres_purge_for_retry(
