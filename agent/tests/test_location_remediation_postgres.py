@@ -8,7 +8,7 @@ import shutil
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from urllib.parse import unquote, urlparse
+from urllib.parse import urlparse
 from uuid import uuid4
 
 import psycopg2
@@ -29,26 +29,47 @@ from scripts.apply_migrations import (  # noqa: E402
 )
 
 
-def _test_database_url() -> str | None:
-    url = os.environ.get("LOCATION_REMEDIATION_TEST_DATABASE_URL")
-    if not url:
-        return None
+def _validate_test_database_url(url: str) -> str:
     parsed = urlparse(url)
-    database_name = unquote(parsed.path.lstrip("/"))
+    try:
+        effective = psycopg2.extensions.parse_dsn(url)
+    except psycopg2.ProgrammingError as exc:
+        raise pytest.UsageError(
+            "LOCATION_REMEDIATION_TEST_DATABASE_URL must be a valid PostgreSQL URL"
+        ) from exc
+
+    host = effective.get("host", "")
+    hostaddr = effective.get("hostaddr", "")
+    database_name = effective.get("dbname", "")
+    loopback_hosts = {"127.0.0.1", "localhost", "::1"}
     if (
         parsed.scheme not in {"postgres", "postgresql"}
-        or parsed.hostname not in {"127.0.0.1", "localhost", "::1"}
+        or "service" in effective
+        or "," in host
+        or "," in hostaddr
+        or host not in loopback_hosts
+        or (hostaddr and hostaddr not in loopback_hosts)
         or "test" not in database_name.lower()
     ):
         raise pytest.UsageError(
-            "LOCATION_REMEDIATION_TEST_DATABASE_URL must target a loopback "
-            "PostgreSQL database whose name contains 'test'"
+            "LOCATION_REMEDIATION_TEST_DATABASE_URL must resolve to a single "
+            "loopback PostgreSQL test database"
         )
     return url
 
 
+def _test_database_url() -> str | None:
+    url = os.environ.get("LOCATION_REMEDIATION_TEST_DATABASE_URL")
+    return _validate_test_database_url(url) if url else None
+
+
+def _connect_test_database():
+    assert TEST_DATABASE_URL is not None
+    return psycopg2.connect(_validate_test_database_url(TEST_DATABASE_URL))
+
+
 TEST_DATABASE_URL = _test_database_url()
-pytestmark = pytest.mark.skipif(
+pg_only = pytest.mark.skipif(
     TEST_DATABASE_URL is None,
     reason="set LOCATION_REMEDIATION_TEST_DATABASE_URL to a disposable PostgreSQL DB",
 )
@@ -62,6 +83,33 @@ LEGACY_CASES = {
 }
 
 
+@pytest.mark.parametrize(
+    "database_url",
+    [
+        "postgresql://user:password@localhost/my_test_db?host=prod.example.com",
+        "postgresql://user:password@localhost/my_test_db?hostaddr=203.0.113.9",
+        "postgresql://user:password@localhost/my_test_db?dbname=production",
+        "postgresql://user:password@localhost/my_test_db?service=production",
+        "postgresql://user:password@localhost/my_test_db?host=localhost%2Cprod.example.com",
+    ],
+    ids=["host-override", "hostaddr-override", "dbname-override", "service", "multi-host"],
+)
+def test_database_url_guard_rejects_libpq_effective_parameter_bypasses(
+    monkeypatch, database_url
+):
+    monkeypatch.setenv("LOCATION_REMEDIATION_TEST_DATABASE_URL", database_url)
+
+    with pytest.raises(pytest.UsageError, match="loopback PostgreSQL test database"):
+        _test_database_url()
+
+
+def test_database_url_guard_accepts_single_loopback_test_database(monkeypatch):
+    database_url = "postgresql://user:password@127.0.0.1/np11_test"
+    monkeypatch.setenv("LOCATION_REMEDIATION_TEST_DATABASE_URL", database_url)
+
+    assert _test_database_url() == database_url
+
+
 @pytest.fixture
 def pre73_database(tmp_path):
     assert TEST_DATABASE_URL is not None
@@ -71,14 +119,14 @@ def pre73_database(tmp_path):
         if migration.version <= 72:
             shutil.copy2(migration.path, migrations_dir / migration.path.name)
 
-    with psycopg2.connect(TEST_DATABASE_URL) as conn:
+    with _connect_test_database() as conn:
         conn.autocommit = True
         with conn.cursor() as cursor:
             cursor.execute("DROP SCHEMA public CASCADE")
             cursor.execute("CREATE SCHEMA public")
 
     apply_migrations(
-        TEST_DATABASE_URL,
+        _validate_test_database_url(TEST_DATABASE_URL),
         migrations_dir=migrations_dir,
         init_baseline=True,
     )
@@ -93,7 +141,7 @@ def pre73_database(tmp_path):
 def apply_migration_073():
     assert TEST_DATABASE_URL is not None
     migration = DEFAULT_MIGRATIONS / "073_location_preference_remediation.sql"
-    with psycopg2.connect(TEST_DATABASE_URL) as conn:
+    with _connect_test_database() as conn:
         with conn.cursor() as cursor:
             apply_sql_file(cursor, migration)
             record_schema_version(cursor, 73, migration.name)
@@ -144,7 +192,7 @@ def _insert_preference(
 def _seed_pre73_rows() -> dict[str, str]:
     assert TEST_DATABASE_URL is not None
     users = {name: str(uuid4()) for name in (*LEGACY_CASES, "canonical-manual", "manual-all", "default-off")}
-    with psycopg2.connect(TEST_DATABASE_URL) as conn:
+    with _connect_test_database() as conn:
         with conn.cursor() as cursor:
             for name, user_id in users.items():
                 cursor.execute(
@@ -225,7 +273,7 @@ def _seed_pre73_rows() -> dict[str, str]:
 def _preference_rows(users: dict[str, str]) -> dict[str, dict]:
     assert TEST_DATABASE_URL is not None
     names_by_user_id = {user_id: name for name, user_id in users.items()}
-    with psycopg2.connect(TEST_DATABASE_URL) as conn:
+    with _connect_test_database() as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             cursor.execute("SELECT * FROM user_preferences")
             return {
@@ -237,16 +285,17 @@ def _preference_rows(users: dict[str, str]) -> dict[str, dict]:
 def _assert_constraint_violation(sql: str, params: tuple, constraint: str) -> None:
     assert TEST_DATABASE_URL is not None
     with pytest.raises(psycopg2.errors.CheckViolation) as exc_info:
-        with psycopg2.connect(TEST_DATABASE_URL) as conn:
+        with _connect_test_database() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(sql, params)
     assert exc_info.value.diag.constraint_name == constraint
 
 
+@pg_only
 def test_073_quarantines_legacy_location_without_erasing_personal_data(pre73_database):
     assert TEST_DATABASE_URL is not None
     users = _seed_pre73_rows()
-    with psycopg2.connect(TEST_DATABASE_URL) as conn:
+    with _connect_test_database() as conn:
         with conn.cursor() as cursor:
             cursor.execute(
                 "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
@@ -311,7 +360,7 @@ def test_073_quarantines_legacy_location_without_erasing_personal_data(pre73_dat
     assert rows["default-off"]["location_reconfirm_required"] is False
     assert rows["default-off"]["revision"] == 7
 
-    with psycopg2.connect(TEST_DATABASE_URL) as conn:
+    with _connect_test_database() as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             cursor.execute(
                 """
@@ -333,12 +382,13 @@ def test_073_quarantines_legacy_location_without_erasing_personal_data(pre73_dat
             assert {row["table_name"] for row in cursor.fetchall()} == tables_before
 
 
+@pg_only
 def test_073_installs_schema_function_and_enforces_write_guards(pre73_database):
     assert TEST_DATABASE_URL is not None
     users = _seed_pre73_rows()
     apply_migration_073()
 
-    with psycopg2.connect(TEST_DATABASE_URL) as conn:
+    with _connect_test_database() as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             cursor.execute(
                 """
@@ -389,13 +439,27 @@ def test_073_installs_schema_function_and_enforces_write_guards(pre73_database):
                 SELECT
                     vl360_region_text_is_safe('Vĩnh Long') AS safe_label,
                     vl360_region_text_is_safe('203.0.113.9') AS raw_ip,
-                    vl360_region_text_is_safe('10.2500, 105.9700') AS coordinate
+                    vl360_region_text_is_safe('10.2500, 105.9700') AS coordinate,
+                    vl360_region_text_is_safe('::1') AS loopback_ipv6,
+                    vl360_region_text_is_safe('::dead:beef') AS compressed_ipv6,
+                    vl360_region_text_is_safe('::') AS all_zero_ipv6,
+                    vl360_region_text_is_safe('fe80::') AS trailing_compressed_ipv6,
+                    vl360_region_text_is_safe('2001:db8::1') AS embedded_compressed_ipv6,
+                    vl360_region_text_is_safe(
+                        '2001:db8:85a3:0:0:8a2e:370:7334'
+                    ) AS full_ipv6
                 """
             )
             assert dict(cursor.fetchone()) == {
                 "safe_label": True,
                 "raw_ip": False,
                 "coordinate": False,
+                "loopback_ipv6": False,
+                "compressed_ipv6": False,
+                "all_zero_ipv6": False,
+                "trailing_compressed_ipv6": False,
+                "embedded_compressed_ipv6": False,
+                "full_ipv6": False,
             }
 
     _assert_constraint_violation(
@@ -417,26 +481,35 @@ def test_073_installs_schema_function_and_enforces_write_guards(pre73_database):
         (users["default-off"],),
         "ck_user_preferences_reconfirm_state_v1",
     )
-    _assert_constraint_violation(
-        """
-        UPDATE user_preferences
-        SET region_id = 'province-vl', region_label = '203.0.113.9',
-            region_scope = 'province', location_source = 'gps',
-            location_accuracy = 'province', location_consent_state = 'granted',
-            location_enabled = TRUE, location_provenance_version = 'resolver-v2',
-            location_reconfirm_required = FALSE
-        WHERE user_id = %s::uuid
-        """,
-        (users["raw-ip"],),
-        "ck_user_preferences_region_text_safe_v2",
-    )
+    for raw_ip in (
+        "203.0.113.9",
+        "::",
+        "::1",
+        "::dead:beef",
+        "fe80::",
+        "2001:db8::1",
+        "2001:db8:85a3:0:0:8a2e:370:7334",
+    ):
+        _assert_constraint_violation(
+            """
+            UPDATE user_preferences
+            SET region_id = 'province-vl', region_label = %s,
+                region_scope = 'province', location_source = 'gps',
+                location_accuracy = 'province', location_consent_state = 'granted',
+                location_enabled = TRUE, location_provenance_version = 'resolver-v2',
+                location_reconfirm_required = FALSE
+            WHERE user_id = %s::uuid
+            """,
+            (raw_ip, users["raw-ip"]),
+            "ck_user_preferences_region_text_safe_v2",
+        )
     _assert_constraint_violation(
         "UPDATE user_preferences SET revision = 9007199254740992 WHERE user_id = %s::uuid",
         (users["default-off"],),
         "ck_user_preferences_revision_json_safe",
     )
 
-    with psycopg2.connect(TEST_DATABASE_URL) as conn:
+    with _connect_test_database() as conn:
         with conn.cursor() as cursor:
             cursor.execute(
                 """
