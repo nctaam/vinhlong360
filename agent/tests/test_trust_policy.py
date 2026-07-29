@@ -154,6 +154,38 @@ def test_explanation_omits_personal_signals_when_personalization_is_disabled():
     }
 
 
+@pytest.mark.parametrize(
+    ("location_source", "region_label", "expected_region"),
+    [
+        ("gps", "near 10.25 and 105.97", None),
+        ("gps", "10.25", None),
+        ("gps", "GPS 105.97", None),
+        ("ip", "lookup for 203.0.113.10", None),
+        ("gps", "2001:db8::1", None),
+        ("gps", "10°15′0″N, 105°58′12″E", None),
+        ("gps", "Vĩnh Long", "Vĩnh Long"),
+        ("ip", "Phường 1", "Phường 1"),
+    ],
+)
+def test_explanation_rejects_raw_location_labels_but_keeps_coarse_regions(
+    location_source, region_label, expected_region
+):
+    from trust_policy import build_explanation
+
+    explanation = build_explanation(
+        {},
+        [],
+        {
+            "personalization_enabled": True,
+            "location_enabled": True,
+            "location_source": location_source,
+            "region_label": region_label,
+        },
+    )
+
+    assert explanation.get("region_label") == expected_region
+
+
 def test_scoring_labels_only_matching_explicit_interests_as_explicit():
     import public_api
 
@@ -185,6 +217,44 @@ def test_scoring_labels_only_matching_explicit_interests_as_explicit():
     assert "Hợp với nội dung bạn quan tâm" in inferred_reasons
 
 
+def test_explicit_match_outscores_multiple_inferred_interest_hits():
+    import public_api
+
+    profile = {
+        "explicit_interests": ["food"],
+        "interest_scores": {
+            "food": 1_000_000.0,
+            "garden": 10.0,
+            "local_products": 10.0,
+            "culture": 10.0,
+        },
+        "area_scores": {},
+        "type_scores": {},
+        "recent_entity_ids": [],
+    }
+    explicit_score, _ = public_api._score_candidate(
+        {"id": "food-1", "type": "restaurant", "attributes": {}},
+        profile,
+        "home",
+        None,
+        "",
+    )
+    inferred_score, _ = public_api._score_candidate(
+        {
+            "id": "inferred-1",
+            "type": "experience",
+            "summary": "Vuon sinh thai Khmer le hoi",
+            "attributes": {},
+        },
+        profile,
+        "home",
+        None,
+        "",
+    )
+
+    assert explicit_score > inferred_score
+
+
 def test_explicit_interest_reason_stays_first_when_other_signals_also_match():
     import public_api
 
@@ -208,6 +278,29 @@ def test_explicit_interest_reason_stays_first_when_other_signals_also_match():
     )
 
     assert reasons[0] == "Khớp sở thích ẩm thực"
+
+
+def test_missing_interest_label_does_not_crash_scoring(monkeypatch):
+    import public_api
+
+    monkeypatch.setattr(public_api, "_label_for_interest", lambda _key: None)
+
+    score, reasons = public_api._score_candidate(
+        {"id": "food-1", "type": "restaurant", "attributes": {}},
+        {
+            "explicit_interests": ["food"],
+            "interest_scores": {"food": 1_000_000.0},
+            "area_scores": {},
+            "type_scores": {},
+            "recent_entity_ids": [],
+        },
+        "home",
+        None,
+        "",
+    )
+
+    assert score > 0
+    assert reasons == []
 
 
 def test_contextual_cards_add_safe_projection_and_keep_legacy_reason(monkeypatch):

@@ -800,13 +800,18 @@ def _score_interest_hits(entity: dict, profile: dict, reasons: list[str]) -> flo
     for key, hit_score in hits.items():
         pref = float(profile.get("interest_scores", {}).get(key, 0) or 0)
         if pref > 0 and hit_score > 0:
-            score += min(pref * 0.8 + hit_score, 20)
+            contribution = min(pref * 0.8 + hit_score, 20)
             if key in explicit_set:
+                # Explicit preference intent must dominate any number of inferred hits.
+                score += _EXPLICIT_INTEREST_BASE_SCORE + contribution
                 matched_explicit.add(key)
             else:
+                score += contribution
                 inferred_match = True
     for key in reversed([key for key in explicit_keys if key in matched_explicit]):
-        reasons.insert(0, f"Khớp sở thích {_label_for_interest(key).lower()}")
+        label = _label_for_interest(key)
+        if label:
+            reasons.insert(0, f"Khớp sở thích {str(label).lower()}")
     if inferred_match and len(reasons) < 2:
         reasons.append("Hợp với nội dung bạn quan tâm")
     return score

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import ipaddress
+import re
 import unicodedata
 from collections.abc import Mapping, Sequence
 from datetime import datetime, timezone
@@ -20,6 +22,24 @@ _AGE_BANDS = frozenset(
 _COMMUNITY_SOURCE_KINDS = frozenset({"review-ugc", "community-ugc"})
 _DEFAULT_REASON = "Được cộng đồng quan tâm"
 _EXPLICIT_REASON = "Phù hợp với sở thích bạn đã chọn"
+_NUMBER_PATTERN = r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?"
+_NUMBER_RE = re.compile(
+    rf"(?<![A-Za-z0-9_.]){_NUMBER_PATTERN}(?![A-Za-z0-9_.])"
+)
+_COORDINATE_PAIR_RE = re.compile(
+    rf"(?<![A-Za-z0-9_.])(?P<first>{_NUMBER_PATTERN})(?![A-Za-z0-9_.])"
+    rf"\s*(?:,|;|/|\band\b|\bva\b|\bvà\b)\s*"
+    rf"(?<![A-Za-z0-9_.])(?P<second>{_NUMBER_PATTERN})(?![A-Za-z0-9_.])",
+    re.IGNORECASE,
+)
+_DMS_RE = re.compile(
+    r"(?P<degrees>[+-]?\d{1,3})\s*[°º]\s*"
+    r"(?P<minutes>\d{1,2}(?:\.\d+)?)\s*['′]\s*"
+    r"(?:(?P<seconds>\d{1,2}(?:\.\d+)?)\s*[\"″]\s*)?"
+    r"(?P<hemisphere>[NSEW])?",
+    re.IGNORECASE,
+)
+_IP_CANDIDATE_RE = re.compile(r"[0-9A-Fa-f:.]+")
 
 
 class RecommendationExplanation(TypedDict):
@@ -167,6 +187,45 @@ def _bounded_strings(value: object, *, limit: int, max_length: int) -> list[str]
     return result
 
 
+def _safe_region_label(value: str) -> bool:
+    """Reject raw IP/GPS-shaped labels at the final recommendation boundary."""
+    for match in _IP_CANDIDATE_RE.finditer(value):
+        candidate = match.group().strip(".,;()[]{}")
+        try:
+            ipaddress.ip_address(candidate)
+        except ValueError:
+            continue
+        return False
+    if _DMS_RE.search(value):
+        return False
+    pair = _COORDINATE_PAIR_RE.search(value)
+    if pair:
+        try:
+            first = float(pair.group("first"))
+            second = float(pair.group("second"))
+        except ValueError:
+            return False
+        if (
+            -90 <= first <= 90
+            and -180 <= second <= 180
+        ) or (
+            -90 <= second <= 90
+            and -180 <= first <= 180
+        ):
+            return False
+    for match in _NUMBER_RE.finditer(value):
+        token = match.group()
+        if not any(marker in token for marker in (".", "e", "E", "+", "-")):
+            continue
+        try:
+            candidate = float(token)
+        except ValueError:
+            continue
+        if -180 <= candidate <= 180:
+            return False
+    return True
+
+
 def build_explanation(
     entity: object,
     reasons: object,
@@ -201,7 +260,11 @@ def build_explanation(
     region_label = preferences.get("region_label")
     if location_allowed and isinstance(region_label, str):
         normalized_region = region_label.strip()
-        if normalized_region and len(normalized_region) <= 160:
+        if (
+            normalized_region
+            and len(normalized_region) <= 160
+            and _safe_region_label(normalized_region)
+        ):
             explanation["region_label"] = normalized_region
     if explicit_interests:
         explanation["explicit_interests"] = explicit_interests
