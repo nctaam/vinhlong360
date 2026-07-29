@@ -2,8 +2,8 @@
 
 > STATUS: active
 
-**Ngày:** 2026-07-29  
-**Phạm vi:** Đợt 1 - lõi tối ưu dùng chung, API công khai và trang tạo lịch trình thủ công  
+**Ngày:** 2026-07-29
+**Phạm vi:** Đợt 1 - lõi tối ưu dùng chung, API công khai và trang tạo lịch trình thủ công
 **Ngoài phạm vi đợt 1:** tự động chọn POI cho lịch nhiều ngày, giờ mở cửa đầy đủ, dữ liệu giao thông thời gian thực, dịch vụ định tuyến trả phí
 
 ## 1. Mục tiêu
