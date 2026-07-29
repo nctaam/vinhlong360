@@ -1808,6 +1808,19 @@ class ItineraryScheduleIn(BaseModel):
         return self
 
 
+def _validate_schedule_references(
+    schedule: ItineraryScheduleIn,
+    stop_ids: list[str],
+) -> None:
+    schedule_ids = [stop.id for stop in schedule.stops]
+    if Counter(schedule_ids) != Counter(stop_ids):
+        raise ValueError("ID lịch phải khớp chính xác các điểm dừng")
+    if schedule_ids[0] != stop_ids[0] or schedule_ids[-1] != stop_ids[-1]:
+        raise ValueError("Điểm đầu và điểm cuối phải khớp lịch trình gốc")
+    if not schedule.stops[0].required or not schedule.stops[-1].required:
+        raise ValueError("Điểm đầu và điểm cuối phải là điểm bắt buộc")
+
+
 class ItineraryOptimizeIn(BaseModel):
     stops: list[ItineraryOptimizeStopIn] = Field(min_length=2, max_length=20)
     strict_direction: bool = True
@@ -1826,11 +1839,7 @@ class ItineraryOptimizeIn(BaseModel):
         ):
             raise ValueError("Cạnh bị cấm phải tham chiếu điểm dừng trong lịch trình")
         if self.schedule is not None:
-            schedule_ids = [stop.id for stop in self.schedule.stops]
-            if Counter(schedule_ids) != Counter(stop_ids):
-                raise ValueError("ID lịch phải khớp chính xác các điểm dừng")
-            if not self.schedule.stops[0].required or not self.schedule.stops[-1].required:
-                raise ValueError("Điểm đầu và điểm cuối phải là điểm bắt buộc")
+            _validate_schedule_references(self.schedule, stop_ids)
         return self
 
 
@@ -1929,21 +1938,61 @@ def _serialize_schedule_result(result, distance_before_km: float) -> dict:
     }
 
 
+def _serialize_order_result(result, extra_warnings: tuple[str, ...] = ()) -> dict:
+    return {
+        "ordered_ids": list(result.ordered_ids),
+        "distance_before_km": result.distance_before_km,
+        "distance_after_km": result.distance_after_km,
+        "saved_distance_km": max(
+            0.0,
+            result.distance_before_km - result.distance_after_km,
+        ),
+        "backtrack_ratio": result.backtrack_ratio,
+        "solver": result.solver,
+        "warnings": [*result.warnings, *extra_warnings],
+    }
+
+
+async def _optimize_itinerary_order_only(
+    payload: ItineraryOptimizeIn,
+    extra_warnings: tuple[str, ...] = (),
+) -> dict | JSONResponse:
+    stops = [RouteStop(stop.id, stop.coordinates) for stop in payload.stops]
+    options = OptimizeOptions(
+        strict_direction=payload.strict_direction,
+        blocked_edges=frozenset(payload.blocked_edges),
+    )
+    try:
+        result = await asyncio.to_thread(optimize_stop_order, stops, options)
+    except NoFeasibleRouteError as exc:
+        return _err(409, str(exc))
+    return _serialize_order_result(result, extra_warnings)
+
+
 async def _schedule_itinerary(payload: ItineraryOptimizeIn) -> dict | JSONResponse:
     schedule = payload.schedule
     if schedule is None:
         raise ValueError("Thiếu cấu hình lịch trình")
     try:
         stops = _build_schedule_stops(payload)
+    except NoFeasibleScheduleError as exc:
+        return _err(409, str(exc))
+    options = ScheduleOptions(
+        day_start_minute=schedule.day_start_minute,
+        day_end_minute=schedule.day_end_minute,
+        blocked_edges=frozenset(payload.blocked_edges),
+    )
+    try:
         matrix = _build_schedule_matrix(schedule, stops)
-        options = ScheduleOptions(
-            day_start_minute=schedule.day_start_minute,
-            day_end_minute=schedule.day_end_minute,
-            blocked_edges=frozenset(payload.blocked_edges),
-        )
         result = await asyncio.to_thread(schedule_stop_order, stops, matrix, options)
     except NoFeasibleScheduleError as exc:
         return _err(409, str(exc))
+    except Exception:
+        logger.exception("Schedule optimization failed; using order-only fallback")
+        return await _optimize_itinerary_order_only(
+            payload,
+            ("schedule-fallback-order-only",),
+        )
     return _serialize_schedule_result(result, _path_distance_km(payload.stops))
 
 
@@ -1955,32 +2004,7 @@ async def _schedule_itinerary(payload: ItineraryOptimizeIn) -> dict | JSONRespon
 async def optimize_itinerary_order(payload: ItineraryOptimizeIn):
     if payload.schedule is not None:
         return await _schedule_itinerary(payload)
-
-    stops = [
-        RouteStop(stop.id, stop.coordinates)
-        for stop in payload.stops
-    ]
-    options = OptimizeOptions(
-        strict_direction=payload.strict_direction,
-        blocked_edges=frozenset(payload.blocked_edges),
-    )
-    try:
-        result = await asyncio.to_thread(optimize_stop_order, stops, options)
-    except NoFeasibleRouteError as exc:
-        return _err(409, str(exc))
-
-    return {
-        "ordered_ids": list(result.ordered_ids),
-        "distance_before_km": result.distance_before_km,
-        "distance_after_km": result.distance_after_km,
-        "saved_distance_km": max(
-            0.0,
-            result.distance_before_km - result.distance_after_km,
-        ),
-        "backtrack_ratio": result.backtrack_ratio,
-        "solver": result.solver,
-        "warnings": list(result.warnings),
-    }
+    return await _optimize_itinerary_order_only(payload)
 
 
 @router.get("/itineraries",

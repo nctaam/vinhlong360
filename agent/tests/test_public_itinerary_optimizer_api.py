@@ -13,6 +13,13 @@ def client():
     return TestClient(app)
 
 
+@pytest.fixture
+def non_raising_client():
+    app = FastAPI()
+    app.include_router(router)
+    return TestClient(app, raise_server_exceptions=False)
+
+
 def payload():
     return {
         "stops": [
@@ -80,6 +87,38 @@ def matrix_with_cell(row_index, column_index, value):
     ]
     matrix[row_index][column_index] = value
     return matrix
+
+
+def capture_route_optimizer_calls(monkeypatch):
+    calls = []
+    original_optimize = public_api.optimize_stop_order
+
+    def track_optimize(stops, options):
+        calls.append((stops, options))
+        return original_optimize(stops, options)
+
+    monkeypatch.setattr(public_api, "optimize_stop_order", track_optimize)
+    return calls
+
+
+def assert_order_only_fallback(response, route_calls):
+    assert response.status_code == 200
+    assert len(route_calls) == 1
+    body = response.json()
+    assert "schedule" not in body
+    assert set(body) == {
+        "ordered_ids",
+        "distance_before_km",
+        "distance_after_km",
+        "saved_distance_km",
+        "backtrack_ratio",
+        "solver",
+        "warnings",
+    }
+    assert body["ordered_ids"] == ["start", "early", "late", "end"]
+    assert body["solver"] == "exact-dp"
+    assert body["saved_distance_km"] > 0
+    assert body["warnings"] == ["schedule-fallback-order-only"]
 
 
 def test_optimize_order_returns_forward_order_and_diagnostics(client):
@@ -261,6 +300,28 @@ def test_schedule_validation_returns_422(client, bad_schedule):
     assert response.status_code == 422
 
 
+@pytest.mark.parametrize(
+    "swap_indices",
+    [(0, 1), (-1, -2)],
+    ids=["swapped-start", "swapped-end"],
+)
+def test_schedule_rejects_endpoint_ids_that_differ_from_outer_stops(
+    client,
+    swap_indices,
+):
+    body = schedule_payload()
+    source, target = swap_indices
+    schedule_stops = body["schedule"]["stops"]
+    schedule_stops[source], schedule_stops[target] = (
+        schedule_stops[target],
+        schedule_stops[source],
+    )
+
+    response = client.post("/api/itineraries/optimize-order", json=body)
+
+    assert response.status_code == 422
+
+
 def test_schedule_matrix_allows_null_for_an_unavailable_edge(client):
     body = schedule_payload()
     body["schedule"]["duration_matrix_minutes"][0][2] = None
@@ -400,22 +461,84 @@ def test_no_feasible_schedule_maps_to_409_without_partial_placements(client):
     }
 
 
-def test_unexpected_scheduler_error_is_not_converted_to_partial_schedule(
-    client,
+def test_matrix_builder_runtime_failure_falls_back_to_order_only(
+    non_raising_client,
     monkeypatch,
+    caplog,
 ):
-    def fail_schedule(*args, **kwargs):
-        raise RuntimeError("scheduler exploded")
+    body = schedule_payload()
+    body["schedule"].pop("duration_matrix_minutes")
+    route_calls = capture_route_optimizer_calls(monkeypatch)
+
+    def fail_matrix(*args, **kwargs):
+        raise RuntimeError("matrix builder exploded")
 
     monkeypatch.setattr(
         public_api,
-        "schedule_stop_order",
-        fail_schedule,
-        raising=False,
+        "build_fallback_matrix",
+        fail_matrix,
     )
 
-    with pytest.raises(RuntimeError, match="scheduler exploded"):
-        client.post("/api/itineraries/optimize-order", json=schedule_payload())
+    with caplog.at_level("ERROR", logger=public_api.logger.name):
+        response = non_raising_client.post(
+            "/api/itineraries/optimize-order",
+            json=body,
+        )
+
+    assert_order_only_fallback(response, route_calls)
+    assert any(
+        record.name == public_api.logger.name and record.exc_info
+        for record in caplog.records
+    )
+
+
+def test_scheduler_runtime_failure_falls_back_to_order_only(
+    non_raising_client,
+    monkeypatch,
+    caplog,
+):
+    route_calls = capture_route_optimizer_calls(monkeypatch)
+
+    def fail_schedule(*args, **kwargs):
+        raise RuntimeError("scheduler exploded")
+
+    monkeypatch.setattr(public_api, "schedule_stop_order", fail_schedule)
+
+    with caplog.at_level("ERROR", logger=public_api.logger.name):
+        response = non_raising_client.post(
+            "/api/itineraries/optimize-order",
+            json=schedule_payload(),
+        )
+
+    assert_order_only_fallback(response, route_calls)
+    assert any(
+        record.name == public_api.logger.name and record.exc_info
+        for record in caplog.records
+    )
+
+
+def test_schedule_fallback_preserves_legacy_no_route_409(
+    non_raising_client,
+    monkeypatch,
+):
+    body = schedule_payload()
+    body["blocked_edges"] = [["start", "early"]]
+    route_calls = capture_route_optimizer_calls(monkeypatch)
+
+    def fail_schedule(*args, **kwargs):
+        raise RuntimeError("scheduler exploded")
+
+    monkeypatch.setattr(public_api, "schedule_stop_order", fail_schedule)
+
+    response = non_raising_client.post(
+        "/api/itineraries/optimize-order",
+        json=body,
+    )
+
+    assert response.status_code == 409
+    assert len(route_calls) == 1
+    assert "Không tìm thấy thứ tự" in response.json()["detail"]
+    assert "schedule" not in response.json()
 
 
 def test_optional_schedule_stop_is_skipped_with_a_reason(client):
