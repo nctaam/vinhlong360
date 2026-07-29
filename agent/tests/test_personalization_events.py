@@ -2190,6 +2190,93 @@ def test_legacy_purge_queue_preserves_committed_deletes_and_retries_failure(
     ]
 
 
+def test_scheduler_drains_existing_backlog_plus_max_enqueue_but_keeps_future_jobs(
+    pg_db, users, monkeypatch
+):
+    del users
+    now = datetime.now(timezone.utc)
+    due_ids = [str(uuid4()) for _ in range(600)]
+    future_id = str(uuid4())
+    with pg_db._conn() as conn:
+        cursor = conn.cursor()
+        psycopg2.extras.execute_values(
+            cursor,
+            "INSERT INTO personalization_legacy_purge_queue "
+            "(user_id, next_attempt_at) VALUES %s",
+            [(user_id, now - timedelta(minutes=1)) for user_id in due_ids]
+            + [(future_id, now + timedelta(days=1))],
+        )
+    purge_calls = []
+    monkeypatch.setattr(
+        personalization_events,
+        "purge_legacy_events",
+        lambda *, user_id: purge_calls.append(user_id),
+    )
+
+    scheduler.task_session_cleanup()
+
+    with pg_db._conn(commit_on_success=False) as conn:
+        remaining = pg_db._fetchall(
+            conn,
+            "SELECT user_id, attempt_count, next_attempt_at "
+            "FROM personalization_legacy_purge_queue ORDER BY user_id",
+        )
+    assert set(purge_calls) == set(due_ids)
+    assert future_id not in purge_calls
+    assert [str(row["user_id"]) for row in remaining] == [future_id]
+    assert int(remaining[0]["attempt_count"]) == 0
+    assert remaining[0]["next_attempt_at"] > now
+
+
+def test_due_purge_jobs_run_when_hard_delete_transaction_fails(
+    pg_db, users, monkeypatch, caplog
+):
+    due_id = str(uuid4())
+    future_id = str(uuid4())
+    now = datetime.now(timezone.utc)
+    with pg_db._conn() as conn:
+        pg_db._execute(
+            conn,
+            "INSERT INTO personalization_legacy_purge_queue "
+            "(user_id, next_attempt_at) VALUES "
+            "(%s::uuid, %s), (%s::uuid, %s)",
+            (
+                due_id,
+                now - timedelta(minutes=1),
+                future_id,
+                now + timedelta(days=1),
+            ),
+        )
+    real_fetchall = pg_db._fetchall
+
+    def fail_candidate_query(conn, sql, params=None):
+        if "SELECT id FROM users" in sql:
+            raise RuntimeError("injected candidate query failure")
+        return real_fetchall(conn, sql, params)
+
+    purge_calls = []
+    monkeypatch.setattr(pg_db, "_fetchall", fail_candidate_query)
+    monkeypatch.setattr(
+        personalization_events,
+        "purge_legacy_events",
+        lambda *, user_id: purge_calls.append(user_id),
+    )
+
+    with caplog.at_level("ERROR", logger="scheduler"):
+        scheduler.task_session_cleanup()
+
+    with pg_db._conn(commit_on_success=False) as conn:
+        remaining = pg_db._fetchall(
+            conn,
+            "SELECT user_id FROM personalization_legacy_purge_queue ORDER BY user_id",
+        )
+        user_count = pg_db._fetchone(conn, "SELECT COUNT(*) AS count FROM users")
+    assert purge_calls == [due_id]
+    assert [str(row["user_id"]) for row in remaining] == [future_id]
+    assert int(user_count["count"]) == 2
+    assert "injected candidate query failure" in caplog.text
+
+
 def test_scheduler_final_delete_purges_only_matching_legacy_rows(
     pg_db, users, tmp_path, monkeypatch
 ):

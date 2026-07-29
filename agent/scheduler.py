@@ -752,6 +752,10 @@ def task_event_reminders():
         _sched_logger.error("Event reminders error: %s", e)
 
 
+HARD_DELETE_BATCH_SIZE = 500
+LEGACY_PURGE_JOB_BUDGET = 1000
+
+
 def _hard_delete_stale_users(db, conn, grace_interval: str) -> int:
     candidates = db._fetchall(conn, f"""
         SELECT id FROM users
@@ -759,7 +763,7 @@ def _hard_delete_stale_users(db, conn, grace_interval: str) -> int:
           AND deleted_at < NOW() - {grace_interval}
           AND is_active = FALSE
         ORDER BY deleted_at, id
-        LIMIT 500
+        LIMIT {HARD_DELETE_BATCH_SIZE}
         FOR UPDATE SKIP LOCKED
     """, ())
     deleted_count = 0
@@ -785,7 +789,9 @@ def _hard_delete_stale_users(db, conn, grace_interval: str) -> int:
     return deleted_count
 
 
-def _process_legacy_purge_queue(db, *, limit: int = 100) -> int:
+def _process_legacy_purge_queue(
+    db, *, limit: int = LEGACY_PURGE_JOB_BUDGET
+) -> int:
     from personalization_events import purge_legacy_events
 
     completed = 0
@@ -834,8 +840,13 @@ def task_session_cleanup():
     """Purge expired sessions and hard-delete accounts past their grace period."""
     try:
         from database import db
-        if not db._use_pg:
-            return
+    except Exception as exc:
+        _sched_logger.error("Session cleanup database load error: %s", exc)
+        return
+    if not db._use_pg:
+        return
+
+    try:
         grace_interval = f"INTERVAL '{ACCOUNT_DELETE_GRACE_DAYS} days'"
         with db._conn() as conn:
             db._execute(conn, "DELETE FROM user_sessions WHERE expires_at < NOW()", ())
@@ -851,15 +862,21 @@ def task_session_cleanup():
             except Exception:
                 _sched_logger.warning("login_history cleanup failed", exc_info=True)
             _hard_delete_stale_posts(db, conn)
+        _sched_logger.info("Session cleanup: purged expired sessions and OTPs")
+    except Exception as exc:
+        _sched_logger.error("Session cleanup database phase error: %s", exc)
+
+    try:
         completed_purges = _process_legacy_purge_queue(db)
         if completed_purges:
             _sched_logger.info(
                 "Session cleanup: purged %d queued legacy personalization sets",
                 completed_purges,
             )
-        _sched_logger.info("Session cleanup: purged expired sessions and OTPs")
-    except Exception as e:
-        _sched_logger.error("Session cleanup error: %s", e)
+    except Exception as exc:
+        _sched_logger.error(
+            "Legacy personalization purge queue error: %s", exc
+        )
 
 
 def task_personalization_cleanup():
