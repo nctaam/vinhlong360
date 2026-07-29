@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
+import subprocess
 import sys
+import textwrap
 from decimal import Decimal
 from pathlib import Path
 from types import ModuleType
@@ -46,7 +49,7 @@ def _ready_schema():
 
 
 def _empty_details(verifier):
-    return {table: {} for table in verifier.DETAIL_TABLES}
+    return {table: {} for table in verifier._canonical_rules().detail_tables}
 
 
 def test_equal_conflict_missing_and_uncoercible_counts():
@@ -348,7 +351,7 @@ def test_run_uses_explicit_url_sets_readonly_before_cursor_and_only_selects(
     assert events[2][0] == "cursor"
     assert events[-1] == "connection_close"
     assert connections
-    assert len(queries) == len(verifier.DETAIL_TABLES) + 3
+    assert len(queries) == len(verifier._canonical_rules().detail_tables) + 3
     assert all(sql.lstrip().upper().startswith("SELECT") for sql, _ in queries)
 
 
@@ -377,6 +380,59 @@ def test_import_does_not_connect(monkeypatch):
                 sys.modules[name] = module
 
     assert calls == []
+
+
+def test_invalid_ambient_production_config_is_redacted_after_safe_import(tmp_path):
+    dsn = "postgresql://canary-user:canary-pass@canary-host/prod-canary"
+    script = textwrap.dedent(
+        f"""
+        import importlib.util
+        import sys
+
+        path = {str(VERIFIER_PATH)!r}
+        name = "verify_entity_invariants_ambient_canary"
+        spec = importlib.util.spec_from_file_location(name, path)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+        print("imported")
+        print(f"exit={{module.main([])}}")
+        """
+    )
+    inherited = (
+        "PATH",
+        "PATHEXT",
+        "SYSTEMROOT",
+        "WINDIR",
+        "TEMP",
+        "TMP",
+    )
+    env = {key: os.environ[key] for key in inherited if key in os.environ}
+    env.update(
+        {
+            "DATABASE_URL": dsn,
+            "ENVIRONMENT": "production",
+            "PYTHON_DOTENV_DISABLED": "1",
+            "PYTHONIOENCODING": "utf-8",
+        }
+    )
+
+    result = subprocess.run(
+        [sys.executable, "-c", script],
+        cwd=tmp_path,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=15,
+    )
+
+    assert result.returncode == 0
+    assert result.stdout.splitlines() == ["imported", "exit=2"]
+    assert result.stderr.startswith("entity invariant verification failed: ")
+    assert "Traceback" not in result.stderr
+    for canary in ("canary-user", "canary-pass", "canary-host", "prod-canary"):
+        assert canary not in result.stdout
+        assert canary not in result.stderr
 
 
 def test_run_rejects_non_postgresql_url_without_connecting(monkeypatch):
@@ -439,3 +495,29 @@ def test_cli_error_redacts_exception_details_and_returns_two(capsys, monkeypatch
     assert "sentinel-row" not in captured.err
     assert "secret-user" not in captured.err
     assert "secret-pass" not in captured.err
+
+
+def test_cli_parser_error_redacts_unexpected_dsn_argument(capsys, monkeypatch):
+    verifier = _load_verifier()
+    argument = (
+        "--database-url="
+        "postgresql://parser-user:parser-pass@parser-host/parser-database"
+    )
+
+    def unexpected_run(_database_url):
+        raise AssertionError("run must not execute after a parser error")
+
+    monkeypatch.setattr(verifier, "run", unexpected_run)
+
+    assert verifier.main([argument]) == 2
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err.startswith("entity invariant verification failed: ")
+    for canary in (
+        argument,
+        "parser-user",
+        "parser-pass",
+        "parser-host",
+        "parser-database",
+    ):
+        assert canary not in captured.err

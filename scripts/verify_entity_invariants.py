@@ -7,20 +7,7 @@ import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable
-
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "agent"))
-from database import PG_REQUIRED_SCHEMA_VERSION, PG_REQUIRED_TRIGGERS  # noqa: E402
-from entity_details import (  # noqa: E402
-    DETAIL_TABLES,
-    KEY_MAP,
-    KIND_TABLE,
-    UNIVERSAL,
-    norm_value,
-    split_typed,
-)
-from entity_schemas import KIND_OF_TYPE  # noqa: E402
+from typing import Any, Callable, Iterable
 
 
 INVARIANT_KEYS = (
@@ -55,17 +42,72 @@ class InvariantReport:
         }
 
 
-def _compare_typed_value(counts: dict[str, int], expected: Any, actual: Any) -> None:
+@dataclass(frozen=True)
+class _CanonicalRules:
+    required_schema_version: int
+    required_triggers: dict[str, str]
+    detail_tables: tuple[str, ...]
+    key_map: dict[str, str]
+    kind_table: dict[str, str]
+    universal: list[str]
+    kind_of_type: dict[str, str]
+    norm_value: Callable[[Any], Any]
+    split_typed: Callable[[str, dict | None], tuple[dict, dict, list[str]]]
+
+
+_RULES: _CanonicalRules | None = None
+
+
+def _canonical_rules() -> _CanonicalRules:
+    """Load config-sensitive canonical modules only inside a caller boundary."""
+    global _RULES
+    if _RULES is not None:
+        return _RULES
+
+    agent_path = str(Path(__file__).resolve().parents[1] / "agent")
+    if agent_path not in sys.path:
+        sys.path.insert(0, agent_path)
+
+    from database import PG_REQUIRED_SCHEMA_VERSION, PG_REQUIRED_TRIGGERS
+    from entity_details import (
+        DETAIL_TABLES,
+        KEY_MAP,
+        KIND_TABLE,
+        UNIVERSAL,
+        norm_value,
+        split_typed,
+    )
+    from entity_schemas import KIND_OF_TYPE
+
+    _RULES = _CanonicalRules(
+        required_schema_version=PG_REQUIRED_SCHEMA_VERSION,
+        required_triggers=PG_REQUIRED_TRIGGERS,
+        detail_tables=DETAIL_TABLES,
+        key_map=KEY_MAP,
+        kind_table=KIND_TABLE,
+        universal=UNIVERSAL,
+        kind_of_type=KIND_OF_TYPE,
+        norm_value=norm_value,
+        split_typed=split_typed,
+    )
+    return _RULES
+
+
+def _compare_typed_value(
+    counts: dict[str, int], expected: Any, actual: Any, rules: _CanonicalRules
+) -> None:
     if actual is None:
         counts["typed_jsonb_without_column"] += 1
-    elif norm_value(actual) == norm_value(expected):
+    elif rules.norm_value(actual) == rules.norm_value(expected):
         counts["typed_jsonb_equal"] += 1
     else:
         counts["typed_jsonb_conflict"] += 1
 
 
-def _evaluate_schema(counts: dict[str, int], schema: dict[str, object]) -> None:
-    required_version = schema.get("required_version", PG_REQUIRED_SCHEMA_VERSION)
+def _evaluate_schema(
+    counts: dict[str, int], schema: dict[str, object], rules: _CanonicalRules
+) -> None:
+    required_version = schema.get("required_version", rules.required_schema_version)
     version = schema.get("version")
     if (
         isinstance(required_version, bool)
@@ -76,7 +118,7 @@ def _evaluate_schema(counts: dict[str, int], schema: dict[str, object]) -> None:
     ):
         counts["schema_version_below_required"] = 1
 
-    required = schema.get("required_triggers", PG_REQUIRED_TRIGGERS)
+    required = schema.get("required_triggers", rules.required_triggers)
     present = schema.get("triggers", {})
     required_triggers = required if isinstance(required, dict) else {}
     present_triggers = present if isinstance(present, dict) else {}
@@ -92,6 +134,7 @@ def evaluate_invariants(
     schema: dict[str, object],
 ) -> InvariantReport:
     """Evaluate entity parity and CTI topology without exposing row data."""
+    rules = _canonical_rules()
     counts = {key: 0 for key in INVARIANT_KEYS}
     total_entities = 0
 
@@ -100,11 +143,11 @@ def evaluate_invariants(
         entity_id = entity["id"]
         entity_type = entity["type"]
         attributes = entity.get("attributes") or {}
-        universal, detail, skipped = split_typed(entity_type, attributes)
+        universal, detail, skipped = rules.split_typed(entity_type, attributes)
         counts["typed_uncoercible"] += len(skipped)
 
-        kind = KIND_OF_TYPE.get(entity_type)
-        expected_table = KIND_TABLE.get(kind or "")
+        kind = rules.kind_of_type.get(entity_type)
+        expected_table = rules.kind_table.get(kind or "")
         rows_by_table = {
             table: table_rows[entity_id]
             for table, table_rows in details.items()
@@ -120,29 +163,31 @@ def evaluate_invariants(
             counts["multi_cti"] += 1
 
         for column, expected in universal.items():
-            if column not in UNIVERSAL:
+            if column not in rules.universal:
                 continue
-            _compare_typed_value(counts, expected, entity.get(column))
+            _compare_typed_value(counts, expected, entity.get(column), rules)
 
         if expected_table is not None:
             expected_row = rows_by_table.get(expected_table, {})
             for column, expected in detail.items():
-                physical_column = KEY_MAP.get(column, column)
+                physical_column = rules.key_map.get(column, column)
                 _compare_typed_value(
-                    counts, expected, expected_row.get(physical_column)
+                    counts, expected, expected_row.get(physical_column), rules
                 )
 
-    _evaluate_schema(counts, schema)
+    _evaluate_schema(counts, schema, rules)
     return InvariantReport(total_entities, counts, schema)
 
 
-def _load_rows(cursor: Any) -> tuple[list[dict[str, Any]], dict[str, dict]]:
-    entity_columns = ", ".join(("id", "type", "attributes", *UNIVERSAL))
+def _load_rows(
+    cursor: Any, rules: _CanonicalRules
+) -> tuple[list[dict[str, Any]], dict[str, dict]]:
+    entity_columns = ", ".join(("id", "type", "attributes", *rules.universal))
     cursor.execute(f"SELECT {entity_columns} FROM entities")
     entities = [dict(row) for row in cursor.fetchall()]
 
     details: dict[str, dict[str, dict[str, Any]]] = {}
-    for table in DETAIL_TABLES:
+    for table in rules.detail_tables:
         cursor.execute(f"SELECT * FROM {table}")
         details[table] = {
             row["entity_id"]: dict(row) for row in cursor.fetchall()
@@ -150,7 +195,10 @@ def _load_rows(cursor: Any) -> tuple[list[dict[str, Any]], dict[str, dict]]:
     return entities, details
 
 
-def _load_schema(cursor: Any) -> dict[str, object]:
+def _load_schema(
+    cursor: Any, rules: _CanonicalRules | None = None
+) -> dict[str, object]:
+    rules = rules or _canonical_rules()
     cursor.execute(
         "SELECT version FROM schema_version WHERE component = %s",
         ("agent",),
@@ -168,17 +216,17 @@ def _load_schema(cursor: Any) -> dict[str, object]:
           AND NOT tg.tgisinternal
           AND tg.tgname = ANY(%s)
         """,
-        ("public", list(PG_REQUIRED_TRIGGERS)),
+        ("public", list(rules.required_triggers)),
     )
     triggers = {
         row["trigger_name"]: row["table_name"]
         for row in cursor.fetchall()
-        if PG_REQUIRED_TRIGGERS.get(row["trigger_name"]) == row["table_name"]
+        if rules.required_triggers.get(row["trigger_name"]) == row["table_name"]
     }
     return {
         "version": version,
-        "required_version": PG_REQUIRED_SCHEMA_VERSION,
-        "required_triggers": dict(sorted(PG_REQUIRED_TRIGGERS.items())),
+        "required_version": rules.required_schema_version,
+        "required_triggers": dict(sorted(rules.required_triggers.items())),
         "triggers": dict(sorted(triggers.items())),
     }
 
@@ -190,6 +238,7 @@ def run(database_url: str) -> InvariantReport:
     ):
         raise ValueError("PostgreSQL database URL required")
 
+    rules = _canonical_rules()
     import psycopg2
     from psycopg2.extras import RealDictCursor
 
@@ -198,8 +247,8 @@ def run(database_url: str) -> InvariantReport:
     try:
         connection.set_session(readonly=True, autocommit=True)
         cursor = connection.cursor(cursor_factory=RealDictCursor)
-        entities, details = _load_rows(cursor)
-        schema = _load_schema(cursor)
+        entities, details = _load_rows(cursor, rules)
+        schema = _load_schema(cursor, rules)
         return evaluate_invariants(entities, details, schema)
     finally:
         if cursor is not None:
@@ -207,12 +256,21 @@ def run(database_url: str) -> InvariantReport:
         connection.close()
 
 
+class _CliUsageError(Exception):
+    pass
+
+
+class _RedactedArgumentParser(argparse.ArgumentParser):
+    def error(self, _message: str) -> None:
+        raise _CliUsageError
+
+
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser()
+    parser = _RedactedArgumentParser()
     parser.add_argument("--json", action="store_true")
-    args = parser.parse_args(argv)
 
     try:
+        args = parser.parse_args(argv)
         report = run(os.environ.get("DATABASE_URL", ""))
     except Exception as exc:  # Boundary intentionally redacts operational details.
         print(
