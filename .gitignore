@@ -30,4 +30,5 @@ temp_analysis.txt
 
 # Worktrees (parallel sessions)
 vl360-*/
+.worktrees/
 coverage.json
