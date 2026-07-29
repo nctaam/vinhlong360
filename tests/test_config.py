@@ -11,6 +11,63 @@ os.environ.setdefault("ADMIN_API_KEY", "test-admin-key")
 os.environ.setdefault("CORS_ORIGINS", "http://localhost:8360")
 
 
+def _production_settings(**overrides):
+    from config import Settings
+
+    values = {
+        "ENVIRONMENT": "production",
+        "LLM_API_KEY": "k",
+        "LLM_BASE_URL": "https://api.example.com",
+        "ADMIN_API_KEY": "a",
+        "DATABASE_URL": "postgresql://user:pass@localhost/db",
+        "ENTITY_DETAILS_TABLES": True,
+    }
+    values.update(overrides)
+    return Settings(_env_file=None, **values)
+
+
+@pytest.mark.parametrize("database_url", [
+    "postgres://user:pass@localhost/db",
+    "postgresql://user:pass@localhost/db",
+])
+def test_production_accepts_postgresql_urls(database_url):
+    assert _production_settings(DATABASE_URL=database_url).is_production is True
+
+
+def test_database_backend_accepts_postgres_url(monkeypatch):
+    import importlib
+    import database
+
+    monkeypatch.setenv("DATABASE_URL", "postgres://user:pass@localhost/db")
+    try:
+        assert importlib.reload(database).USE_PG is True
+    finally:
+        monkeypatch.delenv("DATABASE_URL", raising=False)
+        importlib.reload(database)
+
+
+def test_production_rejects_sqlite_database_url():
+    with pytest.raises(ValueError, match="DATABASE_URL.*PostgreSQL"):
+        _production_settings(DATABASE_URL="sqlite:///knowledge.db")
+
+
+def test_production_requires_entity_detail_tables():
+    with pytest.raises(ValueError, match="ENTITY_DETAILS_TABLES"):
+        _production_settings(ENTITY_DETAILS_TABLES=False)
+
+
+def test_development_still_allows_sqlite_and_disabled_detail_tables():
+    from config import Settings
+
+    settings = Settings(
+        _env_file=None,
+        ENVIRONMENT="development",
+        DATABASE_URL="sqlite:///knowledge.db",
+        ENTITY_DETAILS_TABLES=False,
+    )
+    assert settings.is_production is False
+
+
 class TestSettings:
     def test_defaults(self, monkeypatch):
         # Isolate from the runner's ENVIRONMENT var and any .env file so this
@@ -39,14 +96,11 @@ class TestSettings:
         assert s.admin_telegram_ids_set == set()
 
     def test_production_validation_passes(self):
-        from config import Settings
-        s = Settings(
-            ENVIRONMENT="production",
+        s = _production_settings(
             LLM_API_KEY="real-key",
             LLM_BASE_URL="https://api.example.com",
             ADMIN_API_KEY="admin-key",
             JWT_SECRET="jwt-secret",
-            DATABASE_URL="postgresql://user:pass@localhost/db",
         )
         assert s.is_production is True
 
@@ -62,9 +116,8 @@ class TestSettings:
         # fallback for the TOTP encryption key (TOTP_ENC_KEY > JWT_SECRET > ADMIN_API_KEY),
         # so the app boots fine without it. Requiring it would gate deploys on a key the
         # app does not need. An empty JWT_SECRET in production must therefore NOT raise.
-        from config import Settings
-        s = Settings(ENVIRONMENT="production", LLM_API_KEY="k", LLM_BASE_URL="u",
-                     ADMIN_API_KEY="a", JWT_SECRET="", DATABASE_URL="postgresql://x")
+        s = _production_settings(LLM_BASE_URL="u", JWT_SECRET="",
+                                 DATABASE_URL="postgresql://x")
         assert s.JWT_SECRET == ""
         assert s.is_production is True
 

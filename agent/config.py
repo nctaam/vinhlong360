@@ -13,6 +13,13 @@ from dotenv import load_dotenv
 from pydantic import model_validator
 from pydantic_settings import BaseSettings
 
+POSTGRES_URL_PREFIXES = ("postgres://", "postgresql://")
+
+
+def is_postgresql_url(value: str) -> bool:
+    return value.strip().lower().startswith(POSTGRES_URL_PREFIXES)
+
+
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 
@@ -26,6 +33,7 @@ class Settings(BaseSettings):
 
     # ── Database ──
     DATABASE_URL: str = ""
+    ENTITY_DETAILS_TABLES: bool = False
     REDIS_URL: str = ""
 
     # ── Security ──
@@ -134,6 +142,10 @@ class Settings(BaseSettings):
             # JWT_SECRET: not yet used by any endpoint — skip until auth JWT is implemented
             if not self.DATABASE_URL:
                 missing.append("DATABASE_URL")
+            elif not is_postgresql_url(self.DATABASE_URL):
+                missing.append("DATABASE_URL (PostgreSQL required)")
+            if not self.ENTITY_DETAILS_TABLES:
+                missing.append("ENTITY_DETAILS_TABLES=true")
             if missing:
                 raise ValueError(f"Production requires: {', '.join(missing)}")
         return self

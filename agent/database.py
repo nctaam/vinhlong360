@@ -24,6 +24,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from threading import Lock
 
+from config import is_postgresql_url
+
 logger = logging.getLogger(__name__)
 
 # ── Config ──
@@ -33,7 +35,7 @@ DB_DIR.mkdir(exist_ok=True)
 DB_PATH = DB_DIR / "vinhlong360.db"
 
 DATABASE_URL = os.getenv("DATABASE_URL", "")
-USE_PG = DATABASE_URL.startswith("postgresql")
+USE_PG = is_postgresql_url(DATABASE_URL)
 
 RELATIONSHIP_TYPE_PRIORITY = {
     "hosts": 0,
