@@ -1,6 +1,6 @@
 # Trust And Erasure Closure Design
 
-> STATUS (2026-07-29): active - design approved in-session; awaiting final written-spec review before implementation planning.
+> STATUS (2026-07-29): active - design approved; both implementation plans drafted and awaiting explicit plan approval before implementation.
 
 ## Goal
 
