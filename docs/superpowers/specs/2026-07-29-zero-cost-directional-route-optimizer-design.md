@@ -1,6 +1,6 @@
 # Bộ tối ưu thứ tự điểm dừng có hướng, không tăng chi phí
 
-> STATUS: active
+> STATUS: done
 
 **Ngày:** 2026-07-29
 **Phạm vi:** Đợt 1 - lõi tối ưu dùng chung, API công khai và trang tạo lịch trình thủ công
