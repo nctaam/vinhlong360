@@ -3,7 +3,7 @@
 > **STATUS (2026-07-07): active — đã truth-sync.** Type enum synced to the 18-type registry; auth/admin path prefixes corrected to the actual routes (`/auth/*`, `/admin/*`); 2FA/trusted-devices endpoints added.
 
 Date: 2026-06-12 (updated 2026-07-30)
-Status: Production — reflects actual endpoints
+Status: Baseline endpoints reflect production; the Phase 2A schedule contract is implemented locally, default-off, and not deployed.
 
 This contract defines the data shapes and API endpoints shared between the FastAPI backend (`agent/`) and the Nuxt frontend (`web-nuxt/`).
 
@@ -179,8 +179,9 @@ Request rules:
 
 - Outer `stops` contains 2-20 unique IDs and `[lat, lng]` coordinates. `strict_direction` defaults to `true`; `blocked_edges` defaults to `[]`.
 - `schedule` is optional. Its defaults are `day_start_minute=480`, `day_end_minute=1080`, `mode="driving"`, `visit_minutes=60`, and `required=true`; supported modes are `driving`, `cycling`, and `foot`.
+- `day_start_minute` and `day_end_minute` must each be within `0..1440`, with `day_end_minute > day_start_minute`. Each `visit_minutes` value must be within `0..720`. Violations return HTTP 422.
 - Nested schedule IDs must be an exact permutation of the outer stop IDs. The nested first and last IDs must match the outer first and last IDs, and both endpoints must be required.
-- `duration_matrix_minutes`, when present, must be square, match the nested stop count/order, contain finite non-negative minutes or `null` off the diagonal, and contain `0` on the diagonal.
+- `duration_matrix_minutes` may be omitted or explicitly `null`; either form selects the local Haversine fallback. When non-null, it must be square, match the nested stop count/order, contain finite non-negative minutes or `null` only in off-diagonal cells, and contain `0` on the diagonal.
 - `requested_time` accepts the supported local range grammar (for example `09:00-10:30`, `9h-10h`, or `9h00-10h30`). It is a hard window. When `opening_hours` also supplies trusted windows, the scheduler uses their intersection. An invalid `requested_time` or invalid envelope returns HTTP 422.
 - Travel applies on the first hop. With the matrix fixture above, the `early` placement arrives and begins at minute `490`, not `480`.
 
@@ -205,7 +206,7 @@ On schedule success, the normal order response adds the optional `schedule` obje
 
 Fallback and compatibility rules:
 
-- If `duration_matrix_minutes` is omitted, the server builds a local Haversine matrix using the requested mode; successful responses report `matrix_source: "haversine-fallback"`. No paid routing service or new dependency is used.
+- If `duration_matrix_minutes` is omitted or explicitly `null`, the server builds a local Haversine matrix using the requested mode; successful responses report `matrix_source: "haversine-fallback"`. No paid routing service or new dependency is used.
 - An impossible required schedule returns HTTP 409 with a reason and no partial schedule. Optional stops may be omitted only with entries in `schedule.skipped` that include a `reason`.
 - If the scheduling implementation fails unexpectedly, the endpoint retries through the established order-only optimizer. A successful fallback has no `schedule` field and includes `schedule-fallback-order-only` in `warnings`; it never returns a partial schedule.
 - The manual planner feature flag is default-off. Only `NUXT_PUBLIC_ITINERARY_SCHEDULE_V2=1` exposes `runtimeConfig.public.itineraryScheduleV2=true`; flag-off requests remain order-only and make no Table request.
