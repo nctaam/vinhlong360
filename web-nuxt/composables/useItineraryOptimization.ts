@@ -184,6 +184,18 @@ export interface PlannerOptimizationCommitCallbacks<T extends StopWithCoords> {
   updateMap: (route: RouteResult | null) => Promise<void> | void
 }
 
+export interface RouteRefreshTimer {
+  schedule: (callback: () => void, delayMs: number) => unknown
+  cancel: (handle: unknown) => void
+}
+
+export interface SuspendedRouteScheduler {
+  request: () => void
+  resume: () => void
+  cancelScheduled: () => void
+  discardPending: () => void
+}
+
 type RouteTableCacheEntry = {
   expiresAt: number | null
   promise: Promise<RouteTableResult | null>
@@ -192,6 +204,11 @@ type RouteTableCacheEntry = {
 const ROUTE_TABLE_CACHE_TTL_MS = 15 * 60 * 1000
 const ROUTE_TABLE_CACHE_MAX_KEYS = 16
 const routeTableCache = new Map<string, RouteTableCacheEntry>()
+
+const defaultRouteRefreshTimer: RouteRefreshTimer = {
+  schedule: (callback, delayMs) => setTimeout(callback, delayMs),
+  cancel: handle => clearTimeout(handle as ReturnType<typeof setTimeout>),
+}
 
 const DEFAULT_VISIT_MINUTES: Record<string, number> = {
   accommodation: 0,
@@ -212,6 +229,54 @@ const REQUESTED_TIME_PATTERN = new RegExp(`^\\s*${TIME_RANGE_SOURCE}\\s*$`)
 const OPENING_HOURS_PATTERN = new RegExp(TIME_RANGE_SOURCE, 'g')
 const HOURS_DURATION_PATTERN = /(\d+(?:[.,]\d+)?)\s*(?:giờ|gio|hours?|hrs?|h)\b/i
 const MINUTES_DURATION_PATTERN = /(\d+(?:[.,]\d+)?)\s*(?:phút|phut|minutes?|mins?)\b/i
+
+export function createSuspendedRouteScheduler(
+  refresh: () => Promise<void> | void,
+  isSuspended: () => boolean,
+  delayMs = 400,
+  timer: RouteRefreshTimer = defaultRouteRefreshTimer,
+): SuspendedRouteScheduler {
+  let scheduledHandle: unknown
+  let hasScheduledHandle = false
+  let pending = false
+
+  const cancelScheduled = () => {
+    if (!hasScheduledHandle) return
+    timer.cancel(scheduledHandle)
+    scheduledHandle = undefined
+    hasScheduledHandle = false
+  }
+
+  const scheduleRefresh = () => {
+    cancelScheduled()
+    scheduledHandle = timer.schedule(() => {
+      scheduledHandle = undefined
+      hasScheduledHandle = false
+      void refresh()
+    }, delayMs)
+    hasScheduledHandle = true
+  }
+
+  return {
+    request: () => {
+      if (isSuspended()) {
+        pending = true
+        return
+      }
+      pending = false
+      scheduleRefresh()
+    },
+    resume: () => {
+      if (!pending || isSuspended()) return
+      pending = false
+      scheduleRefresh()
+    },
+    cancelScheduled,
+    discardPending: () => {
+      pending = false
+    },
+  }
+}
 
 function minuteOfDay(hourText: string, minuteText?: string): number | null {
   const hour = Number(hourText)
@@ -455,36 +520,42 @@ export async function runPlannerOptimization<
   options: PlannerOptimizationOptions<T>,
 ): Promise<PlannerOptimizationResult<T>> {
   const inputVersion = options.inputState.version
-  let scheduleEnvelope: OptimizeScheduleRequest | undefined
-  let scheduleWarnings: string[] = []
-  if (options.scheduleEnabled) {
-    const coordinates = options.routed.map(item => item.coordinates)
-    const table = await getCachedRouteTable(
-      routeTableCacheKey(coordinates, options.mode),
-      () => options.fetchTable(coordinates, options.mode),
-    )
-    const prepared = buildPlannerScheduleEnvelope(
-      options.routed,
-      options.metadataByStop,
-      options.mode,
-      table,
-    )
-    scheduleEnvelope = prepared.envelope
-    scheduleWarnings = prepared.warnings
-    if (!table) scheduleWarnings.push('route-table-unavailable')
-  }
+  try {
+    let scheduleEnvelope: OptimizeScheduleRequest | undefined
+    let scheduleWarnings: string[] = []
+    if (options.scheduleEnabled) {
+      const coordinates = options.routed.map(item => item.coordinates)
+      const table = await getCachedRouteTable(
+        routeTableCacheKey(coordinates, options.mode),
+        () => options.fetchTable(coordinates, options.mode),
+      )
+      const prepared = buildPlannerScheduleEnvelope(
+        options.routed,
+        options.metadataByStop,
+        options.mode,
+        table,
+      )
+      scheduleEnvelope = prepared.envelope
+      scheduleWarnings = prepared.warnings
+      if (!table) scheduleWarnings.push('route-table-unavailable')
+    }
 
-  const outcome = await runBoundedOptimization(
-    options.routed,
-    (routed, blockedEdges) => options.requestOptimization(
-      routed,
-      blockedEdges,
-      scheduleEnvelope,
-    ),
-    options.route,
-  )
-  if (options.inputState.version !== inputVersion) return { status: 'stale' }
-  return { status: 'current', outcome, scheduleEnvelope, scheduleWarnings }
+    const outcome = await runBoundedOptimization(
+      options.routed,
+      (routed, blockedEdges) => options.requestOptimization(
+        routed,
+        blockedEdges,
+        scheduleEnvelope,
+      ),
+      options.route,
+    )
+    if (options.inputState.version !== inputVersion) return { status: 'stale' }
+    return { status: 'current', outcome, scheduleEnvelope, scheduleWarnings }
+  }
+  catch (error) {
+    if (options.inputState.version !== inputVersion) return { status: 'stale' }
+    throw error
+  }
 }
 
 export async function commitPlannerOptimizationResult<

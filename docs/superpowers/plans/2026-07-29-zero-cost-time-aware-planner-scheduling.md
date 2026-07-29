@@ -1,6 +1,6 @@
 # Zero-Cost Time-Aware Planner Scheduling Implementation Plan
 
-> STATUS: active
+> STATUS: done - Phase 2A implementation and focused local verification are complete; Phase 2B and Phases 3-6 remain separate work, and no production deployment is claimed.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

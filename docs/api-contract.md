@@ -189,18 +189,24 @@ On schedule success, the normal order response adds the optional `schedule` obje
 
 ```json
 {
-  "placements": [
-    {"stop_id": "start", "arrival_minute": 480.0, "start_visit_minute": 480.0, "end_visit_minute": 480.0},
-    {"stop_id": "early", "arrival_minute": 490.0, "start_visit_minute": 490.0, "end_visit_minute": 520.0},
-    {"stop_id": "late", "arrival_minute": 540.0, "start_visit_minute": 600.0, "end_visit_minute": 630.0},
-    {"stop_id": "end", "arrival_minute": 650.0, "start_visit_minute": 650.0, "end_visit_minute": 650.0}
-  ],
-  "skipped": [],
-  "matrix_source": "request",
-  "total_travel_minutes": 50.0,
-  "waiting_minutes": 60.0,
-  "overtime_minutes": 0.0,
-  "minimum_slack_minutes": 50.0
+  "ordered_ids": ["start", "early", "late", "end"],
+  "warnings": [],
+  "schedule": {
+    "placements": [
+      {"stop_id": "start", "arrival_minute": 480.0, "start_visit_minute": 480.0, "end_visit_minute": 480.0},
+      {"stop_id": "early", "arrival_minute": 490.0, "start_visit_minute": 490.0, "end_visit_minute": 520.0},
+      {"stop_id": "late", "arrival_minute": 540.0, "start_visit_minute": 600.0, "end_visit_minute": 630.0},
+      {"stop_id": "end", "arrival_minute": 650.0, "start_visit_minute": 650.0, "end_visit_minute": 650.0}
+    ],
+    "skipped": [
+      {"stop_id": "optional", "reason": "day-window-overflow"}
+    ],
+    "matrix_source": "request",
+    "total_travel_minutes": 50.0,
+    "waiting_minutes": 60.0,
+    "overtime_minutes": 0.0,
+    "minimum_slack_minutes": 50.0
+  }
 }
 ```
 
@@ -210,7 +216,7 @@ Fallback and compatibility rules:
 - An impossible required schedule returns HTTP 409 with a reason and no partial schedule. Optional stops may be omitted only with entries in `schedule.skipped` that include a `reason`.
 - If the scheduling implementation fails unexpectedly, the endpoint retries through the established order-only optimizer. A successful fallback has no `schedule` field and includes `schedule-fallback-order-only` in `warnings`; it never returns a partial schedule.
 - The manual planner feature flag is default-off. Only `NUXT_PUBLIC_ITINERARY_SCHEDULE_V2=1` exposes `runtimeConfig.public.itineraryScheduleV2=true`; flag-off requests remain order-only and make no Table request.
-- For one user-triggered optimization fingerprint (transport mode plus stop coordinates rounded to five decimal places), the client performs at most one OSRM Table request, one initial OSRM route request, and one U-turn validation retry; background OSRM requests are zero. The same schedule envelope and matrix are reused through the bounded retry.
+- For one user-triggered optimization fingerprint (transport mode plus stop coordinates rounded to five decimal places), the client performs at most one OSRM Table request, one initial OSRM Route request, and one U-turn validation retry. This feature makes zero background OSRM Table requests; existing route watchers may still request OSRM Route after planner inputs change. The same schedule envelope and matrix are reused through the bounded retry.
 - Planner schedule metadata and returned placements are ephemeral `WeakMap` state. Saved `PlanStop` JSON remains exactly `id`, `name`, `type`, optional `place_name`, `coords`, `time`, and `notes`.
 
 ### Internal launch safety (private network only)

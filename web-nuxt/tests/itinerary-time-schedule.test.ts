@@ -13,6 +13,7 @@ import {
   buildPlannerScheduleEnvelope,
   collectRoutableStops,
   commitPlannerOptimizationResult,
+  createSuspendedRouteScheduler,
   enrichPlannerStopFromDetail,
   formatScheduledInterval,
   getCachedRouteTable,
@@ -581,6 +582,167 @@ describe('manual planner schedule integration', () => {
     expect(committed).toBeNull()
     expect(mutations).toEqual([])
     expect(inputState.version).toBe(5)
+  })
+
+  it('suppresses a rejected stale optimization before page error or status mutations', async () => {
+    const stops = [
+      { id: 'start', coords: [12.11, 108.11] as [number, number], time: '' },
+      { id: 'middle', coords: [12.12, 108.12] as [number, number], time: '' },
+      { id: 'end', coords: [12.13, 108.13] as [number, number], time: '' },
+    ]
+    const routed = collectRoutableStops(stops)
+    const metadataByStop = new WeakMap<object, PlannerScheduleMetadata>()
+    const inputState: PlannerInputState = { version: 6 }
+    let rejectRequest!: (reason: Error) => void
+    let markStarted!: () => void
+    const started = new Promise<void>((resolve) => { markStarted = resolve })
+    const deferredResponse = new Promise<OptimizeOrderResponse>((_resolve, reject) => {
+      rejectRequest = reject
+    })
+
+    const pending = runPlannerOptimization({
+      scheduleEnabled: false,
+      routed,
+      metadataByStop,
+      inputState,
+      mode: 'driving',
+      fetchTable: async () => cachedTable,
+      requestOptimization: async () => {
+        markStarted()
+        return deferredResponse
+      },
+      route: async coordinates => routeWithoutUturns(coordinates.length),
+    })
+
+    await started
+    invalidatePlannerInputs(inputState, stops, metadataByStop)
+    rejectRequest(new Error('old optimization failed'))
+
+    const pageMutations: string[] = []
+    const result = await pending.catch((error) => {
+      pageMutations.push('error-ui')
+      throw error
+    })
+    const committed = await commitPlannerOptimizationResult(result, {
+      applyPlacements: () => { pageMutations.push('placements') },
+      reorderStops: () => { pageMutations.push('reorder') },
+      applyRoute: () => { pageMutations.push('route-status') },
+      updateMap: async () => { pageMutations.push('map-status') },
+    })
+
+    expect(result).toEqual({ status: 'stale' })
+    expect(committed).toBeNull()
+    expect(pageMutations).toEqual([])
+    expect(inputState.version).toBe(7)
+  })
+
+  it('rethrows a rejected current optimization to the page error boundary', async () => {
+    const routed = collectRoutableStops([
+      { id: 'start', coords: [12.15, 108.15] as [number, number], time: '' },
+      { id: 'middle', coords: [12.16, 108.16] as [number, number], time: '' },
+      { id: 'end', coords: [12.17, 108.17] as [number, number], time: '' },
+    ])
+
+    await expect(runPlannerOptimization({
+      scheduleEnabled: false,
+      routed,
+      metadataByStop: new WeakMap<object, PlannerScheduleMetadata>(),
+      inputState: { version: 0 },
+      mode: 'driving',
+      fetchTable: async () => cachedTable,
+      requestOptimization: async () => {
+        throw new Error('current optimization failed')
+      },
+      route: async coordinates => routeWithoutUturns(coordinates.length),
+    })).rejects.toThrow('current optimization failed')
+  })
+
+  it('replays one pending route and map refresh after a stale coordinate change releases suspension', async () => {
+    const stops = [
+      { id: 'start', coords: [12.21, 108.21] as [number, number], time: '' },
+      { id: 'middle', coords: [12.22, 108.22] as [number, number], time: '' },
+      { id: 'end', coords: [12.23, 108.23] as [number, number], time: '' },
+    ]
+    const routed = collectRoutableStops(stops)
+    const metadataByStop = new WeakMap<object, PlannerScheduleMetadata>()
+    const inputState: PlannerInputState = { version: 8 }
+    let suspended = true
+    const scheduled: Array<() => void> = []
+    const refreshes: string[] = []
+    const routeScheduler = createSuspendedRouteScheduler(
+      async () => {
+        refreshes.push(`route:${stops[1]?.coords?.join(',')}`)
+        refreshes.push('map')
+      },
+      () => suspended,
+      400,
+      {
+        schedule: callback => {
+          scheduled.push(callback)
+          return callback
+        },
+        cancel: () => {},
+      },
+    )
+    let resolveRequest!: (value: OptimizeOrderResponse) => void
+    let markStarted!: () => void
+    const started = new Promise<void>((resolve) => { markStarted = resolve })
+    const deferredResponse = new Promise<OptimizeOrderResponse>((resolve) => {
+      resolveRequest = resolve
+    })
+    const pending = runPlannerOptimization({
+      scheduleEnabled: false,
+      routed,
+      metadataByStop,
+      inputState,
+      mode: 'driving',
+      fetchTable: async () => cachedTable,
+      requestOptimization: async () => {
+        markStarted()
+        return deferredResponse
+      },
+      route: async coordinates => routeWithoutUturns(coordinates.length),
+    })
+
+    await started
+    invalidatePlannerInputs(inputState, stops, metadataByStop)
+    stops[1]!.coords = [12.24, 108.24]
+    routeScheduler.request()
+    resolveRequest(orderResponse(routed.map(item => item.key)))
+
+    await expect(pending).resolves.toEqual({ status: 'stale' })
+    expect(scheduled).toEqual([])
+    suspended = false
+    routeScheduler.resume()
+    routeScheduler.resume()
+
+    expect(scheduled).toHaveLength(1)
+    await scheduled[0]?.()
+    expect(refreshes).toEqual(['route:12.24,108.24', 'map'])
+  })
+
+  it('can discard the optimizer commit watcher without spending another route request', () => {
+    let suspended = true
+    const scheduled: Array<() => void> = []
+    const routeScheduler = createSuspendedRouteScheduler(
+      () => {},
+      () => suspended,
+      400,
+      {
+        schedule: callback => {
+          scheduled.push(callback)
+          return callback
+        },
+        cancel: () => {},
+      },
+    )
+
+    routeScheduler.request()
+    routeScheduler.discardPending()
+    suspended = false
+    routeScheduler.resume()
+
+    expect(scheduled).toEqual([])
   })
 
   it('invalidates before applying changed coordinates and metadata from deferred detail enrichment', async () => {

@@ -214,6 +214,7 @@ import {
   applySchedulePlacements,
   collectRoutableStops,
   commitPlannerOptimizationResult,
+  createSuspendedRouteScheduler,
   enrichPlannerStopFromDetail,
   formatScheduledInterval,
   invalidatePlannerInputs,
@@ -633,8 +634,6 @@ function sharePlan(idx: number) {
 
 const formatDate = formatDateVN
 
-let routeTimer: ReturnType<typeof setTimeout> | null = null
-
 function plannerRouteLeg(stopIndex: number) {
   return routeLegForStopIndex(
     stopIndex,
@@ -698,7 +697,7 @@ async function optimizePlanRoute() {
   routeLoading.value = true
   routeError.value = false
   optimizationMessage.value = ''
-  if (routeTimer) clearTimeout(routeTimer)
+  autoRouteScheduler.cancelScheduled()
 
   try {
     const plannerResult = await runPlannerOptimization({
@@ -741,12 +740,9 @@ async function optimizePlanRoute() {
       },
     })
     if (!committedResult) {
-      optimizationMessage.value = 'Lịch trình đã thay đổi trong lúc tối ưu. Vui lòng bấm "Tối ưu tuyến" lại.'
-      stopAnnounce.value = ''
-      await nextTick()
-      stopAnnounce.value = optimizationMessage.value
       return
     }
+    autoRouteScheduler.discardPending()
     const { outcome } = committedResult
 
     const messages: string[] = []
@@ -796,6 +792,7 @@ async function optimizePlanRoute() {
     routeLoading.value = false
     await nextTick()
     suspendAutoRoute.value = false
+    autoRouteScheduler.resume()
     optimizing.value = false
   }
 }
@@ -816,10 +813,13 @@ async function computeRoute() {
   updateMap(result)
 }
 
+const autoRouteScheduler = createSuspendedRouteScheduler(
+  computeRoute,
+  () => suspendAutoRoute.value,
+)
+
 function scheduleRouteCalc() {
-  if (suspendAutoRoute.value) return
-  if (routeTimer) clearTimeout(routeTimer)
-  routeTimer = setTimeout(computeRoute, 400)
+  autoRouteScheduler.request()
 }
 
 let pendingUpdate = false
@@ -960,7 +960,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  if (routeTimer) clearTimeout(routeTimer)
+  autoRouteScheduler.cancelScheduled()
   if (addingTimer) clearTimeout(addingTimer)
   if (savePulseTimer) clearTimeout(savePulseTimer)
   if (mapInstance && typeof (mapInstance as any).remove === 'function') (mapInstance as any).remove()
