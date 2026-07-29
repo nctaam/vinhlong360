@@ -88,6 +88,7 @@ from policy_http import PolicyHttpMiddleware
 from itinerary_gen import generate_itinerary
 from scheduler import start_scheduler, stop_scheduler, scheduler_status, sync_data_json_to_js
 from chat_identity import resolve_chat_owner, set_chat_owner_cookie
+from owner_write_gate import owner_write_gate
 from feedback_policy import (
     FeedbackRejected,
     FeedbackUnavailable,
@@ -3042,6 +3043,7 @@ async def chat(req: ChatRequest, request: Request, response: Response):
     # Cache response (only if good quality)
     if cache_eligible and len(reply) > 30 and evaluation["score"] >= 5:
         cache_data = {"reply": reply, "tool_calls": tools_used, "suggestions": suggestions}
+        owner_write_gate.assert_writable(owner_key)
         cache.put(message, cache_data, owner_key=owner_key)
         # ── Semantic cache: store for embedding-based dedup ──
         if HAS_SEMANTIC_CACHE:
@@ -3717,6 +3719,7 @@ async def chat_stream(req: ChatRequest, request: Request):
                     cache_data = {"reply": full_text, "tool_calls": tools_used, "suggestions": suggestions}
                     # Lưu theo cache_query (khoá lúc cache.get) — không phải bản đã autocorrect,
                     # nếu không lần sau cùng câu gốc sẽ luôn MISS (đã sửa: stream cache key mismatch).
+                    owner_write_gate.assert_writable(owner_key)
                     cache.put(cache_query, cache_data, owner_key=owner_key)
                     # ── Semantic cache: store ──
                     if HAS_SEMANTIC_CACHE:

@@ -14,6 +14,7 @@ from datetime import datetime, timedelta, timezone
 from chat_identity import owner_binding_digest
 from config import settings
 from database import db
+from owner_write_gate import owner_key_for_user, owner_write_gate
 
 
 logger = logging.getLogger(__name__)
@@ -143,6 +144,8 @@ class PostgresFeedbackStore:
 
     def issue(self, record: _ReceiptRecord) -> None:
         self._require_postgres()
+        if record.user_id is not None:
+            owner_write_gate.assert_writable(owner_key_for_user(record.user_id))
         with db._conn() as conn:
             db._execute(
                 conn,

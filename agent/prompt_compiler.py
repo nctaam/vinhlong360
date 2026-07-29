@@ -25,6 +25,8 @@ import unicodedata
 from pathlib import Path
 from threading import Lock
 
+from owner_write_gate import owner_write_gate
+
 AGENT_DIR = Path(__file__).resolve().parent
 DEMO_DIR = AGENT_DIR / "data" / "optimizer"
 DEMO_DIR.mkdir(parents=True, exist_ok=True)
@@ -90,6 +92,7 @@ def record_demo(
     """Capture a high-scoring (query, answer) pair into the demo pool."""
     if score < MIN_SCORE or not answer or len(answer) < 80:
         return
+    owner_write_gate.assert_writable(owner_key)
     with _lock:
         pool = _load(RAW_FILE, [])
         pool.append({

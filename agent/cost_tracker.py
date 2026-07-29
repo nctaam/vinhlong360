@@ -27,6 +27,8 @@ from pathlib import Path
 from threading import Lock
 from typing import Any, Deque, Dict, List, Optional
 
+from owner_write_gate import owner_write_gate
+
 logger = logging.getLogger(__name__)
 
 DATA_DIR = Path(__file__).resolve().parent / "data"
@@ -248,6 +250,7 @@ class CostAttribution:
         cost: float,
     ) -> None:
         """Ghi nhan 1 LLM call voi chi phi."""
+        owner_write_gate.assert_writable(owner_key)
         entry = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),

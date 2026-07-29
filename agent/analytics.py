@@ -20,6 +20,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from threading import Lock
 
+from owner_write_gate import owner_write_gate
+
 logger = logging.getLogger(__name__)
 
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
@@ -78,6 +80,7 @@ def track_query(
     owner_key: str = "",
 ):
     """Ghi nhận 1 query từ user."""
+    owner_write_gate.assert_writable(owner_key)
     with _lock:
         data = _load()
         now = datetime.now(timezone.utc)
@@ -143,8 +146,11 @@ def track_session():
         _save(data)
 
 
-def save_conversation(session_id: str, messages: list[dict]):
+def save_conversation(
+    session_id: str, messages: list[dict], *, owner_key: str = ""
+):
     """Lưu lịch sử hội thoại."""
+    owner_write_gate.assert_writable(owner_key)
     try:
         filepath = CONVERSATIONS_DIR / f"{session_id}.json"
         tmp = filepath.with_suffix(".tmp")

@@ -26,6 +26,8 @@ import unicodedata
 from pathlib import Path
 from threading import Lock
 
+from owner_write_gate import owner_write_gate
+
 logger = logging.getLogger(__name__)
 
 AGENT_DIR = Path(__file__).resolve().parent
@@ -144,6 +146,7 @@ def record(
     else:
         return None  # middling — nothing to learn
 
+    owner_write_gate.assert_writable(owner_key)
     with _lock:
         items = _load()
         # Merge by (intent, polarity) — reinforce instead of duplicating

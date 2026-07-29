@@ -27,6 +27,8 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from threading import Lock
 
+from owner_write_gate import owner_write_gate
+
 logger = logging.getLogger(__name__)
 
 # ── Paths ────────────────────────────────────────────────────────────────────
@@ -181,6 +183,7 @@ class PerformanceCollector:
         owner_key: str = "",
     ) -> None:
         """Ghi nhan mot ket qua tuong tac."""
+        owner_write_gate.assert_writable(owner_key)
         entry = {
             "session_id": session_id,
             "owner_key": owner_key,

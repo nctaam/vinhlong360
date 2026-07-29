@@ -32,6 +32,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from threading import Lock
 
+from owner_write_gate import owner_write_gate
+
 logger = logging.getLogger(__name__)
 
 
@@ -396,6 +398,7 @@ class MemoryGraph:
           - user -> entity ("discussed") edges
           - entity <-> entity ("co_mentioned") edges for all pairs
         """
+        owner_write_gate.assert_writable(user_id)
         # Ensure user node exists
         self.add_node(user_id, type="user", properties={"name": user_id})
 
@@ -415,12 +418,14 @@ class MemoryGraph:
     def record_preference(self, user_id: str, entity_id: str,
                           score: float = 1.0):
         """Record user interest in an entity. Score is used as edge weight."""
+        owner_write_gate.assert_writable(user_id)
         self.add_node(user_id, type="user", properties={"name": user_id})
         self.add_node(entity_id, type="entity", properties={"name": entity_id})
         self.add_edge(user_id, entity_id, "interested_in", weight=score)
 
     def record_comparison(self, user_id: str, entity_a: str, entity_b: str):
         """Record that a user compared two entities."""
+        owner_write_gate.assert_writable(user_id)
         self.add_node(user_id, type="user", properties={"name": user_id})
         self.add_node(entity_a, type="entity", properties={"name": entity_a})
         self.add_node(entity_b, type="entity", properties={"name": entity_b})
@@ -762,6 +767,7 @@ class MemoryGraph:
         2. Extracts facts from the conversation
         3. Applies extracted facts to the graph
         """
+        owner_write_gate.assert_writable(user_id)
         # Record direct entity interactions
         if entities_mentioned:
             self.record_interaction(user_id, entities_mentioned, query=message)

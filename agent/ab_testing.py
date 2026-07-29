@@ -27,6 +27,8 @@ import time
 from pathlib import Path
 from threading import Lock
 
+from owner_write_gate import owner_write_gate
+
 logger = logging.getLogger(__name__)
 
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
@@ -294,6 +296,7 @@ class ABTestManager:
         Raises:
             KeyError: If experiment does not exist.
         """
+        owner_write_gate.assert_writable(owner_key)
         _ensure_defaults()
         with self._lock:
             exp = self._get_experiment(experiment_name)

@@ -28,6 +28,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from threading import Lock, RLock
 
+from owner_write_gate import owner_write_gate
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -363,6 +365,7 @@ class ColdMemory:
     def get_profile(self, user_id: str) -> UserProfile:
         with self._lock:
             if user_id not in self._profiles:
+                owner_write_gate.assert_writable(user_id)
                 self._profiles[user_id] = UserProfile(user_id)
             return self._profiles[user_id]
 
@@ -373,6 +376,7 @@ class ColdMemory:
 
     def update_profile_from_session(self, user_id: str, hot: HotMemory):
         """Merge hot memory insights into persistent profile."""
+        owner_write_gate.assert_writable(user_id)
         with self._lock:
             profile = self.get_profile(user_id)
             profile.last_seen = datetime.now(timezone.utc).isoformat()
@@ -409,6 +413,7 @@ class ColdMemory:
 
     def record_feedback(self, user_id: str, query: str, rating: int, entity_id: str = None):
         """Ghi nhận feedback (1-5 stars hoặc thumbs up/down 1/0)."""
+        owner_write_gate.assert_writable(user_id)
         with self._lock:
             profile = self.get_profile(user_id)
             profile.feedback_history.append({
@@ -431,6 +436,7 @@ class ColdMemory:
 
     def add_semantic_fact(self, user_id: str, fact: str):
         """Thêm fact đã học về user (ví dụ: 'Thích ăn chay', 'Sợ nước')."""
+        owner_write_gate.assert_writable(user_id)
         with self._lock:
             profile = self.get_profile(user_id)
             if fact not in profile.semantic_facts:
@@ -915,6 +921,7 @@ class MemoryExtractor:
         # ── Persist to ColdMemory ────────────────────
 
         if user_id:
+            owner_write_gate.assert_writable(user_id)
             with cold_memory._lock:
                 profile = cold_memory.get_profile(user_id)
 
@@ -965,6 +972,7 @@ class MemoryManager:
         """Create a high-entropy conversation scoped to one server-derived owner."""
         session_id = secrets.token_hex(16)
         key = (owner_key, session_id)
+        owner_write_gate.assert_writable(owner_key)
         with self._lock:
             if len(self._sessions) >= self._MAX_SESSIONS:
                 oldest_key = min(self._sessions, key=lambda k: self._sessions[k].last_active)
@@ -1011,11 +1019,13 @@ class MemoryManager:
 
     def on_message(self, owner_key: str, session_id: str, role: str, content: str):
         """Ghi nhận tin nhắn mới."""
+        owner_write_gate.assert_writable(owner_key)
         session = self.require_session(owner_key, session_id)
         session.add_message(role, content)
 
     def on_entity_discussed(self, owner_key: str, session_id: str, entity_id: str):
         """Ghi nhận entity được thảo luận."""
+        owner_write_gate.assert_writable(owner_key)
         session = self.require_session(owner_key, session_id)
         if entity_id not in session.entities_discussed:
             session.entities_discussed.append(entity_id)
@@ -1024,6 +1034,7 @@ class MemoryManager:
         """Merge session insights vào cold memory."""
         key = (owner_key, session_id)
         if key in self._sessions and owner_key:
+            owner_write_gate.assert_writable(owner_key)
             self.cold.update_profile_from_session(owner_key, self._sessions[key])
 
     def on_chat_complete(
@@ -1043,6 +1054,7 @@ class MemoryManager:
 
         Returns the extraction summary dict from MemoryExtractor.
         """
+        owner_write_gate.assert_writable(owner_key)
         return self.extractor.on_conversation_turn(
             session_id=session_id,
             user_id=owner_key,
@@ -1058,6 +1070,7 @@ class MemoryManager:
 
     def feedback(self, user_id: str, query: str, rating: int, entity_id: str = None):
         """User feedback on a response."""
+        owner_write_gate.assert_writable(user_id)
         self.cold.record_feedback(user_id, query, rating, entity_id)
 
     def cleanup_stale_sessions(self, max_age_seconds: int = 3600):
