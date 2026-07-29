@@ -6,6 +6,7 @@ import type {
   PreferenceAgeBand,
   PreferenceLocationAccuracy,
   PreferenceLocationSource,
+  PreferenceMutationResult,
   PreferencePatch,
   PreferenceRegionChoice,
   PreferenceRegionScope,
@@ -122,63 +123,110 @@ function conflictSnapshot(error: unknown): PreferenceSnapshot | null {
 }
 
 export function usePersonalizationPreferences() {
-  const { isLoggedIn, authHeaders, fetchCsrf } = useAuth()
+  const { user, isLoggedIn, authHeaders, fetchCsrf } = useAuth()
   const snapshot = useState<PreferenceSnapshot>('personalization-preferences-snapshot', emptyPreferenceSnapshot)
   const loading = useState<boolean>('personalization-preferences-loading', () => false)
   const error = useState<string | null>('personalization-preferences-error', () => null)
+  const ownerId = useState<string | null>('personalization-preferences-owner', () => null)
+  const generation = useState<number>('personalization-preferences-generation', () => 0)
 
-  async function refresh() {
-    if (!isLoggedIn.value) {
+  function currentOwner(): string | null {
+    return isLoggedIn.value ? user.value?.id || null : null
+  }
+
+  function syncOwner(): string | null {
+    const owner = currentOwner()
+    if (ownerId.value !== owner) {
+      ownerId.value = owner
       snapshot.value = emptyPreferenceSnapshot()
+      loading.value = false
       error.value = null
-      return
+      generation.value += 1
     }
+    return owner
+  }
+
+  function beginOperation(owner: string) {
+    const token = generation.value + 1
+    generation.value = token
     loading.value = true
     error.value = null
+    return { owner, token }
+  }
+
+  function isCurrent(operation: { owner: string; token: number }) {
+    if (ownerId.value !== currentOwner()) syncOwner()
+    return generation.value === operation.token
+      && ownerId.value === operation.owner
+      && currentOwner() === operation.owner
+  }
+
+  function mutationResult(ok: boolean): PreferenceMutationResult {
+    return { ok, snapshot: snapshot.value }
+  }
+
+  syncOwner()
+  watch(() => [isLoggedIn.value, user.value?.id] as const, syncOwner)
+
+  async function refresh(): Promise<boolean> {
+    const owner = syncOwner()
+    if (!owner) return false
+    const operation = beginOperation(owner)
     try {
       const response = await apiFetch<unknown>('/api/me/preferences', {
         credentials: 'include',
         headers: authHeaders(),
       })
+      if (!isCurrent(operation)) return false
       snapshot.value = normalizeSnapshot(response)
+      return true
     } catch (reason) {
-      error.value = errorMessage(reason, 'Không thể tải thiết lập cá nhân hóa.')
+      if (isCurrent(operation)) {
+        error.value = errorMessage(reason, 'Không thể tải thiết lập cá nhân hóa.')
+      }
+      return false
     } finally {
-      loading.value = false
+      if (isCurrent(operation)) loading.value = false
     }
   }
 
-  async function patch(values: PreferencePatch) {
-    if (!isLoggedIn.value) return snapshot.value
-    loading.value = true
-    error.value = null
+  async function patch(values: PreferencePatch): Promise<PreferenceMutationResult> {
+    const owner = syncOwner()
+    if (!owner) return mutationResult(false)
+    const operation = beginOperation(owner)
+    const revision = snapshot.value.revision
     try {
       await fetchCsrf()
+      if (!isCurrent(operation)) return mutationResult(false)
       const response = await apiFetch<unknown>('/api/me/preferences', {
         method: 'PATCH',
         credentials: 'include',
         headers: authHeaders(),
-        body: { ...values, revision: snapshot.value.revision },
+        body: { ...values, revision },
       })
+      if (!isCurrent(operation)) return mutationResult(false)
       const normalized = normalizeSnapshot(response)
       snapshot.value = normalized
-      return normalized
+      return mutationResult(true)
     } catch (reason) {
-      const current = conflictSnapshot(reason)
-      if (current) snapshot.value = current
-      error.value = errorMessage(reason, 'Không thể lưu thiết lập cá nhân hóa.')
-      return snapshot.value
+      if (isCurrent(operation)) {
+        const current = conflictSnapshot(reason)
+        if (current) snapshot.value = current
+        error.value = errorMessage(reason, 'Không thể lưu thiết lập cá nhân hóa.')
+      }
+      return mutationResult(false)
     } finally {
-      loading.value = false
+      if (isCurrent(operation)) loading.value = false
     }
   }
 
   async function resolveLocation(mode: Extract<PreferenceLocationSource, 'gps' | 'ip'>, coords?: GpsCoordinates) {
-    if (!isLoggedIn.value) return normalizeResolution(null, mode)
-    loading.value = true
-    error.value = null
+    const owner = syncOwner()
+    if (!owner) return normalizeResolution(null, mode)
+    const operation = beginOperation(owner)
     try {
       await fetchCsrf()
+      if (!isCurrent(operation)) return normalizeResolution(null, mode)
       const body = mode === 'gps'
         ? { mode, latitude: coords?.latitude, longitude: coords?.longitude }
         : { mode }
@@ -188,34 +236,39 @@ export function usePersonalizationPreferences() {
         headers: authHeaders(),
         body,
       })
+      if (!isCurrent(operation)) return normalizeResolution(null, mode)
       return normalizeResolution(response, mode)
     } catch {
-      error.value = 'Không thể xác định khu vực lúc này.'
+      if (isCurrent(operation)) error.value = 'Không thể xác định khu vực lúc này.'
       return normalizeResolution(null, mode)
     } finally {
-      loading.value = false
+      if (isCurrent(operation)) loading.value = false
     }
   }
 
-  async function resetRecommendations() {
-    if (!isLoggedIn.value) return snapshot.value
-    loading.value = true
-    error.value = null
+  async function resetRecommendations(): Promise<PreferenceMutationResult> {
+    const owner = syncOwner()
+    if (!owner) return mutationResult(false)
+    const operation = beginOperation(owner)
     try {
       await fetchCsrf()
+      if (!isCurrent(operation)) return mutationResult(false)
       const response = await apiFetch<unknown>('/api/me/recommendations/reset', {
         method: 'POST',
         credentials: 'include',
         headers: authHeaders(),
       })
+      if (!isCurrent(operation)) return mutationResult(false)
       const normalized = normalizeSnapshot(response)
       snapshot.value = normalized
-      return normalized
+      return mutationResult(true)
     } catch (reason) {
-      error.value = errorMessage(reason, 'Không thể đặt lại đề xuất lúc này.')
-      return snapshot.value
+      if (isCurrent(operation)) {
+        error.value = errorMessage(reason, 'Không thể đặt lại đề xuất lúc này.')
+      }
+      return mutationResult(false)
     } finally {
-      loading.value = false
+      if (isCurrent(operation)) loading.value = false
     }
   }
 

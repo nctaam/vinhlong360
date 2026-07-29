@@ -41,7 +41,7 @@ import PersonalizeSetupSheet from './PersonalizeSetupSheet.vue'
 import { mergeOnboarding } from '~/utils/onboardingContent'
 const { enabled: ff } = useFeature()
 const { get: ss } = useSiteSettings()
-const { isLoggedIn } = useAuth()
+const { isLoggedIn, user } = useAuth()
 const preferences = usePersonalizationPreferences()
 const visible = ref(false)
 const personalizeVisible = ref(false)
@@ -76,12 +76,15 @@ function scheduleWelcome() {
 
 async function maybePromptPersonalization() {
   if (!ff('onboarding')) return
+  const owner = user.value?.id
+  if (!isLoggedIn.value || !owner) return
   visible.value = false
   if (welcomeTimer) {
     clearTimeout(welcomeTimer)
     welcomeTimer = null
   }
-  await preferences.refresh()
+  const refreshed = await preferences.refresh()
+  if (!refreshed || !isLoggedIn.value || user.value?.id !== owner) return
   const snapshot = preferences.snapshot.value
   const hasExplicitPreference = snapshot.location_source === 'manual'
     || !!snapshot.region_id

@@ -14,6 +14,7 @@ const API_REGIONS: Record<Exclude<RegionSlug, 'all'>, PreferenceRegionChoice> = 
 }
 
 function regionFromSnapshot(snapshot: PreferenceSnapshot): RegionSlug {
+  if ((snapshot.location_source === 'gps' || snapshot.location_source === 'ip') && !snapshot.location_enabled) return 'all'
   if (snapshot.region_id === 'province-vl') return 'vinh-long'
   if (snapshot.region_id === 'province-bt') return 'ben-tre'
   if (snapshot.region_id === 'province-tv') return 'tra-vinh'

@@ -4,13 +4,14 @@ import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h, nextTick } from 'vue'
 
+import OnboardingSheet from '../components/OnboardingSheet.vue'
 import PersonalizeSetupSheet from '../components/PersonalizeSetupSheet.vue'
 import { usePersonalizationPreferences } from '../composables/usePersonalizationPreferences'
 import type { PreferenceSnapshot } from '../types/personalization'
 
 const apiFetchMock = vi.hoisted(() => vi.fn())
 const authState = vi.hoisted(() => ({
-  user: { value: { id: 'user-1' } },
+  user: { value: { id: 'user-1' } as { id: string } | null },
   isLoggedIn: { value: true },
   authHeaders: vi.fn(() => ({ Authorization: 'Bearer test-token' })),
   fetchCsrf: vi.fn(() => Promise.resolve('csrf-token')),
@@ -19,6 +20,8 @@ const authState = vi.hoisted(() => ({
 
 vi.mock('../utils/apiFetch', () => ({ apiFetch: apiFetchMock }))
 mockNuxtImport('useAuth', () => () => authState)
+mockNuxtImport('useFeature', () => () => ({ enabled: () => true }))
+mockNuxtImport('useSiteSettings', () => () => ({ get: () => ({}) }))
 
 const defaultSnapshot: PreferenceSnapshot = {
   region_id: null,
@@ -42,6 +45,12 @@ function snapshot(overrides: Partial<PreferenceSnapshot> = {}): PreferenceSnapsh
 function apiResultFor(url: string, opts?: Record<string, unknown>) {
   if (url === '/api/me/preferences' && !opts?.method) return Promise.resolve(snapshot())
   return Promise.resolve(snapshot({ revision: 1 }))
+}
+
+function deferred<T>() {
+  let resolve!: (value: T) => void
+  const promise = new Promise<T>((next) => { resolve = next })
+  return { promise, resolve }
 }
 
 async function flushUi() {
@@ -111,7 +120,7 @@ describe('usePersonalizationPreferences contract', () => {
     })
     await mountSuspended(Harness)
 
-    await expect(preferences!.refresh()).resolves.toBeUndefined()
+    await expect(preferences!.refresh()).resolves.toBe(true)
 
     expect(preferences!.snapshot.value.region_id).toBeNull()
     expect(preferences!.snapshot.value.region_scope).toBe('unknown')
@@ -209,6 +218,128 @@ describe('usePersonalizationPreferences contract', () => {
 
     const patch = apiFetchMock.mock.calls.at(-1)?.[1]?.body
     expect(patch).toMatchObject({ explicit_interests: ['food', 'culture', 'garden'] })
+  })
+
+  it('keeps a newer patch when an older refresh resolves last', async () => {
+    const staleRefresh = deferred<PreferenceSnapshot>()
+    const patched = snapshot({
+      region_id: 'province-vl',
+      region_label: 'Vĩnh Long',
+      region_scope: 'province',
+      location_source: 'manual',
+      location_accuracy: 'province',
+      revision: 3,
+    })
+    apiFetchMock.mockImplementation((url: string, opts?: Record<string, unknown>) => {
+      if (url === '/api/me/preferences' && !opts?.method) return staleRefresh.promise
+      return Promise.resolve(patched)
+    })
+
+    let preferences: ReturnType<typeof usePersonalizationPreferences> | undefined
+    const Harness = defineComponent({
+      setup() {
+        preferences = usePersonalizationPreferences()
+        return () => h('div')
+      },
+    })
+    await mountSuspended(Harness)
+
+    const refreshPromise = preferences!.refresh()
+    const patchResult = await preferences!.setRegion({ id: 'province-vl', label: 'Vĩnh Long', scope: 'province' })
+    staleRefresh.resolve(snapshot({ revision: 1 }))
+    await refreshPromise
+
+    expect(patchResult).toEqual({ ok: true, snapshot: patched })
+    expect(preferences!.snapshot.value).toEqual(patched)
+  })
+
+  it('resets owner state and ignores a previous account response after an account switch', async () => {
+    const previousOwner = deferred<PreferenceSnapshot>()
+    const nextOwner = deferred<PreferenceSnapshot>()
+    apiFetchMock
+      .mockImplementationOnce(() => previousOwner.promise)
+      .mockImplementationOnce(() => nextOwner.promise)
+
+    let preferences: ReturnType<typeof usePersonalizationPreferences> | undefined
+    const Harness = defineComponent({
+      setup() {
+        preferences = usePersonalizationPreferences()
+        return () => h('div')
+      },
+    })
+    await mountSuspended(Harness)
+
+    const previousRefresh = preferences!.refresh()
+    authState.user.value = { id: 'user-2' }
+    const nextRefresh = preferences!.refresh()
+
+    expect(preferences!.snapshot.value).toEqual(defaultSnapshot)
+
+    const userTwoSnapshot = snapshot({
+      region_id: 'province-bt',
+      region_label: 'Bến Tre',
+      region_scope: 'province',
+      location_source: 'manual',
+      location_accuracy: 'province',
+      revision: 8,
+    })
+    nextOwner.resolve(userTwoSnapshot)
+    await nextRefresh
+    previousOwner.resolve(snapshot({
+      region_id: 'province-vl',
+      region_label: 'Vĩnh Long',
+      region_scope: 'province',
+      location_source: 'manual',
+      location_accuracy: 'province',
+      revision: 4,
+    }))
+    await previousRefresh
+
+    expect(preferences!.snapshot.value).toEqual(userTwoSnapshot)
+
+    authState.isLoggedIn.value = false
+    authState.user.value = null
+    await expect(preferences!.refresh()).resolves.toBe(false)
+    expect(preferences!.snapshot.value).toEqual(defaultSnapshot)
+  })
+
+  it('returns an explicit failed mutation result when a preference patch is rejected', async () => {
+    apiFetchMock
+      .mockResolvedValueOnce(defaultSnapshot)
+      .mockRejectedValueOnce(new Error('save failed'))
+
+    let preferences: ReturnType<typeof usePersonalizationPreferences> | undefined
+    const Harness = defineComponent({
+      setup() {
+        preferences = usePersonalizationPreferences()
+        return () => h('div')
+      },
+    })
+    await mountSuspended(Harness)
+
+    await preferences!.refresh()
+    const result = await preferences!.setRegion({ id: 'province-vl', label: 'Vĩnh Long', scope: 'province' })
+
+    expect(result).toEqual({ ok: false, snapshot: defaultSnapshot })
+    expect(preferences!.error.value).toBe('Không thể lưu thiết lập cá nhân hóa.')
+  })
+
+  it('does not open personalization for a different user after refresh completes', async () => {
+    const pendingRefresh = deferred<PreferenceSnapshot>()
+    apiFetchMock.mockReturnValueOnce(pendingRefresh.promise)
+
+    const wrapper = await mountSuspended(OnboardingSheet, {
+      attachTo: document.body,
+      global: { stubs: { IconLine: true } },
+    })
+    await flushUi()
+
+    authState.user.value = { id: 'user-2' }
+    pendingRefresh.resolve(snapshot())
+    await flushUi()
+
+    expect(document.body.querySelector('[aria-label="Thiết lập khu vực và sở thích"]')).toBeNull()
+    wrapper.unmount()
   })
 
   it('does not request geolocation until the location action is clicked', async () => {

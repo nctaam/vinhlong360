@@ -48,7 +48,7 @@
 
           <div class="personalize-body">
             <div v-if="currentStep === 0" class="setup-panel" data-panel="region">
-              <div class="setup-option-grid" role="listbox" aria-label="Chọn khu vực ưu tiên">
+              <div class="setup-option-grid" role="group" aria-label="Chọn khu vực ưu tiên">
                 <button
                   v-for="region in regions"
                   :key="region.id || 'all'"
@@ -56,8 +56,7 @@
                   class="setup-option"
                   :class="{ selected: selectedRegion?.id === region.id }"
                   :data-region="region.id || 'all'"
-                  :aria-selected="selectedRegion?.id === region.id"
-                  role="option"
+                  :aria-pressed="selectedRegion?.id === region.id"
                   @click="selectedRegion = region"
                 >
                   <IconLine :name="region.icon" aria-hidden="true" />
@@ -161,6 +160,7 @@ const emit = defineEmits<{
 }>()
 
 const preferences = usePersonalizationPreferences()
+const { user, isLoggedIn } = useAuth()
 const visible = computed({
   get: () => props.modelValue,
   set: (value: boolean) => emit('update:modelValue', value),
@@ -172,6 +172,7 @@ const selectedInterests = ref<string[]>([])
 const locationAttempted = ref(false)
 const locationState = ref<'idle' | 'loading' | 'resolved' | 'denied' | 'unknown'>('idle')
 const resolvedLocation = ref<LocationResolution | null>(null)
+const attemptGeneration = ref(0)
 
 const steps = [
   { key: 'region', label: 'Khu vực', title: 'Bạn muốn bắt đầu từ đâu?', description: 'Chọn một khu vực để sắp xếp nội dung gần với bạn hơn.', icon: 'pin' },
@@ -213,6 +214,7 @@ const sourceLabel = computed(() => {
 useModalA11y(visible, sheetEl, { onClose: skip })
 
 watch(() => props.modelValue, (open) => {
+  attemptGeneration.value += 1
   if (!open) {
     currentStep.value = 0
     selectedRegion.value = null
@@ -225,12 +227,16 @@ watch(() => props.modelValue, (open) => {
 
 async function continueStep() {
   if (currentStep.value === 0) {
-    if (selectedRegion.value) await preferences.setRegion(selectedRegion.value)
+    if (selectedRegion.value) {
+      const result = await preferences.setRegion(selectedRegion.value)
+      if (!result.ok) return
+    }
     currentStep.value = 1
     return
   }
   if (currentStep.value === 1) {
-    await preferences.setInterests(selectedInterests.value)
+    const result = await preferences.setInterests(selectedInterests.value)
+    if (!result.ok) return
     currentStep.value = 2
   }
 }
@@ -246,6 +252,12 @@ function toggleInterest(key: string) {
 function useLocation() {
   if (locationAttempted.value) return
   locationAttempted.value = true
+  const owner = user.value?.id
+  const attempt = ++attemptGeneration.value
+  if (!isLoggedIn.value || !owner) {
+    locationState.value = 'unknown'
+    return
+  }
   if (!import.meta.client || !navigator.geolocation) {
     locationState.value = 'unknown'
     return
@@ -253,14 +265,17 @@ function useLocation() {
   locationState.value = 'loading'
   navigator.geolocation.getCurrentPosition(
     async (position) => {
+      if (!isActiveAttempt(attempt, owner)) return
       const result = await preferences.resolveLocation('gps', {
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,
       })
+      if (!isActiveAttempt(attempt, owner)) return
       resolvedLocation.value = result
       locationState.value = result.region_id ? 'resolved' : 'unknown'
     },
     async () => {
+      if (!isActiveAttempt(attempt, owner)) return
       locationState.value = 'denied'
       await preferences.patch({ location_enabled: false, location_consent_state: 'denied' })
     },
@@ -268,12 +283,19 @@ function useLocation() {
   )
 }
 
+function isActiveAttempt(attempt: number, owner: string) {
+  return attemptGeneration.value === attempt
+    && visible.value
+    && isLoggedIn.value
+    && user.value?.id === owner
+}
+
 async function confirmLocation() {
   const result = resolvedLocation.value
   if (!result?.region_id) return finish()
   const current = preferences.snapshot.value
-  const keepsManualRegion = current.location_source === 'manual' && !!current.region_id
-  await preferences.patch(keepsManualRegion
+  const keepsManualRegion = current.location_source === 'manual'
+  const mutation = await preferences.patch(keepsManualRegion
     ? { location_consent_state: 'granted', location_enabled: true }
     : {
         region_id: result.region_id,
@@ -284,7 +306,7 @@ async function confirmLocation() {
         location_consent_state: 'granted',
         location_enabled: true,
       })
-  finish()
+  if (mutation.ok) finish()
 }
 
 function finish() {

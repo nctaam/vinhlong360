@@ -53,6 +53,11 @@ export interface PreferencePatch {
   consent_version?: string | null
 }
 
+export interface PreferenceMutationResult {
+  ok: boolean
+  snapshot: PreferenceSnapshot
+}
+
 export const DEFAULT_PREFERENCE_SNAPSHOT: PreferenceSnapshot = {
   region_id: null,
   region_label: null,

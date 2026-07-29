@@ -91,6 +91,16 @@ function mountSetupHarness(initiallyOpen = true) {
   })
 }
 
+async function advanceToLocationStep() {
+  const dialog = document.body.querySelector('[role="dialog"]') as HTMLElement
+  ;(dialog.querySelector('[data-region="province-vl"]') as HTMLButtonElement).click()
+  ;(dialog.querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+  await flushUi()
+  ;((document.body.querySelector('[role="dialog"]') as HTMLElement)
+    .querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+  await flushUi()
+}
+
 beforeEach(() => {
   localStorage.clear()
   authState.user.value = null
@@ -183,9 +193,78 @@ describe('region preference ownership', () => {
     expect(regionPref!.region.value).toBe('all')
     wrapper.unmount()
   })
+
+  it('ignores a disabled GPS region while keeping a disabled manual region active', async () => {
+    authState.user.value = { id: 'user-1' }
+    authState.isLoggedIn.value = true
+    mockPreferenceApi(snapshot({
+      region_id: 'province-vl',
+      region_label: 'Vĩnh Long',
+      region_scope: 'province',
+      location_source: 'gps',
+      location_accuracy: 'province',
+      location_enabled: false,
+      revision: 2,
+    }))
+    let gpsPref: ReturnType<typeof useRegionPref> | undefined
+    const GpsHarness = defineComponent({
+      setup() {
+        gpsPref = useRegionPref()
+        return () => h('div')
+      },
+    })
+    const gpsWrapper = await mountSuspended(GpsHarness)
+    await flushUi()
+
+    expect(gpsPref!.region.value).toBe('all')
+    gpsWrapper.unmount()
+
+    mockPreferenceApi(snapshot({
+      region_id: 'province-vl',
+      region_label: 'Vĩnh Long',
+      region_scope: 'province',
+      location_source: 'manual',
+      location_accuracy: 'province',
+      location_enabled: false,
+      revision: 3,
+    }))
+    let manualPref: ReturnType<typeof useRegionPref> | undefined
+    const ManualHarness = defineComponent({
+      setup() {
+        manualPref = useRegionPref()
+        return () => h('div')
+      },
+    })
+    const manualWrapper = await mountSuspended(ManualHarness)
+    await flushUi()
+
+    expect(manualPref!.region.value).toBe('vinh-long')
+    manualWrapper.unmount()
+  })
 })
 
 describe('optional location consent flow', () => {
+  it('uses toggle-button semantics for manual region choices', async () => {
+    authState.user.value = { id: 'user-1' }
+    authState.isLoggedIn.value = true
+    const wrapper = await mountSetupHarness()
+    await flushUi()
+
+    const dialog = document.body.querySelector('[role="dialog"]') as HTMLElement
+    const regionGroup = dialog.querySelector('[data-panel="region"] .setup-option-grid') as HTMLElement
+    const vinhLong = dialog.querySelector('[data-region="province-vl"]') as HTMLButtonElement
+
+    expect(regionGroup.getAttribute('role')).toBe('group')
+    expect(dialog.querySelector('[role="listbox"]')).toBeNull()
+    expect(dialog.querySelector('[role="option"]')).toBeNull()
+    expect(vinhLong.getAttribute('aria-pressed')).toBe('false')
+
+    vinhLong.click()
+    await nextTick()
+    expect(vinhLong.getAttribute('aria-pressed')).toBe('true')
+    wrapper.unmount()
+  })
+
   it('offers the same skip route at every setup step', async () => {
     authState.user.value = { id: 'user-1' }
     authState.isLoggedIn.value = true
@@ -243,6 +322,162 @@ describe('optional location consent flow', () => {
     expect(dialog().querySelector('[role="status"]')?.textContent).toContain('bị từ chối')
     await flushUi()
     expect(getCurrentPosition).toHaveBeenCalledTimes(1)
+    wrapper.unmount()
+  })
+
+  it('keeps a manually selected all-region scope when GPS is confirmed', async () => {
+    authState.user.value = { id: 'user-1' }
+    authState.isLoggedIn.value = true
+    const getCurrentPosition = vi.fn((success: PositionCallback) => {
+      success({ coords: { latitude: 10.24, longitude: 105.97 } } as GeolocationPosition)
+    })
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: { getCurrentPosition },
+    })
+    const wrapper = await mountSetupHarness()
+    await flushUi()
+    const dialog = () => document.body.querySelector('[role="dialog"]') as HTMLElement
+
+    ;(dialog().querySelector('[data-region="all"]') as HTMLButtonElement).click()
+    ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+    await flushUi()
+    ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+    await flushUi()
+    ;(dialog().querySelector('[data-action="use-location"]') as HTMLButtonElement).click()
+    await flushUi()
+    ;(dialog().querySelector('[data-action="confirm-location"]') as HTMLButtonElement).click()
+    await flushUi()
+
+    const confirmationPatch = apiFetchMock.mock.calls.at(-1)?.[1]?.body as Record<string, unknown>
+    expect(confirmationPatch).toMatchObject({
+      location_consent_state: 'granted',
+      location_enabled: true,
+    })
+    expect(confirmationPatch).not.toHaveProperty('region_id')
+    expect(confirmationPatch).not.toHaveProperty('location_source')
+    expect(document.body.querySelector('[role="dialog"]')).toBeNull()
+    wrapper.unmount()
+  })
+
+  it('stays on the current step when saving a region fails', async () => {
+    authState.user.value = { id: 'user-1' }
+    authState.isLoggedIn.value = true
+    apiFetchMock.mockImplementation((url: string, opts?: Record<string, unknown>) => {
+      if (url === '/api/me/preferences' && opts?.method === 'PATCH') return Promise.reject(new Error('save failed'))
+      return Promise.resolve(snapshot())
+    })
+    const wrapper = await mountSetupHarness()
+    await flushUi()
+    const dialog = () => document.body.querySelector('[role="dialog"]') as HTMLElement
+
+    ;(dialog().querySelector('[data-region="province-vl"]') as HTMLButtonElement).click()
+    ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+    await flushUi()
+
+    expect(dialog().getAttribute('data-step')).toBe('1')
+    expect(dialog().querySelector('[role="alert"]')?.textContent).toContain('Không thể lưu')
+    wrapper.unmount()
+  })
+
+  it('ignores a geolocation callback from a previous sheet attempt after close and reopen', async () => {
+    authState.user.value = { id: 'user-1' }
+    authState.isLoggedIn.value = true
+    let lateSuccess!: PositionCallback
+    const getCurrentPosition = vi.fn((success: PositionCallback) => { lateSuccess = success })
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: { getCurrentPosition },
+    })
+    const wrapper = await mountSetupHarness()
+    await flushUi()
+    await advanceToLocationStep()
+
+    let dialog = document.body.querySelector('[role="dialog"]') as HTMLElement
+    ;(dialog.querySelector('[data-action="use-location"]') as HTMLButtonElement).click()
+    ;(dialog.querySelector('[data-action="skip"]') as HTMLButtonElement).click()
+    await flushUi()
+    await wrapper.get('[data-trigger="personalize"]').trigger('click')
+    await flushUi()
+    await advanceToLocationStep()
+
+    lateSuccess({ coords: { latitude: 10.24, longitude: 105.97 } } as GeolocationPosition)
+    await flushUi()
+
+    dialog = document.body.querySelector('[role="dialog"]') as HTMLElement
+    expect(apiFetchMock.mock.calls.some(([url]) => url === '/api/me/location/resolve')).toBe(false)
+    expect(dialog.querySelector('[data-action="use-location"]')).toBeTruthy()
+    wrapper.unmount()
+  })
+
+  it('ignores a geolocation callback after the authenticated account changes', async () => {
+    authState.user.value = { id: 'user-1' }
+    authState.isLoggedIn.value = true
+    let lateSuccess!: PositionCallback
+    const getCurrentPosition = vi.fn((success: PositionCallback) => { lateSuccess = success })
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: { getCurrentPosition },
+    })
+    const wrapper = await mountSetupHarness()
+    await flushUi()
+    await advanceToLocationStep()
+
+    const dialog = document.body.querySelector('[role="dialog"]') as HTMLElement
+    ;(dialog.querySelector('[data-action="use-location"]') as HTMLButtonElement).click()
+    authState.user.value = { id: 'user-2' }
+    lateSuccess({ coords: { latitude: 10.24, longitude: 105.97 } } as GeolocationPosition)
+    await flushUi()
+
+    expect(apiFetchMock.mock.calls.some(([url]) => url === '/api/me/location/resolve')).toBe(false)
+    expect(dialog.querySelector('[data-action="use-location"]')).toBeNull()
+    wrapper.unmount()
+  })
+
+  it('does not apply a location resolution that completes after the sheet closes', async () => {
+    authState.user.value = { id: 'user-1' }
+    authState.isLoggedIn.value = true
+    let resolveLocation!: (value: Record<string, unknown>) => void
+    const resolutionPromise = new Promise<Record<string, unknown>>((resolve) => { resolveLocation = resolve })
+    apiFetchMock.mockImplementation((url: string, opts?: Record<string, unknown>) => {
+      if (url === '/api/me/location/resolve') return resolutionPromise
+      if (url === '/api/me/preferences' && opts?.method === 'PATCH') {
+        const { revision: _revision, ...patch } = opts.body as Record<string, unknown>
+        return Promise.resolve(snapshot({ ...patch, revision: 1 }))
+      }
+      return Promise.resolve(snapshot())
+    })
+    const getCurrentPosition = vi.fn((success: PositionCallback) => {
+      success({ coords: { latitude: 10.24, longitude: 105.97 } } as GeolocationPosition)
+    })
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: { getCurrentPosition },
+    })
+    const wrapper = await mountSetupHarness()
+    await flushUi()
+    await advanceToLocationStep()
+
+    const dialog = document.body.querySelector('[role="dialog"]') as HTMLElement
+    ;(dialog.querySelector('[data-action="use-location"]') as HTMLButtonElement).click()
+    await flushUi()
+    ;(dialog.querySelector('[data-action="skip"]') as HTMLButtonElement).click()
+    await flushUi()
+
+    resolveLocation({
+      region_id: 'province-vl',
+      region_label: 'Vĩnh Long',
+      region_scope: 'province',
+      location_source: 'gps',
+      location_accuracy: 'province',
+    })
+    await flushUi()
+    await wrapper.get('[data-trigger="personalize"]').trigger('click')
+    await flushUi()
+    await advanceToLocationStep()
+
+    expect((document.body.querySelector('[role="dialog"]') as HTMLElement)
+      .querySelector('[data-action="use-location"]')).toBeTruthy()
     wrapper.unmount()
   })
 
