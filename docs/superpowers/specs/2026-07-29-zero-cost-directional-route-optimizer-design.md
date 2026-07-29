@@ -55,7 +55,6 @@ class RouteStop:
 
 @dataclass(frozen=True)
 class OptimizeOptions:
-    preserve_endpoints: bool = True
     strict_direction: bool = True
     station_tolerance: float = 0.02
     exact_limit: int = 10
@@ -94,7 +93,6 @@ Request:
     {"id": "a", "coordinates": [10.1, 106.1]},
     {"id": "b", "coordinates": [10.2, 106.2]}
   ],
-  "preserve_endpoints": true,
   "strict_direction": true,
   "blocked_edges": [["a", "b"]]
 }
@@ -129,7 +127,8 @@ Trong `web-nuxt/pages/tao-lich-trinh.vue`:
 
 - Thêm nút `Tối ưu tuyến` khi có ít nhất 3 điểm có tọa độ.
 - Nút không tự chạy và không thay đổi lịch trình khi chỉ có 2 điểm.
-- Điểm đầu và điểm cuối luôn được giữ cố định.
+- Điểm đầu và điểm cuối luôn được giữ cố định; API không cung cấp chế độ đảo hai đầu tuyến.
+- Chỉ cho phép tối ưu khi điểm đầu và điểm cuối có tọa độ; nếu thiếu, UI yêu cầu người dùng chọn hai đầu tuyến có tọa độ hợp lệ.
 - Các stop thiếu tọa độ giữ nguyên vị trí tương đối và không được gửi vào solver; UI thông báo chúng chưa được tối ưu.
 - Khi API thành công, sắp lại mảng `stops` theo `ordered_ids` mà không làm mất `time`, `note` hoặc metadata lưu cục bộ.
 - Thông báo số km ước tính giảm được; nếu không giảm thì thông báo thứ tự hiện tại đã phù hợp.
