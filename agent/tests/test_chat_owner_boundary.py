@@ -568,7 +568,7 @@ def test_owned_stream_cache_reads_receive_owner_key(tmp_path, monkeypatch):
     conversation = manager.create_session("user:alice")
     calls = []
     sentinel = {
-        "reply": "alice exact stream cache sentinel",
+        "reply": "alice exact stream 0901234567 cache sentinel",
         "tool_calls": [],
         "suggestions": [],
     }
@@ -601,6 +601,8 @@ def test_owned_stream_cache_reads_receive_owner_key(tmp_path, monkeypatch):
     assert response.status_code == 200
     assert "alice exact stream" in response.text
     assert "cache sentinel" in response.text
+    assert "0901234567" not in response.text
+    assert "[PHONE]" in response.text
     assert calls == [
         ("semantic", "cached query", "user:alice"),
         ("exact", "cached query", "user:alice"),

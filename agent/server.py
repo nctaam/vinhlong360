@@ -220,9 +220,11 @@ from privacy_boundary import (
     PrivacyBoundaryBlocked,
     PrivacyBoundaryUnavailable,
     SafeText,
+    StreamingPIIRedactor,
     prepare_chat_input,
     prepare_chat_output,
     redact_payload,
+    redact_text,
 )
 from index_policy import is_publicly_eligible
 
@@ -1978,6 +1980,36 @@ def _safe_delivered_reply(
     )
 
 
+def _safe_cached_reply(reply: str) -> SafeText:
+    """Redact a legacy cache reply before any delivery or personal sink."""
+    return redact_text(reply, source="legacy_cache")
+
+
+def _safe_cached_payload(cached: dict) -> dict:
+    """Apply the legacy-cache boundary to every retained cache field."""
+    if not isinstance(cached, dict):
+        raise PrivacyBoundaryUnavailable("INVALID_CACHED_RESPONSE")
+    safe_payload = redact_payload(cached, source="legacy_cache")
+    safe_reply = _safe_cached_reply(cached.get("reply", ""))
+    safe_payload["reply"] = safe_reply.text
+    return safe_payload
+
+
+async def _safe_stream_text_events(chunks, redactor: StreamingPIIRedactor):
+    """Yield only redacted stream text and abort on cancellation or failure."""
+    try:
+        async for chunk in chunks:
+            safe_chunk = redactor.feed(chunk)
+            if safe_chunk:
+                yield safe_chunk
+        safe_tail = redactor.finish()
+        if safe_tail:
+            yield safe_tail
+    except BaseException:
+        redactor.abort()
+        raise
+
+
 def _make_llm_call_fn(model_fn=None):
     """Create an LLM call function for orchestrator injection.
 
@@ -2407,10 +2439,20 @@ async def chat(req: ChatRequest, request: Request, response: Response):
                 semantic_dedup_key,
             )
             if sem_cached:
+                try:
+                    safe_cached = _safe_cached_payload(sem_cached)
+                except PrivacyBoundaryUnavailable as exc:
+                    logger.warning("Legacy cache privacy boundary unavailable", code=exc.code)
+                    return ChatResponse(
+                        reply=SAFE_PRIVACY_FAILURE_REPLY,
+                        tool_calls=[],
+                        suggestions=[],
+                        session_id=session_id,
+                    )
                 if HAS_METRICS:
                     track_cache("hit")
-                _record_cached_exchange(owner_key, session_id, message, sem_cached)
-                return ChatResponse(**sem_cached, session_id=session_id, cached=True)
+                _record_cached_exchange(owner_key, session_id, message, safe_cached)
+                return ChatResponse(**safe_cached, session_id=session_id, cached=True)
         except Exception:
             logger.debug("Semantic cache retrieval failed", exc_info=True)
 
@@ -2418,20 +2460,30 @@ async def chat(req: ChatRequest, request: Request, response: Response):
     if cache_eligible:
         cached = cache.get(message, owner_key=owner_key)
         if cached:
+            try:
+                safe_cached = _safe_cached_payload(cached)
+            except PrivacyBoundaryUnavailable as exc:
+                logger.warning("Legacy cache privacy boundary unavailable", code=exc.code)
+                return ChatResponse(
+                    reply=SAFE_PRIVACY_FAILURE_REPLY,
+                    tool_calls=[],
+                    suggestions=[],
+                    session_id=session_id,
+                )
             if HAS_METRICS:
                 track_cache("hit")
             if HAS_SEMANTIC_CACHE:
                 try:
                     semantic_put(
                         message,
-                        cached,
+                        safe_cached,
                         owner_key=owner_key,
                         dedup_key=semantic_dedup_key,
                     )
                 except Exception:
                     logger.debug("Semantic cache exact-hit publication failed", exc_info=True)
-            _record_cached_exchange(owner_key, session_id, message, cached)
-            return ChatResponse(**cached, session_id=session_id, cached=True)
+            _record_cached_exchange(owner_key, session_id, message, safe_cached)
+            return ChatResponse(**safe_cached, session_id=session_id, cached=True)
         elif HAS_METRICS:
             track_cache("miss")
 
@@ -2922,6 +2974,35 @@ async def chat_stream(req: ChatRequest, request: Request):
     # The cache/dedup lifecycle must use one stable pre-autocorrect query key.
     cache_query = message
 
+    async def _cached_stream(safe_cached: dict, hit_name: str):
+        reply = safe_cached.get("reply", "")
+        words = reply.split(" ")
+        emitted = []
+        try:
+            for index in range(0, len(words), 3):
+                chunk = " ".join(words[index:index + 3])
+                if index > 0:
+                    chunk = " " + chunk
+                emitted.append(chunk)
+                yield f"data: {json.dumps({'type': 'text', 'content': chunk}, ensure_ascii=False)}\n\n"
+
+            delivered = "".join(emitted)
+            safe_cached["reply"] = delivered
+            _record_cached_exchange(owner_key, sid, cache_query, safe_cached)
+            analytics.track_query(
+                message,
+                [hit_name],
+                delivered,
+                sid,
+                owner_key=owner_key,
+            )
+            yield f"data: {json.dumps({'type': 'done', 'tools': [hit_name], 'suggestions': safe_cached.get('suggestions', []), 'session_id': sid}, ensure_ascii=False)}\n\n"
+        except (asyncio.CancelledError, GeneratorExit):
+            return
+        except Exception:
+            logger.debug("Legacy cache stream delivery failed", exc_info=True)
+            yield f"data: {json.dumps({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
+
     # ── Semantic cache: check before regular cache ──
     semantic_dedup_key = None
     if cache_eligible and HAS_SEMANTIC_CACHE:
@@ -2937,25 +3018,12 @@ async def chat_stream(req: ChatRequest, request: Request):
                 semantic_dedup_key,
             )
             if sem_cached:
-                _record_cached_exchange(owner_key, sid, cache_query, sem_cached)
-                async def sem_cached_stream():
-                    reply = sem_cached.get("reply", "")
-                    words = reply.split(" ")
-                    for i in range(0, len(words), 3):
-                        chunk = " ".join(words[i:i+3])
-                        if i > 0:
-                            chunk = " " + chunk
-                        yield f"data: {json.dumps({'type': 'text', 'content': chunk}, ensure_ascii=False)}\n\n"
-                    suggestions = sem_cached.get("suggestions", [])
-                    yield f"data: {json.dumps({'type': 'done', 'tools': ['semantic_cache_hit'], 'suggestions': suggestions, 'session_id': sid}, ensure_ascii=False)}\n\n"
-                analytics.track_query(
-                    message,
-                    ["semantic_cache_hit"],
-                    sem_cached.get("reply", ""),
-                    sid,
-                    owner_key=owner_key,
-                )
-                return _stream_response(sem_cached_stream())
+                try:
+                    safe_cached = _safe_cached_payload(sem_cached)
+                except PrivacyBoundaryUnavailable as exc:
+                    logger.warning("Legacy cache privacy boundary unavailable", code=exc.code)
+                    return _stream_response(_safe_block_stream(SAFE_PRIVACY_FAILURE_REPLY)())
+                return _stream_response(_cached_stream(safe_cached, "semantic_cache_hit"))
         except Exception:
             logger.debug("Semantic cache retrieval failed (stream)", exc_info=True)
 
@@ -2963,11 +3031,16 @@ async def chat_stream(req: ChatRequest, request: Request):
     if cache_eligible:
         cached = cache.get(cache_query, owner_key=owner_key)
         if cached:
+            try:
+                safe_cached = _safe_cached_payload(cached)
+            except PrivacyBoundaryUnavailable as exc:
+                logger.warning("Legacy cache privacy boundary unavailable", code=exc.code)
+                return _stream_response(_safe_block_stream(SAFE_PRIVACY_FAILURE_REPLY)())
             if HAS_SEMANTIC_CACHE:
                 try:
                     semantic_put(
                         cache_query,
-                        cached,
+                        safe_cached,
                         owner_key=owner_key,
                         dedup_key=semantic_dedup_key,
                     )
@@ -2976,25 +3049,7 @@ async def chat_stream(req: ChatRequest, request: Request):
                         "Semantic cache exact-hit publication failed (stream)",
                         exc_info=True,
                     )
-            _record_cached_exchange(owner_key, sid, cache_query, cached)
-            async def cached_stream():
-                reply = cached.get("reply", "")
-                words = reply.split(" ")
-                for i in range(0, len(words), 3):
-                    chunk = " ".join(words[i:i+3])
-                    if i > 0:
-                        chunk = " " + chunk
-                    yield f"data: {json.dumps({'type': 'text', 'content': chunk}, ensure_ascii=False)}\n\n"
-                suggestions = cached.get("suggestions", [])
-                yield f"data: {json.dumps({'type': 'done', 'tools': ['cache_hit'], 'suggestions': suggestions, 'session_id': sid}, ensure_ascii=False)}\n\n"
-            analytics.track_query(
-                message,
-                ["cache_hit"],
-                cached.get("reply", ""),
-                sid,
-                owner_key=owner_key,
-            )
-            return _stream_response(cached_stream())
+            return _stream_response(_cached_stream(safe_cached, "cache_hit"))
 
     usage_accumulator = UsageAccumulator()
     verified_public_contacts: set[str] = set()
@@ -3087,10 +3142,11 @@ async def chat_stream(req: ChatRequest, request: Request):
                 stream_usage_settlement_blocked = True
                 return None
 
-            _privacy_output_boundary_marker = True
-            memory_manager.on_message(owner_key, sid, "user", cache_query)
-            memory_manager.on_message(owner_key, sid, "assistant", safe_fallback.text)
             return safe_fallback.text
+
+        def persist_stream_fallback(safe_text: str) -> None:
+            memory_manager.on_message(owner_key, sid, "user", cache_query)
+            memory_manager.on_message(owner_key, sid, "assistant", safe_text)
 
         for round_num in range(max_rounds):
             try:
@@ -3110,9 +3166,12 @@ async def chat_stream(req: ChatRequest, request: Request):
                 )
                 if not decision["success"]:
                     fallback = prepare_stream_fallback(decision["message"])
+                    fallback_ready = fallback is not None
                     if fallback is None:
                         fallback = SAFE_PRIVACY_FAILURE_REPLY
                     yield f"data: {json.dumps({'type': 'text', 'content': fallback}, ensure_ascii=False)}\n\n"
+                    if fallback_ready:
+                        persist_stream_fallback(fallback)
                     yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
                     return
                 response = decision["response"]
@@ -3122,9 +3181,12 @@ async def chat_stream(req: ChatRequest, request: Request):
                 fallback = prepare_stream_fallback(
                     "Xin lỗi, đã xảy ra lỗi. Vui lòng thử lại."
                 )
+                fallback_ready = fallback is not None
                 if fallback is None:
                     fallback = SAFE_PRIVACY_FAILURE_REPLY
                 yield f"data: {json.dumps({'type': 'text', 'content': fallback}, ensure_ascii=False)}\n\n"
+                if fallback_ready:
+                    persist_stream_fallback(fallback)
                 yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
                 return
 
@@ -3201,20 +3263,44 @@ async def chat_stream(req: ChatRequest, request: Request):
                 producer = asyncio.create_task(asyncio.to_thread(_produce_stream))
                 _chunks: list[str] = []
                 terminal_chunk = None
-                try:
+                redactor = StreamingPIIRedactor()
+
+                async def _stream_text_chunks():
+                    nonlocal terminal_chunk
                     while True:
                         item = await chunk_q.get()
                         if item is None:
-                            break
+                            return
                         if isinstance(item, Exception):
                             raise item
                         if getattr(item, "usage", None) is not None:
                             terminal_chunk = item
                             continue
-                        _chunks.append(item)
-                        yield f"data: {json.dumps({'type': 'text', 'content': item}, ensure_ascii=False)}\n\n"
+                        yield item
+
+                try:
+                    async for safe_chunk in _safe_stream_text_events(
+                        _stream_text_chunks(),
+                        redactor,
+                    ):
+                        _chunks.append(safe_chunk)
+                        yield f"data: {json.dumps({'type': 'text', 'content': safe_chunk}, ensure_ascii=False)}\n\n"
                 except (asyncio.CancelledError, GeneratorExit):
                     _cancelled.set()
+                    redactor.abort()
+                    return
+                except PrivacyBoundaryUnavailable as exc:
+                    logger.warning(
+                        "Privacy boundary unavailable for stream redaction",
+                        code=exc.code,
+                    )
+                    stream_usage_settlement_blocked = True
+                    redactor.abort()
+                    yield f"data: {json.dumps({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
+                    return
+                except Exception:
+                    redactor.abort()
+                    yield f"data: {json.dumps({'type': 'error', 'content': 'Xin lỗi, không thể hoàn tất câu trả lời. Vui lòng thử lại.'}, ensure_ascii=False)}\n\n"
                     return
                 finally:
                     _cancelled.set()
@@ -3419,18 +3505,40 @@ async def chat_stream(req: ChatRequest, request: Request):
             synth_producer = asyncio.create_task(asyncio.to_thread(_synth_produce))
             synth_chunks: list[str] = []
             synth_terminal_chunk = None
-            try:
+            synth_redactor = StreamingPIIRedactor()
+
+            async def _synth_text_chunks():
+                nonlocal synth_terminal_chunk
                 while True:
                     item = await synth_q.get()
                     if item is None:
-                        break
+                        return
                     if isinstance(item, Exception):
                         raise item
                     if getattr(item, "usage", None) is not None:
                         synth_terminal_chunk = item
                         continue
-                    synth_chunks.append(item)
-                    yield f"data: {json.dumps({'type': 'text', 'content': item}, ensure_ascii=False)}\n\n"
+                    yield item
+
+            try:
+                async for safe_chunk in _safe_stream_text_events(
+                    _synth_text_chunks(),
+                    synth_redactor,
+                ):
+                    synth_chunks.append(safe_chunk)
+                    yield f"data: {json.dumps({'type': 'text', 'content': safe_chunk}, ensure_ascii=False)}\n\n"
+            except (asyncio.CancelledError, GeneratorExit):
+                synth_redactor.abort()
+                raise
+            except PrivacyBoundaryUnavailable as exc:
+                logger.warning(
+                    "Privacy boundary unavailable for stream synthesis redaction",
+                    code=exc.code,
+                )
+                stream_usage_settlement_blocked = True
+                synth_redactor.abort()
+                yield f"data: {json.dumps({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
+                return
             finally:
                 _synth_cancelled.set()  # generator đóng (disconnect/hoàn tất) → báo thread produce dừng
                 await synth_producer

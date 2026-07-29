@@ -770,14 +770,18 @@ def test_stream_provider_error_after_completed_decision_still_settles(monkeypatc
     guardrail, attribution = _configure_usage_stream(monkeypatch, create)
     client = TestClient(server.app)
 
-    with pytest.raises(Exception, match="provider stream failed"):
-        client.post(
-            "/chat/stream",
-            json={
-                "message": "where should I go?",
-                "history": [{"role": "user", "content": "prior"}],
-            },
-        )
+    response = client.post(
+        "/chat/stream",
+        json={
+            "message": "where should I go?",
+            "history": [{"role": "user", "content": "prior"}],
+        },
+    )
+
+    assert response.status_code == 200
+    frames = _parse_sse(response.text)
+    assert any(frame.get("type") == "error" for frame in frames)
+    assert "provider stream failed" not in response.text
 
     assert len(guardrail.calls) == 1
     assert len(attribution.calls) == 1

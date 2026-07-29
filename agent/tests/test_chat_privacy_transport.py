@@ -1,14 +1,18 @@
-"""Real-transport coverage for the mandatory chat input boundary."""
+"""Real-transport coverage for mandatory chat privacy boundaries."""
 
+import asyncio
 import inspect
+import json
 import os
 import sys
+import threading
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 import httpx
 import pytest
+from starlette.requests import Request
 
 os.environ.setdefault("LLM_API_KEY", "test-key")
 os.environ.setdefault("LLM_BASE_URL", "http://localhost:9999/v1")
@@ -28,6 +32,9 @@ from privacy_boundary import (  # noqa: E402
 
 
 PROVIDER_REPLY = "Provider reply with enough safe detail for privacy transport testing."
+STREAM_EMAIL = "secret@example.com"
+LEGACY_PHONE = "0901234567"
+LEGACY_EMAIL = "legacy-cache@example.com"
 
 
 @pytest.fixture
@@ -70,6 +77,14 @@ def _stream_chunks(content=PROVIDER_REPLY):
         choices=[],
         usage=SimpleNamespace(prompt_tokens=10, completion_tokens=5, total_tokens=15),
     )
+
+
+def _sse_frames(wire_text):
+    return [
+        json.loads(line.removeprefix("data:").strip())
+        for line in wire_text.splitlines()
+        if line.startswith("data:")
+    ]
 
 
 def _configure_chat(monkeypatch, tmp_path):
@@ -200,6 +215,367 @@ async def test_sse_provider_receives_only_redacted_message_and_history(
     assert '"type": "done"' in response.text
     _assert_provider_inputs_are_safe(captured_messages)
     assert all("0901234567" not in repr(messages) for messages in captured_messages)
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("split_index", range(1, len(STREAM_EMAIL)))
+async def test_sse_redacts_email_across_every_provider_chunk_boundary(
+    monkeypatch,
+    tmp_path,
+    split_index,
+):
+    _manager_instance, _captured_messages = _configure_chat(monkeypatch, tmp_path)
+
+    def create(*_args, stream=False, **_kwargs):
+        if not stream:
+            return _completion("decision")
+
+        def chunks():
+            for content in (
+                "Email ",
+                STREAM_EMAIL[:split_index],
+                STREAM_EMAIL[split_index:],
+                " for details.",
+            ):
+                yield SimpleNamespace(
+                    choices=[SimpleNamespace(
+                        delta=SimpleNamespace(content=content, tool_calls=None),
+                    )],
+                    usage=None,
+                )
+            yield SimpleNamespace(
+                choices=[],
+                usage=SimpleNamespace(
+                    prompt_tokens=10,
+                    completion_tokens=5,
+                    total_tokens=15,
+                ),
+            )
+
+        return chunks()
+
+    fake_client = SimpleNamespace(
+        chat=SimpleNamespace(completions=SimpleNamespace(create=create)),
+    )
+    monkeypatch.setattr(server, "get_client", lambda: fake_client)
+    transport = httpx.ASGITransport(app=server.app)
+
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        async with client.stream(
+            "POST",
+            "/chat/stream",
+            json={"message": "hello", "history": []},
+        ) as response:
+            wire = b"".join([chunk async for chunk in response.aiter_bytes()])
+
+    wire_text = wire.decode("utf-8")
+    delivered_text = "".join(
+        frame.get("content", "")
+        for frame in _sse_frames(wire_text)
+        if frame.get("type") == "text"
+    )
+    assert STREAM_EMAIL not in wire_text
+    assert STREAM_EMAIL not in delivered_text
+    assert "[EMAIL]" in delivered_text
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("path", ["/chat", "/chat/stream"])
+@pytest.mark.parametrize("cache_kind", ["semantic", "exact"])
+async def test_legacy_cache_is_sanitized_before_delivery_sinks_and_refresh(
+    monkeypatch,
+    tmp_path,
+    path,
+    cache_kind,
+):
+    manager, _captured_messages = _configure_chat(monkeypatch, tmp_path)
+    legacy = {
+        "reply": f"Legacy phone {LEGACY_PHONE} must not be delivered raw.",
+        "tool_calls": [f"lookup({LEGACY_PHONE})"],
+        "suggestions": [f"Email {LEGACY_EMAIL}"],
+    }
+    sink_writes = []
+    refresh_writes = []
+
+    async def semantic_read(*_args, **_kwargs):
+        return legacy if cache_kind == "semantic" else None
+
+    def exact_read(*_args, **_kwargs):
+        if cache_kind == "semantic":
+            raise AssertionError("semantic hit must not read exact cache")
+        return legacy
+
+    monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(server, "semantic_get_async", semantic_read)
+    monkeypatch.setattr(
+        server,
+        "semantic_take_dedup_lease",
+        lambda *_args, **_kwargs: "legacy-cache-lease",
+    )
+    monkeypatch.setattr(server, "semantic_abandon", lambda *_args, **_kwargs: True)
+    monkeypatch.setattr(
+        server,
+        "semantic_put",
+        lambda *args, **kwargs: refresh_writes.append((args, kwargs)),
+    )
+    monkeypatch.setattr(server.cache, "get", exact_read)
+    monkeypatch.setattr(
+        server,
+        "get_client",
+        Mock(side_effect=AssertionError("cache hit must not call provider")),
+    )
+    monkeypatch.setattr(
+        manager,
+        "on_message",
+        lambda *args, **kwargs: sink_writes.append(("memory", args, kwargs)),
+    )
+    monkeypatch.setattr(
+        server.analytics,
+        "track_query",
+        lambda *args, **kwargs: sink_writes.append(("analytics", args, kwargs)),
+    )
+    transport = httpx.ASGITransport(app=server.app)
+
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(path, json={"message": "cached", "history": []})
+
+    assert response.status_code == 200
+    assert LEGACY_PHONE not in response.text
+    assert LEGACY_EMAIL not in response.text
+    assert "[PHONE]" in response.text
+    assert "[EMAIL]" in response.text
+    assert LEGACY_PHONE not in repr(sink_writes)
+    assert LEGACY_EMAIL not in repr(sink_writes)
+    assert LEGACY_PHONE not in repr(refresh_writes)
+    assert LEGACY_EMAIL not in repr(refresh_writes)
+    if cache_kind == "exact":
+        assert len(refresh_writes) == 1
+
+
+@pytest.mark.anyio
+async def test_stream_redactor_error_emits_generic_error_and_writes_nothing(
+    monkeypatch,
+    tmp_path,
+):
+    manager, _captured_messages = _configure_chat(monkeypatch, tmp_path)
+    writes = []
+    abandoned = []
+    instances = []
+
+    class ExplodingRedactor:
+        def __init__(self):
+            self.aborted = False
+            instances.append(self)
+
+        def feed(self, _chunk):
+            raise PrivacyBoundaryUnavailable("RAW_REDACTOR_DETAIL")
+
+        def finish(self):
+            raise AssertionError("failed redactor must not finish")
+
+        def abort(self):
+            self.aborted = True
+
+    async def semantic_miss(*_args, **_kwargs):
+        return None
+
+    monkeypatch.setattr(server, "StreamingPIIRedactor", ExplodingRedactor, raising=False)
+    monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(server, "semantic_get_async", semantic_miss)
+    monkeypatch.setattr(
+        server,
+        "semantic_take_dedup_lease",
+        lambda *_args, **_kwargs: "redactor-error-lease",
+    )
+    monkeypatch.setattr(
+        server,
+        "semantic_abandon",
+        lambda *args, **kwargs: abandoned.append((args, kwargs)) or True,
+    )
+    monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        server.cache,
+        "put",
+        lambda *args, **kwargs: writes.append(("cache", args, kwargs)),
+    )
+    monkeypatch.setattr(
+        server,
+        "semantic_put",
+        lambda *args, **kwargs: writes.append(("semantic", args, kwargs)),
+    )
+    monkeypatch.setattr(
+        manager,
+        "on_message",
+        lambda *args, **kwargs: writes.append(("memory", args, kwargs)),
+    )
+    monkeypatch.setattr(
+        server.analytics,
+        "track_query",
+        lambda *args, **kwargs: writes.append(("analytics", args, kwargs)),
+    )
+
+    def create(*_args, stream=False, **_kwargs):
+        return _stream_chunks(f"raw {LEGACY_PHONE} reply") if stream else _completion("decision")
+
+    fake_client = SimpleNamespace(
+        chat=SimpleNamespace(completions=SimpleNamespace(create=create)),
+    )
+    monkeypatch.setattr(server, "get_client", lambda: fake_client)
+    transport = httpx.ASGITransport(app=server.app)
+
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            "/chat/stream",
+            json={"message": "redactor failure", "history": []},
+        )
+
+    assert response.status_code == 200
+    assert LEGACY_PHONE not in response.text
+    assert "RAW_REDACTOR_DETAIL" not in response.text
+    assert any(frame.get("type") == "error" for frame in _sse_frames(response.text))
+    assert writes == []
+    assert abandoned
+    assert instances and instances[0].aborted is True
+
+
+def test_stream_cancellation_aborts_withheld_suffix_and_skips_sinks(
+    monkeypatch,
+    tmp_path,
+):
+    manager, _captured_messages = _configure_chat(monkeypatch, tmp_path)
+    provider_started = threading.Event()
+    release_provider = threading.Event()
+    writes = []
+    abandoned = []
+    instances = []
+
+    class WithholdingRedactor:
+        def __init__(self):
+            self.aborted = False
+            instances.append(self)
+
+        def feed(self, chunk):
+            assert chunk == "0901"
+            return ""
+
+        def finish(self):
+            raise AssertionError("cancelled redactor must not finish")
+
+        def abort(self):
+            self.aborted = True
+
+    class BlockingCompletions:
+        def create(self, *_args, stream=False, **_kwargs):
+            if not stream:
+                return _completion("decision")
+
+            def chunks():
+                yield SimpleNamespace(
+                    choices=[SimpleNamespace(
+                        delta=SimpleNamespace(content="0901", tool_calls=None),
+                    )],
+                    usage=None,
+                )
+                provider_started.set()
+                release_provider.wait(timeout=2)
+
+            return chunks()
+
+    async def semantic_miss(*_args, **_kwargs):
+        return None
+
+    monkeypatch.setattr(server, "StreamingPIIRedactor", WithholdingRedactor, raising=False)
+    monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(server, "semantic_get_async", semantic_miss)
+    monkeypatch.setattr(
+        server,
+        "semantic_take_dedup_lease",
+        lambda *_args, **_kwargs: "cancelled-redactor-lease",
+    )
+    monkeypatch.setattr(
+        server,
+        "semantic_abandon",
+        lambda *args, **kwargs: abandoned.append((args, kwargs)) or True,
+    )
+    monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        server.cache,
+        "put",
+        lambda *args, **kwargs: writes.append(("cache", args, kwargs)),
+    )
+    monkeypatch.setattr(
+        server,
+        "semantic_put",
+        lambda *args, **kwargs: writes.append(("semantic", args, kwargs)),
+    )
+    monkeypatch.setattr(
+        manager,
+        "on_message",
+        lambda *args, **kwargs: writes.append(("memory", args, kwargs)),
+    )
+    monkeypatch.setattr(
+        manager,
+        "on_chat_complete",
+        lambda *args, **kwargs: writes.append(("memory_extract", args, kwargs)),
+    )
+    monkeypatch.setattr(
+        server.analytics,
+        "track_query",
+        lambda *args, **kwargs: writes.append(("analytics", args, kwargs)),
+    )
+    monkeypatch.setattr(
+        server,
+        "get_client",
+        lambda: SimpleNamespace(
+            chat=SimpleNamespace(completions=BlockingCompletions()),
+        ),
+    )
+
+    async def exercise():
+        scope = {
+            "type": "http",
+            "asgi": {"version": "3.0", "spec_version": "2.4"},
+            "http_version": "1.1",
+            "method": "POST",
+            "scheme": "http",
+            "path": "/chat/stream",
+            "raw_path": b"/chat/stream",
+            "query_string": b"",
+            "headers": [],
+            "client": ("127.0.0.1", 1234),
+            "server": ("testserver", 80),
+        }
+        response = await server.chat_stream(
+            server.ChatRequest.model_validate(
+                {"message": "cancel withheld suffix", "history": []}
+            ),
+            Request(scope),
+        )
+        wire = []
+
+        async def receive():
+            await asyncio.Future()
+
+        async def send(message):
+            if message["type"] == "http.response.body":
+                wire.append(message.get("body", b""))
+
+        response_task = asyncio.create_task(response(scope, receive, send))
+        await asyncio.to_thread(provider_started.wait, 2)
+        response_task.cancel()
+        release_provider.set()
+        try:
+            await response_task
+        except asyncio.CancelledError:
+            pass
+        return b"".join(wire).decode("utf-8")
+
+    wire_text = asyncio.run(exercise())
+
+    assert "0901" not in wire_text
+    assert writes == []
+    assert abandoned
+    assert instances and instances[0].aborted is True
 
 
 @pytest.mark.anyio

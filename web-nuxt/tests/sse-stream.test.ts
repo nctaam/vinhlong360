@@ -87,4 +87,23 @@ describe('consumeJsonSseStream', () => {
 
     expect(onEvent).toHaveBeenCalledWith({ type: 'done' })
   })
+
+  it('preserves boundary-safe redacted chunks without rebuilding raw contact values', async () => {
+    const events: Array<{ type: string; content?: string }> = []
+    const reader = readerFor(
+      'data: {"type":"text","content":"Email [EMAIL]"}\n\n',
+      'data: {"type":"text","content":" and [PHONE]"}\n\n',
+      'data: {"type":"done"}\n\n',
+    )
+
+    await consumeJsonSseStream(reader, (event) => {
+      if (event.type === 'text' || event.type === 'done') events.push(event)
+    })
+
+    expect(events.map((event) => event.content || '').join('')).toBe('Email [EMAIL] and [PHONE]')
+    expect(events.map((event) => event.content || '').join('')).not.toMatch(
+      /secret@example\.com|0901234567/,
+    )
+    expect(events.at(-1)).toEqual({ type: 'done' })
+  })
 })
