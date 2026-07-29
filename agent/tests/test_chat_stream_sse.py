@@ -699,6 +699,7 @@ def test_stream_missing_terminal_usage_estimates_complete_call_once(monkeypatch)
 
 
 def test_stream_round_exhaustion_synthesis_usage_is_included(monkeypatch):
+    receipt_calls = []
     tool_call = SimpleNamespace(
         id="call-1",
         function=SimpleNamespace(name="search", arguments='{"q":"test"}'),
@@ -737,6 +738,12 @@ def test_stream_round_exhaustion_synthesis_usage_is_included(monkeypatch):
         lambda: {"prompt_addon": ""},
     )
     monkeypatch.setattr(server, "call_tool", lambda *_args: "[]")
+    monkeypatch.setattr(
+        server,
+        "issue_feedback_receipt",
+        lambda *args, **kwargs: receipt_calls.append((args, kwargs))
+        or SimpleNamespace(token="synthesis-receipt"),
+    )
     client = TestClient(server.app)
 
     response = client.post(
@@ -748,6 +755,13 @@ def test_stream_round_exhaustion_synthesis_usage_is_included(monkeypatch):
     )
 
     assert response.status_code == 200
+    done = [frame for frame in _parse_sse(response.text) if frame.get("type") == "done"]
+    assert len(done) == 1
+    assert done[0]["feedback_receipt"] == "synthesis-receipt"
+    assert len(receipt_calls) == 1
+    assert receipt_calls[0][0][0] == "user:alice"
+    assert len(receipt_calls[0][0][1]) == 64
+    assert receipt_calls[0][0][2:] == ("cx-gpt-5-4", "search")
     assert guardrail.calls == [("user:alice", 335, 0.0)]
     assert attribution.calls[0]["tokens"]["provider_call_count"] == 2
     assert attribution.calls[0]["tokens"]["estimated_call_count"] == 0
@@ -809,6 +823,38 @@ def test_stream_create_failure_does_not_invent_provider_usage(monkeypatch):
     )
 
     _assert_only_completed_decision_usage(guardrail, attribution)
+
+
+def test_stream_decision_failure_attaches_receipt_to_safe_fallback(monkeypatch):
+    receipt_calls = []
+
+    def create(*_args, **_kwargs):
+        raise ConnectionError("decision failed")
+
+    _configure_usage_stream(monkeypatch, create)
+    monkeypatch.setattr(
+        server,
+        "issue_feedback_receipt",
+        lambda *args, **kwargs: receipt_calls.append((args, kwargs))
+        or SimpleNamespace(token="fallback-receipt"),
+    )
+    client = TestClient(server.app)
+
+    response = client.post(
+        "/chat/stream",
+        json={
+            "message": "where should I go?",
+            "history": [{"role": "user", "content": "prior"}],
+        },
+    )
+
+    done = [frame for frame in _parse_sse(response.text) if frame.get("type") == "done"]
+    assert len(done) == 1
+    assert done[0]["feedback_receipt"] == "fallback-receipt"
+    assert len(receipt_calls) == 1
+    assert receipt_calls[0][0][0] == "user:alice"
+    assert len(receipt_calls[0][0][1]) == 64
+    assert receipt_calls[0][0][2:] == ("cx-gpt-5-4", "none")
 
 
 def test_stream_synthesis_create_failure_does_not_invent_usage(monkeypatch):
