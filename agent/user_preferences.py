@@ -480,7 +480,6 @@ def merge_preference_patch(
         and not (
             patch_source == "manual"
             and "region_id" in normalized
-            and normalized["region_id"] is not None
         )
     )
     if disabling_existing_resolver:

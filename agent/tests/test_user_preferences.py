@@ -424,6 +424,37 @@ def test_disabling_location_accepts_an_explicit_manual_region():
     assert merged["location_enabled"] is False
 
 
+@pytest.mark.parametrize("location_source", ["gps", "ip"])
+def test_disabling_location_accepts_explicit_manual_all_region(location_source):
+    merged = merge_preference_patch(
+        current={
+            "region_id": "province-vl",
+            "region_label": "Vĩnh Long",
+            "region_scope": "province",
+            "location_source": location_source,
+            "location_accuracy": "province",
+            "location_enabled": True,
+            "revision": 4,
+        },
+        patch={
+            "region_id": None,
+            "region_label": None,
+            "region_scope": "all",
+            "location_source": "manual",
+            "location_accuracy": "unknown",
+            "location_enabled": False,
+        },
+        expected_revision=4,
+    )
+
+    assert merged["region_id"] is None
+    assert merged["region_label"] is None
+    assert merged["region_scope"] == "all"
+    assert merged["location_source"] == "manual"
+    assert merged["location_accuracy"] == "unknown"
+    assert merged["location_enabled"] is False
+
+
 def test_disabling_location_preserves_manual_region():
     merged = merge_preference_patch(
         current={
@@ -1078,6 +1109,56 @@ def test_manual_all_region_route_wins_over_resolver_confirmation(
             ("user-1",),
         ).fetchone()
     assert row["location_provenance_version"] is None
+
+
+@pytest.mark.parametrize("location_source", ["gps", "ip"])
+def test_preferences_patch_disables_location_with_manual_all_region(
+    client, preference_database, logged_in_user, location_source
+):
+    with preference_database._conn() as conn:
+        conn.execute(
+            "INSERT INTO user_preferences "
+            "(user_id, region_id, region_label, region_scope, location_source, "
+            "location_accuracy, location_consent_state, location_enabled, "
+            "location_provenance_version, revision) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                "user-1",
+                "province-vl",
+                "Vĩnh Long",
+                "province",
+                location_source,
+                "province",
+                "granted",
+                True,
+                "resolver-v2",
+                4,
+            ),
+        )
+
+    response = client.patch(
+        "/api/me/preferences",
+        json={
+            "revision": 4,
+            "region_id": None,
+            "region_label": None,
+            "region_scope": "all",
+            "location_source": "manual",
+            "location_accuracy": "unknown",
+            "location_enabled": False,
+        },
+        headers=logged_in_user.csrf_headers,
+    )
+
+    assert response.status_code == 200
+    assert response.json()["region_id"] is None
+    assert response.json()["region_label"] is None
+    assert response.json()["region_scope"] == "all"
+    assert response.json()["location_source"] == "manual"
+    assert response.json()["location_accuracy"] == "unknown"
+    assert response.json()["location_enabled"] is False
+    assert "location_provenance_version" not in response.json()
+    assert load_preferences("user-1") == response.json()
 
 
 def test_resolver_confirmation_token_expires_at_the_short_lived_boundary(
