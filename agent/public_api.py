@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator, model_validator
 from api_schemas import (  # W6.3: response_model (extra="allow" — không strip field FE)
     AreasResponse, AutocompleteResponse, CollectionsResponse, CompareResponse,
     EntityDetailResponse, EntityListResponse, EntityMapResponse, EntityTypesResponse,
@@ -41,10 +41,22 @@ from auth_middleware import validate_path_id, require_pg, require_user, require_
 if __package__:
     from .ai_disclosure import load_ai_disclosure
     from .image_descriptor import describe_entity_images, describe_review_image
+    from .itinerary_optimizer import (
+        NoFeasibleRouteError,
+        OptimizeOptions,
+        RouteStop,
+        optimize_stop_order,
+    )
     from .media_policy import is_renderable_entity_descriptor
 else:
     from ai_disclosure import load_ai_disclosure
     from image_descriptor import describe_entity_images, describe_review_image
+    from itinerary_optimizer import (
+        NoFeasibleRouteError,
+        OptimizeOptions,
+        RouteStop,
+        optimize_stop_order,
+    )
     from media_policy import is_renderable_entity_descriptor
 
 if __package__:
@@ -1672,6 +1684,83 @@ async def place_day_plan(place_id: str, response: Response):
         return _err(404, "Không phải xã/phường")
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=60"
     return result
+
+
+class ItineraryOptimizeStopIn(BaseModel):
+    id: str = Field(min_length=1, max_length=200)
+    coordinates: tuple[float, float]
+
+    @field_validator("id")
+    @classmethod
+    def validate_id(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("ID điểm dừng không được để trống")
+        return value
+
+    @field_validator("coordinates")
+    @classmethod
+    def validate_coordinates(cls, value: tuple[float, float]) -> tuple[float, float]:
+        lat, lng = value
+        if not math.isfinite(lat) or not math.isfinite(lng):
+            raise ValueError("Tọa độ phải là số hữu hạn")
+        if not -90 <= lat <= 90:
+            raise ValueError("Vĩ độ phải nằm trong khoảng [-90, 90]")
+        if not -180 <= lng <= 180:
+            raise ValueError("Kinh độ phải nằm trong khoảng [-180, 180]")
+        return value
+
+
+class ItineraryOptimizeIn(BaseModel):
+    stops: list[ItineraryOptimizeStopIn] = Field(min_length=2, max_length=20)
+    strict_direction: bool = True
+    blocked_edges: list[tuple[str, str]] = Field(default_factory=list, max_length=80)
+
+    @model_validator(mode="after")
+    def validate_route_references(self):
+        stop_ids = [stop.id for stop in self.stops]
+        known_ids = set(stop_ids)
+        if len(stop_ids) != len(known_ids):
+            raise ValueError("ID điểm dừng không được trùng")
+        if any(
+            source not in known_ids or target not in known_ids
+            for source, target in self.blocked_edges
+        ):
+            raise ValueError("Cạnh bị cấm phải tham chiếu điểm dừng trong lịch trình")
+        return self
+
+
+@router.post(
+    "/itineraries/optimize-order",
+    summary="Optimize itinerary stop order",
+    description="Reorders 2-20 stops along a fixed forward corridor without paid services.",
+)
+async def optimize_itinerary_order(payload: ItineraryOptimizeIn):
+    stops = [
+        RouteStop(stop.id, stop.coordinates)
+        for stop in payload.stops
+    ]
+    options = OptimizeOptions(
+        strict_direction=payload.strict_direction,
+        blocked_edges=frozenset(payload.blocked_edges),
+    )
+    try:
+        result = await asyncio.to_thread(optimize_stop_order, stops, options)
+    except NoFeasibleRouteError as exc:
+        return _err(409, str(exc))
+
+    return {
+        "ordered_ids": list(result.ordered_ids),
+        "distance_before_km": result.distance_before_km,
+        "distance_after_km": result.distance_after_km,
+        "saved_distance_km": max(
+            0.0,
+            result.distance_before_km - result.distance_after_km,
+        ),
+        "backtrack_ratio": result.backtrack_ratio,
+        "solver": result.solver,
+        "warnings": list(result.warnings),
+    }
 
 
 @router.get("/itineraries",
