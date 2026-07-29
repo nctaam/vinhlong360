@@ -28,8 +28,22 @@ from scripts.apply_migrations import (  # noqa: E402
     run as apply_migrations,
 )
 
+LIBPQ_CONNECTION_TARGET_ENV_VARS = (
+    "PGHOST",
+    "PGHOSTADDR",
+    "PGPORT",
+    "PGDATABASE",
+    "PGSERVICE",
+    "PGSERVICEFILE",
+)
+
 
 def _validate_test_database_url(url: str) -> str:
+    if any(os.environ.get(variable) for variable in LIBPQ_CONNECTION_TARGET_ENV_VARS):
+        raise pytest.UsageError(
+            "LOCATION_REMEDIATION_TEST_DATABASE_URL must not inherit libpq "
+            "connection-target environment defaults"
+        )
     parsed = urlparse(url)
     try:
         effective = psycopg2.extensions.parse_dsn(url)
@@ -105,9 +119,35 @@ def test_database_url_guard_rejects_libpq_effective_parameter_bypasses(
 
 def test_database_url_guard_accepts_single_loopback_test_database(monkeypatch):
     database_url = "postgresql://user:password@127.0.0.1/np11_test"
+    for variable in LIBPQ_CONNECTION_TARGET_ENV_VARS:
+        monkeypatch.delenv(variable, raising=False)
     monkeypatch.setenv("LOCATION_REMEDIATION_TEST_DATABASE_URL", database_url)
 
     assert _test_database_url() == database_url
+
+
+@pytest.mark.parametrize(
+    ("variable", "value"),
+    [
+        ("PGHOST", "prod.example.com"),
+        ("PGHOSTADDR", "203.0.113.9"),
+        ("PGPORT", "6543"),
+        ("PGDATABASE", "production"),
+        ("PGSERVICE", "production"),
+        ("PGSERVICEFILE", "unsafe-service.conf"),
+    ],
+)
+def test_database_url_guard_rejects_libpq_environment_target_defaults(
+    monkeypatch, variable, value
+):
+    database_url = "postgresql://user:password@127.0.0.1/np11_test"
+    for environment_variable in LIBPQ_CONNECTION_TARGET_ENV_VARS:
+        monkeypatch.delenv(environment_variable, raising=False)
+    monkeypatch.setenv("LOCATION_REMEDIATION_TEST_DATABASE_URL", database_url)
+    monkeypatch.setenv(variable, value)
+
+    with pytest.raises(pytest.UsageError, match="libpq connection-target environment"):
+        _test_database_url()
 
 
 @pytest.fixture
@@ -445,6 +485,12 @@ def test_073_installs_schema_function_and_enforces_write_guards(pre73_database):
                     vl360_region_text_is_safe('::') AS all_zero_ipv6,
                     vl360_region_text_is_safe('fe80::') AS trailing_compressed_ipv6,
                     vl360_region_text_is_safe('2001:db8::1') AS embedded_compressed_ipv6,
+                    vl360_region_text_is_safe('0::1') AS zero_prefix_compressed_ipv6,
+                    vl360_region_text_is_safe('a::b') AS hex_prefix_compressed_ipv6,
+                    vl360_region_text_is_safe('f::1') AS short_prefix_compressed_ipv6,
+                    vl360_region_text_is_safe(
+                        '1::dead:beef'
+                    ) AS one_prefix_multi_suffix_ipv6,
                     vl360_region_text_is_safe(
                         '2001:db8:85a3:0:0:8a2e:370:7334'
                     ) AS full_ipv6
@@ -459,6 +505,10 @@ def test_073_installs_schema_function_and_enforces_write_guards(pre73_database):
                 "all_zero_ipv6": False,
                 "trailing_compressed_ipv6": False,
                 "embedded_compressed_ipv6": False,
+                "zero_prefix_compressed_ipv6": False,
+                "hex_prefix_compressed_ipv6": False,
+                "short_prefix_compressed_ipv6": False,
+                "one_prefix_multi_suffix_ipv6": False,
                 "full_ipv6": False,
             }
 
@@ -488,6 +538,10 @@ def test_073_installs_schema_function_and_enforces_write_guards(pre73_database):
         "::dead:beef",
         "fe80::",
         "2001:db8::1",
+        "0::1",
+        "a::b",
+        "f::1",
+        "1::dead:beef",
         "2001:db8:85a3:0:0:8a2e:370:7334",
     ):
         _assert_constraint_violation(

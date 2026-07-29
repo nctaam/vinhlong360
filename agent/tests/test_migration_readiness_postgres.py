@@ -17,8 +17,22 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 import database as database_module  # noqa: E402
 from scripts.apply_migrations import run as apply_migrations  # noqa: E402
 
+LIBPQ_CONNECTION_TARGET_ENV_VARS = (
+    "PGHOST",
+    "PGHOSTADDR",
+    "PGPORT",
+    "PGDATABASE",
+    "PGSERVICE",
+    "PGSERVICEFILE",
+)
+
 
 def _validate_test_database_url(url: str) -> str:
+    if any(os.environ.get(variable) for variable in LIBPQ_CONNECTION_TARGET_ENV_VARS):
+        raise pytest.UsageError(
+            "MIGRATION_APPLY_TEST_DATABASE_URL must not inherit libpq "
+            "connection-target environment defaults"
+        )
     parsed = urlparse(url)
     try:
         effective = psycopg2.extensions.parse_dsn(url)
@@ -86,9 +100,35 @@ def test_database_url_guard_rejects_libpq_effective_parameter_bypasses(
 
 def test_database_url_guard_accepts_single_loopback_test_database(monkeypatch):
     database_url = "postgresql://user:password@127.0.0.1/migration_test"
+    for variable in LIBPQ_CONNECTION_TARGET_ENV_VARS:
+        monkeypatch.delenv(variable, raising=False)
     monkeypatch.setenv("MIGRATION_APPLY_TEST_DATABASE_URL", database_url)
 
     assert _test_database_url() == database_url
+
+
+@pytest.mark.parametrize(
+    ("variable", "value"),
+    [
+        ("PGHOST", "prod.example.com"),
+        ("PGHOSTADDR", "203.0.113.9"),
+        ("PGPORT", "6543"),
+        ("PGDATABASE", "production"),
+        ("PGSERVICE", "production"),
+        ("PGSERVICEFILE", "unsafe-service.conf"),
+    ],
+)
+def test_database_url_guard_rejects_libpq_environment_target_defaults(
+    monkeypatch, variable, value
+):
+    database_url = "postgresql://user:password@127.0.0.1/migration_test"
+    for environment_variable in LIBPQ_CONNECTION_TARGET_ENV_VARS:
+        monkeypatch.delenv(environment_variable, raising=False)
+    monkeypatch.setenv("MIGRATION_APPLY_TEST_DATABASE_URL", database_url)
+    monkeypatch.setenv(variable, value)
+
+    with pytest.raises(pytest.UsageError, match="libpq connection-target environment"):
+        _test_database_url()
 
 
 @pytest.fixture
