@@ -226,9 +226,11 @@ async function mountPlannerWithThreeStops() {
 }
 
 async function flushContinuation() {
-  await Promise.resolve()
-  await nextTick()
-  await Promise.resolve()
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    await Promise.resolve()
+    await nextTick()
+  }
+  await new Promise<void>(resolve => setTimeout(resolve, 0))
   await nextTick()
 }
 
