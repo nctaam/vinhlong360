@@ -10,8 +10,13 @@ Replay thật trên PG trắng là verify chính (chạy thủ công/CI); test n
 """
 import pathlib
 import re
+import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "agent"))
+
+import database
+
 INIT_SQL = (ROOT / "init.sql").read_text(encoding="utf-8")
 MIG_059 = (ROOT / "agent" / "migrations" / "059_repair_migration_chain.sql").read_text(encoding="utf-8")
 
@@ -63,6 +68,7 @@ def test_059_records_schema_version_59_monotonic():
 # ── GĐ-B: 060 cột phổ quát + 061 bảng CTI ──────────────────────────────────
 MIG_060 = (ROOT / "agent" / "migrations" / "060_entity_universal_columns.sql").read_text(encoding="utf-8")
 MIG_061 = (ROOT / "agent" / "migrations" / "061_entity_detail_tables.sql").read_text(encoding="utf-8")
+MIG_071 = (ROOT / "agent" / "migrations" / "071_feedback_receipts.sql").read_text(encoding="utf-8")
 
 UNIVERSAL = ["address", "phone", "website", "hours", "price_range", "sub_category", "best_time", "highlight"]
 CTI_TABLES = [
@@ -128,3 +134,69 @@ def test_registry_typed_fields_have_column_in_right_table():
             col = KEY_TO_COLUMN.get(key, key)
             assert re.search(rf"\b{col}\b", table_cols[kind_to_table[kind]]), \
                 f"Bảng {kind_to_table[kind]} thiếu cột {col} (registry {etype}.{key})"
+
+
+def test_071_feedback_receipts_are_digest_only_and_owner_clearable():
+    block = _create_block(MIG_071, "feedback_receipts")
+    normalized = " ".join(block.split())
+    for column in (
+        "token_digest",
+        "owner_kind",
+        "user_id",
+        "anonymous_owner_digest",
+        "owner_binding_digest",
+        "assistant_turn_digest",
+        "model_variant",
+        "tool_bucket",
+        "rating",
+        "created_at",
+        "expires_at",
+        "used_at",
+    ):
+        assert column in block
+    for forbidden in ("query", "reply", "entity_id", "session_id"):
+        assert forbidden not in block
+    assert "ON DELETE CASCADE" in block
+    assert "used_at IS NOT NULL" in block
+    assert "user_id IS NULL AND anonymous_owner_digest IS NULL" in normalized
+
+
+def test_071_rollup_and_indexes_are_bounded():
+    block = _create_block(MIG_071, "feedback_daily_rollups")
+    assert "UNIQUE (day, owner_kind, model_variant, tool_bucket)" in block
+    assert "positive_count" in block
+    assert "negative_count" in block
+    for index_name in (
+        "idx_feedback_receipts_token_digest",
+        "idx_feedback_receipts_expires",
+        "idx_feedback_receipts_user",
+        "idx_feedback_receipts_anonymous",
+        "idx_feedback_receipts_owner_binding",
+    ):
+        assert index_name in MIG_071
+    assert "VALUES ('agent', 71," in MIG_071
+
+
+def test_init_sql_contains_final_feedback_schema():
+    assert "CREATE TABLE IF NOT EXISTS feedback_receipts" in INIT_SQL
+    assert "CREATE TABLE IF NOT EXISTS feedback_daily_rollups" in INIT_SQL
+
+
+def test_database_readiness_requires_feedback_schema_version_71():
+    assert database.PG_REQUIRED_SCHEMA_VERSION == 71
+    assert {"feedback_receipts", "feedback_daily_rollups"} <= database.PG_REQUIRED_TABLES
+    assert {
+        "token_digest",
+        "owner_kind",
+        "owner_binding_digest",
+        "assistant_turn_digest",
+        "expires_at",
+    } <= database.PG_REQUIRED_COLUMNS["feedback_receipts"]
+    assert {
+        "day",
+        "owner_kind",
+        "model_variant",
+        "tool_bucket",
+        "positive_count",
+        "negative_count",
+    } <= database.PG_REQUIRED_COLUMNS["feedback_daily_rollups"]

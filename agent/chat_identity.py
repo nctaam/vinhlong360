@@ -46,6 +46,14 @@ def _sign_visitor_id(visitor_id: str) -> str:
     ).hexdigest()
 
 
+def owner_binding_digest(owner_key: str) -> str:
+    """Create a domain-separated one-way binding for a resolved chat owner."""
+    if not isinstance(owner_key, str) or not owner_key:
+        raise ValueError("INVALID_CHAT_OWNER")
+    payload = b"feedback-owner-binding:v1\x00" + owner_key.encode("utf-8")
+    return hmac.new(_CHAT_OWNER_SECRET, payload, hashlib.sha256).hexdigest()
+
+
 def _anonymous_context(visitor_id: str, *, issue_cookie: bool) -> ChatOwnerContext:
     owner_digest = hashlib.sha256(visitor_id.encode("utf-8")).hexdigest()
     cookie_value = f"{visitor_id}.{_sign_visitor_id(visitor_id)}" if issue_cookie else None

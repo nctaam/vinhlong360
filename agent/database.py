@@ -61,6 +61,8 @@ PG_REQUIRED_TABLES = {
     "shared_rate_limits",
     "request_idempotency_keys",
     "quality_metric_snapshots",
+    "feedback_receipts",
+    "feedback_daily_rollups",
     # GĐ-B/C entity split (migration 059-062)
     "entity_changes",
     "site_settings_history",
@@ -85,10 +87,32 @@ PG_REQUIRED_COLUMNS = {
     "shared_rate_limits": {"key", "hits", "expires_at", "updated_at"},
     "request_idempotency_keys": {"key", "first_seen_at", "expires_at", "meta"},
     "quality_metric_snapshots": {"metric_key", "metric_value", "created_at"},
+    "feedback_receipts": {
+        "token_digest",
+        "owner_kind",
+        "user_id",
+        "anonymous_owner_digest",
+        "owner_binding_digest",
+        "assistant_turn_digest",
+        "model_variant",
+        "tool_bucket",
+        "rating",
+        "created_at",
+        "expires_at",
+        "used_at",
+    },
+    "feedback_daily_rollups": {
+        "day",
+        "owner_kind",
+        "model_variant",
+        "tool_bucket",
+        "positive_count",
+        "negative_count",
+    },
     "schema_version": {"component", "version", "migration", "updated_at"},
 }
 
-PG_REQUIRED_SCHEMA_VERSION = 62
+PG_REQUIRED_SCHEMA_VERSION = 71
 
 if USE_PG:
     import psycopg2

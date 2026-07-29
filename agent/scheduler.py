@@ -313,6 +313,20 @@ def task_cleanup_analytics():
         _sched_logger.error("Analytics cleanup error: %s", e)
 
 
+def task_cleanup_feedback_receipts():
+    """Delete expired feedback receipts in one bounded, independent batch."""
+    try:
+        from feedback_policy import cleanup_expired_feedback_receipts
+
+        removed = cleanup_expired_feedback_receipts(limit=500)
+        if removed:
+            _sched_logger.info("Feedback receipt cleanup removed %d rows", removed)
+        return removed
+    except Exception:
+        _sched_logger.error("FEEDBACK_RECEIPT_CLEANUP_FAILED")
+        return 0
+
+
 def _digest_kb_part(parts: list):
     """Thêm dòng thống kê tri thức (nội dung/địa điểm/lịch trình) vào digest."""
     try:
@@ -921,6 +935,7 @@ TASKS = [
     ScheduledTask("relationships",  task_relationship_discovery, interval_seconds=12 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 12h
     ScheduledTask("data-sync",      task_sync_data,              interval_seconds=3600),        # 1h
     ScheduledTask("analytics-cleanup", task_cleanup_analytics,   interval_seconds=24 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 24h
+    ScheduledTask("feedback-receipt-cleanup", task_cleanup_feedback_receipts, interval_seconds=3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 1h
     # Digest quản lý MIỄN PHÍ (không LLM) — chạy bất kể AUTONOMOUS_TASKS_ENABLED; no-op nếu chưa cấu hình admin TG.
     ScheduledTask("admin-digest",      task_admin_digest,         interval_seconds=24 * 3600, run_immediately=False),  # 24h
     # Agent tự động gọi LLM CÓ CAP (§B8 ngoại lệ kiểm soát) — task tự gate qua AUTONOMOUS_AGENT_ENABLED
