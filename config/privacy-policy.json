@@ -1,0 +1,7 @@
+{
+  "accountErasureDeadlineDays": 30,
+  "recoveryEnabledDuringGracePeriod": true,
+  "feedbackMode": "telemetry_only",
+  "feedbackReceiptTtlHours": 24,
+  "retainDeidentifiedAggregates": true
+}

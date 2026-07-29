@@ -3263,12 +3263,15 @@ async def health_internal(request: Request):
 async def readiness_probe():
     """Lightweight readiness probe for load balancers / orchestrators."""
     def _probe():
+        from config import settings as _settings
         from database import db as _db
+        from privacy_policy import privacy_policy_readiness
         data_source = getattr(knowledge, "_data_source", None) or "unknown"
         entity_count = len(getattr(knowledge, "_entities", None) or {})
         checks = {
             "knowledge": entity_count > 0,
             "data_source": data_source == "db" if getattr(_db, "_use_pg", False) else data_source in {"db", "json"},
+            "privacy_policy": privacy_policy_readiness(_settings),
         }
         try:
             with _db._conn() as conn:
