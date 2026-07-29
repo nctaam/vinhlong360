@@ -1,6 +1,9 @@
 """Tests for centralized config module."""
 import os
+import subprocess
 import sys
+from pathlib import Path
+
 import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "agent"))
@@ -34,16 +37,23 @@ def test_production_accepts_postgresql_urls(database_url):
     assert _production_settings(DATABASE_URL=database_url).is_production is True
 
 
-def test_database_backend_accepts_postgres_url(monkeypatch):
-    import importlib
-    import database
+def test_database_backend_accepts_postgres_url():
+    agent_dir = Path(__file__).resolve().parents[1] / "agent"
+    env = os.environ.copy()
+    env["DATABASE_URL"] = "postgres://user:pass@localhost/db"
+    env["ENVIRONMENT"] = "test"
 
-    monkeypatch.setenv("DATABASE_URL", "postgres://user:pass@localhost/db")
-    try:
-        assert importlib.reload(database).USE_PG is True
-    finally:
-        monkeypatch.delenv("DATABASE_URL", raising=False)
-        importlib.reload(database)
+    result = subprocess.run(
+        [sys.executable, "-c", "import database; print(database.USE_PG)"],
+        cwd=agent_dir,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "True"
 
 
 def test_production_rejects_sqlite_database_url():
