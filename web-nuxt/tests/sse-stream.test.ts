@@ -96,7 +96,7 @@ describe('consumeJsonSseStream', () => {
       'data: {"type":"done"}\n\n',
     )
 
-    await consumeJsonSseStream(reader, (event) => {
+    await consumeJsonSseStream<{ type: string; content?: string }>(reader, (event) => {
       if (event.type === 'text' || event.type === 'done') events.push(event)
     })
 
