@@ -806,9 +806,10 @@ class Database:
             self._write_entity_row(conn, entity, season_val, attrs_store,
                                    source_val, images_val, coords_val, updated)
             # GĐ-C dual-write: cột phổ quát + bảng CTI phản chiếu attrs (cùng transaction).
-            _entity_details.sync_entity_details(
+            mutation = _entity_details.sync_entity_details(
                 conn, self._use_pg, entity["id"], entity["type"],
                 attrs_val if isinstance(attrs_val, dict) else {})
+        _entity_details.apply_detail_cache_mutations([mutation])
 
     def _write_entity_row(self, conn, entity, season_val, attrs_store,
                           source_val, images_val, coords_val, updated) -> None:
@@ -941,13 +942,15 @@ class Database:
             self._execute(conn, f"DELETE FROM relationships WHERE from_id = {ph} OR to_id = {ph}",
                           (entity_id, entity_id))
             # GĐ-C: dọn detail rows (PG có FK CASCADE; SQLite dev thường không bật pragma FK)
-            _entity_details.delete_entity_details(conn, self._use_pg, entity_id)
+            mutation = _entity_details.delete_entity_details(conn, self._use_pg, entity_id)
             if not self._use_pg:
                 try:
                     conn.execute("DELETE FROM entities_fts WHERE id = ?", (entity_id,))
                 except sqlite3.OperationalError:
                     logger.debug("FTS5 delete skipped for entity %s", entity_id)
-            return cur.rowcount > 0
+            deleted = cur.rowcount > 0
+        _entity_details.apply_detail_cache_mutations([mutation])
+        return deleted
 
     def search_entities(self, q: str = None, entity_type: str = None,
                         area: str = None, limit: int = 20, offset: int = 0,
@@ -1493,11 +1496,12 @@ class Database:
         # PG xoá ở transaction này rồi nạp ở migrate_from_json (transaction KHÁC) → không atomic.
         with self._conn() as conn:
             self._clear_knowledge_tables(conn)
-            result = self._bulk_load(conn, data)
+            result, mutations = self._bulk_load(conn, data)
             if result.get("relationships_dropped", 0) > 0:
                 logger.warning("replace_from_json: %d quan he trung (from,to,type) bi bo khi luu "
                                "(input %d -> stored %d)",
                                result['relationships_dropped'], result['relationships'], result['relationships_stored'])
+        _entity_details.apply_detail_cache_mutations(mutations, reset=True)
 
         result["mode"] = "replace"
         if backup_path:
@@ -1528,7 +1532,9 @@ class Database:
                 logger.debug("FTS5 clear skipped (table may not exist)")
         self._execute(conn, "DELETE FROM entities")
 
-    def _bulk_load(self, conn, data: dict) -> dict:
+    def _bulk_load(
+        self, conn, data: dict
+    ) -> tuple[dict, list[_entity_details.DetailCacheMutation]]:
         """Nạp entities+relationships+itineraries vào DB trên CONNECTION đã cho (không tự
         commit) — để replace_from_json gói DELETE+INSERT trong 1 transaction (F1 atomic).
         SQLite + PostgreSQL dùng chung cấu trúc; SQL theo từng backend (copy từ upsert_*)."""
@@ -1543,12 +1549,14 @@ class Database:
 
         # GĐ-C dual-write: phản chiếu typed attrs của TOÀN BỘ entities vừa nạp vào
         # cột phổ quát + bảng CTI — cùng transaction với DELETE+INSERT (F1 atomic).
-        for entity in data.get("entities", []):
+        mutations = [
             _entity_details.sync_entity_details(
                 conn, self._use_pg, entity["id"], entity["type"],
                 entity.get("attributes") or {})
+            for entity in data.get("entities", [])
+        ]
 
-        return {
+        result = {
             "status": "migrated",
             "entities": len(entity_rows),
             "relationships": len(rel_rows),
@@ -1557,6 +1565,7 @@ class Database:
             "itineraries": len(itin_rows),
             "backend": "postgresql" if self._use_pg else "sqlite",
         }
+        return result, mutations
 
     def _bulk_insert_rows(self, conn, entity_rows, fts_rows, rel_rows, itin_rows) -> int:
         """executemany theo backend (extract nguyên văn từ _bulk_load). Trả số quan hệ đã lưu."""

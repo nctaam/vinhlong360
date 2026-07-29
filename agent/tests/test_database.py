@@ -364,6 +364,30 @@ def test_replace_from_json_with_override_roundtrip(db, tmp_path, monkeypatch):
     assert db.get_entity("new1")["name"] == "Mới"
 
 
+def test_replace_from_json_replaces_detail_cache_instead_of_merging(db, tmp_path, monkeypatch):
+    import entity_details
+    from config import settings
+
+    monkeypatch.setattr(settings, "ENTITY_DETAILS_TABLES", True)
+    db.reload_entity_details_cache()
+    db.upsert_entity(_entity(
+        eid="old-cache", etype="product", attributes={"producer": "Old"}))
+    payload = {
+        "entities": [_entity(
+            eid="new-cache", etype="product", attributes={"producer": "New"})],
+        "relationships": [],
+        "itineraries": [],
+    }
+    path = tmp_path / "replace-cache.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    monkeypatch.setenv("ALLOW_DESTRUCTIVE_DB_REPLACE", "1")
+
+    db.replace_from_json(str(path))
+
+    assert "old-cache" not in (entity_details._DETAIL_CACHE or {})
+    assert (entity_details._DETAIL_CACHE or {})["new-cache"]["producer"] == "New"
+
+
 def test_replace_from_json_auto_backup_stays_next_to_custom_db(db, tmp_path, monkeypatch):
     import database
 

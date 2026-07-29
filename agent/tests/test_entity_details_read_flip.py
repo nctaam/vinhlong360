@@ -20,6 +20,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 import pytest  # noqa: E402
 import entity_details  # noqa: E402
+from config import settings  # noqa: E402
 from database import db  # noqa: E402
 
 IDS = {
@@ -34,19 +35,22 @@ IDS = {
 @pytest.fixture()
 def flip(monkeypatch):
     """Bật flag + nạp cache; tự tắt và reset sau test."""
+    prior = settings.ENTITY_DETAILS_TABLES
+
     def _on():
-        monkeypatch.setenv("ENTITY_DETAILS_TABLES", "true")
+        settings.ENTITY_DETAILS_TABLES = True
         db.reload_entity_details_cache()
     yield _on
-    monkeypatch.delenv("ENTITY_DETAILS_TABLES", raising=False)
+    settings.ENTITY_DETAILS_TABLES = prior
     entity_details.reset_detail_cache()
 
 
 @pytest.fixture(autouse=True)
 def _cleanup(isolated_sqlite_db, monkeypatch):
+    prior = settings.ENTITY_DETAILS_TABLES
     monkeypatch.setattr(sys.modules[__name__], "db", isolated_sqlite_db)
     yield
-    os.environ.pop("ENTITY_DETAILS_TABLES", None)
+    settings.ENTITY_DETAILS_TABLES = prior
     entity_details.reset_detail_cache()
     for eid in IDS.values():
         db.delete_entity(eid)
@@ -138,3 +142,53 @@ def test_cache_follows_writes_while_flag_on(flip):
                       "attributes": {"ocop_star": 5, "producer": "HTX Mới"}})
     on = _attrs(IDS["product"])
     assert on["ocop_star"] == 5 and on["producer"] == "HTX Mới"
+
+
+def test_failed_upsert_does_not_publish_uncommitted_detail_cache(flip, monkeypatch):
+    db.upsert_entity({
+        "id": IDS["product"],
+        "type": "product",
+        "name": "Before",
+        "attributes": {"ocop_star": 3},
+    })
+    flip()
+    real_sync = entity_details.sync_entity_details
+
+    def sync_then_fail(*args, **kwargs):
+        real_sync(*args, **kwargs)
+        raise RuntimeError("fail after detail SQL")
+
+    monkeypatch.setattr(entity_details, "sync_entity_details", sync_then_fail)
+    with pytest.raises(RuntimeError, match="fail after detail SQL"):
+        db.upsert_entity({
+            "id": IDS["product"],
+            "type": "product",
+            "name": "After",
+            "attributes": {"ocop_star": 5},
+        })
+
+    assert _attrs(IDS["product"])["ocop_star"] == 3
+
+
+def test_load_detail_cache_rejects_multi_cti_without_replacing_old_cache(flip):
+    db.upsert_entity({
+        "id": IDS["product"],
+        "type": "product",
+        "name": "Product",
+        "attributes": {"producer": "HTX an toàn"},
+    })
+    flip()
+    before = dict(entity_details._DETAIL_CACHE or {})
+    with db._conn() as conn:
+        conn.execute(
+            "INSERT INTO entity_food_details (entity_id, wifi) VALUES (?, ?)",
+            (IDS["product"], 1),
+        )
+
+    with db._conn() as conn, pytest.raises(RuntimeError, match="multiple detail tables") as exc_info:
+        entity_details.load_detail_cache(conn, False)
+
+    message = str(exc_info.value)
+    assert IDS["product"] not in message
+    assert "HTX an toàn" not in message
+    assert entity_details._DETAIL_CACHE == before
