@@ -898,7 +898,7 @@ def task_personalization_cleanup():
         )
 
         deadline = legacy_cutover_deadline()
-        if deadline is not None and now > deadline:
+        if deadline is not None and now >= deadline:
             removed_legacy = purge_legacy_events(before=now)
             if removed_legacy:
                 _sched_logger.info(

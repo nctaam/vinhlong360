@@ -61,6 +61,10 @@ PG_REQUIRED_TABLES = {
     "shared_rate_limits",
     "request_idempotency_keys",
     "quality_metric_snapshots",
+    "user_preferences",
+    "user_preference_consents",
+    "user_personalization_events",
+    "personalization_legacy_purge_queue",
     # GĐ-B/C entity split (migration 059-062)
     "entity_changes",
     "site_settings_history",
@@ -85,10 +89,27 @@ PG_REQUIRED_COLUMNS = {
     "shared_rate_limits": {"key", "hits", "expires_at", "updated_at"},
     "request_idempotency_keys": {"key", "first_seen_at", "expires_at", "meta"},
     "quality_metric_snapshots": {"metric_key", "metric_value", "created_at"},
+    "user_preferences": {
+        "user_id", "region_id", "region_label", "region_scope",
+        "location_source", "location_accuracy", "location_consent_state",
+        "location_enabled", "personalization_enabled", "explicit_interests",
+        "recommendation_reset_at", "consent_version", "revision",
+        "created_at", "updated_at",
+    },
+    "user_preference_consents": {
+        "id", "user_id", "consent_type", "state", "version", "created_at",
+    },
+    "user_personalization_events": {
+        "id", "user_id", "event_type", "context", "entity_id",
+        "entity_type", "area_id", "interest_keys", "occurred_at", "expires_at",
+    },
+    "personalization_legacy_purge_queue": {
+        "user_id", "created_at", "attempt_count", "next_attempt_at", "last_error",
+    },
     "schema_version": {"component", "version", "migration", "updated_at"},
 }
 
-PG_REQUIRED_SCHEMA_VERSION = 62
+PG_REQUIRED_SCHEMA_VERSION = 72
 
 if USE_PG:
     import psycopg2

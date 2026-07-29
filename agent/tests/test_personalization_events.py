@@ -360,6 +360,21 @@ def read_all_legacy_events(path: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
 
 
+def _public_score_paths(value, path="$") -> list[str]:
+    found: list[str] = []
+    if isinstance(value, dict):
+        for key, item in value.items():
+            child = f"{path}.{key}"
+            folded = str(key).casefold()
+            if "score" in folded or "weight" in folded:
+                found.append(child)
+            found.extend(_public_score_paths(item, child))
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            found.extend(_public_score_paths(item, f"{path}[{index}]"))
+    return found
+
+
 def _hold_publication_lock(lock_path: str, ready, release) -> None:
     with publication_lock(Path(lock_path)):
         ready.set()
@@ -451,6 +466,192 @@ def canonical_event_entities(pg_db):
             place_id=place_id,
         )
     return entities
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {
+            "region_id": "203.0.113.8",
+            "region_label": "203.0.113.8",
+            "region_scope": "province",
+            "location_source": "manual",
+            "location_accuracy": "province",
+        },
+        {
+            "region_id": "province-vl",
+            "region_label": "Vĩnh Long",
+            "region_scope": "province",
+            "location_source": "gps",
+            "location_accuracy": "province",
+            "location_enabled": True,
+        },
+        {
+            "region_id": "client-invented-region",
+            "region_label": "Client invented region",
+            "region_scope": "province",
+            "location_source": "manual",
+            "location_accuracy": "province",
+        },
+    ],
+)
+def test_postgres_preference_route_rejects_forged_region_without_writing(
+    logged_in_client, pg_db, payload
+):
+    response = logged_in_client.client.patch(
+        "/api/me/preferences",
+        json={"revision": 0, **payload},
+        headers=logged_in_client.csrf_headers,
+    )
+
+    assert response.status_code == 422
+    with pg_db._conn(commit_on_success=False) as conn:
+        row = pg_db._fetchone(
+            conn,
+            "SELECT COUNT(*) AS count FROM user_preferences WHERE user_id = %s::uuid",
+            (logged_in_client.owner,),
+        )
+    assert int(pg_db._row_to_dict(row)["count"]) == 0
+
+
+def test_postgres_preference_route_persists_valid_manual_and_token_regions_only(
+    logged_in_client, pg_db
+):
+    logged_in_client.client.app.dependency_overrides[
+        public_api.get_reverse_geocoder
+    ] = lambda: (
+        lambda *_: {
+            "region_id": "province-vl",
+            "region_label": "Vĩnh Long",
+            "region_scope": "province",
+            "location_accuracy": "province",
+        }
+    )
+    resolution = logged_in_client.client.post(
+        "/api/me/location/resolve",
+        json={"mode": "gps", "latitude": 10.25, "longitude": 105.97},
+        headers=logged_in_client.csrf_headers,
+    )
+    assert resolution.status_code == 200
+    token = resolution.json()["confirmation_token"]
+
+    confirmed = logged_in_client.client.patch(
+        "/api/me/preferences",
+        json={
+            "revision": 0,
+            "location_confirmation_token": token,
+            "location_consent_state": "granted",
+            "location_enabled": True,
+        },
+        headers=logged_in_client.csrf_headers,
+    )
+
+    assert confirmed.status_code == 200
+    assert confirmed.json()["region_id"] == "province-vl"
+    assert confirmed.json()["location_source"] == "gps"
+
+    manual = logged_in_client.client.patch(
+        "/api/me/preferences",
+        json={
+            "revision": 1,
+            "region_id": "province-bt",
+            "region_label": "Bến Tre",
+            "region_scope": "province",
+            "location_source": "manual",
+            "location_accuracy": "province",
+        },
+        headers=logged_in_client.csrf_headers,
+    )
+    assert manual.status_code == 200
+    with pg_db._conn(commit_on_success=False) as conn:
+        row = pg_db._fetchone(
+            conn,
+            "SELECT region_id, region_label, location_source, revision "
+            "FROM user_preferences WHERE user_id = %s::uuid",
+            (logged_in_client.owner,),
+        )
+        columns = pg_db._fetchall(
+            conn,
+            "SELECT column_name FROM information_schema.columns "
+            "WHERE table_schema = 'public' AND table_name = 'user_preferences'",
+            (),
+        )
+    stored = pg_db._row_to_dict(row)
+    assert stored == {
+        "region_id": "province-bt",
+        "region_label": "Bến Tre",
+        "location_source": "manual",
+        "revision": 2,
+    }
+    assert "confirmation_token" not in {
+        pg_db._row_to_dict(column)["column_name"] for column in columns
+    }
+
+
+def test_contextual_response_recursively_omits_internal_scores(
+    logged_in_client, pg_db, monkeypatch
+):
+    _set_preferences(
+        pg_db,
+        logged_in_client.owner,
+        personalization_enabled=True,
+        explicit_interests=["food"],
+    )
+    candidate = {
+        "id": "public-context-card",
+        "name": "Bánh dân gian",
+        "type": "dish",
+        "summary": "Món bánh truyền thống",
+        "placeId": None,
+        "area": "province-vl",
+        "attributes": {"rating": 4.5, "review_count": 12},
+        "source": {
+            "title": "Cổng thông tin tỉnh",
+            "url": "https://example.gov.vn/banh-dan-gian",
+        },
+        "images": [],
+        "coordinates": None,
+        "status": "published",
+        "verified": 1,
+        "updatedAt": "2026-07-28T00:00:00Z",
+    }
+    monkeypatch.setattr(
+        public_api,
+        "_gather_recommendation_candidates",
+        lambda *_: {candidate["id"]: candidate},
+    )
+
+    internal = public_api._build_user_interest_profile(logged_in_client.owner)
+    response = logged_in_client.client.get(
+        "/api/me/recommendations/contextual?context=home&limit=3",
+        headers=logged_in_client.headers,
+    )
+
+    assert internal["interests"][0]["score"] > 0
+    assert response.status_code == 200
+    assert response.json()["profile"]["interests"][0]["key"] == "food"
+    assert _public_score_paths(response.json()) == []
+
+
+def test_insights_response_recursively_omits_internal_scores(
+    logged_in_client, pg_db
+):
+    _set_preferences(
+        pg_db,
+        logged_in_client.owner,
+        personalization_enabled=True,
+        explicit_interests=["culture"],
+    )
+
+    internal = public_api._build_user_interest_profile(logged_in_client.owner)
+    response = logged_in_client.client.get(
+        "/api/me/insights", headers=logged_in_client.headers
+    )
+
+    assert internal["interest_scores"]["culture"] > 0
+    assert response.status_code == 200
+    assert response.json()["interests"][0]["key"] == "culture"
+    assert _public_score_paths(response.json()) == []
 
 
 def test_event_writer_drops_sensitive_and_arbitrary_fields(
@@ -1242,6 +1443,21 @@ def test_legacy_reader_uses_exact_rollout_deadline_setting(
     assert after == []
 
 
+def test_legacy_reader_disables_reads_at_exact_cutover_deadline(
+    tmp_path, monkeypatch, users
+):
+    owner, _ = users
+    deadline = datetime(2026, 8, 1, tzinfo=timezone.utc)
+    path = tmp_path / "legacy-events.jsonl"
+    seed_legacy_events(path, [owner])
+    monkeypatch.setattr(personalization_events, "LEGACY_EVENTS_PATH", path)
+    monkeypatch.setattr(
+        personalization_events, "legacy_cutover_deadline", lambda: deadline
+    )
+
+    assert read_legacy_events_if_allowed(owner, cutoff=None, now=deadline) == []
+
+
 def test_legacy_reader_ignores_retired_deadline_name_and_fails_closed(
     tmp_path, monkeypatch, users
 ):
@@ -1957,6 +2173,35 @@ def test_scheduler_purges_recognized_legacy_rows_only_after_cutover(
     scheduler.task_personalization_cleanup()
 
     assert read_all_legacy_events(path) == [workspace_row]
+
+
+def test_scheduler_purges_legacy_rows_at_exact_cutover_deadline(
+    pg_db, users, tmp_path, monkeypatch
+):
+    owner, _ = users
+    deadline = datetime(2026, 8, 1, tzinfo=timezone.utc)
+    path = tmp_path / "legacy-events.jsonl"
+    seed_legacy_events(path, [owner])
+    monkeypatch.setattr(personalization_events, "LEGACY_EVENTS_PATH", path)
+    monkeypatch.setattr(
+        personalization_events,
+        "LEGACY_EVENTS_LOCK_PATH",
+        tmp_path / ".legacy-events.publication.lock",
+    )
+    monkeypatch.setattr(
+        personalization_events, "legacy_cutover_deadline", lambda: deadline
+    )
+
+    class AtCutoverDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return deadline
+
+    monkeypatch.setattr(scheduler, "datetime", AtCutoverDateTime)
+
+    scheduler.task_personalization_cleanup()
+
+    assert read_all_legacy_events(path) == []
 
 
 def test_final_account_purge_waits_for_configured_grace_period(

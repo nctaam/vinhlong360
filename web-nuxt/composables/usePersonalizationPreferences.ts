@@ -104,6 +104,9 @@ function normalizeResolution(value: unknown, source: Extract<PreferenceLocationS
     region_scope: regionScope,
     location_source: source,
     location_accuracy: locationAccuracy,
+    ...(typeof value.confirmation_token === 'string' && value.confirmation_token.length <= 2048
+      ? { confirmation_token: value.confirmation_token }
+      : {}),
   }
 }
 
@@ -378,6 +381,15 @@ export function usePersonalizationPreferences() {
     return patch({ explicit_interests: bounded })
   }
 
+  async function confirmLocation(resolution: LocationResolution) {
+    if (!resolution.confirmation_token) return mutationResult(false, 422)
+    return patch({
+      location_confirmation_token: resolution.confirmation_token,
+      location_consent_state: 'granted',
+      location_enabled: true,
+    })
+  }
+
   async function revokeLocation() {
     return patch({ location_enabled: false, location_consent_state: 'off' })
   }
@@ -389,6 +401,7 @@ export function usePersonalizationPreferences() {
     refresh,
     patch,
     resolveLocation,
+    confirmLocation,
     resetRecommendations,
     setRegion,
     setInterests,

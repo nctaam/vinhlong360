@@ -7,8 +7,10 @@ import json
 import math
 import os
 import re
+import secrets
 from collections.abc import Mapping
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Any, Protocol
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
@@ -37,7 +39,14 @@ _DMS_RE = re.compile(
     r"(?P<hemisphere>[NSEW])?",
     re.IGNORECASE,
 )
+_HEMISPHERE_COORDINATE_RE = re.compile(
+    rf"(?<![A-Za-z0-9_.]){_NUMBER_PATTERN}\s*[NSEW](?![A-Za-z])",
+    re.IGNORECASE,
+)
+_IPV4_LIKE_RE = re.compile(r"(?<![0-9.])(?:\d{1,3}\.){3}\d{1,3}(?![0-9.])")
 _IP_CANDIDATE_RE = re.compile(r"[0-9A-Fa-f:.]+")
+LOCATION_CONFIRMATION_TTL_SECONDS = 300
+_LOCATION_CONFIRMATION_PURPOSE = "location-confirmation-v1"
 
 
 class LocationInputError(ValueError):
@@ -46,6 +55,10 @@ class LocationInputError(ValueError):
 
 class LocationProviderError(RuntimeError):
     """Raised when a configured provider cannot return a safe response."""
+
+
+class LocationConfirmationError(ValueError):
+    """Raised when a resolver confirmation lacks valid server provenance."""
 
 
 class ReverseGeocoder(Protocol):
@@ -106,6 +119,47 @@ def _normalized_region_label(value: Any) -> str | None:
     return _bounded_text(value, MAX_REGION_LABEL_LENGTH)
 
 
+def contains_raw_location_value(value: Any) -> bool:
+    """Reject IP/coordinate-shaped text at resolution and persistence boundaries."""
+    if not isinstance(value, str):
+        return False
+    if _IPV4_LIKE_RE.search(value):
+        return True
+    for match in _IP_CANDIDATE_RE.finditer(value):
+        candidate = match.group().strip(".,;()[]{}")
+        try:
+            ipaddress.ip_address(candidate)
+        except ValueError:
+            continue
+        return True
+    if _DMS_RE.search(value) or _HEMISPHERE_COORDINATE_RE.search(value):
+        return True
+    pair = _COORDINATE_PAIR_RE.search(value)
+    if pair:
+        try:
+            first = float(pair.group("first"))
+            second = float(pair.group("second"))
+        except ValueError:
+            return True
+        if (
+            -90 <= first <= 90 and -180 <= second <= 180
+        ) or (
+            -90 <= second <= 90 and -180 <= first <= 180
+        ):
+            return True
+    for match in _NUMBER_RE.finditer(value):
+        token = match.group()
+        if not any(marker in token for marker in (".", "e", "E", "+", "-")):
+            continue
+        try:
+            candidate = float(token)
+        except ValueError:
+            continue
+        if math.isfinite(candidate) and -180 <= candidate <= 180:
+            return True
+    return False
+
+
 def _normalize_provider_result(value: Any, source: str) -> LocationResolution:
     if not isinstance(value, Mapping):
         return _unknown(source)
@@ -121,6 +175,8 @@ def _normalize_provider_result(value: Any, source: str) -> LocationResolution:
     except Exception:
         return _unknown(source)
     if region_id is None:
+        return _unknown(source)
+    if contains_raw_location_value(region_id) or contains_raw_location_value(region_label):
         return _unknown(source)
     return LocationResolution(
         region_id=region_id,
@@ -266,6 +322,54 @@ def resolve_ip(client_ip: str, ip_geocoder: IpGeocoder) -> LocationResolution:
         return _unknown("ip")
     resolution = _normalize_provider_result(provider_result, "ip")
     return _redact_ip_echo(resolution, normalized_ip)
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def issue_location_confirmation(
+    resolution: LocationResolution,
+    user_id: str,
+) -> str | None:
+    from auth_middleware import generate_user_bound_token
+
+    if not resolution.region_id or resolution.location_source not in {"gps", "ip"}:
+        return None
+    now = _utc_now()
+    payload = {
+        "nonce": secrets.token_urlsafe(12),
+        "region_id": resolution.region_id,
+        "region_label": resolution.region_label,
+        "region_scope": resolution.region_scope,
+        "location_source": resolution.location_source,
+        "location_accuracy": resolution.location_accuracy,
+    }
+    return generate_user_bound_token(
+        _LOCATION_CONFIRMATION_PURPOSE,
+        user_id,
+        payload,
+        expires_at=int(now.timestamp()) + LOCATION_CONFIRMATION_TTL_SECONDS,
+    )
+
+
+def verify_location_confirmation(token: str, user_id: str) -> LocationResolution:
+    from auth_middleware import verify_user_bound_token
+
+    payload = verify_user_bound_token(
+        token,
+        _LOCATION_CONFIRMATION_PURPOSE,
+        user_id,
+        now=int(_utc_now().timestamp()),
+    )
+    if payload is None:
+        raise LocationConfirmationError("Invalid location confirmation")
+    resolution = _normalize_provider_result(
+        payload, str(payload.get("location_source") or "")
+    )
+    if not resolution.region_id or resolution.location_source not in {"gps", "ip"}:
+        raise LocationConfirmationError("Invalid location confirmation")
+    return resolution
 
 
 def _provider_url(endpoint: str, parameters: Mapping[str, str]) -> str:

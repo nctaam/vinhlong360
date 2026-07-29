@@ -945,7 +945,7 @@ const trustSourceUrl = computed(() => sourceFreshness.value?.source_url || entit
 const trustSourceTitle = computed(() => sourceFreshness.value?.source_title || entity.value?.quality?.source_title || (trustSourceUrl.value ? 'Nguồn tham khảo' : 'Chưa có nguồn công khai'))
 const trustUpdatedAt = computed(() => sourceFreshness.value?.updated_at || entity.value?.updatedAt || '')
 const trustVerifiedAt = computed(() => sourceFreshness.value?.verified_at || entity.value?.quality?.verified_at || '')
-const trustSourceTier = computed(() => String(entity.value?.quality?.source_tier || 'unknown'))
+const trustSourceTier = computed(() => String(sourceFreshness.value?.source_tier || 'unknown'))
 const trustStatus = computed(() => sourceFreshness.value?.freshness_status || 'unknown')
 const trustStatusLabel = computed(() => {
   if (trustStatus.value === 'fresh') return 'Mới cập nhật'

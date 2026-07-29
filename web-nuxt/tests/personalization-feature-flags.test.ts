@@ -74,11 +74,11 @@ const sourcedEntity = {
   quality: {
     source_title: 'Cổng thông tin tỉnh',
     source_url: 'https://example.gov.vn/flag-detail-1',
-    source_tier: 'official',
   },
   source_freshness: {
     source_title: 'Cổng thông tin tỉnh',
     source_url: 'https://example.gov.vn/flag-detail-1',
+    source_tier: 'official',
     updated_at: '2026-07-20T00:00:00Z',
     freshness_status: 'fresh',
   },

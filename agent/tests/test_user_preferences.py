@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import auth
 import auth_middleware
+import location_resolver
 import public_api
 import user_preferences
 from auth_middleware import generate_csrf_token
@@ -368,16 +369,22 @@ def preference_database(tmp_path, monkeypatch):
 @pytest.fixture
 def logged_in_user(monkeypatch):
     session_token = "preference-route-session"
+    other_session_token = "preference-route-session-other"
     user = {
         "id": "user-1",
         "display_name": "Preference owner",
         "date_of_birth": "1990-01-02",
         "ip": "203.0.113.9",
     }
+    other_user = {**user, "id": "user-2", "display_name": "Other owner"}
 
     async def current_user(request):
         bearer = request.headers.get("Authorization", "").removeprefix("Bearer ").strip()
-        return user if bearer == session_token else None
+        if bearer == session_token:
+            return user
+        if bearer == other_session_token:
+            return other_user
+        return None
 
     monkeypatch.setattr(auth_middleware, "_get_current_user_or_none", current_user)
     headers = {"Authorization": f"Bearer {session_token}"}
@@ -388,6 +395,10 @@ def logged_in_user(monkeypatch):
             **headers,
             "X-CSRF-Token": generate_csrf_token(session_token),
         },
+        other_csrf_headers={
+            "Authorization": f"Bearer {other_session_token}",
+            "X-CSRF-Token": generate_csrf_token(other_session_token),
+        },
     )
 
 
@@ -396,7 +407,7 @@ def client(preference_database, logged_in_user, monkeypatch):
     monkeypatch.setattr(
         public_api,
         "settings",
-        SimpleNamespace(PREFERENCE_PROFILE_V1=True),
+        SimpleNamespace(PREFERENCE_PROFILE_V1=True, LOCATION_RESOLVER_V1=True),
         raising=False,
     )
     app = FastAPI()
@@ -580,15 +591,16 @@ def test_patch_preferences_persists_normalized_values_and_revision(preference_da
         "user-1",
         {
             "region_id": "province-vl",
-            "region_label": "  Vinh Long  ",
+            "region_label": "Vĩnh Long",
             "region_scope": "province",
             "location_source": "manual",
+            "location_accuracy": "province",
             "explicit_interests": ["food", "food", "culture"],
         },
         expected_revision=0,
     )
 
-    assert snapshot["region_label"] == "Vinh Long"
+    assert snapshot["region_label"] == "Vĩnh Long"
     assert snapshot["explicit_interests"] == ["food", "culture"]
     assert snapshot["revision"] == 1
     assert load_preferences("user-1") == snapshot
@@ -704,6 +716,180 @@ def test_preference_profile_flag_allows_enabled_mutation(client, logged_in_user)
 
     assert response.status_code == 200
     assert response.json()["explicit_interests"] == ["food"]
+
+
+def test_preferences_patch_accepts_only_exact_canonical_manual_region(
+    client, logged_in_user
+):
+    valid = client.patch(
+        "/api/me/preferences",
+        json={
+            "revision": 0,
+            "region_id": "province-vl",
+            "region_label": "Vĩnh Long",
+            "region_scope": "province",
+            "location_source": "manual",
+            "location_accuracy": "province",
+        },
+        headers=logged_in_user.csrf_headers,
+    )
+
+    assert valid.status_code == 200
+    assert valid.json()["region_id"] == "province-vl"
+
+    forged = client.patch(
+        "/api/me/preferences",
+        json={
+            "revision": 1,
+            "region_id": "province-vl",
+            "region_label": "10.25, 105.97",
+            "region_scope": "province",
+            "location_source": "manual",
+            "location_accuracy": "province",
+        },
+        headers=logged_in_user.csrf_headers,
+    )
+
+    assert forged.status_code == 422
+    snapshot = load_preferences("user-1")
+    assert snapshot["revision"] == 1
+    assert snapshot["region_label"] == "Vĩnh Long"
+    assert "10.25" not in repr(snapshot)
+    assert "105.97" not in repr(snapshot)
+
+
+@pytest.mark.parametrize("location_source", ["gps", "ip"])
+def test_preferences_patch_rejects_forged_resolver_source_without_token(
+    client, logged_in_user, location_source
+):
+    response = client.patch(
+        "/api/me/preferences",
+        json={
+            "revision": 0,
+            "region_id": "province-vl",
+            "region_label": "Vĩnh Long",
+            "region_scope": "province",
+            "location_source": location_source,
+            "location_accuracy": "province",
+            "location_enabled": True,
+        },
+        headers=logged_in_user.csrf_headers,
+    )
+
+    assert response.status_code == 422
+    assert load_preferences("user-1")["revision"] == 0
+
+
+def test_resolver_confirmation_token_is_required_user_bound_and_transient(
+    client, logged_in_user, monkeypatch
+):
+    now = datetime(2026, 7, 29, 8, tzinfo=timezone.utc)
+    monkeypatch.setattr(location_resolver, "_utc_now", lambda: now, raising=False)
+    client.app.dependency_overrides[public_api.get_reverse_geocoder] = lambda: (
+        lambda *_: {
+            "region_id": "province-vl",
+            "region_label": "Vĩnh Long",
+            "region_scope": "province",
+            "location_accuracy": "province",
+        }
+    )
+
+    resolution = client.post(
+        "/api/me/location/resolve",
+        json={"mode": "gps", "latitude": 10.25, "longitude": 105.97},
+        headers=logged_in_user.csrf_headers,
+    )
+
+    assert resolution.status_code == 200
+    assert resolution.headers["Cache-Control"] == "no-store"
+    token = resolution.json()["confirmation_token"]
+    assert isinstance(token, str) and token
+    assert "10.25" not in token
+    assert "105.97" not in token
+
+    wrong_owner = client.patch(
+        "/api/me/preferences",
+        json={
+            "revision": 0,
+            "location_confirmation_token": token,
+            "location_consent_state": "granted",
+            "location_enabled": True,
+        },
+        headers=logged_in_user.other_csrf_headers,
+    )
+    assert wrong_owner.status_code == 422
+    assert load_preferences("user-2")["revision"] == 0
+
+    forged = client.patch(
+        "/api/me/preferences",
+        json={
+            "revision": 0,
+            "location_confirmation_token": token[:-1] + ("A" if token[-1] != "A" else "B"),
+            "location_consent_state": "granted",
+            "location_enabled": True,
+        },
+        headers=logged_in_user.csrf_headers,
+    )
+    assert forged.status_code == 422
+    assert load_preferences("user-1")["revision"] == 0
+
+    confirmed = client.patch(
+        "/api/me/preferences",
+        json={
+            "revision": 0,
+            "location_confirmation_token": token,
+            "location_consent_state": "granted",
+            "location_enabled": True,
+        },
+        headers=logged_in_user.csrf_headers,
+    )
+    assert confirmed.status_code == 200
+    assert confirmed.json()["region_id"] == "province-vl"
+    assert confirmed.json()["location_source"] == "gps"
+    assert "confirmation_token" not in confirmed.json()
+    assert "confirmation_token" not in repr(load_preferences("user-1"))
+
+
+def test_resolver_confirmation_token_expires_at_the_short_lived_boundary(
+    client, logged_in_user, monkeypatch
+):
+    issued_at = datetime(2026, 7, 29, 8, tzinfo=timezone.utc)
+    monkeypatch.setattr(location_resolver, "_utc_now", lambda: issued_at, raising=False)
+    monkeypatch.setattr(public_api, "get_client_ip", lambda _request: "203.0.113.8")
+    client.app.dependency_overrides[public_api.get_ip_geocoder] = lambda: (
+        lambda *_: {
+            "region_id": "province-vl",
+            "region_label": "Vĩnh Long",
+            "region_scope": "province",
+            "location_accuracy": "province",
+        }
+    )
+    resolution = client.post(
+        "/api/me/location/resolve",
+        json={"mode": "ip"},
+        headers=logged_in_user.csrf_headers,
+    )
+    token = resolution.json()["confirmation_token"]
+    monkeypatch.setattr(
+        location_resolver,
+        "_utc_now",
+        lambda: issued_at.replace(minute=6),
+        raising=False,
+    )
+
+    response = client.patch(
+        "/api/me/preferences",
+        json={
+            "revision": 0,
+            "location_confirmation_token": token,
+            "location_consent_state": "granted",
+            "location_enabled": True,
+        },
+        headers=logged_in_user.csrf_headers,
+    )
+
+    assert response.status_code == 422
+    assert load_preferences("user-1")["revision"] == 0
 
 
 def test_preferences_get_requires_authenticated_owner(client):
@@ -842,24 +1028,44 @@ def test_preferences_initial_consent_toggle_uses_server_policy_version(
 
 @pytest.mark.parametrize("location_source", ["gps", "ip"])
 def test_preferences_location_off_rejects_manual_source_laundering(
-    client, logged_in_user, location_source
+    client, logged_in_user, location_source, monkeypatch
 ):
+    def provider(*_):
+        return {
+            "region_id": "province-vl",
+            "region_label": "Vĩnh Long",
+            "region_scope": "province",
+            "location_accuracy": "province",
+        }
+
+    if location_source == "gps":
+        client.app.dependency_overrides[public_api.get_reverse_geocoder] = lambda: provider
+        resolution = client.post(
+            "/api/me/location/resolve",
+            json={"mode": "gps", "latitude": 10.25, "longitude": 105.97},
+            headers=logged_in_user.csrf_headers,
+        )
+    else:
+        monkeypatch.setattr(public_api, "get_client_ip", lambda _request: "203.0.113.8")
+        client.app.dependency_overrides[public_api.get_ip_geocoder] = lambda: provider
+        resolution = client.post(
+            "/api/me/location/resolve",
+            json={"mode": "ip"},
+            headers=logged_in_user.csrf_headers,
+        )
     first = client.patch(
         "/api/me/preferences",
         json={
             "revision": 0,
-            "region_id": "province-vl",
-            "region_label": "Vinh Long",
-            "region_scope": "province",
-            "location_source": location_source,
-            "location_accuracy": "province",
+            "location_confirmation_token": resolution.json()["confirmation_token"],
+            "location_consent_state": "granted",
             "location_enabled": True,
         },
         headers=logged_in_user.csrf_headers,
     )
     assert first.status_code == 200
 
-    response = client.patch(
+    laundering = client.patch(
         "/api/me/preferences",
         json={
             "revision": 1,
@@ -868,7 +1074,13 @@ def test_preferences_location_off_rejects_manual_source_laundering(
         },
         headers=logged_in_user.csrf_headers,
     )
+    assert laundering.status_code == 422
 
+    response = client.patch(
+        "/api/me/preferences",
+        json={"revision": 1, "location_enabled": False},
+        headers=logged_in_user.csrf_headers,
+    )
     assert response.status_code == 200
     assert response.json()["region_id"] is None
     assert response.json()["region_label"] is None

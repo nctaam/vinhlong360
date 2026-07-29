@@ -30,6 +30,7 @@ from database import (  # noqa: E402
     canonical_verified_at,
 )
 import os  # noqa: E402
+import database as database_module  # noqa: E402
 
 
 @pytest.fixture
@@ -92,11 +93,15 @@ def test_pg_initialize_verifies_schema_before_legacy_repair_code():
     assert "CREATE INDEX" not in verify_src
 
 def test_pg_schema_contract_tracks_latest_release_tables():
-    # 62 = GĐ-B/C entity split (059 repair chain, 060 universal cols, 061 CTI, 062 vá):
-    # replay PG trắng + prod đều ở 62 (2026-07-02).
-    assert PG_REQUIRED_SCHEMA_VERSION == 62
+    assert PG_REQUIRED_SCHEMA_VERSION == 72
     assert {"schema_version", "admin_audit_events", "shared_rate_limits", "request_idempotency_keys"} <= PG_REQUIRED_TABLES
     assert {"entity_changes", "site_settings_history"} <= PG_REQUIRED_TABLES
+    assert {
+        "user_preferences",
+        "user_preference_consents",
+        "user_personalization_events",
+        "personalization_legacy_purge_queue",
+    } <= PG_REQUIRED_TABLES
     assert {f"entity_{k}_details" for k in
             ("place", "food", "product", "lodging", "event",
              "experience", "facility", "person", "adminplace")} <= PG_REQUIRED_TABLES
@@ -104,6 +109,115 @@ def test_pg_schema_contract_tracks_latest_release_tables():
     assert {"key", "first_seen_at", "expires_at", "meta"} <= PG_REQUIRED_COLUMNS["request_idempotency_keys"]
     assert "bucket" not in PG_REQUIRED_COLUMNS["shared_rate_limits"]
     assert "response_json" not in PG_REQUIRED_COLUMNS["request_idempotency_keys"]
+
+
+_NP1_REQUIRED_COLUMNS = {
+    "user_preferences": {
+        "user_id", "region_id", "region_label", "region_scope",
+        "location_source", "location_accuracy", "location_consent_state",
+        "location_enabled", "personalization_enabled", "explicit_interests",
+        "recommendation_reset_at", "consent_version", "revision",
+        "created_at", "updated_at",
+    },
+    "user_preference_consents": {
+        "id", "user_id", "consent_type", "state", "version", "created_at",
+    },
+    "user_personalization_events": {
+        "id", "user_id", "event_type", "context", "entity_id",
+        "entity_type", "area_id", "interest_keys", "occurred_at", "expires_at",
+    },
+    "personalization_legacy_purge_queue": {
+        "user_id", "created_at", "attempt_count", "next_attempt_at", "last_error",
+    },
+}
+
+
+class _SchemaReadinessCursor:
+    def __init__(self, *, tables, columns, version):
+        self.tables = set(tables)
+        self.columns = {table: set(values) for table, values in columns.items()}
+        self.version = version
+        self.rows = []
+
+    def execute(self, sql, params=None):
+        if "information_schema.tables" in sql:
+            self.rows = [{"table_name": table} for table in sorted(self.tables)]
+        elif "information_schema.columns" in sql:
+            self.rows = [
+                {"column_name": column}
+                for column in sorted(self.columns.get(params[0], set()))
+            ]
+        elif "MAX(version)" in sql:
+            self.rows = [{"version": self.version}]
+        else:
+            raise AssertionError(f"unexpected readiness query: {sql}")
+
+    def fetchall(self):
+        return list(self.rows)
+
+    def fetchone(self):
+        return self.rows[0] if self.rows else None
+
+
+class _SchemaReadinessConnection:
+    def __init__(self, cursor):
+        self._cursor = cursor
+
+    def cursor(self, **_kwargs):
+        return self._cursor
+
+
+def _release_schema(*, version=72, missing_table=None, missing_column=None):
+    database_module.psycopg2 = SimpleNamespace(
+        extras=SimpleNamespace(RealDictCursor=object)
+    )
+    tables = set(PG_REQUIRED_TABLES) | set(_NP1_REQUIRED_COLUMNS)
+    columns = {
+        table: set(values) for table, values in PG_REQUIRED_COLUMNS.items()
+    }
+    columns.update({
+        table: set(values) for table, values in _NP1_REQUIRED_COLUMNS.items()
+    })
+    if missing_table:
+        tables.remove(missing_table)
+    if missing_column:
+        table, column = missing_column
+        columns[table].remove(column)
+    return _SchemaReadinessConnection(
+        _SchemaReadinessCursor(tables=tables, columns=columns, version=version)
+    )
+
+
+def test_pg_startup_rejects_schema_version_71():
+    database = Database.__new__(Database)
+
+    with pytest.raises(RuntimeError, match=r"schema_version agent=71, expected >= 72"):
+        database._verify_pg_schema(_release_schema(version=71))
+
+
+@pytest.mark.parametrize("table", sorted(_NP1_REQUIRED_COLUMNS))
+def test_pg_startup_rejects_each_missing_np1_table(table):
+    database = Database.__new__(Database)
+
+    with pytest.raises(RuntimeError, match=rf"missing tables:.*{table}"):
+        database._verify_pg_schema(_release_schema(missing_table=table))
+
+
+@pytest.mark.parametrize(
+    ("table", "column"),
+    [
+        (table, column)
+        for table, columns in sorted(_NP1_REQUIRED_COLUMNS.items())
+        for column in sorted(columns)
+    ],
+)
+def test_pg_startup_rejects_each_missing_np1_column(table, column):
+    database = Database.__new__(Database)
+
+    with pytest.raises(RuntimeError, match=rf"missing columns:.*{table}\.{column}"):
+        database._verify_pg_schema(
+            _release_schema(missing_column=(table, column))
+        )
 
 
 # ── Entity CRUD + JSON round-trip ──

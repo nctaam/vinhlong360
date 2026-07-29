@@ -509,6 +509,7 @@ def test_trust_drawer_flag_controls_entity_detail_enhancement(
             "id": "place-1",
             "name": "Cho Vinh Long",
             "type": "place",
+            "official": True,
             "images": [],
         },
     )
@@ -524,3 +525,5 @@ def test_trust_drawer_flag_controls_entity_detail_enhancement(
     assert entity["id"] == "place-1"
     assert "practical_facts" in entity
     assert ("source_freshness" in entity) is enabled
+    if enabled:
+        assert entity["source_freshness"]["source_tier"] == "official"

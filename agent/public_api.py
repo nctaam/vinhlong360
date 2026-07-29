@@ -59,12 +59,15 @@ from user_preferences import (
 )
 from location_resolver import (
     IpGeocoder,
+    LocationConfirmationError,
     LocationInputError,
     ReverseGeocoder,
     get_ip_geocoder,
     get_reverse_geocoder,
+    issue_location_confirmation,
     resolve_gps,
     resolve_ip,
+    verify_location_confirmation,
 )
 from personalization_events import (
     PERSONALIZATION_CONTEXTS,
@@ -284,6 +287,7 @@ def _build_source_freshness(entity: dict) -> dict:
     return {
         "source_title": src.get("title") or None,
         "source_url": src.get("url") or None,
+        "source_tier": derive_source_tier(entity),
         "updated_at": updated_at,
         "verified_at": verified_at,
         "days_since_update": days_since_update,
@@ -458,6 +462,7 @@ class PreferencePatchIn(BaseModel):
     )
     recommendation_reset_at: PreferenceTimestamp | None = None
     consent_version: Optional[str] = Field(None, max_length=64)
+    location_confirmation_token: Optional[str] = Field(None, max_length=2048)
 
 
 class LocationResolveIn(BaseModel):
@@ -791,6 +796,32 @@ def _profile_next_actions(profile: dict) -> list[dict]:
     return actions[:3]
 
 
+def _project_public_profile_entries(items: object) -> list[dict[str, str]]:
+    projected: list[dict[str, str]] = []
+    if not isinstance(items, list):
+        return projected
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        key = item.get("key")
+        if not isinstance(key, str) or not key:
+            continue
+        entry = {"key": key}
+        label = item.get("label")
+        if isinstance(label, str) and label:
+            entry["label"] = label
+        projected.append(entry)
+    return projected
+
+
+def _project_public_next_actions(profile: dict) -> list[dict[str, str]]:
+    return [
+        {"label": action["label"], "to": action["to"]}
+        for action in _profile_next_actions(profile)
+        if isinstance(action.get("label"), str) and isinstance(action.get("to"), str)
+    ]
+
+
 def _candidate_card(
     entity: dict, reasons: list[str], preference_snapshot: dict | None = None
 ) -> dict:
@@ -811,7 +842,6 @@ def _candidate_card(
         },
         "recommendation_reasons": reasons[:2],
         "reason_vi": reason_vi,
-        "quality_score": entity_quality(entity),
     }
     if _rollout_enabled("RECOMMENDATION_EXPLANATIONS_V1"):
         card["explanation"] = build_explanation(
@@ -983,10 +1013,9 @@ def _contextual_recommendations(user_id: str, context: str, entity_id: str | Non
         "items": items,
         "reasons": {item["id"]: item.get("recommendation_reasons", []) for item in items if item.get("id")},
         "profile": {
-            "interests": profile.get("interests", []),
-            "areas": profile.get("areas", []),
-            "types": profile.get("types", []),
-            "confidence": profile.get("confidence", 0),
+            "interests": _project_public_profile_entries(profile.get("interests")),
+            "areas": _project_public_profile_entries(profile.get("areas")),
+            "types": _project_public_profile_entries(profile.get("types")),
             "signal_count": profile.get("signal_count", 0),
         },
     }
@@ -1045,12 +1074,19 @@ async def update_my_preferences(
         raise HTTPException(422, "Invalid preference patch") from None
     values = validated.model_dump(exclude_unset=True)
     expected_revision = values.pop("revision")
+    confirmation_token = values.pop("location_confirmation_token", None)
     try:
+        confirmed_location = (
+            verify_location_confirmation(confirmation_token, owner)
+            if confirmation_token is not None
+            else None
+        )
         snapshot = await asyncio.to_thread(
             patch_preferences_with_consents,
             owner,
             values,
             expected_revision,
+            confirmed_location=confirmed_location,
         )
     except PreferenceRevisionConflict:
         current = await asyncio.to_thread(load_preferences, owner)
@@ -1059,7 +1095,7 @@ async def update_my_preferences(
             content=jsonable_encoder(current),
             headers={"Cache-Control": "no-store"},
         )
-    except PreferenceValidationError:
+    except (LocationConfirmationError, PreferenceValidationError):
         raise HTTPException(422, "Invalid preference patch") from None
     response.headers["Cache-Control"] = "no-store"
     return snapshot
@@ -1159,7 +1195,11 @@ async def resolve_my_location(
     except (LocationInputError, ValidationError, ValueError):
         raise HTTPException(422, "Invalid location input") from None
     response.headers["Cache-Control"] = "no-store"
-    return asdict(resolution)
+    payload = asdict(resolution)
+    confirmation_token = issue_location_confirmation(resolution, owner)
+    if confirmation_token is not None:
+        payload["confirmation_token"] = confirmation_token
+    return payload
 
 
 @router.post("/me/events",
@@ -1199,13 +1239,11 @@ async def get_my_insights(response: Response, user=Depends(require_user)):
     response.headers["Cache-Control"] = "no-store"
     profile = await asyncio.to_thread(_build_user_interest_profile, str(user["id"]))
     return {
-        "interests": profile.get("interests", []),
-        "areas": profile.get("areas", []),
-        "types": profile.get("types", []),
-        "recent_intents": profile.get("recent_intents", []),
-        "confidence": profile.get("confidence", 0),
+        "interests": _project_public_profile_entries(profile.get("interests")),
+        "areas": _project_public_profile_entries(profile.get("areas")),
+        "types": _project_public_profile_entries(profile.get("types")),
         "signal_count": profile.get("signal_count", 0),
-        "next_actions": _profile_next_actions(profile),
+        "next_actions": _project_public_next_actions(profile),
     }
 
 

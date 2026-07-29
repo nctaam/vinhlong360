@@ -477,11 +477,11 @@ describe('recommendation and detail integration', () => {
       quality: {
         source_title: 'Cổng thông tin tỉnh Vĩnh Long',
         source_url: 'https://example.gov.vn/detail-official',
-        source_tier: 'official',
       },
       source_freshness: {
         source_title: 'Cổng thông tin tỉnh Vĩnh Long',
         source_url: 'https://example.gov.vn/detail-official',
+        source_tier: 'official',
         updated_at: '2026-07-20T00:00:00Z',
         freshness_status: 'fresh',
       },

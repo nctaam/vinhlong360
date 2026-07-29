@@ -32,6 +32,7 @@ export interface LocationResolution {
   region_scope: PreferenceRegionScope
   location_source: Extract<PreferenceLocationSource, 'gps' | 'ip'>
   location_accuracy: PreferenceLocationAccuracy
+  confirmation_token?: string
 }
 
 export interface GpsCoordinates {
@@ -51,6 +52,7 @@ export interface PreferencePatch {
   explicit_interests?: string[]
   recommendation_reset_at?: string | null
   consent_version?: string | null
+  location_confirmation_token?: string
 }
 
 export interface PreferenceMutationResult {

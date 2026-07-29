@@ -431,7 +431,7 @@ def read_legacy_events_if_allowed(
     owner = _owner_id(user_id)
     current = _timestamp(now, datetime.now(timezone.utc))
     deadline = legacy_cutover_deadline()
-    if deadline is None or current > deadline:
+    if deadline is None or current >= deadline:
         return []
     reset_at = _timestamp(cutoff, current) if cutoff is not None else None
     projected: list[dict] = []

@@ -35,6 +35,19 @@ def test_no_dates_is_unknown():
     assert _build_source_freshness({})["freshness_status"] == "unknown"
 
 
+def test_detail_source_freshness_projects_canonical_source_tier():
+    result = _build_source_freshness(
+        {
+            "official": True,
+            "source": {"title": "Cổng thông tin tỉnh Vĩnh Long"},
+            "attributes": {"verifiedAt": _days_ago(10)},
+        }
+    )
+
+    assert result["source_tier"] == "official"
+    assert result["freshness_status"] == "fresh"
+
+
 def test_top_level_verified_at_is_never_verification_authority() -> None:
     result = _build_source_freshness(
         {"verifiedAt": _days_ago(1), "updatedAt": _days_ago(1)}

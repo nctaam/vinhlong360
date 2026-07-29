@@ -1,6 +1,6 @@
 # NP-1 Stitch verification
 
-> STATUS (2026-07-29): verification complete with rendered-runtime limitation.
+> STATUS (2026-07-29): automated behavior verified; rendered trust/visual evidence unavailable.
 
 Date: 2026-07-29 (Asia/Bangkok)
 
@@ -18,7 +18,7 @@ Live Stitch retrieval was unavailable in this session. Tool discovery exposed no
 
 | Role | Screen ID | Borrowed anatomy | Deliberate adaptation | Result |
 | --- | --- | --- | --- | --- |
-| Detail V2 | `6a86654f63f243679ebe997ea340172b` | Source evidence hierarchy, right-side disclosure and freshness grouping | `SourceTrustDrawer` keeps Nuxt tokens, semantic `dl`, focus management, report action and real official/verified evidence rules | Mounted behavior PASS; rendered visual unverified |
+| Detail V2 | `6a86654f63f243679ebe997ea340172b` | Source evidence hierarchy, right-side disclosure and freshness grouping | `SourceTrustDrawer` keeps Nuxt tokens, semantic `dl`, focus management and report action; its mounted fixture mirrors the production `source_freshness.source_tier` response field | Mounted contract behavior PASS; rendered trust/visual evidence unavailable |
 | Saved itinerary | `db76e318f0354ee3b1b8e3a0860443a5` | Dense grouped controls and compact workspace rhythm | `/cai-dat` preference summary, manual-region group, controls and reset stay inside the existing settings system | Mounted behavior PASS; rendered visual unverified |
 | Community | `dc2a7a19958e442a990f548953a042e9` | Community identity and moderation context | Community remains a distinct trust tier and never inherits official semantics | Mounted behavior PASS; rendered visual unverified |
 | Mobile dark premium | `9dac45c42bd7470797ff912060690909` | Bottom-sheet anatomy, dark surface hierarchy and sticky action | `PersonalizeSetupSheet`, `WhyThisDrawer` and `SourceTrustDrawer` preserve 44px controls, safe-area padding and reduced-motion CSS | Component/A11y behavior PASS; rendered visual unverified |
@@ -27,7 +27,7 @@ Live Stitch retrieval was unavailable in this session. Tool discovery exposed no
 ## Behavior evidence
 
 - `SmartRecommendations` is mounted with the real `WhyThisDrawer`; a response containing only `reason_vi: "Cùng khu vực bạn chọn"` opens the drawer and renders the privacy-safe canonical broad reason rather than the generic fallback.
-- `/dia-diem/[id]` is mounted with a complete official-source entity; its real source trigger opens `SourceTrustDrawer`, displays `Cổng thông tin tỉnh Vĩnh Long`, and invokes report navigation.
+- `/dia-diem/[id]` is mounted with the production detail response shape, including `source_freshness.source_tier`; its real source trigger opens `SourceTrustDrawer`, displays `Cổng thông tin tỉnh Vĩnh Long`, and invokes report navigation. This is contract behavior evidence, not independent verification of the fixture's source claim.
 - Settings state coverage distinguishes `unknown`, `manual`, `gps`, `ip`, `off`, `denied`, `expired`, `offline`, and `conflict` without exposing raw GPS/IP or exact age.
 - A mounted competing-signal flow proves confirmed GPS supersedes an existing IP region only when no manual choice exists, then proves a later manual Trà Vinh choice survives another GPS confirmation. Explicit GPS/IP resolution calls are blocked after consent is `off`.
 - A mounted `WhyThisDrawer` conflict puts the explicit selected-interest reason before competing inferred-activity wording.

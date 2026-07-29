@@ -366,17 +366,9 @@ async function confirmLocation() {
   if (!result?.region_id) return finish()
   const current = preferences.snapshot.value
   const keepsManualRegion = current.location_source === 'manual'
-  const mutation = await preferences.patch(keepsManualRegion
-    ? { location_consent_state: 'granted', location_enabled: true }
-    : {
-        region_id: result.region_id,
-        region_label: result.region_label,
-        region_scope: result.region_scope,
-        location_source: 'gps',
-        location_accuracy: result.location_accuracy,
-        location_consent_state: 'granted',
-        location_enabled: true,
-      })
+  const mutation = keepsManualRegion
+    ? await preferences.patch({ location_consent_state: 'granted', location_enabled: true })
+    : await preferences.confirmLocation(result)
   if (mutation.ok) finish()
 }
 

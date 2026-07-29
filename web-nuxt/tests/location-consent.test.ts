@@ -67,7 +67,22 @@ function mockPreferenceApi(initial: PreferenceSnapshot = snapshot()) {
     if (url === '/api/me/preferences' && !opts?.method) return Promise.resolve(current)
     if (url === '/api/me/preferences' && opts?.method === 'PATCH') {
       const { revision: _revision, ...patch } = opts.body as Record<string, unknown>
-      current = snapshot({ ...current, ...patch, revision: current.revision + 1 })
+      const { location_confirmation_token: confirmationToken, ...publicPatch } = patch
+      const confirmedPatch = confirmationToken && current.location_source !== 'manual'
+        ? {
+            region_id: 'province-vl',
+            region_label: 'Vĩnh Long',
+            region_scope: 'province' as const,
+            location_source: 'gps' as const,
+            location_accuracy: 'province' as const,
+          }
+        : {}
+      current = snapshot({
+        ...current,
+        ...publicPatch,
+        ...confirmedPatch,
+        revision: current.revision + 1,
+      })
       return Promise.resolve(current)
     }
     if (url === '/api/me/location/resolve') {
@@ -77,6 +92,7 @@ function mockPreferenceApi(initial: PreferenceSnapshot = snapshot()) {
         region_scope: 'province',
         location_source: 'gps',
         location_accuracy: 'province',
+        confirmation_token: 'fixture-location-confirmation',
       })
     }
     return Promise.resolve(current)
@@ -360,10 +376,12 @@ describe('optional location consent flow', () => {
       .filter(body => body.location_consent_state === 'granted')
     expect(grantedPatches).toHaveLength(2)
     expect(grantedPatches[0]).toMatchObject({
-      region_id: 'province-vl',
-      location_source: 'gps',
+      location_confirmation_token: 'fixture-location-confirmation',
       location_enabled: true,
     })
+    expect(grantedPatches[0]).not.toHaveProperty('region_id')
+    expect(grantedPatches[0]).not.toHaveProperty('region_label')
+    expect(grantedPatches[0]).not.toHaveProperty('location_source')
     expect(grantedPatches[1]).toMatchObject({ location_enabled: true })
     expect(grantedPatches[1]).not.toHaveProperty('region_id')
     expect(grantedPatches[1]).not.toHaveProperty('location_source')

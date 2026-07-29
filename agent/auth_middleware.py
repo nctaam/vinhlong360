@@ -33,8 +33,10 @@ Input validation:
 """
 
 import asyncio
+import base64
 import hashlib
 import hmac
+import json
 import logging
 import os
 import re
@@ -106,6 +108,71 @@ def generate_csrf_token(session_id: str) -> str:
     return hmac.new(
         _CSRF_SECRET.encode(), session_id.encode(), hashlib.sha256
     ).hexdigest()
+
+
+def generate_user_bound_token(
+    purpose: str,
+    user_id: str,
+    payload: dict,
+    *,
+    expires_at: int,
+) -> str:
+    """Sign a compact user-bound payload with the existing CSRF HMAC secret."""
+    envelope = {
+        "purpose": purpose,
+        "user_id": user_id,
+        "expires_at": expires_at,
+        "payload": payload,
+    }
+    raw = json.dumps(
+        envelope, ensure_ascii=True, separators=(",", ":"), sort_keys=True
+    ).encode("utf-8")
+    encoded = base64.urlsafe_b64encode(raw).rstrip(b"=")
+    signature = hmac.new(_CSRF_SECRET.encode(), encoded, hashlib.sha256).digest()
+    return (
+        encoded.decode("ascii")
+        + "."
+        + base64.urlsafe_b64encode(signature).rstrip(b"=").decode("ascii")
+    )
+
+
+def verify_user_bound_token(
+    token: str,
+    purpose: str,
+    user_id: str,
+    *,
+    now: int,
+) -> dict | None:
+    """Verify signature, purpose, owner and expiry without logging token content."""
+    if not isinstance(token, str) or len(token) > 2048 or token.count(".") != 1:
+        return None
+    encoded_text, signature_text = token.split(".", 1)
+    try:
+        encoded = encoded_text.encode("ascii")
+        signature = base64.urlsafe_b64decode(
+            signature_text + "=" * (-len(signature_text) % 4)
+        )
+        canonical_signature = base64.urlsafe_b64encode(signature).rstrip(b"=").decode("ascii")
+        if not hmac.compare_digest(signature_text, canonical_signature):
+            return None
+        expected = hmac.new(_CSRF_SECRET.encode(), encoded, hashlib.sha256).digest()
+        if not hmac.compare_digest(signature, expected):
+            return None
+        raw = base64.urlsafe_b64decode(
+            encoded_text + "=" * (-len(encoded_text) % 4)
+        )
+        envelope = json.loads(raw)
+    except (UnicodeError, ValueError, TypeError, json.JSONDecodeError):
+        return None
+    if not isinstance(envelope, dict):
+        return None
+    if envelope.get("purpose") != purpose or envelope.get("user_id") != user_id:
+        return None
+    expires_at = envelope.get("expires_at")
+    if type(expires_at) is not int or now >= expires_at:
+        return None
+    payload = envelope.get("payload")
+    return payload if isinstance(payload, dict) else None
 
 
 def _validate_csrf(request: Request, session_id: str) -> bool:

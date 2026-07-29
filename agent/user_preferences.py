@@ -9,6 +9,7 @@ from typing import Any, TypedDict
 from uuid import uuid4
 
 from database import db
+from location_resolver import LocationResolution, contains_raw_location_value
 
 
 REGION_SCOPES = frozenset({"ward", "district", "province", "all", "unknown"})
@@ -30,6 +31,36 @@ _SOURCE_PRIORITY = {"default": 0, "ip": 1, "gps": 2, "manual": 3}
 _REGION_FIELDS = frozenset(
     {"region_id", "region_label", "region_scope", "location_source", "location_accuracy"}
 )
+_CANONICAL_MANUAL_REGIONS = {
+    "province-vl": {
+        "region_id": "province-vl",
+        "region_label": "Vĩnh Long",
+        "region_scope": "province",
+        "location_source": "manual",
+        "location_accuracy": "province",
+    },
+    "province-bt": {
+        "region_id": "province-bt",
+        "region_label": "Bến Tre",
+        "region_scope": "province",
+        "location_source": "manual",
+        "location_accuracy": "province",
+    },
+    "province-tv": {
+        "region_id": "province-tv",
+        "region_label": "Trà Vinh",
+        "region_scope": "province",
+        "location_source": "manual",
+        "location_accuracy": "province",
+    },
+    None: {
+        "region_id": None,
+        "region_label": None,
+        "region_scope": "all",
+        "location_source": "manual",
+        "location_accuracy": "unknown",
+    },
+}
 _SNAPSHOT_FIELDS = (
     "region_id",
     "region_label",
@@ -207,8 +238,12 @@ def normalize_preference_patch(patch: Mapping[str, Any]) -> PreferencePatch:
     for field, value in patch.items():
         if field == "region_id":
             normalized[field] = _bounded_optional_text(value, field, MAX_REGION_ID_LENGTH)
+            if contains_raw_location_value(normalized[field]):
+                raise PreferenceValidationError("Invalid region value")
         elif field == "region_label":
             normalized[field] = _bounded_optional_text(value, field, MAX_REGION_LABEL_LENGTH)
+            if contains_raw_location_value(normalized[field]):
+                raise PreferenceValidationError("Invalid region value")
         elif field == "region_scope":
             normalized[field] = _enum_value(value, field, REGION_SCOPES)
         elif field == "location_source":
@@ -228,6 +263,56 @@ def normalize_preference_patch(patch: Mapping[str, Any]) -> PreferencePatch:
         elif field == "revision":
             normalized[field] = _revision_value(value)
     return normalized
+
+
+def _authorize_region_patch(
+    patch: Mapping[str, Any],
+    *,
+    confirmed_location: LocationResolution | None,
+) -> dict[str, Any]:
+    authorized = dict(patch)
+    client_region_fields = _REGION_FIELDS.intersection(authorized)
+    if confirmed_location is not None:
+        if client_region_fields:
+            raise PreferenceValidationError(
+                "Resolver confirmation cannot include client region fields"
+            )
+        authorized.update(
+            {
+                "region_id": confirmed_location.region_id,
+                "region_label": confirmed_location.region_label,
+                "region_scope": confirmed_location.region_scope,
+                "location_source": confirmed_location.location_source,
+                "location_accuracy": confirmed_location.location_accuracy,
+            }
+        )
+        return authorized
+    if not client_region_fields:
+        return authorized
+
+    source = authorized.get("location_source")
+    if source == "manual":
+        canonical = _CANONICAL_MANUAL_REGIONS.get(authorized.get("region_id"))
+        if canonical is None or any(
+            authorized.get(field) != value for field, value in canonical.items()
+        ):
+            raise PreferenceValidationError("Invalid manual region selection")
+        return authorized
+    if source == "default":
+        allowed = {
+            "region_id": None,
+            "region_label": None,
+            "region_scope": "unknown",
+            "location_source": "default",
+            "location_accuracy": "unknown",
+        }
+        if any(
+            field != "location_source" and authorized.get(field) != allowed[field]
+            for field in client_region_fields
+        ):
+            raise PreferenceValidationError("Invalid default region selection")
+        return authorized
+    raise PreferenceValidationError("Resolver region confirmation is required")
 
 
 def _snapshot_from_mapping(value: Mapping[str, Any]) -> PreferenceSnapshot:
@@ -391,13 +476,17 @@ def _patch_preferences_in_connection(
     expected: int,
     *,
     consent_version_fallback: str | None = None,
+    confirmed_location: LocationResolution | None = None,
 ) -> tuple[PreferenceSnapshot, PreferenceSnapshot]:
     if not patch:
         raise PreferenceValidationError("Preference patch must not be empty")
 
+    authorized_patch = _authorize_region_patch(
+        patch, confirmed_location=confirmed_location
+    )
     row = _select_preferences(conn, owner, for_update=True)
     current = _row_snapshot(row) if row is not None else _default_snapshot()
-    merged = merge_preference_patch(current, patch, expected)
+    merged = merge_preference_patch(current, authorized_patch, expected)
     if (
         consent_version_fallback is not None
         and _preference_consent_changes(current, merged)
@@ -470,7 +559,11 @@ def _insert_preference_consent(
 
 
 def patch_preferences_with_consents(
-    user_id: str, patch: Mapping[str, Any], expected_revision: int
+    user_id: str,
+    patch: Mapping[str, Any],
+    expected_revision: int,
+    *,
+    confirmed_location: LocationResolution | None = None,
 ) -> PreferenceSnapshot:
     owner = _user_id(user_id)
     expected = _revision_value(expected_revision)
@@ -481,6 +574,7 @@ def patch_preferences_with_consents(
             patch,
             expected,
             consent_version_fallback=_consent_policy_version(),
+            confirmed_location=confirmed_location,
         )
         for consent_type, state in _preference_consent_changes(current, snapshot):
             _insert_preference_consent(

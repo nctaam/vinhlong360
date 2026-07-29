@@ -150,12 +150,12 @@ function detailFixture(id) {
       has_source: true,
       source_title: variant.title,
       source_url: `https://example.vn/sources/${id}`,
-      source_tier: variant.tier,
       verified_at: variant.verifiedAt,
     },
     source_freshness: {
       source_title: variant.title,
       source_url: `https://example.vn/sources/${id}`,
+      source_tier: variant.tier,
       updated_at: '2026-07-20T00:00:00Z',
       verified_at: variant.verifiedAt,
       days_since_update: variant.freshness === 'stale' ? 120 : 9,
@@ -165,10 +165,28 @@ function detailFixture(id) {
 }
 
 function applyPreferencePatch(body) {
-  const { revision: _revision, latitude: _latitude, longitude: _longitude, gps: _gps, ip: _ip, ...allowed } = body || {}
+  const {
+    revision: _revision,
+    latitude: _latitude,
+    longitude: _longitude,
+    gps: _gps,
+    ip: _ip,
+    location_confirmation_token: confirmationToken,
+    ...allowed
+  } = body || {}
+  const confirmed = confirmationToken && fixture.preferences.location_source !== 'manual'
+    ? {
+        region_id: 'province-vl',
+        region_label: 'Vĩnh Long',
+        region_scope: 'province',
+        location_source: 'gps',
+        location_accuracy: 'province',
+      }
+    : {}
   fixture.preferences = {
     ...fixture.preferences,
     ...allowed,
+    ...confirmed,
     revision: fixture.preferences.revision + 1,
   }
   return clone(fixture.preferences)
@@ -269,6 +287,7 @@ function startFixtureApi() {
           region_scope: 'province',
           location_source: body.mode,
           location_accuracy: 'province',
+          confirmation_token: 'fixture-location-confirmation',
         })
       }
       if (pathname === '/api/me/recommendations/reset' && method === 'POST') {
