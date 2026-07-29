@@ -257,6 +257,38 @@ describe('region preference ownership', () => {
     expect(manualPref!.region.value).toBe('vinh-long')
     manualWrapper.unmount()
   })
+
+  it.each([
+    ['manual', true, 'vinh-long'],
+    ['gps', true, 'vinh-long'],
+    ['ip', true, 'vinh-long'],
+    ['default', false, 'all'],
+  ] as const)('applies the %s source at the region consumer boundary', async (locationSource, locationEnabled, expectedRegion) => {
+    authState.user.value = { id: 'user-1' }
+    authState.isLoggedIn.value = true
+    mockPreferenceApi(snapshot({
+      region_id: locationSource === 'default' ? null : 'province-vl',
+      region_label: locationSource === 'default' ? null : 'Vĩnh Long',
+      region_scope: locationSource === 'default' ? 'unknown' : 'province',
+      location_source: locationSource,
+      location_accuracy: locationSource === 'default' ? 'unknown' : 'province',
+      location_consent_state: locationSource === 'default' ? 'unknown' : 'granted',
+      location_enabled: locationEnabled,
+      revision: 4,
+    }))
+    let regionPref: ReturnType<typeof useRegionPref> | undefined
+    const Harness = defineComponent({
+      setup() {
+        regionPref = useRegionPref()
+        return () => h('div', { 'data-region-result': regionPref!.region.value })
+      },
+    })
+    const wrapper = await mountSuspended(Harness)
+    await flushUi()
+
+    expect(wrapper.attributes('data-region-result')).toBe(expectedRegion)
+    wrapper.unmount()
+  })
 })
 
 describe('optional location consent flow', () => {

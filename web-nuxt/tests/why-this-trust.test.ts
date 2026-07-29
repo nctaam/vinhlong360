@@ -1,6 +1,6 @@
 // @vitest-environment nuxt
 
-import { mountSuspended } from '@nuxt/test-utils/runtime'
+import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h, nextTick, ref } from 'vue'
 
@@ -9,12 +9,16 @@ import SourceTrustDrawer from '../components/SourceTrustDrawer.vue'
 import SmartRecommendations from '../components/SmartRecommendations.vue'
 import DetailPage from '../pages/dia-diem/[id].vue'
 import { useAuth } from '../composables/useAuth'
+import type { Entity } from '../types'
+import type { RecommendationCard, RecommendationSource } from '../types/api'
 import type { PreferenceSnapshot } from '../types/personalization'
 
 const apiFetchMock = vi.hoisted(() => vi.fn())
 const pageFetchMock = vi.hoisted(() => vi.fn())
+const navigateToMock = vi.hoisted(() => vi.fn(() => Promise.resolve()))
 
 vi.mock('../utils/apiFetch', () => ({ apiFetch: apiFetchMock }))
+mockNuxtImport('navigateTo', () => navigateToMock)
 
 const wrappers: Array<{ unmount: () => void }> = []
 let userSequence = 0
@@ -35,11 +39,14 @@ const preferenceSnapshot = (overrides: Partial<PreferenceSnapshot> = {}): Prefer
   ...overrides,
 })
 
-const recommendationItem = (overrides: Record<string, unknown> = {}) => ({
+const recommendationFixture = (overrides: Partial<RecommendationCard> = {}): RecommendationCard => ({
   id: 'entity-rec-1',
   type: 'place',
   name: 'Vườn trái cây ven sông',
   summary: 'Một điểm ghé chậm rãi trong ngày.',
+  attributes: {},
+  relationships: [],
+  relationship_total: 0,
   explanation: {
     primary_reason: 'Cùng khu vực bạn quan tâm',
     reasons: ['Cùng khu vực bạn quan tâm', 'Phù hợp với sở thích bạn đã chọn'],
@@ -70,6 +77,26 @@ async function mountSmart(loggedIn: boolean) {
   return await mountSuspended(Harness, { attachTo: document.body })
 }
 
+async function mountSmartRecommendations(state: {
+  source: RecommendationSource
+  items: RecommendationCard[]
+  reasons?: Record<string, string[]>
+  profile?: Record<string, unknown>
+}) {
+  apiFetchMock.mockImplementation((url: string) => {
+    if (url.startsWith('/api/me/recommendations/contextual?')) {
+      return Promise.resolve({
+        items: state.source === 'personalized' ? state.items : [],
+        reasons: state.reasons || {},
+        profile: state.profile || { signal_count: 1 },
+      })
+    }
+    if (url.startsWith('/api/entities/popular?')) return Promise.resolve({ entities: state.items })
+    return Promise.resolve({ entities: [] })
+  })
+  return await mountSmart(state.source === 'personalized')
+}
+
 async function mountDetail(route: string) {
   const AuthReset = defineComponent({
     setup() {
@@ -82,11 +109,22 @@ async function mountDetail(route: string) {
   return await mountSuspended(DetailPage, { route, attachTo: document.body })
 }
 
+async function mountPlaceDetail(entity: Entity) {
+  apiFetchMock.mockImplementation((url: string) => {
+    if (url === `/api/entities/${entity.id}`) return Promise.resolve(entity)
+    if (url === `/api/entities/${entity.id}/gallery`) return Promise.resolve({ images: [] })
+    if (url === `/seo/jsonld/${entity.id}`) return Promise.resolve(null)
+    return Promise.resolve({})
+  })
+  return await mountDetail(`/dia-diem/${entity.id}`)
+}
+
 beforeEach(() => {
   userSequence += 1
   apiFetchMock.mockReset()
   apiFetchMock.mockResolvedValue({})
   pageFetchMock.mockReset()
+  navigateToMock.mockClear()
   pageFetchMock.mockImplementation((url: string) => {
     if (url === '/auth/me') return Promise.resolve({ user: null })
     if (url === '/auth/csrf') return Promise.resolve({ csrf_token: 'csrf-token' })
@@ -353,8 +391,28 @@ describe('WhyThisDrawer contract', () => {
 })
 
 describe('recommendation and detail integration', () => {
+  it('opens WhyThis from a reason_vi-only personalized recommendation', async () => {
+    const wrapper = await mountSmartRecommendations({
+      source: 'personalized',
+      items: [recommendationFixture({
+        explanation: undefined,
+        reason: undefined,
+        reason_vi: 'Cùng khu vực bạn chọn',
+      })],
+    })
+    wrappers.push(wrapper)
+
+    await vi.waitFor(() => expect(wrapper.find('[data-action="why-this"]').exists()).toBe(true))
+    await wrapper.get('[data-action="why-this"]').trigger('click')
+    await flushUi()
+
+    const dialog = document.body.querySelector('[role="dialog"][data-why-this]') as HTMLElement
+    expect(dialog.textContent).toContain('Cùng khu vực bạn quan tâm')
+    expect(dialog.textContent).not.toContain('Được cộng đồng quan tâm')
+  })
+
   it('opens the real explanation drawer and applies reset and disable through preference APIs', async () => {
-    const cards = [recommendationItem()]
+    const cards = [recommendationFixture()]
     apiFetchMock.mockImplementation((url: string, request?: Record<string, unknown>) => {
       if (url.startsWith('/api/me/recommendations/contextual?')) {
         return Promise.resolve({ items: cards, reasons: {}, profile: { signal_count: 3 } })
@@ -391,7 +449,7 @@ describe('recommendation and detail integration', () => {
   })
 
   it('keeps the real recommendation card functional when disclosure data is absent', async () => {
-    apiFetchMock.mockResolvedValue({ entities: [recommendationItem({ explanation: undefined, reason_vi: undefined })] })
+    apiFetchMock.mockResolvedValue({ entities: [recommendationFixture({ explanation: undefined, reason_vi: undefined })] })
 
     const wrapper = await mountSmart(false)
     wrappers.push(wrapper)
@@ -403,35 +461,26 @@ describe('recommendation and detail integration', () => {
   })
 
   it('opens the shared trust drawer from detail and preserves report navigation', async () => {
-    apiFetchMock.mockImplementation((url: string) => {
-      if (url === '/api/entities/detail-official') {
-        return Promise.resolve({
-          id: 'detail-official',
-          type: 'place',
-          name: 'Nhà cổ ven sông',
-          summary: 'Không gian di sản được biên tập từ nguồn công khai.',
-          attributes: {},
-          relationships: [],
-          relationship_total: 0,
-          quality: {
-            source_title: 'Cổng thông tin tỉnh',
-            source_url: 'https://example.gov.vn/detail-official',
-            source_tier: 'official',
-          },
-          source_freshness: {
-            source_title: 'Cổng thông tin tỉnh',
-            source_url: 'https://example.gov.vn/detail-official',
-            updated_at: '2026-07-20T00:00:00Z',
-            freshness_status: 'fresh',
-          },
-        })
-      }
-      if (url === '/api/entities/detail-official/gallery') return Promise.resolve({ images: [] })
-      if (url === '/seo/jsonld/detail-official') return Promise.resolve(null)
-      return Promise.resolve({})
+    const wrapper = await mountPlaceDetail({
+      id: 'detail-official',
+      type: 'place',
+      name: 'Nhà cổ ven sông',
+      summary: 'Không gian di sản được biên tập từ nguồn công khai.',
+      attributes: {},
+      relationships: [],
+      relationship_total: 0,
+      quality: {
+        source_title: 'Cổng thông tin tỉnh Vĩnh Long',
+        source_url: 'https://example.gov.vn/detail-official',
+        source_tier: 'official',
+      },
+      source_freshness: {
+        source_title: 'Cổng thông tin tỉnh Vĩnh Long',
+        source_url: 'https://example.gov.vn/detail-official',
+        updated_at: '2026-07-20T00:00:00Z',
+        freshness_status: 'fresh',
+      },
     })
-
-    const wrapper = await mountDetail('/dia-diem/detail-official')
     wrappers.push(wrapper)
 
     await vi.waitFor(() => expect(wrapper.find('[data-action="open-source-trust"]').exists()).toBe(true))
@@ -440,8 +489,10 @@ describe('recommendation and detail integration', () => {
 
     const dialog = document.body.querySelector('[role="dialog"][data-source-trust]') as HTMLElement
     expect(dialog.textContent).toContain('Nguồn chính thức')
+    expect(dialog.textContent).toContain('Cổng thông tin tỉnh Vĩnh Long')
     ;(dialog.querySelector('[data-action="report"]') as HTMLButtonElement).click()
-    await vi.waitFor(() => expect(window.location.pathname + window.location.search).toBe('/cong-dong?report=detail-official'))
+    await vi.waitFor(() => expect(navigateToMock).toHaveBeenCalledWith('/cong-dong?report=detail-official'))
+    expect(document.body.querySelector('[role="dialog"][data-source-trust]')).toBeNull()
   })
 
   it('keeps the detail report fallback when no public source can open the enhancement', async () => {

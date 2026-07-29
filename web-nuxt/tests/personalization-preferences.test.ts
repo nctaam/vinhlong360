@@ -860,6 +860,40 @@ describe('settings preference and account contracts', () => {
     wrapper.unmount()
   })
 
+  it('keeps a failed offline mutation out of the explicit retry request', async () => {
+    const wrapper = await mountSettingsPage({
+      preferences: preferenceFixture({
+        region_id: 'province-vl',
+        region_label: 'Vĩnh Long',
+        region_scope: 'province',
+        location_source: 'manual',
+        location_accuracy: 'province',
+        explicit_interests: ['food'],
+        revision: 5,
+      }),
+      preferenceMutations: [{ reject: new TypeError('offline') }],
+    })
+
+    await wrapper.get('[data-region="province-bt"]').trigger('click')
+    await flushUi()
+    const panel = wrapper.get('#khu-vuc-de-xuat')
+    expect(panel.text()).toContain('Vĩnh Long')
+    expect(panel.text()).toContain('Ẩm thực')
+
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
+    window.dispatchEvent(new Event('offline'))
+    await flushUi()
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: true })
+    await panel.get('[data-action="retry-preferences"]').trigger('click')
+    await flushUi()
+
+    const mutationCalls = apiFetchMock.mock.calls.filter(([url, request]) => url === '/api/me/preferences' && request?.method === 'PATCH')
+    expect(mutationCalls).toHaveLength(1)
+    expect(panel.text()).toContain('Vĩnh Long')
+    expect(panel.text()).toContain('Ẩm thực')
+    wrapper.unmount()
+  })
+
   it('shows a same-revision 409 server snapshot and waits for an explicit retry', async () => {
     const serverSnapshot = preferenceFixture({
       region_id: 'province-tv',

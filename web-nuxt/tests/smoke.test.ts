@@ -1,6 +1,10 @@
-import { describe, it, expect } from 'vitest'
+import { mountSuspended } from '@nuxt/test-utils/runtime'
+import { describe, it, expect, vi } from 'vitest'
+import { defineComponent, h } from 'vue'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { useAuth } from '../composables/useAuth'
+import { useUserEvents } from '../composables/useUserEvents'
 import { entityPath, normalizeRouteParam, notificationTargetPath, postPath, savedItemPath, userPath } from '../utils/routePaths'
 
 describe('Component smoke tests', () => {
@@ -339,21 +343,6 @@ describe('UserCP regressions', () => {
     expect(detail).toContain('userPath(c.author?.username || c.author?.id)')
   })
 
-  it('entity detail exposes a user-facing trust layer', () => {
-    const detail = src('pages/dia-diem/[id].vue')
-    const types = src('types/index.ts')
-    expect(types).toContain('EntitySourceFreshness')
-    expect(types).toContain('source_freshness')
-    expect(types).not.toContain('verifiedAt?: string')
-    expect(detail).toContain('trust-card')
-    expect(detail).toContain('source_freshness')
-    expect(detail).toContain('sourceFreshness.value?.verified_at')
-    expect(detail).not.toContain('entity.value?.verifiedAt')
-    expect(detail).toContain('chưa kiểm chứng thực địa')
-    expect(detail).toContain('trustStatusLabel')
-    expect(detail).toContain('Báo sai hoặc bổ sung nguồn')
-  })
-
   it('entity detail uses backend JSON-LD first, then falls back on empty (P1-3 resilience)', () => {
     // P1-3 (§3.4 chủ đích): trước đây khẳng định "backend-only" (cấm fallback) — nếu
     // backend /seo/jsonld fail thì mất hết rich-result. Nay backend-first NHƯNG dùng
@@ -376,44 +365,45 @@ describe('UserCP regressions', () => {
     expect(notifications).toContain('visibilityListenerAttached')
   })
 
-  it('personalized recommendation foundation tracks events and surfaces contextual blocks', () => {
-    const api = src('../agent/public_api.py')
-    expect(api).toContain('USER_EVENTS_FILE')
-    expect(api).toContain('@router.post("/me/events"')
-    expect(api).toContain('@router.get("/me/insights"')
-    expect(api).toContain('@router.get("/me/recommendations/contextual"')
-    expect(api).toContain('_build_user_interest_profile')
-    expect(api).toContain('saved_entities')
-    expect(api).toContain('user_visits')
+  it('posts a normalized search event once without interrupting the mounted surface', async () => {
+    const fetchMock = vi.fn((url: string) => {
+      if (url === '/auth/csrf') return Promise.resolve({ csrf_token: 'smoke-csrf' })
+      return Promise.resolve({ accepted: true })
+    })
+    vi.stubGlobal('$fetch', fetchMock)
 
-    const events = src('composables/useUserEvents.ts')
-    expect(events).toContain("trackEvent('search'")
-    expect(events).toContain('trackEntityView')
-    expect(events).toContain('trackSave')
-    expect(events).toContain('/api/me/events')
-    expect(events).toContain('fetchCsrf')
+    const Harness = defineComponent({
+      setup() {
+        useAuth().user.value = { id: 'smoke-event-user' }
+        const { trackSearch } = useUserEvents()
+        trackSearch('  chợ nổi  ', { context: 'search' })
+        trackSearch('chợ nổi', { context: 'search' })
+        return () => h('p', { role: 'status' }, 'Kết quả tìm kiếm vẫn sẵn sàng')
+      },
+    })
+    const wrapper = await mountSuspended(Harness)
 
-    const recs = src('composables/useContextualRecommendations.ts')
-    expect(src('types/api.ts')).toContain('RecommendationResponse')
-    expect(src('types/api.ts')).toContain('reason_vi')
-    expect(recs).toContain('/api/me/recommendations/contextual')
-    expect(recs).toContain('/api/entities/popular')
-    expect(recs).toContain('/similar?limit=')
-    expect(recs).toContain('reasonMapFromItems')
-
-    const smart = src('components/SmartRecommendations.vue')
-    expect(smart).toContain('useContextualRecommendations')
-    expect(smart).toContain('smart-rec-reason')
-    expect(smart).toContain('reasonFor')
-
-    expect(src('pages/index.vue')).toContain("useContextualRecommendations({ context: 'home', limit: 8 })")
-    expect(src('pages/tai-khoan.vue')).toContain('LazySmartRecommendations context="home"')
-    expect(src('pages/dia-diem/[id].vue')).toContain('trackEntityView')
-    expect(src('pages/dia-diem/[id].vue')).toContain('LazySmartRecommendations context="entity"')
-    expect(src('pages/tim-kiem.vue')).toContain('trackSearch')
-    expect(src('pages/tim-kiem.vue')).toContain('LazySmartRecommendations context="search"')
-    expect(src('pages/cong-dong.vue')).toContain("trackEvent('community_view'")
-    expect(src('pages/bai-viet/[id].vue')).toContain("trackEvent('post_view'")
+    try {
+      expect(wrapper.get('[role="status"]').text()).toBe('Kết quả tìm kiếm vẫn sẵn sàng')
+      await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/me/events', expect.objectContaining({
+        method: 'POST',
+        body: {
+          event_type: 'search',
+          context: 'search',
+          entity_id: undefined,
+          entity_type: undefined,
+          entity_name: undefined,
+          area: undefined,
+          query: 'chợ nổi',
+          metadata: {},
+        },
+      })))
+      expect(fetchMock.mock.calls.filter(([url]) => url === '/api/me/events')).toHaveLength(1)
+    } finally {
+      useAuth().user.value = null
+      wrapper.unmount()
+      vi.unstubAllGlobals()
+    }
   })
 
   it('unified search and ops cockpit contracts are wired in the frontend', () => {
