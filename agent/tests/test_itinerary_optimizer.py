@@ -4,6 +4,7 @@ import pytest
 
 from itinerary_optimizer import (
     NoFeasibleRouteError,
+    OptimizeOptions,
     RouteStop,
     haversine_km,
     optimize_stop_order,
@@ -69,3 +70,90 @@ def test_two_stop_route_returns_direct_diagnostics():
     assert result.solver == "exact-dp"
     assert result.distance_before_km == pytest.approx(result.distance_after_km)
     assert result.backtrack_ratio == 0.0
+
+
+def test_exact_solver_restores_forward_order_and_preserves_endpoints():
+    stops = [
+        stop("start", 10.0, 106.0),
+        stop("late", 10.0, 106.7),
+        stop("early", 10.0, 106.3),
+        stop("end", 10.0, 107.0),
+    ]
+
+    result = optimize_stop_order(stops)
+
+    assert result.ordered_ids == ("start", "early", "late", "end")
+    assert result.solver == "exact-dp"
+    assert result.backtrack_ratio == pytest.approx(0.0, abs=1e-9)
+    assert result.distance_after_km < result.distance_before_km
+
+
+def test_blocked_edge_is_never_used():
+    stops = [
+        stop("start", 10.0, 106.0),
+        stop("north", 10.03, 106.5),
+        stop("south", 9.97, 106.5),
+        stop("end", 10.0, 107.0),
+    ]
+    options = OptimizeOptions(
+        blocked_edges=frozenset({("start", "north")}),
+    )
+
+    result = optimize_stop_order(stops, options)
+
+    edges = set(zip(result.ordered_ids, result.ordered_ids[1:]))
+    assert ("start", "north") not in edges
+    assert result.ordered_ids[0] == "start"
+    assert result.ordered_ids[-1] == "end"
+
+
+def test_strict_solver_reports_no_route_instead_of_backtracking():
+    stops = [
+        stop("start", 10.0, 106.0),
+        stop("middle", 10.0, 106.5),
+        stop("end", 10.0, 107.0),
+    ]
+    options = OptimizeOptions(
+        blocked_edges=frozenset({("start", "middle")}),
+    )
+
+    with pytest.raises(NoFeasibleRouteError, match="Không tìm thấy thứ tự"):
+        optimize_stop_order(stops, options)
+
+
+def test_duplicate_coordinates_keep_input_order():
+    stops = [
+        stop("start", 10.0, 106.0),
+        stop("first", 10.0, 106.5),
+        stop("second", 10.0, 106.5),
+        stop("end", 10.0, 107.0),
+    ]
+
+    result = optimize_stop_order(stops)
+
+    assert result.ordered_ids == ("start", "first", "second", "end")
+
+
+def test_beam_solver_is_deterministic_for_twenty_stops():
+    middle = [
+        stop(
+            f"p{i:02d}",
+            10.0 + ((i % 3) - 1) * 0.002,
+            106.0 + i * 0.04,
+        )
+        for i in range(1, 19)
+    ]
+    stops = [
+        stop("start", 10.0, 106.0),
+        *reversed(middle),
+        stop("end", 10.0, 106.8),
+    ]
+
+    first = optimize_stop_order(stops)
+    second = optimize_stop_order(stops)
+
+    assert first.ordered_ids == second.ordered_ids
+    assert first.solver == "beam-search"
+    assert first.ordered_ids[0] == "start"
+    assert first.ordered_ids[-1] == "end"
+    assert first.backtrack_ratio == pytest.approx(0.0, abs=1e-9)
