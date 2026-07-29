@@ -8,12 +8,21 @@ import {
   type RouteTableResult,
 } from '../composables/useRouting'
 import {
+  applySchedulePlacement,
+  applySchedulePlacements,
+  buildPlannerScheduleEnvelope,
   collectRoutableStops,
   getCachedRouteTable,
+  mergeOptimizedStops,
+  plannerMetadataForEntity,
+  plannerMetadataForLoadedStop,
   requestOptimizedOrder,
   routeTableCacheKey,
+  runPlannerOptimization,
+  serializePlanStops,
   type OptimizeOrderResponse,
   type OptimizeScheduleRequest,
+  type PlannerScheduleMetadata,
 } from '../composables/useItineraryOptimization'
 
 const cachedTable: RouteTableResult = {
@@ -344,3 +353,261 @@ describe('optional itinerary schedule request', () => {
     expect(placement.end_visit_minute).toBe(540)
   })
 })
+
+describe('manual planner schedule integration', () => {
+  it('keeps manual fields while exposing a computed interval separately', () => {
+    const stop = {
+      id: 'a',
+      type: 'attraction',
+      time: '08:00',
+      notes: 'da dat truoc',
+    }
+
+    const result = applySchedulePlacement(stop, {
+      stop_id: 'planner-stop-0',
+      arrival_minute: 500,
+      start_visit_minute: 510,
+      end_visit_minute: 600,
+    })
+
+    expect(result.stop).toBe(stop)
+    expect(result.stop.time).toBe('08:00')
+    expect(result.stop.notes).toBe('da dat truoc')
+    expect(result.scheduledTime).toBe('08:30-10:00')
+  })
+
+  it('serializes only the original saved PlanStop keys', () => {
+    const serialized = serializePlanStops([{
+      id: 'a',
+      name: 'A',
+      type: 'attraction',
+      place_name: 'Vinh Long',
+      coords: [10, 106] as [number, number],
+      time: '08:00',
+      notes: 'giu nguyen',
+      scheduledTime: '08:30-10:00',
+      placement: { start_visit_minute: 510 },
+    }])
+
+    expect(serialized).toEqual([{
+      id: 'a',
+      name: 'A',
+      type: 'attraction',
+      place_name: 'Vinh Long',
+      coords: [10, 106],
+      time: '08:00',
+      notes: 'giu nguyen',
+    }])
+    expect(Object.keys(serialized[0] ?? {}).sort()).toEqual([
+      'coords',
+      'id',
+      'name',
+      'notes',
+      'place_name',
+      'time',
+      'type',
+    ])
+  })
+
+  it('keeps the route-only path free of Table calls and schedule payloads', async () => {
+    const routed = collectRoutableStops([
+      { id: 'start', coords: [10.01, 106.01] as [number, number], time: '' },
+      { id: 'middle', coords: [10.02, 106.02] as [number, number], time: '' },
+      { id: 'end', coords: [10.03, 106.03] as [number, number], time: '' },
+    ])
+    let tableCalls = 0
+    const schedules: Array<OptimizeScheduleRequest | undefined> = []
+
+    const result = await runPlannerOptimization({
+      scheduleEnabled: false,
+      routed,
+      metadataByStop: new WeakMap<object, PlannerScheduleMetadata>(),
+      mode: 'driving',
+      fetchTable: async () => {
+        tableCalls += 1
+        return cachedTable
+      },
+      requestOptimization: async (ordered, _blockedEdges, schedule) => {
+        schedules.push(schedule)
+        return orderResponse(ordered.map(item => item.key))
+      },
+      route: async coordinates => routeWithoutUturns(coordinates.length),
+    })
+
+    expect(tableCalls).toBe(0)
+    expect(schedules).toEqual([undefined])
+    expect(result.scheduleEnvelope).toBeUndefined()
+  })
+
+  it('fetches one cached Table and reuses one envelope and matrix through the bounded retry', async () => {
+    const routed = collectRoutableStops([
+      { id: 'start', coords: [11.01, 107.01] as [number, number], time: '' },
+      { id: 'middle', coords: [11.02, 107.02] as [number, number], time: '09:00-09:30' },
+      { id: 'end', coords: [11.03, 107.03] as [number, number], time: '' },
+    ])
+    const metadataByStop = new WeakMap<object, PlannerScheduleMetadata>()
+    routed.forEach((item, index) => metadataByStop.set(item.stop, {
+      visitMinutes: index === 1 ? 30 : 0,
+      openingHours: index === 1 ? '08:00-17:00' : null,
+      warnings: index === 1 ? [] : ['opening-hours-unknown'],
+    }))
+    const table = {
+      distanceKm: [[0, 1, 2], [1, 0, 1], [2, 1, 0]],
+      durationMinutes: [[0, 10, 20], [10, 0, 10], [20, 10, 0]],
+      source: 'osrm-table' as const,
+    }
+    let tableCalls = 0
+    let routeCalls = 0
+    const schedules: OptimizeScheduleRequest[] = []
+
+    const result = await runPlannerOptimization({
+      scheduleEnabled: true,
+      routed,
+      metadataByStop,
+      mode: 'driving',
+      fetchTable: async () => {
+        tableCalls += 1
+        return table
+      },
+      requestOptimization: async (ordered, _blockedEdges, schedule) => {
+        if (schedule) schedules.push(schedule)
+        return orderResponse(ordered.map(item => item.key), 'schedule-exact')
+      },
+      route: async (coordinates) => {
+        routeCalls += 1
+        return routeCalls === 1
+          ? routeWithFirstLegUturn(coordinates.length)
+          : routeWithoutUturns(coordinates.length)
+      },
+    })
+
+    expect(result.outcome.attempts).toBe(2)
+    expect(tableCalls).toBe(1)
+    expect(schedules).toHaveLength(2)
+    expect(schedules[0]).toBe(result.scheduleEnvelope)
+    expect(schedules[1]).toBe(result.scheduleEnvelope)
+    expect(schedules[1]?.duration_matrix_minutes)
+      .toBe(schedules[0]?.duration_matrix_minutes)
+    expect(schedules[0]?.duration_matrix_minutes).toBe(table.durationMinutes)
+    expect(schedules[0]?.stops[1]?.requested_time).toBe('09:00-09:30')
+  })
+
+  it('omits an invalid manual time from scheduling without mutating it', () => {
+    const stops = [
+      { id: 'start', coords: [10, 106] as [number, number], time: '' },
+      { id: 'middle', coords: [10.1, 106.1] as [number, number], time: 'khoang chin gio' },
+      { id: 'end', coords: [10.2, 106.2] as [number, number], time: '' },
+    ]
+    const routed = collectRoutableStops(stops)
+    const metadataByStop = new WeakMap<object, PlannerScheduleMetadata>()
+    routed.forEach(item => metadataByStop.set(item.stop, {
+      visitMinutes: 60,
+      openingHours: '08:00-17:00',
+      warnings: [],
+    }))
+
+    const result = buildPlannerScheduleEnvelope(
+      routed,
+      metadataByStop,
+      'driving',
+      null,
+    )
+
+    expect(stops[1]?.time).toBe('khoang chin gio')
+    expect(result.envelope.stops[1]).toEqual({
+      id: 'planner-stop-1',
+      visit_minutes: 60,
+      opening_hours: '08:00-17:00',
+      required: true,
+    })
+    expect(result.warnings).toContain('requested-time-invalid:planner-stop-1')
+  })
+
+  it('uses type defaults and an unknown-hours warning for loaded saved stops', () => {
+    expect(plannerMetadataForLoadedStop('craft_village')).toEqual({
+      visitMinutes: 60,
+      openingHours: null,
+      warnings: ['opening-hours-unknown'],
+    })
+    expect(plannerMetadataForEntity('attraction', {
+      suggested_duration: '1 gio 30 phut',
+      hours: 'mo ca ngay',
+    })).toEqual({
+      visitMinutes: 90,
+      openingHours: 'mo ca ngay',
+      warnings: ['opening-hours-invalid'],
+    })
+  })
+
+  it('keeps placements attached to original stop objects across reorder and save', () => {
+    const stops = [
+      { id: 'a', name: 'A', type: 'attraction', coords: [10, 106] as [number, number], time: '', notes: '' },
+      { id: 'b', name: 'B', type: 'attraction', coords: [10.1, 106.1] as [number, number], time: '09:00', notes: 'B note' },
+      { id: 'c', name: 'C', type: 'attraction', coords: [10.2, 106.2] as [number, number], time: '', notes: '' },
+    ]
+    const routed = collectRoutableStops(stops)
+    const metadataByStop = new WeakMap<object, PlannerScheduleMetadata>()
+    routed.forEach(item => metadataByStop.set(item.stop, plannerMetadataForLoadedStop(item.stop.type)))
+
+    applySchedulePlacements(routed, [{
+      stop_id: 'planner-stop-1',
+      arrival_minute: 530,
+      start_visit_minute: 540,
+      end_visit_minute: 600,
+    }], metadataByStop)
+    const reordered = mergeOptimizedStops(stops, routed, [
+      'planner-stop-0',
+      'planner-stop-2',
+      'planner-stop-1',
+    ])
+
+    expect(reordered[2]).toBe(stops[1])
+    expect(metadataByStop.get(reordered[2] as object)?.placement?.stop_id)
+      .toBe('planner-stop-1')
+    expect(reordered[2]?.time).toBe('09:00')
+    expect(reordered[2]?.notes).toBe('B note')
+    expect(serializePlanStops(reordered)[2]).toEqual({
+      id: 'b',
+      name: 'B',
+      type: 'attraction',
+      coords: [10.1, 106.1],
+      time: '09:00',
+      notes: 'B note',
+    })
+  })
+})
+
+function orderResponse(
+  orderedIds: string[],
+  solver: OptimizeOrderResponse['solver'] = 'exact-dp',
+): OptimizeOrderResponse {
+  return {
+    ordered_ids: orderedIds,
+    distance_before_km: 2,
+    distance_after_km: 2,
+    saved_distance_km: 0,
+    backtrack_ratio: 0,
+    solver,
+    warnings: [],
+  }
+}
+
+function routeWithoutUturns(stopCount: number) {
+  return {
+    legs: Array.from({ length: Math.max(0, stopCount - 1) }, () => ({
+      distance: 1000,
+      duration: 120,
+      hasUturn: false,
+    })),
+    totalDistance: Math.max(0, stopCount - 1) * 1000,
+    totalDuration: Math.max(0, stopCount - 1) * 120,
+    geometry: [] as [number, number][],
+  }
+}
+
+function routeWithFirstLegUturn(stopCount: number) {
+  const result = routeWithoutUturns(stopCount)
+  const firstLeg = result.legs[0]
+  if (firstLeg) firstLeg.hasUturn = true
+  return result
+}

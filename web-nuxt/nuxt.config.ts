@@ -4,6 +4,7 @@ import { createLaunchRawArtifactPlugin } from './build/launchRawArtifactPlugin'
 
 const apiBase = process.env.API_BASE || 'http://localhost:8360'
 const siteNoindex = process.env.NUXT_PUBLIC_SITE_NOINDEX !== 'false'
+const itineraryScheduleV2 = process.env.NUXT_PUBLIC_ITINERARY_SCHEDULE_V2 === '1'
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
@@ -143,6 +144,7 @@ export default defineNuxtConfig({
       // Legacy launch switch remains closed by default. HTML robots metadata and
       // headers are now derived from the request-local launch safety decision.
       siteNoindex,
+      itineraryScheduleV2,
     },
   },
 

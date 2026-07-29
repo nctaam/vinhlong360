@@ -64,6 +64,27 @@ export interface OptimizeScheduleResponse {
   minimum_slack_minutes: number
 }
 
+export type PlannerScheduleWarning =
+  | 'opening-hours-unknown'
+  | 'opening-hours-invalid'
+
+export interface PlannerScheduleMetadata {
+  visitMinutes: number
+  openingHours: string | null
+  warnings: PlannerScheduleWarning[]
+  placement?: OptimizeSchedulePlacement
+}
+
+export interface SavedPlanStopShape {
+  id: string
+  name: string
+  type: string
+  place_name?: string
+  coords: Coordinates | null
+  time: string
+  notes: string
+}
+
 export interface BoundedOptimizationResult<T extends StopWithCoords> {
   ordered: RoutableStop<T>[]
   route: RouteResult | null
@@ -97,6 +118,33 @@ type OptimizeFunction<T extends StopWithCoords> = (
 
 type RouteFunction = (coordinates: Coordinates[]) => Promise<RouteResult | null>
 
+type PlannerTableFunction = (
+  coordinates: Coordinates[],
+  mode: TransportMode,
+) => Promise<RouteTableResult | null>
+
+type PlannerRequestFunction<T extends StopWithCoords> = (
+  routed: RoutableStop<T>[],
+  blockedEdges: BlockedEdge[],
+  schedule?: OptimizeScheduleRequest,
+) => Promise<OptimizeOrderResponse>
+
+export interface PlannerOptimizationOptions<T extends StopWithCoords> {
+  scheduleEnabled: boolean
+  routed: RoutableStop<T>[]
+  metadataByStop: WeakMap<object, PlannerScheduleMetadata>
+  mode: TransportMode
+  fetchTable: PlannerTableFunction
+  requestOptimization: PlannerRequestFunction<T>
+  route: RouteFunction
+}
+
+export interface PlannerOptimizationResult<T extends StopWithCoords> {
+  outcome: BoundedOptimizationResult<T>
+  scheduleEnvelope?: OptimizeScheduleRequest
+  scheduleWarnings: string[]
+}
+
 type RouteTableCacheEntry = {
   expiresAt: number | null
   promise: Promise<RouteTableResult | null>
@@ -105,6 +153,239 @@ type RouteTableCacheEntry = {
 const ROUTE_TABLE_CACHE_TTL_MS = 15 * 60 * 1000
 const ROUTE_TABLE_CACHE_MAX_KEYS = 16
 const routeTableCache = new Map<string, RouteTableCacheEntry>()
+
+const DEFAULT_VISIT_MINUTES: Record<string, number> = {
+  accommodation: 0,
+  attraction: 90,
+  craft_village: 60,
+  dish: 45,
+  economy: 30,
+  event: 120,
+  experience: 120,
+  history: 60,
+  nature: 90,
+  person: 30,
+  product: 30,
+}
+
+const TIME_RANGE_SOURCE = String.raw`(\d{1,2})(?:(?::(\d{2}))|(?:[hH](\d{2})?))\s*-\s*(\d{1,2})(?:(?::(\d{2}))|(?:[hH](\d{2})?))`
+const REQUESTED_TIME_PATTERN = new RegExp(`^\\s*${TIME_RANGE_SOURCE}\\s*$`)
+const OPENING_HOURS_PATTERN = new RegExp(TIME_RANGE_SOURCE, 'g')
+const HOURS_DURATION_PATTERN = /(\d+(?:[.,]\d+)?)\s*(?:giờ|gio|hours?|hrs?|h)\b/i
+const MINUTES_DURATION_PATTERN = /(\d+(?:[.,]\d+)?)\s*(?:phút|phut|minutes?|mins?)\b/i
+
+function minuteOfDay(hourText: string, minuteText?: string): number | null {
+  const hour = Number(hourText)
+  const minute = Number(minuteText || 0)
+  if (
+    !Number.isInteger(hour)
+    || !Number.isInteger(minute)
+    || hour > 24
+    || minute > 59
+    || (hour === 24 && minute !== 0)
+  ) {
+    return null
+  }
+  return hour * 60 + minute
+}
+
+function validTimeRangeMatch(match: RegExpMatchArray | RegExpExecArray): boolean {
+  const start = minuteOfDay(match[1] ?? '', match[2] ?? match[3])
+  const end = minuteOfDay(match[4] ?? '', match[5] ?? match[6])
+  return start !== null && end !== null && start <= end
+}
+
+function isSupportedRequestedTime(value: string): boolean {
+  const match = value.match(REQUESTED_TIME_PATTERN)
+  return match !== null && validTimeRangeMatch(match)
+}
+
+function hasSupportedOpeningHours(value: string): boolean {
+  OPENING_HOURS_PATTERN.lastIndex = 0
+  let match = OPENING_HOURS_PATTERN.exec(value)
+  while (match) {
+    if (validTimeRangeMatch(match)) return true
+    match = OPENING_HOURS_PATTERN.exec(value)
+  }
+  return false
+}
+
+function defaultVisitMinutes(type: string): number {
+  return DEFAULT_VISIT_MINUTES[type.trim().toLowerCase()] ?? 60
+}
+
+function inferredVisitMinutes(type: string, suggestedDuration: unknown): number {
+  if (typeof suggestedDuration !== 'string') return defaultVisitMinutes(type)
+  const hours = suggestedDuration.match(HOURS_DURATION_PATTERN)
+  const minutes = suggestedDuration.match(MINUTES_DURATION_PATTERN)
+  if (!hours && !minutes) return defaultVisitMinutes(type)
+  const hourValue = Number((hours?.[1] ?? '0').replace(',', '.'))
+  const minuteValue = Number((minutes?.[1] ?? '0').replace(',', '.'))
+  return Math.round(hourValue * 60 + minuteValue)
+}
+
+export function plannerMetadataForEntity(
+  type: string,
+  attributes?: { suggested_duration?: unknown; hours?: unknown } | null,
+): PlannerScheduleMetadata {
+  const rawHours = typeof attributes?.hours === 'string' && attributes.hours.trim().length
+    ? attributes.hours
+    : null
+  const warnings: PlannerScheduleWarning[] = rawHours === null
+    ? ['opening-hours-unknown']
+    : hasSupportedOpeningHours(rawHours)
+      ? []
+      : ['opening-hours-invalid']
+  return {
+    visitMinutes: inferredVisitMinutes(type, attributes?.suggested_duration),
+    openingHours: rawHours,
+    warnings,
+  }
+}
+
+export function plannerMetadataForLoadedStop(type: string): PlannerScheduleMetadata {
+  return {
+    visitMinutes: defaultVisitMinutes(type),
+    openingHours: null,
+    warnings: ['opening-hours-unknown'],
+  }
+}
+
+function formatMinuteOfDay(value: number): string {
+  const minute = Math.max(0, Math.round(value))
+  const hours = Math.floor(minute / 60)
+  const minutes = minute % 60
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+}
+
+export function formatScheduledInterval(
+  placement?: Pick<OptimizeSchedulePlacement, 'start_visit_minute' | 'end_visit_minute'> | null,
+): string {
+  if (!placement) return ''
+  return `${formatMinuteOfDay(placement.start_visit_minute)}-${formatMinuteOfDay(placement.end_visit_minute)}`
+}
+
+export function applySchedulePlacement<T extends object>(
+  stop: T,
+  placement: OptimizeSchedulePlacement,
+): { stop: T; scheduledTime: string } {
+  return {
+    stop,
+    scheduledTime: formatScheduledInterval(placement),
+  }
+}
+
+export function applySchedulePlacements<T extends StopWithCoords>(
+  routed: RoutableStop<T>[],
+  placements: OptimizeSchedulePlacement[],
+  metadataByStop: WeakMap<object, PlannerScheduleMetadata>,
+): number {
+  const byKey = new Map(routed.map(item => [item.key, item.stop]))
+  let applied = 0
+  placements.forEach((placement) => {
+    const stop = byKey.get(placement.stop_id)
+    if (!stop) return
+    const appliedPlacement = applySchedulePlacement(stop, placement)
+    const metadata = metadataByStop.get(stop) ?? plannerMetadataForLoadedStop('')
+    metadataByStop.set(appliedPlacement.stop, { ...metadata, placement })
+    applied += 1
+  })
+  return applied
+}
+
+export function serializePlanStops<T extends SavedPlanStopShape>(
+  stops: T[],
+): SavedPlanStopShape[] {
+  return stops.map((stop) => {
+    const serialized: SavedPlanStopShape = {
+      id: stop.id,
+      name: stop.name,
+      type: stop.type,
+      coords: stop.coords ? [stop.coords[0], stop.coords[1]] : null,
+      time: stop.time,
+      notes: stop.notes,
+    }
+    if (stop.place_name !== undefined) serialized.place_name = stop.place_name
+    return serialized
+  })
+}
+
+export function buildPlannerScheduleEnvelope<
+  T extends StopWithCoords & { time?: string },
+>(
+  routed: RoutableStop<T>[],
+  metadataByStop: WeakMap<object, PlannerScheduleMetadata>,
+  mode: TransportMode,
+  table: RouteTableResult | null,
+): { envelope: OptimizeScheduleRequest; warnings: string[] } {
+  const warnings: string[] = []
+  const envelope: OptimizeScheduleRequest = {
+    day_start_minute: 480,
+    day_end_minute: 1080,
+    mode,
+    stops: routed.map((item) => {
+      const metadata = metadataByStop.get(item.stop)
+        ?? plannerMetadataForLoadedStop('')
+      metadata.warnings.forEach(warning => warnings.push(`${warning}:${item.key}`))
+      const scheduledStop: OptimizeScheduleStopRequest = {
+        id: item.key,
+        visit_minutes: metadata.visitMinutes,
+        required: true,
+      }
+      if (metadata.openingHours !== null) {
+        scheduledStop.opening_hours = metadata.openingHours
+      }
+      const requestedTime = item.stop.time?.trim()
+      if (requestedTime) {
+        if (isSupportedRequestedTime(requestedTime)) {
+          scheduledStop.requested_time = requestedTime
+        }
+        else {
+          warnings.push(`requested-time-invalid:${item.key}`)
+        }
+      }
+      return scheduledStop
+    }),
+  }
+  if (table) envelope.duration_matrix_minutes = table.durationMinutes
+  return { envelope, warnings }
+}
+
+export async function runPlannerOptimization<
+  T extends StopWithCoords & { time?: string },
+>(
+  options: PlannerOptimizationOptions<T>,
+): Promise<PlannerOptimizationResult<T>> {
+  let scheduleEnvelope: OptimizeScheduleRequest | undefined
+  let scheduleWarnings: string[] = []
+  if (options.scheduleEnabled) {
+    const coordinates = options.routed.map(item => item.coordinates)
+    const table = await getCachedRouteTable(
+      routeTableCacheKey(coordinates, options.mode),
+      () => options.fetchTable(coordinates, options.mode),
+    )
+    const prepared = buildPlannerScheduleEnvelope(
+      options.routed,
+      options.metadataByStop,
+      options.mode,
+      table,
+    )
+    scheduleEnvelope = prepared.envelope
+    scheduleWarnings = prepared.warnings
+    if (!table) scheduleWarnings.push('route-table-unavailable')
+  }
+
+  const outcome = await runBoundedOptimization(
+    options.routed,
+    (routed, blockedEdges) => options.requestOptimization(
+      routed,
+      blockedEdges,
+      scheduleEnvelope,
+    ),
+    options.route,
+  )
+  return { outcome, scheduleEnvelope, scheduleWarnings }
+}
 
 function isCoordinates(value: StopWithCoords['coords']): value is Coordinates {
   return Array.isArray(value)
