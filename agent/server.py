@@ -2126,6 +2126,15 @@ def _safe_delivered_reply(
     )
 
 
+def _safe_sse_event(payload: dict, verified_public_contacts: set[str]) -> dict:
+    """Sanitize provider-derived SSE metadata before serialization."""
+    return redact_payload(
+        payload,
+        source="verified_public_contact",
+        verified_public_contacts=tuple(verified_public_contacts),
+    )
+
+
 def _safe_cached_reply(reply: str) -> SafeText:
     """Redact a legacy cache reply before any delivery or personal sink."""
     return redact_text(reply, source="legacy_cache")
@@ -3354,6 +3363,21 @@ async def chat_stream(req: ChatRequest, request: Request):
             memory_manager.on_message(owner_key, sid, "user", cache_query)
             memory_manager.on_message(owner_key, sid, "assistant", safe_text)
 
+        def prepare_tool_event(payload: dict) -> dict | None:
+            nonlocal stream_usage_settlement_blocked
+            try:
+                return _safe_sse_event(payload, verified_public_contacts)
+            except PrivacyBoundaryUnavailable as exc:
+                code = exc.code
+            except Exception:
+                code = "UNEXPECTED_PRIVACY_TOOL_EVENT_ERROR"
+            logger.warning(
+                "Privacy boundary unavailable for stream tool event",
+                code=code,
+            )
+            stream_usage_settlement_blocked = True
+            return None
+
         for round_num in range(max_rounds):
             try:
                 _kw = {"model": _stream_model, "messages": messages, "tools": TOOLS, "tool_choice": "auto", "timeout": LLM_TIMEOUT}
@@ -3430,7 +3454,16 @@ async def chat_stream(req: ChatRequest, request: Request):
 
                     # Tool-use Tracing: send start event with description
                     tool_desc = _tool_description(fn_name, fn_args)
-                    yield f"data: {json.dumps({'type': 'tool_start', 'name': fn_name, 'description': tool_desc, 'args': fn_args}, ensure_ascii=False)}\n\n"
+                    tool_start_event = prepare_tool_event({
+                        "type": "tool_start",
+                        "name": fn_name,
+                        "description": tool_desc,
+                        "args": fn_args,
+                    })
+                    if tool_start_event is None:
+                        yield f"data: {json.dumps({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
+                        return
+                    yield f"data: {json.dumps(tool_start_event, ensure_ascii=False)}\n\n"
 
                     t0 = time.time()
                     result = await _await_chat_worker(
@@ -3442,7 +3475,16 @@ async def chat_stream(req: ChatRequest, request: Request):
 
                     # Tool-use Tracing: send done event with timing
                     result_preview = result[:200] if len(result) > 200 else result
-                    yield f"data: {json.dumps({'type': 'tool_done', 'name': fn_name, 'duration_ms': duration_ms, 'preview': result_preview}, ensure_ascii=False)}\n\n"
+                    tool_done_event = prepare_tool_event({
+                        "type": "tool_done",
+                        "name": fn_name,
+                        "duration_ms": duration_ms,
+                        "preview": result_preview,
+                    })
+                    if tool_done_event is None:
+                        yield f"data: {json.dumps({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
+                        return
+                    yield f"data: {json.dumps(tool_done_event, ensure_ascii=False)}\n\n"
 
                     # Track entity discussions in memory
                     if fn_name in ("entity_detail", "nearby_entities") and "entity_id" in fn_args:
@@ -3491,7 +3533,9 @@ async def chat_stream(req: ChatRequest, request: Request):
                 producer = asyncio.create_task(asyncio.to_thread(_produce_stream))
                 _chunks: list[str] = []
                 terminal_chunk = None
-                redactor = StreamingPIIRedactor()
+                redactor = StreamingPIIRedactor(
+                    verified_public_contacts=tuple(verified_public_contacts),
+                )
 
                 async def _stream_text_chunks():
                     nonlocal terminal_chunk
@@ -3741,7 +3785,9 @@ async def chat_stream(req: ChatRequest, request: Request):
             synth_producer = asyncio.create_task(asyncio.to_thread(_synth_produce))
             synth_chunks: list[str] = []
             synth_terminal_chunk = None
-            synth_redactor = StreamingPIIRedactor()
+            synth_redactor = StreamingPIIRedactor(
+                verified_public_contacts=tuple(verified_public_contacts),
+            )
 
             async def _synth_text_chunks():
                 nonlocal synth_terminal_chunk

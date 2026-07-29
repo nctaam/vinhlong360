@@ -373,10 +373,16 @@ _MIN_STREAM_PATTERN_SPAN = _DEFAULT_STREAM_PATTERN_SPAN
 class StreamingPIIRedactor:
     """Release only text that is outside the bounded PII detection suffix."""
 
-    def __init__(self, max_pattern_span: int = _DEFAULT_STREAM_PATTERN_SPAN):
+    def __init__(
+        self,
+        max_pattern_span: int = _DEFAULT_STREAM_PATTERN_SPAN,
+        *,
+        verified_public_contacts: Sequence[str] = (),
+    ):
         if not isinstance(max_pattern_span, int) or max_pattern_span < _MIN_STREAM_PATTERN_SPAN:
             raise ValueError("max_pattern_span is too small")
         self.max_pattern_span = max_pattern_span
+        self._verified_public_contacts = _verified_contacts(verified_public_contacts)
         self._pending = ""
         self._aborted = False
         self._finished = False
@@ -399,6 +405,12 @@ class StreamingPIIRedactor:
     def _redact_prefix(self, prefix: str) -> str:
         if not prefix:
             return ""
+        if self._verified_public_contacts:
+            return redact_text(
+                prefix,
+                source="verified_public_contact",
+                verified_public_contacts=tuple(self._verified_public_contacts),
+            ).text
         return redact_text(prefix, source="provider_output").text
 
     def _release_overlong_candidate(self) -> str | None:

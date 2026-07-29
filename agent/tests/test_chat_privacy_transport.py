@@ -35,6 +35,7 @@ PROVIDER_REPLY = "Provider reply with enough safe detail for privacy transport t
 STREAM_EMAIL = "secret@example.com"
 LEGACY_PHONE = "0901234567"
 LEGACY_EMAIL = "legacy-cache@example.com"
+PUBLIC_PHONE = "02703822000"
 
 
 @pytest.fixture
@@ -76,6 +77,24 @@ def _stream_chunks(content=PROVIDER_REPLY):
     yield SimpleNamespace(
         choices=[],
         usage=SimpleNamespace(prompt_tokens=10, completion_tokens=5, total_tokens=15),
+    )
+
+
+def _tool_completion(name, arguments):
+    tool_call = SimpleNamespace(
+        id="tool-call-1",
+        function=SimpleNamespace(name=name, arguments=json.dumps(arguments)),
+    )
+    message = SimpleNamespace(
+        content=None,
+        tool_calls=[tool_call],
+        role="assistant",
+        function_call=None,
+    )
+    usage = SimpleNamespace(prompt_tokens=10, completion_tokens=5, total_tokens=15)
+    return SimpleNamespace(
+        choices=[SimpleNamespace(message=message, finish_reason="tool_calls", index=0)],
+        usage=usage,
     )
 
 
@@ -316,6 +335,120 @@ async def test_sse_redacts_email_across_every_provider_chunk_boundary(
     )
     assert STREAM_EMAIL not in wire_text
     assert STREAM_EMAIL not in delivered_text
+    assert "[EMAIL]" in delivered_text
+
+
+@pytest.mark.anyio
+async def test_sse_redacts_provider_tool_metadata_before_wire(
+    monkeypatch,
+    tmp_path,
+):
+    _manager_instance, _captured_messages = _configure_chat(monkeypatch, tmp_path)
+    decision_count = 0
+
+    def create(*_args, stream=False, **_kwargs):
+        nonlocal decision_count
+        if stream:
+            return _stream_chunks("Safe final answer.")
+        decision_count += 1
+        if decision_count == 1:
+            return _tool_completion(
+                STREAM_EMAIL,
+                {"query": f"Call {LEGACY_PHONE}"},
+            )
+        return _completion("decision complete")
+
+    monkeypatch.setattr(
+        server,
+        "get_client",
+        lambda: SimpleNamespace(
+            chat=SimpleNamespace(completions=SimpleNamespace(create=create)),
+        ),
+    )
+    monkeypatch.setattr(server, "call_tool", lambda *_args, **_kwargs: '{"ok": true}')
+    transport = httpx.ASGITransport(app=server.app)
+
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            "/chat/stream",
+            json={"message": "trace a provider tool", "history": []},
+        )
+
+    assert response.status_code == 200
+    assert STREAM_EMAIL not in response.text
+    assert LEGACY_PHONE not in response.text
+    tool_frames = [
+        frame
+        for frame in _sse_frames(response.text)
+        if frame.get("type") in {"tool_start", "tool_done"}
+    ]
+    assert {frame["type"] for frame in tool_frames} == {"tool_start", "tool_done"}
+    assert "[EMAIL]" in repr(tool_frames)
+    assert "[PHONE]" in repr(tool_frames)
+
+
+@pytest.mark.anyio
+async def test_sse_preserves_only_current_verified_public_contact(
+    monkeypatch,
+    tmp_path,
+):
+    _manager_instance, _captured_messages = _configure_chat(monkeypatch, tmp_path)
+    decision_count = 0
+    monkeypatch.setattr(
+        server.knowledge,
+        "_entities",
+        {
+            "public-office": {
+                "id": "public-office",
+                "status": "published",
+                "verified": True,
+                "attributes": {"phone": PUBLIC_PHONE},
+            },
+        },
+    )
+
+    def create(*_args, stream=False, **_kwargs):
+        nonlocal decision_count
+        if stream:
+            return _stream_chunks(
+                f"Call {PUBLIC_PHONE}; ignore invented {STREAM_EMAIL}."
+            )
+        decision_count += 1
+        if decision_count == 1:
+            return _tool_completion("entity_detail", {"entity_id": "public-office"})
+        return _completion("decision complete")
+
+    monkeypatch.setattr(
+        server,
+        "get_client",
+        lambda: SimpleNamespace(
+            chat=SimpleNamespace(completions=SimpleNamespace(create=create)),
+        ),
+    )
+    monkeypatch.setattr(
+        server,
+        "call_tool",
+        lambda *_args, **_kwargs: json.dumps({
+            "id": "public-office",
+            "phone": PUBLIC_PHONE,
+        }),
+    )
+    transport = httpx.ASGITransport(app=server.app)
+
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            "/chat/stream",
+            json={"message": "show the verified public contact", "history": []},
+        )
+
+    delivered_text = "".join(
+        frame.get("content", "")
+        for frame in _sse_frames(response.text)
+        if frame.get("type") == "text"
+    )
+    assert response.status_code == 200
+    assert PUBLIC_PHONE in delivered_text
+    assert STREAM_EMAIL not in response.text
     assert "[EMAIL]" in delivered_text
 
 
@@ -567,7 +700,7 @@ async def test_stream_redactor_error_emits_generic_error_and_writes_nothing(
     instances = []
 
     class ExplodingRedactor:
-        def __init__(self):
+        def __init__(self, **_kwargs):
             self.aborted = False
             instances.append(self)
 
@@ -654,7 +787,7 @@ def test_stream_cancellation_aborts_withheld_suffix_and_skips_sinks(
     instances = []
 
     class WithholdingRedactor:
-        def __init__(self):
+        def __init__(self, **_kwargs):
             self.aborted = False
             instances.append(self)
 
