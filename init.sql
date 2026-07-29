@@ -137,6 +137,15 @@ CREATE TABLE IF NOT EXISTS users (
     bio           TEXT DEFAULT '',
     role          TEXT DEFAULT 'user' CHECK (role IN ('user', 'moderator', 'admin', 'superadmin')),
     is_active     BOOLEAN DEFAULT TRUE,
+    deleted_at    TIMESTAMPTZ,
+    erasure_due_at TIMESTAMPTZ,
+    erasure_attempt_count INTEGER NOT NULL DEFAULT 0
+        CHECK (erasure_attempt_count >= 0),
+    erasure_last_attempt_at TIMESTAMPTZ,
+    erasure_last_error_code TEXT
+        CHECK (erasure_last_error_code IS NULL OR erasure_last_error_code IN (
+            'STORE_UNAVAILABLE', 'RESIDUAL_DATA', 'DB_CONSTRAINT', 'VERIFY_FAILED'
+        )),
     consent_at    TIMESTAMPTZ,
     consent_version TEXT,
     created_at    TIMESTAMPTZ DEFAULT NOW(),
@@ -146,6 +155,9 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_phone ON users(phone);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_unique
   ON users (lower(username)) WHERE username IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_users_erasure_due
+  ON users(erasure_due_at)
+  WHERE deleted_at IS NOT NULL AND erasure_due_at IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS otp_sessions (
     id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

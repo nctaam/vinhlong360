@@ -69,6 +69,7 @@ def test_059_records_schema_version_59_monotonic():
 MIG_060 = (ROOT / "agent" / "migrations" / "060_entity_universal_columns.sql").read_text(encoding="utf-8")
 MIG_061 = (ROOT / "agent" / "migrations" / "061_entity_detail_tables.sql").read_text(encoding="utf-8")
 MIG_071 = (ROOT / "agent" / "migrations" / "071_feedback_receipts.sql").read_text(encoding="utf-8")
+MIG_072 = (ROOT / "agent" / "migrations" / "072_account_erasure_state.sql").read_text(encoding="utf-8")
 
 UNIVERSAL = ["address", "phone", "website", "hours", "price_range", "sub_category", "best_time", "highlight"]
 CTI_TABLES = [
@@ -200,3 +201,41 @@ def test_database_readiness_requires_feedback_schema_version_71():
         "positive_count",
         "negative_count",
     } <= database.PG_REQUIRED_COLUMNS["feedback_daily_rollups"]
+
+
+def test_072_adds_bounded_erasure_metadata_without_backfill():
+    """Migration replay must add lifecycle state without inventing legacy dates."""
+    for column in (
+        "erasure_due_at TIMESTAMPTZ",
+        "erasure_attempt_count INTEGER NOT NULL DEFAULT 0",
+        "erasure_last_attempt_at TIMESTAMPTZ",
+        "erasure_last_error_code TEXT",
+    ):
+        assert f"ADD COLUMN IF NOT EXISTS {column}" in MIG_072
+    assert "erasure_attempt_count >= 0" in MIG_072
+    for code in (
+        "STORE_UNAVAILABLE",
+        "RESIDUAL_DATA",
+        "DB_CONSTRAINT",
+        "VERIFY_FAILED",
+    ):
+        assert code in MIG_072
+    assert "idx_users_erasure_due" in MIG_072
+    assert "WHERE deleted_at IS NOT NULL AND erasure_due_at IS NOT NULL" in MIG_072
+    assert not re.search(r"\bUPDATE\s+users\b", MIG_072, re.I)
+    assert "VALUES ('agent', 72," in MIG_072
+
+
+def test_init_sql_contains_final_account_erasure_state():
+    """A fresh schema must expose the same columns and bounds as migration 072."""
+    block = _create_block(INIT_SQL, "users")
+    for column in (
+        "deleted_at",
+        "erasure_due_at",
+        "erasure_attempt_count",
+        "erasure_last_attempt_at",
+        "erasure_last_error_code",
+    ):
+        assert column in block
+    assert "erasure_attempt_count >= 0" in block
+    assert "idx_users_erasure_due" in INIT_SQL

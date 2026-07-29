@@ -36,6 +36,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from config import settings as _cfg
 from database import db
+from erasure_state import request_account_erasure
 
 
 async def _require_csrf_lazy(request: Request) -> None:
@@ -96,6 +97,10 @@ OTP_VERIFY_PHONE_WINDOW = 300
 _otp_verify_phone_rate: dict[str, list[float]] = {}
 
 ACCOUNT_DELETE_GRACE_DAYS = _cfg.ACCOUNT_DELETE_GRACE_DAYS
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
 
 _RATE_GC_THRESHOLD = 500
 
@@ -1231,20 +1236,16 @@ async def delete_account(request: Request, response: Response, _csrf=Depends(_re
         logger.warning("Session binding mismatch on delete-account for user %s", user.get("id"))
         raise HTTPException(403, "Phiên không hợp lệ. Vui lòng đăng nhập lại.")
     uid = str(user["id"])
-    def _query():
-        with db._conn() as conn:
-            db._execute(conn, f"""
-                UPDATE users SET deleted_at = NOW(), is_active = FALSE
-                WHERE id::text = {db._ph}
-            """, (uid,))
-            db._execute(conn, f"DELETE FROM user_sessions WHERE user_id::text = {db._ph}", (uid,))
-    await asyncio.to_thread(_query)
+    state = await asyncio.to_thread(
+        request_account_erasure, uid, now=_utc_now()
+    )
     _clear_session_cookie(response, request)
     return {
         "success": True,
         "status": "scheduled",
         "message": f"Tài khoản sẽ bị xoá vĩnh viễn sau {ACCOUNT_DELETE_GRACE_DAYS} ngày. Đăng nhập lại bằng OTP để huỷ.",
         "grace_days": ACCOUNT_DELETE_GRACE_DAYS,
+        "erasure_due_at": state.erasure_due_at.isoformat(),
     }
 
 
