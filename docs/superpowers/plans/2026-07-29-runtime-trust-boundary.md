@@ -1,6 +1,6 @@
 # Runtime Trust Boundary Implementation Plan
 
-> STATUS: done - Runtime Trust Boundary implementation and local evidence are complete at `a0a3a02c`; the separate Verified Erasure Lifecycle plan remains pending.
+> STATUS: done - Runtime Trust Boundary implementation and post-final-review evidence are complete at `fc88f56f`; the separate Verified Erasure Lifecycle plan remains pending.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
