@@ -50,6 +50,30 @@ def test_schema_version_tracks_latest_migration():
 
 
 @pg_only
+def test_feedback_tables_are_owned_by_runtime_role():
+    with db._conn() as conn:
+        rows = db._fetchall(
+            conn,
+            """
+            SELECT tablename, tableowner
+            FROM pg_tables
+            WHERE schemaname = 'public'
+              AND tablename IN ('feedback_receipts', 'feedback_daily_rollups')
+            """,
+            (),
+        )
+
+    owners = {
+        db._row_to_dict(row)["tablename"]: db._row_to_dict(row)["tableowner"]
+        for row in rows
+    }
+    assert owners == {
+        "feedback_receipts": "vl360",
+        "feedback_daily_rollups": "vl360",
+    }
+
+
+@pg_only
 def test_feedback_receipt_schema_forbids_raw_content_columns():
     with db._conn() as conn:
         rows = db._fetchall(

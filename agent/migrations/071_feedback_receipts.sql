@@ -56,6 +56,8 @@ CREATE TABLE IF NOT EXISTS feedback_receipts (
     )
 );
 
+ALTER TABLE feedback_receipts OWNER TO vl360;
+
 CREATE INDEX IF NOT EXISTS idx_feedback_receipts_expires
     ON feedback_receipts(expires_at, id);
 CREATE INDEX IF NOT EXISTS idx_feedback_receipts_user
@@ -83,6 +85,8 @@ CREATE TABLE IF NOT EXISTS feedback_daily_rollups (
     CONSTRAINT feedback_daily_rollups_dimensions_key
         UNIQUE (day, owner_kind, model_variant, tool_bucket)
 );
+
+ALTER TABLE feedback_daily_rollups OWNER TO vl360;
 
 INSERT INTO schema_version(component, version, migration, updated_at)
 VALUES ('agent', 71, '071_feedback_receipts.sql', NOW())
