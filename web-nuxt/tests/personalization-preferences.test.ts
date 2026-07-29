@@ -737,6 +737,36 @@ describe('settings preference and account contracts', () => {
     wrapper.unmount()
   })
 
+  it('keeps a fourth explicit selected-interest reason first while bounding the real drawer', async () => {
+    const wrapper = await mountSuspended(WhyThisDrawer, {
+      attachTo: document.body,
+      props: {
+        open: true,
+        explanation: {
+          primary_reason: 'Cùng khu vực bạn quan tâm',
+          reasons: [
+            'Gần mạch khám phá hiện tại',
+            'Liên quan tới tìm kiếm hiện tại',
+            'Phù hợp với sở thích bạn đã chọn',
+          ],
+          explicit_interests: ['food'],
+        },
+      },
+    })
+    await flushUi()
+
+    const signals = [...document.body.querySelectorAll('.why-signal')]
+      .map(node => node.textContent?.trim() || '')
+    const broadReasons = signals.filter(signal => !signal.startsWith('Sở thích đã chọn:'))
+    expect(broadReasons).toEqual([
+      'Phù hợp với sở thích bạn đã chọn',
+      'Cùng khu vực bạn quan tâm',
+      'Gần mạch khám phá hiện tại',
+    ])
+    expect(signals).toContain('Sở thích đã chọn: Ẩm thực')
+    wrapper.unmount()
+  })
+
   it('opens the preference panel from the real hash and follows later hash changes', async () => {
     const wrapper = await mountSettingsPage({
       openViaHash: true,
