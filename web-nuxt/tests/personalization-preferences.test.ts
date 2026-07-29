@@ -6,13 +6,16 @@ import { defineComponent, h, nextTick } from 'vue'
 
 import OnboardingSheet from '../components/OnboardingSheet.vue'
 import PersonalizeSetupSheet from '../components/PersonalizeSetupSheet.vue'
+import ToastContainer from '../components/ToastContainer.vue'
 import { usePersonalizationPreferences } from '../composables/usePersonalizationPreferences'
+import SettingsPage from '../pages/cai-dat.vue'
 import type { PreferenceSnapshot } from '../types/personalization'
 
 const apiFetchMock = vi.hoisted(() => vi.fn())
+const pageFetchMock = vi.hoisted(() => vi.fn())
 const authState = vi.hoisted(() => ({
-  user: { value: { id: 'user-1' } as { id: string } | null },
-  isLoggedIn: { value: true },
+  user: { __v_isRef: true, value: { id: 'user-1' } as { id: string } | null },
+  isLoggedIn: { __v_isRef: true, value: true },
   authHeaders: vi.fn(() => ({ Authorization: 'Bearer test-token' })),
   fetchCsrf: vi.fn(() => Promise.resolve('csrf-token')),
   fetchMe: vi.fn(() => Promise.resolve()),
@@ -38,9 +41,11 @@ const defaultSnapshot: PreferenceSnapshot = {
   revision: 0,
 }
 
-function snapshot(overrides: Partial<PreferenceSnapshot> = {}): PreferenceSnapshot {
+function preferenceFixture(overrides: Partial<PreferenceSnapshot> = {}): PreferenceSnapshot {
   return { ...defaultSnapshot, ...overrides }
 }
+
+const snapshot = preferenceFixture
 
 function apiResultFor(url: string, opts?: Record<string, unknown>) {
   if (url === '/api/me/preferences' && !opts?.method) return Promise.resolve(snapshot())
@@ -49,8 +54,9 @@ function apiResultFor(url: string, opts?: Record<string, unknown>) {
 
 function deferred<T>() {
   let resolve!: (value: T) => void
-  const promise = new Promise<T>((next) => { resolve = next })
-  return { promise, resolve }
+  let reject!: (reason?: unknown) => void
+  const promise = new Promise<T>((next, fail) => { resolve = next; reject = fail })
+  return { promise, resolve, reject }
 }
 
 async function flushUi() {
@@ -58,6 +64,82 @@ async function flushUi() {
   await nextTick()
   await Promise.resolve()
   await nextTick()
+}
+
+type ConsentFixture = { id: string; version: string; created_at: string }
+type DeleteResponse = { status: string; message: string; grace_days: number }
+
+async function mountSettingsPage(options: {
+  preferences?: PreferenceSnapshot
+  consents?: ConsentFixture[]
+  deleteResponse?: DeleteResponse
+  initialHash?: 'khu-vuc-de-xuat' | 'du-lieu' | 'nguy-hiem'
+  preferenceMutations?: Array<PreferenceSnapshot | Promise<PreferenceSnapshot> | { reject: unknown }>
+} = {}) {
+  let current = options.preferences || preferenceFixture()
+  const mutationQueue = [...(options.preferenceMutations || [])]
+  const deleteResponse = options.deleteResponse || {
+    status: 'scheduled',
+    message: 'Tài khoản sẽ bị xóa sau 30 ngày',
+    grace_days: 30,
+  }
+
+  apiFetchMock.mockImplementation((url: string, request?: Record<string, unknown>) => {
+    if (url === '/api/me/preferences' && !request?.method) return Promise.resolve(current)
+    if (url === '/api/me/preferences' && request?.method === 'PATCH') {
+      const queued = mutationQueue.shift()
+      if (queued && typeof queued === 'object' && 'reject' in queued) return Promise.reject(queued.reject)
+      if (queued) return Promise.resolve(queued).then((next) => {
+        current = next
+        return next
+      })
+      const body = request.body as Partial<PreferenceSnapshot> | undefined
+      current = preferenceFixture({ ...current, ...body, revision: current.revision + 1 })
+      return Promise.resolve(current)
+    }
+    if (url === '/api/me/recommendations/reset') {
+      current = preferenceFixture({
+        ...current,
+        recommendation_reset_at: '2026-07-29T08:00:00Z',
+        revision: current.revision + 1,
+      })
+      return Promise.resolve(current)
+    }
+    return Promise.resolve(current)
+  })
+  pageFetchMock.mockImplementation((url: string) => {
+    if (url === '/auth/consent-history') return Promise.resolve({ history: options.consents || [] })
+    if (url === '/auth/account') return Promise.resolve(deleteResponse)
+    if (url === '/auth/privacy') return Promise.resolve({ profile_visibility: 'public', show_activity: true, show_saved: true })
+    if (url === '/api/notification-preferences') return Promise.resolve({})
+    if (url.startsWith('/api/users/')) return Promise.resolve({ user: { id: 'user-1', display_name: 'Lan' } })
+    return Promise.resolve({})
+  })
+  vi.stubGlobal('$fetch', pageFetchMock)
+  Object.defineProperty(navigator, 'onLine', { configurable: true, value: true })
+  window.history.replaceState(null, '', '/cai-dat')
+
+  const SettingsHarness = defineComponent({
+    setup() {
+      return () => h('div', [h(SettingsPage), h(ToastContainer)])
+    },
+  })
+  const wrapper = await mountSuspended(SettingsHarness, {
+    route: '/cai-dat',
+    global: {
+      stubs: {
+        Breadcrumb: true,
+        AvatarPlaceholder: true,
+      },
+    },
+  })
+  await flushUi()
+  const initialTab = wrapper.find(`#tab-${options.initialHash || 'khu-vuc-de-xuat'}`)
+  if (initialTab.exists()) {
+    await initialTab.trigger('click')
+    await flushUi()
+  }
+  return wrapper
 }
 
 beforeEach(() => {
@@ -452,6 +534,166 @@ describe('usePersonalizationPreferences contract', () => {
     await nextTick()
 
     expect(getCurrentPosition).toHaveBeenCalledTimes(1)
+    wrapper.unmount()
+  })
+})
+
+describe('settings preference and account contracts', () => {
+  it('renders preference and consent data from the API contract', async () => {
+    const wrapper = await mountSettingsPage({
+      preferences: preferenceFixture({
+        region_id: 'province-vl',
+        region_label: 'Vĩnh Long',
+        region_scope: 'province',
+        location_source: 'manual',
+        location_accuracy: 'province',
+        explicit_interests: ['food'],
+        derived_age_band: '25_34',
+        revision: 4,
+      }),
+      consents: [{ id: 'consent-1', version: 'location-v1', created_at: '2026-07-28T08:00:00Z' }],
+    })
+
+    expect(wrapper.get('#khu-vuc-de-xuat').text()).toContain('Vĩnh Long')
+    await wrapper.get('#tab-du-lieu').trigger('click')
+    await flushUi()
+    await wrapper.get('[data-action="load-consent-history"]').trigger('click')
+    await flushUi()
+    expect(wrapper.get('[data-consent-id="consent-1"]').text()).toContain('location-v1')
+    expect(wrapper.get('[data-consent-id="consent-1"] time').attributes('datetime')).toBe('2026-07-28T08:00:00Z')
+    expect(wrapper.text()).not.toContain('203.0.113.')
+    await wrapper.get('#tab-khu-vuc-de-xuat').trigger('click')
+    await flushUi()
+    expect(window.location.hash).toBe('#khu-vuc-de-xuat')
+    wrapper.unmount()
+  })
+
+  it('uses the scheduled-deletion response instead of claiming immediate deletion', async () => {
+    const wrapper = await mountSettingsPage({
+      initialHash: 'nguy-hiem',
+      deleteResponse: { status: 'scheduled', message: 'Tài khoản sẽ bị xóa sau 30 ngày', grace_days: 30 },
+    })
+
+    await wrapper.get('[data-action="delete-account"]').trigger('click')
+    await wrapper.get('[data-action="confirm-delete-account"]').trigger('click')
+    await flushUi()
+
+    expect(wrapper.get('[role="status"]').text()).toContain('Tài khoản sẽ bị xóa sau 30 ngày')
+    expect(wrapper.get('[role="status"]').text()).toContain('30 ngày')
+    expect(document.body.querySelector('.toast')?.textContent).toContain('Tài khoản sẽ bị xóa sau 30 ngày')
+    expect(wrapper.text()).not.toContain('Đã xóa tài khoản')
+    wrapper.unmount()
+  })
+
+  it.each([
+    ['unknown', preferenceFixture(), ['Chưa có quyết định về vị trí', 'Chưa xác định']],
+    ['manual', preferenceFixture({ region_id: 'province-vl', region_label: 'Vĩnh Long', region_scope: 'province', location_source: 'manual', location_accuracy: 'province' }), ['Bạn chọn thủ công', 'Cấp tỉnh']],
+    ['gps', preferenceFixture({ region_id: 'province-vl', region_label: 'Vĩnh Long', region_scope: 'province', location_source: 'gps', location_accuracy: 'province', location_consent_state: 'granted', location_enabled: true }), ['GPS gần đúng', 'Cấp tỉnh']],
+    ['ip', preferenceFixture({ region_id: 'province-vl', region_label: 'Vĩnh Long', region_scope: 'province', location_source: 'ip', location_accuracy: 'province', location_consent_state: 'granted', location_enabled: true }), ['IP gần đúng', 'Cấp tỉnh']],
+    ['off', preferenceFixture({ region_id: 'province-vl', region_label: 'Vĩnh Long', region_scope: 'province', location_source: 'manual', location_accuracy: 'province', location_consent_state: 'off', location_enabled: false }), ['Vị trí đang tắt', 'khu vực thủ công vẫn được dùng']],
+    ['denied', preferenceFixture({ location_consent_state: 'denied' }), ['Quyền vị trí đã bị từ chối', 'chọn khu vực thủ công']],
+    ['expired', preferenceFixture({ location_consent_state: 'expired' }), ['Quyền vị trí đã hết hạn', 'xác nhận lại']],
+  ])('distinguishes the %s preference state without exposing exact age or location', async (_state, preferences, labels) => {
+    const wrapper = await mountSettingsPage({ preferences })
+    const panel = wrapper.get('#khu-vuc-de-xuat')
+
+    for (const label of labels) expect(panel.text()).toContain(label)
+    expect(panel.text()).not.toMatch(/Tuổi chính xác|Tọa độ|Địa chỉ IP|Điểm nội bộ/)
+    expect(panel.get('[data-action="toggle-location"]').attributes('aria-label')).toBeTruthy()
+    expect(panel.get('[data-action="toggle-personalization"]').attributes('aria-label')).toBeTruthy()
+    expect(panel.get('[data-action="reset-recommendations"]').attributes('type')).toBe('button')
+    wrapper.unmount()
+  })
+
+  it('keeps the cached snapshot readable offline, disables mutations, and retries explicitly', async () => {
+    const wrapper = await mountSettingsPage({
+      preferences: preferenceFixture({
+        region_id: 'province-vl',
+        region_label: 'Vĩnh Long',
+        region_scope: 'province',
+        location_source: 'manual',
+        location_accuracy: 'province',
+        revision: 3,
+      }),
+    })
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
+    window.dispatchEvent(new Event('offline'))
+    await flushUi()
+
+    const panel = wrapper.get('#khu-vuc-de-xuat')
+    expect(panel.text()).toContain('Vĩnh Long')
+    expect(panel.text()).toContain('Đang ngoại tuyến')
+    expect(panel.get('[data-action="toggle-location"]').attributes()).toHaveProperty('disabled')
+    expect(panel.get('[data-action="toggle-personalization"]').attributes()).toHaveProperty('disabled')
+    expect(panel.get('[data-action="reset-recommendations"]').attributes()).toHaveProperty('disabled')
+    expect(panel.get('[data-action="retry-preferences"]').attributes()).not.toHaveProperty('disabled')
+
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: true })
+    await panel.get('[data-action="retry-preferences"]').trigger('click')
+    await flushUi()
+    expect(panel.text()).not.toContain('Đang ngoại tuyến')
+    wrapper.unmount()
+  })
+
+  it('shows the server snapshot after a conflict and waits for an explicit retry', async () => {
+    const serverSnapshot = preferenceFixture({
+      region_id: 'province-tv',
+      region_label: 'Trà Vinh',
+      region_scope: 'province',
+      location_source: 'manual',
+      location_accuracy: 'province',
+      revision: 5,
+    })
+    const retriedSnapshot = preferenceFixture({
+      region_id: 'province-bt',
+      region_label: 'Bến Tre',
+      region_scope: 'province',
+      location_source: 'manual',
+      location_accuracy: 'province',
+      revision: 6,
+    })
+    const wrapper = await mountSettingsPage({
+      preferences: preferenceFixture({
+        region_id: 'province-vl',
+        region_label: 'Vĩnh Long',
+        region_scope: 'province',
+        location_source: 'manual',
+        location_accuracy: 'province',
+        revision: 4,
+      }),
+      preferenceMutations: [
+        { reject: { response: { status: 409, _data: serverSnapshot } } },
+        retriedSnapshot,
+      ],
+    })
+
+    await wrapper.get('[data-region="province-bt"]').trigger('click')
+    await flushUi()
+
+    const panel = wrapper.get('#khu-vuc-de-xuat')
+    expect(panel.text()).toContain('Dữ liệu trên máy chủ đã thay đổi')
+    expect(panel.text()).toContain('Trà Vinh')
+    expect(panel.get('[data-action="retry-conflict"]').text()).toContain('Thử lưu lại')
+
+    await panel.get('[data-action="retry-conflict"]').trigger('click')
+    await flushUi()
+    expect(panel.text()).toContain('Bến Tre')
+    expect(panel.find('[data-action="retry-conflict"]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('rolls an optimistic toggle back when the preference mutation fails', async () => {
+    const pending = deferred<PreferenceSnapshot>()
+    const previous = preferenceFixture({ personalization_enabled: false, revision: 2 })
+    const wrapper = await mountSettingsPage({ preferences: previous, preferenceMutations: [pending.promise] })
+    const toggle = wrapper.get<HTMLInputElement>('[data-action="toggle-personalization"]')
+
+    await toggle.setValue(true)
+    expect(toggle.element.checked).toBe(true)
+    pending.reject(new Error('save failed'))
+    await flushUi()
+
+    expect(toggle.element.checked).toBe(false)
     wrapper.unmount()
   })
 })

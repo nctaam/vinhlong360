@@ -1447,7 +1447,7 @@ def _log_consent(user_id: str, version: str, ip: str):
 
 @router.get("/consent-history",
             summary="Get consent history",
-            description="Returns the authenticated user's consent acceptance history, including version, masked IP, and timestamp for each record.")
+            description="Returns the authenticated user's consent acceptance history with record ID, version, and timestamp.")
 async def consent_history(request: Request):
     user = await _get_current_user_or_none(request)
     if not user:
@@ -1456,7 +1456,7 @@ async def consent_history(request: Request):
         ph = db._ph
         with db._conn() as conn:
             rows = db._fetchall(conn, f"""
-                SELECT id, version, ip, created_at
+                SELECT id, version, created_at
                 FROM consent_log
                 WHERE user_id = {ph}::uuid
                 ORDER BY created_at DESC
@@ -1464,7 +1464,6 @@ async def consent_history(request: Request):
             """, (str(user["id"]),))
         return {"history": [{"id": str(db._row_to_dict(r)["id"]),
                              "version": db._row_to_dict(r).get("version"),
-                             "ip": _mask_ip(db._row_to_dict(r).get("ip")),
                              "created_at": str(db._row_to_dict(r).get("created_at", ""))}
                             for r in rows]}
     return await asyncio.to_thread(_query)

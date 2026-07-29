@@ -8,13 +8,15 @@ Complements test_p0_security_hardening.py (P0-1/3/4) with higher-level
 security checks. All tests are pure-logic (no DB, no LLM, no network).
 """
 
+import asyncio
 import hashlib
 import inspect
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from starlette.responses import Response
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -501,6 +503,120 @@ class TestAuthBypassAudit:
         import auth
         src = inspect.getsource(auth.update_profile)
         assert "html.escape" in src or "escape" in src or "sanitize" in src
+
+
+class TestAccountPrivacyContracts:
+    """Exercise account and consent handlers through their observable responses."""
+
+    def test_consent_history_projects_only_id_version_and_created_at(self, monkeypatch):
+        import auth
+
+        row = {
+            "id": "consent-1",
+            "version": "location-v1",
+            "ip": "203.0.113.24",
+            "created_at": "2026-07-28T08:00:00Z",
+        }
+        conn = MagicMock()
+        conn.__enter__.return_value = conn
+        conn.__exit__.return_value = False
+        monkeypatch.setattr(auth, "_get_current_user_or_none", AsyncMock(return_value={"id": "user-1"}))
+        monkeypatch.setattr(auth.db, "_conn", lambda: conn)
+        monkeypatch.setattr(auth.db, "_fetchall", lambda *_args, **_kwargs: [row])
+        monkeypatch.setattr(auth.db, "_row_to_dict", lambda value: value)
+
+        result = asyncio.run(auth.consent_history(MagicMock()))
+
+        assert result == {
+            "history": [{
+                "id": "consent-1",
+                "version": "location-v1",
+                "created_at": "2026-07-28T08:00:00Z",
+            }]
+        }
+
+    def test_delete_schedules_grace_period_without_purging_personalization(self, monkeypatch):
+        import auth
+        import ratelimit
+
+        state = {
+            "is_active": True,
+            "deleted_at": None,
+            "sessions": 2,
+            "personalization_rows": 3,
+        }
+        conn = MagicMock()
+        conn.__enter__.return_value = conn
+        conn.__exit__.return_value = False
+
+        def execute(_conn, statement, _params):
+            normalized = " ".join(statement.split()).upper()
+            if normalized.startswith("UPDATE USERS"):
+                state["is_active"] = False
+                state["deleted_at"] = "scheduled"
+            elif normalized.startswith("DELETE FROM USER_SESSIONS"):
+                state["sessions"] = 0
+
+        monkeypatch.setattr(auth, "_get_current_user_or_none", AsyncMock(return_value={"id": "user-1"}))
+        monkeypatch.setattr(auth, "_check_session_binding_safe", AsyncMock(return_value=True))
+        monkeypatch.setattr(auth, "_clear_session_cookie", lambda *_args: None)
+        monkeypatch.setattr(auth.db, "_conn", lambda: conn)
+        monkeypatch.setattr(auth.db, "_execute", execute)
+        monkeypatch.setattr(ratelimit, "check_rate", lambda *_args, **_kwargs: None)
+
+        result = asyncio.run(auth.delete_account(MagicMock(), Response(), None))
+
+        assert result["status"] == "scheduled"
+        assert result["grace_days"] == auth.ACCOUNT_DELETE_GRACE_DAYS
+        assert str(auth.ACCOUNT_DELETE_GRACE_DAYS) in result["message"]
+        assert state == {
+            "is_active": False,
+            "deleted_at": "scheduled",
+            "sessions": 0,
+            "personalization_rows": 3,
+        }
+
+    def test_deactivate_remains_reactivation_semantics_not_deletion(self, monkeypatch):
+        import auth
+        import ratelimit
+
+        state = {
+            "is_active": True,
+            "deleted_at": None,
+            "sessions": 2,
+            "personalization_rows": 3,
+        }
+        conn = MagicMock()
+        conn.__enter__.return_value = conn
+        conn.__exit__.return_value = False
+
+        def update_user(_user_id, **fields):
+            state.update(fields)
+
+        def execute(_conn, statement, _params):
+            if "DELETE FROM user_sessions" in statement:
+                state["sessions"] = 0
+
+        monkeypatch.setattr(auth, "_get_current_user_or_none", AsyncMock(return_value={"id": "user-1"}))
+        monkeypatch.setattr(auth, "_check_session_binding_safe", AsyncMock(return_value=True))
+        monkeypatch.setattr(auth, "_clear_session_cookie", lambda *_args: None)
+        monkeypatch.setattr(auth.db, "update_user", update_user)
+        monkeypatch.setattr(auth.db, "_conn", lambda: conn)
+        monkeypatch.setattr(auth.db, "_execute", execute)
+        monkeypatch.setattr(ratelimit, "check_rate", lambda *_args, **_kwargs: None)
+
+        result = asyncio.run(auth.deactivate_account(MagicMock(), Response(), None))
+
+        assert result == {
+            "success": True,
+            "message": "Tài khoản đã bị vô hiệu hóa. Đăng nhập lại bằng OTP để kích hoạt.",
+        }
+        assert state == {
+            "is_active": False,
+            "deleted_at": None,
+            "sessions": 0,
+            "personalization_rows": 3,
+        }
 
 
 class TestAuthPasswordSecurity:
