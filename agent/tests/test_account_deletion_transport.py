@@ -77,4 +77,3 @@ async def test_delete_account_returns_committed_exact_deadline(monkeypatch):
         "erasure_due_at": "2026-08-29T12:15:00+00:00",
     }
     assert calls == [(USER_ID, REQUESTED_AT)]
-
