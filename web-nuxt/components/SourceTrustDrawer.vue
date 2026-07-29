@@ -48,9 +48,9 @@
               <dt>Cập nhật</dt>
               <dd><time :datetime="validUpdatedAt">{{ formatDateVN(validUpdatedAt) }}</time></dd>
             </div>
-            <div v-if="validVerifiedAt" data-verification-date>
+            <div v-if="displayVerifiedAt" data-verification-date>
               <dt>Xác minh</dt>
-              <dd><time :datetime="validVerifiedAt">{{ formatDateVN(validVerifiedAt) }}</time></dd>
+              <dd><time :datetime="displayVerifiedAt">{{ formatDateVN(displayVerifiedAt) }}</time></dd>
             </div>
           </dl>
 
@@ -116,12 +116,21 @@ function validDate(value?: string | null) {
 
 const validVerifiedAt = computed(() => validDate(props.verifiedAt))
 const validUpdatedAt = computed(() => validDate(props.updatedAt))
+const sourceTitleEvidence = computed(() => props.sourceTitle?.trim() || '')
+const safeSourceUrl = computed(() => {
+  const normalized = safeUrl(props.sourceUrl)
+  return normalized === '#' ? '' : normalized
+})
+const hasVerifiedEvidence = computed(() => Boolean(
+  validVerifiedAt.value && sourceTitleEvidence.value && safeSourceUrl.value,
+))
 const effectiveTier = computed(() => {
   if (props.sourceTier === 'community' || props.communityContext) return 'community'
   if (props.sourceTier === 'official') return 'official'
-  if (props.sourceTier === 'verified') return validVerifiedAt.value ? 'verified' : 'unsupported-verified'
+  if (props.sourceTier === 'verified') return hasVerifiedEvidence.value ? 'verified' : 'unsupported-verified'
   return 'unknown'
 })
+const displayVerifiedAt = computed(() => effectiveTier.value === 'verified' ? validVerifiedAt.value : '')
 const tierLabel = computed(() => {
   if (effectiveTier.value === 'official') return 'Nguồn chính thức'
   if (effectiveTier.value === 'verified') return 'Đối tác xác minh kèm ngày'
@@ -133,7 +142,7 @@ const tierDescription = computed(() => {
   if (effectiveTier.value === 'official') return 'Thông tin được dẫn từ cơ quan hoặc đơn vị công bố chính thức.'
   if (effectiveTier.value === 'verified') return 'Đối tác cung cấp nguồn kèm ngày xác minh hợp lệ.'
   if (effectiveTier.value === 'community') return 'Nội dung do cộng đồng đóng góp và không đại diện cho nguồn chính thức.'
-  if (effectiveTier.value === 'unsupported-verified') return 'Nhãn nguồn chưa đi kèm ngày xác minh hợp lệ nên không thể khẳng định đã xác minh.'
+  if (effectiveTier.value === 'unsupported-verified') return 'Nhãn đối tác cần đủ tên nguồn, liên kết công khai và ngày xác minh hợp lệ.'
   return 'Chưa có đủ tín hiệu để xếp nguồn vào nhóm chính thức, đối tác hoặc cộng đồng.'
 })
 const tierIcon = computed(() => effectiveTier.value === 'official' || effectiveTier.value === 'verified'
@@ -147,11 +156,7 @@ const communityCopy = computed(() => {
     ? props.communityContext.trim()
     : 'Nội dung cộng đồng được kiểm duyệt theo quy định trước khi hiển thị; vẫn có thể cần bổ sung nguồn.'
 })
-const displaySourceTitle = computed(() => props.sourceTitle?.trim() || 'Chưa có tên nguồn công khai')
-const safeSourceUrl = computed(() => {
-  const normalized = safeUrl(props.sourceUrl)
-  return normalized === '#' ? '' : normalized
-})
+const displaySourceTitle = computed(() => sourceTitleEvidence.value || 'Chưa có tên nguồn công khai')
 const freshnessLabel = computed(() => {
   if (props.freshnessStatus === 'fresh') return 'Mới cập nhật'
   if (props.freshnessStatus === 'aging') return 'Cần kiểm tra định kỳ'

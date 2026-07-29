@@ -149,6 +149,7 @@ describe('SourceTrustDrawer contract', () => {
         open: true,
         sourceTier: 'verified',
         sourceTitle: 'Đối tác dữ liệu địa phương',
+        sourceUrl: 'https://partner.example.vn/entity-1',
         verifiedAt: '2026-07-18T00:00:00Z',
         freshnessStatus: 'aging',
       },
@@ -164,6 +165,27 @@ describe('SourceTrustDrawer contract', () => {
     ;(dialog.querySelector('[aria-label="Đóng thông tin nguồn"]') as HTMLButtonElement).click()
     await flushUi()
     expect(wrapper.emitted('close')).toHaveLength(1)
+  })
+
+  it('degrades a dated verified tier when public source evidence is missing', async () => {
+    const wrapper = await mountSuspended(SourceTrustDrawer, {
+      props: {
+        open: true,
+        sourceTier: 'verified',
+        sourceTitle: 'Đối tác dữ liệu địa phương',
+        sourceUrl: '',
+        verifiedAt: '2026-07-18T00:00:00Z',
+        freshnessStatus: 'fresh',
+      },
+      attachTo: document.body,
+    })
+    wrappers.push(wrapper)
+
+    const dialog = document.body.querySelector('[role="dialog"][data-source-trust]') as HTMLElement
+    expect(dialog.dataset.sourceTier).toBe('unsupported-verified')
+    expect(dialog.textContent).toContain('Chưa đủ bằng chứng xác minh')
+    expect(dialog.textContent).not.toContain('Đối tác xác minh kèm ngày')
+    expect(dialog.querySelector('[data-verification-date]')).toBeNull()
   })
 
   it('keeps official and community identity separate and reports freshness evidence', async () => {
@@ -255,6 +277,34 @@ describe('WhyThisDrawer contract', () => {
       await flushUi()
       expect(wrapper.emitted(action)).toHaveLength(1)
     }
+  })
+
+  it('redacts sensitive values embedded inside explanation strings and keeps a useful fallback', async () => {
+    const wrapper = await mountSuspended(WhyThisDrawer, {
+      props: {
+        open: true,
+        explanation: {
+          primary_reason: 'Bạn thấy mục này vì đã tìm "quán ăn bí mật" gần GPS 10.25,105.97',
+          reasons: [
+            'Tuổi chính xác 31, IP 203.0.113.10 và điểm nội bộ 0.998',
+            'Metadata uncommon-provider-field từ truy vấn thô',
+          ],
+          region_label: 'GPS 10.25,105.97',
+          explicit_interests: ['quán ăn bí mật'],
+        },
+      },
+      attachTo: document.body,
+    })
+    wrappers.push(wrapper)
+
+    const dialog = document.body.querySelector('[role="dialog"][data-why-this]') as HTMLElement
+    expect(dialog.textContent).toContain('Được cộng đồng quan tâm')
+    expect(dialog.textContent).not.toContain('quán ăn bí mật')
+    expect(dialog.textContent).not.toContain('10.25,105.97')
+    expect(dialog.textContent).not.toContain('203.0.113.10')
+    expect(dialog.textContent).not.toContain('0.998')
+    expect(dialog.textContent).not.toContain('uncommon-provider-field')
+    expect(dialog.textContent).not.toContain('31')
   })
 
   it('closes on Escape and restores focus to the disclosure trigger', async () => {

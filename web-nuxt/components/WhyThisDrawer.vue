@@ -57,6 +57,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { RecommendationExplanation } from '~/types/api'
+import { projectRecommendationExplanation } from '~/utils/recommendationExplanation'
 import IconLine from './IconLine.vue'
 
 const props = withDefaults(defineProps<{
@@ -78,26 +79,10 @@ const emit = defineEmits<{
 
 const drawerEl = ref<HTMLElement | null>(null)
 const openState = computed(() => props.open)
-
-function boundedText(value: unknown, maxLength = 160) {
-  if (typeof value !== 'string') return ''
-  const normalized = value.trim()
-  return normalized && normalized.length <= maxLength ? normalized : ''
-}
-
-const broadReasons = computed(() => {
-  const candidates = [
-    props.explanation?.primary_reason,
-    ...(Array.isArray(props.explanation?.reasons) ? props.explanation.reasons : []),
-  ]
-  return [...new Set(candidates.map(value => boundedText(value)).filter(Boolean))].slice(0, 3)
-})
-
-const regionLabel = computed(() => boundedText(props.explanation?.region_label))
-const interestLabels = computed(() => {
-  if (!Array.isArray(props.explanation?.explicit_interests)) return []
-  return [...new Set(props.explanation.explicit_interests.map(value => boundedText(value, 64)).filter(Boolean))].slice(0, 3)
-})
+const safeExplanation = computed(() => projectRecommendationExplanation(props.explanation))
+const broadReasons = computed(() => safeExplanation.value.reasons)
+const regionLabel = computed(() => safeExplanation.value.regionLabel)
+const interestLabels = computed(() => safeExplanation.value.interestLabels)
 
 useModalA11y(openState, drawerEl, { onClose: () => emit('close') })
 </script>
