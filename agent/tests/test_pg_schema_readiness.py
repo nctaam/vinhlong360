@@ -1,4 +1,5 @@
 from database import (
+    Database,
     PG_REQUIRED_SCHEMA_VERSION,
     PG_REQUIRED_TRIGGERS,
     _pg_missing_triggers,
@@ -40,3 +41,24 @@ def test_missing_trigger_scan_requires_name_and_table():
 def test_schema_issues_include_missing_triggers():
     issues = _pg_schema_issues([], [], ["trg_entity_ratings on posts"], 71)
     assert issues == ["missing triggers: trg_entity_ratings on posts"]
+
+
+def test_pg_schema_status_redacts_connection_error_details(monkeypatch):
+    detail = "credential-canary host-canary driver-canary dsn-canary"
+
+    class FailingConnection:
+        def __enter__(self):
+            raise RuntimeError(detail)
+
+        def __exit__(self, *_args):
+            return None
+
+    adapter = Database()
+    adapter._use_pg = True
+    adapter._dsn = None
+    monkeypatch.setattr(adapter, "_conn", lambda: FailingConnection())
+
+    status = adapter.pg_schema_status()
+
+    assert status["error"] == "RuntimeError"
+    assert all(token not in repr(status) for token in detail.split())

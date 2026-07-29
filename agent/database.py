@@ -697,7 +697,7 @@ class Database:
                 "required_schema_version": PG_REQUIRED_SCHEMA_VERSION,
                 "required_triggers": dict(PG_REQUIRED_TRIGGERS),
                 "missing_triggers": [],
-                "error": f"{type(exc).__name__}: {exc}",
+                "error": type(exc).__name__,
             }
 
     def initialize(self):
