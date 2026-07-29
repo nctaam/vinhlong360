@@ -98,6 +98,9 @@ export function projectRecommendationExplanation(
   const reasons = [...new Set(
     candidates.map(value => safeReason(value, interestLabels.length > 0)).filter(Boolean),
   )].slice(0, 3)
+  const explicitInterestReason = 'Phù hợp với sở thích bạn đã chọn'
+  const explicitIndex = interestLabels.length ? reasons.indexOf(explicitInterestReason) : -1
+  if (explicitIndex > 0) reasons.unshift(...reasons.splice(explicitIndex, 1))
   return {
     reasons: reasons.length ? reasons : [DEFAULT_REASON],
     regionLabel: safeRegionLabel(explanation?.region_label),

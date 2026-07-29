@@ -1,17 +1,16 @@
 #!/usr/bin/env node
+import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
 import { createServer } from 'node:http'
 import { existsSync } from 'node:fs'
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const webRoot = path.join(repoRoot, 'web-nuxt')
-const appPort = Number(process.env.SMOKE_APP_PORT || 3199)
-const chromePort = Number(process.env.SMOKE_CDP_PORT || 9239)
-const baseUrl = process.env.SMOKE_BASE_URL || `http://127.0.0.1:${appPort}`
+let baseUrl = ''
 const settleMs = Number(process.env.SMOKE_SETTLE_MS || 350)
 
 const STITCH_SCREENS = Object.freeze({
@@ -39,17 +38,32 @@ const defaultPreferences = () => ({
 })
 
 const fixture = {
-  user: {
+  user: null,
+  registeredUser: {
     id: 'smoke-personalization-user',
     display_name: 'Người kiểm thử',
     username: 'smoke-personalization-user',
+    phone: '0901234567',
     role: 'user',
     has_password: true,
   },
   preferences: defaultPreferences(),
   flags: { failNextPreferencePatch: false, conflictNextPreferencePatch: false },
-  calls: { preferencePatch: 0, preferenceGet: 0, locationResolve: 0, ipResolve: 0, reset: 0, contextual: 0, popular: 0 },
-  lastLocationBody: null,
+  calls: {
+    authMe: 0,
+    checkPhone: 0,
+    requestOtp: 0,
+    verifyOtp: 0,
+    preferencePatch: 0,
+    preferenceGet: 0,
+    locationResolve: 0,
+    ipResolve: 0,
+    reset: 0,
+    contextual: 0,
+    popular: 0,
+  },
+  locationEvidence: { gpsRequestValidated: false, ipRequestValidated: false },
+  unknownRoutes: [],
 }
 
 function sleep(ms) {
@@ -167,12 +181,42 @@ function startFixtureApi() {
       const pathname = decodeURIComponent(url.pathname)
       const method = req.method || 'GET'
 
-      if (pathname === '/auth/me') return jsonResponse(res, 200, { user: fixture.user })
+      if (pathname === '/auth/me') {
+        fixture.calls.authMe += 1
+        return fixture.user
+          ? jsonResponse(res, 200, { user: fixture.user })
+          : jsonResponse(res, 401, { detail: 'No fixture session' })
+      }
+      if (pathname === '/auth/check-phone' && method === 'POST') {
+        fixture.calls.checkPhone += 1
+        const body = await readJson(req)
+        return jsonResponse(res, 200, { exists: body.phone !== fixture.registeredUser.phone })
+      }
+      if (pathname.startsWith('/auth/check-username/')) return jsonResponse(res, 200, { available: true })
+      if (pathname === '/auth/request-otp' && method === 'POST') {
+        fixture.calls.requestOtp += 1
+        return jsonResponse(res, 200, { success: true })
+      }
+      if (pathname === '/auth/verify-otp' && method === 'POST') {
+        fixture.calls.verifyOtp += 1
+        const body = await readJson(req)
+        if (body.phone !== fixture.registeredUser.phone || body.code !== '123456' || !body.consent || !body.full_name || !body.username || !body.password) {
+          return jsonResponse(res, 400, { detail: 'Invalid deterministic registration payload' })
+        }
+        fixture.user = clone(fixture.registeredUser)
+        return jsonResponse(res, 200, { user: clone(fixture.user), has_password: true })
+      }
       if (pathname === '/auth/csrf') return jsonResponse(res, 200, { csrf_token: 'fixture-csrf-token' })
       if (pathname === '/auth/privacy') return jsonResponse(res, 200, { profile_visibility: 'public', show_activity: true, show_saved: true })
       if (pathname === '/auth/consent-history') return jsonResponse(res, 200, { history: [] })
       if (pathname === '/api/site-settings') return jsonResponse(res, 200, {})
       if (pathname === '/api/notification-preferences') return jsonResponse(res, 200, {})
+      if (pathname === '/api/saved') return jsonResponse(res, 200, { items: [] })
+      if (pathname === '/api/notifications') return jsonResponse(res, 200, { notifications: [], unread_count: 0 })
+      if (pathname === '/api/notifications/stream') {
+        res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-store', connection: 'keep-alive' })
+        return res.end()
+      }
       if (pathname.startsWith('/api/users/')) return jsonResponse(res, 200, { user: fixture.user })
 
       if (pathname === '/api/me/preferences' && method === 'GET') {
@@ -202,18 +246,30 @@ function startFixtureApi() {
       }
       if (pathname === '/api/me/location/resolve' && method === 'POST') {
         fixture.calls.locationResolve += 1
-        fixture.lastLocationBody = await readJson(req)
+        const body = await readJson(req)
+        if (body.mode === 'gps') {
+          const valid = Number.isFinite(body.latitude)
+            && Number.isFinite(body.longitude)
+            && body.latitude >= -90
+            && body.latitude <= 90
+            && body.longitude >= -180
+            && body.longitude <= 180
+          fixture.locationEvidence.gpsRequestValidated = valid
+          if (!valid) return jsonResponse(res, 400, { detail: 'Invalid GPS resolution payload' })
+        } else if (body.mode === 'ip') {
+          fixture.calls.ipResolve += 1
+          fixture.locationEvidence.ipRequestValidated = Object.keys(body).every(key => key === 'mode')
+          if (!fixture.locationEvidence.ipRequestValidated) return jsonResponse(res, 400, { detail: 'Invalid IP resolution payload' })
+        } else {
+          return jsonResponse(res, 400, { detail: 'Unknown location resolution mode' })
+        }
         return jsonResponse(res, 200, {
           region_id: 'province-vl',
           region_label: 'Vĩnh Long',
           region_scope: 'province',
-          location_source: 'gps',
+          location_source: body.mode,
           location_accuracy: 'province',
         })
-      }
-      if (pathname.includes('/location/ip')) {
-        fixture.calls.ipResolve += 1
-        return jsonResponse(res, 200, {})
       }
       if (pathname === '/api/me/recommendations/reset' && method === 'POST') {
         fixture.calls.reset += 1
@@ -235,16 +291,39 @@ function startFixtureApi() {
         fixture.calls.popular += 1
         return jsonResponse(res, 200, { entities: [recommendationFixture()] })
       }
+      if (pathname === '/api/search') {
+        return jsonResponse(res, 200, {
+          entities: [recommendationFixture()],
+          posts: [],
+          users: [],
+          totals: { entities: 1, posts: 0, users: 0 },
+        })
+      }
+      if (pathname === '/api/community/stats') return jsonResponse(res, 200, { posts: 12, reviews: 4, members: 8 })
+      if (pathname === '/api/community/trending-tags') return jsonResponse(res, 200, { tags: [] })
+      if (pathname === '/api/community/leaderboard') return jsonResponse(res, 200, { leaders: [] })
+      if (pathname === '/api/community/suggested-follows') return jsonResponse(res, 200, { users: [] })
+      if (pathname === '/api/feed') return jsonResponse(res, 200, { posts: [], page: 1, total: 0, has_more: false })
+      if (pathname === '/api/scheduled') return jsonResponse(res, 200, { scheduled: [] })
+      if (pathname === '/api/me/counts') return jsonResponse(res, 200, { saved: 0, visited: 0, following: 0 })
+      if (pathname === '/api/me/stats') return jsonResponse(res, 200, { posts: 0, reviews: 0, contributions: 0 })
+      if (pathname === '/api/me/activity') return jsonResponse(res, 200, { items: [] })
+      if (pathname === '/api/following') return jsonResponse(res, 200, { following: [] })
+      if (pathname.startsWith('/api/me/visits/check/')) return jsonResponse(res, 200, { status: null })
+      if (/^\/api\/events\/[^/]+\/rsvp$/.test(pathname)) return jsonResponse(res, 200, { count: 0, going: false })
 
       const galleryMatch = /^\/api\/entities\/([^/]+)\/gallery$/.exec(pathname)
       if (galleryMatch) return jsonResponse(res, 200, { images: [] })
       const similarMatch = /^\/api\/entities\/([^/]+)\/similar$/.exec(pathname)
       if (similarMatch) return jsonResponse(res, 200, { similar: [recommendationFixture()] })
+      const feedMatch = /^\/api\/entities\/([^/]+)\/feed$/.exec(pathname)
+      if (feedMatch) return jsonResponse(res, 200, { posts: [], total: 0, page: 1, has_more: false })
       const entityMatch = /^\/api\/entities\/([^/]+)$/.exec(pathname)
       if (entityMatch) return jsonResponse(res, 200, detailFixture(entityMatch[1]))
+      if (/^\/api\/entities\/[^/]+\/relationships$/.test(pathname)) return jsonResponse(res, 200, { total: 0, relationships: [] })
       if (pathname.startsWith('/seo/jsonld/')) return jsonResponse(res, 200, null)
 
-      if (pathname.startsWith('/api/') || pathname.startsWith('/auth/')) return jsonResponse(res, 200, {})
+      fixture.unknownRoutes.push(`${method} ${pathname}`)
       return jsonResponse(res, 404, { detail: 'Fixture route not found' })
     } catch (error) {
       return jsonResponse(res, 500, { detail: error.message })
@@ -274,17 +353,30 @@ function findChrome() {
   return candidates.find(candidate => existsSync(candidate))
 }
 
-async function waitForHttp(url, processRef, logs, timeoutMs = 90000) {
+async function allocateLocalPort() {
+  const reservation = createServer()
+  await new Promise((resolve, reject) => {
+    reservation.once('error', reject)
+    reservation.listen(0, '127.0.0.1', resolve)
+  })
+  const address = reservation.address()
+  const port = address.port
+  await new Promise(resolve => reservation.close(resolve))
+  return port
+}
+
+async function waitForOwnedApp(origin, processRef, logs, fixtureState, timeoutMs = 90000) {
+  const authMeBefore = fixtureState.calls.authMe
   const started = Date.now()
   while (Date.now() - started < timeoutMs) {
     if (processRef?.exitCode != null) throw new Error(`Nuxt exited early (${processRef.exitCode}): ${logs.slice(-12).join('\n')}`)
     try {
-      const response = await fetch(url)
-      if (response.status < 500) return
+      const response = await fetch(`${origin}/auth/me`, { redirect: 'manual' })
+      if ([200, 401].includes(response.status) && fixtureState.calls.authMe > authMeBefore) return
     } catch {}
     await sleep(250)
   }
-  throw new Error(`Timed out waiting for ${url}: ${logs.slice(-12).join('\n')}`)
+  throw new Error(`Timed out waiting for Nuxt ownership at ${origin}: ${logs.slice(-12).join('\n')}`)
 }
 
 class CdpClient {
@@ -355,24 +447,91 @@ class CdpClient {
   }
 }
 
-async function waitForChrome() {
-  for (let index = 0; index < 80; index += 1) {
+async function waitForOwnedChrome(processRef, userDataDir, timeoutMs = 20000) {
+  const started = Date.now()
+  while (Date.now() - started < timeoutMs) {
+    if (processRef?.exitCode != null) throw new Error(`Chrome exited before exposing owned CDP (${processRef.exitCode})`)
     try {
-      const response = await fetch(`http://127.0.0.1:${chromePort}/json/version`)
+      const activePort = await readFile(path.join(userDataDir, 'DevToolsActivePort'), 'utf8')
+      const [portText, browserPath] = activePort.trim().split(/\r?\n/)
+      const port = Number(portText)
+      if (!Number.isInteger(port) || port <= 0 || !browserPath?.startsWith('/devtools/browser/')) throw new Error('Malformed DevToolsActivePort')
+      const response = await fetch(`http://127.0.0.1:${port}/json/version`)
       const data = await response.json()
-      if (data.webSocketDebuggerUrl) return
+      const endpoint = new URL(data.webSocketDebuggerUrl)
+      if (Number(endpoint.port) === port && endpoint.pathname === browserPath) {
+        return { port, browserWsUrl: data.webSocketDebuggerUrl }
+      }
     } catch {}
     await sleep(250)
   }
-  throw new Error('Chrome did not expose CDP in time')
+  throw new Error(`Task-owned Chrome profile did not expose CDP within ${timeoutMs}ms`)
 }
 
-async function createPageTarget() {
+async function createPageTarget(chromePort) {
   const endpoint = `http://127.0.0.1:${chromePort}/json/new?about:blank`
   let response = await fetch(endpoint, { method: 'PUT' })
   if (!response.ok) response = await fetch(endpoint)
   if (!response.ok) throw new Error(`Cannot create Chrome target: ${response.status}`)
-  return (await response.json()).webSocketDebuggerUrl
+  const target = await response.json()
+  if (!target.id || !target.webSocketDebuggerUrl) throw new Error('Chrome target response is incomplete')
+  return { id: target.id, webSocketDebuggerUrl: target.webSocketDebuggerUrl }
+}
+
+async function closePageTarget(chromePort, targetId) {
+  const response = await fetch(`http://127.0.0.1:${chromePort}/json/close/${encodeURIComponent(targetId)}`)
+  if (!response.ok) throw new Error(`Cannot close Chrome target ${targetId}: ${response.status}`)
+}
+
+async function waitForChildExit(child, timeoutMs) {
+  if (!child || child.exitCode !== null || child.signalCode !== null) return true
+  return await new Promise((resolve) => {
+    const timer = setTimeout(() => {
+      child.off('exit', onExit)
+      resolve(false)
+    }, timeoutMs)
+    const onExit = () => {
+      clearTimeout(timer)
+      resolve(true)
+    }
+    child.once('exit', onExit)
+  })
+}
+
+async function stopChild(child, label, timeoutMs = 5000) {
+  if (!child || child.exitCode !== null || child.signalCode !== null) return
+  if (!child.pid) throw new Error(`${label} has no owned process id`)
+  if (process.platform === 'win32') {
+    const killer = spawn('taskkill', ['/PID', String(child.pid), '/T', '/F'], { stdio: 'ignore', windowsHide: true })
+    await waitForChildExit(killer, timeoutMs)
+  } else {
+    child.kill('SIGTERM')
+    if (!await waitForChildExit(child, Math.min(timeoutMs, 2500))) child.kill('SIGKILL')
+  }
+  if (!await waitForChildExit(child, timeoutMs)) throw new Error(`${label} process ${child.pid} did not exit within ${timeoutMs}ms`)
+}
+
+async function cleanupSmokeResources({ cdp, closeTarget, chrome, app, fixtureApi, userDataDir }) {
+  const errors = []
+  async function cleanup(label, action) {
+    try {
+      await action()
+    } catch (error) {
+      errors.push(`${label}: ${error.message}`)
+    }
+  }
+  if (closeTarget) await cleanup('target', closeTarget)
+  if (cdp) await cleanup('cdp', async () => cdp.close())
+  if (chrome) await cleanup('chrome', () => stopChild(chrome, 'Chrome'))
+  if (app) await cleanup('nuxt', () => stopChild(app, 'Nuxt'))
+  if (fixtureApi?.server) {
+    await cleanup('fixture-api', async () => {
+      fixtureApi.server.closeAllConnections?.()
+      if (fixtureApi.server.listening) await new Promise((resolve, reject) => fixtureApi.server.close(error => error ? reject(error) : resolve()))
+    })
+  }
+  if (userDataDir) await cleanup('profile', () => rm(userDataDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 }))
+  if (errors.length) throw new Error(`Smoke cleanup failed:\n${errors.join('\n')}`)
 }
 
 async function evaluate(cdp, expression) {
@@ -413,44 +572,232 @@ async function reload(cdp) {
   await sleep(settleMs)
 }
 
+async function prepareGpsSuccess(cdp) {
+  await reload(cdp)
+  await evaluate(cdp, `window.__smokeGeoMode = 'success'; window.__smokeGeoCalls = 0`)
+}
+
 async function click(cdp, selector) {
   const clicked = await evaluate(cdp, `(() => { const node = document.querySelector(${JSON.stringify(selector)}); if (!node) return false; node.click(); return true })()`)
   if (!clicked) throw new Error(`Missing clickable selector: ${selector}`)
+}
+
+async function setInputValue(cdp, selector, value, index = 0) {
+  const updated = await evaluate(cdp, `(() => {
+    const node = document.querySelectorAll(${JSON.stringify(selector)})[${index}];
+    if (!node) return false;
+    const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(node), 'value');
+    descriptor?.set?.call(node, ${JSON.stringify(value)});
+    node.dispatchEvent(new Event('input', { bubbles: true }));
+    node.dispatchEvent(new Event('change', { bubbles: true }));
+    return true;
+  })()`)
+  if (!updated) throw new Error(`Missing input selector: ${selector}[${index}]`)
 }
 
 async function assertText(cdp, selector, expected) {
   await waitForPage(cdp, `document.querySelector(${JSON.stringify(selector)})?.textContent?.includes(${JSON.stringify(expected)})`, `${selector} containing ${expected}`)
 }
 
-async function captureBaseline(cdp, name, width, height, theme, reducedMotion = false, textZoom = 100) {
-  await cdp.send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: width <= 390 })
+function visualConfigurations() {
+  return [
+    { key: 'desktop-wide-light', width: 1440, height: 1000, theme: 'light', reducedMotion: false, textZoom: 100 },
+    { key: 'desktop-wide-dark', width: 1440, height: 1000, theme: 'dark', reducedMotion: false, textZoom: 100 },
+    { key: 'desktop-compact-light', width: 1024, height: 768, theme: 'light', reducedMotion: false, textZoom: 100 },
+    { key: 'desktop-compact-dark', width: 1024, height: 768, theme: 'dark', reducedMotion: false, textZoom: 100 },
+    { key: 'mobile-light', width: 390, height: 844, theme: 'light', reducedMotion: false, textZoom: 100 },
+    { key: 'mobile-dark', width: 390, height: 844, theme: 'dark', reducedMotion: false, textZoom: 100 },
+    { key: 'mobile-dark-reduced', width: 390, height: 844, theme: 'dark', reducedMotion: true, textZoom: 100 },
+    { key: 'mobile-light-text-200', width: 390, height: 844, theme: 'light', reducedMotion: false, textZoom: 200 },
+  ]
+}
+
+const VISUAL_SURFACES = Object.freeze([
+  {
+    key: 'detail',
+    stitch: STITCH_SCREENS.detailV2,
+    route: '/dia-diem/smoke-official',
+    selector: '.entity-detail-page',
+    requiredSelectors: ['[data-entity-hero]', '[data-action="open-source-trust"]'],
+  },
+  {
+    key: 'community',
+    stitch: STITCH_SCREENS.community,
+    route: '/cong-dong',
+    selector: '.threads-page',
+    requiredSelectors: ['.almanac-masthead', '.threads-layout'],
+  },
+  {
+    key: 'search',
+    stitch: STITCH_SCREENS.search,
+    route: '/tim-kiem',
+    selector: '.search-hero',
+    requiredSelectors: ['input[type="search"]', 'button'],
+  },
+  {
+    key: 'settings',
+    stitch: STITCH_SCREENS.savedItinerary,
+    route: '/cai-dat#khu-vuc-de-xuat',
+    selector: '#khu-vuc-de-xuat:not([hidden])',
+    requiredSelectors: ['[data-action="toggle-location"]', '[data-action="toggle-personalization"]', '[data-action="reset-recommendations"]'],
+  },
+  {
+    key: 'why-this',
+    stitch: STITCH_SCREENS.search,
+    route: '/tai-khoan',
+    selector: '[role="dialog"][data-why-this]',
+    openSelector: '[data-action="why-this"]',
+    requiredSelectors: ['.why-signal-stack', '[data-action="reset"]', '[data-action="open-preferences"]'],
+  },
+  {
+    key: 'source-trust',
+    stitch: STITCH_SCREENS.detailV2,
+    route: '/dia-diem/smoke-community',
+    selector: '[role="dialog"][data-source-trust]',
+    openSelector: '[data-action="open-source-trust"]',
+    requiredSelectors: ['.tier-panel', '.trust-evidence', '[data-action="report"]'],
+  },
+])
+
+async function inspectSurface(cdp, surface, entry) {
+  const result = await evaluate(cdp, `(() => {
+    const root = document.querySelector(${JSON.stringify(surface.selector)});
+    if (!root) return { missingRoot: true };
+    const style = getComputedStyle(root);
+    const rect = root.getBoundingClientRect();
+    const visible = style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || 1) > 0 && rect.width > 0 && rect.height > 0;
+    const requiredMissing = ${JSON.stringify(surface.requiredSelectors)}.filter(selector => !root.querySelector(selector));
+    const nodes = [root, ...root.querySelectorAll('*')];
+    const durationMs = value => String(value || '').split(',').reduce((max, token) => {
+      const text = token.trim();
+      const number = Number.parseFloat(text) || 0;
+      return Math.max(max, text.endsWith('ms') ? number : number * 1000);
+    }, 0);
+    const maxMotionMs = nodes.reduce((max, node) => {
+      const computed = getComputedStyle(node);
+      return Math.max(max, durationMs(computed.animationDuration), durationMs(computed.transitionDuration));
+    }, 0);
+    const focusables = [...root.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')]
+      .filter(node => {
+        const nodeStyle = getComputedStyle(node);
+        const nodeRect = node.getBoundingClientRect();
+        return nodeStyle.display !== 'none' && nodeStyle.visibility !== 'hidden' && nodeRect.width > 0 && nodeRect.height > 0;
+      });
+    const clippedControls = focusables.filter(node => {
+      const nodeRect = node.getBoundingClientRect();
+      return nodeRect.left < -2 || nodeRect.right > innerWidth + 2;
+    }).length;
+    const firstControl = focusables[0];
+    firstControl?.focus();
+    return {
+      missingRoot: false,
+      visible,
+      requiredMissing,
+      focusableCount: focusables.length,
+      focusAccepted: !!firstControl && document.activeElement === firstControl && root.contains(document.activeElement),
+      clippedControls,
+      maxMotionMs,
+      viewportWidth: innerWidth,
+      documentScrollWidth: document.documentElement.scrollWidth,
+      rootLeft: rect.left,
+      rootRight: rect.right,
+      title: document.title,
+      text: root.textContent?.trim().slice(0, 160) || '',
+    };
+  })()`)
+  if (result.missingRoot || !result.visible) throw new Error(`Missing or hidden surface: ${surface.key}`)
+  if (result.requiredMissing.length) throw new Error(`Missing ${surface.key} anatomy: ${result.requiredMissing.join(', ')}`)
+  if (!result.title || !result.text) throw new Error(`Blank rendered surface: ${surface.key}`)
+  if (result.focusableCount < 1 || !result.focusAccepted) throw new Error(`No visible focusable control on ${surface.key}`)
+  if (result.clippedControls > 0) throw new Error(`Horizontally clipped controls on ${surface.key}: ${result.clippedControls}`)
+  if (result.documentScrollWidth > result.viewportWidth + 4 || result.rootLeft < -2 || result.rootRight > result.viewportWidth + 2) {
+    throw new Error(`Horizontal overflow on ${surface.key}: document=${result.documentScrollWidth}/${result.viewportWidth}, root=${result.rootLeft}/${result.rootRight}`)
+  }
+  if (entry.reducedMotion && result.maxMotionMs > 1) throw new Error(`Reduced-motion surface ${surface.key} retains ${result.maxMotionMs}ms motion`)
+  return result
+}
+
+async function captureBaseline(cdp, surface, entry) {
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: entry.width, height: entry.height, deviceScaleFactor: 1, mobile: entry.width <= 390 })
   await cdp.send('Emulation.setEmulatedMedia', {
     media: 'screen',
     features: [
-      { name: 'prefers-color-scheme', value: theme },
-      { name: 'prefers-reduced-motion', value: reducedMotion ? 'reduce' : 'no-preference' },
+      { name: 'prefers-color-scheme', value: entry.theme },
+      { name: 'prefers-reduced-motion', value: entry.reducedMotion ? 'reduce' : 'no-preference' },
     ],
   })
-  await evaluate(cdp, `document.documentElement.classList.toggle('dark', ${theme === 'dark'}); document.documentElement.style.fontSize = '${textZoom}%'; window.scrollTo(0, 0)`)
+  await evaluate(cdp, `document.documentElement.classList.toggle('dark', ${entry.theme === 'dark'}); document.documentElement.style.fontSize = '${entry.textZoom}%'; document.querySelector(${JSON.stringify(surface.selector)})?.scrollIntoView({ block: 'start' })`)
   await sleep(150)
+  const inspection = await inspectSurface(cdp, surface, entry)
   const screenshot = await cdp.send('Page.captureScreenshot', { format: 'png', fromSurface: true })
-  if (!screenshot.data || screenshot.data.length < 1000) throw new Error(`Empty visual baseline: ${name}`)
-  const layout = await evaluate(cdp, `({ width: innerWidth, scrollWidth: document.documentElement.scrollWidth, title: document.title, text: document.body.innerText.slice(0, 120) })`)
-  if (!layout.title || !layout.text) throw new Error(`Blank page during baseline: ${name}`)
-  if (layout.scrollWidth > Math.ceil(layout.width * 1.05)) throw new Error(`Horizontal overflow during baseline ${name}: ${layout.scrollWidth}/${layout.width}`)
-  console.log(`[BASELINE] ${name} ${width}x${height} ${theme} reduced=${reducedMotion} text=${textZoom}% png=${screenshot.data.length}`)
+  if (!screenshot.data || screenshot.data.length < 1000) throw new Error(`Empty visual baseline: ${surface.key}-${entry.key}`)
+  console.log(`[BASELINE] ${surface.key}-${entry.key} stitch=${surface.stitch} focusable=${inspection.focusableCount} motion=${inspection.maxMotionMs}ms png=${screenshot.data.length}`)
   await evaluate(cdp, `document.documentElement.style.fontSize = ''`)
 }
 
+function visualMatrixPlan() {
+  return VISUAL_SURFACES.flatMap(surface => visualConfigurations().map(configuration => ({ surface: surface.key, ...configuration })))
+}
+
+async function captureVisualMatrix(cdp) {
+  fixture.preferences = {
+    ...defaultPreferences(),
+    region_id: 'province-vl',
+    region_label: 'Vĩnh Long',
+    region_scope: 'province',
+    location_source: 'manual',
+    location_accuracy: 'province',
+    personalization_enabled: true,
+    explicit_interests: ['food'],
+    revision: 1,
+  }
+  for (const surface of VISUAL_SURFACES) {
+    await navigate(cdp, surface.route)
+    if (surface.openSelector) {
+      await waitForPage(cdp, `document.querySelector(${JSON.stringify(surface.openSelector)})`, `${surface.key} disclosure trigger`)
+      await click(cdp, surface.openSelector)
+    }
+    await waitForPage(cdp, `document.querySelector(${JSON.stringify(surface.selector)})`, `${surface.key} visual surface`)
+    for (const entry of visualConfigurations()) await captureBaseline(cdp, surface, entry)
+  }
+  console.log(`[STITCH VERIFIED IF EXECUTED] ${VISUAL_SURFACES.map(surface => `${surface.key}:${surface.stitch}`).join(', ')}`)
+}
+
+async function exerciseRegistration(cdp) {
+  await navigate(cdp, '/tim-kiem')
+  await waitForPage(cdp, `document.querySelector('.auth-btn')`, 'guest login control')
+  await click(cdp, '.auth-btn')
+  await waitForPage(cdp, `document.querySelector('#auth-modal-title')`, 'authentication dialog')
+  await setInputValue(cdp, 'input[autocomplete="tel"]', fixture.registeredUser.phone)
+  await click(cdp, '.consent-checkbox')
+  await click(cdp, '.otp-step .btn-primary')
+  await assertText(cdp, '.otp-step .step-label', 'Tạo tài khoản')
+  await setInputValue(cdp, 'input[autocomplete="name"]', fixture.registeredUser.display_name)
+  await setInputValue(cdp, 'input[autocomplete="username"]', fixture.registeredUser.username)
+  await setInputValue(cdp, 'input[autocomplete="new-password"]', 'SmokePass123', 0)
+  await setInputValue(cdp, 'input[autocomplete="new-password"]', 'SmokePass123', 1)
+  await click(cdp, '.otp-step .btn-primary')
+  await assertText(cdp, '.otp-step .step-label', 'Nhập mã OTP')
+  for (let index = 0; index < 6; index += 1) await setInputValue(cdp, '.otp-input input', String(index + 1), index)
+  await click(cdp, '.otp-step .btn-primary')
+  await assertText(cdp, '.otp-step .step-label', 'Đăng ký thành công')
+  await click(cdp, '.otp-done .btn-primary')
+  await waitForPage(cdp, `document.querySelector('.auth-user')`, 'registered fixture session')
+  if (!fixture.user || fixture.calls.checkPhone !== 1 || fixture.calls.requestOtp !== 1 || fixture.calls.verifyOtp !== 1) {
+    throw new Error(`Registration boundary mismatch: ${JSON.stringify({ user: !!fixture.user, calls: fixture.calls })}`)
+  }
+}
+
 async function exerciseFlow(cdp) {
-  await navigate(cdp, '/cai-dat#khu-vuc-de-xuat')
+  await exerciseRegistration(cdp)
   await waitForPage(cdp, `document.querySelector('[role="dialog"][aria-label="Thiết lập khu vực và sở thích"]')`, 'initial personalization setup')
   if (await evaluate(cdp, 'window.__smokeGeoCalls')) throw new Error('Geolocation was called before a user gesture')
 
   await click(cdp, '[data-action="skip"]')
   await waitForPage(cdp, `!document.querySelector('[role="dialog"][aria-label="Thiết lập khu vực và sở thích"]')`, 'setup skip')
-  console.log('[OK] registered fixture session can skip and configure later')
+  console.log('[OK] credential-free registration reaches a session that can skip setup')
 
+  await navigate(cdp, '/cai-dat#khu-vuc-de-xuat')
   await reload(cdp)
   await waitForPage(cdp, `document.querySelector('[role="dialog"][aria-label="Thiết lập khu vực và sở thích"]')`, 'reopened setup')
   await click(cdp, '[data-region="province-vl"]')
@@ -516,8 +863,7 @@ async function exerciseFlow(cdp) {
   console.log('[OK] repeated recommendation reset is idempotent')
 
   fixture.preferences = defaultPreferences()
-  await evaluate(cdp, `window.__smokeGeoMode = 'success'; window.__smokeGeoCalls = 0`)
-  await reload(cdp)
+  await prepareGpsSuccess(cdp)
   await waitForPage(cdp, `document.querySelector('[role="dialog"][aria-label="Thiết lập khu vực và sở thích"]')`, 'isolated GPS setup')
   await click(cdp, '[data-region="province-vl"]')
   await click(cdp, '[data-action="continue"]')
@@ -527,9 +873,15 @@ async function exerciseFlow(cdp) {
   await assertText(cdp, '[role="dialog"]', 'Độ chính xác: Cấp tỉnh')
   await click(cdp, '[data-action="confirm-location"]')
   await waitForNode(() => fixture.preferences.location_consent_state === 'granted', 'GPS confirmation')
-  if (!fixture.lastLocationBody || !('latitude' in fixture.lastLocationBody) || !('longitude' in fixture.lastLocationBody)) throw new Error('GPS resolution boundary did not receive transient coordinates')
+  const geolocationCalls = await evaluate(cdp, 'window.__smokeGeoCalls')
+  if (geolocationCalls !== 1) throw new Error(`Expected one geolocation call after the user gesture, received ${geolocationCalls}`)
+  if (!fixture.locationEvidence.gpsRequestValidated) throw new Error('GPS resolution boundary did not validate transient coordinates')
   for (const key of ['latitude', 'longitude', 'gps', 'ip']) {
     if (key in fixture.preferences) throw new Error(`Raw location key persisted in preferences: ${key}`)
+  }
+  const retainedFixtureState = JSON.stringify(fixture)
+  if (retainedFixtureState.includes('10.24') || retainedFixtureState.includes('105.97') || retainedFixtureState.includes('latitude') || retainedFixtureState.includes('longitude')) {
+    throw new Error('Fixture retained raw GPS evidence after request validation')
   }
   console.log('[OK] isolated GPS resolve requires explicit confirmation and persists no raw coordinates')
 
@@ -565,56 +917,214 @@ async function exerciseFlow(cdp) {
   }
   console.log('[OK] official/verified/community and fresh/aging/stale remain separate')
 
-  await navigate(cdp, '/cai-dat#khu-vuc-de-xuat')
-  await waitForPage(cdp, `document.querySelector('#khu-vuc-de-xuat:not([hidden])')`, 'visual baseline settings panel')
-  for (const [width, height] of [[1440, 1000], [1024, 768], [390, 844]]) {
-    for (const theme of ['light', 'dark']) {
-      await captureBaseline(cdp, `settings-${width}-${theme}`, width, height, theme)
+  await captureVisualMatrix(cdp)
+  if (fixture.unknownRoutes.length) throw new Error(`Incomplete fixture routes:\n${[...new Set(fixture.unknownRoutes)].join('\n')}`)
+}
+
+async function runSelfTests() {
+  const failures = []
+  async function check(name, test) {
+    try {
+      await test()
+      console.log(`[SELF-TEST PASS] ${name}`)
+    } catch (error) {
+      failures.push(`${name}: ${error.message}`)
+      console.error(`[SELF-TEST FAIL] ${name}: ${error.message}`)
     }
   }
-  await captureBaseline(cdp, 'settings-mobile-dark-reduced', 390, 844, 'dark', true, 100)
-  await captureBaseline(cdp, 'settings-mobile-light-text-200', 390, 844, 'light', false, 200)
-  console.log(`[STITCH] ${Object.values(STITCH_SCREENS).join(', ')}`)
+
+  await check('GPS success is configured on the reloaded document', async () => {
+    const documentState = { mode: 'deny', calls: 7 }
+    const cdp = {
+      waitFor: async () => {},
+      send: async (method, params = {}) => {
+        if (method === 'Page.reload') {
+          documentState.mode = 'deny'
+          documentState.calls = 0
+        }
+        if (method === 'Runtime.evaluate') {
+          if (params.expression.includes("__smokeGeoMode = 'success'")) documentState.mode = 'success'
+          if (params.expression.includes('__smokeGeoCalls = 0')) documentState.calls = 0
+          return { result: { value: undefined } }
+        }
+        return {}
+      },
+    }
+    await prepareGpsSuccess(cdp)
+    assert.equal(documentState.mode, 'success')
+    assert.equal(documentState.calls, 0)
+  })
+
+  const fixtureApi = await startFixtureApi()
+  try {
+    await check('fixture discards raw GPS coordinates after validation', async () => {
+      const response = await fetch(`${fixtureApi.origin}/api/me/location/resolve`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ mode: 'gps', latitude: 10.24, longitude: 105.97 }),
+      })
+      assert.equal(response.status, 200)
+      const retained = JSON.stringify(fixture)
+      assert.equal(retained.includes('10.24'), false)
+      assert.equal(retained.includes('105.97'), false)
+      assert.equal(retained.includes('latitude'), false)
+      assert.equal(retained.includes('longitude'), false)
+    })
+
+    await check('fixture begins unauthenticated before registration', async () => {
+      const response = await fetch(`${fixtureApi.origin}/auth/me`)
+      assert.equal(response.status, 401)
+    })
+
+    await check('fixture fails closed for unknown API routes', async () => {
+      const response = await fetch(`${fixtureApi.origin}/api/not-a-smoke-route`)
+      assert.equal(response.status, 404)
+    })
+  } finally {
+    fixtureApi.server.closeAllConnections?.()
+    await new Promise(resolve => fixtureApi.server.close(resolve))
+  }
+
+  await check('visual matrix includes every required surface and accessibility mode', () => {
+    const plan = visualMatrixPlan()
+    assert.deepEqual([...new Set(plan.map(entry => entry.surface))].sort(), ['community', 'detail', 'search', 'settings', 'source-trust', 'why-this'])
+    for (const surface of ['community', 'detail', 'search', 'settings', 'source-trust', 'why-this']) {
+      const entries = plan.filter(entry => entry.surface === surface)
+      assert.equal(entries.some(entry => entry.reducedMotion), true, `${surface} lacks reduced-motion coverage`)
+      assert.equal(entries.some(entry => entry.textZoom === 200), true, `${surface} lacks 200% text coverage`)
+      assert.equal(entries.some(entry => entry.width === 1440 && entry.theme === 'light'), true, `${surface} lacks desktop light coverage`)
+      assert.equal(entries.some(entry => entry.width === 390 && entry.theme === 'dark'), true, `${surface} lacks mobile dark coverage`)
+    }
+  })
+
+  await check('app readiness rejects an unrelated listener without fixture ownership', async () => {
+    const unrelated = createServer((_req, res) => jsonResponse(res, 200, { user: fixture.registeredUser }))
+    await new Promise((resolve, reject) => {
+      unrelated.once('error', reject)
+      unrelated.listen(0, '127.0.0.1', resolve)
+    })
+    const address = unrelated.address()
+    const before = fixture.calls.authMe
+    try {
+      await assert.rejects(
+        waitForOwnedApp(`http://127.0.0.1:${address.port}`, { exitCode: null }, [], fixture, 250),
+        /ownership/i,
+      )
+      assert.equal(fixture.calls.authMe, before)
+    } finally {
+      unrelated.closeAllConnections?.()
+      await new Promise(resolve => unrelated.close(resolve))
+    }
+  })
+
+  await check('CDP endpoint is derived from the task-owned Chrome profile', async () => {
+    const profileDir = await mkdtemp(path.join(tmpdir(), 'vl360-cdp-owner-self-test-'))
+    const fakeCdp = createServer((req, res) => {
+      if (req.url === '/json/version') {
+        return jsonResponse(res, 200, { webSocketDebuggerUrl: `ws://127.0.0.1:${fakeCdp.address().port}/devtools/browser/owned-token` })
+      }
+      return jsonResponse(res, 404, { detail: 'not found' })
+    })
+    await new Promise((resolve, reject) => {
+      fakeCdp.once('error', reject)
+      fakeCdp.listen(0, '127.0.0.1', resolve)
+    })
+    const port = fakeCdp.address().port
+    await writeFile(path.join(profileDir, 'DevToolsActivePort'), `${port}\n/devtools/browser/owned-token\n`, 'utf8')
+    try {
+      const owned = await waitForOwnedChrome({ exitCode: null }, profileDir, 1000)
+      assert.deepEqual(owned, { port, browserWsUrl: `ws://127.0.0.1:${port}/devtools/browser/owned-token` })
+    } finally {
+      fakeCdp.closeAllConnections?.()
+      await new Promise(resolve => fakeCdp.close(resolve))
+      await rm(profileDir, { recursive: true, force: true })
+    }
+  })
+
+  await check('early failure cleanup closes target, server, process, and temp profile', async () => {
+    const fixtureApi = await startFixtureApi()
+    const profileDir = await mkdtemp(path.join(tmpdir(), 'vl360-cleanup-self-test-'))
+    const child = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore', windowsHide: true })
+    let targetClosed = false
+    let cdpClosed = false
+    try {
+      await cleanupSmokeResources({
+        cdp: { close: () => { cdpClosed = true } },
+        closeTarget: async () => { targetClosed = true },
+        chrome: child,
+        app: null,
+        fixtureApi,
+        userDataDir: profileDir,
+      })
+      assert.equal(targetClosed, true)
+      assert.equal(cdpClosed, true)
+      assert.equal(child.exitCode !== null || child.signalCode !== null, true)
+      assert.equal(fixtureApi.server.listening, false)
+      assert.equal(existsSync(profileDir), false)
+    } finally {
+      if (child.exitCode === null && child.signalCode === null) child.kill()
+      if (fixtureApi.server.listening) {
+        fixtureApi.server.closeAllConnections?.()
+        await new Promise(resolve => fixtureApi.server.close(resolve))
+      }
+      await rm(profileDir, { recursive: true, force: true }).catch(() => {})
+    }
+  })
+
+  if (failures.length) throw new Error(`Smoke self-tests failed:\n${failures.join('\n')}`)
+  console.log('[SELF-TEST PASS] all smoke runner checks passed')
 }
 
 async function main() {
   const chromePath = findChrome()
   if (!chromePath) throw new Error('Chrome/Edge not found. Set CHROME_PATH to a Chromium executable.')
-  const fixtureApi = await startFixtureApi()
-  const appLogs = []
   const nuxtEntry = path.join(webRoot, 'node_modules', 'nuxt', 'bin', 'nuxt.mjs')
   if (!existsSync(nuxtEntry)) throw new Error(`Nuxt runtime not found at ${nuxtEntry}`)
-  const app = spawn(process.execPath, [nuxtEntry, 'dev', '--no-fork', '--logLevel', 'info', '--host', '127.0.0.1', '--port', String(appPort)], {
-    cwd: webRoot,
-    env: { ...process.env, API_BASE: fixtureApi.origin, NUXT_PUBLIC_SITE_NOINDEX: 'true' },
-    stdio: ['ignore', 'pipe', 'pipe'],
-    windowsHide: true,
-  })
-  for (const stream of [app.stdout, app.stderr]) {
-    stream.setEncoding('utf8')
-    stream.on('data', chunk => {
-      appLogs.push(...String(chunk).split(/\r?\n/).filter(Boolean))
-      if (appLogs.length > 80) appLogs.splice(0, appLogs.length - 80)
-    })
-  }
-
-  const userDataDir = await mkdtemp(path.join(tmpdir(), 'vl360-personalization-smoke-'))
+  let fixtureApi
+  let app
+  let userDataDir
   let chrome
   let cdp
+  let chromeOwnership
+  let target
+  let failure
+  const appLogs = []
   const runtimeFailures = []
   try {
-    await waitForHttp(baseUrl, app, appLogs)
+    const appPort = process.env.SMOKE_APP_PORT ? Number(process.env.SMOKE_APP_PORT) : await allocateLocalPort()
+    if (!Number.isInteger(appPort) || appPort <= 0 || appPort > 65535) throw new Error(`Invalid SMOKE_APP_PORT: ${process.env.SMOKE_APP_PORT}`)
+    baseUrl = process.env.SMOKE_BASE_URL || `http://127.0.0.1:${appPort}`
+    if (Number(new URL(baseUrl).port || 80) !== appPort) throw new Error('SMOKE_BASE_URL port must match SMOKE_APP_PORT')
+
+    fixtureApi = await startFixtureApi()
+    app = spawn(process.execPath, [nuxtEntry, 'dev', '--no-fork', '--logLevel', 'info', '--host', '127.0.0.1', '--port', String(appPort)], {
+      cwd: webRoot,
+      env: { ...process.env, API_BASE: fixtureApi.origin, NUXT_PUBLIC_SITE_NOINDEX: 'true' },
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true,
+    })
+    for (const stream of [app.stdout, app.stderr]) {
+      stream.setEncoding('utf8')
+      stream.on('data', chunk => {
+        appLogs.push(...String(chunk).split(/\r?\n/).filter(Boolean))
+        if (appLogs.length > 80) appLogs.splice(0, appLogs.length - 80)
+      })
+    }
+    await waitForOwnedApp(baseUrl, app, appLogs, fixture)
+
+    userDataDir = await mkdtemp(path.join(tmpdir(), 'vl360-personalization-smoke-'))
     chrome = spawn(chromePath, [
       '--headless=new',
-      `--remote-debugging-port=${chromePort}`,
+      '--remote-debugging-port=0',
       `--user-data-dir=${userDataDir}`,
       '--disable-gpu',
       '--no-first-run',
       '--no-default-browser-check',
       'about:blank',
     ], { stdio: 'ignore', windowsHide: true })
-    await waitForChrome()
-    cdp = new CdpClient(await createPageTarget())
+    chromeOwnership = await waitForOwnedChrome(chrome, userDataDir)
+    target = await createPageTarget(chromeOwnership.port)
+    cdp = new CdpClient(target.webSocketDebuggerUrl)
     await cdp.connect()
     await cdp.send('Page.enable')
     await cdp.send('Runtime.enable')
@@ -629,15 +1139,6 @@ async function main() {
       if ((params.response?.status || 0) >= 500 && !params.response.url.includes('/api/me/preferences')) runtimeFailures.push(`HTTP ${params.response.status} ${params.response.url}`)
     })
 
-    const origin = new URL(baseUrl)
-    await cdp.send('Network.setCookie', {
-      name: 'vl360_token',
-      value: 'fixture-session',
-      domain: origin.hostname,
-      path: '/',
-      secure: false,
-      sameSite: 'Lax',
-    })
     await cdp.send('Page.addScriptToEvaluateOnNewDocument', {
       source: `
         window.__smokeGeoCalls = 0;
@@ -663,17 +1164,27 @@ async function main() {
     await exerciseFlow(cdp)
     if (runtimeFailures.length) throw new Error(`Rendered runtime failures:\n${[...new Set(runtimeFailures)].join('\n')}`)
     console.log('[PASS] personalization Chrome smoke completed')
-  } finally {
-    cdp?.close()
-    chrome?.kill()
-    app.kill()
-    await new Promise(resolve => fixtureApi.server.close(resolve))
-    await sleep(300)
-    await rm(userDataDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 }).catch(() => {})
+  } catch (error) {
+    failure = error
   }
+  try {
+    await cleanupSmokeResources({
+      cdp,
+      closeTarget: target && chromeOwnership ? () => closePageTarget(chromeOwnership.port, target.id) : null,
+      chrome,
+      app,
+      fixtureApi,
+      userDataDir,
+    })
+  } catch (cleanupError) {
+    if (failure) throw new AggregateError([failure, cleanupError], `${failure.message}\n${cleanupError.message}`)
+    throw cleanupError
+  }
+  if (failure) throw failure
 }
 
-main().catch(error => {
+const entry = process.argv.includes('--self-test') ? runSelfTests : main
+entry().catch(error => {
   console.error(error.stack || error.message)
   process.exit(1)
 })

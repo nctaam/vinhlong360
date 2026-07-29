@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h, nextTick, ref, type Ref } from 'vue'
 
 import PersonalizeSetupSheet from '../components/PersonalizeSetupSheet.vue'
+import { usePersonalizationPreferences } from '../composables/usePersonalizationPreferences'
 import { useRegionPref } from '../composables/useRegionPref'
 import type { PreferenceSnapshot } from '../types/personalization'
 
@@ -80,6 +81,22 @@ function mockPreferenceApi(initial: PreferenceSnapshot = snapshot()) {
     }
     return Promise.resolve(current)
   })
+}
+
+async function hydratePreferences(initial: PreferenceSnapshot) {
+  mockPreferenceApi(initial)
+  let preferences: ReturnType<typeof usePersonalizationPreferences> | undefined
+  const Harness = defineComponent({
+    setup() {
+      preferences = usePersonalizationPreferences()
+      return () => h('div')
+    },
+  })
+  const wrapper = await mountSuspended(Harness)
+  await preferences!.refresh()
+  await flushUi()
+  wrapper.unmount()
+  return preferences!
 }
 
 function mountSetupHarness(initiallyOpen = true) {
@@ -292,6 +309,103 @@ describe('region preference ownership', () => {
 })
 
 describe('optional location consent flow', () => {
+  it('applies manual over GPS over IP when the real setup receives competing signals', async () => {
+    authState.user.value = { id: 'user-1' }
+    authState.isLoggedIn.value = true
+    await hydratePreferences(snapshot({
+      region_id: 'province-bt',
+      region_label: 'Bến Tre',
+      region_scope: 'province',
+      location_source: 'ip',
+      location_accuracy: 'province',
+      location_consent_state: 'granted',
+      location_enabled: true,
+      revision: 4,
+    }))
+    const getCurrentPosition = vi.fn((success: PositionCallback) => {
+      success({ coords: { latitude: 10.24, longitude: 105.97 } } as GeolocationPosition)
+    })
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: { getCurrentPosition },
+    })
+
+    const gpsWrapper = await mountSetupHarness()
+    let dialog = () => document.body.querySelector('[role="dialog"]') as HTMLElement
+    ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+    await flushUi()
+    ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+    await flushUi()
+    ;(dialog().querySelector('[data-action="use-location"]') as HTMLButtonElement).click()
+    await flushUi()
+    ;(dialog().querySelector('[data-action="confirm-location"]') as HTMLButtonElement).click()
+    await flushUi()
+    gpsWrapper.unmount()
+
+    const manualWrapper = await mountSetupHarness()
+    dialog = () => document.body.querySelector('[role="dialog"]') as HTMLElement
+    ;(dialog().querySelector('[data-region="province-tv"]') as HTMLButtonElement).click()
+    ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+    await flushUi()
+    ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+    await flushUi()
+    ;(dialog().querySelector('[data-action="use-location"]') as HTMLButtonElement).click()
+    await flushUi()
+    ;(dialog().querySelector('[data-action="confirm-location"]') as HTMLButtonElement).click()
+    await flushUi()
+
+    const grantedPatches = apiFetchMock.mock.calls
+      .filter(([url, request]) => url === '/api/me/preferences' && request?.method === 'PATCH')
+      .map(([, request]) => request.body as Record<string, unknown>)
+      .filter(body => body.location_consent_state === 'granted')
+    expect(grantedPatches).toHaveLength(2)
+    expect(grantedPatches[0]).toMatchObject({
+      region_id: 'province-vl',
+      location_source: 'gps',
+      location_enabled: true,
+    })
+    expect(grantedPatches[1]).toMatchObject({ location_enabled: true })
+    expect(grantedPatches[1]).not.toHaveProperty('region_id')
+    expect(grantedPatches[1]).not.toHaveProperty('location_source')
+    expect(getCurrentPosition).toHaveBeenCalledTimes(2)
+
+    let regionPref: ReturnType<typeof useRegionPref> | undefined
+    const RegionConsumer = defineComponent({
+      setup() {
+        regionPref = useRegionPref()
+        return () => h('output', { 'data-final-region': regionPref!.region.value })
+      },
+    })
+    const regionWrapper = await mountSuspended(RegionConsumer)
+    await flushUi()
+    expect(regionWrapper.get('output').attributes('data-final-region')).toBe('tra-vinh')
+    regionWrapper.unmount()
+    manualWrapper.unmount()
+  })
+
+  it('blocks explicit GPS and IP resolution attempts after location is off', async () => {
+    authState.user.value = { id: 'user-1' }
+    authState.isLoggedIn.value = true
+    const preferences = await hydratePreferences(snapshot({
+      region_id: 'province-vl',
+      region_label: 'Vĩnh Long',
+      region_scope: 'province',
+      location_source: 'manual',
+      location_accuracy: 'province',
+      location_consent_state: 'off',
+      location_enabled: false,
+      revision: 5,
+    }))
+    apiFetchMock.mockClear()
+
+    const gps = await preferences.resolveLocation('gps', { latitude: 10.24, longitude: 105.97 })
+    const ip = await preferences.resolveLocation('ip')
+
+    expect(gps).toMatchObject({ region_id: null, location_source: 'gps', location_accuracy: 'unknown' })
+    expect(ip).toMatchObject({ region_id: null, location_source: 'ip', location_accuracy: 'unknown' })
+    expect(apiFetchMock.mock.calls.filter(([url]) => url === '/api/me/location/resolve')).toHaveLength(0)
+  })
+
   it('uses toggle-button semantics for manual region choices', async () => {
     authState.user.value = { id: 'user-1' }
     authState.isLoggedIn.value = true

@@ -7,6 +7,7 @@ import { defineComponent, h, nextTick } from 'vue'
 import OnboardingSheet from '../components/OnboardingSheet.vue'
 import PersonalizeSetupSheet from '../components/PersonalizeSetupSheet.vue'
 import ToastContainer from '../components/ToastContainer.vue'
+import WhyThisDrawer from '../components/WhyThisDrawer.vue'
 import { usePersonalizationPreferences } from '../composables/usePersonalizationPreferences'
 import SettingsPage from '../pages/cai-dat.vue'
 import type { PreferenceSnapshot } from '../types/personalization'
@@ -265,7 +266,9 @@ describe('usePersonalizationPreferences contract', () => {
       location_source: 'gps',
       location_accuracy: 'province',
     }
-    apiFetchMock.mockResolvedValueOnce(resolution)
+    apiFetchMock
+      .mockResolvedValueOnce(snapshot())
+      .mockResolvedValueOnce(resolution)
 
     let preferences: ReturnType<typeof usePersonalizationPreferences> | undefined
     const Harness = defineComponent({
@@ -276,6 +279,7 @@ describe('usePersonalizationPreferences contract', () => {
     })
     await mountSuspended(Harness)
 
+    await preferences!.refresh()
     const result = await preferences!.resolveLocation('gps', { latitude: 10.24, longitude: 105.97 })
 
     expect(result).toEqual(resolution)
@@ -712,6 +716,27 @@ describe('usePersonalizationPreferences contract', () => {
 })
 
 describe('settings preference and account contracts', () => {
+  it('puts an explicit selected interest ahead of a competing inferred reason in the real drawer', async () => {
+    const wrapper = await mountSuspended(WhyThisDrawer, {
+      attachTo: document.body,
+      props: {
+        open: true,
+        explanation: {
+          primary_reason: 'Hợp với nhóm nội dung bạn quan tâm',
+          reasons: ['Hợp với nhóm nội dung bạn quan tâm', 'Phù hợp với sở thích bạn đã chọn'],
+          explicit_interests: ['food'],
+        },
+      },
+    })
+    await flushUi()
+
+    const signals = [...document.body.querySelectorAll('.why-signal')].map(node => node.textContent?.trim())
+    expect(signals[0]).toContain('Phù hợp với sở thích bạn đã chọn')
+    expect(signals[1]).toContain('Hợp với nhóm nội dung bạn quan tâm')
+    expect(signals).toContain('Sở thích đã chọn: Ẩm thực')
+    wrapper.unmount()
+  })
+
   it('opens the preference panel from the real hash and follows later hash changes', async () => {
     const wrapper = await mountSettingsPage({
       openViaHash: true,

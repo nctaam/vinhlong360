@@ -1,11 +1,13 @@
-import { mountSuspended } from '@nuxt/test-utils/runtime'
+import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import { describe, it, expect, vi } from 'vitest'
-import { defineComponent, h } from 'vue'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { useAuth } from '../composables/useAuth'
-import { useUserEvents } from '../composables/useUserEvents'
+import SearchPage from '../pages/tim-kiem.vue'
 import { entityPath, normalizeRouteParam, notificationTargetPath, postPath, savedItemPath, userPath } from '../utils/routePaths'
+
+const navigateToMock = vi.hoisted(() => vi.fn(() => Promise.resolve()))
+mockNuxtImport('navigateTo', () => navigateToMock)
 
 describe('Component smoke tests', () => {
   it('imports Breadcrumb component', async () => {
@@ -366,30 +368,49 @@ describe('UserCP regressions', () => {
   })
 
   it('posts a normalized search event once without interrupting the mounted surface', async () => {
+    const unexpectedApiCalls: string[] = []
     const fetchMock = vi.fn((url: string) => {
+      if (url === '/api/site-settings') return Promise.resolve({})
+      if (url === '/api/saved') return Promise.resolve({ items: [] })
       if (url === '/auth/csrf') return Promise.resolve({ csrf_token: 'smoke-csrf' })
-      return Promise.resolve({ accepted: true })
+      if (url === '/api/me/events') return Promise.resolve({ accepted: true })
+      if (url.startsWith('/api/me/recommendations/contextual?')) {
+        return Promise.resolve({ items: [], entities: [], reasons: {}, profile: { signal_count: 0 } })
+      }
+      if (url.startsWith('/api/entities/popular?')) return Promise.resolve({ entities: [], items: [] })
+      if (url.startsWith('/api/search?')) {
+        return Promise.resolve({
+          q: 'chợ nổi',
+          total: 0,
+          results: [],
+          entities: [],
+          posts: [],
+          users: [],
+          suggestions: [],
+          totals: { entities: 0, posts: 0, users: 0 },
+          filters: { q: 'chợ nổi', type: null, area: null, limit: 100 },
+        })
+      }
+      unexpectedApiCalls.push(url)
+      return Promise.reject(new Error(`Unexpected search-page API call: ${url}`))
     })
     vi.stubGlobal('$fetch', fetchMock)
-
-    const Harness = defineComponent({
-      setup() {
-        useAuth().user.value = { id: 'smoke-event-user' }
-        const { trackSearch } = useUserEvents()
-        trackSearch('  chợ nổi  ', { context: 'search' })
-        trackSearch('chợ nổi', { context: 'search' })
-        return () => h('p', { role: 'status' }, 'Kết quả tìm kiếm vẫn sẵn sàng')
-      },
-    })
-    const wrapper = await mountSuspended(Harness)
+    navigateToMock.mockClear()
+    useAuth().user.value = { id: 'smoke-event-user' }
+    useState<Record<string, number>>('user-event-dedupe').value = {}
+    const wrapper = await mountSuspended(SearchPage, { route: '/tim-kiem' })
 
     try {
-      expect(wrapper.get('[role="status"]').text()).toBe('Kết quả tìm kiếm vẫn sẵn sàng')
+      const searchInput = wrapper.get('input[aria-label="Tìm kiếm"]')
+      await searchInput.setValue('  chợ nổi  ')
+      await wrapper.get('.search-row-hero > button').trigger('click')
+      await wrapper.get('.search-row-hero > button').trigger('click')
+
       await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/me/events', expect.objectContaining({
         method: 'POST',
         body: {
           event_type: 'search',
-          context: 'search',
+          context: 'search_submit',
           entity_id: undefined,
           entity_type: undefined,
           entity_name: undefined,
@@ -399,8 +420,14 @@ describe('UserCP regressions', () => {
         },
       })))
       expect(fetchMock.mock.calls.filter(([url]) => url === '/api/me/events')).toHaveLength(1)
+      expect(navigateToMock).toHaveBeenCalledTimes(2)
+      expect(navigateToMock).toHaveBeenLastCalledWith('/tim-kiem?q=ch%E1%BB%A3%20n%E1%BB%95i')
+      expect(wrapper.get('.search-hero').isVisible()).toBe(true)
+      expect((searchInput.element as HTMLInputElement).value).toBe('  chợ nổi  ')
+      expect(unexpectedApiCalls).toEqual([])
     } finally {
       useAuth().user.value = null
+      useState<Record<string, number>>('user-event-dedupe').value = {}
       wrapper.unmount()
       vi.unstubAllGlobals()
     }

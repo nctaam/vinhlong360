@@ -298,6 +298,7 @@ export function usePersonalizationPreferences() {
   async function resolveLocation(mode: Extract<PreferenceLocationSource, 'gps' | 'ip'>, coords?: GpsCoordinates) {
     const owner = syncOwner()
     if (!owner) return normalizeResolution(null, mode)
+    if (snapshot.value.location_consent_state === 'off') return normalizeResolution(null, mode)
     const operation = beginResolution(owner)
     try {
       await fetchCsrf()
