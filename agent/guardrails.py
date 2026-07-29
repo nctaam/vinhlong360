@@ -20,6 +20,7 @@ import logging
 import os
 import re
 import time
+from dataclasses import dataclass
 from pathlib import Path
 from threading import Lock
 
@@ -171,6 +172,38 @@ class PromptInjectionDetector:
 #  2. PII MASKER
 # ══════════════════════════════════════════════════
 
+
+@dataclass(frozen=True)
+class PIISpan:
+    kind: str
+    start: int
+    end: int
+
+
+PII_REPLACEMENTS = {
+    "secret": "[SECRET]",
+    "email": "[EMAIL]",
+    "passport": "[PASSPORT]",
+    "id_number": "[ID_NUMBER]",
+    "bank_account": "[BANK_ACCOUNT]",
+    "phone": "[PHONE]",
+}
+
+# Streaming callers use this table to choose a suffix large enough for every
+# supported detector. Patterns below are deliberately finite.
+PII_MAX_SPAN_BY_KIND = {
+    "secret": 512,
+    "email": 320,
+    "passport": 8,
+    "id_number": 64,
+    "bank_account": 64,
+    "phone": 32,
+}
+PII_CANDIDATE_CHARS = frozenset(
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._%+-@:=/~"
+)
+PII_OVERLONG_CANDIDATE_LIMIT = 448
+
 class PIIMasker:
     """
     Phat hien va mask thong tin ca nhan (PII) trong text.
@@ -181,43 +214,150 @@ class PIIMasker:
     def __init__(self):
         self._lock = Lock()
 
-        # Thu tu quan trong: bank account truoc so dien thoai (bank co keyword prefix)
+        # Detector order is also overlap priority. In particular, keyword-bound
+        # bank/ID values must win over the generic phone detector.
         self._detectors: list[tuple[str, str, re.Pattern]] = [
+            # Common secret sentinels and provider-style API keys.
+            ("secret", PII_REPLACEMENTS["secret"],
+             re.compile(
+                 r"\b(?:api[_-]?key|secret|access[_-]?token|auth[_-]?token|password)\b"
+                 r"[ \t]{0,8}[:=][ \t]{0,8}(?:Bearer[ \t]{1,4})?"
+                 r"[A-Za-z0-9._~+/=-]{8,448}"
+                 r"|\bsk-[A-Za-z0-9_-]{8,480}\b",
+                 re.IGNORECASE)),
+
             # Email
-            ("email", "[EMAIL]",
-             re.compile(r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}", re.IGNORECASE)),
+            ("email", PII_REPLACEMENTS["email"],
+             re.compile(
+                 r"[a-zA-Z0-9._%+\-]{1,64}@"
+                 r"[a-zA-Z0-9.\-]{1,190}\.[a-zA-Z]{2,63}",
+                 re.IGNORECASE)),
 
             # Vietnamese passport: B + 7 digits, or C + 7 digits
-            ("passport", "[PASSPORT]",
+            ("passport", PII_REPLACEMENTS["passport"],
              re.compile(r"\b[BCbc]\d{7}\b")),
 
             # CCCD (12 digits) / CMND (9 or 12 digits) — preceded by keyword
-            ("id_number", "[ID_NUMBER]",
+            ("id_number", PII_REPLACEMENTS["id_number"],
              re.compile(
-                 r"(?:CCCD|CMND|cmnd|cccd|can\s+cuoc|chung\s+minh|so\s+dinh\s+danh"
-                 r"|identity\s+card|ID\s+number|citizen\s+ID)"
-                 r"\s*[:.]?\s*(\d{9,12})",
+                 r"(?:CCCD|CMND|cmnd|cccd|can[ \t]{1,4}cuoc"
+                 r"|chung[ \t]{1,4}minh|so[ \t]{1,4}dinh[ \t]{1,4}danh"
+                 r"|identity[ \t]{1,4}card|ID[ \t]{1,4}number"
+                 r"|citizen[ \t]{1,4}ID)"
+                 r"[ \t]{0,8}[:.]?[ \t]{0,8}(\d{9,12})",
                  re.IGNORECASE)),
 
             # Bank account (10-14 digits preceded by keywords)
-            ("bank_account", "[BANK_ACCOUNT]",
+            ("bank_account", PII_REPLACEMENTS["bank_account"],
              re.compile(
-                 r"(?:tai\s+khoan|so\s+tai\s+khoan|STK|stk|account\s+(?:number|no|num)"
-                 r"|bank\s+account|ngan\s+hang)"
-                 r"\s*[:.]?\s*(\d{10,14})",
+                 r"(?:tai[ \t]{1,4}khoan|so[ \t]{1,4}tai[ \t]{1,4}khoan"
+                 r"|STK|stk|account[ \t]{1,4}(?:number|no|num)"
+                 r"|bank[ \t]{1,4}account|ngan[ \t]{1,4}hang)"
+                 r"[ \t]{0,8}[:.]?[ \t]{0,8}(\d{10,14})",
                  re.IGNORECASE)),
 
             # Phone: +84xxxxxxxxx, 0xx xxx xxxx, 0xx-xxx-xxxx, 0xxxxxxxxx, 0xxx-xxx-xxxx
-            ("phone", "[PHONE]",
+            ("phone", PII_REPLACEMENTS["phone"],
              re.compile(
-                 r"(?:\+84|0084)\s*\d[\d\s\-\.]{7,10}\d"
+                 r"(?:\+84|0084)[ \t]{0,4}\d[\d \t\-\.]{7,10}\d"
                  r"|\b0[1-9]\d{2}[\s\-\.]?\d{3}[\s\-\.]?\d{3}\b"
                  r"|\b0[1-9]\d{2}[\s\-\.]?\d{3}[\s\-\.]?\d{4}\b"
                  r"|\b0[1-9]\d[\s\-\.]?\d{3}[\s\-\.]?\d{4}\b"
+                 r"|\b0[1-9]\d{8,13}\b"
              )),
         ]
 
+        # Overflow safeguards extend a bounded detector to the end of a
+        # PII-like value. Streaming never buffers an unbounded value: it switches
+        # to discard mode at its configured suffix limit.
+        self._overflow_detectors: list[tuple[int, str, int, re.Pattern]] = [
+            (1, "email", 1, re.compile(
+                r"(?<![A-Za-z0-9._%+\-])"
+                r"([A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,})"
+                r"(?![A-Za-z0-9_%+\-@])",
+                re.IGNORECASE,
+            )),
+            (3, "id_number", 1, re.compile(
+                r"(?:CCCD|CMND|cmnd|cccd|can[ \t]{1,4}cuoc"
+                r"|chung[ \t]{1,4}minh|so[ \t]{1,4}dinh[ \t]{1,4}danh"
+                r"|identity[ \t]{1,4}card|ID[ \t]{1,4}number"
+                r"|citizen[ \t]{1,4}ID)"
+                r"[ \t]{0,8}[:.]?[ \t]{0,8}(\d{9,})(?!\d)",
+                re.IGNORECASE,
+            )),
+            (4, "bank_account", 1, re.compile(
+                r"(?:tai[ \t]{1,4}khoan|so[ \t]{1,4}tai[ \t]{1,4}khoan"
+                r"|STK|stk|account[ \t]{1,4}(?:number|no|num)"
+                r"|bank[ \t]{1,4}account|ngan[ \t]{1,4}hang)"
+                r"[ \t]{0,8}[:.]?[ \t]{0,8}(\d{10,})(?!\d)",
+                re.IGNORECASE,
+            )),
+            (5, "phone", 1, re.compile(
+                r"((?:\+84|0084)[ \t]{0,4}\d[\d \t\-\.]{7,}\d)(?!\d)"
+                r"|(\b0[1-9]\d{8,}\b)",
+            )),
+        ]
+
         logger.info("PIIMasker initialized: %d PII types", len(self._detectors))
+
+    def detect_spans(self, text: str) -> tuple[PIISpan, ...]:
+        """Return merged PII coordinates over the original input text."""
+        if not text:
+            return ()
+
+        candidates: list[tuple[int, PIISpan]] = []
+        with self._lock:
+            for priority, (pii_type, _replacement, pattern) in enumerate(self._detectors):
+                for match in pattern.finditer(text):
+                    if pii_type in ("id_number", "bank_account") and match.lastindex:
+                        start, end = match.span(1)
+                    else:
+                        start, end = match.span()
+                    candidates.append((priority, PIISpan(pii_type, start, end)))
+
+            for priority, pii_type, group, pattern in self._overflow_detectors:
+                for match in pattern.finditer(text):
+                    selected_group = group
+                    if pii_type == "phone" and match.lastindex and match.group(1) is None:
+                        selected_group = 2
+                    start, end = match.span(selected_group)
+                    candidates.append((priority, PIISpan(pii_type, start, end)))
+
+            # A token-like run beyond every supported bounded value is treated
+            # as a secret overflow instead of allowing a bounded regex match to
+            # redact only its prefix.
+            run_start = None
+            for index, char in enumerate(text + " "):
+                if char in PII_CANDIDATE_CHARS:
+                    if run_start is None:
+                        run_start = index
+                    continue
+                if (
+                    run_start is not None
+                    and index - run_start > PII_OVERLONG_CANDIDATE_LIMIT
+                ):
+                    candidates.append((-1, PIISpan("secret", run_start, index)))
+                run_start = None
+
+        candidates.sort(key=lambda item: (item[1].start, item[0], item[1].end))
+        merged: list[tuple[int, PIISpan]] = []
+        for priority, span in candidates:
+            if not merged or span.start >= merged[-1][1].end:
+                merged.append((priority, span))
+                continue
+
+            current_priority, current = merged[-1]
+            winner_kind = current.kind if current_priority <= priority else span.kind
+            merged[-1] = (
+                min(current_priority, priority),
+                PIISpan(
+                    winner_kind,
+                    min(current.start, span.start),
+                    max(current.end, span.end),
+                ),
+            )
+
+        return tuple(span for _priority, span in merged)
 
     def mask(self, text: str) -> tuple:
         """
@@ -230,36 +370,24 @@ class PIIMasker:
         if not text:
             return (text, [])
 
-        detections = []
-        masked = text
+        spans = self.detect_spans(text)
+        detections = [
+            {
+                "type": span.kind,
+                "masked": True,
+                "position": (span.start, span.end),
+            }
+            for span in spans
+        ]
 
-        with self._lock:
-            for pii_type, replacement, pattern in self._detectors:
-                # Tim tat ca matches trong text goc truoc, roi thay tu cuoi ve dau
-                # de khong lech position
-                matches = list(pattern.finditer(masked))
-                if not matches:
-                    continue
-
-                # Xu ly tu cuoi ve dau de giu dung vi tri
-                for m in reversed(matches):
-                    # Voi ID va bank account, chi mask nhom so (group 1 neu co)
-                    if pii_type in ("id_number", "bank_account") and m.lastindex and m.lastindex >= 1:
-                        start = m.start(1)
-                        end = m.end(1)
-                    else:
-                        start = m.start()
-                        end = m.end()
-
-                    detections.append({
-                        "type": pii_type,
-                        "masked": True,
-                        "position": (start, end),
-                    })
-                    masked = masked[:start] + replacement + masked[end:]
-
-        # Sap xep detections theo position tang dan
-        detections.sort(key=lambda d: d["position"][0])
+        parts = []
+        cursor = 0
+        for span in spans:
+            parts.append(text[cursor:span.start])
+            parts.append(PII_REPLACEMENTS[span.kind])
+            cursor = span.end
+        parts.append(text[cursor:])
+        masked = "".join(parts)
 
         if detections:
             logger.info("PII masked: %d items (%s)",
