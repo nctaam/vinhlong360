@@ -1,8 +1,25 @@
 from __future__ import annotations
 
+import asyncio
 import json
+from types import SimpleNamespace
 
 import pytest
+
+
+@pytest.fixture(autouse=True)
+def enabled_rollout_projections(monkeypatch):
+    import public_api
+
+    monkeypatch.setattr(
+        public_api,
+        "settings",
+        SimpleNamespace(
+            RECOMMENDATION_EXPLANATIONS_V1=True,
+            TRUST_DRAWER_V1=True,
+        ),
+        raising=False,
+    )
 
 
 @pytest.mark.parametrize(
@@ -387,3 +404,123 @@ def test_public_similar_card_keeps_reason_vi_when_preferences_are_missing():
     assert card["source_tier"] == "community"
     assert card["freshness_status"] == "fresh"
     assert card["explanation"]["primary_reason"] == "Cùng khu vực khám phá"
+
+
+def test_recommendation_explanation_flag_omits_only_structured_explanation(
+    monkeypatch
+):
+    import public_api
+
+    monkeypatch.setattr(
+        public_api,
+        "settings",
+        SimpleNamespace(
+            RECOMMENDATION_EXPLANATIONS_V1=False,
+            TRUST_DRAWER_V1=True,
+        ),
+    )
+
+    card = public_api._entity_card_shape(
+        {"id": "place-1", "name": "Cho Vinh Long", "type": "place"},
+        reason_vi="Cung khu vuc kham pha",
+    )
+
+    assert card["reason_vi"] == "Cung khu vuc kham pha"
+    assert "explanation" not in card
+    assert card["source_tier"] == "unknown"
+    contextual_card = public_api._candidate_card(
+        {"id": "place-1", "name": "Cho Vinh Long", "type": "place"},
+        ["Cung khu vuc kham pha"],
+    )
+    assert contextual_card["reason_vi"] == "Cung khu vuc kham pha"
+    assert "explanation" not in contextual_card
+
+
+def test_recommendation_explanation_flag_includes_enabled_projection():
+    import public_api
+
+    card = public_api._entity_card_shape(
+        {"id": "place-1", "name": "Cho Vinh Long", "type": "place"},
+        reason_vi="Cung khu vuc kham pha",
+    )
+
+    assert card["explanation"]["primary_reason"] == "Cùng khu vực khám phá"
+
+
+def test_trust_drawer_flag_omits_only_trust_projection(monkeypatch):
+    import public_api
+
+    monkeypatch.setattr(
+        public_api,
+        "settings",
+        SimpleNamespace(
+            RECOMMENDATION_EXPLANATIONS_V1=True,
+            TRUST_DRAWER_V1=False,
+        ),
+    )
+
+    card = public_api._entity_card_shape(
+        {"id": "place-1", "name": "Cho Vinh Long", "type": "place"},
+        reason_vi="Cung khu vuc kham pha",
+    )
+
+    assert card["reason_vi"] == "Cung khu vuc kham pha"
+    assert "explanation" in card
+    assert "source_tier" not in card
+    assert "freshness_status" not in card
+    contextual_card = public_api._candidate_card(
+        {"id": "place-1", "name": "Cho Vinh Long", "type": "place"},
+        ["Cung khu vuc kham pha"],
+    )
+    assert "source_tier" not in contextual_card
+    assert "freshness_status" not in contextual_card
+
+
+def test_trust_drawer_flag_includes_enabled_projection():
+    import public_api
+
+    card = public_api._entity_card_shape(
+        {"id": "place-1", "name": "Cho Vinh Long", "type": "place"},
+        reason_vi="Cung khu vuc kham pha",
+    )
+
+    assert card["source_tier"] == "unknown"
+    assert card["freshness_status"] == "unknown"
+
+
+@pytest.mark.parametrize("enabled", [False, True])
+def test_trust_drawer_flag_controls_entity_detail_enhancement(
+    monkeypatch, enabled
+):
+    import public_api
+
+    monkeypatch.setattr(
+        public_api,
+        "settings",
+        SimpleNamespace(
+            RECOMMENDATION_EXPLANATIONS_V1=True,
+            TRUST_DRAWER_V1=enabled,
+        ),
+    )
+    monkeypatch.setattr(
+        public_api,
+        "_get_public_entity",
+        lambda _entity_id: {
+            "id": "place-1",
+            "name": "Cho Vinh Long",
+            "type": "place",
+            "images": [],
+        },
+    )
+    monkeypatch.setattr(
+        public_api.db,
+        "get_relationships",
+        lambda *_args, **_kwargs: ([], 0),
+    )
+    monkeypatch.setattr(public_api, "_enrich_entity_place", lambda _entity: None)
+
+    entity = asyncio.run(public_api.get_entity("place-1"))
+
+    assert entity["id"] == "place-1"
+    assert "practical_facts" in entity
+    assert ("source_freshness" in entity) is enabled

@@ -42,6 +42,7 @@ from api_schemas import (  # W6.3: response_model (extra="allow" — không stri
     GalleryResponse,
     TrendingResponse,
 )
+from config import settings
 from database import canonical_verified_at, db
 from data_quality import entity_quality
 from middleware import report_limiter, get_client_ip
@@ -118,6 +119,15 @@ def _err(status_code: int, detail: str, **extra) -> JSONResponse:
     body: dict = {"detail": detail}
     body.update(extra)
     return JSONResponse(status_code=status_code, content=body)
+
+
+def _rollout_enabled(name: str) -> bool:
+    return getattr(settings, name, False) is True
+
+
+def _require_rollout(name: str) -> None:
+    if not _rollout_enabled(name):
+        raise HTTPException(404, "Not found")
 
 
 from collections import OrderedDict
@@ -687,6 +697,24 @@ def _apply_preference_profile(
 
 def _build_user_interest_profile(user_id: str, query: str | None = None, context_entity: dict | None = None) -> dict:
     acc = _InterestAccumulator()
+    if not _rollout_enabled("PREFERENCE_PROFILE_V1"):
+        _apply_query_and_context(acc, query, context_entity)
+        labels = {key: _label_for_interest(key) for key in _INTEREST_RULES}
+        return {
+            "interests": _top_counter(acc.interest_scores, labels=labels),
+            "areas": _top_counter(acc.area_scores),
+            "types": _top_counter(acc.type_scores),
+            "interest_scores": dict(acc.interest_scores),
+            "area_scores": dict(acc.area_scores),
+            "type_scores": dict(acc.type_scores),
+            "recent_entity_ids": [],
+            "recent_intents": [],
+            "confidence": 0.0,
+            "signal_count": 0,
+            "personalization_enabled": False,
+            "explicit_interests": [],
+            "preference_snapshot": None,
+        }
     preferences = load_preferences(user_id)
     personalization_enabled = preferences.get("personalization_enabled") is True
     preference_signal_count = _apply_preference_profile(
@@ -768,7 +796,7 @@ def _candidate_card(
 ) -> dict:
     projected = _project_public_entity_media(entity, limit=2)
     reason_vi = reasons[0] if reasons else ""
-    return {
+    card = {
         "id": projected.get("id"),
         "name": projected.get("name", ""),
         "type": projected.get("type", ""),
@@ -783,11 +811,16 @@ def _candidate_card(
         },
         "recommendation_reasons": reasons[:2],
         "reason_vi": reason_vi,
-        "explanation": build_explanation(entity, reasons, preference_snapshot),
-        "source_tier": derive_source_tier(entity),
-        "freshness_status": derive_freshness(entity),
         "quality_score": entity_quality(entity),
     }
+    if _rollout_enabled("RECOMMENDATION_EXPLANATIONS_V1"):
+        card["explanation"] = build_explanation(
+            entity, reasons, preference_snapshot
+        )
+    if _rollout_enabled("TRUST_DRAWER_V1"):
+        card["source_tier"] = derive_source_tier(entity)
+        card["freshness_status"] = derive_freshness(entity)
+    return card
 
 
 def _score_interest_hits(entity: dict, profile: dict, reasons: list[str]) -> float:
@@ -973,6 +1006,7 @@ RECOMMENDATION_RESET_RATE_LIMIT = 5
 async def get_my_preferences(response: Response, user=Depends(require_user)):
     from ratelimit import check_rate
 
+    _require_rollout("PREFERENCE_PROFILE_V1")
     owner = str(user["id"])
     check_rate(
         f"preferences-read:{owner}",
@@ -997,6 +1031,7 @@ async def update_my_preferences(
 ):
     from ratelimit import check_rate
 
+    _require_rollout("PREFERENCE_PROFILE_V1")
     owner = str(user["id"])
     check_rate(
         f"preferences-patch:{owner}",
@@ -1040,6 +1075,7 @@ async def get_my_preference_consents(
 ):
     from ratelimit import check_rate
 
+    _require_rollout("PREFERENCE_PROFILE_V1")
     owner = str(user["id"])
     check_rate(
         f"preferences-consents:{owner}",
@@ -1064,6 +1100,7 @@ async def reset_my_recommendations(
 ):
     from ratelimit import check_rate
 
+    _require_rollout("PREFERENCE_PROFILE_V1")
     owner = str(user["id"])
     check_rate(
         f"recommendations-reset:{owner}",
@@ -1091,6 +1128,7 @@ async def resolve_my_location(
 ):
     from ratelimit import check_rate
 
+    _require_rollout("LOCATION_RESOLVER_V1")
     owner = str(user["id"])
     check_rate(
         f"location-resolve:{owner}",
@@ -1307,8 +1345,7 @@ def _entity_card_shape(entity: dict, *, score: float | None = None, reason_vi: s
     projected = _project_public_entity_media(entity, limit=2)
     area = projected.get("place_area") or projected.get("area") or projected.get("legacyArea") or ""
     place = projected.get("place") or projected.get("place_name") or ""
-    explanation = build_explanation(entity, [reason_vi] if reason_vi else [], None)
-    return {
+    card = {
         "id": projected.get("id"),
         "name": projected.get("name", ""),
         "type": projected.get("type", ""),
@@ -1320,10 +1357,15 @@ def _entity_card_shape(entity: dict, *, score: float | None = None, reason_vi: s
         "area": area,
         "score": round(float(score or 0), 4),
         "reason_vi": reason_vi,
-        "explanation": explanation,
-        "source_tier": derive_source_tier(entity),
-        "freshness_status": derive_freshness(entity),
     }
+    if _rollout_enabled("RECOMMENDATION_EXPLANATIONS_V1"):
+        card["explanation"] = build_explanation(
+            entity, [reason_vi] if reason_vi else [], None
+        )
+    if _rollout_enabled("TRUST_DRAWER_V1"):
+        card["source_tier"] = derive_source_tier(entity)
+        card["freshness_status"] = derive_freshness(entity)
+    return card
 
 def _similar_reason_vi(reason: str) -> str:
     raw = str(reason or "")
@@ -1581,7 +1623,8 @@ async def get_entity(
         e["relationships"] = rels
         _enrich_entity_place(e)
         e["quality"] = entity_quality(e)
-        e["source_freshness"] = _build_source_freshness(e)
+        if _rollout_enabled("TRUST_DRAWER_V1"):
+            e["source_freshness"] = _build_source_freshness(e)
         e["practical_facts"] = _build_practical_facts(e)
         return _project_public_entity_media(e)
     entity = await asyncio.to_thread(_query)

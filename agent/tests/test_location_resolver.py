@@ -80,7 +80,13 @@ def logged_in_user(monkeypatch):
 
 
 @pytest.fixture
-def client(preference_database, logged_in_user):
+def client(preference_database, logged_in_user, monkeypatch):
+    monkeypatch.setattr(
+        public_api,
+        "settings",
+        SimpleNamespace(LOCATION_RESOLVER_V1=True),
+        raising=False,
+    )
     app = FastAPI()
     app.include_router(public_api.router)
     with TestClient(app) as test_client:
@@ -149,6 +155,46 @@ def test_location_resolution_requires_auth_before_csrf_or_provider(client):
 
     assert response.status_code == 401
     assert provider_calls == []
+
+
+def test_location_resolver_flag_fails_closed_before_provider_call(
+    client, logged_in_user, monkeypatch
+):
+    provider_calls = []
+    monkeypatch.setattr(
+        public_api,
+        "settings",
+        SimpleNamespace(LOCATION_RESOLVER_V1=False),
+    )
+    client.app.dependency_overrides[public_api.get_reverse_geocoder] = lambda: (
+        lambda *_: provider_calls.append(True) or {"region_id": "ward-1"}
+    )
+
+    response = client.post(
+        "/api/me/location/resolve",
+        json={"mode": "gps", "latitude": 10.25, "longitude": 105.97},
+        headers=logged_in_user.csrf_headers,
+    )
+
+    assert response.status_code == 404
+    assert provider_calls == []
+
+
+def test_location_resolver_flag_allows_enabled_resolution(
+    client, logged_in_user
+):
+    client.app.dependency_overrides[public_api.get_reverse_geocoder] = lambda: (
+        lambda *_: {"region_id": "ward-1", "region_scope": "ward"}
+    )
+
+    response = client.post(
+        "/api/me/location/resolve",
+        json={"mode": "gps", "latitude": 10.25, "longitude": 105.97},
+        headers=logged_in_user.csrf_headers,
+    )
+
+    assert response.status_code == 200
+    assert response.json()["region_id"] == "ward-1"
 
 
 def test_location_resolution_requires_csrf_before_provider(client, logged_in_user):

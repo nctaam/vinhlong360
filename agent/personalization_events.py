@@ -344,14 +344,8 @@ def purge_personalization_events(
 def legacy_cutover_deadline() -> datetime | None:
     """Return Task 10's rollout boundary; absent configuration keeps reads off."""
     raw = getattr(settings, "LEGACY_EVENT_READ_UNTIL", None)
-    # Keep the pre-Task-10 name as a deployment-only compatibility fallback;
-    # the public contract is the exact LEGACY_EVENT_READ_UNTIL field above.
-    if raw is None or (isinstance(raw, str) and not raw.strip()):
-        raw = getattr(settings, "PERSONALIZATION_LEGACY_READ_DEADLINE", None)
     if raw is None:
         raw = os.environ.get("LEGACY_EVENT_READ_UNTIL")
-    if raw is None:
-        raw = os.environ.get("PERSONALIZATION_LEGACY_READ_DEADLINE")
     if raw is None or (isinstance(raw, str) and not raw.strip()):
         return None
     try:

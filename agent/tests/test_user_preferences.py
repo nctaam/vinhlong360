@@ -392,7 +392,13 @@ def logged_in_user(monkeypatch):
 
 
 @pytest.fixture
-def client(preference_database, logged_in_user):
+def client(preference_database, logged_in_user, monkeypatch):
+    monkeypatch.setattr(
+        public_api,
+        "settings",
+        SimpleNamespace(PREFERENCE_PROFILE_V1=True),
+        raising=False,
+    )
     app = FastAPI()
     app.include_router(public_api.router)
     with TestClient(app) as test_client:
@@ -656,6 +662,48 @@ def test_preferences_default_snapshot_is_safe(client, logged_in_user):
         "longitude",
         "coordinates",
     }.isdisjoint(response.json())
+
+
+def test_preference_profile_flag_blocks_mutations_without_changing_snapshot(
+    client, logged_in_user, monkeypatch
+):
+    reset_calls = []
+    monkeypatch.setattr(
+        public_api,
+        "settings",
+        SimpleNamespace(PREFERENCE_PROFILE_V1=False),
+    )
+    monkeypatch.setattr(
+        public_api,
+        "record_recommendation_reset",
+        lambda owner: reset_calls.append(owner) or {"revision": 1},
+    )
+
+    patch_response = client.patch(
+        "/api/me/preferences",
+        json={"revision": 0, "explicit_interests": ["food"]},
+        headers=logged_in_user.csrf_headers,
+    )
+    reset_response = client.post(
+        "/api/me/recommendations/reset",
+        headers=logged_in_user.csrf_headers,
+    )
+
+    assert patch_response.status_code == 404
+    assert reset_response.status_code == 404
+    assert reset_calls == []
+    assert load_preferences("user-1")["revision"] == 0
+
+
+def test_preference_profile_flag_allows_enabled_mutation(client, logged_in_user):
+    response = client.patch(
+        "/api/me/preferences",
+        json={"revision": 0, "explicit_interests": ["food"]},
+        headers=logged_in_user.csrf_headers,
+    )
+
+    assert response.status_code == 200
+    assert response.json()["explicit_interests"] == ["food"]
 
 
 def test_preferences_get_requires_authenticated_owner(client):

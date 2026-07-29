@@ -752,40 +752,96 @@ def task_event_reminders():
         _sched_logger.error("Event reminders error: %s", e)
 
 
+def _hard_delete_stale_users(db, conn, grace_interval: str) -> int:
+    candidates = db._fetchall(conn, f"""
+        SELECT id FROM users
+        WHERE deleted_at IS NOT NULL
+          AND deleted_at < NOW() - {grace_interval}
+          AND is_active = FALSE
+        ORDER BY deleted_at, id
+        LIMIT 500
+        FOR UPDATE SKIP LOCKED
+    """, ())
+    deleted_count = 0
+    for row in candidates:
+        user_id = str(db._row_to_dict(row)["id"])
+        deleted = db._fetchone(conn, f"""
+            DELETE FROM users
+            WHERE id = %s::uuid
+              AND deleted_at IS NOT NULL
+              AND deleted_at < NOW() - {grace_interval}
+              AND is_active = FALSE
+            RETURNING id
+        """, (user_id,))
+        if deleted is None:
+            continue
+        db._execute(conn, """
+            INSERT INTO personalization_legacy_purge_queue
+                (user_id, created_at, attempt_count, next_attempt_at, last_error)
+            VALUES (%s::uuid, NOW(), 0, NOW(), NULL)
+            ON CONFLICT (user_id) DO NOTHING
+        """, (user_id,))
+        deleted_count += 1
+    return deleted_count
+
+
+def _process_legacy_purge_queue(db, *, limit: int = 100) -> int:
+    from personalization_events import purge_legacy_events
+
+    completed = 0
+    for _ in range(limit):
+        with db._conn() as conn:
+            job = db._fetchone(conn, """
+                SELECT user_id, attempt_count
+                FROM personalization_legacy_purge_queue
+                WHERE next_attempt_at <= NOW()
+                ORDER BY next_attempt_at, created_at, user_id
+                LIMIT 1
+                FOR UPDATE SKIP LOCKED
+            """, ())
+            if job is None:
+                break
+            job_data = db._row_to_dict(job)
+            user_id = str(job_data["user_id"])
+            try:
+                purge_legacy_events(user_id=user_id)
+            except Exception as exc:
+                attempt_count = int(job_data.get("attempt_count") or 0)
+                retry_seconds = min(3600, 60 * (2 ** min(attempt_count, 6)))
+                error = f"{type(exc).__name__}: {exc}"[:500]
+                db._execute(conn, """
+                    UPDATE personalization_legacy_purge_queue
+                    SET attempt_count = attempt_count + 1,
+                        next_attempt_at = NOW() + (%s * INTERVAL '1 second'),
+                        last_error = %s
+                    WHERE user_id = %s::uuid
+                """, (retry_seconds, error, user_id))
+                _sched_logger.warning(
+                    "Legacy personalization purge queued for retry: %s", user_id
+                )
+            else:
+                db._execute(
+                    conn,
+                    "DELETE FROM personalization_legacy_purge_queue "
+                    "WHERE user_id = %s::uuid",
+                    (user_id,),
+                )
+                completed += 1
+    return completed
+
+
 def task_session_cleanup():
-    """Purge expired user_sessions, otp_sessions, and sessions of deleted users."""
+    """Purge expired sessions and hard-delete accounts past their grace period."""
     try:
         from database import db
         if not db._use_pg:
             return
-        from personalization_events import (
-            purge_legacy_events,
-            purge_user_personalization,
-        )
         grace_interval = f"INTERVAL '{ACCOUNT_DELETE_GRACE_DAYS} days'"
         with db._conn() as conn:
             db._execute(conn, "DELETE FROM user_sessions WHERE expires_at < NOW()", ())
             db._execute(conn, "DELETE FROM otp_sessions WHERE expires_at < NOW()", ())
-            db._execute(conn, f"""
-                DELETE FROM user_sessions WHERE user_id IN (
-                    SELECT id FROM users WHERE deleted_at IS NOT NULL
-                    AND deleted_at < NOW() - {grace_interval}
-                )
-            """, ())
-            stale_users = db._fetchall(conn, f"""
-                SELECT id FROM users WHERE deleted_at IS NOT NULL
-                AND deleted_at < NOW() - {grace_interval}
-            """, ())
-            stale_user_ids = [str(db._row_to_dict(row)["id"]) for row in stale_users]
-            for user_id in stale_user_ids:
-                purge_user_personalization(user_id, conn=conn)
-                purge_legacy_events(user_id=user_id)
-            result = db._execute(conn, f"""
-                DELETE FROM users WHERE deleted_at IS NOT NULL
-                AND deleted_at < NOW() - {grace_interval}
-            """, ())
-            hard_deleted = getattr(result, 'rowcount', 0)
-            if hard_deleted and hard_deleted > 0:
+            hard_deleted = _hard_delete_stale_users(db, conn, grace_interval)
+            if hard_deleted > 0:
                 _sched_logger.info("Session cleanup: hard-deleted %d accounts past grace period", hard_deleted)
             try:
                 r = db._execute(conn, "DELETE FROM login_history WHERE created_at < NOW() - INTERVAL '90 days'", ())
@@ -795,6 +851,12 @@ def task_session_cleanup():
             except Exception:
                 _sched_logger.warning("login_history cleanup failed", exc_info=True)
             _hard_delete_stale_posts(db, conn)
+        completed_purges = _process_legacy_purge_queue(db)
+        if completed_purges:
+            _sched_logger.info(
+                "Session cleanup: purged %d queued legacy personalization sets",
+                completed_purges,
+            )
         _sched_logger.info("Session cleanup: purged expired sessions and OTPs")
     except Exception as e:
         _sched_logger.error("Session cleanup error: %s", e)

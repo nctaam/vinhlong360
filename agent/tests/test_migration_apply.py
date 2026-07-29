@@ -16,7 +16,7 @@ _CORE_TABLES = (
     "entities", "relationships", "itineraries", "users", "posts", "comments",
     "entity_ratings", "user_2fa", "user_2fa_recovery_codes", "pending_2fa",
     "trusted_devices", "shared_rate_limits", "request_idempotency_keys",
-    "admin_audit_events", "schema_version",
+    "admin_audit_events", "personalization_legacy_purge_queue", "schema_version",
 )
 
 
@@ -45,4 +45,4 @@ def test_schema_version_tracks_latest_migration():
     with db._conn() as conn:
         row = db._fetchone(conn, "SELECT version FROM schema_version WHERE component = 'agent'", ())
     assert row is not None
-    assert int(db._row_to_dict(row)["version"]) >= 70  # đã áp tới 070
+    assert int(db._row_to_dict(row)["version"]) >= 72

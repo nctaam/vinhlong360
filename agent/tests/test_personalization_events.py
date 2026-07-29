@@ -65,6 +65,13 @@ pytestmark = pytest.mark.skipif(
 SCHEMA_SQL = """
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+CREATE TABLE IF NOT EXISTS schema_version (
+    component TEXT PRIMARY KEY,
+    version INTEGER NOT NULL,
+    migration TEXT NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY,
     phone TEXT UNIQUE NOT NULL,
@@ -239,9 +246,16 @@ def personalization_schema():
     if TEST_DATABASE_URL is None:
         yield
         return
+    migration_path = (
+        Path(__file__).resolve().parent.parent
+        / "migrations"
+        / "072_personalization_legacy_purge_queue.sql"
+    )
     with psycopg2.connect(TEST_DATABASE_URL) as conn:
         with conn.cursor() as cursor:
+            cursor.execute("DROP TABLE IF EXISTS personalization_legacy_purge_queue")
             cursor.execute(SCHEMA_SQL)
+            cursor.execute(migration_path.read_text(encoding="utf-8"))
     yield
 
 
@@ -262,6 +276,17 @@ def pg_db(monkeypatch):
     monkeypatch.setattr(auth_middleware, "db", adapter)
     monkeypatch.setattr(public_api, "db", adapter)
     monkeypatch.setattr(
+        public_api,
+        "settings",
+        SimpleNamespace(
+            PREFERENCE_PROFILE_V1=True,
+            LOCATION_RESOLVER_V1=True,
+            RECOMMENDATION_EXPLANATIONS_V1=True,
+            TRUST_DRAWER_V1=True,
+        ),
+        raising=False,
+    )
+    monkeypatch.setattr(
         personalization_events,
         "settings",
         SimpleNamespace(
@@ -272,7 +297,8 @@ def pg_db(monkeypatch):
     with adapter._conn() as conn:
         adapter._execute(
             conn,
-            "TRUNCATE user_personalization_events, user_preference_consents, "
+            "TRUNCATE personalization_legacy_purge_queue, "
+            "user_personalization_events, user_preference_consents, "
             "user_preferences, saved_entities, user_visits, posts, comments, likes, "
             "bookmarks, follows, post_reactions, user_collections, blocks, user_mutes, "
             "user_sessions, otp_sessions, login_history, notifications, entities, users CASCADE",
@@ -281,7 +307,8 @@ def pg_db(monkeypatch):
     with adapter._conn() as conn:
         adapter._execute(
             conn,
-            "TRUNCATE user_personalization_events, user_preference_consents, "
+            "TRUNCATE personalization_legacy_purge_queue, "
+            "user_personalization_events, user_preference_consents, "
             "user_preferences, saved_entities, user_visits, posts, comments, likes, "
             "bookmarks, follows, post_reactions, user_collections, blocks, user_mutes, "
             "user_sessions, otp_sessions, login_history, notifications, entities, users CASCADE",
@@ -1110,6 +1137,48 @@ def test_event_purge_targets_only_expired_or_matching_user(pg_db, users):
     assert len(read_personalization_events(other, cutoff=None)) == 1
 
 
+def test_migration_072_builds_durable_due_queue_without_user_foreign_key(pg_db):
+    with pg_db._conn(commit_on_success=False) as conn:
+        columns = pg_db._fetchall(
+            conn,
+            "SELECT column_name FROM information_schema.columns "
+            "WHERE table_schema = 'public' "
+            "AND table_name = 'personalization_legacy_purge_queue'",
+        )
+        foreign_keys = pg_db._fetchone(
+            conn,
+            "SELECT COUNT(*) AS count FROM information_schema.table_constraints "
+            "WHERE table_schema = 'public' "
+            "AND table_name = 'personalization_legacy_purge_queue' "
+            "AND constraint_type = 'FOREIGN KEY'",
+        )
+        indexes = pg_db._fetchall(
+            conn,
+            "SELECT indexname FROM pg_indexes WHERE schemaname = 'public' "
+            "AND tablename = 'personalization_legacy_purge_queue'",
+        )
+        version = pg_db._fetchone(
+            conn,
+            "SELECT version, migration FROM schema_version "
+            "WHERE component = 'agent'",
+        )
+
+    assert {row["column_name"] for row in columns} == {
+        "user_id",
+        "created_at",
+        "attempt_count",
+        "next_attempt_at",
+        "last_error",
+    }
+    assert int(foreign_keys["count"]) == 0
+    assert {
+        "personalization_legacy_purge_queue_pkey",
+        "idx_personalization_legacy_purge_queue_due",
+    } <= {row["indexname"] for row in indexes}
+    assert version["version"] == 72
+    assert version["migration"] == "072_personalization_legacy_purge_queue.sql"
+
+
 def test_legacy_reader_applies_cutoff_deadline_and_safe_projection(
     tmp_path, monkeypatch, users
 ):
@@ -1171,6 +1240,69 @@ def test_legacy_reader_uses_exact_rollout_deadline_setting(
 
     assert [event["entity_id"] for event in before] == ["entity-0"]
     assert after == []
+
+
+def test_legacy_reader_ignores_retired_deadline_name_and_fails_closed(
+    tmp_path, monkeypatch, users
+):
+    owner, _ = users
+    path = tmp_path / "legacy-events.jsonl"
+    seed_legacy_events(path, [owner])
+    monkeypatch.setattr(personalization_events, "LEGACY_EVENTS_PATH", path)
+    monkeypatch.setattr(
+        personalization_events,
+        "settings",
+        SimpleNamespace(
+            LEGACY_EVENT_READ_UNTIL="",
+            PERSONALIZATION_LEGACY_READ_DEADLINE="2026-08-30T00:00:00Z",
+        ),
+    )
+    monkeypatch.setenv(
+        "PERSONALIZATION_LEGACY_READ_DEADLINE", "2026-08-30T00:00:00Z"
+    )
+    monkeypatch.delenv("LEGACY_EVENT_READ_UNTIL", raising=False)
+
+    assert personalization_events.legacy_cutover_deadline() is None
+    assert read_legacy_events_if_allowed(
+        owner,
+        cutoff=None,
+        now=datetime(2026, 7, 29, tzinfo=timezone.utc),
+    ) == []
+
+
+def test_preference_profile_flag_uses_public_context_without_private_reads(
+    pg_db, users, monkeypatch
+):
+    owner, _ = users
+    monkeypatch.setattr(
+        public_api,
+        "settings",
+        SimpleNamespace(PREFERENCE_PROFILE_V1=False),
+    )
+    monkeypatch.setattr(
+        public_api,
+        "load_preferences",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("disabled profile loaded preferences")
+        ),
+    )
+    monkeypatch.setattr(
+        public_api,
+        "read_personalization_events",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("disabled profile loaded events")
+        ),
+    )
+
+    profile = public_api._build_user_interest_profile(
+        owner,
+        query="am thuc",
+        context_entity={"type": "dish", "name": "Banh xeo"},
+    )
+
+    assert profile["personalization_enabled"] is False
+    assert profile["preference_snapshot"] is None
+    assert profile["recent_entity_ids"] == []
 
 
 def test_personalization_pg_flag_prevents_new_storage_writes(pg_db, users):
@@ -1884,7 +2016,7 @@ def test_final_account_purge_waits_for_configured_grace_period(
     ]
 
 
-def test_scheduler_legacy_failure_rolls_back_user_and_postgres_purge_for_retry(
+def test_cleanup_skips_account_locked_by_concurrent_reactivation(
     pg_db, users, tmp_path, monkeypatch
 ):
     stale, active = users
@@ -1895,7 +2027,77 @@ def test_scheduler_legacy_failure_rolls_back_user_and_postgres_purge_for_retry(
             "is_active = FALSE WHERE id = %s::uuid",
             (stale,),
         )
-    for user_id in (stale, active):
+    path = tmp_path / "legacy-events.jsonl"
+    seed_legacy_events(path, [stale, active])
+    monkeypatch.setattr(personalization_events, "LEGACY_EVENTS_PATH", path)
+    monkeypatch.setattr(
+        personalization_events,
+        "LEGACY_EVENTS_LOCK_PATH",
+        tmp_path / ".legacy-events.publication.lock",
+    )
+    purge_started = threading.Event()
+    real_purge = personalization_events.purge_legacy_events
+
+    def observed_purge(**kwargs):
+        result = real_purge(**kwargs)
+        purge_started.set()
+        return result
+
+    monkeypatch.setattr(personalization_events, "purge_legacy_events", observed_purge)
+    reactivation_conn = psycopg2.connect(TEST_DATABASE_URL)
+    cleanup_thread = threading.Thread(target=scheduler.task_session_cleanup)
+    try:
+        with reactivation_conn.cursor() as cursor:
+            cursor.execute(
+                "UPDATE users SET deleted_at = NULL, is_active = TRUE "
+                "WHERE id = %s::uuid",
+                (stale,),
+            )
+        cleanup_thread.start()
+        cleanup_thread.join(timeout=1)
+        if cleanup_thread.is_alive():
+            assert purge_started.wait(5)
+        reactivation_conn.commit()
+        cleanup_thread.join(timeout=10)
+    finally:
+        reactivation_conn.rollback()
+        reactivation_conn.close()
+
+    assert not cleanup_thread.is_alive()
+    with pg_db._conn(commit_on_success=False) as conn:
+        survivor = pg_db._fetchone(
+            conn,
+            "SELECT is_active, deleted_at FROM users WHERE id = %s::uuid",
+            (stale,),
+        )
+    assert pg_db._row_to_dict(survivor) == {
+        "is_active": True,
+        "deleted_at": None,
+    }
+    assert [row["user_id"] for row in read_all_legacy_events(path)] == [
+        stale,
+        active,
+    ]
+
+
+def test_legacy_purge_queue_preserves_committed_deletes_and_retries_failure(
+    pg_db, users, tmp_path, monkeypatch
+):
+    stale_one, stale_two = users
+    active = str(uuid4())
+    with pg_db._conn() as conn:
+        pg_db._execute(
+            conn,
+            "INSERT INTO users (id, phone) VALUES (%s::uuid, %s)",
+            (active, f"test-{active}"),
+        )
+        pg_db._execute(
+            conn,
+            "UPDATE users SET deleted_at = NOW() - INTERVAL '31 days', "
+            "is_active = FALSE WHERE id IN (%s::uuid, %s::uuid)",
+            (stale_one, stale_two),
+        )
+    for user_id in (stale_one, stale_two, active):
         _set_preferences(pg_db, user_id, personalization_enabled=True)
         with pg_db._conn() as conn:
             pg_db._execute(
@@ -1909,19 +2111,37 @@ def test_scheduler_legacy_failure_rolls_back_user_and_postgres_purge_for_retry(
             user_id, {"event_type": "search", "context": "search"}
         )
     path = tmp_path / "legacy-events.jsonl"
-    lock_path = tmp_path / ".legacy-events.publication.lock"
-    seed_legacy_events(path, [stale, active])
+    seed_legacy_events(path, [stale_one, stale_two, active])
+    workspace_row = {"workspace": "keep", "payload": {"owner": active}}
+    path.write_text(
+        path.read_text(encoding="utf-8")
+        + json.dumps(workspace_row, ensure_ascii=True)
+        + "\n",
+        encoding="utf-8",
+    )
     monkeypatch.setattr(personalization_events, "LEGACY_EVENTS_PATH", path)
-    monkeypatch.setattr(personalization_events, "LEGACY_EVENTS_LOCK_PATH", lock_path)
+    monkeypatch.setattr(
+        personalization_events,
+        "LEGACY_EVENTS_LOCK_PATH",
+        tmp_path / ".legacy-events.publication.lock",
+    )
+    real_purge = personalization_events.purge_legacy_events
+    purge_calls = []
+
+    def fail_second_purge(**kwargs):
+        purge_calls.append(kwargs["user_id"])
+        if len(purge_calls) == 2:
+            raise OSError("legacy purge failed")
+        return real_purge(**kwargs)
 
     with monkeypatch.context() as failure_patch:
         failure_patch.setattr(
-            personalization_events,
-            "purge_legacy_events",
-            lambda **_kwargs: (_ for _ in ()).throw(OSError("legacy purge failed")),
+            personalization_events, "purge_legacy_events", fail_second_purge
         )
         scheduler.task_session_cleanup()
 
+    assert len(purge_calls) == 2
+    succeeded_user, failed_user = purge_calls
     with pg_db._conn(commit_on_success=False) as conn:
         failed_counts = pg_db._fetchone(
             conn,
@@ -1931,32 +2151,43 @@ def test_scheduler_legacy_failure_rolls_back_user_and_postgres_purge_for_retry(
             "(SELECT COUNT(*) FROM user_preference_consents) AS consents, "
             "(SELECT COUNT(*) FROM user_personalization_events) AS events",
         )
-    assert pg_db._row_to_dict(failed_counts) == {
-        "users": 2,
-        "preferences": 2,
-        "consents": 2,
-        "events": 2,
-    }
-    assert [row["user_id"] for row in read_all_legacy_events(path)] == [stale, active]
-
-    scheduler.task_session_cleanup()
-
-    with pg_db._conn(commit_on_success=False) as conn:
-        successful_counts = pg_db._fetchone(
+        jobs = pg_db._fetchall(
             conn,
-            "SELECT "
-            "(SELECT COUNT(*) FROM users) AS users, "
-            "(SELECT COUNT(*) FROM user_preferences) AS preferences, "
-            "(SELECT COUNT(*) FROM user_preference_consents) AS consents, "
-            "(SELECT COUNT(*) FROM user_personalization_events) AS events",
+            "SELECT user_id, attempt_count, last_error "
+            "FROM personalization_legacy_purge_queue ORDER BY user_id",
         )
-    assert pg_db._row_to_dict(successful_counts) == {
+    assert pg_db._row_to_dict(failed_counts) == {
         "users": 1,
         "preferences": 1,
         "consents": 1,
         "events": 1,
     }
-    assert [row["user_id"] for row in read_all_legacy_events(path)] == [active]
+    assert [str(row["user_id"]) for row in jobs] == [failed_user]
+    assert int(jobs[0]["attempt_count"]) == 1
+    assert "legacy purge failed" in jobs[0]["last_error"]
+    remaining_rows = read_all_legacy_events(path)
+    assert succeeded_user not in {row.get("user_id") for row in remaining_rows}
+    assert failed_user in {row.get("user_id") for row in remaining_rows}
+    assert active in {row.get("user_id") for row in remaining_rows}
+    assert workspace_row in remaining_rows
+
+    with pg_db._conn() as conn:
+        pg_db._execute(
+            conn,
+            "UPDATE personalization_legacy_purge_queue SET next_attempt_at = NOW()",
+        )
+    scheduler.task_session_cleanup()
+
+    with pg_db._conn(commit_on_success=False) as conn:
+        queue_count = pg_db._fetchone(
+            conn,
+            "SELECT COUNT(*) AS count FROM personalization_legacy_purge_queue",
+        )
+    assert int(queue_count["count"]) == 0
+    assert read_all_legacy_events(path) == [
+        next(row for row in remaining_rows if row.get("user_id") == active),
+        workspace_row,
+    ]
 
 
 def test_scheduler_final_delete_purges_only_matching_legacy_rows(
