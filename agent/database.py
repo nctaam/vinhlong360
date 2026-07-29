@@ -90,7 +90,11 @@ PG_REQUIRED_COLUMNS = {
     "schema_version": {"component", "version", "migration", "updated_at"},
 }
 
-PG_REQUIRED_SCHEMA_VERSION = 62
+PG_REQUIRED_SCHEMA_VERSION = 71
+PG_REQUIRED_TRIGGERS = {
+    "trg_entity_ratings": "posts",
+    "trg_entity_ratings_del": "posts",
+}
 
 if USE_PG:
     import psycopg2
@@ -166,16 +170,82 @@ def _pg_missing_columns(cur, tables: set) -> list:
     return missing_columns
 
 
-def _pg_schema_issues(missing_tables: list, missing_columns: list, schema_version: int) -> list:
+def _pg_missing_triggers(cur) -> list[str]:
+    cur.execute(
+        """
+        SELECT tg.tgname AS trigger_name, cls.relname AS table_name
+        FROM pg_catalog.pg_trigger AS tg
+        JOIN pg_catalog.pg_class AS cls ON cls.oid = tg.tgrelid
+        JOIN pg_catalog.pg_namespace AS ns ON ns.oid = cls.relnamespace
+        WHERE NOT tg.tgisinternal AND ns.nspname = 'public'
+        """
+    )
+    existing = {
+        (row["trigger_name"], row["table_name"])
+        for row in cur.fetchall()
+    }
+    return [
+        f"{trigger_name} on {table_name}"
+        for trigger_name, table_name in sorted(PG_REQUIRED_TRIGGERS.items())
+        if (trigger_name, table_name) not in existing
+    ]
+
+
+def _pg_schema_issues(
+    missing_tables: list[str],
+    missing_columns: list[str],
+    missing_triggers: list[str],
+    schema_version: int,
+) -> list[str]:
     """Dựng danh sách issue (extract nguyên văn từ _verify_pg_schema)."""
     issues: list[str] = []
     if missing_tables:
         issues.append("missing tables: " + ", ".join(missing_tables))
     if missing_columns:
         issues.append("missing columns: " + ", ".join(missing_columns))
+    if missing_triggers:
+        issues.append("missing triggers: " + ", ".join(missing_triggers))
     if schema_version < PG_REQUIRED_SCHEMA_VERSION:
         issues.append(f"schema_version agent={schema_version}, expected >= {PG_REQUIRED_SCHEMA_VERSION}")
     return issues
+
+
+def _pg_schema_snapshot(conn) -> dict[str, object]:
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur.execute(
+        """
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+        """
+    )
+    tables = {row["table_name"] for row in cur.fetchall()}
+    missing_tables = sorted(PG_REQUIRED_TABLES - tables)
+    missing_columns = _pg_missing_columns(cur, tables)
+    missing_triggers = _pg_missing_triggers(cur)
+
+    schema_version = 0
+    if "schema_version" in tables:
+        cur.execute(
+            "SELECT COALESCE(MAX(version), 0) AS version FROM schema_version WHERE component = %s",
+            ("agent",),
+        )
+        row = cur.fetchone() or {}
+        schema_version = int(row.get("version") or 0)
+
+    issues = _pg_schema_issues(
+        missing_tables,
+        missing_columns,
+        missing_triggers,
+        schema_version,
+    )
+    return {
+        "schema_version": schema_version,
+        "missing_tables": missing_tables,
+        "missing_columns": missing_columns,
+        "missing_triggers": missing_triggers,
+        "issues": issues,
+    }
 
 
 _COORD_INVALID = object()  # sentinel: decode thất bại → _parse_coordinates trả None
@@ -582,28 +652,8 @@ class Database:
 
     def _verify_pg_schema(self, conn) -> None:
         """Verify PostgreSQL schema at startup without mutating it."""
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        cur.execute(
-            """
-            SELECT table_name
-            FROM information_schema.tables
-            WHERE table_schema = 'public'
-            """
-        )
-        tables = {row["table_name"] for row in cur.fetchall()}
-        missing_tables = sorted(PG_REQUIRED_TABLES - tables)
-        missing_columns = _pg_missing_columns(cur, tables)
-
-        schema_version = 0
-        if "schema_version" in tables:
-            cur.execute(
-                "SELECT COALESCE(MAX(version), 0) AS version FROM schema_version WHERE component = %s",
-                ("agent",),
-            )
-            row = cur.fetchone() or {}
-            schema_version = int(row.get("version") or 0)
-
-        issues = _pg_schema_issues(missing_tables, missing_columns, schema_version)
+        snapshot = _pg_schema_snapshot(conn)
+        issues = snapshot["issues"]
         if not issues:
             return
 
@@ -625,22 +675,19 @@ class Database:
                 "ok": True,
                 "schema_version": None,
                 "required_schema_version": PG_REQUIRED_SCHEMA_VERSION,
+                "required_triggers": dict(PG_REQUIRED_TRIGGERS),
+                "missing_triggers": [],
             }
 
         try:
             with self._conn() as conn:
-                self._verify_pg_schema(conn)
-                row = self._fetchone(
-                    conn,
-                    "SELECT COALESCE(MAX(version), 0) AS version FROM schema_version WHERE component = %s",
-                    ("agent",),
-                )
-                version = int((row or {}).get("version") or 0)
+                snapshot = _pg_schema_snapshot(conn)
             return {
                 "backend": "postgresql",
-                "ok": version >= PG_REQUIRED_SCHEMA_VERSION,
-                "schema_version": version,
+                "ok": not snapshot["issues"],
                 "required_schema_version": PG_REQUIRED_SCHEMA_VERSION,
+                "required_triggers": dict(PG_REQUIRED_TRIGGERS),
+                **snapshot,
             }
         except Exception as exc:  # noqa: BLE001 - health endpoint should report, not crash
             return {
@@ -648,6 +695,8 @@ class Database:
                 "ok": False,
                 "schema_version": 0,
                 "required_schema_version": PG_REQUIRED_SCHEMA_VERSION,
+                "required_triggers": dict(PG_REQUIRED_TRIGGERS),
+                "missing_triggers": [],
                 "error": f"{type(exc).__name__}: {exc}",
             }
 

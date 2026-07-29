@@ -41,8 +41,28 @@ def test_migration_070_comment_trigger_fires_on_update():
 
 
 @pg_only
+def test_migration_071_rating_triggers_have_expected_events():
+    with db._conn() as conn:
+        rows = db._fetchall(
+            conn,
+            "SELECT trigger_name, event_manipulation FROM information_schema.triggers "
+            "WHERE event_object_schema = 'public' "
+            "AND trigger_name IN ('trg_entity_ratings', 'trg_entity_ratings_del')",
+            (),
+        )
+    events = {}
+    for row in rows:
+        item = db._row_to_dict(row)
+        events.setdefault(item["trigger_name"], set()).add(item["event_manipulation"])
+    assert events == {
+        "trg_entity_ratings": {"INSERT", "UPDATE"},
+        "trg_entity_ratings_del": {"DELETE"},
+    }
+
+
+@pg_only
 def test_schema_version_tracks_latest_migration():
     with db._conn() as conn:
         row = db._fetchone(conn, "SELECT version FROM schema_version WHERE component = 'agent'", ())
     assert row is not None
-    assert int(db._row_to_dict(row)["version"]) >= 70  # đã áp tới 070
+    assert int(db._row_to_dict(row)["version"]) >= 71  # đã áp tới 071

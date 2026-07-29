@@ -92,9 +92,8 @@ def test_pg_initialize_verifies_schema_before_legacy_repair_code():
     assert "CREATE INDEX" not in verify_src
 
 def test_pg_schema_contract_tracks_latest_release_tables():
-    # 62 = GĐ-B/C entity split (059 repair chain, 060 universal cols, 061 CTI, 062 vá):
-    # replay PG trắng + prod đều ở 62 (2026-07-02).
-    assert PG_REQUIRED_SCHEMA_VERSION == 62
+    # 71 restores both entity rating triggers after migration 070 corrected the function body.
+    assert PG_REQUIRED_SCHEMA_VERSION == 71
     assert {"schema_version", "admin_audit_events", "shared_rate_limits", "request_idempotency_keys"} <= PG_REQUIRED_TABLES
     assert {"entity_changes", "site_settings_history"} <= PG_REQUIRED_TABLES
     assert {f"entity_{k}_details" for k in
