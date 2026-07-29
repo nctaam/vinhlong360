@@ -32,8 +32,26 @@ def test_parse_opening_hours_returns_windows_and_nonfatal_warning():
     assert "weekday-specific-hours-ignored" in warnings
 
 
+def test_parse_opening_hours_warns_for_weekday_prefix_without_colon():
+    windows, warnings = parse_opening_hours("T2-T6 07:30-11:30")
+
+    assert windows == (TimeWindow(450, 690),)
+    assert "weekday-specific-hours-ignored" in warnings
+
+
 def test_invalid_hours_are_unknown_not_open_all_day():
     windows, warnings = parse_opening_hours("liên hệ trước")
+    assert windows == ()
+    assert "opening-hours-unknown" in warnings
+
+
+def test_parse_time_range_rejects_one_digit_h_minutes():
+    assert parse_time_range("7h5-17h") is None
+
+
+def test_parse_opening_hours_does_not_trust_one_digit_h_minutes():
+    windows, warnings = parse_opening_hours("7h5-17h")
+
     assert windows == ()
     assert "opening-hours-unknown" in warnings
 

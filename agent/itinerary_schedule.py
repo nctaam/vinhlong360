@@ -33,16 +33,17 @@ _TYPE_DEFAULT_MINUTES = {
 _TIME_RANGE_PATTERN = re.compile(
     r"(?<!\d)"
     r"(?P<start_hour>\d{1,2})"
-    r"(?:(?::(?P<start_colon_minute>\d{2}))|(?:[hH](?P<start_h_minute>\d{0,2})))"
+    r"(?:(?::(?P<start_colon_minute>\d{2}))|(?:[hH](?P<start_h_minute>\d{2}|)))"
     r"\s*-\s*"
     r"(?P<end_hour>\d{1,2})"
-    r"(?:(?::(?P<end_colon_minute>\d{2}))|(?:[hH](?P<end_h_minute>\d{0,2})))"
+    r"(?:(?::(?P<end_colon_minute>\d{2}))|(?:[hH](?P<end_h_minute>\d{2}|)))"
     r"(?!\d)"
 )
 
 _WEEKDAY_PREFIX_PATTERN = re.compile(
     r"\b(?:t(?:hứ)?\s*[2-7]|cn)"
-    r"(?:\s*-\s*(?:t(?:hứ)?\s*[2-7]|cn))?\s*:",
+    r"(?:\s*-\s*(?:t(?:hứ)?\s*[2-7]|cn))?"
+    r"(?=\s*:|\s|$)\s*:?\s*",
     re.IGNORECASE,
 )
 
