@@ -361,6 +361,34 @@ class StreamingPIIRedactor:
             return ""
         return redact_text(prefix, source="provider_output").text
 
+    def _release_overlong_candidate(self) -> str | None:
+        trailing_start = self._trailing_candidate_start(self._pending)
+        if len(self._pending) - trailing_start < self.max_pattern_span:
+            return None
+        safe_prefix = self._redact_prefix(self._pending[:trailing_start])
+        self._pending = ""
+        self._discarding_overlong_candidate = True
+        return safe_prefix + _OVERLONG_REDACTION
+
+    def _safe_candidate_cut(self) -> int:
+        candidate_cut = max(0, len(self._pending) - self.max_pattern_span)
+        if candidate_cut == 0:
+            return 0
+
+        spans = pii_masker.detect_spans(self._pending)
+        while True:
+            crossing = [
+                span
+                for span in spans
+                if span.start < candidate_cut < span.end
+            ]
+            if not crossing:
+                return candidate_cut
+            left_cut = min(span.start for span in crossing)
+            if len(self._pending) - left_cut <= self.max_pattern_span:
+                return left_cut
+            candidate_cut = max(span.end for span in crossing)
+
     def feed(self, chunk: str) -> str:
         if self._aborted or self._finished:
             return ""
@@ -375,31 +403,13 @@ class StreamingPIIRedactor:
                     return ""
 
             self._pending += chunk
-            trailing_start = self._trailing_candidate_start(self._pending)
-            if len(self._pending) - trailing_start >= self.max_pattern_span:
-                safe_prefix = self._redact_prefix(self._pending[:trailing_start])
-                self._pending = ""
-                self._discarding_overlong_candidate = True
-                return safe_prefix + _OVERLONG_REDACTION
+            overlong_release = self._release_overlong_candidate()
+            if overlong_release is not None:
+                return overlong_release
 
-            candidate_cut = max(0, len(self._pending) - self.max_pattern_span)
+            candidate_cut = self._safe_candidate_cut()
             if candidate_cut == 0:
                 return ""
-
-            spans = pii_masker.detect_spans(self._pending)
-            while True:
-                crossing = [
-                    span
-                    for span in spans
-                    if span.start < candidate_cut < span.end
-                ]
-                if not crossing:
-                    break
-                left_cut = min(span.start for span in crossing)
-                if len(self._pending) - left_cut <= self.max_pattern_span:
-                    candidate_cut = left_cut
-                    break
-                candidate_cut = max(span.end for span in crossing)
 
             prefix = self._pending[:candidate_cut]
             self._pending = self._pending[candidate_cut:]

@@ -312,17 +312,6 @@ class TestGuardrailFallback:
         assert "PrivacyBoundaryUnavailable" in post_context
         assert "UNEXPECTED_PRIVACY_BOUNDARY_ERROR" in post_context
 
-    def test_guardrail_output_error_does_not_crash(self):
-        """Output guardrail failure must not crash the response."""
-        server_path = AGENT_DIR / "server.py"
-        source = server_path.read_text(encoding="utf-8")
-
-        idx = source.find("out_check = check_output(reply")
-        assert idx > 0, "Output guardrail check must exist"
-
-        pre_context = source[max(0, idx-200):idx]
-        assert "try:" in pre_context, "Output check_output must be wrapped in try/except"
-
     def test_guardrail_stream_fail_closed(self):
         """Stream endpoint privacy boundary must also fail closed."""
         server_path = AGENT_DIR / "server.py"

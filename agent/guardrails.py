@@ -204,6 +204,64 @@ PII_CANDIDATE_CHARS = frozenset(
 )
 PII_OVERLONG_CANDIDATE_LIMIT = 448
 
+
+def _bounded_pii_spans(text: str, detectors) -> list[tuple[int, PIISpan]]:
+    candidates = []
+    for priority, (pii_type, _replacement, pattern) in enumerate(detectors):
+        for match in pattern.finditer(text):
+            group = 1 if pii_type in ("id_number", "bank_account") and match.lastindex else 0
+            start, end = match.span(group)
+            candidates.append((priority, PIISpan(pii_type, start, end)))
+    return candidates
+
+
+def _overflow_pii_spans(text: str, detectors) -> list[tuple[int, PIISpan]]:
+    candidates = []
+    for priority, pii_type, group, pattern in detectors:
+        for match in pattern.finditer(text):
+            selected_group = group
+            if pii_type == "phone" and match.lastindex and match.group(1) is None:
+                selected_group = 2
+            start, end = match.span(selected_group)
+            candidates.append((priority, PIISpan(pii_type, start, end)))
+    return candidates
+
+
+def _overlong_pii_spans(text: str) -> list[tuple[int, PIISpan]]:
+    candidates = []
+    run_start = None
+    for index, char in enumerate(text + " "):
+        if char in PII_CANDIDATE_CHARS:
+            if run_start is None:
+                run_start = index
+            continue
+        if run_start is not None and index - run_start > PII_OVERLONG_CANDIDATE_LIMIT:
+            candidates.append((-1, PIISpan("secret", run_start, index)))
+        run_start = None
+    return candidates
+
+
+def _merge_pii_spans(candidates: list[tuple[int, PIISpan]]) -> tuple[PIISpan, ...]:
+    candidates.sort(key=lambda item: (item[1].start, item[0], item[1].end))
+    merged: list[tuple[int, PIISpan]] = []
+    for priority, span in candidates:
+        if not merged or span.start >= merged[-1][1].end:
+            merged.append((priority, span))
+            continue
+
+        current_priority, current = merged[-1]
+        winner_kind = current.kind if current_priority <= priority else span.kind
+        merged[-1] = (
+            min(current_priority, priority),
+            PIISpan(
+                winner_kind,
+                min(current.start, span.start),
+                max(current.end, span.end),
+            ),
+        )
+    return tuple(span for _priority, span in merged)
+
+
 class PIIMasker:
     """
     Phat hien va mask thong tin ca nhan (PII) trong text.
@@ -305,59 +363,11 @@ class PIIMasker:
         if not text:
             return ()
 
-        candidates: list[tuple[int, PIISpan]] = []
         with self._lock:
-            for priority, (pii_type, _replacement, pattern) in enumerate(self._detectors):
-                for match in pattern.finditer(text):
-                    if pii_type in ("id_number", "bank_account") and match.lastindex:
-                        start, end = match.span(1)
-                    else:
-                        start, end = match.span()
-                    candidates.append((priority, PIISpan(pii_type, start, end)))
-
-            for priority, pii_type, group, pattern in self._overflow_detectors:
-                for match in pattern.finditer(text):
-                    selected_group = group
-                    if pii_type == "phone" and match.lastindex and match.group(1) is None:
-                        selected_group = 2
-                    start, end = match.span(selected_group)
-                    candidates.append((priority, PIISpan(pii_type, start, end)))
-
-            # A token-like run beyond every supported bounded value is treated
-            # as a secret overflow instead of allowing a bounded regex match to
-            # redact only its prefix.
-            run_start = None
-            for index, char in enumerate(text + " "):
-                if char in PII_CANDIDATE_CHARS:
-                    if run_start is None:
-                        run_start = index
-                    continue
-                if (
-                    run_start is not None
-                    and index - run_start > PII_OVERLONG_CANDIDATE_LIMIT
-                ):
-                    candidates.append((-1, PIISpan("secret", run_start, index)))
-                run_start = None
-
-        candidates.sort(key=lambda item: (item[1].start, item[0], item[1].end))
-        merged: list[tuple[int, PIISpan]] = []
-        for priority, span in candidates:
-            if not merged or span.start >= merged[-1][1].end:
-                merged.append((priority, span))
-                continue
-
-            current_priority, current = merged[-1]
-            winner_kind = current.kind if current_priority <= priority else span.kind
-            merged[-1] = (
-                min(current_priority, priority),
-                PIISpan(
-                    winner_kind,
-                    min(current.start, span.start),
-                    max(current.end, span.end),
-                ),
-            )
-
-        return tuple(span for _priority, span in merged)
+            candidates = _bounded_pii_spans(text, self._detectors)
+            candidates.extend(_overflow_pii_spans(text, self._overflow_detectors))
+            candidates.extend(_overlong_pii_spans(text))
+        return _merge_pii_spans(candidates)
 
     def mask(self, text: str) -> tuple:
         """

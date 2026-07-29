@@ -1850,73 +1850,117 @@ def _payload_contact_values(value: dict) -> set[str]:
     return contacts
 
 
-def _verified_public_contacts_from_payload(value) -> set[str]:
-    """Return exact published contact fields present in this tool payload."""
-    entities = {
+def _eligible_public_entities() -> dict[str, dict]:
+    return {
         entity_id: entity
         for entity_id, entity in (getattr(knowledge, "_entities", None) or {}).items()
         if isinstance(entity_id, str)
         and isinstance(entity, dict)
         and is_publicly_eligible(entity)
     }
+
+
+def _public_entities_by_name(entities: dict[str, dict]) -> dict[str, list[dict]]:
     entities_by_name: dict[str, list[dict]] = {}
     for entity in entities.values():
         name = entity.get("name")
         if isinstance(name, str) and name:
             entities_by_name.setdefault(name, []).append(entity)
+    return entities_by_name
 
+
+def _selected_public_entity(
+    item: dict,
+    entities: dict[str, dict],
+    entities_by_name: dict[str, list[dict]],
+):
+    for key in ("id", "entity_id"):
+        entity_id = item.get(key)
+        if isinstance(entity_id, str) and entity_id in entities:
+            return entities[entity_id]
+    name = item.get("name")
+    matches = entities_by_name.get(name, []) if isinstance(name, str) else []
+    return matches[0] if len(matches) == 1 else None
+
+
+def _collect_verified_public_contacts(
+    item,
+    entities: dict[str, dict],
+    entities_by_name: dict[str, list[dict]],
+    contacts: set[str],
+) -> None:
+    if isinstance(item, dict):
+        entity = _selected_public_entity(item, entities, entities_by_name)
+        if entity is not None:
+            contacts.update(
+                _payload_contact_values(item) & _entity_contact_values(entity)
+            )
+        for child in item.values():
+            _collect_verified_public_contacts(child, entities, entities_by_name, contacts)
+    elif isinstance(item, (list, tuple)):
+        for child in item:
+            _collect_verified_public_contacts(child, entities, entities_by_name, contacts)
+
+
+def _verified_public_contacts_from_payload(value) -> set[str]:
+    """Return exact published contact fields present in this tool payload."""
+    entities = _eligible_public_entities()
+    entities_by_name = _public_entities_by_name(entities)
     contacts: set[str] = set()
-
-    def selected_entity(item: dict):
-        for key in ("id", "entity_id"):
-            entity_id = item.get(key)
-            if isinstance(entity_id, str) and entity_id in entities:
-                return entities[entity_id]
-        name = item.get("name")
-        matches = entities_by_name.get(name, []) if isinstance(name, str) else []
-        return matches[0] if len(matches) == 1 else None
-
-    def collect(item):
-        if isinstance(item, dict):
-            entity = selected_entity(item)
-            if entity is not None:
-                contacts.update(
-                    _payload_contact_values(item) & _entity_contact_values(entity)
-                )
-            for child in item.values():
-                collect(child)
-        elif isinstance(item, (list, tuple)):
-            for child in item:
-                collect(child)
-
-    collect(value)
+    _collect_verified_public_contacts(value, entities, entities_by_name, contacts)
     return contacts
+
+
+def _public_contact_markers(
+    contacts: set[str], original_strings: tuple[str, ...]
+) -> tuple[tuple[str, str], ...]:
+    replacements = []
+    for index, contact in enumerate(sorted(contacts, key=len, reverse=True)):
+        marker = f"__VL360_PUBLIC_CONTACT_{index}__"
+        while any(marker in original for original in original_strings):
+            marker = "_" + marker
+        replacements.append((contact, marker))
+    return tuple(replacements)
+
+
+def _protect_public_contact_value(
+    item,
+    replacements: tuple[tuple[str, str], ...],
+    restorations: dict[str, str],
+):
+    if isinstance(item, str):
+        protected = item
+        for contact, marker in replacements:
+            if contact in protected:
+                protected = protected.replace(contact, marker)
+                restorations[marker] = contact
+        return protected
+    if isinstance(item, dict):
+        return {
+            _protect_public_contact_value(key, replacements, restorations)
+            if isinstance(key, str)
+            else key: _protect_public_contact_value(child, replacements, restorations)
+            for key, child in item.items()
+        }
+    if isinstance(item, list):
+        return [
+            _protect_public_contact_value(child, replacements, restorations)
+            for child in item
+        ]
+    if isinstance(item, tuple):
+        return tuple(
+            _protect_public_contact_value(child, replacements, restorations)
+            for child in item
+        )
+    return item
 
 
 def _protect_public_contacts(value, contacts: set[str]):
     restorations: dict[str, str] = {}
     original_strings = tuple(_payload_strings(value))
-
-    def protect(item):
-        if isinstance(item, str):
-            protected = item
-            for index, contact in enumerate(sorted(contacts, key=len, reverse=True)):
-                marker = f"__VL360_PUBLIC_CONTACT_{index}__"
-                while any(marker in original for original in original_strings):
-                    marker = "_" + marker
-                if contact in protected:
-                    protected = protected.replace(contact, marker)
-                    restorations[marker] = contact
-            return protected
-        if isinstance(item, dict):
-            return {protect(key) if isinstance(key, str) else key: protect(child) for key, child in item.items()}
-        if isinstance(item, list):
-            return [protect(child) for child in item]
-        if isinstance(item, tuple):
-            return tuple(protect(child) for child in item)
-        return item
-
-    return protect(value), restorations
+    replacements = _public_contact_markers(contacts, original_strings)
+    protected = _protect_public_contact_value(value, replacements, restorations)
+    return protected, restorations
 
 
 def _restore_public_contacts(value, restorations: dict[str, str]):
