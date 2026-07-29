@@ -39,6 +39,11 @@ _DMS_RE = re.compile(
     r"(?P<hemisphere>[NSEW])?",
     re.IGNORECASE,
 )
+_HEMISPHERE_COORDINATE_RE = re.compile(
+    rf"(?<![A-Za-z0-9_.]){_NUMBER_PATTERN}\s*[NSEW](?![A-Za-z])",
+    re.IGNORECASE,
+)
+_IPV4_LIKE_RE = re.compile(r"(?<![0-9.])(?:\d{1,3}\.){3}\d{1,3}(?![0-9.])")
 _IP_CANDIDATE_RE = re.compile(r"[0-9A-Fa-f:.]+")
 
 
@@ -189,6 +194,8 @@ def _bounded_strings(value: object, *, limit: int, max_length: int) -> list[str]
 
 def _safe_region_label(value: str) -> bool:
     """Reject raw IP/GPS-shaped labels at the final recommendation boundary."""
+    if _IPV4_LIKE_RE.search(value):
+        return False
     for match in _IP_CANDIDATE_RE.finditer(value):
         candidate = match.group().strip(".,;()[]{}")
         try:
@@ -196,7 +203,7 @@ def _safe_region_label(value: str) -> bool:
         except ValueError:
             continue
         return False
-    if _DMS_RE.search(value):
+    if _DMS_RE.search(value) or _HEMISPHERE_COORDINATE_RE.search(value):
         return False
     pair = _COORDINATE_PAIR_RE.search(value)
     if pair:

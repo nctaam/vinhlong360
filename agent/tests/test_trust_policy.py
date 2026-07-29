@@ -158,9 +158,12 @@ def test_explanation_omits_personal_signals_when_personalization_is_disabled():
     ("location_source", "region_label", "expected_region"),
     [
         ("gps", "near 10.25 and 105.97", None),
+        ("gps", "near 1.025e1 and 1.0597e2", None),
+        ("gps", "10.25N, 105.97E", None),
         ("gps", "10.25", None),
         ("gps", "GPS 105.97", None),
         ("ip", "lookup for 203.0.113.10", None),
+        ("ip", "lookup for 203.000.113.010", None),
         ("gps", "2001:db8::1", None),
         ("gps", "10°15′0″N, 105°58′12″E", None),
         ("gps", "Vĩnh Long", "Vĩnh Long"),
