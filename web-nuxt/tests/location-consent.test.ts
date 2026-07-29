@@ -1,0 +1,279 @@
+// @vitest-environment nuxt
+
+import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { defineComponent, h, nextTick, ref } from 'vue'
+
+import PersonalizeSetupSheet from '../components/PersonalizeSetupSheet.vue'
+import { useRegionPref } from '../composables/useRegionPref'
+import type { PreferenceSnapshot } from '../types/personalization'
+
+const apiFetchMock = vi.hoisted(() => vi.fn())
+const authState = vi.hoisted(() => ({
+  user: { value: null as { id: string } | null },
+  isLoggedIn: { value: false },
+  authHeaders: vi.fn(() => ({ Authorization: 'Bearer test-token' })),
+  fetchCsrf: vi.fn(() => Promise.resolve('csrf-token')),
+  fetchMe: vi.fn(() => Promise.resolve()),
+}))
+
+vi.mock('../utils/apiFetch', () => ({ apiFetch: apiFetchMock }))
+mockNuxtImport('useAuth', () => () => authState)
+
+const baseSnapshot: PreferenceSnapshot = {
+  region_id: null,
+  region_label: null,
+  region_scope: 'unknown',
+  location_source: 'default',
+  location_accuracy: 'unknown',
+  location_consent_state: 'unknown',
+  location_enabled: false,
+  personalization_enabled: false,
+  explicit_interests: [],
+  recommendation_reset_at: null,
+  consent_version: null,
+  revision: 0,
+}
+
+function snapshot(overrides: Partial<PreferenceSnapshot> = {}): PreferenceSnapshot {
+  return { ...baseSnapshot, ...overrides }
+}
+
+async function flushUi() {
+  await Promise.resolve()
+  await nextTick()
+  await Promise.resolve()
+  await nextTick()
+}
+
+function mockPreferenceApi(initial: PreferenceSnapshot = snapshot()) {
+  let current = initial
+  apiFetchMock.mockImplementation((url: string, opts?: Record<string, unknown>) => {
+    if (url === '/api/me/preferences' && !opts?.method) return Promise.resolve(current)
+    if (url === '/api/me/preferences' && opts?.method === 'PATCH') {
+      const { revision: _revision, ...patch } = opts.body as Record<string, unknown>
+      current = snapshot({ ...current, ...patch, revision: current.revision + 1 })
+      return Promise.resolve(current)
+    }
+    if (url === '/api/me/location/resolve') {
+      return Promise.resolve({
+        region_id: 'province-vl',
+        region_label: 'Vĩnh Long',
+        region_scope: 'province',
+        location_source: 'gps',
+        location_accuracy: 'province',
+      })
+    }
+    return Promise.resolve(current)
+  })
+}
+
+function mountSetupHarness(initiallyOpen = true) {
+  const Harness = defineComponent({
+    setup() {
+      const open = ref(initiallyOpen)
+      return () => h('div', [
+        h('button', {
+          type: 'button',
+          'data-trigger': 'personalize',
+          onClick: () => { open.value = true },
+        }, 'Mở thiết lập'),
+        h(PersonalizeSetupSheet, {
+          modelValue: open.value,
+          'onUpdate:modelValue': (value: boolean) => { open.value = value },
+        }),
+      ])
+    },
+  })
+  return mountSuspended(Harness, {
+    attachTo: document.body,
+    global: { stubs: { IconLine: true } },
+  })
+}
+
+beforeEach(() => {
+  localStorage.clear()
+  authState.user.value = null
+  authState.isLoggedIn.value = false
+  authState.authHeaders.mockClear()
+  authState.fetchCsrf.mockClear()
+  authState.fetchMe.mockClear()
+  apiFetchMock.mockReset()
+  mockPreferenceApi()
+})
+
+afterEach(() => {
+  localStorage.clear()
+  document.body.innerHTML = ''
+  document.body.style.overflow = ''
+  vi.restoreAllMocks()
+  vi.unstubAllGlobals()
+})
+
+describe('region preference ownership', () => {
+  it('hydrates and persists the anonymous region only through local storage', async () => {
+    localStorage.setItem('vl360-region-pref', 'ben-tre')
+    let regionPref: ReturnType<typeof useRegionPref> | undefined
+    const Harness = defineComponent({
+      setup() {
+        regionPref = useRegionPref()
+        return () => h('div')
+      },
+    })
+    const wrapper = await mountSuspended(Harness)
+    await flushUi()
+
+    expect(regionPref!.region.value).toBe('ben-tre')
+    await regionPref!.setRegion('tra-vinh')
+    expect(localStorage.getItem('vl360-region-pref')).toBe('tra-vinh')
+    expect(apiFetchMock).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
+  it('ignores anonymous cache and derives authenticated region from the API snapshot', async () => {
+    localStorage.setItem('vl360-region-pref', 'vinh-long')
+    authState.user.value = { id: 'user-1' }
+    authState.isLoggedIn.value = true
+    mockPreferenceApi(snapshot({
+      region_id: 'province-bt',
+      region_label: 'Bến Tre',
+      region_scope: 'province',
+      location_source: 'manual',
+      location_accuracy: 'province',
+      revision: 3,
+    }))
+    let regionPref: ReturnType<typeof useRegionPref> | undefined
+    const Harness = defineComponent({
+      setup() {
+        regionPref = useRegionPref()
+        return () => h('div')
+      },
+    })
+    const wrapper = await mountSuspended(Harness)
+    await flushUi()
+
+    expect(regionPref!.region.value).toBe('ben-tre')
+    await regionPref!.setRegion('tra-vinh')
+    expect(apiFetchMock).toHaveBeenLastCalledWith('/api/me/preferences', expect.objectContaining({
+      method: 'PATCH',
+      body: expect.objectContaining({
+        revision: 3,
+        region_id: 'province-tv',
+        location_source: 'manual',
+      }),
+    }))
+    expect(localStorage.getItem('vl360-region-pref')).toBe('vinh-long')
+    wrapper.unmount()
+  })
+
+  it('falls back to all regions without crashing on a malformed authenticated snapshot', async () => {
+    authState.user.value = { id: 'user-1' }
+    authState.isLoggedIn.value = true
+    apiFetchMock.mockResolvedValue({ region_id: 42, revision: 'bad' })
+    let regionPref: ReturnType<typeof useRegionPref> | undefined
+    const Harness = defineComponent({
+      setup() {
+        regionPref = useRegionPref()
+        return () => h('div')
+      },
+    })
+    const wrapper = await mountSuspended(Harness)
+    await flushUi()
+
+    expect(regionPref!.region.value).toBe('all')
+    wrapper.unmount()
+  })
+})
+
+describe('optional location consent flow', () => {
+  it('offers the same skip route at every setup step', async () => {
+    authState.user.value = { id: 'user-1' }
+    authState.isLoggedIn.value = true
+
+    for (const targetStep of [0, 1, 2]) {
+      const wrapper = await mountSetupHarness()
+      await flushUi()
+      const dialog = () => document.body.querySelector('[role="dialog"]') as HTMLElement
+
+      if (targetStep >= 1) {
+        ;(dialog().querySelector('[data-region="province-vl"]') as HTMLButtonElement).click()
+        ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+        await flushUi()
+      }
+      if (targetStep >= 2) {
+        ;(dialog().querySelector('[data-interest="food"]') as HTMLButtonElement).click()
+        ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+        await flushUi()
+      }
+
+      const activeDialog = document.body.querySelector('[role="dialog"]') as HTMLElement
+      expect(activeDialog?.getAttribute('data-step')).toBe(String(targetStep + 1))
+      const skip = activeDialog?.querySelector('[data-action="skip"]') as HTMLButtonElement
+      expect(skip?.textContent).toBe('Bỏ qua, thiết lập sau')
+      skip.click()
+      await flushUi()
+      expect(document.body.querySelector('[role="dialog"]')).toBeNull()
+      wrapper.unmount()
+    }
+  })
+
+  it('does not loop the browser prompt after permission is denied', async () => {
+    authState.user.value = { id: 'user-1' }
+    authState.isLoggedIn.value = true
+    const getCurrentPosition = vi.fn((_success: PositionCallback, error: PositionErrorCallback) => {
+      error({ code: 1, message: 'denied', PERMISSION_DENIED: 1 } as GeolocationPositionError)
+    })
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: { getCurrentPosition },
+    })
+    const wrapper = await mountSetupHarness()
+    await flushUi()
+    const dialog = () => document.body.querySelector('[role="dialog"]') as HTMLElement
+    ;(dialog().querySelector('[data-region="province-vl"]') as HTMLButtonElement).click()
+    ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+    await flushUi()
+    ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+    await flushUi()
+
+    ;(dialog().querySelector('[data-action="use-location"]') as HTMLButtonElement).click()
+    await flushUi()
+
+    expect(getCurrentPosition).toHaveBeenCalledTimes(1)
+    expect(dialog().querySelector('[role="status"]')?.textContent).toContain('bị từ chối')
+    await flushUi()
+    expect(getCurrentPosition).toHaveBeenCalledTimes(1)
+    wrapper.unmount()
+  })
+
+  it('closes on Escape and restores focus to the trigger', async () => {
+    const originalOffsetParent = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetParent')
+    Object.defineProperty(HTMLElement.prototype, 'offsetParent', {
+      configurable: true,
+      get: () => document.body,
+    })
+
+    try {
+      const wrapper = await mountSetupHarness(false)
+      const trigger = wrapper.get('[data-trigger="personalize"]')
+      ;(trigger.element as HTMLElement).focus()
+      await trigger.trigger('click')
+      await flushUi()
+
+      const dialog = document.body.querySelector('[role="dialog"]') as HTMLElement
+      expect(dialog.contains(document.activeElement)).toBe(true)
+      expect(document.body.style.overflow).toBe('hidden')
+
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      await flushUi()
+
+      expect(document.body.querySelector('[role="dialog"]')).toBeNull()
+      expect(document.body.style.overflow).toBe('')
+      expect(document.activeElement).toBe(trigger.element)
+      wrapper.unmount()
+    } finally {
+      if (originalOffsetParent) Object.defineProperty(HTMLElement.prototype, 'offsetParent', originalOffsetParent)
+      else Reflect.deleteProperty(HTMLElement.prototype, 'offsetParent')
+    }
+  })
+})
