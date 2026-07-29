@@ -13,7 +13,15 @@ export interface RouteResult {
   geometry: [number, number][] // [lat, lng] pairs for polyline
 }
 
-const OSRM_BASE = 'https://router.project-osrm.org/route/v1'
+export interface RouteTableResult {
+  distanceKm: number[][]
+  durationMinutes: number[][]
+  source: 'osrm-table'
+}
+
+const OSRM_HOST = 'https://router.project-osrm.org'
+const OSRM_BASE = `${OSRM_HOST}/route/v1`
+const OSRM_TABLE_BASE = `${OSRM_HOST}/table/v1`
 
 // OSRM demo only has driving profile — recalculate duration by mode
 const AVG_SPEED: Record<TransportMode, number> = {
@@ -42,6 +50,14 @@ interface OsrmResponse {
   routes?: OsrmRoute[]
 }
 
+interface OsrmTableResponse {
+  code?: string
+  distances?: unknown
+  durations?: unknown
+}
+
+type TableFetcher = (url: string) => Promise<OsrmTableResponse>
+
 export function formatDistance(meters: number): string {
   if (meters < 1000) return `${Math.round(meters)} m`
   return `${(meters / 1000).toFixed(1)} km`
@@ -59,6 +75,14 @@ export function formatDuration(seconds: number): string {
 export function buildRouteUrl(coords: [number, number][]): string {
   const coordStr = coords.map(([lat, lng]) => `${lng},${lat}`).join(';')
   return `${OSRM_BASE}/car/${coordStr}?overview=full&geometries=geojson&steps=true&continue_straight=true`
+}
+
+export function buildTableUrl(
+  coords: [number, number][],
+  _mode: TransportMode = 'driving',
+): string {
+  const coordStr = coords.map(([lat, lng]) => `${lng},${lat}`).join(';')
+  return `${OSRM_TABLE_BASE}/car/${coordStr}?annotations=distance,duration`
 }
 
 export function parseRouteResponse(
@@ -101,6 +125,89 @@ export function parseRouteResponse(
   }
 }
 
+export function parseTableResponse(
+  response: OsrmTableResponse,
+  mode: TransportMode = 'driving',
+): RouteTableResult | null {
+  if (
+    response?.code !== 'Ok'
+    || !Array.isArray(response.distances)
+    || !Array.isArray(response.durations)
+    || response.distances.length === 0
+    || response.durations.length !== response.distances.length
+  ) {
+    return null
+  }
+
+  const size = response.distances.length
+  const distanceKm: number[][] = []
+  const durationMinutes: number[][] = []
+  for (let rowIndex = 0; rowIndex < size; rowIndex += 1) {
+    const distanceRow = response.distances[rowIndex]
+    const durationRow = response.durations[rowIndex]
+    if (
+      !Array.isArray(distanceRow)
+      || !Array.isArray(durationRow)
+      || distanceRow.length !== size
+      || durationRow.length !== size
+    ) {
+      return null
+    }
+
+    const parsedDistances: number[] = []
+    const parsedDurations: number[] = []
+    for (let columnIndex = 0; columnIndex < size; columnIndex += 1) {
+      const distance = distanceRow[columnIndex]
+      const duration = durationRow[columnIndex]
+      if (
+        typeof distance !== 'number'
+        || !Number.isFinite(distance)
+        || distance < 0
+        || (
+          duration !== null
+          && (
+            typeof duration !== 'number'
+            || !Number.isFinite(duration)
+            || duration < 0
+          )
+        )
+      ) {
+        return null
+      }
+
+      const kilometers = distance / 1000
+      parsedDistances.push(kilometers)
+      parsedDurations.push(
+        mode === 'driving' && duration !== null
+          ? duration / 60
+          : (kilometers / AVG_SPEED[mode]) * 60,
+      )
+    }
+    distanceKm.push(parsedDistances)
+    durationMinutes.push(parsedDurations)
+  }
+
+  return { distanceKm, durationMinutes, source: 'osrm-table' }
+}
+
+export async function fetchRouteTable(
+  coords: [number, number][],
+  mode: TransportMode = 'driving',
+  fetcher?: TableFetcher,
+): Promise<RouteTableResult | null> {
+  if (coords.length < 2) return null
+  if (import.meta.server && !fetcher) return null
+
+  const request = fetcher
+    ?? ((url: string) => $fetch<OsrmTableResponse>(url))
+  try {
+    const response = await request(buildTableUrl(coords, mode))
+    return parseTableResponse(response, mode)
+  } catch {
+    return null
+  }
+}
+
 export async function fetchRoute(
   coords: [number, number][], // [lat, lng] pairs
   mode: TransportMode = 'driving'
@@ -117,5 +224,5 @@ export async function fetchRoute(
 }
 
 export function useRouting() {
-  return { fetchRoute, formatDistance, formatDuration }
+  return { fetchRoute, fetchRouteTable, formatDistance, formatDuration }
 }

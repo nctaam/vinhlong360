@@ -1,4 +1,9 @@
-import type { RouteLeg, RouteResult } from './useRouting'
+import type {
+  RouteLeg,
+  RouteResult,
+  RouteTableResult,
+  TransportMode,
+} from './useRouting'
 
 export type Coordinates = [number, number]
 export type BlockedEdge = [string, string]
@@ -21,8 +26,42 @@ export interface OptimizeOrderResponse {
   distance_after_km: number
   saved_distance_km: number
   backtrack_ratio: number
-  solver: 'exact-dp' | 'beam-search'
+  solver: 'exact-dp' | 'beam-search' | 'schedule-exact' | 'schedule-beam'
   warnings: string[]
+  schedule?: OptimizeScheduleResponse
+}
+
+export interface OptimizeScheduleStopRequest {
+  id: string
+  visit_minutes?: number
+  opening_hours?: string | null
+  requested_time?: string | null
+  required?: boolean
+}
+
+export interface OptimizeScheduleRequest {
+  day_start_minute: number
+  day_end_minute: number
+  mode: TransportMode
+  stops: OptimizeScheduleStopRequest[]
+  duration_matrix_minutes?: Array<Array<number | null>> | null
+}
+
+export interface OptimizeSchedulePlacement {
+  stop_id: string
+  arrival_minute: number
+  start_visit_minute: number
+  end_visit_minute: number
+}
+
+export interface OptimizeScheduleResponse {
+  placements: OptimizeSchedulePlacement[]
+  skipped: Array<{ stop_id: string; reason: string }>
+  matrix_source: 'request' | 'haversine-fallback'
+  total_travel_minutes: number
+  waiting_minutes: number
+  overtime_minutes: number
+  minimum_slack_minutes: number
 }
 
 export interface BoundedOptimizationResult<T extends StopWithCoords> {
@@ -36,11 +75,14 @@ export interface BoundedOptimizationResult<T extends StopWithCoords> {
 
 interface OptimizeRequestOptions {
   method: 'POST'
-  body: {
-    stops: Array<{ id: string; coordinates: Coordinates }>
-    strict_direction: true
-    blocked_edges: BlockedEdge[]
-  }
+  body: OptimizeRequestBody
+}
+
+interface OptimizeRequestBody {
+  stops: Array<{ id: string; coordinates: Coordinates }>
+  strict_direction: true
+  blocked_edges: BlockedEdge[]
+  schedule?: OptimizeScheduleRequest
 }
 
 type OptimizeFetcher = (
@@ -54,6 +96,15 @@ type OptimizeFunction<T extends StopWithCoords> = (
 ) => Promise<OptimizeOrderResponse>
 
 type RouteFunction = (coordinates: Coordinates[]) => Promise<RouteResult | null>
+
+type RouteTableCacheEntry = {
+  expiresAt: number | null
+  promise: Promise<RouteTableResult | null>
+}
+
+const ROUTE_TABLE_CACHE_TTL_MS = 15 * 60 * 1000
+const ROUTE_TABLE_CACHE_MAX_KEYS = 16
+const routeTableCache = new Map<string, RouteTableCacheEntry>()
 
 function isCoordinates(value: StopWithCoords['coords']): value is Coordinates {
   return Array.isArray(value)
@@ -76,6 +127,61 @@ export function collectRoutableStops<T extends StopWithCoords>(
     })
   })
   return routed
+}
+
+export function routeTableCacheKey(
+  coordinates: Coordinates[],
+  mode: TransportMode,
+): string {
+  const rounded = coordinates
+    .map(([lat, lng]) => `${lat.toFixed(5)},${lng.toFixed(5)}`)
+    .join(';')
+  return `${mode}:${rounded}`
+}
+
+export function getCachedRouteTable(
+  key: string,
+  fetcher: () => Promise<RouteTableResult | null>,
+): Promise<RouteTableResult | null> {
+  const now = Date.now()
+  for (const [cachedKey, entry] of routeTableCache) {
+    if (entry.expiresAt !== null && entry.expiresAt <= now) {
+      routeTableCache.delete(cachedKey)
+    }
+  }
+
+  const cached = routeTableCache.get(key)
+  if (cached) return cached.promise
+
+  let request: Promise<RouteTableResult | null>
+  try {
+    request = fetcher()
+  } catch (error) {
+    return Promise.reject(error)
+  }
+
+  const entry: RouteTableCacheEntry = {
+    expiresAt: null,
+    promise: request,
+  }
+  entry.promise = Promise.resolve(request).then(
+    (result) => {
+      entry.expiresAt = Date.now() + ROUTE_TABLE_CACHE_TTL_MS
+      return result
+    },
+    (error) => {
+      if (routeTableCache.get(key) === entry) routeTableCache.delete(key)
+      throw error
+    },
+  )
+  routeTableCache.set(key, entry)
+
+  while (routeTableCache.size > ROUTE_TABLE_CACHE_MAX_KEYS) {
+    const oldestKey = routeTableCache.keys().next().value
+    if (oldestKey === undefined) break
+    routeTableCache.delete(oldestKey)
+  }
+  return entry.promise
 }
 
 function reorderRoutableStops<T extends StopWithCoords>(
@@ -133,21 +239,44 @@ export function blockedEdgesForUturns<T extends StopWithCoords>(
   return blocked
 }
 
+export function requestOptimizedOrder<T extends StopWithCoords>(
+  routed: RoutableStop<T>[],
+  blockedEdges?: BlockedEdge[],
+  fetcher?: OptimizeFetcher,
+): Promise<OptimizeOrderResponse>
+export function requestOptimizedOrder<T extends StopWithCoords>(
+  routed: RoutableStop<T>[],
+  blockedEdges: BlockedEdge[],
+  schedule: OptimizeScheduleRequest,
+  fetcher?: OptimizeFetcher,
+): Promise<OptimizeOrderResponse>
 export async function requestOptimizedOrder<T extends StopWithCoords>(
   routed: RoutableStop<T>[],
   blockedEdges: BlockedEdge[] = [],
-  fetcher: OptimizeFetcher = (url, options) => $fetch<OptimizeOrderResponse>(url, options),
+  scheduleOrFetcher?: OptimizeScheduleRequest | OptimizeFetcher,
+  injectedFetcher?: OptimizeFetcher,
 ): Promise<OptimizeOrderResponse> {
+  const schedule = typeof scheduleOrFetcher === 'function'
+    ? undefined
+    : scheduleOrFetcher
+  const fetcher = (
+    typeof scheduleOrFetcher === 'function'
+      ? scheduleOrFetcher
+      : injectedFetcher
+  ) ?? ((url, options) => $fetch<OptimizeOrderResponse>(url, options))
+  const body: OptimizeRequestBody = {
+    stops: routed.map(item => ({
+      id: item.key,
+      coordinates: item.coordinates,
+    })),
+    strict_direction: true,
+    blocked_edges: blockedEdges,
+  }
+  if (schedule) body.schedule = schedule
+
   return fetcher('/api/itineraries/optimize-order', {
     method: 'POST',
-    body: {
-      stops: routed.map(item => ({
-        id: item.key,
-        coordinates: item.coordinates,
-      })),
-      strict_direction: true,
-      blocked_edges: blockedEdges,
-    },
+    body,
   })
 }
 
