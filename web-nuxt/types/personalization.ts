@@ -56,6 +56,7 @@ export interface PreferencePatch {
 export interface PreferenceMutationResult {
   ok: boolean
   snapshot: PreferenceSnapshot
+  status: number | null
 }
 
 export const DEFAULT_PREFERENCE_SNAPSHOT: PreferenceSnapshot = {

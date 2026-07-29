@@ -122,6 +122,13 @@ function conflictSnapshot(error: unknown): PreferenceSnapshot | null {
   return isSnapshot(data) ? normalizeSnapshot(data) : null
 }
 
+function errorStatus(error: unknown): number | null {
+  if (!isRecord(error)) return null
+  const responseStatus = isRecord(error.response) ? error.response.status : null
+  const status = responseStatus ?? error.statusCode ?? error.status
+  return typeof status === 'number' && Number.isInteger(status) ? status : null
+}
+
 export function usePersonalizationPreferences() {
   const { user, isLoggedIn, authHeaders, fetchCsrf } = useAuth()
   const snapshot = useState<PreferenceSnapshot>('personalization-preferences-snapshot', emptyPreferenceSnapshot)
@@ -224,8 +231,8 @@ export function usePersonalizationPreferences() {
     return isCurrentOwner(operation) && resolutionGeneration.value === operation.resolutionToken
   }
 
-  function mutationResult(ok: boolean): PreferenceMutationResult {
-    return { ok, snapshot: snapshot.value }
+  function mutationResult(ok: boolean, status: number | null = null): PreferenceMutationResult {
+    return { ok, snapshot: snapshot.value, status }
   }
 
   syncOwner()
@@ -274,13 +281,16 @@ export function usePersonalizationPreferences() {
       invalidateReads = true
       return mutationResult(true)
     } catch (reason) {
+      const status = errorStatus(reason)
       if (isCurrentWrite(operation)) {
-        const current = conflictSnapshot(reason)
-        if (current) snapshot.value = current
+        if (status === 409) {
+          const current = conflictSnapshot(reason)
+          if (current) snapshot.value = current
+        }
         error.value = errorMessage(reason, 'Không thể lưu thiết lập cá nhân hóa.')
         invalidateReads = true
       }
-      return mutationResult(false)
+      return mutationResult(false, status)
     } finally {
       finishWrite(operation, invalidateReads)
     }
@@ -331,11 +341,12 @@ export function usePersonalizationPreferences() {
       invalidateReads = true
       return mutationResult(true)
     } catch (reason) {
+      const status = errorStatus(reason)
       if (isCurrentWrite(operation)) {
         error.value = errorMessage(reason, 'Không thể đặt lại đề xuất lúc này.')
         invalidateReads = true
       }
-      return mutationResult(false)
+      return mutationResult(false, status)
     } finally {
       finishWrite(operation, invalidateReads)
     }

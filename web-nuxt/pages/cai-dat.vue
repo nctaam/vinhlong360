@@ -552,7 +552,7 @@
         <p class="sf-hint">Các sự kiện đồng ý điều khoản và chính sách bảo mật.</p>
         <div v-if="consentHistory.length" class="dl-consent-list">
           <div v-for="c in consentHistory" :key="c.id" class="dl-consent-item" :data-consent-id="c.id">
-            <span class="dl-consent-ver">{{ c.version || '1.0' }}</span>
+            <span class="dl-consent-ver">{{ c.version || 'Không rõ phiên bản' }}</span>
             <time class="dl-consent-time" :datetime="c.created_at">{{ formatConsentDate(c.created_at) }}</time>
           </div>
         </div>
@@ -797,7 +797,7 @@ async function applyPreferenceOperation(operation: PreferenceOperation) {
       preferenceNotice.value = operation.successMessage
       return
     }
-    if (result.snapshot.revision !== before.revision) {
+    if (result.status === 409) {
       preferenceConflictOperation = operation
       preferenceConflict.value = true
       return
@@ -1336,7 +1336,14 @@ async function deleteAccount() {
   accountStatus.value = ''
   try {
     const result = await $fetch<DeleteAccountResponse>('/auth/account', { method: 'DELETE', headers: authHeaders() })
-    const graceCopy = Number.isFinite(result.grace_days) && result.grace_days > 0 ? ` Thời gian chờ: ${result.grace_days} ngày.` : ''
+    const gracePhrase = `${result.grace_days} ngày`
+    const messageIncludesGrace = result.message
+      .toLocaleLowerCase('vi-VN')
+      .replace(/\s+/g, ' ')
+      .includes(gracePhrase.toLocaleLowerCase('vi-VN'))
+    const graceCopy = Number.isFinite(result.grace_days) && result.grace_days > 0 && !messageIncludesGrace
+      ? ` Thời gian chờ: ${gracePhrase}.`
+      : ''
     accountStatus.value = `${result.message}${graceCopy}`.trim()
     deleteConfirmVisible.value = false
     showToast(result.message, result.status === 'scheduled' ? 'success' : 'info')
