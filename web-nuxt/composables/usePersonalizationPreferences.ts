@@ -128,7 +128,12 @@ export function usePersonalizationPreferences() {
   const loading = useState<boolean>('personalization-preferences-loading', () => false)
   const error = useState<string | null>('personalization-preferences-error', () => null)
   const ownerId = useState<string | null>('personalization-preferences-owner', () => null)
-  const generation = useState<number>('personalization-preferences-generation', () => 0)
+  const ownerGeneration = useState<number>('personalization-preferences-generation', () => 0)
+  const readGeneration = useState<number>('personalization-preferences-read-generation', () => 0)
+  const writeGeneration = useState<number>('personalization-preferences-write-generation', () => 0)
+  const resolutionGeneration = useState<number>('personalization-preferences-resolution-generation', () => 0)
+  const pendingOperations = useState<number>('personalization-preferences-pending-operations', () => 0)
+  const activeWrites = useState<number>('personalization-preferences-active-writes', () => 0)
 
   function currentOwner(): string | null {
     return isLoggedIn.value ? user.value?.id || null : null
@@ -141,24 +146,82 @@ export function usePersonalizationPreferences() {
       snapshot.value = emptyPreferenceSnapshot()
       loading.value = false
       error.value = null
-      generation.value += 1
+      pendingOperations.value = 0
+      activeWrites.value = 0
+      ownerGeneration.value += 1
+      readGeneration.value += 1
+      writeGeneration.value += 1
+      resolutionGeneration.value += 1
     }
     return owner
   }
 
   function beginOperation(owner: string) {
-    const token = generation.value + 1
-    generation.value = token
+    pendingOperations.value += 1
     loading.value = true
     error.value = null
-    return { owner, token }
+    return { owner, ownerToken: ownerGeneration.value }
   }
 
-  function isCurrent(operation: { owner: string; token: number }) {
+  function isCurrentOwner(operation: { owner: string; ownerToken: number }) {
     if (ownerId.value !== currentOwner()) syncOwner()
-    return generation.value === operation.token
+    return ownerGeneration.value === operation.ownerToken
       && ownerId.value === operation.owner
       && currentOwner() === operation.owner
+  }
+
+  function finishOperation(operation: { owner: string; ownerToken: number }) {
+    if (!isCurrentOwner(operation)) return
+    pendingOperations.value = Math.max(0, pendingOperations.value - 1)
+    loading.value = pendingOperations.value > 0
+  }
+
+  function beginRead(owner: string) {
+    return {
+      ...beginOperation(owner),
+      readToken: ++readGeneration.value,
+      writeToken: writeGeneration.value,
+    }
+  }
+
+  function isCurrentRead(operation: ReturnType<typeof beginRead>) {
+    return isCurrentOwner(operation)
+      && readGeneration.value === operation.readToken
+      && writeGeneration.value === operation.writeToken
+      && activeWrites.value === 0
+  }
+
+  function beginWrite(owner: string) {
+    activeWrites.value += 1
+    return {
+      ...beginOperation(owner),
+      writeToken: ++writeGeneration.value,
+    }
+  }
+
+  function isCurrentWrite(operation: ReturnType<typeof beginWrite>) {
+    return isCurrentOwner(operation) && writeGeneration.value === operation.writeToken
+  }
+
+  function finishWrite(operation: ReturnType<typeof beginWrite>, invalidateReads: boolean) {
+    if (isCurrentOwner(operation)) {
+      activeWrites.value = Math.max(0, activeWrites.value - 1)
+      if (invalidateReads && writeGeneration.value === operation.writeToken) {
+        writeGeneration.value += 1
+      }
+    }
+    finishOperation(operation)
+  }
+
+  function beginResolution(owner: string) {
+    return {
+      ...beginOperation(owner),
+      resolutionToken: ++resolutionGeneration.value,
+    }
+  }
+
+  function isCurrentResolution(operation: ReturnType<typeof beginResolution>) {
+    return isCurrentOwner(operation) && resolutionGeneration.value === operation.resolutionToken
   }
 
   function mutationResult(ok: boolean): PreferenceMutationResult {
@@ -171,62 +234,65 @@ export function usePersonalizationPreferences() {
   async function refresh(): Promise<boolean> {
     const owner = syncOwner()
     if (!owner) return false
-    const operation = beginOperation(owner)
+    const operation = beginRead(owner)
     try {
       const response = await apiFetch<unknown>('/api/me/preferences', {
         credentials: 'include',
         headers: authHeaders(),
       })
-      if (!isCurrent(operation)) return false
+      if (!isCurrentRead(operation)) return false
       snapshot.value = normalizeSnapshot(response)
       return true
     } catch (reason) {
-      if (isCurrent(operation)) {
+      if (isCurrentRead(operation)) {
         error.value = errorMessage(reason, 'Không thể tải thiết lập cá nhân hóa.')
       }
       return false
     } finally {
-      if (isCurrent(operation)) loading.value = false
+      finishOperation(operation)
     }
   }
 
   async function patch(values: PreferencePatch): Promise<PreferenceMutationResult> {
     const owner = syncOwner()
     if (!owner) return mutationResult(false)
-    const operation = beginOperation(owner)
+    const operation = beginWrite(owner)
     const revision = snapshot.value.revision
+    let invalidateReads = false
     try {
       await fetchCsrf()
-      if (!isCurrent(operation)) return mutationResult(false)
+      if (!isCurrentWrite(operation)) return mutationResult(false)
       const response = await apiFetch<unknown>('/api/me/preferences', {
         method: 'PATCH',
         credentials: 'include',
         headers: authHeaders(),
         body: { ...values, revision },
       })
-      if (!isCurrent(operation)) return mutationResult(false)
+      if (!isCurrentWrite(operation)) return mutationResult(false)
       const normalized = normalizeSnapshot(response)
       snapshot.value = normalized
+      invalidateReads = true
       return mutationResult(true)
     } catch (reason) {
-      if (isCurrent(operation)) {
+      if (isCurrentWrite(operation)) {
         const current = conflictSnapshot(reason)
         if (current) snapshot.value = current
         error.value = errorMessage(reason, 'Không thể lưu thiết lập cá nhân hóa.')
+        invalidateReads = true
       }
       return mutationResult(false)
     } finally {
-      if (isCurrent(operation)) loading.value = false
+      finishWrite(operation, invalidateReads)
     }
   }
 
   async function resolveLocation(mode: Extract<PreferenceLocationSource, 'gps' | 'ip'>, coords?: GpsCoordinates) {
     const owner = syncOwner()
     if (!owner) return normalizeResolution(null, mode)
-    const operation = beginOperation(owner)
+    const operation = beginResolution(owner)
     try {
       await fetchCsrf()
-      if (!isCurrent(operation)) return normalizeResolution(null, mode)
+      if (!isCurrentResolution(operation)) return normalizeResolution(null, mode)
       const body = mode === 'gps'
         ? { mode, latitude: coords?.latitude, longitude: coords?.longitude }
         : { mode }
@@ -236,39 +302,42 @@ export function usePersonalizationPreferences() {
         headers: authHeaders(),
         body,
       })
-      if (!isCurrent(operation)) return normalizeResolution(null, mode)
+      if (!isCurrentResolution(operation)) return normalizeResolution(null, mode)
       return normalizeResolution(response, mode)
     } catch {
-      if (isCurrent(operation)) error.value = 'Không thể xác định khu vực lúc này.'
+      if (isCurrentResolution(operation)) error.value = 'Không thể xác định khu vực lúc này.'
       return normalizeResolution(null, mode)
     } finally {
-      if (isCurrent(operation)) loading.value = false
+      finishOperation(operation)
     }
   }
 
   async function resetRecommendations(): Promise<PreferenceMutationResult> {
     const owner = syncOwner()
     if (!owner) return mutationResult(false)
-    const operation = beginOperation(owner)
+    const operation = beginWrite(owner)
+    let invalidateReads = false
     try {
       await fetchCsrf()
-      if (!isCurrent(operation)) return mutationResult(false)
+      if (!isCurrentWrite(operation)) return mutationResult(false)
       const response = await apiFetch<unknown>('/api/me/recommendations/reset', {
         method: 'POST',
         credentials: 'include',
         headers: authHeaders(),
       })
-      if (!isCurrent(operation)) return mutationResult(false)
+      if (!isCurrentWrite(operation)) return mutationResult(false)
       const normalized = normalizeSnapshot(response)
       snapshot.value = normalized
+      invalidateReads = true
       return mutationResult(true)
     } catch (reason) {
-      if (isCurrent(operation)) {
+      if (isCurrentWrite(operation)) {
         error.value = errorMessage(reason, 'Không thể đặt lại đề xuất lúc này.')
+        invalidateReads = true
       }
       return mutationResult(false)
     } finally {
-      if (isCurrent(operation)) loading.value = false
+      finishWrite(operation, invalidateReads)
     }
   }
 

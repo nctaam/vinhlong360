@@ -253,6 +253,88 @@ describe('usePersonalizationPreferences contract', () => {
     expect(preferences!.snapshot.value).toEqual(patched)
   })
 
+  it('keeps an earlier patch when a later refresh resolves first with stale state', async () => {
+    const patchStarted = deferred<void>()
+    const pendingPatch = deferred<PreferenceSnapshot>()
+    const pendingRefresh = deferred<PreferenceSnapshot>()
+    const patched = snapshot({
+      region_id: 'province-vl',
+      region_label: 'Vĩnh Long',
+      region_scope: 'province',
+      location_source: 'manual',
+      location_accuracy: 'province',
+      revision: 6,
+    })
+    apiFetchMock.mockImplementation((url: string, opts?: Record<string, unknown>) => {
+      if (url === '/api/me/preferences' && opts?.method === 'PATCH') {
+        patchStarted.resolve()
+        return pendingPatch.promise
+      }
+      if (url === '/api/me/preferences') return pendingRefresh.promise
+      return Promise.resolve(snapshot())
+    })
+
+    let preferences: ReturnType<typeof usePersonalizationPreferences> | undefined
+    const Harness = defineComponent({
+      setup() {
+        preferences = usePersonalizationPreferences()
+        return () => h('div')
+      },
+    })
+    await mountSuspended(Harness)
+
+    const patchPromise = preferences!.setRegion({ id: 'province-vl', label: 'Vĩnh Long', scope: 'province' })
+    await patchStarted.promise
+    const refreshPromise = preferences!.refresh()
+    pendingRefresh.resolve(snapshot({ revision: 5 }))
+    expect(await refreshPromise).toBe(false)
+    pendingPatch.resolve(patched)
+
+    expect(await patchPromise).toEqual({ ok: true, snapshot: patched })
+    expect(preferences!.snapshot.value).toEqual(patched)
+  })
+
+  it('keeps an earlier patch when a later stale refresh resolves after the patch', async () => {
+    const patchStarted = deferred<void>()
+    const pendingPatch = deferred<PreferenceSnapshot>()
+    const pendingRefresh = deferred<PreferenceSnapshot>()
+    const patched = snapshot({
+      region_id: 'province-bt',
+      region_label: 'Bến Tre',
+      region_scope: 'province',
+      location_source: 'manual',
+      location_accuracy: 'province',
+      revision: 10,
+    })
+    apiFetchMock.mockImplementation((url: string, opts?: Record<string, unknown>) => {
+      if (url === '/api/me/preferences' && opts?.method === 'PATCH') {
+        patchStarted.resolve()
+        return pendingPatch.promise
+      }
+      if (url === '/api/me/preferences') return pendingRefresh.promise
+      return Promise.resolve(snapshot())
+    })
+
+    let preferences: ReturnType<typeof usePersonalizationPreferences> | undefined
+    const Harness = defineComponent({
+      setup() {
+        preferences = usePersonalizationPreferences()
+        return () => h('div')
+      },
+    })
+    await mountSuspended(Harness)
+
+    const patchPromise = preferences!.setRegion({ id: 'province-bt', label: 'Bến Tre', scope: 'province' })
+    await patchStarted.promise
+    const refreshPromise = preferences!.refresh()
+    pendingPatch.resolve(patched)
+    expect(await patchPromise).toEqual({ ok: true, snapshot: patched })
+    pendingRefresh.resolve(snapshot({ revision: 9 }))
+
+    expect(await refreshPromise).toBe(false)
+    expect(preferences!.snapshot.value).toEqual(patched)
+  })
+
   it('resets owner state and ignores a previous account response after an account switch', async () => {
     const previousOwner = deferred<PreferenceSnapshot>()
     const nextOwner = deferred<PreferenceSnapshot>()

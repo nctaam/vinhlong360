@@ -57,7 +57,7 @@
                   :class="{ selected: selectedRegion?.id === region.id }"
                   :data-region="region.id || 'all'"
                   :aria-pressed="selectedRegion?.id === region.id"
-                  @click="selectedRegion = region"
+                  @click="selectRegion(region)"
                 >
                   <IconLine :name="region.icon" aria-hidden="true" />
                   <span>{{ region.label }}</span>
@@ -137,7 +137,27 @@
                 :disabled="preferences.loading.value"
                 @click="confirmLocation"
               >Dùng khu vực này</button>
-              <button v-else type="button" class="btn btn-primary" data-action="finish" @click="finish">Xong</button>
+              <button
+                v-else-if="locationState === 'denied' && denialPersistence === 'saving'"
+                type="button"
+                class="btn btn-primary"
+                data-action="denial-saving"
+                disabled
+              >Đang lưu thiết lập…</button>
+              <button
+                v-else-if="locationState === 'denied' && denialPersistence === 'failed'"
+                type="button"
+                class="btn btn-primary"
+                data-action="retry-denial"
+                @click="retryDenial"
+              >Thử lưu lại</button>
+              <button
+                v-else-if="locationState !== 'denied' || denialPersistence === 'saved'"
+                type="button"
+                class="btn btn-primary"
+                data-action="finish"
+                @click="finish"
+              >Xong</button>
             </template>
           </div>
         </section>
@@ -173,6 +193,13 @@ const locationAttempted = ref(false)
 const locationState = ref<'idle' | 'loading' | 'resolved' | 'denied' | 'unknown'>('idle')
 const resolvedLocation = ref<LocationResolution | null>(null)
 const attemptGeneration = ref(0)
+const denialPersistence = ref<'idle' | 'saving' | 'saved' | 'failed'>('idle')
+const sheetOwner = ref<string | null>(null)
+const authenticatedOwner = computed(currentAuthenticatedOwner)
+
+function currentAuthenticatedOwner() {
+  return isLoggedIn.value ? user.value?.id || null : null
+}
 
 const steps = [
   { key: 'region', label: 'Khu vực', title: 'Bạn muốn bắt đầu từ đâu?', description: 'Chọn một khu vực để sắp xếp nội dung gần với bạn hơn.', icon: 'pin' },
@@ -213,19 +240,41 @@ const sourceLabel = computed(() => {
 
 useModalA11y(visible, sheetEl, { onClose: skip })
 
-watch(() => props.modelValue, (open) => {
-  attemptGeneration.value += 1
-  if (!open) {
-    currentStep.value = 0
-    selectedRegion.value = null
-    selectedInterests.value = []
-    locationAttempted.value = false
-    locationState.value = 'idle'
-    resolvedLocation.value = null
+watch([() => props.modelValue, authenticatedOwner], ([open, owner]) => {
+  if (open) {
+    if (sheetOwner.value === null) sheetOwner.value = owner
+    else if (sheetOwner.value !== owner) closeForOwnerChange()
+    return
   }
-})
+  sheetOwner.value = null
+  resetSetupState()
+}, { immediate: true })
+
+function resetSetupState() {
+  attemptGeneration.value += 1
+  currentStep.value = 0
+  selectedRegion.value = null
+  selectedInterests.value = []
+  locationAttempted.value = false
+  locationState.value = 'idle'
+  resolvedLocation.value = null
+  denialPersistence.value = 'idle'
+}
+
+function closeForOwnerChange() {
+  resetSetupState()
+  sheetOwner.value = null
+  visible.value = false
+}
+
+function ensureSheetOwner() {
+  if (visible.value && sheetOwner.value && currentAuthenticatedOwner() === sheetOwner.value) return true
+  closeForOwnerChange()
+  return false
+}
 
 async function continueStep() {
+  if (!ensureSheetOwner()) return
   if (currentStep.value === 0) {
     if (selectedRegion.value) {
       const result = await preferences.setRegion(selectedRegion.value)
@@ -241,7 +290,13 @@ async function continueStep() {
   }
 }
 
+function selectRegion(region: PreferenceRegionChoice) {
+  if (!ensureSheetOwner()) return
+  selectedRegion.value = region
+}
+
 function toggleInterest(key: string) {
+  if (!ensureSheetOwner()) return
   if (selectedInterests.value.includes(key)) {
     selectedInterests.value = selectedInterests.value.filter(item => item !== key)
   } else if (selectedInterests.value.length < 3) {
@@ -250,9 +305,10 @@ function toggleInterest(key: string) {
 }
 
 function useLocation() {
+  if (!ensureSheetOwner()) return
   if (locationAttempted.value) return
   locationAttempted.value = true
-  const owner = user.value?.id
+  const owner = sheetOwner.value
   const attempt = ++attemptGeneration.value
   if (!isLoggedIn.value || !owner) {
     locationState.value = 'unknown'
@@ -277,20 +333,35 @@ function useLocation() {
     async () => {
       if (!isActiveAttempt(attempt, owner)) return
       locationState.value = 'denied'
-      await preferences.patch({ location_enabled: false, location_consent_state: 'denied' })
+      await persistDenial(attempt, owner)
     },
     { enableHighAccuracy: false, maximumAge: 300_000, timeout: 8_000 },
   )
 }
 
+async function persistDenial(attempt: number, owner: string) {
+  if (!isActiveAttempt(attempt, owner)) return
+  denialPersistence.value = 'saving'
+  const mutation = await preferences.patch({ location_enabled: false, location_consent_state: 'denied' })
+  if (!isActiveAttempt(attempt, owner)) return
+  denialPersistence.value = mutation.ok ? 'saved' : 'failed'
+}
+
+async function retryDenial() {
+  if (!ensureSheetOwner() || locationState.value !== 'denied' || !sheetOwner.value) return
+  await persistDenial(attemptGeneration.value, sheetOwner.value)
+}
+
 function isActiveAttempt(attempt: number, owner: string) {
   return attemptGeneration.value === attempt
     && visible.value
+    && sheetOwner.value === owner
     && isLoggedIn.value
     && user.value?.id === owner
 }
 
 async function confirmLocation() {
+  if (!ensureSheetOwner()) return
   const result = resolvedLocation.value
   if (!result?.region_id) return finish()
   const current = preferences.snapshot.value
@@ -310,12 +381,18 @@ async function confirmLocation() {
 }
 
 function finish() {
+  if (!ensureSheetOwner()) return
+  if (locationState.value === 'denied' && denialPersistence.value !== 'saved') return
   emit('complete')
+  resetSetupState()
+  sheetOwner.value = null
   visible.value = false
 }
 
 function skip() {
   emit('skip')
+  resetSetupState()
+  sheetOwner.value = null
   visible.value = false
 }
 

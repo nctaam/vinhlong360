@@ -2,7 +2,7 @@
 
 import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { defineComponent, h, nextTick, ref } from 'vue'
+import { defineComponent, h, nextTick, ref, type Ref } from 'vue'
 
 import PersonalizeSetupSheet from '../components/PersonalizeSetupSheet.vue'
 import { useRegionPref } from '../composables/useRegionPref'
@@ -10,15 +10,19 @@ import type { PreferenceSnapshot } from '../types/personalization'
 
 const apiFetchMock = vi.hoisted(() => vi.fn())
 const authState = vi.hoisted(() => ({
-  user: { value: null as { id: string } | null },
-  isLoggedIn: { value: false },
+  user: null as unknown as Ref<{ id: string } | null>,
+  isLoggedIn: null as unknown as Ref<boolean>,
   authHeaders: vi.fn(() => ({ Authorization: 'Bearer test-token' })),
   fetchCsrf: vi.fn(() => Promise.resolve('csrf-token')),
   fetchMe: vi.fn(() => Promise.resolve()),
 }))
 
 vi.mock('../utils/apiFetch', () => ({ apiFetch: apiFetchMock }))
-mockNuxtImport('useAuth', () => () => authState)
+mockNuxtImport('useAuth', () => () => {
+  if (!authState.user) authState.user = ref(null)
+  if (!authState.isLoggedIn) authState.isLoggedIn = ref(false)
+  return authState
+})
 
 const baseSnapshot: PreferenceSnapshot = {
   region_id: null,
@@ -37,6 +41,16 @@ const baseSnapshot: PreferenceSnapshot = {
 
 function snapshot(overrides: Partial<PreferenceSnapshot> = {}): PreferenceSnapshot {
   return { ...baseSnapshot, ...overrides }
+}
+
+function deferred<T>() {
+  let resolve!: (value: T) => void
+  let reject!: (reason?: unknown) => void
+  const promise = new Promise<T>((next, fail) => {
+    resolve = next
+    reject = fail
+  })
+  return { promise, resolve, reject }
 }
 
 async function flushUi() {
@@ -102,6 +116,8 @@ async function advanceToLocationStep() {
 }
 
 beforeEach(() => {
+  if (!authState.user) authState.user = ref(null)
+  if (!authState.isLoggedIn) authState.isLoggedIn = ref(false)
   localStorage.clear()
   authState.user.value = null
   authState.isLoggedIn.value = false
@@ -325,6 +341,108 @@ describe('optional location consent flow', () => {
     wrapper.unmount()
   })
 
+  it('does not offer completion while denied-consent persistence is pending', async () => {
+    authState.user.value = { id: 'user-1' }
+    authState.isLoggedIn.value = true
+    const deniedSave = deferred<PreferenceSnapshot>()
+    let current = snapshot()
+    apiFetchMock.mockImplementation((url: string, opts?: Record<string, unknown>) => {
+      if (url === '/api/me/preferences' && opts?.method === 'PATCH') {
+        const { revision: _revision, ...patch } = opts.body as Record<string, unknown>
+        if (patch.location_consent_state === 'denied') return deniedSave.promise
+        current = snapshot({ ...current, ...patch, revision: current.revision + 1 })
+        return Promise.resolve(current)
+      }
+      return Promise.resolve(current)
+    })
+    const getCurrentPosition = vi.fn((_success: PositionCallback, error: PositionErrorCallback) => {
+      error({ code: 1, message: 'denied', PERMISSION_DENIED: 1 } as GeolocationPositionError)
+    })
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: { getCurrentPosition },
+    })
+    const wrapper = await mountSetupHarness()
+
+    try {
+      await flushUi()
+      await advanceToLocationStep()
+      const dialog = () => document.body.querySelector('[role="dialog"]') as HTMLElement
+
+      ;(dialog().querySelector('[data-action="use-location"]') as HTMLButtonElement).click()
+      await flushUi()
+      const finishWhilePending = dialog().querySelector('[data-action="finish"]')
+
+      deniedSave.resolve(snapshot({
+        region_id: 'province-vl',
+        region_label: 'Vĩnh Long',
+        region_scope: 'province',
+        location_source: 'manual',
+        location_accuracy: 'province',
+        location_consent_state: 'denied',
+        location_enabled: false,
+        revision: 3,
+      }))
+      await flushUi()
+
+      expect(finishWhilePending).toBeNull()
+      expect(dialog().querySelector('[data-action="finish"]')).toBeTruthy()
+      expect(getCurrentPosition).toHaveBeenCalledTimes(1)
+    } finally {
+      deniedSave.resolve(snapshot())
+      wrapper.unmount()
+    }
+  })
+
+  it('offers retry or skip instead of completion when denied-consent persistence fails', async () => {
+    authState.user.value = { id: 'user-1' }
+    authState.isLoggedIn.value = true
+    let current = snapshot()
+    let deniedAttempts = 0
+    apiFetchMock.mockImplementation((url: string, opts?: Record<string, unknown>) => {
+      if (url === '/api/me/preferences' && opts?.method === 'PATCH') {
+        const { revision: _revision, ...patch } = opts.body as Record<string, unknown>
+        if (patch.location_consent_state === 'denied') {
+          deniedAttempts += 1
+          if (deniedAttempts === 1) return Promise.reject(new Error('save failed'))
+        }
+        current = snapshot({ ...current, ...patch, revision: current.revision + 1 })
+        return Promise.resolve(current)
+      }
+      return Promise.resolve(current)
+    })
+    const getCurrentPosition = vi.fn((_success: PositionCallback, error: PositionErrorCallback) => {
+      error({ code: 1, message: 'denied', PERMISSION_DENIED: 1 } as GeolocationPositionError)
+    })
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: { getCurrentPosition },
+    })
+    const wrapper = await mountSetupHarness()
+
+    try {
+      await flushUi()
+      await advanceToLocationStep()
+      const dialog = () => document.body.querySelector('[role="dialog"]') as HTMLElement
+
+      ;(dialog().querySelector('[data-action="use-location"]') as HTMLButtonElement).click()
+      await flushUi()
+
+      expect(dialog().querySelector('[data-action="finish"]')).toBeNull()
+      expect(dialog().querySelector('[data-action="retry-denial"]')).toBeTruthy()
+      expect(dialog().querySelector('[data-action="skip"]')).toBeTruthy()
+
+      ;(dialog().querySelector('[data-action="retry-denial"]') as HTMLButtonElement).click()
+      await flushUi()
+
+      expect(dialog().querySelector('[data-action="finish"]')).toBeTruthy()
+      expect(getCurrentPosition).toHaveBeenCalledTimes(1)
+      expect(deniedAttempts).toBe(2)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
   it('keeps a manually selected all-region scope when GPS is confirmed', async () => {
     authState.user.value = { id: 'user-1' }
     authState.isLoggedIn.value = true
@@ -430,8 +548,31 @@ describe('optional location consent flow', () => {
     await flushUi()
 
     expect(apiFetchMock.mock.calls.some(([url]) => url === '/api/me/location/resolve')).toBe(false)
-    expect(dialog.querySelector('[data-action="use-location"]')).toBeNull()
+    expect(document.body.querySelector('[role="dialog"]')).toBeNull()
     wrapper.unmount()
+  })
+
+  it('closes an open setup before another account can save the previous account selection', async () => {
+    authState.user.value = { id: 'user-1' }
+    authState.isLoggedIn.value = true
+    const wrapper = await mountSetupHarness()
+
+    try {
+      await flushUi()
+      const dialog = document.body.querySelector('[role="dialog"]') as HTMLElement
+      ;(dialog.querySelector('[data-region="province-vl"]') as HTMLButtonElement).click()
+
+      authState.user.value = { id: 'user-2' }
+      await flushUi()
+
+      const preferencePatches = apiFetchMock.mock.calls.filter(([url, opts]) => (
+        url === '/api/me/preferences' && (opts as Record<string, unknown> | undefined)?.method === 'PATCH'
+      ))
+      expect(preferencePatches).toHaveLength(0)
+      expect(document.body.querySelector('[role="dialog"]')).toBeNull()
+    } finally {
+      wrapper.unmount()
+    }
   })
 
   it('does not apply a location resolution that completes after the sheet closes', async () => {
