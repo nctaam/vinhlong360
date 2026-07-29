@@ -12,7 +12,9 @@ import {
   applySchedulePlacements,
   buildPlannerScheduleEnvelope,
   collectRoutableStops,
+  formatScheduledInterval,
   getCachedRouteTable,
+  invalidatePlannerInputs,
   mergeOptimizedStops,
   plannerMetadataForEntity,
   plannerMetadataForLoadedStop,
@@ -22,6 +24,7 @@ import {
   serializePlanStops,
   type OptimizeOrderResponse,
   type OptimizeScheduleRequest,
+  type PlannerInputState,
   type PlannerScheduleMetadata,
 } from '../composables/useItineraryOptimization'
 
@@ -417,11 +420,13 @@ describe('manual planner schedule integration', () => {
     ])
     let tableCalls = 0
     const schedules: Array<OptimizeScheduleRequest | undefined> = []
+    const inputState: PlannerInputState = { version: 0 }
 
     const result = await runPlannerOptimization({
       scheduleEnabled: false,
       routed,
       metadataByStop: new WeakMap<object, PlannerScheduleMetadata>(),
+      inputState,
       mode: 'driving',
       fetchTable: async () => {
         tableCalls += 1
@@ -436,6 +441,8 @@ describe('manual planner schedule integration', () => {
 
     expect(tableCalls).toBe(0)
     expect(schedules).toEqual([undefined])
+    expect(result.status).toBe('current')
+    if (result.status !== 'current') throw new Error('expected current result')
     expect(result.scheduleEnvelope).toBeUndefined()
   })
 
@@ -459,11 +466,13 @@ describe('manual planner schedule integration', () => {
     let tableCalls = 0
     let routeCalls = 0
     const schedules: OptimizeScheduleRequest[] = []
+    const inputState: PlannerInputState = { version: 0 }
 
     const result = await runPlannerOptimization({
       scheduleEnabled: true,
       routed,
       metadataByStop,
+      inputState,
       mode: 'driving',
       fetchTable: async () => {
         tableCalls += 1
@@ -481,6 +490,8 @@ describe('manual planner schedule integration', () => {
       },
     })
 
+    expect(result.status).toBe('current')
+    if (result.status !== 'current') throw new Error('expected current result')
     expect(result.outcome.attempts).toBe(2)
     expect(tableCalls).toBe(1)
     expect(schedules).toHaveLength(2)
@@ -490,6 +501,69 @@ describe('manual planner schedule integration', () => {
       .toBe(schedules[0]?.duration_matrix_minutes)
     expect(schedules[0]?.duration_matrix_minutes).toBe(table.durationMinutes)
     expect(schedules[0]?.stops[1]?.requested_time).toBe('09:00-09:30')
+  })
+
+  it('discards an in-flight optimization outcome after planner inputs change', async () => {
+    const stops = [
+      { id: 'start', coords: [12.01, 108.01] as [number, number], time: '' },
+      { id: 'middle', coords: [12.02, 108.02] as [number, number], time: '' },
+      { id: 'end', coords: [12.03, 108.03] as [number, number], time: '' },
+    ]
+    const routed = collectRoutableStops(stops)
+    const metadataByStop = new WeakMap<object, PlannerScheduleMetadata>()
+    const inputState: PlannerInputState = { version: 4 }
+    let resolveRequest!: (value: OptimizeOrderResponse) => void
+    let markStarted!: () => void
+    const started = new Promise<void>((resolve) => { markStarted = resolve })
+    const deferredResponse = new Promise<OptimizeOrderResponse>((resolve) => {
+      resolveRequest = resolve
+    })
+
+    const pending = runPlannerOptimization({
+      scheduleEnabled: false,
+      routed,
+      metadataByStop,
+      inputState,
+      mode: 'driving',
+      fetchTable: async () => cachedTable,
+      requestOptimization: async () => {
+        markStarted()
+        return deferredResponse
+      },
+      route: async coordinates => routeWithoutUturns(coordinates.length),
+    })
+
+    await started
+    invalidatePlannerInputs(inputState, stops, metadataByStop)
+    resolveRequest(orderResponse(routed.map(item => item.key)))
+
+    await expect(pending).resolves.toEqual({ status: 'stale' })
+    expect(inputState.version).toBe(5)
+  })
+
+  it('clears a placed interval and bumps input version when detail enrichment invalidates it', () => {
+    const stop = { id: 'favorite', coords: null }
+    const metadataByStop = new WeakMap<object, PlannerScheduleMetadata>()
+    const inputState: PlannerInputState = { version: 9 }
+    metadataByStop.set(stop, {
+      visitMinutes: 60,
+      openingHours: null,
+      warnings: ['opening-hours-unknown'],
+      placement: {
+        stop_id: 'planner-stop-0',
+        arrival_minute: 530,
+        start_visit_minute: 540,
+        end_visit_minute: 600,
+      },
+    })
+
+    expect(formatScheduledInterval(metadataByStop.get(stop)?.placement))
+      .toBe('09:00-10:00')
+
+    invalidatePlannerInputs(inputState, [stop], metadataByStop)
+
+    expect(inputState.version).toBe(10)
+    expect(formatScheduledInterval(metadataByStop.get(stop)?.placement)).toBe('')
   })
 
   it('omits an invalid manual time from scheduling without mutating it', () => {
@@ -547,6 +621,7 @@ describe('manual planner schedule integration', () => {
     ]
     const routed = collectRoutableStops(stops)
     const metadataByStop = new WeakMap<object, PlannerScheduleMetadata>()
+    const inputState: PlannerInputState = { version: 2 }
     routed.forEach(item => metadataByStop.set(item.stop, plannerMetadataForLoadedStop(item.stop.type)))
 
     applySchedulePlacements(routed, [{
@@ -554,7 +629,7 @@ describe('manual planner schedule integration', () => {
       arrival_minute: 530,
       start_visit_minute: 540,
       end_visit_minute: 600,
-    }], metadataByStop)
+    }], metadataByStop, inputState)
     const reordered = mergeOptimizedStops(stops, routed, [
       'planner-stop-0',
       'planner-stop-2',
@@ -564,6 +639,7 @@ describe('manual planner schedule integration', () => {
     expect(reordered[2]).toBe(stops[1])
     expect(metadataByStop.get(reordered[2] as object)?.placement?.stop_id)
       .toBe('planner-stop-1')
+    expect(inputState.version).toBe(3)
     expect(reordered[2]?.time).toBe('09:00')
     expect(reordered[2]?.notes).toBe('B note')
     expect(serializePlanStops(reordered)[2]).toEqual({

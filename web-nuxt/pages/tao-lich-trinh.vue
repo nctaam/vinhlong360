@@ -149,7 +149,7 @@
                     type="text"
                     aria-label="Thời gian dừng"
                     placeholder="VD: 8:00 - 10:00"
-                    @input="clearPlannerPlacements"
+                    @input="invalidatePlannerSchedule"
                   />
                   <input
                     v-model="stop.notes"
@@ -214,6 +214,7 @@ import {
   applySchedulePlacements,
   collectRoutableStops,
   formatScheduledInterval,
+  invalidatePlannerInputs,
   mergeOptimizedStops,
   plannerMetadataForEntity,
   plannerMetadataForLoadedStop,
@@ -221,6 +222,7 @@ import {
   routeLegForStopIndex,
   runPlannerOptimization,
   serializePlanStops,
+  type PlannerInputState,
   type PlannerScheduleMetadata,
 } from '~/composables/useItineraryOptimization'
 
@@ -296,7 +298,7 @@ const routeLoading = ref(false)
 const optimizing = ref(false)
 const optimizationMessage = ref('')
 const suspendAutoRoute = ref(false)
-const plannerScheduleVersion = ref(0)
+const plannerInputState = reactive<PlannerInputState>({ version: 0 })
 const plannerScheduleMetadata = new WeakMap<object, PlannerScheduleMetadata>()
 const routeMapEl = ref<HTMLElement | null>(null)
 const addingId = ref<string | null>(null)
@@ -390,7 +392,7 @@ async function addStop(entity: Entity) {
     nextTick(() => { stopAnnounce.value = `Tối đa ${MAX_STOPS} điểm.` })
     return
   }
-  clearPlannerPlacements()
+  invalidatePlannerSchedule()
   optimizationMessage.value = ''
   const stop = reactive<PlanStop>({
     id: entity.id,
@@ -417,17 +419,29 @@ async function addStop(entity: Entity) {
     try {
       const res = await publicApi.getEntity(entity.id)
       const c = normalizeCoords(res?.coordinates)
-      if (c) stop.coords = c
-      plannerScheduleMetadata.set(
-        stop,
-        plannerMetadataForEntity(res?.type || stop.type, res?.attributes),
+      if (!stops.value.includes(stop)) return
+      const currentMetadata = plannerScheduleMetadata.get(stop)
+      const nextMetadata = plannerMetadataForEntity(
+        res?.type || stop.type,
+        res?.attributes,
       )
+      const coordinatesChanged = Boolean(c) && (
+        !stop.coords
+        || stop.coords[0] !== c?.[0]
+        || stop.coords[1] !== c?.[1]
+      )
+      const metadataChanged = !samePlannerMetadata(currentMetadata, nextMetadata)
+      if (coordinatesChanged || metadataChanged) {
+        invalidatePlannerSchedule()
+        if (c) stop.coords = c
+        plannerScheduleMetadata.set(stop, nextMetadata)
+      }
     } catch { /* coords stay null */ }
   }
 }
 
 function removeStop(idx: number) {
-  clearPlannerPlacements()
+  invalidatePlannerSchedule()
   const name = stops.value[idx]?.name || ''
   stops.value.splice(idx, 1)
   optimizationMessage.value = ''
@@ -441,7 +455,7 @@ function moveStop(idx: number, dir: number) {
   const temp = stops.value[idx]
   const targetStop = stops.value[target]
   if (!temp || !targetStop) return
-  clearPlannerPlacements()
+  invalidatePlannerSchedule()
   stops.value[idx] = targetStop
   stops.value[target] = temp
   optimizationMessage.value = ''
@@ -451,8 +465,8 @@ function moveStop(idx: number, dir: number) {
 
 async function clearPlan() {
   if (stops.value.length && !await confirmDialog('Xóa toàn bộ điểm trong lịch trình đang tạo?', { danger: true, confirmText: 'Xóa' })) return
+  invalidatePlannerSchedule()
   stops.value = []
-  plannerScheduleVersion.value += 1
   planTitle.value = ''
   routeResult.value = null
   optimizationMessage.value = ''
@@ -503,11 +517,11 @@ async function loadPlan(idx: number) {
   const plan = savedPlans.value[idx]
   if (!plan) return
   planTitle.value = plan.title
+  invalidatePlannerSchedule()
   stops.value = serializePlanStops(plan.stops)
   stops.value.forEach((stop) => {
     plannerScheduleMetadata.set(stop, plannerMetadataForLoadedStop(stop.type))
   })
-  plannerScheduleVersion.value += 1
   optimizationMessage.value = ''
 }
 
@@ -634,20 +648,25 @@ function plannerRouteLeg(stopIndex: number) {
   )
 }
 
-function clearPlannerPlacements() {
-  let changed = false
-  stops.value.forEach((stop) => {
-    const metadata = plannerScheduleMetadata.get(stop)
-    if (!metadata?.placement) return
-    const { placement: _placement, ...withoutPlacement } = metadata
-    plannerScheduleMetadata.set(stop, withoutPlacement)
-    changed = true
-  })
-  if (changed) plannerScheduleVersion.value += 1
+function samePlannerMetadata(
+  current: PlannerScheduleMetadata | undefined,
+  next: PlannerScheduleMetadata,
+): boolean {
+  return current?.visitMinutes === next.visitMinutes
+    && current.openingHours === next.openingHours
+    && current.warnings.join('|') === next.warnings.join('|')
+}
+
+function invalidatePlannerSchedule() {
+  invalidatePlannerInputs(
+    plannerInputState,
+    stops.value,
+    plannerScheduleMetadata,
+  )
 }
 
 function scheduledIntervalForStop(stop: PlanStop): string {
-  void plannerScheduleVersion.value
+  void plannerInputState.version
   return formatScheduledInterval(plannerScheduleMetadata.get(stop)?.placement)
 }
 
@@ -700,6 +719,7 @@ async function optimizePlanRoute() {
       scheduleEnabled: itineraryScheduleV2,
       routed,
       metadataByStop: plannerScheduleMetadata,
+      inputState: plannerInputState,
       mode: transportMode.value,
       fetchTable: (coordinates, mode) => fetchRouteTable(coordinates, mode),
       requestOptimization: (ordered, blockedEdges, schedule) => schedule
@@ -707,18 +727,24 @@ async function optimizePlanRoute() {
         : requestOptimizedOrder(ordered, blockedEdges),
       route: coordinates => fetchRoute(coordinates, transportMode.value),
     })
+    if (plannerResult.status === 'stale') {
+      optimizationMessage.value = 'Lịch trình đã thay đổi trong lúc tối ưu. Vui lòng bấm "Tối ưu tuyến" lại.'
+      stopAnnounce.value = ''
+      await nextTick()
+      stopAnnounce.value = optimizationMessage.value
+      return
+    }
     const { outcome } = plannerResult
     if (outcome.optimization.schedule) {
-      clearPlannerPlacements()
       applySchedulePlacements(
         routed,
         outcome.optimization.schedule.placements,
         plannerScheduleMetadata,
+        plannerInputState,
       )
-      plannerScheduleVersion.value += 1
     }
     else if (itineraryScheduleV2) {
-      clearPlannerPlacements()
+      applySchedulePlacements(routed, [], plannerScheduleMetadata, plannerInputState)
     }
     stops.value = mergeOptimizedStops(
       stops.value,
@@ -907,7 +933,7 @@ watch(
   () => [stops.value.map(s => (s.coords ? s.coords.join(',') : 'x')).join('|'), transportMode.value],
   scheduleRouteCalc,
 )
-watch(transportMode, clearPlannerPlacements)
+watch(transportMode, invalidatePlannerSchedule)
 
 onMounted(async () => {
   let local: SavedPlan[] = []

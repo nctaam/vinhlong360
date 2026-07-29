@@ -75,6 +75,10 @@ export interface PlannerScheduleMetadata {
   placement?: OptimizeSchedulePlacement
 }
 
+export interface PlannerInputState {
+  version: number
+}
+
 export interface SavedPlanStopShape {
   id: string
   name: string
@@ -133,17 +137,27 @@ export interface PlannerOptimizationOptions<T extends StopWithCoords> {
   scheduleEnabled: boolean
   routed: RoutableStop<T>[]
   metadataByStop: WeakMap<object, PlannerScheduleMetadata>
+  inputState: PlannerInputState
   mode: TransportMode
   fetchTable: PlannerTableFunction
   requestOptimization: PlannerRequestFunction<T>
   route: RouteFunction
 }
 
-export interface PlannerOptimizationResult<T extends StopWithCoords> {
+export interface CurrentPlannerOptimizationResult<T extends StopWithCoords> {
+  status: 'current'
   outcome: BoundedOptimizationResult<T>
   scheduleEnvelope?: OptimizeScheduleRequest
   scheduleWarnings: string[]
 }
+
+export interface StalePlannerOptimizationResult {
+  status: 'stale'
+}
+
+export type PlannerOptimizationResult<T extends StopWithCoords> =
+  | CurrentPlannerOptimizationResult<T>
+  | StalePlannerOptimizationResult
 
 type RouteTableCacheEntry = {
   expiresAt: number | null
@@ -275,11 +289,34 @@ export function applySchedulePlacement<T extends object>(
   }
 }
 
+function clearSchedulePlacements<T extends object>(
+  stops: T[],
+  metadataByStop: WeakMap<object, PlannerScheduleMetadata>,
+): void {
+  stops.forEach((stop) => {
+    const metadata = metadataByStop.get(stop)
+    if (!metadata?.placement) return
+    const { placement: _placement, ...withoutPlacement } = metadata
+    metadataByStop.set(stop, withoutPlacement)
+  })
+}
+
+export function invalidatePlannerInputs<T extends object>(
+  inputState: PlannerInputState,
+  stops: T[],
+  metadataByStop: WeakMap<object, PlannerScheduleMetadata>,
+): void {
+  clearSchedulePlacements(stops, metadataByStop)
+  inputState.version += 1
+}
+
 export function applySchedulePlacements<T extends StopWithCoords>(
   routed: RoutableStop<T>[],
   placements: OptimizeSchedulePlacement[],
   metadataByStop: WeakMap<object, PlannerScheduleMetadata>,
+  inputState?: PlannerInputState,
 ): number {
+  clearSchedulePlacements(routed.map(item => item.stop), metadataByStop)
   const byKey = new Map(routed.map(item => [item.key, item.stop]))
   let applied = 0
   placements.forEach((placement) => {
@@ -290,6 +327,7 @@ export function applySchedulePlacements<T extends StopWithCoords>(
     metadataByStop.set(appliedPlacement.stop, { ...metadata, placement })
     applied += 1
   })
+  if (inputState) inputState.version += 1
   return applied
 }
 
@@ -356,6 +394,7 @@ export async function runPlannerOptimization<
 >(
   options: PlannerOptimizationOptions<T>,
 ): Promise<PlannerOptimizationResult<T>> {
+  const inputVersion = options.inputState.version
   let scheduleEnvelope: OptimizeScheduleRequest | undefined
   let scheduleWarnings: string[] = []
   if (options.scheduleEnabled) {
@@ -384,7 +423,8 @@ export async function runPlannerOptimization<
     ),
     options.route,
   )
-  return { outcome, scheduleEnvelope, scheduleWarnings }
+  if (options.inputState.version !== inputVersion) return { status: 'stale' }
+  return { status: 'current', outcome, scheduleEnvelope, scheduleWarnings }
 }
 
 function isCoordinates(value: StopWithCoords['coords']): value is Coordinates {
