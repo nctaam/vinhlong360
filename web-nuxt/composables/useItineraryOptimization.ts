@@ -190,10 +190,11 @@ export interface RouteRefreshTimer {
 }
 
 export interface SuspendedRouteScheduler {
-  request: () => void
+  request: () => number | null
   resume: () => void
   cancelScheduled: () => void
-  discardPending: () => void
+  discardPending: (requestId: number | null) => void
+  dispose: () => void
 }
 
 type RouteTableCacheEntry = {
@@ -238,20 +239,29 @@ export function createSuspendedRouteScheduler(
 ): SuspendedRouteScheduler {
   let scheduledHandle: unknown
   let hasScheduledHandle = false
-  let pending = false
+  let scheduledToken: object | null = null
+  let nextRequestId = 0
+  let pendingRequestId: number | null = null
+  let disposed = false
 
   const cancelScheduled = () => {
     if (!hasScheduledHandle) return
     timer.cancel(scheduledHandle)
     scheduledHandle = undefined
     hasScheduledHandle = false
+    scheduledToken = null
   }
 
   const scheduleRefresh = () => {
+    if (disposed) return
     cancelScheduled()
+    const token = {}
+    scheduledToken = token
     scheduledHandle = timer.schedule(() => {
+      if (disposed || scheduledToken !== token) return
       scheduledHandle = undefined
       hasScheduledHandle = false
+      scheduledToken = null
       void refresh()
     }, delayMs)
     hasScheduledHandle = true
@@ -259,21 +269,31 @@ export function createSuspendedRouteScheduler(
 
   return {
     request: () => {
+      if (disposed) return null
+      const requestId = ++nextRequestId
       if (isSuspended()) {
-        pending = true
-        return
+        pendingRequestId = requestId
+        return requestId
       }
-      pending = false
+      pendingRequestId = null
       scheduleRefresh()
+      return requestId
     },
     resume: () => {
-      if (!pending || isSuspended()) return
-      pending = false
+      if (disposed || pendingRequestId === null || isSuspended()) return
+      pendingRequestId = null
       scheduleRefresh()
     },
     cancelScheduled,
-    discardPending: () => {
-      pending = false
+    discardPending: (requestId) => {
+      if (disposed || requestId === null) return
+      if (pendingRequestId === requestId) pendingRequestId = null
+    },
+    dispose: () => {
+      if (disposed) return
+      disposed = true
+      pendingRequestId = null
+      cancelScheduled()
     },
   }
 }

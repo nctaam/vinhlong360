@@ -721,6 +721,105 @@ describe('manual planner schedule integration', () => {
     expect(refreshes).toEqual(['route:12.24,108.24', 'map'])
   })
 
+  it('preserves a real mutation that arrives while optimizer map commit is awaited', async () => {
+    const stops = [
+      { id: 'start', coords: [12.31, 108.31] as [number, number], time: '' },
+      { id: 'middle', coords: [12.32, 108.32] as [number, number], time: '' },
+      { id: 'end', coords: [12.33, 108.33] as [number, number], time: '' },
+    ]
+    const routed = collectRoutableStops(stops)
+    let suspended = true
+    const scheduled: Array<() => void> = []
+    const refreshes: string[] = []
+    const routeScheduler = createSuspendedRouteScheduler(
+      async () => {
+        refreshes.push(stops[1]?.coords?.join(',') || 'missing')
+      },
+      () => suspended,
+      400,
+      {
+        schedule: callback => {
+          scheduled.push(callback)
+          return callback
+        },
+        cancel: () => {},
+      },
+    )
+    let markMapStarted!: () => void
+    const mapStarted = new Promise<void>((resolve) => { markMapStarted = resolve })
+    let resolveMap!: () => void
+    const mapCommit = new Promise<void>((resolve) => { resolveMap = resolve })
+
+    const result = await runPlannerOptimization({
+      scheduleEnabled: false,
+      routed,
+      metadataByStop: new WeakMap<object, PlannerScheduleMetadata>(),
+      inputState: { version: 0 },
+      mode: 'driving',
+      fetchTable: async () => cachedTable,
+      requestOptimization: async ordered => orderResponse(ordered.map(item => item.key)),
+      route: async coordinates => routeWithoutUturns(coordinates.length),
+    })
+
+    let optimizerWatcherRequest: number | null = null
+    const commit = commitPlannerOptimizationResult(result, {
+      applyPlacements: () => {},
+      reorderStops: () => {
+        optimizerWatcherRequest = routeScheduler.request()
+      },
+      applyRoute: () => {},
+      updateMap: async () => {
+        markMapStarted()
+        await mapCommit
+      },
+    })
+
+    await mapStarted
+    stops[1]!.coords = [12.34, 108.34]
+    routeScheduler.request()
+    resolveMap()
+    await commit
+
+    routeScheduler.discardPending(optimizerWatcherRequest)
+    suspended = false
+    routeScheduler.resume()
+
+    expect(scheduled).toHaveLength(1)
+    await scheduled[0]?.()
+    expect(refreshes).toEqual(['12.34,108.34'])
+  })
+
+  it('makes pending work, resume, and already queued callbacks harmless after disposal', async () => {
+    let suspended = true
+    const scheduled: Array<() => void> = []
+    const refreshes: string[] = []
+    const routeScheduler = createSuspendedRouteScheduler(
+      () => { refreshes.push('refresh') },
+      () => suspended,
+      400,
+      {
+        schedule: callback => {
+          scheduled.push(callback)
+          return callback
+        },
+        cancel: () => {},
+      },
+    )
+
+    routeScheduler.request()
+    suspended = false
+    routeScheduler.resume()
+    suspended = true
+    routeScheduler.request()
+    routeScheduler.dispose()
+    routeScheduler.resume()
+    routeScheduler.request()
+
+    await scheduled[0]?.()
+    expect(scheduled).toHaveLength(1)
+    expect(refreshes).toEqual([])
+  })
+
   it('can discard the optimizer commit watcher without spending another route request', () => {
     let suspended = true
     const scheduled: Array<() => void> = []
@@ -737,8 +836,8 @@ describe('manual planner schedule integration', () => {
       },
     )
 
-    routeScheduler.request()
-    routeScheduler.discardPending()
+    const optimizerWatcherRequest = routeScheduler.request()
+    routeScheduler.discardPending(optimizerWatcherRequest)
     suspended = false
     routeScheduler.resume()
 

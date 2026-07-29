@@ -301,6 +301,7 @@ const routeLoading = ref(false)
 const optimizing = ref(false)
 const optimizationMessage = ref('')
 const suspendAutoRoute = ref(false)
+let latestAutoRouteRequest: number | null = null
 const plannerInputState = reactive<PlannerInputState>({ version: 0 })
 const plannerScheduleMetadata = new WeakMap<object, PlannerScheduleMetadata>()
 const routeMapEl = ref<HTMLElement | null>(null)
@@ -712,6 +713,9 @@ async function optimizePlanRoute() {
         : requestOptimizedOrder(ordered, blockedEdges),
       route: coordinates => fetchRoute(coordinates, transportMode.value),
     })
+    const routeRequestBeforeCommit = latestAutoRouteRequest
+    let reorderInputVersion: number | null = null
+    let optimizerWatcherRequest: number | null = null
     const committedResult = await commitPlannerOptimizationResult(plannerResult, {
       applyPlacements: (result) => {
         const schedule = result.outcome.optimization.schedule
@@ -728,6 +732,7 @@ async function optimizePlanRoute() {
         }
       },
       reorderStops: (orderedKeys) => {
+        reorderInputVersion = plannerInputState.version
         stops.value = mergeOptimizedStops(stops.value, routed, orderedKeys)
       },
       applyRoute: (route) => {
@@ -736,13 +741,20 @@ async function optimizePlanRoute() {
       },
       updateMap: async (route) => {
         await nextTick()
+        if (
+          reorderInputVersion !== null
+          && plannerInputState.version === reorderInputVersion
+          && latestAutoRouteRequest !== routeRequestBeforeCommit
+        ) {
+          optimizerWatcherRequest = latestAutoRouteRequest
+        }
         await updateMap(route)
       },
     })
     if (!committedResult) {
       return
     }
-    autoRouteScheduler.discardPending()
+    autoRouteScheduler.discardPending(optimizerWatcherRequest)
     const { outcome } = committedResult
 
     const messages: string[] = []
@@ -819,7 +831,7 @@ const autoRouteScheduler = createSuspendedRouteScheduler(
 )
 
 function scheduleRouteCalc() {
-  autoRouteScheduler.request()
+  latestAutoRouteRequest = autoRouteScheduler.request()
 }
 
 let pendingUpdate = false
@@ -960,7 +972,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  autoRouteScheduler.cancelScheduled()
+  autoRouteScheduler.dispose()
   if (addingTimer) clearTimeout(addingTimer)
   if (savePulseTimer) clearTimeout(savePulseTimer)
   if (mapInstance && typeof (mapInstance as any).remove === 'function') (mapInstance as any).remove()
