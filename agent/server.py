@@ -16,6 +16,7 @@ Chạy:
   python agent/server.py
 """
 
+import hashlib
 import json
 import os
 import re
@@ -86,6 +87,7 @@ from policy_http import PolicyHttpMiddleware
 from itinerary_gen import generate_itinerary
 from scheduler import start_scheduler, stop_scheduler, scheduler_status, sync_data_json_to_js
 from chat_identity import resolve_chat_owner, set_chat_owner_cookie
+from feedback_policy import issue_feedback_receipt
 from memory import UnknownConversation, memory_manager
 from reflexion import reflexion_engine, quality_tracker
 from proactive import get_proactive_context, generate_welcome_message
@@ -1444,6 +1446,92 @@ class ChatResponse(BaseModel):
     suggestions: list[str] = []
     session_id: str = ""
     cached: bool = False
+    feedback_receipt: str | None = None
+
+
+_FEEDBACK_MODEL_VARIANTS = {
+    "cx/gpt-5.4": "cx-gpt-5-4",
+    "cx/gpt-5.4-mini": "cx-gpt-5-4-mini",
+    "cx/gpt-5.5": "cx-gpt-5-5",
+    "cx/gpt-5.5-mini": "cx-gpt-5-5-mini",
+    "cx-gpt-5-4": "cx-gpt-5-4",
+    "cx-gpt-5-4-mini": "cx-gpt-5-4-mini",
+    "cx-gpt-5-5": "cx-gpt-5-5",
+    "cx-gpt-5-5-mini": "cx-gpt-5-5-mini",
+}
+_FEEDBACK_SEARCH_TOOLS = frozenset({"search", "web_search", "accommodation_search"})
+_FEEDBACK_WEATHER_TOOLS = frozenset({"weather"})
+_FEEDBACK_KNOWLEDGE_TOOLS = frozenset({
+    "abstain",
+    "community_reviews",
+    "compare_areas",
+    "directory_lookup",
+    "entity_detail",
+    "generate_itinerary",
+    "itinerary_detail",
+    "list_itineraries",
+    "nearby_entities",
+    "ocop_products",
+    "places_in_area",
+    "seasonal_now",
+    "stats",
+    "suggest_followups",
+    "trending_posts",
+})
+
+
+def _feedback_tool_bucket(tools) -> str:
+    if not tools:
+        return "none"
+    names = {
+        value.split("(", 1)[0].strip()
+        for value in tools
+        if isinstance(value, str) and value.strip()
+    }
+    if not names:
+        return "mixed"
+    buckets = set()
+    for name in names:
+        if name in _FEEDBACK_SEARCH_TOOLS:
+            buckets.add("search")
+        elif name in _FEEDBACK_WEATHER_TOOLS:
+            buckets.add("weather")
+        elif name in _FEEDBACK_KNOWLEDGE_TOOLS:
+            buckets.add("knowledge")
+        else:
+            return "mixed"
+    return next(iter(buckets)) if len(buckets) == 1 else "mixed"
+
+
+def _issue_delivered_feedback_receipt(
+    owner_key,
+    safe_message,
+    safe_reply,
+    model_variant,
+    tools,
+) -> str | None:
+    canonical_turn = json.dumps(
+        {"message": safe_message, "reply": safe_reply},
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    assistant_turn_digest = hashlib.sha256(
+        b"feedback-assistant-turn:v1\x00" + canonical_turn
+    ).hexdigest()
+    bounded_model = _FEEDBACK_MODEL_VARIANTS.get(model_variant, "other")
+    bounded_tools = _feedback_tool_bucket(tools)
+    try:
+        receipt = issue_feedback_receipt(
+            owner_key,
+            assistant_turn_digest,
+            bounded_model,
+            bounded_tools,
+        )
+    except Exception:
+        logger.warning("FEEDBACK_RECEIPT_DELIVERY_ISSUE_FAILED")
+        return None
+    return receipt.token if receipt is not None else None
 
 
 # ── Pydantic models for validated POST endpoints ──
@@ -2498,7 +2586,19 @@ async def chat(req: ChatRequest, request: Request, response: Response):
                     track_cache("hit")
                 _privacy_output_boundary_marker = True
                 _record_cached_exchange(owner_key, session_id, message, safe_cached)
-                return ChatResponse(**safe_cached, session_id=session_id, cached=True)
+                feedback_receipt = _issue_delivered_feedback_receipt(
+                    owner_key,
+                    message,
+                    safe_cached.get("reply", ""),
+                    "cache",
+                    safe_cached.get("tool_calls", []),
+                )
+                return ChatResponse(
+                    **safe_cached,
+                    session_id=session_id,
+                    cached=True,
+                    feedback_receipt=feedback_receipt,
+                )
         except Exception:
             logger.debug("Semantic cache retrieval failed", exc_info=True)
 
@@ -2530,7 +2630,19 @@ async def chat(req: ChatRequest, request: Request, response: Response):
                 except Exception:
                     logger.debug("Semantic cache exact-hit publication failed", exc_info=True)
             _record_cached_exchange(owner_key, session_id, message, safe_cached)
-            return ChatResponse(**safe_cached, session_id=session_id, cached=True)
+            feedback_receipt = _issue_delivered_feedback_receipt(
+                owner_key,
+                message,
+                safe_cached.get("reply", ""),
+                "cache",
+                safe_cached.get("tool_calls", []),
+            )
+            return ChatResponse(
+                **safe_cached,
+                session_id=session_id,
+                cached=True,
+                feedback_receipt=feedback_receipt,
+            )
         elif HAS_METRICS:
             track_cache("miss")
 
@@ -2555,6 +2667,17 @@ async def chat(req: ChatRequest, request: Request, response: Response):
         ac = autocorrect(message)
         if ac.get("was_corrected"):
             corrected_message = ac["corrected"]
+
+    delivery_model = get_model()
+    if HAS_ORCHESTRATOR:
+        try:
+            _feedback_category, _feedback_agent = _get_orchestrator().route(
+                corrected_message
+            )
+            if getattr(_feedback_agent, "use_mini", False):
+                delivery_model = get_model_mini()
+        except Exception:
+            logger.debug("Feedback model routing failed", exc_info=True)
 
     t0 = time.time()
     build_info = {}
@@ -2912,7 +3035,20 @@ async def chat(req: ChatRequest, request: Request, response: Response):
         if HAS_METRICS:
             track_cache("set")
 
-    return ChatResponse(reply=reply, tool_calls=tools_used, suggestions=suggestions, session_id=session_id)
+    feedback_receipt = _issue_delivered_feedback_receipt(
+        owner_key,
+        message,
+        reply,
+        delivery_model,
+        tools_used,
+    )
+    return ChatResponse(
+        reply=reply,
+        tool_calls=tools_used,
+        suggestions=suggestions,
+        session_id=session_id,
+        feedback_receipt=feedback_receipt,
+    )
 
 
 # ── SSE Streaming ──
@@ -3044,7 +3180,14 @@ async def chat_stream(req: ChatRequest, request: Request):
                 sid,
                 owner_key=owner_key,
             )
-            yield f"data: {json.dumps({'type': 'done', 'tools': [hit_name], 'suggestions': safe_cached.get('suggestions', []), 'session_id': sid}, ensure_ascii=False)}\n\n"
+            feedback_receipt = _issue_delivered_feedback_receipt(
+                owner_key,
+                cache_query,
+                delivered,
+                "cache",
+                safe_cached.get("tool_calls", []),
+            )
+            yield f"data: {json.dumps({'type': 'done', 'tools': [hit_name], 'suggestions': safe_cached.get('suggestions', []), 'session_id': sid, 'feedback_receipt': feedback_receipt}, ensure_ascii=False)}\n\n"
         except (asyncio.CancelledError, GeneratorExit):
             return
         except Exception:
@@ -3222,7 +3365,18 @@ async def chat_stream(req: ChatRequest, request: Request):
                     yield f"data: {json.dumps({'type': 'text', 'content': fallback}, ensure_ascii=False)}\n\n"
                     if fallback_ready:
                         persist_stream_fallback(fallback)
-                    yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
+                    feedback_receipt = (
+                        _issue_delivered_feedback_receipt(
+                            owner_key,
+                            cache_query,
+                            fallback,
+                            _stream_model,
+                            tools_used,
+                        )
+                        if fallback_ready
+                        else None
+                    )
+                    yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': [], 'session_id': sid, 'feedback_receipt': feedback_receipt}, ensure_ascii=False)}\n\n"
                     return
                 response = decision["response"]
                 msg = response.choices[0].message
@@ -3237,7 +3391,18 @@ async def chat_stream(req: ChatRequest, request: Request):
                 yield f"data: {json.dumps({'type': 'text', 'content': fallback}, ensure_ascii=False)}\n\n"
                 if fallback_ready:
                     persist_stream_fallback(fallback)
-                yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
+                feedback_receipt = (
+                    _issue_delivered_feedback_receipt(
+                        owner_key,
+                        cache_query,
+                        fallback,
+                        _stream_model,
+                        tools_used,
+                    )
+                    if fallback_ready
+                    else None
+                )
+                yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': [], 'session_id': sid, 'feedback_receipt': feedback_receipt}, ensure_ascii=False)}\n\n"
                 return
 
             if msg.tool_calls:
@@ -3509,12 +3674,20 @@ async def chat_stream(req: ChatRequest, request: Request):
                             logger.debug("Semantic cache put failed", exc_info=True)
 
                 # Send quality score for UI feedback prompt
-                yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': suggestions, 'session_id': sid, 'quality': evaluation['score']}, ensure_ascii=False)}\n\n"
+                feedback_receipt = _issue_delivered_feedback_receipt(
+                    owner_key,
+                    cache_query,
+                    full_text,
+                    _stream_model,
+                    tools_used,
+                )
+                yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': suggestions, 'session_id': sid, 'quality': evaluation['score'], 'feedback_receipt': feedback_receipt}, ensure_ascii=False)}\n\n"
                 return
 
         # ── Round-exhaustion: every round called tools without a final answer.
         # Force ONE synthesis turn (no tools) so the user gets an answer built
         # from gathered evidence instead of an empty response.
+        delivered_synth = ""
         try:
             messages.append({
                 "role": "system",
@@ -3623,6 +3796,7 @@ async def chat_stream(req: ChatRequest, request: Request):
                     stream_usage_settlement_blocked = True
                     return
                 synth_text = safe_synth.text
+                delivered_synth = synth_text
                 _privacy_output_boundary_marker = True
                 memory_manager.on_message(owner_key, sid, "user", cache_query)
                 memory_manager.on_message(owner_key, sid, "assistant", synth_text)
@@ -3636,7 +3810,18 @@ async def chat_stream(req: ChatRequest, request: Request):
         except Exception:
             logger.debug("Stream synthesis fallback failed", exc_info=True)
 
-        yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': suggestions, 'session_id': sid}, ensure_ascii=False)}\n\n"
+        feedback_receipt = (
+            _issue_delivered_feedback_receipt(
+                owner_key,
+                cache_query,
+                delivered_synth,
+                _stream_model,
+                tools_used,
+            )
+            if delivered_synth
+            else None
+        )
+        yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': suggestions, 'session_id': sid, 'feedback_receipt': feedback_receipt}, ensure_ascii=False)}\n\n"
 
     async def event_stream():
         body = _event_stream_body()

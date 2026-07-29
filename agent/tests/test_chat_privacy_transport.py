@@ -87,6 +87,29 @@ def _sse_frames(wire_text):
     ]
 
 
+def _capture_receipts(monkeypatch, token="test-feedback-receipt"):
+    calls = []
+
+    def issue(owner_key, assistant_turn_digest, model_variant, tool_bucket, **kwargs):
+        calls.append({
+            "owner_key": owner_key,
+            "assistant_turn_digest": assistant_turn_digest,
+            "model_variant": model_variant,
+            "tool_bucket": tool_bucket,
+            "kwargs": kwargs,
+        })
+        return SimpleNamespace(token=token)
+
+    monkeypatch.setattr(server, "issue_feedback_receipt", issue, raising=False)
+    return calls
+
+
+def _terminal_done(wire_text):
+    done = [frame for frame in _sse_frames(wire_text) if frame.get("type") == "done"]
+    assert len(done) == 1
+    return done[0]
+
+
 def _configure_chat(monkeypatch, tmp_path):
     manager = _manager(tmp_path)
     captured_messages = []
@@ -173,6 +196,7 @@ async def test_post_provider_receives_only_redacted_message_and_history(
     tmp_path,
 ):
     _manager_instance, captured_messages = _configure_chat(monkeypatch, tmp_path)
+    receipt_calls = _capture_receipts(monkeypatch)
     transport = httpx.ASGITransport(app=server.app)
 
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
@@ -188,6 +212,14 @@ async def test_post_provider_receives_only_redacted_message_and_history(
         )
 
     assert response.status_code == 200
+    assert response.json()["feedback_receipt"] == "test-feedback-receipt"
+    assert len(receipt_calls) == 1
+    assert receipt_calls[0]["owner_key"] == "user:privacy-test"
+    assert len(receipt_calls[0]["assistant_turn_digest"]) == 64
+    assert receipt_calls[0]["model_variant"] == "other"
+    assert receipt_calls[0]["tool_bucket"] == "none"
+    assert "0901234567" not in repr(receipt_calls)
+    assert "a@example.com" not in repr(receipt_calls)
     _assert_provider_inputs_are_safe(captured_messages)
 
 
@@ -197,6 +229,7 @@ async def test_sse_provider_receives_only_redacted_message_and_history(
     tmp_path,
 ):
     _manager_instance, captured_messages = _configure_chat(monkeypatch, tmp_path)
+    receipt_calls = _capture_receipts(monkeypatch)
     transport = httpx.ASGITransport(app=server.app)
 
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
@@ -212,7 +245,14 @@ async def test_sse_provider_receives_only_redacted_message_and_history(
         )
 
     assert response.status_code == 200
-    assert '"type": "done"' in response.text
+    assert _terminal_done(response.text)["feedback_receipt"] == "test-feedback-receipt"
+    assert len(receipt_calls) == 1
+    assert receipt_calls[0]["owner_key"] == "user:privacy-test"
+    assert len(receipt_calls[0]["assistant_turn_digest"]) == 64
+    assert receipt_calls[0]["model_variant"] == "other"
+    assert receipt_calls[0]["tool_bucket"] == "none"
+    assert "0901234567" not in repr(receipt_calls)
+    assert "a@example.com" not in repr(receipt_calls)
     _assert_provider_inputs_are_safe(captured_messages)
     assert all("0901234567" not in repr(messages) for messages in captured_messages)
 
@@ -289,6 +329,7 @@ async def test_legacy_cache_is_sanitized_before_delivery_sinks_and_refresh(
     cache_kind,
 ):
     manager, _captured_messages = _configure_chat(monkeypatch, tmp_path)
+    receipt_calls = _capture_receipts(monkeypatch)
     legacy = {
         "reply": f"Legacy phone {LEGACY_PHONE} must not be delivered raw.",
         "tool_calls": [f"lookup({LEGACY_PHONE})"],
@@ -348,8 +389,171 @@ async def test_legacy_cache_is_sanitized_before_delivery_sinks_and_refresh(
     assert LEGACY_EMAIL not in repr(sink_writes)
     assert LEGACY_PHONE not in repr(refresh_writes)
     assert LEGACY_EMAIL not in repr(refresh_writes)
+    if path == "/chat":
+        assert response.json()["feedback_receipt"] == "test-feedback-receipt"
+    else:
+        assert _terminal_done(response.text)["feedback_receipt"] == "test-feedback-receipt"
+    assert len(receipt_calls) == 1
+    assert len(receipt_calls[0]["assistant_turn_digest"]) == 64
+    assert receipt_calls[0]["model_variant"] == "other"
+    assert receipt_calls[0]["tool_bucket"] in {
+        "none", "search", "weather", "knowledge", "mixed",
+    }
+    assert LEGACY_PHONE not in repr(receipt_calls)
+    assert LEGACY_EMAIL not in repr(receipt_calls)
     if cache_kind == "exact":
         assert len(refresh_writes) == 1
+
+
+@pytest.mark.anyio
+async def test_post_kb_fallback_issues_receipt_for_delivered_safe_turn(
+    monkeypatch,
+    tmp_path,
+):
+    _manager_instance, _captured_messages = _configure_chat(monkeypatch, tmp_path)
+    receipt_calls = _capture_receipts(monkeypatch)
+    fallback_entity = {
+        "id": "fallback-entity",
+        "name": "Fallback Place",
+        "summary": "Verified fallback summary with enough safe detail.",
+        "type": "attraction",
+    }
+
+    monkeypatch.setattr(
+        server,
+        "get_client",
+        lambda: SimpleNamespace(
+            chat=SimpleNamespace(completions=SimpleNamespace(
+                create=lambda *_args, **_kwargs: _completion(
+                    "Xin lỗi, hệ thống đang gặp sự cố. Vui lòng thử lại sau."
+                )
+            )),
+        ),
+    )
+    monkeypatch.setattr(
+        server,
+        "_hybrid_rerank_search",
+        lambda *_args, **_kwargs: [fallback_entity],
+    )
+    monkeypatch.setattr(server.knowledge, "query_relevance", lambda *_args: True)
+    monkeypatch.setattr(server.knowledge, "get_place", lambda *_args: None)
+    transport = httpx.ASGITransport(app=server.app)
+
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            "/chat",
+            json={"message": "fallback query", "history": []},
+        )
+
+    assert response.status_code == 200
+    assert "Fallback Place" in response.json()["reply"]
+    assert response.json()["feedback_receipt"] == "test-feedback-receipt"
+    assert len(receipt_calls) == 1
+    assert receipt_calls[0]["tool_bucket"] == "search"
+
+
+@pytest.mark.anyio
+async def test_post_receipt_uses_the_orchestrator_selected_mini_model(
+    monkeypatch,
+    tmp_path,
+):
+    _manager_instance, _captured_messages = _configure_chat(monkeypatch, tmp_path)
+    receipt_calls = _capture_receipts(monkeypatch)
+    routed_agent = SimpleNamespace(use_mini=True)
+    fake_orchestrator = SimpleNamespace(route=lambda _message: ("general", routed_agent))
+
+    monkeypatch.setattr(server, "HAS_ORCHESTRATOR", True)
+    monkeypatch.setattr(server, "_get_orchestrator", lambda: fake_orchestrator)
+    monkeypatch.setattr(
+        server,
+        "_run_agent_orchestrated",
+        lambda *_args, **_kwargs: (PROVIDER_REPLY, [], []),
+    )
+    monkeypatch.setattr(server, "get_model", lambda: "cx/gpt-5.5")
+    monkeypatch.setattr(server, "get_model_mini", lambda: "cx/gpt-5.5-mini")
+    transport = httpx.ASGITransport(app=server.app)
+
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            "/chat",
+            json={
+                "message": "mini model route",
+                "history": [{"role": "user", "content": "bounded context"}],
+            },
+        )
+
+    assert response.status_code == 200
+    assert response.json()["feedback_receipt"] == "test-feedback-receipt"
+    assert len(receipt_calls) == 1
+    assert receipt_calls[0]["model_variant"] == "cx-gpt-5-5-mini"
+
+
+@pytest.mark.parametrize(
+    ("model_variant", "tools", "expected_model", "expected_bucket"),
+    [
+        ("cx/gpt-5.5", [], "cx-gpt-5-5", "none"),
+        ("cx/gpt-5.4-mini", ["weather"], "cx-gpt-5-4-mini", "weather"),
+        ("unknown-model", ["unknown-tool"], "other", "mixed"),
+        ("cx/gpt-5.4", ["search", "weather"], "cx-gpt-5-4", "mixed"),
+        ("cx/gpt-5.4", ["entity_detail"], "cx-gpt-5-4", "knowledge"),
+    ],
+)
+def test_feedback_receipt_helper_hashes_turn_and_bounds_dimensions(
+    monkeypatch,
+    model_variant,
+    tools,
+    expected_model,
+    expected_bucket,
+):
+    receipt_calls = _capture_receipts(monkeypatch)
+
+    first = server._issue_delivered_feedback_receipt(
+        "user:00000000-0000-0000-0000-000000000001",
+        "private-message-ab",
+        "private-reply-c",
+        model_variant,
+        tools,
+    )
+    second = server._issue_delivered_feedback_receipt(
+        "user:00000000-0000-0000-0000-000000000001",
+        "private-message-a",
+        "private-reply-bc",
+        model_variant,
+        tools,
+    )
+
+    assert first == second == "test-feedback-receipt"
+    assert len(receipt_calls) == 2
+    assert receipt_calls[0]["assistant_turn_digest"] != receipt_calls[1]["assistant_turn_digest"]
+    assert all(len(call["assistant_turn_digest"]) == 64 for call in receipt_calls)
+    assert all(call["model_variant"] == expected_model for call in receipt_calls)
+    assert all(call["tool_bucket"] == expected_bucket for call in receipt_calls)
+    assert "private-message" not in repr(receipt_calls)
+    assert "private-reply" not in repr(receipt_calls)
+
+
+def test_feedback_receipt_helper_failure_is_best_effort_and_logs_stable_code(
+    monkeypatch,
+    caplog,
+):
+    def unavailable(*_args, **_kwargs):
+        raise RuntimeError("raw database detail secret@example.com")
+
+    monkeypatch.setattr(server, "issue_feedback_receipt", unavailable, raising=False)
+
+    with caplog.at_level("WARNING"):
+        result = server._issue_delivered_feedback_receipt(
+            "user:00000000-0000-0000-0000-000000000001",
+            "safe message",
+            "safe reply",
+            "cx/gpt-5.5",
+            [],
+        )
+
+    assert result is None
+    output = "\n".join(record.getMessage() for record in caplog.records)
+    assert "FEEDBACK_RECEIPT_DELIVERY_ISSUE_FAILED" in output
+    assert "secret@example.com" not in output
 
 
 @pytest.mark.anyio
@@ -525,6 +729,12 @@ def test_stream_cancellation_aborts_withheld_suffix_and_skips_sinks(
     )
     monkeypatch.setattr(
         server,
+        "issue_feedback_receipt",
+        lambda *args, **kwargs: writes.append(("receipt", args, kwargs)),
+        raising=False,
+    )
+    monkeypatch.setattr(
+        server,
         "get_client",
         lambda: SimpleNamespace(
             chat=SimpleNamespace(completions=BlockingCompletions()),
@@ -598,6 +808,7 @@ async def test_boundary_failure_stops_all_content_consumers(
     manager, _captured_messages = _configure_chat(monkeypatch, tmp_path)
     boundary_call = Mock(side_effect=error_type("STABLE_TEST_CODE"))
     forbidden = Mock(side_effect=AssertionError("content consumer must not run"))
+    receipt_issue = Mock(side_effect=AssertionError("blocked turn must not issue receipt"))
 
     monkeypatch.setattr(server, "prepare_chat_input", boundary_call)
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
@@ -608,6 +819,7 @@ async def test_boundary_failure_stops_all_content_consumers(
     monkeypatch.setattr(manager, "create_session", forbidden)
     monkeypatch.setattr(manager, "on_message", forbidden)
     monkeypatch.setattr(manager, "on_chat_complete", forbidden)
+    monkeypatch.setattr(server, "issue_feedback_receipt", receipt_issue, raising=False)
     transport = httpx.ASGITransport(app=server.app)
 
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
@@ -623,6 +835,7 @@ async def test_boundary_failure_stops_all_content_consumers(
     assert public_text in response.text
     boundary_call.assert_called_once()
     forbidden.assert_not_called()
+    receipt_issue.assert_not_called()
 
 
 @pytest.mark.anyio
