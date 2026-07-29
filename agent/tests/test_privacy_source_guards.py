@@ -32,7 +32,10 @@ CONTENT_SINKS = (
 PERSISTENCE_SINKS = USAGE_SINKS + CONTENT_SINKS
 FORBIDDEN_FEEDBACK_TOKENS = (
     "memory_manager.feedback(",
-    "record_feedback(query=",
+    "record_feedback(",
+    "save_feedback(",
+    "_adjust_entity_confidence(",
+    "sync_data_json_to_js(",
     "data.json",
 )
 
@@ -171,6 +174,11 @@ def test_feedback_handler_contains_no_personalization_or_data_mutation_tokens():
     source = _handler_source("user_feedback")
     for token in FORBIDDEN_FEEDBACK_TOKENS:
         assert token not in source, token
+
+
+def test_feedback_request_has_only_receipt_and_rating_fields():
+    assert set(server.FeedbackRequest.model_fields) == {"receipt", "rating"}
+    assert server.FeedbackRequest.model_config["extra"] == "forbid"
 
 
 def test_readiness_uses_mandatory_privacy_boundary_health_function():

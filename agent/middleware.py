@@ -280,19 +280,28 @@ class RateLimiter:
 # Singletons: different limits for different endpoints
 chat_limiter = RateLimiter(max_requests=30, window_seconds=60)   # 30 req/min
 admin_limiter = RateLimiter(max_requests=60, window_seconds=60)  # 60 req/min
+stream_limiter = RateLimiter(max_requests=20, window_seconds=60)  # 20 req/min
+report_limiter = RateLimiter(max_requests=5, window_seconds=300)  # 5 báo cáo / 5 phút (chống spam)
+feedback_ip_limiter = RateLimiter(max_requests=30, window_seconds=3600)
+feedback_owner_limiter = RateLimiter(max_requests=20, window_seconds=3600)
+
+# Auto-cleanup: periodically remove stale IP entries every 5 minutes
+_all_limiters = [
+    chat_limiter,
+    admin_limiter,
+    stream_limiter,
+    report_limiter,
+    feedback_ip_limiter,
+    feedback_owner_limiter,
+]
 
 
 def _reset_limiters() -> None:
-    """Test-only: xoá state của mọi limiter singleton (TestClient dùng chung IP nên
-    state cộng dồn qua cả suite → 429 giả ở test không tự-reset)."""
-    for lim in (chat_limiter, admin_limiter):
-        with lim._lock:
-            lim._requests.clear()
-stream_limiter = RateLimiter(max_requests=20, window_seconds=60)  # 20 req/min
-report_limiter = RateLimiter(max_requests=5, window_seconds=300)  # 5 báo cáo / 5 phút (chống spam)
+    """Test-only: clear every process-local limiter singleton."""
+    for limiter in _all_limiters:
+        with limiter._lock:
+            limiter._requests.clear()
 
-# Auto-cleanup: periodically remove stale IP entries every 5 minutes
-_all_limiters = [chat_limiter, admin_limiter, stream_limiter, report_limiter]
 
 def _rate_limiter_cleanup_loop():
     while True:

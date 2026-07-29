@@ -81,13 +81,19 @@ from launch_policy_api import validate_sitemap_bundle_on_startup
 from tools import TOOLS, SYSTEM_PROMPT
 from middleware import (
     logger, chat_limiter, stream_limiter, report_limiter,
+    feedback_ip_limiter, feedback_owner_limiter,
     response_tracker, error_tracker, generate_request_id, get_client_ip,
 )
 from policy_http import PolicyHttpMiddleware
 from itinerary_gen import generate_itinerary
 from scheduler import start_scheduler, stop_scheduler, scheduler_status, sync_data_json_to_js
 from chat_identity import resolve_chat_owner, set_chat_owner_cookie
-from feedback_policy import issue_feedback_receipt
+from feedback_policy import (
+    FeedbackRejected,
+    FeedbackUnavailable,
+    consume_feedback_receipt,
+    issue_feedback_receipt,
+)
 from memory import UnknownConversation, memory_manager
 from reflexion import reflexion_engine, quality_tracker
 from proactive import get_proactive_context, generate_welcome_message
@@ -145,7 +151,7 @@ except ImportError:
     HAS_IMAGE_RECOGNITION = False
 
 try:
-    from metrics import generate_metrics, track_chat_request, track_tool_call, track_cache, track_feedback, track_error, set_gauge, track_http_request  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
+    from metrics import generate_metrics, track_chat_request, track_tool_call, track_cache, track_feedback, track_feedback_attempt, track_error, set_gauge, track_http_request  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
     HAS_METRICS = True
 except ImportError:
     HAS_METRICS = False
@@ -1412,7 +1418,7 @@ async def track_response_time(request: Request, call_next):
 app.add_middleware(PolicyHttpMiddleware, route_resolver=app.router)
 
 
-from pydantic import ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, ValidationError, field_validator
 
 def _sanitize_message(v: str) -> str:
     """Strip HTML/script tags from user chat messages."""
@@ -1537,11 +1543,18 @@ def _issue_delivered_feedback_receipt(
 # ── Pydantic models for validated POST endpoints ──
 
 class FeedbackRequest(BaseModel):
-    query: str = Field(default="", max_length=2000)
-    rating: int = Field(..., ge=0, le=1)
-    user_id: str = Field(default="anonymous", max_length=64)
-    session_id: str = Field(default="anonymous", max_length=64)
-    entity_id: str | None = Field(default=None, max_length=64)
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    receipt: str
+    rating: Literal[0, 1]
+
+    @field_validator("rating", mode="before")
+    @classmethod
+    def reject_boolean_rating(cls, value):
+        if type(value) is not int:
+            raise ValueError("rating must be integer 0 or 1")
+        return value
+
 
 class CheckpointSaveRequest(BaseModel):
     session_id: str = Field(default="", max_length=64)
@@ -4469,19 +4482,121 @@ async def system_quality(request: Request):
     }
 
 
-@app.post("/feedback")
-async def user_feedback(req: FeedbackRequest, request: Request):
-    """Record aggregate feedback telemetry without personalization writes."""
-    client_ip = get_client_ip(request)
-    allowed, _ = chat_limiter.is_allowed(f"fb:{client_ip}")
-    if not allowed:
-        return _error_response(429, "Too many requests")
+def _feedback_response(
+    status_code: int,
+    content: dict,
+    *,
+    owner_context=None,
+    retry_after: int | None = None,
+) -> JSONResponse:
+    result = JSONResponse(status_code=status_code, content=content)
+    if retry_after is not None:
+        result.headers["Retry-After"] = str(max(1, retry_after))
+    if owner_context is not None:
+        set_chat_owner_cookie(result, owner_context)
+    return result
 
-    rating = req.rating
+
+def _feedback_owner_kind(owner_key: str) -> str:
+    if owner_key.startswith("user:"):
+        return "authenticated"
+    if owner_key.startswith("anon:"):
+        return "anonymous"
+    return "unknown"
+
+
+def _track_feedback_transport(
+    reason: str,
+    owner_kind: str,
+    rating: int | None = None,
+) -> None:
     if HAS_METRICS:
-        track_feedback(positive=(rating == 1))
-    logger.info("User feedback telemetry", rating=rating)
-    return {"success": True}
+        track_feedback_attempt(
+            reason=reason,
+            owner_kind=owner_kind,
+            rating=rating,
+        )
+
+
+@app.post("/feedback")
+async def user_feedback(request: Request):
+    """Consume one owner-bound receipt into deidentified aggregate telemetry."""
+    client_ip = get_client_ip(request)
+    allowed, rate_info = feedback_ip_limiter.is_allowed(client_ip)
+    if not allowed:
+        _track_feedback_transport("ip_limit", "unknown")
+        return _feedback_response(
+            429,
+            {"detail": "Too many feedback requests"},
+            retry_after=rate_info["retry_after"],
+        )
+
+    owner_context = await resolve_chat_owner(request)
+    resolved_owner_kind = _feedback_owner_kind(owner_context.owner_key)
+    allowed, rate_info = feedback_owner_limiter.is_allowed(owner_context.owner_key)
+    if not allowed:
+        _track_feedback_transport("owner_limit", resolved_owner_kind)
+        return _feedback_response(
+            429,
+            {"detail": "Too many feedback requests"},
+            owner_context=owner_context,
+            retry_after=rate_info["retry_after"],
+        )
+
+    try:
+        payload = await request.json()
+        feedback = FeedbackRequest.model_validate(payload)
+    except (json.JSONDecodeError, UnicodeDecodeError, ValidationError, TypeError, ValueError):
+        _track_feedback_transport("invalid_request", resolved_owner_kind)
+        return _feedback_response(
+            422,
+            {"detail": "Invalid feedback request"},
+            owner_context=owner_context,
+        )
+
+    if re.fullmatch(r"[A-Za-z0-9_-]{43}", feedback.receipt) is None:
+        _track_feedback_transport("invalid_receipt", resolved_owner_kind, feedback.rating)
+        return _feedback_response(
+            503,
+            {"detail": "Feedback unavailable"},
+            owner_context=owner_context,
+        )
+
+    try:
+        consumed = consume_feedback_receipt(
+            feedback.receipt,
+            owner_context.owner_key,
+            feedback.rating,
+        )
+    except FeedbackUnavailable:
+        _track_feedback_transport(
+            "receipt_unavailable",
+            resolved_owner_kind,
+            feedback.rating,
+        )
+        return _feedback_response(
+            503,
+            {"detail": "Feedback unavailable"},
+            owner_context=owner_context,
+        )
+    except FeedbackRejected:
+        _track_feedback_transport(
+            "receipt_rejected",
+            resolved_owner_kind,
+            feedback.rating,
+        )
+        return _feedback_response(
+            503,
+            {"detail": "Feedback unavailable"},
+            owner_context=owner_context,
+        )
+
+    _track_feedback_transport(
+        "idempotent" if consumed.idempotent else "accepted",
+        resolved_owner_kind,
+        feedback.rating,
+    )
+    return _feedback_response(200, {"success": True}, owner_context=owner_context)
 
 
 @app.post("/api/client-error")
@@ -4981,6 +5096,8 @@ hr { border: none; border-top: 1px solid #e6e0d4; margin: 12px 0; }
 .feedback-row button { padding: 4px 12px; border: 1px solid #e6e0d4; border-radius: 14px; background: #fff; cursor: pointer; font-size: .82rem; transition: all .15s; }
 .feedback-row button:hover { border-color: #1f7a4d; }
 .feedback-row button.voted { background: #f0faf5; border-color: #1f7a4d; color: #1f7a4d; pointer-events: none; }
+.feedback-row button:disabled { opacity: .55; cursor: wait; }
+.feedback-status { color: #66746e; font-size: .8rem; align-self: center; }
 .typing { align-self: flex-start; padding: 14px 18px; }
 .typing-dots { display: flex; gap: 4px; align-items: center; }
 .typing-dots span { width: 8px; height: 8px; border-radius: 50%; background: #b0bdb6; animation: bounce .6s infinite alternate; }
@@ -5065,7 +5182,7 @@ async function send(){
           }else if(data.type==='done'){
             const tp=msgDiv.querySelector('.trace-panel');if(tp)tp.style.opacity='.6';
             if(data.suggestions&&data.suggestions.length)showSuggestions(data.suggestions);
-            showFeedback(msgDiv,text);
+            showFeedback(msgDiv,data.feedback_receipt,(rating,selected,other)=>sendFeedback(data.feedback_receipt,rating,selected,other));
           }
         }catch(e){}}
     }
@@ -5081,17 +5198,28 @@ function showSuggestions(items){const old=document.querySelector('.suggestions.d
   const div=document.createElement('div');div.className='suggestions dynamic';
   items.forEach(t=>{const b=document.createElement('button');b.textContent=t;b.onclick=()=>{div.remove();ask(t);};div.appendChild(b);});
   msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
-function showFeedback(msgDiv,query){
+function showFeedback(msgDiv,receipt,submitFeedback){
+  if(!receipt)return;
   const row=document.createElement('div');row.className='feedback-row';
   const up=document.createElement('button');up.textContent='👍 Hữu ích';
   const down=document.createElement('button');down.textContent='👎 Chưa tốt';
-  up.onclick=()=>{sendFeedback(query,1);up.classList.add('voted');down.style.display='none';};
-  down.onclick=()=>{sendFeedback(query,0);down.classList.add('voted');up.style.display='none';};
+  up.onclick=()=>submitFeedback(1,up,down);
+  down.onclick=()=>submitFeedback(0,down,up);
   row.appendChild(up);row.appendChild(down);msgDiv.appendChild(row);
 }
-function sendFeedback(query,rating){
-  fetch('/feedback',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({query:query,rating:rating,session_id:'web'})}).catch(()=>{});
+async function sendFeedback(receipt,rating,selected,other){
+  selected.disabled=true;other.disabled=true;
+  try{
+    const response=await fetch('/feedback',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',
+      body:JSON.stringify({receipt:receipt,rating:rating})});
+    if(!response.ok)throw new Error('feedback unavailable');
+    selected.classList.add('voted');other.style.display='none';
+  }catch(_error){
+    selected.disabled=false;other.disabled=false;
+    let status=selected.parentNode.querySelector('.feedback-status');
+    if(!status){status=document.createElement('span');status.className='feedback-status';selected.parentNode.appendChild(status);}
+    status.textContent='Chưa thể ghi nhận. Vui lòng thử lại.';
+  }
 }
 function renderMd(t){let h=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   // Code blocks (``` ... ```)

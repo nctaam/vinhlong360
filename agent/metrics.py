@@ -309,6 +309,12 @@ feedback_total = Counter(
     labels=["rating"],
 )
 
+feedback_transport_total = Counter(
+    "feedback_transport_total",
+    "Receipt-bound feedback transport attempts",
+    labels=["reason", "owner_kind", "rating"],
+)
+
 errors_total = Counter(
     "errors_total",
     "Total errors by endpoint and type",
@@ -442,6 +448,36 @@ def track_feedback(positive: bool) -> None:
     """
     rating = "positive" if positive else "negative"
     feedback_total.inc({"rating": rating})
+
+
+_FEEDBACK_REASONS = frozenset({
+    "accepted",
+    "idempotent",
+    "invalid_request",
+    "invalid_receipt",
+    "receipt_unavailable",
+    "receipt_rejected",
+    "ip_limit",
+    "owner_limit",
+})
+_FEEDBACK_OWNER_KINDS = frozenset({"authenticated", "anonymous", "unknown"})
+
+
+def track_feedback_attempt(
+    *,
+    reason: str,
+    owner_kind: str,
+    rating: int | None,
+) -> None:
+    """Record only bounded aggregate dimensions for public feedback."""
+    safe_reason = reason if reason in _FEEDBACK_REASONS else "receipt_rejected"
+    safe_owner = owner_kind if owner_kind in _FEEDBACK_OWNER_KINDS else "unknown"
+    safe_rating = {1: "positive", 0: "negative"}.get(rating, "unknown")
+    feedback_transport_total.inc({
+        "reason": safe_reason,
+        "owner_kind": safe_owner,
+        "rating": safe_rating,
+    })
 
 
 def track_error(endpoint: str, error_type: str) -> None:

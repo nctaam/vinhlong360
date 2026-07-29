@@ -3,6 +3,7 @@
 Tests FastAPI endpoints using TestClient with mocked external dependencies.
 """
 import os
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -355,19 +356,34 @@ def test_home_page(client):
     assert response.status_code == 200
     assert "text/html" in response.headers.get("content-type", "")
     assert "vinhlong360" in response.text
+    assert "sendFeedback(data.feedback_receipt" in response.text
+    assert "JSON.stringify({receipt:receipt,rating:rating})" in response.text
+    assert "session_id:'web'" not in response.text
+    assert "query:query" not in response.text
 
 
 # ── /feedback ────────────────────────────────────────
 
 
-def test_feedback_endpoint(client):
+def test_feedback_endpoint(client, monkeypatch):
+    import server
+
+    async def resolve_owner(_request):
+        return SimpleNamespace(
+            owner_key="user:00000000-0000-0000-0000-000000000001",
+            cookie_value=None,
+        )
+
+    monkeypatch.setattr(server, "resolve_chat_owner", resolve_owner)
+    monkeypatch.setattr(
+        server,
+        "consume_feedback_receipt",
+        lambda *_args: SimpleNamespace(idempotent=False),
+        raising=False,
+    )
     response = client.post(
         "/feedback",
-        json={
-            "query": "test query",
-            "rating": 1,
-            "session_id": "test_session",
-        },
+        json={"receipt": "A" * 43, "rating": 1},
     )
     assert response.status_code == 200
     data = response.json()
@@ -378,11 +394,7 @@ def test_feedback_endpoint(client):
 def test_feedback_invalid_rating(client):
     response = client.post(
         "/feedback",
-        json={
-            "query": "test query",
-            "rating": 5,  # Invalid: must be 0 or 1
-            "session_id": "test_session",
-        },
+        json={"receipt": "A" * 43, "rating": 5},
     )
     # Pydantic validation từ chối -> 422 (cập nhật theo hành vi hiện tại; trước test mong 400).
     assert response.status_code == 422
