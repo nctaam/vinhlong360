@@ -25,6 +25,7 @@ os.environ["SCHEDULER_ENABLED"] = "false"
 import server  # noqa: E402
 import semantic_cache as semantic_cache_mod  # noqa: E402
 from memory import MemoryManager  # noqa: E402
+from privacy_boundary import PrivacyBoundaryBlocked  # noqa: E402
 
 
 def _chat_identity_module():
@@ -309,7 +310,11 @@ def test_post_chat_accepts_alice_conversation_and_rejects_bob(tmp_path, monkeypa
 
     monkeypatch.setattr(server, "resolve_chat_owner", resolve_owner, raising=False)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", True)
-    monkeypatch.setattr(server, "check_input", lambda *_args: {"allowed": False})
+    monkeypatch.setattr(
+        server,
+        "prepare_chat_input",
+        Mock(side_effect=PrivacyBoundaryBlocked("INPUT_BLOCKED")),
+    )
     client = TestClient(server.app)
 
     alice = client.post(
@@ -434,10 +439,15 @@ def test_guardrail_blocked_post_uses_owner_without_creating_session(tmp_path, mo
     monkeypatch.setattr(server, "memory_manager", manager)
     monkeypatch.setattr(server, "resolve_chat_owner", _new_anonymous_owner)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", True)
+
+    def block_input(message, _history, *, owner_key):
+        checked.append((message, owner_key))
+        raise PrivacyBoundaryBlocked("INPUT_BLOCKED")
+
     monkeypatch.setattr(
         server,
-        "check_input",
-        lambda message, identity: checked.append((message, identity)) or {"allowed": False},
+        "prepare_chat_input",
+        block_input,
     )
     client = TestClient(server.app)
 
@@ -472,10 +482,15 @@ def test_guardrail_blocked_stream_uses_owner_without_creating_session(tmp_path, 
     monkeypatch.setattr(server, "memory_manager", manager)
     monkeypatch.setattr(server, "resolve_chat_owner", _new_anonymous_owner)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", True)
+
+    def block_input(message, _history, *, owner_key):
+        checked.append((message, owner_key))
+        raise PrivacyBoundaryBlocked("INPUT_BLOCKED")
+
     monkeypatch.setattr(
         server,
-        "check_input",
-        lambda message, identity: checked.append((message, identity)) or {"allowed": False},
+        "prepare_chat_input",
+        block_input,
     )
     client = TestClient(server.app)
 

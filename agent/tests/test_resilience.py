@@ -297,25 +297,20 @@ class TestGuardrailFallback:
         assert "[PHONE]" in result["cleaned_reply"]
 
     def test_guardrail_crash_returns_fallback_not_500(self):
-        """If guardrail check_input crashes, server must fail-closed with friendly message."""
-        # This test verifies the server.py code handles guardrail exceptions
+        """If the privacy boundary crashes, server must fail closed."""
         server_path = AGENT_DIR / "server.py"
         source = server_path.read_text(encoding="utf-8")
 
-        # Find the guardrail input check in /chat endpoint
-        idx = source.find("guard = check_input(req.message, owner_key)")
-        assert idx > 0, "Guardrail check_input must exist in chat endpoint"
+        idx = source.find("safe_input = prepare_chat_input(")
+        assert idx > 0, "Mandatory privacy boundary must exist in chat endpoint"
 
-        # Check that there is a try/except wrapping it
-        # Look backwards for try:
         pre_context = source[max(0, idx-200):idx]
-        assert "try:" in pre_context, "check_input must be wrapped in try/except"
+        assert "try:" in pre_context, "privacy boundary must be wrapped in try/except"
 
-        # Check that except block returns a friendly response, not re-raises
-        # Extend post_context to capture the except block further down
-        post_context = source[idx:idx+800]
-        assert "fail-closed" in post_context.lower() or "fail-CLOSED" in post_context, \
-            "Guardrail error handler must implement fail-CLOSED"
+        post_context = source[idx:idx+1800]
+        assert "PrivacyBoundaryBlocked" in post_context
+        assert "PrivacyBoundaryUnavailable" in post_context
+        assert "UNEXPECTED_PRIVACY_BOUNDARY_ERROR" in post_context
 
     def test_guardrail_output_error_does_not_crash(self):
         """Output guardrail failure must not crash the response."""
@@ -329,14 +324,15 @@ class TestGuardrailFallback:
         assert "try:" in pre_context, "Output check_output must be wrapped in try/except"
 
     def test_guardrail_stream_fail_closed(self):
-        """Stream endpoint guardrail must also fail-closed."""
+        """Stream endpoint privacy boundary must also fail closed."""
         server_path = AGENT_DIR / "server.py"
         source = server_path.read_text(encoding="utf-8")
 
-        # Find stream guardrail check
         stream_section = source[source.find("async def chat_stream"):]
-        assert "check_input(message, owner_key)" in stream_section
-        assert "fail-closed" in stream_section.lower() or "fail-CLOSED" in stream_section
+        assert "safe_input = prepare_chat_input(" in stream_section
+        assert "PrivacyBoundaryBlocked" in stream_section
+        assert "PrivacyBoundaryUnavailable" in stream_section
+        assert "UNEXPECTED_PRIVACY_BOUNDARY_ERROR" in stream_section
 
 
 # ═══════════════════════════════════════════════════════

@@ -58,6 +58,13 @@ def anyio_backend():
     return "asyncio"
 
 
+@pytest.fixture(autouse=True)
+def _reset_server_drain_flag():
+    server._draining = False
+    yield
+    server._draining = False
+
+
 def _parse_sse(text: str) -> list[dict]:
     frames = []
     for line in text.splitlines():

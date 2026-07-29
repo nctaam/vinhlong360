@@ -239,6 +239,13 @@ def prepare_chat_input(
         raw_types.extend(safe_content.redaction_types)
         safe_history.append(SafeHistoryItem(item["role"], safe_content.text))
 
+    if (
+        safe_history
+        and safe_history[-1].role == "user"
+        and safe_history[-1].content == safe_message.text
+    ):
+        safe_history.pop()
+
     return SafeChatInput(
         message=safe_message.text,
         history=tuple(safe_history),

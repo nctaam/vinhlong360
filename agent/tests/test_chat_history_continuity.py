@@ -196,6 +196,42 @@ def test_provider_input_preserves_prior_history_and_deduplicates_current(
 
 
 @pytest.mark.parametrize("endpoint", ["post", "stream"])
+def test_sensitive_trailing_current_history_is_redacted_then_deduplicated(
+    endpoint,
+    tmp_path,
+    monkeypatch,
+):
+    _manager_instance, provider_messages = _configure_provider_chat(
+        monkeypatch,
+        tmp_path,
+        prompt_cache_enabled=False,
+    )
+    sensitive_current = "Goi 0901234567"
+    path = "/chat" if endpoint == "post" else "/chat/stream"
+
+    with TestClient(server.app) as client:
+        response = client.post(
+            path,
+            json={
+                "message": sensitive_current,
+                "history": [
+                    {"role": "user", "content": "Mail a@example.com"},
+                    {"role": "user", "content": sensitive_current},
+                ],
+            },
+        )
+
+    assert response.status_code == 200
+    conversational = [
+        item for item in provider_messages[0] if item["role"] != "system"
+    ]
+    assert conversational == [
+        {"role": "user", "content": "Mail [EMAIL]"},
+        {"role": "user", "content": "Goi [PHONE]"},
+    ]
+
+
+@pytest.mark.parametrize("endpoint", ["post", "stream"])
 @pytest.mark.parametrize("prompt_cache_enabled", [False, True])
 def test_owned_hot_history_stays_separate_from_client_history(
     endpoint,

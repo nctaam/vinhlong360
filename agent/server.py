@@ -216,6 +216,12 @@ try:
 except ImportError:
     HAS_GUARDRAILS = False
 
+from privacy_boundary import (
+    PrivacyBoundaryBlocked,
+    PrivacyBoundaryUnavailable,
+    prepare_chat_input,
+)
+
 try:
     from cost_tracker import token_counter, cost_attribution, budget_manager as cost_budget, track_llm_call, get_cost_report  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
     HAS_COST_TRACKER = True
@@ -1424,12 +1430,6 @@ class ChatRequest(BaseModel):
     def sanitize_message(cls, v):
         return _sanitize_message(v)
 
-    def history_messages(self) -> list[dict[str, str]]:
-        history = [item.model_dump() for item in self.history]
-        if history and history[-1] == {"role": "user", "content": self.message}:
-            history.pop()
-        return history
-
 
 class ChatResponse(BaseModel):
     reply: str
@@ -2121,9 +2121,9 @@ def _post_tool_process(fn_name, fn_args, result, suggestions, messages, empty_re
 async def chat(req: ChatRequest, request: Request, response: Response):
     owner_context = await resolve_chat_owner(request)
     owner_key = owner_context.owner_key
-    history = req.history_messages()
     session = None
-    session_id = req.session_id or ""
+    requested_session_id = req.session_id or ""
+    session_id = requested_session_id
     set_chat_owner_cookie(response, owner_context)
 
     # Rate limiting
@@ -2138,31 +2138,56 @@ async def chat(req: ChatRequest, request: Request, response: Response):
         return _resp
 
     try:
-        if req.session_id:
-            session = memory_manager.require_session(owner_key, req.session_id)
+        if requested_session_id:
+            session = memory_manager.require_session(owner_key, requested_session_id)
     except UnknownConversation:
         not_found = _error_response(404, "Không tìm thấy cuộc trò chuyện.", request)
         set_chat_owner_cookie(not_found, owner_context)
         return not_found
 
-    # ── Guardrails: input safety (injection detect + PII mask + budget) ──
-    if HAS_GUARDRAILS:
-        try:
-            guard = check_input(req.message, owner_key)
-            if not guard.get("allowed", True):
-                # P1: log lý do chi tiết server-side, KHÔNG lộ chuỗi chẩn-đoán ra user.
-                logger.warning("Guardrails blocked input", reason=guard.get("blocked_reason", ""), session_id=session_id)
-                return ChatResponse(
-                    reply="Xin lỗi, tin nhắn này không thể xử lý vì lý do an toàn. Vui lòng diễn đạt lại.",
-                    tool_calls=[], suggestions=[], session_id=session_id,
-                )
-        except Exception as _gerr:
-            # P1: fail-CLOSED — guardrail lỗi thì KHÔNG cho qua không kiểm.
-            logger.warning(f"Guardrail check_input lỗi → fail-closed: {_gerr}")
-            return ChatResponse(
-                reply="Xin lỗi, hệ thống đang bận kiểm tra an toàn. Vui lòng thử lại sau ít phút.",
-                tool_calls=[], suggestions=[], session_id=session_id,
-            )
+    try:
+        safe_input = prepare_chat_input(
+            req.message,
+            [item.model_dump() for item in req.history],
+            owner_key=owner_key,
+        )
+    except PrivacyBoundaryBlocked as exc:
+        logger.warning(
+            "Privacy boundary blocked input",
+            code=exc.code,
+            session_id=session_id,
+        )
+        return ChatResponse(
+            reply="Xin lỗi, tin nhắn này không thể xử lý vì lý do an toàn. Vui lòng diễn đạt lại.",
+            tool_calls=[], suggestions=[], session_id=session_id,
+        )
+    except PrivacyBoundaryUnavailable as exc:
+        logger.warning(
+            "Privacy boundary unavailable",
+            code=exc.code,
+            session_id=session_id,
+        )
+        return ChatResponse(
+            reply="Xin lỗi, hệ thống đang bận kiểm tra an toàn. Vui lòng thử lại sau ít phút.",
+            tool_calls=[], suggestions=[], session_id=session_id,
+        )
+    except Exception:
+        logger.warning(
+            "Privacy boundary unavailable",
+            code="UNEXPECTED_PRIVACY_BOUNDARY_ERROR",
+            session_id=session_id,
+        )
+        return ChatResponse(
+            reply="Xin lỗi, hệ thống đang bận kiểm tra an toàn. Vui lòng thử lại sau ít phút.",
+            tool_calls=[], suggestions=[], session_id=session_id,
+        )
+
+    _privacy_input_boundary_marker = True
+    message = safe_input.message
+    history = [
+        {"role": item.role, "content": item.content}
+        for item in safe_input.history
+    ]
 
     if session is None:
         session = memory_manager.create_session(owner_key)
@@ -2174,41 +2199,41 @@ async def chat(req: ChatRequest, request: Request, response: Response):
     semantic_dedup_key = None
     if cache_eligible and HAS_SEMANTIC_CACHE:
         try:
-            sem_cached = await semantic_get_async(req.message, owner_key=owner_key)
+            sem_cached = await semantic_get_async(message, owner_key=owner_key)
             semantic_dedup_key = semantic_take_dedup_lease(
-                req.message,
+                message,
                 owner_key=owner_key,
             )
             _hold_semantic_route_lease(
-                req.message,
+                message,
                 owner_key,
                 semantic_dedup_key,
             )
             if sem_cached:
                 if HAS_METRICS:
                     track_cache("hit")
-                _record_cached_exchange(owner_key, session_id, req.message, sem_cached)
+                _record_cached_exchange(owner_key, session_id, message, sem_cached)
                 return ChatResponse(**sem_cached, session_id=session_id, cached=True)
         except Exception:
             logger.debug("Semantic cache retrieval failed", exc_info=True)
 
     # Check cache (only for new conversations without history)
     if cache_eligible:
-        cached = cache.get(req.message, owner_key=owner_key)
+        cached = cache.get(message, owner_key=owner_key)
         if cached:
             if HAS_METRICS:
                 track_cache("hit")
             if HAS_SEMANTIC_CACHE:
                 try:
                     semantic_put(
-                        req.message,
+                        message,
                         cached,
                         owner_key=owner_key,
                         dedup_key=semantic_dedup_key,
                     )
                 except Exception:
                     logger.debug("Semantic cache exact-hit publication failed", exc_info=True)
-            _record_cached_exchange(owner_key, session_id, req.message, cached)
+            _record_cached_exchange(owner_key, session_id, message, cached)
             return ChatResponse(**cached, session_id=session_id, cached=True)
         elif HAS_METRICS:
             track_cache("miss")
@@ -2216,9 +2241,9 @@ async def chat(req: ChatRequest, request: Request, response: Response):
     usage_accumulator = UsageAccumulator()
 
     # Autocorrect user input
-    corrected_message = req.message
+    corrected_message = message
     if HAS_AUTOCORRECT:
-        ac = autocorrect(req.message)
+        ac = autocorrect(message)
         if ac.get("was_corrected"):
             corrected_message = ac["corrected"]
 
@@ -2230,7 +2255,7 @@ async def chat(req: ChatRequest, request: Request, response: Response):
             _trace_ctx = trace_chat_request(corrected_message, session_id, get_model())
             _trace_ctx.__enter__()
         messages, build_info = _build_messages(corrected_message, history, session_id, owner_key)
-        memory_manager.on_message(owner_key, session_id, "user", req.message)
+        memory_manager.on_message(owner_key, session_id, "user", message)
 
         # ── Dynamic agents: check for specialist match before orchestrator ──
         _dyn_prompt_addon = ""
@@ -2443,30 +2468,30 @@ async def chat(req: ChatRequest, request: Request, response: Response):
 
     # Reflexion: evaluate answer quality
     try:
-        evaluation = reflexion_engine.evaluate_answer(req.message, reply, tools_used)
-        quality_tracker.record(req.message, evaluation["score"], tools_used)
+        evaluation = reflexion_engine.evaluate_answer(message, reply, tools_used)
+        quality_tracker.record(message, evaluation["score"], tools_used)
 
         if evaluation["score"] < 5:
-            reflexion_engine.reflect_on_failure(req.message, reply, evaluation)
+            reflexion_engine.reflect_on_failure(message, reply, evaluation)
             logger.warning("Low quality answer", score=evaluation["score"],
-                         issues=evaluation["issues"], query=req.message[:100])
+                         issues=evaluation["issues"], query=message[:100])
         elif evaluation["score"] >= 8:
             # Good answer → save as skill
             memory_manager.on_good_answer(
-                req.message[:100], tools_used,
+                message[:100], tools_used,
                 f"Score {evaluation['score']}: {', '.join(evaluation['good_points'][:2])}",
-                reflexion_engine._categorize_query(req.message),
+                reflexion_engine._categorize_query(message),
             )
         # Experience memory: distill a strategy item (≥8) or negative constraint (<5)
         if HAS_EXPERIENCE:
             try:
-                experience_memory.record(req.message, tools_used, evaluation["score"], reply)
+                experience_memory.record(message, tools_used, evaluation["score"], reply)
             except Exception:
                 logger.debug("Experience memory record failed", exc_info=True)
         # Few-shot demo pool: capture high-scoring (query, answer) exemplars
         if HAS_FEWSHOT:
             try:
-                prompt_compiler.record_demo(req.message, reply, evaluation["score"])
+                prompt_compiler.record_demo(message, reply, evaluation["score"])
             except Exception:
                 logger.debug("Few-shot demo record failed", exc_info=True)
     except Exception as eval_err:
@@ -2487,7 +2512,7 @@ async def chat(req: ChatRequest, request: Request, response: Response):
         try:
             judge_result = judge(corrected_message, reply)
             if judge_result and judge_result.get("weighted_score", 0) < 4:
-                logger.info("LLM Judge low score", score=judge_result.get("weighted_score"), query=req.message[:80])
+                logger.info("LLM Judge low score", score=judge_result.get("weighted_score"), query=message[:80])
         except Exception:
             logger.debug("LLM Judge evaluation failed", exc_info=True)
 
@@ -2504,7 +2529,7 @@ async def chat(req: ChatRequest, request: Request, response: Response):
 
     # Track analytics
     try:
-        analytics.track_query(req.message, tools_used, reply, session_id)
+        analytics.track_query(message, tools_used, reply, session_id)
     except Exception:
         logger.debug("Analytics tracking failed", exc_info=True)
 
@@ -2521,12 +2546,12 @@ async def chat(req: ChatRequest, request: Request, response: Response):
     # Cache response (only if good quality)
     if cache_eligible and len(reply) > 30 and evaluation["score"] >= 5:
         cache_data = {"reply": reply, "tool_calls": tools_used, "suggestions": suggestions}
-        cache.put(req.message, cache_data, owner_key=owner_key)
+        cache.put(message, cache_data, owner_key=owner_key)
         # ── Semantic cache: store for embedding-based dedup ──
         if HAS_SEMANTIC_CACHE:
             try:
                 semantic_put(
-                    req.message,
+                    message,
                     cache_data,
                     owner_key=owner_key,
                     dedup_key=semantic_dedup_key,
@@ -2547,9 +2572,8 @@ async def chat_stream(req: ChatRequest, request: Request):
     owner_context = await resolve_chat_owner(request)
     owner_key = owner_context.owner_key
     session = None
-    message = req.message
-    hist = req.history_messages()
-    sid = req.session_id or ""
+    requested_session_id = req.session_id or ""
+    sid = requested_session_id
     def _stream_response(generator, semantic_lease=None):
         stream_response = _SemanticLeaseStreamingResponse(
             generator,
@@ -2575,43 +2599,73 @@ async def chat_stream(req: ChatRequest, request: Request):
         return limited
 
     try:
-        if req.session_id:
-            session = memory_manager.require_session(owner_key, req.session_id)
+        if requested_session_id:
+            session = memory_manager.require_session(owner_key, requested_session_id)
     except UnknownConversation:
         not_found = _error_response(404, "Không tìm thấy cuộc trò chuyện.", request)
         set_chat_owner_cookie(not_found, owner_context)
         return not_found
+
+    def _safe_block_stream(msg: str):
+        async def _gen():
+            yield f"data: {json.dumps({'type': 'text', 'content': msg}, ensure_ascii=False)}\n\n"
+            yield f"data: {json.dumps({'type': 'done', 'tools': [], 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
+        return _gen
+
+    try:
+        safe_input = prepare_chat_input(
+            req.message,
+            [item.model_dump() for item in req.history],
+            owner_key=owner_key,
+        )
+    except PrivacyBoundaryBlocked as exc:
+        logger.warning(
+            "Privacy boundary blocked stream input",
+            code=exc.code,
+            session_id=sid,
+        )
+        gen = _safe_block_stream(
+            "Xin lỗi, tin nhắn này không thể xử lý vì lý do an toàn. Vui lòng diễn đạt lại."
+        )
+        return _stream_response(gen())
+    except PrivacyBoundaryUnavailable as exc:
+        logger.warning(
+            "Privacy boundary unavailable for stream",
+            code=exc.code,
+            session_id=sid,
+        )
+        gen = _safe_block_stream(
+            "Xin lỗi, hệ thống đang bận kiểm tra an toàn. Vui lòng thử lại sau ít phút."
+        )
+        return _stream_response(gen())
+    except Exception:
+        logger.warning(
+            "Privacy boundary unavailable for stream",
+            code="UNEXPECTED_PRIVACY_BOUNDARY_ERROR",
+            session_id=sid,
+        )
+        gen = _safe_block_stream(
+            "Xin lỗi, hệ thống đang bận kiểm tra an toàn. Vui lòng thử lại sau ít phút."
+        )
+        return _stream_response(gen())
+
+    _privacy_input_boundary_marker = True
+    message = safe_input.message
+    history = [
+        {"role": item.role, "content": item.content}
+        for item in safe_input.history
+    ]
 
     if not message:
         async def empty_stream():
             yield f"data: {json.dumps({'type': 'error', 'content': 'Tin nhắn trống.'}, ensure_ascii=False)}\n\n"
         return _stream_response(empty_stream())
 
-    # ── Guardrails: input safety ──
-    if HAS_GUARDRAILS:
-        def _safe_block_stream(msg: str):
-            async def _gen():
-                yield f"data: {json.dumps({'type': 'text', 'content': msg}, ensure_ascii=False)}\n\n"
-                yield f"data: {json.dumps({'type': 'done', 'tools': [], 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
-            return _gen
-        try:
-            guard = check_input(message, owner_key)
-            if not guard.get("allowed", True):
-                # P1: ẩn blocked_reason (chẩn-đoán) khỏi user, chỉ log server-side
-                logger.warning("Guardrails blocked stream input", reason=guard.get("blocked_reason", ""), session_id=sid)
-                gen = _safe_block_stream("Xin lỗi, tin nhắn này không thể xử lý vì lý do an toàn. Vui lòng diễn đạt lại.")
-                return _stream_response(gen())
-        except Exception as _gerr:
-            # P1: fail-CLOSED
-            logger.warning(f"Guardrail stream check lỗi → fail-closed: {_gerr}")
-            gen = _safe_block_stream("Xin lỗi, hệ thống đang bận kiểm tra an toàn. Vui lòng thử lại sau ít phút.")
-            return _stream_response(gen())
-
     if session is None:
         session = memory_manager.create_session(owner_key)
         sid = session.session_id
-    _hydrate_empty_session(owner_key, session, hist)
-    cache_eligible = not hist and not session.get_context_messages()
+    _hydrate_empty_session(owner_key, session, history)
+    cache_eligible = not history and not session.get_context_messages()
 
     # The cache/dedup lifecycle must use one stable pre-autocorrect query key.
     cache_query = message
@@ -2687,7 +2741,7 @@ async def chat_stream(req: ChatRequest, request: Request):
             message = ac["corrected"]
 
     # Build messages with full 2026 architecture context
-    messages, _build_info = _build_messages(message, hist, sid, owner_key)
+    messages, _build_info = _build_messages(message, history, sid, owner_key)
     memory_manager.on_message(owner_key, sid, "user", cache_query)
 
     # ── Parity with /chat: apply dynamic-agent addon + active prompt variant ──
