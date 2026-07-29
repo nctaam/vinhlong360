@@ -309,7 +309,7 @@ def test_stream_abort_discards_unverified_suffix():
 )
 def test_stream_redacts_sensitive_value_across_every_chunk_boundary(raw_value, marker):
     for split_at in range(1, len(raw_value)):
-        redactor = StreamingPIIRedactor(max_pattern_span=64)
+        redactor = StreamingPIIRedactor(max_pattern_span=512)
         emitted = redactor.feed("Value: " + raw_value[:split_at])
         emitted += redactor.feed(raw_value[split_at:] + " end")
         emitted += redactor.finish()
@@ -319,7 +319,7 @@ def test_stream_redacts_sensitive_value_across_every_chunk_boundary(raw_value, m
 
 
 def test_stream_finish_flushes_normal_safe_suffix():
-    redactor = StreamingPIIRedactor(max_pattern_span=64)
+    redactor = StreamingPIIRedactor(max_pattern_span=512)
 
     assert redactor.feed("Noi dung an toan") == ""
 
@@ -327,31 +327,31 @@ def test_stream_finish_flushes_normal_safe_suffix():
     assert redactor.finish() == ""
 
 
-@pytest.mark.parametrize("max_pattern_span", [0, -1, 31])
+@pytest.mark.parametrize("max_pattern_span", [0, -1, 31, 511])
 def test_stream_rejects_non_positive_or_unreasonably_small_span(max_pattern_span):
     with pytest.raises(ValueError):
         StreamingPIIRedactor(max_pattern_span=max_pattern_span)
 
 
 def test_stream_overlong_candidate_is_bounded_and_leaks_no_raw_prefix():
-    redactor = StreamingPIIRedactor(max_pattern_span=64)
-    candidate = "api_key=" + ("A" * 300)
+    redactor = StreamingPIIRedactor(max_pattern_span=512)
+    candidate = "api_key=" + ("A" * 700)
     emitted = ""
 
     for offset in range(0, len(candidate), 17):
         emitted += redactor.feed(candidate[offset:offset + 17])
-        assert len(redactor._pending) <= 64
+        assert len(redactor._pending) <= 512
     emitted += redactor.finish()
 
     assert "[SECRET]" in emitted
     assert "A" * 8 not in emitted
-    assert candidate[:64] not in emitted
+    assert candidate[:512] not in emitted
 
 
 def test_stream_abort_never_flushes_overlong_candidate_suffix():
-    redactor = StreamingPIIRedactor(max_pattern_span=64)
+    redactor = StreamingPIIRedactor(max_pattern_span=512)
 
-    redactor.feed("api_key=" + ("A" * 80))
+    redactor.feed("api_key=" + ("A" * 700))
     redactor.abort()
 
     assert redactor.finish() == ""
