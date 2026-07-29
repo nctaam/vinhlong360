@@ -209,7 +209,11 @@ class CostAttribution:
             records = data.get("records", [])
             # Chi giu _MAX_RECORDS records gan nhat
             for rec in records[-_MAX_RECORDS:]:
-                self._records.append(rec)
+                normalized = dict(rec)
+                if "owner_key" not in normalized:
+                    normalized["owner_key"] = ""
+                normalized.pop("session_id", None)
+                self._records.append(normalized)
             logger.info("Da load %d cost records tu %s", len(self._records), COSTS_FILE)
         except (json.JSONDecodeError, OSError) as exc:
             logger.warning("Khong doc duoc costs.json: %s", exc)
@@ -235,7 +239,7 @@ class CostAttribution:
 
     def record(
         self,
-        session_id: str,
+        owner_key: str,
         query: str,
         agent_name: str,
         tool_name: Optional[str],
@@ -247,7 +251,7 @@ class CostAttribution:
         entry = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
-            "session_id": session_id,
+            "owner_key": owner_key,
             "query": query[:200],
             "agent_name": agent_name,
             "tool_name": tool_name,
@@ -264,9 +268,9 @@ class CostAttribution:
     # ── Queries ─────────────────────────────────────
 
     def get_session_cost(self, session_id: str) -> Dict[str, Any]:
-        """Tong chi phi cho 1 session."""
+        """Compatibility view over records now attributed by owner key."""
         with self._lock:
-            records = [r for r in self._records if r["session_id"] == session_id]
+            records = [r for r in self._records if r.get("owner_key", "") == session_id]
         total_cost = sum(r["cost"] for r in records)
         total_tokens = sum(r["tokens"].get("total_tokens", 0) for r in records)
         return {
@@ -501,7 +505,7 @@ def track_llm_call(
     cost = token_counter.calculate_cost(tokens, model)
 
     cost_attribution.record(
-        session_id=session_id,
+        owner_key=session_id,
         query=query,
         agent_name=agent_name,
         tool_name=tool_name,

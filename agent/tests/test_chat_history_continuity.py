@@ -123,7 +123,7 @@ def _configure_provider_chat(monkeypatch, tmp_path, prompt_cache_enabled, *, fai
     monkeypatch.setattr(server, "get_model_mini", lambda: "test-model")
     monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(server.cache, "put", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(server.analytics, "track_query", lambda *_args: None)
+    monkeypatch.setattr(server.analytics, "track_query", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(server.memory_manager, "on_chat_complete", lambda *_args: None)
     monkeypatch.setattr(
         server.reflexion_engine,
@@ -361,7 +361,14 @@ def test_post_orchestrator_receives_resolved_owned_history(
     session.add_message("assistant", "OWNED ORCHESTRATOR ASSISTANT")
     captured_history = []
 
-    def orchestrate(_message, history, _session_id, _prompt, _usage):
+    def orchestrate(
+        _message,
+        history,
+        _session_id,
+        _prompt,
+        _usage,
+        _verified_public_contacts,
+    ):
         captured_history.extend(history)
         return PROVIDER_REPLY, [], []
 

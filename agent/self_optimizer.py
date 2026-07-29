@@ -177,11 +177,14 @@ class PerformanceCollector:
         quality_score: float,
         duration: float,
         token_count: int,
+        *,
+        owner_key: str = "",
     ) -> None:
         """Ghi nhan mot ket qua tuong tac."""
         entry = {
             "session_id": session_id,
-            "query": query,
+            "owner_key": owner_key,
+            "query": query[:200],
             "category": _categorize_query(query),
             "agent_name": agent_name,
             "tools_used": tools_used,
@@ -765,6 +768,8 @@ def record_outcome(
     score: float,
     duration: float,
     tokens: int,
+    *,
+    owner_key: str = "",
 ) -> None:
     """Ghi nhan ket qua va kiem tra xem can toi uu hoa chua."""
     performance_collector.record(
@@ -775,6 +780,7 @@ def record_outcome(
         quality_score=score,
         duration=duration,
         token_count=tokens,
+        owner_key=owner_key,
     )
 
     # Check if we need to tune parameters

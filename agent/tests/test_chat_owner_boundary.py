@@ -801,7 +801,7 @@ def test_stream_terminal_path_abandons_captured_semantic_lease(
         lambda *_args: {"score": 4, "issues": [], "good_points": []},
     )
     monkeypatch.setattr(server.quality_tracker, "record", lambda *_args: None)
-    monkeypatch.setattr(server.analytics, "track_query", lambda *_args: None)
+    monkeypatch.setattr(server.analytics, "track_query", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(server, "semantic_get_async", semantic_miss)
     monkeypatch.setattr(
         server,
@@ -1068,7 +1068,7 @@ def test_semantic_dedup_wait_keeps_async_handlers_responsive(
     monkeypatch.setattr(server.cache, "get", forbidden)
     monkeypatch.setattr(server, "UsageAccumulator", forbidden)
     monkeypatch.setattr(server, "_build_messages", forbidden)
-    monkeypatch.setattr(server.analytics, "track_query", lambda *_args: None)
+    monkeypatch.setattr(server.analytics, "track_query", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(semantic_cache_mod, "multi_tier_cache", semantic_cache)
     monkeypatch.setattr(semantic_cache_mod, "deduplicator", deduplicator)
 
@@ -1158,7 +1158,7 @@ def test_stream_semantic_lookup_error_rejects_missing_lease(tmp_path, monkeypatc
         lambda *_args: {"score": 6},
     )
     monkeypatch.setattr(server.quality_tracker, "record", lambda *_args: None)
-    monkeypatch.setattr(server.analytics, "track_query", lambda *_args: None)
+    monkeypatch.setattr(server.analytics, "track_query", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(server, "semantic_get_async", semantic_error)
     monkeypatch.setattr(server, "semantic_take_dedup_lease", forbidden_take)
     monkeypatch.setattr(server, "semantic_put", reject_missing_lease)
@@ -1315,7 +1315,7 @@ def test_autocorrected_stream_resolves_waiter_on_original_cache_query(tmp_path, 
         lambda *_args: {"score": 6},
     )
     monkeypatch.setattr(server.quality_tracker, "record", lambda *_args: None)
-    monkeypatch.setattr(server.analytics, "track_query", lambda *_args: None)
+    monkeypatch.setattr(server.analytics, "track_query", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(server, "semantic_get_async", read_semantic)
     monkeypatch.setattr(server, "semantic_take_dedup_lease", take_semantic_lease)
     monkeypatch.setattr(server, "semantic_put", publish_semantic)

@@ -152,6 +152,8 @@ class ABTestManager:
         self._experiments: dict[str, Experiment] = {}
         # outcomes: {experiment_name: {user_id: [metric_values]}}
         self._outcomes: dict[str, dict[str, list[float]]] = {}
+        # owner attribution: {experiment_name: {user_id: owner_key}}
+        self._outcome_owners: dict[str, dict[str, str]] = {}
         # assignments: {experiment_name: {user_id: variant_id}}
         self._assignments: dict[str, dict[str, str]] = {}
         self._load()
@@ -171,6 +173,7 @@ class ABTestManager:
             exp = Experiment.from_dict(ed)
             self._experiments[exp.name] = exp
         self._outcomes = data.get("outcomes", {})
+        self._outcome_owners = data.get("outcome_owners", {})
         self._assignments = data.get("assignments", {})
 
     def _save(self):
@@ -178,6 +181,7 @@ class ABTestManager:
         data = {
             "experiments": [e.to_dict() for e in self._experiments.values()],
             "outcomes": self._outcomes,
+            "outcome_owners": self._outcome_owners,
             "assignments": self._assignments,
         }
         self._filepath.parent.mkdir(parents=True, exist_ok=True)
@@ -217,11 +221,36 @@ class ABTestManager:
             exp = Experiment(name, variants, metric_name, description)
             self._experiments[name] = exp
             self._outcomes[name] = {}
+            self._outcome_owners[name] = {}
             self._assignments[name] = {}
             self._save()
             return exp
 
-    def assign_variant(self, experiment_name: str, user_id: str) -> dict:
+    def _select_variant(self, experiment_name: str, user_id: str, exp: Experiment) -> dict:
+        cached_vid = self._assignments.get(experiment_name, {}).get(user_id)
+        if cached_vid is not None:
+            for variant in exp.variants:
+                if variant["id"] == cached_vid:
+                    return variant
+
+        seed = f"{user_id}:{experiment_name}"
+        bucket = int(hashlib.sha256(seed.encode("utf-8")).hexdigest()[:8], 16) / 0xFFFFFFFF
+        cumulative = 0.0
+        chosen = exp.variants[-1]
+        for variant in exp.variants:
+            cumulative += variant.get("weight", 1.0 / len(exp.variants))
+            if bucket < cumulative:
+                chosen = variant
+                break
+        return chosen
+
+    def assign_variant(
+        self,
+        experiment_name: str,
+        user_id: str,
+        *,
+        persist: bool = True,
+    ) -> dict:
         """Deterministically assign a user to a variant.
 
         Uses hash(user_id + experiment_name) so the same user always gets the
@@ -241,33 +270,19 @@ class ABTestManager:
         _ensure_defaults()
         with self._lock:
             exp = self._get_experiment(experiment_name)
-
-            # Return cached assignment if already decided
-            cached_vid = self._assignments.get(experiment_name, {}).get(user_id)
-            if cached_vid is not None:
-                for v in exp.variants:
-                    if v["id"] == cached_vid:
-                        return dict(v)
-
-            # Deterministic assignment via hash
-            seed = f"{user_id}:{experiment_name}"
-            h = hashlib.sha256(seed.encode("utf-8")).hexdigest()
-            bucket = int(h[:8], 16) / 0xFFFFFFFF  # [0, 1]
-
-            cumulative = 0.0
-            chosen = exp.variants[-1]  # fallback
-            for v in exp.variants:
-                cumulative += v.get("weight", 1.0 / len(exp.variants))
-                if bucket < cumulative:
-                    chosen = v
-                    break
-
-            self._assignments.setdefault(experiment_name, {})[user_id] = chosen["id"]
-            self._save()
+            chosen = self._select_variant(experiment_name, user_id, exp)
+            if persist:
+                self._assignments.setdefault(experiment_name, {})[user_id] = chosen["id"]
+                self._save()
             return dict(chosen)
 
     def record_outcome(
-        self, experiment_name: str, user_id: str, metric_value: float
+        self,
+        experiment_name: str,
+        user_id: str,
+        metric_value: float,
+        *,
+        owner_key: str = "",
     ):
         """Record a metric observation for a user in an experiment.
 
@@ -281,12 +296,20 @@ class ABTestManager:
         """
         _ensure_defaults()
         with self._lock:
-            self._get_experiment(experiment_name)  # validate existence
+            exp = self._get_experiment(experiment_name)
+            assignments = self._assignments.setdefault(experiment_name, {})
+            if user_id not in assignments:
+                assignments[user_id] = self._select_variant(
+                    experiment_name,
+                    user_id,
+                    exp,
+                )["id"]
             bucket = self._outcomes.setdefault(experiment_name, {})
             values = bucket.setdefault(user_id, [])
             values.append(float(metric_value))
             if len(values) > 100:
                 bucket[user_id] = values[-100:]
+            self._outcome_owners.setdefault(experiment_name, {})[user_id] = owner_key
             self._save()
 
     def get_results(self, experiment_name: str) -> dict:

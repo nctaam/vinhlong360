@@ -111,7 +111,7 @@ def _configure_chat(monkeypatch, tmp_path):
     monkeypatch.setattr(server, "get_model_mini", lambda: "test-model")
     monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(server.cache, "put", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(server.analytics, "track_query", lambda *_args: None)
+    monkeypatch.setattr(server.analytics, "track_query", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(server.memory_manager, "on_chat_complete", lambda *_args: None)
     monkeypatch.setattr(
         server.reflexion_engine,
@@ -247,6 +247,78 @@ async def test_boundary_failure_stops_all_content_consumers(
     assert public_text in response.text
     boundary_call.assert_called_once()
     forbidden.assert_not_called()
+
+
+@pytest.mark.anyio
+async def test_stream_fallback_boundary_failure_does_not_write_memory(
+    monkeypatch,
+    tmp_path,
+):
+    manager, _captured_messages = _configure_chat(monkeypatch, tmp_path)
+
+    def unavailable(*_args, **_kwargs):
+        raise PrivacyBoundaryUnavailable("OUTPUT_REDACTION_FAILED")
+
+    def provider_failure(*_args, **_kwargs):
+        raise RuntimeError("provider unavailable")
+
+    forbidden = Mock(side_effect=AssertionError("fallback boundary failure must not write"))
+    monkeypatch.setattr(server, "_safe_delivered_reply", unavailable)
+    monkeypatch.setattr(server, "get_client", lambda: SimpleNamespace(
+        chat=SimpleNamespace(completions=SimpleNamespace(create=provider_failure)),
+    ))
+    monkeypatch.setattr(manager, "on_message", forbidden)
+
+    transport = httpx.ASGITransport(app=server.app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            "/chat/stream",
+            json={"message": "hello", "history": []},
+        )
+
+    assert response.status_code == 200
+    assert "không thể xác minh an toàn" in response.text
+    forbidden.assert_not_called()
+
+
+@pytest.mark.anyio
+async def test_stream_output_boundary_failure_does_not_settle_personal_usage(
+    monkeypatch,
+    tmp_path,
+):
+    _manager_instance, _captured_messages = _configure_chat(monkeypatch, tmp_path)
+    cost_writes = []
+    guardrail_writes = []
+
+    monkeypatch.setattr(server, "HAS_COST_TRACKER", True)
+    monkeypatch.setattr(server, "HAS_GUARDRAILS", True)
+    monkeypatch.setattr(
+        server,
+        "cost_attribution",
+        SimpleNamespace(record=lambda *args, **kwargs: cost_writes.append((args, kwargs))),
+    )
+    monkeypatch.setattr(
+        server,
+        "guardrail_budget",
+        SimpleNamespace(record_usage=lambda *args, **kwargs: guardrail_writes.append((args, kwargs))),
+    )
+    monkeypatch.setattr(
+        server,
+        "_safe_delivered_reply",
+        Mock(side_effect=PrivacyBoundaryUnavailable("OUTPUT_REDACTION_FAILED")),
+    )
+
+    transport = httpx.ASGITransport(app=server.app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            "/chat/stream",
+            json={"message": "hello", "history": []},
+        )
+
+    assert response.status_code == 200
+    assert "không thể xác minh an toàn" in response.text
+    assert cost_writes == []
+    assert guardrail_writes == []
 
 
 @pytest.mark.parametrize("route", [server.chat, server.chat_stream])

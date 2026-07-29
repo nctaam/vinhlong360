@@ -219,8 +219,12 @@ except ImportError:
 from privacy_boundary import (
     PrivacyBoundaryBlocked,
     PrivacyBoundaryUnavailable,
+    SafeText,
     prepare_chat_input,
+    prepare_chat_output,
+    redact_payload,
 )
+from index_policy import is_publicly_eligible
 
 try:
     from cost_tracker import token_counter, cost_attribution, budget_manager as cost_budget, track_llm_call, get_cost_report  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
@@ -1626,7 +1630,11 @@ def _resolve_base_prompt(session_id):
     base_prompt = SYSTEM_PROMPT
     if HAS_AB_TESTING and session_id:
         try:
-            variant = ab_manager.assign_variant("prompt_style", session_id)
+            variant = ab_manager.assign_variant(
+                "prompt_style",
+                session_id,
+                persist=False,
+            )
             if variant:
                 ab_info["prompt_style"] = variant["id"]
                 style = variant.get("config", {}).get("style", "balanced")
@@ -1799,6 +1807,171 @@ def _record_cached_exchange(owner_key: str, session_id: str, message: str, cache
 
 
 LLM_TIMEOUT = int(os.environ.get("LLM_TIMEOUT", "30"))
+SAFE_PRIVACY_FAILURE_REPLY = (
+    "Xin lỗi, hệ thống không thể xác minh an toàn câu trả lời. Vui lòng thử lại."
+)
+_PUBLIC_CONTACT_FIELDS = ("phone", "email", "hotline", "contact_phone", "contact_email")
+
+
+def _payload_strings(value):
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, dict):
+        for key, item in value.items():
+            if isinstance(key, str):
+                yield key
+            yield from _payload_strings(item)
+    elif isinstance(value, (list, tuple)):
+        for item in value:
+            yield from _payload_strings(item)
+
+
+def _entity_contact_values(entity: dict) -> set[str]:
+    attrs = entity.get("attributes") or {}
+    if not isinstance(attrs, dict):
+        return set()
+    return {
+        value
+        for field in _PUBLIC_CONTACT_FIELDS
+        if isinstance((value := attrs.get(field)), str) and value
+    }
+
+
+def _payload_contact_values(value: dict) -> set[str]:
+    attrs = value.get("attributes") or {}
+    nested = attrs if isinstance(attrs, dict) else {}
+    contacts = set()
+    for field in _PUBLIC_CONTACT_FIELDS:
+        for candidate in (value.get(field), nested.get(field)):
+            if isinstance(candidate, str) and candidate:
+                contacts.add(candidate)
+    return contacts
+
+
+def _verified_public_contacts_from_payload(value) -> set[str]:
+    """Return exact published contact fields present in this tool payload."""
+    entities = {
+        entity_id: entity
+        for entity_id, entity in (getattr(knowledge, "_entities", None) or {}).items()
+        if isinstance(entity_id, str)
+        and isinstance(entity, dict)
+        and is_publicly_eligible(entity)
+    }
+    entities_by_name: dict[str, list[dict]] = {}
+    for entity in entities.values():
+        name = entity.get("name")
+        if isinstance(name, str) and name:
+            entities_by_name.setdefault(name, []).append(entity)
+
+    contacts: set[str] = set()
+
+    def selected_entity(item: dict):
+        for key in ("id", "entity_id"):
+            entity_id = item.get(key)
+            if isinstance(entity_id, str) and entity_id in entities:
+                return entities[entity_id]
+        name = item.get("name")
+        matches = entities_by_name.get(name, []) if isinstance(name, str) else []
+        return matches[0] if len(matches) == 1 else None
+
+    def collect(item):
+        if isinstance(item, dict):
+            entity = selected_entity(item)
+            if entity is not None:
+                contacts.update(
+                    _payload_contact_values(item) & _entity_contact_values(entity)
+                )
+            for child in item.values():
+                collect(child)
+        elif isinstance(item, (list, tuple)):
+            for child in item:
+                collect(child)
+
+    collect(value)
+    return contacts
+
+
+def _protect_public_contacts(value, contacts: set[str]):
+    restorations: dict[str, str] = {}
+    original_strings = tuple(_payload_strings(value))
+
+    def protect(item):
+        if isinstance(item, str):
+            protected = item
+            for index, contact in enumerate(sorted(contacts, key=len, reverse=True)):
+                marker = f"__VL360_PUBLIC_CONTACT_{index}__"
+                while any(marker in original for original in original_strings):
+                    marker = "_" + marker
+                if contact in protected:
+                    protected = protected.replace(contact, marker)
+                    restorations[marker] = contact
+            return protected
+        if isinstance(item, dict):
+            return {protect(key) if isinstance(key, str) else key: protect(child) for key, child in item.items()}
+        if isinstance(item, list):
+            return [protect(child) for child in item]
+        if isinstance(item, tuple):
+            return tuple(protect(child) for child in item)
+        return item
+
+    return protect(value), restorations
+
+
+def _restore_public_contacts(value, restorations: dict[str, str]):
+    if isinstance(value, str):
+        restored = value
+        for marker, contact in restorations.items():
+            restored = restored.replace(marker, contact)
+        return restored
+    if isinstance(value, dict):
+        return {
+            _restore_public_contacts(key, restorations) if isinstance(key, str) else key:
+            _restore_public_contacts(child, restorations)
+            for key, child in value.items()
+        }
+    if isinstance(value, list):
+        return [_restore_public_contacts(child, restorations) for child in value]
+    if isinstance(value, tuple):
+        return tuple(_restore_public_contacts(child, restorations) for child in value)
+    return value
+
+
+def _safe_tool_result(result, verified_public_contacts: set[str]) -> str:
+    """Redact one untrusted tool result before prompt, preview, or persistence use."""
+    if not isinstance(result, str):
+        result = json.dumps(result, ensure_ascii=False, default=str)
+    try:
+        parsed = json.loads(result)
+        was_json = True
+    except (json.JSONDecodeError, TypeError):
+        parsed = result
+        was_json = False
+
+    verified_public_contacts.update(_verified_public_contacts_from_payload(parsed))
+    protected, restorations = _protect_public_contacts(parsed, verified_public_contacts)
+    safe_value = redact_payload(
+        protected,
+        source="untrusted_external",
+        verified_public_contacts=tuple(verified_public_contacts),
+    )
+    safe_value = _restore_public_contacts(safe_value, restorations)
+    if was_json:
+        return json.dumps(safe_value, ensure_ascii=False, default=str)
+    return str(safe_value)
+
+
+def _safe_delivered_reply(
+    reply: str,
+    query: str,
+    entities,
+    verified_public_contacts,
+) -> SafeText:
+    return prepare_chat_output(
+        reply,
+        query=query,
+        entities=entities,
+        verified_public_contacts=tuple(verified_public_contacts),
+    )
 
 
 def _make_llm_call_fn(model_fn=None):
@@ -1890,6 +2063,7 @@ def _run_agent_orchestrated(
     session_id,
     base_system_prompt,
     usage_accumulator=None,
+    verified_public_contacts=None,
 ):
     """Run agent via the orchestrator, now wired with tuned params + parallel tools
     + learned tool ordering + smart model routing."""
@@ -1903,8 +2077,11 @@ def _run_agent_orchestrated(
     if _use_mini:
         logger.info("Model routing: using MINI", category=_cat.value, agent=_agent.name)
 
+    contacts = verified_public_contacts if verified_public_contacts is not None else set()
+
     def _request_call_tool(name, args):
-        return call_tool(name, args, usage_accumulator)
+        result = call_tool(name, args, usage_accumulator)
+        return _safe_tool_result(result, contacts)
 
     result = orch.run(
         message=message,
@@ -1986,7 +2163,7 @@ def _prepare_pending_calls(tool_calls, tools_used, messages, total_tool_calls, m
 
 def _execute_pending_calls(pending_calls, parallel_exec, messages, suggestions,
                            empty_results_count, round_num, total_tool_calls,
-                           call_tool_fn=None):
+                           call_tool_fn=None, verified_public_contacts=None):
     """Thực thi pending tool-calls (parallel khi >1, else serial). Trả empty_results_count."""
     if parallel_exec and len(pending_calls) > 1:
         call_items = [{"id": c["id"], "name": c["name"], "args": c["args"]} for c in pending_calls]
@@ -1995,6 +2172,10 @@ def _execute_pending_calls(pending_calls, parallel_exec, messages, suggestions,
             logger.info("Tool call (parallel)", tool=pc["name"],
                         duration_ms=round(res.get("duration_ms", 0)), round=round_num + 1)
             result = res.get("result", json.dumps({"error": res.get("error", "Unknown")}))
+            result = _safe_tool_result(
+                result,
+                verified_public_contacts if verified_public_contacts is not None else set(),
+            )
             messages.append({"role": "tool", "tool_call_id": pc["id"], "content": result})
             _post_tool_process(pc["name"], pc["args"], result, suggestions, messages, empty_results_count)
     else:
@@ -2003,6 +2184,10 @@ def _execute_pending_calls(pending_calls, parallel_exec, messages, suggestions,
             logger.info(f"Tool call #{total_tool_calls}", tool=pc["name"],
                         args=str(pc["args"])[:200], round=round_num + 1)
             result = tool_caller(pc["name"], pc["args"])
+            result = _safe_tool_result(
+                result,
+                verified_public_contacts if verified_public_contacts is not None else set(),
+            )
             messages.append({"role": "tool", "tool_call_id": pc["id"], "content": result})
             empty_results_count = _post_tool_process(pc["name"], pc["args"], result, suggestions, messages, empty_results_count)
     return empty_results_count
@@ -2013,6 +2198,7 @@ def _run_agent(
     max_rounds: int = 8,
     max_tool_calls: int = 15,
     usage_accumulator=None,
+    verified_public_contacts=None,
 ):
     """
     ReAct-style agent loop with multi-turn tool calling.
@@ -2029,8 +2215,11 @@ def _run_agent(
     total_tool_calls = 0
     empty_results_count = 0
 
+    contacts = verified_public_contacts if verified_public_contacts is not None else set()
+
     def _request_call_tool(name, args):
-        return call_tool(name, args, usage_accumulator)
+        result = call_tool(name, args, usage_accumulator)
+        return _safe_tool_result(result, contacts)
 
     # Setup parallel executor if available
     parallel_exec = None
@@ -2072,7 +2261,7 @@ def _run_agent(
         empty_results_count = _execute_pending_calls(
             pending_calls, parallel_exec, messages, suggestions,
             empty_results_count, round_num, total_tool_calls,
-            _request_call_tool)
+            _request_call_tool, contacts)
 
     return msg.content or "Xin lỗi, tôi không thể trả lời đầy đủ câu hỏi này.", tools_used, suggestions
 
@@ -2239,6 +2428,19 @@ async def chat(req: ChatRequest, request: Request, response: Response):
             track_cache("miss")
 
     usage_accumulator = UsageAccumulator()
+    verified_public_contacts: set[str] = set()
+
+    def settle_usage() -> None:
+        try:
+            usage_accumulator.settle(
+                owner_key=owner_key,
+                query=corrected_message[:200],
+                agent_name="chat",
+                guardrail_budget=guardrail_budget if HAS_GUARDRAILS else None,
+                cost_attribution=cost_attribution if HAS_COST_TRACKER else None,
+            )
+        except Exception:
+            logger.debug("Cost tracking failed", exc_info=True)
 
     # Autocorrect user input
     corrected_message = message
@@ -2255,7 +2457,6 @@ async def chat(req: ChatRequest, request: Request, response: Response):
             _trace_ctx = trace_chat_request(corrected_message, session_id, get_model())
             _trace_ctx.__enter__()
         messages, build_info = _build_messages(corrected_message, history, session_id, owner_key)
-        memory_manager.on_message(owner_key, session_id, "user", message)
 
         # ── Dynamic agents: check for specialist match before orchestrator ──
         _dyn_prompt_addon = ""
@@ -2299,6 +2500,7 @@ async def chat(req: ChatRequest, request: Request, response: Response):
                 _run_agent_orchestrated,
                 corrected_message, messages[1:-1], session_id, _enriched_system,
                 usage_accumulator,
+                verified_public_contacts,
             )
         else:
             messages[0]["content"] = _enriched_system
@@ -2308,7 +2510,11 @@ async def chat(req: ChatRequest, request: Request, response: Response):
                 8,
                 15,
                 usage_accumulator,
+                verified_public_contacts,
             )
+    except asyncio.CancelledError:
+        settle_usage()
+        raise
     except Exception as exc:
         error_tracker.record_error("/chat", str(exc), traceback.format_exc())
         if HAS_METRICS:
@@ -2322,16 +2528,6 @@ async def chat(req: ChatRequest, request: Request, response: Response):
                 _trace_ctx.__exit__(None, None, None)
             except Exception:
                 logger.debug("Trace context exit failed", exc_info=True)
-        try:
-            usage_accumulator.settle(
-                owner_key=owner_key,
-                query=corrected_message[:200],
-                agent_name="chat",
-                guardrail_budget=guardrail_budget if HAS_GUARDRAILS else None,
-                cost_attribution=cost_attribution if HAS_COST_TRACKER else None,
-            )
-        except Exception:
-            logger.debug("Cost tracking failed", exc_info=True)
 
     # ── Knowledge-only fallback: supplement with KB data when LLM fails ──
     # P0/chat: chỉ coi là lỗi khi reply RỖNG, hoặc là fallback hệ-thống thật (mọi fallback
@@ -2425,6 +2621,9 @@ async def chat(req: ChatRequest, request: Request, response: Response):
                 else:
                     kb_data = _relevant
             if isinstance(kb_data, list) and kb_data:
+                verified_public_contacts.update(
+                    _verified_public_contacts_from_payload(kb_data)
+                )
                 if _search_month:
                     lines = [f"Hệ thống AI đang bảo trì. Thông tin tháng {_search_month} từ cơ sở dữ liệu:\n"]
                 else:
@@ -2448,9 +2647,41 @@ async def chat(req: ChatRequest, request: Request, response: Response):
             if not reply:
                 reply = "Xin lỗi, đã xảy ra lỗi khi xử lý câu hỏi. Vui lòng thử lại."
 
+    try:
+        safe_reply = _safe_delivered_reply(
+            reply,
+            message,
+            (knowledge._entities or {}) if hasattr(knowledge, "_entities") else {},
+            verified_public_contacts,
+        )
+    except PrivacyBoundaryUnavailable as exc:
+        logger.warning("Privacy boundary unavailable for output", code=exc.code)
+        return ChatResponse(
+            reply=SAFE_PRIVACY_FAILURE_REPLY,
+            tool_calls=[],
+            suggestions=[],
+            session_id=session_id,
+        )
+    except Exception:
+        logger.warning(
+            "Privacy boundary unavailable for output",
+            code="UNEXPECTED_PRIVACY_OUTPUT_ERROR",
+        )
+        return ChatResponse(
+            reply=SAFE_PRIVACY_FAILURE_REPLY,
+            tool_calls=[],
+            suggestions=[],
+            session_id=session_id,
+        )
+
+    reply = safe_reply.text
+    tools_used = redact_payload(tools_used, source="provider_output")
+    suggestions = redact_payload(suggestions, source="provider_output")
+    _privacy_output_boundary_marker = True
+    settle_usage()
     duration = time.time() - t0
 
-    # Record assistant reply in memory
+    memory_manager.on_message(owner_key, session_id, "user", message)
     memory_manager.on_message(owner_key, session_id, "assistant", reply)
 
     # Memory graph: record entity interactions
@@ -2485,13 +2716,24 @@ async def chat(req: ChatRequest, request: Request, response: Response):
         # Experience memory: distill a strategy item (≥8) or negative constraint (<5)
         if HAS_EXPERIENCE:
             try:
-                experience_memory.record(message, tools_used, evaluation["score"], reply)
+                experience_memory.record(
+                    message,
+                    tools_used,
+                    evaluation["score"],
+                    reply,
+                    owner_key=owner_key,
+                )
             except Exception:
                 logger.debug("Experience memory record failed", exc_info=True)
         # Few-shot demo pool: capture high-scoring (query, answer) exemplars
         if HAS_FEWSHOT:
             try:
-                prompt_compiler.record_demo(message, reply, evaluation["score"])
+                prompt_compiler.record_demo(
+                    message,
+                    reply,
+                    evaluation["score"],
+                    owner_key=owner_key,
+                )
             except Exception:
                 logger.debug("Few-shot demo record failed", exc_info=True)
     except Exception as eval_err:
@@ -2503,7 +2745,8 @@ async def chat(req: ChatRequest, request: Request, response: Response):
         try:
             est_tokens = token_counter.estimate_tokens(reply) if HAS_COST_TRACKER else len(reply) // 3
             record_outcome(session_id, corrected_message, "orchestrator" if HAS_ORCHESTRATOR else "direct",
-                          tools_used, evaluation["score"], duration, est_tokens)
+                          tools_used, evaluation["score"], duration, est_tokens,
+                          owner_key=owner_key)
         except Exception:
             logger.debug("Self-optimizer outcome record failed", exc_info=True)
 
@@ -2519,7 +2762,12 @@ async def chat(req: ChatRequest, request: Request, response: Response):
     # A/B testing: record outcome
     if HAS_AB_TESTING and session_id:
         try:
-            ab_manager.record_outcome("prompt_style", session_id, evaluation["score"])
+            ab_manager.record_outcome(
+                "prompt_style",
+                session_id,
+                evaluation["score"],
+                owner_key=owner_key,
+            )
         except Exception:
             logger.debug("A/B outcome record failed", exc_info=True)
 
@@ -2529,19 +2777,15 @@ async def chat(req: ChatRequest, request: Request, response: Response):
 
     # Track analytics
     try:
-        analytics.track_query(message, tools_used, reply, session_id)
+        analytics.track_query(
+            message,
+            tools_used,
+            reply,
+            session_id,
+            owner_key=owner_key,
+        )
     except Exception:
         logger.debug("Analytics tracking failed", exc_info=True)
-
-    # ── Guardrails: output validation (PII mask + hallucination check) ──
-    if HAS_GUARDRAILS:
-        try:
-            out_check = check_output(reply, corrected_message, knowledge._entities if hasattr(knowledge, '_entities') else {})
-            if out_check.get("cleaned_reply"):
-                reply = out_check["cleaned_reply"]
-        except Exception as guard_err:
-            # GĐ4.5: không nuốt lỗi im lặng — log để biết guardrail output hỏng.
-            logger.error("Output guardrail failed", error=str(guard_err))
 
     # Cache response (only if good quality)
     if cache_eligible and len(reply) > 30 and evaluation["score"] >= 5:
@@ -2696,7 +2940,13 @@ async def chat_stream(req: ChatRequest, request: Request):
                         yield f"data: {json.dumps({'type': 'text', 'content': chunk}, ensure_ascii=False)}\n\n"
                     suggestions = sem_cached.get("suggestions", [])
                     yield f"data: {json.dumps({'type': 'done', 'tools': ['semantic_cache_hit'], 'suggestions': suggestions, 'session_id': sid}, ensure_ascii=False)}\n\n"
-                analytics.track_query(message, ["semantic_cache_hit"], sem_cached.get("reply", ""), sid)
+                analytics.track_query(
+                    message,
+                    ["semantic_cache_hit"],
+                    sem_cached.get("reply", ""),
+                    sid,
+                    owner_key=owner_key,
+                )
                 return _stream_response(sem_cached_stream())
         except Exception:
             logger.debug("Semantic cache retrieval failed (stream)", exc_info=True)
@@ -2729,10 +2979,18 @@ async def chat_stream(req: ChatRequest, request: Request):
                     yield f"data: {json.dumps({'type': 'text', 'content': chunk}, ensure_ascii=False)}\n\n"
                 suggestions = cached.get("suggestions", [])
                 yield f"data: {json.dumps({'type': 'done', 'tools': ['cache_hit'], 'suggestions': suggestions, 'session_id': sid}, ensure_ascii=False)}\n\n"
-            analytics.track_query(message, ["cache_hit"], cached.get("reply", ""), sid)
+            analytics.track_query(
+                message,
+                ["cache_hit"],
+                cached.get("reply", ""),
+                sid,
+                owner_key=owner_key,
+            )
             return _stream_response(cached_stream())
 
     usage_accumulator = UsageAccumulator()
+    verified_public_contacts: set[str] = set()
+    stream_usage_settlement_blocked = False
 
     # Autocorrect
     if HAS_AUTOCORRECT:
@@ -2742,7 +3000,6 @@ async def chat_stream(req: ChatRequest, request: Request):
 
     # Build messages with full 2026 architecture context
     messages, _build_info = _build_messages(message, history, sid, owner_key)
-    memory_manager.on_message(owner_key, sid, "user", cache_query)
 
     # ── Parity with /chat: apply dynamic-agent addon + active prompt variant ──
     # (Previously the streaming path missed these, giving lower quality than /chat.)
@@ -2790,12 +3047,42 @@ async def chat_stream(req: ChatRequest, request: Request):
             logger.debug("Stream tuned params failed", exc_info=True)
 
     async def _event_stream_body():
+        nonlocal stream_usage_settlement_blocked
         # Send autocorrect info if corrected
         if HAS_AUTOCORRECT and message != cache_query:
             yield f"data: {json.dumps({'type': 'autocorrect', 'original': cache_query, 'corrected': message}, ensure_ascii=False)}\n\n"
         tools_used = []
         suggestions = []
         max_rounds = _stream_rounds
+
+        def prepare_stream_fallback(raw_reply) -> str | None:
+            nonlocal stream_usage_settlement_blocked
+            try:
+                safe_fallback = _safe_delivered_reply(
+                    raw_reply,
+                    message,
+                    (knowledge._entities or {}) if hasattr(knowledge, "_entities") else {},
+                    verified_public_contacts,
+                )
+            except PrivacyBoundaryUnavailable as exc:
+                logger.warning(
+                    "Privacy boundary unavailable for stream fallback",
+                    code=exc.code,
+                )
+                stream_usage_settlement_blocked = True
+                return None
+            except Exception:
+                logger.warning(
+                    "Privacy boundary unavailable for stream fallback",
+                    code="UNEXPECTED_PRIVACY_OUTPUT_ERROR",
+                )
+                stream_usage_settlement_blocked = True
+                return None
+
+            _privacy_output_boundary_marker = True
+            memory_manager.on_message(owner_key, sid, "user", cache_query)
+            memory_manager.on_message(owner_key, sid, "assistant", safe_fallback.text)
+            return safe_fallback.text
 
         for round_num in range(max_rounds):
             try:
@@ -2814,14 +3101,22 @@ async def chat_stream(req: ChatRequest, request: Request):
                     messages,
                 )
                 if not decision["success"]:
-                    yield f"data: {json.dumps({'type': 'text', 'content': decision['message']}, ensure_ascii=False)}\n\n"
+                    fallback = prepare_stream_fallback(decision["message"])
+                    if fallback is None:
+                        fallback = SAFE_PRIVACY_FAILURE_REPLY
+                    yield f"data: {json.dumps({'type': 'text', 'content': fallback}, ensure_ascii=False)}\n\n"
                     yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
                     return
                 response = decision["response"]
                 msg = response.choices[0].message
             except Exception as exc:
                 error_tracker.record_error("/chat/stream", str(exc), traceback.format_exc())
-                yield f"data: {json.dumps({'type': 'text', 'content': 'Xin lỗi, đã xảy ra lỗi. Vui lòng thử lại.'}, ensure_ascii=False)}\n\n"
+                fallback = prepare_stream_fallback(
+                    "Xin lỗi, đã xảy ra lỗi. Vui lòng thử lại."
+                )
+                if fallback is None:
+                    fallback = SAFE_PRIVACY_FAILURE_REPLY
+                yield f"data: {json.dumps({'type': 'text', 'content': fallback}, ensure_ascii=False)}\n\n"
                 yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
                 return
 
@@ -2843,6 +3138,7 @@ async def chat_stream(req: ChatRequest, request: Request):
                     result = await _await_chat_worker(
                         call_tool, fn_name, fn_args, usage_accumulator,
                     )  # CONC-001: tool I/O off event loop
+                    result = _safe_tool_result(result, verified_public_contacts)
                     duration_ms = round((time.time() - t0) * 1000)
                     messages.append({"role": "tool", "tool_call_id": tc.id, "content": result})
 
@@ -2924,7 +3220,37 @@ async def chat_stream(req: ChatRequest, request: Request):
                         )
                 full_text = "".join(_chunks)
 
-                # Record in memory
+                try:
+                    safe_reply = _safe_delivered_reply(
+                        full_text,
+                        message,
+                        (knowledge._entities or {}) if hasattr(knowledge, "_entities") else {},
+                        verified_public_contacts,
+                    )
+                except PrivacyBoundaryUnavailable as exc:
+                    logger.warning(
+                        "Privacy boundary unavailable for stream output",
+                        code=exc.code,
+                    )
+                    stream_usage_settlement_blocked = True
+                    yield f"data: {json.dumps({'type': 'text', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
+                    yield f"data: {json.dumps({'type': 'done', 'tools': [], 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
+                    return
+                except Exception:
+                    logger.warning(
+                        "Privacy boundary unavailable for stream output",
+                        code="UNEXPECTED_PRIVACY_OUTPUT_ERROR",
+                    )
+                    stream_usage_settlement_blocked = True
+                    yield f"data: {json.dumps({'type': 'text', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
+                    yield f"data: {json.dumps({'type': 'done', 'tools': [], 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
+                    return
+
+                full_text = safe_reply.text
+                tools_used = redact_payload(tools_used, source="provider_output")
+                suggestions = redact_payload(suggestions, source="provider_output")
+                _privacy_output_boundary_marker = True
+                memory_manager.on_message(owner_key, sid, "user", cache_query)
                 memory_manager.on_message(owner_key, sid, "assistant", full_text)
 
                 # Memory graph: record entity interactions
@@ -2953,12 +3279,23 @@ async def chat_stream(req: ChatRequest, request: Request):
                     )
                 if HAS_EXPERIENCE:
                     try:
-                        experience_memory.record(message, tools_used, evaluation["score"], full_text)
+                        experience_memory.record(
+                            message,
+                            tools_used,
+                            evaluation["score"],
+                            full_text,
+                            owner_key=owner_key,
+                        )
                     except Exception:
                         logger.debug("Experience memory record failed (stream)", exc_info=True)
                 if HAS_FEWSHOT:
                     try:
-                        prompt_compiler.record_demo(message, full_text, evaluation["score"])
+                        prompt_compiler.record_demo(
+                            message,
+                            full_text,
+                            evaluation["score"],
+                            owner_key=owner_key,
+                        )
                     except Exception:
                         logger.debug("Few-shot demo record failed (stream)", exc_info=True)
 
@@ -2966,7 +3303,16 @@ async def chat_stream(req: ChatRequest, request: Request):
                 if HAS_OPTIMIZER:
                     try:
                         est_tok = token_counter.estimate_tokens(full_text) if HAS_COST_TRACKER else len(full_text) // 3
-                        record_outcome(sid, message, "stream", tools_used, evaluation["score"], 0, est_tok)
+                        record_outcome(
+                            sid,
+                            message,
+                            "stream",
+                            tools_used,
+                            evaluation["score"],
+                            0,
+                            est_tok,
+                            owner_key=owner_key,
+                        )
                     except Exception:
                         logger.debug("Self-optimizer outcome failed (stream)", exc_info=True)
 
@@ -2980,7 +3326,12 @@ async def chat_stream(req: ChatRequest, request: Request):
                 # A/B testing: record outcome
                 if HAS_AB_TESTING and sid:
                     try:
-                        ab_manager.record_outcome("prompt_style", sid, evaluation["score"])
+                        ab_manager.record_outcome(
+                            "prompt_style",
+                            sid,
+                            evaluation["score"],
+                            owner_key=owner_key,
+                        )
                     except Exception:
                         logger.debug("A/B outcome record failed (stream)", exc_info=True)
 
@@ -2988,17 +3339,14 @@ async def chat_stream(req: ChatRequest, request: Request):
                 if HAS_METRICS:
                     track_chat_request("ok", 0)  # duration not tracked in stream
 
-                # ── Guardrails: output validation ──
-                if HAS_GUARDRAILS:
-                    try:
-                        out_check = check_output(full_text, message, knowledge._entities if hasattr(knowledge, '_entities') else {})
-                        if out_check.get("cleaned_reply") and out_check["cleaned_reply"] != full_text:
-                            full_text = out_check["cleaned_reply"]
-                    except Exception:
-                        logger.debug("Stream guardrail check failed", exc_info=True)
-
                 # Track & cache
-                analytics.track_query(message, tools_used, full_text, sid)
+                analytics.track_query(
+                    message,
+                    tools_used,
+                    full_text,
+                    sid,
+                    owner_key=owner_key,
+                )
                 if cache_eligible and len(full_text) > 30 and evaluation["score"] >= 5:
                     cache_data = {"reply": full_text, "tool_calls": tools_used, "suggestions": suggestions}
                     # Lưu theo cache_query (khoá lúc cache.get) — không phải bản đã autocorrect,
@@ -3087,8 +3435,38 @@ async def chat_stream(req: ChatRequest, request: Request):
                     )
             synth_text = "".join(synth_chunks)
             if synth_text:
+                try:
+                    safe_synth = _safe_delivered_reply(
+                        synth_text,
+                        message,
+                        (knowledge._entities or {}) if hasattr(knowledge, "_entities") else {},
+                        verified_public_contacts,
+                    )
+                except PrivacyBoundaryUnavailable as exc:
+                    logger.warning(
+                        "Privacy boundary unavailable for stream synthesis",
+                        code=exc.code,
+                    )
+                    stream_usage_settlement_blocked = True
+                    return
+                except Exception:
+                    logger.warning(
+                        "Privacy boundary unavailable for stream synthesis",
+                        code="UNEXPECTED_PRIVACY_OUTPUT_ERROR",
+                    )
+                    stream_usage_settlement_blocked = True
+                    return
+                synth_text = safe_synth.text
+                _privacy_output_boundary_marker = True
+                memory_manager.on_message(owner_key, sid, "user", cache_query)
                 memory_manager.on_message(owner_key, sid, "assistant", synth_text)
-                analytics.track_query(message, tools_used, synth_text, sid)
+                analytics.track_query(
+                    message,
+                    tools_used,
+                    synth_text,
+                    sid,
+                    owner_key=owner_key,
+                )
         except Exception:
             logger.debug("Stream synthesis fallback failed", exc_info=True)
 
@@ -3103,16 +3481,17 @@ async def chat_stream(req: ChatRequest, request: Request):
             try:
                 await body.aclose()
             finally:
-                try:
-                    usage_accumulator.settle(
-                        owner_key=owner_key,
-                        query=message[:200],
-                        agent_name="stream",
-                        guardrail_budget=guardrail_budget if HAS_GUARDRAILS else None,
-                        cost_attribution=cost_attribution if HAS_COST_TRACKER else None,
-                    )
-                except Exception:
-                    logger.debug("Cost tracking failed (stream)", exc_info=True)
+                if not stream_usage_settlement_blocked:
+                    try:
+                        usage_accumulator.settle(
+                            owner_key=owner_key,
+                            query=message[:200],
+                            agent_name="stream",
+                            guardrail_budget=guardrail_budget if HAS_GUARDRAILS else None,
+                            cost_attribution=cost_attribution if HAS_COST_TRACKER else None,
+                        )
+                    except Exception:
+                        logger.debug("Cost tracking failed (stream)", exc_info=True)
 
     semantic_lease = None
     if semantic_dedup_key is not None:

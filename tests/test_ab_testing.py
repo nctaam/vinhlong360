@@ -102,6 +102,27 @@ def test_assign_variant_unknown_experiment(tmp_manager):
         tmp_manager.assign_variant("nonexistent", "user_1")
 
 
+def test_non_persisted_assignment_waits_for_outcome(manager_with_experiment):
+    variant = manager_with_experiment.assign_variant(
+        "test_exp",
+        "user_boundary",
+        persist=False,
+    )
+
+    assert variant["id"] in ("control", "treatment")
+    assert manager_with_experiment._assignments["test_exp"] == {}
+
+    manager_with_experiment.record_outcome(
+        "test_exp",
+        "user_boundary",
+        0.9,
+        owner_key="user:alice",
+    )
+
+    assert manager_with_experiment._assignments["test_exp"]["user_boundary"] == variant["id"]
+    assert manager_with_experiment._outcome_owners["test_exp"]["user_boundary"] == "user:alice"
+
+
 # ── Record outcome ───────────────────────────────────
 
 

@@ -279,7 +279,7 @@ def _configure_usage_stream(monkeypatch, create):
     )
     monkeypatch.setattr(server.memory_manager, "on_message", lambda *_args: None)
     monkeypatch.setattr(server.memory_manager, "on_chat_complete", lambda *_args: None)
-    monkeypatch.setattr(server.analytics, "track_query", lambda *_args: None)
+    monkeypatch.setattr(server.analytics, "track_query", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(
         server.reflexion_engine,
         "evaluate_answer",

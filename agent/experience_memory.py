@@ -124,7 +124,14 @@ def _distill_negative(query: str, tools: list, reply: str) -> dict:
     }
 
 
-def record(query: str, tools_used: list, score: float, reply: str = "") -> dict | None:
+def record(
+    query: str,
+    tools_used: list,
+    score: float,
+    reply: str = "",
+    *,
+    owner_key: str = "",
+) -> dict | None:
     """Distill an interaction into a strategy item (positive) or constraint (negative).
 
     score: reflexion answer score (0-10). >=8 → positive lesson; <5 → negative.
@@ -141,9 +148,14 @@ def record(query: str, tools_used: list, score: float, reply: str = "") -> dict 
         items = _load()
         # Merge by (intent, polarity) — reinforce instead of duplicating
         for existing in items:
-            if existing["intent"] == item["intent"] and existing["polarity"] == item["polarity"]:
+            if (
+                existing["intent"] == item["intent"]
+                and existing["polarity"] == item["polarity"]
+                and existing.get("owner_key", "") == owner_key
+            ):
                 existing["uses"] = existing.get("uses", 1) + 1
                 existing["query_sample"] = query[:120]
+                existing["owner_key"] = owner_key
                 # Union principles (keep it tight)
                 merged = existing.get("principles", [])
                 for p in item["principles"]:
@@ -155,6 +167,7 @@ def record(query: str, tools_used: list, score: float, reply: str = "") -> dict 
 
         item["id"] = f"exp_{len(items) + 1:05d}"
         item["query_sample"] = query[:120]
+        item["owner_key"] = owner_key
         item["uses"] = 1
         item["score"] = round(score, 1)
         items.append(item)

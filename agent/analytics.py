@@ -69,7 +69,14 @@ def _save(data: dict):
         logger.warning("Failed to save analytics: %s", exc)
 
 
-def track_query(message: str, tools_used: list[str], reply: str, session_id: str = None):
+def track_query(
+    message: str,
+    tools_used: list[str],
+    reply: str,
+    session_id: str = None,
+    *,
+    owner_key: str = "",
+):
     """Ghi nhận 1 query từ user."""
     with _lock:
         data = _load()
@@ -83,6 +90,7 @@ def track_query(message: str, tools_used: list[str], reply: str, session_id: str
             "timestamp": now.isoformat(),
             "tools": tools_used,
             "has_answer": has_answer,
+            "owner_key": owner_key,
         })
         data["queries"] = data["queries"][-1000:]
 
@@ -91,6 +99,7 @@ def track_query(message: str, tools_used: list[str], reply: str, session_id: str
             data["unanswered"].append({
                 "text": message[:200],
                 "timestamp": now.isoformat(),
+                "owner_key": owner_key,
             })
             data["unanswered"] = data["unanswered"][-200:]
 

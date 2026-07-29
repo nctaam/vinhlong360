@@ -80,7 +80,13 @@ def _save(path: Path, data):
     tmp.replace(path)
 
 
-def record_demo(query: str, answer: str, score: float):
+def record_demo(
+    query: str,
+    answer: str,
+    score: float,
+    *,
+    owner_key: str = "",
+):
     """Capture a high-scoring (query, answer) pair into the demo pool."""
     if score < MIN_SCORE or not answer or len(answer) < 80:
         return
@@ -91,6 +97,7 @@ def record_demo(query: str, answer: str, score: float):
             "query": query[:160],
             "answer": answer[:MAX_ANSWER_CHARS],
             "score": round(score, 1),
+            "owner_key": owner_key,
         })
         if len(pool) > MAX_POOL:
             pool.sort(key=lambda d: d.get("score", 0), reverse=True)
