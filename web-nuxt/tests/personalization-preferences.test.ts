@@ -565,6 +565,102 @@ describe('usePersonalizationPreferences contract', () => {
     expect(preferences!.snapshot.value).toEqual(previous)
   })
 
+  it('does not leak a stale patch 409 into the result of an obsolete write', async () => {
+    const stalePatchStarted = deferred<void>()
+    const stalePatch = deferred<PreferenceSnapshot>()
+    const previous = snapshot({ revision: 4 })
+    const current = snapshot({
+      region_id: 'province-bt',
+      region_label: 'Bến Tre',
+      region_scope: 'province',
+      location_source: 'manual',
+      location_accuracy: 'province',
+      revision: 5,
+    })
+    const staleServer = snapshot({
+      region_id: 'province-tv',
+      region_label: 'Trà Vinh',
+      region_scope: 'province',
+      location_source: 'manual',
+      location_accuracy: 'province',
+      revision: 4,
+    })
+    let patchCalls = 0
+    apiFetchMock.mockImplementation((url: string, opts?: Record<string, unknown>) => {
+      if (url === '/api/me/preferences' && !opts?.method) return Promise.resolve(previous)
+      if (url === '/api/me/preferences' && opts?.method === 'PATCH') {
+        patchCalls += 1
+        if (patchCalls === 1) {
+          stalePatchStarted.resolve()
+          return stalePatch.promise
+        }
+        return Promise.resolve(current)
+      }
+      return Promise.resolve(previous)
+    })
+
+    let preferences: ReturnType<typeof usePersonalizationPreferences> | undefined
+    const Harness = defineComponent({
+      setup() {
+        preferences = usePersonalizationPreferences()
+        return () => h('div')
+      },
+    })
+    await mountSuspended(Harness)
+    await preferences!.refresh()
+
+    const staleResult = preferences!.setRegion({ id: 'province-vl', label: 'Vĩnh Long', scope: 'province' })
+    await stalePatchStarted.promise
+    const currentResult = await preferences!.setRegion({ id: 'province-bt', label: 'Bến Tre', scope: 'province' })
+    stalePatch.reject({ response: { status: 409, _data: staleServer } })
+
+    expect(currentResult).toEqual({ ok: true, snapshot: current, status: null })
+    expect(await staleResult).toEqual({ ok: false, snapshot: current, status: null })
+    expect(preferences!.snapshot.value).toEqual(current)
+    expect(preferences!.error.value).toBeNull()
+  })
+
+  it('does not leak a stale reset 409 into the result of an obsolete write', async () => {
+    const staleResetStarted = deferred<void>()
+    const staleReset = deferred<PreferenceSnapshot>()
+    const previous = snapshot({ revision: 4 })
+    const current = snapshot({ recommendation_reset_at: '2026-07-29T08:00:00Z', revision: 5 })
+    const staleServer = snapshot({ recommendation_reset_at: '2026-07-28T08:00:00Z', revision: 4 })
+    let resetCalls = 0
+    apiFetchMock.mockImplementation((url: string, opts?: Record<string, unknown>) => {
+      if (url === '/api/me/preferences' && !opts?.method) return Promise.resolve(previous)
+      if (url === '/api/me/recommendations/reset') {
+        resetCalls += 1
+        if (resetCalls === 1) {
+          staleResetStarted.resolve()
+          return staleReset.promise
+        }
+        return Promise.resolve(current)
+      }
+      return Promise.resolve(previous)
+    })
+
+    let preferences: ReturnType<typeof usePersonalizationPreferences> | undefined
+    const Harness = defineComponent({
+      setup() {
+        preferences = usePersonalizationPreferences()
+        return () => h('div')
+      },
+    })
+    await mountSuspended(Harness)
+    await preferences!.refresh()
+
+    const staleResult = preferences!.resetRecommendations()
+    await staleResetStarted.promise
+    const currentResult = await preferences!.resetRecommendations()
+    staleReset.reject({ response: { status: 409, _data: staleServer } })
+
+    expect(currentResult).toEqual({ ok: true, snapshot: current, status: null })
+    expect(await staleResult).toEqual({ ok: false, snapshot: current, status: null })
+    expect(preferences!.snapshot.value).toEqual(current)
+    expect(preferences!.error.value).toBeNull()
+  })
+
   it('does not open personalization for a different user after refresh completes', async () => {
     const pendingRefresh = deferred<PreferenceSnapshot>()
     apiFetchMock.mockReturnValueOnce(pendingRefresh.promise)

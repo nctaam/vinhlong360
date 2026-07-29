@@ -282,14 +282,13 @@ export function usePersonalizationPreferences() {
       return mutationResult(true)
     } catch (reason) {
       const status = errorStatus(reason)
-      if (isCurrentWrite(operation)) {
-        if (status === 409) {
-          const current = conflictSnapshot(reason)
-          if (current) snapshot.value = current
-        }
-        error.value = errorMessage(reason, 'Không thể lưu thiết lập cá nhân hóa.')
-        invalidateReads = true
+      if (!isCurrentWrite(operation)) return mutationResult(false)
+      if (status === 409) {
+        const current = conflictSnapshot(reason)
+        if (current) snapshot.value = current
       }
+      error.value = errorMessage(reason, 'Không thể lưu thiết lập cá nhân hóa.')
+      invalidateReads = true
       return mutationResult(false, status)
     } finally {
       finishWrite(operation, invalidateReads)
@@ -342,10 +341,9 @@ export function usePersonalizationPreferences() {
       return mutationResult(true)
     } catch (reason) {
       const status = errorStatus(reason)
-      if (isCurrentWrite(operation)) {
-        error.value = errorMessage(reason, 'Không thể đặt lại đề xuất lúc này.')
-        invalidateReads = true
-      }
+      if (!isCurrentWrite(operation)) return mutationResult(false)
+      error.value = errorMessage(reason, 'Không thể đặt lại đề xuất lúc này.')
+      invalidateReads = true
       return mutationResult(false, status)
     } finally {
       finishWrite(operation, invalidateReads)
