@@ -79,6 +79,43 @@ def _load_checker() -> ModuleType:
     return module
 
 
+def _production_authority(**overrides: str) -> bytes:
+    values = {
+        "ENVIRONMENT": "production",
+        "DATABASE_URL": "postgresql://gate-user:password-canary@db/vl360",
+        "ENTITY_DETAILS_TABLES": "true",
+    }
+    values.update(overrides)
+    return "".join(f"{key}={value}\n" for key, value in values.items()).encode()
+
+
+def test_environment_authority_accepts_explicit_production_contract():
+    gate = _load_checker()
+    values = gate._parse_environment(_production_authority())
+    assert values["ENVIRONMENT"] == "production"
+
+
+@pytest.mark.parametrize(
+    ("raw", "message"),
+    [
+        (
+            b"DATABASE_URL=postgresql://db/vl360\nENTITY_DETAILS_TABLES=true\n",
+            "ENVIRONMENT=production",
+        ),
+        (_production_authority(ENVIRONMENT="development"), "ENVIRONMENT=production"),
+        (_production_authority(DATABASE_URL="sqlite:///knowledge.db"), "PostgreSQL"),
+        (
+            _production_authority(ENTITY_DETAILS_TABLES="false"),
+            "ENTITY_DETAILS_TABLES=true",
+        ),
+    ],
+)
+def test_environment_authority_rejects_nonproduction_contract(raw, message):
+    gate = _load_checker()
+    with pytest.raises(ValueError, match=message):
+        gate._parse_environment(raw)
+
+
 class _FakeCursor:
     def __init__(self, observed_version: int, statements: list[tuple[str, object]]) -> None:
         self.observed_version = observed_version

@@ -138,7 +138,12 @@ def _run_gate_and_installer_slice(
     event_log = tmp_path / "events.log"
     authority = tmp_path / "production.env"
     canary = "postgresql://gate-user:password-canary@db/vl360"
-    authority.write_text(f"DATABASE_URL={canary}\n", encoding="ascii")
+    authority.write_text(
+        "ENVIRONMENT=production\n"
+        f"DATABASE_URL={canary}\n"
+        "ENTITY_DETAILS_TABLES=true\n",
+        encoding="ascii",
+    )
     authority.chmod(0o600)
     gate_python = tmp_path / "release" / "venv" / "bin" / "python"
     gate_python.parent.mkdir(parents=True)
@@ -252,9 +257,17 @@ def test_environment_authority_is_pinned_once_and_secret_never_enters_child_argv
     assert "INSTALLER_REGULAR=yes" in events
     assert "INSTALLER_SYMLINK=no" in events
     expected_digest = hashlib.sha256(
-        b"DATABASE_URL=postgresql://gate-user:password-canary@db/vl360\r\n"
+        (
+            b"ENVIRONMENT=production\r\n"
+            b"DATABASE_URL=postgresql://gate-user:password-canary@db/vl360\r\n"
+            b"ENTITY_DETAILS_TABLES=true\r\n"
+        )
         if os.name == "nt"
-        else b"DATABASE_URL=postgresql://gate-user:password-canary@db/vl360\n"
+        else (
+            b"ENVIRONMENT=production\n"
+            b"DATABASE_URL=postgresql://gate-user:password-canary@db/vl360\n"
+            b"ENTITY_DETAILS_TABLES=true\n"
+        )
     ).hexdigest()
     assert f"INSTALLER_DIGEST={expected_digest}" in events
     assert "--database-url" not in events
