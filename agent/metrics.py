@@ -315,6 +315,18 @@ errors_total = Counter(
     labels=["endpoint", "error_type"],
 )
 
+privacy_redactions_total = Counter(
+    "privacy_redactions_total",
+    "Privacy redactions by source and type",
+    labels=["source", "type"],
+)
+
+privacy_boundary_failures_total = Counter(
+    "privacy_boundary_failures_total",
+    "Privacy boundary failures by stage",
+    labels=["stage"],
+)
+
 # --- Histograms ---
 
 chat_response_duration_seconds = Histogram(
@@ -442,6 +454,43 @@ def track_error(endpoint: str, error_type: str) -> None:
                     ``"timeout"``, ``"llm_api_error"``).
     """
     errors_total.inc({"endpoint": endpoint, "error_type": error_type})
+
+
+_PRIVACY_SOURCES = frozenset(
+    {
+        "private_user_data",
+        "untrusted_external",
+        "verified_public_contact",
+        "provider_output",
+        "legacy_cache",
+        "log",
+    }
+)
+_PRIVACY_TYPES = frozenset(
+    {"secret", "email", "passport", "id_number", "bank_account", "phone"}
+)
+_PRIVACY_FAILURE_STAGES = frozenset(
+    {"input", "output", "stream", "cache", "log", "readiness", "feedback"}
+)
+
+
+def _privacy_label(value: str, allowed: frozenset[str]) -> str:
+    return value if value in allowed else "other"
+
+
+def track_privacy_redaction(source: str, redaction_type: str) -> None:
+    privacy_redactions_total.inc(
+        {
+            "source": _privacy_label(source, _PRIVACY_SOURCES),
+            "type": _privacy_label(redaction_type, _PRIVACY_TYPES),
+        }
+    )
+
+
+def track_privacy_boundary_failure(stage: str) -> None:
+    privacy_boundary_failures_total.inc(
+        {"stage": _privacy_label(stage, _PRIVACY_FAILURE_STAGES)}
+    )
 
 
 def track_http_request(method: str, path: str, status_code: int,

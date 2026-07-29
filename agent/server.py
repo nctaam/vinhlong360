@@ -223,6 +223,7 @@ from privacy_boundary import (
     StreamingPIIRedactor,
     prepare_chat_input,
     prepare_chat_output,
+    privacy_boundary_readiness,
     redact_payload,
     redact_text,
 )
@@ -2495,6 +2496,7 @@ async def chat(req: ChatRequest, request: Request, response: Response):
                     )
                 if HAS_METRICS:
                     track_cache("hit")
+                _privacy_output_boundary_marker = True
                 _record_cached_exchange(owner_key, session_id, message, safe_cached)
                 return ChatResponse(**safe_cached, session_id=session_id, cached=True)
         except Exception:
@@ -2516,6 +2518,7 @@ async def chat(req: ChatRequest, request: Request, response: Response):
                 )
             if HAS_METRICS:
                 track_cache("hit")
+            _privacy_output_boundary_marker = True
             if HAS_SEMANTIC_CACHE:
                 try:
                     semantic_put(
@@ -3032,6 +3035,7 @@ async def chat_stream(req: ChatRequest, request: Request):
 
             delivered = "".join(emitted)
             safe_cached["reply"] = delivered
+            _privacy_output_boundary_marker = True
             _record_cached_exchange(owner_key, sid, cache_query, safe_cached)
             analytics.track_query(
                 message,
@@ -3081,6 +3085,7 @@ async def chat_stream(req: ChatRequest, request: Request):
                 logger.warning("Legacy cache privacy boundary unavailable", code=exc.code)
                 return _stream_response(_safe_block_stream(SAFE_PRIVACY_FAILURE_REPLY)())
             if HAS_SEMANTIC_CACHE:
+                _privacy_output_boundary_marker = True
                 try:
                     semantic_put(
                         cache_query,
@@ -3189,6 +3194,7 @@ async def chat_stream(req: ChatRequest, request: Request):
             return safe_fallback.text
 
         def persist_stream_fallback(safe_text: str) -> None:
+            _privacy_output_boundary_marker = True
             memory_manager.on_message(owner_key, sid, "user", cache_query)
             memory_manager.on_message(owner_key, sid, "assistant", safe_text)
 
@@ -3865,6 +3871,7 @@ async def readiness_probe():
             "knowledge": entity_count > 0,
             "data_source": data_source == "db" if getattr(_db, "_use_pg", False) else data_source in {"db", "json"},
             "privacy_policy": privacy_policy_readiness(_settings),
+            "privacy_boundary": privacy_boundary_readiness(),
         }
         try:
             with _db._conn() as conn:
@@ -4279,27 +4286,16 @@ async def system_quality(request: Request):
 
 @app.post("/feedback")
 async def user_feedback(req: FeedbackRequest, request: Request):
-    """Nhận feedback từ user (thumbs up/down)."""
+    """Record aggregate feedback telemetry without personalization writes."""
     client_ip = get_client_ip(request)
     allowed, _ = chat_limiter.is_allowed(f"fb:{client_ip}")
     if not allowed:
         return _error_response(429, "Too many requests")
 
-    user_id = req.user_id or req.session_id or "anonymous"
-    query = req.query
     rating = req.rating
-    entity_id = req.entity_id
-    memory_manager.feedback(user_id, query, rating * 5, entity_id)
     if HAS_METRICS:
         track_feedback(positive=(rating == 1))
-
-    # Feed into learning loop
-    try:
-        from learn_loop import record_feedback
-        record_feedback(query=query, rating=rating, entity_id=entity_id, session_id=user_id)
-    except Exception:
-        logger.debug("Learn loop feedback record failed", exc_info=True)
-    logger.info("User feedback", user_id=user_id, rating=rating, query=query[:50])
+    logger.info("User feedback telemetry", rating=rating)
     return {"success": True}
 
 

@@ -24,6 +24,8 @@ from datetime import datetime, timezone
 from threading import Lock
 from pathlib import Path
 
+from privacy_boundary import redact_log_value as _boundary_redact_log_value
+
 _request_id_var: contextvars.ContextVar[str] = contextvars.ContextVar("request_id", default="")
 
 # ══════════════════════════════════════════════════
@@ -32,6 +34,19 @@ _request_id_var: contextvars.ContextVar[str] = contextvars.ContextVar("request_i
 
 LOG_DIR = Path(__file__).resolve().parent / "data"
 LOG_DIR.mkdir(exist_ok=True)
+
+_REDACTION_FAILED = "[REDACTION_FAILED]"
+
+
+def redact_log_value(value):
+    return _boundary_redact_log_value(value)
+
+
+def _safe_log_value(value):
+    try:
+        return redact_log_value(value)
+    except Exception:
+        return _REDACTION_FAILED
 
 
 class StructuredLogger:
@@ -56,14 +71,20 @@ class StructuredLogger:
 
     def log(self, level: str, message: str, **extra):
         rid = _request_id_var.get("")
+        safe_message = _safe_log_value(message)
+        if not isinstance(safe_message, str):
+            safe_message = _REDACTION_FAILED
+        safe_extra = _safe_log_value(extra)
+        if not isinstance(safe_extra, dict):
+            safe_extra = {"redaction": _REDACTION_FAILED}
         entry = {
             "ts": datetime.now(timezone.utc).isoformat(),
             "level": level,
-            "msg": message,
+            "msg": safe_message,
         }
         if rid:
             entry["req_id"] = rid
-        entry.update(extra)
+        entry.update(safe_extra)
         with self._lock:
             self._buffer.append(entry)
             if len(self._buffer) >= 50:
@@ -71,11 +92,15 @@ class StructuredLogger:
 
         # Console output
         if level == "error":
-            self._py_logger.error("%s | %s", message, json.dumps(extra, ensure_ascii=False))
+            self._py_logger.error(
+                "%s | %s", safe_message, json.dumps(safe_extra, ensure_ascii=False)
+            )
         elif level == "warn":
-            self._py_logger.warning("%s | %s", message, json.dumps(extra, ensure_ascii=False))
+            self._py_logger.warning(
+                "%s | %s", safe_message, json.dumps(safe_extra, ensure_ascii=False)
+            )
         else:
-            self._py_logger.info("%s", message)
+            self._py_logger.info("%s", safe_message)
 
     def info(self, msg: str, **kw):
         self.log("info", msg, **kw)

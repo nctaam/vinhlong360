@@ -12,6 +12,7 @@ from guardrails import (
     check_output,
     pii_masker,
 )
+from metrics import track_privacy_boundary_failure, track_privacy_redaction
 
 
 PrivacySource = Literal[
@@ -66,6 +67,9 @@ class SafeChatInput:
 class SafeText:
     text: str
     redaction_types: tuple[str, ...] = ()
+
+
+_REDACTION_FAILED = "[REDACTION_FAILED]"
 
 
 def _validate_source(source: PrivacySource) -> None:
@@ -126,11 +130,47 @@ def redact_text(
     allowed_contacts = contacts if source == "verified_public_contact" else frozenset()
     try:
         spans = pii_masker.detect_spans(text)
-        return _redact_spans(text, spans, allowed_contacts=allowed_contacts)
+        safe = _redact_spans(text, spans, allowed_contacts=allowed_contacts)
+        for redaction_type in safe.redaction_types:
+            track_privacy_redaction(source, redaction_type)
+        return safe
     except PrivacyBoundaryUnavailable:
         raise
     except Exception as exc:
         raise PrivacyBoundaryUnavailable("TEXT_REDACTION_FAILED") from exc
+
+
+def redact_log_value(value):
+    if isinstance(value, str):
+        try:
+            safe = redact_text(value, source="log")
+        except Exception:
+            track_privacy_boundary_failure("log")
+            return _REDACTION_FAILED
+        return safe.text
+    if isinstance(value, Mapping):
+        try:
+            return {key: redact_log_value(item) for key, item in value.items()}
+        except Exception:
+            track_privacy_boundary_failure("log")
+            return _REDACTION_FAILED
+    if isinstance(value, list):
+        return [redact_log_value(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(redact_log_value(item) for item in value)
+    if value is None or isinstance(value, (bool, int, float)):
+        return value
+    track_privacy_boundary_failure("log")
+    return _REDACTION_FAILED
+
+
+def privacy_boundary_readiness() -> bool:
+    try:
+        safe = redact_text("privacy-boundary-ready", source="log")
+        return safe.text == "privacy-boundary-ready"
+    except Exception:
+        track_privacy_boundary_failure("readiness")
+        return False
 
 
 def redact_payload(

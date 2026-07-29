@@ -323,6 +323,15 @@ class TestGuardrailFallback:
         assert "PrivacyBoundaryUnavailable" in stream_section
         assert "UNEXPECTED_PRIVACY_BOUNDARY_ERROR" in stream_section
 
+    def test_privacy_boundary_readiness_fails_closed(self, monkeypatch):
+        import privacy_boundary
+
+        def fail_redaction(*_args, **_kwargs):
+            raise privacy_boundary.PrivacyBoundaryUnavailable("READINESS_TEST_FAILURE")
+
+        monkeypatch.setattr(privacy_boundary, "redact_text", fail_redaction)
+        assert privacy_boundary.privacy_boundary_readiness() is False
+
 
 # ═══════════════════════════════════════════════════════
 # Integration: circuit breaker stats endpoint
@@ -2290,10 +2299,9 @@ class TestSelfEvalLogging:
                 _entities={},
             )}):
                 if "self_eval" in sys.modules:
-                    importlib.reload(sys.modules["self_eval"])
+                    mod = importlib.reload(sys.modules["self_eval"])
                 else:
-                    pass
-                mod = sys.modules["self_eval"]
+                    mod = importlib.import_module("self_eval")
                 assert hasattr(mod, "logger")
                 assert mod.logger.name == "self_eval"
         finally:
