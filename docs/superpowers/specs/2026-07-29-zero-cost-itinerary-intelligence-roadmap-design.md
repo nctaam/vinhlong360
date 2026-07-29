@@ -120,13 +120,18 @@ Trong cùng một tầng, dùng Pareto dominance; chỉ dùng trọng số chu�
 
 ### Giai đoạn 2 — Lịch khả thi theo thời gian
 
+**Trạng thái (2026-07-30):**
+
+- **Phase 2A — hoàn tất:** planner thủ công đã có hợp đồng thời lượng/cửa sổ giờ, scheduler khả thi, repair/drop có lý do, ma trận OSRM Table được cache, fallback Haversine cục bộ, diagnostics, feature flag mặc định tắt và regression tập trung.
+- **Phase 2B — chờ plan riêng:** generator vẫn chưa thay giả định di chuyển cố định 30 phút; meal/rest anchors dành riêng cho generator chưa được triển khai.
+
 **Mục tiêu:** loại bỏ giả định “mỗi chặng cộng 30 phút” và không tạo lịch đến lúc POI đã đóng.
 
 **Thuật toán:**
 
 - Forward scheduling trên thứ tự điểm hiện có, dùng `duration_minutes` và `duration_minutes[i][j]` nếu có.
 - Label-setting cho các trạng thái `(last_stop, time, reward, slack)`; loại trạng thái bị dominance.
-- Chèn meal/rest anchor ở các cửa sổ cấu hình được, không tự chèn món nếu không có candidate phù hợp.
+- **Phase 2B (pending):** chèn meal/rest anchor ở các cửa sổ cấu hình được, không tự chèn món nếu không có candidate phù hợp.
 - Repair theo thứ tự: dời điểm optional, đổi hai điểm kề nhau, relocate một điểm, rồi mới đánh dấu không khả thi.
 - Điểm required không thể xếp được trả lỗi có nguyên nhân; không âm thầm phá giờ đóng cửa.
 
@@ -135,6 +140,8 @@ Trong cùng một tầng, dùng Pareto dominance; chỉ dùng trọng số chu�
 **Tiêu chí nghiệm thu:** zero hard violation trong fixture có dữ liệu đầy đủ; mọi điểm bị bỏ có `reason`; thời gian kết thúc không vượt giới hạn nếu còn nghiệm khả thi.
 
 ### Giai đoạn 3 — Chọn POI và xếp tuyến đồng thời
+
+**Trạng thái:** pending; chưa có plan triển khai được duyệt.
 
 **Mục tiêu:** không chọn nhiều POI điểm cao nhưng khiến tổng lịch quá dài hoặc kém liên quan.
 
@@ -150,6 +157,8 @@ Trong cùng một tầng, dùng Pareto dominance; chỉ dùng trọng số chu�
 
 ### Giai đoạn 4 — Tối ưu nhiều ngày
 
+**Trạng thái:** pending; chưa triển khai.
+
 **Mục tiêu:** tránh ngày đầu quá nặng và ngày cuối phải chạy vòng xa.
 
 **Thuật toán:**
@@ -164,6 +173,8 @@ Trong cùng một tầng, dùng Pareto dominance; chỉ dùng trọng số chu�
 
 ### Giai đoạn 5 — Tái lập lịch động
 
+**Trạng thái:** pending; chưa triển khai.
+
 **Mục tiêu:** xử lý đi trễ, bỏ điểm, POI đóng cửa hoặc thay đổi phương tiện.
 
 **Thuật toán:**
@@ -177,6 +188,8 @@ Trong cùng một tầng, dùng Pareto dominance; chỉ dùng trọng số chu�
 **Tiêu chí nghiệm thu:** không di chuyển điểm đã hoàn thành; tối đa một lần replan cho một sự kiện UI; log rõ nguyên nhân thay đổi.
 
 ### Giai đoạn 6 — Tự hiệu chỉnh cục bộ
+
+**Trạng thái:** pending; chưa triển khai.
 
 **Mục tiêu:** cải thiện ước lượng mà không thêm mô hình trả phí hoặc pipeline học mới.
 
@@ -252,4 +265,4 @@ Nếu vượt deadline, trả nghiệm tốt nhất hợp lệ đã có; nếu c
 
 ## 12. Phạm vi triển khai tiếp theo
 
-Đợt kế tiếp chỉ triển khai **Giai đoạn 2**: hợp đồng thời lượng/cửa sổ giờ, bộ lập lịch khả thi, repair cục bộ, diagnostics và test fixture. Giai đoạn 3 trở đi phải có plan riêng sau khi đo được dữ liệu và thời gian chạy của Giai đoạn 2.
+**Phase 2A đã hoàn tất** cho planner thủ công. Đợt kế tiếp của Giai đoạn 2 là **Phase 2B** với generator adoption: thay giả định di chuyển cố định 30 phút và bổ sung meal/rest anchors dành riêng cho generator. Phase 2B và Giai đoạn 3-6 đều cần plan riêng; không mục nào được coi là hoàn tất bởi đợt Phase 2A này.
