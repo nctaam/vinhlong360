@@ -100,6 +100,29 @@ function mockPreferenceApi(initial: PreferenceSnapshot = snapshot()) {
   })
 }
 
+function mockPendingLocationConfirmation(pending: Promise<PreferenceSnapshot>) {
+  let current = snapshot()
+  apiFetchMock.mockImplementation((url: string, opts?: Record<string, unknown>) => {
+    if (url === '/api/me/preferences' && opts?.method === 'PATCH') {
+      const { revision: _revision, ...patch } = opts.body as Record<string, unknown>
+      if (patch.location_confirmation_token) return pending
+      current = snapshot({ ...current, ...patch, revision: current.revision + 1 })
+      return Promise.resolve(current)
+    }
+    if (url === '/api/me/location/resolve') {
+      return Promise.resolve({
+        region_id: 'province-vl',
+        region_label: 'Vĩnh Long',
+        region_scope: 'province',
+        location_source: 'gps',
+        location_accuracy: 'province',
+        confirmation_token: 'fixture-location-confirmation',
+      })
+    }
+    return Promise.resolve(current)
+  })
+}
+
 async function hydratePreferences(initial: PreferenceSnapshot) {
   mockPreferenceApi(initial)
   let preferences: ReturnType<typeof usePersonalizationPreferences> | undefined
@@ -667,13 +690,119 @@ describe('optional location consent flow', () => {
       response: { status: 409, _data: snapshot({ revision: 2, location_reconfirm_required: true }) },
     })
 
-    ;(dialog().querySelector('[data-action="confirm-location"]') as HTMLButtonElement).click()
+    const confirm = dialog().querySelector('[data-action="confirm-location"]') as HTMLButtonElement
+    confirm.focus()
+    confirm.click()
     await flushUi()
+    await nextTick()
 
     expect(dialog().textContent).toContain('xác định lại khu vực')
     expect(dialog().querySelector('[data-action="confirm-location"]')).toBeNull()
-    expect(dialog().querySelector('[data-action="retry-location"]')).toBeTruthy()
+    const retry = dialog().querySelector('[data-action="retry-location"]') as HTMLButtonElement
+    expect(retry).toBeTruthy()
+    expect(document.activeElement).toBe(retry)
     wrapper.unmount()
+  })
+
+  it('ignores a stale confirmation after the sheet closes and reopens', async () => {
+    authState.user.value = { id: 'user-1' }
+    authState.isLoggedIn.value = true
+    const pendingConfirmation = deferred<PreferenceSnapshot>()
+    mockPendingLocationConfirmation(pendingConfirmation.promise)
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: {
+        getCurrentPosition: (success: PositionCallback) => success({
+          coords: { latitude: 10.24, longitude: 105.97 },
+        } as GeolocationPosition),
+      },
+    })
+    const wrapper = await mountSetupHarness()
+
+    try {
+      await flushUi()
+      const dialog = () => document.body.querySelector('[role="dialog"]') as HTMLElement
+      ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+      await flushUi()
+      ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+      await flushUi()
+      ;(dialog().querySelector('[data-action="use-location"]') as HTMLButtonElement).click()
+      await flushUi()
+      ;(dialog().querySelector('[data-action="confirm-location"]') as HTMLButtonElement).click()
+      await flushUi()
+
+      ;(dialog().querySelector('[data-action="skip"]') as HTMLButtonElement).click()
+      await flushUi()
+      await wrapper.get('[data-trigger="personalize"]').trigger('click')
+      await flushUi()
+
+      pendingConfirmation.reject({
+        response: { status: 409, _data: snapshot({ revision: 2, location_reconfirm_required: true }) },
+      })
+      await flushUi()
+      ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+      await flushUi()
+      ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+      await flushUi()
+
+      expect(dialog().querySelector('[data-action="use-location"]')).toBeTruthy()
+      expect(dialog().querySelector('[data-action="retry-location"]')).toBeNull()
+    } finally {
+      pendingConfirmation.resolve(snapshot())
+      wrapper.unmount()
+    }
+  })
+
+  it('ignores a confirmation completion after the authenticated account changes', async () => {
+    authState.user.value = { id: 'user-1' }
+    authState.isLoggedIn.value = true
+    const pendingConfirmation = deferred<PreferenceSnapshot>()
+    mockPendingLocationConfirmation(pendingConfirmation.promise)
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: {
+        getCurrentPosition: (success: PositionCallback) => success({
+          coords: { latitude: 10.24, longitude: 105.97 },
+        } as GeolocationPosition),
+      },
+    })
+    const wrapper = await mountSetupHarness()
+
+    try {
+      await flushUi()
+      const dialog = () => document.body.querySelector('[role="dialog"]') as HTMLElement
+      ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+      await flushUi()
+      ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+      await flushUi()
+      ;(dialog().querySelector('[data-action="use-location"]') as HTMLButtonElement).click()
+      await flushUi()
+      ;(dialog().querySelector('[data-action="confirm-location"]') as HTMLButtonElement).click()
+      await flushUi()
+
+      authState.user.value = { id: 'user-2' }
+      await flushUi()
+      expect(document.body.querySelector('[role="dialog"]')).toBeNull()
+
+      pendingConfirmation.reject({
+        response: { status: 409, _data: snapshot({ revision: 2, location_reconfirm_required: true }) },
+      })
+      await flushUi()
+      expect(document.body.querySelector('[role="dialog"]')).toBeNull()
+
+      await wrapper.get('[data-trigger="personalize"]').trigger('click')
+      await flushUi()
+      ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+      await flushUi()
+      ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+      await flushUi()
+
+      expect(dialog().querySelector('[data-action="use-location"]')).toBeTruthy()
+      expect(dialog().querySelector('[data-action="retry-location"]')).toBeNull()
+    } finally {
+      pendingConfirmation.resolve(snapshot())
+      wrapper.unmount()
+    }
   })
 
   it('stays on the current step when saving a region fails', async () => {

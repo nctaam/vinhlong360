@@ -140,6 +140,7 @@
               >Dùng khu vực này</button>
               <button
                 v-else-if="locationState === 'stale'"
+                ref="retryLocationAction"
                 type="button"
                 class="btn btn-primary"
                 data-action="retry-location"
@@ -175,7 +176,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import IconLine from './IconLine.vue'
 import { usePersonalizationPreferences } from '~/composables/usePersonalizationPreferences'
 import type { LocationResolution, PreferenceRegionChoice } from '~/types/personalization'
@@ -200,6 +201,7 @@ const selectedInterests = ref<string[]>([])
 const locationAttempted = ref(false)
 const locationState = ref<'idle' | 'loading' | 'resolved' | 'denied' | 'unknown' | 'stale'>('idle')
 const resolvedLocation = ref<LocationResolution | null>(null)
+const retryLocationAction = ref<HTMLButtonElement | null>(null)
 const attemptGeneration = ref(0)
 const denialPersistence = ref<'idle' | 'saving' | 'saved' | 'failed'>('idle')
 const sheetOwner = ref<string | null>(null)
@@ -378,6 +380,9 @@ function isActiveAttempt(attempt: number, owner: string) {
 
 async function confirmLocation() {
   if (!ensureSheetOwner()) return
+  const owner = sheetOwner.value
+  if (!owner) return
+  const attempt = attemptGeneration.value
   const result = resolvedLocation.value
   if (!result?.region_id) return finish()
   const current = preferences.snapshot.value
@@ -385,11 +390,14 @@ async function confirmLocation() {
   const mutation = keepsManualRegion
     ? await preferences.patch({ location_consent_state: 'granted', location_enabled: true })
     : await preferences.confirmLocation(result)
+  if (!isActiveAttempt(attempt, owner)) return
   if (mutation.ok) finish()
   else if (!keepsManualRegion && mutation.status === 409) {
     resolvedLocation.value = null
     locationAttempted.value = false
     locationState.value = 'stale'
+    await nextTick()
+    if (isActiveAttempt(attempt, owner)) retryLocationAction.value?.focus()
   }
 }
 
