@@ -2342,6 +2342,20 @@ def test_scheduler_ttl_cleanup_deletes_only_expired_events(pg_db, users):
     assert any(task.name == "personalization-cleanup" for task in scheduler.TASKS)
 
 
+def test_scheduler_logs_only_aggregate_location_quarantine(monkeypatch, caplog, pg_db):
+    monkeypatch.setattr(
+        user_preferences,
+        "quarantine_invalid_preferences_batch",
+        lambda limit=100: {"raw_shape": 2, "provenance": 1},
+    )
+    with caplog.at_level("INFO", logger="scheduler"):
+        scheduler.task_personalization_cleanup()
+    output = "\n".join(record.getMessage() for record in caplog.records)
+    assert "3" in output
+    assert "203.0.113" not in output
+    assert "province-vl" not in output
+
+
 def test_scheduler_purges_recognized_legacy_rows_only_after_cutover(
     pg_db, users, tmp_path, monkeypatch
 ):

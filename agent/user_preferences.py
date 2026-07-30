@@ -449,6 +449,88 @@ def invalid_region_reason(snapshot: Mapping[str, Any]) -> str | None:
     return None
 
 
+LOCATION_REMEDIATION_REASONS = frozenset(
+    {"raw_shape", "manual_tuple", "resolver_tuple", "provenance", "default_tuple", "state_mismatch"}
+)
+
+
+def quarantine_invalid_preferences_batch(limit: int = 100) -> dict[str, int]:
+    """Quarantine a bounded batch of invalid PostgreSQL preference rows."""
+    bounded_limit = max(1, min(int(limit), 100))
+    if not db._use_pg:
+        return {}
+
+    # Keep candidate selection aligned with migration 073 while Python owns the
+    # allowlisted reason classification and compare-update boundary.
+    invalid_where = """
+        (
+            NOT vl360_region_text_is_safe(region_id)
+            OR NOT vl360_region_text_is_safe(region_label)
+            OR NOT COALESCE((
+                (
+                    location_source = 'manual'
+                    AND location_provenance_version IS NULL
+                    AND (
+                        (region_id = 'province-vl' AND region_label = 'Vĩnh Long' AND region_scope = 'province' AND location_accuracy = 'province')
+                        OR (region_id = 'province-bt' AND region_label = 'Bến Tre' AND region_scope = 'province' AND location_accuracy = 'province')
+                        OR (region_id = 'province-tv' AND region_label = 'Trà Vinh' AND region_scope = 'province' AND location_accuracy = 'province')
+                        OR (region_id IS NULL AND region_label IS NULL AND region_scope = 'all' AND location_accuracy = 'unknown')
+                    )
+                )
+                OR (
+                    location_source = 'default'
+                    AND region_id IS NULL
+                    AND region_label IS NULL
+                    AND region_scope = 'unknown'
+                    AND location_accuracy = 'unknown'
+                    AND location_provenance_version IS NULL
+                )
+                OR (
+                    location_source IN ('gps', 'ip')
+                    AND region_id IS NOT NULL
+                    AND region_scope IN ('ward', 'district', 'province')
+                    AND location_accuracy IN ('ward', 'district', 'province', 'unknown')
+                    AND location_enabled = TRUE
+                    AND location_consent_state = 'granted'
+                    AND location_provenance_version = 'resolver-v2'
+                )
+            ), FALSE)
+            OR (
+                location_reconfirm_required = TRUE
+                AND NOT (
+                    location_source = 'default'
+                    AND region_id IS NULL
+                    AND region_label IS NULL
+                    AND region_scope = 'unknown'
+                    AND location_accuracy = 'unknown'
+                    AND location_enabled = FALSE
+                    AND location_consent_state = 'off'
+                    AND location_provenance_version IS NULL
+                )
+            )
+        )
+    """
+    counts: dict[str, int] = {}
+    with db._conn() as conn:
+        rows = db._fetchall(
+            conn,
+            f"SELECT user_id, {_preference_columns()} FROM user_preferences "
+            f"WHERE {invalid_where} ORDER BY updated_at, user_id "
+            f"LIMIT {db._ph} FOR UPDATE SKIP LOCKED",
+            (bounded_limit,),
+        )
+        for row in rows:
+            persisted = _row_snapshot(row)
+            reason = invalid_region_reason(persisted)
+            if reason is None or reason not in LOCATION_REMEDIATION_REASONS:
+                continue
+            owner = str(db._row_to_dict(row)["user_id"])
+            healed = _quarantine_persisted_snapshot_in_connection(conn, owner, persisted)
+            if healed is not None:
+                counts[reason] = counts.get(reason, 0) + 1
+    return counts
+
+
 def quarantine_location_snapshot(
     snapshot: Mapping[str, Any],
 ) -> PersistedPreferenceSnapshot:

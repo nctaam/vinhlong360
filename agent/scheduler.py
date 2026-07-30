@@ -892,6 +892,19 @@ def task_personalization_cleanup():
                 _sched_logger.info(
                     "Personalization cleanup: purged %d expired events", removed
                 )
+            import user_preferences
+
+            counts = user_preferences.quarantine_invalid_preferences_batch(limit=100)
+            healed = sum(counts.values())
+            if healed:
+                summary = ", ".join(
+                    f"{reason}={count}" for reason, count in sorted(counts.items())
+                )
+                _sched_logger.info(
+                    "Location preference self-healing: quarantined %d rows (%s)",
+                    healed,
+                    summary,
+                )
         from personalization_events import (
             legacy_cutover_deadline,
             purge_legacy_events,
