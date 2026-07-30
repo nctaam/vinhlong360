@@ -216,6 +216,21 @@ Fallback and compatibility rules:
 - An impossible required schedule returns HTTP 409 with a reason and no partial schedule. Optional stops may be omitted only with entries in `schedule.skipped` that include a `reason`.
 - If the scheduling implementation fails unexpectedly, the endpoint retries through the established order-only optimizer. A successful fallback has no `schedule` field and includes `schedule-fallback-order-only` in `warnings`; it never returns a partial schedule.
 - The manual planner feature flag is default-off. Only `NUXT_PUBLIC_ITINERARY_SCHEDULE_V2=1` exposes `runtimeConfig.public.itineraryScheduleV2=true`; flag-off requests remain order-only and make no Table request.
+
+### Generator time-aware scheduling (Phase 2B)
+
+The existing MCP `generate_itinerary` tool accepts optional local anchor lists:
+
+```json
+{
+  "meal_anchors": ["12:00"],
+  "rest_anchors": ["15:00"]
+}
+```
+
+The generator keeps the existing `day_plans` and stop fields, and adds an optional per-day `schedule` diagnostics object. It uses the local Haversine matrix (`matrix_source: "haversine-fallback"`) and makes no OSRM, web, LLM, or paid-service request. `meal_anchors: null` keeps the compatibility lunch attempt; `[]` disables meal insertion. No meal entity is fabricated when a dish/product candidate is unavailable or lacks usable coordinates.
+
+The generator falls back to its deterministic legacy timeline with warnings `coordinates-missing` or `schedule-fallback` when coordinate-aware scheduling cannot be used. Anchor validation may add `invalid-anchor`, `meal-anchor-unavailable`, or `rest-anchor-unavailable`. Any omitted optional route stop is represented in `schedule.skipped` with an explicit `reason`.
 - For one user-triggered optimization fingerprint (transport mode plus stop coordinates rounded to five decimal places), the client performs at most one OSRM Table request, one initial OSRM Route request, and one U-turn validation retry. This feature makes zero background OSRM Table requests; existing route watchers may still request OSRM Route after planner inputs change. The same schedule envelope and matrix are reused through the bounded retry.
 - Planner schedule metadata and returned placements are ephemeral `WeakMap` state. Saved `PlanStop` JSON remains exactly `id`, `name`, `type`, optional `place_name`, `coords`, `time`, and `notes`.
 

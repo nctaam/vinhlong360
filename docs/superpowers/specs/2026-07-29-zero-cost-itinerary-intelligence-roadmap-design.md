@@ -123,7 +123,7 @@ Trong cùng một tầng, dùng Pareto dominance; chỉ dùng trọng số chu�
 **Trạng thái (2026-07-30):**
 
 - **Phase 2A — hoàn tất:** planner thủ công đã có hợp đồng thời lượng/cửa sổ giờ, scheduler khả thi, repair/drop có lý do, ma trận OSRM Table được cache, fallback Haversine cục bộ, diagnostics, feature flag mặc định tắt và regression tập trung.
-- **Phase 2B — chờ plan riêng:** generator vẫn chưa thay giả định di chuyển cố định 30 phút; meal/rest anchors dành riêng cho generator chưa được triển khai.
+- **Phase 2B — hoàn tất (2026-07-30):** generator dùng thời gian di chuyển Haversine cục bộ khi có tọa độ, giữ fallback legacy khi thiếu dữ liệu, và hỗ trợ meal/rest anchors cấu hình được mà không tự tạo món khi thiếu candidate.
 
 **Mục tiêu:** loại bỏ giả định “mỗi chặng cộng 30 phút” và không tạo lịch đến lúc POI đã đóng.
 
@@ -131,7 +131,7 @@ Trong cùng một tầng, dùng Pareto dominance; chỉ dùng trọng số chu�
 
 - Forward scheduling trên thứ tự điểm hiện có, dùng `duration_minutes` và `duration_minutes[i][j]` nếu có.
 - Label-setting cho các trạng thái `(last_stop, time, reward, slack)`; loại trạng thái bị dominance.
-- **Phase 2B (pending):** chèn meal/rest anchor ở các cửa sổ cấu hình được, không tự chèn món nếu không có candidate phù hợp.
+- **Phase 2B (delivered):** chèn meal/rest anchor ở các cửa sổ cấu hình được, không tự chèn món nếu không có candidate phù hợp; fallback và diagnostics vẫn giữ tương thích ngược.
 - Repair theo thứ tự: dời điểm optional, đổi hai điểm kề nhau, relocate một điểm, rồi mới đánh dấu không khả thi.
 - Điểm required không thể xếp được trả lỗi có nguyên nhân; không âm thầm phá giờ đóng cửa.
 

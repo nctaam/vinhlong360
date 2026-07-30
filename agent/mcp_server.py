@@ -432,6 +432,7 @@ def suggest_followups(context: str) -> str:
     description=(
         "Tao lich trinh du lich tuy chinh dua tren so thich, so ngay, khu vuc, thang di va ngan sach. "
         "Tra ve lich trinh chi tiet voi thoi gian, diem dung, ghi chu an uong, meo du lich. "
+        "Co the them meal_anchors/rest_anchors theo gio dia phuong; khong can dich vu tra phi. "
         "Dung khi du khach hoi 'goi y lich trinh', 'di dau N ngay', 'len ke hoach du lich'."
     ),
 )
@@ -441,6 +442,8 @@ def generate_itinerary(
     areas: Optional[list[str]] = None,
     month: Optional[int] = None,
     budget: str = "trung_binh",
+    meal_anchors: Optional[list[str]] = None,
+    rest_anchors: Optional[list[str]] = None,
 ) -> str:
     """Generate a custom travel itinerary.
 
@@ -450,6 +453,8 @@ def generate_itinerary(
         areas: Preferred areas — vinh-long, ben-tre, tra-vinh (default all 3)
         month: Travel month (1-12, default current month)
         budget: Budget level — thap (budget), trung_binh (moderate), cao (luxury)
+        meal_anchors: Local meal start times; None keeps the default lunch attempt.
+        rest_anchors: Optional local rest start times.
     """
     _ensure_knowledge()
     if not HAS_ITINERARY_GEN:
@@ -460,6 +465,8 @@ def generate_itinerary(
         areas=areas,
         month=month,
         budget=budget,
+        meal_anchors=meal_anchors,
+        rest_anchors=rest_anchors,
     )
     return json.dumps(result, ensure_ascii=False)
 
