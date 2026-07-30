@@ -93,6 +93,16 @@ class MultiDayResult:
     warnings: tuple[str, ...]
 
 
+@dataclass(frozen=True)
+class _AllocationLabel:
+    day_results: tuple[MultiDayDayResult, ...]
+    current_end_id: str
+    loads: tuple[float, ...]
+    total_travel_minutes: float
+    total_backtrack_ratio: float
+    area_switches: int
+
+
 def _is_int(value: object) -> bool:
     return isinstance(value, int) and not isinstance(value, bool)
 
@@ -285,6 +295,285 @@ def _schedule_day(
     )
 
 
+def _load_objective(loads: tuple[float, ...]) -> tuple[float, float, float]:
+    maximum = max(loads)
+    minimum = min(loads)
+    average = sum(loads) / len(loads)
+    return (
+        maximum,
+        maximum - minimum,
+        sum(abs(load - average) for load in loads),
+    )
+
+
+def _area_switch_count(
+    day_results: tuple[MultiDayDayResult, ...],
+    candidate_by_id: dict[str, SelectionCandidate],
+) -> int:
+    content_order = tuple(
+        stop_id
+        for day in day_results
+        for stop_id in day.ordered_ids
+        if stop_id in candidate_by_id
+    )
+    return sum(
+        candidate_by_id[left].area != candidate_by_id[right].area
+        for left, right in zip(content_order, content_order[1:])
+    )
+
+
+def _label_metrics(label: _AllocationLabel) -> tuple[float, ...]:
+    max_load, load_range, absolute_deviation = _load_objective(label.loads)
+    return (
+        max_load,
+        load_range,
+        absolute_deviation,
+        label.total_travel_minutes,
+        label.total_backtrack_ratio,
+        float(label.area_switches),
+    )
+
+
+def _label_objective(label: _AllocationLabel) -> tuple[object, ...]:
+    return (
+        *_label_metrics(label),
+        tuple(day.ordered_ids for day in label.day_results),
+        label.current_end_id,
+    )
+
+
+def _label_dominates(left: _AllocationLabel, right: _AllocationLabel) -> bool:
+    """Compare labels that finish on the same endpoint."""
+    if left.current_end_id != right.current_end_id:
+        return False
+    left_metrics = _label_metrics(left)
+    right_metrics = _label_metrics(right)
+    return all(
+        left_value <= right_value
+        for left_value, right_value in zip(left_metrics, right_metrics)
+    ) and any(
+        left_value < right_value
+        for left_value, right_value in zip(left_metrics, right_metrics)
+    )
+
+
+def _cache_key(
+    day: MultiDayDayInput,
+    content_ids: tuple[str, ...],
+    previous_end_id: str | None,
+    current_end_id: str,
+) -> tuple[object, ...]:
+    return (
+        day.day_index,
+        tuple(sorted(content_ids)),
+        tuple(stop.id for stop in day.fixed_stops),
+        previous_end_id,
+        current_end_id,
+    )
+
+
+def _cached_schedule_day(
+    day: MultiDayDayInput,
+    content_ids: tuple[str, ...],
+    candidate_by_id: dict[str, SelectionCandidate],
+    global_start_id: str,
+    previous_end_id: str | None,
+    current_end_id: str,
+    deadline: float,
+    cache: dict[tuple[object, ...], MultiDayDayResult | None],
+) -> MultiDayDayResult | None:
+    key = _cache_key(day, content_ids, previous_end_id, current_end_id)
+    if key in cache:
+        return cache[key]
+    remaining_seconds = deadline - time.perf_counter()
+    if remaining_seconds <= 0:
+        cache[key] = None
+        return None
+    try:
+        result = _schedule_day(
+            day,
+            content_ids,
+            candidate_by_id,
+            first_content_id=global_start_id if day.day_index == 1 else None,
+            previous_end_id=previous_end_id,
+            current_end_id=current_end_id,
+            remaining_seconds=remaining_seconds,
+        )
+    except NoFeasibleScheduleError:
+        result = None
+    cache[key] = result
+    return result
+
+
+def _endpoint_choices(
+    day_index: int,
+    day_count: int,
+    content_ids: tuple[str, ...],
+    global_start_id: str,
+    global_end_id: str,
+) -> tuple[str, ...]:
+    if day_index == day_count:
+        return (global_end_id,)
+    if day_index == 1:
+        return tuple(stop_id for stop_id in content_ids if stop_id != global_start_id)
+    return content_ids
+
+
+def _prune_labels(
+    labels: list[_AllocationLabel],
+    max_labels_per_endpoint: int,
+) -> tuple[_AllocationLabel, ...]:
+    by_endpoint: dict[str, list[_AllocationLabel]] = {}
+    for label in labels:
+        by_endpoint.setdefault(label.current_end_id, []).append(label)
+
+    kept: list[_AllocationLabel] = []
+    for endpoint in sorted(by_endpoint):
+        ordered = sorted(by_endpoint[endpoint], key=_label_objective)
+        nondominated = [
+            label
+            for label in ordered
+            if not any(
+                _label_dominates(other, label)
+                for other in ordered
+                if other is not label
+            )
+        ]
+        kept.extend(nondominated[:max_labels_per_endpoint])
+    return tuple(sorted(kept, key=_label_objective))
+
+
+def _solve_allocation(
+    days: tuple[MultiDayDayInput, ...],
+    allocation: Allocation,
+    candidate_by_id: dict[str, SelectionCandidate],
+    global_start_id: str,
+    global_end_id: str,
+    options: MultiDayOptions,
+    deadline: float,
+    cache: dict[tuple[object, ...], MultiDayDayResult | None],
+) -> tuple[MultiDayDayResult, ...]:
+    """Return the best complete route chain for one ownership allocation."""
+    labels: tuple[_AllocationLabel, ...] = ()
+    for day_position, (day, content_ids) in enumerate(zip(days, allocation)):
+        if time.perf_counter() >= deadline:
+            raise NoFeasibleScheduleError("Multi-day allocation deadline reached")
+        endpoint_choices = _endpoint_choices(
+            day.day_index,
+            len(days),
+            content_ids,
+            global_start_id,
+            global_end_id,
+        )
+        previous_labels: tuple[_AllocationLabel | None, ...] = labels or (None,)
+        next_labels: list[_AllocationLabel] = []
+        for previous_label in previous_labels:
+            previous_end_id = (
+                previous_label.current_end_id if previous_label is not None else None
+            )
+            for current_end_id in endpoint_choices:
+                if time.perf_counter() >= deadline:
+                    break
+                day_result = _cached_schedule_day(
+                    day,
+                    content_ids,
+                    candidate_by_id,
+                    global_start_id,
+                    previous_end_id,
+                    current_end_id,
+                    deadline,
+                    cache,
+                )
+                if day_result is None:
+                    continue
+                day_results = (
+                    (previous_label.day_results if previous_label is not None else ())
+                    + (day_result,)
+                )
+                loads = (
+                    (previous_label.loads if previous_label is not None else ())
+                    + (day_result.load_minutes,)
+                )
+                next_labels.append(
+                    _AllocationLabel(
+                        day_results=day_results,
+                        current_end_id=current_end_id,
+                        loads=loads,
+                        total_travel_minutes=(
+                            previous_label.total_travel_minutes
+                            if previous_label is not None
+                            else 0.0
+                        )
+                        + day_result.schedule.total_travel_minutes,
+                        total_backtrack_ratio=(
+                            previous_label.total_backtrack_ratio
+                            if previous_label is not None
+                            else 0.0
+                        )
+                        + day_result.schedule.backtrack_ratio,
+                        area_switches=_area_switch_count(
+                            day_results,
+                            candidate_by_id,
+                        ),
+                    )
+                )
+        if not next_labels:
+            raise NoFeasibleScheduleError(
+                f"No feasible endpoint label for day {day_position + 1}"
+            )
+        labels = _prune_labels(next_labels, options.max_labels_per_endpoint)
+
+    return min(labels, key=_label_objective).day_results
+
+
+def _solve_fixed_baseline(
+    days: tuple[MultiDayDayInput, ...],
+    allocation: Allocation,
+    candidate_by_id: dict[str, SelectionCandidate],
+    global_start_id: str,
+    deadline: float,
+    cache: dict[tuple[object, ...], MultiDayDayResult | None],
+) -> tuple[MultiDayDayResult, ...] | None:
+    result_days: list[MultiDayDayResult] = []
+    previous_end_id: str | None = None
+    for day, content_ids in zip(days, allocation):
+        current_end_id = content_ids[-1]
+        result = _cached_schedule_day(
+            day,
+            content_ids,
+            candidate_by_id,
+            global_start_id,
+            previous_end_id,
+            current_end_id,
+            deadline,
+            cache,
+        )
+        if result is None:
+            return None
+        result_days.append(result)
+        previous_end_id = current_end_id
+    return tuple(result_days)
+
+
+def _result_days_objective(
+    result_days: tuple[MultiDayDayResult, ...],
+    candidate_by_id: dict[str, SelectionCandidate],
+) -> tuple[object, ...]:
+    label = _AllocationLabel(
+        day_results=result_days,
+        current_end_id=result_days[-1].schedule.ordered_ids[-1],
+        loads=tuple(day.load_minutes for day in result_days),
+        total_travel_minutes=sum(
+            day.schedule.total_travel_minutes for day in result_days
+        ),
+        total_backtrack_ratio=sum(
+            day.schedule.backtrack_ratio for day in result_days
+        ),
+        area_switches=_area_switch_count(result_days, candidate_by_id),
+    )
+    return _label_objective(label)
+
+
 def optimize_multi_day_allocation(
     days: Sequence[MultiDayDayInput],
     global_start_id: str,
@@ -301,26 +590,41 @@ def optimize_multi_day_allocation(
     )
     allocation: Allocation = tuple(day.baseline_order for day in day_inputs)
     deadline = time.perf_counter() + options.deadline_seconds
-
-    result_days: list[MultiDayDayResult] = []
-    previous_end_id: str | None = None
-    for index, (day, content_ids) in enumerate(zip(day_inputs, allocation)):
-        current_end_id = content_ids[-1]
-        result_days.append(
-            _schedule_day(
-                day,
-                content_ids,
-                candidate_by_id,
-                first_content_id=global_start_id if index == 0 else None,
-                previous_end_id=previous_end_id,
-                current_end_id=current_end_id,
-                remaining_seconds=deadline - time.perf_counter(),
-            )
+    cache: dict[tuple[object, ...], MultiDayDayResult | None] = {}
+    baseline_days = _solve_fixed_baseline(
+        day_inputs,
+        allocation,
+        candidate_by_id,
+        global_start_id,
+        deadline,
+        cache,
+    )
+    try:
+        final_days = _solve_allocation(
+            day_inputs,
+            allocation,
+            candidate_by_id,
+            global_start_id,
+            global_end_id,
+            options,
+            deadline,
+            cache,
         )
-        previous_end_id = current_end_id
-
-    final_days = tuple(result_days)
-    loads = tuple(day.load_minutes for day in final_days)
+    except NoFeasibleScheduleError:
+        if baseline_days is None:
+            raise
+        final_days = baseline_days
+    if baseline_days is not None and _result_days_objective(
+        baseline_days,
+        candidate_by_id,
+    ) < _result_days_objective(final_days, candidate_by_id):
+        final_days = baseline_days
+    final_loads = tuple(day.load_minutes for day in final_days)
+    initial_loads = (
+        tuple(day.load_minutes for day in baseline_days)
+        if baseline_days is not None
+        else final_loads
+    )
     empty_moves = tuple(() for _ in final_days)
     warnings = (
         ("overnight-origin-approximated",)
@@ -330,9 +634,9 @@ def optimize_multi_day_allocation(
     return MultiDayResult(
         days=final_days,
         solver="multiday-dp-local-search",
-        initial_load_minutes=loads,
-        final_load_minutes=loads,
-        max_imbalance_minutes=max(loads) - min(loads),
+        initial_load_minutes=initial_loads,
+        final_load_minutes=final_loads,
+        max_imbalance_minutes=max(final_loads) - min(final_loads),
         move_count=0,
         moved_in_by_day=empty_moves,
         moved_out_by_day=empty_moves,

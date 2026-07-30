@@ -5,12 +5,18 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+import itinerary_multiday
 from itinerary_multiday import (
     MultiDayDayInput,
     MultiDayOptions,
     optimize_multi_day_allocation,
 )
-from itinerary_schedule import ScheduleOptions, ScheduleStop
+from itinerary_schedule import (
+    NoFeasibleScheduleError,
+    ScheduleOptions,
+    ScheduleStop,
+    TimeWindow,
+)
 from itinerary_selection import SelectionCandidate
 
 
@@ -142,3 +148,103 @@ def test_synthetic_origin_avoids_fixed_id_collision_across_days():
     )
 
     assert result.days[1].synthetic_origin_id == f"{collision_id}_1"
+
+
+def endpoint_choice_inputs() -> tuple[MultiDayDayInput, MultiDayDayInput]:
+    return (
+        day_input(
+            1,
+            [
+                candidate("start", 10.00, visit=0),
+                candidate("near-next-day", 11.00),
+                candidate("baseline-end", 10.01),
+            ],
+        ),
+        day_input(
+            2,
+            [
+                candidate("day-2-first", 11.01),
+                candidate("end", 11.02, visit=0),
+            ],
+        ),
+    )
+
+
+def test_dp_changes_internal_endpoint_to_reduce_next_day_origin_travel():
+    result = optimize_multi_day_allocation(
+        endpoint_choice_inputs(),
+        global_start_id="start",
+        global_end_id="end",
+        options=MultiDayOptions(max_iterations=0),
+    )
+
+    assert result.days[0].ordered_ids[0] == "start"
+    assert result.days[0].ordered_ids[-1] == "near-next-day"
+    assert result.days[-1].ordered_ids[-1] == "end"
+    assert max(result.final_load_minutes) <= max(result.initial_load_minutes)
+
+
+def test_dp_keeps_fixed_anchor_in_the_original_day():
+    first, second = endpoint_choice_inputs()
+    meal = ScheduleStop(
+        "meal",
+        (11.015, 106.0),
+        60,
+        (TimeWindow(720, 780),),
+        True,
+    )
+    second = MultiDayDayInput(
+        day_index=second.day_index,
+        candidates=second.candidates,
+        fixed_stops=(meal,),
+        baseline_order=second.baseline_order,
+        schedule_options=second.schedule_options,
+    )
+
+    result = optimize_multi_day_allocation(
+        (first, second),
+        global_start_id="start",
+        global_end_id="end",
+        options=MultiDayOptions(max_iterations=0),
+    )
+
+    assert "meal" not in result.days[0].ordered_ids
+    assert "meal" in result.days[1].ordered_ids
+    assert result.days[1].schedule.skipped == ()
+
+
+def test_endpoint_dp_is_deterministic():
+    first = optimize_multi_day_allocation(
+        endpoint_choice_inputs(),
+        "start",
+        "end",
+        MultiDayOptions(max_iterations=0),
+    )
+    second = optimize_multi_day_allocation(
+        endpoint_choice_inputs(),
+        "start",
+        "end",
+        MultiDayOptions(max_iterations=0),
+    )
+
+    assert first == second
+
+
+def test_dp_keeps_complete_baseline_when_dynamic_search_deadlines(monkeypatch):
+    def deadline(*_args, **_kwargs):
+        raise NoFeasibleScheduleError("deadline")
+
+    monkeypatch.setattr(itinerary_multiday, "_solve_allocation", deadline)
+
+    result = optimize_multi_day_allocation(
+        simple_two_day_inputs(),
+        "start",
+        "end",
+        MultiDayOptions(max_iterations=0),
+    )
+
+    assert tuple(day.content_ids for day in result.days) == (
+        ("start", "day-1-end"),
+        ("day-2-first", "end"),
+    )
+    assert result.initial_load_minutes == result.final_load_minutes
