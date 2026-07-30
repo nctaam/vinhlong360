@@ -720,7 +720,7 @@ def imbalanced_generator_entities(monkeypatch):
         "p-vl": _place("p-vl"),
         "start": _entity("start", [10.00, 106.0], "attraction", 0, 1.00),
         "heavy-fixed": _entity("heavy-fixed", [10.02, 106.0], "experience", 200, 0.99),
-        "move-me": _entity("move-me", [10.04, 106.0], "craft_village", 100, 0.98),
+        "move-me": _entity("move-me", [10.061, 106.0], "craft_village", 100, 0.98),
         "day-1-end": _entity("day-1-end", [10.06, 106.0], "product", 0, 0.97),
         "day-2-a": _entity("day-2-a", [10.08, 106.0], "attraction", 0, 0.96),
         "day-2-b": _entity("day-2-b", [10.10, 106.0], "experience", 30, 0.95),

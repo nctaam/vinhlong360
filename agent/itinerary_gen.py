@@ -17,6 +17,12 @@ from numbers import Real
 import re
 
 import knowledge
+from itinerary_multiday import (
+    MultiDayDayInput,
+    MultiDayOptions,
+    MultiDayResult,
+    optimize_multi_day_allocation,
+)
 from itinerary_selection import (
     SelectionCandidate,
     SelectionOptions,
@@ -485,6 +491,109 @@ def _fallback_selection_diagnostics(
     return schedule
 
 
+def _fallback_allocation_diagnostics() -> dict:
+    return {
+        "solver": "multiday-fallback",
+        "move_count": 0,
+        "moved_in_ids": [],
+        "moved_out_ids": [],
+        "warnings": ["multiday-fallback"],
+    }
+
+
+def _allocation_diagnostics(result: MultiDayResult, day_index: int) -> dict:
+    return {
+        "solver": result.solver,
+        "initial_load_minutes": result.initial_load_minutes[day_index],
+        "final_load_minutes": result.final_load_minutes[day_index],
+        "max_imbalance_minutes": result.max_imbalance_minutes,
+        "move_count": result.move_count,
+        "moved_in_ids": list(result.moved_in_by_day[day_index]),
+        "moved_out_ids": list(result.moved_out_by_day[day_index]),
+        "warnings": list(result.warnings),
+    }
+
+
+def _unique_values(*groups) -> list:
+    values = []
+    for group in groups:
+        for value in group:
+            if value not in values:
+                values.append(value)
+    return values
+
+
+def _phase3_day_plan(entry: dict, month: int) -> dict:
+    if entry["eligible"]:
+        day_stops = _project_selection_schedule(
+            entry["selection_result"],
+            entry["raw_content_by_id"],
+            entry["anchor_items"],
+            month,
+        )
+        schedule = dict(entry["selection_diagnostics"])
+    else:
+        day_stops = entry["day_stops"]
+        schedule = dict(entry["schedule"])
+    return {
+        "day": entry["day_index"],
+        "area_focus": entry["phase3_area_focus"],
+        "stops": [
+            {key: value for key, value in stop.items() if key != "time_min"}
+            for stop in day_stops
+        ],
+        "schedule": schedule,
+    }
+
+
+def _phase3_day_plans(
+    entries: list[dict],
+    month: int,
+    add_allocation_fallback: bool,
+) -> list[dict]:
+    day_plans = [_phase3_day_plan(entry, month) for entry in entries]
+    if add_allocation_fallback:
+        for day_plan in day_plans:
+            day_plan["schedule"]["allocation"] = (
+                _fallback_allocation_diagnostics()
+            )
+    return day_plans
+
+
+def _multiday_schedule_diagnostics(
+    entry: dict,
+    day_result,
+    result: MultiDayResult,
+    day_index: int,
+) -> dict:
+    schedule = dict(entry["selection_diagnostics"])
+    final_schedule = day_result.schedule
+    synthetic_origin_id = day_result.synthetic_origin_id
+    schedule.update(
+        {
+            "solver": final_schedule.solver,
+            "matrix_source": final_schedule.matrix_source,
+            "total_travel_minutes": final_schedule.total_travel_minutes,
+            "waiting_minutes": final_schedule.waiting_minutes,
+            "overtime_minutes": final_schedule.overtime_minutes,
+            "minimum_slack_minutes": final_schedule.minimum_slack_minutes,
+            "backtrack_ratio": final_schedule.backtrack_ratio,
+            "skipped": [
+                {"stop_id": skipped.stop_id, "reason": skipped.reason}
+                for skipped in final_schedule.skipped
+                if skipped.stop_id != synthetic_origin_id
+            ],
+            "warnings": _unique_values(
+                schedule.get("warnings", []),
+                entry["anchor_warnings"],
+                final_schedule.warnings,
+            ),
+            "allocation": _allocation_diagnostics(result, day_index),
+        }
+    )
+    return schedule
+
+
 def _build_joint_day_plans(
     days: int,
     stops_per_day: int,
@@ -533,7 +642,7 @@ def _build_joint_day_plans(
 
     used_content_ids: set[str] = set()
     used_anchor_ids: set[str] = set()
-    day_plans = []
+    prepared_days: list[dict] = []
     for day_index, (state, required_ids, seed_day, raw_pool) in enumerate(states):
         anchor_items, anchor_warnings = _build_anchor_items(
             seed_day,
@@ -575,11 +684,24 @@ def _build_joint_day_plans(
             schedule["warnings"] = list(schedule["warnings"])
             if "selection-fallback" not in schedule["warnings"]:
                 schedule["warnings"].append("selection-fallback")
+            prepared_days.append(
+                {
+                    "eligible": False,
+                    "day_index": day_index + 1,
+                    "phase3_area_focus": _day_area(seed_day),
+                    "day_stops": day_stops,
+                    "schedule": schedule,
+                }
+            )
         else:
             selection_items = state["kept"]
             fixed_stops = _selection_anchor_stops(anchor_items)
             matrix_stops = [candidate.stop for candidate in selection_items]
             matrix_stops.extend(fixed_stops)
+            schedule_options = ScheduleOptions(
+                day_start_minute=480,
+                day_end_minute=1080,
+            )
             try:
                 matrix = build_fallback_matrix(matrix_stops, "driving")
                 result = select_and_schedule_day(
@@ -587,10 +709,7 @@ def _build_joint_day_plans(
                     required_ids=required_ids,
                     fixed_stops=fixed_stops,
                     matrix=matrix,
-                    schedule_options=ScheduleOptions(
-                        day_start_minute=480,
-                        day_end_minute=1080,
-                    ),
+                    schedule_options=schedule_options,
                     selection_options=SelectionOptions(
                         target_count=stops_per_day,
                         exact_limit=8,
@@ -616,39 +735,139 @@ def _build_joint_day_plans(
                 schedule["warnings"] = list(schedule["warnings"])
                 if "selection-fallback" not in schedule["warnings"]:
                     schedule["warnings"].append("selection-fallback")
-            else:
-                day_stops = _project_selection_schedule(
-                    result,
-                    state["kept_by_id"],
-                    anchor_items,
-                    month,
+                prepared_days.append(
+                    {
+                        "eligible": False,
+                        "day_index": day_index + 1,
+                        "phase3_area_focus": _day_area(seed_day),
+                        "day_stops": day_stops,
+                        "schedule": schedule,
+                    }
                 )
-                schedule = _selection_diagnostics(
+            else:
+                selection_diagnostics = _selection_diagnostics(
                     result,
                     state,
                     anchor_warnings,
                 )
+                selected_id_set = set(result.selected_ids)
+                selected_candidates = tuple(
+                    candidate
+                    for candidate in selection_items
+                    if candidate.stop.id in selected_id_set
+                )
+                raw_content_by_id = {
+                    stop_id: state["kept_by_id"][stop_id]
+                    for stop_id in result.selected_ids
+                }
+                baseline_order = tuple(
+                    stop_id
+                    for stop_id in result.schedule.ordered_ids
+                    if stop_id in selected_id_set
+                )
+                prepared_days.append(
+                    {
+                        "eligible": True,
+                        "day_index": day_index + 1,
+                        "phase3_area_focus": _day_area(seed_day),
+                        "selection_result": result,
+                        "selected_candidates": selected_candidates,
+                        "raw_content_by_id": raw_content_by_id,
+                        "anchor_items": anchor_items,
+                        "anchor_warnings": anchor_warnings,
+                        "fixed_stops": tuple(fixed_stops),
+                        "baseline_order": baseline_order,
+                        "schedule_options": schedule_options,
+                        "selection_diagnostics": selection_diagnostics,
+                    }
+                )
                 used_content_ids.update(result.selected_ids)
 
-        used_content_ids.update(
-            stop["entity"]["id"]
-            for stop in day_stops
-            if not stop.get("is_meal") and not stop.get("is_rest")
+        if not prepared_days[-1]["eligible"]:
+            used_content_ids.update(
+                stop["entity"]["id"]
+                for stop in prepared_days[-1]["day_stops"]
+                if not stop.get("is_meal") and not stop.get("is_rest")
+            )
+            used_anchor_ids.update(
+                stop["entity"]["id"]
+                for stop in prepared_days[-1]["day_stops"]
+                if stop.get("is_meal")
+            )
+
+    if days < 2:
+        return _phase3_day_plans(
+            prepared_days,
+            month,
+            add_allocation_fallback=False,
         )
-        used_anchor_ids.update(
-            stop["entity"]["id"]
-            for stop in day_stops
-            if stop.get("is_meal")
+    if not all(entry["eligible"] for entry in prepared_days):
+        return _phase3_day_plans(
+            prepared_days,
+            month,
+            add_allocation_fallback=True,
         )
+
+    multi_day_inputs = tuple(
+        MultiDayDayInput(
+            day_index=entry["day_index"],
+            candidates=entry["selected_candidates"],
+            fixed_stops=entry["fixed_stops"],
+            baseline_order=entry["baseline_order"],
+            schedule_options=entry["schedule_options"],
+        )
+        for entry in prepared_days
+    )
+    global_start_id = multi_day_inputs[0].baseline_order[0]
+    global_end_id = multi_day_inputs[-1].baseline_order[-1]
+    try:
+        multi_day_result = optimize_multi_day_allocation(
+            multi_day_inputs,
+            global_start_id=global_start_id,
+            global_end_id=global_end_id,
+            options=MultiDayOptions(),
+        )
+    except (NoFeasibleScheduleError, ValueError):
+        return _phase3_day_plans(
+            prepared_days,
+            month,
+            add_allocation_fallback=True,
+        )
+
+    global_raw_content = {
+        stop_id: item
+        for entry in prepared_days
+        for stop_id, item in entry["raw_content_by_id"].items()
+    }
+    day_plans = []
+    for day_index, (entry, day_result) in enumerate(
+        zip(prepared_days, multi_day_result.days)
+    ):
+        day_stops = _project_selection_schedule(
+            day_result,
+            global_raw_content,
+            entry["anchor_items"],
+            month,
+        )
+        final_content = [
+            global_raw_content[stop_id]
+            for stop_id in day_result.content_ids
+            if stop_id in global_raw_content
+        ]
         day_plans.append(
             {
-                "day": day_index + 1,
-                "area_focus": _day_area(seed_day),
+                "day": entry["day_index"],
+                "area_focus": _day_area(final_content),
                 "stops": [
                     {key: value for key, value in stop.items() if key != "time_min"}
                     for stop in day_stops
                 ],
-                "schedule": schedule,
+                "schedule": _multiday_schedule_diagnostics(
+                    entry,
+                    day_result,
+                    multi_day_result,
+                    day_index,
+                ),
             }
         )
     return day_plans
