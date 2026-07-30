@@ -1,6 +1,6 @@
 # Adaptive Nocturne Heritage cho hệ thống public vinhlong360
 
-> STATUS: draft-for-owner-review - các quyết định thị giác và kiến trúc trải nghiệm đã được chủ dự án duyệt trong phiên 2026-07-30/31; chưa cho phép triển khai code.
+> STATUS: approved-design - các quyết định thị giác, kiến trúc trải nghiệm và Quality Ceiling đã được chủ dự án chốt trong phiên 2026-07-30/31; implementation phải đi qua các plan độc lập bên dưới.
 
 ## 1. Mục tiêu
 
@@ -782,6 +782,96 @@ Mỗi lớp có feature flag/fallback độc lập:
 Tắt feature phải quay về default/editorial ranking mà không phá layout, mất dữ
 liệu user hoặc làm official notice biến mất.
 
+### 10.36 Evidence-Driven Experience Quality Layer
+
+Đây là lớp chất lượng cao nhất của hệ thống. Nó không thêm một agent mới; nó
+kiểm chứng xem intelligence có thực sự giúp user hoàn thành mục tiêu hay không.
+
+#### Decision quality loop
+
+- đo completion thay vì chỉ click hoặc dwell time;
+- ghi nhận task phải sửa lại, bỏ dở hoặc reset recommendation;
+- hạ ưu tiên recommendation có engagement cao nhưng outcome thấp;
+- so sánh predicted fit với kết quả thực tế sau action.
+
+#### Trust quality loop
+
+- theo dõi freshness, source conflict, report-stale và correction resolution;
+- tự hạ source state khi evidence không còn đủ;
+- chuyển `direct suggestion -> conditional suggestion -> default ranking -> hidden`
+  theo policy, không dùng copy để che thiếu dữ liệu;
+- official authority và verified state luôn giữ precedence riêng.
+
+#### Cognitive load engine
+
+- một primary action và một proactive suggestion mỗi viewport;
+- giới hạn metadata, badge, carousel và disclosure mở rộng;
+- cho phép user chọn `Ít thông tin hơn`, `Hiển thị đầy đủ`, `Ưu tiên nguồn` hoặc
+  `Ưu tiên khoảng cách`;
+- khi page đã dày, giảm chi tiết phụ thay vì thêm module.
+
+#### Explainable change log
+
+Khi recommendation, planner hoặc context thay đổi, user có thể xem:
+
+- điều kiện nào vừa thay đổi;
+- source nào vừa stale;
+- vì sao stop bị loại;
+- vì sao hệ thống chuyển về default ranking;
+- bản diff trước và sau.
+
+Thay đổi quan trọng luôn có `Xem thay đổi` và `Hoàn tác` nếu mutation đã được
+user xác nhận.
+
+#### User control plane
+
+Một control surface ngắn cho phép xem và chỉnh:
+
+- khu vực;
+- signal broad đang ảnh hưởng đề xuất;
+- theme và accessibility profile;
+- mức độ proactive;
+- dữ liệu được phép dùng;
+- reset trải nghiệm.
+
+Control plane không hiển thị internal score, prompt, raw event hoặc graph edge
+nhạy cảm.
+
+#### Fairness và coverage guardrail
+
+- giới hạn lặp cùng một nhóm entity;
+- theo dõi coverage theo khu vực và loại hình;
+- không để popularity lấn át official/trust policy;
+- tách popularity khỏi reliability;
+- editorial override phải có lý do và thời hạn.
+
+#### Cost-aware intelligence
+
+Mỗi request có ngân sách cho context, ranking, counterfactual, agentic assist,
+prefetch và analytics. Khi vượt ngân sách, fallback theo thứ tự:
+
+```text
+agentic assistance
+  -> counterfactual preview
+  -> deep explanation
+  -> contextual ranking
+  -> default ranking
+```
+
+Public content và official notice không được phụ thuộc vào việc LLM còn ngân sách.
+
+#### Self-healing UX signal
+
+Hệ thống có thể phát hiện pattern lỗi lặp lại như cùng một zero-result, permission
+loop, CTA failure hoặc entity thường xuyên bị báo sai để tạo product/ops signal.
+Nó không tự sửa production UI, policy hoặc dữ liệu nếu chưa có review và
+rollback plan.
+
+#### Quality gate
+
+Mọi intelligence feature phải có outcome, explanation, undo/reset, fallback,
+feature flag, privacy boundary, behavior test, success metric và harm metric.
+
 ## 11. Motion và interaction
 
 - Page entry: fade/reveal 180-260ms, không stagger mọi card.
@@ -868,6 +958,10 @@ Foundation dùng chung:
 - `SharedJourneyPanel`;
 - `OfflineContextStatus`;
 - `ReliabilityState`;
+- `QualityChangeLog`;
+- `UserControlPlane`;
+- `CognitiveLoadControl`;
+- `CoverageGuardrailStatus`;
 - `OfficialNotice`;
 - `SystemStatePanel`;
 - `GeneratedMediaDisclosure`.
@@ -890,6 +984,7 @@ API/state inputs
   -> stable page render
   -> explicit user action
   -> learning ledger / reset / recovery
+  -> outcome/trust/cognitive quality signals
 ```
 
 Không truyền raw GPS/IP, secret, private history hoặc internal scoring vào DOM,
@@ -998,6 +1093,8 @@ Tối thiểu phải chứng minh:
 - Offline Context Pack luôn có timestamp và diff khi reconnect;
 - passive notification không dùng interruptive treatment;
 - kill switch quay về default ranking mà không mất user state;
+- quality loop đo outcome và harm metric thay vì chỉ click;
+- source/coverage/cognitive signals không làm lộ raw private data;
 - hydration không reorder section;
 - reduced motion và 200% zoom không che control.
 
@@ -1018,7 +1115,9 @@ rollback/test gate độc lập:
 - Plan C: context, location, trust và state primitives;
 - Plan D: Local Life Graph, Outcome Orchestrator và decision support;
 - Plan E: learning ledger, cross-device, Shared Journey và accessibility;
-- Plan F: offline context, reliability mesh, SLO và kill-switch closure.
+- Plan F: offline context, reliability mesh, SLO và kill-switch closure;
+- Plan G: Evidence-Driven Experience Quality, fairness/coverage, cognitive load,
+  cost budget và self-healing signal.
 
 Mỗi plan chỉ bắt đầu sau khi plan trước cung cấp contract cần thiết; không cần
 đợi toàn program hoàn tất mới ship một pilot đã đạt gate.
@@ -1043,8 +1142,9 @@ Mỗi plan chỉ bắt đầu sau khi plan trước cung cấp contract cần th
     định.
 11. Map/planner, community, directory/legal và remaining public families.
 12. Cross-family state catalog, behavior tests, Experience SLO, kill-switch
-   verification, quality-loop metrics và
-   screenshot baselines.
+   verification, quality-loop metrics và Evidence-Driven Experience Quality
+   signals.
+13. Screenshot baselines và review theo layout family.
 
 Việc triển khai phải giữ thứ tự privacy/RBAC đã duyệt cho các action private.
 Không mở rộng scope sang AdminCP operations, payment, booking hoặc production
@@ -1072,6 +1172,8 @@ deployment trong cùng implementation plan.
 - Shared Journey, cross-device và offline state có revision/conflict/freshness
   contract rõ.
 - Intelligence degradation và kill switch giữ public content usable.
+- Evidence-Driven Quality Layer có success/harm metrics, fairness/coverage và
+  cognitive-load guardrail trước khi mở rộng rollout.
 - Không lưu hoặc lộ raw GPS/IP.
 - Không tạo claim, rating, urgency hoặc verification không có dữ liệu thật.
 - Đặc tả đủ rõ để viết program gồm nhiều implementation plan nhỏ, mỗi plan có
