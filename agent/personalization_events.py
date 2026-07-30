@@ -592,12 +592,32 @@ def record_recommendation_reset(user_id: str) -> PreferenceSnapshot:
                 conn,
                 f"INSERT INTO user_preferences (user_id, {_preference_columns()}) "
                 f"VALUES ({_user_param()}, {value_placeholders}) "
+                "ON CONFLICT (user_id) DO NOTHING "
                 f"RETURNING {_preference_columns()}",
                 [owner, *values],
             )
-            if inserted is None:
-                raise RuntimeError("Unable to persist recommendation reset")
-            snapshot = _row_snapshot(inserted)
+            if inserted is not None:
+                snapshot = _row_snapshot(inserted)
+            else:
+                latest = _load_persisted_preferences_in_connection(
+                    conn, owner, for_update=True, heal=False
+                )
+                if invalid_region_reason(latest) is not None:
+                    latest = quarantine_location_snapshot(latest)
+                latest_reset = latest.get("recommendation_reset_at")
+                if latest_reset is not None:
+                    latest_reset = latest_reset.astimezone(timezone.utc)
+                    reset_at = max(reset_at, latest_reset)
+                merged = merge_preference_patch(
+                    latest,
+                    {"recommendation_reset_at": reset_at},
+                    latest["revision"],
+                )
+                snapshot = _update_persisted_snapshot_in_connection(
+                    conn, owner, merged, latest["revision"]
+                )
+                if snapshot is None:
+                    raise RuntimeError("Recommendation reset revision conflict")
         else:
             snapshot = _update_persisted_snapshot_in_connection(
                 conn, owner, merged, current["revision"]

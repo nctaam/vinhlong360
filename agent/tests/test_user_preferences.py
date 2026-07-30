@@ -1,5 +1,6 @@
 import sqlite3
 import sys
+import threading
 from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
@@ -312,6 +313,59 @@ def test_recommendation_reset_rejects_json_unsafe_revision_ceiling(
             ("user-1",),
         ).fetchone()
     assert tuple(row) == (None, 9_007_199_254_740_991)
+
+
+def test_concurrent_first_recommendation_resets_are_atomic(
+    preference_database, monkeypatch
+):
+    original_loader_select = user_preferences._select_preferences
+    original_reset_select = personalization_events._select_preferences
+    loader_barrier = threading.Barrier(2)
+    reset_barrier = threading.Barrier(2)
+
+    def synchronized_loader_select(conn, owner, *, for_update=False):
+        row = original_loader_select(conn, owner, for_update=for_update)
+        if for_update and row is None:
+            loader_barrier.wait(timeout=5)
+        return row
+
+    def synchronized_reset_select(conn, owner, *, for_update=False):
+        row = original_reset_select(conn, owner, for_update=for_update)
+        if for_update and row is None:
+            reset_barrier.wait(timeout=5)
+        return row
+
+    monkeypatch.setattr(
+        user_preferences, "_select_preferences", synchronized_loader_select
+    )
+    monkeypatch.setattr(
+        personalization_events, "_select_preferences", synchronized_reset_select
+    )
+    monkeypatch.setattr(personalization_events, "db", preference_database)
+    results = []
+
+    def reset_in_thread(index):
+        try:
+            snapshot = personalization_events.record_recommendation_reset("user-1")
+            results.append((index, "ok", snapshot["revision"]))
+        except Exception as exc:  # pragma: no cover - asserted below
+            results.append((index, type(exc).__name__, str(exc)))
+
+    threads = [
+        threading.Thread(target=reset_in_thread, args=(index,))
+        for index in (1, 2)
+    ]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=10)
+
+    assert all(not thread.is_alive() for thread in threads)
+    assert sorted((status, revision) for _, status, revision in results) == [
+        ("ok", 1),
+        ("ok", 2),
+    ]
+    assert load_preferences("user-1")["revision"] == 2
 
 pg_only = pytest.mark.skipif(
     not live_db._use_pg, reason="PostgreSQL preference contract requires DATABASE_URL."

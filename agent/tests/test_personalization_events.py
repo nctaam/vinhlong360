@@ -1709,6 +1709,65 @@ def test_repeated_reset_route_keeps_one_monotonic_cutoff(logged_in_client, pg_db
     assert pg_db._row_to_dict(row) == {"count": 1, "revision": 2}
 
 
+def test_concurrent_first_recommendation_resets_are_atomic_on_postgres(
+    pg_db, users, monkeypatch
+):
+    owner, _ = users
+    original_loader_select = user_preferences._select_preferences
+    original_reset_select = personalization_events._select_preferences
+    loader_barrier = threading.Barrier(2)
+    reset_barrier = threading.Barrier(2)
+
+    def synchronized_loader_select(conn, user_id, *, for_update=False):
+        row = original_loader_select(conn, user_id, for_update=for_update)
+        if for_update and row is None:
+            loader_barrier.wait(timeout=10)
+        return row
+
+    def synchronized_reset_select(conn, user_id, *, for_update=False):
+        row = original_reset_select(conn, user_id, for_update=for_update)
+        if for_update and row is None:
+            reset_barrier.wait(timeout=10)
+        return row
+
+    monkeypatch.setattr(
+        user_preferences, "_select_preferences", synchronized_loader_select
+    )
+    monkeypatch.setattr(
+        personalization_events, "_select_preferences", synchronized_reset_select
+    )
+    results = []
+
+    def reset_in_thread(index):
+        try:
+            snapshot = personalization_events.record_recommendation_reset(owner)
+            results.append((index, "ok", snapshot["revision"]))
+        except Exception as exc:  # pragma: no cover - asserted below
+            results.append((index, type(exc).__name__, str(exc)))
+
+    threads = [
+        threading.Thread(target=reset_in_thread, args=(index,))
+        for index in (1, 2)
+    ]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=20)
+
+    assert all(not thread.is_alive() for thread in threads)
+    assert sorted((status, revision) for _, status, revision in results) == [
+        ("ok", 1),
+        ("ok", 2),
+    ]
+    with pg_db._conn(commit_on_success=False) as conn:
+        row = pg_db._fetchone(
+            conn,
+            "SELECT revision FROM user_preferences WHERE user_id = %s::uuid",
+            (owner,),
+        )
+    assert pg_db._row_to_dict(row)["revision"] == 2
+
+
 @contextmanager
 def _unsafe_preference(pg_db, user_id: str, *, recommendation_reset_at=None):
     migration = (
