@@ -10,6 +10,7 @@ from pathlib import Path
 from urllib.parse import unquote, urlparse
 
 import psycopg2
+from psycopg2 import sql
 import pytest
 
 try:
@@ -306,6 +307,91 @@ def erasure_pg_schema():
         conn.rollback()
         with conn.cursor() as cursor:
             cursor.execute(f'DROP SCHEMA IF EXISTS "{schema}" CASCADE')
+        conn.commit()
+        conn.close()
+
+
+def test_real_postgres_migration_covers_full_registered_fk_catalog():
+    if TEST_DATABASE_URL is None:
+        pytest.skip("set TRUST_ERASURE_TEST_DATABASE_URL to a disposable PostgreSQL DB")
+
+    schema = f"erasure_catalog_{uuid.uuid4().hex}"
+    conn = psycopg2.connect(TEST_DATABASE_URL)
+    try:
+        policies = registered_delete_actions()
+        columns_by_table: dict[str, set[str]] = {}
+        for policy in policies:
+            columns_by_table.setdefault(policy.table, set()).add(policy.column)
+
+        with conn.cursor() as cursor:
+            cursor.execute(sql.SQL("CREATE SCHEMA {}").format(sql.Identifier(schema)))
+            cursor.execute(
+                sql.SQL("SET search_path TO {}").format(sql.Identifier(schema))
+            )
+            cursor.execute(
+                """
+                CREATE TABLE users (id UUID PRIMARY KEY);
+                CREATE TABLE schema_version (
+                    component TEXT PRIMARY KEY,
+                    version INTEGER NOT NULL,
+                    migration TEXT NOT NULL,
+                    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                );
+                """
+            )
+
+            required_columns = {
+                "entity_claims": {
+                    "business_name": "TEXT NOT NULL",
+                    "contact_phone": "TEXT NOT NULL",
+                },
+                "moderation_appeals": {"reason": "TEXT NOT NULL"},
+                "moderation_log": {"target_id": "TEXT NOT NULL"},
+                "admin_audit_events": {"actor": "TEXT NOT NULL"},
+            }
+            for table, columns in sorted(columns_by_table.items()):
+                definitions = [
+                    sql.SQL("{} UUID NOT NULL REFERENCES users(id)").format(
+                        sql.Identifier(column)
+                    )
+                    for column in sorted(columns)
+                ]
+                definitions.extend(
+                    sql.SQL("{} {}").format(
+                        sql.Identifier(column), sql.SQL(column_type)
+                    )
+                    for column, column_type in required_columns.get(table, {}).items()
+                    if column not in columns
+                )
+                cursor.execute(
+                    sql.SQL("CREATE TABLE {} ({})").format(
+                        sql.Identifier(table), sql.SQL(", ").join(definitions)
+                    )
+                )
+
+            cursor.execute(MIGRATION_SQL)
+        conn.commit()
+
+        observed = validate_user_fk_actions(conn)
+        assert {
+            (policy.table, policy.column, policy.action) for policy in observed
+        } == {
+            (policy.table, policy.column, policy.action) for policy in policies
+        }
+        assert len(observed) == 45
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "SELECT version, migration FROM schema_version WHERE component = 'agent'"
+            )
+            assert cursor.fetchone() == (73, "073_erasure_delete_actions.sql")
+    finally:
+        conn.rollback()
+        with conn.cursor() as cursor:
+            cursor.execute(
+                sql.SQL("DROP SCHEMA IF EXISTS {} CASCADE").format(
+                    sql.Identifier(schema)
+                )
+            )
         conn.commit()
         conn.close()
 
