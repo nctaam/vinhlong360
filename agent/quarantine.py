@@ -307,11 +307,16 @@ def recover_account(user_id, *, now: datetime) -> RecoveryResult:
             if not row or not settings.RECOVERY_ENABLED_DURING_GRACE_PERIOD:
                 return RecoveryResult(recovered=False)
             due_at = _timestamp(row.get("erasure_due_at"))
+            last_attempt_at = _timestamp(row.get("erasure_last_attempt_at"))
             if (
                 row.get("deleted_at") is None
                 or row.get("is_active", True)
                 or due_at is None
                 or requested_at >= due_at
+                or (
+                    last_attempt_at is not None
+                    and last_attempt_at >= due_at
+                )
             ):
                 return RecoveryResult(recovered=False)
             updated = db._fetchone(

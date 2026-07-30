@@ -164,6 +164,24 @@ def test_recovery_without_due_date_fails_closed(monkeypatch):
     assert events == []
 
 
+def test_recovery_with_stale_clock_fails_after_hard_erasure_started(monkeypatch):
+    db = RecoveryDatabase()
+    db.user["erasure_last_attempt_at"] = DUE
+    events = []
+    monkeypatch.setattr(quarantine, "db", db)
+    monkeypatch.setattr(quarantine, "owner_write_gate", Gate(events))
+
+    result = quarantine.recover_account(
+        USER_ID,
+        now=DUE - timedelta(microseconds=1),
+    )
+
+    assert result.recovered is False
+    assert db.user["deleted_at"] is not None
+    assert db.user["is_active"] is False
+    assert events == []
+
+
 def test_recovery_does_not_reconstruct_quarantined_hot_memory(monkeypatch):
     db = RecoveryDatabase()
     owner_key = f"user:{USER_ID}"
