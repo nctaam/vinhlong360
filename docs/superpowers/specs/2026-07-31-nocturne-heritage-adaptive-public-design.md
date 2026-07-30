@@ -227,18 +227,25 @@ variant của cùng Adaptive Nocturne System.
 
 Kiến trúc được chọn là:
 
-> **Adaptive Task Continuity** làm lõi; **Ambient Intelligence** làm lớp ngữ
-> cảnh; **Predictive Orchestration** chỉ dùng giới hạn cho cảnh báo chính thức và
-> đề xuất confidence cao.
+> **Local Life Graph Orchestration** kết nối toàn hệ thống; **Adaptive Task
+> Continuity** quản lý hành trình; **Ambient Intelligence** cung cấp ngữ cảnh;
+> agentic assistance chỉ tạo bản nháp/giải thích và **Predictive Orchestration**
+> chỉ dùng giới hạn cho cảnh báo chính thức hoặc đề xuất confidence cao.
 
 ```text
 Nocturne Heritage
     -> Context Envelope
+    -> Local Life Graph Projection
     -> Intent Resolver
     -> Journey Thread
     -> Adaptive Priority Composer
+    -> Next Best Action
     -> Explainability + Recovery
 ```
+
+Local Life Graph là projection logic từ dữ liệu/API hiện có, không mặc định yêu
+cầu graph database, service hoặc dependency mới. Implementation chỉ được thêm
+persistence/infra mới khi một plan riêng chứng minh nhu cầu, chi phí và rollback.
 
 ### 10.1 Context Envelope
 
@@ -339,6 +346,200 @@ Controls bắt buộc:
 
 `Đổi khu vực` · `Chỉnh sở thích` · `Tắt vị trí` · `Đặt lại đề xuất`
 
+### 10.8 Local Life Graph Projection
+
+Graph kết nối các node broad sau:
+
+- user context và journey hiện tại;
+- khu vực;
+- thời gian và mùa vụ;
+- thời tiết, giao thông, sự kiện và cảnh báo;
+- địa điểm, dịch vụ, sản phẩm và nội dung cộng đồng;
+- source, freshness và trust tier;
+- action `directions`, `call`, `zalo`, `save`, `follow`, `plan`, `report`,
+  `claim`.
+
+Các edge presentation hợp lệ gồm:
+
+- `nearby`;
+- `in_area`;
+- `happening_at`;
+- `relevant_to_interest`;
+- `fits_time_window`;
+- `part_of_journey`;
+- `saved_or_followed`;
+- `has_contact_path`;
+- `has_source`;
+- `affected_by_official_notice`;
+- `needs_recovery`.
+
+Graph projection không đưa raw GPS/IP, private draft content, secret, internal
+score hoặc quan hệ của user khác vào client. Edge không đủ dữ liệu phải vắng
+mặt, không được suy diễn bằng copy hoặc metric giả.
+
+### 10.9 Situational Brief
+
+Mỗi lần mở hệ thống, có thể hiển thị một brief cực ngắn gồm tối đa:
+
+1. một official signal đang hiệu lực;
+2. một thay đổi ảnh hưởng Journey Thread;
+3. một task đang dang dở;
+4. một gợi ý phù hợp nhất lúc này.
+
+Brief chỉ hiển thị 2-3 dòng và một primary action. Không biến homepage thành
+dashboard, không dùng modal và không lấp viewport đầu khi không có tín hiệu đủ
+mạnh.
+
+### 10.10 Action Chain
+
+Hệ thống hiểu chuỗi hành động thay vì từng CTA độc lập:
+
+```text
+discover
+  -> compare
+  -> add_to_plan
+  -> directions/contact
+  -> visited
+  -> review/report/correct
+```
+
+Mỗi screen chỉ hiển thị bước hiện tại và bước hợp lý kế tiếp. Chuỗi không tự
+thực hiện mutation. Mọi bước gửi bài, report, claim, contact hoặc thay đổi lịch
+đã xác nhận đều cần hành động rõ của người dùng.
+
+### 10.11 Contextual Continuity Rail
+
+Rail thu gọn có thể chứa:
+
+- địa điểm đang so sánh;
+- lịch trình đang chỉnh;
+- bài viết nháp;
+- claim/report đang xử lý;
+- sự kiện vừa lưu;
+- location confirmation còn dang dở.
+
+Desktop dùng rail thu gọn; mobile dùng bottom sheet. Rail không mở mặc định khi
+không có journey thật, không trở thành navigation thứ hai và không hiển thị task
+của user khác sau logout/login hoặc account switch.
+
+### 10.12 Predictive Friction Detection
+
+UI được phép phát hiện trước các lỗi có thể chứng minh từ dữ liệu:
+
+- entity thiếu tọa độ trước khi thêm vào planner;
+- time window hoặc travel time không khả thi;
+- sự kiện đã hết hạn;
+- giờ mở cửa hoặc contact data stale;
+- browser đã chặn location/push;
+- route service degraded;
+- claim thiếu evidence;
+- draft có revision conflict.
+
+Mỗi friction notice cần một recovery action. Không dự báo rủi ro bằng LLM nếu
+không có dữ liệu xác nhận và không tạo urgency giả.
+
+### 10.13 Trust-weighted Decision Support
+
+Priority logic ở lớp presentation sử dụng thứ tự lexicographic/guarded thay vì
+một điểm số bí ẩn:
+
+1. safety/official policy;
+2. task feasibility;
+3. temporal fit;
+4. locality;
+5. journey continuity;
+6. relevance;
+7. freshness;
+8. trust;
+9. uncertainty và operational risk.
+
+Khi người dùng so sánh, UI chỉ dùng field có dữ liệu thật như khoảng cách, time
+fit, khu vực, freshness, source và contact availability. Hiển thị 2-4 lý do
+chính; không hiển thị một AI score tổng hợp không giải thích được.
+
+### 10.14 Progressive Complexity
+
+Không tạo beginner/expert mode. Độ chi tiết tăng qua progressive disclosure:
+
+- primary action và thông tin thiết yếu luôn nhìn thấy;
+- chi tiết route constraint, source evidence hoặc moderation history mở theo
+  nhu cầu;
+- preference hiển thị có thể được ghi nhớ nếu không chứa dữ liệu nhạy cảm;
+- không ẩn chức năng quan trọng vì hệ thống suy đoán người dùng là “người mới”.
+
+### 10.15 Smart Search và Planner Orchestration
+
+Search là entry point thống nhất cho entity, service, event, community và
+official information. Query intent broad như `đi đâu tối nay`, `gần tôi`,
+`đang mở` hoặc `phù hợp trẻ em` chỉ được giải bằng dữ liệu hiện có và policy
+allowlist; AI không tạo result không tồn tại.
+
+Planner dùng cùng graph/action contract để:
+
+- phát hiện ngày quá tải;
+- đề xuất đổi thứ tự hoặc chuyển stop sang ngày khác;
+- giữ required stop và preference;
+- giải thích stop bị loại;
+- giữ lịch khi route service degraded;
+- đưa ra bản sửa để người dùng xác nhận, không tự ghi đè.
+
+### 10.16 Adaptive Latency
+
+- Prefetch detail có giới hạn cho item đang focus/hover hoặc next likely route.
+- Render shell và cached/stale-safe data trước, cập nhật từng panel.
+- Optimistic UI chỉ dùng khi mutation idempotent hoặc có undo rõ.
+- Không optimistic approve, report, claim, role change hoặc mutation nhạy cảm.
+- Background work bị timeout không được tiếp tục side effect ngoài ownership
+  boundary đã duyệt.
+
+### 10.17 Attention Budget
+
+- Tối đa một proactive suggestion nổi bật trong một viewport.
+- Không lặp location prompt sau khi người dùng từ chối.
+- Suggestion bị dismiss phải giảm ưu tiên trong phạm vi phù hợp.
+- Push chỉ dành cho official notice hoặc nội dung user đã chủ động theo dõi.
+- Gợi ý thông thường không dùng modal, badge đỏ hoặc countdown.
+- Không dùng scarcity, urgency hoặc social proof giả để tăng tương tác.
+
+### 10.18 Agentic Assistance Boundary
+
+AI được phép:
+
+- tóm tắt lựa chọn có dữ liệu;
+- tạo draft lịch trình;
+- giải thích recommendation hoặc conflict;
+- đề xuất bản sửa planner;
+- tạo draft bài viết hoặc báo sai để người dùng review.
+
+AI không được tự động:
+
+- gửi bài, report hoặc claim;
+- gọi điện, gửi Zalo hoặc liên hệ đối tác;
+- thay đổi lịch trình đã xác nhận;
+- bật location/push;
+- trình bày generated content như official notice;
+- tạo entity, rating, giờ mở cửa hoặc event không tồn tại.
+
+Mọi AI output phải có provenance của input, confidence phù hợp và đường quay về
+dữ liệu gốc.
+
+### 10.19 Experience Quality Loop
+
+Đo chất lượng bằng kết quả thay vì page view đơn thuần:
+
+- time to first meaningful action;
+- task completion rate;
+- recovery success;
+- planner completion;
+- directions/call/Zalo handoff;
+- recommendation dismiss/reset;
+- `why_recommendation_open`;
+- stale/report/correction resolution;
+- Journey Thread resume success.
+
+Analytics không thu raw location, private draft content, source evidence nhạy
+cảm hoặc dữ liệu không cần thiết cho metric.
+
 ## 11. Motion và interaction
 
 - Page entry: fade/reveal 180-260ms, không stagger mọi card.
@@ -411,8 +612,13 @@ Foundation dùng chung:
 - `SourceMark`;
 - `FreshnessLine`;
 - `WhyThisControl`;
+- `SituationalBrief`;
 - `JourneyThread`;
+- `ContinuityRail`;
+- `ActionChain`;
 - `NextBestAction`;
+- `FrictionNotice`;
+- `DecisionSupport`;
 - `OfficialNotice`;
 - `SystemStatePanel`;
 - `GeneratedMediaDisclosure`.
@@ -425,8 +631,10 @@ Mỗi component cần một mục đích rõ, API hẹp và có thể mount/test
 ```text
 API/state inputs
   -> allowlisted context projection
+  -> local-life graph projection
   -> transient intent resolution
   -> module-local ranking
+  -> action-chain / friction projection
   -> confidence + reasons projection
   -> stable page render
   -> user control / reset / recovery
@@ -525,7 +733,12 @@ Tối thiểu phải chứng minh:
 - partial API failure giữ panel còn dữ liệu;
 - stale/source/trust tách biệt;
 - Journey Thread phục hồi đúng task và không lộ task của user khác;
+- Continuity Rail được xóa/cách ly đúng khi logout hoặc account switch;
+- Situational Brief tôn trọng attention budget và không hiện khi confidence thấp;
+- friction notice chỉ dùng dữ liệu có thể chứng minh và luôn có recovery;
+- Action Chain không tự thực hiện mutation hoặc contact;
 - next best action có fallback an toàn;
+- decision support không tạo AI score không giải thích được;
 - hydration không reorder section;
 - reduced motion và 200% zoom không che control.
 
@@ -543,10 +756,14 @@ overflow và layout shift; không chỉ so pixel tuyệt đối với Stitch.
    Controlled Serif và Framed Dossier.
 3. Existing Screen Evolution pilots: homepage, discovery và entity detail.
 4. Context/trust primitives: SourceMark, FreshnessLine, WhyThis, OfficialNotice.
-5. Adaptive Task Continuity primitives: Context Envelope projection, Journey
-   Thread, Next Best Action và module-local composer.
-6. Map/planner, community, directory/legal và remaining public families.
-7. Cross-family state catalog, behavior tests và screenshot baselines.
+5. Local Life Graph projection thuần từ API/state hiện có; không thêm graph DB.
+6. Adaptive Task Continuity primitives: Situational Brief, Journey Thread,
+   Continuity Rail, Action Chain, Friction Notice, Next Best Action và
+   module-local composer.
+7. Smart search/planner orchestration và agentic draft/explanation boundary.
+8. Map/planner, community, directory/legal và remaining public families.
+9. Cross-family state catalog, behavior tests, quality-loop metrics và
+   screenshot baselines.
 
 Việc triển khai phải giữ thứ tự privacy/RBAC đã duyệt cho các action private.
 Không mở rộng scope sang AdminCP operations, payment, booking hoặc production
@@ -561,6 +778,12 @@ deployment trong cùng implementation plan.
 - Mỗi family có composition phù hợp nhiệm vụ và không nhân bản card-grid.
 - Location, trust và personalization minh bạch, có control và recovery.
 - Giao diện thông minh nhưng skeleton/navigation ổn định.
+- Local Life Graph kết nối nội dung và hành động mà không cần graph database mặc
+  định hoặc tự động thực hiện mutation.
+- Situational Brief, Continuity Rail và proactive suggestion tuân thủ attention
+  budget.
+- Agent chỉ tạo draft/giải thích; mọi action bên ngoài hoặc mutation cần xác
+  nhận của người dùng.
 - Không lưu hoặc lộ raw GPS/IP.
 - Không tạo claim, rating, urgency hoặc verification không có dữ liệu thật.
 - Đặc tả đủ rõ để viết implementation plan theo task nhỏ và behavior-level test.
