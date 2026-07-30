@@ -495,9 +495,14 @@ class TestPersonalizationFoundation:
         import personalization_events
         import ratelimit
 
-        assert personalization_events.settings.PERSONALIZATION_EVENTS_PG is False
+        looked_up_entity_ids = []
+
+        def get_entity(entity_id):
+            looked_up_entity_ids.append(entity_id)
+            return None
+
         monkeypatch.setattr(
-            personalization_events.db, "get_entity", lambda _entity_id: None
+            personalization_events.db, "get_entity", get_entity
         )
         monkeypatch.setattr(ratelimit, "check_rate", lambda *_args, **_kwargs: None)
 
@@ -516,6 +521,7 @@ class TestPersonalizationFoundation:
             )
 
         assert exc_info.value.status_code == 422
+        assert looked_up_entity_ids == ["unknown-entity"]
 
     def test_interest_profile_uses_existing_user_signals(self):
         src = inspect.getsource(public_api._load_user_signal_entities)
