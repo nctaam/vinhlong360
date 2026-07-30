@@ -7,7 +7,6 @@ import json
 import multiprocessing
 import threading
 import time
-from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -609,7 +608,21 @@ def test_postgres_preference_route_persists_valid_manual_and_token_regions_only(
     }
 
 
-def test_postgres_confirmation_token_has_one_atomic_winner(auth_client):
+def test_postgres_confirmation_token_has_one_atomic_winner(
+    auth_client, pg_db, monkeypatch
+):
+    original_select = user_preferences._select_preferences
+    first_write_barrier = threading.Barrier(2)
+    first_write_observations = []
+
+    def synchronized_select(conn, user_id, *, for_update=False):
+        row = original_select(conn, user_id, for_update=for_update)
+        if for_update and row is None and user_id == auth_client.owner:
+            first_write_observations.append(user_id)
+            first_write_barrier.wait(timeout=10)
+        return row
+
+    monkeypatch.setattr(user_preferences, "_select_preferences", synchronized_select)
     auth_client.client.app.dependency_overrides[public_api.get_reverse_geocoder] = (
         lambda: lambda *_: {
             "region_id": "province-vl",
@@ -626,27 +639,45 @@ def test_postgres_confirmation_token_has_one_atomic_winner(auth_client):
     assert resolution.status_code == 200, resolution.text
     assert resolution.headers["Cache-Control"] == "no-store"
     token = resolution.json()["confirmation_token"]
-    barrier = threading.Barrier(2)
+    start_barrier = threading.Barrier(2)
+    responses = []
+    errors = []
 
-    def confirm_once():
-        barrier.wait(timeout=5)
-        return auth_client.client.patch(
-            "/api/me/preferences",
-            json={
-                "revision": 0,
-                "location_confirmation_token": token,
-                "location_consent_state": "granted",
-                "location_enabled": True,
-            },
-            headers=auth_client.csrf_headers,
-        )
+    def confirm_once(index):
+        try:
+            start_barrier.wait(timeout=5)
+            response = auth_client.client.patch(
+                "/api/me/preferences",
+                json={
+                    "revision": 0,
+                    "location_confirmation_token": token,
+                    "location_consent_state": "granted",
+                    "location_enabled": True,
+                },
+                headers=auth_client.csrf_headers,
+            )
+            responses.append((index, response))
+        except Exception as exc:  # pragma: no cover - asserted below
+            errors.append((index, exc))
 
-    with ThreadPoolExecutor(max_workers=2) as pool:
-        responses = list(pool.map(lambda _: confirm_once(), range(2)))
+    threads = [
+        threading.Thread(target=confirm_once, args=(index,)) for index in range(2)
+    ]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=20)
 
-    assert sorted(response.status_code for response in responses) == [200, 409]
-    assert all(response.headers["Cache-Control"] == "no-store" for response in responses)
-    assert {response.json()["revision"] for response in responses} == {1}
+    assert all(not thread.is_alive() for thread in threads)
+    assert errors == []
+    assert first_write_observations == [auth_client.owner, auth_client.owner]
+    response_values = [response for _, response in responses]
+    assert sorted(response.status_code for response in response_values) == [200, 409]
+    assert all(
+        response.headers["Cache-Control"] == "no-store"
+        for response in response_values
+    )
+    assert {response.json()["revision"] for response in response_values} == {1}
     current_response = auth_client.client.get(
         "/api/me/preferences",
         headers=auth_client.headers,
@@ -656,6 +687,17 @@ def test_postgres_confirmation_token_has_one_atomic_winner(auth_client):
     current = current_response.json()
     assert current["revision"] == 1
     assert current["location_source"] == "gps"
+    with pg_db._conn(commit_on_success=False) as conn:
+        consent_rows = pg_db._fetchall(
+            conn,
+            "SELECT consent_type, state FROM user_preference_consents "
+            "WHERE user_id = %s::uuid AND consent_type = 'location'",
+            (auth_client.owner,),
+        )
+    assert [
+        (pg_db._row_to_dict(row)["consent_type"], pg_db._row_to_dict(row)["state"])
+        for row in consent_rows
+    ] == [("location", "granted")]
 
 
 def test_contextual_response_recursively_omits_internal_scores(
