@@ -6,6 +6,7 @@ import os
 import json
 import multiprocessing
 import threading
+from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from types import SimpleNamespace
@@ -61,6 +62,13 @@ pytestmark = pytest.mark.skipif(
     reason="set PERSONALIZATION_EVENTS_TEST_DATABASE_URL to a disposable PostgreSQL DB",
 )
 
+_LOCATION_PREFERENCE_CONSTRAINTS = (
+    "ck_user_preferences_revision_json_safe",
+    "ck_user_preferences_region_text_safe_v2",
+    "ck_user_preferences_region_tuple_v2",
+    "ck_user_preferences_reconfirm_state_v1",
+)
+
 
 SCHEMA_SQL = """
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -92,7 +100,9 @@ CREATE TABLE IF NOT EXISTS user_preferences (
     explicit_interests JSONB NOT NULL DEFAULT '[]'::JSONB,
     recommendation_reset_at TIMESTAMPTZ,
     consent_version VARCHAR(64),
-    revision INTEGER NOT NULL DEFAULT 0,
+    location_reconfirm_required BOOLEAN NOT NULL DEFAULT FALSE,
+    location_provenance_version VARCHAR(32),
+    revision BIGINT NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -246,16 +256,25 @@ def personalization_schema():
     if TEST_DATABASE_URL is None:
         yield
         return
-    migration_path = (
-        Path(__file__).resolve().parent.parent
-        / "migrations"
-        / "072_personalization_legacy_purge_queue.sql"
-    )
+    migration_dir = Path(__file__).resolve().parent.parent / "migrations"
     with psycopg2.connect(TEST_DATABASE_URL) as conn:
         with conn.cursor() as cursor:
             cursor.execute("DROP TABLE IF EXISTS personalization_legacy_purge_queue")
             cursor.execute(SCHEMA_SQL)
-            cursor.execute(migration_path.read_text(encoding="utf-8"))
+            cursor.execute(
+                (migration_dir / "072_personalization_legacy_purge_queue.sql").read_text(
+                    encoding="utf-8"
+                )
+            )
+            for constraint in _LOCATION_PREFERENCE_CONSTRAINTS:
+                cursor.execute(
+                    f"ALTER TABLE user_preferences DROP CONSTRAINT IF EXISTS {constraint}"
+                )
+            cursor.execute(
+                (migration_dir / "073_location_preference_remediation.sql").read_text(
+                    encoding="utf-8"
+                )
+            )
     yield
 
 
@@ -1338,7 +1357,7 @@ def test_event_purge_targets_only_expired_or_matching_user(pg_db, users):
     assert len(read_personalization_events(other, cutoff=None)) == 1
 
 
-def test_migration_072_builds_durable_due_queue_without_user_foreign_key(pg_db):
+def test_migration_072_queue_contract_survives_schema_073_fixture(pg_db):
     with pg_db._conn(commit_on_success=False) as conn:
         columns = pg_db._fetchall(
             conn,
@@ -1376,8 +1395,8 @@ def test_migration_072_builds_durable_due_queue_without_user_foreign_key(pg_db):
         "personalization_legacy_purge_queue_pkey",
         "idx_personalization_legacy_purge_queue_due",
     } <= {row["indexname"] for row in indexes}
-    assert version["version"] == 72
-    assert version["migration"] == "072_personalization_legacy_purge_queue.sql"
+    assert version["version"] == 73
+    assert version["migration"] == "073_location_preference_remediation.sql"
 
 
 def test_legacy_reader_applies_cutoff_deadline_and_safe_projection(
@@ -1690,6 +1709,117 @@ def test_repeated_reset_route_keeps_one_monotonic_cutoff(logged_in_client, pg_db
     assert pg_db._row_to_dict(row) == {"count": 1, "revision": 2}
 
 
+@contextmanager
+def _unsafe_preference(pg_db, user_id: str, *, recommendation_reset_at=None):
+    migration = (
+        Path(__file__).resolve().parent.parent
+        / "migrations"
+        / "073_location_preference_remediation.sql"
+    ).read_text(encoding="utf-8")
+    with pg_db._conn() as conn:
+        for constraint in _LOCATION_PREFERENCE_CONSTRAINTS:
+            pg_db._execute(
+                conn,
+                f"ALTER TABLE user_preferences DROP CONSTRAINT {constraint}",
+            )
+        pg_db._execute(
+            conn,
+            """
+            INSERT INTO user_preferences
+                (user_id, region_id, region_label, region_scope, location_source,
+                 location_accuracy, location_consent_state, location_enabled,
+                 personalization_enabled, explicit_interests,
+                 recommendation_reset_at, consent_version,
+                 location_reconfirm_required, location_provenance_version, revision)
+            VALUES (%s::uuid, %s, %s, 'province', 'manual', 'province', 'granted', TRUE,
+                    TRUE, %s::jsonb, %s, 'privacy-v1', FALSE, NULL, 7)
+            """,
+            (
+                user_id,
+                "203.0.113.9",
+                "10.25,105.97",
+                json.dumps(["food"]),
+                recommendation_reset_at,
+            ),
+        )
+    try:
+        yield
+    finally:
+        with pg_db._conn() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(migration)
+
+
+def test_recommendation_reset_quarantines_unsafe_preference_and_returns_public_state(
+    logged_in_client, pg_db
+):
+    with _unsafe_preference(pg_db, logged_in_client.owner):
+        response = logged_in_client.client.post(
+            "/api/me/recommendations/reset",
+            headers=logged_in_client.csrf_headers,
+        )
+
+        assert response.status_code == 200, response.text
+        payload = response.json()
+        assert payload["region_id"] is None
+        assert payload["region_label"] is None
+        assert payload["location_source"] == "default"
+        assert payload["location_consent_state"] == "off"
+        assert payload["location_reconfirm_required"] is True
+        assert payload["personalization_enabled"] is True
+        assert payload["explicit_interests"] == ["food"]
+        assert payload["revision"] == 8
+        assert payload["recommendation_reset_at"] is not None
+        assert "location_provenance_version" not in payload
+        assert "203.0.113.9" not in response.text
+        assert "10.25,105.97" not in response.text
+
+        with pg_db._conn(commit_on_success=False) as conn:
+            row = pg_db._fetchone(
+                conn,
+                """
+                SELECT region_id, region_label, location_source,
+                       location_consent_state, location_reconfirm_required,
+                       location_provenance_version, explicit_interests, revision
+                FROM user_preferences WHERE user_id = %s::uuid
+                """,
+                (logged_in_client.owner,),
+            )
+        persisted = pg_db._row_to_dict(row)
+        assert persisted["region_id"] is None
+        assert persisted["region_label"] is None
+        assert persisted["location_source"] == "default"
+        assert persisted["location_consent_state"] == "off"
+        assert persisted["location_reconfirm_required"] is True
+        assert persisted["location_provenance_version"] is None
+        assert persisted["revision"] == 8
+
+
+def test_recommendation_reset_honors_json_safe_revision_ceiling(pg_db, users):
+    owner, _ = users
+    with pg_db._conn() as conn:
+        pg_db._execute(
+            conn,
+            "INSERT INTO user_preferences (user_id, revision) "
+            "VALUES (%s::uuid, %s)",
+            (owner, 9_007_199_254_740_991),
+        )
+
+    with pytest.raises(user_preferences.PreferenceValidationError, match="revision limit"):
+        personalization_events.record_recommendation_reset(owner)
+
+    with pg_db._conn(commit_on_success=False) as conn:
+        row = pg_db._fetchone(
+            conn,
+            "SELECT recommendation_reset_at, revision "
+            "FROM user_preferences WHERE user_id = %s::uuid",
+            (owner,),
+        )
+    persisted = pg_db._row_to_dict(row)
+    assert persisted["recommendation_reset_at"] is None
+    assert persisted["revision"] == 9_007_199_254_740_991
+
+
 def test_event_route_persists_safe_owner_event_without_legacy_jsonl(
     logged_in_client, users, canonical_event_entities, tmp_path, monkeypatch
 ):
@@ -1742,6 +1872,8 @@ def _set_preferences(pg_db, user_id: str, **values) -> None:
         "personalization_enabled": False,
         "explicit_interests": [],
         "recommendation_reset_at": None,
+        "location_reconfirm_required": False,
+        "location_provenance_version": None,
         "revision": 0,
     }
     defaults.update(values)
@@ -1753,8 +1885,10 @@ def _set_preferences(pg_db, user_id: str, **values) -> None:
                 (user_id, region_id, region_label, region_scope, location_source,
                  location_accuracy, location_consent_state, location_enabled,
                  personalization_enabled, explicit_interests,
-                 recommendation_reset_at, revision)
-            VALUES (%s::uuid, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s)
+                 recommendation_reset_at, location_reconfirm_required,
+                 location_provenance_version, revision)
+            VALUES (%s::uuid, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb,
+                    %s, %s, %s, %s)
             ON CONFLICT (user_id) DO UPDATE SET
                 region_id = EXCLUDED.region_id,
                 region_label = EXCLUDED.region_label,
@@ -1766,6 +1900,8 @@ def _set_preferences(pg_db, user_id: str, **values) -> None:
                 personalization_enabled = EXCLUDED.personalization_enabled,
                 explicit_interests = EXCLUDED.explicit_interests,
                 recommendation_reset_at = EXCLUDED.recommendation_reset_at,
+                location_reconfirm_required = EXCLUDED.location_reconfirm_required,
+                location_provenance_version = EXCLUDED.location_provenance_version,
                 revision = EXCLUDED.revision
             """,
             (
@@ -1780,6 +1916,8 @@ def _set_preferences(pg_db, user_id: str, **values) -> None:
                 defaults["personalization_enabled"],
                 json.dumps(defaults["explicit_interests"]),
                 defaults["recommendation_reset_at"],
+                defaults["location_reconfirm_required"],
+                defaults["location_provenance_version"],
                 defaults["revision"],
             ),
         )
@@ -1937,9 +2075,10 @@ def test_personalization_off_uses_manual_region_only_and_drops_resolver_region(
         pg_db,
         owner,
         region_id="province-vl",
-        region_label="Vinh Long",
+        region_label="Vĩnh Long",
         region_scope="province",
         location_source="manual",
+        location_accuracy="province",
         location_enabled=False,
         personalization_enabled=False,
         explicit_interests=["culture"],
@@ -1960,11 +2099,14 @@ def test_personalization_off_uses_manual_region_only_and_drops_resolver_region(
     _set_preferences(
         pg_db,
         owner,
-        region_id="gps-region",
-        region_label="GPS region",
-        region_scope="province",
-        location_source="gps",
+        region_id=None,
+        region_label=None,
+        region_scope="unknown",
+        location_source="default",
+        location_accuracy="unknown",
+        location_consent_state="off",
         location_enabled=False,
+        location_provenance_version=None,
         personalization_enabled=False,
     )
     resolver_off = public_api._build_user_interest_profile(owner)
@@ -1979,49 +2121,53 @@ def test_export_includes_safe_preferences_consents_new_and_filtered_legacy_event
     auth_client, pg_db, tmp_path, monkeypatch
 ):
     cutoff = datetime(2026, 7, 1, 12, tzinfo=timezone.utc)
-    _set_preferences(
-        pg_db,
-        auth_client.owner,
-        personalization_enabled=True,
-        explicit_interests=["food"],
-        recommendation_reset_at=cutoff,
-    )
-    with pg_db._conn() as conn:
-        pg_db._execute(
-            conn,
-            "INSERT INTO user_preference_consents "
-            "(id, user_id, consent_type, state, version) "
-            "VALUES (%s, %s::uuid, 'personalization', 'granted', 'privacy-v1')",
-            (str(uuid4()), auth_client.owner),
+    with _unsafe_preference(
+        pg_db, auth_client.owner, recommendation_reset_at=cutoff
+    ):
+        with pg_db._conn() as conn:
+            pg_db._execute(
+                conn,
+                "INSERT INTO user_preference_consents "
+                "(id, user_id, consent_type, state, version) "
+                "VALUES (%s, %s::uuid, 'personalization', 'granted', 'privacy-v1')",
+                (str(uuid4()), auth_client.owner),
+            )
+        write_personalization_event(
+            auth_client.owner,
+            {
+                "event_type": "search_submit",
+                "context": "search",
+                "interest_keys": ["food"],
+                "query": "private-new-query",
+                "ip": "203.0.113.9",
+                "metadata": {"private": "new"},
+            },
         )
-    write_personalization_event(
-        auth_client.owner,
-        {
-            "event_type": "search_submit",
-            "context": "search",
-            "interest_keys": ["food"],
-            "query": "private-new-query",
-            "ip": "203.0.113.9",
-            "metadata": {"private": "new"},
-        },
-    )
-    path = tmp_path / "legacy-events.jsonl"
-    seed_legacy_events(path, [auth_client.owner, auth_client.owner])
-    monkeypatch.setattr(personalization_events, "LEGACY_EVENTS_PATH", path)
-    monkeypatch.setattr(
-        personalization_events,
-        "legacy_cutover_deadline",
-        lambda: datetime(2026, 8, 30, tzinfo=timezone.utc),
-    )
+        path = tmp_path / "legacy-events.jsonl"
+        seed_legacy_events(path, [auth_client.owner, auth_client.owner])
+        monkeypatch.setattr(personalization_events, "LEGACY_EVENTS_PATH", path)
+        monkeypatch.setattr(
+            personalization_events,
+            "legacy_cutover_deadline",
+            lambda: datetime(2026, 8, 30, tzinfo=timezone.utc),
+        )
 
-    response = auth_client.client.get(
-        "/auth/export-data", headers=auth_client.headers
-    )
+        response = auth_client.client.get(
+            "/auth/export-data", headers=auth_client.headers
+        )
 
     assert response.status_code == 200, response.text
     assert response.headers["Cache-Control"] == "no-store"
     exported = response.json()["personalization"]
     assert exported["preferences"]["explicit_interests"] == ["food"]
+    assert exported["preferences"]["region_id"] is None
+    assert exported["preferences"]["location_source"] == "default"
+    assert exported["preferences"]["location_consent_state"] == "off"
+    assert exported["preferences"]["location_reconfirm_required"] is True
+    assert exported["preferences"]["personalization_enabled"] is True
+    assert exported["preferences"]["revision"] == 8
+    assert exported["preferences"]["recommendation_reset_at"] == cutoff.isoformat()
+    assert "location_provenance_version" not in exported["preferences"]
     assert [(row["consent_type"], row["state"]) for row in exported["consents"]] == [
         ("personalization", "granted")
     ]
@@ -2031,6 +2177,7 @@ def test_export_includes_safe_preferences_consents_new_and_filtered_legacy_event
     assert "private-new-query" not in serialized
     assert "private-query" not in serialized
     assert "203.0.113.9" not in serialized
+    assert "10.25,105.97" not in serialized
     assert "metadata" not in serialized
 
 
