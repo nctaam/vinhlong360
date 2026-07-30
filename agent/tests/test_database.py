@@ -92,8 +92,8 @@ def test_pg_initialize_verifies_schema_before_legacy_repair_code():
     assert "CREATE INDEX" not in verify_src
 
 def test_pg_schema_contract_tracks_latest_release_tables():
-    # 71 adds one-time feedback receipts and deidentified daily rollups.
-    assert PG_REQUIRED_SCHEMA_VERSION == 71
+    # 71-73 add feedback receipts, erasure state, and registered FK actions.
+    assert PG_REQUIRED_SCHEMA_VERSION == 73
     assert {"schema_version", "admin_audit_events", "shared_rate_limits", "request_idempotency_keys"} <= PG_REQUIRED_TABLES
     assert {"feedback_receipts", "feedback_daily_rollups"} <= PG_REQUIRED_TABLES
     assert {"entity_changes", "site_settings_history"} <= PG_REQUIRED_TABLES

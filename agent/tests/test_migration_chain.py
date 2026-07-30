@@ -70,6 +70,8 @@ MIG_060 = (ROOT / "agent" / "migrations" / "060_entity_universal_columns.sql").r
 MIG_061 = (ROOT / "agent" / "migrations" / "061_entity_detail_tables.sql").read_text(encoding="utf-8")
 MIG_071 = (ROOT / "agent" / "migrations" / "071_feedback_receipts.sql").read_text(encoding="utf-8")
 MIG_072 = (ROOT / "agent" / "migrations" / "072_account_erasure_state.sql").read_text(encoding="utf-8")
+MIG_073_PATH = ROOT / "agent" / "migrations" / "073_erasure_delete_actions.sql"
+MIG_073 = MIG_073_PATH.read_text(encoding="utf-8") if MIG_073_PATH.exists() else ""
 
 UNIVERSAL = ["address", "phone", "website", "hours", "price_range", "sub_category", "best_time", "highlight"]
 CTI_TABLES = [
@@ -183,8 +185,8 @@ def test_init_sql_contains_final_feedback_schema():
     assert "CREATE TABLE IF NOT EXISTS feedback_daily_rollups" in INIT_SQL
 
 
-def test_database_readiness_requires_feedback_schema_version_71():
-    assert database.PG_REQUIRED_SCHEMA_VERSION == 71
+def test_database_readiness_requires_erasure_schema_version_73():
+    assert database.PG_REQUIRED_SCHEMA_VERSION == 73
     assert {"feedback_receipts", "feedback_daily_rollups"} <= database.PG_REQUIRED_TABLES
     assert {
         "token_digest",
@@ -239,3 +241,31 @@ def test_init_sql_contains_final_account_erasure_state():
         assert column in block
     assert "erasure_attempt_count >= 0" in block
     assert "idx_users_erasure_due" in INIT_SQL
+
+
+def test_073_registers_replay_safe_erasure_fk_policy():
+    assert "ALTER TABLE" in MIG_073
+    assert "ON DELETE CASCADE" in MIG_073
+    assert "ON DELETE SET NULL" in MIG_073
+    assert "completed_claim_scrub" in MIG_073
+    assert "VALUES ('agent', 73," in MIG_073
+    assert "DROP TABLE" not in MIG_073.upper()
+    assert "TRUNCATE" not in MIG_073.upper()
+    assert "DELETE FROM" not in MIG_073.upper()
+
+
+def test_073_clears_non_nullable_actor_and_claim_fields_before_scrub():
+    normalized = " ".join(MIG_073.split())
+    for table, column in (
+        ("post_edit_history", "editor_id"),
+        ("admin_user_notes", "admin_id"),
+        ("entity_claims", "claimant_id"),
+        ("entity_claims", "business_name"),
+        ("entity_claims", "contact_phone"),
+        ("moderation_appeals", "user_id"),
+        ("moderation_log", "target_id"),
+        ("admin_audit_events", "actor"),
+    ):
+        assert f"ALTER COLUMN {column} DROP NOT NULL" in normalized, (
+            f"073 must make {table}.{column} nullable for exact actor/claim scrubbing"
+        )

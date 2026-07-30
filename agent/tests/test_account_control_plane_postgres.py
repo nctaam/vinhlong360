@@ -4,6 +4,7 @@ import threading
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from types import SimpleNamespace
 from urllib.parse import unquote, urlparse
 
@@ -16,10 +17,15 @@ import admin
 import auth
 import database as database_module
 import ratelimit
+from structured_references import validate_user_fk_actions
 
 
 THREAD_TIMEOUT = 10
 WAIT_TIMEOUT = 5
+ROOT = Path(__file__).resolve().parents[2]
+MIGRATION_073_SQL = (
+    ROOT / "agent" / "migrations" / "073_erasure_delete_actions.sql"
+).read_text(encoding="utf-8")
 
 
 def _test_database_url() -> str | None:
@@ -101,6 +107,13 @@ CREATE TABLE IF NOT EXISTS pending_2fa (
     expires_at TIMESTAMPTZ NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS schema_version (
+    component TEXT PRIMARY KEY,
+    version INTEGER NOT NULL,
+    migration TEXT NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 """
 
 
@@ -110,6 +123,7 @@ def _postgres_schema():
     with psycopg2.connect(TEST_DATABASE_URL) as conn:
         with conn.cursor() as cursor:
             cursor.execute(SCHEMA_SQL)
+            cursor.execute(MIGRATION_073_SQL)
     try:
         yield
     finally:
@@ -159,6 +173,16 @@ def _seed_user(pg_db, password_hash="old-hash") -> tuple[str, str]:
             (user_id, phone, password_hash),
         )
     return user_id, phone
+
+
+def test_account_control_fixture_uses_registered_erasure_fk_actions(pg_db):
+    with pg_db._conn(commit_on_success=False) as conn:
+        observed = {
+            (policy.table, policy.column, policy.action)
+            for policy in validate_user_fk_actions(conn)
+        }
+    assert ("user_sessions", "user_id", "cascade") in observed
+    assert ("pending_2fa", "user_id", "cascade") in observed
 
 
 def _seed_reset_otp(pg_db, phone: str, code="otp-hash") -> None:

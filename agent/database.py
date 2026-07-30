@@ -112,7 +112,7 @@ PG_REQUIRED_COLUMNS = {
     "schema_version": {"component", "version", "migration", "updated_at"},
 }
 
-PG_REQUIRED_SCHEMA_VERSION = 71
+PG_REQUIRED_SCHEMA_VERSION = 73
 
 if USE_PG:
     import psycopg2
