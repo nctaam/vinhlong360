@@ -300,29 +300,35 @@ class MemoryGraph:
                 self._save_unlocked()
             return removed
 
+    def _memory_owner_linked(self, owner_key: str) -> bool:
+        return owner_key in self._nodes or any(
+            edge.source == owner_key or edge.target == owner_key
+            for edge in self._edges.values()
+        )
+
+    def _persisted_owner_linked(self, owner_key: str) -> bool:
+        if not self._path.exists():
+            return False
+        data = json.loads(self._path.read_text(encoding="utf-8"))
+        nodes = data.get("nodes", [])
+        edges = data.get("edges", [])
+        if len(nodes) + len(edges) > self._MAX_ERASURE_ITEMS:
+            raise RuntimeError("Memory graph scan limit exceeded")
+        node_linked = any(node.get("id") == owner_key for node in nodes)
+        edge_linked = any(
+            edge.get("source") == owner_key or edge.get("target") == owner_key
+            for edge in edges
+        )
+        return node_linked or edge_linked
+
     def verify_owner_absent(self, owner_key: str) -> bool:
         """Verify memory and the persisted graph contain no exact owner link."""
         with self._lock:
             if len(self._nodes) + len(self._edges) > self._MAX_ERASURE_ITEMS:
                 raise RuntimeError("Memory graph scan limit exceeded")
-            if owner_key in self._nodes:
-                return False
-            if any(
-                edge.source == owner_key or edge.target == owner_key
-                for edge in self._edges.values()
-            ):
-                return False
-            if not self._path.exists():
-                return True
-            data = json.loads(self._path.read_text(encoding="utf-8"))
-            nodes = data.get("nodes", [])
-            edges = data.get("edges", [])
-            if len(nodes) + len(edges) > self._MAX_ERASURE_ITEMS:
-                raise RuntimeError("Memory graph scan limit exceeded")
-            return not any(node.get("id") == owner_key for node in nodes) and not any(
-                edge.get("source") == owner_key or edge.get("target") == owner_key
-                for edge in edges
-            )
+            return not self._memory_owner_linked(
+                owner_key
+            ) and not self._persisted_owner_linked(owner_key)
 
     def get_neighbors(self, node_id: str, relation: str | None = None,
                       min_weight: float = 0) -> list[dict]:

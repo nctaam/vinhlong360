@@ -392,55 +392,76 @@ lifecycle_registry = LifecycleRegistry((
 ))
 
 
+_FORBIDDEN_RETAINED_FIELDS = frozenset({
+    "owner_key",
+    "user_id",
+    "session_id",
+    "query",
+    "response",
+    "receipt",
+    "entity_id",
+})
+_STRICT_RETAINED_STORES = frozenset({
+    "deidentified_daily_rollups",
+    "post_boundary_operational_logs",
+})
+
+
+def _membership_errors(actual, expected, missing_prefix, extra_prefix) -> list[str]:
+    missing = [f"{missing_prefix}:{name}" for name in sorted(expected - actual)]
+    extra = [f"{extra_prefix}:{name}" for name in sorted(actual - expected)]
+    return missing + extra
+
+
+def _policy_registry_errors(policy: DataStorePolicy) -> list[str]:
+    errors = []
+    if policy.classification not in _CLASSIFICATIONS:
+        errors.append(f"INVALID_CLASSIFICATION:{policy.name}")
+    if policy.subject_linked and (
+        not callable(policy.purge) or not callable(policy.verify)
+    ):
+        errors.append(f"MISSING_ADAPTER:{policy.name}")
+    if policy.subject_linked:
+        return errors
+    if policy.classification not in {"aggregate", "operational"}:
+        errors.append(f"INVALID_RETAINED_CLASSIFICATION:{policy.name}")
+    if not policy.retained_fields:
+        errors.append(f"MISSING_RETAINED_FIELDS:{policy.name}")
+    if (
+        policy.name in _STRICT_RETAINED_STORES
+        and _FORBIDDEN_RETAINED_FIELDS.intersection(policy.retained_fields)
+    ):
+        errors.append(f"SUBJECT_FIELD_IN_RETAINED_STORE:{policy.name}")
+    return errors
+
+
 def validate_lifecycle_registry(
     policies: Iterable[DataStorePolicy] | None = None,
 ) -> tuple[str, ...]:
     selected = tuple(
         lifecycle_registry.policies if policies is None else policies
     )
-    errors: list[str] = []
     names = [policy.name for policy in selected]
-    for name in sorted({name for name in names if names.count(name) > 1}):
-        errors.append(f"DUPLICATE_STORE:{name}")
-
+    errors = [
+        f"DUPLICATE_STORE:{name}"
+        for name in sorted({name for name in names if names.count(name) > 1})
+    ]
     subject_names = {policy.name for policy in selected if policy.subject_linked}
-    for name in sorted(EXPECTED_SUBJECT_STORES - subject_names):
-        errors.append(f"MISSING_SUBJECT_STORE:{name}")
-    for name in sorted(subject_names - EXPECTED_SUBJECT_STORES):
-        errors.append(f"UNDECLARED_SUBJECT_STORE:{name}")
-
+    errors.extend(_membership_errors(
+        subject_names,
+        EXPECTED_SUBJECT_STORES,
+        "MISSING_SUBJECT_STORE",
+        "UNDECLARED_SUBJECT_STORE",
+    ))
     immediate = {policy.name for policy in selected if policy.quarantine_on_request}
-    for name in sorted(EXPECTED_QUARANTINE_STORES - immediate):
-        errors.append(f"MISSING_QUARANTINE_STORE:{name}")
-    for name in sorted(immediate - EXPECTED_QUARANTINE_STORES):
-        errors.append(f"UNEXPECTED_QUARANTINE_STORE:{name}")
-
-    forbidden_retained = {
-        "owner_key",
-        "user_id",
-        "session_id",
-        "query",
-        "response",
-        "receipt",
-        "entity_id",
-    }
+    errors.extend(_membership_errors(
+        immediate,
+        EXPECTED_QUARANTINE_STORES,
+        "MISSING_QUARANTINE_STORE",
+        "UNEXPECTED_QUARANTINE_STORE",
+    ))
     for policy in selected:
-        if policy.classification not in _CLASSIFICATIONS:
-            errors.append(f"INVALID_CLASSIFICATION:{policy.name}")
-        if policy.subject_linked and (
-            not callable(policy.purge) or not callable(policy.verify)
-        ):
-            errors.append(f"MISSING_ADAPTER:{policy.name}")
-        if not policy.subject_linked:
-            if policy.classification not in {"aggregate", "operational"}:
-                errors.append(f"INVALID_RETAINED_CLASSIFICATION:{policy.name}")
-            if not policy.retained_fields:
-                errors.append(f"MISSING_RETAINED_FIELDS:{policy.name}")
-            if policy.name in {
-                "deidentified_daily_rollups",
-                "post_boundary_operational_logs",
-            } and forbidden_retained.intersection(policy.retained_fields):
-                errors.append(f"SUBJECT_FIELD_IN_RETAINED_STORE:{policy.name}")
+        errors.extend(_policy_registry_errors(policy))
     return tuple(sorted(errors))
 
 

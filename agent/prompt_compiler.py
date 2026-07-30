@@ -143,38 +143,46 @@ def compile() -> dict:
                 "pool_size": len(pool)}
 
 
+def _without_owner(entries, owner_key: str, error_message: str) -> tuple[list, int]:
+    if not isinstance(entries, list):
+        raise ValueError(error_message)
+    retained = [
+        entry for entry in entries if entry.get("owner_key", "") != owner_key
+    ]
+    return retained, len(entries) - len(retained)
+
+
+def _compiled_without_owner(artifact, owner_key: str) -> tuple[dict, int]:
+    if not isinstance(artifact, dict):
+        raise ValueError("Invalid compiled prompt store")
+    demos = artifact.get("demos", {})
+    if not isinstance(demos, dict):
+        raise ValueError("Invalid compiled prompt store")
+    retained_demos = {}
+    removed = 0
+    for intent, entries in demos.items():
+        retained, intent_removed = _without_owner(
+            entries, owner_key, "Invalid compiled prompt store"
+        )
+        retained_demos[intent] = retained
+        removed += intent_removed
+    return retained_demos, removed
+
+
 def purge_owner(owner_key: str) -> int:
     """Remove an exact owner's raw and compiled demonstration copies."""
     with _lock:
         pool = _load(RAW_FILE, [])
-        if not isinstance(pool, list):
-            raise ValueError("Invalid prompt demo pool")
-        retained_pool = [
-            demo for demo in pool if demo.get("owner_key", "") != owner_key
-        ]
-        removed = len(pool) - len(retained_pool)
+        retained_pool, removed = _without_owner(
+            pool, owner_key, "Invalid prompt demo pool"
+        )
         if removed:
             _save(RAW_FILE, retained_pool)
 
         artifact = _load(COMPILED_FILE, {"demos": {}})
-        if not isinstance(artifact, dict):
-            raise ValueError("Invalid compiled prompt store")
-        demos = artifact.get("demos", {})
-        if not isinstance(demos, dict):
-            raise ValueError("Invalid compiled prompt store")
-        retained_demos = {}
-        removed_compiled = 0
-        for intent, entries in demos.items():
-            if not isinstance(entries, list):
-                raise ValueError("Invalid compiled prompt store")
-            retained = [
-                demo
-                for demo in entries
-                if demo.get("owner_key", "") != owner_key
-            ]
-            removed_compiled += len(entries) - len(retained)
-            retained_demos[intent] = retained
-
+        retained_demos, removed_compiled = _compiled_without_owner(
+            artifact, owner_key
+        )
         if removed_compiled or (removed and COMPILED_FILE.exists()):
             artifact["demos"] = retained_demos
             artifact["pool_size"] = len(retained_pool)
