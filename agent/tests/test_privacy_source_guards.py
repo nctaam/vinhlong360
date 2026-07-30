@@ -38,6 +38,25 @@ FORBIDDEN_FEEDBACK_TOKENS = (
     "sync_data_json_to_js(",
     "data.json",
 )
+LOG_METHODS = {"debug", "info", "warning", "error", "exception", "critical"}
+LIFECYCLE_LOG_SCOPES = (
+    ("auth.py", "delete_account"),
+    ("erasure.py", "_observe_failure"),
+    ("scheduler.py", "task_account_erasure"),
+    ("scheduler.py", "task_quarantine_retry"),
+)
+SENSITIVE_LOG_NAMES = {
+    "e",
+    "exc",
+    "exception",
+    "owner_key",
+    "phone",
+    "query",
+    "receipt",
+    "reply",
+    "uid",
+    "user_id",
+}
 
 
 def _handler_source(name: str) -> str:
@@ -58,6 +77,45 @@ def _call_name(node: ast.AST) -> str:
         parent = _call_name(node.value)
         return f"{parent}.{node.attr}" if parent else node.attr
     return ""
+
+
+def _module_function(relative_path: str, function_name: str):
+    path = SERVER_PATH.parent / relative_path
+    source = path.read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    node = next(
+        item
+        for item in tree.body
+        if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef))
+        and item.name == function_name
+    )
+    return source, node
+
+
+def _log_call_contains_subject(call: ast.Call) -> bool:
+    for node in ast.walk(call):
+        if isinstance(node, ast.Name) and node.id in SENSITIVE_LOG_NAMES:
+            return True
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "get"
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id == "user"
+            and node.args
+            and isinstance(node.args[0], ast.Constant)
+            and node.args[0].value == "id"
+        ):
+            return True
+        if (
+            isinstance(node, ast.Subscript)
+            and isinstance(node.value, ast.Name)
+            and node.value.id == "user"
+            and isinstance(node.slice, ast.Constant)
+            and node.slice.value == "id"
+        ):
+            return True
+    return False
 
 
 def _content_sink_names() -> set[str]:
@@ -185,3 +243,19 @@ def test_readiness_uses_mandatory_privacy_boundary_health_function():
     source = _handler_source("readiness_probe")
     assert '"privacy_boundary": privacy_boundary_readiness()' in source
     assert '"privacy_boundary": True' not in source
+
+
+def test_erasure_lifecycle_logs_use_bounded_subject_free_diagnostics():
+    violations = []
+    for relative_path, function_name in LIFECYCLE_LOG_SCOPES:
+        source, function = _module_function(relative_path, function_name)
+        for node in ast.walk(function):
+            if not isinstance(node, ast.Call):
+                continue
+            if _call_name(node.func).rsplit(".", 1)[-1] not in LOG_METHODS:
+                continue
+            if _log_call_contains_subject(node):
+                segment = ast.get_source_segment(source, node) or "logging call"
+                violations.append(f"{relative_path}:{node.lineno}: {segment}")
+
+    assert violations == []

@@ -102,6 +102,21 @@ def test_health_contains_feature_flags(client, admin_headers):
         assert key in data
 
 
+def test_readiness_exposes_erasure_scheduler_audit_gate(client):
+    response = client.get("/health/ready")
+    data = response.json()
+    erasure = data["checks"]["erasure_scheduler"]
+
+    assert isinstance(erasure["audit_only"], bool)
+    assert erasure["audit_only"] is True
+    assert erasure["schema_version"] == data["checks"]["schema_version"].get(
+        "schema_version"
+    )
+    assert erasure["required_schema_version"] == data["checks"][
+        "schema_version"
+    ].get("required_schema_version")
+
+
 # ── /metrics ─────────────────────────────────────────
 
 
