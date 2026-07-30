@@ -7,7 +7,6 @@ import json
 import math
 import os
 import re
-import secrets
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -46,7 +45,7 @@ _HEMISPHERE_COORDINATE_RE = re.compile(
 _IPV4_LIKE_RE = re.compile(r"(?<![0-9.])(?:\d{1,3}\.){3}\d{1,3}(?![0-9.])")
 _IP_CANDIDATE_RE = re.compile(r"[0-9A-Fa-f:.]+")
 LOCATION_CONFIRMATION_TTL_SECONDS = 300
-_LOCATION_CONFIRMATION_PURPOSE = "location-confirmation-v1"
+_LOCATION_CONFIRMATION_PURPOSE = "location-confirmation-v2"
 
 
 class LocationInputError(ValueError):
@@ -78,6 +77,12 @@ class LocationResolution:
     region_scope: str
     location_source: str
     location_accuracy: str
+
+
+@dataclass(frozen=True)
+class VerifiedLocationConfirmation:
+    resolution: LocationResolution
+    preference_revision: int
 
 
 _PINNED_HTTP = PinnedHTTPClient()
@@ -328,9 +333,16 @@ def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def _validated_preference_revision(value: Any) -> int:
+    if type(value) is not int or value < 0 or value > 9_007_199_254_740_991:
+        raise LocationConfirmationError("Invalid location confirmation")
+    return value
+
+
 def issue_location_confirmation(
     resolution: LocationResolution,
     user_id: str,
+    preference_revision: int,
 ) -> str | None:
     from auth_middleware import generate_user_bound_token
 
@@ -338,7 +350,8 @@ def issue_location_confirmation(
         return None
     now = _utc_now()
     payload = {
-        "nonce": secrets.token_urlsafe(12),
+        "issued_at": int(now.timestamp()),
+        "preference_revision": _validated_preference_revision(preference_revision),
         "region_id": resolution.region_id,
         "region_label": resolution.region_label,
         "region_scope": resolution.region_scope,
@@ -353,7 +366,9 @@ def issue_location_confirmation(
     )
 
 
-def verify_location_confirmation(token: str, user_id: str) -> LocationResolution:
+def verify_location_confirmation(
+    token: str, user_id: str
+) -> VerifiedLocationConfirmation:
     from auth_middleware import verify_user_bound_token
 
     payload = verify_user_bound_token(
@@ -364,12 +379,20 @@ def verify_location_confirmation(token: str, user_id: str) -> LocationResolution
     )
     if payload is None:
         raise LocationConfirmationError("Invalid location confirmation")
+    if type(payload.get("issued_at")) is not int:
+        raise LocationConfirmationError("Invalid location confirmation")
+    preference_revision = _validated_preference_revision(
+        payload.get("preference_revision")
+    )
     resolution = _normalize_provider_result(
         payload, str(payload.get("location_source") or "")
     )
     if not resolution.region_id or resolution.location_source not in {"gps", "ip"}:
         raise LocationConfirmationError("Invalid location confirmation")
-    return resolution
+    return VerifiedLocationConfirmation(
+        resolution=resolution,
+        preference_revision=preference_revision,
+    )
 
 
 def _provider_url(endpoint: str, parameters: Mapping[str, str]) -> str:

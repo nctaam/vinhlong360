@@ -1,4 +1,7 @@
+import base64
+import json
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -13,7 +16,7 @@ import location_resolver
 import middleware
 import public_api
 import user_preferences
-from auth_middleware import generate_csrf_token
+from auth_middleware import generate_csrf_token, generate_user_bound_token
 from database import Database
 from location_resolver import (
     LocationInputError,
@@ -120,6 +123,77 @@ def test_ip_resolver_does_not_return_raw_ip():
 
     assert result.region_id == "province-vl"
     assert "203.0.113.8" not in repr(result)
+
+
+def test_location_confirmation_v2_round_trips_normalized_resolution_and_revision(
+    monkeypatch,
+):
+    now = datetime(2026, 7, 29, 8, tzinfo=timezone.utc)
+    monkeypatch.setattr(location_resolver, "_utc_now", lambda: now)
+    resolution = location_resolver.LocationResolution(
+        region_id="province-vl",
+        region_label="Vĩnh Long",
+        region_scope="province",
+        location_source="gps",
+        location_accuracy="province",
+    )
+
+    token = location_resolver.issue_location_confirmation(
+        resolution, "user-1", preference_revision=7
+    )
+    encoded = token.split(".", 1)[0]
+    envelope = json.loads(
+        base64.urlsafe_b64decode(encoded + "=" * (-len(encoded) % 4))
+    )
+    verified = location_resolver.verify_location_confirmation(token, "user-1")
+
+    assert envelope["purpose"] == "location-confirmation-v2"
+    assert envelope["expires_at"] == int(now.timestamp()) + 300
+    assert envelope["payload"]["issued_at"] == int(now.timestamp())
+    assert envelope["payload"]["preference_revision"] == 7
+    assert "nonce" not in envelope["payload"]
+    assert verified.resolution == resolution
+    assert verified.preference_revision == 7
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("issued_at", None),
+        ("issued_at", True),
+        ("preference_revision", None),
+        ("preference_revision", True),
+        ("preference_revision", -1),
+        ("preference_revision", 9_007_199_254_740_992),
+    ],
+)
+def test_location_confirmation_rejects_invalid_signed_contract(
+    monkeypatch, field, value
+):
+    now = datetime(2026, 7, 29, 8, tzinfo=timezone.utc)
+    monkeypatch.setattr(location_resolver, "_utc_now", lambda: now)
+    payload = {
+        "issued_at": int(now.timestamp()),
+        "preference_revision": 7,
+        "region_id": "province-vl",
+        "region_label": "Vĩnh Long",
+        "region_scope": "province",
+        "location_source": "gps",
+        "location_accuracy": "province",
+    }
+    if value is None:
+        payload.pop(field)
+    else:
+        payload[field] = value
+    token = generate_user_bound_token(
+        location_resolver._LOCATION_CONFIRMATION_PURPOSE,
+        "user-1",
+        payload,
+        expires_at=int(now.timestamp()) + 300,
+    )
+
+    with pytest.raises(location_resolver.LocationConfirmationError):
+        location_resolver.verify_location_confirmation(token, "user-1")
 
 
 def test_ambiguous_resolution_requires_confirmation_without_persisting(

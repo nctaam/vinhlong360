@@ -1077,10 +1077,23 @@ async def update_my_preferences(
     expected_revision = values.pop("revision")
     confirmation_token = values.pop("location_confirmation_token", None)
     try:
-        confirmed_location = (
+        confirmation = (
             verify_location_confirmation(confirmation_token, owner)
             if confirmation_token is not None
             else None
+        )
+        if (
+            confirmation is not None
+            and confirmation.preference_revision != expected_revision
+        ):
+            current = await asyncio.to_thread(load_preferences, owner)
+            return JSONResponse(
+                status_code=409,
+                content=jsonable_encoder(current),
+                headers={"Cache-Control": "no-store"},
+            )
+        confirmed_location = (
+            confirmation.resolution if confirmation is not None else None
         )
         snapshot = await asyncio.to_thread(
             patch_preferences_with_consents,
@@ -1197,7 +1210,10 @@ async def resolve_my_location(
         raise HTTPException(422, "Invalid location input") from None
     response.headers["Cache-Control"] = "no-store"
     payload = asdict(resolution)
-    confirmation_token = issue_location_confirmation(resolution, owner)
+    preferences = await asyncio.to_thread(load_preferences, owner)
+    confirmation_token = issue_location_confirmation(
+        resolution, owner, preferences["revision"]
+    )
     if confirmation_token is not None:
         payload["confirmation_token"] = confirmation_token
     return payload

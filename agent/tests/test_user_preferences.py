@@ -1,3 +1,5 @@
+import base64
+import json
 import sqlite3
 import sys
 import threading
@@ -18,7 +20,7 @@ import location_resolver
 import personalization_events
 import public_api
 import user_preferences
-from auth_middleware import generate_csrf_token
+from auth_middleware import generate_csrf_token, generate_user_bound_token
 from database import Database, db as live_db
 from user_preferences import (
     PreferenceRevisionConflict,
@@ -1233,9 +1235,7 @@ def test_preferences_patch_rejects_forged_resolver_source_without_token(
     assert load_preferences("user-1")["revision"] == 0
 
 
-def test_resolver_confirmation_token_is_required_user_bound_and_transient(
-    client, preference_database, logged_in_user, monkeypatch
-):
+def _resolve_fixture_location(client, logged_in_user, monkeypatch):
     now = datetime(2026, 7, 29, 8, tzinfo=timezone.utc)
     monkeypatch.setattr(location_resolver, "_utc_now", lambda: now, raising=False)
     client.app.dependency_overrides[public_api.get_reverse_geocoder] = lambda: (
@@ -1246,12 +1246,138 @@ def test_resolver_confirmation_token_is_required_user_bound_and_transient(
             "location_accuracy": "province",
         }
     )
-
-    resolution = client.post(
+    return client.post(
         "/api/me/location/resolve",
         json={"mode": "gps", "latitude": 10.25, "longitude": 105.97},
         headers=logged_in_user.csrf_headers,
     )
+
+
+def test_location_confirmation_token_is_revision_bound_and_effectively_one_use(
+    client, logged_in_user, monkeypatch
+):
+    resolution = _resolve_fixture_location(client, logged_in_user, monkeypatch)
+    token = resolution.json()["confirmation_token"]
+
+    first = client.patch(
+        "/api/me/preferences",
+        json={
+            "revision": 0,
+            "location_confirmation_token": token,
+            "location_consent_state": "granted",
+            "location_enabled": True,
+        },
+        headers=logged_in_user.csrf_headers,
+    )
+    assert first.status_code == 200
+    assert first.json()["revision"] == 1
+
+    replay = client.patch(
+        "/api/me/preferences",
+        json={
+            "revision": 1,
+            "location_confirmation_token": token,
+            "location_consent_state": "granted",
+            "location_enabled": True,
+        },
+        headers=logged_in_user.csrf_headers,
+    )
+    assert replay.status_code == 409
+    assert replay.json()["revision"] == 1
+
+
+def test_confirmation_token_payload_has_revision_but_no_nonce_or_raw_coordinates(
+    client, logged_in_user, monkeypatch
+):
+    response = _resolve_fixture_location(client, logged_in_user, monkeypatch)
+    encoded = response.json()["confirmation_token"].split(".", 1)[0]
+    envelope = json.loads(
+        base64.urlsafe_b64decode(encoded + "=" * (-len(encoded) % 4))
+    )
+    payload = envelope["payload"]
+    assert payload["preference_revision"] == 0
+    assert "issued_at" in payload
+    assert "nonce" not in payload
+    serialized = json.dumps(payload)
+    assert "10.25" not in serialized
+    assert "105.97" not in serialized
+
+
+def test_preference_mutation_after_token_issue_returns_409(
+    client, logged_in_user, monkeypatch
+):
+    token = _resolve_fixture_location(
+        client, logged_in_user, monkeypatch
+    ).json()["confirmation_token"]
+    changed = client.patch(
+        "/api/me/preferences",
+        json={"revision": 0, "explicit_interests": ["food"]},
+        headers=logged_in_user.csrf_headers,
+    )
+    assert changed.status_code == 200
+    stale = client.patch(
+        "/api/me/preferences",
+        json={
+            "revision": 1,
+            "location_confirmation_token": token,
+            "location_consent_state": "granted",
+            "location_enabled": True,
+        },
+        headers=logged_in_user.csrf_headers,
+    )
+    assert stale.status_code == 409
+    assert stale.json()["revision"] == 1
+
+
+def test_v1_confirmation_purpose_is_rejected(
+    client, logged_in_user, monkeypatch
+):
+    now = datetime(2026, 7, 29, 8, tzinfo=timezone.utc)
+    monkeypatch.setattr(location_resolver, "_utc_now", lambda: now, raising=False)
+    old_token = generate_user_bound_token(
+        "location-confirmation-v1",
+        "user-1",
+        {
+            "issued_at": int(now.timestamp()),
+            "preference_revision": 0,
+            "region_id": "province-vl",
+            "region_label": "Vĩnh Long",
+            "region_scope": "province",
+            "location_source": "gps",
+            "location_accuracy": "province",
+        },
+        expires_at=int(now.timestamp()) + 300,
+    )
+    response = client.patch(
+        "/api/me/preferences",
+        json={
+            "revision": 0,
+            "location_confirmation_token": old_token,
+            "location_consent_state": "granted",
+            "location_enabled": True,
+        },
+        headers=logged_in_user.csrf_headers,
+    )
+    assert response.status_code == 422
+
+
+def test_resolve_token_binds_post_quarantine_revision(
+    client, preference_database, logged_in_user, monkeypatch
+):
+    _insert_unsafe_preference(preference_database)
+    response = _resolve_fixture_location(client, logged_in_user, monkeypatch)
+    encoded = response.json()["confirmation_token"].split(".", 1)[0]
+    envelope = json.loads(
+        base64.urlsafe_b64decode(encoded + "=" * (-len(encoded) % 4))
+    )
+    assert envelope["payload"]["preference_revision"] == 8
+    assert load_preferences("user-1")["revision"] == 8
+
+
+def test_resolver_confirmation_token_is_required_user_bound_and_transient(
+    client, preference_database, logged_in_user, monkeypatch
+):
+    resolution = _resolve_fixture_location(client, logged_in_user, monkeypatch)
 
     assert resolution.status_code == 200
     assert resolution.headers["Cache-Control"] == "no-store"
