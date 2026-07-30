@@ -881,6 +881,7 @@ def task_session_cleanup():
 
 def task_personalization_cleanup():
     """Purge personalization events after their database TTL expires."""
+    location_self_healing_failed = False
     try:
         from database import db
         now = datetime.now(timezone.utc)
@@ -892,19 +893,23 @@ def task_personalization_cleanup():
                 _sched_logger.info(
                     "Personalization cleanup: purged %d expired events", removed
                 )
-            import user_preferences
+            try:
+                import user_preferences
 
-            counts = user_preferences.quarantine_invalid_preferences_batch(limit=100)
-            healed = sum(counts.values())
-            if healed:
-                summary = ", ".join(
-                    f"{reason}={count}" for reason, count in sorted(counts.items())
-                )
-                _sched_logger.info(
-                    "Location preference self-healing: quarantined %d rows (%s)",
-                    healed,
-                    summary,
-                )
+                counts = user_preferences.quarantine_invalid_preferences_batch(limit=100)
+                healed = sum(counts.values())
+                if healed:
+                    summary = ", ".join(
+                        f"{reason}={count}" for reason, count in sorted(counts.items())
+                    )
+                    _sched_logger.info(
+                        "Location preference self-healing: quarantined %d rows (%s)",
+                        healed,
+                        summary,
+                    )
+            except Exception:
+                location_self_healing_failed = True
+                _sched_logger.error("Location preference self-healing failed")
         from personalization_events import (
             legacy_cutover_deadline,
             purge_legacy_events,
@@ -920,6 +925,8 @@ def task_personalization_cleanup():
                 )
     except Exception as exc:
         _sched_logger.error("Personalization cleanup error: %s", exc)
+    if location_self_healing_failed:
+        raise RuntimeError("Location preference self-healing failed")
 
 
 def _hard_delete_stale_posts(db, conn):

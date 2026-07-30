@@ -6,6 +6,7 @@ import os
 import json
 import multiprocessing
 import threading
+import time
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -2354,6 +2355,62 @@ def test_scheduler_logs_only_aggregate_location_quarantine(monkeypatch, caplog, 
     assert "3" in output
     assert "203.0.113" not in output
     assert "province-vl" not in output
+
+
+def test_scheduler_worker_failure_preserves_legacy_cleanup_and_retry_signal(
+    pg_db, users, tmp_path, monkeypatch, caplog
+):
+    owner, _ = users
+    deadline = datetime(2026, 8, 1, tzinfo=timezone.utc)
+    path = tmp_path / "legacy-events.jsonl"
+    seed_legacy_events(path, [owner])
+    monkeypatch.setattr(personalization_events, "LEGACY_EVENTS_PATH", path)
+    monkeypatch.setattr(
+        personalization_events,
+        "LEGACY_EVENTS_LOCK_PATH",
+        tmp_path / ".legacy-events.publication.lock",
+    )
+    monkeypatch.setattr(
+        personalization_events, "legacy_cutover_deadline", lambda: deadline
+    )
+
+    class AtCutoverDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return deadline
+
+    monkeypatch.setattr(scheduler, "datetime", AtCutoverDateTime)
+    sensitive_error = (
+        f"user={owner} region=203.0.113.9 token=location-confirmation-secret"
+    )
+
+    def fail_location_quarantine(limit=100):
+        raise RuntimeError(sensitive_error)
+
+    monkeypatch.setattr(
+        user_preferences,
+        "quarantine_invalid_preferences_batch",
+        fail_location_quarantine,
+    )
+    scheduled = scheduler.ScheduledTask(
+        "personalization-cleanup-failure-test",
+        scheduler.task_personalization_cleanup,
+        interval_seconds=3600,
+    )
+
+    with caplog.at_level("INFO", logger="scheduler"):
+        scheduled.run()
+
+    output = "\n".join(record.getMessage() for record in caplog.records)
+    assert read_all_legacy_events(path) == []
+    assert scheduled.run_count == 0
+    assert scheduled.last_error == "Location preference self-healing failed"
+    assert scheduled._consecutive_failures == 1
+    assert scheduled.next_run_after > time.time()
+    assert "Location preference self-healing failed" in output
+    assert owner not in output
+    assert "203.0.113.9" not in output
+    assert "location-confirmation-secret" not in output
 
 
 def test_scheduler_purges_recognized_legacy_rows_only_after_cutover(

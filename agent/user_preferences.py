@@ -453,6 +453,78 @@ LOCATION_REMEDIATION_REASONS = frozenset(
     {"raw_shape", "manual_tuple", "resolver_tuple", "provenance", "default_tuple", "state_mismatch"}
 )
 
+_WORKER_NUMBER_PATTERN_SQL = (
+    r"(?<![A-Za-z0-9_.])"
+    r"([+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][+-]?[0-9]+)?)"
+    r"(?![A-Za-z0-9_.])"
+)
+_WORKER_COORDINATE_PAIR_PATTERN_SQL = (
+    r"(?<![A-Za-z0-9_.])"
+    r"([+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][+-]?[0-9]+)?)"
+    r"(?![A-Za-z0-9_.])[[:space:]]*(,|;|/|\m(and|va|và)\M)[[:space:]]*"
+    r"(?<![A-Za-z0-9_.])"
+    r"([+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][+-]?[0-9]+)?)"
+    r"(?![A-Za-z0-9_.])"
+)
+
+
+def _worker_python_raw_text_sql(column: str) -> str:
+    return f"""
+        (
+            EXISTS (
+                SELECT 1
+                FROM regexp_matches(
+                    COALESCE({column}, ''),
+                    '{_WORKER_COORDINATE_PAIR_PATTERN_SQL}',
+                    'gi'
+                ) AS pair_match
+                WHERE CASE
+                    WHEN pg_input_is_valid(pair_match[1], 'double precision')
+                     AND pg_input_is_valid(pair_match[7], 'double precision')
+                    THEN (
+                        (
+                            pair_match[1]::double precision BETWEEN -90 AND 90
+                            AND pair_match[7]::double precision BETWEEN -180 AND 180
+                        )
+                        OR (
+                            pair_match[7]::double precision BETWEEN -90 AND 90
+                            AND pair_match[1]::double precision BETWEEN -180 AND 180
+                        )
+                    )
+                    ELSE FALSE
+                END
+            )
+            OR EXISTS (
+                SELECT 1
+                FROM regexp_matches(
+                    COALESCE({column}, ''),
+                    '{_WORKER_NUMBER_PATTERN_SQL}',
+                    'gi'
+                ) AS number_match
+                WHERE (
+                    position('.' IN number_match[1]) > 0
+                    OR position('e' IN lower(number_match[1])) > 0
+                    OR left(number_match[1], 1) IN ('+', '-')
+                )
+                AND CASE
+                    WHEN pg_input_is_valid(number_match[1], 'double precision')
+                    THEN number_match[1]::double precision BETWEEN -180 AND 180
+                    ELSE FALSE
+                END
+            )
+        )
+    """
+
+
+_WORKER_REGION_TEXT_INVALID_SQL = f"""
+    (
+        NOT vl360_region_text_is_safe(region_id)
+        OR NOT vl360_region_text_is_safe(region_label)
+        OR {_worker_python_raw_text_sql("region_id")}
+        OR {_worker_python_raw_text_sql("region_label")}
+    )
+"""
+
 
 def quarantine_invalid_preferences_batch(limit: int = 100) -> dict[str, int]:
     """Quarantine a bounded batch of invalid PostgreSQL preference rows."""
@@ -462,11 +534,9 @@ def quarantine_invalid_preferences_batch(limit: int = 100) -> dict[str, int]:
 
     # Keep candidate selection aligned with migration 073 while Python owns the
     # allowlisted reason classification and compare-update boundary.
-    invalid_where = """
+    invalid_tuple_where = """
         (
-            NOT vl360_region_text_is_safe(region_id)
-            OR NOT vl360_region_text_is_safe(region_label)
-            OR NOT COALESCE((
+            NOT COALESCE((
                 (
                     location_source = 'manual'
                     AND location_provenance_version IS NULL
@@ -514,17 +584,23 @@ def quarantine_invalid_preferences_batch(limit: int = 100) -> dict[str, int]:
     with db._conn() as conn:
         rows = db._fetchall(
             conn,
-            f"SELECT user_id, {_preference_columns()} FROM user_preferences "
-            f"WHERE {invalid_where} ORDER BY updated_at, user_id "
+            f"SELECT user_id, {_preference_columns()}, "
+            f"{_WORKER_REGION_TEXT_INVALID_SQL} AS worker_region_text_invalid "
+            f"FROM user_preferences "
+            f"WHERE {_WORKER_REGION_TEXT_INVALID_SQL} OR {invalid_tuple_where} "
+            f"ORDER BY updated_at, user_id "
             f"LIMIT {db._ph} FOR UPDATE SKIP LOCKED",
             (bounded_limit,),
         )
         for row in rows:
-            persisted = _row_snapshot(row)
+            row_data = db._row_to_dict(row)
+            persisted = _row_snapshot(row_data)
             reason = invalid_region_reason(persisted)
+            if reason is None and row_data["worker_region_text_invalid"]:
+                reason = "raw_shape"
             if reason is None or reason not in LOCATION_REMEDIATION_REASONS:
                 continue
-            owner = str(db._row_to_dict(row)["user_id"])
+            owner = str(row_data["user_id"])
             healed = _quarantine_persisted_snapshot_in_connection(conn, owner, persisted)
             if healed is not None:
                 counts[reason] = counts.get(reason, 0) + 1

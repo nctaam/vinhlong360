@@ -332,6 +332,97 @@ def _assert_constraint_violation(sql: str, params: tuple, constraint: str) -> No
     assert exc_info.value.diag.constraint_name == constraint
 
 
+def _drop_location_constraints() -> None:
+    with _connect_test_database() as conn:
+        with conn.cursor() as cursor:
+            for constraint in (
+                "ck_user_preferences_region_text_safe_v2",
+                "ck_user_preferences_region_tuple_v2",
+                "ck_user_preferences_reconfirm_state_v1",
+            ):
+                cursor.execute(
+                    f"ALTER TABLE user_preferences DROP CONSTRAINT {constraint}"
+                )
+
+
+def _restore_location_constraints() -> None:
+    with _connect_test_database() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """
+                ALTER TABLE user_preferences
+                ADD CONSTRAINT ck_user_preferences_region_text_safe_v2
+                CHECK (
+                    vl360_region_text_is_safe(region_id)
+                    AND vl360_region_text_is_safe(region_label)
+                )
+                """
+            )
+            cursor.execute(
+                """
+                ALTER TABLE user_preferences
+                ADD CONSTRAINT ck_user_preferences_region_tuple_v2
+                CHECK (COALESCE((
+                    (
+                        location_source = 'manual'
+                        AND location_provenance_version IS NULL
+                        AND (
+                            (region_id = 'province-vl' AND region_label = 'Vĩnh Long' AND region_scope = 'province' AND location_accuracy = 'province')
+                            OR (region_id = 'province-bt' AND region_label = 'Bến Tre' AND region_scope = 'province' AND location_accuracy = 'province')
+                            OR (region_id = 'province-tv' AND region_label = 'Trà Vinh' AND region_scope = 'province' AND location_accuracy = 'province')
+                            OR (region_id IS NULL AND region_label IS NULL AND region_scope = 'all' AND location_accuracy = 'unknown')
+                        )
+                    )
+                    OR (
+                        location_source = 'default'
+                        AND region_id IS NULL
+                        AND region_label IS NULL
+                        AND region_scope = 'unknown'
+                        AND location_accuracy = 'unknown'
+                        AND location_provenance_version IS NULL
+                    )
+                    OR (
+                        location_source IN ('gps', 'ip')
+                        AND region_id IS NOT NULL
+                        AND region_scope IN ('ward', 'district', 'province')
+                        AND location_accuracy IN ('ward', 'district', 'province', 'unknown')
+                        AND location_enabled = TRUE
+                        AND location_consent_state = 'granted'
+                        AND location_provenance_version = 'resolver-v2'
+                    )
+                ), FALSE))
+                """
+            )
+            cursor.execute(
+                """
+                ALTER TABLE user_preferences
+                ADD CONSTRAINT ck_user_preferences_reconfirm_state_v1
+                CHECK (
+                    location_reconfirm_required = FALSE
+                    OR (
+                        location_source = 'default'
+                        AND region_id IS NULL
+                        AND region_label IS NULL
+                        AND region_scope = 'unknown'
+                        AND location_accuracy = 'unknown'
+                        AND location_enabled = FALSE
+                        AND location_consent_state = 'off'
+                        AND location_provenance_version IS NULL
+                    )
+                )
+                """
+            )
+            cursor.execute(
+                "SELECT conname FROM pg_constraint WHERE conrelid = 'user_preferences'::regclass"
+            )
+            constraints = {row[0] for row in cursor.fetchall()}
+    assert {
+        "ck_user_preferences_region_text_safe_v2",
+        "ck_user_preferences_region_tuple_v2",
+        "ck_user_preferences_reconfirm_state_v1",
+    } <= constraints
+
+
 @pg_only
 def test_073_quarantines_legacy_location_without_erasing_personal_data(pre73_database):
     assert TEST_DATABASE_URL is not None
@@ -594,17 +685,9 @@ def test_self_healing_worker_is_bounded_idempotent_and_preserves_non_location_st
     apply_migration_073()
     invalid_users = [str(uuid4()) for _ in range(105)]
     valid_users = {"canonical": str(uuid4()), "default": str(uuid4())}
+    _drop_location_constraints()
     with _connect_test_database() as conn:
         with conn.cursor() as cursor:
-            cursor.execute(
-                "ALTER TABLE user_preferences DROP CONSTRAINT ck_user_preferences_region_text_safe_v2"
-            )
-            cursor.execute(
-                "ALTER TABLE user_preferences DROP CONSTRAINT ck_user_preferences_region_tuple_v2"
-            )
-            cursor.execute(
-                "ALTER TABLE user_preferences DROP CONSTRAINT ck_user_preferences_reconfirm_state_v1"
-            )
             for index, user_id in enumerate([*invalid_users, *valid_users.values()]):
                 cursor.execute(
                     "INSERT INTO users (id, phone) VALUES (%s::uuid, %s)",
@@ -692,78 +775,87 @@ def test_self_healing_worker_is_bounded_idempotent_and_preserves_non_location_st
                 "revision": 7,
             }
 
+    _restore_location_constraints()
+
+
+@pg_only
+def test_self_healing_worker_aligns_candidate_and_reason_text_boundaries(
+    pre73_database, monkeypatch
+):
+    monkeypatch.setattr(user_preferences, "db", pre73_database)
+    assert TEST_DATABASE_URL is not None
+
+    apply_migration_073()
+    _drop_location_constraints()
+    unsafe_labels = {
+        "coordinate_pair": "10.2500 and 105.9700",
+        "dms": '10° 15\' 30" N',
+        "hemisphere": "10.2500N",
+        "single_number": "105.9700",
+        "sql_only": "a:b:c",
+    }
+    for name in ("coordinate_pair", "dms", "hemisphere", "single_number"):
+        assert user_preferences.contains_raw_location_value(unsafe_labels[name])
+    assert not user_preferences.contains_raw_location_value(unsafe_labels["sql_only"])
+    assert not user_preferences.contains_raw_location_value("999.9700")
+    users = {
+        name: str(uuid4())
+        for name in (*unsafe_labels, "valid", "safe_out_of_range_number")
+    }
     with _connect_test_database() as conn:
         with conn.cursor() as cursor:
-            cursor.execute(
-                """
-                ALTER TABLE user_preferences
-                ADD CONSTRAINT ck_user_preferences_region_text_safe_v2
-                CHECK (
-                    vl360_region_text_is_safe(region_id)
-                    AND vl360_region_text_is_safe(region_label)
+            for index, (name, user_id) in enumerate(users.items()):
+                cursor.execute(
+                    "INSERT INTO users (id, phone) VALUES (%s::uuid, %s)",
+                    (user_id, f"np11-parity-{index}-{uuid4().hex}"),
                 )
-                """
-            )
-            cursor.execute(
-                """
-                ALTER TABLE user_preferences
-                ADD CONSTRAINT ck_user_preferences_region_tuple_v2
-                CHECK (COALESCE((
-                    (
-                        location_source = 'manual'
-                        AND location_provenance_version IS NULL
-                        AND (
-                            (region_id = 'province-vl' AND region_label = 'Vĩnh Long' AND region_scope = 'province' AND location_accuracy = 'province')
-                            OR (region_id = 'province-bt' AND region_label = 'Bến Tre' AND region_scope = 'province' AND location_accuracy = 'province')
-                            OR (region_id = 'province-tv' AND region_label = 'Trà Vinh' AND region_scope = 'province' AND location_accuracy = 'province')
-                            OR (region_id IS NULL AND region_label IS NULL AND region_scope = 'all' AND location_accuracy = 'unknown')
-                        )
-                    )
-                    OR (
-                        location_source = 'default'
-                        AND region_id IS NULL
-                        AND region_label IS NULL
-                        AND region_scope = 'unknown'
-                        AND location_accuracy = 'unknown'
-                        AND location_provenance_version IS NULL
-                    )
-                    OR (
-                        location_source IN ('gps', 'ip')
-                        AND region_id IS NOT NULL
-                        AND region_scope IN ('ward', 'district', 'province')
-                        AND location_accuracy IN ('ward', 'district', 'province', 'unknown')
-                        AND location_enabled = TRUE
-                        AND location_consent_state = 'granted'
-                        AND location_provenance_version = 'resolver-v2'
-                    )
-                ), FALSE))
-                """
-            )
-            cursor.execute(
-                """
-                ALTER TABLE user_preferences
-                ADD CONSTRAINT ck_user_preferences_reconfirm_state_v1
-                CHECK (
-                    location_reconfirm_required = FALSE
-                    OR (
-                        location_source = 'default'
-                        AND region_id IS NULL
-                        AND region_label IS NULL
-                        AND region_scope = 'unknown'
-                        AND location_accuracy = 'unknown'
-                        AND location_enabled = FALSE
-                        AND location_consent_state = 'off'
-                        AND location_provenance_version IS NULL
-                    )
+                _insert_preference(
+                    cursor,
+                    user_id=user_id,
+                    region_id="province-vl",
+                    region_label=unsafe_labels.get(
+                        name,
+                        "999.9700"
+                        if name == "safe_out_of_range_number"
+                        else "Vĩnh Long",
+                    ),
+                    region_scope="province",
+                    source="gps",
+                    accuracy="province",
+                    consent="granted",
+                    enabled=True,
                 )
+                cursor.execute(
+                    "UPDATE user_preferences SET location_provenance_version = 'resolver-v2' "
+                    "WHERE user_id = %s::uuid",
+                    (user_id,),
+                )
+
+    counts = user_preferences.quarantine_invalid_preferences_batch(limit=100)
+    assert counts == {"raw_shape": len(unsafe_labels)}
+
+    with _connect_test_database() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            cursor.execute(
+                """
+                SELECT user_id, region_id, region_label, location_source,
+                       location_reconfirm_required, revision
+                FROM user_preferences
                 """
             )
-            cursor.execute(
-                "SELECT conname FROM pg_constraint WHERE conrelid = 'user_preferences'::regclass"
-            )
-            constraints = {row[0] for row in cursor.fetchall()}
-    assert {
-        "ck_user_preferences_region_text_safe_v2",
-        "ck_user_preferences_region_tuple_v2",
-        "ck_user_preferences_reconfirm_state_v1",
-    } <= constraints
+            rows = {str(row["user_id"]): dict(row) for row in cursor.fetchall()}
+    for name in unsafe_labels:
+        row = rows[users[name]]
+        assert row["region_id"] is None
+        assert row["region_label"] is None
+        assert row["location_source"] == "default"
+        assert row["location_reconfirm_required"] is True
+        assert row["revision"] == 8
+    assert rows[users["valid"]]["region_label"] == "Vĩnh Long"
+    assert rows[users["valid"]]["revision"] == 7
+    assert (
+        rows[users["safe_out_of_range_number"]]["region_label"] == "999.9700"
+    )
+    assert rows[users["safe_out_of_range_number"]]["revision"] == 7
+
+    _restore_location_constraints()
