@@ -1,6 +1,6 @@
 # Verified Erasure Lifecycle Implementation Plan
 
-> STATUS: done - implementation, full 45-entry live disposable-PostgreSQL catalog evidence, focused lifecycle gates, and hard gates are complete at `62c97fde`; the full repository baseline remains incomplete under the documented timeout and is not reported as passing. No production activation or mutation is authorized. See `docs/superpowers/results/2026-07-29-verified-erasure-lifecycle.md`.
+> STATUS: done - implementation, full 45-entry live disposable-PostgreSQL catalog evidence, focused lifecycle gates, and hard gates are complete at `c67d287d`; the serial baseline remains incomplete and the bounded backend runner has one environment-level xdist `MemoryError`, so no full repository pass is claimed. No production activation or mutation is authorized. See `docs/superpowers/results/2026-07-29-verified-erasure-lifecycle.md`.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

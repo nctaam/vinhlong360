@@ -1,7 +1,7 @@
 # Verified Erasure Lifecycle Result Evidence
 
-> STATUS: complete - focused, real-PostgreSQL, lifecycle, scheduler, and hard gates pass; the repository-wide baseline remains incomplete under the documented outer timeout and is not reported as passing.
-> Revision under test: `62c97fde7d796f30064c7599dea5547d245cceab`
+> STATUS: complete - focused, real-PostgreSQL, lifecycle, scheduler, and hard gates pass; the bounded backend baseline is not green because one closed-installer node hit environment-level `MemoryError` under xdist and is not reported as passing.
+> Revision under test: `c67d287d09e3ece449dda8d45b69bf9199662057`
 > Date: 2026-07-30 (Asia/Bangkok)
 > Scope: local implementation and verification only; no production deletion, deadline backfill, legacy scrub apply, deploy, push, secret change, or real-data mutation.
 
@@ -18,9 +18,12 @@ live PostgreSQL run exposed that completed-appeal erasure attempted to clear a
 nullable, the regression test asserts the migrated catalog state, and the full
 PostgreSQL matrix passes without skips.
 
-The serial repository baseline still exceeds the bounded 330-second command
-limit. That known closed-installer rehearsal debt is recorded exactly and is not
-reported as passing.
+The official bounded backend runner now completes Phase A cleanly, but Phase B
+has one environment-level failure under the long xdist rehearsal. The failing
+node passes independently, so no production or installer logic change is
+claimed from that run. The older serial repository baseline still exceeds the
+bounded 330-second command limit; neither run is reported as a full baseline
+pass.
 
 The Runtime Trust Boundary result is already complete at
 `docs/superpowers/results/2026-07-29-runtime-trust-boundary.md`; both approved
@@ -43,8 +46,9 @@ separate, explicitly unauthorized operation.
 | Lifecycle integration evidence | `fe1645d4`, `59fdbe57` |
 | Live PostgreSQL appeal-erasure correction | `3143ba7c` |
 | Full live FK-catalog introspection | `62c97fde` |
+| Test contract and baseline hygiene alignment | `c67d287d` |
 
-Branch range: `82241b9a..62c97fde`.
+Branch range: `82241b9a..c67d287d`.
 
 ## Verification Evidence
 
@@ -57,7 +61,8 @@ Branch range: `82241b9a..62c97fde`.
 | Diff whitespace | `git diff --check` | Exit `0`. |
 | Full hard gate | `python scripts/checks/run_hard.py --all` | Exit `0`; `hard=0`, ratchet did not increase. The tool reported only lower-than-baseline soft counters and requested no write. |
 | Collection audit | `python -m pytest --collect-only -q` | Exit `0`; `9396/9509` tests collected, `113 deselected`, in `17.58s`. |
-| Repository baseline | `python -m pytest -q` with both disposable PostgreSQL URLs set | Harness exit `124` after `334.0s` (configured `330000ms` command limit) on revision `62c97fde`. `-q` emitted no case-level progress before timeout, so no last case is claimed; timed-out pytest PID `21316` was stopped and no full-baseline pass is claimed. |
+| Official bounded backend regression | `python scripts/ops/run_backend_regression.py --deadline-seconds 7000` with both disposable PostgreSQL URLs set | Runner exit `1`. Phase A exit `0`: `9040 passed, 52 skipped, 113 deselected, 1 xfailed, 1 warning, 2 subtests` in `1421.76s`. Phase B exit `1`: `283 passed, 19 skipped, 1 failed` in `5157.34s`; the failing node was `test_stale_recovery_resumes_after_each_interrupted_mutation[persistent-restored-recovery-remove-empty-persistent-root-armed-rmdir-True]` and its child Python reported `MemoryError` during `init_import_site`. The same node passed independently in `171.49s`; no full-baseline pass is claimed. |
+| Serial repository baseline | `python -m pytest -q` with both disposable PostgreSQL URLs set | Harness exit `124` after `334.0s` (configured `330000ms`) on the prior revision. The unbounded serial baseline remains diagnostic-only and is not reported as passing. |
 
 ## PostgreSQL Target Safety
 
@@ -114,10 +119,11 @@ The live PostgreSQL migration test validated all 45 entries against
   safe defaults; the scheduler and CLI cannot mutate without explicit gates.
 - The legacy deadline backfill and legacy scrub remain dry-run/audit-only; no
   production or real-data invocation occurred.
-- The full serial repository baseline remains incomplete under the 330-second
-  outer limit because the existing closed-installer rehearsal dominates
-  runtime. Focused and real-PostgreSQL evidence are green; the incomplete run is
-  not relabeled as success.
+- The serial repository baseline remains incomplete under the 330-second outer
+  limit, and the official bounded runner remains not green because one long
+  xdist child hit an environment-level `MemoryError`; the failing node passes
+  alone. Focused and real-PostgreSQL evidence are green, and neither baseline
+  result is relabeled as success.
 - Completing this implementation plan does not approve production activation.
   Any scheduler activation, deadline backfill `--apply`, legacy scrub `--apply`,
   deployment, push, or real-data deletion still requires separate explicit
