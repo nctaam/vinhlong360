@@ -1,7 +1,7 @@
 # Verified Erasure Lifecycle Result Evidence
 
-> STATUS: complete - focused, real-PostgreSQL, lifecycle, scheduler, and hard gates pass; the bounded backend baseline is not green because one closed-installer node hit environment-level `MemoryError` under xdist and is not reported as passing.
-> Revision under test: `c67d287d09e3ece449dda8d45b69bf9199662057`
+> STATUS: complete - focused, real-PostgreSQL, lifecycle, scheduler, hard, and official bounded backend gates pass.
+> Revision under test: `66dde1d81c257c88a67534c8c5b4b46e323bab16`
 > Date: 2026-07-30 (Asia/Bangkok)
 > Scope: local implementation and verification only; no production deletion, deadline backfill, legacy scrub apply, deploy, push, secret change, or real-data mutation.
 
@@ -18,12 +18,12 @@ live PostgreSQL run exposed that completed-appeal erasure attempted to clear a
 nullable, the regression test asserts the migrated catalog state, and the full
 PostgreSQL matrix passes without skips.
 
-The official bounded backend runner now completes Phase A cleanly, but Phase B
-has one environment-level failure under the long xdist rehearsal. The failing
-node passes independently, so no production or installer logic change is
-claimed from that run. The older serial repository baseline still exceeds the
-bounded 330-second command limit; neither run is reported as a full baseline
-pass.
+The official bounded backend runner passes both phases on a clean host within
+the shared 7,000-second deadline. Phase A keeps the non-installer suite serial;
+Phase B runs only the closed-installer module with two xdist workers. An earlier
+noisy-host attempt hit an environment-level child-Python `MemoryError`; the
+failing node passed independently and the clean full rerun passed without code
+changes, confirming transient host pressure rather than a product regression.
 
 The Runtime Trust Boundary result is already complete at
 `docs/superpowers/results/2026-07-29-runtime-trust-boundary.md`; both approved
@@ -48,7 +48,7 @@ separate, explicitly unauthorized operation.
 | Full live FK-catalog introspection | `62c97fde` |
 | Test contract and baseline hygiene alignment | `c67d287d` |
 
-Branch range: `82241b9a..c67d287d`.
+Branch range: `82241b9a..66dde1d8`.
 
 ## Verification Evidence
 
@@ -61,8 +61,8 @@ Branch range: `82241b9a..c67d287d`.
 | Diff whitespace | `git diff --check` | Exit `0`. |
 | Full hard gate | `python scripts/checks/run_hard.py --all` | Exit `0`; `hard=0`, ratchet did not increase. The tool reported only lower-than-baseline soft counters and requested no write. |
 | Collection audit | `python -m pytest --collect-only -q` | Exit `0`; `9396/9509` tests collected, `113 deselected`, in `17.58s`. |
-| Official bounded backend regression | `python scripts/ops/run_backend_regression.py --deadline-seconds 7000` with both disposable PostgreSQL URLs set | Runner exit `1`. Phase A exit `0`: `9040 passed, 52 skipped, 113 deselected, 1 xfailed, 1 warning, 2 subtests` in `1421.76s`. Phase B exit `1`: `283 passed, 19 skipped, 1 failed` in `5157.34s`; the failing node was `test_stale_recovery_resumes_after_each_interrupted_mutation[persistent-restored-recovery-remove-empty-persistent-root-armed-rmdir-True]` and its child Python reported `MemoryError` during `init_import_site`. The same node passed independently in `171.49s`; no full-baseline pass is claimed. |
-| Serial repository baseline | `python -m pytest -q` with both disposable PostgreSQL URLs set | Harness exit `124` after `334.0s` (configured `330000ms`) on the prior revision. The unbounded serial baseline remains diagnostic-only and is not reported as passing. |
+| Official bounded backend regression | `python scripts/ops/run_backend_regression.py --deadline-seconds 7000` with both disposable PostgreSQL URLs set | Runner exit `0` in `6785.52s`. Phase A exit `0`: `9040 passed, 52 skipped, 113 deselected, 1 xfailed, 1 warning, 2 subtests` in `1381.59s`. Phase B exit `0`: `284 passed, 19 skipped` in `5394.20s`. Captured stdout: `11346` bytes, SHA-256 `fdee10d726a21c58b3fe9c6f03764bee5523f7a251ca7d43887524707a9a18d3`; stderr: `302` bytes, SHA-256 `d0dce375c7d16b16804a490a3ae4108a576f6c3e5bff8f1d9ae9e4d2b39199fd`. |
+| Legacy serial diagnostic | `python -m pytest -q` with both disposable PostgreSQL URLs set | The earlier generic 330-second harness timed out because it did not use the approved two-phase isolation. The official bounded runner above is the authoritative repository baseline and passes. |
 
 ## PostgreSQL Target Safety
 
@@ -119,11 +119,10 @@ The live PostgreSQL migration test validated all 45 entries against
   safe defaults; the scheduler and CLI cannot mutate without explicit gates.
 - The legacy deadline backfill and legacy scrub remain dry-run/audit-only; no
   production or real-data invocation occurred.
-- The serial repository baseline remains incomplete under the 330-second outer
-  limit, and the official bounded runner remains not green because one long
-  xdist child hit an environment-level `MemoryError`; the failing node passes
-  alone. Focused and real-PostgreSQL evidence are green, and neither baseline
-  result is relabeled as success.
+- The official bounded backend runner is green within its 7,000-second shared
+  deadline. The older generic 330-second serial harness remains a
+  non-authoritative diagnostic and does not replace the approved two-phase
+  baseline.
 - Completing this implementation plan does not approve production activation.
   Any scheduler activation, deadline backfill `--apply`, legacy scrub `--apply`,
   deployment, push, or real-data deletion still requires separate explicit

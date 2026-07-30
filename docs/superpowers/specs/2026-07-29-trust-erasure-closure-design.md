@@ -1,6 +1,6 @@
 # Trust And Erasure Closure Design
 
-> STATUS (2026-07-30): done - Runtime Trust Boundary and Verified Erasure Lifecycle implementations are complete with focused, hard-gate, and live disposable-PostgreSQL evidence. The serial baseline remains incomplete, and the bounded backend runner has one environment-level xdist `MemoryError`; neither is reported as a full pass. Production erasure activation, backfill, scrub, deploy, push, and real-data mutation remain separately unauthorized.
+> STATUS (2026-07-30): done - Runtime Trust Boundary and Verified Erasure Lifecycle implementations are complete with focused, hard-gate, live disposable-PostgreSQL, and official bounded backend evidence. Production erasure activation, backfill, scrub, deploy, push, and real-data mutation remain separately unauthorized.
 
 ## Goal
 
