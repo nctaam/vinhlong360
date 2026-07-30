@@ -409,6 +409,17 @@ def test_real_postgres_migration_and_exact_sentinel_cleanup(erasure_pg_schema):
 
     policies = validate_user_fk_actions(conn)
     assert policies
+    with conn.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT is_nullable
+            FROM information_schema.columns
+            WHERE table_schema = current_schema()
+              AND table_name = 'moderation_appeals'
+              AND column_name = 'reason'
+            """
+        )
+        assert cursor.fetchone() == ("YES",)
     summary = scrub_user_references(conn, user_id, actor_policy="set_null")
     assert summary.mentions_removed == 2
 

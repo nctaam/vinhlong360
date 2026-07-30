@@ -11,7 +11,8 @@ ALTER TABLE IF EXISTS entity_claims
     ALTER COLUMN business_name DROP NOT NULL,
     ALTER COLUMN contact_phone DROP NOT NULL;
 ALTER TABLE IF EXISTS moderation_appeals
-    ALTER COLUMN user_id DROP NOT NULL;
+    ALTER COLUMN user_id DROP NOT NULL,
+    ALTER COLUMN reason DROP NOT NULL;
 ALTER TABLE IF EXISTS moderation_log
     ALTER COLUMN target_id DROP NOT NULL;
 ALTER TABLE IF EXISTS admin_audit_events
