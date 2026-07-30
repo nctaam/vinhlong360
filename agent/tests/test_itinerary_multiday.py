@@ -5,7 +5,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-import itinerary_multiday
+import itinerary_multiday as multiday_module
 from itinerary_multiday import (
     MultiDayDayInput,
     MultiDayOptions,
@@ -234,7 +234,7 @@ def test_dp_keeps_complete_baseline_when_dynamic_search_deadlines(monkeypatch):
     def deadline(*_args, **_kwargs):
         raise NoFeasibleScheduleError("deadline")
 
-    monkeypatch.setattr(itinerary_multiday, "_solve_allocation", deadline)
+    monkeypatch.setattr(multiday_module, "_solve_allocation", deadline)
 
     result = optimize_multi_day_allocation(
         simple_two_day_inputs(),
@@ -248,3 +248,113 @@ def test_dp_keeps_complete_baseline_when_dynamic_search_deadlines(monkeypatch):
         ("day-2-first", "end"),
     )
     assert result.initial_load_minutes == result.final_load_minutes
+
+
+def imbalanced_inputs() -> tuple[MultiDayDayInput, MultiDayDayInput]:
+    return (
+        day_input(
+            1,
+            [
+                candidate("start", 10.00, visit=0),
+                candidate("heavy-fixed", 10.02, visit=200),
+                candidate("move-me", 10.061, visit=100),
+                candidate("day-1-end", 10.06, visit=0),
+            ],
+        ),
+        day_input(
+            2,
+            [
+                candidate("day-2-a", 10.08, visit=0),
+                candidate("day-2-b", 10.10, visit=30),
+                candidate("day-2-c", 10.12, visit=30),
+                candidate("end", 10.14, visit=0),
+            ],
+        ),
+    )
+
+
+def test_neighbor_generator_contains_all_bounded_operation_kinds():
+    days = imbalanced_inputs()
+    allocation = tuple(day.baseline_order for day in days)
+    baseline_rank = {
+        stop_id: index
+        for index, stop_id in enumerate(
+            stop_id for day in allocation for stop_id in day
+        )
+    }
+    neighbors = multiday_module._generate_neighbors(
+        allocation=allocation,
+        baseline_counts=tuple(len(day) for day in allocation),
+        locked_ids=frozenset({"start", "end"}),
+        baseline_rank=baseline_rank,
+        current_day_results=(),
+        options=MultiDayOptions(),
+    )
+
+    kinds = {neighbor.kind for neighbor in neighbors}
+    assert {"relocate", "swap", "boundary-swap"} <= kinds
+    assert len({neighbor.allocation for neighbor in neighbors}) == len(neighbors)
+    assert all(
+        all(
+            len(content_ids) >= 2
+            and abs(len(content_ids) - baseline_count) <= 1
+            for content_ids, baseline_count in zip(
+                neighbor.allocation,
+                (4, 4),
+            )
+        )
+        for neighbor in neighbors
+    )
+
+
+def test_local_search_relocates_content_to_reduce_maximum_day_load():
+    result = optimize_multi_day_allocation(
+        imbalanced_inputs(),
+        global_start_id="start",
+        global_end_id="end",
+        options=MultiDayOptions(max_iterations=12),
+    )
+
+    assert "move-me" not in result.days[0].content_ids
+    assert "move-me" in result.days[1].content_ids
+    assert max(result.final_load_minutes) < max(result.initial_load_minutes)
+    assert result.move_count == 1
+    assert result.moved_out_by_day[0] == ("move-me",)
+    assert result.moved_in_by_day[1] == ("move-me",)
+
+
+def test_local_search_result_is_repeatable():
+    first = optimize_multi_day_allocation(
+        imbalanced_inputs(),
+        "start",
+        "end",
+        MultiDayOptions(max_iterations=12),
+    )
+    second = optimize_multi_day_allocation(
+        imbalanced_inputs(),
+        "start",
+        "end",
+        MultiDayOptions(max_iterations=12),
+    )
+
+    assert first == second
+
+
+def test_deadline_after_incumbent_returns_complete_result(monkeypatch):
+    monkeypatch.setattr(
+        multiday_module,
+        "_local_search_deadline_reached",
+        lambda _deadline: True,
+    )
+
+    result = optimize_multi_day_allocation(
+        imbalanced_inputs(),
+        "start",
+        "end",
+        MultiDayOptions(max_iterations=12),
+    )
+
+    emitted = [stop_id for day in result.days for stop_id in day.content_ids]
+    assert len(emitted) == len(set(emitted)) == 8
+    assert result.solver == "multiday-deadline"
+    assert "multiday-deadline-reached" in result.warnings

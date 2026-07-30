@@ -468,7 +468,7 @@ def imbalanced_inputs() -> tuple[MultiDayDayInput, MultiDayDayInput]:
             [
                 candidate("start", 10.00, visit=0),
                 candidate("heavy-fixed", 10.02, visit=200),
-                candidate("move-me", 10.04, visit=100),
+                candidate("move-me", 10.061, visit=100),
                 candidate("day-1-end", 10.06, visit=0),
             ],
         ),

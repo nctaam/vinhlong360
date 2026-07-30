@@ -103,6 +103,12 @@ class _AllocationLabel:
     area_switches: int
 
 
+@dataclass(frozen=True)
+class _AllocationNeighbor:
+    kind: str
+    allocation: Allocation
+
+
 def _is_int(value: object) -> bool:
     return isinstance(value, int) and not isinstance(value, bool)
 
@@ -574,6 +580,245 @@ def _result_days_objective(
     return _label_objective(label)
 
 
+def _canonical_allocation(
+    allocation: Allocation,
+    baseline_rank: dict[str, int],
+) -> Allocation:
+    return tuple(
+        tuple(sorted(content_ids, key=baseline_rank.__getitem__))
+        for content_ids in allocation
+    )
+
+
+def _allocation_within_count_bounds(
+    allocation: Allocation,
+    baseline_counts: tuple[int, ...],
+    options: MultiDayOptions,
+) -> bool:
+    return all(
+        len(content_ids) >= options.min_content_per_day
+        and abs(len(content_ids) - baseline_count) <= options.max_count_delta
+        for content_ids, baseline_count in zip(allocation, baseline_counts)
+    )
+
+
+def _routed_boundary_id(
+    result: MultiDayDayResult,
+    content_ids: tuple[str, ...],
+    locked_ids: frozenset[str],
+    reverse: bool,
+) -> str | None:
+    owned_ids = set(content_ids)
+    routed_ids = (
+        reversed(result.ordered_ids) if reverse else iter(result.ordered_ids)
+    )
+    return next(
+        (
+            stop_id
+            for stop_id in routed_ids
+            if stop_id in owned_ids and stop_id not in locked_ids
+        ),
+        None,
+    )
+
+
+def _canonical_boundary_id(
+    content_ids: tuple[str, ...],
+    locked_ids: frozenset[str],
+    reverse: bool,
+) -> str | None:
+    candidates = reversed(content_ids) if reverse else iter(content_ids)
+    return next(
+        (stop_id for stop_id in candidates if stop_id not in locked_ids),
+        None,
+    )
+
+
+def _generate_neighbors(
+    allocation: Allocation,
+    baseline_counts: tuple[int, ...],
+    locked_ids: frozenset[str],
+    baseline_rank: dict[str, int],
+    current_day_results: tuple[MultiDayDayResult, ...],
+    options: MultiDayOptions,
+) -> tuple[_AllocationNeighbor, ...]:
+    """Return unique deterministic adjacent-day ownership neighbors."""
+    generated: list[tuple[int, int, Allocation, _AllocationNeighbor]] = []
+    seen: set[Allocation] = set()
+    operation_order = {"boundary-swap": 0, "relocate": 1, "swap": 2}
+
+    def add_neighbor(
+        pair_index: int,
+        kind: str,
+        left_ids: tuple[str, ...],
+        right_ids: tuple[str, ...],
+    ) -> None:
+        candidate = list(allocation)
+        candidate[pair_index] = left_ids
+        candidate[pair_index + 1] = right_ids
+        canonical = _canonical_allocation(tuple(candidate), baseline_rank)
+        if canonical in seen or not _allocation_within_count_bounds(
+            canonical,
+            baseline_counts,
+            options,
+        ):
+            return
+        seen.add(canonical)
+        neighbor = _AllocationNeighbor(kind=kind, allocation=canonical)
+        generated.append(
+            (pair_index, operation_order[kind], canonical, neighbor)
+        )
+
+    for pair_index in range(len(allocation) - 1):
+        left = allocation[pair_index]
+        right = allocation[pair_index + 1]
+        if current_day_results:
+            left_boundary = _routed_boundary_id(
+                current_day_results[pair_index],
+                left,
+                locked_ids,
+                reverse=True,
+            )
+            right_boundary = _routed_boundary_id(
+                current_day_results[pair_index + 1],
+                right,
+                locked_ids,
+                reverse=False,
+            )
+        else:
+            left_boundary = _canonical_boundary_id(left, locked_ids, reverse=True)
+            right_boundary = _canonical_boundary_id(right, locked_ids, reverse=False)
+        if left_boundary is not None and right_boundary is not None:
+            add_neighbor(
+                pair_index,
+                "boundary-swap",
+                tuple(
+                    right_boundary if stop_id == left_boundary else stop_id
+                    for stop_id in left
+                ),
+                tuple(
+                    left_boundary if stop_id == right_boundary else stop_id
+                    for stop_id in right
+                ),
+            )
+
+        for stop_id in left:
+            if stop_id in locked_ids:
+                continue
+            add_neighbor(
+                pair_index,
+                "relocate",
+                tuple(item for item in left if item != stop_id),
+                (*right, stop_id),
+            )
+        for stop_id in right:
+            if stop_id in locked_ids:
+                continue
+            add_neighbor(
+                pair_index,
+                "relocate",
+                (*left, stop_id),
+                tuple(item for item in right if item != stop_id),
+            )
+
+        for left_id in left:
+            if left_id in locked_ids:
+                continue
+            for right_id in right:
+                if right_id in locked_ids:
+                    continue
+                add_neighbor(
+                    pair_index,
+                    "swap",
+                    tuple(
+                        right_id if stop_id == left_id else stop_id
+                        for stop_id in left
+                    ),
+                    tuple(
+                        left_id if stop_id == right_id else stop_id
+                        for stop_id in right
+                    ),
+                )
+
+    return tuple(
+        item[3]
+        for item in sorted(
+            generated,
+            key=lambda item: (item[0], item[1], item[2]),
+        )
+    )
+
+
+def _result_objective(
+    result_days: tuple[MultiDayDayResult, ...],
+    allocation: Allocation,
+    baseline_owner: dict[str, int],
+    candidate_by_id: dict[str, SelectionCandidate],
+) -> tuple[object, ...]:
+    """Build the final lexicographic allocation objective."""
+    loads = tuple(day.load_minutes for day in result_days)
+    average = sum(loads) / len(loads)
+    final_owner = {
+        stop_id: day_index
+        for day_index, content_ids in enumerate(allocation)
+        for stop_id in content_ids
+    }
+    moved_owner_count = sum(
+        final_owner[stop_id] != baseline_day
+        for stop_id, baseline_day in baseline_owner.items()
+    )
+    return (
+        max(loads),
+        max(loads) - min(loads),
+        sum(abs(load - average) for load in loads),
+        sum(day.schedule.total_travel_minutes for day in result_days),
+        sum(day.schedule.backtrack_ratio for day in result_days),
+        _area_switch_count(result_days, candidate_by_id),
+        moved_owner_count,
+        allocation,
+        tuple(day.ordered_ids for day in result_days),
+    )
+
+
+def _local_search_deadline_reached(deadline: float) -> bool:
+    return time.perf_counter() >= deadline
+
+
+def _move_diagnostics(
+    baseline_owner: dict[str, int],
+    allocation: Allocation,
+) -> tuple[int, tuple[tuple[str, ...], ...], tuple[tuple[str, ...], ...]]:
+    final_owner = {
+        stop_id: day_index
+        for day_index, content_ids in enumerate(allocation)
+        for stop_id in content_ids
+    }
+    moved_ids = tuple(
+        sorted(
+            stop_id
+            for stop_id, day_index in baseline_owner.items()
+            if final_owner[stop_id] != day_index
+        )
+    )
+    moved_in = tuple(
+        tuple(
+            stop_id
+            for stop_id in moved_ids
+            if final_owner[stop_id] == day_index
+        )
+        for day_index in range(len(allocation))
+    )
+    moved_out = tuple(
+        tuple(
+            stop_id
+            for stop_id in moved_ids
+            if baseline_owner[stop_id] == day_index
+        )
+        for day_index in range(len(allocation))
+    )
+    return len(moved_ids), moved_in, moved_out
+
+
 def optimize_multi_day_allocation(
     days: Sequence[MultiDayDayInput],
     global_start_id: str,
@@ -589,6 +834,19 @@ def optimize_multi_day_allocation(
         options,
     )
     allocation: Allocation = tuple(day.baseline_order for day in day_inputs)
+    baseline_counts = tuple(len(content_ids) for content_ids in allocation)
+    baseline_rank = {
+        stop_id: rank
+        for rank, stop_id in enumerate(
+            stop_id for content_ids in allocation for stop_id in content_ids
+        )
+    }
+    baseline_owner = {
+        stop_id: day_index
+        for day_index, content_ids in enumerate(allocation)
+        for stop_id in content_ids
+    }
+    locked_ids = frozenset({global_start_id, global_end_id})
     deadline = time.perf_counter() + options.deadline_seconds
     cache: dict[tuple[object, ...], MultiDayDayResult | None] = {}
     baseline_days = _solve_fixed_baseline(
@@ -619,28 +877,102 @@ def optimize_multi_day_allocation(
         candidate_by_id,
     ) < _result_days_objective(final_days, candidate_by_id):
         final_days = baseline_days
+    current_allocation = allocation
+    current_days = final_days
+    current_objective = _result_objective(
+        current_days,
+        current_allocation,
+        baseline_owner,
+        candidate_by_id,
+    )
+    allocation_cache: dict[
+        Allocation, tuple[MultiDayDayResult, ...] | None
+    ] = {current_allocation: current_days}
+    deadline_reached = False
+
+    for _ in range(options.max_iterations):
+        if _local_search_deadline_reached(deadline):
+            deadline_reached = True
+            break
+        best_allocation: Allocation | None = None
+        best_days: tuple[MultiDayDayResult, ...] | None = None
+        best_objective: tuple[object, ...] | None = None
+        neighbors = _generate_neighbors(
+            allocation=current_allocation,
+            baseline_counts=baseline_counts,
+            locked_ids=locked_ids,
+            baseline_rank=baseline_rank,
+            current_day_results=current_days,
+            options=options,
+        )
+        for neighbor in neighbors:
+            if _local_search_deadline_reached(deadline):
+                deadline_reached = True
+                break
+            if neighbor.allocation not in allocation_cache:
+                try:
+                    allocation_cache[neighbor.allocation] = _solve_allocation(
+                        day_inputs,
+                        neighbor.allocation,
+                        candidate_by_id,
+                        global_start_id,
+                        global_end_id,
+                        options,
+                        deadline,
+                        cache,
+                    )
+                except NoFeasibleScheduleError:
+                    allocation_cache[neighbor.allocation] = None
+            neighbor_days = allocation_cache[neighbor.allocation]
+            if neighbor_days is None:
+                continue
+            neighbor_objective = _result_objective(
+                neighbor_days,
+                neighbor.allocation,
+                baseline_owner,
+                candidate_by_id,
+            )
+            if neighbor_objective >= current_objective:
+                continue
+            if best_objective is None or neighbor_objective < best_objective:
+                best_allocation = neighbor.allocation
+                best_days = neighbor_days
+                best_objective = neighbor_objective
+        if best_allocation is None or best_days is None or best_objective is None:
+            break
+        current_allocation = best_allocation
+        current_days = best_days
+        current_objective = best_objective
+        if deadline_reached:
+            break
+
+    final_days = current_days
+    final_allocation = current_allocation
     final_loads = tuple(day.load_minutes for day in final_days)
     initial_loads = (
         tuple(day.load_minutes for day in baseline_days)
         if baseline_days is not None
         else final_loads
     )
-    empty_moves = tuple(() for _ in final_days)
-    warnings = (
-        ("overnight-origin-approximated",)
-        if any(day.synthetic_origin_id is not None for day in final_days)
-        else ()
+    move_count, moved_in_by_day, moved_out_by_day = _move_diagnostics(
+        baseline_owner,
+        final_allocation,
     )
+    warnings: list[str] = []
+    if any(day.synthetic_origin_id is not None for day in final_days):
+        warnings.append("overnight-origin-approximated")
+    if deadline_reached:
+        warnings.append("multiday-deadline-reached")
     return MultiDayResult(
         days=final_days,
-        solver="multiday-dp-local-search",
+        solver=("multiday-deadline" if deadline_reached else "multiday-dp-local-search"),
         initial_load_minutes=initial_loads,
         final_load_minutes=final_loads,
         max_imbalance_minutes=max(final_loads) - min(final_loads),
-        move_count=0,
-        moved_in_by_day=empty_moves,
-        moved_out_by_day=empty_moves,
-        warnings=warnings,
+        move_count=move_count,
+        moved_in_by_day=moved_in_by_day,
+        moved_out_by_day=moved_out_by_day,
+        warnings=tuple(warnings),
     )
 
 
