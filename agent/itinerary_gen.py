@@ -12,8 +12,19 @@ Output: lịch trình chi tiết với thời gian, điểm dừng, ghi chú, ă
 """
 
 import logging
+import math
+from numbers import Real
 
 import knowledge
+from itinerary_schedule import (
+    NoFeasibleScheduleError,
+    ScheduleOptions,
+    ScheduleStop,
+    build_fallback_matrix,
+    infer_visit_minutes,
+    parse_opening_hours,
+    schedule_stop_order,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -140,15 +151,181 @@ def _build_day_plans(days: int, stops_per_day: int, selected: list, candidates: 
         day_entities = selected[idx:idx + stops_per_day]
         idx += stops_per_day
 
-        day_stops = _build_day_stops(day_entities, candidates, month)
+        day_stops, schedule = _build_day_schedule(day_entities, candidates, month)
 
         day_plans.append({
             "day": d + 1,
             "area_focus": _day_area(day_entities),
             "stops": [{k: v for k, v in s.items() if k != "time_min"} for s in day_stops],
+            "schedule": schedule,
         })
 
     return day_plans
+
+
+def _finite_coordinates(value) -> tuple[float, float] | None:
+    if isinstance(value, dict):
+        value = (
+            value.get("lat", value.get("latitude")),
+            value.get("lng", value.get("lon", value.get("longitude"))),
+        )
+    if not isinstance(value, (list, tuple)) or len(value) < 2:
+        return None
+    lat, lng = value[:2]
+    if (
+        isinstance(lat, bool)
+        or isinstance(lng, bool)
+        or not isinstance(lat, Real)
+        or not isinstance(lng, Real)
+        or not math.isfinite(float(lat))
+        or not math.isfinite(float(lng))
+    ):
+        return None
+    return float(lat), float(lng)
+
+
+def _candidate_coordinates(item: dict) -> tuple[float, float] | None:
+    entity = item.get("entity") or {}
+    coordinates = _finite_coordinates(entity.get("coordinates"))
+    if coordinates is not None:
+        return coordinates
+    return _finite_coordinates((item.get("place") or {}).get("coordinates"))
+
+
+def _candidate_visit_minutes(item: dict) -> int | None:
+    entity = item.get("entity") or {}
+    attributes = entity.get("attributes") or {}
+    for key in ("visit_minutes", "duration_minutes"):
+        value = entity.get(key)
+        if value is None:
+            value = attributes.get(key)
+        if isinstance(value, int) and not isinstance(value, bool):
+            return value
+    return None
+
+
+def _candidate_suggested_duration(item: dict) -> str | None:
+    entity = item.get("entity") or {}
+    attributes = entity.get("attributes") or {}
+    for key in ("suggested_duration", "duration"):
+        value = entity.get(key)
+        if value is None:
+            value = attributes.get(key)
+        if isinstance(value, str):
+            return value
+    return None
+
+
+def _candidate_schedule_stop(item: dict, required: bool) -> tuple[ScheduleStop, tuple[str, ...]] | None:
+    entity = item.get("entity") or {}
+    coordinates = _candidate_coordinates(item)
+    if coordinates is None:
+        return None
+    attributes = entity.get("attributes") or {}
+    hours = (
+        entity.get("hours")
+        or entity.get("open_hours")
+        or attributes.get("hours")
+        or attributes.get("open_hours")
+    )
+    opening_windows, warnings = parse_opening_hours(hours)
+    visit_minutes = infer_visit_minutes(
+        entity.get("type"),
+        _candidate_visit_minutes(item),
+        _candidate_suggested_duration(item),
+    )
+    return (
+        ScheduleStop(
+            id=entity["id"],
+            coordinates=coordinates,
+            visit_minutes=visit_minutes,
+            opening_windows=opening_windows,
+            required=required,
+        ),
+        warnings,
+    )
+
+
+def _legacy_schedule_diagnostics(warnings: list[str]) -> dict:
+    return {
+        "solver": "legacy",
+        "matrix_source": "none",
+        "total_travel_minutes": 0.0,
+        "waiting_minutes": 0.0,
+        "overtime_minutes": 0.0,
+        "minimum_slack_minutes": 0.0,
+        "backtrack_ratio": 0.0,
+        "skipped": [],
+        "warnings": warnings,
+    }
+
+
+def _build_day_schedule(day_entities: list[dict], candidates: list[dict], month: int) -> tuple[list[dict], dict]:
+    legacy_stops = _build_day_stops(day_entities, candidates, month)
+    if not day_entities:
+        return legacy_stops, _legacy_schedule_diagnostics([])
+
+    schedule_stops: list[ScheduleStop] = []
+    warnings: list[str] = []
+    for index, item in enumerate(day_entities):
+        try:
+            adapted = _candidate_schedule_stop(
+                item,
+                required=index in (0, len(day_entities) - 1),
+            )
+        except ValueError:
+            return legacy_stops, _legacy_schedule_diagnostics(["schedule-fallback"])
+        if adapted is None:
+            return legacy_stops, _legacy_schedule_diagnostics(["coordinates-missing"])
+        stop, stop_warnings = adapted
+        schedule_stops.append(stop)
+        warnings.extend(stop_warnings)
+
+    if len(schedule_stops) < 2:
+        return legacy_stops, _legacy_schedule_diagnostics(["schedule-fallback"])
+
+    try:
+        matrix = build_fallback_matrix(schedule_stops, "driving")
+        result = schedule_stop_order(
+            schedule_stops,
+            matrix,
+            ScheduleOptions(day_start_minute=480, day_end_minute=1080),
+        )
+    except (NoFeasibleScheduleError, ValueError):
+        return legacy_stops, _legacy_schedule_diagnostics(["schedule-fallback"])
+
+    items_by_id = {item["entity"]["id"]: item for item in day_entities}
+    placements_by_id = {placement.stop_id: placement for placement in result.placements}
+    scheduled_stops = []
+    for entity_id in result.ordered_ids:
+        item = items_by_id.get(entity_id)
+        placement = placements_by_id.get(entity_id)
+        if item is None or placement is None:
+            continue
+        entity = item["entity"]
+        start_minute = int(round(placement.start_visit_minute))
+        scheduled_stops.append({
+            "time": _fmt_time(start_minute),
+            "time_min": start_minute,
+            "entity": _entity_summary(entity),
+            "note": _gen_note(entity, month),
+        })
+
+    diagnostics = {
+        "solver": result.solver,
+        "matrix_source": result.matrix_source,
+        "total_travel_minutes": result.total_travel_minutes,
+        "waiting_minutes": result.waiting_minutes,
+        "overtime_minutes": result.overtime_minutes,
+        "minimum_slack_minutes": result.minimum_slack_minutes,
+        "backtrack_ratio": result.backtrack_ratio,
+        "skipped": [
+            {"stop_id": skipped.stop_id, "reason": skipped.reason}
+            for skipped in result.skipped
+        ],
+        "warnings": warnings + list(result.warnings),
+    }
+    return scheduled_stops, diagnostics
 
 
 def _build_day_stops(day_entities: list, candidates: list, month: int) -> list:
