@@ -455,40 +455,69 @@ LOCATION_REMEDIATION_REASONS = frozenset(
 
 _WORKER_NUMBER_PATTERN_SQL = (
     r"(?<![A-Za-z0-9_.])"
-    r"([+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][+-]?[0-9]+)?)"
+    r"([+-]?([[:digit:]]+([.][[:digit:]]*)?|[.][[:digit:]]+)([eE][+-]?[[:digit:]]+)?)"
     r"(?![A-Za-z0-9_.])"
 )
 _WORKER_COORDINATE_PAIR_PATTERN_SQL = (
     r"(?<![A-Za-z0-9_.])"
-    r"([+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][+-]?[0-9]+)?)"
+    r"([+-]?([[:digit:]]+([.][[:digit:]]*)?|[.][[:digit:]]+)([eE][+-]?[[:digit:]]+)?)"
     r"(?![A-Za-z0-9_.])[[:space:]]*(,|;|/|\m(and|va|và)\M)[[:space:]]*"
     r"(?<![A-Za-z0-9_.])"
-    r"([+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][+-]?[0-9]+)?)"
+    r"([+-]?([[:digit:]]+([.][[:digit:]]*)?|[.][[:digit:]]+)([eE][+-]?[[:digit:]]+)?)"
     r"(?![A-Za-z0-9_.])"
 )
+_WORKER_DMS_PATTERN_SQL = (
+    r"(?<![A-Za-z0-9_.])[+-]?[[:digit:]]{1,3}[[:space:]]*[°º]"
+    r"[[:space:]]*[[:digit:]]{1,2}([.][[:digit:]]+)?[[:space:]]*['′]"
+)
+_WORKER_HEMISPHERE_PATTERN_SQL = (
+    r"(?<![A-Za-z0-9_.])"
+    r"[+-]?([[:digit:]]+([.][[:digit:]]*)?|[.][[:digit:]]+)"
+    r"([eE][+-]?[[:digit:]]+)?[[:space:]]*[NSEW](?![A-Za-z])"
+)
+_WORKER_UNICODE_DIGITS_SQL = "٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹０１２３４５６７８９"
+_WORKER_ASCII_DIGITS_SQL = "0123456789" * 3
+
+
+def _worker_sql_regex_literal(pattern: str) -> str:
+    return pattern.replace("'", "''")
+
+
+def _worker_numeric_sql(expression: str) -> str:
+    return (
+        f"translate({expression}, '{_WORKER_UNICODE_DIGITS_SQL}', "
+        f"'{_WORKER_ASCII_DIGITS_SQL}')"
+    )
 
 
 def _worker_python_raw_text_sql(column: str) -> str:
+    pair_pattern = _worker_sql_regex_literal(_WORKER_COORDINATE_PAIR_PATTERN_SQL)
+    number_pattern = _worker_sql_regex_literal(_WORKER_NUMBER_PATTERN_SQL)
+    dms_pattern = _worker_sql_regex_literal(_WORKER_DMS_PATTERN_SQL)
+    hemisphere_pattern = _worker_sql_regex_literal(_WORKER_HEMISPHERE_PATTERN_SQL)
+    first_number = _worker_numeric_sql("pair_match[1]")
+    second_number = _worker_numeric_sql("pair_match[7]")
+    single_number = _worker_numeric_sql("number_match[1]")
     return f"""
         (
             EXISTS (
                 SELECT 1
                 FROM regexp_matches(
                     COALESCE({column}, ''),
-                    '{_WORKER_COORDINATE_PAIR_PATTERN_SQL}',
+                    '{pair_pattern}',
                     'gi'
                 ) AS pair_match
                 WHERE CASE
-                    WHEN pg_input_is_valid(pair_match[1], 'double precision')
-                     AND pg_input_is_valid(pair_match[7], 'double precision')
+                    WHEN pg_input_is_valid({first_number}, 'double precision')
+                     AND pg_input_is_valid({second_number}, 'double precision')
                     THEN (
                         (
-                            pair_match[1]::double precision BETWEEN -90 AND 90
-                            AND pair_match[7]::double precision BETWEEN -180 AND 180
+                            {first_number}::double precision BETWEEN -90 AND 90
+                            AND {second_number}::double precision BETWEEN -180 AND 180
                         )
                         OR (
-                            pair_match[7]::double precision BETWEEN -90 AND 90
-                            AND pair_match[1]::double precision BETWEEN -180 AND 180
+                            {second_number}::double precision BETWEEN -90 AND 90
+                            AND {first_number}::double precision BETWEEN -180 AND 180
                         )
                     )
                     ELSE FALSE
@@ -498,7 +527,7 @@ def _worker_python_raw_text_sql(column: str) -> str:
                 SELECT 1
                 FROM regexp_matches(
                     COALESCE({column}, ''),
-                    '{_WORKER_NUMBER_PATTERN_SQL}',
+                    '{number_pattern}',
                     'gi'
                 ) AS number_match
                 WHERE (
@@ -507,10 +536,26 @@ def _worker_python_raw_text_sql(column: str) -> str:
                     OR left(number_match[1], 1) IN ('+', '-')
                 )
                 AND CASE
-                    WHEN pg_input_is_valid(number_match[1], 'double precision')
-                    THEN number_match[1]::double precision BETWEEN -180 AND 180
+                    WHEN pg_input_is_valid({single_number}, 'double precision')
+                    THEN {single_number}::double precision BETWEEN -180 AND 180
                     ELSE FALSE
                 END
+            )
+            OR EXISTS (
+                SELECT 1
+                FROM regexp_matches(
+                    COALESCE({column}, ''),
+                    '{dms_pattern}',
+                    'gi'
+                )
+            )
+            OR EXISTS (
+                SELECT 1
+                FROM regexp_matches(
+                    COALESCE({column}, ''),
+                    '{hemisphere_pattern}',
+                    'gi'
+                )
             )
         )
     """

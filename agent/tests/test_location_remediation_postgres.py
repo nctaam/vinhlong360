@@ -793,8 +793,21 @@ def test_self_healing_worker_aligns_candidate_and_reason_text_boundaries(
         "hemisphere": "10.2500N",
         "single_number": "105.9700",
         "sql_only": "a:b:c",
+        "unicode_decimal": "١٠.٥",
+        "unicode_pair": "١٠ and ١٠٥",
+        "fullwidth_decimal": "１０.５",
+        "unicode_signed": "-١٠.٥",
+        "unicode_dms": '١٠° ١٥\' ٣٠" N',
     }
     for name in ("coordinate_pair", "dms", "hemisphere", "single_number"):
+        assert user_preferences.contains_raw_location_value(unsafe_labels[name])
+    for name in (
+        "unicode_decimal",
+        "unicode_pair",
+        "fullwidth_decimal",
+        "unicode_signed",
+        "unicode_dms",
+    ):
         assert user_preferences.contains_raw_location_value(unsafe_labels[name])
     assert not user_preferences.contains_raw_location_value(unsafe_labels["sql_only"])
     assert not user_preferences.contains_raw_location_value("999.9700")
