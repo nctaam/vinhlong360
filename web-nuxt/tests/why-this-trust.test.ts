@@ -40,6 +40,7 @@ const preferenceSnapshot = (overrides: Partial<PreferenceSnapshot> = {}): Prefer
   explicit_interests: ['food'],
   recommendation_reset_at: null,
   consent_version: 'identity-location-trust-v1',
+  location_reconfirm_required: false,
   revision: 2,
   ...overrides,
 })

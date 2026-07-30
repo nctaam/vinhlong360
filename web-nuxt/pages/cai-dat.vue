@@ -391,6 +391,21 @@
         <button type="button" class="btn btn-secondary btn-sm" data-action="retry-conflict" :disabled="preferenceBusy" @click="retryPreferenceConflict">Thử lưu lại</button>
       </div>
 
+      <div
+        v-if="preferenceView.location_reconfirm_required"
+        class="preference-banner preference-reconfirm"
+        data-state="location-reconfirm"
+        role="status"
+        aria-live="polite"
+      >
+        <div>
+          <strong>Chọn lại khu vực ưu tiên</strong>
+          <p>Khu vực trước đây cần được chọn lại để bảo vệ quyền riêng tư. Sở thích và dữ liệu đã lưu của bạn vẫn được giữ nguyên.</p>
+        </div>
+        <button type="button" class="btn btn-primary btn-sm" data-action="choose-region-again" @click="focusManualRegionChoices">
+          Chọn lại khu vực
+        </button>
+      </div>
       <p v-if="preferenceNotice" class="preference-notice" role="status" aria-live="polite">{{ preferenceNotice }}</p>
       <div v-if="preferences.loading.value && !preferenceBusy" class="sf-loading" role="status" aria-label="Đang tải thiết lập đề xuất"><div class="spinner spinner-sm"></div> Đang tải thiết lập...</div>
 
@@ -422,7 +437,7 @@
             <p>Chọn thủ công không cần bật vị trí và vẫn được dùng khi vị trí đang tắt.</p>
           </div>
         </div>
-        <div class="preference-options" role="group" aria-label="Chọn khu vực ưu tiên">
+        <div ref="manualRegionGroup" class="preference-options" role="group" aria-label="Chọn khu vực ưu tiên" data-region-group="manual" tabindex="-1">
           <button
             v-for="region in PREFERENCE_REGIONS"
             :key="region.id || 'all'"
@@ -709,6 +724,7 @@ const preferenceOnline = ref(true)
 const preferenceBusy = ref(false)
 const preferenceConflict = ref(false)
 const preferenceNotice = ref('')
+const manualRegionGroup = ref<HTMLElement | null>(null)
 let preferenceConflictOperation: PreferenceOperation | null = null
 
 watch(preferences.snapshot, (value) => {
@@ -759,6 +775,14 @@ const preferenceLocationStateCopy = computed(() => {
 
 function preferenceInterestLabel(key: string) {
   return PREFERENCE_INTEREST_LABELS[key] || key
+}
+
+function focusManualRegionChoices() {
+  const target = manualRegionGroup.value
+  if (!target) return
+  target.focus({ preventScroll: true })
+  const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  target.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' })
 }
 
 function syncPreferenceOnline() {
@@ -833,6 +857,7 @@ async function setPreferenceRegion(region: PreferenceRegionChoice) {
       region_scope: region.scope,
       location_source: 'manual',
       location_accuracy: accuracy,
+      location_reconfirm_required: false,
     },
     successMessage: `Đã cập nhật khu vực ưu tiên: ${region.label}.`,
   })

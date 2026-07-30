@@ -16,6 +16,7 @@ export interface PreferenceSnapshot {
   explicit_interests: string[]
   recommendation_reset_at: string | null
   consent_version: string | null
+  location_reconfirm_required: boolean
   revision: number
   derived_age_band?: PreferenceAgeBand
 }
@@ -73,6 +74,7 @@ export const DEFAULT_PREFERENCE_SNAPSHOT: PreferenceSnapshot = {
   explicit_interests: [],
   recommendation_reset_at: null,
   consent_version: null,
+  location_reconfirm_required: false,
   revision: 0,
 }
 

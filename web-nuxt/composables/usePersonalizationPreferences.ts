@@ -58,6 +58,7 @@ function isSnapshot(value: unknown): value is PreferenceSnapshot {
     && normalizeInterests(value.explicit_interests) !== null
     && nullableText(value.recommendation_reset_at)
     && nullableText(value.consent_version)
+    && (value.location_reconfirm_required === undefined || typeof value.location_reconfirm_required === 'boolean')
     && (value.derived_age_band === undefined || AGE_BANDS.has(value.derived_age_band as PreferenceAgeBand))
 }
 
@@ -75,6 +76,7 @@ function normalizeSnapshot(value: unknown): PreferenceSnapshot {
     explicit_interests: normalizeInterests(value.explicit_interests) || [],
     recommendation_reset_at: value.recommendation_reset_at,
     consent_version: value.consent_version,
+    location_reconfirm_required: value.location_reconfirm_required === true,
     revision: value.revision,
     ...(value.derived_age_band ? { derived_age_band: value.derived_age_band } : {}),
   }

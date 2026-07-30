@@ -25,7 +25,7 @@ mockNuxtImport('useAuth', () => () => {
   return authState
 })
 
-const baseSnapshot: PreferenceSnapshot = {
+const baseSnapshot: PreferenceSnapshot & { location_reconfirm_required: boolean } = {
   region_id: null,
   region_label: null,
   region_scope: 'unknown',
@@ -37,10 +37,11 @@ const baseSnapshot: PreferenceSnapshot = {
   explicit_interests: [],
   recommendation_reset_at: null,
   consent_version: null,
+  location_reconfirm_required: false,
   revision: 0,
 }
 
-function snapshot(overrides: Partial<PreferenceSnapshot> = {}): PreferenceSnapshot {
+function snapshot(overrides: Partial<PreferenceSnapshot> & { location_reconfirm_required?: boolean } = {}): PreferenceSnapshot {
   return { ...baseSnapshot, ...overrides }
 }
 
@@ -639,6 +640,39 @@ describe('optional location consent flow', () => {
     expect(confirmationPatch).not.toHaveProperty('region_id')
     expect(confirmationPatch).not.toHaveProperty('location_source')
     expect(document.body.querySelector('[role="dialog"]')).toBeNull()
+    wrapper.unmount()
+  })
+
+  it('discards a stale location token and requires an explicit resolve again', async () => {
+    authState.user.value = { id: 'user-1' }
+    authState.isLoggedIn.value = true
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: {
+        getCurrentPosition: (success: PositionCallback) => success({
+          coords: { latitude: 10.24, longitude: 105.97 },
+        } as GeolocationPosition),
+      },
+    })
+    const wrapper = await mountSetupHarness()
+    await flushUi()
+    const dialog = () => document.body.querySelector('[role="dialog"]') as HTMLElement
+    ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+    await flushUi()
+    ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+    await flushUi()
+    ;(dialog().querySelector('[data-action="use-location"]') as HTMLButtonElement).click()
+    await flushUi()
+    apiFetchMock.mockRejectedValueOnce({
+      response: { status: 409, _data: snapshot({ revision: 2, location_reconfirm_required: true }) },
+    })
+
+    ;(dialog().querySelector('[data-action="confirm-location"]') as HTMLButtonElement).click()
+    await flushUi()
+
+    expect(dialog().textContent).toContain('xác định lại khu vực')
+    expect(dialog().querySelector('[data-action="confirm-location"]')).toBeNull()
+    expect(dialog().querySelector('[data-action="retry-location"]')).toBeTruthy()
     wrapper.unmount()
   })
 

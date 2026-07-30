@@ -104,6 +104,7 @@
                 <div><strong>{{ resolvedLocation.region_label || 'Khu vực gần bạn' }}</strong><p>Độ chính xác: {{ accuracyLabel(resolvedLocation.location_accuracy) }}.</p></div>
               </div>
               <p v-else-if="locationState === 'denied'" class="setup-status" role="status"><IconLine name="alert-triangle" aria-hidden="true" /> Quyền vị trí bị từ chối. Bạn vẫn có thể dùng khu vực thủ công.</p>
+              <p v-else-if="locationState === 'stale'" class="setup-status" role="status"><IconLine name="alert-triangle" aria-hidden="true" /> Token vị trí đã cũ. Vui lòng xác định lại khu vực trước khi tiếp tục.</p>
               <p v-else class="setup-status" role="status"><IconLine name="alert-triangle" aria-hidden="true" /> Chưa xác định được khu vực. Bạn có thể thiết lập sau.</p>
             </div>
           </div>
@@ -137,6 +138,13 @@
                 :disabled="preferences.loading.value"
                 @click="confirmLocation"
               >Dùng khu vực này</button>
+              <button
+                v-else-if="locationState === 'stale'"
+                type="button"
+                class="btn btn-primary"
+                data-action="retry-location"
+                @click="retryLocation"
+              >Xác định lại khu vực</button>
               <button
                 v-else-if="locationState === 'denied' && denialPersistence === 'saving'"
                 type="button"
@@ -190,7 +198,7 @@ const currentStep = ref(0)
 const selectedRegion = ref<PreferenceRegionChoice | null>(null)
 const selectedInterests = ref<string[]>([])
 const locationAttempted = ref(false)
-const locationState = ref<'idle' | 'loading' | 'resolved' | 'denied' | 'unknown'>('idle')
+const locationState = ref<'idle' | 'loading' | 'resolved' | 'denied' | 'unknown' | 'stale'>('idle')
 const resolvedLocation = ref<LocationResolution | null>(null)
 const attemptGeneration = ref(0)
 const denialPersistence = ref<'idle' | 'saving' | 'saved' | 'failed'>('idle')
@@ -352,6 +360,14 @@ async function retryDenial() {
   await persistDenial(attemptGeneration.value, sheetOwner.value)
 }
 
+function retryLocation() {
+  if (!ensureSheetOwner() || locationState.value !== 'stale') return
+  locationAttempted.value = false
+  resolvedLocation.value = null
+  locationState.value = 'idle'
+  useLocation()
+}
+
 function isActiveAttempt(attempt: number, owner: string) {
   return attemptGeneration.value === attempt
     && visible.value
@@ -370,6 +386,11 @@ async function confirmLocation() {
     ? await preferences.patch({ location_consent_state: 'granted', location_enabled: true })
     : await preferences.confirmLocation(result)
   if (mutation.ok) finish()
+  else if (!keepsManualRegion && mutation.status === 409) {
+    resolvedLocation.value = null
+    locationAttempted.value = false
+    locationState.value = 'stale'
+  }
 }
 
 function finish() {

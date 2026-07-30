@@ -27,7 +27,7 @@ mockNuxtImport('useAuth', () => () => authState)
 mockNuxtImport('useFeature', () => () => ({ enabled: () => true }))
 mockNuxtImport('useSiteSettings', () => () => ({ get: () => ({}) }))
 
-const defaultSnapshot: PreferenceSnapshot = {
+const defaultSnapshot: PreferenceSnapshot & { location_reconfirm_required: boolean } = {
   region_id: null,
   region_label: null,
   region_scope: 'unknown',
@@ -39,10 +39,11 @@ const defaultSnapshot: PreferenceSnapshot = {
   explicit_interests: [],
   recommendation_reset_at: null,
   consent_version: null,
+  location_reconfirm_required: false,
   revision: 0,
 }
 
-function preferenceFixture(overrides: Partial<PreferenceSnapshot> = {}): PreferenceSnapshot {
+function preferenceFixture(overrides: Partial<PreferenceSnapshot> & { location_reconfirm_required?: boolean } = {}): PreferenceSnapshot {
   return { ...defaultSnapshot, ...overrides }
 }
 
@@ -129,6 +130,7 @@ async function mountSettingsPage(options: {
     },
   })
   const wrapper = await mountSuspended(options.openViaHash ? SettingsPage : SettingsHarness, {
+    attachTo: document.body,
     route: initialRoute,
     global: {
       stubs: {
@@ -813,6 +815,63 @@ describe('settings preference and account contracts', () => {
     await wrapper.get('#tab-khu-vuc-de-xuat').trigger('click')
     await flushUi()
     expect(window.location.hash).toBe('#khu-vuc-de-xuat')
+    wrapper.unmount()
+  })
+
+  it('shows the privacy reconfirm banner, preserves interests, and focuses manual choices', async () => {
+    const wrapper = await mountSettingsPage({
+      preferences: preferenceFixture({
+        location_consent_state: 'off',
+        location_reconfirm_required: true,
+        explicit_interests: ['food'],
+        revision: 8,
+      }),
+    })
+    const panel = wrapper.get('#khu-vuc-de-xuat')
+    expect(panel.get('[data-state="location-reconfirm"]').text()).toContain('cần được chọn lại')
+    expect(panel.text()).toContain('Ẩm thực')
+
+    await panel.get('[data-action="choose-region-again"]').trigger('click')
+    expect(document.activeElement).toBe(panel.get('[data-region-group="manual"]').element)
+    wrapper.unmount()
+  })
+
+  it('clears reconfirm only from the server manual-selection response', async () => {
+    const getCurrentPosition = vi.fn()
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: { getCurrentPosition },
+    })
+    const wrapper = await mountSettingsPage({
+      preferences: preferenceFixture({
+        location_consent_state: 'off',
+        location_reconfirm_required: true,
+        explicit_interests: ['food'],
+        revision: 8,
+      }),
+      preferenceMutations: [preferenceFixture({
+        region_id: null,
+        region_label: null,
+        region_scope: 'all',
+        location_source: 'manual',
+        location_accuracy: 'unknown',
+        location_consent_state: 'off',
+        location_reconfirm_required: false,
+        explicit_interests: ['food'],
+        revision: 9,
+      })],
+    })
+    const panel = wrapper.get('#khu-vuc-de-xuat')
+    await panel.get('[data-action="choose-region-again"]').trigger('click')
+    await panel.get('[data-region="all"]').trigger('click')
+    await flushUi()
+    const patchBody = apiFetchMock.mock.calls
+      .filter(([url, request]) => url === '/api/me/preferences' && request?.method === 'PATCH')
+      .at(-1)?.[1]?.body as Record<string, unknown>
+    expect(patchBody).not.toHaveProperty('location_reconfirm_required')
+    expect(panel.find('[data-state="location-reconfirm"]').exists()).toBe(false)
+    expect(panel.text()).toContain('Ẩm thực')
+    expect(getCurrentPosition).not.toHaveBeenCalled()
     wrapper.unmount()
   })
 
