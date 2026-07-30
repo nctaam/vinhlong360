@@ -222,7 +222,7 @@ Fallback and compatibility rules:
 - For one user-triggered optimization fingerprint (transport mode plus stop coordinates rounded to five decimal places), the client performs at most one OSRM Table request, one initial OSRM Route request, and one U-turn validation retry. This feature makes zero background OSRM Table requests; existing route watchers may still request OSRM Route after planner inputs change. The same schedule envelope and matrix are reused through the bounded retry.
 - Planner schedule metadata and returned placements are ephemeral `WeakMap` state. Saved `PlanStop` JSON remains exactly `id`, `name`, `type`, optional `place_name`, `coords`, `time`, and `notes`.
 
-### Generator time-aware scheduling (Phase 2B)
+### Generator time-aware scheduling and joint selection (Phases 2B-3)
 
 The existing MCP `generate_itinerary` tool accepts optional local anchor lists:
 
@@ -233,9 +233,21 @@ The existing MCP `generate_itinerary` tool accepts optional local anchor lists:
 }
 ```
 
-The generator keeps the existing `day_plans` and stop fields, and adds an optional per-day `schedule` diagnostics object. It uses the local Haversine matrix (`matrix_source: "haversine-fallback"`) and makes no OSRM, web, LLM, or paid-service request. `meal_anchors: null` keeps the compatibility lunch attempt; `[]` disables meal insertion. No meal entity is fabricated when a dish/product candidate is unavailable or lacks usable coordinates.
+The generator keeps the existing MCP signature, `day_plans`, and stop fields. Phase 3 selects POIs and schedules their route jointly for each day, using bounded exact subset search for small pools and deterministic beam/repair search for larger pools. Required first/last content endpoints and meal/rest anchors participate in feasibility, while globally reserved entity IDs prevent duplicate content or meal entities across days. The post-prune solver pool is capped at 20 content candidates.
 
-The generator falls back to its deterministic legacy timeline with warnings `coordinates-missing` or `schedule-fallback` when coordinate-aware scheduling cannot be used. Anchor validation may add `invalid-anchor`, `meal-anchor-unavailable`, or `rest-anchor-unavailable`. Any omitted optional route stop is represented in `schedule.skipped` with an explicit `reason`.
+The optional per-day `schedule` object retains the Phase 2B timing diagnostics and adds:
+
+- `selection_solver`: `selection-exact`, `selection-beam`, or `phase2b-fallback`.
+- `candidate_count`: number of raw content candidates considered for that day before coordinate filtering and dominance/cap pruning.
+- `selected_count`: number of content candidates emitted by the selection solver; fixed meal/rest anchors are excluded.
+- `total_reward`: sum of the local deterministic rewards for selected content candidates.
+- `dropped_reasons`: one `{stop_id, reason}` entry for each unselected content candidate. Reasons include `coordinates-missing`, `dominated`, `candidate-cap`, `time-window-overflow`, `unreachable-edge`, and `lower-reward-alternative` as applicable.
+
+The generator builds only local Haversine matrices (`matrix_source: "haversine-fallback"`) and makes zero OSRM, web, LLM, or paid-service requests. This is independent of the planner-only OSRM request budget above. `meal_anchors: null` keeps the compatibility lunch attempt; `[]` disables meal insertion. No meal entity is fabricated when a dish/product candidate is unavailable or lacks usable coordinates.
+
+If a required endpoint lacks usable coordinates, the matrix is invalid, or no safe selection incumbent is available, the generator returns the complete Phase 2B deterministic result rather than partial output. The fallback reports `solver: "legacy-fixed-order"`, `selection_solver: "phase2b-fallback"`, and warning `selection-fallback`, together with `coordinates-missing` or `schedule-fallback` when applicable. Anchor validation may add `invalid-anchor`, `meal-anchor-unavailable`, or `rest-anchor-unavailable`; scheduler-level omissions remain represented in `schedule.skipped` with an explicit `reason`.
+
+The saved-itinerary schema and public MCP `generate_itinerary` signature are unchanged; all Phase 3 fields are additive under `day_plans[*].schedule` and may be ignored by existing consumers.
 
 ### Internal launch safety (private network only)
 

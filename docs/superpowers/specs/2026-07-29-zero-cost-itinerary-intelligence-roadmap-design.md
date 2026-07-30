@@ -141,19 +141,20 @@ Trong cùng một tầng, dùng Pareto dominance; chỉ dùng trọng số chu�
 
 ### Giai đoạn 3 — Chọn POI và xếp tuyến đồng thời
 
-**Trạng thái:** pending; chưa có plan triển khai được duyệt.
+**Trạng thái (2026-07-30): hoàn tất.** Generator đã tích hợp chọn POI và xếp lịch theo tuyến ngay trong `generate_itinerary(...)`, giữ nguyên chữ ký MCP, schema lưu lịch trình và các response key hiện có.
 
 **Mục tiêu:** không chọn nhiều POI điểm cao nhưng khiến tổng lịch quá dài hoặc kém liên quan.
 
 **Thuật toán:**
 
-- Prize-Collecting Orienteering with Time Windows cho mỗi ngày.
-- Pre-prune theo dominance: cùng khu vực/loại, reward thấp hơn, thời lượng dài hơn và phí không thấp hơn thì loại.
-- Giữ các điểm required; điểm optional có reward gồm sở thích, mùa, confidence, diversity bonus và penalty theo độ vòng.
-- Exact DP/branch-and-bound cho tập nhỏ; deterministic beam search cho tập lớn; sau đó ALNS với destroy/repair có seed cố định.
-- Giữ giới hạn 20 điểm sau bước chọn; trả thêm `candidate_count`, `selected_count`, `dropped_reasons`.
+- Prize-Collecting Orienteering with Time Windows được giải cục bộ cho từng ngày, dùng scheduler Phase 2B làm feasibility oracle.
+- Pre-prune theo dominance và cap xác định: giữ required endpoint, loại tọa độ không hợp lệ, rồi giới hạn tối đa 20 content candidate theo thứ tự ổn định.
+- Exact bounded subset search/branch-and-bound xử lý tập optional nhỏ; deterministic beam search cùng destroy/repair và swap có giới hạn xử lý tập lớn, không dùng random hoặc network.
+- Điểm đầu/cuối content của seed day là required; meal/rest anchor tham gia kiểm tra khả thi. Entity ID được reserve toàn cục để không trùng giữa các ngày hoặc giữa content và meal.
+- Generator chỉ dùng ma trận Haversine cục bộ và không gọi OSRM, web, LLM hoặc dịch vụ trả phí. Khi thiếu required coordinate, ma trận lỗi hoặc không có incumbent an toàn, hệ thống fallback nguyên vẹn về Phase 2B và ghi `selection-fallback`.
+- Diagnostics additive dưới `day_plans[*].schedule` gồm `selection_solver`, `candidate_count`, `selected_count`, `total_reward` và `dropped_reasons`; mỗi candidate bị loại có lý do xác định.
 
-**Tiêu chí nghiệm thu:** tổng reward không giảm khi thêm candidate bị trội; solver không chọn trùng entity; thứ tự đầu/cuối và ràng buộc thời gian vẫn được giữ.
+**Tiêu chí nghiệm thu đã đạt:** solver ưu tiên số điểm khả thi rồi reward, không chọn trùng entity, giữ required endpoint và ràng buộc thời gian, trả lý do cho candidate bị loại, và regression tập trung xác nhận tương thích Phase 2B/MCP. Không có dependency, API key, migration, deploy, schema hoặc frontend contract mới.
 
 ### Giai đoạn 4 — Tối ưu nhiều ngày
 
@@ -265,4 +266,4 @@ Nếu vượt deadline, trả nghiệm tốt nhất hợp lệ đã có; nếu c
 
 ## 12. Phạm vi triển khai tiếp theo
 
-**Phase 2A đã hoàn tất** cho planner thủ công và **Phase 2B đã hoàn tất** cho generator adoption, gồm thời gian di chuyển Haversine cục bộ cùng meal/rest anchors cấu hình được. Giai đoạn 3-6 vẫn đang chờ và cần plan riêng; trạng thái này không tuyên bố đã deploy production hoặc chạy migration.
+**Phase 2A đã hoàn tất** cho planner thủ công, **Phase 2B đã hoàn tất** cho generator time-aware scheduling và **Phase 3 đã hoàn tất** cho joint POI/route selection cục bộ. Giai đoạn 4-6 vẫn pending và cần plan triển khai riêng; trạng thái này không tuyên bố đã deploy production hoặc chạy migration.
