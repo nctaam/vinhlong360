@@ -203,6 +203,38 @@ class PerformanceCollector:
                 self._records = self._records[-MAX_RECORDS:]
             self._save()
 
+    def purge_owner(self, owner_key: str) -> int:
+        """Remove exact owner-attributed optimizer records."""
+        with self._lock:
+            retained = [
+                record
+                for record in self._records
+                if record.get("owner_key", "") != owner_key
+            ]
+            removed = len(self._records) - len(retained)
+            if removed:
+                self._records = retained
+                self._save()
+            return removed
+
+    def verify_owner_absent(self, owner_key: str) -> bool:
+        """Verify live and persisted performance rows lack the exact owner."""
+        with self._lock:
+            if any(
+                record.get("owner_key", "") == owner_key
+                for record in self._records
+            ):
+                return False
+            if not PERFORMANCE_FILE.exists():
+                return True
+            data = json.loads(PERFORMANCE_FILE.read_text(encoding="utf-8"))
+            if not isinstance(data, dict):
+                raise ValueError("Invalid optimizer store")
+            return not any(
+                record.get("owner_key", "") == owner_key
+                for record in data.get("records", [])
+            )
+
     def get_stats(self, window_hours: float = 24) -> dict:
         """
         Thong ke hieu suat trong khung thoi gian.

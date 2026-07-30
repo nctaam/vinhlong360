@@ -17,6 +17,7 @@ import os
 import sys
 from collections import Counter
 from datetime import datetime, timedelta, timezone
+from itertools import islice
 from pathlib import Path
 from threading import Lock
 
@@ -35,6 +36,7 @@ CONVERSATIONS_DIR = DATA_DIR / "conversations"
 CONVERSATIONS_DIR.mkdir(exist_ok=True)
 
 _lock = Lock()
+_MAX_CONVERSATION_FILES = 5_000
 
 
 def _default_data() -> dict:
@@ -157,12 +159,91 @@ def save_conversation(
         with open(tmp, "w", encoding="utf-8") as f:
             json.dump({
                 "session_id": session_id,
+                "owner_key": owner_key,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "messages": messages[-50:],
             }, f, ensure_ascii=False, indent=2)
         tmp.replace(filepath)
     except OSError as exc:
         logger.warning("Failed to save conversation %s: %s", session_id, exc)
+
+
+def purge_owner_records(owner_key: str) -> int:
+    """Remove exact owner-attributed query and unanswered records."""
+    with _lock:
+        data = _load()
+        removed = 0
+        for field in ("queries", "unanswered"):
+            records = data.get(field, [])
+            retained = [
+                record
+                for record in records
+                if record.get("owner_key", "") != owner_key
+            ]
+            removed += len(records) - len(retained)
+            data[field] = retained
+        if removed:
+            _save(data)
+        return removed
+
+
+def verify_owner_records_absent(owner_key: str) -> bool:
+    with _lock:
+        if not ANALYTICS_FILE.exists():
+            return True
+        content = ANALYTICS_FILE.read_text(encoding="utf-8").strip()
+        if not content:
+            raise ValueError("Invalid analytics store")
+        data = json.loads(content)
+        if not isinstance(data, dict):
+            raise ValueError("Invalid analytics store")
+        return not any(
+            record.get("owner_key", "") == owner_key
+            for field in ("queries", "unanswered")
+            for record in data.get(field, [])
+        )
+
+
+def _conversation_files() -> list[Path]:
+    files = list(islice(CONVERSATIONS_DIR.glob("*.json"), _MAX_CONVERSATION_FILES + 1))
+    if len(files) > _MAX_CONVERSATION_FILES:
+        raise RuntimeError("Conversation store scan limit exceeded")
+    return files
+
+
+def _conversation_owner(filepath: Path) -> str:
+    data = json.loads(filepath.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError("Invalid conversation store")
+    return data.get("owner_key", "")
+
+
+def purge_owner_conversations(owner_key: str) -> int:
+    """Delete conversation files explicitly attributed to one exact owner."""
+    removed = 0
+    for filepath in _conversation_files():
+        if _conversation_owner(filepath) != owner_key:
+            continue
+        filepath.unlink()
+        removed += 1
+    return removed
+
+
+def verify_owner_conversations_absent(owner_key: str) -> bool:
+    return not any(
+        _conversation_owner(filepath) == owner_key
+        for filepath in _conversation_files()
+    )
+
+
+def purge_owner(owner_key: str) -> int:
+    return purge_owner_records(owner_key) + purge_owner_conversations(owner_key)
+
+
+def verify_owner_absent(owner_key: str) -> bool:
+    return verify_owner_records_absent(owner_key) and verify_owner_conversations_absent(
+        owner_key
+    )
 
 
 # ── Report functions ──

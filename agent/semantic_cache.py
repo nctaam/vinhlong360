@@ -384,6 +384,57 @@ class MultiTierCache:
                 self._save_l2()
             logger.debug("Cache invalidate: %s", query[:60])
 
+    def purge_owner(self, owner_key: str) -> int:
+        """Remove an exact owner's logical entries from every cache tier."""
+        with self._lock:
+            self._load_l2()
+            keys = {
+                key
+                for layer in (self._l1, self._l2)
+                for key, entry in layer.items()
+                if entry.get("owner_key", "") == owner_key
+            }
+            with self._matcher._lock:
+                keys.update(
+                    key
+                    for key, stored_owner in self._matcher._owners.items()
+                    if stored_owner == owner_key
+                )
+
+            removed_l2 = False
+            for key in keys:
+                self._l1.pop(key, None)
+                if self._l2.pop(key, None) is not None:
+                    removed_l2 = True
+                self._matcher.remove(key)
+            if removed_l2:
+                self._save_l2()
+            return len(keys)
+
+    def verify_owner_absent(self, owner_key: str) -> bool:
+        """Verify all active and persisted cache tiers lack the exact owner."""
+        with self._lock:
+            self._load_l2()
+            if any(
+                entry.get("owner_key", "") == owner_key
+                for layer in (self._l1, self._l2)
+                for entry in layer.values()
+            ):
+                return False
+            with self._matcher._lock:
+                if owner_key in self._matcher._owners.values():
+                    return False
+            if not ENTRIES_FILE.exists():
+                return True
+            data = json.loads(ENTRIES_FILE.read_text(encoding="utf-8"))
+            if not isinstance(data, dict):
+                raise ValueError("Invalid semantic cache store")
+            return not any(
+                isinstance(entry, dict)
+                and entry.get("owner_key", "") == owner_key
+                for entry in data.values()
+            )
+
     def invalidate_all_namespaces(self, query: str) -> int:
         """Remove an exact query from every owner and legacy namespace."""
         with self._lock:
@@ -506,6 +557,27 @@ class RequestDeduplicator:
         with self._lock:
             async_waiters = self._cleanup_locked()
         self._notify_async_waiters(async_waiters, None)
+
+    def purge_owner(self, owner_key: str) -> int:
+        """Evict an owner's in-flight generations and wake every waiter."""
+        with self._lock:
+            keys = [
+                key
+                for key, slot in self._pending.items()
+                if slot.get("owner_key", "") == owner_key
+            ]
+            async_waiters = []
+            for key in keys:
+                async_waiters.extend(self._evict_locked(key))
+        self._notify_async_waiters(async_waiters, None)
+        return len(keys)
+
+    def verify_owner_absent(self, owner_key: str) -> bool:
+        with self._lock:
+            return not any(
+                slot.get("owner_key", "") == owner_key
+                for slot in self._pending.values()
+            )
 
     def acquire(
         self,

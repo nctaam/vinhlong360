@@ -182,6 +182,31 @@ def record(
         return item
 
 
+def purge_owner(owner_key: str) -> int:
+    """Remove every learned item attributed to one exact owner."""
+    with _lock:
+        items = _load()
+        retained = [
+            item for item in items if item.get("owner_key", "") != owner_key
+        ]
+        removed = len(items) - len(retained)
+        if removed:
+            _save(retained)
+        return removed
+
+
+def verify_owner_absent(owner_key: str) -> bool:
+    with _lock:
+        if not BANK_FILE.exists():
+            return True
+        items = json.loads(BANK_FILE.read_text(encoding="utf-8"))
+        if not isinstance(items, list):
+            raise ValueError("Invalid experience store")
+        return not any(
+            item.get("owner_key", "") == owner_key for item in items
+        )
+
+
 def retrieve(query: str, k: int = 3) -> list:
     """Top-k relevant strategy items by intent match + token overlap (offline)."""
     items = _load()

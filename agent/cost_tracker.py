@@ -268,6 +268,40 @@ class CostAttribution:
             if self._unsaved_count >= _AUTO_SAVE_INTERVAL:
                 self._save()
 
+    def purge_owner(self, owner_key: str) -> int:
+        """Remove all exact owner-attributed cost rows and persist immediately."""
+        with self._lock:
+            records = list(self._records)
+            retained = [
+                record
+                for record in records
+                if record.get("owner_key", "") != owner_key
+            ]
+            removed = len(records) - len(retained)
+            if removed:
+                self._records = deque(retained, maxlen=_MAX_RECORDS)
+                self._save()
+            return removed
+
+    def verify_owner_absent(self, owner_key: str) -> bool:
+        """Verify both live state and the persisted cost store."""
+        with self._lock:
+            if any(
+                record.get("owner_key", "") == owner_key
+                for record in self._records
+            ):
+                return False
+            if not COSTS_FILE.exists():
+                return True
+            with open(COSTS_FILE, encoding="utf-8") as handle:
+                data = json.load(handle)
+            if not isinstance(data, dict):
+                raise ValueError("Invalid cost store")
+            return not any(
+                record.get("owner_key", "") == owner_key
+                for record in data.get("records", [])
+            )
+
     # ── Queries ─────────────────────────────────────
 
     def get_session_cost(self, session_id: str) -> Dict[str, Any]:

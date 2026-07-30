@@ -24,6 +24,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from threading import Lock
 
+from owner_write_gate import owner_write_gate
+
 logger = logging.getLogger(__name__)
 
 DATA_DIR = Path(__file__).resolve().parent / "data"
@@ -629,6 +631,7 @@ class SessionBudgetManager:
     """
 
     CLEANUP_INTERVAL = 3600  # 1 hour giua cac lan cleanup
+    _MAX_ERASURE_IDENTITIES = 50_000
 
     def __init__(self, default_limit: int = None):
         self._lock = Lock()
@@ -728,6 +731,7 @@ class SessionBudgetManager:
                 "limit": float (gioi han)
             }
         """
+        owner_write_gate.assert_writable(session_id)
         with self._lock:
             self._maybe_cleanup()
             self._ensure_session(session_id)
@@ -753,6 +757,7 @@ class SessionBudgetManager:
             tokens: So tokens da dung
             cost: Chi phi (optional, USD)
         """
+        owner_write_gate.assert_writable(session_id)
         with self._lock:
             self._ensure_session(session_id)
 
@@ -769,10 +774,37 @@ class SessionBudgetManager:
 
     def set_limit(self, session_id: str, limit: int):
         """Thay doi limit cho 1 session cu the."""
+        owner_write_gate.assert_writable(session_id)
         with self._lock:
             self._ensure_session(session_id)
             self._sessions[session_id]["limit"] = limit
             self._save_persisted()
+
+    def purge_owner(self, owner_key: str) -> int:
+        """Remove one exact owner budget from memory and persistent storage."""
+        with self._lock:
+            if len(self._sessions) > self._MAX_ERASURE_IDENTITIES:
+                raise RuntimeError("Guardrail budget scan limit exceeded")
+            removed = int(self._sessions.pop(owner_key, None) is not None)
+            if removed:
+                self._save_persisted()
+            return removed
+
+    def verify_owner_absent(self, owner_key: str) -> bool:
+        with self._lock:
+            if owner_key in self._sessions:
+                return False
+            if not self._persistence_file.exists():
+                return True
+            data = json.loads(self._persistence_file.read_text(encoding="utf-8"))
+            if not isinstance(data, dict) or not isinstance(
+                data.get("sessions", {}), dict
+            ):
+                raise ValueError("Invalid guardrail budget store")
+            sessions = data.get("sessions", {})
+            if len(sessions) > self._MAX_ERASURE_IDENTITIES:
+                raise RuntimeError("Guardrail budget scan limit exceeded")
+            return owner_key not in sessions
 
     def get_stats(self) -> dict:
         """Thong ke tong quat."""

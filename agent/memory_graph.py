@@ -272,6 +272,50 @@ class MemoryGraph:
         with self._lock:
             return self._nodes.get(node_id)
 
+    def purge_owner(self, owner_key: str) -> int:
+        """Remove one exact owner node and every incident edge."""
+        with self._lock:
+            edge_keys = set(self._adjacency.get(owner_key, set()))
+            edge_keys.update(
+                key
+                for key, edge in self._edges.items()
+                if edge.source == owner_key or edge.target == owner_key
+            )
+            removed_edges = 0
+            for key in edge_keys:
+                edge = self._edges.pop(key, None)
+                if edge is None:
+                    continue
+                self._adjacency[edge.source].discard(key)
+                self._adjacency[edge.target].discard(key)
+                removed_edges += 1
+            self._adjacency.pop(owner_key, None)
+            removed_node = int(self._nodes.pop(owner_key, None) is not None)
+            removed = removed_node + removed_edges
+            if removed:
+                self._save_unlocked()
+            return removed
+
+    def verify_owner_absent(self, owner_key: str) -> bool:
+        """Verify memory and the persisted graph contain no exact owner link."""
+        with self._lock:
+            if owner_key in self._nodes:
+                return False
+            if any(
+                edge.source == owner_key or edge.target == owner_key
+                for edge in self._edges.values()
+            ):
+                return False
+            if not self._path.exists():
+                return True
+            data = json.loads(self._path.read_text(encoding="utf-8"))
+            nodes = data.get("nodes", [])
+            edges = data.get("edges", [])
+            return not any(node.get("id") == owner_key for node in nodes) and not any(
+                edge.get("source") == owner_key or edge.get("target") == owner_key
+                for edge in edges
+            )
+
     def get_neighbors(self, node_id: str, relation: str | None = None,
                       min_weight: float = 0) -> list[dict]:
         """

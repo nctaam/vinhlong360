@@ -143,6 +143,67 @@ def compile() -> dict:
                 "pool_size": len(pool)}
 
 
+def purge_owner(owner_key: str) -> int:
+    """Remove an exact owner's raw and compiled demonstration copies."""
+    with _lock:
+        pool = _load(RAW_FILE, [])
+        if not isinstance(pool, list):
+            raise ValueError("Invalid prompt demo pool")
+        retained_pool = [
+            demo for demo in pool if demo.get("owner_key", "") != owner_key
+        ]
+        removed = len(pool) - len(retained_pool)
+        if removed:
+            _save(RAW_FILE, retained_pool)
+
+        artifact = _load(COMPILED_FILE, {"demos": {}})
+        if not isinstance(artifact, dict):
+            raise ValueError("Invalid compiled prompt store")
+        demos = artifact.get("demos", {})
+        if not isinstance(demos, dict):
+            raise ValueError("Invalid compiled prompt store")
+        retained_demos = {}
+        removed_compiled = 0
+        for intent, entries in demos.items():
+            if not isinstance(entries, list):
+                raise ValueError("Invalid compiled prompt store")
+            retained = [
+                demo
+                for demo in entries
+                if demo.get("owner_key", "") != owner_key
+            ]
+            removed_compiled += len(entries) - len(retained)
+            retained_demos[intent] = retained
+
+        if removed_compiled or (removed and COMPILED_FILE.exists()):
+            artifact["demos"] = retained_demos
+            artifact["pool_size"] = len(retained_pool)
+            _save(COMPILED_FILE, artifact)
+        return removed + removed_compiled
+
+
+def verify_owner_absent(owner_key: str) -> bool:
+    with _lock:
+        if RAW_FILE.exists():
+            pool = json.loads(RAW_FILE.read_text(encoding="utf-8"))
+            if not isinstance(pool, list):
+                raise ValueError("Invalid prompt demo pool")
+            if any(demo.get("owner_key", "") == owner_key for demo in pool):
+                return False
+        if not COMPILED_FILE.exists():
+            return True
+        artifact = json.loads(COMPILED_FILE.read_text(encoding="utf-8"))
+        if not isinstance(artifact, dict) or not isinstance(
+            artifact.get("demos", {}), dict
+        ):
+            raise ValueError("Invalid compiled prompt store")
+        return not any(
+            demo.get("owner_key", "") == owner_key
+            for entries in artifact.get("demos", {}).values()
+            for demo in entries
+        )
+
+
 def get_demos(query: str, k: int = DEMOS_PER_INTENT) -> list:
     """Return compiled demos relevant to the query (by intent)."""
     if not ENABLED:

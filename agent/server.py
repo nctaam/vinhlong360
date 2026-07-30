@@ -4110,6 +4110,7 @@ async def readiness_probe():
     """Lightweight readiness probe for load balancers / orchestrators."""
     def _probe():
         from config import settings as _settings
+        from data_lifecycle import lifecycle_registry_readiness
         from database import db as _db
         from privacy_policy import privacy_policy_readiness
         data_source = getattr(knowledge, "_data_source", None) or "unknown"
@@ -4120,6 +4121,7 @@ async def readiness_probe():
             "privacy_policy": privacy_policy_readiness(_settings),
             "privacy_boundary": privacy_boundary_readiness(),
         }
+        checks["lifecycle_registry"] = lifecycle_registry_readiness()
         try:
             with _db._conn() as conn:
                 _db._fetchone(conn, "SELECT 1", ())
@@ -4131,7 +4133,13 @@ async def readiness_probe():
         checks["schema_version"] = schema
         return checks
     checks = await asyncio.to_thread(_probe)
-    ready = all(value for key, value in checks.items() if key != "schema_version")
+    ready = all(
+        value.get("ok", False)
+        if isinstance(value, dict) and "ok" in value
+        else bool(value)
+        for key, value in checks.items()
+        if key != "schema_version"
+    )
     return JSONResponse(
         status_code=200 if ready else 503,
         content={"ready": ready, "checks": checks},

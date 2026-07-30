@@ -346,6 +346,19 @@ class PostgresFeedbackStore:
             )
             return max(0, cursor.rowcount)
 
+    def purge_pending(self, *, owner_binding: str) -> int:
+        self._require_postgres()
+        with db._conn() as conn:
+            cursor = db._execute(
+                conn,
+                """
+                DELETE FROM feedback_receipts
+                WHERE owner_binding_digest = %s AND used_at IS NULL
+                """,
+                (owner_binding,),
+            )
+            return max(0, cursor.rowcount)
+
     def owner_absent(self, *, owner_binding: str) -> bool:
         self._require_postgres()
         with db._conn(commit_on_success=False) as conn:
@@ -354,6 +367,20 @@ class PostgresFeedbackStore:
                 """
                 SELECT 1 FROM feedback_receipts
                 WHERE owner_binding_digest = %s
+                LIMIT 1
+                """,
+                (owner_binding,),
+            )
+            return row is None
+
+    def pending_owner_absent(self, *, owner_binding: str) -> bool:
+        self._require_postgres()
+        with db._conn(commit_on_success=False) as conn:
+            row = db._fetchone(
+                conn,
+                """
+                SELECT 1 FROM feedback_receipts
+                WHERE owner_binding_digest = %s AND used_at IS NULL
                 LIMIT 1
                 """,
                 (owner_binding,),
@@ -451,10 +478,30 @@ def purge_feedback_owner(owner_key: str) -> int:
         raise FeedbackUnavailable("FEEDBACK_UNAVAILABLE") from None
 
 
+def purge_pending_feedback_owner(owner_key: str) -> int:
+    owner = _owner_ref(owner_key)
+    try:
+        return _store.purge_pending(owner_binding=owner.owner_binding)
+    except (FeedbackRejected, FeedbackUnavailable):
+        raise
+    except Exception:
+        raise FeedbackUnavailable("FEEDBACK_UNAVAILABLE") from None
+
+
 def verify_feedback_owner_absent(owner_key: str) -> bool:
     owner = _owner_ref(owner_key)
     try:
         return _store.owner_absent(owner_binding=owner.owner_binding)
+    except (FeedbackRejected, FeedbackUnavailable):
+        raise
+    except Exception:
+        raise FeedbackUnavailable("FEEDBACK_UNAVAILABLE") from None
+
+
+def verify_pending_feedback_owner_absent(owner_key: str) -> bool:
+    owner = _owner_ref(owner_key)
+    try:
+        return _store.pending_owner_absent(owner_binding=owner.owner_binding)
     except (FeedbackRejected, FeedbackUnavailable):
         raise
     except Exception:

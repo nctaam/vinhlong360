@@ -315,6 +315,33 @@ class ABTestManager:
             self._outcome_owners.setdefault(experiment_name, {})[user_id] = owner_key
             self._save()
 
+    def purge_owner(self, owner_key: str) -> int:
+        """Remove owner-attributed outcomes and their linked assignments."""
+        with self._lock:
+            removed = 0
+            for experiment_name, owners in self._outcome_owners.items():
+                user_ids = [
+                    user_id
+                    for user_id, stored_owner in owners.items()
+                    if stored_owner == owner_key
+                ]
+                for user_id in user_ids:
+                    owners.pop(user_id, None)
+                    self._outcomes.get(experiment_name, {}).pop(user_id, None)
+                    self._assignments.get(experiment_name, {}).pop(user_id, None)
+                    removed += 1
+            if removed:
+                self._save()
+            return removed
+
+    def verify_owner_absent(self, owner_key: str) -> bool:
+        with self._lock:
+            return not any(
+                stored_owner == owner_key
+                for owners in self._outcome_owners.values()
+                for stored_owner in owners.values()
+            )
+
     def get_results(self, experiment_name: str) -> dict:
         """Return per-variant statistics for an experiment.
 

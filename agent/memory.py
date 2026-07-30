@@ -335,18 +335,21 @@ class ColdMemory:
         self._profiles_file = MEMORY_DIR / "user_profiles.json"
         self._load_all()
 
+    def _read_profiles_data(self) -> dict:
+        if not self._profiles_file.exists():
+            return {}
+        raw = self._profiles_file.read_text(encoding="utf-8")
+        plaintext = raw if raw.strip().startswith("{") else _decrypt(raw.strip())
+        data = json.loads(plaintext)
+        if not isinstance(data, dict):
+            raise ValueError("Invalid profile store")
+        return data
+
     def _load_all(self):
         """Load all profiles from disk (handles encrypted and plain JSON)."""
         try:
-            if self._profiles_file.exists():
-                raw = self._profiles_file.read_text(encoding="utf-8")
-                # Backward-compatible: if file starts with '{', it's plain JSON
-                if raw.strip().startswith("{"):
-                    data = json.loads(raw)
-                else:
-                    data = json.loads(_decrypt(raw.strip()))
-                for uid, pdata in data.items():
-                    self._profiles[uid] = UserProfile.from_dict(pdata)
+            for uid, pdata in self._read_profiles_data().items():
+                self._profiles[uid] = UserProfile.from_dict(pdata)
         except Exception as e:
             logger.warning("Failed to load profiles: %s", e)
 
@@ -373,6 +376,21 @@ class ColdMemory:
         """Return an existing profile without creating persistent state."""
         with self._lock:
             return self._profiles.get(user_id)
+
+    def purge_owner(self, owner_key: str) -> int:
+        """Remove one exact owner profile from memory and persistent storage."""
+        with self._lock:
+            removed = int(self._profiles.pop(owner_key, None) is not None)
+            if removed:
+                self._save_all()
+            return removed
+
+    def verify_owner_absent(self, owner_key: str) -> bool:
+        """Verify the exact owner is absent from memory and the profile file."""
+        with self._lock:
+            if owner_key in self._profiles:
+                return False
+            return owner_key not in self._read_profiles_data()
 
     def update_profile_from_session(self, user_id: str, hot: HotMemory):
         """Merge hot memory insights into persistent profile."""
@@ -988,6 +1006,18 @@ class MemoryManager:
                 return self._sessions[(owner_key, session_id)]
             except KeyError as exc:
                 raise UnknownConversation(session_id) from exc
+
+    def purge_owner(self, owner_key: str) -> int:
+        """Quarantine every in-process session owned by one exact owner."""
+        with self._lock:
+            owned = [key for key in self._sessions if key[0] == owner_key]
+            for key in owned:
+                self._sessions.pop(key, None)
+            return len(owned)
+
+    def verify_owner_absent(self, owner_key: str) -> bool:
+        with self._lock:
+            return not any(key[0] == owner_key for key in self._sessions)
 
     def build_context(self, owner_key: str, session_id: str, message: str) -> str:
         """
