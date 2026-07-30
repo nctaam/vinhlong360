@@ -121,7 +121,10 @@ def test_generator_keeps_legacy_timeline_when_coordinates_are_missing(generator_
 
     assert [stop["entity"]["id"] for stop in stops] == ["start", "near", "end"]
     assert stops[1]["time"] == "10:00"
-    assert day["schedule"]["warnings"] == ["coordinates-missing"]
+    assert day["schedule"]["warnings"] == [
+        "meal-anchor-unavailable",
+        "coordinates-missing",
+    ]
 
 
 def test_generator_keeps_legacy_timeline_when_schedule_is_infeasible(
@@ -141,7 +144,10 @@ def test_generator_keeps_legacy_timeline_when_schedule_is_infeasible(
         "10:00",
         "12:00",
     ]
-    assert day["schedule"]["warnings"] == ["schedule-fallback"]
+    assert day["schedule"]["warnings"] == [
+        "meal-anchor-unavailable",
+        "schedule-fallback",
+    ]
     assert day["schedule"]["skipped"] == []
 
 
@@ -168,4 +174,90 @@ def test_generator_falls_back_for_invalid_schedule_duration(generator_entities):
         "day_plans"
     ][0]
 
-    assert day["schedule"]["warnings"] == ["schedule-fallback"]
+    assert day["schedule"]["warnings"] == [
+        "meal-anchor-unavailable",
+        "schedule-fallback",
+    ]
+
+
+@pytest.fixture
+def generator_entities_with_food(generator_entities):
+    generator_entities["food"] = _entity(
+        "food",
+        [10.12, 106.0],
+        type="dish",
+        summary="Local specialty dish",
+    )
+    return generator_entities
+
+
+def test_explicit_meal_anchor_uses_real_food_candidate(generator_entities_with_food):
+    result = ig.generate_itinerary(
+        days=1,
+        interests=["tham_quan"],
+        areas=["vinh-long"],
+        meal_anchors=["12h00"],
+    )
+
+    meals = [stop for stop in result["day_plans"][0]["stops"] if stop.get("is_meal")]
+    assert len(meals) == 1
+    assert meals[0]["time"] >= "12:00"
+    assert meals[0]["entity"]["type"] in {"dish", "product"}
+    assert meals[0]["entity"]["id"] == "food"
+
+
+def test_rest_anchor_emits_synthetic_fixed_window_stop(generator_entities):
+    result = ig.generate_itinerary(
+        days=1,
+        interests=["tham_quan"],
+        areas=["vinh-long"],
+        rest_anchors=["15h00"],
+    )
+
+    rests = [stop for stop in result["day_plans"][0]["stops"] if stop.get("is_rest")]
+    assert len(rests) == 1
+    assert rests[0]["time"] >= "15:00"
+    assert rests[0]["entity"] == {
+        "id": rests[0]["entity"]["id"],
+        "name": "Nghỉ",
+        "type": "rest",
+        "summary": "Khoảng nghỉ",
+    }
+    assert rests[0]["note"] == "🪑 Nghỉ/đệm thời gian"
+
+
+def test_explicit_empty_meal_anchors_disable_meal_insertion(generator_entities_with_food):
+    result = ig.generate_itinerary(
+        days=1,
+        interests=["tham_quan"],
+        areas=["vinh-long"],
+        meal_anchors=[],
+    )
+
+    assert not any(stop.get("is_meal") for stop in result["day_plans"][0]["stops"])
+
+
+def test_invalid_anchor_is_nonfatal_and_reported(generator_entities):
+    result = ig.generate_itinerary(
+        days=1,
+        interests=["tham_quan"],
+        areas=["vinh-long"],
+        meal_anchors=["not-a-time"],
+        rest_anchors=["25:00"],
+    )
+
+    warnings = result["day_plans"][0]["schedule"]["warnings"]
+    assert warnings.count("invalid-anchor") == 2
+
+
+def test_meal_anchor_without_food_candidate_is_omitted_with_diagnostic(generator_entities):
+    result = ig.generate_itinerary(
+        days=1,
+        interests=["tham_quan"],
+        areas=["vinh-long"],
+        meal_anchors=["12:00"],
+    )
+
+    day = result["day_plans"][0]
+    assert not any(stop.get("is_meal") for stop in day["stops"])
+    assert "meal-anchor-unavailable" in day["schedule"]["warnings"]

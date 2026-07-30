@@ -20,9 +20,11 @@ from itinerary_schedule import (
     NoFeasibleScheduleError,
     ScheduleOptions,
     ScheduleStop,
+    TimeWindow,
     build_fallback_matrix,
     infer_visit_minutes,
     parse_opening_hours,
+    parse_time_range,
     schedule_stop_order,
 )
 
@@ -62,6 +64,9 @@ MEAL_SLOTS = {
     "toi": "18:30",
 }
 
+MEAL_NOTE = "🍜 Nghỉ trưa & thưởng thức đặc sản"
+REST_NOTE = "🪑 Nghỉ/đệm thời gian"
+
 
 def generate_itinerary(
     days: int = 1,
@@ -69,6 +74,8 @@ def generate_itinerary(
     areas: list[str] = None,
     month: int = None,
     budget: str = "trung_binh",
+    meal_anchors: list[str] | None = None,
+    rest_anchors: list[str] | None = None,
 ) -> dict:
     """
     Tạo lịch trình tùy chỉnh.
@@ -79,6 +86,8 @@ def generate_itinerary(
         areas: ["vinh-long", "ben-tre", "tra-vinh"]
         month: 1-12 (ưu tiên mùa vụ)
         budget: "thap" | "trung_binh" | "cao"
+        meal_anchors: Mốc bữa ăn cố định; None dùng mặc định 12:00, [] để tắt
+        rest_anchors: Mốc nghỉ cố định; None không thêm khoảng nghỉ
 
     Returns: {title, days: [{date, stops: [{time, entity, note}]}], tips}
     """
@@ -86,12 +95,16 @@ def generate_itinerary(
     days = max(1, min(5, days))
     interests = interests or ["tong_hop"]
     areas = areas or ["vinh-long", "ben-tre", "tra-vinh"]
+    meal_anchor_values = ["12:00"] if meal_anchors is None else list(meal_anchors)
+    rest_anchor_values = [] if rest_anchors is None else list(rest_anchors)
 
     # 1. Thu thập candidates
     candidates = _collect_candidates(interests, areas, month, budget)
 
     # Sort by score
     candidates.sort(key=lambda c: c["score"], reverse=True)
+    meal_candidates = _collect_candidates(["am_thuc"], areas, month, budget)
+    meal_candidates.sort(key=lambda c: c["score"], reverse=True)
 
     # 2. Phân bổ stops theo ngày
     stops_per_day = 5 if days == 1 else 4
@@ -99,7 +112,15 @@ def generate_itinerary(
     selected = _select_diverse(candidates, total_stops, areas, days)
 
     # 3. Xây dựng lịch trình
-    day_plans = _build_day_plans(days, stops_per_day, selected, candidates, month)
+    day_plans = _build_day_plans(
+        days,
+        stops_per_day,
+        selected,
+        meal_candidates,
+        month,
+        meal_anchor_values,
+        rest_anchor_values,
+    )
 
     # 4. Tips
     tips = _gen_tips(interests, areas, month, budget)
@@ -143,7 +164,15 @@ def _collect_candidates(interests: list, areas: list, month: int, budget: str) -
     return candidates
 
 
-def _build_day_plans(days: int, stops_per_day: int, selected: list, candidates: list, month: int) -> list:
+def _build_day_plans(
+    days: int,
+    stops_per_day: int,
+    selected: list,
+    meal_candidates: list,
+    month: int,
+    meal_anchors: list[str],
+    rest_anchors: list[str],
+) -> list:
     """Xây dựng day_plans từ danh sách entity đã chọn."""
     day_plans = []
     idx = 0
@@ -151,7 +180,14 @@ def _build_day_plans(days: int, stops_per_day: int, selected: list, candidates: 
         day_entities = selected[idx:idx + stops_per_day]
         idx += stops_per_day
 
-        day_stops, schedule = _build_day_schedule(day_entities, candidates, month)
+        day_stops, schedule = _build_day_schedule(
+            day_entities,
+            meal_candidates,
+            month,
+            meal_anchors,
+            rest_anchors,
+            d + 1,
+        )
 
         day_plans.append({
             "day": d + 1,
@@ -260,13 +296,119 @@ def _legacy_schedule_diagnostics(warnings: list[str]) -> dict:
     }
 
 
-def _build_day_schedule(day_entities: list[dict], candidates: list[dict], month: int) -> tuple[list[dict], dict]:
-    legacy_stops = _build_day_stops(day_entities, candidates, month)
-    if not day_entities:
-        return legacy_stops, _legacy_schedule_diagnostics([])
+def _fixed_anchor_window(anchor: str, visit_minutes: int) -> TimeWindow | None:
+    if not isinstance(anchor, str):
+        return None
+    anchor = anchor.strip()
+    parsed = parse_time_range(f"{anchor}-{anchor}")
+    if parsed is None:
+        return None
+    try:
+        return TimeWindow(parsed.start_minute, parsed.start_minute + visit_minutes)
+    except ValueError:
+        return None
 
-    schedule_stops: list[ScheduleStop] = []
+
+def _find_meal_anchor_candidate(candidates: list, area: str, exclude_ids: set[str]) -> dict | None:
+    for candidate in candidates:
+        entity = candidate.get("entity") or {}
+        if (
+            entity.get("type") in ("dish", "product")
+            and candidate.get("area") == area
+            and entity.get("id") not in exclude_ids
+            and _candidate_coordinates(candidate) is not None
+        ):
+            return candidate
+    return None
+
+
+def _build_anchor_items(
+    day_entities: list[dict],
+    meal_candidates: list[dict],
+    meal_anchors: list[str],
+    rest_anchors: list[str],
+    day_number: int,
+) -> tuple[list[dict], list[str]]:
+    items: list[dict] = []
     warnings: list[str] = []
+    area = _day_area(day_entities)
+    used_ids = {item["entity"]["id"] for item in day_entities}
+
+    for anchor_index, anchor in enumerate(meal_anchors):
+        window = _fixed_anchor_window(anchor, 60)
+        if window is None:
+            warnings.append("invalid-anchor")
+            continue
+        meal = _find_meal_anchor_candidate(meal_candidates, area, used_ids)
+        if meal is None:
+            warnings.append("meal-anchor-unavailable")
+            continue
+        meal_id = meal["entity"]["id"]
+        used_ids.add(meal_id)
+        items.append({
+            **meal,
+            "_anchor_kind": "meal",
+            "_anchor_window": window,
+            "_anchor_index": anchor_index,
+        })
+
+    route_coordinates = [
+        coordinates
+        for item in day_entities
+        if (coordinates := _candidate_coordinates(item)) is not None
+    ]
+    for anchor_index, anchor in enumerate(rest_anchors):
+        window = _fixed_anchor_window(anchor, 30)
+        if window is None:
+            warnings.append("invalid-anchor")
+            continue
+        if not route_coordinates:
+            warnings.append("rest-anchor-unavailable")
+            continue
+        coordinates = route_coordinates[min(anchor_index, len(route_coordinates) - 1)]
+        items.append({
+            "entity": {
+                "id": f"rest-anchor-{day_number}-{anchor_index}",
+                "name": "Nghỉ",
+                "type": "rest",
+                "summary": "Khoảng nghỉ",
+                "coordinates": coordinates,
+            },
+            "area": area,
+            "_anchor_kind": "rest",
+            "_anchor_window": window,
+            "_anchor_index": anchor_index,
+        })
+
+    return items, warnings
+
+
+def _build_day_schedule(
+    day_entities: list[dict],
+    meal_candidates: list[dict],
+    month: int,
+    meal_anchors: list[str],
+    rest_anchors: list[str],
+    day_number: int,
+) -> tuple[list[dict], dict]:
+    legacy_stops = _build_day_stops(
+        day_entities,
+        meal_candidates,
+        month,
+        insert_meal=bool(meal_anchors),
+    )
+    anchor_items, anchor_warnings = _build_anchor_items(
+        day_entities,
+        meal_candidates,
+        meal_anchors,
+        rest_anchors,
+        day_number,
+    )
+    if not day_entities:
+        return legacy_stops, _legacy_schedule_diagnostics(anchor_warnings)
+
+    original_entries: list[tuple[dict, ScheduleStop]] = []
+    warnings = list(anchor_warnings)
     for index, item in enumerate(day_entities):
         try:
             adapted = _candidate_schedule_stop(
@@ -274,15 +416,36 @@ def _build_day_schedule(day_entities: list[dict], candidates: list[dict], month:
                 required=index in (0, len(day_entities) - 1),
             )
         except ValueError:
-            return legacy_stops, _legacy_schedule_diagnostics(["schedule-fallback"])
+            return legacy_stops, _legacy_schedule_diagnostics(anchor_warnings + ["schedule-fallback"])
         if adapted is None:
-            return legacy_stops, _legacy_schedule_diagnostics(["coordinates-missing"])
+            return legacy_stops, _legacy_schedule_diagnostics(anchor_warnings + ["coordinates-missing"])
         stop, stop_warnings = adapted
-        schedule_stops.append(stop)
+        original_entries.append((item, stop))
         warnings.extend(stop_warnings)
 
-    if len(schedule_stops) < 2:
-        return legacy_stops, _legacy_schedule_diagnostics(["schedule-fallback"])
+    if len(original_entries) < 2:
+        return legacy_stops, _legacy_schedule_diagnostics(anchor_warnings + ["schedule-fallback"])
+
+    anchor_entries = [
+        (
+            item,
+            ScheduleStop(
+                id=item["entity"]["id"],
+                coordinates=_candidate_coordinates(item),
+                visit_minutes=60 if item["_anchor_kind"] == "meal" else 30,
+                opening_windows=(item["_anchor_window"],),
+                required=True,
+            ),
+        )
+        for item in anchor_items
+    ]
+    schedule_entries = [
+        original_entries[0],
+        *anchor_entries,
+        *original_entries[1:-1],
+        original_entries[-1],
+    ]
+    schedule_stops = [stop for _item, stop in schedule_entries]
 
     try:
         matrix = build_fallback_matrix(schedule_stops, "driving")
@@ -292,9 +455,9 @@ def _build_day_schedule(day_entities: list[dict], candidates: list[dict], month:
             ScheduleOptions(day_start_minute=480, day_end_minute=1080),
         )
     except (NoFeasibleScheduleError, ValueError):
-        return legacy_stops, _legacy_schedule_diagnostics(["schedule-fallback"])
+        return legacy_stops, _legacy_schedule_diagnostics(anchor_warnings + ["schedule-fallback"])
 
-    items_by_id = {item["entity"]["id"]: item for item in day_entities}
+    items_by_id = {item["entity"]["id"]: item for item, _stop in schedule_entries}
     placements_by_id = {placement.stop_id: placement for placement in result.placements}
     scheduled_stops = []
     for entity_id in result.ordered_ids:
@@ -304,12 +467,19 @@ def _build_day_schedule(day_entities: list[dict], candidates: list[dict], month:
             continue
         entity = item["entity"]
         start_minute = int(round(placement.start_visit_minute))
-        scheduled_stops.append({
+        scheduled_stop = {
             "time": _fmt_time(start_minute),
             "time_min": start_minute,
             "entity": _entity_summary(entity),
             "note": _gen_note(entity, month),
-        })
+        }
+        if item.get("_anchor_kind") == "meal":
+            scheduled_stop["note"] = MEAL_NOTE
+            scheduled_stop["is_meal"] = True
+        elif item.get("_anchor_kind") == "rest":
+            scheduled_stop["note"] = REST_NOTE
+            scheduled_stop["is_rest"] = True
+        scheduled_stops.append(scheduled_stop)
 
     diagnostics = {
         "solver": result.solver,
@@ -328,7 +498,12 @@ def _build_day_schedule(day_entities: list[dict], candidates: list[dict], month:
     return scheduled_stops, diagnostics
 
 
-def _build_day_stops(day_entities: list, candidates: list, month: int) -> list:
+def _build_day_stops(
+    day_entities: list,
+    candidates: list,
+    month: int,
+    insert_meal: bool = True,
+) -> list:
     """Phân bổ thời gian & chèn bữa ăn cho 1 ngày."""
     day_stops = []
     # Phân bổ thời gian trong ngày
@@ -338,14 +513,14 @@ def _build_day_stops(day_entities: list, candidates: list, month: int) -> list:
         etype = e["type"]
 
         # Thêm bữa ăn
-        if current_time >= 11.5 * 60 and not any(s.get("is_meal") for s in day_stops if s.get("time_min", 0) > 11 * 60):
+        if insert_meal and current_time >= 11.5 * 60 and not any(s.get("is_meal") for s in day_stops if s.get("time_min", 0) > 11 * 60):
             meal = _find_meal(candidates, item["area"], [s["entity"]["id"] for s in day_stops])
             if meal:
                 day_stops.append({
                     "time": _fmt_time(current_time),
                     "time_min": current_time,
                     "entity": _entity_summary(meal["entity"]),
-                    "note": "🍜 Nghỉ trưa & thưởng thức đặc sản",
+                    "note": MEAL_NOTE,
                     "is_meal": True,
                 })
                 current_time += 60
