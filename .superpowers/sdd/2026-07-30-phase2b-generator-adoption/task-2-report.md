@@ -115,3 +115,65 @@ git diff --check
 ## Concerns
 
 - None for the scoped behavior. The worktree retains pre-existing untracked SDD/plan artifacts owned by the parent workflow.
+
+## Review fix wave
+
+### Findings verified
+
+1. `legacy_stops` was built from the full food candidate pool before anchor validation. A coordinate-invalid meal could therefore be rejected by `_find_meal_anchor_candidate()` and still be emitted by `_build_day_stops()` when an original coordinate forced legacy fallback.
+2. `_build_anchor_items()` initialized meal ownership only from the current day's originals. Since every day received the same food pool, the same top-ranked meal could be emitted on multiple days.
+
+### Fix RED evidence
+
+Command:
+
+```text
+python -m pytest agent/tests/test_itinerary_generator_schedule.py -q
+```
+
+- Exit 1: 2 failed, 11 passed.
+- The fallback regression emitted `is_meal=True` for the coordinate-invalid candidate while also reporting `meal-anchor-unavailable`.
+- The two-day regression emitted `['food', 'food']` instead of consuming the only candidate once and reporting second-day unavailability.
+- Tightened feasible meal/rest assertions required exact `12:00` and `15:00` start times.
+
+### Review fix implementation
+
+- `_build_day_plans()` now carries the IDs of meals actually emitted by earlier days and passes that ownership into each later day.
+- `_build_anchor_items()` excludes those previously emitted meal IDs in addition to current-day original IDs.
+- Ownership is updated only from final emitted `day_stops`, so a candidate is not consumed by a schedule attempt that emits no meal.
+- Legacy fallback now receives only coordinate-valid meal items that passed anchor selection. An unavailable or coordinate-invalid candidate cannot reappear through the legacy lookup.
+- The existing coverage fixture now includes an unused coordinate-valid food candidate, preserving its intended Task 1 legacy-lunch coverage without relying on duplicate or coordinate-invalid food.
+
+### Review fix verification
+
+Focused GREEN:
+
+```text
+python -m pytest agent/tests/test_itinerary_generator_schedule.py -q
+```
+
+- Exit 0: 13/13 tests passed.
+
+Required matrix:
+
+```text
+python -m pytest agent/tests/test_itinerary_generator_schedule.py agent/tests/test_cov_itinerary_gen.py agent/tests/test_itinerary_schedule.py -q
+```
+
+- Exit 0: 158/158 tests passed.
+
+Diff check:
+
+- `git diff --check` exited 0; only repository LF-to-CRLF working-copy notices were printed.
+
+### Review fix self-review
+
+- A meal is consumed across days only after it appears in output, including a valid legacy fallback meal.
+- Coordinate-invalid and unavailable candidates produce diagnostics without any meal entity in scheduled or fallback output.
+- Multiple anchors can still use distinct candidates within one day; only emitted candidates are unavailable to later days.
+- Fixed-window tests now prove the exact requested start, not merely a lower bound.
+- No schema, dependency, network, docs, or MCP behavior changed.
+
+### Review fix commit
+
+- `91b372df874ce2e5490d18a66c405d0d96608de5` - `fix: preserve meal anchor ownership across fallbacks`
