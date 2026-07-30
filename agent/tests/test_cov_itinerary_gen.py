@@ -420,11 +420,16 @@ def kb_itinerary():
     # vinh-long content
     entities["vl-att1"] = _entity("vl-att1", "attraction", "p-vl", confidence=0.9)
     entities["vl-att2"] = _entity("vl-att2", "attraction", "p-vl", confidence=0.85)
-    entities["vl-dish1"] = _entity("vl-dish1", "dish", "p-vl", confidence=0.8)
+    entities["vl-dish1"] = _entity(
+        "vl-dish1", "dish", "p-vl", confidence=0.8, coordinates=[10.10, 106.0]
+    )
+    entities["vl-dish2"] = _entity(
+        "vl-dish2", "dish", "p-vl", confidence=0.3, coordinates=[10.11, 106.0]
+    )
     entities["vl-craft1"] = _entity("vl-craft1", "craft_village", "p-vl", confidence=0.7)
     entities["vl-exp1"] = _entity("vl-exp1", "experience", "p-vl", confidence=0.75)
     entities["vl-prod1"] = _entity("vl-prod1", "product", "p-vl", confidence=0.6,
-                                   attributes={"ocop": "4 sao"})
+                                   attributes={"ocop": "4 sao"}, coordinates=[10.12, 106.0])
     # ben-tre content
     entities["bt-att1"] = _entity("bt-att1", "attraction", "p-bt", confidence=0.9)
     entities["bt-dish1"] = _entity("bt-dish1", "dish", "p-bt", confidence=0.8)

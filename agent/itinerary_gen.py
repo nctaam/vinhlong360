@@ -175,6 +175,7 @@ def _build_day_plans(
 ) -> list:
     """Xây dựng day_plans từ danh sách entity đã chọn."""
     day_plans = []
+    used_meal_ids: set[str] = set()
     idx = 0
     for d in range(days):
         day_entities = selected[idx:idx + stops_per_day]
@@ -187,6 +188,12 @@ def _build_day_plans(
             meal_anchors,
             rest_anchors,
             d + 1,
+            used_meal_ids,
+        )
+        used_meal_ids.update(
+            stop["entity"]["id"]
+            for stop in day_stops
+            if stop.get("is_meal")
         )
 
         day_plans.append({
@@ -328,11 +335,13 @@ def _build_anchor_items(
     meal_anchors: list[str],
     rest_anchors: list[str],
     day_number: int,
+    used_meal_ids: set[str],
 ) -> tuple[list[dict], list[str]]:
     items: list[dict] = []
     warnings: list[str] = []
     area = _day_area(day_entities)
-    used_ids = {item["entity"]["id"] for item in day_entities}
+    used_ids = set(used_meal_ids)
+    used_ids.update(item["entity"]["id"] for item in day_entities)
 
     for anchor_index, anchor in enumerate(meal_anchors):
         window = _fixed_anchor_window(anchor, 60)
@@ -390,19 +399,24 @@ def _build_day_schedule(
     meal_anchors: list[str],
     rest_anchors: list[str],
     day_number: int,
+    used_meal_ids: set[str],
 ) -> tuple[list[dict], dict]:
-    legacy_stops = _build_day_stops(
-        day_entities,
-        meal_candidates,
-        month,
-        insert_meal=bool(meal_anchors),
-    )
     anchor_items, anchor_warnings = _build_anchor_items(
         day_entities,
         meal_candidates,
         meal_anchors,
         rest_anchors,
         day_number,
+        used_meal_ids,
+    )
+    legacy_meal_candidates = [
+        item for item in anchor_items if item.get("_anchor_kind") == "meal"
+    ]
+    legacy_stops = _build_day_stops(
+        day_entities,
+        legacy_meal_candidates,
+        month,
+        insert_meal=bool(legacy_meal_candidates),
     )
     if not day_entities:
         return legacy_stops, _legacy_schedule_diagnostics(anchor_warnings)

@@ -201,7 +201,7 @@ def test_explicit_meal_anchor_uses_real_food_candidate(generator_entities_with_f
 
     meals = [stop for stop in result["day_plans"][0]["stops"] if stop.get("is_meal")]
     assert len(meals) == 1
-    assert meals[0]["time"] >= "12:00"
+    assert meals[0]["time"] == "12:00"
     assert meals[0]["entity"]["type"] in {"dish", "product"}
     assert meals[0]["entity"]["id"] == "food"
 
@@ -216,7 +216,7 @@ def test_rest_anchor_emits_synthetic_fixed_window_stop(generator_entities):
 
     rests = [stop for stop in result["day_plans"][0]["stops"] if stop.get("is_rest")]
     assert len(rests) == 1
-    assert rests[0]["time"] >= "15:00"
+    assert rests[0]["time"] == "15:00"
     assert rests[0]["entity"] == {
         "id": rests[0]["entity"]["id"],
         "name": "Nghỉ",
@@ -261,3 +261,59 @@ def test_meal_anchor_without_food_candidate_is_omitted_with_diagnostic(generator
     day = result["day_plans"][0]
     assert not any(stop.get("is_meal") for stop in day["stops"])
     assert "meal-anchor-unavailable" in day["schedule"]["warnings"]
+
+
+def test_coordinate_invalid_meal_is_not_reintroduced_by_legacy_fallback(
+    generator_entities_with_food,
+):
+    generator_entities_with_food["food"]["coordinates"] = None
+    generator_entities_with_food["near"]["coordinates"] = None
+
+    result = ig.generate_itinerary(
+        days=1,
+        interests=["tham_quan"],
+        areas=["vinh-long"],
+        meal_anchors=["12:00"],
+    )
+
+    day = result["day_plans"][0]
+    assert not any(stop.get("is_meal") for stop in day["stops"])
+    assert "meal-anchor-unavailable" in day["schedule"]["warnings"]
+    assert "coordinates-missing" in day["schedule"]["warnings"]
+
+
+@pytest.fixture
+def two_day_generator_entities(monkeypatch):
+    entities = {
+        "p-vl": _place("p-vl"),
+        "food": _entity("food", [10.11, 106.0], type="dish"),
+    }
+    for index in range(8):
+        entity_id = f"stop-{index}"
+        entities[entity_id] = _entity(
+            entity_id,
+            [10.0 + index * 0.02, 106.0],
+            visit_minutes=60,
+        )
+    monkeypatch.setattr(knowledge, "_entities", entities)
+    monkeypatch.setattr(knowledge, "_relationships", [])
+    monkeypatch.setattr(knowledge, "_itineraries", {})
+    return entities
+
+
+def test_meal_anchor_consumes_candidates_across_days(two_day_generator_entities):
+    result = ig.generate_itinerary(
+        days=2,
+        interests=["tham_quan"],
+        areas=["vinh-long"],
+        meal_anchors=["12:00"],
+    )
+
+    meals = [
+        stop
+        for day in result["day_plans"]
+        for stop in day["stops"]
+        if stop.get("is_meal")
+    ]
+    assert [meal["entity"]["id"] for meal in meals] == ["food"]
+    assert "meal-anchor-unavailable" in result["day_plans"][1]["schedule"]["warnings"]
