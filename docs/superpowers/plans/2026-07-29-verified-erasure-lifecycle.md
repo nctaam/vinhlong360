@@ -1,6 +1,6 @@
 # Verified Erasure Lifecycle Implementation Plan
 
-> STATUS: active - approved design is `docs/superpowers/specs/2026-07-29-trust-erasure-closure-design.md`; implementation awaits explicit plan approval.
+> STATUS: active - implementation commits and focused evidence are complete; final closure remains pending the required disposable PostgreSQL gate and the documented full-baseline timeout debt. See `docs/superpowers/results/2026-07-29-verified-erasure-lifecycle.md`.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

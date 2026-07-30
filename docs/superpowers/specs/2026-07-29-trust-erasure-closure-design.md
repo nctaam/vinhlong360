@@ -1,6 +1,6 @@
 # Trust And Erasure Closure Design
 
-> STATUS (2026-07-29): active - Runtime Trust Boundary implementation is complete and locally verified; Verified Erasure Lifecycle remains pending, so the overall design is not complete.
+> STATUS (2026-07-30): active - Runtime Trust Boundary is complete; Verified Erasure Lifecycle implementation and focused evidence are complete, but final closure remains pending live PostgreSQL migration/lock evidence and the documented full-baseline timeout. The overall design is not complete.
 
 ## Goal
 
