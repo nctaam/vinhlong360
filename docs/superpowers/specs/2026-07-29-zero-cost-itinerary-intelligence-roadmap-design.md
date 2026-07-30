@@ -265,4 +265,4 @@ Nếu vượt deadline, trả nghiệm tốt nhất hợp lệ đã có; nếu c
 
 ## 12. Phạm vi triển khai tiếp theo
 
-**Phase 2A đã hoàn tất** cho planner thủ công. Đợt kế tiếp của Giai đoạn 2 là **Phase 2B** với generator adoption: thay giả định di chuyển cố định 30 phút và bổ sung meal/rest anchors dành riêng cho generator. Phase 2B và Giai đoạn 3-6 đều cần plan riêng; không mục nào được coi là hoàn tất bởi đợt Phase 2A này.
+**Phase 2A đã hoàn tất** cho planner thủ công và **Phase 2B đã hoàn tất** cho generator adoption, gồm thời gian di chuyển Haversine cục bộ cùng meal/rest anchors cấu hình được. Giai đoạn 3-6 vẫn đang chờ và cần plan riêng; trạng thái này không tuyên bố đã deploy production hoặc chạy migration.

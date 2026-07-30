@@ -175,7 +175,7 @@ def _build_day_plans(
 ) -> list:
     """Xây dựng day_plans từ danh sách entity đã chọn."""
     day_plans = []
-    used_meal_ids: set[str] = set()
+    used_entity_ids: set[str] = set()
     idx = 0
     for d in range(days):
         day_entities = selected[idx:idx + stops_per_day]
@@ -188,9 +188,10 @@ def _build_day_plans(
             meal_anchors,
             rest_anchors,
             d + 1,
-            used_meal_ids,
+            used_entity_ids,
         )
-        used_meal_ids.update(
+        used_entity_ids.update(item["entity"]["id"] for item in day_entities)
+        used_entity_ids.update(
             stop["entity"]["id"]
             for stop in day_stops
             if stop.get("is_meal")
@@ -335,12 +336,12 @@ def _build_anchor_items(
     meal_anchors: list[str],
     rest_anchors: list[str],
     day_number: int,
-    used_meal_ids: set[str],
+    used_entity_ids: set[str],
 ) -> tuple[list[dict], list[str]]:
     items: list[dict] = []
     warnings: list[str] = []
     area = _day_area(day_entities)
-    used_ids = set(used_meal_ids)
+    used_ids = set(used_entity_ids)
     used_ids.update(item["entity"]["id"] for item in day_entities)
 
     for anchor_index, anchor in enumerate(meal_anchors):
@@ -399,7 +400,7 @@ def _build_day_schedule(
     meal_anchors: list[str],
     rest_anchors: list[str],
     day_number: int,
-    used_meal_ids: set[str],
+    used_entity_ids: set[str],
 ) -> tuple[list[dict], dict]:
     anchor_items, anchor_warnings = _build_anchor_items(
         day_entities,
@@ -407,7 +408,7 @@ def _build_day_schedule(
         meal_anchors,
         rest_anchors,
         day_number,
-        used_meal_ids,
+        used_entity_ids,
     )
     legacy_meal_candidates = [
         item for item in anchor_items if item.get("_anchor_kind") == "meal"
