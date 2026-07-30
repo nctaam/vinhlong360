@@ -226,6 +226,7 @@ def _schedule_day(
         raise ValueError("A day needs exactly one first-stop source")
     if not math.isfinite(remaining_seconds) or remaining_seconds <= 0:
         raise NoFeasibleScheduleError("Multi-day scheduling deadline reached")
+    preparation_deadline = time.perf_counter() + remaining_seconds
 
     required_content = {
         stop_id: replace(candidate_by_id[stop_id].stop, required=True)
@@ -258,9 +259,15 @@ def _schedule_day(
         if stop_id not in excluded_content
     ) + required_fixed
     stops = (first_stop, *middle_stops, required_content[current_end_id])
+    scheduler_remaining_seconds = preparation_deadline - time.perf_counter()
+    if scheduler_remaining_seconds <= 0:
+        raise NoFeasibleScheduleError("Multi-day scheduling deadline reached")
     schedule_options = replace(
         day.schedule_options,
-        deadline_seconds=min(day.schedule_options.deadline_seconds, remaining_seconds),
+        deadline_seconds=min(
+            day.schedule_options.deadline_seconds,
+            scheduler_remaining_seconds,
+        ),
     )
     schedule = schedule_stop_order(
         stops,

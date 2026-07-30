@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -358,3 +359,44 @@ def test_deadline_after_incumbent_returns_complete_result(monkeypatch):
     assert len(emitted) == len(set(emitted)) == 8
     assert result.solver == "multiday-deadline"
     assert "multiday-deadline-reached" in result.warnings
+
+
+def test_schedule_day_deducts_preparation_time_from_shared_deadline(monkeypatch):
+    first, _second = simple_two_day_inputs()
+    options = MultiDayOptions(max_iterations=0)
+    candidate_by_id = multiday_module._validate_inputs(
+        simple_two_day_inputs(),
+        "start",
+        "end",
+        options,
+    )
+    ticks = iter((100.0, 100.25))
+    monkeypatch.setattr(
+        multiday_module,
+        "time",
+        SimpleNamespace(perf_counter=lambda: next(ticks)),
+    )
+    captured = {}
+    real_schedule = multiday_module.schedule_stop_order
+
+    def capture_deadline(stops, matrix, schedule_options):
+        captured["deadline_seconds"] = schedule_options.deadline_seconds
+        return real_schedule(stops, matrix, schedule_options)
+
+    monkeypatch.setattr(
+        multiday_module,
+        "schedule_stop_order",
+        capture_deadline,
+    )
+
+    multiday_module._schedule_day(
+        first,
+        first.baseline_order,
+        candidate_by_id,
+        first_content_id="start",
+        previous_end_id=None,
+        current_end_id="day-1-end",
+        remaining_seconds=0.5,
+    )
+
+    assert captured["deadline_seconds"] == pytest.approx(0.25)
