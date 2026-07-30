@@ -3,6 +3,17 @@ import type { Map, Marker, NavigationControl } from 'maplibre-gl'
 const NDA_STYLE_BASE = 'https://maptiles.openmap.vn/styles'
 const OSM_TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
 
+type MapLibreModule = typeof import('maplibre-gl')
+type MapCreateResult = { map: Map; maplibregl: MapLibreModule }
+type MapCreatePositionOptions = {
+  center?: [number, number]
+  zoom?: number
+  theme?: 'day' | 'night'
+}
+type LifecycleMapCreateOptions = MapCreatePositionOptions & {
+  isActive: () => boolean
+}
+
 export function useNDAMap() {
   const config = useRuntimeConfig()
   const apiKey = config.public.ndaMapKey as string
@@ -43,38 +54,73 @@ export function useNDAMap() {
     return text.includes('maptiles.openmap.vn') || text.includes('/sprite') || text.includes('/data/base.json') || text.includes('Failed to fetch')
   }
 
-  async function createMap(container: HTMLElement, options?: {
-    center?: [number, number]
-    zoom?: number
-    theme?: 'day' | 'night'
-  }) {
+  function createMap(container: HTMLElement, options: LifecycleMapCreateOptions): Promise<MapCreateResult | null>
+  function createMap(container: HTMLElement, options?: MapCreatePositionOptions): Promise<MapCreateResult>
+  async function createMap(container: HTMLElement, options?: MapCreatePositionOptions & { isActive?: () => boolean }): Promise<MapCreateResult | null> {
+    const mapOptions = options ?? {}
+    const isActive = mapOptions.isActive ?? (() => true)
+    if (!isActive()) return null
+
     const maplibregl = await import('maplibre-gl')
+    if (!isActive()) return null
     await import('maplibre-gl/dist/maplibre-gl.css')
+    if (!isActive()) return null
 
     const map = new maplibregl.Map({
       container,
-      style: getStyleUrl(options?.theme ?? 'day'),
-      center: options?.center ?? [106.0, 10.25],
-      zoom: options?.zoom ?? 10,
+      style: getStyleUrl(mapOptions.theme ?? 'day'),
+      center: mapOptions.center ?? [106.0, 10.25],
+      zoom: mapOptions.zoom ?? 10,
       attributionControl: false,
     })
+    if (!isActive()) {
+      map.remove()
+      return null
+    }
+
     let fallbackApplied = false
     map.on('error', (event: { error?: unknown }) => {
-      if (fallbackApplied || !isRecoverableMapResourceError(event?.error)) return
+      if (!isActive() || fallbackApplied || !isRecoverableMapResourceError(event?.error)) return
       fallbackApplied = true
       try {
-        map.setStyle(getFallbackStyle(options?.theme ?? 'day') as any)
+        map.setStyle(getFallbackStyle(mapOptions.theme ?? 'day') as any)
       } catch {
         // MapLibre can emit after teardown during route navigation; keep map failures non-fatal.
       }
     })
+    if (!isActive()) {
+      map.remove()
+      return null
+    }
 
-    map.addControl(new maplibregl.AttributionControl({
+    if (!isActive()) {
+      map.remove()
+      return null
+    }
+    const attributionControl = new maplibregl.AttributionControl({
       compact: true,
       customAttribution: '© <a href="https://openmap.vn">Openmap.vn</a> | Bản đồ Việt Nam',
-    }))
+    })
+    if (!isActive()) {
+      map.remove()
+      return null
+    }
+    map.addControl(attributionControl)
+    if (!isActive()) {
+      map.remove()
+      return null
+    }
 
-    map.addControl(new maplibregl.NavigationControl(), 'top-right')
+    const navigationControl = new maplibregl.NavigationControl()
+    if (!isActive()) {
+      map.remove()
+      return null
+    }
+    map.addControl(navigationControl, 'top-right')
+    if (!isActive()) {
+      map.remove()
+      return null
+    }
 
     return { map, maplibregl }
   }
