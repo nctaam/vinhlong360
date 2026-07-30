@@ -148,6 +148,24 @@ def test_residual_verification_is_not_safe_for_hard_erasure():
     assert result.verified is False
 
 
+def test_hard_erasure_scope_and_metrics_are_subject_free():
+    import erasure
+    import metrics
+
+    selected = erasure._subject_policies()
+
+    assert {policy.name for policy in selected} == EXPECTED_SUBJECT_STORES
+    assert all(
+        policy.subject_linked
+        and policy.classification in {"personal", "pseudonymous"}
+        for policy in selected
+    )
+    assert metrics.erasure_due_total.label_names == ()
+    assert metrics.erasure_completed_total.label_names == ()
+    assert metrics.erasure_overdue_total.label_names == ()
+    assert metrics.erasure_failed_total.label_names == ("code",)
+
+
 def test_readiness_exposes_only_stable_registry_metadata():
     readiness = data_lifecycle.lifecycle_registry_readiness()
     encoded = json.dumps(readiness, sort_keys=True)

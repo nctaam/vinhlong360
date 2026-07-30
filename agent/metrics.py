@@ -333,6 +333,27 @@ privacy_boundary_failures_total = Counter(
     labels=["stage"],
 )
 
+erasure_due_total = Counter(
+    "erasure_due_total",
+    "Accounts selected for verified erasure",
+)
+
+erasure_completed_total = Counter(
+    "erasure_completed_total",
+    "Accounts verified and deleted",
+)
+
+erasure_failed_total = Counter(
+    "erasure_failed_total",
+    "Erasure attempts failed by bounded code",
+    labels=["code"],
+)
+
+erasure_overdue_total = Counter(
+    "erasure_overdue_total",
+    "Accounts observed at or past their erasure deadline",
+)
+
 # --- Histograms ---
 
 chat_response_duration_seconds = Histogram(

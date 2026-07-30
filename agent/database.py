@@ -1727,6 +1727,22 @@ class Database:
                 f"UPDATE users SET {', '.join(sets)} WHERE id::text = {ph} RETURNING *", params)
             return self._row_to_dict(row)
 
+    def delete_erased_user(self, conn, user_id: str, now):
+        """Delete only a locked, deleted account whose exact deadline has passed."""
+        ph = self._ph
+        return self._fetchone(
+            conn,
+            f"""
+                DELETE FROM users
+                WHERE id::text = {ph}
+                  AND deleted_at IS NOT NULL
+                  AND erasure_due_at IS NOT NULL
+                  AND erasure_due_at <= {ph}
+                RETURNING id
+            """,
+            (str(user_id), now),
+        )
+
     # ── Entity change history ──
 
     def log_entity_changes(self, entity_id: str, old: dict, new: dict, actor: str = "admin"):
