@@ -127,6 +127,15 @@ class SelectionResult:
         object.__setattr__(self, "warnings", tuple(self.warnings))
 
 
+@dataclass(frozen=True)
+class _BeamState:
+    selected_ids: frozenset[str]
+    remaining_ids: tuple[str, ...]
+    reward_upper_bound: float
+    signature: tuple[object, ...]
+    schedule: ScheduleResult
+
+
 def _dominates(left: SelectionCandidate, right: SelectionCandidate) -> bool:
     if left.entity_type != right.entity_type or left.area != right.area:
         return False
@@ -229,8 +238,11 @@ def select_and_schedule_day(
     kept, pruned_dropped = prune_candidates(items, required_ids)
     required = [item for item in items if item.stop.id in required_ids]
     optional = [item for item in kept if item.stop.id not in required_ids]
-    if len(optional) > selection_options.exact_limit:
-        raise NotImplementedError("Beam selection search is implemented in the next task")
+    solver = (
+        "selection-exact"
+        if len(optional) <= selection_options.exact_limit
+        else "selection-beam"
+    )
     if len(required) < 2:
         raise ValueError("Required candidate pool phải có ít nhất hai endpoint")
 
@@ -360,37 +372,182 @@ def select_and_schedule_day(
     deadline_reached = deadline_reached or base_timed_out
 
     required_reward = sum(item.reward for item in required)
-    for count in range(optional_limit, 0, -1):
-        if deadline_reached:
-            break
-        if (
-            incumbent is not None
-            and required_count + len(incumbent[1]) > required_count + count
-        ):
-            break
-        for subset in combinations(optional_order, count):
-            if time.perf_counter() >= deadline:
-                deadline_reached = True
+    if solver == "selection-exact":
+        for count in range(optional_limit, 0, -1):
+            if deadline_reached:
                 break
-            subset_ids = frozenset(item.stop.id for item in subset)
-            subset_reward = required_reward + sum(item.reward for item in subset)
             if (
                 incumbent is not None
-                and required_count + len(incumbent[1]) == required_count + count
-                and required_reward
-                + sum(optional_by_id[stop_id].reward for stop_id in incumbent[1])
-                > subset_reward
+                and required_count + len(incumbent[1]) > required_count + count
             ):
-                continue
-            schedule, timed_out = evaluate(subset_ids)
-            deadline_reached = deadline_reached or timed_out
-            if schedule is None:
-                continue
-            if incumbent is None or objective(schedule, subset_ids) < objective(
-                incumbent[0], incumbent[1]
+                break
+            for subset in combinations(optional_order, count):
+                if time.perf_counter() >= deadline:
+                    deadline_reached = True
+                    break
+                subset_ids = frozenset(item.stop.id for item in subset)
+                subset_reward = required_reward + sum(item.reward for item in subset)
+                if (
+                    incumbent is not None
+                    and required_count + len(incumbent[1])
+                    == required_count + count
+                    and required_reward
+                    + sum(
+                        optional_by_id[stop_id].reward
+                        for stop_id in incumbent[1]
+                    )
+                    > subset_reward
+                ):
+                    continue
+                schedule, timed_out = evaluate(subset_ids)
+                deadline_reached = deadline_reached or timed_out
+                if schedule is None:
+                    continue
+                if incumbent is None or objective(schedule, subset_ids) < objective(
+                    incumbent[0], incumbent[1]
+                ):
+                    incumbent = (schedule, subset_ids)
+                if deadline_reached:
+                    break
+    else:
+
+        def make_beam_state(
+            schedule: ScheduleResult,
+            selected_ids: frozenset[str],
+        ) -> _BeamState:
+            remaining_ids = tuple(
+                item.stop.id
+                for item in optional_order
+                if item.stop.id not in selected_ids
+            )
+            remaining_slots = max(0, optional_limit - len(selected_ids))
+            reward_upper_bound = (
+                required_reward
+                + sum(optional_by_id[stop_id].reward for stop_id in selected_ids)
+                + sum(
+                    optional_by_id[stop_id].reward
+                    for stop_id in remaining_ids[:remaining_slots]
+                )
+            )
+            return _BeamState(
+                selected_ids=selected_ids,
+                remaining_ids=remaining_ids,
+                reward_upper_bound=reward_upper_bound,
+                signature=objective(schedule, selected_ids),
+                schedule=schedule,
+            )
+
+        frontier = (
+            [make_beam_state(base_schedule, frozenset())]
+            if base_schedule is not None
+            else []
+        )
+        for _depth in range(1, optional_limit + 1):
+            if deadline_reached or not frontier:
+                break
+            expanded: dict[frozenset[str], _BeamState] = {}
+            for state in frontier:
+                for stop_id in state.remaining_ids:
+                    if time.perf_counter() >= deadline:
+                        deadline_reached = True
+                        break
+                    subset_ids = state.selected_ids.union({stop_id})
+                    schedule, timed_out = evaluate(subset_ids)
+                    deadline_reached = deadline_reached or timed_out
+                    if schedule is not None:
+                        expanded.setdefault(
+                            subset_ids,
+                            make_beam_state(schedule, subset_ids),
+                        )
+                    if deadline_reached:
+                        break
+                if deadline_reached:
+                    break
+            if not expanded:
+                break
+            frontier = sorted(
+                expanded.values(),
+                key=lambda state: (
+                    state.signature,
+                    -state.reward_upper_bound,
+                    tuple(sorted(state.selected_ids)),
+                ),
+            )[: selection_options.beam_width]
+            for state in frontier:
+                if incumbent is None or state.signature < objective(
+                    incumbent[0], incumbent[1]
+                ):
+                    incumbent = (state.schedule, state.selected_ids)
+
+    repair_deadline_reached = False
+    if (
+        incumbent is not None
+        and selection_options.repair_iterations > 0
+        and not deadline_reached
+    ):
+        optional_rank = {
+            item.stop.id: index for index, item in enumerate(optional_order)
+        }
+        for _iteration in range(selection_options.repair_iterations):
+            if time.perf_counter() >= deadline:
+                repair_deadline_reached = True
+                break
+            current_schedule, current_ids = incumbent
+            dropped_ids = tuple(
+                item.stop.id
+                for item in optional_order
+                if item.stop.id not in current_ids
+            )
+            selected_by_efficiency = tuple(
+                sorted(
+                    current_ids,
+                    key=lambda stop_id: (
+                        optional_by_id[stop_id].reward
+                        / max(1, optional_by_id[stop_id].stop.visit_minutes),
+                        optional_by_id[stop_id].reward,
+                        stop_id,
+                    ),
+                )
+            )
+            neighborhoods: set[frozenset[str]] = set()
+            if len(current_ids) < optional_limit:
+                neighborhoods.update(
+                    current_ids.union({stop_id}) for stop_id in dropped_ids
+                )
+            neighborhoods.update(
+                current_ids.difference({selected_id}).union({dropped_id})
+                for selected_id in selected_by_efficiency
+                for dropped_id in dropped_ids
+            )
+            for removed_id in selected_by_efficiency:
+                rebuilt = set(current_ids.difference({removed_id}))
+                for dropped_id in dropped_ids:
+                    if len(rebuilt) >= optional_limit:
+                        break
+                    rebuilt.add(dropped_id)
+                if rebuilt != set(current_ids):
+                    neighborhoods.add(frozenset(rebuilt))
+
+            best = incumbent
+            for neighbor_ids in sorted(
+                neighborhoods,
+                key=lambda ids: tuple(sorted(ids, key=optional_rank.__getitem__)),
             ):
-                incumbent = (schedule, subset_ids)
-            if deadline_reached:
+                schedule, timed_out = evaluate(neighbor_ids)
+                if schedule is not None and objective(
+                    schedule, neighbor_ids
+                ) < objective(best[0], best[1]):
+                    best = (schedule, neighbor_ids)
+                if timed_out:
+                    repair_deadline_reached = True
+                    break
+            if objective(best[0], best[1]) < objective(
+                current_schedule, current_ids
+            ):
+                incumbent = best
+            else:
+                break
+            if repair_deadline_reached:
                 break
 
     if incumbent is None:
@@ -408,7 +565,9 @@ def select_and_schedule_day(
         stop_id = item.stop.id
         if stop_id in selected_set or stop_id in required_ids:
             continue
-        if deadline_reached and stop_id not in feasible_with:
+        if (
+            deadline_reached or repair_deadline_reached
+        ) and stop_id not in feasible_with:
             reason = "selection-deadline"
         elif stop_id in feasible_with:
             reason = "lower-reward-alternative"
@@ -434,6 +593,11 @@ def select_and_schedule_day(
     warnings = list(schedule.warnings)
     if deadline_reached and "selection-deadline-reached" not in warnings:
         warnings.append("selection-deadline-reached")
+    if (
+        repair_deadline_reached
+        and "selection-repair-deadline-reached" not in warnings
+    ):
+        warnings.append("selection-repair-deadline-reached")
     selected_items = [item for item in items if item.stop.id in selected_set]
     return SelectionResult(
         schedule=schedule,
@@ -442,7 +606,7 @@ def select_and_schedule_day(
         candidate_count=len(items),
         selected_count=len(selected_ids),
         total_reward=sum(item.reward for item in selected_items),
-        solver="selection-exact",
+        solver=solver,
         warnings=tuple(warnings),
     )
 

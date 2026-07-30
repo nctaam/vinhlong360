@@ -258,3 +258,80 @@ def test_exact_selection_prunes_visit_time_lower_bound_before_scheduler(
 
     assert result.dropped == (DroppedCandidate("long", "time-window-overflow"),)
     assert scheduled_ids == [("start", "end")]
+
+
+def run_selection(candidates, target_count, exact_limit):
+    start = candidate("start", 1.0, visit=0)
+    end = candidate("end", 1.0, visit=0)
+    pool = [start, *candidates, end]
+    ids = tuple(item.stop.id for item in pool)
+    return select_and_schedule_day(
+        candidates=pool,
+        required_ids=frozenset({"start", "end"}),
+        fixed_stops=(),
+        matrix=matrix_for(*ids),
+        schedule_options=ScheduleOptions(day_start_minute=480, day_end_minute=1080),
+        selection_options=SelectionOptions(
+            target_count=target_count,
+            exact_limit=exact_limit,
+        ),
+    )
+
+
+def test_beam_selection_is_deterministic_for_large_pool():
+    candidates = [
+        candidate(
+            f"poi-{index}",
+            20.0 - index / 10,
+            entity_type=f"type-{index}",
+            visit=15,
+        )
+        for index in range(12)
+    ]
+
+    first = run_selection(candidates, target_count=5, exact_limit=2)
+    second = run_selection(candidates, target_count=5, exact_limit=2)
+
+    assert first == second
+    assert first.solver == "selection-beam"
+    assert first.selected_count == 5
+
+
+def test_repair_replaces_a_greedy_long_stop_to_restore_cardinality():
+    start = candidate("start", 1.0, visit=0)
+    end = candidate("end", 1.0, visit=0)
+    pool = [
+        start,
+        candidate("trap", 30.0, entity_type="trap", visit=540),
+        candidate("high", 20.0, entity_type="high", visit=30),
+        candidate("short", 19.0, entity_type="short", visit=30),
+        end,
+    ]
+
+    def run(repair_iterations):
+        return select_and_schedule_day(
+            candidates=pool,
+            required_ids=frozenset({"start", "end"}),
+            fixed_stops=(),
+            matrix=matrix_for(*(item.stop.id for item in pool)),
+            schedule_options=ScheduleOptions(
+                day_start_minute=480,
+                day_end_minute=1080,
+            ),
+            selection_options=SelectionOptions(
+                target_count=4,
+                exact_limit=2,
+                beam_width=1,
+                repair_iterations=repair_iterations,
+            ),
+        )
+
+    without_repair = run(repair_iterations=0)
+    result = run(repair_iterations=32)
+
+    assert without_repair.selected_count == 3
+    assert "trap" in without_repair.selected_ids
+    assert result.selected_count == 4
+    assert "high" in result.selected_ids
+    assert "short" in result.selected_ids
+    assert "trap" not in result.selected_ids
