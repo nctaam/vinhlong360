@@ -77,3 +77,37 @@ async def test_delete_account_returns_committed_exact_deadline(monkeypatch):
         "erasure_due_at": "2026-08-29T12:15:00+00:00",
     }
     assert calls == [(USER_ID, REQUESTED_AT)]
+
+
+@pytest.mark.anyio
+async def test_delete_account_binding_failure_log_is_subject_free(
+    monkeypatch, caplog
+):
+    async def current_user(_request):
+        return {"id": USER_ID, "phone": "0900000001"}
+
+    async def binding_failed(_request, _user):
+        return False
+
+    async def no_dependency():
+        return None
+
+    monkeypatch.setattr(auth, "_get_current_user_or_none", current_user)
+    monkeypatch.setattr(auth, "_check_session_binding_safe", binding_failed)
+    monkeypatch.setattr(ratelimit, "check_rate", lambda *_args, **_kwargs: None)
+    server.app.dependency_overrides[auth._require_pg] = no_dependency
+    server.app.dependency_overrides[auth._require_csrf_lazy] = no_dependency
+
+    try:
+        transport = httpx.ASGITransport(app=server.app)
+        async with httpx.AsyncClient(
+            transport=transport, base_url="http://test"
+        ) as client:
+            response = await client.delete("/auth/account")
+    finally:
+        server.app.dependency_overrides.pop(auth._require_pg, None)
+        server.app.dependency_overrides.pop(auth._require_csrf_lazy, None)
+
+    assert response.status_code == 403
+    assert "Session binding mismatch on delete-account" in caplog.text
+    assert USER_ID not in caplog.text

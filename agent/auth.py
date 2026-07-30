@@ -1233,7 +1233,7 @@ async def delete_account(request: Request, response: Response, _csrf=Depends(_re
     from ratelimit import check_rate
     check_rate(f"delete-account:{user['id']}", 3, 3600, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     if not await _check_session_binding_safe(request, user):
-        logger.warning("Session binding mismatch on delete-account for user %s", user.get("id"))
+        logger.warning("Session binding mismatch on delete-account")
         raise HTTPException(403, "Phiên không hợp lệ. Vui lòng đăng nhập lại.")
     uid = str(user["id"])
     requested_at = _utc_now()
