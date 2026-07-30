@@ -1,7 +1,7 @@
 # Verified Erasure Lifecycle Result Evidence
 
 > STATUS: complete - focused, real-PostgreSQL, lifecycle, scheduler, and hard gates pass; the repository-wide baseline remains incomplete under the documented outer timeout and is not reported as passing.
-> Revision under test: `3143ba7c8fabef41a39a8ccd4c7b157624d9bc1c`
+> Revision under test: `62c97fde7d796f30064c7599dea5547d245cceab`
 > Date: 2026-07-30 (Asia/Bangkok)
 > Scope: local implementation and verification only; no production deletion, deadline backfill, legacy scrub apply, deploy, push, secret change, or real-data mutation.
 
@@ -42,21 +42,22 @@ separate, explicitly unauthorized operation.
 | Subject-free lifecycle diagnostics | `61a118df` |
 | Lifecycle integration evidence | `fe1645d4`, `59fdbe57` |
 | Live PostgreSQL appeal-erasure correction | `3143ba7c` |
+| Full live FK-catalog introspection | `62c97fde` |
 
-Branch range: `82241b9a..3143ba7c`.
+Branch range: `82241b9a..62c97fde`.
 
 ## Verification Evidence
 
 | Gate | Exact command | Result |
 | --- | --- | --- |
-| PostgreSQL/state/reference gate | `python -m pytest -q -rs agent/tests/test_erasure_state.py agent/tests/test_erasure_constraints_postgres.py agent/tests/test_structured_reference_cleanup.py agent/tests/test_quarantine.py agent/tests/test_recovery_deadline.py agent/tests/test_erasure_orchestrator_postgres.py agent/tests/test_erasure_lifecycle_postgres.py` | Exit `0`; `30 passed` in `8.27s`, no skips. Covers migration 073, live catalog actions, exact sentinel cleanup, final-transaction rollback, and row-lock lifecycle races. |
+| PostgreSQL/state/reference gate | `python -m pytest -q -rs agent/tests/test_erasure_state.py agent/tests/test_erasure_constraints_postgres.py agent/tests/test_structured_reference_cleanup.py agent/tests/test_quarantine.py agent/tests/test_recovery_deadline.py agent/tests/test_erasure_orchestrator_postgres.py agent/tests/test_erasure_lifecycle_postgres.py` | Exit `0`; `31 passed` in `10.88s`, no skips. Covers migration 073, all 45 live catalog actions, exact sentinel cleanup, final-transaction rollback, and row-lock lifecycle races. |
 | Account control-plane PostgreSQL regression | `python -m pytest -q -rs agent/tests/test_account_control_plane_postgres.py` | Exit `0`; `9 passed` in `14.76s`, no skips. |
-| Lifecycle integration gate | `python -m pytest -q -rs agent/tests/test_erasure_lifecycle_integration.py agent/tests/test_erasure_lifecycle_postgres.py agent/tests/test_erasure_constraints_postgres.py agent/tests/test_structured_reference_cleanup.py agent/tests/test_quarantine.py agent/tests/test_recovery_deadline.py agent/tests/test_erasure_orchestrator.py agent/tests/test_erasure_scheduler.py agent/tests/test_legacy_scrub.py agent/tests/test_erasure_source_guards.py` | Exit `0`; `66 passed` in `17.56s`, no skips. |
+| Lifecycle integration gate | `python -m pytest -q -rs agent/tests/test_erasure_lifecycle_integration.py agent/tests/test_erasure_lifecycle_postgres.py agent/tests/test_erasure_constraints_postgres.py agent/tests/test_structured_reference_cleanup.py agent/tests/test_quarantine.py agent/tests/test_recovery_deadline.py agent/tests/test_erasure_orchestrator.py agent/tests/test_erasure_scheduler.py agent/tests/test_legacy_scrub.py agent/tests/test_erasure_source_guards.py` | Exit `0`; `67 passed` in `23.24s`, no skips. |
 | Scheduler/registry/CLI gate | `python -m pytest -q -rs agent/tests/test_owner_write_gate.py agent/tests/test_data_lifecycle_registry.py agent/tests/test_erasure_orchestrator.py agent/tests/test_erasure_scheduler.py agent/tests/test_erasure_deadline_backfill.py agent/tests/test_erasure_cli.py agent/tests/test_legacy_scrub.py agent/tests/test_erasure_lifecycle_integration.py` | Exit `0`; `65 passed` in `15.66s`. |
 | Diff whitespace | `git diff --check` | Exit `0`. |
 | Full hard gate | `python scripts/checks/run_hard.py --all` | Exit `0`; `hard=0`, ratchet did not increase. The tool reported only lower-than-baseline soft counters and requested no write. |
-| Collection audit | `python -m pytest --collect-only -q` | Exit `0`; `9395/9508` tests collected, `113 deselected`, in `18.24s`. |
-| Repository baseline | `python -m pytest -q` with both disposable PostgreSQL URLs set | Harness exit `124` after `334.1s` (configured `330000ms` command limit). `-q` emitted no case-level progress before timeout, so no last case is claimed; timed-out pytest PID `14432` was stopped and no full-baseline pass is claimed. |
+| Collection audit | `python -m pytest --collect-only -q` | Exit `0`; `9396/9509` tests collected, `113 deselected`, in `17.58s`. |
+| Repository baseline | `python -m pytest -q` with both disposable PostgreSQL URLs set | Harness exit `124` after `334.0s` (configured `330000ms` command limit) on revision `62c97fde`. `-q` emitted no case-level progress before timeout, so no last case is claimed; timed-out pytest PID `21316` was stopped and no full-baseline pass is claimed. |
 
 ## PostgreSQL Target Safety
 
