@@ -198,7 +198,7 @@ git commit -m "feat: add joint itinerary selection contracts"
 - Consumes: Task 1 contracts and `prune_candidates(...)`.
 - Produces: `select_and_schedule_day(candidates, required_ids, fixed_stops, matrix, schedule_options, selection_options) -> SelectionResult` with exact search for at most `exact_limit` optional candidates.
 
-- [ ] **Step 1: Write failing exact-search behavior tests.**
+- [x] **Step 1: Write failing exact-search behavior tests.**
 
 Add a deterministic matrix helper and these tests:
 
@@ -252,7 +252,7 @@ def test_exact_selection_keeps_fixed_meal_in_feasibility():
 
 The fixture must import `TimeWindow`, `ScheduleOptions`, and `select_and_schedule_day`, and `matrix_for(...)` must build a square `TravelMatrix` containing exactly the listed IDs. The test must fail because `select_and_schedule_day(...)` is not implemented, not because of fixture setup.
 
-- [ ] **Step 2: Run the exact tests and confirm RED.**
+- [x] **Step 2: Run the exact tests and confirm RED.**
 
 ```powershell
 python -m pytest agent/tests/test_itinerary_selection.py -q
@@ -260,7 +260,7 @@ python -m pytest agent/tests/test_itinerary_selection.py -q
 
 Expected: the new selection tests fail at the missing selection entry point while Task 1 tests remain green.
 
-- [ ] **Step 3: Implement exact subset search with a shared deadline and cache.**
+- [x] **Step 3: Implement exact subset search with a shared deadline and cache.**
 
 Implement these internal operations:
 
@@ -274,7 +274,7 @@ Implement these internal operations:
 
 Use `schedule_stop_order(...)` for every subset evaluation; do not import private scheduler helpers.
 
-- [ ] **Step 4: Run exact, scheduler, and optimizer tests.**
+- [x] **Step 4: Run exact, scheduler, and optimizer tests.**
 
 ```powershell
 python -m pytest agent/tests/test_itinerary_selection.py agent/tests/test_itinerary_schedule.py agent/tests/test_itinerary_optimizer.py -q
@@ -282,7 +282,7 @@ python -m pytest agent/tests/test_itinerary_selection.py agent/tests/test_itiner
 
 Expected: all tests pass, including fixed-anchor feasibility and explicit drop reasons.
 
-- [ ] **Step 5: Commit exact search.**
+- [x] **Step 5: Commit exact search.**
 
 ```powershell
 git add agent/itinerary_selection.py agent/tests/test_itinerary_selection.py
