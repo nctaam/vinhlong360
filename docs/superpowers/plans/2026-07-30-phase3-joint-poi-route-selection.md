@@ -37,7 +37,7 @@
 - Consumes: `ScheduleOptions`, `ScheduleResult`, `ScheduleStop`, `TravelMatrix` from `agent/itinerary_schedule.py`.
 - Produces: immutable `SelectionCandidate`, `SelectionOptions`, `DroppedCandidate`, `SelectionResult`; deterministic `prune_candidates(...)`; validation helpers used by the later objective comparator; the public `select_and_schedule_day(...)` entry point with an exact-search dispatch stub that raises no exception for an already-empty optional pool.
 
-- [ ] **Step 1: Write failing contract and prune tests.**
+- [x] **Step 1: Write failing contract and prune tests.**
 
 Add these fixtures and tests to `agent/tests/test_itinerary_selection.py`:
 
@@ -120,7 +120,7 @@ def test_selection_options_reject_invalid_bounds():
 
 The expectations are hand-derived: `good` dominates `dominated` because it has higher reward and shorter visit time; the required item cannot be removed by either rule.
 
-- [ ] **Step 2: Run the contract tests and verify the intended RED failure.**
+- [x] **Step 2: Run the contract tests and verify the intended RED failure.**
 
 Run:
 
@@ -130,7 +130,7 @@ python -m pytest agent/tests/test_itinerary_selection.py -q
 
 Expected: collection fails because `agent/itinerary_selection.py` and its public dataclasses do not exist yet.
 
-- [ ] **Step 3: Implement the contracts and deterministic prune.**
+- [x] **Step 3: Implement the contracts and deterministic prune.**
 
 Implement:
 
@@ -173,7 +173,7 @@ class SelectionResult:
 
 Validate finite non-negative rewards, non-empty IDs/types/areas, positive target count, non-negative search bounds, positive deadline, and a maximum candidate cap of 20. Implement `prune_candidates(candidates, required_ids, max_candidates=20)` with same-area/same-type dominance, required preservation, coordinate validity filtering, deterministic cap ordering `(required first, -reward, visit_minutes, id)`, and one dropped reason per raw candidate.
 
-- [ ] **Step 4: Run the contract tests and the existing scheduler/optimizer tests.**
+- [x] **Step 4: Run the contract tests and the existing scheduler/optimizer tests.**
 
 ```powershell
 python -m pytest agent/tests/test_itinerary_selection.py agent/tests/test_itinerary_schedule.py agent/tests/test_itinerary_optimizer.py -q
@@ -181,7 +181,7 @@ python -m pytest agent/tests/test_itinerary_selection.py agent/tests/test_itiner
 
 Expected: all existing tests remain green and the new contract tests pass.
 
-- [ ] **Step 5: Commit the contracts.**
+- [x] **Step 5: Commit the contracts.**
 
 ```powershell
 git add agent/itinerary_selection.py agent/tests/test_itinerary_selection.py
