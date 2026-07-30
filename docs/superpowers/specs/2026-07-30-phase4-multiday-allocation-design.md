@@ -143,7 +143,7 @@ Với mỗi day allocation và endpoint cuối ứng viên:
 
 Mỗi scheduler call nhận `deadline_seconds` bằng giá trị nhỏ hơn giữa deadline của ngày và thời gian còn lại của deadline Phase 4; không call nào được phép kéo dài quá deadline chung.
 
-`load_minutes` là thời điểm departure muộn nhất trừ `day_start_minute`, bao gồm travel từ synthetic origin, waiting và visit. Do API hiện tại chưa có lodging anchor, các ngày sau dùng điểm cuối ngày trước làm origin xấp xỉ và ghi warning `overnight-origin-approximated`.
+`load_minutes` là `max(placement.finish_visit_minute) - day_start_minute`. Với stop cuối, `finish_visit_minute` cũng là thời điểm departure; giá trị này đã bao gồm travel từ synthetic origin, waiting và visit. Do API hiện tại chưa có lodging anchor, các ngày sau dùng điểm cuối ngày trước làm origin xấp xỉ và ghi warning `overnight-origin-approximated`.
 
 ### 6.3. Label-setting qua ngày
 
