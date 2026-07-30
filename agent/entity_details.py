@@ -16,10 +16,13 @@ JSONB vẫn là nguồn sự thật cho mọi đường đọc (flip đọc = C2
 from __future__ import annotations
 
 import json
-import os
+from contextlib import contextmanager
+from dataclasses import dataclass
 from decimal import Decimal
-from typing import Any
+from threading import RLock
+from typing import Any, Iterable
 
+from config import settings
 from entity_schemas import ENTITY_SCHEMAS, KIND_OF_TYPE, _coerce
 
 UNIVERSAL = ["address", "phone", "website", "hours", "price_range",
@@ -36,6 +39,7 @@ KIND_TABLE = {
     "person": "entity_person_details",
     "admin_place": "entity_adminplace_details",
 }
+DETAIL_TABLES = tuple(dict.fromkeys(KIND_TABLE.values()))
 INT_COLUMNS = {"founding_year", "scenic_rating", "review_count", "ocop_star",
                "households", "star_rating", "rooms", "month", "duration_days",
                "birth_year", "death_year", "population"}
@@ -154,7 +158,7 @@ def _db_value(col: str, value: Any, is_pg: bool):
 
 
 def sync_entity_details(conn, is_pg: bool, entity_id: str, etype: str,
-                        attrs: dict | None) -> None:
+                        attrs: dict | None) -> DetailCacheMutation:
     """Dual-write: phản chiếu typed attributes vào cột phổ quát + bảng CTI.
 
     Ghi-là-chính (mirror, KHÔNG COALESCE): cột = giá trị mới hoặc NULL — đảm bảo
@@ -172,13 +176,17 @@ def sync_entity_details(conn, is_pg: bool, entity_id: str, etype: str,
     # 2) Bảng CTI của kind (nếu có).
     kind = KIND_OF_TYPE.get(etype)
     table = KIND_TABLE.get(kind or "")
+    for stale_table in DETAIL_TABLES:
+        if stale_table != table:
+            _exec(conn, is_pg,
+                  f"DELETE FROM {stale_table} WHERE entity_id = {ph}",
+                  [entity_id])
     if not table:
-        return
+        return DetailCacheMutation.from_detail(entity_id, None)
     cols = KIND_COLUMNS[kind]
     if not det:
         _exec(conn, is_pg, f"DELETE FROM {table} WHERE entity_id = {ph}", [entity_id])
-        _cache_put(entity_id, None)
-        return
+        return DetailCacheMutation.from_detail(entity_id, None)
     values = [_db_value(c, det.get(c), is_pg) for c in cols]
     collist = ", ".join(cols)
     phs = ", ".join([ph] * (len(cols) + 1))
@@ -189,16 +197,16 @@ def sync_entity_details(conn, is_pg: bool, entity_id: str, etype: str,
     else:
         sql = f"INSERT OR REPLACE INTO {table} (entity_id, {collist}) VALUES ({phs})"
     _exec(conn, is_pg, sql, [entity_id, *values])
-    _cache_put(entity_id, det)
+    return DetailCacheMutation.from_detail(entity_id, det)
 
 
-def delete_entity_details(conn, is_pg: bool, entity_id: str) -> None:
+def delete_entity_details(conn, is_pg: bool, entity_id: str) -> DetailCacheMutation:
     """Dọn detail rows khi xoá entity. PG có FK CASCADE nhưng SQLite dev thường
     không bật PRAGMA foreign_keys — dọn tường minh cho chắc cả hai."""
     ph = "%s" if is_pg else "?"
-    for table in KIND_TABLE.values():
+    for table in DETAIL_TABLES:
         _exec(conn, is_pg, f"DELETE FROM {table} WHERE entity_id = {ph}", [entity_id])
-    _cache_put(entity_id, None)
+    return DetailCacheMutation.from_detail(entity_id, None)
 
 
 def _sqlite_type(col: str) -> str:
@@ -252,6 +260,42 @@ def norm_value(v: Any) -> Any:
 # sync/delete giữ cache tươi khi ghi. Đổi flag = restart service (chuẩn env var).
 
 _DETAIL_CACHE: dict[str, dict] | None = None
+_DETAIL_CACHE_WRITE_LOCK = RLock()
+
+
+@contextmanager
+def detail_cache_write_scope():
+    """Order detail SQL commit and cache publication as one process-local write."""
+    with _DETAIL_CACHE_WRITE_LOCK:
+        yield
+
+
+@dataclass(frozen=True)
+class DetailCacheMutation:
+    entity_id: str
+    detail_items: tuple[tuple[str, Any], ...] | None
+
+    @classmethod
+    def from_detail(cls, entity_id: str, detail: dict | None):
+        items = None if not detail else tuple(sorted(detail.items()))
+        return cls(entity_id=entity_id, detail_items=items)
+
+
+def apply_detail_cache_mutations(
+    mutations: Iterable[DetailCacheMutation], *, reset: bool = False
+) -> None:
+    global _DETAIL_CACHE
+    with _DETAIL_CACHE_WRITE_LOCK:
+        if _DETAIL_CACHE is None:
+            return
+        updated = {} if reset else dict(_DETAIL_CACHE)
+        for mutation in mutations:
+            if mutation.detail_items is None:
+                updated.pop(mutation.entity_id, None)
+            else:
+                updated[mutation.entity_id] = dict(mutation.detail_items)
+        _DETAIL_CACHE = updated
+
 
 _SCHEMA_KEYS: dict[str, list[str]] = {
     etype: [f["key"] for f in schema["fields"]]
@@ -260,12 +304,13 @@ _SCHEMA_KEYS: dict[str, list[str]] = {
 
 
 def reads_enabled() -> bool:
-    return os.environ.get("ENTITY_DETAILS_TABLES", "").strip().lower() in ("1", "true", "yes", "on")
+    return settings.ENTITY_DETAILS_TABLES
 
 
 def reset_detail_cache() -> None:
     global _DETAIL_CACHE
-    _DETAIL_CACHE = None
+    with _DETAIL_CACHE_WRITE_LOCK:
+        _DETAIL_CACHE = None
 
 
 def _norm_col_value(col: str, v: Any) -> Any:
@@ -287,32 +332,38 @@ def _norm_col_value(col: str, v: Any) -> Any:
 def load_detail_cache(conn, is_pg: bool) -> int:
     """Nạp toàn bộ 9 bảng CTI vào cache {entity_id: {col: giá_trị_python}}."""
     global _DETAIL_CACHE
-    cache: dict[str, dict] = {}
-    for table in KIND_TABLE.values():
-        if is_pg:
-            cur = conn.cursor()
-            cur.execute(f"SELECT * FROM {table}")
-            raw_rows = cur.fetchall()
-            cols = [c[0] for c in cur.description]
-            rows = [r if isinstance(r, dict) else dict(zip(cols, r)) for r in raw_rows]
-        else:
-            fetched = conn.execute(f"SELECT * FROM {table}").fetchall()
-            rows = [{k: r[k] for k in r.keys()} for r in fetched]
-        for r in rows:
-            eid = r.pop("entity_id")
-            cache[eid] = {c: _norm_col_value(c, v) for c, v in r.items() if v is not None}
-    _DETAIL_CACHE = cache
-    return len(cache)
-
-
-def _cache_put(entity_id: str, det: dict | None) -> None:
-    """sync/delete gọi để giữ cache tươi (det = giá trị python từ split_typed)."""
-    if _DETAIL_CACHE is None:
-        return
-    if det:
-        _DETAIL_CACHE[entity_id] = dict(det)
-    else:
-        _DETAIL_CACHE.pop(entity_id, None)
+    with _DETAIL_CACHE_WRITE_LOCK:
+        cache: dict[str, dict] = {}
+        locations: dict[str, str] = {}
+        duplicate_ids: set[str] = set()
+        duplicate_tables: set[str] = set()
+        for table in DETAIL_TABLES:
+            if is_pg:
+                cur = conn.cursor()
+                cur.execute(f"SELECT * FROM {table}")
+                raw_rows = cur.fetchall()
+                cols = [c[0] for c in cur.description]
+                rows = [r if isinstance(r, dict) else dict(zip(cols, r)) for r in raw_rows]
+            else:
+                fetched = conn.execute(f"SELECT * FROM {table}").fetchall()
+                rows = [{k: r[k] for k in r.keys()} for r in fetched]
+            for r in rows:
+                eid = r.pop("entity_id")
+                previous_table = locations.get(eid)
+                if previous_table is not None and previous_table != table:
+                    duplicate_ids.add(eid)
+                    duplicate_tables.update((previous_table, table))
+                else:
+                    locations[eid] = table
+                cache[eid] = {c: _norm_col_value(c, v) for c, v in r.items() if v is not None}
+        if duplicate_ids:
+            tables = ", ".join(sorted(duplicate_tables))
+            raise RuntimeError(
+                f"CTI cache load rejected: {len(duplicate_ids)} entities occur in "
+                f"multiple detail tables ({tables})"
+            )
+        _DETAIL_CACHE = cache
+        return len(cache)
 
 
 def rebuild_attributes(etype: str, attrs: Any, entity_row: dict) -> Any:

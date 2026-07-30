@@ -13,6 +13,13 @@ from dotenv import load_dotenv
 from pydantic import model_validator
 from pydantic_settings import BaseSettings
 
+POSTGRES_URL_PREFIXES = ("postgres://", "postgresql://")
+
+
+def is_postgresql_url(value: str) -> bool:
+    return value.strip().lower().startswith(POSTGRES_URL_PREFIXES)
+
+
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 
@@ -26,6 +33,7 @@ class Settings(BaseSettings):
 
     # ── Database ──
     DATABASE_URL: str = ""
+    ENTITY_DETAILS_TABLES: bool = False
     REDIS_URL: str = ""
 
     # ── Security ──
@@ -119,7 +127,12 @@ class Settings(BaseSettings):
     def admin_telegram_ids_set(self) -> set[str]:
         return {x.strip() for x in self.ADMIN_TELEGRAM_IDS.split(",") if x.strip()}
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
+    model_config = {
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+        "extra": "ignore",
+        "hide_input_in_errors": True,
+    }
 
     @model_validator(mode="after")
     def validate_production_keys(self):
@@ -134,6 +147,10 @@ class Settings(BaseSettings):
             # JWT_SECRET: not yet used by any endpoint — skip until auth JWT is implemented
             if not self.DATABASE_URL:
                 missing.append("DATABASE_URL")
+            elif not is_postgresql_url(self.DATABASE_URL):
+                missing.append("DATABASE_URL (PostgreSQL required)")
+            if not self.ENTITY_DETAILS_TABLES:
+                missing.append("ENTITY_DETAILS_TABLES=true")
             if missing:
                 raise ValueError(f"Production requires: {', '.join(missing)}")
         return self

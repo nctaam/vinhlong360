@@ -92,9 +92,8 @@ def test_pg_initialize_verifies_schema_before_legacy_repair_code():
     assert "CREATE INDEX" not in verify_src
 
 def test_pg_schema_contract_tracks_latest_release_tables():
-    # 62 = GĐ-B/C entity split (059 repair chain, 060 universal cols, 061 CTI, 062 vá):
-    # replay PG trắng + prod đều ở 62 (2026-07-02).
-    assert PG_REQUIRED_SCHEMA_VERSION == 62
+    # 71 restores both entity rating triggers after migration 070 corrected the function body.
+    assert PG_REQUIRED_SCHEMA_VERSION == 71
     assert {"schema_version", "admin_audit_events", "shared_rate_limits", "request_idempotency_keys"} <= PG_REQUIRED_TABLES
     assert {"entity_changes", "site_settings_history"} <= PG_REQUIRED_TABLES
     assert {f"entity_{k}_details" for k in
@@ -362,6 +361,230 @@ def test_replace_from_json_with_override_roundtrip(db, tmp_path, monkeypatch):
     db.replace_from_json(str(p))
     assert db.get_entity("old") is None
     assert db.get_entity("new1")["name"] == "Mới"
+
+
+def test_replace_from_json_replaces_detail_cache_instead_of_merging(db, tmp_path, monkeypatch):
+    import entity_details
+    from config import settings
+
+    monkeypatch.setattr(settings, "ENTITY_DETAILS_TABLES", True)
+    db.reload_entity_details_cache()
+    db.upsert_entity(_entity(
+        eid="old-cache", etype="product", attributes={"producer": "Old"}))
+    payload = {
+        "entities": [_entity(
+            eid="new-cache", etype="product", attributes={"producer": "New"})],
+        "relationships": [],
+        "itineraries": [],
+    }
+    path = tmp_path / "replace-cache.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    monkeypatch.setenv("ALLOW_DESTRUCTIVE_DB_REPLACE", "1")
+
+    db.replace_from_json(str(path))
+
+    assert "old-cache" not in (entity_details._DETAIL_CACHE or {})
+    assert (entity_details._DETAIL_CACHE or {})["new-cache"]["producer"] == "New"
+
+
+@pytest.mark.parametrize("later_operation", ["upsert", "delete", "replace"])
+def test_detail_cache_publication_follows_commit_order_across_mutating_paths(
+    db, tmp_path, monkeypatch, later_operation
+):
+    import threading
+
+    import entity_details
+    from config import settings
+
+    monkeypatch.setattr(settings, "ENTITY_DETAILS_TABLES", True)
+    db.reload_entity_details_cache()
+    entity_id = f"ordered-cache-{later_operation}"
+    db.upsert_entity(_entity(
+        eid=entity_id, etype="product", attributes={"producer": "Seed"}))
+
+    replacement_id = f"replacement-cache-{later_operation}"
+    replacement_path = tmp_path / f"replace-{later_operation}.json"
+    replacement_path.write_text(json.dumps({
+        "entities": [_entity(
+            eid=replacement_id,
+            etype="product",
+            attributes={"producer": "Replacement"},
+        )],
+        "relationships": [],
+        "itineraries": [],
+    }), encoding="utf-8")
+    monkeypatch.setenv("ALLOW_DESTRUCTIVE_DB_REPLACE", "1")
+
+    real_apply = entity_details.apply_detail_cache_mutations
+    first_apply_started = threading.Event()
+    later_apply_finished = threading.Event()
+    call_lock = threading.Lock()
+    call_count = 0
+
+    def pause_first_apply(*args, **kwargs):
+        nonlocal call_count
+        with call_lock:
+            call_index = call_count
+            call_count += 1
+        if call_index == 0:
+            first_apply_started.set()
+            later_apply_finished.wait(timeout=2)
+            return real_apply(*args, **kwargs)
+        try:
+            return real_apply(*args, **kwargs)
+        finally:
+            later_apply_finished.set()
+
+    monkeypatch.setattr(entity_details, "apply_detail_cache_mutations", pause_first_apply)
+    errors = []
+
+    def capture_error(operation):
+        try:
+            operation()
+        except BaseException as exc:  # pragma: no cover - asserted below
+            errors.append(exc)
+
+    first = threading.Thread(target=lambda: capture_error(lambda: db.upsert_entity(_entity(
+        eid=entity_id, etype="product", attributes={"producer": "First"}))))
+    first.start()
+    assert first_apply_started.wait(timeout=5)
+
+    def run_later_operation():
+        if later_operation == "upsert":
+            db.upsert_entity(_entity(
+                eid=entity_id, etype="product", attributes={"producer": "Second"}))
+        elif later_operation == "delete":
+            db.delete_entity(entity_id)
+        else:
+            db.replace_from_json(str(replacement_path))
+
+    later = threading.Thread(target=lambda: capture_error(run_later_operation))
+    later.start()
+    first.join(timeout=10)
+    later.join(timeout=10)
+
+    assert not first.is_alive() and not later.is_alive()
+    assert errors == []
+    cache = entity_details._DETAIL_CACHE or {}
+    with db._conn() as conn:
+        entity_exists = conn.execute(
+            "SELECT 1 FROM entities WHERE id = ?", (entity_id,)).fetchone()
+        detail = conn.execute(
+            "SELECT producer FROM entity_product_details WHERE entity_id = ?",
+            (entity_id,),
+        ).fetchone()
+
+    if later_operation == "upsert":
+        assert detail[0] == "Second"
+        assert cache[entity_id]["producer"] == "Second"
+    elif later_operation == "delete":
+        assert entity_exists is None
+        assert entity_id not in cache
+    else:
+        assert entity_exists is None
+        assert entity_id not in cache
+        assert cache[replacement_id]["producer"] == "Replacement"
+
+
+@pytest.mark.parametrize("operation", ["upsert", "delete", "replace"])
+def test_committed_close_failure_does_not_skip_detail_cache_publication(
+    db, tmp_path, monkeypatch, caplog, operation
+):
+    import entity_details
+    from config import settings
+
+    monkeypatch.setattr(settings, "ENTITY_DETAILS_TABLES", True)
+    db.reload_entity_details_cache()
+    entity_id = f"committed-close-{operation}"
+    if operation in {"delete", "replace"}:
+        db.upsert_entity(
+            _entity(
+                eid=entity_id,
+                etype="product",
+                attributes={"producer": "Before"},
+            )
+        )
+
+    replacement_id = "committed-close-replacement"
+    replacement_path = tmp_path / "committed-close-replace.json"
+    replacement_path.write_text(
+        json.dumps(
+            {
+                "entities": [
+                    _entity(
+                        eid=replacement_id,
+                        etype="product",
+                        attributes={"producer": "Replacement"},
+                    )
+                ],
+                "relationships": [],
+                "itineraries": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    real_connect = sqlite3.connect
+    sensitive_cleanup_error = (
+        "postgresql://cleanup-user-canary:cleanup-pass-canary@cleanup-host-canary/db"
+    )
+
+    class CloseFailureConnection:
+        def __init__(self, connection):
+            self._connection = connection
+
+        @property
+        def row_factory(self):
+            return self._connection.row_factory
+
+        @row_factory.setter
+        def row_factory(self, value):
+            self._connection.row_factory = value
+
+        def __getattr__(self, name):
+            return getattr(self._connection, name)
+
+        def close(self):
+            self._connection.close()
+            raise RuntimeError(sensitive_cleanup_error)
+
+    database_path = Path(db.db_path).resolve()
+
+    def connect(path, *args, **kwargs):
+        connection = real_connect(path, *args, **kwargs)
+        if Path(path).resolve() == database_path:
+            return CloseFailureConnection(connection)
+        return connection
+
+    monkeypatch.setattr(sqlite3, "connect", connect)
+    caplog.set_level("WARNING", logger="database")
+
+    if operation == "upsert":
+        db.upsert_entity(
+            _entity(
+                eid=entity_id,
+                etype="product",
+                attributes={"producer": "After"},
+            )
+        )
+    elif operation == "delete":
+        assert db.delete_entity(entity_id) is True
+    else:
+        monkeypatch.setenv("ALLOW_DESTRUCTIVE_DB_REPLACE", "1")
+        monkeypatch.setattr(db, "backup", lambda: str(tmp_path / "backup.db"))
+        db.replace_from_json(str(replacement_path))
+
+    cache = entity_details._DETAIL_CACHE or {}
+    if operation == "upsert":
+        assert cache[entity_id]["producer"] == "After"
+    elif operation == "delete":
+        assert entity_id not in cache
+    else:
+        assert entity_id not in cache
+        assert cache[replacement_id]["producer"] == "Replacement"
+    assert "RuntimeError" in caplog.text
+    for canary in ("cleanup-user-canary", "cleanup-pass-canary", "cleanup-host-canary"):
+        assert canary not in caplog.text
 
 
 def test_replace_from_json_auto_backup_stays_next_to_custom_db(db, tmp_path, monkeypatch):

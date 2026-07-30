@@ -95,6 +95,7 @@ Legacy aliases (`from_id`, `to_id`, `type`) may be included during migration.
 | GET | `/api/facilities` | List facility entities |
 | GET | `/api/places/{id}/overview` | Place overview with child entity summary |
 | GET | `/api/itineraries` | List itineraries |
+| POST | `/api/itineraries/optimize-order` | Optimize 2-20 itinerary stops along a fixed start-to-end direction |
 | GET | `/api/itineraries/{id}` | Itinerary detail |
 | GET | `/api/search` | Full-text search entities + itineraries |
 | GET | `/api/stats` | Public stats (entity counts, etc.) |
