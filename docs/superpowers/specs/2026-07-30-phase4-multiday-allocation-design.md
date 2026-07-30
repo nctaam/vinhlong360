@@ -1,6 +1,6 @@
 # Phase 4 - Multi-day Itinerary Allocation and Load Balancing
 
-> STATUS: implemented; final whole-branch review pending
+> STATUS: complete (2026-07-30; focused matrix 210 passed; final whole-branch review clean)
 > Ngày: 2026-07-30
 > Phạm vi: generator `generate_itinerary(...)`; kế thừa Phase 3, không thay đổi public API, saved schema hoặc frontend contract
 

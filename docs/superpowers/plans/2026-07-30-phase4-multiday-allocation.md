@@ -1,8 +1,8 @@
 # Phase 4 Multi-day Allocation Implementation Plan
 
-> STATUS: active
+> STATUS: complete (2026-07-30; final focused matrix 210 passed)
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Reallocate the content POIs already selected by Phase 3 across adjacent itinerary days, choose better internal day endpoints, and reduce maximum day load without changing the public API or adding cost.
 
@@ -40,7 +40,7 @@
 - Consumes: `SelectionCandidate` from `agent/itinerary_selection.py`; `NoFeasibleScheduleError`, `ScheduleOptions`, `ScheduleResult`, `ScheduleStop`, `build_fallback_matrix`, and `schedule_stop_order` from `agent/itinerary_schedule.py`.
 - Produces: immutable `MultiDayDayInput`, `MultiDayOptions`, `MultiDayDayResult`, `MultiDayResult`; public `optimize_multi_day_allocation(...)`; a baseline evaluator that keeps Phase 3 ownership and fixed baseline endpoints while adding synthetic origins from day two onward.
 
-- [ ] **Step 1: Write the failing contract and baseline-route tests.**
+- [x] **Step 1: Write the failing contract and baseline-route tests.**
 
 Create `agent/tests/test_itinerary_multiday.py` with these helpers and tests:
 
@@ -172,7 +172,7 @@ def test_fixed_allocation_adds_internal_origin_without_emitting_it():
     assert "overnight-origin-approximated" in result.warnings
 ```
 
-- [ ] **Step 2: Run the tests and verify the intended RED failure.**
+- [x] **Step 2: Run the tests and verify the intended RED failure.**
 
 Run:
 
@@ -182,7 +182,7 @@ python -m pytest agent/tests/test_itinerary_multiday.py -q
 
 Expected: collection fails because `agent/itinerary_multiday.py` and its public contracts do not exist.
 
-- [ ] **Step 3: Implement the contracts, validation, and baseline route evaluator.**
+- [x] **Step 3: Implement the contracts, validation, and baseline route evaluator.**
 
 Implement the four dataclasses exactly as specified in `docs/superpowers/specs/2026-07-30-phase4-multiday-allocation-design.md`. Validation must include:
 
@@ -250,7 +250,7 @@ Return `ordered_ids` after filtering only the synthetic origin. Fixed anchor IDs
 
 In the first implementation of `optimize_multi_day_allocation(...)`, evaluate the baseline allocation with the last baseline content ID as every day's endpoint. Return `initial_load_minutes == final_load_minutes`, empty moved lists, `move_count=0`, solver `multiday-dp-local-search`, and warning `overnight-origin-approximated`. Leave endpoint optimization and neighborhoods for later tasks.
 
-- [ ] **Step 4: Run contract, scheduler, and Phase 3 selection regressions.**
+- [x] **Step 4: Run contract, scheduler, and Phase 3 selection regressions.**
 
 ```powershell
 python -m pytest agent/tests/test_itinerary_multiday.py agent/tests/test_itinerary_selection.py agent/tests/test_itinerary_schedule.py -q
@@ -259,14 +259,14 @@ python -m ruff check agent/itinerary_multiday.py agent/tests/test_itinerary_mult
 
 Expected: all tests pass; no network/dependency changes appear.
 
-- [ ] **Step 5: Commit the contracts and baseline evaluator.**
+- [x] **Step 5: Commit the contracts and baseline evaluator.**
 
 ```powershell
 git add agent/itinerary_multiday.py agent/tests/test_itinerary_multiday.py
 git commit -m "feat: add multiday allocation contracts"
 ```
 
-- [ ] **Step 6: Run a Task 1 scoped spec/quality review.**
+- [x] **Step 6: Run a Task 1 scoped spec/quality review.**
 
 Review the Task 1 commit against the contracts, synthetic-origin isolation, fixed endpoint order, shared-deadline propagation, and validation messages. Fix every Critical or Important finding and rerun the Task 1 matrix before starting Task 2.
 
@@ -280,7 +280,7 @@ Review the Task 1 commit against the contracts, synthetic-origin isolation, fixe
 - Consumes: Task 1 contracts and `_schedule_day(...)`.
 - Produces: `_solve_allocation(...)` with bounded labels per endpoint, shared deadline, feasibility cache, dynamic internal endpoints, and a complete baseline result for the unchanged Phase 3 ownership allocation.
 
-- [ ] **Step 1: Add failing endpoint-DP and fixed-anchor tests.**
+- [x] **Step 1: Add failing endpoint-DP and fixed-anchor tests.**
 
 Append:
 
@@ -368,7 +368,7 @@ def test_endpoint_dp_is_deterministic():
     assert first == second
 ```
 
-- [ ] **Step 2: Run the unit file and verify RED.**
+- [x] **Step 2: Run the unit file and verify RED.**
 
 ```powershell
 python -m pytest agent/tests/test_itinerary_multiday.py -q
@@ -376,7 +376,7 @@ python -m pytest agent/tests/test_itinerary_multiday.py -q
 
 Expected: the baseline evaluator keeps `baseline-end`; the endpoint-choice assertion fails while Task 1 tests remain green.
 
-- [ ] **Step 3: Implement bounded label-setting across days.**
+- [x] **Step 3: Implement bounded label-setting across days.**
 
 Add immutable internal labels:
 
@@ -425,21 +425,21 @@ The label comparator must order by maximum load, load range, total absolute devi
 
 Before dynamic endpoints, evaluate the fixed Phase 3 baseline endpoints once to populate `initial_load_minutes`. The dynamic DP includes those endpoint choices, so it cannot return a worse complete objective than the fixed baseline. With `max_iterations=0`, `optimize_multi_day_allocation(...)` now returns the best endpoint-DP result and no ownership moves.
 
-- [ ] **Step 4: Run DP, scheduler, and selection regressions.**
+- [x] **Step 4: Run DP, scheduler, and selection regressions.**
 
 ```powershell
 python -m pytest agent/tests/test_itinerary_multiday.py agent/tests/test_itinerary_selection.py agent/tests/test_itinerary_schedule.py agent/tests/test_itinerary_optimizer.py -q
 python -m ruff check agent/itinerary_multiday.py agent/tests/test_itinerary_multiday.py
 ```
 
-- [ ] **Step 5: Commit endpoint DP.**
+- [x] **Step 5: Commit endpoint DP.**
 
 ```powershell
 git add agent/itinerary_multiday.py agent/tests/test_itinerary_multiday.py
 git commit -m "feat: add multiday endpoint dp"
 ```
 
-- [ ] **Step 6: Run a Task 2 scoped spec/quality review.**
+- [x] **Step 6: Run a Task 2 scoped spec/quality review.**
 
 Review endpoint enumeration, label dominance, cache keys, fixed-anchor ownership, deadline propagation, and global start/end preservation. Fix every Critical or Important finding and rerun the Task 2 matrix before starting Task 3.
 
@@ -453,7 +453,7 @@ Review endpoint enumeration, label dominance, cache keys, fixed-anchor ownership
 - Consumes: Task 2 `_solve_allocation(...)` and result objective.
 - Produces: canonical ownership allocations, deterministic `boundary-swap`/`relocate`/`swap` neighborhoods, bounded steepest-descent, shared deadline behavior, move diagnostics, and the final `MultiDayResult`.
 
-- [ ] **Step 1: Add failing neighborhood, balance, and deadline tests.**
+- [x] **Step 1: Add failing neighborhood, balance, and deadline tests.**
 
 Append:
 
@@ -560,7 +560,7 @@ def test_deadline_after_incumbent_returns_complete_result(monkeypatch):
     assert "multiday-deadline-reached" in result.warnings
 ```
 
-- [ ] **Step 2: Run the unit file and confirm RED.**
+- [x] **Step 2: Run the unit file and confirm RED.**
 
 ```powershell
 python -m pytest agent/tests/test_itinerary_multiday.py -q
@@ -568,7 +568,7 @@ python -m pytest agent/tests/test_itinerary_multiday.py -q
 
 Expected: `_generate_neighbors` and `_local_search_deadline_reached` do not exist; the optimizer retains baseline ownership.
 
-- [ ] **Step 3: Implement canonical neighborhoods, objective, and bounded search.**
+- [x] **Step 3: Implement canonical neighborhoods, objective, and bounded search.**
 
 Add:
 
@@ -629,21 +629,21 @@ Implement `_local_search_deadline_reached(deadline)` as a thin `time.perf_counte
 
 Compute `baseline_owner`, final owner, `move_count`, and per-day sorted moved-in/out tuples from the final allocation. Preserve `overnight-origin-approximated` for every successful multi-day result.
 
-- [ ] **Step 4: Run Phase 4 unit and Phase 3 regression tests.**
+- [x] **Step 4: Run Phase 4 unit and Phase 3 regression tests.**
 
 ```powershell
 python -m pytest agent/tests/test_itinerary_multiday.py agent/tests/test_itinerary_selection.py agent/tests/test_itinerary_schedule.py agent/tests/test_itinerary_optimizer.py -q
 python -m ruff check agent/itinerary_multiday.py agent/tests/test_itinerary_multiday.py
 ```
 
-- [ ] **Step 5: Commit local search.**
+- [x] **Step 5: Commit local search.**
 
 ```powershell
 git add agent/itinerary_multiday.py agent/tests/test_itinerary_multiday.py
 git commit -m "feat: balance itinerary days locally"
 ```
 
-- [ ] **Step 6: Run a Task 3 scoped spec/quality review.**
+- [x] **Step 6: Run a Task 3 scoped spec/quality review.**
 
 Review neighborhood completeness/deduplication, count bounds, objective ordering, incumbent safety, move accounting, determinism, and deadline behavior. Fix every Critical or Important finding and rerun the Task 3 matrix before generator integration.
 
@@ -658,7 +658,7 @@ Review neighborhood completeness/deduplication, count bounds, objective ordering
 - Consumes: `MultiDayDayInput`, `MultiDayOptions`, `MultiDayResult`, and `optimize_multi_day_allocation(...)` from Task 3.
 - Produces: unchanged `generate_itinerary(...)` arguments and top-level keys; final content ownership/order projected from Phase 4; route timing fields refreshed; nested `schedule.allocation` diagnostics; complete Phase 3 fallback.
 
-- [ ] **Step 1: Write failing generator integration tests.**
+- [x] **Step 1: Write failing generator integration tests.**
 
 Create `agent/tests/test_itinerary_generator_multiday.py`:
 
@@ -836,7 +836,7 @@ def test_one_day_generator_does_not_add_allocation_diagnostics(
     assert "allocation" not in result["day_plans"][0]["schedule"]
 ```
 
-- [ ] **Step 2: Run generator Phase 4 tests and confirm RED.**
+- [x] **Step 2: Run generator Phase 4 tests and confirm RED.**
 
 ```powershell
 python -m pytest agent/tests/test_itinerary_generator_multiday.py -q
@@ -844,7 +844,7 @@ python -m pytest agent/tests/test_itinerary_generator_multiday.py -q
 
 Expected: allocation diagnostics are absent and `move-me` remains on day 1.
 
-- [ ] **Step 3: Refactor the generator adapter and integrate Phase 4.**
+- [x] **Step 3: Refactor the generator adapter and integrate Phase 4.**
 
 Import the Task 3 contracts and keep the public generator signature unchanged:
 
@@ -898,7 +898,7 @@ def _allocation_diagnostics(result, day_index: int) -> dict:
 
 When refreshing route diagnostics, filter the internal synthetic origin out of `skipped` defensively and retain the union of Phase 3 warnings, anchor warnings, and final scheduler warnings in deterministic order without duplicates.
 
-- [ ] **Step 4: Run generator, MCP, Phase 3, and Phase 4 regressions.**
+- [x] **Step 4: Run generator, MCP, Phase 3, and Phase 4 regressions.**
 
 ```powershell
 python -m pytest agent/tests/test_itinerary_generator_multiday.py agent/tests/test_itinerary_multiday.py agent/tests/test_itinerary_generator_selection.py agent/tests/test_itinerary_generator_mcp.py agent/tests/test_itinerary_generator_schedule.py agent/tests/test_cov_itinerary_gen.py agent/tests/test_itinerary_selection.py agent/tests/test_itinerary_schedule.py agent/tests/test_itinerary_optimizer.py -q
@@ -908,14 +908,14 @@ git diff --check
 
 Expected: new multi-day behavior passes, one-day output remains Phase 3-only, and all focused compatibility tests remain green.
 
-- [ ] **Step 5: Commit generator integration.**
+- [x] **Step 5: Commit generator integration.**
 
 ```powershell
 git add agent/itinerary_gen.py agent/tests/test_itinerary_generator_multiday.py agent/tests/test_cov_itinerary_gen.py
 git commit -m "feat: integrate multiday itinerary balancing"
 ```
 
-- [ ] **Step 6: Run a Task 4 scoped spec/quality review.**
+- [x] **Step 6: Run a Task 4 scoped spec/quality review.**
 
 Review public API preservation, Phase 3 diagnostic semantics, synthetic-origin filtering, anchor ownership, uniqueness, fallback completeness, `area_focus`, and `total_stops`. Fix every Critical or Important finding and rerun the Task 4 matrix before documentation.
 
@@ -930,7 +930,7 @@ Review public API preservation, Phase 3 diagnostic semantics, synthetic-origin f
 - Consumes: Task 4 final public behavior and additive allocation diagnostics.
 - Produces: published Phase 4 contract, completed roadmap status, explicit pre-allocation semantics for Phase 3 selection diagnostics, zero-cost wording, and the final focused verification evidence.
 
-- [ ] **Step 1: Re-run the behavior contract before documentation edits.**
+- [x] **Step 1: Re-run the behavior contract before documentation edits.**
 
 ```powershell
 python -m pytest agent/tests/test_itinerary_generator_multiday.py agent/tests/test_itinerary_multiday.py agent/tests/test_itinerary_generator_mcp.py -q
@@ -938,7 +938,7 @@ python -m pytest agent/tests/test_itinerary_generator_multiday.py agent/tests/te
 
 Expected: the public behavior is already green; documentation is the only remaining deliverable.
 
-- [ ] **Step 2: Update the API contract and roadmap.**
+- [x] **Step 2: Update the API contract and roadmap.**
 
 In `docs/api-contract.md`, document:
 
@@ -952,7 +952,7 @@ In the roadmap, mark only Phase 4 complete. Leave Phases 5-6 pending and preserv
 
 Change the Phase 4 design status to `complete` only after the focused matrix is green.
 
-- [ ] **Step 3: Run the complete focused Phase 4 matrix and quality checks.**
+- [x] **Step 3: Run the complete focused Phase 4 matrix and quality checks.**
 
 ```powershell
 python -m pytest agent/tests/test_itinerary_multiday.py agent/tests/test_itinerary_generator_multiday.py agent/tests/test_itinerary_selection.py agent/tests/test_itinerary_generator_selection.py agent/tests/test_itinerary_generator_mcp.py agent/tests/test_itinerary_generator_schedule.py agent/tests/test_cov_itinerary_gen.py agent/tests/test_itinerary_schedule.py agent/tests/test_itinerary_optimizer.py -q
@@ -962,26 +962,26 @@ git diff --check
 
 Expected: all focused tests pass; no dependency, network, paid API, migration, deploy, schema, MCP signature, or frontend changes appear in the diff. Do not claim the full repository suite passes.
 
-- [ ] **Step 4: Commit documentation.**
+- [x] **Step 4: Commit documentation.**
 
 ```powershell
 git add docs/api-contract.md docs/superpowers/specs/2026-07-29-zero-cost-itinerary-intelligence-roadmap-design.md docs/superpowers/specs/2026-07-30-phase4-multiday-allocation-design.md
 git commit -m "docs: publish phase 4 multiday allocation contract"
 ```
 
-- [ ] **Step 5: Run final whole-branch review and record the checkpoint.**
+- [x] **Step 5: Run final whole-branch review and record the checkpoint.**
 
 Review the full branch diff from the Phase 3 merge base through the documentation commit. Confirm every spec invariant, focused test result, Ruff result, and zero-cost boundary. Fix all Critical/Important findings in a final scoped wave, rerun the full focused matrix, then mark the plan and design status complete in a separate checkpoint commit.
 
 ## Verification Checklist
 
-- [ ] Every production task observes a failing test before implementation.
-- [ ] Every task receives task-scoped spec and quality review before the next task.
-- [ ] Global content ID set is unchanged by Phase 4 in all success fixtures.
-- [ ] Global first/last content IDs remain fixed.
-- [ ] Synthetic origin IDs never appear in public stops.
-- [ ] Phase 3 selection diagnostics remain intact as pre-allocation history.
-- [ ] Focused Phase 4 + Phase 3 matrix passes on the final branch result.
-- [ ] Ruff and `git diff --check` are clean.
-- [ ] No dependency, network call, paid API, migration, deploy, saved-schema change, MCP signature change, or frontend contract change is introduced.
-- [ ] Final whole-branch review is clean or only contains explicitly accepted non-load-bearing minors.
+- [x] Every production task observes a failing test before implementation.
+- [x] Every task receives task-scoped spec and quality review before the next task.
+- [x] Global content ID set is unchanged by Phase 4 in all success fixtures.
+- [x] Global first/last content IDs remain fixed.
+- [x] Synthetic origin IDs never appear in public stops.
+- [x] Phase 3 selection diagnostics remain intact as pre-allocation history.
+- [x] Focused Phase 4 + Phase 3 matrix passes on the final branch result.
+- [x] Ruff and `git diff --check` are clean.
+- [x] No dependency, network call, paid API, migration, deploy, saved-schema change, MCP signature change, or frontend contract change is introduced.
+- [x] Final whole-branch review is clean or only contains explicitly accepted non-load-bearing minors.
