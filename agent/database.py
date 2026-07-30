@@ -533,12 +533,21 @@ class Database:
             pass
 
     @staticmethod
-    def _close_connection_preserving_error(conn, primary_error):
+    def _close_connection_preserving_error(
+        conn, primary_error, *, committed_transaction: bool = False
+    ):
         try:
             conn.close()
-        except BaseException:
-            if primary_error is None:
-                raise
+        except BaseException as cleanup_error:
+            if primary_error is not None:
+                return
+            if committed_transaction and isinstance(cleanup_error, Exception):
+                logger.warning(
+                    "Database connection cleanup failed after commit: %s",
+                    type(cleanup_error).__name__,
+                )
+                return
+            raise
 
     @staticmethod
     def _return_connection_to_pool(
@@ -561,12 +570,14 @@ class Database:
         pool = self._get_pg_pool()
         conn = pool.getconn() if pool else psycopg2.connect(self._dsn, connect_timeout=5)
         reusable = False
+        committed_transaction = False
         primary_error = None
         try:
             conn.autocommit = False
             yield conn
             self._finalize_connection(conn, commit_on_success)
             reusable = True
+            committed_transaction = commit_on_success
         except BaseException as exc:
             primary_error = exc
             self._rollback_connection_quietly(conn)
@@ -581,11 +592,16 @@ class Database:
                     primary_error=primary_error,
                 )
             else:
-                self._close_connection_preserving_error(conn, primary_error)
+                self._close_connection_preserving_error(
+                    conn,
+                    primary_error,
+                    committed_transaction=committed_transaction,
+                )
 
     @contextmanager
     def _sqlite_conn(self, *, commit_on_success: bool):
         conn = sqlite3.connect(self.db_path, timeout=30)
+        committed_transaction = False
         primary_error = None
         try:
             conn.row_factory = sqlite3.Row
@@ -594,12 +610,17 @@ class Database:
             conn.execute("PRAGMA busy_timeout=5000")
             yield conn
             self._finalize_connection(conn, commit_on_success)
+            committed_transaction = commit_on_success
         except BaseException as exc:
             primary_error = exc
             self._rollback_connection_quietly(conn)
             raise
         finally:
-            self._close_connection_preserving_error(conn, primary_error)
+            self._close_connection_preserving_error(
+                conn,
+                primary_error,
+                committed_transaction=committed_transaction,
+            )
 
     @contextmanager
     def _conn(self, *, commit_on_success: bool = True):

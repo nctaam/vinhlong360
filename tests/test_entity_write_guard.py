@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import importlib.util
+import os
+import subprocess
 import sys
 from pathlib import Path
 from types import ModuleType
@@ -123,6 +125,62 @@ def dynamic_list(cur, sets):
     ]
 
 
+def test_scanner_detects_literal_entity_type_update(tmp_path):
+    checker = _load_checker()
+    _write_source(
+        tmp_path / "type_update.py",
+        "def change_type(cur):\n    cur.execute('UPDATE entities SET type = ? WHERE id = ?')\n",
+    )
+
+    sites = checker.find_write_sites(tmp_path)
+
+    assert [(site.function, site.kind) for site in sites] == [
+        ("change_type", "integrity-update")
+    ]
+
+
+def test_scanner_detects_attributes_when_not_first_assignment(tmp_path):
+    checker = _load_checker()
+    _write_source(
+        tmp_path / "later_attributes.py",
+        "def write(cur):\n    cur.execute('UPDATE entities SET name = ?, attributes = ? WHERE id = ?')\n",
+    )
+
+    sites = checker.find_write_sites(tmp_path)
+
+    assert [(site.function, site.kind) for site in sites] == [
+        ("write", "attributes-update")
+    ]
+
+
+def test_scanner_detects_concatenated_entity_write_sql(tmp_path):
+    checker = _load_checker()
+    _write_source(
+        tmp_path / "concatenated.py",
+        "def write(cur):\n    cur.execute('UPDATE entities ' + 'SET attributes = ? WHERE id = ?')\n",
+    )
+
+    sites = checker.find_write_sites(tmp_path)
+
+    assert [(site.function, site.kind) for site in sites] == [
+        ("write", "attributes-update")
+    ]
+
+
+def test_scanner_detects_locally_bound_entity_write_sql(tmp_path):
+    checker = _load_checker()
+    _write_source(
+        tmp_path / "bound.py",
+        "def write(cur):\n    sql = 'UPDATE entities SET attributes = ? WHERE id = ?'\n    cur.execute(sql)\n",
+    )
+
+    sites = checker.find_write_sites(tmp_path)
+
+    assert [(site.function, site.kind) for site in sites] == [
+        ("write", "attributes-update")
+    ]
+
+
 def test_allowlist_is_exact_per_function_not_per_path(tmp_path, monkeypatch):
     checker = _load_checker()
     _write_source(
@@ -145,6 +203,31 @@ def bypass(cur):
 
     assert [(site.path, site.function, site.kind) for site in sites] == [
         ("scripts/same_file.py", "bypass", "attributes-update")
+    ]
+
+
+def test_allowlist_rejects_extra_same_kind_call_in_approved_function(
+    tmp_path, monkeypatch
+):
+    checker = _load_checker()
+    _write_source(
+        tmp_path / "scripts" / "same_file.py",
+        """
+def approved(cur):
+    cur.execute('UPDATE entities SET attributes = ?')
+    cur.execute('UPDATE entities SET attributes = ?')
+""",
+    )
+    monkeypatch.setattr(
+        checker,
+        "ALLOWED_WRITE_SITES",
+        {("scripts/same_file.py", "approved", "attributes-update")},
+    )
+
+    sites = checker.unapproved_write_sites(tmp_path)
+
+    assert [(site.path, site.function, site.kind, site.line) for site in sites] == [
+        ("scripts/same_file.py", "approved", "attributes-update", 4)
     ]
 
 
@@ -201,6 +284,42 @@ def test_cli_parse_error_fails_closed_with_sanitized_output(tmp_path, capsys):
     assert captured.err == ""
     assert "DO_NOT_PRINT" not in captured.out
     assert "Traceback" not in captured.out
+
+
+def test_cli_unexpected_dsn_argument_is_redacted_at_process_boundary():
+    argument = (
+        "--database-url="
+        "postgresql://guard-user-canary:guard-pass-canary@guard-host-canary/guard-db-canary"
+    )
+    env = os.environ.copy()
+    env.pop("DATABASE_URL", None)
+    env.update(
+        {
+            "ENVIRONMENT": "test",
+            "ENTITY_DETAILS_TABLES": "false",
+            "PYTHON_DOTENV_DISABLED": "1",
+        }
+    )
+
+    result = subprocess.run(
+        [sys.executable, str(CHECKER), argument],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=15,
+    )
+
+    assert result.returncode == 2
+    combined = result.stdout + result.stderr
+    for canary in (
+        argument,
+        "guard-user-canary",
+        "guard-pass-canary",
+        "guard-host-canary",
+        "guard-db-canary",
+    ):
+        assert canary not in combined
 
 
 def test_declaration_expressions_use_enclosing_scope(tmp_path):

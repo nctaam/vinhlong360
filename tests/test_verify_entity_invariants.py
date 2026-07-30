@@ -205,6 +205,18 @@ def test_report_has_stable_keys_and_sorted_aggregate_output():
     }
 
 
+def test_equal_only_report_keeps_clean_status_and_zero_exit(capsys, monkeypatch):
+    verifier = _load_verifier()
+    counts = {key: 0 for key in verifier.INVARIANT_KEYS}
+    counts["typed_jsonb_equal"] = 2
+    report = verifier.InvariantReport(1, counts, _ready_schema())
+    monkeypatch.setattr(verifier, "run", lambda _dsn: report)
+
+    assert report.ok is True
+    assert verifier.main([]) == 0
+    assert "typed_jsonb_equal=2" in capsys.readouterr().out.splitlines()
+
+
 class _FakeCursor:
     def __init__(self, events, queries):
         self.events = events

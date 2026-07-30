@@ -31,7 +31,11 @@ class InvariantReport:
 
     @property
     def ok(self) -> bool:
-        return all(value == 0 for value in self.counts.values())
+        return all(
+            value == 0
+            for key, value in self.counts.items()
+            if key != "typed_jsonb_equal"
+        )
 
     def as_dict(self) -> dict[str, object]:
         return {

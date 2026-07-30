@@ -66,6 +66,27 @@ def test_production_requires_entity_detail_tables():
         _production_settings(ENTITY_DETAILS_TABLES=False)
 
 
+def test_production_validation_error_rendering_hides_sensitive_inputs():
+    from config import Settings
+
+    secret = "key-canary"
+    dsn = "sqlite://dsn-canary"
+
+    with pytest.raises(ValueError, match="PostgreSQL") as caught:
+        Settings.model_validate(
+            {
+                "ENVIRONMENT": "production",
+                "LLM_API_KEY": secret,
+                "DATABASE_URL": dsn,
+            }
+        )
+
+    rendered = str(caught.value)
+    assert "input_value" not in rendered
+    assert secret not in rendered
+    assert dsn not in rendered
+
+
 def test_development_still_allows_sqlite_and_disabled_detail_tables():
     from config import Settings
 

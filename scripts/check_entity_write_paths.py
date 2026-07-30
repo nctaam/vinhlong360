@@ -6,6 +6,8 @@ from __future__ import annotations
 import argparse
 import ast
 import re
+import sys
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Sequence
@@ -44,6 +46,16 @@ ALLOWED_WRITE_SITES = {
     ("scripts/fix_tinh_moi.py", "apply_pg", "attributes-update"),
     ("scripts/fix_tinh_moi.py", "apply_pg", "dynamic-update"),
 }
+ALLOWED_WRITE_SITE_COUNTS = {
+    site: 2
+    if site
+    in {
+        ("agent/database.py", "Database._write_entity_row", "insert"),
+        ("scripts/sp2_reconcile.py", "_apply_one_local_fix", "attributes-update"),
+    }
+    else 1
+    for site in ALLOWED_WRITE_SITES
+}
 
 _IGNORED_DIRECTORIES = {
     ".cache",
@@ -60,26 +72,49 @@ _IGNORED_DIRECTORIES = {
 }
 _INSERT_RE = re.compile(r"\binsert\s+into\s+entities\b", re.IGNORECASE)
 _UPDATE_RE = re.compile(r"\bupdate\s+entities\s+set\s+", re.IGNORECASE)
-_ATTRIBUTES_ASSIGNMENT_RE = re.compile(r"attributes\b\s*=", re.IGNORECASE)
-_DYNAMIC_ASSIGNMENT_RE = re.compile(
-    r'(?:\{\}|"\{\}"|`\{\}`|\[\{\}\])',
+_UPDATE_CLAUSE_RE = re.compile(r"\b(?:where|returning)\b", re.IGNORECASE)
+_ASSIGNMENT_RE = re.compile(
+    r'(?:^|,)\s*(?P<column>\{\}|(?:"[^"]+"|[a-z_][a-z0-9_]*)(?:\.(?:"[^"]+"|[a-z_][a-z0-9_]*))?)\s*=',
     re.IGNORECASE,
 )
+_INTEGRITY_COLUMNS = {
+    "attributes",
+    "type",
+    "address",
+    "phone",
+    "website",
+    "hours",
+    "price_range",
+    "sub_category",
+    "best_time",
+    "highlight",
+}
 
 
-def _sql_shape(node: ast.AST) -> str | None:
+def _sql_shape(node: ast.AST, bindings: dict[str, str | None]) -> str | None:
     if isinstance(node, ast.Constant) and isinstance(node.value, str):
         return node.value
+    if isinstance(node, ast.Name):
+        return bindings.get(node.id)
+    if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
+        left = _sql_shape(node.left, bindings)
+        right = _sql_shape(node.right, bindings)
+        if left is not None and right is not None:
+            return left + right
+        return None
     if isinstance(node, ast.JoinedStr):
-        return "".join(
-            part.value if isinstance(part, ast.Constant) else "{}"
-            for part in node.values
-        )
+        parts = []
+        for part in node.values:
+            if isinstance(part, ast.Constant):
+                parts.append(part.value)
+            elif isinstance(part, ast.FormattedValue):
+                parts.append(_sql_shape(part.value, bindings) or "{}")
+        return "".join(parts)
     return None
 
 
-def _classify_sql(node: ast.AST) -> str | None:
-    shape = _sql_shape(node)
+def _classify_sql(node: ast.AST, bindings: dict[str, str | None]) -> str | None:
+    shape = _sql_shape(node, bindings)
     if shape is None:
         return None
     normalized = " ".join(shape.split())
@@ -88,11 +123,17 @@ def _classify_sql(node: ast.AST) -> str | None:
     update = _UPDATE_RE.search(normalized)
     if update is None:
         return None
-    first_assignment = normalized[update.end() :].lstrip()
-    if _ATTRIBUTES_ASSIGNMENT_RE.match(first_assignment):
+    assignment_text = _UPDATE_CLAUSE_RE.split(normalized[update.end() :], maxsplit=1)[0]
+    columns = {
+        match.group("column").split(".")[-1].strip('"').lower()
+        for match in _ASSIGNMENT_RE.finditer(assignment_text)
+    }
+    if "attributes" in columns:
         return "attributes-update"
-    if _DYNAMIC_ASSIGNMENT_RE.match(first_assignment):
+    if "{}" in columns or (not columns and assignment_text.lstrip().startswith("{}")):
         return "dynamic-update"
+    if columns & _INTEGRITY_COLUMNS:
+        return "integrity-update"
     return None
 
 
@@ -100,7 +141,14 @@ class _WriteVisitor(ast.NodeVisitor):
     def __init__(self, relative_path: str) -> None:
         self.relative_path = relative_path
         self.scopes: list[str] = []
+        self.binding_scopes: list[dict[str, str | None]] = [{}]
         self.sites: list[WriteSite] = []
+
+    def _bindings(self) -> dict[str, str | None]:
+        bindings: dict[str, str | None] = {}
+        for scope in self.binding_scopes:
+            bindings.update(scope)
+        return bindings
 
     def visit_ClassDef(self, node: ast.ClassDef) -> None:
         self._visit_nodes(node.decorator_list)
@@ -123,25 +171,82 @@ class _WriteVisitor(ast.NodeVisitor):
         if node.returns is not None:
             self.visit(node.returns)
         self._visit_nodes(getattr(node, "type_params", []))
-        self._visit_scope_body(node.name, node.body)
+        arguments = (
+            *node.args.posonlyargs,
+            *node.args.args,
+            *node.args.kwonlyargs,
+        )
+        if node.args.vararg is not None:
+            arguments += (node.args.vararg,)
+        if node.args.kwarg is not None:
+            arguments += (node.args.kwarg,)
+        self._visit_scope_body(
+            node.name,
+            node.body,
+            shadowed=(argument.arg for argument in arguments),
+        )
 
     def _visit_nodes(self, nodes: Iterable[ast.AST]) -> None:
         for node in nodes:
             self.visit(node)
 
-    def _visit_scope_body(self, name: str, body: Iterable[ast.AST]) -> None:
+    def _visit_scope_body(
+        self,
+        name: str,
+        body: Iterable[ast.AST],
+        *,
+        shadowed: Iterable[str] = (),
+    ) -> None:
         self.scopes.append(name)
+        self.binding_scopes.append({binding: None for binding in shadowed})
         self._visit_nodes(body)
+        self.binding_scopes.pop()
         self.scopes.pop()
 
+    def visit_Assign(self, node: ast.Assign) -> None:
+        self.visit(node.value)
+        shape = _sql_shape(node.value, self._bindings())
+        for target in node.targets:
+            if isinstance(target, ast.Name):
+                self.binding_scopes[-1][target.id] = shape
+            else:
+                self.visit(target)
+
+    def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
+        self.visit(node.annotation)
+        if node.value is not None:
+            self.visit(node.value)
+        if isinstance(node.target, ast.Name):
+            self.binding_scopes[-1][node.target.id] = (
+                _sql_shape(node.value, self._bindings())
+                if node.value is not None
+                else None
+            )
+        else:
+            self.visit(node.target)
+
+    def visit_AugAssign(self, node: ast.AugAssign) -> None:
+        self.visit(node.value)
+        if isinstance(node.target, ast.Name) and isinstance(node.op, ast.Add):
+            current = self._bindings().get(node.target.id)
+            addition = _sql_shape(node.value, self._bindings())
+            self.binding_scopes[-1][node.target.id] = (
+                current + addition
+                if current is not None and addition is not None
+                else None
+            )
+        else:
+            self.visit(node.target)
+
     def visit_Call(self, node: ast.Call) -> None:
+        bindings = self._bindings()
         kinds = {
             kind
             for argument in [
                 *node.args,
                 *(keyword.value for keyword in node.keywords),
             ]
-            if (kind := _classify_sql(argument)) is not None
+            if (kind := _classify_sql(argument, bindings)) is not None
         }
         function = ".".join(self.scopes) or "<module>"
         for kind in sorted(kinds):
@@ -192,15 +297,28 @@ def find_write_sites(root: Path) -> list[WriteSite]:
 
 
 def unapproved_write_sites(root: Path) -> list[WriteSite]:
-    return [
-        site
-        for site in find_write_sites(root)
-        if (site.path, site.function, site.kind) not in ALLOWED_WRITE_SITES
-    ]
+    occurrences: Counter[tuple[str, str, str]] = Counter()
+    unapproved = []
+    for site in find_write_sites(root):
+        key = (site.path, site.function, site.kind)
+        occurrences[key] += 1
+        allowed_count = ALLOWED_WRITE_SITE_COUNTS.get(key, 1)
+        if key not in ALLOWED_WRITE_SITES or occurrences[key] > allowed_count:
+            unapproved.append(site)
+    return unapproved
+
+
+class _CliUsageError(Exception):
+    pass
+
+
+class _RedactedArgumentParser(argparse.ArgumentParser):
+    def error(self, _message: str) -> None:
+        raise _CliUsageError
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(
+    parser = _RedactedArgumentParser(
         description="Reject unapproved direct entity SQL writes."
     )
     parser.add_argument(
@@ -209,7 +327,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         type=Path,
         default=Path(__file__).resolve().parents[1],
     )
-    args = parser.parse_args(argv)
+    try:
+        args = parser.parse_args(argv)
+    except _CliUsageError:
+        print("entity write path check failed: invalid arguments", file=sys.stderr)
+        return 2
     sites = unapproved_write_sites(args.root)
     for site in sites:
         print(f"{site.path}|{site.function}|{site.kind}|{site.line}")

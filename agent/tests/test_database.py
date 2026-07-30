@@ -486,6 +486,107 @@ def test_detail_cache_publication_follows_commit_order_across_mutating_paths(
         assert cache[replacement_id]["producer"] == "Replacement"
 
 
+@pytest.mark.parametrize("operation", ["upsert", "delete", "replace"])
+def test_committed_close_failure_does_not_skip_detail_cache_publication(
+    db, tmp_path, monkeypatch, caplog, operation
+):
+    import entity_details
+    from config import settings
+
+    monkeypatch.setattr(settings, "ENTITY_DETAILS_TABLES", True)
+    db.reload_entity_details_cache()
+    entity_id = f"committed-close-{operation}"
+    if operation in {"delete", "replace"}:
+        db.upsert_entity(
+            _entity(
+                eid=entity_id,
+                etype="product",
+                attributes={"producer": "Before"},
+            )
+        )
+
+    replacement_id = "committed-close-replacement"
+    replacement_path = tmp_path / "committed-close-replace.json"
+    replacement_path.write_text(
+        json.dumps(
+            {
+                "entities": [
+                    _entity(
+                        eid=replacement_id,
+                        etype="product",
+                        attributes={"producer": "Replacement"},
+                    )
+                ],
+                "relationships": [],
+                "itineraries": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    real_connect = sqlite3.connect
+    sensitive_cleanup_error = (
+        "postgresql://cleanup-user-canary:cleanup-pass-canary@cleanup-host-canary/db"
+    )
+
+    class CloseFailureConnection:
+        def __init__(self, connection):
+            self._connection = connection
+
+        @property
+        def row_factory(self):
+            return self._connection.row_factory
+
+        @row_factory.setter
+        def row_factory(self, value):
+            self._connection.row_factory = value
+
+        def __getattr__(self, name):
+            return getattr(self._connection, name)
+
+        def close(self):
+            self._connection.close()
+            raise RuntimeError(sensitive_cleanup_error)
+
+    database_path = Path(db.db_path).resolve()
+
+    def connect(path, *args, **kwargs):
+        connection = real_connect(path, *args, **kwargs)
+        if Path(path).resolve() == database_path:
+            return CloseFailureConnection(connection)
+        return connection
+
+    monkeypatch.setattr(sqlite3, "connect", connect)
+    caplog.set_level("WARNING", logger="database")
+
+    if operation == "upsert":
+        db.upsert_entity(
+            _entity(
+                eid=entity_id,
+                etype="product",
+                attributes={"producer": "After"},
+            )
+        )
+    elif operation == "delete":
+        assert db.delete_entity(entity_id) is True
+    else:
+        monkeypatch.setenv("ALLOW_DESTRUCTIVE_DB_REPLACE", "1")
+        monkeypatch.setattr(db, "backup", lambda: str(tmp_path / "backup.db"))
+        db.replace_from_json(str(replacement_path))
+
+    cache = entity_details._DETAIL_CACHE or {}
+    if operation == "upsert":
+        assert cache[entity_id]["producer"] == "After"
+    elif operation == "delete":
+        assert entity_id not in cache
+    else:
+        assert entity_id not in cache
+        assert cache[replacement_id]["producer"] == "Replacement"
+    assert "RuntimeError" in caplog.text
+    for canary in ("cleanup-user-canary", "cleanup-pass-canary", "cleanup-host-canary"):
+        assert canary not in caplog.text
+
+
 def test_replace_from_json_auto_backup_stays_next_to_custom_db(db, tmp_path, monkeypatch):
     import database
 

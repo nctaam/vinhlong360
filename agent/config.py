@@ -127,7 +127,12 @@ class Settings(BaseSettings):
     def admin_telegram_ids_set(self) -> set[str]:
         return {x.strip() for x in self.ADMIN_TELEGRAM_IDS.split(",") if x.strip()}
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
+    model_config = {
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+        "extra": "ignore",
+        "hide_input_in_errors": True,
+    }
 
     @model_validator(mode="after")
     def validate_production_keys(self):
