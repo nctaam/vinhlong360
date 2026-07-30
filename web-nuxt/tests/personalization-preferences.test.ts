@@ -685,6 +685,102 @@ describe('usePersonalizationPreferences contract', () => {
     wrapper.unmount()
   })
 
+  it('opens reconfirm recovery through onboarding despite preserved interests', async () => {
+    const quarantined = snapshot({
+      location_consent_state: 'off',
+      location_enabled: false,
+      location_reconfirm_required: true,
+      explicit_interests: ['food'],
+      revision: 8,
+    })
+    let current = quarantined
+    apiFetchMock.mockImplementation((url: string, request?: Record<string, unknown>) => {
+      if (url === '/api/me/preferences' && !request?.method) return Promise.resolve(current)
+      if (url === '/api/me/preferences' && request?.method === 'PATCH') {
+        const { revision: _revision, ...patch } = request.body as Record<string, unknown>
+        current = snapshot({ ...current, ...patch, revision: current.revision + 1 })
+        return Promise.resolve(current)
+      }
+      if (url === '/api/me/location/resolve') {
+        return Promise.resolve({
+          region_id: 'province-vl',
+          region_label: 'Vĩnh Long',
+          region_scope: 'province',
+          location_source: 'gps',
+          location_accuracy: 'province',
+          confirmation_token: 'onboarding-reconfirm-token',
+        })
+      }
+      return Promise.resolve(current)
+    })
+    const getCurrentPosition = vi.fn((success: PositionCallback) => {
+      success({ coords: { latitude: 10.24, longitude: 105.97 } } as GeolocationPosition)
+    })
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: { getCurrentPosition },
+    })
+
+    const wrapper = await mountSuspended(OnboardingSheet, {
+      attachTo: document.body,
+      global: { stubs: { IconLine: true } },
+    })
+    await flushUi()
+
+    const dialog = () => document.body.querySelector('[aria-label="Thiết lập khu vực và sở thích"]') as HTMLElement
+    expect(dialog()).toBeTruthy()
+    expect(getCurrentPosition).not.toHaveBeenCalled()
+    expect(apiFetchMock.mock.calls.filter(([url, request]) => (
+      url === '/api/me/preferences' && request?.method === 'PATCH'
+    ))).toHaveLength(0)
+    expect(apiFetchMock.mock.calls.filter(([url]) => url === '/api/me/location/resolve')).toHaveLength(0)
+
+    ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+    await flushUi()
+    ;(dialog().querySelector('[data-interest="food"]') as HTMLButtonElement).click()
+    ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+    await flushUi()
+
+    expect(current.explicit_interests).toEqual(['food'])
+    expect(current.location_reconfirm_required).toBe(true)
+    expect(getCurrentPosition).not.toHaveBeenCalled()
+    expect(apiFetchMock.mock.calls.filter(([url]) => url === '/api/me/location/resolve')).toHaveLength(0)
+
+    ;(dialog().querySelector('[data-action="use-location"]') as HTMLButtonElement).click()
+    await flushUi()
+
+    expect(getCurrentPosition).toHaveBeenCalledTimes(1)
+    expect(apiFetchMock.mock.calls.filter(([url]) => url === '/api/me/location/resolve')).toHaveLength(1)
+    expect(apiFetchMock.mock.calls.filter(([url, request]) => (
+      url === '/api/me/preferences'
+      && request?.method === 'PATCH'
+      && (request.body as Record<string, unknown>).location_confirmation_token
+    ))).toHaveLength(0)
+    expect(current.location_reconfirm_required).toBe(true)
+    wrapper.unmount()
+  })
+
+  it('keeps onboarding personalization suppressed for ordinary completed preferences', async () => {
+    apiFetchMock.mockResolvedValue(snapshot({
+      explicit_interests: ['food'],
+      location_reconfirm_required: false,
+      revision: 4,
+    }))
+
+    const wrapper = await mountSuspended(OnboardingSheet, {
+      attachTo: document.body,
+      global: { stubs: { IconLine: true } },
+    })
+    await flushUi()
+
+    expect(document.body.querySelector('[aria-label="Thiết lập khu vực và sở thích"]')).toBeNull()
+    expect(apiFetchMock.mock.calls.filter(([url, request]) => (
+      url === '/api/me/preferences' && request?.method === 'PATCH'
+    ))).toHaveLength(0)
+    expect(apiFetchMock.mock.calls.filter(([url]) => url === '/api/me/location/resolve')).toHaveLength(0)
+    wrapper.unmount()
+  })
+
   it('does not request geolocation until the location action is clicked', async () => {
     const getCurrentPosition = vi.fn((success: PositionCallback) => {
       success({ coords: { latitude: 10.24, longitude: 105.97 } } as GeolocationPosition)

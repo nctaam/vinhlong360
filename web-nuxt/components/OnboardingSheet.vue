@@ -89,7 +89,7 @@ async function maybePromptPersonalization() {
   const hasExplicitPreference = snapshot.location_source === 'manual'
     || !!snapshot.region_id
     || snapshot.explicit_interests.length > 0
-  if (!hasExplicitPreference) personalizeVisible.value = true
+  personalizeVisible.value = snapshot.location_reconfirm_required || !hasExplicitPreference
 }
 
 function dismissPersonalize() {
