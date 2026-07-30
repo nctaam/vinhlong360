@@ -4,7 +4,7 @@
 
 Base: 2bca1dd7f3afce9ad47f70b51b815da62305e559
 
-Head source: 69718d18c7a5ca1918fc742b31663525baf9020b (captured with `git rev-parse HEAD`)
+Head source: ae5a7143 (captured with `git rev-parse HEAD`); the two commits after the original final-head report are test-only backend contract hardening.
 
 ## Migration and PostgreSQL
 
@@ -16,6 +16,9 @@ Head source: 69718d18c7a5ca1918fc742b31663525baf9020b (captured with `git rev-pa
 ## Backend
 
 - Focused backend command above completed with exit code 0 on final head: 434 passed, 7 skipped, 1 xfailed, 1 warning (31s wrapper).
+- Official Phase A regression command — `python -m pytest -q --ignore=tests/launch_safety/test_closed_installer.py` — PASS on final head: 8,892 passed, 183 skipped, 111 deselected, 1 xfailed, 1 warning; exit code 0; elapsed 21:05.
+- Official Phase B launch-safety command — `python -m pytest -q tests/launch_safety/test_closed_installer.py -n 2 --dist=load --max-worker-restart=0` — PASS: 284 passed, 19 skipped; exit code 0; elapsed 1:29:24.
+- The Phase A/B commands were run independently after the final test-only commits `d63c6e82` and `ae5a7143`; no production files were changed by those commits.
 - `python -m py_compile agent/user_preferences.py agent/location_resolver.py agent/public_api.py agent/personalization_events.py agent/scheduler.py` — PASS on final head, exit 0.
 
 ## Frontend
