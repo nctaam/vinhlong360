@@ -2,8 +2,8 @@
 
 > **STATUS (2026-07-07): active — đã truth-sync.** Type enum synced to the 18-type registry; auth/admin path prefixes corrected to the actual routes (`/auth/*`, `/admin/*`); 2FA/trusted-devices endpoints added.
 
-Date: 2026-06-12 (updated 2026-07-17)
-Status: Production — reflects actual endpoints
+Date: 2026-06-12 (updated 2026-07-30)
+Status: Baseline endpoints reflect production; the Phase 2A schedule contract is implemented locally, default-off, and not deployed.
 
 This contract defines the data shapes and API endpoints shared between the FastAPI backend (`agent/`) and the Nuxt frontend (`web-nuxt/`).
 
@@ -110,6 +110,114 @@ The table above lists the primary endpoints; `agent/public_api.py` also serves a
 
 Policy-bearing HTTP responses are governed by the exact registry in `agent/policy_http.py`. Matching uses the resolved FastAPI method, path template, and route name; static `/api/entities/*` routes retain their existing cache behavior.
 The same exact route identity is used for pre-routing 413/503 short-circuits; unmatched URLs remain outside the policy contract.
+
+#### Itinerary order optimization and optional schedule
+
+`POST /api/itineraries/optimize-order` keeps the order-only contract. A request that omits `schedule` remains valid and does not enter the time-aware scheduler:
+
+```json
+{
+  "stops": [
+    {"id": "start", "coordinates": [10.0, 106.0]},
+    {"id": "late", "coordinates": [10.0, 106.7]},
+    {"id": "early", "coordinates": [10.0, 106.3]},
+    {"id": "end", "coordinates": [10.0, 107.0]}
+  ],
+  "strict_direction": true,
+  "blocked_edges": []
+}
+```
+
+The order-only response shape is unchanged:
+
+```json
+{
+  "ordered_ids": ["start", "early", "late", "end"],
+  "distance_before_km": 197.1,
+  "distance_after_km": 109.5,
+  "saved_distance_km": 87.6,
+  "backtrack_ratio": 0.0,
+  "solver": "exact-dp",
+  "warnings": []
+}
+```
+
+The optional `schedule` request envelope is:
+
+```json
+{
+  "day_start_minute": 480,
+  "day_end_minute": 1080,
+  "mode": "driving",
+  "stops": [
+    {"id": "start", "visit_minutes": 0, "required": true},
+    {
+      "id": "late",
+      "visit_minutes": 30,
+      "opening_hours": "10:00-17:00",
+      "required": true
+    },
+    {
+      "id": "early",
+      "visit_minutes": 30,
+      "opening_hours": "08:00-09:30",
+      "requested_time": "08:00-09:30",
+      "required": true
+    },
+    {"id": "end", "visit_minutes": 0, "required": true}
+  ],
+  "duration_matrix_minutes": [
+    [0, 20, 10, 40],
+    [20, 0, 20, 20],
+    [10, 20, 0, 30],
+    [40, 20, 30, 0]
+  ]
+}
+```
+
+Request rules:
+
+- Outer `stops` contains 2-20 unique IDs and `[lat, lng]` coordinates. `strict_direction` defaults to `true`; `blocked_edges` defaults to `[]`.
+- `schedule` is optional. Its defaults are `day_start_minute=480`, `day_end_minute=1080`, `mode="driving"`, `visit_minutes=60`, and `required=true`; supported modes are `driving`, `cycling`, and `foot`.
+- `day_start_minute` and `day_end_minute` must each be within `0..1440`, with `day_end_minute > day_start_minute`. Each `visit_minutes` value must be within `0..720`. Violations return HTTP 422.
+- Nested schedule IDs must be an exact permutation of the outer stop IDs. The nested first and last IDs must match the outer first and last IDs, and both endpoints must be required.
+- `duration_matrix_minutes` may be omitted or explicitly `null`; either form selects the local Haversine fallback. When non-null, it must be square, match the nested stop count/order, contain finite non-negative minutes or `null` only in off-diagonal cells, and contain `0` on the diagonal.
+- `requested_time` accepts the supported local range grammar (for example `09:00-10:30`, `9h-10h`, or `9h00-10h30`). It is a hard window. When `opening_hours` also supplies trusted windows, the scheduler uses their intersection. An invalid `requested_time` or invalid envelope returns HTTP 422.
+- Travel applies on the first hop. With the matrix fixture above, the `early` placement arrives and begins at minute `490`, not `480`.
+
+On schedule success, the normal order response adds the optional `schedule` object. Placement fields use the public API name `end_visit_minute`:
+
+```json
+{
+  "ordered_ids": ["start", "early", "late", "end"],
+  "warnings": [],
+  "schedule": {
+    "placements": [
+      {"stop_id": "start", "arrival_minute": 480.0, "start_visit_minute": 480.0, "end_visit_minute": 480.0},
+      {"stop_id": "early", "arrival_minute": 490.0, "start_visit_minute": 490.0, "end_visit_minute": 520.0},
+      {"stop_id": "late", "arrival_minute": 540.0, "start_visit_minute": 600.0, "end_visit_minute": 630.0},
+      {"stop_id": "end", "arrival_minute": 650.0, "start_visit_minute": 650.0, "end_visit_minute": 650.0}
+    ],
+    "skipped": [
+      {"stop_id": "optional", "reason": "day-window-overflow"}
+    ],
+    "matrix_source": "request",
+    "total_travel_minutes": 50.0,
+    "waiting_minutes": 60.0,
+    "overtime_minutes": 0.0,
+    "minimum_slack_minutes": 50.0
+  }
+}
+```
+
+Fallback and compatibility rules:
+
+- If `duration_matrix_minutes` is omitted or explicitly `null`, the server builds a local Haversine matrix using the requested mode; successful responses report `matrix_source: "haversine-fallback"`. No paid routing service or new dependency is used.
+- An impossible required schedule returns HTTP 409 with a reason and no partial schedule. Optional stops may be omitted only with entries in `schedule.skipped` that include a `reason`.
+- If the scheduling implementation fails unexpectedly, the endpoint retries through the established order-only optimizer. A successful fallback has no `schedule` field and includes `schedule-fallback-order-only` in `warnings`; it never returns a partial schedule.
+- The manual planner feature flag is default-off. Only `NUXT_PUBLIC_ITINERARY_SCHEDULE_V2=1` exposes `runtimeConfig.public.itineraryScheduleV2=true`; flag-off requests remain order-only and make no Table request.
+- For one user-triggered optimization fingerprint (transport mode plus stop coordinates rounded to five decimal places), the client performs at most one OSRM Table request, one initial OSRM Route request, and one U-turn validation retry. This feature makes zero background OSRM Table requests; existing route watchers may still request OSRM Route after planner inputs change. The same schedule envelope and matrix are reused through the bounded retry.
+- Planner schedule metadata and returned placements are ephemeral `WeakMap` state. Saved `PlanStop` JSON remains exactly `id`, `name`, `type`, optional `place_name`, `coords`, `time`, and `notes`.
 
 ### Internal launch safety (private network only)
 

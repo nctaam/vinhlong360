@@ -1,7 +1,38 @@
-import { describe, it, expect } from 'vitest'
+import { loadNuxtConfig } from '@nuxt/kit'
+import { afterEach, describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { entityPath, normalizeRouteParam, notificationTargetPath, postPath, savedItemPath, userPath } from '../utils/routePaths'
+
+const originalItineraryScheduleV2 = process.env.NUXT_PUBLIC_ITINERARY_SCHEDULE_V2
+
+afterEach(() => {
+  if (originalItineraryScheduleV2 === undefined) {
+    delete process.env.NUXT_PUBLIC_ITINERARY_SCHEDULE_V2
+  }
+  else {
+    process.env.NUXT_PUBLIC_ITINERARY_SCHEDULE_V2 = originalItineraryScheduleV2
+  }
+})
+
+describe.sequential('planner schedule runtime config', () => {
+  it('defaults the public planner schedule flag off', async () => {
+    delete process.env.NUXT_PUBLIC_ITINERARY_SCHEDULE_V2
+    const config = await loadNuxtConfig({ cwd: process.cwd(), dotenv: false })
+
+    expect(config.runtimeConfig.public.itineraryScheduleV2).toBe(false)
+  })
+
+  it('enables the public planner schedule flag only for the value 1', async () => {
+    process.env.NUXT_PUBLIC_ITINERARY_SCHEDULE_V2 = '1'
+    const enabled = await loadNuxtConfig({ cwd: process.cwd(), dotenv: false })
+    process.env.NUXT_PUBLIC_ITINERARY_SCHEDULE_V2 = 'true'
+    const truthyText = await loadNuxtConfig({ cwd: process.cwd(), dotenv: false })
+
+    expect(enabled.runtimeConfig.public.itineraryScheduleV2).toBe(true)
+    expect(truthyText.runtimeConfig.public.itineraryScheduleV2).toBe(false)
+  })
+})
 
 describe('Component smoke tests', () => {
   it('imports Breadcrumb component', async () => {

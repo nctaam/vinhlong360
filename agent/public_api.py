@@ -18,7 +18,7 @@ import unicodedata
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -42,20 +42,44 @@ if __package__:
     from .ai_disclosure import load_ai_disclosure
     from .image_descriptor import describe_entity_images, describe_review_image
     from .itinerary_optimizer import (
+        haversine_km,
         NoFeasibleRouteError,
         OptimizeOptions,
         RouteStop,
         optimize_stop_order,
+    )
+    from .itinerary_schedule import (
+        NoFeasibleScheduleError,
+        ScheduleOptions,
+        ScheduleStop,
+        TimeWindow,
+        TravelMatrix,
+        build_fallback_matrix,
+        parse_opening_hours,
+        parse_time_range,
+        schedule_stop_order,
     )
     from .media_policy import is_renderable_entity_descriptor
 else:
     from ai_disclosure import load_ai_disclosure
     from image_descriptor import describe_entity_images, describe_review_image
     from itinerary_optimizer import (
+        haversine_km,
         NoFeasibleRouteError,
         OptimizeOptions,
         RouteStop,
         optimize_stop_order,
+    )
+    from itinerary_schedule import (
+        NoFeasibleScheduleError,
+        ScheduleOptions,
+        ScheduleStop,
+        TimeWindow,
+        TravelMatrix,
+        build_fallback_matrix,
+        parse_opening_hours,
+        parse_time_range,
+        schedule_stop_order,
     )
     from media_policy import is_renderable_entity_descriptor
 
@@ -1686,6 +1710,33 @@ async def place_day_plan(place_id: str, response: Response):
     return result
 
 
+def _validate_itinerary_stop_id(value: str) -> str:
+    value = value.strip()
+    if not value:
+        raise ValueError("ID điểm dừng không được để trống")
+    return value
+
+
+def _validate_duration_matrix_values(value):
+    if value is None:
+        return value
+    if not isinstance(value, list) or any(not isinstance(row, list) for row in value):
+        raise ValueError("Ma trận thời gian phải là một dãy hai chiều")
+    if any(
+        cell is not None
+        and (
+            isinstance(cell, bool)
+            or not isinstance(cell, (int, float))
+            or not math.isfinite(cell)
+            or cell < 0
+        )
+        for row in value
+        for cell in row
+    ):
+        raise ValueError("Thời gian di chuyển phải hữu hạn, không âm hoặc null")
+    return value
+
+
 class ItineraryOptimizeStopIn(BaseModel):
     id: str = Field(min_length=1, max_length=200)
     coordinates: tuple[float, float]
@@ -1693,10 +1744,7 @@ class ItineraryOptimizeStopIn(BaseModel):
     @field_validator("id")
     @classmethod
     def validate_id(cls, value: str) -> str:
-        value = value.strip()
-        if not value:
-            raise ValueError("ID điểm dừng không được để trống")
-        return value
+        return _validate_itinerary_stop_id(value)
 
     @field_validator("coordinates")
     @classmethod
@@ -1711,10 +1759,73 @@ class ItineraryOptimizeStopIn(BaseModel):
         return value
 
 
+class ItineraryScheduleStopIn(BaseModel):
+    id: str = Field(min_length=1, max_length=200)
+    visit_minutes: int = Field(default=60, ge=0, le=720)
+    opening_hours: str | None = Field(default=None, max_length=200)
+    requested_time: str | None = Field(default=None, max_length=80)
+    required: bool = True
+
+    @field_validator("id")
+    @classmethod
+    def validate_id(cls, value: str) -> str:
+        return _validate_itinerary_stop_id(value)
+
+    @field_validator("requested_time")
+    @classmethod
+    def validate_requested_time(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        if parse_time_range(value) is None:
+            raise ValueError("Khung giờ yêu cầu không hợp lệ")
+        return value.strip()
+
+
+class ItineraryScheduleIn(BaseModel):
+    day_start_minute: int = Field(default=480, ge=0, le=1440)
+    day_end_minute: int = Field(default=1080, ge=0, le=1440)
+    mode: Literal["driving", "cycling", "foot"] = "driving"
+    stops: list[ItineraryScheduleStopIn] = Field(min_length=2, max_length=20)
+    duration_matrix_minutes: list[list[float | None]] | None = None
+
+    @field_validator("duration_matrix_minutes", mode="before")
+    @classmethod
+    def validate_matrix_values(cls, value):
+        return _validate_duration_matrix_values(value)
+
+    @model_validator(mode="after")
+    def validate_time_bounds_and_matrix(self):
+        if self.day_end_minute <= self.day_start_minute:
+            raise ValueError("Giờ kết thúc ngày phải sau giờ bắt đầu")
+        matrix = self.duration_matrix_minutes
+        if matrix is None:
+            return self
+        size = len(self.stops)
+        if len(matrix) != size or any(len(row) != size for row in matrix):
+            raise ValueError("Ma trận thời gian phải vuông và khớp số điểm dừng")
+        if any(matrix[index][index] != 0 for index in range(size)):
+            raise ValueError("Đường chéo ma trận thời gian phải bằng 0")
+        return self
+
+
+def _validate_schedule_references(
+    schedule: ItineraryScheduleIn,
+    stop_ids: list[str],
+) -> None:
+    schedule_ids = [stop.id for stop in schedule.stops]
+    if Counter(schedule_ids) != Counter(stop_ids):
+        raise ValueError("ID lịch phải khớp chính xác các điểm dừng")
+    if schedule_ids[0] != stop_ids[0] or schedule_ids[-1] != stop_ids[-1]:
+        raise ValueError("Điểm đầu và điểm cuối phải khớp lịch trình gốc")
+    if not schedule.stops[0].required or not schedule.stops[-1].required:
+        raise ValueError("Điểm đầu và điểm cuối phải là điểm bắt buộc")
+
+
 class ItineraryOptimizeIn(BaseModel):
     stops: list[ItineraryOptimizeStopIn] = Field(min_length=2, max_length=20)
     strict_direction: bool = True
     blocked_edges: list[tuple[str, str]] = Field(default_factory=list, max_length=80)
+    schedule: ItineraryScheduleIn | None = None
 
     @model_validator(mode="after")
     def validate_route_references(self):
@@ -1727,28 +1838,107 @@ class ItineraryOptimizeIn(BaseModel):
             for source, target in self.blocked_edges
         ):
             raise ValueError("Cạnh bị cấm phải tham chiếu điểm dừng trong lịch trình")
+        if self.schedule is not None:
+            _validate_schedule_references(self.schedule, stop_ids)
         return self
 
 
-@router.post(
-    "/itineraries/optimize-order",
-    summary="Optimize itinerary stop order",
-    description="Reorders 2-20 stops along a fixed forward corridor without paid services.",
-)
-async def optimize_itinerary_order(payload: ItineraryOptimizeIn):
-    stops = [
-        RouteStop(stop.id, stop.coordinates)
-        for stop in payload.stops
-    ]
-    options = OptimizeOptions(
-        strict_direction=payload.strict_direction,
-        blocked_edges=frozenset(payload.blocked_edges),
-    )
-    try:
-        result = await asyncio.to_thread(optimize_stop_order, stops, options)
-    except NoFeasibleRouteError as exc:
-        return _err(409, str(exc))
+def _schedule_windows(stop: ItineraryScheduleStopIn) -> tuple[TimeWindow, ...]:
+    opening_windows = ()
+    if stop.opening_hours is not None:
+        opening_windows, _ = parse_opening_hours(stop.opening_hours)
+    requested_window = parse_time_range(stop.requested_time)
+    if requested_window is None:
+        return opening_windows
+    if not opening_windows:
+        return (requested_window,)
 
+    intersections = tuple(
+        TimeWindow(
+            max(window.start_minute, requested_window.start_minute),
+            min(window.end_minute, requested_window.end_minute),
+        )
+        for window in opening_windows
+        if max(window.start_minute, requested_window.start_minute)
+        <= min(window.end_minute, requested_window.end_minute)
+    )
+    if not intersections:
+        raise NoFeasibleScheduleError(
+            f"Không tìm thấy lịch trình khả thi; điểm chặn đầu tiên: {stop.id}"
+        )
+    return intersections
+
+
+def _build_schedule_stops(payload: ItineraryOptimizeIn) -> tuple[ScheduleStop, ...]:
+    schedule = payload.schedule
+    if schedule is None:
+        raise ValueError("Thiếu cấu hình lịch trình")
+    coordinates_by_id = {stop.id: stop.coordinates for stop in payload.stops}
+    return tuple(
+        ScheduleStop(
+            stop.id,
+            coordinates_by_id[stop.id],
+            stop.visit_minutes,
+            _schedule_windows(stop),
+            stop.required,
+        )
+        for stop in schedule.stops
+    )
+
+
+def _build_schedule_matrix(
+    schedule: ItineraryScheduleIn,
+    stops: tuple[ScheduleStop, ...],
+) -> TravelMatrix:
+    if schedule.duration_matrix_minutes is None:
+        return build_fallback_matrix(stops, schedule.mode)
+    return TravelMatrix(
+        tuple(stop.id for stop in schedule.stops),
+        tuple(tuple(row) for row in schedule.duration_matrix_minutes),
+        "request",
+    )
+
+
+def _path_distance_km(stops: list[ItineraryOptimizeStopIn]) -> float:
+    return sum(
+        haversine_km(source.coordinates, target.coordinates)
+        for source, target in zip(stops, stops[1:])
+    )
+
+
+def _serialize_schedule_result(result, distance_before_km: float) -> dict:
+    return {
+        "ordered_ids": list(result.ordered_ids),
+        "distance_before_km": distance_before_km,
+        "distance_after_km": result.geometric_distance_km,
+        "saved_distance_km": max(
+            0.0,
+            distance_before_km - result.geometric_distance_km,
+        ),
+        "backtrack_ratio": result.backtrack_ratio,
+        "solver": result.solver,
+        "warnings": list(result.warnings),
+        "schedule": {
+            "placements": [
+                {
+                    "stop_id": placement.stop_id,
+                    "arrival_minute": placement.arrival_minute,
+                    "start_visit_minute": placement.start_visit_minute,
+                    "end_visit_minute": placement.finish_visit_minute,
+                }
+                for placement in result.placements
+            ],
+            "skipped": [asdict(stop) for stop in result.skipped],
+            "matrix_source": result.matrix_source,
+            "total_travel_minutes": result.total_travel_minutes,
+            "waiting_minutes": result.waiting_minutes,
+            "overtime_minutes": result.overtime_minutes,
+            "minimum_slack_minutes": result.minimum_slack_minutes,
+        },
+    }
+
+
+def _serialize_order_result(result, extra_warnings: tuple[str, ...] = ()) -> dict:
     return {
         "ordered_ids": list(result.ordered_ids),
         "distance_before_km": result.distance_before_km,
@@ -1759,8 +1949,62 @@ async def optimize_itinerary_order(payload: ItineraryOptimizeIn):
         ),
         "backtrack_ratio": result.backtrack_ratio,
         "solver": result.solver,
-        "warnings": list(result.warnings),
+        "warnings": [*result.warnings, *extra_warnings],
     }
+
+
+async def _optimize_itinerary_order_only(
+    payload: ItineraryOptimizeIn,
+    extra_warnings: tuple[str, ...] = (),
+) -> dict | JSONResponse:
+    stops = [RouteStop(stop.id, stop.coordinates) for stop in payload.stops]
+    options = OptimizeOptions(
+        strict_direction=payload.strict_direction,
+        blocked_edges=frozenset(payload.blocked_edges),
+    )
+    try:
+        result = await asyncio.to_thread(optimize_stop_order, stops, options)
+    except NoFeasibleRouteError as exc:
+        return _err(409, str(exc))
+    return _serialize_order_result(result, extra_warnings)
+
+
+async def _schedule_itinerary(payload: ItineraryOptimizeIn) -> dict | JSONResponse:
+    schedule = payload.schedule
+    if schedule is None:
+        raise ValueError("Thiếu cấu hình lịch trình")
+    try:
+        stops = _build_schedule_stops(payload)
+    except NoFeasibleScheduleError as exc:
+        return _err(409, str(exc))
+    options = ScheduleOptions(
+        day_start_minute=schedule.day_start_minute,
+        day_end_minute=schedule.day_end_minute,
+        blocked_edges=frozenset(payload.blocked_edges),
+    )
+    try:
+        matrix = _build_schedule_matrix(schedule, stops)
+        result = await asyncio.to_thread(schedule_stop_order, stops, matrix, options)
+    except NoFeasibleScheduleError as exc:
+        return _err(409, str(exc))
+    except Exception:
+        logger.exception("Schedule optimization failed; using order-only fallback")
+        return await _optimize_itinerary_order_only(
+            payload,
+            ("schedule-fallback-order-only",),
+        )
+    return _serialize_schedule_result(result, _path_distance_km(payload.stops))
+
+
+@router.post(
+    "/itineraries/optimize-order",
+    summary="Optimize itinerary stop order",
+    description="Reorders 2-20 stops along a fixed forward corridor without paid services.",
+)
+async def optimize_itinerary_order(payload: ItineraryOptimizeIn):
+    if payload.schedule is not None:
+        return await _schedule_itinerary(payload)
+    return await _optimize_itinerary_order_only(payload)
 
 
 @router.get("/itineraries",

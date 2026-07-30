@@ -149,6 +149,7 @@
                     type="text"
                     aria-label="Thời gian dừng"
                     placeholder="VD: 8:00 - 10:00"
+                    @input="invalidatePlannerSchedule"
                   />
                   <input
                     v-model="stop.notes"
@@ -158,6 +159,9 @@
                     placeholder="Ghi chú (tùy chọn)"
                   />
                 </div>
+                <small v-if="scheduledIntervalForStop(stop)" class="scheduled-interval">
+                  Lịch đề xuất: {{ scheduledIntervalForStop(stop) }}
+                </small>
               </div>
             </div>
             <!-- Route leg info between stops -->
@@ -205,18 +209,31 @@ import type { Entity } from '~/types'
 import type { EntityListResponse } from '~/types/api'
 import { usePublicApi } from '~/composables/usePublicApi'
 import { TYPE_META, CARD_TYPES, getTypeMeta } from '~/composables/useConstants'
-import { fetchRoute, formatDistance, formatDuration, type TransportMode, type RouteResult } from '~/composables/useRouting'
+import { fetchRoute, fetchRouteTable, formatDistance, formatDuration, type TransportMode, type RouteResult } from '~/composables/useRouting'
 import {
+  applySchedulePlacements,
   collectRoutableStops,
+  commitPlannerOptimizationResult,
+  createSuspendedRouteScheduler,
+  enrichPlannerStopFromDetail,
+  formatScheduledInterval,
+  invalidatePlannerInputs,
   mergeOptimizedStops,
+  plannerMetadataForEntity,
+  plannerMetadataForLoadedStop,
   requestOptimizedOrder,
   routeLegForStopIndex,
-  runBoundedOptimization,
+  runPlannerOptimization,
+  serializePlanStops,
+  type PlannerInputState,
+  type PlannerScheduleMetadata,
 } from '~/composables/useItineraryOptimization'
 
 const LS_PLANS = 'vl360_plans'
 const route = useRoute()
 const router = useRouter()
+const runtimeConfig = useRuntimeConfig()
+const itineraryScheduleV2 = runtimeConfig.public.itineraryScheduleV2 === true
 
 interface PlanStop {
   id: string
@@ -284,6 +301,9 @@ const routeLoading = ref(false)
 const optimizing = ref(false)
 const optimizationMessage = ref('')
 const suspendAutoRoute = ref(false)
+let latestAutoRouteRequest: number | null = null
+const plannerInputState = reactive<PlannerInputState>({ version: 0 })
+const plannerScheduleMetadata = new WeakMap<object, PlannerScheduleMetadata>()
 const routeMapEl = ref<HTMLElement | null>(null)
 const addingId = ref<string | null>(null)
 let addingTimer: ReturnType<typeof setTimeout> | null = null
@@ -292,6 +312,11 @@ const saving = ref(false)
 const stopAnnounce = ref('')
 const MAX_STOPS = 20
 let savePulseTimer: ReturnType<typeof setTimeout> | null = null
+let plannerLifecycleActive = true
+
+function isPlannerLifecycleActive() {
+  return plannerLifecycleActive
+}
 
 const currentRoutableStops = computed(() => collectRoutableStops(stops.value))
 const canOptimizeRoute = computed(() => {
@@ -346,7 +371,7 @@ const pickerResults = computed(() => {
   if (sourceTab.value === 'saved') {
     list = favList.value.map(f => {
       const fav = f as any
-      return { id: fav.id, name: fav.name, type: fav.type, place_name: fav.place_name, summary: fav.summary, coordinates: fav.coordinates }
+      return { id: fav.id, name: fav.name, type: fav.type, place_name: fav.place_name, summary: fav.summary, coordinates: fav.coordinates, attributes: fav.attributes }
     })
   } else {
     list = allEntities.value
@@ -376,6 +401,7 @@ async function addStop(entity: Entity) {
     nextTick(() => { stopAnnounce.value = `Tối đa ${MAX_STOPS} điểm.` })
     return
   }
+  invalidatePlannerSchedule()
   optimizationMessage.value = ''
   const stop = reactive<PlanStop>({
     id: entity.id,
@@ -386,6 +412,10 @@ async function addStop(entity: Entity) {
     time: '',
     notes: '',
   })
+  plannerScheduleMetadata.set(
+    stop,
+    plannerMetadataForEntity(entity.type, entity.attributes),
+  )
   stops.value.push(stop)
   stopAnnounce.value = ''
   nextTick(() => { stopAnnounce.value = `Đã thêm ${entity.name}. ${stops.value.length} điểm.` })
@@ -396,14 +426,24 @@ async function addStop(entity: Entity) {
   // stop can be routed/mapped. Falls back silently (stop still listed) on error.
   if (!stop.coords && entity.id) {
     try {
-      const res = await publicApi.getEntity(entity.id)
-      const c = normalizeCoords(res?.coordinates)
-      if (c) stop.coords = c
+      await enrichPlannerStopFromDetail({
+        stop,
+        fetchDetail: () => publicApi.getEntity(entity.id),
+        isCurrentStop: currentStop => stops.value.includes(currentStop),
+        coordinatesFromDetail: detail => normalizeCoords(detail?.coordinates),
+        metadataFromDetail: detail => plannerMetadataForEntity(
+          detail?.type || stop.type,
+          detail?.attributes,
+        ),
+        metadataByStop: plannerScheduleMetadata,
+        invalidate: invalidatePlannerSchedule,
+      })
     } catch { /* coords stay null */ }
   }
 }
 
 function removeStop(idx: number) {
+  invalidatePlannerSchedule()
   const name = stops.value[idx]?.name || ''
   stops.value.splice(idx, 1)
   optimizationMessage.value = ''
@@ -417,6 +457,7 @@ function moveStop(idx: number, dir: number) {
   const temp = stops.value[idx]
   const targetStop = stops.value[target]
   if (!temp || !targetStop) return
+  invalidatePlannerSchedule()
   stops.value[idx] = targetStop
   stops.value[target] = temp
   optimizationMessage.value = ''
@@ -426,6 +467,7 @@ function moveStop(idx: number, dir: number) {
 
 async function clearPlan() {
   if (stops.value.length && !await confirmDialog('Xóa toàn bộ điểm trong lịch trình đang tạo?', { danger: true, confirmText: 'Xóa' })) return
+  invalidatePlannerSchedule()
   stops.value = []
   planTitle.value = ''
   routeResult.value = null
@@ -440,7 +482,7 @@ async function savePlan() {
 async function _doSave() {
   const plan: SavedPlan = {
     title: planTitle.value.trim() || 'Lịch trình chưa đặt tên',
-    stops: JSON.parse(JSON.stringify(stops.value)),
+    stops: serializePlanStops(stops.value),
     savedAt: new Date().toISOString(),
   }
   if (isLoggedIn.value) {
@@ -477,7 +519,11 @@ async function loadPlan(idx: number) {
   const plan = savedPlans.value[idx]
   if (!plan) return
   planTitle.value = plan.title
-  stops.value = JSON.parse(JSON.stringify(plan.stops))
+  invalidatePlannerSchedule()
+  stops.value = serializePlanStops(plan.stops)
+  stops.value.forEach((stop) => {
+    plannerScheduleMetadata.set(stop, plannerMetadataForLoadedStop(stop.type))
+  })
   optimizationMessage.value = ''
 }
 
@@ -594,14 +640,55 @@ function sharePlan(idx: number) {
 
 const formatDate = formatDateVN
 
-let routeTimer: ReturnType<typeof setTimeout> | null = null
-
 function plannerRouteLeg(stopIndex: number) {
   return routeLegForStopIndex(
     stopIndex,
     currentRoutableStops.value,
     routeResult.value?.legs || [],
   )
+}
+
+function invalidatePlannerSchedule() {
+  invalidatePlannerInputs(
+    plannerInputState,
+    stops.value,
+    plannerScheduleMetadata,
+  )
+}
+
+function scheduledIntervalForStop(stop: PlanStop): string {
+  void plannerInputState.version
+  return formatScheduledInterval(plannerScheduleMetadata.get(stop)?.placement)
+}
+
+function routedStopName(routed: typeof currentRoutableStops.value, key: string): string {
+  return routed.find(item => item.key === key)?.stop.name || key
+}
+
+function plannerWarningMessage(
+  warning: string,
+  routed: typeof currentRoutableStops.value,
+): string {
+  const separator = warning.indexOf(':')
+  const code = separator >= 0 ? warning.slice(0, separator) : warning
+  const key = separator >= 0 ? warning.slice(separator + 1) : ''
+  const name = key ? routedStopName(routed, key) : ''
+  if (code === 'opening-hours-unknown') {
+    return `Chưa rõ giờ mở cửa của "${name}"; lịch không áp dụng ràng buộc giờ mở cửa.`
+  }
+  if (code === 'opening-hours-invalid') {
+    return `Giờ mở cửa của "${name}" không theo định dạng hỗ trợ nên không được dùng để lập lịch.`
+  }
+  if (code === 'requested-time-invalid') {
+    return `Khung giờ đã nhập cho "${name}" được giữ nguyên nhưng không dùng để lập lịch vì sai định dạng khoảng giờ.`
+  }
+  if (code === 'route-table-unavailable') {
+    return 'Không lấy được ma trận thời gian OSRM; yêu cầu đã bỏ ma trận để máy chủ dùng dự phòng Haversine.'
+  }
+  if (code === 'schedule-fallback-order-only') {
+    return 'Bộ lập lịch gặp lỗi; máy chủ chỉ tối ưu thứ tự tuyến.'
+  }
+  return warning
 }
 
 async function optimizePlanRoute() {
@@ -616,23 +703,68 @@ async function optimizePlanRoute() {
   routeLoading.value = true
   routeError.value = false
   optimizationMessage.value = ''
-  if (routeTimer) clearTimeout(routeTimer)
+  autoRouteScheduler.cancelScheduled()
 
   try {
-    const outcome = await runBoundedOptimization(
+    const plannerResult = await runPlannerOptimization({
+      scheduleEnabled: itineraryScheduleV2,
       routed,
-      (ordered, blockedEdges) => requestOptimizedOrder(ordered, blockedEdges),
-      coordinates => fetchRoute(coordinates, transportMode.value),
-    )
-    stops.value = mergeOptimizedStops(
-      stops.value,
-      routed,
-      outcome.ordered.map(item => item.key),
-    )
-    routeResult.value = outcome.route
-    routeError.value = !outcome.route
-    await nextTick()
-    await updateMap(outcome.route)
+      metadataByStop: plannerScheduleMetadata,
+      inputState: plannerInputState,
+      mode: transportMode.value,
+      fetchTable: (coordinates, mode) => fetchRouteTable(coordinates, mode),
+      requestOptimization: (ordered, blockedEdges, schedule) => schedule
+        ? requestOptimizedOrder(ordered, blockedEdges, schedule)
+        : requestOptimizedOrder(ordered, blockedEdges),
+      route: coordinates => fetchRoute(coordinates, transportMode.value),
+    })
+    if (!isPlannerLifecycleActive()) return
+    const routeRequestBeforeCommit = latestAutoRouteRequest
+    let reorderInputVersion: number | null = null
+    let optimizerWatcherRequest: number | null = null
+    const committedResult = await commitPlannerOptimizationResult(plannerResult, {
+      isActive: isPlannerLifecycleActive,
+      applyPlacements: (result) => {
+        const schedule = result.outcome.optimization.schedule
+        if (schedule) {
+          applySchedulePlacements(
+            routed,
+            schedule.placements,
+            plannerScheduleMetadata,
+            plannerInputState,
+          )
+        }
+        else if (itineraryScheduleV2) {
+          applySchedulePlacements(routed, [], plannerScheduleMetadata, plannerInputState)
+        }
+      },
+      reorderStops: (orderedKeys) => {
+        reorderInputVersion = plannerInputState.version
+        stops.value = mergeOptimizedStops(stops.value, routed, orderedKeys)
+      },
+      applyRoute: (route) => {
+        routeResult.value = route
+        routeError.value = !route
+      },
+      updateMap: async (route) => {
+        await nextTick()
+        if (!isPlannerLifecycleActive()) return
+        if (
+          reorderInputVersion !== null
+          && plannerInputState.version === reorderInputVersion
+          && latestAutoRouteRequest !== routeRequestBeforeCommit
+        ) {
+          optimizerWatcherRequest = latestAutoRouteRequest
+        }
+        if (!isPlannerLifecycleActive()) return
+        await updateMap(route)
+      },
+    })
+    if (!committedResult || !isPlannerLifecycleActive()) {
+      return
+    }
+    autoRouteScheduler.discardPending(optimizerWatcherRequest)
+    const { outcome } = committedResult
 
     const messages: string[] = []
     if (outcome.optimization.saved_distance_km > 0.05) {
@@ -649,19 +781,44 @@ async function optimizePlanRoute() {
     if (outcome.route && !outcome.unresolvedUturn) {
       messages.push('OSRM không phát hiện thao tác quay đầu trên tuyến cuối.')
     }
-    messages.push(...outcome.warnings)
+    messages.push(...committedResult.scheduleWarnings.map(warning => (
+      plannerWarningMessage(warning, routed)
+    )))
+    const schedule = outcome.optimization.schedule
+    if (itineraryScheduleV2 && !schedule) {
+      messages.push('Không có khung giờ đề xuất; kết quả hiện tại chỉ tối ưu thứ tự tuyến.')
+    }
+    if (schedule?.matrix_source === 'haversine-fallback') {
+      messages.push('Khung giờ dùng thời gian di chuyển ước tính Haversine do không có ma trận OSRM.')
+    }
+    if (schedule?.skipped.length) {
+      const reasons = [...new Set(schedule.skipped.map(item => item.reason))].join(', ')
+      messages.push(`${schedule.skipped.length} điểm tùy chọn bị bỏ qua (${reasons}).`)
+    }
+    if (schedule && schedule.overtime_minutes > 0) {
+      messages.push(`Lịch dự kiến vượt cuối ngày ${Math.round(schedule.overtime_minutes)} phút.`)
+    }
+    messages.push(...outcome.warnings.map(warning => (
+      plannerWarningMessage(warning, routed)
+    )))
     optimizationMessage.value = [...new Set(messages)].join(' ')
+    if (!isPlannerLifecycleActive()) return
     stopAnnounce.value = ''
     await nextTick()
+    if (!isPlannerLifecycleActive()) return
     stopAnnounce.value = optimizationMessage.value
   } catch (error: unknown) {
+    if (!isPlannerLifecycleActive()) return
     const message = extractErrorMessage(error, 'Không thể tối ưu tuyến lúc này')
     optimizationMessage.value = message
     showToast(message, 'error')
   } finally {
+    if (!isPlannerLifecycleActive()) return
     routeLoading.value = false
     await nextTick()
+    if (!isPlannerLifecycleActive()) return
     suspendAutoRoute.value = false
+    autoRouteScheduler.resume()
     optimizing.value = false
   }
 }
@@ -682,10 +839,13 @@ async function computeRoute() {
   updateMap(result)
 }
 
+const autoRouteScheduler = createSuspendedRouteScheduler(
+  computeRoute,
+  () => suspendAutoRoute.value,
+)
+
 function scheduleRouteCalc() {
-  if (suspendAutoRoute.value) return
-  if (routeTimer) clearTimeout(routeTimer)
-  routeTimer = setTimeout(computeRoute, 400)
+  latestAutoRouteRequest = autoRouteScheduler.request()
 }
 
 let pendingUpdate = false
@@ -710,7 +870,7 @@ function fitMapToCoords(coords: [number, number][]) {
 }
 
 async function updateMap(result: RouteResult | null) {
-  if (!import.meta.client) return
+  if (!import.meta.client || !isPlannerLifecycleActive()) return
   lastRouteResult = result
   if (updatingMap) { pendingUpdate = true; return }
 
@@ -723,13 +883,19 @@ async function updateMap(result: RouteResult | null) {
   try {
 
   if (!mapInstance) {
-    const res = await createNDAMap(routeMapEl.value)
+    const res = await createNDAMap(routeMapEl.value, { isActive: isPlannerLifecycleActive })
+    if (!isPlannerLifecycleActive()) {
+      if (res?.map && typeof (res.map as any).remove === 'function') (res.map as any).remove()
+      return
+    }
+    if (!res) return
     mapInstance = res.map
     maplibre = res.maplibregl
     mapInstance.on('styleimagemissing', (e: any) => {
       if (!mapInstance.hasImage(e.id)) mapInstance.addImage(e.id, { width: 1, height: 1, data: new Uint8Array(4) })
     })
     await new Promise<void>(r => mapInstance.on('load', r))
+    if (!isPlannerLifecycleActive()) return
   }
 
   markers.forEach(m => m.remove())
@@ -792,6 +958,7 @@ watch(
   () => [stops.value.map(s => (s.coords ? s.coords.join(',') : 'x')).join('|'), transportMode.value],
   scheduleRouteCalc,
 )
+watch(transportMode, invalidatePlannerSchedule)
 
 onMounted(async () => {
   let local: SavedPlan[] = []
@@ -825,7 +992,8 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  if (routeTimer) clearTimeout(routeTimer)
+  plannerLifecycleActive = false
+  autoRouteScheduler.dispose()
   if (addingTimer) clearTimeout(addingTimer)
   if (savePulseTimer) clearTimeout(savePulseTimer)
   if (mapInstance && typeof (mapInstance as any).remove === 'function') (mapInstance as any).remove()
@@ -938,6 +1106,7 @@ useHead({
 .stop-card-info { flex: 1; min-width: 0; }
 .stop-card-info strong { display: block; font-size: var(--text-sm); }
 .stop-card-info small { color: var(--muted); font-size: var(--text-xs); }
+.scheduled-interval { display: block; margin-top: var(--space-2); color: var(--primary-fg); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
 .stop-card-actions { display: flex; gap: var(--space-1); }
 .stop-list { margin-bottom: var(--space-4); }
 .route-map { height: 300px; border-radius: var(--radius-lg, 16px); overflow: hidden; border: .5px solid var(--line); box-shadow: var(--shadow-sm); }
