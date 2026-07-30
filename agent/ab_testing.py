@@ -147,6 +147,8 @@ class Experiment:
 class ABTestManager:
     """Thread-safe manager for A/B experiments with JSON persistence."""
 
+    _MAX_ERASURE_OUTCOMES = 50_000
+
     def __init__(self, filepath: Path | str | None = None):
         self._filepath = Path(filepath) if filepath else AB_TESTS_FILE
         self._lock = Lock()
@@ -318,6 +320,10 @@ class ABTestManager:
     def purge_owner(self, owner_key: str) -> int:
         """Remove owner-attributed outcomes and their linked assignments."""
         with self._lock:
+            if sum(
+                len(owners) for owners in self._outcome_owners.values()
+            ) > self._MAX_ERASURE_OUTCOMES:
+                raise RuntimeError("A/B outcome scan limit exceeded")
             removed = 0
             for experiment_name, owners in self._outcome_owners.items():
                 user_ids = [
@@ -336,6 +342,10 @@ class ABTestManager:
 
     def verify_owner_absent(self, owner_key: str) -> bool:
         with self._lock:
+            if sum(
+                len(owners) for owners in self._outcome_owners.values()
+            ) > self._MAX_ERASURE_OUTCOMES:
+                raise RuntimeError("A/B outcome scan limit exceeded")
             return not any(
                 stored_owner == owner_key
                 for owners in self._outcome_owners.values()

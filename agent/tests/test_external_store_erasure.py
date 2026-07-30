@@ -7,6 +7,8 @@ import json
 from pathlib import Path
 from threading import Event, Thread
 
+import pytest
+
 import ab_testing
 import analytics
 import cache as exact_cache
@@ -41,6 +43,7 @@ def test_hot_and_cold_memory_purge_exact_owner_idempotently(tmp_path):
     assert manager.purge_owner(OWNER) == 1
     assert manager.purge_owner(OWNER) == 0
     assert manager.verify_owner_absent(OWNER) is True
+    assert manager.verify_owner_absent(OTHER) is False
     assert manager.require_session(OTHER, next(
         session_id for owner, session_id in manager._sessions if owner == OTHER
     ))
@@ -207,6 +210,40 @@ def test_guardrail_budget_purges_exact_owner_and_blocks_new_writes(
     else:
         raise AssertionError("blocked owner write unexpectedly succeeded")
     assert manager.verify_owner_absent(OWNER) is True
+
+
+def test_monolithic_erasure_adapters_fail_closed_over_scan_limit(tmp_path):
+    manager = memory.MemoryManager()
+    manager.cold._profiles_file = tmp_path / "profiles.json"
+    manager.cold._profiles.clear()
+    manager.cold.get_profile(OWNER)
+    manager.cold.get_profile(OTHER)
+    manager.cold._MAX_ERASURE_PROFILES = 1
+    with pytest.raises(RuntimeError, match="scan limit"):
+        manager.cold.purge_owner(OWNER)
+
+    graph = memory_graph.MemoryGraph(
+        graph_path=tmp_path / "graph.json",
+        auto_save_every=100,
+    )
+    graph.record_interaction(OWNER, ["entity-a"])
+    graph._MAX_ERASURE_ITEMS = 1
+    with pytest.raises(RuntimeError, match="scan limit"):
+        graph.purge_owner(OWNER)
+
+    manager_ab = ab_testing.ABTestManager(filepath=tmp_path / "ab.json")
+    manager_ab.create_experiment(
+        "exp",
+        [
+            {"id": "a", "config": {}, "weight": 0.5},
+            {"id": "b", "config": {}, "weight": 0.5},
+        ],
+        "score",
+    )
+    manager_ab.record_outcome("exp", "alice-session", 1.0, owner_key=OWNER)
+    manager_ab._MAX_ERASURE_OUTCOMES = 0
+    with pytest.raises(RuntimeError, match="scan limit"):
+        manager_ab.purge_owner(OWNER)
 
 
 def test_experience_and_prompt_artifacts_remove_owner_from_all_files(

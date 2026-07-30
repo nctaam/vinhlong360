@@ -329,6 +329,8 @@ class UserProfile:
 class ColdMemory:
     """Persistent memory store — saves/loads user profiles to disk."""
 
+    _MAX_ERASURE_PROFILES = 50_000
+
     def __init__(self):
         self._profiles: dict[str, UserProfile] = {}
         self._lock = RLock()  # RLock to allow nested get_profile calls
@@ -380,6 +382,8 @@ class ColdMemory:
     def purge_owner(self, owner_key: str) -> int:
         """Remove one exact owner profile from memory and persistent storage."""
         with self._lock:
+            if len(self._profiles) > self._MAX_ERASURE_PROFILES:
+                raise RuntimeError("Cold memory scan limit exceeded")
             removed = int(self._profiles.pop(owner_key, None) is not None)
             if removed:
                 self._save_all()
@@ -388,9 +392,14 @@ class ColdMemory:
     def verify_owner_absent(self, owner_key: str) -> bool:
         """Verify the exact owner is absent from memory and the profile file."""
         with self._lock:
+            if len(self._profiles) > self._MAX_ERASURE_PROFILES:
+                raise RuntimeError("Cold memory scan limit exceeded")
             if owner_key in self._profiles:
                 return False
-            return owner_key not in self._read_profiles_data()
+            data = self._read_profiles_data()
+            if len(data) > self._MAX_ERASURE_PROFILES:
+                raise RuntimeError("Cold memory scan limit exceeded")
+            return owner_key not in data
 
     def update_profile_from_session(self, user_id: str, hot: HotMemory):
         """Merge hot memory insights into persistent profile."""

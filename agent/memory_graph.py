@@ -149,6 +149,8 @@ class MemoryGraph:
     Thread-safe, auto-persists after every N mutations.
     """
 
+    _MAX_ERASURE_ITEMS = 100_000
+
     def __init__(self, graph_path: Path | str | None = None, auto_save_every: int = 5):
         self._path = Path(graph_path) if graph_path else GRAPH_FILE
         self._lock = Lock()
@@ -275,6 +277,8 @@ class MemoryGraph:
     def purge_owner(self, owner_key: str) -> int:
         """Remove one exact owner node and every incident edge."""
         with self._lock:
+            if len(self._nodes) + len(self._edges) > self._MAX_ERASURE_ITEMS:
+                raise RuntimeError("Memory graph scan limit exceeded")
             edge_keys = set(self._adjacency.get(owner_key, set()))
             edge_keys.update(
                 key
@@ -299,6 +303,8 @@ class MemoryGraph:
     def verify_owner_absent(self, owner_key: str) -> bool:
         """Verify memory and the persisted graph contain no exact owner link."""
         with self._lock:
+            if len(self._nodes) + len(self._edges) > self._MAX_ERASURE_ITEMS:
+                raise RuntimeError("Memory graph scan limit exceeded")
             if owner_key in self._nodes:
                 return False
             if any(
@@ -311,6 +317,8 @@ class MemoryGraph:
             data = json.loads(self._path.read_text(encoding="utf-8"))
             nodes = data.get("nodes", [])
             edges = data.get("edges", [])
+            if len(nodes) + len(edges) > self._MAX_ERASURE_ITEMS:
+                raise RuntimeError("Memory graph scan limit exceeded")
             return not any(node.get("id") == owner_key for node in nodes) and not any(
                 edge.get("source") == owner_key or edge.get("target") == owner_key
                 for edge in edges
