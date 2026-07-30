@@ -1,6 +1,6 @@
 # Phase 4 - Multi-day Itinerary Allocation and Load Balancing
 
-> STATUS: draft for written-spec review
+> STATUS: implemented; final whole-branch review pending
 > Ngày: 2026-07-30
 > Phạm vi: generator `generate_itinerary(...)`; kế thừa Phase 3, không thay đổi public API, saved schema hoặc frontend contract
 
@@ -274,7 +274,7 @@ Không tuyên bố full repository suite xanh nếu chỉ chạy ma trận trên
 - Public response/schema/MCP signature không thay đổi; diagnostics mới chỉ additive dưới `schedule.allocation`.
 - Focused Phase 4 + Phase 3 matrix xanh; không deploy, migration, push hoặc chi phí mới.
 
-## 14. Phân chia triển khai dự kiến
+## 14. Phân chia triển khai đã thực hiện
 
 1. Contract và route evaluator trong `itinerary_multiday.py`.
 2. Label-setting/DP qua các ngày và synthetic-origin projection.
@@ -284,3 +284,11 @@ Không tuyên bố full repository suite xanh nếu chỉ chạy ma trận trên
 6. API contract/roadmap documentation, final review và local merge.
 
 Mỗi task dùng TDD, commit riêng, task-scoped review và final whole-branch review trước khi merge.
+
+## 15. Bằng chứng triển khai
+
+- Behavior contract trước khi sửa tài liệu: `19 passed` cho generator multi-day, optimizer multi-day và MCP forwarding.
+- Focused Phase 4 + Phase 3 matrix: `209 passed`.
+- Ruff sạch trên module/fixtures Phase 4 và generator integration; `git diff --check` sạch.
+- Không có dependency, network request, paid API, migration, deploy, saved-schema, MCP-signature hoặc frontend-contract change.
+- Fixture cân bằng giữ ràng buộc không quay đầu bằng tọa độ `move-me=10.061`, giảm max day load và chỉ đổi ownership của một content POI.
