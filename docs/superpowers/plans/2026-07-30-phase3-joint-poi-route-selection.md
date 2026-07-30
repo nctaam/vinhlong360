@@ -299,7 +299,7 @@ git commit -m "feat: add exact joint itinerary selection"
 - Consumes: Task 2 selection entry point and feasibility cache.
 - Produces: deterministic `selection-beam` results for pools above `exact_limit`; bounded destroy/repair and swap improvement with no random or network behavior.
 
-- [ ] **Step 1: Write failing beam/repair tests.**
+- [x] **Step 1: Write failing beam/repair tests.**
 
 Add:
 
@@ -322,15 +322,14 @@ def run_selection(candidates, target_count, exact_limit):
     )
 
 
-def run_selection_with_overloaded_pool(selected_low_reward_id, dropped_high_reward_id, target_count):
+def run_selection_with_greedy_trap(repair_iterations):
     start = candidate("start", 1.0, visit=0)
     end = candidate("end", 1.0, visit=0)
     pool = [
         start,
-        candidate(selected_low_reward_id, 2.0, visit=30),
-        candidate(dropped_high_reward_id, 20.0, visit=30),
-        candidate("short", 5.0, visit=30),
-        candidate("long", 1.0, visit=180),
+        candidate("trap", 30.0, entity_type="trap", visit=540),
+        candidate("high", 20.0, entity_type="high", visit=30),
+        candidate("short", 19.0, entity_type="short", visit=30),
         end,
     ]
     return select_and_schedule_day(
@@ -340,15 +339,24 @@ def run_selection_with_overloaded_pool(selected_low_reward_id, dropped_high_rewa
         matrix=matrix_for(*(item.stop.id for item in pool)),
         schedule_options=ScheduleOptions(day_start_minute=480, day_end_minute=1080),
         selection_options=SelectionOptions(
-            target_count=target_count,
+            target_count=4,
             exact_limit=2,
             beam_width=1,
+            repair_iterations=repair_iterations,
         ),
     )
 
 
 def test_beam_selection_is_deterministic_for_large_pool():
-    candidates = [candidate(f"poi-{index}", 20.0 - index / 10, visit=15) for index in range(12)]
+    candidates = [
+        candidate(
+            f"poi-{index}",
+            20.0 - index / 10,
+            entity_type=f"type-{index}",
+            visit=15,
+        )
+        for index in range(12)
+    ]
     first = run_selection(candidates, target_count=5, exact_limit=2)
     second = run_selection(candidates, target_count=5, exact_limit=2)
 
@@ -357,20 +365,21 @@ def test_beam_selection_is_deterministic_for_large_pool():
     assert first.selected_count == 5
 
 
-def test_repair_can_swap_a_high_reward_dropped_candidate():
-    result = run_selection_with_overloaded_pool(
-        selected_low_reward_id="low",
-        dropped_high_reward_id="high",
-        target_count=3,
-    )
+def test_repair_replaces_a_greedy_long_stop_to_restore_cardinality():
+    without_repair = run_selection_with_greedy_trap(repair_iterations=0)
+    result = run_selection_with_greedy_trap(repair_iterations=32)
 
+    assert without_repair.selected_count == 3
+    assert "trap" in without_repair.selected_ids
+    assert result.selected_count == 4
     assert "high" in result.selected_ids
-    assert "low" not in result.selected_ids
+    assert "short" in result.selected_ids
+    assert "trap" not in result.selected_ids
 ```
 
 Fixtures must use real `ScheduleStop` objects and a controlled local matrix. Assertions must inspect public `SelectionResult`, not private frontier state.
 
-- [ ] **Step 2: Run the beam tests and confirm RED.**
+- [x] **Step 2: Run the beam tests and confirm RED.**
 
 ```powershell
 python -m pytest agent/tests/test_itinerary_selection.py -q
@@ -378,7 +387,7 @@ python -m pytest agent/tests/test_itinerary_selection.py -q
 
 Expected: large-pool dispatch still uses the exact solver or repair is absent, so the new assertions fail for the missing behavior.
 
-- [ ] **Step 3: Implement deterministic beam and repair.**
+- [x] **Step 3: Implement deterministic beam and repair.**
 
 Implement beam states with `(selected_ids, remaining_ids, reward_upper_bound, incumbent_signature)`, expand candidates in `(-reward, visit_minutes, id)` order, retain `beam_width=32`, and use the same objective comparator as exact search. Add at most `repair_iterations=32` deterministic neighborhoods:
 
@@ -389,7 +398,7 @@ Implement beam states with `(selected_ids, remaining_ids, reward_upper_bound, in
 
 Use a monotonic deadline derived from `selection_options.deadline_seconds`. Never seed or call a random generator. Add `selection-repair-deadline-reached` only when a feasible incumbent exists and repair stops early.
 
-- [ ] **Step 4: Run deterministic and focused regression tests.**
+- [x] **Step 4: Run deterministic and focused regression tests.**
 
 ```powershell
 python -m pytest agent/tests/test_itinerary_selection.py agent/tests/test_itinerary_schedule.py agent/tests/test_itinerary_optimizer.py -q
@@ -397,7 +406,7 @@ python -m pytest agent/tests/test_itinerary_selection.py agent/tests/test_itiner
 
 Expected: exact and beam results are repeatable, repair never violates hard constraints, and no existing scheduler/optimizer test regresses.
 
-- [ ] **Step 5: Commit beam and repair.**
+- [x] **Step 5: Commit beam and repair.**
 
 ```powershell
 git add agent/itinerary_selection.py agent/tests/test_itinerary_selection.py
