@@ -364,3 +364,50 @@ def test_regular_food_on_day_one_is_not_reused_as_day_two_meal(
     assert food_stops[0][0] == 1
     assert not food_stops[0][1].get("is_meal")
     assert "meal-anchor-unavailable" in result["day_plans"][1]["schedule"]["warnings"]
+
+
+@pytest.fixture
+def regular_food_on_second_day_entities(monkeypatch):
+    entities = {
+        "p-vl": _place("p-vl"),
+        "food": _entity(
+            "food",
+            [10.15, 106.0],
+            type="dish",
+            confidence=0.1,
+        ),
+    }
+    for index in range(7):
+        entity_id = f"visit-{index}"
+        entities[entity_id] = _entity(
+            entity_id,
+            [10.01 + index * 0.02, 106.0],
+            confidence=1.0,
+            visit_minutes=60,
+        )
+    monkeypatch.setattr(knowledge, "_entities", entities)
+    monkeypatch.setattr(knowledge, "_relationships", [])
+    monkeypatch.setattr(knowledge, "_itineraries", {})
+    return entities
+
+
+def test_regular_food_on_day_two_is_not_reused_as_day_one_meal(
+    regular_food_on_second_day_entities,
+):
+    result = ig.generate_itinerary(
+        days=2,
+        interests=["tong_hop"],
+        areas=["vinh-long"],
+        meal_anchors=["12:00"],
+    )
+
+    food_stops = [
+        (day["day"], stop)
+        for day in result["day_plans"]
+        for stop in day["stops"]
+        if stop["entity"]["id"] == "food"
+    ]
+    assert len(food_stops) == 1
+    assert food_stops[0][0] == 2
+    assert not food_stops[0][1].get("is_meal")
+    assert "meal-anchor-unavailable" in result["day_plans"][0]["schedule"]["warnings"]

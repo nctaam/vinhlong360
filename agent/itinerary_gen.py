@@ -175,7 +175,7 @@ def _build_day_plans(
 ) -> list:
     """Xây dựng day_plans từ danh sách entity đã chọn."""
     day_plans = []
-    used_entity_ids: set[str] = set()
+    used_entity_ids = {item["entity"]["id"] for item in selected}
     idx = 0
     for d in range(days):
         day_entities = selected[idx:idx + stops_per_day]
