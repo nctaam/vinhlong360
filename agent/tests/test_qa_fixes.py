@@ -2,11 +2,14 @@
 system gate always-on, check-phone privacy, IP hashing, review stats limit,
 SMS retry, itinerary pagination, comment thread assembly, CTA lint,
 orphan cleanup, reputation anti-sybil."""
+import asyncio
 import inspect
 import os
 import re
 import sys
 from pathlib import Path
+
+import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -474,12 +477,45 @@ class TestPersonalizationFoundation:
         assert "/api/me/recommendations/contextual" in paths
 
     def test_user_event_route_is_guarded_and_csrf_protected(self):
-        src = inspect.getsource(public_api.track_user_event)
-        assert "Depends(require_pg)" in src
-        assert "Depends(require_user)" in src
-        assert "Depends(require_csrf)" in src
-        assert "check_rate" in src
-        assert "validate_path_id" in src
+        route = next(
+            route
+            for route in public_api.router.routes
+            if getattr(route, "path", "") == "/api/me/events"
+        )
+        dependencies = {dependency.call for dependency in route.dependant.dependencies}
+
+        assert {
+            public_api.require_pg,
+            public_api.require_user,
+            public_api.require_csrf,
+        } <= dependencies
+
+    def test_unknown_entity_event_is_rejected_without_postgresql(self, monkeypatch):
+        from fastapi import HTTPException, Response
+        import personalization_events
+        import ratelimit
+
+        assert personalization_events.settings.PERSONALIZATION_EVENTS_PG is False
+        monkeypatch.setattr(
+            personalization_events.db, "get_entity", lambda _entity_id: None
+        )
+        monkeypatch.setattr(ratelimit, "check_rate", lambda *_args, **_kwargs: None)
+
+        with pytest.raises(HTTPException) as exc_info:
+            asyncio.run(
+                public_api.track_user_event(
+                    Response(),
+                    body={
+                        "event_type": "entity_view",
+                        "context": "entity",
+                        "entity_id": "unknown-entity",
+                    },
+                    user={"id": "00000000-0000-0000-0000-000000000001"},
+                    _csrf=None,
+                )
+            )
+
+        assert exc_info.value.status_code == 422
 
     def test_interest_profile_uses_existing_user_signals(self):
         src = inspect.getsource(public_api._load_user_signal_entities)

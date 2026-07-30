@@ -272,12 +272,49 @@ class TestPhase17AccountHardDelete:
     """Phase 17: Hard-delete accounts past grace period."""
 
     def test_session_cleanup_hard_deletes_accounts(self):
-        src = (Path(__file__).resolve().parent.parent / "scheduler.py").read_text(encoding="utf-8")
-        idx = src.find("task_session_cleanup")
-        block = src[idx:idx+1000]
-        assert "DELETE FROM users" in block
-        assert "deleted_at" in block
-        assert "30 days" in block
+        import scheduler
+
+        user_id = "00000000-0000-0000-0000-000000000123"
+
+        class FakeDatabase:
+            def __init__(self):
+                self.statements = []
+
+            def _fetchall(self, _conn, sql, params):
+                self.statements.append(("fetchall", " ".join(sql.split()), params))
+                return [{"id": user_id}]
+
+            def _fetchone(self, _conn, sql, params):
+                self.statements.append(("fetchone", " ".join(sql.split()), params))
+                return {"id": user_id}
+
+            def _execute(self, _conn, sql, params):
+                self.statements.append(("execute", " ".join(sql.split()), params))
+
+            @staticmethod
+            def _row_to_dict(row):
+                return row
+
+        fake_db = FakeDatabase()
+        grace_interval = f"INTERVAL '{scheduler.ACCOUNT_DELETE_GRACE_DAYS} days'"
+
+        deleted_count = scheduler._hard_delete_stale_users(
+            fake_db, object(), grace_interval
+        )
+
+        delete_statement = next(
+            statement for statement in fake_db.statements if statement[0] == "fetchone"
+        )
+        queue_statement = next(
+            statement for statement in fake_db.statements if statement[0] == "execute"
+        )
+        assert deleted_count == 1
+        assert scheduler.ACCOUNT_DELETE_GRACE_DAYS == 30
+        assert "DELETE FROM users" in delete_statement[1]
+        assert "INTERVAL '30 days'" in delete_statement[1]
+        assert delete_statement[2] == (user_id,)
+        assert "INSERT INTO personalization_legacy_purge_queue" in queue_statement[1]
+        assert queue_statement[2] == (user_id,)
 
     def test_grace_period_configurable(self):
         from config import settings

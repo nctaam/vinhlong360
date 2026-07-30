@@ -74,7 +74,7 @@ class TestSourceFreshness:
     def test_source_freshness_keys_complete(self):
         from public_api import _build_source_freshness
         result = _build_source_freshness({"updatedAt": "2025-01-01"})
-        expected_keys = {"source_title", "source_url", "updated_at", "verified_at",
+        expected_keys = {"source_title", "source_url", "source_tier", "updated_at", "verified_at",
                          "days_since_update", "days_since_verified", "freshness_status"}
         assert set(result.keys()) == expected_keys
 
