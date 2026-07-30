@@ -77,7 +77,7 @@ def test_generator_uses_real_leg_durations_instead_of_fixed_thirty_minutes(gener
     assert stops[1]["time"] == "08:15"
     assert day["schedule"]["matrix_source"] == "haversine-fallback"
     assert day["schedule"]["total_travel_minutes"] > 20
-    assert set(day["schedule"]) == {
+    assert {
         "solver",
         "matrix_source",
         "total_travel_minutes",
@@ -87,7 +87,14 @@ def test_generator_uses_real_leg_durations_instead_of_fixed_thirty_minutes(gener
         "backtrack_ratio",
         "skipped",
         "warnings",
-    }
+    } <= set(day["schedule"])
+    assert {
+        "selection_solver",
+        "candidate_count",
+        "selected_count",
+        "total_reward",
+        "dropped_reasons",
+    } <= set(day["schedule"])
 
 
 def test_generator_uses_parent_place_coordinates_before_falling_back(monkeypatch):
@@ -111,7 +118,7 @@ def test_generator_uses_parent_place_coordinates_before_falling_back(monkeypatch
     assert "coordinates-missing" not in day["schedule"]["warnings"]
 
 
-def test_generator_keeps_legacy_timeline_when_coordinates_are_missing(generator_entities):
+def test_generator_drops_optional_stop_when_coordinates_are_missing(generator_entities):
     generator_entities["near"]["coordinates"] = None
 
     day = ig.generate_itinerary(days=1, interests=["tham_quan"], areas=["vinh-long"])[
@@ -119,11 +126,10 @@ def test_generator_keeps_legacy_timeline_when_coordinates_are_missing(generator_
     ][0]
     stops = [stop for stop in day["stops"] if not stop.get("is_meal")]
 
-    assert [stop["entity"]["id"] for stop in stops] == ["start", "near", "end"]
-    assert stops[1]["time"] == "10:00"
-    assert day["schedule"]["warnings"] == [
-        "meal-anchor-unavailable",
-        "coordinates-missing",
+    assert [stop["entity"]["id"] for stop in stops] == ["start", "end"]
+    assert day["schedule"]["selection_solver"] == "selection-exact"
+    assert day["schedule"]["dropped_reasons"] == [
+        {"stop_id": "near", "reason": "coordinates-missing"},
     ]
 
 
@@ -133,6 +139,7 @@ def test_generator_keeps_legacy_timeline_when_schedule_is_infeasible(
     def fail_schedule(*_args, **_kwargs):
         raise NoFeasibleScheduleError("middle")
 
+    monkeypatch.setattr(ig, "select_and_schedule_day", fail_schedule, raising=False)
     monkeypatch.setattr(ig, "schedule_stop_order", fail_schedule, raising=False)
 
     day = ig.generate_itinerary(days=1, interests=["tham_quan"], areas=["vinh-long"])[
@@ -147,7 +154,9 @@ def test_generator_keeps_legacy_timeline_when_schedule_is_infeasible(
     assert day["schedule"]["warnings"] == [
         "meal-anchor-unavailable",
         "schedule-fallback",
+        "selection-fallback",
     ]
+    assert day["schedule"]["selection_solver"] == "phase2b-fallback"
     assert day["schedule"]["skipped"] == []
 
 
@@ -162,8 +171,9 @@ def test_generator_reports_optional_middle_stop_when_day_window_overflows(genera
         "start",
         "end",
     ]
-    assert day["schedule"]["skipped"] == [
-        {"stop_id": "near", "reason": "day-window-overflow"},
+    assert day["schedule"]["skipped"] == []
+    assert day["schedule"]["dropped_reasons"] == [
+        {"stop_id": "near", "reason": "time-window-overflow"},
     ]
 
 
@@ -177,6 +187,7 @@ def test_generator_falls_back_for_invalid_schedule_duration(generator_entities):
     assert day["schedule"]["warnings"] == [
         "meal-anchor-unavailable",
         "schedule-fallback",
+        "selection-fallback",
     ]
 
 
@@ -279,7 +290,9 @@ def test_coordinate_invalid_meal_is_not_reintroduced_by_legacy_fallback(
     day = result["day_plans"][0]
     assert not any(stop.get("is_meal") for stop in day["stops"])
     assert "meal-anchor-unavailable" in day["schedule"]["warnings"]
-    assert "coordinates-missing" in day["schedule"]["warnings"]
+    assert {"stop_id": "near", "reason": "coordinates-missing"} in day[
+        "schedule"
+    ]["dropped_reasons"]
 
 
 @pytest.fixture

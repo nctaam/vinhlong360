@@ -91,6 +91,20 @@ def test_required_candidate_survives_dominance_and_cap():
     assert any(item.reason == "candidate-cap" for item in dropped)
 
 
+def test_required_candidate_does_not_dominate_optional_candidate():
+    kept, dropped = prune_candidates(
+        [
+            candidate("required", 10.0, visit=0),
+            candidate("optional", 10.0, visit=60),
+        ],
+        required_ids=frozenset({"required"}),
+        max_candidates=20,
+    )
+
+    assert {item.stop.id for item in kept} == {"required", "optional"}
+    assert dropped == ()
+
+
 def test_selection_options_reject_invalid_bounds():
     with pytest.raises(ValueError):
         SelectionOptions(target_count=0)

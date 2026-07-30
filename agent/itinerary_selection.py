@@ -181,7 +181,12 @@ def prune_candidates(
         if item.stop.id in required_ids:
             survivors.append(item)
             continue
-        if any(_dominates(other, item) for other in items if other.stop.id != item.stop.id):
+        if any(
+            _dominates(other, item)
+            for other in items
+            if other.stop.id != item.stop.id
+            and other.stop.id not in required_ids
+        ):
             dropped.append(DroppedCandidate(item.stop.id, "dominated"))
             continue
         survivors.append(item)

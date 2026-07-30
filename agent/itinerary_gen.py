@@ -14,8 +14,15 @@ Output: lịch trình chi tiết với thời gian, điểm dừng, ghi chú, ă
 import logging
 import math
 from numbers import Real
+import re
 
 import knowledge
+from itinerary_selection import (
+    SelectionCandidate,
+    SelectionOptions,
+    prune_candidates,
+    select_and_schedule_day,
+)
 from itinerary_schedule import (
     NoFeasibleScheduleError,
     ScheduleOptions,
@@ -112,14 +119,16 @@ def generate_itinerary(
     selected = _select_diverse(candidates, total_stops, areas, days)
 
     # 3. Xây dựng lịch trình
-    day_plans = _build_day_plans(
+    day_plans = _build_joint_day_plans(
         days,
         stops_per_day,
         selected,
+        candidates,
         meal_candidates,
         month,
         meal_anchor_values,
         rest_anchor_values,
+        areas,
     )
 
     # 4. Tips
@@ -204,6 +213,444 @@ def _build_day_plans(
             "schedule": schedule,
         })
 
+    return day_plans
+
+
+def _candidate_fee_value(item: dict) -> float | None:
+    entity = item.get("entity") or {}
+    attributes = entity.get("attributes") or {}
+    value = entity.get("fee_value")
+    if value is None:
+        value = attributes.get("admission_fee")
+    if value is None:
+        value = attributes.get("gia")
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, Real):
+        return float(value) if math.isfinite(float(value)) and value >= 0 else None
+    if not isinstance(value, str):
+        return None
+    match = re.search(r"\d+(?:[.,]\d+)?", value)
+    if match is None:
+        return None
+    try:
+        parsed = float(match.group(0).replace(",", "."))
+    except ValueError:
+        return None
+    return parsed if math.isfinite(parsed) and parsed >= 0 else None
+
+
+def _selection_pool_state(
+    raw_items: list[dict],
+    required_ids: frozenset[str],
+) -> dict:
+    """Adapt one raw pool and retain deterministic diagnostics for its drops."""
+    raw_items = list(raw_items)
+    candidate_count = len(raw_items)
+    warnings: list[str] = []
+    coordinate_drops: list[dict] = []
+    valid: list[tuple[dict, SelectionCandidate]] = []
+    missing_required = False
+
+    for item in raw_items:
+        stop_id = item["entity"]["id"]
+        required = stop_id in required_ids
+        try:
+            adapted = _candidate_schedule_stop(item, required=required)
+        except ValueError:
+            raise
+        if adapted is None:
+            coordinate_drops.append(
+                {"stop_id": stop_id, "reason": "coordinates-missing"}
+            )
+            missing_required = missing_required or required
+            continue
+        stop, stop_warnings = adapted
+        warnings.extend(stop_warnings)
+        valid.append(
+            (
+                item,
+                SelectionCandidate(
+                    stop=stop,
+                    reward=float(item.get("score", 0.0)),
+                    entity_type=item["entity"].get("type", "unknown"),
+                    area=item.get("area", ""),
+                    fee_value=_candidate_fee_value(item),
+                ),
+            )
+        )
+
+    if missing_required:
+        return {
+            "candidate_count": candidate_count,
+            "warnings": warnings,
+            "raw_items": raw_items,
+            "valid": valid,
+            "kept": [],
+            "kept_by_id": {},
+            "dropped": coordinate_drops,
+            "required_missing": True,
+        }
+
+    valid_candidates = [candidate for _item, candidate in valid]
+    required_valid_ids = frozenset(
+        candidate.stop.id
+        for candidate in valid_candidates
+        if candidate.stop.id in required_ids
+    )
+    kept, pruned = prune_candidates(valid_candidates, required_valid_ids)
+    kept_by_id = {candidate.stop.id: candidate for candidate in kept}
+    raw_by_id = {item["entity"]["id"]: item for item in raw_items}
+    required_order = [
+        kept_by_id[item["entity"]["id"]]
+        for item in raw_items
+        if item["entity"]["id"] in kept_by_id
+        and item["entity"]["id"] in required_ids
+    ]
+    optional_order = [
+        candidate for candidate in kept if candidate.stop.id not in required_ids
+    ]
+    ordered_kept = (
+        [required_order[0], *optional_order, required_order[-1]]
+        if len(required_order) >= 2
+        else [*required_order, *optional_order]
+    )
+    dropped = coordinate_drops + [
+        {"stop_id": item.stop_id, "reason": item.reason} for item in pruned
+    ]
+    return {
+        "candidate_count": candidate_count,
+        "warnings": warnings,
+        "raw_items": raw_items,
+        "valid": valid,
+        "kept": ordered_kept,
+        "kept_by_id": {candidate.stop.id: raw_by_id[candidate.stop.id] for candidate in ordered_kept},
+        "dropped": dropped,
+        "required_missing": False,
+    }
+
+
+def _build_joint_candidate_pools(
+    seed_days: list[list[dict]],
+    candidates: list[dict],
+    areas: list[str],
+) -> list[list[dict]]:
+    """Partition non-seed extras while reserving every seed ID for its own day."""
+    pools = [list(day) for day in seed_days]
+    seed_ids = {
+        item["entity"]["id"] for day in seed_days for item in day
+    }
+    extras = [
+        item for item in candidates if item["entity"]["id"] not in seed_ids
+    ]
+    for item in extras:
+        matching = [
+            index
+            for index, day in enumerate(seed_days)
+            if _day_area(day) == item.get("area")
+        ]
+        eligible = matching or list(range(len(pools)))
+        target_index = min(eligible, key=lambda index: (len(pools[index]), index))
+        pools[target_index].append(item)
+
+    normalized: list[list[dict]] = []
+    for day, pool in zip(seed_days, pools):
+        if len(day) >= 2:
+            first_id = day[0]["entity"]["id"]
+            last_id = day[-1]["entity"]["id"]
+            middle = [
+                item
+                for item in pool
+                if item["entity"]["id"] not in {first_id, last_id}
+            ]
+            normalized.append([day[0], *middle, day[-1]])
+        else:
+            normalized.append(pool)
+    return normalized
+
+
+def _selection_anchor_stops(anchor_items: list[dict]) -> list[ScheduleStop]:
+    return [
+        ScheduleStop(
+            id=item["entity"]["id"],
+            coordinates=_candidate_coordinates(item),
+            visit_minutes=60 if item["_anchor_kind"] == "meal" else 30,
+            opening_windows=(item["_anchor_window"],),
+            required=True,
+        )
+        for item in anchor_items
+    ]
+
+
+def _project_selection_schedule(
+    result,
+    items_by_id: dict[str, dict],
+    anchor_items: list[dict],
+    month: int,
+) -> list[dict]:
+    items_by_id = dict(items_by_id)
+    items_by_id.update(
+        {item["entity"]["id"]: item for item in anchor_items}
+    )
+    placements_by_id = {placement.stop_id: placement for placement in result.schedule.placements}
+    scheduled_stops = []
+    for entity_id in result.schedule.ordered_ids:
+        item = items_by_id.get(entity_id)
+        placement = placements_by_id.get(entity_id)
+        if item is None or placement is None:
+            continue
+        entity = item["entity"]
+        start_minute = int(round(placement.start_visit_minute))
+        scheduled_stop = {
+            "time": _fmt_time(start_minute),
+            "time_min": start_minute,
+            "entity": _entity_summary(entity),
+            "note": _gen_note(entity, month),
+        }
+        if item.get("_anchor_kind") == "meal":
+            scheduled_stop["note"] = MEAL_NOTE
+            scheduled_stop["is_meal"] = True
+        elif item.get("_anchor_kind") == "rest":
+            scheduled_stop["note"] = REST_NOTE
+            scheduled_stop["is_rest"] = True
+        scheduled_stops.append(scheduled_stop)
+    return scheduled_stops
+
+
+def _selection_diagnostics(result, state: dict, anchor_warnings: list[str]) -> dict:
+    dropped = list(state["dropped"])
+    dropped.extend(
+        {"stop_id": item.stop_id, "reason": item.reason}
+        for item in result.dropped
+    )
+    dropped.sort(key=lambda item: item["stop_id"])
+    warnings = list(state["warnings"]) + list(anchor_warnings) + list(result.warnings)
+    return {
+        "solver": result.schedule.solver,
+        "matrix_source": result.schedule.matrix_source,
+        "total_travel_minutes": result.schedule.total_travel_minutes,
+        "waiting_minutes": result.schedule.waiting_minutes,
+        "overtime_minutes": result.schedule.overtime_minutes,
+        "minimum_slack_minutes": result.schedule.minimum_slack_minutes,
+        "backtrack_ratio": result.schedule.backtrack_ratio,
+        "skipped": [
+            {"stop_id": skipped.stop_id, "reason": skipped.reason}
+            for skipped in result.schedule.skipped
+        ],
+        "warnings": warnings,
+        "selection_solver": result.solver,
+        "candidate_count": state["candidate_count"],
+        "selected_count": result.selected_count,
+        "total_reward": result.total_reward,
+        "dropped_reasons": dropped,
+    }
+
+
+def _fallback_selection_diagnostics(
+    schedule: dict,
+    raw_items: list[dict],
+    day_stops: list[dict],
+) -> dict:
+    emitted_ids = {
+        stop["entity"]["id"]
+        for stop in day_stops
+        if not stop.get("is_meal") and not stop.get("is_rest")
+    }
+    raw_by_id = {item["entity"]["id"]: item for item in raw_items}
+    dropped = []
+    for item in raw_items:
+        stop_id = item["entity"]["id"]
+        if stop_id in emitted_ids:
+            continue
+        reason = (
+            "coordinates-missing"
+            if _candidate_coordinates(item) is None
+            else "lower-reward-alternative"
+        )
+        dropped.append({"stop_id": stop_id, "reason": reason})
+    schedule = dict(schedule)
+    schedule.update(
+        {
+            "selection_solver": "phase2b-fallback",
+            "candidate_count": len(raw_items),
+            "selected_count": len(emitted_ids),
+            "total_reward": sum(
+                raw_by_id[stop_id].get("score", 0.0)
+                for stop_id in emitted_ids
+                if stop_id in raw_by_id
+            ),
+            "dropped_reasons": sorted(dropped, key=lambda item: item["stop_id"]),
+        }
+    )
+    return schedule
+
+
+def _build_joint_day_plans(
+    days: int,
+    stops_per_day: int,
+    selected: list,
+    candidates: list,
+    meal_candidates: list,
+    month: int,
+    meal_anchors: list[str],
+    rest_anchors: list[str],
+    areas: list[str],
+) -> list:
+    seed_days = [
+        selected[index * stops_per_day : (index + 1) * stops_per_day]
+        for index in range(days)
+    ]
+    raw_pools = _build_joint_candidate_pools(seed_days, candidates, areas)
+    states = []
+    reserved_content_ids: set[str] = set()
+    for raw_pool, seed_day in zip(raw_pools, seed_days):
+        required_ids = frozenset(
+            item["entity"]["id"] for item in (seed_day[:1] + seed_day[-1:])
+        ) if len(seed_day) >= 2 else frozenset()
+        try:
+            state = _selection_pool_state(raw_pool, required_ids)
+        except ValueError:
+            state = {
+                "candidate_count": len(raw_pool),
+                "warnings": ["schedule-fallback"],
+                "raw_items": raw_pool,
+                "valid": [],
+                "kept": [],
+                "kept_by_id": {},
+                "dropped": [],
+                "required_missing": True,
+                "preparation_error": True,
+            }
+        if state.get("required_missing") or state.get("preparation_error"):
+            reserved_content_ids.update(
+                item["entity"]["id"] for item in raw_pool
+            )
+        else:
+            reserved_content_ids.update(
+                candidate.stop.id for candidate in state["kept"]
+            )
+        states.append((state, required_ids, seed_day, raw_pool))
+
+    used_content_ids: set[str] = set()
+    used_anchor_ids: set[str] = set()
+    day_plans = []
+    for day_index, (state, required_ids, seed_day, raw_pool) in enumerate(states):
+        anchor_items, anchor_warnings = _build_anchor_items(
+            seed_day,
+            meal_candidates,
+            meal_anchors,
+            rest_anchors,
+            day_index + 1,
+            reserved_content_ids | used_anchor_ids | used_content_ids,
+        )
+        current_anchor_ids = {
+            item["entity"]["id"]
+            for item in anchor_items
+            if item.get("_anchor_kind") == "meal"
+        }
+        used_anchor_ids.update(current_anchor_ids)
+
+        fallback_used_ids = (
+            reserved_content_ids | used_anchor_ids | used_content_ids
+        ) - current_anchor_ids
+        if (
+            len(seed_day) < 2
+            or state.get("required_missing")
+            or state.get("preparation_error")
+        ):
+            day_stops, schedule = _build_day_schedule(
+                seed_day,
+                meal_candidates,
+                month,
+                meal_anchors,
+                rest_anchors,
+                day_index + 1,
+                fallback_used_ids,
+            )
+            schedule = _fallback_selection_diagnostics(
+                schedule,
+                raw_pool,
+                day_stops,
+            )
+            schedule["warnings"] = list(schedule["warnings"])
+            if "selection-fallback" not in schedule["warnings"]:
+                schedule["warnings"].append("selection-fallback")
+        else:
+            selection_items = state["kept"]
+            fixed_stops = _selection_anchor_stops(anchor_items)
+            matrix_stops = [candidate.stop for candidate in selection_items]
+            matrix_stops.extend(fixed_stops)
+            try:
+                matrix = build_fallback_matrix(matrix_stops, "driving")
+                result = select_and_schedule_day(
+                    candidates=selection_items,
+                    required_ids=required_ids,
+                    fixed_stops=fixed_stops,
+                    matrix=matrix,
+                    schedule_options=ScheduleOptions(
+                        day_start_minute=480,
+                        day_end_minute=1080,
+                    ),
+                    selection_options=SelectionOptions(
+                        target_count=stops_per_day,
+                        exact_limit=8,
+                        beam_width=32,
+                        repair_iterations=32,
+                    ),
+                )
+            except (NoFeasibleScheduleError, ValueError):
+                day_stops, schedule = _build_day_schedule(
+                    seed_day,
+                    meal_candidates,
+                    month,
+                    meal_anchors,
+                    rest_anchors,
+                    day_index + 1,
+                    fallback_used_ids,
+                )
+                schedule = _fallback_selection_diagnostics(
+                    schedule,
+                    raw_pool,
+                    day_stops,
+                )
+                schedule["warnings"] = list(schedule["warnings"])
+                if "selection-fallback" not in schedule["warnings"]:
+                    schedule["warnings"].append("selection-fallback")
+            else:
+                day_stops = _project_selection_schedule(
+                    result,
+                    state["kept_by_id"],
+                    anchor_items,
+                    month,
+                )
+                schedule = _selection_diagnostics(
+                    result,
+                    state,
+                    anchor_warnings,
+                )
+                used_content_ids.update(result.selected_ids)
+
+        used_content_ids.update(
+            stop["entity"]["id"]
+            for stop in day_stops
+            if not stop.get("is_meal") and not stop.get("is_rest")
+        )
+        used_anchor_ids.update(
+            stop["entity"]["id"]
+            for stop in day_stops
+            if stop.get("is_meal")
+        )
+        day_plans.append(
+            {
+                "day": day_index + 1,
+                "area_focus": _day_area(seed_day),
+                "stops": [
+                    {key: value for key, value in stop.items() if key != "time_min"}
+                    for stop in day_stops
+                ],
+                "schedule": schedule,
+            }
+        )
     return day_plans
 
 
@@ -292,7 +739,7 @@ def _candidate_schedule_stop(item: dict, required: bool) -> tuple[ScheduleStop, 
 
 def _legacy_schedule_diagnostics(warnings: list[str]) -> dict:
     return {
-        "solver": "legacy",
+        "solver": "legacy-fixed-order",
         "matrix_source": "none",
         "total_travel_minutes": 0.0,
         "waiting_minutes": 0.0,

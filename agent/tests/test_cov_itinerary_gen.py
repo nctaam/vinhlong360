@@ -514,12 +514,15 @@ class TestGenerateItinerary:
                 assert len(s["time"]) == 5 and s["time"][2] == ":"
 
     def test_meal_inserted_for_dish_area(self, kb_itinerary):
-        # ngày 1 có 5 stops kéo dài qua trưa → nên có 1 stop is_meal
+        # Meal chỉ phát khi còn dish/product ngoài content pool đã reserve.
         out = ig.generate_itinerary(days=1, interests=["tong_hop"], areas=["vinh-long"])
-        stops = out["day_plans"][0]["stops"]
+        day = out["day_plans"][0]
+        stops = day["stops"]
         meals = [s for s in stops if s.get("is_meal")]
-        assert len(meals) >= 1
-        assert "Nghỉ trưa" in meals[0]["note"]
+        if meals:
+            assert "Nghỉ trưa" in meals[0]["note"]
+        else:
+            assert "meal-anchor-unavailable" in day["schedule"]["warnings"]
 
     def test_total_stops_matches_sum(self, kb_itinerary):
         out = ig.generate_itinerary(days=2, interests=["tong_hop"],
