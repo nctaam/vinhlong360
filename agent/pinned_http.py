@@ -35,6 +35,7 @@ import time
 import zlib
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
+from http.cookies import CookieError, SimpleCookie
 from typing import Protocol
 
 import httpcore
@@ -358,6 +359,175 @@ def _ascii_host(url: httpx.URL) -> str:
 def _canonical_url_key(url: httpx.URL) -> tuple[str, str, int, bytes]:
     port = url.port or _HTTP_PORTS[url.scheme]
     return (url.scheme.lower(), _ascii_host(url), port, url.raw_path)
+
+
+_COOKIE_TOKEN_RE = re.compile(r"^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$")
+_MAX_PINNED_COOKIES = 16
+_MAX_COOKIE_NAME_BYTES = 64
+_MAX_COOKIE_VALUE_BYTES = 1024
+_MAX_SET_COOKIE_BYTES = 4096
+
+
+@dataclass(frozen=True)
+class _PinnedCookie:
+    name: str
+    value: str
+    domain: str
+    path: str
+    secure: bool
+    host_only: bool
+
+
+@dataclass(frozen=True)
+class _CookieMutation:
+    cookie: _PinnedCookie
+    delete: bool
+
+
+def _cookie_domain_matches(host: str, domain: str) -> bool:
+    return host == domain or host.endswith(f".{domain}")
+
+
+def _cookie_default_path(url: httpx.URL) -> str:
+    path = url.path or "/"
+    if not path.startswith("/") or path == "/":
+        return "/"
+    parent = path.rsplit("/", 1)[0]
+    return parent or "/"
+
+
+def _cookie_path_matches(request_path: str, cookie_path: str) -> bool:
+    if request_path == cookie_path:
+        return True
+    if not request_path.startswith(cookie_path):
+        return False
+    return cookie_path.endswith("/") or request_path[len(cookie_path):].startswith("/")
+
+
+def _cookie_name_value(morsel) -> tuple[str, str] | None:
+    name = morsel.key
+    if len(name.encode("utf-8", "ignore")) > _MAX_COOKIE_NAME_BYTES:
+        return None
+    if not _COOKIE_TOKEN_RE.fullmatch(name):
+        return None
+    coded_value = morsel.coded_value
+    try:
+        coded_value.encode("ascii")
+    except UnicodeEncodeError:
+        return None
+    if len(coded_value.encode("ascii")) > _MAX_COOKIE_VALUE_BYTES:
+        return None
+    return name, coded_value
+
+
+def _cookie_scope(url: httpx.URL, morsel) -> tuple[str, bool] | None:
+    host = _ascii_host(url)
+    raw_domain = morsel["domain"].strip().lower()
+    host_only = not bool(raw_domain)
+    if host_only:
+        return host, True
+    domain = raw_domain.lstrip(".").rstrip(".")
+    try:
+        domain = domain.encode("idna").decode("ascii").lower()
+    except UnicodeError:
+        return None
+    if not domain or not _cookie_domain_matches(host, domain):
+        return None
+    return domain, False
+
+
+def _parse_set_cookie(url: httpx.URL, raw_value: str) -> _CookieMutation | None:
+    if len(raw_value.encode("utf-8", "ignore")) > _MAX_SET_COOKIE_BYTES:
+        return None
+    parsed = SimpleCookie()
+    try:
+        parsed.load(raw_value)
+    except CookieError:
+        return None
+    if len(parsed) != 1:
+        return None
+    name, morsel = next(iter(parsed.items()))
+    name_value = _cookie_name_value(morsel)
+    if name_value is None:
+        return None
+    scope = _cookie_scope(url, morsel)
+    if scope is None:
+        return None
+    domain, host_only = scope
+    raw_path = morsel["path"].strip()
+    path = raw_path if raw_path.startswith("/") else _cookie_default_path(url)
+    max_age = morsel["max-age"].strip()
+    delete = False
+    if max_age:
+        try:
+            delete = int(max_age) <= 0
+        except ValueError:
+            pass
+    name, coded_value = name_value
+    return _CookieMutation(
+        _PinnedCookie(
+            name=name,
+            value=coded_value,
+            domain=domain,
+            path=path,
+            secure=bool(morsel["secure"]),
+            host_only=host_only,
+        ),
+        delete,
+    )
+
+
+class _PinnedCookieJar:
+    """Small request-scoped cookie jar with conservative bounds and scoping."""
+
+    def __init__(self) -> None:
+        self._cookies: dict[tuple[str, str, str, bool], _PinnedCookie] = {}
+
+    def _delete(self, *, name: str, domain: str, path: str, host_only: bool) -> None:
+        self._cookies.pop((name, domain, path, host_only), None)
+
+    def update(
+        self,
+        url: httpx.URL,
+        headers: tuple[tuple[str, str], ...],
+    ) -> None:
+        for header_name, raw_value in headers:
+            if header_name.lower() != "set-cookie":
+                continue
+            mutation = _parse_set_cookie(url, raw_value)
+            if mutation is None:
+                continue
+            cookie = mutation.cookie
+            key = (cookie.name, cookie.domain, cookie.path, cookie.host_only)
+            if mutation.delete:
+                self._delete(
+                    name=cookie.name,
+                    domain=cookie.domain,
+                    path=cookie.path,
+                    host_only=cookie.host_only,
+                )
+                continue
+            if key not in self._cookies and len(self._cookies) >= _MAX_PINNED_COOKIES:
+                continue
+            self._cookies[key] = cookie
+
+    def header_for(self, url: httpx.URL) -> str | None:
+        host = _ascii_host(url)
+        request_path = url.path or "/"
+        matching = [
+            cookie
+            for cookie in self._cookies.values()
+            if (not cookie.secure or url.scheme == "https")
+            and (
+                (cookie.host_only and host == cookie.domain)
+                or (not cookie.host_only and _cookie_domain_matches(host, cookie.domain))
+            )
+            and _cookie_path_matches(request_path, cookie.path)
+        ]
+        if not matching:
+            return None
+        matching.sort(key=lambda cookie: (-len(cookie.path), cookie.name, cookie.domain))
+        return "; ".join(f"{cookie.name}={cookie.value}" for cookie in matching)
 
 
 def _resolved_address(
@@ -914,6 +1084,7 @@ def _fetch_hop(
     hop: ResolvedHop,
     *,
     user_agent: str,
+    cookie_header: str | None,
     policy: EgressPolicy,
     budget: DeadlineBudget,
     transport_factory: TransportFactory,
@@ -922,14 +1093,17 @@ def _fetch_hop(
     try:
         budget.remaining(monotonic=monotonic)
         transport = transport_factory(hop, policy, budget)
+        client_headers = {
+            "User-Agent": user_agent,
+            "Accept-Encoding": ", ".join(policy.accepted_encodings),
+        }
+        if cookie_header:
+            client_headers["Cookie"] = cookie_header
         with httpx.Client(
             transport=transport,
             follow_redirects=False,
             trust_env=False,
-            headers={
-                "User-Agent": user_agent,
-                "Accept-Encoding": ", ".join(policy.accepted_encodings),
-            },
+            headers=client_headers,
         ) as client:
             # Built via the client (for default-header merging and timeout-extension
             # conversion) but dispatched straight to the transport: httpx.Client.send()
@@ -1004,12 +1178,14 @@ class PinnedHTTPClient:
             monotonic=self._monotonic,
         )
         current = _parse_url(url)
-        visited: set[tuple[str, str, int, bytes]] = set()
+        visited: set[tuple[tuple[str, str, int, bytes], str | None]] = set()
+        cookies = _PinnedCookieJar()
         redirects: list[RedirectHop] = []
         try:
             while True:
                 budget.remaining(monotonic=self._monotonic)
-                key = _canonical_url_key(current)
+                cookie_header = cookies.header_for(current)
+                key = (_canonical_url_key(current), cookie_header)
                 if key in visited:
                     raise RedirectPolicyError("redirect loop detected")
                 visited.add(key)
@@ -1017,11 +1193,13 @@ class PinnedHTTPClient:
                 status, headers, content, location = _fetch_hop(
                     hop,
                     user_agent=user_agent,
+                    cookie_header=cookie_header,
                     policy=policy,
                     budget=budget,
                     transport_factory=self._transport_factory,
                     monotonic=self._monotonic,
                 )
+                cookies.update(hop.url, headers)
                 if location is None:
                     budget.remaining(monotonic=self._monotonic)
                     return PinnedResponse(status, str(hop.url), headers, content, tuple(redirects))

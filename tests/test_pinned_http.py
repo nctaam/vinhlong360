@@ -1958,6 +1958,158 @@ def test_redirect_body_is_closed_without_iteration() -> None:
     assert stream.iterated is False
 
 
+def test_same_url_redirect_with_set_cookie_replays_cookie() -> None:
+    seen: list[tuple[str, str | None]] = []
+
+    def factory(
+        _hop: ph.ResolvedHop,
+        _policy: ph.EgressPolicy,
+        _budget: ph.DeadlineBudget,
+    ) -> httpx.BaseTransport:
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append((str(request.url), request.headers.get("cookie")))
+            if len(seen) == 1:
+                return httpx.Response(
+                    302,
+                    headers=(
+                        ("location", "/p"),
+                        ("set-cookie", "consent=yes; Path=/"),
+                    ),
+                    request=request,
+                )
+            return httpx.Response(
+                200,
+                stream=_ChunkStream([b"ok"]),
+                request=request,
+            )
+
+        return httpx.MockTransport(handler)
+
+    result = ph.PinnedHTTPClient(
+        resolver=_public_resolver,
+        transport_factory=factory,
+    ).get(
+        "https://example.com/p",
+        user_agent="ua/1",
+        policy=_policy(),
+        audit_context="test",
+    )
+
+    assert result.content == b"ok"
+    assert seen == [
+        ("https://example.com/p", None),
+        ("https://example.com/p", "consent=yes"),
+    ]
+
+
+def test_same_url_redirect_without_cookie_is_rejected() -> None:
+    seen: list[str] = []
+
+    def factory(
+        _hop: ph.ResolvedHop,
+        _policy: ph.EgressPolicy,
+        _budget: ph.DeadlineBudget,
+    ) -> httpx.BaseTransport:
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append(str(request.url))
+            return httpx.Response(
+                302,
+                headers={"location": "/p"},
+                request=request,
+            )
+
+        return httpx.MockTransport(handler)
+
+    with pytest.raises(ph.RedirectPolicyError):
+        ph.PinnedHTTPClient(
+            resolver=_public_resolver,
+            transport_factory=factory,
+        ).get(
+            "https://example.com/p",
+            user_agent="ua/1",
+            policy=_policy(),
+            audit_context="test",
+        )
+
+    assert seen == ["https://example.com/p"]
+
+
+def test_cookie_is_not_sent_to_incompatible_origin_or_scheme() -> None:
+    seen: list[tuple[str, str | None]] = []
+
+    def factory(
+        _hop: ph.ResolvedHop,
+        _policy: ph.EgressPolicy,
+        _budget: ph.DeadlineBudget,
+    ) -> httpx.BaseTransport:
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append((str(request.url), request.headers.get("cookie")))
+            if len(seen) == 1:
+                return httpx.Response(
+                    302,
+                    headers=(
+                        ("location", "http://example.com/p"),
+                        ("set-cookie", "consent=yes; Secure; Path=/"),
+                    ),
+                    request=request,
+                )
+            return httpx.Response(
+                200,
+                stream=_ChunkStream([b"ok"]),
+                request=request,
+            )
+
+        return httpx.MockTransport(handler)
+
+    result = ph.PinnedHTTPClient(
+        resolver=_public_resolver,
+        transport_factory=factory,
+    ).get(
+        "https://example.com/p",
+        user_agent="ua/1",
+        policy=_policy(),
+        audit_context="test",
+    )
+
+    assert result.content == b"ok"
+    assert seen == [
+        ("https://example.com/p", None),
+        ("http://example.com/p", None),
+    ]
+
+
+def test_pinned_cookie_jar_enforces_domain_path_and_count_bounds() -> None:
+    jar = ph._PinnedCookieJar()
+    source = httpx.URL("https://sub.example.com/section/page")
+    jar.update(
+        source,
+        (
+            ("set-cookie", "scoped=yes; Domain=example.com; Path=/section"),
+            ("set-cookie", "too-large=" + ("x" * 1025)),
+        ),
+    )
+    for index in range(17):
+        jar.update(source, (("set-cookie", f"c{index}=v; Path=/"),))
+
+    path_cookies = "; ".join(
+        f"c{index}=v" for index in sorted(range(15), key=lambda item: f"c{item}")
+    )
+    assert jar.header_for(httpx.URL("https://sub.example.com/section/next")) == (
+        "scoped=yes; " + path_cookies
+    )
+    assert jar.header_for(httpx.URL("https://sub.example.com/other")) == path_cookies
+    assert jar.header_for(httpx.URL("https://other.test/section/next")) is None
+
+
+def test_pinned_cookie_jar_honors_max_age_deletion() -> None:
+    jar = ph._PinnedCookieJar()
+    url = httpx.URL("https://example.com/p")
+    jar.update(url, (("set-cookie", "consent=yes; Path=/"),))
+    jar.update(url, (("set-cookie", "consent=; Max-Age=0; Path=/"),))
+
+    assert jar.header_for(url) is None
+
+
 def test_gzip_body_accepts_split_chunks() -> None:
     decoded = b"gzip body"
     encoded = gzip.compress(decoded)
