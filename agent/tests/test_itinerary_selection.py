@@ -7,7 +7,13 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from itinerary_schedule import ScheduleOptions, ScheduleStop, build_fallback_matrix
+import itinerary_selection as selection_module
+from itinerary_schedule import (
+    ScheduleOptions,
+    ScheduleStop,
+    TimeWindow,
+    build_fallback_matrix,
+)
 from itinerary_selection import (
     DroppedCandidate,
     SelectionCandidate,
@@ -124,3 +130,131 @@ def test_required_only_selection_schedules_without_optional_search():
     assert result.selected_ids == ("start", "end")
     assert result.selected_count == 2
     assert result.total_reward == 5.0
+
+
+def test_exact_selection_prefers_more_feasible_content_then_reward():
+    result = select_and_schedule_day(
+        candidates=[
+            candidate("start", 1.0, visit=0),
+            candidate("high", 10.0, visit=120),
+            candidate("medium", 8.0, visit=60),
+            candidate("end", 1.0, visit=0),
+        ],
+        required_ids=frozenset({"start", "end"}),
+        fixed_stops=(),
+        matrix=matrix_for("start", "high", "medium", "end"),
+        schedule_options=ScheduleOptions(day_start_minute=480, day_end_minute=660),
+        selection_options=SelectionOptions(target_count=3, exact_limit=8),
+    )
+
+    assert result.selected_count == 3
+    assert set(result.selected_ids) == {"start", "high", "end"}
+    assert result.solver == "selection-exact"
+
+
+def test_exact_selection_drops_optional_with_explicit_reason_when_window_overflows():
+    result = select_and_schedule_day(
+        candidates=[
+            candidate("start", 1.0, visit=0),
+            candidate("long", 9.0, visit=180),
+            candidate("end", 1.0, visit=0),
+        ],
+        required_ids=frozenset({"start", "end"}),
+        fixed_stops=(),
+        matrix=matrix_for("start", "long", "end"),
+        schedule_options=ScheduleOptions(day_start_minute=480, day_end_minute=540),
+        selection_options=SelectionOptions(target_count=2, exact_limit=8),
+    )
+
+    assert result.selected_ids == ("start", "end")
+    assert result.dropped == (DroppedCandidate("long", "time-window-overflow"),)
+
+
+def test_exact_selection_keeps_fixed_meal_in_feasibility():
+    result = select_and_schedule_day(
+        candidates=[
+            candidate("start", 1.0, visit=0),
+            candidate("poi", 8.0, visit=60),
+            candidate("end", 1.0, visit=0),
+        ],
+        required_ids=frozenset({"start", "end"}),
+        fixed_stops=(
+            ScheduleStop(
+                "meal",
+                (10.1, 106.0),
+                60,
+                (TimeWindow(720, 780),),
+                True,
+            ),
+        ),
+        matrix=matrix_for("start", "poi", "meal", "end"),
+        schedule_options=ScheduleOptions(day_start_minute=480, day_end_minute=840),
+        selection_options=SelectionOptions(target_count=3, exact_limit=8),
+    )
+
+    assert "meal" in result.schedule.ordered_ids
+
+
+def test_exact_selection_preserves_required_endpoint_input_order():
+    result = select_and_schedule_day(
+        candidates=[
+            candidate("start", 1.0, visit=0),
+            candidate("end", 2.0, visit=0),
+        ],
+        required_ids=frozenset({"start", "end"}),
+        fixed_stops=(),
+        matrix=matrix_for("start", "end"),
+        schedule_options=ScheduleOptions(),
+        selection_options=SelectionOptions(target_count=2),
+    )
+
+    assert result.schedule.ordered_ids[0] == "start"
+    assert result.schedule.ordered_ids[-1] == "end"
+
+
+def test_exact_selection_filters_blocked_edges_for_excluded_candidates():
+    result = select_and_schedule_day(
+        candidates=[
+            candidate("start", 1.0, visit=0),
+            candidate("blocked", 9.0, visit=30),
+            candidate("end", 1.0, visit=0),
+        ],
+        required_ids=frozenset({"start", "end"}),
+        fixed_stops=(),
+        matrix=matrix_for("start", "blocked", "end"),
+        schedule_options=ScheduleOptions(
+            blocked_edges=frozenset({("start", "blocked")}),
+        ),
+        selection_options=SelectionOptions(target_count=2),
+    )
+
+    assert result.selected_ids == ("start", "end")
+    assert result.dropped == (DroppedCandidate("blocked", "unreachable-edge"),)
+
+
+def test_exact_selection_prunes_visit_time_lower_bound_before_scheduler(
+    monkeypatch,
+):
+    real_schedule = selection_module.schedule_stop_order
+    scheduled_ids = []
+
+    def counted_schedule(stops, matrix, options):
+        scheduled_ids.append(tuple(stop.id for stop in stops))
+        return real_schedule(stops, matrix, options)
+
+    monkeypatch.setattr(selection_module, "schedule_stop_order", counted_schedule)
+    result = select_and_schedule_day(
+        candidates=[
+            candidate("start", 1.0, visit=0),
+            candidate("long", 9.0, visit=180),
+            candidate("end", 1.0, visit=0),
+        ],
+        required_ids=frozenset({"start", "end"}),
+        fixed_stops=(),
+        matrix=matrix_for("start", "long", "end"),
+        schedule_options=ScheduleOptions(day_start_minute=480, day_end_minute=540),
+        selection_options=SelectionOptions(target_count=3),
+    )
+
+    assert result.dropped == (DroppedCandidate("long", "time-window-overflow"),)
+    assert scheduled_ids == [("start", "end")]

@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from itertools import combinations
 import math
+import time
 from typing import Sequence
 
 from itinerary_schedule import (
+    NoFeasibleScheduleError,
     ScheduleOptions,
     ScheduleResult,
     ScheduleStop,
@@ -201,7 +204,7 @@ def select_and_schedule_day(
     schedule_options: ScheduleOptions,
     selection_options: SelectionOptions,
 ) -> SelectionResult:
-    """Return a safe required-only result until exact search is added in Task 2."""
+    """Select a feasible exact subset when the post-prune pool is small."""
     if not isinstance(required_ids, frozenset):
         required_ids = frozenset(required_ids)
 
@@ -214,29 +217,233 @@ def select_and_schedule_day(
     unknown_required = required_ids.difference(candidate_ids)
     if unknown_required:
         raise ValueError("Required ID phải có trong candidate pool")
+    if any(not isinstance(stop, ScheduleStop) for stop in fixed_stops):
+        raise ValueError("Fixed stop phải gồm ScheduleStop")
+    fixed = tuple(fixed_stops)
+    fixed_ids = tuple(stop.id for stop in fixed)
+    if len(fixed_ids) != len(set(fixed_ids)):
+        raise ValueError("Fixed stop ID không được trùng")
+    if set(fixed_ids).intersection(candidate_ids):
+        raise ValueError("Fixed stop ID không được trùng candidate ID")
 
+    kept, pruned_dropped = prune_candidates(items, required_ids)
     required = [item for item in items if item.stop.id in required_ids]
-    optional = [item for item in items if item.stop.id not in required_ids]
-    if optional:
-        raise NotImplementedError("Exact selection search is implemented in the next task")
+    optional = [item for item in kept if item.stop.id not in required_ids]
+    if len(optional) > selection_options.exact_limit:
+        raise NotImplementedError("Beam selection search is implemented in the next task")
     if len(required) < 2:
         raise ValueError("Required candidate pool phải có ít nhất hai endpoint")
 
-    stops = [required[0].stop, *fixed_stops, required[-1].stop]
-    stop_ids = [stop.id for stop in stops]
-    if len(stop_ids) != len(set(stop_ids)):
+    all_stop_ids = [item.stop.id for item in kept] + list(fixed_ids)
+    if len(all_stop_ids) != len(set(all_stop_ids)):
         raise ValueError("Stop ID trong lịch trình không được trùng")
-    schedule = schedule_stop_order(stops, matrix, schedule_options)
-    selected_ids = tuple(item.stop.id for item in required)
+    matrix_indexes = {stop_id: index for index, stop_id in enumerate(matrix.stop_ids)}
+    missing_matrix_ids = set(all_stop_ids).difference(matrix_indexes)
+    if missing_matrix_ids:
+        raise ValueError("Ma trận thiếu ID điểm dừng")
+
+    required_count = len(required)
+    optional_limit = min(
+        len(optional),
+        max(0, selection_options.target_count - required_count),
+    )
+    optional_order = tuple(
+        sorted(
+            optional,
+            key=lambda item: (-item.reward, item.stop.visit_minutes, item.stop.id),
+        )
+    )
+    deadline = time.perf_counter() + selection_options.deadline_seconds
+    cache: dict[frozenset[str], tuple[ScheduleResult | None, bool]] = {}
+    feasible_with: set[str] = set()
+    optional_by_id = {item.stop.id: item for item in optional_order}
+    base_visit_minutes = sum(item.stop.visit_minutes for item in required) + sum(
+        stop.visit_minutes for stop in fixed
+    )
+    available_minutes = (
+        schedule_options.day_end_minute - schedule_options.day_start_minute
+    )
+    visit_bound_infeasible: set[frozenset[str]] = set()
+
+    def evaluate(optional_ids: frozenset[str]) -> tuple[ScheduleResult | None, bool]:
+        key = frozenset(item.stop.id for item in required).union(optional_ids)
+        cached = cache.get(key)
+        if cached is not None:
+            return cached
+        if base_visit_minutes + sum(
+            optional_by_id[stop_id].stop.visit_minutes for stop_id in optional_ids
+        ) > available_minutes:
+            visit_bound_infeasible.add(optional_ids)
+            outcome = (None, False)
+            cache[key] = outcome
+            return outcome
+        remaining = deadline - time.perf_counter()
+        if remaining <= 0:
+            outcome = (None, True)
+            cache[key] = outcome
+            return outcome
+
+        selected_optional = [
+            item for item in optional_order if item.stop.id in optional_ids
+        ]
+        middle_required = [
+            replace(item.stop, required=True) for item in required[1:-1]
+        ]
+        stops = [
+            replace(required[0].stop, required=True),
+            *middle_required,
+            *(replace(item.stop, required=True) for item in selected_optional),
+            *(replace(stop, required=True) for stop in fixed),
+            replace(required[-1].stop, required=True),
+        ]
+        stop_ids = tuple(stop.id for stop in stops)
+        stop_id_set = set(stop_ids)
+        indexes = [matrix_indexes[stop_id] for stop_id in stop_ids]
+        view = TravelMatrix(
+            stop_ids,
+            tuple(
+                tuple(matrix.duration_minutes[row][column] for column in indexes)
+                for row in indexes
+            ),
+            matrix.source,
+        )
+        local_options = replace(
+            schedule_options,
+            deadline_seconds=min(schedule_options.deadline_seconds, remaining),
+            blocked_edges=frozenset(
+                edge
+                for edge in schedule_options.blocked_edges
+                if edge[0] in stop_id_set and edge[1] in stop_id_set
+            ),
+        )
+        try:
+            schedule = schedule_stop_order(stops, view, local_options)
+        except NoFeasibleScheduleError:
+            outcome = (None, False)
+        else:
+            timed_out = time.perf_counter() >= deadline
+            outcome = (schedule, timed_out)
+            feasible_with.update(optional_ids)
+        cache[key] = outcome
+        return outcome
+
+    def objective(
+        schedule: ScheduleResult,
+        selected_optional_ids: frozenset[str],
+    ) -> tuple[object, ...]:
+        selected_ids = tuple(
+            item.stop.id
+            for item in items
+            if item.stop.id in required_ids or item.stop.id in selected_optional_ids
+        )
+        selected_items = [
+            item
+            for item in items
+            if item.stop.id in required_ids or item.stop.id in selected_optional_ids
+        ]
+        return (
+            -len(selected_ids),
+            -sum(item.reward for item in selected_items),
+            -len({item.entity_type for item in selected_items}),
+            schedule.total_travel_minutes,
+            schedule.backtrack_ratio,
+            -schedule.minimum_slack_minutes,
+            selected_ids,
+            schedule.ordered_ids,
+        )
+
+    incumbent: tuple[ScheduleResult, frozenset[str]] | None = None
+    deadline_reached = False
+    base_schedule, base_timed_out = evaluate(frozenset())
+    if base_schedule is not None:
+        incumbent = (base_schedule, frozenset())
+    deadline_reached = deadline_reached or base_timed_out
+
+    required_reward = sum(item.reward for item in required)
+    for count in range(optional_limit, 0, -1):
+        if deadline_reached:
+            break
+        if (
+            incumbent is not None
+            and required_count + len(incumbent[1]) > required_count + count
+        ):
+            break
+        for subset in combinations(optional_order, count):
+            if time.perf_counter() >= deadline:
+                deadline_reached = True
+                break
+            subset_ids = frozenset(item.stop.id for item in subset)
+            subset_reward = required_reward + sum(item.reward for item in subset)
+            if (
+                incumbent is not None
+                and required_count + len(incumbent[1]) == required_count + count
+                and required_reward
+                + sum(optional_by_id[stop_id].reward for stop_id in incumbent[1])
+                > subset_reward
+            ):
+                continue
+            schedule, timed_out = evaluate(subset_ids)
+            deadline_reached = deadline_reached or timed_out
+            if schedule is None:
+                continue
+            if incumbent is None or objective(schedule, subset_ids) < objective(
+                incumbent[0], incumbent[1]
+            ):
+                incumbent = (schedule, subset_ids)
+            if deadline_reached:
+                break
+
+    if incumbent is None:
+        raise NoFeasibleScheduleError("Không tìm thấy lịch trình khả thi cho selection")
+
+    schedule, selected_optional_ids = incumbent
+    selected_ids = tuple(
+        item.stop.id
+        for item in items
+        if item.stop.id in required_ids or item.stop.id in selected_optional_ids
+    )
+    selected_set = set(selected_ids)
+    dropped = list(pruned_dropped)
+    for item in kept:
+        stop_id = item.stop.id
+        if stop_id in selected_set or stop_id in required_ids:
+            continue
+        if deadline_reached and stop_id not in feasible_with:
+            reason = "selection-deadline"
+        elif stop_id in feasible_with:
+            reason = "lower-reward-alternative"
+        else:
+            singleton = frozenset({stop_id})
+            diagnostic, diagnostic_timed_out = evaluate(singleton)
+            if diagnostic is not None:
+                reason = "lower-reward-alternative"
+            elif diagnostic_timed_out:
+                reason = "selection-deadline"
+                deadline_reached = True
+            elif singleton in visit_bound_infeasible:
+                reason = "time-window-overflow"
+            elif any(
+                stop_id in edge
+                for edge in schedule_options.blocked_edges
+            ):
+                reason = "unreachable-edge"
+            else:
+                reason = "time-window-overflow"
+        dropped.append(DroppedCandidate(stop_id, reason))
+    dropped.sort(key=lambda item: item.stop_id)
+    warnings = list(schedule.warnings)
+    if deadline_reached and "selection-deadline-reached" not in warnings:
+        warnings.append("selection-deadline-reached")
+    selected_items = [item for item in items if item.stop.id in selected_set]
     return SelectionResult(
         schedule=schedule,
         selected_ids=selected_ids,
-        dropped=(),
+        dropped=tuple(dropped),
         candidate_count=len(items),
         selected_count=len(selected_ids),
-        total_reward=sum(item.reward for item in required),
+        total_reward=sum(item.reward for item in selected_items),
         solver="selection-exact",
-        warnings=(),
+        warnings=tuple(warnings),
     )
 
 
