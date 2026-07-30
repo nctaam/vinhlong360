@@ -200,6 +200,8 @@ Mỗi `day_plans[*].schedule` có thể nhận thêm object `allocation`:
 
 `moved_in_ids` và `moved_out_ids` là theo từng ngày; `move_count` và `max_imbalance_minutes` là giá trị toàn itinerary được lặp lại để mỗi day diagnostic tự giải thích được. Không thêm field ở top-level response. Stop entity, `time`, `note`, `is_meal`, `is_rest`, `total_stops` và các key schedule Phase 2B/3 giữ nguyên.
 
+Các field `selection_solver`, `candidate_count`, `selected_count`, `total_reward` và `dropped_reasons` tiếp tục mô tả kết quả chọn của Phase 3 trước bước allocation. Phase 4 không sửa lại lịch sử quyết định chọn candidate; `schedule.allocation.moved_in_ids` và `moved_out_ids` là nguồn sự thật cho ownership cuối giữa các ngày. Các field route timing (`solver`, travel, waiting, overtime, slack, backtrack, skipped) được cập nhật từ schedule Phase 4. `area_focus` được tính lại từ content POI cuối cùng của ngày.
+
 Solver values:
 
 - `multiday-dp-local-search`: Phase 4 chạy và trả incumbent hợp lệ.
@@ -242,6 +244,7 @@ Phase 3 schedule warnings vẫn được giữ nguyên. Warning Phase 4 nằm tr
 
 - Fixture hai ngày lệch tải được cân bằng mà global start/end không đổi.
 - POI ranh giới được chuyển ngày khi làm giảm max load; metadata và entity ID giữ nguyên.
+- Phase 3 selection diagnostics vẫn mô tả baseline, còn allocation diagnostics và `area_focus` phản ánh ownership cuối.
 - `total_stops`, số content, meal/rest và uniqueness giữ nguyên trước/sau Phase 4.
 - Một ngày Phase 3 fallback làm Phase 4 fallback toàn lịch.
 - One-day itinerary không chạy allocation mới và giữ diagnostics Phase 3.
