@@ -495,7 +495,14 @@ async def test_request_quarantine_and_predeadline_recovery_keep_retained_data(
 
 
 @pytest.mark.anyio
-async def test_recovery_at_exact_deadline_fails_closed(monkeypatch):
+@pytest.mark.parametrize(
+    "recovery_time",
+    (DUE_AT, DUE_AT + timedelta(microseconds=1)),
+    ids=("at-deadline", "after-deadline"),
+)
+async def test_recovery_at_or_after_exact_deadline_fails_closed(
+    monkeypatch, recovery_time
+):
     db, _stores, _structured, _gate, phones = _setup_world(monkeypatch)
     erasure_state.request_account_erasure(USER_ID, now=REQUESTED_AT)
 
@@ -508,7 +515,7 @@ async def test_recovery_at_exact_deadline_fails_closed(monkeypatch):
     monkeypatch.setattr(auth, "_hash_otp", lambda code: code)
     monkeypatch.setattr(auth, "_check_shared_auth_rate", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(auth, "_enforce_local_rate", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(auth, "_utc_now", lambda: DUE_AT)
+    monkeypatch.setattr(auth, "_utc_now", lambda: recovery_time)
     monkeypatch.setattr(ratelimit, "check_rate", lambda *_args, **_kwargs: None)
     _override_auth_dependencies()
     try:
