@@ -424,7 +424,7 @@ git commit -m "feat: add deterministic beam and repair selection"
 - Consumes: `SelectionCandidate`, `SelectionOptions`, `SelectionResult`, `prune_candidates(...)`, and `select_and_schedule_day(...)`.
 - Produces: unchanged `generate_itinerary(...)` arguments/response keys with per-day selection diagnostics and Phase 2B fallback.
 
-- [ ] **Step 1: Write failing generator integration tests.**
+- [x] **Step 1: Write failing generator integration tests.**
 
 Create a new test fixture in `agent/tests/test_itinerary_generator_selection.py` with deterministic coordinates, durations, opening hours, scores, two areas, and one dish candidate. The fixture must patch `knowledge._entities`, `knowledge._relationships`, and `knowledge._itineraries`; define local `_place(...)` and `_entity(...)` helpers that include parent-place coordinates and an optional entity coordinate. Add:
 
@@ -509,7 +509,7 @@ def generator_entities(monkeypatch):
 
 `_place(...)` and `_entity(...)` must mirror the complete shapes used by `test_itinerary_generator_schedule.py`. `two_day_entities` must provide at least eight coordinate-valid content candidates plus one dish; `missing_coordinate_entities` must remove coordinates from the seed endpoint and its parent place so `_candidate_coordinates(...)` cannot fall back to a valid coordinate. The first test must assert emitted behavior and diagnostics, not source text or private selection state.
 
-- [ ] **Step 2: Run generator integration tests and confirm RED.**
+- [x] **Step 2: Run generator integration tests and confirm RED.**
 
 ```powershell
 python -m pytest agent/tests/test_itinerary_generator_selection.py -q
@@ -517,7 +517,7 @@ python -m pytest agent/tests/test_itinerary_generator_selection.py -q
 
 Expected: the new diagnostics are absent and the generator still follows the Phase 2B selection path.
 
-- [ ] **Step 3: Implement the generator adapter.**
+- [x] **Step 3: Implement the generator adapter.**
 
 In `agent/itinerary_gen.py`:
 
@@ -531,7 +531,7 @@ In `agent/itinerary_gen.py`:
 8. On required-coordinate, matrix, no-incumbent, or expected scheduler errors, call the unchanged Phase 2B day builder and append `selection-fallback` without returning partial output.
 9. Keep `total_stops` based on emitted stops and preserve cross-day uniqueness even when a meal or rest anchor is unavailable.
 
-- [ ] **Step 4: Run generator, anchor, scheduler, optimizer, and MCP tests.**
+- [x] **Step 4: Run generator, anchor, scheduler, optimizer, and MCP tests.**
 
 ```powershell
 python -m pytest agent/tests/test_itinerary_generator_selection.py agent/tests/test_itinerary_generator_mcp.py agent/tests/test_itinerary_generator_schedule.py agent/tests/test_cov_itinerary_gen.py agent/tests/test_itinerary_schedule.py agent/tests/test_itinerary_optimizer.py -q
@@ -539,7 +539,7 @@ python -m pytest agent/tests/test_itinerary_generator_selection.py agent/tests/t
 
 Expected: new selection behavior is green and all Phase 2B compatibility tests remain green.
 
-- [ ] **Step 5: Commit generator integration.**
+- [x] **Step 5: Commit generator integration.**
 
 ```powershell
 git add agent/itinerary_gen.py agent/tests/test_itinerary_generator_selection.py agent/tests/test_cov_itinerary_gen.py
