@@ -61,6 +61,8 @@ class Settings(BaseSettings):
     BUILD_SEARCH_INDEXES: bool = True
     BACKGROUND_INDEX_BUILD: bool = True
     SCHEDULER_ENABLED: bool = True
+    ERASURE_AUDIT_ONLY: bool = True
+    ERASURE_ACTIVATION_ENABLED: bool = False
     LLM_JUDGE_ENABLED: bool = False
     DESTRUCTIVE_OPS_LOCKED: str = "1"
 

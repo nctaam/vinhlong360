@@ -4131,6 +4131,13 @@ async def readiness_probe():
         schema = _db.pg_schema_status()
         checks["schema"] = bool(schema.get("ok"))
         checks["schema_version"] = schema
+        erasure_status = scheduler_status().get("erasure", {})
+        checks["erasure_scheduler"] = {
+            "ok": bool(schema.get("ok")) and "audit_only" in erasure_status,
+            "audit_only": bool(erasure_status.get("audit_only", True)),
+            "schema_version": schema.get("schema_version"),
+            "required_schema_version": schema.get("required_schema_version"),
+        }
         return checks
     checks = await asyncio.to_thread(_probe)
     ready = all(
