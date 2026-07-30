@@ -92,7 +92,12 @@ def test_dominance_prune_keeps_higher_reward_shorter_candidate():
 
 def test_required_candidate_survives_dominance_and_cap():
     candidates = [candidate("required", 1.0, visit=120)] + [
-        candidate(f"poi-{index}", 20.0 - index, visit=30)
+        candidate(
+            f"poi-{index}",
+            20.0 - index,
+            entity_type=f"type-{index}",
+            visit=30,
+        )
         for index in range(21)
     ]
 
