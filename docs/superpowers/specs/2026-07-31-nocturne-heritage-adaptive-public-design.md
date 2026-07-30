@@ -229,6 +229,7 @@ Kiến trúc được chọn là:
 
 > **Local Life Graph Orchestration** kết nối toàn hệ thống; **Adaptive Task
 > Continuity** quản lý hành trình; **Ambient Intelligence** cung cấp ngữ cảnh;
+> **Outcome-Driven Local Experience OS** tối ưu khả năng hoàn thành mục tiêu;
 > agentic assistance chỉ tạo bản nháp/giải thích và **Predictive Orchestration**
 > chỉ dùng giới hạn cho cảnh báo chính thức hoặc đề xuất confidence cao.
 
@@ -236,11 +237,14 @@ Kiến trúc được chọn là:
 Nocturne Heritage
     -> Context Envelope
     -> Local Life Graph Projection
+    -> Local Situation Model
     -> Intent Resolver
     -> Journey Thread
-    -> Adaptive Priority Composer
-    -> Next Best Action
+    -> Outcome Orchestrator
+    -> Decision Set / Counterfactual Preview
     -> Explainability + Recovery
+    -> Explicit User Action
+    -> User-owned Learning Ledger
 ```
 
 Local Life Graph là projection logic từ dữ liệu/API hiện có, không mặc định yêu
@@ -540,6 +544,244 @@ dữ liệu gốc.
 Analytics không thu raw location, private draft content, source evidence nhạy
 cảm hoặc dữ liệu không cần thiết cho metric.
 
+### 10.20 Local Situation Model
+
+Situation Model là snapshot tạm thời của hoàn cảnh địa bàn, được tạo từ dữ liệu
+có sẵn và không phải digital twin hạ tầng nặng. Nó có thể gồm:
+
+- khu vực đã chuẩn hóa;
+- current time và available time window do user cung cấp hoặc flow suy ra rõ;
+- weather, event, traffic và official alert có freshness hợp lệ;
+- entity đang mở khi opening-hour data đủ tin cậy;
+- Journey Thread, saved item và itinerary hiện tại;
+- trạng thái online/offline/degraded của service cần thiết.
+
+Model được tính lại theo request/session và không persist raw GPS/IP. Dữ liệu
+không đủ freshness/confidence phải bị loại hoặc gắn uncertainty, không được điền
+bằng AI.
+
+### 10.21 Outcome Orchestrator
+
+Orchestrator tối ưu outcome, không tối ưu engagement. Outcome broad hợp lệ gồm:
+
+- tìm một nơi phù hợp;
+- tạo lịch trình khả thi;
+- liên hệ một dịch vụ;
+- tìm thông tin chính thức;
+- báo dữ liệu chưa đúng;
+- đóng góp nội dung;
+- tiếp tục task đang dang dở;
+- chuẩn bị cho một event hoặc alert.
+
+Mỗi outcome cần completion condition có thể kiểm chứng. Page view, dwell time
+hoặc số click không được dùng thay thế cho completion.
+
+### 10.22 Decision Set
+
+Khi có nhiều trade-off thật, UI đưa tối đa ba phương án có chủ đích, ví dụ:
+
+- `Phù hợp nhất`;
+- `Ít di chuyển nhất`;
+- `Khác biệt hơn`;
+
+hoặc:
+
+- `Giữ lịch hiện tại`;
+- `Tối ưu thời gian`;
+- `Ưu tiên trải nghiệm`.
+
+Mỗi phương án hiển thị 2-4 lý do và trade-off từ field có dữ liệu thật. Không
+hiển thị AI score tổng hợp hoặc ép chọn một recommendation duy nhất.
+
+### 10.23 Counterfactual Preview
+
+User được xem trước kết quả khi đổi một điều kiện:
+
+- bắt đầu trễ hơn;
+- trời mưa hoặc weather unavailable;
+- không dùng location;
+- bỏ một stop;
+- ưu tiên trẻ em/người lớn tuổi theo lựa chọn explicit;
+- giảm di chuyển;
+- đổi khu vực.
+
+Preview là pure/non-mutating cho tới khi user chọn `Áp dụng`. Hệ thống phải giữ
+state cũ để undo và không tự áp dụng phương án vì model confidence cao.
+
+### 10.24 Reversible Intelligence
+
+Mọi adaptation hoặc suggestion đã áp dụng cần recovery phù hợp:
+
+- undo recommendation/application;
+- restore previous order;
+- remove one learning signal;
+- exclude one item from recommendation;
+- reset journey;
+- preview before apply.
+
+Không có adaptation im lặng mà user không thể xem, sửa, tắt hoặc phục hồi.
+
+### 10.25 User-owned Learning Ledger
+
+Ledger cho user thấy ở mức dễ hiểu:
+
+- khu vực đang dùng;
+- sở thích broad ảnh hưởng recommendation;
+- hành động gần đây làm thay đổi feed;
+- signal bị loại vì stale;
+- thời điểm reset gần nhất;
+- ranking hiện là default hay personalized.
+
+User có thể xóa từng signal, tắt một source hoặc reset toàn bộ. Ledger không lộ
+internal score, model prompt, private raw event hoặc dữ liệu user khác.
+
+### 10.26 Serendipity Budget
+
+Collection recommendation có thể dùng ngân sách khám phá định hướng:
+
+- khoảng 70% phù hợp trực tiếp;
+- khoảng 20% liên quan lân cận;
+- tối đa 10% khác biệt nhưng vẫn đúng địa bàn, policy và safety.
+
+Tỷ lệ là product target có thể hiệu chỉnh, không phải promise hiển thị cứng. Item
+serendipity cần explanation. Không dùng randomness cho official alert, safety,
+directory chính thức hoặc result có hậu quả cao.
+
+### 10.27 Adaptive Accessibility Profile
+
+Ngoài theme, user có thể chọn explicit preference:
+
+- text size;
+- information density;
+- reduce imagery;
+- reduce motion;
+- increase contrast;
+- prefer list over map;
+- reduce recommendation count;
+- always expand source/freshness.
+
+Không suy đoán khuyết tật, tuổi hoặc nhu cầu accessibility từ hành vi. Preference
+phải dùng được cho guest ở mức local và sync account theo contract riêng khi có.
+
+### 10.28 Shared Journey
+
+Shared Journey có thể hỗ trợ:
+
+- shared shortlist;
+- per-participant preference explicit;
+- owner-locked required stop;
+- consensus/conflict presentation;
+- bounded invite permission và expiry;
+- không chia sẻ history ngoài journey.
+
+Hệ thống đề xuất phương án cân bằng nhưng không tự quyết thay nhóm. Flow invite
+không được thêm one-time token/nonce table; implementation phải dùng contract
+stateless hoặc storage hiện có đã được review riêng.
+
+### 10.29 Cross-device Continuity
+
+Các state có thể sync theo revision:
+
+- itinerary draft;
+- shortlist;
+- recent filter;
+- Journey Thread;
+- post draft;
+- claim/report draft.
+
+Conflict không được last-write-wins âm thầm. Guest merge phải preview dữ liệu sẽ
+nhập vào account trước khi apply.
+
+### 10.30 Offline Context Pack
+
+User chủ động lưu gói nhỏ gồm:
+
+- itinerary;
+- essential entity information;
+- phone/Zalo contact;
+- source và updated time;
+- basic direction list;
+- official notice còn hiệu lực tại thời điểm tải.
+
+Offline data luôn có timestamp và không được trình bày là latest. Khi online lại,
+UI preview diff trước khi cập nhật field quan trọng.
+
+### 10.31 Interruption Policy
+
+Notification chia ba tầng:
+
+1. `interruptive`: official severe alert đúng khu vực và còn hiệu lực;
+2. `attention-worthy`: followed event thay đổi, task gần hết hạn hoặc claim/report
+   có phản hồi;
+3. `passive`: recommendation, content mới và community activity.
+
+Passive không mở modal, rung thiết bị hoặc dùng badge đỏ. Push vẫn cần consent
+và subscription explicit.
+
+### 10.32 Local Reliability Mesh
+
+Claim quan trọng có thể mang trạng thái:
+
+- fresh/consistent;
+- stale/no replacement;
+- source conflict;
+- community-reported;
+- pending verification;
+- officially superseded.
+
+Khi source conflict, UI hiển thị diff và authority thay vì để AI chọn claim.
+
+### 10.33 Graceful Intelligence Degradation
+
+Fallback ladder bắt buộc:
+
+```text
+full outcome orchestration
+  -> contextual graph ranking
+  -> cached context
+  -> editorial/default ranking
+  -> static public content
+```
+
+- LLM lỗi không làm search cơ bản mất.
+- Weather lỗi không làm homepage trắng.
+- Location off vẫn dùng manual region.
+- Graph projection lỗi vẫn render API data bình thường.
+- Planner optimizer lỗi vẫn giữ user order.
+- Recommendation lỗi không chặn official notice.
+
+### 10.34 Experience SLO
+
+Mỗi implementation plan phải đặt ngân sách đo được cho:
+
+- time to primary content;
+- zero personalization-induced CLS;
+- journey recovery success;
+- draft survival qua session expiry;
+- recommendation explanation/default label coverage;
+- official notice expiry correctness;
+- theme/accessibility hydration correctness;
+- zero cross-account journey leakage.
+
+Giá trị ngưỡng cụ thể được chốt sau baseline đo thật; spec không bịa số latency
+khi chưa có evidence.
+
+### 10.35 Governance và Kill Switch
+
+Mỗi lớp có feature flag/fallback độc lập:
+
+- ambient context;
+- Journey Thread;
+- adaptive ranking;
+- Situational Brief;
+- counterfactual preview;
+- agentic draft;
+- Shared Journey;
+- Offline Context Pack.
+
+Tắt feature phải quay về default/editorial ranking mà không phá layout, mất dữ
+liệu user hoặc làm official notice biến mất.
+
 ## 11. Motion và interaction
 
 - Page entry: fade/reveal 180-260ms, không stagger mọi card.
@@ -619,6 +861,13 @@ Foundation dùng chung:
 - `NextBestAction`;
 - `FrictionNotice`;
 - `DecisionSupport`;
+- `DecisionSet`;
+- `CounterfactualPreview`;
+- `LearningLedger`;
+- `AccessibilityProfileControl`;
+- `SharedJourneyPanel`;
+- `OfflineContextStatus`;
+- `ReliabilityState`;
 - `OfficialNotice`;
 - `SystemStatePanel`;
 - `GeneratedMediaDisclosure`.
@@ -632,12 +881,15 @@ Mỗi component cần một mục đích rõ, API hẹp và có thể mount/test
 API/state inputs
   -> allowlisted context projection
   -> local-life graph projection
+  -> situation model
   -> transient intent resolution
-  -> module-local ranking
+  -> outcome orchestration
+  -> decision set / counterfactual preview
   -> action-chain / friction projection
   -> confidence + reasons projection
   -> stable page render
-  -> user control / reset / recovery
+  -> explicit user action
+  -> learning ledger / reset / recovery
 ```
 
 Không truyền raw GPS/IP, secret, private history hoặc internal scoring vào DOM,
@@ -739,6 +991,13 @@ Tối thiểu phải chứng minh:
 - Action Chain không tự thực hiện mutation hoặc contact;
 - next best action có fallback an toàn;
 - decision support không tạo AI score không giải thích được;
+- counterfactual preview không mutation trước `Áp dụng` và có undo;
+- Learning Ledger cho phép remove/reset signal mà không lộ internal score;
+- Shared Journey không lộ history ngoài journey hoặc dùng last-write-wins âm
+  thầm;
+- Offline Context Pack luôn có timestamp và diff khi reconnect;
+- passive notification không dùng interruptive treatment;
+- kill switch quay về default ranking mà không mất user state;
 - hydration không reorder section;
 - reduced motion và 200% zoom không che control.
 
@@ -750,19 +1009,41 @@ overflow và layout shift; không chỉ so pixel tuyệt đối với Stitch.
 
 ## 20. Thứ tự triển khai đề xuất
 
+Phạm vi này **không được triển khai bằng một implementation plan hoặc một
+branch lớn**. Nó là program authority chung và phải được tách thành các plan có
+rollback/test gate độc lập:
+
+- Plan A: design authority, token, theme và component foundation;
+- Plan B: existing-screen public pilots;
+- Plan C: context, location, trust và state primitives;
+- Plan D: Local Life Graph, Outcome Orchestrator và decision support;
+- Plan E: learning ledger, cross-device, Shared Journey và accessibility;
+- Plan F: offline context, reliability mesh, SLO và kill-switch closure.
+
+Mỗi plan chỉ bắt đầu sau khi plan trước cung cấp contract cần thiết; không cần
+đợi toàn program hoàn tất mới ship một pilot đã đạt gate.
+
 1. Truth-sync design authority: đánh dấu Hybrid P1.2 là reference và cập nhật
    design-system master.
 2. Token + theme foundation: Mekong Ink & Clay, Nocturne/Daylight Parchment,
    Controlled Serif và Framed Dossier.
 3. Existing Screen Evolution pilots: homepage, discovery và entity detail.
 4. Context/trust primitives: SourceMark, FreshnessLine, WhyThis, OfficialNotice.
-5. Local Life Graph projection thuần từ API/state hiện có; không thêm graph DB.
-6. Adaptive Task Continuity primitives: Situational Brief, Journey Thread,
+5. Local Life Graph và Local Situation Model projection thuần từ API/state hiện
+   có; không thêm graph DB.
+6. Outcome Orchestrator, Decision Set, Counterfactual Preview, Reversible
+   Intelligence và Learning Ledger.
+7. Adaptive Task Continuity primitives: Situational Brief, Journey Thread,
    Continuity Rail, Action Chain, Friction Notice, Next Best Action và
    module-local composer.
-7. Smart search/planner orchestration và agentic draft/explanation boundary.
-8. Map/planner, community, directory/legal và remaining public families.
-9. Cross-family state catalog, behavior tests, quality-loop metrics và
+8. Smart search/planner orchestration, Interruption Policy, Reliability Mesh và
+   agentic draft/explanation boundary.
+9. Adaptive Accessibility Profile, Cross-device Continuity và Shared Journey.
+10. Offline Context Pack sau khi online continuity và source diff contract ổn
+    định.
+11. Map/planner, community, directory/legal và remaining public families.
+12. Cross-family state catalog, behavior tests, Experience SLO, kill-switch
+   verification, quality-loop metrics và
    screenshot baselines.
 
 Việc triển khai phải giữ thứ tự privacy/RBAC đã duyệt cho các action private.
@@ -784,6 +1065,14 @@ deployment trong cùng implementation plan.
   budget.
 - Agent chỉ tạo draft/giải thích; mọi action bên ngoài hoặc mutation cần xác
   nhận của người dùng.
+- Outcome Orchestrator tối ưu completion, không tối ưu engagement thay thế.
+- Decision Set và counterfactual preview thể hiện trade-off, không ép một AI
+  recommendation.
+- Mọi adaptation quan trọng reversible và được phản ánh trong Learning Ledger.
+- Shared Journey, cross-device và offline state có revision/conflict/freshness
+  contract rõ.
+- Intelligence degradation và kill switch giữ public content usable.
 - Không lưu hoặc lộ raw GPS/IP.
 - Không tạo claim, rating, urgency hoặc verification không có dữ liệu thật.
-- Đặc tả đủ rõ để viết implementation plan theo task nhỏ và behavior-level test.
+- Đặc tả đủ rõ để viết program gồm nhiều implementation plan nhỏ, mỗi plan có
+  behavior-level test và rollback riêng.
