@@ -604,6 +604,25 @@ def test_073_installs_schema_function_and_enforces_write_guards(pre73_database):
                 "full_ipv6": False,
             }
 
+    with pre73_database._conn(commit_on_success=False) as conn:
+        column_rows = pre73_database._fetchall(
+            conn,
+            "SELECT column_name FROM information_schema.columns "
+            "WHERE table_schema = 'public' AND table_name = 'user_preferences'",
+        )
+    column_names = {
+        pre73_database._row_to_dict(row)["column_name"] for row in column_rows
+    }
+    assert not {
+        "latitude",
+        "longitude",
+        "ip",
+        "token",
+        "nonce",
+        "score",
+        "weight",
+    } & column_names
+
     _assert_constraint_violation(
         """
         UPDATE user_preferences

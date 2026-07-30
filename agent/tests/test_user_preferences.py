@@ -821,9 +821,10 @@ def test_postgres_patch_round_trips_uuid_jsonb_and_returned_snapshot(
         postgres_preference_user,
         {
             "region_id": "province-vl",
-            "region_label": "Vinh Long",
+            "region_label": "Vĩnh Long",
             "region_scope": "province",
             "location_source": "manual",
+            "location_accuracy": "province",
             "explicit_interests": ["food", "culture"],
         },
         expected_revision=0,
@@ -839,18 +840,21 @@ def test_postgres_patch_round_trips_uuid_jsonb_and_returned_snapshot(
 def test_postgres_update_clears_resolver_region_and_rejects_stale_revision(
     postgres_preference_user,
 ):
-    first = patch_preferences(
+    first = patch_preferences_with_consents(
         postgres_preference_user,
         {
-            "region_id": "province-vl",
-            "region_label": "Vinh Long",
-            "region_scope": "province",
-            "location_source": "gps",
-            "location_accuracy": "province",
+            "location_consent_state": "granted",
             "location_enabled": True,
             "explicit_interests": ["food"],
         },
         expected_revision=0,
+        confirmed_location=location_resolver.LocationResolution(
+            region_id="province-vl",
+            region_label="Vĩnh Long",
+            region_scope="province",
+            location_source="gps",
+            location_accuracy="province",
+        ),
     )
 
     disabled = patch_preferences(
@@ -1270,6 +1274,7 @@ def test_location_confirmation_token_is_revision_bound_and_effectively_one_use(
         headers=logged_in_user.csrf_headers,
     )
     assert first.status_code == 200
+    assert first.headers["Cache-Control"] == "no-store"
     assert first.json()["revision"] == 1
 
     replay = client.patch(
@@ -1283,6 +1288,7 @@ def test_location_confirmation_token_is_revision_bound_and_effectively_one_use(
         headers=logged_in_user.csrf_headers,
     )
     assert replay.status_code == 409
+    assert replay.headers["Cache-Control"] == "no-store"
     assert replay.json()["revision"] == 1
 
 

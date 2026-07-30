@@ -7,6 +7,7 @@ import json
 import multiprocessing
 import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -606,6 +607,55 @@ def test_postgres_preference_route_persists_valid_manual_and_token_regions_only(
     assert "confirmation_token" not in {
         pg_db._row_to_dict(column)["column_name"] for column in columns
     }
+
+
+def test_postgres_confirmation_token_has_one_atomic_winner(auth_client):
+    auth_client.client.app.dependency_overrides[public_api.get_reverse_geocoder] = (
+        lambda: lambda *_: {
+            "region_id": "province-vl",
+            "region_label": "Vĩnh Long",
+            "region_scope": "province",
+            "location_accuracy": "province",
+        }
+    )
+    resolution = auth_client.client.post(
+        "/api/me/location/resolve",
+        json={"mode": "gps", "latitude": 10.25, "longitude": 105.97},
+        headers=auth_client.csrf_headers,
+    )
+    assert resolution.status_code == 200, resolution.text
+    assert resolution.headers["Cache-Control"] == "no-store"
+    token = resolution.json()["confirmation_token"]
+    barrier = threading.Barrier(2)
+
+    def confirm_once():
+        barrier.wait(timeout=5)
+        return auth_client.client.patch(
+            "/api/me/preferences",
+            json={
+                "revision": 0,
+                "location_confirmation_token": token,
+                "location_consent_state": "granted",
+                "location_enabled": True,
+            },
+            headers=auth_client.csrf_headers,
+        )
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        responses = list(pool.map(lambda _: confirm_once(), range(2)))
+
+    assert sorted(response.status_code for response in responses) == [200, 409]
+    assert all(response.headers["Cache-Control"] == "no-store" for response in responses)
+    assert {response.json()["revision"] for response in responses} == {1}
+    current_response = auth_client.client.get(
+        "/api/me/preferences",
+        headers=auth_client.headers,
+    )
+    assert current_response.status_code == 200, current_response.text
+    assert current_response.headers["Cache-Control"] == "no-store"
+    current = current_response.json()
+    assert current["revision"] == 1
+    assert current["location_source"] == "gps"
 
 
 def test_contextual_response_recursively_omits_internal_scores(
@@ -2219,15 +2269,20 @@ def test_export_includes_safe_preferences_consents_new_and_filtered_legacy_event
     assert response.status_code == 200, response.text
     assert response.headers["Cache-Control"] == "no-store"
     exported = response.json()["personalization"]
-    assert exported["preferences"]["explicit_interests"] == ["food"]
-    assert exported["preferences"]["region_id"] is None
-    assert exported["preferences"]["location_source"] == "default"
-    assert exported["preferences"]["location_consent_state"] == "off"
-    assert exported["preferences"]["location_reconfirm_required"] is True
-    assert exported["preferences"]["personalization_enabled"] is True
-    assert exported["preferences"]["revision"] == 8
-    assert exported["preferences"]["recommendation_reset_at"] == cutoff.isoformat()
-    assert "location_provenance_version" not in exported["preferences"]
+    exported_preferences = exported["preferences"]
+    assert exported_preferences["explicit_interests"] == ["food"]
+    assert exported_preferences["region_id"] is None
+    assert exported_preferences["location_source"] == "default"
+    assert exported_preferences["location_consent_state"] == "off"
+    assert exported_preferences["location_reconfirm_required"] is True
+    assert exported_preferences["personalization_enabled"] is True
+    assert exported_preferences["revision"] == 8
+    assert exported_preferences["recommendation_reset_at"] == cutoff.isoformat()
+    assert "location_provenance_version" not in exported_preferences
+    serialized_preferences = json.dumps(exported_preferences, ensure_ascii=False)
+    assert "203.0.113.9" not in serialized_preferences
+    assert "10.25,105.97" not in serialized_preferences
+    assert "confirmation_token" not in serialized_preferences
     assert [(row["consent_type"], row["state"]) for row in exported["consents"]] == [
         ("personalization", "granted")
     ]
@@ -2238,6 +2293,7 @@ def test_export_includes_safe_preferences_consents_new_and_filtered_legacy_event
     assert "private-query" not in serialized
     assert "203.0.113.9" not in serialized
     assert "10.25,105.97" not in serialized
+    assert "confirmation_token" not in serialized
     assert "metadata" not in serialized
 
 
