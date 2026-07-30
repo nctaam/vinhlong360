@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   applyPlacements: 0,
   commitMapGate: null as Promise<void> | null,
   commitMap: 0,
+  createMap: vi.fn(),
   discardPending: 0,
   fetchRoute: vi.fn(),
   mergeStops: 0,
@@ -94,13 +95,14 @@ mockNuxtImport('useAuth', () => () => ({
 }))
 mockNuxtImport('useConfirm', () => () => ({ confirmDialog: vi.fn() }))
 mockNuxtImport('useFavorites', () => () => ({ count: ref(0), favorites: ref([]) }))
-mockNuxtImport('useNDAMap', () => () => ({ createMap: vi.fn() }))
+mockNuxtImport('useNDAMap', () => () => ({ createMap: mocks.createMap }))
 mockNuxtImport('useToast', () => () => ({ show: mocks.showToast }))
 
 beforeEach(() => {
   mocks.applyPlacements = 0
   mocks.commitMapGate = null
   mocks.commitMap = 0
+  mocks.createMap.mockReset()
   mocks.discardPending = 0
   mocks.fetchRoute.mockReset()
   mocks.mergeStops = 0
@@ -178,6 +180,66 @@ describe('planner page lifecycle', () => {
     expect(plannerState(vm)).toEqual(stateAtUnmount)
   })
 
+  it('removes a non-null map handed off after disposal before the await continuation', async () => {
+    let wrapper!: Awaited<ReturnType<typeof mountPlannerWithThreeStops>>
+    const mapEffects: string[] = []
+    const map = {
+      remove: vi.fn(() => mapEffects.push('remove')),
+      on: vi.fn(() => {
+        mapEffects.push('on')
+        return map
+      }),
+      addControl: vi.fn(() => {
+        mapEffects.push('addControl')
+        return map
+      }),
+      hasImage: vi.fn(),
+      addImage: vi.fn(),
+      getSource: vi.fn(),
+      removeLayer: vi.fn(),
+      removeSource: vi.fn(),
+      addSource: vi.fn(),
+      addLayer: vi.fn(),
+      fitBounds: vi.fn(),
+    }
+    const maplibregl = {
+      AttributionControl: class {},
+      NavigationControl: class {},
+      Marker: class {},
+      Popup: class {},
+      LngLatBounds: class {},
+    }
+    mocks.runPlannerOptimization.mockResolvedValue(currentResult())
+    wrapper = await mountPlannerWithThreeStops({ includeMap: true })
+    await flushContinuation()
+    mocks.createMap.mockClear()
+    mocks.createMap.mockImplementation(() => ({
+      then(resolve: (value: unknown) => void) {
+        queueMicrotask(() => {
+          wrapper.unmount()
+          resolve({ map, maplibregl })
+        })
+      },
+    }))
+
+    await wrapper.get('.optimize-route-btn').trigger('click')
+    await flushContinuation()
+
+    expect(mocks.createMap).toHaveBeenCalledTimes(1)
+    expect(map.remove).toHaveBeenCalledTimes(1)
+    expect(mapEffects).toEqual(['remove'])
+    expect(map.on).not.toHaveBeenCalled()
+    expect(map.addControl).not.toHaveBeenCalled()
+    expect(map.hasImage).not.toHaveBeenCalled()
+    expect(map.addImage).not.toHaveBeenCalled()
+    expect(map.getSource).not.toHaveBeenCalled()
+    expect(map.removeLayer).not.toHaveBeenCalled()
+    expect(map.removeSource).not.toHaveBeenCalled()
+    expect(map.addSource).not.toHaveBeenCalled()
+    expect(map.addLayer).not.toHaveBeenCalled()
+    expect(map.fitBounds).not.toHaveBeenCalled()
+  })
+
   it('does not publish the announcement after message-driven disposal at the next tick boundary', async () => {
     mocks.runPlannerOptimization.mockResolvedValue(currentResult())
     const wrapper = await mountPlannerWithThreeStops()
@@ -206,12 +268,13 @@ describe('planner page lifecycle', () => {
   })
 })
 
-async function mountPlannerWithThreeStops() {
+async function mountPlannerWithThreeStops(options: { includeMap?: boolean } = {}) {
+  const includeMap = options.includeMap ?? false
   const wrapper = await mountSuspended(PlannerPage, {
     global: {
       stubs: {
         Breadcrumb: true,
-        ClientOnly: true,
+        ClientOnly: includeMap ? { template: '<slot />' } : true,
         EmptyState: true,
         FilterChips: true,
       },

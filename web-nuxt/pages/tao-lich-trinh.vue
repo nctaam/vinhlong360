@@ -884,7 +884,11 @@ async function updateMap(result: RouteResult | null) {
 
   if (!mapInstance) {
     const res = await createNDAMap(routeMapEl.value, { isActive: isPlannerLifecycleActive })
-    if (!isPlannerLifecycleActive() || !res) return
+    if (!isPlannerLifecycleActive()) {
+      if (res?.map && typeof (res.map as any).remove === 'function') (res.map as any).remove()
+      return
+    }
+    if (!res) return
     mapInstance = res.map
     maplibre = res.maplibregl
     mapInstance.on('styleimagemissing', (e: any) => {
