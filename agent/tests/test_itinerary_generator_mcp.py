@@ -1,10 +1,17 @@
 import json
+import inspect
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import mcp_server
+
+
+def test_generate_itinerary_documents_empty_meal_anchors_disable_insertion():
+    source = inspect.getsource(mcp_server.generate_itinerary)
+    assert "[]" in source
+    assert "disable" in source.lower() or "tắt" in source.lower()
 
 
 def test_generate_itinerary_forwards_anchor_arguments(monkeypatch):
