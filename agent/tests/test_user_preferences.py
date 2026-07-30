@@ -56,6 +56,25 @@ def test_manual_all_region_wins_over_valid_gps_confirmation():
     assert merged["location_source"] == "manual"
 
 
+_MANUAL_ALL_REGION = {
+    "region_id": None,
+    "region_label": None,
+    "region_scope": "all",
+    "location_source": "manual",
+    "location_accuracy": "unknown",
+}
+_VALID_RESOLVER_REGION = {
+    "region_id": "province-vl",
+    "region_label": "Vĩnh Long",
+    "region_scope": "province",
+    "location_source": "gps",
+    "location_accuracy": "province",
+    "location_enabled": True,
+    "location_consent_state": "granted",
+    "location_provenance_version": "resolver-v2",
+}
+
+
 @pytest.mark.parametrize(
     ("snapshot", "reason"),
     [
@@ -92,6 +111,26 @@ def test_manual_all_region_wins_over_valid_gps_confirmation():
             },
             "provenance",
         ),
+        ({"location_source": []}, "default_tuple"),
+        ({"location_source": {}}, "default_tuple"),
+        ({"location_source": None}, "default_tuple"),
+        ({**_MANUAL_ALL_REGION, "region_id": []}, "manual_tuple"),
+        ({**_MANUAL_ALL_REGION, "region_id": {}}, "manual_tuple"),
+        (
+            {
+                **_MANUAL_ALL_REGION,
+                "region_label": "Vĩnh Long",
+                "region_scope": "province",
+                "location_accuracy": "province",
+            },
+            "manual_tuple",
+        ),
+        ({**_VALID_RESOLVER_REGION, "region_scope": []}, "resolver_tuple"),
+        ({**_VALID_RESOLVER_REGION, "region_scope": {}}, "resolver_tuple"),
+        ({**_VALID_RESOLVER_REGION, "region_scope": None}, "resolver_tuple"),
+        ({**_VALID_RESOLVER_REGION, "location_accuracy": []}, "resolver_tuple"),
+        ({**_VALID_RESOLVER_REGION, "location_accuracy": {}}, "resolver_tuple"),
+        ({**_VALID_RESOLVER_REGION, "location_accuracy": None}, "resolver_tuple"),
     ],
 )
 def test_invalid_region_reason_is_bounded(snapshot, reason):
@@ -948,6 +987,60 @@ def test_preferences_patch_accepts_only_exact_canonical_manual_region(
     assert snapshot["region_label"] == "Vĩnh Long"
     assert "10.25" not in repr(snapshot)
     assert "105.97" not in repr(snapshot)
+
+
+@pytest.mark.parametrize("location_source", ["gps", "ip"])
+def test_preferences_patch_rejects_incomplete_manual_all_region_from_resolver(
+    client, preference_database, logged_in_user, location_source
+):
+    with preference_database._conn() as conn:
+        conn.execute(
+            "INSERT INTO user_preferences "
+            "(user_id, region_id, region_label, region_scope, location_source, "
+            "location_accuracy, location_consent_state, location_enabled, "
+            "location_provenance_version, revision) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                "user-1",
+                "province-vl",
+                "Vĩnh Long",
+                "province",
+                location_source,
+                "province",
+                "granted",
+                True,
+                "resolver-v2",
+                4,
+            ),
+        )
+
+    response = client.patch(
+        "/api/me/preferences",
+        json={
+            "revision": 4,
+            "region_scope": "all",
+            "location_source": "manual",
+            "location_accuracy": "unknown",
+        },
+        headers=logged_in_user.csrf_headers,
+    )
+
+    assert response.status_code == 422
+    snapshot = load_preferences("user-1")
+    assert snapshot["region_id"] == "province-vl"
+    assert snapshot["region_label"] == "Vĩnh Long"
+    assert snapshot["region_scope"] == "province"
+    assert snapshot["location_source"] == location_source
+    assert snapshot["location_accuracy"] == "province"
+    assert snapshot["location_enabled"] is True
+    assert snapshot["revision"] == 4
+    with preference_database._conn(commit_on_success=False) as conn:
+        row = conn.execute(
+            "SELECT location_provenance_version FROM user_preferences "
+            "WHERE user_id = ?",
+            ("user-1",),
+        ).fetchone()
+    assert row["location_provenance_version"] == "resolver-v2"
 
 
 @pytest.mark.parametrize("location_source", ["gps", "ip"])

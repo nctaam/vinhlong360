@@ -316,7 +316,8 @@ def _authorize_region_patch(
     if source == "manual":
         canonical = _CANONICAL_MANUAL_REGIONS.get(authorized.get("region_id"))
         if canonical is None or any(
-            authorized.get(field) != value for field, value in canonical.items()
+            field not in authorized or authorized[field] != value
+            for field, value in canonical.items()
         ):
             raise PreferenceValidationError("Invalid manual region selection")
         return authorized
@@ -363,6 +364,8 @@ def _snapshot_from_mapping(value: Mapping[str, Any]) -> PersistedPreferenceSnaps
 
 def _manual_region_tuple(snapshot: Mapping[str, Any]) -> bool:
     region_id = snapshot.get("region_id")
+    if region_id is not None and not isinstance(region_id, str):
+        return False
     canonical = _CANONICAL_MANUAL_REGIONS.get(region_id)
     return (
         snapshot.get("location_source") == "manual"
@@ -393,11 +396,20 @@ def _quarantine_region_tuple(snapshot: Mapping[str, Any]) -> bool:
 
 
 def _resolver_region_tuple(snapshot: Mapping[str, Any]) -> bool:
+    source = snapshot.get("location_source")
+    region_id = snapshot.get("region_id")
+    region_label = snapshot.get("region_label")
+    region_scope = snapshot.get("region_scope")
+    location_accuracy = snapshot.get("location_accuracy")
     return (
-        snapshot.get("location_source") in {"gps", "ip"}
-        and snapshot.get("region_id") is not None
-        and snapshot.get("region_scope") in {"ward", "district", "province"}
-        and snapshot.get("location_accuracy") in LOCATION_ACCURACIES
+        isinstance(source, str)
+        and source in {"gps", "ip"}
+        and isinstance(region_id, str)
+        and (region_label is None or isinstance(region_label, str))
+        and isinstance(region_scope, str)
+        and region_scope in {"ward", "district", "province"}
+        and isinstance(location_accuracy, str)
+        and location_accuracy in LOCATION_ACCURACIES
         and snapshot.get("location_enabled") is True
         and snapshot.get("location_consent_state") == "granted"
     )
@@ -411,6 +423,8 @@ def invalid_region_reason(snapshot: Mapping[str, Any]) -> str | None:
         return "raw_shape"
 
     source = snapshot.get("location_source")
+    if not isinstance(source, str):
+        return "default_tuple"
     if source == "manual":
         if not _manual_region_tuple(snapshot):
             return "manual_tuple"
