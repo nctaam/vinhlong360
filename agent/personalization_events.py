@@ -15,7 +15,21 @@ from uuid import UUID, uuid4
 from config import settings
 from database import db
 from entity_schemas import valid_types
-from user_preferences import PreferenceSnapshot, _row_snapshot
+from user_preferences import (
+    PreferenceSnapshot,
+    _load_persisted_preferences_in_connection,
+    _preference_columns,
+    _public_snapshot,
+    _row_snapshot,
+    _select_preferences,
+    _update_persisted_snapshot_in_connection,
+    _user_id,
+    _user_param,
+    _write_values,
+    invalid_region_reason,
+    merge_preference_patch,
+    quarantine_location_snapshot,
+)
 from versioned_json_store import fsync_directory, publication_lock
 
 
@@ -550,27 +564,44 @@ def purge_user_personalization(user_id: str, *, conn=None) -> None:
 
 def record_recommendation_reset(user_id: str) -> PreferenceSnapshot:
     """Advance the single effective reset cutoff atomically."""
-    owner = _owner_id(user_id)
+    owner = _owner_id(user_id) if db._use_pg else _user_id(user_id)
     reset_at = datetime.now(timezone.utc)
     with db._conn() as conn:
-        row = db._fetchone(
-            conn,
-            """
-            INSERT INTO user_preferences
-                (user_id, recommendation_reset_at, revision, updated_at)
-            VALUES (%s::uuid, %s, 1, NOW())
-            ON CONFLICT (user_id) DO UPDATE SET
-                recommendation_reset_at = GREATEST(
-                    user_preferences.recommendation_reset_at,
-                    EXCLUDED.recommendation_reset_at
-                ),
-                revision = user_preferences.revision + 1,
-                updated_at = NOW()
-            RETURNING region_id, region_label, region_scope, location_source,
-                      location_accuracy, location_consent_state, location_enabled,
-                      personalization_enabled, explicit_interests,
-                      recommendation_reset_at, consent_version, revision
-            """,
-            (owner, reset_at),
+        current = _load_persisted_preferences_in_connection(
+            conn, owner, for_update=True, heal=False
         )
-    return _row_snapshot(row)
+        if invalid_region_reason(current) is not None:
+            current = quarantine_location_snapshot(current)
+
+        previous_reset = current.get("recommendation_reset_at")
+        if previous_reset is not None:
+            previous_reset = previous_reset.astimezone(timezone.utc)
+            reset_at = max(reset_at, previous_reset)
+        merged = merge_preference_patch(
+            current,
+            {"recommendation_reset_at": reset_at},
+            current["revision"],
+        )
+        if invalid_region_reason(merged) is not None:
+            raise ValueError("Invalid location preference state")
+
+        row = _select_preferences(conn, owner, for_update=True)
+        if row is None:
+            values, value_placeholders = _write_values(merged)
+            inserted = db._fetchone(
+                conn,
+                f"INSERT INTO user_preferences (user_id, {_preference_columns()}) "
+                f"VALUES ({_user_param()}, {value_placeholders}) "
+                f"RETURNING {_preference_columns()}",
+                [owner, *values],
+            )
+            if inserted is None:
+                raise RuntimeError("Unable to persist recommendation reset")
+            snapshot = _row_snapshot(inserted)
+        else:
+            snapshot = _update_persisted_snapshot_in_connection(
+                conn, owner, merged, current["revision"]
+            )
+            if snapshot is None:
+                raise RuntimeError("Recommendation reset revision conflict")
+    return _public_snapshot(snapshot)

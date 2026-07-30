@@ -14,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import auth
 import auth_middleware
 import location_resolver
+import personalization_events
 import public_api
 import user_preferences
 from auth_middleware import generate_csrf_token
@@ -22,6 +23,7 @@ from user_preferences import (
     PreferenceRevisionConflict,
     PreferenceValidationError,
     load_preferences,
+    load_preference_consents,
     merge_preference_patch,
     normalize_preference_patch,
     patch_preferences,
@@ -198,6 +200,118 @@ def test_revision_accepts_json_safe_bigint_boundary():
 def test_revision_rejects_value_above_json_safe_bigint_boundary():
     with pytest.raises(PreferenceValidationError):
         normalize_preference_patch({"revision": 9_007_199_254_740_992})
+
+
+def _insert_unsafe_preference(database, user_id="user-1", revision=7):
+    with database._conn() as conn:
+        conn.execute(
+            "INSERT INTO user_preferences "
+            "(user_id, region_id, region_label, region_scope, location_source, "
+            "location_accuracy, location_consent_state, location_enabled, "
+            "personalization_enabled, explicit_interests, consent_version, revision) "
+            "VALUES (?, ?, ?, 'province', 'manual', 'province', 'granted', 1, 1, ?, 'privacy-v1', ?)",
+            (user_id, "203.0.113.9", "10.25,105.97", '["food"]', revision),
+        )
+
+
+def test_load_preferences_quarantines_unsafe_region_without_losing_non_location_state(
+    preference_database,
+):
+    _insert_unsafe_preference(preference_database)
+
+    snapshot = load_preferences("user-1")
+
+    assert snapshot["region_id"] is None
+    assert snapshot["location_source"] == "default"
+    assert snapshot["location_consent_state"] == "off"
+    assert snapshot["location_reconfirm_required"] is True
+    assert snapshot["explicit_interests"] == ["food"]
+    assert snapshot["personalization_enabled"] is True
+    assert snapshot["consent_version"] == "privacy-v1"
+    assert snapshot["revision"] == 8
+
+
+def test_second_load_after_quarantine_is_idempotent(preference_database):
+    _insert_unsafe_preference(preference_database)
+
+    assert load_preferences("user-1")["revision"] == 8
+    assert load_preferences("user-1")["revision"] == 8
+
+
+def test_unrelated_patch_sanitizes_once_without_synthetic_location_consent(
+    preference_database,
+):
+    _insert_unsafe_preference(preference_database)
+
+    snapshot = patch_preferences_with_consents(
+        "user-1",
+        {"explicit_interests": ["culture"]},
+        expected_revision=7,
+    )
+
+    assert snapshot["revision"] == 8
+    assert snapshot["region_id"] is None
+    assert snapshot["location_reconfirm_required"] is True
+    assert snapshot["explicit_interests"] == ["culture"]
+    assert load_preference_consents("user-1") == []
+
+
+def test_manual_patch_completes_reconfirm_in_the_same_write(preference_database):
+    _insert_unsafe_preference(preference_database)
+
+    snapshot = patch_preferences(
+        "user-1",
+        {
+            "region_id": None,
+            "region_label": None,
+            "region_scope": "all",
+            "location_source": "manual",
+            "location_accuracy": "unknown",
+        },
+        expected_revision=7,
+    )
+
+    assert snapshot["revision"] == 8
+    assert snapshot["location_source"] == "manual"
+    assert snapshot["region_scope"] == "all"
+    assert snapshot["location_reconfirm_required"] is False
+
+
+def test_recommendation_reset_uses_sanitized_preference_boundary(
+    preference_database, monkeypatch
+):
+    _insert_unsafe_preference(preference_database)
+    monkeypatch.setattr(personalization_events, "db", preference_database)
+
+    snapshot = personalization_events.record_recommendation_reset("user-1")
+
+    assert snapshot["region_id"] is None
+    assert snapshot["location_reconfirm_required"] is True
+    assert snapshot["explicit_interests"] == ["food"]
+    assert snapshot["recommendation_reset_at"] is not None
+    assert "location_provenance_version" not in snapshot
+
+
+def test_recommendation_reset_rejects_json_unsafe_revision_ceiling(
+    preference_database, monkeypatch
+):
+    with preference_database._conn() as conn:
+        conn.execute(
+            "INSERT INTO user_preferences (user_id, revision) VALUES (?, ?)",
+            ("user-1", 9_007_199_254_740_991),
+        )
+    monkeypatch.setattr(personalization_events, "db", preference_database)
+
+    with pytest.raises(PreferenceValidationError, match="revision limit"):
+        personalization_events.record_recommendation_reset("user-1")
+
+    with preference_database._conn(commit_on_success=False) as conn:
+        row = conn.execute(
+            "SELECT recommendation_reset_at, revision FROM user_preferences "
+            "WHERE user_id = ?",
+            ("user-1",),
+        ).fetchone()
+    assert tuple(row) == (None, 9_007_199_254_740_991)
 
 pg_only = pytest.mark.skipif(
     not live_db._use_pg, reason="PostgreSQL preference contract requires DATABASE_URL."

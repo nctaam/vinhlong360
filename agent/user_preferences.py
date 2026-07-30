@@ -572,15 +572,106 @@ def _row_snapshot(row) -> PersistedPreferenceSnapshot:
     return _snapshot_from_mapping(db._row_to_dict(row))
 
 
+def _update_persisted_snapshot_in_connection(
+    conn,
+    owner: str,
+    snapshot: PersistedPreferenceSnapshot,
+    expected_revision: int,
+) -> PersistedPreferenceSnapshot | None:
+    """Write one complete, validated preference snapshot with revision fencing."""
+    values, _ = _write_values(snapshot)
+    assignments = []
+    for field in _PERSISTED_FIELDS:
+        placeholder = db._ph
+        if field == "explicit_interests" and db._use_pg:
+            placeholder += "::jsonb"
+        assignments.append(f"{field} = {placeholder}")
+    assignments.append("updated_at = NOW()" if db._use_pg else "updated_at = CURRENT_TIMESTAMP")
+    updated = db._fetchone(
+        conn,
+        f"UPDATE user_preferences SET {', '.join(assignments)} "
+        f"WHERE user_id = {_user_param()} AND revision = {db._ph} "
+        f"RETURNING {_preference_columns()}",
+        [*values, owner, expected_revision],
+    )
+    return _row_snapshot(updated) if updated is not None else None
+
+
+def _quarantine_persisted_snapshot_in_connection(
+    conn,
+    owner: str,
+    snapshot: PersistedPreferenceSnapshot,
+) -> PersistedPreferenceSnapshot | None:
+    """Replace only the unsafe location boundary, advancing revision once."""
+    if snapshot["revision"] >= MAX_PREFERENCE_REVISION:
+        return None
+    sanitized = quarantine_location_snapshot(snapshot)
+    sanitized["revision"] = snapshot["revision"] + 1
+    fields = (
+        "region_id",
+        "region_label",
+        "region_scope",
+        "location_source",
+        "location_accuracy",
+        "location_consent_state",
+        "location_enabled",
+        "location_reconfirm_required",
+        "location_provenance_version",
+        "revision",
+    )
+    values = [sanitized[field] for field in fields]
+    placeholders = [db._ph] * len(values)
+    updated_at = "NOW()" if db._use_pg else "CURRENT_TIMESTAMP"
+    updated = db._fetchone(
+        conn,
+        "UPDATE user_preferences SET "
+        + ", ".join(f"{field} = {placeholder}" for field, placeholder in zip(fields, placeholders))
+        + f", updated_at = {updated_at} "
+        + f"WHERE user_id = {_user_param()} AND revision = {db._ph} "
+        + f"RETURNING {_preference_columns()}",
+        [*values, owner, snapshot["revision"]],
+    )
+    return _row_snapshot(updated) if updated is not None else None
+
+
+def _load_persisted_preferences_in_connection(
+    conn,
+    owner: str,
+    *,
+    for_update: bool,
+    heal: bool,
+) -> PersistedPreferenceSnapshot:
+    """Load a persisted row and optionally self-heal an invalid location tuple."""
+    row = _select_preferences(conn, owner, for_update=for_update)
+    if row is None:
+        return _default_persisted_snapshot()
+
+    snapshot = _row_snapshot(row)
+    if not heal or invalid_region_reason(snapshot) is None:
+        return snapshot
+
+    healed = _quarantine_persisted_snapshot_in_connection(conn, owner, snapshot)
+    if healed is not None:
+        return healed
+
+    # A concurrent writer may have won the compare-update. Reload once and never
+    # expose the raw row if it is still invalid; bounded remediation can retry it.
+    latest_row = _select_preferences(conn, owner, for_update=for_update)
+    if latest_row is None:
+        return _default_persisted_snapshot()
+    latest = _row_snapshot(latest_row)
+    if invalid_region_reason(latest) is not None:
+        return quarantine_location_snapshot(latest)
+    return latest
+
+
 def load_preferences(user_id: str) -> PreferenceSnapshot:
     owner = _user_id(user_id)
-    with db._conn(commit_on_success=False) as conn:
-        row = _select_preferences(conn, owner)
-    return (
-        _public_snapshot(_row_snapshot(row))
-        if row is not None
-        else _default_snapshot()
-    )
+    with db._conn() as conn:
+        snapshot = _load_persisted_preferences_in_connection(
+            conn, owner, for_update=False, heal=True
+        )
+    return _public_snapshot(snapshot)
 
 
 def _write_values(snapshot: PersistedPreferenceSnapshot) -> tuple[list[Any], str]:
@@ -610,19 +701,26 @@ def _consent_policy_version() -> str:
     return version
 
 
-def _preference_consent_changes(
-    current: PreferenceSnapshot, snapshot: PreferenceSnapshot
+def _requested_consent_changes(
+    current: PreferenceSnapshot,
+    snapshot: PreferenceSnapshot,
+    authorized_patch: Mapping[str, Any],
+    *,
+    confirmed_location: LocationResolution | None,
 ) -> list[tuple[str, str]]:
+    """Record only consent changes explicitly requested by the user."""
     changes: list[tuple[str, str]] = []
-    if current["location_consent_state"] != snapshot["location_consent_state"]:
-        changes.append(("location", snapshot["location_consent_state"]))
-    if current["personalization_enabled"] != snapshot["personalization_enabled"]:
-        changes.append(
-            (
-                "personalization",
-                "granted" if snapshot["personalization_enabled"] else "off",
+    if "location_consent_state" in authorized_patch or confirmed_location is not None:
+        if current["location_consent_state"] != snapshot["location_consent_state"]:
+            changes.append(("location", snapshot["location_consent_state"]))
+    if "personalization_enabled" in authorized_patch:
+        if current["personalization_enabled"] != snapshot["personalization_enabled"]:
+            changes.append(
+                (
+                    "personalization",
+                    "granted" if snapshot["personalization_enabled"] else "off",
+                )
             )
-        )
     return changes
 
 
@@ -641,8 +739,12 @@ def _patch_preferences_in_connection(
     authorized_patch = _authorize_region_patch(
         patch, confirmed_location=confirmed_location
     )
-    row = _select_preferences(conn, owner, for_update=True)
-    current = _row_snapshot(row) if row is not None else _default_persisted_snapshot()
+    persisted = _load_persisted_preferences_in_connection(
+        conn, owner, for_update=True, heal=False
+    )
+    current = persisted
+    if invalid_region_reason(current) is not None:
+        current = quarantine_location_snapshot(current)
     merged = merge_preference_patch(current, authorized_patch, expected)
     _apply_internal_location_metadata(
         merged,
@@ -651,12 +753,19 @@ def _patch_preferences_in_connection(
     )
     if (
         consent_version_fallback is not None
-        and _preference_consent_changes(current, merged)
+        and _requested_consent_changes(
+            _public_snapshot(current),
+            _public_snapshot(merged),
+            authorized_patch,
+            confirmed_location=confirmed_location,
+        )
         and merged["consent_version"] is None
     ):
         merged["consent_version"] = consent_version_fallback
+    if invalid_region_reason(merged) is not None:
+        raise PreferenceValidationError("Invalid location preference state")
     values, value_placeholders = _write_values(merged)
-    if row is None:
+    if persisted["revision"] == 0 and _select_preferences(conn, owner) is None:
         inserted = db._fetchone(
             conn,
             f"INSERT INTO user_preferences (user_id, {_preference_columns()}) "
@@ -670,25 +779,14 @@ def _patch_preferences_in_connection(
             raise PreferenceRevisionConflict(expected, current_revision)
         return current, _row_snapshot(inserted)
 
-    assignments = []
-    for field in _PERSISTED_FIELDS:
-        placeholder = db._ph
-        if field == "explicit_interests" and db._use_pg:
-            placeholder += "::jsonb"
-        assignments.append(f"{field} = {placeholder}")
-    assignments.append("updated_at = NOW()" if db._use_pg else "updated_at = CURRENT_TIMESTAMP")
-    updated = db._fetchone(
-        conn,
-        f"UPDATE user_preferences SET {', '.join(assignments)} "
-        f"WHERE user_id = {_user_param()} AND revision = {db._ph} "
-        f"RETURNING {_preference_columns()}",
-        [*values, owner, expected],
+    updated_snapshot = _update_persisted_snapshot_in_connection(
+        conn, owner, merged, expected
     )
-    if updated is None:
+    if updated_snapshot is None:
         latest = _select_preferences(conn, owner)
         current_revision = _row_snapshot(latest)["revision"] if latest else 0
         raise PreferenceRevisionConflict(expected, current_revision)
-    return current, _row_snapshot(updated)
+    return current, updated_snapshot
 
 
 def patch_preferences(
@@ -738,7 +836,12 @@ def patch_preferences_with_consents(
             consent_version_fallback=_consent_policy_version(),
             confirmed_location=confirmed_location,
         )
-        for consent_type, state in _preference_consent_changes(current, snapshot):
+        for consent_type, state in _requested_consent_changes(
+            _public_snapshot(current),
+            _public_snapshot(snapshot),
+            normalize_preference_patch(patch),
+            confirmed_location=confirmed_location,
+        ):
             _insert_preference_consent(
                 conn,
                 owner,
