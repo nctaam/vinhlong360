@@ -200,6 +200,8 @@ Mỗi `day_plans[*].schedule` có thể nhận thêm object `allocation`:
 
 `moved_in_ids` và `moved_out_ids` là theo từng ngày; `move_count` và `max_imbalance_minutes` là giá trị toàn itinerary được lặp lại để mỗi day diagnostic tự giải thích được. Không thêm field ở top-level response. Stop entity, `time`, `note`, `is_meal`, `is_rest`, `total_stops` và các key schedule Phase 2B/3 giữ nguyên.
 
+Các load field chỉ xuất hiện khi Phase 4 dựng được baseline allocation hợp lệ. Nếu Phase 4 bị bỏ qua vì một ngày đang dùng Phase 3 fallback hoặc dữ liệu đầu vào không đủ, object `allocation` chỉ gồm `solver: "multiday-fallback"`, `move_count: 0`, moved-ID lists rỗng và warning `multiday-fallback`; không điền số 0 giả cho load/imbalance.
+
 Các field `selection_solver`, `candidate_count`, `selected_count`, `total_reward` và `dropped_reasons` tiếp tục mô tả kết quả chọn của Phase 3 trước bước allocation. Phase 4 không sửa lại lịch sử quyết định chọn candidate; `schedule.allocation.moved_in_ids` và `moved_out_ids` là nguồn sự thật cho ownership cuối giữa các ngày. Các field route timing (`solver`, travel, waiting, overtime, slack, backtrack, skipped) được cập nhật từ schedule Phase 4. `area_focus` được tính lại từ content POI cuối cùng của ngày.
 
 Solver values:
