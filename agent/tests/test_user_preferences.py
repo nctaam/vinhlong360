@@ -136,6 +136,13 @@ _VALID_RESOLVER_REGION = {
         ({**_VALID_RESOLVER_REGION, "location_accuracy": []}, "resolver_tuple"),
         ({**_VALID_RESOLVER_REGION, "location_accuracy": {}}, "resolver_tuple"),
         ({**_VALID_RESOLVER_REGION, "location_accuracy": None}, "resolver_tuple"),
+        ({**_VALID_RESOLVER_REGION, "region_id": ""}, "resolver_tuple"),
+        ({**_VALID_RESOLVER_REGION, "region_id": " province-vl"}, "resolver_tuple"),
+        ({**_VALID_RESOLVER_REGION, "region_id": "province vl"}, "resolver_tuple"),
+        ({**_VALID_RESOLVER_REGION, "region_id": "x" * 129}, "resolver_tuple"),
+        ({**_VALID_RESOLVER_REGION, "region_label": ""}, "resolver_tuple"),
+        ({**_VALID_RESOLVER_REGION, "region_label": " Vĩnh Long"}, "resolver_tuple"),
+        ({**_VALID_RESOLVER_REGION, "region_label": "x" * 161}, "resolver_tuple"),
     ],
 )
 def test_invalid_region_reason_is_bounded(snapshot, reason):
@@ -217,6 +224,20 @@ def _insert_unsafe_preference(database, user_id="user-1", revision=7):
         )
 
 
+def _insert_noncanonical_resolver_preference(database, user_id="user-1", revision=7):
+    with database._conn() as conn:
+        conn.execute(
+            "INSERT INTO user_preferences "
+            "(user_id, region_id, region_label, region_scope, location_source, "
+            "location_accuracy, location_consent_state, location_enabled, "
+            "personalization_enabled, explicit_interests, consent_version, "
+            "location_provenance_version, revision) "
+            "VALUES (?, ?, ?, 'province', 'gps', 'province', 'granted', 1, 1, ?, "
+            "'privacy-v1', 'resolver-v2', ?)",
+            (user_id, "x" * 129, "Vĩnh Long", '["food"]', revision),
+        )
+
+
 def test_load_preferences_quarantines_unsafe_region_without_losing_non_location_state(
     preference_database,
 ):
@@ -231,6 +252,22 @@ def test_load_preferences_quarantines_unsafe_region_without_losing_non_location_
     assert snapshot["explicit_interests"] == ["food"]
     assert snapshot["personalization_enabled"] is True
     assert snapshot["consent_version"] == "privacy-v1"
+    assert snapshot["revision"] == 8
+
+
+def test_load_preferences_quarantines_overlong_resolver_region_id(
+    preference_database,
+):
+    _insert_noncanonical_resolver_preference(preference_database)
+
+    snapshot = load_preferences("user-1")
+
+    assert snapshot["region_id"] is None
+    assert snapshot["region_label"] is None
+    assert snapshot["location_source"] == "default"
+    assert snapshot["location_consent_state"] == "off"
+    assert snapshot["location_reconfirm_required"] is True
+    assert snapshot["explicit_interests"] == ["food"]
     assert snapshot["revision"] == 8
 
 

@@ -30,6 +30,39 @@ AS $$
     );
 $$;
 
+CREATE OR REPLACE FUNCTION vl360_resolver_region_is_normalized(
+    resolver_region_id TEXT,
+    resolver_region_label TEXT
+)
+RETURNS BOOLEAN
+LANGUAGE SQL
+IMMUTABLE
+PARALLEL SAFE
+AS $$
+    SELECT
+        resolver_region_id IS NOT NULL
+        AND char_length(resolver_region_id) BETWEEN 1 AND 128
+        AND resolver_region_id = regexp_replace(
+            resolver_region_id,
+            '^[[:space:]]+|[[:space:]]+$',
+            '',
+            'g'
+        )
+        AND resolver_region_id ~ '^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$'
+        AND (
+            resolver_region_label IS NULL
+            OR (
+                char_length(resolver_region_label) BETWEEN 1 AND 160
+                AND resolver_region_label = regexp_replace(
+                    resolver_region_label,
+                    '^[[:space:]]+|[[:space:]]+$',
+                    '',
+                    'g'
+                )
+            )
+        );
+$$;
+
 DO $$
 DECLARE
     quarantined_count BIGINT;
@@ -69,7 +102,7 @@ BEGIN
             )
             OR (
                 location_source IN ('gps', 'ip')
-                AND region_id IS NOT NULL
+                AND vl360_resolver_region_is_normalized(region_id, region_label)
                 AND region_scope IN ('ward', 'district', 'province')
                 AND location_accuracy IN ('ward', 'district', 'province', 'unknown')
                 AND location_enabled = TRUE
@@ -124,7 +157,7 @@ ALTER TABLE user_preferences
         )
         OR (
             location_source IN ('gps', 'ip')
-            AND region_id IS NOT NULL
+            AND vl360_resolver_region_is_normalized(region_id, region_label)
             AND region_scope IN ('ward', 'district', 'province')
             AND location_accuracy IN ('ward', 'district', 'province', 'unknown')
             AND location_enabled = TRUE

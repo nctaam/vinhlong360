@@ -124,6 +124,23 @@ def _normalized_region_label(value: Any) -> str | None:
     return _bounded_text(value, MAX_REGION_LABEL_LENGTH)
 
 
+def is_normalized_region_id(value: Any) -> bool:
+    return (
+        isinstance(value, str)
+        and value == value.strip()
+        and 0 < len(value) <= MAX_REGION_ID_LENGTH
+        and _REGION_ID_RE.fullmatch(value) is not None
+    )
+
+
+def is_normalized_region_label(value: Any) -> bool:
+    return value is None or (
+        isinstance(value, str)
+        and value == value.strip()
+        and 0 < len(value) <= MAX_REGION_LABEL_LENGTH
+    )
+
+
 def contains_raw_location_value(value: Any) -> bool:
     """Reject IP/coordinate-shaped text at resolution and persistence boundaries."""
     if not isinstance(value, str):

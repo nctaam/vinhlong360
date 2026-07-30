@@ -76,6 +76,7 @@ function mockPreferenceApi(initial: PreferenceSnapshot = snapshot()) {
             region_scope: 'province' as const,
             location_source: 'gps' as const,
             location_accuracy: 'province' as const,
+            location_reconfirm_required: false,
           }
         : {}
       current = snapshot({
@@ -446,6 +447,55 @@ describe('optional location consent flow', () => {
     expect(gps).toMatchObject({ region_id: null, location_source: 'gps', location_accuracy: 'unknown' })
     expect(ip).toMatchObject({ region_id: null, location_source: 'ip', location_accuracy: 'unknown' })
     expect(apiFetchMock.mock.calls.filter(([url]) => url === '/api/me/location/resolve')).toHaveLength(0)
+  })
+
+  it('posts an explicit GPS resolve while an off location requires reconfirmation', async () => {
+    authState.user.value = { id: 'user-1' }
+    authState.isLoggedIn.value = true
+    const preferences = await hydratePreferences(snapshot({
+      location_consent_state: 'off',
+      location_enabled: false,
+      location_reconfirm_required: true,
+      revision: 5,
+    }))
+    const getCurrentPosition = vi.fn((success: PositionCallback) => {
+      success({ coords: { latitude: 10.24, longitude: 105.97 } } as GeolocationPosition)
+    })
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: { getCurrentPosition },
+    })
+
+    const wrapper = await mountSetupHarness()
+    await flushUi()
+    const dialog = () => document.body.querySelector('[role="dialog"]') as HTMLElement
+    ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+    await flushUi()
+    ;(dialog().querySelector('[data-action="continue"]') as HTMLButtonElement).click()
+    await flushUi()
+    ;(dialog().querySelector('[data-action="use-location"]') as HTMLButtonElement).click()
+    await flushUi()
+
+    expect(getCurrentPosition).toHaveBeenCalledTimes(1)
+    expect(apiFetchMock.mock.calls.filter(([url]) => url === '/api/me/location/resolve')).toHaveLength(1)
+    expect(dialog().querySelector('[data-action="confirm-location"]')).toBeTruthy()
+    expect(preferences.snapshot.value.location_reconfirm_required).toBe(true)
+    expect(apiFetchMock.mock.calls.filter(([url, request]) => (
+      url === '/api/me/preferences'
+      && request?.method === 'PATCH'
+      && (request.body as Record<string, unknown>).location_confirmation_token
+    ))).toHaveLength(0)
+
+    ;(dialog().querySelector('[data-action="confirm-location"]') as HTMLButtonElement).click()
+    await flushUi()
+
+    expect(preferences.snapshot.value.location_reconfirm_required).toBe(false)
+    expect(apiFetchMock.mock.calls.filter(([url, request]) => (
+      url === '/api/me/preferences'
+      && request?.method === 'PATCH'
+      && (request.body as Record<string, unknown>).location_confirmation_token
+    ))).toHaveLength(1)
+    wrapper.unmount()
   })
 
   it('uses toggle-button semantics for manual region choices', async () => {

@@ -383,7 +383,7 @@ def _restore_location_constraints() -> None:
                     )
                     OR (
                         location_source IN ('gps', 'ip')
-                        AND region_id IS NOT NULL
+                        AND vl360_resolver_region_is_normalized(region_id, region_label)
                         AND region_scope IN ('ward', 'district', 'province')
                         AND location_accuracy IN ('ward', 'district', 'province', 'unknown')
                         AND location_enabled = TRUE
@@ -668,6 +668,27 @@ def test_073_installs_schema_function_and_enforces_write_guards(pre73_database):
             (raw_ip, users["raw-ip"]),
             "ck_user_preferences_region_text_safe_v2",
         )
+    for region_id, region_label in (
+        ("", "Vĩnh Long"),
+        (" province-vl", "Vĩnh Long"),
+        ("province vl", "Vĩnh Long"),
+        ("x" * 129, "Vĩnh Long"),
+        ("province-vl", ""),
+        ("province-vl", " Vĩnh Long"),
+    ):
+        _assert_constraint_violation(
+            """
+            UPDATE user_preferences
+            SET region_id = %s, region_label = %s,
+                region_scope = 'province', location_source = 'gps',
+                location_accuracy = 'province', location_consent_state = 'granted',
+                location_enabled = TRUE, location_provenance_version = 'resolver-v2',
+                location_reconfirm_required = FALSE
+            WHERE user_id = %s::uuid
+            """,
+            (region_id, region_label, users["raw-ip"]),
+            "ck_user_preferences_region_tuple_v2",
+        )
     _assert_constraint_violation(
         "UPDATE user_preferences SET revision = 9007199254740992 WHERE user_id = %s::uuid",
         (users["default-off"],),
@@ -818,6 +839,14 @@ def test_self_healing_worker_aligns_candidate_and_reason_text_boundaries(
         "unicode_signed": "-١٠.٥",
         "unicode_dms": '١٠° ١٥\' ٣٠" N',
     }
+    noncanonical_resolver = {
+        "empty_id": ("", "Vĩnh Long"),
+        "padded_id": (" province-vl", "Vĩnh Long"),
+        "invalid_id_shape": ("province vl", "Vĩnh Long"),
+        "overlong_id": ("x" * 129, "Vĩnh Long"),
+        "empty_label": ("province-vl", ""),
+        "padded_label": ("province-vl", " Vĩnh Long"),
+    }
     for name in ("coordinate_pair", "dms", "hemisphere", "single_number"):
         assert user_preferences.contains_raw_location_value(unsafe_labels[name])
     for name in (
@@ -832,7 +861,13 @@ def test_self_healing_worker_aligns_candidate_and_reason_text_boundaries(
     assert not user_preferences.contains_raw_location_value("999.9700")
     users = {
         name: str(uuid4())
-        for name in (*unsafe_labels, "valid", "safe_out_of_range_number")
+        for name in (
+            *unsafe_labels,
+            *noncanonical_resolver,
+            "valid",
+            "bounded_valid",
+            "safe_out_of_range_number",
+        )
     }
     with _connect_test_database() as conn:
         with conn.cursor() as cursor:
@@ -844,13 +879,29 @@ def test_self_healing_worker_aligns_candidate_and_reason_text_boundaries(
                 _insert_preference(
                     cursor,
                     user_id=user_id,
-                    region_id="province-vl",
-                    region_label=unsafe_labels.get(
+                    region_id=noncanonical_resolver.get(
                         name,
-                        "999.9700"
-                        if name == "safe_out_of_range_number"
-                        else "Vĩnh Long",
-                    ),
+                        (
+                            "x" * 128
+                            if name == "bounded_valid"
+                            else "province-vl",
+                            "Vĩnh Long",
+                        ),
+                    )[0],
+                    region_label=noncanonical_resolver.get(
+                        name,
+                        (
+                            "province-vl",
+                            "x" * 160
+                            if name == "bounded_valid"
+                            else unsafe_labels.get(
+                                name,
+                                "999.9700"
+                                if name == "safe_out_of_range_number"
+                                else "Vĩnh Long",
+                            ),
+                        ),
+                    )[1],
                     region_scope="province",
                     source="gps",
                     accuracy="province",
@@ -864,7 +915,10 @@ def test_self_healing_worker_aligns_candidate_and_reason_text_boundaries(
                 )
 
     counts = user_preferences.quarantine_invalid_preferences_batch(limit=100)
-    assert counts == {"raw_shape": len(unsafe_labels)}
+    assert counts == {
+        "raw_shape": len(unsafe_labels),
+        "resolver_tuple": len(noncanonical_resolver),
+    }
 
     with _connect_test_database() as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
@@ -883,8 +937,18 @@ def test_self_healing_worker_aligns_candidate_and_reason_text_boundaries(
         assert row["location_source"] == "default"
         assert row["location_reconfirm_required"] is True
         assert row["revision"] == 8
+    for name in noncanonical_resolver:
+        row = rows[users[name]]
+        assert row["region_id"] is None
+        assert row["region_label"] is None
+        assert row["location_source"] == "default"
+        assert row["location_reconfirm_required"] is True
+        assert row["revision"] == 8
     assert rows[users["valid"]]["region_label"] == "Vĩnh Long"
     assert rows[users["valid"]]["revision"] == 7
+    assert rows[users["bounded_valid"]]["region_id"] == "x" * 128
+    assert rows[users["bounded_valid"]]["region_label"] == "x" * 160
+    assert rows[users["bounded_valid"]]["revision"] == 7
     assert (
         rows[users["safe_out_of_range_number"]]["region_label"] == "999.9700"
     )

@@ -9,7 +9,14 @@ from typing import Any, TypedDict
 from uuid import uuid4
 
 from database import db
-from location_resolver import LocationResolution, contains_raw_location_value
+from location_resolver import (
+    MAX_REGION_ID_LENGTH,
+    MAX_REGION_LABEL_LENGTH,
+    LocationResolution,
+    contains_raw_location_value,
+    is_normalized_region_id,
+    is_normalized_region_label,
+)
 
 
 REGION_SCOPES = frozenset({"ward", "district", "province", "all", "unknown"})
@@ -21,8 +28,6 @@ CONSENT_EVENT_STATES = frozenset({"granted", "denied", "off", "expired"})
 
 MAX_INTERESTS = 12
 MAX_INTEREST_LENGTH = 64
-MAX_REGION_ID_LENGTH = 128
-MAX_REGION_LABEL_LENGTH = 160
 MAX_CONSENT_VERSION_LENGTH = 64
 MAX_RECOMMENDATION_RESET_AT_LENGTH = 64
 MAX_PREFERENCE_REVISION = 9_007_199_254_740_991
@@ -404,8 +409,8 @@ def _resolver_region_tuple(snapshot: Mapping[str, Any]) -> bool:
     return (
         isinstance(source, str)
         and source in {"gps", "ip"}
-        and isinstance(region_id, str)
-        and (region_label is None or isinstance(region_label, str))
+        and is_normalized_region_id(region_id)
+        and is_normalized_region_label(region_label)
         and isinstance(region_scope, str)
         and region_scope in {"ward", "district", "province"}
         and isinstance(location_accuracy, str)
@@ -602,7 +607,7 @@ def quarantine_invalid_preferences_batch(limit: int = 100) -> dict[str, int]:
                 )
                 OR (
                     location_source IN ('gps', 'ip')
-                    AND region_id IS NOT NULL
+                    AND vl360_resolver_region_is_normalized(region_id, region_label)
                     AND region_scope IN ('ward', 'district', 'province')
                     AND location_accuracy IN ('ward', 'district', 'province', 'unknown')
                     AND location_enabled = TRUE
