@@ -269,15 +269,17 @@ class TestPhase17ModerationAutoEscalation:
 
 
 class TestPhase17AccountHardDelete:
-    """Phase 17: Hard-delete accounts past grace period."""
+    """Phase 17: Hard-delete accounts through the verified erasure task."""
 
-    def test_session_cleanup_hard_deletes_accounts(self):
+    def test_account_erasure_task_owns_hard_delete(self):
         src = (Path(__file__).resolve().parent.parent / "scheduler.py").read_text(encoding="utf-8")
-        idx = src.find("task_session_cleanup")
-        block = src[idx:idx+1000]
-        assert "DELETE FROM users" in block
-        assert "deleted_at" in block
-        assert "30 days" in block
+        erasure_start = src.index("def task_account_erasure")
+        erasure_end = src.index("def task_quarantine_retry", erasure_start)
+        session_start = src.index("def task_session_cleanup")
+        session_end = src.index("def _hard_delete_stale_posts", session_start)
+
+        assert "erase_due_accounts(" in src[erasure_start:erasure_end]
+        assert "DELETE FROM users" not in src[session_start:session_end]
 
     def test_grace_period_configurable(self):
         from config import settings
@@ -1355,14 +1357,19 @@ class TestDeepScanBatch3:
         block = src[idx:idx+400]
         assert "_MAX_ENTITY_HITS" in block, "track_entity_hit must enforce cap"
 
-    def test_save_conversation_error_handling(self):
+    def test_save_conversation_error_handling(self, monkeypatch, tmp_path, caplog):
         """save_conversation must catch OSError to prevent crashes."""
-        src = (Path(__file__).resolve().parent.parent / "analytics.py").read_text(encoding="utf-8")
-        idx = src.find("def save_conversation(")
-        assert idx > 0
-        block = src[idx:idx+600]
-        assert "except OSError" in block or "except (OSError" in block, \
-            "save_conversation must handle OSError"
+        import analytics
+
+        monkeypatch.setattr(analytics, "CONVERSATIONS_DIR", tmp_path)
+
+        def fail_open(*_args, **_kwargs):
+            raise OSError("disk unavailable")
+
+        monkeypatch.setattr("builtins.open", fail_open)
+        analytics.save_conversation("session-1", [{"role": "user", "content": "hello"}])
+
+        assert "Failed to save conversation session-1" in caplog.text
 
     def test_db_pool_retry_flag_inside_lock(self):
         """Pool retry flag must be reset inside the lock to prevent race."""

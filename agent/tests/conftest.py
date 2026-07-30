@@ -53,7 +53,16 @@ def _reset_rate_limiters():
         middleware._reset_limiters()
     except Exception:
         pass
-    yield
+    def reset_server_drain_flag():
+        server_module = sys.modules.get("server")
+        if server_module is not None:
+            server_module._draining = False
+
+    reset_server_drain_flag()
+    try:
+        yield
+    finally:
+        reset_server_drain_flag()
 
 
 @pytest.fixture

@@ -14,6 +14,7 @@ import pytest
 
 import database as database_module
 import feedback_policy
+from owner_write_gate import OwnerWriteGate
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -67,9 +68,13 @@ def _postgres_schema():
                 """
                 CREATE TABLE IF NOT EXISTS users (
                     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-                    phone TEXT UNIQUE NOT NULL
+                    phone TEXT UNIQUE NOT NULL,
+                    deleted_at TIMESTAMPTZ
                 )
                 """
+            )
+            cursor.execute(
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ"
             )
             cursor.execute(
                 """
@@ -100,6 +105,21 @@ def pg_store(monkeypatch):
     adapter._dsn = TEST_DATABASE_URL
     monkeypatch.setattr(feedback_policy, "db", adapter)
     monkeypatch.setattr(feedback_policy, "_store", feedback_policy.PostgresFeedbackStore())
+
+    def read_deleted_at(user_id: str):
+        with adapter._conn(commit_on_success=False) as conn:
+            row = adapter._fetchone(
+                conn,
+                "SELECT deleted_at FROM users WHERE id = %s::uuid",
+                (user_id,),
+            )
+        return None if row is None else row["deleted_at"]
+
+    monkeypatch.setattr(
+        feedback_policy,
+        "owner_write_gate",
+        OwnerWriteGate(state_reader=read_deleted_at),
+    )
 
     with psycopg2.connect(TEST_DATABASE_URL) as conn:
         with conn.cursor() as cursor:
