@@ -1,6 +1,6 @@
 # Phase 3 - Joint POI and Route Selection Implementation Plan
 
-> STATUS: active
+> STATUS: complete
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -556,7 +556,7 @@ git commit -m "feat: integrate joint POI route selection into generator"
 - Consumes: Task 4's additive schedule diagnostics and generator behavior.
 - Produces: documentation for `selection_solver`, `candidate_count`, `selected_count`, `total_reward`, `dropped_reasons`, local fallback, and Phase 3 completion status; no MCP signature change.
 
-- [ ] **Step 1: Re-run the behavior contract before documentation edits.**
+- [x] **Step 1: Re-run the behavior contract before documentation edits.**
 
 ```powershell
 python -m pytest agent/tests/test_itinerary_generator_selection.py agent/tests/test_itinerary_generator_mcp.py -q
@@ -564,11 +564,11 @@ python -m pytest agent/tests/test_itinerary_generator_selection.py agent/tests/t
 
 Expected: the behavior contract is already green from Task 4; documentation remains the only uncommitted deliverable in this task.
 
-- [ ] **Step 2: Update the API contract and roadmap.**
+- [x] **Step 2: Update the API contract and roadmap.**
 
 Keep planner-only OSRM budget bullets separate from generator no-network wording. Document that selection runs locally, diagnostics are additive, dropped POIs carry reasons, and Phase 2B fallback remains available. Mark only Phase 3 complete; leave Phases 4-6 pending and retain no-deploy/no-migration wording.
 
-- [ ] **Step 3: Run the complete focused Phase 3 matrix and diff checks.**
+- [x] **Step 3: Run the complete focused Phase 3 matrix and diff checks.**
 
 ```powershell
 python -m pytest agent/tests/test_itinerary_selection.py agent/tests/test_itinerary_generator_selection.py agent/tests/test_itinerary_generator_mcp.py agent/tests/test_itinerary_generator_schedule.py agent/tests/test_cov_itinerary_gen.py agent/tests/test_itinerary_schedule.py agent/tests/test_itinerary_optimizer.py -q
@@ -577,7 +577,7 @@ git diff --check
 
 Expected: all focused tests pass; no full-repository suite claim is made; no dependency, schema, network, migration, deploy, or frontend changes appear in the diff.
 
-- [ ] **Step 4: Commit documentation.**
+- [x] **Step 4: Commit documentation.**
 
 ```powershell
 git add docs/api-contract.md docs/superpowers/specs/2026-07-29-zero-cost-itinerary-intelligence-roadmap-design.md
@@ -586,9 +586,9 @@ git commit -m "docs: publish phase 3 joint selection contract"
 
 ## Verification Checklist
 
-- [ ] Every task has a failing test observed before production code.
-- [ ] Every task receives a task-scoped spec/quality review before the next task starts.
-- [ ] Final whole-branch review is clean or only has explicitly parked non-load-bearing minors.
-- [ ] Focused Phase 3 matrix passes on the merged result.
-- [ ] `git diff --check` is clean.
-- [ ] No new dependency, network call, migration, deploy, paid API, saved-schema change, or frontend contract change is introduced.
+- [x] Every task has a failing test observed before production code.
+- [x] Every task receives a task-scoped spec/quality review before the next task starts.
+- [x] Final whole-branch review is clean or only has explicitly parked non-load-bearing minors.
+- [x] Focused Phase 3 matrix passes on the merged result.
+- [x] `git diff --check` is clean.
+- [x] No new dependency, network call, migration, deploy, paid API, saved-schema change, or frontend contract change is introduced.
