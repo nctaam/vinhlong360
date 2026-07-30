@@ -37,6 +37,8 @@ from pydantic import BaseModel, Field, field_validator
 from config import settings as _cfg
 from database import db
 from erasure_state import request_account_erasure
+from owner_write_gate import owner_key_for_user, owner_write_gate
+from quarantine import quarantine_account, recover_account
 
 
 async def _require_csrf_lazy(request: Request) -> None:
@@ -771,17 +773,15 @@ def _register_new_user(phone: str, body: "OTPVerify") -> dict:
 
 
 def _reactivate_user(u: dict) -> dict:
-    """Kích hoạt lại tài khoản đã tắt/đã lên lịch xoá khi đăng nhập lại qua OTP."""
-    updates = {}
-    if not u.get("is_active", True):
-        updates["is_active"] = True
-    if u.get("deleted_at"):
-        updates["deleted_at"] = None
-        updates["is_active"] = True
-    if updates:
-        db.update_user(str(u["id"]), **updates)
-        u.update(updates)
-    return u
+    """Recover a scheduled deletion through the locked grace-period service."""
+    if u.get("deleted_at") is None:
+        if not u.get("is_active", True):
+            raise HTTPException(403, "Tài khoản không khả dụng")
+        return u
+    result = recover_account(str(u["id"]), now=_utc_now())
+    if not result.recovered or result.user is None:
+        raise HTTPException(403, "Tài khoản không khả dụng")
+    return result.user
 
 
 def _get_or_create_user(phone: str, body: "OTPVerify") -> dict:
@@ -1236,9 +1236,29 @@ async def delete_account(request: Request, response: Response, _csrf=Depends(_re
         logger.warning("Session binding mismatch on delete-account for user %s", user.get("id"))
         raise HTTPException(403, "Phiên không hợp lệ. Vui lòng đăng nhập lại.")
     uid = str(user["id"])
+    requested_at = _utc_now()
     state = await asyncio.to_thread(
-        request_account_erasure, uid, now=_utc_now()
+        request_account_erasure, uid, now=requested_at
     )
+    # The durable deleted_at check is authoritative; this hook closes the local
+    # admission cache before any best-effort external quarantine begins.
+    try:
+        owner_write_gate.block_owner(owner_key_for_user(uid))
+    except Exception:
+        logger.error("Owner block hook failed after durable deletion commit")
+    try:
+        quarantine_result = await asyncio.to_thread(
+            quarantine_account, uid, now=requested_at
+        )
+        if not quarantine_result.success and quarantine_result.status != "not_pending":
+            logger.warning(
+                "Immediate account quarantine incomplete: run_id=%s error_code=%s failed_stores=%s",
+                quarantine_result.run_id,
+                quarantine_result.error_code,
+                quarantine_result.failed_store_names,
+            )
+    except Exception:
+        logger.error("Immediate account quarantine failed after durable commit")
     _clear_session_cookie(response, request)
     return {
         "success": True,
