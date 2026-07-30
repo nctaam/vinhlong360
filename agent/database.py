@@ -63,6 +63,8 @@ PG_REQUIRED_TABLES = {
     "shared_rate_limits",
     "request_idempotency_keys",
     "quality_metric_snapshots",
+    "feedback_receipts",
+    "feedback_daily_rollups",
     # GĐ-B/C entity split (migration 059-062)
     "entity_changes",
     "site_settings_history",
@@ -87,10 +89,32 @@ PG_REQUIRED_COLUMNS = {
     "shared_rate_limits": {"key", "hits", "expires_at", "updated_at"},
     "request_idempotency_keys": {"key", "first_seen_at", "expires_at", "meta"},
     "quality_metric_snapshots": {"metric_key", "metric_value", "created_at"},
+    "feedback_receipts": {
+        "token_digest",
+        "owner_kind",
+        "user_id",
+        "anonymous_owner_digest",
+        "owner_binding_digest",
+        "assistant_turn_digest",
+        "model_variant",
+        "tool_bucket",
+        "rating",
+        "created_at",
+        "expires_at",
+        "used_at",
+    },
+    "feedback_daily_rollups": {
+        "day",
+        "owner_kind",
+        "model_variant",
+        "tool_bucket",
+        "positive_count",
+        "negative_count",
+    },
     "schema_version": {"component", "version", "migration", "updated_at"},
 }
 
-PG_REQUIRED_SCHEMA_VERSION = 71
+PG_REQUIRED_SCHEMA_VERSION = 74
 PG_REQUIRED_TRIGGERS = {
     "trg_entity_ratings": "posts",
     "trg_entity_ratings_del": "posts",
@@ -1788,6 +1812,22 @@ class Database:
             row = self._fetchone(conn,
                 f"UPDATE users SET {', '.join(sets)} WHERE id::text = {ph} RETURNING *", params)
             return self._row_to_dict(row)
+
+    def delete_erased_user(self, conn, user_id: str, now):
+        """Delete only a locked, deleted account whose exact deadline has passed."""
+        ph = self._ph
+        return self._fetchone(
+            conn,
+            f"""
+                DELETE FROM users
+                WHERE id::text = {ph}
+                  AND deleted_at IS NOT NULL
+                  AND erasure_due_at IS NOT NULL
+                  AND erasure_due_at <= {ph}
+                RETURNING id
+            """,
+            (str(user_id), now),
+        )
 
     # ── Entity change history ──
 

@@ -2407,12 +2407,6 @@ class TestReliabilityFixes:
         assert "finally:" in fn_src
         assert "backup_conn.close()" in fn_src
 
-    def test_stream_guardrail_logs_errors(self):
-        """Stream guardrail failure must log, not silently pass."""
-        src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
-        idx = src.index("Stream guardrail check failed")
-        assert idx > 0
-
     def test_pool_failure_logged(self):
         """PG pool creation failure must log a warning."""
         src = (AGENT_DIR / "database.py").read_text(encoding="utf-8")

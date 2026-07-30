@@ -60,10 +60,15 @@ def test_post_admission_and_settlement_share_owner_across_conversation_rotation(
     admitted = []
     settled = []
     attributed = []
+    real_prepare = server.prepare_chat_input
+
+    def prepare(message, history, *, owner_key):
+        admitted.append(owner_key)
+        return real_prepare(message, history, owner_key=owner_key)
 
     with patch.object(server, "HAS_GUARDRAILS", True), \
          patch.object(server, "HAS_COST_TRACKER", True), \
-         patch.object(server, "check_input", side_effect=lambda _message, key: admitted.append(key) or {"allowed": True}), \
+         patch.object(server, "prepare_chat_input", side_effect=prepare), \
          patch.object(server.guardrail_budget, "record_usage", side_effect=lambda key, _tokens: settled.append(key)), \
          patch.object(server.cost_attribution, "record", side_effect=lambda key, *_args, **_kwargs: attributed.append(key)):
         first = client_mocked.post("/chat", json={"message": "owner post one", "history": [{"role": "user", "content": "x"}]})
@@ -82,10 +87,15 @@ def test_stream_admission_and_settlement_share_owner_across_conversation_rotatio
     settled = []
     attributed = []
     history = [{"role": "user", "content": "prior"}]
+    real_prepare = server.prepare_chat_input
+
+    def prepare(message, supplied_history, *, owner_key):
+        admitted.append(owner_key)
+        return real_prepare(message, supplied_history, owner_key=owner_key)
 
     with patch.object(server, "HAS_GUARDRAILS", True), \
          patch.object(server, "HAS_COST_TRACKER", True), \
-         patch.object(server, "check_input", side_effect=lambda _message, key: admitted.append(key) or {"allowed": True}), \
+         patch.object(server, "prepare_chat_input", side_effect=prepare), \
          patch.object(server, "check_output", return_value={}), \
          patch.object(server.guardrail_budget, "record_usage", side_effect=lambda key, _tokens: settled.append(key)), \
          patch.object(server.cost_attribution, "record", side_effect=lambda key, *_args, **_kwargs: attributed.append(key)):

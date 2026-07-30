@@ -25,6 +25,7 @@ os.environ["SCHEDULER_ENABLED"] = "false"
 import server  # noqa: E402
 import semantic_cache as semantic_cache_mod  # noqa: E402
 from memory import MemoryManager  # noqa: E402
+from privacy_boundary import PrivacyBoundaryBlocked  # noqa: E402
 
 
 def _chat_identity_module():
@@ -309,7 +310,11 @@ def test_post_chat_accepts_alice_conversation_and_rejects_bob(tmp_path, monkeypa
 
     monkeypatch.setattr(server, "resolve_chat_owner", resolve_owner, raising=False)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", True)
-    monkeypatch.setattr(server, "check_input", lambda *_args: {"allowed": False})
+    monkeypatch.setattr(
+        server,
+        "prepare_chat_input",
+        Mock(side_effect=PrivacyBoundaryBlocked("INPUT_BLOCKED")),
+    )
     client = TestClient(server.app)
 
     alice = client.post(
@@ -434,10 +439,15 @@ def test_guardrail_blocked_post_uses_owner_without_creating_session(tmp_path, mo
     monkeypatch.setattr(server, "memory_manager", manager)
     monkeypatch.setattr(server, "resolve_chat_owner", _new_anonymous_owner)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", True)
+
+    def block_input(message, _history, *, owner_key):
+        checked.append((message, owner_key))
+        raise PrivacyBoundaryBlocked("INPUT_BLOCKED")
+
     monkeypatch.setattr(
         server,
-        "check_input",
-        lambda message, identity: checked.append((message, identity)) or {"allowed": False},
+        "prepare_chat_input",
+        block_input,
     )
     client = TestClient(server.app)
 
@@ -472,10 +482,15 @@ def test_guardrail_blocked_stream_uses_owner_without_creating_session(tmp_path, 
     monkeypatch.setattr(server, "memory_manager", manager)
     monkeypatch.setattr(server, "resolve_chat_owner", _new_anonymous_owner)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", True)
+
+    def block_input(message, _history, *, owner_key):
+        checked.append((message, owner_key))
+        raise PrivacyBoundaryBlocked("INPUT_BLOCKED")
+
     monkeypatch.setattr(
         server,
-        "check_input",
-        lambda message, identity: checked.append((message, identity)) or {"allowed": False},
+        "prepare_chat_input",
+        block_input,
     )
     client = TestClient(server.app)
 
@@ -553,7 +568,7 @@ def test_owned_stream_cache_reads_receive_owner_key(tmp_path, monkeypatch):
     conversation = manager.create_session("user:alice")
     calls = []
     sentinel = {
-        "reply": "alice exact stream cache sentinel",
+        "reply": "alice exact stream 0901234567 cache sentinel",
         "tool_calls": [],
         "suggestions": [],
     }
@@ -586,6 +601,8 @@ def test_owned_stream_cache_reads_receive_owner_key(tmp_path, monkeypatch):
     assert response.status_code == 200
     assert "alice exact stream" in response.text
     assert "cache sentinel" in response.text
+    assert "0901234567" not in response.text
+    assert "[PHONE]" in response.text
     assert calls == [
         ("semantic", "cached query", "user:alice"),
         ("exact", "cached query", "user:alice"),
@@ -786,7 +803,7 @@ def test_stream_terminal_path_abandons_captured_semantic_lease(
         lambda *_args: {"score": 4, "issues": [], "good_points": []},
     )
     monkeypatch.setattr(server.quality_tracker, "record", lambda *_args: None)
-    monkeypatch.setattr(server.analytics, "track_query", lambda *_args: None)
+    monkeypatch.setattr(server.analytics, "track_query", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(server, "semantic_get_async", semantic_miss)
     monkeypatch.setattr(
         server,
@@ -1053,7 +1070,7 @@ def test_semantic_dedup_wait_keeps_async_handlers_responsive(
     monkeypatch.setattr(server.cache, "get", forbidden)
     monkeypatch.setattr(server, "UsageAccumulator", forbidden)
     monkeypatch.setattr(server, "_build_messages", forbidden)
-    monkeypatch.setattr(server.analytics, "track_query", lambda *_args: None)
+    monkeypatch.setattr(server.analytics, "track_query", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(semantic_cache_mod, "multi_tier_cache", semantic_cache)
     monkeypatch.setattr(semantic_cache_mod, "deduplicator", deduplicator)
 
@@ -1143,7 +1160,7 @@ def test_stream_semantic_lookup_error_rejects_missing_lease(tmp_path, monkeypatc
         lambda *_args: {"score": 6},
     )
     monkeypatch.setattr(server.quality_tracker, "record", lambda *_args: None)
-    monkeypatch.setattr(server.analytics, "track_query", lambda *_args: None)
+    monkeypatch.setattr(server.analytics, "track_query", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(server, "semantic_get_async", semantic_error)
     monkeypatch.setattr(server, "semantic_take_dedup_lease", forbidden_take)
     monkeypatch.setattr(server, "semantic_put", reject_missing_lease)
@@ -1300,7 +1317,7 @@ def test_autocorrected_stream_resolves_waiter_on_original_cache_query(tmp_path, 
         lambda *_args: {"score": 6},
     )
     monkeypatch.setattr(server.quality_tracker, "record", lambda *_args: None)
-    monkeypatch.setattr(server.analytics, "track_query", lambda *_args: None)
+    monkeypatch.setattr(server.analytics, "track_query", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(server, "semantic_get_async", read_semantic)
     monkeypatch.setattr(server, "semantic_take_dedup_lease", take_semantic_lease)
     monkeypatch.setattr(server, "semantic_put", publish_semantic)

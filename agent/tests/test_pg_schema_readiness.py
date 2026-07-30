@@ -22,7 +22,7 @@ class TriggerCursor:
 
 
 def test_required_schema_version_and_rating_trigger_registry():
-    assert PG_REQUIRED_SCHEMA_VERSION == 71
+    assert PG_REQUIRED_SCHEMA_VERSION == 74
     assert PG_REQUIRED_TRIGGERS == {
         "trg_entity_ratings": "posts",
         "trg_entity_ratings_del": "posts",
@@ -39,7 +39,7 @@ def test_missing_trigger_scan_requires_name_and_table():
 
 
 def test_schema_issues_include_missing_triggers():
-    issues = _pg_schema_issues([], [], ["trg_entity_ratings on posts"], 71)
+    issues = _pg_schema_issues([], [], ["trg_entity_ratings on posts"], 74)
     assert issues == ["missing triggers: trg_entity_ratings on posts"]
 
 

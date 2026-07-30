@@ -60,7 +60,7 @@
       <section class="contact-card card-privacy">
         <div class="card-icon" aria-hidden="true"><span class="card-icon-glyph">🔒</span></div>
         <h2>Dữ liệu cá nhân</h2>
-        <p>Theo <NuxtLink to="/chinh-sach-bao-mat">Chính sách bảo mật</NuxtLink>: truy cập/chỉnh sửa (10 ngày), rút đồng ý (15 ngày), xoá dữ liệu (20 ngày). Bạn cũng có thể tự xoá tài khoản trong phần tài khoản.</p>
+        <p>Theo <NuxtLink to="/chinh-sach-bao-mat">Chính sách bảo mật</NuxtLink>: truy cập/chỉnh sửa (10 ngày), rút đồng ý (15 ngày), xoá dữ liệu ({{ accountErasureDeadlineDays }} ngày). Bạn cũng có thể tự xoá tài khoản trong phần tài khoản.</p>
       </section>
     </div>
 
@@ -68,7 +68,10 @@
 </template>
 
 <script setup lang="ts">
+import privacyPolicy from '#privacy-policy'
+
 useReveal()
+const accountErasureDeadlineDays = privacyPolicy.accountErasureDeadlineDays
 const { get: ss } = useSiteSettings()
 const { f: pc } = usePageContent('lien_he')
 const contactEmail = computed(() => ss('contact.email', 'lienhe@vinhlong360.vn'))

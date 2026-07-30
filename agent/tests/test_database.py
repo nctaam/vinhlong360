@@ -92,15 +92,18 @@ def test_pg_initialize_verifies_schema_before_legacy_repair_code():
     assert "CREATE INDEX" not in verify_src
 
 def test_pg_schema_contract_tracks_latest_release_tables():
-    # 71 restores both entity rating triggers after migration 070 corrected the function body.
-    assert PG_REQUIRED_SCHEMA_VERSION == 71
+    # 71 restores entity rating triggers; 72-74 add feedback and erasure lifecycle state.
+    assert PG_REQUIRED_SCHEMA_VERSION == 74
     assert {"schema_version", "admin_audit_events", "shared_rate_limits", "request_idempotency_keys"} <= PG_REQUIRED_TABLES
+    assert {"feedback_receipts", "feedback_daily_rollups"} <= PG_REQUIRED_TABLES
     assert {"entity_changes", "site_settings_history"} <= PG_REQUIRED_TABLES
     assert {f"entity_{k}_details" for k in
             ("place", "food", "product", "lodging", "event",
              "experience", "facility", "person", "adminplace")} <= PG_REQUIRED_TABLES
     assert {"key", "hits", "expires_at", "updated_at"} <= PG_REQUIRED_COLUMNS["shared_rate_limits"]
     assert {"key", "first_seen_at", "expires_at", "meta"} <= PG_REQUIRED_COLUMNS["request_idempotency_keys"]
+    assert {"token_digest", "owner_binding_digest", "expires_at"} <= PG_REQUIRED_COLUMNS["feedback_receipts"]
+    assert {"day", "positive_count", "negative_count"} <= PG_REQUIRED_COLUMNS["feedback_daily_rollups"]
     assert "bucket" not in PG_REQUIRED_COLUMNS["shared_rate_limits"]
     assert "response_json" not in PG_REQUIRED_COLUMNS["request_idempotency_keys"]
 

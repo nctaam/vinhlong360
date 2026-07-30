@@ -26,6 +26,8 @@ import unicodedata
 from pathlib import Path
 from threading import Lock
 
+from owner_write_gate import owner_write_gate
+
 logger = logging.getLogger(__name__)
 
 AGENT_DIR = Path(__file__).resolve().parent
@@ -124,7 +126,14 @@ def _distill_negative(query: str, tools: list, reply: str) -> dict:
     }
 
 
-def record(query: str, tools_used: list, score: float, reply: str = "") -> dict | None:
+def record(
+    query: str,
+    tools_used: list,
+    score: float,
+    reply: str = "",
+    *,
+    owner_key: str = "",
+) -> dict | None:
     """Distill an interaction into a strategy item (positive) or constraint (negative).
 
     score: reflexion answer score (0-10). >=8 → positive lesson; <5 → negative.
@@ -137,13 +146,19 @@ def record(query: str, tools_used: list, score: float, reply: str = "") -> dict 
     else:
         return None  # middling — nothing to learn
 
+    owner_write_gate.assert_writable(owner_key)
     with _lock:
         items = _load()
         # Merge by (intent, polarity) — reinforce instead of duplicating
         for existing in items:
-            if existing["intent"] == item["intent"] and existing["polarity"] == item["polarity"]:
+            if (
+                existing["intent"] == item["intent"]
+                and existing["polarity"] == item["polarity"]
+                and existing.get("owner_key", "") == owner_key
+            ):
                 existing["uses"] = existing.get("uses", 1) + 1
                 existing["query_sample"] = query[:120]
+                existing["owner_key"] = owner_key
                 # Union principles (keep it tight)
                 merged = existing.get("principles", [])
                 for p in item["principles"]:
@@ -155,6 +170,7 @@ def record(query: str, tools_used: list, score: float, reply: str = "") -> dict 
 
         item["id"] = f"exp_{len(items) + 1:05d}"
         item["query_sample"] = query[:120]
+        item["owner_key"] = owner_key
         item["uses"] = 1
         item["score"] = round(score, 1)
         items.append(item)
@@ -164,6 +180,31 @@ def record(query: str, tools_used: list, score: float, reply: str = "") -> dict 
             items = items[:MAX_ITEMS]
         _save(items)
         return item
+
+
+def purge_owner(owner_key: str) -> int:
+    """Remove every learned item attributed to one exact owner."""
+    with _lock:
+        items = _load()
+        retained = [
+            item for item in items if item.get("owner_key", "") != owner_key
+        ]
+        removed = len(items) - len(retained)
+        if removed:
+            _save(retained)
+        return removed
+
+
+def verify_owner_absent(owner_key: str) -> bool:
+    with _lock:
+        if not BANK_FILE.exists():
+            return True
+        items = json.loads(BANK_FILE.read_text(encoding="utf-8"))
+        if not isinstance(items, list):
+            raise ValueError("Invalid experience store")
+        return not any(
+            item.get("owner_key", "") == owner_key for item in items
+        )
 
 
 def retrieve(query: str, k: int = 3) -> list:

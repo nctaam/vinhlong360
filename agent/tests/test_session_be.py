@@ -1344,13 +1344,16 @@ class TestPhase8SessionCleanup:
         src = inspect.getsource(scheduler.task_session_cleanup)
         assert "expires_at < NOW()" in src
 
-    def test_session_cleanup_purges_deleted_users(self):
-        """task_session_cleanup purges sessions for soft-deleted users past grace period."""
+    def test_account_erasure_is_separate_from_session_cleanup(self):
+        """Account deletion runs only through the verified erasure lifecycle."""
         import inspect
         import scheduler
-        src = inspect.getsource(scheduler.task_session_cleanup)
-        assert "deleted_at IS NOT NULL" in src
-        assert "30 days" in src
+        cleanup = inspect.getsource(scheduler.task_session_cleanup)
+        erasure = inspect.getsource(scheduler.task_account_erasure)
+
+        assert "deleted_at IS NOT NULL" not in cleanup
+        assert "erase_due_accounts(" in erasure
+        assert any(task.name == "account-erasure" for task in scheduler.TASKS)
 
     def test_leaderboard_excludes_deleted(self):
         """Leaderboard query excludes soft-deleted users."""

@@ -25,6 +25,8 @@ import unicodedata
 from pathlib import Path
 from threading import Lock
 
+from owner_write_gate import owner_write_gate
+
 AGENT_DIR = Path(__file__).resolve().parent
 DEMO_DIR = AGENT_DIR / "data" / "optimizer"
 DEMO_DIR.mkdir(parents=True, exist_ok=True)
@@ -80,10 +82,17 @@ def _save(path: Path, data):
     tmp.replace(path)
 
 
-def record_demo(query: str, answer: str, score: float):
+def record_demo(
+    query: str,
+    answer: str,
+    score: float,
+    *,
+    owner_key: str = "",
+):
     """Capture a high-scoring (query, answer) pair into the demo pool."""
     if score < MIN_SCORE or not answer or len(answer) < 80:
         return
+    owner_write_gate.assert_writable(owner_key)
     with _lock:
         pool = _load(RAW_FILE, [])
         pool.append({
@@ -91,6 +100,7 @@ def record_demo(query: str, answer: str, score: float):
             "query": query[:160],
             "answer": answer[:MAX_ANSWER_CHARS],
             "score": round(score, 1),
+            "owner_key": owner_key,
         })
         if len(pool) > MAX_POOL:
             pool.sort(key=lambda d: d.get("score", 0), reverse=True)
@@ -131,6 +141,75 @@ def compile() -> dict:
         return {"intents": list(compiled.keys()),
                 "total_demos": sum(len(v) for v in compiled.values()),
                 "pool_size": len(pool)}
+
+
+def _without_owner(entries, owner_key: str, error_message: str) -> tuple[list, int]:
+    if not isinstance(entries, list):
+        raise ValueError(error_message)
+    retained = [
+        entry for entry in entries if entry.get("owner_key", "") != owner_key
+    ]
+    return retained, len(entries) - len(retained)
+
+
+def _compiled_without_owner(artifact, owner_key: str) -> tuple[dict, int]:
+    if not isinstance(artifact, dict):
+        raise ValueError("Invalid compiled prompt store")
+    demos = artifact.get("demos", {})
+    if not isinstance(demos, dict):
+        raise ValueError("Invalid compiled prompt store")
+    retained_demos = {}
+    removed = 0
+    for intent, entries in demos.items():
+        retained, intent_removed = _without_owner(
+            entries, owner_key, "Invalid compiled prompt store"
+        )
+        retained_demos[intent] = retained
+        removed += intent_removed
+    return retained_demos, removed
+
+
+def purge_owner(owner_key: str) -> int:
+    """Remove an exact owner's raw and compiled demonstration copies."""
+    with _lock:
+        pool = _load(RAW_FILE, [])
+        retained_pool, removed = _without_owner(
+            pool, owner_key, "Invalid prompt demo pool"
+        )
+        if removed:
+            _save(RAW_FILE, retained_pool)
+
+        artifact = _load(COMPILED_FILE, {"demos": {}})
+        retained_demos, removed_compiled = _compiled_without_owner(
+            artifact, owner_key
+        )
+        if removed_compiled or (removed and COMPILED_FILE.exists()):
+            artifact["demos"] = retained_demos
+            artifact["pool_size"] = len(retained_pool)
+            _save(COMPILED_FILE, artifact)
+        return removed + removed_compiled
+
+
+def verify_owner_absent(owner_key: str) -> bool:
+    with _lock:
+        if RAW_FILE.exists():
+            pool = json.loads(RAW_FILE.read_text(encoding="utf-8"))
+            if not isinstance(pool, list):
+                raise ValueError("Invalid prompt demo pool")
+            if any(demo.get("owner_key", "") == owner_key for demo in pool):
+                return False
+        if not COMPILED_FILE.exists():
+            return True
+        artifact = json.loads(COMPILED_FILE.read_text(encoding="utf-8"))
+        if not isinstance(artifact, dict) or not isinstance(
+            artifact.get("demos", {}), dict
+        ):
+            raise ValueError("Invalid compiled prompt store")
+        return not any(
+            demo.get("owner_key", "") == owner_key
+            for entries in artifact.get("demos", {}).values()
+            for demo in entries
+        )
 
 
 def get_demos(query: str, k: int = DEMOS_PER_INTENT) -> list:

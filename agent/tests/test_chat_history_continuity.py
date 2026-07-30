@@ -123,7 +123,7 @@ def _configure_provider_chat(monkeypatch, tmp_path, prompt_cache_enabled, *, fai
     monkeypatch.setattr(server, "get_model_mini", lambda: "test-model")
     monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(server.cache, "put", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(server.analytics, "track_query", lambda *_args: None)
+    monkeypatch.setattr(server.analytics, "track_query", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(server.memory_manager, "on_chat_complete", lambda *_args: None)
     monkeypatch.setattr(
         server.reflexion_engine,
@@ -192,6 +192,42 @@ def test_provider_input_preserves_prior_history_and_deduplicates_current(
         ("assistant", PRIOR_ASSISTANT),
         ("user", CURRENT),
         ("assistant", PROVIDER_REPLY),
+    ]
+
+
+@pytest.mark.parametrize("endpoint", ["post", "stream"])
+def test_sensitive_trailing_current_history_is_redacted_then_deduplicated(
+    endpoint,
+    tmp_path,
+    monkeypatch,
+):
+    _manager_instance, provider_messages = _configure_provider_chat(
+        monkeypatch,
+        tmp_path,
+        prompt_cache_enabled=False,
+    )
+    sensitive_current = "Goi 0901234567"
+    path = "/chat" if endpoint == "post" else "/chat/stream"
+
+    with TestClient(server.app) as client:
+        response = client.post(
+            path,
+            json={
+                "message": sensitive_current,
+                "history": [
+                    {"role": "user", "content": "Mail a@example.com"},
+                    {"role": "user", "content": sensitive_current},
+                ],
+            },
+        )
+
+    assert response.status_code == 200
+    conversational = [
+        item for item in provider_messages[0] if item["role"] != "system"
+    ]
+    assert conversational == [
+        {"role": "user", "content": "Mail [EMAIL]"},
+        {"role": "user", "content": "Goi [PHONE]"},
     ]
 
 
@@ -325,7 +361,14 @@ def test_post_orchestrator_receives_resolved_owned_history(
     session.add_message("assistant", "OWNED ORCHESTRATOR ASSISTANT")
     captured_history = []
 
-    def orchestrate(_message, history, _session_id, _prompt, _usage):
+    def orchestrate(
+        _message,
+        history,
+        _session_id,
+        _prompt,
+        _usage,
+        _verified_public_contacts,
+    ):
         captured_history.extend(history)
         return PROVIDER_REPLY, [], []
 

@@ -22,6 +22,8 @@ from contextvars import ContextVar
 from pathlib import Path
 from threading import Event, Lock
 
+from owner_write_gate import owner_write_gate
+
 logger = logging.getLogger(__name__)
 
 # ── Try importing tokenizer from vector_search ──
@@ -341,6 +343,7 @@ class MultiTierCache:
         owner_key: str = "",
     ):
         """Store *response* for *query* in both L1 and L2."""
+        owner_write_gate.assert_writable(owner_key)
         with self._lock:
             self._load_l2()
             key = _make_key(query, owner_key=owner_key)
@@ -380,6 +383,57 @@ class MultiTierCache:
             if removed:
                 self._save_l2()
             logger.debug("Cache invalidate: %s", query[:60])
+
+    def purge_owner(self, owner_key: str) -> int:
+        """Remove an exact owner's logical entries from every cache tier."""
+        with self._lock:
+            self._load_l2()
+            keys = {
+                key
+                for layer in (self._l1, self._l2)
+                for key, entry in layer.items()
+                if entry.get("owner_key", "") == owner_key
+            }
+            with self._matcher._lock:
+                keys.update(
+                    key
+                    for key, stored_owner in self._matcher._owners.items()
+                    if stored_owner == owner_key
+                )
+
+            removed_l2 = False
+            for key in keys:
+                self._l1.pop(key, None)
+                if self._l2.pop(key, None) is not None:
+                    removed_l2 = True
+                self._matcher.remove(key)
+            if removed_l2:
+                self._save_l2()
+            return len(keys)
+
+    def verify_owner_absent(self, owner_key: str) -> bool:
+        """Verify all active and persisted cache tiers lack the exact owner."""
+        with self._lock:
+            self._load_l2()
+            if any(
+                entry.get("owner_key", "") == owner_key
+                for layer in (self._l1, self._l2)
+                for entry in layer.values()
+            ):
+                return False
+            with self._matcher._lock:
+                if owner_key in self._matcher._owners.values():
+                    return False
+            if not ENTRIES_FILE.exists():
+                return True
+            data = json.loads(ENTRIES_FILE.read_text(encoding="utf-8"))
+            if not isinstance(data, dict):
+                raise ValueError("Invalid semantic cache store")
+            return not any(
+                isinstance(entry, dict)
+                and entry.get("owner_key", "") == owner_key
+                for entry in data.values()
+            )
 
     def invalidate_all_namespaces(self, query: str) -> int:
         """Remove an exact query from every owner and legacy namespace."""
@@ -504,6 +558,27 @@ class RequestDeduplicator:
             async_waiters = self._cleanup_locked()
         self._notify_async_waiters(async_waiters, None)
 
+    def purge_owner(self, owner_key: str) -> int:
+        """Evict an owner's in-flight generations and wake every waiter."""
+        with self._lock:
+            keys = [
+                key
+                for key, slot in self._pending.items()
+                if slot.get("owner_key", "") == owner_key
+            ]
+            async_waiters = []
+            for key in keys:
+                async_waiters.extend(self._evict_locked(key))
+        self._notify_async_waiters(async_waiters, None)
+        return len(keys)
+
+    def verify_owner_absent(self, owner_key: str) -> bool:
+        with self._lock:
+            return not any(
+                slot.get("owner_key", "") == owner_key
+                for slot in self._pending.values()
+            )
+
     def acquire(
         self,
         query: str,
@@ -517,6 +592,7 @@ class RequestDeduplicator:
             (True,  dedup_key) — caller is first; compute the result and call resolve().
             (False, dedup_key) — duplicate; call wait_for() to get the result.
         """
+        owner_write_gate.assert_writable(owner_key)
         with self._lock:
             async_waiters = self._cleanup_locked()
             base_key = _make_key(query, owner_key=owner_key)
@@ -552,6 +628,7 @@ class RequestDeduplicator:
 
     def resolve(self, dedup_key: str, result: dict, owner_key: str = ""):
         """Store the computed result and wake up all waiters."""
+        owner_write_gate.assert_writable(owner_key)
         with self._lock:
             slot = self._pending.get(dedup_key)
             if slot is None:
@@ -572,6 +649,7 @@ class RequestDeduplicator:
         owner_key: str = "",
     ) -> bool:
         """Resolve only when *dedup_key* is still the active generation."""
+        owner_write_gate.assert_writable(owner_key)
         with self._lock:
             slot = self._pending.get(dedup_key)
             if slot is None or slot.get("owner_key", "") != owner_key:
@@ -621,6 +699,7 @@ class RequestDeduplicator:
         owner_key: str = "",
     ) -> bool:
         """Validate, publish, and resolve one generation under the slot lock."""
+        owner_write_gate.assert_writable(owner_key)
         with self._lock:
             slot = self._pending.get(dedup_key)
             if slot is None or slot.get("owner_key", "") != owner_key:
@@ -644,6 +723,7 @@ class RequestDeduplicator:
         owner_key: str = "",
     ) -> bool | None:
         """Publish the active generation, or return ``None`` when absent."""
+        owner_write_gate.assert_writable(owner_key)
         with self._lock:
             dedup_key = self._active.get(base_key)
             if dedup_key is None:
@@ -933,6 +1013,7 @@ def semantic_put(
     dedup_key: str | None | object = _DEDUP_KEY_OMITTED,
 ):
     """Publish only for the active generation and resolve its waiters."""
+    owner_write_gate.assert_writable(owner_key)
     base_key = _make_key(query, owner_key=owner_key)
     lease = _semantic_dedup_lease.get()
     _semantic_dedup_lease.set(None)

@@ -56,6 +56,16 @@ class TestRecord:
         # Same intent+polarity → merged, uses incremented
         assert item2["uses"] == 2
 
+    def test_record_persists_owner_key(self):
+        item = experience_memory.record(
+            "safe query",
+            ["search"],
+            9.0,
+            "safe answer",
+            owner_key="user:alice",
+        )
+        assert item["owner_key"] == "user:alice"
+
 
 class TestRetrieve:
     def test_retrieve_by_intent(self):

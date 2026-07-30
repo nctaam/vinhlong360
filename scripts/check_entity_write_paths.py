@@ -91,25 +91,37 @@ _INTEGRITY_COLUMNS = {
 }
 
 
+def _binary_sql_shape(
+    node: ast.BinOp, bindings: dict[str, str | None]
+) -> str | None:
+    left = _sql_shape(node.left, bindings)
+    right = _sql_shape(node.right, bindings)
+    if left is not None and right is not None:
+        return left + right
+    return None
+
+
+def _joined_sql_shape(
+    node: ast.JoinedStr, bindings: dict[str, str | None]
+) -> str:
+    parts = []
+    for part in node.values:
+        if isinstance(part, ast.Constant):
+            parts.append(part.value)
+        elif isinstance(part, ast.FormattedValue):
+            parts.append(_sql_shape(part.value, bindings) or "{}")
+    return "".join(parts)
+
+
 def _sql_shape(node: ast.AST, bindings: dict[str, str | None]) -> str | None:
     if isinstance(node, ast.Constant) and isinstance(node.value, str):
         return node.value
     if isinstance(node, ast.Name):
         return bindings.get(node.id)
     if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
-        left = _sql_shape(node.left, bindings)
-        right = _sql_shape(node.right, bindings)
-        if left is not None and right is not None:
-            return left + right
-        return None
+        return _binary_sql_shape(node, bindings)
     if isinstance(node, ast.JoinedStr):
-        parts = []
-        for part in node.values:
-            if isinstance(part, ast.Constant):
-                parts.append(part.value)
-            elif isinstance(part, ast.FormattedValue):
-                parts.append(_sql_shape(part.value, bindings) or "{}")
-        return "".join(parts)
+        return _joined_sql_shape(node, bindings)
     return None
 
 

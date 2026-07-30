@@ -61,6 +61,8 @@ class TestChatRequest:
 class TestFeedbackRequest:
     """Test FeedbackRequest validation."""
 
+    RECEIPT = "A" * 43
+
     def setup_method(self):
         try:
             from server import FeedbackRequest
@@ -69,29 +71,33 @@ class TestFeedbackRequest:
             pytest.skip("Cannot import FeedbackRequest")
 
     def test_valid_feedback(self):
-        req = self.FeedbackRequest(rating=1)
+        req = self.FeedbackRequest(receipt=self.RECEIPT, rating=1)
+        assert req.receipt == self.RECEIPT
         assert req.rating == 1
-        assert req.user_id == "anonymous"
 
     def test_rating_0(self):
-        req = self.FeedbackRequest(rating=0)
+        req = self.FeedbackRequest(receipt=self.RECEIPT, rating=0)
         assert req.rating == 0
 
     def test_invalid_rating_high(self):
         with pytest.raises(ValidationError):
-            self.FeedbackRequest(rating=5)
+            self.FeedbackRequest(receipt=self.RECEIPT, rating=5)
 
     def test_invalid_rating_negative(self):
         with pytest.raises(ValidationError):
-            self.FeedbackRequest(rating=-1)
+            self.FeedbackRequest(receipt=self.RECEIPT, rating=-1)
 
-    def test_query_too_long(self):
+    def test_query_is_forbidden(self):
         with pytest.raises(ValidationError):
-            self.FeedbackRequest(rating=1, query="x" * 2001)
+            self.FeedbackRequest(receipt=self.RECEIPT, rating=1, query="private")
 
-    def test_entity_id(self):
-        req = self.FeedbackRequest(rating=1, entity_id="cam-sanh-vinh-long")
-        assert req.entity_id == "cam-sanh-vinh-long"
+    def test_entity_id_is_forbidden(self):
+        with pytest.raises(ValidationError):
+            self.FeedbackRequest(
+                receipt=self.RECEIPT,
+                rating=1,
+                entity_id="cam-sanh-vinh-long",
+            )
 
 
 class TestGuardrailCheckRequest:

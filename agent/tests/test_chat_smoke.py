@@ -60,6 +60,29 @@ def test_chat_returns_200_and_reply(client_mocked):
     assert body["reply"].strip(), "reply không được rỗng"
 
 
+def test_chat_succeeds_when_receipt_issue_returns_none(client_mocked, monkeypatch):
+    calls = []
+    monkeypatch.setattr(
+        server,
+        "issue_feedback_receipt",
+        lambda *args, **kwargs: calls.append((args, kwargs)) or None,
+        raising=False,
+    )
+
+    response = client_mocked.post(
+        "/chat",
+        json={
+            "message": "receipt outage unique query",
+            "history": [{"role": "user", "content": "bounded context"}],
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["reply"]
+    assert response.json().get("feedback_receipt") is None
+    assert len(calls) == 1
+
+
 def test_chat_rejects_empty_message(client_mocked):
     r = client_mocked.post("/chat", json={"message": ""})
     assert r.status_code == 422  # pydantic min_length=1

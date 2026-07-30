@@ -63,6 +63,7 @@ _CORE_TABLES = (
     "entity_ratings", "user_2fa", "user_2fa_recovery_codes", "pending_2fa",
     "trusted_devices", "shared_rate_limits", "request_idempotency_keys",
     "admin_audit_events", "schema_version",
+    "feedback_receipts", "feedback_daily_rollups",
 )
 
 
@@ -166,4 +167,44 @@ def test_schema_version_tracks_latest_migration():
     with db._conn() as conn:
         row = db._fetchone(conn, "SELECT version FROM schema_version WHERE component = 'agent'", ())
     assert row is not None
-    assert int(db._row_to_dict(row)["version"]) >= 71  # đã áp tới 071
+    assert int(db._row_to_dict(row)["version"]) >= 74  # đã áp tới 074
+
+
+
+@pg_only
+def test_feedback_tables_are_owned_by_runtime_role():
+    with db._conn() as conn:
+        rows = db._fetchall(
+            conn,
+            """
+            SELECT tablename, tableowner
+            FROM pg_tables
+            WHERE schemaname = 'public'
+              AND tablename IN ('feedback_receipts', 'feedback_daily_rollups')
+            """,
+            (),
+        )
+
+    owners = {
+        db._row_to_dict(row)["tablename"]: db._row_to_dict(row)["tableowner"]
+        for row in rows
+    }
+    assert owners == {
+        "feedback_receipts": "vl360",
+        "feedback_daily_rollups": "vl360",
+    }
+
+
+@pg_only
+def test_feedback_receipt_schema_forbids_raw_content_columns():
+    with db._conn() as conn:
+        rows = db._fetchall(
+            conn,
+            """
+            SELECT column_name FROM information_schema.columns
+            WHERE table_schema = 'public' AND table_name = 'feedback_receipts'
+            """,
+            (),
+        )
+    columns = {db._row_to_dict(row)["column_name"] for row in rows}
+    assert not {"query", "reply", "entity_id", "session_id"} & columns

@@ -10,6 +10,7 @@ export default defineNuxtConfig({
 
   alias: {
     '#launch-config': fileURLToPath(new URL('../config', import.meta.url)),
+    '#privacy-policy': fileURLToPath(new URL('../config/privacy-policy.json', import.meta.url)),
   },
 
   ssr: true,

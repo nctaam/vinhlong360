@@ -132,6 +132,81 @@ def _evaluate_schema(
     )
 
 
+def _rows_for_entity(
+    details: dict[str, dict[str, dict[str, Any]]], entity_id: str
+) -> dict[str, dict[str, Any]]:
+    return {
+        table: table_rows[entity_id]
+        for table, table_rows in details.items()
+        if entity_id in table_rows
+    }
+
+
+def _evaluate_entity_topology(
+    counts: dict[str, int],
+    detail: dict[str, Any],
+    expected_table: str | None,
+    present_tables: set[str],
+) -> None:
+    if detail and expected_table is not None and expected_table not in present_tables:
+        counts["missing_expected_cti"] += 1
+    if any(table != expected_table for table in present_tables):
+        counts["wrong_kind_cti"] += 1
+    if len(present_tables) > 1:
+        counts["multi_cti"] += 1
+
+
+def _compare_universal_values(
+    counts: dict[str, int],
+    entity: dict[str, Any],
+    universal: dict[str, Any],
+    rules: _CanonicalRules,
+) -> None:
+    for column, expected in universal.items():
+        if column not in rules.universal:
+            continue
+        _compare_typed_value(counts, expected, entity.get(column), rules)
+
+
+def _compare_detail_values(
+    counts: dict[str, int],
+    detail: dict[str, Any],
+    expected_table: str | None,
+    rows_by_table: dict[str, dict[str, Any]],
+    rules: _CanonicalRules,
+) -> None:
+    if expected_table is None:
+        return
+    expected_row = rows_by_table.get(expected_table, {})
+    for column, expected in detail.items():
+        physical_column = rules.key_map.get(column, column)
+        _compare_typed_value(
+            counts, expected, expected_row.get(physical_column), rules
+        )
+
+
+def _evaluate_entity(
+    counts: dict[str, int],
+    entity: dict[str, Any],
+    details: dict[str, dict[str, dict[str, Any]]],
+    rules: _CanonicalRules,
+) -> None:
+    entity_id = entity["id"]
+    entity_type = entity["type"]
+    attributes = entity.get("attributes") or {}
+    universal, detail, skipped = rules.split_typed(entity_type, attributes)
+    counts["typed_uncoercible"] += len(skipped)
+
+    kind = rules.kind_of_type.get(entity_type)
+    expected_table = rules.kind_table.get(kind or "")
+    rows_by_table = _rows_for_entity(details, entity_id)
+    _evaluate_entity_topology(
+        counts, detail, expected_table, set(rows_by_table)
+    )
+    _compare_universal_values(counts, entity, universal, rules)
+    _compare_detail_values(counts, detail, expected_table, rows_by_table, rules)
+
+
 def evaluate_invariants(
     entities: Iterable[dict[str, Any]],
     details: dict[str, dict[str, dict[str, Any]]],
@@ -144,40 +219,7 @@ def evaluate_invariants(
 
     for entity in entities:
         total_entities += 1
-        entity_id = entity["id"]
-        entity_type = entity["type"]
-        attributes = entity.get("attributes") or {}
-        universal, detail, skipped = rules.split_typed(entity_type, attributes)
-        counts["typed_uncoercible"] += len(skipped)
-
-        kind = rules.kind_of_type.get(entity_type)
-        expected_table = rules.kind_table.get(kind or "")
-        rows_by_table = {
-            table: table_rows[entity_id]
-            for table, table_rows in details.items()
-            if entity_id in table_rows
-        }
-        present_tables = set(rows_by_table)
-
-        if detail and expected_table is not None and expected_table not in present_tables:
-            counts["missing_expected_cti"] += 1
-        if any(table != expected_table for table in present_tables):
-            counts["wrong_kind_cti"] += 1
-        if len(present_tables) > 1:
-            counts["multi_cti"] += 1
-
-        for column, expected in universal.items():
-            if column not in rules.universal:
-                continue
-            _compare_typed_value(counts, expected, entity.get(column), rules)
-
-        if expected_table is not None:
-            expected_row = rows_by_table.get(expected_table, {})
-            for column, expected in detail.items():
-                physical_column = rules.key_map.get(column, column)
-                _compare_typed_value(
-                    counts, expected, expected_row.get(physical_column), rules
-                )
+        _evaluate_entity(counts, entity, details, rules)
 
     _evaluate_schema(counts, schema, rules)
     return InvariantReport(total_entities, counts, schema)

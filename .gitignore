@@ -32,3 +32,4 @@ temp_analysis.txt
 vl360-*/
 .worktrees/
 coverage.json
+coverage.xml

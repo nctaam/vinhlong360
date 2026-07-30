@@ -10,8 +10,13 @@ Replay thật trên PG trắng là verify chính (chạy thủ công/CI); test n
 """
 import pathlib
 import re
+import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "agent"))
+
+import database
+
 INIT_SQL = (ROOT / "init.sql").read_text(encoding="utf-8")
 MIG_059 = (ROOT / "agent" / "migrations" / "059_repair_migration_chain.sql").read_text(encoding="utf-8")
 
@@ -63,6 +68,10 @@ def test_059_records_schema_version_59_monotonic():
 # ── GĐ-B: 060 cột phổ quát + 061 bảng CTI ──────────────────────────────────
 MIG_060 = (ROOT / "agent" / "migrations" / "060_entity_universal_columns.sql").read_text(encoding="utf-8")
 MIG_061 = (ROOT / "agent" / "migrations" / "061_entity_detail_tables.sql").read_text(encoding="utf-8")
+MIG_072 = (ROOT / "agent" / "migrations" / "072_feedback_receipts.sql").read_text(encoding="utf-8")
+MIG_073 = (ROOT / "agent" / "migrations" / "073_account_erasure_state.sql").read_text(encoding="utf-8")
+MIG_074_PATH = ROOT / "agent" / "migrations" / "074_erasure_delete_actions.sql"
+MIG_074 = MIG_074_PATH.read_text(encoding="utf-8") if MIG_074_PATH.exists() else ""
 
 UNIVERSAL = ["address", "phone", "website", "hours", "price_range", "sub_category", "best_time", "highlight"]
 CTI_TABLES = [
@@ -128,3 +137,135 @@ def test_registry_typed_fields_have_column_in_right_table():
             col = KEY_TO_COLUMN.get(key, key)
             assert re.search(rf"\b{col}\b", table_cols[kind_to_table[kind]]), \
                 f"Bảng {kind_to_table[kind]} thiếu cột {col} (registry {etype}.{key})"
+
+
+def test_072_feedback_receipts_are_digest_only_and_owner_clearable():
+    block = _create_block(MIG_072, "feedback_receipts")
+    normalized = " ".join(block.split())
+    for column in (
+        "token_digest",
+        "owner_kind",
+        "user_id",
+        "anonymous_owner_digest",
+        "owner_binding_digest",
+        "assistant_turn_digest",
+        "model_variant",
+        "tool_bucket",
+        "rating",
+        "created_at",
+        "expires_at",
+        "used_at",
+    ):
+        assert column in block
+    for forbidden in ("query", "reply", "entity_id", "session_id"):
+        assert forbidden not in block
+    assert "ON DELETE CASCADE" in block
+    assert "used_at IS NOT NULL" in block
+    assert "user_id IS NULL AND anonymous_owner_digest IS NULL" in normalized
+
+
+def test_072_rollup_and_indexes_are_bounded():
+    block = _create_block(MIG_072, "feedback_daily_rollups")
+    assert "UNIQUE (day, owner_kind, model_variant, tool_bucket)" in block
+    assert "positive_count" in block
+    assert "negative_count" in block
+    for index_name in (
+        "idx_feedback_receipts_token_digest",
+        "idx_feedback_receipts_expires",
+        "idx_feedback_receipts_user",
+        "idx_feedback_receipts_anonymous",
+        "idx_feedback_receipts_owner_binding",
+    ):
+        assert index_name in MIG_072
+    assert "VALUES ('agent', 72," in MIG_072
+
+
+def test_init_sql_contains_final_feedback_schema():
+    assert "CREATE TABLE IF NOT EXISTS feedback_receipts" in INIT_SQL
+    assert "CREATE TABLE IF NOT EXISTS feedback_daily_rollups" in INIT_SQL
+
+
+def test_database_readiness_requires_erasure_schema_version_74():
+    assert database.PG_REQUIRED_SCHEMA_VERSION == 74
+    assert {"feedback_receipts", "feedback_daily_rollups"} <= database.PG_REQUIRED_TABLES
+    assert {
+        "token_digest",
+        "owner_kind",
+        "owner_binding_digest",
+        "assistant_turn_digest",
+        "expires_at",
+    } <= database.PG_REQUIRED_COLUMNS["feedback_receipts"]
+    assert {
+        "day",
+        "owner_kind",
+        "model_variant",
+        "tool_bucket",
+        "positive_count",
+        "negative_count",
+    } <= database.PG_REQUIRED_COLUMNS["feedback_daily_rollups"]
+
+
+def test_073_adds_bounded_erasure_metadata_without_backfill():
+    """Migration replay must add lifecycle state without inventing legacy dates."""
+    for column in (
+        "erasure_due_at TIMESTAMPTZ",
+        "erasure_attempt_count INTEGER NOT NULL DEFAULT 0",
+        "erasure_last_attempt_at TIMESTAMPTZ",
+        "erasure_last_error_code TEXT",
+    ):
+        assert f"ADD COLUMN IF NOT EXISTS {column}" in MIG_073
+    assert "erasure_attempt_count >= 0" in MIG_073
+    for code in (
+        "STORE_UNAVAILABLE",
+        "RESIDUAL_DATA",
+        "DB_CONSTRAINT",
+        "VERIFY_FAILED",
+    ):
+        assert code in MIG_073
+    assert "idx_users_erasure_due" in MIG_073
+    assert "WHERE deleted_at IS NOT NULL AND erasure_due_at IS NOT NULL" in MIG_073
+    assert not re.search(r"\bUPDATE\s+users\b", MIG_073, re.I)
+    assert "VALUES ('agent', 73," in MIG_073
+
+
+def test_init_sql_contains_final_account_erasure_state():
+    """A fresh schema must expose the same columns and bounds as migration 073."""
+    block = _create_block(INIT_SQL, "users")
+    for column in (
+        "deleted_at",
+        "erasure_due_at",
+        "erasure_attempt_count",
+        "erasure_last_attempt_at",
+        "erasure_last_error_code",
+    ):
+        assert column in block
+    assert "erasure_attempt_count >= 0" in block
+    assert "idx_users_erasure_due" in INIT_SQL
+
+
+def test_074_registers_replay_safe_erasure_fk_policy():
+    assert "ALTER TABLE" in MIG_074
+    assert "ON DELETE CASCADE" in MIG_074
+    assert "ON DELETE SET NULL" in MIG_074
+    assert "completed_claim_scrub" in MIG_074
+    assert "VALUES ('agent', 74," in MIG_074
+    assert "DROP TABLE" not in MIG_074.upper()
+    assert "TRUNCATE" not in MIG_074.upper()
+    assert "DELETE FROM" not in MIG_074.upper()
+
+
+def test_074_clears_non_nullable_actor_and_claim_fields_before_scrub():
+    normalized = " ".join(MIG_074.split())
+    for table, column in (
+        ("post_edit_history", "editor_id"),
+        ("admin_user_notes", "admin_id"),
+        ("entity_claims", "claimant_id"),
+        ("entity_claims", "business_name"),
+        ("entity_claims", "contact_phone"),
+        ("moderation_appeals", "user_id"),
+        ("moderation_log", "target_id"),
+        ("admin_audit_events", "actor"),
+    ):
+        assert f"ALTER COLUMN {column} DROP NOT NULL" in normalized, (
+            f"074 must make {table}.{column} nullable for exact actor/claim scrubbing"
+        )

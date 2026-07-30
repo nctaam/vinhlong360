@@ -632,7 +632,7 @@ def _configure_post_chat(monkeypatch, guardrail, attribution):
     )
     monkeypatch.setattr(server.memory_manager, "on_message", lambda *_args: None)
     monkeypatch.setattr(server.memory_manager, "on_chat_complete", lambda *_args: None)
-    monkeypatch.setattr(server.analytics, "track_query", lambda *_args: None)
+    monkeypatch.setattr(server.analytics, "track_query", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(
         server.reflexion_engine,
         "evaluate_answer",
@@ -646,7 +646,14 @@ def test_post_chat_settles_provider_totals_once_to_owner(monkeypatch):
     attribution = _AttributionRecorder()
     _configure_post_chat(monkeypatch, guardrail, attribution)
 
-    def fake_orchestrated(_message, _history, _session_id, _prompt, usage_accumulator):
+    def fake_orchestrated(
+        _message,
+        _history,
+        _session_id,
+        _prompt,
+        usage_accumulator,
+        _verified_public_contacts,
+    ):
         usage_accumulator.add_response(
             _response(120, 10),
             model="cx/gpt-5.4",
@@ -851,7 +858,14 @@ def test_post_cancellation_settles_completed_worker_usage_once(monkeypatch):
     started = threading.Event()
     release = threading.Event()
 
-    def fake_orchestrated(_message, _history, _session_id, _prompt, usage_accumulator):
+    def fake_orchestrated(
+        _message,
+        _history,
+        _session_id,
+        _prompt,
+        usage_accumulator,
+        _verified_public_contacts,
+    ):
         usage_accumulator.add_response(
             _response(120, 10),
             model="cx/gpt-5.4",
@@ -1123,6 +1137,7 @@ def test_post_double_cancellation_retrieves_worker_error(monkeypatch):
         _session_id,
         _prompt,
         usage_accumulator,
+        _verified_public_contacts,
     ):
         usage_accumulator.add_response(
             _response(7, 4),

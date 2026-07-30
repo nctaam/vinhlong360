@@ -110,6 +110,12 @@ class TestSettings:
         assert s.LLM_TIMEOUT == 30
         assert s.ENVIRONMENT == "development"
         assert s.is_production is False
+        assert s.ACCOUNT_ERASURE_DEADLINE_DAYS == 30
+        assert s.RECOVERY_ENABLED_DURING_GRACE_PERIOD is True
+        assert s.FEEDBACK_MODE == "telemetry_only"
+        assert s.FEEDBACK_RECEIPT_TTL_HOURS == 24
+        assert s.RETAIN_DEIDENTIFIED_AGGREGATES is True
+        assert s.ACCOUNT_DELETE_GRACE_DAYS == 30
 
     def test_cors_list(self):
         from config import Settings
@@ -157,6 +163,20 @@ class TestSettings:
         with pytest.raises(ValueError, match="DATABASE_URL"):
             Settings(ENVIRONMENT="production", LLM_API_KEY="k", LLM_BASE_URL="u",
                      ADMIN_API_KEY="a", JWT_SECRET="j", DATABASE_URL="")
+
+    def test_production_rejects_privacy_policy_override(self):
+        from config import Settings
+        with pytest.raises(ValueError, match="ACCOUNT_ERASURE_DEADLINE_DAYS"):
+            Settings(
+                _env_file=None,
+                ENVIRONMENT="production",
+                LLM_API_KEY="k",
+                LLM_BASE_URL="u",
+                ADMIN_API_KEY="a",
+                DATABASE_URL="postgresql://x",
+                ENTITY_DETAILS_TABLES=True,
+                ACCOUNT_ERASURE_DEADLINE_DAYS=20,
+            )
 
     def test_bool_env_parsing(self):
         from config import Settings

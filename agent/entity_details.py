@@ -329,6 +329,43 @@ def _norm_col_value(col: str, v: Any) -> Any:
     return v
 
 
+def _load_detail_rows(conn, table: str, is_pg: bool) -> list[dict[str, Any]]:
+    if is_pg:
+        cur = conn.cursor()
+        cur.execute(f"SELECT * FROM {table}")
+        raw_rows = cur.fetchall()
+        cols = [column[0] for column in cur.description]
+        return [
+            dict(row) if isinstance(row, dict) else dict(zip(cols, row))
+            for row in raw_rows
+        ]
+
+    fetched = conn.execute(f"SELECT * FROM {table}").fetchall()
+    return [{key: row[key] for key in row.keys()} for row in fetched]
+
+
+def _merge_detail_cache_row(
+    cache: dict[str, dict],
+    locations: dict[str, str],
+    duplicate_ids: set[str],
+    duplicate_tables: set[str],
+    table: str,
+    row: dict[str, Any],
+) -> None:
+    entity_id = row.pop("entity_id")
+    previous_table = locations.get(entity_id)
+    if previous_table is not None and previous_table != table:
+        duplicate_ids.add(entity_id)
+        duplicate_tables.update((previous_table, table))
+    else:
+        locations[entity_id] = table
+    cache[entity_id] = {
+        column: _norm_col_value(column, value)
+        for column, value in row.items()
+        if value is not None
+    }
+
+
 def load_detail_cache(conn, is_pg: bool) -> int:
     """Nạp toàn bộ 9 bảng CTI vào cache {entity_id: {col: giá_trị_python}}."""
     global _DETAIL_CACHE
@@ -338,24 +375,15 @@ def load_detail_cache(conn, is_pg: bool) -> int:
         duplicate_ids: set[str] = set()
         duplicate_tables: set[str] = set()
         for table in DETAIL_TABLES:
-            if is_pg:
-                cur = conn.cursor()
-                cur.execute(f"SELECT * FROM {table}")
-                raw_rows = cur.fetchall()
-                cols = [c[0] for c in cur.description]
-                rows = [r if isinstance(r, dict) else dict(zip(cols, r)) for r in raw_rows]
-            else:
-                fetched = conn.execute(f"SELECT * FROM {table}").fetchall()
-                rows = [{k: r[k] for k in r.keys()} for r in fetched]
-            for r in rows:
-                eid = r.pop("entity_id")
-                previous_table = locations.get(eid)
-                if previous_table is not None and previous_table != table:
-                    duplicate_ids.add(eid)
-                    duplicate_tables.update((previous_table, table))
-                else:
-                    locations[eid] = table
-                cache[eid] = {c: _norm_col_value(c, v) for c, v in r.items() if v is not None}
+            for row in _load_detail_rows(conn, table, is_pg):
+                _merge_detail_cache_row(
+                    cache,
+                    locations,
+                    duplicate_ids,
+                    duplicate_tables,
+                    table,
+                    row,
+                )
         if duplicate_ids:
             tables = ", ".join(sorted(duplicate_tables))
             raise RuntimeError(
