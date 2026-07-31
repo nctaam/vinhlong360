@@ -1,8 +1,7 @@
 <template>
-  <div class="home">
+  <div class="home" data-home-pilot="nocturne-b1">
     <!-- 1. Hero — dynamic tagline + search + stats inline -->
-    <section class="hero" aria-label="Giới thiệu">
-      <div class="hero-kenburns" aria-hidden="true"></div>
+    <section class="hero" aria-label="Giới thiệu" data-home-section="hero">
       <HeroIllustration />
       <div class="hero-scrim" aria-hidden="true"></div>
       <div class="hero-inner">
@@ -13,50 +12,23 @@
           <SearchAutocomplete class="hero-search hero-ac" :placeholder="ss('homepage.search_placeholder', 'Tìm điểm đến, món ngon, lịch trình…')" />
           <NuxtLink to="/ban-do?near=1" class="hero-nearby"><IconLine name="pin" /> Tìm quanh tôi</NuxtLink>
         </div>
-        <aside v-if="heroFeature" class="hero-feature" aria-label="Gợi ý nổi bật">
-          <div class="hf-card">
-            <NuxtLink :to="entityPath(heroFeature.id)" class="hf-thumb" :class="`cat-${hfMeta?.cat}`" :style="{ backgroundImage: hfBg }" :aria-label="`Xem ${heroFeature.name}`" :aria-describedby="heroFeatureDisclosureId">
-              <span v-if="!heroFeatureDescriptor.url" class="hf-thumb-icon" v-html="hfIcon" />
-              <ImageDisclosure :id="heroFeatureDisclosureId" :descriptor="heroFeatureDescriptor" presentation="short" />
-            </NuxtLink>
-            <span class="hf-body">
-              <span class="hf-tag">{{ heroFeatureReason }}</span>
-              <NuxtLink :to="entityPath(heroFeature.id)" class="hf-title">{{ heroFeature.name }}</NuxtLink>
-              <span v-if="hfRegion" class="hf-region">{{ hfRegion }}</span>
-              <span v-if="heroFeature.summary" class="hf-summary">{{ heroFeature.summary }}</span>
-              <span class="hf-actions">
-                <NuxtLink :to="entityPath(heroFeature.id)" class="hf-action hf-action-primary">Khám phá</NuxtLink>
-                <NuxtLink :to="plannerAddPath(heroFeature.id)" no-prefetch class="hf-action">Thêm vào lịch trình</NuxtLink>
-              </span>
-            </span>
-          </div>
-        </aside>
+        <HomeFeatureDossier
+          v-if="heroFeature"
+          class="hero-feature"
+          :eyebrow="heroFeatureReason"
+          :title="heroFeature.name"
+          :summary="heroFeature.summary"
+          :region="hfRegion"
+          :descriptor="heroFeatureDescriptor"
+          :disclosure-id="heroFeatureDisclosureId"
+          :detail-to="entityPath(heroFeature.id)"
+          :planner-to="plannerAddPath(heroFeature.id)"
+        />
       </div>
     </section>
 
     <!-- 1a. Bắt đầu hành trình — data-driven decision layer -->
-    <section v-if="homeDecisionCards.length" class="block block-compact reveal home-decision" aria-label="Bắt đầu hành trình">
-      <div class="decision-shell">
-        <div class="decision-copy">
-          <span class="decision-kicker">Gợi ý nhanh</span>
-          <h2>Hôm nay bạn muốn bắt đầu thế nào?</h2>
-          <p>Dựa trên mùa, sự kiện và nội dung đang nổi bật để đưa bạn tới đúng luồng tiếp theo.</p>
-        </div>
-        <ol class="decision-index">
-          <li v-for="(card, i) in homeDecisionCards" :key="card.to" class="dx-row">
-            <NuxtLink :to="card.to" class="dx-item" :class="`dx-${card.tone}`">
-              <span class="dx-num" aria-hidden="true">{{ String(i + 1).padStart(2, '0') }}</span>
-              <span class="dx-main">
-                <span class="dx-eyebrow">{{ card.eyebrow }}</span>
-                <span class="dx-title">{{ card.title }}</span>
-                <span class="dx-text">{{ card.text }}</span>
-              </span>
-              <span class="dx-go" aria-hidden="true">→</span>
-            </NuxtLink>
-          </li>
-        </ol>
-      </div>
-    </section>
+    <HomeDecisionLedger :entries="homePresentation.decisionEntries" data-home-section="decisions" />
 
     <!-- ClientOnly: homeJourneyActions is personalized from client-only state (localStorage
          favorites/recently-viewed + isLoggedIn) → SSR (anon/empty) ≠ client → hydration
@@ -73,7 +45,7 @@
     </ClientOnly>
 
     <!-- Degraded/empty fallback -->
-    <section v-if="homeFailed" class="block reveal">
+    <section v-if="homeFailed" class="block reveal" data-home-section="recovery">
       <EmptyState :tone="homeError ? 'error' : 'empty'" title="Đang cập nhật nội dung" :message="homeError ? 'Mạng chậm một chút rồi. Bạn thử tải lại giúp tụi mình nhé!' : 'Tụi mình đang bổ sung điểm đến và đặc sản cho khu vực này. Quay lại sau nhé!'">
         <template #actions>
           <button v-if="homeError" type="button" class="btn btn-outline" @click="refreshHome()">Tải lại</button>
@@ -82,25 +54,20 @@
     </section>
 
     <!-- Skeleton -->
-    <section v-if="homeLoadingSkeleton" class="block reveal" aria-hidden="true">
+    <section v-if="homeLoadingSkeleton" class="block reveal" aria-hidden="true" data-home-section="recovery">
       <div class="section-head"><div class="sk-heading"></div></div>
       <SkeletonGrid :count="3" />
     </section>
 
     <!-- 1b. Khám phá nhanh — compact category grid (always visible for navigation) -->
-    <section v-if="!homePending" class="block block-compact reveal">
-      <nav class="cat-grid" aria-label="Khám phá theo chủ đề">
-        <NuxtLink v-for="cat in categoryLinks" :key="cat.to" :to="cat.to" class="cat-tile" :class="[`cat-tile-${cat.accent}`, `ct-${cat.key}`]">
-          <IconLine :name="cat.icon" class="cat-icon" />
-          <span class="cat-label">{{ cat.label }}</span>
-          <span class="cat-hint">{{ cat.hint }}</span>
-          <span class="cat-count" v-if="cat.countLabel">{{ cat.countLabel }}</span>
-        </NuxtLink>
-      </nav>
-    </section>
+    <HomeCategoryIndex
+      v-if="!homePending"
+      :groups="homePresentation.categoryGroups"
+      data-home-section="categories"
+    />
 
     <!-- 2. "Đang diễn ra" — upcoming events + seasonal -->
-    <section v-if="upcomingEvents.length || seasonal.length" class="block reveal" aria-label="Sự kiện và lễ hội">
+    <section v-if="upcomingEventList.length || seasonalList.length" class="block reveal" aria-label="Sự kiện và lễ hội" data-home-section="events-seasonal">
       <div class="section-head">
         <div class="sh-text">
           <h2>Đang <em class="ac-clay">diễn ra</em></h2>
@@ -111,8 +78,8 @@
 
       <!-- declutter-3 T16 (B1-2): event-hero đã bỏ — event #1 sống ở decision card
            "Có lịch gần nhất"; 3 mini giữ nhịp lịch, không lặp -->
-      <div v-if="upcomingEvents.length > 1" class="happening-rest">
-        <NuxtLink v-for="ev in upcomingEvents.slice(1, 4)" :key="ev.id" :to="entityPath(ev.id)" class="event-mini">
+      <div v-if="upcomingEventList.length" class="happening-rest">
+        <NuxtLink v-for="ev in upcomingEventList" :key="ev.id" :to="entityPath(ev.id)" class="event-mini">
           <div class="ec-date ec-date-sm">
             <span class="ec-day">{{ formatEventDay(ev) }}</span>
             <span class="ec-month">{{ formatEventMonth(ev) }}</span>
@@ -126,7 +93,7 @@
         </NuxtLink>
       </div>
 
-      <div v-if="seasonal.length" class="happening-section">
+      <div v-if="seasonalList.length" class="happening-section">
         <p class="happening-label"><IconLine name="flame" /> Đang vào mùa tháng {{ currentMonth }}</p>
         <div class="scroll-row" role="region" aria-label="Đặc sản theo mùa" tabindex="0">
           <EntityCard v-for="e in seasonalList" :key="e.id" :entity="e" :season-filter="String(currentMonth)" />
@@ -317,12 +284,16 @@
 
 <script setup lang="ts">
 import { TYPE_META, AREA_META } from '~/composables/useConstants'
-import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
+import { generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
 import { useJourneyActions } from '~/composables/useJourneyActions'
 import EntityFeature from '~/components/home/EntityFeature.vue'
+import HomeCategoryIndex from '~/components/home/HomeCategoryIndex.vue'
+import HomeDecisionLedger from '~/components/home/HomeDecisionLedger.vue'
+import HomeFeatureDossier from '~/components/home/HomeFeatureDossier.vue'
 import StorySpread from '~/components/home/StorySpread.vue'
 import ImageDisclosure from '~/components/ImageDisclosure.vue'
 import { describeEntityImages, describeEntityPlaceholder } from '~/utils/imageDescriptors'
+import { createHomeNocturnePresentation } from '~/utils/homeNocturnePresentation'
 import { aiDisclosure } from '~/utils/aiDisclosure'
 import type { ImageDescriptor } from '~/types/image'
 import { useId } from 'vue'
@@ -341,18 +312,21 @@ const FEATURE_EXPERIENCE = {
   ctaText: 'Khám phá trải nghiệm',
   ctaTo: '/du-lich',
 }
-const FEATURE_EXPERIENCE_IMAGE: ImageDescriptor = {
-  url: '/img/features/trai-nghiem.webp',
-  alt: 'Trải nghiệm miệt vườn — ảnh minh họa',
-  source_class: 'ai-generated',
-  source_kind: 'entity-editorial',
-  disclosure_key: 'entity-ai',
-  short_label: aiDisclosure.entity_ai.short_label,
-  full_disclosure: aiDisclosure.entity_ai.full_disclosure,
-  credit: null,
-  width: null,
-  height: null,
-}
+const FEATURE_EXPERIENCE_IMAGE = describeEntityImages({
+  name: FEATURE_EXPERIENCE.title,
+  image_descriptor: {
+    url: '/img/features/trai-nghiem.webp',
+    alt: 'Trải nghiệm miệt vườn — ảnh minh họa',
+    source_class: 'ai-generated',
+    source_kind: 'entity-editorial',
+    disclosure_key: 'entity-ai',
+    short_label: aiDisclosure.entity_ai.short_label,
+    full_disclosure: aiDisclosure.entity_ai.full_disclosure,
+    credit: null,
+    width: null,
+    height: null,
+  } satisfies ImageDescriptor,
+})[0]!
 
 // Full-bleed signature moment (StorySpread). Discover-only CTA — never an order/price
 // form, per project invariants.
@@ -362,16 +336,6 @@ const SPREAD = {
   subtitle: 'Nơi sông Cổ Chiên ôm 4 cù lao An Bình — gốm đỏ Mang Thít, bưởi Năm Roi, chợ nổi Trà Ôn họp lúc tinh mơ.',
   ctaText: 'Khám phá vùng đất',
   ctaTo: '/ban-do',
-}
-
-type HomeDecisionCard = {
-  icon: string
-  eyebrow: string
-  title: string
-  text: string
-  to: string
-  cta: string
-  tone: 'event' | 'season' | 'planner' | 'food' | 'map'
 }
 
 const { favorites } = useFavorites()
@@ -450,23 +414,6 @@ const itineraries = computed(() => homeData.value?.itineraries || [])
 const upcomingEvents = computed(() => homeData.value?.upcoming_events || [])
 const seasonalTagline = computed(() => homeData.value?.seasonal_tagline || 'Khám phá Vĩnh Long theo cách của người bản địa')
 
-const CATEGORY_LINKS = [
-  { icon: 'leaf', label: 'Du lịch', hint: 'vườn, sông, làng nghề', to: '/du-lich', accent: 'leaf', countKey: 'experiences', key: 'du-lich' },
-  { icon: 'bowl', label: 'Ẩm thực', hint: 'quán ngon, món bản địa', to: '/kham-pha/am-thuc', accent: 'amber', countKey: 'dishes', key: 'am-thuc' },
-  { icon: 'gift', label: 'OCOP', hint: 'đặc sản làm quà', to: '/ocop', accent: 'clay', countKey: 'products', key: 'ocop' },
-  { icon: 'lantern', label: 'Lễ hội', hint: 'lịch gần nhất', to: '/le-hoi', accent: 'river', countKey: 'events', key: 'le-hoi' },
-  { icon: 'home', label: 'Lưu trú', hint: 'nghỉ lại theo khu vực', to: '/luu-tru', accent: 'leaf', countKey: '', key: 'luu-tru' },
-  // declutter-3 T16 (B1-4): tile thay strip "Lịch trình gợi ý" (section đã bỏ)
-  { icon: 'compass', label: 'Lịch trình', hint: 'gợi ý sẵn 1–3 ngày', to: '/lich-trinh', accent: 'amber', countKey: '', key: 'lich-trinh' },
-  { icon: 'map', label: 'Bản đồ', hint: 'lọc theo vùng', to: '/ban-do', accent: 'river', countKey: 'areas', key: 'ban-do' },
-]
-const categoryLinks = computed(() => {
-  return CATEGORY_LINKS.map(c => ({
-    ...c,
-    countLabel: categoryMetric(c.countKey),
-  }))
-})
-
 const SPOTLIGHT_TYPE_WEIGHT: Record<string, number> = { experience: 3, place: 2, dish: 1, product: 0 }
 const spotlight = computed<any>(() => {
   const pool = [...experiences.value.slice(0, 8), ...productsAll.value.slice(0, 8)]
@@ -511,13 +458,7 @@ const heroFeatureDescriptor = computed<ImageDescriptor>(() => {
   const descriptor = heroFeature.value ? describeEntityImages(heroFeature.value)[0] : null
   return descriptor || describeEntityPlaceholder(heroFeature.value || { name: 'Gợi ý nổi bật' })
 })
-const hfBg = computed(() => {
-  const img = heroFeatureDescriptor.value.url
-  if (img) return `linear-gradient(to top, rgba(18,20,24,.42) 0%, rgba(18,20,24,.06) 45%, rgba(18,20,24,.22) 100%), url(${img})`
-  return heroFeature.value && hfMeta.value ? generateCategoryPlaceholder(heroFeature.value.id, hfMeta.value.cat) : ''
-})
 const heroFeatureDisclosureId = `home-hero-feature-${useId().replace(/[^A-Za-z0-9_-]+/g, '-')}`
-const hfIcon = computed(() => hfMeta.value ? generateCategoryIcon(hfMeta.value.cat) : '')
 const hfRegion = computed(() => {
   const a = heroFeature.value?.area || heroFeature.value?.attributes?.area || heroFeature.value?.attributes?.province
   if (!a) return ''
@@ -532,66 +473,28 @@ const heroFeatureReason = computed(() => {
 
 const areaCounts = computed<Record<string, number>>(() => homeData.value?.area_counts || {})
 
-const firstUpcomingEvent = computed<any>(() => upcomingEvents.value[0] || null)
-const firstSeasonal = computed<any>(() => seasonal.value[0] || null)
-const firstDish = computed<any>(() => topDishes.value[0] || null)
-// De-dup: entities already shown in the top zone (hero + decision index) or the spotlight
-// band are excluded from the downstream grids so no "current" entity repeats. Pure computeds
-// → SSR/CSR identical.
 const experienceThumbs = computed(() =>
   experiences.value.filter((e: any) => e.id !== heroFeature.value?.id && e.id !== spotId.value).slice(0, 3))
-const topDishesList = computed(() =>
-  topDishes.value.filter((d: any) => d.id !== firstDish.value?.id))
-const seasonalList = computed(() => {
-  const rest = seasonal.value.filter((e: any) => e.id !== firstSeasonal.value?.id)
-  return rest.length ? rest : seasonal.value
-})
-const homeDecisionCards = computed<HomeDecisionCard[]>(() => {
-  const cards: HomeDecisionCard[] = []
-  const ev = firstUpcomingEvent.value
-  if (ev) {
-    cards.push({
-      icon: '🎭',
-      eyebrow: eventCountdownLabel(ev),
-      title: 'Có lịch gần nhất',
-      text: ev.name,
-      to: entityPath(ev.id),
-      cta: 'Xem sự kiện',
-      tone: 'event',
-    })
-  }
+const homePresentation = computed(() => createHomeNocturnePresentation({
+  currentMonth: currentMonth.value,
+  heroId: heroFeature.value?.id,
+  spotlightId: spotlight.value?.id,
+  upcomingEvents: upcomingEvents.value,
+  seasonal: seasonal.value,
+  topDishes: topDishes.value,
+  itineraries: itineraries.value,
+  categoryCounts: {
+    experiences: experiences.value.length,
+    dishes: topDishes.value.length,
+    products: productsAll.value.length,
+    events: upcomingEvents.value.length,
+    areas: Object.keys(areaCounts.value).length,
+  },
+}))
 
-  const seasonalPick = firstSeasonal.value
-  if (seasonalPick) {
-    cards.push({
-      icon: '🌿',
-      eyebrow: `Tháng ${currentMonth.value}`,
-      title: 'Đang vào mùa',
-      text: seasonalPick.name,
-      to: `/theo-mua?mua=${encodeURIComponent(String(currentMonth.value))}`,
-      cta: 'Xem theo mùa',
-      tone: 'season',
-    })
-  }
-
-  const dish = firstDish.value
-  if (dish) {
-    cards.push({
-      icon: '🍲',
-      eyebrow: dish.attributes?.rating ? `${formatRating(dish.attributes.rating)} điểm` : 'Ẩm thực',
-      title: 'Ăn gì hôm nay',
-      text: dish.name,
-      to: '/kham-pha/am-thuc?sort=rating',
-      cta: 'Xem quán ngon',
-      tone: 'food',
-    })
-  }
-
-  // declutter-3 T16 (B1-8): bỏ card độn "Mở bản đồ" — hero đã có "Tìm quanh tôi" (/ban-do)
-  // render vô điều kiện; thiếu data thì decision-index ngắn lại một cách trung thực.
-
-  return cards.slice(0, 4)
-})
+const upcomingEventList = computed(() => homePresentation.value.upcomingEventEntries)
+const seasonalList = computed(() => homePresentation.value.seasonalEntries)
+const topDishesList = computed(() => homePresentation.value.dishEntries)
 
 const homeJourneyActions = computed(() => homepageDecisionActions({
   isLoggedIn: isLoggedIn.value,
@@ -617,13 +520,6 @@ function formatEventMonth(ev: any) {
   return isNaN(m) || m === 0 ? '' : `Th${m}`
 }
 
-function eventCountdownLabel(ev: any) {
-  if (ev?.days_until === 0) return 'Hôm nay'
-  if (ev?.days_until === 1) return 'Ngày mai'
-  if (typeof ev?.days_until === 'number') return `Còn ${ev.days_until} ngày`
-  return 'Sắp diễn ra'
-}
-
 function formatRating(rating: number | string): string {
   const n = Number(rating)
   return n > 0 ? n.toFixed(1) : 'Mới'
@@ -631,19 +527,6 @@ function formatRating(rating: number | string): string {
 
 function plannerAddPath(id: string | number) {
   return `/tao-lich-trinh?add=${encodeURIComponent(String(id))}`
-}
-
-function categoryMetric(key: string) {
-  if (!key) return ''
-  if (key === 'experiences') return experiences.value.length ? `${experiences.value.length} gợi ý` : ''
-  if (key === 'dishes') return topDishes.value.length ? `${topDishes.value.length} nổi bật` : ''
-  if (key === 'products') return productsAll.value.length ? `${productsAll.value.length} gợi ý` : ''
-  if (key === 'events') return upcomingEvents.value.length ? `${upcomingEvents.value.length} sắp tới` : ''
-  if (key === 'areas') {
-    const count = Object.keys(areaCounts.value).length
-    return count ? `${count} vùng` : ''
-  }
-  return ''
 }
 
 function onImgError(e: Event | string) {
