@@ -1,6 +1,8 @@
 # Homepage Existing Screen Evolution B1 Implementation Plan
 
-> STATUS: approved - written design approved; ready for subagent-driven implementation; production deployment remains out of scope.
+> **STATUS: DONE — 2026-07-31.**
+>
+> Implementation and production-preview verification completed at `d5dd453a`; production deployment remains out of scope.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -56,7 +58,7 @@
 - Consumes: normalized homepage entity arrays, `currentMonth`, selected hero/spotlight IDs, and real category counts.
 - Produces: `createHomeNocturnePresentation(input: HomeNocturnePresentationInput): HomeNocturnePresentation` plus the exact approved public types `HomeDecisionTone`, `HomeDecisionEntry`, `HomeCategoryLink`, and `HomeCategoryGroups`.
 
-- [ ] **Step 1: Verify the parallel-session hash guard and capture the focused baseline**
+- [x] **Step 1: Verify the parallel-session hash guard and capture the focused baseline**
 
 Run from repository root:
 
@@ -69,7 +71,7 @@ npm test -- tests/journeyActions.test.ts tests/framed-dossier.test.ts tests/them
 
 Expected: all selected suites PASS and the guard prints no error.
 
-- [ ] **Step 2: Write failing adapter behavior tests**
+- [x] **Step 2: Write failing adapter behavior tests**
 
 Create `web-nuxt/tests/home-nocturne-presentation.test.ts` with deterministic fixtures. The test must prove order, omission, category route uniqueness, count labels, and cross-region de-duplication:
 
@@ -162,7 +164,7 @@ describe('homepage Nocturne presentation adapter', () => {
 })
 ```
 
-- [ ] **Step 3: Run the adapter test and verify RED**
+- [x] **Step 3: Run the adapter test and verify RED**
 
 ```powershell
 npm test -- tests/home-nocturne-presentation.test.ts
@@ -170,7 +172,7 @@ npm test -- tests/home-nocturne-presentation.test.ts
 
 Expected: FAIL because `../utils/homeNocturnePresentation` does not exist.
 
-- [ ] **Step 4: Implement the exact pure adapter contract**
+- [x] **Step 4: Implement the exact pure adapter contract**
 
 Create `web-nuxt/utils/homeNocturnePresentation.ts`. Keep the approved public types exact, use `entityPath()` for entity detail routes, and use the following stable model/selection structure:
 
@@ -362,7 +364,7 @@ export function createHomeNocturnePresentation(
 }
 ```
 
-- [ ] **Step 5: Run GREEN, typecheck the contract, verify the guard, and commit**
+- [x] **Step 5: Run GREEN, typecheck the contract, verify the guard, and commit**
 
 ```powershell
 npm test -- tests/home-nocturne-presentation.test.ts
@@ -389,7 +391,7 @@ Expected: focused test and typecheck PASS, no whitespace error, hash unchanged, 
 - Consumes: `HomeDecisionEntry`, `HomeCategoryGroups`, `ImageDescriptor`, route strings, and existing `FramedDossier`/`ImageDisclosure`/`IconLine` primitives.
 - Produces: `[data-home-feature-dossier]`, `[data-home-decision-ledger]`, and `[data-home-category-index]` behavior boundaries consumed by the page and tests.
 
-- [ ] **Step 1: Verify the guard and write failing mounted component tests**
+- [x] **Step 1: Verify the guard and write failing mounted component tests**
 
 Run the hash guard from Task 1, then create `web-nuxt/tests/home-nocturne-components.test.ts`:
 
@@ -522,7 +524,7 @@ describe('homepage Nocturne presentation components', () => {
 })
 ```
 
-- [ ] **Step 2: Run the component test and verify RED**
+- [x] **Step 2: Run the component test and verify RED**
 
 ```powershell
 Set-Location web-nuxt
@@ -531,7 +533,7 @@ npm test -- tests/home-nocturne-components.test.ts
 
 Expected: FAIL because the three Vue components do not exist.
 
-- [ ] **Step 3: Implement `HomeFeatureDossier.vue` without fetching or inventing claims**
+- [x] **Step 3: Implement `HomeFeatureDossier.vue` without fetching or inventing claims**
 
 Use one media link with canonical disclosure and one `FramedDossier` body. The component must not accept rating, source, ranking, or personalization props:
 
@@ -593,7 +595,7 @@ withDefaults(defineProps<{
 </script>
 ```
 
-- [ ] **Step 4: Implement the ledger and category index as semantic route lists**
+- [x] **Step 4: Implement the ledger and category index as semantic route lists**
 
 Create `HomeDecisionLedger.vue`:
 
@@ -661,7 +663,7 @@ defineProps<{ groups: HomeCategoryGroups }>()
 </script>
 ```
 
-- [ ] **Step 5: Run GREEN, regression tests, guard, and commit**
+- [x] **Step 5: Run GREEN, regression tests, guard, and commit**
 
 ```powershell
 npm test -- tests/home-nocturne-components.test.ts tests/framed-dossier.test.ts tests/entity-image-detail.test.ts
@@ -686,7 +688,7 @@ git commit -m "feat: add homepage nocturne presentation components"
 - Consumes: `createHomeNocturnePresentation`, the three Task 2 components, existing `/api/homepage` state, image descriptors, route helpers, and client-only composables.
 - Produces: the stable root `[data-home-pilot="nocturne-b1"]`, top-zone section markers, unchanged request boundaries, and adapter-filtered event/seasonal/dish collections.
 
-- [ ] **Step 1: Verify the guard and add a mounted page test that fails against the legacy markup**
+- [x] **Step 1: Verify the guard and add a mounted page test that fails against the legacy markup**
 
 Create a real mounted page fixture in `home-nocturne-page.test.ts`. Mock only network boundaries; retain the page's real computed state and new child components. Include `clearNuxtData()` after each case so the fixed `homepage` and `home-community` keys do not leak fixtures:
 
@@ -807,7 +809,7 @@ describe('homepage Existing Screen Evolution B1', () => {
 })
 ```
 
-- [ ] **Step 2: Run the page test and verify RED**
+- [x] **Step 2: Run the page test and verify RED**
 
 ```powershell
 npm test -- tests/home-nocturne-page.test.ts
@@ -815,7 +817,7 @@ npm test -- tests/home-nocturne-page.test.ts
 
 Expected: FAIL because the root pilot, new components, unnumbered entries, and adapter-driven collection results are not integrated.
 
-- [ ] **Step 3: Replace only the top-zone presentation markup**
+- [x] **Step 3: Replace only the top-zone presentation markup**
 
 In `pages/index.vue`:
 
@@ -843,7 +845,7 @@ The new hero binding is exact:
 />
 ```
 
-- [ ] **Step 4: Replace page-local decision/category computation with the pure adapter**
+- [x] **Step 4: Replace page-local decision/category computation with the pure adapter**
 
 Import the three components and adapter. Remove `HomeDecisionCard`, `CATEGORY_LINKS`, `categoryLinks`, `firstUpcomingEvent`, `firstSeasonal`, `firstDish`, `homeDecisionCards`, `eventCountdownLabel`, and `categoryMetric`. Keep `formatEventDay`, `formatEventMonth`, `formatRating`, route helpers, journey/personalization state, and all network calls.
 
@@ -874,13 +876,13 @@ const topDishesList = computed(() => homePresentation.value.dishEntries)
 
 Change the event list condition/loop to `upcomingEventList.length` and `v-for="ev in upcomingEventList"`. Keep `experienceThumbs` filtered against hero and spotlight IDs. Remove `hfBg`, `hfIcon`, and the unused `generateCategoryPlaceholder` import; retain `generateCategoryIcon` for the existing `Dành cho bạn` fallback icon.
 
-- [ ] **Step 5: Update supporting smoke and UGC fixtures without replacing behavior tests**
+- [x] **Step 5: Update supporting smoke and UGC fixtures without replacing behavior tests**
 
 In `tests/smoke.test.ts`, keep assertions for intent-led copy, `homepageDecisionActions`, `JourneyActionRail`, `plannerAddPath`, and `Dành cho bạn`. Replace legacy assertions for `homeDecisionCards`, `dx-item`, fake numbering, and page-local category markup with structural assertions for `createHomeNocturnePresentation`, `HomeFeatureDossier`, `HomeDecisionLedger`, `HomeCategoryIndex`, and `data-home-pilot="nocturne-b1"`.
 
 In `tests/ugc-image-classification.test.ts`, add `HomeFeatureDossier`, `HomeDecisionLedger`, and `HomeCategoryIndex` to `pageStubs` only if the existing focused UGC test cannot mount them with its minimal homepage fixture. Do not stub `ImageDisclosure`, remove the `data-image-surface="home-community"` assertion, or relax the no-UGC-thumbnail checks.
 
-- [ ] **Step 6: Run GREEN and focused regressions, verify guard, and commit**
+- [x] **Step 6: Run GREEN and focused regressions, verify guard, and commit**
 
 ```powershell
 npm test -- tests/home-nocturne-page.test.ts tests/home-nocturne-presentation.test.ts tests/home-nocturne-components.test.ts tests/ugc-image-classification.test.ts tests/smoke.test.ts tests/journeyActions.test.ts
@@ -904,7 +906,7 @@ git commit -m "feat: integrate homepage nocturne top zone"
 - Consumes: the Task 3 pilot root and section markers, Plan A semantic tokens, adapter-filtered lists, and current `EntityFeature`, `StorySpread`, community, and personalization models.
 - Produces: distinct temporal, editorial, split-dossier, community, and personal densities with identical Nocturne/Parchment DOM order.
 
-- [ ] **Step 1: Verify the guard and extend the mounted page test for the remaining behavior**
+- [x] **Step 1: Verify the guard and extend the mounted page test for the remaining behavior**
 
 Add these cases to `home-nocturne-page.test.ts`. Also change `beforeEach` to clear `localStorage` so no previous favorite/recent-history signal leaks into the no-personalization assertion:
 
@@ -1006,7 +1008,7 @@ it('preserves the stable section order across Nocturne and Daylight Parchment', 
 
 These are rendered behavior assertions; do not replace them with source-string checks.
 
-- [ ] **Step 2: Run the expanded page test and verify RED**
+- [x] **Step 2: Run the expanded page test and verify RED**
 
 ```powershell
 Set-Location web-nuxt
@@ -1015,7 +1017,7 @@ npm test -- tests/home-nocturne-page.test.ts
 
 Expected: at least the new section-marker/theme-order assertions FAIL because middle/bottom markers and the new scoped CSS import are absent.
 
-- [ ] **Step 3: Mark and refine the existing middle/bottom sections without changing their data flow**
+- [x] **Step 3: Mark and refine the existing middle/bottom sections without changing their data flow**
 
 In `pages/index.vue`:
 
@@ -1028,7 +1030,7 @@ In `pages/index.vue`:
 - Keep `Dành cho bạn` inside its existing `ClientOnly` and real-signal condition.
 - Append `<style src="~/assets/css/home-nocturne.css"></style>` after the existing homepage `<style>` block so the compatibility layer wins only on this page.
 
-- [ ] **Step 4: Create the scoped Nocturne/Parchment composition stylesheet**
+- [x] **Step 4: Create the scoped Nocturne/Parchment composition stylesheet**
 
 Create `web-nuxt/assets/css/home-nocturne.css`. Every selector must begin with `[data-home-pilot="nocturne-b1"]`; use semantic tokens and the following complete anatomy:
 
@@ -1359,7 +1361,7 @@ Create `web-nuxt/assets/css/home-nocturne.css`. Every selector must begin with `
 
 The referenced layout, spacing, type, focus, surface, and action tokens already exist in the Plan A/base token layers. Do not add fallback literals or new token aliases for B1.
 
-- [ ] **Step 5: Remove only selectors made dead by the new markup**
+- [x] **Step 5: Remove only selectors made dead by the new markup**
 
 From the existing `<style>` in `pages/index.vue`, delete the complete legacy selector blocks for `.hero-kenburns` and its keyframes, `.hf-card/.hf-*`, `.decision-shell/.decision-*/.dx-*`, and `.cat-grid/.cat-tile/.cat-*` after confirming no remaining template node uses them:
 
@@ -1369,7 +1371,7 @@ rg -n "hero-kenburns|hf-card|hf-|decision-shell|decision-index|dx-|cat-grid|cat-
 
 Expected after cleanup: no template or script reference remains; any remaining result must be a migration comment explaining the removed name, not a live selector.
 
-- [ ] **Step 6: Run GREEN, accessibility/style regressions, guard, and commit**
+- [x] **Step 6: Run GREEN, accessibility/style regressions, guard, and commit**
 
 ```powershell
 npm test -- tests/home-nocturne-page.test.ts tests/home-nocturne-components.test.ts tests/home-nocturne-presentation.test.ts tests/theme-mode-control.test.ts tests/framed-dossier.test.ts tests/entity-card-disclosure.test.ts tests/image-renderer-inventory.test.ts tests/ugc-image-classification.test.ts tests/smoke.test.ts
@@ -1393,7 +1395,7 @@ git commit -m "feat: complete homepage nocturne composition"
 - Consumes: all Task 1–4 commits, mounted behavior suites, Nuxt production build, local production preview, and the approved visual QA matrix.
 - Produces: a closed B1 plan/spec status, exact test/build evidence, four canonical screenshot baselines, and a rollback instruction that removes the pilot without touching shared shell or data flow.
 
-- [ ] **Step 1: Verify the guard and audit the completed behavior matrix**
+- [x] **Step 1: Verify the guard and audit the completed behavior matrix**
 
 Review the spec sections `Required States and Recovery`, `Interaction and Accessibility`, and `Anti-Template Gate` against the mounted tests. The final page suite must explicitly assert:
 
@@ -1406,7 +1408,7 @@ Review the spec sections `Required States and Recovery`, `Interaction and Access
 
 Every item is implemented in Tasks 1–4. If an item is absent, stop Task 5 and reopen the owning task instead of adding implementation or test scope to the closure commit. Record `No missing behavior assertion after integrated review` in the QA report when the audit is complete.
 
-- [ ] **Step 2: Run the full automated verification gate**
+- [x] **Step 2: Run the full automated verification gate**
 
 From `web-nuxt`:
 
@@ -1418,7 +1420,7 @@ npm run build
 
 Expected: every selected suite PASS, typecheck exits `0`, production build exits `0`, and no new dependency is added to `package.json` or the lockfile.
 
-- [ ] **Step 3: Run the production visual QA matrix**
+- [x] **Step 3: Run the production visual QA matrix**
 
 Start the built preview on an unused port and use the in-app browser control skill to inspect `/` with real keyboard interaction. Test 375, 390, 768, 1024, and 1440 CSS pixels in Nocturne and Daylight Parchment; also test mobile landscape, keyboard tab order, reduced motion, forced colors, image fallback, homepage partial data, community empty/failure, and 200% text zoom.
 
@@ -1433,7 +1435,7 @@ docs/superpowers/qa/2026-07-31-homepage-b1/parchment-desktop-1440.webp
 
 For every matrix row, record viewport, theme, fixture/state, keyboard result, overflow result, disclosure visibility, and screenshot filename or `not canonical` in `report.md`. A row fails if horizontal page overflow appears, a 44px action becomes smaller, focus is invisible, a disclosure disappears, section order changes, content animates under reduced motion, or labels/actions clip at 200% zoom.
 
-- [ ] **Step 4: Perform the anti-template and rollback audit**
+- [x] **Step 4: Perform the anti-template and rollback audit**
 
 Run:
 
@@ -1444,7 +1446,7 @@ rg -n "data-home-pilot=\"nocturne-b1\"|home-nocturne.css" web-nuxt/pages/index.v
 
 Expected: no prohibited implementation result. Existing legacy gradient strings used only by untouched non-pilot image descriptors must be reviewed manually and documented; do not broaden cleanup beyond B1. Confirm rollback is limited to reverting Tasks 2–4 or removing the three component imports/usages and the page-only CSS import; API, shell, auth, location, trust, and shared Plan A tokens remain untouched.
 
-- [ ] **Step 5: Truth-sync documentation and final guard**
+- [x] **Step 5: Truth-sync documentation and final guard**
 
 After every automated and visual row passes:
 
@@ -1454,7 +1456,7 @@ After every automated and visual row passes:
 - Record commit IDs, test command results, build result, preview URL/port, browser matrix, screenshot paths, reviewer outcomes, and any `404 No active credentials` review-provider failure in `report.md`.
 - Record the final `home.md` object hash and assert it is still `b694ac09ede89442c8af48e193534f0fd25ee3a4`.
 
-- [ ] **Step 6: Commit only closure evidence**
+- [x] **Step 6: Commit only closure evidence**
 
 ```powershell
 Set-Location C:\Code\vinhlong360

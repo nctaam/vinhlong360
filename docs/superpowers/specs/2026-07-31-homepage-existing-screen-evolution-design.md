@@ -1,7 +1,8 @@
 # Homepage Existing Screen Evolution B1 Design
 
-> STATUS: approved-for-plan
+> STATUS: implemented-and-verified
 > Approved in conversation on 2026-07-31: Controlled Composition Upgrade.
+> Verified on 2026-07-31 at revision `d5dd453a`; production deployment remains out of scope.
 
 ## 1. Goal
 
