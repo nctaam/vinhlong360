@@ -17,8 +17,8 @@ export default defineNuxtConfig({
 
   modules: ['@nuxt/fonts', '@nuxt/image', '@nuxtjs/color-mode'],
 
-  // Dark mode: thêm class .dark vào <html>; mặc định theo OS, nút toggle ghi đè.
-  colorMode: { classSuffix: '', preference: 'system', fallback: 'light', storageKey: 'vl360-color-mode' },
+  // Public theme is explicit: Nocturne by default, Parchment only by user choice.
+  colorMode: { classSuffix: '', preference: 'dark', fallback: 'dark', storageKey: 'vl360-color-mode' },
 
   // Self-host font (bỏ Google CDN) — giảm latency bên thứ 3 + CLS (font-metric optimization).
   fonts: {
@@ -101,6 +101,7 @@ export default defineNuxtConfig({
         { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
       ],
       script: [
+        { innerHTML: "try{var k='vl360-color-mode',v=localStorage.getItem(k);if(v==='system'||v==='auto')localStorage.setItem(k,'dark')}catch(_){ }", tagPosition: 'head' },
         // Add `js` to <html> BEFORE first paint so the JS-gated .reveal rule
         // (html.js .reveal { opacity:0 }) only ever hides content when JS is
         // present — no flash-of-hidden, and full visibility when JS is off/slow.

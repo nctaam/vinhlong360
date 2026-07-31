@@ -558,22 +558,75 @@
   }
 }
 
-/* ── Dark mode: @nuxtjs/color-mode thêm class .dark vào <html>.
-   Remap semantic tokens + lighten brand-foreground cho đạt WCAG trên nền tối.
-   (preference 'system' → tự áp .dark theo OS; nút toggle ở header ghi đè.) ── */
+/* ============================================================
+   ADAPTIVE NOCTURNE — explicit public material modes
+   Default is Nocturne; Parchment is selected only by the user.
+   ============================================================ */
+:root {
+  color-scheme: dark;
+  --theme-public-default: nocturne;
+  --color-canvas: var(--night-canvas);
+  --color-surface: var(--night-surface);
+  --color-surface-raised: var(--night-raised);
+  --color-text: var(--night-text);
+  --color-text-muted: var(--night-muted);
+  --color-border: color-mix(in srgb, var(--night-text) 18%, transparent);
+  --color-action: var(--night-river);
+  --color-brand: var(--night-clay);
+  --color-focus: var(--night-amber);
+  --color-source-official: var(--night-river);
+  --color-source-verified: var(--night-clay);
+  --color-source-community: var(--night-leaf);
+  --font-interface-heading: var(--font-sans);
+  --font-body: var(--font-sans);
+  --font-editorial-display: var(--font-editorial);
+  --framed-dossier-border: var(--color-border);
+  --framed-dossier-padding: var(--space-6);
+  --framed-dossier-padding-compact: var(--space-4);
+  --framed-dossier-gap: var(--space-4);
+  --framed-dossier-media-ratio: var(--ratio-card);
+  --framed-dossier-radius: var(--radius-control);
+  --framed-dossier-shadow: none;
+  --theme-control-bg: var(--color-surface);
+  --theme-control-border: var(--color-border);
+  --theme-control-active: var(--color-action);
+  --theme-control-radius: var(--radius-control);
+  --theme-control-min-height: var(--touch-min);
+}
+
+.light {
+  color-scheme: light;
+  --theme-public-default: parchment;
+  --color-canvas: var(--alluvial-paper);
+  --color-surface: var(--surface-white);
+  --color-surface-raised: var(--surface-white);
+  --color-text: var(--mekong-ink);
+  --color-text-muted: var(--mekong-muted);
+  --color-border: var(--alluvial-line);
+  --color-action: var(--river-600);
+  --color-brand: var(--mangthit-600);
+  --color-focus: var(--river-600);
+  --color-source-official: var(--river-600);
+  --color-source-verified: var(--mangthit-600);
+  --color-source-community: var(--orchard-600);
+}
+
+/* ── Dark compatibility: @nuxtjs/color-mode thêm class .dark vào <html>.
+   Remap semantic tokens + lighten brand-foreground cho đạt WCAG trên nền tối. ── */
 .dark {
   color-scheme: dark;  /* thanh cuộn/native-UI tối khớp theme (sửa: trước là 'normal') */
+  --theme-public-default: nocturne;
   --color-canvas: var(--night-canvas);
   --color-surface: var(--night-surface);
   --color-surface-subtle: #172320;
   --color-surface-raised: var(--night-raised);
   --color-text: var(--night-text);
   --color-text-muted: var(--night-muted);
-  --color-border: #34423F;
+  --color-border: color-mix(in srgb, var(--night-text) 18%, transparent);
   --color-action: var(--night-river);
   --color-action-hover: #9BC2CB;
   --color-brand: var(--night-clay);
-  --color-focus: var(--night-river);
+  --color-focus: var(--night-amber);
   --color-success: var(--night-leaf);
   --color-warning: var(--night-amber);
   --color-error: var(--night-error);
