@@ -172,6 +172,52 @@
   flex: 0 0 auto;
 }
 
+.theme-mode-control {
+  display: inline-flex;
+  align-items: stretch;
+  min-height: var(--theme-control-min-height);
+  overflow: hidden;
+  border: 1px solid var(--theme-control-border);
+  border-radius: var(--theme-control-radius);
+  background: var(--theme-control-bg);
+}
+
+.theme-mode-control button {
+  min-width: var(--theme-control-min-height);
+  min-height: var(--theme-control-min-height);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-inline-end: 1px solid var(--theme-control-border);
+  background: transparent;
+  color: var(--color-text-muted);
+  font: 600 .76rem/1.1 var(--font-body);
+  cursor: pointer;
+}
+
+.theme-mode-control button:last-child {
+  border-inline-end: 0;
+}
+
+.theme-mode-control button[aria-pressed="true"] {
+  background: var(--theme-control-active);
+  color: var(--color-canvas);
+}
+
+.theme-mode-control button:hover:not([aria-pressed="true"]) {
+  color: var(--color-text);
+}
+
+.theme-mode-control button:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 2px solid var(--color-focus);
+  outline-offset: -3px;
+}
+
 .public-shell-task-row {
   min-height: 44px;
   display: flex;
@@ -379,6 +425,14 @@
     gap: var(--space-3);
   }
 
+  .theme-mode-control .theme-mode-label {
+    display: none;
+  }
+
+  .theme-mode-control button {
+    padding-inline: var(--space-2);
+  }
+
   .public-shell-task-row {
     display: none;
   }
@@ -471,10 +525,6 @@
     gap: 2px;
   }
 
-  .public-shell-command-row .theme-toggle {
-    display: none;
-  }
-
   .public-shell main {
     padding-bottom: calc(72px + env(safe-area-inset-bottom));
   }
@@ -565,6 +615,16 @@
 
   .public-shell-task-nav a.active,
   .public-bottom-nav-item.active {
+    color: HighlightText;
+    background: Highlight;
+  }
+
+  .theme-mode-control {
+    border-color: CanvasText;
+    background: Canvas;
+  }
+
+  .theme-mode-control button[aria-pressed="true"] {
     color: HighlightText;
     background: Highlight;
   }

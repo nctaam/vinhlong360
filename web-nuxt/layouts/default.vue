@@ -13,11 +13,8 @@
           <SearchAutocomplete class="topbar-search public-shell-search" />
 
           <div class="auth-area">
+            <ShellThemeModeControl />
             <template v-if="clientReady">
-              <button type="button" class="theme-toggle" :aria-label="colorMode.value === 'dark' ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'" :title="colorMode.value === 'dark' ? 'Giao diện sáng' : 'Giao diện tối'" @click="toggleColorMode">
-                <IconLine v-if="colorMode.value === 'dark'" name="sun" />
-                <IconLine v-else name="moon" />
-              </button>
               <template v-if="isLoggedIn">
                 <LazyNotificationBell />
                 <LazyUserMenu />
@@ -29,7 +26,6 @@
               <button type="button" v-else class="auth-btn" @click="showAuth = true">Đăng nhập</button>
             </template>
             <template v-else>
-              <button type="button" class="theme-toggle" aria-label="Đổi giao diện sáng/tối"><IconLine name="moon" /></button>
               <span class="auth-user auth-user-snapshot auth-user-loading" aria-hidden="true">
                 <span class="avatar avatar-sm">?</span>
                 <span class="auth-user-name">Tài khoản</span>
@@ -130,14 +126,10 @@
 <script setup lang="ts">
 const route = useRoute()
 const { isLoggedIn, user } = useAuth()
-const colorMode = useColorMode()
 const { get: ss } = useSiteSettings()
 const hasAuthSession = computed(() => isLoggedIn.value)
 const headerDisplayName = computed(() => user.value?.display_name || user.value?.phone || 'Tài khoản')
 const headerInitial = computed(() => headerDisplayName.value ? headerDisplayName.value.charAt(0).toUpperCase() : '?')
-function toggleColorMode() {
-  colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
-}
 const { open: showAuth } = useAuthModal()
 useSeasonTheme()
 const mobileNav = ref(false)
