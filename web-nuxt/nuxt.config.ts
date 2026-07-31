@@ -42,6 +42,7 @@ export default defineNuxtConfig({
     '~/assets/css/base.css',
     '~/assets/css/shell.css',
     '~/assets/css/components.css',
+    '~/assets/css/dossier.css',
     '~/assets/css/cards.css',
     // detail.css KHÔNG global: chỉ 3 trang chi tiết (dia-diem/xa-phuong/lich-trinh) dùng
     // → import qua <style src> trong 3 page đó (bỏ ~35KB khỏi entry.css mọi trang).
