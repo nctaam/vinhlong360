@@ -148,6 +148,81 @@ describe('homepage Existing Screen Evolution B1', () => {
     ])
   })
 
+  it('shows homepage loading feedback during retry even when community content is available', async () => {
+    let homepageState: 'failure' | 'pending' = 'failure'
+    let resolveHomepage: ((value: ReturnType<typeof homeFixture>) => void) | undefined
+    const pendingHomepage = new Promise<ReturnType<typeof homeFixture>>((resolve) => {
+      resolveHomepage = resolve
+    })
+
+    apiFetchMock.mockImplementation((url: unknown) => {
+      const path = String(url)
+      if (path === '/api/homepage') {
+        return homepageState === 'failure'
+          ? Promise.reject(new Error('homepage unavailable'))
+          : pendingHomepage
+      }
+      if (path === '/api/feed?limit=10') {
+        return Promise.resolve({ posts: [{ id: 'post-1', content: 'Chuyen ben song', display_name: 'An' }] })
+      }
+      if (path === '/api/community/stats') return Promise.resolve({ posts: 1, reviews: 0, members: 1 })
+      if (path === '/api/community/leaderboard?limit=3') return Promise.resolve({ leaders: [] })
+      if (path === '/api/community/trending-tags?limit=8') return Promise.resolve({ tags: [] })
+      if (path.startsWith('/api/entities/popular?')) return Promise.resolve({ entities: [] })
+      return Promise.resolve({})
+    })
+
+    const wrapper = await mountSuspended(HomePage, { global: { stubs: pageStubs } })
+    wrappers.push(wrapper)
+    await flushUi()
+
+    expect(wrapper.get('[data-home-section="community"]')).toBeTruthy()
+    homepageState = 'pending'
+    await wrapper.get('[data-empty-state] button').trigger('click')
+    await nextTick()
+
+    const loading = wrapper.get('[data-home-section="recovery"]')
+    expect(loading.find('.sk-heading').exists()).toBe(true)
+    expect(wrapper.find('[data-empty-state]').exists()).toBe(false)
+
+    resolveHomepage?.(homeFixture())
+    await flushUi()
+  })
+
+  it('shows the homepage empty state even when community content is available', async () => {
+    apiFetchMock.mockImplementation((url: unknown) => {
+      const path = String(url)
+      if (path === '/api/homepage') {
+        return Promise.resolve({
+          month: 8,
+          seasonal: [],
+          experiences: [],
+          products: [],
+          top_dishes: [],
+          itineraries: [],
+          upcoming_events: [],
+          area_counts: {},
+        })
+      }
+      if (path === '/api/feed?limit=10') {
+        return Promise.resolve({ posts: [{ id: 'post-1', content: 'Chuyen ben song', display_name: 'An' }] })
+      }
+      if (path === '/api/community/stats') return Promise.resolve({ posts: 1, reviews: 0, members: 1 })
+      if (path === '/api/community/leaderboard?limit=3') return Promise.resolve({ leaders: [] })
+      if (path === '/api/community/trending-tags?limit=8') return Promise.resolve({ tags: [] })
+      if (path.startsWith('/api/entities/popular?')) return Promise.resolve({ entities: [] })
+      return Promise.resolve({})
+    })
+
+    const wrapper = await mountSuspended(HomePage, { global: { stubs: pageStubs } })
+    wrappers.push(wrapper)
+    await flushUi()
+
+    expect(wrapper.get('[data-home-section="community"]')).toBeTruthy()
+    expect(wrapper.get('[data-empty-state]').text()).toContain('Đang cập nhật nội dung')
+    expect(wrapper.get('[data-empty-state]').text()).toContain('Tụi mình đang bổ sung điểm đến')
+  })
+
   it('isolates community failure and omits personalization without a real signal', async () => {
     apiFetchMock.mockImplementation((url: unknown) => {
       const path = String(url)

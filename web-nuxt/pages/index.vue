@@ -181,7 +181,7 @@
          (Trải nghiệm, LCP priority). -->
 
     <!-- declutter-3 T16 (B1-4): strip "Lịch trình gợi ý" đã bỏ — luồng lịch trình
-         vẫn có trong chỉ mục tiện ích; itineraries GIỮ trong hasHomeContent (degraded logic). -->
+         vẫn có trong chỉ mục tiện ích; itineraries GIỮ trong hasHomepageContent (degraded logic). -->
 
     <!-- 5. Từ cộng đồng — compact + trending tags; else always-populated editorial story.
          ClientOnly: communityData is lazy → renders null at prerender but resolves into the
@@ -411,7 +411,7 @@ const experiences = computed(() => homeData.value?.experiences || [])
 const productsAll = computed(() => homeData.value?.products || [])
 const topDishes = computed(() => homeData.value?.top_dishes || [])
 // (declutter-1: computed `trending` đã bỏ — không section nào render nó; đếm nó trong
-// hasHomeContent chỉ làm trang "có nội dung" mà không hiển thị gì.)
+// hasHomepageContent chỉ làm trang "có nội dung" mà không hiển thị gì.)
 const itineraries = computed(() => homeData.value?.itineraries || [])
 const upcomingEvents = computed(() => homeData.value?.upcoming_events || [])
 const seasonalTagline = computed(() => homeData.value?.seasonal_tagline || 'Khám phá Vĩnh Long theo cách của người bản địa')
@@ -505,10 +505,10 @@ const homeJourneyActions = computed(() => homepageDecisionActions({
   currentMonth: currentMonth.value,
 }))
 
-const hasHomeContent = computed(() => !!(upcomingEvents.value.length || seasonal.value.length || itineraries.value.length || spotlight.value || topDishes.value.length || communityPosts.value.length))
-const homeFailed = computed(() => !homePending.value && (!!homeError.value || (!!homeData.value && !hasHomeContent.value)))
-const homeLoadingSkeleton = computed(() => !hasHomeContent.value && !homeFailed.value)
-onMounted(() => { if (homeError.value || !hasHomeContent.value) refreshHome() })
+const hasHomepageContent = computed(() => !!(upcomingEvents.value.length || seasonal.value.length || itineraries.value.length || spotlight.value || topDishes.value.length))
+const homeFailed = computed(() => !homePending.value && (!!homeError.value || (!!homeData.value && !hasHomepageContent.value)))
+const homeLoadingSkeleton = computed(() => !hasHomepageContent.value && !homeFailed.value)
+onMounted(() => { if (homeError.value || !hasHomepageContent.value) refreshHome() })
 
 function formatEventDay(ev: any) {
   const ds = ev.attributes?.date_start
