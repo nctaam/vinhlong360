@@ -1,6 +1,6 @@
 import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { defineComponent, h, nextTick } from 'vue'
+import { defineComponent, h, nextTick, ref } from 'vue'
 
 import CommandPalette from '../components/CommandPalette.vue'
 import IconLine from '../components/IconLine.vue'
@@ -26,8 +26,8 @@ const mocks = vi.hoisted(() => ({
 mockNuxtImport('useAuth', () => () => ({
   authHeaders: mocks.authHeaders,
   fetchMe: mocks.fetchMe,
-  isLoggedIn: { value: false },
-  user: { value: null },
+  isLoggedIn: ref(false),
+  user: ref(null),
 }))
 mockNuxtImport('useAuthModal', () => () => ({ open: { value: false } }))
 mockNuxtImport('useSeasonTheme', () => () => undefined)
@@ -200,6 +200,17 @@ describe('UI foundation shell', () => {
     } finally {
       vi.useRealTimers()
     }
+  })
+
+  it('keeps the compact mobile login action accessible', async () => {
+    const wrapper = await mountDefaultLayout()
+    wrappers.push(wrapper)
+    await nextTick()
+
+    const login = wrapper.get('button.auth-btn')
+    expect(login.attributes('aria-label')).toBe('Đăng nhập')
+    expect(login.find('.line-icon').exists()).toBe(true)
+    expect(login.get('.auth-btn-label').text()).toBe('Đăng nhập')
   })
 
   it('resolves exact, prefix and entity-kind Admin navigation states', () => {

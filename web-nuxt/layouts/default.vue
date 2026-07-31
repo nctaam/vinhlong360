@@ -23,7 +23,10 @@
                 <span class="avatar avatar-sm">{{ headerInitial }}</span>
                 <span class="auth-user-name">{{ headerDisplayName }}</span>
               </span>
-              <button type="button" v-else class="auth-btn" @click="showAuth = true">Đăng nhập</button>
+              <button type="button" v-else class="auth-btn" aria-label="Đăng nhập" @click="showAuth = true">
+                <IconLine name="user" aria-hidden="true" />
+                <span class="auth-btn-label">Đăng nhập</span>
+              </button>
             </template>
             <template v-else>
               <span class="auth-user auth-user-snapshot auth-user-loading" aria-hidden="true">
