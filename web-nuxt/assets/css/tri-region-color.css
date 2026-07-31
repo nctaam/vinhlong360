@@ -1,0 +1,79 @@
+[data-color-system="tri-region-v1"] {
+  --primary: var(--color-action);
+  --primary-dark: var(--color-action-hover);
+  --primary-fg: var(--color-action);
+  --primary-fg-strong: var(--color-action-hover);
+  --primary-rgb: var(--color-action-rgb);
+  --focus-outline: var(--color-focus);
+  --tri-region-material-accent: var(--color-material-neutral);
+  background: var(--color-canvas);
+  color: var(--color-text);
+}
+
+[data-color-system="tri-region-v1"]:is(
+  [data-page-recipe="homepage"],
+  [data-page-recipe="discovery"],
+  [data-page-recipe="search"],
+  [data-page-recipe="detail"]
+),
+[data-color-system="tri-region-v1"] :is(
+  [data-page-recipe="homepage"],
+  [data-page-recipe="discovery"],
+  [data-page-recipe="search"],
+  [data-page-recipe="detail"]
+) {
+  --tri-region-material-accent: var(--color-material-neutral);
+}
+
+[data-color-system="tri-region-v1"][data-material-accent="clay"],
+[data-color-system="tri-region-v1"] [data-material-accent="clay"] {
+  --tri-region-material-accent: var(--color-material-clay);
+}
+
+[data-color-system="tri-region-v1"][data-material-accent="leaf"],
+[data-color-system="tri-region-v1"] [data-material-accent="leaf"] {
+  --tri-region-material-accent: var(--color-material-leaf);
+}
+
+[data-color-system="tri-region-v1"][data-material-accent="river"],
+[data-color-system="tri-region-v1"] [data-material-accent="river"] {
+  --tri-region-material-accent: var(--color-material-river);
+}
+
+[data-color-system="tri-region-v1"][data-material-accent="amber"],
+[data-color-system="tri-region-v1"] [data-material-accent="amber"] {
+  --tri-region-material-accent: var(--color-material-amber);
+}
+
+[data-color-system="tri-region-v1"] [data-color-role="action-primary"] {
+  border-color: var(--color-action);
+  background: var(--color-action);
+  color: var(--color-on-action);
+}
+
+[data-color-system="tri-region-v1"] [data-color-role="action-secondary"] {
+  border-color: var(--color-action-border);
+  background: var(--color-action-surface);
+  color: var(--color-action);
+}
+
+[data-color-system="tri-region-v1"] :is(a, button, input, select, textarea):focus-visible {
+  outline-color: var(--color-focus);
+}
+
+@media (prefers-contrast: more) {
+  [data-color-system="tri-region-v1"] {
+    --color-border: currentColor;
+    --color-action-border: currentColor;
+  }
+}
+
+@media (forced-colors: active) {
+  [data-color-system="tri-region-v1"] [data-material-accent] {
+    --tri-region-material-accent: CanvasText;
+  }
+
+  [data-color-system="tri-region-v1"] :is(a, button, input, select, textarea):focus-visible {
+    outline-color: Highlight;
+  }
+}
