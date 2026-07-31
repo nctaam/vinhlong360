@@ -108,6 +108,9 @@ describe('homepage Existing Screen Evolution B1', () => {
       'Cá tai tượng chiên xù',
       'Một ngày ven sông',
     ])
+    expect(wrapper.find('.dx-num').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('Đã xác minh')
+    expect(wrapper.text()).not.toContain('Nguồn:')
     const temporal = wrapper.get('[data-home-section="events-seasonal"]')
     expect(temporal.text()).toContain('Đêm đờn ca')
     expect(temporal.text()).not.toContain('Lễ hội sông nước')
