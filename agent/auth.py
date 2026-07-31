@@ -34,6 +34,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response,
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field, field_validator
 
+from admin_permissions import admin_scopes_for_user
 from config import settings as _cfg
 from database import db
 
@@ -2125,6 +2126,7 @@ def _safe_user(user: dict) -> dict:
         "bio": user.get("bio", ""),
         "username": user.get("username"),
         "role": user.get("role", "user"),
+        "admin_scopes": admin_scopes_for_user(user),
         "has_password": bool(user.get("password_hash")),
         "created_at": str(user.get("created_at", "")),
         "date_of_birth": str(user.get("date_of_birth", "")) if user.get("date_of_birth") else None,

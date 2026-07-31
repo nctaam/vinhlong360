@@ -9,25 +9,25 @@ import admin  # noqa: E402
 import auth  # noqa: E402
 
 
-def test_every_mutating_admin_route_has_scope_rule():
-    # RBAC default-deny: MỌI route admin mutating (POST/PUT/DELETE/PATCH) phải có scope rule
-    # tường minh trong ADMIN_SCOPE_RULES. Route mutating thiếu rule = fail-open (bị default-
-    # deny khoá về master) — buộc dev khai rule khi thêm endpoint mutating admin mới.
+def test_every_admin_route_has_scope_rule_or_scope_filtered_read():
+    # Mọi route AdminCP phải có scope tường minh; endpoint read đa workstream chỉ được
+    # miễn rule đơn khi response được lọc theo actor tại endpoint.
     offenders = []
     for r in admin.router.routes:
         p = getattr(r, "path", "")
         if not p.startswith("/admin"):
             continue
-        mutating = (getattr(r, "methods", set()) or set()) - {"GET", "HEAD", "OPTIONS"}
-        if mutating and not admin._admin_required_scope_for_path(p):
-            offenders.append((sorted(mutating), p))
-    assert not offenders, f"Route admin mutating thiếu scope rule (fail-open): {offenders}"
+        methods = getattr(r, "methods", set()) or set()
+        scope_filtered = methods <= {"GET", "HEAD", "OPTIONS"} and p in admin.ADMIN_SCOPE_AWARE_READ_PATHS
+        if not admin._admin_required_scope_for_path(p) and not scope_filtered:
+            offenders.append((sorted(methods), p))
+    assert not offenders, f"Route AdminCP thiếu scope hoặc response filter: {offenders}"
 
 
 def test_require_admin_has_default_deny_branch():
-    # Guard: nhánh default-deny cho mutating-không-rule không bị xoá vô tình.
+    # Guard: GET không rule cũng phải default-deny, trừ endpoint read tự lọc response.
     src = inspect.getsource(admin.require_admin)
-    assert 'request.method not in ("GET", "HEAD", "OPTIONS")' in src
+    assert "_is_scope_aware_admin_read(request)" in src
     assert '_ensure_admin_scope(request, "*")' in src
 
 
