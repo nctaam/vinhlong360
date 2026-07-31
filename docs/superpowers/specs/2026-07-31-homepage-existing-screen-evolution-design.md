@@ -1,6 +1,6 @@
 # Homepage Existing Screen Evolution B1 Design
 
-> STATUS: awaiting-written-spec-review
+> STATUS: approved-for-plan
 > Approved in conversation on 2026-07-31: Controlled Composition Upgrade.
 
 ## 1. Goal
