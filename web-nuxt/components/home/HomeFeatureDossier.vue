@@ -8,6 +8,7 @@
       :aria-label="`Xem ${title}`"
     >
       <NuxtImg
+        v-if="isRemote(descriptor.url)"
         :src="descriptor.url"
         :alt="descriptor.alt"
         :aria-describedby="disclosureId"
@@ -17,6 +18,16 @@
         loading="eager"
         fetchpriority="high"
       />
+      <img
+        v-else
+        :src="descriptor.url"
+        :alt="descriptor.alt"
+        :aria-describedby="disclosureId"
+        width="960"
+        height="640"
+        loading="eager"
+        fetchpriority="high"
+      >
       <ImageDisclosure :id="disclosureId" :descriptor="descriptor" presentation="short" />
     </NuxtLink>
     <div v-else class="home-feature-dossier__media home-feature-dossier__media--empty" data-home-feature-media>
@@ -51,6 +62,8 @@
 
 <script setup lang="ts">
 import type { ImageDescriptor } from '~/types/image'
+
+const isRemote = isRemoteUrl
 
 withDefaults(defineProps<{
   eyebrow: string

@@ -10,7 +10,7 @@ const NuxtImgStub = defineComponent({
   inheritAttrs: false,
   props: { src: { type: String, required: true }, alt: { type: String, required: true } },
   setup(props, { attrs }) {
-    return () => h('img', { ...attrs, src: props.src, alt: props.alt })
+    return () => h('img', { ...attrs, src: props.src, alt: props.alt, 'data-nuxt-img-stub': 'true' })
   },
 })
 const wrappers: Array<{ unmount: () => void }> = []
@@ -50,12 +50,45 @@ describe('homepage Nocturne presentation components', () => {
     wrappers.push(wrapper)
 
     const media = wrapper.get('[data-home-feature-media]')
-    expect(media.get('img').attributes('aria-describedby')).toBe('home-feature-disclosure')
+    const image = media.get('img')
+    expect(image.attributes('data-nuxt-img-stub')).toBeUndefined()
+    expect(image.attributes('aria-describedby')).toBe('home-feature-disclosure')
+    expect(image.attributes('width')).toBe('960')
+    expect(image.attributes('height')).toBe('640')
+    expect(image.attributes('loading')).toBe('eager')
+    expect(image.attributes('fetchpriority')).toBe('high')
     expect(wrapper.get('#home-feature-disclosure').text()).toBe(descriptor.full_disclosure)
     expect(wrapper.get('[data-dossier-title]').text()).toBe('Một buổi trong vườn')
     expect(wrapper.findAll('[data-home-feature-action]')).toHaveLength(2)
     expect(wrapper.find('[data-source-mark]').exists()).toBe(false)
     expect(wrapper.find('[data-rating]').exists()).toBe(false)
+  })
+
+  it('uses Nuxt image optimization for remote feature media', async () => {
+    const wrapper = await mountSuspended(HomeFeatureDossier, {
+      props: {
+        eyebrow: 'Trải nghiệm ven sông',
+        title: 'Một chiều trên bến',
+        descriptor: {
+          ...descriptor,
+          url: 'https://images.example.com/hero.webp',
+        },
+        disclosureId: 'home-feature-remote-disclosure',
+        detailTo: '/dia-diem/remote-hero',
+      },
+      global: { stubs: { NuxtImg: NuxtImgStub, IconLine: true } },
+    })
+    wrappers.push(wrapper)
+
+    const image = wrapper.get('[data-home-feature-media] img')
+    expect(image.attributes('data-nuxt-img-stub')).toBe('true')
+    expect(image.attributes('src')).toBe('https://images.example.com/hero.webp')
+    expect(image.attributes('aria-describedby')).toBe('home-feature-remote-disclosure')
+    expect(image.attributes('width')).toBe('960')
+    expect(image.attributes('height')).toBe('640')
+    expect(image.attributes('sizes')).toBe('375px sm:540px md:640px')
+    expect(image.attributes('loading')).toBe('eager')
+    expect(image.attributes('fetchpriority')).toBe('high')
   })
 
   it('preserves feature geometry and disclosure when no image URL is supplied', async () => {
