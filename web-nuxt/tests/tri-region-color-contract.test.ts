@@ -1,8 +1,11 @@
+import { execFile } from 'node:child_process'
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
+import { promisify } from 'node:util'
 import { describe, expect, it } from 'vitest'
 
 const root = resolve(import.meta.dirname, '../..')
+const execFileAsync = promisify(execFile)
 
 describe('Tri-Region color contract', () => {
   it('maps action, brand, trust, status and material roles without province themes', async () => {
@@ -51,5 +54,38 @@ describe('Tri-Region color contract', () => {
     expect(config.indexOf("'~/assets/css/tri-region-color.css'")).toBeGreaterThan(
       config.indexOf("'~/assets/css/catalog.css'"),
     )
+  })
+
+  it('lets a nested neutral material reset an inherited page accent', async () => {
+    const css = await readFile(resolve(root, 'web-nuxt/assets/css/tri-region-color.css'), 'utf8')
+
+    expect(css).toMatch(
+      /\[data-color-system="tri-region-v1"\]\[data-material-accent="neutral"\],[\s\S]*\[data-color-system="tri-region-v1"\] \[data-material-accent="neutral"\]\s*\{[\s\S]*--tri-region-material-accent:\s*var\(--color-material-neutral\)/,
+    )
+  })
+
+  it('covers canonical root material accents in forced-colors mode', async () => {
+    const css = await readFile(resolve(root, 'web-nuxt/assets/css/tri-region-color.css'), 'utf8')
+    const forcedColors = css.slice(css.indexOf('@media (forced-colors: active)'))
+
+    expect(forcedColors).toContain('[data-color-system="tri-region-v1"][data-material-accent]')
+    expect(forcedColors).toContain('[data-color-system="tri-region-v1"] [data-material-accent]')
+  })
+
+  it('executes control-border contrast checks for sRGB and OKLCH branches', async () => {
+    const { stdout } = await execFileAsync(process.execPath, ['scripts/check-tri-region-contrast.mjs'], {
+      cwd: resolve(root, 'web-nuxt'),
+    })
+
+    for (const name of [
+      'control-border-light-srgb',
+      'control-border-dark-srgb',
+      'control-border-light-oklch',
+      'control-border-dark-oklch',
+    ]) {
+      const match = new RegExp(`^${name}\\s+(\\d+\\.\\d+)\\s+3\\.0$`, 'm').exec(stdout)
+      expect(match, `missing executable audit output for ${name}`).not.toBeNull()
+      expect(Number(match![1])).toBeGreaterThanOrEqual(3)
+    }
   })
 })

@@ -45,6 +45,11 @@
   --tri-region-material-accent: var(--color-material-amber);
 }
 
+[data-color-system="tri-region-v1"][data-material-accent="neutral"],
+[data-color-system="tri-region-v1"] [data-material-accent="neutral"] {
+  --tri-region-material-accent: var(--color-material-neutral);
+}
+
 [data-color-system="tri-region-v1"] [data-color-role="action-primary"] {
   border-color: var(--color-action);
   background: var(--color-action);
@@ -69,6 +74,7 @@
 }
 
 @media (forced-colors: active) {
+  [data-color-system="tri-region-v1"][data-material-accent],
   [data-color-system="tri-region-v1"] [data-material-accent] {
     --tri-region-material-accent: CanvasText;
   }

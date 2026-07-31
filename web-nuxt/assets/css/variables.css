@@ -49,7 +49,7 @@
   --color-action-hover: var(--river-700);
   --color-action-surface: color-mix(in srgb, var(--color-action) 10%, transparent);
   --color-action-surface-hover: color-mix(in srgb, var(--color-action) 16%, transparent);
-  --color-action-border: color-mix(in srgb, var(--color-action) 36%, transparent);
+  --color-action-border: color-mix(in srgb, var(--color-action) 66%, transparent);
   --color-on-action: var(--surface-white);
   --color-brand: var(--mangthit-600);
   --color-brand-surface: color-mix(in srgb, var(--color-brand) 10%, transparent);
