@@ -1,8 +1,7 @@
 <template>
-  <div class="home">
+  <div class="home" data-home-pilot="nocturne-b1">
     <!-- 1. Hero — dynamic tagline + search + stats inline -->
-    <section class="hero" aria-label="Giới thiệu">
-      <div class="hero-kenburns" aria-hidden="true"></div>
+    <section class="hero" aria-label="Giới thiệu" data-home-section="hero">
       <HeroIllustration />
       <div class="hero-scrim" aria-hidden="true"></div>
       <div class="hero-inner">
@@ -13,50 +12,23 @@
           <SearchAutocomplete class="hero-search hero-ac" :placeholder="ss('homepage.search_placeholder', 'Tìm điểm đến, món ngon, lịch trình…')" />
           <NuxtLink to="/ban-do?near=1" class="hero-nearby"><IconLine name="pin" /> Tìm quanh tôi</NuxtLink>
         </div>
-        <aside v-if="heroFeature" class="hero-feature" aria-label="Gợi ý nổi bật">
-          <div class="hf-card">
-            <NuxtLink :to="entityPath(heroFeature.id)" class="hf-thumb" :class="`cat-${hfMeta?.cat}`" :style="{ backgroundImage: hfBg }" :aria-label="`Xem ${heroFeature.name}`" :aria-describedby="heroFeatureDisclosureId">
-              <span v-if="!heroFeatureDescriptor.url" class="hf-thumb-icon" v-html="hfIcon" />
-              <ImageDisclosure :id="heroFeatureDisclosureId" :descriptor="heroFeatureDescriptor" presentation="short" />
-            </NuxtLink>
-            <span class="hf-body">
-              <span class="hf-tag">{{ heroFeatureReason }}</span>
-              <NuxtLink :to="entityPath(heroFeature.id)" class="hf-title">{{ heroFeature.name }}</NuxtLink>
-              <span v-if="hfRegion" class="hf-region">{{ hfRegion }}</span>
-              <span v-if="heroFeature.summary" class="hf-summary">{{ heroFeature.summary }}</span>
-              <span class="hf-actions">
-                <NuxtLink :to="entityPath(heroFeature.id)" class="hf-action hf-action-primary">Khám phá</NuxtLink>
-                <NuxtLink :to="plannerAddPath(heroFeature.id)" no-prefetch class="hf-action">Thêm vào lịch trình</NuxtLink>
-              </span>
-            </span>
-          </div>
-        </aside>
+        <HomeFeatureDossier
+          v-if="heroFeature"
+          class="hero-feature"
+          :eyebrow="heroFeatureReason"
+          :title="heroFeature.name"
+          :summary="heroFeature.summary"
+          :region="hfRegion"
+          :descriptor="heroFeatureDescriptor"
+          :disclosure-id="heroFeatureDisclosureId"
+          :detail-to="entityPath(heroFeature.id)"
+          :planner-to="plannerAddPath(heroFeature.id)"
+        />
       </div>
     </section>
 
     <!-- 1a. Bắt đầu hành trình — data-driven decision layer -->
-    <section v-if="homeDecisionCards.length" class="block block-compact reveal home-decision" aria-label="Bắt đầu hành trình">
-      <div class="decision-shell">
-        <div class="decision-copy">
-          <span class="decision-kicker">Gợi ý nhanh</span>
-          <h2>Hôm nay bạn muốn bắt đầu thế nào?</h2>
-          <p>Dựa trên mùa, sự kiện và nội dung đang nổi bật để đưa bạn tới đúng luồng tiếp theo.</p>
-        </div>
-        <ol class="decision-index">
-          <li v-for="(card, i) in homeDecisionCards" :key="card.to" class="dx-row">
-            <NuxtLink :to="card.to" class="dx-item" :class="`dx-${card.tone}`">
-              <span class="dx-num" aria-hidden="true">{{ String(i + 1).padStart(2, '0') }}</span>
-              <span class="dx-main">
-                <span class="dx-eyebrow">{{ card.eyebrow }}</span>
-                <span class="dx-title">{{ card.title }}</span>
-                <span class="dx-text">{{ card.text }}</span>
-              </span>
-              <span class="dx-go" aria-hidden="true">→</span>
-            </NuxtLink>
-          </li>
-        </ol>
-      </div>
-    </section>
+    <HomeDecisionLedger :entries="homePresentation.decisionEntries" data-home-section="decisions" />
 
     <!-- ClientOnly: homeJourneyActions is personalized from client-only state (localStorage
          favorites/recently-viewed + isLoggedIn) → SSR (anon/empty) ≠ client → hydration
@@ -73,7 +45,7 @@
     </ClientOnly>
 
     <!-- Degraded/empty fallback -->
-    <section v-if="homeFailed" class="block reveal">
+    <section v-if="homeFailed" class="block reveal" data-home-section="recovery">
       <EmptyState :tone="homeError ? 'error' : 'empty'" title="Đang cập nhật nội dung" :message="homeError ? 'Mạng chậm một chút rồi. Bạn thử tải lại giúp tụi mình nhé!' : 'Tụi mình đang bổ sung điểm đến và đặc sản cho khu vực này. Quay lại sau nhé!'">
         <template #actions>
           <button v-if="homeError" type="button" class="btn btn-outline" @click="refreshHome()">Tải lại</button>
@@ -82,25 +54,20 @@
     </section>
 
     <!-- Skeleton -->
-    <section v-if="homeLoadingSkeleton" class="block reveal" aria-hidden="true">
+    <section v-if="homeLoadingSkeleton" class="block reveal" aria-hidden="true" data-home-section="recovery">
       <div class="section-head"><div class="sk-heading"></div></div>
       <SkeletonGrid :count="3" />
     </section>
 
     <!-- 1b. Khám phá nhanh — compact category grid (always visible for navigation) -->
-    <section v-if="!homePending" class="block block-compact reveal">
-      <nav class="cat-grid" aria-label="Khám phá theo chủ đề">
-        <NuxtLink v-for="cat in categoryLinks" :key="cat.to" :to="cat.to" class="cat-tile" :class="[`cat-tile-${cat.accent}`, `ct-${cat.key}`]">
-          <IconLine :name="cat.icon" class="cat-icon" />
-          <span class="cat-label">{{ cat.label }}</span>
-          <span class="cat-hint">{{ cat.hint }}</span>
-          <span class="cat-count" v-if="cat.countLabel">{{ cat.countLabel }}</span>
-        </NuxtLink>
-      </nav>
-    </section>
+    <HomeCategoryIndex
+      v-if="!homePending"
+      :groups="homePresentation.categoryGroups"
+      data-home-section="categories"
+    />
 
     <!-- 2. "Đang diễn ra" — upcoming events + seasonal -->
-    <section v-if="upcomingEvents.length || seasonal.length" class="block reveal" aria-label="Sự kiện và lễ hội">
+    <section v-if="upcomingEventList.length || seasonalList.length" class="block reveal" aria-label="Sự kiện và lễ hội" data-home-section="events-seasonal">
       <div class="section-head">
         <div class="sh-text">
           <h2>Đang <em class="ac-clay">diễn ra</em></h2>
@@ -111,8 +78,8 @@
 
       <!-- declutter-3 T16 (B1-2): event-hero đã bỏ — event #1 sống ở decision card
            "Có lịch gần nhất"; 3 mini giữ nhịp lịch, không lặp -->
-      <div v-if="upcomingEvents.length > 1" class="happening-rest">
-        <NuxtLink v-for="ev in upcomingEvents.slice(1, 4)" :key="ev.id" :to="entityPath(ev.id)" class="event-mini">
+      <div v-if="upcomingEventList.length" class="happening-rest">
+        <NuxtLink v-for="ev in upcomingEventList" :key="ev.id" :to="entityPath(ev.id)" class="event-mini">
           <div class="ec-date ec-date-sm">
             <span class="ec-day">{{ formatEventDay(ev) }}</span>
             <span class="ec-month">{{ formatEventMonth(ev) }}</span>
@@ -126,7 +93,7 @@
         </NuxtLink>
       </div>
 
-      <div v-if="seasonal.length" class="happening-section">
+      <div v-if="seasonalList.length" class="happening-section">
         <p class="happening-label"><IconLine name="flame" /> Đang vào mùa tháng {{ currentMonth }}</p>
         <div class="scroll-row" role="region" aria-label="Đặc sản theo mùa" tabindex="0">
           <EntityCard v-for="e in seasonalList" :key="e.id" :entity="e" :season-filter="String(currentMonth)" />
@@ -135,7 +102,7 @@
     </section>
 
     <!-- 2b. Feature — photo-led editorial block (Trải nghiệm miệt vườn) -->
-    <section class="block reveal" aria-label="Trải nghiệm nổi bật">
+    <section class="block reveal" aria-label="Trải nghiệm nổi bật" data-home-section="editorial-feature">
       <EntityFeature
         :image="FEATURE_EXPERIENCE_IMAGE"
         v-bind="FEATURE_EXPERIENCE"
@@ -148,7 +115,7 @@
     </section>
 
     <!-- 3. Nổi bật — spotlight magazine + quán ngon rating -->
-    <section v-if="spotlight || topDishes.length" class="block reveal band" aria-label="Nổi bật">
+    <section v-if="spotlight || topDishes.length" class="block reveal band" aria-label="Nổi bật" data-home-section="spotlight-food">
       <div class="section-head">
         <div class="sh-text">
           <h2><em class="ac-river">Nổi bật</em></h2>
@@ -156,7 +123,7 @@
         </div>
       </div>
 
-      <div class="tinh-hoa">
+      <div class="home-spotlight-dossier">
         <div v-if="spotlight" class="spotlight">
           <NuxtLink
             :to="entityPath(spotlight.id)"
@@ -178,11 +145,11 @@
           </div>
         </div>
 
-        <div v-if="topDishesList.length" class="top-dishes">
+        <div v-if="topDishesList.length" class="home-food-ledger">
           <h3 class="dishes-heading">⭐ Quán ngon nổi bật</h3>
           <div class="dishes-list">
             <NuxtLink v-for="d in topDishesList" :key="d.id" :to="entityPath(d.id)" class="dish-item">
-              <span class="dish-rating-badge">
+              <span v-if="Number(d.attributes?.rating) > 0" class="dish-rating-badge">
                 <span class="dish-star">★</span>
                 <span class="dish-score">{{ formatRating(d.attributes?.rating || 0) }}</span>
               </span>
@@ -202,6 +169,7 @@
 
     <!-- 3a. Story spread — full-bleed signature moment -->
     <StorySpread
+      data-home-section="story-spread"
       image="/img/spread/cu-lao-an-binh.webp"
       srcset="/img/spread/cu-lao-an-binh-640.webp 640w, /img/spread/cu-lao-an-binh-1024.webp 1024w, /img/spread/cu-lao-an-binh.webp 1536w"
       v-bind="SPREAD"
@@ -209,11 +177,11 @@
     />
 
     <!-- declutter-3 T16 (B1-5): EntityFeature #2 OCOP đã bỏ — 1 feature-block/trang là đủ
-         nhịp editorial; OCOP còn tile cat-grid + decision card + tinh-hoa. GIỮ feature #1
+         nhịp editorial; OCOP vẫn có trong chỉ mục địa phương. GIỮ feature #1
          (Trải nghiệm, LCP priority). -->
 
-    <!-- declutter-3 T16 (B1-4): strip "Lịch trình gợi ý" đã bỏ — thay bằng tile thứ 7
-         trong cat-grid (ct-lich-trinh); itineraries GIỮ trong hasHomeContent (degraded logic). -->
+    <!-- declutter-3 T16 (B1-4): strip "Lịch trình gợi ý" đã bỏ — luồng lịch trình
+         vẫn có trong chỉ mục tiện ích; itineraries GIỮ trong hasHomepageContent (degraded logic). -->
 
     <!-- 5. Từ cộng đồng — compact + trending tags; else always-populated editorial story.
          ClientOnly: communityData is lazy → renders null at prerender but resolves into the
@@ -227,6 +195,7 @@
         data-image-surface="home-community"
         data-source-class="user-uploaded"
         data-entity-image-policy="no-image-invariant"
+        data-home-section="community"
       >
         <div class="section-head">
           <div class="sh-text">
@@ -242,7 +211,7 @@
             · <strong>{{ communityStats.members }}</strong> thành viên
           </p>
           <div v-if="trendingTags.length" class="trending-tags">
-            <span class="tt-label"><IconLine name="flame" /> Trending:</span>
+            <span class="tt-label"><IconLine name="flame" /> Đang được nhắc:</span>
             <NuxtLink v-for="t in trendingTags" :key="t.tag" :to="`/cong-dong?tag=${encodeURIComponent(t.tag)}`" class="tt-chip">{{ t.tag }}</NuxtLink>
           </div>
           <!-- declutter-3 T16 (B1-6): dàn chip leaderboard → 1 link teaser (đích /bang-xep-hang) -->
@@ -272,7 +241,7 @@
           <NuxtLink to="/cong-dong" class="btn btn-outline"><IconLine name="message" /> Tham gia cộng đồng</NuxtLink>
         </div>
       </section>
-      <section v-else class="block reveal" aria-label="Cộng đồng">
+      <section v-else class="block reveal" aria-label="Cộng đồng" data-home-section="community">
         <EmptyState tone="empty" title="Cộng đồng đang khởi động"
           message="Chưa có bài viết nổi bật tuần này — bạn là người kể chuyện đầu tiên nhé!">
           <template #actions>
@@ -286,7 +255,7 @@
     <ClientOnly>
       <!-- declutter-3 T16 (B1-7): chỉ hiện khi CÓ tín hiệu cá nhân thật (đã xem/đã lưu) —
            hết nhánh fallback "Gợi ý khám phá" đội lốt cá nhân hoá -->
-      <section v-if="hasPersonalSignal && forYou.length" class="block block-compact reveal" aria-label="Dành cho bạn">
+      <section v-if="hasPersonalSignal && forYou.length" class="block block-compact reveal" aria-label="Dành cho bạn" data-home-section="for-you">
         <div class="section-head section-head-tight">
           <div class="sh-text">
             <h2 class="h2-tight">Dành cho <em class="ac-clay">bạn</em></h2>
@@ -317,12 +286,16 @@
 
 <script setup lang="ts">
 import { TYPE_META, AREA_META } from '~/composables/useConstants'
-import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
+import { generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
 import { useJourneyActions } from '~/composables/useJourneyActions'
 import EntityFeature from '~/components/home/EntityFeature.vue'
+import HomeCategoryIndex from '~/components/home/HomeCategoryIndex.vue'
+import HomeDecisionLedger from '~/components/home/HomeDecisionLedger.vue'
+import HomeFeatureDossier from '~/components/home/HomeFeatureDossier.vue'
 import StorySpread from '~/components/home/StorySpread.vue'
 import ImageDisclosure from '~/components/ImageDisclosure.vue'
 import { describeEntityImages, describeEntityPlaceholder } from '~/utils/imageDescriptors'
+import { createHomeNocturnePresentation } from '~/utils/homeNocturnePresentation'
 import { aiDisclosure } from '~/utils/aiDisclosure'
 import type { ImageDescriptor } from '~/types/image'
 import { useId } from 'vue'
@@ -341,18 +314,21 @@ const FEATURE_EXPERIENCE = {
   ctaText: 'Khám phá trải nghiệm',
   ctaTo: '/du-lich',
 }
-const FEATURE_EXPERIENCE_IMAGE: ImageDescriptor = {
-  url: '/img/features/trai-nghiem.webp',
-  alt: 'Trải nghiệm miệt vườn — ảnh minh họa',
-  source_class: 'ai-generated',
-  source_kind: 'entity-editorial',
-  disclosure_key: 'entity-ai',
-  short_label: aiDisclosure.entity_ai.short_label,
-  full_disclosure: aiDisclosure.entity_ai.full_disclosure,
-  credit: null,
-  width: null,
-  height: null,
-}
+const FEATURE_EXPERIENCE_IMAGE = describeEntityImages({
+  name: FEATURE_EXPERIENCE.title,
+  image_descriptor: {
+    url: '/img/features/trai-nghiem.webp',
+    alt: 'Trải nghiệm miệt vườn — ảnh minh họa',
+    source_class: 'ai-generated',
+    source_kind: 'entity-editorial',
+    disclosure_key: 'entity-ai',
+    short_label: aiDisclosure.entity_ai.short_label,
+    full_disclosure: aiDisclosure.entity_ai.full_disclosure,
+    credit: null,
+    width: null,
+    height: null,
+  } satisfies ImageDescriptor,
+})[0]!
 
 // Full-bleed signature moment (StorySpread). Discover-only CTA — never an order/price
 // form, per project invariants.
@@ -362,16 +338,6 @@ const SPREAD = {
   subtitle: 'Nơi sông Cổ Chiên ôm 4 cù lao An Bình — gốm đỏ Mang Thít, bưởi Năm Roi, chợ nổi Trà Ôn họp lúc tinh mơ.',
   ctaText: 'Khám phá vùng đất',
   ctaTo: '/ban-do',
-}
-
-type HomeDecisionCard = {
-  icon: string
-  eyebrow: string
-  title: string
-  text: string
-  to: string
-  cta: string
-  tone: 'event' | 'season' | 'planner' | 'food' | 'map'
 }
 
 const { favorites } = useFavorites()
@@ -445,27 +411,10 @@ const experiences = computed(() => homeData.value?.experiences || [])
 const productsAll = computed(() => homeData.value?.products || [])
 const topDishes = computed(() => homeData.value?.top_dishes || [])
 // (declutter-1: computed `trending` đã bỏ — không section nào render nó; đếm nó trong
-// hasHomeContent chỉ làm trang "có nội dung" mà không hiển thị gì.)
+// hasHomepageContent chỉ làm trang "có nội dung" mà không hiển thị gì.)
 const itineraries = computed(() => homeData.value?.itineraries || [])
 const upcomingEvents = computed(() => homeData.value?.upcoming_events || [])
 const seasonalTagline = computed(() => homeData.value?.seasonal_tagline || 'Khám phá Vĩnh Long theo cách của người bản địa')
-
-const CATEGORY_LINKS = [
-  { icon: 'leaf', label: 'Du lịch', hint: 'vườn, sông, làng nghề', to: '/du-lich', accent: 'leaf', countKey: 'experiences', key: 'du-lich' },
-  { icon: 'bowl', label: 'Ẩm thực', hint: 'quán ngon, món bản địa', to: '/kham-pha/am-thuc', accent: 'amber', countKey: 'dishes', key: 'am-thuc' },
-  { icon: 'gift', label: 'OCOP', hint: 'đặc sản làm quà', to: '/ocop', accent: 'clay', countKey: 'products', key: 'ocop' },
-  { icon: 'lantern', label: 'Lễ hội', hint: 'lịch gần nhất', to: '/le-hoi', accent: 'river', countKey: 'events', key: 'le-hoi' },
-  { icon: 'home', label: 'Lưu trú', hint: 'nghỉ lại theo khu vực', to: '/luu-tru', accent: 'leaf', countKey: '', key: 'luu-tru' },
-  // declutter-3 T16 (B1-4): tile thay strip "Lịch trình gợi ý" (section đã bỏ)
-  { icon: 'compass', label: 'Lịch trình', hint: 'gợi ý sẵn 1–3 ngày', to: '/lich-trinh', accent: 'amber', countKey: '', key: 'lich-trinh' },
-  { icon: 'map', label: 'Bản đồ', hint: 'lọc theo vùng', to: '/ban-do', accent: 'river', countKey: 'areas', key: 'ban-do' },
-]
-const categoryLinks = computed(() => {
-  return CATEGORY_LINKS.map(c => ({
-    ...c,
-    countLabel: categoryMetric(c.countKey),
-  }))
-})
 
 const SPOTLIGHT_TYPE_WEIGHT: Record<string, number> = { experience: 3, place: 2, dish: 1, product: 0 }
 const spotlight = computed<any>(() => {
@@ -511,13 +460,7 @@ const heroFeatureDescriptor = computed<ImageDescriptor>(() => {
   const descriptor = heroFeature.value ? describeEntityImages(heroFeature.value)[0] : null
   return descriptor || describeEntityPlaceholder(heroFeature.value || { name: 'Gợi ý nổi bật' })
 })
-const hfBg = computed(() => {
-  const img = heroFeatureDescriptor.value.url
-  if (img) return `linear-gradient(to top, rgba(18,20,24,.42) 0%, rgba(18,20,24,.06) 45%, rgba(18,20,24,.22) 100%), url(${img})`
-  return heroFeature.value && hfMeta.value ? generateCategoryPlaceholder(heroFeature.value.id, hfMeta.value.cat) : ''
-})
 const heroFeatureDisclosureId = `home-hero-feature-${useId().replace(/[^A-Za-z0-9_-]+/g, '-')}`
-const hfIcon = computed(() => hfMeta.value ? generateCategoryIcon(hfMeta.value.cat) : '')
 const hfRegion = computed(() => {
   const a = heroFeature.value?.area || heroFeature.value?.attributes?.area || heroFeature.value?.attributes?.province
   if (!a) return ''
@@ -532,66 +475,28 @@ const heroFeatureReason = computed(() => {
 
 const areaCounts = computed<Record<string, number>>(() => homeData.value?.area_counts || {})
 
-const firstUpcomingEvent = computed<any>(() => upcomingEvents.value[0] || null)
-const firstSeasonal = computed<any>(() => seasonal.value[0] || null)
-const firstDish = computed<any>(() => topDishes.value[0] || null)
-// De-dup: entities already shown in the top zone (hero + decision index) or the spotlight
-// band are excluded from the downstream grids so no "current" entity repeats. Pure computeds
-// → SSR/CSR identical.
 const experienceThumbs = computed(() =>
   experiences.value.filter((e: any) => e.id !== heroFeature.value?.id && e.id !== spotId.value).slice(0, 3))
-const topDishesList = computed(() =>
-  topDishes.value.filter((d: any) => d.id !== firstDish.value?.id))
-const seasonalList = computed(() => {
-  const rest = seasonal.value.filter((e: any) => e.id !== firstSeasonal.value?.id)
-  return rest.length ? rest : seasonal.value
-})
-const homeDecisionCards = computed<HomeDecisionCard[]>(() => {
-  const cards: HomeDecisionCard[] = []
-  const ev = firstUpcomingEvent.value
-  if (ev) {
-    cards.push({
-      icon: '🎭',
-      eyebrow: eventCountdownLabel(ev),
-      title: 'Có lịch gần nhất',
-      text: ev.name,
-      to: entityPath(ev.id),
-      cta: 'Xem sự kiện',
-      tone: 'event',
-    })
-  }
+const homePresentation = computed(() => createHomeNocturnePresentation({
+  currentMonth: currentMonth.value,
+  heroId: heroFeature.value?.id,
+  spotlightId: spotlight.value?.id,
+  upcomingEvents: upcomingEvents.value,
+  seasonal: seasonal.value,
+  topDishes: topDishes.value,
+  itineraries: itineraries.value,
+  categoryCounts: {
+    experiences: experiences.value.length,
+    dishes: topDishes.value.length,
+    products: productsAll.value.length,
+    events: upcomingEvents.value.length,
+    areas: Object.keys(areaCounts.value).length,
+  },
+}))
 
-  const seasonalPick = firstSeasonal.value
-  if (seasonalPick) {
-    cards.push({
-      icon: '🌿',
-      eyebrow: `Tháng ${currentMonth.value}`,
-      title: 'Đang vào mùa',
-      text: seasonalPick.name,
-      to: `/theo-mua?mua=${encodeURIComponent(String(currentMonth.value))}`,
-      cta: 'Xem theo mùa',
-      tone: 'season',
-    })
-  }
-
-  const dish = firstDish.value
-  if (dish) {
-    cards.push({
-      icon: '🍲',
-      eyebrow: dish.attributes?.rating ? `${formatRating(dish.attributes.rating)} điểm` : 'Ẩm thực',
-      title: 'Ăn gì hôm nay',
-      text: dish.name,
-      to: '/kham-pha/am-thuc?sort=rating',
-      cta: 'Xem quán ngon',
-      tone: 'food',
-    })
-  }
-
-  // declutter-3 T16 (B1-8): bỏ card độn "Mở bản đồ" — hero đã có "Tìm quanh tôi" (/ban-do)
-  // render vô điều kiện; thiếu data thì decision-index ngắn lại một cách trung thực.
-
-  return cards.slice(0, 4)
-})
+const upcomingEventList = computed(() => homePresentation.value.upcomingEventEntries)
+const seasonalList = computed(() => homePresentation.value.seasonalEntries)
+const topDishesList = computed(() => homePresentation.value.dishEntries)
 
 const homeJourneyActions = computed(() => homepageDecisionActions({
   isLoggedIn: isLoggedIn.value,
@@ -600,10 +505,10 @@ const homeJourneyActions = computed(() => homepageDecisionActions({
   currentMonth: currentMonth.value,
 }))
 
-const hasHomeContent = computed(() => !!(upcomingEvents.value.length || seasonal.value.length || itineraries.value.length || spotlight.value || topDishes.value.length || communityPosts.value.length))
-const homeFailed = computed(() => !homePending.value && (!!homeError.value || (!!homeData.value && !hasHomeContent.value)))
-const homeLoadingSkeleton = computed(() => !hasHomeContent.value && !homeFailed.value)
-onMounted(() => { if (homeError.value || !hasHomeContent.value) refreshHome() })
+const hasHomepageContent = computed(() => !!(upcomingEvents.value.length || seasonal.value.length || itineraries.value.length || spotlight.value || topDishes.value.length))
+const homeFailed = computed(() => !homePending.value && (!!homeError.value || (!!homeData.value && !hasHomepageContent.value)))
+const homeLoadingSkeleton = computed(() => !hasHomepageContent.value && !homeFailed.value)
+onMounted(() => { if (homeError.value || !hasHomepageContent.value) refreshHome() })
 
 function formatEventDay(ev: any) {
   const ds = ev.attributes?.date_start
@@ -617,33 +522,13 @@ function formatEventMonth(ev: any) {
   return isNaN(m) || m === 0 ? '' : `Th${m}`
 }
 
-function eventCountdownLabel(ev: any) {
-  if (ev?.days_until === 0) return 'Hôm nay'
-  if (ev?.days_until === 1) return 'Ngày mai'
-  if (typeof ev?.days_until === 'number') return `Còn ${ev.days_until} ngày`
-  return 'Sắp diễn ra'
-}
-
 function formatRating(rating: number | string): string {
   const n = Number(rating)
-  return n > 0 ? n.toFixed(1) : 'Mới'
+  return n > 0 ? n.toFixed(1) : ''
 }
 
 function plannerAddPath(id: string | number) {
   return `/tao-lich-trinh?add=${encodeURIComponent(String(id))}`
-}
-
-function categoryMetric(key: string) {
-  if (!key) return ''
-  if (key === 'experiences') return experiences.value.length ? `${experiences.value.length} gợi ý` : ''
-  if (key === 'dishes') return topDishes.value.length ? `${topDishes.value.length} nổi bật` : ''
-  if (key === 'products') return productsAll.value.length ? `${productsAll.value.length} gợi ý` : ''
-  if (key === 'events') return upcomingEvents.value.length ? `${upcomingEvents.value.length} sắp tới` : ''
-  if (key === 'areas') {
-    const count = Object.keys(areaCounts.value).length
-    return count ? `${count} vùng` : ''
-  }
-  return ''
 }
 
 function onImgError(e: Event | string) {
@@ -767,80 +652,9 @@ useHead({
   .home .hero-inner { display: grid; grid-template-columns: minmax(0, 1.32fr) minmax(280px, 0.8fr); gap: var(--space-10); align-items: center; }
   .home .hero-feature { align-self: end; padding-bottom: var(--space-2); }
 }
-/* Mobile: hero feature as compact inline card (NOT hidden) */
-@media (max-width: 919px) {
-  .hero-feature { margin-top: var(--space-4); }
-  .hf-card { padding: var(--space-3); gap: var(--space-3); }
-  .hf-thumb { flex: 0 0 56px; height: 56px; }
-  .hf-title { font-size: var(--text-base); }
-}
-.hf-card {
-  display: flex; gap: var(--space-4); align-items: center;
-  padding: var(--space-4);
-  background: rgba(var(--white-rgb),.07);
-  backdrop-filter: saturate(160%) blur(6px); -webkit-backdrop-filter: saturate(160%) blur(6px);
-  border: .5px solid rgba(var(--white-rgb),.14);
-  border-radius: var(--radius-md);
-  color: var(--text-on-dark, var(--white)); text-decoration: none;
-  box-shadow: 0 4px 18px rgba(var(--black-rgb),.14);
-  opacity: 1;
-  transition: transform .4s var(--ease-spring-gentle), box-shadow .4s var(--ease-out-expo), background .3s var(--ease-out);
-}
-.hf-card:hover { transform: translateY(-4px); background: rgba(var(--white-rgb),.16); box-shadow: var(--shadow-lg); opacity: 1; }
-.hf-card:active { transform: scale(.99); transition-duration: .1s; }
-.hf-thumb {
-  flex: 0 0 76px; height: 76px; border-radius: var(--radius-md);
-  background-size: cover; background-position: center;
-  position: relative; overflow: hidden;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--text-on-dark, var(--white));
-  text-decoration: none;
-}
-.hf-thumb:focus-visible, .hf-title:focus-visible, .hf-action:focus-visible { outline: 2px solid var(--text-on-dark, var(--white)); outline-offset: 3px; }
-.hf-thumb-icon { width: 46px; height: 46px; opacity: .85; filter: drop-shadow(0 2px 6px rgba(var(--black-rgb),.22)); }
-.hf-thumb-icon :deep(svg), .hf-thumb-icon svg { width: 100%; height: 100%; display: block; }
-.hf-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.hf-tag { font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: .04em; color: var(--accent); }
-.hf-title { color: inherit; text-decoration: none; font-size: var(--text-lg); font-weight: var(--weight-bold); line-height: var(--leading-snug); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.hf-title:hover { text-decoration: underline; text-underline-offset: 3px; }
-.hf-region { font-size: var(--text-xs); opacity: .88; }
-.hf-summary { color: rgba(var(--white-rgb),.78); font-size: var(--text-xs); line-height: var(--leading-snug); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.hf-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
-.hf-action {
-  display: inline-flex; align-items: center; justify-content: center;
-  min-height: 44px; padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-full);
-  background: rgba(var(--white-rgb),.14); border: .5px solid rgba(var(--white-rgb),.24);
-  color: var(--text-on-dark, var(--white)); text-decoration: none;
-  font-size: var(--text-xs); font-weight: var(--weight-bold);
-}
-.hf-action:hover { background: rgba(var(--white-rgb),.22); }
-.hf-action-primary { background: rgba(var(--accent-rgb), .28); border-color: rgba(var(--accent-rgb), .48); color: var(--text-on-dark, var(--white)); }
 html.js .home .hero-feature { opacity: 0; transform: translateY(16px); animation: hero-rise .7s var(--ease-out-expo) .5s forwards; }
 
-/* Ken Burns */
 .home .hero { background-image: none; }
-.home .hero-kenburns {
-  position: absolute; inset: 0; z-index: 0;
-  background-image:
-    linear-gradient(105deg, rgba(var(--ink-rgb),.80) 0%, rgba(var(--ink-rgb),.42) 46%, rgba(var(--ink-rgb),.08) 100%),
-    url('/img/hero.webp');
-  background-size: cover; background-position: center;
-  transform: scale(1.06);
-  animation: hero-kenburns 34s var(--ease-in-out) infinite alternate;
-  will-change: transform;
-}
-@media (max-width: 640px) {
-  .home .hero-kenburns {
-    background-image:
-      linear-gradient(105deg, rgba(var(--ink-rgb),.82) 0%, rgba(var(--ink-rgb),.48) 46%, rgba(var(--ink-rgb),.12) 100%),
-      url('/img/hero-mobile.webp');
-  }
-}
-@keyframes hero-kenburns {
-  0%   { transform: scale(1.06) translate3d(0, 0, 0); }
-  100% { transform: scale(1.16) translate3d(-2.2%, -1.6%, 0); }
-}
 
 /* Kicker */
 /* Editorial dateline eyebrow — a hairline rule + wide-tracked caps, not a glass badge/pill */
@@ -949,143 +763,6 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 }
 .home .hero-nearby:hover { text-decoration: underline; text-underline-offset: 3px; }
 .home .hero-nearby:focus-visible { outline: 2px solid var(--white); outline-offset: 3px; border-radius: 4px; }
-
-/* Decision layer */
-.home-decision { padding-top: var(--space-8); }
-.decision-shell {
-  display: grid; grid-template-columns: minmax(220px, .48fr) minmax(0, 1fr);
-  gap: var(--space-5); align-items: stretch;
-}
-.decision-copy {
-  display: flex; flex-direction: column; justify-content: center;
-  min-width: 0; padding: var(--space-1) 0;
-}
-.decision-kicker {
-  width: fit-content; padding: 3px var(--space-2);
-  border-radius: var(--radius-full);
-  background: rgba(var(--primary-rgb), .08); color: var(--primary-fg);
-  font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: .04em;
-}
-.decision-copy h2 {
-  margin: var(--space-2) 0 0;
-  font-size: clamp(1.15rem, 2vw, 1.55rem);
-  line-height: var(--leading-snug); letter-spacing: 0;
-}
-.decision-copy p {
-  margin: var(--space-2) 0 0; color: var(--muted);
-  font-size: var(--text-sm); line-height: var(--leading-relaxed);
-}
-/* Editorial numbered index — the old uniform card-grid read as generic/AI-slop.
-   This is conceptually a table-of-contents for the page: big serif numerals,
-   hairline rules, no boxes, no emoji-in-box. */
-.decision-index {
-  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: var(--space-8); row-gap: 0;
-  margin: 0; padding: 0; list-style: none;
-  border-top: 1px solid var(--line);
-}
-.dx-row { margin: 0; }
-.dx-item {
-  display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center; gap: var(--space-4);
-  padding: var(--space-4) var(--space-1);
-  border-bottom: 1px solid var(--line);
-  color: var(--ink); text-decoration: none;
-  transition: background .3s var(--ease-out);
-}
-.dx-item:hover { background: var(--bg-warm); }
-.dx-item:active { background: var(--bg-alt); }
-.dx-item:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
-.dx-num {
-  font-family: var(--font-editorial);
-  font-size: clamp(2rem, 1.3rem + 2.2vw, 2.9rem); line-height: 1;
-  font-weight: 500; letter-spacing: -.02em; font-variant-numeric: tabular-nums;
-  color: var(--tone, var(--muted)); opacity: .4;
-  transition: opacity .3s var(--ease-out);
-}
-.dx-item:hover .dx-num { opacity: 1; }
-.dx-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.dx-eyebrow {
-  font-size: var(--text-2xs); font-weight: var(--weight-bold);
-  /* A11Y: meta labels at ~11px need ≥4.5:1 — the light per-card tone failed (3.89), so use the
-     neutral muted ink (5.38) here; the tone stays on the numeral + arrow. */
-  text-transform: uppercase; letter-spacing: .09em; color: var(--muted);
-}
-.dx-title { font-size: var(--text-base); font-weight: var(--weight-bold); line-height: var(--leading-snug); }
-.dx-text {
-  color: var(--muted); font-size: var(--text-sm); line-height: var(--leading-snug);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.dx-go {
-  color: var(--tone, var(--primary-fg)); font-size: 1.1rem; font-weight: var(--weight-bold);
-  transform: translateX(-3px); opacity: .5;
-  transition: transform .3s var(--ease-spring-gentle), opacity .3s var(--ease-out);
-}
-.dx-item:hover .dx-go { transform: translateX(2px); opacity: 1; }
-.dx-event   { --tone: var(--clay-600); }
-.dx-season  { --tone: var(--primary-fg); }
-.dx-planner { --tone: var(--river-600); }
-.dx-food    { --tone: var(--amber-700); }
-.dx-map     { --tone: var(--river-600); }
-.dark .dx-event { --tone: var(--clay-400); }
-.dark .dx-planner, .dark .dx-map { --tone: #74ABB5; }
-.dark .dx-food { --tone: var(--amber-500); }
-@media (max-width: 860px) {
-  .decision-shell { grid-template-columns: 1fr; }
-  .decision-copy { max-width: 680px; }
-}
-@media (max-width: 560px) {
-  .decision-index { grid-template-columns: 1fr; column-gap: 0; }
-}
-
-/* ═══════════════════════════════════════════════════
-   CATEGORY QUICK-NAV GRID
-   ═══════════════════════════════════════════════════ */
-.cat-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3);
-}
-/* declutter-3 T16 (B1-4): 7 tile — mobile 3+3+1: tile cuối trải full hàng (chủ đích,
-   không orphan); desktop 4 cột, tile cuối span 2 → 2 hàng × 4 ô khít. */
-.cat-grid .cat-tile:last-child { grid-column: 1 / -1; }
-@media (min-width: 769px) {
-  .cat-grid { grid-template-columns: repeat(4, 1fr); }
-  .cat-grid .cat-tile:last-child { grid-column: span 2; }
-}
-/* ── Klook/GYG-style image tiles: each category shows its own logical photo,
-   editorial label bottom-left over a scrim; small corner emoji as a wayfinding accent. ── */
-.cat-tile {
-  display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: 1px;
-  min-height: clamp(8.5rem, 7.5rem + 7vw, 12rem);
-  padding: var(--space-3);
-  color: var(--white); text-decoration: none;
-  background-color: var(--card);
-  background-image: linear-gradient(to top, rgba(8,9,12,.86) 0%, rgba(8,9,12,.34) 46%, rgba(8,9,12,.05) 100%), var(--tile-img);
-  background-size: cover; background-position: center;
-  border-radius: var(--radius);
-  position: relative; overflow: hidden;
-  transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out);
-}
-.cat-tile:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
-.cat-tile:active { transform: scale(.97); transition-duration: .1s; }
-.cat-tile:focus-visible { outline: 2px solid var(--text-on-dark, var(--white)); outline-offset: 3px; }
-.cat-icon { position: absolute; top: var(--space-2); left: var(--space-3); font-size: 1.35rem; color: var(--white); filter: drop-shadow(0 1px 4px rgba(var(--black-rgb),.7)); }
-.cat-label { color: var(--white); font-size: var(--text-base); font-weight: 700; text-align: left; text-shadow: 0 1px 8px rgba(var(--black-rgb),.7); }
-.cat-hint {
-  min-height: 0; color: rgba(var(--white-rgb),.82); font-size: var(--text-xs); line-height: var(--leading-snug);
-  text-align: left; text-shadow: 0 1px 5px rgba(var(--black-rgb),.65);
-  display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
-}
-.cat-count { font-size: var(--text-xs); color: rgba(var(--white-rgb),.8); text-shadow: 0 1px 4px rgba(var(--black-rgb),.6); font-variant-numeric: tabular-nums; margin-top: 1px; }
-.dark .cat-tile { background-color: var(--card); }
-/* Per-category tile image via static class (NOT inline :style — that custom-prop caused an
-   SSR hydration mismatch that broke the scroll-reveal observer). */
-.ct-du-lich { --tile-img: url(/img/cat-du-lich.webp); }
-.ct-am-thuc { --tile-img: url(/img/cat-am-thuc.webp); }
-.ct-ocop    { --tile-img: url(/img/cat-ocop.webp); }
-.ct-le-hoi  { --tile-img: url(/img/cat-le-hoi.webp); }
-.ct-luu-tru { --tile-img: url(/img/cat-luu-tru.webp); }
-.ct-lich-trinh { --tile-img: url(/img/cat-lich-trinh.webp); }
-.ct-ban-do  { --tile-img: url(/img/cat-ban-do.webp); }
 
 /* ═══════════════════════════════════════════════════
    SECTION RHYTHM
@@ -1323,18 +1000,6 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 /* ═══════════════════════════════════════════════════
    DARK MODE
    ═══════════════════════════════════════════════════ */
-.dark .home .hero-kenburns {
-  background-image:
-    linear-gradient(105deg, rgba(26,26,26,.60) 0%, rgba(26,26,26,.30) 46%, rgba(26,26,26,.05) 100%),
-    url('/img/hero.webp');
-}
-@media (max-width: 640px) {
-  .dark .home .hero-kenburns {
-    background-image:
-      linear-gradient(105deg, rgba(26,26,26,.60) 0%, rgba(26,26,26,.30) 46%, rgba(26,26,26,.05) 100%),
-      url('/img/hero-mobile.webp');
-  }
-}
 .dark .home .hero-scrim {
   background:
     radial-gradient(120% 95% at 88% 6%, rgba(var(--accent-rgb),.12) 0%, rgba(var(--accent-rgb),.03) 34%, transparent 60%),
@@ -1362,15 +1027,12 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   html.js .home .hero-enter > * { opacity: 1; transform: none; animation: none; }
   html.js .home .hero-enter h1::after { animation: none; transform: scaleX(1); opacity: 1; }
   .home .hero-kicker-dot { animation: none; }
-  .home .hero-kenburns { animation: none; transform: none; }
   html.js .home .hero-feature { opacity: 1; transform: none; animation: none; }
-  .hf-card:hover { transform: none; }
   .event-mini:hover { transform: none; }
   .cm-card:hover, .cm-card:active { transform: none; }
   .sk-heading { animation: none; }
   .spotlight:hover .spot-visual { transform: none; }
   .dish-item:hover, .dish-item:active { transform: none; }
-  .cat-tile:hover, .cat-tile:active { transform: none; }
   .fy-chip:hover, .fy-chip:active { transform: none; }
 }
 
@@ -1408,3 +1070,4 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .dark .fy-chip:hover { border-color: rgba(var(--white-rgb),.1); }
 .dark .fy-thumb { background: rgba(var(--white-rgb),.06); }
 </style>
+<style src="~/assets/css/home-nocturne.css"></style>
