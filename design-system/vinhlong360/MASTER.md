@@ -1,12 +1,35 @@
 # Hệ thống thiết kế vinhlong360
 
-> **Trạng thái:** `draft-for-review` - bản tổng hợp bespoke ngày 2026-07-27.
+> **Trạng thái:** `approved-design` - Adaptive Nocturne Heritage đã được chủ dự án chốt ngày 2026-07-31.
 > **Phạm vi:** toàn bộ public, tài khoản riêng tư và AdminCP.
 > **Quy tắc kế thừa:** khi thiết kế một trang, đọc file này trước rồi đọc `pages/<page>.md`. Quy tắc trong file trang chỉ được ghi đè khi có nêu rõ lý do.
+> **Nguồn thẩm quyền:** [`docs/superpowers/specs/2026-07-31-nocturne-heritage-adaptive-public-design.md`](../../docs/superpowers/specs/2026-07-31-nocturne-heritage-adaptive-public-design.md).
 
 ## 1. Định hướng
 
-**Tên hệ:** Mekong Signal Atlas - Civic Cartographic Modernism.
+**Tên hệ public:** **Adaptive Nocturne System**, với **Nocturne Heritage** là
+visual direction chính.
+
+Các quyết định bắt buộc:
+
+- **Existing Stitch Screen Evolution** là nguồn thị giác: tiến hóa screen hiện
+  hữu thay vì thay bằng Hybrid P1.2 hoặc một concept độc lập.
+- **Nocturne + Parchment** là hai material mode trong cùng hệ; Nocturne mặc
+  định, Daylight Parchment là tùy chọn `Nền sáng dễ đọc`, không tự đổi theo giờ.
+- **Mekong Ink & Clay** là palette; trust và status vẫn dùng semantic token
+  riêng, không suy nghĩa nghiệp vụ từ màu thương hiệu.
+- **Controlled Serif** dùng Fraunces có chủ đích cho editorial display; Be
+  Vietnam Pro tiếp tục phụ trách interface, body, form, table và data.
+- **Framed Dossier** là composition public mặc định: hairline border, bất đối
+  xứng có kiểm soát, row/split view và tối đa một media-led feature mỗi viewport.
+- **Grounded Local Light** là hướng ảnh mặc định; **Material Still Life** chỉ
+  dành cho gốm, sản phẩm và nghề thủ công; **Blue-hour Cinema** chỉ dành cho
+  campaign đặc biệt có lý do biên tập.
+
+**Nền tảng kế thừa:** Mekong Signal Atlas - Civic Cartographic Modernism tiếp
+tục cung cấp logic địa bàn, token ba tầng và quy tắc vận hành. Các công thức
+generic hero/card/seasonal styling mâu thuẫn với Adaptive Nocturne được xem là
+legacy và không còn là visual source of truth.
 
 **Luận đề:** vinhlong360 không chỉ trưng bày miền Tây. Hệ thống giúp một người hiểu địa bàn của mình, nhận biết điều đáng chú ý và thực hiện hành động phù hợp trong thời gian ngắn nhất.
 

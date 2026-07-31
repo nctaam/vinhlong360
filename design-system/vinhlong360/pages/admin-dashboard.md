@@ -1,6 +1,11 @@
 # Đặc tả bổ sung cho `/admin`
 
-> Kế thừa `../MASTER.md`. Trạng thái `draft-for-review`.
+> Kế thừa `../MASTER.md`. Trạng thái `approved-design`.
+
+**Ranh giới hệ thống:** AdminCP tiếp tục là workbench mật độ cao, không dùng
+Nocturne Heritage làm composition chính. Nó chỉ chia sẻ semantic trust/status,
+Be Vietnam Pro và một số token thương hiệu với public; queue, SLA, scope, quyền
+và next action vẫn quyết định bố cục.
 
 ## 1. Nhiệm vụ
 

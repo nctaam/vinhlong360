@@ -1,6 +1,12 @@
 # Đặc tả bổ sung cho `/du-lich`
 
-> Kế thừa `../MASTER.md`. Trạng thái `draft-for-review`.
+> Kế thừa `../MASTER.md`. Trạng thái `approved-design`.
+
+**Ánh xạ Adaptive Nocturne:** thuộc family **Discovery / Search**, dùng mật độ
+quét cao hơn editorial và tỷ lệ định hướng 62% Nocturne / 38% Parchment. Giữ
+screen Stitch hiện hữu làm bố cục nguồn; Hybrid P1.2 chỉ là tham khảo. Kết quả
+ưu tiên row/tile theo chất lượng dữ liệu, không chuyển thành một card grid đồng
+dạng.
 
 ## 1. Nhiệm vụ
 

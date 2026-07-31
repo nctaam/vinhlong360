@@ -1,6 +1,12 @@
 # Đặc tả bổ sung cho `/dia-diem/[id]`
 
-> Kế thừa `../MASTER.md`. Trạng thái `draft-for-review`.
+> Kế thừa `../MASTER.md`. Trạng thái `approved-design`.
+
+**Ánh xạ Adaptive Nocturne:** thuộc family **Dossier / Detail**, dùng Framed
+Dossier với tỷ lệ định hướng 56% Nocturne / 44% Parchment. Controlled Serif chỉ
+dùng cho H1/tên địa danh hoặc narrative highlight; source, freshness, facts và
+action dùng Be Vietnam Pro. Skeleton, trust tier và primary action giữ cùng
+anatomy ở desktop/mobile.
 
 ## 1. Nhiệm vụ
 
