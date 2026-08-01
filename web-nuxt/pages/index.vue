@@ -97,7 +97,7 @@
           </div>
           <div class="ec-info">
             <h3>{{ ev.name }}</h3>
-            <span v-if="ev.days_until != null" class="ec-countdown" :class="{ 'ec-today': ev.days_until === 0 }">
+            <span v-if="ev.days_until != null" class="ec-countdown" data-material-accent="amber" :class="{ 'ec-today': ev.days_until === 0 }">
               {{ ev.days_until === 0 ? 'Hôm nay!' : ev.days_until === 1 ? 'Ngày mai' : `Còn ${ev.days_until} ngày` }}
             </span>
           </div>
@@ -856,20 +856,20 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .event-mini { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); min-height: 48px; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle); }
 .event-mini:hover { border-color: var(--color-action-border); transform: translateX(2px); }
 .ec-date-sm { min-width: 46px; padding: var(--space-2); }
-.ec-date { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 52px; padding: var(--space-2); background: color-mix(in srgb, var(--color-material-amber) 14%, transparent); border-radius: var(--radius-sm); color: color-mix(in srgb, var(--color-material-amber) 70%, var(--color-text)); }
+.ec-date { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 52px; padding: var(--space-2); background: var(--home-color-amber-surface); border-radius: var(--radius-sm); color: var(--home-color-amber-text); }
 .ec-day { font-size: var(--text-xl); font-weight: var(--weight-extrabold); line-height: 1; font-variant-numeric: tabular-nums; }
-.ec-month { font-size: var(--text-xs); font-weight: var(--weight-semibold); opacity: .9; }
+.ec-month { font-size: var(--text-xs); font-weight: var(--weight-semibold); opacity: 1; }
 .ec-info { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
 .ec-info h3 { margin: 0; font-size: var(--text-base); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-tight); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .event-mini .ec-info { gap: 2px; }
 .event-mini h3 { margin: 0; font-size: var(--text-sm); font-weight: var(--weight-semibold); line-height: var(--leading-snug); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .ec-countdown {
   display: inline-flex; align-items: center; gap: var(--space-1);
-  font-size: var(--text-xs); font-weight: var(--weight-bold); color: color-mix(in srgb, var(--color-material-amber) 70%, var(--color-text));
-  background: color-mix(in srgb, var(--color-material-amber) 8%, transparent); padding: var(--space-1) var(--space-2); border-radius: var(--radius-full);
+  font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--home-color-amber-text);
+  background: var(--home-color-amber-surface); padding: var(--space-1) var(--space-2); border-radius: var(--radius-full);
 }
 .ec-today { color: var(--color-error); }
-.happening-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: color-mix(in srgb, var(--color-material-amber) 70%, var(--color-text)); margin: var(--space-4) 0 var(--space-2); }
+.happening-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--home-color-amber-text); margin: var(--space-4) 0 var(--space-2); }
 .happening-section { margin-top: var(--space-1); }
 
 /* ═══════════════════════════════════════════════════

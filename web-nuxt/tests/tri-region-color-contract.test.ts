@@ -207,6 +207,8 @@ describe('Tri-Region color contract', () => {
           `direct-contact-zalo-${theme}-${format}`,
           ...['canvas', 'surface', 'subtle'].map(surface => `control-border-${theme}-${surface}-${format}`),
           ...['canvas', 'surface', 'subtle'].map(surface => `focus-${theme}-${surface}-${format}`),
+          `homepage-amber-text-${theme}-${format}`,
+          `homepage-focus-media-${theme}-${format}`,
         ]),
       ),
     ]

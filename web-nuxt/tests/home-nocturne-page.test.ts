@@ -101,6 +101,7 @@ describe('homepage Existing Screen Evolution B1', () => {
     expect(wrapper.get('[data-source-mark]').text()).toContain('Chính thức')
     expect(wrapper.get('[data-source-mark]').attributes('data-source-tier')).toBe('official')
     expect(wrapper.get('[data-home-section="events-seasonal"]').attributes('data-material-accent')).toBe('amber')
+    expect(wrapper.get('.ec-countdown').attributes('data-material-accent')).toBe('amber')
     expect(wrapper.get('[data-home-section="community"]').attributes('data-material-accent')).toBe('neutral')
   })
 

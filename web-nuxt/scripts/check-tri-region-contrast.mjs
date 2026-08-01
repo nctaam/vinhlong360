@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 const css = readFileSync(resolve(process.cwd(), 'assets/css/variables.css'), 'utf8')
+const homeCss = readFileSync(resolve(process.cwd(), 'assets/css/home-nocturne.css'), 'utf8')
 const pairs = [
   ['body-light', 'mekong-ink', 'alluvial-paper', 7],
   ['muted-light', 'mekong-muted', 'alluvial-paper', 4.5],
@@ -22,6 +23,11 @@ const pairs = [
 
 const actionSurfaceWeight = readMixWeight('color-action-surface')
 const actionBorderWeight = readMixWeight('color-action-border')
+const homeAmberSurfaceWeight = readMixWeight(
+  'home-color-amber-surface',
+  homeCss,
+  'color-material-amber',
+)
 const semanticNames = pairs.map(([name]) => name)
 const expectedAuditNames = new Set([
   ...semanticNames,
@@ -32,6 +38,8 @@ const expectedAuditNames = new Set([
       `direct-contact-zalo-${theme}-${format}`,
       ...['canvas', 'surface', 'subtle'].map(surface => `control-border-${theme}-${surface}-${format}`),
       ...['canvas', 'surface', 'subtle'].map(surface => `focus-${theme}-${surface}-${format}`),
+      `homepage-amber-text-${theme}-${format}`,
+      `homepage-focus-media-${theme}-${format}`,
     ]),
   ),
 ])
@@ -67,12 +75,13 @@ function readFiniteNumber(value, label) {
   return number
 }
 
-function readMixWeight(name) {
+function readMixWeight(name, source = css, sourceToken = 'color-action') {
   const escaped = escapeRegExp(name)
+  const escapedSourceToken = escapeRegExp(sourceToken)
   const match = new RegExp(
-    `--${escaped}:\\s*color-mix\\(in srgb, var\\(--color-action\\)\\s+([0-9.]+)%, transparent\\)\\s*;`,
+    `--${escaped}:\\s*color-mix\\(in srgb, var\\(--${escapedSourceToken}\\)\\s+([0-9.]+)%, transparent\\)\\s*;`,
     'i',
-  ).exec(css)
+  ).exec(source)
   if (!match) throw new Error(`Missing sRGB color-mix contract for --${name}`)
   const weight = readFiniteNumber(match[1], `--${name}`) / 100
   if (weight < 0 || weight > 1) throw new Error(`Out-of-range color-mix weight for --${name}`)
@@ -207,6 +216,10 @@ function controlThemes(format) {
         action: readHexToken('river-600'),
         onAction: readHexToken('surface-white'),
         focus: readHexToken('river-600'),
+        focusMedia: readHexToken('surface-white'),
+        mediaHost: readHexToken('mekong-ink'),
+        amberText: readHexToken('harvest-700'),
+        materialAmber: readHexToken('harvest-600'),
         directContact: readHexDeclaration(fallbackRoot, 'brand-zalo'),
         backgrounds: {
           canvas: readHexToken('alluvial-paper'),
@@ -219,6 +232,10 @@ function controlThemes(format) {
         action: readHexToken('night-river'),
         onAction: readHexToken('night-canvas'),
         focus: readHexToken('night-amber'),
+        focusMedia: readHexToken('night-amber'),
+        mediaHost: readHexToken('night-canvas'),
+        amberText: readHexToken('night-amber'),
+        materialAmber: readHexToken('night-amber'),
         directContact: readHexDeclaration(darkBlock, 'brand-zalo'),
         backgrounds: {
           canvas: readHexToken('night-canvas'),
@@ -235,6 +252,10 @@ function controlThemes(format) {
       action: readOklchToken('river-600'),
       onAction: readOklchToken('surface-white'),
       focus: readOklchToken('river-600'),
+      focusMedia: readOklchToken('surface-white'),
+      mediaHost: readOklchToken('mekong-ink'),
+      amberText: readOklchToken('harvest-700'),
+      materialAmber: readOklchToken('harvest-600'),
       directContact: readHexDeclaration(fallbackRoot, 'brand-zalo'),
       backgrounds: {
         canvas: readOklchToken('alluvial-paper'),
@@ -248,6 +269,10 @@ function controlThemes(format) {
       action: readOklchToken('night-river'),
       onAction: readOklchToken('night-canvas'),
       focus: readOklchToken('night-amber'),
+      focusMedia: readOklchToken('night-amber'),
+      mediaHost: readOklchToken('night-canvas'),
+      amberText: readOklchToken('night-amber'),
+      materialAmber: readOklchToken('night-amber'),
       directContact: readHexDeclaration(darkBlock, 'brand-zalo'),
       backgrounds: {
         canvas: readOklchToken('night-canvas'),
@@ -259,7 +284,18 @@ function controlThemes(format) {
 }
 
 function auditControls(format) {
-  for (const { theme, action, onAction, focus, directContact, backgrounds } of controlThemes(format)) {
+  for (const {
+    theme,
+    action,
+    onAction,
+    focus,
+    focusMedia,
+    mediaHost,
+    amberText,
+    materialAmber,
+    directContact,
+    backgrounds,
+  } of controlThemes(format)) {
     audit(`filled-action-${theme}-${format}`, onAction, action, 4.5)
     audit(`direct-contact-zalo-${theme}-${format}`, onAction, directContact, 4.5)
     for (const [surfaceName, host] of Object.entries(backgrounds)) {
@@ -271,6 +307,9 @@ function auditControls(format) {
     for (const [surfaceName, host] of Object.entries(backgrounds)) {
       audit(`focus-${theme}-${surfaceName}-${format}`, focus, host, 3)
     }
+    const amberSurface = composite(materialAmber, backgrounds.surface, homeAmberSurfaceWeight)
+    audit(`homepage-amber-text-${theme}-${format}`, amberText, amberSurface, 4.5)
+    audit(`homepage-focus-media-${theme}-${format}`, focusMedia, mediaHost, 3)
   }
 }
 
