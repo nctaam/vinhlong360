@@ -79,6 +79,21 @@
   outline-color: var(--color-focus);
 }
 
+[data-color-system="tri-region-v1"][data-page-recipe="discovery"] .mode-pill[aria-pressed="true"] {
+  border-color: var(--color-brand);
+  background: var(--color-brand-surface);
+  color: var(--color-text);
+  box-shadow: inset 3px 0 0 var(--color-brand);
+}
+
+[data-color-system="tri-region-v1"][data-page-recipe="discovery"] :is(.card-rule, .cspot-rule, .catalog-interstitial-rule) {
+  background: var(--tri-region-material-accent);
+}
+
+[data-color-system="tri-region-v1"][data-page-recipe="discovery"] :is(.atlas-hero, .card, .cspot, .catalog-interstitial) {
+  box-shadow: none;
+}
+
 @media (prefers-contrast: more) {
   [data-color-system="tri-region-v1"] {
     --color-border: currentColor;

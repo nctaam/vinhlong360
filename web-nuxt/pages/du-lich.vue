@@ -1,5 +1,10 @@
 ﻿<template>
-  <div class="page">
+  <div
+    class="page"
+    data-color-system="tri-region-v1"
+    data-page-recipe="discovery"
+    :data-material-accent="activeMode.accent"
+  >
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Du lịch' }]" />
 
     <!-- Hero — "living atlas" thesis: mode dial swaps scene before any scroll -->
@@ -51,7 +56,7 @@
     </section>
 
     <!-- Spotlight nổi bật (magazine, dùng-chung) -->
-    <CatalogSpotlight :items="allEntities" />
+    <CatalogSpotlight :items="allEntities" color-recipe="tri-region-v1" />
 
     <!-- Featured -->
     <section v-if="featured.length" class="block band reveal">
@@ -59,7 +64,7 @@
         <h2>Nổi bật</h2>
       </div>
       <div class="scroll-row" role="region" aria-label="Trải nghiệm nổi bật" tabindex="0">
-        <EntityCard v-for="e in featured" :key="e.id" :entity="e" />
+        <EntityCard v-for="e in featured" :key="e.id" :entity="e" color-recipe="tri-region-v1" />
       </div>
     </section>
 
@@ -75,7 +80,7 @@
       <p class="section-desc">{{ cat.desc }}</p>
       <p v-if="cat.seasonNote" class="season-note">{{ cat.seasonNote }}</p>
       <div class="scroll-row" role="region" :aria-label="cat.label" tabindex="0">
-        <EntityCard v-for="e in cat.items.slice(0, 5)" :key="e.id" :entity="e" />
+        <EntityCard v-for="e in cat.items.slice(0, 5)" :key="e.id" :entity="e" color-recipe="tri-region-v1" />
       </div>
     </section>
 
@@ -92,6 +97,7 @@
         fact="Vĩnh Long, Bến Tre và Trà Vinh có hơn 200 điểm du lịch sinh thái — phần lớn nằm trên các cù lao giữa sông Tiền và sông Hậu."
         icon="🌊"
         variant="warm"
+        material-accent="amber"
         :links="[{ to: '/ban-do', label: 'Xem bản đồ' }, { to: '/lich-trinh', label: 'Lịch trình gợi ý' }]"
       />
 
@@ -157,7 +163,7 @@
       </EmptyState>
       <SkeletonGrid v-else-if="!data" :count="6" />
       <div v-else-if="filtered.length" :class="viewMode === 'list' ? 'list-view' : 'grid'">
-        <EntityCard v-for="e in visible" :key="e.id" :entity="e" :season-filter="seasonFilter" />
+        <EntityCard v-for="e in visible" :key="e.id" :entity="e" :season-filter="seasonFilter" color-recipe="tri-region-v1" />
       </div>
       <EmptyState v-else icon="🌿" title="Không tìm thấy kết quả" message="Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.">
         <template #actions>
@@ -199,6 +205,7 @@ const MONTH_ABBR = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10',
 
 <script setup lang="ts">
 import type { Entity } from '~/types'
+import type { RegionalAccent } from '~/utils/regionalColor'
 import { TYPE_META, TOURISM_TYPES } from '~/composables/useConstants'
 import { inSeason, relevanceScore } from '~/composables/useSeason'
 import { generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
@@ -222,11 +229,19 @@ const seasonFilter = ref('all')
 // Hero mode-dial — the signature moment: clicking a mode cross-fades the
 // hero's own background/copy (CSS transition on the section's mode-* class),
 // no grid interaction, zero extra data cost (concept §2/§10).
-const heroModes = [
-  { key: 'trai-nghiem', emoji: '🌾', label: 'Trải nghiệm', line: 'Khám phá theo mùa nước, theo mùa trái, theo mùa lễ.', sub: 'Miệt vườn, cù lao, làng nghề trăm năm — khám phá theo mùa nước, mùa trái, mùa lễ hội.', motif: generateCategoryIcon('experience') },
-  { key: 'am-thuc', emoji: '🍲', label: 'Ẩm thực', line: 'Một tô bún nước lèo, một mẻ bánh xèo mới đổ.', sub: 'Hương vị sông nước — món ăn nào cũng có một câu chuyện đứng sau nó.', motif: generateCategoryIcon('dish') },
-  { key: 'lang-nghe', emoji: '🏺', label: 'Làng nghề', line: 'Tiếng lò gạch Mang Thít, mùi kẹo dừa mới sên.', sub: 'Gốm đỏ, kẹo dừa, chiếu lác, bánh tráng — nghề trăm năm vẫn còn đỏ lửa mỗi sáng.', motif: generateCategoryIcon('craft') },
-  { key: 'luu-tru', emoji: '🏡', label: 'Lưu trú', line: 'Một buổi sáng thức dậy giữa vườn trái cây.', sub: 'Homestay nhà vườn, resort ven sông — nơi bạn muốn mở mắt vào buổi sáng giữa miệt vườn.', motif: generateCategoryIcon('accommodation') },
+const heroModes: ReadonlyArray<{
+  key: string
+  emoji: string
+  label: string
+  line: string
+  sub: string
+  motif: string
+  accent: RegionalAccent
+}> = [
+  { key: 'trai-nghiem', emoji: '🌾', label: 'Trải nghiệm', line: 'Khám phá theo mùa nước, theo mùa trái, theo mùa lễ.', sub: 'Miệt vườn, cù lao, làng nghề trăm năm — khám phá theo mùa nước, mùa trái, mùa lễ hội.', motif: generateCategoryIcon('experience'), accent: 'leaf' },
+  { key: 'am-thuc', emoji: '🍲', label: 'Ẩm thực', line: 'Một tô bún nước lèo, một mẻ bánh xèo mới đổ.', sub: 'Hương vị sông nước — món ăn nào cũng có một câu chuyện đứng sau nó.', motif: generateCategoryIcon('dish'), accent: 'amber' },
+  { key: 'lang-nghe', emoji: '🏺', label: 'Làng nghề', line: 'Tiếng lò gạch Mang Thít, mùi kẹo dừa mới sên.', sub: 'Gốm đỏ, kẹo dừa, chiếu lác, bánh tráng — nghề trăm năm vẫn còn đỏ lửa mỗi sáng.', motif: generateCategoryIcon('craft'), accent: 'clay' },
+  { key: 'luu-tru', emoji: '🏡', label: 'Lưu trú', line: 'Một buổi sáng thức dậy giữa vườn trái cây.', sub: 'Homestay nhà vườn, resort ven sông — nơi bạn muốn mở mắt vào buổi sáng giữa miệt vườn.', motif: generateCategoryIcon('accommodation'), accent: 'river' },
 ]
 const activeModeKey = ref(heroModes[0]!.key)
 const activeMode = computed(() => heroModes.find(m => m.key === activeModeKey.value) || heroModes[0]!)
@@ -492,12 +507,8 @@ useHead(() => ({
 /* .filter-status/.result-bar/.view-toggle/.vt-btn/.list-view moved to
    assets/css/catalog.css (was identical across du-lich/ocop/san-pham). */
 
-/* ══════════════════════════════════════════════════════════════════════
-   ATLAS HERO — "living atlas" thesis. Warm clay/amber register (contrast
-   with luu-tru's cool dawn-blue). Signature moment: the mode-dial cross-fade
-   — clicking a mode swaps headline/sub/motif in one smooth motion before any
-   scrolling (concept §2/§10), zero extra data cost (all copy pre-computed).
-   ══════════════════════════════════════════════════════════════════════ */
+/* The selected mode changes one material accent while the structure and
+   semantic action/trust colors remain stable. */
 .atlas-hero {
   position: relative;
   overflow: hidden;
@@ -506,17 +517,10 @@ useHead(() => ({
   padding: clamp(var(--space-8), 4vw + var(--space-6), 4.5rem) var(--space-6) var(--space-6);
   margin-bottom: var(--space-6);
   border: .5px solid var(--line);
-  background: linear-gradient(135deg, rgba(var(--primary-rgb), .14) 0%, var(--bg-warm) 70%);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--tri-region-material-accent) 14%, transparent) 0%, var(--color-surface-subtle) 70%);
   transition: background 1.1s var(--ease-cinematic);
 }
-.dark .atlas-hero { background: linear-gradient(135deg, rgba(var(--white-rgb),.04) 0%, rgba(var(--white-rgb),.01) 100%); border-color: var(--line); }
-/* each mode gets its own warm tint (still clay/amber family — same publication) */
-.atlas-hero.mode-am-thuc { background: linear-gradient(135deg, rgba(var(--accent-rgb), .16) 0%, var(--bg-warm) 70%); }
-.atlas-hero.mode-lang-nghe { background: linear-gradient(135deg, rgba(var(--secondary-rgb), .14) 0%, var(--bg-warm) 70%); }
-.atlas-hero.mode-luu-tru { background: linear-gradient(135deg, rgba(var(--river-rgb, var(--primary-rgb)), .14) 0%, var(--bg-warm) 70%); }
-.dark .atlas-hero.mode-am-thuc,
-.dark .atlas-hero.mode-lang-nghe,
-.dark .atlas-hero.mode-luu-tru { background: linear-gradient(135deg, rgba(var(--white-rgb),.04) 0%, rgba(var(--white-rgb),.01) 100%); }
+.dark .atlas-hero { border-color: var(--color-border); }
 
 .atlas-hero-grain {
   position: absolute; inset: 0; z-index: 0; pointer-events: none;
@@ -527,21 +531,18 @@ useHead(() => ({
 /* Oversized off-centre category motif — bleeds off the edge, changes per mode */
 .atlas-hero-motif {
   position: absolute; right: -4%; bottom: -10%; z-index: 0; pointer-events: none;
-  width: clamp(140px, 22vw, 260px); color: var(--primary);
+  width: clamp(140px, 22vw, 260px); color: var(--tri-region-material-accent);
   opacity: .1;
   transition: color .8s var(--ease-cinematic);
 }
 .atlas-hero-motif :deep(svg) { width: 100%; height: auto; display: block; }
-.atlas-hero.mode-am-thuc .atlas-hero-motif { color: var(--accent); }
-.atlas-hero.mode-lang-nghe .atlas-hero-motif { color: var(--secondary); }
-.atlas-hero.mode-luu-tru .atlas-hero-motif { color: var(--tertiary); }
 
 .atlas-hero-inner { position: relative; z-index: 1; max-width: 64ch; }
 .atlas-hero-eyebrow {
   margin: 0 0 var(--space-4);
   font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
   text-transform: uppercase; letter-spacing: var(--tracking-caps);
-  color: var(--primary-fg-strong, var(--primary-fg));
+  color: var(--color-brand);
 }
 .atlas-hero-title {
   margin: 0 0 var(--space-4); font-family: var(--font-editorial); font-weight: 600;
@@ -549,9 +550,8 @@ useHead(() => ({
 }
 .atlas-hero-line1 {
   display: block; font-size: clamp(2rem, 1.6rem + 2.6vw, var(--text-5xl));
-  line-height: var(--leading-tight); color: var(--clay-600, var(--primary));
+  line-height: var(--leading-tight); color: var(--color-brand);
 }
-.dark .atlas-hero-line1 { color: var(--clay-400, var(--primary)); }
 .atlas-hero-line2 {
   display: block; margin-top: var(--space-2);
   font-family: var(--font-sans); font-weight: var(--weight-medium);
@@ -582,12 +582,12 @@ useHead(() => ({
   font-size: var(--text-sm); font-weight: var(--weight-medium); cursor: pointer;
   transition: background .3s var(--ease-out), color .3s var(--ease-out), border-color .3s var(--ease-out), transform .2s var(--ease-spring-gentle), box-shadow .3s var(--ease-out);
 }
-.mode-pill:hover { border-color: var(--primary-fg); transform: translateY(-1px); }
+.mode-pill:hover { border-color: var(--color-brand); transform: translateY(-1px); }
 .mode-pill:active { transform: scale(.96); transition-duration: .08s; }
-.mode-pill:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.mode-pill:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .mode-pill.active {
-  background: var(--primary); color: var(--text-on-dark, var(--white)); border-color: var(--primary);
-  box-shadow: 0 2px 10px -2px rgba(var(--primary-rgb), .4);
+  background: var(--color-brand-surface); color: var(--color-text); border-color: var(--color-brand);
+  box-shadow: inset 3px 0 0 var(--color-brand);
 }
 .dark .mode-pill { background: var(--card); border-color: var(--line); }
 
@@ -630,16 +630,16 @@ useHead(() => ({
 }
 .life-tile:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--border); }
 .life-tile:active { transform: scale(.98); transition-duration: .08s; }
-.life-tile:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.life-tile:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 /* asymmetric bleed motif per tile — editorial, not icon-in-a-box */
 .life-tile-motif {
   position: absolute; right: -8%; bottom: -14%; z-index: 0;
-  width: 110px; height: 110px; opacity: .09; color: var(--primary);
+  width: 110px; height: 110px; opacity: .09; color: var(--color-material-river);
   pointer-events: none;
 }
-.life-tile.life-miet-vuon .life-tile-motif { color: var(--secondary); }
-.life-tile.life-lang-nghe .life-tile-motif { color: var(--accent-dark, var(--accent)); }
-.life-tile.life-tam-linh .life-tile-motif { color: var(--tertiary); }
+.life-tile.life-miet-vuon .life-tile-motif { color: var(--color-material-leaf); }
+.life-tile.life-lang-nghe .life-tile-motif { color: var(--color-material-clay); }
+.life-tile.life-tam-linh .life-tile-motif { color: var(--color-brand); }
 .life-tile-motif :deep(svg) { width: 100%; height: 100%; display: block; }
 .life-tile-kicker {
   position: relative; z-index: 1; margin: 0 0 var(--space-3);
@@ -670,8 +670,8 @@ useHead(() => ({
   display: inline-flex; align-items: center; gap: var(--space-2);
   margin: 0 0 var(--space-4); padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-full);
-  background: rgba(var(--accent-rgb), .1);
-  color: var(--accent-dark, var(--accent));
+  background: color-mix(in srgb, var(--color-warning) 10%, transparent);
+  color: var(--color-warning);
   font-size: var(--text-xs); font-weight: var(--weight-semibold);
 }
 /* Static dot, deliberately NOT breathing — the page can render several
@@ -683,5 +683,5 @@ useHead(() => ({
   content: ""; width: 6px; height: 6px; border-radius: 50%;
   background: currentColor; flex-shrink: 0;
 }
-.dark .season-note { background: rgba(var(--accent-rgb), .16); color: var(--accent); }
+.dark .season-note { background: color-mix(in srgb, var(--color-warning) 16%, transparent); }
 </style>

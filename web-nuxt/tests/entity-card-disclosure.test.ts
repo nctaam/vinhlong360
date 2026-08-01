@@ -59,6 +59,29 @@ const globals = {
 }
 
 describe('EntityCard image disclosure', () => {
+  it('shows one honest source mark and a typed material accent only for the Tri-Region recipe', async () => {
+    const withoutRecipe = await mountSuspended(EntityCard, {
+      props: { entity: entity({ type: 'craft_village', quality: { source_tier: 'gold' } }) },
+      global: globals,
+    })
+    expect(withoutRecipe.find('[data-source-mark]').exists()).toBe(false)
+    expect(withoutRecipe.attributes('data-color-recipe')).toBeUndefined()
+
+    const withRecipe = await mountSuspended(EntityCard, {
+      props: {
+        entity: entity({ type: 'craft_village', quality: { source_tier: 'gold' } }),
+        colorRecipe: 'tri-region-v1',
+      },
+      global: globals,
+    })
+
+    expect(withRecipe.attributes('data-color-recipe')).toBe('tri-region-v1')
+    expect(withRecipe.attributes('data-material-accent')).toBe('clay')
+    expect(withRecipe.findAll('[data-source-mark]')).toHaveLength(1)
+    expect(withRecipe.get('[data-source-mark]').attributes('data-source-tier')).toBe('unknown')
+    expect(withRecipe.get('[data-source-mark]').text()).toContain('Chưa rõ nguồn')
+  })
+
   it('uses a supplied descriptor over a conflicting legacy URL and associates the full copy', async () => {
     const supplied = ai('/descriptor.webp')
     const wrapper = await mountSuspended(EntityCard, {

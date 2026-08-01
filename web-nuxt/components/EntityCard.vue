@@ -1,5 +1,9 @@
 <template>
-  <article :class="['card', `cat-${typeMeta.cat}`]">
+  <article
+    :class="['card', `cat-${typeMeta.cat}`]"
+    :data-color-recipe="colorRecipe || undefined"
+    :data-material-accent="cardMaterialAccent"
+  >
     <div class="cover cover-img" :class="{ 'cover-generated': !activeDescriptor.url || imgError, [`cat-${typeMeta.cat}`]: true }" :style="(!activeDescriptor.url || imgError) ? { backgroundImage: placeholderBg } : undefined">
       <template v-if="activeDescriptor.url && !imgError">
         <NuxtLink :to="cardPath" class="card-cover-link" :aria-label="`Xem ${entity.name}`" :aria-describedby="activeDisclosureId">
@@ -22,13 +26,14 @@
           <span v-for="(_, i) in allDescriptors.slice(0, 5)" :key="i" :class="['card-dot', { active: i === activeSlide }]" />
         </div>
       </template>
-      <span class="cover-disclosure">
+      <span class="cover-disclosure" data-material-accent="neutral">
         <ImageDisclosure :id="activeDisclosureId" :descriptor="displayDescriptor" presentation="short" />
       </span>
       <ClientOnly><SaveButton class="card-save" :entity="entity" size="sm" /></ClientOnly>
     </div>
     <NuxtLink :to="cardPath" class="card-b card-body-link">
       <span class="card-dateline">{{ dateline }}</span>
+      <SourceMark v-if="colorRecipe === 'tri-region-v1'" :tier="sourceTier" compact />
       <h3 class="card-name">{{ entity.name }}</h3>
       <span class="card-rule" aria-hidden="true"></span>
       <p class="summary card-teaser">{{ storyTeaser }}</p>
@@ -77,17 +82,23 @@ import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables
 import { entityStoryTeaser, entityDateline } from '~/composables/useEntityStory'
 import { describeEntityImages, describeEntityPlaceholder } from '~/utils/imageDescriptors'
 import type { ImageDescriptor } from '~/types/image'
+import { resolveRegionalAccent, resolveSourceTier } from '~/utils/regionalColor'
 import { useId } from 'vue'
 
 const props = defineProps<{
   entity: Record<string, any>
   seasonFilter?: string | null
+  colorRecipe?: 'tri-region-v1'
 }>()
 
 const imgError = ref(false)
 const activeSlide = ref(0)
 const cardPath = computed(() => entityPath(props.entity.id))
 const typeMeta = computed(() => TYPE_META[props.entity.type] || { emoji: '•', label: props.entity.type, cat: 'place' })
+const cardMaterialAccent = computed(() => props.colorRecipe === 'tri-region-v1'
+  ? resolveRegionalAccent(props.entity.type)
+  : undefined)
+const sourceTier = computed(() => resolveSourceTier(props.entity.quality?.source_tier))
 const allDescriptors = computed<ImageDescriptor[]>(() => {
   const descriptors = describeEntityImages(props.entity)
   return descriptors.length ? descriptors : [describeEntityPlaceholder(props.entity)]
@@ -180,7 +191,7 @@ const ratingDisplay = computed(() => {
 }
 .card-cover-link:focus-visible,
 .card-body-link:focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--color-focus);
   outline-offset: -2px;
 }
 .card-body-link {
@@ -220,7 +231,7 @@ const ratingDisplay = computed(() => {
 .card-arrow-prev { left: var(--space-2); }
 .card-arrow-next { right: var(--space-2); }
 .card-arrow:hover { transform: translateY(-50%) scale(1.1); }
-.card-arrow:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; opacity: 1; }
+.card-arrow:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; opacity: 1; }
 :deep(.card:hover) .card-arrow { opacity: 1; }
 /* Carousel dots */
 .card-dots {
@@ -255,12 +266,11 @@ const ratingDisplay = computed(() => {
 }
 /* the on-cover dateline stays legible on imagery — keep the readable chip form there */
 .cover-dateline { text-transform: uppercase; letter-spacing: .08em; }
-/* tri-province "sediment" rule between name and teaser (card-scale sediment tick) */
+/* One typed material rule keeps category context separate from trust color. */
 .card-rule {
   display: block; width: 26px; height: 2px; border-radius: 2px; margin: 5px 0 6px;
-  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+  background: var(--tri-region-material-accent, var(--color-material-neutral));
 }
-.dark .card-rule { background: linear-gradient(90deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 .card-teaser { color: var(--muted); }
 /* grain overlay turns the flat placeholder gradient into an intentional illustration */
 .cover-grain {
