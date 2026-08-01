@@ -108,6 +108,29 @@
   box-shadow: none;
 }
 
+[data-color-system="tri-region-v1"][data-page-recipe="search"] .search-row-hero::before {
+  background: var(--color-material-clay);
+}
+
+[data-color-system="tri-region-v1"][data-page-recipe="search"] :is(.sediment-head h2, h2.sediment-head, .catalog-cross h2)::before {
+  background: var(--color-material-neutral);
+}
+
+[data-color-system="tri-region-v1"][data-page-recipe="search"] :is(.trending-chip, .quick-pick, .recent-card):hover {
+  border-color: var(--color-action);
+  background: var(--color-action-surface);
+}
+
+[data-color-system="tri-region-v1"][data-page-recipe="search"] .sug-item[aria-selected="true"] {
+  border-left-color: var(--color-material-clay);
+  background: var(--color-brand-surface);
+}
+
+[data-color-system="tri-region-v1"][data-page-recipe="search"] [role="alert"] {
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
 @media (prefers-contrast: more) {
   [data-color-system="tri-region-v1"] {
     --color-border: currentColor;

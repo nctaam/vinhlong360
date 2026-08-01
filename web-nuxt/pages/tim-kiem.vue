@@ -1,8 +1,13 @@
 ﻿<template>
-  <section class="page">
+  <div
+    class="page"
+    data-color-system="tri-region-v1"
+    data-page-recipe="search"
+    data-material-accent="neutral"
+  >
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tìm kiếm' }]" />
 
-    <!-- Hero: masthead + hero-scale input, sediment tick as the search's vertical accent -->
+    <!-- Hero: masthead + hero-scale input, with one Clay editorial tick. -->
     <section class="catalog-hero cat-search search-hero">
       <span class="dateline-eyebrow">Tìm kiếm · Vĩnh Long · Bến Tre · Trà Vinh</span>
       <h1>{{ pc('hero_title') }}</h1>
@@ -26,7 +31,7 @@
             </ul>
           </Transition>
         </div>
-        <button type="button" class="btn btn-primary" @click="doSearch">Tìm</button>
+        <button type="button" class="btn btn-primary" data-color-role="action-primary" @click="doSearch">Tìm</button>
       </div>
     </section>
 
@@ -40,7 +45,14 @@
     </NuxtErrorBoundary>
 
     <SkeletonGrid v-if="searching" :count="6" />
-    <EmptyState v-else-if="hasError" title="Lỗi tìm kiếm" message="Không thể tải kết quả. Vui lòng thử lại.">
+    <EmptyState
+      v-else-if="hasError"
+      title="Lỗi tìm kiếm"
+      message="Không thể tìm kiếm lúc này. Vui lòng thử lại."
+      tone="error"
+      role="alert"
+      data-color-role="status-error"
+    >
       <template #actions>
         <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData('search-results')">Thử lại</button>
       </template>
@@ -53,7 +65,7 @@
           <span class="result-strap-query">„{{ q }}"</span> — {{ resultStrapLine }}
         </p>
         <div class="grid">
-          <EntityCard v-for="e in results" :key="e.id" :entity="e" />
+          <EntityCard v-for="e in results" :key="e.id" :entity="e" color-recipe="tri-region-v1" />
         </div>
       </template>
 
@@ -205,7 +217,7 @@
     </section>
     <!-- declutter-3 T14 (A3c): JourneyBar page-level — trang thuộc luồng lập-kế-hoạch -->
     <ClientOnly><LazyJourneyBar /></ClientOnly>
-  </section>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -489,13 +501,13 @@ useHead({
 .search-section-secondary .people-list { margin-bottom: var(--space-3); }
 .people-list { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .person-chip { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-full); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle); }
-.person-chip:hover { border-color: var(--primary-fg); transform: translateY(-1px); }
-.person-avatar { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--primary-fg, var(--white)); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
+.person-chip:hover { border-color: var(--color-action); transform: translateY(-1px); }
+.person-avatar { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--color-action); color: var(--color-on-action); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
 .person-name { font-size: var(--text-sm); font-weight: var(--weight-medium); }
 .person-meta { font-size: var(--text-xs); color: var(--muted); }
 .search-post-list { display: flex; flex-direction: column; gap: var(--space-2); }
 .search-post-item { display: block; padding: var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out); }
-.search-post-item:hover { border-color: var(--primary-fg); }
+.search-post-item:hover { border-color: var(--color-action); }
 .spi-head { display: flex; align-items: center; gap: var(--space-2); margin-bottom: .2rem; }
 .spi-head strong { font-size: var(--text-sm); }
 .spi-type { font-size: var(--text-xs); color: var(--muted); background: var(--bg-alt); padding: 1px 8px; border-radius: var(--radius-full); }
@@ -503,9 +515,9 @@ useHead({
 
 .quick-picks { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--space-3); }
 .quick-pick { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-4); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg); text-align: center; box-shadow: var(--shadow-xs); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
-.quick-pick:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--primary-fg); background: rgba(var(--primary-rgb), .04); }
+.quick-pick:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--color-action); background: var(--color-action-surface); }
 .quick-pick:active { transform: scale(.97); transition-duration: .08s; }
-.quick-pick:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.quick-pick:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 /* Glyph swap: same pairing EntityCard uses — seeded gradient swatch (generateCategoryPlaceholder)
    behind the white-watermark glyph (generateCategoryIcon), never the bare glyph alone (its fills
    are translucent-white, illegible without the saturated backdrop). Small size, rounded tile. */
@@ -546,16 +558,11 @@ useHead({
   transition: background .15s, border-color .15s;
 }
 .sug-item:hover, .sug-item.active { background: var(--bg-alt); }
-/* Category-color left-border strip — turns the dropdown into a tiny preview of the
-   tri-province palette (leaf/amber/river/clay family) instead of a plain emoji list. */
-.sug-cat-nature, .sug-cat-experience { border-left-color: var(--secondary); }
-.sug-cat-dish, .sug-cat-product, .sug-cat-craft, .sug-cat-economy { border-left-color: var(--accent-dark); }
-.sug-cat-attraction, .sug-cat-history, .sug-cat-place, .sug-cat-facility, .sug-cat-org { border-left-color: var(--river-600); }
-.sug-cat-accommodation { border-left-color: var(--clay-400); }
-.sug-cat-event, .sug-cat-person { border-left-color: var(--clay-600); }
+/* Keyboard selection stays explicit in structure and gains one restrained Clay marker. */
+.sug-item[aria-selected="true"] { border-left-color: var(--color-material-clay); background: var(--color-brand-surface); }
 .sug-name { font-weight: var(--weight-medium); }
 .sug-place { color: var(--muted); font-size: var(--text-xs); margin-left: auto; flex-shrink: 0; }
-.sug-all { color: var(--primary-fg); font-weight: var(--weight-semibold); border-top: .5px solid var(--line); margin-top: var(--space-1); padding-top: var(--space-2); }
+.sug-all { color: var(--color-action); font-weight: var(--weight-semibold); border-top: .5px solid var(--line); margin-top: var(--space-1); padding-top: var(--space-2); }
 .sug-fade-enter-active { transition: opacity .15s, transform .15s; }
 .sug-fade-leave-active { transition: opacity .1s; }
 .sug-fade-enter-from { opacity: 0; transform: translateY(-4px); }
@@ -568,8 +575,8 @@ useHead({
   transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo);
 }
 .search-row-spaced input:focus-visible {
-  border-color: var(--primary-fg);
-  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .12);
+  border-color: var(--color-focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-focus) 12%, transparent);
 }
 
 /* ── Masthead: search is a mid-conversation moment, not an empty box ──
@@ -613,8 +620,8 @@ useHead({
   to { opacity: 1; transform: none; }
 }
 
-/* Hero-scale input: oversized, sits on a hairline underline (not a boxed input), sediment
-   tick to the left as the vertical accent echoing the section-head signature. */
+/* Hero-scale input: oversized, sits on a hairline underline (not a boxed input), with a
+   single Clay editorial tick at the left edge. */
 .search-row-hero {
   position: relative;
   padding-left: var(--space-4);
@@ -624,10 +631,7 @@ useHead({
   content: "";
   position: absolute; left: 0; top: 2px; bottom: 2px;
   width: 4px; border-radius: var(--radius-full);
-  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
-}
-.dark .search-row-hero::before {
-  background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+  background: var(--color-material-clay);
 }
 .search-row-hero .search-input-wrap input {
   font-size: var(--text-2xl);
@@ -645,7 +649,7 @@ useHead({
   opacity: .75;
 }
 .search-row-hero .search-input-wrap input:focus-visible {
-  border-bottom-color: var(--primary-fg);
+  border-bottom-color: var(--color-focus);
   box-shadow: none;
 }
 @media (max-width: 640px) {
@@ -663,25 +667,25 @@ useHead({
   cursor: pointer; white-space: nowrap;
   transition: border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle), background .25s var(--ease-out);
 }
-.trending-chip:hover { border-color: var(--primary-fg); transform: translateY(-1px); background: rgba(var(--primary-rgb), .04); }
+.trending-chip:hover { border-color: var(--color-action); transform: translateY(-1px); background: var(--color-action-surface); }
 .trending-chip:active { transform: scale(.97); transition-duration: .08s; }
-.trending-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.trending-chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .trending-row > * { flex: 0 0 auto; }
 /* "Hot right now" dot — reuses the same restrained pulse token as EntityCard's peak-dot,
    settles after one breathing cycle rather than looping forever (motion-budget discipline). */
 .trending-dot {
   width: 6px; height: 6px; border-radius: 50%;
-  background: var(--accent-dark);
-  box-shadow: 0 0 0 0 rgba(var(--accent-rgb), .5);
+  background: var(--color-material-neutral);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-material-neutral) 50%, transparent);
   animation: trendingPulse 2.4s var(--ease-out) 1;
 }
 @keyframes trendingPulse {
-  0% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), .5); }
-  70% { box-shadow: 0 0 0 6px rgba(var(--accent-rgb), 0); }
-  100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0); }
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-material-neutral) 50%, transparent); }
+  70% { box-shadow: 0 0 0 6px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
 }
 .dark .trending-chip { background: var(--bg-alt); border-color: var(--line); }
-.dark .trending-chip:hover { border-color: rgba(var(--white-rgb),.15); background: rgba(var(--white-rgb),.04); }
+.dark .trending-chip:hover { border-color: var(--color-action); background: var(--color-action-surface); }
 
 /* Grid results stagger */
 .grid { animation: fadeInGrid .4s var(--ease-out) both; }
@@ -689,7 +693,7 @@ useHead({
 
 /* Dark mode */
 .dark .quick-pick { background: var(--bg-alt); border-color: var(--line); }
-.dark .quick-pick:hover { border-color: rgba(var(--white-rgb),.15); box-shadow: var(--shadow-md); background: rgba(var(--white-rgb),.04); }
+.dark .quick-pick:hover { border-color: var(--color-action); box-shadow: var(--shadow-md); background: var(--color-action-surface); }
 
 /* Recently viewed */
 /* Row C filmstrip — narrower flex-basis than the shared .scroll-row default (260px is
@@ -701,9 +705,9 @@ useHead({
   border-radius: var(--radius-lg); text-decoration: none; color: var(--ink); text-align: center;
   transition: transform .3s var(--ease-spring-gentle), box-shadow .3s var(--ease-out), border-color .3s;
 }
-.recent-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--primary-fg); }
+.recent-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--color-action); }
 .recent-card:active { transform: scale(.97); transition-duration: .08s; }
-.recent-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.recent-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .recent-img {
   width: 56px; height: 56px; border-radius: var(--radius-md); object-fit: cover;
 }
@@ -720,7 +724,7 @@ useHead({
 .recent-name { font-size: var(--text-xs); font-weight: var(--weight-semibold); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; }
 .recent-type { font-size: 10px; color: var(--muted); }
 .dark .recent-card { background: var(--bg-alt); border-color: var(--line); }
-.dark .recent-card:hover { border-color: rgba(var(--white-rgb),.15); }
+.dark .recent-card:hover { border-color: var(--color-action); background: var(--color-action-surface); }
 
 /* Reduced motion — ticker interval itself never starts (see onMounted guard in script);
    these rules cover the remaining CSS-driven motion so nothing depends on JS alone. */
@@ -732,7 +736,7 @@ useHead({
   .recent-card:active { transform: none; }
   .grid { animation: none; opacity: 1; transform: none; }
   .search-ticker-word { animation: none; opacity: 1; transform: none; }
-  .trending-dot { animation: none; box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0); }
+  .trending-dot { animation: none; box-shadow: none; }
   .trending-chip:hover { transform: none; }
   .trending-chip:active { transform: none; }
 }
