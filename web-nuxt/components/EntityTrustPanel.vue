@@ -5,7 +5,7 @@
       <SourceMark :tier="tier" />
     </div>
     <FreshnessLine :status="freshnessStatus" :updated-label="updatedLabel" />
-    <a v-if="sourceUrl" data-source-link :href="sourceUrl" target="_blank" rel="noopener nofollow">{{ sourceTitle }}</a>
+    <a v-if="sourceHref" data-source-link :href="sourceHref" target="_blank" rel="noopener nofollow">{{ sourceTitle }}</a>
     <span v-else data-source-label>{{ sourceTitle }}</span>
     <p>{{ note }}</p>
     <NuxtLink data-report-action :to="reportTo">Báo sai hoặc bổ sung nguồn</NuxtLink>
@@ -14,8 +14,9 @@
 
 <script setup lang="ts">
 import type { FreshnessStatus, SourceTier } from '../utils/regionalColor'
+import { safeUrl } from '~/utils/safe'
 
-defineProps<{
+const props = defineProps<{
   tier: SourceTier
   sourceTitle: string
   sourceUrl?: string
@@ -24,6 +25,13 @@ defineProps<{
   note: string
   reportTo: string
 }>()
+
+const sourceHref = computed(() => {
+  const raw = props.sourceUrl?.trim()
+  if (!raw) return ''
+  const safe = safeUrl(raw)
+  return safe === '#' ? '' : safe
+})
 </script>
 
 <style scoped>

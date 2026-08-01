@@ -52,6 +52,26 @@ describe('entity detail tri-region behavior', () => {
     expect(wrapper.get('[data-report-action]').attributes('href')).toBe('/cong-dong?report=entity-1')
   })
 
+  it('keeps invalid source URLs as labels instead of unsafe links', async () => {
+    const wrapper = await mountSuspended(EntityTrustPanel, {
+      props: {
+        tier: 'unknown',
+        sourceTitle: 'Nguồn chưa được xác minh',
+        sourceUrl: 'javascript:alert(1)',
+        freshnessStatus: 'unknown',
+        updatedLabel: '',
+        note: 'Hãy kiểm tra trước khi sử dụng thông tin.',
+        reportTo: '/cong-dong?report=entity-unsafe',
+      },
+      global: { stubs: { IconLine: true } },
+    })
+    wrappers.push(wrapper)
+
+    expect(wrapper.find('[data-source-link]').exists()).toBe(false)
+    expect(wrapper.get('[data-source-label]').text()).toBe('Nguồn chưa được xác minh')
+    expect(wrapper.get('[data-report-action]').attributes('href')).toBe('/cong-dong?report=entity-unsafe')
+  })
+
   it('keeps the direct-contact model and semantic action order', async () => {
     const wrapper = await mountSuspended(ContactWidget, {
       props: {
