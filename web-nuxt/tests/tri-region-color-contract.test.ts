@@ -97,6 +97,21 @@ describe('Tri-Region color contract', () => {
     )
   })
 
+  it('binds the real today selector to semantic text, Coral surface and Coral boundary', async () => {
+    const css = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
+    const homeRoot = readCssBlock(css, '[data-home-pilot="nocturne-b1"] {')
+    const today = readCssBlock(
+      css,
+      '[data-home-pilot="nocturne-b1"] .ec-countdown.ec-today[data-material-accent="amber"] {',
+    )
+
+    expect(homeRoot).toMatch(/--home-color-today-text:\s*var\(--color-text\)/)
+    expect(homeRoot).toMatch(/--home-color-today-surface:\s*color-mix\(in srgb, var\(--color-error\) 14%, transparent\)/)
+    expect(today).toMatch(/background:\s*var\(--home-color-today-surface\)/)
+    expect(today).toMatch(/color:\s*var\(--home-color-today-text\)/)
+    expect(today).toMatch(/box-shadow:\s*inset 0 0 0 1px var\(--color-error\)/)
+  })
+
   it('lets a nested neutral material reset an inherited page accent', async () => {
     const css = await readFile(resolve(root, 'web-nuxt/assets/css/tri-region-color.css'), 'utf8')
     const neutral = readCssBlock(
@@ -217,6 +232,14 @@ describe('Tri-Region color contract', () => {
     const outputNames = stdout.trim().split(/\r?\n/).map(line => line.split(/\s+/)[0])
 
     expect(outputNames).toEqual(expectedNames)
+    expect(stdout).toContain('homepage-amber-text-light-srgb 4.86 4.5')
+    expect(stdout).toContain('homepage-today-text-light-srgb 13.78 4.5')
+    expect(stdout).toContain('homepage-amber-text-dark-srgb 6.81 4.5')
+    expect(stdout).toContain('homepage-today-text-dark-srgb 13.35 4.5')
+    expect(stdout).toContain('homepage-amber-text-light-oklch 5.33 4.5')
+    expect(stdout).toContain('homepage-today-text-light-oklch 13.76 4.5')
+    expect(stdout).toContain('homepage-amber-text-dark-oklch 6.80 4.5')
+    expect(stdout).toContain('homepage-today-text-dark-oklch 13.37 4.5')
   })
 
   it('fails closed when an audited numeric token parses as non-finite', async () => {
@@ -243,13 +266,91 @@ describe('Tri-Region color contract', () => {
     }
   })
 
-  it('fails closed when a Homepage focus alias points at an unsupported semantic token', async () => {
+  it.each([
+    {
+      name: 'missing action alias hidden in a comment',
+      mutate: (source: string) => source.replace(
+        '--home-color-focus-on-action: var(--color-on-action);',
+        '/* --home-color-focus-on-action: var(--color-on-action); */',
+      ),
+      message: 'Missing semantic alias assignment for --home-color-focus-on-action',
+    },
+    {
+      name: 'malformed action alias',
+      mutate: (source: string) => source.replace(
+        '--home-color-focus-on-action: var(--color-on-action);',
+        '--home-color-focus-on-action: var(--color-on-action;',
+      ),
+      message: 'Malformed semantic alias assignment for --home-color-focus-on-action',
+    },
+    {
+      name: 'duplicate action alias',
+      mutate: (source: string) => source.replace(
+        '--home-color-focus-on-action: var(--color-on-action);',
+        '--home-color-focus-on-action: var(--color-on-action);\n  --home-color-focus-on-action: var(--color-on-action);',
+      ),
+      message: 'Duplicate semantic alias assignment for --home-color-focus-on-action',
+    },
+    {
+      name: 'missing media alias hidden in a comment',
+      mutate: (source: string) => source.replace(
+        '--home-color-focus-on-media: var(--color-focus);',
+        '/* --home-color-focus-on-media: var(--color-focus); */',
+      ),
+      message: 'Missing semantic alias assignment for --home-color-focus-on-media',
+    },
+    {
+      name: 'malformed light media alias',
+      mutate: (source: string) => source.replace(
+        '--home-color-focus-on-media: var(--color-on-action);',
+        '--home-color-focus-on-media: var(--color-on-action;',
+      ),
+      message: 'Malformed semantic alias assignment for --home-color-focus-on-media',
+    },
+    {
+      name: 'duplicate light media alias',
+      mutate: (source: string) => source.replace(
+        '--home-color-focus-on-media: var(--color-on-action);',
+        '--home-color-focus-on-media: var(--color-on-action);\n  --home-color-focus-on-media: var(--color-on-action);',
+      ),
+      message: 'Duplicate semantic alias assignment for --home-color-focus-on-media',
+    },
+    {
+      name: 'missing today text alias hidden in a comment',
+      mutate: (source: string) => source.replace(
+        '--home-color-today-text: var(--color-text);',
+        '/* --home-color-today-text: var(--color-text); */',
+      ),
+      message: 'Missing semantic alias assignment for --home-color-today-text',
+    },
+    {
+      name: 'malformed today text alias',
+      mutate: (source: string) => source.replace(
+        '--home-color-today-text: var(--color-text);',
+        '--home-color-today-text: var(--color-text;',
+      ),
+      message: 'Malformed semantic alias assignment for --home-color-today-text',
+    },
+    {
+      name: 'duplicate today text alias',
+      mutate: (source: string) => source.replace(
+        '--home-color-today-text: var(--color-text);',
+        '--home-color-today-text: var(--color-text);\n  --home-color-today-text: var(--color-text);',
+      ),
+      message: 'Duplicate semantic alias assignment for --home-color-today-text',
+    },
+    {
+      name: 'unsupported media alias',
+      mutate: (source: string) => source.replace(
+        '--home-color-focus-on-media: var(--color-focus);',
+        '--home-color-focus-on-media: var(--color-brand);',
+      ),
+      message: 'Unsupported semantic alias for --home-color-focus-on-media',
+    },
+  ])('fails closed for $name', async ({ mutate, message }) => {
     const source = await readFile(resolve(root, 'web-nuxt/assets/css/variables.css'), 'utf8')
     const homeSource = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
-    const invalidHomeCss = homeSource.replace(
-      /--home-color-focus-on-media:\s*var\(--color-focus\);/,
-      '--home-color-focus-on-media: var(--color-brand);',
-    )
+    const invalidHomeCss = mutate(homeSource)
     const temp = await mkdtemp(join(tmpdir(), 'tri-region-home-alias-'))
     await mkdir(resolve(temp, 'assets/css'), { recursive: true })
     await writeFile(resolve(temp, 'assets/css/variables.css'), source)
@@ -261,7 +362,7 @@ describe('Tri-Region color contract', () => {
           cwd: temp,
         }),
       ).rejects.toMatchObject({
-        stderr: expect.stringContaining('Unsupported semantic alias'),
+        stderr: expect.stringContaining(message),
       })
     } finally {
       await rm(temp, { recursive: true, force: true })

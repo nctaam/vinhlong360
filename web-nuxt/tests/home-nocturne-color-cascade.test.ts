@@ -1,13 +1,11 @@
-import { readFile } from 'node:fs/promises'
-import { resolve } from 'node:path'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { afterEach, describe, expect, it } from 'vitest'
 import { defineComponent, h } from 'vue'
 import HomeFeatureDossier from '../components/home/HomeFeatureDossier.vue'
 import SearchAutocomplete from '../components/SearchAutocomplete.vue'
 import type { ImageDescriptor } from '../types/image'
+import { installActualHomepageStyles } from './helpers/installHomepageStyles'
 
-const root = resolve(import.meta.dirname, '../..')
 const wrappers: Array<{ unmount: () => void }> = []
 const stylesheets: HTMLStyleElement[] = []
 
@@ -22,26 +20,6 @@ const descriptor: ImageDescriptor = {
   credit: null,
   width: null,
   height: null,
-}
-
-function pageStyle(source: string): string {
-  const start = source.indexOf('<style>')
-  const end = source.indexOf('</style>', start)
-  if (start < 0 || end < 0) throw new Error('Missing Homepage inline style')
-  return source.slice(start + '<style>'.length, end)
-}
-
-async function installActualHomepageStyles() {
-  const config = await readFile(resolve(root, 'web-nuxt/nuxt.config.ts'), 'utf8')
-  const cssList = config.slice(config.indexOf('css: ['), config.indexOf('],', config.indexOf('css: [')))
-  const orderedGlobalFiles = [...cssList.matchAll(/'~\/assets\/css\/([^']+)'/g)].map(match => match[1]!)
-  const globalCss = await Promise.all(orderedGlobalFiles.map(file => readFile(resolve(root, 'web-nuxt/assets/css', file), 'utf8')))
-  const indexSource = await readFile(resolve(root, 'web-nuxt/pages/index.vue'), 'utf8')
-  const homeCss = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
-  const stylesheet = document.createElement('style')
-  stylesheet.textContent = [...globalCss, pageStyle(indexSource), homeCss].join('\n')
-  document.head.append(stylesheet)
-  stylesheets.push(stylesheet)
 }
 
 function rgb(value: string): [number, number, number] {
@@ -99,13 +77,12 @@ function cascadeFixture(tokens: Record<string, string>) {
         h('span', { class: 'ec-month' }, 'Th8'),
       ]),
       h('span', { class: 'ec-countdown', 'data-material-accent': 'amber' }, 'Còn 4 ngày'),
-      h('span', { class: 'ec-countdown ec-today', 'data-material-accent': 'amber' }, 'Hôm nay!'),
     ]),
   })
 }
 
 async function mountCascade(tokens: Record<string, string>) {
-  await installActualHomepageStyles()
+  stylesheets.push(await installActualHomepageStyles())
   const wrapper = await mountSuspended(cascadeFixture(tokens), { attachTo: document.body })
   wrappers.push(wrapper)
   return wrapper
@@ -231,35 +208,4 @@ describe('Homepage Nocturne computed color cascade', () => {
     expect(style.backgroundColor).toBe('rgb(42, 41, 34)')
   })
 
-  it.each([
-    {
-      theme: 'light',
-      text: 'rgb(8, 26, 22)',
-      surface: 'rgb(244, 226, 223)',
-      error: 'rgb(189, 65, 63)',
-    },
-    {
-      theme: 'dark',
-      text: 'rgb(237, 235, 229)',
-      surface: 'rgb(46, 43, 40)',
-      error: 'rgb(223, 127, 120)',
-    },
-  ])('keeps the visible today label readable with a Coral status accent in $theme', async ({ theme, text, surface, error }) => {
-    document.documentElement.classList.add(theme)
-    const wrapper = await mountCascade({
-      '--home-color-amber-text': 'rgb(133, 90, 22)',
-      '--home-color-amber-surface': 'rgb(249, 244, 232)',
-      '--home-color-today-surface': surface,
-      '--color-text': text,
-      '--color-error': error,
-    })
-
-    const today = wrapper.get<HTMLElement>('.ec-today')
-    const style = getComputedStyle(today.element)
-    expect(today.text()).toBe('Hôm nay!')
-    expect(style.color).toBe(text)
-    expect(style.backgroundColor).toBe(surface)
-    expect(style.boxShadow).toContain(error)
-    expect(contrast(rgb(style.color), rgb(style.backgroundColor))).toBeGreaterThanOrEqual(4.5)
-  })
 })

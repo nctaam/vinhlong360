@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 
 const css = readFileSync(resolve(process.cwd(), 'assets/css/variables.css'), 'utf8')
 const homeCss = readFileSync(resolve(process.cwd(), 'assets/css/home-nocturne.css'), 'utf8')
+const parsedHomeCss = stripCssComments(homeCss)
 const pairs = [
   ['body-light', 'mekong-ink', 'alluvial-paper', 7],
   ['muted-light', 'mekong-muted', 'alluvial-paper', 4.5],
@@ -25,16 +26,16 @@ const actionSurfaceWeight = readMixWeight('color-action-surface')
 const actionBorderWeight = readMixWeight('color-action-border')
 const homeAmberSurfaceWeight = readMixWeight(
   'home-color-amber-surface',
-  homeCss,
+  parsedHomeCss,
   'color-material-amber',
 )
 const homeTodaySurfaceWeight = readMixWeight(
   'home-color-today-surface',
-  homeCss,
+  parsedHomeCss,
   'color-error',
 )
-const homeRootBlock = readCssBlock(homeCss, '[data-home-pilot="nocturne-b1"] {')
-const homeLightBlock = readCssBlock(homeCss, '.light [data-home-pilot="nocturne-b1"] {')
+const homeRootBlock = readCssBlock(parsedHomeCss, '[data-home-pilot="nocturne-b1"] {')
+const homeLightBlock = readCssBlock(parsedHomeCss, '.light [data-home-pilot="nocturne-b1"] {')
 const supportedSemanticAliases = new Set([
   'color-action',
   'color-on-action',
@@ -70,6 +71,10 @@ const darkOklchBlock = readCssBlock(css, '\n  .dark {', finalOklchSupport)
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function stripCssComments(source) {
+  return source.replace(/\/\*[\s\S]*?\*\//g, '')
 }
 
 function readCssBlock(source, marker, fromIndex = 0) {
@@ -109,8 +114,12 @@ function readMixWeight(name, source = css, sourceToken = 'color-action') {
 
 function readSemanticAlias(block, name) {
   const escaped = escapeRegExp(name)
-  const match = new RegExp(`--${escaped}:\\s*var\\(--([\\w-]+)\\)\\s*;`, 'i').exec(block)
-  if (!match) throw new Error(`Missing semantic alias assignment for --${name}`)
+  const declarations = [...block.matchAll(new RegExp(`--${escaped}\\s*:\\s*([^;{}]*)(?:;|$)`, 'gi'))]
+  if (declarations.length === 0) throw new Error(`Missing semantic alias assignment for --${name}`)
+  if (declarations.length > 1) throw new Error(`Duplicate semantic alias assignment for --${name}`)
+  const value = declarations[0][1].trim()
+  const match = /^var\(--([\w-]+)\)$/.exec(value)
+  if (!match) throw new Error(`Malformed semantic alias assignment for --${name}`)
   const alias = match[1]
   if (!supportedSemanticAliases.has(alias)) {
     throw new Error(`Unsupported semantic alias for --${name}: --${alias}`)
@@ -355,14 +364,14 @@ function auditControls(format) {
     for (const [surfaceName, host] of Object.entries(backgrounds)) {
       audit(`focus-${theme}-${surfaceName}-${format}`, focus, host, 3)
     }
-    const amberSurface = composite(materialAmber, backgrounds.surface, homeAmberSurfaceWeight)
+    const amberSurface = composite(materialAmber, backgrounds.canvas, homeAmberSurfaceWeight)
     const focusAction = resolveSemanticAlias(homeFocusActionAlias, themeData)
     const focusMedia = resolveSemanticAlias(
       theme === 'light' ? homeFocusMediaLightAlias : homeFocusMediaAlias,
       themeData,
     )
     const todayText = resolveSemanticAlias(homeTodayTextAlias, themeData)
-    const todaySurface = composite(error, backgrounds.surface, homeTodaySurfaceWeight)
+    const todaySurface = composite(error, backgrounds.canvas, homeTodaySurfaceWeight)
     audit(`homepage-amber-text-${theme}-${format}`, amberText, amberSurface, 4.5)
     audit(`homepage-focus-action-${theme}-${format}`, focusAction, action, 3)
     audit(`homepage-focus-media-${theme}-${format}`, focusMedia, mediaHost, 3)

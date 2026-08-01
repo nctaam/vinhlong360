@@ -3,11 +3,13 @@ import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { defineComponent, h, nextTick } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import HomePage from '../pages/index.vue'
+import { installActualHomepageStyles } from './helpers/installHomepageStyles'
 
 const apiFetchMock = vi.hoisted(() => vi.fn())
 vi.mock('../utils/apiFetch', () => ({ apiFetch: apiFetchMock }))
 
 const wrappers: Array<{ unmount: () => void }> = []
+const stylesheets: HTMLStyleElement[] = []
 const NuxtImgStub = defineComponent({
   inheritAttrs: false,
   props: { src: { type: String, required: true }, alt: { type: String, required: true } },
@@ -45,6 +47,7 @@ beforeEach(() => {
 })
 afterEach(async () => {
   for (const wrapper of wrappers.splice(0)) wrapper.unmount()
+  for (const stylesheet of stylesheets.splice(0)) stylesheet.remove()
   await clearNuxtData()
   document.documentElement.classList.remove('dark', 'light')
 })
@@ -75,7 +78,63 @@ function homeFixture() {
   }
 }
 
+type Rgba = [number, number, number, number]
+
+function rgba(value: string): Rgba {
+  if (value === 'transparent') return [0, 0, 0, 0]
+  const hex = /^#([0-9a-f]{6})$/i.exec(value)
+  if (hex) {
+    const number = Number.parseInt(hex[1]!, 16)
+    return [(number >> 16) & 255, (number >> 8) & 255, number & 255, 1]
+  }
+  const match = /rgba?\(\s*([0-9.]+)[, ]+([0-9.]+)[, ]+([0-9.]+)(?:\s*[,/]\s*([0-9.]+))?/.exec(value)
+  if (!match) throw new Error(`Expected computed RGB(A) color, received: ${value}`)
+  return [Number(match[1]), Number(match[2]), Number(match[3]), match[4] === undefined ? 1 : Number(match[4])]
+}
+
 describe('homepage Existing Screen Evolution B1', () => {
+  it.each([
+    { theme: 'light', text: [8, 26, 22, 1] as Rgba, canvas: [249, 247, 241, 1] as Rgba, error: '#BD413F' },
+    { theme: 'dark', text: [237, 235, 229, 1] as Rgba, canvas: [7, 18, 16, 1] as Rgba, error: '#DF7F78' },
+  ])('renders the real today event with semantic foreground on its transparent canvas path in $theme', async ({ theme, text, canvas, error }) => {
+    document.documentElement.classList.add(theme)
+    // Happy DOM cannot resolve OKLCH through var(); the executable audit covers the color-mix composite.
+    stylesheets.push(await installActualHomepageStyles({ srgbFallback: true }))
+    const fixture = homeFixture()
+    fixture.upcoming_events[0]!.days_until = 0
+    fixture.upcoming_events[1]!.days_until = 0
+    apiFetchMock.mockImplementation((url: unknown) => {
+      const path = String(url)
+      if (path === '/api/homepage') return Promise.resolve(fixture)
+      if (path === '/api/feed?limit=10') return Promise.resolve({ posts: [] })
+      if (path === '/api/community/stats') return Promise.resolve(null)
+      if (path === '/api/community/leaderboard?limit=3') return Promise.resolve({ leaders: [] })
+      if (path === '/api/community/trending-tags?limit=8') return Promise.resolve({ tags: [] })
+      if (path.startsWith('/api/entities/popular?')) return Promise.resolve({ entities: [] })
+      return Promise.resolve({})
+    })
+
+    const wrapper = await mountSuspended(HomePage, { global: { stubs: pageStubs }, attachTo: document.body })
+    wrappers.push(wrapper)
+    await flushUi()
+
+    const root = wrapper.get<HTMLElement>('[data-home-pilot="nocturne-b1"]')
+    const event = wrapper.get<HTMLElement>('.event-mini:has(.ec-today)')
+    const today = event.get<HTMLElement>('.ec-today')
+    const rootStyle = getComputedStyle(root.element)
+    const rootBackground = rgba(rootStyle.backgroundColor)
+    const eventBackground = rgba(getComputedStyle(event.element).backgroundColor)
+    const todayStyle = getComputedStyle(today.element)
+
+    expect(today.text()).toBe('Hôm nay!')
+    expect(today.classes()).toContain('ec-today')
+    expect(today.attributes('data-material-accent')).toBe('amber')
+    expect(rootBackground).toEqual(canvas)
+    expect(eventBackground[3]).toBe(0)
+    expect(rgba(todayStyle.color)).toEqual(text)
+    expect(todayStyle.boxShadow).toContain(error)
+  })
+
   it('renders the homepage recipe with River action, Clay context and visible source tier', async () => {
     const fixture = homeFixture()
     fixture.experiences[0]!.quality = { source_tier: 'official' }
