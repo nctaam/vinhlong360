@@ -3,11 +3,43 @@ import { resolve } from 'node:path'
 
 const root = resolve(import.meta.dirname, '../../..')
 
-function pageStyle(source: string): string {
-  const start = source.indexOf('<style>')
-  const end = source.indexOf('</style>', start)
-  if (start < 0 || end < 0) throw new Error('Missing Homepage inline style')
-  return source.slice(start + '<style>'.length, end)
+export type PageStyleEntry =
+  | { kind: 'inline', css: string }
+  | { kind: 'asset', path: string }
+
+export function extractNuxtCssPaths(source: string): string[] {
+  const cssKey = source.search(/\bcss\s*:/)
+  if (cssKey < 0) throw new Error('Missing Nuxt css array')
+  const open = source.indexOf('[', cssKey)
+  if (open < 0) throw new Error('Missing Nuxt css array opening bracket')
+  let depth = 0
+  let close = -1
+  for (let index = open; index < source.length; index += 1) {
+    if (source[index] === '[') depth += 1
+    if (source[index] === ']') depth -= 1
+    if (depth === 0) {
+      close = index
+      break
+    }
+  }
+  if (close < 0) throw new Error('Missing Nuxt css array closing bracket')
+  const paths = [...source.slice(open + 1, close).matchAll(/["']~\/assets\/css\/([^"']+)["']/g)]
+    .map(match => match[1]!)
+  if (paths.length === 0) throw new Error('Nuxt css array contains no asset paths')
+  return paths
+}
+
+export function extractPageStyleEntries(source: string): PageStyleEntry[] {
+  const entries = [...source.matchAll(/<style\b([^>]*)>([\s\S]*?)<\/style>/gi)].map((match): PageStyleEntry => {
+    const src = /\bsrc\s*=\s*["']~\/assets\/css\/([^"']+)["']/i.exec(match[1]!)
+    return src ? { kind: 'asset', path: src[1]! } : { kind: 'inline', css: match[2]! }
+  })
+  if (entries.length === 0) throw new Error('Homepage contains no style blocks')
+  if (!entries.some(entry => entry.kind === 'inline')) throw new Error('Homepage inline style block is missing')
+  if (!entries.some(entry => entry.kind === 'asset' && entry.path === 'home-nocturne.css')) {
+    throw new Error('Homepage home-nocturne.css style block is missing')
+  }
+  return entries
 }
 
 function stripOklchSupports(source: string): string {
@@ -36,15 +68,20 @@ function stripOklchSupports(source: string): string {
 
 export async function installActualHomepageStyles(options: { srgbFallback?: boolean } = {}): Promise<HTMLStyleElement> {
   const config = await readFile(resolve(root, 'web-nuxt/nuxt.config.ts'), 'utf8')
-  const cssList = config.slice(config.indexOf('css: ['), config.indexOf('],', config.indexOf('css: [')))
-  const orderedGlobalFiles = [...cssList.matchAll(/'~\/assets\/css\/([^']+)'/g)].map(match => match[1]!)
+  const orderedGlobalFiles = extractNuxtCssPaths(config)
+  if (!orderedGlobalFiles.includes('variables.css')) throw new Error('Nuxt variables.css input is missing')
+  if (!orderedGlobalFiles.includes('tri-region-color.css')) throw new Error('Nuxt tri-region-color.css input is missing')
   const globalCss = await Promise.all(
     orderedGlobalFiles.map(file => readFile(resolve(root, 'web-nuxt/assets/css', file), 'utf8')),
   )
   const indexSource = await readFile(resolve(root, 'web-nuxt/pages/index.vue'), 'utf8')
-  const homeCss = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
+  const pageCss = await Promise.all(extractPageStyleEntries(indexSource).map(entry => {
+    return entry.kind === 'inline'
+      ? Promise.resolve(entry.css)
+      : readFile(resolve(root, 'web-nuxt/assets/css', entry.path), 'utf8')
+  }))
   const stylesheet = document.createElement('style')
-  const sources = [...globalCss, pageStyle(indexSource), homeCss]
+  const sources = [...globalCss, ...pageCss]
   stylesheet.textContent = (options.srgbFallback ? sources.map(stripOklchSupports) : sources).join('\n')
   document.head.append(stylesheet)
   return stylesheet

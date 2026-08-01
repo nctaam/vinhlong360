@@ -22,6 +22,10 @@ const pairs = [
   ['error-dark', 'night-error', 'night-canvas', 4.5],
 ]
 
+const homeRootMarker = '[data-home-pilot="nocturne-b1"] {'
+const homeLightMarker = '.light [data-home-pilot="nocturne-b1"] {'
+const homeRootBlock = readUniqueCssBlock(parsedHomeCss, homeRootMarker)
+const homeLightBlock = readUniqueCssBlock(parsedHomeCss, homeLightMarker)
 const actionSurfaceWeight = readMixWeight('color-action-surface')
 const actionBorderWeight = readMixWeight('color-action-border')
 const homeAmberSurfaceWeight = readMixWeight(
@@ -34,18 +38,26 @@ const homeTodaySurfaceWeight = readMixWeight(
   parsedHomeCss,
   'color-error',
 )
-const homeRootBlock = readCssBlock(parsedHomeCss, '[data-home-pilot="nocturne-b1"] {')
-const homeLightBlock = readCssBlock(parsedHomeCss, '.light [data-home-pilot="nocturne-b1"] {')
+const homeOnMediaPlateAlpha = readRgbaAlpha(
+  'home-color-on-media-plate',
+  parsedHomeCss,
+  'black-rgb',
+)
 const supportedSemanticAliases = new Set([
   'color-action',
+  'color-mask-opaque',
   'color-on-action',
   'color-focus',
   'color-text',
+  'surface-white',
 ])
 const homeFocusActionAlias = readSemanticAlias(homeRootBlock, 'home-color-focus-on-action')
 const homeFocusMediaAlias = readSemanticAlias(homeRootBlock, 'home-color-focus-on-media')
 const homeFocusMediaLightAlias = readSemanticAlias(homeLightBlock, 'home-color-focus-on-media')
+const homeFocusMediaHaloAlias = readSemanticAlias(homeRootBlock, 'home-color-focus-on-media-halo')
+const homeOnMediaTextAlias = readSemanticAlias(homeRootBlock, 'home-color-on-media-text')
 const homeTodayTextAlias = readSemanticAlias(homeRootBlock, 'home-color-today-text')
+const blackRgb = readRgbTuple('black-rgb')
 const semanticNames = pairs.map(([name]) => name)
 const expectedAuditNames = new Set([
   ...semanticNames,
@@ -57,6 +69,7 @@ const expectedAuditNames = new Set([
       ...['canvas', 'surface', 'subtle'].map(surface => `control-border-${theme}-${surface}-${format}`),
       ...['canvas', 'surface', 'subtle'].map(surface => `focus-${theme}-${surface}-${format}`),
       `homepage-amber-text-${theme}-${format}`,
+      `homepage-on-media-text-${theme}-${format}`,
       `homepage-focus-action-${theme}-${format}`,
       `homepage-focus-media-${theme}-${format}`,
       `homepage-today-text-${theme}-${format}`,
@@ -83,6 +96,12 @@ function readCssBlock(source, marker, fromIndex = 0) {
   const open = source.indexOf('{', start)
   if (open < 0) throw new Error(`Missing opening brace: ${marker}`)
 
+  return readCssBlockAt(source, open, marker)
+}
+
+function readCssBlockAt(source, open, marker) {
+  if (source[open] !== '{') throw new Error(`Missing opening brace: ${marker}`)
+
   let depth = 0
   for (let index = open; index < source.length; index += 1) {
     if (source[index] === '{') depth += 1
@@ -91,6 +110,27 @@ function readCssBlock(source, marker, fromIndex = 0) {
   }
 
   throw new Error(`Missing closing brace: ${marker}`)
+}
+
+function readCssBlocks(source, marker) {
+  const selector = marker.slice(0, marker.lastIndexOf('{')).trim()
+  const blocks = []
+  for (let open = 0; open < source.length; open += 1) {
+    if (source[open] !== '{') continue
+    let boundary = open - 1
+    while (boundary >= 0 && !'{};'.includes(source[boundary])) boundary -= 1
+    if (source.slice(boundary + 1, open).trim() === selector) {
+      blocks.push(readCssBlockAt(source, open, marker))
+    }
+  }
+  return blocks
+}
+
+function readUniqueCssBlock(source, marker) {
+  const blocks = readCssBlocks(source, marker)
+  if (blocks.length === 0) throw new Error(`Missing CSS block: ${marker}`)
+  if (blocks.length > 1) throw new Error(`Duplicate CSS block: ${marker}`)
+  return blocks[0]
 }
 
 function readFiniteNumber(value, label) {
@@ -102,14 +142,29 @@ function readFiniteNumber(value, label) {
 function readMixWeight(name, source = css, sourceToken = 'color-action') {
   const escaped = escapeRegExp(name)
   const escapedSourceToken = escapeRegExp(sourceToken)
-  const match = new RegExp(
+  const declarations = [...source.matchAll(new RegExp(
     `--${escaped}:\\s*color-mix\\(in srgb, var\\(--${escapedSourceToken}\\)\\s+([0-9.]+)%, transparent\\)\\s*;`,
-    'i',
-  ).exec(source)
-  if (!match) throw new Error(`Missing sRGB color-mix contract for --${name}`)
-  const weight = readFiniteNumber(match[1], `--${name}`) / 100
+    'gi',
+  ))]
+  if (declarations.length === 0) throw new Error(`Missing sRGB color-mix contract for --${name}`)
+  if (declarations.length > 1) throw new Error(`Duplicate color-mix declaration for --${name}`)
+  const weight = readFiniteNumber(declarations[0][1], `--${name}`) / 100
   if (weight < 0 || weight > 1) throw new Error(`Out-of-range color-mix weight for --${name}`)
   return weight
+}
+
+function readRgbaAlpha(name, source, sourceToken) {
+  const escaped = escapeRegExp(name)
+  const escapedSourceToken = escapeRegExp(sourceToken)
+  const declarations = [...source.matchAll(new RegExp(
+    `--${escaped}:\\s*rgba\\(var\\(--${escapedSourceToken}\\),\\s*([0-9.]+)\\)\\s*;`,
+    'gi',
+  ))]
+  if (declarations.length === 0) throw new Error(`Missing rgba contract for --${name}`)
+  if (declarations.length > 1) throw new Error(`Duplicate rgba declaration for --${name}`)
+  const alpha = readFiniteNumber(declarations[0][1], `--${name}`)
+  if (alpha < 0 || alpha > 1) throw new Error(`Out-of-range rgba alpha for --${name}`)
+  return alpha
 }
 
 function readSemanticAlias(block, name) {
@@ -132,6 +187,21 @@ function readHexToken(name) {
   const match = new RegExp(`--${escaped}:\\s*(#[0-9a-f]{6})\\s*;`, 'i').exec(css)
   if (!match) throw new Error(`Missing sRGB fallback for --${name}`)
   return hexToSrgb(match[1])
+}
+
+function readRgbTuple(name) {
+  const escaped = escapeRegExp(name)
+  const declarations = [...css.matchAll(new RegExp(
+    `--${escaped}:\\s*([0-9.]+)\\s*,\\s*([0-9.]+)\\s*,\\s*([0-9.]+)\\s*;`,
+    'gi',
+  ))]
+  if (declarations.length === 0) throw new Error(`Missing RGB tuple for --${name}`)
+  if (declarations.length > 1) throw new Error(`Duplicate RGB tuple for --${name}`)
+  return declarations[0].slice(1, 4).map((channel) => {
+    const value = readFiniteNumber(channel, `--${name}`) / 255
+    if (value < 0 || value > 1) throw new Error(`Out-of-range RGB tuple for --${name}`)
+    return value
+  })
 }
 
 function readOklchToken(name) {
@@ -227,17 +297,25 @@ function assertColor(color, label) {
 
 let failed = false
 const auditedNames = new Set()
-function audit(name, foreground, background, threshold) {
+function auditRatio(name, ratio, threshold) {
   if (!expectedAuditNames.has(name)) throw new Error(`Unexpected audit: ${name}`)
   if (auditedNames.has(name)) throw new Error(`Duplicate audit: ${name}`)
-  assertColor(foreground, `${name} foreground`)
-  assertColor(background, `${name} background`)
   if (!Number.isFinite(threshold)) throw new Error(`Non-finite threshold for ${name}`)
-  const ratio = contrastRatio(foreground, background)
   if (!Number.isFinite(ratio)) throw new Error(`Non-finite contrast ratio for ${name}`)
   console.log(`${name} ${ratio.toFixed(2)} ${threshold.toFixed(1)}`)
   auditedNames.add(name)
   if (ratio < threshold) failed = true
+}
+
+function audit(name, foreground, background, threshold) {
+  assertColor(foreground, `${name} foreground`)
+  assertColor(background, `${name} background`)
+  auditRatio(name, contrastRatio(foreground, background), threshold)
+}
+
+function minimumDualRingContrast(firstRing, secondRing) {
+  // The worst host luminance lies where the two ring contrast ratios intersect.
+  return Math.sqrt(contrastRatio(firstRing, secondRing))
 }
 
 function auditSemanticPairs(format, readToken) {
@@ -257,7 +335,8 @@ function controlThemes(format) {
         focus: readHexToken('river-600'),
         text: readHexToken('mekong-ink'),
         error: readHexToken('coral-error'),
-        mediaHost: readHexToken('mekong-ink'),
+        surfaceWhite: readHexToken('surface-white'),
+        maskOpaque: readHexToken('mask-opaque'),
         amberText: readHexToken('harvest-700'),
         materialAmber: readHexToken('harvest-600'),
         directContact: readHexDeclaration(fallbackRoot, 'brand-zalo'),
@@ -274,7 +353,8 @@ function controlThemes(format) {
         focus: readHexToken('night-amber'),
         text: readHexToken('night-text'),
         error: readHexToken('night-error'),
-        mediaHost: readHexToken('night-canvas'),
+        surfaceWhite: readHexToken('surface-white'),
+        maskOpaque: readHexToken('mask-opaque'),
         amberText: readHexToken('night-amber'),
         materialAmber: readHexToken('night-amber'),
         directContact: readHexDeclaration(darkBlock, 'brand-zalo'),
@@ -295,7 +375,8 @@ function controlThemes(format) {
       focus: readOklchToken('river-600'),
       text: readOklchToken('mekong-ink'),
       error: readOklchToken('coral-error'),
-      mediaHost: readOklchToken('mekong-ink'),
+      surfaceWhite: readOklchToken('surface-white'),
+      maskOpaque: readHexToken('mask-opaque'),
       amberText: readOklchToken('harvest-700'),
       materialAmber: readOklchToken('harvest-600'),
       directContact: readHexDeclaration(fallbackRoot, 'brand-zalo'),
@@ -313,7 +394,8 @@ function controlThemes(format) {
       focus: readOklchToken('night-amber'),
       text: readOklchToken('night-text'),
       error: readOklchToken('night-error'),
-      mediaHost: readOklchToken('night-canvas'),
+      surfaceWhite: readOklchToken('surface-white'),
+      maskOpaque: readHexToken('mask-opaque'),
       amberText: readOklchToken('night-amber'),
       materialAmber: readOklchToken('night-amber'),
       directContact: readHexDeclaration(darkBlock, 'brand-zalo'),
@@ -331,7 +413,9 @@ function resolveSemanticAlias(alias, theme) {
     'color-action': theme.action,
     'color-on-action': theme.onAction,
     'color-focus': theme.focus,
+    'color-mask-opaque': theme.maskOpaque,
     'color-text': theme.text,
+    'surface-white': theme.surfaceWhite,
   }
   const value = values[alias]
   if (!value) throw new Error(`Missing resolved value for semantic alias --${alias}`)
@@ -347,7 +431,6 @@ function auditControls(format) {
       focus,
       text,
       error,
-      mediaHost,
       amberText,
       materialAmber,
       directContact,
@@ -370,11 +453,19 @@ function auditControls(format) {
       theme === 'light' ? homeFocusMediaLightAlias : homeFocusMediaAlias,
       themeData,
     )
+    const focusMediaHalo = resolveSemanticAlias(homeFocusMediaHaloAlias, themeData)
+    const onMediaText = resolveSemanticAlias(homeOnMediaTextAlias, themeData)
+    const onMediaPlate = composite(blackRgb, backgrounds.canvas, homeOnMediaPlateAlpha)
     const todayText = resolveSemanticAlias(homeTodayTextAlias, themeData)
     const todaySurface = composite(error, backgrounds.canvas, homeTodaySurfaceWeight)
     audit(`homepage-amber-text-${theme}-${format}`, amberText, amberSurface, 4.5)
+    audit(`homepage-on-media-text-${theme}-${format}`, onMediaText, onMediaPlate, 4.5)
     audit(`homepage-focus-action-${theme}-${format}`, focusAction, action, 3)
-    audit(`homepage-focus-media-${theme}-${format}`, focusMedia, mediaHost, 3)
+    auditRatio(
+      `homepage-focus-media-${theme}-${format}`,
+      minimumDualRingContrast(focusMedia, focusMediaHalo),
+      3,
+    )
     audit(`homepage-today-text-${theme}-${format}`, todayText, todaySurface, 4.5)
   }
 }

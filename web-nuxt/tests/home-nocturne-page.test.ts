@@ -92,7 +92,69 @@ function rgba(value: string): Rgba {
   return [Number(match[1]), Number(match[2]), Number(match[3]), match[4] === undefined ? 1 : Number(match[4])]
 }
 
+function composite(foreground: Rgba, background: Rgba): Rgba {
+  const alpha = foreground[3] + background[3] * (1 - foreground[3])
+  if (alpha === 0) return [0, 0, 0, 0]
+  return [
+    (foreground[0] * foreground[3] + background[0] * background[3] * (1 - foreground[3])) / alpha,
+    (foreground[1] * foreground[3] + background[1] * background[3] * (1 - foreground[3])) / alpha,
+    (foreground[2] * foreground[3] + background[2] * background[3] * (1 - foreground[3])) / alpha,
+    alpha,
+  ]
+}
+
+function luminance(color: Rgba) {
+  const channels = color.slice(0, 3).map((channel) => {
+    const normalized = channel / 255
+    return normalized <= .04045 ? normalized / 12.92 : ((normalized + .055) / 1.055) ** 2.4
+  })
+  return .2126 * channels[0]! + .7152 * channels[1]! + .0722 * channels[2]!
+}
+
+function contrast(foreground: Rgba, background: Rgba) {
+  const a = luminance(foreground)
+  const b = luminance(background)
+  return (Math.max(a, b) + .05) / (Math.min(a, b) + .05)
+}
+
 describe('homepage Existing Screen Evolution B1', () => {
+  it.each([
+    { theme: 'light', canvas: [249, 247, 241, 1] as Rgba },
+    { theme: 'dark', canvas: [7, 18, 16, 1] as Rgba },
+  ])('renders the real hero subtitle with an accessible on-media plate in $theme', async ({ theme, canvas }) => {
+    document.documentElement.classList.add(theme)
+    stylesheets.push(await installActualHomepageStyles({ srgbFallback: true }))
+    apiFetchMock.mockImplementation((url: unknown) => {
+      const path = String(url)
+      if (path === '/api/homepage') return Promise.resolve(homeFixture())
+      if (path === '/api/feed?limit=10') return Promise.resolve({ posts: [] })
+      if (path === '/api/community/stats') return Promise.resolve(null)
+      if (path === '/api/community/leaderboard?limit=3') return Promise.resolve({ leaders: [] })
+      if (path === '/api/community/trending-tags?limit=8') return Promise.resolve({ tags: [] })
+      if (path.startsWith('/api/entities/popular?')) return Promise.resolve({ entities: [] })
+      return Promise.resolve({})
+    })
+
+    const wrapper = await mountSuspended(HomePage, { global: { stubs: pageStubs }, attachTo: document.body })
+    wrappers.push(wrapper)
+    await flushUi()
+
+    const root = wrapper.get<HTMLElement>('[data-home-pilot="nocturne-b1"]')
+    const subtitle = wrapper.get<HTMLElement>('.hero-sub')
+    const rootBackground = rgba(getComputedStyle(root.element).backgroundColor)
+    const subtitleStyle = getComputedStyle(subtitle.element)
+    const subtitleText = rgba(subtitleStyle.color)
+    const subtitlePlate = rgba(subtitleStyle.backgroundColor)
+    const renderedPlate = composite(subtitlePlate, rootBackground)
+
+    expect(subtitle.text()).toContain('Tìm điểm đến')
+    expect(rootBackground).toEqual(canvas)
+    expect(subtitleText).toEqual([253, 252, 249, 1])
+    expect(subtitlePlate.slice(0, 3)).toEqual([0, 0, 0])
+    expect(subtitlePlate[3]).toBeGreaterThanOrEqual(.72)
+    expect(contrast(subtitleText, renderedPlate)).toBeGreaterThanOrEqual(4.5)
+  })
+
   it.each([
     { theme: 'light', text: [8, 26, 22, 1] as Rgba, canvas: [249, 247, 241, 1] as Rgba, error: '#BD413F' },
     { theme: 'dark', text: [237, 235, 229, 1] as Rgba, canvas: [7, 18, 16, 1] as Rgba, error: '#DF7F78' },

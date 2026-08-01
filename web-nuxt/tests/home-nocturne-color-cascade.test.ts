@@ -135,22 +135,21 @@ describe('Homepage Nocturne computed color cascade', () => {
       theme: 'light',
       action: 'rgb(3, 90, 105)',
       onAction: 'rgb(253, 252, 249)',
-      focusOnMedia: 'rgb(253, 252, 249)',
-      hero: 'rgb(8, 26, 22)',
+      hero: 'rgb(255, 255, 255)',
     },
     {
       theme: 'dark',
       action: 'rgb(125, 174, 186)',
       onAction: 'rgb(7, 18, 16)',
-      focusOnMedia: 'rgb(206, 167, 112)',
-      hero: 'rgb(7, 18, 16)',
+      hero: 'rgb(0, 0, 0)',
     },
-  ])('maps action and media focus to their adjacent surfaces in $theme', async ({ theme, action, onAction, focusOnMedia, hero }) => {
+  ])('maps action focus locally and keeps a dual media ring robust in $theme', async ({ theme, action, onAction, hero }) => {
     document.documentElement.classList.add(theme)
     const wrapper = await mountCascade({
       '--color-action': action,
       '--color-on-action': onAction,
-      '--color-focus': theme === 'dark' ? focusOnMedia : 'rgb(3, 90, 105)',
+      '--color-focus': theme === 'dark' ? 'rgb(206, 167, 112)' : 'rgb(3, 90, 105)',
+      '--surface-white': 'rgb(253, 252, 249)',
       '--color-mask-opaque': 'rgb(0, 0, 0)',
       '--white-rgb': '255, 255, 255',
       '--black-rgb': '0, 0, 0',
@@ -172,9 +171,12 @@ describe('Homepage Nocturne computed color cascade', () => {
     const nearby = wrapper.get<HTMLElement>('.hero-nearby').element
     nearby.focus()
     expect(document.activeElement).toBe(nearby)
-    expect(getComputedStyle(nearby).outlineColor).toBe(focusOnMedia)
-    expect(getComputedStyle(nearby).boxShadow).toContain('rgb(0, 0, 0)')
-    expect(contrast(rgb(getComputedStyle(nearby).outlineColor), rgb(hero))).toBeGreaterThanOrEqual(3)
+    const nearbyStyle = getComputedStyle(nearby)
+    const outline = rgb(nearbyStyle.outlineColor)
+    const halo = rgb(nearbyStyle.boxShadow)
+    expect(nearbyStyle.outlineColor).toBe('rgb(253, 252, 249)')
+    expect(nearbyStyle.boxShadow).toContain('rgb(0, 0, 0)')
+    expect(Math.max(contrast(outline, rgb(hero)), contrast(halo, rgb(hero)))).toBeGreaterThanOrEqual(3)
   })
 
   it('keeps both feature actions on the semantic secondary recipe after component styles', async () => {

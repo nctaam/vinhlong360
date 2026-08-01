@@ -2,8 +2,10 @@
   --home-color-amber-text: var(--color-warning);
   --home-color-amber-surface: color-mix(in srgb, var(--color-material-amber) 14%, transparent);
   --home-color-focus-on-action: var(--color-on-action);
-  --home-color-focus-on-media: var(--color-focus);
+  --home-color-focus-on-media: var(--surface-white);
   --home-color-focus-on-media-halo: var(--color-mask-opaque);
+  --home-color-on-media-text: var(--surface-white);
+  --home-color-on-media-plate: rgba(var(--black-rgb), .76);
   --home-color-today-text: var(--color-text);
   --home-color-today-surface: color-mix(in srgb, var(--color-error) 14%, transparent);
   background: var(--color-canvas);
@@ -11,7 +13,7 @@
 }
 
 .light [data-home-pilot="nocturne-b1"] {
-  --home-color-focus-on-media: var(--color-on-action);
+  --home-color-focus-on-media: var(--surface-white);
 }
 
 [data-home-pilot="nocturne-b1"] .hero {
@@ -40,10 +42,14 @@
 }
 
 [data-home-pilot="nocturne-b1"] .hero-sub {
+  width: fit-content;
   max-width: 42rem;
-  color: var(--color-text-muted);
+  padding: var(--space-2) var(--space-3);
+  background: var(--home-color-on-media-plate);
+  color: var(--home-color-on-media-text);
   font-family: var(--font-body);
   font-size: max(var(--text-base), 1rem);
+  opacity: 1;
 }
 
 [data-home-pilot="nocturne-b1"] .hero-search,

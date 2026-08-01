@@ -112,6 +112,17 @@ describe('Tri-Region color contract', () => {
     expect(today).toMatch(/box-shadow:\s*inset 0 0 0 1px var\(--color-error\)/)
   })
 
+  it('binds the hero subtitle to semantic on-media text and an opaque local plate', async () => {
+    const css = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
+    const homeRoot = readCssBlock(css, '[data-home-pilot="nocturne-b1"] {')
+    const subtitle = readCssBlock(css, '[data-home-pilot="nocturne-b1"] .hero-sub {')
+
+    expect(homeRoot).toMatch(/--home-color-on-media-text:\s*var\(--surface-white\)/)
+    expect(homeRoot).toMatch(/--home-color-on-media-plate:\s*rgba\(var\(--black-rgb\),\s*\.7[2-9]\)/)
+    expect(subtitle).toMatch(/color:\s*var\(--home-color-on-media-text\)/)
+    expect(subtitle).toMatch(/background:\s*var\(--home-color-on-media-plate\)/)
+  })
+
   it('lets a nested neutral material reset an inherited page accent', async () => {
     const css = await readFile(resolve(root, 'web-nuxt/assets/css/tri-region-color.css'), 'utf8')
     const neutral = readCssBlock(
@@ -223,6 +234,7 @@ describe('Tri-Region color contract', () => {
           ...['canvas', 'surface', 'subtle'].map(surface => `control-border-${theme}-${surface}-${format}`),
           ...['canvas', 'surface', 'subtle'].map(surface => `focus-${theme}-${surface}-${format}`),
           `homepage-amber-text-${theme}-${format}`,
+          `homepage-on-media-text-${theme}-${format}`,
           `homepage-focus-action-${theme}-${format}`,
           `homepage-focus-media-${theme}-${format}`,
           `homepage-today-text-${theme}-${format}`,
@@ -240,6 +252,10 @@ describe('Tri-Region color contract', () => {
     expect(stdout).toContain('homepage-today-text-light-oklch 13.76 4.5')
     expect(stdout).toContain('homepage-amber-text-dark-oklch 6.80 4.5')
     expect(stdout).toContain('homepage-today-text-dark-oklch 13.37 4.5')
+    expect(stdout).toContain('homepage-focus-media-light-srgb 4.52 3.0')
+    expect(stdout).toContain('homepage-focus-media-dark-srgb 4.52 3.0')
+    expect(stdout).toContain('homepage-focus-media-light-oklch 4.52 3.0')
+    expect(stdout).toContain('homepage-focus-media-dark-oklch 4.52 3.0')
   })
 
   it('fails closed when an audited numeric token parses as non-finite', async () => {
@@ -294,24 +310,24 @@ describe('Tri-Region color contract', () => {
     {
       name: 'missing media alias hidden in a comment',
       mutate: (source: string) => source.replace(
-        '--home-color-focus-on-media: var(--color-focus);',
-        '/* --home-color-focus-on-media: var(--color-focus); */',
+        '--home-color-focus-on-media: var(--surface-white);',
+        '/* --home-color-focus-on-media: var(--surface-white); */',
       ),
       message: 'Missing semantic alias assignment for --home-color-focus-on-media',
     },
     {
       name: 'malformed light media alias',
       mutate: (source: string) => source.replace(
-        '--home-color-focus-on-media: var(--color-on-action);',
-        '--home-color-focus-on-media: var(--color-on-action;',
+        '.light [data-home-pilot="nocturne-b1"] {\n  --home-color-focus-on-media: var(--surface-white);',
+        '.light [data-home-pilot="nocturne-b1"] {\n  --home-color-focus-on-media: var(--surface-white;',
       ),
       message: 'Malformed semantic alias assignment for --home-color-focus-on-media',
     },
     {
       name: 'duplicate light media alias',
       mutate: (source: string) => source.replace(
-        '--home-color-focus-on-media: var(--color-on-action);',
-        '--home-color-focus-on-media: var(--color-on-action);\n  --home-color-focus-on-media: var(--color-on-action);',
+        '.light [data-home-pilot="nocturne-b1"] {\n  --home-color-focus-on-media: var(--surface-white);',
+        '.light [data-home-pilot="nocturne-b1"] {\n  --home-color-focus-on-media: var(--surface-white);\n  --home-color-focus-on-media: var(--surface-white);',
       ),
       message: 'Duplicate semantic alias assignment for --home-color-focus-on-media',
     },
@@ -342,10 +358,65 @@ describe('Tri-Region color contract', () => {
     {
       name: 'unsupported media alias',
       mutate: (source: string) => source.replace(
-        '--home-color-focus-on-media: var(--color-focus);',
+        '--home-color-focus-on-media: var(--surface-white);',
         '--home-color-focus-on-media: var(--color-brand);',
       ),
       message: 'Unsupported semantic alias for --home-color-focus-on-media',
+    },
+    {
+      name: 'missing on-media text alias hidden in a comment',
+      mutate: (source: string) => source.replace(
+        '--home-color-on-media-text: var(--surface-white);',
+        '/* --home-color-on-media-text: var(--surface-white); */',
+      ),
+      message: 'Missing semantic alias assignment for --home-color-on-media-text',
+    },
+    {
+      name: 'unsupported media halo alias',
+      mutate: (source: string) => source.replace(
+        '--home-color-focus-on-media-halo: var(--color-mask-opaque);',
+        '--home-color-focus-on-media-halo: var(--color-brand);',
+      ),
+      message: 'Unsupported semantic alias for --home-color-focus-on-media-halo',
+    },
+    {
+      name: 'duplicate on-media plate',
+      mutate: (source: string) => source.replace(
+        '--home-color-on-media-plate: rgba(var(--black-rgb), .76);',
+        '--home-color-on-media-plate: rgba(var(--black-rgb), .76);\n  --home-color-on-media-plate: rgba(var(--black-rgb), .76);',
+      ),
+      message: 'Duplicate rgba declaration for --home-color-on-media-plate',
+    },
+    {
+      name: 'duplicate Amber surface mix',
+      mutate: (source: string) => source.replace(
+        '--home-color-amber-surface: color-mix(in srgb, var(--color-material-amber) 14%, transparent);',
+        '--home-color-amber-surface: color-mix(in srgb, var(--color-material-amber) 14%, transparent);\n  --home-color-amber-surface: color-mix(in srgb, var(--color-material-amber) 14%, transparent);',
+      ),
+      message: 'Duplicate color-mix declaration for --home-color-amber-surface',
+    },
+    {
+      name: 'duplicate today surface mix',
+      mutate: (source: string) => source.replace(
+        '--home-color-today-surface: color-mix(in srgb, var(--color-error) 14%, transparent);',
+        '--home-color-today-surface: color-mix(in srgb, var(--color-error) 14%, transparent);\n  --home-color-today-surface: color-mix(in srgb, var(--color-error) 14%, transparent);',
+      ),
+      message: 'Duplicate color-mix declaration for --home-color-today-surface',
+    },
+    {
+      name: 'later Homepage root block overriding focus',
+      mutate: (source: string) => `${source}\n[data-home-pilot="nocturne-b1"] { --home-color-focus-on-action: var(--color-focus); }`,
+      message: 'Duplicate CSS block: [data-home-pilot="nocturne-b1"] {',
+    },
+    {
+      name: 'later Homepage root block overriding today',
+      mutate: (source: string) => `${source}\n[data-home-pilot="nocturne-b1"] { --home-color-today-text: var(--color-focus); }`,
+      message: 'Duplicate CSS block: [data-home-pilot="nocturne-b1"] {',
+    },
+    {
+      name: 'later light Homepage block overriding media focus',
+      mutate: (source: string) => `${source}\n.light [data-home-pilot="nocturne-b1"] { --home-color-focus-on-media: var(--color-focus); }`,
+      message: 'Duplicate CSS block: .light [data-home-pilot="nocturne-b1"] {',
     },
   ])('fails closed for $name', async ({ mutate, message }) => {
     const source = await readFile(resolve(root, 'web-nuxt/assets/css/variables.css'), 'utf8')
