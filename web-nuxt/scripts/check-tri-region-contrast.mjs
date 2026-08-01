@@ -22,9 +22,47 @@ const pairs = [
 
 const actionSurfaceWeight = readMixWeight('color-action-surface')
 const actionBorderWeight = readMixWeight('color-action-border')
+const semanticNames = pairs.map(([name]) => name)
+const expectedAuditNames = new Set([
+  ...semanticNames,
+  ...semanticNames.map(name => `${name}-oklch`),
+  ...['srgb', 'oklch'].flatMap(format =>
+    ['light', 'dark'].flatMap(theme => [
+      `filled-action-${theme}-${format}`,
+      ...['canvas', 'surface', 'subtle'].map(surface => `control-border-${theme}-${surface}-${format}`),
+    ]),
+  ),
+])
+const fallbackRoot = readCssBlock(css, ':root {')
+const darkBlock = readCssBlock(css, '\n.dark {')
+const finalOklchSupport = css.lastIndexOf('@supports (color: oklch(0% 0 0))')
+if (finalOklchSupport < 0) throw new Error('Missing final OKLCH runtime block')
+const darkOklchBlock = readCssBlock(css, '\n  .dark {', finalOklchSupport)
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function readCssBlock(source, marker, fromIndex = 0) {
+  const start = source.indexOf(marker, fromIndex)
+  if (start < 0) throw new Error(`Missing CSS block: ${marker}`)
+  const open = source.indexOf('{', start)
+  if (open < 0) throw new Error(`Missing opening brace: ${marker}`)
+
+  let depth = 0
+  for (let index = open; index < source.length; index += 1) {
+    if (source[index] === '{') depth += 1
+    if (source[index] === '}') depth -= 1
+    if (depth === 0) return source.slice(open + 1, index)
+  }
+
+  throw new Error(`Missing closing brace: ${marker}`)
+}
+
+function readFiniteNumber(value, label) {
+  const number = Number(value)
+  if (!Number.isFinite(number)) throw new Error(`Non-finite numeric value for ${label}`)
+  return number
 }
 
 function readMixWeight(name) {
@@ -34,7 +72,9 @@ function readMixWeight(name) {
     'i',
   ).exec(css)
   if (!match) throw new Error(`Missing sRGB color-mix contract for --${name}`)
-  return Number(match[1]) / 100
+  const weight = readFiniteNumber(match[1], `--${name}`) / 100
+  if (weight < 0 || weight > 1) throw new Error(`Out-of-range color-mix weight for --${name}`)
+  return weight
 }
 
 function readHexToken(name) {
@@ -51,7 +91,32 @@ function readOklchToken(name) {
     'i',
   ).exec(css)
   if (!match) throw new Error(`Missing OKLCH runtime value for --${name}`)
-  return oklchToSrgb(Number(match[1]) / 100, Number(match[2]), Number(match[3]))
+  return oklchToSrgb(
+    readFiniteNumber(match[1], `--${name} lightness`) / 100,
+    readFiniteNumber(match[2], `--${name} chroma`),
+    readFiniteNumber(match[3], `--${name} hue`),
+  )
+}
+
+function readHexDeclaration(block, name) {
+  const escaped = escapeRegExp(name)
+  const match = new RegExp(`--${escaped}:\\s*(#[0-9a-f]{6})\\s*;`, 'i').exec(block)
+  if (!match) throw new Error(`Missing sRGB declaration for --${name}`)
+  return hexToSrgb(match[1])
+}
+
+function readOklchDeclaration(block, name) {
+  const escaped = escapeRegExp(name)
+  const match = new RegExp(
+    `--${escaped}:\\s*oklch\\(\\s*([0-9.]+)%\\s+([0-9.]+)\\s+([0-9.]+)\\s*\\)\\s*;`,
+    'i',
+  ).exec(block)
+  if (!match) throw new Error(`Missing OKLCH declaration for --${name}`)
+  return oklchToSrgb(
+    readFiniteNumber(match[1], `--${name} lightness`) / 100,
+    readFiniteNumber(match[2], `--${name} chroma`),
+    readFiniteNumber(match[3], `--${name} hue`),
+  )
 }
 
 function hexToSrgb(hex) {
@@ -84,6 +149,7 @@ function oklchToSrgb(lightness, chroma, hue) {
 }
 
 function relativeLuminance(color) {
+  assertColor(color, 'relative luminance input')
   const channels = color.map((channel) => {
     return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4
   })
@@ -97,36 +163,111 @@ function contrastRatio(foreground, background) {
 }
 
 function composite(foreground, background, weight) {
+  assertColor(foreground, 'composite foreground')
+  assertColor(background, 'composite background')
+  if (!Number.isFinite(weight)) throw new Error('Non-finite composite weight')
   return foreground.map((channel, index) => channel * weight + background[index] * (1 - weight))
 }
 
+function assertColor(color, label) {
+  if (color.length !== 3 || color.some(channel => !Number.isFinite(channel) || channel < 0 || channel > 1)) {
+    throw new Error(`Invalid color channels for ${label}`)
+  }
+}
+
 let failed = false
+const auditedNames = new Set()
 function audit(name, foreground, background, threshold) {
+  if (!expectedAuditNames.has(name)) throw new Error(`Unexpected audit: ${name}`)
+  if (auditedNames.has(name)) throw new Error(`Duplicate audit: ${name}`)
+  assertColor(foreground, `${name} foreground`)
+  assertColor(background, `${name} background`)
+  if (!Number.isFinite(threshold)) throw new Error(`Non-finite threshold for ${name}`)
   const ratio = contrastRatio(foreground, background)
+  if (!Number.isFinite(ratio)) throw new Error(`Non-finite contrast ratio for ${name}`)
   console.log(`${name} ${ratio.toFixed(2)} ${threshold.toFixed(1)}`)
+  auditedNames.add(name)
   if (ratio < threshold) failed = true
 }
 
-function auditTokenPairs(format, readToken) {
+function auditSemanticPairs(format, readToken) {
   const suffix = format === 'srgb' ? '' : `-${format}`
   for (const [name, foregroundToken, backgroundToken, threshold] of pairs) {
     audit(`${name}${suffix}`, readToken(foregroundToken), readToken(backgroundToken), threshold)
   }
+}
 
-  for (const [theme, actionToken, canvasToken] of [
-    ['light', 'river-600', 'alluvial-paper'],
-    ['dark', 'night-river', 'night-canvas'],
-  ]) {
-    const action = readToken(actionToken)
-    const canvas = readToken(canvasToken)
-    const surface = composite(action, canvas, actionSurfaceWeight)
-    // CSS backgrounds paint beneath translucent borders, so audit the rendered border against its tinted surface.
-    const border = composite(action, surface, actionBorderWeight)
-    audit(`control-border-${theme}-${format}`, border, surface, 3)
+function controlThemes(format) {
+  if (format === 'srgb') {
+    return [
+      {
+        theme: 'light',
+        action: readHexToken('river-600'),
+        onAction: readHexToken('surface-white'),
+        backgrounds: {
+          canvas: readHexToken('alluvial-paper'),
+          surface: readHexToken('surface-white'),
+          subtle: readHexDeclaration(fallbackRoot, 'color-surface-subtle'),
+        },
+      },
+      {
+        theme: 'dark',
+        action: readHexToken('night-river'),
+        onAction: readHexToken('night-canvas'),
+        backgrounds: {
+          canvas: readHexToken('night-canvas'),
+          surface: readHexToken('night-surface'),
+          subtle: readHexDeclaration(darkBlock, 'color-surface-subtle'),
+        },
+      },
+    ]
+  }
+
+  return [
+    {
+      theme: 'light',
+      action: readOklchToken('river-600'),
+      onAction: readOklchToken('surface-white'),
+      backgrounds: {
+        canvas: readOklchToken('alluvial-paper'),
+        surface: readOklchToken('surface-white'),
+        // Parchment subtle remains an explicit sRGB semantic value in the runtime cascade.
+        subtle: readHexDeclaration(fallbackRoot, 'color-surface-subtle'),
+      },
+    },
+    {
+      theme: 'dark',
+      action: readOklchToken('night-river'),
+      onAction: readOklchToken('night-canvas'),
+      backgrounds: {
+        canvas: readOklchToken('night-canvas'),
+        surface: readOklchToken('night-surface'),
+        subtle: readOklchDeclaration(darkOklchBlock, 'color-surface-subtle'),
+      },
+    },
+  ]
+}
+
+function auditControls(format) {
+  for (const { theme, action, onAction, backgrounds } of controlThemes(format)) {
+    audit(`filled-action-${theme}-${format}`, onAction, action, 4.5)
+    for (const [surfaceName, host] of Object.entries(backgrounds)) {
+      const surface = composite(action, host, actionSurfaceWeight)
+      // CSS backgrounds paint beneath translucent borders, so audit the rendered border against its tinted surface.
+      const border = composite(action, surface, actionBorderWeight)
+      audit(`control-border-${theme}-${surfaceName}-${format}`, border, surface, 3)
+    }
   }
 }
 
-auditTokenPairs('srgb', readHexToken)
-auditTokenPairs('oklch', readOklchToken)
+auditSemanticPairs('srgb', readHexToken)
+auditSemanticPairs('oklch', readOklchToken)
+auditControls('srgb')
+auditControls('oklch')
+
+const missingAudits = [...expectedAuditNames].filter(name => !auditedNames.has(name))
+if (missingAudits.length > 0 || auditedNames.size !== expectedAuditNames.size) {
+  throw new Error(`Incomplete audit set: ${missingAudits.join(', ')}`)
+}
 
 if (failed) process.exitCode = 1
