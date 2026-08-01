@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process'
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { promisify } from 'node:util'
@@ -43,29 +43,21 @@ function readCssBlock(source: string, marker: string) {
   throw new Error(`Missing closing brace: ${marker}`)
 }
 
-type ContrastSourceOverrides = {
-  homeCss?: string
-  baseCss?: string
-  darkOverridesCss?: string
-  homePageVue?: string
-}
+type ContrastSourceOverrides = Record<string, string>
 
 async function runContrastWithSources(overrides: ContrastSourceOverrides = {}) {
-  const [variablesCss, baseCss, darkOverridesCss, homeCss, homePageVue] = await Promise.all([
-    readFile(resolve(root, 'web-nuxt/assets/css/variables.css'), 'utf8'),
-    readFile(resolve(root, 'web-nuxt/assets/css/base.css'), 'utf8'),
-    readFile(resolve(root, 'web-nuxt/assets/css/dark-overrides.css'), 'utf8'),
-    readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8'),
-    readFile(resolve(root, 'web-nuxt/pages/index.vue'), 'utf8'),
-  ])
   const temp = await mkdtemp(join(tmpdir(), 'tri-region-home-alias-'))
-  await mkdir(resolve(temp, 'assets/css'), { recursive: true })
-  await mkdir(resolve(temp, 'pages'), { recursive: true })
-  await writeFile(resolve(temp, 'assets/css/variables.css'), variablesCss)
-  await writeFile(resolve(temp, 'assets/css/base.css'), overrides.baseCss ?? baseCss)
-  await writeFile(resolve(temp, 'assets/css/dark-overrides.css'), overrides.darkOverridesCss ?? darkOverridesCss)
-  await writeFile(resolve(temp, 'assets/css/home-nocturne.css'), overrides.homeCss ?? homeCss)
-  await writeFile(resolve(temp, 'pages/index.vue'), overrides.homePageVue ?? homePageVue)
+  await Promise.all([
+    cp(resolve(root, 'web-nuxt/assets/css'), resolve(temp, 'assets/css'), { recursive: true }),
+    mkdir(resolve(temp, 'pages'), { recursive: true }),
+    mkdir(resolve(temp, 'components'), { recursive: true }),
+  ])
+  await cp(resolve(root, 'web-nuxt/pages/index.vue'), resolve(temp, 'pages/index.vue'))
+  await Promise.all(Object.entries(overrides).map(async ([path, source]) => {
+    const target = resolve(temp, path)
+    await mkdir(resolve(target, '..'), { recursive: true })
+    await writeFile(target, source)
+  }))
 
   try {
     return await execFileAsync(process.execPath, [resolve(root, 'web-nuxt/scripts/check-tri-region-contrast.mjs')], {
@@ -78,7 +70,7 @@ async function runContrastWithSources(overrides: ContrastSourceOverrides = {}) {
 }
 
 async function runContrastWithHomeCss(homeCss: string) {
-  return runContrastWithSources({ homeCss })
+  return runContrastWithSources({ 'assets/css/home-nocturne.css': homeCss })
 }
 
 describe('Tri-Region color contract', () => {
@@ -302,26 +294,14 @@ describe('Tri-Region color contract', () => {
 
   it('fails closed when an audited numeric token parses as non-finite', async () => {
     const source = await readFile(resolve(root, 'web-nuxt/assets/css/variables.css'), 'utf8')
-    const homeSource = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
     const invalidWeight = '9'.repeat(400)
     const invalidCss = source.replace(
       /(--color-action-border:\s*color-mix\(in srgb, var\(--color-action\) )([0-9.]+)(%, transparent\);)/,
       (_, prefix, _weight, suffix) => `${prefix}${invalidWeight}${suffix}`,
     )
-    const temp = await mkdtemp(join(tmpdir(), 'tri-region-contrast-'))
-    await mkdir(resolve(temp, 'assets/css'), { recursive: true })
-    await writeFile(resolve(temp, 'assets/css/variables.css'), invalidCss)
-    await writeFile(resolve(temp, 'assets/css/home-nocturne.css'), homeSource)
-
-    try {
-      await expect(
-        execFileAsync(process.execPath, [resolve(root, 'web-nuxt/scripts/check-tri-region-contrast.mjs')], {
-          cwd: temp,
-        }),
-      ).rejects.toBeDefined()
-    } finally {
-      await rm(temp, { recursive: true, force: true })
-    }
+    await expect(runContrastWithSources({
+      'assets/css/variables.css': invalidCss,
+    })).rejects.toMatchObject({ stderr: expect.stringContaining('Non-finite numeric value') })
   })
 
   it.each([
@@ -588,49 +568,49 @@ describe('Tri-Region color contract', () => {
   it.each([
     {
       name: 'hero subtitle override',
-      source: 'baseCss' as const,
+      source: 'assets/css/base.css',
       path: 'web-nuxt/assets/css/base.css',
       mutation: '.hero-sub { opacity: .2; }',
       message: 'Unexpected protected consumer declaration: assets/css/base.css',
     },
     {
       name: 'nearby focus override',
-      source: 'baseCss' as const,
+      source: 'assets/css/base.css',
       path: 'web-nuxt/assets/css/base.css',
       mutation: '.hero-nearby:focus-visible { outline: none; }',
       message: 'Unexpected protected consumer declaration: assets/css/base.css',
     },
     {
       name: 'nested media override',
-      source: 'baseCss' as const,
+      source: 'assets/css/base.css',
       path: 'web-nuxt/assets/css/base.css',
       mutation: '@media (min-width: 1px) { .hero-search { background: transparent; } }',
       message: 'Unexpected protected consumer declaration: assets/css/base.css',
     },
     {
       name: 'selector-list override',
-      source: 'darkOverridesCss' as const,
+      source: 'assets/css/dark-overrides.css',
       path: 'web-nuxt/assets/css/dark-overrides.css',
       mutation: '.never, .ec-today { color: transparent; }',
       message: 'Unexpected protected consumer declaration: assets/css/dark-overrides.css',
     },
     {
       name: ':is() override',
-      source: 'homeCss' as const,
+      source: 'assets/css/home-nocturne.css',
       path: 'web-nuxt/assets/css/home-nocturne.css',
       mutation: ':is(.hero-search, .never) input:focus-visible { outline: none; }',
       message: 'Unexpected protected consumer declaration: assets/css/home-nocturne.css',
     },
     {
       name: 'escaped class-name override',
-      source: 'homeCss' as const,
+      source: 'assets/css/home-nocturne.css',
       path: 'web-nuxt/assets/css/home-nocturne.css',
       mutation: String.raw`.hero\2d sub { opacity: .2; }`,
       message: 'Unexpected protected consumer declaration: assets/css/home-nocturne.css',
     },
     {
       name: 'reserved soft-action override',
-      source: 'homeCss' as const,
+      source: 'assets/css/home-nocturne.css',
       path: 'web-nuxt/assets/css/home-nocturne.css',
       mutation: '.hero-action--soft { color: transparent; }',
       message: 'Unexpected protected consumer declaration: assets/css/home-nocturne.css',
@@ -646,9 +626,132 @@ describe('Tri-Region color contract', () => {
     const pageSource = await readFile(resolve(root, 'web-nuxt/pages/index.vue'), 'utf8')
     const mutatedPage = pageSource.replace('</style>', '.ec-today { color: transparent; }\n</style>')
 
-    await expect(runContrastWithSources({ homePageVue: mutatedPage })).rejects.toMatchObject({
+    await expect(runContrastWithSources({ 'pages/index.vue': mutatedPage })).rejects.toMatchObject({
       stderr: expect.stringContaining('Unexpected protected consumer declaration: pages/index.vue#style-0'),
     })
+  })
+
+  it.each([
+    {
+      name: 'protected alias from another global stylesheet',
+      path: 'assets/css/components.css',
+      mutation: '[data-home-pilot="nocturne-b1"] { --home-color-today-text: var(--color-focus); }',
+    },
+    {
+      name: 'hero subtitle background-color reset',
+      path: 'assets/css/components.css',
+      mutation: '.hero-sub { background-color: transparent; }',
+    },
+    {
+      name: 'nearby outline-color reset',
+      path: 'assets/css/components.css',
+      mutation: '.hero-nearby:focus-visible { outline-color: transparent; }',
+    },
+    {
+      name: 'actual search input all reset',
+      path: 'assets/css/components.css',
+      mutation: '.hero-search input { all: unset; }',
+    },
+    {
+      name: 'dossier action important transparency',
+      path: 'assets/css/components.css',
+      mutation: '.home-feature-dossier__action { background-color: transparent !important; }',
+    },
+    {
+      name: 'dossier action modifier transparency',
+      path: 'assets/css/components.css',
+      mutation: '.home-feature-dossier__action--secondary { background-color: transparent; }',
+    },
+    {
+      name: 'event date background image reset',
+      path: 'assets/css/components.css',
+      mutation: '.ec-date { background-image: none; }',
+    },
+    {
+      name: 'countdown destructive filter',
+      path: 'assets/css/components.css',
+      mutation: '.ec-countdown { filter: opacity(0); }',
+    },
+    {
+      name: 'today text fill reset',
+      path: 'assets/css/components.css',
+      mutation: '.ec-today { -webkit-text-fill-color: transparent; }',
+    },
+    {
+      name: 'nested media selector list with subject is()',
+      path: 'assets/css/components.css',
+      mutation: '@media (min-width: 1px) { :is(.never, .home-feature-dossier__action), .hero\\2d search input { border-top-color: transparent; } }',
+    },
+  ])('scans every global CSS source and rejects $name', async ({ path, mutation }) => {
+    const original = await readFile(resolve(root, 'web-nuxt', path), 'utf8')
+
+    await expect(runContrastWithSources({ [path]: `${original}\n${mutation}` })).rejects.toMatchObject({
+      stderr: expect.stringContaining(path),
+    })
+  })
+
+  it.each([
+    {
+      name: 'page SFC dossier action reset',
+      path: 'pages/tim-kiem.vue',
+      mutation: '.home-feature-dossier__action { background-color: transparent !important; }',
+    },
+    {
+      name: 'component SFC search input reset',
+      path: 'components/SearchAutocomplete.vue',
+      mutation: '.hero-search input { outline-style: none; }',
+    },
+  ])('scans every Vue style block and rejects $name', async ({ path, mutation }) => {
+    const original = await readFile(resolve(root, 'web-nuxt', path), 'utf8')
+    const mutated = `${original}\n<style>${mutation}</style>\n`
+
+    await expect(runContrastWithSources({ [path]: mutated })).rejects.toMatchObject({
+      stderr: expect.stringContaining(path),
+    })
+  })
+
+  it('fails loudly when an unrelated CSS or Vue style block cannot be parsed', async () => {
+    const componentsCss = await readFile(resolve(root, 'web-nuxt/assets/css/components.css'), 'utf8')
+    const search = await readFile(resolve(root, 'web-nuxt/components/SearchAutocomplete.vue'), 'utf8')
+
+    await expect(runContrastWithSources({
+      'assets/css/components.css': `${componentsCss}\n.syntax-error { color: var(--color-text; }`,
+    })).rejects.toMatchObject({ stderr: expect.stringContaining('assets/css/components.css') })
+    await expect(runContrastWithSources({
+      'components/SearchAutocomplete.vue': `${search}\n<style>.syntax-error { color: var(--color-text; }</style>`,
+    })).rejects.toMatchObject({ stderr: expect.stringContaining('components/SearchAutocomplete.vue') })
+  })
+
+  it('does not treat classes used only inside :not() or :has() as protected subjects', async () => {
+    const homeSource = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
+    const safeRelationalSelectors = `
+.audit-probe:not(.hero-sub) { background: transparent; }
+.audit-probe:has(.home-feature-dossier__action) { color: transparent; }
+.audit-probe:not(:is(.hero-nearby, .ec-today)) { outline: none; }
+`
+
+    await expect(runContrastWithHomeCss(`${homeSource}\n${safeRelationalSelectors}`)).resolves.toMatchObject({
+      stdout: expect.stringContaining('homepage-on-media-text-light-srgb 10.55 4.5'),
+      stderr: '',
+    })
+  })
+
+  it('reports the intentional Nuxt/Vue audit toolchain and compatible parser versions', async () => {
+    const { stdout } = await execFileAsync(process.execPath, ['scripts/check-tri-region-contrast.mjs'], {
+      cwd: resolve(root, 'web-nuxt'),
+      env: { ...process.env, TRI_REGION_AUDIT_TOOLCHAIN: '1' },
+    })
+
+    expect(stdout).toMatch(/audit-toolchain .*nuxt@4\..*vue\/compiler-sfc@3\..*postcss@8\..*postcss-selector-parser@7\./)
+  })
+
+  it.each(['package.json', 'package-lock.json'])('keeps %s identical to the remediation base', async (path) => {
+    const [{ stdout: baseline }, current] = await Promise.all([
+      execFileAsync('git', ['show', `96bfba4c:web-nuxt/${path}`], { cwd: root }),
+      readFile(resolve(root, 'web-nuxt', path), 'utf8'),
+    ])
+
+    expect(current.replace(/\r\n/g, '\n')).toBe(baseline.replace(/\r\n/g, '\n'))
   })
 
   it.each([

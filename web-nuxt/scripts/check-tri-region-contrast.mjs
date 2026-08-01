@@ -1,20 +1,37 @@
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
-import { parse as parseVueSfc } from '@vue/compiler-sfc'
-import postcss from 'postcss'
-import selectorParser from 'postcss-selector-parser'
-import valueParser from 'postcss-value-parser'
+import { readdirSync, readFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
+import { relative, resolve } from 'node:path'
+import { parse as parseVueSfc } from 'vue/compiler-sfc'
 
-const css = readFileSync(resolve(process.cwd(), 'assets/css/variables.css'), 'utf8')
-const baseCss = readFileSync(resolve(process.cwd(), 'assets/css/base.css'), 'utf8')
-const darkOverridesCss = readFileSync(resolve(process.cwd(), 'assets/css/dark-overrides.css'), 'utf8')
-const homeCss = readFileSync(resolve(process.cwd(), 'assets/css/home-nocturne.css'), 'utf8')
-const homePageVue = readFileSync(resolve(process.cwd(), 'pages/index.vue'), 'utf8')
-const variablesRoot = parseStylesheet(css, 'assets/css/variables.css')
-const baseRoot = parseStylesheet(baseCss, 'assets/css/base.css')
-const darkOverridesRoot = parseStylesheet(darkOverridesCss, 'assets/css/dark-overrides.css')
-const homeRoot = parseStylesheet(homeCss, 'assets/css/home-nocturne.css')
-const homePageStyleRoots = parseHomePageStyles(homePageVue)
+const auditProjectRoot = process.cwd()
+const auditScriptRoot = resolve(import.meta.dirname, '..')
+const appRequire = createRequire(import.meta.url)
+const appPackage = readJsonFile(resolve(auditScriptRoot, 'package.json'), 'application package.json')
+validateDirectToolchainDependency(appPackage, 'nuxt')
+validateDirectToolchainDependency(appPackage, 'vue')
+const nuxtPackagePath = resolveRequiredPackage(appRequire, 'nuxt/package.json', 'direct Nuxt dependency')
+const nuxtPackage = readJsonFile(nuxtPackagePath, 'Nuxt package.json')
+validatePackageMajor('nuxt', nuxtPackage.version, 4)
+const nuxtRequire = createRequire(nuxtPackagePath)
+const postcssTool = loadNuxtTool('postcss', 8)
+const selectorParserTool = loadNuxtTool('postcss-selector-parser', 7)
+const postcss = postcssTool.module.default ?? postcssTool.module
+const selectorParser = selectorParserTool.module.default ?? selectorParserTool.module
+const vuePackagePath = resolveRequiredPackage(appRequire, 'vue/package.json', 'direct Vue dependency')
+const vuePackage = readJsonFile(vuePackagePath, 'Vue package.json')
+validatePackageMajor('vue/compiler-sfc', vuePackage.version, 3)
+
+if (process.env.TRI_REGION_AUDIT_TOOLCHAIN === '1') {
+  console.log(`audit-toolchain nuxt@${nuxtPackage.version} vue/compiler-sfc@${vuePackage.version} postcss@${postcssTool.version} postcss-selector-parser@${selectorParserTool.version}`)
+}
+
+const allStyleSources = loadAllStyleSources(auditProjectRoot)
+const styleSourceByName = new Map(allStyleSources.map(entry => [entry.source, entry]))
+const variablesSource = readStyleSource(styleSourceByName, 'assets/css/variables.css')
+const homeSource = readStyleSource(styleSourceByName, 'assets/css/home-nocturne.css')
+const css = variablesSource.css
+const variablesRoot = variablesSource.root
+const homeRoot = homeSource.root
 const pairs = [
   ['body-light', 'mekong-ink', 'alluvial-paper', 7],
   ['muted-light', 'mekong-muted', 'alluvial-paper', 4.5],
@@ -49,7 +66,7 @@ const protectedHomeRootNames = new Set([
 const protectedHomeLightNames = new Set(['home-color-focus-on-media'])
 const homeRootRule = readUniqueTopLevelRule(homeRoot, homeRootSelector)
 const homeLightRule = readUniqueTopLevelRule(homeRoot, homeLightSelector)
-validateProtectedHomeDeclarations(homeRoot, homeRootRule, homeLightRule)
+validateProtectedHomeDeclarations(allStyleSources, homeRootRule, homeLightRule)
 const actionSurfaceWeight = readMixWeight('color-action-surface', variablesRoot)
 const actionBorderWeight = readMixWeight('color-action-border', variablesRoot)
 const homeAmberSurfaceWeight = readMixWeight(
@@ -112,6 +129,136 @@ const darkOklchRule = readFinalNestedRule(
   '.dark',
 )
 
+function readJsonFile(path, label) {
+  let source
+  try {
+    source = readFileSync(path, 'utf8')
+  }
+  catch (error) {
+    throw new Error(`Unable to read ${label} at ${path}: ${error.message}`)
+  }
+  try {
+    return JSON.parse(source)
+  }
+  catch (error) {
+    throw new Error(`Invalid ${label} at ${path}: ${error.message}`)
+  }
+}
+
+function validateDirectToolchainDependency(packageJson, name) {
+  if (!packageJson.dependencies?.[name]) {
+    throw new Error(`Audit toolchain requires ${name} as a direct application dependency`)
+  }
+}
+
+function resolveRequiredPackage(requireFrom, id, label) {
+  try {
+    return requireFrom.resolve(id)
+  }
+  catch (error) {
+    throw new Error(`Unable to resolve ${label} (${id}): ${error.message}`)
+  }
+}
+
+function validatePackageMajor(name, version, expectedMajor) {
+  const major = Number.parseInt(String(version).split('.')[0], 10)
+  if (!Number.isInteger(major) || major !== expectedMajor) {
+    throw new Error(`Unsupported ${name} version ${version}; expected major ${expectedMajor}`)
+  }
+}
+
+function loadNuxtTool(name, expectedMajor) {
+  const modulePath = resolveRequiredPackage(nuxtRequire, name, `Nuxt audit tool ${name}`)
+  const packagePath = resolveRequiredPackage(nuxtRequire, `${name}/package.json`, `${name} package metadata`)
+  const nodeModulesRoot = resolve(nuxtPackagePath, '../..').replaceAll('\\', '/').toLowerCase()
+  const normalizedModulePath = resolve(modulePath).replaceAll('\\', '/').toLowerCase()
+  if (!normalizedModulePath.startsWith(`${nodeModulesRoot}/`) && normalizedModulePath !== nodeModulesRoot) {
+    throw new Error(`Resolved ${name} outside the direct Nuxt toolchain: ${modulePath}`)
+  }
+  const packageJson = readJsonFile(packagePath, `${name} package.json`)
+  validatePackageMajor(name, packageJson.version, expectedMajor)
+  try {
+    return { module: nuxtRequire(name), version: packageJson.version, path: modulePath }
+  }
+  catch (error) {
+    throw new Error(`Unable to load Nuxt audit tool ${name} from ${modulePath}: ${error.message}`)
+  }
+}
+
+function readRequiredText(path, source) {
+  try {
+    return readFileSync(path, 'utf8')
+  }
+  catch (error) {
+    throw new Error(`Unable to read audit source ${source}: ${error.message}`)
+  }
+}
+
+function listFilesRecursively(directory, extension) {
+  let entries
+  try {
+    entries = readdirSync(directory, { withFileTypes: true })
+  }
+  catch (error) {
+    throw new Error(`Unable to enumerate audit directory ${directory}: ${error.message}`)
+  }
+  entries.sort((left, right) => left.name < right.name ? -1 : left.name > right.name ? 1 : 0)
+  const files = []
+  for (const entry of entries) {
+    const path = resolve(directory, entry.name)
+    if (entry.isDirectory()) files.push(...listFilesRecursively(path, extension))
+    else if (entry.isFile() && entry.name.endsWith(extension)) files.push(path)
+  }
+  return files
+}
+
+function sourceName(projectRoot, path) {
+  return relative(projectRoot, path).replaceAll('\\', '/')
+}
+
+function parseVueStyles(source, from) {
+  let parsed
+  try {
+    parsed = parseVueSfc(source, { filename: from })
+  }
+  catch (error) {
+    throw new Error(`Unable to parse Vue SFC ${from}: ${error.message}`)
+  }
+  if (parsed.errors.length > 0) {
+    const message = parsed.errors.map(error => error instanceof Error ? error.message : String(error)).join('; ')
+    throw new Error(`Invalid Vue SFC ${from}: ${message}`)
+  }
+  return parsed.descriptor.styles.map((style, index) => {
+    if (style.lang && style.lang !== 'css') {
+      throw new Error(`Unsupported style language in ${from}#style-${index}: ${style.lang}`)
+    }
+    const styleSource = `${from}#style-${index}`
+    return { source: styleSource, css: style.content, root: parseStylesheet(style.content, styleSource) }
+  })
+}
+
+function loadAllStyleSources(projectRoot) {
+  const sources = []
+  for (const path of listFilesRecursively(resolve(projectRoot, 'assets/css'), '.css')) {
+    const source = sourceName(projectRoot, path)
+    const content = readRequiredText(path, source)
+    sources.push({ source, css: content, root: parseStylesheet(content, source) })
+  }
+  for (const directory of ['pages', 'components']) {
+    for (const path of listFilesRecursively(resolve(projectRoot, directory), '.vue')) {
+      const source = sourceName(projectRoot, path)
+      sources.push(...parseVueStyles(readRequiredText(path, source), source))
+    }
+  }
+  return sources
+}
+
+function readStyleSource(sourceMap, source) {
+  const entry = sourceMap.get(source)
+  if (!entry) throw new Error(`Missing required audit source: ${source}`)
+  return entry
+}
+
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
@@ -170,27 +317,38 @@ function canonicalizeCssIdentifier(source) {
 }
 
 function parseStylesheet(source, from) {
-  return postcss.parse(source, { from })
+  try {
+    return postcss.parse(source, { from })
+  }
+  catch (error) {
+    throw new Error(`Unable to parse audit stylesheet ${from}: ${error.message}`)
+  }
 }
 
-function parseHomePageStyles(source) {
-  const { descriptor, errors } = parseVueSfc(source, { filename: 'pages/index.vue' })
-  if (errors.length > 0) {
-    const message = errors.map(error => error instanceof Error ? error.message : String(error)).join('; ')
-    throw new Error(`Invalid pages/index.vue: ${message}`)
+function isInsideRelationalFilter(node) {
+  for (let parent = node.parent; parent; parent = parent.parent) {
+    if (parent.type !== 'pseudo') continue
+    const name = parent.value.toLowerCase()
+    if (name === ':not' || name === ':has') return true
   }
-  return descriptor.styles.map((style, index) => ({
-    source: `pages/index.vue#style-${index}`,
-    root: parseStylesheet(style.content, `pages/index.vue#style-${index}`),
-  }))
+  return false
 }
 
 function readSelector(selector) {
   const classes = new Set()
+  const actionRoles = new Set()
   const normalized = selectorParser((root) => {
-    root.walkClasses(node => classes.add(node.value))
+    root.walkClasses((node) => {
+      if (!isInsideRelationalFilter(node)) classes.add(node.value)
+    })
+    root.walkAttributes((node) => {
+      if (isInsideRelationalFilter(node)) return
+      if (node.attribute !== 'data-color-role') return
+      const value = String(node.value ?? '').replace(/^['"]|['"]$/g, '')
+      if (value === 'action-primary' || value === 'action-secondary') actionRoles.add(value)
+    })
   }).processSync(selector, { lossless: false })
-  return { selector: normalized, classes }
+  return { selector: normalized, classes, actionRoles }
 }
 
 function readRuleChain(node) {
@@ -213,12 +371,14 @@ function readAtRuleContext(node) {
 
 function readSelectorChain(node) {
   const classes = new Set()
+  const actionRoles = new Set()
   const selectors = readRuleChain(node).map((rule) => {
     const parsed = readSelector(rule.selector)
     for (const className of parsed.classes) classes.add(className)
+    for (const role of parsed.actionRoles) actionRoles.add(role)
     return parsed.selector
   })
-  return { selector: selectors.join(' -> '), classes }
+  return { selector: selectors.join(' -> '), classes, actionRoles }
 }
 
 function readUniqueTopLevelRule(root, selector) {
@@ -283,20 +443,22 @@ function validateApprovedDeclarationCounts(rule, names) {
   }
 }
 
-function validateProtectedHomeDeclarations(root, rootRule, lightRule) {
+function validateProtectedHomeDeclarations(sources, rootRule, lightRule) {
   const protectedNames = new Set([...protectedHomeRootNames, ...protectedHomeLightNames])
-  root.walkDecls((declaration) => {
-    const canonicalName = canonicalDeclarationName(declaration)
-    if (!canonicalName.startsWith('--')) return
-    const name = canonicalName.slice(2)
-    if (!protectedNames.has(name)) return
-    const approved = (declaration.parent === rootRule && protectedHomeRootNames.has(name))
-      || (declaration.parent === lightRule && protectedHomeLightNames.has(name))
-    if (!approved) {
-      const { selector } = readSelectorChain(declaration)
-      throw new Error(`Unexpected protected declaration for --${name} in ${selector} (${readAtRuleContext(declaration)})`)
-    }
-  })
+  for (const { source, root } of sources) {
+    root.walkDecls((declaration) => {
+      const canonicalName = canonicalDeclarationName(declaration)
+      if (!canonicalName.startsWith('--')) return
+      const name = canonicalName.slice(2)
+      if (!protectedNames.has(name)) return
+      const approved = (declaration.parent === rootRule && protectedHomeRootNames.has(name))
+        || (declaration.parent === lightRule && protectedHomeLightNames.has(name))
+      if (!approved) {
+        const { selector } = readSelectorChain(declaration)
+        throw new Error(`Unexpected protected declaration for --${name} in ${source} | ${selector} (${readAtRuleContext(declaration)})`)
+      }
+    })
+  }
   validateApprovedDeclarationCounts(rootRule, protectedHomeRootNames)
   validateApprovedDeclarationCounts(lightRule, protectedHomeLightNames)
 }
@@ -306,29 +468,47 @@ const protectedConsumerClasses = new Set([
   'hero-nearby',
   'hero-search',
   'hero-action--soft',
+  'home-feature-dossier__action',
+  'home-feature-dossier__action--secondary',
+  'ec-date',
   'ec-countdown',
   'ec-today',
 ])
-const protectedConsumerProperties = new Set([
-  'color',
-  'background',
-  'opacity',
-  'outline',
-  'box-shadow',
-  'border',
-  'border-color',
-])
+
+function isProtectedConsumerProperty(property) {
+  return property === 'all'
+    || property === 'color'
+    || property === '-webkit-text-fill-color'
+    || property === 'opacity'
+    || property === 'box-shadow'
+    || property === 'text-shadow'
+    || property === 'filter'
+    || property === 'background'
+    || property.startsWith('background-')
+    || property === 'outline'
+    || property.startsWith('outline-')
+    || property === 'border'
+    || property.startsWith('border-')
+}
 
 function consumerTupleKey(tuple) {
   return JSON.stringify(tuple)
 }
 
 const approvedConsumerTuples = new Set([
+  ['assets/css/tri-region-color.css', 'top level', '[data-color-system="tri-region-v1"] [data-color-role="action-primary"]', 'border-color', 'var(--color-action)'],
+  ['assets/css/tri-region-color.css', 'top level', '[data-color-system="tri-region-v1"] [data-color-role="action-primary"]', 'background', 'var(--color-action)'],
+  ['assets/css/tri-region-color.css', 'top level', '[data-color-system="tri-region-v1"] [data-color-role="action-primary"]', 'color', 'var(--color-on-action)'],
+  ['assets/css/tri-region-color.css', 'top level', '[data-color-system="tri-region-v1"] [data-color-role="action-secondary"]', 'border-color', 'var(--color-action-border)'],
+  ['assets/css/tri-region-color.css', 'top level', '[data-color-system="tri-region-v1"] [data-color-role="action-secondary"]', 'background', 'var(--color-action-surface)'],
+  ['assets/css/tri-region-color.css', 'top level', '[data-color-system="tri-region-v1"] [data-color-role="action-secondary"]', 'color', 'var(--color-action)'],
   ['assets/css/base.css', 'top level', '.hero-search input', 'border', '2px solid transparent'],
+  ['assets/css/base.css', 'top level', '.hero-search input', 'border-radius', 'var(--radius-md)'],
   ['assets/css/base.css', 'top level', '.hero-search input:focus', 'outline', 'none'],
   ['assets/css/base.css', 'top level', '.hero-search input:focus', 'border-color', 'var(--accent)'],
   ['assets/css/base.css', 'top level', '.hero-search input:focus', 'box-shadow', '0 0 0 2px rgba(var(--accent-rgb), .4), inset 0 0 0 1.5px rgba(var(--accent-rgb), .2)'],
   ['assets/css/base.css', 'top level', '.hero-search button', 'border', 'none'],
+  ['assets/css/base.css', 'top level', '.hero-search button', 'border-radius', 'var(--radius-md)'],
   ['assets/css/base.css', 'top level', '.hero-search button', 'background', 'var(--accent)'],
   ['assets/css/base.css', 'top level', '.hero-search button', 'color', 'var(--ink)'],
   ['assets/css/base.css', 'top level', '.hero-search button:hover', 'background', 'var(--accent-dark)'],
@@ -336,6 +516,7 @@ const approvedConsumerTuples = new Set([
   ['assets/css/base.css', 'top level', '.hero-search button:hover', 'box-shadow', '0 4px 20px rgba(var(--accent-rgb), .45)'],
   ['assets/css/base.css', 'top level', '.hero-search button:active', 'box-shadow', '0 2px 8px rgba(var(--accent-rgb), .3)'],
   ['assets/css/base.css', 'top level', '.hero-search button:focus-visible', 'outline', '2px solid var(--text-on-dark, #fff)'],
+  ['assets/css/base.css', 'top level', '.hero-search button:focus-visible', 'outline-offset', '2px'],
   ['assets/css/base.css', 'top level', '.dark .hero-search input', 'background', 'var(--bg-alt)'],
   ['assets/css/base.css', 'top level', '.dark .hero-search input', 'color', 'var(--ink)'],
   ['assets/css/base.css', 'top level', '.dark .hero-search input', 'border-color', 'var(--line)'],
@@ -345,9 +526,11 @@ const approvedConsumerTuples = new Set([
   ['assets/css/dark-overrides.css', 'top level', '.dark .ec-countdown', 'color', 'var(--accent-text)'],
   ['assets/css/dark-overrides.css', 'top level', '.dark .ec-countdown', 'background', 'rgba(var(--accent-rgb), .12)'],
   ['pages/index.vue#style-0', 'top level', '.home .hero-sub', 'opacity', '.95'],
+  ['pages/index.vue#style-0', 'top level', '.home .hero-sub', 'text-shadow', '0 1px 8px rgba(var(--black-rgb),.22)'],
   ['pages/index.vue#style-0', 'top level', '.dark .home .hero-sub', 'opacity', '1'],
   ['pages/index.vue#style-0', 'top level', '.home .hero-search', 'background', 'rgba(var(--white-rgb),.14)'],
   ['pages/index.vue#style-0', 'top level', '.home .hero-search', 'border', '.5px solid rgba(var(--white-rgb),.30)'],
+  ['pages/index.vue#style-0', 'top level', '.home .hero-search', 'border-radius', 'calc(var(--radius-md) + var(--space-1))'],
   ['pages/index.vue#style-0', 'top level', '.home .hero-search', 'box-shadow', '0 8px 30px rgba(var(--black-rgb),.18), 0 2px 8px rgba(var(--black-rgb),.12)'],
   ['pages/index.vue#style-0', 'top level', '.home .hero-search:focus-within', 'border-color', 'var(--color-focus)'],
   ['pages/index.vue#style-0', 'top level', '.home .hero-search:focus-within', 'box-shadow', '0 12px 40px rgba(var(--black-rgb),.22), 0 0 0 4px color-mix(in srgb, var(--color-focus) 22%, transparent)'],
@@ -356,9 +539,16 @@ const approvedConsumerTuples = new Set([
   ['pages/index.vue#style-0', 'top level', '.home .hero-search input:focus', 'border-color', 'transparent'],
   ['pages/index.vue#style-0', 'top level', '.home .hero-search input:focus', 'box-shadow', 'none'],
   ['pages/index.vue#style-0', 'top level', '.home .hero-nearby', 'color', 'rgba(var(--white-rgb),.92)'],
+  ['pages/index.vue#style-0', 'top level', '.home .hero-nearby', 'text-shadow', '0 1px 6px rgba(var(--black-rgb),.35)'],
   ['pages/index.vue#style-0', 'top level', '.home .hero-nearby:focus-visible', 'outline', '2px solid var(--color-focus)'],
+  ['pages/index.vue#style-0', 'top level', '.home .hero-nearby:focus-visible', 'outline-offset', '3px'],
+  ['pages/index.vue#style-0', 'top level', '.home .hero-nearby:focus-visible', 'border-radius', '4px'],
+  ['pages/index.vue#style-0', 'top level', '.ec-date', 'background', 'var(--home-color-amber-surface)'],
+  ['pages/index.vue#style-0', 'top level', '.ec-date', 'border-radius', 'var(--radius-sm)'],
+  ['pages/index.vue#style-0', 'top level', '.ec-date', 'color', 'var(--home-color-amber-text)'],
   ['pages/index.vue#style-0', 'top level', '.ec-countdown', 'color', 'var(--home-color-amber-text)'],
   ['pages/index.vue#style-0', 'top level', '.ec-countdown', 'background', 'var(--home-color-amber-surface)'],
+  ['pages/index.vue#style-0', 'top level', '.ec-countdown', 'border-radius', 'var(--radius-full)'],
   ['pages/index.vue#style-0', 'top level', '.ec-today', 'color', 'var(--color-error)'],
   ['pages/index.vue#style-0', 'top level', '.dark .home .hero-search', 'background', 'rgba(var(--white-rgb),.22)'],
   ['pages/index.vue#style-0', 'top level', '.dark .home .hero-search', 'border-color', 'rgba(var(--white-rgb),.38)'],
@@ -375,12 +565,22 @@ const approvedConsumerTuples = new Set([
   ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-search[data-color-role="action-primary"]', 'background', 'var(--color-action)'],
   ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-search[data-color-role="action-primary"]', 'color', 'var(--color-on-action)'],
   ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-search[data-color-role="action-primary"]:focus-within', 'outline', '3px solid var(--home-color-focus-on-media)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-search[data-color-role="action-primary"]:focus-within', 'outline-offset', '3px'],
   ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-search[data-color-role="action-primary"]:focus-within', 'border-color', 'var(--color-action)'],
   ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-search[data-color-role="action-primary"]:focus-within', 'box-shadow', '0 0 0 2px var(--home-color-focus-on-media-halo)'],
   ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-nearby:focus-visible', 'outline', '3px solid var(--home-color-focus-on-media)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-nearby:focus-visible', 'outline-offset', '3px'],
   ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-nearby:focus-visible', 'box-shadow', '0 0 0 2px var(--home-color-focus-on-media-halo)'],
   ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-search[data-color-role="action-primary"] input:focus-visible', 'outline', '3px solid var(--home-color-focus-on-action)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-search[data-color-role="action-primary"] input:focus-visible', 'outline-offset', '3px'],
   ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-search[data-color-role="action-primary"] input:focus-visible', 'box-shadow', '0 0 0 2px var(--home-color-focus-on-media-halo)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .home-feature-dossier__action', 'border', '1px solid var(--color-action)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .home-feature-dossier__action', 'color', 'var(--color-action)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .home-feature-dossier__action--secondary', 'border-color', 'var(--color-border)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .home-feature-dossier__action--secondary', 'color', 'var(--color-text)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .home-feature-dossier__action[data-color-role="action-secondary"]', 'border-color', 'var(--color-action-border)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .home-feature-dossier__action[data-color-role="action-secondary"]', 'background', 'var(--color-action-surface)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .home-feature-dossier__action[data-color-role="action-secondary"]', 'color', 'var(--color-action)'],
   ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .ec-date[data-material-accent="amber"],[data-home-pilot="nocturne-b1"] .ec-countdown[data-material-accent="amber"]', 'background', 'var(--home-color-amber-surface)'],
   ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .ec-date[data-material-accent="amber"],[data-home-pilot="nocturne-b1"] .ec-countdown[data-material-accent="amber"]', 'color', 'var(--home-color-amber-text)'],
   ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .ec-countdown.ec-today[data-material-accent="amber"]', 'background', 'var(--home-color-today-surface)'],
@@ -392,10 +592,11 @@ function validateProtectedConsumerDeclarations(sources) {
   for (const { source, root } of sources) {
     root.walkDecls((declaration) => {
       const property = canonicalDeclarationName(declaration).toLowerCase()
-      if (!protectedConsumerProperties.has(property)) return
-      const { selector, classes } = readSelectorChain(declaration)
-      if (![...classes].some(className => protectedConsumerClasses.has(className))) return
-      const value = `${valueParser(declaration.value).toString().trim()}${declaration.important ? ' !important' : ''}`
+      if (!isProtectedConsumerProperty(property)) return
+      const { selector, classes, actionRoles } = readSelectorChain(declaration)
+      const hasProtectedClass = [...classes].some(className => protectedConsumerClasses.has(className))
+      if (!hasProtectedClass && actionRoles.size === 0) return
+      const value = `${declaration.value.trim()}${declaration.important ? ' !important' : ''}`
       const tuple = [source, readAtRuleContext(declaration), selector, property, value]
       if (!approvedConsumerTuples.has(consumerTupleKey(tuple))) {
         throw new Error(`Unexpected protected consumer declaration: ${tuple.join(' | ')}`)
@@ -405,10 +606,7 @@ function validateProtectedConsumerDeclarations(sources) {
 }
 
 validateProtectedConsumerDeclarations([
-  { source: 'assets/css/base.css', root: baseRoot },
-  { source: 'assets/css/dark-overrides.css', root: darkOverridesRoot },
-  ...homePageStyleRoots,
-  { source: 'assets/css/home-nocturne.css', root: homeRoot },
+  ...allStyleSources,
 ])
 
 function readFiniteNumber(value, label) {
@@ -421,27 +619,12 @@ function readMixWeight(name, container, sourceToken = 'color-action') {
   const declarations = findDeclarations(container, name)
   if (declarations.length === 0) throw new Error(`Missing sRGB color-mix contract for --${name}`)
   if (declarations.length > 1) throw new Error(`Duplicate color-mix declaration for --${name}`)
-  const nodes = valueParser(declarations[0].value).nodes.filter(node => node.type !== 'space' && node.type !== 'comment')
-  const mix = nodes.length === 1 && nodes[0].type === 'function' && nodes[0].value.toLowerCase() === 'color-mix'
-    ? nodes[0]
-    : null
-  const parts = mix?.nodes.filter(node => node.type !== 'space' && node.type !== 'comment') ?? []
-  const sourceVar = parts[3]
-  const sourceVarNodes = sourceVar?.type === 'function'
-    ? sourceVar.nodes.filter(node => node.type !== 'space' && node.type !== 'comment')
-    : []
-  const valid = parts.length === 7
-    && parts[0].type === 'word' && parts[0].value.toLowerCase() === 'in'
-    && parts[1].type === 'word' && parts[1].value.toLowerCase() === 'srgb'
-    && parts[2].type === 'div' && parts[2].value === ','
-    && sourceVar?.type === 'function' && sourceVar.value.toLowerCase() === 'var'
-    && sourceVarNodes.length === 1 && sourceVarNodes[0].type === 'word'
-    && canonicalizeCssIdentifier(sourceVarNodes[0].value) === `--${sourceToken}`
-    && parts[4].type === 'word' && /^([0-9.]+)%$/.test(parts[4].value)
-    && parts[5].type === 'div' && parts[5].value === ','
-    && parts[6].type === 'word' && parts[6].value.toLowerCase() === 'transparent'
-  if (!valid) throw new Error(`Missing sRGB color-mix contract for --${name}`)
-  const weight = readFiniteNumber(parts[4].value.slice(0, -1), `--${name}`) / 100
+  const match = /^color-mix\(\s*in\s+srgb\s*,\s*var\(\s*(.*?)\s*\)\s+([0-9.]+)%\s*,\s*transparent\s*\)$/i
+    .exec(declarations[0].value.trim())
+  if (!match || canonicalizeCssIdentifier(match[1]) !== `--${sourceToken}`) {
+    throw new Error(`Missing sRGB color-mix contract for --${name}`)
+  }
+  const weight = readFiniteNumber(match[2], `--${name}`) / 100
   if (weight < 0 || weight > 1) throw new Error(`Out-of-range color-mix weight for --${name}`)
   return weight
 }
@@ -450,23 +633,12 @@ function readRgbaAlpha(name, container, sourceToken) {
   const declarations = findDeclarations(container, name)
   if (declarations.length === 0) throw new Error(`Missing rgba contract for --${name}`)
   if (declarations.length > 1) throw new Error(`Duplicate rgba declaration for --${name}`)
-  const nodes = valueParser(declarations[0].value).nodes.filter(node => node.type !== 'space' && node.type !== 'comment')
-  const rgba = nodes.length === 1 && nodes[0].type === 'function' && nodes[0].value.toLowerCase() === 'rgba'
-    ? nodes[0]
-    : null
-  const parts = rgba?.nodes.filter(node => node.type !== 'space' && node.type !== 'comment') ?? []
-  const sourceVar = parts[0]
-  const sourceVarNodes = sourceVar?.type === 'function'
-    ? sourceVar.nodes.filter(node => node.type !== 'space' && node.type !== 'comment')
-    : []
-  const valid = parts.length === 3
-    && sourceVar?.type === 'function' && sourceVar.value.toLowerCase() === 'var'
-    && sourceVarNodes.length === 1 && sourceVarNodes[0].type === 'word'
-    && canonicalizeCssIdentifier(sourceVarNodes[0].value) === `--${sourceToken}`
-    && parts[1].type === 'div' && parts[1].value === ','
-    && parts[2].type === 'word' && /^[0-9.]+$/.test(parts[2].value)
-  if (!valid) throw new Error(`Missing rgba contract for --${name}`)
-  const alpha = readFiniteNumber(parts[2].value, `--${name}`)
+  const match = /^rgba\(\s*var\(\s*(.*?)\s*\)\s*,\s*([0-9.]+)\s*\)$/i
+    .exec(declarations[0].value.trim())
+  if (!match || canonicalizeCssIdentifier(match[1]) !== `--${sourceToken}`) {
+    throw new Error(`Missing rgba contract for --${name}`)
+  }
+  const alpha = readFiniteNumber(match[2], `--${name}`)
   if (alpha < 0 || alpha > 1) throw new Error(`Out-of-range rgba alpha for --${name}`)
   return alpha
 }
@@ -475,15 +647,11 @@ function readSemanticAlias(container, name) {
   const declarations = findDeclarations(container, name).filter(declaration => declaration.parent === container)
   if (declarations.length === 0) throw new Error(`Missing semantic alias assignment for --${name}`)
   if (declarations.length > 1) throw new Error(`Duplicate semantic alias assignment for --${name}`)
-  const nodes = valueParser(declarations[0].value).nodes.filter(node => node.type !== 'space' && node.type !== 'comment')
-  const variable = nodes.length === 1 && nodes[0].type === 'function' && nodes[0].value.toLowerCase() === 'var'
-    ? nodes[0]
-    : null
-  const variableNodes = variable?.nodes.filter(node => node.type !== 'space' && node.type !== 'comment') ?? []
-  if (variableNodes.length !== 1 || variableNodes[0].type !== 'word') {
+  const match = /^var\(\s*(.*?)\s*\)$/i.exec(declarations[0].value.trim())
+  if (!match || match[1].length === 0) {
     throw new Error(`Malformed semantic alias assignment for --${name}`)
   }
-  const canonicalAlias = canonicalizeCssIdentifier(variableNodes[0].value)
+  const canonicalAlias = canonicalizeCssIdentifier(match[1])
   if (!canonicalAlias.startsWith('--')) throw new Error(`Malformed semantic alias assignment for --${name}`)
   const alias = canonicalAlias.slice(2)
   if (!supportedSemanticAliases.has(alias)) {
