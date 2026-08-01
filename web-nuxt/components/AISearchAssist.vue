@@ -1,5 +1,5 @@
 <template>
-  <div class="ai-search-assist">
+  <div class="ai-search-assist" :data-color-recipe="colorRecipe || undefined">
     <button type="button" v-if="!aiReply && !loading && !errored" class="ai-toggle-btn ai-toggle-btn-emoji" @click="load"><IconLine name="sparkles" class="emoji-chip" /> Gợi ý AI cho "{{ query }}"</button>
     <div v-else-if="loading" class="ai-loading ai-loading-padded" role="status" aria-label="Đang tải gợi ý"><div class="spinner spinner-center"></div></div>
     <div v-else-if="errored" class="ai-error" role="status">
@@ -22,7 +22,10 @@
 
 <script setup lang="ts">
 // GĐ4.3: chỉ gọi LLM khi người dùng bấm "Gợi ý AI" — không auto-fire mỗi lần tìm kiếm.
-const props = defineProps<{ query: string }>()
+const props = defineProps<{
+  query: string
+  colorRecipe?: 'tri-region-v1'
+}>()
 
 const { get: ss } = useSiteSettings()
 const disclaimerText = computed(() => ss('ai.disclaimer_text', 'Gợi ý do AI tạo — mang tính tham khảo.'))
@@ -130,6 +133,10 @@ watch(() => props.query, () => {
 .dark .ai-search-h3::before {
   background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%);
 }
+.ai-search-assist[data-color-recipe='tri-region-v1'] .ai-search-h3 {
+  border-left: 4px solid var(--color-material-neutral);
+}
+.ai-search-assist[data-color-recipe='tri-region-v1'] .ai-search-h3::before { content: none; }
 /* Quiet "AI-assisted" label — hairline tag, not a decorative badge; overrides
    the shared bold-span styling since this is a secondary meta label. */
 .ai-label {

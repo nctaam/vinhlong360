@@ -37,7 +37,7 @@
 
     <NuxtErrorBoundary>
       <ClientOnly>
-        <LazyAISearchAssist v-if="q" :query="q" />
+        <LazyAISearchAssist v-if="q" :query="q" color-recipe="tri-region-v1" />
         <template #fallback>
           <div v-if="q" class="ai-loading ai-loading-padded" role="status" aria-label="Đang tải gợi ý AI"><div class="spinner spinner-center"></div></div>
         </template>
@@ -50,6 +50,7 @@
       title="Lỗi tìm kiếm"
       message="Không thể tìm kiếm lúc này. Vui lòng thử lại."
       tone="error"
+      color-recipe="tri-region-v1"
       role="alert"
       data-color-role="status-error"
     >
@@ -92,7 +93,7 @@
 
       <NuxtErrorBoundary v-if="results.length || postResults.length || userResults.length">
         <ClientOnly>
-          <LazySmartRecommendations context="search" :query="q" title="Gợi ý tiếp theo" :limit="6" />
+          <LazySmartRecommendations context="search" :query="q" title="Gợi ý tiếp theo" :limit="6" color-recipe="tri-region-v1" />
         </ClientOnly>
       </NuxtErrorBoundary>
       <JourneyActionRail
@@ -104,7 +105,7 @@
 
       <!-- Không có kết quả nào — đây là khoảnh khắc phục hồi, không phải ngõ cụt -->
       <template v-if="!results.length && !postResults.length && !userResults.length">
-        <EmptyState title="Chưa thấy đúng ý bạn" message="Nhưng biết đâu những gợi ý dưới đây lại hợp — phù sa vẫn còn nhiều thứ để kể.">
+        <EmptyState title="Chưa thấy đúng ý bạn" message="Nhưng biết đâu những gợi ý dưới đây lại hợp — phù sa vẫn còn nhiều thứ để kể." color-recipe="tri-region-v1">
           <template #actions>
             <NuxtLink to="/du-lich" class="btn btn-outline">Khám phá du lịch</NuxtLink>
             <NuxtLink to="/san-pham" class="btn btn-outline">Xem sản phẩm</NuxtLink>
@@ -112,7 +113,7 @@
         </EmptyState>
         <NuxtErrorBoundary>
           <ClientOnly>
-            <LazySmartRecommendations context="search" :query="q" title="Có phải bạn muốn tìm…" :limit="6" />
+            <LazySmartRecommendations context="search" :query="q" title="Có phải bạn muốn tìm…" :limit="6" color-recipe="tri-region-v1" />
           </ClientOnly>
         </NuxtErrorBoundary>
         <JourneyActionRail
@@ -145,7 +146,7 @@
       <!-- Row B: gợi ý đáng chú ý — recommendation engine sẵn có (context hợp lệ, không tự chế) -->
       <NuxtErrorBoundary>
         <ClientOnly>
-          <LazySmartRecommendations context="search" title="Đáng chú ý lúc này" :limit="3" />
+          <LazySmartRecommendations context="search" title="Đáng chú ý lúc này" :limit="3" color-recipe="tri-region-v1" />
         </ClientOnly>
       </NuxtErrorBoundary>
 
@@ -321,7 +322,7 @@ const { data, error: searchError, status } = await useAsyncData(
 const searching = computed(() => status.value === 'pending' && !!q.value)
 
 const results = computed(() => data.value?.entities || data.value?.results || [])
-const hasError = computed(() => !!searchError.value)
+const hasError = computed(() => status.value !== 'pending' && !!searchError.value)
 const postResults = computed(() => (data.value?.posts || []).slice(0, 6))
 const userResults = computed(() => (data.value?.users || []).slice(0, 8))
 const totalSearchResults = computed(() => results.value.length + postResults.value.length + userResults.value.length)
@@ -641,7 +642,7 @@ useHead({
   border: none;
   border-bottom: 1.5px solid var(--line);
   border-radius: 0;
-  box-shadow: none !important;
+  box-shadow: none;
 }
 .search-row-hero .search-input-wrap input::placeholder {
   font-style: italic;

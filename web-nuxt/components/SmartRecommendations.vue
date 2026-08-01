@@ -1,5 +1,5 @@
 <template>
-  <section v-if="visible" class="smart-rec">
+  <section v-if="visible" class="smart-rec" :data-color-recipe="colorRecipe || undefined">
     <div class="section-head sediment-head">
       <div class="sh-text">
         <h2>{{ title }}</h2>
@@ -13,7 +13,7 @@
     </div>
     <div v-else class="grid smart-rec-grid">
       <div v-for="entity in items" :key="entity.id" class="smart-rec-item">
-        <EntityCard :entity="entity" />
+        <EntityCard :entity="entity" :color-recipe="colorRecipe" />
         <p v-if="reasonFor(entity.id)" class="smart-rec-reason">{{ reasonFor(entity.id) }}</p>
       </div>
     </div>
@@ -27,6 +27,7 @@ const props = withDefaults(defineProps<{
   query?: string
   title?: string
   limit?: number
+  colorRecipe?: 'tri-region-v1'
 }>(), {
   context: 'home',
   title: 'Dành cho bạn',

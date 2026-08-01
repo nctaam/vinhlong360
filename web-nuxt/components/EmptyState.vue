@@ -1,20 +1,25 @@
 <template>
-  <div class="empty-state" :class="`is-${tone}`" :role="tone === 'error' ? 'alert' : 'status'">
+  <div
+    class="empty-state"
+    :class="`is-${tone}`"
+    :role="tone === 'error' ? 'alert' : 'status'"
+    :data-color-recipe="colorRecipe || undefined"
+  >
     <span v-if="icon" class="empty-icon" aria-hidden="true">{{ icon }}</span>
     <svg v-else viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="empty-illust">
       <defs>
         <linearGradient id="empty-sediment" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="var(--river-600)" />
-          <stop offset="52%" stop-color="var(--amber-600)" />
-          <stop offset="100%" stop-color="var(--clay-600)" />
+          <stop offset="0%" :stop-color="recipeDecorationColor || 'var(--river-600)'" />
+          <stop offset="52%" :stop-color="recipeDecorationColor || 'var(--amber-600)'" />
+          <stop offset="100%" :stop-color="recipeDecorationColor || 'var(--clay-600)'" />
         </linearGradient>
       </defs>
       <circle cx="100" cy="70" r="50" fill="var(--bg-warm)" />
       <rect class="empty-illust-grain" x="50" y="20" width="100" height="100" />
       <circle cx="100" cy="70" r="35" fill="var(--bg)" />
       <circle cx="90" cy="65" r="20" stroke="url(#empty-sediment)" stroke-width="3.5" fill="none" />
-      <line x1="105" y1="80" x2="125" y2="100" stroke="var(--clay-600)" stroke-width="5" stroke-linecap="round" />
-      <g fill="var(--amber-600)" opacity=".65">
+      <line x1="105" y1="80" x2="125" y2="100" :stroke="recipeDecorationColor || 'var(--clay-600)'" stroke-width="5" stroke-linecap="round" />
+      <g :fill="recipeDecorationColor || 'var(--amber-600)'" opacity=".65">
         <path d="M140 35 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3z" />
         <path d="M55 30 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2z" />
         <path d="M150 75 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z" />
@@ -39,9 +44,13 @@ const props = withDefaults(defineProps<{
   hint?: string
   tone?: 'empty' | 'error'
   headingLevel?: 2 | 3 | 4
+  colorRecipe?: 'tri-region-v1'
 }>(), { headingLevel: 2, tone: 'empty' })
 
 const headingTag = computed(() => `h${props.headingLevel}`)
+const recipeDecorationColor = computed(() => props.colorRecipe === 'tri-region-v1'
+  ? (props.tone === 'error' ? 'var(--color-error)' : 'var(--color-material-neutral)')
+  : '')
 </script>
 
 <style scoped>
@@ -88,6 +97,14 @@ const headingTag = computed(() => `h${props.headingLevel}`)
    a quieter cue than a red icon, consistent with "no hardcoded brand hex". */
 .is-error .empty-rule { background: linear-gradient(90deg, var(--amber-600) 0%, var(--clay-600) 100%); }
 .dark .is-error .empty-rule { background: linear-gradient(90deg, var(--amber-500) 0%, var(--clay-400) 100%); }
+.empty-state[data-color-recipe='tri-region-v1'] .empty-rule {
+  background-image: none;
+  background-color: var(--color-material-neutral);
+}
+.empty-state[data-color-recipe='tri-region-v1'].is-error .empty-rule {
+  background-image: none;
+  background-color: var(--color-error);
+}
 
 @media (prefers-reduced-motion: reduce) {
   .empty-state { animation: none; opacity: 1; transform: none; }
