@@ -1,4 +1,5 @@
 import type { ImageDescriptor } from './image'
+import type { FreshnessStatus } from '../utils/regionalColor'
 
 export interface Coordinates {
   lat: number
@@ -17,7 +18,7 @@ export interface EntitySourceFreshness {
   updated_at?: string | null
   verified_at?: string | null
   days_since_update?: number | null
-  freshness_status?: 'fresh' | 'aging' | 'stale' | 'unknown' | string
+  freshness_status?: FreshnessStatus | string
 }
 
 export interface EntitySeason {
