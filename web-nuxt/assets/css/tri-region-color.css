@@ -202,6 +202,27 @@
   box-shadow: 0 0 0 3px rgba(var(--color-error-rgb), .18);
 }
 
+[data-color-system="tri-region-v1"][data-page-recipe="detail"] .detail-cover::after {
+  border-block-end: 3px solid var(--tri-region-material-accent);
+}
+
+[data-color-system="tri-region-v1"][data-page-recipe="detail"] :is(.facts-card, .entity-trust-panel) {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  box-shadow: none;
+}
+
+[data-color-system="tri-region-v1"][data-page-recipe="detail"] :is(.scta-phone, .scta-plan, .cw-btn-primary) {
+  background: var(--color-action);
+  color: var(--color-on-action);
+}
+
+[data-color-system="tri-region-v1"][data-page-recipe="detail"] .image-disclosure {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+}
+
 @media (prefers-contrast: more) {
   [data-color-system="tri-region-v1"] {
     --color-border: currentColor;

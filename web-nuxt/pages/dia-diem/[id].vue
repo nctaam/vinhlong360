@@ -1,5 +1,11 @@
 <template>
-  <section v-if="entity" class="entity-detail-page">
+  <section
+    v-if="entity"
+    class="page entity-detail entity-detail-page"
+    data-color-system="tri-region-v1"
+    data-page-recipe="detail"
+    :data-material-accent="detailMaterialAccent"
+  >
     <div class="scroll-progress" :style="{ transform: `scaleX(${progress})` }" aria-hidden="true" />
     <!-- Breadcrumb -->
     <nav class="breadcrumb" aria-label="Breadcrumb">
@@ -25,7 +31,7 @@
     >
       <NuxtImg v-if="hasEntityImages && heroDescriptor.url && isRemoteUrl(heroDescriptor.url)" :src="heroDescriptor.url" :alt="heroDescriptor.alt" class="dc-bg" loading="eager" fetchpriority="high" width="1200" height="600" sizes="sm:100vw md:100vw lg:960px xl:1200px" role="button" tabindex="0" :aria-describedby="heroDisclosureId" :aria-label="`Xem ảnh ${entity.name}`" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="openCoverLightbox(0)" @keydown.enter="openCoverLightbox(0)" @keydown.space.prevent="openCoverLightbox(0)" />
       <img v-else-if="hasEntityImages && heroDescriptor.url" :src="heroDescriptor.url" :alt="heroDescriptor.alt" class="dc-bg" loading="eager" fetchpriority="high" width="1200" height="600" role="button" tabindex="0" :aria-describedby="heroDisclosureId" :aria-label="`Xem ảnh ${entity.name}`" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="openCoverLightbox(0)" @keydown.enter="openCoverLightbox(0)" @keydown.space.prevent="openCoverLightbox(0)" />
-      <EntityHeroPlaceholder v-else :id="entity.id" :cat="typeMeta.cat" :label="typeMeta.label" :descriptor="heroDescriptor" class="dc-placeholder" aria-hidden="true" />
+      <EntityHeroPlaceholder v-else :id="entity.id" :cat="typeMeta.cat" :label="typeMeta.label" :descriptor="heroDescriptor" :material-accent="detailMaterialAccent" class="dc-placeholder" aria-hidden="true" />
       <div v-if="coverImage" class="dc-overlay"></div>
       <div v-if="coverImage" class="dc-vignette" aria-hidden="true"></div>
       <span v-if="!hasEntityImages" class="dc-motif" aria-hidden="true" v-html="heroMotifSvg"></span>
@@ -58,7 +64,7 @@
         </div>
       </div>
       <button type="button" v-if="hasEntityImages" class="dc-photo-btn" :aria-label="entityImageDescriptors.length === 1 ? 'Xem ảnh' : `Xem ${entityImageDescriptors.length} ảnh`" @click="openCoverLightbox()">
-        <span class="dc-photo-icon" aria-hidden="true">&#128247;</span>
+        <span class="dc-photo-icon" aria-hidden="true">📷</span>
         {{ entityImageDescriptors.length === 1 ? 'Xem ảnh' : `${entityImageDescriptors.length} ảnh` }}
       </button>
       <div v-if="hasEntityImages && entityImageDescriptors.length > 1" class="dc-thumbs">
@@ -393,32 +399,17 @@
         <!-- P0-5: byline biên tập (Who) — always-on, ngoài trust-card -->
         <p class="entity-byline"><IconLine name="user" /> {{ bylineText }} · <strong>Ban biên tập vinhlong360</strong> · <NuxtLink to="/gioi-thieu#ban-bien-tap">phương pháp biên tập</NuxtLink></p>
 
-        <!-- Liên hệ trực tiếp (showcase — KHÔNG đặt hàng/giỏ hàng/thanh toán on-site) -->
-        <section v-if="trustVisible" class="trust-card" aria-labelledby="trust-card-title">
-          <div class="trust-card-head">
-            <h2 id="trust-card-title" class="sediment-head">Độ tin cậy dữ liệu</h2>
-            <span :class="['trust-status', trustStatusTone]">{{ trustStatusLabel }}</span>
-          </div>
-          <dl class="trust-list">
-            <div>
-              <dt>Nguồn</dt>
-              <dd>
-                <a v-if="trustSourceUrl" :href="safeUrl(trustSourceUrl)" target="_blank" rel="noopener nofollow">{{ trustSourceTitle }}</a>
-                <span v-else>{{ trustSourceTitle }}</span>
-              </dd>
-            </div>
-            <div>
-              <dt>Cập nhật</dt>
-              <dd>{{ trustUpdatedLabel }}</dd>
-            </div>
-          </dl>
-          <p class="trust-note">{{ trustNote }}</p>
-          <NuxtLink class="trust-report" :to="reportUrl">Báo sai hoặc bổ sung nguồn</NuxtLink>
-        </section>
-
-        <!-- declutter-3 T17 (B5c/D12): đúng 1 kênh Báo sai mỗi trang — trust-card ưu tiên;
-             fallback này chỉ hiện khi entity KHÔNG có nguồn (trust-card ẩn) -->
-        <NuxtLink v-if="!trustVisible" class="quality-report" :to="reportUrl">{{ ss('labels.detail.cta_report', 'Báo sai dữ liệu') }}</NuxtLink>
+        <!-- Trust, freshness and media disclosure remain independent layers; người dùng có thể "Báo sai hoặc bổ sung nguồn" tại đây. -->
+        <EntityTrustPanel
+          class="trust-card"
+          :tier="trustTier"
+          :source-title="trustSourceTitle"
+          :source-url="trustSourceUrl || undefined"
+          :freshness-status="trustFreshnessStatus"
+          :updated-label="trustUpdatedLabel"
+          :note="trustNote"
+          :report-to="reportUrl"
+        />
 
         <NuxtErrorBoundary>
           <ClientOnly>
@@ -490,6 +481,7 @@ import { entityStoryTeaser } from '~/composables/useEntityStory'
 import { aiDisclosure } from '~/utils/aiDisclosure'
 import { currentGalleryDescriptors, type GalleryDescriptorCarrier } from '~/utils/entityGallery'
 import { describeEntityImages, parseGalleryDescriptor } from '~/utils/imageDescriptors'
+import { resolveFreshnessStatus, resolveRegionalAccent, resolveSourceTier } from '~/utils/regionalColor'
 
 interface LaunchEntityCarrier extends Entity {
   readonly __launchGeneration: number
@@ -703,6 +695,8 @@ const typeMeta = computed(() => {
   if (!entity.value) return { emoji: '•', icon: 'pin', label: '', cat: 'place' }
   return TYPE_META[entity.value.type] || { emoji: '•', icon: 'pin', label: entity.value.type, cat: 'place' }
 })
+
+const detailMaterialAccent = computed(() => resolveRegionalAccent(entity.value?.type))
 
 const areaName = computed(() => {
   const area = entity.value ? getEntityArea(entity.value) : ''
@@ -930,31 +924,25 @@ const foodSpecialties = computed(() => {
 const reportUrl = computed(() => `/cong-dong?report=${encodeURIComponent(id.value)}`)
 
 const sourceFreshness = computed(() => entity.value?.source_freshness)
+const trustTier = computed(() => resolveSourceTier(entity.value?.quality?.source_tier))
 const trustSourceUrl = computed(() => sourceFreshness.value?.source_url || entity.value?.quality?.source_url || '')
 const trustSourceTitle = computed(() => sourceFreshness.value?.source_title || entity.value?.quality?.source_title || (trustSourceUrl.value ? 'Nguồn tham khảo' : 'Chưa có nguồn công khai'))
 const trustUpdatedAt = computed(() => sourceFreshness.value?.updated_at || entity.value?.quality?.verified_at || entity.value?.updatedAt || '')
 const trustUpdatedLabel = computed(() => trustUpdatedAt.value ? formatDateVN(trustUpdatedAt.value) : 'Chưa rõ')
-const trustStatus = computed(() => sourceFreshness.value?.freshness_status || 'unknown')
+const trustFreshnessStatus = computed(() => resolveFreshnessStatus(sourceFreshness.value?.freshness_status))
+// Retained as a text contract for integrations; FreshnessLine owns its visible status label.
 const trustStatusLabel = computed(() => {
-  if (trustStatus.value === 'fresh') return 'Mới cập nhật'
-  if (trustStatus.value === 'aging') return 'Cần kiểm tra định kỳ'
-  if (trustStatus.value === 'stale') return 'Có thể đã cũ'
+  if (trustFreshnessStatus.value === 'fresh') return 'Mới cập nhật'
+  if (trustFreshnessStatus.value === 'aging') return 'Cần kiểm tra định kỳ'
+  if (trustFreshnessStatus.value === 'stale') return 'Có thể đã cũ'
   return 'Chưa rõ'
 })
-const trustStatusTone = computed(() => {
-  if (trustStatus.value === 'fresh') return 'fresh'
-  if (trustStatus.value === 'aging') return 'aging'
-  if (trustStatus.value === 'stale') return 'stale'
-  return 'unknown'
-})
 const trustNote = computed(() => {
-  if (trustStatus.value === 'fresh') return 'Thông tin này có tín hiệu cập nhật gần đây.'
-  if (trustStatus.value === 'aging') return 'Thông tin vẫn dùng được nhưng nên kiểm tra lại nếu bạn sắp đi.'
-  if (trustStatus.value === 'stale') return 'Thông tin có thể đã cũ; hãy báo sai nếu bạn thấy khác thực tế.'
+  if (trustFreshnessStatus.value === 'fresh') return 'Thông tin này có tín hiệu cập nhật gần đây.'
+  if (trustFreshnessStatus.value === 'aging') return 'Thông tin vẫn dùng được nhưng nên kiểm tra lại nếu bạn sắp đi.'
+  if (trustFreshnessStatus.value === 'stale') return 'Thông tin có thể đã cũ; hãy báo sai nếu bạn thấy khác thực tế.'
   return 'Hệ thống chưa có đủ tín hiệu nguồn/ngày cập nhật cho mục này.'
 })
-// P0-7: chỉ hiện trust-card khi CÓ nguồn công khai thật (đừng quảng cáo "chưa có nguồn").
-const trustVisible = computed(() => !!trustSourceUrl.value)
 
 // P0-5: byline biên tập (Who) — LUÔN hiện, mọi trang. Trung thực theo
 // attributes.verifiedAt (người đặt tay); hiện chưa entity nào có → mặc định
@@ -1289,8 +1277,8 @@ useHead({
   border: none; border-radius: var(--radius-sm); background: transparent;
   color: var(--muted); cursor: pointer; transition: color .2s, background .2s;
 }
-.fact-copy:hover { color: var(--primary-fg); background: rgba(var(--primary-rgb), .08); }
-.fact-copy:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.fact-copy:hover { color: var(--color-action); background: var(--color-action-surface); }
+.fact-copy:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 
 /* P0-5: editorial byline — subtle, honest "Who" line above the trust card. */
 .entity-byline {
@@ -1304,70 +1292,7 @@ useHead({
 }
 .entity-byline .line-icon { font-size: 1.1em; color: var(--muted); flex: 0 0 auto; }
 .entity-byline strong { font-weight: var(--weight-semibold); color: var(--ink); }
-.entity-byline a { color: var(--primary-fg); text-decoration: underline; text-underline-offset: 2px; }
-
-.trust-card {
-  margin: var(--space-4) 0;
-  padding: var(--space-4);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-}
-.trust-card-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-3);
-  margin-bottom: var(--space-3);
-}
-.trust-card h2 {
-  margin: 0;
-  font-size: var(--text-base);
-}
-.trust-status {
-  flex: 0 0 auto;
-  padding: 3px 8px;
-  border-radius: 999px;
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
-  border: 1px solid var(--line);
-}
-.trust-status.fresh { color: var(--success); background: var(--success-bg); border-color: var(--success-border); }
-.trust-status.aging { color: var(--warning); background: var(--warning-bg); border-color: var(--warning-border); }
-.trust-status.stale { color: var(--error); background: var(--error-bg); border-color: var(--error-border); }
-.trust-status.unknown { color: var(--muted); background: var(--bg-warm); }
-.trust-list {
-  display: grid;
-  gap: var(--space-2);
-  margin: 0;
-}
-.trust-list > div {
-  display: grid;
-  grid-template-columns: 88px minmax(0, 1fr);
-  gap: var(--space-2);
-}
-.trust-list dt {
-  color: var(--muted);
-  font-size: var(--text-sm);
-}
-.trust-list dd {
-  margin: 0;
-  min-width: 0;
-  font-size: var(--text-sm);
-  overflow-wrap: anywhere;
-}
-.trust-note {
-  margin: var(--space-3) 0 0;
-  color: var(--muted);
-  font-size: var(--text-sm);
-  line-height: 1.5;
-}
-.trust-report {
-  display: inline-flex;
-  margin-top: var(--space-3);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
-}
+.entity-byline a { color: var(--color-action); text-decoration: underline; text-underline-offset: 2px; }
 
 /* declutter-3 T17 (B5d): Save/Share dời từ hero về sidebar — 2 nút chia đều hàng.
    Sidebar stack dưới article trên mobile nên mọi viewport đều với tới. */

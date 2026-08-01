@@ -46,6 +46,7 @@ describe('ImageDisclosure', () => {
     expect(description.text()).toBe(aiDisclosure.entity_ai.full_disclosure)
     expect(wrapper.get('[data-short-label]').text()).toBe(aiDisclosure.entity_ai.short_label)
     expect(wrapper.get('[data-disclosure-target]').attributes('aria-describedby')).toBe('entity-abc-hero-0')
+    expect(wrapper.get('[data-disclosure-target]').attributes('data-color-role')).toBe('disclosure')
   })
 
   it('renders the exact placeholder disclosure when no short label exists', async () => {
@@ -140,6 +141,25 @@ describe('ImageDisclosure', () => {
 
     expect(wrapper.find('.ehp-note').exists()).toBe(false)
     expect(wrapper.get('[role="img"]').attributes('aria-label')).toBe(placeholderDescriptor.alt)
+    expect(wrapper.get('[role="img"]').attributes('data-material-accent')).toBe('neutral')
+  })
+
+  it('derives placeholder material from category rather than image metadata', async () => {
+    const wrapper = await mountSuspended(EntityHeroPlaceholder, {
+      props: { id: 'entity-craft', cat: 'craft', descriptor: aiDescriptor },
+    })
+
+    expect(wrapper.get('[role="img"]').attributes('data-material-accent')).toBe('clay')
+
+    await wrapper.setProps({
+      descriptor: {
+        ...aiDescriptor,
+        url: '/img/green-orchard.webp',
+        alt: 'Ảnh minh họa có sắc xanh vườn cây',
+      },
+    })
+
+    expect(wrapper.get('[role="img"]').attributes('data-material-accent')).toBe('clay')
   })
 })
 

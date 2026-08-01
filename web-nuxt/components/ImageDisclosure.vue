@@ -24,7 +24,7 @@ const disclosureVisible = computed(() => props.presentation === 'full' || props.
 </script>
 
 <template>
-  <span class="image-disclosure" data-disclosure-target :aria-describedby="disclosureId">
+  <span class="image-disclosure" data-disclosure-target data-color-role="disclosure" :aria-describedby="disclosureId">
     <span v-if="showShortLabel" data-short-label data-image-disclosure>{{ descriptor.short_label }}</span>
     <span
       :id="disclosureId"
@@ -41,8 +41,13 @@ const disclosureVisible = computed(() => props.presentation === 'full' || props.
   display: inline-flex;
   align-items: center;
   gap: .35em;
+  padding: .2em .45em;
+  color: var(--color-text-muted);
   font-size: var(--text-2xs, .72rem);
   line-height: 1.3;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
 }
 .image-disclosure-sr-only {
   position: absolute;
@@ -55,5 +60,5 @@ const disclosureVisible = computed(() => props.presentation === 'full' || props.
   white-space: nowrap;
   border: 0;
 }
-.image-disclosure-credit { color: var(--muted); }
+.image-disclosure-credit { color: var(--color-text-muted); }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="ehp" :class="`cat-${cat}`" :style="{ backgroundImage: bg }" role="img" :aria-label="descriptor?.alt || `Minh hoạ đồ hoạ ${label}`">
+  <div class="ehp" :class="`cat-${cat}`" :style="{ backgroundImage: bg }" :data-material-accent="resolvedMaterialAccent" role="img" :aria-label="descriptor?.alt || `Minh hoạ đồ hoạ ${label}`">
     <span class="ehp-grain" aria-hidden="true"></span>
     <span class="ehp-wash" aria-hidden="true"></span>
     <span class="ehp-motif" aria-hidden="true" v-html="motif"></span>
@@ -11,21 +11,24 @@
 import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
 import type { ImageDescriptor } from '~/types/image'
 import { aiDisclosure } from '~/utils/aiDisclosure'
+import { resolveRegionalAccent, type RegionalAccent } from '~/utils/regionalColor'
 
 const props = withDefaults(defineProps<{
   id?: string | number
   cat?: string
   label?: string
   descriptor?: ImageDescriptor
+  materialAccent?: RegionalAccent
 }>(), {
   cat: 'place',
   label: '',
 })
 
-const seed = computed(() => props.id ?? props.descriptor?.alt ?? 'placeholder')
+const seed = computed(() => props.id ?? props.cat ?? 'placeholder')
 const bg = computed(() => generateCategoryPlaceholder(seed.value, props.cat))
 const motif = computed(() => generateCategoryIcon(props.cat))
 const label = computed(() => props.label || '')
+const resolvedMaterialAccent = computed(() => props.materialAccent || resolveRegionalAccent(props.cat))
 const disclosure = computed(() => props.descriptor?.full_disclosure || aiDisclosure.placeholder.full_disclosure)
 </script>
 
@@ -37,9 +40,8 @@ const disclosure = computed(() => props.descriptor?.full_disclosure || aiDisclos
 .ehp-grain { position: absolute; inset: 0; z-index: 1; pointer-events: none;
   background-image: var(--grain); background-size: 140px 140px; opacity: .07; }
 .dark .ehp-grain { opacity: .1; }
-/* horizontal river→amber→clay sediment wash, low opacity, anchored bottom */
 .ehp-wash { position: absolute; inset: 0; z-index: 1; pointer-events: none;
-  background: linear-gradient(105deg, rgba(51,100,110,.28) 0%, rgba(232,163,61,.14) 50%, rgba(156,61,34,.24) 100%);
+  background: linear-gradient(105deg, color-mix(in srgb, var(--tri-region-material-accent) 30%, transparent), transparent 54%, color-mix(in srgb, var(--tri-region-material-accent) 22%, transparent));
   mix-blend-mode: soft-light; }
 /* oversized off-centre category motif bleeding off the right edge */
 .ehp-motif { position: absolute; right: -6%; bottom: -8%; z-index: 1; width: 46%; max-width: 320px;

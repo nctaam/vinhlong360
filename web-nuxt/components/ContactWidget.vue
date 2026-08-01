@@ -69,13 +69,13 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
 
       <!-- CTA buttons -->
       <div class="cw-ctas">
-        <a v-if="zalo" :href="`https://zalo.me/${zalo}`" target="_blank" rel="noopener" class="cw-btn cw-btn-primary" :aria-label="`Nhắn Zalo cho ${entity.name}`">
+        <a v-if="zalo" :href="`https://zalo.me/${zalo}`" target="_blank" rel="noopener" class="cw-btn cw-btn-primary" data-color-role="action-primary" :aria-label="`Nhắn Zalo cho ${entity.name}`">
           <IconLine name="message" class="cw-icon" /> Nhắn Zalo
         </a>
-        <a v-if="phone" :href="`tel:${phone}`" class="cw-btn cw-btn-secondary" :aria-label="`Gọi điện cho ${entity.name}`">
+        <a v-if="phone" :href="`tel:${phone}`" class="cw-btn cw-btn-secondary" data-color-role="action-secondary" :aria-label="`Gọi điện cho ${entity.name}`">
           <IconLine name="phone" class="cw-icon" /> Gọi điện
         </a>
-        <NuxtLink v-if="!hasContact" :to="mapUrl" class="cw-btn cw-btn-secondary">
+        <NuxtLink v-if="!hasContact" :to="mapUrl" class="cw-btn cw-btn-secondary" data-color-role="action-secondary">
           <IconLine name="pin" class="cw-icon" /> Xem bản đồ
         </NuxtLink>
       </div>
@@ -159,7 +159,7 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
   width: calc(100% + var(--space-4));
 }
 .cw-copyable:hover { background: var(--bg-alt); }
-.cw-copyable:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.cw-copyable:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .cw-check {
   flex-shrink: 0;
   font-size: var(--text-xs);
@@ -171,15 +171,15 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
 .cw-copyable.copied .cw-check { opacity: 1; transform: scale(1); }
 .cw-copyable.copied .cw-icon { opacity: .4; }
 
-/* Divider — tri-province hairline (river→amber→clay), the widget's sediment-thread beat */
+/* A single semantic rule keeps contact actions distinct from material accents. */
 .cw-divider {
   height: 1px;
   margin: var(--space-1) 0;
-  background: linear-gradient(90deg, var(--river-600), var(--amber-600) 52%, var(--clay-600));
+  background: var(--color-border);
   opacity: .5;
 }
 .dark .cw-divider {
-  background: linear-gradient(90deg, #74ABB5, var(--amber-500) 52%, var(--clay-400));
+  background: var(--color-border);
   opacity: .6;
 }
 
@@ -206,29 +206,29 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
   min-height: 44px;
 }
 .cw-btn:focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
 .cw-btn:active:not(:disabled) { transform: scale(0.97); }
 
 .cw-btn-primary {
-  background: var(--primary);
-  color: var(--text-on-dark, var(--white));
+  background: var(--color-action);
+  color: var(--color-on-action);
 }
 .cw-btn-primary:hover {
-  background: var(--primary-dark, var(--primary));
+  background: var(--color-action-hover);
   box-shadow: var(--shadow-sm);
 }
 
 /* Secondary — hairline + ghost fill, not a solid box (anti-slop: hairline over heavy border+shadow) */
 .cw-btn-secondary {
-  background: rgba(var(--primary-rgb), 0.06);
-  color: var(--primary);
-  border-color: rgba(var(--primary-rgb), 0.22);
+  background: var(--color-action-surface);
+  color: var(--color-action);
+  border-color: var(--color-action-border);
 }
 .cw-btn-secondary:hover {
-  background: rgba(var(--primary-rgb), 0.11);
-  border-color: rgba(var(--primary-rgb), 0.32);
+  background: var(--color-action-surface-hover);
+  border-color: var(--color-action);
 }
 
 /* Website link */
@@ -242,7 +242,7 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.cw-website:hover { color: var(--primary); text-decoration: underline; }
+.cw-website:hover { color: var(--color-action); text-decoration: underline; }
 
 /* Mobile: fixed bottom bar */
 @media (max-width: 767px) {
