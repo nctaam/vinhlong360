@@ -17,7 +17,12 @@
         class="home-decision-ledger__row"
         data-home-decision-entry
       >
-        <NuxtLink :to="entry.to" class="home-decision-ledger__link" :data-tone="entry.tone">
+        <NuxtLink
+          :to="entry.to"
+          class="home-decision-ledger__link"
+          :data-tone="entry.tone"
+          :data-material-accent="resolveRegionalAccent(entry.tone)"
+        >
           <span class="home-decision-ledger__eyebrow">{{ entry.eyebrow }}</span>
           <strong class="home-decision-ledger__title">{{ entry.title }}</strong>
           <span class="home-decision-ledger__text">{{ entry.text }}</span>
@@ -30,6 +35,7 @@
 
 <script setup lang="ts">
 import type { HomeDecisionEntry } from '~/utils/homeNocturnePresentation'
+import { resolveRegionalAccent } from '~/utils/regionalColor'
 
 defineProps<{ entries: readonly HomeDecisionEntry[] }>()
 </script>

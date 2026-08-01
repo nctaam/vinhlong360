@@ -1,4 +1,5 @@
 import { entityPath } from '~/utils/routePaths'
+import type { RegionalAccent } from '~/utils/regionalColor'
 
 export type HomeDecisionTone = 'event' | 'season' | 'planner' | 'food' | 'map'
 
@@ -17,7 +18,7 @@ export type HomeCategoryLink = {
   hint: string
   to: string
   icon: string
-  accent: string
+  accent: RegionalAccent
   countLabel?: string
 }
 
@@ -70,9 +71,9 @@ const CATEGORY_DEFINITIONS: readonly CategoryDefinition[] = [
   { group: 'primary', icon: 'leaf', label: 'Du lịch', hint: 'Vườn, sông, làng nghề', to: '/du-lich', accent: 'leaf', countKey: 'experiences', key: 'du-lich' },
   { group: 'primary', icon: 'bowl', label: 'Ẩm thực', hint: 'Quán ngon, món bản địa', to: '/kham-pha/am-thuc', accent: 'amber', countKey: 'dishes', key: 'am-thuc' },
   { group: 'primary', icon: 'gift', label: 'OCOP', hint: 'Đặc sản làm quà', to: '/ocop', accent: 'clay', countKey: 'products', key: 'ocop' },
-  { group: 'primary', icon: 'lantern', label: 'Lễ hội', hint: 'Lịch và văn hóa địa phương', to: '/le-hoi', accent: 'river', countKey: 'events', key: 'le-hoi' },
-  { group: 'utility', icon: 'home', label: 'Lưu trú', hint: 'Nghỉ lại theo khu vực', to: '/luu-tru', accent: 'leaf', key: 'luu-tru' },
-  { group: 'utility', icon: 'compass', label: 'Lịch trình', hint: 'Gợi ý sẵn 1–3 ngày', to: '/lich-trinh', accent: 'amber', key: 'lich-trinh' },
+  { group: 'primary', icon: 'lantern', label: 'Lễ hội', hint: 'Lịch và văn hóa địa phương', to: '/le-hoi', accent: 'amber', countKey: 'events', key: 'le-hoi' },
+  { group: 'utility', icon: 'home', label: 'Lưu trú', hint: 'Nghỉ lại theo khu vực', to: '/luu-tru', accent: 'river', key: 'luu-tru' },
+  { group: 'utility', icon: 'compass', label: 'Lịch trình', hint: 'Gợi ý sẵn 1–3 ngày', to: '/lich-trinh', accent: 'river', key: 'lich-trinh' },
   { group: 'utility', icon: 'map', label: 'Bản đồ', hint: 'Lọc theo vùng', to: '/ban-do', accent: 'river', countKey: 'areas', key: 'ban-do' },
 ]
 

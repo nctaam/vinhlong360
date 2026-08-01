@@ -1,15 +1,25 @@
 <template>
-  <div class="home" data-home-pilot="nocturne-b1">
+  <div
+    class="home"
+    data-home-pilot="nocturne-b1"
+    data-color-system="tri-region-v1"
+    data-page-recipe="homepage"
+    data-material-accent="clay"
+  >
     <!-- 1. Hero — dynamic tagline + search + stats inline -->
     <section class="hero" aria-label="Giới thiệu" data-home-section="hero">
       <HeroIllustration />
       <div class="hero-scrim" aria-hidden="true"></div>
       <div class="hero-inner">
         <div class="hero-main hero-enter">
-          <span class="hero-kicker"><span class="hero-kicker-dot" aria-hidden="true"></span>{{ ss('homepage.hero_kicker', 'Du lịch & Đặc sản Vĩnh Long') }}</span>
+          <span class="hero-kicker" data-color-role="brand"><span class="hero-kicker-dot" aria-hidden="true"></span>{{ ss('homepage.hero_kicker', 'Du lịch & Đặc sản Vĩnh Long') }}</span>
           <h1>{{ seasonalTagline }}</h1>
           <p class="hero-sub">{{ ss('homepage.hero_subtitle', 'Tìm điểm đến, món ngon, lễ hội và lịch trình phù hợp cho chuyến đi Vĩnh Long hôm nay.') }}</p>
-          <SearchAutocomplete class="hero-search hero-ac" :placeholder="ss('homepage.search_placeholder', 'Tìm điểm đến, món ngon, lịch trình…')" />
+          <SearchAutocomplete
+            class="hero-search hero-ac"
+            data-color-role="action-primary"
+            :placeholder="ss('homepage.search_placeholder', 'Tìm điểm đến, món ngon, lịch trình…')"
+          />
           <NuxtLink to="/ban-do?near=1" class="hero-nearby"><IconLine name="pin" /> Tìm quanh tôi</NuxtLink>
         </div>
         <HomeFeatureDossier
@@ -23,6 +33,7 @@
           :disclosure-id="heroFeatureDisclosureId"
           :detail-to="entityPath(heroFeature.id)"
           :planner-to="plannerAddPath(heroFeature.id)"
+          :source-tier="resolveSourceTier(heroFeature?.quality?.source_tier)"
         />
       </div>
     </section>
@@ -67,10 +78,10 @@
     />
 
     <!-- 2. "Đang diễn ra" — upcoming events + seasonal -->
-    <section v-if="upcomingEventList.length || seasonalList.length" class="block reveal" aria-label="Sự kiện và lễ hội" data-home-section="events-seasonal">
+    <section v-if="upcomingEventList.length || seasonalList.length" class="block reveal" aria-label="Sự kiện và lễ hội" data-home-section="events-seasonal" data-material-accent="amber">
       <div class="section-head">
         <div class="sh-text">
-          <h2>Đang <em class="ac-clay">diễn ra</em></h2>
+          <h2>Đang <em class="ac-amber">diễn ra</em></h2>
           <p class="sh-sub">Sự kiện &amp; lễ hội sắp tới</p>
         </div>
         <NuxtLink class="see-all" to="/su-kien">Xem lịch →</NuxtLink>
@@ -80,7 +91,7 @@
            "Có lịch gần nhất"; 3 mini giữ nhịp lịch, không lặp -->
       <div v-if="upcomingEventList.length" class="happening-rest">
         <NuxtLink v-for="ev in upcomingEventList" :key="ev.id" :to="entityPath(ev.id)" class="event-mini">
-          <div class="ec-date ec-date-sm">
+          <div class="ec-date ec-date-sm" data-material-accent="amber">
             <span class="ec-day">{{ formatEventDay(ev) }}</span>
             <span class="ec-month">{{ formatEventMonth(ev) }}</span>
           </div>
@@ -94,7 +105,7 @@
       </div>
 
       <div v-if="seasonalList.length" class="happening-section">
-        <p class="happening-label"><IconLine name="flame" /> Đang vào mùa tháng {{ currentMonth }}</p>
+        <p class="happening-label" data-material-accent="amber"><IconLine name="flame" /> Đang vào mùa tháng {{ currentMonth }}</p>
         <div class="scroll-row" role="region" aria-label="Đặc sản theo mùa" tabindex="0">
           <EntityCard v-for="e in seasonalList" :key="e.id" :entity="e" :season-filter="String(currentMonth)" />
         </div>
@@ -102,7 +113,7 @@
     </section>
 
     <!-- 2b. Feature — photo-led editorial block (Trải nghiệm miệt vườn) -->
-    <section class="block reveal" aria-label="Trải nghiệm nổi bật" data-home-section="editorial-feature">
+    <section class="block reveal" aria-label="Trải nghiệm nổi bật" data-home-section="editorial-feature" data-material-accent="leaf">
       <EntityFeature
         :image="FEATURE_EXPERIENCE_IMAGE"
         v-bind="FEATURE_EXPERIENCE"
@@ -148,8 +159,8 @@
         <div v-if="topDishesList.length" class="home-food-ledger">
           <h3 class="dishes-heading">⭐ Quán ngon nổi bật</h3>
           <div class="dishes-list">
-            <NuxtLink v-for="d in topDishesList" :key="d.id" :to="entityPath(d.id)" class="dish-item">
-              <span v-if="Number(d.attributes?.rating) > 0" class="dish-rating-badge">
+            <NuxtLink v-for="d in topDishesList" :key="d.id" :to="entityPath(d.id)" class="dish-item" data-material-accent="amber">
+              <span v-if="Number(d.attributes?.rating) > 0" class="dish-rating-badge" data-material-accent="amber">
                 <span class="dish-star">★</span>
                 <span class="dish-score">{{ formatRating(d.attributes?.rating || 0) }}</span>
               </span>
@@ -196,10 +207,11 @@
         data-source-class="user-uploaded"
         data-entity-image-policy="no-image-invariant"
         data-home-section="community"
+        data-material-accent="neutral"
       >
         <div class="section-head">
           <div class="sh-text">
-            <h2>Từ <em class="ac-leaf">cộng đồng</em></h2>
+            <h2>Từ <em class="ac-neutral">cộng đồng</em></h2>
             <p class="sh-sub">Trải nghiệm thật, mẹo hay từ người đi trước</p>
           </div>
           <NuxtLink class="see-all" to="/cong-dong">Đọc thêm chuyện người đi trước →</NuxtLink>
@@ -241,7 +253,7 @@
           <NuxtLink to="/cong-dong" class="btn btn-outline"><IconLine name="message" /> Tham gia cộng đồng</NuxtLink>
         </div>
       </section>
-      <section v-else class="block reveal" aria-label="Cộng đồng" data-home-section="community">
+      <section v-else class="block reveal" aria-label="Cộng đồng" data-home-section="community" data-material-accent="neutral">
         <EmptyState tone="empty" title="Cộng đồng đang khởi động"
           message="Chưa có bài viết nổi bật tuần này — bạn là người kể chuyện đầu tiên nhé!">
           <template #actions>
@@ -296,6 +308,7 @@ import StorySpread from '~/components/home/StorySpread.vue'
 import ImageDisclosure from '~/components/ImageDisclosure.vue'
 import { describeEntityImages, describeEntityPlaceholder } from '~/utils/imageDescriptors'
 import { createHomeNocturnePresentation } from '~/utils/homeNocturnePresentation'
+import { resolveSourceTier } from '~/utils/regionalColor'
 import { aiDisclosure } from '~/utils/aiDisclosure'
 import type { ImageDescriptor } from '~/types/image'
 import { useId } from 'vue'
@@ -670,13 +683,13 @@ html.js .home .hero-feature { opacity: 0; transform: translateY(16px); animation
 .home .hero-kicker::before {
   content: ""; flex: 0 0 auto;
   width: clamp(26px, 6vw, 54px); height: 1.5px;
-  background: var(--accent);
+  background: var(--color-brand);
 }
 .home .hero-kicker-dot { display: none; }
 @keyframes hero-dot-pulse {
-  0% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), .55); }
-  70% { box-shadow: 0 0 0 7px rgba(var(--accent-rgb), 0); }
-  100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0); }
+  0% { box-shadow: 0 0 0 0 rgba(var(--color-brand-rgb), .55); }
+  70% { box-shadow: 0 0 0 7px rgba(var(--color-brand-rgb), 0); }
+  100% { box-shadow: 0 0 0 0 rgba(var(--color-brand-rgb), 0); }
 }
 
 /* Display headline — editorial serif, cinematic scale */
@@ -733,7 +746,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   width: 20px;
   height: 20px;
   transform: translateY(-50%);
-  color: var(--primary-fg);
+  color: var(--color-action);
   opacity: .9;
   pointer-events: none;
   background: currentColor;
@@ -741,8 +754,8 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='none' stroke='black' stroke-width='2.35' stroke-linecap='round' stroke-linejoin='round' d='m21 21-4.34-4.34M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 .home .hero-search:focus-within {
-  border-color: rgba(var(--accent-rgb), .72);
-  box-shadow: 0 12px 40px rgba(var(--black-rgb),.22), 0 0 0 4px rgba(var(--accent-rgb), .22);
+  border-color: var(--color-focus);
+  box-shadow: 0 12px 40px rgba(var(--black-rgb),.22), 0 0 0 4px color-mix(in srgb, var(--color-focus) 22%, transparent);
   transform: translateY(-1px);
 }
 .home .hero-search input { border-color: transparent; background: var(--card); }
@@ -762,7 +775,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   text-decoration: none; text-shadow: 0 1px 6px rgba(var(--black-rgb),.35);
 }
 .home .hero-nearby:hover { text-decoration: underline; text-underline-offset: 3px; }
-.home .hero-nearby:focus-visible { outline: 2px solid var(--white); outline-offset: 3px; border-radius: 4px; }
+.home .hero-nearby:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; border-radius: 4px; }
 
 /* ═══════════════════════════════════════════════════
    SECTION RHYTHM
@@ -776,23 +789,18 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .home .section-head h2::before {
   content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
   width: 4px; height: 1.05em; border-radius: var(--radius-full);
-  /* "Lõi trầm tích" — cùng câu chuyện phù sa: river→amber→clay xếp lớp dọc. */
-  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+  background: var(--color-brand);
 }
-/* Fraunces cất tiếng: chữ nghiêng "điểm nhấn" trong tiêu đề mục, tô theo 1 trong 3 tỉnh
-   (clay=Vĩnh Long · leaf=Bến Tre · river=Trà Vinh · amber=mùa/đặc sản). Tận dụng bộ chữ
-   editorial sẵn có thay vì dùng serif "phẳng". */
+/* Fraunces cất tiếng: chữ nghiêng trong tiêu đề dùng accent vật liệu theo ngữ cảnh,
+   không gắn một theme riêng cho từng địa phương. */
 .home .section-head h2 em, .home .spot-name em {
   font-family: var(--font-editorial); font-style: italic; font-weight: 600;
 }
-.home .ac-clay  { color: var(--clay-600); }
-.home .ac-leaf  { color: var(--leaf-700); }
-.home .ac-river { color: var(--river-600); }
-.home .ac-amber { color: var(--amber-700); }
-.dark .home .ac-clay  { color: var(--clay-400); }
-.dark .home .ac-leaf  { color: #64BE93; }
-.dark .home .ac-river { color: #74ABB5; }
-.dark .home .ac-amber { color: var(--amber-500); }
+.home .ac-clay  { color: var(--color-material-clay); }
+.home .ac-leaf  { color: var(--color-material-leaf); }
+.home .ac-river { color: var(--color-material-river); }
+.home .ac-amber { color: var(--color-material-amber); }
+.home .ac-neutral { color: var(--color-material-neutral); }
 .home .section-head .sh-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .home .sh-sub { padding-left: var(--space-4); margin: 0; font-size: var(--text-sm); font-weight: var(--weight-normal); color: var(--muted); line-height: var(--leading-snug); max-width: 62ch; }
 /* Tight variant — itineraries + personalization rows: smaller heading, less bottom margin,
@@ -804,12 +812,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .home .block + .block::before {
   content: ""; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
   width: min(100%, var(--maxw)); height: 7px;
-  /* Phù sa — dấu ấn chữ ký: ba dòng sông (sông Tiền/Hậu/Cổ Chiên) bồi thành lớp trầm tích.
-     3 hairline river→amber→clay, thon 2 đầu để không thành "gạch" cứng. */
-  background:
-    linear-gradient(90deg, transparent, var(--river-600) 26%, var(--river-600) 74%, transparent) top/100% 1px no-repeat,
-    linear-gradient(90deg, transparent, var(--amber-600) 30%, var(--amber-600) 70%, transparent) center/100% 1px no-repeat,
-    linear-gradient(90deg, transparent, var(--clay-600) 26%, var(--clay-600) 74%, transparent) bottom/100% 1.5px no-repeat;
+  background: linear-gradient(90deg, transparent, var(--color-material-clay) 26%, var(--color-material-clay) 74%, transparent) center/100% 1px no-repeat;
   opacity: .5;
 }
 .dark .home .block + .block::before { opacity: .62; }
@@ -835,12 +838,12 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
     -webkit-overflow-scrolling: touch; padding-bottom: var(--space-2);
     padding-inline: var(--space-4); margin-inline: calc(-1 * var(--space-4));
     scrollbar-width: none;
-    mask-image: linear-gradient(to right, transparent, #000 var(--space-4), #000 88%, transparent);
-    -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--space-4), #000 88%, transparent);
+    mask-image: linear-gradient(to right, transparent, var(--color-mask-opaque) var(--space-4), var(--color-mask-opaque) 88%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, var(--color-mask-opaque) var(--space-4), var(--color-mask-opaque) 88%, transparent);
   }
   .home .scroll-row::-webkit-scrollbar { display: none; }
-  .home .scroll-row:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-md); }
-  .home .scroll-row:hover, .home .scroll-row:focus-within { mask-image: linear-gradient(to right, transparent, #000 var(--space-4), #000 100%); -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--space-4), #000 100%); }
+  .home .scroll-row:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-md); }
+  .home .scroll-row:hover, .home .scroll-row:focus-within { mask-image: linear-gradient(to right, transparent, var(--color-mask-opaque) var(--space-4), var(--color-mask-opaque) 100%); -webkit-mask-image: linear-gradient(to right, transparent, var(--color-mask-opaque) var(--space-4), var(--color-mask-opaque) 100%); }
   .home .scroll-row > * { flex: 0 0 280px; scroll-snap-align: start; }
 }
 
@@ -851,9 +854,9 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .happening-rest { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2); }
 @media (max-width: 760px) { .happening-rest { grid-template-columns: 1fr; } }
 .event-mini { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); min-height: 48px; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle); }
-.event-mini:hover { border-color: var(--primary-fg); transform: translateX(2px); }
+.event-mini:hover { border-color: var(--color-action-border); transform: translateX(2px); }
 .ec-date-sm { min-width: 46px; padding: var(--space-2); }
-.ec-date { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 52px; padding: var(--space-2); background: var(--primary); border-radius: var(--radius-sm); color: var(--text-on-dark, var(--white)); }
+.ec-date { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 52px; padding: var(--space-2); background: color-mix(in srgb, var(--color-material-amber) 14%, transparent); border-radius: var(--radius-sm); color: color-mix(in srgb, var(--color-material-amber) 70%, var(--color-text)); }
 .ec-day { font-size: var(--text-xl); font-weight: var(--weight-extrabold); line-height: 1; font-variant-numeric: tabular-nums; }
 .ec-month { font-size: var(--text-xs); font-weight: var(--weight-semibold); opacity: .9; }
 .ec-info { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
@@ -862,12 +865,11 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .event-mini h3 { margin: 0; font-size: var(--text-sm); font-weight: var(--weight-semibold); line-height: var(--leading-snug); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .ec-countdown {
   display: inline-flex; align-items: center; gap: var(--space-1);
-  font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--amber-700);
-  background: rgba(154, 109, 30, .08); padding: var(--space-1) var(--space-2); border-radius: var(--radius-full);
+  font-size: var(--text-xs); font-weight: var(--weight-bold); color: color-mix(in srgb, var(--color-material-amber) 70%, var(--color-text));
+  background: color-mix(in srgb, var(--color-material-amber) 8%, transparent); padding: var(--space-1) var(--space-2); border-radius: var(--radius-full);
 }
-.ec-today { color: var(--error); }
-.happening-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--primary-fg); margin: var(--space-4) 0 var(--space-2); }
-.dark .happening-label { color: var(--primary-fg-strong); }
+.ec-today { color: var(--color-error); }
+.happening-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: color-mix(in srgb, var(--color-material-amber) 70%, var(--color-text)); margin: var(--space-4) 0 var(--space-2); }
 .happening-section { margin-top: var(--space-1); }
 
 /* ═══════════════════════════════════════════════════
@@ -902,7 +904,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   display: flex; flex-direction: column; justify-content: center; gap: var(--space-3); min-width: 0;
 }
 @media (max-width: 760px) { .spot-body { padding: var(--space-5); } }
-.spot-kicker { font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: .05em; color: var(--primary-fg-strong); }
+.spot-kicker { font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: .05em; color: var(--color-brand); }
 .spot-body .spot-name { margin: 0; font-size: clamp(1.5rem, 3.2vw, 2.1rem); line-height: var(--leading-snug); letter-spacing: -.01em; }
 .spot-sum { margin: 0; color: var(--text-muted); line-height: var(--leading-relaxed); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
 .spot-cta { align-self: flex-start; margin-top: var(--space-2); }
@@ -921,22 +923,22 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   text-decoration: none; color: var(--ink);
   transition: border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle), box-shadow .25s var(--ease-out);
 }
-.dish-item:hover { border-color: var(--primary-fg); transform: translateX(4px); box-shadow: var(--shadow-sm); }
+.dish-item:hover { border-color: var(--color-action-border); transform: translateX(4px); box-shadow: var(--shadow-sm); }
 .dish-item:active { transform: translateX(1px) scale(.98); transition-duration: .1s; }
-.dish-item:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.dish-item:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .dish-rating-badge {
   display: flex; align-items: center; gap: 3px; flex-shrink: 0;
   padding: var(--space-1) var(--space-2);
-  background: var(--accent-container);
+  background: color-mix(in srgb, var(--color-material-amber) 14%, transparent);
   border-radius: var(--radius-sm); font-weight: var(--weight-extrabold);
 }
-.dish-star { color: var(--accent); font-size: var(--text-sm); }
-.dish-score { color: var(--on-accent-container); font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
+.dish-star { color: var(--color-material-amber); font-size: var(--text-sm); }
+.dish-score { color: var(--color-text); font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
 .dish-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .dish-name { font-size: var(--text-sm); font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dish-reviews { font-size: var(--text-xs); color: var(--muted); }
 .dish-arrow { color: var(--muted); font-size: var(--text-sm); flex-shrink: 0; transition: color .2s; }
-.dish-item:hover .dish-arrow { color: var(--primary-fg); }
+.dish-item:hover .dish-arrow { color: var(--color-action); }
 .dark .dish-item { background: var(--card); border-color: var(--line); }
 .dark .dish-item:hover { border-color: rgba(var(--white-rgb),.1); }
 
@@ -944,7 +946,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
    COMMUNITY — compact with trending tags
    ═══════════════════════════════════════════════════ */
 .community-stats-line { font-size: var(--text-sm); color: var(--muted); margin: 0 0 var(--space-3); }
-.community-stats-line strong { color: var(--primary-fg); font-weight: var(--weight-bold); }
+.community-stats-line strong { color: var(--color-source-community); font-weight: var(--weight-bold); }
 
 .trending-tags { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin: 0 0 var(--space-3); }
 .tt-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink); }
@@ -952,26 +954,26 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   display: inline-flex; align-items: center;
   padding: var(--space-2) var(--space-3);
   background: var(--bg-alt); border: .5px solid var(--line); border-radius: var(--radius-full);
-  font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--primary-fg);
+  font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--color-source-community);
   text-decoration: none; min-height: 44px;
   transition: background .2s var(--ease-out), border-color .2s var(--ease-out);
 }
-.tt-chip:hover { background: var(--bg-warm); border-color: var(--primary-fg); }
+.tt-chip:hover { background: var(--bg-warm); border-color: var(--color-action-border); }
 .dark .tt-chip { background: rgba(var(--white-rgb),.06); border-color: rgba(var(--white-rgb),.1); }
 .dark .tt-chip:hover { background: rgba(var(--white-rgb),.1); }
 
 /* declutter-3 T16 (B1-6): dàn chip leaderboard → 1 dòng teaser */
 .home-leaders-teaser { display: flex; align-items: center; gap: var(--space-2); margin: 0 0 var(--space-4); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
-.home-leaders-teaser a { color: var(--primary-fg); text-decoration: none; }
+.home-leaders-teaser a { color: var(--color-action); text-decoration: none; }
 .home-leaders-teaser a:hover { text-decoration: underline; }
 
 .cm-card { display: flex; flex-direction: column; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-xs); text-decoration: none; color: var(--ink); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
 .cm-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--border); }
 .cm-card:active { transform: scale(.98); transition-duration: .1s; }
-.cm-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.cm-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .cm-body { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3) var(--space-4) var(--space-4); }
 .cm-author { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
-.cm-avatar { width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--text-on-dark, var(--white)); font-size: var(--text-xs); font-weight: var(--weight-semibold); flex-shrink: 0; }
+.cm-avatar { width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--color-source-community-surface); color: var(--color-source-community); font-size: var(--text-xs); font-weight: var(--weight-semibold); flex-shrink: 0; }
 .cm-name { font-size: var(--text-sm); font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cm-type { margin-left: auto; font-size: var(--text-xs); color: var(--muted); background: var(--bg-alt); padding: 1px 8px; border-radius: var(--radius-full); white-space: nowrap; flex-shrink: 0; }
 .cm-content { margin: 0; font-size: var(--text-sm); color: var(--ink-700); line-height: var(--leading-snug); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
@@ -1002,19 +1004,18 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
    ═══════════════════════════════════════════════════ */
 .dark .home .hero-scrim {
   background:
-    radial-gradient(120% 95% at 88% 6%, rgba(var(--accent-rgb),.12) 0%, rgba(var(--accent-rgb),.03) 34%, transparent 60%),
-    radial-gradient(90% 70% at 6% 100%, rgba(var(--primary-rgb),.12) 0%, transparent 58%),
+    radial-gradient(120% 95% at 88% 6%, color-mix(in srgb, var(--color-material-clay) 12%, transparent) 0%, color-mix(in srgb, var(--color-material-clay) 3%, transparent) 34%, transparent 60%),
+    radial-gradient(90% 70% at 6% 100%, color-mix(in srgb, var(--color-material-clay) 12%, transparent) 0%, transparent 58%),
     linear-gradient(to top, rgba(var(--black-rgb),.30) 0%, rgba(var(--black-rgb),.04) 28%, transparent 50%);
 }
 .dark .home .hero-kicker { background: rgba(var(--white-rgb),.12); border-color: rgba(var(--white-rgb),.22); }
 .dark .home .hero-search { background: rgba(var(--white-rgb),.22); border-color: rgba(var(--white-rgb),.38); }
 .dark .home .hero-search input { background: var(--bg-warm); color: var(--ink); }
 .dark .home .hero-search input::placeholder { color: rgba(var(--white-rgb),.50); }
-.dark .home .hero-search:focus-within { border-color: rgba(var(--accent-rgb), .7); }
-.dark .home .section-head h2::before { background: linear-gradient(180deg, var(--accent) 0%, var(--primary-fg) 100%); }
+.dark .home .hero-search:focus-within { border-color: var(--color-focus); }
+.dark .home .section-head h2::before { background: var(--color-brand); }
 .dark .home .block + .block::before { background: linear-gradient(90deg, transparent, var(--line) 22%, var(--line) 78%, transparent); opacity: .6; }
-.dark .ec-countdown { color: var(--accent-text); }
-.dark .ec-today { color: var(--secondary-fg); }
+.dark .ec-today { color: var(--color-error); }
 
 /* ═══════════════════════════════════════════════════
    REDUCED TRANSPARENCY / MOTION
@@ -1050,7 +1051,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 }
 .fy-chip:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); border-color: var(--border); }
 .fy-chip:active { transform: translateY(-1px) scale(.98); transition-duration: .1s; }
-.fy-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.fy-chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .fy-media { flex: 0 0 60px; width: 60px; display: flex; flex-direction: column; gap: 2px; align-self: stretch; }
 .fy-thumb {
   flex: 0 0 60px; width: 60px; height: 60px;
@@ -1064,7 +1065,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .fy-icon { width: 30px; height: 30px; opacity: .8; color: var(--muted); }
 .fy-icon :deep(svg) { width: 100%; height: 100%; }
 .fy-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.fy-type { font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: .04em; color: var(--accent-text, var(--primary-fg)); }
+.fy-type { font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: .04em; color: var(--color-material-clay); }
 .fy-name { font-size: var(--text-sm); font-weight: var(--weight-bold); line-height: var(--leading-snug); color: var(--ink); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .dark .fy-chip { background: var(--card); border-color: var(--line); }
 .dark .fy-chip:hover { border-color: rgba(var(--white-rgb),.1); }

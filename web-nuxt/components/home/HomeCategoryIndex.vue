@@ -10,7 +10,7 @@
         :key="link.key"
         :to="link.to"
         class="home-category-index__primary-link"
-        :data-accent="link.accent"
+        :data-material-accent="link.accent"
       >
         <IconLine :name="link.icon" aria-hidden="true" />
         <span>
@@ -28,7 +28,7 @@
           :key="link.key"
           :to="link.to"
           class="home-category-index__utility-link"
-          :data-accent="link.accent"
+          :data-material-accent="link.accent"
         >
           <IconLine :name="link.icon" aria-hidden="true" />
           <span>

@@ -80,6 +80,15 @@ describe('homepage Nocturne presentation adapter', () => {
       '/ban-do',
     ])
     expect(new Set(links.map(link => link.to)).size).toBe(links.length)
+    expect(links.map(link => link.accent)).toEqual([
+      'leaf',
+      'amber',
+      'clay',
+      'amber',
+      'river',
+      'river',
+      'river',
+    ])
     expect(links.find(link => link.key === 'du-lich')?.countLabel).toBe('5 gợi ý')
     expect(links.find(link => link.key === 'luu-tru')?.countLabel).toBeUndefined()
   })

@@ -86,6 +86,17 @@
   background: transparent;
 }
 
+[data-home-pilot="nocturne-b1"] .home-feature-dossier .framed-dossier__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+[data-home-pilot="nocturne-b1"] .home-feature-dossier [data-source-mark] {
+  margin-inline-start: auto;
+}
+
 [data-home-pilot="nocturne-b1"] .home-feature-dossier__action {
   display: inline-flex;
   align-items: center;
@@ -140,6 +151,14 @@
   min-height: calc(var(--touch-min) + var(--space-5));
   color: var(--color-text);
   text-decoration: none;
+}
+
+[data-home-pilot="nocturne-b1"] :is(
+  .home-decision-ledger__link,
+  .home-category-index__primary-link,
+  .home-category-index__utility-link
+)[data-material-accent] {
+  box-shadow: inset 2px 0 0 var(--tri-region-material-accent);
 }
 
 [data-home-pilot="nocturne-b1"] .home-decision-ledger__eyebrow,

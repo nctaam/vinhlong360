@@ -54,8 +54,8 @@ function homeFixture() {
     month: 8,
     seasonal_tagline: 'Theo dòng sông, gặp mùa trái chín',
     experiences: [
-      { id: 'experience-1', name: 'Vườn ven sông', type: 'experience', summary: 'Đi giữa vườn cây.', images: ['/img/entities/experience-1.webp'] },
-      { id: 'experience-2', name: 'Làng nghề gốm', type: 'experience', summary: 'Nghe chuyện người thợ.', images: ['/img/entities/experience-2.webp'] },
+      { id: 'experience-1', name: 'Vườn ven sông', type: 'experience', summary: 'Đi giữa vườn cây.', images: ['/img/entities/experience-1.webp'], quality: undefined as { source_tier?: string } | undefined },
+      { id: 'experience-2', name: 'Làng nghề gốm', type: 'experience', summary: 'Nghe chuyện người thợ.', images: ['/img/entities/experience-2.webp'], quality: undefined as { source_tier?: string } | undefined },
     ],
     products: [{ id: 'product-1', name: 'Gốm đỏ Mang Thít', type: 'product', summary: 'Một câu chuyện vật liệu.' }],
     upcoming_events: [
@@ -76,6 +76,53 @@ function homeFixture() {
 }
 
 describe('homepage Existing Screen Evolution B1', () => {
+  it('renders the homepage recipe with River action, Clay context and visible source tier', async () => {
+    const fixture = homeFixture()
+    fixture.experiences[0]!.quality = { source_tier: 'official' }
+    apiFetchMock.mockImplementation((url: unknown) => {
+      const path = String(url)
+      if (path === '/api/homepage') return Promise.resolve(fixture)
+      if (path === '/api/feed?limit=10') return Promise.resolve({ posts: [] })
+      if (path === '/api/community/stats') return Promise.resolve(null)
+      if (path === '/api/community/leaderboard?limit=3') return Promise.resolve({ leaders: [] })
+      if (path === '/api/community/trending-tags?limit=8') return Promise.resolve({ tags: [] })
+      if (path.startsWith('/api/entities/popular?')) return Promise.resolve({ entities: [] })
+      return Promise.resolve({})
+    })
+
+    const wrapper = await mountSuspended(HomePage, { global: { stubs: pageStubs } })
+    wrappers.push(wrapper)
+    await flushUi()
+
+    const root = wrapper.get('[data-color-system="tri-region-v1"]')
+    expect(root.attributes('data-page-recipe')).toBe('homepage')
+    expect(root.attributes('data-material-accent')).toBe('clay')
+    expect(wrapper.get('[data-home-search]').attributes('data-color-role')).toBe('action-primary')
+    expect(wrapper.get('[data-source-mark]').text()).toContain('Chính thức')
+    expect(wrapper.get('[data-source-mark]').attributes('data-source-tier')).toBe('official')
+    expect(wrapper.get('[data-home-section="events-seasonal"]').attributes('data-material-accent')).toBe('amber')
+    expect(wrapper.get('[data-home-section="community"]').attributes('data-material-accent')).toBe('neutral')
+  })
+
+  it('shows an honest unknown source label instead of inventing verification', async () => {
+    apiFetchMock.mockImplementation((url: unknown) => {
+      const path = String(url)
+      if (path === '/api/homepage') return Promise.resolve(homeFixture())
+      if (path === '/api/feed?limit=10') return Promise.resolve({ posts: [] })
+      if (path === '/api/community/stats') return Promise.resolve(null)
+      if (path === '/api/community/leaderboard?limit=3') return Promise.resolve({ leaders: [] })
+      if (path === '/api/community/trending-tags?limit=8') return Promise.resolve({ tags: [] })
+      if (path.startsWith('/api/entities/popular?')) return Promise.resolve({ entities: [] })
+      return Promise.resolve({})
+    })
+    const wrapper = await mountSuspended(HomePage, { global: { stubs: pageStubs } })
+    wrappers.push(wrapper)
+    await flushUi()
+
+    expect(wrapper.get('[data-source-mark]').text()).toContain('Chưa rõ nguồn')
+    expect(wrapper.text()).not.toContain('Đã xác minh')
+  })
+
   it('renders the controlled top zone and removes decision items from following collections', async () => {
     apiFetchMock.mockImplementation((url: unknown) => {
       const path = String(url)

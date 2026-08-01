@@ -5,6 +5,7 @@ import HomeCategoryIndex from '../components/home/HomeCategoryIndex.vue'
 import HomeDecisionLedger from '../components/home/HomeDecisionLedger.vue'
 import HomeFeatureDossier from '../components/home/HomeFeatureDossier.vue'
 import type { ImageDescriptor } from '../types/image'
+import { createHomeNocturnePresentation } from '../utils/homeNocturnePresentation'
 
 const NuxtImgStub = defineComponent({
   inheritAttrs: false,
@@ -44,6 +45,7 @@ describe('homepage Nocturne presentation components', () => {
         disclosureId: 'home-feature-disclosure',
         detailTo: '/dia-diem/hero-1',
         plannerTo: '/tao-lich-trinh?add=hero-1',
+        sourceTier: 'official',
       },
       global: { stubs: { NuxtImg: NuxtImgStub, IconLine: true } },
     })
@@ -60,7 +62,12 @@ describe('homepage Nocturne presentation components', () => {
     expect(wrapper.get('#home-feature-disclosure').text()).toBe(descriptor.full_disclosure)
     expect(wrapper.get('[data-dossier-title]').text()).toBe('Một buổi trong vườn')
     expect(wrapper.findAll('[data-home-feature-action]')).toHaveLength(2)
-    expect(wrapper.find('[data-source-mark]').exists()).toBe(false)
+    expect(wrapper.get('[data-source-mark]').text()).toContain('Chính thức')
+    expect(wrapper.get('[data-source-mark]').attributes('data-source-tier')).toBe('official')
+    expect(wrapper.findAll('[data-home-feature-action]').map(action => action.attributes('data-color-role'))).toEqual([
+      'action-secondary',
+      'action-secondary',
+    ])
     expect(wrapper.find('[data-rating]').exists()).toBe(false)
   })
 
@@ -75,6 +82,7 @@ describe('homepage Nocturne presentation components', () => {
         },
         disclosureId: 'home-feature-remote-disclosure',
         detailTo: '/dia-diem/remote-hero',
+        sourceTier: 'verified',
       },
       global: { stubs: { NuxtImg: NuxtImgStub, IconLine: true } },
     })
@@ -107,6 +115,7 @@ describe('homepage Nocturne presentation components', () => {
         },
         disclosureId: 'home-feature-placeholder',
         detailTo: '/dia-diem/placeholder-1',
+        sourceTier: 'unknown',
       },
       global: { stubs: { NuxtImg: NuxtImgStub, IconLine: true } },
     })
@@ -134,27 +143,44 @@ describe('homepage Nocturne presentation components', () => {
     expect(rows.map(row => row.get('.home-decision-ledger__eyebrow').text())).toEqual(['Ngày mai', 'Tháng 8'])
     expect(rows.map(row => row.get('.home-decision-ledger__title').text())).toEqual(['Có lịch gần nhất', 'Đang vào mùa'])
     expect(rows.map(row => row.get('.home-decision-ledger__text').text())).toEqual(['Lễ hội sông nước', 'Chôm chôm'])
+    expect(rows.map(row => row.get('.home-decision-ledger__link').attributes('data-material-accent'))).toEqual(['amber', 'amber'])
     expect(wrapper.text()).not.toMatch(/\b0[1-9]\b/)
   })
 
   it('renders primary and utility routes exactly once', async () => {
+    const { categoryGroups } = createHomeNocturnePresentation({
+      currentMonth: 8,
+      upcomingEvents: [],
+      seasonal: [],
+      topDishes: [],
+      itineraries: [],
+      categoryCounts: { experiences: 5, areas: 3 },
+    })
     const wrapper = await mountSuspended(HomeCategoryIndex, {
-      props: {
-        groups: {
-          primary: [
-            { key: 'du-lich', label: 'Du lịch', hint: 'Vườn và sông', to: '/du-lich', icon: 'leaf', accent: 'leaf', countLabel: '5 gợi ý' },
-          ],
-          utility: [
-            { key: 'ban-do', label: 'Bản đồ', hint: 'Lọc theo vùng', to: '/ban-do', icon: 'map', accent: 'river' },
-          ],
-        },
-      },
+      props: { groups: categoryGroups },
       global: { stubs: { IconLine: true } },
     })
     wrappers.push(wrapper)
 
     expect(wrapper.get('[data-home-category-primary]').text()).toContain('5 gợi ý')
     expect(wrapper.get('[data-home-category-utility]').text()).not.toContain('gợi ý')
-    expect(wrapper.findAll('a').map(link => link.attributes('href'))).toEqual(['/du-lich', '/ban-do'])
+    expect(wrapper.findAll('a').map(link => link.attributes('href'))).toEqual([
+      '/du-lich',
+      '/kham-pha/am-thuc',
+      '/ocop',
+      '/le-hoi',
+      '/luu-tru',
+      '/lich-trinh',
+      '/ban-do',
+    ])
+    expect(wrapper.findAll('a').map(link => link.attributes('data-material-accent'))).toEqual([
+      'leaf',
+      'amber',
+      'clay',
+      'amber',
+      'river',
+      'river',
+      'river',
+    ])
   })
 })

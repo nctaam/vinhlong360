@@ -39,11 +39,17 @@
       <template v-if="summary" #summary>
         <p>{{ summary }}</p>
       </template>
-      <template v-if="region" #meta>
-        <span>{{ region }}</span>
+      <template #meta>
+        <span v-if="region">{{ region }}</span>
+        <SourceMark :tier="sourceTier" compact />
       </template>
       <template #action>
-        <NuxtLink :to="detailTo" class="home-feature-dossier__action" data-home-feature-action>
+        <NuxtLink
+          :to="detailTo"
+          class="home-feature-dossier__action"
+          data-home-feature-action
+          data-color-role="action-secondary"
+        >
           Khám phá
         </NuxtLink>
         <NuxtLink
@@ -52,6 +58,7 @@
           no-prefetch
           class="home-feature-dossier__action home-feature-dossier__action--secondary"
           data-home-feature-action
+          data-color-role="action-secondary"
         >
           Thêm vào lịch trình
         </NuxtLink>
@@ -61,7 +68,9 @@
 </template>
 
 <script setup lang="ts">
+import SourceMark from '~/components/SourceMark.vue'
 import type { ImageDescriptor } from '~/types/image'
+import type { SourceTier } from '~/utils/regionalColor'
 
 const isRemote = isRemoteUrl
 
@@ -73,6 +82,7 @@ withDefaults(defineProps<{
   descriptor: ImageDescriptor
   disclosureId: string
   detailTo: string
+  sourceTier: SourceTier
   plannerTo?: string
 }>(), {
   summary: undefined,
