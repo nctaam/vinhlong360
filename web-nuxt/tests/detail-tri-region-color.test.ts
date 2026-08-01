@@ -1,5 +1,7 @@
 import { clearNuxtData } from '#app'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { defineComponent, h, nextTick } from 'vue'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import ContactWidget from '../components/ContactWidget.vue'
@@ -8,6 +10,8 @@ import EntityDetailPage from '../pages/dia-diem/[id].vue'
 
 const apiFetchMock = vi.hoisted(() => vi.fn())
 vi.mock('../utils/apiFetch', () => ({ apiFetch: apiFetchMock }))
+
+const triRegionCss = readFileSync(resolve(process.cwd(), 'assets/css/tri-region-color.css'), 'utf8')
 
 const wrappers: Array<{ unmount: () => void }> = []
 const NuxtImgStub = defineComponent({
@@ -101,7 +105,8 @@ describe('entity detail tri-region behavior', () => {
       summary: 'Không gian nghề gốm ven sông.',
       description: 'Một làng nghề lâu đời bên dòng Cổ Chiên.',
       place_name: 'Mang Thít',
-      attributes: { phone: '0900000000', address: 'Mang Thít, Vĩnh Long' },
+      attributes: { zalo: '0900000000', phone: '0900000000', address: 'Mang Thít, Vĩnh Long' },
+      coordinates: { lat: 10.211, lng: 106.116 },
       quality: {
         source_tier: 'official',
         source_title: 'Cổng thông tin tỉnh Vĩnh Long',
@@ -151,5 +156,37 @@ describe('entity detail tri-region behavior', () => {
     expect(wrapper.get('[data-freshness-line]').text()).toContain('Mới cập nhật')
     expect(wrapper.get('[data-image-disclosure]').text()).not.toContain('Chính thức')
     expect(wrapper.get('[data-entity-trust-panel]').text()).not.toContain('Ảnh minh họa')
+
+    const highlightActions = wrapper.findAll('.highlights .hl-action')
+    expect(highlightActions.map(action => action.text())).toEqual(['💬 Zalo', '📞 Gọi', '🗺️ Bản đồ'])
+    expect(highlightActions.map(action => action.attributes('data-color-role'))).toEqual([
+      'action-primary',
+      'action-secondary',
+      'action-secondary',
+    ])
+
+    const stickyActions = wrapper.findAll('.sticky-cta-bar a')
+    expect(stickyActions.map(action => action.text())).toEqual(['💬 Zalo', '📞 Gọi', '🗺️ Bản đồ'])
+    expect(stickyActions.map(action => action.attributes('data-color-role'))).toEqual([
+      'action-primary',
+      'action-secondary',
+      'action-secondary',
+    ])
+  })
+
+  it('generates the material border pseudo-element for every detail hero', () => {
+    const heroRule = triRegionCss.match(/\[data-color-system="tri-region-v1"\]\[data-page-recipe="detail"\] \.detail-cover::after\s*\{([^}]*)\}/)
+
+    expect(heroRule?.[1]).toMatch(/content:\s*""/)
+    expect(heroRule?.[1]).toMatch(/position:\s*absolute/)
+    expect(heroRule?.[1]).toMatch(/border-block-end:\s*3px solid var\(--tri-region-material-accent\)/)
+  })
+
+  it('keeps the required page class without inheriting the legacy constrained layout', () => {
+    const rootRule = triRegionCss.match(/\[data-color-system="tri-region-v1"\]\[data-page-recipe="detail"\]\.page\.entity-detail\s*\{([^}]*)\}/)
+
+    expect(rootRule?.[1]).toMatch(/max-width:\s*none/)
+    expect(rootRule?.[1]).toMatch(/margin:\s*0/)
+    expect(rootRule?.[1]).toMatch(/padding:\s*0/)
   })
 })

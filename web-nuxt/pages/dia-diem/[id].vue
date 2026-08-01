@@ -104,9 +104,9 @@
       <article class="detail-main" aria-label="Thông tin chi tiết">
         <!-- Highlights quét nhanh (Baymard: 78% site thiếu; chống info bị chôn dưới fold) -->
         <div v-if="hasHighlights" class="highlights">
-          <a v-if="entity.attributes?.phone" class="hl hl-action" :href="telHref(entity.attributes.phone)" :aria-label="`Gọi ${entity.name}`">📞 Gọi</a>
-          <a v-if="zaloLink" class="hl hl-action" :href="zaloLink" target="_blank" rel="nofollow noopener" :aria-label="`Nhắn Zalo ${entity.name}`">💬 Zalo</a>
-          <NuxtLink v-if="hasCoords" class="hl hl-action" :to="mapUrl" :aria-label="`Xem ${entity.name} trên bản đồ`">🗺️ Bản đồ</NuxtLink>
+          <a v-if="zaloLink" class="hl hl-action" data-color-role="action-primary" :href="zaloLink" target="_blank" rel="nofollow noopener" :aria-label="`Nhắn Zalo ${entity.name}`">💬 Zalo</a>
+          <a v-if="entity.attributes?.phone" class="hl hl-action" data-color-role="action-secondary" :href="telHref(entity.attributes.phone)" :aria-label="`Gọi ${entity.name}`">📞 Gọi</a>
+          <NuxtLink v-if="hasCoords" class="hl hl-action" data-color-role="action-secondary" :to="mapUrl" :aria-label="`Xem ${entity.name} trên bản đồ`">🗺️ Bản đồ</NuxtLink>
           <span v-if="entity.attributes?.hours" class="hl"><span aria-hidden="true">🕒</span> {{ entity.attributes.hours }}</span>
           <span v-if="addressText" class="hl"><span aria-hidden="true">📍</span> {{ addressText }}</span>
         </div>
@@ -439,10 +439,10 @@
          Always renders so mobile users never hit a "CTA void"; when there's no
          phone/Zalo/map, fall back to the guaranteed next action (add to itinerary). -->
     <div class="sticky-cta-bar">
-      <a v-if="entity.attributes?.phone" class="scta-phone" :href="telHref(entity.attributes.phone)" aria-label="Gọi điện thoại">📞 Gọi</a>
-      <a v-if="zaloLink" class="scta-zalo" :href="zaloLink" target="_blank" rel="nofollow noopener" aria-label="Nhắn Zalo">💬 Zalo</a>
-      <NuxtLink v-if="hasCoords" class="scta-map" :to="mapUrl" aria-label="Xem trên bản đồ">🗺️ Bản đồ</NuxtLink>
-      <NuxtLink v-if="!hasStickyContact" :to="planAddUrl" no-prefetch class="scta-plan" aria-label="Thêm vào lịch trình">📋 {{ ss('labels.detail.next_add_itinerary', 'Thêm vào lịch trình') }}</NuxtLink>
+      <a v-if="zaloLink" class="scta-zalo" data-color-role="action-primary" :href="zaloLink" target="_blank" rel="nofollow noopener" aria-label="Nhắn Zalo">💬 Zalo</a>
+      <a v-if="entity.attributes?.phone" class="scta-phone" data-color-role="action-secondary" :href="telHref(entity.attributes.phone)" aria-label="Gọi điện thoại">📞 Gọi</a>
+      <NuxtLink v-if="hasCoords" class="scta-map" data-color-role="action-secondary" :to="mapUrl" aria-label="Xem trên bản đồ">🗺️ Bản đồ</NuxtLink>
+      <NuxtLink v-if="!hasStickyContact" :to="planAddUrl" no-prefetch class="scta-plan" data-color-role="action-primary" aria-label="Thêm vào lịch trình">📋 {{ ss('labels.detail.next_add_itinerary', 'Thêm vào lịch trình') }}</NuxtLink>
     </div>
   </section>
   <section v-else-if="fetchError" class="page">
