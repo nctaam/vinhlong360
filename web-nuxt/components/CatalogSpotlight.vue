@@ -103,8 +103,7 @@ const relCount = computed(() => pick.value?.relationship_total || 0)
   display: flex; flex-direction: column; justify-content: center; gap: var(--space-3); min-width: 0;
 }
 @media (max-width: 760px) { .cspot-body { padding: var(--space-5); } }
-.cspot-kicker { font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: .05em; color: var(--mangthit-700); }
-.dark .cspot-kicker { color: color-mix(in srgb, var(--color-brand) 76%, white); }
+.cspot-kicker { font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: .05em; color: var(--catalog-legacy-primary-fg-strong); }
 .cspot[data-color-recipe='tri-region-v1'] .cspot-kicker { color: var(--color-brand); }
 /* editorial title — serif, matching the Story Card idiom (§2 narrative system) instead of
    the sans-serif magazine-panel heading this used before */
@@ -112,9 +111,9 @@ const relCount = computed(() => pick.value?.relationship_total || 0)
 /* Legacy callers retain the existing sediment rule until they opt into the recipe. */
 .cspot-rule {
   display: block; width: 30px; height: 2px; border-radius: 2px; margin: var(--space-2) 0 0;
-  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+  background: linear-gradient(90deg, var(--catalog-legacy-rule-river) 0%, var(--catalog-legacy-rule-amber) 52%, var(--catalog-legacy-rule-clay) 100%);
 }
-.dark .cspot-rule { background: linear-gradient(90deg, var(--color-material-river) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
+.dark .cspot-rule { background: linear-gradient(90deg, var(--catalog-legacy-rule-river-dark) 0%, var(--catalog-legacy-rule-amber-dark) 52%, var(--catalog-legacy-rule-clay-dark) 100%); }
 .cspot[data-color-recipe='tri-region-v1'] .cspot-rule { background: var(--tri-region-material-accent); }
 .cspot-sum { margin: 0; color: var(--text-muted); line-height: var(--leading-relaxed); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
 .cspot-badges { display: flex; gap: var(--space-2); flex-wrap: wrap; }
@@ -125,7 +124,7 @@ const relCount = computed(() => pick.value?.relationship_total || 0)
 .cspot-badge-year { color: var(--river-600); }
 .cspot-badge-pop { color: var(--amber-600); }
 .dark .cspot-badge-peak { color: var(--clay-400); }
-.dark .cspot-badge-year { color: var(--color-material-river); }
+.dark .cspot-badge-year { color: var(--catalog-legacy-rule-river-dark); }
 .dark .cspot-badge-pop { color: var(--amber-500); }
 .cspot-cta { align-self: flex-start; margin-top: var(--space-2); }
 @media (prefers-reduced-motion: reduce) { .cspot-visual::before { animation: none; } }

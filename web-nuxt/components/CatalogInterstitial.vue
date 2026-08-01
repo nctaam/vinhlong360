@@ -12,7 +12,13 @@
     <div class="interstitial-body">
       <p class="interstitial-text">{{ fact }}</p>
       <div v-if="links.length" class="interstitial-links">
-        <NuxtLink v-for="l in links" :key="l.to" :to="l.to" class="interstitial-link">
+        <NuxtLink
+          v-for="l in links"
+          :key="l.to"
+          :to="l.to"
+          class="interstitial-link"
+          :data-color-role="materialAccent ? 'catalog-action' : undefined"
+        >
           {{ l.label }} <span aria-hidden="true">→</span>
         </NuxtLink>
       </div>
@@ -40,6 +46,7 @@ const props = withDefaults(defineProps<{
 
 <style scoped>
 .interstitial {
+  --catalog-interstitial-focus: var(--catalog-legacy-primary);
   display: grid;
   grid-template-columns: auto 1fr;
   gap: var(--space-4);
@@ -47,7 +54,7 @@ const props = withDefaults(defineProps<{
   padding: var(--space-5) var(--space-6);
   border-radius: var(--radius-xl);
   border: .5px solid var(--line);
-  background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .04), transparent);
+  background: linear-gradient(135deg, rgba(var(--catalog-legacy-primary-rgb), .04), transparent);
   margin: var(--space-4) 0;
   position: relative;
   overflow: hidden;
@@ -55,11 +62,11 @@ const props = withDefaults(defineProps<{
 /* Legacy callers keep the existing sediment rule. Explicit accents replace it below. */
 .interstitial::before {
   content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+  background: linear-gradient(90deg, var(--catalog-legacy-rule-river) 0%, var(--catalog-legacy-rule-amber) 52%, var(--catalog-legacy-rule-clay) 100%);
   opacity: .7;
 }
 .dark .interstitial::before {
-  background: linear-gradient(90deg, var(--color-material-river) 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+  background: linear-gradient(90deg, var(--catalog-legacy-rule-river-dark) 0%, var(--catalog-legacy-rule-amber-dark) 52%, var(--catalog-legacy-rule-clay-dark) 100%);
 }
 .interstitial.warm {
   background: linear-gradient(135deg, rgba(var(--secondary-rgb), .06), rgba(var(--accent-rgb), .03));
@@ -74,7 +81,7 @@ const props = withDefaults(defineProps<{
 .interstitial-icon-chip {
   display: flex; align-items: center; justify-content: center;
   width: 40px; height: 40px; border-radius: var(--radius-full); flex-shrink: 0;
-  background: rgba(var(--color-brand-rgb), .07);
+  background: rgba(var(--catalog-legacy-primary-rgb), .07);
 }
 .dark .interstitial-icon-chip { background: rgba(var(--white-rgb), .06); }
 .interstitial-icon {
@@ -105,24 +112,24 @@ const props = withDefaults(defineProps<{
   gap: var(--space-1);
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
-  color: var(--color-brand);
+  color: var(--catalog-legacy-primary-fg);
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
-  background: rgba(var(--color-brand-rgb), .06);
+  background: rgba(var(--catalog-legacy-primary-rgb), .06);
   transition: background .2s var(--ease-out), transform .2s var(--ease-out);
   min-height: 44px;
 }
 .interstitial-link:hover {
-  background: rgba(var(--color-brand-rgb), .12);
+  background: rgba(var(--catalog-legacy-primary-rgb), .12);
   transform: translateX(2px);
 }
 .interstitial-link:focus-visible {
-  outline: 2px solid var(--color-brand);
+  outline: 2px solid var(--catalog-interstitial-focus);
   outline-offset: 2px;
 }
 
 .dark .interstitial {
-  background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .06), transparent);
+  background: linear-gradient(135deg, rgba(var(--catalog-legacy-primary-rgb), .06), transparent);
   border-color: rgba(var(--white-rgb), .08);
 }
 .dark .interstitial.warm {
@@ -133,8 +140,8 @@ const props = withDefaults(defineProps<{
   background: linear-gradient(135deg, rgba(var(--accent-rgb), .08), transparent);
   border-color: rgba(var(--accent-rgb), .18);
 }
-.dark .interstitial-link { background: rgba(var(--color-brand-rgb), .1); }
-.dark .interstitial-link:hover { background: rgba(var(--color-brand-rgb), .18); }
+.dark .interstitial-link { background: rgba(var(--catalog-legacy-primary-rgb), .1); }
+.dark .interstitial-link:hover { background: rgba(var(--catalog-legacy-primary-rgb), .18); }
 
 .interstitial[data-material-accent] {
   background: linear-gradient(135deg, color-mix(in srgb, var(--tri-region-material-accent) 8%, transparent), transparent);
@@ -161,7 +168,7 @@ const props = withDefaults(defineProps<{
   background: var(--color-action-surface);
 }
 .interstitial[data-material-accent] .interstitial-link:hover { background: var(--color-action-surface-hover); }
-.interstitial[data-material-accent] .interstitial-link:focus-visible { outline-color: var(--color-focus); }
+.interstitial-link[data-color-role='catalog-action'] { outline-color: var(--color-focus); }
 .dark .interstitial[data-material-accent] {
   background: linear-gradient(135deg, color-mix(in srgb, var(--tri-region-material-accent) 8%, transparent), transparent);
   border-color: var(--color-border);

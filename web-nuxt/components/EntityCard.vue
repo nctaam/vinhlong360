@@ -189,9 +189,9 @@ const ratingDisplay = computed(() => {
   color: inherit;
   text-decoration: none;
 }
-.card-cover-link:focus-visible,
-.card-body-link:focus-visible {
-  outline: 2px solid var(--color-brand);
+.card .card-cover-link:focus-visible,
+.card .card-body-link:focus-visible {
+  outline: 2px solid var(--catalog-legacy-primary);
   outline-offset: -2px;
 }
 .card[data-color-recipe='tri-region-v1'] :is(.card-cover-link, .card-body-link):focus-visible {
@@ -234,7 +234,7 @@ const ratingDisplay = computed(() => {
 .card-arrow-prev { left: var(--space-2); }
 .card-arrow-next { right: var(--space-2); }
 .card-arrow:hover { transform: translateY(-50%) scale(1.1); }
-.card-arrow:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 1px; opacity: 1; }
+.card .card-arrow:focus-visible { outline: 2px solid var(--catalog-legacy-primary); outline-offset: 1px; opacity: 1; }
 .card[data-color-recipe='tri-region-v1'] .card-arrow:focus-visible { outline-color: var(--color-focus); }
 :deep(.card:hover) .card-arrow { opacity: 1; }
 /* Carousel dots */
@@ -273,9 +273,9 @@ const ratingDisplay = computed(() => {
 /* Legacy callers retain the existing sediment rule until they opt into the recipe. */
 .card-rule {
   display: block; width: 26px; height: 2px; border-radius: 2px; margin: 5px 0 6px;
-  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+  background: linear-gradient(90deg, var(--catalog-legacy-rule-river) 0%, var(--catalog-legacy-rule-amber) 52%, var(--catalog-legacy-rule-clay) 100%);
 }
-.dark .card-rule { background: linear-gradient(90deg, var(--color-material-river) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
+.dark .card-rule { background: linear-gradient(90deg, var(--catalog-legacy-rule-river-dark) 0%, var(--catalog-legacy-rule-amber-dark) 52%, var(--catalog-legacy-rule-clay-dark) 100%); }
 .card[data-color-recipe='tri-region-v1'] .card-rule { background: var(--tri-region-material-accent); }
 .card-teaser { color: var(--muted); }
 /* grain overlay turns the flat placeholder gradient into an intentional illustration */

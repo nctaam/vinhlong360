@@ -1,3 +1,17 @@
+[data-color-system="tri-region-v1"],
+:where(.card, .cspot, .interstitial) {
+  --catalog-legacy-primary: var(--primary);
+  --catalog-legacy-primary-rgb: var(--primary-rgb);
+  --catalog-legacy-primary-fg: var(--primary-fg);
+  --catalog-legacy-primary-fg-strong: var(--primary-fg-strong);
+  --catalog-legacy-rule-river: var(--river-600);
+  --catalog-legacy-rule-amber: var(--amber-600);
+  --catalog-legacy-rule-clay: var(--clay-600);
+  --catalog-legacy-rule-river-dark: var(--river-legacy-dark);
+  --catalog-legacy-rule-amber-dark: var(--amber-500);
+  --catalog-legacy-rule-clay-dark: var(--clay-400);
+}
+
 [data-color-system="tri-region-v1"] {
   --primary: var(--color-action);
   --primary-dark: var(--color-action-hover);

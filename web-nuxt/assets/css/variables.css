@@ -30,6 +30,7 @@
   --night-amber: #CEA770;
   --night-error: #DF7F78;
   --mask-opaque: #000000;
+  --river-legacy-dark: #74ABB5;
 
   /* Semantic roles consumed by all new shell and component work. */
   --color-canvas: var(--alluvial-paper);
