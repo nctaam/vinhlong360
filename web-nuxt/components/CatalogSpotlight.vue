@@ -103,15 +103,19 @@ const relCount = computed(() => pick.value?.relationship_total || 0)
   display: flex; flex-direction: column; justify-content: center; gap: var(--space-3); min-width: 0;
 }
 @media (max-width: 760px) { .cspot-body { padding: var(--space-5); } }
-.cspot-kicker { font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: .05em; color: var(--color-brand); }
+.cspot-kicker { font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: .05em; color: var(--mangthit-700); }
+.dark .cspot-kicker { color: color-mix(in srgb, var(--color-brand) 76%, white); }
+.cspot[data-color-recipe='tri-region-v1'] .cspot-kicker { color: var(--color-brand); }
 /* editorial title — serif, matching the Story Card idiom (§2 narrative system) instead of
    the sans-serif magazine-panel heading this used before */
 .cspot-h { margin: 0; font-family: var(--font-editorial); font-weight: 600; font-size: clamp(1.4rem, 3vw, 2rem); line-height: var(--leading-snug); letter-spacing: -.01em; }
-/* The selected entity owns one typed material accent. */
+/* Legacy callers retain the existing sediment rule until they opt into the recipe. */
 .cspot-rule {
   display: block; width: 30px; height: 2px; border-radius: 2px; margin: var(--space-2) 0 0;
-  background: var(--tri-region-material-accent, var(--color-material-neutral));
+  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
+.dark .cspot-rule { background: linear-gradient(90deg, var(--color-material-river) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
+.cspot[data-color-recipe='tri-region-v1'] .cspot-rule { background: var(--tri-region-material-accent); }
 .cspot-sum { margin: 0; color: var(--text-muted); line-height: var(--leading-relaxed); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
 .cspot-badges { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 /* hairline outline badges (spec-tag idiom) instead of solid-fill pills — quieter, reads as

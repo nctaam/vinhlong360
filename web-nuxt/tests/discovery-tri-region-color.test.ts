@@ -61,17 +61,28 @@ describe('Discovery Tri-Region color recipe', () => {
     await flushUi()
 
     const root = wrapper.get('[data-page-recipe="discovery"]')
-    expect(root.attributes('data-material-accent')).toBe('leaf')
     expect(wrapper.text()).toContain('Chính thức')
     expect(wrapper.text()).toContain('Đã xác minh')
+    expect(wrapper.get('.cspot').attributes('data-color-recipe')).toBe('tri-region-v1')
     expect(wrapper.get('.cspot').attributes('data-material-accent')).toBe('clay')
     expect(wrapper.get('.catalog-interstitial').attributes('data-material-accent')).toBe('amber')
 
-    const craftMode = wrapper.findAll('.mode-pill').find(button => button.text().includes('Làng nghề'))
-    expect(craftMode).toBeTruthy()
-    await craftMode!.trigger('click')
-    expect(root.attributes('data-material-accent')).toBe('clay')
-    expect(wrapper.findAll('[data-material-accent="clay"]').length).toBeGreaterThan(0)
+    for (const [label, accent] of [
+      ['Trải nghiệm', 'leaf'],
+      ['Ẩm thực', 'amber'],
+      ['Làng nghề', 'clay'],
+      ['Lưu trú', 'river'],
+    ] as const) {
+      const buttons = wrapper.findAll('.mode-pill')
+      const selected = buttons.find(button => button.text().includes(label))
+      expect(selected).toBeTruthy()
+      await selected!.trigger('click')
+
+      expect(root.attributes('data-material-accent')).toBe(accent)
+      for (const button of buttons) {
+        expect(button.attributes('aria-pressed')).toBe(button === selected ? 'true' : 'false')
+      }
+    }
   })
 
   it('keeps filter selection understandable without relying on color', async () => {

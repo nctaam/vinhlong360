@@ -66,6 +66,9 @@ describe('EntityCard image disclosure', () => {
     })
     expect(withoutRecipe.find('[data-source-mark]').exists()).toBe(false)
     expect(withoutRecipe.attributes('data-color-recipe')).toBeUndefined()
+    expect(withoutRecipe.attributes('data-material-accent')).toBeUndefined()
+    expect(withoutRecipe.classes()).toEqual(['card', 'cat-craft'])
+    expect(withoutRecipe.get('.cover-disclosure').attributes('data-material-accent')).toBeUndefined()
 
     const withRecipe = await mountSuspended(EntityCard, {
       props: {
@@ -80,6 +83,7 @@ describe('EntityCard image disclosure', () => {
     expect(withRecipe.findAll('[data-source-mark]')).toHaveLength(1)
     expect(withRecipe.get('[data-source-mark]').attributes('data-source-tier')).toBe('unknown')
     expect(withRecipe.get('[data-source-mark]').text()).toContain('Chưa rõ nguồn')
+    expect(withRecipe.get('.cover-disclosure').attributes('data-material-accent')).toBe('neutral')
   })
 
   it('uses a supplied descriptor over a conflicting legacy URL and associates the full copy', async () => {

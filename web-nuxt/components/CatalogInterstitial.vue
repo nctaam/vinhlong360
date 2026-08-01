@@ -1,13 +1,13 @@
 <template>
   <aside
     v-if="fact"
-    class="interstitial catalog-interstitial reveal"
-    :class="variant"
-    :data-material-accent="materialAccent"
+    class="interstitial reveal"
+    :class="[variant, { 'catalog-interstitial': materialAccent }]"
+    :data-material-accent="materialAccent || undefined"
     role="complementary"
     :aria-label="ariaLabel"
   >
-    <span class="catalog-interstitial-rule" aria-hidden="true"></span>
+    <span v-if="materialAccent" class="catalog-interstitial-rule" aria-hidden="true"></span>
     <span class="interstitial-icon-chip" aria-hidden="true"><span class="interstitial-icon">{{ icon }}</span></span>
     <div class="interstitial-body">
       <p class="interstitial-text">{{ fact }}</p>
@@ -35,7 +35,6 @@ const props = withDefaults(defineProps<{
   links: () => [],
   variant: 'default',
   ariaLabel: 'Thông tin thú vị',
-  materialAccent: 'neutral',
 })
 </script>
 
@@ -48,31 +47,34 @@ const props = withDefaults(defineProps<{
   padding: var(--space-5) var(--space-6);
   border-radius: var(--radius-xl);
   border: .5px solid var(--line);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--tri-region-material-accent, var(--color-material-neutral)) 8%, transparent), transparent);
+  background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .04), transparent);
   margin: var(--space-4) 0;
   position: relative;
   overflow: hidden;
 }
-/* One ruled thread carries the explicit material accent through the interruption. */
-.catalog-interstitial-rule {
-  position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: var(--tri-region-material-accent, var(--color-material-neutral));
+/* Legacy callers keep the existing sediment rule. Explicit accents replace it below. */
+.interstitial::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
   opacity: .7;
 }
+.dark .interstitial::before {
+  background: linear-gradient(90deg, var(--color-material-river) 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+}
 .interstitial.warm {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--tri-region-material-accent, var(--color-material-neutral)) 12%, transparent), transparent);
-  border-color: color-mix(in srgb, var(--tri-region-material-accent, var(--color-material-neutral)) 30%, transparent);
+  background: linear-gradient(135deg, rgba(var(--secondary-rgb), .06), rgba(var(--accent-rgb), .03));
+  border-color: rgba(var(--secondary-rgb), .15);
 }
 .interstitial.accent {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--tri-region-material-accent, var(--color-material-neutral)) 10%, transparent), transparent);
-  border-color: color-mix(in srgb, var(--tri-region-material-accent, var(--color-material-neutral)) 30%, transparent);
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), .06), transparent);
+  border-color: rgba(var(--accent-rgb), .15);
 }
 /* icon sits in its own quiet chip rather than bare beside the text — keeps the emoji from
    reading as a slapped-on heading-marker next to the now-serif fact copy */
 .interstitial-icon-chip {
   display: flex; align-items: center; justify-content: center;
   width: 40px; height: 40px; border-radius: var(--radius-full); flex-shrink: 0;
-  background: color-mix(in srgb, var(--tri-region-material-accent, var(--color-material-neutral)) 12%, transparent);
+  background: rgba(var(--color-brand-rgb), .07);
 }
 .dark .interstitial-icon-chip { background: rgba(var(--white-rgb), .06); }
 .interstitial-icon {
@@ -103,23 +105,77 @@ const props = withDefaults(defineProps<{
   gap: var(--space-1);
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
-  color: var(--color-action);
+  color: var(--color-brand);
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
-  background: var(--color-action-surface);
+  background: rgba(var(--color-brand-rgb), .06);
   transition: background .2s var(--ease-out), transform .2s var(--ease-out);
   min-height: 44px;
 }
 .interstitial-link:hover {
-  background: var(--color-action-surface-hover);
+  background: rgba(var(--color-brand-rgb), .12);
   transform: translateX(2px);
 }
 .interstitial-link:focus-visible {
-  outline: 2px solid var(--color-focus);
+  outline: 2px solid var(--color-brand);
   outline-offset: 2px;
 }
 
-.dark .interstitial { border-color: var(--color-border); }
+.dark .interstitial {
+  background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .06), transparent);
+  border-color: rgba(var(--white-rgb), .08);
+}
+.dark .interstitial.warm {
+  background: linear-gradient(135deg, rgba(var(--secondary-rgb), .08), rgba(var(--accent-rgb), .04));
+  border-color: rgba(var(--secondary-rgb), .18);
+}
+.dark .interstitial.accent {
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), .08), transparent);
+  border-color: rgba(var(--accent-rgb), .18);
+}
+.dark .interstitial-link { background: rgba(var(--color-brand-rgb), .1); }
+.dark .interstitial-link:hover { background: rgba(var(--color-brand-rgb), .18); }
+
+.interstitial[data-material-accent] {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--tri-region-material-accent) 8%, transparent), transparent);
+}
+.interstitial[data-material-accent]::before { content: none; }
+.interstitial[data-material-accent].warm {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--tri-region-material-accent) 12%, transparent), transparent);
+  border-color: color-mix(in srgb, var(--tri-region-material-accent) 30%, transparent);
+}
+.interstitial[data-material-accent].accent {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--tri-region-material-accent) 10%, transparent), transparent);
+  border-color: color-mix(in srgb, var(--tri-region-material-accent) 30%, transparent);
+}
+.catalog-interstitial-rule {
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--tri-region-material-accent);
+  opacity: .7;
+}
+.interstitial[data-material-accent] .interstitial-icon-chip {
+  background: color-mix(in srgb, var(--tri-region-material-accent) 12%, transparent);
+}
+.interstitial[data-material-accent] .interstitial-link {
+  color: var(--color-action);
+  background: var(--color-action-surface);
+}
+.interstitial[data-material-accent] .interstitial-link:hover { background: var(--color-action-surface-hover); }
+.interstitial[data-material-accent] .interstitial-link:focus-visible { outline-color: var(--color-focus); }
+.dark .interstitial[data-material-accent] {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--tri-region-material-accent) 8%, transparent), transparent);
+  border-color: var(--color-border);
+}
+.dark .interstitial[data-material-accent].warm {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--tri-region-material-accent) 12%, transparent), transparent);
+  border-color: color-mix(in srgb, var(--tri-region-material-accent) 30%, transparent);
+}
+.dark .interstitial[data-material-accent].accent {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--tri-region-material-accent) 10%, transparent), transparent);
+  border-color: color-mix(in srgb, var(--tri-region-material-accent) 30%, transparent);
+}
+.dark .interstitial[data-material-accent] .interstitial-link { background: var(--color-action-surface); }
+.dark .interstitial[data-material-accent] .interstitial-link:hover { background: var(--color-action-surface-hover); }
 
 @media (max-width: 640px) {
   .interstitial {

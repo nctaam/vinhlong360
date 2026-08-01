@@ -26,7 +26,7 @@
           <span v-for="(_, i) in allDescriptors.slice(0, 5)" :key="i" :class="['card-dot', { active: i === activeSlide }]" />
         </div>
       </template>
-      <span class="cover-disclosure" data-material-accent="neutral">
+      <span class="cover-disclosure" :data-material-accent="colorRecipe === 'tri-region-v1' ? 'neutral' : undefined">
         <ImageDisclosure :id="activeDisclosureId" :descriptor="displayDescriptor" presentation="short" />
       </span>
       <ClientOnly><SaveButton class="card-save" :entity="entity" size="sm" /></ClientOnly>
@@ -191,8 +191,11 @@ const ratingDisplay = computed(() => {
 }
 .card-cover-link:focus-visible,
 .card-body-link:focus-visible {
-  outline: 2px solid var(--color-focus);
+  outline: 2px solid var(--color-brand);
   outline-offset: -2px;
+}
+.card[data-color-recipe='tri-region-v1'] :is(.card-cover-link, .card-body-link):focus-visible {
+  outline-color: var(--color-focus);
 }
 .card-body-link {
   color: inherit;
@@ -231,7 +234,8 @@ const ratingDisplay = computed(() => {
 .card-arrow-prev { left: var(--space-2); }
 .card-arrow-next { right: var(--space-2); }
 .card-arrow:hover { transform: translateY(-50%) scale(1.1); }
-.card-arrow:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; opacity: 1; }
+.card-arrow:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 1px; opacity: 1; }
+.card[data-color-recipe='tri-region-v1'] .card-arrow:focus-visible { outline-color: var(--color-focus); }
 :deep(.card:hover) .card-arrow { opacity: 1; }
 /* Carousel dots */
 .card-dots {
@@ -266,11 +270,13 @@ const ratingDisplay = computed(() => {
 }
 /* the on-cover dateline stays legible on imagery — keep the readable chip form there */
 .cover-dateline { text-transform: uppercase; letter-spacing: .08em; }
-/* One typed material rule keeps category context separate from trust color. */
+/* Legacy callers retain the existing sediment rule until they opt into the recipe. */
 .card-rule {
   display: block; width: 26px; height: 2px; border-radius: 2px; margin: 5px 0 6px;
-  background: var(--tri-region-material-accent, var(--color-material-neutral));
+  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
+.dark .card-rule { background: linear-gradient(90deg, var(--color-material-river) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
+.card[data-color-recipe='tri-region-v1'] .card-rule { background: var(--tri-region-material-accent); }
 .card-teaser { color: var(--muted); }
 /* grain overlay turns the flat placeholder gradient into an intentional illustration */
 .cover-grain {
