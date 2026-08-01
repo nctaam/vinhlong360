@@ -453,7 +453,23 @@ const spotDescriptor = computed<ImageDescriptor>(() => {
   const entityDescriptor = spotlight.value ? describeEntityImages(spotlight.value)[0] : null
   if (entityDescriptor) return entityDescriptor
   const fallback = SPOT_CAT_PHOTO[spotMeta.value?.cat || ''] || '/img/cat-du-lich.webp'
-  return describeEntityImages({ id: `spotlight-${spotlight.value?.id || 'home'}`, name: spotlight.value?.name || 'Nổi bật', images: [fallback] })[0]!
+  const fallbackDescriptor = describeEntityImages({
+    id: `spotlight-${spotlight.value?.id || 'home'}`,
+    name: spotlight.value?.name || 'Nổi bật',
+    image_descriptor: {
+      url: fallback,
+      alt: `Ảnh minh họa danh mục ${spotMeta.value?.label || 'du lịch'} — ${spotlight.value?.name || 'Nổi bật'} chưa có ảnh riêng`,
+      source_class: 'ai-generated',
+      source_kind: 'entity-editorial',
+      disclosure_key: 'entity-ai',
+      short_label: aiDisclosure.entity_ai.short_label,
+      full_disclosure: aiDisclosure.entity_ai.full_disclosure,
+      credit: null,
+      width: null,
+      height: null,
+    } satisfies ImageDescriptor,
+  })[0]
+  return fallbackDescriptor || describeEntityPlaceholder(spotlight.value || { name: 'Nổi bật' })
 })
 const spotPhoto = computed(() => spotDescriptor.value.url || '')
 const spotBgCss = computed(() => spotlight.value

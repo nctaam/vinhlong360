@@ -245,6 +245,38 @@ describe('homepage Existing Screen Evolution B1', () => {
     expect(wrapper.text()).not.toContain('Đã xác minh')
   })
 
+  it('renders the category editorial fallback with disclosure when spotlight descriptors are empty', async () => {
+    const fixture = homeFixture()
+    fixture.experiences = [Object.assign(fixture.experiences[0]!, {
+      images: [],
+      image_descriptors: [],
+    })]
+    fixture.products = []
+    apiFetchMock.mockImplementation((url: unknown) => {
+      const path = String(url)
+      if (path === '/api/homepage') return Promise.resolve(fixture)
+      if (path === '/api/feed?limit=10') return Promise.resolve({ posts: [] })
+      if (path === '/api/community/stats') return Promise.resolve(null)
+      if (path === '/api/community/leaderboard?limit=3') return Promise.resolve({ leaders: [] })
+      if (path === '/api/community/trending-tags?limit=8') return Promise.resolve({ tags: [] })
+      if (path.startsWith('/api/entities/popular?')) return Promise.resolve({ entities: [] })
+      return Promise.resolve({})
+    })
+
+    const wrapper = await mountSuspended(HomePage, { global: { stubs: pageStubs } })
+    wrappers.push(wrapper)
+    await flushUi()
+
+    const spotlight = wrapper.get('.spotlight')
+    const visual = spotlight.get('.spot-visual')
+    const disclosure = visual.get('[data-full-disclosure]')
+    expect(spotlight.text()).toContain('Vườn ven sông')
+    expect(visual.attributes('style')).toContain('/img/cat-du-lich.webp')
+    expect(visual.get('[data-short-label]').text()).toBe('Minh họa AI')
+    expect(disclosure.text()).toBe('Ảnh minh họa do AI dựng — không phải ảnh chụp tại chỗ.')
+    expect(visual.attributes('aria-describedby')).toBe(disclosure.attributes('id'))
+  })
+
   it('renders the controlled top zone and removes decision items from following collections', async () => {
     apiFetchMock.mockImplementation((url: unknown) => {
       const path = String(url)
