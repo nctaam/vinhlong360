@@ -27,6 +27,23 @@ describe('source and freshness primitives', () => {
     expect(wrapper.get(`[data-icon="${icon}"]`)).toBeTruthy()
   })
 
+  it.each([
+    ['official', 'shield'],
+    ['verified', 'check'],
+    ['community', 'user'],
+    ['unknown', 'info'],
+  ] as const)('renders the real %s tier with its %s icon instead of fallback', async (tier, icon) => {
+    const wrapper = await mountSuspended(SourceMark, {
+      props: { tier },
+    })
+    wrappers.push(wrapper)
+
+    const renderedIcon = wrapper.get('.line-icon')
+    expect(renderedIcon.classes()).toContain(`li-${icon}`)
+    expect(renderedIcon.classes()).not.toContain('li-circle-help')
+    expect(renderedIcon.find('svg').exists()).toBe(true)
+  })
+
   it('keeps freshness separate from provenance', async () => {
     const wrapper = await mountSuspended(FreshnessLine, {
       props: { status: 'stale', updatedLabel: '12/07/2026' },

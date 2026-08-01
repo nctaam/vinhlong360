@@ -13,6 +13,9 @@ const W = (inner: string) =>
 
 const ICONS: Record<string, string> = {
   'circle-help': W('<circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.5 2.5 0 1 1 4.4 1.7c-.9.9-2.1 1.3-2.1 3.3"/><path d="M12 18h.01"/>'),
+  info: W('<circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><path d="M12 7h.01"/>'),
+  check: W('<path d="m5 12 4 4L19 6"/>'),
+  shield: W('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/>'),
   menu: W('<path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/>'),
   'chevron-down': W('<path d="m6 9 6 6 6-6"/>'),
   search: W('<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>'),

@@ -42,20 +42,20 @@ const meta = computed(() => SOURCE_META[props.tier])
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
   line-height: var(--lh-xs);
-  background: color-mix(in srgb, var(--color-source-community) 12%, transparent);
+  background: var(--color-source-community-surface);
   border: 1px solid color-mix(in srgb, var(--color-source-community) 48%, transparent);
   border-radius: var(--radius-full);
 }
 
 .source-mark[data-source-tier='official'] {
   color: var(--color-source-official);
-  background: color-mix(in srgb, var(--color-source-official) 12%, transparent);
+  background: var(--color-source-official-surface);
   border-color: color-mix(in srgb, var(--color-source-official) 48%, transparent);
 }
 
 .source-mark[data-source-tier='verified'] {
   color: var(--color-source-verified);
-  background: color-mix(in srgb, var(--color-source-verified) 12%, transparent);
+  background: var(--color-source-verified-surface);
   border-color: color-mix(in srgb, var(--color-source-verified) 48%, transparent);
 }
 
