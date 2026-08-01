@@ -256,6 +256,10 @@ describe('Tri-Region color contract', () => {
     expect(stdout).toContain('homepage-focus-media-dark-srgb 4.52 3.0')
     expect(stdout).toContain('homepage-focus-media-light-oklch 4.52 3.0')
     expect(stdout).toContain('homepage-focus-media-dark-oklch 4.52 3.0')
+    expect(stdout).toContain('homepage-on-media-text-light-srgb 10.55 4.5')
+    expect(stdout).toContain('homepage-on-media-text-dark-srgb 10.55 4.5')
+    expect(stdout).toContain('homepage-on-media-text-light-oklch 10.52 4.5')
+    expect(stdout).toContain('homepage-on-media-text-dark-oklch 10.52 4.5')
   })
 
   it('fails closed when an audited numeric token parses as non-finite', async () => {
@@ -417,6 +421,67 @@ describe('Tri-Region color contract', () => {
       name: 'later light Homepage block overriding media focus',
       mutate: (source: string) => `${source}\n.light [data-home-pilot="nocturne-b1"] { --home-color-focus-on-media: var(--color-focus); }`,
       message: 'Duplicate CSS block: .light [data-home-pilot="nocturne-b1"] {',
+    },
+    {
+      name: 'stronger equivalent selector overriding action focus',
+      mutate: (source: string) => `${source}\n[data-home-pilot="nocturne-b1"].home { --home-color-focus-on-action: var(--color-focus); }`,
+      message: 'Unexpected protected declaration for --home-color-focus-on-action',
+    },
+    {
+      name: 'stronger light selector overriding media focus',
+      mutate: (source: string) => `${source}\n.light [data-home-pilot="nocturne-b1"].home { --home-color-focus-on-media: var(--color-focus); }`,
+      message: 'Unexpected protected declaration for --home-color-focus-on-media',
+    },
+    {
+      name: 'selector list overriding media halo',
+      mutate: (source: string) => `${source}\n[data-home-pilot="nocturne-b1"], .never { --home-color-focus-on-media-halo: var(--color-focus); }`,
+      message: 'Unexpected protected declaration for --home-color-focus-on-media-halo',
+    },
+    {
+      name: 'reordered stronger selector overriding on-media text',
+      mutate: (source: string) => `${source}\n.home[data-home-pilot="nocturne-b1"] { --home-color-on-media-text: var(--color-text); }`,
+      message: 'Unexpected protected declaration for --home-color-on-media-text',
+    },
+    {
+      name: 'later stronger block overriding on-media plate syntax',
+      mutate: (source: string) => `${source}\n.home[data-home-pilot="nocturne-b1"] { --home-color-on-media-plate: transparent; }`,
+      message: 'Unexpected protected declaration for --home-color-on-media-plate',
+    },
+    {
+      name: 'nested media query overriding today text',
+      mutate: (source: string) => `${source}\n@media (min-width: 1px) { .home[data-home-pilot="nocturne-b1"] { --home-color-today-text: var(--color-focus); } }`,
+      message: 'Unexpected protected declaration for --home-color-today-text',
+    },
+    {
+      name: 'stronger selector overriding today surface syntax',
+      mutate: (source: string) => `${source}\n[data-home-pilot="nocturne-b1"].home { --home-color-today-surface: var(--color-canvas); }`,
+      message: 'Unexpected protected declaration for --home-color-today-surface',
+    },
+    {
+      name: 'selector list overriding Amber text',
+      mutate: (source: string) => `${source}\n[data-home-pilot="nocturne-b1"], .never { --home-color-amber-text: var(--color-text); }`,
+      message: 'Unexpected protected declaration for --home-color-amber-text',
+    },
+    {
+      name: 'nested media query overriding Amber surface syntax',
+      mutate: (source: string) => `${source}\n@media (min-width: 1px) { [data-home-pilot="nocturne-b1"].home { --home-color-amber-surface: transparent; } }`,
+      message: 'Unexpected protected declaration for --home-color-amber-surface',
+    },
+    {
+      name: 'nested at-rule declaration inside the approved root rule',
+      mutate: (source: string) => source.replace(
+        '  --home-color-today-surface: color-mix(in srgb, var(--color-error) 14%, transparent);\n  background:',
+        '  --home-color-today-surface: color-mix(in srgb, var(--color-error) 14%, transparent);\n  @media (min-width: 1px) { --home-color-on-media-text: var(--color-text); }\n  background:',
+      ),
+      message: 'Unexpected protected declaration for --home-color-on-media-text',
+    },
+    {
+      name: 'nested stronger selector inside the approved root rule',
+      mutate: (source: string) => source.replace(
+        '  --home-color-today-surface: color-mix(in srgb, var(--color-error) 14%, transparent);\n  background:',
+        '  --home-color-today-surface: color-mix(in srgb, var(--color-error) 14%, transparent);\n  &.home { --home-color-focus-on-action: var(--color-focus); }\n  background:',
+      ),
+      message: 'Unexpected protected declaration for --home-color-focus-on-action',
     },
   ])('fails closed for $name', async ({ mutate, message }) => {
     const source = await readFile(resolve(root, 'web-nuxt/assets/css/variables.css'), 'utf8')

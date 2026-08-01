@@ -22,10 +22,26 @@ const pairs = [
   ['error-dark', 'night-error', 'night-canvas', 4.5],
 ]
 
-const homeRootMarker = '[data-home-pilot="nocturne-b1"] {'
-const homeLightMarker = '.light [data-home-pilot="nocturne-b1"] {'
-const homeRootBlock = readUniqueCssBlock(parsedHomeCss, homeRootMarker)
-const homeLightBlock = readUniqueCssBlock(parsedHomeCss, homeLightMarker)
+const homeRootSelector = '[data-home-pilot="nocturne-b1"]'
+const homeLightSelector = '.light [data-home-pilot="nocturne-b1"]'
+const protectedHomeRootNames = new Set([
+  'home-color-amber-text',
+  'home-color-amber-surface',
+  'home-color-focus-on-action',
+  'home-color-focus-on-media',
+  'home-color-focus-on-media-halo',
+  'home-color-on-media-text',
+  'home-color-on-media-plate',
+  'home-color-today-text',
+  'home-color-today-surface',
+])
+const protectedHomeLightNames = new Set(['home-color-focus-on-media'])
+const parsedHomeRules = parseCssRules(parsedHomeCss)
+const homeRootRule = readUniqueCssRule(parsedHomeRules, homeRootSelector)
+const homeLightRule = readUniqueCssRule(parsedHomeRules, homeLightSelector)
+validateProtectedHomeDeclarations(parsedHomeRules, homeRootRule, homeLightRule)
+const homeRootBlock = homeRootRule.body
+const homeLightBlock = homeLightRule.body
 const actionSurfaceWeight = readMixWeight('color-action-surface')
 const actionBorderWeight = readMixWeight('color-action-border')
 const homeAmberSurfaceWeight = readMixWeight(
@@ -49,14 +65,17 @@ const supportedSemanticAliases = new Set([
   'color-on-action',
   'color-focus',
   'color-text',
+  'color-warning',
   'surface-white',
 ])
+const homeAmberTextAlias = readSemanticAlias(homeRootBlock, 'home-color-amber-text')
 const homeFocusActionAlias = readSemanticAlias(homeRootBlock, 'home-color-focus-on-action')
 const homeFocusMediaAlias = readSemanticAlias(homeRootBlock, 'home-color-focus-on-media')
 const homeFocusMediaLightAlias = readSemanticAlias(homeLightBlock, 'home-color-focus-on-media')
 const homeFocusMediaHaloAlias = readSemanticAlias(homeRootBlock, 'home-color-focus-on-media-halo')
 const homeOnMediaTextAlias = readSemanticAlias(homeRootBlock, 'home-color-on-media-text')
 const homeTodayTextAlias = readSemanticAlias(homeRootBlock, 'home-color-today-text')
+const whiteRgb = readRgbTuple('white-rgb')
 const blackRgb = readRgbTuple('black-rgb')
 const semanticNames = pairs.map(([name]) => name)
 const expectedAuditNames = new Set([
@@ -112,25 +131,191 @@ function readCssBlockAt(source, open, marker) {
   throw new Error(`Missing closing brace: ${marker}`)
 }
 
-function readCssBlocks(source, marker) {
-  const selector = marker.slice(0, marker.lastIndexOf('{')).trim()
-  const blocks = []
-  for (let open = 0; open < source.length; open += 1) {
-    if (source[open] !== '{') continue
-    let boundary = open - 1
-    while (boundary >= 0 && !'{};'.includes(source[boundary])) boundary -= 1
-    if (source.slice(boundary + 1, open).trim() === selector) {
-      blocks.push(readCssBlockAt(source, open, marker))
-    }
-  }
-  return blocks
+function normalizeCssPrelude(value) {
+  return value.replace(/\s+/g, ' ').trim()
 }
 
-function readUniqueCssBlock(source, marker) {
-  const blocks = readCssBlocks(source, marker)
-  if (blocks.length === 0) throw new Error(`Missing CSS block: ${marker}`)
-  if (blocks.length > 1) throw new Error(`Duplicate CSS block: ${marker}`)
-  return blocks[0]
+function findCssBoundary(source, start, end) {
+  let quote = ''
+  let escaped = false
+  let parentheses = 0
+  let brackets = 0
+  for (let index = start; index < end; index += 1) {
+    const character = source[index]
+    if (quote) {
+      if (escaped) escaped = false
+      else if (character === '\\') escaped = true
+      else if (character === quote) quote = ''
+      continue
+    }
+    if (character === '"' || character === "'") {
+      quote = character
+      continue
+    }
+    if (character === '(') parentheses += 1
+    else if (character === ')') parentheses -= 1
+    else if (character === '[') brackets += 1
+    else if (character === ']') brackets -= 1
+    else if (parentheses === 0 && brackets === 0 && (character === '{' || character === ';')) {
+      return index
+    }
+  }
+  return -1
+}
+
+function findMatchingBrace(source, open, end) {
+  let depth = 0
+  let quote = ''
+  let escaped = false
+  for (let index = open; index < end; index += 1) {
+    const character = source[index]
+    if (quote) {
+      if (escaped) escaped = false
+      else if (character === '\\') escaped = true
+      else if (character === quote) quote = ''
+      continue
+    }
+    if (character === '"' || character === "'") {
+      quote = character
+      continue
+    }
+    if (character === '{') depth += 1
+    if (character === '}') depth -= 1
+    if (depth === 0) return index
+  }
+  throw new Error('Missing closing brace in Homepage CSS')
+}
+
+function readCustomPropertyDeclarations(body) {
+  const declarations = []
+  let start = 0
+  let quote = ''
+  let escaped = false
+  let parentheses = 0
+  let brackets = 0
+  let braces = 0
+
+  const readSegment = (end) => {
+    const segment = body.slice(start, end).trim()
+    const match = /^(--[\w-]+)\s*:\s*([\s\S]*)$/.exec(segment)
+    if (match) declarations.push({ name: match[1].slice(2), value: match[2].trim() })
+  }
+
+  for (let index = 0; index < body.length; index += 1) {
+    const character = body[index]
+    if (quote) {
+      if (escaped) escaped = false
+      else if (character === '\\') escaped = true
+      else if (character === quote) quote = ''
+      continue
+    }
+    if (character === '"' || character === "'") {
+      quote = character
+      continue
+    }
+    if (character === '(') parentheses += 1
+    else if (character === ')') parentheses -= 1
+    else if (character === '[') brackets += 1
+    else if (character === ']') brackets -= 1
+    else if (character === '{') braces += 1
+    else if (character === '}') {
+      braces -= 1
+      if (braces === 0) start = index + 1
+    }
+    else if (character === ';' && brackets === 0 && braces === 0) {
+      readSegment(index)
+      start = index + 1
+      parentheses = 0
+    }
+  }
+  readSegment(body.length)
+  return declarations
+}
+
+function parseCssRuleRange(source, start, end, context, rules, inheritedSelector = '') {
+  let cursor = start
+  while (cursor < end) {
+    while (cursor < end && /\s/.test(source[cursor])) cursor += 1
+    if (cursor >= end) break
+    const boundary = findCssBoundary(source, cursor, end)
+    if (boundary < 0) break
+    if (source[boundary] === ';') {
+      cursor = boundary + 1
+      continue
+    }
+
+    const prelude = normalizeCssPrelude(source.slice(cursor, boundary))
+    const close = findMatchingBrace(source, boundary, end)
+    const body = source.slice(boundary + 1, close)
+    if (prelude.startsWith('@')) {
+      const nestedContext = [...context, prelude]
+      if (inheritedSelector) {
+        const declarations = readCustomPropertyDeclarations(body)
+        if (declarations.length > 0) {
+          rules.push({ selector: inheritedSelector, context: nestedContext, body, declarations })
+        }
+      }
+      parseCssRuleRange(source, boundary + 1, close, nestedContext, rules, inheritedSelector)
+    }
+    else if (prelude) {
+      const selector = inheritedSelector ? `${inheritedSelector} -> ${prelude}` : prelude
+      rules.push({
+        selector,
+        context,
+        body,
+        declarations: readCustomPropertyDeclarations(body),
+      })
+      parseCssRuleRange(source, boundary + 1, close, context, rules, selector)
+    }
+    cursor = close + 1
+  }
+}
+
+function parseCssRules(source) {
+  const rules = []
+  parseCssRuleRange(source, 0, source.length, [], rules)
+  return rules
+}
+
+function readUniqueCssRule(rules, selector) {
+  const matches = rules.filter(rule => rule.context.length === 0 && rule.selector === selector)
+  const marker = `${selector} {`
+  if (matches.length === 0) throw new Error(`Missing CSS block: ${marker}`)
+  if (matches.length > 1) throw new Error(`Duplicate CSS block: ${marker}`)
+  return matches[0]
+}
+
+function declarationCountError(name, count) {
+  const prefix = count === 0 ? 'Missing' : 'Duplicate'
+  if (name === 'home-color-on-media-plate') return `${prefix} rgba ${count === 0 ? 'contract' : 'declaration'} for --${name}`
+  if (name === 'home-color-amber-surface' || name === 'home-color-today-surface') {
+    return `${prefix} ${count === 0 ? 'sRGB color-mix contract' : 'color-mix declaration'} for --${name}`
+  }
+  return `${prefix} semantic alias assignment for --${name}`
+}
+
+function validateApprovedDeclarationCounts(rule, names) {
+  for (const name of names) {
+    const count = rule.declarations.filter(declaration => declaration.name === name).length
+    if (count !== 1) throw new Error(declarationCountError(name, count))
+  }
+}
+
+function validateProtectedHomeDeclarations(rules, rootRule, lightRule) {
+  const protectedNames = new Set([...protectedHomeRootNames, ...protectedHomeLightNames])
+  for (const rule of rules) {
+    for (const declaration of rule.declarations) {
+      if (!protectedNames.has(declaration.name)) continue
+      const approved = (rule === rootRule && protectedHomeRootNames.has(declaration.name))
+        || (rule === lightRule && protectedHomeLightNames.has(declaration.name))
+      if (!approved) {
+        const context = rule.context.length === 0 ? 'top level' : rule.context.join(' > ')
+        throw new Error(`Unexpected protected declaration for --${declaration.name} in ${rule.selector} (${context})`)
+      }
+    }
+  }
+  validateApprovedDeclarationCounts(rootRule, protectedHomeRootNames)
+  validateApprovedDeclarationCounts(lightRule, protectedHomeLightNames)
 }
 
 function readFiniteNumber(value, label) {
@@ -318,6 +503,10 @@ function minimumDualRingContrast(firstRing, secondRing) {
   return Math.sqrt(contrastRatio(firstRing, secondRing))
 }
 
+function minimumOverlayTextContrast(text, overlay, weight, hostExtremes) {
+  return Math.min(...hostExtremes.map(host => contrastRatio(text, composite(overlay, host, weight))))
+}
+
 function auditSemanticPairs(format, readToken) {
   const suffix = format === 'srgb' ? '' : `-${format}`
   for (const [name, foregroundToken, backgroundToken, threshold] of pairs) {
@@ -337,7 +526,7 @@ function controlThemes(format) {
         error: readHexToken('coral-error'),
         surfaceWhite: readHexToken('surface-white'),
         maskOpaque: readHexToken('mask-opaque'),
-        amberText: readHexToken('harvest-700'),
+        warning: readHexToken('harvest-700'),
         materialAmber: readHexToken('harvest-600'),
         directContact: readHexDeclaration(fallbackRoot, 'brand-zalo'),
         backgrounds: {
@@ -355,7 +544,7 @@ function controlThemes(format) {
         error: readHexToken('night-error'),
         surfaceWhite: readHexToken('surface-white'),
         maskOpaque: readHexToken('mask-opaque'),
-        amberText: readHexToken('night-amber'),
+        warning: readHexToken('night-amber'),
         materialAmber: readHexToken('night-amber'),
         directContact: readHexDeclaration(darkBlock, 'brand-zalo'),
         backgrounds: {
@@ -377,7 +566,7 @@ function controlThemes(format) {
       error: readOklchToken('coral-error'),
       surfaceWhite: readOklchToken('surface-white'),
       maskOpaque: readHexToken('mask-opaque'),
-      amberText: readOklchToken('harvest-700'),
+      warning: readOklchToken('harvest-700'),
       materialAmber: readOklchToken('harvest-600'),
       directContact: readHexDeclaration(fallbackRoot, 'brand-zalo'),
       backgrounds: {
@@ -396,7 +585,7 @@ function controlThemes(format) {
       error: readOklchToken('night-error'),
       surfaceWhite: readOklchToken('surface-white'),
       maskOpaque: readHexToken('mask-opaque'),
-      amberText: readOklchToken('night-amber'),
+      warning: readOklchToken('night-amber'),
       materialAmber: readOklchToken('night-amber'),
       directContact: readHexDeclaration(darkBlock, 'brand-zalo'),
       backgrounds: {
@@ -415,6 +604,7 @@ function resolveSemanticAlias(alias, theme) {
     'color-focus': theme.focus,
     'color-mask-opaque': theme.maskOpaque,
     'color-text': theme.text,
+    'color-warning': theme.warning,
     'surface-white': theme.surfaceWhite,
   }
   const value = values[alias]
@@ -431,7 +621,6 @@ function auditControls(format) {
       focus,
       text,
       error,
-      amberText,
       materialAmber,
       directContact,
       backgrounds,
@@ -448,6 +637,7 @@ function auditControls(format) {
       audit(`focus-${theme}-${surfaceName}-${format}`, focus, host, 3)
     }
     const amberSurface = composite(materialAmber, backgrounds.canvas, homeAmberSurfaceWeight)
+    const amberText = resolveSemanticAlias(homeAmberTextAlias, themeData)
     const focusAction = resolveSemanticAlias(homeFocusActionAlias, themeData)
     const focusMedia = resolveSemanticAlias(
       theme === 'light' ? homeFocusMediaLightAlias : homeFocusMediaAlias,
@@ -455,11 +645,19 @@ function auditControls(format) {
     )
     const focusMediaHalo = resolveSemanticAlias(homeFocusMediaHaloAlias, themeData)
     const onMediaText = resolveSemanticAlias(homeOnMediaTextAlias, themeData)
-    const onMediaPlate = composite(blackRgb, backgrounds.canvas, homeOnMediaPlateAlpha)
     const todayText = resolveSemanticAlias(homeTodayTextAlias, themeData)
     const todaySurface = composite(error, backgrounds.canvas, homeTodaySurfaceWeight)
     audit(`homepage-amber-text-${theme}-${format}`, amberText, amberSurface, 4.5)
-    audit(`homepage-on-media-text-${theme}-${format}`, onMediaText, onMediaPlate, 4.5)
+    auditRatio(
+      `homepage-on-media-text-${theme}-${format}`,
+      minimumOverlayTextContrast(
+        onMediaText,
+        blackRgb,
+        homeOnMediaPlateAlpha,
+        [blackRgb, whiteRgb],
+      ),
+      4.5,
+    )
     audit(`homepage-focus-action-${theme}-${format}`, focusAction, action, 3)
     auditRatio(
       `homepage-focus-media-${theme}-${format}`,
