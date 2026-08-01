@@ -43,12 +43,29 @@ function readCssBlock(source: string, marker: string) {
   throw new Error(`Missing closing brace: ${marker}`)
 }
 
-async function runContrastWithHomeCss(homeSource: string) {
-  const source = await readFile(resolve(root, 'web-nuxt/assets/css/variables.css'), 'utf8')
+type ContrastSourceOverrides = {
+  homeCss?: string
+  baseCss?: string
+  darkOverridesCss?: string
+  homePageVue?: string
+}
+
+async function runContrastWithSources(overrides: ContrastSourceOverrides = {}) {
+  const [variablesCss, baseCss, darkOverridesCss, homeCss, homePageVue] = await Promise.all([
+    readFile(resolve(root, 'web-nuxt/assets/css/variables.css'), 'utf8'),
+    readFile(resolve(root, 'web-nuxt/assets/css/base.css'), 'utf8'),
+    readFile(resolve(root, 'web-nuxt/assets/css/dark-overrides.css'), 'utf8'),
+    readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8'),
+    readFile(resolve(root, 'web-nuxt/pages/index.vue'), 'utf8'),
+  ])
   const temp = await mkdtemp(join(tmpdir(), 'tri-region-home-alias-'))
   await mkdir(resolve(temp, 'assets/css'), { recursive: true })
-  await writeFile(resolve(temp, 'assets/css/variables.css'), source)
-  await writeFile(resolve(temp, 'assets/css/home-nocturne.css'), homeSource)
+  await mkdir(resolve(temp, 'pages'), { recursive: true })
+  await writeFile(resolve(temp, 'assets/css/variables.css'), variablesCss)
+  await writeFile(resolve(temp, 'assets/css/base.css'), overrides.baseCss ?? baseCss)
+  await writeFile(resolve(temp, 'assets/css/dark-overrides.css'), overrides.darkOverridesCss ?? darkOverridesCss)
+  await writeFile(resolve(temp, 'assets/css/home-nocturne.css'), overrides.homeCss ?? homeCss)
+  await writeFile(resolve(temp, 'pages/index.vue'), overrides.homePageVue ?? homePageVue)
 
   try {
     return await execFileAsync(process.execPath, [resolve(root, 'web-nuxt/scripts/check-tri-region-contrast.mjs')], {
@@ -58,6 +75,10 @@ async function runContrastWithHomeCss(homeSource: string) {
   finally {
     await rm(temp, { recursive: true, force: true })
   }
+}
+
+async function runContrastWithHomeCss(homeCss: string) {
+  return runContrastWithSources({ homeCss })
 }
 
 describe('Tri-Region color contract', () => {
@@ -318,7 +339,7 @@ describe('Tri-Region color contract', () => {
         '--home-color-focus-on-action: var(--color-on-action);',
         '--home-color-focus-on-action: var(--color-on-action;',
       ),
-      message: 'Malformed semantic alias assignment for --home-color-focus-on-action',
+      message: 'Unclosed bracket',
     },
     {
       name: 'duplicate action alias',
@@ -342,7 +363,7 @@ describe('Tri-Region color contract', () => {
         '.light [data-home-pilot="nocturne-b1"] {\n  --home-color-focus-on-media: var(--surface-white);',
         '.light [data-home-pilot="nocturne-b1"] {\n  --home-color-focus-on-media: var(--surface-white;',
       ),
-      message: 'Malformed semantic alias assignment for --home-color-focus-on-media',
+      message: 'Unclosed bracket',
     },
     {
       name: 'duplicate light media alias',
@@ -366,7 +387,7 @@ describe('Tri-Region color contract', () => {
         '--home-color-today-text: var(--color-text);',
         '--home-color-today-text: var(--color-text;',
       ),
-      message: 'Malformed semantic alias assignment for --home-color-today-text',
+      message: 'Unclosed bracket',
     },
     {
       name: 'duplicate today text alias',
@@ -530,14 +551,124 @@ describe('Tri-Region color contract', () => {
       message: 'Unexpected protected declaration for --home-color-today-text',
     },
     {
+      name: 'escaped leading hyphens on a protected alias',
+      mutate: (source: string) => `${source}\n${String.raw`[data-home-pilot="nocturne-b1"].home { \2d \2d home-color-focus-on-action: var(--color-focus); }`}`,
+      message: 'Unexpected protected declaration for --home-color-focus-on-action',
+    },
+    {
       name: 'escaped delimiter leaving an invalid custom property identifier',
       mutate: (source: string) => `${source}\n[data-home-pilot="nocturne-b1"].home { --home-color-focus-on-media\\: var(--color-focus); }`,
-      message: 'Missing colon after custom property name',
+      message: 'Unknown word --home-color-focus-on-media',
     },
   ])('fails closed for $name', async ({ mutate, message }) => {
     const homeSource = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
     await expect(runContrastWithHomeCss(mutate(homeSource))).rejects.toMatchObject({
       stderr: expect.stringContaining(message),
+    })
+  })
+
+  it.each([
+    {
+      name: 'an extra closing brace',
+      mutate: (source: string) => `${source}\n}`,
+      message: 'Unexpected }',
+    },
+    {
+      name: 'an unclosed function in an unrelated declaration',
+      mutate: (source: string) => `${source}\n.syntax-probe { color: var(--color-text; }`,
+      message: 'Unclosed bracket',
+    },
+  ])('rejects malformed Homepage CSS with $name', async ({ mutate, message }) => {
+    const homeSource = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
+    await expect(runContrastWithHomeCss(mutate(homeSource))).rejects.toMatchObject({
+      stderr: expect.stringContaining(message),
+    })
+  })
+
+  it.each([
+    {
+      name: 'hero subtitle override',
+      source: 'baseCss' as const,
+      path: 'web-nuxt/assets/css/base.css',
+      mutation: '.hero-sub { opacity: .2; }',
+      message: 'Unexpected protected consumer declaration: assets/css/base.css',
+    },
+    {
+      name: 'nearby focus override',
+      source: 'baseCss' as const,
+      path: 'web-nuxt/assets/css/base.css',
+      mutation: '.hero-nearby:focus-visible { outline: none; }',
+      message: 'Unexpected protected consumer declaration: assets/css/base.css',
+    },
+    {
+      name: 'nested media override',
+      source: 'baseCss' as const,
+      path: 'web-nuxt/assets/css/base.css',
+      mutation: '@media (min-width: 1px) { .hero-search { background: transparent; } }',
+      message: 'Unexpected protected consumer declaration: assets/css/base.css',
+    },
+    {
+      name: 'selector-list override',
+      source: 'darkOverridesCss' as const,
+      path: 'web-nuxt/assets/css/dark-overrides.css',
+      mutation: '.never, .ec-today { color: transparent; }',
+      message: 'Unexpected protected consumer declaration: assets/css/dark-overrides.css',
+    },
+    {
+      name: ':is() override',
+      source: 'homeCss' as const,
+      path: 'web-nuxt/assets/css/home-nocturne.css',
+      mutation: ':is(.hero-search, .never) input:focus-visible { outline: none; }',
+      message: 'Unexpected protected consumer declaration: assets/css/home-nocturne.css',
+    },
+    {
+      name: 'escaped class-name override',
+      source: 'homeCss' as const,
+      path: 'web-nuxt/assets/css/home-nocturne.css',
+      mutation: String.raw`.hero\2d sub { opacity: .2; }`,
+      message: 'Unexpected protected consumer declaration: assets/css/home-nocturne.css',
+    },
+    {
+      name: 'reserved soft-action override',
+      source: 'homeCss' as const,
+      path: 'web-nuxt/assets/css/home-nocturne.css',
+      mutation: '.hero-action--soft { color: transparent; }',
+      message: 'Unexpected protected consumer declaration: assets/css/home-nocturne.css',
+    },
+  ])('rejects unapproved $name', async ({ source, path, mutation, message }) => {
+    const original = await readFile(resolve(root, path), 'utf8')
+    await expect(runContrastWithSources({ [source]: `${original}\n${mutation}` })).rejects.toMatchObject({
+      stderr: expect.stringContaining(message),
+    })
+  })
+
+  it('rejects an unapproved ec-today override in the Homepage SFC style', async () => {
+    const pageSource = await readFile(resolve(root, 'web-nuxt/pages/index.vue'), 'utf8')
+    const mutatedPage = pageSource.replace('</style>', '.ec-today { color: transparent; }\n</style>')
+
+    await expect(runContrastWithSources({ homePageVue: mutatedPage })).rejects.toMatchObject({
+      stderr: expect.stringContaining('Unexpected protected consumer declaration: pages/index.vue#style-0'),
+    })
+  })
+
+  it.each([
+    {
+      name: 'a function containing a semicolon',
+      fixture: '.syntax-probe { background-image: url("data:image/svg+xml;utf8,<svg>{}</svg>"); }',
+    },
+    {
+      name: 'a balanced custom-property block',
+      fixture: '.syntax-probe { --unprotected-block: {a;b}; color: var(--color-text); }',
+    },
+    {
+      name: 'an escaped brace in a selector',
+      fixture: String.raw`.syntax-probe\{literal { color: var(--color-text); }`,
+    },
+  ])('accepts valid CSS with $name', async ({ fixture }) => {
+    const homeSource = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
+    await expect(runContrastWithHomeCss(`${homeSource}\n${fixture}`)).resolves.toMatchObject({
+      stdout: expect.stringContaining('homepage-on-media-text-light-srgb 10.55 4.5'),
+      stderr: '',
     })
   })
 

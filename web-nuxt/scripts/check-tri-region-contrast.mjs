@@ -1,9 +1,20 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { parse as parseVueSfc } from '@vue/compiler-sfc'
+import postcss from 'postcss'
+import selectorParser from 'postcss-selector-parser'
+import valueParser from 'postcss-value-parser'
 
 const css = readFileSync(resolve(process.cwd(), 'assets/css/variables.css'), 'utf8')
+const baseCss = readFileSync(resolve(process.cwd(), 'assets/css/base.css'), 'utf8')
+const darkOverridesCss = readFileSync(resolve(process.cwd(), 'assets/css/dark-overrides.css'), 'utf8')
 const homeCss = readFileSync(resolve(process.cwd(), 'assets/css/home-nocturne.css'), 'utf8')
-const parsedHomeCss = stripCssComments(homeCss)
+const homePageVue = readFileSync(resolve(process.cwd(), 'pages/index.vue'), 'utf8')
+const variablesRoot = parseStylesheet(css, 'assets/css/variables.css')
+const baseRoot = parseStylesheet(baseCss, 'assets/css/base.css')
+const darkOverridesRoot = parseStylesheet(darkOverridesCss, 'assets/css/dark-overrides.css')
+const homeRoot = parseStylesheet(homeCss, 'assets/css/home-nocturne.css')
+const homePageStyleRoots = parseHomePageStyles(homePageVue)
 const pairs = [
   ['body-light', 'mekong-ink', 'alluvial-paper', 7],
   ['muted-light', 'mekong-muted', 'alluvial-paper', 4.5],
@@ -36,27 +47,24 @@ const protectedHomeRootNames = new Set([
   'home-color-today-surface',
 ])
 const protectedHomeLightNames = new Set(['home-color-focus-on-media'])
-const parsedHomeRules = parseCssRules(parsedHomeCss)
-const homeRootRule = readUniqueCssRule(parsedHomeRules, homeRootSelector)
-const homeLightRule = readUniqueCssRule(parsedHomeRules, homeLightSelector)
-validateProtectedHomeDeclarations(parsedHomeRules, homeRootRule, homeLightRule)
-const homeRootBlock = homeRootRule.body
-const homeLightBlock = homeLightRule.body
-const actionSurfaceWeight = readMixWeight('color-action-surface')
-const actionBorderWeight = readMixWeight('color-action-border')
+const homeRootRule = readUniqueTopLevelRule(homeRoot, homeRootSelector)
+const homeLightRule = readUniqueTopLevelRule(homeRoot, homeLightSelector)
+validateProtectedHomeDeclarations(homeRoot, homeRootRule, homeLightRule)
+const actionSurfaceWeight = readMixWeight('color-action-surface', variablesRoot)
+const actionBorderWeight = readMixWeight('color-action-border', variablesRoot)
 const homeAmberSurfaceWeight = readMixWeight(
   'home-color-amber-surface',
-  parsedHomeCss,
+  homeRootRule,
   'color-material-amber',
 )
 const homeTodaySurfaceWeight = readMixWeight(
   'home-color-today-surface',
-  parsedHomeCss,
+  homeRootRule,
   'color-error',
 )
 const homeOnMediaPlateAlpha = readRgbaAlpha(
   'home-color-on-media-plate',
-  parsedHomeCss,
+  homeRootRule,
   'black-rgb',
 )
 const supportedSemanticAliases = new Set([
@@ -68,13 +76,13 @@ const supportedSemanticAliases = new Set([
   'color-warning',
   'surface-white',
 ])
-const homeAmberTextAlias = readSemanticAlias(homeRootBlock, 'home-color-amber-text')
-const homeFocusActionAlias = readSemanticAlias(homeRootBlock, 'home-color-focus-on-action')
-const homeFocusMediaAlias = readSemanticAlias(homeRootBlock, 'home-color-focus-on-media')
-const homeFocusMediaLightAlias = readSemanticAlias(homeLightBlock, 'home-color-focus-on-media')
-const homeFocusMediaHaloAlias = readSemanticAlias(homeRootBlock, 'home-color-focus-on-media-halo')
-const homeOnMediaTextAlias = readSemanticAlias(homeRootBlock, 'home-color-on-media-text')
-const homeTodayTextAlias = readSemanticAlias(homeRootBlock, 'home-color-today-text')
+const homeAmberTextAlias = readSemanticAlias(homeRootRule, 'home-color-amber-text')
+const homeFocusActionAlias = readSemanticAlias(homeRootRule, 'home-color-focus-on-action')
+const homeFocusMediaAlias = readSemanticAlias(homeRootRule, 'home-color-focus-on-media')
+const homeFocusMediaLightAlias = readSemanticAlias(homeLightRule, 'home-color-focus-on-media')
+const homeFocusMediaHaloAlias = readSemanticAlias(homeRootRule, 'home-color-focus-on-media-halo')
+const homeOnMediaTextAlias = readSemanticAlias(homeRootRule, 'home-color-on-media-text')
+const homeTodayTextAlias = readSemanticAlias(homeRootRule, 'home-color-today-text')
 const whiteRgb = readRgbTuple('white-rgb')
 const blackRgb = readRgbTuple('black-rgb')
 const semanticNames = pairs.map(([name]) => name)
@@ -95,163 +103,21 @@ const expectedAuditNames = new Set([
     ]),
   ),
 ])
-const fallbackRoot = readCssBlock(css, ':root {')
-const darkBlock = readCssBlock(css, '\n.dark {')
-const finalOklchSupport = css.lastIndexOf('@supports (color: oklch(0% 0 0))')
-if (finalOklchSupport < 0) throw new Error('Missing final OKLCH runtime block')
-const darkOklchBlock = readCssBlock(css, '\n  .dark {', finalOklchSupport)
+const fallbackRootRule = readFirstTopLevelRule(variablesRoot, ':root')
+const darkRule = readFirstTopLevelRule(variablesRoot, '.dark')
+const darkOklchRule = readFinalNestedRule(
+  variablesRoot,
+  'supports',
+  '(color: oklch(0% 0 0))',
+  '.dark',
+)
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
-function stripCssComments(source) {
-  let output = ''
-  let state = 'normal'
-  let escaped = false
-
-  for (let index = 0; index < source.length; index += 1) {
-    const character = source[index]
-    const next = source[index + 1]
-
-    if (state === 'comment') {
-      if (character === '*' && next === '/') {
-        state = 'normal'
-        index += 1
-      }
-      else if (character === '\n' || character === '\r') {
-        output += character
-      }
-      continue
-    }
-
-    if (state === 'normal') {
-      if (escaped) {
-        output += character
-        if (character === '\r' && next === '\n') {
-          output += next
-          index += 1
-        }
-        escaped = false
-      }
-      else if (character === '\\') {
-        output += character
-        escaped = true
-      }
-      else if (character === '/' && next === '*') {
-        output += ' '
-        state = 'comment'
-        index += 1
-      }
-      else {
-        output += character
-        if (character === "'") state = 'single-quote'
-        else if (character === '"') state = 'double-quote'
-      }
-      continue
-    }
-
-    output += character
-    if (escaped) {
-      if (character === '\r' && next === '\n') {
-        output += next
-        index += 1
-      }
-      escaped = false
-    }
-    else if (character === '\\') {
-      escaped = true
-    }
-    else if ((state === 'single-quote' && character === "'")
-      || (state === 'double-quote' && character === '"')) {
-      state = 'normal'
-    }
-    else if (character === '\n' || character === '\r' || character === '\f') {
-      throw new Error('Unescaped newline in CSS string')
-    }
-  }
-
-  if (state === 'comment') throw new Error('Unterminated CSS comment')
-  if (state !== 'normal') throw new Error('Unterminated CSS string')
-  if (escaped) throw new Error('Unterminated CSS escape')
-  return output
-}
-
-function readCssBlock(source, marker, fromIndex = 0) {
-  const start = source.indexOf(marker, fromIndex)
-  if (start < 0) throw new Error(`Missing CSS block: ${marker}`)
-  const open = source.indexOf('{', start)
-  if (open < 0) throw new Error(`Missing opening brace: ${marker}`)
-
-  return readCssBlockAt(source, open, marker)
-}
-
-function readCssBlockAt(source, open, marker) {
-  if (source[open] !== '{') throw new Error(`Missing opening brace: ${marker}`)
-
-  let depth = 0
-  for (let index = open; index < source.length; index += 1) {
-    if (source[index] === '{') depth += 1
-    if (source[index] === '}') depth -= 1
-    if (depth === 0) return source.slice(open + 1, index)
-  }
-
-  throw new Error(`Missing closing brace: ${marker}`)
-}
-
 function normalizeCssPrelude(value) {
   return value.replace(/\s+/g, ' ').trim()
-}
-
-function findCssBoundary(source, start, end) {
-  let quote = ''
-  let escaped = false
-  let parentheses = 0
-  let brackets = 0
-  for (let index = start; index < end; index += 1) {
-    const character = source[index]
-    if (quote) {
-      if (escaped) escaped = false
-      else if (character === '\\') escaped = true
-      else if (character === quote) quote = ''
-      continue
-    }
-    if (character === '"' || character === "'") {
-      quote = character
-      continue
-    }
-    if (character === '(') parentheses += 1
-    else if (character === ')') parentheses -= 1
-    else if (character === '[') brackets += 1
-    else if (character === ']') brackets -= 1
-    else if (parentheses === 0 && brackets === 0 && (character === '{' || character === ';')) {
-      return index
-    }
-  }
-  return -1
-}
-
-function findMatchingBrace(source, open, end) {
-  let depth = 0
-  let quote = ''
-  let escaped = false
-  for (let index = open; index < end; index += 1) {
-    const character = source[index]
-    if (quote) {
-      if (escaped) escaped = false
-      else if (character === '\\') escaped = true
-      else if (character === quote) quote = ''
-      continue
-    }
-    if (character === '"' || character === "'") {
-      quote = character
-      continue
-    }
-    if (character === '{') depth += 1
-    if (character === '}') depth -= 1
-    if (depth === 0) return index
-  }
-  throw new Error('Missing closing brace in Homepage CSS')
 }
 
 function isCssHexDigit(character) {
@@ -261,12 +127,6 @@ function isCssHexDigit(character) {
 function isCssWhitespace(character) {
   return character === ' ' || character === '\t' || character === '\n'
     || character === '\r' || character === '\f'
-}
-
-function isCssNameCharacter(character) {
-  if (!character) return false
-  const codePoint = character.codePointAt(0)
-  return /[a-z0-9_-]/i.test(character) || codePoint >= 0x80
 }
 
 function decodeCssIdentifierEscape(source, start) {
@@ -293,134 +153,118 @@ function decodeCssIdentifierEscape(source, start) {
   return { value: String.fromCodePoint(codePoint), end }
 }
 
-function parseCustomPropertyDeclaration(segment) {
-  let index = 0
-  while (isCssWhitespace(segment[index])) index += 1
-  if (!segment.startsWith('--', index)) return null
-
-  let canonicalName = '--'
-  index += 2
-  while (index < segment.length) {
-    const character = segment[index]
-    if (character === ':') break
-    if (isCssWhitespace(character)) {
-      while (isCssWhitespace(segment[index])) index += 1
-      if (segment[index] !== ':') throw new Error('Missing colon after custom property name')
-      break
-    }
-    if (character === '\\') {
-      const decoded = decodeCssIdentifierEscape(segment, index)
-      canonicalName += decoded.value
-      index = decoded.end
+function canonicalizeCssIdentifier(source) {
+  let value = ''
+  for (let index = 0; index < source.length;) {
+    if (source[index] !== '\\') {
+      if (source[index].codePointAt(0) === 0) throw new Error('Invalid CSS identifier escape')
+      value += source[index]
+      index += 1
       continue
     }
-    if (!isCssNameCharacter(character)) throw new Error('Invalid CSS custom property identifier')
-    canonicalName += character
-    index += 1
+    const decoded = decodeCssIdentifierEscape(source, index)
+    value += decoded.value
+    index = decoded.end
   }
-
-  if (canonicalName.length === 2) throw new Error('Empty CSS custom property name')
-  if (segment[index] !== ':') throw new Error('Missing colon after custom property name')
-  return { name: canonicalName.slice(2), value: segment.slice(index + 1).trim() }
+  return value
 }
 
-function readCustomPropertyDeclarations(body) {
-  const declarations = []
-  let start = 0
-  let quote = ''
-  let escaped = false
-  let parentheses = 0
-  let brackets = 0
-  let braces = 0
-
-  const readSegment = (end) => {
-    const segment = body.slice(start, end).trim()
-    const declaration = parseCustomPropertyDeclaration(segment)
-    if (declaration) declarations.push(declaration)
-  }
-
-  for (let index = 0; index < body.length; index += 1) {
-    const character = body[index]
-    if (quote) {
-      if (escaped) escaped = false
-      else if (character === '\\') escaped = true
-      else if (character === quote) quote = ''
-      continue
-    }
-    if (character === '"' || character === "'") {
-      quote = character
-      continue
-    }
-    if (character === '(') parentheses += 1
-    else if (character === ')') parentheses -= 1
-    else if (character === '[') brackets += 1
-    else if (character === ']') brackets -= 1
-    else if (character === '{') braces += 1
-    else if (character === '}') {
-      braces -= 1
-      if (braces === 0) start = index + 1
-    }
-    else if (character === ';' && brackets === 0 && braces === 0) {
-      readSegment(index)
-      start = index + 1
-      parentheses = 0
-    }
-  }
-  readSegment(body.length)
-  return declarations
+function parseStylesheet(source, from) {
+  return postcss.parse(source, { from })
 }
 
-function parseCssRuleRange(source, start, end, context, rules, inheritedSelector = '') {
-  let cursor = start
-  while (cursor < end) {
-    while (cursor < end && /\s/.test(source[cursor])) cursor += 1
-    if (cursor >= end) break
-    const boundary = findCssBoundary(source, cursor, end)
-    if (boundary < 0) break
-    if (source[boundary] === ';') {
-      cursor = boundary + 1
-      continue
-    }
-
-    const prelude = normalizeCssPrelude(source.slice(cursor, boundary))
-    const close = findMatchingBrace(source, boundary, end)
-    const body = source.slice(boundary + 1, close)
-    if (prelude.startsWith('@')) {
-      const nestedContext = [...context, prelude]
-      if (inheritedSelector) {
-        const declarations = readCustomPropertyDeclarations(body)
-        if (declarations.length > 0) {
-          rules.push({ selector: inheritedSelector, context: nestedContext, body, declarations })
-        }
-      }
-      parseCssRuleRange(source, boundary + 1, close, nestedContext, rules, inheritedSelector)
-    }
-    else if (prelude) {
-      const selector = inheritedSelector ? `${inheritedSelector} -> ${prelude}` : prelude
-      rules.push({
-        selector,
-        context,
-        body,
-        declarations: readCustomPropertyDeclarations(body),
-      })
-      parseCssRuleRange(source, boundary + 1, close, context, rules, selector)
-    }
-    cursor = close + 1
+function parseHomePageStyles(source) {
+  const { descriptor, errors } = parseVueSfc(source, { filename: 'pages/index.vue' })
+  if (errors.length > 0) {
+    const message = errors.map(error => error instanceof Error ? error.message : String(error)).join('; ')
+    throw new Error(`Invalid pages/index.vue: ${message}`)
   }
+  return descriptor.styles.map((style, index) => ({
+    source: `pages/index.vue#style-${index}`,
+    root: parseStylesheet(style.content, `pages/index.vue#style-${index}`),
+  }))
 }
 
-function parseCssRules(source) {
+function readSelector(selector) {
+  const classes = new Set()
+  const normalized = selectorParser((root) => {
+    root.walkClasses(node => classes.add(node.value))
+  }).processSync(selector, { lossless: false })
+  return { selector: normalized, classes }
+}
+
+function readRuleChain(node) {
   const rules = []
-  parseCssRuleRange(source, 0, source.length, [], rules)
+  for (let parent = node.parent; parent && parent.type !== 'root'; parent = parent.parent) {
+    if (parent.type === 'rule') rules.unshift(parent)
+  }
   return rules
 }
 
-function readUniqueCssRule(rules, selector) {
-  const matches = rules.filter(rule => rule.context.length === 0 && rule.selector === selector)
+function readAtRuleContext(node) {
+  const contexts = []
+  for (let parent = node.parent; parent && parent.type !== 'root'; parent = parent.parent) {
+    if (parent.type === 'atrule') {
+      contexts.unshift(normalizeCssPrelude(`@${parent.name} ${parent.params}`))
+    }
+  }
+  return contexts.length === 0 ? 'top level' : contexts.join(' > ')
+}
+
+function readSelectorChain(node) {
+  const classes = new Set()
+  const selectors = readRuleChain(node).map((rule) => {
+    const parsed = readSelector(rule.selector)
+    for (const className of parsed.classes) classes.add(className)
+    return parsed.selector
+  })
+  return { selector: selectors.join(' -> '), classes }
+}
+
+function readUniqueTopLevelRule(root, selector) {
+  const normalizedSelector = readSelector(selector).selector
+  const matches = root.nodes.filter(node => node.type === 'rule'
+    && readSelector(node.selector).selector === normalizedSelector)
   const marker = `${selector} {`
   if (matches.length === 0) throw new Error(`Missing CSS block: ${marker}`)
   if (matches.length > 1) throw new Error(`Duplicate CSS block: ${marker}`)
   return matches[0]
+}
+
+function readFirstTopLevelRule(root, selector) {
+  const normalizedSelector = readSelector(selector).selector
+  const match = root.nodes.find(node => node.type === 'rule'
+    && readSelector(node.selector).selector === normalizedSelector)
+  if (!match) throw new Error(`Missing CSS block: ${selector} {`)
+  return match
+}
+
+function readFinalNestedRule(root, atRuleName, atRuleParams, selector) {
+  const atRules = root.nodes.filter(node => node.type === 'atrule'
+    && node.name === atRuleName && normalizeCssPrelude(node.params) === atRuleParams)
+  const finalAtRule = atRules.at(-1)
+  if (!finalAtRule) throw new Error('Missing final OKLCH runtime block')
+  const normalizedSelector = readSelector(selector).selector
+  const match = finalAtRule.nodes?.find(node => node.type === 'rule'
+    && readSelector(node.selector).selector === normalizedSelector)
+  if (!match) throw new Error(`Missing CSS block: ${selector} {`)
+  return match
+}
+
+function canonicalDeclarationName(declaration) {
+  const name = canonicalizeCssIdentifier(declaration.prop)
+  if (name.startsWith('--home-color-') && !/^--[a-z0-9-]+$/.test(name)) {
+    throw new Error(`Invalid protected custom property name: ${name}`)
+  }
+  return name
+}
+
+function findDeclarations(container, name) {
+  const declarations = []
+  container.walkDecls((declaration) => {
+    if (canonicalDeclarationName(declaration) === `--${name}`) declarations.push(declaration)
+  })
+  return declarations
 }
 
 function declarationCountError(name, count) {
@@ -434,27 +278,138 @@ function declarationCountError(name, count) {
 
 function validateApprovedDeclarationCounts(rule, names) {
   for (const name of names) {
-    const count = rule.declarations.filter(declaration => declaration.name === name).length
+    const count = findDeclarations(rule, name).filter(declaration => declaration.parent === rule).length
     if (count !== 1) throw new Error(declarationCountError(name, count))
   }
 }
 
-function validateProtectedHomeDeclarations(rules, rootRule, lightRule) {
+function validateProtectedHomeDeclarations(root, rootRule, lightRule) {
   const protectedNames = new Set([...protectedHomeRootNames, ...protectedHomeLightNames])
-  for (const rule of rules) {
-    for (const declaration of rule.declarations) {
-      if (!protectedNames.has(declaration.name)) continue
-      const approved = (rule === rootRule && protectedHomeRootNames.has(declaration.name))
-        || (rule === lightRule && protectedHomeLightNames.has(declaration.name))
-      if (!approved) {
-        const context = rule.context.length === 0 ? 'top level' : rule.context.join(' > ')
-        throw new Error(`Unexpected protected declaration for --${declaration.name} in ${rule.selector} (${context})`)
-      }
+  root.walkDecls((declaration) => {
+    const canonicalName = canonicalDeclarationName(declaration)
+    if (!canonicalName.startsWith('--')) return
+    const name = canonicalName.slice(2)
+    if (!protectedNames.has(name)) return
+    const approved = (declaration.parent === rootRule && protectedHomeRootNames.has(name))
+      || (declaration.parent === lightRule && protectedHomeLightNames.has(name))
+    if (!approved) {
+      const { selector } = readSelectorChain(declaration)
+      throw new Error(`Unexpected protected declaration for --${name} in ${selector} (${readAtRuleContext(declaration)})`)
     }
-  }
+  })
   validateApprovedDeclarationCounts(rootRule, protectedHomeRootNames)
   validateApprovedDeclarationCounts(lightRule, protectedHomeLightNames)
 }
+
+const protectedConsumerClasses = new Set([
+  'hero-sub',
+  'hero-nearby',
+  'hero-search',
+  'hero-action--soft',
+  'ec-countdown',
+  'ec-today',
+])
+const protectedConsumerProperties = new Set([
+  'color',
+  'background',
+  'opacity',
+  'outline',
+  'box-shadow',
+  'border',
+  'border-color',
+])
+
+function consumerTupleKey(tuple) {
+  return JSON.stringify(tuple)
+}
+
+const approvedConsumerTuples = new Set([
+  ['assets/css/base.css', 'top level', '.hero-search input', 'border', '2px solid transparent'],
+  ['assets/css/base.css', 'top level', '.hero-search input:focus', 'outline', 'none'],
+  ['assets/css/base.css', 'top level', '.hero-search input:focus', 'border-color', 'var(--accent)'],
+  ['assets/css/base.css', 'top level', '.hero-search input:focus', 'box-shadow', '0 0 0 2px rgba(var(--accent-rgb), .4), inset 0 0 0 1.5px rgba(var(--accent-rgb), .2)'],
+  ['assets/css/base.css', 'top level', '.hero-search button', 'border', 'none'],
+  ['assets/css/base.css', 'top level', '.hero-search button', 'background', 'var(--accent)'],
+  ['assets/css/base.css', 'top level', '.hero-search button', 'color', 'var(--ink)'],
+  ['assets/css/base.css', 'top level', '.hero-search button:hover', 'background', 'var(--accent-dark)'],
+  ['assets/css/base.css', 'top level', '.hero-search button:hover', 'color', 'var(--ink)'],
+  ['assets/css/base.css', 'top level', '.hero-search button:hover', 'box-shadow', '0 4px 20px rgba(var(--accent-rgb), .45)'],
+  ['assets/css/base.css', 'top level', '.hero-search button:active', 'box-shadow', '0 2px 8px rgba(var(--accent-rgb), .3)'],
+  ['assets/css/base.css', 'top level', '.hero-search button:focus-visible', 'outline', '2px solid var(--text-on-dark, #fff)'],
+  ['assets/css/base.css', 'top level', '.dark .hero-search input', 'background', 'var(--bg-alt)'],
+  ['assets/css/base.css', 'top level', '.dark .hero-search input', 'color', 'var(--ink)'],
+  ['assets/css/base.css', 'top level', '.dark .hero-search input', 'border-color', 'var(--line)'],
+  ['assets/css/base.css', 'top level', '.dark .hero-search', 'border-color', 'var(--glass-border)'],
+  ['assets/css/base.css', 'top level', '.dark .hero-search:focus-within', 'border-color', 'var(--primary-fg)'],
+  ['assets/css/base.css', 'top level', '.dark .hero-search:focus-within', 'box-shadow', '0 0 0 3px rgba(var(--primary-rgb), .18)'],
+  ['assets/css/dark-overrides.css', 'top level', '.dark .ec-countdown', 'color', 'var(--accent-text)'],
+  ['assets/css/dark-overrides.css', 'top level', '.dark .ec-countdown', 'background', 'rgba(var(--accent-rgb), .12)'],
+  ['pages/index.vue#style-0', 'top level', '.home .hero-sub', 'opacity', '.95'],
+  ['pages/index.vue#style-0', 'top level', '.dark .home .hero-sub', 'opacity', '1'],
+  ['pages/index.vue#style-0', 'top level', '.home .hero-search', 'background', 'rgba(var(--white-rgb),.14)'],
+  ['pages/index.vue#style-0', 'top level', '.home .hero-search', 'border', '.5px solid rgba(var(--white-rgb),.30)'],
+  ['pages/index.vue#style-0', 'top level', '.home .hero-search', 'box-shadow', '0 8px 30px rgba(var(--black-rgb),.18), 0 2px 8px rgba(var(--black-rgb),.12)'],
+  ['pages/index.vue#style-0', 'top level', '.home .hero-search:focus-within', 'border-color', 'var(--color-focus)'],
+  ['pages/index.vue#style-0', 'top level', '.home .hero-search:focus-within', 'box-shadow', '0 12px 40px rgba(var(--black-rgb),.22), 0 0 0 4px color-mix(in srgb, var(--color-focus) 22%, transparent)'],
+  ['pages/index.vue#style-0', 'top level', '.home .hero-search input', 'border-color', 'transparent'],
+  ['pages/index.vue#style-0', 'top level', '.home .hero-search input', 'background', 'var(--card)'],
+  ['pages/index.vue#style-0', 'top level', '.home .hero-search input:focus', 'border-color', 'transparent'],
+  ['pages/index.vue#style-0', 'top level', '.home .hero-search input:focus', 'box-shadow', 'none'],
+  ['pages/index.vue#style-0', 'top level', '.home .hero-nearby', 'color', 'rgba(var(--white-rgb),.92)'],
+  ['pages/index.vue#style-0', 'top level', '.home .hero-nearby:focus-visible', 'outline', '2px solid var(--color-focus)'],
+  ['pages/index.vue#style-0', 'top level', '.ec-countdown', 'color', 'var(--home-color-amber-text)'],
+  ['pages/index.vue#style-0', 'top level', '.ec-countdown', 'background', 'var(--home-color-amber-surface)'],
+  ['pages/index.vue#style-0', 'top level', '.ec-today', 'color', 'var(--color-error)'],
+  ['pages/index.vue#style-0', 'top level', '.dark .home .hero-search', 'background', 'rgba(var(--white-rgb),.22)'],
+  ['pages/index.vue#style-0', 'top level', '.dark .home .hero-search', 'border-color', 'rgba(var(--white-rgb),.38)'],
+  ['pages/index.vue#style-0', 'top level', '.dark .home .hero-search input', 'background', 'var(--bg-warm)'],
+  ['pages/index.vue#style-0', 'top level', '.dark .home .hero-search input', 'color', 'var(--ink)'],
+  ['pages/index.vue#style-0', 'top level', '.dark .home .hero-search input::placeholder', 'color', 'rgba(var(--white-rgb),.50)'],
+  ['pages/index.vue#style-0', 'top level', '.dark .home .hero-search:focus-within', 'border-color', 'var(--color-focus)'],
+  ['pages/index.vue#style-0', 'top level', '.dark .ec-today', 'color', 'var(--color-error)'],
+  ['pages/index.vue#style-0', '@media (prefers-reduced-transparency: reduce)', '.home .hero-search', 'background', 'rgba(var(--black-rgb),.35)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-sub', 'background', 'var(--home-color-on-media-plate)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-sub', 'color', 'var(--home-color-on-media-text)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-sub', 'opacity', '1'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-search[data-color-role="action-primary"]', 'border-color', 'var(--color-action)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-search[data-color-role="action-primary"]', 'background', 'var(--color-action)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-search[data-color-role="action-primary"]', 'color', 'var(--color-on-action)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-search[data-color-role="action-primary"]:focus-within', 'outline', '3px solid var(--home-color-focus-on-media)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-search[data-color-role="action-primary"]:focus-within', 'border-color', 'var(--color-action)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-search[data-color-role="action-primary"]:focus-within', 'box-shadow', '0 0 0 2px var(--home-color-focus-on-media-halo)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-nearby:focus-visible', 'outline', '3px solid var(--home-color-focus-on-media)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-nearby:focus-visible', 'box-shadow', '0 0 0 2px var(--home-color-focus-on-media-halo)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-search[data-color-role="action-primary"] input:focus-visible', 'outline', '3px solid var(--home-color-focus-on-action)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-search[data-color-role="action-primary"] input:focus-visible', 'box-shadow', '0 0 0 2px var(--home-color-focus-on-media-halo)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .ec-date[data-material-accent="amber"],[data-home-pilot="nocturne-b1"] .ec-countdown[data-material-accent="amber"]', 'background', 'var(--home-color-amber-surface)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .ec-date[data-material-accent="amber"],[data-home-pilot="nocturne-b1"] .ec-countdown[data-material-accent="amber"]', 'color', 'var(--home-color-amber-text)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .ec-countdown.ec-today[data-material-accent="amber"]', 'background', 'var(--home-color-today-surface)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .ec-countdown.ec-today[data-material-accent="amber"]', 'color', 'var(--home-color-today-text)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .ec-countdown.ec-today[data-material-accent="amber"]', 'box-shadow', 'inset 0 0 0 1px var(--color-error)'],
+].map(consumerTupleKey))
+
+function validateProtectedConsumerDeclarations(sources) {
+  for (const { source, root } of sources) {
+    root.walkDecls((declaration) => {
+      const property = canonicalDeclarationName(declaration).toLowerCase()
+      if (!protectedConsumerProperties.has(property)) return
+      const { selector, classes } = readSelectorChain(declaration)
+      if (![...classes].some(className => protectedConsumerClasses.has(className))) return
+      const value = `${valueParser(declaration.value).toString().trim()}${declaration.important ? ' !important' : ''}`
+      const tuple = [source, readAtRuleContext(declaration), selector, property, value]
+      if (!approvedConsumerTuples.has(consumerTupleKey(tuple))) {
+        throw new Error(`Unexpected protected consumer declaration: ${tuple.join(' | ')}`)
+      }
+    })
+  }
+}
+
+validateProtectedConsumerDeclarations([
+  { source: 'assets/css/base.css', root: baseRoot },
+  { source: 'assets/css/dark-overrides.css', root: darkOverridesRoot },
+  ...homePageStyleRoots,
+  { source: 'assets/css/home-nocturne.css', root: homeRoot },
+])
 
 function readFiniteNumber(value, label) {
   const number = Number(value)
@@ -462,43 +417,75 @@ function readFiniteNumber(value, label) {
   return number
 }
 
-function readMixWeight(name, source = css, sourceToken = 'color-action') {
-  const escaped = escapeRegExp(name)
-  const escapedSourceToken = escapeRegExp(sourceToken)
-  const declarations = [...source.matchAll(new RegExp(
-    `--${escaped}:\\s*color-mix\\(in srgb, var\\(--${escapedSourceToken}\\)\\s+([0-9.]+)%, transparent\\)\\s*;`,
-    'gi',
-  ))]
+function readMixWeight(name, container, sourceToken = 'color-action') {
+  const declarations = findDeclarations(container, name)
   if (declarations.length === 0) throw new Error(`Missing sRGB color-mix contract for --${name}`)
   if (declarations.length > 1) throw new Error(`Duplicate color-mix declaration for --${name}`)
-  const weight = readFiniteNumber(declarations[0][1], `--${name}`) / 100
+  const nodes = valueParser(declarations[0].value).nodes.filter(node => node.type !== 'space' && node.type !== 'comment')
+  const mix = nodes.length === 1 && nodes[0].type === 'function' && nodes[0].value.toLowerCase() === 'color-mix'
+    ? nodes[0]
+    : null
+  const parts = mix?.nodes.filter(node => node.type !== 'space' && node.type !== 'comment') ?? []
+  const sourceVar = parts[3]
+  const sourceVarNodes = sourceVar?.type === 'function'
+    ? sourceVar.nodes.filter(node => node.type !== 'space' && node.type !== 'comment')
+    : []
+  const valid = parts.length === 7
+    && parts[0].type === 'word' && parts[0].value.toLowerCase() === 'in'
+    && parts[1].type === 'word' && parts[1].value.toLowerCase() === 'srgb'
+    && parts[2].type === 'div' && parts[2].value === ','
+    && sourceVar?.type === 'function' && sourceVar.value.toLowerCase() === 'var'
+    && sourceVarNodes.length === 1 && sourceVarNodes[0].type === 'word'
+    && canonicalizeCssIdentifier(sourceVarNodes[0].value) === `--${sourceToken}`
+    && parts[4].type === 'word' && /^([0-9.]+)%$/.test(parts[4].value)
+    && parts[5].type === 'div' && parts[5].value === ','
+    && parts[6].type === 'word' && parts[6].value.toLowerCase() === 'transparent'
+  if (!valid) throw new Error(`Missing sRGB color-mix contract for --${name}`)
+  const weight = readFiniteNumber(parts[4].value.slice(0, -1), `--${name}`) / 100
   if (weight < 0 || weight > 1) throw new Error(`Out-of-range color-mix weight for --${name}`)
   return weight
 }
 
-function readRgbaAlpha(name, source, sourceToken) {
-  const escaped = escapeRegExp(name)
-  const escapedSourceToken = escapeRegExp(sourceToken)
-  const declarations = [...source.matchAll(new RegExp(
-    `--${escaped}:\\s*rgba\\(var\\(--${escapedSourceToken}\\),\\s*([0-9.]+)\\)\\s*;`,
-    'gi',
-  ))]
+function readRgbaAlpha(name, container, sourceToken) {
+  const declarations = findDeclarations(container, name)
   if (declarations.length === 0) throw new Error(`Missing rgba contract for --${name}`)
   if (declarations.length > 1) throw new Error(`Duplicate rgba declaration for --${name}`)
-  const alpha = readFiniteNumber(declarations[0][1], `--${name}`)
+  const nodes = valueParser(declarations[0].value).nodes.filter(node => node.type !== 'space' && node.type !== 'comment')
+  const rgba = nodes.length === 1 && nodes[0].type === 'function' && nodes[0].value.toLowerCase() === 'rgba'
+    ? nodes[0]
+    : null
+  const parts = rgba?.nodes.filter(node => node.type !== 'space' && node.type !== 'comment') ?? []
+  const sourceVar = parts[0]
+  const sourceVarNodes = sourceVar?.type === 'function'
+    ? sourceVar.nodes.filter(node => node.type !== 'space' && node.type !== 'comment')
+    : []
+  const valid = parts.length === 3
+    && sourceVar?.type === 'function' && sourceVar.value.toLowerCase() === 'var'
+    && sourceVarNodes.length === 1 && sourceVarNodes[0].type === 'word'
+    && canonicalizeCssIdentifier(sourceVarNodes[0].value) === `--${sourceToken}`
+    && parts[1].type === 'div' && parts[1].value === ','
+    && parts[2].type === 'word' && /^[0-9.]+$/.test(parts[2].value)
+  if (!valid) throw new Error(`Missing rgba contract for --${name}`)
+  const alpha = readFiniteNumber(parts[2].value, `--${name}`)
   if (alpha < 0 || alpha > 1) throw new Error(`Out-of-range rgba alpha for --${name}`)
   return alpha
 }
 
-function readSemanticAlias(block, name) {
-  const escaped = escapeRegExp(name)
-  const declarations = [...block.matchAll(new RegExp(`--${escaped}\\s*:\\s*([^;{}]*)(?:;|$)`, 'gi'))]
+function readSemanticAlias(container, name) {
+  const declarations = findDeclarations(container, name).filter(declaration => declaration.parent === container)
   if (declarations.length === 0) throw new Error(`Missing semantic alias assignment for --${name}`)
   if (declarations.length > 1) throw new Error(`Duplicate semantic alias assignment for --${name}`)
-  const value = declarations[0][1].trim()
-  const match = /^var\(--([\w-]+)\)$/.exec(value)
-  if (!match) throw new Error(`Malformed semantic alias assignment for --${name}`)
-  const alias = match[1]
+  const nodes = valueParser(declarations[0].value).nodes.filter(node => node.type !== 'space' && node.type !== 'comment')
+  const variable = nodes.length === 1 && nodes[0].type === 'function' && nodes[0].value.toLowerCase() === 'var'
+    ? nodes[0]
+    : null
+  const variableNodes = variable?.nodes.filter(node => node.type !== 'space' && node.type !== 'comment') ?? []
+  if (variableNodes.length !== 1 || variableNodes[0].type !== 'word') {
+    throw new Error(`Malformed semantic alias assignment for --${name}`)
+  }
+  const canonicalAlias = canonicalizeCssIdentifier(variableNodes[0].value)
+  if (!canonicalAlias.startsWith('--')) throw new Error(`Malformed semantic alias assignment for --${name}`)
+  const alias = canonicalAlias.slice(2)
   if (!supportedSemanticAliases.has(alias)) {
     throw new Error(`Unsupported semantic alias for --${name}: --${alias}`)
   }
@@ -541,19 +528,19 @@ function readOklchToken(name) {
   )
 }
 
-function readHexDeclaration(block, name) {
-  const escaped = escapeRegExp(name)
-  const match = new RegExp(`--${escaped}:\\s*(#[0-9a-f]{6})\\s*;`, 'i').exec(block)
-  if (!match) throw new Error(`Missing sRGB declaration for --${name}`)
-  return hexToSrgb(match[1])
+function readHexDeclaration(rule, name) {
+  const declarations = findDeclarations(rule, name).filter(declaration => declaration.parent === rule)
+  if (declarations.length !== 1 || !/^#[0-9a-f]{6}$/i.test(declarations[0].value.trim())) {
+    throw new Error(`Missing sRGB declaration for --${name}`)
+  }
+  return hexToSrgb(declarations[0].value.trim())
 }
 
-function readOklchDeclaration(block, name) {
-  const escaped = escapeRegExp(name)
-  const match = new RegExp(
-    `--${escaped}:\\s*oklch\\(\\s*([0-9.]+)%\\s+([0-9.]+)\\s+([0-9.]+)\\s*\\)\\s*;`,
-    'i',
-  ).exec(block)
+function readOklchDeclaration(rule, name) {
+  const declarations = findDeclarations(rule, name).filter(declaration => declaration.parent === rule)
+  const match = declarations.length === 1
+    ? /^oklch\(\s*([0-9.]+)%\s+([0-9.]+)\s+([0-9.]+)\s*\)$/i.exec(declarations[0].value.trim())
+    : null
   if (!match) throw new Error(`Missing OKLCH declaration for --${name}`)
   return oklchToSrgb(
     readFiniteNumber(match[1], `--${name} lightness`) / 100,
@@ -666,11 +653,11 @@ function controlThemes(format) {
         maskOpaque: readHexToken('mask-opaque'),
         warning: readHexToken('harvest-700'),
         materialAmber: readHexToken('harvest-600'),
-        directContact: readHexDeclaration(fallbackRoot, 'brand-zalo'),
+        directContact: readHexDeclaration(fallbackRootRule, 'brand-zalo'),
         backgrounds: {
           canvas: readHexToken('alluvial-paper'),
           surface: readHexToken('surface-white'),
-          subtle: readHexDeclaration(fallbackRoot, 'color-surface-subtle'),
+          subtle: readHexDeclaration(fallbackRootRule, 'color-surface-subtle'),
         },
       },
       {
@@ -684,11 +671,11 @@ function controlThemes(format) {
         maskOpaque: readHexToken('mask-opaque'),
         warning: readHexToken('night-amber'),
         materialAmber: readHexToken('night-amber'),
-        directContact: readHexDeclaration(darkBlock, 'brand-zalo'),
+        directContact: readHexDeclaration(darkRule, 'brand-zalo'),
         backgrounds: {
           canvas: readHexToken('night-canvas'),
           surface: readHexToken('night-surface'),
-          subtle: readHexDeclaration(darkBlock, 'color-surface-subtle'),
+          subtle: readHexDeclaration(darkRule, 'color-surface-subtle'),
         },
       },
     ]
@@ -706,12 +693,12 @@ function controlThemes(format) {
       maskOpaque: readHexToken('mask-opaque'),
       warning: readOklchToken('harvest-700'),
       materialAmber: readOklchToken('harvest-600'),
-      directContact: readHexDeclaration(fallbackRoot, 'brand-zalo'),
+      directContact: readHexDeclaration(fallbackRootRule, 'brand-zalo'),
       backgrounds: {
         canvas: readOklchToken('alluvial-paper'),
         surface: readOklchToken('surface-white'),
         // Parchment subtle remains an explicit sRGB semantic value in the runtime cascade.
-        subtle: readHexDeclaration(fallbackRoot, 'color-surface-subtle'),
+        subtle: readHexDeclaration(fallbackRootRule, 'color-surface-subtle'),
       },
     },
     {
@@ -725,11 +712,11 @@ function controlThemes(format) {
       maskOpaque: readHexToken('mask-opaque'),
       warning: readOklchToken('night-amber'),
       materialAmber: readOklchToken('night-amber'),
-      directContact: readHexDeclaration(darkBlock, 'brand-zalo'),
+      directContact: readHexDeclaration(darkRule, 'brand-zalo'),
       backgrounds: {
         canvas: readOklchToken('night-canvas'),
         surface: readOklchToken('night-surface'),
-        subtle: readOklchDeclaration(darkOklchBlock, 'color-surface-subtle'),
+        subtle: readOklchDeclaration(darkOklchRule, 'color-surface-subtle'),
       },
     },
   ]
