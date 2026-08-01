@@ -106,7 +106,75 @@ function escapeRegExp(value) {
 }
 
 function stripCssComments(source) {
-  return source.replace(/\/\*[\s\S]*?\*\//g, '')
+  let output = ''
+  let state = 'normal'
+  let escaped = false
+
+  for (let index = 0; index < source.length; index += 1) {
+    const character = source[index]
+    const next = source[index + 1]
+
+    if (state === 'comment') {
+      if (character === '*' && next === '/') {
+        state = 'normal'
+        index += 1
+      }
+      else if (character === '\n' || character === '\r') {
+        output += character
+      }
+      continue
+    }
+
+    if (state === 'normal') {
+      if (escaped) {
+        output += character
+        if (character === '\r' && next === '\n') {
+          output += next
+          index += 1
+        }
+        escaped = false
+      }
+      else if (character === '\\') {
+        output += character
+        escaped = true
+      }
+      else if (character === '/' && next === '*') {
+        output += ' '
+        state = 'comment'
+        index += 1
+      }
+      else {
+        output += character
+        if (character === "'") state = 'single-quote'
+        else if (character === '"') state = 'double-quote'
+      }
+      continue
+    }
+
+    output += character
+    if (escaped) {
+      if (character === '\r' && next === '\n') {
+        output += next
+        index += 1
+      }
+      escaped = false
+    }
+    else if (character === '\\') {
+      escaped = true
+    }
+    else if ((state === 'single-quote' && character === "'")
+      || (state === 'double-quote' && character === '"')) {
+      state = 'normal'
+    }
+    else if (character === '\n' || character === '\r' || character === '\f') {
+      throw new Error('Unescaped newline in CSS string')
+    }
+  }
+
+  if (state === 'comment') throw new Error('Unterminated CSS comment')
+  if (state !== 'normal') throw new Error('Unterminated CSS string')
+  if (escaped) throw new Error('Unterminated CSS escape')
+  return output
 }
 
 function readCssBlock(source, marker, fromIndex = 0) {
@@ -186,6 +254,76 @@ function findMatchingBrace(source, open, end) {
   throw new Error('Missing closing brace in Homepage CSS')
 }
 
+function isCssHexDigit(character) {
+  return Boolean(character) && /[0-9a-f]/i.test(character)
+}
+
+function isCssWhitespace(character) {
+  return character === ' ' || character === '\t' || character === '\n'
+    || character === '\r' || character === '\f'
+}
+
+function isCssNameCharacter(character) {
+  if (!character) return false
+  const codePoint = character.codePointAt(0)
+  return /[a-z0-9_-]/i.test(character) || codePoint >= 0x80
+}
+
+function decodeCssIdentifierEscape(source, start) {
+  const first = source[start + 1]
+  if (!first || first === '\n' || first === '\r' || first === '\f') {
+    throw new Error('Invalid CSS identifier escape')
+  }
+
+  if (!isCssHexDigit(first)) {
+    if (first.codePointAt(0) === 0) throw new Error('Invalid CSS identifier escape')
+    return { value: first, end: start + 2 }
+  }
+
+  let end = start + 1
+  while (end < source.length && end < start + 7 && isCssHexDigit(source[end])) end += 1
+  const codePoint = Number.parseInt(source.slice(start + 1, end), 16)
+  if (codePoint === 0 || codePoint > 0x10FFFF || (codePoint >= 0xD800 && codePoint <= 0xDFFF)) {
+    throw new Error('Invalid CSS identifier escape')
+  }
+  if (isCssWhitespace(source[end])) {
+    if (source[end] === '\r' && source[end + 1] === '\n') end += 2
+    else end += 1
+  }
+  return { value: String.fromCodePoint(codePoint), end }
+}
+
+function parseCustomPropertyDeclaration(segment) {
+  let index = 0
+  while (isCssWhitespace(segment[index])) index += 1
+  if (!segment.startsWith('--', index)) return null
+
+  let canonicalName = '--'
+  index += 2
+  while (index < segment.length) {
+    const character = segment[index]
+    if (character === ':') break
+    if (isCssWhitespace(character)) {
+      while (isCssWhitespace(segment[index])) index += 1
+      if (segment[index] !== ':') throw new Error('Missing colon after custom property name')
+      break
+    }
+    if (character === '\\') {
+      const decoded = decodeCssIdentifierEscape(segment, index)
+      canonicalName += decoded.value
+      index = decoded.end
+      continue
+    }
+    if (!isCssNameCharacter(character)) throw new Error('Invalid CSS custom property identifier')
+    canonicalName += character
+    index += 1
+  }
+
+  if (canonicalName.length === 2) throw new Error('Empty CSS custom property name')
+  if (segment[index] !== ':') throw new Error('Missing colon after custom property name')
+  return { name: canonicalName.slice(2), value: segment.slice(index + 1).trim() }
+}
+
 function readCustomPropertyDeclarations(body) {
   const declarations = []
   let start = 0
@@ -197,8 +335,8 @@ function readCustomPropertyDeclarations(body) {
 
   const readSegment = (end) => {
     const segment = body.slice(start, end).trim()
-    const match = /^(--[\w-]+)\s*:\s*([\s\S]*)$/.exec(segment)
-    if (match) declarations.push({ name: match[1].slice(2), value: match[2].trim() })
+    const declaration = parseCustomPropertyDeclaration(segment)
+    if (declaration) declarations.push(declaration)
   }
 
   for (let index = 0; index < body.length; index += 1) {

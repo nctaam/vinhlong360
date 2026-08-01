@@ -43,6 +43,23 @@ function readCssBlock(source: string, marker: string) {
   throw new Error(`Missing closing brace: ${marker}`)
 }
 
+async function runContrastWithHomeCss(homeSource: string) {
+  const source = await readFile(resolve(root, 'web-nuxt/assets/css/variables.css'), 'utf8')
+  const temp = await mkdtemp(join(tmpdir(), 'tri-region-home-alias-'))
+  await mkdir(resolve(temp, 'assets/css'), { recursive: true })
+  await writeFile(resolve(temp, 'assets/css/variables.css'), source)
+  await writeFile(resolve(temp, 'assets/css/home-nocturne.css'), homeSource)
+
+  try {
+    return await execFileAsync(process.execPath, [resolve(root, 'web-nuxt/scripts/check-tri-region-contrast.mjs')], {
+      cwd: temp,
+    })
+  }
+  finally {
+    await rm(temp, { recursive: true, force: true })
+  }
+}
+
 describe('Tri-Region color contract', () => {
   it('maps action, brand, trust, status and material roles without province themes', async () => {
     const css = await readFile(resolve(root, 'web-nuxt/assets/css/variables.css'), 'utf8')
@@ -483,25 +500,63 @@ describe('Tri-Region color contract', () => {
       ),
       message: 'Unexpected protected declaration for --home-color-focus-on-action',
     },
+    {
+      name: 'comment delimiters inside escaped content strings hiding an override',
+      mutate: (source: string) => `${source}\n${String.raw`
+[data-home-pilot="nocturne-b1"] .comment-open::before { content: "escaped quote: \" /* { ;"; }
+[data-home-pilot="nocturne-b1"].home { --home-color-focus-on-media: var(--color-focus); }
+[data-home-pilot="nocturne-b1"] .comment-close::after { content: "*/ } ; backslash: \\"; }
+`}`,
+      message: 'Unexpected protected declaration for --home-color-focus-on-media',
+    },
+    {
+      name: 'hex-escaped media alias in a stronger selector',
+      mutate: (source: string) => `${source}\n[data-home-pilot="nocturne-b1"].home { --home-color-focus-on-medi\\000061: var(--color-focus); }`,
+      message: 'Unexpected protected declaration for --home-color-focus-on-media',
+    },
+    {
+      name: 'hex-escaped action alias with terminator whitespace',
+      mutate: (source: string) => `${source}\n.home[data-home-pilot="nocturne-b1"] { --home-color-\\66 ocus-on-action: var(--color-focus); }`,
+      message: 'Unexpected protected declaration for --home-color-focus-on-action',
+    },
+    {
+      name: 'simple-escaped media halo alias in a selector list',
+      mutate: (source: string) => `${source}\n[data-home-pilot="nocturne-b1"], .never { --home-color-focus-on\\-media-halo: var(--color-focus); }`,
+      message: 'Unexpected protected declaration for --home-color-focus-on-media-halo',
+    },
+    {
+      name: 'escaped protected alias inside a nested media override',
+      mutate: (source: string) => `${source}\n@media (min-width: 1px) { [data-home-pilot="nocturne-b1"].home { --home-color-today\\-text: var(--color-focus); } }`,
+      message: 'Unexpected protected declaration for --home-color-today-text',
+    },
+    {
+      name: 'escaped delimiter leaving an invalid custom property identifier',
+      mutate: (source: string) => `${source}\n[data-home-pilot="nocturne-b1"].home { --home-color-focus-on-media\\: var(--color-focus); }`,
+      message: 'Missing colon after custom property name',
+    },
   ])('fails closed for $name', async ({ mutate, message }) => {
-    const source = await readFile(resolve(root, 'web-nuxt/assets/css/variables.css'), 'utf8')
     const homeSource = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
-    const invalidHomeCss = mutate(homeSource)
-    const temp = await mkdtemp(join(tmpdir(), 'tri-region-home-alias-'))
-    await mkdir(resolve(temp, 'assets/css'), { recursive: true })
-    await writeFile(resolve(temp, 'assets/css/variables.css'), source)
-    await writeFile(resolve(temp, 'assets/css/home-nocturne.css'), invalidHomeCss)
+    await expect(runContrastWithHomeCss(mutate(homeSource))).rejects.toMatchObject({
+      stderr: expect.stringContaining(message),
+    })
+  })
 
-    try {
-      await expect(
-        execFileAsync(process.execPath, [resolve(root, 'web-nuxt/scripts/check-tri-region-contrast.mjs')], {
-          cwd: temp,
-        }),
-      ).rejects.toMatchObject({
-        stderr: expect.stringContaining(message),
-      })
-    } finally {
-      await rm(temp, { recursive: true, force: true })
-    }
+  it('keeps legitimate comment markers, escapes, braces and continuations inside CSS strings', async () => {
+    const homeSource = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
+    const safeStrings = String.raw`
+[data-home-pilot="nocturne-b1"] .string-probe::before {
+  content: "literal /* */ escaped quote: \" backslash: \\ braces: { } semicolon: ;";
+  --unprotected-copy: "continued\
+line";
+}
+[data-home-pilot="nocturne-b1"] .string-probe::after {
+  content: 'literal /* */ escaped quote: \' backslash: \\ braces: { } semicolon: ;';
+}
+`
+
+    await expect(runContrastWithHomeCss(`${homeSource}\n${safeStrings}`)).resolves.toMatchObject({
+      stdout: expect.stringContaining('homepage-on-media-text-light-srgb 10.55 4.5'),
+      stderr: '',
+    })
   })
 })
