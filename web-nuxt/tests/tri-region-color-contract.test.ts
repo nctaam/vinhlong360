@@ -143,6 +143,57 @@ describe('Tri-Region color contract', () => {
     }
   })
 
+  it('wins real legacy direct-contact and focus cascades inside the scoped wave', async () => {
+    const [components, detail, catalog, triRegion] = await Promise.all([
+      readFile(resolve(root, 'web-nuxt/assets/css/components.css'), 'utf8'),
+      readFile(resolve(root, 'web-nuxt/assets/css/detail-shared.css'), 'utf8'),
+      readFile(resolve(root, 'web-nuxt/assets/css/catalog.css'), 'utf8'),
+      readFile(resolve(root, 'web-nuxt/assets/css/tri-region-color.css'), 'utf8'),
+    ])
+    const stylesheet = document.createElement('style')
+    stylesheet.textContent = `
+      :root {
+        --primary: rgb(3, 90, 105);
+        --primary-dark: rgb(0, 67, 78);
+        --primary-rgb: 3, 90, 105;
+        --accent: rgb(232, 163, 61);
+        --color-focus: rgb(3, 90, 105);
+        --color-on-action: rgb(7, 18, 16);
+        --text-on-dark: rgb(255, 255, 255);
+      }
+      ${components}
+      ${detail}
+      ${catalog}
+      ${triRegion}
+    `
+    document.head.append(stylesheet)
+
+    const RepresentativeCascade = defineComponent({
+      setup: () => () => h('main', { 'data-color-system': 'tri-region-v1' }, [
+        h('a', { class: 'hl', href: '#contact' }, 'Gọi trực tiếp'),
+        h('button', { class: 'chip active' }, 'Đang chọn'),
+        h('span', { class: 'star-rating' }, [h('button', { class: 'star' }, '★')]),
+      ]),
+    })
+    const wrapper = await mountSuspended(RepresentativeCascade, { attachTo: document.body })
+
+    try {
+      const contact = wrapper.get<HTMLElement>('a.hl').element
+      const chip = wrapper.get<HTMLElement>('.chip.active').element
+      const star = wrapper.get<HTMLElement>('.star-rating .star').element
+
+      expect(getComputedStyle(contact).color).toBe('rgb(7, 18, 16)')
+      for (const control of [chip, star]) {
+        control.focus()
+        expect(document.activeElement).toBe(control)
+        expect(getComputedStyle(control).outlineColor).toBe('rgb(3, 90, 105)')
+      }
+    } finally {
+      wrapper.unmount()
+      stylesheet.remove()
+    }
+  })
+
   it('executes the complete semantic and control contrast audit set', async () => {
     const { stdout } = await execFileAsync(process.execPath, ['scripts/check-tri-region-contrast.mjs'], {
       cwd: resolve(root, 'web-nuxt'),
@@ -153,7 +204,9 @@ describe('Tri-Region color contract', () => {
       ...['srgb', 'oklch'].flatMap(format =>
         ['light', 'dark'].flatMap(theme => [
           `filled-action-${theme}-${format}`,
+          `direct-contact-zalo-${theme}-${format}`,
           ...['canvas', 'surface', 'subtle'].map(surface => `control-border-${theme}-${surface}-${format}`),
+          ...['canvas', 'surface', 'subtle'].map(surface => `focus-${theme}-${surface}-${format}`),
         ]),
       ),
     ]

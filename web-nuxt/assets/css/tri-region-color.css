@@ -64,11 +64,18 @@
 
 [data-color-system="tri-region-v1"] .btn-primary,
 [data-color-system="tri-region-v1"] .chip.active,
-[data-color-system="tri-region-v1"] .btn-outline:hover:not(:disabled) {
+[data-color-system="tri-region-v1"] .btn-outline:hover:not(:disabled),
+[data-color-system="tri-region-v1"] a.hl {
   color: var(--color-on-action);
 }
 
 [data-color-system="tri-region-v1"] :is(a, button, input, select, textarea):focus-visible {
+  outline-color: var(--color-focus);
+}
+
+[data-color-system="tri-region-v1"] .chip.active:focus-visible,
+[data-color-system="tri-region-v1"] .star-rating .star:focus-visible,
+[data-color-system="tri-region-v1"] a.hl:focus-visible {
   outline-color: var(--color-focus);
 }
 

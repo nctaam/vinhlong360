@@ -29,7 +29,9 @@ const expectedAuditNames = new Set([
   ...['srgb', 'oklch'].flatMap(format =>
     ['light', 'dark'].flatMap(theme => [
       `filled-action-${theme}-${format}`,
+      `direct-contact-zalo-${theme}-${format}`,
       ...['canvas', 'surface', 'subtle'].map(surface => `control-border-${theme}-${surface}-${format}`),
+      ...['canvas', 'surface', 'subtle'].map(surface => `focus-${theme}-${surface}-${format}`),
     ]),
   ),
 ])
@@ -204,6 +206,8 @@ function controlThemes(format) {
         theme: 'light',
         action: readHexToken('river-600'),
         onAction: readHexToken('surface-white'),
+        focus: readHexToken('river-600'),
+        directContact: readHexDeclaration(fallbackRoot, 'brand-zalo'),
         backgrounds: {
           canvas: readHexToken('alluvial-paper'),
           surface: readHexToken('surface-white'),
@@ -214,6 +218,8 @@ function controlThemes(format) {
         theme: 'dark',
         action: readHexToken('night-river'),
         onAction: readHexToken('night-canvas'),
+        focus: readHexToken('night-amber'),
+        directContact: readHexDeclaration(darkBlock, 'brand-zalo'),
         backgrounds: {
           canvas: readHexToken('night-canvas'),
           surface: readHexToken('night-surface'),
@@ -228,6 +234,8 @@ function controlThemes(format) {
       theme: 'light',
       action: readOklchToken('river-600'),
       onAction: readOklchToken('surface-white'),
+      focus: readOklchToken('river-600'),
+      directContact: readHexDeclaration(fallbackRoot, 'brand-zalo'),
       backgrounds: {
         canvas: readOklchToken('alluvial-paper'),
         surface: readOklchToken('surface-white'),
@@ -239,6 +247,8 @@ function controlThemes(format) {
       theme: 'dark',
       action: readOklchToken('night-river'),
       onAction: readOklchToken('night-canvas'),
+      focus: readOklchToken('night-amber'),
+      directContact: readHexDeclaration(darkBlock, 'brand-zalo'),
       backgrounds: {
         canvas: readOklchToken('night-canvas'),
         surface: readOklchToken('night-surface'),
@@ -249,13 +259,17 @@ function controlThemes(format) {
 }
 
 function auditControls(format) {
-  for (const { theme, action, onAction, backgrounds } of controlThemes(format)) {
+  for (const { theme, action, onAction, focus, directContact, backgrounds } of controlThemes(format)) {
     audit(`filled-action-${theme}-${format}`, onAction, action, 4.5)
+    audit(`direct-contact-zalo-${theme}-${format}`, onAction, directContact, 4.5)
     for (const [surfaceName, host] of Object.entries(backgrounds)) {
       const surface = composite(action, host, actionSurfaceWeight)
       // CSS backgrounds paint beneath translucent borders, so audit the rendered border against its tinted surface.
       const border = composite(action, surface, actionBorderWeight)
       audit(`control-border-${theme}-${surfaceName}-${format}`, border, surface, 3)
+    }
+    for (const [surfaceName, host] of Object.entries(backgrounds)) {
+      audit(`focus-${theme}-${surfaceName}-${format}`, focus, host, 3)
     }
   }
 }
