@@ -28,6 +28,23 @@ const homeAmberSurfaceWeight = readMixWeight(
   homeCss,
   'color-material-amber',
 )
+const homeTodaySurfaceWeight = readMixWeight(
+  'home-color-today-surface',
+  homeCss,
+  'color-error',
+)
+const homeRootBlock = readCssBlock(homeCss, '[data-home-pilot="nocturne-b1"] {')
+const homeLightBlock = readCssBlock(homeCss, '.light [data-home-pilot="nocturne-b1"] {')
+const supportedSemanticAliases = new Set([
+  'color-action',
+  'color-on-action',
+  'color-focus',
+  'color-text',
+])
+const homeFocusActionAlias = readSemanticAlias(homeRootBlock, 'home-color-focus-on-action')
+const homeFocusMediaAlias = readSemanticAlias(homeRootBlock, 'home-color-focus-on-media')
+const homeFocusMediaLightAlias = readSemanticAlias(homeLightBlock, 'home-color-focus-on-media')
+const homeTodayTextAlias = readSemanticAlias(homeRootBlock, 'home-color-today-text')
 const semanticNames = pairs.map(([name]) => name)
 const expectedAuditNames = new Set([
   ...semanticNames,
@@ -39,7 +56,9 @@ const expectedAuditNames = new Set([
       ...['canvas', 'surface', 'subtle'].map(surface => `control-border-${theme}-${surface}-${format}`),
       ...['canvas', 'surface', 'subtle'].map(surface => `focus-${theme}-${surface}-${format}`),
       `homepage-amber-text-${theme}-${format}`,
+      `homepage-focus-action-${theme}-${format}`,
       `homepage-focus-media-${theme}-${format}`,
+      `homepage-today-text-${theme}-${format}`,
     ]),
   ),
 ])
@@ -86,6 +105,17 @@ function readMixWeight(name, source = css, sourceToken = 'color-action') {
   const weight = readFiniteNumber(match[1], `--${name}`) / 100
   if (weight < 0 || weight > 1) throw new Error(`Out-of-range color-mix weight for --${name}`)
   return weight
+}
+
+function readSemanticAlias(block, name) {
+  const escaped = escapeRegExp(name)
+  const match = new RegExp(`--${escaped}:\\s*var\\(--([\\w-]+)\\)\\s*;`, 'i').exec(block)
+  if (!match) throw new Error(`Missing semantic alias assignment for --${name}`)
+  const alias = match[1]
+  if (!supportedSemanticAliases.has(alias)) {
+    throw new Error(`Unsupported semantic alias for --${name}: --${alias}`)
+  }
+  return alias
 }
 
 function readHexToken(name) {
@@ -216,7 +246,8 @@ function controlThemes(format) {
         action: readHexToken('river-600'),
         onAction: readHexToken('surface-white'),
         focus: readHexToken('river-600'),
-        focusMedia: readHexToken('surface-white'),
+        text: readHexToken('mekong-ink'),
+        error: readHexToken('coral-error'),
         mediaHost: readHexToken('mekong-ink'),
         amberText: readHexToken('harvest-700'),
         materialAmber: readHexToken('harvest-600'),
@@ -232,7 +263,8 @@ function controlThemes(format) {
         action: readHexToken('night-river'),
         onAction: readHexToken('night-canvas'),
         focus: readHexToken('night-amber'),
-        focusMedia: readHexToken('night-amber'),
+        text: readHexToken('night-text'),
+        error: readHexToken('night-error'),
         mediaHost: readHexToken('night-canvas'),
         amberText: readHexToken('night-amber'),
         materialAmber: readHexToken('night-amber'),
@@ -252,7 +284,8 @@ function controlThemes(format) {
       action: readOklchToken('river-600'),
       onAction: readOklchToken('surface-white'),
       focus: readOklchToken('river-600'),
-      focusMedia: readOklchToken('surface-white'),
+      text: readOklchToken('mekong-ink'),
+      error: readOklchToken('coral-error'),
       mediaHost: readOklchToken('mekong-ink'),
       amberText: readOklchToken('harvest-700'),
       materialAmber: readOklchToken('harvest-600'),
@@ -269,7 +302,8 @@ function controlThemes(format) {
       action: readOklchToken('night-river'),
       onAction: readOklchToken('night-canvas'),
       focus: readOklchToken('night-amber'),
-      focusMedia: readOklchToken('night-amber'),
+      text: readOklchToken('night-text'),
+      error: readOklchToken('night-error'),
       mediaHost: readOklchToken('night-canvas'),
       amberText: readOklchToken('night-amber'),
       materialAmber: readOklchToken('night-amber'),
@@ -283,19 +317,33 @@ function controlThemes(format) {
   ]
 }
 
+function resolveSemanticAlias(alias, theme) {
+  const values = {
+    'color-action': theme.action,
+    'color-on-action': theme.onAction,
+    'color-focus': theme.focus,
+    'color-text': theme.text,
+  }
+  const value = values[alias]
+  if (!value) throw new Error(`Missing resolved value for semantic alias --${alias}`)
+  return value
+}
+
 function auditControls(format) {
-  for (const {
-    theme,
-    action,
-    onAction,
-    focus,
-    focusMedia,
-    mediaHost,
-    amberText,
-    materialAmber,
-    directContact,
-    backgrounds,
-  } of controlThemes(format)) {
+  for (const themeData of controlThemes(format)) {
+    const {
+      theme,
+      action,
+      onAction,
+      focus,
+      text,
+      error,
+      mediaHost,
+      amberText,
+      materialAmber,
+      directContact,
+      backgrounds,
+    } = themeData
     audit(`filled-action-${theme}-${format}`, onAction, action, 4.5)
     audit(`direct-contact-zalo-${theme}-${format}`, onAction, directContact, 4.5)
     for (const [surfaceName, host] of Object.entries(backgrounds)) {
@@ -308,8 +356,17 @@ function auditControls(format) {
       audit(`focus-${theme}-${surfaceName}-${format}`, focus, host, 3)
     }
     const amberSurface = composite(materialAmber, backgrounds.surface, homeAmberSurfaceWeight)
+    const focusAction = resolveSemanticAlias(homeFocusActionAlias, themeData)
+    const focusMedia = resolveSemanticAlias(
+      theme === 'light' ? homeFocusMediaLightAlias : homeFocusMediaAlias,
+      themeData,
+    )
+    const todayText = resolveSemanticAlias(homeTodayTextAlias, themeData)
+    const todaySurface = composite(error, backgrounds.surface, homeTodaySurfaceWeight)
     audit(`homepage-amber-text-${theme}-${format}`, amberText, amberSurface, 4.5)
+    audit(`homepage-focus-action-${theme}-${format}`, focusAction, action, 3)
     audit(`homepage-focus-media-${theme}-${format}`, focusMedia, mediaHost, 3)
+    audit(`homepage-today-text-${theme}-${format}`, todayText, todaySurface, 4.5)
   }
 }
 

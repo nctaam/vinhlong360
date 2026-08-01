@@ -208,7 +208,9 @@ describe('Tri-Region color contract', () => {
           ...['canvas', 'surface', 'subtle'].map(surface => `control-border-${theme}-${surface}-${format}`),
           ...['canvas', 'surface', 'subtle'].map(surface => `focus-${theme}-${surface}-${format}`),
           `homepage-amber-text-${theme}-${format}`,
+          `homepage-focus-action-${theme}-${format}`,
           `homepage-focus-media-${theme}-${format}`,
+          `homepage-today-text-${theme}-${format}`,
         ]),
       ),
     ]
@@ -219,6 +221,7 @@ describe('Tri-Region color contract', () => {
 
   it('fails closed when an audited numeric token parses as non-finite', async () => {
     const source = await readFile(resolve(root, 'web-nuxt/assets/css/variables.css'), 'utf8')
+    const homeSource = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
     const invalidWeight = '9'.repeat(400)
     const invalidCss = source.replace(
       /(--color-action-border:\s*color-mix\(in srgb, var\(--color-action\) )([0-9.]+)(%, transparent\);)/,
@@ -227,6 +230,7 @@ describe('Tri-Region color contract', () => {
     const temp = await mkdtemp(join(tmpdir(), 'tri-region-contrast-'))
     await mkdir(resolve(temp, 'assets/css'), { recursive: true })
     await writeFile(resolve(temp, 'assets/css/variables.css'), invalidCss)
+    await writeFile(resolve(temp, 'assets/css/home-nocturne.css'), homeSource)
 
     try {
       await expect(
@@ -234,6 +238,31 @@ describe('Tri-Region color contract', () => {
           cwd: temp,
         }),
       ).rejects.toBeDefined()
+    } finally {
+      await rm(temp, { recursive: true, force: true })
+    }
+  })
+
+  it('fails closed when a Homepage focus alias points at an unsupported semantic token', async () => {
+    const source = await readFile(resolve(root, 'web-nuxt/assets/css/variables.css'), 'utf8')
+    const homeSource = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
+    const invalidHomeCss = homeSource.replace(
+      /--home-color-focus-on-media:\s*var\(--color-focus\);/,
+      '--home-color-focus-on-media: var(--color-brand);',
+    )
+    const temp = await mkdtemp(join(tmpdir(), 'tri-region-home-alias-'))
+    await mkdir(resolve(temp, 'assets/css'), { recursive: true })
+    await writeFile(resolve(temp, 'assets/css/variables.css'), source)
+    await writeFile(resolve(temp, 'assets/css/home-nocturne.css'), invalidHomeCss)
+
+    try {
+      await expect(
+        execFileAsync(process.execPath, [resolve(root, 'web-nuxt/scripts/check-tri-region-contrast.mjs')], {
+          cwd: temp,
+        }),
+      ).rejects.toMatchObject({
+        stderr: expect.stringContaining('Unsupported semantic alias'),
+      })
     } finally {
       await rm(temp, { recursive: true, force: true })
     }

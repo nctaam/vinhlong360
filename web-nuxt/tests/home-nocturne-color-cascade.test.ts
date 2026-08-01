@@ -157,24 +157,24 @@ describe('Homepage Nocturne computed color cascade', () => {
     {
       theme: 'light',
       action: 'rgb(3, 90, 105)',
+      onAction: 'rgb(253, 252, 249)',
       focusOnMedia: 'rgb(253, 252, 249)',
       hero: 'rgb(8, 26, 22)',
     },
     {
       theme: 'dark',
       action: 'rgb(125, 174, 186)',
+      onAction: 'rgb(7, 18, 16)',
       focusOnMedia: 'rgb(206, 167, 112)',
       hero: 'rgb(7, 18, 16)',
     },
-  ])('renders primary search and media focus in $theme after the full cascade', async ({ theme, action, focusOnMedia, hero }) => {
+  ])('maps action and media focus to their adjacent surfaces in $theme', async ({ theme, action, onAction, focusOnMedia, hero }) => {
     document.documentElement.classList.add(theme)
     const wrapper = await mountCascade({
       '--color-action': action,
-      '--color-on-action': 'rgb(253, 252, 249)',
-      '--color-focus': 'rgb(3, 90, 105)',
+      '--color-on-action': onAction,
+      '--color-focus': theme === 'dark' ? focusOnMedia : 'rgb(3, 90, 105)',
       '--color-mask-opaque': 'rgb(0, 0, 0)',
-      '--home-color-focus-on-media': focusOnMedia,
-      '--home-color-focus-on-media-halo': 'rgb(0, 0, 0)',
       '--white-rgb': '255, 255, 255',
       '--black-rgb': '0, 0, 0',
     })
@@ -185,10 +185,12 @@ describe('Homepage Nocturne computed color cascade', () => {
     const input = wrapper.get<HTMLInputElement>('[data-home-search] input').element
     input.focus()
     expect(document.activeElement).toBe(input)
-    expect(getComputedStyle(search).backgroundColor).toBe(action)
-    expect(getComputedStyle(input).outlineColor).toBe(focusOnMedia)
-    expect(getComputedStyle(input).boxShadow).toContain('rgb(0, 0, 0)')
-    expect(contrast(rgb(getComputedStyle(input).outlineColor), rgb(hero))).toBeGreaterThanOrEqual(3)
+    const searchStyle = getComputedStyle(search)
+    const inputStyle = getComputedStyle(input)
+    expect(searchStyle.backgroundColor).toBe(action)
+    expect(inputStyle.outlineColor).toBe(onAction)
+    expect(inputStyle.boxShadow).toContain('rgb(0, 0, 0)')
+    expect(contrast(rgb(inputStyle.outlineColor), rgb(searchStyle.backgroundColor))).toBeGreaterThanOrEqual(3)
 
     const nearby = wrapper.get<HTMLElement>('.hero-nearby').element
     nearby.focus()
@@ -229,13 +231,35 @@ describe('Homepage Nocturne computed color cascade', () => {
     expect(style.backgroundColor).toBe('rgb(42, 41, 34)')
   })
 
-  it('keeps the today state on Coral instead of letting Amber specificity hide urgency', async () => {
+  it.each([
+    {
+      theme: 'light',
+      text: 'rgb(8, 26, 22)',
+      surface: 'rgb(244, 226, 223)',
+      error: 'rgb(189, 65, 63)',
+    },
+    {
+      theme: 'dark',
+      text: 'rgb(237, 235, 229)',
+      surface: 'rgb(46, 43, 40)',
+      error: 'rgb(223, 127, 120)',
+    },
+  ])('keeps the visible today label readable with a Coral status accent in $theme', async ({ theme, text, surface, error }) => {
+    document.documentElement.classList.add(theme)
     const wrapper = await mountCascade({
       '--home-color-amber-text': 'rgb(133, 90, 22)',
       '--home-color-amber-surface': 'rgb(249, 244, 232)',
-      '--color-error': 'rgb(189, 65, 63)',
+      '--home-color-today-surface': surface,
+      '--color-text': text,
+      '--color-error': error,
     })
 
-    expect(getComputedStyle(wrapper.get<HTMLElement>('.ec-today').element).color).toBe('rgb(189, 65, 63)')
+    const today = wrapper.get<HTMLElement>('.ec-today')
+    const style = getComputedStyle(today.element)
+    expect(today.text()).toBe('Hôm nay!')
+    expect(style.color).toBe(text)
+    expect(style.backgroundColor).toBe(surface)
+    expect(style.boxShadow).toContain(error)
+    expect(contrast(rgb(style.color), rgb(style.backgroundColor))).toBeGreaterThanOrEqual(4.5)
   })
 })
