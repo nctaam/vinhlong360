@@ -168,6 +168,7 @@ describe('entity detail tri-region behavior', () => {
       const pendingHero = wrapper.get<HTMLElement>('[data-entity-hero] .dc-bg')
       expect(pendingHero.classes()).not.toContain('loaded')
       expect(pendingHero.element.style.opacity).toBe('0')
+      expect(pendingHero.element.style.transition).toBe('none')
     } finally {
       navigationGate.resolve()
       await navigation
@@ -204,11 +205,13 @@ describe('entity detail tri-region behavior', () => {
     expect(failedImage.attributes('alt')).toBe(heroDescriptor.alt)
     expect(failedImage.classes()).not.toContain('loaded')
     expect(failedImage.element.style.opacity).toBe('0')
+    expect(failedImage.element.style.transition).toBe('none')
 
     imageState.update({ complete: true })
     await failedImage.trigger('load')
     expect(failedImage.classes()).not.toContain('loaded')
     expect(failedImage.element.style.opacity).toBe('0')
+    expect(failedImage.element.style.transition).toBe('none')
   })
 
   it('reveals a cached remote NuxtImg when it replaces a placeholder after client navigation', async () => {
@@ -231,6 +234,7 @@ describe('entity detail tri-region behavior', () => {
     expect(remoteImage.attributes('src')).toBe(remoteHeroDescriptor.url)
     expect(remoteImage.classes()).toContain('loaded')
     expect(remoteImage.element.style.opacity).toBe('')
+    expect(remoteImage.element.style.transition).toBe('')
     expect(wrapper.get(`#${remoteImage.attributes('aria-describedby')}`).text()).toBe(remoteHeroDescriptor.full_disclosure)
   })
 
@@ -247,6 +251,7 @@ describe('entity detail tri-region behavior', () => {
     expect(remoteImage.attributes('src')).toBe(remoteHeroDescriptor.url)
     expect(remoteImage.classes()).toContain('loaded')
     expect(remoteImage.element.style.opacity).toBe('')
+    expect(remoteImage.element.style.transition).toBe('')
   })
 
   it('reveals a successfully cached hero after mount without a new load event', async () => {
@@ -258,6 +263,7 @@ describe('entity detail tri-region behavior', () => {
 
     expect(image.classes()).toContain('loaded')
     expect(image.element.style.opacity).toBe('')
+    expect(image.element.style.transition).toBe('')
     expect(image.attributes('alt')).toBe(heroDescriptor.alt)
     expect(wrapper.get(`#${disclosureId}`).text()).toBe(heroDescriptor.full_disclosure)
   })
@@ -269,11 +275,13 @@ describe('entity detail tri-region behavior', () => {
 
     expect(image.classes()).not.toContain('loaded')
     expect(image.element.style.opacity).toBe('0')
+    expect(image.element.style.transition).toBe('none')
     imageState.update({ complete: true, naturalWidth: 800, naturalHeight: 533 })
     await image.trigger('load')
 
     expect(image.classes()).toContain('loaded')
     expect(image.element.style.opacity).toBe('')
+    expect(image.element.style.transition).toBe('')
   })
 
   it('does not reveal a completed hero whose natural width is zero', async () => {
@@ -285,6 +293,7 @@ describe('entity detail tri-region behavior', () => {
 
     expect(image.classes()).not.toContain('loaded')
     expect(image.element.style.opacity).toBe('0')
+    expect(image.element.style.transition).toBe('none')
     expect(wrapper.get(`#${image.attributes('aria-describedby')}`).text()).toBe(heroDescriptor.full_disclosure)
   })
 
