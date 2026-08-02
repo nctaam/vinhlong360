@@ -140,9 +140,8 @@
             :to="entityPath(spotlight.id)"
             class="spot-visual"
             :style="{ backgroundImage: spotBgCss }"
-            :aria-label="spotlight.name"
+            :aria-label="`${spotlight.name} — ${spotDescriptor.alt}`"
             data-background-image
-            role="img"
             :aria-describedby="spotDisclosureId"
           >
             <span v-if="spotRegion" class="spot-region">{{ spotRegion }}</span>

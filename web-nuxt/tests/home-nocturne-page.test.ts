@@ -271,6 +271,8 @@ describe('homepage Existing Screen Evolution B1', () => {
     const visual = spotlight.get('.spot-visual')
     const disclosure = visual.get('[data-full-disclosure]')
     expect(spotlight.text()).toContain('Vườn ven sông')
+    expect(visual.attributes('aria-label')).toBe('Vườn ven sông — Ảnh minh họa danh mục Trải nghiệm — Vườn ven sông chưa có ảnh riêng')
+    expect(visual.attributes('role')).toBeUndefined()
     expect(visual.attributes('style')).toContain('/img/cat-du-lich.webp')
     expect(visual.get('[data-short-label]').text()).toBe('Minh họa AI')
     expect(disclosure.text()).toBe('Ảnh minh họa do AI dựng — không phải ảnh chụp tại chỗ.')
