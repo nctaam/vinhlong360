@@ -635,6 +635,8 @@ useHead({
   background: var(--color-material-clay);
 }
 .search-row-hero .search-input-wrap input {
+  width: 100%;
+  min-width: 0;
   font-size: var(--text-2xl);
   font-style: normal;
   padding: var(--space-2) 0;

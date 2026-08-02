@@ -1,5 +1,7 @@
 import { clearNuxtData } from '#app'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { defineComponent, h, nextTick } from 'vue'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import SearchPage from '../pages/tim-kiem.vue'
@@ -14,6 +16,7 @@ vi.mock('../composables/useUnifiedSearch', () => ({
 }))
 
 const wrappers: Array<{ unmount: () => void }> = []
+const searchPageSource = readFileSync(resolve(process.cwd(), 'pages/tim-kiem.vue'), 'utf8')
 const NuxtImgStub = defineComponent({
   inheritAttrs: false,
   props: { src: String, alt: String },
@@ -47,6 +50,34 @@ beforeEach(() => {
 afterEach(async () => {
   for (const wrapper of wrappers.splice(0)) wrapper.unmount()
   await clearNuxtData()
+})
+
+it('keeps the mobile primary action reachable and submits the typed query', async () => {
+  searchAllMock.mockResolvedValue({
+    entities: [],
+    posts: [],
+    users: [],
+    totals: { entities: 0, posts: 0, users: 0 },
+  })
+  const wrapper = await mountSuspended(SearchPage, {
+    route: '/tim-kiem',
+    global: { stubs },
+  })
+  wrappers.push(wrapper)
+  await flushUi()
+
+  const input = wrapper.get<HTMLInputElement>('input[type="search"]')
+  const submit = wrapper.get<HTMLButtonElement>('[data-color-role="action-primary"]')
+  await input.setValue('dừa')
+  await submit.trigger('click')
+
+  await vi.waitFor(() => {
+    expect(wrapper.vm.$router.currentRoute.value.fullPath).toBe('/tim-kiem?q=d%E1%BB%ABa')
+  })
+
+  const heroInputRule = searchPageSource.match(/\.search-row-hero \.search-input-wrap input\s*\{([^}]*)\}/)
+  expect(heroInputRule?.[1]).toMatch(/width:\s*100%/)
+  expect(heroInputRule?.[1]).toMatch(/min-width:\s*0/)
 })
 
 it('shows semantic search state and source labels for real results', async () => {
