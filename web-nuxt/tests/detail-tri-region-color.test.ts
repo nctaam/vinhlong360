@@ -434,10 +434,12 @@ describe('entity detail tri-region behavior', () => {
     expect(follow.text()).toBe('🔔 Đang theo dõi')
   })
 
-  it('clears guest auth-modal state and callback without wiping unrelated Nuxt state', async () => {
+  it('clears seeded auth-user and guest auth-modal state without wiping unrelated Nuxt state', async () => {
+    clearNuxtState('auth-user')
     const authUser = useState('auth-user')
     const authModalOpen = useState('auth-modal-open', () => false)
     const unrelated = useState('detail-cleanup-sentinel', () => 'keep')
+    authModalOpen.value = false
     unrelated.value = 'keep'
 
     try {
@@ -450,6 +452,7 @@ describe('entity detail tri-region behavior', () => {
       expect(follow.attributes('aria-pressed')).toBe('false')
       expect(follow.text()).toBe('🔔 Theo dõi')
 
+      authUser.value = { id: 'cleanup-leak-user', has_password: true }
       await cleanupDetailTestState()
 
       expect.soft(authUser.value).toBeUndefined()
