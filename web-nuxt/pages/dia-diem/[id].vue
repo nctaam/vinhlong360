@@ -514,10 +514,34 @@ watch(() => route.fullPath, (next, previous) => {
   if (previous !== undefined && next !== previous) entityLaunchGeneration.begin()
 }, { flush: 'sync' })
 
+type HeroNavigationAttempt = {
+  readonly fromFullPath: string
+  readonly toFullPath: string
+}
+
+let pendingHeroNavigation: HeroNavigationAttempt | null = null
+
+function changesHeroRouteIdentity(to: typeof route, from: typeof route): boolean {
+  return to.name !== from.name || normalizeRouteParam(to.params.id) !== normalizeRouteParam(from.params.id)
+}
+
 const removeHeroNavigationGuard = router.beforeEach((to, from) => {
-  if (to.fullPath !== from.fullPath) heroLoaded.value = false
+  if (!changesHeroRouteIdentity(to, from)) return
+  pendingHeroNavigation = { fromFullPath: from.fullPath, toFullPath: to.fullPath }
+  heroLoaded.value = false
 })
-onUnmounted(removeHeroNavigationGuard)
+
+const removeHeroNavigationCompletionHook = router.afterEach((to, from, failure) => {
+  const pending = pendingHeroNavigation
+  if (!pending || pending.fromFullPath !== from.fullPath || pending.toFullPath !== to.fullPath) return
+  pendingHeroNavigation = null
+  if (failure) void revealHeroImageAfterUpdate()
+})
+
+onUnmounted(() => {
+  removeHeroNavigationGuard()
+  removeHeroNavigationCompletionHook()
+})
 
 // ── Đã-đi/Muốn-đi + theo-dõi địa-điểm (Tier-1 MXH) ──
 const { isLoggedIn, authHeaders } = useAuth()

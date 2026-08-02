@@ -176,6 +176,54 @@ describe('entity detail tri-region behavior', () => {
     }
   })
 
+  it('keeps a loaded hero visible through same-entity query-only and hash-only navigation', async () => {
+    stubHeroImageState({ complete: true, naturalWidth: 800, naturalHeight: 533 })
+    const wrapper = await mountDetailHero({
+      fixtures: {
+        'hero-a': { entity: detailEntity('hero-a', 'Hero A', [heroDescriptor.url]), images: [heroDescriptor] },
+      },
+      route: '/dia-diem/hero-a',
+    })
+
+    for (const target of ['/dia-diem/hero-a?view=map', '/dia-diem/hero-a?view=map#entity-image-disclosure-hero-a-hero']) {
+      await wrapper.vm.$router.push(target)
+      await flushUi()
+
+      const hero = wrapper.get<HTMLElement>('[data-entity-hero] .dc-bg')
+      expect(hero.classes()).toContain('loaded')
+      expect(hero.element.style.opacity).toBe('')
+      expect(hero.element.style.transition).toBe('')
+    }
+  })
+
+  it('restores the current valid hero when a later guard aborts entity navigation', async () => {
+    stubHeroImageState({ complete: true, naturalWidth: 800, naturalHeight: 533 })
+    const wrapper = await mountDetailHero({
+      fixtures: {
+        'hero-a': { entity: detailEntity('hero-a', 'Hero A', [heroDescriptor.url]), images: [heroDescriptor] },
+        'hero-b': { entity: detailEntity('hero-b', 'Hero B'), images: [] },
+      },
+      route: '/dia-diem/hero-a',
+    })
+    const removeAbortGuard = wrapper.vm.$router.beforeEach((to) => {
+      if (to.path === '/dia-diem/hero-b') return false
+    })
+
+    try {
+      await wrapper.vm.$router.push('/dia-diem/hero-b')
+      await flushUi()
+
+      expect(wrapper.vm.$router.currentRoute.value.path).toBe('/dia-diem/hero-a')
+      expect(wrapper.get('h1').text()).toBe('Hero A')
+      const hero = wrapper.get<HTMLElement>('[data-entity-hero] .dc-bg')
+      expect(hero.classes()).toContain('loaded')
+      expect(hero.element.style.opacity).toBe('')
+      expect(hero.element.style.transition).toBe('')
+    } finally {
+      removeAbortGuard()
+    }
+  })
+
   it('clears a loaded hero when the reused detail page switches to an incomplete failed image', async () => {
     const imageState = stubHeroImageState({ complete: true, naturalWidth: 800, naturalHeight: 533 })
     const nextEntity = deferred<ReturnType<typeof detailEntity>>()
