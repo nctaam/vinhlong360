@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import ContactWidget from '../components/ContactWidget.vue'
 import EntityTrustPanel from '../components/EntityTrustPanel.vue'
 import EntityDetailPage from '../pages/dia-diem/[id].vue'
+import { aiDisclosure } from '../utils/aiDisclosure'
 
 const apiFetchMock = vi.hoisted(() => vi.fn())
 vi.mock('../utils/apiFetch', () => ({ apiFetch: apiFetchMock }))
@@ -22,6 +23,74 @@ const NuxtImgStub = defineComponent({
   },
 })
 
+const heroDescriptor = {
+  url: '/img/entities/cong-vien-an-hoi.webp',
+  alt: 'Cong vien An Hoi ben song',
+  source_class: 'ai-generated',
+  source_kind: 'entity-editorial',
+  disclosure_key: 'entity-ai',
+  short_label: aiDisclosure.entity_ai.short_label,
+  full_disclosure: aiDisclosure.entity_ai.full_disclosure,
+  credit: null,
+  width: 800,
+  height: 533,
+} as const
+
+function stubHeroImageState(initial: { complete: boolean; naturalWidth: number; naturalHeight: number }) {
+  const state = { ...initial }
+  vi.spyOn(HTMLImageElement.prototype, 'complete', 'get').mockImplementation(() => state.complete)
+  vi.spyOn(HTMLImageElement.prototype, 'naturalWidth', 'get').mockImplementation(() => state.naturalWidth)
+  vi.spyOn(HTMLImageElement.prototype, 'naturalHeight', 'get').mockImplementation(() => state.naturalHeight)
+  return {
+    update(next: Partial<typeof state>) {
+      Object.assign(state, next)
+    },
+  }
+}
+
+async function mountDetailHero() {
+  const entity = {
+    id: 'cong-vien-an-hoi',
+    type: 'attraction',
+    name: 'Cong vien An Hoi',
+    summary: 'Khong gian cong vien ven song tai Vinh Long.',
+    description: 'Noi dao bo va nghi chan ben bo song.',
+    place_name: 'Phuong Thanh Duc',
+    attributes: {},
+  }
+  apiFetchMock.mockImplementation((url: unknown) => {
+    const path = String(url)
+    if (path === '/api/entities/cong-vien-an-hoi') return Promise.resolve(entity)
+    if (path === '/api/entities/cong-vien-an-hoi/gallery') return Promise.resolve({ images: [heroDescriptor] })
+    if (path === '/seo/jsonld/cong-vien-an-hoi') return Promise.resolve(null)
+    if (path.startsWith('/api/entities/cong-vien-an-hoi/relationships')) return Promise.resolve({ relationships: [], total: 0 })
+    return Promise.resolve({})
+  })
+
+  const wrapper = await mountSuspended(EntityDetailPage, {
+    route: '/dia-diem/cong-vien-an-hoi',
+    global: {
+      stubs: {
+        NuxtImg: NuxtImgStub,
+        Breadcrumb: true,
+        SaveButton: true,
+        ShareButton: true,
+        IconLine: { props: ['name'], template: '<i :data-icon="name" />' },
+        EntityMap: true,
+        EntityFeed: true,
+        ReviewSection: true,
+        JourneyBar: true,
+        AIBestTime: true,
+        ContactWidget: true,
+        LazyContactWidget: true,
+      },
+    },
+  })
+  wrappers.push(wrapper)
+  await flushUi()
+  return wrapper
+}
+
 async function flushUi() {
   await new Promise(resolve => setTimeout(resolve, 0))
   await nextTick()
@@ -30,11 +99,47 @@ async function flushUi() {
 
 afterEach(async () => {
   for (const wrapper of wrappers.splice(0)) wrapper.unmount()
+  vi.restoreAllMocks()
   apiFetchMock.mockReset()
   await clearNuxtData()
 })
 
 describe('entity detail tri-region behavior', () => {
+  it('reveals a successfully cached hero after mount without a new load event', async () => {
+    stubHeroImageState({ complete: true, naturalWidth: 800, naturalHeight: 533 })
+
+    const wrapper = await mountDetailHero()
+    const image = wrapper.get<HTMLImageElement>('[data-entity-hero] .dc-bg')
+    const disclosureId = image.attributes('aria-describedby')
+
+    expect(image.classes()).toContain('loaded')
+    expect(image.attributes('alt')).toBe(heroDescriptor.alt)
+    expect(wrapper.get(`#${disclosureId}`).text()).toBe(heroDescriptor.full_disclosure)
+  })
+
+  it('reveals the hero when a successful load event arrives after hydration', async () => {
+    const imageState = stubHeroImageState({ complete: false, naturalWidth: 0, naturalHeight: 0 })
+    const wrapper = await mountDetailHero()
+    const image = wrapper.get<HTMLImageElement>('[data-entity-hero] .dc-bg')
+
+    expect(image.classes()).not.toContain('loaded')
+    imageState.update({ complete: true, naturalWidth: 800, naturalHeight: 533 })
+    await image.trigger('load')
+
+    expect(image.classes()).toContain('loaded')
+  })
+
+  it('does not reveal a completed hero whose natural width is zero', async () => {
+    stubHeroImageState({ complete: true, naturalWidth: 0, naturalHeight: 0 })
+    const wrapper = await mountDetailHero()
+    const image = wrapper.get<HTMLImageElement>('[data-entity-hero] .dc-bg')
+
+    await image.trigger('load')
+
+    expect(image.classes()).not.toContain('loaded')
+    expect(wrapper.get(`#${image.attributes('aria-describedby')}`).text()).toBe(heroDescriptor.full_disclosure)
+  })
+
   it('separates official provenance, stale severity and report action', async () => {
     const wrapper = await mountSuspended(EntityTrustPanel, {
       props: {

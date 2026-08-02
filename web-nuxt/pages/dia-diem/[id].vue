@@ -29,8 +29,8 @@
       :aria-label="!hasEntityImages ? heroDescriptor.alt : undefined"
       :aria-describedby="heroDisclosureId"
     >
-      <NuxtImg v-if="hasEntityImages && heroDescriptor.url && isRemoteUrl(heroDescriptor.url)" :src="heroDescriptor.url" :alt="heroDescriptor.alt" class="dc-bg" loading="eager" fetchpriority="high" width="1200" height="600" sizes="sm:100vw md:100vw lg:960px xl:1200px" role="button" tabindex="0" :aria-describedby="heroDisclosureId" :aria-label="`Xem ảnh ${entity.name}`" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="openCoverLightbox(0)" @keydown.enter="openCoverLightbox(0)" @keydown.space.prevent="openCoverLightbox(0)" />
-      <img v-else-if="hasEntityImages && heroDescriptor.url" :src="heroDescriptor.url" :alt="heroDescriptor.alt" class="dc-bg" loading="eager" fetchpriority="high" width="1200" height="600" role="button" tabindex="0" :aria-describedby="heroDisclosureId" :aria-label="`Xem ảnh ${entity.name}`" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="openCoverLightbox(0)" @keydown.enter="openCoverLightbox(0)" @keydown.space.prevent="openCoverLightbox(0)" />
+      <NuxtImg v-if="hasEntityImages && heroDescriptor.url && isRemoteUrl(heroDescriptor.url)" ref="heroImage" :src="heroDescriptor.url" :alt="heroDescriptor.alt" class="dc-bg" loading="eager" fetchpriority="high" width="1200" height="600" sizes="sm:100vw md:100vw lg:960px xl:1200px" role="button" tabindex="0" :aria-describedby="heroDisclosureId" :aria-label="`Xem ảnh ${entity.name}`" @load="revealHeroImage" @click="openCoverLightbox(0)" @keydown.enter="openCoverLightbox(0)" @keydown.space.prevent="openCoverLightbox(0)" />
+      <img v-else-if="hasEntityImages && heroDescriptor.url" ref="heroImage" :src="heroDescriptor.url" :alt="heroDescriptor.alt" class="dc-bg" loading="eager" fetchpriority="high" width="1200" height="600" role="button" tabindex="0" :aria-describedby="heroDisclosureId" :aria-label="`Xem ảnh ${entity.name}`" @load="revealHeroImage" @click="openCoverLightbox(0)" @keydown.enter="openCoverLightbox(0)" @keydown.space.prevent="openCoverLightbox(0)" />
       <EntityHeroPlaceholder v-else :id="entity.id" :cat="typeMeta.cat" :label="typeMeta.label" :descriptor="heroDescriptor" :material-accent="detailMaterialAccent" class="dc-placeholder" aria-hidden="true" />
       <div v-if="coverImage" class="dc-overlay"></div>
       <div v-if="coverImage" class="dc-vignette" aria-hidden="true"></div>
@@ -532,6 +532,22 @@ const isFollowingPlace = ref(false)
 const rsvpGoing = ref(false)
 const rsvpCount = ref(0)
 const actionPending = ref(false)
+type HeroImageRef = HTMLImageElement | { $el?: unknown } | null
+const heroImage = ref<HeroImageRef>(null)
+
+function revealHeroImage(event?: Event) {
+  const eventTarget = event?.currentTarget
+  const refTarget = heroImage.value
+  const image = eventTarget instanceof HTMLImageElement
+    ? eventTarget
+    : refTarget instanceof HTMLImageElement
+      ? refTarget
+      : refTarget?.$el instanceof HTMLImageElement
+        ? refTarget.$el
+        : null
+  if (!image?.complete || image.naturalWidth <= 0) return
+  image.classList.add('loaded')
+}
 
 async function toggleRsvp() {
   if (!isLoggedIn.value) { openAuth(() => toggleRsvp()); return }
@@ -591,6 +607,8 @@ function trackCurrentEntity() {
 }
 
 onMounted(async () => {
+  await nextTick()
+  revealHeroImage()
   trackCurrentEntity()
   if (!isLoggedIn.value) return
   const tasks: Promise<void>[] = [
