@@ -533,9 +533,13 @@ const removeHeroNavigationGuard = router.beforeEach((to, from) => {
 
 const removeHeroNavigationCompletionHook = router.afterEach((to, from, failure) => {
   const pending = pendingHeroNavigation
-  if (!pending || pending.fromFullPath !== from.fullPath || pending.toFullPath !== to.fullPath) return
+  if (!pending) return
+  const completesPendingNavigation = (
+    pending.fromFullPath === from.fullPath && pending.toFullPath === to.fullPath
+  ) || to.redirectedFrom?.fullPath === pending.toFullPath
+  if (!completesPendingNavigation) return
   pendingHeroNavigation = null
-  if (failure) void revealHeroImageAfterUpdate()
+  if (failure || !changesHeroRouteIdentity(to, from)) void revealHeroImageAfterUpdate()
 })
 
 onUnmounted(() => {

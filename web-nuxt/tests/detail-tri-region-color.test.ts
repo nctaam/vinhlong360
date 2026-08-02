@@ -224,6 +224,57 @@ describe('entity detail tri-region behavior', () => {
     }
   })
 
+  it('restores the current valid hero when entity navigation redirects back to it', async () => {
+    stubHeroImageState({ complete: true, naturalWidth: 800, naturalHeight: 533 })
+    const wrapper = await mountDetailHero({
+      fixtures: {
+        'hero-a': { entity: detailEntity('hero-a', 'Hero A', [heroDescriptor.url]), images: [heroDescriptor] },
+        'hero-b': { entity: detailEntity('hero-b', 'Hero B'), images: [] },
+      },
+      route: '/dia-diem/hero-a',
+    })
+    const removeRedirectGuard = wrapper.vm.$router.beforeEach((to) => {
+      if (to.path === '/dia-diem/hero-b') return '/dia-diem/hero-a?redirected=1'
+    })
+
+    try {
+      await wrapper.vm.$router.push('/dia-diem/hero-b')
+      await flushUi()
+
+      expect(wrapper.vm.$router.currentRoute.value.fullPath).toBe('/dia-diem/hero-a?redirected=1')
+      expect(wrapper.get('h1').text()).toBe('Hero A')
+      const restoredHero = wrapper.get<HTMLElement>('[data-entity-hero] .dc-bg')
+      expect(restoredHero.classes()).toContain('loaded')
+      expect(restoredHero.element.style.opacity).toBe('')
+      expect(restoredHero.element.style.transition).toBe('')
+    } finally {
+      removeRedirectGuard()
+    }
+
+    const navigationGate = deferred<void>()
+    let navigationReachedResolveGuard = false
+    const removeResolveGuard = wrapper.vm.$router.beforeResolve(async (to) => {
+      if (to.path !== '/dia-diem/hero-b') return
+      navigationReachedResolveGuard = true
+      await navigationGate.promise
+    })
+    const nextNavigation = wrapper.vm.$router.push('/dia-diem/hero-b')
+
+    try {
+      await vi.waitFor(() => expect(navigationReachedResolveGuard).toBe(true))
+      await nextTick()
+
+      const pendingHero = wrapper.get<HTMLElement>('[data-entity-hero] .dc-bg')
+      expect(pendingHero.classes()).not.toContain('loaded')
+      expect(pendingHero.element.style.opacity).toBe('0')
+      expect(pendingHero.element.style.transition).toBe('none')
+    } finally {
+      navigationGate.resolve()
+      await nextNavigation
+      removeResolveGuard()
+    }
+  })
+
   it('clears a loaded hero when the reused detail page switches to an incomplete failed image', async () => {
     const imageState = stubHeroImageState({ complete: true, naturalWidth: 800, naturalHeight: 533 })
     const nextEntity = deferred<ReturnType<typeof detailEntity>>()
