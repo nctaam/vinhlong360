@@ -29,8 +29,8 @@
       :aria-label="!hasEntityImages ? heroDescriptor.alt : undefined"
       :aria-describedby="heroDisclosureId"
     >
-      <NuxtImg v-if="hasEntityImages && heroDescriptor.url && isRemoteUrl(heroDescriptor.url)" ref="heroImage" :src="heroDescriptor.url" :alt="heroDescriptor.alt" class="dc-bg" loading="eager" fetchpriority="high" width="1200" height="600" sizes="sm:100vw md:100vw lg:960px xl:1200px" role="button" tabindex="0" :aria-describedby="heroDisclosureId" :aria-label="`Xem ảnh ${entity.name}`" @load="revealHeroImage" @click="openCoverLightbox(0)" @keydown.enter="openCoverLightbox(0)" @keydown.space.prevent="openCoverLightbox(0)" />
-      <img v-else-if="hasEntityImages && heroDescriptor.url" ref="heroImage" :src="heroDescriptor.url" :alt="heroDescriptor.alt" class="dc-bg" loading="eager" fetchpriority="high" width="1200" height="600" role="button" tabindex="0" :aria-describedby="heroDisclosureId" :aria-label="`Xem ảnh ${entity.name}`" @load="revealHeroImage" @click="openCoverLightbox(0)" @keydown.enter="openCoverLightbox(0)" @keydown.space.prevent="openCoverLightbox(0)" />
+      <NuxtImg v-if="hasEntityImages && heroDescriptor.url && isRemoteUrl(heroDescriptor.url)" :key="heroImageIdentity" ref="heroImage" :src="heroDescriptor.url" :alt="heroDescriptor.alt" :class="['dc-bg', { loaded: heroLoaded }]" loading="eager" fetchpriority="high" width="1200" height="600" sizes="sm:100vw md:100vw lg:960px xl:1200px" role="button" tabindex="0" :aria-describedby="heroDisclosureId" :aria-label="`Xem ảnh ${entity.name}`" @load="revealHeroImage" @click="openCoverLightbox(0)" @keydown.enter="openCoverLightbox(0)" @keydown.space.prevent="openCoverLightbox(0)" />
+      <img v-else-if="hasEntityImages && heroDescriptor.url" :key="heroImageIdentity" ref="heroImage" :src="heroDescriptor.url" :alt="heroDescriptor.alt" :class="['dc-bg', { loaded: heroLoaded }]" loading="eager" fetchpriority="high" width="1200" height="600" role="button" tabindex="0" :aria-describedby="heroDisclosureId" :aria-label="`Xem ảnh ${entity.name}`" @load="revealHeroImage" @click="openCoverLightbox(0)" @keydown.enter="openCoverLightbox(0)" @keydown.space.prevent="openCoverLightbox(0)" />
       <EntityHeroPlaceholder v-else :id="entity.id" :cat="typeMeta.cat" :label="typeMeta.label" :descriptor="heroDescriptor" :material-accent="detailMaterialAccent" class="dc-placeholder" aria-hidden="true" />
       <div v-if="coverImage" class="dc-overlay"></div>
       <div v-if="coverImage" class="dc-vignette" aria-hidden="true"></div>
@@ -501,6 +501,7 @@ const route = useRoute()
 const router = useRouter()
 const id = computed(() => normalizeRouteParam(route.params.id))
 const encodedId = computed(() => encodePathId(id.value))
+const heroLoaded = ref(false)
 const launchSafety = useLaunchSafety()
 const entityLaunchGeneration = createLaunchGenerationGuard(() => launchSafety.resetForNavigation())
 entityLaunchGeneration.initialize()
@@ -546,7 +547,12 @@ function revealHeroImage(event?: Event) {
         ? refTarget.$el
         : null
   if (!image?.complete || image.naturalWidth <= 0) return
-  image.classList.add('loaded')
+  heroLoaded.value = true
+}
+
+async function revealHeroImageAfterUpdate() {
+  await nextTick()
+  revealHeroImage()
 }
 
 async function toggleRsvp() {
@@ -607,8 +613,7 @@ function trackCurrentEntity() {
 }
 
 onMounted(async () => {
-  await nextTick()
-  revealHeroImage()
+  await revealHeroImageAfterUpdate()
   trackCurrentEntity()
   if (!isLoggedIn.value) return
   const tasks: Promise<void>[] = [
@@ -744,6 +749,7 @@ function createPlaceholderDescriptor(): Readonly<ImageDescriptor> {
 }
 
 const heroDescriptor = computed(() => entityImageDescriptors.value[0] || createPlaceholderDescriptor())
+const heroImageIdentity = computed(() => `${id.value}:${heroDescriptor.value.url || 'placeholder'}`)
 const hasEntityImages = computed(() => (
   entityImageDescriptors.value.some(descriptor => descriptor.url !== null)
 ))
@@ -752,6 +758,15 @@ const hasEntityGallery = computed(() => (
 ))
 
 const coverImage = computed(() => heroDescriptor.value.url || '')
+
+// Reset stale route state before Vue reuses the hero, then inspect the committed replacement ref.
+watch(heroImageIdentity, () => {
+  heroLoaded.value = false
+}, { flush: 'sync' })
+
+watch(heroImageIdentity, () => {
+  void revealHeroImageAfterUpdate()
+}, { flush: 'post' })
 
 function sanitizeDisclosureIdToken(value: unknown): string {
   const raw = String(value ?? '').trim()

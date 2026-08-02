@@ -36,6 +36,37 @@ const heroDescriptor = {
   height: 533,
 } as const
 
+const remoteHeroDescriptor = {
+  ...heroDescriptor,
+  url: 'https://cdn.example/cong-vien-an-hoi.webp',
+  alt: 'Cong vien An Hoi tu CDN',
+} as const
+
+function detailEntity(id: string, name: string, images: string[] = []) {
+  return {
+    id,
+    type: 'attraction',
+    name,
+    summary: `Khong gian ${name} tai Vinh Long.`,
+    description: `Thong tin chi tiet ve ${name}.`,
+    place_name: 'Phuong Thanh Duc',
+    attributes: {},
+    images,
+  }
+}
+
+type DetailRouteFixture = {
+  entity: ReturnType<typeof detailEntity> | Promise<ReturnType<typeof detailEntity>>
+  images: readonly unknown[] | Promise<readonly unknown[]>
+}
+
+const defaultDetailFixtures: Record<string, DetailRouteFixture> = {
+  'cong-vien-an-hoi': {
+    entity: detailEntity('cong-vien-an-hoi', 'Cong vien An Hoi'),
+    images: [heroDescriptor],
+  },
+}
+
 function stubHeroImageState(initial: { complete: boolean; naturalWidth: number; naturalHeight: number }) {
   const state = { ...initial }
   vi.spyOn(HTMLImageElement.prototype, 'complete', 'get').mockImplementation(() => state.complete)
@@ -48,27 +79,32 @@ function stubHeroImageState(initial: { complete: boolean; naturalWidth: number; 
   }
 }
 
-async function mountDetailHero() {
-  const entity = {
-    id: 'cong-vien-an-hoi',
-    type: 'attraction',
-    name: 'Cong vien An Hoi',
-    summary: 'Khong gian cong vien ven song tai Vinh Long.',
-    description: 'Noi dao bo va nghi chan ben bo song.',
-    place_name: 'Phuong Thanh Duc',
-    attributes: {},
-  }
+function deferred<T>() {
+  let resolve!: (value: T) => void
+  const promise = new Promise<T>((fulfill) => { resolve = fulfill })
+  return { promise, resolve }
+}
+
+async function mountDetailHero(options: {
+  route?: string
+  fixtures?: Record<string, DetailRouteFixture>
+} = {}) {
+  const fixtures = options.fixtures || defaultDetailFixtures
   apiFetchMock.mockImplementation((url: unknown) => {
     const path = String(url)
-    if (path === '/api/entities/cong-vien-an-hoi') return Promise.resolve(entity)
-    if (path === '/api/entities/cong-vien-an-hoi/gallery') return Promise.resolve({ images: [heroDescriptor] })
-    if (path === '/seo/jsonld/cong-vien-an-hoi') return Promise.resolve(null)
-    if (path.startsWith('/api/entities/cong-vien-an-hoi/relationships')) return Promise.resolve({ relationships: [], total: 0 })
+    if (path.startsWith('/seo/jsonld/')) return Promise.resolve(null)
+    const match = path.match(/^\/api\/entities\/([^/?]+)(?:\/(gallery|relationships))?/)
+    if (match) {
+      const fixture = fixtures[decodeURIComponent(match[1] || '')]
+      if (match[2] === 'gallery') return Promise.resolve(fixture?.images || []).then(images => ({ images }))
+      if (match[2] === 'relationships') return Promise.resolve({ relationships: [], total: 0 })
+      if (fixture) return Promise.resolve(fixture.entity)
+    }
     return Promise.resolve({})
   })
 
   const wrapper = await mountSuspended(EntityDetailPage, {
-    route: '/dia-diem/cong-vien-an-hoi',
+    route: options.route || '/dia-diem/cong-vien-an-hoi',
     global: {
       stubs: {
         NuxtImg: NuxtImgStub,
@@ -105,6 +141,76 @@ afterEach(async () => {
 })
 
 describe('entity detail tri-region behavior', () => {
+  it('clears a loaded hero when the reused detail page switches to an incomplete failed image', async () => {
+    const imageState = stubHeroImageState({ complete: true, naturalWidth: 800, naturalHeight: 533 })
+    const nextEntity = deferred<ReturnType<typeof detailEntity>>()
+    const nextImages = deferred<readonly unknown[]>()
+    const wrapper = await mountDetailHero({
+      fixtures: {
+        'hero-a': { entity: detailEntity('hero-a', 'Hero A', [heroDescriptor.url]), images: [heroDescriptor] },
+        'hero-b': { entity: nextEntity.promise, images: nextImages.promise },
+      },
+      route: '/dia-diem/hero-a',
+    })
+    expect(wrapper.get('[data-entity-hero] .dc-bg').classes()).toContain('loaded')
+
+    imageState.update({ complete: false, naturalWidth: 0, naturalHeight: 0 })
+    await wrapper.vm.$router.push('/dia-diem/hero-b')
+    await nextTick()
+    const stayedLoadedWhileNextHeroWasPending = wrapper.get('[data-entity-hero] .dc-bg').classes().includes('loaded')
+
+    nextEntity.resolve(detailEntity('hero-b', 'Hero B', [heroDescriptor.url]))
+    nextImages.resolve([heroDescriptor])
+    await flushUi()
+    await flushUi()
+
+    const failedImage = wrapper.get<HTMLImageElement>('[data-entity-hero] .dc-bg')
+    expect(stayedLoadedWhileNextHeroWasPending).toBe(false)
+    expect(wrapper.get('h1').text()).toBe('Hero B')
+    expect(failedImage.attributes('alt')).toBe(heroDescriptor.alt)
+    expect(failedImage.classes()).not.toContain('loaded')
+
+    imageState.update({ complete: true })
+    await failedImage.trigger('load')
+    expect(failedImage.classes()).not.toContain('loaded')
+  })
+
+  it('reveals a cached remote NuxtImg when it replaces a placeholder after client navigation', async () => {
+    stubHeroImageState({ complete: true, naturalWidth: 800, naturalHeight: 533 })
+    const wrapper = await mountDetailHero({
+      fixtures: {
+        'hero-placeholder': { entity: detailEntity('hero-placeholder', 'Hero Placeholder'), images: [] },
+        'hero-remote': { entity: detailEntity('hero-remote', 'Hero Remote'), images: [remoteHeroDescriptor] },
+      },
+      route: '/dia-diem/hero-placeholder',
+    })
+    expect(wrapper.find('[data-entity-hero] .dc-bg').exists()).toBe(false)
+
+    await wrapper.vm.$router.push('/dia-diem/hero-remote')
+    await flushUi()
+    await flushUi()
+
+    const remoteImage = wrapper.get<HTMLImageElement>('[data-entity-hero] .dc-bg')
+    expect(wrapper.get('h1').text()).toBe('Hero Remote')
+    expect(remoteImage.attributes('src')).toBe(remoteHeroDescriptor.url)
+    expect(remoteImage.classes()).toContain('loaded')
+    expect(wrapper.get(`#${remoteImage.attributes('aria-describedby')}`).text()).toBe(remoteHeroDescriptor.full_disclosure)
+  })
+
+  it('resolves the cached remote NuxtImg component ref through its rendered image element', async () => {
+    stubHeroImageState({ complete: true, naturalWidth: 800, naturalHeight: 533 })
+    const wrapper = await mountDetailHero({
+      fixtures: {
+        'hero-remote': { entity: detailEntity('hero-remote', 'Hero Remote'), images: [remoteHeroDescriptor] },
+      },
+      route: '/dia-diem/hero-remote',
+    })
+    const remoteImage = wrapper.get<HTMLImageElement>('[data-entity-hero] .dc-bg')
+
+    expect(remoteImage.attributes('src')).toBe(remoteHeroDescriptor.url)
+    expect(remoteImage.classes()).toContain('loaded')
+  })
+
   it('reveals a successfully cached hero after mount without a new load event', async () => {
     stubHeroImageState({ complete: true, naturalWidth: 800, naturalHeight: 533 })
 
