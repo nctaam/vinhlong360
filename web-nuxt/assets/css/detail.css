@@ -348,7 +348,7 @@
 @media (max-width: 480px) {
   .detail-cover h1 { font-size: 1.5rem; }
   .detail-cover.has-cover-img { min-height: 260px; }
-  .has-cover-img .dc-inner { padding-top: 60px; }
+  .has-cover-img .dc-inner { padding-top: 60px; padding-bottom: calc(44px + var(--space-6)); }
   .dc-photo-btn { bottom: var(--space-3); right: var(--space-3); padding: var(--space-1) var(--space-3); font-size: .82rem; }
   .dc-thumbs { display: none; }
   .dc-credit { display: none; }

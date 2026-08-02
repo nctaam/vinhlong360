@@ -1,4 +1,4 @@
-import { clearNuxtData } from '#app'
+import { clearNuxtData, useState } from '#app'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -13,6 +13,7 @@ const apiFetchMock = vi.hoisted(() => vi.fn())
 vi.mock('../utils/apiFetch', () => ({ apiFetch: apiFetchMock }))
 
 const triRegionCss = readFileSync(resolve(process.cwd(), 'assets/css/tri-region-color.css'), 'utf8')
+const detailCss = readFileSync(resolve(process.cwd(), 'assets/css/detail.css'), 'utf8')
 
 const wrappers: Array<{ unmount: () => void }> = []
 const NuxtImgStub = defineComponent({
@@ -136,6 +137,7 @@ async function flushUi() {
 afterEach(async () => {
   for (const wrapper of wrappers.splice(0)) wrapper.unmount()
   vi.restoreAllMocks()
+  vi.unstubAllGlobals()
   apiFetchMock.mockReset()
   await clearNuxtData()
 })
@@ -381,6 +383,56 @@ describe('entity detail tri-region behavior', () => {
     expect(image.classes()).toContain('loaded')
     expect(image.element.style.opacity).toBe('')
     expect(image.element.style.transition).toBe('')
+  })
+
+  it('keeps hero actions labelled, ordered and independently clickable through follow state changes', async () => {
+    useState('auth-user').value = { id: 'user-1', has_password: true }
+    vi.stubGlobal('$fetch', vi.fn(async (input: unknown) => {
+      const path = String(input)
+      if (path.includes('/api/me/visits/check/')) return { status: null }
+      if (path === '/api/following') return { following: [] }
+      if (path === '/auth/csrf') return { csrf_token: 'test-csrf' }
+      return {}
+    }))
+
+    const wrapper = await mountDetailHero()
+    const actions = wrapper.findAll('.detail-cover button').filter(button =>
+      button.classes().includes('trip-btn') || button.classes().includes('dc-photo-btn'))
+
+    expect(actions.map(action => action.text())).toEqual([
+      '✓ Đã đến',
+      '♡ Muốn đến',
+      '🔔 Theo dõi',
+      '📷 Xem ảnh',
+    ])
+
+    const follow = wrapper.findAll('.trip-btn').find(button => button.text().includes('Theo dõi'))!
+    expect(follow.attributes('aria-pressed')).toBe('false')
+    expect(document.body.querySelector('[role="dialog"][aria-label="Xem ảnh"]')).toBeNull()
+
+    await follow.trigger('click')
+    await flushUi()
+
+    expect(follow.attributes('aria-pressed')).toBe('true')
+    expect(follow.text()).toBe('🔔 Đang theo dõi')
+    expect(document.body.querySelector('[role="dialog"][aria-label="Xem ảnh"]')).toBeNull()
+
+    await wrapper.get('.dc-photo-btn').trigger('click')
+    await flushUi()
+
+    const dialog = document.body.querySelector('[role="dialog"][aria-label="Xem ảnh"]')
+    expect(dialog).not.toBeNull()
+    expect(dialog?.querySelector('[data-active-media]')?.getAttribute('alt')).toBe(heroDescriptor.alt)
+    expect(follow.attributes('aria-pressed')).toBe('true')
+    expect(follow.text()).toBe('🔔 Đang theo dõi')
+  })
+
+  it('reserves a mobile photo-action row below the wrapping trip region', () => {
+    const mobileInnerRule = detailCss.match(/@media \(max-width: 480px\) \{[\s\S]*?\.has-cover-img \.dc-inner\s*\{([^}]*)\}/)
+    const tripRule = detailCss.match(/\.dc-trip\s*\{([^}]*)\}/)
+
+    expect(tripRule?.[1]).toMatch(/flex-wrap:\s*wrap/)
+    expect(mobileInnerRule?.[1]).toMatch(/padding-bottom:\s*calc\(44px \+ var\(--space-6\)\)/)
   })
 
   it('does not reveal a completed hero whose natural width is zero', async () => {
