@@ -141,6 +141,38 @@ afterEach(async () => {
 })
 
 describe('entity detail tri-region behavior', () => {
+  it('hides a loaded hero while a reused detail navigation is still resolving', async () => {
+    stubHeroImageState({ complete: true, naturalWidth: 800, naturalHeight: 533 })
+    const wrapper = await mountDetailHero({
+      fixtures: {
+        'hero-a': { entity: detailEntity('hero-a', 'Hero A', [heroDescriptor.url]), images: [heroDescriptor] },
+        'hero-b': { entity: detailEntity('hero-b', 'Hero B'), images: [] },
+      },
+      route: '/dia-diem/hero-a',
+    })
+    const navigationGate = deferred<void>()
+    let navigationReachedResolveGuard = false
+    const removeGuard = wrapper.vm.$router.beforeResolve(async (to) => {
+      if (to.path !== '/dia-diem/hero-b') return
+      navigationReachedResolveGuard = true
+      await navigationGate.promise
+    })
+
+    const navigation = wrapper.vm.$router.push('/dia-diem/hero-b')
+    try {
+      await vi.waitFor(() => expect(navigationReachedResolveGuard).toBe(true))
+      await nextTick()
+
+      expect(wrapper.vm.$router.currentRoute.value.path).toBe('/dia-diem/hero-a')
+      expect(wrapper.get('h1').text()).toBe('Hero A')
+      expect(wrapper.get('[data-entity-hero] .dc-bg').classes()).not.toContain('loaded')
+    } finally {
+      navigationGate.resolve()
+      await navigation
+      removeGuard()
+    }
+  })
+
   it('clears a loaded hero when the reused detail page switches to an incomplete failed image', async () => {
     const imageState = stubHeroImageState({ complete: true, naturalWidth: 800, naturalHeight: 533 })
     const nextEntity = deferred<ReturnType<typeof detailEntity>>()

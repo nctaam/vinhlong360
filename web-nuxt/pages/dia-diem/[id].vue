@@ -514,6 +514,11 @@ watch(() => route.fullPath, (next, previous) => {
   if (previous !== undefined && next !== previous) entityLaunchGeneration.begin()
 }, { flush: 'sync' })
 
+const removeHeroNavigationGuard = router.beforeEach((to, from) => {
+  if (to.fullPath !== from.fullPath) heroLoaded.value = false
+})
+onUnmounted(removeHeroNavigationGuard)
+
 // ── Đã-đi/Muốn-đi + theo-dõi địa-điểm (Tier-1 MXH) ──
 const { isLoggedIn, authHeaders } = useAuth()
 const { openAuth } = useAuthModal()
