@@ -1,4 +1,4 @@
-import { clearNuxtData, useState } from '#app'
+import { clearNuxtData, clearNuxtState, useState } from '#app'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -134,13 +134,16 @@ async function flushUi() {
   await new Promise(resolve => setTimeout(resolve, 0))
 }
 
-afterEach(async () => {
+async function cleanupDetailTestState() {
   for (const wrapper of wrappers.splice(0)) wrapper.unmount()
   vi.restoreAllMocks()
   vi.unstubAllGlobals()
   apiFetchMock.mockReset()
   await clearNuxtData()
-})
+  clearNuxtState('auth-user')
+}
+
+afterEach(cleanupDetailTestState)
 
 describe('entity detail tri-region behavior', () => {
   it('hides a loaded hero while a reused detail navigation is still resolving', async () => {
@@ -427,12 +430,39 @@ describe('entity detail tri-region behavior', () => {
     expect(follow.text()).toBe('🔔 Đang theo dõi')
   })
 
-  it('reserves a mobile photo-action row below the wrapping trip region', () => {
+  it('clears authenticated test state without wiping unrelated Nuxt state before the next mount', async () => {
+    const authUser = useState('auth-user')
+    const unrelated = useState('detail-cleanup-sentinel', () => 'keep')
+    authUser.value = { id: 'leaked-user', has_password: true }
+    unrelated.value = 'keep'
+
+    try {
+      await cleanupDetailTestState()
+
+      expect(authUser.value).toBeUndefined()
+      expect(unrelated.value).toBe('keep')
+
+      const wrapper = await mountDetailHero()
+      const follow = wrapper.findAll('.trip-btn').find(button => button.text().includes('Theo dõi'))!
+      await follow.trigger('click')
+      await flushUi()
+
+      expect(follow.attributes('aria-pressed')).toBe('false')
+      expect(follow.text()).toBe('🔔 Theo dõi')
+    } finally {
+      clearNuxtState('auth-user')
+      clearNuxtState('detail-cleanup-sentinel')
+    }
+  })
+
+  it('extends only the photo-row reservation through the last colliding tablet pixel', () => {
     const mobileInnerRule = detailCss.match(/@media \(max-width: 480px\) \{[\s\S]*?\.has-cover-img \.dc-inner\s*\{([^}]*)\}/)
+    const boundaryInnerRule = detailCss.match(/@media \(min-width: 481px\) and \(max-width: 768px\)\s*\{\s*\.has-cover-img \.dc-inner\s*\{([^}]*)\}/)
     const tripRule = detailCss.match(/\.dc-trip\s*\{([^}]*)\}/)
 
     expect(tripRule?.[1]).toMatch(/flex-wrap:\s*wrap/)
     expect(mobileInnerRule?.[1]).toMatch(/padding-bottom:\s*calc\(44px \+ var\(--space-6\)\)/)
+    expect(boundaryInnerRule?.[1]).toMatch(/padding-bottom:\s*calc\(44px \+ var\(--space-6\)\)/)
   })
 
   it('does not reveal a completed hero whose natural width is zero', async () => {

@@ -353,6 +353,9 @@
   .dc-thumbs { display: none; }
   .dc-credit { display: none; }
 }
+@media (min-width: 481px) and (max-width: 768px) {
+  .has-cover-img .dc-inner { padding-bottom: calc(44px + var(--space-6)); }
+}
 /* Ultra-narrow: drop the map button so phone + Zalo stay full-width and legible
    without text wrap; emoji always visible to preserve meaning. */
 @media (max-width: 320px) {
