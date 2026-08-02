@@ -202,13 +202,15 @@ describe('UI foundation shell', () => {
     }
   })
 
-  it('keeps the compact mobile login action accessible', async () => {
+  it('keeps the compact mobile login control accessible as a secondary action', async () => {
     const wrapper = await mountDefaultLayout()
     wrappers.push(wrapper)
     await nextTick()
 
     const login = wrapper.get('button.auth-btn')
+    expect(login.attributes('type')).toBe('button')
     expect(login.attributes('aria-label')).toBe('Đăng nhập')
+    expect(login.attributes('data-color-role')).toBe('action-secondary')
     expect(login.find('.line-icon').exists()).toBe(true)
     expect(login.get('.auth-btn-label').text()).toBe('Đăng nhập')
   })

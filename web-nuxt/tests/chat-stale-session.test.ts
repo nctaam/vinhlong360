@@ -46,6 +46,24 @@ beforeEach(() => {
 })
 
 describe('stale chat selector recovery', () => {
+  it('keeps Chat AI accessible as the primary global action while toggling the dialog', async () => {
+    const wrapper = await mountSuspended(ChatWidget, {
+      global: { stubs: { ClientOnly: false, IconLine: true } },
+    })
+
+    const chat = wrapper.get('button.chat-fab')
+    expect(chat.attributes('type')).toBe('button')
+    expect(chat.attributes('aria-label')).toBe('Chat AI')
+    expect(chat.attributes('data-color-role')).toBe('action')
+    expect(chat.attributes('aria-expanded')).toBe('false')
+
+    await chat.trigger('click')
+
+    expect(chat.attributes('aria-expanded')).toBe('true')
+    expect(wrapper.get('[role="dialog"]').attributes('aria-label')).toBe('Chat hỏi đáp')
+    wrapper.unmount()
+  })
+
   it('ChatWidget clears the stale selector and retries exactly once into a fragmented done event', async () => {
     mocks.fetch
       .mockResolvedValueOnce(new Response(null, { status: 404 }))

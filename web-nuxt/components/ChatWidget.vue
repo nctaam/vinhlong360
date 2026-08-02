@@ -1,7 +1,7 @@
 <template>
   <ClientOnly>
     <div v-if="ff('chat_widget') && !isEntityDetail" class="chat-widget">
-      <button type="button" class="chat-fab" :class="{ open }" @click="open = !open" :aria-expanded="open" aria-label="Chat AI">
+      <button type="button" class="chat-fab" data-color-role="action" :class="{ open }" @click="open = !open" :aria-expanded="open" aria-label="Chat AI">
         <IconLine :name="open ? 'x' : 'message'" />
       </button>
 
