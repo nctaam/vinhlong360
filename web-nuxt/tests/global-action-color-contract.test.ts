@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 const root = resolve(import.meta.dirname, '..')
-const legacyActionToken = /var\(--primary(?:-[a-z-]+)?\)/
+const legacyActionToken = /var\(\s*--primary(?:-[\w-]+)?(?=\s*[,\)])/i
 
 type CssSource = { from: string, css: string }
 type CssRule = { from: string, selector: string, body: string, atRules: string[] }
@@ -141,15 +141,24 @@ function readDeclarations(rule: CssRule) {
     else {
       const char = rule.body[cursor]
       if (char === '(') parentheses += 1
-      else if (char === ')') parentheses -= 1
+      else if (char === ')') {
+        if (parentheses === 0) throw new Error(`Unbalanced CSS declaration delimiters in ${rule.from}: ${rule.selector}`)
+        parentheses -= 1
+      }
       else if (char === '[') brackets += 1
-      else if (char === ']') brackets -= 1
+      else if (char === ']') {
+        if (brackets === 0) throw new Error(`Unbalanced CSS declaration delimiters in ${rule.from}: ${rule.selector}`)
+        brackets -= 1
+      }
       else if (char === ';' && parentheses === 0 && brackets === 0) {
         addDeclaration(cursor)
         start = cursor + 1
       }
       cursor += 1
     }
+  }
+  if (parentheses !== 0 || brackets !== 0) {
+    throw new Error(`Unbalanced CSS declaration delimiters in ${rule.from}: ${rule.selector}`)
   }
   addDeclaration(rule.body.length)
   return declarations
@@ -161,7 +170,10 @@ function selectorTargets(selector: string, target: '.auth-btn' | '.chat-fab') {
 }
 
 function isForcedColorsRule(rule: CssRule) {
-  return rule.atRules.some(atRule => /^@media\b/i.test(atRule) && /forced-colors\s*:\s*active/i.test(atRule))
+  return rule.atRules.some((atRule) => {
+    const media = /^@media\b([\s\S]*)$/i.exec(atRule)
+    return media !== null && /^\s*\(\s*forced-colors\s*:\s*active\s*\)\s*$/i.test(media[1]!)
+  })
 }
 
 function expectedTokens(target: '.auth-btn' | '.chat-fab', property: string) {
@@ -296,5 +308,37 @@ describe('Global public-shell action color contract', () => {
 
     expect(() => expectSemanticCascade([{ from: 'mutated-components.css', css: mutated }], '.auth-btn'))
       .toThrow(/Legacy action token.*--primary-fg/)
+  })
+
+  it('audits mixed, alternative and negated forced-colors media outside the exemption', () => {
+    const mutations = [
+      '@media (forced-colors: active), (min-width: 1px) { .auth-btn { color: red; } }',
+      '@media (forced-colors: active) or (min-width: 1px) { .auth-btn { color: red; } }',
+      '@media not (forced-colors: active) { .auth-btn { color: red; } }',
+    ]
+
+    for (const [index, css] of mutations.entries()) {
+      expect(() => expectSemanticCascade([{ from: `mixed-forced-colors-${index}.css`, css }], '.auth-btn'))
+        .toThrow(/Non-semantic \.auth-btn color/)
+    }
+  })
+
+  it('rejects legacy primary references even when their fallback is an allowed River token', () => {
+    const css = '.chat-fab { background: var(--primary, var(--color-action)); }'
+
+    expect(() => expectSemanticCascade([{ from: 'legacy-fallback.css', css }], '.chat-fab'))
+      .toThrow(/Legacy action token.*--primary/)
+  })
+
+  it('fails closed on unbalanced declaration parentheses and brackets', () => {
+    const mutations = [
+      { target: '.chat-fab' as const, css: '.chat-fab { background: var(--color-action); transform: translateX(1px; }' },
+      { target: '.auth-btn' as const, css: '.auth-btn { color: var(--color-action); transform: translateX([1px; }' },
+    ]
+
+    for (const [index, mutation] of mutations.entries()) {
+      expect(() => expectSemanticCascade([{ from: `unbalanced-${index}.css`, css: mutation.css }], mutation.target))
+        .toThrow(/Unbalanced CSS declaration delimiters/)
+    }
   })
 })
