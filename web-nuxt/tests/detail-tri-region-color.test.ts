@@ -6,6 +6,7 @@ import { defineComponent, h, nextTick } from 'vue'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import ContactWidget from '../components/ContactWidget.vue'
 import EntityTrustPanel from '../components/EntityTrustPanel.vue'
+import { useAuthModal } from '../composables/useAuthModal'
 import EntityDetailPage from '../pages/dia-diem/[id].vue'
 import { aiDisclosure } from '../utils/aiDisclosure'
 
@@ -141,6 +142,9 @@ async function cleanupDetailTestState() {
   apiFetchMock.mockReset()
   await clearNuxtData()
   clearNuxtState('auth-user')
+  const { openAuth, closeAuth } = useAuthModal()
+  openAuth()
+  closeAuth()
 }
 
 afterEach(cleanupDetailTestState)
@@ -430,39 +434,48 @@ describe('entity detail tri-region behavior', () => {
     expect(follow.text()).toBe('🔔 Đang theo dõi')
   })
 
-  it('clears authenticated test state without wiping unrelated Nuxt state before the next mount', async () => {
+  it('clears guest auth-modal state and callback without wiping unrelated Nuxt state', async () => {
     const authUser = useState('auth-user')
+    const authModalOpen = useState('auth-modal-open', () => false)
     const unrelated = useState('detail-cleanup-sentinel', () => 'keep')
-    authUser.value = { id: 'leaked-user', has_password: true }
     unrelated.value = 'keep'
 
     try {
-      await cleanupDetailTestState()
-
-      expect(authUser.value).toBeUndefined()
-      expect(unrelated.value).toBe('keep')
-
       const wrapper = await mountDetailHero()
       const follow = wrapper.findAll('.trip-btn').find(button => button.text().includes('Theo dõi'))!
       await follow.trigger('click')
       await flushUi()
 
+      expect(authModalOpen.value).toBe(true)
       expect(follow.attributes('aria-pressed')).toBe('false')
       expect(follow.text()).toBe('🔔 Theo dõi')
+
+      await cleanupDetailTestState()
+
+      expect.soft(authUser.value).toBeUndefined()
+      expect.soft(unrelated.value).toBe('keep')
+      expect.soft(authModalOpen.value).toBe(false)
+
+      authModalOpen.value = false
+      useAuthModal().onLoginSuccess()
+      await flushUi()
+
+      expect(authModalOpen.value).toBe(false)
     } finally {
       clearNuxtState('auth-user')
+      clearNuxtState('auth-modal-open')
       clearNuxtState('detail-cleanup-sentinel')
     }
   })
 
-  it('extends only the photo-row reservation through the last colliding tablet pixel', () => {
+  it('reserves the photo-action row continuously below the naturally clear 769px width', () => {
     const mobileInnerRule = detailCss.match(/@media \(max-width: 480px\) \{[\s\S]*?\.has-cover-img \.dc-inner\s*\{([^}]*)\}/)
-    const boundaryInnerRule = detailCss.match(/@media \(min-width: 481px\) and \(max-width: 768px\)\s*\{\s*\.has-cover-img \.dc-inner\s*\{([^}]*)\}/)
+    const continuousReservationRule = detailCss.match(/@media \(width < 769px\)\s*\{\s*\.has-cover-img \.dc-inner\s*\{([^}]*)\}/)
     const tripRule = detailCss.match(/\.dc-trip\s*\{([^}]*)\}/)
 
     expect(tripRule?.[1]).toMatch(/flex-wrap:\s*wrap/)
-    expect(mobileInnerRule?.[1]).toMatch(/padding-bottom:\s*calc\(44px \+ var\(--space-6\)\)/)
-    expect(boundaryInnerRule?.[1]).toMatch(/padding-bottom:\s*calc\(44px \+ var\(--space-6\)\)/)
+    expect(continuousReservationRule?.[1]).toMatch(/padding-bottom:\s*calc\(44px \+ var\(--space-6\)\)/)
+    expect(mobileInnerRule?.[1]).not.toMatch(/padding-bottom:/)
   })
 
   it('does not reveal a completed hero whose natural width is zero', async () => {

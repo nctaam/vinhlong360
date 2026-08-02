@@ -345,16 +345,16 @@
 @media (max-width: 768px) {
   .detail-cover h1 { font-size: var(--text-2xl); }
 }
+@media (width < 769px) {
+  .has-cover-img .dc-inner { padding-bottom: calc(44px + var(--space-6)); }
+}
 @media (max-width: 480px) {
   .detail-cover h1 { font-size: 1.5rem; }
   .detail-cover.has-cover-img { min-height: 260px; }
-  .has-cover-img .dc-inner { padding-top: 60px; padding-bottom: calc(44px + var(--space-6)); }
+  .has-cover-img .dc-inner { padding-top: 60px; }
   .dc-photo-btn { bottom: var(--space-3); right: var(--space-3); padding: var(--space-1) var(--space-3); font-size: .82rem; }
   .dc-thumbs { display: none; }
   .dc-credit { display: none; }
-}
-@media (min-width: 481px) and (max-width: 768px) {
-  .has-cover-img .dc-inner { padding-bottom: calc(44px + var(--space-6)); }
 }
 /* Ultra-narrow: drop the map button so phone + Zalo stay full-width and legible
    without text wrap; emoji always visible to preserve meaning. */
