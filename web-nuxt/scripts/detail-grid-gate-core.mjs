@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process'
+import { execFile, spawn } from 'node:child_process'
 import { readdir, readFile, readlink } from 'node:fs/promises'
 import { basename } from 'node:path'
 
@@ -98,6 +98,7 @@ export function collectAssetSetFailures(states) {
     || !asset.theme_binding?.physical_transition_observed
     || !asset.theme_binding?.requested_mode_selected_before_finalize
     || !asset.theme_binding?.stable_readiness_before_finalize
+    || !asset.theme_binding?.requested_mode_revalidated_after_finalize
   ))) {
     failures.push({ code: 'asset-theme-binding-incomplete', message: 'one or more asset fingerprints were finalized before requested theme readiness' })
   }
@@ -140,6 +141,44 @@ export function ownedBrowserProcessIds(processes, ownership) {
     .filter(pid => Number.isInteger(pid) && pid > 0)
 }
 
+export async function cleanupOwnedProcessSet({
+  listOwnedProcesses,
+  terminateOwnedProcesses,
+  rootPid = 0,
+  timeoutMs = 10000,
+  requiredEmptySnapshots = 3,
+  quiescenceMs = 100,
+  wait = ms => new Promise(resolveWait => setTimeout(resolveWait, ms)),
+}) {
+  if (!Number.isInteger(requiredEmptySnapshots) || requiredEmptySnapshots < 2) {
+    throw new Error('stable cleanup requires at least two consecutive empty snapshots')
+  }
+  const deadline = Date.now() + timeoutMs
+  let emptyStreak = 0
+  while (Date.now() < deadline) {
+    const candidates = await listOwnedProcesses({
+      deadline,
+      timeoutMs: remainingDeadlineMs(deadline, 'owned process snapshot'),
+    })
+    if (candidates.length === 0) {
+      emptyStreak += 1
+      if (emptyStreak >= requiredEmptySnapshots) return []
+      await wait(Math.min(quiescenceMs, remainingDeadlineMs(deadline, 'owned process quiescence')))
+      continue
+    }
+    emptyStreak = 0
+    const ordered = [...candidates].sort((left, right) => (
+      (left.pid === rootPid ? 1 : 0) - (right.pid === rootPid ? 1 : 0)
+    ))
+    await terminateOwnedProcesses(ordered, {
+      deadline,
+      timeoutMs: remainingDeadlineMs(deadline, 'owned process termination'),
+    })
+    await wait(Math.min(quiescenceMs, remainingDeadlineMs(deadline, 'owned process quiescence')))
+  }
+  throw new Error('owned process cleanup did not reach stable-empty quiescence before its deadline')
+}
+
 export function hasStableOwnedHit(samples, requiredConsecutive) {
   const required = Number(requiredConsecutive)
   if (!Number.isInteger(required) || required <= 0) return false
@@ -153,21 +192,58 @@ export function hasStableOwnedHit(samples, requiredConsecutive) {
   return false
 }
 
+export async function waitForStableCondition({
+  sample,
+  isReady,
+  requiredConsecutive = 1,
+  intervalMs = 100,
+  timeoutMs = 15000,
+  wait = ms => new Promise(resolveWait => setTimeout(resolveWait, ms)),
+}) {
+  if (!Number.isInteger(requiredConsecutive) || requiredConsecutive <= 0) {
+    throw new Error('stable condition requires a positive consecutive sample count')
+  }
+  const deadline = Date.now() + timeoutMs
+  let lastValue
+  let consecutive = 0
+  while (Date.now() < deadline) {
+    lastValue = await sample()
+    if (isReady(lastValue)) {
+      consecutive += 1
+      if (consecutive >= requiredConsecutive) return { value: lastValue, consecutive, requiredConsecutive }
+    } else consecutive = 0
+    await wait(Math.min(intervalMs, Math.max(1, deadline - Date.now())))
+  }
+  const error = new Error('stable condition timed out; last value: ' + JSON.stringify(lastValue ?? null).slice(0, 500))
+  error.code = 'ETIMEDOUT'
+  throw error
+}
+
 export async function captureThemeBoundAssets({
   capture,
   navigate,
   assertOppositeTheme,
   applyRequestedTheme,
   waitForStableReadiness,
+  revalidateRequestedTheme,
 }) {
   capture.start()
   try {
     await navigate()
     const oppositeThemeState = await assertOppositeTheme()
     const themeState = await applyRequestedTheme()
-    await waitForStableReadiness()
+    const stableReadinessState = await waitForStableReadiness()
+    const preFinalizeThemeState = await revalidateRequestedTheme('before-finalize')
     const previewAssets = await capture.verify()
-    return { oppositeThemeState, themeState, previewAssets }
+    const postFinalizeThemeState = await revalidateRequestedTheme('after-finalize')
+    return {
+      oppositeThemeState,
+      themeState,
+      stableReadinessState,
+      preFinalizeThemeState,
+      postFinalizeThemeState,
+      previewAssets,
+    }
   } finally {
     capture.stop()
   }
@@ -175,6 +251,12 @@ export async function captureThemeBoundAssets({
 
 function childExited(child) {
   return !child || child.exitCode !== null || child.signalCode !== null
+}
+
+function remainingDeadlineMs(deadline, label) {
+  const remaining = deadline - Date.now()
+  if (remaining <= 0) throw new Error(label + ' deadline expired')
+  return remaining
 }
 
 function normalizedExecutable(value) {
@@ -231,51 +313,40 @@ export function classifyOwnedProcessTree(rootIdentity, processes, marker = '') {
   return { owned, unverified }
 }
 
-function runBoundedHelper(command, args, { timeoutMs, env } = {}) {
-  return new Promise((resolveRun, reject) => {
-    const child = spawn(command, args, {
-      env,
-      stdio: ['ignore', 'pipe', 'pipe'],
-      windowsHide: true,
-    })
-    let stdout = ''
-    let stderr = ''
-    let settled = false
-    let timeoutTimer
-    const append = (current, chunk) => (current + String(chunk)).slice(-512 * 1024)
-    const onStdout = chunk => { stdout = append(stdout, chunk) }
-    const onStderr = chunk => { stderr = append(stderr, chunk) }
-    const finish = (handler, value) => {
-      if (settled) return
-      settled = true
-      clearTimeout(timeoutTimer)
-      child.stdout?.off('data', onStdout)
-      child.stderr?.off('data', onStderr)
-      child.off('error', onError)
+function waitForChildExit(child, timeoutMs) {
+  if (childExited(child)) return Promise.resolve(true)
+  return new Promise(resolveWait => {
+    let timer
+    const finish = exited => {
+      clearTimeout(timer)
       child.off('exit', onExit)
-      handler(value)
+      child.off('error', onError)
+      resolveWait(exited)
     }
-    const onError = error => {
-      finish(reject, error)
-    }
-    const onExit = code => {
-      if (code === 0) {
-        finish(resolveRun, { stdout, stderr })
-      } else {
-        finish(reject, new Error(basename(command) + ' exited with code ' + code + (stderr.trim() ? ': ' + stderr.trim() : '')))
-      }
-    }
-    child.stdout?.on('data', onStdout)
-    child.stderr?.on('data', onStderr)
-    child.once('error', onError)
+    const onExit = () => finish(true)
+    const onError = () => finish(childExited(child))
     child.once('exit', onExit)
-    timeoutTimer = setTimeout(() => {
-      child.stdout?.destroy()
-      child.stderr?.destroy()
-      child.unref()
-      finish(reject, new Error(basename(command) + ' timed out after ' + timeoutMs
-        + 'ms; helper identity was not verified, so no bare-PID termination was attempted'))
-    }, timeoutMs)
+    child.once('error', onError)
+    timer = setTimeout(() => finish(childExited(child)), Math.max(1, timeoutMs))
+  })
+}
+
+function runControlHelper(command, args, { timeoutMs, env } = {}) {
+  return new Promise((resolveRun, reject) => {
+    execFile(command, args, {
+      env,
+      windowsHide: true,
+      timeout: Math.max(1, timeoutMs),
+      killSignal: 'SIGKILL',
+      maxBuffer: 512 * 1024,
+    }, (error, stdout, stderr) => {
+      if (!error) return resolveRun({ stdout: String(stdout), stderr: String(stderr) })
+      if (error.killed || error.code === 'ETIMEDOUT') {
+        return reject(new Error(basename(command) + ' control helper timed out after ' + timeoutMs + 'ms'))
+      }
+      reject(new Error(basename(command) + ' exited with code ' + (error.code ?? 'unknown')
+        + (String(stderr).trim() ? ': ' + String(stderr).trim() : '')))
+    })
   })
 }
 
@@ -286,6 +357,26 @@ const windowsStartIdentityFunction = [
   '  return "win:utc-ticks:" + $ticks',
   '}',
 ]
+
+function windowsProcessSnapshotSource() {
+  return [
+    "$ErrorActionPreference = 'Stop'",
+    ...windowsStartIdentityFunction,
+    '$items = @(Get-CimInstance Win32_Process | ForEach-Object { [PSCustomObject]@{ ProcessId = [int]$_.ProcessId; ParentProcessId = [int]$_.ParentProcessId; StartIdentity = Get-Vl360StartIdentity $_; ExecutablePath = [string]$_.ExecutablePath; CommandLine = [string]$_.CommandLine } })',
+    'ConvertTo-Json -InputObject $items -Compress',
+  ].join('; ')
+}
+
+function parseWindowsProcessSnapshot(source) {
+  const parsed = JSON.parse(String(source || '').trim() || '[]')
+  return (Array.isArray(parsed) ? parsed : [parsed]).map(processInfo => ({
+    pid: Number(processInfo.ProcessId || 0),
+    parentPid: Number(processInfo.ParentProcessId || 0),
+    startIdentity: String(processInfo.StartIdentity || ''),
+    executablePath: String(processInfo.ExecutablePath || ''),
+    commandLine: String(processInfo.CommandLine || ''),
+  })).filter(processInfo => processInfo.pid > 0 && processInfo.startIdentity)
+}
 
 export function assertHighConfidenceProcessIdentityPlatform(platform = process.platform) {
   if (platform !== 'win32' && platform !== 'linux') {
@@ -307,16 +398,40 @@ function isMissingProcessError(error) {
   return ['ENOENT', 'ESRCH'].includes(error?.code)
 }
 
+function operationTimeoutError(label) {
+  const error = new Error(label + ' timed out')
+  error.code = 'ETIMEDOUT'
+  return error
+}
+
+async function runBeforeDeadline(operation, deadline, label) {
+  const remaining = deadline - Date.now()
+  if (remaining <= 0) throw operationTimeoutError(label)
+  let timer
+  try {
+    return await Promise.race([
+      Promise.resolve().then(operation),
+      new Promise((resolveUnused, reject) => {
+        timer = setTimeout(() => reject(operationTimeoutError(label)), remaining)
+      }),
+    ])
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
 export async function readLinuxProcessIdentity(pid, io = {}) {
   if (!Number.isInteger(pid) || pid <= 0) return null
   const readFileOperation = io.readFile || readFile
   const readlinkOperation = io.readlink || readlink
+  const timeoutMs = Number.isFinite(io.timeoutMs) ? Math.max(1, Number(io.timeoutMs)) : 5000
+  const deadline = Number.isFinite(io.deadline) ? Number(io.deadline) : Date.now() + timeoutMs
   try {
     const procRoot = '/proc/' + pid
     const [statSource, executablePath, commandLineBuffer] = await Promise.all([
-      readFileOperation(procRoot + '/stat', 'utf8'),
-      readlinkOperation(procRoot + '/exe'),
-      readFileOperation(procRoot + '/cmdline'),
+      runBeforeDeadline(() => readFileOperation(procRoot + '/stat', 'utf8'), deadline, 'Linux proc stat read'),
+      runBeforeDeadline(() => readlinkOperation(procRoot + '/exe'), deadline, 'Linux proc executable read'),
+      runBeforeDeadline(() => readFileOperation(procRoot + '/cmdline'), deadline, 'Linux proc command line read'),
     ])
     const stat = parseLinuxProcStat(statSource)
     if (!stat || stat.pid !== pid) return null
@@ -339,38 +454,42 @@ export async function readLinuxProcessIdentity(pid, io = {}) {
   }
 }
 
-async function captureProcessSnapshot(timeoutMs) {
-  assertHighConfidenceProcessIdentityPlatform()
-  if (process.platform === 'win32') {
-    const source = [
-      "$ErrorActionPreference = 'Stop'",
-      ...windowsStartIdentityFunction,
-      '$items = @(Get-CimInstance Win32_Process | ForEach-Object { [PSCustomObject]@{ ProcessId = [int]$_.ProcessId; ParentProcessId = [int]$_.ParentProcessId; StartIdentity = Get-Vl360StartIdentity $_; ExecutablePath = [string]$_.ExecutablePath; CommandLine = [string]$_.CommandLine } })',
-      'ConvertTo-Json -InputObject $items -Compress',
-    ].join('; ')
-    const result = await runBoundedHelper(
-      'powershell.exe',
-      ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', source],
-      { timeoutMs },
-    )
-    const parsed = JSON.parse(result.stdout.trim() || '[]')
-    return (Array.isArray(parsed) ? parsed : [parsed]).map(processInfo => ({
-      pid: Number(processInfo.ProcessId || 0),
-      parentPid: Number(processInfo.ParentProcessId || 0),
-      startIdentity: String(processInfo.StartIdentity || ''),
-      executablePath: String(processInfo.ExecutablePath || ''),
-      commandLine: String(processInfo.CommandLine || ''),
-    })).filter(processInfo => processInfo.pid > 0 && processInfo.startIdentity)
-  }
-
-  const entries = await readdir('/proc', { withFileTypes: true })
+export async function captureLinuxProcessSnapshot({
+  timeoutMs = 5000,
+  deadline = Date.now() + timeoutMs,
+  io = {},
+} = {}) {
+  const readdirOperation = io.readdir || readdir
+  const entries = await runBeforeDeadline(
+    () => readdirOperation('/proc', { withFileTypes: true }),
+    deadline,
+    'Linux proc enumeration',
+  )
   const identities = await Promise.all(entries
     .filter(entry => entry.isDirectory() && /^\d+$/u.test(entry.name))
-    .map(entry => readLinuxProcessIdentity(Number(entry.name)).catch(error => {
-      if (isMissingProcessError(error) || error?.code === 'EACCES') return null
+    .map(entry => readLinuxProcessIdentity(Number(entry.name), {
+      ...io,
+      timeoutMs: Math.max(1, deadline - Date.now()),
+      deadline,
+    }).catch(error => {
+      if (isMissingProcessError(error)) return null
       throw error
     })))
   return identities.filter(Boolean)
+}
+
+async function captureProcessSnapshot(timeoutMs) {
+  assertHighConfidenceProcessIdentityPlatform()
+  if (process.platform === 'win32') {
+    const result = await runControlHelper(
+      'powershell.exe',
+      ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', windowsProcessSnapshotSource()],
+      { timeoutMs },
+    )
+    return parseWindowsProcessSnapshot(result.stdout)
+  }
+
+  return captureLinuxProcessSnapshot({ timeoutMs })
 }
 
 async function captureProcessIdentity(pid, timeoutMs) {
@@ -385,7 +504,7 @@ async function captureProcessIdentity(pid, timeoutMs) {
       '$result = [PSCustomObject]@{ ProcessId = [int]$item.ProcessId; ParentProcessId = [int]$item.ParentProcessId; StartIdentity = Get-Vl360StartIdentity $item; ExecutablePath = [string]$item.ExecutablePath; CommandLine = [string]$item.CommandLine }',
       'ConvertTo-Json -InputObject $result -Compress',
     ].join('; ')
-    const result = await runBoundedHelper(
+    const result = await runControlHelper(
       'powershell.exe',
       ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', source],
       { timeoutMs },
@@ -400,68 +519,120 @@ async function captureProcessIdentity(pid, timeoutMs) {
       commandLine: String(processInfo.CommandLine || ''),
     }
   }
-  return readLinuxProcessIdentity(pid)
+  return readLinuxProcessIdentity(pid, { timeoutMs })
 }
 
-async function waitForIdentityExit(identity, timeoutMs, helperTimeoutMs) {
-  const deadline = Date.now() + timeoutMs
+export async function waitForProcessIdentityExit(identity, {
+  timeoutMs,
+  deadline = Date.now() + timeoutMs,
+  pollTimeoutMs = timeoutMs,
+  captureIdentity = (pid, operationTimeoutMs) => captureProcessIdentity(pid, operationTimeoutMs),
+  wait = ms => new Promise(resolveWait => setTimeout(resolveWait, ms)),
+} = {}) {
   let current
   while (Date.now() < deadline) {
-    current = await captureProcessIdentity(identity.pid, Math.min(helperTimeoutMs, Math.max(500, deadline - Date.now())))
+    const remaining = deadline - Date.now()
+    if (remaining <= 0) break
+    current = await captureIdentity(identity.pid, Math.max(1, Math.min(pollTimeoutMs, remaining)))
     if (!matchesProcessIdentity(identity, current)) return null
-    await new Promise(resolveWait => setTimeout(resolveWait, 50))
+    const waitRemaining = deadline - Date.now()
+    if (waitRemaining <= 0) break
+    await wait(Math.min(50, waitRemaining))
   }
   return current
 }
 
-async function signalOwnedIdentityLinux(identity, marker, signal, timeoutMs) {
-  const source = [
-    "const fs = require('node:fs')",
-    'const expected = JSON.parse(process.env.VL360_GATE_PROCESS_IDENTITY)',
-    "const marker = process.env.VL360_GATE_PROCESS_MARKER || ''",
-    'const pid = Number(expected.pid)',
-    'const result = status => process.stdout.write(JSON.stringify({ pid, status }))',
-    'const missing = error => error && (error.code === "ENOENT" || error.code === "ESRCH")',
-    'let statSource, executablePath, commandLine',
-    'try { statSource = fs.readFileSync(`/proc/${pid}/stat`, "utf8"); executablePath = fs.readlinkSync(`/proc/${pid}/exe`); commandLine = fs.readFileSync(`/proc/${pid}/cmdline`, "utf8") } catch (error) { if (missing(error)) { result("already-exited"); process.exit(0) } throw error }',
-    'const match = /^(\\d+)\\s+\\((.*)\\)\\s+\\S\\s+(.+)$/s.exec(statSource.trim())',
-    'const fields = match ? match[3].trim().split(/\\s+/) : []',
-    'const current = match ? { pid: Number(match[1]), startIdentity: `linux:proc-start-ticks:${fields[18] || ""}`, executablePath, commandLine, argv: commandLine.split("\\0").filter(Boolean) } : null',
-    'const same = current && current.pid === expected.pid && current.startIdentity === expected.startIdentity && current.executablePath === expected.executablePath && current.commandLine === expected.commandLine && JSON.stringify(current.argv) === JSON.stringify(expected.argv || []) && (!marker || current.commandLine.includes(marker))',
-    'if (!same) { result("identity-mismatch"); process.exit(0) }',
-    'try { process.kill(pid, process.env.VL360_GATE_PROCESS_SIGNAL); result("signalled") } catch (error) { if (missing(error)) result("already-exited"); else throw error }',
-  ].join('; ')
-  const result = await runBoundedHelper(process.execPath, ['-e', source], {
-    env: {
-      ...process.env,
-      VL360_GATE_PROCESS_IDENTITY: JSON.stringify(identity),
-      VL360_GATE_PROCESS_MARKER: marker,
-      VL360_GATE_PROCESS_SIGNAL: signal,
-    },
-    timeoutMs,
-  })
-  return JSON.parse(result.stdout.trim() || '{"pid":0,"status":"helper-empty"}')
+async function waitForIdentityExit(identity, timeoutMs, helperTimeoutMs) {
+  return waitForProcessIdentityExit(identity, { timeoutMs, pollTimeoutMs: helperTimeoutMs })
 }
 
-async function terminateOwnedIdentityLinux(identity, marker, deadline, helperTimeoutMs) {
-  const remainingMs = () => Math.max(0, deadline - Date.now())
-  const termStatus = await signalOwnedIdentityLinux(
+export async function signalLinuxProcessIdentity(identity, {
+  marker = '',
+  signal = 'SIGTERM',
+  timeoutMs = 5000,
+  deadline = Date.now() + timeoutMs,
+  readIdentity = readLinuxProcessIdentity,
+  kill = (pid, requestedSignal) => process.kill(pid, requestedSignal),
+} = {}) {
+  if (
+    !Number.isInteger(identity?.pid)
+    || identity.pid <= 0
+    || !identity.startIdentity
+    || !identity.executablePath
+    || !identity.commandLine
+    || !Array.isArray(identity.argv)
+    || identity.argv.length === 0
+  ) {
+    throw new Error('Linux process identity is incomplete; no signal was sent')
+  }
+  const remaining = deadline - Date.now()
+  if (remaining <= 0) throw new Error('Linux process signal deadline expired before identity validation')
+  const current = await readIdentity(identity.pid, {
+    timeoutMs: Math.max(1, Math.min(timeoutMs, remaining)),
+    deadline,
+  })
+  if (!current) return { pid: identity.pid, status: 'already-exited' }
+  if (!matchesProcessIdentity(identity, current) || (marker && !commandHasMarker(current, marker))) {
+    return { pid: identity.pid, status: 'identity-mismatch' }
+  }
+  try {
+    kill(identity.pid, signal)
+    return { pid: identity.pid, status: 'signalled' }
+  } catch (error) {
+    if (isMissingProcessError(error)) return { pid: identity.pid, status: 'already-exited' }
+    throw error
+  }
+}
+
+export async function terminateLinuxProcessIdentity(identity, {
+  marker = '',
+  deadline,
+  timeoutMs = 5000,
+  signalIdentity,
+  waitForExit = waitForIdentityExit,
+} = {}) {
+  const effectiveDeadline = Number.isFinite(deadline) ? deadline : Date.now() + timeoutMs
+  const signalOperation = signalIdentity || ((expected, expectedMarker, signal, operationTimeoutMs) => (
+    signalLinuxProcessIdentity(expected, {
+      marker: expectedMarker,
+      signal,
+      timeoutMs: operationTimeoutMs,
+      deadline: effectiveDeadline,
+    })
+  ))
+  const remainingMs = () => Math.max(0, effectiveDeadline - Date.now())
+  const boundedTimeout = label => {
+    const remaining = remainingMs()
+    if (remaining <= 0) throw new Error('Linux process termination deadline expired before ' + label)
+    return Math.max(1, Math.min(timeoutMs, remaining))
+  }
+  const termStatus = await signalOperation(
     identity,
     marker,
     'SIGTERM',
-    Math.min(helperTimeoutMs, Math.max(500, remainingMs())),
+    boundedTimeout('SIGTERM'),
   )
   if (termStatus.status !== 'signalled') return termStatus
-  let remaining = await waitForIdentityExit(identity, Math.min(1500, remainingMs()), helperTimeoutMs)
+  const termPollBudget = Math.max(1, Math.floor(boundedTimeout('TERM exit polling') / 2))
+  let remaining = await waitForExit(
+    identity,
+    Math.min(1500, termPollBudget),
+    Math.min(timeoutMs, termPollBudget),
+  )
   if (!remaining) return termStatus
-  const killStatus = await signalOwnedIdentityLinux(
+  const killStatus = await signalOperation(
     identity,
     marker,
     'SIGKILL',
-    Math.min(helperTimeoutMs, Math.max(500, remainingMs())),
+    boundedTimeout('SIGKILL'),
   )
   if (killStatus.status === 'signalled') {
-    remaining = await waitForIdentityExit(identity, Math.min(1500, remainingMs()), helperTimeoutMs)
+    const killPollBudget = boundedTimeout('KILL exit polling')
+    remaining = await waitForExit(
+      identity,
+      Math.min(1500, killPollBudget),
+      Math.min(timeoutMs, killPollBudget),
+    )
   }
   if (remaining && killStatus.status === 'signalled') {
     throw new Error('owned process identity did not exit: ' + identity.pid)
@@ -500,7 +671,7 @@ async function terminateOwnedIdentitiesWindows(identities, marker, timeoutMs) {
     '}',
     'ConvertTo-Json -InputObject $results -Compress',
   ].join('; ')
-  const result = await runBoundedHelper(
+  const result = await runControlHelper(
     'powershell.exe',
     ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', source],
     {
@@ -537,7 +708,7 @@ export async function terminateExactProcessIdentities(identities, {
   }
   const statuses = []
   for (const identity of valid) {
-    statuses.push(await terminateOwnedIdentityLinux(identity, marker, deadline, timeoutMs))
+    statuses.push(await terminateLinuxProcessIdentity(identity, { marker, deadline, timeoutMs }))
   }
   return statuses
 }
@@ -547,11 +718,23 @@ async function terminateCapturedProcessTree(child, cleanupTimeoutMs, initialIden
   const rootPid = child.pid
   const deadline = Date.now() + cleanupTimeoutMs
   const helperTimeoutMs = Math.max(1000, Math.min(4000, cleanupTimeoutMs - 1000))
-  const initialIdentity = await initialIdentityPromise
+  let initialIdentity = await initialIdentityPromise
+  if (!initialIdentity && ownershipMarker) {
+    const recoverySnapshot = await captureProcessSnapshot(Math.min(
+      helperTimeoutMs,
+      remainingDeadlineMs(deadline, 'captured process identity recovery'),
+    ))
+    initialIdentity = recoverySnapshot.find(processInfo => (
+      processInfo.pid === rootPid && commandHasMarker(processInfo, ownershipMarker)
+    )) || null
+  }
   if (!initialIdentity) throw new Error('captured process identity was unavailable before timeout; cleanup is unverified')
   if (initialIdentity.pid !== rootPid) throw new Error('captured process identity PID changed before timeout')
 
-  const beforeTermination = await captureProcessSnapshot(Math.min(helperTimeoutMs, Math.max(250, deadline - Date.now())))
+  const beforeTermination = await captureProcessSnapshot(Math.min(
+    helperTimeoutMs,
+    remainingDeadlineMs(deadline, 'captured process snapshot'),
+  ))
   const classification = classifyOwnedProcessTree(initialIdentity, beforeTermination, ownershipMarker)
   if (classification.owned.length === 0) {
     throw new Error('captured process identity no longer matched immediately before termination; no PID was killed')
@@ -562,27 +745,41 @@ async function terminateCapturedProcessTree(child, cleanupTimeoutMs, initialIden
     const terminationOrder = [...classification.owned].sort((left, right) => (left.pid === rootPid ? 1 : 0) - (right.pid === rootPid ? 1 : 0))
     await terminateExactProcessIdentities(terminationOrder, {
       marker: ownershipMarker,
-      timeoutMs: Math.min(helperTimeoutMs, Math.max(1000, deadline - Date.now())),
+      timeoutMs: Math.min(helperTimeoutMs, remainingDeadlineMs(deadline, 'captured process termination')),
       deadline,
     })
 
     if (ownershipMarker) {
-      for (let round = 0; round < 2 && Date.now() < deadline; round += 1) {
-        const snapshot = await captureProcessSnapshot(Math.min(helperTimeoutMs, Math.max(250, deadline - Date.now())))
+      let emptyStreak = 0
+      while (emptyStreak < 3 && Date.now() < deadline) {
+        const remainingMs = remainingDeadlineMs(deadline, 'captured process quiescence snapshot')
+        const snapshot = await captureProcessSnapshot(Math.max(1, Math.min(helperTimeoutMs, remainingMs)))
         const lateOwned = snapshot.filter(processInfo => commandHasMarker(processInfo, ownershipMarker))
-        if (lateOwned.length === 0) break
+        if (lateOwned.length === 0) {
+          emptyStreak += 1
+          if (emptyStreak < 3) await new Promise(resolveWait => setTimeout(
+            resolveWait,
+            Math.min(75, remainingDeadlineMs(deadline, 'captured process quiescence')),
+          ))
+          continue
+        }
+        emptyStreak = 0
         for (const identity of lateOwned) {
           captured.set(identity.pid + ':' + identity.startIdentity, identity)
         }
         await terminateExactProcessIdentities(lateOwned, {
           marker: ownershipMarker,
-          timeoutMs: Math.min(helperTimeoutMs, Math.max(1000, deadline - Date.now())),
+          timeoutMs: Math.min(helperTimeoutMs, remainingDeadlineMs(deadline, 'late process termination')),
           deadline,
         })
       }
+      if (emptyStreak < 3) throw new Error('owned process cleanup did not reach stable-empty quiescence')
     }
 
-    const verification = await captureProcessSnapshot(Math.min(helperTimeoutMs, Math.max(250, deadline - Date.now())))
+    const verification = await captureProcessSnapshot(Math.min(
+      helperTimeoutMs,
+      remainingDeadlineMs(deadline, 'captured process verification'),
+    ))
     const remainingOwned = [...captured.values()].filter(identity => verification.some(processInfo => matchesProcessIdentity(identity, processInfo)))
     const lateMarkerOwned = ownershipMarker ? verification.filter(processInfo => commandHasMarker(processInfo, ownershipMarker)) : []
     const remainingUnverified = classification.unverified.filter(identity => (
@@ -594,6 +791,12 @@ async function terminateCapturedProcessTree(child, cleanupTimeoutMs, initialIden
         ...lateMarkerOwned.map(identity => identity.pid),
         ...remainingUnverified.map(identity => identity.pid),
       ])].join(','))
+    }
+    if (!childExited(child) && !(await waitForChildExit(
+      child,
+      remainingDeadlineMs(deadline, 'captured process exit observation'),
+    ))) {
+      throw new Error('captured process exit was not observed after identity-verified cleanup')
     }
   } catch (error) {
     error.capturedProcessIdentities = [...captured.values()]
@@ -616,7 +819,7 @@ export function runCaptured(command, args, options = {}) {
       stdio: ['ignore', 'pipe', 'pipe'],
       windowsHide: true,
     })
-    const identityTimeoutMs = Math.max(1000, Math.min(4000, cleanupTimeoutMs - 1000))
+    const identityTimeoutMs = Math.max(1, Math.min(4000, cleanupTimeoutMs))
     const initialIdentityPromise = child.pid
       ? captureProcessIdentity(child.pid, identityTimeoutMs)
           .catch(() => null)

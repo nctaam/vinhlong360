@@ -3,13 +3,15 @@
 import { spawn } from 'node:child_process'
 import { createHash, randomUUID } from 'node:crypto'
 import { existsSync, readFileSync } from 'node:fs'
-import { mkdtemp, readdir, rm } from 'node:fs/promises'
+import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import {
   captureThemeBoundAssets,
+  captureLinuxProcessSnapshot,
+  cleanupOwnedProcessSet,
   collectAssetSetFailures,
   collectStateFailures,
   compactGateEvidence,
@@ -17,10 +19,10 @@ import {
   hasStableOwnedHit,
   isFreshNavigationState,
   ownedBrowserProcessIds,
-  readLinuxProcessIdentity,
   recordGateReason as addReason,
   runCaptured,
   terminateExactProcessIdentities,
+  waitForStableCondition,
 } from './detail-grid-gate-core.mjs'
 
 const ROUTE = '/dia-diem/cong-vien-an-hoi'
@@ -203,9 +205,16 @@ function waitForExit(child, timeoutMs) {
   })
 }
 
-async function listOwnedBrowserProcesses({ profile, browserPath, marker }) {
+async function listOwnedBrowserProcesses({ profile, browserPath, marker }, {
+  timeoutMs = 5000,
+  deadline = Date.now() + timeoutMs,
+} = {}) {
   let processes = []
   if (process.platform === 'win32') {
+    const sharedRemainingMs = deadline - Date.now()
+    if (sharedRemainingMs <= 0) throw new Error('browser process snapshot deadline expired')
+    const operationTimeoutMs = Math.min(timeoutMs, 5000, Math.max(1, Math.floor(sharedRemainingMs / 2)))
+    const helperMarker = 'vl360-browser-snapshot-' + randomUUID()
     const source = [
       "$ErrorActionPreference = 'Stop'",
       'function Get-Vl360StartIdentity([object]$ProcessItem) {',
@@ -217,10 +226,13 @@ async function listOwnedBrowserProcesses({ profile, browserPath, marker }) {
       "$filter = \"Name='\" + $browserName + \"'\"",
       '$items = @(Get-CimInstance Win32_Process -Filter $filter | ForEach-Object { [PSCustomObject]@{ ProcessId = [int]$_.ProcessId; ParentProcessId = [int]$_.ParentProcessId; StartIdentity = Get-Vl360StartIdentity $_; ExecutablePath = [string]$_.ExecutablePath; CommandLine = [string]$_.CommandLine } })',
       'ConvertTo-Json -InputObject $items -Compress',
+      '$null = ' + JSON.stringify(helperMarker),
     ].join('; ')
     const result = await runCaptured('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', source], {
       env: { ...process.env, VL360_GATE_BROWSER_PATH: browserPath },
-      timeoutMs: 5000,
+      timeoutMs: operationTimeoutMs,
+      cleanupTimeoutMs: Math.max(1, deadline - Date.now()),
+      ownershipMarker: helperMarker,
     })
     const parsed = JSON.parse(result.stdout.trim() || '[]')
     processes = (Array.isArray(parsed) ? parsed : [parsed]).map(processInfo => ({
@@ -231,13 +243,7 @@ async function listOwnedBrowserProcesses({ profile, browserPath, marker }) {
       commandLine: String(processInfo.CommandLine || ''),
     }))
   } else if (process.platform === 'linux') {
-    const entries = await readdir('/proc', { withFileTypes: true })
-    processes = (await Promise.all(entries
-      .filter(entry => entry.isDirectory() && /^\d+$/u.test(entry.name))
-      .map(entry => readLinuxProcessIdentity(Number(entry.name)).catch(error => {
-        if (['ENOENT', 'ESRCH', 'EACCES'].includes(error?.code)) return null
-        throw error
-      })))).filter(Boolean)
+    processes = await captureLinuxProcessSnapshot({ timeoutMs, deadline })
   } else {
     throw new Error('high-confidence browser process identity is unsupported on ' + process.platform)
   }
@@ -246,27 +252,15 @@ async function listOwnedBrowserProcesses({ profile, browserPath, marker }) {
 }
 
 async function cleanupOwnedBrowserProcesses(browser) {
-  const deadline = Date.now() + 10000
-  const captured = new Map()
-  while (Date.now() < deadline) {
-    const candidates = await listOwnedBrowserProcesses(browser)
-    if (candidates.length === 0) return []
-    for (const identity of candidates) captured.set(identity.pid + ':' + identity.startIdentity, identity)
-    const ordered = [...candidates].sort((left, right) => (
-      (left.pid === browser.child?.pid ? 1 : 0) - (right.pid === browser.child?.pid ? 1 : 0)
-    ))
-    await terminateExactProcessIdentities(ordered, {
+  return cleanupOwnedProcessSet({
+    listOwnedProcesses: options => listOwnedBrowserProcesses(browser, options),
+    terminateOwnedProcesses: (identities, options) => terminateExactProcessIdentities(identities, {
+      ...options,
       marker: browser.marker,
-      timeoutMs: Math.min(5000, Math.max(1000, deadline - Date.now())),
-      deadline,
-    })
-    await sleep(100)
-  }
-  const remaining = await listOwnedBrowserProcesses(browser)
-  return remaining.filter(identity => (
-    captured.has(identity.pid + ':' + identity.startIdentity)
-    || String(identity.commandLine || '').includes(browser.marker)
-  ))
+      timeoutMs: Math.min(5000, options.timeoutMs),
+    }),
+    rootPid: browser.child?.pid,
+  })
 }
 
 async function stopChrome(browser) {
@@ -707,31 +701,51 @@ async function navigate(cdp, url, assetCapture) {
   await sleep(250)
 }
 
+async function readRequestedThemeReadiness(cdp, mode) {
+  return evaluateFunction(cdp, selectedMode => {
+    const image = document.querySelector('.dc-bg')
+    return {
+      readyState: document.readyState,
+      pressed: document.querySelector('[data-theme-mode="' + selectedMode + '"]')?.getAttribute('aria-pressed') === 'true',
+      className: document.documentElement.className,
+      stored: localStorage.getItem('vl360-color-mode'),
+      fonts: document.fonts?.status || 'loaded',
+      heroReady: Boolean(image?.classList.contains('loaded') && image?.complete && image?.naturalWidth > 0),
+    }
+  }, mode)
+}
+
+function isRequestedThemeReady(value, mode) {
+  return value?.readyState === 'complete'
+    && value?.pressed
+    && value?.stored === mode
+    && String(value?.className || '').split(/\s+/u).includes(mode)
+    && value?.fonts === 'loaded'
+    && value?.heroReady
+}
+
 async function waitForRequestedThemeReadiness(cdp, mode) {
-  await waitForValue(
-    cdp,
-    selectedMode => {
-      const image = document.querySelector('.dc-bg')
-      return {
-        readyState: document.readyState,
-        pressed: document.querySelector('[data-theme-mode="' + selectedMode + '"]')?.getAttribute('aria-pressed') === 'true',
-        className: document.documentElement.className,
-        stored: localStorage.getItem('vl360-color-mode'),
-        fonts: document.fonts?.status || 'loaded',
-        heroReady: Boolean(image?.classList.contains('loaded') && image?.complete && image?.naturalWidth > 0),
-      }
-    },
-    mode,
-    value => value?.readyState === 'complete'
-      && value?.pressed
-      && value?.stored === mode
-      && String(value?.className || '').split(/\s+/u).includes(mode)
-      && value?.fonts === 'loaded'
-      && value?.heroReady,
-    'requested theme did not reach stable asset readiness: ' + mode,
-    20000,
-  )
-  await sleep(300)
+  try {
+    return await waitForStableCondition({
+      sample: () => readRequestedThemeReadiness(cdp, mode),
+      isReady: value => isRequestedThemeReady(value, mode),
+      requiredConsecutive: 3,
+      intervalMs: 100,
+      timeoutMs: 20000,
+    })
+  } catch (error) {
+    throw new GateError('page-state-timeout', 'requested theme did not reach stable asset readiness: '
+      + mode + '; ' + safeMessage(error))
+  }
+}
+
+async function revalidateRequestedTheme(cdp, mode, phase) {
+  const value = await readRequestedThemeReadiness(cdp, mode)
+  if (!isRequestedThemeReady(value, mode)) {
+    throw new GateError('theme-readiness-reverted', 'requested theme readiness reverted '
+      + phase + ': ' + mode + '; state: ' + JSON.stringify(value ?? null).slice(0, 500))
+  }
+  return value
 }
 
 function oppositeThemeMode(mode) {
@@ -776,18 +790,24 @@ async function navigateWithBoundAssets(cdp, baseUrl, mode) {
       assertOppositeTheme: () => assertThemeActive(cdp, themeSeed.mode, 'opposite theme was not active before physical transition'),
       applyRequestedTheme: () => selectTheme(cdp, mode, themeSeed.mode),
       waitForStableReadiness: () => waitForRequestedThemeReadiness(cdp, mode),
+      revalidateRequestedTheme: phase => revalidateRequestedTheme(cdp, mode, phase),
     })
+    const stableReadinessObserved = result.stableReadinessState?.consecutive
+      >= result.stableReadinessState?.requiredConsecutive
+    const beforeFinalizeReady = isRequestedThemeReady(result.preFinalizeThemeState, mode)
+    const afterFinalizeReady = isRequestedThemeReady(result.postFinalizeThemeState, mode)
     result.previewAssets.theme_binding = {
       capture_started_before_navigation: true,
       opposite_mode_seeded_before_navigation: result.oppositeThemeState?.stored === themeSeed.mode,
       opposite_mode_confirmed_before_click: result.themeState?.previous_mode === themeSeed.mode,
       target_control_hit_owned: result.themeState?.target_hit?.belongs === true,
       physical_transition_observed: result.themeState?.transition_observed === true,
-      requested_mode_selected_before_finalize: result.themeState?.stored === mode,
-      stable_readiness_before_finalize: true,
+      requested_mode_selected_before_finalize: result.themeState?.stored === mode && beforeFinalizeReady,
+      stable_readiness_before_finalize: stableReadinessObserved && beforeFinalizeReady,
+      requested_mode_revalidated_after_finalize: afterFinalizeReady,
       opposite_mode: themeSeed.mode,
       requested_mode: mode,
-      selected_mode: result.themeState?.stored || '',
+      selected_mode: result.postFinalizeThemeState?.stored || '',
     }
     return result
   } finally {
@@ -1465,6 +1485,7 @@ async function run(args, evidence) {
       && state.preview_assets.theme_binding?.physical_transition_observed
       && state.preview_assets.theme_binding?.requested_mode_selected_before_finalize
       && state.preview_assets.theme_binding?.stable_readiness_before_finalize
+      && state.preview_assets.theme_binding?.requested_mode_revalidated_after_finalize
     ))
     const aggregateFingerprint = createHash('sha256')
     for (const state of evidence.states) {

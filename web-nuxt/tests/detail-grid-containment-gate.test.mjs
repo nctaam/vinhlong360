@@ -20,6 +20,17 @@ import {
   runCaptured,
 } from '../scripts/detail-grid-gate-core.mjs'
 
+const LINUX_STAT = '4321 (node worker) S 123 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 987654321 19 20'
+const LINUX_COMMAND_LINE = 'node\0worker.js\0vl360-linux-owned\0'
+const LINUX_IDENTITY = Object.freeze({
+  pid: 4321,
+  parentPid: 123,
+  startIdentity: 'linux:proc-start-ticks:987654321',
+  executablePath: '/usr/bin/node',
+  commandLine: LINUX_COMMAND_LINE,
+  argv: ['node', 'worker.js', 'vl360-linux-owned'],
+})
+
 describe('Detail grid containment gate contracts', () => {
   it('accepts only exact zero-length min-width declarations', () => {
     expect(hasExactZeroMinWidth('display: block; min-width: 0; color: red')).toBe(true)
@@ -239,6 +250,7 @@ describe('Detail grid containment gate contracts', () => {
         physical_transition_observed: true,
         requested_mode_selected_before_finalize: true,
         stable_readiness_before_finalize: true,
+        requested_mode_revalidated_after_finalize: true,
       },
     }
     expect(collectAssetSetFailures([
@@ -273,14 +285,7 @@ describe('Detail grid containment gate contracts', () => {
 
   it('keeps asset capture open through an opposite-to-requested physical theme transition and stable readiness', async () => {
     const events = []
-    const capture = {
-      start() { events.push('capture:start') },
-      async verify() {
-        events.push('capture:verify')
-        return { fingerprint_sha256: 'a'.repeat(64) }
-      },
-      stop() { events.push('capture:stop') },
-    }
+    const capture = eventCapture(events)
 
     const result = await captureThemeBoundAssets({
       capture,
@@ -293,7 +298,8 @@ describe('Detail grid containment gate contracts', () => {
         events.push('theme:apply')
         return { stored: 'light', transitionObserved: true }
       },
-      waitForStableReadiness: async () => { events.push('theme:stable') },
+      waitForStableReadiness: async () => { events.push('theme:stable'); return { ready: true } },
+      revalidateRequestedTheme: async phase => { events.push('theme:' + phase); return { ready: true } },
     })
 
     expect(events).toEqual([
@@ -302,14 +308,74 @@ describe('Detail grid containment gate contracts', () => {
       'theme:opposite',
       'theme:apply',
       'theme:stable',
+      'theme:before-finalize',
       'capture:verify',
+      'theme:after-finalize',
       'capture:stop',
     ])
     expect(result).toEqual({
       oppositeThemeState: { stored: 'dark' },
       themeState: { stored: 'light', transitionObserved: true },
+      stableReadinessState: { ready: true },
+      preFinalizeThemeState: { ready: true },
+      postFinalizeThemeState: { ready: true },
       previewAssets: { fingerprint_sha256: 'a'.repeat(64) },
     })
+  })
+
+  it.each([
+    { phase: 'before-finalize', message: 'requested theme reverted before asset verification', verifies: false },
+    { phase: 'after-finalize', message: 'requested theme reverted after fingerprint finalization', verifies: true },
+  ])('fails when requested theme readiness reverts $phase', async ({ phase, message, verifies }) => {
+    const events = []
+    const capture = eventCapture(events)
+
+    await expect(captureThemeBoundAssets({
+      capture,
+      navigate: async () => { events.push('navigate') },
+      assertOppositeTheme: async () => ({ stored: 'dark' }),
+      applyRequestedTheme: async () => ({ stored: 'light', transitionObserved: true }),
+      waitForStableReadiness: async () => { events.push('theme:stable'); return { ready: true } },
+      revalidateRequestedTheme: async observedPhase => {
+        events.push('theme:' + observedPhase)
+        if (observedPhase === phase) throw new Error(message)
+        return { ready: true }
+      },
+    })).rejects.toThrow(message)
+
+    expect(events).toEqual([
+      'capture:start',
+      'navigate',
+      'theme:stable',
+      'theme:before-finalize',
+      ...(verifies ? ['capture:verify', 'theme:after-finalize'] : []),
+      'capture:stop',
+    ])
+  })
+
+  it('requires multiple consecutive requested-theme readiness samples and resets on a transient revert', async () => {
+    const samples = [
+      { ready: true, sequence: 1 },
+      { ready: false, sequence: 2 },
+      { ready: true, sequence: 3 },
+      { ready: true, sequence: 4 },
+      { ready: true, sequence: 5 },
+    ]
+    const waits = []
+    let sampleIndex = 0
+
+    const result = await gateCore.waitForStableCondition({
+      sample: async () => samples[Math.min(sampleIndex++, samples.length - 1)],
+      isReady: value => value.ready,
+      requiredConsecutive: 3,
+      intervalMs: 25,
+      timeoutMs: 1000,
+      wait: async ms => { waits.push(ms) },
+    })
+
+    expect(result).toEqual({ value: samples[4], consecutive: 3, requiredConsecutive: 3 })
+    expect(sampleIndex).toBe(5)
+    expect(waits).toEqual([25, 25, 25, 25])
   })
 
   it('matches only browser processes bound to the exact owned profile and executable', () => {
@@ -341,6 +407,32 @@ describe('Detail grid containment gate contracts', () => {
       { pid: 12, executablePath: ownership.browserPath, commandLine: `chrome.exe --user-data-dir="${ownership.profile}-other" --vl360-gate-marker=${ownership.marker}` },
       { pid: 13, executablePath: 'C:\\Other\\chrome.exe', commandLine: `chrome.exe --user-data-dir="${ownership.profile}" --vl360-gate-marker=${ownership.marker}` },
     ], ownership)).toEqual([11])
+  })
+
+  it('resets stable-empty cleanup when a late reparented owned process appears during quiescence', async () => {
+    const lateIdentity = {
+      pid: 402,
+      parentPid: 1,
+      startIdentity: 'win:utc-ticks:639213500000000000',
+      executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+      commandLine: 'chrome.exe --vl360-gate-marker=late-owned',
+    }
+    const snapshots = [[], [lateIdentity], [lateIdentity], [], [], []]
+    const terminated = []
+    const waits = []
+    let snapshotIndex = 0
+
+    const remaining = await gateCore.cleanupOwnedProcessSet({
+      listOwnedProcesses: async () => snapshots[Math.min(snapshotIndex++, snapshots.length - 1)],
+      terminateOwnedProcesses: async identities => { terminated.push(...identities) },
+      timeoutMs: 5000,
+      wait: async ms => { waits.push(ms) },
+    })
+
+    expect(terminated).toEqual([lateIdentity, lateIdentity])
+    expect(snapshotIndex).toBe(6)
+    expect(waits.filter(ms => ms > 0)).toHaveLength(5)
+    expect(remaining).toEqual([])
   })
 
   it('rejects PID reuse and classifies only marker-owned descendants of the captured process identity', () => {
@@ -407,31 +499,151 @@ describe('Detail grid containment gate contracts', () => {
     })).resolves.toBeNull()
   })
 
+  it('captures a complete Linux identity and fails closed when proc reads exceed their deadline', async () => {
+    const commandLine = Buffer.from(LINUX_COMMAND_LINE)
+    const io = {
+      readFile: async path => path.endsWith('/stat') ? LINUX_STAT : commandLine,
+      readlink: async () => '/usr/bin/node',
+      timeoutMs: 1000,
+    }
+
+    await expect(gateCore.readLinuxProcessIdentity(4321, io)).resolves.toEqual(LINUX_IDENTITY)
+
+    const slowIo = {
+      readFile: async path => {
+        await sleep(100)
+        return path.endsWith('/stat') ? LINUX_STAT : commandLine
+      },
+      readlink: async () => {
+        await sleep(100)
+        return '/usr/bin/node'
+      },
+      timeoutMs: 20,
+    }
+    await expect(gateCore.readLinuxProcessIdentity(4321, slowIo)).rejects.toThrow(/timed out/)
+  })
+
+  it('bounds Linux proc enumeration with the same explicit deadline', async () => {
+    await expect(gateCore.captureLinuxProcessSnapshot({
+      timeoutMs: 20,
+      io: {
+        readdir: async () => {
+          await sleep(100)
+          return []
+        },
+      },
+    })).rejects.toThrow(/timed out/)
+  })
+
+  it('fails closed when a Linux proc identity cannot be read with permission', async () => {
+    const denied = Object.assign(new Error('permission denied'), { code: 'EACCES' })
+    await expect(gateCore.captureLinuxProcessSnapshot({
+      timeoutMs: 1000,
+      io: {
+        readdir: async () => [{ name: '4321', isDirectory: () => true }],
+        readFile: async () => { throw denied },
+        readlink: async () => '/usr/bin/node',
+      },
+    })).rejects.toMatchObject({ code: 'EACCES' })
+  })
+
+  it('enforces the Linux signal deadline, skips marker mismatches, and escalates TERM to KILL', async () => {
+    const identity = LINUX_IDENTITY
+    const incompleteOsSignals = []
+    await expect(gateCore.signalLinuxProcessIdentity({ ...identity, argv: undefined }, {
+      marker: 'vl360-linux-owned',
+      readIdentity: async () => identity,
+      kill: (pid, signal) => { incompleteOsSignals.push([pid, signal]) },
+    })).rejects.toThrow(/identity is incomplete/)
+    expect(incompleteOsSignals).toEqual([])
+
+    const expiredSignals = []
+    await expect(gateCore.terminateLinuxProcessIdentity(identity, {
+      marker: 'vl360-linux-owned',
+      deadline: Date.now() - 1,
+      signalIdentity: async (...args) => {
+        expiredSignals.push(args)
+        return { pid: identity.pid, status: 'identity-mismatch' }
+      },
+      waitForExit: async () => null,
+    })).rejects.toThrow(/deadline/)
+    expect(expiredSignals).toEqual([])
+
+    const mismatchOsSignals = []
+    const mismatch = await gateCore.signalLinuxProcessIdentity(identity, {
+      marker: 'wrong-marker',
+      signal: 'SIGTERM',
+      timeoutMs: 1000,
+      readIdentity: async () => identity,
+      kill: (pid, signal) => { mismatchOsSignals.push([pid, signal]) },
+    })
+    expect(mismatch.status).toBe('identity-mismatch')
+    expect(mismatchOsSignals).toEqual([])
+
+    const escalationSignals = []
+    const escalationOsSignals = []
+    const waits = [identity, null]
+    const escalated = await gateCore.terminateLinuxProcessIdentity(identity, {
+      marker: 'vl360-linux-owned',
+      timeoutMs: 1000,
+      signalIdentity: async (...args) => {
+        escalationSignals.push(args)
+        return signalLinuxFixture(args, identity, escalationOsSignals)
+      },
+      waitForExit: async () => waits.shift(),
+    })
+    expect(escalated.status).toBe('signalled')
+    expect(escalationSignals.map(([, marker, signal]) => [marker, signal])).toEqual([
+      ['vl360-linux-owned', 'SIGTERM'],
+      ['vl360-linux-owned', 'SIGKILL'],
+    ])
+    expect(escalationOsSignals).toEqual([
+      [identity.pid, 'SIGTERM'],
+      [identity.pid, 'SIGKILL'],
+    ])
+  })
+
+  it('bounds Linux exit identity polling by the remaining shared deadline', async () => {
+    const identity = LINUX_IDENTITY
+    const pollTimeouts = []
+    const startedAt = Date.now()
+    const result = await gateCore.waitForProcessIdentityExit(identity, {
+      timeoutMs: 20,
+      deadline: startedAt + 20,
+      pollTimeoutMs: 1000,
+      captureIdentity: async (pid, timeoutMs) => {
+        expect(pid).toBe(identity.pid)
+        pollTimeouts.push(timeoutMs)
+        return identity
+      },
+      wait: async () => { await sleep(25) },
+    })
+
+    expect(result).toBe(identity)
+    expect(pollTimeouts).toHaveLength(1)
+    expect(pollTimeouts[0]).toBeGreaterThan(0)
+    expect(pollTimeouts[0]).toBeLessThanOrEqual(20)
+  })
+
   it('fails closed on platforms without high-confidence process identity', () => {
     expect(() => gateCore.assertHighConfidenceProcessIdentityPlatform('darwin'))
       .toThrow(/high-confidence process identity is unsupported on darwin/)
   })
 
-  it.runIf(process.platform === 'win32')('verifies high-precision identities and cleanup for a timed-out marker-owned parent and child', async () => {
+  it.runIf(process.platform === 'win32')('observes exact timed-out helper-tree exit and prevents delayed side effects', async () => {
     const directory = mkdtempSync(join(tmpdir(), 'vl360-run-captured-tree-'))
     const pidPath = join(directory, 'pids.json')
+    const sideEffectPath = join(directory, 'late-side-effect.txt')
     const marker = `vl360-run-captured-tree-${Date.now()}-${Math.random()}`
-    const childSource = `setTimeout(() => process.exit(0), 20000); setInterval(() => {}, 1000) // ${marker}`
-    const parentSource = [
-      "const { spawn } = require('node:child_process')",
-      "const { writeFileSync } = require('node:fs')",
-      `const child = spawn(process.execPath, ['-e', ${JSON.stringify(childSource)}, ${JSON.stringify(marker)}], { stdio: 'ignore' })`,
-      `writeFileSync(${JSON.stringify(pidPath)}, JSON.stringify({ parent: process.pid, child: child.pid }))`,
-      'setTimeout(() => process.exit(0), 20000)',
-      'setInterval(() => {}, 1000)',
-    ].join('; ')
+    const parentSource = timedTreeSource({ marker, pidPath, sideEffectPath, lifetimeMs: 12000 })
+    const startedAt = Date.now()
     let pids
     let timeoutError
 
     try {
       try {
         await runCaptured(process.execPath, ['-e', parentSource, marker], {
-          timeoutMs: 300,
+          timeoutMs: 1000,
           cleanupTimeoutMs: 12000,
           ownershipMarker: marker,
         })
@@ -440,7 +652,7 @@ describe('Detail grid containment gate contracts', () => {
       }
 
       expect(timeoutError).toBeInstanceOf(Error)
-      expect(timeoutError?.message).toMatch(/timed out after 300ms/)
+      expect(timeoutError?.message).toMatch(/timed out after 1000ms/)
       expect(timeoutError?.cleanupVerified).toBe(true)
       expect(existsSync(pidPath)).toBe(true)
       pids = JSON.parse(readFileSync(pidPath, 'utf8'))
@@ -454,6 +666,8 @@ describe('Detail grid containment gate contracts', () => {
       expect(childIdentity?.commandLine).toContain(marker)
       expect(isRunning(pids.parent)).toBe(false)
       expect(isRunning(pids.child)).toBe(false)
+      await sleep(Math.max(0, 8500 - (Date.now() - startedAt)))
+      expect(existsSync(sideEffectPath)).toBe(false)
     } finally {
       const retained = (timeoutError?.capturedProcessIdentities || [])
         .filter(identity => [pids?.parent, pids?.child].includes(identity.pid) && isRunning(identity.pid))
@@ -538,4 +752,44 @@ function isRunning(pid) {
   } catch {
     return false
   }
+}
+
+function sleep(ms) {
+  return new Promise(resolveSleep => setTimeout(resolveSleep, ms))
+}
+
+function eventCapture(events) {
+  return {
+    start() { events.push('capture:start') },
+    async verify() { events.push('capture:verify'); return { fingerprint_sha256: 'a'.repeat(64) } },
+    stop() { events.push('capture:stop') },
+  }
+}
+
+function signalLinuxFixture([identity, marker, signal, timeoutMs], current, osSignals) {
+  return gateCore.signalLinuxProcessIdentity(identity, {
+    marker,
+    signal,
+    timeoutMs,
+    readIdentity: async () => current,
+    kill: (pid, requestedSignal) => { osSignals.push([pid, requestedSignal]) },
+  })
+}
+
+function timedTreeSource({ marker, pidPath, sideEffectPath = '', lifetimeMs }) {
+  const childSource = [
+    sideEffectPath ? "const { writeFileSync } = require('node:fs')" : '',
+    sideEffectPath ? `setTimeout(() => writeFileSync(${JSON.stringify(sideEffectPath)}, 'late'), 8000)` : '',
+    `setTimeout(() => process.exit(0), ${lifetimeMs})`,
+    'setInterval(() => {}, 1000)',
+    '// ' + marker,
+  ].filter(Boolean).join('; ')
+  return [
+    "const { spawn } = require('node:child_process')",
+    "const { writeFileSync } = require('node:fs')",
+    `const child = spawn(process.execPath, ['-e', ${JSON.stringify(childSource)}, ${JSON.stringify(marker)}], { stdio: 'ignore' })`,
+    `writeFileSync(${JSON.stringify(pidPath)}, JSON.stringify({ parent: process.pid, child: child.pid }))`,
+    `setTimeout(() => process.exit(0), ${lifetimeMs})`,
+    'setInterval(() => {}, 1000)',
+  ].join('; ')
 }
