@@ -435,6 +435,41 @@ describe('Detail grid containment gate contracts', () => {
     expect(remaining).toEqual([])
   })
 
+  it('returns the third full stable-empty snapshot without a redundant verification capture', async () => {
+    const unrelated = {
+      pid: 901,
+      parentPid: 1,
+      startIdentity: 'win:utc-ticks:639213500000000901',
+      executablePath: 'C:\\Windows\\System32\\conhost.exe',
+      commandLine: 'conhost.exe 0x4',
+    }
+    const lateOwned = {
+      pid: 902,
+      parentPid: 1,
+      startIdentity: 'win:utc-ticks:639213500000000902',
+      executablePath: 'C:\\Program Files\\nodejs\\node.exe',
+      commandLine: 'node.exe worker.js vl360-owned',
+    }
+    const snapshots = [[lateOwned, unrelated], [unrelated], [unrelated], [unrelated]]
+    const terminated = []
+    let snapshotIndex = 0
+
+    const finalSnapshot = await gateCore.waitForStableEmptyProcessSnapshot({
+      captureSnapshot: async () => {
+        if (snapshotIndex >= snapshots.length) throw new Error('redundant verification snapshot')
+        return snapshots[snapshotIndex++]
+      },
+      selectOwnedProcesses: snapshot => snapshot.filter(identity => identity.commandLine.includes('vl360-owned')),
+      terminateOwnedProcesses: async identities => { terminated.push(...identities) },
+      timeoutMs: 5000,
+      wait: async () => {},
+    })
+
+    expect(finalSnapshot).toBe(snapshots[3])
+    expect(snapshotIndex).toBe(4)
+    expect(terminated).toEqual([lateOwned])
+  })
+
   it('rejects PID reuse and classifies only marker-owned descendants of the captured process identity', () => {
     const marker = 'vl360-owned-process-42'
     const root = {
@@ -653,7 +688,8 @@ describe('Detail grid containment gate contracts', () => {
 
       expect(timeoutError).toBeInstanceOf(Error)
       expect(timeoutError?.message).toMatch(/timed out after 1000ms/)
-      expect(timeoutError?.cleanupVerified).toBe(true)
+      const cleanupDiagnostic = [timeoutError?.message, timeoutError?.cause?.message].filter(Boolean).join('; cause: ')
+      expect(timeoutError?.cleanupVerified, cleanupDiagnostic).toBe(true)
       expect(existsSync(pidPath)).toBe(true)
       pids = JSON.parse(readFileSync(pidPath, 'utf8'))
       const captured = timeoutError?.capturedProcessIdentities || []

@@ -179,6 +179,41 @@ export async function cleanupOwnedProcessSet({
   throw new Error('owned process cleanup did not reach stable-empty quiescence before its deadline')
 }
 
+export async function waitForStableEmptyProcessSnapshot({
+  captureSnapshot,
+  selectOwnedProcesses,
+  terminateOwnedProcesses,
+  timeoutMs = 10000,
+  deadline = Date.now() + timeoutMs,
+  requiredEmptySnapshots = 3,
+  quiescenceMs = 75,
+  wait = ms => new Promise(resolveWait => setTimeout(resolveWait, ms)),
+}) {
+  if (!Number.isInteger(requiredEmptySnapshots) || requiredEmptySnapshots < 2) {
+    throw new Error('stable cleanup requires at least two consecutive empty snapshots')
+  }
+  let emptyStreak = 0
+  while (Date.now() < deadline) {
+    const snapshot = await captureSnapshot({
+      deadline,
+      timeoutMs: remainingDeadlineMs(deadline, 'captured process quiescence snapshot'),
+    })
+    const owned = selectOwnedProcesses(snapshot)
+    if (owned.length === 0) {
+      emptyStreak += 1
+      if (emptyStreak >= requiredEmptySnapshots) return snapshot
+      await wait(Math.min(quiescenceMs, remainingDeadlineMs(deadline, 'captured process quiescence')))
+      continue
+    }
+    emptyStreak = 0
+    await terminateOwnedProcesses(owned, {
+      deadline,
+      timeoutMs: remainingDeadlineMs(deadline, 'late process termination'),
+    })
+  }
+  throw new Error('owned process cleanup did not reach stable-empty quiescence')
+}
+
 export function hasStableOwnedHit(samples, requiredConsecutive) {
   const required = Number(requiredConsecutive)
   if (!Number.isInteger(required) || required <= 0) return false
@@ -749,37 +784,31 @@ async function terminateCapturedProcessTree(child, cleanupTimeoutMs, initialIden
       deadline,
     })
 
+    let verification
     if (ownershipMarker) {
-      let emptyStreak = 0
-      while (emptyStreak < 3 && Date.now() < deadline) {
-        const remainingMs = remainingDeadlineMs(deadline, 'captured process quiescence snapshot')
-        const snapshot = await captureProcessSnapshot(Math.max(1, Math.min(helperTimeoutMs, remainingMs)))
-        const lateOwned = snapshot.filter(processInfo => commandHasMarker(processInfo, ownershipMarker))
-        if (lateOwned.length === 0) {
-          emptyStreak += 1
-          if (emptyStreak < 3) await new Promise(resolveWait => setTimeout(
-            resolveWait,
-            Math.min(75, remainingDeadlineMs(deadline, 'captured process quiescence')),
-          ))
-          continue
-        }
-        emptyStreak = 0
-        for (const identity of lateOwned) {
-          captured.set(identity.pid + ':' + identity.startIdentity, identity)
-        }
-        await terminateExactProcessIdentities(lateOwned, {
-          marker: ownershipMarker,
-          timeoutMs: Math.min(helperTimeoutMs, remainingDeadlineMs(deadline, 'late process termination')),
-          deadline,
-        })
-      }
-      if (emptyStreak < 3) throw new Error('owned process cleanup did not reach stable-empty quiescence')
+      verification = await waitForStableEmptyProcessSnapshot({
+        captureSnapshot: ({ timeoutMs: operationTimeoutMs }) => captureProcessSnapshot(
+          Math.max(1, Math.min(helperTimeoutMs, operationTimeoutMs)),
+        ),
+        selectOwnedProcesses: snapshot => snapshot.filter(processInfo => commandHasMarker(processInfo, ownershipMarker)),
+        terminateOwnedProcesses: async (lateOwned, options) => {
+          for (const identity of lateOwned) {
+            captured.set(identity.pid + ':' + identity.startIdentity, identity)
+          }
+          await terminateExactProcessIdentities(lateOwned, {
+            marker: ownershipMarker,
+            timeoutMs: Math.min(helperTimeoutMs, options.timeoutMs),
+            deadline: options.deadline,
+          })
+        },
+        deadline,
+      })
+    } else {
+      verification = await captureProcessSnapshot(Math.min(
+        helperTimeoutMs,
+        remainingDeadlineMs(deadline, 'captured process verification'),
+      ))
     }
-
-    const verification = await captureProcessSnapshot(Math.min(
-      helperTimeoutMs,
-      remainingDeadlineMs(deadline, 'captured process verification'),
-    ))
     const remainingOwned = [...captured.values()].filter(identity => verification.some(processInfo => matchesProcessIdentity(identity, processInfo)))
     const lateMarkerOwned = ownershipMarker ? verification.filter(processInfo => commandHasMarker(processInfo, ownershipMarker)) : []
     const remainingUnverified = classification.unverified.filter(identity => (
