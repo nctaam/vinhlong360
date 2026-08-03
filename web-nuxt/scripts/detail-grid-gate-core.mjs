@@ -137,67 +137,242 @@ export function hasStableOwnedHit(samples, requiredConsecutive) {
   return false
 }
 
-function terminateCapturedProcess(child) {
-  if (!child || child.exitCode !== null || child.signalCode !== null) return
-  if (process.platform === 'win32' && child.pid) {
-    const killer = spawn('taskkill.exe', ['/PID', String(child.pid), '/T', '/F'], {
-      stdio: 'ignore',
-      windowsHide: true,
-    })
-    killer.once('error', () => child.kill())
-    return
-  }
-  child.kill('SIGTERM')
+function childExited(child) {
+  return !child || child.exitCode !== null || child.signalCode !== null
 }
 
-export function runCaptured(command, args, options = {}) {
-  const { timeoutMs = 10000, ...spawnOptions } = options
+function processIsRunning(pid) {
+  if (!Number.isInteger(pid) || pid <= 0) return false
+  try {
+    process.kill(pid, 0)
+    return true
+  } catch {
+    return false
+  }
+}
+
+function runBoundedHelper(command, args, { timeoutMs, env } = {}) {
   return new Promise((resolveRun, reject) => {
-    const child = spawn(command, args, { ...spawnOptions, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true })
+    const child = spawn(command, args, {
+      env,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true,
+    })
     let stdout = ''
     let stderr = ''
     let timedOut = false
     let settled = false
-    let timer
-    let forceTimer
-    let abandonTimer
+    let timeoutTimer
+    let exitTimer
     const append = (current, chunk) => (current + String(chunk)).slice(-512 * 1024)
+    const onStdout = chunk => { stdout = append(stdout, chunk) }
+    const onStderr = chunk => { stderr = append(stderr, chunk) }
     const finish = (handler, value) => {
       if (settled) return
       settled = true
-      clearTimeout(timer)
-      clearTimeout(forceTimer)
-      clearTimeout(abandonTimer)
+      clearTimeout(timeoutTimer)
+      clearTimeout(exitTimer)
+      child.stdout?.off('data', onStdout)
+      child.stderr?.off('data', onStderr)
       child.off('error', onError)
       child.off('exit', onExit)
       handler(value)
     }
-    const timeoutError = () => new Error(basename(command) + ' timed out after ' + timeoutMs + 'ms')
-    const onError = error => finish(reject, timedOut ? timeoutError() : error)
+    const onError = error => {
+      if (!timedOut) finish(reject, error)
+    }
     const onExit = code => {
       if (timedOut) {
-        finish(reject, timeoutError())
+        finish(reject, new Error(basename(command) + ' timed out after ' + timeoutMs + 'ms'))
       } else if (code === 0) {
         finish(resolveRun, { stdout, stderr })
       } else {
         finish(reject, new Error(basename(command) + ' exited with code ' + code + (stderr.trim() ? ': ' + stderr.trim() : '')))
       }
     }
-    child.stdout?.on('data', chunk => { stdout = append(stdout, chunk) })
-    child.stderr?.on('data', chunk => { stderr = append(stderr, chunk) })
+    child.stdout?.on('data', onStdout)
+    child.stderr?.on('data', onStderr)
+    child.once('error', onError)
+    child.once('exit', onExit)
+    timeoutTimer = setTimeout(() => {
+      timedOut = true
+      if (!childExited(child)) child.kill('SIGKILL')
+      exitTimer = setTimeout(() => {
+        finish(reject, new Error(basename(command) + ' cleanup helper did not exit after timeout'))
+      }, 1000)
+    }, timeoutMs)
+  })
+}
+
+function buildProcessTree(rootPid, processes) {
+  const tree = new Set([rootPid])
+  let changed = true
+  while (changed) {
+    changed = false
+    for (const processInfo of processes) {
+      if (!tree.has(processInfo.pid) && tree.has(processInfo.parentPid)) {
+        tree.add(processInfo.pid)
+        changed = true
+      }
+    }
+  }
+  return [...tree]
+}
+
+async function captureProcessTree(rootPid, timeoutMs) {
+  let processes
+  if (process.platform === 'win32') {
+    const source = [
+      "$ErrorActionPreference = 'Stop'",
+      '$items = @(Get-CimInstance Win32_Process | Select-Object ProcessId, ParentProcessId)',
+      'ConvertTo-Json -InputObject $items -Compress',
+    ].join('; ')
+    const result = await runBoundedHelper(
+      'powershell.exe',
+      ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', source],
+      { timeoutMs },
+    )
+    const parsed = JSON.parse(result.stdout.trim() || '[]')
+    processes = (Array.isArray(parsed) ? parsed : [parsed]).map(processInfo => ({
+      pid: Number(processInfo.ProcessId || 0),
+      parentPid: Number(processInfo.ParentProcessId || 0),
+    }))
+  } else {
+    const result = await runBoundedHelper('ps', ['-axo', 'pid=,ppid='], { timeoutMs })
+    processes = result.stdout.split(/\r?\n/u).map(line => {
+      const match = /^\s*(\d+)\s+(\d+)\s*$/u.exec(line)
+      return match ? { pid: Number(match[1]), parentPid: Number(match[2]) } : null
+    }).filter(Boolean)
+  }
+  return buildProcessTree(rootPid, processes)
+}
+
+async function waitForProcessTreeExit(pids, timeoutMs) {
+  const deadline = Date.now() + timeoutMs
+  let remaining = pids.filter(processIsRunning)
+  while (remaining.length > 0 && Date.now() < deadline) {
+    await new Promise(resolveWait => setTimeout(resolveWait, 50))
+    remaining = pids.filter(processIsRunning)
+  }
+  return remaining
+}
+
+async function terminateCapturedProcessTree(child, cleanupTimeoutMs) {
+  if (!child?.pid) throw new Error('captured process has no PID for cleanup verification')
+  const rootPid = child.pid
+  const helperTimeoutMs = Math.max(1000, Math.min(5000, cleanupTimeoutMs - 1000))
+  let treePids = [rootPid]
+  let discoveryError
+  try {
+    treePids = await captureProcessTree(rootPid, helperTimeoutMs)
+  } catch (error) {
+    discoveryError = error
+  }
+  let terminationError
+
+  if (process.platform === 'win32') {
+    try {
+      await runBoundedHelper('taskkill.exe', ['/PID', String(rootPid), '/T', '/F'], { timeoutMs: helperTimeoutMs })
+    } catch (error) {
+      terminationError = error
+    }
+  } else if (!childExited(child)) {
+    try {
+      process.kill(-rootPid, 'SIGTERM')
+    } catch (error) {
+      terminationError = error
+    }
+  }
+
+  const remaining = await waitForProcessTreeExit(treePids, Math.max(500, cleanupTimeoutMs - helperTimeoutMs))
+  if (remaining.length > 0) {
+    throw new Error('captured process tree cleanup failed for PID(s): ' + remaining.join(','))
+  }
+  if (discoveryError) {
+    throw new Error('captured process tree was terminated but descendant verification failed: ' + discoveryError.message)
+  }
+  if (terminationError && processIsRunning(rootPid)) throw terminationError
+  return treePids
+}
+
+export function runCaptured(command, args, options = {}) {
+  const { timeoutMs = 10000, cleanupTimeoutMs = 7000, ...spawnOptions } = options
+  return new Promise((resolveRun, reject) => {
+    const child = spawn(command, args, {
+      ...spawnOptions,
+      detached: process.platform === 'win32' ? Boolean(spawnOptions.detached) : true,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true,
+    })
+    let stdout = ''
+    let stderr = ''
+    let timedOut = false
+    let settled = false
+    let timer
+    const append = (current, chunk) => (current + String(chunk)).slice(-512 * 1024)
+    const onStdout = chunk => { stdout = append(stdout, chunk) }
+    const onStderr = chunk => { stderr = append(stderr, chunk) }
+    const finish = (handler, value) => {
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
+      child.stdout?.off('data', onStdout)
+      child.stderr?.off('data', onStderr)
+      child.off('error', onError)
+      child.off('exit', onExit)
+      handler(value)
+    }
+    const timeoutError = cleanup => {
+      const error = new Error(basename(command) + ' timed out after ' + timeoutMs + 'ms')
+      error.cleanupVerified = true
+      error.terminatedPids = cleanup
+      return error
+    }
+    const onError = error => {
+      if (!timedOut) finish(reject, error)
+    }
+    const onExit = code => {
+      if (timedOut) return
+      if (code === 0) {
+        finish(resolveRun, { stdout, stderr })
+      } else {
+        finish(reject, new Error(basename(command) + ' exited with code ' + code + (stderr.trim() ? ': ' + stderr.trim() : '')))
+      }
+    }
+    child.stdout?.on('data', onStdout)
+    child.stderr?.on('data', onStderr)
     child.once('error', onError)
     child.once('exit', onExit)
     timer = setTimeout(() => {
       timedOut = true
-      terminateCapturedProcess(child)
-      forceTimer = setTimeout(() => {
-        if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL')
-      }, 1000)
-      abandonTimer = setTimeout(() => {
-        finish(reject, timeoutError())
-      }, 3000)
+      terminateCapturedProcessTree(child, cleanupTimeoutMs).then(
+        cleanup => finish(reject, timeoutError(cleanup)),
+        cleanupError => {
+          const error = new Error(
+            basename(command) + ' timed out after ' + timeoutMs + 'ms; cleanup failed: ' + cleanupError.message,
+          )
+          error.cleanupVerified = false
+          error.cause = cleanupError
+          finish(reject, error)
+        },
+      )
     }, timeoutMs)
   })
+}
+
+export function recordGateReason(evidence, code, message) {
+  if (!Array.isArray(evidence.reasons)) evidence.reasons = []
+  evidence.reasons.push({ code: String(code).slice(0, 100), message: String(message).slice(0, 300) })
+}
+
+export function finalizeGateEvidence(evidence, { blocked = false } = {}) {
+  if ((evidence.cleanup_errors || []).length > 0 && !(evidence.reasons || []).some(reason => reason?.code === 'cleanup-failed')) {
+    recordGateReason(evidence, 'cleanup-failed', 'owned Chrome resources were not fully cleaned up')
+  }
+  evidence.verdict = blocked
+    ? 'blocked'
+    : (evidence.reasons || []).length === 0 && (evidence.cleanup_errors || []).length === 0 ? 'pass' : 'fail'
+  return evidence
 }
 
 export function compactGateEvidence(evidence) {

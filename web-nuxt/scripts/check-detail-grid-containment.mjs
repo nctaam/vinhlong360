@@ -12,16 +12,17 @@ import {
   collectAssetSetFailures,
   collectStateFailures,
   compactGateEvidence,
+  finalizeGateEvidence,
   hasStableOwnedHit,
   isFreshNavigationState,
   ownedBrowserProcessIds,
+  recordGateReason as addReason,
   runCaptured,
 } from './detail-grid-gate-core.mjs'
 
 const ROUTE = '/dia-diem/cong-vien-an-hoi'
 const REVISION_PATTERN = /^[a-f0-9]{40}$/u
 const MAX_CONSOLE_ERRORS = 8
-const MAX_REASONS = 32
 const MAX_EVIDENCE_BYTES = 64 * 1024
 const TOLERANCE_PX = 1
 const CONSOLE_DRAIN_MS = 300
@@ -117,11 +118,6 @@ function safeMessage(error) {
 
 function sleep(ms) {
   return new Promise(resolveSleep => setTimeout(resolveSleep, ms))
-}
-
-function addReason(evidence, code, message) {
-  if (evidence.reasons.length >= MAX_REASONS) return
-  evidence.reasons.push({ code: String(code).slice(0, 100), message: String(message).slice(0, 300) })
 }
 
 function stateReason(evidence, state, code, message) {
@@ -1432,8 +1428,6 @@ async function run(args, evidence) {
       evidence.cleanup_errors.push('profile:owned profile retained while browser processes remain or ownership audit failed')
     }
   }
-  if (evidence.cleanup_errors.length > 0) addReason(evidence, 'cleanup-failed', 'owned Chrome resources were not fully cleaned up')
-  evidence.verdict = evidence.reasons.length === 0 && evidence.cleanup_errors.length === 0 ? 'pass' : 'fail'
 }
 
 let args
@@ -1477,12 +1471,14 @@ if (args?.help) {
     cleanup: { owned_processes_remaining: null, profile_removed: false },
     cleanup_errors: [],
   }
+  let blocked = false
   try {
     await run(args, evidence)
   } catch (error) {
-    evidence.verdict = error instanceof GateError && error.blocked ? 'blocked' : 'fail'
+    blocked = error instanceof GateError && error.blocked
     addReason(evidence, error instanceof GateError ? error.code : 'unexpected-error', safeMessage(error))
   }
+  finalizeGateEvidence(evidence, { blocked })
   process.stdout.write(boundedJson(evidence))
   process.exitCode = evidence.verdict === 'pass' ? 0 : 1
 }

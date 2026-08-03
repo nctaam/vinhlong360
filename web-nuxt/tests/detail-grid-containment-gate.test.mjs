@@ -1,4 +1,10 @@
+import { execFileSync } from 'node:child_process'
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+
+import * as gateCore from '../scripts/detail-grid-gate-core.mjs'
 
 import {
   collectAssetSetFailures,
@@ -277,6 +283,81 @@ describe('Detail grid containment gate contracts', () => {
       .rejects.toThrow(/timed out after 100ms/)
   })
 
+  it.runIf(process.platform === 'win32')('verifies the timed-out parent and its owned descendant are gone before rejecting', async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'vl360-run-captured-tree-'))
+    const pidPath = join(directory, 'pids.json')
+    const marker = `vl360-run-captured-tree-${Date.now()}-${Math.random()}`
+    const childSource = `setInterval(() => {}, 1000) // ${marker}`
+    const parentSource = [
+      "const { spawn } = require('node:child_process')",
+      "const { writeFileSync } = require('node:fs')",
+      `const child = spawn(process.execPath, ['-e', ${JSON.stringify(childSource)}, ${JSON.stringify(marker)}], { stdio: 'ignore' })`,
+      `writeFileSync(${JSON.stringify(pidPath)}, JSON.stringify({ parent: process.pid, child: child.pid }))`,
+      'setInterval(() => {}, 1000)',
+    ].join('; ')
+    let pids
+
+    try {
+      let timeoutError
+      try {
+        await runCaptured(process.execPath, ['-e', parentSource, marker], { timeoutMs: 300, cleanupTimeoutMs: 7000 })
+      } catch (error) {
+        timeoutError = error
+      }
+
+      expect(timeoutError).toBeInstanceOf(Error)
+      expect(timeoutError?.message).toMatch(/timed out after 300ms/)
+      expect(timeoutError?.cleanupVerified).toBe(true)
+      expect(existsSync(pidPath)).toBe(true)
+      pids = JSON.parse(readFileSync(pidPath, 'utf8'))
+      expect(isRunning(pids.parent)).toBe(false)
+      expect(isRunning(pids.child)).toBe(false)
+    } finally {
+      for (const pid of [pids?.parent, pids?.child]) {
+        if (Number.isInteger(pid) && isRunning(pid)) {
+          execFileSync('taskkill.exe', ['/PID', String(pid), '/F'], { stdio: 'ignore' })
+        }
+      }
+      rmSync(directory, { recursive: true, force: true })
+    }
+  })
+
+  it('preserves late global and cleanup blockers after more than the output reason limit', () => {
+    const evidence = { states: [], reasons: [], cleanup_errors: [] }
+    for (let index = 0; index < 40; index += 1) {
+      gateCore.recordGateReason(evidence, `mobile:nocturne:state-${index}`, `state failure ${index}`)
+    }
+    gateCore.recordGateReason(evidence, 'revision-mismatch', 'manifest differs from expected revision')
+    try {
+      throw new Error('primary gate failure')
+    } catch (error) {
+      gateCore.recordGateReason(evidence, 'unexpected-error', error.message)
+    } finally {
+      evidence.cleanup_errors.push('chrome:owned process remained')
+    }
+
+    gateCore.finalizeGateEvidence(evidence)
+    compactGateEvidence(evidence)
+
+    expect(evidence.verdict).toBe('fail')
+    expect(evidence.reasons.map(reason => reason.code)).toEqual(expect.arrayContaining([
+      'revision-mismatch',
+      'unexpected-error',
+      'cleanup-failed',
+    ]))
+    expect(evidence.reason_summary).toMatchObject({
+      total_count: 43,
+      retained_count: 12,
+      truncated_count: 31,
+      truncated: true,
+    })
+    expect(evidence.reason_summary.blocker_codes).toEqual(expect.arrayContaining([
+      'revision-mismatch',
+      'unexpected-error',
+      'cleanup-failed',
+    ]))
+  })
+
   it('compacts repeated per-state assets while preserving the exact global asset set', () => {
     const assetPaths = ['/_nuxt/app.hash.js', '/_nuxt/detail.hash.css']
     const evidence = {
@@ -306,3 +387,13 @@ describe('Detail grid containment gate contracts', () => {
     expect(evidence.reason_summary.blocker_codes).toEqual(expect.arrayContaining(['revision-mismatch', 'cleanup-failed']))
   })
 })
+
+function isRunning(pid) {
+  if (!Number.isInteger(pid) || pid <= 0) return false
+  try {
+    process.kill(pid, 0)
+    return true
+  } catch {
+    return false
+  }
+}
