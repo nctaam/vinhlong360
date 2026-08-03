@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 import { spawn } from 'node:child_process'
-import { createHash } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { existsSync, readFileSync } from 'node:fs'
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdtemp, readdir, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -16,10 +16,11 @@ import {
   finalizeGateEvidence,
   hasStableOwnedHit,
   isFreshNavigationState,
-  matchesProcessIdentity,
   ownedBrowserProcessIds,
+  readLinuxProcessIdentity,
   recordGateReason as addReason,
   runCaptured,
+  terminateExactProcessIdentities,
 } from './detail-grid-gate-core.mjs'
 
 const ROUTE = '/dia-diem/cong-vien-an-hoi'
@@ -202,14 +203,19 @@ function waitForExit(child, timeoutMs) {
   })
 }
 
-async function listOwnedBrowserProcesses({ profile, browserPath }) {
+async function listOwnedBrowserProcesses({ profile, browserPath, marker }) {
   let processes = []
   if (process.platform === 'win32') {
     const source = [
       "$ErrorActionPreference = 'Stop'",
+      'function Get-Vl360StartIdentity([object]$ProcessItem) {',
+      '  if ($null -eq $ProcessItem -or $null -eq $ProcessItem.CreationDate) { return "" }',
+      '  $ticks = $ProcessItem.CreationDate.ToUniversalTime().Ticks.ToString([Globalization.CultureInfo]::InvariantCulture)',
+      '  return "win:utc-ticks:" + $ticks',
+      '}',
       "$browserName = [IO.Path]::GetFileName($env:VL360_GATE_BROWSER_PATH).Replace(\"'\", \"''\")",
       "$filter = \"Name='\" + $browserName + \"'\"",
-      '$items = @(Get-CimInstance Win32_Process -Filter $filter | ForEach-Object { [PSCustomObject]@{ ProcessId = [int]$_.ProcessId; ParentProcessId = [int]$_.ParentProcessId; StartIdentity = [string]$_.CreationDate; ExecutablePath = [string]$_.ExecutablePath; CommandLine = [string]$_.CommandLine } })',
+      '$items = @(Get-CimInstance Win32_Process -Filter $filter | ForEach-Object { [PSCustomObject]@{ ProcessId = [int]$_.ProcessId; ParentProcessId = [int]$_.ParentProcessId; StartIdentity = Get-Vl360StartIdentity $_; ExecutablePath = [string]$_.ExecutablePath; CommandLine = [string]$_.CommandLine } })',
       'ConvertTo-Json -InputObject $items -Compress',
     ].join('; ')
     const result = await runCaptured('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', source], {
@@ -224,84 +230,43 @@ async function listOwnedBrowserProcesses({ profile, browserPath }) {
       executablePath: String(processInfo.ExecutablePath || ''),
       commandLine: String(processInfo.CommandLine || ''),
     }))
+  } else if (process.platform === 'linux') {
+    const entries = await readdir('/proc', { withFileTypes: true })
+    processes = (await Promise.all(entries
+      .filter(entry => entry.isDirectory() && /^\d+$/u.test(entry.name))
+      .map(entry => readLinuxProcessIdentity(Number(entry.name)).catch(error => {
+        if (['ENOENT', 'ESRCH', 'EACCES'].includes(error?.code)) return null
+        throw error
+      })))).filter(Boolean)
   } else {
-    const result = await runCaptured('ps', ['-axo', 'pid=,ppid=,lstart=,command='], { timeoutMs: 5000 })
-    processes = result.stdout.split(/\r?\n/u).map(line => {
-      const match = /^\s*(\d+)\s+(\d+)\s+(\S+\s+\S+\s+\d+\s+\d{2}:\d{2}:\d{2}\s+\d{4})\s+(.+)$/u.exec(line)
-      return match ? {
-        pid: Number(match[1]),
-        parentPid: Number(match[2]),
-        startIdentity: match[3],
-        executablePath: browserPath,
-        commandLine: match[4],
-      } : null
-    }).filter(Boolean)
+    throw new Error('high-confidence browser process identity is unsupported on ' + process.platform)
   }
-  const ownedIds = new Set(ownedBrowserProcessIds(processes, { profile, browserPath }))
+  const ownedIds = new Set(ownedBrowserProcessIds(processes, { profile, browserPath, marker }))
   return processes.filter(processInfo => ownedIds.has(processInfo.pid))
 }
 
-async function waitForOwnedBrowserExit(browser, timeoutMs = 5000) {
-  const deadline = Date.now() + timeoutMs
-  let remaining = []
-  do {
-    remaining = await listOwnedBrowserProcesses(browser)
-    if (remaining.length === 0) return []
-    await sleep(100)
-  } while (Date.now() < deadline)
-  return remaining
-}
-
-async function terminateOwnedBrowserProcess(identity, browser) {
-  if (process.platform === 'win32') {
-    const source = [
-      "$ErrorActionPreference = 'Stop'",
-      '$identity = $env:VL360_GATE_BROWSER_IDENTITY | ConvertFrom-Json',
-      '$current = Get-CimInstance Win32_Process -Filter ("ProcessId=" + [int]$identity.pid)',
-      'if ($null -eq $current) { exit 0 }',
-      '$sameStart = ([string]$current.CreationDate) -ceq ([string]$identity.startIdentity)',
-      '$sameExecutable = [StringComparer]::OrdinalIgnoreCase.Equals([string]$current.ExecutablePath, [string]$identity.executablePath)',
-      '$sameCommand = ([string]$current.CommandLine) -ceq ([string]$identity.commandLine)',
-      '$sameProfile = ([string]$current.CommandLine).Contains([string]$env:VL360_GATE_BROWSER_PROFILE)',
-      'if (-not ($sameStart -and $sameExecutable -and $sameCommand -and $sameProfile)) { throw "browser process identity mismatch" }',
-      'Stop-Process -Id ([int]$identity.pid) -Force -ErrorAction Stop',
-    ].join('; ')
-    await runCaptured('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', source], {
-      env: {
-        ...process.env,
-        VL360_GATE_BROWSER_IDENTITY: JSON.stringify(identity),
-        VL360_GATE_BROWSER_PROFILE: browser.profile,
-      },
-      timeoutMs: 5000,
-      ownershipMarker: 'VL360_GATE_BROWSER_IDENTITY',
-    })
-    return
-  }
-  process.kill(identity.pid, 'SIGTERM')
-  await sleep(100)
-  let current = (await listOwnedBrowserProcesses(browser)).find(processInfo => matchesProcessIdentity(identity, processInfo))
-  if (!current) return
-  current = (await listOwnedBrowserProcesses(browser)).find(processInfo => matchesProcessIdentity(identity, processInfo))
-  if (!current) return
-  process.kill(identity.pid, 'SIGKILL')
-}
-
 async function cleanupOwnedBrowserProcesses(browser) {
-  const candidates = await listOwnedBrowserProcesses(browser)
-  const ordered = [...candidates].sort((left, right) => (
-    (left.pid === browser.child?.pid ? 1 : 0) - (right.pid === browser.child?.pid ? 1 : 0)
-  ))
-  for (const identity of ordered) {
-    const current = await listOwnedBrowserProcesses(browser)
-    if (!current.some(processInfo => matchesProcessIdentity(identity, processInfo))) continue
-    try {
-      await terminateOwnedBrowserProcess(identity, browser)
-    } catch (error) {
-      const afterFailure = await listOwnedBrowserProcesses(browser)
-      if (afterFailure.some(processInfo => matchesProcessIdentity(identity, processInfo))) throw error
-    }
+  const deadline = Date.now() + 10000
+  const captured = new Map()
+  while (Date.now() < deadline) {
+    const candidates = await listOwnedBrowserProcesses(browser)
+    if (candidates.length === 0) return []
+    for (const identity of candidates) captured.set(identity.pid + ':' + identity.startIdentity, identity)
+    const ordered = [...candidates].sort((left, right) => (
+      (left.pid === browser.child?.pid ? 1 : 0) - (right.pid === browser.child?.pid ? 1 : 0)
+    ))
+    await terminateExactProcessIdentities(ordered, {
+      marker: browser.marker,
+      timeoutMs: Math.min(5000, Math.max(1000, deadline - Date.now())),
+      deadline,
+    })
+    await sleep(100)
   }
-  return waitForOwnedBrowserExit(browser)
+  const remaining = await listOwnedBrowserProcesses(browser)
+  return remaining.filter(identity => (
+    captured.has(identity.pid + ':' + identity.startIdentity)
+    || String(identity.commandLine || '').includes(browser.marker)
+  ))
 }
 
 async function stopChrome(browser) {
@@ -326,7 +291,8 @@ function parseCdpEndpoint(output) {
 async function launchChrome() {
   const chromePath = findChrome()
   if (!chromePath) throw new GateError('chrome-unavailable', 'Chrome or Edge executable is unavailable', { blocked: true })
-  const profile = await mkdtemp(resolve(tmpdir(), 'vl360-detail-grid-'))
+  const marker = 'vl360-detail-grid-gate-' + randomUUID()
+  const profile = await mkdtemp(resolve(tmpdir(), marker + '-'))
   let child
   try {
     child = spawn(chromePath, [
@@ -340,6 +306,7 @@ async function launchChrome() {
       '--no-default-browser-check',
       '--remote-debugging-port=0',
       '--user-data-dir=' + profile,
+      '--vl360-gate-marker=' + marker,
       '--window-size=' + DESKTOP_VIEWPORT.width + ',' + DESKTOP_VIEWPORT.height,
       'about:blank',
     ], { stdio: ['ignore', 'ignore', 'pipe'], windowsHide: true })
@@ -369,10 +336,10 @@ async function launchChrome() {
       child.once('error', onError)
       child.once('exit', onExit)
     })
-    return { child, endpoint, profile, browserPath: chromePath }
+    return { child, endpoint, profile, browserPath: chromePath, marker }
   } catch (error) {
     const cleanupErrors = []
-    const browser = { child, profile, browserPath: chromePath }
+    const browser = { child, profile, browserPath: chromePath, marker }
     let profileCanBeRemoved = false
     try { await stopChrome(browser) } catch (cleanupError) { cleanupErrors.push('chrome:' + safeMessage(cleanupError)) }
     try {
@@ -767,7 +734,12 @@ async function waitForRequestedThemeReadiness(cdp, mode) {
   await sleep(300)
 }
 
-async function addRequestedThemeSeed(cdp, baseUrl, mode) {
+function oppositeThemeMode(mode) {
+  return mode === 'dark' ? 'light' : 'dark'
+}
+
+async function addOppositeThemeSeed(cdp, baseUrl, requestedMode) {
+  const mode = oppositeThemeMode(requestedMode)
   const result = await cdp.send('Page.addScriptToEvaluateOnNewDocument', {
     source: 'if (location.origin === '
       + JSON.stringify(new URL(baseUrl).origin)
@@ -776,9 +748,9 @@ async function addRequestedThemeSeed(cdp, baseUrl, mode) {
       + ')',
   })
   if (!result.identifier) {
-    throw new GateError('theme-seed-unavailable', 'could not bind the requested theme before Detail navigation', { blocked: true })
+    throw new GateError('theme-seed-unavailable', 'could not bind the opposite theme before Detail navigation', { blocked: true })
   }
-  return result.identifier
+  return { identifier: result.identifier, mode }
 }
 
 async function navigateWithBoundAssets(cdp, baseUrl, mode) {
@@ -795,26 +767,31 @@ async function navigateWithBoundAssets(cdp, baseUrl, mode) {
     10000,
   )
   await cdp.send('Network.clearBrowserCache')
-  const themeSeedIdentifier = await addRequestedThemeSeed(cdp, baseUrl, mode)
+  const themeSeed = await addOppositeThemeSeed(cdp, baseUrl, mode)
   const capture = new NavigationAssetCapture(cdp, baseUrl)
   try {
     const result = await captureThemeBoundAssets({
       capture,
       navigate: () => navigate(cdp, new URL(ROUTE, baseUrl).toString(), capture),
-      applyRequestedTheme: () => selectTheme(cdp, mode),
+      assertOppositeTheme: () => assertThemeActive(cdp, themeSeed.mode, 'opposite theme was not active before physical transition'),
+      applyRequestedTheme: () => selectTheme(cdp, mode, themeSeed.mode),
       waitForStableReadiness: () => waitForRequestedThemeReadiness(cdp, mode),
     })
     result.previewAssets.theme_binding = {
       capture_started_before_navigation: true,
-      requested_mode_seeded_before_navigation: true,
+      opposite_mode_seeded_before_navigation: result.oppositeThemeState?.stored === themeSeed.mode,
+      opposite_mode_confirmed_before_click: result.themeState?.previous_mode === themeSeed.mode,
+      target_control_hit_owned: result.themeState?.target_hit?.belongs === true,
+      physical_transition_observed: result.themeState?.transition_observed === true,
       requested_mode_selected_before_finalize: result.themeState?.stored === mode,
       stable_readiness_before_finalize: true,
+      opposite_mode: themeSeed.mode,
       requested_mode: mode,
       selected_mode: result.themeState?.stored || '',
     }
     return result
   } finally {
-    await cdp.send('Page.removeScriptToEvaluateOnNewDocument', { identifier: themeSeedIdentifier })
+    await cdp.send('Page.removeScriptToEvaluateOnNewDocument', { identifier: themeSeed.identifier })
   }
 }
 
@@ -839,16 +816,36 @@ async function elementRect(cdp, selector) {
   }, selector)
 }
 
-async function physicalClick(cdp, selector) {
+async function physicalClick(cdp, selector, { requireOwnedHit = false } = {}) {
   const rect = await elementRect(cdp, selector)
   if (!rect || rect.width <= 0 || rect.height <= 0) {
     throw new GateError('target-not-visible', 'physical click target is not visible: ' + selector)
   }
   await sleep(50)
+  let hit = null
+  if (requireOwnedHit) {
+    hit = await evaluateFunction(cdp, ({ targetSelector, x, y }) => {
+      const element = document.querySelector(targetSelector)
+      const target = document.elementFromPoint(x, y)
+      const describe = candidate => candidate
+        ? candidate.tagName.toLowerCase()
+          + (candidate.id ? '#' + candidate.id : '')
+          + (candidate.classList.length ? '.' + [...candidate.classList].slice(0, 3).join('.') : '')
+        : ''
+      return {
+        present: Boolean(element),
+        belongs: Boolean(element && target && (target === element || element.contains(target))),
+        tag: describe(target),
+      }
+    }, { targetSelector: selector, x: rect.centerX, y: rect.centerY })
+    if (!hit?.belongs) {
+      throw new GateError('theme-control-hit-owner', 'physical click target does not own its center hit: ' + selector)
+    }
+  }
   await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: rect.centerX, y: rect.centerY })
   await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: rect.centerX, y: rect.centerY, button: 'left', buttons: 1, clickCount: 1 })
   await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: rect.centerX, y: rect.centerY, button: 'left', buttons: 0, clickCount: 1 })
-  return rect
+  return { rect, hit }
 }
 
 async function hitTarget(cdp, selector, index = 0) {
@@ -1064,8 +1061,7 @@ function intersectionRect(a, b) {
   return { width: rounded(width), height: rounded(height), area: rounded(width * height) }
 }
 
-async function selectTheme(cdp, mode) {
-  await physicalClick(cdp, '[data-theme-mode="' + mode + '"]')
+async function assertThemeActive(cdp, mode, timeoutMessage) {
   return waitForValue(
     cdp,
     selectedMode => ({
@@ -1077,8 +1073,20 @@ async function selectTheme(cdp, mode) {
     value => value?.pressed
       && value?.stored === mode
       && String(value?.className || '').split(/\s+/u).includes(mode),
-    'theme ' + mode + ' did not become active after physical click',
+    timeoutMessage,
   )
+}
+
+async function selectTheme(cdp, mode, previousMode) {
+  const before = await assertThemeActive(cdp, previousMode, 'theme ' + previousMode + ' was not active before physical click')
+  const click = await physicalClick(cdp, '[data-theme-mode="' + mode + '"]', { requireOwnedHit: true })
+  const after = await assertThemeActive(cdp, mode, 'theme ' + mode + ' did not become active after physical click')
+  return {
+    ...after,
+    previous_mode: before.stored,
+    target_hit: click.hit,
+    transition_observed: before.stored === previousMode && after.stored === mode && previousMode !== mode,
+  }
 }
 
 async function measureGeometry(cdp) {
@@ -1451,7 +1459,10 @@ async function run(args, evidence) {
       && Boolean(state.preview_assets.detail_css_path)
       && /^[a-f0-9]{64}$/u.test(state.preview_assets.fingerprint_sha256)
       && state.preview_assets.theme_binding?.capture_started_before_navigation
-      && state.preview_assets.theme_binding?.requested_mode_seeded_before_navigation
+      && state.preview_assets.theme_binding?.opposite_mode_seeded_before_navigation
+      && state.preview_assets.theme_binding?.opposite_mode_confirmed_before_click
+      && state.preview_assets.theme_binding?.target_control_hit_owned
+      && state.preview_assets.theme_binding?.physical_transition_observed
       && state.preview_assets.theme_binding?.requested_mode_selected_before_finalize
       && state.preview_assets.theme_binding?.stable_readiness_before_finalize
     ))

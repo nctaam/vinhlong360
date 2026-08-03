@@ -1,4 +1,3 @@
-import { execFileSync } from 'node:child_process'
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -234,7 +233,10 @@ describe('Detail grid containment gate contracts', () => {
       fingerprint_sha256: 'a'.repeat(64),
       theme_binding: {
         capture_started_before_navigation: true,
-        requested_mode_seeded_before_navigation: true,
+        opposite_mode_seeded_before_navigation: true,
+        opposite_mode_confirmed_before_click: true,
+        target_control_hit_owned: true,
+        physical_transition_observed: true,
         requested_mode_selected_before_finalize: true,
         stable_readiness_before_finalize: true,
       },
@@ -247,7 +249,7 @@ describe('Detail grid containment gate contracts', () => {
           ...shared,
           asset_paths: ['/_nuxt/other.hash.js', '/_nuxt/detail.hash.css'],
           fingerprint_sha256: 'b'.repeat(64),
-          theme_binding: { ...shared.theme_binding, stable_readiness_before_finalize: false },
+          theme_binding: { ...shared.theme_binding, physical_transition_observed: false },
         },
       },
     ]).map(failure => failure.code)).toEqual([
@@ -269,7 +271,7 @@ describe('Detail grid containment gate contracts', () => {
     ])).toEqual([])
   })
 
-  it('keeps asset capture open through requested theme application and stable readiness', async () => {
+  it('keeps asset capture open through an opposite-to-requested physical theme transition and stable readiness', async () => {
     const events = []
     const capture = {
       start() { events.push('capture:start') },
@@ -283,9 +285,13 @@ describe('Detail grid containment gate contracts', () => {
     const result = await captureThemeBoundAssets({
       capture,
       navigate: async () => { events.push('navigate') },
+      assertOppositeTheme: async () => {
+        events.push('theme:opposite')
+        return { stored: 'dark' }
+      },
       applyRequestedTheme: async () => {
         events.push('theme:apply')
-        return { stored: 'light' }
+        return { stored: 'light', transitionObserved: true }
       },
       waitForStableReadiness: async () => { events.push('theme:stable') },
     })
@@ -293,13 +299,15 @@ describe('Detail grid containment gate contracts', () => {
     expect(events).toEqual([
       'capture:start',
       'navigate',
+      'theme:opposite',
       'theme:apply',
       'theme:stable',
       'capture:verify',
       'capture:stop',
     ])
     expect(result).toEqual({
-      themeState: { stored: 'light' },
+      oppositeThemeState: { stored: 'dark' },
+      themeState: { stored: 'light', transitionObserved: true },
       previewAssets: { fingerprint_sha256: 'a'.repeat(64) },
     })
   })
@@ -308,25 +316,30 @@ describe('Detail grid containment gate contracts', () => {
     const ownership = {
       profile: 'C:\\Temp\\vl360-detail-grid-owned',
       browserPath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+      marker: 'vl360-detail-grid-gate-unique-42',
     }
 
     expect(isOwnedBrowserProcess({
       executablePath: ownership.browserPath,
-      commandLine: `"${ownership.browserPath}" --headless=new --user-data-dir="${ownership.profile}"`,
+      commandLine: `"${ownership.browserPath}" --headless=new --user-data-dir="${ownership.profile}" --vl360-gate-marker=${ownership.marker}`,
     }, ownership)).toBe(true)
     expect(isOwnedBrowserProcess({
       executablePath: ownership.browserPath,
-      commandLine: `"${ownership.browserPath}" --user-data-dir="${ownership.profile}-other"`,
+      commandLine: `"${ownership.browserPath}" --user-data-dir="${ownership.profile}-other" --vl360-gate-marker=${ownership.marker}`,
     }, ownership)).toBe(false)
     expect(isOwnedBrowserProcess({
       executablePath: 'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
-      commandLine: `msedge.exe --user-data-dir="${ownership.profile}"`,
+      commandLine: `msedge.exe --user-data-dir="${ownership.profile}" --vl360-gate-marker=${ownership.marker}`,
+    }, ownership)).toBe(false)
+    expect(isOwnedBrowserProcess({
+      executablePath: ownership.browserPath,
+      commandLine: `"${ownership.browserPath}" --user-data-dir="${ownership.profile}" --vl360-gate-marker=another-invocation`,
     }, ownership)).toBe(false)
 
     expect(ownedBrowserProcessIds([
-      { pid: 11, executablePath: ownership.browserPath, commandLine: `chrome.exe --user-data-dir="${ownership.profile}"` },
-      { pid: 12, executablePath: ownership.browserPath, commandLine: `chrome.exe --user-data-dir="${ownership.profile}-other"` },
-      { pid: 13, executablePath: 'C:\\Other\\chrome.exe', commandLine: `chrome.exe --user-data-dir="${ownership.profile}"` },
+      { pid: 11, executablePath: ownership.browserPath, commandLine: `chrome.exe --user-data-dir="${ownership.profile}" --vl360-gate-marker=${ownership.marker}` },
+      { pid: 12, executablePath: ownership.browserPath, commandLine: `chrome.exe --user-data-dir="${ownership.profile}-other" --vl360-gate-marker=${ownership.marker}` },
+      { pid: 13, executablePath: 'C:\\Other\\chrome.exe', commandLine: `chrome.exe --user-data-dir="${ownership.profile}" --vl360-gate-marker=${ownership.marker}` },
     ], ownership)).toEqual([11])
   })
 
@@ -335,18 +348,18 @@ describe('Detail grid containment gate contracts', () => {
     const root = {
       pid: 101,
       parentPid: 50,
-      startIdentity: '20260803170000.000000+420',
+      startIdentity: 'win:utc-ticks:639213480000000000',
       executablePath: 'C:\\Program Files\\nodejs\\node.exe',
       commandLine: `node.exe parent.js ${marker}`,
     }
     const child = {
       pid: 102,
       parentPid: 101,
-      startIdentity: '20260803170001.000000+420',
+      startIdentity: 'win:utc-ticks:639213480010000000',
       executablePath: root.executablePath,
       commandLine: `node.exe child.js ${marker}`,
     }
-    const reusedRoot = { ...root, startIdentity: '20260803170100.000000+420' }
+    const reusedRoot = { ...root, startIdentity: 'win:utc-ticks:639213480600000000' }
     const unrelatedChild = { ...child, pid: 103, commandLine: 'node.exe unrelated.js' }
 
     expect(matchesProcessIdentity(root, { ...root })).toBe(true)
@@ -358,21 +371,58 @@ describe('Detail grid containment gate contracts', () => {
     })
   })
 
-  it('bounds owned command execution instead of waiting indefinitely', async () => {
-    await expect(runCaptured(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { timeoutMs: 100 }))
-      .rejects.toThrow(/timed out after 100ms/)
+  it('distinguishes identities created in the same PID and second at different subsecond ticks', () => {
+    const base = {
+      pid: 101,
+      parentPid: 50,
+      startIdentity: 'win:utc-ticks:639213499535606110',
+      executablePath: 'C:\\Program Files\\nodejs\\node.exe',
+      commandLine: 'node.exe worker.js',
+    }
+    const sameSecondDifferentSubsecond = {
+      ...base,
+      startIdentity: 'win:utc-ticks:639213499539999999',
+    }
+
+    expect(matchesProcessIdentity(base, { ...base })).toBe(true)
+    expect(matchesProcessIdentity(base, sameSecondDifferentSubsecond)).toBe(false)
   })
 
-  it.runIf(process.platform === 'win32')('verifies the timed-out parent and its owned descendant are gone before rejecting', async () => {
+  it('parses Linux proc stat start ticks even when the process name contains spaces and parentheses', () => {
+    const stat = '4321 (node worker (qa)) S 123 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 987654321 19 20'
+
+    expect(gateCore.parseLinuxProcStat(stat)).toEqual({
+      pid: 4321,
+      parentPid: 123,
+      startTicks: '987654321',
+    })
+  })
+
+  it('treats a vanished Linux proc identity as gone instead of rejecting the helper', async () => {
+    const missing = Object.assign(new Error('gone'), { code: 'ENOENT' })
+
+    await expect(gateCore.readLinuxProcessIdentity(4321, {
+      readFile: async () => { throw missing },
+      readlink: async () => { throw missing },
+    })).resolves.toBeNull()
+  })
+
+  it('fails closed on platforms without high-confidence process identity', () => {
+    expect(() => gateCore.assertHighConfidenceProcessIdentityPlatform('darwin'))
+      .toThrow(/high-confidence process identity is unsupported on darwin/)
+  })
+
+  it.runIf(process.platform === 'win32')('verifies high-precision identities and cleanup for a timed-out marker-owned parent and child', async () => {
     const directory = mkdtempSync(join(tmpdir(), 'vl360-run-captured-tree-'))
     const pidPath = join(directory, 'pids.json')
     const marker = `vl360-run-captured-tree-${Date.now()}-${Math.random()}`
-    const childSource = `setInterval(() => {}, 1000) // ${marker}`
+    const childSource = `setTimeout(() => process.exit(0), 20000); setInterval(() => {}, 1000) // ${marker}`
     const parentSource = [
       "const { spawn } = require('node:child_process')",
       "const { writeFileSync } = require('node:fs')",
       `const child = spawn(process.execPath, ['-e', ${JSON.stringify(childSource)}, ${JSON.stringify(marker)}], { stdio: 'ignore' })`,
       `writeFileSync(${JSON.stringify(pidPath)}, JSON.stringify({ parent: process.pid, child: child.pid }))`,
+      'setTimeout(() => process.exit(0), 20000)',
       'setInterval(() => {}, 1000)',
     ].join('; ')
     let pids
@@ -394,23 +444,25 @@ describe('Detail grid containment gate contracts', () => {
       expect(timeoutError?.cleanupVerified).toBe(true)
       expect(existsSync(pidPath)).toBe(true)
       pids = JSON.parse(readFileSync(pidPath, 'utf8'))
+      const captured = timeoutError?.capturedProcessIdentities || []
+      const parentIdentity = captured.find(identity => identity.pid === pids.parent)
+      const childIdentity = captured.find(identity => identity.pid === pids.child)
+      expect(parentIdentity?.startIdentity).toMatch(/^win:utc-ticks:\d+$/u)
+      expect(childIdentity?.startIdentity).toMatch(/^win:utc-ticks:\d+$/u)
+      expect(parentIdentity?.startIdentity).not.toBe(childIdentity?.startIdentity)
+      expect(parentIdentity?.commandLine).toContain(marker)
+      expect(childIdentity?.commandLine).toContain(marker)
       expect(isRunning(pids.parent)).toBe(false)
       expect(isRunning(pids.child)).toBe(false)
     } finally {
-      for (const pid of [pids?.parent, pids?.child]) {
-        const expectedIdentity = timeoutError?.capturedProcessIdentities?.find(identity => identity.pid === pid)
-        if (
-          Number.isInteger(pid)
-          && isRunning(pid)
-          && expectedIdentity
-          && processMatchesIdentity(pid, marker, expectedIdentity)
-        ) {
-          execFileSync('taskkill.exe', ['/PID', String(pid), '/F'], { stdio: 'ignore' })
-        }
+      const retained = (timeoutError?.capturedProcessIdentities || [])
+        .filter(identity => [pids?.parent, pids?.child].includes(identity.pid) && isRunning(identity.pid))
+      if (retained.length > 0) {
+        await gateCore.terminateExactProcessIdentities(retained, { marker, timeoutMs: 5000 })
       }
       rmSync(directory, { recursive: true, force: true })
     }
-  })
+  }, 30000)
 
   it('preserves late global and cleanup blockers after more than the output reason limit', () => {
     const evidence = { states: [], reasons: [], cleanup_errors: [] }
@@ -483,32 +535,6 @@ function isRunning(pid) {
   try {
     process.kill(pid, 0)
     return true
-  } catch {
-    return false
-  }
-}
-
-function processMatchesIdentity(pid, marker, expectedIdentity) {
-  if (process.platform !== 'win32') return false
-  const source = [
-    `$item = Get-CimInstance Win32_Process -Filter \"ProcessId=${pid}\"`,
-    'if ($null -eq $item) { exit 1 }',
-    '$result = [PSCustomObject]@{ ProcessId = [int]$item.ProcessId; StartIdentity = [string]$item.CreationDate; ExecutablePath = [string]$item.ExecutablePath; CommandLine = [string]$item.CommandLine }',
-    'ConvertTo-Json -InputObject $result -Compress',
-  ].join('; ')
-  try {
-    const current = JSON.parse(execFileSync('powershell.exe', [
-      '-NoLogo',
-      '-NoProfile',
-      '-NonInteractive',
-      '-Command',
-      source,
-    ], { encoding: 'utf8', timeout: 3000 }))
-    return Number(current.ProcessId) === expectedIdentity.pid
-      && String(current.StartIdentity || '') === expectedIdentity.startIdentity
-      && String(current.ExecutablePath || '').toLowerCase() === expectedIdentity.executablePath.toLowerCase()
-      && String(current.CommandLine || '') === expectedIdentity.commandLine
-      && String(current.CommandLine || '').includes(marker)
   } catch {
     return false
   }
