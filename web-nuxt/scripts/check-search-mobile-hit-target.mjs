@@ -119,38 +119,14 @@ function readManifest() {
   return revision
 }
 
-async function fetchSearchPage(baseUrl) {
-  let response
-  try {
-    response = await fetch(new URL('/tim-kiem', baseUrl), {
-      headers: { 'cache-control': 'no-cache' },
-      signal: AbortSignal.timeout(10000),
-    })
-  } catch {
-    throw new GateError('preview-unavailable', 'production preview is not reachable', { blocked: true })
-  }
-  if (!response.ok) throw new GateError('preview-unavailable', `production preview returned ${response.status}`, { blocked: true })
-  return response.text()
-}
-
-function collectNuxtAssetPaths(baseUrl, values) {
+function nuxtAssetPath(baseUrl, value) {
   const origin = new URL(baseUrl).origin
-  const paths = new Set()
-  for (const value of values) {
-    try {
-      const parsed = new URL(value, origin)
-      if (parsed.origin === origin && parsed.pathname.startsWith('/_nuxt/')) paths.add(parsed.pathname)
-    } catch {
-      // Malformed unrelated page values are ignored; only canonical same-origin assets are evidence.
-    }
+  try {
+    const parsed = new URL(value, origin)
+    return parsed.origin === origin && parsed.pathname.startsWith('/_nuxt/') ? parsed.pathname : ''
+  } catch {
+    return ''
   }
-  return paths
-}
-
-function htmlNuxtAssetPaths(baseUrl, html) {
-  const values = []
-  for (const match of html.matchAll(/(?:href|src)=["']([^"']+)["']/giu)) values.push(match[1])
-  return collectNuxtAssetPaths(baseUrl, values)
 }
 
 function localAssetPath(assetPath) {
@@ -158,41 +134,6 @@ function localAssetPath(assetPath) {
   const prefix = `${outputPublicRoot}${sep}`.toLowerCase()
   if (!candidate.toLowerCase().startsWith(prefix)) throw new GateError('asset-path-invalid', 'preview asset path escaped output root')
   return candidate
-}
-
-async function verifyPreviewAssets(baseUrl, assetPaths) {
-  const sorted = [...assetPaths].sort()
-  const searchCss = sorted.filter(path => SEARCH_CSS_PATTERN.test(path))
-  if (searchCss.length !== 1) {
-    throw new GateError('search-css-unbound', `expected one served Search CSS asset, found ${searchCss.length}`)
-  }
-  const fingerprint = createHash('sha256')
-  for (const assetPath of sorted) {
-    const localPath = localAssetPath(assetPath)
-    if (!existsSync(localPath)) throw new GateError('preview-asset-missing-local', `local asset is missing: ${assetPath}`)
-    const localBytes = readFileSync(localPath)
-    let response
-    try {
-      response = await fetch(new URL(assetPath, baseUrl), {
-        headers: { 'cache-control': 'no-cache' },
-        signal: AbortSignal.timeout(10000),
-      })
-    } catch {
-      throw new GateError('preview-asset-unavailable', `served asset is unavailable: ${assetPath}`, { blocked: true })
-    }
-    if (!response.ok) throw new GateError('preview-asset-unavailable', `served asset returned ${response.status}: ${assetPath}`)
-    const servedBytes = Buffer.from(await response.arrayBuffer())
-    if (!servedBytes.equals(localBytes)) throw new GateError('preview-asset-mismatch', `served asset differs from local build: ${assetPath}`)
-    fingerprint.update(assetPath)
-    fingerprint.update('\0')
-    fingerprint.update(servedBytes)
-    fingerprint.update('\0')
-  }
-  return {
-    count: sorted.length,
-    search_css_path: searchCss[0],
-    fingerprint_sha256: fingerprint.digest('hex'),
-  }
 }
 
 function findChrome() {
@@ -386,6 +327,7 @@ class CdpClient {
   on(method, handler) {
     if (!this.listeners.has(method)) this.listeners.set(method, new Set())
     this.listeners.get(method).add(handler)
+    return () => this.listeners.get(method)?.delete(handler)
   }
 
   waitFor(method, timeoutMs = 20000) {
@@ -406,6 +348,128 @@ class CdpClient {
 
   close() {
     this.ws?.close()
+  }
+}
+
+class NavigationAssetCapture {
+  constructor(cdp, baseUrl) {
+    this.cdp = cdp
+    this.baseUrl = baseUrl
+    this.loaderId = ''
+    this.requests = new Map()
+    this.unsubscribe = []
+  }
+
+  start() {
+    this.unsubscribe.push(
+      this.cdp.on('Network.requestWillBeSent', params => {
+        const assetPath = nuxtAssetPath(this.baseUrl, params.request?.url || '')
+        if (!assetPath) return
+        this.requests.set(params.requestId, {
+          requestId: params.requestId,
+          loaderId: params.loaderId || '',
+          assetPath,
+          response: null,
+          finished: false,
+          failed: '',
+          updatedAt: Date.now(),
+        })
+      }),
+      this.cdp.on('Network.responseReceived', params => {
+        const record = this.requests.get(params.requestId)
+        if (!record) return
+        record.loaderId = params.loaderId || record.loaderId
+        record.response = {
+          status: params.response?.status || 0,
+          url: params.response?.url || '',
+        }
+        record.updatedAt = Date.now()
+      }),
+      this.cdp.on('Network.loadingFinished', params => {
+        const record = this.requests.get(params.requestId)
+        if (!record) return
+        record.finished = true
+        record.updatedAt = Date.now()
+      }),
+      this.cdp.on('Network.loadingFailed', params => {
+        const record = this.requests.get(params.requestId)
+        if (!record) return
+        record.failed = String(params.errorText || 'asset request failed')
+        record.updatedAt = Date.now()
+      }),
+    )
+  }
+
+  bind(loaderId) {
+    if (!loaderId) throw new GateError('navigation-loader-unavailable', 'Search navigation did not expose a loader ID', { blocked: true })
+    this.loaderId = loaderId
+  }
+
+  stop() {
+    for (const unsubscribe of this.unsubscribe.splice(0)) unsubscribe()
+  }
+
+  boundRequests() {
+    return [...this.requests.values()].filter(record => record.loaderId === this.loaderId)
+  }
+
+  async waitForSettled(timeoutMs = 20000) {
+    const deadline = Date.now() + timeoutMs
+    while (Date.now() < deadline) {
+      const records = this.boundRequests()
+      const lastEventAt = Math.max(0, ...records.map(record => record.updatedAt))
+      if (
+        records.length > 0
+        && records.every(record => record.finished || record.failed)
+        && Date.now() - lastEventAt >= 300
+      ) {
+        return records
+      }
+      await sleep(50)
+    }
+    throw new GateError('preview-assets-timeout', 'Search navigation assets did not finish loading', { blocked: true })
+  }
+
+  async verify() {
+    const records = await this.waitForSettled()
+    const failed = records.find(record => record.failed)
+    if (failed) {
+      throw new GateError('preview-asset-unavailable', `served asset failed to load: ${failed.assetPath} (${failed.failed})`, { blocked: true })
+    }
+    const searchCss = records.filter(record => SEARCH_CSS_PATTERN.test(record.assetPath))
+    if (searchCss.length !== 1) {
+      throw new GateError('search-css-unbound', `expected one Search CSS response for the measured navigation, found ${searchCss.length}`)
+    }
+    const sorted = records.sort((left, right) => left.assetPath.localeCompare(right.assetPath) || left.requestId.localeCompare(right.requestId))
+    const fingerprint = createHash('sha256')
+    for (const record of sorted) {
+      if (!record.response || record.response.status < 200 || record.response.status >= 300) {
+        throw new GateError('preview-asset-unavailable', `served asset returned ${record.response?.status || 0}: ${record.assetPath}`)
+      }
+      const localPath = localAssetPath(record.assetPath)
+      if (!existsSync(localPath)) throw new GateError('preview-asset-missing-local', `local asset is missing: ${record.assetPath}`)
+      let payload
+      try {
+        payload = await this.cdp.send('Network.getResponseBody', { requestId: record.requestId })
+      } catch {
+        throw new GateError('preview-asset-body-unavailable', `browser response body is unavailable: ${record.assetPath}`, { blocked: true })
+      }
+      const servedBytes = Buffer.from(payload.body || '', payload.base64Encoded ? 'base64' : 'utf8')
+      const localBytes = readFileSync(localPath)
+      if (!servedBytes.equals(localBytes)) {
+        throw new GateError('preview-asset-mismatch', `measured navigation asset differs from local build: ${record.assetPath}`)
+      }
+      fingerprint.update(record.assetPath)
+      fingerprint.update('\0')
+      fingerprint.update(servedBytes)
+      fingerprint.update('\0')
+    }
+    return {
+      count: sorted.length,
+      unique_count: new Set(sorted.map(record => record.assetPath)).size,
+      search_css_path: searchCss[0].assetPath,
+      fingerprint_sha256: fingerprint.digest('hex'),
+    }
   }
 }
 
@@ -432,9 +496,11 @@ async function waitForValue(cdp, expression, predicate, message, timeoutMs = 150
   throw new GateError('page-state-timeout', `${message}; last state: ${diagnostic}`)
 }
 
-async function navigate(cdp, url) {
+async function navigate(cdp, url, assetCapture) {
   const loaded = cdp.waitFor('Page.loadEventFired', 20000).catch(() => undefined)
-  await cdp.send('Page.navigate', { url })
+  const navigation = await cdp.send('Page.navigate', { url })
+  if (navigation.errorText) throw new GateError('preview-unavailable', `Search navigation failed: ${navigation.errorText}`, { blocked: true })
+  assetCapture?.bind(navigation.loaderId)
   await loaded
   await waitForValue(
     cdp,
@@ -463,6 +529,18 @@ async function navigate(cdp, url) {
     20000,
   )
   await sleep(250)
+}
+
+async function navigateWithBoundAssets(cdp, baseUrl) {
+  await cdp.send('Network.clearBrowserCache')
+  const capture = new NavigationAssetCapture(cdp, baseUrl)
+  capture.start()
+  try {
+    await navigate(cdp, new URL('/tim-kiem', baseUrl).toString(), capture)
+    return await capture.verify()
+  } finally {
+    capture.stop()
+  }
 }
 
 async function elementRect(cdp, selector) {
@@ -502,12 +580,15 @@ async function injectMutation(cdp, mutation) {
     style.textContent = selector + ' { width: auto !important; min-width: auto !important; }';
     document.head.append(style);
     const input = document.querySelector(selector);
+    const wrapper = document.querySelector('.search-row-hero .search-input-wrap');
     const rule = style.sheet?.cssRules?.[0];
     const computed = input ? getComputedStyle(input) : null;
     const rect = input?.getBoundingClientRect();
+    const wrapperRect = wrapper?.getBoundingClientRect();
     return {
       id: '${mutation}',
       selector_matches: Boolean(input?.matches(selector)),
+      rule_selector: rule?.selectorText || '',
       declared_width: rule?.style?.getPropertyValue('width') || '',
       declared_width_priority: rule?.style?.getPropertyPriority('width') || '',
       declared_min_width: rule?.style?.getPropertyValue('min-width') || '',
@@ -516,8 +597,23 @@ async function injectMutation(cdp, mutation) {
       computed_min_width: computed?.minWidth || '',
       rendered_width: rect?.width || 0,
       rendered_height: rect?.height || 0,
+      wrapper_rendered_width: wrapperRect?.width || 0,
+      wrapper_overflow_px: rect && wrapperRect ? Math.max(0, rect.right - wrapperRect.right) : 0,
     };
   })()`)
+}
+
+function assertMutationApplied(mutation, requestedMutation) {
+  if (!requestedMutation) return
+  const failures = []
+  if (!mutation?.selector_matches) failures.push('selector did not match')
+  if (mutation?.rule_selector !== '.search-row-hero .search-input-wrap input') failures.push('rule selector differs')
+  if (mutation?.declared_width !== 'auto' || mutation?.declared_width_priority !== 'important') failures.push('width:auto !important is absent')
+  if (mutation?.declared_min_width !== 'auto' || mutation?.declared_min_width_priority !== 'important') failures.push('min-width:auto !important is absent')
+  if (!(mutation?.rendered_width > mutation?.wrapper_rendered_width && mutation?.wrapper_overflow_px > 0)) {
+    failures.push('fixture does not overflow the input wrapper')
+  }
+  if (failures.length > 0) throw new GateError('mutation-not-applied', failures.join('; '))
 }
 
 function roundedRect(rect) {
@@ -545,6 +641,7 @@ async function exerciseState({ cdp, baseUrl, mode, theme, mutation, consoleError
     theme,
     requested_mode: mode,
     selected_mode: '',
+    preview_assets: { count: 0, unique_count: 0, search_css_path: '', fingerprint_sha256: '' },
     mutation: null,
     input_rect: null,
     button_rect: null,
@@ -559,8 +656,9 @@ async function exerciseState({ cdp, baseUrl, mode, theme, mutation, consoleError
     failures: [],
   }
   const consoleStart = evidence.states.length === 0 ? 0 : consoleErrors.length
-  await navigate(cdp, new URL('/tim-kiem', baseUrl).toString())
+  state.preview_assets = await navigateWithBoundAssets(cdp, baseUrl)
   state.mutation = await injectMutation(cdp, mutation)
+  assertMutationApplied(state.mutation, mutation)
   await physicalClick(cdp, `[data-theme-mode="${mode}"]`)
   const themeState = await waitForValue(
     cdp,
@@ -705,8 +803,6 @@ async function run(args, evidence) {
       `manifest revision ${evidence.manifest_revision} does not match expected revision ${args.expectedRevision}`,
     )
   }
-  const html = await fetchSearchPage(args.baseUrl)
-  const assetPaths = htmlNuxtAssetPaths(args.baseUrl, html)
   let chrome
   let cdp
   try {
@@ -739,19 +835,25 @@ async function run(args, evidence) {
         screenHeight: VIEWPORT.height,
       }),
     ])
-    await navigate(cdp, new URL('/tim-kiem', args.baseUrl).toString())
-    const browserAssetValues = await evaluate(cdp, `(() => [...new Set([
-      ...[...document.querySelectorAll('link[href],script[src]')].map(element => element.href || element.src),
-      ...performance.getEntriesByType('resource').map(entry => entry.name),
-      ...[...document.styleSheets].map(sheet => sheet.href).filter(Boolean),
-    ])])()`)
-    for (const path of collectNuxtAssetPaths(args.baseUrl, browserAssetValues || [])) assetPaths.add(path)
-    evidence.preview_assets = await verifyPreviewAssets(args.baseUrl, assetPaths)
     for (const stateConfig of [
       { mode: 'dark', theme: 'nocturne' },
       { mode: 'light', theme: 'parchment' },
     ]) {
       evidence.states.push(await exerciseState({ cdp, baseUrl: args.baseUrl, mutation: args.mutation, consoleErrors, evidence, ...stateConfig }))
+    }
+    const firstAssets = evidence.states[0]?.preview_assets
+    const allStateAssetsMatch = evidence.states.every(state => (
+      state.preview_assets.count === firstAssets?.count
+      && state.preview_assets.unique_count === firstAssets?.unique_count
+      && state.preview_assets.search_css_path === firstAssets?.search_css_path
+      && state.preview_assets.fingerprint_sha256 === firstAssets?.fingerprint_sha256
+    ))
+    evidence.preview_assets = {
+      count: allStateAssetsMatch ? firstAssets?.count || 0 : 0,
+      unique_count: allStateAssetsMatch ? firstAssets?.unique_count || 0 : 0,
+      search_css_path: allStateAssetsMatch ? firstAssets?.search_css_path || '' : '',
+      fingerprint_sha256: allStateAssetsMatch ? firstAssets?.fingerprint_sha256 || '' : '',
+      state_count: evidence.states.length,
     }
   } finally {
     cdp?.close()
@@ -785,7 +887,7 @@ try {
     expected_revision: '',
     manifest_revision: '',
     mutation: '',
-    preview_assets: { count: 0, search_css_path: '', fingerprint_sha256: '' },
+    preview_assets: { count: 0, unique_count: 0, search_css_path: '', fingerprint_sha256: '', state_count: 0 },
     viewport: VIEWPORT,
     states: [],
     reasons: [{ code: error instanceof GateError ? error.code : 'unexpected-error', message: safeMessage(error) }],
@@ -805,7 +907,7 @@ if (args?.help) {
     expected_revision: args.expectedRevision,
     manifest_revision: '',
     mutation: args.mutation,
-    preview_assets: { count: 0, search_css_path: '', fingerprint_sha256: '' },
+    preview_assets: { count: 0, unique_count: 0, search_css_path: '', fingerprint_sha256: '', state_count: 0 },
     viewport: VIEWPORT,
     states: [],
     reasons: [],
