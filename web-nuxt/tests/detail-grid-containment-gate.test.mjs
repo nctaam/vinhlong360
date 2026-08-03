@@ -1,7 +1,9 @@
+import { EventEmitter } from 'node:events'
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { PassThrough } from 'node:stream'
+import { describe, expect, it, vi } from 'vitest'
 
 import * as gateCore from '../scripts/detail-grid-gate-core.mjs'
 
@@ -700,8 +702,9 @@ describe('Detail grid containment gate contracts', () => {
       expect(parentIdentity?.startIdentity).not.toBe(childIdentity?.startIdentity)
       expect(parentIdentity?.commandLine).toContain(marker)
       expect(childIdentity?.commandLine).toContain(marker)
-      expect(isRunning(pids.parent)).toBe(false)
-      expect(isRunning(pids.child)).toBe(false)
+      const postCleanupSnapshot = await gateCore.captureProcessSnapshot(4000)
+      expect(postCleanupSnapshot.some(identity => matchesProcessIdentity(parentIdentity, identity))).toBe(false)
+      expect(postCleanupSnapshot.some(identity => matchesProcessIdentity(childIdentity, identity))).toBe(false)
       await sleep(Math.max(0, 8500 - (Date.now() - startedAt)))
       expect(existsSync(sideEffectPath)).toBe(false)
     } finally {
@@ -719,7 +722,7 @@ describe('Detail grid containment gate contracts', () => {
     const pidPath = join(directory, 'pids.json')
     const sideEffectPath = join(directory, 'late-side-effect.txt')
     const marker = `vl360-control-helper-tree-${Date.now()}-${Math.random()}`
-    const parentSource = timedTreeSource({ marker, pidPath, sideEffectPath, sideEffectDelayMs: 2600, lifetimeMs: 4500 })
+    const parentSource = timedTreeSource({ marker, pidPath, sideEffectPath, sideEffectDelayMs: 5000, lifetimeMs: 7000 })
     const startedAt = Date.now()
     let pids
     let timeoutError
@@ -727,7 +730,7 @@ describe('Detail grid containment gate contracts', () => {
     try {
       try {
         await gateCore.runControlHelper(process.execPath, ['-e', parentSource, marker], {
-          timeoutMs: 1000,
+          timeoutMs: 3000,
           cleanupTimeoutMs: 8000,
           ownershipMarker: marker,
         })
@@ -736,20 +739,70 @@ describe('Detail grid containment gate contracts', () => {
       }
 
       expect(timeoutError).toBeInstanceOf(Error)
-      expect(timeoutError?.message).toMatch(/timed out after 1000ms/)
+      expect(timeoutError?.message).toMatch(/timed out after 3000ms/)
       expect(existsSync(pidPath)).toBe(true)
       pids = JSON.parse(readFileSync(pidPath, 'utf8'))
       const cleanupDiagnostic = [timeoutError?.message, timeoutError?.cause?.message].filter(Boolean).join('; cause: ')
       expect(timeoutError?.cleanupVerified, cleanupDiagnostic).toBe(true)
       expect(isRunning(pids.parent)).toBe(false)
       expect(isRunning(pids.child)).toBe(false)
-      await sleep(Math.max(0, 3200 - (Date.now() - startedAt)))
+      await sleep(Math.max(0, 6000 - (Date.now() - startedAt)))
       expect(existsSync(sideEffectPath)).toBe(false)
     } finally {
-      await sleep(Math.max(0, 5200 - (Date.now() - startedAt)))
+      await sleep(Math.max(0, 8000 - (Date.now() - startedAt)))
       rmSync(directory, { recursive: true, force: true })
     }
   }, 30000)
+
+  it('waits for control-helper pipes to close before returning complete buffered JSON', async () => {
+    const child = new EventEmitter()
+    child.stdout = new PassThrough({ highWaterMark: 16384 })
+    child.stderr = new PassThrough({ highWaterMark: 16384 })
+    child.exitCode = null
+    child.signalCode = null
+    child.kill = () => true
+    const resultPromise = gateCore.observeJobBoundControlHelper(child, process.execPath, 5000, 5000)
+
+    child.stdout.write('{"payload":"' + 'x'.repeat(100000) + '","tail":')
+    child.exitCode = 0
+    child.emit('exit', 0, null)
+    setTimeout(() => {
+      child.stdout.end('"VL360_CLOSE_SENTINEL"}')
+      child.stderr.end()
+      child.emit('close', 0, null)
+    }, 0)
+
+    const result = await resultPromise
+    const parsed = JSON.parse(result.stdout)
+    expect(parsed.payload).toHaveLength(100000)
+    expect(parsed.tail).toBe('VL360_CLOSE_SENTINEL')
+    expect(result.stdout.endsWith('"VL360_CLOSE_SENTINEL"}')).toBe(true)
+  })
+
+  it.each([
+    {
+      adapter: 'snapshot',
+      run: deadline => gateCore.captureProcessSnapshot(1000, deadline),
+    },
+    {
+      adapter: 'identity',
+      run: deadline => gateCore.captureProcessIdentity(987654321, 1000, deadline),
+    },
+  ])('keeps a nearly-expired absolute deadline through the Linux $adapter adapter', async ({ run }) => {
+    const platformDescriptor = Object.getOwnPropertyDescriptor(process, 'platform')
+    let now = 1000
+    const nowSpy = vi.spyOn(Date, 'now').mockImplementation(() => now)
+    const deadline = Date.now() + 1
+    now = 1002
+    Object.defineProperty(process, 'platform', { ...platformDescriptor, value: 'linux' })
+
+    try {
+      await expect(run(deadline)).rejects.toThrow(/deadline|timed out/i)
+    } finally {
+      Object.defineProperty(process, 'platform', platformDescriptor)
+      nowSpy.mockRestore()
+    }
+  })
 
   it('does not start a captured operation after its caller deadline has expired', async () => {
     const directory = mkdtempSync(join(tmpdir(), 'vl360-expired-captured-deadline-'))

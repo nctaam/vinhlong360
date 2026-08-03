@@ -424,12 +424,15 @@ function wrapPowerShellControlHelperArgs(command, args, ownershipMarker) {
   return wrapped
 }
 
-function observeJobBoundControlHelper(child, command, timeoutMs, cleanupTimeoutMs) {
+export function observeJobBoundControlHelper(child, command, timeoutMs, cleanupTimeoutMs) {
   return new Promise((resolveRun, reject) => {
     let stdout = ''
     let stderr = ''
     let timedOut = false
     let settled = false
+    let exitObserved = false
+    let exitCode = null
+    let childError = null
     let operationTimer
     let cleanupTimer
     const append = (current, chunk) => (current + String(chunk)).slice(-512 * 1024)
@@ -444,6 +447,7 @@ function observeJobBoundControlHelper(child, command, timeoutMs, cleanupTimeoutM
       child.stderr?.off('data', onStderr)
       child.off('error', onError)
       child.off('exit', onExit)
+      child.off('close', onClose)
       handler(value)
     }
     const timeoutError = cleanupVerified => {
@@ -451,20 +455,46 @@ function observeJobBoundControlHelper(child, command, timeoutMs, cleanupTimeoutM
       error.cleanupVerified = cleanupVerified
       return error
     }
-    const onError = error => finish(reject, error)
+    const onError = error => { childError = error }
     const onExit = code => {
+      exitObserved = true
+      exitCode = code
+      if (!timedOut) {
+        clearTimeout(operationTimer)
+        cleanupTimer = setTimeout(() => {
+          child.stdout?.destroy()
+          child.stderr?.destroy()
+          const error = new Error(basename(command) + ' control helper pipes did not close within cleanup budget')
+          error.cleanupVerified = false
+          finish(reject, error)
+        }, Math.max(1, cleanupTimeoutMs))
+      }
+    }
+    const onClose = code => {
       if (timedOut) return finish(reject, timeoutError(true))
-      if (code === 0) return finish(resolveRun, { stdout, stderr })
-      finish(reject, new Error(basename(command) + ' exited with code ' + (code ?? 'unknown')
+      if (childError) return finish(reject, childError)
+      const finalCode = exitObserved ? exitCode : code
+      if (finalCode === 0) return finish(resolveRun, { stdout, stderr })
+      finish(reject, new Error(basename(command) + ' exited with code ' + (finalCode ?? 'unknown')
         + (stderr.trim() ? ': ' + stderr.trim() : '')))
     }
     child.stdout?.on('data', onStdout)
     child.stderr?.on('data', onStderr)
     child.once('error', onError)
     child.once('exit', onExit)
+    child.once('close', onClose)
     operationTimer = setTimeout(() => {
       timedOut = true
-      child.kill('SIGKILL')
+      try {
+        const killRequested = child.kill('SIGKILL')
+        if (!killRequested && !childExited(child)) {
+          return finish(reject, timeoutError(false))
+        }
+      } catch (error) {
+        const failure = timeoutError(false)
+        failure.cause = error
+        return finish(reject, failure)
+      }
       cleanupTimer = setTimeout(() => {
         child.stdout?.destroy()
         child.stderr?.destroy()
@@ -602,7 +632,7 @@ export async function captureLinuxProcessSnapshot({
   return identities.filter(Boolean)
 }
 
-async function captureProcessSnapshot(timeoutMs, deadline = Date.now() + timeoutMs) {
+export async function captureProcessSnapshot(timeoutMs, deadline = Date.now() + timeoutMs) {
   assertHighConfidenceProcessIdentityPlatform()
   if (process.platform === 'win32') {
     const result = await runControlHelper(
@@ -613,10 +643,10 @@ async function captureProcessSnapshot(timeoutMs, deadline = Date.now() + timeout
     return parseWindowsProcessSnapshot(result.stdout)
   }
 
-  return captureLinuxProcessSnapshot({ timeoutMs })
+  return captureLinuxProcessSnapshot({ timeoutMs, deadline })
 }
 
-async function captureProcessIdentity(pid, timeoutMs, deadline = Date.now() + timeoutMs) {
+export async function captureProcessIdentity(pid, timeoutMs, deadline = Date.now() + timeoutMs) {
   if (!Number.isInteger(pid) || pid <= 0) return null
   assertHighConfidenceProcessIdentityPlatform()
   if (process.platform === 'win32') {
@@ -643,21 +673,27 @@ async function captureProcessIdentity(pid, timeoutMs, deadline = Date.now() + ti
       commandLine: String(processInfo.CommandLine || ''),
     }
   }
-  return readLinuxProcessIdentity(pid, { timeoutMs })
+  return readLinuxProcessIdentity(pid, { timeoutMs, deadline })
 }
 
 export async function waitForProcessIdentityExit(identity, {
   timeoutMs,
   deadline = Date.now() + timeoutMs,
   pollTimeoutMs = timeoutMs,
-  captureIdentity = (pid, operationTimeoutMs) => captureProcessIdentity(pid, operationTimeoutMs),
+  captureIdentity = (pid, operationTimeoutMs, operationDeadline) => (
+    captureProcessIdentity(pid, operationTimeoutMs, operationDeadline)
+  ),
   wait = ms => new Promise(resolveWait => setTimeout(resolveWait, ms)),
 } = {}) {
   let current
   while (Date.now() < deadline) {
     const remaining = deadline - Date.now()
     if (remaining <= 0) break
-    current = await captureIdentity(identity.pid, Math.max(1, Math.min(pollTimeoutMs, remaining)))
+    current = await captureIdentity(
+      identity.pid,
+      Math.max(1, Math.min(pollTimeoutMs, remaining)),
+      deadline,
+    )
     if (!matchesProcessIdentity(identity, current)) return null
     const waitRemaining = deadline - Date.now()
     if (waitRemaining <= 0) break
@@ -666,8 +702,8 @@ export async function waitForProcessIdentityExit(identity, {
   return current
 }
 
-async function waitForIdentityExit(identity, timeoutMs, helperTimeoutMs) {
-  return waitForProcessIdentityExit(identity, { timeoutMs, pollTimeoutMs: helperTimeoutMs })
+async function waitForIdentityExit(identity, timeoutMs, helperTimeoutMs, deadline = Date.now() + timeoutMs) {
+  return waitForProcessIdentityExit(identity, { timeoutMs, pollTimeoutMs: helperTimeoutMs, deadline })
 }
 
 export async function signalLinuxProcessIdentity(identity, {
@@ -742,6 +778,7 @@ export async function terminateLinuxProcessIdentity(identity, {
     identity,
     Math.min(1500, termPollBudget),
     Math.min(timeoutMs, termPollBudget),
+    effectiveDeadline,
   )
   if (!remaining) return termStatus
   const killStatus = await signalOperation(
@@ -756,6 +793,7 @@ export async function terminateLinuxProcessIdentity(identity, {
       identity,
       Math.min(1500, killPollBudget),
       Math.min(timeoutMs, killPollBudget),
+      effectiveDeadline,
     )
   }
   if (remaining && killStatus.status === 'signalled') {
