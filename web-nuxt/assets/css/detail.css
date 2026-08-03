@@ -83,6 +83,7 @@
 .dc-credit { position: absolute; bottom: var(--space-1); left: var(--space-5); z-index: 3; font-size: .72rem; color: rgba(255,255,255,.78); font-style: italic; }
 
 .detail-body { max-width: var(--maxw); margin: 0 auto; padding: var(--space-6) var(--space-5) var(--space-8); display: grid; grid-template-columns: 1fr 320px; gap: var(--space-8); align-items: start; }
+.detail-main { min-width: 0; }
 .detail-main .lead { font-size: var(--text-lg); margin-top: 0; line-height: var(--leading-relaxed); max-width: var(--measure-read); }
 /* Editorial feature opening: drop-cap on the lead's first letter */
 .detail-main .lead::first-letter { font-family: var(--font-editorial); font-weight: 700; float: left; font-size: 3.1em; line-height: .78; padding: .04em .12em 0 0; color: var(--primary-fg); }

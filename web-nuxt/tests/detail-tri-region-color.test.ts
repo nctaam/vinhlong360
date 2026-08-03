@@ -481,6 +481,12 @@ describe('entity detail tri-region behavior', () => {
     expect(mobileInnerRule?.[1]).not.toMatch(/padding-bottom:/)
   })
 
+  it('lets the Detail main grid item shrink inside its assigned track', () => {
+    const mainRule = detailCss.match(/\.detail-main\s*\{([^}]*)\}/)
+
+    expect(mainRule?.[1]).toMatch(/min-width:\s*0/)
+  })
+
   it('does not reveal a completed hero whose natural width is zero', async () => {
     stubHeroImageState({ complete: true, naturalWidth: 0, naturalHeight: 0 })
     const wrapper = await mountDetailHero()
