@@ -231,7 +231,8 @@ async function listOwnedBrowserProcesses({ profile, browserPath, marker }, {
     const result = await runCaptured('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', source], {
       env: { ...process.env, VL360_GATE_BROWSER_PATH: browserPath },
       timeoutMs: operationTimeoutMs,
-      cleanupTimeoutMs: Math.max(1, deadline - Date.now()),
+      cleanupTimeoutMs: Math.max(1, sharedRemainingMs - operationTimeoutMs),
+      deadline,
       ownershipMarker: helperMarker,
     })
     const parsed = JSON.parse(result.stdout.trim() || '[]')

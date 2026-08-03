@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -714,6 +714,72 @@ describe('Detail grid containment gate contracts', () => {
     }
   }, 30000)
 
+  it.runIf(process.platform === 'win32')('prevents a control-helper descendant from surviving its timeout and writing a delayed side effect', async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'vl360-control-helper-tree-'))
+    const pidPath = join(directory, 'pids.json')
+    const sideEffectPath = join(directory, 'late-side-effect.txt')
+    const childPath = join(directory, 'child.js')
+    const marker = `vl360-control-helper-tree-${Date.now()}-${Math.random()}`
+    const childSource = timedChildSource({ marker, sideEffectPath, sideEffectDelayMs: 2600, lifetimeMs: 4500 })
+    writeFileSync(childPath, childSource)
+    const parentSource = powershellTimedTreeSource(marker)
+    const startedAt = Date.now()
+    let pids
+    let timeoutError
+
+    try {
+      try {
+        await gateCore.runControlHelper('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', parentSource], {
+          env: {
+            ...process.env,
+            VL360_TEST_CHILD_PATH: childPath,
+            VL360_TEST_MARKER: marker,
+            VL360_TEST_NODE: process.execPath,
+            VL360_TEST_PID_PATH: pidPath,
+          },
+          timeoutMs: 1000,
+          cleanupTimeoutMs: 8000,
+          ownershipMarker: marker,
+        })
+      } catch (error) {
+        timeoutError = error
+      }
+
+      expect(timeoutError).toBeInstanceOf(Error)
+      expect(timeoutError?.message).toMatch(/timed out after 1000ms/)
+      expect(existsSync(pidPath)).toBe(true)
+      pids = JSON.parse(readFileSync(pidPath, 'utf8'))
+      const cleanupDiagnostic = [timeoutError?.message, timeoutError?.cause?.message].filter(Boolean).join('; cause: ')
+      expect(timeoutError?.cleanupVerified, cleanupDiagnostic).toBe(true)
+      expect(isRunning(pids.parent)).toBe(false)
+      expect(isRunning(pids.child)).toBe(false)
+      await sleep(Math.max(0, 3200 - (Date.now() - startedAt)))
+      expect(existsSync(sideEffectPath)).toBe(false)
+    } finally {
+      await sleep(Math.max(0, 5200 - (Date.now() - startedAt)))
+      rmSync(directory, { recursive: true, force: true })
+    }
+  }, 30000)
+
+  it('does not start a captured operation after its caller deadline has expired', async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'vl360-expired-captured-deadline-'))
+    const sideEffectPath = join(directory, 'started.txt')
+    const marker = `vl360-expired-captured-deadline-${Date.now()}-${Math.random()}`
+    const source = `require('node:fs').writeFileSync(${JSON.stringify(sideEffectPath)}, 'started') // ${marker}`
+
+    try {
+      await expect(runCaptured(process.execPath, ['-e', source, marker], {
+        timeoutMs: 1000,
+        cleanupTimeoutMs: 5000,
+        deadline: Date.now() - 1,
+        ownershipMarker: marker,
+      })).rejects.toThrow(/deadline/)
+      expect(existsSync(sideEffectPath)).toBe(false)
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
+  })
+
   it('preserves late global and cleanup blockers after more than the output reason limit', () => {
     const evidence = { states: [], reasons: [], cleanup_errors: [] }
     for (let index = 0; index < 40; index += 1) {
@@ -812,14 +878,8 @@ function signalLinuxFixture([identity, marker, signal, timeoutMs], current, osSi
   })
 }
 
-function timedTreeSource({ marker, pidPath, sideEffectPath = '', lifetimeMs }) {
-  const childSource = [
-    sideEffectPath ? "const { writeFileSync } = require('node:fs')" : '',
-    sideEffectPath ? `setTimeout(() => writeFileSync(${JSON.stringify(sideEffectPath)}, 'late'), 8000)` : '',
-    `setTimeout(() => process.exit(0), ${lifetimeMs})`,
-    'setInterval(() => {}, 1000)',
-    '// ' + marker,
-  ].filter(Boolean).join('; ')
+function timedTreeSource({ marker, pidPath, sideEffectPath = '', sideEffectDelayMs = 8000, lifetimeMs }) {
+  const childSource = timedChildSource({ marker, sideEffectPath, sideEffectDelayMs, lifetimeMs })
   return [
     "const { spawn } = require('node:child_process')",
     "const { writeFileSync } = require('node:fs')",
@@ -827,5 +887,26 @@ function timedTreeSource({ marker, pidPath, sideEffectPath = '', lifetimeMs }) {
     `writeFileSync(${JSON.stringify(pidPath)}, JSON.stringify({ parent: process.pid, child: child.pid }))`,
     `setTimeout(() => process.exit(0), ${lifetimeMs})`,
     'setInterval(() => {}, 1000)',
+  ].join('; ')
+}
+
+function timedChildSource({ marker, sideEffectPath = '', sideEffectDelayMs = 8000, lifetimeMs }) {
+  return [
+    sideEffectPath ? "const { writeFileSync } = require('node:fs')" : '',
+    sideEffectPath ? `setTimeout(() => writeFileSync(${JSON.stringify(sideEffectPath)}, 'late'), ${sideEffectDelayMs})` : '',
+    `setTimeout(() => process.exit(0), ${lifetimeMs})`,
+    'setInterval(() => {}, 1000)',
+    '// ' + marker,
+  ].filter(Boolean).join('; ')
+}
+
+function powershellTimedTreeSource(marker) {
+  return [
+    "$ErrorActionPreference = 'Stop'",
+    '$child = Start-Process -FilePath $env:VL360_TEST_NODE -ArgumentList @($env:VL360_TEST_CHILD_PATH, $env:VL360_TEST_MARKER) -PassThru -WindowStyle Hidden',
+    '$json = "{`"parent`":" + $PID + ",`"child`":" + $child.Id + "}"',
+    '[IO.File]::WriteAllText($env:VL360_TEST_PID_PATH, $json)',
+    'Start-Sleep -Milliseconds 4500',
+    '$null = ' + JSON.stringify(marker),
   ].join('; ')
 }
