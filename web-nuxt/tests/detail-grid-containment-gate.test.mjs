@@ -5,8 +5,11 @@ import {
   collectStateFailures,
   compactGateEvidence,
   hasExactZeroMinWidth,
+  hasStableOwnedHit,
   isFreshNavigationState,
   isOwnedBrowserProcess,
+  ownedBrowserProcessIds,
+  runCaptured,
 } from '../scripts/detail-grid-gate-core.mjs'
 
 describe('Detail grid containment gate contracts', () => {
@@ -101,7 +104,8 @@ describe('Detail grid containment gate contracts', () => {
         actions: {
           trip_photo_intersection: { area: 12 },
           photo_hit: { belongs: false },
-          trip_hits: [{ belongs: true }],
+          trip_control_count: 3,
+          trip_hits: [{ belongs: true }, { belongs: true }, { belongs: true }],
         },
         contact: { controls: [{ hit: { belongs: false } }] },
         sticky: { rect: { width: 390, height: 64 }, display: 'flex', visibility: 'visible' },
@@ -145,7 +149,8 @@ describe('Detail grid containment gate contracts', () => {
         actions: {
           trip_photo_intersection: { area: 0 },
           photo_hit: { belongs: true },
-          trip_hits: [{ belongs: true }, { belongs: true }],
+          trip_control_count: 3,
+          trip_hits: [{ belongs: true }, { belongs: true }, { belongs: true }],
         },
         contact: { controls: [{ hit: { belongs: true } }] },
         sticky: { rect: { width: 0, height: 0 }, display: 'none', visibility: 'visible' },
@@ -160,6 +165,55 @@ describe('Detail grid containment gate contracts', () => {
       },
       console_errors: [],
     })).toEqual([])
+  })
+
+  it('fails closed when route-owned trip controls or the hidden sticky contract disappear', () => {
+    const failures = collectStateFailures({
+      viewport: { width: 390, height: 844 },
+      geometry: {
+        viewport: { width: 390, height: 844 },
+        hero: {
+          cover_rect: { width: 350, height: 260 },
+          image_rect: { width: 350, height: 260 },
+          image_loaded_class: true,
+          image_complete: true,
+          image_natural_width: 800,
+          image_natural_height: 533,
+          image_in_cover: true,
+        },
+        actions: {
+          trip_photo_intersection: { area: 0 },
+          photo_hit: { belongs: true },
+          trip_control_count: 0,
+          trip_hits: [],
+        },
+        contact: { controls: [{ hit: { belongs: true } }] },
+        sticky: null,
+      },
+      lightbox: {
+        opened: true,
+        aria_modal: true,
+        surface_visible: true,
+        media_visible: true,
+        close_hit: { belongs: true, stable: true },
+        closed: true,
+      },
+      console_errors: [],
+    })
+
+    expect(failures.map(failure => failure.code)).toEqual([
+      'trip-controls-missing',
+      'sticky-contract-missing',
+    ])
+  })
+
+  it('requires consecutive owned lightbox close samples before interaction', () => {
+    const owned = { present: true, visible: true, belongs: true, tag: 'button.lb-close' }
+    const blocked = { present: true, visible: true, belongs: false, tag: 'img.lb-img' }
+
+    expect(hasStableOwnedHit([owned], 3)).toBe(false)
+    expect(hasStableOwnedHit([blocked, owned, owned, owned], 3)).toBe(true)
+    expect(hasStableOwnedHit([owned, blocked, owned], 3)).toBe(false)
   })
 
   it('requires CSS and JavaScript assets and one exact state-bound asset set', () => {
@@ -210,6 +264,17 @@ describe('Detail grid containment gate contracts', () => {
       executablePath: 'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
       commandLine: `msedge.exe --user-data-dir="${ownership.profile}"`,
     }, ownership)).toBe(false)
+
+    expect(ownedBrowserProcessIds([
+      { pid: 11, executablePath: ownership.browserPath, commandLine: `chrome.exe --user-data-dir="${ownership.profile}"` },
+      { pid: 12, executablePath: ownership.browserPath, commandLine: `chrome.exe --user-data-dir="${ownership.profile}-other"` },
+      { pid: 13, executablePath: 'C:\\Other\\chrome.exe', commandLine: `chrome.exe --user-data-dir="${ownership.profile}"` },
+    ], ownership)).toEqual([11])
+  })
+
+  it('bounds owned command execution instead of waiting indefinitely', async () => {
+    await expect(runCaptured(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { timeoutMs: 100 }))
+      .rejects.toThrow(/timed out after 100ms/)
   })
 
   it('compacts repeated per-state assets while preserving the exact global asset set', () => {
@@ -222,7 +287,11 @@ describe('Detail grid containment gate contracts', () => {
         relevant_console_errors: [{ message: 'one' }, { message: 'two' }, { message: 'three' }],
         geometry: { contact: { controls: [{}, {}, {}] } },
       }],
-      reasons: Array.from({ length: 14 }, (_, index) => ({ code: String(index) })),
+      reasons: [
+        ...Array.from({ length: 14 }, (_, index) => ({ code: `mobile:nocturne:state-${index}` })),
+        { code: 'revision-mismatch' },
+        { code: 'cleanup-failed' },
+      ],
     }
 
     compactGateEvidence(evidence)
@@ -232,5 +301,8 @@ describe('Detail grid containment gate contracts', () => {
     expect(evidence.states[0].console_errors).toHaveLength(2)
     expect(evidence.states[0].geometry.contact.controls).toHaveLength(2)
     expect(evidence.reasons).toHaveLength(12)
+    expect(evidence.reasons.map(reason => reason.code)).toEqual(expect.arrayContaining(['revision-mismatch', 'cleanup-failed']))
+    expect(evidence.reason_summary).toMatchObject({ total_count: 16, retained_count: 12, truncated_count: 4, truncated: true })
+    expect(evidence.reason_summary.blocker_codes).toEqual(expect.arrayContaining(['revision-mismatch', 'cleanup-failed']))
   })
 })

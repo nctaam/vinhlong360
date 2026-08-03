@@ -5,15 +5,17 @@ import { createHash } from 'node:crypto'
 import { existsSync, readFileSync } from 'node:fs'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { basename, dirname, resolve, sep } from 'node:path'
+import { dirname, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import {
   collectAssetSetFailures,
   collectStateFailures,
   compactGateEvidence,
+  hasStableOwnedHit,
   isFreshNavigationState,
-  isOwnedBrowserProcess,
+  ownedBrowserProcessIds,
+  runCaptured,
 } from './detail-grid-gate-core.mjs'
 
 const ROUTE = '/dia-diem/cong-vien-an-hoi'
@@ -207,14 +209,7 @@ async function stopChrome(child) {
   if (process.platform === 'win32') {
     let taskkillError
     try {
-      await new Promise((resolveKill, reject) => {
-        const killer = spawn(process.env.ComSpec || 'cmd.exe', ['/d', '/s', '/c', 'taskkill /PID ' + child.pid + ' /T /F'], {
-          stdio: 'ignore',
-          windowsHide: true,
-        })
-        killer.once('error', reject)
-        killer.once('exit', code => code === 0 ? resolveKill() : reject(new Error('taskkill exited with code ' + code)))
-      })
+      await runCaptured('taskkill.exe', ['/PID', String(child.pid), '/T', '/F'], { timeoutMs: 7000 })
     } catch (error) {
       taskkillError = error
     }
@@ -226,22 +221,6 @@ async function stopChrome(child) {
     child.kill('SIGKILL')
     if (!(await waitForExit(child, 1000))) throw new Error('Chrome did not exit after cleanup')
   }
-}
-
-function runCaptured(command, args, options = {}) {
-  return new Promise((resolveRun, reject) => {
-    const child = spawn(command, args, { ...options, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true })
-    let stdout = ''
-    let stderr = ''
-    const append = (current, chunk) => (current + String(chunk)).slice(-512 * 1024)
-    child.stdout?.on('data', chunk => { stdout = append(stdout, chunk) })
-    child.stderr?.on('data', chunk => { stderr = append(stderr, chunk) })
-    child.once('error', reject)
-    child.once('exit', code => {
-      if (code === 0) resolveRun({ stdout, stderr })
-      else reject(new Error(basename(command) + ' exited with code ' + code + (stderr.trim() ? ': ' + stderr.trim() : '')))
-    })
-  })
 }
 
 async function listOwnedBrowserProcesses({ profile, browserPath }) {
@@ -256,6 +235,7 @@ async function listOwnedBrowserProcesses({ profile, browserPath }) {
     ].join('; ')
     const result = await runCaptured('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', source], {
       env: { ...process.env, VL360_GATE_BROWSER_PATH: browserPath },
+      timeoutMs: 5000,
     })
     const parsed = JSON.parse(result.stdout.trim() || '[]')
     processes = (Array.isArray(parsed) ? parsed : [parsed]).map(processInfo => ({
@@ -264,13 +244,14 @@ async function listOwnedBrowserProcesses({ profile, browserPath }) {
       commandLine: String(processInfo.CommandLine || ''),
     }))
   } else {
-    const result = await runCaptured('ps', ['-axo', 'pid=,command='])
+    const result = await runCaptured('ps', ['-axo', 'pid=,command='], { timeoutMs: 5000 })
     processes = result.stdout.split(/\r?\n/u).map(line => {
       const match = /^\s*(\d+)\s+(.+)$/u.exec(line)
       return match ? { pid: Number(match[1]), executablePath: browserPath, commandLine: match[2] } : null
     }).filter(Boolean)
   }
-  return processes.filter(processInfo => isOwnedBrowserProcess(processInfo, { profile, browserPath }))
+  const ownedIds = new Set(ownedBrowserProcessIds(processes, { profile, browserPath }))
+  return processes.filter(processInfo => ownedIds.has(processInfo.pid))
 }
 
 async function waitForOwnedBrowserExit(browser, timeoutMs = 5000) {
@@ -282,6 +263,29 @@ async function waitForOwnedBrowserExit(browser, timeoutMs = 5000) {
     await sleep(100)
   } while (Date.now() < deadline)
   return remaining
+}
+
+async function terminateOwnedBrowserProcess(pid) {
+  if (process.platform === 'win32') {
+    await runCaptured('taskkill.exe', ['/PID', String(pid), '/F'], { timeoutMs: 5000 })
+    return
+  }
+  process.kill(pid, 'SIGTERM')
+}
+
+async function cleanupOwnedBrowserProcesses(browser) {
+  const candidates = await listOwnedBrowserProcesses(browser)
+  for (const pid of ownedBrowserProcessIds(candidates, browser)) {
+    const current = await listOwnedBrowserProcesses(browser)
+    if (!ownedBrowserProcessIds(current, browser).includes(pid)) continue
+    try {
+      await terminateOwnedBrowserProcess(pid)
+    } catch (error) {
+      const afterFailure = await listOwnedBrowserProcesses(browser)
+      if (ownedBrowserProcessIds(afterFailure, browser).includes(pid)) throw error
+    }
+  }
+  return waitForOwnedBrowserExit(browser)
 }
 
 function parseCdpEndpoint(output) {
@@ -343,17 +347,24 @@ async function launchChrome() {
     return { child, endpoint, profile, browserPath: chromePath }
   } catch (error) {
     const cleanupErrors = []
+    const browser = { child, profile, browserPath: chromePath }
+    let profileCanBeRemoved = false
     try { await stopChrome(child) } catch (cleanupError) { cleanupErrors.push('chrome:' + safeMessage(cleanupError)) }
     try {
-      const remaining = await waitForOwnedBrowserExit({ child, profile, browserPath: chromePath })
+      const remaining = await cleanupOwnedBrowserProcesses(browser)
+      profileCanBeRemoved = remaining.length === 0
       if (remaining.length > 0) cleanupErrors.push('owned-processes:' + remaining.map(processInfo => processInfo.pid).join(','))
     } catch (cleanupError) {
       cleanupErrors.push('owned-process-audit:' + safeMessage(cleanupError))
     }
-    try {
-      await rm(profile, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 })
-    } catch (cleanupError) {
-      cleanupErrors.push('profile:' + safeMessage(cleanupError))
+    if (profileCanBeRemoved) {
+      try {
+        await rm(profile, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 })
+      } catch (cleanupError) {
+        cleanupErrors.push('profile:' + safeMessage(cleanupError))
+      }
+    } else {
+      cleanupErrors.push('profile:owned profile retained while browser processes remain or ownership audit failed')
     }
     if (cleanupErrors.length > 0) {
       throw new GateError('chrome-start-cleanup-failed', safeMessage(error) + '; ' + cleanupErrors.join('; '), { blocked: true })
@@ -797,6 +808,29 @@ async function hitTarget(cdp, selector, index = 0) {
   }, { selector, index })
 }
 
+async function waitForStableOwnedHit(cdp, selector, { requiredConsecutive = 3, timeoutMs = 3000 } = {}) {
+  const deadline = Date.now() + timeoutMs
+  const samples = []
+  do {
+    const sample = await hitTarget(cdp, selector)
+    samples.push(sample)
+    if (hasStableOwnedHit(samples, requiredConsecutive)) {
+      return {
+        ...sample,
+        stable: true,
+        sample_count: samples.length,
+        required_consecutive: requiredConsecutive,
+      }
+    }
+  } while (Date.now() < deadline)
+  return {
+    ...(samples.at(-1) || { present: false, visible: false, belongs: false, tag: '', text: '' }),
+    stable: false,
+    sample_count: samples.length,
+    required_consecutive: requiredConsecutive,
+  }
+}
+
 async function exerciseLightbox(cdp) {
   const evidence = {
     opened: false,
@@ -855,9 +889,8 @@ async function exerciseLightbox(cdp) {
     return evidence
   }
 
-  await sleep(250)
-  evidence.close_hit = await hitTarget(cdp, '.lb-close')
-  if (!evidence.close_hit.present || !evidence.close_hit.visible) return evidence
+  evidence.close_hit = await waitForStableOwnedHit(cdp, '.lb-close')
+  if (!evidence.close_hit.stable) return evidence
   await physicalClick(cdp, '.lb-close')
   try {
     await waitForValue(
@@ -1076,6 +1109,7 @@ async function measureGeometry(cdp) {
       actions: {
         trip_rect: tripRect,
         photo_rect: photoRect,
+        trip_control_count: tripControls.length,
         trip_photo_intersection: tripRect && photoRect ? {
           left: Math.max(tripRect.left, photoRect.left),
           right: Math.min(tripRect.right, photoRect.right),
@@ -1089,7 +1123,9 @@ async function measureGeometry(cdp) {
         metric: metric(contact),
         controls: contactControls.map(control => ({ text: String(control.textContent || '').trim().slice(0, 50), metric: metric(control), hit: hit(control) })),
       },
-      sticky: metric(sticky),
+      sticky: sticky
+        ? { intended_contract: 'present-hidden', present: true, ...metric(sticky) }
+        : { intended_contract: 'present-hidden', present: false, rect: null, display: '', visibility: '' },
     }
   })
 }
@@ -1249,6 +1285,7 @@ async function exerciseState({ cdp, baseUrl, mutation, consoleErrors, evidence, 
   state.geometry = normalizeGeometry(await measureGeometry(cdp))
   state.geometry.actions.photo_hit = await hitTarget(cdp, '.dc-photo-btn')
   const tripControlCount = await evaluateFunction(cdp, () => document.querySelectorAll('.dc-trip .trip-btn').length)
+  state.geometry.actions.trip_control_count = tripControlCount
   state.geometry.actions.trip_hits = []
   for (let index = 0; index < tripControlCount; index += 1) {
     state.geometry.actions.trip_hits.push(await hitTarget(cdp, '.dc-trip .trip-btn', index))
@@ -1370,10 +1407,12 @@ async function run(args, evidence) {
         evidence.cleanup_errors.push('chrome:' + safeMessage(error))
       }
     }
+    let profileCanBeRemoved = false
     if (chrome?.profile && chrome?.browserPath) {
       try {
-        const remaining = await waitForOwnedBrowserExit(chrome)
+        const remaining = await cleanupOwnedBrowserProcesses(chrome)
         evidence.cleanup.owned_processes_remaining = remaining.map(processInfo => processInfo.pid)
+        profileCanBeRemoved = remaining.length === 0
         if (remaining.length > 0) {
           evidence.cleanup_errors.push('owned-processes:' + remaining.map(processInfo => processInfo.pid).join(','))
         }
@@ -1381,7 +1420,7 @@ async function run(args, evidence) {
         evidence.cleanup_errors.push('owned-process-audit:' + safeMessage(error))
       }
     }
-    if (chrome?.profile) {
+    if (chrome?.profile && profileCanBeRemoved) {
       try {
         await rm(chrome.profile, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 })
         evidence.cleanup.profile_removed = !existsSync(chrome.profile)
@@ -1389,6 +1428,8 @@ async function run(args, evidence) {
       } catch (error) {
         evidence.cleanup_errors.push('profile:' + safeMessage(error))
       }
+    } else if (chrome?.profile) {
+      evidence.cleanup_errors.push('profile:owned profile retained while browser processes remain or ownership audit failed')
     }
   }
   if (evidence.cleanup_errors.length > 0) addReason(evidence, 'cleanup-failed', 'owned Chrome resources were not fully cleaned up')
