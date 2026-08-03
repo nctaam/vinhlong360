@@ -10,6 +10,7 @@
     "postinstall": "nuxt prepare",
     "test": "vitest run",
     "smoke:e2e": "node ../scripts/smoke_e2e_chrome.mjs",
+    "check:search-mobile-hit-target": "node scripts/check-search-mobile-hit-target.mjs",
     "typecheck": "nuxt typecheck",
     "smoke:launch-safety": "node ../scripts/launch_safety_browser_e2e.mjs --install-legacy-worker-first --activate-current-worker --assert-policy-cache-storage-empty --assert-offline-policy-replay-denied"
   },
