@@ -9,12 +9,14 @@ MAPPED_FETCHERS = {
     "agent/admin.py": {"_approve_fetch_image_data"},
     "agent/auto_learn.py": {"fetch_url"},
     "agent/crawler.py": {"fetch_page"},
+    "agent/geocode.py": {"_query_nominatim"},
     "agent/gpt55_quality_burst.py": {"fetch_url_text"},
 }
 EXPECTED_AUDIT_CONTEXTS = {
     ("agent/admin.py", "_approve_fetch_image_data"): "admin_image_review",
     ("agent/auto_learn.py", "fetch_url"): "auto_learn",
     ("agent/crawler.py", "fetch_page"): "crawler",
+    ("agent/geocode.py", "_query_nominatim"): "geocode",
     ("agent/gpt55_quality_burst.py", "fetch_url_text"): "quality_burst",
 }
 
@@ -58,6 +60,7 @@ def test_mapped_fetcher_registry_scope_is_exact() -> None:
         "agent/admin.py": {"_approve_fetch_image_data"},
         "agent/auto_learn.py": {"fetch_url"},
         "agent/crawler.py": {"fetch_page"},
+        "agent/geocode.py": {"_query_nominatim"},
         "agent/gpt55_quality_burst.py": {"fetch_url_text"},
     }
 
@@ -100,7 +103,6 @@ def test_mapped_fetchers_use_exact_audit_context_literals() -> None:
 # but the surface must not grow silently.
 KNOWN_UNPINNED_FETCHERS = {
     # Outbound GETs that a future tranche can route through PinnedHTTPClient.
-    ("agent/geocode.py", "_query_nominatim"),
     ("agent/realtime.py", "get_weather"),
     # Outbound POSTs to the Telegram bot API. PinnedHTTPClient is GET-only by
     # design, so these cannot migrate without widening that contract.

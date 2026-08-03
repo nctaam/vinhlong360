@@ -16,9 +16,10 @@ which locks the mapping):
 - ``admin._approve_fetch_image_data`` — admin image-suggestion review
 - ``auto_learn.fetch_url`` — auto-learn source ingestion
 - ``crawler.fetch_page`` — same-origin tourism-source ingestion
+- ``geocode._query_nominatim`` — exact-origin Nominatim lookup
 - ``gpt55_quality_burst.fetch_url_text`` — quality-burst source verification
 
-Other outbound callers (geocode, realtime, bot, moderation, DDGS,
+Other outbound callers (realtime, bot, moderation, DDGS,
 OpenAI clients) are deliberately NOT routed through here yet; that migration
 is tracked as residual egress debt, not an oversight.
 """

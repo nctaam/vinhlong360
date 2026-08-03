@@ -19,15 +19,12 @@ import re
 import time
 import unicodedata
 from pathlib import Path
+from threading import Lock
+from urllib.parse import urlencode
+
+from pinned_http import EgressPolicy, PinnedHTTPClient
 
 logger = logging.getLogger(__name__)
-from threading import Lock
-
-try:
-    import requests
-    _HAS_REQUESTS = True
-except ImportError:
-    _HAS_REQUESTS = False
 
 AGENT_DIR = Path(__file__).resolve().parent
 DATA_DIR = AGENT_DIR / "data"
@@ -41,8 +38,20 @@ LON_MIN, LON_MAX = 105.70, 106.85
 _VIEWBOX = f"{LON_MIN},{LAT_MAX},{LON_MAX},{LAT_MIN}"
 
 NOMINATIM = "https://nominatim.openstreetmap.org/search"
+NOMINATIM_ORIGIN = "https://nominatim.openstreetmap.org"
 USER_AGENT = "vinhlong360-agent/1.0 (tourism knowledge-base geocoder)"
 MIN_INTERVAL = 1.1  # seconds between requests (politeness)
+
+_NOMINATIM_EGRESS_POLICY = EgressPolicy(
+    max_encoded_bytes=64 * 1024,
+    max_decoded_bytes=256 * 1024,
+    accepted_encodings=("gzip", "identity"),
+    inactivity_timeout_seconds=15.0,
+    total_timeout_seconds=15.0,
+    max_redirects=2,
+    allowed_origins=(NOMINATIM_ORIGIN,),
+)
+_PINNED_HTTP = PinnedHTTPClient()
 
 _lock = Lock()
 _last_request = [0.0]
@@ -91,25 +100,29 @@ def in_box(lat: float, lon: float) -> bool:
 
 def _query_nominatim(query: str) -> list | None:
     """One rate-limited Nominatim call. Returns [lat, lon] in-box, or None."""
-    if not _HAS_REQUESTS:
-        return None
     with _lock:
         wait = MIN_INTERVAL - (time.time() - _last_request[0])
         if wait > 0:
             time.sleep(wait)
         _last_request[0] = time.time()
     try:
-        resp = requests.get(
-            NOMINATIM,
-            params={"format": "jsonv2", "q": query, "limit": 1,
-                    "viewbox": _VIEWBOX, "bounded": 1},
-            headers={"User-Agent": USER_AGENT},
-            timeout=15,
+        params = urlencode({
+            "format": "jsonv2",
+            "q": query,
+            "limit": 1,
+            "viewbox": _VIEWBOX,
+            "bounded": 1,
+        })
+        resp = _PINNED_HTTP.get(
+            f"{NOMINATIM}?{params}",
+            user_agent=USER_AGENT,
+            policy=_NOMINATIM_EGRESS_POLICY,
+            audit_context="geocode",
         )
         if resp.status_code != 200:
             return None
-        data = resp.json()
-        if not data:
+        data = json.loads(resp.content)
+        if not isinstance(data, list) or not data or not isinstance(data[0], dict):
             return None
         lat, lon = float(data[0]["lat"]), float(data[0]["lon"])
         if in_box(lat, lon):
@@ -145,7 +158,7 @@ def stats() -> dict:
     cache = _load_cache()
     hits = sum(1 for v in cache.values() if v)
     return {
-        "available": _HAS_REQUESTS,
+        "available": True,
         "cached_queries": len(cache),
         "cached_hits": hits,
         "cached_misses": len(cache) - hits,
