@@ -1027,8 +1027,9 @@ def _policy(
     inactivity_timeout_seconds: float = 2.0,
     total_timeout_seconds: float = 5.0,
     max_redirects: int = 5,
+    allowed_origins: tuple[str, ...] = (),
 ) -> ph.EgressPolicy:
-    return ph.EgressPolicy(
+    values = dict(
         max_encoded_bytes=max_encoded_bytes,
         max_decoded_bytes=max_decoded_bytes,
         accepted_encodings=accepted_encodings,
@@ -1036,6 +1037,9 @@ def _policy(
         total_timeout_seconds=total_timeout_seconds,
         max_redirects=max_redirects,
     )
+    if allowed_origins:
+        values["allowed_origins"] = allowed_origins
+    return ph.EgressPolicy(**values)
 
 
 class SocketPairClient:
@@ -2519,6 +2523,87 @@ def test_client_supports_all_approved_redirect_forms(
     ).get(start, user_agent="ua/1", policy=_policy(), audit_context="test")
     assert result.url == expected
     assert len(result.redirects) == 1
+
+
+@pytest.mark.parametrize(
+    "location",
+    [
+        "https://other.example/next",
+        "http://allowed.example/next",
+        "https://allowed.example:444/next",
+    ],
+    ids=["other-host", "scheme-downgrade", "alternate-port"],
+)
+def test_allowed_origins_blocks_redirect_before_resolution_or_dial(location: str) -> None:
+    resolved: list[str] = []
+    requested: list[str] = []
+
+    def resolver(
+        host: str,
+        port: int,
+        budget: ph.DeadlineBudget,
+    ) -> tuple[ph.ResolvedAddress, ...]:
+        resolved.append(host)
+        return _public_resolver(host, port, budget)
+
+    def factory(
+        _hop: ph.ResolvedHop,
+        _policy: ph.EgressPolicy,
+        _budget: ph.DeadlineBudget,
+    ) -> httpx.BaseTransport:
+        def handler(request: httpx.Request) -> httpx.Response:
+            requested.append(str(request.url))
+            return httpx.Response(
+                302,
+                headers={"location": location},
+                request=request,
+            )
+
+        return httpx.MockTransport(handler)
+
+    client = ph.PinnedHTTPClient(resolver=resolver, transport_factory=factory)
+    with pytest.raises(ph.RedirectPolicyError):
+        client.get(
+            "https://allowed.example/start",
+            user_agent="ua/1",
+            policy=_policy(allowed_origins=("https://allowed.example",)),
+            audit_context="test",
+        )
+
+    assert resolved == ["allowed.example"]
+    assert requested == ["https://allowed.example/start"]
+
+
+def test_allowed_origins_blocks_initial_destination_before_resolution() -> None:
+    resolved: list[str] = []
+
+    def resolver(
+        host: str,
+        port: int,
+        budget: ph.DeadlineBudget,
+    ) -> tuple[ph.ResolvedAddress, ...]:
+        resolved.append(host)
+        return _public_resolver(host, port, budget)
+
+    client = ph.PinnedHTTPClient(resolver=resolver)
+    with pytest.raises(ph.InvalidDestinationError):
+        client.get(
+            "https://other.example/start",
+            user_agent="ua/1",
+            policy=_policy(allowed_origins=("https://allowed.example",)),
+            audit_context="test",
+        )
+
+    assert resolved == []
+
+
+@pytest.mark.parametrize(
+    "origin",
+    ["not-a-url", "ftp://example.com", "https://user@example.com"],
+)
+def test_egress_policy_rejects_invalid_allowed_origin(origin: str) -> None:
+    with pytest.raises(ValueError):
+        _policy(allowed_origins=(origin,))
 
 
 @pytest.mark.parametrize(

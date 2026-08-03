@@ -15,9 +15,10 @@ which locks the mapping):
 
 - ``admin._approve_fetch_image_data`` — admin image-suggestion review
 - ``auto_learn.fetch_url`` — auto-learn source ingestion
+- ``crawler.fetch_page`` — same-origin tourism-source ingestion
 - ``gpt55_quality_burst.fetch_url_text`` — quality-burst source verification
 
-Other outbound callers (crawler, geocode, realtime, bot, moderation, DDGS,
+Other outbound callers (geocode, realtime, bot, moderation, DDGS,
 OpenAI clients) are deliberately NOT routed through here yet; that migration
 is tracked as residual egress debt, not an oversight.
 """
@@ -118,6 +119,23 @@ def _safe_origin(url: httpx.URL | str) -> str:
         return "<invalid>"
 
 
+def _normalize_allowed_origin(value: str) -> str:
+    try:
+        parsed = httpx.URL(value)
+    except (TypeError, ValueError, httpx.InvalidURL) as exc:
+        raise ValueError("allowed origin must be an absolute http/https origin") from exc
+    if parsed.scheme not in _HTTP_PORTS or not parsed.host or not parsed.is_absolute_url:
+        raise ValueError("allowed origin must be an absolute http/https origin")
+    if parsed.username or parsed.password or parsed.query or parsed.fragment:
+        raise ValueError("allowed origin cannot contain credentials, query, or fragment")
+    if parsed.raw_path not in {b"", b"/"}:
+        raise ValueError("allowed origin cannot contain a path")
+    normalized = _safe_origin(parsed)
+    if normalized == "<invalid>":
+        raise ValueError("allowed origin is invalid")
+    return normalized
+
+
 def _security_denial_reason(exc: BaseException) -> str | None:
     return {
         BlockedAddressError: "blocked_address",
@@ -152,6 +170,7 @@ class EgressPolicy:
     inactivity_timeout_seconds: float
     total_timeout_seconds: float
     max_redirects: int
+    allowed_origins: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         if self.max_encoded_bytes <= 0 or self.max_decoded_bytes <= 0:
@@ -166,6 +185,12 @@ class EgressPolicy:
             raise ValueError("content encodings must be unique")
         if any(token not in {"identity", "gzip"} for token in self.accepted_encodings):
             raise ValueError("unsupported content encoding policy")
+        if not isinstance(self.allowed_origins, tuple):
+            raise ValueError("allowed origins must be a tuple")
+        normalized_origins = tuple(
+            dict.fromkeys(_normalize_allowed_origin(origin) for origin in self.allowed_origins)
+        )
+        object.__setattr__(self, "allowed_origins", normalized_origins)
 
 
 @dataclass(frozen=True)
@@ -359,6 +384,10 @@ def _ascii_host(url: httpx.URL) -> str:
 def _canonical_url_key(url: httpx.URL) -> tuple[str, str, int, bytes]:
     port = url.port or _HTTP_PORTS[url.scheme]
     return (url.scheme.lower(), _ascii_host(url), port, url.raw_path)
+
+
+def _origin_is_allowed(url: httpx.URL, policy: EgressPolicy) -> bool:
+    return not policy.allowed_origins or _safe_origin(url) in policy.allowed_origins
 
 
 _COOKIE_TOKEN_RE = re.compile(r"^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$")
@@ -1178,6 +1207,8 @@ class PinnedHTTPClient:
             monotonic=self._monotonic,
         )
         current = _parse_url(url)
+        if not _origin_is_allowed(current, policy):
+            raise InvalidDestinationError("destination origin is not allowed")
         visited: set[tuple[tuple[str, str, int, bytes], str | None]] = set()
         cookies = _PinnedCookieJar()
         redirects: list[RedirectHop] = []
@@ -1207,6 +1238,8 @@ class PinnedHTTPClient:
                     raise RedirectPolicyError("redirect limit exceeded")
                 budget.remaining(monotonic=self._monotonic)
                 next_url = _redirect_target(hop.url, location)
+                if not _origin_is_allowed(next_url, policy):
+                    raise RedirectPolicyError("redirect origin is not allowed")
                 redirects.append(RedirectHop(str(hop.url), status, location, str(next_url)))
                 current = next_url
         except (BlockedAddressError, PeerMismatchError, RedirectPolicyError) as exc:
