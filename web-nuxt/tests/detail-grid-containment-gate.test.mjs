@@ -7,6 +7,8 @@ import { describe, expect, it } from 'vitest'
 import * as gateCore from '../scripts/detail-grid-gate-core.mjs'
 
 import {
+  captureThemeBoundAssets,
+  classifyOwnedProcessTree,
   collectAssetSetFailures,
   collectStateFailures,
   compactGateEvidence,
@@ -14,6 +16,7 @@ import {
   hasStableOwnedHit,
   isFreshNavigationState,
   isOwnedBrowserProcess,
+  matchesProcessIdentity,
   ownedBrowserProcessIds,
   runCaptured,
 } from '../scripts/detail-grid-gate-core.mjs'
@@ -229,13 +232,27 @@ describe('Detail grid containment gate contracts', () => {
       css_paths: ['/_nuxt/detail.hash.css'],
       js_paths: ['/_nuxt/app.hash.js'],
       fingerprint_sha256: 'a'.repeat(64),
+      theme_binding: {
+        capture_started_before_navigation: true,
+        requested_mode_seeded_before_navigation: true,
+        requested_mode_selected_before_finalize: true,
+        stable_readiness_before_finalize: true,
+      },
     }
     expect(collectAssetSetFailures([
       { preview_assets: shared },
       { preview_assets: { ...shared, js_paths: [] } },
-      { preview_assets: { ...shared, asset_paths: ['/_nuxt/other.hash.js', '/_nuxt/detail.hash.css'], fingerprint_sha256: 'b'.repeat(64) } },
+      {
+        preview_assets: {
+          ...shared,
+          asset_paths: ['/_nuxt/other.hash.js', '/_nuxt/detail.hash.css'],
+          fingerprint_sha256: 'b'.repeat(64),
+          theme_binding: { ...shared.theme_binding, stable_readiness_before_finalize: false },
+        },
+      },
     ]).map(failure => failure.code)).toEqual([
       'asset-binding-incomplete',
+      'asset-theme-binding-incomplete',
       'asset-set-state-mismatch',
     ])
 
@@ -250,6 +267,41 @@ describe('Detail grid containment gate contracts', () => {
       { viewport_name: 'desktop', preview_assets: { ...shared, asset_paths: ['/_nuxt/desktop.hash.js', '/_nuxt/detail.hash.css'], fingerprint_sha256: 'b'.repeat(64) } },
       { viewport_name: 'desktop', preview_assets: { ...shared, asset_paths: ['/_nuxt/desktop.hash.js', '/_nuxt/detail.hash.css'], fingerprint_sha256: 'b'.repeat(64) } },
     ])).toEqual([])
+  })
+
+  it('keeps asset capture open through requested theme application and stable readiness', async () => {
+    const events = []
+    const capture = {
+      start() { events.push('capture:start') },
+      async verify() {
+        events.push('capture:verify')
+        return { fingerprint_sha256: 'a'.repeat(64) }
+      },
+      stop() { events.push('capture:stop') },
+    }
+
+    const result = await captureThemeBoundAssets({
+      capture,
+      navigate: async () => { events.push('navigate') },
+      applyRequestedTheme: async () => {
+        events.push('theme:apply')
+        return { stored: 'light' }
+      },
+      waitForStableReadiness: async () => { events.push('theme:stable') },
+    })
+
+    expect(events).toEqual([
+      'capture:start',
+      'navigate',
+      'theme:apply',
+      'theme:stable',
+      'capture:verify',
+      'capture:stop',
+    ])
+    expect(result).toEqual({
+      themeState: { stored: 'light' },
+      previewAssets: { fingerprint_sha256: 'a'.repeat(64) },
+    })
   })
 
   it('matches only browser processes bound to the exact owned profile and executable', () => {
@@ -278,6 +330,34 @@ describe('Detail grid containment gate contracts', () => {
     ], ownership)).toEqual([11])
   })
 
+  it('rejects PID reuse and classifies only marker-owned descendants of the captured process identity', () => {
+    const marker = 'vl360-owned-process-42'
+    const root = {
+      pid: 101,
+      parentPid: 50,
+      startIdentity: '20260803170000.000000+420',
+      executablePath: 'C:\\Program Files\\nodejs\\node.exe',
+      commandLine: `node.exe parent.js ${marker}`,
+    }
+    const child = {
+      pid: 102,
+      parentPid: 101,
+      startIdentity: '20260803170001.000000+420',
+      executablePath: root.executablePath,
+      commandLine: `node.exe child.js ${marker}`,
+    }
+    const reusedRoot = { ...root, startIdentity: '20260803170100.000000+420' }
+    const unrelatedChild = { ...child, pid: 103, commandLine: 'node.exe unrelated.js' }
+
+    expect(matchesProcessIdentity(root, { ...root })).toBe(true)
+    expect(matchesProcessIdentity(root, reusedRoot)).toBe(false)
+    expect(classifyOwnedProcessTree(root, [reusedRoot, child], marker)).toEqual({ owned: [], unverified: [] })
+    expect(classifyOwnedProcessTree(root, [root, child, unrelatedChild], marker)).toEqual({
+      owned: [root, child],
+      unverified: [unrelatedChild],
+    })
+  })
+
   it('bounds owned command execution instead of waiting indefinitely', async () => {
     await expect(runCaptured(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { timeoutMs: 100 }))
       .rejects.toThrow(/timed out after 100ms/)
@@ -296,11 +376,15 @@ describe('Detail grid containment gate contracts', () => {
       'setInterval(() => {}, 1000)',
     ].join('; ')
     let pids
+    let timeoutError
 
     try {
-      let timeoutError
       try {
-        await runCaptured(process.execPath, ['-e', parentSource, marker], { timeoutMs: 300, cleanupTimeoutMs: 7000 })
+        await runCaptured(process.execPath, ['-e', parentSource, marker], {
+          timeoutMs: 300,
+          cleanupTimeoutMs: 12000,
+          ownershipMarker: marker,
+        })
       } catch (error) {
         timeoutError = error
       }
@@ -314,7 +398,13 @@ describe('Detail grid containment gate contracts', () => {
       expect(isRunning(pids.child)).toBe(false)
     } finally {
       for (const pid of [pids?.parent, pids?.child]) {
-        if (Number.isInteger(pid) && isRunning(pid)) {
+        const expectedIdentity = timeoutError?.capturedProcessIdentities?.find(identity => identity.pid === pid)
+        if (
+          Number.isInteger(pid)
+          && isRunning(pid)
+          && expectedIdentity
+          && processMatchesIdentity(pid, marker, expectedIdentity)
+        ) {
           execFileSync('taskkill.exe', ['/PID', String(pid), '/F'], { stdio: 'ignore' })
         }
       }
@@ -393,6 +483,32 @@ function isRunning(pid) {
   try {
     process.kill(pid, 0)
     return true
+  } catch {
+    return false
+  }
+}
+
+function processMatchesIdentity(pid, marker, expectedIdentity) {
+  if (process.platform !== 'win32') return false
+  const source = [
+    `$item = Get-CimInstance Win32_Process -Filter \"ProcessId=${pid}\"`,
+    'if ($null -eq $item) { exit 1 }',
+    '$result = [PSCustomObject]@{ ProcessId = [int]$item.ProcessId; StartIdentity = [string]$item.CreationDate; ExecutablePath = [string]$item.ExecutablePath; CommandLine = [string]$item.CommandLine }',
+    'ConvertTo-Json -InputObject $result -Compress',
+  ].join('; ')
+  try {
+    const current = JSON.parse(execFileSync('powershell.exe', [
+      '-NoLogo',
+      '-NoProfile',
+      '-NonInteractive',
+      '-Command',
+      source,
+    ], { encoding: 'utf8', timeout: 3000 }))
+    return Number(current.ProcessId) === expectedIdentity.pid
+      && String(current.StartIdentity || '') === expectedIdentity.startIdentity
+      && String(current.ExecutablePath || '').toLowerCase() === expectedIdentity.executablePath.toLowerCase()
+      && String(current.CommandLine || '') === expectedIdentity.commandLine
+      && String(current.CommandLine || '').includes(marker)
   } catch {
     return false
   }

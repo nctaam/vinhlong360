@@ -9,12 +9,14 @@ import { dirname, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import {
+  captureThemeBoundAssets,
   collectAssetSetFailures,
   collectStateFailures,
   compactGateEvidence,
   finalizeGateEvidence,
   hasStableOwnedHit,
   isFreshNavigationState,
+  matchesProcessIdentity,
   ownedBrowserProcessIds,
   recordGateReason as addReason,
   runCaptured,
@@ -200,25 +202,6 @@ function waitForExit(child, timeoutMs) {
   })
 }
 
-async function stopChrome(child) {
-  if (childExited(child)) return
-  if (process.platform === 'win32') {
-    let taskkillError
-    try {
-      await runCaptured('taskkill.exe', ['/PID', String(child.pid), '/T', '/F'], { timeoutMs: 7000 })
-    } catch (error) {
-      taskkillError = error
-    }
-    if (taskkillError && !(await waitForExit(child, 5000))) throw taskkillError
-  } else {
-    child.kill('SIGTERM')
-  }
-  if (!(await waitForExit(child, 5000))) {
-    child.kill('SIGKILL')
-    if (!(await waitForExit(child, 1000))) throw new Error('Chrome did not exit after cleanup')
-  }
-}
-
 async function listOwnedBrowserProcesses({ profile, browserPath }) {
   let processes = []
   if (process.platform === 'win32') {
@@ -226,7 +209,7 @@ async function listOwnedBrowserProcesses({ profile, browserPath }) {
       "$ErrorActionPreference = 'Stop'",
       "$browserName = [IO.Path]::GetFileName($env:VL360_GATE_BROWSER_PATH).Replace(\"'\", \"''\")",
       "$filter = \"Name='\" + $browserName + \"'\"",
-      '$items = @(Get-CimInstance Win32_Process -Filter $filter | Select-Object ProcessId, ExecutablePath, CommandLine)',
+      '$items = @(Get-CimInstance Win32_Process -Filter $filter | ForEach-Object { [PSCustomObject]@{ ProcessId = [int]$_.ProcessId; ParentProcessId = [int]$_.ParentProcessId; StartIdentity = [string]$_.CreationDate; ExecutablePath = [string]$_.ExecutablePath; CommandLine = [string]$_.CommandLine } })',
       'ConvertTo-Json -InputObject $items -Compress',
     ].join('; ')
     const result = await runCaptured('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', source], {
@@ -236,14 +219,22 @@ async function listOwnedBrowserProcesses({ profile, browserPath }) {
     const parsed = JSON.parse(result.stdout.trim() || '[]')
     processes = (Array.isArray(parsed) ? parsed : [parsed]).map(processInfo => ({
       pid: Number(processInfo.ProcessId || 0),
+      parentPid: Number(processInfo.ParentProcessId || 0),
+      startIdentity: String(processInfo.StartIdentity || ''),
       executablePath: String(processInfo.ExecutablePath || ''),
       commandLine: String(processInfo.CommandLine || ''),
     }))
   } else {
-    const result = await runCaptured('ps', ['-axo', 'pid=,command='], { timeoutMs: 5000 })
+    const result = await runCaptured('ps', ['-axo', 'pid=,ppid=,lstart=,command='], { timeoutMs: 5000 })
     processes = result.stdout.split(/\r?\n/u).map(line => {
-      const match = /^\s*(\d+)\s+(.+)$/u.exec(line)
-      return match ? { pid: Number(match[1]), executablePath: browserPath, commandLine: match[2] } : null
+      const match = /^\s*(\d+)\s+(\d+)\s+(\S+\s+\S+\s+\d+\s+\d{2}:\d{2}:\d{2}\s+\d{4})\s+(.+)$/u.exec(line)
+      return match ? {
+        pid: Number(match[1]),
+        parentPid: Number(match[2]),
+        startIdentity: match[3],
+        executablePath: browserPath,
+        commandLine: match[4],
+      } : null
     }).filter(Boolean)
   }
   const ownedIds = new Set(ownedBrowserProcessIds(processes, { profile, browserPath }))
@@ -261,27 +252,65 @@ async function waitForOwnedBrowserExit(browser, timeoutMs = 5000) {
   return remaining
 }
 
-async function terminateOwnedBrowserProcess(pid) {
+async function terminateOwnedBrowserProcess(identity, browser) {
   if (process.platform === 'win32') {
-    await runCaptured('taskkill.exe', ['/PID', String(pid), '/F'], { timeoutMs: 5000 })
+    const source = [
+      "$ErrorActionPreference = 'Stop'",
+      '$identity = $env:VL360_GATE_BROWSER_IDENTITY | ConvertFrom-Json',
+      '$current = Get-CimInstance Win32_Process -Filter ("ProcessId=" + [int]$identity.pid)',
+      'if ($null -eq $current) { exit 0 }',
+      '$sameStart = ([string]$current.CreationDate) -ceq ([string]$identity.startIdentity)',
+      '$sameExecutable = [StringComparer]::OrdinalIgnoreCase.Equals([string]$current.ExecutablePath, [string]$identity.executablePath)',
+      '$sameCommand = ([string]$current.CommandLine) -ceq ([string]$identity.commandLine)',
+      '$sameProfile = ([string]$current.CommandLine).Contains([string]$env:VL360_GATE_BROWSER_PROFILE)',
+      'if (-not ($sameStart -and $sameExecutable -and $sameCommand -and $sameProfile)) { throw "browser process identity mismatch" }',
+      'Stop-Process -Id ([int]$identity.pid) -Force -ErrorAction Stop',
+    ].join('; ')
+    await runCaptured('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', source], {
+      env: {
+        ...process.env,
+        VL360_GATE_BROWSER_IDENTITY: JSON.stringify(identity),
+        VL360_GATE_BROWSER_PROFILE: browser.profile,
+      },
+      timeoutMs: 5000,
+      ownershipMarker: 'VL360_GATE_BROWSER_IDENTITY',
+    })
     return
   }
-  process.kill(pid, 'SIGTERM')
+  process.kill(identity.pid, 'SIGTERM')
+  await sleep(100)
+  let current = (await listOwnedBrowserProcesses(browser)).find(processInfo => matchesProcessIdentity(identity, processInfo))
+  if (!current) return
+  current = (await listOwnedBrowserProcesses(browser)).find(processInfo => matchesProcessIdentity(identity, processInfo))
+  if (!current) return
+  process.kill(identity.pid, 'SIGKILL')
 }
 
 async function cleanupOwnedBrowserProcesses(browser) {
   const candidates = await listOwnedBrowserProcesses(browser)
-  for (const pid of ownedBrowserProcessIds(candidates, browser)) {
+  const ordered = [...candidates].sort((left, right) => (
+    (left.pid === browser.child?.pid ? 1 : 0) - (right.pid === browser.child?.pid ? 1 : 0)
+  ))
+  for (const identity of ordered) {
     const current = await listOwnedBrowserProcesses(browser)
-    if (!ownedBrowserProcessIds(current, browser).includes(pid)) continue
+    if (!current.some(processInfo => matchesProcessIdentity(identity, processInfo))) continue
     try {
-      await terminateOwnedBrowserProcess(pid)
+      await terminateOwnedBrowserProcess(identity, browser)
     } catch (error) {
       const afterFailure = await listOwnedBrowserProcesses(browser)
-      if (ownedBrowserProcessIds(afterFailure, browser).includes(pid)) throw error
+      if (afterFailure.some(processInfo => matchesProcessIdentity(identity, processInfo))) throw error
     }
   }
   return waitForOwnedBrowserExit(browser)
+}
+
+async function stopChrome(browser) {
+  if (!browser?.profile || !browser?.browserPath) return
+  const remaining = await cleanupOwnedBrowserProcesses(browser)
+  if (remaining.length > 0) {
+    throw new Error('Chrome did not exit after identity-verified cleanup: ' + remaining.map(processInfo => processInfo.pid).join(','))
+  }
+  if (browser.child && !childExited(browser.child)) await waitForExit(browser.child, 1000)
 }
 
 function parseCdpEndpoint(output) {
@@ -345,7 +374,7 @@ async function launchChrome() {
     const cleanupErrors = []
     const browser = { child, profile, browserPath: chromePath }
     let profileCanBeRemoved = false
-    try { await stopChrome(child) } catch (cleanupError) { cleanupErrors.push('chrome:' + safeMessage(cleanupError)) }
+    try { await stopChrome(browser) } catch (cleanupError) { cleanupErrors.push('chrome:' + safeMessage(cleanupError)) }
     try {
       const remaining = await cleanupOwnedBrowserProcesses(browser)
       profileCanBeRemoved = remaining.length === 0
@@ -711,7 +740,48 @@ async function navigate(cdp, url, assetCapture) {
   await sleep(250)
 }
 
-async function navigateWithBoundAssets(cdp, baseUrl) {
+async function waitForRequestedThemeReadiness(cdp, mode) {
+  await waitForValue(
+    cdp,
+    selectedMode => {
+      const image = document.querySelector('.dc-bg')
+      return {
+        readyState: document.readyState,
+        pressed: document.querySelector('[data-theme-mode="' + selectedMode + '"]')?.getAttribute('aria-pressed') === 'true',
+        className: document.documentElement.className,
+        stored: localStorage.getItem('vl360-color-mode'),
+        fonts: document.fonts?.status || 'loaded',
+        heroReady: Boolean(image?.classList.contains('loaded') && image?.complete && image?.naturalWidth > 0),
+      }
+    },
+    mode,
+    value => value?.readyState === 'complete'
+      && value?.pressed
+      && value?.stored === mode
+      && String(value?.className || '').split(/\s+/u).includes(mode)
+      && value?.fonts === 'loaded'
+      && value?.heroReady,
+    'requested theme did not reach stable asset readiness: ' + mode,
+    20000,
+  )
+  await sleep(300)
+}
+
+async function addRequestedThemeSeed(cdp, baseUrl, mode) {
+  const result = await cdp.send('Page.addScriptToEvaluateOnNewDocument', {
+    source: 'if (location.origin === '
+      + JSON.stringify(new URL(baseUrl).origin)
+      + ') localStorage.setItem(\'vl360-color-mode\', '
+      + JSON.stringify(mode)
+      + ')',
+  })
+  if (!result.identifier) {
+    throw new GateError('theme-seed-unavailable', 'could not bind the requested theme before Detail navigation', { blocked: true })
+  }
+  return result.identifier
+}
+
+async function navigateWithBoundAssets(cdp, baseUrl, mode) {
   const blankLoaded = cdp.waitFor('Page.loadEventFired', 10000)
   const blankNavigation = await cdp.send('Page.navigate', { url: 'about:blank' })
   if (blankNavigation.errorText) throw new GateError('navigation-reset-failed', 'could not reset the measured document: ' + blankNavigation.errorText, { blocked: true })
@@ -725,13 +795,26 @@ async function navigateWithBoundAssets(cdp, baseUrl) {
     10000,
   )
   await cdp.send('Network.clearBrowserCache')
+  const themeSeedIdentifier = await addRequestedThemeSeed(cdp, baseUrl, mode)
   const capture = new NavigationAssetCapture(cdp, baseUrl)
-  capture.start()
   try {
-    await navigate(cdp, new URL(ROUTE, baseUrl).toString(), capture)
-    return await capture.verify()
+    const result = await captureThemeBoundAssets({
+      capture,
+      navigate: () => navigate(cdp, new URL(ROUTE, baseUrl).toString(), capture),
+      applyRequestedTheme: () => selectTheme(cdp, mode),
+      waitForStableReadiness: () => waitForRequestedThemeReadiness(cdp, mode),
+    })
+    result.previewAssets.theme_binding = {
+      capture_started_before_navigation: true,
+      requested_mode_seeded_before_navigation: true,
+      requested_mode_selected_before_finalize: result.themeState?.stored === mode,
+      stable_readiness_before_finalize: true,
+      requested_mode: mode,
+      selected_mode: result.themeState?.stored || '',
+    }
+    return result
   } finally {
-    capture.stop()
+    await cdp.send('Page.removeScriptToEvaluateOnNewDocument', { identifier: themeSeedIdentifier })
   }
 }
 
@@ -1272,12 +1355,12 @@ async function exerciseState({ cdp, baseUrl, mutation, consoleErrors, evidence, 
   }
   const consoleStart = consoleErrors.length
   await setViewport(cdp, config.viewport)
-  state.preview_assets = await navigateWithBoundAssets(cdp, baseUrl)
+  const themeBoundNavigation = await navigateWithBoundAssets(cdp, baseUrl, config.mode)
+  state.preview_assets = themeBoundNavigation.previewAssets
   evidence.preconditions.onboarding_seen_seeded = true
   state.mutation = await injectMutation(cdp, mutation)
   assertMutationApplied(state.mutation, mutation)
-  const themeState = await selectTheme(cdp, config.mode)
-  state.selected_mode = themeState.stored
+  state.selected_mode = themeBoundNavigation.themeState.stored
   state.geometry = normalizeGeometry(await measureGeometry(cdp))
   state.geometry.actions.photo_hit = await hitTarget(cdp, '.dc-photo-btn')
   const tripControlCount = await evaluateFunction(cdp, () => document.querySelectorAll('.dc-trip .trip-btn').length)
@@ -1367,6 +1450,10 @@ async function run(args, evidence) {
       && state.preview_assets.js_paths.length > 0
       && Boolean(state.preview_assets.detail_css_path)
       && /^[a-f0-9]{64}$/u.test(state.preview_assets.fingerprint_sha256)
+      && state.preview_assets.theme_binding?.capture_started_before_navigation
+      && state.preview_assets.theme_binding?.requested_mode_seeded_before_navigation
+      && state.preview_assets.theme_binding?.requested_mode_selected_before_finalize
+      && state.preview_assets.theme_binding?.stable_readiness_before_finalize
     ))
     const aggregateFingerprint = createHash('sha256')
     for (const state of evidence.states) {
@@ -1398,7 +1485,7 @@ async function run(args, evidence) {
     cdp?.close()
     if (chrome?.child) {
       try {
-        await stopChrome(chrome.child)
+        await stopChrome(chrome)
       } catch (error) {
         evidence.cleanup_errors.push('chrome:' + safeMessage(error))
       }
