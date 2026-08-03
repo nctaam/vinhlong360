@@ -484,7 +484,7 @@ describe('entity detail tri-region behavior', () => {
   it('lets the Detail main grid item shrink inside its assigned track', () => {
     const mainRule = detailCss.match(/\.detail-main\s*\{([^}]*)\}/)
 
-    expect(mainRule?.[1]).toMatch(/min-width:\s*0/)
+    expect(mainRule?.[1]).toMatch(/(?:^|;)\s*min-width\s*:\s*(?:0|0px)\s*(?:;|$)/)
   })
 
   it('does not reveal a completed hero whose natural width is zero', async () => {

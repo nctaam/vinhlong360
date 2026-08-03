@@ -5,8 +5,16 @@ import { createHash } from 'node:crypto'
 import { existsSync, readFileSync } from 'node:fs'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { dirname, resolve, sep } from 'node:path'
+import { basename, dirname, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+import {
+  collectAssetSetFailures,
+  collectStateFailures,
+  compactGateEvidence,
+  isFreshNavigationState,
+  isOwnedBrowserProcess,
+} from './detail-grid-gate-core.mjs'
 
 const ROUTE = '/dia-diem/cong-vien-an-hoi'
 const REVISION_PATTERN = /^[a-f0-9]{40}$/u
@@ -14,6 +22,7 @@ const MAX_CONSOLE_ERRORS = 8
 const MAX_REASONS = 32
 const MAX_EVIDENCE_BYTES = 64 * 1024
 const TOLERANCE_PX = 1
+const CONSOLE_DRAIN_MS = 300
 const MOBILE_VIEWPORT = Object.freeze({ width: 390, height: 844, mobile: true })
 const DESKTOP_VIEWPORT = Object.freeze({ width: 1440, height: 1000, mobile: false })
 const STATE_CONFIGS = Object.freeze([
@@ -219,6 +228,62 @@ async function stopChrome(child) {
   }
 }
 
+function runCaptured(command, args, options = {}) {
+  return new Promise((resolveRun, reject) => {
+    const child = spawn(command, args, { ...options, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true })
+    let stdout = ''
+    let stderr = ''
+    const append = (current, chunk) => (current + String(chunk)).slice(-512 * 1024)
+    child.stdout?.on('data', chunk => { stdout = append(stdout, chunk) })
+    child.stderr?.on('data', chunk => { stderr = append(stderr, chunk) })
+    child.once('error', reject)
+    child.once('exit', code => {
+      if (code === 0) resolveRun({ stdout, stderr })
+      else reject(new Error(basename(command) + ' exited with code ' + code + (stderr.trim() ? ': ' + stderr.trim() : '')))
+    })
+  })
+}
+
+async function listOwnedBrowserProcesses({ profile, browserPath }) {
+  let processes = []
+  if (process.platform === 'win32') {
+    const source = [
+      "$ErrorActionPreference = 'Stop'",
+      "$browserName = [IO.Path]::GetFileName($env:VL360_GATE_BROWSER_PATH).Replace(\"'\", \"''\")",
+      "$filter = \"Name='\" + $browserName + \"'\"",
+      '$items = @(Get-CimInstance Win32_Process -Filter $filter | Select-Object ProcessId, ExecutablePath, CommandLine)',
+      'ConvertTo-Json -InputObject $items -Compress',
+    ].join('; ')
+    const result = await runCaptured('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', source], {
+      env: { ...process.env, VL360_GATE_BROWSER_PATH: browserPath },
+    })
+    const parsed = JSON.parse(result.stdout.trim() || '[]')
+    processes = (Array.isArray(parsed) ? parsed : [parsed]).map(processInfo => ({
+      pid: Number(processInfo.ProcessId || 0),
+      executablePath: String(processInfo.ExecutablePath || ''),
+      commandLine: String(processInfo.CommandLine || ''),
+    }))
+  } else {
+    const result = await runCaptured('ps', ['-axo', 'pid=,command='])
+    processes = result.stdout.split(/\r?\n/u).map(line => {
+      const match = /^\s*(\d+)\s+(.+)$/u.exec(line)
+      return match ? { pid: Number(match[1]), executablePath: browserPath, commandLine: match[2] } : null
+    }).filter(Boolean)
+  }
+  return processes.filter(processInfo => isOwnedBrowserProcess(processInfo, { profile, browserPath }))
+}
+
+async function waitForOwnedBrowserExit(browser, timeoutMs = 5000) {
+  const deadline = Date.now() + timeoutMs
+  let remaining = []
+  do {
+    remaining = await listOwnedBrowserProcesses(browser)
+    if (remaining.length === 0) return []
+    await sleep(100)
+  } while (Date.now() < deadline)
+  return remaining
+}
+
 function parseCdpEndpoint(output) {
   const match = /DevTools listening on (ws:\/\/[^\s]+)/u.exec(output)
   if (!match) return undefined
@@ -275,10 +340,16 @@ async function launchChrome() {
       child.once('error', onError)
       child.once('exit', onExit)
     })
-    return { child, endpoint, profile }
+    return { child, endpoint, profile, browserPath: chromePath }
   } catch (error) {
     const cleanupErrors = []
     try { await stopChrome(child) } catch (cleanupError) { cleanupErrors.push('chrome:' + safeMessage(cleanupError)) }
+    try {
+      const remaining = await waitForOwnedBrowserExit({ child, profile, browserPath: chromePath })
+      if (remaining.length > 0) cleanupErrors.push('owned-processes:' + remaining.map(processInfo => processInfo.pid).join(','))
+    } catch (cleanupError) {
+      cleanupErrors.push('owned-process-audit:' + safeMessage(cleanupError))
+    }
     try {
       await rm(profile, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 })
     } catch (cleanupError) {
@@ -454,7 +525,7 @@ class NavigationAssetCapture {
       throw new GateError('preview-asset-unavailable', 'served asset failed to load: ' + failed.assetPath + ' (' + failed.failed + ')', { blocked: true })
     }
     const sorted = records.sort((left, right) => left.assetPath.localeCompare(right.assetPath) || left.requestId.localeCompare(right.requestId))
-    const fingerprint = createHash('sha256')
+    const uniqueAssets = new Map()
     const detailCssPaths = new Set()
     for (const record of sorted) {
       if (!record.response || record.response.status < 200 || record.response.status >= 300) {
@@ -480,17 +551,36 @@ class NavigationAssetCapture {
       ) {
         detailCssPaths.add(record.assetPath)
       }
-      fingerprint.update(record.assetPath)
-      fingerprint.update('\0')
-      fingerprint.update(servedBytes)
-      fingerprint.update('\0')
+      const previousBytes = uniqueAssets.get(record.assetPath)
+      if (previousBytes && !servedBytes.equals(previousBytes)) {
+        throw new GateError('preview-asset-inconsistent', 'duplicate asset responses differed: ' + record.assetPath)
+      }
+      uniqueAssets.set(record.assetPath, servedBytes)
     }
     if (detailCssPaths.size !== 1) {
       throw new GateError('detail-css-unbound', 'expected one Detail CSS response for the measured navigation, found ' + detailCssPaths.size)
     }
+    const allAssetPaths = [...uniqueAssets.keys()].sort((left, right) => left.localeCompare(right))
+    const cssPaths = allAssetPaths.filter(assetPath => assetPath.endsWith('.css'))
+    const jsPaths = allAssetPaths.filter(assetPath => assetPath.endsWith('.js'))
+    const assetPaths = [...cssPaths, ...jsPaths].sort((left, right) => left.localeCompare(right))
+    if (cssPaths.length === 0 || jsPaths.length === 0) {
+      throw new GateError('preview-asset-types-incomplete', 'measured navigation must bind both CSS and JavaScript assets')
+    }
+    const fingerprint = createHash('sha256')
+    for (const assetPath of assetPaths) {
+      fingerprint.update(assetPath)
+      fingerprint.update('\0')
+      fingerprint.update(uniqueAssets.get(assetPath))
+      fingerprint.update('\0')
+    }
     return {
       count: sorted.length,
-      unique_count: new Set(sorted.map(record => record.assetPath)).size,
+      unique_count: allAssetPaths.length,
+      supplemental_asset_count: allAssetPaths.length - assetPaths.length,
+      asset_paths: assetPaths,
+      css_paths: cssPaths,
+      js_paths: jsPaths,
       detail_css_path: [...detailCssPaths][0],
       fingerprint_sha256: fingerprint.digest('hex'),
     }
@@ -539,9 +629,14 @@ async function setViewport(cdp, viewport) {
 }
 
 async function navigate(cdp, url, assetCapture) {
-  const loaded = cdp.waitFor('Page.loadEventFired', 20000).catch(() => undefined)
+  const previousDocument = await evaluateFunction(cdp, () => ({
+    href: location.href,
+    documentToken: String(globalThis.__vl360DetailGateDocumentToken || ''),
+  }))
+  const loaded = cdp.waitFor('Page.loadEventFired', 20000)
   const navigation = await cdp.send('Page.navigate', { url })
   if (navigation.errorText) throw new GateError('preview-unavailable', 'Detail navigation failed: ' + navigation.errorText, { blocked: true })
+  if (!navigation.loaderId) throw new GateError('navigation-loader-unavailable', 'Detail navigation did not expose a loader ID', { blocked: true })
   assetCapture?.bind(navigation.loaderId)
   await loaded
   await waitForValue(
@@ -554,7 +649,9 @@ async function navigate(cdp, url, assetCapture) {
         return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden'
       }
       return {
+        href: location.href,
         readyState: document.readyState,
+        documentToken: String(globalThis.__vl360DetailGateDocumentToken || ''),
         nuxtRoot: Boolean(document.querySelector('#__nuxt')),
         detailBody: Boolean(document.querySelector('.detail-body')),
         detailMain: Boolean(document.querySelector('.detail-main')),
@@ -568,7 +665,13 @@ async function navigate(cdp, url, assetCapture) {
       }
     },
     null,
-    value => value?.readyState === 'complete'
+    value => isFreshNavigationState({
+      expectedUrl: url,
+      previousDocumentToken: previousDocument?.documentToken || '',
+      href: value?.href,
+      readyState: value?.readyState,
+      documentToken: value?.documentToken,
+    })
       && value?.nuxtRoot
       && value?.detailBody
       && value?.detailMain
@@ -602,6 +705,18 @@ async function navigate(cdp, url, assetCapture) {
 }
 
 async function navigateWithBoundAssets(cdp, baseUrl) {
+  const blankLoaded = cdp.waitFor('Page.loadEventFired', 10000)
+  const blankNavigation = await cdp.send('Page.navigate', { url: 'about:blank' })
+  if (blankNavigation.errorText) throw new GateError('navigation-reset-failed', 'could not reset the measured document: ' + blankNavigation.errorText, { blocked: true })
+  await blankLoaded
+  await waitForValue(
+    cdp,
+    () => ({ href: location.href, readyState: document.readyState }),
+    null,
+    value => value?.href === 'about:blank' && value?.readyState === 'complete',
+    'browser document reset did not complete',
+    10000,
+  )
   await cdp.send('Network.clearBrowserCache')
   const capture = new NavigationAssetCapture(cdp, baseUrl)
   capture.start()
@@ -644,6 +759,120 @@ async function physicalClick(cdp, selector) {
   await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: rect.centerX, y: rect.centerY, button: 'left', buttons: 1, clickCount: 1 })
   await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: rect.centerX, y: rect.centerY, button: 'left', buttons: 0, clickCount: 1 })
   return rect
+}
+
+async function hitTarget(cdp, selector, index = 0) {
+  await evaluateFunction(cdp, ({ selector: targetSelector, index: targetIndex }) => {
+    const element = document.querySelectorAll(targetSelector)[targetIndex]
+    element?.scrollIntoView({ block: 'center', inline: 'center' })
+    return Boolean(element)
+  }, { selector, index })
+  await sleep(100)
+  return evaluateFunction(cdp, ({ selector: targetSelector, index: targetIndex }) => {
+    const element = document.querySelectorAll(targetSelector)[targetIndex]
+    if (!element) return { present: false, visible: false, belongs: false, tag: '', text: '' }
+    const rect = element.getBoundingClientRect()
+    const style = getComputedStyle(element)
+    const visible = rect.width > 0
+      && rect.height > 0
+      && style.display !== 'none'
+      && style.visibility !== 'hidden'
+      && rect.bottom > 0
+      && rect.top < innerHeight
+      && rect.right > 0
+      && rect.left < innerWidth
+    const target = visible ? document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2) : null
+    const describe = candidate => candidate
+      ? candidate.tagName.toLowerCase()
+        + (candidate.id ? '#' + candidate.id : '')
+        + (candidate.classList.length ? '.' + [...candidate.classList].slice(0, 3).join('.') : '')
+      : ''
+    return {
+      present: true,
+      visible,
+      belongs: Boolean(target && (target === element || element.contains(target))),
+      tag: describe(target),
+      text: String(element.textContent || '').trim().slice(0, 60),
+    }
+  }, { selector, index })
+}
+
+async function exerciseLightbox(cdp) {
+  const evidence = {
+    opened: false,
+    aria_modal: false,
+    dialog_rect: null,
+    surface_visible: false,
+    media_visible: false,
+    close_hit: { present: false, visible: false, belongs: false, tag: '', text: '' },
+    closed: false,
+  }
+  await physicalClick(cdp, '.dc-photo-btn')
+  try {
+    const opened = await waitForValue(
+      cdp,
+      () => {
+        const visible = element => {
+          if (!element) return false
+          const rect = element.getBoundingClientRect()
+          const style = getComputedStyle(element)
+          return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden'
+        }
+        const dialog = document.querySelector('[role="dialog"][aria-label="Xem ảnh"]')
+        const surface = dialog?.querySelector('[data-image-surface="image-lightbox"]')
+        const media = dialog?.querySelector('[data-active-media]')
+        const dialogRect = dialog?.getBoundingClientRect()
+        const mediaReady = media?.matches('img')
+          ? Boolean(media.complete && media.naturalWidth > 0 && media.naturalHeight > 0)
+          : Boolean(media?.matches('[data-placeholder-media="true"]'))
+        return {
+          opened: Boolean(dialog),
+          ariaModal: dialog?.getAttribute('aria-modal') === 'true',
+          dialogRect: dialogRect ? {
+            width: dialogRect.width,
+            height: dialogRect.height,
+            left: dialogRect.left,
+            right: dialogRect.right,
+            top: dialogRect.top,
+            bottom: dialogRect.bottom,
+          } : null,
+          surfaceVisible: visible(surface),
+          mediaVisible: visible(media) && mediaReady,
+        }
+      },
+      null,
+      value => value?.opened && value?.ariaModal && value?.surfaceVisible && value?.mediaVisible,
+      'Detail photo action did not open a stable lightbox',
+      8000,
+    )
+    evidence.opened = opened.opened
+    evidence.aria_modal = opened.ariaModal
+    evidence.dialog_rect = roundedRect(opened.dialogRect)
+    evidence.surface_visible = opened.surfaceVisible
+    evidence.media_visible = opened.mediaVisible
+  } catch (error) {
+    if (!(error instanceof GateError) || error.code !== 'page-state-timeout') throw error
+    return evidence
+  }
+
+  await sleep(250)
+  evidence.close_hit = await hitTarget(cdp, '.lb-close')
+  if (!evidence.close_hit.present || !evidence.close_hit.visible) return evidence
+  await physicalClick(cdp, '.lb-close')
+  try {
+    await waitForValue(
+      cdp,
+      () => !document.querySelector('[role="dialog"][aria-label="Xem ảnh"]'),
+      null,
+      Boolean,
+      'Detail lightbox did not close',
+      5000,
+    )
+    evidence.closed = true
+  } catch (error) {
+    if (!(error instanceof GateError) || error.code !== 'page-state-timeout') throw error
+  }
+  return evidence
 }
 
 async function injectMutation(cdp, mutation) {
@@ -993,9 +1222,18 @@ async function exerciseState({ cdp, baseUrl, mutation, consoleErrors, evidence, 
     theme: config.theme,
     requested_mode: config.mode,
     selected_mode: '',
-    preview_assets: { count: 0, unique_count: 0, detail_css_path: '', fingerprint_sha256: '' },
+    preview_assets: {
+      count: 0,
+      unique_count: 0,
+      asset_paths: [],
+      css_paths: [],
+      js_paths: [],
+      detail_css_path: '',
+      fingerprint_sha256: '',
+    },
     mutation: null,
     geometry: null,
+    lightbox: null,
     console_errors: [],
     relevant_console_errors: [],
     failures: [],
@@ -1009,22 +1247,32 @@ async function exerciseState({ cdp, baseUrl, mutation, consoleErrors, evidence, 
   const themeState = await selectTheme(cdp, config.mode)
   state.selected_mode = themeState.stored
   state.geometry = normalizeGeometry(await measureGeometry(cdp))
-  await sleep(100)
+  state.geometry.actions.photo_hit = await hitTarget(cdp, '.dc-photo-btn')
+  const tripControlCount = await evaluateFunction(cdp, () => document.querySelectorAll('.dc-trip .trip-btn').length)
+  state.geometry.actions.trip_hits = []
+  for (let index = 0; index < tripControlCount; index += 1) {
+    state.geometry.actions.trip_hits.push(await hitTarget(cdp, '.dc-trip .trip-btn', index))
+  }
+  state.lightbox = await exerciseLightbox(cdp)
+  const contactControlCount = await evaluateFunction(cdp, () => document.querySelectorAll('.detail-contact-widget .cw-btn').length)
+  state.geometry.contact.controls = []
+  for (let index = 0; index < contactControlCount; index += 1) {
+    state.geometry.contact.controls.push({ hit: await hitTarget(cdp, '.detail-contact-widget .cw-btn', index) })
+  }
+  await sleep(CONSOLE_DRAIN_MS)
   state.console_errors = consoleErrors.slice(consoleStart, consoleStart + MAX_CONSOLE_ERRORS)
   state.relevant_console_errors = state.console_errors.filter(entry => !entry.allowed_reason)
   assertState(evidence, state, state.geometry)
+  for (const failure of collectStateFailures(state)) {
+    stateReason(evidence, state, failure.code, failure.message)
+  }
   return state
 }
 
 function boundedJson(evidence) {
   let json = JSON.stringify(evidence, null, 2) + '\n'
   if (Buffer.byteLength(json) <= MAX_EVIDENCE_BYTES) return json
-  for (const state of evidence.states) {
-    state.console_errors = state.console_errors.slice(0, 2)
-    state.relevant_console_errors = state.relevant_console_errors.slice(0, 2)
-    state.geometry.contact.controls = state.geometry.contact.controls.slice(0, 2)
-  }
-  evidence.reasons = evidence.reasons.slice(0, 12)
+  compactGateEvidence(evidence)
   json = JSON.stringify(evidence, null, 2) + '\n'
   if (Buffer.byteLength(json) > MAX_EVIDENCE_BYTES) throw new Error('bounded evidence exceeded byte limit')
   return json
@@ -1063,7 +1311,9 @@ async function run(args, evidence) {
       cdp.send('Network.setCacheDisabled', { cacheDisabled: true }),
     ])
     await cdp.send('Page.addScriptToEvaluateOnNewDocument', {
-      source: "try { localStorage.setItem('vl360_onboarding_seen', '1') } catch {}",
+      source: "globalThis.__vl360DetailGateDocumentToken = (globalThis.crypto?.randomUUID?.() || (Date.now() + ':' + Math.random())); if (location.origin === "
+        + JSON.stringify(new URL(args.baseUrl).origin)
+        + ") localStorage.setItem('vl360_onboarding_seen', '1')",
     })
     for (const config of STATE_CONFIGS) {
       evidence.states.push(await exerciseState({
@@ -1079,6 +1329,9 @@ async function run(args, evidence) {
     const allStatesBound = evidence.states.every(state => (
       state.preview_assets.count > 0
       && state.preview_assets.unique_count > 0
+      && state.preview_assets.asset_paths.length > 0
+      && state.preview_assets.css_paths.length > 0
+      && state.preview_assets.js_paths.length > 0
       && Boolean(state.preview_assets.detail_css_path)
       && /^[a-f0-9]{64}$/u.test(state.preview_assets.fingerprint_sha256)
     ))
@@ -1095,10 +1348,19 @@ async function run(args, evidence) {
       state_count: evidence.states.length,
       all_states_bound: allStatesBound,
       detail_css_path: detailCssPaths.length === 1 ? detailCssPaths[0] : '',
+      asset_paths: evidence.states[0]?.preview_assets.asset_paths || [],
+      asset_groups: Object.fromEntries([...new Set(evidence.states.map(state => state.viewport_name))].map(viewportName => {
+        const state = evidence.states.find(candidate => candidate.viewport_name === viewportName)
+        return [viewportName, {
+          state_count: evidence.states.filter(candidate => candidate.viewport_name === viewportName).length,
+          asset_paths: state?.preview_assets.asset_paths || [],
+          fingerprint_sha256: state?.preview_assets.fingerprint_sha256 || '',
+        }]
+      })),
       aggregate_fingerprint_sha256: aggregateFingerprint.digest('hex'),
     }
-    if (!allStatesBound) addReason(evidence, 'asset-binding-incomplete', 'one or more state asset sets were not bound to local output')
     if (detailCssPaths.length !== 1) addReason(evidence, 'detail-css-state-mismatch', 'states did not bind one shared Detail CSS asset')
+    for (const failure of collectAssetSetFailures(evidence.states)) addReason(evidence, failure.code, failure.message)
   } finally {
     cdp?.close()
     if (chrome?.child) {
@@ -1108,9 +1370,22 @@ async function run(args, evidence) {
         evidence.cleanup_errors.push('chrome:' + safeMessage(error))
       }
     }
+    if (chrome?.profile && chrome?.browserPath) {
+      try {
+        const remaining = await waitForOwnedBrowserExit(chrome)
+        evidence.cleanup.owned_processes_remaining = remaining.map(processInfo => processInfo.pid)
+        if (remaining.length > 0) {
+          evidence.cleanup_errors.push('owned-processes:' + remaining.map(processInfo => processInfo.pid).join(','))
+        }
+      } catch (error) {
+        evidence.cleanup_errors.push('owned-process-audit:' + safeMessage(error))
+      }
+    }
     if (chrome?.profile) {
       try {
         await rm(chrome.profile, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 })
+        evidence.cleanup.profile_removed = !existsSync(chrome.profile)
+        if (!evidence.cleanup.profile_removed) evidence.cleanup_errors.push('profile:owned profile still exists after removal')
       } catch (error) {
         evidence.cleanup_errors.push('profile:' + safeMessage(error))
       }
@@ -1133,9 +1408,10 @@ try {
     route: ROUTE,
     mutation: '',
     preconditions: { onboarding_seen_seeded: false },
-    preview_assets: { state_count: 0, all_states_bound: false, detail_css_path: '', aggregate_fingerprint_sha256: '' },
+    preview_assets: { state_count: 0, all_states_bound: false, detail_css_path: '', asset_paths: [], asset_groups: {}, aggregate_fingerprint_sha256: '' },
     states: [],
     reasons: [{ code: error instanceof GateError ? error.code : 'unexpected-error', message: safeMessage(error) }],
+    cleanup: { owned_processes_remaining: null, profile_removed: false },
     cleanup_errors: [],
   }
   process.stdout.write(boundedJson(evidence))
@@ -1154,9 +1430,10 @@ if (args?.help) {
     route: ROUTE,
     mutation: args.mutation,
     preconditions: { onboarding_seen_seeded: false },
-    preview_assets: { state_count: 0, all_states_bound: false, detail_css_path: '', aggregate_fingerprint_sha256: '' },
+    preview_assets: { state_count: 0, all_states_bound: false, detail_css_path: '', asset_paths: [], asset_groups: {}, aggregate_fingerprint_sha256: '' },
     states: [],
     reasons: [],
+    cleanup: { owned_processes_remaining: null, profile_removed: false },
     cleanup_errors: [],
   }
   try {
