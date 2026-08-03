@@ -1,7 +1,8 @@
 import { spawn } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
 import { readdir, readFile, readlink } from 'node:fs/promises'
-import { basename } from 'node:path'
+import { basename, dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 export function hasExactZeroMinWidth(declarations) {
   return /(?:^|;)\s*min-width\s*:\s*(?:0|0px)\s*(?:;|$)/iu.test(String(declarations || ''))
@@ -367,7 +368,14 @@ function waitForChildExit(child, timeoutMs) {
   })
 }
 
-const CONTROL_HELPER_IDENTITY_PREFIX = '__VL360_CONTROL_HELPER_IDENTITY__'
+const WINDOWS_JOB_SUPERVISOR = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  '..',
+  '..',
+  'scripts',
+  'ops',
+  'run_backend_regression.py',
+)
 
 export function runControlHelper(command, args, {
   timeoutMs = 5000,
@@ -380,63 +388,90 @@ export function runControlHelper(command, args, {
   const remaining = sharedDeadline === null
     ? timeoutMs + cleanupTimeoutMs
     : remainingDeadlineMs(sharedDeadline, 'control helper')
-  const operationTimeoutMs = Math.max(1, Math.min(timeoutMs, Math.floor(remaining / 2)))
-  const cleanupBudgetMs = Math.max(1, Math.min(cleanupTimeoutMs, remaining - operationTimeoutMs))
+  const operationTimeoutMs = Math.max(1, Math.min(timeoutMs, remaining))
+  const cleanupBudgetMs = sharedDeadline === null
+    ? cleanupTimeoutMs
+    : Math.max(1, Math.min(cleanupTimeoutMs, sharedDeadline - Date.now() - operationTimeoutMs))
   const wrappedArgs = wrapPowerShellControlHelperArgs(command, args, ownershipMarker)
-  return runCaptured(command, wrappedArgs, {
+  const supervisor = spawn(process.env.PYTHON || 'python', [
+    WINDOWS_JOB_SUPERVISOR,
+    '--windows-job-supervisor',
+    '--',
+    command,
+    ...wrappedArgs,
+  ], {
     env,
-    timeoutMs: operationTimeoutMs,
-    cleanupTimeoutMs: cleanupBudgetMs,
-    deadline: sharedDeadline,
-    ownershipMarker,
-    parseInitialIdentity: parseControlHelperIdentity,
-  }).then(result => ({
-    ...result,
-    stdout: stripControlHelperIdentity(result.stdout),
-  }))
+    windowsHide: true,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  })
+  return observeJobBoundControlHelper(supervisor, command, operationTimeoutMs, cleanupBudgetMs)
 }
 
 function wrapPowerShellControlHelperArgs(command, args, ownershipMarker) {
   if (!/^pwsh(?:\.exe)?$|^powershell(?:\.exe)?$/iu.test(basename(command))) {
-    throw new Error('control helper requires PowerShell self-identity support')
+    if (!(args || []).some(argument => String(argument).includes(ownershipMarker))) {
+      throw new Error('non-PowerShell control helper command line must include its ownership marker')
+    }
+    return [...args]
   }
   const commandIndex = args.findIndex(argument => String(argument).toLowerCase() === '-command')
   if (commandIndex < 0 || commandIndex + 1 >= args.length) {
     throw new Error('control helper requires a PowerShell -Command source')
   }
   const source = String(args[commandIndex + 1])
-  const identitySource = [
-    '$vl360ControlSelf = [Diagnostics.Process]::GetCurrentProcess()',
-    '$vl360ControlTicks = [long]$vl360ControlSelf.StartTime.ToUniversalTime().Ticks; $vl360ControlTicks -= ($vl360ControlTicks % 10)',
-    '$vl360ControlIdentity = [PSCustomObject]@{ ProcessId = [int]$PID; ParentProcessId = 0; StartIdentity = "win:utc-ticks:" + $vl360ControlTicks.ToString([Globalization.CultureInfo]::InvariantCulture); ExecutablePath = [string]$vl360ControlSelf.MainModule.FileName; CommandLine = [Environment]::CommandLine }',
-    '[Console]::Out.WriteLine(' + JSON.stringify(CONTROL_HELPER_IDENTITY_PREFIX) + ' + (ConvertTo-Json -InputObject $vl360ControlIdentity -Compress))',
-    '$null = ' + JSON.stringify(ownershipMarker),
-  ].join('; ')
   const wrapped = [...args]
-  wrapped[commandIndex + 1] = identitySource + '; ' + source
+  wrapped[commandIndex + 1] = '$null = ' + JSON.stringify(ownershipMarker) + '; ' + source
   return wrapped
 }
 
-function parseControlHelperIdentity(output) {
-  const start = String(output).indexOf(CONTROL_HELPER_IDENTITY_PREFIX)
-  if (start < 0) return null
-  const valueStart = start + CONTROL_HELPER_IDENTITY_PREFIX.length
-  const valueEnd = String(output).indexOf('\n', valueStart)
-  if (valueEnd < 0) return null
-  const parsed = JSON.parse(String(output).slice(valueStart, valueEnd).trim())
-  return {
-    pid: Number(parsed.ProcessId || 0),
-    parentPid: Number(parsed.ParentProcessId || 0),
-    startIdentity: String(parsed.StartIdentity || ''),
-    executablePath: String(parsed.ExecutablePath || ''),
-    commandLine: String(parsed.CommandLine || ''),
-  }
-}
-
-function stripControlHelperIdentity(output) {
-  return String(output).split(/\r?\n/u)
-    .filter(line => !line.startsWith(CONTROL_HELPER_IDENTITY_PREFIX))
-    .join('\n')
+function observeJobBoundControlHelper(child, command, timeoutMs, cleanupTimeoutMs) {
+  return new Promise((resolveRun, reject) => {
+    let stdout = ''
+    let stderr = ''
+    let timedOut = false
+    let settled = false
+    let operationTimer
+    let cleanupTimer
+    const append = (current, chunk) => (current + String(chunk)).slice(-512 * 1024)
+    const onStdout = chunk => { stdout = append(stdout, chunk) }
+    const onStderr = chunk => { stderr = append(stderr, chunk) }
+    const finish = (handler, value) => {
+      if (settled) return
+      settled = true
+      clearTimeout(operationTimer)
+      clearTimeout(cleanupTimer)
+      child.stdout?.off('data', onStdout)
+      child.stderr?.off('data', onStderr)
+      child.off('error', onError)
+      child.off('exit', onExit)
+      handler(value)
+    }
+    const timeoutError = cleanupVerified => {
+      const error = new Error(basename(command) + ' control helper timed out after ' + timeoutMs + 'ms')
+      error.cleanupVerified = cleanupVerified
+      return error
+    }
+    const onError = error => finish(reject, error)
+    const onExit = code => {
+      if (timedOut) return finish(reject, timeoutError(true))
+      if (code === 0) return finish(resolveRun, { stdout, stderr })
+      finish(reject, new Error(basename(command) + ' exited with code ' + (code ?? 'unknown')
+        + (stderr.trim() ? ': ' + stderr.trim() : '')))
+    }
+    child.stdout?.on('data', onStdout)
+    child.stderr?.on('data', onStderr)
+    child.once('error', onError)
+    child.once('exit', onExit)
+    operationTimer = setTimeout(() => {
+      timedOut = true
+      child.kill('SIGKILL')
+      cleanupTimer = setTimeout(() => {
+        child.stdout?.destroy()
+        child.stderr?.destroy()
+        finish(reject, timeoutError(false))
+      }, Math.max(1, cleanupTimeoutMs))
+    }, Math.max(1, timeoutMs))
+  })
 }
 
 const windowsStartIdentityFunction = [
@@ -898,7 +933,6 @@ export function runCaptured(command, args, options = {}) {
     cleanupTimeoutMs = 12000,
     deadline,
     ownershipMarker = '',
-    parseInitialIdentity,
     ...spawnOptions
   } = options
   const sharedDeadline = Number.isFinite(deadline) ? Number(deadline) : null
@@ -920,48 +954,20 @@ export function runCaptured(command, args, options = {}) {
     let timedOut = false
     let settled = false
     let timer
-    let resolveParsedIdentity
-    let rejectParsedIdentity
-    let parsedIdentitySettled = false
-    const parsedIdentityPromise = typeof parseInitialIdentity === 'function'
-      ? new Promise((resolveIdentity, rejectIdentity) => {
-          resolveParsedIdentity = resolveIdentity
-          rejectParsedIdentity = rejectIdentity
-        })
-      : null
     const identityTimeoutMs = Math.max(1, Math.min(
       4000,
       cleanupTimeoutMs,
       sharedDeadline === null ? cleanupTimeoutMs : sharedDeadline - Date.now(),
     ))
-    const initialIdentityPromise = !child.pid
-      ? Promise.resolve(null)
-      : parsedIdentityPromise
-        ? runBeforeDeadline(
-            () => parsedIdentityPromise,
-            Date.now() + identityTimeoutMs,
-            'captured process self-identity',
-          )
-        : captureProcessIdentity(
-            child.pid,
-            identityTimeoutMs,
-            sharedDeadline === null ? Date.now() + identityTimeoutMs : sharedDeadline,
-          ).catch(() => null)
+    const initialIdentityPromise = child.pid
+      ? captureProcessIdentity(
+          child.pid,
+          identityTimeoutMs,
+          sharedDeadline === null ? Date.now() + identityTimeoutMs : sharedDeadline,
+        ).catch(() => null)
+      : Promise.resolve(null)
     const append = (current, chunk) => (current + String(chunk)).slice(-512 * 1024)
-    const onStdout = chunk => {
-      stdout = append(stdout, chunk)
-      if (!parsedIdentityPromise || parsedIdentitySettled) return
-      try {
-        const identity = parseInitialIdentity(stdout)
-        if (identity) {
-          parsedIdentitySettled = true
-          resolveParsedIdentity(identity)
-        }
-      } catch (error) {
-        parsedIdentitySettled = true
-        rejectParsedIdentity(error)
-      }
-    }
+    const onStdout = chunk => { stdout = append(stdout, chunk) }
     const onStderr = chunk => { stderr = append(stderr, chunk) }
     const finish = (handler, value) => {
       if (settled) return
@@ -984,10 +990,6 @@ export function runCaptured(command, args, options = {}) {
       if (!timedOut) finish(reject, error)
     }
     const onExit = code => {
-      if (parsedIdentityPromise && !parsedIdentitySettled) {
-        parsedIdentitySettled = true
-        resolveParsedIdentity(null)
-      }
       if (timedOut) return
       if (code === 0) {
         finish(resolveRun, { stdout, stderr })

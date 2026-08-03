@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -718,25 +718,15 @@ describe('Detail grid containment gate contracts', () => {
     const directory = mkdtempSync(join(tmpdir(), 'vl360-control-helper-tree-'))
     const pidPath = join(directory, 'pids.json')
     const sideEffectPath = join(directory, 'late-side-effect.txt')
-    const childPath = join(directory, 'child.js')
     const marker = `vl360-control-helper-tree-${Date.now()}-${Math.random()}`
-    const childSource = timedChildSource({ marker, sideEffectPath, sideEffectDelayMs: 2600, lifetimeMs: 4500 })
-    writeFileSync(childPath, childSource)
-    const parentSource = powershellTimedTreeSource(marker)
+    const parentSource = timedTreeSource({ marker, pidPath, sideEffectPath, sideEffectDelayMs: 2600, lifetimeMs: 4500 })
     const startedAt = Date.now()
     let pids
     let timeoutError
 
     try {
       try {
-        await gateCore.runControlHelper('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', parentSource], {
-          env: {
-            ...process.env,
-            VL360_TEST_CHILD_PATH: childPath,
-            VL360_TEST_MARKER: marker,
-            VL360_TEST_NODE: process.execPath,
-            VL360_TEST_PID_PATH: pidPath,
-          },
+        await gateCore.runControlHelper(process.execPath, ['-e', parentSource, marker], {
           timeoutMs: 1000,
           cleanupTimeoutMs: 8000,
           ownershipMarker: marker,
@@ -898,15 +888,4 @@ function timedChildSource({ marker, sideEffectPath = '', sideEffectDelayMs = 800
     'setInterval(() => {}, 1000)',
     '// ' + marker,
   ].filter(Boolean).join('; ')
-}
-
-function powershellTimedTreeSource(marker) {
-  return [
-    "$ErrorActionPreference = 'Stop'",
-    '$child = Start-Process -FilePath $env:VL360_TEST_NODE -ArgumentList @($env:VL360_TEST_CHILD_PATH, $env:VL360_TEST_MARKER) -PassThru -WindowStyle Hidden',
-    '$json = "{`"parent`":" + $PID + ",`"child`":" + $child.Id + "}"',
-    '[IO.File]::WriteAllText($env:VL360_TEST_PID_PATH, $json)',
-    'Start-Sleep -Milliseconds 4500',
-    '$null = ' + JSON.stringify(marker),
-  ].join('; ')
 }
