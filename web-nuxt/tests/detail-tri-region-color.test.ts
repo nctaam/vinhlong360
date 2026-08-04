@@ -567,6 +567,7 @@ describe('entity detail tri-region behavior', () => {
 
   it('reserves one semantic mobile bottom-nav height beneath the contextual contact bar', () => {
     expect(variablesCss).toMatch(/--shell-public-bottom-nav-reserved-height\s*:/)
+    expect(variablesCss).not.toMatch(/--shell-public-bottom-nav-reserved-height\s*:[^;]*max\(0px,\s*calc\(/)
     expect(shellCss).toMatch(/\.public-bottom-nav\s*\{[\s\S]*?min-height:\s*var\(--shell-public-bottom-nav-reserved-height\)/)
     expect(shellCss).toMatch(/@media \(max-width:\s*767px\)[\s\S]*?\.public-bottom-nav\s*\{[\s\S]*?display:\s*grid/)
     expect(contactWidgetSource).toMatch(/@media \(max-width:\s*767px\)[\s\S]*?\.cw\s*\{[\s\S]*?bottom:\s*var\(--shell-public-bottom-nav-reserved-height\)/)
