@@ -9,6 +9,7 @@ import { defineComponent, h } from 'vue'
 
 const root = resolve(import.meta.dirname, '../..')
 const execFileAsync = promisify(execFile)
+const contrastSubprocessTimeout = 30_000
 const semanticPairNames = [
   'body-light',
   'muted-light',
@@ -250,7 +251,7 @@ describe('Tri-Region color contract', () => {
     }
   })
 
-  it('executes the complete semantic and control contrast audit set', async () => {
+  it('executes the complete semantic and control contrast audit set', { timeout: contrastSubprocessTimeout }, async () => {
     const { stdout } = await execFileAsync(process.execPath, ['scripts/check-tri-region-contrast.mjs'], {
       cwd: resolve(root, 'web-nuxt'),
     })
@@ -292,7 +293,7 @@ describe('Tri-Region color contract', () => {
     expect(stdout).toContain('homepage-on-media-text-dark-oklch 10.52 4.5')
   })
 
-  it('fails closed when an audited numeric token parses as non-finite', async () => {
+  it('fails closed when an audited numeric token parses as non-finite', { timeout: contrastSubprocessTimeout }, async () => {
     const source = await readFile(resolve(root, 'web-nuxt/assets/css/variables.css'), 'utf8')
     const invalidWeight = '9'.repeat(400)
     const invalidCss = source.replace(
@@ -540,7 +541,7 @@ describe('Tri-Region color contract', () => {
       mutate: (source: string) => `${source}\n[data-home-pilot="nocturne-b1"].home { --home-color-focus-on-media\\: var(--color-focus); }`,
       message: 'Unknown word --home-color-focus-on-media',
     },
-  ])('fails closed for $name', async ({ mutate, message }) => {
+  ])('fails closed for $name', { timeout: contrastSubprocessTimeout }, async ({ mutate, message }) => {
     const homeSource = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
     await expect(runContrastWithHomeCss(mutate(homeSource))).rejects.toMatchObject({
       stderr: expect.stringContaining(message),
@@ -558,7 +559,7 @@ describe('Tri-Region color contract', () => {
       mutate: (source: string) => `${source}\n.syntax-probe { color: var(--color-text; }`,
       message: 'Unclosed bracket',
     },
-  ])('rejects malformed Homepage CSS with $name', async ({ mutate, message }) => {
+  ])('rejects malformed Homepage CSS with $name', { timeout: contrastSubprocessTimeout }, async ({ mutate, message }) => {
     const homeSource = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
     await expect(runContrastWithHomeCss(mutate(homeSource))).rejects.toMatchObject({
       stderr: expect.stringContaining(message),
@@ -615,14 +616,14 @@ describe('Tri-Region color contract', () => {
       mutation: '.hero-action--soft { color: transparent; }',
       message: 'Unexpected protected consumer declaration: assets/css/home-nocturne.css',
     },
-  ])('rejects unapproved $name', async ({ source, path, mutation, message }) => {
+  ])('rejects unapproved $name', { timeout: contrastSubprocessTimeout }, async ({ source, path, mutation, message }) => {
     const original = await readFile(resolve(root, path), 'utf8')
     await expect(runContrastWithSources({ [source]: `${original}\n${mutation}` })).rejects.toMatchObject({
       stderr: expect.stringContaining(message),
     })
   })
 
-  it('rejects an unapproved ec-today override in the Homepage SFC style', async () => {
+  it('rejects an unapproved ec-today override in the Homepage SFC style', { timeout: contrastSubprocessTimeout }, async () => {
     const pageSource = await readFile(resolve(root, 'web-nuxt/pages/index.vue'), 'utf8')
     const mutatedPage = pageSource.replace('</style>', '.ec-today { color: transparent; }\n</style>')
 
@@ -682,7 +683,7 @@ describe('Tri-Region color contract', () => {
       path: 'assets/css/components.css',
       mutation: '@media (min-width: 1px) { :is(.never, .home-feature-dossier__action), .hero\\2d search input { border-top-color: transparent; } }',
     },
-  ])('scans every global CSS source and rejects $name', async ({ path, mutation }) => {
+  ])('scans every global CSS source and rejects $name', { timeout: contrastSubprocessTimeout }, async ({ path, mutation }) => {
     const original = await readFile(resolve(root, 'web-nuxt', path), 'utf8')
 
     await expect(runContrastWithSources({ [path]: `${original}\n${mutation}` })).rejects.toMatchObject({
@@ -701,7 +702,7 @@ describe('Tri-Region color contract', () => {
       path: 'components/SearchAutocomplete.vue',
       mutation: '.hero-search input { outline-style: none; }',
     },
-  ])('scans every Vue style block and rejects $name', async ({ path, mutation }) => {
+  ])('scans every Vue style block and rejects $name', { timeout: contrastSubprocessTimeout }, async ({ path, mutation }) => {
     const original = await readFile(resolve(root, 'web-nuxt', path), 'utf8')
     const mutated = `${original}\n<style>${mutation}</style>\n`
 
@@ -710,7 +711,7 @@ describe('Tri-Region color contract', () => {
     })
   })
 
-  it('fails loudly when an unrelated CSS or Vue style block cannot be parsed', async () => {
+  it('fails loudly when an unrelated CSS or Vue style block cannot be parsed', { timeout: contrastSubprocessTimeout }, async () => {
     const componentsCss = await readFile(resolve(root, 'web-nuxt/assets/css/components.css'), 'utf8')
     const search = await readFile(resolve(root, 'web-nuxt/components/SearchAutocomplete.vue'), 'utf8')
 
@@ -722,7 +723,7 @@ describe('Tri-Region color contract', () => {
     })).rejects.toMatchObject({ stderr: expect.stringContaining('components/SearchAutocomplete.vue') })
   })
 
-  it('does not treat classes used only inside :not() or :has() as protected subjects', async () => {
+  it('does not treat classes used only inside :not() or :has() as protected subjects', { timeout: contrastSubprocessTimeout }, async () => {
     const homeSource = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
     const safeRelationalSelectors = `
 .audit-probe:not(.hero-sub) { background: transparent; }
@@ -736,7 +737,7 @@ describe('Tri-Region color contract', () => {
     })
   })
 
-  it('reports the intentional Nuxt/Vue audit toolchain and compatible parser versions', async () => {
+  it('reports the intentional Nuxt/Vue audit toolchain and compatible parser versions', { timeout: contrastSubprocessTimeout }, async () => {
     const { stdout } = await execFileAsync(process.execPath, ['scripts/check-tri-region-contrast.mjs'], {
       cwd: resolve(root, 'web-nuxt'),
       env: { ...process.env, TRI_REGION_AUDIT_TOOLCHAIN: '1' },
@@ -767,7 +768,7 @@ describe('Tri-Region color contract', () => {
       name: 'an escaped brace in a selector',
       fixture: String.raw`.syntax-probe\{literal { color: var(--color-text); }`,
     },
-  ])('accepts valid CSS with $name', async ({ fixture }) => {
+  ])('accepts valid CSS with $name', { timeout: contrastSubprocessTimeout }, async ({ fixture }) => {
     const homeSource = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
     await expect(runContrastWithHomeCss(`${homeSource}\n${fixture}`)).resolves.toMatchObject({
       stdout: expect.stringContaining('homepage-on-media-text-light-srgb 10.55 4.5'),
@@ -775,7 +776,7 @@ describe('Tri-Region color contract', () => {
     })
   })
 
-  it('keeps legitimate comment markers, escapes, braces and continuations inside CSS strings', async () => {
+  it('keeps legitimate comment markers, escapes, braces and continuations inside CSS strings', { timeout: contrastSubprocessTimeout }, async () => {
     const homeSource = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
     const safeStrings = String.raw`
 [data-home-pilot="nocturne-b1"] .string-probe::before {
