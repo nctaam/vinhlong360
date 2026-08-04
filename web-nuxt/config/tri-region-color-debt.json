@@ -1,0 +1,22 @@
+{
+  "pages/index.vue": { "rawHex": 0, "legacyPrimary": 0 },
+  "assets/css/home-nocturne.css": { "rawHex": 0, "legacyPrimary": 0 },
+  "pages/du-lich.vue": { "rawHex": 0, "legacyPrimary": 0 },
+  "pages/tim-kiem.vue": { "rawHex": 0, "legacyPrimary": 0 },
+  "pages/dia-diem/[id].vue": { "rawHex": 0, "legacyPrimary": 0 },
+  "components/home/HomeFeatureDossier.vue": { "rawHex": 0, "legacyPrimary": 0 },
+  "components/home/HomeDecisionLedger.vue": { "rawHex": 0, "legacyPrimary": 0 },
+  "components/home/HomeCategoryIndex.vue": { "rawHex": 0, "legacyPrimary": 0 },
+  "components/SourceMark.vue": { "rawHex": 0, "legacyPrimary": 0 },
+  "components/FreshnessLine.vue": { "rawHex": 0, "legacyPrimary": 0 },
+  "components/EntityTrustPanel.vue": { "rawHex": 0, "legacyPrimary": 0 },
+  "components/EntityCard.vue": { "rawHex": 0, "legacyPrimary": 0 },
+  "components/CatalogSpotlight.vue": { "rawHex": 0, "legacyPrimary": 0 },
+  "components/CatalogInterstitial.vue": { "rawHex": 0, "legacyPrimary": 0 },
+  "components/ContactWidget.vue": { "rawHex": 0, "legacyPrimary": 0 },
+  "components/ImageDisclosure.vue": { "rawHex": 0, "legacyPrimary": 0 },
+  "components/EntityHeroPlaceholder.vue": { "rawHex": 0, "legacyPrimary": 0 },
+  "assets/css/tri-region-color.css": { "rawHex": 0, "legacyPrimary": 0 },
+  "assets/css/catalog.css": { "rawHex": 5, "legacyPrimary": 58 },
+  "assets/css/detail.css": { "rawHex": 20, "legacyPrimary": 45 }
+}

@@ -1,6 +1,6 @@
 # Tri-Region Color Excellence System cho Plan B
 
-> STATUS (2026-07-31): active — approved design, pending written-spec review.
+> STATUS (2026-08-04): implemented — automated and visual gates passed.
 > **Ngày chốt:** 2026-07-31
 > **Phạm vi triển khai đầu tiên:** Homepage, Discovery/Search và Entity Detail
 > **Hệ cha:** Adaptive Nocturne Heritage
