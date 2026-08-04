@@ -77,6 +77,18 @@ class TestTrackQuery:
             data = analytics._load()
             assert len(data["queries"]) == 2
 
+    def test_track_query_persists_owner_key(self, tmp_path):
+        f = tmp_path / "analytics.json"
+        with patch.object(analytics, "ANALYTICS_FILE", f):
+            analytics.track_query(
+                "safe query",
+                tools_used=[],
+                reply="A long safe reply that counts as answered",
+                owner_key="user:alice",
+            )
+            data = analytics._load()
+            assert data["queries"][0]["owner_key"] == "user:alice"
+
 
 class TestEntityHits:
     """Test entity hit counting."""

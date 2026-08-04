@@ -21,6 +21,7 @@ MIGRATIONS = ROOT / "agent" / "migrations"
 MIGRATION_RE = re.compile(r"^(\d{3})_[a-z0-9_]+\.sql$")
 ENV_KEY_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 MAX_ENVIRONMENT_BYTES = 1024 * 1024
+POSTGRES_URL_PREFIXES = ("postgres://", "postgresql://")
 
 
 @dataclass(frozen=True)
@@ -477,6 +478,16 @@ def _parse_environment_assignment(
     return key, _normalize_environment_value(value.strip(), line_number)
 
 
+def _validate_production_environment(values: Mapping[str, str]) -> None:
+    if values.get("ENVIRONMENT", "").strip().lower() != "production":
+        raise ValueError("environment authority requires ENVIRONMENT=production")
+    database_url = values.get("DATABASE_URL", "").strip().lower()
+    if not database_url.startswith(POSTGRES_URL_PREFIXES):
+        raise ValueError("environment authority requires a PostgreSQL DATABASE_URL")
+    if values.get("ENTITY_DETAILS_TABLES", "").strip().lower() != "true":
+        raise ValueError("environment authority requires ENTITY_DETAILS_TABLES=true")
+
+
 def _parse_environment(raw: bytes) -> dict[str, str]:
     if b"\0" in raw:
         raise ValueError("environment authority contains NUL")
@@ -499,6 +510,7 @@ def _parse_environment(raw: bytes) -> dict[str, str]:
     unlock_keys = [key for key, value in values.items() if "UNLOCK" in key and value]
     if unlock_keys:
         raise ValueError("environment authority contains a nonempty unlock key")
+    _validate_production_environment(values)
     return values
 
 

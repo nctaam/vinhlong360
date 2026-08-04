@@ -677,6 +677,7 @@ def fetch_url_text(url: str, *, timeout: int = 12, disabled: bool = False) -> st
             url,
             user_agent="vinhlong360-quality-burst/1.0",
             policy=_quality_burst_egress_policy(timeout),
+            audit_context="quality_burst",
         )
         if response.status_code >= 400:
             return ""

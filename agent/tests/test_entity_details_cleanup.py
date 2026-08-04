@@ -17,6 +17,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "scripts"))
 
 import pytest  # noqa: E402
 import entity_details  # noqa: E402
+from config import settings  # noqa: E402
 from database import db  # noqa: E402
 import cleanup_entity_jsonb  # noqa: E402
 from cleanup_entity_jsonb import run as cleanup_run, strippable_keys  # noqa: E402
@@ -26,10 +27,11 @@ TEST_ID = "zz-test-c3-cleanup"
 
 @pytest.fixture(autouse=True)
 def _cleanup(isolated_sqlite_db, monkeypatch):
+    prior = settings.ENTITY_DETAILS_TABLES
     monkeypatch.setattr(sys.modules[__name__], "db", isolated_sqlite_db)
     monkeypatch.setattr(cleanup_entity_jsonb, "db", isolated_sqlite_db)
     yield
-    os.environ.pop("ENTITY_DETAILS_TABLES", None)
+    settings.ENTITY_DETAILS_TABLES = prior
     entity_details.reset_detail_cache()
     db.delete_entity(TEST_ID)
 
@@ -43,7 +45,7 @@ def _raw_attrs() -> dict:
 
 
 def test_strip_on_write_when_flag_on(monkeypatch):
-    monkeypatch.setenv("ENTITY_DETAILS_TABLES", "true")
+    monkeypatch.setattr(settings, "ENTITY_DETAILS_TABLES", True)
     db.reload_entity_details_cache()
     db.upsert_entity({"id": TEST_ID, "type": "product", "name": "C3 test",
                       "attributes": {"ocop_star": 4, "producer": "HTX C3",
@@ -79,7 +81,7 @@ def test_cleanup_strips_only_when_column_matches(monkeypatch):
     assert "ocop_star" not in raw and "producer" not in raw
     assert raw.get("sac_phong") == "tail" and raw.get("founding_year") == "Thế kỷ 19"
     # Đọc flag ON sau dọn phải bằng đọc trước dọn
-    monkeypatch.setenv("ENTITY_DETAILS_TABLES", "true")
+    monkeypatch.setattr(settings, "ENTITY_DETAILS_TABLES", True)
     db.reload_entity_details_cache()
     after_read = db.get_entity(TEST_ID)["attributes"]
     assert after_read == before_read

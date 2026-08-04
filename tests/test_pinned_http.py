@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import gzip
 import inspect
+import logging
 import math
 import socket
 import ssl
@@ -1026,8 +1027,9 @@ def _policy(
     inactivity_timeout_seconds: float = 2.0,
     total_timeout_seconds: float = 5.0,
     max_redirects: int = 5,
+    allowed_origins: tuple[str, ...] = (),
 ) -> ph.EgressPolicy:
-    return ph.EgressPolicy(
+    values = dict(
         max_encoded_bytes=max_encoded_bytes,
         max_decoded_bytes=max_decoded_bytes,
         accepted_encodings=accepted_encodings,
@@ -1035,6 +1037,9 @@ def _policy(
         total_timeout_seconds=total_timeout_seconds,
         max_redirects=max_redirects,
     )
+    if allowed_origins:
+        values["allowed_origins"] = allowed_origins
+    return ph.EgressPolicy(**values)
 
 
 class SocketPairClient:
@@ -1264,6 +1269,7 @@ def test_real_httpcore_emits_request_line_host_and_reads_fixed_length() -> None:
                 inactivity_timeout_seconds=1.0,
                 total_timeout_seconds=2.0,
             ),
+            audit_context="test",
         )
     finally:
         transport_closed = harness.cleanup()
@@ -1289,6 +1295,7 @@ def test_real_httpcore_reads_chunked_body() -> None:
             "http://example.com/path?q=1",
             user_agent="test-agent",
             policy=_policy(accepted_encodings=("identity",)),
+            audit_context="test",
         )
     finally:
         transport_closed = harness.cleanup()
@@ -1310,6 +1317,7 @@ def test_real_httpcore_partial_send_completes_request() -> None:
             "http://example.com/path?q=1",
             user_agent="test-agent",
             policy=_policy(accepted_encodings=("identity",)),
+            audit_context="test",
         )
     finally:
         transport_closed = harness.cleanup()
@@ -1333,6 +1341,7 @@ def test_real_httpcore_zero_send_raises_pinned_transport_error() -> None:
                 "http://example.com/path?q=1",
                 user_agent="test-agent",
                 policy=_policy(accepted_encodings=("identity",)),
+                audit_context="test",
             )
     finally:
         transport_closed = harness.cleanup()
@@ -1354,6 +1363,7 @@ def test_real_httpcore_peer_mismatch_prevents_request_bytes() -> None:
                 "http://example.com/path?q=1",
                 user_agent="test-agent",
                 policy=_policy(accepted_encodings=("identity",)),
+                audit_context="test",
             )
     finally:
         transport_closed = harness.cleanup()
@@ -1542,6 +1552,7 @@ def test_real_httpcore_body_and_encoding_boundaries(
                 "http://example.com/body",
                 user_agent="test-agent",
                 policy=policy,
+                audit_context="test",
             )
         else:
             with pytest.raises(expected_error) as exc_info:
@@ -1549,6 +1560,7 @@ def test_real_httpcore_body_and_encoding_boundaries(
                     "http://example.com/body",
                     user_agent="test-agent",
                     policy=policy,
+                    audit_context="test",
                 )
     finally:
         transport_closed = harness.cleanup()
@@ -1578,6 +1590,7 @@ def test_real_httpcore_total_deadline_expires_while_response_is_withheld() -> No
                     inactivity_timeout_seconds=2.0,
                     total_timeout_seconds=1.0,
                 ),
+                audit_context="test",
             )
     finally:
         transport_closed = harness.cleanup()
@@ -1684,12 +1697,144 @@ def test_egress_policy_rejects_invalid_limits(overrides: dict) -> None:
         ph.EgressPolicy(**values)
 
 
-def test_pinned_client_public_get_requires_policy_only() -> None:
+def test_pinned_client_public_get_requires_audit_context() -> None:
     parameters = inspect.signature(ph.PinnedHTTPClient.get).parameters
-    assert list(parameters) == ["self", "url", "user_agent", "policy"]
+    assert list(parameters) == ["self", "url", "user_agent", "policy", "audit_context"]
     assert parameters["user_agent"].kind is inspect.Parameter.KEYWORD_ONLY
     assert parameters["policy"].kind is inspect.Parameter.KEYWORD_ONLY
     assert parameters["policy"].default is inspect.Parameter.empty
+    assert parameters["audit_context"].kind is inspect.Parameter.KEYWORD_ONLY
+    assert parameters["audit_context"].default is inspect.Parameter.empty
+
+
+def test_security_denial_logs_sanitized_blocked_address_once(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    def resolver(_host: str, _port: int, _budget: ph.DeadlineBudget):
+        raise ph.BlockedAddressError("private address: 127.0.0.1")
+
+    client = ph.PinnedHTTPClient(resolver=resolver)
+    with caplog.at_level(logging.WARNING, logger="security.egress"):
+        with pytest.raises(ph.BlockedAddressError):
+            client.get(
+                "https://public.example/private?token=secret#fragment",
+                user_agent="test-agent",
+                policy=_policy(),
+                audit_context="Quality / Burst",
+            )
+
+    records = [record for record in caplog.records if record.name == "security.egress"]
+    assert len(records) == 1
+    record = records[0]
+    assert record.name == "security.egress"
+    assert record.levelno == logging.WARNING
+    message = record.getMessage()
+    assert message == (
+        "Pinned egress denied consumer=quality_burst reason=blocked_address "
+        "target=https://public.example:443 hop=0"
+    )
+    assert "/private" not in message
+    assert "token" not in message
+    assert "fragment" not in message
+    assert "private address" not in message
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("Admin Image/Review", "admin_image_review"),
+        ("x" * 100, "x" * 64),
+        ("!!!", "unknown"),
+    ],
+)
+def test_audit_context_sanitization(raw: str, expected: str) -> None:
+    assert ph._sanitize_audit_context(raw) == expected
+
+
+def test_safe_origin_formats_ascii_ipv6_and_effective_port() -> None:
+    assert ph._safe_origin("https://[2001:db8::1]/path?secret=1") == "https://[2001:db8::1]:443"
+    assert ph._safe_origin("https://user:pass@example.com/private") == "https://example.com:443"
+    assert ph._safe_origin("not a url") == "<invalid>"
+
+
+def test_peer_mismatch_logs_one_security_denial(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    def factory(_hop, _policy, _budget):
+        raise ph.PeerMismatchError("peer secret text")
+
+    client = ph.PinnedHTTPClient(resolver=_public_resolver, transport_factory=factory)
+    with caplog.at_level(logging.WARNING, logger="security.egress"):
+        with pytest.raises(ph.PeerMismatchError):
+            client.get(
+                "https://peer.example/path?token=secret",
+                user_agent="test-agent",
+                policy=_policy(),
+                audit_context="test",
+            )
+    records = [record for record in caplog.records if record.name == "security.egress"]
+    assert len(records) == 1
+    assert records[0].getMessage() == (
+        "Pinned egress denied consumer=test reason=peer_mismatch "
+        "target=https://peer.example:443 hop=0"
+    )
+
+
+def test_redirect_policy_logs_accepted_redirect_hop(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    def factory(hop, _policy, _budget):
+        def handler(request: httpx.Request) -> httpx.Response:
+            if hop.url.host == "one.example":
+                return httpx.Response(302, headers={"location": "https://two.example/next"}, request=request)
+            return httpx.Response(302, headers={"location": "https://three.example/final"}, request=request)
+
+        return httpx.MockTransport(handler)
+
+    client = ph.PinnedHTTPClient(resolver=_public_resolver, transport_factory=factory)
+    with caplog.at_level(logging.WARNING, logger="security.egress"):
+        with pytest.raises(ph.RedirectPolicyError):
+            client.get(
+                "https://one.example/start",
+                user_agent="test-agent",
+                policy=_policy(max_redirects=1),
+                audit_context="test",
+            )
+    records = [record for record in caplog.records if record.name == "security.egress"]
+    assert len(records) == 1
+    assert records[0].getMessage() == (
+        "Pinned egress denied consumer=test reason=redirect_policy "
+        "target=https://two.example:443 hop=1"
+    )
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        ph.PinnedBodyLimitError("body secret"),
+        ph.PinnedContentEncodingError("encoding secret"),
+        ph.PinnedDeadlineExceeded("deadline secret"),
+        ph.ResolverSaturatedError("saturation secret"),
+        ph.PinnedTransportError("transport secret"),
+    ],
+)
+def test_non_security_failures_do_not_emit_security_denial(
+    caplog: pytest.LogCaptureFixture,
+    error: Exception,
+) -> None:
+    def resolver(_host: str, _port: int, _budget: ph.DeadlineBudget):
+        raise error
+
+    client = ph.PinnedHTTPClient(resolver=resolver)
+    with caplog.at_level(logging.WARNING, logger="security.egress"):
+        with pytest.raises(type(error)):
+            client.get(
+                "https://example.com/a",
+                user_agent="test-agent",
+                policy=_policy(),
+                audit_context="test",
+            )
+    assert caplog.records == []
 
 
 def test_identity_body_accepts_exact_encoded_and_decoded_boundaries() -> None:
@@ -1698,6 +1843,7 @@ def test_identity_body_accepts_exact_encoded_and_decoded_boundaries() -> None:
         "https://example.com/a",
         user_agent="test",
         policy=_policy(max_encoded_bytes=1024, max_decoded_bytes=1024),
+        audit_context="test",
     )
     assert result.content == body
 
@@ -1708,6 +1854,7 @@ def test_identity_body_rejects_encoded_boundary_plus_one() -> None:
             "https://example.com/a",
             user_agent="test",
             policy=_policy(max_encoded_bytes=1024),
+            audit_context="test",
         )
 
 
@@ -1726,6 +1873,7 @@ def test_unsupported_or_stacked_content_encoding_is_rejected(headers) -> None:
             "https://example.com/a",
             user_agent="test",
             policy=_policy(),
+            audit_context="test",
         )
 
 
@@ -1738,6 +1886,7 @@ def test_false_small_content_length_cannot_bypass_actual_encoded_limit() -> None
             "https://example.com/a",
             user_agent="test",
             policy=_policy(max_encoded_bytes=1024),
+            audit_context="test",
         )
 
 
@@ -1750,6 +1899,7 @@ def test_content_length_over_encoded_limit_is_rejected_early() -> None:
             "https://example.com/a",
             user_agent="test",
             policy=_policy(max_encoded_bytes=1024),
+            audit_context="test",
         )
 
 
@@ -1792,6 +1942,7 @@ def test_final_response_headers_and_accept_encoding_are_preserved() -> None:
         "https://example.com/a",
         user_agent="test",
         policy=_policy(accepted_encodings=("gzip", "identity")),
+        audit_context="test",
     )
     assert result.headers == (("x-original", "kept"), ("x-original", "duplicate"))
     assert seen == ["gzip, identity"]
@@ -1804,10 +1955,163 @@ def test_redirect_body_is_closed_without_iteration() -> None:
         "https://example.com/a",
         user_agent="test",
         policy=_policy(max_redirects=1),
+        audit_context="test",
     )
     assert result.url == "https://example.com/final"
     assert stream.closed is True
     assert stream.iterated is False
+
+
+def test_same_url_redirect_with_set_cookie_replays_cookie() -> None:
+    seen: list[tuple[str, str | None]] = []
+
+    def factory(
+        _hop: ph.ResolvedHop,
+        _policy: ph.EgressPolicy,
+        _budget: ph.DeadlineBudget,
+    ) -> httpx.BaseTransport:
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append((str(request.url), request.headers.get("cookie")))
+            if len(seen) == 1:
+                return httpx.Response(
+                    302,
+                    headers=(
+                        ("location", "/p"),
+                        ("set-cookie", "consent=yes; Path=/"),
+                    ),
+                    request=request,
+                )
+            return httpx.Response(
+                200,
+                stream=_ChunkStream([b"ok"]),
+                request=request,
+            )
+
+        return httpx.MockTransport(handler)
+
+    result = ph.PinnedHTTPClient(
+        resolver=_public_resolver,
+        transport_factory=factory,
+    ).get(
+        "https://example.com/p",
+        user_agent="ua/1",
+        policy=_policy(),
+        audit_context="test",
+    )
+
+    assert result.content == b"ok"
+    assert seen == [
+        ("https://example.com/p", None),
+        ("https://example.com/p", "consent=yes"),
+    ]
+
+
+def test_same_url_redirect_without_cookie_is_rejected() -> None:
+    seen: list[str] = []
+
+    def factory(
+        _hop: ph.ResolvedHop,
+        _policy: ph.EgressPolicy,
+        _budget: ph.DeadlineBudget,
+    ) -> httpx.BaseTransport:
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append(str(request.url))
+            return httpx.Response(
+                302,
+                headers={"location": "/p"},
+                request=request,
+            )
+
+        return httpx.MockTransport(handler)
+
+    with pytest.raises(ph.RedirectPolicyError):
+        ph.PinnedHTTPClient(
+            resolver=_public_resolver,
+            transport_factory=factory,
+        ).get(
+            "https://example.com/p",
+            user_agent="ua/1",
+            policy=_policy(),
+            audit_context="test",
+        )
+
+    assert seen == ["https://example.com/p"]
+
+
+def test_cookie_is_not_sent_to_incompatible_origin_or_scheme() -> None:
+    seen: list[tuple[str, str | None]] = []
+
+    def factory(
+        _hop: ph.ResolvedHop,
+        _policy: ph.EgressPolicy,
+        _budget: ph.DeadlineBudget,
+    ) -> httpx.BaseTransport:
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append((str(request.url), request.headers.get("cookie")))
+            if len(seen) == 1:
+                return httpx.Response(
+                    302,
+                    headers=(
+                        ("location", "http://example.com/p"),
+                        ("set-cookie", "consent=yes; Secure; Path=/"),
+                    ),
+                    request=request,
+                )
+            return httpx.Response(
+                200,
+                stream=_ChunkStream([b"ok"]),
+                request=request,
+            )
+
+        return httpx.MockTransport(handler)
+
+    result = ph.PinnedHTTPClient(
+        resolver=_public_resolver,
+        transport_factory=factory,
+    ).get(
+        "https://example.com/p",
+        user_agent="ua/1",
+        policy=_policy(),
+        audit_context="test",
+    )
+
+    assert result.content == b"ok"
+    assert seen == [
+        ("https://example.com/p", None),
+        ("http://example.com/p", None),
+    ]
+
+
+def test_pinned_cookie_jar_enforces_domain_path_and_count_bounds() -> None:
+    jar = ph._PinnedCookieJar()
+    source = httpx.URL("https://sub.example.com/section/page")
+    jar.update(
+        source,
+        (
+            ("set-cookie", "scoped=yes; Domain=example.com; Path=/section"),
+            ("set-cookie", "too-large=" + ("x" * 1025)),
+        ),
+    )
+    for index in range(17):
+        jar.update(source, (("set-cookie", f"c{index}=v; Path=/"),))
+
+    path_cookies = "; ".join(
+        f"c{index}=v" for index in sorted(range(15), key=lambda item: f"c{item}")
+    )
+    assert jar.header_for(httpx.URL("https://sub.example.com/section/next")) == (
+        "scoped=yes; " + path_cookies
+    )
+    assert jar.header_for(httpx.URL("https://sub.example.com/other")) == path_cookies
+    assert jar.header_for(httpx.URL("https://other.test/section/next")) is None
+
+
+def test_pinned_cookie_jar_honors_max_age_deletion() -> None:
+    jar = ph._PinnedCookieJar()
+    url = httpx.URL("https://example.com/p")
+    jar.update(url, (("set-cookie", "consent=yes; Path=/"),))
+    jar.update(url, (("set-cookie", "consent=; Max-Age=0; Path=/"),))
+
+    assert jar.header_for(url) is None
 
 
 def test_gzip_body_accepts_split_chunks() -> None:
@@ -1818,7 +2122,7 @@ def test_gzip_body_accepts_split_chunks() -> None:
         encoded,
         headers=(("content-encoding", "gzip"),),
         chunks=[encoded[:midpoint], encoded[midpoint:]],
-    ).get("https://example.com/a", user_agent="test", policy=_policy())
+    ).get("https://example.com/a", user_agent="test", policy=_policy(), audit_context="test")
     assert result.content == decoded
 
 
@@ -1836,7 +2140,7 @@ def test_gzip_rejects_malformed_truncated_trailing_or_concatenated(encoded: byte
         _client_for_raw_response(
             encoded,
             headers=(("content-encoding", "gzip"),),
-        ).get("https://example.com/a", user_agent="test", policy=_policy())
+        ).get("https://example.com/a", user_agent="test", policy=_policy(), audit_context="test")
 
 
 def test_gzip_body_rejects_decoded_boundary_plus_one() -> None:
@@ -1849,6 +2153,7 @@ def test_gzip_body_rejects_decoded_boundary_plus_one() -> None:
             "https://example.com/a",
             user_agent="test",
             policy=_policy(max_encoded_bytes=len(encoded), max_decoded_bytes=1024),
+            audit_context="test",
         )
 
 
@@ -1873,6 +2178,7 @@ def test_gzip_bomb_allocation_is_policy_relative() -> None:
                     max_encoded_bytes=len(encoded),
                     max_decoded_bytes=decoded_cap,
                 ),
+                audit_context="test",
             )
         _current, peak = tracemalloc.get_traced_memory()
     finally:
@@ -1920,6 +2226,7 @@ def test_client_returns_immutable_decoded_response_and_user_agent() -> None:
         "https://example.com/a",
         user_agent="ua/1",
         policy=_policy(inactivity_timeout_seconds=3.0, total_timeout_seconds=3.0),
+        audit_context="test",
     )
     assert result.status_code == 200
     assert result.content == b"xin chao"
@@ -1956,6 +2263,7 @@ def test_redirect_re_resolves_every_hop_and_blocks_private_target() -> None:
             "https://public.example/start",
             user_agent="ua/1",
             policy=_policy(),
+            audit_context="test",
         )
     assert calls == [("public.example", 443), ("internal.example", 443)]
     assert budgets[0] is budgets[1]
@@ -1986,6 +2294,7 @@ def test_redirects_reuse_one_deadline_budget() -> None:
         "https://one.example/start",
         user_agent="test",
         policy=_policy(max_redirects=2),
+        audit_context="test",
     )
 
     assert len({id(item) for item in budgets}) == 1
@@ -2049,6 +2358,7 @@ def test_one_deadline_budget_reaches_transport_backend_stream_and_decode(
         "https://one.example/start",
         user_agent="test",
         policy=_policy(),
+        audit_context="test",
     )
 
     assert result.content == b"done"
@@ -2083,6 +2393,7 @@ def test_redirect_processing_stops_on_original_deadline() -> None:
             "https://one.example/start",
             user_agent="test",
             policy=_policy(total_timeout_seconds=5.0),
+            audit_context="test",
         )
 
     assert resolved == ["one.example"]
@@ -2110,6 +2421,7 @@ def test_redirect_to_blocked_literal_is_rejected(ip: str) -> None:
             "https://93.184.216.34/start",
             user_agent="ua/1",
             policy=_policy(),
+            audit_context="test",
         )
 
 
@@ -2145,6 +2457,7 @@ def test_redirect_to_mixed_dns_answer_is_rejected(monkeypatch: pytest.MonkeyPatc
             "https://public.example/start",
             user_agent="ua/1",
             policy=_policy(),
+            audit_context="test",
         )
     assert calls == ["public.example", "mixed.example"]
 
@@ -2171,6 +2484,7 @@ def test_five_redirects_allowed_sixth_rejected() -> None:
             "https://example.com/0",
             user_agent="ua/1",
             policy=_policy(max_redirects=5),
+            audit_context="test",
         )
     assert len(visited) == 6
 
@@ -2206,9 +2520,90 @@ def test_client_supports_all_approved_redirect_forms(
     result = ph.PinnedHTTPClient(
         resolver=_public_resolver,
         transport_factory=factory,
-    ).get(start, user_agent="ua/1", policy=_policy())
+    ).get(start, user_agent="ua/1", policy=_policy(), audit_context="test")
     assert result.url == expected
     assert len(result.redirects) == 1
+
+
+@pytest.mark.parametrize(
+    "location",
+    [
+        "https://other.example/next",
+        "http://allowed.example/next",
+        "https://allowed.example:444/next",
+    ],
+    ids=["other-host", "scheme-downgrade", "alternate-port"],
+)
+def test_allowed_origins_blocks_redirect_before_resolution_or_dial(location: str) -> None:
+    resolved: list[str] = []
+    requested: list[str] = []
+
+    def resolver(
+        host: str,
+        port: int,
+        budget: ph.DeadlineBudget,
+    ) -> tuple[ph.ResolvedAddress, ...]:
+        resolved.append(host)
+        return _public_resolver(host, port, budget)
+
+    def factory(
+        _hop: ph.ResolvedHop,
+        _policy: ph.EgressPolicy,
+        _budget: ph.DeadlineBudget,
+    ) -> httpx.BaseTransport:
+        def handler(request: httpx.Request) -> httpx.Response:
+            requested.append(str(request.url))
+            return httpx.Response(
+                302,
+                headers={"location": location},
+                request=request,
+            )
+
+        return httpx.MockTransport(handler)
+
+    client = ph.PinnedHTTPClient(resolver=resolver, transport_factory=factory)
+    with pytest.raises(ph.RedirectPolicyError):
+        client.get(
+            "https://allowed.example/start",
+            user_agent="ua/1",
+            policy=_policy(allowed_origins=("https://allowed.example",)),
+            audit_context="test",
+        )
+
+    assert resolved == ["allowed.example"]
+    assert requested == ["https://allowed.example/start"]
+
+
+def test_allowed_origins_blocks_initial_destination_before_resolution() -> None:
+    resolved: list[str] = []
+
+    def resolver(
+        host: str,
+        port: int,
+        budget: ph.DeadlineBudget,
+    ) -> tuple[ph.ResolvedAddress, ...]:
+        resolved.append(host)
+        return _public_resolver(host, port, budget)
+
+    client = ph.PinnedHTTPClient(resolver=resolver)
+    with pytest.raises(ph.InvalidDestinationError):
+        client.get(
+            "https://other.example/start",
+            user_agent="ua/1",
+            policy=_policy(allowed_origins=("https://allowed.example",)),
+            audit_context="test",
+        )
+
+    assert resolved == []
+
+
+@pytest.mark.parametrize(
+    "origin",
+    ["not-a-url", "ftp://example.com", "https://user@example.com"],
+)
+def test_egress_policy_rejects_invalid_allowed_origin(origin: str) -> None:
+    with pytest.raises(ValueError):
+        _policy(allowed_origins=(origin,))
 
 
 @pytest.mark.parametrize(
@@ -2231,6 +2626,7 @@ def test_blank_or_nonstandard_redirect_is_final(status: int, location: str) -> N
         "https://example.com/a",
         user_agent="ua/1",
         policy=_policy(),
+        audit_context="test",
     )
     assert result.status_code == status
     assert result.redirects == ()
@@ -2253,6 +2649,7 @@ def test_fragment_and_default_port_redirect_loops_are_rejected(location: str) ->
             "https://example.com/a#initial",
             user_agent="ua/1",
             policy=_policy(),
+            audit_context="test",
         )
 
 
@@ -2272,6 +2669,7 @@ def test_unicode_and_ascii_idna_redirect_loop_is_rejected() -> None:
             "https://BÜCHER.example/a",
             user_agent="ua/1",
             policy=_policy(),
+            audit_context="test",
         )
 
 
@@ -2288,6 +2686,7 @@ def test_malformed_redirect_target_is_translated() -> None:
             "https://example.com/a",
             user_agent="ua/1",
             policy=_policy(),
+            audit_context="test",
         )
 
 
@@ -2306,7 +2705,12 @@ def test_percent_encoded_and_literal_paths_are_distinct() -> None:
     result = ph.PinnedHTTPClient(
         resolver=_public_resolver,
         transport_factory=factory,
-    ).get("https://example.com/a%2Fb", user_agent="ua/1", policy=_policy())
+    ).get(
+        "https://example.com/a%2Fb",
+        user_agent="ua/1",
+        policy=_policy(),
+        audit_context="test",
+    )
     assert result.url == "https://example.com/a/b"
     assert len(result.redirects) == 1
 
@@ -2341,7 +2745,12 @@ def test_each_redirect_hop_resolves_once_and_gets_a_fresh_transport() -> None:
     result = ph.PinnedHTTPClient(
         resolver=resolver,
         transport_factory=factory,
-    ).get("https://a.example/start", user_agent="ua/1", policy=_policy())
+    ).get(
+        "https://a.example/start",
+        user_agent="ua/1",
+        policy=_policy(),
+        audit_context="test",
+    )
     assert result.content == b"done"
     assert resolutions == [("a.example", 443), ("b.example", 443)]
     assert transports == [
@@ -2370,7 +2779,12 @@ def test_environment_proxies_are_not_used(monkeypatch: pytest.MonkeyPatch) -> No
     result = ph.PinnedHTTPClient(
         resolver=_public_resolver,
         transport_factory=factory,
-    ).get("https://example.com/a", user_agent="ua/1", policy=_policy())
+    ).get(
+        "https://example.com/a",
+        user_agent="ua/1",
+        policy=_policy(),
+        audit_context="test",
+    )
     assert result.content == b"direct"
     assert handled == ["https://example.com/a"]
 
@@ -2392,6 +2806,7 @@ def test_client_translates_transport_factory_failure() -> None:
             "https://example.com/a",
             user_agent="ua/1",
             policy=_policy(),
+            audit_context="test",
         )
 
 
@@ -2424,6 +2839,7 @@ def test_client_translates_transport_failures(error_factory) -> None:
             "https://example.com/a",
             user_agent="ua/1",
             policy=_policy(),
+            audit_context="test",
         )
 
 
@@ -2458,7 +2874,12 @@ def test_shared_layer_decodes_gzip_exactly_once() -> None:
     result = ph.PinnedHTTPClient(
         resolver=_public_resolver,
         transport_factory=factory,
-    ).get("https://example.com/a", user_agent="ua/1", policy=_policy())
+    ).get(
+        "https://example.com/a",
+        user_agent="ua/1",
+        policy=_policy(),
+        audit_context="test",
+    )
     assert result.content == "Vĩnh Long".encode("utf-8")
     assert result.content != encoded
 
@@ -2491,6 +2912,7 @@ def test_concurrent_calls_do_not_leak_pinned_hops() -> None:
                     f"https://{host}/",
                     user_agent="ua/1",
                     policy=_policy(),
+                    audit_context="test",
                 ),
                 hosts,
             )

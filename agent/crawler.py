@@ -25,6 +25,8 @@ import httpx
 from dotenv import load_dotenv
 from openai import OpenAI
 
+from pinned_http import EgressPolicy, PinnedHTTPClient, PinnedResponse
+
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 client = OpenAI(
@@ -37,6 +39,21 @@ MODEL_MINI = os.environ.get("LLM_MODEL_MINI", "cx/gpt-5.4-mini")
 BASE_URL = "https://vinhlongtourist.vn"
 OUTPUT_DIR = Path(__file__).resolve().parent / "crawled"
 OUTPUT_DIR.mkdir(exist_ok=True)
+
+_CRAWL_BASE_URL = httpx.URL(BASE_URL)
+_CRAWL_HOST = _CRAWL_BASE_URL.host
+_CRAWLER_USER_AGENT = "vinhlong360-crawler/1.0"
+_CRAWLER_EGRESS_POLICY = EgressPolicy(
+    max_encoded_bytes=2 * 1024 * 1024,
+    max_decoded_bytes=2 * 1024 * 1024,
+    accepted_encodings=("gzip", "identity"),
+    inactivity_timeout_seconds=30.0,
+    total_timeout_seconds=30.0,
+    max_redirects=5,
+    allowed_origins=(BASE_URL,),
+)
+_PINNED_HTTP = PinnedHTTPClient()
+_HTTP_ENTITY_HEADERS = {"content-encoding", "content-length", "transfer-encoding"}
 
 # ── Mapping địa chỉ → placeId ──
 
@@ -117,12 +134,40 @@ def make_slug(name: str) -> str:
 
 # ── Fetch & extract ──
 
+def _resolve_crawl_target(path: str) -> httpx.URL:
+    try:
+        target = _CRAWL_BASE_URL.join(path)
+    except (TypeError, ValueError, httpx.InvalidURL) as exc:
+        raise ValueError("invalid crawl target") from exc
+    if target.scheme != "https" or target.userinfo or target.host != _CRAWL_HOST:
+        raise ValueError("crawl target must stay on the configured origin")
+    return target
+
+
+def _pinned_to_httpx_response(response: PinnedResponse) -> httpx.Response:
+    headers = [
+        (name, value)
+        for name, value in response.headers
+        if name.lower() not in _HTTP_ENTITY_HEADERS
+    ]
+    return httpx.Response(
+        status_code=response.status_code,
+        headers=headers,
+        content=response.content,
+        request=httpx.Request("GET", response.url),
+    )
+
 def fetch_page(path: str) -> str:
     """Fetch HTML từ vinhlongtourist.vn, trả về text content."""
-    url = BASE_URL + path
+    url = _resolve_crawl_target(path)
     print(f"  Fetching: {url}")
-    resp = httpx.get(url, timeout=30, follow_redirects=True,
-                     headers={"User-Agent": "vinhlong360-crawler/1.0"})
+    pinned = _PINNED_HTTP.get(
+        str(url),
+        user_agent=_CRAWLER_USER_AGENT,
+        policy=_CRAWLER_EGRESS_POLICY,
+        audit_context="crawler",
+    )
+    resp = _pinned_to_httpx_response(pinned)
     resp.raise_for_status()
     # Loại bỏ HTML tags cơ bản
     text = resp.text

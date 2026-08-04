@@ -52,7 +52,11 @@ const initial = computed(() => {
 
 async function doLogout() {
   open.value = false
-  await logout()
+  try {
+    await logout()
+  } catch {
+    showToast('Không thể đăng xuất. Phiên của bạn vẫn đang hoạt động.', 'error', 5000)
+  }
 }
 
 </script>

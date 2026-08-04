@@ -172,7 +172,8 @@ class TestCostAttributionRecord(unittest.TestCase):
         _record_helper(attr)
         self.assertEqual(len(attr._records), 1)
         entry = attr._records[0]
-        self.assertEqual(entry["session_id"], "s1")
+        self.assertEqual(entry["owner_key"], "s1")
+        self.assertNotIn("session_id", entry)
         self.assertEqual(entry["agent_name"], "knowledge")
         self.assertEqual(entry["tool_name"], "search")
         self.assertEqual(entry["cost"], 0.001)
@@ -288,10 +289,10 @@ class TestCostAttributionFIFOEviction(unittest.TestCase):
             _record_helper(attr, session_id=f"s{i}", cost=float(i))
         # Only 5 should remain (most recent)
         self.assertEqual(len(attr._records), 5)
-        session_ids = [r["session_id"] for r in attr._records]
-        self.assertNotIn("s0", session_ids)
-        self.assertNotIn("s1", session_ids)
-        self.assertIn("s6", session_ids)
+        owner_keys = [r["owner_key"] for r in attr._records]
+        self.assertNotIn("s0", owner_keys)
+        self.assertNotIn("s1", owner_keys)
+        self.assertIn("s6", owner_keys)
 
 
 class TestCostAttributionPersistence(unittest.TestCase):

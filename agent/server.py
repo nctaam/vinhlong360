@@ -16,6 +16,7 @@ Chạy:
   python agent/server.py
 """
 
+import hashlib
 import json
 import os
 import re
@@ -80,12 +81,20 @@ from launch_policy_api import validate_sitemap_bundle_on_startup
 from tools import TOOLS, SYSTEM_PROMPT
 from middleware import (
     logger, chat_limiter, stream_limiter, report_limiter,
+    feedback_ip_limiter, feedback_owner_limiter,
     response_tracker, error_tracker, generate_request_id, get_client_ip,
 )
 from policy_http import PolicyHttpMiddleware
 from itinerary_gen import generate_itinerary
 from scheduler import start_scheduler, stop_scheduler, scheduler_status, sync_data_json_to_js
 from chat_identity import resolve_chat_owner, set_chat_owner_cookie
+from owner_write_gate import owner_write_gate
+from feedback_policy import (
+    FeedbackRejected,
+    FeedbackUnavailable,
+    consume_feedback_receipt,
+    issue_feedback_receipt,
+)
 from memory import UnknownConversation, memory_manager
 from reflexion import reflexion_engine, quality_tracker
 from proactive import get_proactive_context, generate_welcome_message
@@ -143,7 +152,7 @@ except ImportError:
     HAS_IMAGE_RECOGNITION = False
 
 try:
-    from metrics import generate_metrics, track_chat_request, track_tool_call, track_cache, track_feedback, track_error, set_gauge, track_http_request  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
+    from metrics import generate_metrics, track_chat_request, track_tool_call, track_cache, track_feedback, track_feedback_attempt, track_error, set_gauge, track_http_request  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
     HAS_METRICS = True
 except ImportError:
     HAS_METRICS = False
@@ -215,6 +224,19 @@ try:
     HAS_GUARDRAILS = True
 except ImportError:
     HAS_GUARDRAILS = False
+
+from privacy_boundary import (
+    PrivacyBoundaryBlocked,
+    PrivacyBoundaryUnavailable,
+    SafeText,
+    StreamingPIIRedactor,
+    prepare_chat_input,
+    prepare_chat_output,
+    privacy_boundary_readiness,
+    redact_payload,
+    redact_text,
+)
+from index_policy import is_publicly_eligible
 
 try:
     from cost_tracker import token_counter, cost_attribution, budget_manager as cost_budget, track_llm_call, get_cost_report  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
@@ -1087,6 +1109,49 @@ app.add_middleware(
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 
+def _merge_vary_header(response, *members: str) -> None:
+    """Merge Vary members case-insensitively without duplicate directives."""
+    existing = []
+    for name, value in getattr(response, "raw_headers", []):
+        if name.lower() == b"vary":
+            existing.extend(value.decode("latin-1").split(","))
+    existing.extend(response.headers.get("Vary", "").split(","))
+    existing.extend(members)
+
+    merged = []
+    seen = set()
+    for member in existing:
+        normalized = member.strip()
+        if not normalized:
+            continue
+        key = normalized.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        merged.append(normalized)
+
+    response.raw_headers = [
+        (name, value)
+        for name, value in getattr(response, "raw_headers", [])
+        if name.lower() != b"vary"
+    ]
+    if merged:
+        response.headers["Vary"] = ", ".join(merged)
+
+
+def _apply_final_cache_policy(request, response) -> None:
+    """Apply the last cache classification after endpoint processing."""
+    path = request.url.path
+    if not path.startswith(("/api/", "/admin/", "/auth/")):
+        return
+
+    _merge_vary_header(response, "Authorization", "Cookie", "Accept")
+    if path.startswith("/api/") and getattr(
+        request.state, "authenticated_user_id", None
+    ):
+        response.headers["Cache-Control"] = "private, no-store"
+
+
 @app.middleware("http")
 async def security_headers(request, call_next):
     from auth_middleware import generate_csp_nonce, build_csp, get_security_headers
@@ -1097,12 +1162,11 @@ async def security_headers(request, call_next):
         response.headers[k] = v
     response.headers["Content-Security-Policy"] = build_csp(nonce)
     response.headers["X-API-Version"] = "1.0"
-    # Vary: phản hồi /api|/admin|/auth phụ thuộc Authorization → cache đúng theo user
-    # (salvage session-be af90dbb: tránh cache lẫn giữa các phiên đăng nhập).
-    if request.url.path.startswith(("/api/", "/admin/", "/auth/")):
-        response.headers["Vary"] = "Authorization, Accept"
     if request.method == "GET" and "cache-control" not in response.headers:
         response.headers["Cache-Control"] = "private, max-age=30"
+    # Finalize after endpoint headers are known so personalized API data cannot
+    # retain an endpoint-provided public cache classification.
+    _apply_final_cache_policy(request, response)
     return response
 
 
@@ -1355,7 +1419,7 @@ async def track_response_time(request: Request, call_next):
 app.add_middleware(PolicyHttpMiddleware, route_resolver=app.router)
 
 
-from pydantic import ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, ValidationError, field_validator
 
 def _sanitize_message(v: str) -> str:
     """Strip HTML/script tags from user chat messages."""
@@ -1382,12 +1446,6 @@ class ChatRequest(BaseModel):
     def sanitize_message(cls, v):
         return _sanitize_message(v)
 
-    def history_messages(self) -> list[dict[str, str]]:
-        history = [item.model_dump() for item in self.history]
-        if history and history[-1] == {"role": "user", "content": self.message}:
-            history.pop()
-        return history
-
 
 class ChatResponse(BaseModel):
     reply: str
@@ -1395,16 +1453,109 @@ class ChatResponse(BaseModel):
     suggestions: list[str] = []
     session_id: str = ""
     cached: bool = False
+    feedback_receipt: str | None = None
+
+
+_FEEDBACK_MODEL_VARIANTS = {
+    "cx/gpt-5.4": "cx-gpt-5-4",
+    "cx/gpt-5.4-mini": "cx-gpt-5-4-mini",
+    "cx/gpt-5.5": "cx-gpt-5-5",
+    "cx/gpt-5.5-mini": "cx-gpt-5-5-mini",
+    "cx-gpt-5-4": "cx-gpt-5-4",
+    "cx-gpt-5-4-mini": "cx-gpt-5-4-mini",
+    "cx-gpt-5-5": "cx-gpt-5-5",
+    "cx-gpt-5-5-mini": "cx-gpt-5-5-mini",
+}
+_FEEDBACK_SEARCH_TOOLS = frozenset({"search", "web_search", "accommodation_search"})
+_FEEDBACK_WEATHER_TOOLS = frozenset({"weather"})
+_FEEDBACK_KNOWLEDGE_TOOLS = frozenset({
+    "abstain",
+    "community_reviews",
+    "compare_areas",
+    "directory_lookup",
+    "entity_detail",
+    "generate_itinerary",
+    "itinerary_detail",
+    "list_itineraries",
+    "nearby_entities",
+    "ocop_products",
+    "places_in_area",
+    "seasonal_now",
+    "stats",
+    "suggest_followups",
+    "trending_posts",
+})
+
+
+def _feedback_tool_bucket(tools) -> str:
+    if not tools:
+        return "none"
+    names = {
+        value.split("(", 1)[0].strip()
+        for value in tools
+        if isinstance(value, str) and value.strip()
+    }
+    if not names:
+        return "mixed"
+    buckets = set()
+    for name in names:
+        if name in _FEEDBACK_SEARCH_TOOLS:
+            buckets.add("search")
+        elif name in _FEEDBACK_WEATHER_TOOLS:
+            buckets.add("weather")
+        elif name in _FEEDBACK_KNOWLEDGE_TOOLS:
+            buckets.add("knowledge")
+        else:
+            return "mixed"
+    return next(iter(buckets)) if len(buckets) == 1 else "mixed"
+
+
+def _issue_delivered_feedback_receipt(
+    owner_key,
+    safe_message,
+    safe_reply,
+    model_variant,
+    tools,
+) -> str | None:
+    canonical_turn = json.dumps(
+        {"message": safe_message, "reply": safe_reply},
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    assistant_turn_digest = hashlib.sha256(
+        b"feedback-assistant-turn:v1\x00" + canonical_turn
+    ).hexdigest()
+    bounded_model = _FEEDBACK_MODEL_VARIANTS.get(model_variant, "other")
+    bounded_tools = _feedback_tool_bucket(tools)
+    try:
+        receipt = issue_feedback_receipt(
+            owner_key,
+            assistant_turn_digest,
+            bounded_model,
+            bounded_tools,
+        )
+    except Exception:
+        logger.warning("FEEDBACK_RECEIPT_DELIVERY_ISSUE_FAILED")
+        return None
+    return receipt.token if receipt is not None else None
 
 
 # ── Pydantic models for validated POST endpoints ──
 
 class FeedbackRequest(BaseModel):
-    query: str = Field(default="", max_length=2000)
-    rating: int = Field(..., ge=0, le=1)
-    user_id: str = Field(default="anonymous", max_length=64)
-    session_id: str = Field(default="anonymous", max_length=64)
-    entity_id: str | None = Field(default=None, max_length=64)
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    receipt: str
+    rating: Literal[0, 1]
+
+    @field_validator("rating", mode="before")
+    @classmethod
+    def reject_boolean_rating(cls, value):
+        if type(value) is not int:
+            raise ValueError("rating must be integer 0 or 1")
+        return value
+
 
 class CheckpointSaveRequest(BaseModel):
     session_id: str = Field(default="", max_length=64)
@@ -1584,7 +1735,11 @@ def _resolve_base_prompt(session_id):
     base_prompt = SYSTEM_PROMPT
     if HAS_AB_TESTING and session_id:
         try:
-            variant = ab_manager.assign_variant("prompt_style", session_id)
+            variant = ab_manager.assign_variant(
+                "prompt_style",
+                session_id,
+                persist=False,
+            )
             if variant:
                 ab_info["prompt_style"] = variant["id"]
                 style = variant.get("config", {}).get("style", "balanced")
@@ -1757,6 +1912,258 @@ def _record_cached_exchange(owner_key: str, session_id: str, message: str, cache
 
 
 LLM_TIMEOUT = int(os.environ.get("LLM_TIMEOUT", "30"))
+SAFE_PRIVACY_FAILURE_REPLY = (
+    "Xin lỗi, hệ thống không thể xác minh an toàn câu trả lời. Vui lòng thử lại."
+)
+_PUBLIC_CONTACT_FIELDS = ("phone", "email", "hotline", "contact_phone", "contact_email")
+
+
+def _payload_strings(value):
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, dict):
+        for key, item in value.items():
+            if isinstance(key, str):
+                yield key
+            yield from _payload_strings(item)
+    elif isinstance(value, (list, tuple)):
+        for item in value:
+            yield from _payload_strings(item)
+
+
+def _entity_contact_values(entity: dict) -> set[str]:
+    attrs = entity.get("attributes") or {}
+    if not isinstance(attrs, dict):
+        return set()
+    return {
+        value
+        for field in _PUBLIC_CONTACT_FIELDS
+        if isinstance((value := attrs.get(field)), str) and value
+    }
+
+
+def _payload_contact_values(value: dict) -> set[str]:
+    attrs = value.get("attributes") or {}
+    nested = attrs if isinstance(attrs, dict) else {}
+    contacts = set()
+    for field in _PUBLIC_CONTACT_FIELDS:
+        for candidate in (value.get(field), nested.get(field)):
+            if isinstance(candidate, str) and candidate:
+                contacts.add(candidate)
+    return contacts
+
+
+def _eligible_public_entities() -> dict[str, dict]:
+    return {
+        entity_id: entity
+        for entity_id, entity in (getattr(knowledge, "_entities", None) or {}).items()
+        if isinstance(entity_id, str)
+        and isinstance(entity, dict)
+        and is_publicly_eligible(entity)
+    }
+
+
+def _public_entities_by_name(entities: dict[str, dict]) -> dict[str, list[dict]]:
+    entities_by_name: dict[str, list[dict]] = {}
+    for entity in entities.values():
+        name = entity.get("name")
+        if isinstance(name, str) and name:
+            entities_by_name.setdefault(name, []).append(entity)
+    return entities_by_name
+
+
+def _selected_public_entity(
+    item: dict,
+    entities: dict[str, dict],
+    entities_by_name: dict[str, list[dict]],
+):
+    for key in ("id", "entity_id"):
+        entity_id = item.get(key)
+        if isinstance(entity_id, str) and entity_id in entities:
+            return entities[entity_id]
+    name = item.get("name")
+    matches = entities_by_name.get(name, []) if isinstance(name, str) else []
+    return matches[0] if len(matches) == 1 else None
+
+
+def _collect_verified_public_contacts(
+    item,
+    entities: dict[str, dict],
+    entities_by_name: dict[str, list[dict]],
+    contacts: set[str],
+) -> None:
+    if isinstance(item, dict):
+        entity = _selected_public_entity(item, entities, entities_by_name)
+        if entity is not None:
+            contacts.update(
+                _payload_contact_values(item) & _entity_contact_values(entity)
+            )
+        for child in item.values():
+            _collect_verified_public_contacts(child, entities, entities_by_name, contacts)
+    elif isinstance(item, (list, tuple)):
+        for child in item:
+            _collect_verified_public_contacts(child, entities, entities_by_name, contacts)
+
+
+def _verified_public_contacts_from_payload(value) -> set[str]:
+    """Return exact published contact fields present in this tool payload."""
+    entities = _eligible_public_entities()
+    entities_by_name = _public_entities_by_name(entities)
+    contacts: set[str] = set()
+    _collect_verified_public_contacts(value, entities, entities_by_name, contacts)
+    return contacts
+
+
+def _public_contact_markers(
+    contacts: set[str], original_strings: tuple[str, ...]
+) -> tuple[tuple[str, str], ...]:
+    replacements = []
+    for index, contact in enumerate(sorted(contacts, key=len, reverse=True)):
+        marker = f"__VL360_PUBLIC_CONTACT_{index}__"
+        while any(marker in original for original in original_strings):
+            marker = "_" + marker
+        replacements.append((contact, marker))
+    return tuple(replacements)
+
+
+def _protect_public_contact_value(
+    item,
+    replacements: tuple[tuple[str, str], ...],
+    restorations: dict[str, str],
+):
+    if isinstance(item, str):
+        protected = item
+        for contact, marker in replacements:
+            if contact in protected:
+                protected = protected.replace(contact, marker)
+                restorations[marker] = contact
+        return protected
+    if isinstance(item, dict):
+        return {
+            _protect_public_contact_value(key, replacements, restorations)
+            if isinstance(key, str)
+            else key: _protect_public_contact_value(child, replacements, restorations)
+            for key, child in item.items()
+        }
+    if isinstance(item, list):
+        return [
+            _protect_public_contact_value(child, replacements, restorations)
+            for child in item
+        ]
+    if isinstance(item, tuple):
+        return tuple(
+            _protect_public_contact_value(child, replacements, restorations)
+            for child in item
+        )
+    return item
+
+
+def _protect_public_contacts(value, contacts: set[str]):
+    restorations: dict[str, str] = {}
+    original_strings = tuple(_payload_strings(value))
+    replacements = _public_contact_markers(contacts, original_strings)
+    protected = _protect_public_contact_value(value, replacements, restorations)
+    return protected, restorations
+
+
+def _restore_public_contacts(value, restorations: dict[str, str]):
+    if isinstance(value, str):
+        restored = value
+        for marker, contact in restorations.items():
+            restored = restored.replace(marker, contact)
+        return restored
+    if isinstance(value, dict):
+        return {
+            _restore_public_contacts(key, restorations) if isinstance(key, str) else key:
+            _restore_public_contacts(child, restorations)
+            for key, child in value.items()
+        }
+    if isinstance(value, list):
+        return [_restore_public_contacts(child, restorations) for child in value]
+    if isinstance(value, tuple):
+        return tuple(_restore_public_contacts(child, restorations) for child in value)
+    return value
+
+
+def _safe_tool_result(result, verified_public_contacts: set[str]) -> str:
+    """Redact one untrusted tool result before prompt, preview, or persistence use."""
+    if not isinstance(result, str):
+        result = json.dumps(result, ensure_ascii=False, default=str)
+    try:
+        parsed = json.loads(result)
+        was_json = True
+    except (json.JSONDecodeError, TypeError):
+        parsed = result
+        was_json = False
+
+    new_contacts = _verified_public_contacts_from_payload(parsed)
+    effective_contacts = verified_public_contacts | new_contacts
+    protected, restorations = _protect_public_contacts(parsed, effective_contacts)
+    safe_value = redact_payload(
+        protected,
+        source="untrusted_external",
+        verified_public_contacts=tuple(effective_contacts),
+    )
+    safe_value = _restore_public_contacts(safe_value, restorations)
+    if was_json:
+        serialized = json.dumps(safe_value, ensure_ascii=False, default=str)
+    else:
+        serialized = str(safe_value)
+    verified_public_contacts.update(new_contacts)
+    return serialized
+
+
+def _safe_delivered_reply(
+    reply: str,
+    query: str,
+    entities,
+    verified_public_contacts,
+) -> SafeText:
+    return prepare_chat_output(
+        reply,
+        query=query,
+        entities=entities,
+        verified_public_contacts=tuple(verified_public_contacts),
+    )
+
+
+def _safe_sse_event(payload: dict, verified_public_contacts: set[str]) -> dict:
+    """Sanitize provider-derived SSE metadata before serialization."""
+    return redact_payload(
+        payload,
+        source="verified_public_contact",
+        verified_public_contacts=tuple(verified_public_contacts),
+    )
+
+
+def _safe_cached_reply(reply: str) -> SafeText:
+    """Redact a legacy cache reply before any delivery or personal sink."""
+    return redact_text(reply, source="legacy_cache")
+
+
+def _safe_cached_payload(cached: dict) -> dict:
+    """Apply the legacy-cache boundary to every retained cache field."""
+    if not isinstance(cached, dict):
+        raise PrivacyBoundaryUnavailable("INVALID_CACHED_RESPONSE")
+    safe_payload = redact_payload(cached, source="legacy_cache")
+    safe_reply = _safe_cached_reply(cached.get("reply", ""))
+    safe_payload["reply"] = safe_reply.text
+    return safe_payload
+
+
+async def _safe_stream_text_events(chunks, redactor: StreamingPIIRedactor):
+    """Yield only redacted stream text and abort on cancellation or failure."""
+    try:
+        async for chunk in chunks:
+            safe_chunk = redactor.feed(chunk)
+            if safe_chunk:
+                yield safe_chunk
+        safe_tail = redactor.finish()
+        if safe_tail:
+            yield safe_tail
+    except BaseException:
+        redactor.abort()
+        raise
 
 
 def _make_llm_call_fn(model_fn=None):
@@ -1848,6 +2255,7 @@ def _run_agent_orchestrated(
     session_id,
     base_system_prompt,
     usage_accumulator=None,
+    verified_public_contacts=None,
 ):
     """Run agent via the orchestrator, now wired with tuned params + parallel tools
     + learned tool ordering + smart model routing."""
@@ -1861,8 +2269,13 @@ def _run_agent_orchestrated(
     if _use_mini:
         logger.info("Model routing: using MINI", category=_cat.value, agent=_agent.name)
 
+    contacts = verified_public_contacts if verified_public_contacts is not None else set()
+    contacts_lock = threading.Lock()
+
     def _request_call_tool(name, args):
-        return call_tool(name, args, usage_accumulator)
+        result = call_tool(name, args, usage_accumulator)
+        with contacts_lock:
+            return _safe_tool_result(result, contacts)
 
     result = orch.run(
         message=message,
@@ -1944,7 +2357,7 @@ def _prepare_pending_calls(tool_calls, tools_used, messages, total_tool_calls, m
 
 def _execute_pending_calls(pending_calls, parallel_exec, messages, suggestions,
                            empty_results_count, round_num, total_tool_calls,
-                           call_tool_fn=None):
+                           call_tool_fn=None, verified_public_contacts=None):
     """Thực thi pending tool-calls (parallel khi >1, else serial). Trả empty_results_count."""
     if parallel_exec and len(pending_calls) > 1:
         call_items = [{"id": c["id"], "name": c["name"], "args": c["args"]} for c in pending_calls]
@@ -1953,6 +2366,10 @@ def _execute_pending_calls(pending_calls, parallel_exec, messages, suggestions,
             logger.info("Tool call (parallel)", tool=pc["name"],
                         duration_ms=round(res.get("duration_ms", 0)), round=round_num + 1)
             result = res.get("result", json.dumps({"error": res.get("error", "Unknown")}))
+            result = _safe_tool_result(
+                result,
+                verified_public_contacts if verified_public_contacts is not None else set(),
+            )
             messages.append({"role": "tool", "tool_call_id": pc["id"], "content": result})
             _post_tool_process(pc["name"], pc["args"], result, suggestions, messages, empty_results_count)
     else:
@@ -1961,6 +2378,10 @@ def _execute_pending_calls(pending_calls, parallel_exec, messages, suggestions,
             logger.info(f"Tool call #{total_tool_calls}", tool=pc["name"],
                         args=str(pc["args"])[:200], round=round_num + 1)
             result = tool_caller(pc["name"], pc["args"])
+            result = _safe_tool_result(
+                result,
+                verified_public_contacts if verified_public_contacts is not None else set(),
+            )
             messages.append({"role": "tool", "tool_call_id": pc["id"], "content": result})
             empty_results_count = _post_tool_process(pc["name"], pc["args"], result, suggestions, messages, empty_results_count)
     return empty_results_count
@@ -1971,6 +2392,7 @@ def _run_agent(
     max_rounds: int = 8,
     max_tool_calls: int = 15,
     usage_accumulator=None,
+    verified_public_contacts=None,
 ):
     """
     ReAct-style agent loop with multi-turn tool calling.
@@ -1987,8 +2409,13 @@ def _run_agent(
     total_tool_calls = 0
     empty_results_count = 0
 
+    contacts = verified_public_contacts if verified_public_contacts is not None else set()
+    contacts_lock = threading.Lock()
+
     def _request_call_tool(name, args):
-        return call_tool(name, args, usage_accumulator)
+        result = call_tool(name, args, usage_accumulator)
+        with contacts_lock:
+            return _safe_tool_result(result, contacts)
 
     # Setup parallel executor if available
     parallel_exec = None
@@ -2030,7 +2457,7 @@ def _run_agent(
         empty_results_count = _execute_pending_calls(
             pending_calls, parallel_exec, messages, suggestions,
             empty_results_count, round_num, total_tool_calls,
-            _request_call_tool)
+            _request_call_tool, contacts)
 
     return msg.content or "Xin lỗi, tôi không thể trả lời đầy đủ câu hỏi này.", tools_used, suggestions
 
@@ -2079,9 +2506,9 @@ def _post_tool_process(fn_name, fn_args, result, suggestions, messages, empty_re
 async def chat(req: ChatRequest, request: Request, response: Response):
     owner_context = await resolve_chat_owner(request)
     owner_key = owner_context.owner_key
-    history = req.history_messages()
     session = None
-    session_id = req.session_id or ""
+    requested_session_id = req.session_id or ""
+    session_id = requested_session_id
     set_chat_owner_cookie(response, owner_context)
 
     # Rate limiting
@@ -2096,31 +2523,56 @@ async def chat(req: ChatRequest, request: Request, response: Response):
         return _resp
 
     try:
-        if req.session_id:
-            session = memory_manager.require_session(owner_key, req.session_id)
+        if requested_session_id:
+            session = memory_manager.require_session(owner_key, requested_session_id)
     except UnknownConversation:
         not_found = _error_response(404, "Không tìm thấy cuộc trò chuyện.", request)
         set_chat_owner_cookie(not_found, owner_context)
         return not_found
 
-    # ── Guardrails: input safety (injection detect + PII mask + budget) ──
-    if HAS_GUARDRAILS:
-        try:
-            guard = check_input(req.message, owner_key)
-            if not guard.get("allowed", True):
-                # P1: log lý do chi tiết server-side, KHÔNG lộ chuỗi chẩn-đoán ra user.
-                logger.warning("Guardrails blocked input", reason=guard.get("blocked_reason", ""), session_id=session_id)
-                return ChatResponse(
-                    reply="Xin lỗi, tin nhắn này không thể xử lý vì lý do an toàn. Vui lòng diễn đạt lại.",
-                    tool_calls=[], suggestions=[], session_id=session_id,
-                )
-        except Exception as _gerr:
-            # P1: fail-CLOSED — guardrail lỗi thì KHÔNG cho qua không kiểm.
-            logger.warning(f"Guardrail check_input lỗi → fail-closed: {_gerr}")
-            return ChatResponse(
-                reply="Xin lỗi, hệ thống đang bận kiểm tra an toàn. Vui lòng thử lại sau ít phút.",
-                tool_calls=[], suggestions=[], session_id=session_id,
-            )
+    try:
+        safe_input = prepare_chat_input(
+            req.message,
+            [item.model_dump() for item in req.history],
+            owner_key=owner_key,
+        )
+    except PrivacyBoundaryBlocked as exc:
+        logger.warning(
+            "Privacy boundary blocked input",
+            code=exc.code,
+            session_id=session_id,
+        )
+        return ChatResponse(
+            reply="Xin lỗi, tin nhắn này không thể xử lý vì lý do an toàn. Vui lòng diễn đạt lại.",
+            tool_calls=[], suggestions=[], session_id=session_id,
+        )
+    except PrivacyBoundaryUnavailable as exc:
+        logger.warning(
+            "Privacy boundary unavailable",
+            code=exc.code,
+            session_id=session_id,
+        )
+        return ChatResponse(
+            reply="Xin lỗi, hệ thống đang bận kiểm tra an toàn. Vui lòng thử lại sau ít phút.",
+            tool_calls=[], suggestions=[], session_id=session_id,
+        )
+    except Exception:
+        logger.warning(
+            "Privacy boundary unavailable",
+            code="UNEXPECTED_PRIVACY_BOUNDARY_ERROR",
+            session_id=session_id,
+        )
+        return ChatResponse(
+            reply="Xin lỗi, hệ thống đang bận kiểm tra an toàn. Vui lòng thử lại sau ít phút.",
+            tool_calls=[], suggestions=[], session_id=session_id,
+        )
+
+    _privacy_input_boundary_marker = True
+    message = safe_input.message
+    history = [
+        {"role": item.role, "content": item.content}
+        for item in safe_input.history
+    ]
 
     if session is None:
         session = memory_manager.create_session(owner_key)
@@ -2132,53 +2584,123 @@ async def chat(req: ChatRequest, request: Request, response: Response):
     semantic_dedup_key = None
     if cache_eligible and HAS_SEMANTIC_CACHE:
         try:
-            sem_cached = await semantic_get_async(req.message, owner_key=owner_key)
+            sem_cached = await semantic_get_async(message, owner_key=owner_key)
             semantic_dedup_key = semantic_take_dedup_lease(
-                req.message,
+                message,
                 owner_key=owner_key,
             )
             _hold_semantic_route_lease(
-                req.message,
+                message,
                 owner_key,
                 semantic_dedup_key,
             )
             if sem_cached:
+                try:
+                    safe_cached = _safe_cached_payload(sem_cached)
+                except PrivacyBoundaryUnavailable as exc:
+                    logger.warning("Legacy cache privacy boundary unavailable", code=exc.code)
+                    return ChatResponse(
+                        reply=SAFE_PRIVACY_FAILURE_REPLY,
+                        tool_calls=[],
+                        suggestions=[],
+                        session_id=session_id,
+                    )
                 if HAS_METRICS:
                     track_cache("hit")
-                _record_cached_exchange(owner_key, session_id, req.message, sem_cached)
-                return ChatResponse(**sem_cached, session_id=session_id, cached=True)
+                _privacy_output_boundary_marker = True
+                _record_cached_exchange(owner_key, session_id, message, safe_cached)
+                feedback_receipt = _issue_delivered_feedback_receipt(
+                    owner_key,
+                    message,
+                    safe_cached.get("reply", ""),
+                    "cache",
+                    safe_cached.get("tool_calls", []),
+                )
+                return ChatResponse(
+                    **safe_cached,
+                    session_id=session_id,
+                    cached=True,
+                    feedback_receipt=feedback_receipt,
+                )
         except Exception:
             logger.debug("Semantic cache retrieval failed", exc_info=True)
 
     # Check cache (only for new conversations without history)
     if cache_eligible:
-        cached = cache.get(req.message, owner_key=owner_key)
+        cached = cache.get(message, owner_key=owner_key)
         if cached:
+            try:
+                safe_cached = _safe_cached_payload(cached)
+            except PrivacyBoundaryUnavailable as exc:
+                logger.warning("Legacy cache privacy boundary unavailable", code=exc.code)
+                return ChatResponse(
+                    reply=SAFE_PRIVACY_FAILURE_REPLY,
+                    tool_calls=[],
+                    suggestions=[],
+                    session_id=session_id,
+                )
             if HAS_METRICS:
                 track_cache("hit")
+            _privacy_output_boundary_marker = True
             if HAS_SEMANTIC_CACHE:
                 try:
                     semantic_put(
-                        req.message,
-                        cached,
+                        message,
+                        safe_cached,
                         owner_key=owner_key,
                         dedup_key=semantic_dedup_key,
                     )
                 except Exception:
                     logger.debug("Semantic cache exact-hit publication failed", exc_info=True)
-            _record_cached_exchange(owner_key, session_id, req.message, cached)
-            return ChatResponse(**cached, session_id=session_id, cached=True)
+            _record_cached_exchange(owner_key, session_id, message, safe_cached)
+            feedback_receipt = _issue_delivered_feedback_receipt(
+                owner_key,
+                message,
+                safe_cached.get("reply", ""),
+                "cache",
+                safe_cached.get("tool_calls", []),
+            )
+            return ChatResponse(
+                **safe_cached,
+                session_id=session_id,
+                cached=True,
+                feedback_receipt=feedback_receipt,
+            )
         elif HAS_METRICS:
             track_cache("miss")
 
     usage_accumulator = UsageAccumulator()
+    verified_public_contacts: set[str] = set()
+
+    def settle_usage() -> None:
+        try:
+            usage_accumulator.settle(
+                owner_key=owner_key,
+                query=corrected_message[:200],
+                agent_name="chat",
+                guardrail_budget=guardrail_budget if HAS_GUARDRAILS else None,
+                cost_attribution=cost_attribution if HAS_COST_TRACKER else None,
+            )
+        except Exception:
+            logger.debug("Cost tracking failed", exc_info=True)
 
     # Autocorrect user input
-    corrected_message = req.message
+    corrected_message = message
     if HAS_AUTOCORRECT:
-        ac = autocorrect(req.message)
+        ac = autocorrect(message)
         if ac.get("was_corrected"):
             corrected_message = ac["corrected"]
+
+    delivery_model = get_model()
+    if HAS_ORCHESTRATOR:
+        try:
+            _feedback_category, _feedback_agent = _get_orchestrator().route(
+                corrected_message
+            )
+            if getattr(_feedback_agent, "use_mini", False):
+                delivery_model = get_model_mini()
+        except Exception:
+            logger.debug("Feedback model routing failed", exc_info=True)
 
     t0 = time.time()
     build_info = {}
@@ -2188,7 +2710,6 @@ async def chat(req: ChatRequest, request: Request, response: Response):
             _trace_ctx = trace_chat_request(corrected_message, session_id, get_model())
             _trace_ctx.__enter__()
         messages, build_info = _build_messages(corrected_message, history, session_id, owner_key)
-        memory_manager.on_message(owner_key, session_id, "user", req.message)
 
         # ── Dynamic agents: check for specialist match before orchestrator ──
         _dyn_prompt_addon = ""
@@ -2232,6 +2753,7 @@ async def chat(req: ChatRequest, request: Request, response: Response):
                 _run_agent_orchestrated,
                 corrected_message, messages[1:-1], session_id, _enriched_system,
                 usage_accumulator,
+                verified_public_contacts,
             )
         else:
             messages[0]["content"] = _enriched_system
@@ -2241,7 +2763,11 @@ async def chat(req: ChatRequest, request: Request, response: Response):
                 8,
                 15,
                 usage_accumulator,
+                verified_public_contacts,
             )
+    except asyncio.CancelledError:
+        settle_usage()
+        raise
     except Exception as exc:
         error_tracker.record_error("/chat", str(exc), traceback.format_exc())
         if HAS_METRICS:
@@ -2255,16 +2781,6 @@ async def chat(req: ChatRequest, request: Request, response: Response):
                 _trace_ctx.__exit__(None, None, None)
             except Exception:
                 logger.debug("Trace context exit failed", exc_info=True)
-        try:
-            usage_accumulator.settle(
-                owner_key=owner_key,
-                query=corrected_message[:200],
-                agent_name="chat",
-                guardrail_budget=guardrail_budget if HAS_GUARDRAILS else None,
-                cost_attribution=cost_attribution if HAS_COST_TRACKER else None,
-            )
-        except Exception:
-            logger.debug("Cost tracking failed", exc_info=True)
 
     # ── Knowledge-only fallback: supplement with KB data when LLM fails ──
     # P0/chat: chỉ coi là lỗi khi reply RỖNG, hoặc là fallback hệ-thống thật (mọi fallback
@@ -2358,6 +2874,9 @@ async def chat(req: ChatRequest, request: Request, response: Response):
                 else:
                     kb_data = _relevant
             if isinstance(kb_data, list) and kb_data:
+                verified_public_contacts.update(
+                    _verified_public_contacts_from_payload(kb_data)
+                )
                 if _search_month:
                     lines = [f"Hệ thống AI đang bảo trì. Thông tin tháng {_search_month} từ cơ sở dữ liệu:\n"]
                 else:
@@ -2381,9 +2900,41 @@ async def chat(req: ChatRequest, request: Request, response: Response):
             if not reply:
                 reply = "Xin lỗi, đã xảy ra lỗi khi xử lý câu hỏi. Vui lòng thử lại."
 
+    try:
+        safe_reply = _safe_delivered_reply(
+            reply,
+            message,
+            (knowledge._entities or {}) if hasattr(knowledge, "_entities") else {},
+            verified_public_contacts,
+        )
+    except PrivacyBoundaryUnavailable as exc:
+        logger.warning("Privacy boundary unavailable for output", code=exc.code)
+        return ChatResponse(
+            reply=SAFE_PRIVACY_FAILURE_REPLY,
+            tool_calls=[],
+            suggestions=[],
+            session_id=session_id,
+        )
+    except Exception:
+        logger.warning(
+            "Privacy boundary unavailable for output",
+            code="UNEXPECTED_PRIVACY_OUTPUT_ERROR",
+        )
+        return ChatResponse(
+            reply=SAFE_PRIVACY_FAILURE_REPLY,
+            tool_calls=[],
+            suggestions=[],
+            session_id=session_id,
+        )
+
+    reply = safe_reply.text
+    tools_used = redact_payload(tools_used, source="provider_output")
+    suggestions = redact_payload(suggestions, source="provider_output")
+    _privacy_output_boundary_marker = True
+    settle_usage()
     duration = time.time() - t0
 
-    # Record assistant reply in memory
+    memory_manager.on_message(owner_key, session_id, "user", message)
     memory_manager.on_message(owner_key, session_id, "assistant", reply)
 
     # Memory graph: record entity interactions
@@ -2401,30 +2952,41 @@ async def chat(req: ChatRequest, request: Request, response: Response):
 
     # Reflexion: evaluate answer quality
     try:
-        evaluation = reflexion_engine.evaluate_answer(req.message, reply, tools_used)
-        quality_tracker.record(req.message, evaluation["score"], tools_used)
+        evaluation = reflexion_engine.evaluate_answer(message, reply, tools_used)
+        quality_tracker.record(message, evaluation["score"], tools_used)
 
         if evaluation["score"] < 5:
-            reflexion_engine.reflect_on_failure(req.message, reply, evaluation)
+            reflexion_engine.reflect_on_failure(message, reply, evaluation)
             logger.warning("Low quality answer", score=evaluation["score"],
-                         issues=evaluation["issues"], query=req.message[:100])
+                         issues=evaluation["issues"], query=message[:100])
         elif evaluation["score"] >= 8:
             # Good answer → save as skill
             memory_manager.on_good_answer(
-                req.message[:100], tools_used,
+                message[:100], tools_used,
                 f"Score {evaluation['score']}: {', '.join(evaluation['good_points'][:2])}",
-                reflexion_engine._categorize_query(req.message),
+                reflexion_engine._categorize_query(message),
             )
         # Experience memory: distill a strategy item (≥8) or negative constraint (<5)
         if HAS_EXPERIENCE:
             try:
-                experience_memory.record(req.message, tools_used, evaluation["score"], reply)
+                experience_memory.record(
+                    message,
+                    tools_used,
+                    evaluation["score"],
+                    reply,
+                    owner_key=owner_key,
+                )
             except Exception:
                 logger.debug("Experience memory record failed", exc_info=True)
         # Few-shot demo pool: capture high-scoring (query, answer) exemplars
         if HAS_FEWSHOT:
             try:
-                prompt_compiler.record_demo(req.message, reply, evaluation["score"])
+                prompt_compiler.record_demo(
+                    message,
+                    reply,
+                    evaluation["score"],
+                    owner_key=owner_key,
+                )
             except Exception:
                 logger.debug("Few-shot demo record failed", exc_info=True)
     except Exception as eval_err:
@@ -2436,7 +2998,8 @@ async def chat(req: ChatRequest, request: Request, response: Response):
         try:
             est_tokens = token_counter.estimate_tokens(reply) if HAS_COST_TRACKER else len(reply) // 3
             record_outcome(session_id, corrected_message, "orchestrator" if HAS_ORCHESTRATOR else "direct",
-                          tools_used, evaluation["score"], duration, est_tokens)
+                          tools_used, evaluation["score"], duration, est_tokens,
+                          owner_key=owner_key)
         except Exception:
             logger.debug("Self-optimizer outcome record failed", exc_info=True)
 
@@ -2445,14 +3008,19 @@ async def chat(req: ChatRequest, request: Request, response: Response):
         try:
             judge_result = judge(corrected_message, reply)
             if judge_result and judge_result.get("weighted_score", 0) < 4:
-                logger.info("LLM Judge low score", score=judge_result.get("weighted_score"), query=req.message[:80])
+                logger.info("LLM Judge low score", score=judge_result.get("weighted_score"), query=message[:80])
         except Exception:
             logger.debug("LLM Judge evaluation failed", exc_info=True)
 
     # A/B testing: record outcome
     if HAS_AB_TESTING and session_id:
         try:
-            ab_manager.record_outcome("prompt_style", session_id, evaluation["score"])
+            ab_manager.record_outcome(
+                "prompt_style",
+                session_id,
+                evaluation["score"],
+                owner_key=owner_key,
+            )
         except Exception:
             logger.debug("A/B outcome record failed", exc_info=True)
 
@@ -2462,29 +3030,26 @@ async def chat(req: ChatRequest, request: Request, response: Response):
 
     # Track analytics
     try:
-        analytics.track_query(req.message, tools_used, reply, session_id)
+        analytics.track_query(
+            message,
+            tools_used,
+            reply,
+            session_id,
+            owner_key=owner_key,
+        )
     except Exception:
         logger.debug("Analytics tracking failed", exc_info=True)
-
-    # ── Guardrails: output validation (PII mask + hallucination check) ──
-    if HAS_GUARDRAILS:
-        try:
-            out_check = check_output(reply, corrected_message, knowledge._entities if hasattr(knowledge, '_entities') else {})
-            if out_check.get("cleaned_reply"):
-                reply = out_check["cleaned_reply"]
-        except Exception as guard_err:
-            # GĐ4.5: không nuốt lỗi im lặng — log để biết guardrail output hỏng.
-            logger.error("Output guardrail failed", error=str(guard_err))
 
     # Cache response (only if good quality)
     if cache_eligible and len(reply) > 30 and evaluation["score"] >= 5:
         cache_data = {"reply": reply, "tool_calls": tools_used, "suggestions": suggestions}
-        cache.put(req.message, cache_data, owner_key=owner_key)
+        owner_write_gate.assert_writable(owner_key)
+        cache.put(message, cache_data, owner_key=owner_key)
         # ── Semantic cache: store for embedding-based dedup ──
         if HAS_SEMANTIC_CACHE:
             try:
                 semantic_put(
-                    req.message,
+                    message,
                     cache_data,
                     owner_key=owner_key,
                     dedup_key=semantic_dedup_key,
@@ -2494,7 +3059,20 @@ async def chat(req: ChatRequest, request: Request, response: Response):
         if HAS_METRICS:
             track_cache("set")
 
-    return ChatResponse(reply=reply, tool_calls=tools_used, suggestions=suggestions, session_id=session_id)
+    feedback_receipt = _issue_delivered_feedback_receipt(
+        owner_key,
+        message,
+        reply,
+        delivery_model,
+        tools_used,
+    )
+    return ChatResponse(
+        reply=reply,
+        tool_calls=tools_used,
+        suggestions=suggestions,
+        session_id=session_id,
+        feedback_receipt=feedback_receipt,
+    )
 
 
 # ── SSE Streaming ──
@@ -2505,9 +3083,8 @@ async def chat_stream(req: ChatRequest, request: Request):
     owner_context = await resolve_chat_owner(request)
     owner_key = owner_context.owner_key
     session = None
-    message = req.message
-    hist = req.history_messages()
-    sid = req.session_id or ""
+    requested_session_id = req.session_id or ""
+    sid = requested_session_id
     def _stream_response(generator, semantic_lease=None):
         stream_response = _SemanticLeaseStreamingResponse(
             generator,
@@ -2533,46 +3110,113 @@ async def chat_stream(req: ChatRequest, request: Request):
         return limited
 
     try:
-        if req.session_id:
-            session = memory_manager.require_session(owner_key, req.session_id)
+        if requested_session_id:
+            session = memory_manager.require_session(owner_key, requested_session_id)
     except UnknownConversation:
         not_found = _error_response(404, "Không tìm thấy cuộc trò chuyện.", request)
         set_chat_owner_cookie(not_found, owner_context)
         return not_found
+
+    def _safe_block_stream(msg: str):
+        async def _gen():
+            yield f"data: {json.dumps({'type': 'text', 'content': msg}, ensure_ascii=False)}\n\n"
+            yield f"data: {json.dumps({'type': 'done', 'tools': [], 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
+        return _gen
+
+    try:
+        safe_input = prepare_chat_input(
+            req.message,
+            [item.model_dump() for item in req.history],
+            owner_key=owner_key,
+        )
+    except PrivacyBoundaryBlocked as exc:
+        logger.warning(
+            "Privacy boundary blocked stream input",
+            code=exc.code,
+            session_id=sid,
+        )
+        gen = _safe_block_stream(
+            "Xin lỗi, tin nhắn này không thể xử lý vì lý do an toàn. Vui lòng diễn đạt lại."
+        )
+        return _stream_response(gen())
+    except PrivacyBoundaryUnavailable as exc:
+        logger.warning(
+            "Privacy boundary unavailable for stream",
+            code=exc.code,
+            session_id=sid,
+        )
+        gen = _safe_block_stream(
+            "Xin lỗi, hệ thống đang bận kiểm tra an toàn. Vui lòng thử lại sau ít phút."
+        )
+        return _stream_response(gen())
+    except Exception:
+        logger.warning(
+            "Privacy boundary unavailable for stream",
+            code="UNEXPECTED_PRIVACY_BOUNDARY_ERROR",
+            session_id=sid,
+        )
+        gen = _safe_block_stream(
+            "Xin lỗi, hệ thống đang bận kiểm tra an toàn. Vui lòng thử lại sau ít phút."
+        )
+        return _stream_response(gen())
+
+    _privacy_input_boundary_marker = True
+    message = safe_input.message
+    history = [
+        {"role": item.role, "content": item.content}
+        for item in safe_input.history
+    ]
 
     if not message:
         async def empty_stream():
             yield f"data: {json.dumps({'type': 'error', 'content': 'Tin nhắn trống.'}, ensure_ascii=False)}\n\n"
         return _stream_response(empty_stream())
 
-    # ── Guardrails: input safety ──
-    if HAS_GUARDRAILS:
-        def _safe_block_stream(msg: str):
-            async def _gen():
-                yield f"data: {json.dumps({'type': 'text', 'content': msg}, ensure_ascii=False)}\n\n"
-                yield f"data: {json.dumps({'type': 'done', 'tools': [], 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
-            return _gen
-        try:
-            guard = check_input(message, owner_key)
-            if not guard.get("allowed", True):
-                # P1: ẩn blocked_reason (chẩn-đoán) khỏi user, chỉ log server-side
-                logger.warning("Guardrails blocked stream input", reason=guard.get("blocked_reason", ""), session_id=sid)
-                gen = _safe_block_stream("Xin lỗi, tin nhắn này không thể xử lý vì lý do an toàn. Vui lòng diễn đạt lại.")
-                return _stream_response(gen())
-        except Exception as _gerr:
-            # P1: fail-CLOSED
-            logger.warning(f"Guardrail stream check lỗi → fail-closed: {_gerr}")
-            gen = _safe_block_stream("Xin lỗi, hệ thống đang bận kiểm tra an toàn. Vui lòng thử lại sau ít phút.")
-            return _stream_response(gen())
-
     if session is None:
         session = memory_manager.create_session(owner_key)
         sid = session.session_id
-    _hydrate_empty_session(owner_key, session, hist)
-    cache_eligible = not hist and not session.get_context_messages()
+    _hydrate_empty_session(owner_key, session, history)
+    cache_eligible = not history and not session.get_context_messages()
 
     # The cache/dedup lifecycle must use one stable pre-autocorrect query key.
     cache_query = message
+
+    async def _cached_stream(safe_cached: dict, hit_name: str):
+        reply = safe_cached.get("reply", "")
+        words = reply.split(" ")
+        emitted = []
+        try:
+            for index in range(0, len(words), 3):
+                chunk = " ".join(words[index:index + 3])
+                if index > 0:
+                    chunk = " " + chunk
+                emitted.append(chunk)
+                yield f"data: {json.dumps({'type': 'text', 'content': chunk}, ensure_ascii=False)}\n\n"
+
+            delivered = "".join(emitted)
+            safe_cached["reply"] = delivered
+            _privacy_output_boundary_marker = True
+            _record_cached_exchange(owner_key, sid, cache_query, safe_cached)
+            analytics.track_query(
+                message,
+                [hit_name],
+                delivered,
+                sid,
+                owner_key=owner_key,
+            )
+            feedback_receipt = _issue_delivered_feedback_receipt(
+                owner_key,
+                cache_query,
+                delivered,
+                "cache",
+                safe_cached.get("tool_calls", []),
+            )
+            yield f"data: {json.dumps({'type': 'done', 'tools': [hit_name], 'suggestions': safe_cached.get('suggestions', []), 'session_id': sid, 'feedback_receipt': feedback_receipt}, ensure_ascii=False)}\n\n"
+        except (asyncio.CancelledError, GeneratorExit):
+            return
+        except Exception:
+            logger.debug("Legacy cache stream delivery failed", exc_info=True)
+            yield f"data: {json.dumps({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
 
     # ── Semantic cache: check before regular cache ──
     semantic_dedup_key = None
@@ -2589,19 +3233,12 @@ async def chat_stream(req: ChatRequest, request: Request):
                 semantic_dedup_key,
             )
             if sem_cached:
-                _record_cached_exchange(owner_key, sid, cache_query, sem_cached)
-                async def sem_cached_stream():
-                    reply = sem_cached.get("reply", "")
-                    words = reply.split(" ")
-                    for i in range(0, len(words), 3):
-                        chunk = " ".join(words[i:i+3])
-                        if i > 0:
-                            chunk = " " + chunk
-                        yield f"data: {json.dumps({'type': 'text', 'content': chunk}, ensure_ascii=False)}\n\n"
-                    suggestions = sem_cached.get("suggestions", [])
-                    yield f"data: {json.dumps({'type': 'done', 'tools': ['semantic_cache_hit'], 'suggestions': suggestions, 'session_id': sid}, ensure_ascii=False)}\n\n"
-                analytics.track_query(message, ["semantic_cache_hit"], sem_cached.get("reply", ""), sid)
-                return _stream_response(sem_cached_stream())
+                try:
+                    safe_cached = _safe_cached_payload(sem_cached)
+                except PrivacyBoundaryUnavailable as exc:
+                    logger.warning("Legacy cache privacy boundary unavailable", code=exc.code)
+                    return _stream_response(_safe_block_stream(SAFE_PRIVACY_FAILURE_REPLY)())
+                return _stream_response(_cached_stream(safe_cached, "semantic_cache_hit"))
         except Exception:
             logger.debug("Semantic cache retrieval failed (stream)", exc_info=True)
 
@@ -2609,11 +3246,17 @@ async def chat_stream(req: ChatRequest, request: Request):
     if cache_eligible:
         cached = cache.get(cache_query, owner_key=owner_key)
         if cached:
+            try:
+                safe_cached = _safe_cached_payload(cached)
+            except PrivacyBoundaryUnavailable as exc:
+                logger.warning("Legacy cache privacy boundary unavailable", code=exc.code)
+                return _stream_response(_safe_block_stream(SAFE_PRIVACY_FAILURE_REPLY)())
             if HAS_SEMANTIC_CACHE:
+                _privacy_output_boundary_marker = True
                 try:
                     semantic_put(
                         cache_query,
-                        cached,
+                        safe_cached,
                         owner_key=owner_key,
                         dedup_key=semantic_dedup_key,
                     )
@@ -2622,21 +3265,11 @@ async def chat_stream(req: ChatRequest, request: Request):
                         "Semantic cache exact-hit publication failed (stream)",
                         exc_info=True,
                     )
-            _record_cached_exchange(owner_key, sid, cache_query, cached)
-            async def cached_stream():
-                reply = cached.get("reply", "")
-                words = reply.split(" ")
-                for i in range(0, len(words), 3):
-                    chunk = " ".join(words[i:i+3])
-                    if i > 0:
-                        chunk = " " + chunk
-                    yield f"data: {json.dumps({'type': 'text', 'content': chunk}, ensure_ascii=False)}\n\n"
-                suggestions = cached.get("suggestions", [])
-                yield f"data: {json.dumps({'type': 'done', 'tools': ['cache_hit'], 'suggestions': suggestions, 'session_id': sid}, ensure_ascii=False)}\n\n"
-            analytics.track_query(message, ["cache_hit"], cached.get("reply", ""), sid)
-            return _stream_response(cached_stream())
+            return _stream_response(_cached_stream(safe_cached, "cache_hit"))
 
     usage_accumulator = UsageAccumulator()
+    verified_public_contacts: set[str] = set()
+    stream_usage_settlement_blocked = False
 
     # Autocorrect
     if HAS_AUTOCORRECT:
@@ -2645,8 +3278,7 @@ async def chat_stream(req: ChatRequest, request: Request):
             message = ac["corrected"]
 
     # Build messages with full 2026 architecture context
-    messages, _build_info = _build_messages(message, hist, sid, owner_key)
-    memory_manager.on_message(owner_key, sid, "user", cache_query)
+    messages, _build_info = _build_messages(message, history, sid, owner_key)
 
     # ── Parity with /chat: apply dynamic-agent addon + active prompt variant ──
     # (Previously the streaming path missed these, giving lower quality than /chat.)
@@ -2694,12 +3326,59 @@ async def chat_stream(req: ChatRequest, request: Request):
             logger.debug("Stream tuned params failed", exc_info=True)
 
     async def _event_stream_body():
+        nonlocal stream_usage_settlement_blocked
         # Send autocorrect info if corrected
         if HAS_AUTOCORRECT and message != cache_query:
             yield f"data: {json.dumps({'type': 'autocorrect', 'original': cache_query, 'corrected': message}, ensure_ascii=False)}\n\n"
         tools_used = []
         suggestions = []
         max_rounds = _stream_rounds
+
+        def prepare_stream_fallback(raw_reply) -> str | None:
+            nonlocal stream_usage_settlement_blocked
+            try:
+                safe_fallback = _safe_delivered_reply(
+                    raw_reply,
+                    message,
+                    (knowledge._entities or {}) if hasattr(knowledge, "_entities") else {},
+                    verified_public_contacts,
+                )
+            except PrivacyBoundaryUnavailable as exc:
+                logger.warning(
+                    "Privacy boundary unavailable for stream fallback",
+                    code=exc.code,
+                )
+                stream_usage_settlement_blocked = True
+                return None
+            except Exception:
+                logger.warning(
+                    "Privacy boundary unavailable for stream fallback",
+                    code="UNEXPECTED_PRIVACY_OUTPUT_ERROR",
+                )
+                stream_usage_settlement_blocked = True
+                return None
+
+            return safe_fallback.text
+
+        def persist_stream_fallback(safe_text: str) -> None:
+            _privacy_output_boundary_marker = True
+            memory_manager.on_message(owner_key, sid, "user", cache_query)
+            memory_manager.on_message(owner_key, sid, "assistant", safe_text)
+
+        def prepare_tool_event(payload: dict) -> dict | None:
+            nonlocal stream_usage_settlement_blocked
+            try:
+                return _safe_sse_event(payload, verified_public_contacts)
+            except PrivacyBoundaryUnavailable as exc:
+                code = exc.code
+            except Exception:
+                code = "UNEXPECTED_PRIVACY_TOOL_EVENT_ERROR"
+            logger.warning(
+                "Privacy boundary unavailable for stream tool event",
+                code=code,
+            )
+            stream_usage_settlement_blocked = True
+            return None
 
         for round_num in range(max_rounds):
             try:
@@ -2718,15 +3397,51 @@ async def chat_stream(req: ChatRequest, request: Request):
                     messages,
                 )
                 if not decision["success"]:
-                    yield f"data: {json.dumps({'type': 'text', 'content': decision['message']}, ensure_ascii=False)}\n\n"
-                    yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
+                    fallback = prepare_stream_fallback(decision["message"])
+                    fallback_ready = fallback is not None
+                    if fallback is None:
+                        fallback = SAFE_PRIVACY_FAILURE_REPLY
+                    yield f"data: {json.dumps({'type': 'text', 'content': fallback}, ensure_ascii=False)}\n\n"
+                    if fallback_ready:
+                        persist_stream_fallback(fallback)
+                    feedback_receipt = (
+                        _issue_delivered_feedback_receipt(
+                            owner_key,
+                            cache_query,
+                            fallback,
+                            _stream_model,
+                            tools_used,
+                        )
+                        if fallback_ready
+                        else None
+                    )
+                    yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': [], 'session_id': sid, 'feedback_receipt': feedback_receipt}, ensure_ascii=False)}\n\n"
                     return
                 response = decision["response"]
                 msg = response.choices[0].message
             except Exception as exc:
                 error_tracker.record_error("/chat/stream", str(exc), traceback.format_exc())
-                yield f"data: {json.dumps({'type': 'text', 'content': 'Xin lỗi, đã xảy ra lỗi. Vui lòng thử lại.'}, ensure_ascii=False)}\n\n"
-                yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
+                fallback = prepare_stream_fallback(
+                    "Xin lỗi, đã xảy ra lỗi. Vui lòng thử lại."
+                )
+                fallback_ready = fallback is not None
+                if fallback is None:
+                    fallback = SAFE_PRIVACY_FAILURE_REPLY
+                yield f"data: {json.dumps({'type': 'text', 'content': fallback}, ensure_ascii=False)}\n\n"
+                if fallback_ready:
+                    persist_stream_fallback(fallback)
+                feedback_receipt = (
+                    _issue_delivered_feedback_receipt(
+                        owner_key,
+                        cache_query,
+                        fallback,
+                        _stream_model,
+                        tools_used,
+                    )
+                    if fallback_ready
+                    else None
+                )
+                yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': [], 'session_id': sid, 'feedback_receipt': feedback_receipt}, ensure_ascii=False)}\n\n"
                 return
 
             if msg.tool_calls:
@@ -2741,18 +3456,37 @@ async def chat_stream(req: ChatRequest, request: Request):
 
                     # Tool-use Tracing: send start event with description
                     tool_desc = _tool_description(fn_name, fn_args)
-                    yield f"data: {json.dumps({'type': 'tool_start', 'name': fn_name, 'description': tool_desc, 'args': fn_args}, ensure_ascii=False)}\n\n"
+                    tool_start_event = prepare_tool_event({
+                        "type": "tool_start",
+                        "name": fn_name,
+                        "description": tool_desc,
+                        "args": fn_args,
+                    })
+                    if tool_start_event is None:
+                        yield f"data: {json.dumps({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
+                        return
+                    yield f"data: {json.dumps(tool_start_event, ensure_ascii=False)}\n\n"
 
                     t0 = time.time()
                     result = await _await_chat_worker(
                         call_tool, fn_name, fn_args, usage_accumulator,
                     )  # CONC-001: tool I/O off event loop
+                    result = _safe_tool_result(result, verified_public_contacts)
                     duration_ms = round((time.time() - t0) * 1000)
                     messages.append({"role": "tool", "tool_call_id": tc.id, "content": result})
 
                     # Tool-use Tracing: send done event with timing
                     result_preview = result[:200] if len(result) > 200 else result
-                    yield f"data: {json.dumps({'type': 'tool_done', 'name': fn_name, 'duration_ms': duration_ms, 'preview': result_preview}, ensure_ascii=False)}\n\n"
+                    tool_done_event = prepare_tool_event({
+                        "type": "tool_done",
+                        "name": fn_name,
+                        "duration_ms": duration_ms,
+                        "preview": result_preview,
+                    })
+                    if tool_done_event is None:
+                        yield f"data: {json.dumps({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
+                        return
+                    yield f"data: {json.dumps(tool_done_event, ensure_ascii=False)}\n\n"
 
                     # Track entity discussions in memory
                     if fn_name in ("entity_detail", "nearby_entities") and "entity_id" in fn_args:
@@ -2801,20 +3535,46 @@ async def chat_stream(req: ChatRequest, request: Request):
                 producer = asyncio.create_task(asyncio.to_thread(_produce_stream))
                 _chunks: list[str] = []
                 terminal_chunk = None
-                try:
+                redactor = StreamingPIIRedactor(
+                    verified_public_contacts=tuple(verified_public_contacts),
+                )
+
+                async def _stream_text_chunks():
+                    nonlocal terminal_chunk
                     while True:
                         item = await chunk_q.get()
                         if item is None:
-                            break
+                            return
                         if isinstance(item, Exception):
                             raise item
                         if getattr(item, "usage", None) is not None:
                             terminal_chunk = item
                             continue
-                        _chunks.append(item)
-                        yield f"data: {json.dumps({'type': 'text', 'content': item}, ensure_ascii=False)}\n\n"
+                        yield item
+
+                try:
+                    async for safe_chunk in _safe_stream_text_events(
+                        _stream_text_chunks(),
+                        redactor,
+                    ):
+                        _chunks.append(safe_chunk)
+                        yield f"data: {json.dumps({'type': 'text', 'content': safe_chunk}, ensure_ascii=False)}\n\n"
                 except (asyncio.CancelledError, GeneratorExit):
                     _cancelled.set()
+                    redactor.abort()
+                    return
+                except PrivacyBoundaryUnavailable as exc:
+                    logger.warning(
+                        "Privacy boundary unavailable for stream redaction",
+                        code=exc.code,
+                    )
+                    stream_usage_settlement_blocked = True
+                    redactor.abort()
+                    yield f"data: {json.dumps({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
+                    return
+                except Exception:
+                    redactor.abort()
+                    yield f"data: {json.dumps({'type': 'error', 'content': 'Xin lỗi, không thể hoàn tất câu trả lời. Vui lòng thử lại.'}, ensure_ascii=False)}\n\n"
                     return
                 finally:
                     _cancelled.set()
@@ -2828,7 +3588,37 @@ async def chat_stream(req: ChatRequest, request: Request):
                         )
                 full_text = "".join(_chunks)
 
-                # Record in memory
+                try:
+                    safe_reply = _safe_delivered_reply(
+                        full_text,
+                        message,
+                        (knowledge._entities or {}) if hasattr(knowledge, "_entities") else {},
+                        verified_public_contacts,
+                    )
+                except PrivacyBoundaryUnavailable as exc:
+                    logger.warning(
+                        "Privacy boundary unavailable for stream output",
+                        code=exc.code,
+                    )
+                    stream_usage_settlement_blocked = True
+                    yield f"data: {json.dumps({'type': 'text', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
+                    yield f"data: {json.dumps({'type': 'done', 'tools': [], 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
+                    return
+                except Exception:
+                    logger.warning(
+                        "Privacy boundary unavailable for stream output",
+                        code="UNEXPECTED_PRIVACY_OUTPUT_ERROR",
+                    )
+                    stream_usage_settlement_blocked = True
+                    yield f"data: {json.dumps({'type': 'text', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
+                    yield f"data: {json.dumps({'type': 'done', 'tools': [], 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
+                    return
+
+                full_text = safe_reply.text
+                tools_used = redact_payload(tools_used, source="provider_output")
+                suggestions = redact_payload(suggestions, source="provider_output")
+                _privacy_output_boundary_marker = True
+                memory_manager.on_message(owner_key, sid, "user", cache_query)
                 memory_manager.on_message(owner_key, sid, "assistant", full_text)
 
                 # Memory graph: record entity interactions
@@ -2857,12 +3647,23 @@ async def chat_stream(req: ChatRequest, request: Request):
                     )
                 if HAS_EXPERIENCE:
                     try:
-                        experience_memory.record(message, tools_used, evaluation["score"], full_text)
+                        experience_memory.record(
+                            message,
+                            tools_used,
+                            evaluation["score"],
+                            full_text,
+                            owner_key=owner_key,
+                        )
                     except Exception:
                         logger.debug("Experience memory record failed (stream)", exc_info=True)
                 if HAS_FEWSHOT:
                     try:
-                        prompt_compiler.record_demo(message, full_text, evaluation["score"])
+                        prompt_compiler.record_demo(
+                            message,
+                            full_text,
+                            evaluation["score"],
+                            owner_key=owner_key,
+                        )
                     except Exception:
                         logger.debug("Few-shot demo record failed (stream)", exc_info=True)
 
@@ -2870,7 +3671,16 @@ async def chat_stream(req: ChatRequest, request: Request):
                 if HAS_OPTIMIZER:
                     try:
                         est_tok = token_counter.estimate_tokens(full_text) if HAS_COST_TRACKER else len(full_text) // 3
-                        record_outcome(sid, message, "stream", tools_used, evaluation["score"], 0, est_tok)
+                        record_outcome(
+                            sid,
+                            message,
+                            "stream",
+                            tools_used,
+                            evaluation["score"],
+                            0,
+                            est_tok,
+                            owner_key=owner_key,
+                        )
                     except Exception:
                         logger.debug("Self-optimizer outcome failed (stream)", exc_info=True)
 
@@ -2884,7 +3694,12 @@ async def chat_stream(req: ChatRequest, request: Request):
                 # A/B testing: record outcome
                 if HAS_AB_TESTING and sid:
                     try:
-                        ab_manager.record_outcome("prompt_style", sid, evaluation["score"])
+                        ab_manager.record_outcome(
+                            "prompt_style",
+                            sid,
+                            evaluation["score"],
+                            owner_key=owner_key,
+                        )
                     except Exception:
                         logger.debug("A/B outcome record failed (stream)", exc_info=True)
 
@@ -2892,21 +3707,19 @@ async def chat_stream(req: ChatRequest, request: Request):
                 if HAS_METRICS:
                     track_chat_request("ok", 0)  # duration not tracked in stream
 
-                # ── Guardrails: output validation ──
-                if HAS_GUARDRAILS:
-                    try:
-                        out_check = check_output(full_text, message, knowledge._entities if hasattr(knowledge, '_entities') else {})
-                        if out_check.get("cleaned_reply") and out_check["cleaned_reply"] != full_text:
-                            full_text = out_check["cleaned_reply"]
-                    except Exception:
-                        logger.debug("Stream guardrail check failed", exc_info=True)
-
                 # Track & cache
-                analytics.track_query(message, tools_used, full_text, sid)
+                analytics.track_query(
+                    message,
+                    tools_used,
+                    full_text,
+                    sid,
+                    owner_key=owner_key,
+                )
                 if cache_eligible and len(full_text) > 30 and evaluation["score"] >= 5:
                     cache_data = {"reply": full_text, "tool_calls": tools_used, "suggestions": suggestions}
                     # Lưu theo cache_query (khoá lúc cache.get) — không phải bản đã autocorrect,
                     # nếu không lần sau cùng câu gốc sẽ luôn MISS (đã sửa: stream cache key mismatch).
+                    owner_write_gate.assert_writable(owner_key)
                     cache.put(cache_query, cache_data, owner_key=owner_key)
                     # ── Semantic cache: store ──
                     if HAS_SEMANTIC_CACHE:
@@ -2921,12 +3734,20 @@ async def chat_stream(req: ChatRequest, request: Request):
                             logger.debug("Semantic cache put failed", exc_info=True)
 
                 # Send quality score for UI feedback prompt
-                yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': suggestions, 'session_id': sid, 'quality': evaluation['score']}, ensure_ascii=False)}\n\n"
+                feedback_receipt = _issue_delivered_feedback_receipt(
+                    owner_key,
+                    cache_query,
+                    full_text,
+                    _stream_model,
+                    tools_used,
+                )
+                yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': suggestions, 'session_id': sid, 'quality': evaluation['score'], 'feedback_receipt': feedback_receipt}, ensure_ascii=False)}\n\n"
                 return
 
         # ── Round-exhaustion: every round called tools without a final answer.
         # Force ONE synthesis turn (no tools) so the user gets an answer built
         # from gathered evidence instead of an empty response.
+        delivered_synth = ""
         try:
             messages.append({
                 "role": "system",
@@ -2967,18 +3788,42 @@ async def chat_stream(req: ChatRequest, request: Request):
             synth_producer = asyncio.create_task(asyncio.to_thread(_synth_produce))
             synth_chunks: list[str] = []
             synth_terminal_chunk = None
-            try:
+            synth_redactor = StreamingPIIRedactor(
+                verified_public_contacts=tuple(verified_public_contacts),
+            )
+
+            async def _synth_text_chunks():
+                nonlocal synth_terminal_chunk
                 while True:
                     item = await synth_q.get()
                     if item is None:
-                        break
+                        return
                     if isinstance(item, Exception):
                         raise item
                     if getattr(item, "usage", None) is not None:
                         synth_terminal_chunk = item
                         continue
-                    synth_chunks.append(item)
-                    yield f"data: {json.dumps({'type': 'text', 'content': item}, ensure_ascii=False)}\n\n"
+                    yield item
+
+            try:
+                async for safe_chunk in _safe_stream_text_events(
+                    _synth_text_chunks(),
+                    synth_redactor,
+                ):
+                    synth_chunks.append(safe_chunk)
+                    yield f"data: {json.dumps({'type': 'text', 'content': safe_chunk}, ensure_ascii=False)}\n\n"
+            except (asyncio.CancelledError, GeneratorExit):
+                synth_redactor.abort()
+                raise
+            except PrivacyBoundaryUnavailable as exc:
+                logger.warning(
+                    "Privacy boundary unavailable for stream synthesis redaction",
+                    code=exc.code,
+                )
+                stream_usage_settlement_blocked = True
+                synth_redactor.abort()
+                yield f"data: {json.dumps({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
+                return
             finally:
                 _synth_cancelled.set()  # generator đóng (disconnect/hoàn tất) → báo thread produce dừng
                 await synth_producer
@@ -2991,12 +3836,54 @@ async def chat_stream(req: ChatRequest, request: Request):
                     )
             synth_text = "".join(synth_chunks)
             if synth_text:
+                try:
+                    safe_synth = _safe_delivered_reply(
+                        synth_text,
+                        message,
+                        (knowledge._entities or {}) if hasattr(knowledge, "_entities") else {},
+                        verified_public_contacts,
+                    )
+                except PrivacyBoundaryUnavailable as exc:
+                    logger.warning(
+                        "Privacy boundary unavailable for stream synthesis",
+                        code=exc.code,
+                    )
+                    stream_usage_settlement_blocked = True
+                    return
+                except Exception:
+                    logger.warning(
+                        "Privacy boundary unavailable for stream synthesis",
+                        code="UNEXPECTED_PRIVACY_OUTPUT_ERROR",
+                    )
+                    stream_usage_settlement_blocked = True
+                    return
+                synth_text = safe_synth.text
+                delivered_synth = synth_text
+                _privacy_output_boundary_marker = True
+                memory_manager.on_message(owner_key, sid, "user", cache_query)
                 memory_manager.on_message(owner_key, sid, "assistant", synth_text)
-                analytics.track_query(message, tools_used, synth_text, sid)
+                analytics.track_query(
+                    message,
+                    tools_used,
+                    synth_text,
+                    sid,
+                    owner_key=owner_key,
+                )
         except Exception:
             logger.debug("Stream synthesis fallback failed", exc_info=True)
 
-        yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': suggestions, 'session_id': sid}, ensure_ascii=False)}\n\n"
+        feedback_receipt = (
+            _issue_delivered_feedback_receipt(
+                owner_key,
+                cache_query,
+                delivered_synth,
+                _stream_model,
+                tools_used,
+            )
+            if delivered_synth
+            else None
+        )
+        yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': suggestions, 'session_id': sid, 'feedback_receipt': feedback_receipt}, ensure_ascii=False)}\n\n"
 
     async def event_stream():
         body = _event_stream_body()
@@ -3007,16 +3894,17 @@ async def chat_stream(req: ChatRequest, request: Request):
             try:
                 await body.aclose()
             finally:
-                try:
-                    usage_accumulator.settle(
-                        owner_key=owner_key,
-                        query=message[:200],
-                        agent_name="stream",
-                        guardrail_budget=guardrail_budget if HAS_GUARDRAILS else None,
-                        cost_attribution=cost_attribution if HAS_COST_TRACKER else None,
-                    )
-                except Exception:
-                    logger.debug("Cost tracking failed (stream)", exc_info=True)
+                if not stream_usage_settlement_blocked:
+                    try:
+                        usage_accumulator.settle(
+                            owner_key=owner_key,
+                            query=message[:200],
+                            agent_name="stream",
+                            guardrail_budget=guardrail_budget if HAS_GUARDRAILS else None,
+                            cost_attribution=cost_attribution if HAS_COST_TRACKER else None,
+                        )
+                    except Exception:
+                        logger.debug("Cost tracking failed (stream)", exc_info=True)
 
     semantic_lease = None
     if semantic_dedup_key is not None:
@@ -3221,13 +4109,19 @@ async def health_internal(request: Request):
 async def readiness_probe():
     """Lightweight readiness probe for load balancers / orchestrators."""
     def _probe():
+        from config import settings as _settings
+        from data_lifecycle import lifecycle_registry_readiness
         from database import db as _db
+        from privacy_policy import privacy_policy_readiness
         data_source = getattr(knowledge, "_data_source", None) or "unknown"
         entity_count = len(getattr(knowledge, "_entities", None) or {})
         checks = {
             "knowledge": entity_count > 0,
             "data_source": data_source == "db" if getattr(_db, "_use_pg", False) else data_source in {"db", "json"},
+            "privacy_policy": privacy_policy_readiness(_settings),
+            "privacy_boundary": privacy_boundary_readiness(),
         }
+        checks["lifecycle_registry"] = lifecycle_registry_readiness()
         try:
             with _db._conn() as conn:
                 _db._fetchone(conn, "SELECT 1", ())
@@ -3237,9 +4131,22 @@ async def readiness_probe():
         schema = _db.pg_schema_status()
         checks["schema"] = bool(schema.get("ok"))
         checks["schema_version"] = schema
+        erasure_status = scheduler_status().get("erasure", {})
+        checks["erasure_scheduler"] = {
+            "ok": bool(schema.get("ok")) and "audit_only" in erasure_status,
+            "audit_only": bool(erasure_status.get("audit_only", True)),
+            "schema_version": schema.get("schema_version"),
+            "required_schema_version": schema.get("required_schema_version"),
+        }
         return checks
     checks = await asyncio.to_thread(_probe)
-    ready = all(value for key, value in checks.items() if key != "schema_version")
+    ready = all(
+        value.get("ok", False)
+        if isinstance(value, dict) and "ok" in value
+        else bool(value)
+        for key, value in checks.items()
+        if key != "schema_version"
+    )
     return JSONResponse(
         status_code=200 if ready else 503,
         content={"ready": ready, "checks": checks},
@@ -3639,30 +4546,121 @@ async def system_quality(request: Request):
     }
 
 
-@app.post("/feedback")
-async def user_feedback(req: FeedbackRequest, request: Request):
-    """Nhận feedback từ user (thumbs up/down)."""
-    client_ip = get_client_ip(request)
-    allowed, _ = chat_limiter.is_allowed(f"fb:{client_ip}")
-    if not allowed:
-        return _error_response(429, "Too many requests")
+def _feedback_response(
+    status_code: int,
+    content: dict,
+    *,
+    owner_context=None,
+    retry_after: int | None = None,
+) -> JSONResponse:
+    result = JSONResponse(status_code=status_code, content=content)
+    if retry_after is not None:
+        result.headers["Retry-After"] = str(max(1, retry_after))
+    if owner_context is not None:
+        set_chat_owner_cookie(result, owner_context)
+    return result
 
-    user_id = req.user_id or req.session_id or "anonymous"
-    query = req.query
-    rating = req.rating
-    entity_id = req.entity_id
-    memory_manager.feedback(user_id, query, rating * 5, entity_id)
+
+def _feedback_owner_kind(owner_key: str) -> str:
+    if owner_key.startswith("user:"):
+        return "authenticated"
+    if owner_key.startswith("anon:"):
+        return "anonymous"
+    return "unknown"
+
+
+def _track_feedback_transport(
+    reason: str,
+    owner_kind: str,
+    rating: int | None = None,
+) -> None:
     if HAS_METRICS:
-        track_feedback(positive=(rating == 1))
+        track_feedback_attempt(
+            reason=reason,
+            owner_kind=owner_kind,
+            rating=rating,
+        )
 
-    # Feed into learning loop
+
+@app.post("/feedback")
+async def user_feedback(request: Request):
+    """Consume one owner-bound receipt into deidentified aggregate telemetry."""
+    client_ip = get_client_ip(request)
+    allowed, rate_info = feedback_ip_limiter.is_allowed(client_ip)
+    if not allowed:
+        _track_feedback_transport("ip_limit", "unknown")
+        return _feedback_response(
+            429,
+            {"detail": "Too many feedback requests"},
+            retry_after=rate_info["retry_after"],
+        )
+
+    owner_context = await resolve_chat_owner(request)
+    resolved_owner_kind = _feedback_owner_kind(owner_context.owner_key)
+    allowed, rate_info = feedback_owner_limiter.is_allowed(owner_context.owner_key)
+    if not allowed:
+        _track_feedback_transport("owner_limit", resolved_owner_kind)
+        return _feedback_response(
+            429,
+            {"detail": "Too many feedback requests"},
+            owner_context=owner_context,
+            retry_after=rate_info["retry_after"],
+        )
+
     try:
-        from learn_loop import record_feedback
-        record_feedback(query=query, rating=rating, entity_id=entity_id, session_id=user_id)
-    except Exception:
-        logger.debug("Learn loop feedback record failed", exc_info=True)
-    logger.info("User feedback", user_id=user_id, rating=rating, query=query[:50])
-    return {"success": True}
+        payload = await request.json()
+        feedback = FeedbackRequest.model_validate(payload)
+    except (json.JSONDecodeError, UnicodeDecodeError, ValidationError, TypeError, ValueError):
+        _track_feedback_transport("invalid_request", resolved_owner_kind)
+        return _feedback_response(
+            422,
+            {"detail": "Invalid feedback request"},
+            owner_context=owner_context,
+        )
+
+    if re.fullmatch(r"[A-Za-z0-9_-]{43}", feedback.receipt) is None:
+        _track_feedback_transport("invalid_receipt", resolved_owner_kind, feedback.rating)
+        return _feedback_response(
+            503,
+            {"detail": "Feedback unavailable"},
+            owner_context=owner_context,
+        )
+
+    try:
+        consumed = consume_feedback_receipt(
+            feedback.receipt,
+            owner_context.owner_key,
+            feedback.rating,
+        )
+    except FeedbackUnavailable:
+        _track_feedback_transport(
+            "receipt_unavailable",
+            resolved_owner_kind,
+            feedback.rating,
+        )
+        return _feedback_response(
+            503,
+            {"detail": "Feedback unavailable"},
+            owner_context=owner_context,
+        )
+    except FeedbackRejected:
+        _track_feedback_transport(
+            "receipt_rejected",
+            resolved_owner_kind,
+            feedback.rating,
+        )
+        return _feedback_response(
+            503,
+            {"detail": "Feedback unavailable"},
+            owner_context=owner_context,
+        )
+
+    _track_feedback_transport(
+        "idempotent" if consumed.idempotent else "accepted",
+        resolved_owner_kind,
+        feedback.rating,
+    )
+    return _feedback_response(200, {"success": True}, owner_context=owner_context)
 
 
 @app.post("/api/client-error")
@@ -4162,6 +5160,8 @@ hr { border: none; border-top: 1px solid #e6e0d4; margin: 12px 0; }
 .feedback-row button { padding: 4px 12px; border: 1px solid #e6e0d4; border-radius: 14px; background: #fff; cursor: pointer; font-size: .82rem; transition: all .15s; }
 .feedback-row button:hover { border-color: #1f7a4d; }
 .feedback-row button.voted { background: #f0faf5; border-color: #1f7a4d; color: #1f7a4d; pointer-events: none; }
+.feedback-row button:disabled { opacity: .55; cursor: wait; }
+.feedback-status { color: #66746e; font-size: .8rem; align-self: center; }
 .typing { align-self: flex-start; padding: 14px 18px; }
 .typing-dots { display: flex; gap: 4px; align-items: center; }
 .typing-dots span { width: 8px; height: 8px; border-radius: 50%; background: #b0bdb6; animation: bounce .6s infinite alternate; }
@@ -4246,7 +5246,7 @@ async function send(){
           }else if(data.type==='done'){
             const tp=msgDiv.querySelector('.trace-panel');if(tp)tp.style.opacity='.6';
             if(data.suggestions&&data.suggestions.length)showSuggestions(data.suggestions);
-            showFeedback(msgDiv,text);
+            showFeedback(msgDiv,data.feedback_receipt,(rating,selected,other)=>sendFeedback(data.feedback_receipt,rating,selected,other));
           }
         }catch(e){}}
     }
@@ -4262,17 +5262,28 @@ function showSuggestions(items){const old=document.querySelector('.suggestions.d
   const div=document.createElement('div');div.className='suggestions dynamic';
   items.forEach(t=>{const b=document.createElement('button');b.textContent=t;b.onclick=()=>{div.remove();ask(t);};div.appendChild(b);});
   msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
-function showFeedback(msgDiv,query){
+function showFeedback(msgDiv,receipt,submitFeedback){
+  if(!receipt)return;
   const row=document.createElement('div');row.className='feedback-row';
   const up=document.createElement('button');up.textContent='👍 Hữu ích';
   const down=document.createElement('button');down.textContent='👎 Chưa tốt';
-  up.onclick=()=>{sendFeedback(query,1);up.classList.add('voted');down.style.display='none';};
-  down.onclick=()=>{sendFeedback(query,0);down.classList.add('voted');up.style.display='none';};
+  up.onclick=()=>submitFeedback(1,up,down);
+  down.onclick=()=>submitFeedback(0,down,up);
   row.appendChild(up);row.appendChild(down);msgDiv.appendChild(row);
 }
-function sendFeedback(query,rating){
-  fetch('/feedback',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({query:query,rating:rating,session_id:'web'})}).catch(()=>{});
+async function sendFeedback(receipt,rating,selected,other){
+  selected.disabled=true;other.disabled=true;
+  try{
+    const response=await fetch('/feedback',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',
+      body:JSON.stringify({receipt:receipt,rating:rating})});
+    if(!response.ok)throw new Error('feedback unavailable');
+    selected.classList.add('voted');other.style.display='none';
+  }catch(_error){
+    selected.disabled=false;other.disabled=false;
+    let status=selected.parentNode.querySelector('.feedback-status');
+    if(!status){status=document.createElement('span');status.className='feedback-status';selected.parentNode.appendChild(status);}
+    status.textContent='Chưa thể ghi nhận. Vui lòng thử lại.';
+  }
 }
 function renderMd(t){let h=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   // Code blocks (``` ... ```)

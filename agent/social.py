@@ -30,6 +30,10 @@ from storage import storage
 from ratelimit import check_rate, check_rate_ip
 from text_utils import normalize_name
 from media_policy import AI_ONLY_MEDIA_DETAIL
+from profile_access import (
+    can_view_profile_audience as _profile_can_view_full,
+    resolve_profile_access,
+)
 
 logger = logging.getLogger("social")
 
@@ -1925,6 +1929,11 @@ async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100
     bc, bc_p = _block_sql(user)
     def _query():
         with db._conn() as conn:
+            access = resolve_profile_access(
+                conn, uid, str(user["id"]) if user else None, require_activity=False
+            )
+            if access.status != "ok":
+                return access, [], None
             total_row = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM follows f JOIN users u ON u.id::text = f.target_id
                 WHERE f.follower_id = {ph}::uuid AND f.target_type = 'user' AND u.is_active = TRUE {bc}
@@ -1937,8 +1946,12 @@ async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100
                 {bc}
                 ORDER BY f.created_at DESC LIMIT {ph} OFFSET {ph}
             """, (uid,) + tuple(bc_p) + (limit, offset))
-            return rows, total
-    rows, total = await asyncio.to_thread(_query)
+            return access, rows, total
+    access, rows, total = await asyncio.to_thread(_query)
+    if access.status == "not_found":
+        raise HTTPException(404, "Người dùng không tồn tại")
+    if access.status == "hidden":
+        return {"users": [], "total": 0, "offset": offset, "has_more": False}
     users = []
     for r in rows:
         d = db._row_to_dict(r)
@@ -1960,6 +1973,11 @@ async def list_followers(user_id: str, limit: int = Query(50, ge=1, le=100), off
     bc, bc_p = _block_sql(user)
     def _query():
         with db._conn() as conn:
+            access = resolve_profile_access(
+                conn, uid, str(user["id"]) if user else None, require_activity=False
+            )
+            if access.status != "ok":
+                return access, [], None
             total_row = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM follows f JOIN users u ON u.id = f.follower_id
                 WHERE f.target_type = 'user' AND f.target_id = {ph} AND u.is_active = TRUE {bc}
@@ -1972,8 +1990,12 @@ async def list_followers(user_id: str, limit: int = Query(50, ge=1, le=100), off
                 {bc}
                 ORDER BY f.created_at DESC LIMIT {ph} OFFSET {ph}
             """, (uid,) + tuple(bc_p) + (limit, offset))
-            return rows, total
-    rows, total = await asyncio.to_thread(_query)
+            return access, rows, total
+    access, rows, total = await asyncio.to_thread(_query)
+    if access.status == "not_found":
+        raise HTTPException(404, "Người dùng không tồn tại")
+    if access.status == "hidden":
+        return {"users": [], "total": 0, "offset": offset, "has_more": False}
     users = []
     for r in rows:
         d = db._row_to_dict(r)
@@ -3762,14 +3784,6 @@ def _profile_private_response(profile, follower_count):
     }
 
 
-def _profile_can_view_full(vis: str, is_self: bool, is_follower: bool) -> bool:
-    if is_self or vis == "public":
-        return True
-    if vis in {"followers", "followers_only", "private"}:
-        return is_follower
-    return False
-
-
 def _profile_full_response(profile, posts_n, reviews_n, follower_count, following_row,
                            reputation, privacy, view_count_7d, is_self,
                            viewer_following, viewer_blocked, viewer_muted):
@@ -3848,6 +3862,10 @@ def _profile_is_follower(conn, ph, is_self, vis, viewer_id, resolved_id):
     return False
 
 
+_PROFILE_PRIVACY_LOAD_FAILED = object()
+_PROFILE_PRIVACY_LOAD_FAILED_VISIBILITY = "privacy_load_failed"
+
+
 def _profile_load_privacy(conn, ph, resolved_id):
     """Nạp privacy settings cho profile (extract-method thuần từ get_user_profile._query)."""
     try:
@@ -3855,7 +3873,11 @@ def _profile_load_privacy(conn, ph, resolved_id):
         if prow:
             return db._row_to_dict(prow)
     except Exception:
-        logger.warning("Failed to load privacy settings for user %s", resolved_id)
+        logger.warning(
+            "Failed to load privacy settings for user %s", resolved_id,
+            exc_info=True,
+        )
+        return _PROFILE_PRIVACY_LOAD_FAILED
     return None
 
 
@@ -3910,10 +3932,15 @@ def _profile_query(ph, user_id, _is_uuid, viewer_id):
             WHERE follower_id::text = {ph} AND target_type = 'user'
         """, (resolved_id,))
 
-        privacy = _profile_load_privacy(conn, ph, resolved_id)
-
-        vis = privacy["profile_visibility"] if privacy else ("public" if is_self else "followers_only")
-        is_follower = _profile_is_follower(conn, ph, is_self, vis, viewer_id, resolved_id)
+        privacy_result = _profile_load_privacy(conn, ph, resolved_id)
+        if privacy_result is _PROFILE_PRIVACY_LOAD_FAILED:
+            privacy = None
+            vis = "public" if is_self else _PROFILE_PRIVACY_LOAD_FAILED_VISIBILITY
+            is_follower = False
+        else:
+            privacy = privacy_result
+            vis = privacy["profile_visibility"] if privacy else ("public" if is_self else "followers_only")
+            is_follower = _profile_is_follower(conn, ph, is_self, vis, viewer_id, resolved_id)
 
         viewer_following = False
         viewer_blocked = False
@@ -3977,20 +4004,21 @@ async def get_user_posts(
     if not uid:
         raise HTTPException(404, "Người dùng không tồn tại")
     viewer_id = str(user["id"]) if user else None
-    is_self = viewer_id == uid
-    if not is_self:
-        privacy_hidden = await asyncio.to_thread(_check_show_activity, uid, viewer_id)
-        if privacy_hidden:
-            return {"posts": [], "total": 0, "page": page, "has_more": False}
     bc, bc_p = _block_sql(user, "p.user_id")
     seed_filter, seed_params = _prod_seed_post_filter("p")
     offset = (page - 1) * limit
     def _query():
         with db._conn() as conn:
+            access = resolve_profile_access(
+                conn, uid, viewer_id, require_activity=True
+            )
+            if access.status != "ok":
+                return access, [], None
+            target_id = access.target_id or uid
             total_row = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM posts p
                 WHERE p.user_id::text = {ph} AND p.moderation_status = 'approved' AND p.deleted_at IS NULL {bc} {seed_filter}
-            """, (uid, *bc_p, *seed_params))
+            """, (target_id, *bc_p, *seed_params))
             total = db._row_to_dict(total_row)["c"] if total_row else 0
             rows = db._fetchall(conn, f"""
                 SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
@@ -4002,9 +4030,13 @@ async def get_user_posts(
                 {bc} {seed_filter}
                 ORDER BY COALESCE(p.is_pinned, FALSE) DESC, p.created_at DESC
                 LIMIT {ph} OFFSET {ph}
-            """, (uid, *bc_p, *seed_params, limit, offset))
-            return rows, total
-    rows, total = await asyncio.to_thread(_query)
+                """, (target_id, *bc_p, *seed_params, limit, offset))
+            return access, rows, total
+    access, rows, total = await asyncio.to_thread(_query)
+    if access.status == "not_found":
+        raise HTTPException(404, "Người dùng không tồn tại")
+    if access.status == "hidden":
+        return {"posts": [], "total": 0, "page": page, "has_more": False}
     posts = [db._row_to_dict(r) for r in rows]
     await asyncio.to_thread(_enrich_reactions, posts)
     posts = [_format_post(p) for p in posts]
@@ -4025,20 +4057,22 @@ async def get_user_reviews(
     if not uid:
         raise HTTPException(404, "Người dùng không tồn tại")
     viewer_id = str(user["id"]) if user else None
-    if viewer_id != uid:
-        privacy_hidden = await asyncio.to_thread(_check_show_activity, uid, viewer_id)
-        if privacy_hidden:
-            return {"reviews": [], "total": 0, "page": page, "has_more": False}
     bc, bc_p = _block_sql(user, "p.user_id")
     seed_filter, seed_params = _prod_seed_post_filter("p")
     offset = (page - 1) * limit
     def _query():
         with db._conn() as conn:
+            access = resolve_profile_access(
+                conn, uid, viewer_id, require_activity=True
+            )
+            if access.status != "ok":
+                return access, [], None
+            target_id = access.target_id or uid
             total_row = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM posts p
                 WHERE p.user_id::text = {ph} AND p.post_type = 'review'
                   AND p.moderation_status = 'approved' AND p.deleted_at IS NULL {bc} {seed_filter}
-            """, (uid, *bc_p, *seed_params))
+            """, (target_id, *bc_p, *seed_params))
             total = db._row_to_dict(total_row)["c"] if total_row else 0
             rows = db._fetchall(conn, f"""
                 SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
@@ -4051,73 +4085,29 @@ async def get_user_reviews(
                 {bc} {seed_filter}
                 ORDER BY p.created_at DESC
                 LIMIT {ph} OFFSET {ph}
-            """, (uid, *bc_p, *seed_params, limit, offset))
-            return rows, total
-    rows, total = await asyncio.to_thread(_query)
+                """, (target_id, *bc_p, *seed_params, limit, offset))
+            return access, rows, total
+    access, rows, total = await asyncio.to_thread(_query)
+    if access.status == "not_found":
+        raise HTTPException(404, "Người dùng không tồn tại")
+    if access.status == "hidden":
+        return {"reviews": [], "total": 0, "page": page, "has_more": False}
     posts = [db._row_to_dict(r) for r in rows]
     await asyncio.to_thread(_enrich_reactions, posts)
     posts = [_format_post(p) for p in posts]
     return {"reviews": posts, "total": total, "page": page, "has_more": offset + limit < total}
 
 
-def _timeline_blocked(conn, ph, viewer_id, resolved_id):
-    """Chặn 2 chiều giữa viewer và target — extract-method thuần."""
-    # Chặn 2 chiều — mirror get_user_profile (dòng ~3350-3357): SQL
-    # text 2 nhánh OR trông giống hệt nhau nhưng param bind khác vị trí
-    # (viewer_id, resolved_id, resolved_id, viewer_id) nên vẫn đúng
-    # 2 chiều (viewer chặn target HOẶC target chặn viewer).
-    return db._fetchone(conn, f"""
-        SELECT 1 FROM blocks
-        WHERE (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
-           OR (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
-    """, (viewer_id, resolved_id, resolved_id, viewer_id)) is not None
-
-
-def _timeline_followers_hidden(conn, ph, target, is_self, viewer_id, resolved_id):
-    """True nếu target là 'followers-only' và viewer không đủ điều kiện xem — extract-method thuần."""
-    is_follower = False
-    if not is_self and target.get("profile_visibility") == "followers" and viewer_id:
-        frow = db._fetchone(conn, f"""
-            SELECT 1 FROM follows
-            WHERE follower_id = {ph}::uuid AND target_type = 'user' AND target_id = {ph}
-        """, (viewer_id, resolved_id))
-        is_follower = frow is not None
-    return target.get("profile_visibility") == "followers" and not is_self and not is_follower
-
-
 def _timeline_visibility_gate(conn, ph, user_id, viewer_id):
     """Cổng kiểm hiển thị timeline — extract-method thuần từ get_user_timeline._query.
     Trả (status, resolved_id): 'notfound' | 'hidden' | 'ok'."""
-    # Không có cột users.is_private — độ hiển thị hồ sơ nằm ở
-    # user_privacy.profile_visibility (3 tier: public/followers/private,
-    # giống get_user_profile). Lấy giá trị thô thay vì rút gọn thành bool
-    # để còn phân biệt được tier 'followers'.
-    target = db._fetchone(conn, f"""
-        SELECT u.id, COALESCE(pv.profile_visibility, 'public') AS profile_visibility
-        FROM users u
-        LEFT JOIN user_privacy pv ON pv.user_id = u.id
-        WHERE u.id::text = {ph} AND u.is_active = TRUE AND u.deleted_at IS NULL
-    """, (user_id,))
-    if not target:
-        return "notfound", None
-    target = db._row_to_dict(target)
-    resolved_id = str(target["id"])
-    is_self = bool(viewer_id) and viewer_id == resolved_id
-    is_private = target.get("profile_visibility") == "private"
-
-    if not is_self and viewer_id and _timeline_blocked(conn, ph, viewer_id, resolved_id):
-        return "hidden", resolved_id
-
-    if is_private and not is_self:
-        return "hidden", resolved_id
-
-    if _timeline_followers_hidden(conn, ph, target, is_self, viewer_id, resolved_id):
-        return "hidden", resolved_id
-
-    if not is_self and _check_show_activity(resolved_id, viewer_id):
-        return "hidden", resolved_id
-
-    return "ok", resolved_id
+    # The shared decision owns profile_visibility/is_private, follower, block,
+    # and show_activity policy; this adapter preserves the legacy status spelling.
+    decision = resolve_profile_access(
+        conn, user_id, viewer_id, require_activity=True
+    )
+    status = "notfound" if decision.status == "not_found" else decision.status
+    return status, decision.target_id
 
 
 def _timeline_fetch(conn, ph, user_id, user, limit, offset):
@@ -4243,6 +4233,11 @@ async def get_activity_heatmap(user_id: str, user=Depends(get_current_user)):
 
     def _query():
         with db._conn() as conn:
+            access = resolve_profile_access(
+                conn, user_id, str(user["id"]) if user else None, require_activity=True
+            )
+            if access.status != "ok":
+                return access, []
             rows = db._fetchall(conn, f"""
                 SELECT DATE(created_at) AS d, COUNT(*) AS c
                 FROM posts
@@ -4252,9 +4247,13 @@ async def get_activity_heatmap(user_id: str, user=Depends(get_current_user)):
                 GROUP BY DATE(created_at)
                 ORDER BY d
             """, (user_id,))
-            return [db._row_to_dict(r) for r in rows]
+            return access, [db._row_to_dict(r) for r in rows]
 
-    rows = await asyncio.to_thread(_query)
+    access, rows = await asyncio.to_thread(_query)
+    if access.status == "not_found":
+        raise HTTPException(404, "Người dùng không tồn tại")
+    if access.status == "hidden":
+        return {"days": [], "total": 0, "max": 0}
     days = [{"date": str(r["d"]), "count": int(r["c"])} for r in rows]
     total = sum(d["count"] for d in days)
     mx = max((d["count"] for d in days), default=0)
@@ -4302,30 +4301,6 @@ def get_trending_posts(limit: int = 10, entity_type: str = None) -> list[dict]:
             LIMIT {ph}
         """, params)
     return [db._row_to_dict(r) for r in rows]
-
-
-# ── Format helpers ──
-
-
-def _check_show_activity(target_uid: str, viewer_uid: str | None) -> bool:
-    """Return True if target user's activity is hidden from viewer (privacy enforcement)."""
-    ph = db._ph
-    with db._conn() as conn:
-        prow = db._fetchone(conn, f"""
-            SELECT show_activity FROM user_privacy WHERE user_id = {ph}::uuid
-        """, (target_uid,))
-        if not prow:
-            return False
-        d = db._row_to_dict(prow)
-        if d.get("show_activity", True) in (True, None):
-            return False
-        if not viewer_uid:
-            return True
-        follower = db._fetchone(conn, f"""
-            SELECT 1 FROM follows
-            WHERE follower_id = {ph}::uuid AND target_type = 'user' AND target_id = {ph}
-        """, (viewer_uid, target_uid))
-        return follower is None
 
 
 def _resolve_user_id(user_id: str) -> str | None:

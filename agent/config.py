@@ -13,7 +13,17 @@ from dotenv import load_dotenv
 from pydantic import model_validator
 from pydantic_settings import BaseSettings
 
+POSTGRES_URL_PREFIXES = ("postgres://", "postgresql://")
+
+
+def is_postgresql_url(value: str) -> bool:
+    return value.strip().lower().startswith(POSTGRES_URL_PREFIXES)
+
+from privacy_policy import load_privacy_policy
+
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+
+_PRIVACY_POLICY = load_privacy_policy()
 
 
 class Settings(BaseSettings):
@@ -26,6 +36,7 @@ class Settings(BaseSettings):
 
     # ── Database ──
     DATABASE_URL: str = ""
+    ENTITY_DETAILS_TABLES: bool = False
     REDIS_URL: str = ""
 
     # ── Security ──
@@ -57,6 +68,8 @@ class Settings(BaseSettings):
     BUILD_SEARCH_INDEXES: bool = True
     BACKGROUND_INDEX_BUILD: bool = True
     SCHEDULER_ENABLED: bool = True
+    ERASURE_AUDIT_ONLY: bool = True
+    ERASURE_ACTIVATION_ENABLED: bool = False
     LLM_JUDGE_ENABLED: bool = False
     DESTRUCTIVE_OPS_LOCKED: str = "1"
 
@@ -97,7 +110,11 @@ class Settings(BaseSettings):
     RL_POST_DAILY_WINDOW: int = 86400
     TRENDING_CACHE_TTL: int = 120
     BACKUP_COOLDOWN: int = 300
-    ACCOUNT_DELETE_GRACE_DAYS: int = 30
+    ACCOUNT_ERASURE_DEADLINE_DAYS: int = _PRIVACY_POLICY.account_erasure_deadline_days
+    RECOVERY_ENABLED_DURING_GRACE_PERIOD: bool = _PRIVACY_POLICY.recovery_enabled_during_grace_period
+    FEEDBACK_MODE: str = _PRIVACY_POLICY.feedback_mode
+    FEEDBACK_RECEIPT_TTL_HOURS: int = _PRIVACY_POLICY.feedback_receipt_ttl_hours
+    RETAIN_DEIDENTIFIED_AGGREGATES: bool = _PRIVACY_POLICY.retain_deidentified_aggregates
     PBKDF2_ITERATIONS: int = 310_000
     SESSION_EXPIRE_DAYS: int = 30
     OTP_EXPIRE_MINUTES: int = 5
@@ -119,7 +136,16 @@ class Settings(BaseSettings):
     def admin_telegram_ids_set(self) -> set[str]:
         return {x.strip() for x in self.ADMIN_TELEGRAM_IDS.split(",") if x.strip()}
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
+    model_config = {
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+        "extra": "ignore",
+        "hide_input_in_errors": True,
+    }
+
+    @property
+    def ACCOUNT_DELETE_GRACE_DAYS(self) -> int:
+        return self.ACCOUNT_ERASURE_DEADLINE_DAYS
 
     @model_validator(mode="after")
     def validate_production_keys(self):
@@ -134,8 +160,39 @@ class Settings(BaseSettings):
             # JWT_SECRET: not yet used by any endpoint — skip until auth JWT is implemented
             if not self.DATABASE_URL:
                 missing.append("DATABASE_URL")
+            elif not is_postgresql_url(self.DATABASE_URL):
+                missing.append("DATABASE_URL (PostgreSQL required)")
+            if not self.ENTITY_DETAILS_TABLES:
+                missing.append("ENTITY_DETAILS_TABLES=true")
             if missing:
                 raise ValueError(f"Production requires: {', '.join(missing)}")
+            policy_values = {
+                "ACCOUNT_ERASURE_DEADLINE_DAYS": (
+                    self.ACCOUNT_ERASURE_DEADLINE_DAYS,
+                    _PRIVACY_POLICY.account_erasure_deadline_days,
+                ),
+                "RECOVERY_ENABLED_DURING_GRACE_PERIOD": (
+                    self.RECOVERY_ENABLED_DURING_GRACE_PERIOD,
+                    _PRIVACY_POLICY.recovery_enabled_during_grace_period,
+                ),
+                "FEEDBACK_MODE": (self.FEEDBACK_MODE, _PRIVACY_POLICY.feedback_mode),
+                "FEEDBACK_RECEIPT_TTL_HOURS": (
+                    self.FEEDBACK_RECEIPT_TTL_HOURS,
+                    _PRIVACY_POLICY.feedback_receipt_ttl_hours,
+                ),
+                "RETAIN_DEIDENTIFIED_AGGREGATES": (
+                    self.RETAIN_DEIDENTIFIED_AGGREGATES,
+                    _PRIVACY_POLICY.retain_deidentified_aggregates,
+                ),
+            }
+            mismatched = [
+                name for name, (actual, expected) in policy_values.items()
+                if actual != expected
+            ]
+            if mismatched:
+                raise ValueError(
+                    "Production privacy policy mismatch: " + ", ".join(mismatched)
+                )
         return self
 
 

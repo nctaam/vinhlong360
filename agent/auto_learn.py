@@ -41,7 +41,14 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from ddgs import DDGS
 
-from pinned_http import EgressPolicy, PinnedHTTPClient, PinnedResponse
+from pinned_http import (
+    BlockedAddressError,
+    EgressPolicy,
+    PeerMismatchError,
+    PinnedHTTPClient,
+    PinnedResponse,
+    RedirectPolicyError,
+)
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
@@ -275,6 +282,7 @@ def fetch_url(url: str) -> str | None:
             url,
             user_agent="vinhlong360-learner/1.0",
             policy=_AUTO_LEARN_EGRESS_POLICY,
+            audit_context="auto_learn",
         )
         if response.status_code != 200:
             return None
@@ -284,6 +292,8 @@ def fetch_url(url: str) -> str | None:
         text = re.sub(r"<[^>]+>", " ", text)
         text = re.sub(r"\s+", " ", text).strip()
         return text[:6000]
+    except (BlockedAddressError, PeerMismatchError, RedirectPolicyError):
+        return None
     except Exception as exc:
         logger.warning("Failed to fetch %s: %s", url, exc)
         return None

@@ -195,8 +195,24 @@ def test_fetch_url_text_uses_pinned_options_and_tag_only_cleanup(monkeypatch: py
                 total_timeout_seconds=12.0,
                 max_redirects=5,
             ),
+            "audit_context": "quality_burst",
         },
     )]
+
+
+def test_fetch_url_text_real_blocked_literal_returns_empty_and_logs_once(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    with caplog.at_level(logging.WARNING, logger="security.egress"):
+        assert q.fetch_url_text("https://127.0.0.1/private?token=secret") == ""
+
+    records = [record for record in caplog.records if record.name == "security.egress"]
+    assert len(records) == 1
+    assert records[0].getMessage() == (
+        "Pinned egress denied consumer=quality_burst reason=blocked_address "
+        "target=https://127.0.0.1:443 hop=0"
+    )
+    assert "token" not in records[0].getMessage()
 
 
 @pytest.mark.parametrize("status, expected", [(200, True), (399, True), (400, False), (500, False)])

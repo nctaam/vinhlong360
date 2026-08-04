@@ -32,6 +32,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from threading import Lock
 
+from owner_write_gate import owner_write_gate
+
 logger = logging.getLogger(__name__)
 
 
@@ -146,6 +148,8 @@ class MemoryGraph:
 
     Thread-safe, auto-persists after every N mutations.
     """
+
+    _MAX_ERASURE_ITEMS = 100_000
 
     def __init__(self, graph_path: Path | str | None = None, auto_save_every: int = 5):
         self._path = Path(graph_path) if graph_path else GRAPH_FILE
@@ -269,6 +273,62 @@ class MemoryGraph:
         """Get a node by ID."""
         with self._lock:
             return self._nodes.get(node_id)
+
+    def purge_owner(self, owner_key: str) -> int:
+        """Remove one exact owner node and every incident edge."""
+        with self._lock:
+            if len(self._nodes) + len(self._edges) > self._MAX_ERASURE_ITEMS:
+                raise RuntimeError("Memory graph scan limit exceeded")
+            edge_keys = set(self._adjacency.get(owner_key, set()))
+            edge_keys.update(
+                key
+                for key, edge in self._edges.items()
+                if edge.source == owner_key or edge.target == owner_key
+            )
+            removed_edges = 0
+            for key in edge_keys:
+                edge = self._edges.pop(key, None)
+                if edge is None:
+                    continue
+                self._adjacency[edge.source].discard(key)
+                self._adjacency[edge.target].discard(key)
+                removed_edges += 1
+            self._adjacency.pop(owner_key, None)
+            removed_node = int(self._nodes.pop(owner_key, None) is not None)
+            removed = removed_node + removed_edges
+            if removed:
+                self._save_unlocked()
+            return removed
+
+    def _memory_owner_linked(self, owner_key: str) -> bool:
+        return owner_key in self._nodes or any(
+            edge.source == owner_key or edge.target == owner_key
+            for edge in self._edges.values()
+        )
+
+    def _persisted_owner_linked(self, owner_key: str) -> bool:
+        if not self._path.exists():
+            return False
+        data = json.loads(self._path.read_text(encoding="utf-8"))
+        nodes = data.get("nodes", [])
+        edges = data.get("edges", [])
+        if len(nodes) + len(edges) > self._MAX_ERASURE_ITEMS:
+            raise RuntimeError("Memory graph scan limit exceeded")
+        node_linked = any(node.get("id") == owner_key for node in nodes)
+        edge_linked = any(
+            edge.get("source") == owner_key or edge.get("target") == owner_key
+            for edge in edges
+        )
+        return node_linked or edge_linked
+
+    def verify_owner_absent(self, owner_key: str) -> bool:
+        """Verify memory and the persisted graph contain no exact owner link."""
+        with self._lock:
+            if len(self._nodes) + len(self._edges) > self._MAX_ERASURE_ITEMS:
+                raise RuntimeError("Memory graph scan limit exceeded")
+            return not self._memory_owner_linked(
+                owner_key
+            ) and not self._persisted_owner_linked(owner_key)
 
     def get_neighbors(self, node_id: str, relation: str | None = None,
                       min_weight: float = 0) -> list[dict]:
@@ -396,6 +456,7 @@ class MemoryGraph:
           - user -> entity ("discussed") edges
           - entity <-> entity ("co_mentioned") edges for all pairs
         """
+        owner_write_gate.assert_writable(user_id)
         # Ensure user node exists
         self.add_node(user_id, type="user", properties={"name": user_id})
 
@@ -415,12 +476,14 @@ class MemoryGraph:
     def record_preference(self, user_id: str, entity_id: str,
                           score: float = 1.0):
         """Record user interest in an entity. Score is used as edge weight."""
+        owner_write_gate.assert_writable(user_id)
         self.add_node(user_id, type="user", properties={"name": user_id})
         self.add_node(entity_id, type="entity", properties={"name": entity_id})
         self.add_edge(user_id, entity_id, "interested_in", weight=score)
 
     def record_comparison(self, user_id: str, entity_a: str, entity_b: str):
         """Record that a user compared two entities."""
+        owner_write_gate.assert_writable(user_id)
         self.add_node(user_id, type="user", properties={"name": user_id})
         self.add_node(entity_a, type="entity", properties={"name": entity_a})
         self.add_node(entity_b, type="entity", properties={"name": entity_b})
@@ -762,6 +825,7 @@ class MemoryGraph:
         2. Extracts facts from the conversation
         3. Applies extracted facts to the graph
         """
+        owner_write_gate.assert_writable(user_id)
         # Record direct entity interactions
         if entities_mentioned:
             self.record_interaction(user_id, entities_mentioned, query=message)

@@ -9,6 +9,7 @@ from unittest.mock import patch
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "agent"))
 
 from guardrails import (
+    PIISpan,
     PromptInjectionDetector,
     PIIMasker,
     OutputValidator,
@@ -292,6 +293,86 @@ class TestPIIMasker(unittest.TestCase):
         _, detections = self.masker.mask(text)
         positions = [d["position"][0] for d in detections]
         self.assertEqual(positions, sorted(positions))
+
+    def test_detect_spans_use_original_text_coordinates(self):
+        text = "Email long.address@example.com va goi 0912345678"
+
+        spans = self.masker.detect_spans(text)
+
+        self.assertTrue(all(isinstance(span, PIISpan) for span in spans))
+        self.assertEqual(
+            [(span.kind, text[span.start:span.end]) for span in spans],
+            [
+                ("email", "long.address@example.com"),
+                ("phone", "0912345678"),
+            ],
+        )
+
+    def test_mask_reports_original_positions_after_earlier_replacement(self):
+        text = "Email long.address@example.com va goi 0912345678"
+
+        _, detections = self.masker.mask(text)
+
+        self.assertEqual(
+            [(item["type"], text[slice(*item["position"])]) for item in detections],
+            [
+                ("email", "long.address@example.com"),
+                ("phone", "0912345678"),
+            ],
+        )
+        self.assertTrue(
+            all(set(item) == {"type", "masked", "position"} for item in detections)
+        )
+
+    def test_overlapping_bank_and_phone_span_uses_detector_priority(self):
+        text = "STK: 0912345678"
+
+        spans = self.masker.detect_spans(text)
+        masked, detections = self.masker.mask(text)
+
+        self.assertEqual(spans, (PIISpan("bank_account", 5, 15),))
+        self.assertEqual(masked, "STK: [BANK_ACCOUNT]")
+        self.assertEqual(
+            detections,
+            [{"type": "bank_account", "masked": True, "position": (5, 15)}],
+        )
+
+    def test_secret_sentinel_is_redacted(self):
+        text = "api_key=sk-live-ABCDEF123456"
+
+        masked, detections = self.masker.mask(text)
+
+        self.assertEqual(masked, "[SECRET]")
+        self.assertEqual(detections[0]["type"], "secret")
+
+    def test_overlong_email_candidate_does_not_leak_local_part_prefix(self):
+        text = "email " + ("a" * 70) + "@example.com"
+
+        masked, spans = self.masker.mask(text)
+
+        self.assertEqual(masked, "email [EMAIL]")
+        self.assertEqual(spans[0]["position"], (6, len(text)))
+
+    def test_keyword_bound_overlong_numeric_candidates_are_fully_redacted(self):
+        cases = [
+            ("CCCD: " + ("1" * 20), "CCCD: [ID_NUMBER]", "id_number", 6),
+            ("STK: " + ("2" * 20), "STK: [BANK_ACCOUNT]", "bank_account", 5),
+        ]
+
+        for text, expected, kind, start in cases:
+            with self.subTest(kind=kind):
+                masked, detections = self.masker.mask(text)
+                self.assertEqual(masked, expected)
+                self.assertEqual(detections[0]["type"], kind)
+                self.assertEqual(detections[0]["position"], (start, len(text)))
+
+    def test_overlong_international_phone_candidate_is_fully_redacted(self):
+        text = "+84" + ("3" * 20)
+
+        masked, detections = self.masker.mask(text)
+
+        self.assertEqual(masked, "[PHONE]")
+        self.assertEqual(detections[0]["position"], (0, len(text)))
 
 
 # ══════════════════════════════════════════════════

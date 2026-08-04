@@ -1,12 +1,12 @@
 # Pinned Egress Security Observability
 
-> STATUS: active - approved design; implementation has not started.
+> STATUS: done - implemented and verified locally through code/test revision `15f7124a16745d0315ae4e249ce4b4dd7187c5fb`; production observation still requires a separately authorized deployment.
 
 ## Decision
 
 Add one centralized, sanitized warning event at the public
 `PinnedHTTPClient.get()` boundary for the three security-denial classes that are
-currently operationally silent:
+operationally silent before this tranche:
 
 - `BlockedAddressError`;
 - `PeerMismatchError`;
@@ -178,3 +178,45 @@ After all gates pass:
   argument and consumer-registry tests.
 - **False completion claim:** local verification proves only code behavior; prod
   observability remains unproven until a separately authorized deployment.
+
+## KẾT QUẢ
+
+- Scoped commits: `f2b50bbbb3ec76dedb1ac0fb80ee11dc2ca5f46c`
+  (`feat: add pinned egress security denial observability`) and
+  `8e4bf9bef3c6c6949c4d22185ca8518591eef276` (`test: isolate full-suite chat
+  state`), followed by review-fix `15f7124a16745d0315ae4e249ce4b4dd7187c5fb`
+  (`test: lock auto-learn denial log cardinality`). The official long-running
+  gates below were measured on `8e4bf9be`; `15f7124a` changes only one assertion
+  and passed the final focused and hard gates.
+- The full pre-merge coverage command `python -m pytest -q tests agent/tests -m
+  "not slow" --ignore=tests/launch_safety/test_closed_installer.py --cov=agent
+  --cov-report=json:coverage.json --cov-report=` exited `0`: `8726 passed, 66
+  skipped, 26 deselected, 1 xfailed` in `1157.29s`. The test-hygiene commit
+  removed one leaked `_draining` state and one stale nonexistent conversation
+  selector; it did not change production behavior.
+- The focused command `python -m pytest tests/test_pinned_http.py
+  tests/test_admin_pinned_http.py tests/test_auto_learn_fetch.py
+  tests/test_gpt55_quality_burst.py tests/test_pinned_http_consumers.py -q`
+  exited `0`: `319 passed in 19.11s`.
+- Ruff over the plan files plus the two CI-hygiene tests exited `0` with `All
+  checks passed!`. `python scripts/checks/run_hard.py --all` exited `0` with
+  `hard=0`, no ratchet increase, and R50.3 improved to `7 < baseline 8`. `git
+  diff --check` exited `0`.
+- The final assertion-only review fix was mutation-checked: temporarily removing
+  auto-learn's typed security-denial catch made the focused test fail on its raw
+  `Failed to fetch <URL>` warning; restoring the catch made the complete focused
+  suite pass `319` tests and the hard gate return `hard=0`.
+- The official bounded command `python scripts/ops/run_backend_regression.py
+  --deadline-seconds 7000` exited `0` in `5024.4s`. Phase A exited `0` with
+  `8649 passed, 58 skipped, 111 deselected, 1 xfailed, 1 warning` in `1069.44s`;
+  Phase B exited `0` with `284 passed, 19 skipped` in `3941.27s`.
+- The production event contract is exactly `Pinned egress denied
+  consumer=<context> reason=<reason> target=<origin> hop=<n>` on logger
+  `security.egress` at `WARNING`, with reason codes `blocked_address`,
+  `peer_mismatch`, and `redirect_policy`. Production contexts are exactly
+  `admin_image_review`, `auto_learn`, and `quality_burst`.
+- No push, deployment, database or `web/data.json` rewrite, production
+  mutation, secret change, indexing change, paid service, or external logging
+  integration occurred; pre-existing user-owned WAL/SHM files remained
+  untouched. Production log behavior remains unobserved until the owner
+  separately authorizes deployment and observation.

@@ -2,6 +2,7 @@ import type { H3Event } from 'h3'
 import { useRuntimeConfig } from 'nitropack/runtime'
 
 import type { LaunchSafetyDecision } from '../../../types/launch'
+import { SITEMAP_TIMEOUT_MS, withRequestDeadline } from '../../../utils/requestDeadline'
 
 const XML_CONTENT_TYPE = 'application/xml; charset=utf-8'
 const SHA256_PATTERN = /^[a-f0-9]{64}$/u
@@ -61,6 +62,7 @@ interface RawHttpFetchOptions {
   readonly ignoreResponseError: true
   readonly retry: false
   readonly headers: { readonly accept: 'application/xml' }
+  readonly signal: AbortSignal
 }
 
 export type InternalRawHttpFetcher = (
@@ -325,7 +327,7 @@ export function createInternalSitemapFetcher(
   return async (document, requestedBatch) => {
     const apiBase = normalizePrivateApiBase(useRuntimeConfig(event).apiBase)
     const query = internalDocumentQuery(document, requestedBatch)
-    const response = await fetchRawHttp(
+    const response = await withRequestDeadline(SITEMAP_TIMEOUT_MS, signal => fetchRawHttp(
       `${apiBase}/_internal/launch-sitemaps/${document}${query}`,
       {
         method: 'GET',
@@ -334,8 +336,9 @@ export function createInternalSitemapFetcher(
         ignoreResponseError: true,
         retry: false,
         headers: { accept: 'application/xml' },
+        signal,
       },
-    )
+    ))
     if (
       response === null
       || typeof response !== 'object'

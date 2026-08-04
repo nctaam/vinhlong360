@@ -1,7 +1,13 @@
 """Tests for gap-scan fixes: reaction enrichment, user rating, SSE reconnect, moderation history."""
+import asyncio
 import inspect
+from contextlib import contextmanager
 from pathlib import Path
+
 import pytest
+from fastapi import Request
+
+from profile_access import ProfileAccessDecision, resolve_profile_access
 
 AGENT_DIR = Path(__file__).resolve().parent.parent
 
@@ -255,36 +261,109 @@ class TestLeaderboardMuteFilter:
 class TestPrivacyShowActivityEnforcement:
     """get_user_posts and get_user_reviews respect show_activity privacy setting."""
 
-    def test_check_show_activity_exists(self):
-        from social import _check_show_activity
-        assert callable(_check_show_activity)
+    @staticmethod
+    def _request():
+        return Request(
+            {
+                "type": "http",
+                "method": "GET",
+                "path": "/api/test",
+                "headers": [],
+                "query_string": b"",
+                "scheme": "http",
+                "server": ("testserver", 80),
+                "client": ("testclient", 50000),
+            }
+        )
 
-    def test_check_show_activity_queries_user_privacy(self):
-        src = inspect.getsource(__import__("social")._check_show_activity)
-        assert "user_privacy" in src
-        assert "show_activity" in src
+    @staticmethod
+    def _hide_activity(monkeypatch):
+        import social
 
-    def test_check_show_activity_checks_follower(self):
-        src = inspect.getsource(__import__("social")._check_show_activity)
-        assert "follows" in src
-        assert "follower_id" in src
+        @contextmanager
+        def fake_conn():
+            yield object()
 
-    def test_user_posts_checks_privacy(self):
-        src = inspect.getsource(__import__("social").get_user_posts)
-        assert "_check_show_activity" in src
-        assert "privacy_hidden" in src
+        def resolve(_conn, target_id, viewer_id, *, require_activity):
+            assert target_id == "11111111-1111-1111-1111-111111111111"
+            assert viewer_id is None
+            assert require_activity is True
+            return ProfileAccessDecision("hidden", target_id)
 
-    def test_user_reviews_checks_privacy(self):
-        src = inspect.getsource(__import__("social").get_user_reviews)
-        assert "_check_show_activity" in src
+        monkeypatch.setattr(social, "_resolve_user_id", lambda _value: "11111111-1111-1111-1111-111111111111")
+        monkeypatch.setattr(social, "resolve_profile_access", resolve)
+        monkeypatch.setattr(social.db, "_conn", fake_conn)
+        monkeypatch.setattr(
+            social.db,
+            "_fetchone",
+            lambda *_args: (_ for _ in ()).throw(
+                AssertionError("queried posts after hidden decision")
+            ),
+        )
+        monkeypatch.setattr(
+            social.db,
+            "_fetchall",
+            lambda *_args: (_ for _ in ()).throw(
+                AssertionError("queried posts after hidden decision")
+            ),
+        )
+        return social
 
-    def test_self_view_skips_privacy(self):
-        src = inspect.getsource(__import__("social").get_user_posts)
-        assert "is_self" in src
+    def test_user_posts_maps_hidden_decision_to_empty_shape(self, monkeypatch):
+        social = self._hide_activity(monkeypatch)
 
-    def test_privacy_hidden_returns_empty(self):
-        src = inspect.getsource(__import__("social").get_user_posts)
-        assert '"posts": []' in src or "'posts': []" in src
+        result = asyncio.run(
+            social.get_user_posts(
+                "11111111-1111-1111-1111-111111111111",
+                self._request(),
+                page=2,
+                limit=20,
+            )
+        )
+
+        assert result == {"posts": [], "total": 0, "page": 2, "has_more": False}
+
+    def test_user_reviews_maps_hidden_decision_to_empty_shape(self, monkeypatch):
+        social = self._hide_activity(monkeypatch)
+
+        result = asyncio.run(
+            social.get_user_reviews(
+                "11111111-1111-1111-1111-111111111111",
+                self._request(),
+                page=3,
+                limit=20,
+            )
+        )
+
+        assert result == {"reviews": [], "total": 0, "page": 3, "has_more": False}
+
+    def test_self_profile_access_allows_activity(self, monkeypatch):
+        import profile_access
+
+        monkeypatch.setattr(
+            profile_access.db,
+            "_fetchone",
+            lambda *_args: {
+                "id": "11111111-1111-1111-1111-111111111111",
+                "profile_visibility": "followers_only",
+                "show_activity": False,
+            },
+        )
+        monkeypatch.setattr(profile_access.db, "_row_to_dict", lambda row: row)
+
+        decision = resolve_profile_access(
+            object(),
+            "11111111-1111-1111-1111-111111111111",
+            "11111111-1111-1111-1111-111111111111",
+            require_activity=True,
+        )
+
+        assert decision == ProfileAccessDecision(
+            "ok",
+            "11111111-1111-1111-1111-111111111111",
+            True,
+            True,
+        )
 
 
 # ── Full mute enforcement across all feed/search/list endpoints ──
@@ -2301,19 +2380,24 @@ class TestReliabilityFixes:
 
     def test_privacy_fail_closed(self):
         """Privacy load failure must NOT default to public for non-self views."""
-        # Refactor: privacy load moved to _profile_load_privacy (returns None on
-        # failure) và default fail-closed 'followers_only' ở _profile_query.
         import social
-        load_src = inspect.getsource(social._profile_load_privacy)
-        # on exception the loader logs the warning and falls through to return None
-        assert "Failed to load privacy settings" in load_src
-        assert "return None" in load_src
-        # None privacy → non-self default is 'followers_only' (NOT public)
-        q_src = inspect.getsource(social._profile_query)
-        assert "followers_only" in q_src
-        idx = q_src.find("followers_only")
-        window = q_src[max(0, idx - 120):idx + 40]
-        assert "privacy" in window and "public" in window
+
+        def fail_fetch(*_args):
+            raise RuntimeError("privacy unavailable")
+
+        original = social.db._fetchone
+        try:
+            social.db._fetchone = fail_fetch
+            result = social._profile_load_privacy(object(), social.db._ph, "user-1")
+        finally:
+            social.db._fetchone = original
+
+        assert result is social._PROFILE_PRIVACY_LOAD_FAILED
+        assert social._profile_can_view_full(
+            social._PROFILE_PRIVACY_LOAD_FAILED_VISIBILITY,
+            False,
+            True,
+        ) is False
 
     def test_backup_conn_closed_on_error(self):
         """Backup connection must be closed in finally block."""
@@ -2322,12 +2406,6 @@ class TestReliabilityFixes:
         fn_src = src[idx:idx+200]
         assert "finally:" in fn_src
         assert "backup_conn.close()" in fn_src
-
-    def test_stream_guardrail_logs_errors(self):
-        """Stream guardrail failure must log, not silently pass."""
-        src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
-        idx = src.index("Stream guardrail check failed")
-        assert idx > 0
 
     def test_pool_failure_logged(self):
         """PG pool creation failure must log a warning."""

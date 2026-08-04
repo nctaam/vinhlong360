@@ -14,6 +14,7 @@ os.environ.setdefault("SCHEDULER_ENABLED", "false")
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 import pytest  # noqa: E402
+import entity_details  # noqa: E402
 from database import db  # noqa: E402
 
 TEST_ID = "zz-test-entity-details-sync"
@@ -85,6 +86,44 @@ def test_no_typed_values_no_row_and_itinerary_kind_skipped():
     # không crash, không bảng nào có row
     for t in ("entity_place_details", "entity_food_details"):
         assert _fetch_detail(t) is None
+
+
+def test_changing_kind_removes_the_previous_cti_row():
+    db.upsert_entity({
+        "id": TEST_ID,
+        "type": "product",
+        "name": "Product",
+        "attributes": {"producer": "HTX cũ"},
+    })
+    assert _fetch_detail("entity_product_details") is not None
+
+    db.upsert_entity({
+        "id": TEST_ID,
+        "type": "cafe",
+        "name": "Cafe",
+        "attributes": {"wifi": True},
+    })
+
+    assert _fetch_detail("entity_product_details") is None
+    assert _fetch_detail("entity_food_details") is not None
+
+
+def test_changing_to_type_without_cti_removes_all_detail_rows():
+    db.upsert_entity({
+        "id": TEST_ID,
+        "type": "person",
+        "name": "Person",
+        "attributes": {"role": "Danh nhân"},
+    })
+    db.upsert_entity({
+        "id": TEST_ID,
+        "type": "itinerary",
+        "name": "Không dùng CTI",
+        "attributes": {"duration": "2 ngày"},
+    })
+
+    for table in entity_details.DETAIL_TABLES:
+        assert _fetch_detail(table) is None
 
 
 def test_delete_entity_cleans_detail_rows():

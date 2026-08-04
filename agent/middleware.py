@@ -24,6 +24,8 @@ from datetime import datetime, timezone
 from threading import Lock
 from pathlib import Path
 
+from privacy_boundary import redact_log_value as _boundary_redact_log_value
+
 _request_id_var: contextvars.ContextVar[str] = contextvars.ContextVar("request_id", default="")
 
 # ══════════════════════════════════════════════════
@@ -32,6 +34,19 @@ _request_id_var: contextvars.ContextVar[str] = contextvars.ContextVar("request_i
 
 LOG_DIR = Path(__file__).resolve().parent / "data"
 LOG_DIR.mkdir(exist_ok=True)
+
+_REDACTION_FAILED = "[REDACTION_FAILED]"
+
+
+def redact_log_value(value):
+    return _boundary_redact_log_value(value)
+
+
+def _safe_log_value(value):
+    try:
+        return redact_log_value(value)
+    except Exception:
+        return _REDACTION_FAILED
 
 
 class StructuredLogger:
@@ -56,14 +71,20 @@ class StructuredLogger:
 
     def log(self, level: str, message: str, **extra):
         rid = _request_id_var.get("")
+        safe_message = _safe_log_value(message)
+        if not isinstance(safe_message, str):
+            safe_message = _REDACTION_FAILED
+        safe_extra = _safe_log_value(extra)
+        if not isinstance(safe_extra, dict):
+            safe_extra = {"redaction": _REDACTION_FAILED}
         entry = {
             "ts": datetime.now(timezone.utc).isoformat(),
             "level": level,
-            "msg": message,
+            "msg": safe_message,
         }
         if rid:
             entry["req_id"] = rid
-        entry.update(extra)
+        entry.update(safe_extra)
         with self._lock:
             self._buffer.append(entry)
             if len(self._buffer) >= 50:
@@ -71,11 +92,15 @@ class StructuredLogger:
 
         # Console output
         if level == "error":
-            self._py_logger.error("%s | %s", message, json.dumps(extra, ensure_ascii=False))
+            self._py_logger.error(
+                "%s | %s", safe_message, json.dumps(safe_extra, ensure_ascii=False)
+            )
         elif level == "warn":
-            self._py_logger.warning("%s | %s", message, json.dumps(extra, ensure_ascii=False))
+            self._py_logger.warning(
+                "%s | %s", safe_message, json.dumps(safe_extra, ensure_ascii=False)
+            )
         else:
-            self._py_logger.info("%s", message)
+            self._py_logger.info("%s", safe_message)
 
     def info(self, msg: str, **kw):
         self.log("info", msg, **kw)
@@ -255,19 +280,28 @@ class RateLimiter:
 # Singletons: different limits for different endpoints
 chat_limiter = RateLimiter(max_requests=30, window_seconds=60)   # 30 req/min
 admin_limiter = RateLimiter(max_requests=60, window_seconds=60)  # 60 req/min
+stream_limiter = RateLimiter(max_requests=20, window_seconds=60)  # 20 req/min
+report_limiter = RateLimiter(max_requests=5, window_seconds=300)  # 5 báo cáo / 5 phút (chống spam)
+feedback_ip_limiter = RateLimiter(max_requests=30, window_seconds=3600)
+feedback_owner_limiter = RateLimiter(max_requests=20, window_seconds=3600)
+
+# Auto-cleanup: periodically remove stale IP entries every 5 minutes
+_all_limiters = [
+    chat_limiter,
+    admin_limiter,
+    stream_limiter,
+    report_limiter,
+    feedback_ip_limiter,
+    feedback_owner_limiter,
+]
 
 
 def _reset_limiters() -> None:
-    """Test-only: xoá state của mọi limiter singleton (TestClient dùng chung IP nên
-    state cộng dồn qua cả suite → 429 giả ở test không tự-reset)."""
-    for lim in (chat_limiter, admin_limiter):
-        with lim._lock:
-            lim._requests.clear()
-stream_limiter = RateLimiter(max_requests=20, window_seconds=60)  # 20 req/min
-report_limiter = RateLimiter(max_requests=5, window_seconds=300)  # 5 báo cáo / 5 phút (chống spam)
+    """Test-only: clear every process-local limiter singleton."""
+    for limiter in _all_limiters:
+        with limiter._lock:
+            limiter._requests.clear()
 
-# Auto-cleanup: periodically remove stale IP entries every 5 minutes
-_all_limiters = [chat_limiter, admin_limiter, stream_limiter, report_limiter]
 
 def _rate_limiter_cleanup_loop():
     while True:

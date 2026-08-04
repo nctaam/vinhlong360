@@ -309,10 +309,49 @@ feedback_total = Counter(
     labels=["rating"],
 )
 
+feedback_transport_total = Counter(
+    "feedback_transport_total",
+    "Receipt-bound feedback transport attempts",
+    labels=["reason", "owner_kind", "rating"],
+)
+
 errors_total = Counter(
     "errors_total",
     "Total errors by endpoint and type",
     labels=["endpoint", "error_type"],
+)
+
+privacy_redactions_total = Counter(
+    "privacy_redactions_total",
+    "Privacy redactions by source and type",
+    labels=["source", "type"],
+)
+
+privacy_boundary_failures_total = Counter(
+    "privacy_boundary_failures_total",
+    "Privacy boundary failures by stage",
+    labels=["stage"],
+)
+
+erasure_due_total = Counter(
+    "erasure_due_total",
+    "Accounts selected for verified erasure",
+)
+
+erasure_completed_total = Counter(
+    "erasure_completed_total",
+    "Accounts verified and deleted",
+)
+
+erasure_failed_total = Counter(
+    "erasure_failed_total",
+    "Erasure attempts failed by bounded code",
+    labels=["code"],
+)
+
+erasure_overdue_total = Counter(
+    "erasure_overdue_total",
+    "Accounts observed at or past their erasure deadline",
 )
 
 # --- Histograms ---
@@ -432,6 +471,36 @@ def track_feedback(positive: bool) -> None:
     feedback_total.inc({"rating": rating})
 
 
+_FEEDBACK_REASONS = frozenset({
+    "accepted",
+    "idempotent",
+    "invalid_request",
+    "invalid_receipt",
+    "receipt_unavailable",
+    "receipt_rejected",
+    "ip_limit",
+    "owner_limit",
+})
+_FEEDBACK_OWNER_KINDS = frozenset({"authenticated", "anonymous", "unknown"})
+
+
+def track_feedback_attempt(
+    *,
+    reason: str,
+    owner_kind: str,
+    rating: int | None,
+) -> None:
+    """Record only bounded aggregate dimensions for public feedback."""
+    safe_reason = reason if reason in _FEEDBACK_REASONS else "receipt_rejected"
+    safe_owner = owner_kind if owner_kind in _FEEDBACK_OWNER_KINDS else "unknown"
+    safe_rating = {1: "positive", 0: "negative"}.get(rating, "unknown")
+    feedback_transport_total.inc({
+        "reason": safe_reason,
+        "owner_kind": safe_owner,
+        "rating": safe_rating,
+    })
+
+
 def track_error(endpoint: str, error_type: str) -> None:
     """Record an error event.
 
@@ -442,6 +511,43 @@ def track_error(endpoint: str, error_type: str) -> None:
                     ``"timeout"``, ``"llm_api_error"``).
     """
     errors_total.inc({"endpoint": endpoint, "error_type": error_type})
+
+
+_PRIVACY_SOURCES = frozenset(
+    {
+        "private_user_data",
+        "untrusted_external",
+        "verified_public_contact",
+        "provider_output",
+        "legacy_cache",
+        "log",
+    }
+)
+_PRIVACY_TYPES = frozenset(
+    {"secret", "email", "passport", "id_number", "bank_account", "phone"}
+)
+_PRIVACY_FAILURE_STAGES = frozenset(
+    {"input", "output", "stream", "cache", "log", "readiness", "feedback"}
+)
+
+
+def _privacy_label(value: str, allowed: frozenset[str]) -> str:
+    return value if value in allowed else "other"
+
+
+def track_privacy_redaction(source: str, redaction_type: str) -> None:
+    privacy_redactions_total.inc(
+        {
+            "source": _privacy_label(source, _PRIVACY_SOURCES),
+            "type": _privacy_label(redaction_type, _PRIVACY_TYPES),
+        }
+    )
+
+
+def track_privacy_boundary_failure(stage: str) -> None:
+    privacy_boundary_failures_total.inc(
+        {"stage": _privacy_label(stage, _PRIVACY_FAILURE_STAGES)}
+    )
 
 
 def track_http_request(method: str, path: str, status_code: int,

@@ -1,4 +1,5 @@
 import type { BackendAttestation } from '../../../types/launch'
+import { ATTESTATION_TIMEOUT_MS, withRequestDeadline } from '../../../utils/requestDeadline'
 
 const ATTESTATION_PATH = '/_internal/launch-policy-attestation'
 const FINGERPRINT_PATTERN = /^[0-9a-f]{64}$/u
@@ -72,7 +73,12 @@ export function parseBackendAttestation(value: unknown): BackendAttestation {
 
 export type BackendAttestationFetcher = (
   request: string,
-  options: { baseURL: string; method: 'GET'; headers: { accept: 'application/json' } },
+  options: {
+    baseURL: string
+    method: 'GET'
+    headers: { accept: 'application/json' }
+    signal: AbortSignal
+  },
 ) => Promise<unknown>
 
 function defaultFetcher(request: string, options: Parameters<BackendAttestationFetcher>[1]): Promise<unknown> {
@@ -89,11 +95,14 @@ export async function fetchBackendAttestation(input: {
   if (!baseURL) throw new BackendAttestationUnavailableError()
 
   try {
-    const payload = await (input.fetcher ?? defaultFetcher)(ATTESTATION_PATH, {
+    const payload = await withRequestDeadline(ATTESTATION_TIMEOUT_MS, signal => (
+      input.fetcher ?? defaultFetcher
+    )(ATTESTATION_PATH, {
       baseURL,
       method: 'GET',
       headers: { accept: 'application/json' },
-    })
+      signal,
+    }))
     return parseBackendAttestation(payload)
   } catch (error: unknown) {
     if (error instanceof BackendAttestationMismatchError) throw error

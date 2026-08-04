@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import copy
+import logging
 
 import pytest
 from fastapi import HTTPException
@@ -52,8 +53,32 @@ def test_admin_fetch_passes_dynamic_image_egress_policy(
                 total_timeout_seconds=25.0,
                 max_redirects=5,
             ),
+            "audit_context": "admin_image_review",
         },
     )]
+
+
+def test_admin_real_blocked_literal_maps_to_400_and_logs_once(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    with caplog.at_level(logging.WARNING, logger="security.egress"):
+        with pytest.raises(HTTPException) as caught:
+            asyncio.run(
+                admin._approve_fetch_image_data(
+                    "https://127.0.0.1/private?token=secret",
+                    _inline_threadpool,
+                    1024,
+                )
+            )
+
+    assert caught.value.status_code == 400
+    records = [record for record in caplog.records if record.name == "security.egress"]
+    assert len(records) == 1
+    assert records[0].getMessage() == (
+        "Pinned egress denied consumer=admin_image_review reason=blocked_address "
+        "target=https://127.0.0.1:443 hop=0"
+    )
+    assert "token" not in records[0].getMessage()
 
 
 def test_admin_fetch_does_not_redecode_http_decoded_content(

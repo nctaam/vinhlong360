@@ -10,10 +10,13 @@ import re
 import sys
 from pathlib import Path
 
+from fastapi import Request, Response
+
 _AGENT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_AGENT))
 
 import admin  # noqa: E402
+import server  # noqa: E402
 
 
 def test_no_deprecated_logger_warn():
@@ -44,6 +47,26 @@ def test_review_stats_rating_null_safe():
 
 def test_vary_header_for_auth_varied_paths():
     # af90dbb: Vary Authorization cho /api|/admin|/auth → cache đúng theo phiên đăng nhập.
-    src = (_AGENT / "server.py").read_text(encoding="utf-8")
-    assert 'response.headers["Vary"]' in src
-    assert '"/api/", "/admin/", "/auth/"' in src
+    request = Request(
+        {
+            "type": "http",
+            "method": "GET",
+            "path": "/api/search",
+            "raw_path": b"/api/search",
+            "headers": [],
+            "query_string": b"",
+            "scheme": "http",
+            "server": ("testserver", 80),
+            "client": ("testclient", 50000),
+        }
+    )
+    response = Response(headers={"Vary": "Accept-Encoding"})
+
+    server._apply_final_cache_policy(request, response)
+
+    assert {part.strip().lower() for part in response.headers["Vary"].split(",")} == {
+        "accept-encoding",
+        "authorization",
+        "cookie",
+        "accept",
+    }

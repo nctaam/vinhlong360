@@ -1,6 +1,9 @@
 """Tests for centralized config module."""
 import os
+import subprocess
 import sys
+from pathlib import Path
+
 import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "agent"))
@@ -9,6 +12,91 @@ os.environ.setdefault("LLM_API_KEY", "test-key")
 os.environ.setdefault("LLM_BASE_URL", "http://localhost:9999/v1")
 os.environ.setdefault("ADMIN_API_KEY", "test-admin-key")
 os.environ.setdefault("CORS_ORIGINS", "http://localhost:8360")
+
+
+def _production_settings(**overrides):
+    from config import Settings
+
+    values = {
+        "ENVIRONMENT": "production",
+        "LLM_API_KEY": "k",
+        "LLM_BASE_URL": "https://api.example.com",
+        "ADMIN_API_KEY": "a",
+        "DATABASE_URL": "postgresql://user:pass@localhost/db",
+        "ENTITY_DETAILS_TABLES": True,
+    }
+    values.update(overrides)
+    return Settings(_env_file=None, **values)
+
+
+@pytest.mark.parametrize("database_url", [
+    "postgres://user:pass@localhost/db",
+    "postgresql://user:pass@localhost/db",
+])
+def test_production_accepts_postgresql_urls(database_url):
+    assert _production_settings(DATABASE_URL=database_url).is_production is True
+
+
+def test_database_backend_accepts_postgres_url():
+    agent_dir = Path(__file__).resolve().parents[1] / "agent"
+    env = os.environ.copy()
+    env["DATABASE_URL"] = "postgres://user:pass@localhost/db"
+    env["ENVIRONMENT"] = "test"
+
+    result = subprocess.run(
+        [sys.executable, "-c", "import database; print(database.USE_PG)"],
+        cwd=agent_dir,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "True"
+
+
+def test_production_rejects_sqlite_database_url():
+    with pytest.raises(ValueError, match="DATABASE_URL.*PostgreSQL"):
+        _production_settings(DATABASE_URL="sqlite:///knowledge.db")
+
+
+def test_production_requires_entity_detail_tables():
+    with pytest.raises(ValueError, match="ENTITY_DETAILS_TABLES"):
+        _production_settings(ENTITY_DETAILS_TABLES=False)
+
+
+def test_production_validation_error_rendering_hides_sensitive_inputs():
+    from config import Settings
+
+    secret = "key-canary"
+    dsn = "sqlite://dsn-canary"
+
+    with pytest.raises(ValueError, match="PostgreSQL") as caught:
+        Settings.model_validate(
+            {
+                "ENVIRONMENT": "production",
+                "LLM_API_KEY": secret,
+                "DATABASE_URL": dsn,
+            }
+        )
+
+    rendered = str(caught.value)
+    assert "input_value" not in rendered
+    assert secret not in rendered
+    assert dsn not in rendered
+
+
+def test_development_still_allows_sqlite_and_disabled_detail_tables():
+    from config import Settings
+
+    settings = Settings(
+        _env_file=None,
+        ENVIRONMENT="development",
+        DATABASE_URL="sqlite:///knowledge.db",
+        ENTITY_DETAILS_TABLES=False,
+    )
+    assert settings.is_production is False
 
 
 class TestSettings:
@@ -22,6 +110,12 @@ class TestSettings:
         assert s.LLM_TIMEOUT == 30
         assert s.ENVIRONMENT == "development"
         assert s.is_production is False
+        assert s.ACCOUNT_ERASURE_DEADLINE_DAYS == 30
+        assert s.RECOVERY_ENABLED_DURING_GRACE_PERIOD is True
+        assert s.FEEDBACK_MODE == "telemetry_only"
+        assert s.FEEDBACK_RECEIPT_TTL_HOURS == 24
+        assert s.RETAIN_DEIDENTIFIED_AGGREGATES is True
+        assert s.ACCOUNT_DELETE_GRACE_DAYS == 30
 
     def test_cors_list(self):
         from config import Settings
@@ -39,14 +133,11 @@ class TestSettings:
         assert s.admin_telegram_ids_set == set()
 
     def test_production_validation_passes(self):
-        from config import Settings
-        s = Settings(
-            ENVIRONMENT="production",
+        s = _production_settings(
             LLM_API_KEY="real-key",
             LLM_BASE_URL="https://api.example.com",
             ADMIN_API_KEY="admin-key",
             JWT_SECRET="jwt-secret",
-            DATABASE_URL="postgresql://user:pass@localhost/db",
         )
         assert s.is_production is True
 
@@ -62,9 +153,8 @@ class TestSettings:
         # fallback for the TOTP encryption key (TOTP_ENC_KEY > JWT_SECRET > ADMIN_API_KEY),
         # so the app boots fine without it. Requiring it would gate deploys on a key the
         # app does not need. An empty JWT_SECRET in production must therefore NOT raise.
-        from config import Settings
-        s = Settings(ENVIRONMENT="production", LLM_API_KEY="k", LLM_BASE_URL="u",
-                     ADMIN_API_KEY="a", JWT_SECRET="", DATABASE_URL="postgresql://x")
+        s = _production_settings(LLM_BASE_URL="u", JWT_SECRET="",
+                                 DATABASE_URL="postgresql://x")
         assert s.JWT_SECRET == ""
         assert s.is_production is True
 
@@ -73,6 +163,20 @@ class TestSettings:
         with pytest.raises(ValueError, match="DATABASE_URL"):
             Settings(ENVIRONMENT="production", LLM_API_KEY="k", LLM_BASE_URL="u",
                      ADMIN_API_KEY="a", JWT_SECRET="j", DATABASE_URL="")
+
+    def test_production_rejects_privacy_policy_override(self):
+        from config import Settings
+        with pytest.raises(ValueError, match="ACCOUNT_ERASURE_DEADLINE_DAYS"):
+            Settings(
+                _env_file=None,
+                ENVIRONMENT="production",
+                LLM_API_KEY="k",
+                LLM_BASE_URL="u",
+                ADMIN_API_KEY="a",
+                DATABASE_URL="postgresql://x",
+                ENTITY_DETAILS_TABLES=True,
+                ACCOUNT_ERASURE_DEADLINE_DAYS=20,
+            )
 
     def test_bool_env_parsing(self):
         from config import Settings

@@ -5,6 +5,8 @@
 // merges override-over-default so it renders identically until edited, and an
 // admin clearing the override reverts to this (legally-reviewed) default.
 
+import privacyPolicy from '#privacy-policy'
+
 export interface LegalSection {
   heading: string
   body: string
@@ -20,7 +22,7 @@ export interface LegalDoc {
 
 export const LEGAL_PRIVACY: LegalDoc = {
   title: 'Chính sách bảo mật',
-  updated_date: '13/06/2026',
+  updated_date: '29/07/2026',
   seo_title: 'Chính sách bảo mật — vinhlong360',
   seo_description: 'Chính sách bảo mật dữ liệu cá nhân của vinhlong360.vn theo Luật Bảo vệ dữ liệu cá nhân Việt Nam.',
   intro: 'vinhlong360.vn ("chúng tôi") tôn trọng quyền riêng tư của bạn và tuân thủ Luật Bảo vệ dữ liệu cá nhân (Luật 91/2025/QH15) cùng Nghị định 356/2025/NĐ-CP của Việt Nam.',
@@ -39,7 +41,7 @@ export const LEGAL_PRIVACY: LegalDoc = {
     },
     {
       heading: '4. Quyền của bạn',
-      body: '- **Truy cập / chỉnh sửa** thông tin tài khoản — phản hồi trong vòng 10 ngày.\n- **Rút lại đồng ý** — trong vòng 15 ngày.\n- **Xoá tài khoản & dữ liệu** — trong vòng 20 ngày. Bạn có thể tự xoá trong phần tài khoản, hoặc gửi yêu cầu qua trang [Liên hệ](/lien-he).',
+      body: `- **Truy cập / chỉnh sửa** thông tin tài khoản — phản hồi trong vòng 10 ngày.\n- **Rút lại đồng ý** — trong vòng 15 ngày.\n- **Xoá tài khoản & dữ liệu** — chậm nhất ${privacyPolicy.accountErasureDeadlineDays} ngày kể từ khi yêu cầu xoá tài khoản. Bạn có thể tự xoá trong phần tài khoản, hoặc gửi yêu cầu qua trang [Liên hệ](/lien-he).`,
     },
     {
       heading: '5. Sự cố dữ liệu',

@@ -25,6 +25,10 @@ from datetime import datetime, timedelta, timezone
 _VN_TZ = timezone(timedelta(hours=7))
 from pathlib import Path
 
+from config import settings
+from erasure import erase_due_accounts
+from quarantine import retry_pending_quarantines
+
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 if sys.stdout.encoding != "utf-8":
     sys.stdout.reconfigure(encoding="utf-8")
@@ -135,6 +139,186 @@ _TASK_TIMEOUT = int(os.environ.get("SCHEDULER_TASK_TIMEOUT", "600"))
 
 _MAX_RETRIES = 2
 _RETRY_BACKOFF_BASE = 30
+
+_ERASURE_BATCH_LIMIT = 50
+_ERASURE_INTERVAL_SECONDS = 300
+_LIFECYCLE_RUN_LOCK = threading.Lock()
+_ERASURE_STATUS_LOCK = threading.Lock()
+_ERASURE_STATUS = {
+    "audit_only": bool(settings.ERASURE_AUDIT_ONLY)
+    or not bool(settings.ERASURE_ACTIVATION_ENABLED),
+    "last_run_at": None,
+    "last_result": None,
+    "due_count": 0,
+    "overdue_count": 0,
+    "legacy_missing_deadline_count": 0,
+    "legacy_deadline_impact": {},
+}
+_QUARANTINE_STATUS = {
+    "last_run_at": None,
+    "last_result": None,
+}
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _iso_timestamp(value):
+    if value is None:
+        return None
+    if isinstance(value, str):
+        value = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc).isoformat()
+
+
+def _effective_erasure_audit_only() -> bool:
+    return bool(settings.ERASURE_AUDIT_ONLY) or not bool(
+        settings.ERASURE_ACTIVATION_ENABLED
+    )
+
+
+def _legacy_deadline_impact(now: datetime) -> dict:
+    """Report legacy soft-deleted rows without backfilling or mutating them."""
+    try:
+        from database import db
+
+        if not db._use_pg:
+            return {
+                "legacy_missing_deadline_count": 0,
+                "earliest_due_at": None,
+                "latest_due_at": None,
+            }
+        with db._conn(commit_on_success=False) as conn:
+            row = db._fetchone(
+                conn,
+                """
+                SELECT COUNT(*) AS count,
+                       MIN(deleted_at) AS earliest_deleted_at,
+                       MAX(deleted_at) AS latest_deleted_at
+                FROM users
+                WHERE deleted_at IS NOT NULL AND erasure_due_at IS NULL
+                """,
+                (),
+            )
+        data = db._row_to_dict(row) if row else {}
+        days = settings.ACCOUNT_ERASURE_DEADLINE_DAYS
+        earliest = data.get("earliest_deleted_at")
+        latest = data.get("latest_deleted_at")
+        delta = timedelta(days=days)
+        return {
+            "legacy_missing_deadline_count": int(data.get("count") or 0),
+            "earliest_due_at": _iso_timestamp(earliest + delta) if earliest else None,
+            "latest_due_at": _iso_timestamp(latest + delta) if latest else None,
+        }
+    except Exception:
+        _sched_logger.error("ERASURE_LEGACY_IMPACT_UNAVAILABLE")
+        return {
+            "legacy_missing_deadline_count": 0,
+            "earliest_due_at": None,
+            "latest_due_at": None,
+            "error_code": "DB_CONSTRAINT",
+        }
+
+
+def _set_erasure_status(payload: dict) -> None:
+    with _ERASURE_STATUS_LOCK:
+        _ERASURE_STATUS.update(payload)
+
+
+def task_account_erasure():
+    """Run the bounded erasure orchestrator with a safe audit-only default."""
+    if not _LIFECYCLE_RUN_LOCK.acquire(blocking=False):
+        return {"status": "already_running", "audit_only": _effective_erasure_audit_only()}
+    now = _utc_now()
+    audit_only = _effective_erasure_audit_only()
+    try:
+        impact = _legacy_deadline_impact(now)
+        result = erase_due_accounts(
+            now=now,
+            limit=_ERASURE_BATCH_LIMIT,
+            audit_only=audit_only,
+        )
+        payload = result.to_dict()
+        payload.update(
+            {
+                "audit_only": audit_only,
+                "due_count": result.selected_count,
+                "overdue_count": result.overdue_count,
+                **impact,
+            }
+        )
+        _set_erasure_status(
+            {
+                "audit_only": audit_only,
+                "last_run_at": _iso_timestamp(now),
+                "last_result": payload,
+                "due_count": result.selected_count,
+                "overdue_count": result.overdue_count,
+                "legacy_missing_deadline_count": impact.get(
+                    "legacy_missing_deadline_count", 0
+                ),
+                "legacy_deadline_impact": impact,
+            }
+        )
+        return payload
+    except Exception:
+        _sched_logger.error("ERASURE_TASK_FAILED")
+        payload = {
+            "status": "failed",
+            "audit_only": audit_only,
+            "error_code": "DB_CONSTRAINT",
+            "due_count": 0,
+            "overdue_count": 0,
+            "legacy_missing_deadline_count": 0,
+        }
+        _set_erasure_status(
+            {
+                "audit_only": audit_only,
+                "last_run_at": _iso_timestamp(now),
+                "last_result": payload,
+            }
+        )
+        return payload
+    finally:
+        _LIFECYCLE_RUN_LOCK.release()
+
+
+def task_quarantine_retry():
+    """Retry incomplete immediate quarantine without bypassing the audit gate."""
+    if not _LIFECYCLE_RUN_LOCK.acquire(blocking=False):
+        return {"status": "already_running", "audit_only": _effective_erasure_audit_only()}
+    now = _utc_now()
+    audit_only = _effective_erasure_audit_only()
+    try:
+        result = retry_pending_quarantines(
+            now=now,
+            limit=_ERASURE_BATCH_LIMIT,
+            audit_only=audit_only,
+        )
+        payload = result.to_dict()
+        payload["audit_only"] = audit_only
+        with _ERASURE_STATUS_LOCK:
+            _QUARANTINE_STATUS.update(
+                {"last_run_at": _iso_timestamp(now), "last_result": payload}
+            )
+        return payload
+    except Exception:
+        _sched_logger.error("QUARANTINE_RETRY_FAILED")
+        payload = {
+            "status": "failed",
+            "audit_only": audit_only,
+            "error_code": "DB_CONSTRAINT",
+        }
+        with _ERASURE_STATUS_LOCK:
+            _QUARANTINE_STATUS.update(
+                {"last_run_at": _iso_timestamp(now), "last_result": payload}
+            )
+        return payload
+    finally:
+        _LIFECYCLE_RUN_LOCK.release()
 
 
 class ScheduledTask:
@@ -311,6 +495,20 @@ def task_cleanup_analytics():
 
     except Exception as e:
         _sched_logger.error("Analytics cleanup error: %s", e)
+
+
+def task_cleanup_feedback_receipts():
+    """Delete expired feedback receipts in one bounded, independent batch."""
+    try:
+        from feedback_policy import cleanup_expired_feedback_receipts
+
+        removed = cleanup_expired_feedback_receipts(limit=500)
+        if removed:
+            _sched_logger.info("Feedback receipt cleanup removed %d rows", removed)
+        return removed
+    except Exception:
+        _sched_logger.error("FEEDBACK_RECEIPT_CLEANUP_FAILED")
+        return 0
 
 
 def _digest_kb_part(parts: list):
@@ -745,7 +943,7 @@ def task_event_reminders():
 
 
 def task_session_cleanup():
-    """Purge expired user_sessions, otp_sessions, and sessions of deleted users."""
+    """Purge expired sessions/OTPs and unrelated stale operational data."""
     try:
         from database import db
         if not db._use_pg:
@@ -753,19 +951,6 @@ def task_session_cleanup():
         with db._conn() as conn:
             db._execute(conn, "DELETE FROM user_sessions WHERE expires_at < NOW()", ())
             db._execute(conn, "DELETE FROM otp_sessions WHERE expires_at < NOW()", ())
-            db._execute(conn, """
-                DELETE FROM user_sessions WHERE user_id IN (
-                    SELECT id FROM users WHERE deleted_at IS NOT NULL
-                    AND deleted_at < NOW() - INTERVAL '30 days'
-                )
-            """, ())
-            result = db._execute(conn, """
-                DELETE FROM users WHERE deleted_at IS NOT NULL
-                AND deleted_at < NOW() - INTERVAL '30 days'
-            """, ())
-            hard_deleted = getattr(result, 'rowcount', 0)
-            if hard_deleted and hard_deleted > 0:
-                _sched_logger.info("Session cleanup: hard-deleted %d accounts past grace period", hard_deleted)
             try:
                 r = db._execute(conn, "DELETE FROM login_history WHERE created_at < NOW() - INTERVAL '90 days'", ())
                 old_logins = getattr(r, 'rowcount', 0) if r else 0
@@ -921,6 +1106,7 @@ TASKS = [
     ScheduledTask("relationships",  task_relationship_discovery, interval_seconds=12 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 12h
     ScheduledTask("data-sync",      task_sync_data,              interval_seconds=3600),        # 1h
     ScheduledTask("analytics-cleanup", task_cleanup_analytics,   interval_seconds=24 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 24h
+    ScheduledTask("feedback-receipt-cleanup", task_cleanup_feedback_receipts, interval_seconds=3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 1h
     # Digest quản lý MIỄN PHÍ (không LLM) — chạy bất kể AUTONOMOUS_TASKS_ENABLED; no-op nếu chưa cấu hình admin TG.
     ScheduledTask("admin-digest",      task_admin_digest,         interval_seconds=24 * 3600, run_immediately=False),  # 24h
     # Agent tự động gọi LLM CÓ CAP (§B8 ngoại lệ kiểm soát) — task tự gate qua AUTONOMOUS_AGENT_ENABLED
@@ -932,6 +1118,8 @@ TASKS = [
     ScheduledTask("optimizer-check",   task_optimizer_check,      interval_seconds=6 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),   # 6h
     ScheduledTask("guardrails-cleanup",task_guardrails_cleanup,   interval_seconds=12 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 12h
     ScheduledTask("session-cleanup", task_session_cleanup,       interval_seconds=6 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 6h
+    ScheduledTask("account-erasure", task_account_erasure,       interval_seconds=_ERASURE_INTERVAL_SECONDS, run_immediately=True),  # 5m, audit-only by default
+    ScheduledTask("quarantine-retry", task_quarantine_retry,     interval_seconds=_ERASURE_INTERVAL_SECONDS, run_immediately=True),  # 5m, audit-only by default
     ScheduledTask("notification-cleanup", task_notification_cleanup, interval_seconds=24 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 24h
     ScheduledTask("event-reminders",    task_event_reminders,      interval_seconds=6 * 3600, run_immediately=False),  # 6h
     ScheduledTask("ratelimit-gc",  task_ratelimit_gc,          interval_seconds=300),        # 5min
@@ -992,12 +1180,17 @@ def _autonomous_agent_status() -> dict:
 
 
 def scheduler_status() -> dict:
+    with _ERASURE_STATUS_LOCK:
+        erasure_status = dict(_ERASURE_STATUS)
+        quarantine_status = dict(_QUARANTINE_STATUS)
     return {
         "running": _running,
         "enabled": SCHEDULER_ENABLED,
         "run_startup_tasks": SCHEDULER_RUN_STARTUP_TASKS,
         "autonomous_tasks_enabled": AUTONOMOUS_TASKS_ENABLED,
         "autonomous_agent": _autonomous_agent_status(),
+        "erasure": erasure_status,
+        "quarantine": quarantine_status,
         "tasks": [
             {
                 "name": t.name,

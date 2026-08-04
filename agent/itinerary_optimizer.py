@@ -75,6 +75,10 @@ class _PreparedStop:
     projection: Projection
 
 
+_ExactState = tuple[float, tuple[int, ...]]
+_BeamState = tuple[float, tuple[int, ...], int, int]
+
+
 def haversine_km(a: Coordinates, b: Coordinates) -> float:
     """Return great-circle distance in kilometers."""
     lat1, lng1 = map(math.radians, a)
@@ -206,20 +210,13 @@ def _prefer_candidate(
     return abs(candidate_cost - current_cost) <= 1e-9 and candidate_path < current_path
 
 
-def _solve_exact(
+def _initial_exact_states(
     prepared: list[_PreparedStop],
+    middle: tuple[int, ...],
     options: OptimizeOptions,
     corridor_length_km: float,
-) -> tuple[int, ...]:
-    destination_index = len(prepared) - 1
-    middle = tuple(range(1, destination_index))
-    if not middle:
-        direct = (0, destination_index)
-        if _path_is_allowed(direct, prepared, options):
-            return direct
-        raise NoFeasibleRouteError("Không tìm thấy thứ tự điểm dừng hợp lệ")
-
-    states: dict[tuple[int, int], tuple[float, tuple[int, ...]]] = {}
+) -> dict[tuple[int, int], _ExactState]:
+    states: dict[tuple[int, int], _ExactState] = {}
     for middle_position, stop_index in enumerate(middle):
         if not _edge_allowed(prepared[0], prepared[stop_index], options):
             continue
@@ -229,35 +226,78 @@ def _solve_exact(
             _path_cost(path, prepared, corridor_length_km),
             path,
         )
+    return states
 
+
+def _expand_exact_state(
+    states: dict[tuple[int, int], _ExactState],
+    mask: int,
+    last_position: int,
+    last_index: int,
+    middle: tuple[int, ...],
+    prepared: list[_PreparedStop],
+    options: OptimizeOptions,
+    corridor_length_km: float,
+) -> None:
+    state = states.get((mask, last_position))
+    if state is None:
+        return
+    state_cost, state_path = state
+    for next_position, next_index in enumerate(middle):
+        bit = 1 << next_position
+        if mask & bit or not _edge_allowed(
+            prepared[last_index], prepared[next_index], options
+        ):
+            continue
+        next_mask = mask | bit
+        next_path = state_path + (next_index,)
+        next_cost = state_cost + _edge_cost(
+            prepared[last_index],
+            prepared[next_index],
+            corridor_length_km,
+        )
+        key = (next_mask, next_position)
+        if _prefer_candidate(next_cost, next_path, states.get(key)):
+            states[key] = (next_cost, next_path)
+
+
+def _expand_exact_states(
+    states: dict[tuple[int, int], _ExactState],
+    middle: tuple[int, ...],
+    prepared: list[_PreparedStop],
+    options: OptimizeOptions,
+    corridor_length_km: float,
+) -> None:
     full_mask = (1 << len(middle)) - 1
     for mask in range(1, full_mask + 1):
         for last_position, last_index in enumerate(middle):
-            state = states.get((mask, last_position))
-            if state is None:
-                continue
-            state_cost, state_path = state
-            for next_position, next_index in enumerate(middle):
-                bit = 1 << next_position
-                if mask & bit or not _edge_allowed(
-                    prepared[last_index], prepared[next_index], options
-                ):
-                    continue
-                next_mask = mask | bit
-                next_path = state_path + (next_index,)
-                next_cost = state_cost + _edge_cost(
-                    prepared[last_index],
-                    prepared[next_index],
-                    corridor_length_km,
-                )
-                key = (next_mask, next_position)
-                if _prefer_candidate(next_cost, next_path, states.get(key)):
-                    states[key] = (next_cost, next_path)
+            _expand_exact_state(
+                states,
+                mask,
+                last_position,
+                last_index,
+                middle,
+                prepared,
+                options,
+                corridor_length_km,
+            )
 
-    best: tuple[float, tuple[int, ...]] | None = None
+
+def _finish_exact_path(
+    states: dict[tuple[int, int], _ExactState],
+    middle: tuple[int, ...],
+    destination_index: int,
+    prepared: list[_PreparedStop],
+    options: OptimizeOptions,
+    corridor_length_km: float,
+) -> tuple[int, ...]:
+    full_mask = (1 << len(middle)) - 1
+    best: _ExactState | None = None
     for last_position, last_index in enumerate(middle):
         state = states.get((full_mask, last_position))
-        if state is None or not _edge_allowed(
+        if state is None:
+            continue
+        if not _edge_allowed(
             prepared[last_index], prepared[destination_index], options
         ):
             continue
@@ -276,6 +316,35 @@ def _solve_exact(
     return best[1]
 
 
+def _solve_exact(
+    prepared: list[_PreparedStop],
+    options: OptimizeOptions,
+    corridor_length_km: float,
+) -> tuple[int, ...]:
+    destination_index = len(prepared) - 1
+    middle = tuple(range(1, destination_index))
+    if not middle:
+        direct = (0, destination_index)
+        if _path_is_allowed(direct, prepared, options):
+            return direct
+        raise NoFeasibleRouteError("Không tìm thấy thứ tự điểm dừng hợp lệ")
+
+    states = _initial_exact_states(
+        prepared, middle, options, corridor_length_km
+    )
+    _expand_exact_states(
+        states, middle, prepared, options, corridor_length_km
+    )
+    return _finish_exact_path(
+        states,
+        middle,
+        destination_index,
+        prepared,
+        options,
+        corridor_length_km,
+    )
+
+
 def _leaves_unreachable_stop(
     next_index: int,
     remaining: tuple[int, ...],
@@ -291,60 +360,85 @@ def _leaves_unreachable_stop(
     )
 
 
-def _solve_beam(
+def _expand_beam_state(
+    state: _BeamState,
+    middle: tuple[int, ...],
+    prepared: list[_PreparedStop],
+    options: OptimizeOptions,
+    corridor_length_km: float,
+) -> list[_BeamState]:
+    state_cost, state_path, mask, last_index = state
+    expanded: list[_BeamState] = []
+    for next_position, next_index in enumerate(middle):
+        bit = 1 << next_position
+        if mask & bit or not _edge_allowed(
+            prepared[last_index], prepared[next_index], options
+        ):
+            continue
+        next_mask = mask | bit
+        remaining = tuple(
+            index
+            for position, index in enumerate(middle)
+            if not next_mask & (1 << position)
+        )
+        if _leaves_unreachable_stop(next_index, remaining, prepared, options):
+            continue
+        next_cost = state_cost + _edge_cost(
+            prepared[last_index],
+            prepared[next_index],
+            corridor_length_km,
+        )
+        expanded.append((
+            next_cost,
+            state_path + (next_index,),
+            next_mask,
+            next_index,
+        ))
+    return expanded
+
+
+def _expand_beam_states(
+    states: list[_BeamState],
+    middle: tuple[int, ...],
+    prepared: list[_PreparedStop],
+    options: OptimizeOptions,
+    corridor_length_km: float,
+) -> list[_BeamState]:
+    return [
+        candidate
+        for state in states
+        for candidate in _expand_beam_state(
+            state, middle, prepared, options, corridor_length_km
+        )
+    ]
+
+
+def _beam_state_priority(
+    state: _BeamState,
+    prepared: list[_PreparedStop],
+    destination_index: int,
+) -> tuple[float, float, tuple[int, ...]]:
+    state_cost, state_path, _mask, last_index = state
+    remaining_distance = haversine_km(
+        prepared[last_index].stop.coordinates,
+        prepared[destination_index].stop.coordinates,
+    )
+    return state_cost + remaining_distance, state_cost, state_path
+
+
+def _finish_beam_path(
+    states: list[_BeamState],
+    full_mask: int,
+    destination_index: int,
     prepared: list[_PreparedStop],
     options: OptimizeOptions,
     corridor_length_km: float,
 ) -> tuple[int, ...]:
-    destination_index = len(prepared) - 1
-    middle = tuple(range(1, destination_index))
-    full_mask = (1 << len(middle)) - 1
-    states: list[tuple[float, tuple[int, ...], int, int]] = [(0.0, (0,), 0, 0)]
-
-    for _ in middle:
-        expanded: list[tuple[float, tuple[int, ...], int, int]] = []
-        for state_cost, state_path, mask, last_index in states:
-            for next_position, next_index in enumerate(middle):
-                bit = 1 << next_position
-                if mask & bit or not _edge_allowed(
-                    prepared[last_index], prepared[next_index], options
-                ):
-                    continue
-                next_mask = mask | bit
-                remaining = tuple(
-                    index
-                    for position, index in enumerate(middle)
-                    if not next_mask & (1 << position)
-                )
-                if _leaves_unreachable_stop(next_index, remaining, prepared, options):
-                    continue
-                next_cost = state_cost + _edge_cost(
-                    prepared[last_index],
-                    prepared[next_index],
-                    corridor_length_km,
-                )
-                expanded.append((
-                    next_cost,
-                    state_path + (next_index,),
-                    next_mask,
-                    next_index,
-                ))
-
-        if not expanded:
-            raise NoFeasibleRouteError("Không tìm thấy thứ tự điểm dừng hợp lệ")
-        expanded.sort(key=lambda state: (
-            state[0] + haversine_km(
-                prepared[state[3]].stop.coordinates,
-                prepared[destination_index].stop.coordinates,
-            ),
-            state[0],
-            state[1],
-        ))
-        states = expanded[:options.beam_width]
-
-    best: tuple[float, tuple[int, ...]] | None = None
+    best: _ExactState | None = None
     for state_cost, state_path, mask, last_index in states:
-        if mask != full_mask or not _edge_allowed(
+        if mask != full_mask:
+            continue
+        if not _edge_allowed(
             prepared[last_index], prepared[destination_index], options
         ):
             continue
@@ -360,6 +454,39 @@ def _solve_beam(
     if best is None:
         raise NoFeasibleRouteError("Không tìm thấy thứ tự điểm dừng hợp lệ")
     return best[1]
+
+
+def _solve_beam(
+    prepared: list[_PreparedStop],
+    options: OptimizeOptions,
+    corridor_length_km: float,
+) -> tuple[int, ...]:
+    destination_index = len(prepared) - 1
+    middle = tuple(range(1, destination_index))
+    full_mask = (1 << len(middle)) - 1
+    states: list[_BeamState] = [(0.0, (0,), 0, 0)]
+
+    for _ in middle:
+        expanded = _expand_beam_states(
+            states, middle, prepared, options, corridor_length_km
+        )
+        if not expanded:
+            raise NoFeasibleRouteError("Không tìm thấy thứ tự điểm dừng hợp lệ")
+        expanded.sort(
+            key=lambda state: _beam_state_priority(
+                state, prepared, destination_index
+            )
+        )
+        states = expanded[:options.beam_width]
+
+    return _finish_beam_path(
+        states,
+        full_mask,
+        destination_index,
+        prepared,
+        options,
+        corridor_length_km,
+    )
 
 
 def _local_candidates(path: tuple[int, ...]):

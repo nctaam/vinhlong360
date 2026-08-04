@@ -8,7 +8,18 @@ ROOT = Path(__file__).resolve().parents[1]
 MAPPED_FETCHERS = {
     "agent/admin.py": {"_approve_fetch_image_data"},
     "agent/auto_learn.py": {"fetch_url"},
+    "agent/crawler.py": {"fetch_page"},
+    "agent/geocode.py": {"_query_nominatim"},
     "agent/gpt55_quality_burst.py": {"fetch_url_text"},
+    "agent/realtime.py": {"get_weather"},
+}
+EXPECTED_AUDIT_CONTEXTS = {
+    ("agent/admin.py", "_approve_fetch_image_data"): "admin_image_review",
+    ("agent/auto_learn.py", "fetch_url"): "auto_learn",
+    ("agent/crawler.py", "fetch_page"): "crawler",
+    ("agent/geocode.py", "_query_nominatim"): "geocode",
+    ("agent/gpt55_quality_burst.py", "fetch_url_text"): "quality_burst",
+    ("agent/realtime.py", "get_weather"): "realtime_weather",
 }
 
 
@@ -50,7 +61,10 @@ def test_mapped_fetcher_registry_scope_is_exact() -> None:
     assert MAPPED_FETCHERS == {
         "agent/admin.py": {"_approve_fetch_image_data"},
         "agent/auto_learn.py": {"fetch_url"},
+        "agent/crawler.py": {"fetch_page"},
+        "agent/geocode.py": {"_query_nominatim"},
         "agent/gpt55_quality_burst.py": {"fetch_url_text"},
+        "agent/realtime.py": {"get_weather"},
     }
 
 
@@ -61,15 +75,40 @@ def test_every_mapped_module_imports_pinned_http_client_and_policy() -> None:
             assert name in imported, f"{relative_path} does not import {name}"
 
 
+def _audit_context_literals(path: Path, function_name: str) -> set[str]:
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    function = next(
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == function_name
+    )
+    contexts: set[str] = set()
+    for node in ast.walk(function):
+        if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Attribute):
+            continue
+        if (
+            node.func.attr != "get"
+            or not isinstance(node.func.value, ast.Name)
+            or node.func.value.id != "_PINNED_HTTP"
+        ):
+            continue
+        keyword = next((item for item in node.keywords if item.arg == "audit_context"), None)
+        assert keyword is not None, f"{path}::{function_name} missing audit_context"
+        assert isinstance(keyword.value, ast.Constant) and isinstance(keyword.value.value, str)
+        contexts.add(keyword.value.value)
+    return contexts
+
+
+def test_mapped_fetchers_use_exact_audit_context_literals() -> None:
+    for (relative_path, function_name), expected in EXPECTED_AUDIT_CONTEXTS.items():
+        assert _audit_context_literals(ROOT / relative_path, function_name) == {expected}
+
+
 # Every function in agent/ that still reaches the network through a
 # general-purpose HTTP client, deliberately enumerated. Migrating these is
 # residual egress debt, explicitly out of scope for the P1 pinned tranche --
 # but the surface must not grow silently.
 KNOWN_UNPINNED_FETCHERS = {
-    # Outbound GETs that a future tranche can route through PinnedHTTPClient.
-    ("agent/crawler.py", "fetch_page"),
-    ("agent/geocode.py", "_query_nominatim"),
-    ("agent/realtime.py", "get_weather"),
     # Outbound POSTs to the Telegram bot API. PinnedHTTPClient is GET-only by
     # design, so these cannot migrate without widening that contract.
     ("agent/scheduler.py", "_digest_send"),

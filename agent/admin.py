@@ -2232,6 +2232,7 @@ async def _approve_fetch_image_data(candidate_url, run_in_threadpool, max_image_
                 candidate_url,
                 user_agent="vinhlong360-image-review/1.0 (+https://vinhlong360.vn)",
                 policy=_admin_image_egress_policy(max_image_size),
+                audit_context="admin_image_review",
             )
         )
         status_response = httpx.Response(

@@ -11,7 +11,13 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from scheduler import ScheduledTask, TASKS, scheduler_status, sync_data_json_to_js
+from scheduler import (
+    ScheduledTask,
+    TASKS,
+    scheduler_status,
+    sync_data_json_to_js,
+    task_cleanup_feedback_receipts,
+)
 
 
 class TestScheduledTask:
@@ -78,7 +84,14 @@ class TestTaskRegistry:
 
     def test_expected_tasks_present(self):
         names = {t.name for t in TASKS}
-        expected = {"auto-learn", "relationships", "data-sync", "analytics-cleanup", "learning-loop"}
+        expected = {
+            "auto-learn",
+            "relationships",
+            "data-sync",
+            "analytics-cleanup",
+            "feedback-receipt-cleanup",
+            "learning-loop",
+        }
         assert expected.issubset(names), f"Missing tasks: {expected - names}"
 
     def test_learning_loop_interval(self):
@@ -153,3 +166,36 @@ class TestDataSync:
         with patch.object(sys.modules['scheduler'], 'PROJECT_DIR', tmp_path):
             result = sync_data_json_to_js()
             assert result is False
+
+
+class TestFeedbackReceiptCleanup:
+    def test_cleanup_is_bounded(self, monkeypatch):
+        import feedback_policy
+
+        calls = []
+        monkeypatch.setattr(
+            feedback_policy,
+            "cleanup_expired_feedback_receipts",
+            lambda *, limit: calls.append(limit) or 17,
+        )
+
+        assert task_cleanup_feedback_receipts() == 17
+        assert calls == [500]
+
+    def test_cleanup_failure_logs_stable_code(self, monkeypatch, caplog):
+        import feedback_policy
+
+        def fail_cleanup(*, limit):
+            raise feedback_policy.FeedbackUnavailable("raw db secret@example.com")
+
+        monkeypatch.setattr(
+            feedback_policy,
+            "cleanup_expired_feedback_receipts",
+            fail_cleanup,
+        )
+        with caplog.at_level("ERROR", logger="scheduler"):
+            assert task_cleanup_feedback_receipts() == 0
+
+        output = "\n".join(record.getMessage() for record in caplog.records)
+        assert "FEEDBACK_RECEIPT_CLEANUP_FAILED" in output
+        assert "secret@example.com" not in output

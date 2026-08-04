@@ -149,6 +149,7 @@ Allowlist dùng cặp `path + function`, không allowlist cả file. Wave 1 cố
 
 - các hàm ghi chuẩn trong `agent/database.py`;
 - mirror universal columns trong `agent/entity_details.py` vì không ghi `attributes`;
+- `_apply_universal()` trong `scripts/backfill_entity_details.py`;
 - `_process_entity()` trong `scripts/cleanup_entity_jsonb.py`;
 - `_apply_one_local_fix()`, `_prod_patch_one()` và `_prod_insert()` trong `scripts/sp2_reconcile.py`;
 - `_apply_sqlite()` và `_apply_pg()` trong `scripts/sp6_fill_required.py`;

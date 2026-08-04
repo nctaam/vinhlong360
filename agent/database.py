@@ -24,6 +24,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from threading import Lock
 
+from config import is_postgresql_url
+
 logger = logging.getLogger(__name__)
 
 # ── Config ──
@@ -33,7 +35,7 @@ DB_DIR.mkdir(exist_ok=True)
 DB_PATH = DB_DIR / "vinhlong360.db"
 
 DATABASE_URL = os.getenv("DATABASE_URL", "")
-USE_PG = DATABASE_URL.startswith("postgresql")
+USE_PG = is_postgresql_url(DATABASE_URL)
 
 RELATIONSHIP_TYPE_PRIORITY = {
     "hosts": 0,
@@ -61,6 +63,8 @@ PG_REQUIRED_TABLES = {
     "shared_rate_limits",
     "request_idempotency_keys",
     "quality_metric_snapshots",
+    "feedback_receipts",
+    "feedback_daily_rollups",
     # GĐ-B/C entity split (migration 059-062)
     "entity_changes",
     "site_settings_history",
@@ -85,10 +89,36 @@ PG_REQUIRED_COLUMNS = {
     "shared_rate_limits": {"key", "hits", "expires_at", "updated_at"},
     "request_idempotency_keys": {"key", "first_seen_at", "expires_at", "meta"},
     "quality_metric_snapshots": {"metric_key", "metric_value", "created_at"},
+    "feedback_receipts": {
+        "token_digest",
+        "owner_kind",
+        "user_id",
+        "anonymous_owner_digest",
+        "owner_binding_digest",
+        "assistant_turn_digest",
+        "model_variant",
+        "tool_bucket",
+        "rating",
+        "created_at",
+        "expires_at",
+        "used_at",
+    },
+    "feedback_daily_rollups": {
+        "day",
+        "owner_kind",
+        "model_variant",
+        "tool_bucket",
+        "positive_count",
+        "negative_count",
+    },
     "schema_version": {"component", "version", "migration", "updated_at"},
 }
 
-PG_REQUIRED_SCHEMA_VERSION = 62
+PG_REQUIRED_SCHEMA_VERSION = 74
+PG_REQUIRED_TRIGGERS = {
+    "trg_entity_ratings": "posts",
+    "trg_entity_ratings_del": "posts",
+}
 
 if USE_PG:
     import psycopg2
@@ -164,16 +194,82 @@ def _pg_missing_columns(cur, tables: set) -> list:
     return missing_columns
 
 
-def _pg_schema_issues(missing_tables: list, missing_columns: list, schema_version: int) -> list:
+def _pg_missing_triggers(cur) -> list[str]:
+    cur.execute(
+        """
+        SELECT tg.tgname AS trigger_name, cls.relname AS table_name
+        FROM pg_catalog.pg_trigger AS tg
+        JOIN pg_catalog.pg_class AS cls ON cls.oid = tg.tgrelid
+        JOIN pg_catalog.pg_namespace AS ns ON ns.oid = cls.relnamespace
+        WHERE NOT tg.tgisinternal AND ns.nspname = 'public'
+        """
+    )
+    existing = {
+        (row["trigger_name"], row["table_name"])
+        for row in cur.fetchall()
+    }
+    return [
+        f"{trigger_name} on {table_name}"
+        for trigger_name, table_name in sorted(PG_REQUIRED_TRIGGERS.items())
+        if (trigger_name, table_name) not in existing
+    ]
+
+
+def _pg_schema_issues(
+    missing_tables: list[str],
+    missing_columns: list[str],
+    missing_triggers: list[str],
+    schema_version: int,
+) -> list[str]:
     """Dựng danh sách issue (extract nguyên văn từ _verify_pg_schema)."""
     issues: list[str] = []
     if missing_tables:
         issues.append("missing tables: " + ", ".join(missing_tables))
     if missing_columns:
         issues.append("missing columns: " + ", ".join(missing_columns))
+    if missing_triggers:
+        issues.append("missing triggers: " + ", ".join(missing_triggers))
     if schema_version < PG_REQUIRED_SCHEMA_VERSION:
         issues.append(f"schema_version agent={schema_version}, expected >= {PG_REQUIRED_SCHEMA_VERSION}")
     return issues
+
+
+def _pg_schema_snapshot(conn) -> dict[str, object]:
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur.execute(
+        """
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+        """
+    )
+    tables = {row["table_name"] for row in cur.fetchall()}
+    missing_tables = sorted(PG_REQUIRED_TABLES - tables)
+    missing_columns = _pg_missing_columns(cur, tables)
+    missing_triggers = _pg_missing_triggers(cur)
+
+    schema_version = 0
+    if "schema_version" in tables:
+        cur.execute(
+            "SELECT COALESCE(MAX(version), 0) AS version FROM schema_version WHERE component = %s",
+            ("agent",),
+        )
+        row = cur.fetchone() or {}
+        schema_version = int(row.get("version") or 0)
+
+    issues = _pg_schema_issues(
+        missing_tables,
+        missing_columns,
+        missing_triggers,
+        schema_version,
+    )
+    return {
+        "schema_version": schema_version,
+        "missing_tables": missing_tables,
+        "missing_columns": missing_columns,
+        "missing_triggers": missing_triggers,
+        "issues": issues,
+    }
 
 
 _COORD_INVALID = object()  # sentinel: decode thất bại → _parse_coordinates trả None
@@ -461,12 +557,21 @@ class Database:
             pass
 
     @staticmethod
-    def _close_connection_preserving_error(conn, primary_error):
+    def _close_connection_preserving_error(
+        conn, primary_error, *, committed_transaction: bool = False
+    ):
         try:
             conn.close()
-        except BaseException:
-            if primary_error is None:
-                raise
+        except BaseException as cleanup_error:
+            if primary_error is not None:
+                return
+            if committed_transaction and isinstance(cleanup_error, Exception):
+                logger.warning(
+                    "Database connection cleanup failed after commit: %s",
+                    type(cleanup_error).__name__,
+                )
+                return
+            raise
 
     @staticmethod
     def _return_connection_to_pool(
@@ -489,12 +594,14 @@ class Database:
         pool = self._get_pg_pool()
         conn = pool.getconn() if pool else psycopg2.connect(self._dsn, connect_timeout=5)
         reusable = False
+        committed_transaction = False
         primary_error = None
         try:
             conn.autocommit = False
             yield conn
             self._finalize_connection(conn, commit_on_success)
             reusable = True
+            committed_transaction = commit_on_success
         except BaseException as exc:
             primary_error = exc
             self._rollback_connection_quietly(conn)
@@ -509,11 +616,16 @@ class Database:
                     primary_error=primary_error,
                 )
             else:
-                self._close_connection_preserving_error(conn, primary_error)
+                self._close_connection_preserving_error(
+                    conn,
+                    primary_error,
+                    committed_transaction=committed_transaction,
+                )
 
     @contextmanager
     def _sqlite_conn(self, *, commit_on_success: bool):
         conn = sqlite3.connect(self.db_path, timeout=30)
+        committed_transaction = False
         primary_error = None
         try:
             conn.row_factory = sqlite3.Row
@@ -522,12 +634,17 @@ class Database:
             conn.execute("PRAGMA busy_timeout=5000")
             yield conn
             self._finalize_connection(conn, commit_on_success)
+            committed_transaction = commit_on_success
         except BaseException as exc:
             primary_error = exc
             self._rollback_connection_quietly(conn)
             raise
         finally:
-            self._close_connection_preserving_error(conn, primary_error)
+            self._close_connection_preserving_error(
+                conn,
+                primary_error,
+                committed_transaction=committed_transaction,
+            )
 
     @contextmanager
     def _conn(self, *, commit_on_success: bool = True):
@@ -580,28 +697,8 @@ class Database:
 
     def _verify_pg_schema(self, conn) -> None:
         """Verify PostgreSQL schema at startup without mutating it."""
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        cur.execute(
-            """
-            SELECT table_name
-            FROM information_schema.tables
-            WHERE table_schema = 'public'
-            """
-        )
-        tables = {row["table_name"] for row in cur.fetchall()}
-        missing_tables = sorted(PG_REQUIRED_TABLES - tables)
-        missing_columns = _pg_missing_columns(cur, tables)
-
-        schema_version = 0
-        if "schema_version" in tables:
-            cur.execute(
-                "SELECT COALESCE(MAX(version), 0) AS version FROM schema_version WHERE component = %s",
-                ("agent",),
-            )
-            row = cur.fetchone() or {}
-            schema_version = int(row.get("version") or 0)
-
-        issues = _pg_schema_issues(missing_tables, missing_columns, schema_version)
+        snapshot = _pg_schema_snapshot(conn)
+        issues = snapshot["issues"]
         if not issues:
             return
 
@@ -623,22 +720,19 @@ class Database:
                 "ok": True,
                 "schema_version": None,
                 "required_schema_version": PG_REQUIRED_SCHEMA_VERSION,
+                "required_triggers": dict(PG_REQUIRED_TRIGGERS),
+                "missing_triggers": [],
             }
 
         try:
             with self._conn() as conn:
-                self._verify_pg_schema(conn)
-                row = self._fetchone(
-                    conn,
-                    "SELECT COALESCE(MAX(version), 0) AS version FROM schema_version WHERE component = %s",
-                    ("agent",),
-                )
-                version = int((row or {}).get("version") or 0)
+                snapshot = _pg_schema_snapshot(conn)
             return {
                 "backend": "postgresql",
-                "ok": version >= PG_REQUIRED_SCHEMA_VERSION,
-                "schema_version": version,
+                "ok": not snapshot["issues"],
                 "required_schema_version": PG_REQUIRED_SCHEMA_VERSION,
+                "required_triggers": dict(PG_REQUIRED_TRIGGERS),
+                **snapshot,
             }
         except Exception as exc:  # noqa: BLE001 - health endpoint should report, not crash
             return {
@@ -646,7 +740,9 @@ class Database:
                 "ok": False,
                 "schema_version": 0,
                 "required_schema_version": PG_REQUIRED_SCHEMA_VERSION,
-                "error": f"{type(exc).__name__}: {exc}",
+                "required_triggers": dict(PG_REQUIRED_TRIGGERS),
+                "missing_triggers": [],
+                "error": type(exc).__name__,
             }
 
     def initialize(self):
@@ -657,19 +753,20 @@ class Database:
             if self._initialized:
                 return
 
-            if self._use_pg:
+            with _entity_details.detail_cache_write_scope():
+                if self._use_pg:
+                    with self._conn() as conn:
+                        self._verify_pg_schema(conn)
+                        # GĐ-C C2: nạp cache detail khi flip đọc bật (đổi flag = restart)
+                        if _entity_details.reads_enabled():
+                            _entity_details.load_detail_cache(conn, True)
+                        self._initialized = True
+                        return
+
                 with self._conn() as conn:
-                    self._verify_pg_schema(conn)
-                    # GĐ-C C2: nạp cache detail khi flip đọc bật (đổi flag = restart)
-                    if _entity_details.reads_enabled():
-                        _entity_details.load_detail_cache(conn, True)
-                    self._initialized = True
-                    return
+                    self._init_sqlite_schema(conn)
 
-            with self._conn() as conn:
-                self._init_sqlite_schema(conn)
-
-            self._initialized = True
+                self._initialized = True
 
     def _init_sqlite_schema(self, conn) -> None:
         """Tạo bảng/index SQLite + migration cột (extract nguyên văn từ initialize —
@@ -800,13 +897,15 @@ class Database:
         season_val, attrs_val, source_val, images_val, coords_val, updated, attrs_store = \
             _normalize_upsert_fields(entity)
 
-        with self._conn() as conn:
-            self._write_entity_row(conn, entity, season_val, attrs_store,
-                                   source_val, images_val, coords_val, updated)
-            # GĐ-C dual-write: cột phổ quát + bảng CTI phản chiếu attrs (cùng transaction).
-            _entity_details.sync_entity_details(
-                conn, self._use_pg, entity["id"], entity["type"],
-                attrs_val if isinstance(attrs_val, dict) else {})
+        with _entity_details.detail_cache_write_scope():
+            with self._conn() as conn:
+                self._write_entity_row(conn, entity, season_val, attrs_store,
+                                       source_val, images_val, coords_val, updated)
+                # GĐ-C dual-write: cột phổ quát + bảng CTI phản chiếu attrs (cùng transaction).
+                mutation = _entity_details.sync_entity_details(
+                    conn, self._use_pg, entity["id"], entity["type"],
+                    attrs_val if isinstance(attrs_val, dict) else {})
+            _entity_details.apply_detail_cache_mutations([mutation])
 
     def _write_entity_row(self, conn, entity, season_val, attrs_store,
                           source_val, images_val, coords_val, updated) -> None:
@@ -900,8 +999,9 @@ class Database:
     def reload_entity_details_cache(self) -> int:
         """GĐ-C C2: nạp lại cache detail-rows (test + vận hành sau khi sửa DB tay)."""
         self.initialize()
-        with self._conn() as conn:
-            return _entity_details.load_detail_cache(conn, self._use_pg)
+        with _entity_details.detail_cache_write_scope():
+            with self._conn() as conn:
+                return _entity_details.load_detail_cache(conn, self._use_pg)
 
     def update_description(self, entity_id: str, description: str):
         """Update only the description field (won't be overwritten by upsert_entity)."""
@@ -934,18 +1034,21 @@ class Database:
         """Delete entity and its relationships."""
         self.initialize()
         ph = self._ph
-        with self._conn() as conn:
-            cur = self._execute(conn, f"DELETE FROM entities WHERE id = {ph}", (entity_id,))
-            self._execute(conn, f"DELETE FROM relationships WHERE from_id = {ph} OR to_id = {ph}",
-                          (entity_id, entity_id))
-            # GĐ-C: dọn detail rows (PG có FK CASCADE; SQLite dev thường không bật pragma FK)
-            _entity_details.delete_entity_details(conn, self._use_pg, entity_id)
-            if not self._use_pg:
-                try:
-                    conn.execute("DELETE FROM entities_fts WHERE id = ?", (entity_id,))
-                except sqlite3.OperationalError:
-                    logger.debug("FTS5 delete skipped for entity %s", entity_id)
-            return cur.rowcount > 0
+        with _entity_details.detail_cache_write_scope():
+            with self._conn() as conn:
+                cur = self._execute(conn, f"DELETE FROM entities WHERE id = {ph}", (entity_id,))
+                self._execute(conn, f"DELETE FROM relationships WHERE from_id = {ph} OR to_id = {ph}",
+                              (entity_id, entity_id))
+                # GĐ-C: dọn detail rows (PG có FK CASCADE; SQLite dev thường không bật pragma FK)
+                mutation = _entity_details.delete_entity_details(conn, self._use_pg, entity_id)
+                if not self._use_pg:
+                    try:
+                        conn.execute("DELETE FROM entities_fts WHERE id = ?", (entity_id,))
+                    except sqlite3.OperationalError:
+                        logger.debug("FTS5 delete skipped for entity %s", entity_id)
+                deleted = cur.rowcount > 0
+            _entity_details.apply_detail_cache_mutations([mutation])
+            return deleted
 
     def search_entities(self, q: str = None, entity_type: str = None,
                         area: str = None, limit: int = 20, offset: int = 0,
@@ -1489,13 +1592,15 @@ class Database:
         # F1 (atomic): DELETE + INSERT trong CÙNG 1 transaction cho CẢ PG lẫn SQLite.
         # Crash giữa chừng → rollback → data CŨ còn nguyên (KHÔNG để DB rỗng). Trước đây
         # PG xoá ở transaction này rồi nạp ở migrate_from_json (transaction KHÁC) → không atomic.
-        with self._conn() as conn:
-            self._clear_knowledge_tables(conn)
-            result = self._bulk_load(conn, data)
-            if result.get("relationships_dropped", 0) > 0:
-                logger.warning("replace_from_json: %d quan he trung (from,to,type) bi bo khi luu "
-                               "(input %d -> stored %d)",
-                               result['relationships_dropped'], result['relationships'], result['relationships_stored'])
+        with _entity_details.detail_cache_write_scope():
+            with self._conn() as conn:
+                self._clear_knowledge_tables(conn)
+                result, mutations = self._bulk_load(conn, data)
+                if result.get("relationships_dropped", 0) > 0:
+                    logger.warning("replace_from_json: %d quan he trung (from,to,type) bi bo khi luu "
+                                   "(input %d -> stored %d)",
+                                   result['relationships_dropped'], result['relationships'], result['relationships_stored'])
+            _entity_details.apply_detail_cache_mutations(mutations, reset=True)
 
         result["mode"] = "replace"
         if backup_path:
@@ -1526,7 +1631,9 @@ class Database:
                 logger.debug("FTS5 clear skipped (table may not exist)")
         self._execute(conn, "DELETE FROM entities")
 
-    def _bulk_load(self, conn, data: dict) -> dict:
+    def _bulk_load(
+        self, conn, data: dict
+    ) -> tuple[dict, list[_entity_details.DetailCacheMutation]]:
         """Nạp entities+relationships+itineraries vào DB trên CONNECTION đã cho (không tự
         commit) — để replace_from_json gói DELETE+INSERT trong 1 transaction (F1 atomic).
         SQLite + PostgreSQL dùng chung cấu trúc; SQL theo từng backend (copy từ upsert_*)."""
@@ -1541,12 +1648,14 @@ class Database:
 
         # GĐ-C dual-write: phản chiếu typed attrs của TOÀN BỘ entities vừa nạp vào
         # cột phổ quát + bảng CTI — cùng transaction với DELETE+INSERT (F1 atomic).
-        for entity in data.get("entities", []):
+        mutations = [
             _entity_details.sync_entity_details(
                 conn, self._use_pg, entity["id"], entity["type"],
                 entity.get("attributes") or {})
+            for entity in data.get("entities", [])
+        ]
 
-        return {
+        result = {
             "status": "migrated",
             "entities": len(entity_rows),
             "relationships": len(rel_rows),
@@ -1555,6 +1664,7 @@ class Database:
             "itineraries": len(itin_rows),
             "backend": "postgresql" if self._use_pg else "sqlite",
         }
+        return result, mutations
 
     def _bulk_insert_rows(self, conn, entity_rows, fts_rows, rel_rows, itin_rows) -> int:
         """executemany theo backend (extract nguyên văn từ _bulk_load). Trả số quan hệ đã lưu."""
@@ -1702,6 +1812,22 @@ class Database:
             row = self._fetchone(conn,
                 f"UPDATE users SET {', '.join(sets)} WHERE id::text = {ph} RETURNING *", params)
             return self._row_to_dict(row)
+
+    def delete_erased_user(self, conn, user_id: str, now):
+        """Delete only a locked, deleted account whose exact deadline has passed."""
+        ph = self._ph
+        return self._fetchone(
+            conn,
+            f"""
+                DELETE FROM users
+                WHERE id::text = {ph}
+                  AND deleted_at IS NOT NULL
+                  AND erasure_due_at IS NOT NULL
+                  AND erasure_due_at <= {ph}
+                RETURNING id
+            """,
+            (str(user_id), now),
+        )
 
     # ── Entity change history ──
 

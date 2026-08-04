@@ -297,46 +297,40 @@ class TestGuardrailFallback:
         assert "[PHONE]" in result["cleaned_reply"]
 
     def test_guardrail_crash_returns_fallback_not_500(self):
-        """If guardrail check_input crashes, server must fail-closed with friendly message."""
-        # This test verifies the server.py code handles guardrail exceptions
+        """If the privacy boundary crashes, server must fail closed."""
         server_path = AGENT_DIR / "server.py"
         source = server_path.read_text(encoding="utf-8")
 
-        # Find the guardrail input check in /chat endpoint
-        idx = source.find("guard = check_input(req.message, owner_key)")
-        assert idx > 0, "Guardrail check_input must exist in chat endpoint"
-
-        # Check that there is a try/except wrapping it
-        # Look backwards for try:
-        pre_context = source[max(0, idx-200):idx]
-        assert "try:" in pre_context, "check_input must be wrapped in try/except"
-
-        # Check that except block returns a friendly response, not re-raises
-        # Extend post_context to capture the except block further down
-        post_context = source[idx:idx+800]
-        assert "fail-closed" in post_context.lower() or "fail-CLOSED" in post_context, \
-            "Guardrail error handler must implement fail-CLOSED"
-
-    def test_guardrail_output_error_does_not_crash(self):
-        """Output guardrail failure must not crash the response."""
-        server_path = AGENT_DIR / "server.py"
-        source = server_path.read_text(encoding="utf-8")
-
-        idx = source.find("out_check = check_output(reply")
-        assert idx > 0, "Output guardrail check must exist"
+        idx = source.find("safe_input = prepare_chat_input(")
+        assert idx > 0, "Mandatory privacy boundary must exist in chat endpoint"
 
         pre_context = source[max(0, idx-200):idx]
-        assert "try:" in pre_context, "Output check_output must be wrapped in try/except"
+        assert "try:" in pre_context, "privacy boundary must be wrapped in try/except"
+
+        post_context = source[idx:idx+1800]
+        assert "PrivacyBoundaryBlocked" in post_context
+        assert "PrivacyBoundaryUnavailable" in post_context
+        assert "UNEXPECTED_PRIVACY_BOUNDARY_ERROR" in post_context
 
     def test_guardrail_stream_fail_closed(self):
-        """Stream endpoint guardrail must also fail-closed."""
+        """Stream endpoint privacy boundary must also fail closed."""
         server_path = AGENT_DIR / "server.py"
         source = server_path.read_text(encoding="utf-8")
 
-        # Find stream guardrail check
         stream_section = source[source.find("async def chat_stream"):]
-        assert "check_input(message, owner_key)" in stream_section
-        assert "fail-closed" in stream_section.lower() or "fail-CLOSED" in stream_section
+        assert "safe_input = prepare_chat_input(" in stream_section
+        assert "PrivacyBoundaryBlocked" in stream_section
+        assert "PrivacyBoundaryUnavailable" in stream_section
+        assert "UNEXPECTED_PRIVACY_BOUNDARY_ERROR" in stream_section
+
+    def test_privacy_boundary_readiness_fails_closed(self, monkeypatch):
+        import privacy_boundary
+
+        def fail_redaction(*_args, **_kwargs):
+            raise privacy_boundary.PrivacyBoundaryUnavailable("READINESS_TEST_FAILURE")
+
+        monkeypatch.setattr(privacy_boundary, "redact_text", fail_redaction)
+        assert privacy_boundary.privacy_boundary_readiness() is False
 
 
 # ═══════════════════════════════════════════════════════
@@ -1929,9 +1923,14 @@ class TestRealtimeLogging:
         assert hasattr(realtime, "logger")
 
     def test_weather_api_failure_returns_fallback(self):
+        import pinned_http as ph
         import realtime
-        with patch.dict(os.environ, {"WEATHER_API_KEY": "fake_key"}):
-            with patch("httpx.get", side_effect=ConnectionError("API down")):
+        with patch.object(realtime, "WEATHER_API_KEY", "fake_key"):
+            with patch.object(
+                realtime._PINNED_HTTP,
+                "get",
+                side_effect=ph.PinnedTransportError("API down"),
+            ):
                 realtime._weather_cache.clear()
                 result = realtime.get_weather("vinh-long")
                 assert result is not None
@@ -2305,10 +2304,9 @@ class TestSelfEvalLogging:
                 _entities={},
             )}):
                 if "self_eval" in sys.modules:
-                    importlib.reload(sys.modules["self_eval"])
+                    mod = importlib.reload(sys.modules["self_eval"])
                 else:
-                    pass
-                mod = sys.modules["self_eval"]
+                    mod = importlib.import_module("self_eval")
                 assert hasattr(mod, "logger")
                 assert mod.logger.name == "self_eval"
         finally:
