@@ -1,5 +1,5 @@
 import disclosureJson from '#launch-config/ai-disclosure.json'
-import { parseAiDisclosureArtifact } from './launchArtifactValidators.mjs'
+import { parseAiDisclosureArtifact } from '#launch-validators'
 
 export type AiDisclosureArtifact = {
   readonly schema_version: 1

@@ -12,6 +12,9 @@ export default defineNuxtConfig({
   alias: {
     '#launch-config': fileURLToPath(new URL('../config', import.meta.url)),
     '#privacy-policy': fileURLToPath(new URL('../config/privacy-policy.json', import.meta.url)),
+    // Nitro giữ nguyên specifier '.mjs' tương đối và resolve từ vị trí bundle,
+    // nên import tương đối từ server/ đi lạc thư mục. Alias tuyệt đối tránh việc đó.
+    '#launch-validators': fileURLToPath(new URL('./utils/launchArtifactValidators.mjs', import.meta.url)),
   },
 
   ssr: true,

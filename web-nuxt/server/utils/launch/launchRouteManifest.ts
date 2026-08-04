@@ -1,5 +1,5 @@
 import manifestJson from '#launch-config/launch-indexing-policy.json'
-import { parseLaunchRouteManifestArtifact } from '../../../utils/launchArtifactValidators.mjs'
+import { parseLaunchRouteManifestArtifact } from '#launch-validators'
 
 const EXPECTED_REVISION = 'launch-indexing-policy-v1'
 const NORMALIZATION = Object.freeze({
