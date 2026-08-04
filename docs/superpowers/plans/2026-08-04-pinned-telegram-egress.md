@@ -39,7 +39,7 @@
 - Create `tests/test_telegram_pinned.py`: endpoint, payload, response, redaction, and synchronous adapter tests.
 - Modify `agent/scheduler.py`: replace direct Telegram HTTP, add round-based delivery, per-recipient outbox, retry task, and subject-free status.
 - Create `agent/tests/test_scheduler_telegram.py`: scheduler fan-out, retry, queue, concurrency, authorization, and telemetry tests.
-- Modify `agent/tests/test_gap_fixes.py`: replace raw-traceback source guards with safe-log behavioral coverage.
+- Modify `agent/tests/test_gap_fixes.py`: remove legacy Telegram source guards after equivalent scheduler behavior is covered directly.
 - Modify `tests/test_pinned_http_consumers.py`: make `KNOWN_UNPINNED_FETCHERS` empty after scheduler migration.
 - Create `agent/telegram_ptb.py`: PTB `BaseRequest` adapter, safe response mapping, executor admission, cancellation, and lifecycle.
 - Create `tests/test_telegram_ptb.py`: real PTB request-data integration and executor/lifecycle tests.
@@ -2198,28 +2198,9 @@ else:
     _sched_logger.warning("TELEGRAM_ADMIN_DELIVERY_INCOMPLETE")
 ```
 
-- [ ] **Step 7: Replace hygiene guards and empty the unpinned registry**
+- [ ] **Step 7: Remove legacy source guards and empty the unpinned registry**
 
-In `agent/tests/test_gap_fixes.py`, replace the two legacy Telegram tests with:
-
-```python
-def test_telegram_queue_mutation_has_lock(self):
-    src = (AGENT_DIR / "scheduler.py").read_text(encoding="utf-8")
-    start = src.index("def _enqueue_telegram_retry")
-    end = src.index("\ndef ", start + 4)
-    chunk = src[start:end]
-    assert "with _telegram_queue_lock" in chunk
-    assert "_TELEGRAM_RETRY_QUEUE.append" in chunk
-
-
-def test_telegram_transport_logs_never_include_subjects_or_tracebacks(self):
-    src = (AGENT_DIR / "scheduler.py").read_text(encoding="utf-8")
-    start = src.index("def _digest_send")
-    end = src.index("def task_autonomous_agent", start)
-    chunk = src[start:end]
-    for banned in ("exc_info=True", "chat %s", "telegram attempt %d", "repr("):
-        assert banned not in chunk
-```
+In `agent/tests/test_gap_fixes.py`, remove the two legacy Telegram source-inspection tests. Do not replace them with implementation-text assertions: `agent/tests/test_scheduler_telegram.py` now verifies the same properties behaviorally through drain-lock concurrency, enqueue/capacity behavior, and aggregate-only logs.
 
 In `tests/test_pinned_http_consumers.py`, set:
 
@@ -2278,7 +2259,6 @@ Create `tests/test_telegram_ptb.py` with a fake synchronous transport:
 from __future__ import annotations
 
 import asyncio
-import inspect
 import json
 import threading
 from types import SimpleNamespace
@@ -2382,13 +2362,6 @@ def test_runtime_contract_accepts_installed_ptb_and_rejects_missing_capability(m
     monkeypatch.setattr(tr, "RequestData", object)
     with pytest.raises(RuntimeError, match="telegram_ptb_incompatible"):
         tr.validate_ptb_runtime_contract()
-
-
-def test_adapter_never_uses_default_executor_or_httpx_fallback() -> None:
-    source = inspect.getsource(tr)
-    assert "asyncio.to_thread" not in source
-    assert "HTTPXRequest" not in source
-    assert "run_in_executor(self._executor" in source
 
 
 def test_profile_read_timeouts_match_ptb_long_poll_contract() -> None:
@@ -3255,7 +3228,6 @@ Create `agent/tests/test_bot_gateway_telegram.py` with a fake fluent builder/app
 from __future__ import annotations
 
 import asyncio
-import inspect
 from types import SimpleNamespace
 
 import pytest
@@ -3322,17 +3294,9 @@ def test_start_telegram_wires_distinct_pinned_requests(monkeypatch) -> None:
     }
 ```
 
-Add the exact source assertion and missing-capability test:
+Add the missing-capability test. The builder-wiring test above is the behavioral proof that both pinned request slots are used and broad/default transport construction is not used:
 
 ```python
-def test_start_telegram_source_has_no_default_builder_or_broad_updates() -> None:
-    source = inspect.getsource(BotGateway.start_telegram)
-    assert ".request(command_request)" in source
-    assert ".get_updates_request(polling_request)" in source
-    assert "Update.ALL_TYPES" not in source
-    assert ".token(token).build()" not in source
-
-
 def test_start_telegram_fails_closed_when_builder_hook_is_missing(monkeypatch) -> None:
     builder = FakeBuilder()
     builder.get_updates_request = None
@@ -3383,16 +3347,66 @@ def test_network_error_is_not_converted_into_second_send() -> None:
     assert len(asyncio.run(exercise())) == 1
 ```
 
-Add exact helper-use and redaction coverage:
+Add handler-level fallback and redaction coverage. These tests prove both handlers make exactly one plain-text retry after Telegram rejects Markdown, while non-markup transport failures propagate after one attempt:
 
 ```python
-def test_both_telegram_reply_paths_use_safe_helper() -> None:
-    message_source = inspect.getsource(BotGateway._tg_message)
-    callback_source = inspect.getsource(BotGateway._tg_callback)
-    assert "_send_telegram_reply" in message_source
-    assert "_send_telegram_reply" in callback_source
-    assert "except Exception" not in message_source
-    assert "except Exception" not in callback_source
+def _handler_update(kind: str, message: ReplyMessage):
+    if kind == "message":
+        return SimpleNamespace(
+            effective_user=SimpleNamespace(id=4242, first_name="Tester"),
+            message=SimpleNamespace(text="hello", reply_text=message.reply_text),
+        )
+
+    async def answer():
+        return None
+
+    return SimpleNamespace(
+        callback_query=SimpleNamespace(
+            answer=answer,
+            from_user=SimpleNamespace(id=4343, first_name="Tester"),
+            data="suggestion",
+            message=SimpleNamespace(reply_text=message.reply_text),
+        )
+    )
+
+
+@pytest.mark.parametrize("kind", ["message", "callback"])
+def test_telegram_handlers_retry_plain_text_once_for_bad_markup(monkeypatch, kind) -> None:
+    gateway = BotGateway()
+
+    async def send_to_agent(_text, _user_key):
+        return {"reply": "*broken*", "suggestions": []}
+
+    gateway.send_to_agent = send_to_agent
+    monkeypatch.setattr(bot_gateway, "_add_message", lambda *_args: None)
+    message = ReplyMessage([BadRequest("telegram_bad_markup"), None])
+    update = _handler_update(kind, message)
+
+    handler = gateway._tg_message if kind == "message" else gateway._tg_callback
+    asyncio.run(handler(update, None))
+
+    assert len(message.calls) == 2
+    assert message.calls[0][1]["parse_mode"] == "Markdown"
+    assert "parse_mode" not in message.calls[1][1]
+
+
+@pytest.mark.parametrize("kind", ["message", "callback"])
+def test_telegram_handlers_do_not_retry_non_markup_failures(monkeypatch, kind) -> None:
+    gateway = BotGateway()
+
+    async def send_to_agent(_text, _user_key):
+        return {"reply": "safe reply", "suggestions": []}
+
+    gateway.send_to_agent = send_to_agent
+    monkeypatch.setattr(bot_gateway, "_add_message", lambda *_args: None)
+    message = ReplyMessage([NetworkError("telegram_transport_error")])
+    update = _handler_update(kind, message)
+
+    handler = gateway._tg_message if kind == "message" else gateway._tg_callback
+    with pytest.raises(NetworkError, match="telegram_transport_error"):
+        asyncio.run(handler(update, None))
+
+    assert len(message.calls) == 1
 
 
 def test_markup_fallback_log_contains_no_text_or_exception(caplog) -> None:
