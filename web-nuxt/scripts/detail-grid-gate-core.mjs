@@ -1180,11 +1180,12 @@ function compactHitEvidence(hit) {
 
 function compactOwnedTargets(targets) {
   return (targets || []).map((target, index) => {
-    const hit = compactHitEvidence(target?.hit)
+    const hit = compactHitEvidence(target?.hit || target)
     const text = String(target?.text || hit.text || '').slice(0, 60)
-    const { text: hitText, ...ownership } = hit
+    const { text: compactedHitText, ...ownership } = hit
+    const hitText = target?.hit_text || compactedHitText
     return {
-      index,
+      index: Number.isInteger(target?.index) ? target.index : index,
       text,
       ...ownership,
       ...(hitText && hitText !== text ? { hit_text: hitText } : {}),
@@ -1193,8 +1194,13 @@ function compactOwnedTargets(targets) {
 }
 
 function compactConsoleEvidence(evidence) {
-  const catalog = []
+  const catalog = Array.isArray(evidence.console_error_catalog)
+    ? evidence.console_error_catalog.map(entry => (
+        entry && typeof entry === 'object' ? { ...entry } : entry
+      ))
+    : []
   const indexes = new Map()
+  catalog.forEach((entry, index) => indexes.set(JSON.stringify(entry), index))
   const referenceEntries = entries => (entries || []).map(entry => {
     const key = JSON.stringify(entry)
     if (!indexes.has(key)) {
@@ -1204,12 +1210,110 @@ function compactConsoleEvidence(evidence) {
     return indexes.get(key)
   })
   for (const state of evidence.states || []) {
-    state.console_error_indexes = referenceEntries(state.console_errors)
-    state.relevant_console_error_indexes = referenceEntries(state.relevant_console_errors)
+    if (Array.isArray(state.console_errors)) {
+      state.console_error_indexes = referenceEntries(state.console_errors)
+    } else if (!Array.isArray(state.console_error_indexes)) {
+      state.console_error_indexes = []
+    }
+    if (Array.isArray(state.relevant_console_errors)) {
+      state.relevant_console_error_indexes = referenceEntries(state.relevant_console_errors)
+    } else if (!Array.isArray(state.relevant_console_error_indexes)) {
+      state.relevant_console_error_indexes = []
+    }
     delete state.console_errors
     delete state.relevant_console_errors
   }
   if (catalog.length > 0) evidence.console_error_catalog = catalog
+}
+
+function compactAssetEvidence(evidence) {
+  const previewAssets = evidence.preview_assets
+  if (!previewAssets || typeof previewAssets !== 'object') return
+  const assetSets = []
+  const assetSetIndexes = new Map()
+  const remappedExistingIndexes = new Map()
+  const validFingerprint = value => /^[a-f0-9]{64}$/u.test(String(value || ''))
+  const registerAssetSet = (assetPaths, fingerprint) => {
+    if (
+      !Array.isArray(assetPaths)
+      || assetPaths.length === 0
+      || assetPaths.some(path => typeof path !== 'string' || !path)
+      || !validFingerprint(fingerprint)
+    ) return -1
+    const key = JSON.stringify([assetPaths, fingerprint])
+    if (assetSetIndexes.has(key)) return assetSetIndexes.get(key)
+    const index = assetSets.length
+    assetSets.push({ asset_paths: [...assetPaths], fingerprint_sha256: fingerprint })
+    assetSetIndexes.set(key, index)
+    return index
+  }
+  for (const [index, assetSet] of (Array.isArray(previewAssets.asset_sets) ? previewAssets.asset_sets : []).entries()) {
+    const remapped = registerAssetSet(assetSet?.asset_paths, assetSet?.fingerprint_sha256)
+    if (remapped >= 0) remappedExistingIndexes.set(index, remapped)
+  }
+
+  const existingGroups = previewAssets.asset_groups && typeof previewAssets.asset_groups === 'object'
+    ? previewAssets.asset_groups
+    : {}
+  const indexesByGroup = new Map()
+  const addGroupIndex = (groupName, index) => {
+    if (!Number.isInteger(index) || index < 0 || index >= assetSets.length) return
+    if (!indexesByGroup.has(groupName)) indexesByGroup.set(groupName, new Set())
+    indexesByGroup.get(groupName).add(index)
+  }
+  for (const [groupName, group] of Object.entries(existingGroups)) {
+    for (const existingIndex of group?.asset_set_indexes || []) {
+      addGroupIndex(groupName, remappedExistingIndexes.get(existingIndex))
+    }
+    addGroupIndex(groupName, registerAssetSet(group?.asset_paths, group?.fingerprint_sha256))
+  }
+
+  const stateCounts = new Map()
+  const statesWithAssets = []
+  for (const state of evidence.states || []) {
+    const stateAssets = state?.preview_assets
+    if (!stateAssets || typeof stateAssets !== 'object') continue
+    statesWithAssets.push(stateAssets)
+    const groupName = state.viewport_name || stateAssets.asset_group || 'unknown'
+    stateCounts.set(groupName, (stateCounts.get(groupName) || 0) + 1)
+    const rawIndex = registerAssetSet(stateAssets.asset_paths, stateAssets.fingerprint_sha256)
+    const existingIndex = remappedExistingIndexes.get(stateAssets.asset_set_index)
+    const assetSetIndex = rawIndex >= 0 ? rawIndex : existingIndex
+    if (!Number.isInteger(assetSetIndex)) continue
+    stateAssets.asset_group = groupName
+    stateAssets.asset_set_index = assetSetIndex
+    stateAssets.asset_set_recorded_globally = true
+    addGroupIndex(groupName, assetSetIndex)
+    delete stateAssets.asset_paths
+    delete stateAssets.css_paths
+    delete stateAssets.js_paths
+    delete stateAssets.count
+    delete stateAssets.unique_count
+    delete stateAssets.detail_css_path
+    delete stateAssets.fingerprint_sha256
+  }
+
+  const groupNames = new Set([...Object.keys(existingGroups), ...stateCounts.keys(), ...indexesByGroup.keys()])
+  previewAssets.asset_groups = Object.fromEntries([...groupNames].map(groupName => {
+    const existingGroup = existingGroups[groupName]
+    const assetSetIndexesForGroup = [...(indexesByGroup.get(groupName) || [])]
+    if (assetSetIndexesForGroup.length === 0) return [groupName, existingGroup]
+    return [groupName, {
+      state_count: Number(existingGroup?.state_count || stateCounts.get(groupName) || 0),
+      asset_set_indexes: assetSetIndexesForGroup,
+    }]
+  }))
+  if (assetSets.length > 0) previewAssets.asset_sets = assetSets
+  if (
+    Array.isArray(previewAssets.asset_paths)
+    && assetSets.some(assetSet => JSON.stringify(assetSet.asset_paths) === JSON.stringify(previewAssets.asset_paths))
+  ) delete previewAssets.asset_paths
+  const allStateReferencesValid = statesWithAssets.length > 0 && statesWithAssets.every(stateAssets => (
+    Number.isInteger(stateAssets.asset_set_index)
+    && stateAssets.asset_set_index >= 0
+    && stateAssets.asset_set_index < assetSets.length
+  ))
+  if (allStateReferencesValid) previewAssets.asset_sets_recorded_by_viewport = true
 }
 
 function compactRectEvidence(rect) {
@@ -1290,28 +1394,14 @@ function compactGeometryEvidence(geometry) {
 
 export function compactGateEvidence(evidence) {
   for (const state of evidence.states || []) {
-    if (state.preview_assets) {
-      delete state.preview_assets.asset_paths
-      delete state.preview_assets.css_paths
-      delete state.preview_assets.js_paths
-      delete state.preview_assets.count
-      delete state.preview_assets.unique_count
-      delete state.preview_assets.detail_css_path
-      delete state.preview_assets.fingerprint_sha256
-      state.preview_assets.asset_group = state.viewport_name || 'unknown'
-      state.preview_assets.asset_set_recorded_globally = true
-    }
     state.geometry = compactGeometryEvidence(state.geometry)
     if (state.lightbox) {
       state.lightbox.dialog_rect = compactRectEvidence(state.lightbox.dialog_rect)
       state.lightbox.close_hit = compactHitEvidence(state.lightbox.close_hit)
     }
   }
+  compactAssetEvidence(evidence)
   compactConsoleEvidence(evidence)
-  if (Object.keys(evidence.preview_assets?.asset_groups || {}).length > 0) {
-    delete evidence.preview_assets.asset_paths
-    evidence.preview_assets.asset_sets_recorded_by_viewport = true
-  }
   const reasons = evidence.reasons || []
   const blockerReasons = reasons.filter(reason => !/^(?:mobile|desktop):/u.test(String(reason?.code || '')))
   const retainedBlockers = blockerReasons.slice(0, 12)
@@ -1328,4 +1418,17 @@ export function compactGateEvidence(evidence) {
     blocker_codes: blockerReasons.map(reason => String(reason?.code || '')).filter(Boolean),
   }
   return evidence
+}
+
+export function serializeBoundedGateEvidence(evidence, maxBytes) {
+  const pretty = JSON.stringify(evidence, null, 2) + '\n'
+  if (Buffer.byteLength(pretty) <= maxBytes) return pretty
+
+  compactGateEvidence(evidence)
+  const compactedPretty = JSON.stringify(evidence, null, 2) + '\n'
+  if (Buffer.byteLength(compactedPretty) <= maxBytes) return compactedPretty
+
+  const compactedMinified = JSON.stringify(evidence) + '\n'
+  if (Buffer.byteLength(compactedMinified) <= maxBytes) return compactedMinified
+  throw new Error('bounded evidence exceeded byte limit')
 }

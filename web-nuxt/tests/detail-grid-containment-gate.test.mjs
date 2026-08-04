@@ -1,4 +1,5 @@
 import { EventEmitter } from 'node:events'
+import { createHash } from 'node:crypto'
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -1020,15 +1021,179 @@ describe('Detail grid containment gate contracts', () => {
     compactGateEvidence(evidence)
 
     expect(evidence.preview_assets.asset_paths).toEqual(assetPaths)
-    expect(evidence.states[0].preview_assets).toEqual({ asset_group: 'unknown', asset_set_recorded_globally: true })
+    expect(evidence.states[0].preview_assets).toEqual({
+      asset_paths: assetPaths,
+      css_paths: [assetPaths[1]],
+      js_paths: [assetPaths[0]],
+    })
     expect(evidence.states[0].console_error_indexes).toEqual([0, 1, 2])
     expect(evidence.states[0].relevant_console_error_indexes).toEqual([0, 1, 2])
-    expect(evidence.console_error_catalog).toEqual([{ message: 'one' }, { message: 'two' }, { message: 'three' }])
+    expect(evidence.console_error_catalog).toEqual([
+      { message: 'one' },
+      { message: 'two' },
+      { message: 'three' },
+    ])
     expect(evidence.states[0].geometry.contact.controls).toHaveLength(3)
     expect(evidence.reasons).toHaveLength(12)
     expect(evidence.reasons.map(reason => reason.code)).toEqual(expect.arrayContaining(['revision-mismatch', 'cleanup-failed']))
     expect(evidence.reason_summary).toMatchObject({ total_count: 16, retained_count: 12, truncated_count: 4, truncated: true })
     expect(evidence.reason_summary.blocker_codes).toEqual(expect.arrayContaining(['revision-mismatch', 'cleanup-failed']))
+  })
+
+  it('produces equivalent ownership and console evidence when compacted twice', () => {
+    const evidence = {
+      preview_assets: {
+        asset_groups: {
+          mobile: {
+            state_count: 1,
+            asset_paths: ['/_nuxt/app.hash.js', '/_nuxt/detail.hash.css'],
+            fingerprint_sha256: 'a'.repeat(64),
+          },
+        },
+      },
+      states: [{
+        viewport_name: 'mobile',
+        preview_assets: {
+          count: 2,
+          unique_count: 2,
+          asset_paths: ['/_nuxt/app.hash.js', '/_nuxt/detail.hash.css'],
+          css_paths: ['/_nuxt/detail.hash.css'],
+          js_paths: ['/_nuxt/app.hash.js'],
+          detail_css_path: '/_nuxt/detail.hash.css',
+          fingerprint_sha256: 'a'.repeat(64),
+        },
+        console_errors: [{ source: 'network', message: 'expected 503', url: '/feed', allowed_reason: 'sqlite' }],
+        relevant_console_errors: [],
+        geometry: {
+          contact: {
+            controls: [{
+              text: 'Xem bản đồ',
+              hit: {
+                present: true,
+                visible: true,
+                belongs: true,
+                stable: true,
+                sample_count: 3,
+                required_consecutive: 3,
+                tag: 'a.cw-btn',
+                text: 'Xem bản đồ',
+              },
+            }],
+          },
+          bottom_nav: {
+            items: [{
+              text: 'Trang chủ',
+              hit: {
+                present: true,
+                visible: true,
+                belongs: true,
+                stable: true,
+                sample_count: 3,
+                required_consecutive: 3,
+                tag: 'a.public-bottom-nav-item',
+                text: 'Trang chủ',
+              },
+            }],
+          },
+        },
+      }],
+      reasons: [],
+    }
+
+    compactGateEvidence(evidence)
+    const once = structuredClone(evidence)
+    compactGateEvidence(evidence)
+
+    expect(evidence).toEqual(once)
+    expect(evidence.states[0].geometry.contact.controls[0]).toMatchObject({
+      present: true,
+      visible: true,
+      belongs: true,
+      stable: true,
+      sample_count: 3,
+      required_consecutive: 3,
+    })
+    expect(evidence.states[0].console_error_indexes).toEqual([0])
+  })
+
+  it('preserves exact state assets when global aggregation has not run', () => {
+    const assetPaths = ['/_nuxt/app.early.js', '/_nuxt/detail.early.css']
+    const fingerprint = 'd'.repeat(64)
+    const evidence = {
+      preview_assets: { asset_groups: {} },
+      states: [{
+        viewport_name: 'mobile',
+        preview_assets: {
+          count: 2,
+          unique_count: 2,
+          asset_paths: [...assetPaths],
+          css_paths: [assetPaths[1]],
+          js_paths: [assetPaths[0]],
+          detail_css_path: assetPaths[1],
+          fingerprint_sha256: fingerprint,
+        },
+      }],
+      reasons: [{ code: 'unexpected-error', message: 'global aggregation did not run' }],
+    }
+
+    compactGateEvidence(evidence)
+
+    const assetSets = evidence.preview_assets.asset_sets
+    expect(assetSets).toEqual([{ asset_paths: assetPaths, fingerprint_sha256: fingerprint }])
+    expect(evidence.preview_assets.asset_groups.mobile).toEqual({ state_count: 1, asset_set_indexes: [0] })
+    expect(evidence.states[0].preview_assets).toMatchObject({ asset_group: 'mobile', asset_set_index: 0 })
+    expect(assetSets[evidence.states[0].preview_assets.asset_set_index]).toEqual({
+      asset_paths: assetPaths,
+      fingerprint_sha256: fingerprint,
+    })
+  })
+
+  it('catalogs every distinct asset set when themes in one viewport mismatch', () => {
+    const firstPaths = ['/_nuxt/app.first.js', '/_nuxt/detail.first.css']
+    const secondPaths = ['/_nuxt/app.second.js', '/_nuxt/detail.second.css']
+    const firstFingerprint = 'e'.repeat(64)
+    const secondFingerprint = 'f'.repeat(64)
+    const state = (theme, assetPaths, fingerprint) => ({
+      viewport_name: 'mobile',
+      theme,
+      preview_assets: {
+        count: 2,
+        unique_count: 2,
+        asset_paths: [...assetPaths],
+        css_paths: [assetPaths[1]],
+        js_paths: [assetPaths[0]],
+        detail_css_path: assetPaths[1],
+        fingerprint_sha256: fingerprint,
+      },
+    })
+    const evidence = {
+      preview_assets: {
+        asset_groups: {
+          mobile: { state_count: 2, asset_paths: [...firstPaths], fingerprint_sha256: firstFingerprint },
+        },
+      },
+      states: [
+        state('nocturne', firstPaths, firstFingerprint),
+        state('parchment', secondPaths, secondFingerprint),
+      ],
+      reasons: [{ code: 'asset-set-state-mismatch', message: 'themes bound different assets' }],
+    }
+
+    compactGateEvidence(evidence)
+
+    const assetSets = evidence.preview_assets.asset_sets
+    expect(assetSets).toEqual([
+      { asset_paths: firstPaths, fingerprint_sha256: firstFingerprint },
+      { asset_paths: secondPaths, fingerprint_sha256: secondFingerprint },
+    ])
+    expect(evidence.preview_assets.asset_groups.mobile).toEqual({ state_count: 2, asset_set_indexes: [0, 1] })
+    expect(evidence.states.map(candidate => candidate.preview_assets.asset_set_index)).toEqual([0, 1])
+    expect(evidence.states.map(candidate => (
+      assetSets[candidate.preview_assets.asset_set_index]
+    ))).toEqual([
+      { asset_paths: firstPaths, fingerprint_sha256: firstFingerprint },
+      { asset_paths: secondPaths, fingerprint_sha256: secondFingerprint },
+    ])
   })
 
   it('keeps complete four-state hit, asset, error, mutation, and late-blocker evidence below the output bound', () => {
@@ -1065,6 +1230,13 @@ describe('Detail grid containment gate contracts', () => {
       tag,
       text: tag,
     })
+    const uniquePayload = (seed, length) => {
+      let value = ''
+      for (let index = 0; value.length < length; index += 1) {
+        value += createHash('sha256').update(`${seed}:${index}`).digest('base64url')
+      }
+      return value.slice(0, length)
+    }
     const contactLabels = ['Gọi điện', 'Zalo', 'Chỉ đường']
     const bottomNavLabels = ['Trang chủ', 'Khám phá', 'Gần bạn', 'Lịch trình', 'Tài khoản']
     const themeBinding = {
@@ -1173,22 +1345,13 @@ describe('Detail grid containment gate contracts', () => {
         close_hit: stableHit('button.lb-close'),
         closed: true,
       },
-      console_errors: [
-        {
-          source: 'network',
-          message: 'Failed to load resource: the server responded with a status of 503 (Service Unavailable)',
-          url: 'http://127.0.0.1:3000/api/entities/cong-vien-an-hoi/feed?limit=5',
-          allowed_reason: 'sqlite-lightweight-entity-feed-503',
-        },
-        {
-          source: 'network',
-          message: 'Failed to load resource: the server responded with a status of 503 (Service Unavailable)',
-          url: 'http://127.0.0.1:3000/api/entities/cong-vien-an-hoi/feed?page=1&limit=10',
-          allowed_reason: 'sqlite-lightweight-entity-feed-503',
-        },
-        { source: 'console', message: 'late global failure', url: '', allowed_reason: '' },
-      ],
-      relevant_console_errors: [{ source: 'console', message: 'late global failure', url: '', allowed_reason: '' }],
+      console_errors: Array.from({ length: 8 }, (_, index) => ({
+        source: 'network',
+        message: `${viewportName}-${theme}-${index}-${uniquePayload(`message-${viewportName}-${theme}-${index}`, 220)}`,
+        url: `http://127.0.0.1:3000/api/evidence/${viewportName}/${theme}/${index}?detail=${uniquePayload(`url-${viewportName}-${theme}-${index}`, 160)}`,
+        allowed_reason: `expected-${viewportName}-${theme}-${index}`,
+      })),
+      relevant_console_errors: [],
       failures: [],
     })
     const states = [
@@ -1226,11 +1389,19 @@ describe('Detail grid containment gate contracts', () => {
     const beforeBytes = Buffer.byteLength(JSON.stringify(evidence, null, 2) + '\n')
     expect(beforeBytes).toBeGreaterThan(maxEvidenceBytes)
 
-    compactGateEvidence(evidence)
+    expect(typeof gateCore.serializeBoundedGateEvidence).toBe('function')
+    if (typeof gateCore.serializeBoundedGateEvidence !== 'function') return
 
-    const afterBytes = Buffer.byteLength(JSON.stringify(evidence, null, 2) + '\n')
-    expect(afterBytes).toBeLessThanOrEqual(maxEvidenceBytes - targetHeadroomBytes)
-    for (const state of evidence.states) {
+    const output = gateCore.serializeBoundedGateEvidence(evidence, maxEvidenceBytes)
+    const serializedBytes = Buffer.byteLength(output)
+    const compactedPrettyBytes = Buffer.byteLength(JSON.stringify(evidence, null, 2) + '\n')
+    const parsed = JSON.parse(output)
+
+    expect(compactedPrettyBytes).toBeGreaterThan(maxEvidenceBytes)
+    expect(serializedBytes).toBeLessThanOrEqual(maxEvidenceBytes - targetHeadroomBytes)
+    expect(output).toBe(JSON.stringify(evidence) + '\n')
+    expect(parsed).toEqual(evidence)
+    for (const state of parsed.states) {
       expect(state.geometry.contact.controls.map(control => control.text)).toEqual(contactLabels)
       expect(state.geometry.contact.controls).toHaveLength(3)
       expect(state.geometry.bottom_nav.items.map(item => item.text)).toEqual(bottomNavLabels)
@@ -1245,16 +1416,13 @@ describe('Detail grid containment gate contracts', () => {
           required_consecutive: 3,
         })
       }
-      const consoleErrors = state.console_error_indexes.map(index => evidence.console_error_catalog[index])
-      expect(consoleErrors).toHaveLength(3)
-      expect(consoleErrors.map(entry => entry.allowed_reason)).toEqual([
-        'sqlite-lightweight-entity-feed-503',
-        'sqlite-lightweight-entity-feed-503',
-        '',
-      ])
-      expect(state.relevant_console_error_indexes.map(index => evidence.console_error_catalog[index])).toEqual([
-        { source: 'console', message: 'late global failure', url: '', allowed_reason: '' },
-      ])
+      const consoleErrors = state.console_error_indexes.map(index => parsed.console_error_catalog[index])
+      expect(consoleErrors).toHaveLength(8)
+      expect(consoleErrors.map(entry => entry.allowed_reason)).toEqual(Array.from(
+        { length: 8 },
+        (_, index) => `expected-${state.viewport_name}-${state.theme}-${index}`,
+      ))
+      expect(state.relevant_console_error_indexes).toEqual([])
       expect(state.mutation).toMatchObject({
         name: 'mobile-main-auto-min-width',
         declared_min_width: 'auto',
@@ -1270,28 +1438,40 @@ describe('Detail grid containment gate contracts', () => {
         footer_padding_bottom_px: 201,
       })
     }
-    expect(evidence.preview_assets.asset_groups.mobile).toMatchObject({
-      asset_paths: [...mobileAssetPaths],
-      fingerprint_sha256: 'a'.repeat(64),
-    })
-    expect(evidence.preview_assets.asset_groups.desktop).toMatchObject({
-      asset_paths: [...desktopAssetPaths],
-      fingerprint_sha256: 'b'.repeat(64),
-    })
-    expect(evidence.verdict).toBe('fail')
-    expect(evidence.reasons.map(reason => reason.code)).toEqual(expect.arrayContaining([
+    expect(parsed.preview_assets.asset_groups.mobile).toEqual({ state_count: 2, asset_set_indexes: [0] })
+    expect(parsed.preview_assets.asset_groups.desktop).toEqual({ state_count: 2, asset_set_indexes: [1] })
+    expect(parsed.preview_assets.asset_sets).toEqual([
+      { asset_paths: [...mobileAssetPaths], fingerprint_sha256: 'a'.repeat(64) },
+      { asset_paths: [...desktopAssetPaths], fingerprint_sha256: 'b'.repeat(64) },
+    ])
+    expect(parsed.console_error_catalog).toHaveLength(32)
+    expect(parsed.verdict).toBe('fail')
+    expect(parsed.reasons.map(reason => reason.code)).toEqual(expect.arrayContaining([
       'revision-mismatch',
       'unexpected-error',
       'cleanup-failed',
     ]))
-    expect(evidence.reason_summary).toMatchObject({ total_count: 23, retained_count: 12, truncated_count: 11, truncated: true })
-    expect(evidence.reason_summary.blocker_codes).toEqual(expect.arrayContaining([
+    expect(parsed.reason_summary).toMatchObject({ total_count: 23, retained_count: 12, truncated_count: 11, truncated: true })
+    expect(parsed.reason_summary.blocker_codes).toEqual(expect.arrayContaining([
       'revision-mismatch',
       'unexpected-error',
       'cleanup-failed',
     ]))
-    expect(evidence.cleanup_errors).toEqual(['profile:owned profile still exists after removal'])
-    expect(evidence.cleanup).toEqual({ attempted: true, profile_removed: false, owned_processes_remaining: [4120] })
+    expect(parsed.cleanup_errors).toEqual(['profile:owned profile still exists after removal'])
+    expect(parsed.cleanup).toEqual({ attempted: true, profile_removed: false, owned_processes_remaining: [4120] })
+  })
+
+  it('keeps small evidence pretty and throws only when compact minified evidence exceeds the bound', () => {
+    expect(typeof gateCore.serializeBoundedGateEvidence).toBe('function')
+    if (typeof gateCore.serializeBoundedGateEvidence !== 'function') return
+
+    const small = { verdict: 'pass', states: [], reasons: [], cleanup_errors: [] }
+    expect(gateCore.serializeBoundedGateEvidence(small, 1024)).toBe(JSON.stringify(small, null, 2) + '\n')
+
+    const irreducible = { states: [], reasons: [], payload: 'x'.repeat(2048) }
+    expect(() => gateCore.serializeBoundedGateEvidence(irreducible, 512)).toThrow(
+      'bounded evidence exceeded byte limit',
+    )
   })
 })
 

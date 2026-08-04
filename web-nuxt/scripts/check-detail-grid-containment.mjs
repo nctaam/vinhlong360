@@ -15,7 +15,6 @@ import {
   collectAssetSetFailures,
   collectStateFailures,
   classifyBrowserError,
-  compactGateEvidence,
   finalizeGateEvidence,
   hasStableOwnedHit,
   isFreshNavigationState,
@@ -23,6 +22,7 @@ import {
   ownedBrowserProcessIds,
   recordGateReason as addReason,
   runCaptured,
+  serializeBoundedGateEvidence,
   terminateExactProcessIdentities,
   waitForStableCondition,
 } from './detail-grid-gate-core.mjs'
@@ -1491,12 +1491,7 @@ async function exerciseState({ cdp, baseUrl, databaseBackend, mutation, consoleE
 }
 
 function boundedJson(evidence) {
-  let json = JSON.stringify(evidence, null, 2) + '\n'
-  if (Buffer.byteLength(json) <= MAX_EVIDENCE_BYTES) return json
-  compactGateEvidence(evidence)
-  json = JSON.stringify(evidence, null, 2) + '\n'
-  if (Buffer.byteLength(json) > MAX_EVIDENCE_BYTES) throw new Error('bounded evidence exceeded byte limit')
-  return json
+  return serializeBoundedGateEvidence(evidence, MAX_EVIDENCE_BYTES)
 }
 
 async function run(args, evidence) {
