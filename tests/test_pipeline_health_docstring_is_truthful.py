@@ -31,11 +31,23 @@ def _is_called_by_production_code(symbol: str) -> bool:
     return False
 
 
+# Dòng vừa trích dẫn vừa bác bỏ một khẳng định cũ ("... — không đúng") không phải
+# là lời khẳng định của module. Guard chỉ xét các dòng khẳng định thật, nếu không
+# thì chính đoạn giải thích lịch sử sẽ bị bắt oan.
+_REFUTING_MARKERS = ("không đúng", "không còn", "trước đây", "docstring cũ", "cũ khẳng định")
+
+
+def _asserting_lines(docstring: str) -> list[str]:
+    return [
+        line for line in docstring.splitlines()
+        if CLAIM_RE.search(line) and not any(marker in line.lower() for marker in _REFUTING_MARKERS)
+    ]
+
+
 def test_pipeline_health_does_not_claim_a_wiring_it_does_not_have():
     docstring = _module_docstring(AGENT / "pipeline_health.py")
-    claims_health_wiring = bool(CLAIM_RE.search(docstring))
 
-    if claims_health_wiring:
+    if _asserting_lines(docstring):
         assert _is_called_by_production_code("pipeline_health"), (
             "docstring khẳng định module phục vụ /health nhưng không file production nào "
             "tham chiếu tới nó — hoặc nối vào thật, hoặc sửa docstring cho đúng"
