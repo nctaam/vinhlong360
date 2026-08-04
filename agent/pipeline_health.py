@@ -1,8 +1,17 @@
 """
 vinhlong360 — Unified Pipeline Health Check.
 
-Aggregates health probes from all AI pipeline subsystems into
-a single status report. Used by /health endpoint and monitoring.
+Aggregates health probes from all AI pipeline subsystems into a single status
+report.
+
+TRẠNG THÁI (kiểm chứng 2026-08-04): module này CHƯA được nối vào bất kỳ endpoint
+nào. Sáu handler /health trong server.py không gọi tới đây; tham chiếu duy nhất
+trong toàn repo là agent/tests/test_resilience.py. Docstring cũ ghi "Used by
+/health endpoint and monitoring" — không đúng, và đã khiến một đợt audit tin
+rằng hệ thống có giám sát pipeline trong khi thực tế không có.
+
+Muốn dùng thật thì phải gọi pipeline_health() từ một handler /health và bổ sung
+test cho đường đi đó; đừng dựa vào docstring để kết luận là đã có giám sát.
 """
 
 import logging
