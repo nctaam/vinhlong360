@@ -77,6 +77,16 @@ PG_REQUIRED_TABLES = {
     "entity_facility_details",
     "entity_person_details",
     "entity_adminplace_details",
+    # Tính năng tài khoản đã ship (migration 063-067). Thiếu nhóm này thì
+    # health-check vẫn xanh nhưng 2FA/thiết bị tin cậy/huy hiệu vỡ ngay lần
+    # gọi đầu — riêng 2FA là deploy gate, hỏng là khoá người dùng ra ngoài.
+    "user_2fa",
+    "pending_2fa",
+    "user_2fa_recovery_codes",
+    "trusted_devices",
+    "achievements",
+    "user_achievements",
+    "profile_views",
 }
 
 PG_REQUIRED_COLUMNS = {
