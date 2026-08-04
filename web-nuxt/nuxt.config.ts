@@ -147,7 +147,10 @@ export default defineNuxtConfig({
     // into the public runtime payload.
     apiBase,
     public: {
-      ndaMapKey: process.env.NDA_MAP_KEY || 'J2TnJ4JIEP3WTBnFwzVPAxTP7KKfW1OD',
+      // Nhánh public được serialize xuống trình duyệt trên mọi trang, nên không
+      // đặt khoá thật làm giá trị mặc định ở đây. Thiếu NDA_MAP_KEY thì bản đồ
+      // tự chạy nền OpenStreetMap (xem composables/useNDAMap.ts).
+      ndaMapKey: process.env.NDA_MAP_KEY || '',
       // Legacy launch switch remains closed by default. HTML robots metadata and
       // headers are now derived from the request-local launch safety decision.
       siteNoindex,

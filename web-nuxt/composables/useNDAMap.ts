@@ -68,7 +68,9 @@ export function useNDAMap() {
 
     const map = new maplibregl.Map({
       container,
-      style: getStyleUrl(mapOptions.theme ?? 'day'),
+      // Không có khoá tile thì đi thẳng vào nền OpenStreetMap thay vì bắn một
+      // request chắc chắn hỏng rồi mới rơi vào nhánh lỗi.
+      style: apiKey ? getStyleUrl(mapOptions.theme ?? 'day') : getFallbackStyle(mapOptions.theme ?? 'day') as any,
       center: mapOptions.center ?? [106.0, 10.25],
       zoom: mapOptions.zoom ?? 10,
       attributionControl: false,
