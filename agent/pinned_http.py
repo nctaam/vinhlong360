@@ -18,8 +18,9 @@ which locks the mapping):
 - ``crawler.fetch_page`` — same-origin tourism-source ingestion
 - ``geocode._query_nominatim`` — exact-origin Nominatim lookup
 - ``gpt55_quality_burst.fetch_url_text`` — quality-burst source verification
+- ``realtime.get_weather`` — exact-origin OpenWeatherMap lookup
 
-Other outbound callers (realtime, bot, moderation, DDGS,
+Other outbound callers (bot, moderation, DDGS,
 OpenAI clients) are deliberately NOT routed through here yet; that migration
 is tracked as residual egress debt, not an oversight.
 """

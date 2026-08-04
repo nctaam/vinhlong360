@@ -10,6 +10,7 @@ Cache: mỗi API response cache 30 phút để tránh rate limit.
 Fallback: nếu API không khả dụng, dùng seasonal data có sẵn.
 """
 
+import json
 import logging
 import os
 import time
@@ -18,6 +19,15 @@ from datetime import datetime, timedelta, timezone
 _VN_TZ = timezone(timedelta(hours=7))
 from pathlib import Path
 from threading import Lock
+from urllib.parse import urlencode
+
+from pinned_http import (
+    BlockedAddressError,
+    EgressPolicy,
+    PeerMismatchError,
+    PinnedHTTPClient,
+    RedirectPolicyError,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +35,20 @@ logger = logging.getLogger(__name__)
 
 WEATHER_API_KEY = os.environ.get("WEATHER_API_KEY", "")
 WEATHER_CACHE_TTL = 1800  # 30 minutes
+WEATHER_URL = "https://api.openweathermap.org/data/2.5/weather"
+WEATHER_ORIGIN = "https://api.openweathermap.org"
+WEATHER_USER_AGENT = "vinhlong360-weather/1.0"
+
+_WEATHER_EGRESS_POLICY = EgressPolicy(
+    max_encoded_bytes=64 * 1024,
+    max_decoded_bytes=256 * 1024,
+    accepted_encodings=("gzip", "identity"),
+    inactivity_timeout_seconds=10.0,
+    total_timeout_seconds=10.0,
+    max_redirects=2,
+    allowed_origins=(WEATHER_ORIGIN,),
+)
+_PINNED_HTTP = PinnedHTTPClient()
 
 # Coordinates for 3 areas
 AREA_COORDS = {
@@ -65,8 +89,6 @@ def get_weather(area: str = "vinh-long") -> dict | None:
     coords = AREA_COORDS.get(area, AREA_COORDS["vinh-long"])
 
     try:
-        import httpx
-        url = "https://api.openweathermap.org/data/2.5/weather"
         params = {
             "lat": coords["lat"],
             "lon": coords["lon"],
@@ -74,11 +96,16 @@ def get_weather(area: str = "vinh-long") -> dict | None:
             "units": "metric",
             "lang": "vi",
         }
-        resp = httpx.get(url, params=params, timeout=10)
-        data = resp.json()
+        resp = _PINNED_HTTP.get(
+            f"{WEATHER_URL}?{urlencode(params)}",
+            user_agent=WEATHER_USER_AGENT,
+            policy=_WEATHER_EGRESS_POLICY,
+            audit_context="realtime_weather",
+        )
 
         if resp.status_code != 200:
             return _fallback_weather(area)
+        data = json.loads(resp.content)
 
         result = {
             "area": area,
@@ -99,8 +126,14 @@ def get_weather(area: str = "vinh-long") -> dict | None:
 
         return result
 
-    except Exception:
-        logger.warning("Weather API failed for area %s, using fallback", area, exc_info=True)
+    except (BlockedAddressError, PeerMismatchError, RedirectPolicyError):
+        return _fallback_weather(area)
+    except Exception as exc:
+        logger.warning(
+            "Weather API failed for area %s, using fallback (%s)",
+            area,
+            type(exc).__name__,
+        )
         return _fallback_weather(area)
 
 

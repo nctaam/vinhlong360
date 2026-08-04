@@ -11,6 +11,7 @@ MAPPED_FETCHERS = {
     "agent/crawler.py": {"fetch_page"},
     "agent/geocode.py": {"_query_nominatim"},
     "agent/gpt55_quality_burst.py": {"fetch_url_text"},
+    "agent/realtime.py": {"get_weather"},
 }
 EXPECTED_AUDIT_CONTEXTS = {
     ("agent/admin.py", "_approve_fetch_image_data"): "admin_image_review",
@@ -18,6 +19,7 @@ EXPECTED_AUDIT_CONTEXTS = {
     ("agent/crawler.py", "fetch_page"): "crawler",
     ("agent/geocode.py", "_query_nominatim"): "geocode",
     ("agent/gpt55_quality_burst.py", "fetch_url_text"): "quality_burst",
+    ("agent/realtime.py", "get_weather"): "realtime_weather",
 }
 
 
@@ -62,6 +64,7 @@ def test_mapped_fetcher_registry_scope_is_exact() -> None:
         "agent/crawler.py": {"fetch_page"},
         "agent/geocode.py": {"_query_nominatim"},
         "agent/gpt55_quality_burst.py": {"fetch_url_text"},
+        "agent/realtime.py": {"get_weather"},
     }
 
 
@@ -83,7 +86,11 @@ def _audit_context_literals(path: Path, function_name: str) -> set[str]:
     for node in ast.walk(function):
         if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Attribute):
             continue
-        if node.func.attr != "get":
+        if (
+            node.func.attr != "get"
+            or not isinstance(node.func.value, ast.Name)
+            or node.func.value.id != "_PINNED_HTTP"
+        ):
             continue
         keyword = next((item for item in node.keywords if item.arg == "audit_context"), None)
         assert keyword is not None, f"{path}::{function_name} missing audit_context"
@@ -102,8 +109,6 @@ def test_mapped_fetchers_use_exact_audit_context_literals() -> None:
 # residual egress debt, explicitly out of scope for the P1 pinned tranche --
 # but the surface must not grow silently.
 KNOWN_UNPINNED_FETCHERS = {
-    # Outbound GETs that a future tranche can route through PinnedHTTPClient.
-    ("agent/realtime.py", "get_weather"),
     # Outbound POSTs to the Telegram bot API. PinnedHTTPClient is GET-only by
     # design, so these cannot migrate without widening that contract.
     ("agent/scheduler.py", "_digest_send"),

@@ -1923,9 +1923,14 @@ class TestRealtimeLogging:
         assert hasattr(realtime, "logger")
 
     def test_weather_api_failure_returns_fallback(self):
+        import pinned_http as ph
         import realtime
-        with patch.dict(os.environ, {"WEATHER_API_KEY": "fake_key"}):
-            with patch("httpx.get", side_effect=ConnectionError("API down")):
+        with patch.object(realtime, "WEATHER_API_KEY", "fake_key"):
+            with patch.object(
+                realtime._PINNED_HTTP,
+                "get",
+                side_effect=ph.PinnedTransportError("API down"),
+            ):
                 realtime._weather_cache.clear()
                 result = realtime.get_weather("vinh-long")
                 assert result is not None
