@@ -7,7 +7,8 @@
 `PASS` — toàn bộ cổng tự động và ma trận thị giác `16/16` đã được chấp nhận.
 
 - Ảnh và bằng chứng runtime được chụp trên code HEAD chính xác `074b42101b47903b142099589a8d80fb25253139` (`074b4210`) của nhánh `codex/tri-region-color`.
-- Commit closure chứa báo cáo này là commit con trực tiếp của `074b4210`; commit đó chỉ lưu bằng chứng QA, ba artifact debt/ratchet và hai dòng trạng thái, không thay đổi logic production hoặc test đã được chụp.
+- Commit closure `d28b063d` là commit con trực tiếp của `074b4210`; commit đó lưu bằng chứng QA, ba artifact debt/ratchet và hai dòng trạng thái, không thay đổi UI production hoặc backend đã được chụp.
+- Tại `074b4210`, ba file debt manifest/checker/test là protected-untracked harness đã được revalidate SHA; vì vậy clean checkout của riêng `074b4210` không chứa lệnh debt. Chúng được commit nguyên trạng trong `d28b063d`, rồi checker/test được harden bằng behavior-level fixtures trong fix round kế tiếp mà vẫn giữ toàn bộ source production ở đúng trạng thái `074b4210`.
 - Vì SHA của một commit không thể tự nằm trong nội dung của chính commit đó, SHA closure cuối cùng được ghi trong git history và báo cáo SDD `task-7-closure-commit-074b421-report.md`.
 - Nguồn runtime chung là bản Nuxt/Nitro build đúng revision, backend mới ở chế độ SQLite, cache trình duyệt tắt và profile Chrome mới cho từng trạng thái. Không cài dependency và không dùng mock UI.
 
@@ -69,15 +70,15 @@ Các ước lượng accent đều nằm trong biên bắt buộc: Homepage `9%`
 - Controller đã xem trực tiếp 16 candidate gốc và bốn contact sheet theo route: không blank page, overlay, clipping ngang, fixed-control overlap, ảnh nhìn thấy bị thiếu, primary action bị che, loading state cũ hoặc chữ trên ảnh không đọc được.
 - Phần chip Search mobile lộ một phần là continuation cue ngang có chủ ý, không phải page/grid overflow hoặc scroll trap.
 
-## Bằng chứng tự động trên code HEAD `074b4210`
+## Bằng chứng tự động và provenance
 
-- Contrast audit: `82/82 PASS`.
-- Debt checker: `PASS`; ratchet artifact được bảo vệ và không làm tăng raw hex/legacy primary debt.
-- Exact serial Task 7: `16` files, `203/203 PASS` với `--maxWorkers=1`.
-- `npm run typecheck`: PASS; `node --check` cho `detail-grid-gate-core.mjs` và `check-detail-grid-containment.mjs`: PASS; `git diff --check`: PASS; hard-ratchet hook: `hard=0`, không tăng ratchet.
-- Nuxt/Nitro build: PASS; `.output/server/index.mjs` tồn tại. Manifest `1,240` bytes, SHA-256 `BFA717920BA6B64664C967251631FE1808624B69B604F33A793255D488976E11`, có `build_revision=074b42101b47903b142099589a8d80fb25253139`, route revision `launch-indexing-policy-v1`, AI disclosure revision `ai-disclosure-v1` và cache purge đã xác minh.
+- Production/runtime code HEAD `074b4210`: contrast audit `82/82 PASS`; `npm run typecheck`, hai syntax check cho Detail gate, `git diff --check` và hard-ratchet đều PASS; Nuxt/Nitro build PASS và `.output/server/index.mjs` tồn tại.
+- Exact build manifest tại `074b4210`: `1,240` bytes, SHA-256 `BFA717920BA6B64664C967251631FE1808624B69B604F33A793255D488976E11`, `build_revision=074b42101b47903b142099589a8d80fb25253139`, route revision `launch-indexing-policy-v1`, AI disclosure revision `ai-disclosure-v1`, cache purge đã xác minh.
 - Detail normal gate: exit `0`, verdict `pass`, reasons `0/0/0`, `blocker_codes=[]`, `cleanup_errors=[]`, `owned_processes_remaining=[]`, `profile_removed=true`; mobile body `390/390`, main `350/350`, overflow `0`; ContactWidget/bottom-nav intersection `0`.
 - Detail intentional mutation `mobile-main-auto-min-width`: gate exit `1` đúng fail-closed, verdict `fail`, reasons `26/12/14`; mutation `.detail-main { min-width:auto !important }` được chứng minh. Mobile body `390/1400`, overflow khác `0` là `1010px`, main `1380px`; desktop body overflow `872px`; cleanup vẫn sạch với `cleanup_errors=[]`, `owned_processes_remaining=[]`, `profile_removed=true`.
+- Closure harness trên production-equivalent tree: source UI/backend vẫn byte-identical với `074b4210`; checker và ratchet test là artifact closure từ `d28b063d` được harden trong fix round.
+- Debt checker fresh: `PASS`; `catalog.css legacyPrimary 58/58`, `detail.css 45/45`, shared `103/103`, raw hex shared `25/25`. Dependency `--AREA-rgb: var(--primary-rgb)` được tính; manifest phải có exact 20-path set, budget số nguyên không âm và đúng approved ceiling; chỉ bốn compatibility alias property→target trong `tri-region-color.css` được exempt.
+- Exact serial Task 7 fresh sau hardening: `16/16` files, `215/215 PASS` với `--maxWorkers=1`, duration `144.31s`. Đây là kết quả mới thay thế số `203/203` cũ vốn chỉ thuộc implementation commit `a94d85e2`.
 
 ## Review độc lập
 
@@ -100,6 +101,7 @@ Các ước lượng accent đều nằm trong biên bắt buộc: Homepage `9%`
 - Task 7 Detail clipping/gate remediation: `7f8ef150`, `a82bfb0a`, `9e3d3c0f`, `24e9dec6`, `f189fbd5`, `bef2e02e`, `b9ac10a0`, `a9ab2c66`, `85896c8f`, `ee16eecd`, `dff96ab1`.
 - Task 7 ContactWidget/feed/evidence remediation: `3cad85e2`, `faed0123`, `a94d85e2`, `df0c8986`, `074b4210` (accepted code HEAD `074b4210`).
 - Task 7 closure artifact commit: commit con trực tiếp của `074b4210`, gồm đúng 22 path closure được liệt kê trong plan/brief.
+- Task 7 closure fix round 1: harden debt checker/test và sửa exact serial/provenance report trên nền `d28b063d`; SHA fix được ghi trong git history và SDD implementation report vì commit không thể tự tham chiếu SHA của chính nó.
 
 ## Cleanup và rủi ro Minor còn lại
 
