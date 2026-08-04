@@ -174,6 +174,16 @@ export default defineNuxtConfig({
 
   experimental: {
     viewTransition: true,
+    defaults: {
+      nuxtLink: {
+        // Mặc định của Nuxt là prefetch mọi link vừa lọt viewport, nên trang chủ
+        // kéo sẵn JS/CSS của hàng chục route khác. Với người dùng 3G/4G ở nông thôn
+        // đó là băng thông trả cho thứ họ chưa bấm. Chuyển sang prefetch khi có
+        // ý định thật (hover/focus) — vẫn kịp trước cú click, không tải mù.
+        prefetch: true,
+        prefetchOn: { visibility: false, interaction: true },
+      },
+    },
   },
 
   vite: {
