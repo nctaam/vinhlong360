@@ -1403,6 +1403,9 @@ export function compactGateEvidence(evidence) {
   compactAssetEvidence(evidence)
   compactConsoleEvidence(evidence)
   const reasons = evidence.reasons || []
+  const previousSummary = evidence.reason_summary && typeof evidence.reason_summary === 'object'
+    ? evidence.reason_summary
+    : {}
   const blockerReasons = reasons.filter(reason => !/^(?:mobile|desktop):/u.test(String(reason?.code || '')))
   const retainedBlockers = blockerReasons.slice(0, 12)
   const retainedStateReasons = reasons
@@ -1410,12 +1413,25 @@ export function compactGateEvidence(evidence) {
     .slice(0, Math.max(0, 12 - retainedBlockers.length))
   const retained = new Set([...retainedStateReasons, ...retainedBlockers])
   evidence.reasons = reasons.filter(reason => retained.has(reason)).slice(0, 12)
+  const totalCount = Math.max(
+    reasons.length,
+    Number.isInteger(previousSummary.total_count) ? previousSummary.total_count : 0,
+  )
+  const truncatedCount = Math.max(
+    0,
+    totalCount - evidence.reasons.length,
+    Number.isInteger(previousSummary.truncated_count) ? previousSummary.truncated_count : 0,
+  )
+  const blockerCodes = [...new Set([
+    ...(Array.isArray(previousSummary.blocker_codes) ? previousSummary.blocker_codes : []),
+    ...blockerReasons.map(reason => String(reason?.code || '')).filter(Boolean),
+  ])]
   evidence.reason_summary = {
-    total_count: reasons.length,
+    total_count: totalCount,
     retained_count: evidence.reasons.length,
-    truncated_count: Math.max(0, reasons.length - evidence.reasons.length),
-    truncated: reasons.length > evidence.reasons.length,
-    blocker_codes: blockerReasons.map(reason => String(reason?.code || '')).filter(Boolean),
+    truncated_count: truncatedCount,
+    truncated: Boolean(previousSummary.truncated) || truncatedCount > 0,
+    blocker_codes: blockerCodes,
   }
   return evidence
 }

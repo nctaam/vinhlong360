@@ -1001,6 +1001,52 @@ describe('Detail grid containment gate contracts', () => {
     ]))
   })
 
+  it('preserves the original reason summary and late blockers across repeated compact serialization', () => {
+    const makeEvidence = () => {
+      const evidence = { states: [], reasons: [], cleanup_errors: [] }
+      for (let index = 0; index < 20; index += 1) {
+        gateCore.recordGateReason(
+          evidence,
+          `mobile:nocturne:state-${index}`,
+          `state failure ${index} ${'s'.repeat(260)}`,
+        )
+      }
+      gateCore.recordGateReason(evidence, 'revision-mismatch', `manifest differs ${'r'.repeat(260)}`)
+      gateCore.recordGateReason(evidence, 'unexpected-error', `late global failure ${'u'.repeat(260)}`)
+      evidence.cleanup_errors.push('profile:owned profile still exists after removal')
+      gateCore.finalizeGateEvidence(evidence)
+      return evidence
+    }
+    const expectedSummary = {
+      total_count: 23,
+      retained_count: 12,
+      truncated_count: 11,
+      truncated: true,
+      blocker_codes: ['revision-mismatch', 'unexpected-error', 'cleanup-failed'],
+    }
+    const expectedBlockers = [
+      { code: 'revision-mismatch', message: `manifest differs ${'r'.repeat(260)}` },
+      { code: 'unexpected-error', message: `late global failure ${'u'.repeat(260)}` },
+      { code: 'cleanup-failed', message: 'owned Chrome resources were not fully cleaned up' },
+    ]
+
+    const compacted = makeEvidence()
+    compactGateEvidence(compacted)
+    compactGateEvidence(compacted)
+
+    expect(compacted.reason_summary).toEqual(expectedSummary)
+    expect(compacted.reasons.filter(reason => !reason.code.startsWith('mobile:'))).toEqual(expectedBlockers)
+
+    const serialized = makeEvidence()
+    const first = JSON.parse(gateCore.serializeBoundedGateEvidence(serialized, 4096))
+    const second = JSON.parse(gateCore.serializeBoundedGateEvidence(serialized, 4096))
+
+    expect(first.reason_summary).toEqual(expectedSummary)
+    expect(second.reason_summary).toEqual(expectedSummary)
+    expect(second.reason_summary.blocker_codes).toEqual(first.reason_summary.blocker_codes)
+    expect(second.reasons.filter(reason => !reason.code.startsWith('mobile:'))).toEqual(expectedBlockers)
+  })
+
   it('compacts repeated per-state assets while preserving the exact global set and all target/error evidence', () => {
     const assetPaths = ['/_nuxt/app.hash.js', '/_nuxt/detail.hash.css']
     const evidence = {
