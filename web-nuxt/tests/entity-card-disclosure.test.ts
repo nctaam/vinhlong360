@@ -59,6 +59,34 @@ const globals = {
 }
 
 describe('EntityCard image disclosure', () => {
+  it('renders two encoded navigation surfaces inside an article card without outer link ownership', async () => {
+    const wrapper = await mountSuspended(EntityCard, {
+      props: {
+        entity: entity({
+          id: 'craft/place 1',
+          type: 'craft_village',
+          name: 'Làng nghề ven sông',
+        }),
+      },
+      global: globals,
+    })
+
+    expect(wrapper.element.tagName).toBe('ARTICLE')
+    expect(wrapper.classes()).toContain('card')
+    expect(wrapper.classes()).toContain('cat-craft')
+
+    const links = wrapper.findAll('a')
+    expect(links).toHaveLength(2)
+    expect([
+      wrapper.get('a.card-cover-link').attributes('href'),
+      wrapper.get('a.card-body-link').attributes('href'),
+    ]).toEqual([
+      '/dia-diem/craft%2Fplace%201',
+      '/dia-diem/craft%2Fplace%201',
+    ])
+    expect(wrapper.element.querySelector('a a')).toBeNull()
+  })
+
   it('shows one honest source mark and a typed material accent only for the Tri-Region recipe', async () => {
     const withoutRecipe = await mountSuspended(EntityCard, {
       props: { entity: entity({ type: 'craft_village', quality: { source_tier: 'gold' } }) },

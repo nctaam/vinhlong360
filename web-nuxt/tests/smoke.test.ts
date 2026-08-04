@@ -355,10 +355,6 @@ describe('UserCP regressions', () => {
     expect(src('components/PostCard.vue')).toContain('entityPath(post.entity_id)')
     expect(src('components/PostCard.vue')).toContain('userPath(post.username || post.user_id)')
     const entityCard = src('components/EntityCard.vue')
-    expect(entityCard).toContain('const cardPath = computed(() => entityPath(props.entity.id))')
-    expect(entityCard).toContain('<article :class="[\'card\'')
-    expect(entityCard).toContain('class="card-cover-link"')
-    expect(entityCard).not.toContain('<NuxtLink :to="entityPath(entity.id)" :class="[\'card\'')
     // Story Card (Wave 1 keystone): serif name, dateline eyebrow, tri-province rule, story teaser, grain
     expect(entityCard).toContain('entityStoryTeaser')
     expect(entityCard).toContain('class="card-rule"')
