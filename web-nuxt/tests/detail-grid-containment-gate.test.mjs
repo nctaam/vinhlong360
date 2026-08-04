@@ -1000,7 +1000,7 @@ describe('Detail grid containment gate contracts', () => {
     ]))
   })
 
-  it('compacts repeated per-state assets while preserving the exact global asset set', () => {
+  it('compacts repeated per-state assets while preserving the exact global set and all target/error evidence', () => {
     const assetPaths = ['/_nuxt/app.hash.js', '/_nuxt/detail.hash.css']
     const evidence = {
       preview_assets: { asset_paths: assetPaths },
@@ -1020,13 +1020,278 @@ describe('Detail grid containment gate contracts', () => {
     compactGateEvidence(evidence)
 
     expect(evidence.preview_assets.asset_paths).toEqual(assetPaths)
-    expect(evidence.states[0].preview_assets).toMatchObject({ asset_paths: [], css_paths: [], js_paths: [], asset_set_recorded_globally: true })
-    expect(evidence.states[0].console_errors).toHaveLength(2)
-    expect(evidence.states[0].geometry.contact.controls).toHaveLength(2)
+    expect(evidence.states[0].preview_assets).toEqual({ asset_group: 'unknown', asset_set_recorded_globally: true })
+    expect(evidence.states[0].console_error_indexes).toEqual([0, 1, 2])
+    expect(evidence.states[0].relevant_console_error_indexes).toEqual([0, 1, 2])
+    expect(evidence.console_error_catalog).toEqual([{ message: 'one' }, { message: 'two' }, { message: 'three' }])
+    expect(evidence.states[0].geometry.contact.controls).toHaveLength(3)
     expect(evidence.reasons).toHaveLength(12)
     expect(evidence.reasons.map(reason => reason.code)).toEqual(expect.arrayContaining(['revision-mismatch', 'cleanup-failed']))
     expect(evidence.reason_summary).toMatchObject({ total_count: 16, retained_count: 12, truncated_count: 4, truncated: true })
     expect(evidence.reason_summary.blocker_codes).toEqual(expect.arrayContaining(['revision-mismatch', 'cleanup-failed']))
+  })
+
+  it('keeps complete four-state hit, asset, error, mutation, and late-blocker evidence below the output bound', () => {
+    const maxEvidenceBytes = 64 * 1024
+    const targetHeadroomBytes = 5 * 1024
+    const mobileAssetPaths = Object.freeze(Array.from({ length: 48 }, (_, index) => (
+      `/_nuxt/mobile-detail-${String(index).padStart(2, '0')}.${'a'.repeat(36)}.${index % 3 === 0 ? 'css' : 'js'}`
+    )))
+    const desktopAssetPaths = Object.freeze(Array.from({ length: 48 }, (_, index) => (
+      `/_nuxt/desktop-detail-${String(index).padStart(2, '0')}.${'b'.repeat(36)}.${index % 4 === 0 ? 'css' : 'js'}`
+    )))
+    const metric = (left, top, width, height) => ({
+      rect: { x: left, y: top, width, height, left, right: left + width, top, bottom: top + height },
+      client_width: width,
+      scroll_width: width,
+      overflow_px: 0,
+      min_width: '0px',
+      overflow_x: 'visible',
+      white_space: 'normal',
+      display: 'flex',
+      position: 'fixed',
+      visibility: 'visible',
+      z_index: '30',
+      bottom: '64px',
+      padding_bottom: '0px',
+    })
+    const stableHit = tag => ({
+      present: true,
+      visible: true,
+      belongs: true,
+      stable: true,
+      sample_count: 3,
+      required_consecutive: 3,
+      tag,
+      text: tag,
+    })
+    const contactLabels = ['Gọi điện', 'Zalo', 'Chỉ đường']
+    const bottomNavLabels = ['Trang chủ', 'Khám phá', 'Gần bạn', 'Lịch trình', 'Tài khoản']
+    const themeBinding = {
+      capture_started_before_navigation: true,
+      opposite_mode_seeded_before_navigation: true,
+      opposite_mode_confirmed_before_click: true,
+      target_control_hit_owned: true,
+      physical_transition_observed: true,
+      requested_mode_selected_before_finalize: true,
+      stable_readiness_before_finalize: true,
+      requested_mode_revalidated_after_finalize: true,
+      opposite_mode: 'light',
+      requested_mode: 'dark',
+      selected_mode: 'dark',
+    }
+    const makeState = (viewportName, theme, assetPaths, fingerprint) => ({
+      viewport_name: viewportName,
+      viewport: viewportName === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 1000 },
+      theme,
+      requested_mode: theme === 'nocturne' ? 'dark' : 'light',
+      selected_mode: theme === 'nocturne' ? 'dark' : 'light',
+      preview_assets: {
+        count: assetPaths.length,
+        unique_count: assetPaths.length,
+        asset_paths: [...assetPaths],
+        css_paths: assetPaths.filter(path => path.endsWith('.css')),
+        js_paths: assetPaths.filter(path => path.endsWith('.js')),
+        detail_css_path: assetPaths.find(path => path.endsWith('.css')),
+        fingerprint_sha256: fingerprint,
+        theme_binding: { ...themeBinding },
+      },
+      mutation: {
+        name: 'mobile-main-auto-min-width',
+        selector_matches: 1,
+        rule_selector: '.detail-main',
+        declared_min_width: 'auto',
+        declared_priority: 'important',
+        computed_min_width: 'auto',
+        source_guard_present: true,
+      },
+      geometry: {
+        viewport: viewportName === 'mobile'
+          ? { width: 390, height: 844, root_client_width: 390 }
+          : { width: 1440, height: 1000, root_client_width: 1440 },
+        class_name: theme === 'nocturne' ? 'dark' : 'light',
+        grid_template_columns: viewportName === 'mobile' ? '390px' : '900px 360px',
+        detail_body: metric(0, 0, viewportName === 'mobile' ? 390 : 1280, 2000),
+        main: metric(0, 0, viewportName === 'mobile' ? 390 : 900, 1900),
+        lead: metric(16, 420, viewportName === 'mobile' ? 358 : 868, 160),
+        description: metric(16, 600, viewportName === 'mobile' ? 358 : 868, 720),
+        aside: metric(viewportName === 'mobile' ? 0 : 920, 420, viewportName === 'mobile' ? 390 : 360, 760),
+        trust: metric(16, 1340, viewportName === 'mobile' ? 358 : 868, 260),
+        containment: {
+          main_in_body: true,
+          lead_in_body: true,
+          description_in_body: true,
+          aside_in_body: true,
+          trust_in_body: true,
+        },
+        page_overflow_px: 0,
+        hero: {
+          cover_rect: { x: 0, y: 0, width: 390, height: 260, left: 0, right: 390, top: 0, bottom: 260 },
+          image_rect: { x: 0, y: 0, width: 390, height: 260, left: 0, right: 390, top: 0, bottom: 260 },
+          image_loaded_class: true,
+          image_complete: true,
+          image_natural_width: 1600,
+          image_natural_height: 1067,
+          image_src: '/images/detail/cong-vien-an-hoi.webp',
+          image_in_cover: true,
+        },
+        actions: {
+          trip_rect: { x: 16, y: 300, width: 260, height: 48, left: 16, right: 276, top: 300, bottom: 348 },
+          photo_rect: { x: 292, y: 300, width: 82, height: 48, left: 292, right: 374, top: 300, bottom: 348 },
+          trip_control_count: 3,
+          trip_photo_intersection: { width: 0, height: 48, area: 0 },
+          photo_hit: stableHit('button.dc-photo-btn'),
+          trip_hits: ['Tạo lịch trình', 'Lưu', 'Chia sẻ'].map(label => stableHit(`button.trip-btn.${label}`)),
+        },
+        contact: {
+          metric: metric(0, 707, 390, 73),
+          controls: contactLabels.map((text, index) => ({
+            text,
+            metric: metric(index * 130, 707, 130, 73),
+            hit: stableHit(`a.cw-btn.contact-${index}`),
+          })),
+        },
+        bottom_nav: {
+          metric: metric(0, 780, 390, 64),
+          hit: stableHit('nav.public-bottom-nav'),
+          items: bottomNavLabels.map((text, index) => ({
+            text,
+            metric: metric(index * 78, 780, 78, 64),
+            hit: stableHit(`a.public-bottom-nav-item.nav-${index}`),
+          })),
+          contact_intersection: { width: 0, height: 0, area: 0 },
+        },
+        bottom_reservation: { required_px: 137, main_padding_bottom_px: 145, footer_padding_bottom_px: 201 },
+        sticky: { intended_contract: 'present-hidden', present: true, ...metric(0, 0, 0, 0), display: 'none' },
+      },
+      lightbox: {
+        opened: true,
+        aria_modal: true,
+        dialog_rect: { x: 20, y: 40, width: 350, height: 760, left: 20, right: 370, top: 40, bottom: 800 },
+        surface_visible: true,
+        media_visible: true,
+        close_hit: stableHit('button.lb-close'),
+        closed: true,
+      },
+      console_errors: [
+        {
+          source: 'network',
+          message: 'Failed to load resource: the server responded with a status of 503 (Service Unavailable)',
+          url: 'http://127.0.0.1:3000/api/entities/cong-vien-an-hoi/feed?limit=5',
+          allowed_reason: 'sqlite-lightweight-entity-feed-503',
+        },
+        {
+          source: 'network',
+          message: 'Failed to load resource: the server responded with a status of 503 (Service Unavailable)',
+          url: 'http://127.0.0.1:3000/api/entities/cong-vien-an-hoi/feed?page=1&limit=10',
+          allowed_reason: 'sqlite-lightweight-entity-feed-503',
+        },
+        { source: 'console', message: 'late global failure', url: '', allowed_reason: '' },
+      ],
+      relevant_console_errors: [{ source: 'console', message: 'late global failure', url: '', allowed_reason: '' }],
+      failures: [],
+    })
+    const states = [
+      makeState('mobile', 'nocturne', mobileAssetPaths, 'a'.repeat(64)),
+      makeState('mobile', 'parchment', mobileAssetPaths, 'a'.repeat(64)),
+      makeState('desktop', 'nocturne', desktopAssetPaths, 'b'.repeat(64)),
+      makeState('desktop', 'parchment', desktopAssetPaths, 'b'.repeat(64)),
+    ]
+    const evidence = {
+      preconditions: { database_backend: 'sqlite' },
+      mutation: 'mobile-main-auto-min-width',
+      states,
+      reasons: Array.from({ length: 20 }, (_, index) => ({
+        code: `mobile:nocturne:state-${index}`,
+        message: `state failure ${index}`,
+      })),
+      cleanup_errors: ['profile:owned profile still exists after removal'],
+      cleanup: { attempted: true, profile_removed: false, owned_processes_remaining: [4120] },
+      preview_assets: {
+        state_count: 4,
+        all_states_bound: true,
+        detail_css_path: mobileAssetPaths.find(path => path.endsWith('.css')),
+        asset_paths: [...mobileAssetPaths],
+        asset_groups: {
+          mobile: { state_count: 2, asset_paths: [...mobileAssetPaths], fingerprint_sha256: 'a'.repeat(64) },
+          desktop: { state_count: 2, asset_paths: [...desktopAssetPaths], fingerprint_sha256: 'b'.repeat(64) },
+        },
+        aggregate_fingerprint_sha256: 'c'.repeat(64),
+      },
+    }
+    gateCore.recordGateReason(evidence, 'revision-mismatch', 'manifest differs from expected revision')
+    gateCore.recordGateReason(evidence, 'unexpected-error', 'primary gate failure')
+    gateCore.finalizeGateEvidence(evidence)
+
+    const beforeBytes = Buffer.byteLength(JSON.stringify(evidence, null, 2) + '\n')
+    expect(beforeBytes).toBeGreaterThan(maxEvidenceBytes)
+
+    compactGateEvidence(evidence)
+
+    const afterBytes = Buffer.byteLength(JSON.stringify(evidence, null, 2) + '\n')
+    expect(afterBytes).toBeLessThanOrEqual(maxEvidenceBytes - targetHeadroomBytes)
+    for (const state of evidence.states) {
+      expect(state.geometry.contact.controls.map(control => control.text)).toEqual(contactLabels)
+      expect(state.geometry.contact.controls).toHaveLength(3)
+      expect(state.geometry.bottom_nav.items.map(item => item.text)).toEqual(bottomNavLabels)
+      expect(state.geometry.bottom_nav.items).toHaveLength(5)
+      for (const target of [...state.geometry.contact.controls, ...state.geometry.bottom_nav.items]) {
+        expect(target).toMatchObject({
+          present: true,
+          visible: true,
+          belongs: true,
+          stable: true,
+          sample_count: 3,
+          required_consecutive: 3,
+        })
+      }
+      const consoleErrors = state.console_error_indexes.map(index => evidence.console_error_catalog[index])
+      expect(consoleErrors).toHaveLength(3)
+      expect(consoleErrors.map(entry => entry.allowed_reason)).toEqual([
+        'sqlite-lightweight-entity-feed-503',
+        'sqlite-lightweight-entity-feed-503',
+        '',
+      ])
+      expect(state.relevant_console_error_indexes.map(index => evidence.console_error_catalog[index])).toEqual([
+        { source: 'console', message: 'late global failure', url: '', allowed_reason: '' },
+      ])
+      expect(state.mutation).toMatchObject({
+        name: 'mobile-main-auto-min-width',
+        declared_min_width: 'auto',
+        computed_min_width: 'auto',
+      })
+      expect(state.geometry.main.overflow_px).toBe(0)
+      expect(state.geometry.contact.metric.rect).toMatchObject({ width: 390, height: 73 })
+      expect(state.geometry.bottom_nav.metric.rect).toMatchObject({ width: 390, height: 64 })
+      expect(state.geometry.bottom_nav.contact_intersection.area).toBe(0)
+      expect(state.geometry.bottom_reservation).toEqual({
+        required_px: 137,
+        main_padding_bottom_px: 145,
+        footer_padding_bottom_px: 201,
+      })
+    }
+    expect(evidence.preview_assets.asset_groups.mobile).toMatchObject({
+      asset_paths: [...mobileAssetPaths],
+      fingerprint_sha256: 'a'.repeat(64),
+    })
+    expect(evidence.preview_assets.asset_groups.desktop).toMatchObject({
+      asset_paths: [...desktopAssetPaths],
+      fingerprint_sha256: 'b'.repeat(64),
+    })
+    expect(evidence.verdict).toBe('fail')
+    expect(evidence.reasons.map(reason => reason.code)).toEqual(expect.arrayContaining([
+      'revision-mismatch',
+      'unexpected-error',
+      'cleanup-failed',
+    ]))
+    expect(evidence.reason_summary).toMatchObject({ total_count: 23, retained_count: 12, truncated_count: 11, truncated: true })
+    expect(evidence.reason_summary.blocker_codes).toEqual(expect.arrayContaining([
+      'revision-mismatch',
+      'unexpected-error',
+      'cleanup-failed',
+    ]))
+    expect(evidence.cleanup_errors).toEqual(['profile:owned profile still exists after removal'])
+    expect(evidence.cleanup).toEqual({ attempted: true, profile_removed: false, owned_processes_remaining: [4120] })
   })
 })
 

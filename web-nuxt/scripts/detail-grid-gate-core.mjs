@@ -1163,17 +1163,154 @@ export function finalizeGateEvidence(evidence, { blocked = false } = {}) {
   return evidence
 }
 
+function compactHitEvidence(hit) {
+  if (!hit || typeof hit !== 'object') return {}
+  const fields = [
+    'present',
+    'visible',
+    'belongs',
+    'stable',
+    'sample_count',
+    'required_consecutive',
+    'tag',
+    'text',
+  ]
+  return Object.fromEntries(fields.filter(field => Object.hasOwn(hit, field)).map(field => [field, hit[field]]))
+}
+
+function compactOwnedTargets(targets) {
+  return (targets || []).map((target, index) => {
+    const hit = compactHitEvidence(target?.hit)
+    const text = String(target?.text || hit.text || '').slice(0, 60)
+    const { text: hitText, ...ownership } = hit
+    return {
+      index,
+      text,
+      ...ownership,
+      ...(hitText && hitText !== text ? { hit_text: hitText } : {}),
+    }
+  })
+}
+
+function compactConsoleEvidence(evidence) {
+  const catalog = []
+  const indexes = new Map()
+  const referenceEntries = entries => (entries || []).map(entry => {
+    const key = JSON.stringify(entry)
+    if (!indexes.has(key)) {
+      indexes.set(key, catalog.length)
+      catalog.push(entry)
+    }
+    return indexes.get(key)
+  })
+  for (const state of evidence.states || []) {
+    state.console_error_indexes = referenceEntries(state.console_errors)
+    state.relevant_console_error_indexes = referenceEntries(state.relevant_console_errors)
+    delete state.console_errors
+    delete state.relevant_console_errors
+  }
+  if (catalog.length > 0) evidence.console_error_catalog = catalog
+}
+
+function compactRectEvidence(rect) {
+  if (!rect || typeof rect !== 'object') return rect
+  const fields = ['width', 'height', 'left', 'top']
+  return Object.fromEntries(fields.filter(field => Object.hasOwn(rect, field)).map(field => [field, rect[field]]))
+}
+
+function compactContentMetricEvidence(metric) {
+  if (!metric || typeof metric !== 'object') return metric
+  const fields = [
+    'client_width',
+    'scroll_width',
+    'overflow_px',
+    'min_width',
+    'overflow_x',
+    'white_space',
+  ]
+  return {
+    rect: compactRectEvidence(metric.rect),
+    ...Object.fromEntries(fields.filter(field => Object.hasOwn(metric, field)).map(field => [field, metric[field]])),
+  }
+}
+
+function compactFixedLayerMetricEvidence(metric) {
+  if (!metric || typeof metric !== 'object') return metric
+  const fields = [
+    'client_width',
+    'scroll_width',
+    'overflow_px',
+    'display',
+    'position',
+    'visibility',
+    'z_index',
+    'bottom',
+    'padding_bottom',
+  ]
+  return {
+    rect: compactRectEvidence(metric.rect),
+    ...Object.fromEntries(fields.filter(field => Object.hasOwn(metric, field)).map(field => [field, metric[field]])),
+  }
+}
+
+function compactGeometryEvidence(geometry) {
+  if (!geometry || typeof geometry !== 'object') return geometry
+  for (const key of ['detail_body', 'main', 'lead', 'description', 'aside', 'trust']) {
+    if (geometry[key]) geometry[key] = compactContentMetricEvidence(geometry[key])
+  }
+  if (geometry.hero) {
+    geometry.hero.cover_rect = compactRectEvidence(geometry.hero.cover_rect)
+    geometry.hero.image_rect = compactRectEvidence(geometry.hero.image_rect)
+  }
+  if (geometry.actions) {
+    geometry.actions.trip_rect = compactRectEvidence(geometry.actions.trip_rect)
+    geometry.actions.photo_rect = compactRectEvidence(geometry.actions.photo_rect)
+    geometry.actions.photo_hit = compactHitEvidence(geometry.actions.photo_hit)
+    geometry.actions.trip_hits = (geometry.actions.trip_hits || []).map(compactHitEvidence)
+  }
+  if (geometry.contact) {
+    geometry.contact.metric = compactFixedLayerMetricEvidence(geometry.contact.metric)
+    geometry.contact.controls = compactOwnedTargets(geometry.contact.controls)
+  }
+  if (geometry.bottom_nav) {
+    geometry.bottom_nav.metric = compactFixedLayerMetricEvidence(geometry.bottom_nav.metric)
+    geometry.bottom_nav.hit = compactHitEvidence(geometry.bottom_nav.hit)
+    geometry.bottom_nav.items = compactOwnedTargets(geometry.bottom_nav.items)
+  }
+  if (geometry.sticky) {
+    const sticky = compactFixedLayerMetricEvidence(geometry.sticky)
+    geometry.sticky = {
+      intended_contract: geometry.sticky.intended_contract,
+      present: geometry.sticky.present,
+      ...sticky,
+    }
+  }
+  return geometry
+}
+
 export function compactGateEvidence(evidence) {
   for (const state of evidence.states || []) {
-    state.console_errors = (state.console_errors || []).slice(0, 2)
-    state.relevant_console_errors = (state.relevant_console_errors || []).slice(0, 2)
     if (state.preview_assets) {
-      state.preview_assets.asset_paths = []
-      state.preview_assets.css_paths = []
-      state.preview_assets.js_paths = []
+      delete state.preview_assets.asset_paths
+      delete state.preview_assets.css_paths
+      delete state.preview_assets.js_paths
+      delete state.preview_assets.count
+      delete state.preview_assets.unique_count
+      delete state.preview_assets.detail_css_path
+      delete state.preview_assets.fingerprint_sha256
+      state.preview_assets.asset_group = state.viewport_name || 'unknown'
       state.preview_assets.asset_set_recorded_globally = true
     }
-    if (state.geometry?.contact) state.geometry.contact.controls = (state.geometry.contact.controls || []).slice(0, 2)
+    state.geometry = compactGeometryEvidence(state.geometry)
+    if (state.lightbox) {
+      state.lightbox.dialog_rect = compactRectEvidence(state.lightbox.dialog_rect)
+      state.lightbox.close_hit = compactHitEvidence(state.lightbox.close_hit)
+    }
+  }
+  compactConsoleEvidence(evidence)
+  if (Object.keys(evidence.preview_assets?.asset_groups || {}).length > 0) {
+    delete evidence.preview_assets.asset_paths
+    evidence.preview_assets.asset_sets_recorded_by_viewport = true
   }
   const reasons = evidence.reasons || []
   const blockerReasons = reasons.filter(reason => !/^(?:mobile|desktop):/u.test(String(reason?.code || '')))
