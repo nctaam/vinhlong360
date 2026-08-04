@@ -1,5 +1,5 @@
 <template>
-  <section class="page threads-page">
+  <section class="page threads-page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng' }]" />
 
     <!-- Sổ tay hôm nay — masthead sống, không phải catalog-hero -->

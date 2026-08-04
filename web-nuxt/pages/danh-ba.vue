@@ -1,5 +1,5 @@
 ﻿<template>
-  <section class="page dir-page">
+  <section class="page dir-page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Danh bạ' }]" />
 
     <!-- Hero -->

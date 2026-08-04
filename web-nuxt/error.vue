@@ -1,5 +1,5 @@
 <template>
-  <div class="error-page">
+  <div class="error-page" data-color-system="tri-region-v1">
     <div class="error-content" role="alert">
       <div class="error-illust" aria-hidden="true">
         <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">

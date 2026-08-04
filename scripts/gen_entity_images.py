@@ -96,17 +96,54 @@ DEFAULT_PROMPT = (
 )
 
 
+# Type chung chung: nhiều bản ghi món ăn/quán ăn bị gán 'attraction' hoặc
+# 'history', nên nếu tin type một cách mù quáng thì một tô bún nhận prompt
+# "heritage site, architectural photography".
+_GENERIC_TYPES = {"attraction", "history", "facility", "organization", "place", ""}
+
+_DISH_WORDS = (
+    "bún", "hủ tiếu", "phở", "bánh", "cơm", "chè", "cháo", "lẩu", "gỏi", "nem",
+    "chả", "xôi", "mì ", "miến", "canh", "mắm", "kẹo", "bò kho", "vịt", "gà nướng",
+)
+_VENUE_WORDS = ("quán", "nhà hàng", "tiệm", "cà phê", "cafe", "coffee")
+
+# Một tỉnh Vĩnh Long từ 7/2025. Tên vùng cũ vẫn dùng được như địa danh để ảnh
+# giữ đặc trưng bản địa, nhưng không được gọi là "province".
+_AREA_PLACE = {"vinh-long": "Vinh Long", "ben-tre": "Ben Tre", "tra-vinh": "Tra Vinh"}
+
+
+def _subject_template(entity: dict) -> str:
+    etype = (entity.get("type") or "").strip()
+    name = (entity.get("name") or "").lower()
+
+    if etype in _GENERIC_TYPES:
+        if any(word in name for word in _DISH_WORDS):
+            return PROMPT_TEMPLATES["dish"]
+        if any(word in name for word in _VENUE_WORDS):
+            return PROMPT_TEMPLATES["restaurant"]
+    return PROMPT_TEMPLATES.get(etype, DEFAULT_PROMPT)
+
+
 def build_prompt(entity: dict) -> str:
-    etype = entity.get("type", "")
     name = entity.get("name", entity.get("id", "unknown"))
-    template = PROMPT_TEMPLATES.get(etype, DEFAULT_PROMPT)
-    prompt = template.format(name=name)
+    prompt = _subject_template(entity).format(name=name)
+
     area = entity.get("area", "")
-    if area and area not in prompt.lower():
-        area_label = {"vinh-long": "Vinh Long", "ben-tre": "Ben Tre",
-                      "tra-vinh": "Tra Vinh"}.get(area, area)
-        prompt += f", {area_label} province"
+    place = _AREA_PLACE.get(area)
+    if place and place != "Vinh Long" and place.lower() not in prompt.lower():
+        prompt += f", {place} area"
+    if "vinh long province" not in prompt.lower():
+        prompt += ", Vinh Long province, Vietnam"
     return prompt
+
+
+def entity_image_relpath(entity_id: str) -> str:
+    """Đường dẫn ghi vào entity.images — phải khớp đúng file thật trên đĩa."""
+    return f"/img/entities/{entity_id}.webp"
+
+
+def entity_image_file(entity_id: str):
+    return IMG_DIR / f"{entity_id}.webp"
 
 
 def _load_raw_entities():
@@ -151,7 +188,7 @@ def load_entities(entity_type=None, entity_id=None, skip_existing=True):
 
 
 def update_entity_image(entity_id: str, image_path: str):
-    rel_path = f"/img/entities/{entity_id}.jpg"
+    rel_path = entity_image_relpath(entity_id)
     try:
         from database import db
         entity = db.get_entity(entity_id)
@@ -201,7 +238,7 @@ def main():
         name = entity.get("name", eid)
         etype = entity.get("type", "?")
         prompt = build_prompt(entity)
-        out_path = IMG_DIR / f"{eid}.jpg"
+        out_path = entity_image_file(eid)
 
         print(f"\n[{i}/{total}] {eid} ({etype})")
         print(f"  Name: {name}")
