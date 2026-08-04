@@ -8,6 +8,54 @@ export function hasExactZeroMinWidth(declarations) {
   return /(?:^|;)\s*min-width\s*:\s*(?:0|0px)\s*(?:;|$)/iu.test(String(declarations || ''))
 }
 
+const SERVICE_UNAVAILABLE_MESSAGE = 'Failed to load resource: the server responded with a status of 503 (Service Unavailable)'
+
+export function normalizeReadinessBackend({ status, payload } = {}) {
+  const backend = payload?.checks?.schema_version?.backend
+  if (
+    status !== 200
+    || payload?.ready !== true
+    || payload?.checks?.database !== true
+    || payload?.checks?.schema !== true
+    || !['sqlite', 'postgres'].includes(backend)
+  ) return ''
+  return backend
+}
+
+function hasExactEntityFeedQuery(searchParams) {
+  if (searchParams.size === 1) {
+    return searchParams.getAll('limit').length === 1 && searchParams.get('limit') === '5'
+  }
+  return searchParams.size === 2
+    && searchParams.getAll('page').length === 1
+    && searchParams.get('page') === '1'
+    && searchParams.getAll('limit').length === 1
+    && searchParams.get('limit') === '10'
+}
+
+export function classifyBrowserError(entry, { baseUrl, databaseBackend } = {}) {
+  if (entry?.source !== 'network' || entry?.message !== SERVICE_UNAVAILABLE_MESSAGE) return ''
+  let parsed
+  let previewOrigin
+  try {
+    parsed = new URL(entry.url)
+    previewOrigin = new URL(baseUrl).origin
+  } catch {
+    return ''
+  }
+  if (parsed.origin !== previewOrigin) return ''
+  if (parsed.pathname === '/auth/me' && !parsed.search && !parsed.hash) {
+    return 'sqlite-lightweight-auth-me-503'
+  }
+  if (
+    databaseBackend === 'sqlite'
+    && parsed.pathname === '/api/entities/cong-vien-an-hoi/feed'
+    && !parsed.hash
+    && hasExactEntityFeedQuery(parsed.searchParams)
+  ) return 'sqlite-lightweight-entity-feed-503'
+  return ''
+}
+
 export function collectStateFailures(state) {
   const failures = []
   const relevantErrors = (state?.console_errors || []).filter(entry => !entry?.allowed_reason)
@@ -17,6 +65,7 @@ export function collectStateFailures(state) {
 
   const geometry = state?.geometry
   if (geometry) {
+    const mobile = state?.viewport_name === 'mobile' || Number(state?.viewport?.width || 0) <= 767
     if (geometry.viewport?.width !== state.viewport?.width || geometry.viewport?.height !== state.viewport?.height) {
       failures.push({ code: 'viewport-mismatch', message: 'rendered viewport differs from the requested viewport' })
     }
@@ -47,8 +96,44 @@ export function collectStateFailures(state) {
     if (tripHits.some(hit => !hit?.belongs)) {
       failures.push({ code: 'trip-hit-owner', message: 'one or more trip actions do not own their center hit target' })
     }
-    if (!(geometry.contact?.controls || []).length || geometry.contact.controls.some(control => !control?.hit?.belongs)) {
+    const contactControls = geometry.contact?.controls || []
+    if (
+      !contactControls.length
+      || contactControls.some(control => !control?.hit?.belongs || (mobile && control?.hit?.stable !== true))
+    ) {
       failures.push({ code: 'contact-hit-owner', message: 'one or more contact actions do not own their center hit target' })
+    }
+    if (mobile) {
+      const visible = metric => Boolean(
+        metric?.rect?.width > 0
+        && metric?.rect?.height > 0
+        && metric?.display !== 'none'
+        && metric?.visibility !== 'hidden'
+      )
+      if (!visible(geometry.contact?.metric)) {
+        failures.push({ code: 'contact-not-visible', message: 'mobile ContactWidget action bar is not visible' })
+      }
+      if (!visible(geometry.bottom_nav?.metric)) {
+        failures.push({ code: 'bottom-nav-not-visible', message: 'public bottom navigation is not visible' })
+      }
+      if ((geometry.bottom_nav?.contact_intersection?.area || 0) > 0) {
+        failures.push({ code: 'contact-bottom-nav-overlap', message: 'ContactWidget overlaps the public bottom navigation' })
+      }
+      const bottomNavItems = geometry.bottom_nav?.items || []
+      if (bottomNavItems.length !== 5) {
+        failures.push({ code: 'bottom-nav-items-missing', message: 'public bottom navigation must expose exactly five items' })
+      }
+      if (bottomNavItems.some(item => !item?.hit?.belongs || item?.hit?.stable !== true)) {
+        failures.push({ code: 'bottom-nav-hit-owner', message: 'one or more public bottom-navigation items do not own their center hit target' })
+      }
+      const requiredReservation = Number(geometry.bottom_reservation?.required_px || 0)
+      if (
+        requiredReservation <= 0
+        || Number(geometry.bottom_reservation?.main_padding_bottom_px || 0) + 1 < requiredReservation
+        || Number(geometry.bottom_reservation?.footer_padding_bottom_px || 0) + 1 < requiredReservation
+      ) {
+        failures.push({ code: 'bottom-stack-reservation', message: 'page or footer does not reserve the complete fixed mobile stack' })
+      }
     }
     const sticky = geometry.sticky
     const stickyPresent = sticky?.present ?? Boolean(sticky)

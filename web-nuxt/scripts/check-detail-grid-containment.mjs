@@ -14,10 +14,12 @@ import {
   cleanupOwnedProcessSet,
   collectAssetSetFailures,
   collectStateFailures,
+  classifyBrowserError,
   compactGateEvidence,
   finalizeGateEvidence,
   hasStableOwnedHit,
   isFreshNavigationState,
+  normalizeReadinessBackend,
   ownedBrowserProcessIds,
   recordGateReason as addReason,
   runCaptured,
@@ -143,6 +145,43 @@ function readManifest() {
     throw new GateError('manifest-invalid', 'local launch readiness manifest revision is invalid')
   }
   return revision
+}
+
+async function probeReadinessBackend(baseUrl) {
+  const requestedUrl = new URL('/health/ready', baseUrl)
+  let response
+  let payload = null
+  let error = ''
+  try {
+    response = await fetch(requestedUrl, { signal: AbortSignal.timeout(10000) })
+    payload = await response.json()
+  } catch (probeError) {
+    error = safeMessage(probeError)
+  }
+  let sameOrigin = false
+  let exactEndpoint = false
+  if (response?.url) {
+    try {
+      const finalUrl = new URL(response.url)
+      sameOrigin = finalUrl.origin === requestedUrl.origin
+      exactEndpoint = finalUrl.pathname === '/health/ready' && !finalUrl.search && !finalUrl.hash
+    } catch {
+      // Invalid final URLs never establish readiness authority.
+    }
+  }
+  const status = Number(response?.status || 0)
+  const backend = sameOrigin && exactEndpoint ? normalizeReadinessBackend({ status, payload }) : ''
+  return {
+    readiness_url: requestedUrl.toString(),
+    readiness_http_status: status,
+    readiness_same_origin: sameOrigin,
+    readiness_exact_endpoint: exactEndpoint,
+    readiness_ready: payload?.ready === true,
+    readiness_database_check: payload?.checks?.database === true,
+    readiness_schema_check: payload?.checks?.schema === true,
+    database_backend: backend,
+    readiness_error: error,
+  }
 }
 
 function nuxtAssetPath(baseUrl, value) {
@@ -905,11 +944,11 @@ async function hitTarget(cdp, selector, index = 0) {
   }, { selector, index })
 }
 
-async function waitForStableOwnedHit(cdp, selector, { requiredConsecutive = 3, timeoutMs = 3000 } = {}) {
+async function waitForStableOwnedHit(cdp, selector, { index = 0, requiredConsecutive = 3, timeoutMs = 3000 } = {}) {
   const deadline = Date.now() + timeoutMs
   const samples = []
   do {
-    const sample = await hitTarget(cdp, selector)
+    const sample = await hitTarget(cdp, selector, index)
     samples.push(sample)
     if (hasStableOwnedHit(samples, requiredConsecutive)) {
       return {
@@ -1140,6 +1179,9 @@ async function measureGeometry(cdp) {
         display: style.display,
         position: style.position,
         visibility: style.visibility,
+        z_index: style.zIndex,
+        bottom: style.bottom,
+        padding_bottom: style.paddingBottom,
       }
     }
     const hit = element => {
@@ -1166,6 +1208,10 @@ async function measureGeometry(cdp) {
     const photo = document.querySelector('.dc-photo-btn')
     const contact = document.querySelector('.detail-contact-widget')
     const contactControls = [...document.querySelectorAll('.detail-contact-widget .cw-btn')].slice(0, 4)
+    const bottomNav = document.querySelector('.public-bottom-nav')
+    const bottomNavItems = [...document.querySelectorAll('.public-bottom-nav-item')].slice(0, 8)
+    const shellMain = document.querySelector('.public-shell > main')
+    const footer = document.querySelector('.public-shell > .site-footer')
     const tripControls = [...document.querySelectorAll('.dc-trip .trip-btn')].slice(0, 4)
     const sticky = document.querySelector('.sticky-cta-bar')
     const root = document.documentElement
@@ -1179,6 +1225,8 @@ async function measureGeometry(cdp) {
     const trustRect = rect(trust)
     const tripRect = rect(trip)
     const photoRect = rect(photo)
+    const contactRect = rect(contact)
+    const bottomNavRect = rect(bottomNav)
     const within = (inner, outer) => Boolean(
       inner
       && outer
@@ -1231,6 +1279,22 @@ async function measureGeometry(cdp) {
         metric: metric(contact),
         controls: contactControls.map(control => ({ text: String(control.textContent || '').trim().slice(0, 50), metric: metric(control), hit: hit(control) })),
       },
+      bottom_nav: {
+        metric: metric(bottomNav),
+        hit: hit(bottomNav),
+        items: bottomNavItems.map(item => ({ text: String(item.textContent || '').trim().slice(0, 50), metric: metric(item), hit: hit(item) })),
+        contact_intersection: contactRect && bottomNavRect ? {
+          left: Math.max(contactRect.left, bottomNavRect.left),
+          right: Math.min(contactRect.right, bottomNavRect.right),
+          top: Math.max(contactRect.top, bottomNavRect.top),
+          bottom: Math.min(contactRect.bottom, bottomNavRect.bottom),
+        } : null,
+      },
+      bottom_reservation: {
+        required_px: Number(contactRect?.height || 0) + Number(bottomNavRect?.height || 0),
+        main_padding_bottom_px: parseFloat(shellMain ? getComputedStyle(shellMain).paddingBottom : '0') || 0,
+        footer_padding_bottom_px: parseFloat(footer ? getComputedStyle(footer).paddingBottom : '0') || 0,
+      },
       sticky: sticky
         ? { intended_contract: 'present-hidden', present: true, ...metric(sticky) }
         : { intended_contract: 'present-hidden', present: false, rect: null, display: '', visibility: '' },
@@ -1266,6 +1330,21 @@ function normalizeGeometry(geometry) {
       control.metric.overflow_px = rounded(control.metric.overflow_px)
     }
   }
+  if (geometry.bottom_nav.metric?.rect) geometry.bottom_nav.metric.rect = roundedRect(geometry.bottom_nav.metric.rect)
+  for (const item of geometry.bottom_nav.items) {
+    if (item.metric?.rect) item.metric.rect = roundedRect(item.metric.rect)
+    if (item.metric) {
+      item.metric.client_width = rounded(item.metric.client_width)
+      item.metric.scroll_width = rounded(item.metric.scroll_width)
+      item.metric.overflow_px = rounded(item.metric.overflow_px)
+    }
+  }
+  geometry.bottom_nav.contact_intersection = geometry.bottom_nav.contact_intersection
+    ? intersectionRect(geometry.contact.metric?.rect, geometry.bottom_nav.metric?.rect)
+    : null
+  geometry.bottom_reservation = Object.fromEntries(
+    Object.entries(geometry.bottom_reservation).map(([key, value]) => [key, rounded(value)]),
+  )
   return geometry
 }
 
@@ -1323,26 +1402,12 @@ function assertState(evidence, state, geometry) {
   }
 }
 
-function consoleEntry(params, baseUrl) {
+function consoleEntry(params, baseUrl, databaseBackend) {
   if (params.entry?.level === 'error') {
     const source = String(params.entry.source || 'log')
     const message = String(params.entry.text || '').trim()
     const url = String(params.entry.url || '')
-    let allowedReason = ''
-    try {
-      const parsed = new URL(url)
-      if (
-        source === 'network'
-        && parsed.origin === new URL(baseUrl).origin
-        && parsed.pathname === '/auth/me'
-        && !parsed.search
-        && /^Failed to load resource: the server responded with a status of 503 \(Service Unavailable\)$/u.test(message)
-      ) {
-        allowedReason = 'sqlite-lightweight-auth-me-503'
-      }
-    } catch {
-      // Non-URL console entries never receive the narrow QA-backend allowance.
-    }
+    const allowedReason = classifyBrowserError({ source, message, url }, { baseUrl, databaseBackend })
     return { source, message: safeMessage(message), url: url ? safeMessage(url) : '', allowed_reason: allowedReason }
   }
   if (params.message?.level === 'error') {
@@ -1359,7 +1424,7 @@ function consoleEntry(params, baseUrl) {
   return null
 }
 
-async function exerciseState({ cdp, baseUrl, mutation, consoleErrors, evidence, config }) {
+async function exerciseState({ cdp, baseUrl, databaseBackend, mutation, consoleErrors, evidence, config }) {
   const state = {
     viewport_name: config.viewport_name,
     viewport: { width: config.viewport.width, height: config.viewport.height },
@@ -1400,9 +1465,20 @@ async function exerciseState({ cdp, baseUrl, mutation, consoleErrors, evidence, 
   }
   state.lightbox = await exerciseLightbox(cdp)
   const contactControlCount = await evaluateFunction(cdp, () => document.querySelectorAll('.detail-contact-widget .cw-btn').length)
-  state.geometry.contact.controls = []
   for (let index = 0; index < contactControlCount; index += 1) {
-    state.geometry.contact.controls.push({ hit: await hitTarget(cdp, '.detail-contact-widget .cw-btn', index) })
+    const control = state.geometry.contact.controls[index] || {}
+    control.hit = state.viewport_name === 'mobile'
+      ? await waitForStableOwnedHit(cdp, '.detail-contact-widget .cw-btn', { index })
+      : await hitTarget(cdp, '.detail-contact-widget .cw-btn', index)
+    state.geometry.contact.controls[index] = control
+  }
+  const bottomNavItemCount = await evaluateFunction(cdp, () => document.querySelectorAll('.public-bottom-nav-item').length)
+  for (let index = 0; index < bottomNavItemCount; index += 1) {
+    const item = state.geometry.bottom_nav.items[index] || {}
+    item.hit = state.viewport_name === 'mobile'
+      ? await waitForStableOwnedHit(cdp, '.public-bottom-nav-item', { index })
+      : await hitTarget(cdp, '.public-bottom-nav-item', index)
+    state.geometry.bottom_nav.items[index] = item
   }
   await sleep(CONSOLE_DRAIN_MS)
   state.console_errors = consoleErrors.slice(consoleStart, consoleStart + MAX_CONSOLE_ERRORS)
@@ -1431,6 +1507,15 @@ async function run(args, evidence) {
       'manifest revision ' + evidence.manifest_revision + ' does not match expected revision ' + args.expectedRevision,
     )
   }
+  const readiness = await probeReadinessBackend(args.baseUrl)
+  Object.assign(evidence.preconditions, readiness)
+  if (!readiness.database_backend) {
+    throw new GateError(
+      'backend-readiness-unproven',
+      'same-origin /health/ready did not prove a ready SQLite or PostgreSQL backend'
+        + (readiness.readiness_error ? ': ' + readiness.readiness_error : ''),
+    )
+  }
   let chrome
   let cdp
   try {
@@ -1440,7 +1525,7 @@ async function run(args, evidence) {
     await cdp.connect()
     const consoleErrors = []
     const recordConsole = params => {
-      const entry = consoleEntry(params, args.baseUrl)
+      const entry = consoleEntry(params, args.baseUrl, readiness.database_backend)
       if (!entry || consoleErrors.length >= MAX_CONSOLE_ERRORS * STATE_CONFIGS.length * 2) return
       if (!consoleErrors.some(candidate => JSON.stringify(candidate) === JSON.stringify(entry))) consoleErrors.push(entry)
     }
@@ -1464,6 +1549,7 @@ async function run(args, evidence) {
       evidence.states.push(await exerciseState({
         cdp,
         baseUrl: args.baseUrl,
+        databaseBackend: readiness.database_backend,
         mutation: args.mutation,
         consoleErrors,
         evidence,
@@ -1562,7 +1648,18 @@ try {
     manifest_revision: '',
     route: ROUTE,
     mutation: '',
-    preconditions: { onboarding_seen_seeded: false },
+    preconditions: {
+      onboarding_seen_seeded: false,
+      readiness_url: '',
+      readiness_http_status: 0,
+      readiness_same_origin: false,
+      readiness_exact_endpoint: false,
+      readiness_ready: false,
+      readiness_database_check: false,
+      readiness_schema_check: false,
+      database_backend: '',
+      readiness_error: '',
+    },
     preview_assets: { state_count: 0, all_states_bound: false, detail_css_path: '', asset_paths: [], asset_groups: {}, aggregate_fingerprint_sha256: '' },
     states: [],
     reasons: [{ code: error instanceof GateError ? error.code : 'unexpected-error', message: safeMessage(error) }],
@@ -1584,7 +1681,18 @@ if (args?.help) {
     manifest_revision: '',
     route: ROUTE,
     mutation: args.mutation,
-    preconditions: { onboarding_seen_seeded: false },
+    preconditions: {
+      onboarding_seen_seeded: false,
+      readiness_url: '',
+      readiness_http_status: 0,
+      readiness_same_origin: false,
+      readiness_exact_endpoint: false,
+      readiness_ready: false,
+      readiness_database_check: false,
+      readiness_schema_check: false,
+      database_backend: '',
+      readiness_error: '',
+    },
     preview_assets: { state_count: 0, all_states_bound: false, detail_css_path: '', asset_paths: [], asset_groups: {}, aggregate_fingerprint_sha256: '' },
     states: [],
     reasons: [],

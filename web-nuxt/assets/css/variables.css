@@ -92,6 +92,9 @@
   --radius-surface: 12px;
   --radius-sheet: 20px;
   --shell-public-header-height: 150px;
+  --shell-public-bottom-nav-reserved-height: calc(64px + max(0px, calc(env(safe-area-inset-bottom, 0px) - 5px)));
+  --contact-widget-mobile-reserved-height: calc(var(--contact-cta-height) + var(--space-6) + 1px);
+  --shell-mobile-fixed-stack-reserved-height: calc(var(--shell-public-bottom-nav-reserved-height) + var(--contact-widget-mobile-reserved-height));
   --shell-admin-sidebar-width: 272px;
   --shell-admin-sidebar-collapsed-width: 76px;
   /* ── TẦNG 1: PRIMITIVE — thang màu thô, đặt tên theo cảnh quan Tây Nam Bộ ── */

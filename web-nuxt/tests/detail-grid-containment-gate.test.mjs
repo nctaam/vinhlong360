@@ -67,6 +67,73 @@ describe('Detail grid containment gate contracts', () => {
     expect(failures).toEqual([])
   })
 
+  it('normalizes only a fully ready SQLite or PostgreSQL readiness authority', () => {
+    expect(typeof gateCore.normalizeReadinessBackend).toBe('function')
+    const { normalizeReadinessBackend } = gateCore
+    const validChecks = {
+      database: true,
+      schema: true,
+      schema_version: { backend: 'sqlite' },
+    }
+
+    expect(normalizeReadinessBackend({ status: 200, payload: { ready: true, checks: validChecks } })).toBe('sqlite')
+    expect(normalizeReadinessBackend({
+      status: 200,
+      payload: { ready: true, checks: { ...validChecks, schema_version: { backend: 'postgres' } } },
+    })).toBe('postgres')
+
+    for (const candidate of [
+      { status: 503, payload: { ready: true, checks: validChecks } },
+      { status: 200, payload: { ready: false, checks: validChecks } },
+      { status: 200, payload: { ready: true, checks: { ...validChecks, database: false } } },
+      { status: 200, payload: { ready: true, checks: { ...validChecks, schema: false } } },
+      { status: 200, payload: { ready: true, checks: { ...validChecks, schema_version: { backend: 'postgresql' } } } },
+      { status: 200, payload: { ready: true, checks: { ...validChecks, schema_version: null } } },
+      { status: 200, payload: null },
+    ]) {
+      expect(normalizeReadinessBackend(candidate)).toBe('')
+    }
+  })
+
+  it('classifies only the two exact same-origin entity-feed 503s when readiness proves SQLite', () => {
+    expect(typeof gateCore.classifyBrowserError).toBe('function')
+    const { classifyBrowserError } = gateCore
+    const message = 'Failed to load resource: the server responded with a status of 503 (Service Unavailable)'
+    const context = { baseUrl: 'http://127.0.0.1:4177', databaseBackend: 'sqlite' }
+    const classify = entry => classifyBrowserError(entry, context)
+
+    expect(classify({
+      source: 'network',
+      message,
+      url: 'http://127.0.0.1:4177/api/entities/cong-vien-an-hoi/feed?limit=5',
+    })).toBe('sqlite-lightweight-entity-feed-503')
+    expect(classify({
+      source: 'network',
+      message,
+      url: 'http://127.0.0.1:4177/api/entities/cong-vien-an-hoi/feed?limit=10&page=1',
+    })).toBe('sqlite-lightweight-entity-feed-503')
+
+    const rejected = [
+      [{ source: 'network', message, url: 'http://127.0.0.1:4177/api/entities/cong-vien-an-hoi/feed?limit=5' }, { ...context, databaseBackend: '' }],
+      [{ source: 'network', message, url: 'http://127.0.0.1:4177/api/entities/cong-vien-an-hoi/feed?limit=5' }, { ...context, databaseBackend: 'postgres' }],
+      [{ source: 'console', message, url: 'http://127.0.0.1:4177/api/entities/cong-vien-an-hoi/feed?limit=5' }, context],
+      [{ source: 'network', message, url: 'http://example.test/api/entities/cong-vien-an-hoi/feed?limit=5' }, context],
+      [{ source: 'network', message, url: 'http://127.0.0.1:4177/api/entities/other/feed?limit=5' }, context],
+      [{ source: 'network', message, url: 'http://127.0.0.1:4177/api/entities/cong-vien-an-hoi/feed/extra?limit=5' }, context],
+      [{ source: 'network', message: 'Failed to load resource: the server responded with a status of 500 (Internal Server Error)', url: 'http://127.0.0.1:4177/api/entities/cong-vien-an-hoi/feed?limit=5' }, context],
+      [{ source: 'network', message, url: 'http://127.0.0.1:4177/api/entities/cong-vien-an-hoi/feed' }, context],
+      [{ source: 'network', message, url: 'http://127.0.0.1:4177/api/entities/cong-vien-an-hoi/feed?limit=10' }, context],
+      [{ source: 'network', message, url: 'http://127.0.0.1:4177/api/entities/cong-vien-an-hoi/feed?page=1&limit=10&sort=newest' }, context],
+      [{ source: 'network', message, url: 'http://127.0.0.1:4177/api/entities/cong-vien-an-hoi/feed?page=1&page=1&limit=10' }, context],
+      [{ source: 'network', message, url: 'http://127.0.0.1:4177/api/entities/cong-vien-an-hoi/feed?limit=5&limit=5' }, context],
+      [{ source: 'exception', message: 'uncaught', url: '' }, context],
+    ]
+
+    for (const [entry, candidateContext] of rejected) {
+      expect(classifyBrowserError(entry, candidateContext)).toBe('')
+    }
+  })
+
   it('requires the exact new URL, a complete document, and a changed document token', () => {
     const expectedUrl = 'http://127.0.0.1:4177/dia-diem/cong-vien-an-hoi'
     const previousDocumentToken = 'old-document'
@@ -128,7 +195,16 @@ describe('Detail grid containment gate contracts', () => {
           trip_control_count: 3,
           trip_hits: [{ belongs: true }, { belongs: true }, { belongs: true }],
         },
-        contact: { controls: [{ hit: { belongs: false } }] },
+        contact: {
+          metric: { rect: { width: 390, height: 73 }, display: 'block', visibility: 'visible' },
+          controls: [{ hit: { present: true, visible: true, belongs: false, stable: false } }],
+        },
+        bottom_nav: {
+          metric: { rect: { width: 390, height: 64 }, display: 'grid', visibility: 'visible' },
+          contact_intersection: { area: 0 },
+          items: Array.from({ length: 5 }, () => ({ hit: { present: true, visible: true, belongs: true, stable: true } })),
+        },
+        bottom_reservation: { required_px: 137, main_padding_bottom_px: 145, footer_padding_bottom_px: 201 },
         sticky: { rect: { width: 390, height: 64 }, display: 'flex', visibility: 'visible' },
       },
       lightbox: {
@@ -173,7 +249,16 @@ describe('Detail grid containment gate contracts', () => {
           trip_control_count: 3,
           trip_hits: [{ belongs: true }, { belongs: true }, { belongs: true }],
         },
-        contact: { controls: [{ hit: { belongs: true } }] },
+        contact: {
+          metric: { rect: { width: 390, height: 73 }, display: 'block', visibility: 'visible' },
+          controls: [{ hit: { present: true, visible: true, belongs: true, stable: true } }],
+        },
+        bottom_nav: {
+          metric: { rect: { width: 390, height: 64 }, display: 'grid', visibility: 'visible' },
+          contact_intersection: { area: 0 },
+          items: Array.from({ length: 5 }, () => ({ hit: { present: true, visible: true, belongs: true, stable: true } })),
+        },
+        bottom_reservation: { required_px: 137, main_padding_bottom_px: 145, footer_padding_bottom_px: 201 },
         sticky: { rect: { width: 0, height: 0 }, display: 'none', visibility: 'visible' },
       },
       lightbox: {
@@ -208,7 +293,16 @@ describe('Detail grid containment gate contracts', () => {
           trip_control_count: 0,
           trip_hits: [],
         },
-        contact: { controls: [{ hit: { belongs: true } }] },
+        contact: {
+          metric: { rect: { width: 390, height: 73 }, display: 'block', visibility: 'visible' },
+          controls: [{ hit: { present: true, visible: true, belongs: true, stable: true } }],
+        },
+        bottom_nav: {
+          metric: { rect: { width: 390, height: 64 }, display: 'grid', visibility: 'visible' },
+          contact_intersection: { area: 0 },
+          items: Array.from({ length: 5 }, () => ({ hit: { present: true, visible: true, belongs: true, stable: true } })),
+        },
+        bottom_reservation: { required_px: 137, main_padding_bottom_px: 145, footer_padding_bottom_px: 201 },
         sticky: null,
       },
       lightbox: {
@@ -225,6 +319,53 @@ describe('Detail grid containment gate contracts', () => {
     expect(failures.map(failure => failure.code)).toEqual([
       'trip-controls-missing',
       'sticky-contract-missing',
+    ])
+  })
+
+  it('fails when the mobile fixed action stack overlaps or lacks stable center ownership', () => {
+    const failures = collectStateFailures({
+      viewport_name: 'mobile',
+      viewport: { width: 390, height: 844 },
+      geometry: {
+        viewport: { width: 390, height: 844 },
+        hero: {
+          cover_rect: { width: 350, height: 260 },
+          image_rect: { width: 350, height: 260 },
+          image_loaded_class: true,
+          image_complete: true,
+          image_natural_width: 800,
+          image_natural_height: 533,
+          image_in_cover: true,
+        },
+        actions: {
+          trip_photo_intersection: { area: 0 },
+          photo_hit: { belongs: true },
+          trip_control_count: 3,
+          trip_hits: [{ belongs: true }, { belongs: true }, { belongs: true }],
+        },
+        contact: {
+          metric: { rect: { width: 390, height: 73 }, display: 'block', visibility: 'visible' },
+          controls: [{ hit: { present: true, visible: true, belongs: true, stable: false } }],
+        },
+        bottom_nav: {
+          metric: { rect: { width: 390, height: 64 }, display: 'grid', visibility: 'visible' },
+          contact_intersection: { area: 17160 },
+          items: [
+            { hit: { present: true, visible: true, belongs: true, stable: true } },
+            { hit: { present: true, visible: true, belongs: false, stable: false } },
+          ],
+        },
+        bottom_reservation: { required_px: 137, main_padding_bottom_px: 145, footer_padding_bottom_px: 201 },
+        sticky: { rect: { width: 0, height: 0 }, display: 'none', visibility: 'visible' },
+      },
+      console_errors: [],
+    })
+
+    expect(failures.map(failure => failure.code)).toEqual([
+      'contact-hit-owner',
+      'contact-bottom-nav-overlap',
+      'bottom-nav-items-missing',
+      'bottom-nav-hit-owner',
     ])
   })
 

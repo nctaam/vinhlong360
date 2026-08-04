@@ -248,14 +248,14 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
 @media (max-width: 767px) {
   .cw {
     position: fixed;
-    bottom: 0;
+    bottom: var(--shell-public-bottom-nav-reserved-height);
     left: 0;
     right: 0;
     top: auto;
     width: 100%;
     border-radius: var(--radius-xl, 16px) var(--radius-xl, 16px) 0 0;
     box-shadow: var(--shadow-lg);
-    padding: var(--space-3) var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
+    padding: var(--space-3) var(--space-4);
     z-index: var(--z-sticky);
     border-bottom: none;
   }

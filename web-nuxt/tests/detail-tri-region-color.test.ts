@@ -15,6 +15,9 @@ vi.mock('../utils/apiFetch', () => ({ apiFetch: apiFetchMock }))
 
 const triRegionCss = readFileSync(resolve(process.cwd(), 'assets/css/tri-region-color.css'), 'utf8')
 const detailCss = readFileSync(resolve(process.cwd(), 'assets/css/detail.css'), 'utf8')
+const variablesCss = readFileSync(resolve(process.cwd(), 'assets/css/variables.css'), 'utf8')
+const shellCss = readFileSync(resolve(process.cwd(), 'assets/css/shell.css'), 'utf8')
+const contactWidgetSource = readFileSync(resolve(process.cwd(), 'components/ContactWidget.vue'), 'utf8')
 
 const wrappers: Array<{ unmount: () => void }> = []
 const NuxtImgStub = defineComponent({
@@ -560,6 +563,15 @@ describe('entity detail tri-region behavior', () => {
     expect(actions[1]!.attributes('data-color-role')).toBe('action-secondary')
     expect(wrapper.text()).not.toContain('Đặt ngay')
     expect(wrapper.text()).not.toContain('Thanh toán')
+  })
+
+  it('reserves one semantic mobile bottom-nav height beneath the contextual contact bar', () => {
+    expect(variablesCss).toMatch(/--shell-public-bottom-nav-reserved-height\s*:/)
+    expect(shellCss).toMatch(/\.public-bottom-nav\s*\{[\s\S]*?min-height:\s*var\(--shell-public-bottom-nav-reserved-height\)/)
+    expect(shellCss).toMatch(/@media \(max-width:\s*767px\)[\s\S]*?\.public-bottom-nav\s*\{[\s\S]*?display:\s*grid/)
+    expect(contactWidgetSource).toMatch(/@media \(max-width:\s*767px\)[\s\S]*?\.cw\s*\{[\s\S]*?bottom:\s*var\(--shell-public-bottom-nav-reserved-height\)/)
+    expect(contactWidgetSource).not.toMatch(/@media \(max-width:\s*767px\)[\s\S]*?\.cw\s*\{[^}]*padding:[^;]*safe-area-inset-bottom/)
+    expect(shellCss).toMatch(/:has\(\.detail-contact-widget\)[\s\S]*?--shell-mobile-fixed-stack-reserved-height/)
   })
 
   it('mounts detail data and keeps material, trust and image disclosure as separate layers', async () => {
