@@ -50,7 +50,9 @@ CASES = [
     (S.UserStatsResponse, {"reviews": 5, "avg_rating": 4.25, "questions": 1, "followers": 3, "following": 2,
                            "likes_received": 10, "reactions_received": 4, "entities_reviewed": 3,
                            "collections": 1, "reputation": 42}),
-    (S.UserActivityResponse, {"activities": [{"action": "post", "ref_id": "p1", "created_at": "2026-01-01"}]}),
+    # Client (web-nuxt/pages/tai-khoan.vue) đọc `items` và dựng link từ `ref_type`.
+    (S.UserActivityResponse, {"items": [{"action": "post", "ref_type": "post", "ref_id": "p1",
+                                         "created_at": "2026-01-01"}], "has_more": False}),
     (S.TrendingTagsResponse, {"tags": [{"tag": "amthuc", "count": 9}], "period": "30d", "days": 30}),
     (S.HashtagsListResponse, {"hashtags": [{"tag": "amthuc", "post_count": 9}], "total": 1, "page": 1, "has_more": False}),
     (S.HashtagPostsResponse, {"tag": "amthuc", "posts": [_POST_ITEM], "total": 1, "page": 1, "has_more": False}),

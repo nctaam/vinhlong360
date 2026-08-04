@@ -1601,10 +1601,20 @@ async def user_stats(user=Depends(require_user)):
 @router.get("/me/activity", response_model=UserActivityResponse,
             summary="Get current user's activity feed",
             description="Unified activity feed showing the user's recent posts, comments, and likes in reverse chronological order.")
-async def user_activity(limit: int = Query(30, ge=1, le=100), user=Depends(require_user)):
-    """Unified activity feed: user's recent posts, comments, likes, bookmarks."""
+async def user_activity(
+    limit: int = Query(30, ge=1, le=100),
+    offset: int = Query(0, ge=0, le=5000),
+    user=Depends(require_user),
+):
+    """Unified activity feed: user's recent posts, comments, likes.
+
+    Mỗi luồng phải lấy đủ `offset + limit` bản ghi rồi mới trộn — áp OFFSET
+    riêng cho từng luồng sẽ âm thầm đánh rơi bản ghi ở trang thứ hai trở đi,
+    vì thứ tự thời gian chỉ đúng sau khi đã trộn ba luồng.
+    """
     ph = db._ph
     uid = str(user["id"])
+    window = offset + limit
 
     def _query():
         with db._conn() as conn:
@@ -1612,38 +1622,41 @@ async def user_activity(limit: int = Query(30, ge=1, le=100), user=Depends(requi
                 SELECT 'post' as action, p.id as ref_id, p.content, p.post_type, p.created_at
                 FROM posts p WHERE p.user_id = {ph}::uuid AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
                 ORDER BY p.created_at DESC LIMIT {ph}
-            """, (uid, limit))
+            """, (uid, window))
             comments = db._fetchall(conn, f"""
-                SELECT 'comment' as action, c.id as ref_id, c.content, 'comment' as post_type, c.created_at
+                SELECT 'comment' as action, c.post_id as ref_id, c.content, 'comment' as post_type, c.created_at
                 FROM comments c WHERE c.user_id = {ph}::uuid AND c.deleted_at IS NULL
                 ORDER BY c.created_at DESC LIMIT {ph}
-            """, (uid, limit))
+            """, (uid, window))
             likes = db._fetchall(conn, f"""
                 SELECT 'like' as action, l.post_id as ref_id, NULL as content, 'like' as post_type, l.created_at
                 FROM likes l WHERE l.user_id = {ph}::uuid
                 ORDER BY l.created_at DESC LIMIT {ph}
-            """, (uid, limit))
+            """, (uid, window))
             return posts, comments, likes
 
     posts, comments, likes = await asyncio.to_thread(_query)
     activities = []
+    # ref_type cho biết ref_id trỏ tới loại tài nguyên nào; thiếu nó thì client
+    # không dựng được link và mọi dòng hoạt động thành chữ chết.
     for row in posts:
         d = db._row_to_dict(row)
-        activities.append({"action": "post", "ref_id": str(d["ref_id"]),
+        activities.append({"action": "post", "ref_type": "post", "ref_id": str(d["ref_id"]),
                           "content": (d.get("content") or "")[:200], "type": d.get("post_type"),
                           "created_at": str(d["created_at"])})
     for row in comments:
         d = db._row_to_dict(row)
-        activities.append({"action": "comment", "ref_id": str(d["ref_id"]),
+        activities.append({"action": "comment", "ref_type": "post", "ref_id": str(d["ref_id"]),
                           "content": (d.get("content") or "")[:200], "type": "comment",
                           "created_at": str(d["created_at"])})
     for row in likes:
         d = db._row_to_dict(row)
-        activities.append({"action": "like", "ref_id": str(d["ref_id"]),
+        activities.append({"action": "like", "ref_type": "post", "ref_id": str(d["ref_id"]),
                           "content": None, "type": "like",
                           "created_at": str(d["created_at"])})
     activities.sort(key=lambda x: x["created_at"], reverse=True)
-    return {"activities": activities[:limit]}
+    page_items = activities[offset:window]
+    return {"items": page_items, "has_more": len(activities) > window}
 
 
 _trending_cache: dict = {"ts": 0.0, "data": {}}

@@ -484,40 +484,72 @@ class TestEntityStats:
 class TestUserActivity:
     """User activity feed endpoint."""
 
+    # Endpoint sống ở social.py (router UGC có guard require_pg). Bản trùng
+    # trong public_api.py đã bị xoá: nó thắng thứ tự đăng ký nhưng thiếu guard
+    # và trả payload client không đọc được.
+    #
+    # Các test dưới đây gọi thẳng handler với ba luồng dữ liệu giả thay vì grep
+    # source: bộ cũ chỉ kiểm chuỗi trong source nên vẫn xanh suốt thời gian
+    # endpoint trả sai key.
+
+    @staticmethod
+    def _run(rows, **kwargs):
+        """Gọi thật handler, chỉ thay tầng truy vấn DB bằng ba luồng dữ liệu giả."""
+        import asyncio as _asyncio
+        from unittest.mock import patch
+
+        import social
+
+        async def _fake_to_thread(fn, *a, **kw):
+            return rows
+
+        with patch.object(social.asyncio, "to_thread", _fake_to_thread), \
+             patch.object(social.db, "_row_to_dict", lambda r: dict(r)):
+            return _asyncio.run(social.user_activity(user={"id": "u1"}, **kwargs))
+
     def test_endpoint_exists(self):
-        from public_api import router
+        from social import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]
         assert "/api/me/activity" in paths
 
-    def test_requires_auth(self):
-        src = inspect.getsource(__import__("public_api").user_activity)
-        assert "require_user" in src
+    def test_returns_items_key_the_client_reads(self):
+        result = self._run(([], [], []), limit=10, offset=0)
+        assert "items" in result and "has_more" in result
 
-    def test_rate_limited(self):
-        src = inspect.getsource(__import__("public_api").user_activity)
-        assert "check_rate" in src
+    def test_merges_three_streams_newest_first(self):
+        posts = [{"ref_id": "p1", "content": "bài", "post_type": "review", "created_at": "2026-08-03"}]
+        comments = [{"ref_id": "p9", "content": "bình luận", "post_type": "comment", "created_at": "2026-08-05"}]
+        likes = [{"ref_id": "p7", "content": None, "post_type": "like", "created_at": "2026-08-04"}]
 
-    def test_returns_posts(self):
-        src = inspect.getsource(__import__("public_api").user_activity)
-        assert '"post"' in src
-        assert "posts" in src
+        result = self._run((posts, comments, likes), limit=10, offset=0)
 
-    def test_returns_comments(self):
-        src = inspect.getsource(__import__("public_api").user_activity)
-        assert '"comment"' in src
+        assert [i["action"] for i in result["items"]] == ["comment", "like", "post"]
+        assert [i["created_at"] for i in result["items"]] == ["2026-08-05", "2026-08-04", "2026-08-03"]
 
-    def test_returns_likes(self):
-        src = inspect.getsource(__import__("public_api").user_activity)
-        assert '"like"' in src
+    def test_every_item_carries_ref_type_so_the_client_can_link(self):
+        posts = [{"ref_id": "p1", "content": "bài", "post_type": "review", "created_at": "2026-08-03"}]
+        comments = [{"ref_id": "p9", "content": "c", "post_type": "comment", "created_at": "2026-08-02"}]
+        likes = [{"ref_id": "p7", "content": None, "post_type": "like", "created_at": "2026-08-01"}]
 
-    def test_uses_parameterized(self):
-        src = inspect.getsource(__import__("public_api").user_activity)
-        assert "db._ph" in src
+        result = self._run((posts, comments, likes), limit=10, offset=0)
 
-    def test_merges_and_sorts(self):
-        src = inspect.getsource(__import__("public_api").user_activity)
-        assert "sorted" in src
-        assert "created_at" in src
+        assert all(i.get("ref_type") == "post" for i in result["items"])
+        assert all(i.get("ref_id") for i in result["items"])
+
+    def test_second_page_does_not_drop_records(self):
+        posts = [{"ref_id": f"p{i}", "content": "x", "post_type": "review",
+                  "created_at": f"2026-08-{20 - i:02d}"} for i in range(4)]
+        likes = [{"ref_id": f"l{i}", "content": None, "post_type": "like",
+                  "created_at": f"2026-08-{10 - i:02d}"} for i in range(4)]
+
+        first = self._run((posts, [], likes), limit=4, offset=0)
+        second = self._run((posts, [], likes), limit=4, offset=4)
+
+        assert len(first["items"]) == 4 and len(second["items"]) == 4
+        seen = [i["created_at"] for i in first["items"]] + [i["created_at"] for i in second["items"]]
+        assert len(set(seen)) == 8, "trang 2 không được trùng hoặc đánh rơi bản ghi của trang 1"
+        assert first["has_more"] is True
+        assert second["has_more"] is False
 
 
 class TestVisitStats:

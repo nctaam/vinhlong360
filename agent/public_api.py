@@ -2172,59 +2172,9 @@ async def autocomplete(
     }
 
 
-@router.get("/me/activity",
-            summary="Get current user activity",
-            description="Returns the authenticated user's recent activity feed combining posts, comments, and likes sorted by recency. Requires authentication.")
-async def user_activity(
-    request: Request,
-    response: Response,
-    page: int = Query(1, ge=1, le=1000),
-    limit: int = Query(20, ge=1, le=50),
-    user=Depends(require_user),
-):
-    from ratelimit import check_rate
-    check_rate(f"activity:{user['id']}", 20, 60, "Quá nhiều yêu cầu. Vui lòng thử lại sau.")
-    ph = db._ph
-    offset = (page - 1) * limit
-    uid = str(user["id"])
-    def _query():
-        with db._conn() as conn:
-            posts = db._fetchall(conn, f"""
-                SELECT id, content, post_type, entity_id, created_at, like_count, comment_count
-                FROM posts WHERE user_id = {ph}::uuid AND moderation_status != 'rejected' AND deleted_at IS NULL
-                ORDER BY created_at DESC LIMIT {ph} OFFSET {ph}
-            """, (uid, limit, offset))
-            comments = db._fetchall(conn, f"""
-                SELECT c.id, c.content, c.post_id, c.created_at, p.entity_id
-                FROM comments c JOIN posts p ON p.id = c.post_id
-                WHERE c.user_id = {ph}::uuid
-                ORDER BY c.created_at DESC LIMIT {ph} OFFSET {ph}
-            """, (uid, limit, offset))
-            likes = db._fetchall(conn, f"""
-                SELECT l.post_id, l.created_at, p.content, p.entity_id
-                FROM likes l JOIN posts p ON p.id = l.post_id
-                WHERE l.user_id = {ph}::uuid
-                ORDER BY l.created_at DESC LIMIT {ph} OFFSET {ph}
-            """, (uid, limit, offset))
-        return (
-            [db._row_to_dict(r) for r in posts],
-            [db._row_to_dict(r) for r in comments],
-            [db._row_to_dict(r) for r in likes],
-        )
-    posts, comments, likes = await asyncio.to_thread(_query)
-    for p in posts:
-        p["id"] = str(p["id"])
-        p["type"] = "post"
-    for c in comments:
-        c["id"] = str(c["id"])
-        c["post_id"] = str(c["post_id"])
-        c["type"] = "comment"
-    for lk in likes:
-        lk["post_id"] = str(lk["post_id"])
-        lk["type"] = "like"
-    items = sorted(posts + comments + likes, key=lambda x: str(x.get("created_at", "")), reverse=True)[:limit]
-    response.headers["Cache-Control"] = "private, max-age=30"
-    return {"activity": items, "page": page, "has_more": len(items) == limit}
+# GET /api/me/activity sống ở social.py (router UGC có guard require_pg).
+# Bản trùng từng nằm ở đây thắng thứ tự đăng ký nhưng lại không có guard đó,
+# nên chế độ SQLite ném 500 thay vì 503, và payload của nó không khớp client.
 
 
 @router.get("/stats", response_model=StatsResponse,

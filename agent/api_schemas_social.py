@@ -134,7 +134,8 @@ class UserStatsResponse(ApiModel):
 
 
 class UserActivityResponse(ApiModel):
-    activities: list = []
+    items: list = []
+    has_more: bool = False
 
 
 # ── Hashtags / trending tags ─────────────────────────────────────────

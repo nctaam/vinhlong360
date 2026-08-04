@@ -332,6 +332,7 @@ private-network-only and does not change the global `noindex` state.
 | POST | `/api/posts/{id}/like` | Yes | Like/unlike |
 | POST | `/api/posts/{id}/bookmark` | Yes | Bookmark/unbookmark |
 | GET | `/api/me/bookmarks` | Yes | List bookmarks |
+| GET | `/api/me/activity` | Yes | Dòng hoạt động của chính user (post + comment + like đã trộn). Query: `limit` (1–100, mặc định 30), `offset` (≥0). Trả `{ items: [{ action, ref_type, ref_id, content, type, created_at }], has_more }`. `ref_type` luôn là `post` nên client dựng được link; comment tham chiếu `post_id` chứ không phải id của chính comment. Handler nằm ở `agent/social.py` — chỉ một bản duy nhất, sau guard `require_pg` |
 | POST | `/api/posts/{id}/best-answer` | Yes | Mark best answer |
 | GET | `/api/users/{id}` | No | User profile |
 | GET | `/api/users/{id}/posts` | No | User's posts |
