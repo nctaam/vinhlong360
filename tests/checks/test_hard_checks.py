@@ -311,16 +311,21 @@ def test_api_contract_survives_vietnamese_diff(tmp_path):
 
 def test_net_route_changes_ignores_moved_route():
     """Extract-method dời decorator: cùng route ở CẢ +/- → net rỗng (hết false-positive)."""
-    from checks.check_api_contract import _net_route_changes
+    from checks.check_api_contract import _route_changes
     diff = ('-@router.get("/homepage",\n'
             '+@router.get("/homepage",\n'
             '-@router.get("/entities/{id}/gallery",\n'
             '+@router.get("/entities/{id}/gallery",\n')
-    assert _net_route_changes(diff) == set()
+    added, removed = _route_changes(diff)
+    assert added == set() and removed == set()
 
 
 def test_net_route_changes_flags_real_add_and_method_change():
-    from checks.check_api_contract import _net_route_changes
-    assert _net_route_changes('+@router.post("/new")\n') == {"POST /new"}
-    # đổi method cùng path = đổi hợp đồng → bắt cả 2 chiều
-    assert _net_route_changes('-@router.get("/x")\n+@router.post("/x")\n') == {"GET /x", "POST /x"}
+    from checks.check_api_contract import _route_changes
+    added, removed = _route_changes('+@router.post("/new")\n')
+    assert added == {"POST /new"} and removed == set()
+
+    # đổi method cùng path = đổi hợp đồng → bắt cả 2 chiều, và phân biệt được
+    # chiều nào là thêm, chiều nào là xoá để đối chiếu nội dung hợp đồng.
+    added, removed = _route_changes('-@router.get("/x")\n+@router.post("/x")\n')
+    assert added == {"POST /x"} and removed == {"GET /x"}
