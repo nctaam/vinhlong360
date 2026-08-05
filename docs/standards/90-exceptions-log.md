@@ -55,4 +55,16 @@
 
   **Chống tái phát:** thêm 2 cặp `action-dark-raised` và `brand-dark-surface` vào `web-nuxt/scripts/check-tri-region-contrast.mjs` — điểm mù để lọt cả 5 ca là bảng đó chỉ khoá cặp trên `canvas`, trong khi phần lớn nội dung nằm trên `surface`/`raised`.
 
+- 2026-08-05 · **R20.8 26 → 18: TRẢ nợ cụm itinerary (12 → 4), kèm 3 hàm DEFER có-lý-do.** Chủ dự án duyệt nâng baseline 14 → 26 sáng nay; buổi chiều trả lại 8 trong số đó bằng refactor thật, không phải nới trần. Kế hoạch dựng bằng workflow 7 agent (phân tích + phản biện đối kháng từng cụm), mọi con số đo bằng chính `scripts/checks/check_complexity.py`.
+
+  **Đã tách (8 hàm):** `TravelMatrix.__post_init__` 23→3 · `ScheduleOptions.__post_init__` 21→5 · `SelectionOptions` 17→6 · `SelectionCandidate` 15→7 · `SelectionResult` 13→10 · `prune_candidates` 14→8 · `evaluate` 17→dưới ngưỡng · `_selection_pool_state` 16→7. Rủi ro merge bằng 0: hai file `itinerary_selection.py`/`itinerary_schedule.py` có blob **byte-identical trên cả 4 nhánh codex** (đã verify). Trước mỗi bước đụng code đều có commit test-only làm lưới an toàn (B3): 18 test ghim thông điệp validate + 1 test nhánh deadline vốn mù hoàn toàn + 3 test cho `_ordered_kept_candidates`.
+
+  **DEFER 1 — `select_and_schedule_day` (`agent/itinerary_selection.py`, cx 126, 404 dòng = 64% file).** Lý do CỨNG, không chủ quan: mô phỏng cú tách verbatim tối đa 9 mảnh theo 12 pha đọc được, đo từng mảnh → `_evaluate_subset` 17, `_run_exact_search` 18, `_run_beam_search` 19, `_run_repair` 19, `_attribute_drop_reasons` 13 — **5 mảnh VẪN vi phạm**, cộng 2 mảnh đúng 12 không dư địa. Số vi phạm repo-wide đi từ 26 lên **29**, và `common.py` so ratchet theo **số hàm** chứ không theo điểm, nên **pre-commit sẽ từ chối commit**. Ép hết ≤12 cần ~15–18 helper nhận 6–13 tham số trong vòng lặp nóng — đúng khuôn "helper-soup nuốt-context" đã ký DEFER cho bộ ba pipeline `server.py` ngày 2026-07-10. Hệ quả kèm theo: "hạ 126 → 106" bằng cách nâng 3 closure lên module-level là **tiến bộ bằng 0 trên thước repo** (hàm vẫn là 1 vi phạm) — không được bán như trả nợ chuẩn. Nguồn essential thật: 4 accumulator mutable bắc cầu qua các pha (`cache`, `feasible_with`, `visit_bound_infeasible`, `deadline_reached`), trong đó pha báo-cáo vừa ĐỌC vừa GHI lại `deadline_reached` — không phải luồng một chiều, nên "context object" chỉ đổi chỗ coupling.
+
+  **DEFER 2 — `_build_joint_day_plans` (`agent/itinerary_gen.py`, cx 24).** Điều phối đặt-chỗ ID xuyên nhiều ngày qua `used_content_ids`/`used_anchor_ids`; tách ra phải truyền và trả lại chính hai tập đó ở mỗi mảnh.
+
+  **DEFER 3 — `_candidate_fee_value` (cx 14).** Chuỗi ép kiểu phòng thủ cho dữ liệu phí đến từ nhiều nguồn định dạng khác nhau; giá trị tách thấp, rủi ro đổi thầm quy tắc parse cao. Mở câu hỏi cho chủ dự án.
+
+  **CÒN LÀM ĐƯỢC, chưa làm — `_build_day_schedule` (cx 19 → 11).** Không phải essential: tách được bằng cách gộp-trùng `_project_placements` dùng chung với `_project_selection_schedule`. Chưa làm vì cần 5 test mở đường trước (39 dòng hiện không test nào phủ) và có một bẫy đã nhận diện: khoá `warnings` được tính từ **nguồn khác nhau** ở hai chỗ gọi — helper mà tự đọc `schedule.warnings` sẽ âm thầm thêm warning lịch vào đường selection. Tách thành task riêng thay vì làm vội trong đợt này.
+
 ## SKIP-log (tự động ghi bởi run_hard khi SKIP_CHECKS hợp lệ)

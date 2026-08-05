@@ -21,7 +21,7 @@ Cơ chế: **hard** = 0 vi phạm mọi lúc · **hard-ratchet/soft-ratchet** = 
 | R20.5b | route trong code phải được api-contract mô tả (chiều ngược) | hard-ratchet | check_api_contract | 0 | 20-backend.md |
 | R20.6 | B3 test trước refactor | quy-trình-ký | — | — | 20-backend.md |
 | R20.7 | agent đổi ⇒ test staged cùng | soft-ratchet | check_test_pairing | 0 | 20-backend.md |
-| R20.8 | complexity ≤12 | soft-ratchet | check_complexity | 26 | 20-backend.md |
+| R20.8 | complexity ≤12 | soft-ratchet | check_complexity | 18 | 20-backend.md |
 | R20.9 | policy HTTP route registry exact + mounted identity | hard | check_policy_http_registry | 0 | 20-backend.md |
 | R30.1 | cấm Tailwind | hard | check_banned_claims | 0 | 30-frontend.md |
 | R30.2 | emoji chức năng → IconLine (đếm từng match) | soft-ratchet | check_fe_tokens | 687 | 30-frontend.md |
