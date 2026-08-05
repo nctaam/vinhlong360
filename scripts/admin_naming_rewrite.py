@@ -107,6 +107,37 @@ def check(old: str, new: str) -> list[str]:
     return problems
 
 
+# Phép biến đổi hẹp, chỉ áp cho câu KHÔNG có ngữ cảnh lịch sử. Mục tiêu là bỏ
+# cấp hành chính đã bãi bỏ mà giữ nguyên địa danh — không diễn đạt lại câu.
+AUTO_RULES = [
+    # "cách thành phố Bến Tre 70 km" -> "cách trung tâm Bến Tre 70 km"
+    (re.compile(r"\b(cách|Cách)\s+(?:thành phố|TP\.?)\s*(Bến Tre|Trà Vinh|Vĩnh Long)\b"), r"\1 trung tâm \2"),
+    # "tại TP Vĩnh Long" / "ở thành phố Bến Tre" -> giữ tên, bỏ cấp
+    (re.compile(r"\b(?:thành phố|TP\.?)\s*(Bến Tre|Trà Vinh|Vĩnh Long)\b"), r"\1"),
+    # "xã A, huyện B" -> "xã A, B" (địa danh giữ nguyên, chỉ bỏ nhãn cấp)
+    (re.compile(r"\bhuyện\s+(?=[A-ZĐÀ-Ỹ])"), ""),
+    (re.compile(r"\bH\.\s*(?=[A-ZĐÀ-Ỹ])"), ""),
+    (re.compile(r"\bthị trấn\s+(?=[A-ZĐÀ-Ỹ])"), ""),
+    # "tỉnh Bến Tre" ở ngữ cảnh hiện tại -> địa danh vùng
+    (re.compile(r"\btỉnh\s+(Bến Tre|Trà Vinh)\b"), r"\1"),
+]
+
+
+def suggest(text: str) -> str:
+    """Bản nháp: chỉ đụng vào câu đang dùng cách gọi cũ ở ngữ cảnh hiện tại."""
+    bad = set(stale_sentences(text))
+    if not bad:
+        return text
+    out = text
+    for sentence in bad:
+        fixed = sentence
+        for pattern, repl in AUTO_RULES:
+            fixed = pattern.sub(repl, fixed)
+        fixed = re.sub(r"\s{2,}", " ", fixed).replace(" ,", ",")
+        out = out.replace(sentence, fixed)
+    return out
+
+
 def _load_db():
     from database import db
     return db
@@ -120,6 +151,10 @@ def cmd_export(args):
         bad = stale_sentences(description)
         if not bad:
             continue
+        draft = suggest(description) if args.suggest else ""
+        # Bản nháp không qua nổi gác cổng thì để trống, buộc phải viết tay.
+        if draft and check(description, draft):
+            draft = ""
         rows.append({
             "id": entity.get("id"),
             "name": entity.get("name"),
@@ -127,7 +162,7 @@ def cmd_export(args):
             "area": entity.get("area"),
             "stale_sentences": bad,
             "description_old": description,
-            "description_new": "",
+            "description_new": draft,
         })
     rows.sort(key=lambda r: (-len(r["stale_sentences"]), r["id"] or ""))
     batch = rows[args.offset:args.offset + args.limit]
@@ -172,6 +207,9 @@ def main():
     ex.add_argument("--limit", type=int, default=25)
     ex.add_argument("--offset", type=int, default=0)
     ex.add_argument("--out", required=True)
+    ex.add_argument("--suggest", action="store_true",
+                    help="điền sẵn bản nháp cho các câu đổi được bằng luật hẹp; "
+                         "nháp không qua gác cổng thì để trống để viết tay")
     ex.set_defaults(func=cmd_export)
 
     ap_apply = sub.add_parser("apply")
