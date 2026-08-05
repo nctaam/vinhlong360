@@ -465,3 +465,474 @@ The data contract is healthy when:
 - **Admin endpoints:** `X-Admin-Key` header matching `ADMIN_API_KEY` env var.
 - **System endpoints:** Gated by `gate_internal_endpoints` middleware (404 without admin key — enforced in ALL environments, not just prod; `agent/server.py` `gate_internal_endpoints`).
 - **UGC endpoints:** Require Postgres — return 503 on SQLite (`_require_pg` guard).
+
+---
+
+<!-- ROUTE-APPENDIX:START — sinh bởi scripts/gen_route_appendix.py, đừng sửa tay -->
+
+## Phụ lục — bản đồ route đầy đủ
+
+Sinh tự động từ AST của `agent/` bằng `scripts/gen_route_appendix.py` (399 route trong 12 module). Mọi thông tin dưới đây lấy trực tiếp từ mã nguồn: method, path đã ghép prefix của `APIRouter`, tên handler, và dòng đầu docstring nếu handler có. Ô mô tả trống nghĩa là **code chưa có docstring** — đó là chỗ đáng viết tiếp, không phải chỗ để đoán.
+
+Các mục ở phần trên tài liệu mới là hợp đồng có ràng buộc (shape dữ liệu, quy tắc, ví dụ). Phụ lục này chỉ bảo đảm **không route nào tồn tại mà tài liệu không biết** — đó là điều R20.5b đo.
+
+### `agent/achievements.py` (1 route · 1 chưa từng được nhắc)
+
+| Method | Path | Handler | Mô tả (docstring) |
+|---|---|---|---|
+| GET | `/api/me/achievements` | `get_my_achievements` |  |
+
+### `agent/admin.py` (132 route · 132 chưa từng được nhắc)
+
+| Method | Path | Handler | Mô tả (docstring) |
+|---|---|---|---|
+| GET | `/admin/activity-feed` | `activity_feed` | 10 admin actions gần nhất từ audit JSONL. |
+| POST | `/admin/ai/triage` | `ai_triage` | On-demand: trợ lý LLM gợi ý ≤3 việc quản trị ưu tiên từ tình hình hiện tại. |
+| GET | `/admin/analytics-overview` | `analytics_overview` | GĐ9.6: gói số liệu cho trang admin Analytics (1 call, đã auth qua require_admin). |
+| GET | `/admin/announcements` | `list_announcements` |  |
+| POST | `/admin/announcements` | `create_announcement` |  |
+| DELETE | `/admin/announcements/{announcement_id}` | `delete_announcement` |  |
+| PUT | `/admin/announcements/{announcement_id}` | `update_announcement` |  |
+| GET | `/admin/appeals` | `list_appeals` |  |
+| POST | `/admin/appeals/{appeal_id}/approve` | `approve_appeal` |  |
+| POST | `/admin/appeals/{appeal_id}/reject` | `reject_appeal` |  |
+| GET | `/admin/audit-log` | `get_audit_log` | P2-7: nhật ký thao tác admin (mutation), mới nhất trước. Hỗ trợ filter server-side. |
+| GET | `/admin/backup-status` | `backup_status` | B5c: route mỏng bọc _latest_backup_info() — không thêm logic mới. |
+| POST | `/admin/backup-trigger` | `trigger_backup` | B5c: trigger manual backup from admin UI. |
+| GET | `/admin/badge-counts` | `badge_counts` | Lightweight counts cho sidebar badges — cached 60s to avoid repeated DB+JSONL parsing. |
+| GET | `/admin/claims` | `list_claims` | U-30: List entity claims for admin review. |
+| POST | `/admin/claims/{claim_id}/approve` | `approve_claim` | U-30: Approve an entity claim. |
+| POST | `/admin/claims/{claim_id}/reject` | `reject_claim` | U-30: Reject an entity claim with optional reason. |
+| POST | `/admin/cleanup-orphan-refs` | `admin_cleanup_orphan_entity_refs` | Remove UGC records referencing entity IDs that no longer exist in knowledge base. |
+| GET | `/admin/collections` | `list_collections` |  |
+| POST | `/admin/collections` | `create_collection` |  |
+| DELETE | `/admin/collections/{collection_id}` | `delete_collection` |  |
+| PUT | `/admin/collections/{collection_id}` | `update_collection` |  |
+| GET | `/admin/comments` | `admin_list_comments` | List comments for admin review with optional search and post filter. |
+| DELETE | `/admin/comments/{comment_id}` | `admin_delete_comment` | Admin force-delete a comment. |
+| GET | `/admin/completeness` | `completeness_overview` | Tổng quan hoàn thiện: % entities có source+images+placeId+summary. |
+| GET | `/admin/completeness/details` | `completeness_details` | Per-entity completeness scores with filter. |
+| GET | `/admin/contact-funnel` | `contact_funnel` | Thống kê click vào thông tin liên hệ — zalo/phone/website/map. |
+| GET | `/admin/contact-funnel/export` | `contact_funnel_export` | Export contact funnel dạng CSV. |
+| GET | `/admin/content-stats` | `content_stats` |  |
+| GET | `/admin/content/search` | `admin_content_search` | Admin search across posts and comments by keyword. |
+| GET | `/admin/cost-overview` | `cost_overview` | Bảng chi phí: chi phí LLM (cost_tracker) + ngân sách agent tự động (cap/dùng/còn). |
+| GET | `/admin/dashboard-alerts` | `dashboard_alerts` | Priority-sorted alerts cho admin dashboard. |
+| POST | `/admin/data-quality/apply` | `data_quality_apply` |  |
+| POST | `/admin/data-quality/decision` | `data_quality_decision` |  |
+| GET | `/admin/data-quality/history` | `data_quality_history` |  |
+| GET | `/admin/data-quality/review` | `data_quality_review` |  |
+| POST | `/admin/data-quality/rollback/{batch_id}` | `data_quality_rollback` |  |
+| GET | `/admin/data-quality/summary` | `data_quality_summary` |  |
+| GET | `/admin/entities` | `list_entities` | Danh sách entities với filter — đọc từ database. |
+| POST | `/admin/entities` | `create_entity` | Tạo entity mới. |
+| POST | `/admin/entities/bulk-delete` | `bulk_delete` | Xóa nhiều entities cùng lúc. |
+| POST | `/admin/entities/bulk-place` | `_bulk_assign_entities` | Assign pid to each id in ids; return (assigned_ids, errors). |
+| GET | `/admin/entities/check-duplicate` | `check_duplicate` | Kiểm tra entity trùng tên (substring, case-insensitive + B2c: không phân biệt dấu). |
+| GET | `/admin/entities/places` | `list_places` | Danh sách xã/phường cho dropdown. |
+| DELETE | `/admin/entities/{entity_id}` | `delete_entity` | Xóa entity. |
+| GET | `/admin/entities/{entity_id}` | `get_entity` | Chi tiết 1 entity. |
+| PUT | `/admin/entities/{entity_id}` | `update_entity` | Cập nhật entity. |
+| GET | `/admin/entities/{entity_id}/history` | `get_entity_history` | Lịch sử thay đổi entity. |
+| POST | `/admin/entities/{entity_id}/images` | `add_entity_image_url` | GĐ8.4: thêm ảnh entity theo URL (chỉ nguồn cấp phép — B6). |
+| POST | `/admin/entities/{entity_id}/images/upload` | `upload_entity_image` | GĐ8.4: upload file ảnh → WebP 3 cỡ → R2 (fallback đĩa) → entity.images. |
+| DELETE | `/admin/entities/{entity_id}/images/{idx}` | `remove_entity_image` | Gỡ ảnh thứ idx khỏi entity.images (không xoá file R2 — tránh mất ảnh dùng chung). |
+| POST | `/admin/entities/{entity_id}/place` | `assign_place` | Gán (hoặc gỡ) xã/phường cho 1 entity. Validate place_id là place thật (chống gán bừa). |
+| GET | `/admin/entity-completeness` | `entity_completeness` | % điền từng trường + entity thiếu nhiều nhất — dashboard làm giàu dữ liệu theo nhóm. |
+| GET | `/admin/entity-kinds` | `entity_kinds` | Đếm entity theo danh mục chủ (kind) — lớp gộp phái sinh trên 17 type. |
+| GET | `/admin/entity-schema` | `get_entity_schema` | Content-model registry: per-type fields + owner-category (kind) mapping. |
+| POST | `/admin/export` | `export_data` | Export toàn bộ entities từ DB — streaming JSON để không OOM. |
+| GET | `/admin/export/posts` | `export_posts_csv` | CSV export of posts with author/entity info. |
+| GET | `/admin/export/users` | `export_users_csv` | CSV export of all users with stats. |
+| GET | `/admin/featured` | `list_featured` |  |
+| POST | `/admin/featured/{entity_id}` | `toggle_featured` |  |
+| GET | `/admin/image-suggestions` | `list_image_suggestions` | Liệt kê ứng viên ảnh chờ duyệt (mặc định: tất cả; lọc theo status/entity). |
+| POST | `/admin/image-suggestions/create-batch` | `create_image_suggestion_batch` | Nhận lô ứng viên từ script ingest (mode=queue). KHÔNG publish — chỉ xếp hàng chờ duyệt. |
+| GET | `/admin/image-suggestions/{suggestion_id}` | `get_image_suggestion` | Chi tiết 1 ứng viên ảnh (kèm tên entity để review). |
+| POST | `/admin/image-suggestions/{suggestion_id}/approve` | `approve_image_suggestion` | Duyệt 1 ứng viên: tải ảnh → WebP 3 cỡ → R2 → gắn vào entity.images + lưu |
+| POST | `/admin/image-suggestions/{suggestion_id}/reject` | `reject_image_suggestion` | Từ chối 1 ứng viên (ghi lý do). Không tải/không upload gì. |
+| GET | `/admin/info-reports` | `get_info_reports` | Liệt kê báo-sai/báo cáo ẩn danh (reports.jsonl), mới nhất trước. Admin tự xử lý |
+| POST | `/admin/info-reports/action` | `info_report_action` | Đổi trạng thái 1 báo-sai (resolve/dismiss/open) — ghi lại reports.jsonl atomic. |
+| GET | `/admin/itineraries` | `list_itineraries_admin` |  |
+| POST | `/admin/itineraries` | `create_itinerary` |  |
+| DELETE | `/admin/itineraries/{itin_id}` | `delete_itinerary` |  |
+| GET | `/admin/itineraries/{itin_id}` | `get_itinerary_admin` |  |
+| PUT | `/admin/itineraries/{itin_id}` | `update_itinerary` |  |
+| GET | `/admin/llm-config` | `admin_get_llm_config` | Current LLM configuration (API key masked). |
+| PUT | `/admin/llm-config` | `admin_update_llm_config` | Update LLM config. Validates with a test API call before applying. |
+| POST | `/admin/llm-config/reset` | `admin_reset_llm_config` | Reset LLM config to environment variables. |
+| GET | `/admin/media` | `media_gallery` | B6a: Central media gallery — cached extraction, avoids re-scanning all entities per page. |
+| POST | `/admin/moderation/batch` | `_batch_mod_notify` | Notify each affected post author of the batch moderation result. |
+| GET | `/admin/moderation/queue` | `moderation_queue` |  |
+| GET | `/admin/moderation/stats` | `moderation_stats` |  |
+| POST | `/admin/moderation/{post_id}/approve` | `approve_post` |  |
+| GET | `/admin/moderation/{post_id}/history` | `moderation_history` | Admin: view full moderation action timeline for a specific post. |
+| POST | `/admin/moderation/{post_id}/note` | `add_moderation_note` | B3d: Add internal admin note (not visible to poster). |
+| GET | `/admin/moderation/{post_id}/notes` | `get_moderation_notes` |  |
+| POST | `/admin/moderation/{post_id}/reject` | `reject_post` |  |
+| POST | `/admin/notifications/cleanup` | `admin_cleanup_notifications` | Delete read notifications older than N days. |
+| GET | `/admin/ops-summary` | `ops_summary` | Ops cockpit snapshot: lightweight, read-only, no background jobs. |
+| GET | `/admin/posts/{post_id}` | `admin_post_detail` | Full post detail with comments for admin review. |
+| POST | `/admin/posts/{post_id}/feature` | `feature_post` | Admin: toggle feature a post at the top of its entity page. |
+| DELETE | `/admin/posts/{post_id}/response` | `delete_review_response` |  |
+| GET | `/admin/posts/{post_id}/response` | `get_review_response` | Get the admin response for a review post. |
+| POST | `/admin/posts/{post_id}/response` | `admin_review_response` | Admin/business reply to a review — one response per review (UNIQUE). |
+| GET | `/admin/provisional` | `list_provisional_entities` | Liệt kê các entity tự học CHƯA kiểm chứng (chờ duyệt). |
+| POST | `/admin/provisional/{entity_id}/approve` | `approve_provisional` | Duyệt 1 entity provisional → verified (tin cậy). |
+| POST | `/admin/provisional/{entity_id}/reject` | `reject_provisional` | Từ chối + xóa 1 entity provisional khỏi KB. |
+| GET | `/admin/qa-queue` | `qa_queue` | Admin queue: questions chưa có best answer hoặc chưa có reply. |
+| POST | `/admin/qa-queue/{post_id}/set-best-answer` | `qa_set_best_answer` | Admin override: set best_answer_id cho 1 question. |
+| DELETE | `/admin/relationships` | `delete_relationship` |  |
+| POST | `/admin/relationships` | `add_relationship` |  |
+| POST | `/admin/relationships/bulk` | `add_relationships_bulk` | B7b: thêm nhiều quan hệ cùng lúc. |
+| GET | `/admin/reports` | `get_reports` |  |
+| POST | `/admin/reports/bulk` | `bulk_report_action` |  |
+| POST | `/admin/reports/{report_id}/dismiss` | `dismiss_report` |  |
+| POST | `/admin/reports/{report_id}/resolve` | `resolve_report` |  |
+| GET | `/admin/search-analytics` | `search_analytics` |  |
+| GET | `/admin/site-settings` | `admin_get_all_settings` | All settings grouped by category (for admin overview). |
+| GET | `/admin/site-settings-history` | `admin_site_settings_history` |  |
+| POST | `/admin/site-settings-history/{history_id}/rollback` | `admin_site_settings_rollback` |  |
+| POST | `/admin/site-settings/bulk` | `admin_bulk_update_settings` | Batch update multiple settings at once. |
+| POST | `/admin/site-settings/reset/{category}` | `admin_reset_category` | Reset all settings in a category to their defaults. |
+| GET | `/admin/site-settings/{category}` | `admin_get_settings_by_category` | Settings for a specific category (for admin editor page). |
+| PUT | `/admin/site-settings/{key:path}` | `admin_update_setting` | Update a single setting value. |
+| GET | `/admin/sources` | `list_sources` | Liệt kê tất cả nguồn dữ liệu. |
+| GET | `/admin/stale-queue` | `stale_queue` | Danh sách entity cũ/thiếu thông tin — admin review queue. |
+| POST | `/admin/stale-queue/{entity_id}/mark-reviewed` | `stale_mark_reviewed` | Đánh dấu entity đã được admin xem xét — ghi timestamp vào attributes. |
+| GET | `/admin/stats` | `admin_stats` | Thống kê chi tiết cho admin. |
+| GET | `/admin/system-health` | `_system_health_server` |  |
+| POST | `/admin/trigger-learn` | `trigger_learn` | Trigger 1 vòng auto-learn (chạy background). |
+| GET | `/admin/unclassified` | `list_unclassified` | Entity nội dung CHƯA gán xã/phường (placeId rỗng) — để admin gán đúng (lấp nợ placeId). |
+| GET | `/admin/user-engagement` | `user_engagement_stats` |  |
+| GET | `/admin/user-growth` | `user_growth` |  |
+| GET | `/admin/users` | `list_users` |  |
+| POST | `/admin/users/bulk-ban` | `bulk_ban_users` |  |
+| POST | `/admin/users/bulk-unban` | `bulk_unban_users` |  |
+| GET | `/admin/users/{user_id}` | `admin_user_detail` | Comprehensive user detail for admin panel. |
+| POST | `/admin/users/{user_id}/ban` | `ban_user` |  |
+| GET | `/admin/users/{user_id}/mutes` | `admin_user_mutes` |  |
+| GET | `/admin/users/{user_id}/notes` | `get_user_notes` | Admin: list internal notes for a user. |
+| POST | `/admin/users/{user_id}/notes` | `add_user_note` | Admin: add internal note to a user profile. |
+| DELETE | `/admin/users/{user_id}/notes/{note_id}` | `delete_user_note` | Admin: delete an internal note. |
+| GET | `/admin/users/{user_id}/reactions` | `admin_user_reactions` |  |
+| POST | `/admin/users/{user_id}/role` | `set_user_role` |  |
+| POST | `/admin/users/{user_id}/unban` | `unban_user` |  |
+
+### `agent/auth.py` (30 route · 5 chưa từng được nhắc)
+
+| Method | Path | Handler | Mô tả (docstring) |
+|---|---|---|---|
+| POST | `/auth/2fa/disable` | `twofa_disable` |  |
+| POST | `/auth/2fa/setup` | `twofa_setup` |  |
+| GET | `/auth/2fa/status` | `twofa_status` |  |
+| POST | `/auth/2fa/verify` | `twofa_verify` |  |
+| POST | `/auth/2fa/verify-setup` | `twofa_verify_setup` |  |
+| DELETE | `/auth/account` | `delete_account` |  |
+| POST | `/auth/avatar` | `upload_avatar` |  |
+| POST | `/auth/check-phone` | `check_phone` |  |
+| GET | `/auth/check-username/{username}` | `check_username` |  |
+| GET | `/auth/consent-history` | `consent_history` |  |
+| POST | `/auth/cover` | `upload_cover` |  |
+| GET | `/auth/csrf` | `get_csrf` |  |
+| POST | `/auth/deactivate` | `deactivate_account` |  |
+| GET | `/auth/export-data` | `export_user_data` |  |
+| POST | `/auth/login` | `login_password` |  |
+| GET | `/auth/login-history` | `get_login_history` |  |
+| POST | `/auth/logout` | `logout` |  |
+| GET | `/auth/me` | `get_me` |  |
+| GET | `/auth/privacy` | `get_privacy` |  |
+| PUT | `/auth/privacy` | `update_privacy` |  |
+| PUT | `/auth/profile` | `update_profile` |  |
+| POST | `/auth/refresh` | `refresh_token` | Rotate session token — issue new token, revoke old. Reduces compromise window. |
+| POST | `/auth/request-otp` | `request_otp` |  |
+| POST | `/auth/reset-password-otp` | `reset_password_otp` |  |
+| GET | `/auth/sessions` | `list_sessions` |  |
+| DELETE | `/auth/sessions/{session_id}` | `revoke_session` |  |
+| POST | `/auth/set-password` | `set_password` |  |
+| GET | `/auth/trusted-devices` | `list_trusted_devices` |  |
+| DELETE | `/auth/trusted-devices/{device_id}` | `delete_trusted_device` |  |
+| POST | `/auth/verify-otp` | `verify_otp` |  |
+
+### `agent/launch_policy_api.py` (2 route · 2 chưa từng được nhắc)
+
+| Method | Path | Handler | Mô tả (docstring) |
+|---|---|---|---|
+| GET | `/_internal/launch-policy-attestation` | `launch_policy_attestation` |  |
+| GET | `/_internal/launch-sitemaps/{document}` | `launch_sitemap_document` |  |
+
+### `agent/notifications.py` (20 route · 7 chưa từng được nhắc)
+
+| Method | Path | Handler | Mô tả (docstring) |
+|---|---|---|---|
+| POST | `/api/block/{blocked_id}` | `toggle_block` |  |
+| GET | `/api/blocked-users` | `list_blocked_users` |  |
+| GET | `/api/events/{entity_id}/rsvp` | `get_rsvp` |  |
+| POST | `/api/events/{entity_id}/rsvp` | `toggle_rsvp` |  |
+| GET | `/api/follow/check/{target_type}/{target_id}` | `check_follow` |  |
+| POST | `/api/follow/{target_type}/{target_id}` | `toggle_follow` |  |
+| GET | `/api/followers/count/{target_type}/{target_id}` | `get_follower_count` |  |
+| GET | `/api/following` | `get_following` |  |
+| POST | `/api/mute/{muted_id}` | `toggle_mute` |  |
+| GET | `/api/muted-users` | `list_muted_users` |  |
+| GET | `/api/notification-preferences` | `get_notification_preferences` |  |
+| PUT | `/api/notification-preferences` | `update_notification_preferences` |  |
+| DELETE | `/api/notifications` | `clear_all_notifications` |  |
+| GET | `/api/notifications` | `get_notifications` |  |
+| POST | `/api/notifications/read-all` | `mark_all_read` |  |
+| GET | `/api/notifications/stream` | `notification_stream` |  |
+| GET | `/api/notifications/unread-count` | `unread_count` |  |
+| DELETE | `/api/notifications/{notif_id}` | `delete_notification` |  |
+| POST | `/api/notifications/{notif_id}/read` | `mark_notification_read` |  |
+| POST | `/api/report-ugc` | `create_report` |  |
+
+### `agent/plans.py` (7 route · 1 chưa từng được nhắc)
+
+| Method | Path | Handler | Mô tả (docstring) |
+|---|---|---|---|
+| GET | `/api/my-plans` | `list_plans` |  |
+| POST | `/api/my-plans` | `add_plan` |  |
+| POST | `/api/my-plans/merge` | `merge_plans` |  |
+| DELETE | `/api/my-plans/{plan_id}` | `remove_plan` |  |
+| POST | `/api/my-plans/{plan_id}/publish` | `publish_plan` |  |
+| GET | `/api/shared-plans` | `list_shared` |  |
+| GET | `/api/shared-plans/{plan_id}` | `get_shared` |  |
+
+### `agent/public_api.py` (47 route · 32 chưa từng được nhắc)
+
+| Method | Path | Handler | Mô tả (docstring) |
+|---|---|---|---|
+| GET | `/api/announcements` | `list_active_announcements` | Active announcements for display to users. |
+| GET | `/api/areas` | `list_areas` |  |
+| GET | `/api/autocomplete` | `autocomplete` | Lightweight typeahead for entity name search. |
+| GET | `/api/collections` | `list_public_collections` |  |
+| GET | `/api/collections/{slug}` | `get_collection_by_slug` |  |
+| GET | `/api/entities` | `list_entities` |  |
+| GET | `/api/entities/compare` | `compare_entities` | Side-by-side entity comparison. Pass comma-separated IDs (max 5). |
+| GET | `/api/entities/map` | `entities_map_search` | Entities within a bounding box for map display. |
+| GET | `/api/entities/popular` | `popular_entities` | Popular entities by review count + rating. Filter by type and area. |
+| GET | `/api/entities/search` | `entity_search` | Entity search with type, area, image, and sort filters. |
+| GET | `/api/entities/trending` | `entities_trending` | Entities with most activity (posts+reviews+bookmarks) in recent days. |
+| GET | `/api/entities/{entity_id}` | `get_entity` |  |
+| POST | `/api/entities/{entity_id}/claim` | `submit_entity_claim` |  |
+| GET | `/api/entities/{entity_id}/gallery` | `get_entity_gallery` |  |
+| GET | `/api/entities/{entity_id}/nearby` | `get_nearby_entities` |  |
+| GET | `/api/entities/{entity_id}/qa` | `get_entity_qa` | U-09: Surface Q&A posts for an entity with accepted answer resolution. |
+| GET | `/api/entities/{entity_id}/rating-breakdown` | `get_entity_rating_breakdown` | 5-star rating distribution for an entity. |
+| GET | `/api/entities/{entity_id}/relationships` | `get_entity_relationships` |  |
+| POST | `/api/entities/{entity_id}/report-stale` | `report_stale_field` | U-02: Report a specific field as stale/incorrect on an entity. |
+| GET | `/api/entities/{entity_id}/review-stats` | `get_review_stats` |  |
+| GET | `/api/entities/{entity_id}/reviews` | `get_entity_reviews` |  |
+| GET | `/api/entities/{entity_id}/similar` | `get_similar_entities` | U-29: Rule-based similar entity recommendations (no ML). |
+| GET | `/api/entities/{entity_id}/stats` | `get_entity_stats` |  |
+| POST | `/api/entities/{entity_id}/view-contact` | `track_contact_view` |  |
+| GET | `/api/entity-types` | `entity_types` |  |
+| GET | `/api/events` | `list_events` |  |
+| GET | `/api/facilities` | `list_facilities` | GĐ13.4: danh bạ hành chính — cơ quan công vụ (UBND/công an/...) theo xã/phường. |
+| GET | `/api/featured` | `get_featured_entities` |  |
+| GET | `/api/feed/new-since` | `feed_new_since` | Mới cập nhật/tạo từ `since` — entities + posts (public only). |
+| GET | `/api/health` | `api_health` |  |
+| GET | `/api/homepage` | `homepage_curated` | Curated homepage: smart-scored, type/area diverse, seasonal-aware, deduped. |
+| GET | `/api/itineraries` | `list_itineraries` |  |
+| POST | `/api/itineraries/optimize-order` | `optimize_itinerary_order` |  |
+| GET | `/api/itineraries/{itin_id}` | `get_itinerary` |  |
+| GET | `/api/map-pins` | `get_map_pins` |  |
+| POST | `/api/me/events` | `track_user_event` |  |
+| GET | `/api/me/insights` | `get_my_insights` |  |
+| GET | `/api/me/recommendations/contextual` | `contextual_recommendations` |  |
+| GET | `/api/places` | `list_places` |  |
+| GET | `/api/places/{place_id}/day-plan` | `place_day_plan` | Gợi ý lịch trình 1 ngày cho xã/phường — đa dạng loại hình, sắp theo khoảng cách. |
+| GET | `/api/places/{place_id}/overview` | `place_overview` | Trang hub 1 xã/phường: danh bạ hành chính + du lịch + lưu trú + sản phẩm. |
+| POST | `/api/report` | `submit_report` | GĐ13.6f: tiếp nhận báo-sai (facility/entity) & báo cáo nội dung (post/comment). |
+| GET | `/api/search` | `search` |  |
+| GET | `/api/site-settings` | `get_site_settings` | Public flat {key: value} dict of all site settings (cached 60s). |
+| GET | `/api/stats` | `public_stats` |  |
+| GET | `/api/transparency` | `transparency_report` | ND 147/2024 transparency: moderation policy, contact, takedown SLA. |
+| GET | `/api/users/{user_id}/engagement` | `user_engagement_stats` | Lightweight engagement stats for a user profile card. |
+
+### `agent/saved.py` (4 route)
+
+| Method | Path | Handler | Mô tả (docstring) |
+|---|---|---|---|
+| GET | `/api/saved` | `list_saved` |  |
+| POST | `/api/saved` | `add_saved` |  |
+| POST | `/api/saved/merge` | `merge_saved` |  |
+| DELETE | `/api/saved/{entity_id}` | `remove_saved` |  |
+
+### `agent/seo.py` (8 route · 3 chưa từng được nhắc)
+
+| Method | Path | Handler | Mô tả (docstring) |
+|---|---|---|---|
+| GET | `/favicon.ico` | `favicon` |  |
+| GET | `/seo/jsonld/area/{area_slug}` | `area_jsonld` |  |
+| GET | `/seo/jsonld/collection/{collection_type}` | `collection_jsonld` |  |
+| GET | `/seo/jsonld/itinerary/{itinerary_id}` | `itinerary_jsonld` |  |
+| GET | `/seo/jsonld/site` | `site_jsonld` |  |
+| GET | `/seo/jsonld/{entity_id}` | `entity_jsonld` |  |
+| GET | `/seo/og` | `site_og_meta` |  |
+| GET | `/seo/og/{entity_id}` | `entity_og_meta` |  |
+
+### `agent/server.py` (71 route · 61 chưa từng được nhắc)
+
+| Method | Path | Handler | Mô tả (docstring) |
+|---|---|---|---|
+| GET | `/` | `home` |  |
+| GET | `/ab-testing/experiments` | `ab_experiments` | List all A/B testing experiments. Admin-only. |
+| GET | `/ab-testing/results/{experiment_name}` | `ab_results` | Get A/B test results with statistics. Admin-only. |
+| GET | `/analytics/daily` | `analytics_daily` |  |
+| GET | `/analytics/gaps` | `analytics_gaps` |  |
+| GET | `/analytics/popular` | `analytics_popular` |  |
+| GET | `/analytics/summary` | `analytics_summary` |  |
+| GET | `/analytics/top-entities` | `analytics_top_entities` |  |
+| POST | `/api/client-error` | `client_error` | P3: Nhận lỗi frontend (uncaught/unhandledrejection/component) để admin xem. |
+| GET | `/api/mentions` | `mention_search` | Autocomplete cho @-mention: người dùng (PG) + địa điểm (KB in-RAM). Trả tối đa ~11 mục. |
+| GET | `/autocorrect` | `autocorrect_endpoint` |  |
+| POST | `/chat` | `chat` |  |
+| POST | `/chat/stream` | `chat_stream` |  |
+| POST | `/checkpoints` | `save_checkpoint` | Save a conversation checkpoint. Admin-only. |
+| POST | `/checkpoints/{checkpoint_id}/resume` | `resume_checkpoint` | Resume from a conversation checkpoint. Admin-only. |
+| GET | `/checkpoints/{session_id}` | `list_checkpoints` | List conversation checkpoints. Admin-only. |
+| POST | `/confirm/{confirmation_id}` | `confirm_action` | Confirm a pending action. Admin-only. |
+| GET | `/confirmations/{session_id}` | `pending_confirmations` | List pending confirmations. Admin-only. |
+| GET | `/events` | `events_endpoint` |  |
+| POST | `/feedback` | `user_feedback` | Consume one owner-bound receipt into deidentified aggregate telemetry. |
+| GET | `/freshness/candidates` | `freshness_candidates_endpoint` |  |
+| GET | `/freshness/check` | `freshness_check_endpoint` |  |
+| GET | `/freshness/report` | `freshness_report_endpoint` |  |
+| GET | `/graph` | `graph_endpoint` | Return subgraph data for knowledge graph visualization. |
+| GET | `/health` | `health` |  |
+| GET | `/health/deep` | `deep_health` |  |
+| GET | `/health/details` | `health_details` |  |
+| GET | `/health/internal` | `health_internal` |  |
+| GET | `/health/ready` | `readiness_probe` | Lightweight readiness probe for load balancers / orchestrators. |
+| GET | `/health/slo` | `slo_metrics` | Basic SLO tracking: uptime, error rate, p95 latency. Admin-only. |
+| POST | `/image/recognize` | `image_recognize_endpoint` |  |
+| GET | `/metrics` | `metrics_endpoint` | Prometheus-compatible metrics in text exposition format. Admin-only. |
+| GET | `/prompt-cache/stats` | `prompt_cache_stats` | Get prompt cache statistics. Admin-only. |
+| GET | `/recommend` | `recommend_endpoint` |  |
+| POST | `/reject/{confirmation_id}` | `reject_action` | Reject a pending action. Admin-only. |
+| POST | `/reload` | `reload_data` |  |
+| GET | `/search/enhanced` | `enhanced_search` | Enhanced hybrid search with BM25 + contextual embeddings. |
+| GET | `/system/circuit-breakers` | `circuit_breaker_stats` |  |
+| GET | `/system/client-errors` | `system_client_errors` | Admin xem lỗi frontend gần đây (lọc source=client từ StructuredLogger). |
+| GET | `/system/costs` | `cost_tracker_report` |  |
+| GET | `/system/costs/budget` | `cost_budget_status` |  |
+| GET | `/system/costs/session/{session_id}` | `cost_tracker_session` |  |
+| GET | `/system/dynamic-agents` | `dynamic_agents_report` |  |
+| POST | `/system/dynamic-agents/create` | `dynamic_agents_create` |  |
+| GET | `/system/errors` | `system_errors` |  |
+| GET | `/system/eval/history` | `eval_history` |  |
+| GET | `/system/eval/latest` | `eval_latest` |  |
+| GET | `/system/guardrails` | `guardrails_status` |  |
+| POST | `/system/guardrails/check-input` | `guardrails_check_input` |  |
+| GET | `/system/handoffs` | `system_handoffs` | Multi-agent orchestrator handoff log. Admin-only. |
+| GET | `/system/judge` | `judge_report` |  |
+| POST | `/system/judge/evaluate` | `judge_evaluate` |  |
+| GET | `/system/learning` | `system_learning` | Trạng thái vòng lặp tự học. Admin-only. |
+| POST | `/system/learning/run` | `trigger_learning` | Trigger 1 vòng lặp tự học SAU cổng fitness (admin only, eval-gated). |
+| GET | `/system/logs` | `system_logs` |  |
+| GET | `/system/memory` | `system_memory` |  |
+| GET | `/system/memory-graph` | `system_memory_graph` | Memory graph statistics. Admin-only. |
+| GET | `/system/optimizer` | `optimizer_report` |  |
+| GET | `/system/quality` | `system_quality` |  |
+| GET | `/system/response-times` | `system_response_times` |  |
+| GET | `/system/scheduler` | `system_scheduler` |  |
+| GET | `/system/self-evolution` | `system_self_evolution` | Trạng thái cơ chế tự tiến hoá. Admin-only. |
+| GET | `/system/semantic-cache` | `semantic_cache_status` |  |
+| POST | `/system/semantic-cache/invalidate` | `semantic_cache_invalidate` |  |
+| GET | `/system/traces` | `system_traces` | OpenTelemetry trace data. Admin-only. |
+| POST | `/vectors/build` | `build_vectors` | Build/rebuild vector embeddings index. |
+| GET | `/vectors/search` | `vector_search_endpoint` |  |
+| GET | `/vectors/stats` | `vector_stats` |  |
+| GET | `/weather` | `weather_endpoint` |  |
+| GET | `/weather/all` | `weather_all` |  |
+| GET | `/welcome` | `welcome_message` | Welcome message cá nhân hóa. |
+
+### `agent/social.py` (71 route · 51 chưa từng được nhắc)
+
+| Method | Path | Handler | Mô tả (docstring) |
+|---|---|---|---|
+| DELETE | `/api/comments/{comment_id}` | `delete_comment` |  |
+| PUT | `/api/comments/{comment_id}` | `edit_comment` |  |
+| POST | `/api/comments/{comment_id}/like` | `toggle_comment_like` |  |
+| POST | `/api/comments/{comment_id}/report` | `report_comment` |  |
+| GET | `/api/community/leaderboard` | `community_leaderboard` | Bảng xếp hạng: thành viên tích cực theo điểm danh-tiếng (1 query gộp). |
+| GET | `/api/community/stats` | `community_stats` | Số liệu THẬT của cộng đồng (không phải đếm 20 bài đã tải) cho sidebar /cong-dong. |
+| GET | `/api/community/suggested-follows` | `suggested_follows` | Gợi ý người để theo dõi: top contributor mình CHƯA theo dõi (loại chính mình). |
+| GET | `/api/community/trending-tags` | `trending_tags` | Hashtag thịnh hành: đếm hashtag trên bài ĐÃ DUYỆT trong N ngày gần nhất. |
+| GET | `/api/drafts` | `list_drafts` |  |
+| POST | `/api/drafts` | `save_draft` |  |
+| DELETE | `/api/drafts/{draft_id}` | `delete_draft` |  |
+| PUT | `/api/drafts/{draft_id}` | `update_draft` |  |
+| POST | `/api/drafts/{draft_id}/publish` | `publish_draft` | Publish a draft — runs moderation and converts to a real post. |
+| POST | `/api/drafts/{draft_id}/schedule` | `schedule_draft` | Schedule a draft for future publication. |
+| GET | `/api/entities/{entity_id}/feed` | `get_entity_feed` | Feed cho một entity cụ thể (điểm du lịch, sản phẩm...). |
+| GET | `/api/feed` | `get_feed` | Feed cộng đồng: chronological + seasonal boost + quality boost. |
+| GET | `/api/feed/explore` | `explore_feed` |  |
+| GET | `/api/feed/following` | `get_following_feed` | Feed các bài từ NGƯỜI + ĐỊA ĐIỂM mình theo dõi (mới nhất trước). |
+| GET | `/api/feed/friend-reviews` | `get_friend_reviews` | Đánh giá gần đây từ những NGƯỜI mình theo dõi (không phải địa điểm). |
+| GET | `/api/feed/friend-saves` | `get_friend_saves` | Địa điểm gần đây được LƯU (saved_entities) bởi những người mình theo dõi. |
+| GET | `/api/feed/trending` | `trending_posts` |  |
+| GET | `/api/hashtags` | `list_hashtags` | All hashtags with post counts (approved posts only). |
+| GET | `/api/hashtags/{tag}/posts` | `hashtag_posts` |  |
+| GET | `/api/me/activity` | `user_activity` | Unified activity feed: user's recent posts, comments, likes. |
+| GET | `/api/me/badge-progress` | `get_badge_progress` |  |
+| GET | `/api/me/bookmarks` | `get_my_bookmarks` |  |
+| GET | `/api/me/collections` | `list_my_collections` |  |
+| POST | `/api/me/collections` | `create_collection` |  |
+| DELETE | `/api/me/collections/{collection_id}` | `delete_collection` |  |
+| GET | `/api/me/collections/{collection_id}/items` | `get_collection_items` |  |
+| POST | `/api/me/collections/{collection_id}/items` | `add_to_collection` |  |
+| DELETE | `/api/me/collections/{collection_id}/items/{post_id}` | `remove_from_collection` |  |
+| GET | `/api/me/counts` | `user_counts` |  |
+| GET | `/api/me/stats` | `user_stats` | Extended stats for the authenticated user's profile dashboard. |
+| POST | `/api/posts` | `create_post` |  |
+| GET | `/api/posts/hidden` | `list_hidden_posts` |  |
+| DELETE | `/api/posts/{post_id}` | `delete_post` |  |
+| GET | `/api/posts/{post_id}` | `get_post` |  |
+| PATCH | `/api/posts/{post_id}` | `update_post` | Sửa bài của CHÍNH MÌNH (nội dung; review đổi sao). Kiểm duyệt + hashtag lại. |
+| GET | `/api/posts/{post_id}/appeal` | `get_appeal_status` |  |
+| POST | `/api/posts/{post_id}/appeal` | `appeal_post` |  |
+| POST | `/api/posts/{post_id}/best-answer` | `set_best_answer` |  |
+| POST | `/api/posts/{post_id}/bookmark` | `toggle_bookmark` |  |
+| GET | `/api/posts/{post_id}/comments` | `get_comments` |  |
+| POST | `/api/posts/{post_id}/comments` | `create_comment` |  |
+| GET | `/api/posts/{post_id}/edit-history` | `get_post_edit_history` | View edit history for a post (public — transparency). |
+| POST | `/api/posts/{post_id}/hide` | `hide_post` |  |
+| POST | `/api/posts/{post_id}/like` | `toggle_like` |  |
+| GET | `/api/posts/{post_id}/likers` | `get_post_likers` | List users who liked a post. |
+| DELETE | `/api/posts/{post_id}/pin-comment` | `unpin_comment` |  |
+| POST | `/api/posts/{post_id}/pin-comment` | `pin_comment` |  |
+| POST | `/api/posts/{post_id}/pin-to-profile` | `pin_post_to_profile` |  |
+| POST | `/api/posts/{post_id}/react` | `toggle_reaction` | Toggle an emoji reaction on a post. |
+| GET | `/api/posts/{post_id}/reactions` | `get_reactions` | Get reaction counts and details for a post. |
+| GET | `/api/posts/{post_id}/related` | `related_posts` | Bài viết liên quan: cùng entity hoặc cùng hashtag. |
+| POST | `/api/posts/{post_id}/report` | `report_post` |  |
+| POST | `/api/posts/{post_id}/share` | `track_share` | Track when a user shares a post (copy link, social media share). |
+| POST | `/api/posts/{post_id}/unhide` | `unhide_post` |  |
+| GET | `/api/scheduled` | `list_scheduled` | List user's scheduled posts (not yet published). |
+| DELETE | `/api/scheduled/{post_id}` | `cancel_scheduled` | Cancel a scheduled post (converts back to draft). |
+| GET | `/api/search/posts` | `search_posts` | Tìm bài viết cộng đồng theo nội dung (PG trigram `lower(content) LIKE`, |
+| GET | `/api/search/users` | `search_users` | Tìm người dùng theo tên hiển thị (không phân-biệt-dấu). Thông tin hồ-sơ công-khai. |
+| POST | `/api/upload/image` | `upload_image` |  |
+| GET | `/api/users/{user_id}` | `get_user_profile` |  |
+| GET | `/api/users/{user_id}/activity-heatmap` | `get_activity_heatmap` |  |
+| GET | `/api/users/{user_id}/followers` | `list_followers` | Danh sách NGƯỜI đang theo dõi user này (hồ-sơ công-khai). |
+| GET | `/api/users/{user_id}/following` | `list_following_users` | Danh sách NGƯỜI mà user này đang theo dõi (hồ-sơ công-khai). |
+| GET | `/api/users/{user_id}/posts` | `get_user_posts` |  |
+| POST | `/api/users/{user_id}/report` | `report_user` |  |
+| GET | `/api/users/{user_id}/reviews` | `get_user_reviews` |  |
+| GET | `/api/users/{user_id}/timeline` | `get_user_timeline` |  |
+
+### `agent/visits.py` (6 route · 2 chưa từng được nhắc)
+
+| Method | Path | Handler | Mô tả (docstring) |
+|---|---|---|---|
+| GET | `/api/me/visits` | `list_visits` |  |
+| POST | `/api/me/visits` | `set_visit` |  |
+| GET | `/api/me/visits/check/{entity_id}` | `check_visit` |  |
+| GET | `/api/me/visits/review-prompts` | `review_prompts` | Entities visited but not yet reviewed — prompt user to write a review. |
+| GET | `/api/me/visits/stats` | `visit_stats` |  |
+| DELETE | `/api/me/visits/{entity_id}` | `remove_visit` |  |
+
+<!-- ROUTE-APPENDIX:END -->

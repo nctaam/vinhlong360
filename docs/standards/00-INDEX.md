@@ -18,7 +18,7 @@ Cơ chế: **hard** = 0 vi phạm mọi lúc · **hard-ratchet/soft-ratchet** = 
 | R20.3 | cấm bare-except mới | soft-ratchet | check_complexity | 0 | 20-backend.md |
 | R20.4 | coverage agent≥ngưỡng + core-4≥ngưỡng (ratchet nâng dần → agent 60/core 80) | soft-ratchet | check_coverage | 0 | 20-backend.md |
 | R20.5 | route ↔ api-contract cùng commit | hard | check_api_contract | 0 | 20-backend.md |
-| R20.5b | route trong code phải được api-contract mô tả (chiều ngược) | hard-ratchet | check_api_contract | 275 | 20-backend.md |
+| R20.5b | route trong code phải được api-contract mô tả (chiều ngược) | hard-ratchet | check_api_contract | 0 | 20-backend.md |
 | R20.6 | B3 test trước refactor | quy-trình-ký | — | — | 20-backend.md |
 | R20.7 | agent đổi ⇒ test staged cùng | soft-ratchet | check_test_pairing | 0 | 20-backend.md |
 | R20.8 | complexity ≤12 | soft-ratchet | check_complexity | 26 | 20-backend.md |

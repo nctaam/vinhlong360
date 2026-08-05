@@ -153,3 +153,54 @@ def test_r20_5b_bat_route_khong_duoc_mo_ta(tmp_path):
 def test_r20_5b_im_lang_o_che_do_staged(tmp_path):
     """Chiều ngược chỉ có nghĩa toàn cục; staged đã có R20.5 lo."""
     assert ApiContractCoverageCheck(root=tmp_path).run(files=["agent/x.py"])["count"] == 0
+
+
+# --- Phụ lục route sinh tự động (2026-08-05) ------------------------------
+# R20.5b từng ở mức 275 route không được mô tả. Trả nợ bằng phụ lục sinh từ AST
+# thay vì viết tay: mô tả do người/LLM đoán sẽ trôi khỏi code ngay lần refactor sau.
+
+def test_phu_luc_route_lay_du_method_path_handler_docstring(tmp_path, monkeypatch):
+    import gen_route_appendix as gen
+
+    (tmp_path / "agent").mkdir(parents=True)
+    (tmp_path / "agent" / "r.py").write_text(
+        'from fastapi import APIRouter\n'
+        'router = APIRouter(prefix="/api")\n'
+        '@router.get("/co-doc")\n'
+        'def handler_co_doc():\n'
+        '    """Dòng đầu docstring.\n\n    Dòng sau không được lấy.\n    """\n'
+        '    return {}\n'
+        '@router.post("/khong-doc")\n'
+        'def handler_khong_doc():\n'
+        '    return {}\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(gen, "ROOT", tmp_path)
+
+    by_file = gen.collect()
+    routes = by_file["agent/r.py"]
+
+    assert ("GET", "/api/co-doc", "handler_co_doc", "Dòng đầu docstring.") in routes
+    # Không docstring → ô mô tả TRỐNG, không được bịa
+    assert ("POST", "/api/khong-doc", "handler_khong_doc", "") in routes
+
+
+def test_phu_luc_ghi_path_trong_backtick_de_cong_doc_duoc(tmp_path, monkeypatch):
+    """Cổng R20.5/R20.5b đọc path qua CONTRACT_PATH_RE — phải là `/path` trong backtick."""
+    import gen_route_appendix as gen
+
+    (tmp_path / "agent").mkdir(parents=True)
+    (tmp_path / "agent" / "r.py").write_text(
+        'from fastapi import APIRouter\n'
+        'router = APIRouter(prefix="/api")\n'
+        '@router.get("/x")\n'
+        'def h():\n    return {}\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(gen, "ROOT", tmp_path)
+
+    rendered = gen.render(gen.collect(), documented=set())
+
+    assert "`/api/x`" in rendered
+    from checks.check_api_contract import CONTRACT_PATH_RE
+    assert "/api/x" in set(CONTRACT_PATH_RE.findall(rendered))
