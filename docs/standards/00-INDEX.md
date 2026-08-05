@@ -18,13 +18,14 @@ Cơ chế: **hard** = 0 vi phạm mọi lúc · **hard-ratchet/soft-ratchet** = 
 | R20.3 | cấm bare-except mới | soft-ratchet | check_complexity | 0 | 20-backend.md |
 | R20.4 | coverage agent≥ngưỡng + core-4≥ngưỡng (ratchet nâng dần → agent 60/core 80) | soft-ratchet | check_coverage | 0 | 20-backend.md |
 | R20.5 | route ↔ api-contract cùng commit | hard | check_api_contract | 0 | 20-backend.md |
+| R20.5b | route trong code phải được api-contract mô tả (chiều ngược) | hard-ratchet | check_api_contract | 275 | 20-backend.md |
 | R20.6 | B3 test trước refactor | quy-trình-ký | — | — | 20-backend.md |
 | R20.7 | agent đổi ⇒ test staged cùng | soft-ratchet | check_test_pairing | 0 | 20-backend.md |
 | R20.8 | complexity ≤12 | soft-ratchet | check_complexity | 26 | 20-backend.md |
 | R20.9 | policy HTTP route registry exact + mounted identity | hard | check_policy_http_registry | 0 | 20-backend.md |
 | R30.1 | cấm Tailwind | hard | check_banned_claims | 0 | 30-frontend.md |
-| R30.2 | emoji chức năng → IconLine | soft-ratchet | check_fe_tokens | 623 | 30-frontend.md |
-| R30.3 | màu ngoài tokens | hard-ratchet | check_fe_tokens | 270 | 30-frontend.md |
+| R30.2 | emoji chức năng → IconLine (đếm từng match) | soft-ratchet | check_fe_tokens | 687 | 30-frontend.md |
+| R30.3 | màu ngoài tokens (đếm từng match) | hard-ratchet | check_fe_tokens | 307 | 30-frontend.md |
 | R30.4 | ClientOnly cho volatile | checklist-ký | — | — | 30-frontend.md |
 | R30.5 | tap-target ≥44 (ngoại lệ season-ring) | checklist-ký | — | — | 30-frontend.md |
 | R30.6 | axe 0 serious+ | ⚠️ CHƯA THỰC THI | check_axe — **không nơi nào trong repo/CI sinh `axe-report.json`**, nên cổng vĩnh viễn skip về 0. Xem 95-ra-soat-cong.md | 0 | 30-frontend.md |
@@ -32,7 +33,7 @@ Cơ chế: **hard** = 0 vi phạm mọi lúc · **hard-ratchet/soft-ratchet** = 
 | R40.3 | cấm claim đã-xác-minh | hard | check_banned_claims | 0 | 40-ui-design.md |
 | R50.2 | filler giọng cấm (field-aware, bỏ source) | soft-ratchet | check_content_voice | 102 | 50-content.md |
 | R50.3 | cấm công thức mở bài + kết sáo | soft-ratchet | check_content_gates | 7 | 50-content.md |
-| R50.4 | summary+desc ≥200 ký tự | soft | check_thin_content | 245 | 50-content.md |
+| R50.4 | summary+desc ≥200 ký tự | soft-ratchet | check_thin_content | 245 | 50-content.md |
 | R50.7 | cấm superlative trơ (không số/năm/nguồn) | soft-ratchet | check_content_gates | 24 | 50-content.md |
 | R60.1 | docs-active có STATUS (phải CÓ nội dung, không chỉ chữ "STATUS") | hard-ratchet | check_doc_status | 0 | 60-docs.md |
 | R60.4 | internal link sống | hard-ratchet | check_links | 0 | 60-docs.md |

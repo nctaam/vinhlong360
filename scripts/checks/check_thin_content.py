@@ -1,5 +1,15 @@
 # -*- coding: utf-8 -*-
-"""R50.4 — entity mỏng (summary+description < 200 ký tự) — SOFT report xu hướng (SP6 kéo)."""
+"""R50.4 — entity mỏng (summary+description < 200 ký tự) — SOFT-RATCHET.
+
+Trước 2026-08-05 rule ở tầng `soft` thuần, mà `run_hard` chỉ chặn `hard` và các
+`*-ratchet`: nó không bao giờ chặn gì, kể cả khi số entity mỏng tăng vọt. Nay là
+`soft-ratchet` với baseline = nợ đang có.
+
+Ratchet ở đây KHÔNG ép trả nợ cũ — 90-exceptions-log.md đã ghi 245 entity mỏng
+là irreducible bằng grind: §1.7 cấm độn chữ cho đủ ngưỡng, giảm đúng cách phải
+là viết nội dung thật có nguồn. Nó chỉ đảm bảo entity mỏng MỚI không lọt vào
+mà không ai thấy.
+"""
 from __future__ import annotations
 
 import json
@@ -12,7 +22,7 @@ DATA_REL = "web/data.json"
 
 
 class ThinContentCheck:
-    name, level, rule = "thin_content", "soft", "R50.4"
+    name, level, rule = "thin_content", "soft-ratchet", "R50.4"
 
     def __init__(self, root: Path | None = None):
         self._root = root

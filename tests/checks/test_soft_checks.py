@@ -76,7 +76,9 @@ def test_thin_content_counts_under_threshold(tmp_path):
         {"id": "b", "summary": "x" * 250, "description": ""},
     ]}, ensure_ascii=False))
     r = ThinContentCheck(root=tmp_path).run()
-    assert r["count"] == 1 and r["level"] == "soft"
+    # R50.4 lên soft-ratchet 2026-08-05: tầng `soft` thuần không bao giờ chặn,
+    # kể cả khi số entity mỏng tăng vọt.
+    assert r["count"] == 1 and r["level"] == "soft-ratchet"
 
 
 def test_test_pairing_blocks_agent_without_tests(tmp_path):

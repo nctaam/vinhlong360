@@ -15,7 +15,10 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from checks.check_api_contract import ApiContractCheck  # noqa: E402
+from checks.check_api_contract import (  # noqa: E402
+    ApiContractCheck,
+    ApiContractCoverageCheck,
+)
 
 
 def _git(repo: Path, *args):
@@ -102,3 +105,51 @@ def test_all_mode_reports_contract_entries_for_routes_that_no_longer_exist(repo)
 
     assert result["count"] >= 1, "--all phải phát hiện hợp đồng mô tả route không tồn tại"
     assert any("ghost-route" in v["msg"] for v in result["violations"])
+
+
+# --- Khe đã vá 2026-08-05: path hằng số + chiều ngược (R20.5b) -------------
+
+def test_route_khai_bang_hang_so_van_duoc_nhin_thay(tmp_path):
+    """`@router.get(PATH)` với PATH = "/x" từng vô hình với cổng."""
+    (tmp_path / "agent").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "agent" / "r.py").write_text(
+        'from fastapi import APIRouter\n'
+        'router = APIRouter(prefix="/api")\n'
+        'SECRET_PATH = "/an-danh"\n'
+        '@router.get(SECRET_PATH)\n'
+        'def handler():\n    return {}\n',
+        encoding="utf-8",
+    )
+    paths = ApiContractCheck(root=tmp_path)._code_route_paths()
+    assert "/api/an-danh" in paths, paths
+
+
+def _contract(tmp_path, body: str):
+    p = tmp_path / "docs" / "api-contract.md"
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(body, encoding="utf-8")
+
+
+def test_r20_5b_bat_route_khong_duoc_mo_ta(tmp_path):
+    (tmp_path / "agent").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "agent" / "r.py").write_text(
+        'from fastapi import APIRouter\n'
+        'router = APIRouter(prefix="/api")\n'
+        '@router.get("/co-mo-ta")\n'
+        'def a():\n    return {}\n'
+        '@router.get("/khong-he-co-trong-hop-dong")\n'
+        'def b():\n    return {}\n',
+        encoding="utf-8",
+    )
+    _contract(tmp_path, "# Hợp đồng\n\n- `/api/co-mo-ta` — có mô tả\n")
+
+    result = ApiContractCoverageCheck(root=tmp_path).run(None)
+
+    assert result["level"] == "hard-ratchet"
+    assert result["count"] == 1
+    assert "/api/khong-he-co-trong-hop-dong" in result["violations"][0]["msg"]
+
+
+def test_r20_5b_im_lang_o_che_do_staged(tmp_path):
+    """Chiều ngược chỉ có nghĩa toàn cục; staged đã có R20.5 lo."""
+    assert ApiContractCoverageCheck(root=tmp_path).run(files=["agent/x.py"])["count"] == 0

@@ -57,9 +57,35 @@ def test_tinh_cu_fe_code_always_violation(tmp_path):
 def test_fe_colors_and_emoji_counters(tmp_path):
     _mk(tmp_path, "web-nuxt/pages/a.vue", "<style>.x{color:#ff0000;background:rgb(1,2,3)}</style>\n<template><span>🌿</span></template>\n")
     results = {r["rule"]: r for r in (c.run() for c in fe_checks(root=tmp_path))}
-    assert results["R30.3"]["count"] == 1  # dòng style có hex + rgb → 1 dòng vi phạm... mỗi dòng 1 violation
+    # Từ 2026-08-05 đếm theo TỪNG MATCH: dòng style có #ff0000 VÀ rgb(1,2,3) → 2.
+    # Đếm theo dòng biến ratchet thành lỗ: gộp màu cũ vào một dòng là mua suất
+    # cho màu cứng mới ở chỗ khác.
+    assert results["R30.3"]["count"] == 2
     assert results["R30.3"]["level"] == "hard-ratchet"
     assert results["R30.2"]["count"] == 1 and results["R30.2"]["level"] == "soft-ratchet"
+
+
+def test_fe_colors_dem_tung_match_khong_phai_tung_dong(tmp_path):
+    """Chốt chặn cho chính lỗ ratchet: 3 màu / 3 dòng và 3 màu / 1 dòng phải bằng nhau."""
+    _mk(tmp_path, "web-nuxt/pages/nhieu-dong.vue",
+        "<style>\n.a{color:#111111}\n.b{color:#222222}\n.c{color:#333333}\n</style>\n")
+    spread = {r["rule"]: r["count"] for r in (c.run() for c in fe_checks(root=tmp_path))}
+
+    (tmp_path / "web-nuxt/pages/nhieu-dong.vue").unlink()
+    _mk(tmp_path, "web-nuxt/pages/mot-dong.vue",
+        "<style>.a{color:#111111}.b{color:#222222}.c{color:#333333}</style>\n")
+    packed = {r["rule"]: r["count"] for r in (c.run() for c in fe_checks(root=tmp_path))}
+
+    assert spread["R30.3"] == 3
+    assert packed["R30.3"] == 3, "gộp dòng vẫn giấu được màu cứng"
+
+
+def test_fe_colors_rgb_co_khoang_trang_truoc_var_khong_bi_bat(tmp_path):
+    """`rgb( var(--x) )` là dùng token; lookahead phải bao cả khoảng trắng."""
+    _mk(tmp_path, "web-nuxt/pages/a.vue",
+        "<style>.ok{color:rgb( var(--x) )}</style>\n")
+    results = {r["rule"]: r["count"] for r in (c.run() for c in fe_checks(root=tmp_path))}
+    assert results["R30.3"] == 0
 
 
 def test_fe_tokens_var_usage_clean(tmp_path):

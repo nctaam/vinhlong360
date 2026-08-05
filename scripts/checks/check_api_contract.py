@@ -90,7 +90,35 @@ class ApiContractCheck:
         return prefixes
 
     @staticmethod
-    def _decorated_paths(tree: ast.Module, prefixes: dict[str, str]) -> set[str]:
+    def _module_constants(tree: ast.Module) -> dict[str, str]:
+        """Hằng chuỗi khai ở cấp module: `PATH = "/an-danh"`.
+
+        Không có bảng này thì `@router.get(PATH)` vô hình với cổng — decorator
+        chỉ được nhận khi tham số là literal.
+        """
+        consts: dict[str, str] = {}
+        for node in tree.body:
+            if not isinstance(node, ast.Assign) or not isinstance(node.value, ast.Constant):
+                continue
+            if not isinstance(node.value.value, str):
+                continue
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    consts[target.id] = node.value.value
+        return consts
+
+    @staticmethod
+    def _decorator_path(deco: ast.Call, consts: dict[str, str]) -> str | None:
+        arg = deco.args[0]
+        if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
+            return arg.value
+        if isinstance(arg, ast.Name):
+            return consts.get(arg.id)
+        return None
+
+    @classmethod
+    def _decorated_paths(cls, tree: ast.Module, prefixes: dict[str, str]) -> set[str]:
+        consts = cls._module_constants(tree)
         paths: set[str] = set()
         for node in ast.walk(tree):
             if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -101,9 +129,10 @@ class ApiContractCheck:
                 func = deco.func
                 if not isinstance(func, ast.Attribute) or func.attr not in HTTP_METHODS:
                     continue
-                if not isinstance(deco.args[0], ast.Constant):
+                path = cls._decorator_path(deco, consts)
+                if path is None:
                     continue
-                paths.add(f"{prefixes.get(getattr(func.value, 'id', ''), '')}{deco.args[0].value}")
+                paths.add(f"{prefixes.get(getattr(func.value, 'id', ''), '')}{path}")
         return paths
 
     def _paths_in_file(self, file: Path) -> set[str]:
@@ -189,4 +218,40 @@ class ApiContractCheck:
                 "count": len(violations), "violations": violations}
 
 
-CHECKS = [ApiContractCheck()]
+class ApiContractCoverageCheck(ApiContractCheck):
+    """R20.5b — route CÓ trong code mà hợp đồng không mô tả (chiều ngược).
+
+    R20.5 chỉ đi một chiều: hợp đồng → code. Route mới thêm vào `agent/` mà
+    không ai viết vào `docs/api-contract.md` thì `--all` không thấy gì, và ở
+    chế độ staged chỉ cần chuỗi path xuất hiện đâu đó trong file hợp đồng là
+    qua. Nghĩa là bề mặt API có thể phình ra mà tài liệu đứng yên.
+
+    Tầng `hard-ratchet` chứ không phải `hard`: đo 2026-08-05 có 367 route đọc
+    được từ `agent/`, trong đó 297 chưa được hợp đồng nhắc tới. Bắt trả hết nợ
+    đó ngay là không thực tế; ratchet giữ đúng tinh thần bộ chuẩn — nợ cũ đứng
+    yên, route MỚI bắt buộc có mô tả.
+    """
+
+    name, level, rule = "api_contract_coverage", "hard-ratchet", "R20.5b"
+
+    def _undocumented(self, contract: str) -> list[dict]:
+        documented = set(CONTRACT_PATH_RE.findall(contract))
+        missing = sorted(
+            path for path in self._code_route_paths()
+            if not any(_matches_any_route(entry, {path}) for entry in documented)
+        )
+        return [
+            {"file": CONTRACT, "line": 0, "rule": self.rule,
+             "msg": f"route {path} có trong agent/ nhưng {CONTRACT} không mô tả"}
+            for path in missing
+        ]
+
+    def run(self, files: list[str] | None = None) -> dict:
+        # Chỉ có nghĩa toàn cục: ở chế độ staged, R20.5 đã lo cặp route↔hợp đồng
+        # cho đúng file đang commit.
+        if files is not None:
+            return self._result([])
+        return self._result(self._undocumented(self._contract_text()))
+
+
+CHECKS = [ApiContractCheck(), ApiContractCoverageCheck()]
