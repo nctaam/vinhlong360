@@ -22,6 +22,10 @@ import sys
 import unicodedata
 from pathlib import Path
 
+if hasattr(sys.stdout, "reconfigure"):  # console Windows cp1252 không in nổi tiếng Việt
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 ROOT = Path(os.environ.get("VL360_ROOT") or Path(__file__).resolve().parent.parent)
 sys.path.insert(0, str(ROOT / "agent"))
 

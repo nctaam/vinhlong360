@@ -27,6 +27,12 @@ import re
 import sys
 from pathlib import Path
 
+# Console Windows mặc định cp1252 không in được tiếng Việt: script chết giữa
+# chừng bằng UnicodeEncodeError sau khi đã ghi một phần — nguy hiểm cho lệnh apply.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 # DB là tài sản chung của repo chính, không thuộc worktree nào. VL360_ROOT cho
 # phép chạy script từ worktree đang phát triển mà vẫn đọc/ghi đúng DB thật.
 ROOT = Path(os.environ.get("VL360_ROOT") or Path(__file__).resolve().parent.parent)
