@@ -6,6 +6,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 
@@ -54,6 +56,43 @@ def test_secrets_allows_env_read_and_example(tmp_path):
     _mk(tmp_path, "agent/x.py", 'API_KEY = os.environ.get("IMAGE_API_KEY", "")\n')
     _mk(tmp_path, ".env.example", 'ADMIN_API_KEY="your_key_here_example_1234567890"\n')
     assert SecretsCheck(root=tmp_path).run()["count"] == 0
+
+
+# Hồi quy 2026-08-05: hai đường lách đã đo được của R70.1.
+
+@pytest.mark.parametrize("name", [".env.production", ".env.local", ".env.prod", "deploy/.env.staging"])
+def test_secrets_blocks_every_env_variant(tmp_path, name):
+    """Chỉ chặn đúng `.env` là hụt — biến thể mới là nơi chứa secret PROD.
+
+    `.env.production` vừa thoát chặn tuyệt đối, vừa rớt khỏi bộ lọc đuôi file,
+    nên trước bản vá nó không được quét lấy một dòng.
+    """
+    _mk(tmp_path, name, "LLM_API_KEY=sk-live-XXXXXXXXXXXXXXXXXXXX\n")
+    result = SecretsCheck(root=tmp_path).run(files=[name])
+    assert result["count"] == 1, f"{name} lọt cổng R70.1"
+
+
+@pytest.mark.parametrize("name", [".env.example", ".env.sample", ".env.template", ".env.dist"])
+def test_secrets_still_allows_env_templates(tmp_path, name):
+    _mk(tmp_path, name, "LLM_API_KEY=your_key_here\n")
+    assert SecretsCheck(root=tmp_path).run(files=[name])["count"] == 0
+
+
+def test_secrets_catches_key_wrapped_in_html_tag(tmp_path):
+    """Thẻ HTML không phải placeholder: `<div>` từng miễn trừ cả dòng."""
+    _mk(tmp_path, "web-nuxt/leak.vue",
+        '<div>API_KEY = "sk-live-AAAAAAAAAAAAAAAAAAAAAAAA"</div>\n')
+    result = SecretsCheck(root=tmp_path).run(files=["web-nuxt/leak.vue"])
+    assert result["count"] == 1, "secret bọc trong thẻ HTML vẫn lọt"
+
+
+@pytest.mark.parametrize("line", [
+    'API_KEY = "<YOUR_API_KEY_HERE>"\n',
+    'token: "<REPLACE_ME>"\n',
+])
+def test_secrets_still_allows_uppercase_placeholders(tmp_path, line):
+    _mk(tmp_path, "agent/doc.py", line)
+    assert SecretsCheck(root=tmp_path).run(files=["agent/doc.py"])["count"] == 0
 
 
 # ---------- banned claims ----------

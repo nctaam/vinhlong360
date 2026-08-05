@@ -11,7 +11,11 @@ from .common import iter_text_files, repo_root
 KEY_PATTERN = re.compile(
     r"(api[_-]?key|secret|token|password|passwd)\s*[=:]\s*['\"]([A-Za-z0-9+/_\-]{16,})['\"]", re.I
 )
-_ALLOW_LINE = re.compile(r"(example|placeholder|xxx+|your[_-]|<.*>|\bos\.environ|getenv|env\(|process\.env|import\.meta|b64|base64|alphabet|charset|ABCDEFGHIJKLMNOPQRSTUVWXYZ)")
+# `<...>` chỉ miễn khi là PLACEHOLDER (`<YOUR_API_KEY>`, `<TOKEN>`), không phải
+# thẻ HTML. Pattern cũ `<.*>` miễn mọi dòng có một cặp ngoặc nhọn — trong SFC Vue
+# gần như dòng template nào cũng có, nên một secret đặt giữa `<div>…</div>` lọt
+# sạch (đã đo 2026-08-05: cùng chuỗi đó trong .py bị chặn, trong .vue thì không).
+_ALLOW_LINE = re.compile(r"(example|placeholder|xxx+|your[_-]|<[A-Z][A-Z0-9_ -]{1,30}>|\bos\.environ|getenv|env\(|process\.env|import\.meta|b64|base64|alphabet|charset|ABCDEFGHIJKLMNOPQRSTUVWXYZ)")
 _STRING_32 = re.compile(r"['\"]([A-Za-z0-9+/=_\-]{32,})['\"]")
 _EXCLUDE = ["tests", ".env.example", "package-lock.json", "scripts/checks", "web-nuxt/node_modules"]
 _ROOTS = ["agent", "scripts", "web-nuxt"]
@@ -61,11 +65,24 @@ class SecretsCheck:
                 found.append(v)
         return found
 
+    @staticmethod
+    def _is_secret_env_file(rel: str) -> bool:
+        """`.env` VÀ mọi biến thể `.env.<gì đó>`, trừ các bản mẫu.
+
+        Điều kiện cũ chỉ khớp đúng `.env`, nên `.env.production` / `.env.local`
+        — đúng những file mang secret PROD — vừa thoát chặn tuyệt đối, vừa rớt
+        khỏi bộ lọc đuôi file bên dưới, tức không được quét lấy một dòng.
+        """
+        name = Path(rel).name
+        if name in {".env.example", ".env.sample", ".env.template", ".env.dist"}:
+            return False
+        return name == ".env" or name.startswith(".env.")
+
     def _file_violations(self, rel: str) -> list[dict]:
         # .env thật bị stage = chặn tuyệt đối
-        if rel == ".env" or rel.endswith("/.env"):
+        if self._is_secret_env_file(rel):
             return [{"file": rel, "line": 0, "rule": self.rule,
-                     "msg": "CẤM stage file .env (secret thật)"}]
+                     "msg": f"CẤM stage file {Path(rel).name} (secret thật)"}]
         if any(rel.startswith(e) or e in rel for e in _EXCLUDE):
             return []
         if not any(rel.endswith(g.lstrip("*")) for g in _GLOBS):

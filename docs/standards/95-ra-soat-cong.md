@@ -29,7 +29,7 @@ Bốn vấn đề **xuyên suốt** (không tính vào hạng của cổng riên
 | R40.3 | `banned_claims` | hard | ~~YẾU~~ → **THẬT** ✅ | Lỗ miễn-trừ đã vá `cf7b84d9` |
 | R10.6 | `banned_image_sources` | hard | ~~YẾU~~ → **THẬT** ✅ | Vi phạm thật ở `huong-dan.vue:459` đã sửa; lỗ miễn-trừ đã vá `cf7b84d9` — "không" chỉ miễn khi đi với động từ chỉ dẫn |
 | R30.1 | `no_tailwind` | hard | ~~YẾU~~ → **THẬT** ✅ | Cùng bản vá `cf7b84d9` |
-| R70.1 | `secrets` | hard | YẾU | Dòng có thẻ `<...>` được miễn; `.env.production`/`.env.local` không bị quét |
+| R70.1 | `secrets` | hard | ~~YẾU~~ → **THẬT** ✅ | Đã vá: mọi biến thể `.env.*` (trừ bản mẫu) bị chặn tuyệt đối; `<...>` chỉ miễn khi là placeholder CHỮ HOA, không phải thẻ HTML. Giá phải trả: 0 vi phạm mới |
 | R60.1 | `doc_status` | hard-ratchet | YẾU | Chỉ kiểm có chuỗi `> STATUS`; `> STATUS` trống rỗng cũng qua |
 | R10.7 | `tinh_cu` | hard-ratchet | YẾU | Một cặp `(id, field)` trong whitelist miễn **không giới hạn** số lần; itinerary + attribute lồng không quét |
 | R20.5 | `api_contract` | hard | YẾU | `--all` chỉ soi chiều hợp-đồng→code; route khai bằng hằng số không bị nhìn thấy |
