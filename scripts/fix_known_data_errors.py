@@ -38,6 +38,32 @@ RATING_RE = re.compile(r"(\d+[.,]\d+)\s*/\s*5\b")
 MISLABELED_SANCTUARY = "san-chim-chua-phat-lon-tra-vinh"
 SANCTUARY_TEXT = "Sân chim ở khu vực Chùa Phật Lớn, Trà Vinh."
 
+# Mô tả ghi "OCOP 4 sao", attributes ghi "3 sao". Tra nguồn ngoài không xác nhận
+# được con số nào, nên bỏ hẳn số sao thay vì chọn bừa — giữ "OCOP" là phần chắc.
+OCOP_STAR_CONFLICT = ("khoai-lang-binh-tan", "Sản phẩm OCOP 4 sao", "Sản phẩm OCOP")
+
+# attributes ghi mùa "tháng 5–8" nhưng mô tả ghi "chỉ rộ sau Tết". Báo Vĩnh Long
+# xác nhận thanh trà chín từ trước Tết tới hết tháng 4, chính vụ tháng 2 âm lịch
+# — tức mô tả đúng, attributes sai.
+SEASON_CONFLICT = ("thanh-tra-binh-minh", "tháng 5–8", "tháng 1–4, chính vụ sau Tết")
+
+# address ghi rõ Sa Đéc, Đồng Tháp nhưng area=ben-tre. Entity nằm NGOÀI tỉnh
+# Vĩnh Long mới; giữ hay bỏ là quyết định của chủ dự án, nhưng mô tả không được
+# để người đọc tưởng nó ở trong tỉnh.
+OUT_OF_PROVINCE = (
+    "nha-co-huynh-thuy-le",
+    "Ngôi nhà cổ kiến trúc Pháp – Hoa đầu thế kỷ XX",
+    "Ngôi nhà cổ ở Sa Đéc, Đồng Tháp — ngoài địa bàn tỉnh Vĩnh Long — kiến trúc Pháp – Hoa đầu thế kỷ XX",
+)
+
+# Mô tả bị hỏng mã (mojibake): "?i?m tham quan n?m trong khu v?c bi?n Ba ??ng".
+# Đọc ra được nên đây là khôi phục, không phải viết mới.
+MOJIBAKE_FIX = (
+    "con-cu",
+    "Điểm tham quan nằm trong khu vực biển Ba Động, từng được phát triển thành "
+    "sân golf trong giai đoạn khai thác du lịch ven biển.",
+)
+
 
 def fix_rating_scale(text: str) -> str:
     """Điểm > 5 mà ghi thang 5 thì thang thật là 10; điểm ≤ 5 giữ nguyên."""
@@ -77,7 +103,21 @@ def main() -> int:
             # được từ chính tên entity. Thà ngắn còn hơn mô tả nhầm địa điểm.
             new = SANCTUARY_TEXT
 
-        if new == description:
+        for target_id, old_text, fixed_text in (OCOP_STAR_CONFLICT, OUT_OF_PROVINCE):
+            if eid == target_id and old_text in new:
+                new = new.replace(old_text, fixed_text)
+
+        if eid == MOJIBAKE_FIX[0] and "?" in new:
+            new = MOJIBAKE_FIX[1]
+
+        attributes_changed = False
+        if eid == SEASON_CONFLICT[0]:
+            attributes = entity.get("attributes")
+            if isinstance(attributes, dict) and attributes.get("season_note") == SEASON_CONFLICT[1]:
+                attributes["season_note"] = SEASON_CONFLICT[2]
+                attributes_changed = True
+
+        if new == description and not attributes_changed:
             continue
         changed += 1
         print(f"  [{'DRY' if args.dry_run else 'OK'}] {eid}")
