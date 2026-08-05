@@ -63,8 +63,9 @@
     <!-- Register toggle: contemporary (sự kiện, here) vs ancestral (lễ hội) — amber ↔ leaf -->
     <section class="block reveal">
       <div class="register-toggle" role="group" aria-label="Chọn sổ lễ hội">
-        <NuxtLink to="/le-hoi" class="register-toggle-tab tone-leaf" aria-pressed="false">🎋 Lễ hội truyền thống</NuxtLink>
-        <NuxtLink to="/su-kien" class="register-toggle-tab is-active tone-amber" aria-pressed="true">🎪 Sự kiện &amp; hội chợ</NuxtLink>
+        <!-- aria-current, KHÔNG phải aria-pressed — xem ghi chú ở le-hoi.vue. -->
+        <NuxtLink to="/le-hoi" class="register-toggle-tab tone-leaf">🎋 Lễ hội truyền thống</NuxtLink>
+        <NuxtLink to="/su-kien" class="register-toggle-tab is-active tone-amber" aria-current="page">🎪 Sự kiện &amp; hội chợ</NuxtLink>
       </div>
     </section>
 

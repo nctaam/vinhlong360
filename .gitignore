@@ -33,3 +33,6 @@ vl360-*/
 .worktrees/
 coverage.json
 coverage.xml
+
+# Artifact quét a11y (sinh bởi scripts/axe_scan.mjs, đọc bởi R30.6)
+axe-report.json

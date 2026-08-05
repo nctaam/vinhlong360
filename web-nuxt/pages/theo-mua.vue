@@ -174,7 +174,11 @@
       <!-- NEW: season timeline — turns the closing almanac summary into a
            visual instrument that echoes the ring's logic in linear form
            (§1.3), rather than leaving it buried in plain prose. -->
-      <div class="season-timeline" role="img" :aria-label="`Lịch mùa vụ 12 tháng, hiện đang ở tháng ${month}`">
+      <!-- role="group" chứ không phải role="img": bên trong là 12 <button> bấm
+           được, mà role="img" tuyên bố cả khối là một hình ảnh nên axe bắt
+           `nested-interactive` (serious, 2026-08-05). Mỗi nút đã có aria-label
+           riêng; nhãn ở đây chỉ đặt tên cho nhóm. -->
+      <div class="season-timeline" role="group" :aria-label="`Lịch mùa vụ 12 tháng, hiện đang ở tháng ${month}`">
         <div class="stl-track">
           <button
             v-for="m in 12" :key="m" type="button"

@@ -43,4 +43,8 @@
 
 - 2026-08-05 · **R20.5b — rule MỚI, hard-ratchet, baseline 275.** R20.5 chỉ đi một chiều (hợp đồng → code): route thêm vào `agent/` mà không ai viết vào `docs/api-contract.md` thì `--all` không thấy. Đo: 367 route đọc được từ `agent/`, **275 chưa được hợp đồng nhắc tới**. Đặt tầng `hard` = 0 là bất khả thi, nên dùng ratchet đúng tinh thần bộ chuẩn — nợ cũ đứng yên, route MỚI bắt buộc có mô tả. Kèm theo, `_decorated_paths` nay đọc được `@router.get(HANG_SO)` (trước chỉ nhận literal, nên route khai bằng hằng số vô hình với cả hai chiều).
 
+- 2026-08-05 · **R30.6 axe baseline 0 → 5 — chủ dự án duyệt thêm scan vào CI.** Cổng có checker từ 2026-07-10 nhưng không nơi nào sinh `axe-report.json`, nên chưa từng chạy. Nguồn sinh nay là `scripts/axe_scan.mjs` (CDP thuần trên Chrome sẵn có của runner — không puppeteer/playwright, không tải browser riêng, giữ §B8), chạy ở job frontend sau `npm run preview`.
+  Lần quét đầu tiên trên 14 trang công khai lộ **8 violation serious+**. Đã sửa ngay 5 cái là lỗi markup rõ ràng: 4 × `aria-allowed-attr` (critical) do `aria-pressed` đặt trên `<NuxtLink>` — thuộc tính đó chỉ hợp lệ với `role="button"`, tab điều hướng phải dùng `aria-current="page"` (le-hoi.vue, su-kien.vue); và 1 × `nested-interactive` (serious) do `.season-timeline` khai `role="img"` trong khi bọc 12 `<button>` bấm được → đổi sang `role="group"` (theo-mua.vue).
+  **5 còn lại đều là `color-contrast`** (23 node trên `/`, `/du-lich`, `/ocop`, `/theo-mua`, `/lich-trinh`) — sửa đúng cách là chỉnh design token, đụng cả hệ màu tri-region nên tách thành việc riêng thay vì vá vội trong đợt cổng. Baseline 5 = nợ đang có; ratchet chặn mọi violation serious+ PHÁT SINH THÊM.
+
 ## SKIP-log (tự động ghi bởi run_hard khi SKIP_CHECKS hợp lệ)

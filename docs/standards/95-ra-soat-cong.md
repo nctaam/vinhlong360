@@ -24,7 +24,7 @@ Bốn vấn đề **xuyên suốt** (không tính vào hạng của cổng riên
 | Rule | Check | Tầng | Hạng | Vì sao (một dòng) |
 |---|---|---|---|---|
 | R20.7 | `test_pairing` | soft-ratchet | ~~GIẢ~~ → **THẬT** ✅ | Lỗ file-rỗng đã vá `2c0f12bf`: file test phải có hàm `test_*` mới tính là cặp. *Đính chính:* `--all` trả rỗng là **cố ý** — R20.7 đối chiếu "file đổi ↔ test **staged**", khái niệm không tồn tại ngoài pre-commit; đây không phải lỗi |
-| R30.6 | `axe` | ⚠️ chưa thực thi | **GIẢ** | Không nơi nào trong repo/CI sinh `axe-report.json` → vĩnh viễn 0. Đã hạ hạng trong `00-INDEX.md`; **cần chủ dự án quyết** có thêm axe scan vào CI hay không (kéo theo chromium ~300MB + phút CI) |
+| R30.6 | `axe` | hard-ratchet | ~~GIẢ~~ → **THẬT** ✅ | Chủ dự án duyệt thêm scan. `scripts/axe_scan.mjs` quét 14 trang bằng CDP thuần trên Chrome sẵn có (không puppeteer/playwright, không tải browser). Lần chạy đầu lộ **8 violation serious+**; đã sửa 4 critical `aria-allowed-attr` + 1 `nested-interactive`, còn 5 `color-contrast` làm baseline |
 | R30.7 | `bundle` | soft-ratchet | ~~GIẢ~~ → **THẬT** ✅ | Đã vá: cổng nay chạy ở **job frontend** của `ci.yml` ngay sau `npm run build`, và exit 2 nếu thiếu `.output` thay vì im lặng trả 0 |
 | R40.3 | `banned_claims` | hard | ~~YẾU~~ → **THẬT** ✅ | Lỗ miễn-trừ đã vá `cf7b84d9` |
 | R10.6 | `banned_image_sources` | hard | ~~YẾU~~ → **THẬT** ✅ | Vi phạm thật ở `huong-dan.vue:459` đã sửa; lỗ miễn-trừ đã vá `cf7b84d9` — "không" chỉ miễn khi đi với động từ chỉ dẫn |
@@ -53,7 +53,8 @@ Bốn vấn đề **xuyên suốt** (không tính vào hạng của cổng riên
 | R50.7 | `content_superlative` | soft-ratchet | THẬT | Khớp theo câu, có kiểm dẫn chứng số trong cùng câu |
 
 Tổng lúc rà (2026-08-05, sáng): **13 THẬT · 12 YẾU · 3 GIẢ**.
-Sau đợt vá cùng ngày: **27 THẬT · 0 YẾU · 1 GIẢ** (R30.6 axe — chờ chủ dự án quyết), cộng rule mới **R20.5b**.
+Sau đợt vá cùng ngày: **28 THẬT · 0 YẾU · 0 GIẢ**, cộng rule mới **R20.5b**.
+Mọi cổng trong bảng nay đều đọc đúng thứ nó tuyên bố kiểm.
 
 Các mục 1–2 bên dưới giữ nguyên văn bản lúc rà để đối chiếu; trạng thái mới nhất
 nằm ở bảng tổng phía trên và ở `00-INDEX.md`.

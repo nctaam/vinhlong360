@@ -290,6 +290,41 @@ jobs:
       - name: Run tests
         run: npm test
 
+      # R30.6 cần axe-report.json, mà trước 2026-08-05 KHÔNG nơi nào trong repo
+      # sinh ra nó — cổng hard-ratchet đó chưa bao giờ chạy. Quét bằng CDP thuần
+      # (scripts/axe_scan.mjs) trên Chrome có sẵn của runner: không thêm
+      # puppeteer/playwright, không tải browser riêng.
+      - name: Start preview server for a11y scan
+        run: |
+          npm run preview &
+          echo "PREVIEW_PID=$!" >> $GITHUB_ENV
+        env:
+          NUXT_PUBLIC_SITE_NOINDEX: "true"
+
+      - name: Accessibility scan (axe-core, 14 trang)
+        working-directory: .
+        run: node scripts/axe_scan.mjs
+        env:
+          AXE_BASE_URL: http://localhost:3000
+
+      - name: Accessibility gate (R30.6)
+        working-directory: .
+        env:
+          PYTHONPATH: scripts
+        run: python3 -m checks.check_axe
+
+      - name: Stop preview server
+        if: always()
+        run: kill "$PREVIEW_PID" 2>/dev/null || true
+
+      - name: Upload axe report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: axe-report
+          path: axe-report.json
+          retention-days: 14
+
   # ── 5. Docker build (agent) ──────────────────────────────────
   docker:
     name: Docker build

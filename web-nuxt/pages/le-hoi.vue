@@ -105,8 +105,11 @@
     <!-- Register toggle: ancestral (lễ hội, here) vs contemporary (sự kiện) — leaf ↔ amber -->
     <section class="block reveal">
       <div class="register-toggle" role="group" aria-label="Chọn sổ lễ hội">
-        <NuxtLink to="/le-hoi" class="register-toggle-tab is-active tone-leaf" aria-pressed="true">🎋 Lễ hội truyền thống</NuxtLink>
-        <NuxtLink to="/su-kien" class="register-toggle-tab tone-amber" aria-pressed="false">🎪 Sự kiện &amp; hội chợ</NuxtLink>
+        <!-- aria-current, KHÔNG phải aria-pressed: đây là link điều hướng
+             (<a>), mà aria-pressed chỉ hợp lệ với role="button" — axe bắt
+             critical `aria-allowed-attr` (2026-08-05). -->
+        <NuxtLink to="/le-hoi" class="register-toggle-tab is-active tone-leaf" aria-current="page">🎋 Lễ hội truyền thống</NuxtLink>
+        <NuxtLink to="/su-kien" class="register-toggle-tab tone-amber">🎪 Sự kiện &amp; hội chợ</NuxtLink>
       </div>
     </section>
 

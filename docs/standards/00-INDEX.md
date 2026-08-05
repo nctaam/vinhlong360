@@ -28,7 +28,7 @@ Cơ chế: **hard** = 0 vi phạm mọi lúc · **hard-ratchet/soft-ratchet** = 
 | R30.3 | màu ngoài tokens (đếm từng match) | hard-ratchet | check_fe_tokens | 307 | 30-frontend.md |
 | R30.4 | ClientOnly cho volatile | checklist-ký | — | — | 30-frontend.md |
 | R30.5 | tap-target ≥44 (ngoại lệ season-ring) | checklist-ký | — | — | 30-frontend.md |
-| R30.6 | axe 0 serious+ | ⚠️ CHƯA THỰC THI | check_axe — **không nơi nào trong repo/CI sinh `axe-report.json`**, nên cổng vĩnh viễn skip về 0. Xem 95-ra-soat-cong.md | 0 | 30-frontend.md |
+| R30.6 | axe 0 serious+ trên 14 trang sweep | hard-ratchet | check_axe — report sinh bởi `scripts/axe_scan.mjs` ở **job frontend** của CI (job Python không quét axe) | 5 | 30-frontend.md |
 | R30.7 | bundle budget (chunk-max gz + trần CSS + đích entry ≤200kB) | soft-ratchet | check_bundle — chạy ở **job frontend** của CI sau `npm run build` (job Python không có `.output`) | 0 | 30-frontend.md |
 | R40.3 | cấm claim đã-xác-minh | hard | check_banned_claims | 0 | 40-ui-design.md |
 | R50.2 | filler giọng cấm (field-aware, bỏ source) | soft-ratchet | check_content_voice | 102 | 50-content.md |
@@ -44,7 +44,7 @@ Cơ chế: **hard** = 0 vi phạm mọi lúc · **hard-ratchet/soft-ratchet** = 
 
 ## Pending-check có hạn
 - (R20.1 ruff + R20.2 async + R20.4 coverage-gate ĐÃ BẬT; coverage nâng ngưỡng dần qua W4/W5)
-- ~~SP4: R30.6 axe · R30.7 bundle~~ → checker viết xong 2026-07-10, nhưng "enforce CI" khi đó **không đúng**: R30.7 chạy ở job không build FE, R30.6 không có nguồn sinh report. Rà 2026-08-05 (`95-ra-soat-cong.md`) phát hiện; R30.7 đã gắn vào job frontend, R30.6 vẫn treo — **chờ chủ dự án quyết** có thêm axe scan vào CI hay không.
+- ~~SP4: R30.6 axe · R30.7 bundle~~ → checker viết xong 2026-07-10 nhưng "enforce CI" khi đó **không đúng** (R30.7 chạy ở job không build FE; R30.6 không có nguồn sinh report). Rà 2026-08-05 phát hiện; **cả hai nay đã thực sự chạy** ở job frontend — R30.7 sau `npm run build`, R30.6 sau `scripts/axe_scan.mjs`.
 
 ## Lệnh
 ```
