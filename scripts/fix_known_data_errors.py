@@ -58,11 +58,25 @@ OUT_OF_PROVINCE = (
 
 # Mô tả bị hỏng mã (mojibake): "?i?m tham quan n?m trong khu v?c bi?n Ba ??ng".
 # Đọc ra được nên đây là khôi phục, không phải viết mới.
-MOJIBAKE_FIX = (
-    "con-cu",
-    "Điểm tham quan nằm trong khu vực biển Ba Động, từng được phát triển thành "
-    "sân golf trong giai đoạn khai thác du lịch ven biển.",
-)
+MOJIBAKE_FIXES = {
+    "con-cu": (
+        "Điểm tham quan nằm trong khu vực biển Ba Động, từng được phát triển thành "
+        "sân golf trong giai đoạn khai thác du lịch ven biển."
+    ),
+    # Bản dài, khôi phục kèm sửa luôn "thành phố Bến Tre" — cấp huyện đã bỏ từ
+    # 7/2025. "tỉnh lỵ Kiến Hòa" là mốc lịch sử nên giữ nguyên.
+    "ho-truc-giang": (
+        "Hồ Trúc Giang hình thành từ khoảng đầu thập niên 1930 ngay trung tâm Bến Tre, "
+        "trên khu đất từng bị đào lấy đất rồi tích nước thành hồ. Tên Trúc Giang gắn với "
+        "giai đoạn tỉnh lỵ Kiến Hòa, còn người dân quen gọi nơi này là Bờ Hồ. Đường dạo "
+        "quanh hồ rợp bóng me tây và phượng vĩ lâu năm; mùa hè, sắc phượng phản chiếu "
+        "xuống mặt nước tạo khung cảnh rất riêng của xứ dừa. Giữa hồ có nhà thủy tạ, ven "
+        "bờ có ghế đá và lối đi bộ, buổi sáng thường có người tập thể dục, chiều tối là "
+        "điểm hẹn hóng mát. Phía tây hồ đặt tượng đồng Trần Văn Ơn, gần Đình An Hội, Chợ "
+        "Bến Tre, Bảo tàng Bến Tre và Chùa Viên Minh. Hồ mở cửa tự do, không thu phí; "
+        "thời điểm dễ chịu nhất để dạo Bờ Hồ là mùa khô từ tháng 11 đến tháng 4."
+    ),
+}
 
 
 def fix_rating_scale(text: str) -> str:
@@ -107,8 +121,8 @@ def main() -> int:
             if eid == target_id and old_text in new:
                 new = new.replace(old_text, fixed_text)
 
-        if eid == MOJIBAKE_FIX[0] and "?" in new:
-            new = MOJIBAKE_FIX[1]
+        if eid in MOJIBAKE_FIXES and "?" in new:
+            new = MOJIBAKE_FIXES[eid]
 
         attributes_changed = False
         if eid == SEASON_CONFLICT[0]:
