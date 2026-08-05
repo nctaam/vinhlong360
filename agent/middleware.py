@@ -15,6 +15,7 @@ import ipaddress
 import json
 import logging
 import os
+from collections import deque
 import secrets
 import time
 import threading
@@ -52,13 +53,17 @@ def _safe_log_value(value):
 class StructuredLogger:
     """JSON-based logger with rotation support."""
 
-    def __init__(self, name: str = "vinhlong360", max_entries: int = 5000):
+    def __init__(self, name: str = "vinhlong360", max_entries: int = 5000,
+                 max_bytes: int = 32 * 1024 * 1024):
         self.name = name
         self.max_entries = max_entries
+        # Trần cứng theo dung lượng, độc lập với bộ đếm của phiên chạy.
+        self.max_bytes = max_bytes
         self.log_file = LOG_DIR / "server.log.jsonl"
         self._lock = Lock()
         self._buffer: list[dict] = []
         self._flush_count = 0
+        self._checked_existing = False
 
         # Python logging bridge — configurable via LOG_LEVEL env var
         self._py_logger = logging.getLogger(name)
@@ -128,25 +133,47 @@ class StructuredLogger:
             self._flush_count += len(self._buffer)
             self._buffer.clear()
 
-            # Rotate if too large
-            if self._flush_count > self.max_entries:
+            # Ngưỡng theo _flush_count chỉ đếm được phiên chạy hiện tại: sau mỗi lần
+            # khởi động lại nó về 0, nên file to sẵn từ phiên trước không bao giờ bị
+            # xét — đó là cách server.log.jsonl trên máy dev phình tới hàng chục MB
+            # dù đã có _rotate(). Nên lần ghi đầu của mỗi phiên luôn dọn phần tồn dư,
+            # sau đó mới chạy theo bộ đếm và trần dung lượng.
+            if not self._checked_existing:
+                self._checked_existing = True
+                self._rotate()
+            elif self._flush_count > self.max_entries or self._file_too_big():
                 self._rotate()
         except Exception as exc:
             self._py_logger.debug("Log flush failed: %s", exc)
 
+    def _file_too_big(self) -> bool:
+        try:
+            return self.log_file.exists() and self.log_file.stat().st_size > self.max_bytes
+        except OSError:
+            return False
+
     def _rotate(self):
-        """Keep only last N entries (streaming read to avoid loading entire file)."""
+        """Giữ lại N bản ghi mới nhất, đọc theo dòng chứ không nạp cả file.
+
+        Bản cũ ghi docstring là streaming nhưng dùng readlines(), tức nạp trọn
+        file vào RAM đúng lúc file đã quá lớn — càng cần xoay vòng thì càng dễ
+        thất bại, và lỗi bị nuốt nên file cứ phình tiếp.
+        """
         try:
             if self.log_file.exists():
-                with open(self.log_file, "r", encoding="utf-8") as f:
-                    lines = f.readlines()
-                if len(lines) > self.max_entries:
-                    keep = lines[-self.max_entries:]
-                    with open(self.log_file, "w", encoding="utf-8") as f:
+                keep: deque[str] = deque(maxlen=self.max_entries)
+                with open(self.log_file, "r", encoding="utf-8", errors="replace") as f:
+                    for line in f:
+                        keep.append(line)
+                if len(keep) == self.max_entries or self.log_file.stat().st_size > self.max_bytes:
+                    tmp = self.log_file.with_suffix(self.log_file.suffix + ".rotating")
+                    with open(tmp, "w", encoding="utf-8") as f:
                         f.writelines(keep)
+                    tmp.replace(self.log_file)
             self._flush_count = 0
         except Exception as exc:
-            self._py_logger.debug("Log rotation failed: %s", exc)
+            # Xoay vòng hỏng nghĩa là đĩa sẽ đầy dần trong im lặng — phải thấy được.
+            self._py_logger.warning("Log rotation failed: %s", exc)
 
     def flush(self):
         with self._lock:
