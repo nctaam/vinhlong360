@@ -17,7 +17,11 @@ from .common import repo_root
 
 NUXT_DIR = "web-nuxt/.output/public/_nuxt"
 BUDGET = "docs/standards/bundle-budget.json"
-DEFAULTS = {"total_gz_kb": 800, "max_chunk_gz_kb": 280, "entry_target_gz_kb": 200}
+DEFAULTS = {"total_gz_kb": 800, "max_chunk_gz_kb": 280, "entry_target_gz_kb": 200,
+            # CSS trước đây KHÔNG được cân: cổng chỉ glob("*.js"), nên 107 file CSS
+            # (156 kB gz) nằm ngoài mọi ngưỡng — chúng có phình gấp đôi thì cổng vẫn
+            # xanh. Trần riêng để không phải nới trần JS đang có hiệu lực.
+            "total_css_gz_kb": 190}
 
 
 def _gz_kb(p: Path) -> int:
@@ -60,6 +64,11 @@ class BundleCheck:
             violations.append({"file": f"{NUXT_DIR}/{max_name}", "line": 0, "rule": self.rule,
                                "msg": f"chunk lớn nhất {max_chunk}kB gz > {budget['max_chunk_gz_kb']}kB "
                                       f"(đích entry {budget['entry_target_gz_kb']}kB)"})
+
+        css_total = sum(_gz_kb(f) for f in nuxt.rglob("*.css"))
+        if css_total > budget["total_css_gz_kb"]:
+            violations.append({"file": NUXT_DIR, "line": 0, "rule": self.rule,
+                               "msg": f"CSS total {css_total}kB gz > {budget['total_css_gz_kb']}kB"})
         return self._result(violations)
 
     def _result(self, violations: list) -> dict:

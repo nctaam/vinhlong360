@@ -67,3 +67,29 @@ def test_axe_clean_report_passes(tmp_path):
         json.dumps({"violations": [{"impact": "moderate", "id": "x", "nodes": [1]}]}),
         encoding="utf-8")
     assert AxeCheck(root=tmp_path).run()["count"] == 0
+
+
+def test_bundle_gate_can_css_chu_khong_chi_js(tmp_path):
+    """CSS từng nằm ngoài mọi ngưỡng: cổng chỉ glob('*.js').
+
+    Đo thật trên bản build ngày 2026-08-05: 107 file CSS = 156 kB gz hoàn toàn
+    không được cân. CSS có phình gấp đôi thì cổng vẫn báo xanh.
+    """
+    nuxt = tmp_path / "web-nuxt" / ".output" / "public" / "_nuxt"
+    nuxt.mkdir(parents=True)
+    # JS nhỏ để không chạm trần JS — chỉ CSS mới được phép làm cổng đỏ ở đây.
+    (nuxt / "entry.js").write_bytes(b"x" * 1024)
+    # ~300 kB gz CSS: dùng nội dung ngẫu nhiên để gzip không nén sạch.
+    import os
+    for i in range(6):
+        (nuxt / f"chunk-{i}.css").write_bytes(os.urandom(60 * 1024))
+
+    budget = tmp_path / "docs" / "standards"
+    budget.mkdir(parents=True)
+    (budget / "bundle-budget.json").write_text(
+        '{"total_gz_kb": 800, "max_chunk_gz_kb": 280, "total_css_gz_kb": 190}', encoding="utf-8")
+
+    result = BundleCheck(root=tmp_path).run()
+
+    assert result["count"] >= 1, "CSS vượt trần mà cổng vẫn xanh"
+    assert any("CSS total" in v["msg"] for v in result["violations"])
