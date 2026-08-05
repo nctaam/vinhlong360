@@ -33,6 +33,15 @@ THIN_LIMIT = 200
 NUMBER_RE = re.compile(r"\d[\d.,/]*")
 WORD_RE = re.compile(r"[^\W\d_]+", re.UNICODE)
 
+# Câu độn: kể ra thứ hồ sơ KHÔNG có để lấp cho đủ độ dài. Nó không thêm thông tin
+# nào cho người đọc, chỉ làm mọi trang giống nhau.
+EMPTY_FILLER_RE = re.compile(
+    r"(chưa có thông tin|chưa rõ (giá|giờ|số điện thoại)|không có thông tin|"
+    r"hỏi (tại chỗ|trực tiếp) (để|cho) (biết|rõ)|liên hệ để biết thêm|"
+    r"thông tin đang được (cập nhật|bổ sung))",
+    re.IGNORECASE,
+)
+
 
 def proper_nouns(text: str) -> set[str]:
     """Cụm từ viết hoa liên tiếp.
@@ -77,6 +86,45 @@ COMMON_CAPITALIZED = {
 
 VAGUE_WORDS = ("nổi tiếng", "hấp dẫn", "thu hút", "tuyệt vời", "độc đáo", "ấn tượng",
                "thơ mộng", "hữu tình", "không thể bỏ qua", "điểm đến lý tưởng")
+
+# Trường nội bộ: ghi chú vận hành/marketing của đội ngũ, KHÔNG phải sự thật về
+# địa điểm. Đợt đầu có bản biến responsible_tips (đề xuất nội bộ) thành dịch vụ
+# đang bán — khách đọc xong có thể tới đặt một workshop không tồn tại.
+INTERNAL_ONLY_FIELDS = (
+    "responsible_tips", "target_segments", "priority", "role", "tour", "where",
+    "local_favorite", "instagram_worthy", "coords_approximate", "schema_type",
+    "merge_note", "confidence", "internal_note", "todo",
+)
+
+# Khẳng định độ chính xác vị trí. coords_approximate=false chỉ nghĩa là toạ độ
+# KHÔNG được đánh dấu gần đúng — không đủ để hứa "bấm bản đồ là ra tới cửa".
+# §1.7 cấm mọi claim xác minh mà dữ liệu không đỡ được.
+PRECISION_CLAIMS = (
+    "toạ độ chính xác", "tọa độ chính xác", "toạ độ chấm đúng", "tọa độ chấm đúng",
+    "ra tới cửa", "đúng tới cửa", "chính xác tuyệt đối", "đã được xác minh",
+    "đã xác minh", "kiểm chứng thực địa",
+)
+
+# Ba nhóm chủ đề mà đợt viết 765 mô tả đã bịa ra, và gác cổng chuỗi thuần không
+# nhận biết được vì chúng không nhắc tên trường nào:
+#
+# 1. Lời khuyên an toàn. Một bản khuyên "bơi tự do giữa dòng, không phao không
+#    hàng rào" trên sông Cổ Chiên — chính DB ghi sông này có điểm sâu nhất ĐBSCL
+#    và dòng chảy mạnh. Khuyên sai kiểu này có thể làm chết người.
+# 2. Giải thích lý do phân loại hành chính ("có thị trấn cũ bên trong nên xếp là
+#    phường") — luật bịa, chính bộ dữ liệu bác bỏ.
+# 3. Nhóm khách mục tiêu — đó là target_segments, ghi chú marketing nội bộ.
+UNSOURCEABLE_TOPICS = (
+    (r"(bơi|tắm|lội)\s+(tự do|thoải mái)|không\s+(phao|hàng rào|cứu hộ)|"
+     r"an toàn hơn|đừng xuống nước|nước cạn nên|có thể tắm được",
+     "lời khuyên an toàn không có trong bản ghi"),
+    (r"nên\s+(được\s+)?(xếp|gọi|coi) là (phường|xã)|không phải (là )?(phường|xã)|"
+     r"vì có thị trấn cũ|nên đơn vị mới",
+     "tự suy ra luật phân loại hành chính"),
+    (r"nhóm khách (được )?nhắm|khách mục tiêu|phù hợp với (dân|nhóm|giới)|"
+     r"đối tượng khách",
+     "nhóm khách mục tiêu là ghi chú nội bộ"),
+)
 
 
 def _strip_accents(text: str) -> str:
@@ -125,15 +173,29 @@ def check_no_invention(entity: dict, new: str) -> list[str]:
         return ["mô tả mới rỗng"]
 
     known = _known_text(entity)
+    lowered = new.lower()
     checks = [
         (_invented_numbers(new, known), "số liệu không có trong bản ghi"),
         (_invented_nouns(new, _strip_accents(known).lower()), "tên riêng không có trong bản ghi"),
-        ([w for w in VAGUE_WORDS if w in new.lower()], "từ sáo rỗng"),
+        ([w for w in VAGUE_WORDS if w in lowered], "từ sáo rỗng"),
+        ([f for f in INTERNAL_ONLY_FIELDS if f in lowered], "lộ tên trường nội bộ"),
+        ([c for c in PRECISION_CLAIMS if c in lowered], "khai khống độ chính xác (§1.7)"),
     ]
     problems = [f"{label}: {found[:6]}" for found, label in checks if found]
 
-    if len(new) < THIN_LIMIT:
-        problems.append(f"vẫn dưới ngưỡng mỏng ({len(new)} < {THIN_LIMIT})")
+    for pattern, label in UNSOURCEABLE_TOPICS:
+        match = re.search(pattern, lowered)
+        if match:
+            problems.append(f"{label}: '{match.group(0)}'")
+
+    # Không ép độ dài tối thiểu. Ngưỡng cứng 200 ký tự ở bản đầu đã khiến 148 bản
+    # đạt ngưỡng bằng cách LIỆT KÊ NHỮNG THỨ HỒ SƠ KHÔNG CÓ ("giá thì chưa có
+    # thông tin, hỏi tại chỗ"). Với entity nghèo dữ kiện, mô tả ngắn mới là trung
+    # thực; điều bắt buộc chỉ là dài hơn bản cũ và không độn.
+    if len(new) <= len(entity.get("description") or ""):
+        problems.append("không dài hơn mô tả cũ")
+    if EMPTY_FILLER_RE.search(new):
+        problems.append("độn chữ bằng thứ hồ sơ không có")
     return problems
 
 
