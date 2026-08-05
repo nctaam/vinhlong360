@@ -18,6 +18,11 @@ import venv
 
 import pytest
 
+# Mỗi test ở đây spawn một tiến trình installer thật (~20s). 284 test trong file
+# chiếm ~95 trong 128 phút của full suite. Marker này loại chúng khỏi vòng chạy
+# local mặc định; CI truyền -m riêng nên vẫn chạy đủ.
+pytestmark = pytest.mark.subprocess_heavy
+
 from tests.launch_safety.test_rollback_runbook import (
     _bash_path,
     _build_closed_package,
