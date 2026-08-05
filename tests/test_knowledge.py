@@ -61,13 +61,28 @@ def test_search_entities_by_type():
 
 
 def test_search_entities_by_area():
+    """Lọc theo area phải trả đúng area — và xã/phường cha (nếu có) cùng area.
+
+    Bản cũ đòi get_place() khác None cho MỌI kết quả. Nhưng get_place() trả về
+    xã/phường mà entity thuộc về qua placeId, nên nó None với entity vốn đã là
+    một xã/phường. Vì vậy test cũ xanh khi DB nghèo dữ liệu và đỏ khi DB đầy đủ
+    (dữ liệu thật có "Xã Hậu Lộc" area=vinh-long, không có placeId) — đỏ vì giả
+    định sai, không phải vì code hỏng.
+    """
     results = knowledge.search_entities(area="vinh-long")
     assert isinstance(results, list)
-    # Every result should belong to the vinh-long area
+
     for r in results:
+        assert r.get("area") == "vinh-long", f"{r['id']} lọt qua bộ lọc area"
+
         place = knowledge.get_place(r["id"])
-        assert place is not None
-        assert place.get("area") == "vinh-long"
+        if place is None:
+            # Hợp lệ khi bản thân entity là xã/phường; entity khác thì phải gắn nơi chốn.
+            assert r.get("type") == "place", f"{r['id']} ({r.get('type')}) không gắn xã/phường nào"
+            continue
+        assert place.get("area") == "vinh-long", (
+            f"{r['id']} thuộc {place.get('id')} nhưng xã/phường đó ở area {place.get('area')}"
+        )
 
 
 # ── get_entity ──
