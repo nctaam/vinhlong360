@@ -74,6 +74,53 @@ class ApiContractCheck:
         except OSError:
             return ""
 
+    @staticmethod
+    def _router_prefixes(tree: ast.Module) -> dict[str, str]:
+        """Tên biến router -> prefix khai trong APIRouter(prefix=...)."""
+        prefixes: dict[str, str] = {}
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Assign) or not isinstance(node.value, ast.Call):
+                continue
+            func = node.value.func
+            if getattr(func, "id", None) != "APIRouter" and getattr(func, "attr", None) != "APIRouter":
+                continue
+            prefix = next((str(kw.value.value) for kw in node.value.keywords
+                           if kw.arg == "prefix" and isinstance(kw.value, ast.Constant)), "")
+            prefixes.update({t.id: prefix for t in node.targets if isinstance(t, ast.Name)})
+        return prefixes
+
+    @staticmethod
+    def _decorated_paths(tree: ast.Module, prefixes: dict[str, str]) -> set[str]:
+        paths: set[str] = set()
+        for node in ast.walk(tree):
+            if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            for deco in node.decorator_list:
+                if not isinstance(deco, ast.Call) or not deco.args:
+                    continue
+                func = deco.func
+                if not isinstance(func, ast.Attribute) or func.attr not in HTTP_METHODS:
+                    continue
+                if not isinstance(deco.args[0], ast.Constant):
+                    continue
+                paths.add(f"{prefixes.get(getattr(func.value, 'id', ''), '')}{deco.args[0].value}")
+        return paths
+
+    def _paths_in_file(self, file: Path) -> set[str]:
+        try:
+            source = file.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            return set()
+        # Bỏ sớm file không khai route: pre-commit chạy cổng này mỗi lần, parse
+        # AST toàn bộ agent/ tốn vài giây không cần thiết.
+        if "@router." not in source and "@app." not in source:
+            return set()
+        try:
+            tree = ast.parse(source)
+        except SyntaxError:
+            return set(DECORATOR_RE.findall(source))
+        return self._decorated_paths(tree, self._router_prefixes(tree))
+
     def _code_route_paths(self) -> set[str]:
         """Mọi path route hiện có trong agent/, đã ghép prefix của APIRouter.
 
@@ -85,97 +132,56 @@ class ApiContractCheck:
         for file in (self.root / "agent").rglob("*.py"):
             if "/tests/" in file.as_posix() or "\\tests\\" in str(file):
                 continue
-            try:
-                source = file.read_text(encoding="utf-8", errors="replace")
-            except OSError:
-                continue
-            # Bỏ sớm file không khai route: pre-commit chạy cổng này mỗi lần,
-            # parse AST toàn bộ agent/ tốn vài giây không cần thiết.
-            if "@router." not in source and "@app." not in source:
-                continue
-            try:
-                tree = ast.parse(source)
-            except SyntaxError:
-                paths.update(DECORATOR_RE.findall(source))
-                continue
-
-            prefixes: dict[str, str] = {}
-            for node in ast.walk(tree):
-                if not isinstance(node, ast.Assign) or not isinstance(node.value, ast.Call):
-                    continue
-                func = node.value.func
-                if getattr(func, "id", None) != "APIRouter" and getattr(func, "attr", None) != "APIRouter":
-                    continue
-                prefix = ""
-                for kw in node.value.keywords:
-                    if kw.arg == "prefix" and isinstance(kw.value, ast.Constant):
-                        prefix = str(kw.value.value)
-                for target in node.targets:
-                    if isinstance(target, ast.Name):
-                        prefixes[target.id] = prefix
-
-            for node in ast.walk(tree):
-                if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                    continue
-                for deco in node.decorator_list:
-                    if not isinstance(deco, ast.Call):
-                        continue
-                    func = deco.func
-                    if not isinstance(func, ast.Attribute) or func.attr not in HTTP_METHODS:
-                        continue
-                    owner = getattr(func.value, "id", "")
-                    if not deco.args or not isinstance(deco.args[0], ast.Constant):
-                        continue
-                    paths.add(f"{prefixes.get(owner, '')}{deco.args[0].value}")
+            paths |= self._paths_in_file(file)
         return paths
 
+    def _stale_contract_entries(self, contract: str) -> list[dict]:
+        """--all: hợp đồng mô tả route đã biến mất khỏi code.
+
+        Trước đây nhánh này trả rỗng, nên cổng hạng HARD thực chất vô hiệu ngoài
+        lúc commit.
+        """
+        code_paths = self._code_route_paths()
+        return [
+            {"file": CONTRACT, "line": 0, "rule": self.rule,
+             "msg": f"hợp đồng mô tả `{documented}` nhưng không route nào trong agent/ khớp"}
+            for documented in sorted(set(CONTRACT_PATH_RE.findall(contract)))
+            if documented not in CONTRACT_NON_ROUTE_ENTRIES
+            and not _matches_any_route(documented, code_paths)
+        ]
+
+    def _staged_violations(self, path: str, contract: str) -> list[dict]:
+        # encoding tường minh: Windows text=True decode cp1252 → chết reader-thread
+        # trên diff UTF-8 tiếng Việt (stdout thành None)
+        diff = subprocess.run(
+            ["git", "diff", "--cached", "-U0", "--", path],
+            capture_output=True, encoding="utf-8", errors="replace", cwd=str(self.root),
+        ).stdout or ""
+        added, removed = _route_changes(diff)
+
+        # Staged file hợp đồng là điều kiện cần, không phải điều kiện đủ: phải
+        # thật sự mô tả route mới và bỏ mô tả route đã xoá.
+        cases = [
+            (sorted(k for k in added if k.split(" ", 1)[1] not in contract),
+             "route thêm", f"nhưng {CONTRACT} không mô tả path đó"),
+            (sorted(k for k in removed if k.split(" ", 1)[1] in contract),
+             "route bị xoá", f"nhưng {CONTRACT} vẫn còn mô tả"),
+        ]
+        return [
+            {"file": path, "line": 0, "rule": self.rule,
+             "msg": f"{len(keys)} {label} ({', '.join(keys)}) {tail}"}
+            for keys, label, tail in cases if keys
+        ]
+
     def run(self, files: list[str] | None = None) -> dict:
-        violations = []
         contract = self._contract_text()
-
         if files is None:
-            # --all: không có diff, nhưng vẫn soi được chiều ngược lại — hợp đồng
-            # mô tả route đã biến mất khỏi code. Trước đây nhánh này trả rỗng, nên
-            # cổng hạng HARD thực chất vô hiệu ngoài lúc commit.
-            code_paths = self._code_route_paths()
-            for documented in sorted(set(CONTRACT_PATH_RE.findall(contract))):
-                if documented in CONTRACT_NON_ROUTE_ENTRIES:
-                    continue
-                if not _matches_any_route(documented, code_paths):
-                    violations.append({
-                        "file": CONTRACT, "line": 0, "rule": self.rule,
-                        "msg": f"hợp đồng mô tả `{documented}` nhưng không route nào trong agent/ khớp",
-                    })
-            return self._result(violations)
+            return self._result(self._stale_contract_entries(contract))
 
-        files = [f.replace("\\", "/") for f in files]
-        agent_py = [f for f in files if f.startswith("agent/") and f.endswith(".py")]
-        for f in agent_py:
-            # encoding tường minh: Windows text=True decode cp1252 → chết
-            # reader-thread trên diff UTF-8 tiếng Việt (stdout thành None)
-            diff = subprocess.run(
-                ["git", "diff", "--cached", "-U0", "--", f],
-                capture_output=True, encoding="utf-8", errors="replace", cwd=str(self.root),
-            ).stdout or ""
-            added, removed = _route_changes(diff)
-
-            # Staged file hợp đồng là điều kiện cần, không phải điều kiện đủ:
-            # phải thật sự mô tả route mới và bỏ mô tả route đã xoá.
-            undocumented = sorted(k for k in added if k.split(" ", 1)[1] not in contract)
-            if undocumented:
-                violations.append({
-                    "file": f, "line": 0, "rule": self.rule,
-                    "msg": f"{len(undocumented)} route thêm ({', '.join(undocumented)}) "
-                           f"nhưng {CONTRACT} không mô tả path đó",
-                })
-
-            stale = sorted(k for k in removed if k.split(" ", 1)[1] in contract)
-            if stale:
-                violations.append({
-                    "file": f, "line": 0, "rule": self.rule,
-                    "msg": f"{len(stale)} route bị xoá ({', '.join(stale)}) "
-                           f"nhưng {CONTRACT} vẫn còn mô tả",
-                })
+        violations = []
+        for path in (f.replace("\\", "/") for f in files):
+            if path.startswith("agent/") and path.endswith(".py"):
+                violations.extend(self._staged_violations(path, contract))
         return self._result(violations)
 
     def _result(self, violations: list) -> dict:

@@ -43,16 +43,28 @@ def proper_nouns(text: str) -> set[str]:
     nouns: set[str] = set()
     for sentence in re.split(r"[.!?\n]", text or ""):
         run: list[str] = []
-        for word in WORD_RE.findall(sentence):
+        start_index = 0
+        for index, word in enumerate(WORD_RE.findall(sentence)):
             if word[:1].isupper():
+                if not run:
+                    start_index = index
                 run.append(word)
                 continue
             if run:
-                nouns.add(" ".join(run))
+                _collect(nouns, run, start_index)
                 run = []
         if run:
-            nouns.add(" ".join(run))
+            _collect(nouns, run, start_index)
     return nouns
+
+
+def _collect(nouns: set[str], run: list[str], start_index: int) -> None:
+    """Tiếng Việt viết hoa đầu câu, nên một từ viết hoa đứng đầu câu chưa phải
+    tên riêng — tính nó là tên riêng sẽ chặn oan mọi câu mở đầu bằng danh từ
+    chung ("Hàng bún dọn sớm...")."""
+    if start_index == 0 and len(run) == 1:
+        return
+    nouns.add(" ".join(run))
 
 # Từ mở đầu câu hoặc danh từ chung viết hoa — không phải tên riêng cần truy nguồn.
 COMMON_CAPITALIZED = {
@@ -71,62 +83,57 @@ def _strip_accents(text: str) -> str:
     return "".join(c for c in unicodedata.normalize("NFD", text) if unicodedata.category(c) != "Mn")
 
 
+KNOWN_FIELDS = ("name", "description", "summary", "address", "place_name", "placeId",
+                "area", "hours", "price_range", "best_time", "highlight")
+
+
 def _known_text(entity: dict) -> str:
     """Toàn bộ chữ nghĩa đã biết về entity — nguồn hợp lệ duy nhất để viết."""
-    parts = [
-        str(entity.get("name") or ""),
-        str(entity.get("description") or ""),
-        str(entity.get("summary") or ""),
-        str(entity.get("address") or ""),
-        str(entity.get("place_name") or entity.get("placeId") or ""),
-        str(entity.get("area") or ""),
-        str(entity.get("hours") or ""),
-        str(entity.get("price_range") or ""),
-        str(entity.get("best_time") or ""),
-        str(entity.get("highlight") or ""),
-    ]
+    parts = [str(entity.get(field) or "") for field in KNOWN_FIELDS]
     attributes = entity.get("attributes")
-    if isinstance(attributes, str):
-        parts.append(attributes)
-    elif attributes:
-        parts.append(json.dumps(attributes, ensure_ascii=False))
+    if attributes:
+        parts.append(attributes if isinstance(attributes, str)
+                     else json.dumps(attributes, ensure_ascii=False))
     return "\n".join(parts)
+
+
+def _invented_numbers(new: str, known: str) -> list[str]:
+    return sorted({
+        n.rstrip(".,/") for n in NUMBER_RE.findall(new)
+        if n.rstrip(".,/") and n.rstrip(".,/") not in known
+    })
+
+
+def _invented_nouns(new: str, known_flat: str) -> list[str]:
+    def traceable(noun: str) -> bool:
+        if _strip_accents(noun).lower() in known_flat:
+            return True
+        # Cụm mở đầu câu có thể chỉ là một từ thường viết hoa; nếu bỏ từ đầu mà
+        # phần còn lại truy được thì không phải bịa.
+        tail = " ".join(noun.split()[1:])
+        return bool(tail) and _strip_accents(tail).lower() in known_flat
+
+    return sorted({
+        noun for noun in proper_nouns(new)
+        if noun not in COMMON_CAPITALIZED and not traceable(noun)
+    })
 
 
 def check_no_invention(entity: dict, new: str) -> list[str]:
     """Từ chối bản mới nếu nó chứa dữ kiện không truy được về bản ghi."""
-    problems = []
     if not (new or "").strip():
         return ["mô tả mới rỗng"]
 
     known = _known_text(entity)
-    known_flat = _strip_accents(known).lower()
-
-    invented_numbers = sorted({
-        n.rstrip(".,/") for n in NUMBER_RE.findall(new)
-        if n.rstrip(".,/") and n.rstrip(".,/") not in known
-    })
-    if invented_numbers:
-        problems.append(f"số liệu không có trong bản ghi: {invented_numbers[:6]}")
-
-    invented_nouns = sorted({
-        noun for noun in proper_nouns(new)
-        if noun not in COMMON_CAPITALIZED
-        and _strip_accents(noun).lower() not in known_flat
-        # Cụm mở đầu câu có thể chỉ là một từ thường viết hoa; nếu bỏ từ đầu mà
-        # phần còn lại truy được thì không phải bịa.
-        and _strip_accents(" ".join(noun.split()[1:])).lower() not in known_flat
-    })
-    if invented_nouns:
-        problems.append(f"tên riêng không có trong bản ghi: {invented_nouns[:6]}")
-
-    found_vague = [w for w in VAGUE_WORDS if w in new.lower()]
-    if found_vague:
-        problems.append(f"từ sáo rỗng: {found_vague[:4]}")
+    checks = [
+        (_invented_numbers(new, known), "số liệu không có trong bản ghi"),
+        (_invented_nouns(new, _strip_accents(known).lower()), "tên riêng không có trong bản ghi"),
+        ([w for w in VAGUE_WORDS if w in new.lower()], "từ sáo rỗng"),
+    ]
+    problems = [f"{label}: {found[:6]}" for found, label in checks if found]
 
     if len(new) < THIN_LIMIT:
         problems.append(f"vẫn dưới ngưỡng mỏng ({len(new)} < {THIN_LIMIT})")
-
     return problems
 
 
