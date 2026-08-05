@@ -371,7 +371,11 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
   padding: var(--space-2) 0;
 }
 .footer-logo .logo { font-size: var(--text-lg); font-weight: var(--weight-bold); }
-.footer-logo .tld { font-size: var(--text-sm); color: var(--accent); font-weight: var(--weight-semibold); }
+/* --accent-text chứ không phải --accent: --accent (amber-500) KHÔNG có bản
+   light/dark riêng nên ở chế độ sáng nó là amber nhạt trên nền sáng — axe đo
+   1.86:1 trên 19 trang (footer có ở mọi trang, 2026-08-06). --accent-text tồn
+   tại sẵn đúng cho việc này, có bản riêng mỗi chế độ. */
+.footer-logo .tld { font-size: var(--text-sm); color: var(--accent-text); font-weight: var(--weight-semibold); }
 .footer-logo { transition: opacity .3s var(--ease-out), transform .35s var(--ease-spring-gentle); }
 .footer-logo:hover { opacity: .7; }
 .footer-logo:active { transform: scale(.95); transition-duration: .08s; }

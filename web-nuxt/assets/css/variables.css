@@ -133,7 +133,11 @@
   --primary-light: var(--clay-400);
   --accent: var(--amber-500);
   --accent-dark: var(--amber-600);
-  --accent-text: #9A6612;  /* amber dark enough for AA when used as TEXT on light bg */
+  /* Đậm hơn #9A6612 cũ: giá trị đó chỉ đủ AA trên nền SÁNG NHẤT (paper 4.58,
+     white 4.78 — đều sát mép) và TRƯỢT trên nền ấm --bg-warm (4.23), vốn là
+     nền của footer. axe bắt .footer-logo .tld ở 19/25 trang chế độ sáng
+     (2026-08-06). Giá trị mới đạt AA trên cả ba nền sáng: 4.86 / 5.26 / 5.50. */
+  --accent-text: #8E5D10;  /* amber dark enough for AA when used as TEXT on light bg */
   --secondary: var(--color-success);
   --secondary-dark: var(--leaf-700);
   --tertiary: var(--color-action);

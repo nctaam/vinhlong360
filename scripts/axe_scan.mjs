@@ -30,6 +30,11 @@ const OUT_FILE = path.join(REPO_ROOT, 'axe-report.json')
 const baseUrl = process.env.AXE_BASE_URL || 'http://localhost:3000'
 const port = Number(process.env.AXE_CDP_PORT || 9224)
 const settleMs = Number(process.env.AXE_SETTLE_MS || 900)
+// Site mặc định Nocturne (nuxt.config.ts: preference 'dark'), nên sweep trước
+// 2026-08-06 CHỈ kiểm chế độ tối — Parchment chưa từng được axe chạm tới. Quét cả
+// hai nhân đôi phạm vi cổng R30.6 mà gần như không tốn thêm hạ tầng.
+const COLOR_MODES = (process.env.AXE_COLOR_MODES || 'dark,light')
+  .split(',').map(s => s.trim()).filter(Boolean)
 
 // Sweep chỉ gồm trang CÔNG KHAI, không cần đăng nhập, để chạy được trên CI mà
 // không phải seed tài khoản.
@@ -162,6 +167,19 @@ async function newTarget() {
   return (await res.json()).webSocketDebuggerUrl
 }
 
+async function applyColorMode(cdp, mode) {
+  // @nuxtjs/color-mode đọc localStorage['vl360-color-mode'] (nuxt.config.ts:25).
+  // Phải đứng trên trang CÙNG ORIGIN mới ghi được, nên navigate về base trước.
+  await cdp.send('Page.navigate', { url: baseUrl })
+  await sleep(settleMs)
+  await cdp.send('Runtime.evaluate', {
+    expression: `localStorage.setItem('vl360-color-mode', ${JSON.stringify(mode)})`,
+  })
+  await cdp.send('Emulation.setEmulatedMedia', {
+    features: [{ name: 'prefers-color-scheme', value: mode }],
+  }).catch(() => {})
+}
+
 async function scanRoute(cdp, axeSource, route) {
   const url = new URL(route, baseUrl).toString()
   await cdp.send('Page.navigate', { url })
@@ -177,8 +195,8 @@ async function scanRoute(cdp, axeSource, route) {
     }))`,
     awaitPromise: true,
     returnByValue: true,
-    timeout: 60000,
-  })
+    timeout: 120000,
+  }, 150000)
   const payload = JSON.parse(result.result?.value || '{"violations":[]}')
   return { url: route, violations: payload.violations || [] }
 }
@@ -209,6 +227,7 @@ async function main() {
   ], { stdio: 'ignore' })
 
   const report = []
+  const skipped = []
   let cdp
   try {
     await waitForChrome()
@@ -216,12 +235,27 @@ async function main() {
     await cdp.connect()
     await cdp.send('Page.enable')
     await cdp.send('Runtime.enable')
-    for (const route of ROUTES) {
-      const entry = await scanRoute(cdp, axeSource, route)
-      report.push(entry)
-      const severe = entry.violations.filter(v => ['serious', 'critical'].includes(v.impact))
-      const mark = severe.length ? '✖' : '·'
-      console.log(`  ${mark} ${route} — ${entry.violations.length} violation, ${severe.length} serious+`)
+    for (const mode of COLOR_MODES) {
+      console.log(`\n— chế độ ${mode} —`)
+      await applyColorMode(cdp, mode)
+      for (const route of ROUTES) {
+        // Một trang nặng làm axe.run vượt timeout KHÔNG được kéo sập cả lượt —
+        // trước đây mất trắng 24 trang đã quét xong chỉ vì trang thứ 25.
+        let entry
+        try {
+          entry = await scanRoute(cdp, axeSource, route)
+        } catch (error) {
+          console.log(`  ! ${route} — bỏ qua: ${error.message}`)
+          skipped.push(`${route} [${mode}]: ${error.message}`)
+          continue
+        }
+        // Gắn chế độ vào url để báo cáo phân biệt hai lượt của cùng một trang.
+        entry.url = `${route} [${mode}]`
+        report.push(entry)
+        const severe = entry.violations.filter(v => ['serious', 'critical'].includes(v.impact))
+        const mark = severe.length ? '✖' : '·'
+        console.log(`  ${mark} ${route} — ${entry.violations.length} violation, ${severe.length} serious+`)
+      }
     }
   } finally {
     cdp?.close()
@@ -230,8 +264,14 @@ async function main() {
   }
 
   await writeFile(OUT_FILE, JSON.stringify(report, null, 2), 'utf8')
+  if (skipped.length) {
+    // In ra chứ không nuốt: quét thiếu trang mà báo 'sạch' là thông tin sai.
+    console.log(`
+! ${skipped.length} trang KHÔNG quét được:`)
+    for (const line of skipped) console.log(`    ${line}`)
+  }
   const severe = report.flatMap(r => r.violations).filter(v => ['serious', 'critical'].includes(v.impact))
-  console.log(`\n→ ${OUT_FILE} (${ROUTES.length} trang, ${severe.length} violation serious+)`)
+  console.log(`\n→ ${OUT_FILE} (${ROUTES.length} trang × ${COLOR_MODES.length} chế độ, ${severe.length} violation serious+)`)
   return 0
 }
 

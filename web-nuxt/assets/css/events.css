@@ -315,7 +315,10 @@
   box-shadow: var(--shadow-xs);
 }
 .register-toggle-tab.is-active.tone-leaf { color: var(--secondary-fg, var(--secondary)); }
-.register-toggle-tab.is-active.tone-amber { color: var(--accent-dark); }
+/* --accent-text chứ không phải --accent-dark: --accent-dark (amber-600) chỉ đạt
+   2.62:1 trên nền sáng vì nó là biến thể ĐẬM CỦA NỀN, không phải màu chữ.
+   --accent-text mới là token dành cho chữ và có bản riêng mỗi chế độ. */
+.register-toggle-tab.is-active.tone-amber { color: var(--accent-text); }
 .register-toggle-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .dark .register-toggle { background: rgba(255,255,255,.05); }
 .dark .register-toggle-tab.is-active { background: var(--card); }
