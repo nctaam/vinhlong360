@@ -23,12 +23,12 @@ Bốn vấn đề **xuyên suốt** (không tính vào hạng của cổng riên
 
 | Rule | Check | Tầng | Hạng | Vì sao (một dòng) |
 |---|---|---|---|---|
-| R20.7 | `test_pairing` | soft-ratchet | **GIẢ** | `--all` trả rỗng; chế độ staged chỉ kiểm *có* file `test_*.py` tên khớp — file rỗng cũng qua |
-| R30.6 | `axe` | hard-ratchet | **GIẢ** | Không nơi nào trong repo/CI sinh `axe-report.json` → vĩnh viễn 0 |
-| R30.7 | `bundle` | soft-ratchet | **GIẢ** | Cần `web-nuxt/.output`; job CI chạy cổng không build FE → vĩnh viễn 0 |
-| R40.3 | `banned_claims` | hard | YẾU | Dòng chứa chữ "không" (hoặc `no-repeat`) được miễn toàn bộ |
-| R10.6 | `banned_image_sources` | hard | YẾU | Cùng lỗ miễn-trừ; đang che một vi phạm thật ở `huong-dan.vue:459` |
-| R30.1 | `no_tailwind` | hard | YẾU | Cùng lỗ miễn-trừ |
+| R20.7 | `test_pairing` | soft-ratchet | ~~GIẢ~~ → **THẬT** ✅ | Lỗ file-rỗng đã vá `2c0f12bf`: file test phải có hàm `test_*` mới tính là cặp. *Đính chính:* `--all` trả rỗng là **cố ý** — R20.7 đối chiếu "file đổi ↔ test **staged**", khái niệm không tồn tại ngoài pre-commit; đây không phải lỗi |
+| R30.6 | `axe` | ⚠️ chưa thực thi | **GIẢ** | Không nơi nào trong repo/CI sinh `axe-report.json` → vĩnh viễn 0. Đã hạ hạng trong `00-INDEX.md`; **cần chủ dự án quyết** có thêm axe scan vào CI hay không (kéo theo chromium ~300MB + phút CI) |
+| R30.7 | `bundle` | soft-ratchet | ~~GIẢ~~ → **THẬT** ✅ | Đã vá: cổng nay chạy ở **job frontend** của `ci.yml` ngay sau `npm run build`, và exit 2 nếu thiếu `.output` thay vì im lặng trả 0 |
+| R40.3 | `banned_claims` | hard | ~~YẾU~~ → **THẬT** ✅ | Lỗ miễn-trừ đã vá `cf7b84d9` |
+| R10.6 | `banned_image_sources` | hard | ~~YẾU~~ → **THẬT** ✅ | Vi phạm thật ở `huong-dan.vue:459` đã sửa; lỗ miễn-trừ đã vá `cf7b84d9` — "không" chỉ miễn khi đi với động từ chỉ dẫn |
+| R30.1 | `no_tailwind` | hard | ~~YẾU~~ → **THẬT** ✅ | Cùng bản vá `cf7b84d9` |
 | R70.1 | `secrets` | hard | YẾU | Dòng có thẻ `<...>` được miễn; `.env.production`/`.env.local` không bị quét |
 | R60.1 | `doc_status` | hard-ratchet | YẾU | Chỉ kiểm có chuỗi `> STATUS`; `> STATUS` trống rỗng cũng qua |
 | R10.7 | `tinh_cu` | hard-ratchet | YẾU | Một cặp `(id, field)` trong whitelist miễn **không giới hạn** số lần; itinerary + attribute lồng không quét |

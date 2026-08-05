@@ -274,6 +274,15 @@ jobs:
           BUILD_REVISION: ${{ github.sha }}
         run: npm run build
 
+      # R30.7 chỉ đo được khi ĐÃ có web-nuxt/.output. `run_hard.py --all` chạy ở
+      # job Python — nơi frontend chưa từng build — nên ở đó cổng luôn graceful-skip
+      # về 0 và không bao giờ chặn được gì. Đây là nơi duy nhất nó có răng.
+      - name: Bundle budget gate (R30.7)
+        working-directory: .
+        env:
+          PYTHONPATH: scripts
+        run: python3 -m checks.check_bundle
+
       - name: Run tests
         run: npm test
 

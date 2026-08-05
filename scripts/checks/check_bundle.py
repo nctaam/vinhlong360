@@ -77,3 +77,30 @@ class BundleCheck:
 
 
 CHECKS = [BundleCheck()]
+
+
+def main() -> int:
+    """Chạy riêng R30.7 ở nơi CÓ `.output` — cụ thể là job frontend của CI,
+    ngay sau `npm run build`.
+
+    `run_hard.py --all` chạy ở job Python, nơi frontend chưa bao giờ được
+    build, nên R30.7 ở đó luôn graceful-skip về 0: cổng không bao giờ chặn
+    được gì. Entry này để job frontend gọi trực tiếp:
+        PYTHONPATH=scripts python3 -m checks.check_bundle
+    """
+    result = CHECKS[0].run(None)
+    nuxt = CHECKS[0].root / NUXT_DIR
+    if not nuxt.exists():
+        print(f"✖ R30.7: không thấy {NUXT_DIR} — phải chạy SAU `npm run build`")
+        return 2
+    for violation in result["violations"]:
+        print(f"✖ R30.7 {violation['file']}: {violation['msg']}")
+    if result["count"]:
+        print(f"Bundle vượt ngân sách: {result['count']} vi phạm")
+        return 1
+    print("✓ R30.7 bundle budget: đạt")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
