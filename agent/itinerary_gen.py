@@ -240,6 +240,53 @@ def _candidate_fee_value(item: dict) -> float | None:
     return parsed if math.isfinite(parsed) and parsed >= 0 else None
 
 
+def _ordered_kept_candidates(
+    valid: list[tuple[dict, SelectionCandidate]],
+    raw_items: list[dict],
+    required_ids: frozenset[str],
+    coordinate_drops: list[dict],
+) -> tuple[list[SelectionCandidate], dict[str, dict], list[dict]]:
+    """Prune pool rồi xếp thứ tự: required đầu, optional giữa, required cuối.
+
+    Trả cả `raw_by_id` vì hàm gọi cần nó để dựng `kept_by_id` — nếu không thì
+    shell phải tính lại y hệt.
+
+    CỐ Ý giữ hai điểm dễ bị "dọn" nhầm:
+    - `required_order` bám THỨ TỰ của `raw_items`, và khi có ≥2 required thì
+      required ở GIỮA bị bỏ (chỉ lấy [0] và [-1] làm hai đầu mút). Đây là hành
+      vi có test phủ, không phải lỗi.
+    - Tên `kept_by_id` ở đây (id → SelectionCandidate) khác nghĩa với khoá
+      `kept_by_id` trong dict trả về của hàm gọi (id → raw item).
+    """
+    valid_candidates = [candidate for _item, candidate in valid]
+    required_valid_ids = frozenset(
+        candidate.stop.id
+        for candidate in valid_candidates
+        if candidate.stop.id in required_ids
+    )
+    kept, pruned = prune_candidates(valid_candidates, required_valid_ids)
+    kept_by_id = {candidate.stop.id: candidate for candidate in kept}
+    raw_by_id = {item["entity"]["id"]: item for item in raw_items}
+    required_order = [
+        kept_by_id[item["entity"]["id"]]
+        for item in raw_items
+        if item["entity"]["id"] in kept_by_id
+        and item["entity"]["id"] in required_ids
+    ]
+    optional_order = [
+        candidate for candidate in kept if candidate.stop.id not in required_ids
+    ]
+    ordered_kept = (
+        [required_order[0], *optional_order, required_order[-1]]
+        if len(required_order) >= 2
+        else [*required_order, *optional_order]
+    )
+    dropped = coordinate_drops + [
+        {"stop_id": item.stop_id, "reason": item.reason} for item in pruned
+    ]
+    return ordered_kept, raw_by_id, dropped
+
+
 def _selection_pool_state(
     raw_items: list[dict],
     required_ids: frozenset[str],
@@ -292,32 +339,9 @@ def _selection_pool_state(
             "required_missing": True,
         }
 
-    valid_candidates = [candidate for _item, candidate in valid]
-    required_valid_ids = frozenset(
-        candidate.stop.id
-        for candidate in valid_candidates
-        if candidate.stop.id in required_ids
+    ordered_kept, raw_by_id, dropped = _ordered_kept_candidates(
+        valid, raw_items, required_ids, coordinate_drops
     )
-    kept, pruned = prune_candidates(valid_candidates, required_valid_ids)
-    kept_by_id = {candidate.stop.id: candidate for candidate in kept}
-    raw_by_id = {item["entity"]["id"]: item for item in raw_items}
-    required_order = [
-        kept_by_id[item["entity"]["id"]]
-        for item in raw_items
-        if item["entity"]["id"] in kept_by_id
-        and item["entity"]["id"] in required_ids
-    ]
-    optional_order = [
-        candidate for candidate in kept if candidate.stop.id not in required_ids
-    ]
-    ordered_kept = (
-        [required_order[0], *optional_order, required_order[-1]]
-        if len(required_order) >= 2
-        else [*required_order, *optional_order]
-    )
-    dropped = coordinate_drops + [
-        {"stop_id": item.stop_id, "reason": item.reason} for item in pruned
-    ]
     return {
         "candidate_count": candidate_count,
         "warnings": warnings,

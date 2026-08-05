@@ -574,3 +574,63 @@ class TestGenerateItinerary:
     def test_area_focus_present(self, kb_itinerary):
         out = ig.generate_itinerary(days=1, interests=["tong_hop"], areas=["vinh-long"])
         assert out["day_plans"][0]["area_focus"] == "vinh-long"
+
+
+# ── _ordered_kept_candidates — tách ra khi hạ complexity (2026-08-05) ────────
+
+def _sel_candidate(stop_id: str, reward: float = 1.0, visit: int = 30):
+    from itinerary_schedule import ScheduleStop
+    from itinerary_selection import SelectionCandidate
+
+    return SelectionCandidate(
+        stop=ScheduleStop(stop_id, (10.0 + len(stop_id) * 0.01, 106.0), visit),
+        reward=reward,
+        entity_type="attraction",
+        area="vinh-long",
+    )
+
+
+def _raw(stop_id: str) -> dict:
+    return {"entity": {"id": stop_id, "type": "attraction"}, "score": 1.0, "area": "vinh-long"}
+
+
+def test_ordered_kept_dat_required_o_hai_dau_mut():
+    """≥2 required → CHỈ [0] và [-1] thành hai đầu mút, required ở giữa bị bỏ.
+
+    Đây là hành vi cố ý, và thứ tự bám theo raw_items chứ không sort — bản
+    refactor nào lỡ sort lại sẽ đổi thầm hai đầu mút của lịch trình.
+    """
+    valid = [(_raw(i), _sel_candidate(i)) for i in ("r1", "opt", "r2", "r3")]
+    raw_items = [_raw(i) for i in ("r1", "opt", "r2", "r3")]
+
+    ordered, raw_by_id, dropped = ig._ordered_kept_candidates(
+        valid, raw_items, frozenset({"r1", "r2", "r3"}), []
+    )
+
+    ids = [c.stop.id for c in ordered]
+    assert ids[0] == "r1" and ids[-1] == "r3", ids
+    assert "opt" in ids
+    assert set(raw_by_id) == {"r1", "opt", "r2", "r3"}
+    assert dropped == []
+
+
+def test_ordered_kept_giu_nguyen_coordinate_drops_dau_danh_sach():
+    coordinate_drops = [{"stop_id": "mat-toa-do", "reason": "coordinates-missing"}]
+    valid = [(_raw("a"), _sel_candidate("a"))]
+
+    _ordered, _raw_by_id, dropped = ig._ordered_kept_candidates(
+        valid, [_raw("a")], frozenset(), coordinate_drops
+    )
+
+    assert dropped[0] == {"stop_id": "mat-toa-do", "reason": "coordinates-missing"}
+
+
+def test_ordered_kept_mot_required_thi_khong_lam_dau_mut():
+    """<2 required → nối thẳng required rồi optional, không tạo cặp đầu-cuối."""
+    valid = [(_raw(i), _sel_candidate(i)) for i in ("r1", "opt")]
+
+    ordered, _raw_by_id, _dropped = ig._ordered_kept_candidates(
+        valid, [_raw("r1"), _raw("opt")], frozenset({"r1"}), []
+    )
+
+    assert [c.stop.id for c in ordered] == ["r1", "opt"]
