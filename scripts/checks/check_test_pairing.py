@@ -84,24 +84,34 @@ class TestPairingCheck:
     def _test_pairs(self, module: str, test_path: str, tree: ast.Module) -> bool:
         return self._filename_pairs(module, test_path) or self._ast_pairs(module, tree)
 
+    def _violation(self, path: str, msg: str) -> dict:
+        return {"file": path, "line": 0, "rule": self.rule, "msg": msg}
+
+    def _usable_tests(self, tests: dict[str, ast.Module]) -> tuple[dict[str, ast.Module], list[dict]]:
+        """Loại file test không có hàm test_* nào, kèm vi phạm giải thích vì sao."""
+        empty = sorted(path for path, tree in tests.items() if not self._has_tests(tree))
+        found = [
+            self._violation(path, "file test staged không có hàm test_* nào — không tính là test cho R20.7")
+            for path in empty
+        ]
+        blank = set(empty)
+        return {path: tree for path, tree in tests.items() if path not in blank}, found
+
     def run(self, files: list[str] | None = None) -> dict:
-        violations = []
+        violations: list[dict] = []
         if files:  # chỉ có nghĩa ở chế độ staged
             norm = [f.replace("\\", "/") for f in files]
             agent_py = [f for f in norm if f.startswith("agent/") and f.endswith(".py") and "/tests/" not in f]
             tests, unparseable = self._test_candidates(norm)
             violations.extend(
-                {"file": broken, "line": 0, "rule": self.rule,
-                 "msg": "test staged không parse được (encoding/cú pháp) — không đối chiếu được R20.7"}
+                self._violation(
+                    broken,
+                    "test staged không parse được (encoding/cú pháp) — không đối chiếu được R20.7",
+                )
                 for broken in unparseable
             )
-            empty = sorted(path for path, tree in tests.items() if not self._has_tests(tree))
-            violations.extend(
-                {"file": path, "line": 0, "rule": self.rule,
-                 "msg": "file test staged không có hàm test_* nào — không tính là test cho R20.7"}
-                for path in empty
-            )
-            tests = {path: tree for path, tree in tests.items() if path not in set(empty)}
+            tests, blank_violations = self._usable_tests(tests)
+            violations.extend(blank_violations)
             unpaired = [
                 source for source in agent_py
                 if not any(
@@ -110,8 +120,10 @@ class TestPairingCheck:
                 )
             ]
             if unpaired:
-                violations.append({"file": unpaired[0], "line": 0, "rule": self.rule,
-                                   "msg": f"{len(unpaired)} file agent/ đổi nhưng chưa có test staged tương ứng (R20.7/B3)"})
+                violations.append(self._violation(
+                    unpaired[0],
+                    f"{len(unpaired)} file agent/ đổi nhưng chưa có test staged tương ứng (R20.7/B3)",
+                ))
         return {"check": self.name, "level": self.level, "rule": self.rule,
                 "count": len(violations), "violations": violations}
 
