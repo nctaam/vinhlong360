@@ -31,7 +31,7 @@ Bốn vấn đề **xuyên suốt** (không tính vào hạng của cổng riên
 | R30.1 | `no_tailwind` | hard | ~~YẾU~~ → **THẬT** ✅ | Cùng bản vá `cf7b84d9` |
 | R70.1 | `secrets` | hard | ~~YẾU~~ → **THẬT** ✅ | Đã vá: mọi biến thể `.env.*` (trừ bản mẫu) bị chặn tuyệt đối; `<...>` chỉ miễn khi là placeholder CHỮ HOA, không phải thẻ HTML. Giá phải trả: 0 vi phạm mới |
 | R60.1 | `doc_status` | hard-ratchet | YẾU | Chỉ kiểm có chuỗi `> STATUS`; `> STATUS` trống rỗng cũng qua |
-| R10.7 | `tinh_cu` | hard-ratchet | YẾU | Một cặp `(id, field)` trong whitelist miễn **không giới hạn** số lần; itinerary + attribute lồng không quét |
+| R10.7 | `tinh_cu` | hard-ratchet | ~~YẾU~~ → **THẬT** ✅ | Đã vá: whitelist thành `id<TAB>field<TAB>số_lần` và cổng ĐẾM suất; `_data_occurrences` quét đệ quy attributes lồng + itineraries. Lộ ra **8 vi phạm §1.6 THẬT** trong `attributes.key_facts[]` (một câu còn nói ngược sự thật hành chính) — đã sửa nội dung, không whitelist |
 | R20.5 | `api_contract` | hard | YẾU | `--all` chỉ soi chiều hợp-đồng→code; route khai bằng hằng số không bị nhìn thấy |
 | R30.3 | `fe_colors` | hard-ratchet | YẾU | Đếm theo DÒNG: gộp 3 màu vào 1 dòng → count 3 → 1 |
 | R30.2 | `fe_emoji` | soft-ratchet | YẾU | Cùng phép đếm theo dòng |
@@ -53,7 +53,7 @@ Bốn vấn đề **xuyên suốt** (không tính vào hạng của cổng riên
 | R50.7 | `content_superlative` | soft-ratchet | THẬT | Khớp theo câu, có kiểm dẫn chứng số trong cùng câu |
 
 Tổng lúc rà (2026-08-05, sáng): **13 THẬT · 12 YẾU · 3 GIẢ**.
-Sau đợt vá cùng ngày: **21 THẬT · 6 YẾU · 1 GIẢ** (R30.6 axe — chờ chủ dự án quyết).
+Sau đợt vá cùng ngày: **22 THẬT · 5 YẾU · 1 GIẢ** (R30.6 axe — chờ chủ dự án quyết).
 
 Các mục 1–2 bên dưới giữ nguyên văn bản lúc rà để đối chiếu; trạng thái mới nhất
 nằm ở bảng tổng phía trên và ở `00-INDEX.md`.

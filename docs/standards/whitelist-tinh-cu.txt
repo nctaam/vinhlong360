@@ -1,5 +1,8 @@
 # Whitelist tỉnh-cũ per-occurrence — occ lịch-sử/tên-riêng đã duyệt (campaign 2026-07-07)
-# Format: entity_id<TAB>field. Thêm dòng mới = phải có ngữ cảnh lịch-sử hợp lệ (CLAUDE.md §1.6).
+# Format: id<TAB>field<TAB>số_lần (thiếu cột 3 = 1 lần). Thêm dòng mới = phải có ngữ cảnh
+# lịch-sử hợp lệ (CLAUDE.md §1.6). Từ 2026-08-05 cổng ĐẾM số lần: một dòng không còn
+# miễn trừ vô hạn occurrence trong cùng field. `id` là entity_id, hoặc itinerary_id khi
+# field bắt đầu bằng `itinerary:`.
 ao-ba-om-ao-vuong-tra-vinh	description
 bai-boi-rung-ngap-man-ba-tri-ben-tre	description
 banh-tet-tra-cuon	description
@@ -68,8 +71,8 @@ nuoc-khoang-thien-nhien-sao-bien-starfiwa	description
 nuoc-khoang-thien-nhien-sao-bien-starfiwa	summary
 san-chim-chua-phat-lon-tra-vinh	description
 san-chim-chua-phat-lon-tra-vinh	summary
-thach-boi	description
-thach-boi	summary
+thach-boi	description	2
+thach-boi	summary	2
 thach-oai	description
 thach-sok-xane	description
 thach-sok-xane	summary
@@ -88,3 +91,4 @@ xa-hung-khanh-trung	summary
 bao-tang-van-hoa-dan-toc-khmer-tinh-tra-vinh	name
 bao-tang-van-hoa-dan-toc-khmer-tinh-tra-vinh	description
 bao-tang-van-hoa-dan-toc-khmer-tinh-tra-vinh	summary
+tour-p08	itinerary:stops[2].name	1

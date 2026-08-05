@@ -140,3 +140,57 @@ def test_doc_status_chap_nhan_header_co_noi_dung(tmp_path, header):
 def test_doc_status_bat_header_rong_hoac_gia(tmp_path, header):
     """Gõ đúng chữ STATUS rồi bỏ trống từng qua cổng hard-ratchet."""
     assert _doc(tmp_path, f"{header}\n\n# Tài liệu\n").run()["count"] == 1
+
+
+# --- R10.7: whitelist phải ĐẾM, và quét cả vùng lồng (hồi quy 2026-08-05) ---
+
+def _mk_nested_data(tmp_path, wl_lines=""):
+    _mk(tmp_path, "web/data.json", json.dumps({
+        "entities": [{
+            "id": "e1", "type": "dish", "name": "A", "summary": "s", "description": "d",
+            # attributes LỒNG — bản cũ chỉ nhìn attributes kiểu chuỗi nên bỏ sót hết
+            "attributes": {"key_facts": ["Sản lượng lớn nhất tỉnh Bến Tre", "không liên quan"]},
+        }],
+        "relationships": [],
+        "itineraries": [{"id": "t1", "stops": [{"name": "Bảo tàng tỉnh Bến Tre"}]}],
+    }, ensure_ascii=False))
+    _mk(tmp_path, "docs/standards/whitelist-tinh-cu.txt", wl_lines)
+
+
+def test_tinh_cu_quet_attributes_long_va_itineraries(tmp_path):
+    """8 occurrence trong key_facts[] và 1 trong itineraries từng vô hình hoàn toàn."""
+    _mk_nested_data(tmp_path)
+    result = TinhCuCheck(root=tmp_path).run()
+
+    fields = {v["msg"].split(" — ")[0] for v in result["violations"]}
+    assert "e1:attr:key_facts[0]" in fields, fields
+    assert "t1:itinerary:stops[0].name" in fields, fields
+
+
+def test_tinh_cu_whitelist_dem_so_lan(tmp_path):
+    """Một dòng whitelist chỉ miễn ĐÚNG số lần khai, không phải vô hạn."""
+    _mk(tmp_path, "web/data.json", json.dumps({
+        "entities": [{"id": "e1", "type": "dish", "name": "A", "description": "d",
+                      "summary": "tỉnh Bến Tre và tỉnh Trà Vinh và tỉnh Bến Tre",
+                      "attributes": {}}],
+        "relationships": [], "itineraries": [],
+    }, ensure_ascii=False))
+    wl = tmp_path / "docs/standards/whitelist-tinh-cu.txt"
+    wl.parent.mkdir(parents=True, exist_ok=True)
+
+    wl.write_text("e1\tsummary\n", encoding="utf-8")          # 1 suất
+    assert TinhCuCheck(root=tmp_path).run()["count"] == 2
+
+    wl.write_text("e1\tsummary\t3\n", encoding="utf-8")       # đủ 3 suất
+    assert TinhCuCheck(root=tmp_path).run()["count"] == 0
+
+    wl.write_text("e1\tsummary\t2\n", encoding="utf-8")       # thiếu 1
+    result = TinhCuCheck(root=tmp_path).run()
+    assert result["count"] == 1
+    assert "vượt số lần đã duyệt" in result["violations"][0]["msg"]
+
+
+def test_tinh_cu_whitelist_2_cot_van_doc_duoc(tmp_path):
+    """88 dòng cũ (2 cột) không được vỡ khi thêm cột thứ ba."""
+    _mk_nested_data(tmp_path, "e1\tattr:key_facts[0]\nt1\titinerary:stops[0].name\n")
+    assert TinhCuCheck(root=tmp_path).run()["count"] == 0
