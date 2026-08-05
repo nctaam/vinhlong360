@@ -448,8 +448,14 @@ admin        -> da che        social       -> da che
 auth         -> da che        database     -> da che
 scheduler    -> RO RI: email,phone,api_key
 learn_loop   -> RO RI: email,phone,api_key
-bot_gateway  -> RO RI: email
+bot_gateway  -> RO RI: email,phone,api_key
 ```
+
+> Đính chính bản rà đầu: dòng `bot_gateway` ban đầu ghi rò rỉ **chỉ** email. Chạy lại
+> đúng probe đó (import middleware rồi bắt stream của handler riêng từng logger) cho
+> thấy nó rò cả **email, phone và api_key**, y hệt `scheduler` và `learn_loop`. Mức độ
+> nặng hơn bản rà đầu mô tả — và `bot_gateway` chính là module xử lý tin nhắn
+> Telegram/Zalo của người thật.
 
 **THIẾU (Trung bình) — ba module tự gắn `StreamHandler` riêng nên bản THÔ lọt ra console/journald:**
 

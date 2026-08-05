@@ -1,10 +1,16 @@
 """Kiểm HÀNH VI thật của agent/auth.py: đăng nhập, phiên, 2FA, thiết bị tin cậy.
 
-Vì sao có file này: auth.py là một trong ba "vùng mù" mà CLAUDE.md §B3 gọi tên,
-coverage ~25%. Phần lớn test auth sẵn có đọc source bằng inspect.getsource() rồi
-so chuỗi — loại đó đỏ khi refactor đúng và xanh khi hành vi sai. Ở đây KHÔNG có
-assert nào nhìn vào source: mọi kiểm tra đều gọi endpoint thật qua TestClient rồi
-soi status code, cookie, và trạng thái DB sau đó.
+Vì sao có file này: auth.py là một trong năm "vùng mù" mà CLAUDE.md §B3 gọi tên
+(database.py, chat handler của server.py, social.py, auth.py, ETL), coverage ~25%.
+Một phần test auth sẵn có đọc source bằng inspect.getsource() rồi so chuỗi — loại
+đó đỏ khi refactor đúng và xanh khi hành vi sai; riêng
+agent/tests/test_auth_security_hardening.py có 24 lần. Ở đây KHÔNG có assert nào
+nhìn vào source: mọi kiểm tra đều gọi endpoint thật qua TestClient rồi soi status
+code, cookie, và trạng thái DB sau đó.
+
+Gắn marker `integration` vì file chạy ~58 giây qua TestClient. pytest.ini:2 loại
+marker này khỏi lệnh chạy hàng ngày, còn CI vẫn chạy (`-m "not slow"`,
+.github/workflows/ci.yml:88) nên vẫn được bảo vệ.
 
 Chạy được khi máy không có Postgres bằng cách nào: auth.py là Postgres-only (§1.3)
 nên test dựng một test double ở TẦNG TRUY VẤN (_PgLite). Nó nhận đúng câu SQL mà
@@ -35,6 +41,8 @@ import auth
 import auth_middleware
 import twofactor
 from database import Database
+
+pytestmark = pytest.mark.integration
 
 # ──────────────────────────────────────────────────────────────────────────
 #  Test double ở tầng truy vấn: chạy SQL của Postgres trên SQLite
@@ -775,13 +783,18 @@ class TestChongDoMatKhau:
         assert api.login(phone="0902222222", password=_PASSWORD).status_code == 200
 
     def test_dang_nhap_dung_khong_xoa_het_bo_dem_sai(self, api, monkeypatch):
-        """Ghi lại đúng hành vi hiện tại, kể cả chỗ lệch.
+        """Ghi lại hành vi hiện tại — ĐÂY LÀ KHIẾM KHUYẾT, không phải yêu cầu.
 
         login_password có HAI bộ đếm sai theo số điện thoại: một bộ cục bộ
         (_login_phone_fails) và một bộ chung qua ratelimit.check_rate. Đăng nhập
-        đúng chỉ xoá bộ cục bộ; bộ chung vẫn giữ nguyên các lần sai cũ suốt
-        LOGIN_PHONE_WINDOW. Hệ quả quan sát được: sau khi vào thành công, người
-        dùng chỉ còn ĐÚNG MỘT lần nhập sai nữa là bị khoá.
+        đúng chỉ xoá bộ cục bộ (agent/auth.py:934); bộ chung vẫn giữ nguyên các
+        lần sai cũ suốt LOGIN_PHONE_WINDOW. Hệ quả quan sát được: sau khi vào
+        thành công, người dùng chỉ còn ĐÚNG MỘT lần nhập sai nữa là bị khoá —
+        gõ nhầm mật khẩu ở lần đổi mật khẩu kế tiếp là mất quyền vào trong 15 phút.
+
+        Test này tồn tại để việc sửa khiếm khuyết đó là một thay đổi CÓ CHỦ Ý:
+        ai xoá cả hai bộ đếm khi đăng nhập đúng sẽ thấy test này đỏ và phải sửa
+        cả kỳ vọng ở đây. Đừng đọc nó như "hành vi mong muốn".
         """
         monkeypatch.setattr(auth, "LOGIN_IP_LIMIT", 100)
         api.add_user()

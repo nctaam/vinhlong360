@@ -81,7 +81,11 @@ NUXT_OWNED_SEO_DOCS = ("/sitemap.xml", "/sitemap-media.xml", "/sitemap-index.xml
 MIN_API_WRITE_ROUTES = 40
 MIN_ADMIN_ROUTES = 100
 MIN_LOGIN_ROUTES = 50
-MIN_UGC_PROBES = 50
+# Hai tập khác hẳn kích thước nên phải có sàn riêng. Dùng chung một ngưỡng 50 làm
+# mất tác dụng chống-xanh-rỗng ở tập lớn: đo 2026-08-05 có 118 route thuộc module
+# UGC, nên cả router social.py ngừng được mount mà vẫn còn dư trên 50.
+MIN_UGC_ROUTES = 100      # đo thật: 118
+MIN_UGC_GET_PROBES = 60   # đo thật: 80 GET, trừ vài route streaming
 MIN_CONTRACT_ROWS = 90
 
 
@@ -313,9 +317,9 @@ def test_routes_requiring_login_also_require_postgres(app):
 def test_ugc_routes_all_sit_behind_the_postgres_guard(app):
     """Phủ cả route SSE và route ghi — những chỗ phần gọi HTTP bên dưới không với tới."""
     ugc_routes = [info for info in _routes(app) if info.module in UGC_MODULES]
-    assert len(ugc_routes) >= MIN_UGC_PROBES, (
+    assert len(ugc_routes) >= MIN_UGC_ROUTES, (
         f"Chỉ thấy {len(ugc_routes)} route thuộc module UGC {sorted(UGC_MODULES)}, "
-        f"dưới ngưỡng {MIN_UGC_PROBES} — router UGC không được mount?"
+        f"dưới ngưỡng {MIN_UGC_ROUTES} — router UGC không được mount?"
     )
 
     missing_pg = [info.label() for info in ugc_routes if not info.has((PG_GUARD,))]
@@ -346,8 +350,8 @@ def test_ugc_routes_answer_503_not_500_when_running_on_sqlite(app, client):
             and info.path not in STREAMING_PATHS
         }
     )
-    assert len(paths) >= MIN_UGC_PROBES, (
-        f"Chỉ gọi thử được {len(paths)} route UGC GET, dưới ngưỡng {MIN_UGC_PROBES} — "
+    assert len(paths) >= MIN_UGC_GET_PROBES, (
+        f"Chỉ gọi thử được {len(paths)} route UGC GET, dưới ngưỡng {MIN_UGC_GET_PROBES} — "
         "selector hỏng, đừng tin màu xanh."
     )
 
