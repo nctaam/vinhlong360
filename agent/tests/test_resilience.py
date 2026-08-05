@@ -2272,6 +2272,12 @@ class TestMiddlewareLogging:
             assert "flush" in str(mock_py.debug.call_args).lower()
 
     def test_rotate_failure_logged(self):
+        """Xoay vòng log hỏng phải báo ở mức WARNING, không phải debug.
+
+        Rotation hỏng nghĩa là file log phình mãi cho tới khi đầy đĩa. Chôn nó
+        ở `debug` — mức mà cấu hình mặc định (LOG_LEVEL=INFO) không in ra —
+        biến một sự cố hạ tầng thành im lặng hoàn toàn.
+        """
         from middleware import StructuredLogger
         sl = StructuredLogger(name="test_rotate", max_entries=100)
         with patch.object(sl, "log_file",
@@ -2279,7 +2285,9 @@ class TestMiddlewareLogging:
             with patch("builtins.open", side_effect=OSError("read fail")):
                 with patch.object(sl, "_py_logger") as mock_py:
                     sl._rotate()
-                mock_py.debug.assert_called()
+                mock_py.warning.assert_called()
+                assert "rotation" in str(mock_py.warning.call_args).lower()
+                mock_py.debug.assert_not_called()
 
     def test_recent_read_failure_logged(self):
         from middleware import StructuredLogger

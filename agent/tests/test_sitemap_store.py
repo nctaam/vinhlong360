@@ -234,7 +234,12 @@ def test_first_publish_durably_creates_each_missing_root_component(
 def test_publish_with_existing_root_does_not_fsync_unchanged_ancestor(
     tmp_path, monkeypatch
 ):
-    root = tmp_path / "sitemap-bundles"
+    # Tên thư mục cố tình ngắn: dưới xdist, pytest chèn thêm `popen-gwN\` vào
+    # tmp_path, và staging dir do sitemap_store sinh ra đã dài sẵn 98 ký tự
+    # (`.{64-hex}.{32-hex}.staging`). Với "sitemap-bundles" thì đường dẫn file
+    # cuối cùng đạt ĐÚNG 260 ký tự — chạm trần MAX_PATH của Windows — và test
+    # đỏ bằng FileNotFoundError, chỉ khi chạy song song (đo 2026-08-05).
+    root = tmp_path / "b"
     root.mkdir()
     fsynced = []
     real_fsync_directory = sitemap_store.fsync_directory

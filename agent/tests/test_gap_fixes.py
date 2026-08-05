@@ -3062,11 +3062,18 @@ class TestStructuredLogBridge:
         assert '"/api/notifications/stream" not in msg' in src
 
     def test_structured_logger_has_warning_alias(self):
-        src = (AGENT_DIR / "middleware.py").read_text(encoding="utf-8")
-        idx = src.index("class StructuredLogger")
-        cls_src = src[idx:idx + 2500]
-        assert "def warning(" in cls_src
-        assert "def debug(" in cls_src
+        """Kiểm API thật thay vì cắt 2500 ký tự source từ `class StructuredLogger`.
+
+        Cửa sổ ký tự cố định làm test đỏ mỗi khi ai đó thêm vài dòng vào
+        `__init__`: `def debug(` bị đẩy ra ngoài khung dù vẫn tồn tại nguyên vẹn
+        (đã xảy ra 2026-08-05). Nó cũng không chứng minh được method chạy được —
+        một chuỗi trong comment cũng khớp.
+        """
+        import middleware
+
+        for name in ("info", "warn", "warning", "debug", "error"):
+            method = getattr(middleware.StructuredLogger, name, None)
+            assert callable(method), f"StructuredLogger thiếu .{name}()"
 
     def test_bridge_includes_module_name(self):
         src = (AGENT_DIR / "middleware.py").read_text(encoding="utf-8")
