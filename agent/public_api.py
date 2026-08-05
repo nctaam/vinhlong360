@@ -886,6 +886,11 @@ def _contextual_recommendations(user_id: str, context: str, entity_id: str | Non
              summary="Track a user experience event",
              description="Stores a bounded first-party event for personalized recommendations. Requires login and CSRF.")
 async def track_user_event(body: UserEventIn, request: Request, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    """Ghi nhận một sự kiện trải nghiệm của user đang đăng nhập vào log sự kiện (HTTP 202).
+
+    event_type ngoài danh sách trắng → 400; các trường text bị cắt ngắn; giới hạn 120 sự
+    kiện/300 giây mỗi user. Bản ghi lưu hash IP rút gọn, không lưu IP thô.
+    """
     from ratelimit import check_rate
     event_type = (body.event_type or "").strip().lower()
     if event_type not in _VALID_USER_EVENT_TYPES:
@@ -910,6 +915,10 @@ async def track_user_event(body: UserEventIn, request: Request, user=Depends(req
             summary="Get current user interest profile",
             description="Returns lightweight interest, area, and next-action insights inferred from saved items, visits, and recent events.")
 async def get_my_insights(response: Response, user=Depends(require_user)):
+    """Hồ sơ quan tâm của user: interests, areas, types, recent_intents, next_actions, confidence, signal_count.
+
+    Hồ sơ được suy ra từ sự kiện đã ghi và tín hiệu lưu/đánh dấu của user; đặt Cache-Control: no-store.
+    """
     response.headers["Cache-Control"] = "no-store"
     profile = await asyncio.to_thread(_build_user_interest_profile, str(user["id"]))
     return {
@@ -936,6 +945,11 @@ async def contextual_recommendations(
     limit: int = Query(6, ge=1, le=20),
     user=Depends(require_user),
 ):
+    """Trả entity gợi ý kèm lý do ngắn cho một context trang của user đang đăng nhập.
+
+    context ngoài danh sách hợp lệ bị ép về "home"; giới hạn 60 lượt/300 giây mỗi user;
+    đặt Cache-Control: private, max-age=30.
+    """
     from ratelimit import check_rate
     context = (context or "home").strip().lower()
     if context not in _VALID_RECOMMENDATION_CONTEXTS:
@@ -1187,6 +1201,16 @@ async def list_entities(
     limit: int = Query(50, ge=1, le=1000),
     offset: int = Query(0, ge=0, le=10000),
 ):
+    """Trả danh sách entity công khai đã phân trang kèm tổng số, lọc theo type/area/q/month và sort.
+
+    type nhận nhiều giá trị phân tách bằng dấu phẩy (tối đa 10). Có q thì tìm bằng
+    db.search_entities, không có thì liệt kê bằng db.list_entities. fields=minimal rút
+    mỗi entity về tập trường tối thiểu.
+
+    Hai điểm dễ hiểu nhầm: `sort` CHỈ có tác dụng ở nhánh không có q (db.search_entities
+    không nhận tham số sort), và `type=place` không bao giờ khớp vì db.list_entities loại
+    cứng `e.type != 'place'`.
+    """
     response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
     entity_types: list[str] | None = None
     single_type = type
@@ -1221,6 +1245,11 @@ async def get_entity_relationships(
     type: Optional[str] = Query(None, max_length=50),
     include_near: bool = True,
 ):
+    """Trả quan hệ của một entity theo trang, đã loại quan hệ trỏ tới entity không công khai.
+
+    total giữ tổng thật từ DB (đếm trước khi lọc) để phân trang không hụt.
+    Entity không tồn tại hoặc không công khai → 404.
+    """
     response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
     validate_path_id(entity_id, "entity_id")
     def _query():
@@ -1246,6 +1275,11 @@ async def get_entity_relationships(
             summary="Get featured entities",
             description="Returns up to 20 editorially featured entities sorted by display order. Includes basic entity info and images.")
 async def get_featured_entities(response: Response):
+    """Trả tối đa 20 entity công khai được ghim trong bảng featured_entities, sắp theo sort_order.
+
+    Chế độ không dùng Postgres trả về danh sách rỗng. Mỗi mục gồm id, name, type, summary,
+    mô tả ảnh (1 ảnh), rating và toạ độ.
+    """
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     def _query():
         if not db._use_pg:
@@ -1280,6 +1314,10 @@ async def get_featured_entities(response: Response):
             summary="List entity types",
             description="Returns all entity types with their counts, ordered by frequency. Cached for 1 hour.")
 async def entity_types(response: Response):
+    """Trả số lượng entity theo từng giá trị cột type kèm tổng cộng, sắp giảm dần theo count.
+
+    Câu đếm chạy trên toàn bảng entities, KHÔNG lọc theo trạng thái công khai.
+    """
     response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=7200"
     def _query():
         with db._conn() as conn:
@@ -1293,6 +1331,14 @@ async def entity_types(response: Response):
             summary="List areas with places",
             description="Returns all administrative areas grouped with their places (wards/communes). Cached for 1 hour.")
 async def list_areas(response: Response):
+    """LUÔN trả về danh sách rỗng ở bản hiện tại — endpoint đang hỏng, không phải theo thiết kế.
+
+    Ý định là gom entity type=place theo `area`, nhưng nó gọi
+    `db.list_entities(entity_type="place", ...)` mà hàm đó có điều kiện cứng
+    `e.type != 'place'` (database.py:1122). Hai điều kiện loại trừ nhau nên truy vấn
+    luôn rỗng, dù DB có 125 entity type=place. Test hiện có chỉ assert cấu trúc
+    (200 + có khoá) nên bug lọt lưới. Frontend không gọi endpoint này.
+    """
     response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=7200"
     def _query():
         places = db.list_entities(entity_type="place", limit=1000, offset=0, public_only=True)
@@ -1314,6 +1360,11 @@ async def get_entity(
     entity_id: str,
     relationship_limit: int = Query(DEFAULT_RELATIONSHIP_LIMIT, ge=0, le=100),
 ):
+    """Trả chi tiết một entity công khai kèm quan hệ, quality, source_freshness và practical_facts.
+
+    relationship_total giữ tổng quan hệ thật từ DB (trước khi lọc công khai).
+    Entity không tồn tại hoặc không công khai → 404.
+    """
     validate_path_id(entity_id, "entity_id")
 
     def _query():
@@ -1342,6 +1393,11 @@ async def get_entity(
             summary="Get entity social stats",
             description="Returns aggregated social stats for an entity: review count, average rating, post count, bookmark count, and follower count.")
 async def get_entity_stats(entity_id: str, response: Response):
+    """Trả số đếm cộng đồng của một entity: review, rating trung bình, post, bookmark, follower.
+
+    Chỉ đếm post đã duyệt và chưa xoá mềm. Cần Postgres (không có → 503);
+    entity không tồn tại hoặc không công khai → 404.
+    """
     validate_path_id(entity_id, "entity_id")
     require_pg()
     response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
@@ -1470,6 +1526,12 @@ async def get_entity_reviews(
     min_rating: int = Query(None, ge=1, le=5),
     user=Depends(get_current_user),
 ):
+    """Trả review của một entity theo trang kèm tổng, rating trung bình và phân bố sao.
+
+    Hỗ trợ sort newest/helpful/highest/lowest và lọc min_rating; user đăng nhập được kèm
+    my_review (review mới nhất của chính họ, nội dung cắt 100 ký tự). Cần Postgres
+    (không có → 503); entity không tồn tại hoặc không công khai → 404.
+    """
     validate_path_id(entity_id, "entity_id")
     require_pg()
     response.headers["Cache-Control"] = "public, max-age=30, stale-while-revalidate=60"
@@ -1542,6 +1604,10 @@ async def get_entity_reviews(
             summary="List places",
             description="Returns all place entities (wards/communes) with id, name, area, and level. Optionally filtered by area. Cached for 1 hour.")
 async def list_places(response: Response, area: Optional[str] = Query(None, max_length=100)):
+    """Trả entity type=place công khai (id, name, area, level), lọc tuỳ chọn theo area.
+
+    Khi không truyền area, câu truy vấn giới hạn 500 bản ghi đầu sắp theo tên.
+    """
     response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=7200"
     db.initialize()
     def _query():
@@ -2004,6 +2070,12 @@ async def _schedule_itinerary(payload: ItineraryOptimizeIn) -> dict | JSONRespon
     description="Reorders 2-20 stops along a fixed forward corridor without paid services.",
 )
 async def optimize_itinerary_order(payload: ItineraryOptimizeIn):
+    """Sắp lại thứ tự điểm dừng của lịch trình; có trường schedule thì chạy nhánh xếp lịch theo giờ.
+
+    Cả hai nhánh trả ordered_ids, quãng đường trước/sau, backtrack_ratio, solver và warnings.
+    Không tìm được phương án khả thi → 409; nhánh xếp lịch lỗi bất ngờ sẽ lùi về nhánh
+    chỉ-sắp-thứ-tự kèm cảnh báo schedule-fallback-order-only.
+    """
     if payload.schedule is not None:
         return await _schedule_itinerary(payload)
     return await _optimize_itinerary_order_only(payload)
@@ -2018,6 +2090,10 @@ async def list_itineraries(
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0, le=10000),
 ):
+    """Trả danh sách lịch trình theo trang, đã loại các stop trỏ tới entity không công khai.
+
+    Lọc tuỳ chọn theo area; các entity của stop được nạp theo lô một lần cho cả trang.
+    """
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     def _query():
         itineraries = db.list_itineraries(area=area, limit=limit, offset=offset)
@@ -2042,6 +2118,10 @@ async def list_itineraries(
             summary="Get itinerary detail",
             description="Returns a single itinerary with stops enriched with entity names, summaries, types, and coordinates.")
 async def get_itinerary(itin_id: str, response: Response):
+    """Trả một lịch trình theo id, stop đã lọc theo entity công khai và bổ sung dữ liệu entity.
+
+    Lịch trình không tồn tại → 404.
+    """
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     validate_path_id(itin_id, "itin_id")
     def _query():
@@ -2109,6 +2189,11 @@ async def search(
     limit: int = Query(20, ge=1, le=100),
     user=Depends(get_current_user),
 ):
+    """Tìm hợp nhất entity + bài viết + người dùng cho một truy vấn, kèm suggestions và totals.
+
+    Giới hạn 30 lượt/60 giây theo IP; q bị bỏ thẻ HTML trước khi tìm post/user và trước khi
+    ghi log truy vấn. Trường results giữ lại cho client cũ, trùng nội dung với entities.
+    """
     from ratelimit import check_rate
     check_rate(f"search:{get_client_ip(request)}", 30, 60, "Tìm kiếm quá nhanh. Vui lòng thử lại sau.")
     entity_limit = min(limit, 100)
@@ -2181,6 +2266,7 @@ async def autocomplete(
             summary="Get public stats",
             description="Returns aggregate platform statistics including entity counts, user counts, and other summary metrics. Cached for 5 minutes.")
 async def public_stats(response: Response):
+    """Trả nguyên vẹn kết quả db.stats() làm thống kê tổng hợp công khai, cache 5 phút."""
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     return await asyncio.to_thread(db.stats)
 
@@ -2683,6 +2769,12 @@ async def get_map_pins(
     type: Optional[str] = Query(None, max_length=50),
     area: Optional[str] = Query(None, max_length=50),
 ):
+    """Trả pin bản đồ (lat/lng, emoji, màu theo type, rating, place) của entity công khai có toạ độ.
+
+    Lọc theo type (nhiều giá trị phân tách dấu phẩy) và area; quét tối đa 5000 entity và
+    bỏ qua entity thiếu toạ độ hợp lệ. Kết quả giữ trong cache tiến trình 120 giây cho
+    đúng MỘT tổ hợp filter gần nhất.
+    """
     response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
     cache_key = f"{type}:{area}"
     _now = _time.time()
@@ -2749,6 +2841,12 @@ async def list_events(
     include_past: bool = False,
     limit: int = Query(50, ge=1, le=200),
 ):
+    """Trả entity type=event công khai sắp theo ngày bắt đầu, mặc định ẩn sự kiện đã qua.
+
+    Chỉ giữ sự kiện có ngày bắt đầu đáng tin (loại mục category=mua và mục có tháng khai
+    báo lệch với ngày bắt đầu); lọc tuỳ chọn theo area. total đếm sau khi lọc, events cắt
+    theo limit.
+    """
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     """Sự kiện: sắp xếp theo date_start, mặc định ẩn sự kiện đã qua."""
     today = datetime.now(timezone.utc).date()
@@ -2913,6 +3011,11 @@ def _append_review_gallery_images(images: list[dict], review_rows: list[dict], e
             summary="Get entity image gallery",
             description="Returns all images for an entity including editorial images and user review photos with credits and alt text.")
 async def get_entity_gallery(entity_id: str, response: Response):
+    """Trả danh sách mô tả ảnh biên tập có thể render của một entity công khai.
+
+    Chỉ lấy ảnh của entity qua describe_entity_images (không kèm ảnh từ review người dùng);
+    entity không tồn tại hoặc không công khai → 404.
+    """
     validate_path_id(entity_id, "entity_id")
     response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
 
@@ -2966,6 +3069,12 @@ def _int0(v) -> int:
             summary="Get entity review stats",
             description="Returns review statistics for an entity: average rating, distribution by star, and frequently mentioned keywords extracted from review text.")
 async def get_review_stats(entity_id: str, response: Response):
+    """Trả thống kê review của entity: điểm trung bình, số lượng, phân bố sao và từ khoá hay nhắc.
+
+    Từ khoá lấy từ 200 review mới nhất (unigram/bigram xuất hiện >= 2 lần, đã bỏ stopword).
+    Cache tiến trình 300 giây; chế độ không dùng Postgres hoặc truy vấn lỗi → kết quả rỗng;
+    entity không tồn tại hoặc không công khai → 404.
+    """
     validate_path_id(entity_id, "entity_id")
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
 
@@ -3115,6 +3224,12 @@ async def get_nearby_entities(
     radius_km: float = Query(10.0, ge=0.5, le=50.0),
     type: str = Query(None, max_length=50),
 ):
+    """Trả entity công khai nằm trong bán kính radius_km quanh một entity, sắp theo khoảng cách.
+
+    Quét tối đa 3000 entity và tính khoảng cách haversine, lọc tuỳ chọn theo type.
+    Entity gốc không tồn tại/không công khai → 404; entity gốc thiếu toạ độ hợp lệ →
+    trả danh sách rỗng kèm message.
+    """
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     validate_path_id(entity_id, "entity_id")
     entity = await asyncio.to_thread(_get_public_entity, entity_id)
@@ -3258,6 +3373,11 @@ async def track_contact_view(
     request: Request,
     action: str = Query(..., pattern="^(zalo|phone|website|map)$"),
 ):
+    """Ghi một lượt xem thông tin liên hệ (zalo/phone/website/map) của entity vào contact_views.jsonl.
+
+    Giới hạn 10 lượt/60 giây theo IP; bản ghi chỉ lưu hash IP rút gọn, không lưu IP thô.
+    Không kiểm tra entity có tồn tại hay không. Lỗi ghi file → 500.
+    """
     validate_path_id(entity_id, "entity_id")
     ip = get_client_ip(request)
     from ratelimit import check_rate
@@ -3300,6 +3420,12 @@ class EntityClaimIn(BaseModel):
              summary="Submit entity ownership claim",
              description="Submits a business ownership claim for an entity. Requires authentication and CSRF. Limited to 3 claims per day per user. Requires Postgres.")
 async def submit_entity_claim(entity_id: str, payload: EntityClaimIn, request: Request, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    """Nhận yêu cầu xác nhận quyền sở hữu một entity từ user đăng nhập, ghi vào bảng entity_claims.
+
+    Giới hạn 3 yêu cầu/ngày mỗi user; entity không tồn tại/không công khai → 404; user đã có
+    yêu cầu ở trạng thái pending hoặc approved cho entity đó → 409. Tên doanh nghiệp và
+    evidence được HTML-escape trước khi lưu. Cần Postgres và CSRF hợp lệ.
+    """
     validate_path_id(entity_id, "entity_id")
     from ratelimit import check_rate
     check_rate(f"claim:{user['id']}", 3, 86400, "Chỉ được gửi 3 yêu cầu xác nhận/ngày.")
@@ -3406,6 +3532,10 @@ async def feed_new_since(
             summary="List public collections",
             description="Returns published editorial collections sorted by display order. Each collection includes title, description, cover image, and entity IDs.")
 async def list_public_collections(response: Response, limit: int = Query(20, ge=1, le=100)):
+    """Trả các collection đã publish theo sort_order, entity_ids đã lọc còn entity công khai.
+
+    Cần Postgres (không có → 503).
+    """
     require_pg()
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     ph = db._ph
@@ -3440,6 +3570,10 @@ async def list_public_collections(response: Response, limit: int = Query(20, ge=
             summary="Get collection by slug",
             description="Returns a single published collection by its URL slug with entity IDs resolved to full entity summaries.")
 async def get_collection_by_slug(slug: str, response: Response):
+    """Trả một collection đã publish theo slug, kèm entities đã lọc theo quyền công khai.
+
+    Cần Postgres (không có → 503); slug không khớp collection đã publish → 404.
+    """
     require_pg()
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     validate_path_id(slug, "slug")
@@ -3896,6 +4030,7 @@ async def transparency_report(response: Response):
             summary="System health check",
             description="Returns minimal public liveness status and entity count. Detailed diagnostics are available through admin-only health endpoints.")
 async def api_health():
+    """Trả nguyên kết quả của server.health() dưới prefix /api, kèm Cache-Control: no-store."""
     from server import health
     data = await health()
     return JSONResponse(data, headers={"Cache-Control": "no-store"})

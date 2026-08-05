@@ -927,6 +927,7 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
             summary="Site-wide JSON-LD",
             description="Returns WebSite and Organization JSON-LD structured data for the homepage. Used by search engines to understand site identity and search action.")
 def site_jsonld():
+    """Trả về hai khối JSON-LD cấp site: WebSite (kèm SearchAction) và Organization."""
     return [
         {
             "@context": "https://schema.org",
@@ -1146,6 +1147,11 @@ def build_area_jsonld(area_slug: str, data: dict[str, Any] | None = None) -> dic
             summary="Area JSON-LD",
             description="Returns TouristDestination JSON-LD for a geographic area (vinh-long, ben-tre, tra-vinh). Includes contained entities up to 50.")
 def area_jsonld(area_slug: str):
+    """Trả về JSON-LD TouristDestination của một khu vực theo slug.
+
+    Dữ liệu lấy qua _load_seo_data (snapshot DB, fallback web/data.json); ném 404
+    khi slug không nằm trong AREA_NAMES.
+    """
     data = _load_seo_data()
     result = build_area_jsonld(area_slug, data)
     if not result:
@@ -1157,6 +1163,11 @@ def area_jsonld(area_slug: str):
             summary="Itinerary JSON-LD",
             description="Returns TouristTrip JSON-LD for a specific itinerary. Includes stops as an ItemList with linked entities.")
 def itinerary_jsonld(itinerary_id: str):
+    """Trả về JSON-LD TouristTrip của lịch trình có id trùng khớp.
+
+    Quét tuyến tính data["itineraries"] lấy từ _load_seo_data; ném 404 nếu không
+    id nào khớp.
+    """
     data = _load_seo_data()
     by_id = _by_id(data)
     for it in data.get("itineraries", []):
@@ -1169,6 +1180,11 @@ def itinerary_jsonld(itinerary_id: str):
             summary="Entity JSON-LD",
             description="Returns schema.org JSON-LD for a single entity. Includes type-specific fields, breadcrumb, FAQ, geo, ratings, and relationships.")
 def entity_jsonld(entity_id: str):
+    """Trả về JSON-LD schema.org của một entity, gộp thêm khối FAQPage vào @graph nếu có.
+
+    Ném 404 khi không tìm thấy entity hoặc entity không qua _is_listing_visible
+    (status là "provisional", hoặc verified là False).
+    """
     data = _load_seo_data()
     by_id = _by_id(data)
     entity = by_id.get(entity_id)
@@ -1260,6 +1276,11 @@ def build_collection_jsonld(collection_type: str, data: dict[str, Any]) -> dict[
             summary="Collection JSON-LD",
             description="Returns ItemList JSON-LD for a catalog collection (du-lich, ocop, san-pham, luu-tru, le-hoi). Lists up to 100 public entities.")
 def collection_jsonld(collection_type: str):
+    """Trả về JSON-LD ItemList cho một collection danh mục khai trong COLLECTIONS.
+
+    Đọc dữ liệu từ web/data.json qua _load() (không dùng snapshot DB); ném 404 khi
+    collection_type không có trong COLLECTIONS.
+    """
     data = _load()
     result = build_collection_jsonld(collection_type, data)
     if result is None:
@@ -1365,6 +1386,7 @@ def sitemap_index():
             summary="Favicon placeholder",
             description="Returns 204 No Content to prevent browser 404 errors for favicon requests.")
 def favicon():
+    """Trả về phản hồi rỗng HTTP 204 cho /favicon.ico."""
     return Response(status_code=204)
 
 
@@ -1448,6 +1470,11 @@ def build_og_meta(entity: dict[str, Any] | None = None) -> dict[str, str]:
             summary="Entity Open Graph meta",
             description="Returns Open Graph, Twitter Card, and Zalo meta tags for a specific entity. Used by the frontend for social sharing previews.")
 def entity_og_meta(entity_id: str):
+    """Trả về map meta Open Graph/Twitter Card của một entity theo id.
+
+    Đọc web/data.json qua _load() và ném 404 nếu không có id; không lọc theo
+    _is_listing_visible như /seo/jsonld/{entity_id}.
+    """
     data = _load()
     by_id = _by_id(data)
     entity = by_id.get(entity_id)
@@ -1460,4 +1487,5 @@ def entity_og_meta(entity_id: str):
             summary="Site-wide Open Graph meta",
             description="Returns default Open Graph, Twitter Card, and Zalo meta tags for the homepage. Provides fallback social sharing data.")
 def site_og_meta():
+    """Trả về map meta Open Graph/Twitter Card mặc định cấp site (không gắn entity)."""
     return build_og_meta()

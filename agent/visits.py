@@ -42,6 +42,11 @@ class VisitBody(BaseModel):
             summary="List visit marks",
             description="Returns all entities marked as 'want' or 'visited' by the user. Optionally filter by status. Ordered by most recent, limited to 5000.")
 async def list_visits(status: Optional[str] = Query(None, pattern="^(want|visited)$"), user=Depends(require_user)):
+    """Liệt kê các entity người dùng hiện tại đã đánh dấu want/visited, lọc tuỳ chọn theo status.
+
+    Sắp xếp created_at giảm dần, giới hạn 5000 bản ghi; mỗi phần tử response chỉ
+    gồm entity_id và status (created_at được SELECT nhưng không trả ra).
+    """
     def _query():
         ph = db._ph
         sql = f"SELECT entity_id, status, created_at FROM user_visits WHERE user_id = {ph}::uuid"
@@ -61,6 +66,10 @@ async def list_visits(status: Optional[str] = Query(None, pattern="^(want|visite
             summary="Check visit status for an entity",
             description="Returns the current visit status ('want', 'visited', or null) for a specific entity. Used to render toggle state in the UI.")
 async def check_visit(entity_id: str, user=Depends(require_user)):
+    """Trả về status want/visited của người dùng hiện tại cho một entity, hoặc null nếu chưa đánh dấu.
+
+    entity_id đi qua validate_path_id nên định dạng sai bị chặn 400.
+    """
     entity_id = validate_path_id(entity_id, "entity_id")
     def _query():
         ph = db._ph
@@ -75,6 +84,13 @@ async def check_visit(entity_id: str, user=Depends(require_user)):
              summary="Set visit status",
              description="Marks an entity as 'want' or 'visited' for the user. Upserts on conflict, updating the status and timestamp.")
 async def set_visit(body: VisitBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    """Upsert dấu want/visited của người dùng hiện tại cho một entity, trả về status vừa ghi.
+
+    Trùng (user_id, entity_id) thì cập nhật status và đặt lại created_at = NOW().
+    Giới hạn 60 lượt/300 giây trên khoá `visit:<user_id>` (vượt thì 429). Riêng
+    status = visited còn tạo thêm một task nền gọi check_achievements(notify=True),
+    task này nuốt mọi exception và không ảnh hưởng response.
+    """
     check_rate(f"visit:{user['id']}", 60, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     def _query():
         ph = db._ph
@@ -134,6 +150,11 @@ async def review_prompts(user=Depends(require_user), limit: int = Query(10, ge=1
             summary="Visit statistics",
             description="Returns aggregate visit statistics for the user: total count, visited vs. want breakdown, and per-entity-type counts.")
 async def visit_stats(user=Depends(require_user)):
+    """Thống kê visit của người dùng hiện tại: tổng, số visited, số want và tách theo loại entity.
+
+    Phần by_type INNER JOIN sang bảng entities, nên dấu trỏ tới entity_id không
+    có trong entities vẫn được đếm ở total nhưng vắng mặt trong by_type.
+    """
     def _query():
         ph = db._ph
         uid = str(user["id"])
@@ -173,6 +194,12 @@ async def visit_stats(user=Depends(require_user)):
                summary="Remove visit mark",
                description="Removes the visit mark (want or visited) for a specific entity. Returns {status: null} on success.")
 async def remove_visit(entity_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    """Xoá dấu want/visited của người dùng hiện tại cho một entity, luôn trả status null.
+
+    Không kiểm tra bản ghi có tồn tại hay không nên xoá hụt cũng trả kết quả như
+    xoá thật. entity_id sai định dạng bị chặn 400; dùng chung khoá rate-limit
+    `visit:<user_id>` 60 lượt/300 giây với endpoint POST.
+    """
     entity_id = validate_path_id(entity_id, "entity_id")
     check_rate(f"visit:{user['id']}", 60, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     def _query():

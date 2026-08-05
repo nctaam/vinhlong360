@@ -476,13 +476,13 @@ Sinh tự động từ AST của `agent/` bằng `scripts/gen_route_appendix.py`
 
 Các mục ở phần trên tài liệu mới là hợp đồng có ràng buộc (shape dữ liệu, quy tắc, ví dụ). Phụ lục này chỉ bảo đảm **không route nào tồn tại mà tài liệu không biết** — đó là điều R20.5b đo.
 
-### `agent/achievements.py` (1 route · 1 chưa từng được nhắc)
+### `agent/achievements.py` (1 route)
 
 | Method | Path | Handler | Mô tả (docstring) |
 |---|---|---|---|
 | GET | `/api/me/achievements` | `get_my_achievements` |  |
 
-### `agent/admin.py` (132 route · 132 chưa từng được nhắc)
+### `agent/admin.py` (132 route)
 
 | Method | Path | Handler | Mô tả (docstring) |
 |---|---|---|---|
@@ -619,7 +619,7 @@ Các mục ở phần trên tài liệu mới là hợp đồng có ràng buộc
 | POST | `/admin/users/{user_id}/role` | `set_user_role` |  |
 | POST | `/admin/users/{user_id}/unban` | `unban_user` |  |
 
-### `agent/auth.py` (30 route · 5 chưa từng được nhắc)
+### `agent/auth.py` (30 route)
 
 | Method | Path | Handler | Mô tả (docstring) |
 |---|---|---|---|
@@ -654,39 +654,39 @@ Các mục ở phần trên tài liệu mới là hợp đồng có ràng buộc
 | DELETE | `/auth/trusted-devices/{device_id}` | `delete_trusted_device` |  |
 | POST | `/auth/verify-otp` | `verify_otp` |  |
 
-### `agent/launch_policy_api.py` (2 route · 2 chưa từng được nhắc)
+### `agent/launch_policy_api.py` (2 route)
 
 | Method | Path | Handler | Mô tả (docstring) |
 |---|---|---|---|
 | GET | `/_internal/launch-policy-attestation` | `launch_policy_attestation` |  |
 | GET | `/_internal/launch-sitemaps/{document}` | `launch_sitemap_document` |  |
 
-### `agent/notifications.py` (20 route · 7 chưa từng được nhắc)
+### `agent/notifications.py` (20 route)
 
 | Method | Path | Handler | Mô tả (docstring) |
 |---|---|---|---|
-| POST | `/api/block/{blocked_id}` | `toggle_block` |  |
-| GET | `/api/blocked-users` | `list_blocked_users` |  |
-| GET | `/api/events/{entity_id}/rsvp` | `get_rsvp` |  |
-| POST | `/api/events/{entity_id}/rsvp` | `toggle_rsvp` |  |
-| GET | `/api/follow/check/{target_type}/{target_id}` | `check_follow` |  |
-| POST | `/api/follow/{target_type}/{target_id}` | `toggle_follow` |  |
-| GET | `/api/followers/count/{target_type}/{target_id}` | `get_follower_count` |  |
-| GET | `/api/following` | `get_following` |  |
-| POST | `/api/mute/{muted_id}` | `toggle_mute` |  |
-| GET | `/api/muted-users` | `list_muted_users` |  |
-| GET | `/api/notification-preferences` | `get_notification_preferences` |  |
-| PUT | `/api/notification-preferences` | `update_notification_preferences` |  |
-| DELETE | `/api/notifications` | `clear_all_notifications` |  |
-| GET | `/api/notifications` | `get_notifications` |  |
-| POST | `/api/notifications/read-all` | `mark_all_read` |  |
-| GET | `/api/notifications/stream` | `notification_stream` |  |
-| GET | `/api/notifications/unread-count` | `unread_count` |  |
-| DELETE | `/api/notifications/{notif_id}` | `delete_notification` |  |
-| POST | `/api/notifications/{notif_id}/read` | `mark_notification_read` |  |
-| POST | `/api/report-ugc` | `create_report` |  |
+| POST | `/api/block/{blocked_id}` | `toggle_block` | Bật/tắt chặn một user, trả về trạng thái blocked mới. |
+| GET | `/api/blocked-users` | `list_blocked_users` | Liệt kê user bị người dùng đang đăng nhập chặn, phân trang theo page/limit. |
+| GET | `/api/events/{entity_id}/rsvp` | `get_rsvp` | Trả về số RSVP của một entity và cờ going của người dùng hiện tại nếu đã đăng nhập. |
+| POST | `/api/events/{entity_id}/rsvp` | `toggle_rsvp` | Bật/tắt RSVP cho một entity kiểu 'event', trả về going và tổng số RSVP của sự kiện. |
+| GET | `/api/follow/check/{target_type}/{target_id}` | `check_follow` | Kiểm tra người dùng đang đăng nhập có đang follow target hay không. |
+| POST | `/api/follow/{target_type}/{target_id}` | `toggle_follow` | Bật/tắt theo dõi một user hoặc entity, trả về trạng thái follow mới. |
+| GET | `/api/followers/count/{target_type}/{target_id}` | `get_follower_count` | Đếm số follower của một user hoặc entity; không yêu cầu đăng nhập. |
+| GET | `/api/following` | `get_following` | Liệt kê user/entity mà người dùng đang đăng nhập theo dõi, kèm total và has_more. |
+| POST | `/api/mute/{muted_id}` | `toggle_mute` | Bật/tắt tắt tiếng một user bằng cách thêm/xoá dòng trong bảng user_mutes. |
+| GET | `/api/muted-users` | `list_muted_users` | Liệt kê user bị người dùng đang đăng nhập tắt tiếng, phân trang theo page/limit. |
+| GET | `/api/notification-preferences` | `get_notification_preferences` | Trả về 5 cờ tuỳ chọn thông báo của người dùng; chưa có bản ghi thì trả mặc định bật hết. |
+| PUT | `/api/notification-preferences` | `update_notification_preferences` | Cập nhật các cờ tuỳ chọn thông báo được gửi lên; field để None thì bỏ qua. |
+| DELETE | `/api/notifications` | `clear_all_notifications` | Xoá toàn bộ thông báo của người dùng đang đăng nhập, trả về số dòng đếm trước khi xoá. |
+| GET | `/api/notifications` | `get_notifications` | Trả về thông báo của người dùng đang đăng nhập kèm số lượng chưa đọc. |
+| POST | `/api/notifications/read-all` | `mark_all_read` | Đặt is_read = TRUE cho mọi thông báo chưa đọc của người dùng đang đăng nhập. |
+| GET | `/api/notifications/stream` | `notification_stream` | Mở luồng SSE thông báo thời gian thực cho một phiên đăng nhập còn hạn. |
+| GET | `/api/notifications/unread-count` | `unread_count` | Đếm số thông báo có is_read = FALSE của người dùng đang đăng nhập. |
+| DELETE | `/api/notifications/{notif_id}` | `delete_notification` | Xoá một thông báo theo id, chỉ khi thông báo đó thuộc về người dùng đang đăng nhập. |
+| POST | `/api/notifications/{notif_id}/read` | `mark_notification_read` | Đặt is_read = TRUE cho một thông báo thuộc về người dùng đang đăng nhập. |
+| POST | `/api/report-ugc` | `create_report` | Ghi một báo cáo kiểm duyệt vào bảng reports cho target post/comment/user/entity. |
 
-### `agent/plans.py` (7 route · 1 chưa từng được nhắc)
+### `agent/plans.py` (7 route)
 
 | Method | Path | Handler | Mô tả (docstring) |
 |---|---|---|---|
@@ -698,55 +698,55 @@ Các mục ở phần trên tài liệu mới là hợp đồng có ràng buộc
 | GET | `/api/shared-plans` | `list_shared` |  |
 | GET | `/api/shared-plans/{plan_id}` | `get_shared` |  |
 
-### `agent/public_api.py` (47 route · 32 chưa từng được nhắc)
+### `agent/public_api.py` (47 route)
 
 | Method | Path | Handler | Mô tả (docstring) |
 |---|---|---|---|
 | GET | `/api/announcements` | `list_active_announcements` | Active announcements for display to users. |
-| GET | `/api/areas` | `list_areas` |  |
+| GET | `/api/areas` | `list_areas` | LUÔN trả về danh sách rỗng ở bản hiện tại — endpoint đang hỏng, không phải theo thiết kế. |
 | GET | `/api/autocomplete` | `autocomplete` | Lightweight typeahead for entity name search. |
-| GET | `/api/collections` | `list_public_collections` |  |
-| GET | `/api/collections/{slug}` | `get_collection_by_slug` |  |
-| GET | `/api/entities` | `list_entities` |  |
+| GET | `/api/collections` | `list_public_collections` | Trả các collection đã publish theo sort_order, entity_ids đã lọc còn entity công khai. |
+| GET | `/api/collections/{slug}` | `get_collection_by_slug` | Trả một collection đã publish theo slug, kèm entities đã lọc theo quyền công khai. |
+| GET | `/api/entities` | `list_entities` | Trả danh sách entity công khai đã phân trang kèm tổng số, lọc theo type/area/q/month và sort. |
 | GET | `/api/entities/compare` | `compare_entities` | Side-by-side entity comparison. Pass comma-separated IDs (max 5). |
 | GET | `/api/entities/map` | `entities_map_search` | Entities within a bounding box for map display. |
 | GET | `/api/entities/popular` | `popular_entities` | Popular entities by review count + rating. Filter by type and area. |
 | GET | `/api/entities/search` | `entity_search` | Entity search with type, area, image, and sort filters. |
 | GET | `/api/entities/trending` | `entities_trending` | Entities with most activity (posts+reviews+bookmarks) in recent days. |
-| GET | `/api/entities/{entity_id}` | `get_entity` |  |
-| POST | `/api/entities/{entity_id}/claim` | `submit_entity_claim` |  |
-| GET | `/api/entities/{entity_id}/gallery` | `get_entity_gallery` |  |
-| GET | `/api/entities/{entity_id}/nearby` | `get_nearby_entities` |  |
+| GET | `/api/entities/{entity_id}` | `get_entity` | Trả chi tiết một entity công khai kèm quan hệ, quality, source_freshness và practical_facts. |
+| POST | `/api/entities/{entity_id}/claim` | `submit_entity_claim` | Nhận yêu cầu xác nhận quyền sở hữu một entity từ user đăng nhập, ghi vào bảng entity_claims. |
+| GET | `/api/entities/{entity_id}/gallery` | `get_entity_gallery` | Trả danh sách mô tả ảnh biên tập có thể render của một entity công khai. |
+| GET | `/api/entities/{entity_id}/nearby` | `get_nearby_entities` | Trả entity công khai nằm trong bán kính radius_km quanh một entity, sắp theo khoảng cách. |
 | GET | `/api/entities/{entity_id}/qa` | `get_entity_qa` | U-09: Surface Q&A posts for an entity with accepted answer resolution. |
 | GET | `/api/entities/{entity_id}/rating-breakdown` | `get_entity_rating_breakdown` | 5-star rating distribution for an entity. |
-| GET | `/api/entities/{entity_id}/relationships` | `get_entity_relationships` |  |
+| GET | `/api/entities/{entity_id}/relationships` | `get_entity_relationships` | Trả quan hệ của một entity theo trang, đã loại quan hệ trỏ tới entity không công khai. |
 | POST | `/api/entities/{entity_id}/report-stale` | `report_stale_field` | U-02: Report a specific field as stale/incorrect on an entity. |
-| GET | `/api/entities/{entity_id}/review-stats` | `get_review_stats` |  |
-| GET | `/api/entities/{entity_id}/reviews` | `get_entity_reviews` |  |
+| GET | `/api/entities/{entity_id}/review-stats` | `get_review_stats` | Trả thống kê review của entity: điểm trung bình, số lượng, phân bố sao và từ khoá hay nhắc. |
+| GET | `/api/entities/{entity_id}/reviews` | `get_entity_reviews` | Trả review của một entity theo trang kèm tổng, rating trung bình và phân bố sao. |
 | GET | `/api/entities/{entity_id}/similar` | `get_similar_entities` | U-29: Rule-based similar entity recommendations (no ML). |
-| GET | `/api/entities/{entity_id}/stats` | `get_entity_stats` |  |
-| POST | `/api/entities/{entity_id}/view-contact` | `track_contact_view` |  |
-| GET | `/api/entity-types` | `entity_types` |  |
-| GET | `/api/events` | `list_events` |  |
+| GET | `/api/entities/{entity_id}/stats` | `get_entity_stats` | Trả số đếm cộng đồng của một entity: review, rating trung bình, post, bookmark, follower. |
+| POST | `/api/entities/{entity_id}/view-contact` | `track_contact_view` | Ghi một lượt xem thông tin liên hệ (zalo/phone/website/map) của entity vào contact_views.jsonl. |
+| GET | `/api/entity-types` | `entity_types` | Trả số lượng entity theo từng giá trị cột type kèm tổng cộng, sắp giảm dần theo count. |
+| GET | `/api/events` | `list_events` | Trả entity type=event công khai sắp theo ngày bắt đầu, mặc định ẩn sự kiện đã qua. |
 | GET | `/api/facilities` | `list_facilities` | GĐ13.4: danh bạ hành chính — cơ quan công vụ (UBND/công an/...) theo xã/phường. |
-| GET | `/api/featured` | `get_featured_entities` |  |
+| GET | `/api/featured` | `get_featured_entities` | Trả tối đa 20 entity công khai được ghim trong bảng featured_entities, sắp theo sort_order. |
 | GET | `/api/feed/new-since` | `feed_new_since` | Mới cập nhật/tạo từ `since` — entities + posts (public only). |
-| GET | `/api/health` | `api_health` |  |
+| GET | `/api/health` | `api_health` | Trả nguyên kết quả của server.health() dưới prefix /api, kèm Cache-Control: no-store. |
 | GET | `/api/homepage` | `homepage_curated` | Curated homepage: smart-scored, type/area diverse, seasonal-aware, deduped. |
-| GET | `/api/itineraries` | `list_itineraries` |  |
-| POST | `/api/itineraries/optimize-order` | `optimize_itinerary_order` |  |
-| GET | `/api/itineraries/{itin_id}` | `get_itinerary` |  |
-| GET | `/api/map-pins` | `get_map_pins` |  |
-| POST | `/api/me/events` | `track_user_event` |  |
-| GET | `/api/me/insights` | `get_my_insights` |  |
-| GET | `/api/me/recommendations/contextual` | `contextual_recommendations` |  |
-| GET | `/api/places` | `list_places` |  |
+| GET | `/api/itineraries` | `list_itineraries` | Trả danh sách lịch trình theo trang, đã loại các stop trỏ tới entity không công khai. |
+| POST | `/api/itineraries/optimize-order` | `optimize_itinerary_order` | Sắp lại thứ tự điểm dừng của lịch trình; có trường schedule thì chạy nhánh xếp lịch theo giờ. |
+| GET | `/api/itineraries/{itin_id}` | `get_itinerary` | Trả một lịch trình theo id, stop đã lọc theo entity công khai và bổ sung dữ liệu entity. |
+| GET | `/api/map-pins` | `get_map_pins` | Trả pin bản đồ (lat/lng, emoji, màu theo type, rating, place) của entity công khai có toạ độ. |
+| POST | `/api/me/events` | `track_user_event` | Ghi nhận một sự kiện trải nghiệm của user đang đăng nhập vào log sự kiện (HTTP 202). |
+| GET | `/api/me/insights` | `get_my_insights` | Hồ sơ quan tâm của user: interests, areas, types, recent_intents, next_actions, confidence, signal_count. |
+| GET | `/api/me/recommendations/contextual` | `contextual_recommendations` | Trả entity gợi ý kèm lý do ngắn cho một context trang của user đang đăng nhập. |
+| GET | `/api/places` | `list_places` | Trả entity type=place công khai (id, name, area, level), lọc tuỳ chọn theo area. |
 | GET | `/api/places/{place_id}/day-plan` | `place_day_plan` | Gợi ý lịch trình 1 ngày cho xã/phường — đa dạng loại hình, sắp theo khoảng cách. |
 | GET | `/api/places/{place_id}/overview` | `place_overview` | Trang hub 1 xã/phường: danh bạ hành chính + du lịch + lưu trú + sản phẩm. |
 | POST | `/api/report` | `submit_report` | GĐ13.6f: tiếp nhận báo-sai (facility/entity) & báo cáo nội dung (post/comment). |
-| GET | `/api/search` | `search` |  |
+| GET | `/api/search` | `search` | Tìm hợp nhất entity + bài viết + người dùng cho một truy vấn, kèm suggestions và totals. |
 | GET | `/api/site-settings` | `get_site_settings` | Public flat {key: value} dict of all site settings (cached 60s). |
-| GET | `/api/stats` | `public_stats` |  |
+| GET | `/api/stats` | `public_stats` | Trả nguyên vẹn kết quả db.stats() làm thống kê tổng hợp công khai, cache 5 phút. |
 | GET | `/api/transparency` | `transparency_report` | ND 147/2024 transparency: moderation policy, contact, takedown SLA. |
 | GET | `/api/users/{user_id}/engagement` | `user_engagement_stats` | Lightweight engagement stats for a user profile card. |
 
@@ -754,25 +754,25 @@ Các mục ở phần trên tài liệu mới là hợp đồng có ràng buộc
 
 | Method | Path | Handler | Mô tả (docstring) |
 |---|---|---|---|
-| GET | `/api/saved` | `list_saved` |  |
-| POST | `/api/saved` | `add_saved` |  |
-| POST | `/api/saved/merge` | `merge_saved` |  |
-| DELETE | `/api/saved/{entity_id}` | `remove_saved` |  |
+| GET | `/api/saved` | `list_saved` | Trả về danh sách entity đã lưu của người dùng đăng nhập, mới nhất trước, tối đa 2000 mục. |
+| POST | `/api/saved` | `add_saved` | Lưu một entity vào danh sách của người dùng; nếu đã lưu thì ghi đè snapshot (upsert). |
+| POST | `/api/saved/merge` | `merge_saved` | Gộp danh sách lưu từ thiết bị vào tài khoản, rồi trả về toàn bộ danh sách sau khi gộp. |
+| DELETE | `/api/saved/{entity_id}` | `remove_saved` | Xoá một entity khỏi danh sách đã lưu của người dùng theo `entity_id`. |
 
-### `agent/seo.py` (8 route · 3 chưa từng được nhắc)
+### `agent/seo.py` (8 route)
 
 | Method | Path | Handler | Mô tả (docstring) |
 |---|---|---|---|
-| GET | `/favicon.ico` | `favicon` |  |
-| GET | `/seo/jsonld/area/{area_slug}` | `area_jsonld` |  |
-| GET | `/seo/jsonld/collection/{collection_type}` | `collection_jsonld` |  |
-| GET | `/seo/jsonld/itinerary/{itinerary_id}` | `itinerary_jsonld` |  |
-| GET | `/seo/jsonld/site` | `site_jsonld` |  |
-| GET | `/seo/jsonld/{entity_id}` | `entity_jsonld` |  |
-| GET | `/seo/og` | `site_og_meta` |  |
-| GET | `/seo/og/{entity_id}` | `entity_og_meta` |  |
+| GET | `/favicon.ico` | `favicon` | Trả về phản hồi rỗng HTTP 204 cho /favicon.ico. |
+| GET | `/seo/jsonld/area/{area_slug}` | `area_jsonld` | Trả về JSON-LD TouristDestination của một khu vực theo slug. |
+| GET | `/seo/jsonld/collection/{collection_type}` | `collection_jsonld` | Trả về JSON-LD ItemList cho một collection danh mục khai trong COLLECTIONS. |
+| GET | `/seo/jsonld/itinerary/{itinerary_id}` | `itinerary_jsonld` | Trả về JSON-LD TouristTrip của lịch trình có id trùng khớp. |
+| GET | `/seo/jsonld/site` | `site_jsonld` | Trả về hai khối JSON-LD cấp site: WebSite (kèm SearchAction) và Organization. |
+| GET | `/seo/jsonld/{entity_id}` | `entity_jsonld` | Trả về JSON-LD schema.org của một entity, gộp thêm khối FAQPage vào @graph nếu có. |
+| GET | `/seo/og` | `site_og_meta` | Trả về map meta Open Graph/Twitter Card mặc định cấp site (không gắn entity). |
+| GET | `/seo/og/{entity_id}` | `entity_og_meta` | Trả về map meta Open Graph/Twitter Card của một entity theo id. |
 
-### `agent/server.py` (71 route · 61 chưa từng được nhắc)
+### `agent/server.py` (71 route)
 
 | Method | Path | Handler | Mô tả (docstring) |
 |---|---|---|---|
@@ -848,7 +848,7 @@ Các mục ở phần trên tài liệu mới là hợp đồng có ràng buộc
 | GET | `/weather/all` | `weather_all` |  |
 | GET | `/welcome` | `welcome_message` | Welcome message cá nhân hóa. |
 
-### `agent/social.py` (71 route · 51 chưa từng được nhắc)
+### `agent/social.py` (71 route)
 
 | Method | Path | Handler | Mô tả (docstring) |
 |---|---|---|---|
@@ -924,15 +924,15 @@ Các mục ở phần trên tài liệu mới là hợp đồng có ràng buộc
 | GET | `/api/users/{user_id}/reviews` | `get_user_reviews` |  |
 | GET | `/api/users/{user_id}/timeline` | `get_user_timeline` |  |
 
-### `agent/visits.py` (6 route · 2 chưa từng được nhắc)
+### `agent/visits.py` (6 route)
 
 | Method | Path | Handler | Mô tả (docstring) |
 |---|---|---|---|
-| GET | `/api/me/visits` | `list_visits` |  |
-| POST | `/api/me/visits` | `set_visit` |  |
-| GET | `/api/me/visits/check/{entity_id}` | `check_visit` |  |
+| GET | `/api/me/visits` | `list_visits` | Liệt kê các entity người dùng hiện tại đã đánh dấu want/visited, lọc tuỳ chọn theo status. |
+| POST | `/api/me/visits` | `set_visit` | Upsert dấu want/visited của người dùng hiện tại cho một entity, trả về status vừa ghi. |
+| GET | `/api/me/visits/check/{entity_id}` | `check_visit` | Trả về status want/visited của người dùng hiện tại cho một entity, hoặc null nếu chưa đánh dấu. |
 | GET | `/api/me/visits/review-prompts` | `review_prompts` | Entities visited but not yet reviewed — prompt user to write a review. |
-| GET | `/api/me/visits/stats` | `visit_stats` |  |
-| DELETE | `/api/me/visits/{entity_id}` | `remove_visit` |  |
+| GET | `/api/me/visits/stats` | `visit_stats` | Thống kê visit của người dùng hiện tại: tổng, số visited, số want và tách theo loại entity. |
+| DELETE | `/api/me/visits/{entity_id}` | `remove_visit` | Xoá dấu want/visited của người dùng hiện tại cho một entity, luôn trả status null. |
 
 <!-- ROUTE-APPENDIX:END -->

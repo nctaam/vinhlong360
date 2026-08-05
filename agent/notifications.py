@@ -81,6 +81,11 @@ async def get_notifications(
     offset: int = Query(0, ge=0, le=10000),
     user=Depends(require_user),
 ):
+    """Trả về thông báo của người dùng đang đăng nhập kèm số lượng chưa đọc.
+
+    Phân trang bằng limit/offset trên bảng notifications (created_at giảm dần); việc gộp
+    thông báo trùng chỉ chạy trong phạm vi trang vừa lấy, không gộp xuyên trang.
+    """
     ph = db._ph
     def _query():
         with db._conn() as conn:
@@ -111,6 +116,7 @@ async def get_notifications(
             summary="Get unread notification count",
             description="Returns the total number of unread notifications for the authenticated user.")
 async def unread_count(user=Depends(require_user)):
+    """Đếm số thông báo có is_read = FALSE của người dùng đang đăng nhập."""
     ph = db._ph
     def _query():
         with db._conn() as conn:
@@ -127,6 +133,13 @@ async def unread_count(user=Depends(require_user)):
              summary="Mark all notifications as read",
              description="Marks every unread notification as read for the authenticated user.")
 async def mark_all_read(user=Depends(require_user), _csrf=Depends(require_csrf)):
+    """Đặt is_read = TRUE cho mọi thông báo chưa đọc của người dùng đang đăng nhập.
+
+    Yêu cầu CSRF; giới hạn 30 lượt/300 giây trên khoá đếm `notif-read:<user_id>`.
+    Khoá này DÙNG CHUNG với `POST /api/notifications/{id}/read` (limit 60), nên lượt
+    đọc-từng-cái ăn vào cùng bucket: sau 30 lượt bất kỳ, endpoint này trả 429 trong khi
+    endpoint kia vẫn qua.
+    """
     check_rate(f"notif-read:{user['id']}", 30, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     def _query():
         ph = db._ph
@@ -143,6 +156,12 @@ async def mark_all_read(user=Depends(require_user), _csrf=Depends(require_csrf))
              summary="Mark single notification as read",
              description="Marks a specific notification as read. Only the notification owner can perform this action.")
 async def mark_notification_read(notif_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    """Đặt is_read = TRUE cho một thông báo thuộc về người dùng đang đăng nhập.
+
+    UPDATE lọc theo cả id lẫn user_id nên không đụng thông báo của người khác, nhưng luôn
+    trả về success kể cả khi không dòng nào khớp. Giới hạn 60 lượt/300 giây, dùng chung
+    khoá đếm `notif-read:<user_id>` với endpoint read-all.
+    """
     check_rate(f"notif-read:{user['id']}", 60, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     notif_id = validate_path_id(notif_id, "notif_id")
     def _query():
@@ -160,6 +179,11 @@ async def mark_notification_read(notif_id: str, user=Depends(require_user), _csr
                summary="Delete a notification",
                description="Permanently deletes a single notification by ID. Only the notification owner can delete it.")
 async def delete_notification(notif_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    """Xoá một thông báo theo id, chỉ khi thông báo đó thuộc về người dùng đang đăng nhập.
+
+    DELETE lọc theo cả id lẫn user_id; luôn trả về success kể cả khi không xoá dòng nào.
+    Giới hạn 30 lượt/300 giây.
+    """
     check_rate(f"notif-del:{user['id']}", 30, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     notif_id = validate_path_id(notif_id, "notif_id")
     def _query():
@@ -177,6 +201,10 @@ async def delete_notification(notif_id: str, user=Depends(require_user), _csrf=D
                summary="Clear all notifications",
                description="Deletes all notifications for the authenticated user. Returns the count of deleted notifications.")
 async def clear_all_notifications(user=Depends(require_user), _csrf=Depends(require_csrf)):
+    """Xoá toàn bộ thông báo của người dùng đang đăng nhập, trả về số dòng đếm trước khi xoá.
+
+    COUNT và DELETE chạy trong cùng một kết nối. Giới hạn 3 lượt/60 giây.
+    """
     check_rate(f"notif-clear:{user['id']}", 3, 60, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     def _query():
         ph = db._ph
@@ -209,6 +237,7 @@ class NotifPrefsUpdate(BaseModel):
             summary="Get notification preferences",
             description="Returns the user's notification preference flags for each notification type (like, comment, mention, follow, system).")
 async def get_notification_preferences(user=Depends(require_user)):
+    """Trả về 5 cờ tuỳ chọn thông báo của người dùng; chưa có bản ghi thì trả mặc định bật hết."""
     ph = db._ph
     uid = str(user["id"])
     def _query():
@@ -228,6 +257,12 @@ async def get_notification_preferences(user=Depends(require_user)):
             summary="Update notification preferences",
             description="Updates one or more notification preference flags. Only provided fields are changed; omitted fields keep their current value.")
 async def update_notification_preferences(body: NotifPrefsUpdate, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    """Cập nhật các cờ tuỳ chọn thông báo được gửi lên; field để None thì bỏ qua.
+
+    Ném 400 nếu không field nào khác None. Chèn hàng notification_preferences
+    (ON CONFLICT DO NOTHING) trước, rồi UPDATE các cột tương ứng kèm updated_at = NOW().
+    Giới hạn 10 lượt/600 giây.
+    """
     check_rate(f"notif-prefs:{user['id']}", 10, 600, "Cập nhật cài đặt quá nhanh. Vui lòng thử lại sau.")
     ph = db._ph
     uid = str(user["id"])
@@ -288,6 +323,15 @@ async def _next_event_id() -> int:
             summary="SSE notification stream",
             description="Server-Sent Events stream for real-time notifications. Authenticates via auth cookie or legacy query token. Supports Last-Event-ID for missed event recovery.")
 async def notification_stream(request: Request, token: str = Query(None, max_length=200)):
+    """Mở luồng SSE thông báo thời gian thực cho một phiên đăng nhập còn hạn.
+
+    Token lấy từ header Authorization/cookie; query param `token` chỉ được chấp nhận khi
+    ENVIRONMENT không thuộc {production, prod, prd}. Ném 401 nếu thiếu token hoặc token
+    không khớp phiên còn hạn của user is_active. Có header Last-Event-ID thì phát lại tối
+    đa 50 thông báo chưa đọc trong 5 phút gần nhất trước khi stream tiếp; khi hàng đợi
+    rỗng 30 giây thì gửi comment keepalive. Mỗi user giữ tối đa 5 hàng đợi, đăng ký thứ 6
+    đẩy hàng đợi cũ nhất ra.
+    """
     from auth import _extract_token
     session_token = _extract_token(request)
     if not session_token and token and os.environ.get("ENVIRONMENT", "").lower() not in {"production", "prod", "prd"}:
@@ -465,6 +509,14 @@ def create_notification(user_id: str, notif_type: str, title: str,
              summary="Toggle follow",
              description="Follows or unfollows a user or entity. Returns the new follow state. Blocked users cannot be followed.")
 async def toggle_follow(target_type: str, target_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    """Bật/tắt theo dõi một user hoặc entity, trả về trạng thái follow mới.
+
+    Ném 400 khi target_type ngoài user/entity, khi tự follow chính mình, hoặc khi vượt hạn
+    mức (500 với user, 1000 với entity); 404 khi entity không tồn tại hoặc user không tồn
+    tại/không is_active; 403 khi tồn tại bản ghi chặn theo một trong hai chiều. Khi follow
+    một user thì tạo thông báo cho người được follow và chạy nền check_achievements cho
+    chính người đó.
+    """
     target_id = validate_path_id(target_id, "target_id")
     check_rate(f"follow:{user['id']}", 30, 300, "Thao tác follow quá nhanh. Vui lòng thử lại sau.")
     if target_type not in ("user", "entity"):
@@ -561,6 +613,10 @@ async def _run_follow_side_effects(user, target_id: str, target_type: str, follo
             summary="Check follow status",
             description="Checks whether the authenticated user is following a specific user or entity.")
 async def check_follow(target_type: str, target_id: str, user=Depends(require_user)):
+    """Kiểm tra người dùng đang đăng nhập có đang follow target hay không.
+
+    Ném 400 nếu target_type ngoài user/entity; không kiểm tra target có tồn tại.
+    """
     validate_path_id(target_id, "target_id")
     _require_pg()
     if target_type not in ("user", "entity"):
@@ -587,6 +643,11 @@ async def get_following(
     offset: int = Query(0, ge=0, le=10000),
     user=Depends(require_user),
 ):
+    """Liệt kê user/entity mà người dùng đang đăng nhập theo dõi, kèm total và has_more.
+
+    Lọc tuỳ chọn theo target_type. target_name và entity_type lấy qua LEFT JOIN sang
+    users/entities nên có thể là null.
+    """
     ph = db._ph
     conditions = [f"f.follower_id = {ph}::uuid"]
     params: list = [str(user["id"])]
@@ -634,6 +695,10 @@ async def get_following(
             summary="Get follower count",
             description="Returns the total number of followers for a given user or entity. No authentication required.")
 async def get_follower_count(target_type: str, target_id: str):
+    """Đếm số follower của một user hoặc entity; không yêu cầu đăng nhập.
+
+    Ném 400 nếu target_type ngoài user/entity.
+    """
     if target_type not in ("user", "entity"):
         raise HTTPException(400, "target_type phải là 'user' hoặc 'entity'")
     validate_path_id(target_id, "target_id")
@@ -660,6 +725,12 @@ RL_REPORT_WINDOW = 3600
              summary="Report user-generated content",
              description="Submits a moderation report for a post, comment, or user. Duplicate pending reports for the same target are rejected.")
 async def create_report(body: ReportRequest, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    """Ghi một báo cáo kiểm duyệt vào bảng reports cho target post/comment/user/entity.
+
+    Ném 400 nếu người báo cáo đã có report status='pending' cho đúng target đó. Giới hạn
+    10 báo cáo/3600 giây. Đường dẫn /api/report-ugc tách biệt với POST /api/report ẩn danh
+    của public_api (ghi JSONL).
+    """
     check_rate(f"report:{user['id']}", RL_REPORT_LIMIT, RL_REPORT_WINDOW, "Bạn đã gửi quá nhiều báo cáo. Vui lòng thử lại sau.")
     ph = db._ph
     def _query():
@@ -685,6 +756,12 @@ async def create_report(body: ReportRequest, user=Depends(require_user), _csrf=D
              summary="Toggle block user",
              description="Blocks or unblocks a user. Blocking automatically removes mutual follows. Returns the new block state.")
 async def toggle_block(blocked_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    """Bật/tắt chặn một user, trả về trạng thái blocked mới.
+
+    Ném 400 khi tự chặn chính mình; giới hạn 20 lượt/300 giây. Nhánh tạo chặn còn xoá
+    follow giữa hai người theo cả hai chiều; nhánh bỏ chặn chỉ xoá dòng trong blocks.
+    Không kiểm tra blocked_id có tồn tại trong bảng users.
+    """
     blocked_id = validate_path_id(blocked_id, "blocked_id")
     check_rate(f"block:{user['id']}", 20, 300, "Thao tác chặn quá nhanh. Vui lòng thử lại sau.")
     if blocked_id == str(user["id"]):
@@ -722,6 +799,11 @@ async def toggle_block(blocked_id: str, user=Depends(require_user), _csrf=Depend
             description="Returns a paginated list of users blocked by the authenticated user, with display name and avatar.")
 async def list_blocked_users(page: int = Query(1, ge=1, le=100), limit: int = Query(50, ge=1, le=100),
                               user=Depends(require_user)):
+    """Liệt kê user bị người dùng đang đăng nhập chặn, phân trang theo page/limit.
+
+    Mỗi mục gồm id, display_name, avatar_url, username và thời điểm chặn; kèm total,
+    page và has_more.
+    """
     offset = (page - 1) * limit
     def _query():
         ph = db._ph
@@ -753,6 +835,11 @@ async def list_blocked_users(page: int = Query(1, ge=1, le=100), limit: int = Qu
              summary="Toggle mute user",
              description="Mutes or unmutes a user. Muted users' posts are hidden from the feed but they are not blocked. Returns the new mute state.")
 async def toggle_mute(muted_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    """Bật/tắt tắt tiếng một user bằng cách thêm/xoá dòng trong bảng user_mutes.
+
+    Ném 400 khi tự mute chính mình; giới hạn 20 lượt/300 giây. Chỉ đụng user_mutes —
+    không thay đổi bảng blocks hay follows. Trả về trạng thái muted mới.
+    """
     muted_id = validate_path_id(muted_id, "muted_id")
     check_rate(f"mute:{user['id']}", 20, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     if muted_id == str(user["id"]):
@@ -784,6 +871,11 @@ async def toggle_mute(muted_id: str, user=Depends(require_user), _csrf=Depends(r
             description="Returns a paginated list of users muted by the authenticated user, with display name and avatar.")
 async def list_muted_users(page: int = Query(1, ge=1, le=100), limit: int = Query(50, ge=1, le=100),
                             user=Depends(require_user)):
+    """Liệt kê user bị người dùng đang đăng nhập tắt tiếng, phân trang theo page/limit.
+
+    Mỗi mục gồm id, display_name, avatar_url, username và thời điểm mute; kèm total,
+    page và has_more.
+    """
     offset = (page - 1) * limit
     def _query():
         ph = db._ph
@@ -855,6 +947,12 @@ def _format_notif(row: dict) -> dict:
              summary="Toggle event RSVP",
              description="Marks or unmarks the authenticated user as attending an event. Only entities of type 'event' are accepted. Returns the new RSVP state and attendee count.")
 async def toggle_rsvp(entity_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    """Bật/tắt RSVP cho một entity kiểu 'event', trả về going và tổng số RSVP của sự kiện.
+
+    Ném 404 nếu không tìm thấy entity, 400 nếu entity.type khác 'event'; giới hạn 30
+    lượt/300 giây. Cờ going lấy từ rowcount của INSERT ... ON CONFLICT DO NOTHING nên
+    vẫn là False khi dòng RSVP đã tồn tại sẵn.
+    """
     validate_path_id(entity_id, "entity_id")
     check_rate(f"rsvp:{user['id']}", 30, 300, "Thao tác RSVP quá nhanh. Vui lòng thử lại sau.")
     entity = await asyncio.to_thread(db.get_entity, entity_id)
@@ -885,6 +983,11 @@ async def toggle_rsvp(entity_id: str, user=Depends(require_user), _csrf=Depends(
             summary="Get event RSVP status",
             description="Returns the total attendee count and whether the current user (if authenticated) has RSVP'd to the event.")
 async def get_rsvp(entity_id: str, request: Request = None):
+    """Trả về số RSVP của một entity và cờ going của người dùng hiện tại nếu đã đăng nhập.
+
+    Không bắt buộc đăng nhập: khi không xác định được user thì going luôn False. Không
+    kiểm tra entity có tồn tại hay có type 'event'.
+    """
     validate_path_id(entity_id, "entity_id")
     u = await get_current_user(request) if request else None
     uid = str(u["id"]) if u else None

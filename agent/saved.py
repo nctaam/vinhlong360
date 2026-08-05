@@ -117,6 +117,11 @@ def _upsert(conn, uid: str, item: SavedItem, *, skip_missing: bool = False) -> b
             summary="List saved entities",
             description="Returns all entities saved by the authenticated user, ordered by most recently saved. Each item includes a snapshot with name, type, and image.")
 async def list_saved(user=Depends(require_user)):
+    """Trả về danh sách entity đã lưu của người dùng đăng nhập, mới nhất trước, tối đa 2000 mục.
+
+    Mỗi mục gồm `id`, các trường trong snapshot đã lưu, `savedAt` và `kind` suy từ snapshot
+    (id có tiền tố `itinerary-` luôn cho kind `itinerary`).
+    """
     def _query():
         with db._conn() as conn:
             return {"items": _list(conn, str(user["id"]))}
@@ -127,6 +132,13 @@ async def list_saved(user=Depends(require_user)):
              summary="Save an entity",
              description="Adds an entity to the user's saved list with a snapshot for offline display. Upserts on conflict. Limited to 2000 saved entities per user.")
 async def add_saved(item: SavedItem, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    """Lưu một entity vào danh sách của người dùng; nếu đã lưu thì ghi đè snapshot (upsert).
+
+    Giới hạn 60 lượt/300 giây trên khoá `saved:<user_id>` — DÙNG CHUNG với
+    `DELETE /api/saved/{id}`, nên lưu và bỏ-lưu ăn chung một hạn mức. Đã lưu đủ 2000 mục
+    → 400. Với kind `entity`, id không có trong bảng entities hoặc đang
+    `provisional`/`verified = 0` → 404. Trả `{"saved": true}` với HTTP 201.
+    """
     check_rate(f"saved:{user['id']}", 60, 300, "Thao tác lưu quá nhanh. Vui lòng thử lại sau.")
     def _query():
         with db._conn() as conn:
@@ -146,6 +158,11 @@ async def add_saved(item: SavedItem, user=Depends(require_user), _csrf=Depends(r
                summary="Remove a saved entity",
                description="Removes an entity from the user's saved list by entity ID. Returns {saved: false} on success.")
 async def remove_saved(entity_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    """Xoá một entity khỏi danh sách đã lưu của người dùng theo `entity_id`.
+
+    `entity_id` phải qua validate_path_id (400 nếu sai định dạng); giới hạn 60 lượt/300 giây.
+    Luôn trả `{"saved": false}`, kể cả khi không có dòng nào bị xoá.
+    """
     entity_id = validate_path_id(entity_id, "entity_id")
     check_rate(f"saved:{user['id']}", 60, 300, "Thao tác lưu quá nhanh. Vui lòng thử lại sau.")
     def _query():
@@ -162,6 +179,12 @@ async def remove_saved(entity_id: str, user=Depends(require_user), _csrf=Depends
              summary="Merge saved entities from device",
              description="Merges locally saved entities into the server list for cross-device sync. Trims oldest entries if the total exceeds 2000. Returns the full merged list.")
 async def merge_saved(body: MergeBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    """Gộp danh sách lưu từ thiết bị vào tài khoản, rồi trả về toàn bộ danh sách sau khi gộp.
+
+    Body quá 500 mục bị Pydantic chặn ở tầng validation (422), KHÔNG phải cắt bớt lặng lẽ.
+    Mục kind `entity` trỏ tới entity không tồn tại/chưa công khai bị bỏ qua thay vì báo lỗi.
+    Tổng vượt 2000 thì xoá bớt các mục `created_at` cũ nhất. Giới hạn 10 lượt/300 giây.
+    """
     check_rate(f"saved-merge:{user['id']}", 10, 300, "Đồng bộ quá nhanh. Vui lòng thử lại sau.")
     uid = str(user["id"])
     items = (body.items or [])[:500]
