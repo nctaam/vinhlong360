@@ -109,6 +109,50 @@ class ScheduleStop:
         object.__setattr__(self, "opening_windows", windows)
 
 
+def _coerce_matrix_ids(raw: object) -> tuple[str, ...]:
+    """Chuẩn hoá + kiểm dãy ID của ma trận. Tách khỏi __post_init__ (cx 23)."""
+    try:
+        stop_ids = tuple(raw)
+    except TypeError as exc:
+        raise ValueError("ID ma trận phải là một dãy") from exc
+    if any(
+        not isinstance(stop_id, str) or not stop_id.strip() for stop_id in stop_ids
+    ):
+        raise ValueError("ID ma trận không được để trống")
+    if len(stop_ids) != len(set(stop_ids)):
+        raise ValueError("ID ma trận không được trùng")
+    return stop_ids
+
+
+def _coerce_matrix_rows(raw: object, size: int) -> tuple[tuple[float | None, ...], ...]:
+    """Chuẩn hoá ma trận về tuple-2-chiều và kiểm hình dạng vuông khớp số ID."""
+    try:
+        rows = tuple(tuple(row) for row in raw)
+    except TypeError as exc:
+        raise ValueError("Ma trận thời gian phải là một dãy hai chiều") from exc
+    if size != len(rows):
+        raise ValueError("Số ID phải khớp kích thước ma trận thời gian")
+    if any(len(row) != len(rows) for row in rows):
+        raise ValueError("Ma trận thời gian phải là ma trận vuông")
+    return rows
+
+
+def _validate_matrix_cells(rows: tuple[tuple[float | None, ...], ...]) -> None:
+    """Kiểm từng ô: kiểu, hữu hạn, không âm, và đường chéo phải bằng 0."""
+    for row_index, row in enumerate(rows):
+        for column_index, value in enumerate(row):
+            if value is None:
+                if row_index == column_index:
+                    raise ValueError("Đường chéo ma trận thời gian phải bằng 0")
+                continue
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                raise ValueError("Thời gian di chuyển phải là số hoặc None")
+            if not math.isfinite(value) or value < 0:
+                raise ValueError("Thời gian di chuyển phải hữu hạn và không âm")
+            if row_index == column_index and value != 0:
+                raise ValueError("Đường chéo ma trận thời gian phải bằng 0")
+
+
 @dataclass(frozen=True)
 class TravelMatrix:
     stop_ids: tuple[str, ...]
@@ -116,41 +160,54 @@ class TravelMatrix:
     source: str
 
     def __post_init__(self) -> None:
-        try:
-            stop_ids = tuple(self.stop_ids)
-        except TypeError as exc:
-            raise ValueError("ID ma trận phải là một dãy") from exc
-        if any(
-            not isinstance(stop_id, str) or not stop_id.strip() for stop_id in stop_ids
-        ):
-            raise ValueError("ID ma trận không được để trống")
-        if len(stop_ids) != len(set(stop_ids)):
-            raise ValueError("ID ma trận không được trùng")
-        try:
-            rows = tuple(tuple(row) for row in self.duration_minutes)
-        except TypeError as exc:
-            raise ValueError("Ma trận thời gian phải là một dãy hai chiều") from exc
-        size = len(rows)
-        if len(stop_ids) != size:
-            raise ValueError("Số ID phải khớp kích thước ma trận thời gian")
-        if any(len(row) != size for row in rows):
-            raise ValueError("Ma trận thời gian phải là ma trận vuông")
-        for row_index, row in enumerate(rows):
-            for column_index, value in enumerate(row):
-                if value is None:
-                    if row_index == column_index:
-                        raise ValueError("Đường chéo ma trận thời gian phải bằng 0")
-                    continue
-                if isinstance(value, bool) or not isinstance(value, (int, float)):
-                    raise ValueError("Thời gian di chuyển phải là số hoặc None")
-                if not math.isfinite(value) or value < 0:
-                    raise ValueError("Thời gian di chuyển phải hữu hạn và không âm")
-                if row_index == column_index and value != 0:
-                    raise ValueError("Đường chéo ma trận thời gian phải bằng 0")
+        stop_ids = _coerce_matrix_ids(self.stop_ids)
+        rows = _coerce_matrix_rows(self.duration_minutes, len(stop_ids))
+        _validate_matrix_cells(rows)
         if not isinstance(self.source, str) or not self.source.strip():
             raise ValueError("Nguồn ma trận không được để trống")
         object.__setattr__(self, "stop_ids", stop_ids)
         object.__setattr__(self, "duration_minutes", rows)
+
+
+def _is_int_at_least(value: object, minimum: int) -> bool:
+    """Số nguyên thật (bool bị loại) và không nhỏ hơn `minimum`."""
+    return _is_int(value) and value >= minimum
+
+
+def _is_finite_nonneg(value: object) -> bool:
+    """Số hữu hạn không âm; bool bị loại vì nó là int trong Python."""
+    return (
+        not isinstance(value, bool)
+        and isinstance(value, (int, float))
+        and math.isfinite(value)
+        and value >= 0
+    )
+
+
+def _is_finite_positive(value: object) -> bool:
+    return _is_finite_nonneg(value) and value > 0
+
+
+def _coerce_blocked_edges(raw: object) -> frozenset[tuple[str, str]]:
+    """Chuẩn hoá tập cạnh bị cấm.
+
+    CỐ Ý dùng `not stop_id` chứ KHÔNG phải `not stop_id.strip()` như
+    `_coerce_matrix_ids`: hai chỗ khác nhau thật (blocked_edges chấp nhận ID
+    toàn khoảng trắng, TravelMatrix thì không). Gộp chung một vị từ sẽ siết
+    ngầm blocked_edges — có test ghim ở test_itinerary_selection.py.
+    """
+    try:
+        raw_edges = tuple(raw)
+    except TypeError as exc:
+        raise ValueError("Cạnh bị cấm phải là cặp ID điểm dừng") from exc
+    if any(
+        not isinstance(edge, (tuple, list))
+        or len(edge) != 2
+        or any(not isinstance(stop_id, str) or not stop_id for stop_id in edge)
+        for edge in raw_edges
+    ):
+        raise ValueError("Cạnh bị cấm phải là cặp ID điểm dừng")
+    return frozenset(tuple(edge) for edge in raw_edges)
 
 
 @dataclass(frozen=True)
@@ -165,37 +222,15 @@ class ScheduleOptions:
 
     def __post_init__(self) -> None:
         TimeWindow(self.day_start_minute, self.day_end_minute)
-        if not _is_int(self.exact_limit) or self.exact_limit < 0:
+        if not _is_int_at_least(self.exact_limit, 0):
             raise ValueError("Ngưỡng giải chính xác không được âm")
-        if not _is_int(self.beam_width) or self.beam_width < 1:
+        if not _is_int_at_least(self.beam_width, 1):
             raise ValueError("Độ rộng beam search phải lớn hơn 0")
-        if (
-            isinstance(self.station_tolerance, bool)
-            or not isinstance(self.station_tolerance, (int, float))
-            or not math.isfinite(self.station_tolerance)
-            or self.station_tolerance < 0
-        ):
+        if not _is_finite_nonneg(self.station_tolerance):
             raise ValueError("Sai số tiến tuyến phải là số hữu hạn không âm")
-        if (
-            isinstance(self.deadline_seconds, bool)
-            or not isinstance(self.deadline_seconds, (int, float))
-            or not math.isfinite(self.deadline_seconds)
-            or self.deadline_seconds <= 0
-        ):
+        if not _is_finite_positive(self.deadline_seconds):
             raise ValueError("Thời hạn giải phải là số hữu hạn dương")
-        try:
-            raw_edges = tuple(self.blocked_edges)
-        except TypeError as exc:
-            raise ValueError("Cạnh bị cấm phải là cặp ID điểm dừng") from exc
-        if any(
-            not isinstance(edge, (tuple, list))
-            or len(edge) != 2
-            or any(not isinstance(stop_id, str) or not stop_id for stop_id in edge)
-            for edge in raw_edges
-        ):
-            raise ValueError("Cạnh bị cấm phải là cặp ID điểm dừng")
-        blocked_edges = frozenset(tuple(edge) for edge in raw_edges)
-        object.__setattr__(self, "blocked_edges", blocked_edges)
+        object.__setattr__(self, "blocked_edges", _coerce_blocked_edges(self.blocked_edges))
 
 
 @dataclass(frozen=True)

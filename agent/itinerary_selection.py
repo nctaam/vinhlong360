@@ -4,11 +4,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 from itertools import combinations
-import math
 import time
 from typing import Sequence
 
 from itinerary_schedule import (
+    _is_finite_nonneg,
+    _is_finite_positive,
+    _is_int_at_least,
     NoFeasibleScheduleError,
     ScheduleOptions,
     ScheduleResult,
@@ -16,6 +18,12 @@ from itinerary_schedule import (
     TravelMatrix,
     schedule_stop_order,
 )
+
+
+def _is_filled_str(value: object) -> bool:
+    """Chuỗi có nội dung. CỐ Ý dùng .strip() — khác `_coerce_blocked_edges`
+    bên itinerary_schedule vốn chỉ kiểm `not stop_id`. Đừng gộp hai chỗ."""
+    return isinstance(value, str) and bool(value.strip())
 
 
 @dataclass(frozen=True)
@@ -29,23 +37,13 @@ class SelectionCandidate:
     def __post_init__(self) -> None:
         if not isinstance(self.stop, ScheduleStop):
             raise ValueError("Candidate phải chứa ScheduleStop")
-        if (
-            isinstance(self.reward, bool)
-            or not isinstance(self.reward, (int, float))
-            or not math.isfinite(self.reward)
-            or self.reward < 0
-        ):
+        if not _is_finite_nonneg(self.reward):
             raise ValueError("Reward phải là số hữu hạn không âm")
-        if not isinstance(self.entity_type, str) or not self.entity_type.strip():
+        if not _is_filled_str(self.entity_type):
             raise ValueError("Loại entity không được để trống")
-        if not isinstance(self.area, str) or not self.area.strip():
+        if not _is_filled_str(self.area):
             raise ValueError("Khu vực không được để trống")
-        if self.fee_value is not None and (
-            isinstance(self.fee_value, bool)
-            or not isinstance(self.fee_value, (int, float))
-            or not math.isfinite(self.fee_value)
-            or self.fee_value < 0
-        ):
+        if self.fee_value is not None and not _is_finite_nonneg(self.fee_value):
             raise ValueError("Phí phải là số hữu hạn không âm")
         object.__setattr__(self, "reward", float(self.reward))
         object.__setattr__(self, "entity_type", self.entity_type.strip())
@@ -61,20 +59,15 @@ class SelectionOptions:
     deadline_seconds: float = 1.5
 
     def __post_init__(self) -> None:
-        if not isinstance(self.target_count, int) or isinstance(self.target_count, bool) or self.target_count < 1:
+        if not _is_int_at_least(self.target_count, 1):
             raise ValueError("Số POI mục tiêu phải lớn hơn 0")
-        if not isinstance(self.exact_limit, int) or isinstance(self.exact_limit, bool) or self.exact_limit < 0:
+        if not _is_int_at_least(self.exact_limit, 0):
             raise ValueError("Ngưỡng giải chính xác không được âm")
-        if not isinstance(self.beam_width, int) or isinstance(self.beam_width, bool) or self.beam_width < 1:
+        if not _is_int_at_least(self.beam_width, 1):
             raise ValueError("Độ rộng beam search phải lớn hơn 0")
-        if not isinstance(self.repair_iterations, int) or isinstance(self.repair_iterations, bool) or self.repair_iterations < 0:
+        if not _is_int_at_least(self.repair_iterations, 0):
             raise ValueError("Số iteration repair không được âm")
-        if (
-            isinstance(self.deadline_seconds, bool)
-            or not isinstance(self.deadline_seconds, (int, float))
-            or not math.isfinite(self.deadline_seconds)
-            or self.deadline_seconds <= 0
-        ):
+        if not _is_finite_positive(self.deadline_seconds):
             raise ValueError("Deadline phải là số hữu hạn dương")
 
 
@@ -114,12 +107,7 @@ class SelectionResult:
             raise ValueError("Candidate count không được âm")
         if not isinstance(self.selected_count, int) or not 0 <= self.selected_count <= self.candidate_count:
             raise ValueError("Selected count không hợp lệ")
-        if (
-            isinstance(self.total_reward, bool)
-            or not isinstance(self.total_reward, (int, float))
-            or not math.isfinite(self.total_reward)
-            or self.total_reward < 0
-        ):
+        if not _is_finite_nonneg(self.total_reward):
             raise ValueError("Total reward phải là số hữu hạn không âm")
         object.__setattr__(self, "selected_ids", selected_ids)
         object.__setattr__(self, "dropped", dropped)

@@ -488,3 +488,77 @@ def test_fallback_matrix_uses_each_supported_mode_speed():
 def test_fallback_matrix_rejects_an_unknown_mode():
     with pytest.raises(ValueError, match="mode"):
         build_fallback_matrix([ScheduleStop("a", (10.0, 106.0), 0)], "flying")
+
+
+# ── Vị từ dùng chung, tách ra khi hạ complexity 5 __post_init__ (2026-08-05) ──
+
+@pytest.mark.parametrize(
+    ("value", "minimum", "expected"),
+    [
+        (3, 0, True), (0, 0, True), (-1, 0, False), (0, 1, False),
+        (True, 0, False),      # bool là int trong Python — phải bị loại
+        (3.0, 0, False),       # float không phải int
+        ("3", 0, False),
+    ],
+)
+def test_is_int_at_least(value, minimum, expected):
+    from itinerary_schedule import _is_int_at_least
+
+    assert _is_int_at_least(value, minimum) is expected
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        (0, True), (0.0, True), (2.5, True), (-0.1, False),
+        (math.nan, False), (math.inf, False), (-math.inf, False),
+        (True, False), (None, False), ("1", False),
+    ],
+)
+def test_is_finite_nonneg(value, expected):
+    from itinerary_schedule import _is_finite_nonneg
+
+    assert _is_finite_nonneg(value) is expected
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [(0.1, True), (2, True), (0, False), (-1, False), (math.inf, False), (True, False)],
+)
+def test_is_finite_positive(value, expected):
+    from itinerary_schedule import _is_finite_positive
+
+    assert _is_finite_positive(value) is expected
+
+
+def test_coerce_blocked_edges_giu_dung_do_long_leo_ve_khoang_trang():
+    """Vị từ này CỐ Ý lỏng hơn _coerce_matrix_ids — xem comment trong code."""
+    from itinerary_schedule import _coerce_blocked_edges
+
+    assert _coerce_blocked_edges({(" ", "b")}) == frozenset({(" ", "b")})
+    with pytest.raises(ValueError, match="Cạnh bị cấm phải là cặp ID điểm dừng"):
+        _coerce_blocked_edges({("a", "b", "c")})
+    with pytest.raises(ValueError, match="Cạnh bị cấm phải là cặp ID điểm dừng"):
+        _coerce_blocked_edges({("a", "")})
+
+
+def test_coerce_matrix_ids_bat_id_toan_khoang_trang():
+    from itinerary_schedule import _coerce_matrix_ids
+
+    assert _coerce_matrix_ids(["a", "b"]) == ("a", "b")
+    with pytest.raises(ValueError, match="ID ma trận không được để trống"):
+        _coerce_matrix_ids([" "])
+    with pytest.raises(ValueError, match="ID ma trận không được trùng"):
+        _coerce_matrix_ids(["a", "a"])
+
+
+def test_validate_matrix_cells_bat_duong_cheo_khac_khong():
+    from itinerary_schedule import _validate_matrix_cells
+
+    _validate_matrix_cells(((0.0, 5.0), (5.0, 0.0)))
+    with pytest.raises(ValueError, match="Đường chéo ma trận thời gian phải bằng 0"):
+        _validate_matrix_cells(((1.0, 5.0), (5.0, 0.0)))
+    with pytest.raises(ValueError, match="Đường chéo ma trận thời gian phải bằng 0"):
+        _validate_matrix_cells(((None, 5.0), (5.0, 0.0)))
+    with pytest.raises(ValueError, match="Thời gian di chuyển phải là số hoặc None"):
+        _validate_matrix_cells(((0.0, True), (5.0, 0.0)))

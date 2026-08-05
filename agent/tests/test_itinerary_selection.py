@@ -476,3 +476,14 @@ def test_ghim_bat_nhat_whitespace_giua_travel_matrix_va_blocked_edges():
 
     options = ScheduleOptions(blocked_edges={(" ", "b")})
     assert (" ", "b") in options.blocked_edges
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [("a", True), (" a ", True), ("", False), ("   ", False), (None, False), (1, False)],
+)
+def test_is_filled_str(value, expected):
+    """Bản của itinerary_selection CÓ .strip() — khác _coerce_blocked_edges."""
+    from itinerary_selection import _is_filled_str
+
+    assert _is_filled_str(value) is expected
