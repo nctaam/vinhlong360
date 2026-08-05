@@ -406,19 +406,17 @@ def _selection_anchor_stops(anchor_items: list[dict]) -> list[ScheduleStop]:
     ]
 
 
-def _project_selection_schedule(
-    result,
-    items_by_id: dict[str, dict],
-    anchor_items: list[dict],
-    month: int,
-) -> list[dict]:
-    items_by_id = dict(items_by_id)
-    items_by_id.update(
-        {item["entity"]["id"]: item for item in anchor_items}
-    )
-    placements_by_id = {placement.stop_id: placement for placement in result.schedule.placements}
-    scheduled_stops = []
-    for entity_id in result.schedule.ordered_ids:
+def _project_placements(schedule, items_by_id: dict[str, dict], month: int) -> list[dict]:
+    """Dựng danh sách stop người dùng nhìn thấy từ một ScheduleResult.
+
+    Gộp bản trùng giữa `_build_day_schedule` (truyền thẳng ScheduleResult) và
+    `_project_selection_schedule` (truyền `result.schedule`). Nhận CHÍNH đối
+    tượng schedule chứ không nhận SelectionResult, để hai chỗ gọi giữ nguyên
+    nguồn dữ liệu của mình.
+    """
+    placements_by_id = {placement.stop_id: placement for placement in schedule.placements}
+    scheduled_stops: list[dict] = []
+    for entity_id in schedule.ordered_ids:
         item = items_by_id.get(entity_id)
         placement = placements_by_id.get(entity_id)
         if item is None or placement is None:
@@ -441,6 +439,42 @@ def _project_selection_schedule(
     return scheduled_stops
 
 
+def _schedule_core_diagnostics(schedule) -> dict:
+    """8 khoá chẩn đoán chung của một ScheduleResult.
+
+    CỐ Ý KHÔNG có khoá `warnings`: hai chỗ gọi tính nó từ NGUỒN KHÁC NHAU —
+    `_build_day_schedule` gộp warnings của chính lịch, còn `_selection_diagnostics`
+    cố tình BỎ `result.schedule.warnings`. Helper mà tự đọc `schedule.warnings`
+    sẽ âm thầm thêm warning lịch vào đường selection (đã có test ghim).
+    """
+    return {
+        "solver": schedule.solver,
+        "matrix_source": schedule.matrix_source,
+        "total_travel_minutes": schedule.total_travel_minutes,
+        "waiting_minutes": schedule.waiting_minutes,
+        "overtime_minutes": schedule.overtime_minutes,
+        "minimum_slack_minutes": schedule.minimum_slack_minutes,
+        "backtrack_ratio": schedule.backtrack_ratio,
+        "skipped": [
+            {"stop_id": skipped.stop_id, "reason": skipped.reason}
+            for skipped in schedule.skipped
+        ],
+    }
+
+
+def _project_selection_schedule(
+    result,
+    items_by_id: dict[str, dict],
+    anchor_items: list[dict],
+    month: int,
+) -> list[dict]:
+    items_by_id = dict(items_by_id)
+    items_by_id.update(
+        {item["entity"]["id"]: item for item in anchor_items}
+    )
+    return _project_placements(result.schedule, items_by_id, month)
+
+
 def _selection_diagnostics(result, state: dict, anchor_warnings: list[str]) -> dict:
     dropped = list(state["dropped"])
     dropped.extend(
@@ -448,19 +482,10 @@ def _selection_diagnostics(result, state: dict, anchor_warnings: list[str]) -> d
         for item in result.dropped
     )
     dropped.sort(key=lambda item: item["stop_id"])
+    # KHÔNG lấy result.schedule.warnings — xem docstring _schedule_core_diagnostics
     warnings = list(state["warnings"]) + list(anchor_warnings) + list(result.warnings)
     return {
-        "solver": result.schedule.solver,
-        "matrix_source": result.schedule.matrix_source,
-        "total_travel_minutes": result.schedule.total_travel_minutes,
-        "waiting_minutes": result.schedule.waiting_minutes,
-        "overtime_minutes": result.schedule.overtime_minutes,
-        "minimum_slack_minutes": result.schedule.minimum_slack_minutes,
-        "backtrack_ratio": result.schedule.backtrack_ratio,
-        "skipped": [
-            {"stop_id": skipped.stop_id, "reason": skipped.reason}
-            for skipped in result.schedule.skipped
-        ],
+        **_schedule_core_diagnostics(result.schedule),
         "warnings": warnings,
         "selection_solver": result.solver,
         "candidate_count": state["candidate_count"],
@@ -944,41 +969,10 @@ def _build_day_schedule(
         return legacy_stops, _legacy_schedule_diagnostics(anchor_warnings + ["schedule-fallback"])
 
     items_by_id = {item["entity"]["id"]: item for item, _stop in schedule_entries}
-    placements_by_id = {placement.stop_id: placement for placement in result.placements}
-    scheduled_stops = []
-    for entity_id in result.ordered_ids:
-        item = items_by_id.get(entity_id)
-        placement = placements_by_id.get(entity_id)
-        if item is None or placement is None:
-            continue
-        entity = item["entity"]
-        start_minute = int(round(placement.start_visit_minute))
-        scheduled_stop = {
-            "time": _fmt_time(start_minute),
-            "time_min": start_minute,
-            "entity": _entity_summary(entity),
-            "note": _gen_note(entity, month),
-        }
-        if item.get("_anchor_kind") == "meal":
-            scheduled_stop["note"] = MEAL_NOTE
-            scheduled_stop["is_meal"] = True
-        elif item.get("_anchor_kind") == "rest":
-            scheduled_stop["note"] = REST_NOTE
-            scheduled_stop["is_rest"] = True
-        scheduled_stops.append(scheduled_stop)
-
+    scheduled_stops = _project_placements(result, items_by_id, month)
     diagnostics = {
-        "solver": result.solver,
-        "matrix_source": result.matrix_source,
-        "total_travel_minutes": result.total_travel_minutes,
-        "waiting_minutes": result.waiting_minutes,
-        "overtime_minutes": result.overtime_minutes,
-        "minimum_slack_minutes": result.minimum_slack_minutes,
-        "backtrack_ratio": result.backtrack_ratio,
-        "skipped": [
-            {"stop_id": skipped.stop_id, "reason": skipped.reason}
-            for skipped in result.skipped
-        ],
+        **_schedule_core_diagnostics(result),
+        # Đường legacy CÓ gộp warnings của chính lịch — khác đường selection.
         "warnings": warnings + list(result.warnings),
     }
     return scheduled_stops, diagnostics

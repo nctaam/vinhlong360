@@ -634,3 +634,108 @@ def test_ordered_kept_mot_required_thi_khong_lam_dau_mut():
     )
 
     assert [c.stop.id for c in ordered] == ["r1", "opt"]
+
+
+# ── _build_day_schedule: mở khoá vùng chưa có test nào phủ (B3, 2026-08-05) ──
+# 39 dòng cuối hàm (dựng scheduled_stops + diagnostics) chưa từng được test chạm
+# tới, trong khi chính vùng đó sinh `time`/`entity`/`note` mà người dùng nhìn thấy.
+
+def _day_item(eid: str, lat: float, etype: str = "attraction") -> dict:
+    return {
+        "entity": {
+            "id": eid, "name": eid.upper(), "type": etype,
+            "coordinates": [lat, 106.0], "summary": "x" * 60,
+        },
+        "score": 1.0,
+        "area": "vinh-long",
+    }
+
+
+def test_build_day_schedule_sinh_moc_gio_va_entity_cho_moi_stop():
+    day_entities = [_day_item("a", 10.00), _day_item("b", 10.02), _day_item("c", 10.04)]
+
+    stops, diagnostics = ig._build_day_schedule(
+        day_entities, meal_candidates=[], month=6, meal_anchors=[],
+        rest_anchors=[], day_number=1, used_entity_ids=set(),
+    )
+
+    assert len(stops) == 3
+    for stop in stops:
+        assert stop["entity"]["id"] in {"a", "b", "c"}
+        assert ":" in stop["time"] and isinstance(stop["time_min"], int)
+        assert "note" in stop  # _gen_note trả "" cho entity không có mùa/giờ mở cửa
+    assert diagnostics["solver"]
+    assert "warnings" in diagnostics
+
+
+def test_build_day_schedule_danh_dau_is_meal_cho_anchor_bua_an():
+    """Nhánh _anchor_kind == 'meal' — _build_joint_day_plans đọc cờ này để giữ
+    chỗ ID xuyên ngày, hỏng là vỡ giao thức đặt-chỗ trong im lặng."""
+    day_entities = [_day_item("a", 10.00), _day_item("b", 10.02)]
+    # _find_meal_anchor_candidate chỉ nhận type dish/product, KHÔNG nhận restaurant
+    meal_candidates = [_day_item("mon-an", 10.01, etype="dish")]
+
+    stops, _diagnostics = ig._build_day_schedule(
+        day_entities, meal_candidates=meal_candidates, month=6,
+        meal_anchors=["11:30"], rest_anchors=[], day_number=1, used_entity_ids=set(),
+    )
+
+    meals = [s for s in stops if s.get("is_meal")]
+    assert meals, [s["entity"]["id"] for s in stops]
+    assert meals[0]["note"] == ig.MEAL_NOTE
+
+
+def test_build_day_schedule_bo_qua_id_khong_co_trong_items_by_id():
+    """Guard `item is None or placement is None` — mù ở cả hai đường."""
+    day_entities = [_day_item("a", 10.00), _day_item("b", 10.02)]
+
+    stops, _diagnostics = ig._build_day_schedule(
+        day_entities, meal_candidates=[], month=6, meal_anchors=[],
+        rest_anchors=[], day_number=1, used_entity_ids=set(),
+    )
+
+    assert {s["entity"]["id"] for s in stops} <= {"a", "b"}
+
+
+def test_build_day_schedule_mot_entity_thi_roi_ve_legacy():
+    stops, diagnostics = ig._build_day_schedule(
+        [_day_item("a", 10.00)], meal_candidates=[], month=6, meal_anchors=[],
+        rest_anchors=[], day_number=1, used_entity_ids=set(),
+    )
+
+    assert "schedule-fallback" in diagnostics["warnings"]
+    assert len(stops) == 1
+
+
+def test_hop_dong_warnings_khac_nhau_giua_duong_legacy_va_duong_selection():
+    """QUẢ MÌN của bước gộp-trùng: khoá `warnings` tính từ NGUỒN KHÁC NHAU.
+
+    - `_build_day_schedule` GỘP `result.warnings` của chính ScheduleResult.
+    - `_selection_diagnostics` CỐ Ý BỎ `result.schedule.warnings`, chỉ lấy
+      state + anchor + result.warnings của SelectionResult.
+
+    Helper dùng chung mà tự đọc `schedule.warnings` bên trong sẽ âm thầm thêm
+    warning lịch vào đường selection. Test này là cái chặn.
+    """
+    from itinerary_schedule import ScheduleResult
+    from itinerary_selection import SelectionResult
+
+    schedule = ScheduleResult(
+        ordered_ids=(), placements=(), skipped=(), total_travel_minutes=0.0,
+        waiting_minutes=0.0, overtime_minutes=0.0, minimum_slack_minutes=0.0,
+        geometric_distance_km=0.0, backtrack_ratio=0.0, solver="s",
+        matrix_source="m", warnings=("CANH-BAO-CUA-LICH",),
+    )
+    result = SelectionResult(
+        schedule=schedule, selected_ids=(), dropped=(), candidate_count=0,
+        selected_count=0, total_reward=0.0, solver="sel",
+        warnings=("canh-bao-cua-selection",),
+    )
+    state = {"dropped": [], "warnings": ["canh-bao-cua-state"], "candidate_count": 0}
+
+    diagnostics = ig._selection_diagnostics(result, state, ["canh-bao-anchor"])
+
+    assert "CANH-BAO-CUA-LICH" not in diagnostics["warnings"]
+    assert diagnostics["warnings"] == [
+        "canh-bao-cua-state", "canh-bao-anchor", "canh-bao-cua-selection",
+    ]

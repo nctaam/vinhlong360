@@ -65,6 +65,6 @@
 
   **DEFER 3 — `_candidate_fee_value` (cx 14).** Chuỗi ép kiểu phòng thủ cho dữ liệu phí đến từ nhiều nguồn định dạng khác nhau; giá trị tách thấp, rủi ro đổi thầm quy tắc parse cao. Mở câu hỏi cho chủ dự án.
 
-  **CÒN LÀM ĐƯỢC, chưa làm — `_build_day_schedule` (cx 19 → 11).** Không phải essential: tách được bằng cách gộp-trùng `_project_placements` dùng chung với `_project_selection_schedule`. Chưa làm vì cần 5 test mở đường trước (39 dòng hiện không test nào phủ) và có một bẫy đã nhận diện: khoá `warnings` được tính từ **nguồn khác nhau** ở hai chỗ gọi — helper mà tự đọc `schedule.warnings` sẽ âm thầm thêm warning lịch vào đường selection. Tách thành task riêng thay vì làm vội trong đợt này.
+  **~~CÒN LÀM ĐƯỢC, chưa làm~~ → ĐÃ LÀM cùng ngày, R20.8 18 → 17 — `_build_day_schedule` (cx 19 → 11).** Không phải essential: tách được bằng cách gộp-trùng `_project_placements` dùng chung với `_project_selection_schedule`. Chưa làm vì cần 5 test mở đường trước (39 dòng hiện không test nào phủ) và có một bẫy đã nhận diện: khoá `warnings` được tính từ **nguồn khác nhau** ở hai chỗ gọi — helper mà tự đọc `schedule.warnings` sẽ âm thầm thêm warning lịch vào đường selection. Đã làm sau khi viết đủ 5 test mở đường, trong đó test thứ 5 ghim đúng cái bẫy: `_project_placements` nhận CHÍNH đối tượng schedule (không phải SelectionResult) và `_schedule_core_diagnostics` cố ý KHÔNG có khoá `warnings`, để mỗi chỗ gọi tự ghép warnings từ nguồn của mình.
 
 ## SKIP-log (tự động ghi bởi run_hard khi SKIP_CHECKS hợp lệ)
