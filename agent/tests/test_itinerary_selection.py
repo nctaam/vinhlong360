@@ -349,3 +349,130 @@ def test_repair_replaces_a_greedy_long_stop_to_restore_cardinality():
     assert "high" in result.selected_ids
     assert "short" in result.selected_ids
     assert "trap" not in result.selected_ids
+
+
+# ── Lưới an toàn cho refactor complexity R20.8 (2026-08-05) ──────────────────
+# Các __post_init__ dưới đây sắp được tách thành vị từ. Ghim TỪNG thông điệp
+# lỗi trước, để bản tách nào đổi hành vi là đỏ ngay — không dựa vào việc đọc lại
+# diff bằng mắt.
+
+import math  # noqa: E402
+
+from itinerary_schedule import ScheduleResult, TravelMatrix  # noqa: E402
+from itinerary_selection import SelectionResult  # noqa: E402
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    [
+        ({"reward": -1.0}, "Reward phải là số hữu hạn không âm"),
+        ({"reward": math.nan}, "Reward phải là số hữu hạn không âm"),
+        ({"reward": math.inf}, "Reward phải là số hữu hạn không âm"),
+        ({"reward": True}, "Reward phải là số hữu hạn không âm"),
+        ({"entity_type": ""}, "Loại entity không được để trống"),
+        ({"entity_type": "   "}, "Loại entity không được để trống"),
+        ({"area": ""}, "Khu vực không được để trống"),
+        ({"area": "  "}, "Khu vực không được để trống"),
+        ({"fee_value": -1.0}, "Phí phải là số hữu hạn không âm"),
+        ({"fee_value": math.nan}, "Phí phải là số hữu hạn không âm"),
+        ({"fee_value": True}, "Phí phải là số hữu hạn không âm"),
+    ],
+)
+def test_selection_candidate_tu_choi_truong_khong_hop_le(kwargs, message):
+    base = {
+        "stop": ScheduleStop("a", (10.0, 106.0), 30),
+        "reward": 1.0,
+        "entity_type": "attraction",
+        "area": "vinh-long",
+    }
+    with pytest.raises(ValueError, match=message):
+        SelectionCandidate(**{**base, **kwargs})
+
+
+def test_selection_candidate_tu_choi_stop_sai_kieu():
+    with pytest.raises(ValueError, match="Candidate phải chứa ScheduleStop"):
+        SelectionCandidate(stop="a", reward=1.0, entity_type="attraction", area="vinh-long")
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    [
+        ({"target_count": True}, "Số POI mục tiêu phải lớn hơn 0"),
+        ({"target_count": 0}, "Số POI mục tiêu phải lớn hơn 0"),
+        ({"exact_limit": True}, "Ngưỡng giải chính xác không được âm"),
+        ({"exact_limit": -1}, "Ngưỡng giải chính xác không được âm"),
+        ({"beam_width": 0}, "Độ rộng beam search phải lớn hơn 0"),
+        ({"repair_iterations": -1}, "Số iteration repair không được âm"),
+        ({"deadline_seconds": 0}, "Deadline phải là số hữu hạn dương"),
+        ({"deadline_seconds": math.inf}, "Deadline phải là số hữu hạn dương"),
+    ],
+)
+def test_selection_options_tu_choi_so_khong_hop_le(kwargs, message):
+    with pytest.raises(ValueError, match=message):
+        SelectionOptions(**{"target_count": 3, **kwargs})
+
+
+def _schedule_result_rong() -> ScheduleResult:
+    """ScheduleResult tối thiểu, hợp lệ — chỉ để SelectionResult chịu nhận."""
+    return ScheduleResult(
+        ordered_ids=(), placements=(), skipped=(), total_travel_minutes=0.0,
+        waiting_minutes=0.0, overtime_minutes=0.0, minimum_slack_minutes=0.0,
+        geometric_distance_km=0.0, backtrack_ratio=0.0, solver="test",
+        matrix_source="test", warnings=(),
+    )
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    [
+        ({"selected_ids": ("a", "a")}, "Selected ID không được trùng"),
+        ({"dropped": ("khong-phai-dropped",)}, "Dropped phải gồm DroppedCandidate"),
+        ({"candidate_count": -1}, "Candidate count không được âm"),
+        ({"selected_count": -1}, "Selected count không hợp lệ"),
+        ({"selected_count": 99, "candidate_count": 1}, "Selected count không hợp lệ"),
+        ({"total_reward": -1.0}, "Total reward phải là số hữu hạn không âm"),
+        ({"total_reward": math.nan}, "Total reward phải là số hữu hạn không âm"),
+        ({"total_reward": True}, "Total reward phải là số hữu hạn không âm"),
+    ],
+)
+def test_selection_result_tu_choi_truong_khong_hop_le(kwargs, message):
+    base = {
+        "schedule": _schedule_result_rong(), "selected_ids": (), "dropped": (),
+        "candidate_count": 0, "selected_count": 0, "total_reward": 0.0,
+        "solver": "test", "warnings": (),
+    }
+    with pytest.raises(ValueError, match=message):
+        SelectionResult(**{**base, **kwargs})
+
+
+def test_ghim_bat_nhat_bool_giua_selection_options_va_selection_result():
+    """QUẢ MÌN 1 — hai lớp đối xử với bool KHÁC nhau, và đó là hành vi hiện tại.
+
+    SelectionOptions loại bool (isinstance(x, bool) tường minh), còn SelectionResult
+    chỉ dùng `not isinstance(x, int)` mà bool LÀ int trong Python → lọt. Test này
+    ghim sự bất nhất để bản refactor nào "dọn dẹp" cho nhất quán sẽ đỏ ngay, buộc
+    người sửa phải quyết định có chủ đích thay vì đổi thầm.
+    """
+    with pytest.raises(ValueError):
+        SelectionOptions(target_count=True)
+
+    accepted = SelectionResult(
+        schedule=_schedule_result_rong(), selected_ids=(), dropped=(),
+        candidate_count=True, selected_count=0, total_reward=0.0,
+        solver="test", warnings=(),
+    )
+    assert accepted.candidate_count is True
+
+
+def test_ghim_bat_nhat_whitespace_giua_travel_matrix_va_blocked_edges():
+    """QUẢ MÌN 2 — TravelMatrix dùng .strip(), blocked_edges thì không.
+
+    `TravelMatrix(stop_ids=(' ',))` bị từ chối, còn `ScheduleOptions(blocked_edges=
+    {(' ', 'b')})` được nhận. Gộp hai chỗ vào chung một vị từ `_is_filled_str` sẽ
+    siết ngầm blocked_edges — test này là cái chặn.
+    """
+    with pytest.raises(ValueError):
+        TravelMatrix(stop_ids=(" ",), duration_minutes=((0.0,),), source="test")
+
+    options = ScheduleOptions(blocked_edges={(" ", "b")})
+    assert (" ", "b") in options.blocked_edges
