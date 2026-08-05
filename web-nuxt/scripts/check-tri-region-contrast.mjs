@@ -43,8 +43,12 @@ const pairs = [
   ['error-light', 'coral-error', 'alluvial-paper', 4.5],
   ['body-dark', 'night-text', 'night-canvas', 7],
   ['action-dark', 'night-river', 'night-canvas', 4.5],
+  // Điểm mù đã để lọt 2 lỗi axe (2026-08-05): bảng này chỉ khoá cặp trên
+  // canvas, trong khi phần lớn nội dung nằm trên surface/raised.
+  ['action-dark-raised', 'night-river', 'night-raised', 4.5],
   ['on-action-dark', 'night-canvas', 'night-river', 4.5],
   ['brand-dark', 'night-clay', 'night-canvas', 4.5],
+  ['brand-dark-surface', 'night-clay', 'night-surface', 4.5],
   ['verified-dark', 'night-leaf', 'night-canvas', 4.5],
   ['warning-dark', 'night-amber', 'night-canvas', 4.5],
   ['error-dark', 'night-error', 'night-canvas', 4.5],

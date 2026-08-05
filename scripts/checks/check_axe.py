@@ -86,7 +86,7 @@ def main() -> int:
     result = check.run(None)
     for violation in result["violations"]:
         print(f"✖ R30.6 {violation['msg']}")
-    baseline = 5  # nợ color-contrast đang có; xem docs/standards/90-exceptions-log.md
+    baseline = 0  # 8 serious+ ban đầu đã sửa hết 2026-08-05; cổng nay đòi sạch tuyệt đối
     if result["count"] > baseline:
         print(f"axe: {result['count']} violation serious+ > baseline {baseline}")
         return 1

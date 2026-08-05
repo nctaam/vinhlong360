@@ -138,15 +138,21 @@
 .dark .home .section-head .section-link { color: var(--primary-fg); }
 
 /* Event cards */
-.dark .event-mini { background: var(--surface-container-high); border-color: rgba(255,255,255,.14); }
-.dark .event-mini:hover { border-color: var(--primary-fg); background: var(--surface-container-highest); }
+/* Cùng vết M3 residue với .spotlight ở dưới: gỡ nền để .event-mini không thành
+   hòn đảo xám tím duy nhất sau khi .spotlight trở về --card. */
+.dark .event-mini { border-color: rgba(255,255,255,.14); }
+.dark .event-mini:hover { border-color: var(--primary-fg); }
 .dark .event-mini h3 { color: var(--ink); }
 .dark .ec-countdown { color: var(--accent-text); background: rgba(var(--accent-rgb), .12); }
 
 /* Spotlight */
-.dark .spotlight { background: var(--surface-container-high); border-color: rgba(255,255,255,.16); }
+/* Bỏ nền M3 --surface-container-high (#424248, hue 285.9° — xám tím lạc giữa
+   ramp Nocturne hue 181–184°). Rơi về .spotlight { background: var(--card) }
+   = --night-surface #111D1B, đúng pattern card-tối-hơn-band của cả site
+   (cards.css:138) và khớp .cspot vốn không có override dark.
+   .spot-kicker 3.35 → 5.79; .spot-sum vốn sát mép 4.50 → 7.80. */
+.dark .spotlight { border-color: rgba(255,255,255,.16); }
 .dark .spot-body { color: var(--ink); }
-.dark .spot-body .spot-desc { color: #c8c8ce; }
 
 /* Quán ngon list */
 .dark .top-place { border-color: rgba(255,255,255,.10); }

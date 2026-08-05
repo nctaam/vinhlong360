@@ -21,8 +21,10 @@ const semanticPairNames = [
   'error-light',
   'body-dark',
   'action-dark',
+  'action-dark-raised',
   'on-action-dark',
   'brand-dark',
+  'brand-dark-surface',
   'verified-dark',
   'warning-dark',
   'error-dark',
@@ -746,9 +748,15 @@ describe('Tri-Region color contract', () => {
     expect(stdout).toMatch(/audit-toolchain .*nuxt@4\..*vue\/compiler-sfc@3\..*postcss@8\..*postcss-selector-parser@7\./)
   })
 
+  // Mốc dời 96bfba4c → 358fe697 (2026-08-05): thêm devDependency `axe-core` để
+  // R30.6 có nguồn sinh axe-report.json — trước đó cổng hard-ratchet ấy chưa
+  // từng chạy lần nào. Đây là thay đổi toolchain CÓ CHỦ ĐÍCH, chủ dự án duyệt;
+  // khác biệt so với mốc cũ đúng một dòng. Chốt chặn giữ nguyên tác dụng: mọi
+  // dependency thêm sau đây vẫn làm test đỏ cho tới khi có người dời mốc và
+  // giải trình.
   it.each(['package.json', 'package-lock.json'])('keeps %s identical to the remediation base', async (path) => {
     const [{ stdout: baseline }, current] = await Promise.all([
-      execFileAsync('git', ['show', `96bfba4c:web-nuxt/${path}`], { cwd: root }),
+      execFileAsync('git', ['show', `358fe697:web-nuxt/${path}`], { cwd: root }),
       readFile(resolve(root, 'web-nuxt', path), 'utf8'),
     ])
 

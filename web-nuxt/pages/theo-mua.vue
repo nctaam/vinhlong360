@@ -672,7 +672,7 @@ useHead(() => ({
 .stl-cell {
   position: relative; aspect-ratio: 1 / 1.15; border: none; cursor: pointer;
   display: flex; align-items: flex-end; justify-content: center; padding-bottom: 4px;
-  color: rgba(var(--white-rgb), .82); font-size: var(--text-2xs); font-weight: var(--weight-semibold);
+  color: var(--ink); font-size: var(--text-2xs); font-weight: var(--weight-semibold);
   font-variant-numeric: tabular-nums;
   transition: filter .2s var(--ease-out), transform .2s var(--ease-spring-gentle);
 }
@@ -687,6 +687,13 @@ useHead(() => ({
    viewport is already spent on the hero ring — this stays calm, per the
    §3 golden rule). */
 .stl-cell.is-now { box-shadow: inset 0 0 0 2px var(--card), inset 0 0 0 4px rgba(var(--black-rgb), .25); }
+/* Nhãn tháng có NỀN RIÊNG thay vì nằm thẳng trên màu quý. Lý do: --accent
+   không có bản .dark trong khi --secondary/--tertiary đảo sáng-tối
+   theo theme, nên ở Nocturne mọi nền quý đều sáng và chữ trắng chết cả 5/5
+   (axe đo 1.83–2.29). Riêng q-summer thì chữ trắng ĐẶC cũng chỉ đạt 2.16:1 —
+   không màu chữ sáng nào cứu được. Cặp --card/--ink tự đảo theo theme nên
+   đạt ngưỡng ở CẢ hai chế độ, và giữ nguyên 5 màu quý làm mã hoá ngữ nghĩa. */
+.stl-m { background: var(--card); color: var(--ink); border-radius: var(--radius-sm); padding: 0 var(--space-1); }
 .stl-cell.is-now .stl-m { font-weight: var(--weight-extrabold); }
 .stl-legend { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); margin-top: var(--space-3); }
 .stl-legend-item { display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--text-xs); color: var(--muted); }
@@ -717,7 +724,6 @@ useHead(() => ({
 .dark .ring-notch-tick { background: rgba(var(--white-rgb), .4); }
 .dark .ring-notch:hover .ring-notch-tick, .dark .ring-notch:focus-visible .ring-notch-tick { background: rgba(var(--white-rgb), .85); }
 .dark .ring-notch.is-current .ring-notch-tick { background: var(--card); box-shadow: 0 0 0 1px rgba(var(--white-rgb), .2); }
-.dark .stl-cell { color: rgba(var(--white-rgb), .78); }
 .dark .stl-cell.is-now { box-shadow: inset 0 0 0 2px var(--card), inset 0 0 0 4px rgba(var(--black-rgb), .4); }
 
 /* ── Responsive ────────────────────────────── */

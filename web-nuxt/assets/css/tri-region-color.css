@@ -77,9 +77,19 @@
 }
 
 [data-color-system="tri-region-v1"] .btn-primary,
-[data-color-system="tri-region-v1"] .chip.active,
 [data-color-system="tri-region-v1"] .btn-outline:hover:not(:disabled),
 [data-color-system="tri-region-v1"] a.hl {
+  color: var(--color-on-action);
+}
+
+/* .chip.active tách khỏi rule gộp trên: nó phải khai CẢ nền. Chỉ ép `color`
+   thì `.dark .chip` (catalog.css:358) vẫn kéo nền về --bg-alt, trong khi chữ
+   đã thành --color-on-action — gần-đen trên gần-đen, axe đo 1.26:1, nút đang
+   chọn gần như vô hình ở chế độ tối.
+   Khuôn mẫu giống [data-color-role="action-primary"] ở trên. */
+[data-color-system="tri-region-v1"] .chip.active {
+  border-color: var(--color-action);
+  background: var(--color-action);
   color: var(--color-on-action);
 }
 

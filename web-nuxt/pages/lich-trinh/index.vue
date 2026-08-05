@@ -390,8 +390,12 @@ useHead(() => ({
 .pace-chip-count { font-size: var(--text-2xs); color: var(--muted); font-variant-numeric: tabular-nums; }
 .pace-chip:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); border-color: var(--border); }
 .pace-chip:active { transform: scale(.96); transition-duration: .08s; }
-.pace-chip.active { background: var(--secondary); border-color: var(--secondary); color: var(--text-on-dark, var(--white)); }
-.pace-chip.active .pace-chip-count { color: rgba(var(--white-rgb),.85); }
+/* --color-on-action thay cho chữ trắng cứng: --secondary đảo sáng-tối theo
+   theme, nên ở Nocturne nền thành --night-leaf và chữ trắng chỉ đạt
+   2.80:1. Đây cũng là hợp đồng mà tri-region-color.css áp cho mọi control
+   nền-đặc; .pace-chip đặt tên khác nên đã lọt khỏi rule đó. */
+.pace-chip.active { background: var(--secondary); border-color: var(--secondary); color: var(--color-on-action); }
+.pace-chip.active .pace-chip-count { color: inherit; opacity: .8; }
 .dark .pace-chip { background: var(--card); border-color: var(--line); }
 .dark .pace-chip.active { background: var(--secondary); border-color: var(--secondary); }
 
