@@ -456,7 +456,7 @@ const sections: Section[] = [
     ],
     faqs: [
       { q: 'Tìm kiếm có hỗ trợ tiếng Anh không?', a: 'Hiện tại nội dung chủ yếu bằng tiếng Việt. Bạn có thể tìm bằng tên riêng tiếng Anh (như "homestay", "Cai Be") và hệ thống sẽ trả kết quả phù hợp.' },
-      { q: 'Tại sao một số địa điểm không có ảnh?', a: 'Ảnh chỉ hiển thị khi có nguồn bản quyền hợp lệ (UGC, Pexels, Unsplash). Bạn có thể đóng góp ảnh qua bài viết cộng đồng.' },
+      { q: 'Tại sao một số địa điểm không có ảnh?', a: 'Ảnh minh hoạ của trang do AI tạo và luôn có nhãn "Minh họa AI"; nơi nào chưa có ảnh thì để trống thay vì mượn ảnh nơi khác. Bạn có thể đóng góp ảnh thật qua bài viết cộng đồng.' },
       { q: 'Kết quả tìm kiếm có bao gồm bài viết cộng đồng không?', a: 'Có. Trang kết quả đầy đủ (nhấn Enter) hiển thị cả bài viết, đánh giá từ cộng đồng và hồ sơ người dùng.' },
       { q: 'Có bao nhiêu địa điểm trên hệ thống?', a: 'Hiện có hơn 1.700 địa điểm và 9.500 mối quan hệ liên kết, trải rộng Vĩnh Long, Bến Tre, Trà Vinh. Dữ liệu liên tục được bổ sung.' },
     ],

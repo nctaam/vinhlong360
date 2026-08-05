@@ -16,9 +16,18 @@ import re
 import subprocess
 from pathlib import Path
 
-# Dòng mang ngữ cảnh phủ định/cảnh báo — không tính là vi phạm
+# Dòng mang ngữ cảnh phủ định/cảnh báo — không tính là vi phạm.
+# (?-i:...) giữ NGUYÊN chữ HOA cho nhóm chỉ-dẫn: "KHÔNG/CẤM" viết hoa là quy tắc
+# có chủ đích, còn "không" thường chỉ là văn xuôi và KHÔNG được miễn trừ —
+# nếu miễn, một câu như "Tại sao chỗ này không có ảnh? Ảnh lấy từ Pexels."
+# sẽ lọt cổng dù đang vi phạm thật (ca huong-dan.vue:459, 2026-08-05).
 NEG_DEFAULT = re.compile(
-    r"(KHÔNG|KHONG|CẤM|không dùng|đừng|OVERRIDE|ARCHIVED|đã bỏ|đã xoá|đã dừng|banned|deprecated|ngoại lệ|whitelist|từ.khoá|blacklist|filler|\bno\b|Supersedes)",
+    r"((?-i:KHÔNG|KHONG|CẤM|CHẶN|TUYỆT ĐỐI|OVERRIDE|ARCHIVED|Supersedes)"
+    # "không" phải đi với động từ CHỈ DẪN mới được miễn; "không có/không hiện"
+    # là câu mô tả thường và vẫn phải qua cổng.
+    r"|không (?:dùng|được|thêm|tự nhận|nhận|phải|bao giờ|còn|nên|lấy|đăng|re-host)"
+    r"|đừng|tránh dùng|thay vì|đã bỏ|đã xoá|đã dừng"
+    r"|banned|deprecated|ngoại lệ|whitelist|từ.khoá|blacklist|filler|\bno\b)",
     re.I,
 )
 

@@ -100,6 +100,29 @@ def _is_about_people(sentence: str, match_start: int = -1) -> bool:
     return not any(word in lowered for word in FAUNA)
 
 
+def _safety_hit_is_about_people(description: str, pattern: str) -> bool:
+    """Cảnh báo an toàn chỉ tính khi câu đang nói về NGƯỜI, không phải con vật."""
+    sentence = next(
+        (s for s in re.split(r"(?<=[.!?])\s+|—", description)
+         if re.search(pattern, s.lower())), description)
+    local = re.search(pattern, sentence.lower())
+    return _is_about_people(sentence, local.start() if local else -1)
+
+
+def _rule_hits(description: str) -> list[tuple[str, str]]:
+    """Trả [(mã rule, đoạn khớp)] cho một mô tả."""
+    lowered = description.lower()
+    hits: list[tuple[str, str]] = []
+    for key, pattern, _ in RULES:
+        match = re.search(pattern, lowered)
+        if not match:
+            continue
+        if key == "khuyen_an_toan" and not _safety_hit_is_about_people(description, pattern):
+            continue
+        hits.append((key, match.group(0)[:60]))
+    return hits
+
+
 def audit(entities) -> dict[str, list[tuple[str, str]]]:
     findings: dict[str, list[tuple[str, str]]] = {key: [] for key, _, _ in RULES}
     findings["don_vi_hanh_chinh_cu"] = []
@@ -108,19 +131,8 @@ def audit(entities) -> dict[str, list[tuple[str, str]]]:
         if not description:
             continue
         eid = entity.get("id") or "?"
-        lowered = description.lower()
-        for key, pattern, _ in RULES:
-            match = re.search(pattern, lowered)
-            if not match:
-                continue
-            if key == "khuyen_an_toan":
-                sentence = next(
-                    (s for s in re.split(r"(?<=[.!?])\s+|—", description)
-                     if re.search(pattern, s.lower())), description)
-                local = re.search(pattern, sentence.lower())
-                if not _is_about_people(sentence, local.start() if local else -1):
-                    continue
-            findings[key].append((eid, match.group(0)[:60]))
+        for key, sample in _rule_hits(description):
+            findings[key].append((eid, sample))
         bad = stale_admin_sentences(description)
         if bad:
             findings["don_vi_hanh_chinh_cu"].append((eid, bad[0][:70]))

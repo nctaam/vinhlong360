@@ -92,6 +92,41 @@ def _load_db():
     return db
 
 
+def _fix_description(eid: str, description: str) -> str:
+    """Áp mọi bản vá mô tả cho một entity. Idempotent: chạy lại không đổi thêm."""
+    new = description
+
+    if eid == "vinh-long" and WRONG_UNIT_SPLIT in new:
+        new = new.replace(WRONG_UNIT_SPLIT, RIGHT_UNIT_SPLIT)
+
+    new = fix_rating_scale(new)
+
+    if eid == MISLABELED_SANCTUARY and "Vàm Hồ" in new:
+        # Bản ghi không có dữ kiện riêng nào, nên chỉ giữ đúng phần suy ra
+        # được từ chính tên entity. Thà ngắn còn hơn mô tả nhầm địa điểm.
+        new = SANCTUARY_TEXT
+
+    for target_id, old_text, fixed_text in (OCOP_STAR_CONFLICT, OUT_OF_PROVINCE):
+        if eid == target_id and old_text in new:
+            new = new.replace(old_text, fixed_text)
+
+    if eid in MOJIBAKE_FIXES and "?" in new:
+        new = MOJIBAKE_FIXES[eid]
+
+    return new
+
+
+def _fix_attributes(eid: str, entity: dict) -> bool:
+    """Sửa attributes tại chỗ; trả True nếu có thay đổi."""
+    if eid != SEASON_CONFLICT[0]:
+        return False
+    attributes = entity.get("attributes")
+    if isinstance(attributes, dict) and attributes.get("season_note") == SEASON_CONFLICT[1]:
+        attributes["season_note"] = SEASON_CONFLICT[2]
+        return True
+    return False
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--dry-run", action="store_true")
@@ -105,31 +140,9 @@ def main() -> int:
         if not description:
             continue
         eid = entity.get("id")
-        new = description
 
-        if eid == "vinh-long" and WRONG_UNIT_SPLIT in new:
-            new = new.replace(WRONG_UNIT_SPLIT, RIGHT_UNIT_SPLIT)
-
-        new = fix_rating_scale(new)
-
-        if eid == MISLABELED_SANCTUARY and "Vàm Hồ" in new:
-            # Bản ghi không có dữ kiện riêng nào, nên chỉ giữ đúng phần suy ra
-            # được từ chính tên entity. Thà ngắn còn hơn mô tả nhầm địa điểm.
-            new = SANCTUARY_TEXT
-
-        for target_id, old_text, fixed_text in (OCOP_STAR_CONFLICT, OUT_OF_PROVINCE):
-            if eid == target_id and old_text in new:
-                new = new.replace(old_text, fixed_text)
-
-        if eid in MOJIBAKE_FIXES and "?" in new:
-            new = MOJIBAKE_FIXES[eid]
-
-        attributes_changed = False
-        if eid == SEASON_CONFLICT[0]:
-            attributes = entity.get("attributes")
-            if isinstance(attributes, dict) and attributes.get("season_note") == SEASON_CONFLICT[1]:
-                attributes["season_note"] = SEASON_CONFLICT[2]
-                attributes_changed = True
+        new = _fix_description(eid, description)
+        attributes_changed = _fix_attributes(eid, entity)
 
         if new == description and not attributes_changed:
             continue

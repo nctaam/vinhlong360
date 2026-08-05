@@ -191,3 +191,54 @@ def test_baseline_io_roundtrip(tmp_path):
 
 def test_load_baseline_missing_returns_empty(tmp_path):
     assert common.load_baseline(root=tmp_path) == {}
+
+
+# --- NEG_DEFAULT: phủ định phải là CHỈ DẪN, không phải văn xuôi ------------
+# Hồi quy 2026-08-05: `web-nuxt/pages/huong-dan.vue:459` trả lời người dùng
+# "Ảnh chỉ hiển thị khi có nguồn bản quyền hợp lệ (UGC, Pexels, Unsplash)" —
+# trái CLAUDE.md §1.5 — nhưng lọt cổng hard R10.6 suốt thời gian dài vì câu
+# hỏi phía trước chứa chữ "không" ("Tại sao ... không có ảnh?") và NEG_DEFAULT
+# khi đó miễn trừ mọi dòng chứa "không" (re.I trùm cả chữ thường).
+
+REAL_VIOLATIONS = [
+    "{ q: 'Tại sao một số nơi không có ảnh?', a: 'nguồn hợp lệ (UGC, Pexels, Unsplash)' }",
+    "Ảnh không hiện thì lấy tạm từ Wikimedia",
+]
+
+LEGIT_DIRECTIVES = [
+    '# KHÔNG dùng Tailwind',
+    'không dùng Pexels/Unsplash',
+    'TUYỆT ĐỐI không thêm lại claim "đã xác minh/kiểm chứng"',
+    'không tự nhận "đã xác minh/kiểm chứng thực địa" khi chưa đi thực tế',
+    '**⛔ CHẶN — chờ chủ dự án:** PUBLISH ảnh thật (Wikimedia khớp tên sai ~50%)',
+    'CẤM Wikimedia',
+    'background: no-repeat url(x)',
+]
+
+
+def test_neg_default_khong_mien_tru_cau_mo_ta_thuong():
+    """Chữ "không" trơn trong văn xuôi KHÔNG được miễn trừ cả dòng."""
+    for line in REAL_VIOLATIONS:
+        assert not common.NEG_DEFAULT.search(line), f"vẫn bị miễn trừ: {line}"
+
+
+def test_neg_default_van_mien_tru_chi_dan_co_chu_dich():
+    """Chỉ dẫn cấm (viết HOA hoặc "không <động từ>") vẫn được miễn trừ."""
+    for line in LEGIT_DIRECTIVES:
+        assert common.NEG_DEFAULT.search(line), f"chỉ dẫn hợp lệ bị bắt nhầm: {line}"
+
+
+def test_regex_check_bat_duoc_ca_huong_dan_vue(tmp_path):
+    """Cổng R10.6 đi hết đường: từ file thật tới danh sách vi phạm."""
+    _mk(tmp_path, "web-nuxt/pages/faq.vue",
+        "const faq = [\n"
+        "  { q: 'Tại sao chỗ này không có ảnh?', a: 'Ảnh lấy từ Pexels và Unsplash.' },\n"
+        "]\n")
+    check = common.RegexCheck(
+        name="banned_image_sources", level="hard", rule="R10.6",
+        patterns=[r"\b(Pexels|Unsplash|Wikimedia)\b"],
+        globs=["*.vue"], roots=["web-nuxt"], root=tmp_path,
+    )
+    result = check.run(None)
+    assert result["count"] == 1, result
+    assert result["violations"][0]["line"] == 2
