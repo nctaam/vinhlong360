@@ -11,7 +11,17 @@ from pathlib import Path
 
 from .common import iter_text_files, repo_root
 
-STATUS_RE = re.compile(r"^>\s*\*{0,2}STATUS", re.M)
+# Header phải là STATUS *có nội dung*: `> STATUS`, `> STATUS:` trống hay
+# `> STATUSAAAA` từng qua hết vì điều kiện cũ chỉ hỏi chuỗi "STATUS" có nằm
+# đầu một dòng blockquote không.
+# Cố ý KHÔNG ép 4 trạng thái của CLAUDE.md §3.6: đo trên repo cho thấy 44 file
+# plan/QA dùng từ vựng quy trình superpowers (`complete`, `proposed`,
+# `implemented-and-verified`) — chúng hợp lệ, siết cứng sẽ báo nhầm hàng loạt.
+# `[^\S\n]` thay cho `\s` để khoảng trắng không nuốt sang dòng sau.
+STATUS_RE = re.compile(
+    r"^>[^\S\n]*\*{0,2}STATUS\*{0,2}\b[^\S\n]*(?:\([^)\n]*\))?[^\S\n]*:?[^\S\n]*[^\s:]",
+    re.M,
+)
 EXCLUDE = ["docs/archive", "docs/research"]
 
 

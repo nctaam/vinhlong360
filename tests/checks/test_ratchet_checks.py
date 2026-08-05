@@ -4,6 +4,8 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 
@@ -113,3 +115,28 @@ def test_links_ignores_inline_and_fenced_code(tmp_path):
     # Nhưng link THẬT (ngoài code) vẫn bị bắt.
     _mk(tmp_path, "docs/b.md", "> STATUS x\n[thật](khong-ton-tai.md)\n")
     assert LinksCheck(root=tmp_path).run()["count"] == 1
+
+
+# --- R60.1: STATUS phải có nội dung (hồi quy 2026-08-05) -------------------
+
+def _doc(tmp_path, body: str):
+    p = tmp_path / "docs" / "x.md"
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(body, encoding="utf-8")
+    return DocStatusCheck(root=tmp_path)
+
+
+@pytest.mark.parametrize("header", [
+    "> STATUS: active", "> **STATUS**: done", "> STATUS (2026-08-04): complete",
+    "> STATUS: implementation complete - đã kiểm chứng", ">STATUS: obsolete",
+])
+def test_doc_status_chap_nhan_header_co_noi_dung(tmp_path, header):
+    assert _doc(tmp_path, f"{header}\n\n# Tài liệu\n").run()["count"] == 0
+
+
+@pytest.mark.parametrize("header", [
+    "> STATUS", "> STATUS:", "> STATUS: ", "> STATUSAAAA vớ vẩn", "> STATUS  ",
+])
+def test_doc_status_bat_header_rong_hoac_gia(tmp_path, header):
+    """Gõ đúng chữ STATUS rồi bỏ trống từng qua cổng hard-ratchet."""
+    assert _doc(tmp_path, f"{header}\n\n# Tài liệu\n").run()["count"] == 1
