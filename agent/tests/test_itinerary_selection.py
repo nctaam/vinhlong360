@@ -487,3 +487,39 @@ def test_is_filled_str(value, expected):
     from itinerary_selection import _is_filled_str
 
     assert _is_filled_str(value) is expected
+
+
+def test_selection_bao_deadline_khi_het_gio_giua_chung(monkeypatch):
+    """Nhánh deadline trong `evaluate` (mù trước 2026-08-05) — B3 cho bước tách.
+
+    Dùng đồng hồ ĐẾM ĐƠN ĐIỆU CÓ STATE, không dùng `iter((0.0, 9.9, ...))`:
+    itinerary_selection và itinerary_schedule cùng `import time` nên trỏ về CÙNG
+    một module object; schedule_stop_order lồng bên trong cũng rút tick, và một
+    iterator hữu hạn sẽ ném StopIteration giữa chừng thay vì hết giờ.
+    """
+    ticks = {"n": 0}
+
+    def dong_ho_tang_dan() -> float:
+        """Mỗi lần đọc trôi thêm 0.1s. Seed (lịch chỉ-required) kịp chạy xong
+        trước khi chạm deadline_seconds=1.0, rồi vòng tìm kiếm mới hết giờ —
+        nhảy thẳng lên quá deadline sẽ làm seed vỡ và ném NoFeasibleSchedule."""
+        ticks["n"] += 1
+        return ticks["n"] * 0.1
+
+    monkeypatch.setattr(selection_module.time, "perf_counter", dong_ho_tang_dan)
+
+    result = select_and_schedule_day(
+        candidates=[
+            candidate("start", 1.0, visit=0),
+            candidate("poi-1", 5.0, visit=60),
+            candidate("poi-2", 4.0, visit=60),
+            candidate("end", 1.0, visit=0),
+        ],
+        required_ids=frozenset({"start", "end"}),
+        fixed_stops=(),
+        matrix=matrix_for("start", "poi-1", "poi-2", "end"),
+        schedule_options=ScheduleOptions(),
+        selection_options=SelectionOptions(target_count=4, deadline_seconds=1.0),
+    )
+
+    assert "selection-deadline-reached" in result.warnings

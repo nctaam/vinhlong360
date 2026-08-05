@@ -142,12 +142,17 @@ def _dominates(left: SelectionCandidate, right: SelectionCandidate) -> bool:
     )
 
 
-def prune_candidates(
+def _validate_prune_inputs(
     candidates: Sequence[SelectionCandidate],
     required_ids: frozenset[str],
-    max_candidates: int = 20,
-) -> tuple[list[SelectionCandidate], tuple[DroppedCandidate, ...]]:
-    """Drop dominated candidates and cap the deterministic solver pool."""
+    max_candidates: int,
+) -> tuple[list[SelectionCandidate], frozenset[str]]:
+    """Kiểm đầu vào của prune và trả (items, required_ids đã chuẩn hoá).
+
+    Giữ NGUYÊN thứ tự kiểm của bản gốc: `max_candidates` được xét TRƯỚC khi
+    `list(candidates)` chạy, nên một Sequence lỗi vẫn báo lỗi cap trước — đổi
+    thứ tự sẽ đổi thông điệp lỗi mà người gọi nhận được.
+    """
     if not isinstance(required_ids, frozenset):
         required_ids = frozenset(required_ids)
     if not 1 <= max_candidates <= 20:
@@ -157,11 +162,20 @@ def prune_candidates(
     ids = [item.stop.id for item in items]
     if len(ids) != len(set(ids)):
         raise ValueError("Candidate ID không được trùng")
-    unknown_required = required_ids.difference(ids)
-    if unknown_required:
+    if required_ids.difference(ids):
         raise ValueError("Required ID phải có trong candidate pool")
     if len(required_ids) > max_candidates:
         raise ValueError("Required candidate count cannot exceed candidate cap")
+    return items, required_ids
+
+
+def prune_candidates(
+    candidates: Sequence[SelectionCandidate],
+    required_ids: frozenset[str],
+    max_candidates: int = 20,
+) -> tuple[list[SelectionCandidate], tuple[DroppedCandidate, ...]]:
+    """Drop dominated candidates and cap the deterministic solver pool."""
+    items, required_ids = _validate_prune_inputs(candidates, required_ids, max_candidates)
 
     dropped: list[DroppedCandidate] = []
     survivors: list[SelectionCandidate] = []
@@ -270,24 +284,17 @@ def select_and_schedule_day(
     )
     visit_bound_infeasible: set[frozenset[str]] = set()
 
-    def evaluate(optional_ids: frozenset[str]) -> tuple[ScheduleResult | None, bool]:
-        key = frozenset(item.stop.id for item in required).union(optional_ids)
-        cached = cache.get(key)
-        if cached is not None:
-            return cached
-        if base_visit_minutes + sum(
-            optional_by_id[stop_id].stop.visit_minutes for stop_id in optional_ids
-        ) > available_minutes:
-            visit_bound_infeasible.add(optional_ids)
-            outcome = (None, False)
-            cache[key] = outcome
-            return outcome
-        remaining = deadline - time.perf_counter()
-        if remaining <= 0:
-            outcome = (None, True)
-            cache[key] = outcome
-            return outcome
+    def build_subset_view(
+        optional_ids: frozenset[str], remaining: float
+    ) -> tuple[list[ScheduleStop], TravelMatrix, ScheduleOptions]:
+        """Dựng chuỗi stop + ma trận con + option cục bộ cho một tập optional.
 
+        Là closure ANH-EM của `evaluate` chứ không phải hàm module-level: nó đọc
+        7 free-var (required, fixed, optional_order, matrix, matrix_indexes,
+        schedule_options) mà nâng lên module-level sẽ thành chữ ký 8 tham số
+        trong vòng lặp nóng. `remaining` PHẢI là tham số — đọc lại đồng hồ ở đây
+        sẽ cho deadline_seconds nhỏ hơn, tức đổi hành vi.
+        """
         selected_optional = [
             item for item in optional_order if item.stop.id in optional_ids
         ]
@@ -321,6 +328,27 @@ def select_and_schedule_day(
                 if edge[0] in stop_id_set and edge[1] in stop_id_set
             ),
         )
+        return stops, view, local_options
+
+    def evaluate(optional_ids: frozenset[str]) -> tuple[ScheduleResult | None, bool]:
+        key = frozenset(item.stop.id for item in required).union(optional_ids)
+        cached = cache.get(key)
+        if cached is not None:
+            return cached
+        if base_visit_minutes + sum(
+            optional_by_id[stop_id].stop.visit_minutes for stop_id in optional_ids
+        ) > available_minutes:
+            visit_bound_infeasible.add(optional_ids)
+            outcome = (None, False)
+            cache[key] = outcome
+            return outcome
+        remaining = deadline - time.perf_counter()
+        if remaining <= 0:
+            outcome = (None, True)
+            cache[key] = outcome
+            return outcome
+
+        stops, view, local_options = build_subset_view(optional_ids, remaining)
         try:
             schedule = schedule_stop_order(stops, view, local_options)
         except NoFeasibleScheduleError:
