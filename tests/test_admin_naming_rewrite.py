@@ -27,6 +27,34 @@ class TestNhanDienCauCanSua:
         assert stale_sentences(text) == []
 
 
+class TestLoHongDaLoTraiTrongDotSuaHangLoat:
+    """Ba lỗ hổng đã cho lọt lỗi thật ở đợt sửa 457 mô tả."""
+
+    def test_bat_nhan_cap_viet_hoa(self):
+        """'Huyện Trà Cú' viết hoa từng lọt, khiến bến xe đang chạy bị dán 'cũ'."""
+        text = "Bến xe Trà Cú tại Thị trấn Trà Cú, Huyện Trà Cú, Tỉnh Trà Vinh."
+        assert stale_sentences(text)
+
+    def test_bat_ca_thanh_pho_viet_hoa(self):
+        text = "Khách sạn tại Phường 1, Thành Phố Vĩnh Long."
+        assert stale_sentences(text)
+
+    def test_khong_coi_chu_thuong_co_dau_la_ten_rieng(self):
+        """Lớp [A-ZĐÀ-Ỹ] trùm cả chữ thường có dấu nên 'đến', 'đi' bị tính là tên riêng."""
+        old = "Các tuyến nội huyện đến các xã trong vùng."
+        new = "Các tuyến đến các xã trong vùng."
+        assert check(old, new) == []
+
+    def test_xoa_nhan_cap_khong_bi_coi_la_mat_ten_rieng(self):
+        """Nhãn cấp bị gộp vào cụm tên riêng, nên xoá nhãn lại bị chặn 'mất tên riêng'
+        — chính điều buộc người sửa phải giữ nhãn rồi dán 'cũ'."""
+        old = ("Bến xe Cầu Ngang tại Đường 3 Tháng 2, Thị trấn Cầu Ngang, Huyện Cầu Ngang, "
+               "Trà Vinh. Tuyến: Cầu Ngang - Duyên Hải; các tuyến đến các xã lân cận.")
+        new = ("Bến xe Cầu Ngang tại Đường 3 Tháng 2, Cầu Ngang, Trà Vinh. "
+               "Tuyến: Cầu Ngang - Duyên Hải; các tuyến đến các xã lân cận quanh vùng.")
+        assert check(old, new) == []
+
+
 class TestGacCongKhiGhi:
     OLD = "Công viên An Hội rộng 2,5 ha nằm trên Đại lộ Đồng Khởi, giữa trung tâm thành phố Bến Tre."
 

@@ -39,13 +39,26 @@ ROOT = Path(os.environ.get("VL360_ROOT") or Path(__file__).resolve().parent.pare
 sys.path.insert(0, str(ROOT / "agent"))
 
 # Cách gọi đơn vị hành chính đã bị bãi bỏ.
+#
+# Nhãn cấp phải bắt cả dạng VIẾT HOA ("Huyện Trà Cú", "Thành Phố Vĩnh Long").
+# Bản đầu chỉ bắt chữ thường, nên trong đợt sửa 457 mô tả, hai bến xe đang hoạt
+# động giữ nguyên "Thị trấn/Huyện/Tỉnh" rồi bị dán thêm "cũ" — đọc thành đã ngưng
+# chạy. Dùng lớp chữ hoa tường minh thay vì dải [A-ZĐÀ-Ỹ], vì dải đó trong Unicode
+# trùm luôn chữ THƯỜNG có dấu (đ, ế, ă...).
+_UPPER = r"[A-ZĐÀ-ÞĂĐĨŨƠƯẠ-Ỹ]"
 STALE_PATTERNS = [
-    (re.compile(r"\bhuyện\s+[A-ZĐÀ-Ỹ]"), "huyện + tên riêng"),
-    (re.compile(r"\bthành phố\s+(Bến Tre|Trà Vinh|Vĩnh Long)\b"), "thành phố trực thuộc tỉnh"),
+    (re.compile(rf"\b[Hh]uyện\s+{_UPPER}"), "huyện + tên riêng"),
+    (re.compile(r"\b[Tt]hành\s+[Pp]hố\s+(Bến Tre|Trà Vinh|Vĩnh Long)\b"), "thành phố trực thuộc tỉnh"),
     (re.compile(r"\bTP\.?\s*(Bến Tre|Trà Vinh|Vĩnh Long)\b"), "TP viết tắt"),
-    (re.compile(r"\bthị trấn\s+[A-ZĐÀ-Ỹ]"), "thị trấn"),
-    (re.compile(r"\btỉnh\s+(Bến Tre|Trà Vinh)\b"), "tỉnh đã sáp nhập"),
+    (re.compile(rf"\b[Tt]hị\s+[Tt]rấn\s+{_UPPER}"), "thị trấn"),
+    (re.compile(r"\b[Tt]ỉnh\s+(Bến Tre|Trà Vinh)\b"), "tỉnh đã sáp nhập"),
 ]
+
+# Nhãn cấp bị gộp vào cụm tên riêng ("Huyện Cầu Ngang" thành một token), nên xoá
+# nhãn lại bị chặn là "mất tên riêng" — chính điều buộc người sửa giữ nhãn rồi dán
+# "cũ". Vì vậy phải bóc nhãn ra trước khi so tên riêng.
+ADMIN_LABELS = {"Huyện", "Thị", "Trấn", "Thành", "Phố", "Tỉnh", "TP", "TT", "H",
+                "Xã", "Phường", "Ấp", "Khóm", "Khu"}
 
 # Dấu hiệu câu đang kể chuyện quá khứ — cách gọi cũ ở đây là đúng, không sửa.
 HISTORICAL_MARKERS = (
@@ -82,8 +95,19 @@ def _numbers(text: str) -> set[str]:
 
 
 def _proper_nouns(text: str) -> set[str]:
-    stop = {"Huyện", "Thành", "Phố", "Thị", "Trấn", "Tỉnh", "Xã", "Phường", "Ấp"}
-    return {n for n in PROPER_NOUN_RE.findall(text or "") if n not in stop}
+    """Các TỪ viết hoa, đã bỏ nhãn cấp hành chính.
+
+    Hai điều bản đầu làm sai, đều đã cho lọt lỗi thật:
+    - dùng dải [A-ZĐÀ-Ỹ], mà trong Unicode dải đó trùm luôn chữ THƯỜNG có dấu,
+      nên "đến", "đi" bị tính là tên riêng;
+    - so theo CỤM viết hoa liên tiếp. Bỏ nhãn cấp ở giữa làm hai tên dính lại
+      thành cụm khác ("Cầu Ngang Cầu Ngang Trà Vinh" so với "Cầu Ngang Trà
+      Vinh"), nên bản sửa đúng vẫn bị chặn là "mất tên riêng" — chính điều buộc
+      người sửa giữ nhãn rồi dán "cũ".
+    So theo từ thì mất tên là mất thật, không phụ thuộc cách ghép cụm.
+    """
+    words = re.findall(r"[^\W\d_]+", text or "", re.UNICODE)
+    return {w for w in words if w[:1].isupper() and w not in ADMIN_LABELS}
 
 
 def check(old: str, new: str) -> list[str]:
@@ -117,15 +141,19 @@ def check(old: str, new: str) -> list[str]:
 # cấp hành chính đã bãi bỏ mà giữ nguyên địa danh — không diễn đạt lại câu.
 AUTO_RULES = [
     # "cách thành phố Bến Tre 70 km" -> "cách trung tâm Bến Tre 70 km"
-    (re.compile(r"\b(cách|Cách)\s+(?:thành phố|TP\.?)\s*(Bến Tre|Trà Vinh|Vĩnh Long)\b"), r"\1 trung tâm \2"),
-    # "tại TP Vĩnh Long" / "ở thành phố Bến Tre" -> giữ tên, bỏ cấp
-    (re.compile(r"\b(?:thành phố|TP\.?)\s*(Bến Tre|Trà Vinh|Vĩnh Long)\b"), r"\1"),
-    # "xã A, huyện B" -> "xã A, B" (địa danh giữ nguyên, chỉ bỏ nhãn cấp)
-    (re.compile(r"\bhuyện\s+(?=[A-ZĐÀ-Ỹ])"), ""),
-    (re.compile(r"\bH\.\s*(?=[A-ZĐÀ-Ỹ])"), ""),
-    (re.compile(r"\bthị trấn\s+(?=[A-ZĐÀ-Ỹ])"), ""),
+    (re.compile(r"\b([Cc]ách)\s+(?:[Tt]hành\s+[Pp]hố|TP\.?)\s*(Bến Tre|Trà Vinh|Vĩnh Long)\b"),
+     r"\1 trung tâm \2"),
+    # "tại TP Vĩnh Long" / "ở Thành Phố Bến Tre" -> giữ tên, bỏ cấp
+    (re.compile(r"\b(?:[Tt]hành\s+[Pp]hố|TP\.?)\s*(Bến Tre|Trà Vinh|Vĩnh Long)\b"), r"\1"),
+    # "xã A, huyện B" -> "xã A, B" (địa danh giữ nguyên, chỉ bỏ nhãn cấp).
+    # Phải nhận cả dạng viết hoa: 40 bản ghi lọt qua đợt đầu đều viết "Huyện X",
+    # "Thị trấn Y", "Thành Phố Z".
+    (re.compile(rf"\b[Hh]uyện\s+(?={_UPPER})"), ""),
+    (re.compile(rf"\bH\.\s*(?={_UPPER})"), ""),
+    (re.compile(rf"\b[Tt]hị\s+[Tt]rấn\s+(?={_UPPER})"), ""),
+    (re.compile(rf"\bTT\.?\s+(?={_UPPER})"), ""),
     # "tỉnh Bến Tre" ở ngữ cảnh hiện tại -> địa danh vùng
-    (re.compile(r"\btỉnh\s+(Bến Tre|Trà Vinh)\b"), r"\1"),
+    (re.compile(r"\b[Tt]ỉnh\s+(Bến Tre|Trà Vinh)\b"), r"\1"),
 ]
 
 
