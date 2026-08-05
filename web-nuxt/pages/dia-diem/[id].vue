@@ -25,13 +25,17 @@
       data-entity-hero
       :class="['detail-cover', `cat-${typeMeta.cat}`, { 'has-cover-img': hasEntityImages }]"
       :style="!hasEntityImages ? { backgroundImage: heroPlaceholderBg } : undefined"
-      :role="!hasEntityImages ? 'img' : undefined"
-      :aria-label="!hasEntityImages ? heroDescriptor.alt : undefined"
       :aria-describedby="heroDisclosureId"
     >
+      <!-- KHÔNG đặt role="img" lên chính .detail-cover: khối này bọc cả
+           .dc-place-link lẫn các nút hành động, mà role="img" tuyên bố cả vùng
+           là một hình ảnh — axe bắt `nested-interactive` (serious, 2026-08-06),
+           cùng dạng lỗi với .season-timeline ở theo-mua.vue. Nhãn ảnh minh hoạ
+           nay do chính EntityHeroPlaceholder mang (nó đã có role="img" +
+           aria-label từ descriptor), nên bỏ luôn aria-hidden của nó. -->
       <NuxtImg v-if="hasEntityImages && heroDescriptor.url && isRemoteUrl(heroDescriptor.url)" :key="heroImageIdentity" ref="heroImage" :src="heroDescriptor.url" :alt="heroDescriptor.alt" :class="['dc-bg', { loaded: heroLoaded }]" :style="heroLoaded ? undefined : { opacity: 0, transition: 'none' }" loading="eager" fetchpriority="high" width="1200" height="600" sizes="sm:100vw md:100vw lg:960px xl:1200px" role="button" tabindex="0" :aria-describedby="heroDisclosureId" :aria-label="`Xem ảnh ${entity.name}`" @load="revealHeroImage" @click="openCoverLightbox(0)" @keydown.enter="openCoverLightbox(0)" @keydown.space.prevent="openCoverLightbox(0)" />
       <img v-else-if="hasEntityImages && heroDescriptor.url" :key="heroImageIdentity" ref="heroImage" :src="heroDescriptor.url" :alt="heroDescriptor.alt" :class="['dc-bg', { loaded: heroLoaded }]" :style="heroLoaded ? undefined : { opacity: 0, transition: 'none' }" loading="eager" fetchpriority="high" width="1200" height="600" role="button" tabindex="0" :aria-describedby="heroDisclosureId" :aria-label="`Xem ảnh ${entity.name}`" @load="revealHeroImage" @click="openCoverLightbox(0)" @keydown.enter="openCoverLightbox(0)" @keydown.space.prevent="openCoverLightbox(0)" />
-      <EntityHeroPlaceholder v-else :id="entity.id" :cat="typeMeta.cat" :label="typeMeta.label" :descriptor="heroDescriptor" :material-accent="detailMaterialAccent" class="dc-placeholder" aria-hidden="true" />
+      <EntityHeroPlaceholder v-else :id="entity.id" :cat="typeMeta.cat" :label="typeMeta.label" :descriptor="heroDescriptor" :material-accent="detailMaterialAccent" class="dc-placeholder" />
       <div v-if="coverImage" class="dc-overlay"></div>
       <div v-if="coverImage" class="dc-vignette" aria-hidden="true"></div>
       <span v-if="!hasEntityImages" class="dc-motif" aria-hidden="true" v-html="heroMotifSvg"></span>

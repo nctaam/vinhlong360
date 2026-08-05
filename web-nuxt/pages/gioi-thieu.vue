@@ -218,8 +218,11 @@ useHead({
   font-weight: 600;
   font-variant-numeric: tabular-nums oldstyle-nums;
   line-height: 1.1;
+  /* Bỏ opacity: nó trộn --ink-tertiary với nền tối thành một sắc xám mờ, axe đo
+     2.38–2.55:1 trên 3 trang legal (2026-08-06). Số thứ tự mục là nội dung đọc
+     được, không phải hoạ tiết — hạ độ nổi bằng token màu, không bằng opacity.
+     Bỏ hẳn cho ratio 5.77:1. */
   color: var(--ink-tertiary);
-  opacity: .55;
   letter-spacing: var(--tracking-tight);
 }
 .about-section-content { flex: 1 1 auto; min-width: 0; }

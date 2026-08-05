@@ -406,8 +406,11 @@ describe('Luồng người dùng: entity chưa có ảnh', () => {
 
     const heroFigure = wrapper.get('[data-entity-hero]')
     expect(heroFigure.find('img').exists()).toBe(false)
-    expect(heroFigure.attributes('role')).toBe('img')
-    expect(heroFigure.attributes('aria-label')).toBe('Đình Long Thanh — chưa có ảnh riêng')
+    // Nhãn ảnh minh hoạ nằm ở CHÍNH placeholder, không phải ở khối bọc: khối bọc
+    // còn chứa link và nút hành động, nên role="img" ở đó là nested-interactive.
+    expect(heroFigure.attributes('role')).toBeUndefined()
+    expect(heroFigure.get('.dc-placeholder').attributes('aria-label'))
+      .toBe('Đình Long Thanh — chưa có ảnh riêng')
     // Hero rỗng vẫn được vẽ: motif loại + tấm placeholder có sắc vật liệu.
     expect(heroFigure.get('.dc-motif').find('svg').exists()).toBe(true)
     expect(heroFigure.get('.dc-placeholder').attributes('role')).toBe('img')

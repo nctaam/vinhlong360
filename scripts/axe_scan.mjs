@@ -31,9 +31,16 @@ const baseUrl = process.env.AXE_BASE_URL || 'http://localhost:3000'
 const port = Number(process.env.AXE_CDP_PORT || 9224)
 const settleMs = Number(process.env.AXE_SETTLE_MS || 900)
 
-// 14 trang sweep — chỉ trang CÔNG KHAI, không cần đăng nhập, để scan chạy được
-// trên CI mà không cần seed tài khoản.
+// Sweep chỉ gồm trang CÔNG KHAI, không cần đăng nhập, để chạy được trên CI mà
+// không phải seed tài khoản.
+//
+// Mở rộng 2026-08-06: 14 trang danh sách ban đầu bỏ sót toàn bộ trang CHI TIẾT —
+// loại trang người dùng xem nhiều nhất và cũng là nơi lỗi a11y hay nấp (ảnh,
+// bảng thuộc tính, breadcrumb, tab). Thêm 6 trang chi tiết với id THẬT lấy từ DB,
+// cố ý chọn cả entity CÓ ảnh lẫn entity KHÔNG ảnh (đường nhãn "Minh họa AI" là
+// nhánh render khác hẳn), cộng 5 trang tĩnh còn thiếu.
 const ROUTES = (process.env.AXE_ROUTES || [
+  // trang danh sách
   '/',
   '/du-lich',
   '/san-pham',
@@ -48,6 +55,19 @@ const ROUTES = (process.env.AXE_ROUTES || [
   '/cong-dong',
   '/bang-xep-hang',
   '/huong-dan',
+  // trang tĩnh còn thiếu
+  '/danh-ba',
+  '/gioi-thieu',
+  '/lien-he',
+  '/chinh-sach-bao-mat',
+  '/dieu-khoan-su-dung',
+  // trang chi tiết — id thật, có/không ảnh
+  '/dia-diem/lang-nghe-san-xuat-chi-xo-dua-an-thanh',
+  '/dia-diem/cu-lao-my-hoa',
+  '/dia-diem/nha-tho-cai-mon-cho-lach',
+  '/khu-vuc/vinh-long',
+  '/kham-pha/thien-nhien',
+  '/lich-trinh/mot-ngay-cu-lao-an-binh',
 ].join(',')).split(',').map(s => s.trim()).filter(Boolean)
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))

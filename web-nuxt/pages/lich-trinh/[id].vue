@@ -700,8 +700,11 @@ if (itinerary.value && !itinerary.value.error) {
 .route-leg-info { background: var(--bg-alt); padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); transition: background .3s var(--ease-out); }
 
 /* Route loading shimmer */
-.route-loading { opacity: .6; animation: routePulse 1.5s var(--ease-in-out) infinite; }
-@keyframes routePulse { 0%, 100% { opacity: .6; } 50% { opacity: 1; } }
+/* Nâng đáy opacity .6 → .82: ở .6 thì --muted trộn với nền tối tụt dưới ngưỡng
+   tương phản, axe bắt serious ngay tại khoảnh khắc "Đang tính..." (2026-08-06).
+   Nhịp thở vẫn còn (.82 ↔ 1) nhưng chữ đọc được ở mọi pha. */
+.route-loading { opacity: .82; animation: routePulse 1.5s var(--ease-in-out) infinite; }
+@keyframes routePulse { 0%, 100% { opacity: .82; } 50% { opacity: 1; } }
 /* Route total: prominent floating summary badge, pinned right */
 .route-total {
   display: inline-block;
