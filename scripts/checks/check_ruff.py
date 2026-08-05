@@ -39,8 +39,12 @@ def find_ruff() -> list[str] | None:
     return None
 
 
-def run_ruff(root: Path, targets: list[str], select: str | None = None) -> list[dict]:
-    """Trả list violation (dict ruff json) — [] nếu không target hoặc không có ruff.
+def run_ruff(root: Path, targets: list[str], select: str | None = None) -> list[dict] | None:
+    """Trả list violation (dict ruff json); `[]` = sạch, `None` = KHÔNG có ruff.
+
+    Phân biệt hai thứ này là điểm mấu chốt: gộp chung thành `[]` biến "cổng
+    không chạy được" thành "cổng báo sạch" — một cổng hạng hard-ratchet im
+    lặng đúng lúc nó vô dụng.
 
     select=None → dùng config pyproject.toml; select="ASYNC" → chỉ nhóm đó.
     """
@@ -48,7 +52,7 @@ def run_ruff(root: Path, targets: list[str], select: str | None = None) -> list[
         return []
     ruff = find_ruff()
     if not ruff:
-        return []
+        return None
     extra = ["--select", select] if select else []
     proc = subprocess.run(
         ruff + ["check", *targets, *extra, "--output-format", "json", "--quiet"],
@@ -84,9 +88,29 @@ class RuffCheck:
                 picked.append(rel)
         return picked
 
+    def _missing_tool_result(self, files: list[str] | None) -> dict:
+        """Thiếu ruff: `--all` fail-closed, hook staged chỉ cảnh báo.
+
+        `--all` chạy ở CI và pre-merge — môi trường kiểm soát được, thiếu công
+        cụ ở đó là defect hạ tầng chứ không phải hoàn cảnh của dev. Còn hook
+        staged trên máy chưa cài ruff thì không nên chặn commit, nhưng phải
+        NÓI ra thay vì lặng lẽ báo sạch.
+        """
+        hint = "cài bằng: pip install -r requirements-dev.txt"
+        if files is None:
+            return {"check": self.name, "level": self.level, "rule": self.rule, "count": 1,
+                    "violations": [{"file": "pyproject.toml", "line": 0, "rule": self.rule,
+                                    "msg": f"không tìm thấy ruff — {self.rule} không thể chạy ({hint})"}]}
+        print(f"⚠ {self.rule}: không tìm thấy ruff, bỏ qua lint cho commit này ({hint})",
+              file=sys.stderr)
+        return {"check": self.name, "level": self.level, "rule": self.rule,
+                "count": 0, "violations": []}
+
     def run(self, files: list[str] | None = None) -> dict:
         targets = self._targets(files)
         violations = run_ruff(self.root, targets, select=self.select)
+        if violations is None:
+            return self._missing_tool_result(files)
         out = [{"file": _norm(str(v.get("filename", ""))), "line": (v.get("location") or {}).get("row", 0),
                 "rule": self.rule, "msg": f'{v.get("code")}: {v.get("message", "")[:80]}'}
                for v in violations]

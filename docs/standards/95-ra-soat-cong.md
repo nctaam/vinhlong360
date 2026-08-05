@@ -35,8 +35,8 @@ Bốn vấn đề **xuyên suốt** (không tính vào hạng của cổng riên
 | R20.5 | `api_contract` | hard | YẾU | `--all` chỉ soi chiều hợp-đồng→code; route khai bằng hằng số không bị nhìn thấy |
 | R30.3 | `fe_colors` | hard-ratchet | YẾU | Đếm theo DÒNG: gộp 3 màu vào 1 dòng → count 3 → 1 |
 | R30.2 | `fe_emoji` | soft-ratchet | YẾU | Cùng phép đếm theo dòng |
-| R20.1 | `ruff_lint` | hard-ratchet | YẾU | Máy không có `ruff` → count 0, im lặng (hook local) |
-| R20.2 | `ruff_async` | hard-ratchet | YẾU | Như trên |
+| R20.1 | `ruff_lint` | hard-ratchet | ~~YẾU~~ → **THẬT** ✅ | Đã vá: `--all` fail-closed khi thiếu ruff, staged cảnh báo ra stderr. CI job `test` nay cài ruff — trước đó không cài, nên cổng chưa từng chạy trong CI |
+| R20.2 | `ruff_async` | hard-ratchet | ~~YẾU~~ → **THẬT** ✅ | Cùng bản vá |
 | R50.4 | `thin_content` | soft | YẾU | Tầng soft: chỉ báo, không bao giờ chặn |
 | R10.schema | `data_schema` | hard | THẬT | Parse data.json, đối chiếu enum thật từ `useConstants.ts`, bbox, id trùng |
 | R10.3b | `data_typed_required` | hard-ratchet | THẬT | Gọi `entity_schemas.validate_attributes` — registry thật |
@@ -52,7 +52,11 @@ Bốn vấn đề **xuyên suốt** (không tính vào hạng của cổng riên
 | R50.3 | `content_formula` | soft-ratchet | THẬT | Tách câu đầu/câu cuối rồi mới khớp |
 | R50.7 | `content_superlative` | soft-ratchet | THẬT | Khớp theo câu, có kiểm dẫn chứng số trong cùng câu |
 
-Tổng: **13 THẬT · 12 YẾU · 3 GIẢ**.
+Tổng lúc rà (2026-08-05, sáng): **13 THẬT · 12 YẾU · 3 GIẢ**.
+Sau đợt vá cùng ngày: **21 THẬT · 6 YẾU · 1 GIẢ** (R30.6 axe — chờ chủ dự án quyết).
+
+Các mục 1–2 bên dưới giữ nguyên văn bản lúc rà để đối chiếu; trạng thái mới nhất
+nằm ở bảng tổng phía trên và ở `00-INDEX.md`.
 
 ---
 

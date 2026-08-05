@@ -70,6 +70,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest-cov pytest-timeout
+          # ruff là công cụ đo của R20.1/R20.2 trong `run_hard --all` ở bước
+          # "Enforce standards" bên dưới. Job này trước đây không cài ruff, nên
+          # hai cổng hard-ratchet đó im lặng trả 0 — tức chưa từng chạy trong CI.
+          pip install ruff
 
       - name: Run tests with coverage
         env:

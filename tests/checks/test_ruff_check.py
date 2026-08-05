@@ -15,10 +15,33 @@ def test_level_rule():
     assert c.level == "hard-ratchet" and c.rule == "R20.1" and c.name == "ruff_lint"
 
 
-def test_graceful_skip_when_ruff_absent(monkeypatch):
-    # Máy không có ruff → count 0, KHÔNG chặn.
+def test_staged_khong_chan_khi_may_thieu_ruff(monkeypatch, capsys):
+    """Hook local trên máy chưa cài ruff: không chặn, nhưng phải cảnh báo.
+
+    Trước 2026-08-05 cổng trả 0 trong im lặng ở CẢ hai chế độ — xem test dưới.
+    """
     monkeypatch.setattr(check_ruff, "find_ruff", lambda: None)
-    assert RuffCheck().run()["count"] == 0
+    result = RuffCheck().run(files=["agent/server.py"])
+    assert result["count"] == 0
+    assert "không tìm thấy ruff" in capsys.readouterr().err
+
+
+def test_all_fail_closed_khi_thieu_ruff(monkeypatch):
+    """`--all` chạy ở CI/pre-merge: thiếu công cụ đo là defect hạ tầng.
+
+    Fail-open ở đây biến "cổng không chạy được" thành "cổng báo sạch", và
+    R20.1/R20.2 là hạng hard-ratchet — im lặng đúng lúc chúng vô dụng.
+    """
+    monkeypatch.setattr(check_ruff, "find_ruff", lambda: None)
+    result = RuffCheck().run()
+    assert result["count"] == 1
+    assert "không thể chạy" in result["violations"][0]["msg"]
+
+
+def test_run_ruff_phan_biet_sach_voi_thieu_cong_cu(monkeypatch, tmp_path):
+    monkeypatch.setattr(check_ruff, "find_ruff", lambda: None)
+    assert check_ruff.run_ruff(tmp_path, ["agent"]) is None      # thiếu công cụ
+    assert check_ruff.run_ruff(tmp_path, []) == []               # không target
 
 
 def test_non_py_staged_returns_zero(monkeypatch):
