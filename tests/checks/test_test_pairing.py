@@ -13,6 +13,10 @@ from checks.check_test_pairing import TestPairingCheck  # noqa: E402
 
 BOM = "﻿"
 
+# Fixture phải có hàm test THẬT: từ 2026-08-05, file test rỗng hoặc không có
+# hàm test_* nào không còn được tính là cặp cho R20.7.
+PLACEHOLDER = "\n\ndef test_placeholder():\n    pass\n"
+
 
 def _write(root: Path, relative_path: str, content: str = "def test_placeholder():\n    pass\n") -> None:
     path = root / relative_path
@@ -26,7 +30,7 @@ def test_bom_test_file_still_pairs_via_ast_import(tmp_path: Path) -> None:
     Tên file KHÔNG chứa 'search' → chỉ ghép cặp được nếu AST thực sự parse thành công,
     nên test này chứng minh BOM đã bị bóc chứ không chỉ chứng minh 'không crash'.
     """
-    _write(tmp_path, "tests/test_query_contract.py", f"{BOM}from agent import search\n")
+    _write(tmp_path, "tests/test_query_contract.py", f"{BOM}from agent import search\n{PLACEHOLDER}")
 
     result = TestPairingCheck(root=tmp_path).run(
         files=["agent/search.py", "tests/test_query_contract.py"]
@@ -37,7 +41,7 @@ def test_bom_test_file_still_pairs_via_ast_import(tmp_path: Path) -> None:
 
 def test_bom_test_file_is_written_with_a_real_bom(tmp_path: Path) -> None:
     """Chốt chặn: nếu helper vô tình ghi mất BOM thì test trên thành vô nghĩa."""
-    _write(tmp_path, "tests/test_query_contract.py", f"{BOM}from agent import search\n")
+    _write(tmp_path, "tests/test_query_contract.py", f"{BOM}from agent import search\n{PLACEHOLDER}")
 
     assert (tmp_path / "tests/test_query_contract.py").read_bytes().startswith(b"\xef\xbb\xbf")
 
@@ -81,7 +85,7 @@ def test_filename_token_pairs_module_and_supports_windows_separators(tmp_path: P
     ],
 )
 def test_direct_import_pairs_module(tmp_path: Path, statement: str) -> None:
-    _write(tmp_path, "tests/test_query_contract.py", f"{statement}\n")
+    _write(tmp_path, "tests/test_query_contract.py", f"{statement}\n{PLACEHOLDER}")
 
     result = TestPairingCheck(root=tmp_path).run(
         files=["agent/search.py", "tests/test_query_contract.py"]
@@ -111,7 +115,7 @@ def test_comments_and_strings_that_mention_import_do_not_pair(tmp_path: Path) ->
     _write(
         tmp_path,
         "tests/test_unrelated.py",
-        '# import server\nIMPORT_EXAMPLE = "from agent import server"\n',
+        '# import server\nIMPORT_EXAMPLE = "from agent import server"\n' + PLACEHOLDER,
     )
 
     result = TestPairingCheck(root=tmp_path).run(
@@ -123,7 +127,7 @@ def test_comments_and_strings_that_mention_import_do_not_pair(tmp_path: Path) ->
 
 def test_every_staged_source_requires_its_own_pair(tmp_path: Path) -> None:
     _write(tmp_path, "tests/test_alpha.py")
-    _write(tmp_path, "tests/test_contract.py", "from agent import beta\n")
+    _write(tmp_path, "tests/test_contract.py", "from agent import beta\n" + PLACEHOLDER)
     check = TestPairingCheck(root=tmp_path)
 
     missing = check.run(files=["agent/alpha.py", "agent/beta.py", "tests/test_alpha.py"])
@@ -192,3 +196,44 @@ def test_test_only_change_is_ignored(tmp_path: Path) -> None:
     result = TestPairingCheck(root=tmp_path).run(files=["tests/test_server.py"])
 
     assert result["count"] == 0
+
+
+# --- File test phải có hàm test THẬT mới tính là cặp (hồi quy 2026-08-05) ---
+# Trước bản vá, điều kiện duy nhất là TÊN file khớp: một `test_social.py`
+# rỗng 0 byte đủ để `agent/social.py` qua cổng R20.7.
+
+@pytest.mark.parametrize(
+    "body",
+    ["", "import agent.social\n\nX = 1\n", "'''chỉ có docstring'''\n"],
+    ids=["rỗng", "chỉ-import", "chỉ-docstring"],
+)
+def test_file_test_khong_co_ham_test_thi_khong_tinh_la_cap(tmp_path: Path, body: str) -> None:
+    _write(tmp_path, "agent/social.py", "def handler():\n    return 1\n")
+    _write(tmp_path, "tests/test_social.py", body)
+
+    result = TestPairingCheck(root=tmp_path).run(
+        files=["agent/social.py", "tests/test_social.py"]
+    )
+
+    assert result["count"] > 0, "file test không có hàm test_* vẫn qua cổng"
+    assert any("không có hàm test_*" in v["msg"] for v in result["violations"])
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        "import agent.social\n\ndef test_x():\n    assert agent.social\n",
+        "import agent.social\n\nclass TestS:\n    def test_y(self):\n        assert 1\n",
+        "import agent.social\n\nasync def test_z():\n    assert 1\n",
+    ],
+    ids=["hàm-thường", "method-trong-class", "async"],
+)
+def test_file_test_co_ham_test_that_van_qua(tmp_path: Path, body: str) -> None:
+    _write(tmp_path, "agent/social.py", "def handler():\n    return 1\n")
+    _write(tmp_path, "tests/test_social.py", body)
+
+    result = TestPairingCheck(root=tmp_path).run(
+        files=["agent/social.py", "tests/test_social.py"]
+    )
+
+    assert result["count"] == 0, result["violations"]

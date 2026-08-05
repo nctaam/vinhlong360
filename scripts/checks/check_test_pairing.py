@@ -49,6 +49,20 @@ class TestPairingCheck:
         return candidates, unparseable
 
     @staticmethod
+    def _has_tests(tree: ast.Module) -> bool:
+        """File test phải chứa ít nhất một hàm test THẬT.
+
+        Không có bước này, một file rỗng tuếch tên `test_social.py` đủ để
+        `agent/social.py` qua cổng — tên khớp là điều kiện duy nhất. Đã kiểm
+        thực nghiệm 2026-08-05: file 0 byte cho count=0.
+        """
+        return any(
+            isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+            and node.name.startswith("test_")
+            for node in ast.walk(tree)
+        )
+
+    @staticmethod
     def _filename_pairs(module: str, test_path: str) -> bool:
         test_stem = Path(test_path).stem
         return re.search(rf"(?:^|_){re.escape(module)}(?:_|$)", test_stem) is not None
@@ -81,6 +95,13 @@ class TestPairingCheck:
                  "msg": "test staged không parse được (encoding/cú pháp) — không đối chiếu được R20.7"}
                 for broken in unparseable
             )
+            empty = sorted(path for path, tree in tests.items() if not self._has_tests(tree))
+            violations.extend(
+                {"file": path, "line": 0, "rule": self.rule,
+                 "msg": "file test staged không có hàm test_* nào — không tính là test cho R20.7"}
+                for path in empty
+            )
+            tests = {path: tree for path, tree in tests.items() if path not in set(empty)}
             unpaired = [
                 source for source in agent_py
                 if not any(
