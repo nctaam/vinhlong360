@@ -543,7 +543,14 @@ Write-Host "Root: $Root"
 Write-Host ""
 
 if ($RunAuthCheck -or $env:DATABASE_URL) {
-  Invoke-NativeAllowWarning "local dev auth check" "powershell" @(
+  # `pwsh` trước, `powershell` chỉ là dự phòng cho Windows PowerShell 5.x:
+  # ghim cứng "powershell" làm gate này chết trên Linux ("The term 'powershell'
+  # is not recognized"), và CI đặt DATABASE_URL nên nhánh này LUÔN chạy ở job
+  # Postgres. Cùng cách tra lệnh đã dùng ở harness phía trên.
+  $authShell = Get-Command pwsh, powershell -ErrorAction SilentlyContinue |
+    Select-Object -First 1
+  if ($null -eq $authShell) { throw "khong tim thay pwsh lan powershell" }
+  Invoke-NativeAllowWarning "local dev auth check" $authShell.Source @(
     "-ExecutionPolicy", "Bypass",
     "-File", (Join-Path $Root "scripts/dev_auth_check.ps1"),
     "-Python", $Python
