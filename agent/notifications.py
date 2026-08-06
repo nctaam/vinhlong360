@@ -56,7 +56,7 @@ class ReportRequest(BaseModel):
     @classmethod
     def validate_type(cls, v):
         if v not in ("post", "comment", "user", "entity"):
-            raise ValueError("Loại báo cáo: post, comment, user")
+            raise ValueError("Loại báo cáo: post, comment, user, entity")
         return v
 
     @field_validator("reason")
@@ -618,7 +618,6 @@ async def check_follow(target_type: str, target_id: str, user=Depends(require_us
     Ném 400 nếu target_type ngoài user/entity; không kiểm tra target có tồn tại.
     """
     validate_path_id(target_id, "target_id")
-    _require_pg()
     if target_type not in ("user", "entity"):
         raise HTTPException(400, "Loại follow: user hoặc entity")
     ph = db._ph
@@ -918,8 +917,6 @@ def _group_notifications(notifs: list[dict]) -> list[dict]:
                 if abs((t1 - t2).total_seconds()) < 86400:
                     existing.setdefault("group_count", 1)
                     existing["group_count"] += 1
-                    if not existing.get("is_read") and n.get("is_read"):
-                        pass
                     continue
             except (ValueError, TypeError):
                 pass
@@ -970,8 +967,15 @@ async def toggle_rsvp(entity_id: str, user=Depends(require_user), _csrf=Depends(
             if deleted:
                 going = False
             else:
-                cur = db._execute(conn, f"INSERT INTO event_rsvp (user_id, entity_id) VALUES ({ph}::uuid, {ph}) ON CONFLICT DO NOTHING", (uid, entity_id))
-                going = bool(cur and cur.rowcount > 0)
+                db._execute(conn, f"INSERT INTO event_rsvp (user_id, entity_id) VALUES ({ph}::uuid, {ph}) ON CONFLICT DO NOTHING", (uid, entity_id))
+                # Đọc lại TRẠNG THÁI THẬT thay vì suy từ rowcount: với
+                # ON CONFLICT DO NOTHING, dòng đã tồn tại cho rowcount = 0 nên
+                # bản cũ trả going=False trong khi `count` bên dưới VẪN đếm
+                # dòng đó — hai trường mâu thuẫn trong cùng một response và nút
+                # trên giao diện nhảy sai trạng thái.
+                exists = db._fetchone(conn,
+                    f"SELECT 1 FROM event_rsvp WHERE user_id = {ph}::uuid AND entity_id = {ph}", (uid, entity_id))
+                going = bool(exists)
             cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM event_rsvp WHERE entity_id = {ph}", (entity_id,))
         return going, int(db._row_to_dict(cnt)["c"]) if cnt else 0
     going, count = await asyncio.to_thread(_query)

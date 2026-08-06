@@ -1278,10 +1278,13 @@ def build_collection_jsonld(collection_type: str, data: dict[str, Any]) -> dict[
 def collection_jsonld(collection_type: str):
     """Trả về JSON-LD ItemList cho một collection danh mục khai trong COLLECTIONS.
 
-    Đọc dữ liệu từ web/data.json qua _load() (không dùng snapshot DB); ném 404 khi
-    collection_type không có trong COLLECTIONS.
+    Dùng _load_seo_data() (snapshot DB, fallback web/data.json) cho khớp với các
+    endpoint JSON-LD còn lại. Trước 2026-08-06 nó đọc thẳng web/data.json qua
+    _load(), mà theo CLAUDE.md §1.1 file đó đã phân kỳ với DB — nên collection
+    có thể liệt kê entity khác hẳn /seo/jsonld/{id} của cùng entity đó.
+    Ném 404 khi collection_type không có trong COLLECTIONS.
     """
-    data = _load()
+    data = _load_seo_data()
     result = build_collection_jsonld(collection_type, data)
     if result is None:
         raise HTTPException(status_code=404, detail="not found")
@@ -1472,13 +1475,15 @@ def build_og_meta(entity: dict[str, Any] | None = None) -> dict[str, str]:
 def entity_og_meta(entity_id: str):
     """Trả về map meta Open Graph/Twitter Card của một entity theo id.
 
-    Đọc web/data.json qua _load() và ném 404 nếu không có id; không lọc theo
-    _is_listing_visible như /seo/jsonld/{entity_id}.
+    Cùng luật hiển thị với `/seo/jsonld/{entity_id}`: ném 404 khi không có id
+    HOẶC entity không qua `_is_listing_visible`. Trước 2026-08-06 endpoint này
+    bỏ bước lọc, nên entity `provisional` / `verified=False` vẫn lộ tiêu đề, mô
+    tả và ảnh ra ngoài qua đường OG — trái Track-H (chỉ đưa ra nội dung đã duyệt).
     """
-    data = _load()
+    data = _load_seo_data()
     by_id = _by_id(data)
     entity = by_id.get(entity_id)
-    if not entity:
+    if not entity or not _is_listing_visible(entity):
         raise HTTPException(status_code=404, detail="not found")
     return build_og_meta(entity)
 

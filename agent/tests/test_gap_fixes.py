@@ -9,6 +9,8 @@ from fastapi import Request
 
 from profile_access import ProfileAccessDecision, resolve_profile_access
 
+from _source_window import function_source
+
 AGENT_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -1988,8 +1990,9 @@ class TestMentionSearchAsync:
         # Refactor: user-search dời sang _mention_users (mention_search gọi nó).
         m_idx = src.index("async def mention_search(")
         assert "_mention_users" in src[m_idx:m_idx + 600]
-        idx = src.index("async def _mention_users(")
-        assert "asyncio.to_thread" in src[idx:idx + 1000]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        assert "asyncio.to_thread" in function_source(src, "_mention_users")
 
 
 class TestSavedModuleHardening:
@@ -1997,14 +2000,16 @@ class TestSavedModuleHardening:
 
     def test_list_query_has_limit(self):
         src = (AGENT_DIR / "saved.py").read_text(encoding="utf-8")
-        idx = src.index("def _list(")
-        fn_src = src[idx:idx + 500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "_list")
         assert "LIMIT" in fn_src
 
     def test_add_saved_advisory_lock(self):
         src = (AGENT_DIR / "saved.py").read_text(encoding="utf-8")
-        idx = src.index("async def add_saved(")
-        fn_src = src[idx:idx + 800]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "add_saved")
         assert "pg_advisory_xact_lock" in fn_src
 
     def test_merge_body_max_items(self):
@@ -2017,8 +2022,9 @@ class TestSavedModuleHardening:
 
     def test_json_parse_failure_logged(self):
         src = (AGENT_DIR / "saved.py").read_text(encoding="utf-8")
-        idx = src.index("def _row_item(")
-        fn_src = src[idx:idx + 500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "_row_item")
         assert "logger.warning" in fn_src
         assert "Corrupted snapshot" in fn_src
 
@@ -2032,14 +2038,16 @@ class TestVisitsModuleHardening:
 
     def test_list_visits_has_limit(self):
         src = (AGENT_DIR / "visits.py").read_text(encoding="utf-8")
-        idx = src.index("async def list_visits(")
-        fn_src = src[idx:idx + 800]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "list_visits")
         assert "LIMIT" in fn_src
 
     def test_list_visits_single_row_to_dict_call(self):
         src = (AGENT_DIR / "visits.py").read_text(encoding="utf-8")
-        idx = src.index("async def list_visits(")
-        fn_src = src[idx:idx + 800]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "list_visits")
         assert fn_src.count("_row_to_dict") == 1
 
 
@@ -2048,14 +2056,16 @@ class TestPlansModuleHardening:
 
     def test_list_query_has_limit(self):
         src = (AGENT_DIR / "plans.py").read_text(encoding="utf-8")
-        idx = src.index("def _list(")
-        fn_src = src[idx:idx + 500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "_list")
         assert "LIMIT" in fn_src
 
     def test_add_plan_advisory_lock(self):
         src = (AGENT_DIR / "plans.py").read_text(encoding="utf-8")
-        idx = src.index("async def add_plan(")
-        fn_src = src[idx:idx + 800]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "add_plan")
         assert "pg_advisory_xact_lock" in fn_src
 
     def test_merge_body_max_plans(self):
@@ -2068,8 +2078,9 @@ class TestPlansModuleHardening:
 
     def test_json_parse_failure_logged(self):
         src = (AGENT_DIR / "plans.py").read_text(encoding="utf-8")
-        idx = src.index("def _row_plan(")
-        fn_src = src[idx:idx + 500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "_row_plan")
         assert "logger.warning" in fn_src
         assert "Corrupted stops" in fn_src
 
@@ -2087,35 +2098,40 @@ class TestDataRetentionCleanup:
 
     def test_cleanup_covers_sessions(self):
         src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
-        idx = src.index("def cleanup_expired_data(")
-        fn_src = src[idx:idx+800]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "cleanup_expired_data")
         assert "user_sessions" in fn_src
         assert "expires_at < NOW()" in fn_src
 
     def test_cleanup_covers_otps(self):
         src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
-        idx = src.index("def cleanup_expired_data(")
-        fn_src = src[idx:idx+800]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "cleanup_expired_data")
         assert "otp_sessions" in fn_src
 
     def test_cleanup_covers_login_history(self):
         src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
-        idx = src.index("def cleanup_expired_data(")
-        fn_src = src[idx:idx+800]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "cleanup_expired_data")
         assert "login_history" in fn_src
         assert "90 days" in fn_src
 
     def test_cleanup_covers_notifications(self):
         src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
-        idx = src.index("def cleanup_expired_data(")
-        fn_src = src[idx:idx+1200]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "cleanup_expired_data")
         assert "notifications" in fn_src
         assert "60 days" in fn_src
 
     def test_cleanup_returns_dict(self):
         src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
-        idx = src.index("def cleanup_expired_data(")
-        fn_src = src[idx:idx+800]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "cleanup_expired_data")
         assert "return results" in fn_src or "return {" in fn_src
 
 
@@ -2130,20 +2146,23 @@ class TestRateLimitThreadSafety:
 
     def test_check_rate_uses_lock(self):
         src = (AGENT_DIR / "ratelimit.py").read_text(encoding="utf-8")
-        idx = src.index("def check_rate(")
-        fn_src = src[idx:idx+600]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "check_rate")
         assert "_rl_lock" in fn_src
 
     def test_global_ip_budget_uses_lock(self):
         src = (AGENT_DIR / "ratelimit.py").read_text(encoding="utf-8")
-        idx = src.index("def check_global_ip_budget(")
-        fn_src = src[idx:idx+600]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "check_global_ip_budget")
         assert "_rl_lock" in fn_src
 
     def test_token_bucket_uses_lock(self):
         src = (AGENT_DIR / "ratelimit.py").read_text(encoding="utf-8")
-        idx = src.index("def check_rate_token_bucket(")
-        fn_src = src[idx:idx+600]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "check_rate_token_bucket")
         assert "_rl_lock" in fn_src
 
 
@@ -2152,33 +2171,38 @@ class TestCacheControlHeaders:
 
     def test_middleware_sets_default_cache_control(self):
         src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
-        idx = src.index("async def security_headers(")
-        fn_src = src[idx:idx+1200]  # window ôm cả function (Vary header đẩy Cache-Control xuống ~835)
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "security_headers")  # window ôm cả function (Vary header đẩy Cache-Control xuống ~835)
         assert 'Cache-Control' in fn_src
         assert 'private, max-age=30' in fn_src
 
     def test_community_stats_public_cache(self):
         src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
-        idx = src.index("async def community_stats(")
-        fn_src = src[idx:idx+400]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "community_stats")
         assert "public, max-age=60" in fn_src
 
     def test_trending_tags_public_cache(self):
         src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
-        idx = src.index("async def trending_tags(")
-        fn_src = src[idx:idx+400]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "trending_tags")
         assert "public, max-age=60" in fn_src
 
     def test_me_counts_no_cache(self):
         src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
-        idx = src.index("async def user_counts(")
-        fn_src = src[idx:idx+400]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "user_counts")
         assert "private, no-cache" in fn_src
 
     def test_hashtags_public_cache(self):
         src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
-        idx = src.index("async def list_hashtags(")
-        fn_src = src[idx:idx+400]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "list_hashtags")
         assert "public, max-age=120" in fn_src
 
 
@@ -2200,44 +2224,51 @@ class TestAsyncBlockingFixes:
 
     def test_vector_search_async(self):
         src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
-        idx = src.index("async def vector_search_endpoint(")
-        fn_src = src[idx:idx+800]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "vector_search_endpoint")
         assert "asyncio.to_thread" in fn_src
 
     def test_enhanced_search_async(self):
         src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
-        idx = src.index("async def enhanced_search(")
-        fn_src = src[idx:idx+1600]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "enhanced_search")
         assert "asyncio.to_thread" in fn_src
 
     def test_recommend_async(self):
         src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
-        idx = src.index("async def recommend_endpoint(")
-        fn_src = src[idx:idx+1000]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "recommend_endpoint")
         assert "asyncio.to_thread" in fn_src
 
     def test_events_async(self):
         src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
-        idx = src.index("async def events_endpoint(")
-        fn_src = src[idx:idx+300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "events_endpoint")
         assert "asyncio.to_thread" in fn_src
 
     def test_graph_async(self):
         src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
-        idx = src.index("async def graph_endpoint(")
-        fn_src = src[idx:idx+300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "graph_endpoint")
         assert "asyncio.to_thread" in fn_src
 
     def test_map_search_async(self):
         src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
-        idx = src.index("async def entities_map_search(")
-        fn_src = src[idx:idx+1800]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "entities_map_search")
         assert "asyncio.to_thread" in fn_src
 
     def test_public_stats_async(self):
         src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
-        idx = src.index("async def public_stats(")
-        fn_src = src[idx:idx+300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "public_stats")
         assert "asyncio.to_thread" in fn_src
 
     def test_enrich_place_async(self):
@@ -2278,27 +2309,31 @@ class TestSecurityFixes:
 
     def test_session_binding_fails_closed(self):
         src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
-        idx = src.index("async def _check_session_binding_safe(")
-        fn_src = src[idx:idx+400]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "_check_session_binding_safe")
         assert "return False" in fn_src
         assert "return True" not in fn_src.split("return await")[0]
 
     def test_avatar_upload_bounded_read(self):
         src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
-        idx = src.index("async def upload_avatar(")
-        fn_src = src[idx:idx+800]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "upload_avatar")
         assert "file.read(MAX_IMAGE_SIZE" in fn_src
 
     def test_cover_upload_bounded_read(self):
         src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
-        idx = src.index("async def upload_cover(")
-        fn_src = src[idx:idx+800]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "upload_cover")
         assert "file.read(MAX_IMAGE_SIZE" in fn_src
 
     def test_admin_image_bounded_read(self):
         src = (AGENT_DIR / "admin.py").read_text(encoding="utf-8")
-        idx = src.index("async def upload_entity_image(")
-        fn_src = src[idx:idx+600]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "upload_entity_image")
         assert "file.read(MAX_IMAGE_SIZE" in fn_src
 
     def test_dashboard_alerts_connection_safety(self):
@@ -2313,8 +2348,9 @@ class TestSecurityFixes:
     def test_mention_search_imports_db(self):
         src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
         # Refactor: db-query dời sang _mention_users.
-        idx = src.index("async def _mention_users(")
-        assert "from database import db" in src[idx:idx + 400]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        assert "from database import db" in function_source(src, "_mention_users")
 
     def test_sse_thread_lock_exists(self):
         import notifications
@@ -2322,14 +2358,16 @@ class TestSecurityFixes:
 
     def test_notify_sse_uses_thread_lock(self):
         src = (AGENT_DIR / "notifications.py").read_text(encoding="utf-8")
-        idx = src.index("def _notify_sse(")
-        fn_src = src[idx:idx+500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "_notify_sse")
         assert "_sse_thread_lock" in fn_src
 
     def test_notify_sse_uses_call_soon_threadsafe(self):
         src = (AGENT_DIR / "notifications.py").read_text(encoding="utf-8")
-        idx = src.index("def _notify_sse(")
-        fn_src = src[idx:idx+500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "_notify_sse")
         assert "call_soon_threadsafe" in fn_src
 
     def test_sse_loop_captured_in_stream(self):
@@ -2362,20 +2400,23 @@ class TestReliabilityFixes:
         """Place cache operations must be wrapped in _place_cache_lock."""
         src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
         assert "_place_cache_lock" in src
-        idx = src.index("def _get_place(")
-        fn_src = src[idx:idx+500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "_get_place")
         assert "_place_cache_lock" in fn_src
 
     def test_enrich_place_thread_safe(self):
         src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
-        idx = src.index("def _enrich_place(")
-        fn_src = src[idx:idx+600]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "_enrich_place")
         assert "_place_cache_lock" in fn_src
 
     def test_invalidate_place_cache_thread_safe(self):
         src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
-        idx = src.index("def invalidate_place_cache(")
-        fn_src = src[idx:idx+300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "invalidate_place_cache")
         assert "_place_cache_lock" in fn_src
 
     def test_privacy_fail_closed(self):
@@ -2427,24 +2468,27 @@ class TestReliabilityFixes:
     def test_session_binding_blocks_password_change(self):
         """Session binding failure must raise 403 on set-password."""
         src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
-        idx = src.index("async def set_password(")
-        fn_src = src[idx:idx+600]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "set_password")
         bind_idx = fn_src.index("_check_session_binding_safe")
         after_bind = fn_src[bind_idx:bind_idx+200]
         assert "raise HTTPException(403" in after_bind
 
     def test_session_binding_blocks_deactivate(self):
         src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
-        idx = src.index("async def deactivate_account(")
-        fn_src = src[idx:idx+600]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "deactivate_account")
         bind_idx = fn_src.index("_check_session_binding_safe")
         after_bind = fn_src[bind_idx:bind_idx+300]
         assert "raise HTTPException(403" in after_bind
 
     def test_session_binding_blocks_delete_account(self):
         src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
-        idx = src.index("async def delete_account(")
-        fn_src = src[idx:idx+600]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "delete_account")
         bind_idx = fn_src.index("_check_session_binding_safe")
         after_bind = fn_src[bind_idx:bind_idx+300]
         assert "raise HTTPException(403" in after_bind
@@ -2504,8 +2548,9 @@ class TestSoftDeleteEnforcement:
     def test_update_comment_none_check(self):
         """Update comment must handle None result from re-fetch."""
         src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
-        idx = src.index("async def edit_comment(")
-        fn = src[idx:idx+2500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn = function_source(src, "edit_comment")
         assert "if not updated:" in fn or "if updated is None" in fn
 
 
@@ -2515,15 +2560,17 @@ class TestRaceConditionFixes:
     def test_validate_path_id_imported_in_auth(self):
         """validate_path_id must be imported in auth.py (lazy to avoid circular)."""
         src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
-        idx = src.index("async def revoke_session(")
-        fn = src[idx:idx+500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn = function_source(src, "revoke_session")
         assert "from auth_middleware import validate_path_id" in fn
 
     def test_pin_post_advisory_lock(self):
         """pin_post_to_profile must use advisory lock before count check."""
         src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
-        idx = src.index("async def pin_post_to_profile(")
-        fn = src[idx:idx+1500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn = function_source(src, "pin_post_to_profile")
         lock_pos = fn.find("pg_advisory_xact_lock")
         count_pos = fn.find("SELECT COUNT(*) as c FROM posts")
         assert lock_pos != -1, "Missing advisory lock"
@@ -2533,8 +2580,9 @@ class TestRaceConditionFixes:
     def test_report_post_advisory_lock(self):
         """report_post must use advisory lock to prevent duplicate reports."""
         src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
-        idx = src.index("async def report_post(")
-        fn = src[idx:idx+1500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn = function_source(src, "report_post")
         lock_pos = fn.find("pg_advisory_xact_lock")
         check_pos = fn.find("SELECT 1 FROM reports")
         assert lock_pos != -1, "Missing advisory lock"
@@ -2544,8 +2592,9 @@ class TestRaceConditionFixes:
     def test_report_user_advisory_lock(self):
         """report_user must use advisory lock to prevent duplicate reports."""
         src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
-        idx = src.index("async def report_user(")
-        fn = src[idx:idx+1500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn = function_source(src, "report_user")
         lock_pos = fn.find("pg_advisory_xact_lock")
         check_pos = fn.find("SELECT 1 FROM reports")
         assert lock_pos != -1, "Missing advisory lock"
@@ -2555,8 +2604,9 @@ class TestRaceConditionFixes:
     def test_appeal_post_advisory_lock(self):
         """appeal_post must use advisory lock to prevent duplicate appeals."""
         src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
-        idx = src.index("async def appeal_post(")
-        fn = src[idx:idx+1500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn = function_source(src, "appeal_post")
         lock_pos = fn.find("pg_advisory_xact_lock")
         check_pos = fn.find("SELECT id FROM moderation_appeals")
         assert lock_pos != -1, "Missing advisory lock"
@@ -2655,8 +2705,9 @@ class TestGuardrailsInputBounds:
     def test_check_input_truncates_long_messages(self):
         """check_input must truncate messages exceeding max length."""
         src = (AGENT_DIR / "guardrails.py").read_text(encoding="utf-8")
-        idx = src.index("def check_input(")
-        fn = src[idx:idx+500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn = function_source(src, "check_input")
         assert "_MAX_INPUT_LEN" in fn or "MAX_INPUT" in fn
 
 
@@ -2665,14 +2716,16 @@ class TestPasswordRehash:
 
     def test_verify_password_return_legacy_flag(self):
         src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
-        idx = src.index("def _verify_password(")
-        fn = src[idx:idx+500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn = function_source(src, "_verify_password")
         assert "_return_legacy" in fn
 
     def test_login_rehashes_legacy(self):
         src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
-        idx = src.index("async def login_password(")
-        fn = src[idx:idx+3000]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn = function_source(src, "login_password")
         assert "is_legacy" in fn
         assert "_rehash" in fn or "rehash" in fn
 
@@ -2715,8 +2768,9 @@ class TestPerformanceOptimizations:
 
     def test_comment_replies_have_limit(self):
         src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
-        idx = src.index("async def get_comments(")
-        fn_src = src[idx:idx + 2000]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "get_comments")
         reply_idx = fn_src.index("parent_id::text IN")
         reply_block = fn_src[reply_idx:reply_idx + 300]
         assert "LIMIT" in reply_block
@@ -2892,8 +2946,9 @@ class TestAdminUserStatefix:
 
     def test_require_admin_sets_admin_user(self):
         src = (AGENT_DIR / "admin.py").read_text(encoding="utf-8")
-        idx = src.index("async def require_admin(")
-        fn_src = src[idx:idx + 1200]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "require_admin")
         assert "request.state.admin_user" in fn_src
 
     def test_toggle_featured_uses_getattr(self):
@@ -2959,14 +3014,16 @@ class TestAsyncCorrectnessFixes:
 
     def test_popular_entities_has_public_only(self):
         src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
-        idx = src.index("def popular_entities")
-        fn_src = src[idx:idx + 600]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "popular_entities")
         assert "public_only=True" in fn_src
 
     def test_merge_saved_has_advisory_lock(self):
         src = (AGENT_DIR / "saved.py").read_text(encoding="utf-8")
-        idx = src.index("def merge_saved")
-        fn_src = src[idx:idx + 500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "merge_saved")
         assert "pg_advisory_xact_lock" in fn_src
 
     def test_homepage_enrich_place_async(self):
@@ -2981,48 +3038,54 @@ class TestEnumPatternValidation:
 
     def test_review_sort_has_pattern(self):
         src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
-        idx = src.index("def get_entity_reviews")
-        fn_src = src[idx:idx + 400]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "get_entity_reviews")
         assert 'pattern=' in fn_src
         for val in ("newest", "helpful", "highest", "lowest"):
             assert val in fn_src
 
     def test_trending_tags_period_has_pattern(self):
         src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
-        idx = src.index("def trending_tags")
-        fn_src = src[idx:idx + 300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "trending_tags")
         assert 'pattern=' in fn_src
         for val in ("7d", "14d", "30d", "90d"):
             assert val in fn_src
 
     def test_entity_feed_sort_has_pattern(self):
         src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
-        idx = src.index("def get_entity_feed")
-        fn_src = src[idx:idx + 400]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "get_entity_feed")
         assert 'pattern=' in fn_src
         for val in ("default", "newest", "helpful", "photo", "star", "unanswered"):
             assert val in fn_src
 
     def test_following_target_type_has_pattern(self):
         src = (AGENT_DIR / "notifications.py").read_text(encoding="utf-8")
-        idx = src.index("def get_following")
-        fn_src = src[idx:idx + 300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "get_following")
         assert 'pattern=' in fn_src
         assert "user" in fn_src
         assert "entity" in fn_src
 
     def test_visits_status_has_pattern(self):
         src = (AGENT_DIR / "visits.py").read_text(encoding="utf-8")
-        idx = src.index("def list_visits")
-        fn_src = src[idx:idx + 200]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "list_visits")
         assert 'pattern=' in fn_src
         assert "want" in fn_src
         assert "visited" in fn_src
 
     def test_visits_status_is_optional(self):
         src = (AGENT_DIR / "visits.py").read_text(encoding="utf-8")
-        idx = src.index("def list_visits")
-        fn_src = src[idx:idx + 200]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "list_visits")
         assert "Optional" in fn_src
 
 
@@ -3102,8 +3165,9 @@ class TestHttpRequestMetrics:
 
     def test_middleware_calls_track_http_request(self):
         src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
-        idx = src.index("def track_response_time")
-        fn_src = src[idx:idx + 1200]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        fn_src = function_source(src, "track_response_time")
         assert "track_http_request" in fn_src
 
     def test_http_metrics_imported_in_server(self):

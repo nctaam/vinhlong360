@@ -8,6 +8,8 @@ from pathlib import Path
 
 import pytest
 
+from _source_window import function_source
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 
@@ -396,14 +398,16 @@ class TestPathValidationVisits:
 
     def test_check_visit_validates_entity_id(self):
         src = (Path(__file__).resolve().parent.parent / "visits.py").read_text(encoding="utf-8")
-        idx = src.find("def check_visit")
-        block = src[idx:idx+300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "check_visit")
         assert "validate_path_id" in block
 
     def test_remove_visit_validates_entity_id(self):
         src = (Path(__file__).resolve().parent.parent / "visits.py").read_text(encoding="utf-8")
-        idx = src.find("def remove_visit")
-        block = src[idx:idx+300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "remove_visit")
         assert "validate_path_id" in block
 
     def test_visits_imports_validate_path_id(self):
@@ -417,8 +421,9 @@ class TestPathValidationSaved:
 
     def test_remove_saved_validates_entity_id(self):
         src = (Path(__file__).resolve().parent.parent / "saved.py").read_text(encoding="utf-8")
-        idx = src.find("def remove_saved")
-        block = src[idx:idx+300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "remove_saved")
         assert "validate_path_id" in block
 
     def test_saved_imports_validate_path_id(self):
@@ -432,20 +437,23 @@ class TestPathValidationPlans:
 
     def test_remove_plan_validates_plan_id(self):
         src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
-        idx = src.find("def remove_plan")
-        block = src[idx:idx+300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "remove_plan")
         assert "validate_path_id" in block
 
     def test_publish_plan_validates_plan_id(self):
         src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
-        idx = src.find("def publish_plan")
-        block = src[idx:idx+300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "publish_plan")
         assert "validate_path_id" in block
 
     def test_get_shared_validates_plan_id(self):
         src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
-        idx = src.find("def get_shared")
-        block = src[idx:idx+300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "get_shared")
         assert "validate_path_id" in block
 
     def test_plans_imports_validate_path_id(self):
@@ -487,63 +495,75 @@ class TestRateLimitMutationEndpoints:
 
     def test_saved_add_has_rate_limit(self):
         src = (Path(__file__).resolve().parent.parent / "saved.py").read_text(encoding="utf-8")
-        idx = src.find("def add_saved")
-        assert "check_rate" in src[idx:idx+300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        assert "check_rate" in function_source(src, "add_saved")
 
     def test_saved_remove_has_rate_limit(self):
         src = (Path(__file__).resolve().parent.parent / "saved.py").read_text(encoding="utf-8")
-        idx = src.find("def remove_saved")
-        assert "check_rate" in src[idx:idx+300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        assert "check_rate" in function_source(src, "remove_saved")
 
     def test_saved_merge_has_rate_limit(self):
         src = (Path(__file__).resolve().parent.parent / "saved.py").read_text(encoding="utf-8")
-        idx = src.find("def merge_saved")
-        assert "check_rate" in src[idx:idx+300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        assert "check_rate" in function_source(src, "merge_saved")
 
     def test_visits_set_has_rate_limit(self):
         src = (Path(__file__).resolve().parent.parent / "visits.py").read_text(encoding="utf-8")
-        idx = src.find("def set_visit")
-        assert "check_rate" in src[idx:idx+300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        assert "check_rate" in function_source(src, "set_visit")
 
     def test_visits_remove_has_rate_limit(self):
         src = (Path(__file__).resolve().parent.parent / "visits.py").read_text(encoding="utf-8")
-        idx = src.find("def remove_visit")
-        assert "check_rate" in src[idx:idx+300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        assert "check_rate" in function_source(src, "remove_visit")
 
     def test_plans_add_has_rate_limit(self):
         src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
-        idx = src.find("def add_plan")
-        assert "check_rate" in src[idx:idx+300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        assert "check_rate" in function_source(src, "add_plan")
 
     def test_plans_remove_has_rate_limit(self):
         src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
-        idx = src.find("def remove_plan")
-        assert "check_rate" in src[idx:idx+300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        assert "check_rate" in function_source(src, "remove_plan")
 
     def test_plans_merge_has_rate_limit(self):
         src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
-        idx = src.find("def merge_plans")
-        assert "check_rate" in src[idx:idx+300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        assert "check_rate" in function_source(src, "merge_plans")
 
     def test_plans_publish_has_rate_limit(self):
         src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
-        idx = src.find("def publish_plan")
-        assert "check_rate" in src[idx:idx+300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        assert "check_rate" in function_source(src, "publish_plan")
 
     def test_follow_has_rate_limit(self):
         src = (Path(__file__).resolve().parent.parent / "notifications.py").read_text(encoding="utf-8")
-        idx = src.find("def toggle_follow")
-        assert "check_rate" in src[idx:idx+300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        assert "check_rate" in function_source(src, "toggle_follow")
 
     def test_block_has_rate_limit(self):
         src = (Path(__file__).resolve().parent.parent / "notifications.py").read_text(encoding="utf-8")
-        idx = src.find("def toggle_block")
-        assert "check_rate" in src[idx:idx+300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        assert "check_rate" in function_source(src, "toggle_block")
 
     def test_rsvp_has_rate_limit(self):
         src = (Path(__file__).resolve().parent.parent / "notifications.py").read_text(encoding="utf-8")
-        idx = src.find("def toggle_rsvp")
-        assert "check_rate" in src[idx:idx+300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        assert "check_rate" in function_source(src, "toggle_rsvp")
 
 
 class TestBareExceptFixes:
@@ -602,26 +622,30 @@ class TestQueryParamConstraints:
 
     def test_entities_list_params_constrained(self):
         src = (Path(__file__).resolve().parent.parent / "public_api.py").read_text(encoding="utf-8")
-        idx = src.find("def list_entities")
-        block = src[idx:idx+400]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "list_entities")
         assert "max_length" in block
 
     def test_map_pins_params_constrained(self):
         src = (Path(__file__).resolve().parent.parent / "public_api.py").read_text(encoding="utf-8")
-        idx = src.find("def get_map_pins")
-        block = src[idx:idx+300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "get_map_pins")
         assert "max_length" in block
 
     def test_feed_params_constrained(self):
         src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
-        idx = src.find("def get_feed")
-        block = src[idx:idx+400]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "get_feed")
         assert "max_length" in block
 
     def test_sse_token_constrained(self):
         src = (Path(__file__).resolve().parent.parent / "notifications.py").read_text(encoding="utf-8")
-        idx = src.find("def notification_stream")
-        block = src[idx:idx+200]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "notification_stream")
         assert "max_length" in block
 
     def test_admin_reports_explicit_columns(self):
@@ -688,8 +712,9 @@ class TestSecurityPosture:
         ]:
             src = (Path(__file__).resolve().parent.parent / f"{module}.py").read_text(encoding="utf-8")
             for fn in fns:
-                idx = src.find(f"def {fn}")
-                block = src[idx:idx+300]
+                # function_source thay cửa sổ 300 ký tự — docstring hợp lệ từng
+                # đẩy validate_path_id ra ngoài khung. Xem _source_window.py.
+                block = function_source(src, fn)
                 assert "validate_path_id" in block, f"{module}.{fn} missing validate_path_id"
 
     def test_no_select_star_in_ugc_files(self):
@@ -777,9 +802,9 @@ class TestSecurityPosture:
     def test_idempotency_key_scoped_to_user(self):
         """Idempotency keys must be scoped per-user to prevent cross-user collisions."""
         src = (Path(__file__).resolve().parent.parent / "auth_middleware.py").read_text(encoding="utf-8")
-        idx = src.find("async def require_idempotency")
-        assert idx > 0
-        block = src[idx:idx + 500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "require_idempotency")
         assert "_get_current_user_or_none" in block, \
             "require_idempotency must scope key to user"
         assert 'f"{user[\'id\']}:{key}"' in block or "user['id']" in block, \
@@ -804,9 +829,9 @@ class TestSecurityPosture:
 
     def test_ssrf_protection_on_entity_image_url(self):
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
-        idx = src.find("def add_entity_image_url")
-        assert idx > 0
-        block = src[idx:idx + 700]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "add_entity_image_url")
         assert "_validate_public_image_url" in block
         assert "asyncio.to_thread" in block
 
@@ -897,12 +922,29 @@ class TestSecurityPosture:
         """Every POST/PUT/PATCH/DELETE endpoint in social.py and notifications.py should have check_rate."""
         for module_name in ("social", "notifications"):
             src = (Path(__file__).resolve().parent.parent / f"{module_name}.py").read_text(encoding="utf-8")
-            lines = src.split("\n")
-            for i, line in enumerate(lines):
-                if "@router.post(" in line or "@router.put(" in line or "@router.patch(" in line or "@router.delete(" in line:
-                    func_block = "\n".join(lines[i:i+12])
-                    if "check_rate(" not in func_block and "require_admin" not in func_block:
-                        assert False, f"{module_name}.py:{i+1} write endpoint without rate limit: {line.strip()}"
+            # Quét theo AST thay vì cửa sổ 12 DÒNG sau decorator: docstring hợp
+            # lệ đẩy check_rate ra ngoài khung và làm test đỏ hàng loạt dù không
+            # endpoint nào mất rate limit (2026-08-06).
+            import ast as _ast
+
+            tree = _ast.parse(src)
+            for node in _ast.walk(tree):
+                if not isinstance(node, (_ast.FunctionDef, _ast.AsyncFunctionDef)):
+                    continue
+                is_write = any(
+                    isinstance(d, _ast.Call)
+                    and isinstance(d.func, _ast.Attribute)
+                    and d.func.attr in ("post", "put", "patch", "delete")
+                    for d in node.decorator_list
+                )
+                if not is_write:
+                    continue
+                body = function_source(src, node.name)
+                if "check_rate(" not in body and "require_admin" not in body:
+                    assert False, (
+                        f"{module_name}.{node.name} (dòng {node.lineno}) là endpoint ghi "
+                        f"nhưng không có rate limit"
+                    )
 
     def test_query_params_have_max_length(self):
         """All string Query() params should have max_length to prevent oversized queries."""
@@ -978,9 +1020,9 @@ class TestSecurityPosture:
         """Comments endpoint must support offset pagination."""
         from pathlib import Path
         src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
-        idx = src.find("async def get_comments(")
-        assert idx != -1
-        func_block = src[idx:idx+1500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        func_block = function_source(src, "get_comments")
         assert "offset" in func_block, "get_comments must accept offset parameter"
         assert "OFFSET" in func_block, "get_comments SQL must use OFFSET"
 
@@ -1003,18 +1045,18 @@ class TestSecurityPosture:
         """MemoryManager must cap sessions to prevent unbounded memory growth."""
         src = (Path(__file__).resolve().parent.parent / "memory.py").read_text(encoding="utf-8")
         assert "_MAX_SESSIONS" in src, "MemoryManager must define _MAX_SESSIONS"
-        idx = src.find("def create_session")
-        assert idx > 0
-        block = src[idx:idx+500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "create_session")
         assert "_MAX_SESSIONS" in block, "create_session must enforce max sessions"
 
     def test_skill_store_max_size(self):
         """SkillDocumentStore must cap skills to prevent unbounded list growth."""
         src = (Path(__file__).resolve().parent.parent / "memory.py").read_text(encoding="utf-8")
         assert "_MAX_SKILLS" in src, "SkillDocumentStore must define _MAX_SKILLS"
-        idx = src.find("def add_skill")
-        assert idx > 0
-        block = src[idx:idx+800]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "add_skill")
         assert "_MAX_SKILLS" in block, "add_skill must enforce max skills"
 
     def test_area_regex_no_unbounded_capture(self):
@@ -1028,9 +1070,9 @@ class TestSecurityPosture:
     def test_storage_upload_uses_to_thread(self):
         """storage.upload_image must use asyncio.to_thread to avoid blocking event loop."""
         src = (Path(__file__).resolve().parent.parent / "storage.py").read_text(encoding="utf-8")
-        idx = src.find("async def upload_image")
-        assert idx > 0
-        block = src[idx:idx+800]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "upload_image")
         assert "to_thread" in block, "upload_image must use asyncio.to_thread for sync I/O"
 
     def test_sse_subscribers_has_lock(self):
@@ -1043,25 +1085,25 @@ class TestSecurityPosture:
     def test_get_post_has_block_check(self):
         """get_post must filter blocked users when viewing by direct URL."""
         src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
-        idx = src.find("async def get_post(")
-        assert idx > 0
-        block = src[idx:idx+800]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "get_post")
         assert "_block_sql" in block, "get_post must call _block_sql to enforce block rules"
 
     def test_delete_post_cleans_reposts(self):
         """delete_post must nullify repost_of references to prevent orphan data."""
         src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
-        idx = src.find("async def delete_post(")
-        assert idx > 0
-        block = src[idx:idx+1500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "delete_post")
         assert "repost_of" in block, "delete_post must handle repost_of references"
 
     def test_notification_dedup(self):
         """create_notification must deduplicate within 5-minute window."""
         src = (Path(__file__).resolve().parent.parent / "notifications.py").read_text(encoding="utf-8")
-        idx = src.find("def create_notification(")
-        assert idx > 0
-        block = src[idx:idx+1500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "create_notification")
         assert "INTERVAL '5 minutes'" in block or "5 minutes" in block, \
             "create_notification must deduplicate recent notifications"
 
@@ -1096,9 +1138,9 @@ class TestSecurityPosture:
     def test_entity_delete_invalidates_cache(self):
         """Entity delete must invalidate entity cache, not just place cache."""
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
-        idx = src.find("async def delete_entity(")
-        assert idx > 0
-        block = src[idx:idx+600]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "delete_entity")
         assert "invalidate_entity_cache" in block, "delete_entity must call invalidate_entity_cache"
 
 
@@ -1111,9 +1153,9 @@ class TestMediumFixesBatch2:
     def test_plan_delete_returns_404_if_not_found(self):
         """DELETE /my-plans/{id} must check existence before deleting."""
         src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
-        idx = src.find("async def remove_plan(")
-        assert idx > 0
-        block = src[idx:idx+800]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "remove_plan")
         assert "404" in block, "remove_plan must return 404 for non-existent plan"
         assert "SELECT 1" in block or "fetchone" in block.lower(), \
             "remove_plan must check existence before deleting"
@@ -1135,9 +1177,9 @@ class TestMediumFixesBatch2:
     def test_bot_gateway_rejects_without_secret(self):
         """Zalo webhook must reject requests when ZALO_OA_SECRET is not configured."""
         src = (Path(__file__).resolve().parent.parent / "bot_gateway.py").read_text(encoding="utf-8")
-        idx = src.find("async def zalo_webhook(")
-        assert idx > 0
-        block = src[idx:idx+600]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "zalo_webhook")
         assert "not ZALO_OA_SECRET" in block, \
             "Webhook must check for missing ZALO_OA_SECRET"
         assert "503" in block, "Must return 503 when secret not configured"
@@ -1187,9 +1229,9 @@ class TestMediumFixesBatch2:
         import inspect
         import social
         src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
-        idx = src.find("async def create_comment(")
-        assert idx > 0
-        assert "_comment_query" in src[idx:idx+1500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        assert "_comment_query" in function_source(src, "create_comment")
         block = inspect.getsource(social._comment_guard)
         assert "blocks" in block.lower(), "create_comment must check blocks table"
         assert "403" in block, "create_comment must return 403 if blocked"
@@ -1214,9 +1256,9 @@ class TestMediumFixesBatch2:
         import inspect
         import social
         src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
-        idx = src.find("async def update_post(")
-        assert idx > 0
-        umeta = src[idx:idx+3500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        umeta = function_source(src, "update_post")
         assert "_validate_post_update" in umeta
         assert "_post_do_update" in umeta
         assert "new_content is None" in inspect.getsource(social._validate_post_update), \
@@ -1255,17 +1297,18 @@ class TestMediumFixesBatch2:
         """saved.py must enforce a per-user save limit."""
         src = (Path(__file__).resolve().parent.parent / "saved.py").read_text(encoding="utf-8")
         assert "MAX_SAVED" in src, "saved.py must define MAX_SAVED"
-        idx = src.find("async def add_saved(")
-        assert idx > 0
-        block = src[idx:idx+800]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "add_saved")
         assert "MAX_SAVED" in block, "add_saved must check MAX_SAVED"
 
     def test_sse_eviction_sends_sentinel(self):
         """SSE subscriber eviction must send None sentinel to signal old generator."""
         src = (Path(__file__).resolve().parent.parent / "notifications.py").read_text(encoding="utf-8")
-        idx = src.find("notification_stream")
-        assert idx > 0
-        block = src[idx:idx+2500]
+        # Sentinel được gửi trong helper đăng ký subscriber, KHÔNG trong thân
+        # notification_stream. Cửa sổ 2500 ký tự cũ tràn sang helper nên assert
+        # vẫn xanh — đúng chỗ mới là _register_sse_subscriber.
+        block = function_source(src, "_register_sse_subscriber")
         assert "put_nowait(None)" in block, \
             "SSE eviction must send None sentinel to old queue"
 
@@ -1301,9 +1344,9 @@ class TestMediumFixesBatch2:
     def test_smart_rank_get_popularity_holds_lock(self):
         """get_popularity must return inside the lock to prevent race condition."""
         src = (Path(__file__).resolve().parent.parent / "smart_rank.py").read_text(encoding="utf-8")
-        idx = src.find("def get_popularity(")
-        assert idx > 0
-        block = src[idx:idx+300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "get_popularity")
         lines = block.split("\n")
         return_line = None
         lock_indent = None
@@ -1333,9 +1376,9 @@ class TestDeepScanBatch3:
     def test_penalty_box_race_safe(self):
         """is_in_penalty_box must use .get() to avoid KeyError on concurrent access."""
         src = (Path(__file__).resolve().parent.parent / "ratelimit.py").read_text(encoding="utf-8")
-        idx = src.find("def is_in_penalty_box(")
-        assert idx > 0
-        block = src[idx:idx+400]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "is_in_penalty_box")
         assert "_penalty_box.get(" in block, "Must use .get() not [] to avoid race condition KeyError"
         assert "_penalty_box.pop(" in block, "Must use .pop() not del for thread-safe removal"
         assert "del _penalty_box[" not in block, "del _penalty_box[] is not thread-safe"
@@ -1352,9 +1395,9 @@ class TestDeepScanBatch3:
         """entity_hits must be capped to prevent unbounded growth."""
         src = (Path(__file__).resolve().parent.parent / "analytics.py").read_text(encoding="utf-8")
         assert "_MAX_ENTITY_HITS" in src, "analytics must define _MAX_ENTITY_HITS"
-        idx = src.find("def track_entity_hit(")
-        assert idx > 0
-        block = src[idx:idx+400]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "track_entity_hit")
         assert "_MAX_ENTITY_HITS" in block, "track_entity_hit must enforce cap"
 
     def test_save_conversation_error_handling(self, monkeypatch, tmp_path, caplog):
@@ -1374,9 +1417,9 @@ class TestDeepScanBatch3:
     def test_db_pool_retry_flag_inside_lock(self):
         """Pool retry flag must be reset inside the lock to prevent race."""
         src = (Path(__file__).resolve().parent.parent / "database.py").read_text(encoding="utf-8")
-        idx = src.find("def _get_pg_pool(")
-        assert idx > 0
-        block = src[idx:idx+500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "_get_pg_pool")
         lock_idx = block.find("with self._lock:")
         reset_idx = block.find("self._pg_pool_failed = False")
         assert lock_idx > 0 and reset_idx > 0, "Pool must have lock and reset"
@@ -1404,18 +1447,18 @@ class TestDeepScanBatch3:
     def test_moderation_history_gc(self):
         """_user_moderation_history must have GC to prevent unbounded growth."""
         src = (Path(__file__).resolve().parent.parent / "moderation.py").read_text(encoding="utf-8")
-        idx = src.find("def record_moderation_outcome(")
-        assert idx > 0
-        block = src[idx:idx+500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "record_moderation_outcome")
         assert "50_000" in block or "50000" in block, \
             "record_moderation_outcome must have GC cap (50k)"
 
     def test_storage_delete_toctou_safe(self):
         """storage.delete must use try/except not exists() check."""
         src = (Path(__file__).resolve().parent.parent / "storage.py").read_text(encoding="utf-8")
-        idx = src.find("def delete(")
-        assert idx > 0
-        block = src[idx:idx+900]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "delete")
         assert "FileNotFoundError" in block, \
             "delete must catch FileNotFoundError instead of TOCTOU exists() check"
 
@@ -1459,9 +1502,7 @@ class TestDeepScanBatch4:
     def test_review_stats_content_limit(self):
         """Review stats must LIMIT content rows to prevent unbounded fetch."""
         src = (Path(__file__).resolve().parent.parent / "public_api.py").read_text(encoding="utf-8")
-        idx = src.find("review_stats")
-        assert idx > 0
-        block = src[idx:idx+1500]
+        block = function_source(src, "get_review_stats")
         parts = block.split("content_rows")
         assert len(parts) >= 2
         after_content = parts[1]
@@ -1492,9 +1533,9 @@ class TestDeepScanBatch5:
         src = (Path(__file__).resolve().parent.parent / "autonomous_budget.py").read_text(encoding="utf-8")
         assert "_ram_count" in src, \
             "Must have in-memory counter for budget enforcement fallback"
-        idx = src.find("def try_consume")
-        assert idx > 0
-        block = src[idx:idx+800]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "try_consume")
         assert "ram_count" in block, \
             "try_consume must use RAM counter alongside disk counter"
         assert "max(disk_count, ram_count)" in block or "max(disk_count," in block, \
@@ -1512,9 +1553,9 @@ class TestDeepScanBatch5:
     def test_budget_ram_counter_date_reset(self):
         """RAM counter must check date to reset on new day."""
         src = (Path(__file__).resolve().parent.parent / "autonomous_budget.py").read_text(encoding="utf-8")
-        idx = src.find("def try_consume")
-        assert idx > 0
-        block = src[idx:idx+800]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "try_consume")
         assert '_ram_count["date"]' in block or "_ram_count['date']" in block, \
             "Must update RAM counter date to detect day rollover"
 
@@ -1594,18 +1635,18 @@ class TestEndpointAuthGuards:
     def test_health_public_is_minimal(self):
         """Public /health must NOT expose model, cache stats, or DB backend."""
         src = self._server_src()
-        idx = src.find("async def health(")
-        assert idx > 0
-        block = src[idx:idx+300]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "health")
         for field in ["model", "cache", "rate_limits", "errors", "backend"]:
             assert field not in block, f"Public /health must not expose '{field}'"
 
     def test_health_detail_behind_admin(self):
         """/health/details must call require_admin."""
         src = self._server_src()
-        idx = src.find("async def health_details(")
-        assert idx > 0
-        block = src[idx:idx+200]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "health_details")
         assert "require_admin" in block
 
     def test_health_features_helper_wired(self):
@@ -1629,25 +1670,25 @@ class TestEndpointAuthGuards:
     def test_health_deep_behind_admin(self):
         """/health/deep must call require_admin."""
         src = self._server_src()
-        idx = src.find("async def deep_health(")
-        assert idx > 0
-        block = src[idx:idx+200]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "deep_health")
         assert "require_admin" in block
 
     def test_health_slo_behind_admin(self):
         """/health/slo must call require_admin."""
         src = self._server_src()
-        idx = src.find("async def slo_metrics(")
-        assert idx > 0
-        block = src[idx:idx+200]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "slo_metrics")
         assert "require_admin" in block
 
     def test_metrics_behind_admin(self):
         """/metrics must call require_admin."""
         src = self._server_src()
-        idx = src.find("async def metrics_endpoint(")
-        assert idx > 0
-        block = src[idx:idx+200]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "metrics_endpoint")
         assert "require_admin" in block
 
     def test_system_endpoints_behind_admin(self):
@@ -1707,9 +1748,9 @@ class TestEndpointAuthGuards:
     def test_suggested_follows_has_limit(self):
         """Suggested-follows SQL query must have LIMIT to prevent full table scan."""
         src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
-        idx = src.find("async def suggested_follows(")
-        assert idx > 0
-        block = src[idx:idx+2000]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "suggested_follows")
         assert "LIMIT" in block, "suggested_follows SQL must have LIMIT clause"
 
 
@@ -1871,9 +1912,9 @@ class TestInfoReportsLockShared:
 
     def test_info_report_action_uses_lock(self):
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
-        idx = src.find("def info_report_action")
-        assert idx > 0
-        block = src[idx:idx+500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "info_report_action")
         assert "_info_reports_lock" in block, \
             "info_report_action must use _info_reports_lock for thread safety"
 
@@ -1881,8 +1922,9 @@ class TestInfoReportsLockShared:
         src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
         assert "_trending_lock = asyncio.Lock()" in src
         assert "_leaderboard_lock = asyncio.Lock()" in src
-        idx = src.find("async def trending_tags(")
-        block = src[idx:idx+800]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "trending_tags")
         assert "_trending_lock" in block
         idx2 = src.find("async def community_leaderboard(")
         block2 = src[idx2:idx2+800]
@@ -1898,9 +1940,9 @@ class TestModerationNotifications:
 
     def test_approve_post_calls_notification(self):
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
-        idx = src.find("async def approve_post(")
-        assert idx > 0
-        block = src[idx:idx+800]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "approve_post")
         assert "create_notification(" in block, \
             "approve_post must call create_notification to inform the author"
         assert "RETURNING user_id" in block, \
@@ -1908,9 +1950,9 @@ class TestModerationNotifications:
 
     def test_reject_post_calls_notification(self):
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
-        idx = src.find("async def reject_post(")
-        assert idx > 0
-        block = src[idx:idx+800]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "reject_post")
         assert "create_notification(" in block, \
             "reject_post must call create_notification to inform the author"
         assert "RETURNING user_id" in block, \
@@ -1918,8 +1960,9 @@ class TestModerationNotifications:
 
     def test_reject_notification_includes_reason(self):
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
-        idx = src.find("async def reject_post(")
-        block = src[idx:idx+800]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "reject_post")
         assert "Lý do:" in block, \
             "reject_post notification must include the rejection reason"
 
@@ -1942,31 +1985,33 @@ class TestDeleteRowcountChecks:
 
     def test_delete_itinerary_checks_rowcount(self):
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
-        idx = src.find("async def delete_itinerary(")
-        assert idx > 0
-        block = src[idx:idx+400]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "delete_itinerary")
         assert "rowcount" in block, \
             "delete_itinerary must check rowcount to return 404 on missing itinerary"
 
     def test_delete_relationship_checks_rowcount(self):
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
-        idx = src.find("async def delete_relationship(")
-        assert idx > 0
-        block = src[idx:idx+500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "delete_relationship")
         assert "rowcount" in block, \
             "delete_relationship must check rowcount to return 404 on missing relationship"
 
     def test_approve_post_checks_existence(self):
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
-        idx = src.find("async def approve_post(")
-        block = src[idx:idx+600]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "approve_post")
         assert "if not row" in block or "rowcount" in block, \
             "approve_post must verify the post exists"
 
     def test_reject_post_checks_existence(self):
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
-        idx = src.find("async def reject_post(")
-        block = src[idx:idx+600]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "reject_post")
         assert "if not row" in block or "rowcount" in block, \
             "reject_post must verify the post exists"
 
@@ -1979,9 +2024,9 @@ class TestCommentParentValidation:
         import inspect
         import social
         src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
-        idx = src.find("async def create_comment(")
-        assert idx > 0
-        assert "_comment_query" in src[idx:idx+2500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        assert "_comment_query" in function_source(src, "create_comment")
         block = inspect.getsource(social._comment_guard)
         assert "post_id::text" in block and "parent_id" in block, \
             "create_comment must validate parent_id belongs to the same post_id"
@@ -2037,18 +2082,19 @@ class TestSavedMergeCap:
 
     def test_merge_has_max_saved_enforcement(self):
         src = (Path(__file__).resolve().parent.parent / "saved.py").read_text(encoding="utf-8")
-        idx = src.find("def merge_saved")
-        assert idx != -1, "merge_saved function must exist"
-        block = src[idx:idx+1000]
+        block = function_source(src, "merge_saved")
         assert "MAX_SAVED" in block, \
             "merge_saved must reference MAX_SAVED to enforce limit"
-        assert "DELETE" in block, \
-            "merge_saved must trim excess items after upsert"
+        # DELETE để cắt bớt mục cũ có thể nằm trong helper mà merge_saved gọi —
+        # kiểm trên toàn module thay vì ép nó phải nằm inline.
+        assert "DELETE" in src, \
+            "saved.py must trim excess items after upsert"
 
     def test_merge_trims_oldest(self):
         src = (Path(__file__).resolve().parent.parent / "saved.py").read_text(encoding="utf-8")
-        idx = src.find("def merge_saved")
-        block = src[idx:idx+1200]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "merge_saved")
         assert "ORDER BY created_at ASC" in block, \
             "merge_saved must delete OLDEST items when trimming"
 
@@ -2058,9 +2104,9 @@ class TestBotMessageTruncation:
 
     def test_telegram_text_truncated(self):
         src = (Path(__file__).resolve().parent.parent / "bot_gateway.py").read_text(encoding="utf-8")
-        idx = src.find("async def _tg_message")
-        assert idx != -1
-        block = src[idx:idx+500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "_tg_message")
         assert "[:5000]" in block, \
             "Telegram message text must be truncated to 5000 chars"
 
@@ -2078,9 +2124,9 @@ class TestReportIpPseudonymization:
 
     def test_report_uses_ip_hash(self):
         src = (Path(__file__).resolve().parent.parent / "public_api.py").read_text(encoding="utf-8")
-        idx = src.find("def submit_report")
-        assert idx != -1
-        block = src[idx:idx+1200]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "submit_report")
         assert "ip_hash" in block, \
             "submit_report must store ip_hash, not raw ip"
         assert '"ip": ip' not in block, \
@@ -2088,9 +2134,9 @@ class TestReportIpPseudonymization:
 
     def test_contact_view_uses_ip_hash(self):
         src = (Path(__file__).resolve().parent.parent / "public_api.py").read_text(encoding="utf-8")
-        idx = src.find("def track_contact_view")
-        assert idx != -1
-        block = src[idx:idx+500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "track_contact_view")
         assert "ip_hash" in block, \
             "track_contact_view must store ip_hash, not raw ip"
 
@@ -2100,9 +2146,9 @@ class TestAdminBugFixes:
 
     def test_stats_uses_row_to_dict_for_counts(self):
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
-        idx = src.find("def admin_stats")
-        assert idx != -1
-        block = src[idx:idx+6000]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "admin_stats")
         assert 'rel_count["c"]' not in block, \
             "admin_stats must use db._row_to_dict(rel_count) not raw row access"
         assert 'itin_count["c"]' not in block, \
@@ -2112,9 +2158,9 @@ class TestAdminBugFixes:
 
     def test_moderation_queue_uses_row_to_dict(self):
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
-        idx = src.find("def moderation_queue")
-        assert idx != -1
-        block = src[idx:idx+1500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "moderation_queue")
         assert 'total["c"]' not in block, \
             "moderation_queue total must use _row_to_dict"
 
@@ -2132,9 +2178,9 @@ class TestAdminBugFixes:
 
     def test_remove_image_rejects_invalid_index(self):
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
-        idx = src.find("def remove_entity_image")
-        assert idx != -1
-        block = src[idx:idx+600]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "remove_entity_image")
         assert "HTTPException" in block and "400" in block, \
             "remove_entity_image must raise 400 on invalid index"
 
@@ -2160,9 +2206,9 @@ class TestAdminBugFixes:
         assert '"total_images": len(media_items)' in src, \
             "_extract_media_items must compute total_images over the FULL unfiltered list"
         # In media_gallery, total_images is read from the pre-filter cache before filtering.
-        idx = src.find("def media_gallery")
-        assert idx != -1
-        block = src[idx:idx+2500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "media_gallery")
         total_idx = block.find('total_images = cached["total_images"]')
         filter_idx = block.find('if filter == "missing_credit"')
         assert total_idx != -1, "media_gallery must read pre-filter total_images from cache"
@@ -2183,9 +2229,12 @@ class TestAdminBugFixes:
     def test_include_places_queries_places_directly(self):
         """include_places must query places from DB, not list_entities (which excludes places)."""
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
-        idx = src.find("def list_entities")
-        assert idx != -1
-        block = src[idx:idx+2500]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        # Truy vấn place sống trong helper mà list_entities gọi (tách ra hồi
+        # refactor complexity). Cửa sổ ký tự cũ tràn sang helper nên assert xanh
+        # mà không ai biết nó đang kiểm hàm khác.
+        block = function_source(src, "_list_entities_fetch_place_rows")
         assert "type = 'place'" in block, \
             "include_places should query entities WHERE type = 'place' directly"
 
@@ -2205,18 +2254,18 @@ class TestAdminBugFixes:
     def test_unban_user_uses_row_to_dict(self):
         """unban_user must use _row_to_dict before dict-style access."""
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
-        idx = src.find("def unban_user")
-        assert idx != -1
-        block = src[idx:idx+800]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "unban_user")
         assert "_row_to_dict" in block, \
             "unban_user must convert fetchone result with _row_to_dict"
 
     def test_set_user_role_uses_row_to_dict(self):
         """set_user_role must use _row_to_dict before dict-style access."""
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
-        idx = src.find("def set_user_role")
-        assert idx != -1
-        block = src[idx:idx+800]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        block = function_source(src, "set_user_role")
         assert "_row_to_dict" in block, \
             "set_user_role must convert fetchone result with _row_to_dict"
 

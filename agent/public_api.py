@@ -1314,14 +1314,20 @@ async def get_featured_entities(response: Response):
             summary="List entity types",
             description="Returns all entity types with their counts, ordered by frequency. Cached for 1 hour.")
 async def entity_types(response: Response):
-    """Trả số lượng entity theo từng giá trị cột type kèm tổng cộng, sắp giảm dần theo count.
+    """Trả số lượng entity CÔNG KHAI theo từng giá trị cột type, sắp giảm dần theo count.
 
-    Câu đếm chạy trên toàn bảng entities, KHÔNG lọc theo trạng thái công khai.
+    Áp cùng luật công khai với các endpoint public khác (bỏ `provisional` và
+    `verified = 0`). Trước 2026-08-06 câu đếm chạy trên toàn bảng nên con số
+    hiển thị lớn hơn số entity người dùng thật sự xem được.
     """
     response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=7200"
     def _query():
         with db._conn() as conn:
-            rows = db._fetchall(conn, "SELECT type, COUNT(*) as count FROM entities GROUP BY type ORDER BY count DESC", ())
+            rows = db._fetchall(conn,
+                "SELECT type, COUNT(*) as count FROM entities e"
+                " WHERE (e.status IS NULL OR e.status != 'provisional')"
+                " AND (e.verified IS NULL OR e.verified != 0)"
+                " GROUP BY type ORDER BY count DESC", ())
         return [{"type": d["type"], "count": d["count"]} for d in (db._row_to_dict(r) for r in rows)]
     result = await asyncio.to_thread(_query)
     return {"types": result, "total": sum(t["count"] for t in result)}
@@ -1341,7 +1347,16 @@ async def list_areas(response: Response):
     """
     response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=7200"
     def _query():
-        places = db.list_entities(entity_type="place", limit=1000, offset=0, public_only=True)
+        # KHÔNG dùng db.list_entities(entity_type="place"): hàm đó loại cứng
+        # `e.type != 'place'` nên hai điều kiện loại trừ nhau và truy vấn LUÔN
+        # rỗng — endpoint này chết im lặng cho tới 2026-08-06. Lọc từ
+        # all_entities() và áp đúng luật công khai của _append_public_only.
+        places = [
+            e for e in db.all_entities()
+            if e.get("type") == "place"
+            and e.get("status") != "provisional"
+            and e.get("verified") is not False
+        ][:1000]
         areas: dict[str, list] = {}
         for p in places:
             area = p.get("area", "")
@@ -2848,7 +2863,6 @@ async def list_events(
     theo limit.
     """
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
-    """Sự kiện: sắp xếp theo date_start, mặc định ẩn sự kiện đã qua."""
     today = datetime.now(timezone.utc).date()
     all_ents = await asyncio.to_thread(db.list_entities, entity_type="event", limit=2000, offset=0, public_only=True)
     events = list(all_ents)
