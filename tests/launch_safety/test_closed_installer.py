@@ -6376,8 +6376,15 @@ def test_explicit_python_executor_preserves_isolated_venv_runtime(tmp_path: Path
     (dotenv / "parser.py").write_text("def parse_stream(stream): return ()\n", encoding="ascii")
     source = INSTALL.read_text(encoding="utf-8")
     bootstrap = source.split("\nfsync_directories()", 1)[0]
+    # `invoke_python`, KHÔNG phải `command "$PYTHON_EXECUTOR"`: executor đã bị
+    # ghim thành /proc/<pid>/fd/<n>, gọi thẳng nó thì argv[0] chính là đường dẫn
+    # /proc đó và Python suy prefix từ file thật — ra Python hệ thống, không phải
+    # venv. `invoke_python` mới là đường installer thật đi: nó đặt argv[0] về
+    # PYTHON_EXECUTOR_LOGICAL, thứ giữ cho venv được nhận ra.
+    # Đo trên runner xác nhận: qua /proc/fd với argv0=venv → prefix=venv;
+    # gọi thẳng canonical → prefix=Python hệ thống.
     probe = bootstrap + """
-command "$PYTHON_EXECUTOR" -c '
+invoke_python -c '
 import json
 import dotenv.parser
 import ssl
