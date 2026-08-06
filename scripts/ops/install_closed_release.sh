@@ -164,9 +164,14 @@ invoke_python() {
     # The subshell keeps `exec` from replacing this installer shell; the
     # pinned descriptor and the heredoc stdin are both inherited through it.
     #
+    # `builtin exec`, never a bare `exec`: a function named exec() inherited
+    # through BASH_ENV would otherwise shadow it, swallow the call and let the
+    # installer continue as if Python had run. The shadowing test asserts that
+    # marker file is never created.
+    #
     # This file stays pure ASCII on purpose --- the venv-runtime test reads
     # its bootstrap and writes it back with encoding="ascii".
-    ( exec -a "$PYTHON_EXECUTOR_LOGICAL" "$PYTHON_EXECUTOR" "$@" )
+    ( builtin exec -a "$PYTHON_EXECUTOR_LOGICAL" "$PYTHON_EXECUTOR" "$@" )
   else
     "$PYTHON_EXECUTOR" "$@"
   fi

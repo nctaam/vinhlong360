@@ -58,6 +58,13 @@ def test_invoke_python_dat_argv0_bang_exec_a():
     assert 'exec -a "$PYTHON_EXECUTOR_LOGICAL" "$PYTHON_EXECUTOR"' in source, (
         "invoke_python phải đặt argv[0] về đường dẫn logical qua `exec -a`"
     )
+    # `builtin` là bắt buộc, không phải trang trí: một hàm tên exec() thừa kế
+    # qua BASH_ENV sẽ shadow `exec` trần, nuốt lệnh và trả 0 — installer đi tiếp
+    # như thể Python đã chạy. Thử tại chỗ: hàm shadow nuốt `exec -a`, còn
+    # `builtin exec -a` vẫn chạy thật.
+    assert 'builtin exec -a "$PYTHON_EXECUTOR_LOGICAL"' in source, (
+        "phải gọi `builtin exec -a`, đừng để hàm exec() từ BASH_ENV shadow được"
+    )
 
 
 def test_exec_a_nam_trong_subshell():
