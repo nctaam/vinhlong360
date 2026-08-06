@@ -288,6 +288,13 @@ def test_load_artifact_rejects_regular_looking_windows_reparse_metadata(
     source,
 ):
     if source == "production":
+        # Nhánh release-root đi đường fd-based (`_regular_file_stat_at`) khi nền
+        # có dir_fd — tức trên Linux — nên không hề gọi `os.lstat`, và bản
+        # monkeypatch bên dưới không tới được chỗ nào. Reparse point là khái niệm
+        # NTFS; `st_reparse_tag` của fstat thật trên Linux luôn 0, không có gì để
+        # từ chối. Biến thể `fixture` vẫn chạy mọi nền vì nó đi nhánh lstat.
+        if os.name != "nt":
+            pytest.skip("nhánh release-root dùng fd-based stat ngoài Windows")
         target = tmp_path / "config" / "artifact.json"
         target.parent.mkdir()
         kwargs = {"release_root": tmp_path}
