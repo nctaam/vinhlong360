@@ -1623,7 +1623,16 @@ def _require_posix_evidence_capabilities() -> None:
         if not hasattr(os, constant):
             missing.append(constant)
     supports_dir_fd = getattr(os, "supports_dir_fd", set())
-    for function in (os.open, os.mkdir, os.replace, os.stat, os.unlink):
+    # `os.rename` chứ KHÔNG phải `os.replace`: `os.supports_dir_fd` chỉ chứa các
+    # hàm nhận tham số TÊN `dir_fd`, còn replace/rename nhận `src_dir_fd`/
+    # `dst_dir_fd`. Đo trên Linux CPython 3.12.13 cho thấy
+    # `rename in supports_dir_fd` = True nhưng `replace` = False — nên kiểm
+    # `os.replace` là kiểm một điều KHÔNG BAO GIỜ đúng, kể cả trên POSIX đầy đủ,
+    # và verifier tự chặn mình bằng "required POSIX evidence capabilities
+    # unavailable: replace(dir_fd)" (74 test đỏ, và trên VPS thì không chạy nổi).
+    # Cả hai dùng chung syscall renameat, nên `os.rename` là proxy đúng cho khả
+    # năng mà lệnh `os.replace(src_dir_fd=…, dst_dir_fd=…)` bên dưới cần.
+    for function in (os.open, os.mkdir, os.rename, os.stat, os.unlink):
         if function not in supports_dir_fd:
             missing.append(f"{function.__name__}(dir_fd)")
     supports_follow_symlinks = getattr(os, "supports_follow_symlinks", set())

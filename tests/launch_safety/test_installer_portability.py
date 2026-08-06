@@ -71,3 +71,35 @@ def test_exec_a_nam_trong_subshell():
     assert stripped.startswith("(") and stripped.endswith(")"), (
         f"dòng `exec -a` phải nằm trong subshell, thấy: {stripped!r}"
     )
+
+
+VERIFIER = ROOT / "scripts" / "ops" / "verify_closed_release.py"
+
+
+def test_kiem_kha_nang_posix_khong_do_os_replace():
+    """`os.replace` KHÔNG bao giờ nằm trong `os.supports_dir_fd`.
+
+    Tập đó chỉ chứa hàm nhận tham số tên `dir_fd`; replace/rename nhận
+    `src_dir_fd`/`dst_dir_fd`. Đo trên Linux CPython 3.12.13:
+
+        supports_dir_fd: [… mkdir, open, readlink, rename, rmdir, stat …]
+        replace dir_fd=False    rename dir_fd=True
+
+    Nên kiểm `os.replace in os.supports_dir_fd` là kiểm một điều không bao giờ
+    đúng — verifier tự chặn mình trên MỌI nền POSIX, kể cả VPS thật. Windows
+    không lộ được vì ở đó `supports_dir_fd` rỗng nên nhánh này raise dù sao.
+    """
+    source = VERIFIER.read_text(encoding="utf-8")
+    code = "\n".join(
+        line for line in source.splitlines() if not line.lstrip().startswith("#")
+    )
+    guard = [
+        line for line in code.splitlines()
+        if "for function in (" in line and "os.open" in line
+    ]
+    assert guard, "không tìm thấy vòng lặp kiểm khả năng dir_fd"
+    assert "os.replace" not in guard[0], (
+        "đừng dò os.replace trong supports_dir_fd — nó không bao giờ ở đó; "
+        "dùng os.rename làm proxy cho renameat"
+    )
+    assert "os.rename" in guard[0], "vẫn phải kiểm khả năng renameat"
