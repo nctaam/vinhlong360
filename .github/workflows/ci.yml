@@ -84,6 +84,24 @@ jobs:
       - name: Provision system Python for installer contract tests
         run: sudo apt-get update -qq && sudo apt-get install -y -qq python3-dotenv
 
+      # TẠM — gỡ sau khi chốt. `verify_closed_release.py` đòi os.replace nằm
+      # trong os.supports_dir_fd và từ chối chạy khi không thấy (74 test đỏ).
+      # Nghi vấn: check sai loại — replace/rename nhận src_dir_fd/dst_dir_fd chứ
+      # không phải dir_fd. In tập thật ra để sửa theo dữ liệu, không theo suy đoán.
+      - name: 'DIAG: os.supports_dir_fd trên runner'
+        continue-on-error: true
+        run: |
+          python - <<'PY'
+          import os, sys
+          print("python:", sys.version)
+          names = sorted(f.__name__ for f in os.supports_dir_fd)
+          print("supports_dir_fd:", names)
+          for fn in (os.open, os.mkdir, os.replace, os.rename, os.stat, os.unlink):
+              print(f"  {fn.__name__:8s} dir_fd={fn in os.supports_dir_fd}")
+          print("O_DIRECTORY:", hasattr(os, "O_DIRECTORY"), "O_NOFOLLOW:", hasattr(os, "O_NOFOLLOW"))
+          print("stat follow_symlinks:", os.stat in os.supports_follow_symlinks)
+          PY
+
       - name: Run tests with coverage
         env:
           # Dummy values so modules that read env vars at import time
