@@ -88,7 +88,11 @@ jobs:
           DESTRUCTIVE_OPS_LOCKED: "1"
         run: |
           # Chạy CẢ tests/ và agent/tests/; bao gồm integration (chỉ loại 'slow').
-          pytest tests/ agent/tests/ \
+          # `python -m` chèn cwd vào sys.path — `pytest` trần thì KHÔNG, nên
+          # `from scripts.package_launch_release import ...` vỡ ngay ở bước collect
+          # (scripts/ không có __init__.py). Bước release-gate phía dưới đã dùng
+          # đúng cách này từ trước; CI run 31068058171 là lần đầu lộ ra.
+          python -m pytest tests/ agent/tests/ \
             -m "not slow" \
             -v \
             --tb=short \
@@ -262,6 +266,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # tri-region-color-contract khoá package.json/package-lock.json bằng
+          # `git show <commit>:...`, nên clone nông mặc định (depth 1) làm nó vỡ:
+          # "Command failed: git show 358fe697:web-nuxt/package.json".
+          # Cùng lý do job secret scan đã dùng fetch-depth: 0.
+          fetch-depth: 0
 
       - name: Set up Node.js 24
         uses: actions/setup-node@v4
