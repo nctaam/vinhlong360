@@ -637,10 +637,16 @@ class TestOrchestratorResilience:
 class TestKnowledgeSearchEdgeCases:
     """Knowledge search handles empty, special-char, diacritic queries."""
 
-    def _seed_entities(self):
-        """Seed knowledge module with test entities."""
+    def _seed_entities(self, monkeypatch):
+        """Seed knowledge module with test entities.
+
+        monkeypatch chứ KHÔNG gán thẳng: _ensure() chỉ nạp lại khi
+        `_entities is None`, nên để lại dict seed sẽ khiến mọi test sau trên
+        cùng worker xdist đọc phải knowledge giả — rò âm thầm, đỏ hay không
+        tuỳ --dist loadfile xếp file vào worker nào.
+        """
         import knowledge
-        knowledge._entities = {
+        monkeypatch.setattr(knowledge, "_entities", {
             "test-1": {
                 "id": "test-1", "name": "Chùa Vĩnh Tràng", "type": "attraction",
                 "summary": "Ngôi chùa nổi tiếng tại Mỹ Tho",
@@ -654,52 +660,52 @@ class TestKnowledgeSearchEdgeCases:
                 "id": "place-1", "name": "Xã Tam Bình", "type": "place",
                 "level": "xa", "area": "vinh-long", "parentId": "root",
             },
-        }
-        knowledge._relationships = []
-        knowledge._itineraries = {}
+        })
+        monkeypatch.setattr(knowledge, "_relationships", [])
+        monkeypatch.setattr(knowledge, "_itineraries", {})
 
-    def test_empty_query_returns_results(self):
+    def test_empty_query_returns_results(self, monkeypatch):
         """search_entities with q='' should return results (no keyword filter)."""
-        self._seed_entities()
+        self._seed_entities(monkeypatch)
         from knowledge import search_entities
         results = search_entities(q="")
         assert len(results) >= 1
 
-    def test_none_query_returns_results(self):
+    def test_none_query_returns_results(self, monkeypatch):
         """search_entities with q=None should return results."""
-        self._seed_entities()
+        self._seed_entities(monkeypatch)
         from knowledge import search_entities
         results = search_entities(q=None)
         assert len(results) >= 1
 
-    def test_special_chars_no_crash(self):
+    def test_special_chars_no_crash(self, monkeypatch):
         """Queries with regex-special chars must not crash."""
-        self._seed_entities()
+        self._seed_entities(monkeypatch)
         from knowledge import search_entities
         for q in ["cam (sành)", "du lịch [VL]", "test.*", "a+b", "price $100"]:
             results = search_entities(q=q)
             assert isinstance(results, list)
 
-    def test_diacritics_stripped_match(self):
+    def test_diacritics_stripped_match(self, monkeypatch):
         """Queries without diacritics should still match via _normalize_vn."""
-        self._seed_entities()
+        self._seed_entities(monkeypatch)
         from knowledge import search_entities
         # "Cam sanh" (no diacritics) should match "Cam sành" entity
         results = search_entities(q="cam sanh")
         assert any("Cam" in r.get("name", "") for r in results), \
             "Diacritic-stripped query should match diacriticed entity"
 
-    def test_very_long_query_no_crash(self):
+    def test_very_long_query_no_crash(self, monkeypatch):
         """Extremely long query must not crash."""
-        self._seed_entities()
+        self._seed_entities(monkeypatch)
         from knowledge import search_entities
         long_q = "du lịch " * 500
         results = search_entities(q=long_q)
         assert isinstance(results, list)
 
-    def test_whitespace_only_query(self):
+    def test_whitespace_only_query(self, monkeypatch):
         """Whitespace-only query returns results (treated as empty)."""
-        self._seed_entities()
+        self._seed_entities(monkeypatch)
         from knowledge import search_entities
         results = search_entities(q="   ")
         assert isinstance(results, list)
@@ -1084,9 +1090,10 @@ class TestImageRecognitionLogging:
 class TestKnowledgeEdgeCasesExtended:
     """Extended edge-case tests for knowledge search functions."""
 
-    def _seed(self):
+    def _seed(self, monkeypatch):
+        # monkeypatch chứ không gán thẳng — lý do ở _seed_entities phía trên.
         import knowledge
-        knowledge._entities = {
+        monkeypatch.setattr(knowledge, "_entities", {
             "e1": {
                 "id": "e1", "name": "Bánh tráng Trảng Bàng", "type": "dish",
                 "summary": "Bánh tráng cuốn thịt heo",
@@ -1099,9 +1106,9 @@ class TestKnowledgeEdgeCasesExtended:
                 "id": "p1", "name": "Xã An Bình", "type": "place",
                 "level": "xa", "area": "vinh-long", "parentId": "root",
             },
-        }
-        knowledge._relationships = []
-        knowledge._itineraries = {}
+        })
+        monkeypatch.setattr(knowledge, "_relationships", [])
+        monkeypatch.setattr(knowledge, "_itineraries", {})
 
     def test_query_relevance_empty_entity(self):
         """query_relevance must handle entities with missing fields."""
@@ -1115,35 +1122,35 @@ class TestKnowledgeEdgeCasesExtended:
         entity = {"name": "Cam sành Tam Bình", "summary": "Đặc sản cam"}
         assert query_relevance("", entity) is False
 
-    def test_search_entities_unicode_control_chars(self):
+    def test_search_entities_unicode_control_chars(self, monkeypatch):
         """Unicode control characters in query must not crash search."""
-        self._seed()
+        self._seed(monkeypatch)
         from knowledge import search_entities
         results = search_entities(q="\x00\x01\x02test")
         assert isinstance(results, list)
 
-    def test_search_entities_only_stopwords(self):
+    def test_search_entities_only_stopwords(self, monkeypatch):
         """Query containing only stopwords should still not crash."""
-        self._seed()
+        self._seed(monkeypatch)
         from knowledge import search_entities
         results = search_entities(q="la co va")
         assert isinstance(results, list)
 
-    def test_nearby_entities_nonexistent_id(self):
+    def test_nearby_entities_nonexistent_id(self, monkeypatch):
         """nearby_entities with unknown entity_id returns empty list."""
-        self._seed()
+        self._seed(monkeypatch)
         from knowledge import nearby_entities
         assert nearby_entities("nonexistent-id-999") == []
 
-    def test_entity_detail_nonexistent_id(self):
+    def test_entity_detail_nonexistent_id(self, monkeypatch):
         """entity_detail with unknown entity_id returns None."""
-        self._seed()
+        self._seed(monkeypatch)
         from knowledge import entity_detail
         assert entity_detail("nonexistent-id-999") is None
 
-    def test_directory_search_empty_query(self):
+    def test_directory_search_empty_query(self, monkeypatch):
         """directory_search with empty query should not crash."""
-        self._seed()
+        self._seed(monkeypatch)
         from knowledge import directory_search
         results = directory_search("")
         assert isinstance(results, list)
@@ -1457,12 +1464,12 @@ class TestCircuitBreakerIsHealthy:
 class TestKnowledgeHealthCheck:
     """knowledge.health_check() reports layer readiness."""
 
-    def test_health_check_loaded(self):
+    def test_health_check_loaded(self, monkeypatch):
         import knowledge
-        knowledge._entities = {"e1": {"id": "e1", "name": "Test", "type": "attraction"}}
-        knowledge._relationships = [{"from": "e1", "to": "e2", "type": "located_in"}]
-        knowledge._itineraries = {"i1": {"id": "i1"}}
-        knowledge._data_source = "db"
+        monkeypatch.setattr(knowledge, "_entities", {"e1": {"id": "e1", "name": "Test", "type": "attraction"}})
+        monkeypatch.setattr(knowledge, "_relationships", [{"from": "e1", "to": "e2", "type": "located_in"}])
+        monkeypatch.setattr(knowledge, "_itineraries", {"i1": {"id": "i1"}})
+        monkeypatch.setattr(knowledge, "_data_source", "db")
 
         result = knowledge.health_check()
         assert result["status"] == "ok"
@@ -1471,12 +1478,14 @@ class TestKnowledgeHealthCheck:
         assert result["relationship_count"] == 1
         assert result["itinerary_count"] == 1
 
-    def test_health_check_empty_is_degraded(self):
+    def test_health_check_empty_is_degraded(self, monkeypatch):
         import knowledge
-        knowledge._entities = {}
-        knowledge._relationships = []
-        knowledge._itineraries = {}
-        knowledge._data_source = "json"
+        # Rò nặng nhất nếu gán thẳng: _ensure() chỉ nạp lại khi `_entities is
+        # None`, nên để lại `{}` = knowledge RỖNG vĩnh viễn cho cả worker đó.
+        monkeypatch.setattr(knowledge, "_entities", {})
+        monkeypatch.setattr(knowledge, "_relationships", [])
+        monkeypatch.setattr(knowledge, "_itineraries", {})
+        monkeypatch.setattr(knowledge, "_data_source", "json")
 
         result = knowledge.health_check()
         assert result["status"] == "degraded"
