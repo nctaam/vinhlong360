@@ -95,14 +95,19 @@ def test_kiem_kha_nang_posix_khong_do_os_replace():
     )
     guard = [
         line for line in code.splitlines()
-        if "for function in (" in line and "os.open" in line
+        if "for name in (" in line and '"open"' in line
     ]
     assert guard, "không tìm thấy vòng lặp kiểm khả năng dir_fd"
-    assert "os.replace" not in guard[0], (
-        "đừng dò os.replace trong supports_dir_fd — nó không bao giờ ở đó; "
-        "dùng os.rename làm proxy cho renameat"
+    assert '"replace"' not in guard[0], (
+        "đừng dò replace trong supports_dir_fd — nó không bao giờ ở đó; "
+        "dùng rename làm proxy cho renameat"
     )
-    assert "os.rename" in guard[0], "vẫn phải kiểm khả năng renameat"
+    assert '"rename"' in guard[0], "vẫn phải kiểm khả năng renameat"
+    # So theo tên, không theo object: đọc `os.unlink` lúc chạy sẽ vớ phải bản
+    # đã bị test monkeypatch và guard báo nhầm là thiếu khả năng nền tảng.
+    assert "supported_names" in code, (
+        "phải so tên hàm với supports_dir_fd, đừng so chính object trong os"
+    )
 
 
 def test_installer_thuan_ascii():

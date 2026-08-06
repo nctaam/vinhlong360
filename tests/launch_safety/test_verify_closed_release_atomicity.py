@@ -598,6 +598,13 @@ def test_installed_root_rejects_environment_authority_change_after_check(
     admitted = b"SAFE_LOCAL=1\n"
     environment_authority.write_bytes(admitted)
     (root / ".env").write_bytes(admitted)
+    if os.name != "nt":
+        # Verifier từ chối authority có `st_mode & 0o077` (nhóm/khác đọc được),
+        # và chỉ kiểm điều đó ngoài Windows. umask mặc định trên Linux tạo file
+        # 0644 nên nó dừng ngay ở đó và không bao giờ chạy tới kịch bản
+        # "đổi giữa chừng" mà test này muốn kiểm.
+        (root / ".env").chmod(0o600)
+        environment_authority.chmod(0o600)
     real_verify_authority = verifier._verify_environment_authority
     mutation_applied = False
 

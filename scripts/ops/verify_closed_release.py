@@ -1623,18 +1623,23 @@ def _require_posix_evidence_capabilities() -> None:
         if not hasattr(os, constant):
             missing.append(constant)
     supports_dir_fd = getattr(os, "supports_dir_fd", set())
-    # `os.rename` chứ KHÔNG phải `os.replace`: `os.supports_dir_fd` chỉ chứa các
-    # hàm nhận tham số TÊN `dir_fd`, còn replace/rename nhận `src_dir_fd`/
-    # `dst_dir_fd`. Đo trên Linux CPython 3.12.13 cho thấy
-    # `rename in supports_dir_fd` = True nhưng `replace` = False — nên kiểm
-    # `os.replace` là kiểm một điều KHÔNG BAO GIỜ đúng, kể cả trên POSIX đầy đủ,
+    # So theo TÊN, không theo object. `os.supports_dir_fd` mô tả khả năng của
+    # NỀN TẢNG; đọc `os.unlink` tại đây thì gặp bất kỳ thứ gì đang được gắn vào
+    # module lúc chạy, nên một test monkeypatch os.unlink sẽ khiến guard báo
+    # thiếu khả năng ("fail_os_cleanup(dir_fd)") thay vì để lỗi thật nổi lên.
+    #
+    # Dùng "rename" chứ KHÔNG phải "replace": tập này chỉ chứa hàm nhận tham số
+    # TÊN `dir_fd`, còn replace/rename nhận `src_dir_fd`/`dst_dir_fd`. Đo trên
+    # Linux CPython 3.12.13: rename có trong tập, replace thì không — nên dò
+    # `os.replace` là dò một điều KHÔNG BAO GIỜ đúng, kể cả trên POSIX đầy đủ,
     # và verifier tự chặn mình bằng "required POSIX evidence capabilities
-    # unavailable: replace(dir_fd)" (74 test đỏ, và trên VPS thì không chạy nổi).
-    # Cả hai dùng chung syscall renameat, nên `os.rename` là proxy đúng cho khả
-    # năng mà lệnh `os.replace(src_dir_fd=…, dst_dir_fd=…)` bên dưới cần.
-    for function in (os.open, os.mkdir, os.rename, os.stat, os.unlink):
-        if function not in supports_dir_fd:
-            missing.append(f"{function.__name__}(dir_fd)")
+    # unavailable: replace(dir_fd)". Cả hai dùng chung syscall renameat, nên
+    # "rename" là proxy đúng cho khả năng mà lệnh
+    # `os.replace(src_dir_fd=…, dst_dir_fd=…)` bên dưới cần.
+    supported_names = {getattr(f, "__name__", "") for f in supports_dir_fd}
+    for name in ("open", "mkdir", "rename", "stat", "unlink"):
+        if name not in supported_names:
+            missing.append(f"{name}(dir_fd)")
     supports_follow_symlinks = getattr(os, "supports_follow_symlinks", set())
     if os.stat not in supports_follow_symlinks:
         missing.append("stat(follow_symlinks=False)")
