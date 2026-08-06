@@ -276,6 +276,21 @@ jobs:
           ALLOW_DESTRUCTIVE_DB_REPLACE: "1"
         run: python agent/database.py --replace
 
+      # TẠM — gỡ sau khi chốt. Một số test PG báo "cần có entity để test" dù
+      # bước seed ở trên thoát 0. Hai khả năng: `--replace` nạp 0 dòng mà vẫn
+      # báo thành công, hoặc entity có nhưng bị lọc mất. Cái thứ hai đáng nghi
+      # vì bản vá `verified` (df988278) ép bool sang 0/1, mà truy vấn dùng
+      # `verified IS NULL OR verified != 0` — entity nào mang verified=false
+      # trong data.json nay thành 0 và biến mất khỏi mọi kết quả.
+      - name: 'DIAG: đếm entity sau seed'
+        continue-on-error: true
+        run: |
+          psql "$DATABASE_URL" -c "select count(*) as total,
+            count(*) filter (where verified = 0) as verified_0,
+            count(*) filter (where verified is null) as verified_null,
+            count(*) filter (where status = 'published') as published
+            from entities"
+
       - name: Run tests against Postgres (prod-parity)
         env:
           # Dummy để module đọc env lúc import không crash (không gọi API thật).
