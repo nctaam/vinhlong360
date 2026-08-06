@@ -69,8 +69,13 @@ def client():
         # ColdMemory.record_feedback acquires _lock then calls get_profile
         # which also acquires _lock — a non-reentrant Lock deadlocks.
         memory_manager.cold._lock = threading.RLock()
-        test_client = TestClient(app, raise_server_exceptions=False)
-        yield test_client
+        # `with` chứ không phải `TestClient(...)` trần: chỉ context manager mới
+        # chạy lifespan. Không có nó, startup không gắn router động và không
+        # reset `server._draining`, nên tuỳ môi trường mà test thấy 404 (route
+        # chưa gắn, local) hay 503 "Server shutting down" (cờ drain còn sót từ
+        # TestClient của file test trước trong cùng process, CI Linux).
+        with TestClient(app, raise_server_exceptions=False) as test_client:
+            yield test_client
 
 
 @pytest.fixture
