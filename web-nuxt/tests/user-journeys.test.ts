@@ -122,7 +122,13 @@ async function flushUi() {
   await new Promise(resolve => setTimeout(resolve, 0))
 }
 
-async function mountPage(component: unknown, route: string, stubs: Record<string, unknown>) {
+// Suy kiểu stubs từ chính chữ ký mountSuspended thay vì khai Record<string, unknown>:
+// kiểu Stubs của vue-test-utils là union có nhánh string[], nên Record<> không gán
+// được và `nuxt typecheck` đỏ (TS2322). Suy kiểu kiểu này còn tự đúng khi API đổi.
+type MountOptions = NonNullable<Parameters<typeof mountSuspended>[1]>
+type GlobalStubs = NonNullable<NonNullable<MountOptions['global']>['stubs']>
+
+async function mountPage(component: unknown, route: string, stubs: GlobalStubs) {
   const wrapper = await mountSuspended(component as never, { route, global: { stubs } })
   wrappers.push(wrapper)
   await flushUi()
