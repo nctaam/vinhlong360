@@ -99,6 +99,31 @@ jobs:
         working-directory: web-nuxt
         run: npm ci --no-audit --no-fund
 
+      # TẠM — gỡ sau khi chốt. test_explicit_python_executor_preserves_isolated_venv_runtime
+      # thấy sys.prefix là Python hệ thống thay vì venv của release. Chưa rõ do
+      # `exec -a` (bản vá 3ea5490c) hay do việc ghim executor qua /proc/<pid>/fd
+      # vốn đã có từ trước — ở các lần chạy cũ test này chết sớm hơn nên không
+      # bao giờ tới được chỗ so prefix. Tách từng lớp để biết lớp nào đánh mất venv.
+      - name: 'DIAG: sys.prefix qua từng cách exec'
+        continue-on-error: true
+        run: |
+          set +e
+          python -m venv /tmp/probe-venv
+          VENV=/tmp/probe-venv/bin/python
+          CANON="$(/usr/bin/readlink -f -- "$VENV")"
+          echo "VENV =$VENV"
+          echo "CANON=$CANON"
+          P='import sys; print("   prefix=", sys.prefix); print("   exe=", sys.executable)'
+          echo "--- 1: gọi thẳng venv python ---";      "$VENV"  -c "$P"
+          echo "--- 2: gọi thẳng canonical ---";        "$CANON" -c "$P"
+          echo "--- 3: builtin exec -a venv → canonical ---"
+          ( builtin exec -a "$VENV" "$CANON" -c "$P" )
+          echo "--- 4: qua /proc/<pid>/fd, argv0=venv (đúng như installer) ---"
+          exec {FD}<"$CANON"
+          ( builtin exec -a "$VENV" "/proc/$$/fd/$FD" -c "$P" )
+          echo "--- 5: có pyvenv.cfg cạnh argv0 không ---"
+          ls -l /tmp/probe-venv/pyvenv.cfg 2>&1 | head -1
+
       - name: Run tests with coverage
         env:
           # Dummy values so modules that read env vars at import time
