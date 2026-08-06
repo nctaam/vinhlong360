@@ -65,6 +65,23 @@ cd web-nuxt; npm run build               # build frontend
 python scripts/gen_image.py --prompt "..." --out web-nuxt/public/img/x.webp   # ảnh AI (cần IMAGE_API_KEY)
 ```
 
+### 5b. BẪY: "local xanh" KHÔNG chứng minh CI xanh (học đắt 2026-08-06)
+
+- `pytest.ini` `addopts` loại **4 marker** khỏi lệnh mặc định: `slow`, `integration`,
+  `entity_status_postgres`, `subprocess_heavy`. Chạy `python -m pytest -q` thấy xanh mà cả nhóm
+  launch-safety lẫn integration **chưa hề chạy**. Trước khi commit vào `scripts/ops/`, `agent/database.py`
+  hay `tests/launch_safety/`: `python -m pytest tests/launch_safety/ -m "" -n0`.
+- **Máy dev là Windows, đích là Linux.** Đợt 2026-08-06 có 7 bug sản phẩm CHỈ hỏng trên Linux: thiếu
+  bit exec, `env --argv0` (đòi coreutils ≥ 9.1), `StartsWith("$root\")`, ghim cứng `powershell` thay vì
+  `pwsh`, `os.replace` không bao giờ nằm trong `os.supports_dir_fd`, inode tái dụng đánh lừa `samestat`,
+  `verified` bool vs cột INTEGER. Không cái nào lộ được ở local.
+- Với lớp lỗi đó: **ĐO TRƯỚC, VÁ SAU** — thêm step tạm `continue-on-error: true` vào `ci.yml` in ra sự
+  thật của runner, rồi gỡ. Vá theo suy luận sai 2/2 lần; đo trước trúng 4/4 lần.
+- `concurrency: cancel-in-progress: true` → push mới **huỷ** vòng đang chạy và **mất log** step đo. Chờ
+  vòng đo xong rồi hãy push tiếp.
+- Dữ liệu local KHÔNG đối chiếu được với prod: `agent/knowledge.db` rỗng (0 entity, chưa có cột
+  `status`), `web/data.json` có 1746 entity nhưng `status=None` toàn bộ. Đừng suy ra hành vi prod từ chúng.
+
 ## 6. Quy ước
 
 - File reference dạng `path:line`. Commit message: prefix ngữ nghĩa (`feat:`/`fix:`/`refactor:`/`docs:`...; `<GĐx.y>` chỉ khi làm đúng task ROADMAP).

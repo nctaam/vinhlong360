@@ -9,7 +9,12 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    # MỌI nhánh, không riêng main. Trước 2026-08-06 chỉ `main` và PR mới kích CI,
+    # nên nhánh phát triển chạy hàng tuần mà không ai kiểm: lần chạy đầu sau 4
+    # tuần backlog lộ 254 test đỏ cùng lúc — không cái nào là hồi quy mới, chúng
+    # chỉ chưa từng được chạy. Trả giá bằng vài phút runner mỗi push rẻ hơn nhiều
+    # so với gỡ một đống nợ tích luỹ.
+    branches: ['**']
   pull_request:
     branches: [main]
 
