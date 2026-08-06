@@ -2330,6 +2330,7 @@ class TestMCPServerLogging:
     """mcp_server helper functions must log failures."""
 
     def test_has_logger(self):
+        import importlib
         try:
             # mcp_server imports many modules; mock the heavy ones
             with patch.dict(sys.modules, {
@@ -2339,7 +2340,6 @@ class TestMCPServerLogging:
                 "mcp.server": MagicMock(),
                 "mcp.server.fastmcp": MagicMock(),
             }):
-                import importlib
                 if "mcp_server" in sys.modules:
                     importlib.reload(sys.modules["mcp_server"])
                 else:
@@ -2348,6 +2348,15 @@ class TestMCPServerLogging:
                 assert hasattr(mod, "logger")
         except Exception:
             pytest.skip("mcp_server import requires mcp package")
+        finally:
+            # patch.dict restores sys.modules, but NOT mcp_server's own __dict__: the
+            # reload above ran while "mcp" was a MagicMock, so every @mcp.tool-decorated
+            # function (generate_itinerary, search, ...) was rebound to a MagicMock and
+            # stays that way. Reload once more with the real modules back in place —
+            # same fix as TestSelfEvalLogging above — so later tests
+            # (test_itinerary_generator_mcp) see the real functions, not mocks.
+            if "mcp_server" in sys.modules:
+                importlib.reload(sys.modules["mcp_server"])
 
 
 # ═══════════════════════════════════════════════════════

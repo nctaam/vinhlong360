@@ -71,6 +71,24 @@ def _reset_rate_limiters():
         reset_server_drain_flag()
 
 
+@pytest.fixture(autouse=True)
+def _reset_autonomous_budget():
+    """Reset bộ đếm RAM của autonomous_budget TRƯỚC mỗi test.
+
+    `autonomous_budget._ram_count` là biến module-level: MỌI test gọi try_consume()
+    (vd test_resilience::TestAutonomousBudgetLogging) đều cộng dồn vào đó và không
+    trả lại. Test tự đếm với cap thấp (test_autonomous_budget::test_hard_cap_blocks_
+    overuse, cap=2) do đó thấy cap đã bị tiêu trước → fail giả. monkeypatch _DATA
+    sang tmp_path KHÔNG cứu được vì counter nằm trong RAM, ngoài file. Chỉ đỏ khi
+    xdist --dist loadfile xếp 2 file vào cùng worker → trông như flaky.
+    """
+    try:
+        import autonomous_budget
+        autonomous_budget._ram_count.update({"date": "", "count": 0})
+    except Exception:
+        pass
+
+
 @pytest.fixture
 def sample_entities():
     """Minimal entity list for testing."""
