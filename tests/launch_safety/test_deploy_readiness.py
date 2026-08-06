@@ -400,6 +400,12 @@ def test_deploy_backend_diagnostics_are_not_a_post_reopen_gate():
 
 
 def _write_fake_runner(path: Path) -> None:
+    # `deploy_launch_admission.sh` gọi thẳng `"$RUNNER" …`, nên file phải có bit
+    # exec. Trên Windows/Git Bash quyền POSIX không được áp nên thiếu chmod vẫn
+    # chạy; trên Linux CI thì `Permission denied` — đó là lý do cả nhóm
+    # test_deploy_readiness đỏ ở lần đầu job này chạy hết (run 31076418020).
+    # Runner thật trên VPS luôn là script có +x, nên cấp quyền ở đây mới đúng
+    # thực tế, thay vì đổi script sản phẩm sang gọi qua `bash`.
     path.write_text(
         """#!/usr/bin/env bash
 set -euo pipefail
@@ -424,6 +430,7 @@ fi
         encoding="utf-8",
         newline="\n",
     )
+    path.chmod(0o755)
 
 
 def _run_admission_sandbox(
@@ -436,6 +443,7 @@ def _run_admission_sandbox(
     _write_fake_runner(runner)
     maintenance = tmp_path / "maintenance_mode.sh"
     maintenance.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8", newline="\n")
+    maintenance.chmod(0o755)  # cũng được gọi thẳng — xem chú thích ở _write_fake_runner
     log = tmp_path / "commands.log"
     state = tmp_path / "maintenance.state"
     readiness = tmp_path / "readiness.json"
