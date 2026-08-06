@@ -252,6 +252,20 @@ jobs:
       - name: Provision system Python for installer contract tests
         run: sudo apt-get update -qq && sudo apt-get install -y -qq python3-dotenv
 
+      # Cũng cùng lý do với job `test`: test soi AST và test route-manifest gọi
+      # Node vào web-nuxt/node_modules (typescript, vite-node). Bản vá 8321b430
+      # mới chỉ thêm cho job kia nên job này vẫn MODULE_NOT_FOUND.
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: web-nuxt/package-lock.json
+
+      - name: Install web-nuxt deps for AST/parity tests
+        working-directory: web-nuxt
+        run: npm ci --no-audit --no-fund
+
       # init.sql (baseline) + agent/migrations/*.sql lên Postgres CI trống.
       - name: Apply schema + migrations
         run: python scripts/apply_migrations.py --init-baseline
