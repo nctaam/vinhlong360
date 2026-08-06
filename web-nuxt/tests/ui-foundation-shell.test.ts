@@ -29,7 +29,11 @@ mockNuxtImport('useAuth', () => () => ({
   isLoggedIn: ref(false),
   user: ref(null),
 }))
-mockNuxtImport('useAuthModal', () => () => ({ open: { value: false } }))
+// `ref(false)` chứ KHÔNG phải `{ value: false }`: composable thật trả `useState`
+// (một ref), nên template `:visible="showAuth"` tự unwrap thành boolean. Mock bằng
+// object thường thì prop nhận nguyên object — luôn truthy — nên AuthModal mở thật.
+// Đó là gốc của cảnh báo CI `Invalid prop … Expected Boolean, got Object`.
+mockNuxtImport('useAuthModal', () => () => ({ open: ref(false) }))
 mockNuxtImport('useSeasonTheme', () => () => undefined)
 mockNuxtImport('useScrollFade', () => () => undefined)
 mockNuxtImport('useAdminPrefs', () => () => ({
@@ -56,14 +60,27 @@ function mountDefaultLayout() {
     attachTo: document.body,
     slots: { default: '<div>Nội dung</div>' },
     global: {
+      // Stub CẢ hai tên cho mỗi component lười. Nuxt auto-import biến `<LazyFoo>` thành
+      // import tĩnh, nên Vue Test Utils khớp stub theo `__name` của SFC (`AuthModal`),
+      // KHÔNG theo tên viết trong template (`LazyAuthModal`). Khai mỗi tên Lazy* là
+      // trượt. Local không lộ vì async chunk chưa resolve kịp trong vòng đời test —
+      // bỏ hẳn stub ở local vẫn 15/15 xanh, nên đây là lỗi CI-only (run 31068058171).
       stubs: {
+        AuthModal: true,
         LazyAuthModal: true,
+        ChatWidget: true,
         LazyChatWidget: true,
+        ConfirmDialog: true,
         LazyConfirmDialog: true,
+        NotificationBell: true,
         LazyNotificationBell: true,
+        OnboardingSheet: true,
         LazyOnboardingSheet: true,
+        ScrollToTop: true,
         LazyScrollToTop: true,
+        ToastContainer: true,
         LazyToastContainer: true,
+        UserMenu: true,
         LazyUserMenu: true,
         SearchAutocomplete: true,
         ShellPublicBottomNav: true,
