@@ -154,14 +154,18 @@ if [[ "$OSTYPE" = linux* ]]; then
 fi
 invoke_python() {
   if [[ "$OSTYPE" = linux* ]]; then
-    # `exec -a` (builtin bash, có từ bash 2.0) chứ KHÔNG dùng
-    # `/usr/bin/env --argv0=…`: cờ đó chỉ có từ GNU coreutils 9.1 (2022), nên
-    # trên Ubuntu 22.04 (coreutils 8.32) `env` từ chối thẳng —
-    # `unrecognized option '--argv0=…'`, thoát 125 — và guard runtime bên dưới
-    # dịch cái đó thành `python-executor-runtime-incompatible`. Đo trên runner
-    # cho thấy gọi thẳng canonical thì rc=0, qua `env --argv0` thì rc=125.
-    # Bọc subshell để `exec` thay thế subshell chứ không phải shell đang chạy;
-    # fd đã ghim và stdin của heredoc vẫn kế thừa qua.
+    # Use bash's `exec -a` (since bash 2.0), NOT `/usr/bin/env` with the
+    # argv0 override flag: that flag only exists in GNU coreutils 9.1+ (2022).
+    # On Ubuntu 22.04 (coreutils 8.32) env rejects it outright with
+    # "unrecognized option" and exits 125, which the runtime guard below then
+    # reports as python-executor-runtime-incompatible. Measured on the CI
+    # runner: calling the canonical executable directly gives rc=0, going
+    # through env's argv0 flag gives rc=125.
+    # The subshell keeps `exec` from replacing this installer shell; the
+    # pinned descriptor and the heredoc stdin are both inherited through it.
+    #
+    # This file stays pure ASCII on purpose --- the venv-runtime test reads
+    # its bootstrap and writes it back with encoding="ascii".
     ( exec -a "$PYTHON_EXECUTOR_LOGICAL" "$PYTHON_EXECUTOR" "$@" )
   else
     "$PYTHON_EXECUTOR" "$@"

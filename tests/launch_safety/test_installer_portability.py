@@ -103,3 +103,24 @@ def test_kiem_kha_nang_posix_khong_do_os_replace():
         "dùng os.rename làm proxy cho renameat"
     )
     assert "os.rename" in guard[0], "vẫn phải kiểm khả năng renameat"
+
+
+def test_installer_thuan_ascii():
+    """Installer phải thuần ASCII.
+
+    `test_explicit_python_executor_preserves_isolated_venv_runtime` đọc phần
+    bootstrap của script rồi ghi lại bằng `encoding="ascii"`, nên một ký tự có
+    dấu là đủ làm nó vỡ. Test đó mang marker `subprocess_heavy` — bị `addopts`
+    loại khỏi lệnh chạy mặc định — nên nó chỉ tố giác ở CI, sau ~28 phút.
+
+    Đúng chuyện đó đã xảy ra 2026-08-06: chú thích tiếng Việt thêm vào
+    `invoke_python` làm test kia đỏ. Test này không có marker nên bắt ngay tại
+    chỗ, và bắt cả file chứ không riêng vùng bootstrap.
+    """
+    raw = INSTALLER.read_text(encoding="utf-8")
+    offenders = [(i, ch) for i, ch in enumerate(raw) if ord(ch) > 127]
+    assert not offenders, (
+        f"{len(offenders)} ký tự non-ASCII trong installer, đầu tiên ở vị trí "
+        f"{offenders[0][0]} (U+{ord(offenders[0][1]):04X}) — viết chú thích "
+        f"bằng ASCII"
+    )
