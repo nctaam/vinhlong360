@@ -22,6 +22,8 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { SCRIM_SELECTORS, scrimShieldsText } from './axe_scrim_filter.mjs'
+
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = path.resolve(HERE, '..')
 const AXE_SOURCE = path.join(REPO_ROOT, 'web-nuxt', 'node_modules', 'axe-core', 'axe.min.js')
@@ -190,7 +192,15 @@ async function scanRoute(cdp, axeSource, route) {
     expression: `axe.run(document, { resultTypes: ['violations'] }).then(r => JSON.stringify({
       violations: r.violations.map(v => ({
         id: v.id, impact: v.impact, help: v.help,
-        nodes: v.nodes.map(n => ({ target: n.target })),
+        // Giữ cả \`data\` của từng check: với color-contrast nó chứa fgColor/
+        // bgColor/contrastRatio — số liệu DUY NHẤT cho phép phân biệt vi phạm
+        // thật với false positive (axe không thấy được nền nằm dưới z-index âm
+        // nên hay quy về nền tổ tiên). Không có nó thì artifact CI vô dụng lúc
+        // chẩn đoán, đúng như lần chạy 31076418020.
+        nodes: v.nodes.map(n => ({
+          target: n.target,
+          data: (n.any || []).map(c => c.data).filter(Boolean),
+        })),
       })),
     }))`,
     awaitPromise: true,
@@ -198,7 +208,46 @@ async function scanRoute(cdp, axeSource, route) {
     timeout: 120000,
   }, 150000)
   const payload = JSON.parse(result.result?.value || '{"violations":[]}')
-  return { url: route, violations: payload.violations || [] }
+  const violations = await dropScrimFalsePositives(cdp, payload.violations || [])
+  return { url: route, violations }
+}
+
+/* Text nằm trên `.spread-scrim` bị axe chấm sai. Scrim ở `z-index:-1`, ngoài
+ * stacking context của chữ, nên axe bỏ qua nó và quy nền về nền TRANG: ở chế độ
+ * sáng nó đọc bgColor `#fdfcf9` rồi báo tỉ lệ 1.02 cho chữ trắng, trong khi nền
+ * thật dưới chữ là `rgba(8,9,12,.84)` — trắng-trên-gần-đen, thừa AA.
+ * Đo được bằng getComputedStyle nhưng axe không có đường nào thấy.
+ *
+ * Nên bỏ qua, NHƯNG chỉ khi scrim còn thật sự tối — nếu ai gỡ scrim hoặc làm nó
+ * nhạt đi thì đó là vi phạm THẬT và phải nổi lên. Đó là điểm khác giữa hàm này
+ * và một allowlist chết: nó tự kiểm điều kiện đã khiến nó hợp lệ.
+ *
+ * Chỉ áp cho color-contrast; mọi rule khác trên cùng phần tử vẫn được chấm.
+ */
+async function dropScrimFalsePositives(cdp, violations) {
+  if (!violations.some(v => v.id === 'color-contrast')) return violations
+  const probe = await cdp.send('Runtime.evaluate', {
+    expression: `(() => {
+      const scrim = document.querySelector('.spread-scrim')
+      if (!scrim) return '[]'
+      const shields = ${scrimShieldsText.toString()}
+      return shields(getComputedStyle(scrim)) ? ${JSON.stringify(JSON.stringify(SCRIM_SELECTORS))} : '[]'
+    })()`,
+    returnByValue: true,
+  })
+  const covered = JSON.parse(probe.result?.value || '[]')
+  if (!covered.length) return violations
+  const onScrim = t => covered.some(sel => String(t).includes(sel))
+  return violations
+    .map(v => {
+      if (v.id !== 'color-contrast') return v
+      const kept = v.nodes.filter(n => ![].concat(n.target).some(onScrim))
+      if (kept.length === v.nodes.length) return v
+      const dropped = v.nodes.length - kept.length
+      console.log(`    (bỏ ${dropped} node color-contrast trên .spread-scrim — nền thật rgba(8,9,12,.84), axe không thấy qua z-index âm)`)
+      return kept.length ? { ...v, nodes: kept } : null
+    })
+    .filter(Boolean)
 }
 
 async function main() {
@@ -275,7 +324,11 @@ async function main() {
   return 0
 }
 
-main().then(code => process.exit(code)).catch(error => {
-  console.error(`✖ axe scan lỗi: ${error.message}`)
-  process.exit(2)
-})
+// Chỉ tự chạy khi được gọi trực tiếp — để test import được `scrimShieldsText`
+// mà không kéo theo cả lượt quét (dựng Chrome, mở CDP, ghi axe-report.json).
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main().then(code => process.exit(code)).catch(error => {
+    console.error(`✖ axe scan lỗi: ${error.message}`)
+    process.exit(2)
+  })
+}

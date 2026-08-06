@@ -75,6 +75,17 @@ jobs:
           # hai cổng hard-ratchet đó im lặng trả 0 — tức chưa từng chạy trong CI.
           pip install ruff
 
+      # `install_closed_release.sh:127` fallback về /usr/bin/python3 khi không có
+      # VL360_PYTHON_EXECUTOR, và guard runtime dòng 188 đòi `import ssl` +
+      # `dotenv.parser`. `pip` ở trên cài vào Python của setup-python, KHÔNG chạm
+      # system Python — nên toàn bộ test_closed_installer.py chết với
+      # `python-executor-runtime-incompatible`. Local Windows không lộ vì ở đó
+      # fallback là `type -P python3`, trúng đúng Python đang chạy pytest.
+      # Cài vào system Python để CI phản ánh điều kiện VPS thật (nơi venv của
+      # release có sẵn dotenv) thay vì né guard bằng cách trỏ executor khác.
+      - name: Provision system Python for installer contract tests
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq python3-dotenv
+
       - name: Run tests with coverage
         env:
           # Dummy values so modules that read env vars at import time
@@ -197,6 +208,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest-cov pytest-timeout
+
+      # Cùng lý do với job `test`: installer contract test gọi system Python,
+      # nơi `pip install` ở trên không với tới. Xem chú thích đầy đủ ở job đó.
+      - name: Provision system Python for installer contract tests
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq python3-dotenv
 
       # init.sql (baseline) + agent/migrations/*.sql lên Postgres CI trống.
       - name: Apply schema + migrations
