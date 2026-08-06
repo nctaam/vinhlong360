@@ -68,7 +68,13 @@ function Assert-TestOwnedPath([string]$Path, [string]$Label) {
     if ($null -eq $rootItem -or -not ($rootItem -is [IO.DirectoryInfo])) { Fail 'pytest-owned test root is unavailable' }
     $candidate = [IO.Path]::GetFullPath($Path)
     $same = [StringComparer]::OrdinalIgnoreCase.Equals($candidate.TrimEnd('\', '/'), $testRoot)
-    $inside = $candidate.StartsWith("$testRoot\", [StringComparison]::OrdinalIgnoreCase)
+    # Phải nhận CẢ HAI dấu phân cách: pwsh cũng chạy trên Linux (CI), nơi đường
+    # dẫn dùng '/'. Nối cứng '\' làm mọi đường dẫn con trượt kiểm tra, script
+    # kết luận "outside test root" và fail-closed — đó là lý do 21 test stage_b
+    # đỏ ở lần đầu job pytest chạy hết trên Linux. Hai dòng ngay trên đã TrimEnd
+    # cả '\' lẫn '/', riêng chỗ này bị sót.
+    $inside = $candidate.StartsWith("$testRoot\", [StringComparison]::OrdinalIgnoreCase) `
+        -or $candidate.StartsWith("$testRoot/", [StringComparison]::OrdinalIgnoreCase)
     if (-not ($same -or $inside)) { Fail "$Label is outside test root" }
     Assert-NoReparseAncestors $testRoot 'test root'
     Assert-NoReparseAncestors $candidate $Label

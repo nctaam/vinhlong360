@@ -726,3 +726,32 @@ def test_success_prints_only_non_secret_hashes(fake_stage_b_tools: FakeStageBToo
     assert "APPLY_NOT_RUN" in result.stdout
     assert "password" not in result.stdout.lower()
     assert hashlib.sha256(b"x").hexdigest() not in result.stdout
+
+
+def test_kiem_test_root_nhan_ca_hai_dau_phan_cach():
+    """Khoá bài học: `pwsh` cũng chạy trên Linux, nơi đường dẫn dùng '/'.
+
+    `Assert-TestOwnedPath` từng nối cứng `"$testRoot\\"` để kiểm "nằm trong test
+    root". Trên Linux mọi đường dẫn con đều trượt, script fail-closed với
+    "… is outside test root", làm 21 test ở file này đỏ ngay lần đầu job pytest
+    chạy hết trên Linux (run 31076418020).
+
+    Windows KHÔNG lộ được lỗi này — ở đó separator vốn là '\' nên phép so khớp
+    vẫn đúng. Vì vậy phải khoá bằng test đọc source, không trông vào lần chạy
+    thật. Cùng khuôn với tests/launch_safety/test_installer_portability.py.
+    """
+    source = SCRIPT.read_text(encoding="utf-8")
+    code = "\n".join(
+        line for line in source.splitlines() if not line.lstrip().startswith("#")
+    )
+    # PowerShell nối dòng bằng backtick cuối dòng — gộp lại trước khi soi, nếu
+    # không thì một phép kiểm trải hai dòng sẽ bị đọc thành hai mảnh rời.
+    code = code.replace("`\n", " ")
+    inside_checks = [line for line in code.splitlines() if "$inside" in line and "StartsWith" in line]
+    assert inside_checks, "không tìm thấy phép kiểm 'nằm trong test root'"
+    joined = " ".join(inside_checks)
+    assert '"$testRoot/"' in joined, (
+        "phép kiểm test-root phải nhận cả dấu '/' — nếu không, script fail-closed "
+        "trên mọi đường dẫn khi chạy pwsh trên Linux"
+    )
+    assert '"$testRoot\\"' in joined, "vẫn phải nhận '\' để không hỏng trên Windows"
