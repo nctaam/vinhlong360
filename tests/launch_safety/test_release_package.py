@@ -1020,3 +1020,35 @@ def test_temp_cleanup_failure_rollback_preserves_foreign_replacement_outputs(
     assert destination.read_bytes() == b"keep foreign archive"
     assert digest_file.read_text(encoding="ascii") == "keep foreign digest\n"
     assert list(tmp_path.glob(".*.tmp")) == []
+
+
+def test_same_published_file_tu_choi_file_la_trung_inode(tmp_path: Path):
+    """dev+ino một mình không đủ để nhận là "file của mình".
+
+    Trên Linux inode vừa unlink thường được cấp lại ngay cho file kế tiếp, nên
+    file của tiến trình khác có thể trùng dev+ino và bị rollback xoá nhầm. Mô
+    phỏng bằng stat giả: cùng dev+ino nhưng lệch mtime hoặc size thì phải trả
+    False. Windows không tái dụng inode nên test đích
+    (test_temp_cleanup_failure_rollback_preserves_foreign_replacement_outputs)
+    chỉ đỏ trên Linux — test này khoá bất biến ở mọi nền.
+    """
+    probe = tmp_path / "probe"
+    probe.write_bytes(b"x")
+    base = os.lstat(probe)
+
+    class FakeStat:
+        def __init__(self, src, **over):
+            for name in ("st_dev", "st_ino", "st_mtime_ns", "st_size", "st_mode"):
+                setattr(self, name, over.get(name, getattr(src, name)))
+
+    same = FakeStat(base)
+    assert release_package._same_published_file(base, same) is True
+
+    khac_mtime = FakeStat(base, st_mtime_ns=base.st_mtime_ns + 1)
+    assert release_package._same_published_file(base, khac_mtime) is False
+
+    khac_size = FakeStat(base, st_size=base.st_size + 1)
+    assert release_package._same_published_file(base, khac_size) is False
+
+    khac_ino = FakeStat(base, st_ino=base.st_ino + 1)
+    assert release_package._same_published_file(base, khac_ino) is False

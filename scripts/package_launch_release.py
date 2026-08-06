@@ -1267,11 +1267,37 @@ def _publish_without_overwrite(temporary: Path, destination: Path) -> None:
         try:
             candidate = os.lstat(destination)
             source = os.lstat(temporary)
-            if os.path.samestat(candidate, source):
+            # Cùng lý do với _remove_owned_identity: dev+ino một mình không
+            # phân biệt được hardlink của mình với file lạ trúng inode tái dụng.
+            if _same_published_file(source, candidate):
                 destination.unlink(missing_ok=True)
         except OSError:
             pass
         raise
+
+
+def _same_published_file(expected: os.stat_result, current: os.stat_result) -> bool:
+    """Nhận diện file mình đã publish, chặt hơn `samestat`.
+
+    `os.path.samestat` chỉ so dev+ino. Trên Linux, inode vừa giải phóng thường
+    được cấp lại NGAY cho file tạo kế tiếp, nên một file của tiến trình khác ghi
+    vào cùng đường dẫn có thể trùng dev+ino và bị rollback xoá nhầm — mất dữ
+    liệu không phải của mình. Windows không lộ vì file index khác nhau.
+
+    Thêm mtime+size: file lạ ghi vào inode tái dụng gần như chắc chắn lệch mtime.
+    Nếu lệch, ta KHÔNG xoá — cùng lắm để lại rác cho người vận hành dọn, còn hơn
+    xoá nhầm file người khác.
+
+    KHÔNG so ctime: `os.link()` làm link count đổi nên ctime của inode cập nhật
+    theo, và identity chụp trước lúc link sẽ không bao giờ khớp lại — ba test
+    rollback "xoá đúng file của mình" đỏ ngay khi thử đưa ctime vào.
+    """
+    if not os.path.samestat(expected, current):
+        return False
+    return (
+        current.st_mtime_ns == expected.st_mtime_ns
+        and current.st_size == expected.st_size
+    )
 
 
 def _remove_owned_identity(
@@ -1281,7 +1307,7 @@ def _remove_owned_identity(
         return
     try:
         current = os.lstat(destination)
-        if stat.S_ISREG(current.st_mode) and os.path.samestat(identity, current):
+        if stat.S_ISREG(current.st_mode) and _same_published_file(identity, current):
             destination.unlink(missing_ok=True)
     except OSError:
         pass
