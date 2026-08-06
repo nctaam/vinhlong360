@@ -394,7 +394,7 @@ def _build_bulk_entity_rows(entities, strip: bool, now: str):
             entity.get("area"), entity.get("level"), entity.get("parentId"),
             entity.get("legacyArea"),
             entity.get("status"),
-            entity.get("verified", True),
+            _verified_column(entity.get("verified", True)),
         ))
         fts_rows.append((entity["id"], entity["name"], entity.get("summary", ""), entity["type"]))
     return entity_rows, fts_rows
@@ -462,10 +462,27 @@ def _normalize_upsert_fields(entity: dict):
     return season_val, attrs_val, source_val, images_val, coords_val, updated, attrs_store
 
 
+def _verified_column(value: object) -> object:
+    """Ép bool sang 0/1 cho cột `entities.verified`.
+
+    Cột đó là INTEGER (migration 057), nhưng code sinh giá trị Python `bool`.
+    SQLite nuốt bool nên ở local không ai thấy; Postgres thì báo thẳng
+    `DatatypeMismatch: column "verified" is of type integer but expression is of
+    type boolean`, và `replace_from_json` vỡ hoàn toàn — 8 test dựng fixture qua
+    đường đó chết ngay ở setup khi job PG lần đầu chạy hết (2026-08-06).
+
+    Ép ở đây, không đổi kiểu cột: đổi schema `entities` trên prod là việc riêng,
+    cần backup + migration + test theo §B4.
+    """
+    if isinstance(value, bool):
+        return int(value)
+    return value
+
+
 def _publication_write_fields(entity: dict) -> tuple[object, object, bool, bool]:
     return (
         entity.get("status"),
-        entity.get("verified", True),
+        _verified_column(entity.get("verified", True)),
         "status" in entity,
         "verified" in entity,
     )

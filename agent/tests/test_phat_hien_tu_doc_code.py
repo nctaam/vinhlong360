@@ -144,3 +144,25 @@ def test_toggle_rsvp_lay_going_tu_trang_thai_that_khong_phai_rowcount():
     assert "SELECT 1 FROM event_rsvp" in than, (
         "cần đọc lại trạng thái thật sau thao tác để tính going"
     )
+
+
+def test_verified_column_ep_bool_sang_int():
+    """Cột entities.verified là INTEGER (migration 057) — bool phải thành 0/1.
+
+    SQLite nuốt bool nên local không lộ; Postgres báo DatatypeMismatch và
+    `replace_from_json` vỡ hoàn toàn. Khoá cả hai chiều: bool được ép, còn giá
+    trị đã là int/None thì giữ nguyên (đừng biến None thành 0).
+    """
+    import database
+
+    assert database._verified_column(True) == 1
+    assert database._verified_column(False) == 0
+    assert isinstance(database._verified_column(True), int)
+    assert not isinstance(database._verified_column(True), bool)
+    assert database._verified_column(1) == 1
+    assert database._verified_column(0) == 0
+    assert database._verified_column(None) is None
+
+    # Đường ghi publication cũng phải đi qua phép ép đó.
+    _, verified, _, _ = database._publication_write_fields({"verified": True})
+    assert verified == 1 and not isinstance(verified, bool)
