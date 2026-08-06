@@ -48,6 +48,18 @@ def _find_bash() -> Path:
 
 
 BASH = _find_bash()
+
+
+def _systemd_units_writable() -> bool:
+    """Live-mode installer ghi thẳng /etc/systemd/system — không có đường vòng.
+
+    Đó là chủ đích: nhánh live CẤM mọi override đường dẫn
+    (`live-hook-override-forbidden`), nên không thể trỏ nó vào tmp cho test.
+    Runner CI chạy user thường, nên `mkdir` lock ở đó trả Permission denied và
+    test chết trước khi chạm được hành vi cần kiểm — tức không kiểm được gì,
+    chỉ báo đỏ. Chạy bằng root (VPS, hoặc CI có sudo) thì vẫn phủ đầy đủ.
+    """
+    return os.access("/etc/systemd/system", os.W_OK)
 RUNBOOK = ROOT / "docs" / "runbooks" / "launch-safety-rollback.md"
 SYSTEMD_UNIT_NAMES = (
     "vl-agent.service",
@@ -3753,7 +3765,8 @@ def test_stale_local_detach_classifies_mutation_topology(
 
 
 @pytest.mark.skipif(
-    not sys.platform.startswith("linux"), reason="Linux live mount harness only"
+    not sys.platform.startswith("linux") or not _systemd_units_writable(),
+    reason="cần Linux + quyền ghi /etc/systemd/system (live mount harness)",
 )
 def test_production_shaped_retry_reconciles_stale_journal_without_live_mutation(
     tmp_path: Path, closed_package
@@ -3847,7 +3860,8 @@ def test_production_shaped_retry_reconciles_stale_journal_without_live_mutation(
 
 @pytest.mark.parametrize("invalid_evidence", ("wrong-source", "invalid-options"))
 @pytest.mark.skipif(
-    not sys.platform.startswith("linux"), reason="Linux live mount harness only"
+    not sys.platform.startswith("linux") or not _systemd_units_writable(),
+    reason="cần Linux + quyền ghi /etc/systemd/system (live mount harness)",
 )
 def test_stale_recovery_preserves_authorities_when_findmnt_evidence_is_invalid(
     tmp_path: Path, closed_package, invalid_evidence: str
@@ -4007,7 +4021,8 @@ def test_stale_recovery_refuses_different_retry_authorities(
 
 
 @pytest.mark.skipif(
-    not sys.platform.startswith("linux"), reason="Linux live mount harness only"
+    not sys.platform.startswith("linux") or not _systemd_units_writable(),
+    reason="cần Linux + quyền ghi /etc/systemd/system (live mount harness)",
 )
 def test_failed_recovery_umount_preserves_new_and_old_roots_and_persistent_bytes(
     tmp_path: Path, closed_package
@@ -4135,7 +4150,8 @@ def test_live_mode_rejects_injected_hook_overrides_before_any_mount_or_tree_muta
 
 
 @pytest.mark.skipif(
-    not sys.platform.startswith("linux"), reason="Linux live mount harness only"
+    not sys.platform.startswith("linux") or not _systemd_units_writable(),
+    reason="cần Linux + quyền ghi /etc/systemd/system (live mount harness)",
 )
 def test_primary_mount_failure_restores_old_root_then_verifies_recovery_mount(
     tmp_path: Path, closed_package
@@ -4163,7 +4179,8 @@ def test_primary_mount_failure_restores_old_root_then_verifies_recovery_mount(
 
 
 @pytest.mark.skipif(
-    not sys.platform.startswith("linux"), reason="Linux live mount harness only"
+    not sys.platform.startswith("linux") or not _systemd_units_writable(),
+    reason="cần Linux + quyền ghi /etc/systemd/system (live mount harness)",
 )
 def test_recovery_rechecks_findmnt_and_bytes_after_post_remount_failure(
     tmp_path: Path, closed_package
@@ -5891,7 +5908,8 @@ def test_dependency_and_unit_sources_are_pinned_before_replacement(
 
 
 @pytest.mark.skipif(
-    not sys.platform.startswith("linux"), reason="Linux live mount harness only"
+    not sys.platform.startswith("linux") or not _systemd_units_writable(),
+    reason="cần Linux + quyền ghi /etc/systemd/system (live mount harness)",
 )
 def test_live_mount_authority_is_pinned_before_dependency_hook_replaces_source(
     tmp_path: Path, closed_package
