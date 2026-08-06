@@ -86,6 +86,30 @@ jobs:
       - name: Provision system Python for installer contract tests
         run: sudo apt-get update -qq && sudo apt-get install -y -qq python3-dotenv
 
+      # TẠM — gỡ ngay sau khi chốt nguyên nhân `python-executor-runtime-incompatible`.
+      # Không tái hiện được ở local (Windows đi nhánh khác, máy không có Docker/WSL),
+      # nên đo thẳng trên runner. Installer gọi Python qua BA lớp; step này tách
+      # từng lớp để biết lớp nào làm mất `dotenv`, thay vì đoán tiếp.
+      - name: 'DIAG: installer python executor'
+        continue-on-error: true
+        run: |
+          set +e
+          echo "PATH=$PATH"
+          LOGICAL="$(type -P python3)"
+          CANON="$(/usr/bin/readlink -f -- "$LOGICAL")"
+          echo "LOGICAL=$LOGICAL"
+          echo "CANON  =$CANON"
+          PROBE='import sys, ssl; from dotenv.parser import parse_stream; print("prefix=", sys.prefix); print("exe=", sys.executable); print("OK")'
+          echo "--- lớp 1: gọi thẳng canonical ---"
+          "$CANON" -c "$PROBE"; echo "rc=$?"
+          echo "--- lớp 2: qua env --argv0 (như invoke_python) ---"
+          /usr/bin/env --argv0="$LOGICAL" "$CANON" -c "$PROBE"; echo "rc=$?"
+          echo "--- lớp 3: qua /proc/<pid>/fd (đúng cách installer ghim executor) ---"
+          exec {FD}<"$CANON"
+          /usr/bin/env --argv0="$LOGICAL" "/proc/$$/fd/$FD" -c "$PROBE"; echo "rc=$?"
+          echo "--- đối chiếu: system python3 ---"
+          /usr/bin/python3 -c "$PROBE"; echo "rc=$?"
+
       - name: Run tests with coverage
         env:
           # Dummy values so modules that read env vars at import time
