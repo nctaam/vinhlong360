@@ -154,7 +154,15 @@ if [[ "$OSTYPE" = linux* ]]; then
 fi
 invoke_python() {
   if [[ "$OSTYPE" = linux* ]]; then
-    /usr/bin/env --argv0="$PYTHON_EXECUTOR_LOGICAL" "$PYTHON_EXECUTOR" "$@"
+    # `exec -a` (builtin bash, có từ bash 2.0) chứ KHÔNG dùng
+    # `/usr/bin/env --argv0=…`: cờ đó chỉ có từ GNU coreutils 9.1 (2022), nên
+    # trên Ubuntu 22.04 (coreutils 8.32) `env` từ chối thẳng —
+    # `unrecognized option '--argv0=…'`, thoát 125 — và guard runtime bên dưới
+    # dịch cái đó thành `python-executor-runtime-incompatible`. Đo trên runner
+    # cho thấy gọi thẳng canonical thì rc=0, qua `env --argv0` thì rc=125.
+    # Bọc subshell để `exec` thay thế subshell chứ không phải shell đang chạy;
+    # fd đã ghim và stdin của heredoc vẫn kế thừa qua.
+    ( exec -a "$PYTHON_EXECUTOR_LOGICAL" "$PYTHON_EXECUTOR" "$@" )
   else
     "$PYTHON_EXECUTOR" "$@"
   fi
