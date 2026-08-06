@@ -1261,7 +1261,8 @@ def test_restore_bind_failure_after_local_move_rolls_back_without_data_loss(
 
 
 @pytest.mark.skipif(
-    not sys.platform.startswith("linux"), reason="Linux live bind recovery only"
+    not sys.platform.startswith("linux") or not _systemd_units_writable(),
+    reason="cần Linux + quyền ghi /etc/systemd/system (live bind recovery)",
 )
 def test_live_retry_recovers_interruption_immediately_after_bind_mount(
     tmp_path: Path, closed_package
@@ -1364,12 +1365,14 @@ def test_live_retry_recovers_interruption_immediately_after_bind_mount(
     )
 
     assert first.returncode != 0, first.stderr + first.stdout
-    assert interrupted.is_file()
+    # Kèm stderr: nếu installer chết trước khi chạm bind mount (ví dụ không lấy
+    # được lock /etc/systemd/system) thì phải đọc được lý do, đừng chỉ "assert False".
+    assert interrupted.is_file(), first.stderr + first.stdout
     journal = evidence / "install-mutation-state.json"
     assert json.loads(journal.read_text(encoding="utf-8"))["stage"] == (
         "restore-bind-agent-data-armed"
     )
-    assert mounted.is_file()
+    assert mounted.is_file(), first.stderr + first.stdout
 
     retry = subprocess.run(
         command,
@@ -5934,12 +5937,29 @@ def test_pinned_executable_tamper_fails_closed_before_next_hook_invocation(
     prepared = _prepare_case(case_root, closed_package)
     release, persistent, evidence, before_release, before_persistent, hook_log, _ = prepared
     python_hook = case_root / "runtime" / "python-hook.sh"
+    # Dò pin root qua TMPDIR (nơi installer `mktemp -d` nó ra), KHÔNG qua
+    # `dirname $0`: trên Linux bản pin được exec từ memfd bằng
+    # `bash -- /proc/self/fd/N`, nên `$0` của hook là "/proc/self/fd/3" và
+    # `dirname` ra "/proc/self/fd" — chmod trượt sang một đường dẫn không tồn
+    # tại. Windows exec thẳng theo đường dẫn nên `$0` mới đúng là pin root.
+    # Trả mode về 0500 sau khi ghi đè: pin được tạo ở 0500 và Linux từ chối
+    # mode khác bằng `pin-invalid`, nên giữ nguyên mode để khác biệt DUY NHẤT
+    # là nội dung — thứ phải bị bắt bằng `digest-mismatch` trên cả hai nền.
     python_hook.write_text(
         "#!/usr/bin/env bash\n"
         "printf '%s|%s\\n' 'python-dependencies' \"$*\" >> \"$INSTALL_HOOK_LOG\"\n"
-        "target=$(dirname -- \"$0\")/nuxt-dependency\n"
-        "chmod 0700 -- \"$target\"\n"
-        "printf '#!/usr/bin/env bash\\nexit 0\\n# executable-pin-tampered\\n' > \"$target\"\n",
+        "tampered=false\n"
+        "for target in \"$TMPDIR\"/vl360-executable-pins.*/nuxt-dependency; do\n"
+        "  [ -f \"$target\" ] || continue\n"
+        "  tampered=true\n"
+        "  chmod 0700 -- \"$target\"\n"
+        "  printf '#!/usr/bin/env bash\\nexit 0\\n# executable-pin-tampered\\n' > \"$target\"\n"
+        "  chmod 0500 -- \"$target\"\n"
+        "done\n"
+        "[ \"$tampered\" = true ] || {\n"
+        "  printf 'executable-pin-root-not-found\\n' >&2\n"
+        "  exit 70\n"
+        "}\n",
         encoding="ascii",
     )
     python_hook.chmod(0o755)
@@ -6305,11 +6325,18 @@ def test_linux_installer_keeps_admitted_python_when_authority_path_is_replaced(
     )
     marker = case_root / "replacement-python-ran"
     hook = case_root / "runtime" / "python-hook.sh"
+    # Ghi ra file mới rồi `mv` đè: đó mới là "thay ĐƯỜNG DẪN" như tên test nói,
+    # và là thứ mà ghim-theo-descriptor thật sự chặn được — installer giữ
+    # /proc/$BASHPID/fd/N trỏ vào inode đã admit, nên inode mới ở cùng đường dẫn
+    # không bao giờ chạy. Ghi đè tại chỗ (`> "$PYTHON_EXECUTOR_SOURCE"`) thì
+    # KHÁC: nó truncate đúng inode đang bị ghim, và không descriptor pin nào
+    # chống được — xem "Backlog phát sinh" trong docs/ROADMAP.md.
     hook.write_text(
         "#!/usr/bin/env bash\n"
         "printf '%s\\n' '#!/usr/bin/env bash' "
-        f"': > {_bash_path(marker)}' 'exit 97' > \"$PYTHON_EXECUTOR_SOURCE\"\n"
-        "chmod 0755 -- \"$PYTHON_EXECUTOR_SOURCE\"\n",
+        f"': > {_bash_path(marker)}' 'exit 97' > \"$PYTHON_EXECUTOR_SOURCE.replacement\"\n"
+        "chmod 0755 -- \"$PYTHON_EXECUTOR_SOURCE.replacement\"\n"
+        "mv -f -- \"$PYTHON_EXECUTOR_SOURCE.replacement\" \"$PYTHON_EXECUTOR_SOURCE\"\n",
         encoding="ascii",
     )
     hook.chmod(0o755)
@@ -7850,19 +7877,32 @@ def test_reentrant_same_target_attempt_is_rejected_before_mutation(
     nested_evidence = case_root / "nested-evidence"
     nested_evidence.mkdir()
     nested_code = case_root / "nested-code"
+    nested_output = case_root / "nested-output"
     nested_command = _installer_command(
         closed_package,
         case_root,
         prepared,
         evidence_arg=_bash_path(nested_evidence),
     )
-    nested_shell = " ".join(shlex.quote(argument) for argument in nested_command[1:])
+    # Gọi qua `bash` thay vì chạy thẳng script: installer được commit ở mode
+    # 100644, nên trên Linux gọi trực tiếp là "Permission denied" → 126, tức lần
+    # lồng chết trước khi installer kịp chạy và ta không kiểm được gì. MSYS bỏ
+    # qua bit exec nên Windows không lộ.
+    # Windows phải là `bash` theo PATH: BASH trỏ tới bin/bash.exe (wrapper
+    # Git-for-Windows), gọi thẳng nó từ trong hook dựng lại môi trường MSYS khác
+    # đi và installer chết sớm ở `python-executor-authority-required` (đã đo).
+    # Linux dùng đúng BASH tuyệt đối mà cả suite dùng, khỏi phụ thuộc PATH của
+    # hook — hook ở đó được exec thẳng từ memfd nên shebang không hề tra PATH.
+    nested_bash = "bash" if os.name == "nt" else shlex.quote(_bash_path(BASH))
+    nested_shell = " ".join(
+        [nested_bash, *(shlex.quote(argument) for argument in nested_command[1:])]
+    )
     hook = case_root / "runtime" / "python-hook.sh"
     hook.write_text(
         "#!/usr/bin/env bash\n"
         "if [ \"${VL360_REENTRANT_CHILD:-}\" = true ]; then exit 18; fi\n"
         "VL360_REENTRANT_CHILD=true "
-        f"{nested_shell} >/dev/null 2>&1\n"
+        f"{nested_shell} > '{_bash_path(nested_output)}' 2>&1\n"
         "nested_status=$?\n"
         f"printf '%s\\n' \"$nested_status\" > '{_bash_path(nested_code)}'\n"
         "exit 19\n",
@@ -7873,10 +7913,11 @@ def test_reentrant_same_target_attempt_is_rejected_before_mutation(
     result = _invoke_installer(closed_package, case_root, prepared)
 
     assert result.returncode == 19, result.stderr + result.stdout
-    assert nested_code.read_text(encoding="ascii").strip() == "2"
-    nested_lock = json.loads(
-        (nested_evidence / "install-lock.json").read_text(encoding="utf-8")
-    )
+    nested_log = nested_output.read_text(encoding="utf-8", errors="replace")
+    assert nested_code.read_text(encoding="ascii").strip() == "2", nested_log
+    nested_lock_path = nested_evidence / "install-lock.json"
+    assert nested_lock_path.is_file(), nested_log
+    nested_lock = json.loads(nested_lock_path.read_text(encoding="utf-8"))
     assert nested_lock["status"] == "rejected"
     outer_lock = json.loads(
         (evidence / "install-lock.json").read_text(encoding="utf-8")
