@@ -75,40 +75,14 @@ jobs:
           # hai cổng hard-ratchet đó im lặng trả 0 — tức chưa từng chạy trong CI.
           pip install ruff
 
-      # `install_closed_release.sh:127` fallback về /usr/bin/python3 khi không có
-      # VL360_PYTHON_EXECUTOR, và guard runtime dòng 188 đòi `import ssl` +
+      # `install_closed_release.sh` chạy live-mode (không --local-rehearsal) sẽ
+      # fallback về /usr/bin/python3, và guard runtime của nó đòi `import ssl` +
       # `dotenv.parser`. `pip` ở trên cài vào Python của setup-python, KHÔNG chạm
-      # system Python — nên toàn bộ test_closed_installer.py chết với
-      # `python-executor-runtime-incompatible`. Local Windows không lộ vì ở đó
-      # fallback là `type -P python3`, trúng đúng Python đang chạy pytest.
-      # Cài vào system Python để CI phản ánh điều kiện VPS thật (nơi venv của
-      # release có sẵn dotenv) thay vì né guard bằng cách trỏ executor khác.
+      # system Python. Lưu ý: đây KHÔNG phải nguyên nhân đợt đỏ 2026-08-06 (cái
+      # đó là `env --argv0`, xem tests/launch_safety/test_installer_portability.py)
+      # — giữ lại vì nhánh live-mode vẫn cần, không phải vì nó sửa được nhóm đó.
       - name: Provision system Python for installer contract tests
         run: sudo apt-get update -qq && sudo apt-get install -y -qq python3-dotenv
-
-      # TẠM — gỡ ngay sau khi chốt nguyên nhân `python-executor-runtime-incompatible`.
-      # Không tái hiện được ở local (Windows đi nhánh khác, máy không có Docker/WSL),
-      # nên đo thẳng trên runner. Installer gọi Python qua BA lớp; step này tách
-      # từng lớp để biết lớp nào làm mất `dotenv`, thay vì đoán tiếp.
-      - name: 'DIAG: installer python executor'
-        continue-on-error: true
-        run: |
-          set +e
-          echo "PATH=$PATH"
-          LOGICAL="$(type -P python3)"
-          CANON="$(/usr/bin/readlink -f -- "$LOGICAL")"
-          echo "LOGICAL=$LOGICAL"
-          echo "CANON  =$CANON"
-          PROBE='import sys, ssl; from dotenv.parser import parse_stream; print("prefix=", sys.prefix); print("exe=", sys.executable); print("OK")'
-          echo "--- lớp 1: gọi thẳng canonical ---"
-          "$CANON" -c "$PROBE"; echo "rc=$?"
-          echo "--- lớp 2: qua env --argv0 (như invoke_python) ---"
-          /usr/bin/env --argv0="$LOGICAL" "$CANON" -c "$PROBE"; echo "rc=$?"
-          echo "--- lớp 3: qua /proc/<pid>/fd (đúng cách installer ghim executor) ---"
-          exec {FD}<"$CANON"
-          /usr/bin/env --argv0="$LOGICAL" "/proc/$$/fd/$FD" -c "$PROBE"; echo "rc=$?"
-          echo "--- đối chiếu: system python3 ---"
-          /usr/bin/python3 -c "$PROBE"; echo "rc=$?"
 
       - name: Run tests with coverage
         env:
