@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import tarfile
 
@@ -12,10 +13,31 @@ from tests.launch_safety.test_release_package import _write_launch_fixture
 
 ROOT = Path(__file__).resolve().parents[2]
 DEPLOY = ROOT / "scripts" / "deploy.sh"
-BASH = Path(r"C:\Program Files\Git\bin\bash.exe")
+def _find_bash() -> Path:
+    """Cùng khuôn với test_closed_installer._find_bash.
+
+    Trước đây file này ghim cứng đường dẫn Git Bash của Windows, nên trên Linux
+    CI mọi test ở đây chết bằng FileNotFoundError trước khi chạm logic cần kiểm.
+    """
+    for candidate in (
+        os.environ.get("GIT_BASH"),
+        r"C:\Program Files\Git\bin\bash.exe",
+        shutil.which("bash"),
+    ):
+        if candidate and Path(candidate).is_file():
+            return Path(candidate)
+    return Path("bash-unavailable")
+
+
+BASH = _find_bash()
 
 
 def _bash_path(path: Path) -> str:
+    # `cygpath` chỉ tồn tại trong Git Bash/MSYS trên Windows — nó dịch
+    # `C:\x` thành `/c/x`. Trên Linux đường dẫn đã đúng dạng POSIX nên không có
+    # gì để dịch, và gọi cygpath ở đó chỉ tổ lỗi "command not found".
+    if os.name != "nt":
+        return path.as_posix()
     result = subprocess.run(
         [str(BASH), "-lc", 'cygpath -u "$1"', "deploy-gate-test", str(path)],
         check=True,
