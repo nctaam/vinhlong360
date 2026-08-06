@@ -6386,7 +6386,13 @@ print(json.dumps({"prefix": sys.prefix}))
 '
 """
     env = os.environ.copy()
-    env["VL360_PYTHON_EXECUTOR"] = _bash_path(venv_python.resolve())
+    # KHÔNG `.resolve()`: trên Linux `venv/bin/python` là symlink tới Python hệ
+    # thống, resolve xong thì argv[0] trỏ ra ngoài venv và `sys.prefix` thành
+    # /opt/hostedtoolcache/... — đúng thứ test này đang khẳng định là không được
+    # xảy ra. Windows không lộ vì `Scripts/python.exe` là bản sao, resolve ra
+    # chính nó. Installer vẫn tự canonical hoá để ghim executor; nó chỉ cần
+    # đường dẫn tuyệt đối, không cần đã-resolve.
+    env["VL360_PYTHON_EXECUTOR"] = _bash_path(venv_python.absolute())
     required_args = [
         "--archive",
         "archive",
