@@ -372,22 +372,28 @@ function findComment(id: string): ThreadComment | null {
 
 /**
  * Sau khi sửa, kiểm duyệt có thể hạ bình luận xuống 'pending' — lúc đó nó biến
- * khỏi danh sách (social.py:2290 chỉ trả moderation_status='approved'). API sửa
- * KHÔNG trả moderation_status nên phải suy ra từ việc tải lại: còn thấy = đã
- * đăng, biến mất = đang chờ duyệt. Danh sách tải lỗi thì KHÔNG đoán bừa.
+ * khỏi danh sách (social.py chỉ trả moderation_status='approved'). PUT
+ * /api/comments/{id} NAY trả thẳng moderation_status của bình luận vừa sửa (chỉ
+ * cho chủ nó), nên trạng thái là thứ đọc được, không phải thứ suy ra.
+ *
+ * Vẫn giữ nhánh suy-ra CŨ cho trường hợp không có trường đó (backend cũ hơn
+ * frontend, hoặc phản hồi thiếu): còn thấy trong danh sách = đã đăng, biến mất =
+ * chờ duyệt; danh sách tải lỗi thì KHÔNG đoán bừa.
  */
-async function onCommentUpdated(payload: { id: string; content: string }) {
+async function onCommentUpdated(payload: { id: string; content: string; moderation_status?: string }) {
   const target = findComment(payload.id)
   if (target) target.content = payload.content
   const ok = await fetchComments()
-  if (!ok) {
-    showToast('Đã cập nhật bình luận', 'success')
+
+  if (payload.moderation_status) {
+    const held = payload.moderation_status !== 'approved'
+    showToast(held ? 'Đã lưu — bình luận đang chờ duyệt lại' : 'Đã cập nhật bình luận', held ? 'info' : 'success')
     return
   }
-  if (findComment(payload.id)) {
-    showToast('Đã cập nhật bình luận', 'success')
-  } else {
+  if (ok && !findComment(payload.id)) {
     showToast('Đã lưu — bình luận đang chờ duyệt lại', 'info')
+  } else {
+    showToast('Đã cập nhật bình luận', 'success')
   }
 }
 

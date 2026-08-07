@@ -223,6 +223,12 @@ export interface Comment {
   content: string
   created_at: string
   user?: User
+  /**
+   * Backend chỉ trả trường này cho CHỦ bình luận và admin/moderator
+   * (agent/social.py `_format_comment`) — người lạ không nhận được khoá này.
+   * Vắng mặt = không có quyền đọc HOẶC backend không nói, KHÔNG phải 'approved'.
+   */
+  moderation_status?: string
 }
 
 export interface Review {

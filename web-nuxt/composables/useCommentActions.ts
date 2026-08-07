@@ -71,8 +71,18 @@ export function useCommentActions() {
   /**
    * Lưu nội dung mới. Trả `null` khi thất bại để nơi gọi giữ nguyên ô sửa và
    * người dùng không mất chữ đã gõ.
+   *
+   * `moderation_status` là trạng thái kiểm duyệt của CHÍNH bình luận vừa sửa —
+   * backend chỉ trả nó cho chủ bình luận (agent/social.py `_format_comment`).
+   * Sửa xong có thể bị hạ xuống 'pending' và bình luận biến khỏi danh sách; nhờ
+   * trường này nơi gọi biết ngay thay vì phải tải lại rồi suy ra. `undefined`
+   * nghĩa là backend không nói (ví dụ nhánh dự phòng bên dưới) — KHÔNG phải
+   * "đã duyệt".
    */
-  async function saveComment(commentId: string, content: string): Promise<{ id: string; content: string } | null> {
+  async function saveComment(
+    commentId: string,
+    content: string,
+  ): Promise<{ id: string; content: string; moderation_status?: string } | null> {
     const trimmed = content.trim()
     if (trimmed.length < COMMENT_MIN_LENGTH) {
       showToast('Bình luận quá ngắn', 'error')
@@ -85,7 +95,7 @@ export function useCommentActions() {
     const encoded = encodePathId(commentId)
     if (!encoded) return null
     try {
-      const res = await $fetch<{ comment?: { id: string; content: string } }>(`/api/comments/${encoded}`, {
+      const res = await $fetch<{ comment?: { id: string; content: string; moderation_status?: string } }>(`/api/comments/${encoded}`, {
         method: 'PUT',
         headers: authHeaders(),
         body: { content: trimmed },

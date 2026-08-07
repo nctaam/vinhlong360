@@ -236,6 +236,40 @@ def test_threaded_reply_nests_under_parent(pg_user, pg_entity):
 
 
 @pg_only
+def test_create_comment_tells_the_author_its_moderation_status(pg_user, pg_entity):
+    """POST /comments phải nói ngay bình luận vừa gửi đã đăng hay đang chờ duyệt.
+
+    Bình luận chưa duyệt biến khỏi GET /comments, nên thiếu trường này thì
+    frontend chỉ còn cách gửi xong tải lại danh sách rồi suy ra từ việc nó có
+    hiện hay không. Nhánh quyền (chính chủ thấy, người lạ không) đo ở
+    tests/test_social_comment_ownership.py — chạy được không cần Postgres.
+    """
+    ph = db._ph
+    with db._conn() as conn:
+        row = db._fetchone(conn, f"""
+            INSERT INTO posts (user_id, entity_id, content, images, post_type, moderation_status)
+            VALUES ({ph}::uuid, {ph}, {ph}, {ph}::jsonb, {ph}, 'approved')
+            RETURNING id
+        """, (str(pg_user["id"]), pg_entity, "Bài để bình luận.", json.dumps([]), "share"))
+        pid = str(row["id"])
+    try:
+        client = _client_as(pg_user)
+        resp = client.post(f"/api/posts/{pid}/comments", json={"content": "Bình luận thử."})
+        assert resp.status_code == 201, resp.text
+        comment = resp.json()["comment"]
+        assert "moderation_status" in comment, \
+            "chủ bình luận phải biết bản vừa gửi có bị giữ lại chờ duyệt không"
+        with db._conn() as conn:
+            stored = db._row_to_dict(db._fetchone(
+                conn, f"SELECT moderation_status FROM comments WHERE id::text = {ph}", (comment["id"],)))
+        assert comment["moderation_status"] == stored["moderation_status"], \
+            "trường trả về phải là trạng thái THẬT trong DB, không phải hằng số"
+    finally:
+        with db._conn() as conn:
+            db._execute(conn, f"DELETE FROM posts WHERE id::text = {ph}", (pid,))
+
+
+@pg_only
 def test_search_posts_finds_by_content(pg_user, pg_entity):
     """/api/search/posts tìm bài ĐÃ DUYỆT theo nội dung (case-insensitive)."""
     ph = db._ph

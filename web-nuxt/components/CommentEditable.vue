@@ -68,7 +68,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'updated', payload: { id: string; content: string }): void
+  (e: 'updated', payload: { id: string; content: string; moderation_status?: string }): void
   (e: 'deleted', id: string): void
 }>()
 
@@ -101,7 +101,13 @@ async function save() {
     const updated = await saveComment(props.comment.id, draft.value)
     // Thất bại → giữ nguyên ô sửa để người dùng không mất chữ đã gõ.
     if (!updated) return
-    emit('updated', { id: props.comment.id, content: updated.content })
+    // moderation_status đi kèm nguyên vẹn: trang cha dùng nó để biết bản sửa có
+    // bị hạ xuống chờ duyệt không. Nuốt ở đây là đẩy cha về chỗ phải tự đoán.
+    emit('updated', {
+      id: props.comment.id,
+      content: updated.content,
+      moderation_status: updated.moderation_status,
+    })
     editing.value = false
     draft.value = ''
   } finally {

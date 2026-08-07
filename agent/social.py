@@ -65,7 +65,8 @@ _POST_COLS = ("p.id, p.user_id, p.content, p.mentions, p.hashtags, p.best_answer
               "p.repost_of, p.repost_snapshot, p.post_type, p.rating, p.images, "
               "p.like_count, p.comment_count, p.share_count, p.created_at, p.updated_at, "
               "p.entity_id, p.moderation_status")
-_COMMENT_COLS = "c.id, c.user_id, c.content, c.mentions, c.parent_id, c.created_at"
+_COMMENT_COLS = ("c.id, c.user_id, c.content, c.mentions, c.parent_id, c.created_at, "
+                 "c.moderation_status")
 
 router = APIRouter(prefix="/api", tags=["social"], dependencies=[Depends(_require_pg)])
 
@@ -2313,10 +2314,10 @@ async def get_comments(
 
     top_rows, reply_rows = await asyncio.to_thread(_get_comments)
 
-    top_level = [_format_comment(db._row_to_dict(r)) for r in top_rows]
+    top_level = [_format_comment(db._row_to_dict(r), user) for r in top_rows]
     replies_by_parent: dict[str, list] = {}
     for r in reply_rows:
-        c = _format_comment(db._row_to_dict(r))
+        c = _format_comment(db._row_to_dict(r), user)
         replies_by_parent.setdefault(str(c.get("parent_id", "")), []).append(c)
     for c in top_level:
         c["replies"] = replies_by_parent.get(c["id"], [])
@@ -2444,7 +2445,7 @@ async def create_comment(post_id: str, body: CreateComment, user=Depends(require
             _notify_comment, user, post_owner, parent_author, post_type_val, body, mentions, post_id,
         )
 
-    return {"comment": _format_comment(db._row_to_dict(row))}
+    return {"comment": _format_comment(db._row_to_dict(row), user)}
 
 
 class EditComment(BaseModel):
@@ -2507,7 +2508,7 @@ async def edit_comment(comment_id: str, body: EditComment, user=Depends(require_
     updated = await asyncio.to_thread(_update)
     if not updated:
         raise HTTPException(404, "Bình luận không tồn tại hoặc không có quyền sửa")
-    return {"comment": _format_comment(db._row_to_dict(updated))}
+    return {"comment": _format_comment(db._row_to_dict(updated), user)}
 
 
 @router.delete("/comments/{comment_id}",
@@ -4444,14 +4445,38 @@ def _format_post(row: dict) -> dict:
     }
 
 
-def _format_comment(row: dict) -> dict:
+def _may_see_comment_moderation(row: dict, viewer: dict | None) -> bool:
+    """Ai được đọc `moderation_status` của một bình luận.
+
+    Trạng thái kiểm duyệt là chuyện riêng giữa tác giả bình luận và ban quản
+    trị: người lạ đọc được 'pending' của người khác tức là biết nội dung người
+    đó vừa bị gắn cờ. Nhánh quyền lấy đúng của delete_comment (social.py:2529):
+    chính chủ HOẶC admin/moderator. Không có người xem = ĐÓNG.
+    """
+    if not viewer:
+        return False
+    author_id = str(row.get("user_id") or "")
+    viewer_id = str(viewer.get("id") or "")
+    if author_id and author_id == viewer_id:
+        return True
+    return viewer.get("role") in ("admin", "moderator")
+
+
+def _format_comment(row: dict, viewer: dict | None = None) -> dict:
+    """Payload công khai của một bình luận.
+
+    `viewer` là người đang gọi API (None = khách). Nó quyết định DUY NHẤT một
+    việc: có kèm `moderation_status` hay không — xem `_may_see_comment_moderation`.
+    Mặc định None để mọi nơi gọi thiếu tham số đều rơi vào nhánh đóng, chứ không
+    phải nhánh lộ.
+    """
     mentions = row.get("mentions", [])
     if isinstance(mentions, str):
         try:
             mentions = json.loads(mentions)
         except (json.JSONDecodeError, ValueError, TypeError):
             mentions = []
-    return {
+    out = {
         "id": str(row["id"]),
         "content": row["content"],
         "mentions": mentions if isinstance(mentions, list) else [],
@@ -4464,6 +4489,13 @@ def _format_comment(row: dict) -> dict:
             "avatar_url": row.get("avatar_url"),
         },
     }
+    if _may_see_comment_moderation(row, viewer):
+        # Chủ bình luận phải BIẾT bản vừa đăng/vừa sửa có bị hạ xuống chờ duyệt
+        # không. Bình luận chưa duyệt biến khỏi GET /comments, nên thiếu trường
+        # này thì frontend chỉ còn cách tải lại danh sách rồi suy ra từ việc nó
+        # còn hiện hay không.
+        out["moderation_status"] = row.get("moderation_status")
+    return out
 
 
 def _enrich_post(row: dict, user: dict) -> dict:

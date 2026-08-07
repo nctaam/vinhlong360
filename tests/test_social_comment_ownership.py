@@ -603,3 +603,142 @@ class TestSuaBinhLuan:
         assert resp.status_code == 200, resp.text
         assert api.comment_row(cid)["moderation_status"] == "pending"
         assert api.get(f"/api/posts/{post}/comments").json()["comments"] == []
+
+
+# ──────────────────────────────────────────────────────────────────────────
+#  Hợp đồng: PUT trả thẳng trạng thái kiểm duyệt, FE không phải suy ra
+# ──────────────────────────────────────────────────────────────────────────
+
+class TestPUTTraTrangThaiKiemDuyet:
+    """Sửa xong, người sửa phải BIẾT ngay bản sửa có bị hạ xuống chờ duyệt không.
+
+    Trước đợt này response chỉ có content/author/like_count. Trạng thái duy nhất
+    FE đọc được là gián tiếp: tải lại GET /comments rồi xem bình luận còn hiện
+    không (còn = 'approved', biến mất = bị hạ xuống 'pending'). Chạy đúng nhưng
+    mong manh — lượt tải lại lỗi mạng là mất luôn thông tin, và FE phải tự viết
+    lại một mẩu logic kiểm duyệt của backend để đoán.
+    """
+
+    def test_bi_ha_xuong_cho_duyet_thi_response_noi_thang_pending(self, api, monkeypatch):
+        tac_gia = api.add_user()
+        post = api.add_post(tac_gia["id"])
+        cid = api.add_comment(post, tac_gia["id"], "Nội dung cũ")
+
+        async def _pending(content, **kwargs):
+            return {"status": "pending", "score": 0.5, "reasons": ["test"]}
+
+        monkeypatch.setattr(social, "moderate_content_enhanced", _pending)
+
+        resp = api.put(f"/api/comments/{cid}", token=tac_gia["token"],
+                       json={"content": "Nội dung cần duyệt lại"})
+
+        assert resp.status_code == 200, resp.text
+        assert resp.json()["comment"]["moderation_status"] == "pending"
+
+    def test_duyet_ngay_thi_response_noi_thang_approved(self, api):
+        """Nhánh ngược lại phải khác giá trị — nếu không, trường này vô dụng."""
+        tac_gia = api.add_user()
+        post = api.add_post(tac_gia["id"])
+        cid = api.add_comment(post, tac_gia["id"], "Nội dung cũ")
+
+        resp = api.put(f"/api/comments/{cid}", token=tac_gia["token"],
+                       json={"content": "Nội dung mới ở Vĩnh Long"})
+
+        assert resp.status_code == 200, resp.text
+        assert resp.json()["comment"]["moderation_status"] == "approved"
+
+    def test_gia_tri_tra_ve_khop_dung_hang_trong_db(self, api, monkeypatch):
+        """Chống trường hằng số: response phải đọc từ DB, không phải bịa 'approved'."""
+        tac_gia = api.add_user()
+        post = api.add_post(tac_gia["id"])
+        cid = api.add_comment(post, tac_gia["id"], "Nội dung cũ")
+
+        async def _rejected(content, **kwargs):
+            return {"status": "rejected", "score": 0.9, "reasons": ["test"]}
+
+        monkeypatch.setattr(social, "moderate_content_enhanced", _rejected)
+
+        resp = api.put(f"/api/comments/{cid}", token=tac_gia["token"],
+                       json={"content": "Nội dung bị từ chối"})
+
+        assert resp.status_code == 200, resp.text
+        assert resp.json()["comment"]["moderation_status"] == api.comment_row(cid)["moderation_status"] == "rejected"
+
+
+# ──────────────────────────────────────────────────────────────────────────
+#  Rò rỉ: trạng thái kiểm duyệt của NGƯỜI KHÁC
+# ──────────────────────────────────────────────────────────────────────────
+
+class TestKhongLoTrangThaiKiemDuyetNguoiKhac:
+    """`moderation_status` là chuyện riêng giữa tác giả bình luận và ban quản trị.
+
+    Người lạ đọc được 'pending' của người khác tức là biết nội dung của người đó
+    vừa bị gắn cờ — thông tin kiểm duyệt, không phải nội dung công khai. Hôm nay
+    GET /comments chỉ trả bình luận đã duyệt nên giá trị luôn là 'approved' và
+    lỗ chưa mở; khoá quyền NGAY để một endpoint sau này (ví dụ "bình luận của
+    tôi đang chờ duyệt") không vô tình biến formatter dùng chung thành lỗ hổng.
+
+    Nhánh quyền lấy đúng của delete_comment (social.py:2528): chính chủ HOẶC
+    admin/moderator.
+    """
+
+    def _mot_binh_luan_cua_nguoi_khac(self, api):
+        tac_gia = api.add_user(display_name="Tác giả")
+        post = api.add_post(tac_gia["id"])
+        cid = api.add_comment(post, tac_gia["id"], "Bình luận của người khác")
+        return tac_gia, post, cid
+
+    def test_chinh_chu_thay_trang_thai_binh_luan_cua_minh(self, api):
+        tac_gia, post, cid = self._mot_binh_luan_cua_nguoi_khac(api)
+
+        listed = api.get(f"/api/posts/{post}/comments", token=tac_gia["token"]).json()["comments"]
+
+        assert [c["id"] for c in listed] == [cid]
+        assert listed[0]["moderation_status"] == "approved"
+
+    def test_nguoi_la_KHONG_thay_trang_thai_binh_luan_nguoi_khac(self, api):
+        _, post, cid = self._mot_binh_luan_cua_nguoi_khac(api)
+        nguoi_la = api.add_user(display_name="Người lạ")
+
+        listed = api.get(f"/api/posts/{post}/comments", token=nguoi_la["token"]).json()["comments"]
+
+        assert [c["id"] for c in listed] == [cid], "vẫn phải đọc được bình luận"
+        assert "moderation_status" not in listed[0]
+
+    def test_khach_chua_dang_nhap_KHONG_thay(self, api):
+        _, post, cid = self._mot_binh_luan_cua_nguoi_khac(api)
+
+        listed = api.get(f"/api/posts/{post}/comments").json()["comments"]
+
+        assert [c["id"] for c in listed] == [cid]
+        assert "moderation_status" not in listed[0]
+
+    def test_admin_thay_duoc(self, api):
+        _, post, cid = self._mot_binh_luan_cua_nguoi_khac(api)
+        admin = api.add_user(display_name="Quản trị", role="admin")
+
+        listed = api.get(f"/api/posts/{post}/comments", token=admin["token"]).json()["comments"]
+
+        assert listed[0]["moderation_status"] == "approved"
+
+    def test_moderator_thay_duoc(self, api):
+        _, post, cid = self._mot_binh_luan_cua_nguoi_khac(api)
+        mod = api.add_user(display_name="Kiểm duyệt viên", role="moderator")
+
+        listed = api.get(f"/api/posts/{post}/comments", token=mod["token"]).json()["comments"]
+
+        assert listed[0]["moderation_status"] == "approved"
+
+    def test_trong_cung_mot_luot_tai_chi_lo_phan_cua_minh(self, api):
+        """Trả lời lồng cũng đi qua formatter — nhánh reply không được lệch quyền."""
+        tac_gia, post, goc = self._mot_binh_luan_cua_nguoi_khac(api)
+        toi = api.add_user(display_name="Tôi")
+        cua_toi = api.add_comment(post, toi["id"], "Trả lời của tôi", parent_id=goc)
+
+        listed = api.get(f"/api/posts/{post}/comments", token=toi["token"]).json()["comments"]
+
+        assert [c["id"] for c in listed] == [goc]
+        assert "moderation_status" not in listed[0], "bình luận gốc là của người khác"
+        replies = listed[0]["replies"]
+        assert [r["id"] for r in replies] == [cua_toi]
+        assert replies[0]["moderation_status"] == "approved", "trả lời này là của mình"

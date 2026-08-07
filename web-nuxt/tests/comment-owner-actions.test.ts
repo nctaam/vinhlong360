@@ -201,6 +201,21 @@ describe('(b) sửa inline', () => {
     expect(wrapper.find('[data-comment-action="edit-input"]').exists()).toBe(false)
   })
 
+  it('phát luôn `moderation_status` backend trả về — trang cha cần nó, đừng nuốt', async () => {
+    mocks.fetch.mockResolvedValue({
+      comment: { id: 'c1', content: 'Nội dung mới', moderation_status: 'pending' },
+    })
+    const wrapper = await mountComment()
+    await wrapper.get('[data-comment-action="edit"]').trigger('click')
+    await wrapper.get('[data-comment-action="edit-input"]').setValue('Nội dung mới')
+    await wrapper.get('[data-comment-action="edit-save"]').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.emitted('updated')).toEqual([[
+      { id: 'c1', content: 'Nội dung mới', moderation_status: 'pending' },
+    ]])
+  })
+
   it('API lỗi thì ô sửa VẪN mở, chữ đã gõ không mất, và người dùng đọc được lý do', async () => {
     mocks.fetch.mockRejectedValue(httpError(400, 'Chỉ có thể sửa bình luận trong 24 giờ đầu'))
     const wrapper = await mountComment()
@@ -356,6 +371,57 @@ describe('(e) trang bài viết nối đủ hai nhánh', () => {
     const wrapper = await mountPage()
     expect(wrapper.findAll('[data-comment-action="edit"]')).toHaveLength(2)
     expect(wrapper.findAll('[data-comment-action="delete"]')).toHaveLength(2)
+  })
+
+  /**
+   * Sửa bình luận thứ nhất rồi trả về wrapper. `putResponse` là phản hồi của
+   * PUT /api/comments/c1, `listAfter` là danh sách GET /comments tải lại sau đó
+   * — hai thứ này cố tình cho MÂU THUẪN nhau để lộ ra trang đang tin cái nào.
+   */
+  async function editFirstComment(putResponse: unknown, listAfter: unknown) {
+    const wrapper = await mountPage()
+    mocks.showToast.mockClear()
+    mocks.fetch.mockImplementation((url: string) => {
+      if (url.startsWith('/api/comments/')) return Promise.resolve(putResponse)
+      if (url.includes('/comments')) return Promise.resolve(listAfter)
+      return routeFetch(url)
+    })
+    await wrapper.findAll('[data-comment-action="edit"]')[0]!.trigger('click')
+    await wrapper.get('[data-comment-action="edit-input"]').setValue('Nội dung đã sửa lại')
+    await wrapper.get('[data-comment-action="edit-save"]').trigger('click')
+    await flushPromises()
+    return wrapper
+  }
+
+  it('API nói "pending" thì báo chờ duyệt — kể cả khi danh sách tải lại vẫn còn bình luận', async () => {
+    await editFirstComment(
+      { comment: { id: 'c1', content: 'Nội dung đã sửa lại', moderation_status: 'pending' } },
+      commentsPayload(),  // suy-ra-từ-danh-sách sẽ kết luận NHẦM là "đã đăng"
+    )
+
+    expect(mocks.showToast).toHaveBeenCalledWith('Đã lưu — bình luận đang chờ duyệt lại', 'info')
+  })
+
+  it('API nói "approved" thì báo đã cập nhật — kể cả khi bình luận biến khỏi danh sách', async () => {
+    await editFirstComment(
+      { comment: { id: 'c1', content: 'Nội dung đã sửa lại', moderation_status: 'approved' } },
+      { comments: [] },  // biến mất vì lý do khác (bị xoá, bị chặn) — KHÔNG phải chờ duyệt
+    )
+
+    expect(mocks.showToast).toHaveBeenCalledWith('Đã cập nhật bình luận', 'success')
+    expect(mocks.showToast).not.toHaveBeenCalledWith('Đã lưu — bình luận đang chờ duyệt lại', 'info')
+  })
+
+  it('API không nói gì thì quay về cách cũ: còn trong danh sách = đã đăng', async () => {
+    await editFirstComment({ comment: { id: 'c1', content: 'Nội dung đã sửa lại' } }, commentsPayload())
+
+    expect(mocks.showToast).toHaveBeenCalledWith('Đã cập nhật bình luận', 'success')
+  })
+
+  it('API không nói gì và bình luận biến mất thì mới đoán là chờ duyệt', async () => {
+    await editFirstComment({ comment: { id: 'c1', content: 'Nội dung đã sửa lại' } }, { comments: [] })
+
+    expect(mocks.showToast).toHaveBeenCalledWith('Đã lưu — bình luận đang chờ duyệt lại', 'info')
   })
 
   it('xoá xong thì tải lại danh sách và bình luận biến khỏi màn hình', async () => {
