@@ -423,7 +423,24 @@ jobs:
       - name: Run TruffleHog
         uses: trufflesecurity/trufflehog@v3.95.9
         with:
-          extra_args: --only-verified
+          # Ghim THẬT phiên bản binary. Tag của action (@v3.95.9) KHÔNG ghim nó:
+          # input `version` mặc định là `latest`, action dựng ${IMAGE}:${VERSION}
+          # nên runner kéo `latest` — log ngày 2026-08-07 chạy 3.96.0 chứ không
+          # phải 3.95.9. Nghĩa là một bản latest mới có thể đổi hành vi detector
+          # giữa chừng mà không ai đổi một dòng nào ở đây.
+          version: v3.96.0
+          # --exclude-detectors=Lob: 43 kết quả "verified Lob" đều là DƯƠNG TÍNH GIẢ.
+          # Hai lý do độc lập, cả hai đã đo:
+          #   1. keyPat của detector là \b((live|test)_[a-zA-Z0-9_]{35})\b, KHÔNG có
+          #      kiểm entropy. Toàn bộ 182 chuỗi khớp trong cây đều bắt đầu bằng
+          #      `test_` và đều là tên hàm pytest (`def <tên>(`), dài đúng 40 ký tự.
+          #      Không có chuỗi `live_` nào. Dự án cũng không dùng dịch vụ Lob.
+          #   2. Bước "verify" của detector hỏng: gọi API với User-Agent "TruffleHog"
+          #      trả 403 kể cả khi KHÔNG gửi credential nào, và detector coi 403 là
+          #      hợp lệ. Tức "verified" ở đây không chứng minh được điều gì.
+          # Chỉ tắt ĐÚNG detector này, không nới --only-verified và không tắt
+          # detector nào khác (AWS/GitHub/Postgres/OpenAI… vẫn chặn như cũ).
+          extra_args: --only-verified --exclude-detectors=Lob
 
   # ── 7. Frontend typecheck (BLOCKING gate) ─────
   # Runs `nuxt typecheck` (vue-tsc). Type-error backlog driven to 0, so this is now
