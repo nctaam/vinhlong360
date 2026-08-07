@@ -23,13 +23,15 @@
           @click="navigate(item)"
           @mouseenter="active = i"
         >
-          <span class="cmd-icon-chip" aria-hidden="true"><span class="cmd-icon">{{ item.icon }}</span></span>
+          <span class="cmd-icon-chip" aria-hidden="true">
+            <span class="cmd-icon"><IconLine :name="item.icon" /></span>
+          </span>
           <span class="cmd-label">{{ item.label }}</span>
           <span class="cmd-hint">{{ item.hint }}</span>
         </button>
         <div v-if="!results.length && query" class="cmd-empty">
           <span class="cmd-empty-query">Không tìm thấy "{{ query }}"</span>
-          <span class="cmd-empty-hint">Thử: Entities, Kiểm duyệt, Users, Báo cáo…</span>
+          <span class="cmd-empty-hint">Thử: {{ emptySuggestions }}…</span>
         </div>
       </div>
       <div class="cmd-footer">
@@ -41,47 +43,70 @@
 </template>
 
 <script setup lang="ts">
-import { ADMIN_KINDS } from '~/utils/adminKinds'
+import { resolveAdminScopes } from '~/utils/adminAccess'
+import {
+  ADMIN_NAV_GROUPS,
+  filterAdminNavGroups,
+  type AdminNavItem,
+} from '~/utils/adminNavigation'
+
+interface PaletteItem {
+  icon: string
+  label: string
+  to: string
+  hint: string
+  search: string
+}
 
 const open = ref(false)
 const query = ref('')
 const active = ref(0)
 const inputEl = ref<HTMLInputElement>()
 const paletteRef = ref<HTMLElement | null>(null)
+const { user } = useAuth()
 useModalA11y(open, paletteRef, { onClose: () => { open.value = false } })
 
 function removeDiacritics(s: string): string {
   return s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D')
 }
 
-const PAGES: { icon: string; label: string; to: string; hint: string; search: string }[] = [
-  { icon: '📊', label: 'Dashboard', to: '/admin', hint: 'Tổng quan' },
-  { icon: '📈', label: 'Thống kê', to: '/admin/thong-ke', hint: 'Analytics' },
-  { icon: '📋', label: 'Entities', to: '/admin/entities', hint: 'Quản lý nội dung' },
-  ...ADMIN_KINDS.map(k => ({
-    icon: k.emoji, label: k.label, to: `/admin/entities?kind=${k.kind}`, hint: k.types.join(', '),
-  })),
-  { icon: '📍', label: 'Chưa phân loại', to: '/admin/chua-phan-loai', hint: 'Entity chưa gắn xã' },
-  { icon: '🏛', label: 'Danh bạ HC', to: '/admin/danh-ba', hint: 'Hành chính' },
-  { icon: '🗺', label: 'Lịch trình', to: '/admin/lich-trinh', hint: 'Tuyến đường' },
-  { icon: '🔍', label: 'Chất lượng DL', to: '/admin/data-quality', hint: 'Data quality' },
-  { icon: '🖼', label: 'Thư viện ảnh', to: '/admin/media', hint: 'Media gallery' },
-  { icon: '🛡', label: 'Kiểm duyệt', to: '/admin/kiem-duyet', hint: 'Moderation' },
-  { icon: '📷', label: 'Duyệt ảnh', to: '/admin/duyet-anh', hint: 'Image review' },
-  { icon: '👥', label: 'Users', to: '/admin/users', hint: 'Quản lý tài khoản' },
-  { icon: '🚩', label: 'Báo cáo', to: '/admin/bao-cao', hint: 'Reports' },
-  { icon: '🧪', label: 'Duyệt & Tools', to: '/admin/duyet-tu-hoc', hint: 'KB curation' },
-  { icon: '🤖', label: 'Knowledge Agent', to: '/admin/ai', hint: 'AI chat' },
-  { icon: '📜', label: 'Nhật ký', to: '/admin/nhat-ky', hint: 'Audit log' },
-  { icon: '⚙', label: 'Cài đặt', to: '/admin/cai-dat', hint: 'Site settings' },
-  { icon: '🏠', label: 'Về trang chủ', to: '/', hint: 'Public site' },
-].map(p => ({ ...p, search: removeDiacritics(`${p.label} ${p.hint}`).toLowerCase() }))
+function targetToUrl(target: AdminNavItem['to']): string {
+  if (typeof target === 'string') return target
+  const queryString = new URLSearchParams(target.query || {}).toString()
+  return queryString ? `${target.path}?${queryString}` : target.path
+}
+
+function toPaletteItem(item: AdminNavItem, hint: string): PaletteItem {
+  return {
+    icon: item.icon,
+    label: item.label,
+    to: targetToUrl(item.to),
+    hint,
+    search: removeDiacritics(`${item.label} ${hint}`).toLowerCase(),
+  }
+}
+
+const pages = computed<PaletteItem[]>(() => {
+  const scopes = resolveAdminScopes(user.value)
+  const adminItems = filterAdminNavGroups(ADMIN_NAV_GROUPS, scopes).flatMap(group => (
+    group.items.flatMap(item => [
+      toPaletteItem(item, group.label),
+      ...(item.children || []).map(child => toPaletteItem(child, item.label)),
+    ])
+  ))
+
+  return [
+    ...adminItems,
+    toPaletteItem({ id: 'public-home', label: 'Về trang chủ', to: '/', icon: 'home' }, 'Trang công khai'),
+  ]
+})
 
 const results = computed(() => {
-  if (!query.value) return PAGES
+  if (!query.value) return pages.value
   const q = removeDiacritics(query.value).toLowerCase()
-  return PAGES.filter(p => p.search.includes(q))
+  return pages.value.filter(p => p.search.includes(q))
 })
+const emptySuggestions = computed(() => pages.value.slice(0, 4).map(page => page.label).join(', '))
 
 watch(query, () => { active.value = 0 })
 

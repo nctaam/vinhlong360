@@ -148,14 +148,15 @@ _audit_lock = threading.Lock()
 
 
 from config import settings as _cfg
+from admin_permissions import (
+    ADMIN_ROLE_SCOPES as ADMIN_ROLE_SCOPES,
+    admin_scopes_for_user,
+    filter_admin_badge_counts,
+    filter_admin_dashboard_alerts,
+    has_admin_entry_scope as _has_admin_entry_scope,
+)
 _AUDIT_MAX_LINES = _cfg.AUDIT_MAX_LINES
 _AUDIT_MAX_BYTES = 10 * 1024 * 1024  # B5b: rotate cũng khi file > 10MB (không chỉ khi vượt số dòng)
-
-ADMIN_ROLE_SCOPES: dict[str, set[str]] = {
-    "moderator": {"moderation.manager"},
-    "admin": {"content.editor", "moderation.manager", "ops.deploy", "settings.admin", "security.admin"},
-    "superadmin": {"*"},
-}
 
 ADMIN_ROLE_RANKS: dict[str, int] = {
     "user": 0,
@@ -223,25 +224,16 @@ ADMIN_SCOPE_RULES: tuple[tuple[str, str], ...] = (
     ("/admin/sources", "content.editor"),
     ("/admin/claims", "content.editor"),
     ("/admin/announcements", "content.editor"),
+    ("/admin/entity-completeness", "content.editor"),
+    ("/admin/entity-kinds", "content.editor"),
+    ("/admin/entity-schema", "content.editor"),
+    ("/admin/stats", "ops.deploy"),
 )
 
-def _coerce_scope_list(value: Any) -> set[str]:
-    if isinstance(value, str):
-        return {part.strip() for part in value.split(",") if part.strip()}
-    if isinstance(value, (list, tuple, set)):
-        return {str(part).strip() for part in value if str(part).strip()}
-    return set()
-
-def admin_scopes_for_user(user: dict | None) -> list[str]:
-    """Return RBAC scopes for an admin actor. admin-key/superadmin receive wildcard."""
-    if user is None:
-        return ["*"]
-    scopes = set(ADMIN_ROLE_SCOPES.get(str(user.get("role") or "user"), set()))
-    for field in ("admin_scopes", "scopes", "permissions"):
-        scopes.update(_coerce_scope_list(user.get(field)))
-    if "*" in scopes:
-        return ["*"]
-    return sorted(scopes)
+ADMIN_SCOPE_AWARE_READ_PATHS = frozenset({
+    "/admin/badge-counts",
+    "/admin/dashboard-alerts",
+})
 
 def _ensure_admin_scope(request: Request | None, scope: str) -> None:
     scopes = set(getattr(getattr(request, "state", None), "admin_scopes", []) or [])
@@ -262,9 +254,12 @@ def _admin_required_scope_for_path(path: str) -> str | None:
             return scope
     return None
 
-def _has_admin_entry_scope(user: dict | None) -> bool:
-    scopes = set(admin_scopes_for_user(user))
-    return "*" in scopes or bool(scopes & {"content.editor", "moderation.manager", "ops.deploy", "settings.admin", "security.admin"})
+
+def _is_scope_aware_admin_read(request: Request) -> bool:
+    return (
+        request.method in ("GET", "HEAD", "OPTIONS")
+        and _normalize_admin_path(request.url.path) in ADMIN_SCOPE_AWARE_READ_PATHS
+    )
 
 def _admin_actor_context(request: Request | None, actor: str) -> dict[str, Any]:
     user = getattr(getattr(request, "state", None), "admin_user", None) if request is not None else None
@@ -498,10 +493,9 @@ async def require_admin(request: Request, required_scope_override: str | None = 
     request.state.admin_required_scope = required_scope
     if required_scope:
         _ensure_admin_scope(request, required_scope)
-    elif admin_user is not None and request.method not in ("GET", "HEAD", "OPTIONS"):
-        # Default-deny: path admin MUTATING không có scope rule → chỉ master ('*'/admin-key/
-        # superadmin) được vào (scoped-user 403). Chống fail-open âm thầm khi thêm endpoint
-        # mutating mới mà quên khai ADMIN_SCOPE_RULES. Read (GET) giữ nguyên cho mọi admin.
+    elif admin_user is not None and not _is_scope_aware_admin_read(request):
+        # Default-deny mọi route không có scope. Chỉ endpoint GET tự lọc response theo
+        # workstream mới được khai trong ADMIN_SCOPE_AWARE_READ_PATHS.
         _ensure_admin_scope(request, "*")
     if admin_user is not None:
         request.state.user = admin_user
@@ -3229,7 +3223,7 @@ def _extract_media_items(entities: list) -> dict:
 @router.get("/badge-counts",
             summary="Get admin dashboard badge counts",
             description="Returns lightweight counts for sidebar badges including moderation, images, unclassified entities, provisional items, and reports.")
-async def badge_counts():
+async def badge_counts(request: Request):
     """Lightweight counts cho sidebar badges — cached 60s to avoid repeated DB+JSONL parsing."""
     def _query():
         import time as _time
@@ -3263,13 +3257,15 @@ async def badge_counts():
         _badge_cache["data"] = counts
         _badge_cache["ts"] = now
         return counts
-    return await asyncio.to_thread(_query)
+    counts = await asyncio.to_thread(_query)
+    scopes = getattr(request.state, "admin_scopes", [])
+    return filter_admin_badge_counts(counts, scopes)
 
 
 @router.get("/dashboard-alerts",
             summary="Get dashboard alert notifications",
             description="Returns priority-sorted alerts for the admin dashboard. Scans moderation, reports, images, unclassified entities, provisional items, and appeals queues.")
-async def dashboard_alerts():
+async def dashboard_alerts(request: Request):
     """Priority-sorted alerts cho admin dashboard."""
     def _query():
         alerts: list[dict] = []
@@ -3296,8 +3292,11 @@ async def dashboard_alerts():
         _dashboard_alerts_provisional(alerts)
         _dashboard_alerts_appeals(alerts)
         alerts.sort(key=lambda a: a["priority"])
-        return {"alerts": alerts[:5]}
-    return await asyncio.to_thread(_query)
+        return {"alerts": alerts}
+    payload = await asyncio.to_thread(_query)
+    scopes = getattr(request.state, "admin_scopes", [])
+    visible_alerts = filter_admin_dashboard_alerts(payload["alerts"], scopes)
+    return {"alerts": visible_alerts[:5]}
 
 
 def _dashboard_alerts_images(alerts) -> None:

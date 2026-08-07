@@ -31,7 +31,7 @@
       </div>
 
       <nav class="admin-nav" aria-label="Menu quản trị">
-        <div v-for="group in ADMIN_NAV_GROUPS" :key="group.id" class="admin-nav-group">
+        <div v-for="group in visibleAdminNavGroups" :key="group.id" class="admin-nav-group">
           <span v-if="!sidebarCollapsed || mobileSidebarOpen" class="admin-nav-group-label">{{ group.label }}</span>
           <template v-for="item in group.items" :key="item.id">
             <NuxtLink
@@ -127,10 +127,13 @@
 <script setup lang="ts">
 import {
   ADMIN_NAV_GROUPS,
+  filterAdminNavGroups,
   isAdminNavItemActive,
   resolveAdminPageLabel,
+  type AdminBadgeKey,
   type AdminNavItem,
 } from '~/utils/adminNavigation'
+import { resolveAdminScopes } from '~/utils/adminAccess'
 
 const route = useRoute()
 const { user, fetchMe, authHeaders } = useAuth()
@@ -158,11 +161,15 @@ const sidebarCollapsed = computed({
   set: (v: boolean) => setPref('sidebarCollapsed', v),
 })
 const badges = ref<Record<string, number>>({ moderation: 0, images: 0, unclassified: 0, provisional: 0, reports: 0 })
+const visibleBadgeKeys = computed(() => new Set<AdminBadgeKey>(
+  visibleAdminNavGroups.value.flatMap(group => group.items.flatMap(item => item.badge ? [item.badge] : [])),
+))
 
 async function loadBadges() {
+  if (!visibleBadgeKeys.value.size) return
   try {
     const data = await $fetch<Record<string, number>>('/admin-api/badge-counts', { headers: authHeaders() })
-    badges.value = data
+    for (const key of visibleBadgeKeys.value) badges.value[key] = data[key] || 0
   } catch { /* ignore */ }
 }
 
@@ -171,13 +178,15 @@ const currentKind = computed(() => {
   return Array.isArray(value) ? value[0] || '' : String(value || '')
 })
 const currentPageLabel = computed(() => resolveAdminPageLabel(route.path, currentKind.value))
+const adminScopes = computed(() => resolveAdminScopes(user.value))
+const visibleAdminNavGroups = computed(() => filterAdminNavGroups(ADMIN_NAV_GROUPS, adminScopes.value))
 
 function isNavActive(item: AdminNavItem) {
   return isAdminNavItemActive(item, route.path, currentKind.value)
 }
 
 const currentWorkstreamLabel = computed(() => {
-  const activeGroup = ADMIN_NAV_GROUPS.find(group => group.items.some(item =>
+  const activeGroup = visibleAdminNavGroups.value.find(group => group.items.some(item =>
     isNavActive(item) || item.children?.some(child => isNavActive(child)),
   ))
   return activeGroup?.label || 'Tổng quan'

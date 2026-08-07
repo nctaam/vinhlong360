@@ -18,6 +18,7 @@ import {
 } from '../utils/adminNavigation'
 
 const mocks = vi.hoisted(() => ({
+  authUser: { value: null as null | { id: string; role: string; admin_scopes?: string[] } },
   authHeaders: vi.fn(() => ({})),
   fetchMe: vi.fn(() => Promise.resolve()),
   setPref: vi.fn(),
@@ -27,7 +28,12 @@ mockNuxtImport('useAuth', () => () => ({
   authHeaders: mocks.authHeaders,
   fetchMe: mocks.fetchMe,
   isLoggedIn: ref(false),
-  user: ref(null),
+  // Hai dòng này cố ý KHÔNG cùng kiểu, và đó là chủ ý chứ không phải sót khi hợp nhánh:
+  // `isLoggedIn` phải là `ref` thật (xem chú thích ngay dưới) vì nó đi thẳng vào một
+  // prop Boolean; còn `user` là holder `{ value }` khai trong `vi.hoisted` để các test
+  // RBAC gán lại `mocks.authUser.value = {...}` giữa chừng. Không đổi `user` thành
+  // `ref()` được: `vi.hoisted` chạy TRƯỚC khi import `vue` được dùng.
+  user: mocks.authUser,
 }))
 // `ref(false)` chứ KHÔNG phải `{ value: false }`: composable thật trả `useState`
 // (một ref), nên template `:visible="showAuth"` tự unwrap thành boolean. Mock bằng
@@ -91,6 +97,7 @@ function mountDefaultLayout() {
 }
 
 beforeEach(() => {
+  mocks.authUser.value = null
   mocks.authHeaders.mockClear()
   mocks.fetchMe.mockClear()
   mocks.setPref.mockClear()
@@ -257,6 +264,24 @@ describe('UI foundation shell', () => {
     expect(resolveAdminPageLabel('/admin/entities', 'product')).not.toMatch(/\p{Extended_Pictographic}/u)
   })
 
+  it('shows a moderator only the moderation workstream', async () => {
+    mocks.authUser.value = {
+      id: 'moderator-1',
+      role: 'moderator',
+      admin_scopes: ['moderation.manager'],
+    }
+    const wrapper = await mountAdminLayout()
+    wrappers.push(wrapper)
+
+    const navigation = wrapper.get('nav[aria-label="Menu quản trị"]')
+    expect(navigation.text()).toContain('Kiểm duyệt')
+    expect(navigation.text()).toContain('Báo cáo')
+    expect(navigation.text()).not.toContain('Thành viên')
+    expect(navigation.text()).not.toContain('Chất lượng dữ liệu')
+    expect(navigation.text()).not.toContain('Knowledge Agent')
+    expect(navigation.findAll('a')).toHaveLength(2)
+  })
+
   it('opens the existing Admin command palette from the topbar hint', async () => {
     const wrapper = await mountAdminLayout()
     wrappers.push(wrapper)
@@ -265,6 +290,30 @@ describe('UI foundation shell', () => {
     await nextTick()
 
     expect(wrapper.get('[role="dialog"][aria-label="Tìm nhanh"]').isVisible()).toBe(true)
+  })
+
+  it('filters the command palette by scope and uses SVG icons', async () => {
+    mocks.authUser.value = {
+      id: 'moderator-2',
+      role: 'moderator',
+      admin_scopes: ['moderation.manager'],
+    }
+    const wrapper = await mountAdminLayout()
+    wrappers.push(wrapper)
+
+    await wrapper.get('button[aria-label="Mở bảng lệnh"]').trigger('click')
+    await nextTick()
+
+    const palette = wrapper.get('[role="dialog"][aria-label="Tìm nhanh"]')
+    expect(palette.text()).toContain('Kiểm duyệt')
+    expect(palette.text()).toContain('Báo cáo')
+    expect(palette.text()).not.toContain('Users')
+    expect(palette.text()).not.toContain('Knowledge Agent')
+    expect(palette.findAll('.cmd-icon svg')).toHaveLength(3)
+    expect(palette.text()).not.toMatch(/\p{Extended_Pictographic}/u)
+
+    await palette.get('input').setValue('không có kết quả')
+    expect(palette.get('.cmd-empty-hint').text()).toBe('Thử: Kiểm duyệt, Báo cáo, Về trang chủ…')
   })
 
   it('traps focus in the mobile Admin drawer and restores it after Escape', async () => {

@@ -1,4 +1,5 @@
 import { ADMIN_KINDS, kindByKey } from './adminKinds'
+import { firstAdminRoute, type AdminScope } from './adminAccess'
 
 export type AdminBadgeKey = 'moderation' | 'images' | 'unclassified' | 'provisional' | 'reports'
 
@@ -8,6 +9,7 @@ export interface AdminNavItem {
   to: string | { path: string; query?: Record<string, string> }
   icon: string
   badge?: AdminBadgeKey
+  scope?: AdminScope
   prefix?: boolean
   matchKind?: string
   children?: AdminNavItem[]
@@ -24,6 +26,7 @@ const entityKindItems: AdminNavItem[] = ADMIN_KINDS.map(kind => ({
   label: kind.label,
   to: { path: '/admin/entities', query: { kind: kind.kind } },
   icon: kind.icon,
+  scope: 'content.editor',
   matchKind: kind.kind,
 }))
 
@@ -33,7 +36,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     label: 'Tổng quan',
     items: [
       { id: 'dashboard', label: 'Bàn điều phối', to: '/admin', icon: 'layout-dashboard' },
-      { id: 'analytics', label: 'Thống kê', to: '/admin/thong-ke', icon: 'chart' },
+      { id: 'analytics', label: 'Thống kê', to: '/admin/thong-ke', icon: 'chart', scope: 'ops.deploy' },
     ],
   },
   {
@@ -45,34 +48,35 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         label: 'Tất cả nội dung',
         to: '/admin/entities',
         icon: 'clipboard-list',
+        scope: 'content.editor',
         matchKind: '',
         children: entityKindItems,
       },
-      { id: 'unclassified', label: 'Chưa phân loại', to: '/admin/chua-phan-loai', icon: 'pin', badge: 'unclassified' },
-      { id: 'directory', label: 'Danh bạ hành chính', to: '/admin/danh-ba', icon: 'landmark' },
-      { id: 'itineraries', label: 'Lịch trình', to: '/admin/lich-trinh', icon: 'route' },
-      { id: 'data-quality', label: 'Chất lượng dữ liệu', to: '/admin/data-quality', icon: 'database' },
-      { id: 'media', label: 'Thư viện ảnh', to: '/admin/media', icon: 'images' },
+      { id: 'unclassified', label: 'Chưa phân loại', to: '/admin/chua-phan-loai', icon: 'pin', badge: 'unclassified', scope: 'content.editor' },
+      { id: 'directory', label: 'Danh bạ hành chính', to: '/admin/danh-ba', icon: 'landmark', scope: 'content.editor' },
+      { id: 'itineraries', label: 'Lịch trình', to: '/admin/lich-trinh', icon: 'route', scope: 'content.editor' },
+      { id: 'data-quality', label: 'Chất lượng dữ liệu', to: '/admin/data-quality', icon: 'database', scope: 'content.editor' },
+      { id: 'media', label: 'Thư viện ảnh', to: '/admin/media', icon: 'images', scope: 'content.editor' },
     ],
   },
   {
     id: 'community',
     label: 'Cộng đồng & tin cậy',
     items: [
-      { id: 'moderation', label: 'Kiểm duyệt', to: '/admin/kiem-duyet', icon: 'shield-check', badge: 'moderation' },
-      { id: 'image-review', label: 'Duyệt ảnh', to: '/admin/duyet-anh', icon: 'images', badge: 'images' },
-      { id: 'users', label: 'Thành viên', to: '/admin/users', icon: 'users' },
-      { id: 'reports', label: 'Báo cáo', to: '/admin/bao-cao', icon: 'flag', badge: 'reports' },
+      { id: 'moderation', label: 'Kiểm duyệt', to: '/admin/kiem-duyet', icon: 'shield-check', badge: 'moderation', scope: 'moderation.manager' },
+      { id: 'image-review', label: 'Duyệt ảnh', to: '/admin/duyet-anh', icon: 'images', badge: 'images', scope: 'content.editor' },
+      { id: 'users', label: 'Thành viên', to: '/admin/users', icon: 'users', scope: 'security.admin' },
+      { id: 'reports', label: 'Báo cáo', to: '/admin/bao-cao', icon: 'flag', badge: 'reports', scope: 'moderation.manager' },
     ],
   },
   {
     id: 'system',
     label: 'Hệ thống',
     items: [
-      { id: 'provisional', label: 'Duyệt & công cụ', to: '/admin/duyet-tu-hoc', icon: 'flask', badge: 'provisional' },
-      { id: 'knowledge-agent', label: 'Knowledge Agent', to: '/admin/ai', icon: 'bot' },
-      { id: 'audit-log', label: 'Nhật ký', to: '/admin/nhat-ky', icon: 'file-text' },
-      { id: 'settings', label: 'Cài đặt trang', to: '/admin/cai-dat', icon: 'settings', prefix: true },
+      { id: 'provisional', label: 'Duyệt & công cụ', to: '/admin/duyet-tu-hoc', icon: 'flask', badge: 'provisional', scope: 'content.editor' },
+      { id: 'knowledge-agent', label: 'Knowledge Agent', to: '/admin/ai', icon: 'bot', scope: 'ops.deploy' },
+      { id: 'audit-log', label: 'Nhật ký', to: '/admin/nhat-ky', icon: 'file-text', scope: 'security.admin' },
+      { id: 'settings', label: 'Cài đặt trang', to: '/admin/cai-dat', icon: 'settings', scope: 'settings.admin', prefix: true },
     ],
   },
 ]
@@ -93,6 +97,23 @@ export const ADMIN_PAGE_LABELS: Record<string, string> = {
   '/admin/nhat-ky': 'Nhật ký',
   '/admin/media': 'Thư viện ảnh',
   '/admin/cai-dat': 'Cài đặt trang',
+}
+
+function hasScope(item: AdminNavItem, scopes: readonly string[]) {
+  if (item.id === 'dashboard') return firstAdminRoute(scopes) === '/admin'
+  return !!item.scope && (scopes.includes('*') || scopes.includes(item.scope))
+}
+
+export function filterAdminNavGroups(groups: readonly AdminNavGroup[], scopes: readonly string[]): AdminNavGroup[] {
+  return groups.flatMap((group) => {
+    const items = group.items
+      .filter(item => hasScope(item, scopes))
+      .map(item => ({
+        ...item,
+        children: item.children?.filter(child => hasScope(child, scopes)),
+      }))
+    return items.length ? [{ ...group, items }] : []
+  })
 }
 
 export function isAdminNavItemActive(item: AdminNavItem, path: string, kind = ''): boolean {

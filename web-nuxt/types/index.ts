@@ -171,6 +171,7 @@ export interface User {
   username?: string | null
   bio?: string
   role?: string
+  admin_scopes?: string[]
   is_private?: boolean
   created_at?: string
   date_of_birth?: string | null
