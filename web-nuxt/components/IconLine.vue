@@ -79,6 +79,16 @@ const ICONS: Record<string, string> = {
   megaphone: W('<path d="M4 9v6h3l10 5V4L7 9Z"/><path d="M18.5 9a4 4 0 0 1 0 6"/>'),
   repeat: W('<path d="M17 2.5 21 6l-4 3.5"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 21.5 3 18l4-3.5"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>'),
   'eye-off': W('<path d="M3 3l18 18"/><path d="M10.6 5.2A9.6 9.6 0 0 1 12 5c5 0 9 4.5 10 7a15 15 0 0 1-3.3 4.2"/><path d="M6.5 7.3A14.6 14.6 0 0 0 2 12c1 2.5 5 7 10 7a9.4 9.4 0 0 0 3.9-.8"/><path d="M9.9 10.1a3 3 0 0 0 4 4"/>'),
+  // Bộ thời tiết — phủ mã icon OpenWeatherMap 01–50 qua composables/useWeather.ts.
+  // `sun` (01d) và `moon` (01n) đã có ở trên nên không lặp lại.
+  cloud: W('<path d="M17.5 19H9a7 7 0 1 1 6.7-9h1.8a4.5 4.5 0 1 1 0 9Z"/>'),
+  'cloud-sun': W('<path d="M12 2v2"/><path d="m4.9 4.9 1.4 1.4"/><path d="M20 12h2"/><path d="m19.1 4.9-1.4 1.4"/><path d="M15.9 12.6A4 4 0 0 0 10 8.5"/><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6Z"/>'),
+  'cloud-moon': W('<path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6Z"/><path d="M10.2 8.9A6 6 0 0 1 15.5 2a6 6 0 0 0 6.4 8.6 6 6 0 0 1-4.6 4.3"/>'),
+  'cloud-rain': W('<path d="M4 14.9A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.2"/><path d="M16 14v6"/><path d="M8 14v6"/><path d="M12 16v6"/>'),
+  'cloud-lightning': W('<path d="M6 16.3A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 .5 9"/><path d="m13 12-3 5h4l-3 5"/>'),
+  haze: W('<path d="m5.2 6.2 1.4 1.4"/><path d="M2 13h2"/><path d="M20 13h2"/><path d="m17.4 7.6 1.4-1.4"/><path d="M22 17H2"/><path d="M22 21H2"/><path d="M16 13a4 4 0 0 0-8 0"/><path d="M12 5V2.5"/>'),
+  droplet: W('<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5S12.5 5.5 12 3c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7Z"/>'),
+  wind: W('<path d="M12.8 19.6A2 2 0 1 0 14 16H2"/><path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"/><path d="M9.8 4.4A2 2 0 1 1 11 8H2"/>'),
 }
 
 const resolvedName = computed(() => ICONS[props.name] ? props.name : 'circle-help')

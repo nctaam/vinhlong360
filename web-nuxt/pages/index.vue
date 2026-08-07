@@ -38,6 +38,10 @@
       </div>
     </section>
 
+    <!-- 1a-pre. Bản tin địa phương — lớp utility "giờ này đang thế nào", giữa hero (đây là
+         đâu) và decision ledger (vậy làm gì). Tự ẩn khi chưa có dữ liệu đo. -->
+    <HomeLocalBriefing data-home-section="briefing" />
+
     <!-- 1a. Bắt đầu hành trình — data-driven decision layer -->
     <HomeDecisionLedger :entries="homePresentation.decisionEntries" data-home-section="decisions" />
 
@@ -303,6 +307,7 @@ import EntityFeature from '~/components/home/EntityFeature.vue'
 import HomeCategoryIndex from '~/components/home/HomeCategoryIndex.vue'
 import HomeDecisionLedger from '~/components/home/HomeDecisionLedger.vue'
 import HomeFeatureDossier from '~/components/home/HomeFeatureDossier.vue'
+import HomeLocalBriefing from '~/components/home/HomeLocalBriefing.vue'
 import StorySpread from '~/components/home/StorySpread.vue'
 import ImageDisclosure from '~/components/ImageDisclosure.vue'
 import { describeEntityImages, describeEntityPlaceholder } from '~/utils/imageDescriptors'
