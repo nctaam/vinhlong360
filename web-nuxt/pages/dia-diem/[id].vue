@@ -15,7 +15,12 @@
       <ol>
         <li><NuxtLink to="/">Trang chủ</NuxtLink></li>
         <li><NuxtLink :to="typeBreadcrumbUrl">{{ typeMeta.label }}</NuxtLink></li>
-        <li v-if="entity.place_area"><NuxtLink :to="`/khu-vuc/${entity.place_area}`">{{ areaName }}</NuxtLink></li>
+        <!-- §1.6: mắt xích giữa là ĐƠN VỊ HÀNH CHÍNH (xã/phường theo placeId),
+             không phải `area` (vùng cũ ben-tre/tra-vinh/vinh-long — chỉ để tra cứu dữ liệu). -->
+        <li v-if="adminUnitBreadcrumb">
+          <NuxtLink v-if="adminUnitBreadcrumb.to" :to="adminUnitBreadcrumb.to">{{ adminUnitBreadcrumb.label }}</NuxtLink>
+          <template v-else>{{ adminUnitBreadcrumb.label }}</template>
+        </li>
         <li aria-current="page">{{ entity.name }}</li>
       </ol>
     </nav>
@@ -482,6 +487,7 @@ import { TYPE_META, AREA_META, REL_FWD, REL_BWD } from '~/composables/useConstan
 import { seasonText } from '~/composables/useSeason'
 import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
 import { entityStoryTeaser } from '~/composables/useEntityStory'
+import { adminUnitCrumb, withAdminUnitBreadcrumb } from '~/utils/adminUnit'
 import { aiDisclosure } from '~/utils/aiDisclosure'
 import { currentGalleryDescriptors, type GalleryDescriptorCarrier } from '~/utils/entityGallery'
 import { describeEntityImages, parseGalleryDescriptor } from '~/utils/imageDescriptors'
@@ -856,6 +862,11 @@ const typeBreadcrumbUrl = computed(() => {
   const type = entity.value?.type
   return type ? (TYPE_BREADCRUMB[type] || '/du-lich') : '/du-lich'
 })
+
+// §1.6: breadcrumb đi qua xã/phường (đơn vị hành chính thật) chứ không qua `area`.
+// Thiếu placeId, hoặc placeId trỏ tới id không tồn tại (backend không gắn được
+// place_name) → null = bỏ hẳn mắt xích, không bịa địa bàn.
+const adminUnitBreadcrumb = computed(() => adminUnitCrumb(entity.value))
 
 const seasonLabel = computed(() => seasonText(entity.value?.season))
 
@@ -1250,12 +1261,19 @@ const fallbackJsonLdScripts = computed(() => {
     }
   }
 
+  // Mắt xích giữa PHẢI khớp breadcrumb hiển thị (§1.6) — lệch nhau là lỗi structured-data.
   const bcItems: any[] = [
     { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
     { '@type': 'ListItem', position: 2, name: typeMeta.value.label, item: `${SITE_URL}${typeBreadcrumbUrl.value}` },
   ]
-  if (e.place_area) {
-    bcItems.push({ '@type': 'ListItem', position: 3, name: areaName.value, item: `${SITE_URL}/khu-vuc/${e.place_area}` })
+  const unitCrumb = adminUnitBreadcrumb.value
+  if (unitCrumb) {
+    bcItems.push({
+      '@type': 'ListItem',
+      position: bcItems.length + 1,
+      name: unitCrumb.label,
+      ...(unitCrumb.to ? { item: `${SITE_URL}${unitCrumb.to}` } : {}),
+    })
   }
   bcItems.push({ '@type': 'ListItem', position: bcItems.length + 1, name: e.name, item: entityUrl })
   const breadcrumb = {
@@ -1305,9 +1323,12 @@ function normalizeJsonLdPayload(payload: JsonLdPayload | null | undefined) {
   return (Array.isArray(payload) ? payload : [payload]).filter(Boolean)
 }
 
+// Backend /seo/jsonld/{id} (agent/seo.py:519 `_build_breadcrumb`) vẫn phát mắt xích
+// `area` cũ (/khu-vuc/...) và payload backend được ưu tiên hơn fallback dưới đây —
+// chuẩn hoá tại chỗ để structured-data không lệch breadcrumb hiển thị.
 const backendJsonLdScripts = computed(() => normalizeJsonLdPayload(backendJsonLd.value).map(item => ({
   type: 'application/ld+json',
-  innerHTML: safeJsonLd(item),
+  innerHTML: safeJsonLd(withAdminUnitBreadcrumb(item, adminUnitBreadcrumb.value)),
 })))
 
 const jsonLdScripts = computed(() => {
