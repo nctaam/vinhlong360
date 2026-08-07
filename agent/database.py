@@ -140,8 +140,52 @@ def escape_like(s: str) -> str:
     return s.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
-# Bbox vùng VL+Bến Tre+Trà Vinh — guard validate toạ độ geocode (chống khớp nhầm tỉnh khác)
-_REGION_BBOX = (9.2, 10.65, 105.6, 106.95)  # lat_min, lat_max, lng_min, lng_max
+# Bbox vùng phục vụ — guard validate toạ độ geocode (chống khớp nhầm tỉnh khác).
+# Mặc định = tỉnh Vĩnh Long mới (gộp VL + Bến Tre + Trà Vinh cũ). Bản clone cho tỉnh
+# khác (dongthap360/cantho360/...) PHẢI đặt env REGION_BBOX, nếu không guard sẽ null-hoá
+# TOÀN BỘ toạ độ của tỉnh đó.
+REGION_BBOX_ENV = "REGION_BBOX"
+_DEFAULT_REGION_BBOX = (9.2, 10.65, 105.6, 106.95)  # lat_min, lat_max, lng_min, lng_max
+_REGION_BBOX_CACHE: tuple[str, tuple[float, float, float, float]] | None = None
+
+
+def _parse_region_bbox(raw: str) -> tuple[float, float, float, float] | None:
+    """Parse "lat_min,lat_max,lng_min,lng_max". None nếu sai định dạng/vô lý."""
+    parts = [p.strip() for p in str(raw).split(",")]
+    if len(parts) != 4:
+        return None
+    try:
+        lat_min, lat_max, lng_min, lng_max = (float(p) for p in parts)
+    except ValueError:
+        return None
+    if lat_min > lat_max or lng_min > lng_max:
+        return None
+    if not (-90.0 <= lat_min and lat_max <= 90.0 and -180.0 <= lng_min and lng_max <= 180.0):
+        return None
+    return (lat_min, lat_max, lng_min, lng_max)
+
+
+def region_bbox() -> tuple[float, float, float, float]:
+    """Bbox đang áp dụng: env REGION_BBOX nếu hợp lệ, không thì mặc định Vĩnh Long.
+
+    Đọc env mỗi lần gọi (có cache theo chuỗi thô) thay vì chốt lúc import: guard này
+    chạy trong upsert nên test/ops đổi env phải ăn ngay, không cần reload module.
+    """
+    global _REGION_BBOX_CACHE
+    raw = os.environ.get(REGION_BBOX_ENV, "").strip()
+    if not raw:
+        return _DEFAULT_REGION_BBOX
+    if _REGION_BBOX_CACHE is not None and _REGION_BBOX_CACHE[0] == raw:
+        return _REGION_BBOX_CACHE[1]
+    parsed = _parse_region_bbox(raw)
+    if parsed is None:
+        logger.warning(
+            "%s=%r sai định dạng (cần 'lat_min,lat_max,lng_min,lng_max') → dùng mặc định %s",
+            REGION_BBOX_ENV, raw, _DEFAULT_REGION_BBOX,
+        )
+        parsed = _DEFAULT_REGION_BBOX
+    _REGION_BBOX_CACHE = (raw, parsed)
+    return parsed
 
 
 def _validate_place_level(entity: dict):
@@ -170,12 +214,28 @@ def _normalize_itinerary_areas(value) -> list[str]:
 
 
 def _coords_in_region(c) -> bool:
-    """True nếu [lat, lng] nằm trong vùng 3 tỉnh. Toạ độ ngoài vùng = geocode sai → loại."""
+    """True nếu [lat, lng] nằm trong bbox vùng phục vụ. Ngoài vùng = geocode sai → loại."""
     try:
         lat, lng = float(c[0]), float(c[1])
     except (TypeError, IndexError, ValueError):
         return False
-    return _REGION_BBOX[0] <= lat <= _REGION_BBOX[1] and _REGION_BBOX[2] <= lng <= _REGION_BBOX[3]
+    lat_min, lat_max, lng_min, lng_max = region_bbox()
+    return lat_min <= lat <= lat_max and lng_min <= lng <= lng_max
+
+
+def _warn_coords_dropped(entity_id, coords_val) -> None:
+    """Cảnh báo khi guard bbox loại toạ độ.
+
+    Trước đây việc loại là IM LẶNG (chỉ gán None): `ben-xe-mien-tay-hcm` còn toạ độ
+    trong web/data.json nhưng DB trả None, không có dấu vết nào để lần ra. Với bản
+    clone tỉnh khác, im lặng = mất sạch toạ độ. Log kèm id + toạ độ + bbox đang áp dụng.
+    """
+    logger.warning(
+        "Loại toạ độ ngoài vùng: entity=%s coords=%r bbox=%s. "
+        "Nếu vùng phục vụ khác Vĩnh Long, đặt %s='lat_min,lat_max,lng_min,lng_max'.",
+        entity_id or "<no-id>", coords_val, region_bbox(), REGION_BBOX_ENV,
+    )
+
 
 def _env_truthy(name: str, default: str = "false") -> bool:
     return os.environ.get(name, default).strip().lower() in ("1", "true", "yes", "on")
@@ -449,9 +509,11 @@ def _normalize_upsert_fields(entity: dict):
     # GĐ-audit: chấp nhận alias legacy "coords" để ETL/auto_learn không mất toạ độ
     # đã geocode (nhiều path ghi entity["coords"] thay vì "coordinates").
     coords_val = entity.get("coordinates") or entity.get("coords")
-    # Guard geocode: bỏ toạ độ NGOÀI vùng VL+Bến Tre+Trà Vinh (crawler/geocoder hay
-    # khớp nhầm tên → pin sai tỉnh). Thà null còn hơn sai (xem fix data 2026-06-14).
+    # Guard geocode: bỏ toạ độ NGOÀI bbox vùng phục vụ (crawler/geocoder hay khớp nhầm
+    # tên → pin sai tỉnh). Thà null còn hơn sai (xem fix data 2026-06-14). Bbox đổi được
+    # qua env REGION_BBOX (mặc định = Vĩnh Long); việc loại KHÔNG còn im lặng.
     if coords_val and not _coords_in_region(coords_val):
+        _warn_coords_dropped(entity.get("id"), coords_val)
         coords_val = None
     updated = entity.get("updatedAt", datetime.now(timezone.utc).strftime("%Y-%m-%d"))
     # GĐ-C3: khi flip đọc bật, JSONB lưu TAIL-ONLY (typed keys sống ở cột — sync

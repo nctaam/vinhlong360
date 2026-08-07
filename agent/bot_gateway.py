@@ -7,7 +7,7 @@ All platforms share a single agent engine for consistent answers.
 Architecture:
   User (Telegram/Zalo) -> BotGateway -> POST /chat -> Agent -> User
 
-Endpoints (FastAPI app on port 8361):
+Endpoints (FastAPI app, port mặc định 8361 — đổi bằng BOT_GATEWAY_PORT):
   GET  /             — gateway status
   POST /webhook/zalo — Zalo OA webhook receiver
   GET  /stats        — session statistics
@@ -22,6 +22,7 @@ Config (.env):
   ZALO_OA_ID           — Zalo OA application ID
   ZALO_OA_SECRET       — Zalo OA secret key
   AGENT_URL            — agent server (default http://localhost:8360)
+  BOT_GATEWAY_PORT     — cổng lắng nghe của gateway (default 8361)
 """
 
 import hashlib
@@ -47,7 +48,13 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+
+from runtime_ports import resolve_port
+
 BIND_HOST = os.environ.get("BIND_HOST", "127.0.0.1")
+# Cổng lắng nghe: mặc định 8361 = y hệt trước khi tham số hoá. Biến RIÊNG, không
+# dùng chung với AGENT_PORT — hai tiến trình khác nhau, xem runtime_ports.
+BOT_GATEWAY_PORT = resolve_port("BOT_GATEWAY_PORT", 8361)
 
 # ── Structured logging ──
 
@@ -918,7 +925,7 @@ def create_bot_app() -> FastAPI:
 
     The returned app can be:
       - Mounted on the main agent server via ``app.mount("/bot", create_bot_app())``
-      - Run standalone on port 8361 via ``uvicorn.run(app, port=8361)``
+      - Run standalone via ``uvicorn.run(app, port=BOT_GATEWAY_PORT)`` (default 8361)
 
     Returns:
         Configured FastAPI application.
@@ -1004,7 +1011,7 @@ if __name__ == "__main__":
     _admin_state = (f"{len(ADMIN_TELEGRAM_IDS)} chat ID" if ADMIN_TELEGRAM_IDS
                     else "disabled (set ADMIN_TELEGRAM_IDS=<chat_id,...>)")
     print(f"  Admin TG: {_admin_state}{'' if ADMIN_API_KEY else '  ⚠ thiếu ADMIN_API_KEY'}")
-    print("  API:      http://localhost:8361")
+    print(f"  API:      http://localhost:{BOT_GATEWAY_PORT}")
     print("=" * 55)
 
     if not any([TELEGRAM_TOKEN and HAS_TELEGRAM, ZALO_OA_ID]):
@@ -1040,4 +1047,4 @@ if __name__ == "__main__":
         print("  [Telegram] Polling started in background thread")
 
     # Start FastAPI server (Zalo webhook + stats)
-    uvicorn.run(app, host=BIND_HOST, port=8361)
+    uvicorn.run(app, host=BIND_HOST, port=BOT_GATEWAY_PORT)

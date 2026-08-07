@@ -15,9 +15,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import urllib.error
 import urllib.request
 from datetime import datetime
+
+# Mặc định 8360 = y hệt trước khi backend tham số hoá cổng (agent/runtime_ports.py).
+# --base-url vẫn thắng env, để cron/runbook cũ không đổi hành vi.
+DEFAULT_BASE_URL = f"http://localhost:{os.environ.get('AGENT_PORT', '8360').strip() or '8360'}"
 
 
 def _fetch(url: str, timeout: int) -> tuple[dict | None, str | None]:
@@ -36,7 +41,7 @@ def _fetch(url: str, timeout: int) -> tuple[dict | None, str | None]:
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Health check for vinhlong360 backend.")
-    parser.add_argument("--base-url", default="http://localhost:8360", help="backend base URL")
+    parser.add_argument("--base-url", default=DEFAULT_BASE_URL, help="backend base URL (mặc định từ AGENT_PORT)")
     parser.add_argument("--deep", action="store_true", help="also check /health/deep (LLM connectivity)")
     parser.add_argument("--timeout", type=int, default=5, help="request timeout in seconds (default: 5)")
     parser.add_argument("--json", action="store_true", dest="json_output", help="output as JSON")

@@ -64,12 +64,17 @@ def test_http_only_cookie_auth_migration_contracts():
     assert "def _clear_session_cookie" in auth
     assert "response.set_cookie" in auth
     assert "x-forwarded-host" in auth
-    assert "host == \"vinhlong360.vn\"" in auth
+    # Domain của site đến từ env COOKIE_DOMAIN (nền tảng đa-tỉnh), KHÔNG ghim cứng nữa —
+    # nhưng nhận-diện-production-theo-host vẫn phải còn, và mặc định vẫn là Vĩnh Long.
+    assert "get_site_domain" in auth
+    assert "host == site_domain" in auth
     assert "VL360_FORCE_SECURE_COOKIES" in auth
     assert "not is_production" in auth
     assert "{\"production\", \"prod\", \"prd\"}" in auth
     assert "httponly" in auth_middleware
-    assert ".vinhlong360.vn" in auth_middleware
+    assert "_DEFAULT_COOKIE_DOMAIN = \".vinhlong360.vn\"" in auth_middleware
+    # Không được gắn Domain khi host của request không thuộc domain đó (cookie bị vứt im lặng)
+    assert "cookie_domain_matches_host" in auth_middleware
     assert "production\", \"prod\", \"prd\"" in auth_middleware
     # verify_otp / login_password establish the session cookie via the shared
     # _finish_login helper (Wave 4 2FA refactor); refresh_token sets it directly.

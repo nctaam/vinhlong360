@@ -224,15 +224,19 @@ def _call_name(node: ast.AST) -> str | None:
     return None
 
 
-def _bind_assignment(tree: ast.Module) -> ast.Assign:
+def _module_assignment(tree: ast.Module, name: str) -> ast.Assign:
     assignments = [
         node
         for node in tree.body
         if isinstance(node, ast.Assign)
-        and any(isinstance(target, ast.Name) and target.id == "BIND_HOST" for target in node.targets)
+        and any(isinstance(target, ast.Name) and target.id == name for target in node.targets)
     ]
     assert len(assignments) == 1
     return assignments[0]
+
+
+def _bind_assignment(tree: ast.Module) -> ast.Assign:
+    return _module_assignment(tree, "BIND_HOST")
 
 
 def _load_dotenv_line(tree: ast.Module) -> int:
@@ -362,10 +366,21 @@ def test_watchdog_uses_bash_for_non_executable_tracked_script():
 
 
 @pytest.mark.parametrize(
-    ("relative_path", "port"),
-    [("agent/server.py", 8360), ("agent/bot_gateway.py", 8361)],
+    ("relative_path", "port_const", "port_env", "port"),
+    [
+        ("agent/server.py", "AGENT_PORT", "AGENT_PORT", 8360),
+        ("agent/bot_gateway.py", "BOT_GATEWAY_PORT", "BOT_GATEWAY_PORT", 8361),
+    ],
 )
-def test_python_entrypoint_loads_loopback_bind_after_dotenv(relative_path: str, port: int):
+def test_python_entrypoint_loads_loopback_bind_after_dotenv(
+    relative_path: str, port_const: str, port_env: str, port: int
+):
+    """Bind host + cổng phải đọc env SAU load_dotenv, và mặc định phải là giá trị canonical.
+
+    Cổng đã tham số hoá (nền tảng sẽ clone sang dongthap360/cantho360…), nhưng
+    nginx.conf + ops/systemd/* vẫn ghim 8360/8361 — nên MẶC ĐỊNH phải giữ đúng
+    hai số đó, nếu không một deploy không set env sẽ lệch khỏi biên nginx.
+    """
     tree = _module_ast(ROOT / relative_path)
     assignment = _bind_assignment(tree)
 
@@ -378,12 +393,35 @@ def test_python_entrypoint_loads_loopback_bind_after_dotenv(relative_path: str, 
     assert isinstance(assignment.value.args[1], ast.Constant)
     assert assignment.value.args[1].value == "127.0.0.1"
 
+    port_assignment = _module_assignment(tree, port_const)
+    assert port_assignment.lineno > _load_dotenv_line(tree)
+    assert isinstance(port_assignment.value, ast.Call)
+    assert _call_name(port_assignment.value.func) == "resolve_port"
+    assert len(port_assignment.value.args) == 2
+    assert isinstance(port_assignment.value.args[0], ast.Constant)
+    assert port_assignment.value.args[0].value == port_env
+    assert isinstance(port_assignment.value.args[1], ast.Constant)
+    assert port_assignment.value.args[1].value == port
+
     run_call = _uvicorn_call(tree)
     keywords = {keyword.arg: keyword.value for keyword in run_call.keywords}
     assert isinstance(keywords["host"], ast.Name)
     assert keywords["host"].id == "BIND_HOST"
-    assert isinstance(keywords["port"], ast.Constant)
-    assert keywords["port"].value == port
+    assert isinstance(keywords["port"], ast.Name)
+    assert keywords["port"].id == port_const
+
+
+def test_entrypoints_read_separate_port_env_vars():
+    """Agent và bot gateway là hai tiến trình — một biến chung sẽ đẩy cả hai cùng nhảy cổng."""
+    env_names = {
+        _module_assignment(_module_ast(ROOT / path), const).value.args[0].value
+        for path, const in (
+            ("agent/server.py", "AGENT_PORT"),
+            ("agent/bot_gateway.py", "BOT_GATEWAY_PORT"),
+        )
+    }
+
+    assert len(env_names) == 2, f"hai tiến trình đang dùng chung một biến env: {env_names}"
 
 
 def test_ss_parser_extracts_canonical_listener_fields_without_process_ids():

@@ -1129,11 +1129,58 @@ def validate_content_type(
 #  SECURE COOKIE CONFIGURATION
 # ══════════════════════════════════════════════════
 
-def get_secure_cookie_params(is_production: bool = False) -> dict:
+# Giá trị Vĩnh Long hiện tại = mặc định. Bản clone (dongthap360.vn, cantho360.vn…)
+# chỉ cần đặt env COOKIE_DOMAIN, KHÔNG phải sửa code. Đặt COOKIE_DOMAIN= (rỗng)
+# để cookie thành host-only (không gắn thuộc tính Domain) — hợp cho dev/localhost.
+_DEFAULT_COOKIE_DOMAIN = ".vinhlong360.vn"
+
+
+def get_cookie_domain() -> str:
+    """Domain gắn vào session/trusted-device cookie (đọc env mỗi lần gọi).
+
+    Trả "" nghĩa là KHÔNG gắn thuộc tính Domain (cookie host-only).
+    """
+    raw = os.environ.get("COOKIE_DOMAIN")
+    if raw is None:
+        return _DEFAULT_COOKIE_DOMAIN
+    return raw.strip()
+
+
+def get_site_domain() -> str:
+    """Apex domain của site (bỏ dấu chấm đầu), suy ra từ COOKIE_DOMAIN.
+
+    Dùng cho nhận diện "đang chạy trên domain của mình" (secure-cookie detection).
+    Trả "" khi COOKIE_DOMAIN rỗng — khi đó việc nhận diện theo host bị tắt.
+    """
+    return get_cookie_domain().lstrip(".").lower()
+
+
+def cookie_domain_matches_host(domain: str, host: str) -> bool:
+    """Trình duyệt CHỈ nhận Set-Cookie khi host thuộc domain đó (RFC 6265 §5.3).
+
+    Gắn domain không khớp = cookie bị vứt im lặng (đăng nhập hỏng, không exception)
+    và là rò cấu hình sang domain khác → coi như không hợp lệ, bỏ thuộc tính Domain.
+    """
+    if not domain:
+        return True  # host-only cookie: luôn hợp lệ
+    apex = domain.lstrip(".").lower().rstrip(".")
+    h = (host or "").split(",", 1)[0].split(":")[0].strip().lower().rstrip(".")
+    if not apex or not h:
+        return False
+    return h == apex or h.endswith("." + apex)
+
+
+def get_secure_cookie_params(is_production: bool = False, request_host: str = "") -> dict:
     """Return secure cookie parameters for session cookies.
 
-    Production: Secure + HttpOnly + SameSite=Lax for vinhlong360.vn.
+    Production: Secure + HttpOnly + SameSite=Lax cho domain trong env COOKIE_DOMAIN
+    (mặc định .vinhlong360.vn).
     Development: HttpOnly + SameSite=Lax (no Secure for localhost).
+
+    `request_host`: host thật của request. Nếu truyền vào và KHÔNG khớp
+    COOKIE_DOMAIN thì thuộc tính Domain bị bỏ (cookie host-only) thay vì gắn domain
+    sai — tránh đăng nhập hỏng im lặng trên bản clone và tránh rò cookie sang domain
+    không liên quan. Bỏ trống = giữ hành vi cũ (luôn gắn domain).
     """
     base = {
         "httponly": True,
@@ -1144,7 +1191,9 @@ def get_secure_cookie_params(is_production: bool = False) -> dict:
     if is_production:
         base["secure"] = True
         base["samesite"] = "lax"
-        base["domain"] = ".vinhlong360.vn"
+        domain = get_cookie_domain()
+        if domain and cookie_domain_matches_host(domain, request_host or domain):
+            base["domain"] = domain
     return base
 
 

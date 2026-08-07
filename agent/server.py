@@ -13,7 +13,7 @@ FastAPI server cung cấp:
 
 Chạy:
   pip install -r requirements.txt
-  python agent/server.py
+  python agent/server.py           # lắng nghe BIND_HOST:AGENT_PORT (mặc định 127.0.0.1:8360)
 """
 
 import hashlib
@@ -47,7 +47,13 @@ from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+
+from runtime_ports import resolve_port
+
 BIND_HOST = os.environ.get("BIND_HOST", "127.0.0.1")
+# Cổng lắng nghe: mặc định 8360 = y hệt trước khi tham số hoá. Env chỉ cần khi
+# chạy nhiều bản (dongthap360, cantho360…) trên cùng một máy — xem runtime_ports.
+AGENT_PORT = resolve_port("AGENT_PORT", 8360)
 
 
 def _env_bool(name: str, default: bool) -> bool:
@@ -5380,6 +5386,6 @@ if __name__ == "__main__":
         print("  Admin Key:   (configured via .env)")
     else:
         print("  Admin Key:   (NOT SET — admin endpoints disabled)")
-    print("  URL:         http://localhost:8360")
+    print(f"  URL:         http://localhost:{AGENT_PORT}")
     print("=" * 64)
-    uvicorn.run(app, host=BIND_HOST, port=8360)
+    uvicorn.run(app, host=BIND_HOST, port=AGENT_PORT)

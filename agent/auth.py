@@ -144,24 +144,34 @@ def _check_shared_auth_rate(key: str, limit: int, window: int, msg: str) -> None
 def _truthy_env(name: str) -> bool:
     return os.environ.get(name, "").strip().lower() in {"1", "true", "yes", "on"}
 
+def _request_host(request: Request) -> str:
+    """Host thật của request (ưu tiên X-Forwarded-Host; bỏ port và danh sách proxy)."""
+    host_header = request.headers.get("x-forwarded-host") or request.headers.get("host") or request.url.hostname or ""
+    return host_header.split(",", 1)[0].split(":")[0].strip().lower()
+
 def _request_is_production(request: Request) -> bool:
+    from auth_middleware import get_site_domain
     if _truthy_env("VL360_FORCE_SECURE_COOKIES") or _truthy_env("SECURE_COOKIES"):
         return True
     if os.environ.get("ENVIRONMENT", "").lower() in {"production", "prod", "prd"}:
         return True
     proto = (request.headers.get("x-forwarded-proto") or request.url.scheme or "").split(",", 1)[0].strip().lower()
-    host_header = request.headers.get("x-forwarded-host") or request.headers.get("host") or request.url.hostname or ""
-    host = host_header.split(",", 1)[0].split(":")[0].lower()
-    if host == "vinhlong360.vn" or host.endswith(".vinhlong360.vn"):
+    host = _request_host(request)
+    # Domain của site đến từ env COOKIE_DOMAIN (mặc định vinhlong360.vn) để bản clone
+    # nhận đúng domain của nó. Rỗng => tắt nhận-diện-theo-host (chỉ còn cờ env ở trên).
+    site_domain = get_site_domain()
+    if not site_domain:
+        return False
+    if host == site_domain or host.endswith("." + site_domain):
         return True
-    return proto == "https" and host.endswith("vinhlong360.vn")
+    return proto == "https" and host.endswith(site_domain)
 
 def _cookie_params_for_request(request: Request) -> dict:
     from auth_middleware import get_secure_cookie_params
     is_production = _request_is_production(request)
-    params = get_secure_cookie_params(is_production=is_production)
+    host = _request_host(request)
+    params = get_secure_cookie_params(is_production=is_production, request_host=host)
     params["max_age"] = SESSION_EXPIRE_DAYS * 86400
-    host = (request.headers.get("host") or request.url.hostname or "").split(":")[0].lower()
     if not is_production and (host in {"localhost", "127.0.0.1", "::1"} or host.startswith("127.")):
         params.pop("domain", None)
         params.pop("secure", None)
@@ -649,9 +659,9 @@ TRUSTED_DEVICE_DAYS = 90
 def _trusted_cookie_params(request: Request) -> dict:
     from auth_middleware import get_secure_cookie_params
     is_prod = _request_is_production(request)
-    params = get_secure_cookie_params(is_production=is_prod)
+    host = _request_host(request)
+    params = get_secure_cookie_params(is_production=is_prod, request_host=host)
     params["max_age"] = TRUSTED_DEVICE_DAYS * 86400
-    host = (request.headers.get("host") or request.url.hostname or "").split(":")[0].lower()
     if not is_prod and (host in {"localhost", "127.0.0.1", "::1"} or host.startswith("127.")):
         params.pop("domain", None)
         params.pop("secure", None)
