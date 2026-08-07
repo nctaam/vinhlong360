@@ -386,6 +386,40 @@
       <p v-else class="sf-hint">Bạn chưa tắt tiếng ai.</p>
     </div>
 
+    <!-- Tab: Bài đã ẩn -->
+    <div v-if="activeTab === 'bai-da-an'" id="panel-bai-da-an" class="settings-card card sediment-head" role="tabpanel" aria-labelledby="tab-bai-da-an">
+      <h2>Bài viết đã ẩn</h2>
+      <p class="sf-hint sf-hint-spaced">
+        Những bài bạn đã ẩn sẽ không xuất hiện trong bảng tin cộng đồng của bạn nữa.
+        Đây là lựa chọn riêng của bạn — người khác vẫn thấy bài bình thường.
+      </p>
+      <div v-if="hiddenLoading && !hiddenPosts.length" class="sf-loading" role="status"><div class="spinner spinner-sm"></div> Đang tải...</div>
+      <div v-else-if="hiddenError && !hiddenPosts.length" class="sf-hint" role="alert">
+        Không thể tải danh sách bài đã ẩn.
+        <button type="button" class="btn btn-ghost btn-sm" @click="loadHiddenPosts(true)">Thử lại</button>
+      </div>
+      <template v-else-if="hiddenPosts.length">
+        <div class="sessions-list">
+          <div v-for="p in hiddenPosts" :key="p.id" class="session-item" data-testid="hidden-post-row">
+            <div class="session-info">
+              <NuxtLink :to="postPath(p.id)" class="session-ua">{{ hiddenPostExcerpt(p) }}</NuxtLink>
+              <span class="sf-hint">{{ p.display_name || 'Người dùng' }}<template v-if="p.entity_name"> · {{ p.entity_name }}</template></span>
+            </div>
+            <button
+              type="button" class="btn btn-ghost btn-sm"
+              data-post-action="unhide"
+              :disabled="unhidingId === p.id"
+              @click="unhideHiddenPost(p.id)"
+            >{{ unhidingId === p.id ? 'Đang bỏ ẩn...' : 'Bỏ ẩn' }}</button>
+          </div>
+        </div>
+        <button v-if="hiddenHasMore" type="button" class="btn btn-ghost btn-sm" :disabled="hiddenLoading" @click="loadHiddenPosts()">
+          {{ hiddenLoading ? 'Đang tải...' : 'Xem thêm' }}
+        </button>
+      </template>
+      <p v-else class="sf-hint">Bạn chưa ẩn bài viết nào.</p>
+    </div>
+
     <!-- Tab: Dữ liệu & pháp lý -->
     <div v-if="activeTab === 'du-lieu'" id="panel-du-lieu" class="settings-card card sediment-head" role="tabpanel" aria-labelledby="tab-du-lieu">
       <h2>Dữ liệu & pháp lý</h2>
@@ -437,6 +471,8 @@
 </template>
 
 <script setup lang="ts">
+import type { HideablePost } from '~/composables/useHiddenPosts'
+
 const { user, isLoggedIn, authHeaders, fetchMe, handleSessionExpired } = useAuth()
 const { openAuth } = useAuthModal()
 const { show: showToast } = useToast()
@@ -459,6 +495,7 @@ const TABS = [
   { key: 'rieng-tu', label: 'Riêng tư', icon: '🔒' },
   { key: 'chan', label: 'Chặn', icon: '\u{1F6AB}' },
   { key: 'tat-tieng', label: 'Tắt tiếng', icon: '\u{1F507}' },
+  { key: 'bai-da-an', label: 'Bài đã ẩn', icon: '\u{1F648}' },
   { key: 'du-lieu', label: 'Dữ liệu', icon: '📋' },
   { key: 'nguy-hiem', label: 'Nguy hiểm', icon: '⚠️' },
 ] as const
@@ -505,6 +542,7 @@ function lazyLoadTab(key: TabKey) {
   else if (key === 'rieng-tu') loadPrivacy()
   else if (key === 'chan') loadBlocked()
   else if (key === 'tat-tieng') loadMutedUsers()
+  else if (key === 'bai-da-an') loadHiddenPosts(true)
   else if (key === 'thong-bao') loadNotifPrefs()
 }
 
@@ -865,6 +903,56 @@ async function unmuteUser(id: string, name: string) {
   } catch (e: unknown) {
     if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể bỏ tắt tiếng', 'error')
+  }
+}
+
+// ── Bài đã ẩn (GET/POST /api/posts/hidden|unhide) ──
+// Nơi DUY NHẤT xem lại và hoàn tác thao tác "Ẩn bài này" ở bảng tin cộng đồng.
+// Ẩn là riêng tư: chỉ ảnh hưởng bảng tin của chính người này, không gỡ bài của ai.
+const { fetchHiddenPosts, unhidePost } = useHiddenPosts()
+const hiddenPosts = ref<HideablePost[]>([])
+const hiddenLoading = ref(false)
+const hiddenError = ref(false)
+const hiddenHasMore = ref(false)
+const hiddenPage = ref(1)
+const unhidingId = ref('')
+
+function hiddenPostExcerpt(p: HideablePost) {
+  const content = String(p.content || '').trim()
+  if (!content) return 'Bài viết không có nội dung văn bản'
+  return content.length > 90 ? `${content.slice(0, 90)}…` : content
+}
+
+async function loadHiddenPosts(reset = false) {
+  if (hiddenLoading.value) return
+  if (reset) { hiddenPage.value = 1; hiddenPosts.value = []; hiddenError.value = false }
+  hiddenLoading.value = true
+  try {
+    const res = await fetchHiddenPosts(hiddenPage.value, 20)
+    hiddenPosts.value = reset ? res.posts : [...hiddenPosts.value, ...res.posts]
+    hiddenHasMore.value = res.has_more
+    if (res.has_more) hiddenPage.value += 1
+    hiddenError.value = false
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+    // Lỗi phải THẤY ĐƯỢC — danh sách rỗng vì mạng hỏng khác hẳn "chưa ẩn bài nào".
+    hiddenError.value = true
+    showToast('Không thể tải danh sách bài đã ẩn', 'error')
+  } finally {
+    hiddenLoading.value = false
+  }
+}
+
+async function unhideHiddenPost(postId: string) {
+  if (unhidingId.value) return
+  unhidingId.value = postId
+  try {
+    // Lạc quan + hoàn nguyên nằm trong useHiddenPosts: lỗi thì dòng quay lại
+    // danh sách kèm toast, không im lặng.
+    const ok = await unhidePost(postId, [hiddenPosts])
+    if (ok) showToast('Đã bỏ ẩn bài viết', 'success')
+  } finally {
+    unhidingId.value = ''
   }
 }
 

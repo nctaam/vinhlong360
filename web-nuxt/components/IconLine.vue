@@ -78,6 +78,7 @@ const ICONS: Record<string, string> = {
   vase: W('<path d="M8 3h8"/><path d="M9.5 3c0 2.5-3 3.5-3 7a5.5 5.5 0 0 0 11 0c0-3.5-3-4.5-3-7"/>'),
   megaphone: W('<path d="M4 9v6h3l10 5V4L7 9Z"/><path d="M18.5 9a4 4 0 0 1 0 6"/>'),
   repeat: W('<path d="M17 2.5 21 6l-4 3.5"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 21.5 3 18l4-3.5"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>'),
+  'eye-off': W('<path d="M3 3l18 18"/><path d="M10.6 5.2A9.6 9.6 0 0 1 12 5c5 0 9 4.5 10 7a15 15 0 0 1-3.3 4.2"/><path d="M6.5 7.3A14.6 14.6 0 0 0 2 12c1 2.5 5 7 10 7a9.4 9.4 0 0 0 3.9-.8"/><path d="M9.9 10.1a3 3 0 0 0 4 4"/>'),
 }
 
 const resolvedName = computed(() => ICONS[props.name] ? props.name : 'circle-help')

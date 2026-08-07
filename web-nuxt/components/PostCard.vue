@@ -37,6 +37,7 @@
           <div v-if="showMenu" class="thread-menu" role="menu" aria-label="Tùy chọn bài viết" @keydown="onPostMenuKey">
             <button v-if="isOwner" type="button" role="menuitem" @click="$emit('edit', post.id); showMenu = false">Sửa bài</button>
             <button v-if="isOwner" type="button" role="menuitem" class="menu-danger" @click="confirmDelete">Xoá bài</button>
+            <button v-if="canHide && !isOwner" type="button" role="menuitem" data-post-action="hide" @click="$emit('hide', post.id); showMenu = false">Ẩn bài này</button>
             <button v-if="!isOwner" type="button" role="menuitem" @click="$emit('report', post.id); showMenu = false">Báo cáo</button>
           </div>
         </Transition>
@@ -110,6 +111,14 @@
 const props = defineProps<{
   post: Record<string, any>
   hasReplies?: boolean
+  /**
+   * Hiện mục "Ẩn bài này" trong menu ⋯. MẶC ĐỊNH TẮT — chỉ bật ở màn hình mà
+   * backend THẬT SỰ lọc bài đã ẩn (GET /api/feed, /api/feed/following). Các
+   * danh sách khác (đã lưu, tìm kiếm, hồ sơ người dùng, feed địa điểm) không
+   * lọc `user_hidden_posts`, bật ở đó thì bài ẩn xong sẽ quay lại khi tải lại
+   * trang. Xem chú thích bất biến #2 ở composables/useHiddenPosts.ts.
+   */
+  canHide?: boolean
 }>()
 const emit = defineEmits<{
   (e: 'like', id: string): void
@@ -120,6 +129,7 @@ const emit = defineEmits<{
   (e: 'quote', id: string): void
   (e: 'edit', id: string): void
   (e: 'delete', id: string): void
+  (e: 'hide', id: string): void
 }>()
 
 const { user: _authUser } = useAuth()

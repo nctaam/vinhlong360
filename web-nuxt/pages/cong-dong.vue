@@ -307,6 +307,7 @@
             :key="post.id"
             :post="post"
             :has-replies="(post.comments_count || 0) > 0"
+            :can-hide="canHidePosts"
             @like="toggleLike"
             @comment="goToPost"
             @bookmark="toggleBookmark"
@@ -315,6 +316,7 @@
             @quote="startQuote"
             @edit="(id) => navigateTo(`${postPath(id)}?edit=1`)"
             @delete="deletePost"
+            @hide="hidePost"
           />
         </TransitionGroup>
 
@@ -458,10 +460,22 @@
 
     <!-- Save momentum cue — keeps bookmarking from dead-ending -->
     <Transition name="momentum-fade">
-      <div v-if="showBookmarkMomentum" class="bookmark-momentum" role="status">
+      <div v-if="showBookmarkMomentum && !hiddenNotice" class="bookmark-momentum" role="status">
         <span class="bm-icon" aria-hidden="true">🔖</span>
         <button type="button" class="bm-link" @click="setTab('bookmarks'); bookmarkBannerDismissed = true">Xem mục đã lưu</button>
         <button type="button" class="bm-dismiss" aria-label="Đóng" @click="bookmarkBannerDismissed = true">&times;</button>
+      </div>
+    </Transition>
+
+    <!-- Ẩn bài: lối hoàn tác NGAY tại chỗ. Ẩn là thao tác đảo-ngược-được nên
+         không chặn bằng hộp thoại xác nhận — đổi lại phải luôn có đường lùi
+         (ở đây + tab "Bài đã ẩn" trong /cai-dat). -->
+    <Transition name="momentum-fade">
+      <div v-if="hiddenNotice" class="bookmark-momentum hide-undo" role="status" data-testid="hide-undo">
+        <span class="bm-icon" aria-hidden="true"><IconLine name="eye-off" /></span>
+        <span class="hu-text">Đã ẩn bài này khỏi bảng tin của bạn.</span>
+        <button type="button" class="bm-link" data-post-action="undo-hide" :disabled="undoingHide" @click="undoHide">Hoàn tác</button>
+        <button type="button" class="bm-dismiss" aria-label="Đóng" @click="dismissHiddenNotice">&times;</button>
       </div>
     </Transition>
 
@@ -1328,6 +1342,50 @@ function deletePost(postId: string) {
   })
 }
 
+// ── Tự dọn bảng tin: ẩn bài (riêng tư, không phải kiểm duyệt) ──
+// CHỈ bật ở tab feed thật (latest / trending / following). Tab "Đã lưu" và chế-độ
+// tìm kiếm đọc /api/me/bookmarks và /api/search/posts — hai endpoint KHÔNG lọc
+// `user_hidden_posts`, nên bài ẩn ở đó sẽ quay lại sau khi tải lại trang.
+const canHidePosts = computed(() => !searchMode.value && activeTab.value !== 'bookmarks')
+
+const { hidePost: _hide, unhidePost: _unhide } = useHiddenPosts()
+const hiddenNotice = ref<{ id: string } | null>(null)
+const undoingHide = ref(false)
+let hiddenNoticeTimer: ReturnType<typeof setTimeout> | null = null
+
+function dismissHiddenNotice() {
+  if (hiddenNoticeTimer) { clearTimeout(hiddenNoticeTimer); hiddenNoticeTimer = null }
+  hiddenNotice.value = null
+}
+
+async function hidePost(postId: string) {
+  // Lạc quan + hoàn nguyên nằm trong useHiddenPosts: API lỗi thì bài quay lại
+  // ĐÚNG vị trí cũ kèm toast lỗi, và `ok=false` nên không hiện dải "Hoàn tác".
+  const ok = await _hide(postId, [posts, bookmarks, searchResults])
+  if (!ok) return
+  dismissHiddenNotice()
+  hiddenNotice.value = { id: postId }
+  hiddenNoticeTimer = setTimeout(() => { hiddenNotice.value = null; hiddenNoticeTimer = null }, 8000)
+}
+
+async function undoHide() {
+  const notice = hiddenNotice.value
+  if (!notice || undoingHide.value) return
+  undoingHide.value = true
+  try {
+    const ok = await _unhide(notice.id)
+    if (!ok) return
+    dismissHiddenNotice()
+    showToast('Đã bỏ ẩn bài viết', 'success')
+    // Nạp lại feed để bài về đúng thứ tự backend trả, không phải vị trí đoán.
+    await fetchFeed(true)
+  } finally {
+    undoingHide.value = false
+  }
+}
+
+onUnmounted(dismissHiddenNotice)
+
 function goToPost(postId: string) {
   navigateTo(postPath(postId))
 }
@@ -1792,6 +1850,11 @@ useHead({
 .bm-dismiss:hover { background: var(--bg-alt); color: var(--ink); }
 .bm-dismiss:active { transform: scale(.9); transition-duration: .08s; }
 .bm-dismiss:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+/* Dải "Đã ẩn — Hoàn tác": mượn nguyên hình khối của .bookmark-momentum, chỉ
+   thêm câu giải thích ngắn ở giữa. Chỉ 1 trong 2 dải hiện tại một thời điểm. */
+.hide-undo { padding-left: var(--space-3); }
+.hu-text { font-size: var(--text-sm); color: var(--ink); }
+.bm-link:disabled { opacity: .55; cursor: progress; }
 .momentum-fade-enter-active { transition: opacity .25s var(--ease-out), transform .3s var(--ease-spring-gentle); }
 .momentum-fade-leave-active { transition: opacity .15s var(--ease-out), transform .15s var(--ease-out); }
 .momentum-fade-enter-from { opacity: 0; transform: translate(-50%, 16px); }
