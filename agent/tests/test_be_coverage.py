@@ -435,6 +435,12 @@ class TestBE9ActivityFeed:
         ]
         audit_file.write_text("\n".join(json.dumps(r) for r in records) + "\n", encoding="utf-8")
         monkeypatch.setattr(admin, "_AUDIT_FILE", audit_file)
+        # Chủ thể của bài này là nhánh JSONL. Dưới Postgres, activity_feed lấy từ bảng
+        # admin_audit_events trước (admin.py:3349) và bảng đó rỗng trong CI → nhánh JSONL
+        # không bao giờ tới, `actions` rỗng. Hai bài anh em ở trên chọn skip dưới PG; ở
+        # đây ghim thẳng điều kiện "DB audit không dùng được" (đúng nhánh fallback mà
+        # admin.py:396 mô tả) để bài chạy được ở CẢ hai job thay vì im lặng biến mất.
+        monkeypatch.setattr(admin, "_query_admin_audit_db", lambda *a, **k: None)
         client = _admin_client()
         resp = client.get("/admin/activity-feed?limit=5")
         assert len(resp.json()["actions"]) == 5

@@ -208,8 +208,18 @@ def test_comment_on_nonexistent_post_404(pg_user):
 
 
 @pg_only
-def test_threaded_reply_nests_under_parent(pg_user, pg_entity):
-    """Trả lời (parent_id) lồng đúng dưới bình-luận-gốc trong GET comments."""
+def test_threaded_reply_nests_under_parent(pg_user, pg_entity, monkeypatch):
+    """Trả lời (parent_id) lồng đúng dưới bình-luận-gốc trong GET comments.
+
+    Kiểm duyệt nằm ngoài phạm vi bài này: chặn ở biên, mặc định duyệt. Guard parent
+    (social.py:2356) đòi bình-luận-gốc `moderation_status='approved'`; CI trỏ
+    LLM_BASE_URL vào cổng chết nên `moderate_content_enhanced` fail-closed sang
+    'pending' (moderation.py:1461) → trả lời bị 400 "không thuộc bài viết này".
+    """
+    async def _approve(content, **kwargs):
+        return {"status": "approved", "score": 0.0, "reasons": []}
+
+    monkeypatch.setattr(social, "moderate_content_enhanced", _approve)
     ph = db._ph
     with db._conn() as conn:
         row = db._fetchone(conn, f"""

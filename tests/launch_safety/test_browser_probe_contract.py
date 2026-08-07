@@ -69,6 +69,13 @@ def test_default_release_gate_does_not_invoke_browser_or_preview(tmp_path: Path)
     marker = tmp_path / "node-invoked.txt"
     node_stub = tmp_path / "node.cmd"
     node_stub.write_text(f'@echo off\r\necho invoked>"{marker}"\r\nexit /b 91\r\n', encoding="ascii")
+    # "Cổng mặc định" = cổng chạy trên máy KHÔNG khai DATABASE_URL. release_gate.ps1:545
+    # tự bật "local dev auth check" ngay khi thấy biến đó, và Postgres dùng-một-lần của
+    # job test-pg không có tài khoản dev 0909090909 → WARN → gate exit 2. Đấy là hành vi
+    # ĐÚNG của cổng, nên siết assertion là sai chỗ; cái sai là bài test đọc env của runner.
+    # Ghim env để phép đo "không đụng browser/preview" cho cùng kết quả ở cả hai job CI.
+    env = os.environ.copy()
+    env.pop("DATABASE_URL", None)
     powershell = next(
         (candidate for candidate in ("pwsh", "powershell") if subprocess.run(
             [candidate, "-NoProfile", "-Command", "exit 0"],
@@ -92,6 +99,7 @@ def test_default_release_gate_does_not_invoke_browser_or_preview(tmp_path: Path)
             str(node_stub),
         ],
         cwd=ROOT,
+        env=env,
         capture_output=True,
         text=True,
         check=False,

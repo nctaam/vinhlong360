@@ -21,6 +21,22 @@ from database import db  # noqa: E402
 pg_only = pytest.mark.skipif(not db._use_pg, reason="Trigger PG-only (UGC là Postgres-only).")
 
 
+@pytest.fixture(autouse=True)
+def approve_moderation(monkeypatch):
+    """Kiểm duyệt nằm ngoài phạm vi file này: chặn ở biên, mặc định duyệt.
+
+    Trigger 070 chỉ cộng review có `moderation_status='approved'` (migration 070 dòng 34).
+    CI trỏ LLM_BASE_URL vào cổng chết → `_moderate_text` trả available=False →
+    `moderate_content_enhanced` fail-closed sang 'pending' (moderation.py:1461) → review
+    vừa đăng nằm ngoài AVG/COUNT và bài test đo trigger lại đỏ vì mạng. Cùng khuôn với
+    tests/test_social_comment_ownership.py:348.
+    """
+    async def _approve(content, **kwargs):
+        return {"status": "approved", "score": 0.0, "reasons": []}
+
+    monkeypatch.setattr(social, "moderate_content_enhanced", _approve)
+
+
 @pytest.fixture
 def pg_user():
     user = db.create_user("09" + uuid.uuid4().hex[:8])

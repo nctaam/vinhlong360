@@ -39,7 +39,10 @@ kèm `_dsn` riêng nên qua rule này.
 
 Ngoại lệ hợp lệ thứ hai (cấp file): module tự vô hiệu hoá dưới Postgres bằng
 `pytestmark = pytest.mark.skipif(db._use_pg, ...)` — không chạy thì không thể làm
-bẩn. `tests/test_database_filters.py` dùng đường này.
+bẩn. Rule vẫn nhận dạng hình dạng này (self-test `_MODULE_LEVEL_PG_SKIP` bên dưới),
+nhưng hiện KHÔNG file thật nào đi đường đó: `tests/test_database_filters.py` đã đổi
+sang ghim `USE_PG=False` để chạy được ở cả job SQLite lẫn job Postgres. Đường skip
+là lối thoát cuối — ghim tường minh vẫn hơn, vì skip = mất phủ ở một job.
 
 ALLOWLIST đang RỖNG và nên giữ rỗng: gặp báo nhầm thì siết rule, đừng nới allowlist.
 """

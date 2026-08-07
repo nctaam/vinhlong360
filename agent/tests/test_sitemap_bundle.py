@@ -26,6 +26,12 @@ def _run_cli(tmp_path: Path, *args: str, module: bool) -> subprocess.CompletedPr
     release_root = tmp_path / "release"
     env = os.environ.copy()
     env["SITEMAP_BUNDLE_RELEASE_ROOT"] = str(release_root)
+    # Hợp đồng đo ở đây là nhánh fail-closed: KHÔNG có Postgres thì refresh phải chết
+    # trước mọi tác dụng phụ (sitemap_bundle.py:126 `_require_postgresql`). `USE_PG` là
+    # hằng module tính lúc import (database.py:38) nên chỉ chặn được bằng env của tiến
+    # trình con. Bỏ dòng này thì ở job test-pg tiến trình con thấy DATABASE_URL, build
+    # + publish THẬT (đúng chức năng) và `assert not release_root.exists()` đỏ oan.
+    env.pop("DATABASE_URL", None)
     command = (
         [sys.executable, "-m", "agent.sitemap_bundle", *args]
         if module
