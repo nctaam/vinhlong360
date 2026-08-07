@@ -1,8 +1,15 @@
-// Lunar calendar conversion — based on Hồ Ngọc Đức's algorithm
-// Covers years 1900–2100, timezone UTC+7 (Vietnam)
+// Lunar calendar conversion — based on Hồ Ngọc Đức's algorithm (Meeus ch.25 + ch.49).
+// Covers years 1900–2100, timezone UTC+7 (Vietnam — NOT UTC+8 like the Chinese calendar).
+//
+// ORACLE: agent/lunar_calendar.py. This file must stay bit-for-bit in agreement with it —
+// tests/lunar-oracle-parity.test.ts compares against a fixture generated from that module.
+// Do not "improve" the astronomy here without regenerating the fixture and re-reading the
+// oracle's own comments; two subtle traps live below (sampling offset, and the k step-back).
 
 const PI = Math.PI
-const TZ = 7.0 / 24
+const TZ = 7.0 / 24 // fraction of a day
+const SYNODIC = 29.530588853 // mean synodic month (days)
+const NM_EPOCH = 2415021.076998695 // JD of new moon k=0
 
 function jdFromDate(dd: number, mm: number, yy: number): number {
   const a = Math.floor((14 - mm) / 12)
@@ -41,18 +48,30 @@ function newMoon(k: number): number {
   return Jd1 + C1 - deltat
 }
 
-function sunLongitude(jdn: number): number {
-  const T = (jdn - 2451545.0) / 36525
+/** Apparent ecliptic longitude of the sun at instant `jd`, in degrees [0, 360). */
+function sunLongitudeDegrees(jd: number): number {
+  const T = (jd - 2451545.0) / 36525
   const T2 = T * T
   const dr = PI / 180
   const M = 357.5291 + 35999.0503 * T - 0.0001559 * T2 - 0.00000048 * T * T2
   const L0 = 280.46645 + 36000.76983 * T + 0.0003032 * T2
   let DL = (1.9146 - 0.004817 * T - 0.000014 * T2) * Math.sin(dr * M)
   DL = DL + (0.019993 - 0.000101 * T) * Math.sin(dr * 2 * M) + 0.00029 * Math.sin(dr * 3 * M)
-  let L = L0 + DL
-  L = L * dr
-  L = L - PI * 2 * Math.floor(L / (PI * 2))
-  return Math.floor(L / PI * 6)
+  let lon = (L0 + DL) % 360
+  if (lon < 0) lon += 360
+  return lon
+}
+
+/**
+ * 30° sector (0..11) holding the sun at 00:00 local time on day `jdn`.
+ *
+ * The `- 0.5` is mandatory: a JDN starts at 12:00 UTC, so sampling at `jdn` alone is
+ * half a day (~0.5° of sun) late. Dropping it misplaces the leap month in 22 windows
+ * between 1900 and 2100 — e.g. it hid the leap 6th month of 2025 and pushed rằm tháng
+ * Bảy from 06/09/2025 to 08/08/2025.
+ */
+function sunLongitudeSector(jdn: number): number {
+  return Math.floor(sunLongitudeDegrees(jdn - 0.5 - TZ) / 30)
 }
 
 function getNewMoonDay(k: number): number {
@@ -61,24 +80,23 @@ function getNewMoonDay(k: number): number {
 
 function getLunarMonth11(yy: number): number {
   const off = jdFromDate(31, 12, yy) - 2415021
-  const k = Math.floor(off / 29.530588853)
+  const k = Math.floor(off / SYNODIC)
   let nm = getNewMoonDay(k)
-  const sunLong = sunLongitude(nm - TZ)
-  if (sunLong >= 9) {
+  if (sunLongitudeSector(nm) >= 9) {
     nm = getNewMoonDay(k - 1)
   }
   return nm
 }
 
 function getLeapMonthOffset(a11: number): number {
-  const k = Math.floor((a11 - 2415021.076998695) / 29.530588853 + 0.5)
+  const k = Math.floor((a11 - NM_EPOCH) / SYNODIC + 0.5)
   let last = 0
   let i = 1
-  let arc = sunLongitude(getNewMoonDay(k + i) - TZ)
+  let arc = sunLongitudeSector(getNewMoonDay(k + i))
   do {
     last = arc
     i++
-    arc = sunLongitude(getNewMoonDay(k + i) - TZ)
+    arc = sunLongitudeSector(getNewMoonDay(k + i))
   } while (arc !== last && i < 14)
   return i - 1
 }
@@ -92,10 +110,16 @@ export interface LunarDate {
 
 export function solarToLunar(dd: number, mm: number, yy: number): LunarDate {
   const dayNumber = jdFromDate(dd, mm, yy)
-  const k = Math.floor((dayNumber - 2415021.076998695) / 29.530588853)
+  // `k` is estimated from the MEAN synodic month, so it can be off by ±1 against the true
+  // new moon (which runs up to ~0.7 days early/late). Hồ Ngọc Đức's original steps back
+  // exactly once (`k+1` then `k`) — not enough: 07/05/2054 and 09/04/2062 fall in that gap
+  // and yield lunar day 0. Step back in a LOOP until the 1st really is ≤ the queried day.
+  // (Same fix as agent/lunar_calendar.py; guarded by the 1900–2100 range invariant test.)
+  let k = Math.floor((dayNumber - NM_EPOCH) / SYNODIC) + 1
   let monthStart = getNewMoonDay(k)
-  if (monthStart > dayNumber) {
-    monthStart = getNewMoonDay(k - 1)
+  while (monthStart > dayNumber) {
+    k--
+    monthStart = getNewMoonDay(k)
   }
   let a11 = getLunarMonth11(yy)
   let b11 = a11
