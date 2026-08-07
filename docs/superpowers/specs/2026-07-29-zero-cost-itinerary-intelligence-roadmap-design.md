@@ -46,7 +46,7 @@ flowchart TD
 - Thời gian tham quan đang lấy từ `VISIT_DURATION` theo loại; thời gian di chuyển đang cộng cố định 30 phút cho mỗi điểm.
 - Giờ mở cửa mới được đưa vào ghi chú, chưa phải ràng buộc cứng hay mềm khi xếp giờ.
 - `agent/itinerary_optimizer.py` tối ưu thứ tự bằng chiếu lên hành lang thẳng, Haversine, exact DP/beam search và local search; chưa dùng ma trận thời gian đường thực.
-- Planner thủ công đã có retry U-turn giới hạn; generator nhiều ngày chưa dùng chung solver chọn/xếp lịch.
+- Planner thủ công đã có retry U-turn giới hạn; generator đã có Phase 4 cân bằng ownership nhiều ngày cục bộ, còn tái lập lịch động và tự hiệu chỉnh thuộc Phase 5-6.
 
 ## 4. Hợp đồng dữ liệu nội bộ
 
@@ -158,19 +158,20 @@ Trong cùng một tầng, dùng Pareto dominance; chỉ dùng trọng số chu�
 
 ### Giai đoạn 4 — Tối ưu nhiều ngày
 
-**Trạng thái:** pending; chưa triển khai.
+**Trạng thái (2026-07-30): hoàn tất.** Generator đã tích hợp Phase 4 cho lịch nhiều ngày có kết quả Phase 3 an toàn, giữ nguyên public API/MCP/saved schema và fallback toàn batch khi không đủ điều kiện.
 
 **Mục tiêu:** tránh ngày đầu quá nặng và ngày cuối phải chạy vòng xa.
 
 **Thuật toán:**
 
-- Tạo anchor cho điểm xuất phát, điểm kết thúc, nơi lưu trú và sự kiện cố định.
-- Cluster ban đầu theo khu vực và hành lang, nhưng cho phép điểm ở ranh giới được chuyển ngày.
-- Phân bổ ngày bằng DP trên tổng thời gian khả dụng và reward; sau đó cross-day swap, relocate và 2-opt*.
-- Tối ưu lexicographic: không vi phạm anchor/giờ trước, cân bằng thời lượng, rồi mới giảm tổng quãng đường.
-- Nếu thiếu anchor lưu trú, dùng điểm cuối ngày của ngày trước làm start xấp xỉ và ghi cảnh báo, không tự bịa địa chỉ.
+- Giữ nguyên chính xác tập content POI Phase 3; khóa POI đầu toàn chuyến, POI cuối toàn chuyến và ownership ngày của meal/rest anchor.
+- Label-setting DP có tối đa 8 label cho mỗi endpoint chọn endpoint nội bộ qua chuỗi ngày. Ngày sau dùng điểm cuối ngày trước làm synthetic origin xấp xỉ; origin tham gia travel/load nhưng không xuất hiện trong response.
+- Steepest-descent deterministic thử `boundary-swap`, `relocate` và `swap` giữa hai ngày liền kề, tối đa 12 iteration. Mỗi ngày giữ ít nhất hai content POI và count chỉ lệch baseline tối đa một.
+- Objective lexicographic ưu tiên hard feasibility, giảm max day load, load imbalance và absolute deviation, sau đó travel, backtrack, area switch, số POI đổi owner và deterministic tie-break.
+- Toàn bộ attempt dùng deadline chung 1.0 giây, cache chỉ trong request và trả incumbent hoàn chỉnh khi hết thời gian. Nếu một ngày Phase 3 không an toàn hoặc không có incumbent hoàn chỉnh, toàn lịch giữ nguyên Phase 3 với `multiday-fallback`.
+- Generator chỉ dùng ma trận Haversine cục bộ; không gọi OSRM, web, LLM hoặc dịch vụ trả phí và không thêm dependency/persistent cache.
 
-**Tiêu chí nghiệm thu:** mỗi ngày có diagnostics riêng; tổng thời gian và số điểm khớp input; không làm mất metadata hoặc thay đổi thứ tự tương đối của điểm bị khóa.
+**Tiêu chí nghiệm thu đã đạt:** global content set và global endpoints không đổi; anchor giữ nguyên ngày; fixture lệch tải giảm max load; synthetic origin không lọt ra public stops; diagnostics `schedule.allocation` và fallback tối thiểu tương thích ngược; focused Phase 4 + Phase 3 regression xanh mà không deploy hoặc migration.
 
 ### Giai đoạn 5 — Tái lập lịch động
 
@@ -253,7 +254,7 @@ Nếu vượt deadline, trả nghiệm tốt nhất hợp lệ đã có; nếu c
 1. Phát hành Giai đoạn 2 sau feature flag, chỉ bật cho planner thủ công.
 2. So sánh diagnostics với baseline nhưng không tự đổi lịch đã lưu.
 3. Bật Giai đoạn 3 cho lịch mới sau khi fixture giờ mở cửa ổn định.
-4. Mở Giai đoạn 4-6 từng bước; mỗi bước có kill switch và giữ fallback cũ.
+4. Phase 4 đã được tích hợp cục bộ cho lịch mới đủ điều kiện; Phase 5-6 tiếp tục mở riêng từng bước với fallback cũ.
 5. Không deploy production hoặc chạy migration trong phạm vi đặc tả này.
 
 ## 11. Rủi ro và giới hạn
@@ -266,4 +267,4 @@ Nếu vượt deadline, trả nghiệm tốt nhất hợp lệ đã có; nếu c
 
 ## 12. Phạm vi triển khai tiếp theo
 
-**Phase 2A đã hoàn tất** cho planner thủ công, **Phase 2B đã hoàn tất** cho generator time-aware scheduling và **Phase 3 đã hoàn tất** cho joint POI/route selection cục bộ. Giai đoạn 4-6 vẫn pending và cần plan triển khai riêng; trạng thái này không tuyên bố đã deploy production hoặc chạy migration.
+**Phase 2A đã hoàn tất** cho planner thủ công, **Phase 2B đã hoàn tất** cho generator time-aware scheduling, **Phase 3 đã hoàn tất** cho joint POI/route selection cục bộ và **Phase 4 đã hoàn tất** cho endpoint-DP cùng adjacent-day local search. Giai đoạn 5-6 vẫn pending và cần plan triển khai riêng; trạng thái này không tuyên bố đã deploy production hoặc chạy migration.
