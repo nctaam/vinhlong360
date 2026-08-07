@@ -24,6 +24,14 @@ if str(TESTS_DIR) not in sys.path:
 os.environ.setdefault("ENVIRONMENT", "test")
 os.environ.setdefault("LOG_LEVEL", "WARNING")
 os.environ.setdefault("ADMIN_API_KEY", "test-admin-key-12345")
+# Scheduler nền PHẢI tắt trong test: task "data-sync" (run_immediately=True) gọi
+# sync_data_json_to_js() → GHI ĐÈ file tracked web/data.js ngay tick đầu tiên.
+# 17 file test đã đặt cờ này ở module-level, nhưng scheduler.py đọc env LÚC IMPORT
+# nên cách đó thua nếu một file khác import server (→ scheduler) trước → cờ chốt
+# True → file test đầu tiên mở lifespan làm bẩn worktree. conftest được import
+# TRƯỚC mọi test module nên đây là chỗ duy nhất chắc chắn kịp.
+# Hồi quy: agent/tests/test_scheduler_repo_isolation.py
+os.environ.setdefault("SCHEDULER_ENABLED", "false")
 
 
 @pytest.fixture
