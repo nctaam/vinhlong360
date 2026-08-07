@@ -145,5 +145,7 @@ async function remove() {
 .comment-edit-input { width: 100%; font-size: var(--text-sm); resize: vertical; }
 .comment-edit-actions { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
 .comment-edit-count { font-size: var(--text-xs); color: var(--muted); margin-right: auto; }
-.comment-danger-btn:hover { color: var(--danger, #c0392b); }
+/* Không đặt màu dự phòng cứng: `--danger` đã có trong assets/css/variables.css,
+   nên giá trị fallback vừa thừa vừa làm đỏ cổng R30.3 (màu ngoài tokens). */
+.comment-danger-btn:hover { color: var(--danger); }
 </style>

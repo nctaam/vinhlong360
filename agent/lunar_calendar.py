@@ -311,6 +311,31 @@ def solar_date_to_lunar(d: date, timezone: float = TZ_VIETNAM) -> LunarDate:
     return solar_to_lunar(d.day, d.month, d.year, timezone)
 
 
+def _apply_leap_offset(
+    off: int, a11: int, b11: int, mm: int, yy: int, leap: bool, timezone: float
+) -> int:
+    """Dịch offset tháng khi năm âm có tháng nhuận.
+
+    Tách khỏi ``lunar_to_solar`` để hàm đó không gánh cả hai việc — tra tháng và
+    xử nhuận (cổng R20.8 complexity). Raise ``ValueError`` khi người gọi đòi một
+    tháng nhuận mà năm âm đó không có.
+    """
+    if b11 - a11 <= 365:
+        if leap:
+            raise ValueError(f"năm âm {yy} không có tháng nhuận")
+        return off
+
+    leap_off = _leap_month_offset(a11, timezone)
+    leap_month = leap_off - 2
+    if leap_month < 0:
+        leap_month += 12
+    if leap and mm != leap_month:
+        raise ValueError(f"năm âm {yy} không có tháng {mm} nhuận")
+    if leap or off >= leap_off:
+        return off + 1
+    return off
+
+
 def lunar_to_solar(
     dd: int, mm: int, yy: int, leap: bool = False, timezone: float = TZ_VIETNAM
 ) -> date:
@@ -332,17 +357,7 @@ def lunar_to_solar(
     off = mm - 11
     if off < 0:
         off += 12
-    if b11 - a11 > 365:
-        leap_off = _leap_month_offset(a11, timezone)
-        leap_month = leap_off - 2
-        if leap_month < 0:
-            leap_month += 12
-        if leap and mm != leap_month:
-            raise ValueError(f"năm âm {yy} không có tháng {mm} nhuận")
-        if leap or off >= leap_off:
-            off += 1
-    elif leap:
-        raise ValueError(f"năm âm {yy} không có tháng nhuận")
+    off = _apply_leap_offset(off, a11, b11, mm, yy, leap, timezone)
     k = math.floor(0.5 + (a11 - _NM_EPOCH) / _SYNODIC)
     month_start = _new_moon_day(k + off, timezone)
     jdn = month_start + dd - 1

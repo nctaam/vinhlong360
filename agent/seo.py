@@ -552,6 +552,23 @@ def _admin_unit_label(place_name: Any, level: Any = None) -> str:
     return raw
 
 
+def _admin_unit_source(
+    entity: dict[str, Any],
+    by_id: dict[str, dict[str, Any]],
+    place_id: str,
+) -> tuple[Any, Any]:
+    """(tên, cấp) để dựng nhãn — ưu tiên entity place tra được, sau đó payload đã enrich.
+
+    Tách khỏi ``_admin_unit_crumb`` cho cổng R20.8. Hai nguồn tồn tại vì API công
+    khai (``_enrich_entity_place``) chỉ gắn ``place_name``/``place_level`` chứ không
+    gắn cả entity place, còn đường build tĩnh thì tra thẳng từ ``by_id``.
+    """
+    place = by_id.get(place_id) if place_id else None
+    if place:
+        return place.get("name"), place.get("level")
+    return entity.get("place_name"), entity.get("place_level")
+
+
 def _admin_unit_crumb(
     entity: dict[str, Any],
     by_id: dict[str, dict[str, Any]],
@@ -577,11 +594,7 @@ def _admin_unit_crumb(
     if place_id and self_id and place_id == self_id:
         return None
 
-    place = by_id.get(place_id) if place_id else None
-    label = _admin_unit_label(
-        place.get("name") if place else entity.get("place_name"),
-        place.get("level") if place else entity.get("place_level"),
-    )
+    label = _admin_unit_label(*_admin_unit_source(entity, by_id, place_id))
     if not label:
         return None
 

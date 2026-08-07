@@ -189,3 +189,24 @@ def test_entity_jsonld_breadcrumb_carries_no_defunct_area_tier(sample_entities):
     ]
     assert "/khu-vuc/" not in str(ld["breadcrumb"])
     _assert_wellformed(items)
+
+
+# _admin_unit_source — tách khỏi _admin_unit_crumb cho cổng R20.8. Hai nguồn
+# (entity place tra được vs payload đã enrich) là lý do hàm tồn tại, nên khoá cả hai.
+
+
+def test_admin_unit_source_uu_tien_entity_place_tra_duoc():
+    by_id = {"p-an-hoi": {"name": "Phường An Hội", "level": "phuong"}}
+    entity = {"placeId": "p-an-hoi", "place_name": "SAI — không được dùng"}
+    assert seo._admin_unit_source(entity, by_id, "p-an-hoi") == ("Phường An Hội", "phuong")
+
+
+def test_admin_unit_source_roi_ve_payload_da_enrich():
+    """API công khai chỉ gắn place_name/place_level, không gắn cả entity place."""
+    entity = {"placeId": "p-khong-co", "place_name": "Xã Long Hòa", "place_level": "xa"}
+    assert seo._admin_unit_source(entity, {}, "p-khong-co") == ("Xã Long Hòa", "xa")
+
+
+def test_admin_unit_source_khong_co_place_id():
+    entity = {"place_name": "Phường An Hội"}
+    assert seo._admin_unit_source(entity, {"x": {"name": "SAI"}}, "") == ("Phường An Hội", None)

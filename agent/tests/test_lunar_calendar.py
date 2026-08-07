@@ -556,3 +556,31 @@ def test_pham_vi_nam_duoc_cong_bo():
     assert lc.SUPPORTED_YEAR_MAX == 2199
     assert lc.RECOMMENDED_YEAR_MIN == 1968
     assert "1968" in lc.__doc__ and "2199" in lc.__doc__
+
+
+# ---------------------------------------------------------------------------
+# _apply_leap_offset — tách khỏi lunar_to_solar cho cổng R20.8. Tách xong thì
+# hợp đồng của nó phải được khoá riêng, không thì lần refactor sau không ai biết
+# nó từng làm gì.
+# ---------------------------------------------------------------------------
+
+
+def test_apply_leap_offset_nam_thuong_giu_nguyen_offset():
+    """Năm âm thường (b11-a11 <= 365) không dịch offset."""
+    assert lc._apply_leap_offset(3, 1000, 1350, 2, 2025, False, lc.TZ_VIETNAM) == 3
+
+
+def test_apply_leap_offset_nam_thuong_ma_doi_nhuan_thi_bao_loi():
+    with pytest.raises(ValueError, match="không có tháng nhuận"):
+        lc._apply_leap_offset(3, 1000, 1350, 2, 2025, True, lc.TZ_VIETNAM)
+
+
+def test_apply_leap_offset_khop_lunar_to_solar_tren_nam_nhuan_that():
+    """Năm âm 2025 nhuận tháng 6 — dùng số thật thay vì số bịa.
+
+    Khoá hai chiều: đòi nhuận đúng tháng thì ra ngày, đòi nhuận sai tháng thì
+    ValueError. Đây là hành vi mà lunar_to_solar uỷ thác cho helper.
+    """
+    assert lc.lunar_to_solar(15, 6, 2025, True) == date(2025, 8, 8)
+    with pytest.raises(ValueError, match="không có tháng 5 nhuận"):
+        lc.lunar_to_solar(15, 5, 2025, True)
