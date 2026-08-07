@@ -146,6 +146,7 @@ class _FakeCursor:
                 72: "072_feedback_receipts.sql",
                 73: "073_account_erasure_state.sql",
                 74: "074_erasure_delete_actions.sql",
+                75: "075_hot_path_indexes_and_session_timeouts.sql",
             }.get(self.observed_version, f"{self.observed_version:03d}_observed.sql")
             return (
                 self.observed_version,
@@ -220,7 +221,10 @@ def test_db_gate_requires_the_latest_version_from_the_supplied_migration_chain(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    assert sorted(MIGRATIONS.glob("*.sql"))[-1].name == "074_erasure_delete_actions.sql"
+    assert (
+        sorted(MIGRATIONS.glob("*.sql"))[-1].name
+        == "075_hot_path_indexes_and_session_timeouts.sql"
+    )
 
     status, output, statements, sessions = _run_gate(
         monkeypatch,
@@ -229,7 +233,7 @@ def test_db_gate_requires_the_latest_version_from_the_supplied_migration_chain(
     )
 
     assert status == 1
-    assert "74" in output
+    assert "75" in output
     assert any("schema_version" in sql.lower() for sql, _params in statements)
     assert sessions == [(True, True)]
 
@@ -241,7 +245,7 @@ def test_db_gate_accepts_the_exact_latest_version_from_the_supplied_chain(
     status, output, _statements, _sessions = _run_gate(
         monkeypatch,
         capsys,
-        observed_version=74,
+        observed_version=75,
     )
 
     assert status == 0, output

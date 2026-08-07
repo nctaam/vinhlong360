@@ -25,8 +25,8 @@ def test_migration_gate_static_contracts_pass_current_repo():
     errors = [issue for issue in issues if issue.severity == "error"]
 
     assert errors == []
-    assert stats["latest"] == "074_erasure_delete_actions.sql"
-    assert stats["latest_schema_version"] == 74
+    assert stats["latest"] == "075_hot_path_indexes_and_session_timeouts.sql"
+    assert stats["latest_schema_version"] == 75
 
 def test_shared_rate_limit_and_idempotency_contracts_exist():
     migration = (ROOT / "agent" / "migrations" / "056_shared_rate_idempotency.sql").read_text(encoding="utf-8")
@@ -269,7 +269,7 @@ def test_apply_migrations_runner_uses_legacy_baseline_and_latest_plan():
     pending_after_legacy_baseline = [m.path.name for m in migrations if m.version > runner.LEGACY_BASELINE_VERSION]
 
     assert runner.LEGACY_BASELINE_VERSION == 52
-    assert migrations[-1].path.name == "074_erasure_delete_actions.sql"
+    assert migrations[-1].path.name == "075_hot_path_indexes_and_session_timeouts.sql"
     assert pending_after_legacy_baseline == [
         "053_saved_kind_superadmin.sql",
         "054_admin_audit_events.sql",
@@ -293,6 +293,7 @@ def test_apply_migrations_runner_uses_legacy_baseline_and_latest_plan():
         "072_feedback_receipts.sql",
         "073_account_erasure_state.sql",
         "074_erasure_delete_actions.sql",
+        "075_hot_path_indexes_and_session_timeouts.sql",
     ]
 
 def test_chrome_smoke_redacts_sensitive_urls():
