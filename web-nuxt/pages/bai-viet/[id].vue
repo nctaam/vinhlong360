@@ -96,12 +96,13 @@
               <span v-else class="thread-author">{{ c.author?.display_name || 'Người dùng' }}</span>
               <time class="thread-time" :datetime="c.created_at">{{ timeAgo(c.created_at) }}</time>
             </div>
-            <p class="thread-content reply-text" v-html="renderComment(c)"></p>
-            <div class="comment-actions">
-              <button v-if="isLoggedIn" type="button" class="comment-reply-btn" @click="startReply(c)">Trả lời</button>
-              <span v-if="isQuestion && c.id === bestAnswerId" class="qa-badge">✓ Câu trả lời hay</span>
-              <button v-else-if="isQuestion && isQuestionAuthor" type="button" class="qa-pick" @click="setBestAnswer(c.id)">Chọn là câu trả lời hay</button>
-            </div>
+            <CommentEditable :comment="c" @updated="onCommentUpdated" @deleted="onCommentDeleted">
+              <template #actions>
+                <button v-if="isLoggedIn" type="button" class="comment-reply-btn" @click="startReply(c)">Trả lời</button>
+                <span v-if="isQuestion && c.id === bestAnswerId" class="qa-badge">✓ Câu trả lời hay</span>
+                <button v-else-if="isQuestion && isQuestionAuthor" type="button" class="qa-pick" @click="setBestAnswer(c.id)">Chọn là câu trả lời hay</button>
+              </template>
+            </CommentEditable>
 
             <!-- Replies lồng (threaded, 1 cấp) -->
             <div v-for="r in (c.replies || [])" :key="r.id" class="thread-subreply">
@@ -115,8 +116,11 @@
                   <span v-else class="thread-author">{{ r.author?.display_name || 'Người dùng' }}</span>
                   <time class="thread-time" :datetime="r.created_at">{{ timeAgo(r.created_at) }}</time>
                 </div>
-                <p class="thread-content reply-text" v-html="renderComment(r)"></p>
-                <button v-if="isLoggedIn" type="button" class="comment-reply-btn" @click="startReply(r)">Trả lời</button>
+                <CommentEditable :comment="r" @updated="onCommentUpdated" @deleted="onCommentDeleted">
+                  <template #actions>
+                    <button v-if="isLoggedIn" type="button" class="comment-reply-btn" @click="startReply(r)">Trả lời</button>
+                  </template>
+                </CommentEditable>
               </div>
             </div>
           </div>
@@ -190,9 +194,7 @@ const { openAuth } = useAuthModal()
 
 const { repost, quote } = useRepost()
 
-function renderComment(c: { content?: string; mentions?: Array<{ label?: string; id?: string; type?: string }> }): string {
-  return linkifyContent(c?.content || '', c?.mentions)
-}
+// Nội dung bình luận nay do <CommentEditable> render (nó cũng dựng ô sửa inline).
 const { reportPost } = useReport()
 const { show: showToast } = useToast()
 const { trackEvent } = useUserEvents()
@@ -341,17 +343,65 @@ function trackCurrentPost() {
   }, { dedupeMs: 60_000 })
 }
 
-async function fetchComments() {
+async function fetchComments(): Promise<boolean> {
   loading.value = true
   commentError.value = false
   try {
     const res = await $fetch<CommentsResponse | ThreadComment[]>(`/api/posts/${encodedPostId.value}/comments`)
     comments.value = Array.isArray(res) ? res : (res.comments || [])
+    return true
   } catch {
     commentError.value = true
+    return false
   } finally {
     loading.value = false
   }
+}
+
+// ── Sửa / xoá bình luận của chính mình (CommentEditable phát sự kiện lên) ──
+
+function findComment(id: string): ThreadComment | null {
+  for (const c of comments.value) {
+    if (c.id === id) return c
+    for (const r of c.replies || []) {
+      if (r.id === id) return r
+    }
+  }
+  return null
+}
+
+/**
+ * Sau khi sửa, kiểm duyệt có thể hạ bình luận xuống 'pending' — lúc đó nó biến
+ * khỏi danh sách (social.py:2290 chỉ trả moderation_status='approved'). API sửa
+ * KHÔNG trả moderation_status nên phải suy ra từ việc tải lại: còn thấy = đã
+ * đăng, biến mất = đang chờ duyệt. Danh sách tải lỗi thì KHÔNG đoán bừa.
+ */
+async function onCommentUpdated(payload: { id: string; content: string }) {
+  const target = findComment(payload.id)
+  if (target) target.content = payload.content
+  const ok = await fetchComments()
+  if (!ok) {
+    showToast('Đã cập nhật bình luận', 'success')
+    return
+  }
+  if (findComment(payload.id)) {
+    showToast('Đã cập nhật bình luận', 'success')
+  } else {
+    showToast('Đã lưu — bình luận đang chờ duyệt lại', 'info')
+  }
+}
+
+/** Backend soft-delete kéo theo mọi trả lời con (social.py:2534) — trừ đúng số đó. */
+async function onCommentDeleted(id: string) {
+  const target = findComment(id)
+  const removed = 1 + (target?.replies?.length || 0)
+  if (post.value) {
+    post.value.comments_count = Math.max(0, (post.value.comments_count || 0) - removed)
+  }
+  if (replyingTo.value && (replyingTo.value.id === id || replyingTo.value.parent_id === id)) {
+    cancelReply()
+  }
+  await fetchComments()
 }
 
 async function submitComment() {

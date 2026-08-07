@@ -2490,8 +2490,13 @@ async def edit_comment(comment_id: str, body: EditComment, user=Depends(require_
     mod_result = await moderate_content_enhanced(body.content, user_id=uid)
     def _update():
         with db._conn() as conn:
+            # KHÔNG set updated_at: bảng comments không có cột đó (init.sql:224;
+            # migration 008/034/068 là toàn bộ ADD COLUMN cho bảng này). Câu UPDATE
+            # cũ tham chiếu updated_at nên endpoint này 500 ngay khi được gọi thật —
+            # frontend chưa từng gọi nên bug nằm im. Muốn hiện nhãn "đã sửa" thì cần
+            # migration thêm cột, đó là quyết định riêng của chủ dự án.
             db._execute(conn, f"""
-                UPDATE comments SET content = {ph}, moderation_status = {ph}, updated_at = NOW()
+                UPDATE comments SET content = {ph}, moderation_status = {ph}
                 WHERE id::text = {ph} AND user_id = {ph}::uuid
             """, (body.content, mod_result["status"], comment_id, uid))
             return db._fetchone(conn, f"""
