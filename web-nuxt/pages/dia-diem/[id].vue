@@ -1236,14 +1236,11 @@ const fallbackJsonLdScripts = computed(() => {
       ld.offers = { '@type': 'Offer', price: '0', priceCurrency: 'VND', availability: 'https://schema.org/InStock' }
     }
   }
-  if (e.attributes?.rating) {
-    ld.aggregateRating = {
-      '@type': 'AggregateRating',
-      ratingValue: e.attributes.rating,
-      bestRating: '5',
-      ...(e.attributes.review_count ? { reviewCount: String(e.attributes.review_count) } : { ratingCount: '1' }),
-    }
-  }
+  // KHÔNG phát aggregateRating. Điểm sao trong attributes.rating là dữ liệu của bên thứ ba
+  // (125/126 mục ghi nguồn "foody.vn", chỉ 2 mục có URL) — vinhlong360 không tự thu thập
+  // đánh giá. Phát chúng dưới dạng AggregateRating là nói với máy tìm kiếm rằng site này
+  // sở hữu đánh giá tổng hợp đó, và nhánh cũ còn bịa `ratingCount: '1'` khi không có số
+  // lượng thật. Chỉ được bật lại khi site thực sự có đánh giá của chính mình.
   if (ldType === 'Product') {
     if (e.attributes?.price) {
       ld.offers = {
