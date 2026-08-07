@@ -1,0 +1,246 @@
+diff --git a/nginx-ssl.conf b/nginx-ssl.conf
+index 7c4d04d..1e3458d 100644
+--- a/nginx-ssl.conf
++++ b/nginx-ssl.conf
+@@ -194,6 +194,29 @@ server {
+         proxy_set_header X-Forwarded-Proto $scheme;
+     }
+ 
++    # See nginx.conf for the full rationale. HSTS is restated because add_header
++    # inside a location replaces the server-level set.
++    location ^~ /_nuxt/ {
++        root /var/www/nuxt;
++        gzip_static on;
++        access_log off;
++        add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
++        add_header Cache-Control "public, max-age=31536000, immutable" always;
++        add_header X-Content-Type-Options "nosniff" always;
++        add_header X-Served-By "nginx-static" always;
++        try_files $uri @node;
++    }
++
++    location @node {
++        proxy_pass http://vl360_nuxt;
++        proxy_http_version 1.1;
++        proxy_set_header Host $host;
++        proxy_set_header X-Real-IP $remote_addr;
++        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
++        proxy_set_header X-Forwarded-Proto $scheme;
++        proxy_read_timeout 120s;
++    }
++
+     location / {
+         proxy_pass http://vl360_nuxt;
+         proxy_http_version 1.1;
+diff --git a/nginx.conf b/nginx.conf
+index 2180fc2..564022d 100644
+--- a/nginx.conf
++++ b/nginx.conf
+@@ -157,6 +157,40 @@ server {
+         proxy_set_header X-Forwarded-Proto $scheme;
+     }
+ 
++    # Nuxt build assets are content-hashed and immutable, so Nginx can serve them
++    # from disk instead of paying a Node round-trip on the 1-CPU VPS. `root`
++    # (not `alias`) keeps the historical alias+try_files interaction out of reach.
++    # A missing file falls through to @node, so an unmounted or stale build
++    # directory degrades to the pre-patch behaviour instead of breaking the site.
++    #
++    # Compose mounts nothing at this root, so every request takes @node until a
++    # bind mount of web-nuxt/.output/public is added. The systemd render rewrites
++    # the root to the live output directory (scripts/ops/render_nginx_config.py).
++    #
++    # `add_header` inside a location REPLACES the server-level set, so the headers
++    # Nitro sends for /_nuxt/** (web-nuxt/nuxt.config.ts:216-227) are restated here
++    # instead of inherited. `gzip_static` picks up the .gz emitted by
++    # nitro.compressPublicAssets.
++    location ^~ /_nuxt/ {
++        root /var/www/nuxt;
++        gzip_static on;
++        access_log off;
++        add_header Cache-Control "public, max-age=31536000, immutable" always;
++        add_header X-Content-Type-Options "nosniff" always;
++        add_header X-Served-By "nginx-static" always;
++        try_files $uri @node;
++    }
++
++    location @node {
++        proxy_pass http://vl360_nuxt;
++        proxy_http_version 1.1;
++        proxy_set_header Host $host;
++        proxy_set_header X-Real-IP $remote_addr;
++        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
++        proxy_set_header X-Forwarded-Proto $scheme;
++        proxy_read_timeout 120s;
++    }
++
+     location / {
+         proxy_pass http://vl360_nuxt;
+         proxy_http_version 1.1;
+diff --git a/scripts/ops/render_nginx_config.py b/scripts/ops/render_nginx_config.py
+index 9a8421e..455fa68 100644
+--- a/scripts/ops/render_nginx_config.py
++++ b/scripts/ops/render_nginx_config.py
+@@ -19,6 +19,15 @@ import tempfile
+ 
+ TOPOLOGIES = {"compose", "systemd"}
+ 
++# Compose form points the immutable-asset root at a bind-mount path; the systemd
++# units run Nuxt straight out of the release directory, so the rendered config
++# reads the live build output instead.  Keeping the rewrite here (rather than a
++# hand edit on the VPS) is what stops a re-render from silently dropping the
++# static-asset offload.
++COMPOSE_STATIC_ROOT = "root /var/www/nuxt;"
++SYSTEMD_STATIC_ROOT = "root /opt/vinhlong360/web-nuxt/.output/public;"
++COMPOSE_STATIC_PATH = "/var/www/nuxt"
++
+ 
+ def render_config(source: str, *, topology: str) -> str:
+     """Return ``source`` rendered for ``topology``.
+@@ -59,6 +68,9 @@ def render_config(source: str, *, topology: str) -> str:
+         rendered = rendered.replace(docker_resolver, "")
+     rendered = rendered.replace("server nuxt:3000;", "server 127.0.0.1:3000;")
+     rendered = rendered.replace("http://vl360_nuxt", "http://127.0.0.1:3000")
++    rendered = rendered.replace(COMPOSE_STATIC_ROOT, SYSTEMD_STATIC_ROOT)
++    if COMPOSE_STATIC_PATH in rendered:
++        raise ValueError("systemd Nginx render kept a Compose-only static root")
+     if "$agent_upstream" in rendered or "$bot_upstream" in rendered:
+         raise ValueError("systemd Nginx render contains an unsupported variable upstream")
+     if any(host in rendered for host in ("agent:", "bot-gateway:", "nuxt:")):
+diff --git a/tests/launch_safety/test_nginx_contract.py b/tests/launch_safety/test_nginx_contract.py
+index 8dd2676..718b168 100644
+--- a/tests/launch_safety/test_nginx_contract.py
++++ b/tests/launch_safety/test_nginx_contract.py
+@@ -1005,3 +1005,132 @@ def test_backend_ingress_policy_rejects_rogue_route():
+     )
+     with pytest.raises(AssertionError, match="unreviewed backend ingress alias: /rogue"):
+         _assert_backend_ingress_matches_policy(source, policy)
++
++
++# ── Immutable Nuxt assets served by Nginx (perf debt closed 2026-08-08) ──────
++#
++# The 2026-07-02 perf pass added a `/_nuxt/` static block BY HAND to
++# /etc/nginx/sites-enabled/vinhlong360 on the VPS.  That file is rendered from
++# nginx-ssl.conf (docs/deployment-guide.md, "SSL Setup"), so re-running the SSL
++# step would have silently reverted the offload.  These tests pin the block into
++# the reviewed source and pin the systemd rewrite that makes it point at the
++# live build output.
++
++
++def _nuxt_serving_servers(filename: str) -> list[Statement]:
++    """Public servers that actually serve Nuxt (skips the :80 redirect server)."""
++    servers = [
++        server
++        for server in _public_servers(ROOT / filename)
++        if any(
++            location.modifier == ""
++            and location.pattern == "/"
++            and _directive(location.body, "proxy_pass")
++            for location in _locations(server)
++        )
++    ]
++    assert servers
++    return servers
++
++
++@pytest.mark.parametrize("filename", ["nginx.conf", "nginx-ssl.conf"])
++def test_nuxt_assets_are_served_from_disk_with_node_fallback(filename: str):
++    for server in _nuxt_serving_servers(filename):
++        static = _location_for(server, "^~", "/_nuxt/")
++
++        # `root`, not `alias`: alias+try_files is the historically buggy pairing.
++        assert [tuple(item.parts) for item in _directive(static.body, "root")] == [
++            ("root", "/var/www/nuxt")
++        ]
++        assert not _directive(static.body, "alias")
++
++        # The fallback is what makes a missing/stale build directory harmless.
++        assert [tuple(item.parts) for item in _directive(static.body, "try_files")] == [
++            ("try_files", "$uri", "@node")
++        ]
++        assert [tuple(item.parts) for item in _directive(static.body, "gzip_static")] == [
++            ("gzip_static", "on")
++        ]
++
++        # add_header inside a location REPLACES the server-level set, so the
++        # headers Nitro would have sent must be restated here.
++        headers = {item.parts[1]: item.parts[2] for item in _directive(static.body, "add_header")}
++        assert headers["Cache-Control"] == "public, max-age=31536000, immutable"
++        assert headers["X-Content-Type-Options"] == "nosniff"
++
++        # No proxy_pass here — otherwise the block would enter the backend
++        # ingress inventory and demand a launch-indexing-policy exception.
++        assert not _directive(static.body, "proxy_pass")
++
++        fallback = _location_for(server, "", "@node")
++        assert len(_directive(fallback.body, "proxy_pass")) == 1
++
++
++@pytest.mark.parametrize("filename", ["nginx.conf", "nginx-ssl.conf"])
++def test_nuxt_assets_win_over_the_catch_all_location(filename: str):
++    for server in _nuxt_serving_servers(filename):
++        locations = _locations(server)
++        resolved = _resolve_location(locations, "/_nuxt/entry.abc123.js")
++
++        assert resolved is not None
++        assert (resolved.modifier, resolved.pattern) == ("^~", "/_nuxt/")
++
++
++def test_nuxt_static_block_exists_in_both_http_and_https_configs():
++    """Drift guard: the HTTPS config is what prod renders from."""
++    for filename in ("nginx.conf", "nginx-ssl.conf"):
++        source = (ROOT / filename).read_text(encoding="utf-8")
++        assert source.count("location ^~ /_nuxt/ {") == 1
++        assert source.count("location @node {") == 1
++
++
++def test_https_nuxt_block_restates_hsts_it_would_otherwise_lose():
++    for server in _nuxt_serving_servers("nginx-ssl.conf"):
++        static = _location_for(server, "^~", "/_nuxt/")
++        headers = {item.parts[1]: item.parts[2] for item in _directive(static.body, "add_header")}
++
++        assert headers["Strict-Transport-Security"] == (
++            "max-age=63072000; includeSubDomains; preload"
++        )
++
++
++@pytest.mark.parametrize("filename", ["nginx.conf", "nginx-ssl.conf"])
++def test_systemd_render_points_static_root_at_the_live_build_output(filename: str):
++    from scripts.ops.render_nginx_config import render_config
++
++    source = (ROOT / filename).read_text(encoding="utf-8")
++    rendered = render_config(source, topology="systemd")
++
++    assert "root /opt/vinhlong360/web-nuxt/.output/public;" in rendered
++    assert "root /var/www/nuxt;" not in rendered
++    # The fallback must survive the rewrite, else a missing asset 404s.
++    assert "try_files $uri @node;" in rendered
++    assert "proxy_pass http://127.0.0.1:3000;" in rendered
++
++
++@pytest.mark.parametrize("filename", ["nginx.conf", "nginx-ssl.conf"])
++def test_compose_render_keeps_the_bind_mount_static_root(filename: str):
++    from scripts.ops.render_nginx_config import render_config
++
++    source = (ROOT / filename).read_text(encoding="utf-8")
++
++    assert render_config(source, topology="compose") == source
++    assert "root /var/www/nuxt;" in source
++
++
++def test_systemd_render_refuses_to_ship_a_compose_only_static_root():
++    """A Compose path the textual rewrite misses must fail the render, not ship.
++
++    Re-spacing the directive is exactly what a future editor would do; the
++    rewrite is a literal string replace and would silently skip it.
++    """
++    from scripts.ops.render_nginx_config import render_config
++
++    source = (ROOT / "nginx-ssl.conf").read_text(encoding="utf-8").replace(
++        "root /var/www/nuxt;",
++        "root  /var/www/nuxt;",
++        1,
++    )
++
++    with pytest.raises(ValueError, match="Compose-only static root"):
++        render_config(source, topology="systemd")
