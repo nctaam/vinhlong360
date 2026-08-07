@@ -183,7 +183,20 @@ def _clear_session_cookie(response: Response, request: Request) -> None:
 
 
 def cleanup_expired_data() -> dict:
-    """Remove expired sessions, OTP records, and old login history. Call from scheduler."""
+    """Xoá phiên/OTP hết hạn, login_history cũ, thông báo đã đọc cũ, pending_2fa +
+    trusted_devices hết hạn.
+
+    CHƯA CÓ AI GỌI (2026-08): scheduler không đăng ký hàm này. Bốn bảng đầu vẫn
+    được dọn nhờ task_session_cleanup + task_notification_cleanup trong
+    agent/scheduler.py, nhưng pending_2fa và trusted_devices thì KHÔNG — chúng
+    chỉ bị xoá khi user tự thao tác. Việc đăng ký task định kỳ là thao tác
+    xoá-dữ-liệu-tự-động (§B7) nên chờ chủ dự án quyết.
+
+    Cả 6 câu DELETE nằm trong CÙNG một transaction: trên Postgres, một câu sai
+    làm abort cả transaction → các câu trước bị rollback, các câu sau không chạy.
+    Đó là lý do bug tên cột `read` (đúng phải là `is_read`, init.sql:294) từng
+    làm hàm này mất tác dụng hoàn toàn chứ không chỉ hỏng một bảng.
+    """
     if not db._use_pg:
         return {"skipped": True}
     results = {}
@@ -198,7 +211,7 @@ def cleanup_expired_data() -> dict:
             """, ())
             results["old_login_history"] = getattr(r, "rowcount", 0) if r else 0
             r = db._execute(conn, """
-                DELETE FROM notifications WHERE read = TRUE AND created_at < NOW() - INTERVAL '60 days'
+                DELETE FROM notifications WHERE is_read = TRUE AND created_at < NOW() - INTERVAL '60 days'
             """, ())
             results["old_read_notifications"] = getattr(r, "rowcount", 0) if r else 0
             r = db._execute(conn, "DELETE FROM pending_2fa WHERE expires_at < NOW()", ())

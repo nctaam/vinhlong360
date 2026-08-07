@@ -31,6 +31,7 @@ import sqlite3
 import threading
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 import pyotp
 import pytest
@@ -164,10 +165,52 @@ CREATE TABLE user_2fa_recovery_codes (
 CREATE TABLE notifications (
     id TEXT PRIMARY KEY DEFAULT {_UUID_DEFAULT},
     user_id TEXT,
-    read INTEGER DEFAULT 0,
+    -- Cột là is_read (init.sql:294), KHÔNG phải read. Double từng khai "read",
+    -- khiến câu DELETE sai cột trong cleanup_expired_data xanh ở đây nhưng nổ
+    -- trên Postgres. TestDoubleTuKiem.test_double_khong_bia_cot_ngoai_prod canh.
+    is_read INTEGER DEFAULT 0,
     created_at TEXT DEFAULT {_NOW_DEFAULT}
 );
 """
+
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+
+_CREATE_TABLE_RE = re.compile(
+    r"CREATE TABLE (?:IF NOT EXISTS )?(\w+)\s*\((.*?)\n\s*\);", re.S | re.I
+)
+_ADD_COLUMN_RE = re.compile(
+    r"ALTER TABLE (?:IF EXISTS )?(\w+)\s+ADD COLUMN (?:IF NOT EXISTS )?(\w+)", re.I
+)
+_NOT_A_COLUMN = {"PRIMARY", "FOREIGN", "UNIQUE", "CHECK", "CONSTRAINT", "EXCLUDE", "LIKE"}
+
+
+def _prod_columns() -> dict[str, set[str]]:
+    """Đọc cột thật của Postgres từ DDL sản xuất: init.sql + agent/migrations/*.sql.
+
+    Đây KHÔNG phải assert-chuỗi-source: init.sql và migrations LÀ hợp đồng schema
+    chạy trên prod, không có Postgres trong test này thì đó là nguồn duy nhất nói
+    được "cột nào có thật".
+    """
+    tables: dict[str, set[str]] = {}
+    files = [_REPO_ROOT / "init.sql"] + sorted((_REPO_ROOT / "agent" / "migrations").glob("*.sql"))
+    for path in files:
+        if not path.exists():
+            continue
+        text = path.read_text(encoding="utf-8", errors="replace")
+        for name, body in _CREATE_TABLE_RE.findall(text):
+            cols = tables.setdefault(name.lower(), set())
+            for line in body.splitlines():
+                line = line.strip().rstrip(",")
+                if not line or line.startswith("--"):
+                    continue
+                first = line.split()[0]
+                if first.upper() in _NOT_A_COLUMN:
+                    continue
+                cols.add(first.lower())
+        for name, col in _ADD_COLUMN_RE.findall(text):
+            tables.setdefault(name.lower(), set()).add(col.lower())
+    return tables
+
 
 _INTERVAL_UNITS = {
     "day": "days", "days": "days",
@@ -390,6 +433,28 @@ class _Api:
         )
         return raw
 
+    def add_pending_2fa(self, user_id, *, expires_in=timedelta(minutes=5)):
+        raw = auth._generate_token()
+        self.db.raw(
+            "INSERT INTO pending_2fa (user_id, token_hash, ip, user_agent, expires_at)"
+            " VALUES (?, ?, 'testclient', 'testclient', ?)",
+            (user_id, auth._hash_token(raw), _ts(_now() + expires_in)),
+        )
+        return raw
+
+    def add_notification(self, user_id, *, is_read, age=timedelta(0)):
+        self.db.raw(
+            "INSERT INTO notifications (user_id, is_read, created_at) VALUES (?, ?, ?)",
+            (user_id, 1 if is_read else 0, _ts(_now() - age)),
+        )
+
+    def add_login_history(self, user_id, *, age=timedelta(0)):
+        self.db.raw(
+            "INSERT INTO login_history (user_id, phone, method, success, ip, user_agent, created_at)"
+            " VALUES (?, '0901234567', 'password', 1, 'testclient', 'testclient', ?)",
+            (user_id, _ts(_now() - age)),
+        )
+
     # ── soi dữ liệu ──
 
     def sessions_of(self, user_id):
@@ -454,6 +519,34 @@ class TestDoubleTuKiem:
             "SELECT COUNT(*) AS c FROM user_sessions WHERE expires_at > ?", (_ts(_now()),)
         )[0]["c"]
         assert con_han == 1, "so sánh chuỗi ISO phải cho cùng thứ tự như timestamptz"
+
+    def test_double_khong_bia_cot_ngoai_prod(self, api):
+        """Mọi cột trong double phải TỒN TẠI trong DDL sản xuất.
+
+        Bug thật (2026-08): double khai `notifications.read`, prod là `is_read`.
+        Câu `DELETE FROM notifications WHERE read = TRUE` trong
+        cleanup_expired_data() vì thế xanh ở đây và nổ trên Postgres. Kiểm một
+        chiều (double ⊆ prod) là đủ và không giòn: double chỉ khai phần cột auth
+        dùng, nên thiếu cột so với prod là bình thường, THỪA thì không.
+        """
+        prod = _prod_columns()
+        bia_dat = {}
+        for row in api.db.raw("SELECT name FROM sqlite_master WHERE type = 'table'"):
+            bang = row["name"].lower()
+            assert bang in prod, f"double khai bảng {bang} không có trong DDL sản xuất"
+            cot_double = {c["name"].lower() for c in api.db.raw(f"PRAGMA table_info({bang})")}
+            thua = cot_double - prod[bang]
+            if thua:
+                bia_dat[bang] = sorted(thua)
+        assert not bia_dat, f"double bịa cột không có trên Postgres: {bia_dat}"
+
+    def test_prod_columns_doc_duoc_ddl_that(self):
+        """Chốt chặn cho chính parser: nếu nó parse trượt, mọi thứ sẽ ⊆ rỗng."""
+        prod = _prod_columns()
+        assert "is_read" in prod["notifications"]
+        assert "read" not in prod["notifications"]
+        assert "expires_at" in prod["pending_2fa"]
+        assert "expires_at" in prod["trusted_devices"]
 
     def test_dich_sql_giu_nguyen_y_nghia(self):
         sql = "SELECT id FROM t WHERE user_id::text = %s AND expires_at > NOW() FOR UPDATE SKIP LOCKED"
@@ -1304,6 +1397,65 @@ class TestCanhBaoVaDonDep:
         assert ket_qua["expired_otps"] == 1
         assert ket_qua["expired_trusted_devices"] == 1
         assert api.get("/auth/me", token=con_han).status_code == 200
+
+    def test_don_du_lieu_quet_du_ca_sau_bang(self, api):
+        """Cả 6 bảng phải được dọn trong MỘT lần gọi, và chỉ dọn phần hết hạn.
+
+        Vì sao gộp một test: hàm chạy 6 câu DELETE trong CÙNG một transaction và
+        cùng một try/except. Một câu hỏng (bug `read` vs `is_read`, 2026-08) làm
+        Postgres abort transaction → 3 câu trước bị rollback, 2 câu sau không
+        chạy. Chỉ khi dựng dữ liệu cho cả 6 bảng rồi soi lại toàn bộ thì hỏng-dây
+        -chuyền đó mới lộ ra.
+        """
+        user = api.add_user()
+        con_han = api.add_session(user["id"], expires_in=timedelta(days=1))
+        api.add_session(user["id"], expires_in=timedelta(days=-1))
+        api.add_otp("0901234567", "111111", expires_in=timedelta(minutes=-1))
+        api.add_otp("0901234567", "222222", expires_in=timedelta(minutes=5))
+        api.add_login_history(user["id"], age=timedelta(days=120))
+        api.add_login_history(user["id"], age=timedelta(days=10))
+        api.add_notification(user["id"], is_read=True, age=timedelta(days=90))
+        api.add_notification(user["id"], is_read=True, age=timedelta(days=10))
+        api.add_notification(user["id"], is_read=False, age=timedelta(days=90))
+        api.add_pending_2fa(user["id"], expires_in=timedelta(minutes=-1))
+        api.add_pending_2fa(user["id"], expires_in=timedelta(minutes=5))
+        api.add_trusted_device(user["id"], expires_in=timedelta(days=-1))
+        api.add_trusted_device(user["id"], expires_in=timedelta(days=30))
+
+        ket_qua = auth.cleanup_expired_data()
+
+        assert ket_qua.get("error") is None, ket_qua
+        assert ket_qua == {
+            "expired_sessions": 1,
+            "expired_otps": 1,
+            "old_login_history": 1,
+            "old_read_notifications": 1,
+            "expired_pending_2fa": 1,
+            "expired_trusted_devices": 1,
+        }
+        # Phần chưa hết hạn / chưa đọc phải còn nguyên.
+        assert api.count("user_sessions") == 1
+        assert api.count("otp_sessions") == 1
+        assert api.count("login_history") == 1
+        assert api.count("pending_2fa") == 1
+        assert api.count("trusted_devices") == 1
+        assert api.count("notifications") == 2
+        assert api.count("notifications", "is_read = 0") == 1, (
+            "thông báo CHƯA đọc không bao giờ bị dọn dù cũ tới đâu"
+        )
+        assert api.get("/auth/me", token=con_han).status_code == 200
+
+    def test_don_du_lieu_khong_chay_khi_khong_co_postgres(self, monkeypatch):
+        """§1.3 auth là Postgres-only: trên SQLite phải bỏ qua, không nổ."""
+
+        class _KhongPhaiPg:
+            _use_pg = False
+
+            def _conn(self, **kw):
+                raise AssertionError("không được mở kết nối khi không có Postgres")
+
+        monkeypatch.setattr(auth, "db", _KhongPhaiPg())
+        assert auth.cleanup_expired_data() == {"skipped": True}
 
 
 # ──────────────────────────────────────────────────────────────────────────
