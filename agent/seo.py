@@ -56,6 +56,15 @@ ITINERARY_AREA_NAMES = {
     "lien-vung": "Liên vùng Vĩnh Long - Bến Tre - Trà Vinh",
 }
 
+# Tiền tố đơn vị hành chính cấp xã/phường (§1.6 CLAUDE.md). Giữ khớp với
+# PREFIX_PATTERN / PREFIX_LEVEL trong web-nuxt/utils/adminUnit.ts.
+_ADMIN_UNIT_PREFIX_RE = re.compile(r"^(Phường|Xã|Tỉnh)\s+(.+)$", re.IGNORECASE)
+_ADMIN_UNIT_PREFIX_LEVEL = {
+    "phường": "phuong",
+    "xã": "xa",
+    "tỉnh": "tinh",
+}
+
 TYPE_SCHEMA = {
     "accommodation": "LodgingBusiness",
     "attraction": "TouristAttraction",
@@ -516,13 +525,85 @@ def _image_object(img_url: str, entity_name: str, idx: int,
     return obj
 
 
+def _admin_unit_label(place_name: Any, level: Any = None) -> str:
+    """'Phường An Hội' → 'P. An Hội'; 'Xã Long Hòa' → 'Xã Long Hòa';
+    'Tỉnh Vĩnh Long' → 'Vĩnh Long'.
+
+    Mirror của `adminUnitLabel` trong web-nuxt/utils/adminUnit.ts — hai đầu phải
+    ra cùng một chuỗi, nếu không HTML và structured data lại lệch nhau.
+    Tên không nhận diện được → giữ nguyên văn (không bao giờ trả chuỗi rỗng cho
+    một tên có thật). `level` tường minh thắng tiền tố suy từ tên.
+    """
+    raw = re.sub(r"\s+", " ", str(place_name or "")).strip()
+    if not raw:
+        return ""
+
+    matched = _ADMIN_UNIT_PREFIX_RE.match(raw)
+    bare = (matched.group(2).strip() if matched else "") or raw
+    inferred = _ADMIN_UNIT_PREFIX_LEVEL.get(matched.group(1).lower()) if matched else None
+    resolved = str(level or "").strip() or inferred
+
+    if resolved == "phuong":
+        return f"P. {bare}"
+    if resolved == "xa":
+        return f"Xã {bare}"
+    if resolved == "tinh":
+        return bare
+    return raw
+
+
+def _admin_unit_crumb(
+    entity: dict[str, Any],
+    by_id: dict[str, dict[str, Any]],
+) -> dict[str, Any] | None:
+    """Mắt xích ĐƠN VỊ HÀNH CHÍNH (xã/phường) của một entity nội dung.
+
+    Mirror của `adminUnitCrumb` trong web-nuxt/utils/adminUnit.ts:
+
+    - entity `type=place` → None: nó ĐÃ LÀ đơn vị hành chính, không đội một đơn
+      vị khác lên chính nó. Guard bắt buộc vì 39/125 place trong dữ liệu có
+      `placeId` ≠ `id` (32 trỏ nhầm `p-long-chau`).
+    - `placeId` trỏ về chính nó → None (cùng lý do).
+    - thiếu `placeId`, hoặc `placeId` trỏ tới id không tồn tại → None = BỎ HẲN
+      mắt xích, thay vì rơi về `area` (vùng CŨ, không còn là cấp hành chính từ
+      1/7/2025 — §1.6 CLAUDE.md).
+    - payload đã enrich có `place_name` mà thiếu `placeId` → giữ nhãn, bỏ liên kết.
+    """
+    if str(entity.get("type") or "").strip() == "place":
+        return None
+
+    place_id = str(entity.get("placeId") or "").strip()
+    self_id = str(entity.get("id") or "").strip()
+    if place_id and self_id and place_id == self_id:
+        return None
+
+    place = by_id.get(place_id) if place_id else None
+    label = _admin_unit_label(
+        place.get("name") if place else entity.get("place_name"),
+        place.get("level") if place else entity.get("place_level"),
+    )
+    if not label:
+        return None
+
+    crumb: dict[str, Any] = {"@type": "ListItem", "name": label}
+    if place_id:
+        crumb["item"] = f"{SITE}/xa-phuong/{quote(place_id, safe='-_~')}"
+    return crumb
+
+
 def _build_breadcrumb(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]) -> dict[str, Any]:
     """BreadcrumbList for an entity detail page.
 
-    Tiers: Trang chủ > Type (catalog route) > Khu vực (if known) > Entity.
+    Tiers: Trang chủ > Type (catalog route) > Xã/Phường (if resolvable) > Entity.
     The type tier reuses real catalog routes (TYPE_BREADCRUMB_PATH) so the
     JSON-LD breadcrumb matches the on-page breadcrumb in dia-diem/[id].vue and
     never links to a non-existent route.
+
+    Mắt xích giữa là ĐƠN VỊ HÀNH CHÍNH cấp xã/phường (`/xa-phuong/<placeId>`),
+    KHÔNG phải `area` (`/khu-vuc/...`). Từ 1/7/2025 tỉnh Vĩnh Long mới chạy
+    hành chính 2 cấp; 'Bến Tre'/'Trà Vinh' là vùng CŨ, chỉ còn để tra cứu/lọc
+    nên không được đứng trong breadcrumb như một cấp hành chính (§1.6 CLAUDE.md).
+    Không xác định được xã/phường → bỏ hẳn mắt xích, không bịa địa bàn.
     """
     entity_id = str(entity.get("id"))
     items: list[dict[str, Any]] = [
@@ -538,14 +619,9 @@ def _build_breadcrumb(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]) 
             "name": type_label,
             "item": f"{SITE}{type_path}",
         })
-    area = _entity_area(entity, by_id)
-    if area:
-        items.append({
-            "@type": "ListItem",
-            "position": len(items) + 1,
-            "name": AREA_NAMES.get(area, area),
-            "item": f"{SITE}/khu-vuc/{quote(area, safe='-_~')}",
-        })
+    admin_unit = _admin_unit_crumb(entity, by_id)
+    if admin_unit:
+        items.append({**admin_unit, "position": len(items) + 1})
     items.append({
         "@type": "ListItem",
         "position": len(items) + 1,

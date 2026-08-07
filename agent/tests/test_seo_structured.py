@@ -26,12 +26,15 @@ def test_entity_jsonld_emits_breadcrumb(sample_entities):
     bc = ld["breadcrumb"]
     assert bc["@type"] == "BreadcrumbList"
     items = bc["itemListElement"]
-    # Trang chủ > Sản phẩm (type) > Vĩnh Long (area) > entity
+    # Trang chủ > Sản phẩm (type) > Xã Bình Hòa Phước (xã/phường) > entity.
+    # Mắt xích giữa là ĐƠN VỊ HÀNH CHÍNH, không phải `area` (vùng CŨ) — §1.6
+    # CLAUDE.md; hình dạng đầy đủ khoá ở test_seo_breadcrumb_admin_unit.py.
     assert items[0]["name"] == "Trang chủ"
     assert items[0]["item"] == f"{seo.SITE}/"
     names = [i["name"] for i in items]
     assert "Sản phẩm" in names  # product -> /san-pham tier
-    assert "Vĩnh Long" in names  # area tier resolved via placeId
+    assert "Xã Bình Hòa Phước" in names  # ward tier resolved via placeId
+    assert "/khu-vuc/" not in str(items)
     assert items[-1]["name"] == "Cam sành Vĩnh Long"
     assert items[-1]["item"] == seo._entity_url("cam-sanh-vinh-long")
     # positions are contiguous starting at 1

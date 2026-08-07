@@ -256,6 +256,31 @@ describe('withAdminUnitBreadcrumb', () => {
     expect(withAdminUnitBreadcrumb(payload, null)).toEqual(payload)
   })
 
+  it('passes the corrected backend payload through unchanged', () => {
+    // agent/seo.py `_build_breadcrumb` giờ phát THẲNG mắt xích xã/phường, nên
+    // hàm này không còn phải sửa gì ở đường đi thường — nhưng KHÔNG phải no-op
+    // để xoá: nó vẫn là chốt chặn khi hai đầu lệch nhau (backend đọc
+    // web/data.json đã phân kỳ với DB — §1.1 CLAUDE.md; API công khai không trả
+    // `level` nên frontend suy tiền tố từ tên), và khi frontend chạy trước một
+    // backend cũ chưa vá thì payload vẫn còn `/khu-vuc/`.
+    const fixedBackendPayload = {
+      '@context': 'https://schema.org',
+      '@type': 'TouristAttraction',
+      name: 'Chợ Bến Tre',
+      breadcrumb: {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE}/` },
+          { '@type': 'ListItem', position: 2, name: 'Du lịch', item: `${SITE}/du-lich` },
+          { '@type': 'ListItem', position: 3, name: 'P. An Hội', item: `${SITE}/xa-phuong/p-an-hoi` },
+          { '@type': 'ListItem', position: 4, name: 'Chợ Bến Tre', item: `${SITE}/dia-diem/cho-ben-tre` },
+        ],
+      },
+    }
+    expect(withAdminUnitBreadcrumb(fixedBackendPayload, crumb)).toEqual(fixedBackendPayload)
+  })
+
   it('leaves payloads without a breadcrumb untouched', () => {
     const payload = { '@type': 'TouristAttraction', name: 'Chợ Bến Tre' }
     expect(withAdminUnitBreadcrumb(payload, crumb)).toEqual(payload)
