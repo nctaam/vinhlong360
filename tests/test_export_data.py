@@ -55,7 +55,16 @@ def tmp_db(tmp_path, monkeypatch):
     src.write_text(json.dumps(MINI, ensure_ascii=False), encoding="utf-8")
     import database
 
+    # `database.USE_PG` / `database.DATABASE_URL` là HẰNG MODULE tính LÚC IMPORT
+    # (database.py:37-38) và __init__ đọc chúng (database.py:539-540). Vì vậy
+    # delenv("DATABASE_URL") ở trên KHÔNG đổi được gì và tham số db_path bị BỎ QUA:
+    # trên CI (có DATABASE_URL) đối tượng này nối thẳng vào Postgres dùng chung, rồi
+    # replace_from_json DELETE sạch entities/relationships/itineraries của cả suite.
+    # Phải ép SQLite TRƯỚC khi dựng — khuôn chuẩn: agent/tests/conftest.py::isolated_sqlite_db.
+    monkeypatch.setattr(database, "USE_PG", False)
+    monkeypatch.setattr(database, "DATABASE_URL", "")
     d = database.Database(db_path=str(tmp_path / "t.db"))
+    assert d._use_pg is False and d._dsn is None
     d.replace_from_json(str(src))
     return d
 
@@ -149,7 +158,12 @@ def test_export_roundtrip_stable(tmp_db, tmp_path, monkeypatch):
     export(tmp_db, str(out1), dry_run=False)
     monkeypatch.setenv("ALLOW_DESTRUCTIVE_DB_REPLACE", "1")
     monkeypatch.setenv("DESTRUCTIVE_OPS_LOCKED", "0")
+    # Chỗ dựng Database THỨ HAI — cũng phải ép SQLite. Vá mỗi fixture `tmp_db` là vá
+    # vô hiệu: test này gọi replace_from_json lần nữa và vẫn wipe Postgres của CI.
+    monkeypatch.setattr(database, "USE_PG", False)
+    monkeypatch.setattr(database, "DATABASE_URL", "")
     db2 = database.Database(db_path=str(tmp_path / "t2.db"))
+    assert db2._use_pg is False and db2._dsn is None
     db2.replace_from_json(str(out1))
     out2 = tmp_path / "r2.json"
     export(db2, str(out2), dry_run=False)
