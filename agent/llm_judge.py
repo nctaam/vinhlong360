@@ -31,6 +31,8 @@ from threading import Lock
 
 from dotenv import load_dotenv
 
+from versioned_json_store import atomic_write_json
+
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 logger = logging.getLogger(__name__)
@@ -54,19 +56,30 @@ _LLM_BASE_URL = os.environ.get("LLM_BASE_URL", "")  # P1-3: KHÔNG hardcode tunn
 _LLM_MODEL_DEFAULT = os.environ.get("LLM_MODEL_MINI", "cx/gpt-5.4-mini")
 
 # ---------------------------------------------------------------------------
-# Atomic write helper
+# Atomic write helper (delegates to versioned_json_store — the audited writer)
 # ---------------------------------------------------------------------------
 
 
 def _atomic_write(path: Path, data) -> None:
-    """Write JSON atomically: write to .tmp then rename."""
+    """Persist JSON durably. Best-effort: logs and returns instead of raising.
+
+    Delegates to the repository's single audited atomic writer — unique temp
+    file in the destination directory, flush + fsync, then ONE `os.replace`.
+
+    The previous body was atomic in name only: it did `path.unlink()` *before*
+    `tmp.rename(path)`, so a crash or power loss in that window destroyed the
+    destination outright rather than leaving the previous revision behind. It
+    also never fsynced (a rename could commit a name pointing at unflushed
+    bytes) and reused a fixed `path.with_suffix(".tmp")`, so two writers aimed
+    at the same file trampled each other's temp.
+
+    `LLMJudge._save` passes a list, not a dict — both are valid JSON payloads.
+
+    Callers sit on the runtime chat path, so a telemetry write failure must not
+    surface as a request error — the swallow-and-log contract is deliberate.
+    """
     try:
-        content = json.dumps(data, ensure_ascii=False, indent=2)
-        tmp_path = path.with_suffix(".tmp")
-        tmp_path.write_text(content, encoding="utf-8")
-        if path.exists():
-            path.unlink()
-        tmp_path.rename(path)
+        atomic_write_json(path, data)
     except Exception as e:
         logger.error("Failed to write %s: %s", path, e)
 

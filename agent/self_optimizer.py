@@ -28,6 +28,7 @@ from pathlib import Path
 from threading import Lock
 
 from owner_write_gate import owner_write_gate
+from versioned_json_store import atomic_write_json
 
 logger = logging.getLogger(__name__)
 
@@ -49,18 +50,27 @@ QUERY_CATEGORIES = [
     "itinerary", "food", "history", "culture", "comparison", "general",
 ]
 
-# ── Atomic write helper ──────────────────────────────────────────────────────
+# ── Atomic write helper (delegates to versioned_json_store) ──────────────────
 
 
 def _atomic_write(path: Path, data: dict) -> None:
-    """Write JSON atomically: write to .tmp then rename."""
+    """Persist JSON durably. Best-effort: logs and returns instead of raising.
+
+    Delegates to the repository's single audited atomic writer — unique temp
+    file in the destination directory, flush + fsync, then ONE `os.replace`.
+
+    The previous body was atomic in name only: it did `path.unlink()` *before*
+    `tmp.rename(path)`, so a crash or power loss in that window destroyed the
+    destination outright rather than leaving the previous revision behind. It
+    also never fsynced (a rename could commit a name pointing at unflushed
+    bytes) and reused a fixed `path.with_suffix(".tmp")`, so two writers aimed
+    at the same file trampled each other's temp.
+
+    Callers sit on the runtime chat path, so a telemetry write failure must not
+    surface as a request error — the swallow-and-log contract is deliberate.
+    """
     try:
-        content = json.dumps(data, ensure_ascii=False, indent=2)
-        tmp_path = path.with_suffix(".tmp")
-        tmp_path.write_text(content, encoding="utf-8")
-        if path.exists():
-            path.unlink()
-        tmp_path.rename(path)
+        atomic_write_json(path, data)
     except Exception as e:
         logger.error("Failed to write %s: %s", path, e)
 
