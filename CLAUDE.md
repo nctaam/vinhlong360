@@ -82,6 +82,41 @@ python scripts/gen_image.py --prompt "..." --out web-nuxt/public/img/x.webp   # 
 - Dữ liệu local KHÔNG đối chiếu được với prod: `agent/knowledge.db` rỗng (0 entity, chưa có cột
   `status`), `web/data.json` có 1746 entity nhưng `status=None` toàn bộ. Đừng suy ra hành vi prod từ chúng.
 
+### 5c. BẪY: worktree dùng chung + công cụ verify nói dối (học đắt 2026-08-07)
+
+- **HAI WORKFLOW KHÔNG DÙNG CHUNG MỘT WORKTREE.** Một agent chạy `git stash push -u` để lấy baseline sạch,
+  cuốn theo việc đang dở của workflow khác — **6 file tracked (68.663 dòng, phần lớn là fixture) + 4 file
+  untracked (883 dòng)**; khôi phục được nhưng suýt mất trắng. Ràng buộc "đừng đụng file X" KHÔNG đủ — `stash`/`checkout .`/`restore .`/`reset`/`clean`/`add -A`
+  tác động TOÀN CÂY. Agent phụ trong worktree dùng chung: git chỉ được **ĐỌC** (`log`, `show`, `diff <file>`,
+  `status`, `for-each-ref`, `merge-base`, `rev-list`, `worktree list`).
+- **DB mỗi worktree là một bản KHÁC NHAU.** `C:\Code\vinhlong360\agent\data\vinhlong360.db` = 1751 entity /
+  49 dòng `entity_event_details` (34.8 MB); `C:\Code\vinhlong360\.worktrees\tri-region-color\agent\data\vinhlong360.db`
+  = 1746 / 67 (7.4 MB). Chạy script phân tích nhầm worktree ra bộ số khác hẳn → luôn dùng **đường dẫn tuyệt đối**.
+- **`scripts/validate_data.py` đọc `web/data.json`, KHÔNG đọc DB** (`scripts/validate_data.py:16`). Sửa DB xong
+  chạy nó ra "0 critical" là kết luận RỖNG — nó không nói gì về DB.
+- **Sửa `entity_event_details` ở LOCAL thì không hiện ra được.** `reads_enabled()` trả `settings.ENTITY_DETAILS_TABLES`
+  (`agent/entity_details.py:306`), mặc định `False` (`agent/config.py:39`), local không có file `.env` → `agent/database.py:1970`
+  bỏ qua `rebuild_attributes`, attributes vẫn lấy từ cột JSON cũ. Sửa DB xong mà nhìn không thấy gì đổi là
+  vì vậy, **không phải do ai lười**. Bật được: `$env:ENTITY_DETAILS_TABLES='true'` (pydantic-settings vẫn đọc
+  biến môi trường OS dù thiếu `.env` — `agent/config.py:139-141`), nhưng phải đặt TƯỜNG MINH, mặc định là tắt.
+- **NGÀY CỦA MỘT SỰ KIỆN NẰM Ở SÁU Ô**, không phải một: `attributes.lunar_date`, `attributes.date_start`,
+  `attributes.date_end`, `entities.summary`, `entities.description`, `entities.season(.text/.months/.peak)`.
+  Phủ từng ô (đo trên DB worktree tri-region-color, `type='event'`): `date_start` 67/67 · `season` 67/67 ·
+  `date_end` 57/67 · `description` 44/67 · `lunar_date` 36/67 · `summary` 33/67 → **49/67 event có ≥4 ô cùng
+  mang thông tin ngày** (16 event có 3 ô, 2 event có 2 ô). Riêng `le-hoi.vue` render 4/6 ô — `lunar_date`
+  (:86,:99,:216), `summary` (:211), `date_start` (:226,:343), `date_end` (:348); `season` không dùng ở file này,
+  `description` chỉ vào SEO meta (:562,:564,:601). Sửa một ô
+  thì năm ô kia thành nói ngược → mâu thuẫn **CÔNG KHAI** tệ hơn trạng thái lệch ban đầu; đã phải hoàn nguyên DB một
+  lần vì đúng bẫy này. Sửa thì sửa cả sáu, hoặc không sửa. Bảng quyết định:
+  `docs/2026-08-07-bang-quyet-dinh-ngay-le-hoi-am-duong.md`.
+- **Checker chuẩn là bộ SO CHUỖI — nó bắt luôn cái test đang cấm điều đó.** `no_tailwind` = regex `(?i)tailwind`
+  trên `web-nuxt/**`, exclude chỉ có `node_modules` + `package-lock.json`, KHÔNG loại `tests`
+  (`scripts/checks/check_banned_claims.py:38-46`) → test chứa chữ "tailwind" để assert *không có* Tailwind làm R30.1 đỏ.
+  `banned_claims` (`:20-28`) cùng lớp lỗi: bắt cả câu phủ định. Lớp hard không skip được → **ghép chuỗi từ mảnh** trong test.
+- **R20.7 ghép test–module bằng TÊN FILE hoặc AST `import`** (`scripts/checks/check_test_pairing.py:66-82`).
+  `pytest.importorskip("x")` là lời gọi lúc CHẠY, AST không thấy → bị tính là "sửa `agent/x.py` mà không có test".
+  Cách vòng hợp lệ: thêm import cấp module bọc `try/except`.
+
 ## 6. Quy ước
 
 - File reference dạng `path:line`. Commit message: prefix ngữ nghĩa (`feat:`/`fix:`/`refactor:`/`docs:`...; `<GĐx.y>` chỉ khi làm đúng task ROADMAP).
