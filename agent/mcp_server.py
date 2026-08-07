@@ -76,7 +76,11 @@ except ImportError:
     HAS_ITINERARY_GEN = False
 
 try:
-    from realtime import get_weather as _get_weather, get_upcoming_events as _get_upcoming_events
+    from realtime import (
+        get_weather as _get_weather,
+        get_upcoming_events as _get_upcoming_events,
+        weather_for_llm as _weather_for_llm,
+    )
     HAS_REALTIME = True
 except ImportError:
     HAS_REALTIME = False
@@ -490,7 +494,14 @@ def weather(area: Optional[str] = None) -> str:
     area = area or "vinh-long"
     weather_data = _get_weather(area)
     events = _get_upcoming_events(days_ahead=14, area=area)
-    return json.dumps({"weather": weather_data, "events": events}, ensure_ascii=False, default=str)
+    # §1.7 — cùng hàng rào với tool `weather` của chat (server.py `_tool_weather`):
+    # payload dự phòng theo mùa có đủ số như số đo thật, chỉ khác key `fallback`.
+    # _weather_for_llm() lược sạch số, thay bằng cảnh báo tiếng Việt.
+    return json.dumps(
+        {"weather": _weather_for_llm(weather_data), "events": events},
+        ensure_ascii=False,
+        default=str,
+    )
 
 
 # ═══════════════════════════════════════════════════════════════════════

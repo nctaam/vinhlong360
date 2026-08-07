@@ -494,6 +494,50 @@ class TestCommentModerationIntegration:
                 assert "0901234567" not in v, \
                     "_format_comment must not leak phone number"
 
+    # ── moderation_status: chỉ chính chủ + ban quản trị ──────────────────
+    # Formatter dùng chung cho 3 endpoint (list / create / edit). Khoá quyền
+    # ngay tại đây để endpoint mới thêm sau không thừa hưởng một lỗ hổng.
+
+    @staticmethod
+    def _pending_row():
+        return {
+            "id": "c1", "content": "Nội dung chờ duyệt", "user_id": "author-1",
+            "display_name": "Tác giả", "avatar_url": None, "parent_id": None,
+            "created_at": "2026-01-01", "mentions": "[]",
+            "moderation_status": "pending",
+        }
+
+    def test_format_comment_gives_moderation_status_to_the_author(self):
+        from social import _format_comment
+        out = _format_comment(self._pending_row(), {"id": "author-1", "role": "user"})
+        assert out["moderation_status"] == "pending"
+
+    def test_format_comment_hides_moderation_status_from_strangers(self):
+        from social import _format_comment
+        out = _format_comment(self._pending_row(), {"id": "someone-else", "role": "user"})
+        assert "moderation_status" not in out
+        assert "pending" not in [v for v in _all_values(out) if isinstance(v, str)]
+
+    def test_format_comment_hides_moderation_status_from_anonymous(self):
+        """Không có người xem = không có quyền. Mặc định phải là ĐÓNG."""
+        from social import _format_comment
+        assert "moderation_status" not in _format_comment(self._pending_row())
+        assert "moderation_status" not in _format_comment(self._pending_row(), None)
+
+    def test_format_comment_gives_moderation_status_to_staff(self):
+        from social import _format_comment
+        for role in ("admin", "moderator"):
+            out = _format_comment(self._pending_row(), {"id": "staff-1", "role": role})
+            assert out["moderation_status"] == "pending", role
+
+    def test_format_comment_blank_ids_do_not_match_each_other(self):
+        """Hàng thiếu user_id + người xem thiếu id: "" == "" KHÔNG được tính là chính chủ."""
+        from social import _format_comment
+        row = self._pending_row()
+        row["user_id"] = ""
+        assert "moderation_status" not in _format_comment(row, {"id": "", "role": "user"})
+        assert "moderation_status" not in _format_comment(row, {"role": "user"})
+
     def test_moderate_content_calls_spam_patterns(self):
         """moderate_content must include _check_spam_patterns in its pipeline."""
         import inspect

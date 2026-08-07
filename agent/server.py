@@ -115,7 +115,7 @@ except ImportError:
     logger.info("Vector search disabled (optional dependency)")
 
 try:
-    from realtime import get_realtime_context, get_weather, get_all_weather, get_upcoming_events
+    from realtime import get_realtime_context, get_weather, get_all_weather, get_upcoming_events, weather_for_llm
     HAS_REALTIME = True
 except ImportError:
     HAS_REALTIME = False
@@ -884,7 +884,15 @@ def _tool_weather(args: dict) -> str:
             logger.warning(f"Weather API error (circuit breaker): {_we}")
             weather_data = None
         events = get_upcoming_events(days_ahead=14, area=area)
-        return json.dumps({"weather": weather_data, "events": events}, ensure_ascii=False, default=str)
+        # §1.7 — `weather_data` ở đây có thể là payload dự phòng theo mùa
+        # (realtime._fallback_weather): nó có ĐỦ temp_c/humidity/description y như
+        # nhánh đo thật, chỉ khác ở key `fallback`. Json.dumps thẳng dict đó là LLM
+        # đọc "28°C, mưa rào" rồi phát biểu như số đo. weather_for_llm() lược sạch
+        # số và thay bằng cảnh báo tiếng Việt (cùng nguyên tắc với frontend
+        # web-nuxt/composables/useWeather.ts). Nó cũng nuốt luôn trường hợp
+        # weather_data is None ở trên (circuit breaker mở / lỗi gọi).
+        # Đường HTTP GET /weather KHÔNG đi qua đây nên frontend vẫn nhận `fallback: true`.
+        return json.dumps({"weather": weather_for_llm(weather_data), "events": events}, ensure_ascii=False, default=str)
     return json.dumps({"error": "Weather API not available"})
 
 

@@ -12,6 +12,7 @@ Fallback: nếu API không khả dụng, dùng seasonal data có sẵn.
 
 import json
 import logging
+import math
 import os
 import time
 from datetime import datetime, timedelta, timezone
@@ -185,6 +186,83 @@ def _fallback_weather(area: str) -> dict:
 
 
 # ══════════════════════════════════════════════════
+#  BIÊN GIỚI LLM — dự phòng KHÔNG được đi tiếp như số đo
+# ══════════════════════════════════════════════════
+#
+# `_fallback_weather()` ngay bên trên trả về payload có ĐỦ MỌI FIELD mà nhánh đo
+# thật (:110-122) có: `temp_c`, `humidity`, `description`, `icon`. Nhưng đó là HẰNG
+# SỐ THEO THÁNG, giống hệt nhau cho mọi khu vực, không phải quan trắc. Đưa nguyên
+# dict đó cho LLM là nó phát biểu "Vĩnh Long hôm nay 28°C, mưa rào" trong khi hệ
+# thống chưa hề có số đo nào — vi phạm CLAUDE.md §1.7 (không khai khống).
+#
+# Dấu hiệu phân biệt DUY NHẤT là key `fallback` (:182). Nhánh đo thật **vắng mặt**
+# key này chứ không đặt `fallback: False`. Hệ quả bắt buộc:
+#   - kiểm tra theo hướng TRUTHY. `payload.get("fallback") is True` sẽ để lọt mọi
+#     giá trị truthy khác; `payload.get("fallback") != False` sẽ coi luôn nhánh đo
+#     thật (get → None) là dự phòng và làm câm hết số đo thật.
+#
+# Cùng vấn đề này ở frontend đã xử lý tại `web-nuxt/composables/useWeather.ts`
+# (`classifyWeather`): khi `fallback` truthy thì MỌI trường số bị đưa về `null` —
+# giao diện không còn gì để lỡ tay render. Backend giữ đúng nguyên tắc đó: LLM
+# không nhận được con số nào để lỡ miệng đọc ra, chỉ nhận một câu tiếng Việt nói
+# rõ là chưa có số đo. Chỉ dán nhãn mà vẫn kèm số là không đủ — mô hình (cũng như
+# người lướt nhanh) sẽ giữ lại con số và bỏ rơi phần chú thích.
+#
+# QUAN TRỌNG: hàng rào này chỉ đặt ở ĐƯỜNG VÀO LLM. Đường HTTP `GET /weather`
+# (server.py) vẫn trả nguyên payload kèm `fallback: true`, vì frontend cần đúng
+# key đó để tự phân loại.
+
+LLM_WEATHER_NO_MEASUREMENT_NOTICE = (
+    "KHÔNG CÓ SỐ ĐO THỜI TIẾT. Hệ thống không lấy được quan trắc cho khu vực này, "
+    "nên phần dữ liệu thời tiết ở đây đã bị lược sạch, không còn con số nào. "
+    "TUYỆT ĐỐI KHÔNG nêu nhiệt độ, độ ẩm, sức gió hay lượng mưa, và KHÔNG khẳng định "
+    "trời đang mưa hay đang nắng. Nếu người dùng hỏi thời tiết, hãy nói thẳng rằng "
+    "hiện chưa có số liệu quan trắc và mời họ xem dự báo chính thức."
+)
+
+
+def weather_has_measurement(payload: object) -> bool:
+    """True chỉ khi `payload` là số đo THẬT từ upstream.
+
+    Ba điều kiện, theo đúng thứ tự của `classifyWeather` ở frontend:
+      1. phải là dict;
+      2. `fallback` phải FALSY — kiểm tra truthy, xem ghi chú khối trên;
+      3. `temp_c` phải là số hữu hạn thật sự (chuỗi "28" KHÔNG tính, `nan`/`inf`
+         KHÔNG tính, `True` cũng KHÔNG tính dù `bool` là con của `int`).
+    """
+    if not isinstance(payload, dict):
+        return False
+    if payload.get("fallback"):
+        return False
+    temp = payload.get("temp_c")
+    if isinstance(temp, bool) or not isinstance(temp, (int, float)):
+        return False
+    return math.isfinite(temp)
+
+
+def weather_for_llm(payload: object) -> dict:
+    """Chuẩn hoá payload thời tiết TRƯỚC khi đưa vào bất kỳ ngữ cảnh LLM nào.
+
+    - Có số đo thật → trả nguyên payload (không sao chép, không sửa tại chỗ; dict
+      này có thể chính là bản đang nằm trong `_weather_cache` và được `GET /weather`
+      trả cho frontend).
+    - Dự phòng theo mùa, hoặc không lấy được gì (None / lỗi / circuit breaker mở)
+      → trả dict KHÔNG CÓ CON SỐ NÀO, mở đầu bằng câu cảnh báo tiếng Việt.
+
+    Hai nhánh "dự phòng" và "mất kết nối" cố ý dùng chung một hình dạng: với LLM,
+    cả hai đều là "không có số đo", và một hình dạng duy nhất thì không thể đọc nhầm.
+    """
+    if weather_has_measurement(payload):
+        return payload  # type: ignore[return-value]
+    return {
+        # `canh_bao` đứng đầu để là thứ đầu tiên LLM đọc trong JSON (json.dumps giữ
+        # thứ tự chèn), và đặt tên tiếng Việt để không bị đọc như metadata kỹ thuật.
+        "canh_bao": LLM_WEATHER_NO_MEASUREMENT_NOTICE,
+        "co_so_do": False,
+    }
+
+
+# ══════════════════════════════════════════════════
 #  EVENT CALENDAR
 # ══════════════════════════════════════════════════
 
@@ -261,14 +339,22 @@ def get_realtime_context(area: str = "vinh-long") -> str:
     parts = []
 
     # Weather
+    #
+    # Chuỗi này được tiêm THẲNG vào system prompt (server.py `_gather_context_pieces`),
+    # nên nó là đường ngắn nhất để một hằng số theo mùa trở thành lời khẳng định của
+    # chatbot. Bản cũ vẫn in đủ "mưa rào, 28°C, ẩm 80%" và chỉ gắn hậu tố " (dự đoán)"
+    # — một chi tiết hai chữ nằm trong ngoặc, đúng loại chú thích mà mô hình lược đi
+    # đầu tiên khi tóm tắt lại cho người dùng. Nay: không có số đo thì KHÔNG có số nào
+    # trong prompt, chỉ còn câu cấm bằng tiếng Việt.
     weather = get_weather(area)
-    if weather:
-        fb = " (dự đoán)" if weather.get("fallback") else ""
+    if weather_has_measurement(weather):
         parts.append(
-            f"[Thời tiết {weather['area_name']}{fb}]: "
+            f"[Thời tiết {weather['area_name']}]: "
             f"{weather['description']}, {weather['temp_c']}°C, "
             f"ẩm {weather['humidity']}%. {weather['suggestion']}"
         )
+    else:
+        parts.append(f"[Thời tiết]: {LLM_WEATHER_NO_MEASUREMENT_NOTICE}")
 
     # Upcoming events
     events = get_upcoming_events(days_ahead=14, area=area)
