@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { trackContactView, type ContactAction } from '~/composables/useContactBeacon'
+
 const props = defineProps<{
   entity: Record<string, any>
 }>()
@@ -23,6 +25,12 @@ const stars = computed(() => {
 
 const hasContact = computed(() => !!phone.value || !!zalo.value)
 const mapUrl = computed(() => `/ban-do?highlight=${encodeURIComponent(props.entity.id)}`)
+
+// Đo lượt bấm CTA (contact-funnel). Fire-and-forget: KHÔNG await, KHÔNG chặn
+// điều hướng `tel:` / bản đồ / website. Xem composables/useContactBeacon.ts.
+function trackContact(action: ContactAction) {
+  trackContactView(props.entity?.id, action)
+}
 
 const copiedField = ref('')
 let copyTimer: ReturnType<typeof setTimeout> | null = null
@@ -72,16 +80,16 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
         <a v-if="zalo" :href="`https://zalo.me/${zalo}`" target="_blank" rel="noopener" class="cw-btn cw-btn-primary" data-color-role="action-primary" :aria-label="`Nhắn Zalo cho ${entity.name}`">
           <IconLine name="message" class="cw-icon" /> Nhắn Zalo
         </a>
-        <a v-if="phone" :href="`tel:${phone}`" class="cw-btn cw-btn-secondary" data-color-role="action-secondary" :aria-label="`Gọi điện cho ${entity.name}`">
+        <a v-if="phone" :href="`tel:${phone}`" class="cw-btn cw-btn-secondary" data-color-role="action-secondary" data-contact-action="phone" :aria-label="`Gọi điện cho ${entity.name}`" @click="trackContact('phone')">
           <IconLine name="phone" class="cw-icon" /> Gọi điện
         </a>
-        <NuxtLink v-if="!hasContact" :to="mapUrl" class="cw-btn cw-btn-secondary" data-color-role="action-secondary">
+        <NuxtLink v-if="!hasContact" :to="mapUrl" class="cw-btn cw-btn-secondary" data-color-role="action-secondary" data-contact-action="map" @click="trackContact('map')">
           <IconLine name="pin" class="cw-icon" /> Xem bản đồ
         </NuxtLink>
       </div>
 
       <!-- Website -->
-      <a v-if="website" :href="website" target="_blank" rel="noopener" class="cw-website">
+      <a v-if="website" :href="website" target="_blank" rel="noopener" class="cw-website" data-contact-action="website" @click="trackContact('website')">
 <IconLine name="globe" /> {{ website.replace(/^https?:\/\//, '').replace(/\/$/, '') }}
       </a>
     </div>

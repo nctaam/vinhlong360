@@ -114,8 +114,8 @@
         <!-- Highlights quét nhanh (Baymard: 78% site thiếu; chống info bị chôn dưới fold) -->
         <div v-if="hasHighlights" class="highlights">
           <a v-if="zaloLink" class="hl hl-action" data-color-role="action-primary" :href="zaloLink" target="_blank" rel="nofollow noopener" :aria-label="`Nhắn Zalo ${entity.name}`">💬 Zalo</a>
-          <a v-if="entity.attributes?.phone" class="hl hl-action" data-color-role="action-secondary" :href="telHref(entity.attributes.phone)" :aria-label="`Gọi ${entity.name}`">📞 Gọi</a>
-          <NuxtLink v-if="hasCoords" class="hl hl-action" data-color-role="action-secondary" :to="mapUrl" :aria-label="`Xem ${entity.name} trên bản đồ`">🗺️ Bản đồ</NuxtLink>
+          <a v-if="entity.attributes?.phone" class="hl hl-action" data-color-role="action-secondary" data-contact-action="phone" :href="telHref(entity.attributes.phone)" :aria-label="`Gọi ${entity.name}`" @click="trackContact('phone')">📞 Gọi</a>
+          <NuxtLink v-if="hasCoords" class="hl hl-action" data-color-role="action-secondary" data-contact-action="map" :to="mapUrl" :aria-label="`Xem ${entity.name} trên bản đồ`" @click="trackContact('map')">🗺️ Bản đồ</NuxtLink>
           <span v-if="entity.attributes?.hours" class="hl"><span aria-hidden="true">🕒</span> {{ entity.attributes.hours }}</span>
           <span v-if="addressText" class="hl"><span aria-hidden="true">📍</span> {{ addressText }}</span>
         </div>
@@ -371,7 +371,7 @@
             <div v-if="entity.attributes?.phone" class="fact">
               <span class="fact-ic" aria-hidden="true">📞</span>
               <span class="k">{{ ss('labels.detail.fact_phone', 'Liên hệ') }}</span>
-              <span class="v"><a :href="telHref(entity.attributes.phone)" class="fact-link">{{ entity.attributes.phone }}</a><button type="button" class="fact-copy" @click="copyText(entity.attributes.phone!, 'số điện thoại')" aria-label="Sao chép số điện thoại" title="Sao chép"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></span>
+              <span class="v"><a :href="telHref(entity.attributes.phone)" class="fact-link" data-contact-action="phone" @click="trackContact('phone')">{{ entity.attributes.phone }}</a><button type="button" class="fact-copy" @click="copyText(entity.attributes.phone!, 'số điện thoại')" aria-label="Sao chép số điện thoại" title="Sao chép"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></span>
             </div>
             <div v-if="entity.attributes?.address" class="fact">
               <span class="fact-ic" aria-hidden="true">🏠</span>
@@ -386,7 +386,7 @@
             <div v-if="entity.attributes?.website" class="fact">
               <span class="fact-ic" aria-hidden="true">🔗</span>
               <span class="k">{{ ss('labels.detail.fact_website', 'Website') }}</span>
-              <span class="v"><a :href="safeUrl(entity.attributes.website)" target="_blank" rel="noopener nofollow" class="fact-link website-link">{{ entity.attributes?.website?.replace(/^https?:\/\//, '') }}</a></span>
+              <span class="v"><a :href="safeUrl(entity.attributes.website)" target="_blank" rel="noopener nofollow" class="fact-link website-link" data-contact-action="website" @click="trackContact('website')">{{ entity.attributes?.website?.replace(/^https?:\/\//, '') }}</a></span>
             </div>
           </div>
 
@@ -434,7 +434,7 @@
         <NuxtLink :to="planAddUrl" no-prefetch class="ns-action">📋 {{ ss('labels.detail.next_add_itinerary', 'Thêm vào lịch trình') }}</NuxtLink>
           <!-- declutter-1 T5: buy-contact dời từ contact-row (đã bỏ — desktop bị CSS ẩn,
                mobile ContactWidget che); ContactWidget không có kênh hỏi-mua nên giữ ở đây. -->
-          <a v-if="buyContactUrl" :href="buyContactUrl" target="_blank" rel="nofollow noopener" class="ns-action" :aria-label="`Hỏi mua ${entity.name}`">🛒 {{ ss('labels.detail.cta_buy_contact', 'Hỏi mua trực tiếp') }}</a>
+          <a v-if="buyContactUrl" :href="buyContactUrl" target="_blank" rel="nofollow noopener" class="ns-action" data-contact-action="website" :aria-label="`Hỏi mua ${entity.name}`" @click="trackContact('website')">🛒 {{ ss('labels.detail.cta_buy_contact', 'Hỏi mua trực tiếp') }}</a>
           <NuxtLink v-if="entity.type !== 'accommodation'" to="/luu-tru" class="ns-action">🏡 {{ ss('labels.detail.next_find_stay', 'Tìm chỗ ở gần đây') }}</NuxtLink>
         <NuxtLink :to="mapUrl" no-prefetch class="ns-action">🗺️ {{ ss('labels.detail.next_view_map', 'Xem trên bản đồ') }}</NuxtLink>
           <NuxtLink to="/tuyen-duong" class="ns-action">🛤️ {{ ss('labels.detail.next_route', 'Tuyến đường gợi ý') }}</NuxtLink>
@@ -449,8 +449,8 @@
          phone/Zalo/map, fall back to the guaranteed next action (add to itinerary). -->
     <div class="sticky-cta-bar">
       <a v-if="zaloLink" class="scta-zalo" data-color-role="action-primary" :href="zaloLink" target="_blank" rel="nofollow noopener" aria-label="Nhắn Zalo">💬 Zalo</a>
-      <a v-if="entity.attributes?.phone" class="scta-phone" data-color-role="action-secondary" :href="telHref(entity.attributes.phone)" aria-label="Gọi điện thoại">📞 Gọi</a>
-      <NuxtLink v-if="hasCoords" class="scta-map" data-color-role="action-secondary" :to="mapUrl" aria-label="Xem trên bản đồ">🗺️ Bản đồ</NuxtLink>
+      <a v-if="entity.attributes?.phone" class="scta-phone" data-color-role="action-secondary" data-contact-action="phone" :href="telHref(entity.attributes.phone)" aria-label="Gọi điện thoại" @click="trackContact('phone')">📞 Gọi</a>
+      <NuxtLink v-if="hasCoords" class="scta-map" data-color-role="action-secondary" data-contact-action="map" :to="mapUrl" aria-label="Xem trên bản đồ" @click="trackContact('map')">🗺️ Bản đồ</NuxtLink>
       <NuxtLink v-if="!hasStickyContact" :to="planAddUrl" no-prefetch class="scta-plan" data-color-role="action-primary" aria-label="Thêm vào lịch trình">📋 {{ ss('labels.detail.next_add_itinerary', 'Thêm vào lịch trình') }}</NuxtLink>
     </div>
   </section>
@@ -487,6 +487,7 @@ import { TYPE_META, AREA_META, REL_FWD, REL_BWD } from '~/composables/useConstan
 import { seasonText } from '~/composables/useSeason'
 import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
 import { entityStoryTeaser } from '~/composables/useEntityStory'
+import { trackContactView, type ContactAction } from '~/composables/useContactBeacon'
 import { adminUnitCrumb, withAdminUnitBreadcrumb } from '~/utils/adminUnit'
 import { aiDisclosure } from '~/utils/aiDisclosure'
 import { currentGalleryDescriptors, type GalleryDescriptorCarrier } from '~/utils/entityGallery'
@@ -957,6 +958,12 @@ const mapUrl = computed(() => {
   return c ? `${base}&lat=${c[0]}&lng=${c[1]}` : base
 })
 const planAddUrl = computed(() => `/tao-lich-trinh?add=${encodeURIComponent(id.value)}`)
+
+// Đo lượt bấm CTA liên hệ (contact-funnel). Fire-and-forget, KHÔNG await:
+// `tel:` rời trang ngay nên beacon dùng keepalive; endpoint chết thì nút vẫn chạy.
+function trackContact(action: ContactAction) {
+  trackContactView(id.value, action)
+}
 const hasHighlights = computed(() => !!(entity.value?.attributes?.phone || zaloLink.value || entity.value?.attributes?.hours || priceText.value || addressText.value || hasCoords.value))
 const hasVisitFacts = computed(() => { const a = entity.value?.attributes; return !!(a?.hours || a?.price || a?.fee || a?.suggested_duration || a?.transport) })
 const hasContactFacts = computed(() => { const a = entity.value?.attributes; return !!(a?.phone || a?.address || (a?.coords_approximate && hasCoords.value) || a?.website) })

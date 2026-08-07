@@ -88,7 +88,7 @@
             <strong>{{ f.name }}</strong>
           </div>
           <div v-if="attr(f, 'address')" class="fac-row">📍 {{ attr(f, 'address') }}</div>
-          <div v-if="attr(f, 'phone')" class="fac-row">📞 <a :href="telHref(attr(f, 'phone'))">{{ attr(f, 'phone') }}</a></div>
+          <div v-if="attr(f, 'phone')" class="fac-row">📞 <a :href="telHref(attr(f, 'phone'))" data-contact-action="phone" @click="trackContactView(f.id, 'phone')">{{ attr(f, 'phone') }}</a></div>
           <div v-if="attr(f, 'hours')" class="fac-row">🕒 {{ attr(f, 'hours') }}</div>
           <footer v-if="sourceUrl(f) || f.updatedAt" class="fac-src">
             <span v-if="isOfficialSource(f)" class="fac-verified" title="Nguồn chính thống">✓</span>
@@ -142,6 +142,9 @@
 <script setup lang="ts">
 import type { Entity, EntitySource } from '~/types'
 import { OFFICE_KIND, AREA_META } from '~/composables/useConstants'
+// Đo lượt bấm số điện thoại cơ quan (contact-funnel). Fire-and-forget — `tel:`
+// rời trang ngay, beacon dùng keepalive; lỗi mạng KHÔNG chặn cuộc gọi.
+import { trackContactView } from '~/composables/useContactBeacon'
 
 const AREA_RGB: Record<string, string> = {
   'vinh-long': 'var(--primary-rgb)',
