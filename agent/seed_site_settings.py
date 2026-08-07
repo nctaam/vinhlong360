@@ -68,6 +68,7 @@ DEFAULTS: dict[str, dict] = {
                 {"to": "/tuyen-duong", "label": "Tuyến đường gợi ý"},
                 {"to": "/le-hoi", "label": "Lễ hội truyền thống"},
                 {"to": "/su-kien", "label": "Sự kiện"},
+                {"to": "/lich-van-nien", "label": "Lịch vạn niên"},
             ]},
             {"label": "Đặc sản", "children": [
                 {"to": "/san-pham", "label": "Sản phẩm địa phương"},
@@ -105,6 +106,7 @@ DEFAULTS: dict[str, dict] = {
                 {"to": "/lich-trinh", "label": "Lịch trình gợi ý"},
                 {"to": "/tao-lich-trinh", "label": "Tạo lịch trình"},
                 {"to": "/danh-ba", "label": "Danh bạ hành chính"},
+                {"to": "/lich-van-nien", "label": "Lịch vạn niên"},
                 {"to": "/cong-dong", "label": "Cộng đồng"},
             ]},
             {"title": "3 vùng", "links": [

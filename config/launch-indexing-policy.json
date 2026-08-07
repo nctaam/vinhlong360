@@ -39,6 +39,7 @@
     {"path": "/khu-vuc/ben-tre", "classification": "indexable-public", "sitemap": true},
     {"path": "/khu-vuc/tra-vinh", "classification": "indexable-public", "sitemap": true},
     {"path": "/tim-kiem", "classification": "noindex-follow-public", "sitemap": false},
+    {"path": "/lich-van-nien", "classification": "noindex-follow-public", "sitemap": false},
     {"path": "/lich-trinh", "classification": "noindex-follow-public", "sitemap": false},
     {"path": "/tao-lich-trinh", "classification": "noindex-follow-public", "sitemap": false},
     {"path": "/cong-dong", "classification": "noindex-follow-public", "sitemap": false},

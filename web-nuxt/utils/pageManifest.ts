@@ -167,6 +167,17 @@ export const PAGE_MANIFESTS: Record<string, PageManifest> = {
       ogDescription: 'Tìm kiếm đặc sản, trải nghiệm, lưu trú tại Vĩnh Long.',
     }),
   },
+  lich_van_nien: {
+    slug: 'lich_van_nien', title: 'Lịch vạn niên', icon: '🌙', route: '/lich-van-nien',
+    fields: heroSeoFields({
+      heroTitle: 'Lịch vạn niên',
+      heroSubtitle: 'Đối chiếu dương lịch và âm lịch Việt Nam (múi giờ UTC+7), can chi và tiết khí. Toàn bộ con số trên trang được tính tại chỗ theo thuật toán thiên văn, không tra bảng chép sẵn.',
+      seoTitle: 'Lịch vạn niên — âm lịch, can chi, tiết khí | vinhlong360',
+      seoDescription: 'Tra âm lịch, can chi ngày/tháng/năm và tiết khí theo múi giờ Việt Nam UTC+7. Đổi ngày dương sang âm và ngược lại. Không có mục ngày tốt — ngày xấu.',
+      ogTitle: 'Lịch vạn niên — vinhlong360',
+      ogDescription: 'Âm lịch, can chi và tiết khí tính theo giờ Việt Nam. Đổi ngày hai chiều.',
+    }),
+  },
   lien_he: {
     slug: 'lien_he', title: 'Liên hệ', icon: '📬', route: '/lien-he',
     fields: heroSeoFields({

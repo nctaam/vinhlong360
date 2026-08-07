@@ -154,6 +154,11 @@ def test_route_manifest_contains_exact_reviewed_schema_and_inventory():
             "sitemap": False,
         },
         {
+            "path": "/lich-van-nien",
+            "classification": "noindex-follow-public",
+            "sitemap": False,
+        },
+        {
             "path": "/lich-trinh",
             "classification": "noindex-follow-public",
             "sitemap": False,
