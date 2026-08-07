@@ -535,33 +535,26 @@ const offseasonNext = computed(() => {
     .slice(0, 3)
 })
 
-/** Bulk .ics: one VCALENDAR with a VEVENT per upcoming festival — client-side only, no backend change. */
+/**
+ * Bulk .ics: one VCALENDAR with a VEVENT per upcoming festival — client-side only, no backend change.
+ * Line assembly lives in utils/safe.ts so the all-day DTEND rule (exclusive end = last day + 1,
+ * RFC 5545 §3.6.1) has a single implementation shared with su-kien and the per-row button.
+ */
 function downloadIcalBulk() {
-  const items = allEvents.value.filter((e: Entity) => {
-    const ds = eventStart(e)
-    return ds && ds >= todayStr
-  })
-  if (!items.length) return
-  const esc = (s: string) => (s || '').replace(/[,;\\]/g, ' ')
-  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//vinhlong360.vn//VI']
-  for (const e of items) {
-    const attrs: any = e.attributes || {}
-    const ds = String(attrs.date_start || eventStart(e) || '').replace(/-/g, '')
-    if (!ds) continue
-    const de = String(attrs.date_end || eventEnd(e) || attrs.date_start || '').replace(/-/g, '')
-    lines.push(
-      'BEGIN:VEVENT',
-      `DTSTART;VALUE=DATE:${ds}`,
-      `DTEND;VALUE=DATE:${de}`,
-      `SUMMARY:${esc(e.name)}`,
-      `DESCRIPTION:${esc((e.summary || '').slice(0, 200))}`,
-      `LOCATION:${esc(e.place_name || '')}`,
-      `URL:https://vinhlong360.vn${entityPath(e.id)}`,
-      'END:VEVENT',
-    )
-  }
-  lines.push('END:VCALENDAR')
-  downloadBlob(new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' }), 'le-hoi-sap-toi.ics')
+  const items = allEvents.value
+    .filter((e: Entity) => {
+      const ds = eventStart(e)
+      return ds && ds >= todayStr
+    })
+    .map((e: Entity) => ({
+      id: e.id,
+      name: e.name,
+      summary: e.summary,
+      place_name: e.place_name,
+      dateStart: eventStart(e),
+      dateEnd: eventEnd(e),
+    }))
+  downloadIcsBundle(items, 'le-hoi-sap-toi.ics')
 }
 
 useSeoMeta({

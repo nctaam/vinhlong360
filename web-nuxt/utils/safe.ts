@@ -1,6 +1,8 @@
 // Shared safety helpers (auto-imported by Nuxt from utils/).
 // P0-16/17/3: sanitize URLs, HTML, and tel: links before they reach href/innerHTML.
 
+import { entityPath } from './routePaths'
+
 /** Allow only http(s) URLs into an href; anything else (javascript:, data:, …) → '#'. */
 export function safeUrl(url?: string | null): string {
   if (!url) return '#'
@@ -32,24 +34,108 @@ export function getEntityArea(e: { place_area?: string; area?: string }): string
   return e.place_area || e.area || ''
 }
 
+// ── iCalendar (.ics) generation ──
+// One implementation for every .ics we emit (entity button + the su-kien/le-hoi bulk
+// buttons). Keep it here: three copies of this drifted apart once already.
+
+/** An event ready for ICS output. `dateEnd` is the INCLUSIVE last day, the way our data stores it. */
+export interface IcsEventInput {
+  id: string
+  name?: string
+  summary?: string
+  place_name?: string
+  /** Inclusive first day — `YYYY-MM-DD` (also accepts `YYYYMMDD` or a full ISO timestamp). */
+  dateStart: string
+  /** Inclusive last day; empty/absent means a single-day event. */
+  dateEnd?: string | null
+}
+
+/**
+ * Parse a calendar date into UTC midnight, or null when it is not a real day.
+ * Overflow inputs (`2026-02-30`, `2027-02-29`) are rejected rather than silently rolled
+ * into the next month, so bad data can never shift an event to a wrong date.
+ */
+function parseCalendarDate(value?: string | null): Date | null {
+  const m = /^(\d{4})-?(\d{2})-?(\d{2})/.exec(String(value ?? '').trim())
+  if (!m) return null
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])]
+  const dt = new Date(Date.UTC(y, mo - 1, d))
+  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) return null
+  return dt
+}
+
+/** UTC date → the compact `YYYYMMDD` form iCalendar wants for VALUE=DATE. */
+function formatCalendarDate(d: Date): string {
+  return String(d.getUTCFullYear()).padStart(4, '0')
+    + String(d.getUTCMonth() + 1).padStart(2, '0')
+    + String(d.getUTCDate()).padStart(2, '0')
+}
+
+/**
+ * DTEND for an all-day VEVENT, in compact `YYYYMMDD`.
+ *
+ * RFC 5545 §3.6.1: a DATE-valued DTEND is NON-INCLUSIVE and "MUST be greater than" DTSTART.
+ * Our data stores an inclusive last day, so the exclusive end is always (last day + 1) — for a
+ * one-day event too. Emitting DTEND == DTSTART produces a zero-length event that Google
+ * Calendar and Outlook drop or draw wrong.
+ *
+ * @param dateStart          inclusive first day
+ * @param dateEndInclusive   inclusive last day; empty/unparseable → treated as a single-day event
+ * @returns compact exclusive end date, or '' when `dateStart` itself is not a real date
+ */
+export function icsAllDayEnd(dateStart: string, dateEndInclusive?: string | null): string {
+  const start = parseCalendarDate(dateStart)
+  if (!start) return ''
+  const end = parseCalendarDate(dateEndInclusive) || start
+  // Bad data (end before start) collapses to one day instead of an inverted range.
+  const last = end.getTime() < start.getTime() ? start : end
+  return formatCalendarDate(new Date(last.getTime() + 86_400_000))
+}
+
+/** Strip the characters that would break ICS line structure (RFC 5545 delimiters). */
+function icsEscape(s?: string | null): string {
+  return String(s || '').replace(/[,;\\]/g, ' ')
+}
+
+/** Build a complete VCALENDAR document; entries without a usable start date are skipped. */
+export function buildIcsCalendar(items: IcsEventInput[]): string {
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//vinhlong360.vn//VI']
+  for (const e of items || []) {
+    const start = parseCalendarDate(e?.dateStart)
+    if (!start) continue
+    lines.push(
+      'BEGIN:VEVENT',
+      `DTSTART;VALUE=DATE:${formatCalendarDate(start)}`,
+      `DTEND;VALUE=DATE:${icsAllDayEnd(e.dateStart, e.dateEnd)}`,
+      `SUMMARY:${icsEscape(e.name)}`,
+      `DESCRIPTION:${icsEscape((e.summary || '').slice(0, 200)).replace(/\r?\n/g, '\\n')}`,
+      `LOCATION:${icsEscape(e.place_name)}`,
+      `URL:https://vinhlong360.vn${entityPath(e.id)}`,
+      'END:VEVENT',
+    )
+  }
+  lines.push('END:VCALENDAR')
+  return lines.join('\r\n')
+}
+
+/** Download a multi-event .ics; no-op when nothing has a usable date. */
+export function downloadIcsBundle(items: IcsEventInput[], filename: string) {
+  const usable = (items || []).filter(i => parseCalendarDate(i?.dateStart))
+  if (!usable.length) return
+  downloadBlob(new Blob([buildIcsCalendar(usable)], { type: 'text/calendar;charset=utf-8' }), filename)
+}
+
 /** Generate and download an .ics calendar file for an entity with date attributes. */
 export function downloadIcal(e: { id: string; name?: string; summary?: string; place_name?: string; attributes?: Record<string, any> }) {
   const attrs = e.attributes || {}
-  const ds = String(attrs.date_start || '').replace(/-/g, '')
-  if (!ds) return
-  const de = String(attrs.date_end || attrs.date_start || '').replace(/-/g, '')
-  const lines = [
-    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//vinhlong360.vn//VI',
-    'BEGIN:VEVENT',
-    `DTSTART;VALUE=DATE:${ds}`,
-    `DTEND;VALUE=DATE:${de}`,
-    `SUMMARY:${(e.name || '').replace(/[,;\\]/g, ' ')}`,
-    `DESCRIPTION:${(e.summary || '').slice(0, 200).replace(/\n/g, '\\n')}`,
-    `LOCATION:${(e.place_name || '').replace(/[,;\\]/g, ' ')}`,
-    `URL:https://vinhlong360.vn/dia-diem/${e.id}`,
-    'END:VEVENT', 'END:VCALENDAR',
-  ]
-  downloadBlob(new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' }), `${e.id}.ics`)
+  downloadIcsBundle([{
+    id: e.id,
+    name: e.name,
+    summary: e.summary,
+    place_name: e.place_name,
+    dateStart: String(attrs.date_start || ''),
+    dateEnd: String(attrs.date_end || ''),
+  }], `${e.id}.ics`)
 }
 
 // ── Event date helpers (shared by le-hoi + su-kien pages) ──
