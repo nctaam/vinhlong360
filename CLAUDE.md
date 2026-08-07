@@ -7,7 +7,7 @@
 
 ## 0. Bối cảnh 1 dòng
 
-MXH du lịch/OCOP/cộng đồng cho **tỉnh Vĩnh Long MỚI** (sáp nhập Vĩnh Long + Bến Tre + Trà Vinh từ 07/2025; hành chính 2 cấp: 1 tỉnh → 124 xã/phường = 35 phường + 89 xã, KHÔNG còn cấp huyện, KHÔNG còn tỉnh Bến Tre/Trà Vinh). Solo dev, vibe code, <10k user, **ngân sách <1.000.000đ/tháng**, web-first, **không tính năng nặng** (không AR/audio-guide/native app). Backend FastAPI (`agent/`) + frontend Nuxt 4 SSR (`web-nuxt/`). Kiến trúc & lý do: `docs/architecture-decisions.md`; bản đồ tài liệu còn hiệu lực: `docs/README.md`.
+MXH du lịch/OCOP/cộng đồng cho **tỉnh Vĩnh Long MỚI** (sáp nhập Vĩnh Long + Bến Tre + Trà Vinh từ 07/2025; hành chính 2 cấp: 1 tỉnh → 124 xã/phường = 35 phường + 89 xã, KHÔNG còn cấp huyện, KHÔNG còn tỉnh Bến Tre/Trà Vinh). Cảnh báo khi đối chiếu: danh mục GSO / file `.xls` có thể vẫn ghi 19 phường + 105 xã vì chưa cập nhật đợt 16 xã lên phường — lấy `.xls` làm nguồn MÃ hành chính, KHÔNG lấy làm nguồn CẤP. Solo dev, vibe code, <10k user, **ngân sách <1.000.000đ/tháng**, web-first, **không tính năng nặng** (không AR/audio-guide/native app). Backend FastAPI (`agent/`) + frontend Nuxt 4 SSR (`web-nuxt/`). Kiến trúc & lý do: `docs/architecture-decisions.md`; bản đồ tài liệu còn hiệu lực: `docs/README.md`.
 
 ## 1. Các quyết định đã chốt (KHÔNG tự ý đổi)
 
