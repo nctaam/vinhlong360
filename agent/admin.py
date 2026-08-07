@@ -1230,9 +1230,6 @@ async def assign_place(entity_id: str, body: AssignPlaceRequest):
 
 # ── Itinerary CRUD ──
 
-@router.post("/entities/bulk-place",
-             summary="Bulk assign place to entities",
-             description="Assigns or removes a commune/ward placeId for many entities in one admin action.")
 def _bulk_assign_entities(ids, pid, place):
     """Assign pid to each id in ids; return (assigned_ids, errors)."""
     assigned: list[str] = []
@@ -1252,6 +1249,9 @@ def _bulk_assign_entities(ids, pid, place):
     return assigned, errors
 
 
+@router.post("/entities/bulk-place",
+             summary="Bulk assign place to entities",
+             description="Assigns or removes a commune/ward placeId for many entities in one admin action.")
 async def bulk_assign_place(body: BulkAssignPlaceRequest):
     ids = [validate_path_id(entity_id, "entity_id") for entity_id in body.entity_ids]
     def _query():
@@ -1747,7 +1747,7 @@ async def qa_queue(
         where = " AND ".join(conditions)
         with db._conn() as conn:
             rows = db._fetchall(conn, f"""
-                SELECT p.id, p.title, p.content, p.entity_id, p.user_id,
+                SELECT p.id, p.content, p.entity_id, p.user_id,
                        p.comment_count, p.best_answer_id, p.created_at,
                        u.display_name
                 FROM posts p
@@ -2366,9 +2366,6 @@ async def reject_image_suggestion(suggestion_id: str, body: RejectSuggestionRequ
 _server_start_time = __import__("time").time()
 
 
-@router.get("/system-health",
-            summary="Get system health status",
-            description="Returns system health information including SQLite/Postgres status, server uptime, memory usage, and storage metrics.")
 def _system_health_server(result, os, _t) -> None:
     result["server"]["uptime_seconds"] = int(_t.time() - _server_start_time)
     result["server"]["uptime_human"] = _format_uptime(int(_t.time() - _server_start_time))
@@ -2415,6 +2412,9 @@ def _system_health_pg(result) -> None:
         result["postgres"]["open_reports"] = db._row_to_dict(open_reports)["c"] if open_reports else 0
 
 
+@router.get("/system-health",
+            summary="Get system health status",
+            description="Returns system health information including SQLite/Postgres status, server uptime, memory usage, and storage metrics.")
 async def system_health():
     import os
     import time as _t
@@ -3725,9 +3725,6 @@ class BatchModerationBody(BaseModel):
     reason: str = Field("", max_length=500)
 
 
-@router.post("/moderation/batch",
-             summary="Batch moderate multiple posts",
-             description="Approve or reject multiple posts at once. Notifies each author and logs moderation actions.")
 def _batch_mod_notify(rows, status, reason) -> None:
     """Notify each affected post author of the batch moderation result."""
     if status == "approved":
@@ -3746,6 +3743,9 @@ def _batch_mod_notify(rows, status, reason) -> None:
             logger.exception("Failed to notify batch moderation %s", rd["id"])
 
 
+@router.post("/moderation/batch",
+             summary="Batch moderate multiple posts",
+             description="Approve or reject multiple posts at once. Notifies each author and logs moderation actions.")
 async def batch_moderation(body: BatchModerationBody, request: Request):
     require_pg()
     from ratelimit import check_rate
@@ -3976,8 +3976,9 @@ async def admin_content_search(
         total = 0
         with db._conn() as conn:
             if content_type in ("post", "all"):
-                conditions = [f"(p.content ILIKE {ph} ESCAPE '\\' OR p.title ILIKE {ph} ESCAPE '\\')"]
-                params = [f"%{search_esc}%", f"%{search_esc}%"]
+                # `posts` has no title column — content is the only searchable text.
+                conditions = [f"p.content ILIKE {ph} ESCAPE '\\'"]
+                params = [f"%{search_esc}%"]
                 if status != "all":
                     conditions.append(f"p.moderation_status = {ph}")
                     params.append(status)
@@ -3986,7 +3987,7 @@ async def admin_content_search(
                     params.append(post_type)
                 where = " AND ".join(conditions)
                 post_rows = db._fetchall(conn, f"""
-                    SELECT p.id, p.title, p.content, p.post_type, p.moderation_status,
+                    SELECT p.id, p.content, p.post_type, p.moderation_status,
                            p.entity_id, p.created_at, p.like_count,
                            u.display_name as author_name
                     FROM posts p JOIN users u ON u.id = p.user_id
@@ -4242,7 +4243,7 @@ async def admin_list_comments(
             rows = db._fetchall(conn, f"""
                 SELECT c.id, c.content, c.post_id, c.parent_id, c.created_at,
                        u.display_name as author_name, u.id as user_id,
-                       p.title as post_title, p.post_type
+                       p.post_type
                 FROM comments c
                 JOIN users u ON u.id = c.user_id
                 JOIN posts p ON p.id = c.post_id

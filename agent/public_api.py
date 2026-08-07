@@ -3519,7 +3519,7 @@ async def feed_new_since(
         if _db._use_pg:
             with _db._conn() as conn:
                 rows = _db._fetchall(conn, f"""
-                    SELECT p.id, p.title, p.post_type, p.entity_id, p.created_at,
+                    SELECT p.id, p.post_type, p.entity_id, p.created_at,
                            u.display_name
                     FROM posts p JOIN users u ON u.id = p.user_id
                     WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL

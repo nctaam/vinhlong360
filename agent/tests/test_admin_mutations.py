@@ -299,12 +299,64 @@ def test_create_entity_requires_auth():
 
 # ── Entity bulk operations ───────────────────────────────────────────────
 
-def test_bulk_place_endpoint_runs():
+def test_bulk_place_reads_the_json_body():
+    """A body-only POST must reach the handler, not 422 on phantom query params.
+
+    422 here means the route decorator is bound to something that is not
+    `bulk_assign_place` — see agent/tests/test_route_decorator_binding.py.
+    """
     r = client.post("/admin/entities/bulk-place", json={
-        "entity_ids": [],
+        "entity_ids": ["test-isolation-sentinel"],
         "place_id": "nonexistent",
     }, headers=H)
-    assert r.status_code in (200, 422)
+    # 400 = the handler ran and rejected the place_id.
+    # 422 would mean FastAPI never got past parameter binding.
+    assert r.status_code == 400, r.text
+    assert "place_id" in r.json()["detail"]
+
+
+def test_bulk_place_assigns_place_id_to_each_entity(isolated_sqlite_db):
+    isolated_sqlite_db.upsert_entity({
+        "id": "test-bulk-place-ward",
+        "name": "Phường Test",
+        "type": "place",
+        "area": "Vĩnh Long",
+    })
+    _create_entity("bulk-place-a")
+    _create_entity("bulk-place-b")
+
+    r = client.post("/admin/entities/bulk-place", json={
+        "entity_ids": ["test-mutation-bulk-place-a", "test-mutation-bulk-place-b"],
+        "place_id": "test-bulk-place-ward",
+    }, headers=H)
+
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["assigned"] == 2
+    assert body["errors"] == []
+    for eid in ("test-mutation-bulk-place-a", "test-mutation-bulk-place-b"):
+        saved = isolated_sqlite_db.get_entity(eid)
+        assert saved["placeId"] == "test-bulk-place-ward"
+        assert saved["area"] == "Vĩnh Long"
+
+
+def test_bulk_place_reports_missing_entities_without_failing_the_batch(isolated_sqlite_db):
+    isolated_sqlite_db.upsert_entity({
+        "id": "test-bulk-place-ward-2",
+        "name": "Phường Test 2",
+        "type": "place",
+    })
+    _create_entity("bulk-place-c")
+
+    r = client.post("/admin/entities/bulk-place", json={
+        "entity_ids": ["test-mutation-bulk-place-c", "khong-ton-tai"],
+        "place_id": "test-bulk-place-ward-2",
+    }, headers=H)
+
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["assigned_ids"] == ["test-mutation-bulk-place-c"]
+    assert [e["id"] for e in body["errors"]] == ["khong-ton-tai"]
 
 
 def test_bulk_delete_empty():

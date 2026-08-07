@@ -527,7 +527,7 @@ Các mục ở phần trên tài liệu mới là hợp đồng có ràng buộc
 | GET | `/admin/entities` | `list_entities` | Danh sách entities với filter — đọc từ database. |
 | POST | `/admin/entities` | `create_entity` | Tạo entity mới. |
 | POST | `/admin/entities/bulk-delete` | `bulk_delete` | Xóa nhiều entities cùng lúc. |
-| POST | `/admin/entities/bulk-place` | `_bulk_assign_entities` | Assign pid to each id in ids; return (assigned_ids, errors). |
+| POST | `/admin/entities/bulk-place` | `bulk_assign_place` |  |
 | GET | `/admin/entities/check-duplicate` | `check_duplicate` | Kiểm tra entity trùng tên (substring, case-insensitive + B2c: không phân biệt dấu). |
 | GET | `/admin/entities/places` | `list_places` | Danh sách xã/phường cho dropdown. |
 | DELETE | `/admin/entities/{entity_id}` | `delete_entity` | Xóa entity. |
@@ -562,7 +562,7 @@ Các mục ở phần trên tài liệu mới là hợp đồng có ràng buộc
 | PUT | `/admin/llm-config` | `admin_update_llm_config` | Update LLM config. Validates with a test API call before applying. |
 | POST | `/admin/llm-config/reset` | `admin_reset_llm_config` | Reset LLM config to environment variables. |
 | GET | `/admin/media` | `media_gallery` | B6a: Central media gallery — cached extraction, avoids re-scanning all entities per page. |
-| POST | `/admin/moderation/batch` | `_batch_mod_notify` | Notify each affected post author of the batch moderation result. |
+| POST | `/admin/moderation/batch` | `batch_moderation` |  |
 | GET | `/admin/moderation/queue` | `moderation_queue` |  |
 | GET | `/admin/moderation/stats` | `moderation_stats` |  |
 | POST | `/admin/moderation/{post_id}/approve` | `approve_post` |  |
@@ -601,7 +601,7 @@ Các mục ở phần trên tài liệu mới là hợp đồng có ràng buộc
 | GET | `/admin/stale-queue` | `stale_queue` | Danh sách entity cũ/thiếu thông tin — admin review queue. |
 | POST | `/admin/stale-queue/{entity_id}/mark-reviewed` | `stale_mark_reviewed` | Đánh dấu entity đã được admin xem xét — ghi timestamp vào attributes. |
 | GET | `/admin/stats` | `admin_stats` | Thống kê chi tiết cho admin. |
-| GET | `/admin/system-health` | `_system_health_server` |  |
+| GET | `/admin/system-health` | `system_health` |  |
 | POST | `/admin/trigger-learn` | `trigger_learn` | Trigger 1 vòng auto-learn (chạy background). |
 | GET | `/admin/unclassified` | `list_unclassified` | Entity nội dung CHƯA gán xã/phường (placeId rỗng) — để admin gán đúng (lấp nợ placeId). |
 | GET | `/admin/user-engagement` | `user_engagement_stats` |  |

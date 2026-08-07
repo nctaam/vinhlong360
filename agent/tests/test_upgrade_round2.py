@@ -2624,8 +2624,14 @@ class TestAdminCommentList:
         assert "author_name" in src
 
     def test_list_includes_post_info(self):
+        # The parent-post context is the posts JOIN + post_type. It used to also
+        # select `p.title as post_title`, but `posts` has never had a title
+        # column (init.sql:191) — that select 500'd on Postgres. Runtime coverage:
+        # agent/tests/test_posts_sql_columns.py.
         src = inspect.getsource(__import__("admin").admin_list_comments)
-        assert "post_title" in src
+        assert "JOIN posts p" in src
+        assert "p.post_type" in src
+        assert "p.title" not in src
 
     def test_delete_validates_path_id(self):
         src = inspect.getsource(__import__("admin").admin_delete_comment)
