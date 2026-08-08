@@ -94,6 +94,10 @@ def client(preference_database, logged_in_user, monkeypatch):
     )
     app = FastAPI()
     app.include_router(public_api.router)
+    # Cùng lý do với agent/tests/test_user_preferences.py: route /api/me/location/resolve
+    # nay có guard `require_pg` (§1.3 — route đòi đăng nhập phải trả 503 rõ ràng trên
+    # SQLite thay vì nổ 500). Bộ test này chạy SQLite nên override, KHÔNG gỡ guard.
+    app.dependency_overrides[public_api.require_pg] = lambda: None
     with TestClient(app) as test_client:
         yield test_client
 

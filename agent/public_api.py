@@ -1286,7 +1286,6 @@ async def resolve_my_location(
              description="Stores a bounded first-party event for personalized recommendations. Requires login and CSRF.")
 async def track_user_event(
     body: UserEventIn,
-    request: Request,
     response: Response,
     user=Depends(require_user),
     _csrf=Depends(require_csrf),
@@ -1320,9 +1319,12 @@ async def track_user_event(
     if body.entity_id:
         body.entity_id = validate_path_id(body.entity_id, "entity_id")
     body.entity_type = _clean_short_text(body.entity_type, 60)
-    body.entity_name = _clean_short_text(body.entity_name, 300)
-    body.area = _clean_short_text(body.area, 120)
-    body.query = _clean_short_text(body.query, 200)
+    body.area_id = _clean_short_text(body.area_id, 200)
+    # CHỈ làm sạch các trường CÓ THẬT trên `UserEventIn` sau khi hợp NP-1.
+    # Bản của main còn cắt ngắn `entity_name`, `area`, `query` — ba trường đó KHÔNG tồn
+    # tại trên model của NP-1 (model đó đã thắng ở bước hợp, và nó hẹp hơn có chủ đích:
+    # `extra="ignore"` nên client gửi thừa cũng bị bỏ). Giữ nguyên ba dòng cũ thì handler
+    # nổ AttributeError ở MỌI sự kiện — agent/tests/test_qa_fixes.py bắt được.
     check_rate(f"user-event:{user['id']}", 120, 300, "Too many events")
     try:
         await asyncio.to_thread(

@@ -508,13 +508,18 @@ class TestPersonalizationFoundation:
 
         with pytest.raises(HTTPException) as exc_info:
             asyncio.run(
+                # Gọi bằng TỪ KHOÁ và bằng UserEventIn, không truyền dict/vị trí.
+                # Sau khi hợp NP-1 vào main, handler nhận `body: UserEventIn` (thứ tự
+                # của main) chứ không phải `(response, body_dict)` như bản NP-1 — gọi
+                # theo vị trí sẽ bind Response() vào `body`. Tính chất được kiểm ở đây
+                # KHÔNG đổi: entity không tồn tại -> 422, và việc tra cứu có thật xảy ra.
                 public_api.track_user_event(
-                    Response(),
-                    body={
-                        "event_type": "entity_view",
-                        "context": "entity",
-                        "entity_id": "unknown-entity",
-                    },
+                    body=public_api.UserEventIn(
+                        event_type="entity_view",
+                        context="entity",
+                        entity_id="unknown-entity",
+                    ),
+                    response=Response(),
                     user={"id": "00000000-0000-0000-0000-000000000001"},
                     _csrf=None,
                 )
