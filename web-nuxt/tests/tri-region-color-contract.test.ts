@@ -768,7 +768,23 @@ describe('Tri-Region color contract', () => {
     expect(stdout).toMatch(/audit-toolchain .*nuxt@4\..*vue\/compiler-sfc@3\..*postcss@8\..*postcss-selector-parser@7\./)
   })
 
-  // Mốc dời 96bfba4c → 358fe697 (2026-08-05): thêm devDependency `axe-core` để
+  // Mốc dời 358fe697 → 98b8649e (2026-08-08): vá bảo mật phụ thuộc. `npm audit` báo
+  // 13 lỗ (2 CRITICAL ở `tar`, 9 high gồm `sharp`/`svgo`/`brace-expansion`/`esbuild`);
+  // bản vá đưa về 3. Chỉ `package-lock.json` đổi — `package.json` KHÔNG đổi một dòng,
+  // nên toàn bộ nằm trong phạm vi phiên bản đã khai. Verify: typecheck exit 0,
+  // vitest 1613/1615 (hai bài đỏ là bài flaky đã biết + chính cổng này).
+  //
+  // BA LỖ CÒN LẠI đều ở `nuxt` 4.0.0–4.5.0 và đều nặng — RCE qua template injection
+  // trong Server Island Props, rò dữ liệu SSR giữa các người dùng, và route rule bị bỏ
+  // với đường dẫn hoa/thường lẫn lộn (vòng qua cổng xác thực). Vá được: `nuxt@4.5.2`
+  // + `@nuxt/test-utils@4.1.0` đưa về 1 lỗ low và typecheck vẫn sạch. CHƯA làm vì nó
+  // kéo theo một cuộc di trú test: `$fetch` không còn phân giải qua `globalThis` nên
+  // `vi.stubGlobal('$fetch', …)` mất tác dụng — 63 bài trên 16 file đỏ, tất cả cùng
+  // một nguyên nhân đó. Đây là task riêng, KHÔNG được làm vội vì nó chạm đúng các
+  // đường UGC vừa sửa. Site đang noindex nên chưa có mặt tiền để khai thác, nhưng
+  // PHẢI xong trước khi public.
+  //
+  // Mốc dời trước đó 96bfba4c → 358fe697 (2026-08-05): thêm devDependency `axe-core` để
   // R30.6 có nguồn sinh axe-report.json — trước đó cổng hard-ratchet ấy chưa
   // từng chạy lần nào. Đây là thay đổi toolchain CÓ CHỦ ĐÍCH, chủ dự án duyệt;
   // khác biệt so với mốc cũ đúng một dòng. Chốt chặn giữ nguyên tác dụng: mọi
@@ -776,7 +792,7 @@ describe('Tri-Region color contract', () => {
   // giải trình.
   it.each(['package.json', 'package-lock.json'])('keeps %s identical to the remediation base', async (path) => {
     const [{ stdout: baseline }, current] = await Promise.all([
-      execFileAsync('git', ['show', `358fe697:web-nuxt/${path}`], { cwd: root }),
+      execFileAsync('git', ['show', `98b8649e:web-nuxt/${path}`], { cwd: root }),
       readFile(resolve(root, 'web-nuxt', path), 'utf8'),
     ])
 
