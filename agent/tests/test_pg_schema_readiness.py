@@ -22,7 +22,9 @@ class TriggerCursor:
 
 
 def test_required_schema_version_and_rating_trigger_registry():
-    assert PG_REQUIRED_SCHEMA_VERSION == 74
+    # 74 -> 78 khi hợp NP-1: ba migration của nhánh đó được đánh số lại thành 076-078,
+    # và code NP-1 đọc user_preferences/consents/events nên thật sự cần cả ba đã chạy.
+    assert PG_REQUIRED_SCHEMA_VERSION == 78
     assert PG_REQUIRED_TRIGGERS == {
         "trg_entity_ratings": "posts",
         "trg_entity_ratings_del": "posts",
@@ -39,7 +41,9 @@ def test_missing_trigger_scan_requires_name_and_table():
 
 
 def test_schema_issues_include_missing_triggers():
-    issues = _pg_schema_issues([], [], ["trg_entity_ratings on posts"], 74)
+    # Truyền đúng ngưỡng hiện hành để bài này CHỈ kiểm nhánh trigger, không lẫn thêm
+    # khiếu nại schema_version (bản cũ ghim 74, nay ngưỡng là 78 nên nó sinh 2 issue).
+    issues = _pg_schema_issues([], [], ["trg_entity_ratings on posts"], PG_REQUIRED_SCHEMA_VERSION)
     assert issues == ["missing triggers: trg_entity_ratings on posts"]
 
 

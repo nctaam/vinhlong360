@@ -214,19 +214,42 @@ class TestAggregateRatingGating:
         ld = seo.build_entity_jsonld(entity, {})
         assert "aggregateRating" not in ld
 
-    def test_attrs_rating_at_min_emits(self):
+    def test_attrs_rating_never_emits_aggregate_rating(self):
+        """`attributes.rating` KHÔNG được dựng thành aggregateRating nữa (§1.7).
+
+        Đảo chiều so với bản cũ (`test_attrs_rating_at_min_emits`). Commit
+        `ae959c40 fix: stop asserting things the data cannot back` gỡ
+        `_jsonld_rating_fallback` — nhánh đó phát aggregateRating từ `attributes.rating`
+        kèm `review_count`, hai trường KHÔNG phải số liệu đánh giá thật của hệ thống.
+        Google đọc structured data này, nên bịa ở đây là bịa ra ngoài.
+        Chỉ `_jsonld_rating_primary` còn lại, và nó đòi `avg_rating` + `rating_count` thật.
+        """
         import seo
         entity = {
             "id": "attr-ok", "name": "OK", "type": "restaurant",
             "attributes": {"rating": 4.2, "review_count": 5},
         }
         ld = seo.build_entity_jsonld(entity, {})
-        assert "aggregateRating" in ld
-        assert ld["aggregateRating"]["ratingValue"] == 4.2
+        assert "aggregateRating" not in ld
+
+    def test_real_rating_still_emits(self):
+        """Chiều ngược lại: có số liệu THẬT thì vẫn phát — đừng siết quá tay."""
+        import seo
+        entity = {
+            "id": "real-ok", "name": "Real", "type": "restaurant",
+            "avg_rating": 4.6, "rating_count": 40,
+        }
+        ld = seo.build_entity_jsonld(entity, {})
+        assert ld["aggregateRating"]["ratingValue"] == 4.6
+        assert ld["aggregateRating"]["ratingCount"] == 40
 
     def test_gating_uses_constant_in_source(self):
-        # Gating aggregateRating dời sang helper _jsonld_rating_primary/_fallback
-        # (refactor R20.8 build_entity_jsonld); hằng phải còn được dùng ở đó.
+        # Gating aggregateRating nằm ở `_jsonld_rating_primary`. Bản cũ cộng thêm
+        # `_jsonld_rating_fallback`, hàm đó đã bị gỡ ở ae959c40 (§1.7).
         seo = __import__("seo")
-        src = inspect.getsource(seo._jsonld_rating_primary) + inspect.getsource(seo._jsonld_rating_fallback)
+        src = inspect.getsource(seo._jsonld_rating_primary)
         assert "AGGREGATE_RATING_MIN_COUNT" in src
+        assert not hasattr(seo, "_jsonld_rating_fallback"), (
+            "hàm phát aggregateRating từ attributes.rating đã bị gỡ có chủ đích — "
+            "đừng khôi phục, xem ae959c40"
+        )
