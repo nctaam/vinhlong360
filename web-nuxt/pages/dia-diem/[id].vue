@@ -1456,7 +1456,6 @@ useHead({
 .entity-byline .line-icon { font-size: 1.1em; color: var(--muted); flex: 0 0 auto; }
 .entity-byline strong { font-weight: var(--weight-semibold); color: var(--ink); }
 .entity-byline a { color: var(--color-action); text-decoration: underline; text-underline-offset: 2px; }
-.entity-byline a { color: var(--primary-fg); text-decoration: underline; text-underline-offset: 2px; }
 
 .trust-card {
   margin: var(--space-4) 0;
@@ -1489,10 +1488,10 @@ useHead({
 .trust-status.stale { color: var(--error); background: var(--error-bg); border-color: var(--error-border); }
 .trust-status.unknown { color: var(--muted); background: var(--bg-warm); }
 .trust-source { display: flex; align-items: flex-start; gap: var(--space-2); margin: 0; color: var(--muted); font-size: var(--text-sm); line-height: var(--leading-snug); }
-.trust-source .line-icon { margin-top: .12rem; color: var(--primary-fg); }
-.trust-open { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); width: 100%; min-height: 44px; margin-top: var(--space-3); padding: 0 var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-sm); color: var(--primary-fg); background: var(--bg-warm); cursor: pointer; font: inherit; font-size: var(--text-sm); font-weight: var(--weight-semibold); text-align: left; }
-.trust-open:hover { border-color: var(--primary-fg); background: var(--bg-alt); }
-.trust-open:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.trust-source .line-icon { margin-top: .12rem; color: var(--color-action); }
+.trust-open { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); width: 100%; min-height: 44px; margin-top: var(--space-3); padding: 0 var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-sm); color: var(--color-action); background: var(--bg-warm); cursor: pointer; font: inherit; font-size: var(--text-sm); font-weight: var(--weight-semibold); text-align: left; }
+.trust-open:hover { border-color: var(--color-action); background: var(--bg-alt); }
+.trust-open:focus-visible { outline: 2px solid var(--color-action); outline-offset: 2px; }
 
 /* declutter-3 T17 (B5d): Save/Share dời từ hero về sidebar — 2 nút chia đều hàng.
    Sidebar stack dưới article trên mobile nên mọi viewport đều với tới. */

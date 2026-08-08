@@ -72,6 +72,26 @@ async function runContrastWithSources(overrides: ContrastSourceOverrides = {}) {
   }
 }
 
+/**
+ * Đọc CSS đang được kiểm và CHUẨN HOÁ xuống dòng về `
+`.
+ *
+ * Bắt buộc phải chuẩn hoá: các ca đột biến bên dưới neo bằng chuỗi có `
+`
+ * (`'...transparent);
+  background:'`). Trên Windows với `core.autocrlf=true`, git
+ * checkout ra CRLF nên chuỗi neo KHÔNG khớp — `replace` thành no-op, checker đúng khi
+ * không kêu, và bài test đỏ vì đòi một rejection không bao giờ tới. Bốn ca
+ * `fails closed for …` dùng `replace` từng đỏ đúng vì lý do này, trong khi các ca
+ * dùng nối chuỗi vẫn xanh — dấu hiệu nhận ra là chỉ nhóm `replace` hỏng.
+ * Đây là điều kiện MÔI TRƯỜNG, không phải lỗi sản phẩm; CSS không đổi nghĩa khi
+ * chuẩn hoá xuống dòng.
+ */
+async function readHomeNocturneCss() {
+  const raw = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
+  return raw.replace(/\r\n/g, '\n')
+}
+
 async function runContrastWithHomeCss(homeCss: string) {
   return runContrastWithSources({ 'assets/css/home-nocturne.css': homeCss })
 }
@@ -131,7 +151,7 @@ describe('Tri-Region color contract', () => {
   })
 
   it('binds the real today selector to semantic text, Coral surface and Coral boundary', async () => {
-    const css = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
+    const css = await readHomeNocturneCss()
     const homeRoot = readCssBlock(css, '[data-home-pilot="nocturne-b1"] {')
     const today = readCssBlock(
       css,
@@ -146,7 +166,7 @@ describe('Tri-Region color contract', () => {
   })
 
   it('binds the hero subtitle to semantic on-media text and an opaque local plate', async () => {
-    const css = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
+    const css = await readHomeNocturneCss()
     const homeRoot = readCssBlock(css, '[data-home-pilot="nocturne-b1"] {')
     const subtitle = readCssBlock(css, '[data-home-pilot="nocturne-b1"] .hero-sub {')
 
@@ -544,7 +564,7 @@ describe('Tri-Region color contract', () => {
       message: 'Unknown word --home-color-focus-on-media',
     },
   ])('fails closed for $name', { timeout: contrastSubprocessTimeout }, async ({ mutate, message }) => {
-    const homeSource = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
+    const homeSource = await readHomeNocturneCss()
     await expect(runContrastWithHomeCss(mutate(homeSource))).rejects.toMatchObject({
       stderr: expect.stringContaining(message),
     })
@@ -562,7 +582,7 @@ describe('Tri-Region color contract', () => {
       message: 'Unclosed bracket',
     },
   ])('rejects malformed Homepage CSS with $name', { timeout: contrastSubprocessTimeout }, async ({ mutate, message }) => {
-    const homeSource = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
+    const homeSource = await readHomeNocturneCss()
     await expect(runContrastWithHomeCss(mutate(homeSource))).rejects.toMatchObject({
       stderr: expect.stringContaining(message),
     })
@@ -726,7 +746,7 @@ describe('Tri-Region color contract', () => {
   })
 
   it('does not treat classes used only inside :not() or :has() as protected subjects', { timeout: contrastSubprocessTimeout }, async () => {
-    const homeSource = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
+    const homeSource = await readHomeNocturneCss()
     const safeRelationalSelectors = `
 .audit-probe:not(.hero-sub) { background: transparent; }
 .audit-probe:has(.home-feature-dossier__action) { color: transparent; }
@@ -777,7 +797,7 @@ describe('Tri-Region color contract', () => {
       fixture: String.raw`.syntax-probe\{literal { color: var(--color-text); }`,
     },
   ])('accepts valid CSS with $name', { timeout: contrastSubprocessTimeout }, async ({ fixture }) => {
-    const homeSource = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
+    const homeSource = await readHomeNocturneCss()
     await expect(runContrastWithHomeCss(`${homeSource}\n${fixture}`)).resolves.toMatchObject({
       stdout: expect.stringContaining('homepage-on-media-text-light-srgb 10.55 4.5'),
       stderr: '',
@@ -785,7 +805,7 @@ describe('Tri-Region color contract', () => {
   })
 
   it('keeps legitimate comment markers, escapes, braces and continuations inside CSS strings', { timeout: contrastSubprocessTimeout }, async () => {
-    const homeSource = await readFile(resolve(root, 'web-nuxt/assets/css/home-nocturne.css'), 'utf8')
+    const homeSource = await readHomeNocturneCss()
     const safeStrings = String.raw`
 [data-home-pilot="nocturne-b1"] .string-probe::before {
   content: "literal /* */ escaped quote: \" backslash: \\ braces: { } semicolon: ;";
