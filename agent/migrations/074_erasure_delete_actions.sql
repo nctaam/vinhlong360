@@ -72,7 +72,13 @@ BEGIN
             ('user_hidden_posts', 'user_id', 'CASCADE', NULL),
             ('user_mutes', 'muted_id', 'CASCADE', NULL),
             ('user_mutes', 'user_id', 'CASCADE', NULL),
+            -- NP-1 (migration 076 tao ba bang nay voi ON DELETE CASCADE san).
+            -- Ghi vao day de ban ke khop registry runtime; vong lap co CONTINUE khi
+            -- bang chua ton tai nen DB moi chay 074 truoc 076 van an toan.
+            ('user_personalization_events', 'user_id', 'CASCADE', NULL),
             ('user_plans', 'user_id', 'CASCADE', NULL),
+            ('user_preference_consents', 'user_id', 'CASCADE', NULL),
+            ('user_preferences', 'user_id', 'CASCADE', NULL),
             ('user_privacy', 'user_id', 'CASCADE', NULL),
             ('user_sessions', 'user_id', 'CASCADE', NULL),
             ('user_visits', 'user_id', 'CASCADE', NULL)

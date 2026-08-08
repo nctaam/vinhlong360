@@ -98,7 +98,14 @@ _REGISTERED_DELETE_ACTIONS = (
     DeleteActionPolicy("user_hidden_posts", "user_id", "cascade"),
     DeleteActionPolicy("user_mutes", "muted_id", "cascade"),
     DeleteActionPolicy("user_mutes", "user_id", "cascade"),
+    # NP-1 (migration 076): cả ba đều FK tới users ON DELETE CASCADE. Thiếu ở đây
+    # thì xoá tài khoản bỏ sót tuỳ chọn/consent/hành vi của người đó —
+    # test_erasure_constraints_postgres.py::test_registry_matches_every_source_fk_to_users
+    # tồn tại đúng để bắt việc này, và nó đã đỏ khi hợp nhánh vào.
+    DeleteActionPolicy("user_personalization_events", "user_id", "cascade"),
     DeleteActionPolicy("user_plans", "user_id", "cascade"),
+    DeleteActionPolicy("user_preference_consents", "user_id", "cascade"),
+    DeleteActionPolicy("user_preferences", "user_id", "cascade"),
     DeleteActionPolicy("user_privacy", "user_id", "cascade"),
     DeleteActionPolicy("user_sessions", "user_id", "cascade"),
     DeleteActionPolicy("user_visits", "user_id", "cascade"),

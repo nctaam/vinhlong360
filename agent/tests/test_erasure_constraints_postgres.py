@@ -535,3 +535,30 @@ def test_real_postgres_migration_and_exact_sentinel_cleanup(erasure_pg_schema):
         assert cursor.fetchone()[0] == 0
         cursor.execute("SELECT actor, reason FROM admin_audit_events")
         assert cursor.fetchone() == (None, None)
+
+
+def test_np1_personalization_tables_are_registered_for_erasure():
+    """Ba bảng NP-1 phải nằm trong registry xoá, và phải là `cascade`.
+
+    Thiếu chúng thì xoá tài khoản bỏ sót tuỳ chọn, consent và hành vi cá nhân hoá của
+    người đó — đúng loại dữ liệu mà vòng đời xoá tồn tại để dọn. Khi hợp nhánh
+    `codex/non-public-wave0`/NP-1 vào `main`, cả ba đều vắng mặt.
+
+    `cascade` chứ không phải `set_null`: migration 076 tạo ba bảng với
+    `REFERENCES users(id) ON DELETE CASCADE`, và đây không phải cột actor-reference
+    (không có ai khác cần giữ lại dấu vết của chủ dữ liệu ở đây).
+    """
+    assert callable(registered_delete_actions), "structured_references.py is not implemented"
+    actions = {
+        (item.table, item.column): (item.action, item.special_policy)
+        for item in registered_delete_actions()
+    }
+
+    for table in (
+        "user_preferences",
+        "user_preference_consents",
+        "user_personalization_events",
+    ):
+        assert actions[(table, "user_id")] == ("cascade", None), (
+            f"{table}.user_id phải được đăng ký cascade — xem migration 076"
+        )
