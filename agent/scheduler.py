@@ -949,41 +949,23 @@ def task_event_reminders():
         _sched_logger.error("Event reminders error: %s", e)
 
 
-HARD_DELETE_BATCH_SIZE = 500
 LEGACY_PURGE_JOB_BUDGET = 1000
 
-
-def _hard_delete_stale_users(db, conn, grace_interval: str) -> int:
-    candidates = db._fetchall(conn, f"""
-        SELECT id FROM users
-        WHERE deleted_at IS NOT NULL
-          AND deleted_at < NOW() - {grace_interval}
-          AND is_active = FALSE
-        ORDER BY deleted_at, id
-        LIMIT {HARD_DELETE_BATCH_SIZE}
-        FOR UPDATE SKIP LOCKED
-    """, ())
-    deleted_count = 0
-    for row in candidates:
-        user_id = str(db._row_to_dict(row)["id"])
-        deleted = db._fetchone(conn, f"""
-            DELETE FROM users
-            WHERE id = %s::uuid
-              AND deleted_at IS NOT NULL
-              AND deleted_at < NOW() - {grace_interval}
-              AND is_active = FALSE
-            RETURNING id
-        """, (user_id,))
-        if deleted is None:
-            continue
-        db._execute(conn, """
-            INSERT INTO personalization_legacy_purge_queue
-                (user_id, created_at, attempt_count, next_attempt_at, last_error)
-            VALUES (%s::uuid, NOW(), 0, NOW(), NULL)
-            ON CONFLICT (user_id) DO NOTHING
-        """, (user_id,))
-        deleted_count += 1
-    return deleted_count
+# CỐ Ý KHÔNG có hàm xoá-cứng-tài-khoản trong file này.
+#
+# Nhánh `codex/np1-identity-location-trust` xoá cứng tài khoản bằng SQL trực tiếp trên
+# bảng users, ngay trong `task_session_cleanup`. Nhánh đó rẽ TRƯỚC khi main dựng vòng
+# đời xoá riêng (`task_account_erasure` -> `erase_due_accounts`,
+# `retry_pending_quarantines`), nên khi hợp lại thì có HAI đường xoá song song.
+#
+# Giữ cả hai là lỗi an toàn thật, không phải trùng lặp vô hại: đường của main mặc định
+# CHỈ-AUDIT (`ERASURE_AUDIT_ONLY = True`, agent/config.py:71) — tức chủ dự án chưa bật
+# xoá thật — trong khi đường kia xoá ngay và vòng qua chính cổng đó.
+# `test_scheduler_source_guard.py` và `test_erasure_source_guards.py` tồn tại đúng để
+# chặn việc này; chúng đã đỏ khi bản union đưa hàm kia trở lại.
+#
+# Lưu ý cho người sửa sau: hai guard đó là bộ SO CHUỖI trên mã nguồn, nên đừng viết
+# nguyên văn câu lệnh bị cấm vào comment — chính chú thích này từng làm chúng đỏ.
 
 
 def _process_legacy_purge_queue(
@@ -1038,7 +1020,7 @@ def task_session_cleanup():
 
     Gộp từ hai nhánh: `main` mô tả phần dọn session/OTP + dữ liệu vận hành,
     `codex/np1-identity-location-trust` thêm nhánh hard-delete tài khoản hết ân hạn.
-    Cả hai việc đều thật sự nằm trong hàm này sau khi hợp — xem `_hard_delete_stale_users`.
+    Xoá CỨNG tài khoản KHÔNG nằm ở đây — nó thuộc `task_account_erasure`.
     """
     try:
         from database import db
@@ -1049,14 +1031,10 @@ def task_session_cleanup():
         return
 
     try:
-        grace_interval = f"INTERVAL '{ACCOUNT_DELETE_GRACE_DAYS} days'"
         with db._conn() as conn:
             db._execute(conn, "DELETE FROM user_sessions WHERE expires_at < NOW()", ())
             db._execute(conn, "DELETE FROM otp_sessions WHERE expires_at < NOW()", ())
 
-            hard_deleted = _hard_delete_stale_users(db, conn, grace_interval)
-            if hard_deleted > 0:
-                _sched_logger.info("Session cleanup: hard-deleted %d accounts past grace period", hard_deleted)
             try:
                 r = db._execute(conn, "DELETE FROM login_history WHERE created_at < NOW() - INTERVAL '90 days'", ())
                 old_logins = getattr(r, 'rowcount', 0) if r else 0

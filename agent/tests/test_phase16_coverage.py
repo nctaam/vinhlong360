@@ -282,50 +282,15 @@ class TestPhase17AccountHardDelete:
 
         assert "erase_due_accounts(" in src[erasure_start:erasure_end]
         assert "DELETE FROM users" not in src[session_start:session_end]
-    def test_session_cleanup_hard_deletes_accounts(self):
-        import scheduler
-
-        user_id = "00000000-0000-0000-0000-000000000123"
-
-        class FakeDatabase:
-            def __init__(self):
-                self.statements = []
-
-            def _fetchall(self, _conn, sql, params):
-                self.statements.append(("fetchall", " ".join(sql.split()), params))
-                return [{"id": user_id}]
-
-            def _fetchone(self, _conn, sql, params):
-                self.statements.append(("fetchone", " ".join(sql.split()), params))
-                return {"id": user_id}
-
-            def _execute(self, _conn, sql, params):
-                self.statements.append(("execute", " ".join(sql.split()), params))
-
-            @staticmethod
-            def _row_to_dict(row):
-                return row
-
-        fake_db = FakeDatabase()
-        grace_interval = f"INTERVAL '{scheduler.ACCOUNT_DELETE_GRACE_DAYS} days'"
-
-        deleted_count = scheduler._hard_delete_stale_users(
-            fake_db, object(), grace_interval
-        )
-
-        delete_statement = next(
-            statement for statement in fake_db.statements if statement[0] == "fetchone"
-        )
-        queue_statement = next(
-            statement for statement in fake_db.statements if statement[0] == "execute"
-        )
-        assert deleted_count == 1
-        assert scheduler.ACCOUNT_DELETE_GRACE_DAYS == 30
-        assert "DELETE FROM users" in delete_statement[1]
-        assert "INTERVAL '30 days'" in delete_statement[1]
-        assert delete_statement[2] == (user_id,)
-        assert "INSERT INTO personalization_legacy_purge_queue" in queue_statement[1]
-        assert queue_statement[2] == (user_id,)
+    # ĐÃ GỠ `test_session_cleanup_hard_deletes_accounts`.
+    #
+    # Nó khẳng định `task_session_cleanup` tự chạy `DELETE FROM users` — kiến trúc của
+    # nhánh `codex/np1-identity-location-trust`, rẽ TRƯỚC khi main tách vòng đời xoá ra
+    # `task_account_erasure` -> `erase_due_accounts`. Sau khi hợp, nó mâu thuẫn trực tiếp
+    # với `test_account_erasure_task_owns_hard_delete` ngay bên trên, và với hai guard
+    # `test_scheduler_source_guard.py` / `test_erasure_source_guards.py`.
+    # Giữ đường của main vì nó có cổng `ERASURE_AUDIT_ONLY` (mặc định True); đường kia
+    # xoá thật ngay và vòng qua cổng đó.
 
     def test_grace_period_configurable(self):
         from config import settings
