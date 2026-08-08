@@ -151,3 +151,24 @@ def test_fetch_page_follows_same_origin_redirect_and_strips_html(
 
     assert crawler.fetch_page("/old") == "Cu lao An Binh"
     assert [url.host for url in egress.requested] == [ON_SITE_HOST, ON_SITE_HOST]
+
+
+def test_fetch_page_raises_on_error_status(
+    crawler: ModuleType, egress: SimpleNamespace
+) -> None:
+    """404 phải nổ, KHÔNG được trả chuỗi rỗng như một trang hợp lệ.
+
+    Port từ nhánh `t7/crawler-pinned` trước khi bỏ nhánh đó. Trunk rộng hơn t7 về
+    SSRF (chặn userinfo-authority, chặn redirect ra ngoài trước khi dial) nhưng hở
+    đúng ca này — mà nó là ca dễ âm thầm nhất: nếu `raise_for_status()` bị gỡ, hàm
+    vẫn trả về một chuỗi (thân trang lỗi đã lược tag) và crawler sẽ nuốt trang 404
+    thành nội dung thật.
+
+    Khác bản gốc một chỗ: t7 mong `ValueError`, còn `fetch_page` ở đây gọi
+    `resp.raise_for_status()` trên một `httpx.Response` (`agent/crawler.py:171`)
+    nên ngoại lệ đúng là `httpx.HTTPStatusError`.
+    """
+    egress.routes[(ON_SITE_HOST, "/vi/gone")] = {"status": 404, "content": b"gone"}
+
+    with pytest.raises(httpx.HTTPStatusError):
+        crawler.fetch_page("/vi/gone")
