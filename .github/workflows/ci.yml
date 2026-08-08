@@ -428,7 +428,13 @@ jobs:
           # nên runner kéo `latest` — log ngày 2026-08-07 chạy 3.96.0 chứ không
           # phải 3.95.9. Nghĩa là một bản latest mới có thể đổi hành vi detector
           # giữa chừng mà không ai đổi một dòng nào ở đây.
-          version: v3.96.0
+          #
+          # KHÔNG có tiền tố `v`. Action ghép thẳng `${IMAGE}:${VERSION}`, mà registry
+          # ghcr.io/trufflesecurity/trufflehog chỉ có tag `3.96.0`; `v3.96.0` không tồn
+          # tại và làm job chết với `docker: manifest unknown` (exit 125) — đúng cái bẫy
+          # bản vá đầu tiên của mục này sập vào. Đã hỏi thẳng registry để xác nhận, không
+          # suy từ tag của repo GitHub.
+          version: 3.96.0
           # --exclude-detectors=Lob: 43 kết quả "verified Lob" đều là DƯƠNG TÍNH GIẢ.
           # Hai lý do độc lập, cả hai đã đo:
           #   1. keyPat của detector là \b((live|test)_[a-zA-Z0-9_]{35})\b, KHÔNG có
