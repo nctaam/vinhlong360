@@ -1,5 +1,7 @@
 > STATUS: active
-> Ngày lập: 2026-08-07 · Đo trên nhánh `codex/tri-region-color` @ `10d9bb69`
+> Ngày lập: 2026-08-07 · cập nhật 2026-08-08 sau khi gom mọi nhánh về `main`.
+> Đo trên `main` @ `b60ce900` (trước đó: `codex/tri-region-color` @ `10d9bb69` — nhánh
+> đó đã hợp vào `main` và bị xoá, xem `docs/HANDOFF-BRANCHES.md`).
 > **Đây là SỔ, không phải kế hoạch.** Mỗi mục chờ đúng MỘT câu trả lời của chủ dự án.
 > Không mục nào được tự quyết (CLAUDE.md §4). Điền cột **CHỐT** → lúc đó mới mở task.
 
@@ -31,8 +33,8 @@ dự án; chỗ nào có gợi ý thì ghi rõ là gợi ý.
 
 | Mã | Khoản | Chặn cái gì | CHỐT |
 |---|---|---|---|
-| **A1** | 12 CVE npm vs cổng đóng băng `package.json` + `package-lock.json` | mọi thay đổi phụ thuộc frontend | |
-| **A2** | Migration 075 đã viết, chưa chạy ở đâu | bump `PG_REQUIRED_SCHEMA_VERSION`, perf đường nóng | |
+| **A1** | **3 CVE `nuxt`** còn lại — RCE, rò dữ liệu SSR giữa người dùng, vòng qua cổng xác thực. Vá được nhưng kéo theo di trú 63 test | gỡ `noindex` (B7) | |
+| **A2** | Migration **075–078** đã viết, chưa chạy trên prod | bump `PG_REQUIRED_SCHEMA_VERSION` (đã lên 78), perf đường nóng, toàn bộ tính năng NP-1 | |
 | **A3** | 124 mã hành chính chưa vào prod Postgres | vòng export kế tiếp sẽ xoá mã | |
 | **A4** | 17 câu hỏi dữ liệu sự kiện lệch âm/dương | mọi task chạm `type=event` | |
 | **A5** | Taxonomy 3 vùng mang tên tỉnh cũ | nhánh `tri-region-color`, §1.6 | |
@@ -59,56 +61,52 @@ dự án; chỗ nào có gợi ý thì ghi rõ là gợi ý.
 
 # NHÓM A — chặn việc khác
 
-## A1. 12 CVE npm vs cổng đóng băng `package.json`
+## A1. 3 CVE `nuxt` còn lại — cần một cuộc di trú test, không phải một lệnh
 
-**BỐI CẢNH.** `npm audit` trong `web-nuxt` đo hôm nay: **12 lỗ — 2 critical, 8 high, 1
-moderate, 1 low**. Nặng nhất nằm ở chính `nuxt` (cài `4.4.8`, `package.json` khai
-`^4.4.8`): sáu advisory, trong đó `GHSA-hxvh-4h3w-prp9` (CVSS 8.2 — route rule bị bỏ im
-lặng với path viết hoa-thường lẫn lộn) và `GHSA-wm8w-6qjm-cv43` (CVSS 7.5 — cache payload
-SSR lộ dữ liệu người này sang người khác) **không phụ thuộc server island**, tức chạm được
-tới prod.
+> **CẬP NHẬT 2026-08-08.** Mục này trước ghi "12 CVE" và dự đoán `npm audit fix` trần
+> đóng hết mà không đụng `package.json`. Đã đo thật: **dự đoán đó chỉ đúng một nửa.**
 
-**Cái vá rẻ hơn tưởng, và đó mới là điểm đau.** Đo bằng `npm audit fix --dry-run`: cả 12 lỗ
-đều `fixAvailable: true`, **không cái nào là semver-major** — `npm audit fix` trần (không
-`--force`) đóng hết. `nuxt 4.5.1` nằm gọn trong dải `^4.4.8` đang khai, nên nhiều khả năng
-**`package.json` không đổi một ký tự; chỉ `package-lock.json` đổi**. Cổng đóng băng dưới
-đây pin **cả hai file**, nên nó chặn kể cả bản vá không đụng gì tới `package.json`.
+**ĐÃ LÀM.** `npm audit`: **13 lỗ → 3**. Hai lỗ **CRITICAL** ở `tar` biến mất (crash qua
+PAX numeric path confusion, DoS không giới hạn đầu vào, vòng lặp vô tận khi entry size
+âm, DoS qua NUL byte trong PAX path, stack-overflow qua đệ quy `mapHas/filesFilter`),
+cùng `sharp`, `svgo`, `brace-expansion`, `esbuild`. Đúng như dự đoán, phần này **không
+đổi một ký tự `package.json`** — commit `98b8649e`, mốc cổng dời sang đó ở `f05f8e3e`.
 
-Điểm chặn không phải kỹ thuật mà là **một cổng thiết kế cố ý**:
-`web-nuxt/tests/tri-region-color-contract.test.ts:757-764` yêu cầu `package.json` và
-`package-lock.json` **giống byte-for-byte** bản ở commit `358fe697`. Sửa một ký tự trong
-`package.json` = test đỏ. Cổng này được dựng có chủ đích (comment `:751-756`) để không ai
-lén thêm dependency; nó không phân biệt "lén thêm" với "vá CVE".
+**CÒN LẠI 3 LỖ, ĐỀU Ở `nuxt` 4.0.0–4.5.0, ĐỀU NẶNG:**
 
-Phía Python **sạch**: `pip-audit -r requirements.txt` → `No known vulnerabilities found`.
-CI đã có job quét (`ci.yml:520-547`) nhưng **`continue-on-error: true`** (`:523`) — nó báo
-chứ không chặn, nên 12 lỗ này chưa từng làm CI đỏ.
+| Advisory | Nội dung |
+|---|---|
+| `GHSA-9473-5f9j-94wq` | **RCE phía máy chủ** qua template injection trong Server Island Props |
+| `GHSA-wm8w-6qjm-cv43` | Cache payload SSR **rò dữ liệu người này sang người khác**, kể cả khách chưa đăng nhập |
+| `GHSA-hxvh-4h3w-prp9` | Route rule bị bỏ im lặng với path hoa/thường lẫn lộn → **vòng qua cổng xác thực** |
+| `GHSA-48hr-524c-v5w3` · `GHSA-hxcr-hm88-mpq6` · `GHSA-9pgf-384g-p7mv` · `GHSA-7c4v-fwgw-9rf7` | instantiate component trái phép, OOM/CPU exhaustion không cần đăng nhập, lộ đường dẫn dự án |
 
-Repo **không dùng server island** (không có file `.server.vue`, không có `<NuxtIsland>`),
-nên bốn advisory họ island (kể cả RCE `GHSA-9473-5f9j-94wq`) nhiều khả năng không với tới
-prod. Nhưng `routeRules` được dùng nặng (`nuxt.config.ts:161-176`: 14 rule, gồm
-`/admin/**: { ssr: false }` và proxy `/admin-api/**`), đúng bề mặt của `GHSA-hxvh-4h3w-prp9`.
+**CÁI GIÁ — ĐÃ ĐI HẾT ĐƯỜNG VÁ ĐỂ ĐO, KHÔNG ĐOÁN.** `nuxt@4.5.2` +
+`@nuxt/test-utils@4.1.0` đưa về **1 lỗ low**, và `npm run typecheck` vẫn **exit 0** sau
+khi thêm `as const` cho 4 literal trong `useHead` (Nuxt 4.5 siết `script[].type` và
+`link[].rel` thành literal union). Nhưng:
+
+> **`$fetch` không còn phân giải qua `globalThis`.** `vi.stubGlobal('$fetch', …)` mất tác
+> dụng ⇒ **63 bài trên 16 file đỏ, TẤT CẢ cùng một nguyên nhân đó.** 17 file trong
+> `web-nuxt/tests/` dùng khuôn này; `vitest.config.ts` **không có `setupFiles`** nên
+> không có chỗ nào sửa một lần cho tất cả.
 
 **LỰA CHỌN.**
-1. **Dời mốc đóng băng** sang commit sau khi chạy `npm audit fix`, ghi giải trình vào
-   comment của test (đã có tiền lệ: mốc từng dời `96bfba4c` → `358fe697` cho `axe-core`).
-2. **Giữ mốc, hoãn vá.** Chấp nhận 12 lỗ tới khi có đợt nâng dependency riêng.
-3. **Đổi bản chất cổng**: pin `package.json` (chặn thêm/bớt dependency — mục đích gốc)
-   nhưng **thả `package-lock.json`**. Sửa test một lần, hết va chạm về sau.
-4. **Bật `continue-on-error: false`** cho job audit — biến CVE thành cổng chặn thật.
+1. **Làm cuộc di trú** — chuyển 17 file sang `registerEndpoint` hoặc mock module `ofetch`.
+   Cơ học, một nguyên nhân, nhưng chạm đúng các đường UGC (bình luận, ẩn bài, preference)
+   vừa sửa trong đợt gom nhánh 2026-08-08. **Không nên làm vội.**
+2. **Hoãn tới trước khi public** — site đang `NUXT_PUBLIC_SITE_NOINDEX`, chưa có mặt tiền
+   để khai thác. Job `Dependency CVE scan` là **informational** (`continue-on-error`), nên
+   nó đỏ mà không chặn merge.
+3. **Nâng nuxt mà không sửa test** — KHÔNG. 63 bài đỏ sẽ che mọi hồi quy thật sau đó.
 
-**ĐÁNH ĐỔI.** (1) rẻ nhất nhưng làm mòn ý nghĩa cổng: dời mốc lần hai trong ba ngày thì
-lần thứ ba sẽ dời không ai hỏi. (2) giữ được kỷ luật nhưng để 8 high sống trên prod, và
-`npm audit` sẽ báo lại ở mọi lần CI. (3) đúng trọng tâm — cổng sinh ra để chặn *thêm
-dependency*, mà thêm dependency luôn hiện ra ở `package.json`; đổi lại mất khả năng phát
-hiện lock bị sửa tay. (4) làm CI đỏ ngay hôm nay và đỏ mỗi khi upstream ra advisory mới,
-kể cả trên PR không liên quan — đúng lý do job này được đặt non-blocking từ đầu.
+**AI CHỊU ẢNH HƯỞNG.** Chưa ai, khi còn noindex. Sau khi public: mọi người dùng đăng nhập
+(rò SSR giữa các phiên) và chính máy chủ (RCE).
 
-**AI CHỊU.** Người dùng đã đăng nhập (rò payload SSR chéo người dùng); mọi phiên làm việc
-sau này chạm `web-nuxt/package.json`.
+**NẾU KHÔNG QUYẾT.** CI giữ một job đỏ vĩnh viễn — và một job đỏ quen mắt là cách nhanh
+nhất để lần sau không ai nhìn nó nữa. Đó mới là cái giá thật của việc hoãn.
 
-**NẾU KHÔNG QUYẾT.** Mọi thay đổi phụ thuộc frontend bị chặn cứng. Số CVE chỉ tăng —
-upstream ra advisory mới thì con số 12 tự lớn lên mà không ai làm gì.
+**HẠN CHÓT TỰ NHIÊN:** trước khi gỡ `noindex` (xem B7).
 
 ---
 
@@ -121,9 +119,18 @@ riêng, seed 60k like: `likes(post_id)` từ Seq Scan 500 buffer/12,9ms xuống 
 `statement_timeout=30s` + `idle_in_transaction_session_timeout=60s` đặt ở tầng **role**
 `vl360`.
 
-Nhưng `agent/database.py:127` vẫn `PG_REQUIRED_SCHEMA_VERSION = 74`, và hai test khoá con
-số đó (`agent/tests/test_database.py:96`, `agent/tests/test_migration_chain.py:189`). Nghĩa
-là: file có, chưa chạy ở đâu, và hệ thống chưa đòi nó.
+**CẬP NHẬT 2026-08-08.** Không còn là "hệ thống chưa đòi nó":
+`PG_REQUIRED_SCHEMA_VERSION` **đã lên 78** khi hợp `codex/np1-identity-location-trust` vào
+`main`. Ba migration của nhánh đó bị đụng số (nó khai 071/072/073, trunk đã dùng ba số ấy
+cho việc khác) nên được **đánh số lại thành 076/077/078**. Code NP-1 đọc
+`user_preferences`/`consents`/`events` nên thật sự cần cả ba đã chạy.
+
+Nghĩa là bây giờ **prod không khởi động được cho tới khi chạy migration** — `_verify_pg_schema`
+sẽ từ chối với `schema_version agent=<cũ>, expected >= 78`. Đây là thay đổi trạng thái quan
+trọng nhất của mục này: trước 2026-08-08 migration là *tuỳ chọn*, nay là *điều kiện cần*.
+
+Đã kiểm chuỗi 075→078 áp sạch trên PostgreSQL 16 thật (cluster dùng-một-lần, `apply_migrations.py
+--init-baseline`); `Database()` khởi tạo xong, `_use_pg = True`.
 
 Hai chi tiết vận hành đã ghi trong chính file, đọc trước khi chạy: migration **cố ý không
 dùng `CREATE INDEX CONCURRENTLY`** (runner chạy cả chuỗi trong một transaction, PG từ chối
