@@ -193,6 +193,51 @@ class _SchemaReadinessConnection:
         return self._cursor
 
 
+@pytest.fixture(autouse=True)
+def _restore_database_psycopg2():
+    """Trả `database.psycopg2` về nguyên trạng sau MỖI bài trong file này.
+
+    `_release_schema()` bên dưới thay nó bằng một `SimpleNamespace` để giả lập vòng
+    kiểm schema, và bản gốc KHÔNG bao giờ khôi phục. Hậu quả chỉ lộ trên Postgres và
+    chỉ khi chạy CẢ BỘ: mọi bài chạy SAU trong cùng tiến trình gọi `psycopg2.connect`
+    đều chết với `'SimpleNamespace' object has no attribute 'connect'` — CI đếm được
+    54 failed + 9 errors, gần hết nằm ở agent/tests/test_integration_api.py, và không
+    bài nào trong số đó có lỗi thật.
+
+    Đây là rò trạng thái global giữa các file test, không phải lỗi sản phẩm. Fixture
+    autouse chặn cả những lần dùng về sau, không riêng chỗ hiện tại.
+    """
+    # `database.py` chỉ `import psycopg2` khi USE_PG, nên thuộc tính có thể KHÔNG
+    # tồn tại (chạy SQLite). Dùng sentinel để trả đúng trạng thái ban đầu — gán đại
+    # `None` sẽ tạo ra một thuộc tính chưa từng có.
+    missing = object()
+    original = getattr(database_module, "psycopg2", missing)
+    try:
+        yield
+    finally:
+        if original is missing:
+            if hasattr(database_module, "psycopg2"):
+                delattr(database_module, "psycopg2")
+        else:
+            database_module.psycopg2 = original
+
+
+def test_release_schema_helper_does_not_leak_psycopg2():
+    """Chốt chặn cho chính fixture trên — nếu ai gỡ nó, bài này đỏ."""
+    _release_schema(version=database_module.PG_REQUIRED_SCHEMA_VERSION)
+    assert isinstance(database_module.psycopg2, SimpleNamespace), (
+        "_release_schema phải thay psycopg2 — nếu không, bài này vô nghĩa"
+    )
+
+
+def test_psycopg2_is_intact_after_release_schema():
+    """Chạy SAU bài trên (pytest giữ thứ tự khai báo): psycopg2 phải nguyên vẹn."""
+    leftover = getattr(database_module, "psycopg2", None)
+    assert not isinstance(leftover, SimpleNamespace), (
+        "psycopg2 còn là test double sau bài trước — fixture khôi phục đã bị gỡ"
+    )
+
+
 def _release_schema(*, version=73, missing_table=None, missing_column=None):
     database_module.psycopg2 = SimpleNamespace(
         extras=SimpleNamespace(RealDictCursor=object)
