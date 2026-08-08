@@ -70,12 +70,26 @@ export interface PublicSearchQuery {
 }
 
 export type RecommendationSource = 'personalized' | 'fallback'
+export type RecommendationSourceTier = 'official' | 'verified' | 'community' | 'unknown'
+export type RecommendationFreshnessStatus = 'fresh' | 'aging' | 'stale' | 'unknown'
+export type RecommendationAgeBand = 'under_18' | '18_24' | '25_34' | '35_49' | '50_plus' | 'unknown'
+
+export interface RecommendationExplanation {
+  primary_reason: string
+  reasons: string[]
+  region_label?: string
+  explicit_interests?: string[]
+  derived_age_band?: RecommendationAgeBand
+}
 
 export interface RecommendationCard extends Entity {
   score?: number
   reason?: string
   reason_vi?: string
   place?: string
+  explanation?: RecommendationExplanation
+  source_tier?: RecommendationSourceTier
+  freshness_status?: RecommendationFreshnessStatus
 }
 
 export interface RecommendationResponse {
@@ -84,4 +98,7 @@ export interface RecommendationResponse {
   similar?: RecommendationCard[]
   reasons?: Record<string, string[]>
   profile?: Record<string, unknown>
+  explanation?: RecommendationExplanation
+  source_tier?: RecommendationSourceTier
+  freshness_status?: RecommendationFreshnessStatus
 }

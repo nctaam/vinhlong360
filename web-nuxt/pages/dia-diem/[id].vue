@@ -408,8 +408,16 @@
         <!-- P0-5: byline biên tập (Who) — always-on, ngoài trust-card -->
         <p class="entity-byline"><IconLine name="user" /> {{ bylineText }} · <strong>Ban biên tập vinhlong360</strong> · <NuxtLink to="/gioi-thieu#ban-bien-tap">phương pháp biên tập</NuxtLink></p>
 
-        <!-- Trust, freshness and media disclosure remain independent layers; người dùng có thể "Báo sai hoặc bổ sung nguồn" tại đây. -->
+        <!--
+          Hai thiết kế cho cùng một vai trò, hợp từ hai nhánh:
+          · main: EntityTrustPanel — thẻ nội tuyến, luôn hiện.
+          · NP-1: thẻ "Độ tin cậy dữ liệu" + SourceTrustDrawer, sau cờ `trust_drawer_v1`
+            và chỉ khi CÓ nguồn công khai thật (`trustVisible`).
+          Chặn hai thẻ cùng hiện bằng `v-if="!trustVisible"`: bật cờ thì bản NP-1 thắng
+          vì nó nói được nhiều hơn; tắt cờ thì rơi về bản đã ship trên main.
+        -->
         <EntityTrustPanel
+          v-if="!trustVisible"
           class="trust-card"
           :tier="trustTier"
           :source-title="trustSourceTitle"
@@ -419,6 +427,42 @@
           :note="trustNote"
           :report-to="reportUrl"
         />
+
+        <section v-if="trustVisible" class="trust-card" aria-labelledby="trust-card-title">
+          <div class="trust-card-head">
+            <h2 id="trust-card-title" class="sediment-head">Độ tin cậy dữ liệu</h2>
+            <span :class="['trust-status', trustStatusTone]">{{ trustStatusLabel }}</span>
+          </div>
+          <p class="trust-source"><IconLine :name="trustSourceTier === 'community' ? 'users' : 'shield-check'" aria-hidden="true" /> {{ trustSourceTitle }}</p>
+          <button
+            type="button"
+            class="trust-open"
+            data-action="open-source-trust"
+            aria-haspopup="dialog"
+            :aria-expanded="trustDrawerOpen"
+            @click="trustDrawerOpen = true"
+          >
+            Xem nguồn và cách đánh giá
+            <IconLine name="panel-left-open" aria-hidden="true" />
+          </button>
+        </section>
+
+        <SourceTrustDrawer
+          :open="trustDrawerOpen"
+          :source-tier="trustSourceTier"
+          :source-title="trustSourceTitle"
+          :source-url="trustSourceUrl"
+          :verified-at="trustVerifiedAt"
+          :updated-at="trustUpdatedAt"
+          :freshness-status="trustStatus"
+          :community-context="trustCommunityContext"
+          @close="trustDrawerOpen = false"
+          @report="reportTrustIssue"
+        />
+
+        <!-- declutter-3 T17 (B5c/D12): đúng 1 kênh Báo sai mỗi trang — trust-card ưu tiên;
+             fallback này chỉ hiện khi entity KHÔNG có nguồn (trust-card ẩn) -->
+        <NuxtLink v-if="!trustVisible" class="quality-report" :to="reportUrl">{{ ss('labels.detail.cta_report', 'Báo sai dữ liệu') }}</NuxtLink>
 
         <NuxtErrorBoundary>
           <ClientOnly>
@@ -493,6 +537,7 @@ import { aiDisclosure } from '~/utils/aiDisclosure'
 import { currentGalleryDescriptors, type GalleryDescriptorCarrier } from '~/utils/entityGallery'
 import { describeEntityImages, parseGalleryDescriptor } from '~/utils/imageDescriptors'
 import { resolveFreshnessStatus, resolveRegionalAccent, resolveSourceTier } from '~/utils/regionalColor'
+import SourceTrustDrawer from '~/components/SourceTrustDrawer.vue'
 
 interface LaunchEntityCarrier extends Entity {
   readonly __launchGeneration: number
@@ -1015,7 +1060,13 @@ const sourceFreshness = computed(() => entity.value?.source_freshness)
 const trustTier = computed(() => resolveSourceTier(entity.value?.quality?.source_tier))
 const trustSourceUrl = computed(() => sourceFreshness.value?.source_url || entity.value?.quality?.source_url || '')
 const trustSourceTitle = computed(() => sourceFreshness.value?.source_title || entity.value?.quality?.source_title || (trustSourceUrl.value ? 'Nguồn tham khảo' : 'Chưa có nguồn công khai'))
-const trustUpdatedAt = computed(() => sourceFreshness.value?.updated_at || entity.value?.quality?.verified_at || entity.value?.updatedAt || '')
+// Bản main gộp `verified_at` vào `trustUpdatedAt`; bản NP-1 tách ra. Lấy bản TÁCH:
+// §1.7 phân biệt rõ "cập nhật lúc nào" với "đã kiểm chứng thực địa" — gộp hai thứ đó
+// làm một là để ngày sửa nội dung trông như bằng chứng kiểm chứng.
+const trustUpdatedAt = computed(() => sourceFreshness.value?.updated_at || entity.value?.updatedAt || '')
+const trustVerifiedAt = computed(() => sourceFreshness.value?.verified_at || entity.value?.quality?.verified_at || '')
+const trustSourceTier = computed(() => String(sourceFreshness.value?.source_tier || 'unknown'))
+const trustStatus = computed(() => sourceFreshness.value?.freshness_status || 'unknown')
 const trustUpdatedLabel = computed(() => trustUpdatedAt.value ? formatDateVN(trustUpdatedAt.value) : 'Chưa rõ')
 const trustFreshnessStatus = computed(() => resolveFreshnessStatus(sourceFreshness.value?.freshness_status))
 // Retained as a text contract for integrations; FreshnessLine owns its visible status label.
@@ -1031,6 +1082,23 @@ const trustNote = computed(() => {
   if (trustFreshnessStatus.value === 'stale') return 'Thông tin có thể đã cũ; hãy báo sai nếu bạn thấy khác thực tế.'
   return 'Hệ thống chưa có đủ tín hiệu nguồn/ngày cập nhật cho mục này.'
 })
+const trustStatusTone = computed(() => {
+  if (trustStatus.value === 'fresh') return 'fresh'
+  if (trustStatus.value === 'aging') return 'aging'
+  if (trustStatus.value === 'stale') return 'stale'
+  return 'unknown'
+})
+const trustCommunityContext = computed(() => trustSourceTier.value === 'community'
+  ? 'Nguồn cộng đồng đã qua bước kiểm duyệt nội dung; không phải thông tin chính thức.'
+  : false)
+// P0-7: chỉ hiện trust-card khi CÓ nguồn công khai thật (đừng quảng cáo "chưa có nguồn").
+const trustVisible = computed(() => ff('trust_drawer_v1') && !!trustSourceUrl.value)
+const trustDrawerOpen = ref(false)
+
+async function reportTrustIssue() {
+  trustDrawerOpen.value = false
+  await navigateTo(reportUrl.value)
+}
 
 // P0-5: byline biên tập (Who) — LUÔN hiện, mọi trang. Trung thực theo
 // attributes.verifiedAt (người đặt tay); hiện chưa entity nào có → mặc định
@@ -1388,6 +1456,43 @@ useHead({
 .entity-byline .line-icon { font-size: 1.1em; color: var(--muted); flex: 0 0 auto; }
 .entity-byline strong { font-weight: var(--weight-semibold); color: var(--ink); }
 .entity-byline a { color: var(--color-action); text-decoration: underline; text-underline-offset: 2px; }
+.entity-byline a { color: var(--primary-fg); text-decoration: underline; text-underline-offset: 2px; }
+
+.trust-card {
+  margin: var(--space-4) 0;
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+.trust-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.trust-card h2 {
+  margin: 0;
+  font-size: var(--text-base);
+}
+.trust-status {
+  flex: 0 0 auto;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  border: 1px solid var(--line);
+}
+.trust-status.fresh { color: var(--success); background: var(--success-bg); border-color: var(--success-border); }
+.trust-status.aging { color: var(--warning); background: var(--warning-bg); border-color: var(--warning-border); }
+.trust-status.stale { color: var(--error); background: var(--error-bg); border-color: var(--error-border); }
+.trust-status.unknown { color: var(--muted); background: var(--bg-warm); }
+.trust-source { display: flex; align-items: flex-start; gap: var(--space-2); margin: 0; color: var(--muted); font-size: var(--text-sm); line-height: var(--leading-snug); }
+.trust-source .line-icon { margin-top: .12rem; color: var(--primary-fg); }
+.trust-open { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); width: 100%; min-height: 44px; margin-top: var(--space-3); padding: 0 var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-sm); color: var(--primary-fg); background: var(--bg-warm); cursor: pointer; font: inherit; font-size: var(--text-sm); font-weight: var(--weight-semibold); text-align: left; }
+.trust-open:hover { border-color: var(--primary-fg); background: var(--bg-alt); }
+.trust-open:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* declutter-3 T17 (B5d): Save/Share dời từ hero về sidebar — 2 nút chia đều hàng.
    Sidebar stack dưới article trên mobile nên mọi viewport đều với tới. */

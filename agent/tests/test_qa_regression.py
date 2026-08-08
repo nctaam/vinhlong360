@@ -4,6 +4,7 @@ Covers: system endpoint gating, health minimal data, business integrity
 (self-like, self-follow, best-answer ownership, RSVP entity validation,
 reply cross-post, no booking routes), XSS/SQLi detection, Unicode
 boundaries, and performance bounds."""
+import asyncio
 import ast
 import inspect
 import os
@@ -533,9 +534,51 @@ class TestIPMasking:
         src = inspect.getsource(auth.get_login_history)
         assert "_mask_ip" in src
 
-    def test_consent_history_masks_ip(self):
-        src = inspect.getsource(auth.consent_history)
-        assert "_mask_ip" in src
+    def test_consent_history_excludes_ip(self, monkeypatch):
+        row = {
+            "id": "consent-1",
+            "version": "location-v1",
+            "created_at": "2026-07-28T08:00:00Z",
+            "ip": "203.0.113.24",
+        }
+
+        class FakeDatabase:
+            _ph = "%s"
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                return None
+
+            def _conn(self):
+                return self
+
+            @staticmethod
+            def _fetchall(_conn, _sql, _params):
+                return [row]
+
+            @staticmethod
+            def _row_to_dict(value):
+                return value
+
+        async def current_user(_request):
+            return {"id": "user-1"}
+
+        monkeypatch.setattr(auth, "_get_current_user_or_none", current_user)
+        monkeypatch.setattr(auth, "db", FakeDatabase())
+
+        result = asyncio.run(auth.consent_history(object()))
+
+        assert result == {
+            "history": [{
+                "id": "consent-1",
+                "version": "location-v1",
+                "created_at": "2026-07-28T08:00:00Z",
+            }]
+        }
+        assert row["ip"] not in repr(result)
+        assert auth._mask_ip(row["ip"]) not in repr(result)
 
     def test_login_history_stores_masked_phone(self):
         src = inspect.getsource(auth._log_login)

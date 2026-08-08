@@ -1,4 +1,10 @@
 <template>
+  <PersonalizeSetupSheet
+    v-if="ff('onboarding') && ff('preference_ui_v1')"
+    v-model="personalizeVisible"
+    @complete="dismissPersonalize"
+    @skip="dismissPersonalize"
+  />
   <Teleport to="body">
     <Transition name="sheet">
       <div v-if="visible && ff('onboarding')" class="onboarding-overlay" @click.self="dismiss">
@@ -30,10 +36,15 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, onUnmounted, ref, watch } from 'vue'
+import PersonalizeSetupSheet from './PersonalizeSetupSheet.vue'
 import { mergeOnboarding } from '~/utils/onboardingContent'
 const { enabled: ff } = useFeature()
 const { get: ss } = useSiteSettings()
+const { isLoggedIn, user } = useAuth()
+const preferences = usePersonalizationPreferences()
 const visible = ref(false)
+const personalizeVisible = ref(false)
 const sheetEl = ref<HTMLElement | null>(null)
 
 const ob = computed(() => mergeOnboarding(ss('onboarding', {})))
@@ -42,16 +53,58 @@ const ob = computed(() => mergeOnboarding(ss('onboarding', {})))
 useModalA11y(visible, sheetEl, { onClose: dismiss })
 
 const LS_ONBOARDING = 'vl360_onboarding_seen'
+
 onMounted(() => {
-  if (!localStorage.getItem(LS_ONBOARDING)) {
-    setTimeout(() => { visible.value = true }, 5000)
+  if (isLoggedIn.value) void maybePromptPersonalization()
+  else scheduleWelcome()
+})
+
+watch(() => isLoggedIn.value, (authenticated) => {
+  if (authenticated) void maybePromptPersonalization()
+  else {
+    personalizeVisible.value = false
+    scheduleWelcome()
   }
 })
 
+let welcomeTimer: ReturnType<typeof setTimeout> | null = null
+
+function scheduleWelcome() {
+  if (welcomeTimer || localStorage.getItem(LS_ONBOARDING)) return
+  welcomeTimer = setTimeout(() => { visible.value = true }, 5000)
+}
+
+async function maybePromptPersonalization() {
+  if (!ff('onboarding') || !ff('preference_ui_v1')) return
+  const owner = user.value?.id
+  if (!isLoggedIn.value || !owner) return
+  visible.value = false
+  if (welcomeTimer) {
+    clearTimeout(welcomeTimer)
+    welcomeTimer = null
+  }
+  const refreshed = await preferences.refresh()
+  if (!refreshed || !isLoggedIn.value || user.value?.id !== owner) return
+  const snapshot = preferences.snapshot.value
+  const hasExplicitPreference = snapshot.location_source === 'manual'
+    || !!snapshot.region_id
+    || snapshot.explicit_interests.length > 0
+  personalizeVisible.value = snapshot.location_reconfirm_required || !hasExplicitPreference
+}
+
+function dismissPersonalize() {
+  personalizeVisible.value = false
+  if (import.meta.client) localStorage.setItem(LS_ONBOARDING, '1')
+}
+
 function dismiss() {
   visible.value = false
-  localStorage.setItem(LS_ONBOARDING, '1')
+  if (import.meta.client) localStorage.setItem(LS_ONBOARDING, '1')
 }
+
+onUnmounted(() => {
+  if (welcomeTimer) clearTimeout(welcomeTimer)
+})
 </script>
 
 <style scoped>

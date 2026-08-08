@@ -1,6 +1,6 @@
 # Identity, Location, Trust và Preferences Implementation Plan
 
-> STATUS: proposed - đặc tả NP-1 đã được duyệt; kế hoạch chờ người dùng chọn cách thực thi trước khi triển khai code.
+> STATUS: active - đặc tả và kế hoạch NP-1 đã được duyệt; triển khai Subagent-Driven đang thực hiện trên worktree riêng.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` (recommended) or `superpowers:executing-plans` to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -28,6 +28,7 @@
 - Không mở marketplace, booking, ordering, payment hoặc chế độ du lịch/người địa phương trong NP-1.
 - Giữ public fallback hoạt động khi personalization/API/location resolver bị tắt hoặc lỗi.
 - Các rollout flag mới mặc định `false`; mỗi flag phải có rollback độc lập và không được làm mất public fallback.
+- Frontend tests phải kiểm hành vi render, interaction, API/state và accessibility thực tế; không dùng source-text assertions hoặc `readFileSync(...).toContain(...)` làm bằng chứng tích hợp.
 
 ## File Map
 
@@ -472,17 +473,29 @@ git commit -m "feat: add adaptive preference setup flow"
 - Settings route remains `/cai-dat`; new anchor is `#khu-vuc-de-xuat`.
 - Delete API response fields `status`, `message` and `grace_days` drive the confirmation/toast copy.
 - Consent history UI consumes `{ id, version, created_at }` and never expects `consent_version`/`consent_at`.
+- Test-local `preferenceFixture(overrides)` returns a complete `PreferenceSnapshot`; `mountSettingsPage({ preferences, consents, deleteResponse })` mounts the real page with API transport stubbed only at the network boundary.
 
 - [ ] **Step 1: Write failing settings contract assertions.**
 
 ```ts
-it('renders the preference panel and the API consent field names', () => {
-  const source = readFileSync(resolve(process.cwd(), 'pages/cai-dat.vue'), 'utf8')
-  expect(source).toContain('khu-vuc-de-xuat')
-  expect(source).toContain('c.version')
-  expect(source).toContain('c.created_at')
-  expect(source).not.toContain('c.consent_version')
-  expect(source).not.toContain('c.consent_at')
+it('renders preference and consent data from the API contract', async () => {
+  const wrapper = await mountSettingsPage({
+    preferences: preferenceFixture({ region_label: 'Vĩnh Long' }),
+    consents: [{ id: 'consent-1', version: 'location-v1', created_at: '2026-07-28T08:00:00Z' }],
+  })
+  expect(wrapper.get('#khu-vuc-de-xuat').text()).toContain('Vĩnh Long')
+  expect(wrapper.get('[data-consent-id="consent-1"]').text()).toContain('location-v1')
+  expect(wrapper.get('[data-consent-id="consent-1"] time').attributes('datetime')).toBe('2026-07-28T08:00:00Z')
+})
+
+it('uses the scheduled-deletion response instead of claiming immediate deletion', async () => {
+  const wrapper = await mountSettingsPage({
+    deleteResponse: { status: 'scheduled', message: 'Tài khoản sẽ bị xóa sau 30 ngày', grace_days: 30 },
+  })
+  await wrapper.get('[data-action="delete-account"]').trigger('click')
+  await wrapper.get('[data-action="confirm-delete-account"]').trigger('click')
+  expect(wrapper.get('[role="status"]').text()).toContain('Tài khoản sẽ bị xóa sau 30 ngày')
+  expect(wrapper.text()).not.toContain('Đã xóa tài khoản')
 })
 ```
 
@@ -577,6 +590,8 @@ git commit -m "feat: add explanation and trust disclosure drawers"
 
 **Interfaces:**
 - Smoke script opens `/cai-dat#khu-vuc-de-xuat`, exercises manual region, opens WhyThis and verifies no geolocation call before click.
+- Component integration tests mount the real surfaces and exercise disclosure controls; they do not grep component source.
+- Test-local `recommendationFixture(overrides)`, `mountSmartRecommendations(state)` and `mountPlaceDetail(entity)` provide complete contract fixtures while keeping the real components and interaction logic mounted.
 - Visual review compares layout anatomy against Stitch references, not generated HTML identity.
 - State verification covers `unknown`, `manual`, `gps`, `ip`, `off`, `denied`, `expired`, `offline` and `conflict`.
 - Visual baselines cover desktop `1440`, desktop `1024` and mobile `390` in light/dark, reduced motion and 200% text zoom.
@@ -584,10 +599,23 @@ git commit -m "feat: add explanation and trust disclosure drawers"
 - [ ] **Step 1: Add failing route/component inventory assertions.**
 
 ```ts
-it('keeps the NP-1 surfaces mounted on existing routes', () => {
-  expect(source('pages/cai-dat.vue')).toContain('khu-vuc-de-xuat')
-  expect(source('components/SmartRecommendations.vue')).toContain('WhyThisDrawer')
-  expect(source('pages/dia-diem/[id].vue')).toContain('SourceTrustDrawer')
+it('opens WhyThis from a personalized recommendation', async () => {
+  const wrapper = mountSmartRecommendations({
+    source: 'personalized',
+    items: [recommendationFixture({ primary_reason: 'Cùng khu vực bạn chọn' })],
+  })
+  await wrapper.get('[data-action="why-this"]').trigger('click')
+  expect(wrapper.get('[role="dialog"]').text()).toContain('Cùng khu vực bạn chọn')
+})
+
+it('opens source trust disclosure from a detail surface', async () => {
+  const wrapper = mountPlaceDetail({
+    source_tier: 'official',
+    source_title: 'Cổng thông tin tỉnh Vĩnh Long',
+    freshness_status: 'fresh',
+  })
+  await wrapper.get('[data-action="open-source-trust"]').trigger('click')
+  expect(wrapper.get('[role="dialog"]').text()).toContain('Cổng thông tin tỉnh Vĩnh Long')
 })
 ```
 
@@ -666,7 +694,7 @@ def test_final_account_purge_removes_only_matching_legacy_events(user_events_fil
     assert [row["user_id"] for row in read_all_legacy_events(user_events_file)] == [other_user_id]
 ```
 
-Add a frontend registry test that imports `FEATURE_FLAGS` and asserts `preference_ui_v1`, `recommendation_explanations_v1` and `trust_drawer_v1` exist with `default: false`; source assertions verify each corresponding surface is gated through `useFeature().enabled(...)`.
+Add frontend behavior tests that call `featureFlagDefault` for `preference_ui_v1`, `recommendation_explanations_v1` and `trust_drawer_v1` and receive `false`. Mount each real surface with its flag disabled and enabled: disabled hides only the NP-1 enhancement while preserving the public fallback; enabled exposes the preference panel, explanation trigger or trust disclosure respectively. Do not inspect component source text.
 
 - [ ] **Step 2: Run the cutover tests and verify they fail.**
 

@@ -15,6 +15,7 @@ export interface EntitySource {
 export interface EntitySourceFreshness {
   source_title?: string | null
   source_url?: string | null
+  source_tier?: 'official' | 'verified' | 'community' | 'unknown' | string
   updated_at?: string | null
   verified_at?: string | null
   days_since_update?: number | null
@@ -76,7 +77,6 @@ export interface EntityQuality extends Record<string, unknown> {
   has_source?: boolean
   source_title?: string
   source_url?: string
-  source_tier?: string
   verified_at?: string
   confidence_reason?: string
 }

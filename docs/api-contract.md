@@ -770,6 +770,11 @@ Các mục ở phần trên tài liệu mới là hợp đồng có ràng buộc
 | GET | `/api/itineraries/{itin_id}` | `get_itinerary` | Trả một lịch trình theo id, stop đã lọc theo entity công khai và bổ sung dữ liệu entity. |
 | GET | `/api/map-pins` | `get_map_pins` | Trả pin bản đồ (lat/lng, emoji, màu theo type, rating, place) của entity công khai có toạ độ. |
 | POST | `/api/me/events` | `track_user_event` | Ghi nhận một sự kiện trải nghiệm của user đang đăng nhập vào log sự kiện (HTTP 202). |
+| GET | `/api/me/preferences` | `get_my_preferences` | Ảnh chụp tuỳ chọn cá nhân hoá của user đang đăng nhập, đã lược thông tin nhạy cảm. |
+| PATCH | `/api/me/preferences` | `update_my_preferences` | Áp một patch tuỳ chọn có giới hạn (optimistic) và ghi thay đổi consent trong cùng giao dịch. |
+| GET | `/api/me/preferences/consents` | `get_my_preference_consents` | Lịch sử quyết định consent, KHÔNG kèm IP và KHÔNG kèm toạ độ. |
+| POST | `/api/me/location/resolve` | `resolve_my_location` | Trả gợi ý vùng đã chuẩn hoá, tạm thời — không lưu lại. |
+| POST | `/api/me/recommendations/reset` | `reset_my_recommendations` | Đẩy mốc cắt gợi ý về hiện tại; KHÔNG xoá dữ liệu workspace của user. |
 | GET | `/api/me/insights` | `get_my_insights` | Hồ sơ quan tâm của user: interests, areas, types, recent_intents, next_actions, confidence, signal_count. |
 | GET | `/api/me/recommendations/contextual` | `contextual_recommendations` | Trả entity gợi ý kèm lý do ngắn cho một context trang của user đang đăng nhập. |
 | GET | `/api/places` | `list_places` | Trả entity type=place công khai (id, name, area, level), lọc tuỳ chọn theo area. |

@@ -40,6 +40,15 @@ from database import db
 from erasure_state import request_account_erasure
 from owner_write_gate import owner_key_for_user, owner_write_gate
 from quarantine import quarantine_account, recover_account
+from personalization_events import (
+    read_legacy_events_if_allowed,
+    read_personalization_events,
+)
+from user_preferences import (
+    load_preference_consents,
+    load_preferences,
+    recommendation_cutoff,
+)
 
 
 async def _require_csrf_lazy(request: Request) -> None:
@@ -1483,7 +1492,7 @@ def _log_consent(user_id: str, version: str, ip: str):
 
 @router.get("/consent-history",
             summary="Get consent history",
-            description="Returns the authenticated user's consent acceptance history, including version, masked IP, and timestamp for each record.")
+            description="Returns the authenticated user's consent acceptance history with record ID, version, and timestamp.")
 async def consent_history(request: Request):
     user = await _get_current_user_or_none(request)
     if not user:
@@ -1492,7 +1501,7 @@ async def consent_history(request: Request):
         ph = db._ph
         with db._conn() as conn:
             rows = db._fetchall(conn, f"""
-                SELECT id, version, ip, created_at
+                SELECT id, version, created_at
                 FROM consent_log
                 WHERE user_id = {ph}::uuid
                 ORDER BY created_at DESC
@@ -1500,7 +1509,6 @@ async def consent_history(request: Request):
             """, (str(user["id"]),))
         return {"history": [{"id": str(db._row_to_dict(r)["id"]),
                              "version": db._row_to_dict(r).get("version"),
-                             "ip": _mask_ip(db._row_to_dict(r).get("ip")),
                              "created_at": str(db._row_to_dict(r).get("created_at", ""))}
                             for r in rows]}
     return await asyncio.to_thread(_query)
@@ -1693,7 +1701,7 @@ async def update_privacy(body: PrivacyUpdate, request: Request, _csrf=Depends(_r
 @router.get("/export-data",
             summary="Export all user data",
             description="Exports all data associated with the authenticated user for GDPR compliance. Includes profile, posts, comments, likes, bookmarks, follows, visits, reactions, collections, blocks, and mutes.")
-async def export_user_data(request: Request):
+async def export_user_data(request: Request, response: Response):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
@@ -1773,11 +1781,29 @@ async def export_user_data(request: Request):
         }
 
     ugc = await asyncio.to_thread(_query)
+    preferences = await asyncio.to_thread(load_preferences, uid)
+    preference_consents = await asyncio.to_thread(load_preference_consents, uid)
+    personalization_events = await asyncio.to_thread(
+        read_personalization_events, uid, None
+    )
+    legacy_events = await asyncio.to_thread(
+        read_legacy_events_if_allowed,
+        uid,
+        recommendation_cutoff(preferences),
+        datetime.now(timezone.utc),
+    )
     profile = _safe_user(user)
     profile["bio"] = user.get("bio", "")
+    response.headers["Cache-Control"] = "no-store"
     return {
         "profile": profile,
         "data": ugc,
+        "personalization": {
+            "preferences": preferences,
+            "consents": preference_consents,
+            "events": personalization_events,
+            "legacy_events": legacy_events,
+        },
         "exported_at": datetime.now(timezone.utc).isoformat(),
     }
 

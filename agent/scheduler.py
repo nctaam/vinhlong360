@@ -22,10 +22,11 @@ import threading
 import traceback
 from datetime import datetime, timedelta, timezone
 
+from config import settings
+
 _VN_TZ = timezone(timedelta(hours=7))
 from pathlib import Path
 
-from config import settings
 from erasure import erase_due_accounts
 from quarantine import retry_pending_quarantines
 
@@ -71,6 +72,12 @@ DISCOVERY_INTERVAL    = _env_int("LEARN_INTERVAL_DISCOVERY", 3600)        # 1h (
 LEARNING_LOOP_INTERVAL = _env_int("LEARN_INTERVAL_LOOP", 3600)            # 1h
 AUTO_LEARN_INTERVAL   = _env_int("LEARN_INTERVAL_AUTOLEARN", 3 * 3600)    # 3h
 PROMOTION_INTERVAL    = _env_int("LEARN_INTERVAL_PROMOTION", 6 * 3600)    # 6h
+
+# Keep the worker's retention decision tied to the same configurable grace
+# period used by account deletion, rather than duplicating a literal 30 days.
+ACCOUNT_DELETE_GRACE_DAYS = max(
+    0, int(getattr(settings, "ACCOUNT_DELETE_GRACE_DAYS", 30))
+)
 
 # Adaptive bounds for continuous-discovery
 DISCOVERY_MIN_INTERVAL = 1800       # 30 phút khi đang "trúng mỏ"
@@ -942,15 +949,114 @@ def task_event_reminders():
         _sched_logger.error("Event reminders error: %s", e)
 
 
+HARD_DELETE_BATCH_SIZE = 500
+LEGACY_PURGE_JOB_BUDGET = 1000
+
+
+def _hard_delete_stale_users(db, conn, grace_interval: str) -> int:
+    candidates = db._fetchall(conn, f"""
+        SELECT id FROM users
+        WHERE deleted_at IS NOT NULL
+          AND deleted_at < NOW() - {grace_interval}
+          AND is_active = FALSE
+        ORDER BY deleted_at, id
+        LIMIT {HARD_DELETE_BATCH_SIZE}
+        FOR UPDATE SKIP LOCKED
+    """, ())
+    deleted_count = 0
+    for row in candidates:
+        user_id = str(db._row_to_dict(row)["id"])
+        deleted = db._fetchone(conn, f"""
+            DELETE FROM users
+            WHERE id = %s::uuid
+              AND deleted_at IS NOT NULL
+              AND deleted_at < NOW() - {grace_interval}
+              AND is_active = FALSE
+            RETURNING id
+        """, (user_id,))
+        if deleted is None:
+            continue
+        db._execute(conn, """
+            INSERT INTO personalization_legacy_purge_queue
+                (user_id, created_at, attempt_count, next_attempt_at, last_error)
+            VALUES (%s::uuid, NOW(), 0, NOW(), NULL)
+            ON CONFLICT (user_id) DO NOTHING
+        """, (user_id,))
+        deleted_count += 1
+    return deleted_count
+
+
+def _process_legacy_purge_queue(
+    db, *, limit: int = LEGACY_PURGE_JOB_BUDGET
+) -> int:
+    from personalization_events import purge_legacy_events
+
+    completed = 0
+    for _ in range(limit):
+        with db._conn() as conn:
+            job = db._fetchone(conn, """
+                SELECT user_id, attempt_count
+                FROM personalization_legacy_purge_queue
+                WHERE next_attempt_at <= NOW()
+                ORDER BY next_attempt_at, created_at, user_id
+                LIMIT 1
+                FOR UPDATE SKIP LOCKED
+            """, ())
+            if job is None:
+                break
+            job_data = db._row_to_dict(job)
+            user_id = str(job_data["user_id"])
+            try:
+                purge_legacy_events(user_id=user_id)
+            except Exception as exc:
+                attempt_count = int(job_data.get("attempt_count") or 0)
+                retry_seconds = min(3600, 60 * (2 ** min(attempt_count, 6)))
+                error = f"{type(exc).__name__}: {exc}"[:500]
+                db._execute(conn, """
+                    UPDATE personalization_legacy_purge_queue
+                    SET attempt_count = attempt_count + 1,
+                        next_attempt_at = NOW() + (%s * INTERVAL '1 second'),
+                        last_error = %s
+                    WHERE user_id = %s::uuid
+                """, (retry_seconds, error, user_id))
+                _sched_logger.warning(
+                    "Legacy personalization purge queued for retry: %s", user_id
+                )
+            else:
+                db._execute(
+                    conn,
+                    "DELETE FROM personalization_legacy_purge_queue "
+                    "WHERE user_id = %s::uuid",
+                    (user_id,),
+                )
+                completed += 1
+    return completed
+
+
 def task_session_cleanup():
-    """Purge expired sessions/OTPs and unrelated stale operational data."""
+    """Dọn session/OTP hết hạn, dữ liệu vận hành cũ, và xoá cứng tài khoản đã quá hạn ân hạn.
+
+    Gộp từ hai nhánh: `main` mô tả phần dọn session/OTP + dữ liệu vận hành,
+    `codex/np1-identity-location-trust` thêm nhánh hard-delete tài khoản hết ân hạn.
+    Cả hai việc đều thật sự nằm trong hàm này sau khi hợp — xem `_hard_delete_stale_users`.
+    """
     try:
         from database import db
-        if not db._use_pg:
-            return
+    except Exception as exc:
+        _sched_logger.error("Session cleanup database load error: %s", exc)
+        return
+    if not db._use_pg:
+        return
+
+    try:
+        grace_interval = f"INTERVAL '{ACCOUNT_DELETE_GRACE_DAYS} days'"
         with db._conn() as conn:
             db._execute(conn, "DELETE FROM user_sessions WHERE expires_at < NOW()", ())
             db._execute(conn, "DELETE FROM otp_sessions WHERE expires_at < NOW()", ())
+
+            hard_deleted = _hard_delete_stale_users(db, conn, grace_interval)
+            if hard_deleted > 0:
+                _sched_logger.info("Session cleanup: hard-deleted %d accounts past grace period", hard_deleted)
             try:
                 r = db._execute(conn, "DELETE FROM login_history WHERE created_at < NOW() - INTERVAL '90 days'", ())
                 old_logins = getattr(r, 'rowcount', 0) if r else 0
@@ -960,8 +1066,70 @@ def task_session_cleanup():
                 _sched_logger.warning("login_history cleanup failed", exc_info=True)
             _hard_delete_stale_posts(db, conn)
         _sched_logger.info("Session cleanup: purged expired sessions and OTPs")
-    except Exception as e:
-        _sched_logger.error("Session cleanup error: %s", e)
+    except Exception as exc:
+        _sched_logger.error("Session cleanup database phase error: %s", exc)
+
+    try:
+        completed_purges = _process_legacy_purge_queue(db)
+        if completed_purges:
+            _sched_logger.info(
+                "Session cleanup: purged %d queued legacy personalization sets",
+                completed_purges,
+            )
+    except Exception as exc:
+        _sched_logger.error(
+            "Legacy personalization purge queue error: %s", exc
+        )
+
+
+def task_personalization_cleanup():
+    """Purge personalization events after their database TTL expires."""
+    location_self_healing_failed = False
+    try:
+        from database import db
+        now = datetime.now(timezone.utc)
+        if db._use_pg:
+            from personalization_events import purge_personalization_events
+
+            removed = purge_personalization_events(before=now)
+            if removed:
+                _sched_logger.info(
+                    "Personalization cleanup: purged %d expired events", removed
+                )
+            try:
+                import user_preferences
+
+                counts = user_preferences.quarantine_invalid_preferences_batch(limit=100)
+                healed = sum(counts.values())
+                if healed:
+                    summary = ", ".join(
+                        f"{reason}={count}" for reason, count in sorted(counts.items())
+                    )
+                    _sched_logger.info(
+                        "Location preference self-healing: quarantined %d rows (%s)",
+                        healed,
+                        summary,
+                    )
+            except Exception:
+                location_self_healing_failed = True
+                _sched_logger.error("Location preference self-healing failed")
+        from personalization_events import (
+            legacy_cutover_deadline,
+            purge_legacy_events,
+        )
+
+        deadline = legacy_cutover_deadline()
+        if deadline is not None and now >= deadline:
+            removed_legacy = purge_legacy_events(before=now)
+            if removed_legacy:
+                _sched_logger.info(
+                    "Personalization cleanup: purged %d legacy events after cutover",
+                    removed_legacy,
+                )
+    except Exception as exc:
+        _sched_logger.error("Personalization cleanup error: %s", exc)
+    if location_self_healing_failed:
+        raise RuntimeError("Location preference self-healing failed")
 
 
 def _hard_delete_stale_posts(db, conn):
@@ -1120,6 +1288,7 @@ TASKS = [
     ScheduledTask("session-cleanup", task_session_cleanup,       interval_seconds=6 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 6h
     ScheduledTask("account-erasure", task_account_erasure,       interval_seconds=_ERASURE_INTERVAL_SECONDS, run_immediately=True),  # 5m, audit-only by default
     ScheduledTask("quarantine-retry", task_quarantine_retry,     interval_seconds=_ERASURE_INTERVAL_SECONDS, run_immediately=True),  # 5m, audit-only by default
+    ScheduledTask("personalization-cleanup", task_personalization_cleanup, interval_seconds=6 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),
     ScheduledTask("notification-cleanup", task_notification_cleanup, interval_seconds=24 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 24h
     ScheduledTask("event-reminders",    task_event_reminders,      interval_seconds=6 * 3600, run_immediately=False),  # 6h
     ScheduledTask("ratelimit-gc",  task_ratelimit_gc,          interval_seconds=300),        # 5min

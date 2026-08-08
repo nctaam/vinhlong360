@@ -8,15 +8,39 @@ Complements test_p0_security_hardening.py (P0-1/3/4) with higher-level
 security checks. All tests are pure-logic (no DB, no LLM, no network).
 """
 
+import asyncio
+from types import SimpleNamespace
 import hashlib
 import inspect
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from starlette.responses import Response
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+
+def test_identity_location_rollout_flags_default_off(monkeypatch):
+    for name in (
+        "PREFERENCE_PROFILE_V1",
+        "PERSONALIZATION_EVENTS_PG",
+        "LOCATION_RESOLVER_V1",
+        "RECOMMENDATION_EXPLANATIONS_V1",
+        "TRUST_DRAWER_V1",
+    ):
+        monkeypatch.delenv(name, raising=False)
+
+    from config import Settings
+
+    configured = Settings(_env_file=None)
+
+    assert configured.PREFERENCE_PROFILE_V1 is False
+    assert configured.PERSONALIZATION_EVENTS_PG is False
+    assert configured.LOCATION_RESOLVER_V1 is False
+    assert configured.RECOMMENDATION_EXPLANATIONS_V1 is False
+    assert configured.TRUST_DRAWER_V1 is False
 
 
 # ============================================================================
@@ -261,20 +285,23 @@ class TestSecurityEventLogger:
     def test_auth_failure_logged(self):
         from middleware import security_logger
         initial = len(security_logger.recent())
-        security_logger.auth_failure("10.0.0.1", "invalid_token", endpoint="/auth/login")
+        raw_ip = "10.0.0.1"
+        security_logger.auth_failure(raw_ip, "invalid_token", endpoint="/auth/login")
         events = security_logger.recent()
         assert len(events) > initial
         last = events[-1]
         assert last["event"] == "auth_failure"
-        assert last["ip"] == "10.0.0.1"
+        assert raw_ip not in repr(last)
         assert last["reason"] == "invalid_token"
 
     def test_rate_limit_hit_logged(self):
         from middleware import security_logger
-        security_logger.rate_limit_hit("10.0.0.2", "/chat", key="chat:10.0.0.2")
+        raw_ip = "10.0.0.2"
+        security_logger.rate_limit_hit(raw_ip, "/chat", key=f"chat:{raw_ip}")
         last = security_logger.recent()[-1]
         assert last["event"] == "rate_limit_hit"
         assert last["endpoint"] == "/chat"
+        assert raw_ip not in repr(last)
 
     def test_suspicious_input_logged(self):
         from middleware import security_logger
@@ -300,16 +327,22 @@ class TestSecurityEventLogger:
 
     def test_csrf_failure_logged(self):
         from middleware import security_logger
-        security_logger.csrf_failure("10.0.0.6", endpoint="/api/posts")
+        raw_ip = "10.0.0.6"
+        security_logger.csrf_failure(raw_ip, endpoint="/api/posts")
         last = security_logger.recent()[-1]
         assert last["event"] == "csrf_failure"
+        assert raw_ip not in repr(last)
 
     def test_session_anomaly_logged(self):
         from middleware import security_logger
-        security_logger.session_anomaly("10.0.0.7", "ip_changed", old_ip="1.2.3.4")
+        current_ip = "10.0.0.7"
+        old_ip = "1.2.3.4"
+        security_logger.session_anomaly(current_ip, "ip_changed", old_ip=old_ip)
         last = security_logger.recent()[-1]
         assert last["event"] == "session_anomaly"
         assert last["reason"] == "ip_changed"
+        assert current_ip not in repr(last)
+        assert old_ip not in repr(last)
 
     def test_filter_by_event_type(self):
         from middleware import security_logger
@@ -492,6 +525,126 @@ class TestAuthBypassAudit:
         import auth
         src = inspect.getsource(auth.update_profile)
         assert "html.escape" in src or "escape" in src or "sanitize" in src
+
+
+class TestAccountPrivacyContracts:
+    """Exercise account and consent handlers through their observable responses."""
+
+    def test_consent_history_projects_only_id_version_and_created_at(self, monkeypatch):
+        import auth
+
+        row = {
+            "id": "consent-1",
+            "version": "location-v1",
+            "ip": "203.0.113.24",
+            "created_at": "2026-07-28T08:00:00Z",
+        }
+        conn = MagicMock()
+        conn.__enter__.return_value = conn
+        conn.__exit__.return_value = False
+        monkeypatch.setattr(auth, "_get_current_user_or_none", AsyncMock(return_value={"id": "user-1"}))
+        monkeypatch.setattr(auth.db, "_conn", lambda: conn)
+        monkeypatch.setattr(auth.db, "_fetchall", lambda *_args, **_kwargs: [row])
+        monkeypatch.setattr(auth.db, "_row_to_dict", lambda value: value)
+
+        result = asyncio.run(auth.consent_history(MagicMock()))
+
+        assert result == {
+            "history": [{
+                "id": "consent-1",
+                "version": "location-v1",
+                "created_at": "2026-07-28T08:00:00Z",
+            }]
+        }
+
+    def test_delete_schedules_grace_period_without_purging_personalization(self, monkeypatch):
+        """Xoá tài khoản KHÔNG được cuốn theo dữ liệu cá nhân hoá.
+
+        Viết lại khi hợp NP-1 vào main. Bản gốc stub `db._conn`/`db._execute` vì
+        `delete_account` của nhánh xoá bằng SQL trực tiếp; trên main nó đi qua
+        `request_account_erasure` (agent/erasure_state.py) + `quarantine_account`.
+        Giữ nguyên điều đang được bảo vệ — không có câu lệnh nào chạm bảng
+        personalization — chỉ đổi cách dựng cảnh cho khớp đường thật.
+        """
+        import auth
+        import ratelimit
+        from datetime import timedelta
+
+        statements: list[str] = []
+
+        def execute(_conn, statement, _params=None):
+            statements.append(" ".join(statement.split()).upper())
+
+        conn = MagicMock()
+        conn.__enter__.return_value = conn
+        conn.__exit__.return_value = False
+
+        due = auth._utc_now() + timedelta(days=auth.ACCOUNT_DELETE_GRACE_DAYS)
+        erasure_state = SimpleNamespace(erasure_due_at=due)
+
+        monkeypatch.setattr(auth, "_get_current_user_or_none", AsyncMock(return_value={"id": "user-1"}))
+        monkeypatch.setattr(auth, "_check_session_binding_safe", AsyncMock(return_value=True))
+        monkeypatch.setattr(auth, "_clear_session_cookie", lambda *_args: None)
+        monkeypatch.setattr(auth, "request_account_erasure", lambda _uid, now=None: erasure_state)
+        monkeypatch.setattr(auth, "quarantine_account", lambda _uid, now=None: SimpleNamespace(
+            success=True, status="quarantined", run_id="r1", error_code=None, failed_store_names=[]))
+        monkeypatch.setattr(auth.owner_write_gate, "block_owner", lambda *_a, **_k: None)
+        monkeypatch.setattr(auth.db, "_conn", lambda: conn)
+        monkeypatch.setattr(auth.db, "_execute", execute)
+        monkeypatch.setattr(ratelimit, "check_rate", lambda *_args, **_kwargs: None)
+
+        result = asyncio.run(auth.delete_account(MagicMock(), Response(), None))
+
+        assert result["status"] == "scheduled"
+        assert result["grace_days"] == auth.ACCOUNT_DELETE_GRACE_DAYS
+        assert str(auth.ACCOUNT_DELETE_GRACE_DAYS) in result["message"]
+        assert result["erasure_due_at"] == due.isoformat()
+        # Điều thật sự được bảo vệ: không câu lệnh nào chạm dữ liệu cá nhân hoá.
+        for table in ("USER_PREFERENCES", "USER_PERSONALIZATION_EVENTS",
+                      "USER_PREFERENCE_CONSENTS", "PERSONALIZATION_LEGACY_PURGE_QUEUE"):
+            assert not any(table in stmt for stmt in statements),                 f"delete_account không được đụng {table}"
+
+    def test_deactivate_remains_reactivation_semantics_not_deletion(self, monkeypatch):
+        import auth
+        import ratelimit
+
+        state = {
+            "is_active": True,
+            "deleted_at": None,
+            "sessions": 2,
+            "personalization_rows": 3,
+        }
+        conn = MagicMock()
+        conn.__enter__.return_value = conn
+        conn.__exit__.return_value = False
+
+        def update_user(_user_id, **fields):
+            state.update(fields)
+
+        def execute(_conn, statement, _params):
+            if "DELETE FROM user_sessions" in statement:
+                state["sessions"] = 0
+
+        monkeypatch.setattr(auth, "_get_current_user_or_none", AsyncMock(return_value={"id": "user-1"}))
+        monkeypatch.setattr(auth, "_check_session_binding_safe", AsyncMock(return_value=True))
+        monkeypatch.setattr(auth, "_clear_session_cookie", lambda *_args: None)
+        monkeypatch.setattr(auth.db, "update_user", update_user)
+        monkeypatch.setattr(auth.db, "_conn", lambda: conn)
+        monkeypatch.setattr(auth.db, "_execute", execute)
+        monkeypatch.setattr(ratelimit, "check_rate", lambda *_args, **_kwargs: None)
+
+        result = asyncio.run(auth.deactivate_account(MagicMock(), Response(), None))
+
+        assert result == {
+            "success": True,
+            "message": "Tài khoản đã bị vô hiệu hóa. Đăng nhập lại bằng OTP để kích hoạt.",
+        }
+        assert state == {
+            "is_active": False,
+            "deleted_at": None,
+            "sessions": 0,
+            "personalization_rows": 3,
+        }
 
 
 class TestAuthPasswordSecurity:

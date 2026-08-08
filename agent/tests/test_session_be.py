@@ -1354,6 +1354,58 @@ class TestPhase8SessionCleanup:
         assert "deleted_at IS NOT NULL" not in cleanup
         assert "erase_due_accounts(" in erasure
         assert any(task.name == "account-erasure" for task in scheduler.TASKS)
+    def test_session_cleanup_purges_deleted_users_after_grace_then_runs_outbox(
+        self, monkeypatch
+    ):
+        import scheduler
+        import database
+
+        events = []
+        statements = []
+
+        class ConnectionContext:
+            def __enter__(self):
+                events.append("transaction-open")
+                return object()
+
+            def __exit__(self, exc_type, exc, traceback):
+                events.append("transaction-committed")
+                return False
+
+        class FakeDatabase:
+            _use_pg = True
+
+            def _conn(self):
+                return ConnectionContext()
+
+            def _execute(self, _conn, sql, _params=()):
+                statements.append(sql)
+                return type("Result", (), {"rowcount": 0})()
+
+        fake_db = FakeDatabase()
+        monkeypatch.setattr(database, "db", fake_db)
+        monkeypatch.setattr(scheduler, "ACCOUNT_DELETE_GRACE_DAYS", 30)
+
+        def hard_delete(db_arg, _conn, grace_interval):
+            assert db_arg is fake_db
+            events.append(("hard-delete", grace_interval))
+            return 1
+
+        def process_outbox(db_arg):
+            assert db_arg is fake_db
+            events.append("outbox")
+            return 1
+
+        monkeypatch.setattr(scheduler, "_hard_delete_stale_users", hard_delete)
+        monkeypatch.setattr(scheduler, "_hard_delete_stale_posts", lambda *_: None)
+        monkeypatch.setattr(scheduler, "_process_legacy_purge_queue", process_outbox)
+
+        scheduler.task_session_cleanup()
+
+        assert any("DELETE FROM user_sessions" in sql for sql in statements)
+        assert any("DELETE FROM otp_sessions" in sql for sql in statements)
+        assert ("hard-delete", "INTERVAL '30 days'") in events
+        assert events.index("transaction-committed") < events.index("outbox")
 
     def test_leaderboard_excludes_deleted(self):
         """Leaderboard query excludes soft-deleted users."""

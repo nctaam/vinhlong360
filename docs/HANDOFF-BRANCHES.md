@@ -1,6 +1,5 @@
-> STATUS: active — bản đồ nhánh & worktree, chụp ngày 2026-08-07.
-> Đây là tài liệu **mô tả + kiến nghị**. Mọi thao tác hợp/xoá/push là quyết định của chủ dự án (CLAUDE.md §4).
-> Mâu thuẫn với `CLAUDE.md` → CLAUDE.md thắng. Mâu thuẫn với `docs/HANDOFF.md` về "nhánh chính" → **file này thắng** (HANDOFF.md §đầu còn ghi "Nhánh chính: `main`", đã lỗi thời).
+> STATUS: active — bản đồ nhánh & worktree. Chụp 2026-08-07, **hợp nhất về `main` ngày 2026-08-08**.
+> Mâu thuẫn với `CLAUDE.md` → CLAUDE.md thắng.
 
 # Bản đồ nhánh & worktree — vinhlong360
 
@@ -8,16 +7,42 @@
 
 | Câu hỏi | Trả lời |
 |---|---|
-| **Trunk thật nằm ở đâu?** | Nhánh `codex/tri-region-color`, tip `10d9bb69` (2026-08-07) |
-| **Tôi nên checkout gì để làm tiếp?** | `codex/tri-region-color`, làm trong worktree `C:\Code\vinhlong360\.worktrees\tri-region-color` |
-| **`main` có dùng được không?** | **KHÔNG.** `main` (`aebf4afe`) thiếu **246 commit** so với trunk. Nó là tổ tiên của trunk, không có gì riêng. |
-| **Clone mới từ GitHub thì sao?** | Bạn nhận `origin/main` = `1b9f2bd9` **ngày 2026-07-11** — thiếu **847 commit** so với trunk. Phải `git checkout codex/tri-region-color` ngay sau khi clone. |
-| **Có gì đang treo/mất được không?** | Có: **98 commit chỉ tồn tại trên máy này**, chưa lên GitHub. Xem §2. |
+| **Trunk thật nằm ở đâu?** | **`main`.** Không còn nhánh phát triển song song. |
+| **Tôi nên checkout gì để làm tiếp?** | `main`. Clone về là dùng được ngay. |
+| **Có gì đang treo/mất được không?** | **Không.** 102 commit từng chỉ có ở local đã được push ngày 2026-08-08; `git rev-list` đếm 0 commit ngoài origin. |
 
-```
-# sau khi clone
-git checkout codex/tri-region-color   # còn thiếu 16 commit local, xem §2
-```
+## 0b. Chuyện gì đã xảy ra ngày 2026-08-08
+
+Trước hôm đó: 22 nhánh, 20 worktree, `main` thiếu **246 commit** so với trunk thật
+(`codex/tri-region-color`), và **98 commit chưa bao giờ rời khỏi máy**. Người clone repo
+về nhận `origin/main` bản 11-07 — thiếu 847 commit — mà không chỗ nào nói trunk ở đâu.
+
+Đã xử lý theo thứ tự chi phí đo được (`git merge-tree`, không đụng cây làm việc):
+
+| Nhánh | Xung đột | Kết quả |
+|---|---|---|
+| `codex/tri-region-color` | 0 (main là tổ tiên) | fast-forward |
+| `codex/phase4-multiday-allocation` | 0 | hợp sạch |
+| `codex/non-public-wave0` | 1 file | hợp |
+| `fix/truthful-public-claims` | 1 file | hợp |
+| `t7/crawler-pinned` + `claude/competent-northcutt-622292` | 4 + 3 file | **không hợp** — trùng nhau và trunk đã có bản tương đương; port đúng 1 ca kiểm còn hở rồi bỏ nhánh |
+| `codex/np1-identity-location-trust` | 15 file + đụng số migration | hợp, đánh số lại 071/072/073 → **076/077/078** |
+
+Ba cái giá phải trả, ghi lại để không ai tưởng là miễn phí:
+
+1. **Baseline complexity 17 → 23.** `phase4` phát triển ngoài tầm cổng nên mang theo 6 hàm
+   vượt ngưỡng. Nâng trần theo §3.7 kèm giải trình thay vì refactor thuật toán DP giữa lúc
+   merge. **Nợ chưa đóng** — xem Backlog phát sinh trong `docs/ROADMAP.md`.
+2. **`PG_REQUIRED_SCHEMA_VERSION` 74 → 78.** Code NP-1 đọc `user_preferences`/`consents`/
+   `events` nên thật sự cần cả ba migration mới đã chạy. **Migration 076-078 CHƯA CHẠY ở
+   đâu cả** — prod vẫn ở mức cũ.
+3. **Hai thiết kế trùng vai được giữ cả hai, gate bằng cờ.** `EntityTrustPanel` (main) và
+   `SourceTrustDrawer` + thẻ "Độ tin cậy dữ liệu" (NP-1) cùng nói về độ tin cậy nguồn;
+   `v-if="!trustVisible"` đảm bảo chỉ một cái hiện, cờ `trust_drawer_v1` quyết cái nào.
+   Tương tự với `SmartRecommendations` (lý do tĩnh vs nút mở drawer).
+
+Bốn chỗ vẫn còn sai sự thật trên sản phẩm sau khi hợp — xem §3.4, trong đó
+`web-nuxt/pages/dia-diem/[id].vue:1239` vẫn bịa `ratingCount: '1'`.
 
 ---
 

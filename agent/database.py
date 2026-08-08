@@ -65,6 +65,11 @@ PG_REQUIRED_TABLES = {
     "quality_metric_snapshots",
     "feedback_receipts",
     "feedback_daily_rollups",
+    # NP-1 identity/location/trust (migration 076-078)
+    "user_preferences",
+    "user_preference_consents",
+    "user_personalization_events",
+    "personalization_legacy_purge_queue",
     # GĐ-B/C entity split (migration 059-062)
     "entity_changes",
     "site_settings_history",
@@ -120,11 +125,34 @@ PG_REQUIRED_COLUMNS = {
         "tool_bucket",
         "positive_count",
         "negative_count",
+        "created_at",
+    },
+    "user_preferences": {
+        "user_id", "region_id", "region_label", "region_scope",
+        "location_source", "location_accuracy", "location_consent_state",
+        "location_enabled", "personalization_enabled", "explicit_interests",
+        "recommendation_reset_at", "consent_version", "revision",
+        "location_reconfirm_required", "location_provenance_version",
+        "created_at", "updated_at",
+    },
+    "user_preference_consents": {
+        "id", "user_id", "consent_type", "state", "version", "created_at",
+    },
+    "user_personalization_events": {
+        "id", "user_id", "event_type", "context", "entity_id",
+        "entity_type", "area_id", "interest_keys", "occurred_at", "expires_at",
+    },
+    "personalization_legacy_purge_queue": {
+        "user_id", "created_at", "attempt_count", "next_attempt_at", "last_error",
     },
     "schema_version": {"component", "version", "migration", "updated_at"},
 }
 
-PG_REQUIRED_SCHEMA_VERSION = 74
+# 78 = migration mới nhất sau khi hợp NP-1 (078_location_preference_remediation).
+# Trước hợp: main yêu cầu 74, nhánh NP-1 yêu cầu 73 (chính là 073 của nó, nay đánh
+# số lại thành 078). Code NP-1 đọc user_preferences/consents/events nên nó THẬT SỰ
+# cần cả ba migration 076-078 đã chạy — lấy số cao hơn, không lấy số của một bên.
+PG_REQUIRED_SCHEMA_VERSION = 78
 PG_REQUIRED_TRIGGERS = {
     "trg_entity_ratings": "posts",
     "trg_entity_ratings_del": "posts",

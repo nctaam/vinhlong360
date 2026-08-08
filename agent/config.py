@@ -73,6 +73,16 @@ class Settings(BaseSettings):
     LLM_JUDGE_ENABLED: bool = False
     DESTRUCTIVE_OPS_LOCKED: str = "1"
 
+    # ── Identity/location/personalization rollout ──
+    # Kill-switches stay off until each bounded surface has an owner-approved
+    # rollout. Legacy JSONL is read only through the configured ISO deadline.
+    PREFERENCE_PROFILE_V1: bool = False
+    PERSONALIZATION_EVENTS_PG: bool = False
+    LOCATION_RESOLVER_V1: bool = False
+    RECOMMENDATION_EXPLANATIONS_V1: bool = False
+    TRUST_DRAWER_V1: bool = False
+    LEGACY_EVENT_READ_UNTIL: str = ""
+
     # ── Autonomous agent ──
     AUTONOMOUS_AGENT_ENABLED: bool = False
     AUTONOMOUS_AGENT_MAX_CALLS_PER_DAY: int = 20

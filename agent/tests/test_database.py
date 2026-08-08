@@ -30,6 +30,7 @@ from database import (  # noqa: E402
     canonical_verified_at,
 )
 import os  # noqa: E402
+import database as database_module  # noqa: E402
 
 
 @pytest.fixture
@@ -92,11 +93,18 @@ def test_pg_initialize_verifies_schema_before_legacy_repair_code():
     assert "CREATE INDEX" not in verify_src
 
 def test_pg_schema_contract_tracks_latest_release_tables():
-    # 71 restores entity rating triggers; 72-74 add feedback and erasure lifecycle state.
-    assert PG_REQUIRED_SCHEMA_VERSION == 74
+    # 71 phục hồi trigger rating; 72-74 thêm feedback + vòng đời xoá tài khoản;
+    # 75 index đường nóng; 76-78 là NP-1 identity/location/trust (đánh số lại khi hợp).
+    assert PG_REQUIRED_SCHEMA_VERSION == 78
     assert {"schema_version", "admin_audit_events", "shared_rate_limits", "request_idempotency_keys"} <= PG_REQUIRED_TABLES
     assert {"feedback_receipts", "feedback_daily_rollups"} <= PG_REQUIRED_TABLES
     assert {"entity_changes", "site_settings_history"} <= PG_REQUIRED_TABLES
+    assert {
+        "user_preferences",
+        "user_preference_consents",
+        "user_personalization_events",
+        "personalization_legacy_purge_queue",
+    } <= PG_REQUIRED_TABLES
     assert {f"entity_{k}_details" for k in
             ("place", "food", "product", "lodging", "event",
              "experience", "facility", "person", "adminplace")} <= PG_REQUIRED_TABLES
@@ -106,6 +114,146 @@ def test_pg_schema_contract_tracks_latest_release_tables():
     assert {"day", "positive_count", "negative_count"} <= PG_REQUIRED_COLUMNS["feedback_daily_rollups"]
     assert "bucket" not in PG_REQUIRED_COLUMNS["shared_rate_limits"]
     assert "response_json" not in PG_REQUIRED_COLUMNS["request_idempotency_keys"]
+    assert {
+        "location_reconfirm_required",
+        "location_provenance_version",
+    } <= PG_REQUIRED_COLUMNS["user_preferences"]
+
+
+_NP1_REQUIRED_COLUMNS = {
+    "user_preferences": {
+        "user_id", "region_id", "region_label", "region_scope",
+        "location_source", "location_accuracy", "location_consent_state",
+        "location_enabled", "personalization_enabled", "explicit_interests",
+        "recommendation_reset_at", "consent_version", "revision",
+        "location_reconfirm_required", "location_provenance_version",
+        "created_at", "updated_at",
+    },
+    "user_preference_consents": {
+        "id", "user_id", "consent_type", "state", "version", "created_at",
+    },
+    "user_personalization_events": {
+        "id", "user_id", "event_type", "context", "entity_id",
+        "entity_type", "area_id", "interest_keys", "occurred_at", "expires_at",
+    },
+    "personalization_legacy_purge_queue": {
+        "user_id", "created_at", "attempt_count", "next_attempt_at", "last_error",
+    },
+}
+
+
+class _SchemaReadinessCursor:
+    """Test double cho vòng kiểm schema lúc khởi động Postgres.
+
+    Nhánh NP-1 viết class này TRƯỚC khi `main` thêm bước kiểm trigger
+    (`PG_REQUIRED_TRIGGERS`, `agent/database.py`), nên khi hợp hai nhánh thì mọi
+    bài dùng nó nổ `unexpected readiness query`. Thêm nhánh `pg_trigger` để double
+    phủ đúng những gì code thật hỏi — KHÔNG nới assertion để test xanh.
+    """
+
+    def __init__(self, *, tables, columns, version, triggers=None):
+        self.tables = set(tables)
+        self.columns = {table: set(values) for table, values in columns.items()}
+        self.version = version
+        # Mặc định = đủ trigger, để các bài đang kiểm THIẾU BẢNG/THIẾU CỘT không bị
+        # trượt vì một lý do khác. Bài nào muốn kiểm thiếu trigger thì truyền vào.
+        self.triggers = dict(database_module.PG_REQUIRED_TRIGGERS) if triggers is None else dict(triggers)
+        self.rows = []
+
+    def execute(self, sql, params=None):
+        if "information_schema.tables" in sql:
+            self.rows = [{"table_name": table} for table in sorted(self.tables)]
+        elif "information_schema.columns" in sql:
+            self.rows = [
+                {"column_name": column}
+                for column in sorted(self.columns.get(params[0], set()))
+            ]
+        elif "MAX(version)" in sql:
+            self.rows = [{"version": self.version}]
+        elif "pg_trigger" in sql or "tgname" in sql:
+            self.rows = [
+                {"trigger_name": name, "table_name": table}
+                for name, table in sorted(self.triggers.items())
+            ]
+        else:
+            raise AssertionError(f"unexpected readiness query: {sql}")
+
+    def fetchall(self):
+        return list(self.rows)
+
+    def fetchone(self):
+        return self.rows[0] if self.rows else None
+
+
+class _SchemaReadinessConnection:
+    def __init__(self, cursor):
+        self._cursor = cursor
+
+    def cursor(self, **_kwargs):
+        return self._cursor
+
+
+def _release_schema(*, version=73, missing_table=None, missing_column=None):
+    database_module.psycopg2 = SimpleNamespace(
+        extras=SimpleNamespace(RealDictCursor=object)
+    )
+    tables = set(PG_REQUIRED_TABLES) | set(_NP1_REQUIRED_COLUMNS)
+    columns = {
+        table: set(values) for table, values in PG_REQUIRED_COLUMNS.items()
+    }
+    columns.update({
+        table: set(values) for table, values in _NP1_REQUIRED_COLUMNS.items()
+    })
+    if missing_table:
+        tables.remove(missing_table)
+    if missing_column:
+        table, column = missing_column
+        columns[table].remove(column)
+    return _SchemaReadinessConnection(
+        _SchemaReadinessCursor(tables=tables, columns=columns, version=version)
+    )
+
+
+def test_pg_startup_rejects_schema_version_72():
+    """Ngưỡng lấy từ hằng số, không gõ cứng.
+
+    Bản NP-1 gõ cứng `expected >= 73` vì đó là migration mới nhất CỦA NÓ. Sau khi hợp
+    vào main, ba migration của nó được đánh số lại 076-078 nên ngưỡng thành 78 — gõ
+    cứng thì lần bump tới lại đỏ vì một lý do vô nghĩa.
+    """
+    database = Database.__new__(Database)
+
+    expected = database_module.PG_REQUIRED_SCHEMA_VERSION
+    assert expected >= 78, "hợp NP-1 vào thì ngưỡng phải tính cả migration 076-078"
+    with pytest.raises(
+        RuntimeError, match=rf"schema_version agent=72, expected >= {expected}"
+    ):
+        database._verify_pg_schema(_release_schema(version=72))
+
+
+@pytest.mark.parametrize("table", sorted(_NP1_REQUIRED_COLUMNS))
+def test_pg_startup_rejects_each_missing_np1_table(table):
+    database = Database.__new__(Database)
+
+    with pytest.raises(RuntimeError, match=rf"missing tables:.*{table}"):
+        database._verify_pg_schema(_release_schema(missing_table=table))
+
+
+@pytest.mark.parametrize(
+    ("table", "column"),
+    [
+        (table, column)
+        for table, columns in sorted(_NP1_REQUIRED_COLUMNS.items())
+        for column in sorted(columns)
+    ],
+)
+def test_pg_startup_rejects_each_missing_np1_column(table, column):
+    database = Database.__new__(Database)
+
+    with pytest.raises(RuntimeError, match=rf"missing columns:.*{table}\.{column}"):
+        database._verify_pg_schema(
+            _release_schema(missing_column=(table, column))
+        )
 
 
 # ── Entity CRUD + JSON round-trip ──

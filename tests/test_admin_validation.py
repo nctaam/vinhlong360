@@ -136,11 +136,35 @@ def test_require_admin_accepts_admin_key() -> None:
     assert asyncio.run(admin_module.require_admin(request)) is None
 
 
-def test_require_admin_accepts_admin_session(monkeypatch) -> None:
+def test_require_admin_accepts_superadmin_session(monkeypatch) -> None:
+    """Chỉ `superadmin` (scope `*`) mới qua được route CHƯA khai scope.
+
+    Đổi từ `role: admin` sang `superadmin` khi hợp `codex/non-public-wave0`: RBAC
+    scope mới cho role `admin` đúng 5 scope workstream (content.editor,
+    moderation.manager, ops.deploy, settings.admin, security.admin) chứ KHÔNG có `*`
+    (`agent/admin_permissions.py:10`). Route nào chưa khai scope thì mặc định TỪ CHỐI
+    (`agent/admin.py:496`) — đó là chủ ý, không phải lỗi.
+    """
     async def fake_current_user(_request):
-        return {"id": "u1", "role": "admin"}
+        return {"id": "u1", "role": "superadmin"}
 
     monkeypatch.setattr(admin_module, "get_current_user", fake_current_user)
     request = make_request({"Authorization": "Bearer admin-token"})
 
     assert asyncio.run(admin_module.require_admin(request)) is None
+
+
+def test_require_admin_denies_plain_admin_on_unscoped_route(monkeypatch) -> None:
+    """Mặt còn lại của cùng một hợp đồng — khoá luôn kẻo ai đó nới nhầm về `*`."""
+    import pytest
+    from fastapi import HTTPException
+
+    async def fake_current_user(_request):
+        return {"id": "u2", "role": "admin"}
+
+    monkeypatch.setattr(admin_module, "get_current_user", fake_current_user)
+    request = make_request({"Authorization": "Bearer admin-token"})
+
+    with pytest.raises(HTTPException) as exc:
+        asyncio.run(admin_module.require_admin(request))
+    assert exc.value.status_code == 403

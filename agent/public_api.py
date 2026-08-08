@@ -18,13 +18,24 @@ import unicodedata
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Literal, Optional
+from typing import Annotated, Any, Literal, Optional
 
 logger = logging.getLogger(__name__)
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, Response
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    StrictBool,
+    StrictFloat,
+    StrictInt,
+    ValidationError,
+    field_validator,
+    model_validator,
+)
 from api_schemas import (  # W6.3: response_model (extra="allow" — không strip field FE)
     AreasResponse, AutocompleteResponse, CollectionsResponse, CompareResponse,
     EntityDetailResponse, EntityListResponse, EntityMapResponse, EntityTypesResponse,
@@ -33,10 +44,43 @@ from api_schemas import (  # W6.3: response_model (extra="allow" — không stri
     GalleryResponse,
     TrendingResponse,
 )
+from config import settings
 from database import canonical_verified_at, db
 from data_quality import entity_quality
 from middleware import report_limiter, get_client_ip
 from auth_middleware import validate_path_id, require_pg, require_user, require_csrf, get_current_user
+from user_preferences import (
+    MAX_PREFERENCE_REVISION,
+    MAX_RECOMMENDATION_RESET_AT_LENGTH,
+    PreferenceRevisionConflict,
+    PreferenceValidationError,
+    _public_snapshot,
+    load_preference_consents,
+    load_preferences,
+    patch_preferences_with_consents,
+    recommendation_cutoff,
+)
+from location_resolver import (
+    IpGeocoder,
+    LocationConfirmationError,
+    LocationInputError,
+    ReverseGeocoder,
+    get_ip_geocoder,
+    get_reverse_geocoder,
+    issue_location_confirmation,
+    resolve_gps,
+    resolve_ip,
+    verify_location_confirmation,
+)
+from personalization_events import (
+    PERSONALIZATION_CONTEXTS,
+    PERSONALIZATION_EVENT_TYPES,
+    PersonalizationEventError,
+    read_legacy_events_if_allowed,
+    read_personalization_events,
+    record_recommendation_reset,
+    write_personalization_event,
+)
 
 if __package__:
     from .ai_disclosure import load_ai_disclosure
@@ -60,6 +104,7 @@ if __package__:
         schedule_stop_order,
     )
     from .media_policy import is_renderable_entity_descriptor
+    from .trust_policy import build_explanation, derive_freshness, derive_source_tier
 else:
     from ai_disclosure import load_ai_disclosure
     from image_descriptor import describe_entity_images, describe_review_image
@@ -82,6 +127,7 @@ else:
         schedule_stop_order,
     )
     from media_policy import is_renderable_entity_descriptor
+    from trust_policy import build_explanation, derive_freshness, derive_source_tier
 
 if __package__:
     from .index_policy import (
@@ -117,6 +163,15 @@ def _err(status_code: int, detail: str, **extra) -> JSONResponse:
     body: dict = {"detail": detail}
     body.update(extra)
     return JSONResponse(status_code=status_code, content=body)
+
+
+def _rollout_enabled(name: str) -> bool:
+    return getattr(settings, name, False) is True
+
+
+def _require_rollout(name: str) -> None:
+    if not _rollout_enabled(name):
+        raise HTTPException(404, "Not found")
 
 
 from collections import OrderedDict
@@ -269,17 +324,11 @@ def _build_source_freshness(entity: dict) -> dict:
     verified_at = canonical_verified_at(entity)
     days_since_update = _days_since(updated_at)
     days_since_verified = _days_since(verified_at)
-    if days_since_verified is None:
-        status = "unknown"
-    elif days_since_verified <= 90:
-        status = "fresh"
-    elif days_since_verified <= 180:
-        status = "aging"
-    else:
-        status = "stale"
+    status = derive_freshness({"verified_at": verified_at})
     return {
         "source_title": src.get("title") or None,
         "source_url": src.get("url") or None,
+        "source_tier": derive_source_tier(entity),
         "updated_at": updated_at,
         "verified_at": verified_at,
         "days_since_update": days_since_update,
@@ -328,7 +377,6 @@ def invalidate_place_cache():
 # admin xem qua /admin/reports để xử lý (takedown/sửa). KHÔNG dùng DB/dịch vụ trả phí.
 REPORTS_FILE = Path(__file__).resolve().parent / "data" / "reports.jsonl"
 SEARCH_LOG_FILE = Path(__file__).resolve().parent / "data" / "search_queries.jsonl"
-USER_EVENTS_FILE = Path(__file__).resolve().parent / "data" / "user_events.jsonl"
 _VALID_TARGET_TYPES = {"facility", "entity", "post", "comment", "other"}
 
 _JSONL_MAX_LINES = 5000
@@ -371,11 +419,8 @@ def _log_search_query(q: str, entity_type: str | None, area: str | None, total: 
         logger.debug("search log write failed", exc_info=True)
 
 
-_VALID_USER_EVENT_TYPES = {
-    "entity_view", "search", "save_add", "save_remove", "visit_mark",
-    "community_view", "post_view", "map_focus", "itinerary_view",
-}
-_VALID_RECOMMENDATION_CONTEXTS = {"home", "entity", "search", "saved", "map", "itinerary", "community"}
+_VALID_USER_EVENT_TYPES = PERSONALIZATION_EVENT_TYPES
+_VALID_RECOMMENDATION_CONTEXTS = PERSONALIZATION_CONTEXTS - {"unknown"}
 _EVENT_WEIGHTS = {
     "save_add": 5.0,
     "visit_mark": 4.0,
@@ -387,6 +432,7 @@ _EVENT_WEIGHTS = {
     "post_view": 1.0,
     "save_remove": -2.0,
 }
+_EXPLICIT_INTEREST_BASE_SCORE = 1_000_000.0
 _INTEREST_RULES: dict[str, dict[str, Any]] = {
     "food": {
         "label": "Ẩm thực",
@@ -421,15 +467,51 @@ _INTEREST_RULES: dict[str, dict[str, Any]] = {
 }
 
 
+PreferenceInterest = Annotated[str, Field(max_length=64)]
+
+
 class UserEventIn(BaseModel):
-    event_type: str = Field(max_length=40)
-    context: Optional[str] = Field(None, max_length=40)
+    model_config = ConfigDict(extra="ignore")
+
+    event_type: str = Field(max_length=64)
+    context: Optional[str] = Field(None, max_length=64)
     entity_id: Optional[str] = Field(None, max_length=200)
-    entity_type: Optional[str] = Field(None, max_length=60)
-    entity_name: Optional[str] = Field(None, max_length=300)
-    area: Optional[str] = Field(None, max_length=120)
-    query: Optional[str] = Field(None, max_length=200)
-    metadata: dict[str, Any] = Field(default_factory=dict)
+    entity_type: Optional[str] = Field(None, max_length=64)
+    area_id: Optional[str] = Field(None, max_length=200)
+    interest_keys: list[PreferenceInterest] = Field(default_factory=list, max_length=12)
+
+
+PreferenceTimestamp = Annotated[
+    str, Field(max_length=MAX_RECOMMENDATION_RESET_AT_LENGTH)
+]
+
+
+class PreferencePatchIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    revision: StrictInt = Field(ge=0, le=MAX_PREFERENCE_REVISION)
+    region_id: Optional[str] = Field(None, max_length=128)
+    region_label: Optional[str] = Field(None, max_length=160)
+    region_scope: Optional[str] = Field(None, max_length=16)
+    location_source: Optional[str] = Field(None, max_length=16)
+    location_accuracy: Optional[str] = Field(None, max_length=16)
+    location_consent_state: Optional[str] = Field(None, max_length=16)
+    location_enabled: Optional[StrictBool] = None
+    personalization_enabled: Optional[StrictBool] = None
+    explicit_interests: Optional[list[PreferenceInterest]] = Field(
+        None, max_length=12
+    )
+    recommendation_reset_at: PreferenceTimestamp | None = None
+    consent_version: Optional[str] = Field(None, max_length=64)
+    location_confirmation_token: Optional[str] = Field(None, max_length=2048)
+
+
+class LocationResolveIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    mode: Literal["gps", "ip"]
+    latitude: StrictFloat | StrictInt | None = None
+    longitude: StrictFloat | StrictInt | None = None
 
 
 def _fold_text(value: Any) -> str:
@@ -447,25 +529,6 @@ def _clean_short_text(value: Any, max_len: int = 200) -> str | None:
     if not text:
         return None
     return text[:max_len]
-
-
-def _safe_event_metadata(value: Any) -> dict[str, Any]:
-    if not isinstance(value, dict):
-        return {}
-    out: dict[str, Any] = {}
-    for key, raw in list(value.items())[:12]:
-        k = _clean_short_text(key, 50)
-        if not k or k.startswith("__"):
-            continue
-        if isinstance(raw, (str, int, float, bool)) or raw is None:
-            out[k] = raw if not isinstance(raw, str) else raw[:300]
-        elif isinstance(raw, (list, tuple)):
-            out[k] = [str(x)[:120] for x in raw[:8]]
-        elif isinstance(raw, dict):
-            out[k] = {str(sk)[:50]: str(sv)[:120] for sk, sv in list(raw.items())[:8]}
-        else:
-            out[k] = str(raw)[:120]
-    return out
 
 
 def _entity_area(entity: dict | None) -> str:
@@ -506,56 +569,23 @@ def _label_for_interest(key: str) -> str:
     return str(rule.get("label") or key)
 
 
-def _log_user_event(user_id: str, body: UserEventIn, request: Request) -> None:
-    record = {
-        "ts": datetime.now(timezone.utc).isoformat(),
-        "user_id": str(user_id),
-        "event_type": body.event_type,
-        "context": body.context,
-        "entity_id": body.entity_id,
-        "entity_type": body.entity_type,
-        "entity_name": body.entity_name,
-        "area": body.area,
-        "query": body.query,
-        "metadata": _safe_event_metadata(body.metadata),
-        "ip_hash": hashlib.sha256(get_client_ip(request).encode("utf-8")).hexdigest()[:16],
-    }
-    with _jsonl_lock:
-        USER_EVENTS_FILE.parent.mkdir(exist_ok=True)
-        with open(USER_EVENTS_FILE, "a", encoding="utf-8") as f:
-            f.write(json.dumps(record, ensure_ascii=False) + "\n")
-        _maybe_rotate_jsonl(USER_EVENTS_FILE)
-
-
-def _read_user_events(user_id: str, limit: int = 300) -> list[dict]:
-    try:
-        if not USER_EVENTS_FILE.exists():
-            return []
-        rows: list[dict] = []
-        for line in reversed(USER_EVENTS_FILE.read_text(encoding="utf-8").splitlines()):
-            if not line.strip():
-                continue
-            try:
-                item = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            if str(item.get("user_id")) != str(user_id):
-                continue
-            rows.append(item)
-            if len(rows) >= limit:
-                break
-        return rows
-    except Exception:
-        logger.debug("user event read failed", exc_info=True)
-        return []
-
-
-def _load_user_signal_entities(user_id: str, limit: int = 80) -> list[tuple[dict, str]]:
+def _load_user_signal_entities(
+    user_id: str, cutoff: datetime | None = None, limit: int = 80
+) -> list[tuple[dict, str]]:
     if not db._use_pg:
         return []
     ph = db._ph
     uid = str(user_id)
     signals: list[tuple[dict, str]] = []
+    saved_cutoff = f" AND s.created_at > {ph}" if cutoff is not None else ""
+    visit_cutoff = f" AND v.created_at > {ph}" if cutoff is not None else ""
+    saved_params: list[Any] = [uid]
+    visit_params: list[Any] = [uid]
+    if cutoff is not None:
+        saved_params.append(cutoff)
+        visit_params.append(cutoff)
+    saved_params.append(limit // 2)
+    visit_params.append(limit // 2)
     try:
         with db._conn() as conn:
             saved_rows = db._fetchall(conn, f"""
@@ -564,18 +594,20 @@ def _load_user_signal_entities(user_id: str, limit: int = 80) -> list[tuple[dict
                 WHERE s.user_id = {ph}::uuid
                   AND COALESCE(e.status, '') != 'provisional'
                   AND (e.verified IS NULL OR e.verified != 0)
+                  {saved_cutoff}
                 ORDER BY s.created_at DESC
                 LIMIT {ph}
-            """, (uid, limit // 2))
+            """, saved_params)
             visit_rows = db._fetchall(conn, f"""
                 SELECT e.* FROM user_visits v
                 JOIN entities e ON e.id = v.entity_id
                 WHERE v.user_id = {ph}::uuid
                   AND COALESCE(e.status, '') != 'provisional'
                   AND (e.verified IS NULL OR e.verified != 0)
+                  {visit_cutoff}
                 ORDER BY v.created_at DESC
                 LIMIT {ph}
-            """, (uid, limit // 2))
+            """, visit_params)
         for row in saved_rows:
             ent = db._parse_entity(row)
             if ent and _is_public(ent):
@@ -626,10 +658,12 @@ def _apply_event_fallback(acc: "_InterestAccumulator", event: dict, weight: floa
     entity_type = _clean_short_text(event.get("entity_type"), 60)
     if entity_type:
         acc.type_scores[entity_type] += weight
-    if area := _clean_short_text(event.get("area"), 120):
+    if area := _clean_short_text(event.get("area_id"), 200):
         acc.area_scores[area] += weight
-    text = " ".join(str(event.get(k) or "") for k in ("entity_name", "query", "context"))
-    acc.interest_scores.update({k: v * weight for k, v in _interest_hits_from_text(text, entity_type).items()})
+    for key in event.get("interest_keys") or []:
+        normalized = _clean_short_text(key, 64)
+        if normalized:
+            acc.interest_scores[normalized] += weight
 
 
 def _apply_events_to_profile(acc: "_InterestAccumulator", events: list[dict], event_entities: dict) -> None:
@@ -638,23 +672,31 @@ def _apply_events_to_profile(acc: "_InterestAccumulator", events: list[dict], ev
         weight = float(_EVENT_WEIGHTS.get(etype, 1.0))
         if weight == 0:
             continue
+        for key in event.get("interest_keys") or []:
+            normalized = _clean_short_text(key, 64)
+            if normalized:
+                acc.interest_scores[normalized] += weight
         entity_id = str(event.get("entity_id") or "")
         entity = event_entities.get(entity_id) if entity_id else None
         if entity and _is_public(entity):
             _apply_event_entity(acc, entity, entity_id, weight)
         else:
-            _apply_event_fallback(acc, event, weight)
+            fallback = dict(event)
+            fallback["interest_keys"] = []
+            _apply_event_fallback(acc, fallback, weight)
         if len(acc.recent_intents) < 8:
             acc.recent_intents.append({
                 "event_type": etype,
                 "context": event.get("context"),
                 "entity_id": entity_id or None,
-                "query": event.get("query"),
+                "interest_keys": list(event.get("interest_keys") or [])[:12],
             })
 
 
-def _apply_signals_to_profile(acc: "_InterestAccumulator", user_id: str) -> None:
-    for entity, source in _load_user_signal_entities(user_id):
+def _apply_signals_to_profile(
+    acc: "_InterestAccumulator", user_id: str, cutoff: datetime | None
+) -> None:
+    for entity, source in _load_user_signal_entities(user_id, cutoff=cutoff):
         weight = 5.0 if source == "saved" else 4.0
         acc.type_scores[str(entity.get("type") or "")] += weight
         if area := _entity_area(entity):
@@ -675,15 +717,84 @@ def _apply_query_and_context(acc: "_InterestAccumulator", query: str | None, con
         acc.interest_scores.update({k: v * 1.5 for k, v in _interest_hits_from_entity(context_entity).items()})
 
 
+def _apply_preference_profile(
+    acc: "_InterestAccumulator", preferences: dict, *, include_interests: bool
+) -> int:
+    signal_count = 0
+    source = preferences.get("location_source")
+    location_allowed = source == "manual" or (
+        source in {"gps", "ip"} and preferences.get("location_enabled") is True
+    )
+    if location_allowed:
+        region = preferences.get("region_id") or preferences.get("region_label")
+        if region:
+            acc.area_scores[str(region)] += 50.0
+            signal_count += 1
+    if include_interests:
+        for index, key in enumerate(preferences.get("explicit_interests") or []):
+            normalized = _clean_short_text(key, 64)
+            if normalized:
+                acc.interest_scores[normalized] += (
+                    _EXPLICIT_INTEREST_BASE_SCORE - index
+                )
+                signal_count += 1
+    return signal_count
+
+
 def _build_user_interest_profile(user_id: str, query: str | None = None, context_entity: dict | None = None) -> dict:
     acc = _InterestAccumulator()
-    events = _read_user_events(user_id)
+    if not _rollout_enabled("PREFERENCE_PROFILE_V1"):
+        _apply_query_and_context(acc, query, context_entity)
+        labels = {key: _label_for_interest(key) for key in _INTEREST_RULES}
+        return {
+            "interests": _top_counter(acc.interest_scores, labels=labels),
+            "areas": _top_counter(acc.area_scores),
+            "types": _top_counter(acc.type_scores),
+            "interest_scores": dict(acc.interest_scores),
+            "area_scores": dict(acc.area_scores),
+            "type_scores": dict(acc.type_scores),
+            "recent_entity_ids": [],
+            "recent_intents": [],
+            "confidence": 0.0,
+            "signal_count": 0,
+            "personalization_enabled": False,
+            "explicit_interests": [],
+            "preference_snapshot": None,
+        }
+    preferences = _public_snapshot(load_preferences(user_id))
+    personalization_enabled = preferences.get("personalization_enabled") is True
+    preference_signal_count = _apply_preference_profile(
+        acc, preferences, include_interests=personalization_enabled
+    )
+    if not personalization_enabled:
+        return {
+            "interests": [],
+            "areas": _top_counter(acc.area_scores),
+            "types": [],
+            "interest_scores": {},
+            "area_scores": dict(acc.area_scores),
+            "type_scores": {},
+            "recent_entity_ids": [],
+            "recent_intents": [],
+            "confidence": round(min(1.0, preference_signal_count / 20), 2),
+            "signal_count": preference_signal_count,
+            "personalization_enabled": False,
+            "explicit_interests": [],
+            "preference_snapshot": preferences,
+        }
+
+    cutoff = recommendation_cutoff(preferences)
+    events = read_personalization_events(user_id, cutoff=cutoff)
+    legacy = read_legacy_events_if_allowed(
+        user_id, cutoff=cutoff, now=datetime.now(timezone.utc)
+    )
+    events = (events + legacy)[:300]
 
     event_entity_ids = [str(e.get("entity_id")) for e in events if e.get("entity_id")]
     event_entities = db.get_entities_batch(event_entity_ids[:80]) if event_entity_ids else {}
 
     _apply_events_to_profile(acc, events, event_entities)
-    _apply_signals_to_profile(acc, user_id)
+    _apply_signals_to_profile(acc, user_id, cutoff)
     _apply_query_and_context(acc, query, context_entity)
 
     interest_scores = acc.interest_scores
@@ -691,7 +802,7 @@ def _build_user_interest_profile(user_id: str, query: str | None = None, context
     area_scores = acc.area_scores
     recent_entity_ids = acc.recent_entity_ids
     recent_intents = acc.recent_intents
-    signal_count = len(events) + len(recent_entity_ids)
+    signal_count = preference_signal_count + len(events) + len(recent_entity_ids)
     labels = {key: _label_for_interest(key) for key in _INTEREST_RULES}
     return {
         "interests": _top_counter(interest_scores, labels=labels),
@@ -704,6 +815,9 @@ def _build_user_interest_profile(user_id: str, query: str | None = None, context
         "recent_intents": recent_intents,
         "confidence": round(min(1.0, signal_count / 20), 2),
         "signal_count": signal_count,
+        "personalization_enabled": True,
+        "explicit_interests": list(preferences.get("explicit_interests") or []),
+        "preference_snapshot": preferences,
     }
 
 
@@ -723,9 +837,38 @@ def _profile_next_actions(profile: dict) -> list[dict]:
     return actions[:3]
 
 
-def _candidate_card(entity: dict, reasons: list[str]) -> dict:
+def _project_public_profile_entries(items: object) -> list[dict[str, str]]:
+    projected: list[dict[str, str]] = []
+    if not isinstance(items, list):
+        return projected
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        key = item.get("key")
+        if not isinstance(key, str) or not key:
+            continue
+        entry = {"key": key}
+        label = item.get("label")
+        if isinstance(label, str) and label:
+            entry["label"] = label
+        projected.append(entry)
+    return projected
+
+
+def _project_public_next_actions(profile: dict) -> list[dict[str, str]]:
+    return [
+        {"label": action["label"], "to": action["to"]}
+        for action in _profile_next_actions(profile)
+        if isinstance(action.get("label"), str) and isinstance(action.get("to"), str)
+    ]
+
+
+def _candidate_card(
+    entity: dict, reasons: list[str], preference_snapshot: dict | None = None
+) -> dict:
     projected = _project_public_entity_media(entity, limit=2)
-    return {
+    reason_vi = reasons[0] if reasons else ""
+    card = {
         "id": projected.get("id"),
         "name": projected.get("name", ""),
         "type": projected.get("type", ""),
@@ -739,20 +882,42 @@ def _candidate_card(entity: dict, reasons: list[str]) -> dict:
             "review_count": (entity.get("attributes") or {}).get("review_count"),
         },
         "recommendation_reasons": reasons[:2],
-        "quality_score": entity_quality(entity),
+        "reason_vi": reason_vi,
     }
+    if _rollout_enabled("RECOMMENDATION_EXPLANATIONS_V1"):
+        card["explanation"] = build_explanation(
+            entity, reasons, preference_snapshot
+        )
+    if _rollout_enabled("TRUST_DRAWER_V1"):
+        card["source_tier"] = derive_source_tier(entity)
+        card["freshness_status"] = derive_freshness(entity)
+    return card
 
 
 def _score_interest_hits(entity: dict, profile: dict, reasons: list[str]) -> float:
     score = 0.0
     hits = _interest_hits_from_entity(entity)
+    explicit_keys = [str(key) for key in profile.get("explicit_interests") or []]
+    explicit_set = set(explicit_keys)
+    matched_explicit: set[str] = set()
+    inferred_match = False
     for key, hit_score in hits.items():
         pref = float(profile.get("interest_scores", {}).get(key, 0) or 0)
         if pref > 0 and hit_score > 0:
-            score += min(pref * 0.8 + hit_score, 20)
-            label = _label_for_interest(key)
-            if label and len(reasons) < 2:
-                reasons.append(f"Khớp sở thích {label.lower()}")
+            contribution = min(pref * 0.8 + hit_score, 20)
+            if key in explicit_set:
+                # Explicit preference intent must dominate any number of inferred hits.
+                score += _EXPLICIT_INTEREST_BASE_SCORE + contribution
+                matched_explicit.add(key)
+            else:
+                score += contribution
+                inferred_match = True
+    for key in reversed([key for key in explicit_keys if key in matched_explicit]):
+        label = _label_for_interest(key)
+        if label:
+            reasons.insert(0, f"Khớp sở thích {str(label).lower()}")
+    if inferred_match and len(reasons) < 2:
+        reasons.append("Hợp với nội dung bạn quan tâm")
     return score
 
 
@@ -829,6 +994,13 @@ def _add_profile_type_candidates(candidates: dict[str, dict], profile: dict, ent
             for area in top_areas:
                 _add_candidates(candidates, db.search_entities(entity_type=entity_type, area=area, limit=30, public_only=True), entity_id)
         _add_candidates(candidates, db.list_entities(entity_type=entity_type, limit=40, public_only=True, sort="rating"), entity_id)
+    if top_areas and not top_types:
+        for area in top_areas:
+            _add_candidates(
+                candidates,
+                db.search_entities(area=area, limit=40, public_only=True),
+                entity_id,
+            )
 
 
 def _gather_recommendation_candidates(profile: dict, current: dict | None, entity_id: str | None, query: str) -> dict[str, dict]:
@@ -852,11 +1024,18 @@ def _gather_recommendation_candidates(profile: dict, current: dict | None, entit
 def _contextual_recommendations(user_id: str, context: str, entity_id: str | None, query: str, limit: int) -> dict:
     current = _get_public_entity(entity_id) if entity_id else None
     profile = _build_user_interest_profile(user_id, query=query, context_entity=current)
-    candidates = _gather_recommendation_candidates(profile, current, entity_id, query)
+    personalized = profile.get("personalization_enabled") is True
+    scoring_current = current if personalized else None
+    scoring_query = query if personalized else ""
+    candidates = _gather_recommendation_candidates(
+        profile, scoring_current, entity_id, scoring_query
+    )
 
     scored = []
     for entity in candidates.values():
-        score, reasons = _score_candidate(entity, profile, context, current, query)
+        score, reasons = _score_candidate(
+            entity, profile, context, scoring_current, scoring_query
+        )
         if not reasons:
             reasons = ["Được cộng đồng quan tâm"]
         scored.append((score, entity, reasons))
@@ -865,19 +1044,239 @@ def _contextual_recommendations(user_id: str, context: str, entity_id: str | Non
     selected = [entity for _, entity, _ in scored[:limit]]
     if selected:
         _enrich_place(selected)
-    items = [_candidate_card(entity, reasons) for _, entity, reasons in scored[:limit]]
+    preference_snapshot = profile.get("preference_snapshot")
+    items = [
+        _candidate_card(entity, reasons, preference_snapshot)
+        for _, entity, reasons in scored[:limit]
+    ]
     return {
         "context": context,
         "items": items,
         "reasons": {item["id"]: item.get("recommendation_reasons", []) for item in items if item.get("id")},
         "profile": {
-            "interests": profile.get("interests", []),
-            "areas": profile.get("areas", []),
-            "types": profile.get("types", []),
-            "confidence": profile.get("confidence", 0),
+            "interests": _project_public_profile_entries(profile.get("interests")),
+            "areas": _project_public_profile_entries(profile.get("areas")),
+            "types": _project_public_profile_entries(profile.get("types")),
             "signal_count": profile.get("signal_count", 0),
         },
     }
+
+
+PREFERENCE_READ_RATE_LIMIT = 120
+PREFERENCE_PATCH_RATE_LIMIT = 30
+LOCATION_RESOLVE_RATE_LIMIT = 30
+RECOMMENDATION_RESET_RATE_LIMIT = 5
+
+
+@router.get(
+    "/me/preferences",
+    summary="Get current user preferences",
+    # §1.3: route đòi đăng nhập PHẢI khai require_pg. Không có nó, chạy trên SQLite
+    # sẽ nổ 500 lúc truy vấn bảng users thay vì trả 503 rõ ràng. Nhánh NP-1 thiếu
+    # cả 5 route này; test hợp đồng tests/test_api_surface_contract.py bắt được.
+    dependencies=[Depends(require_pg)],
+    description="Returns the authenticated user's privacy-safe preference snapshot.",
+)
+async def get_my_preferences(response: Response, user=Depends(require_user)):
+    from ratelimit import check_rate
+
+    _require_rollout("PREFERENCE_PROFILE_V1")
+    owner = str(user["id"])
+    check_rate(
+        f"preferences-read:{owner}",
+        PREFERENCE_READ_RATE_LIMIT,
+        300,
+        "Too many preference requests",
+    )
+    response.headers["Cache-Control"] = "no-store"
+    return _public_snapshot(await asyncio.to_thread(load_preferences, owner))
+
+
+@router.patch(
+    "/me/preferences",
+    summary="Update current user preferences",
+    # §1.3: route đòi đăng nhập PHẢI khai require_pg. Không có nó, chạy trên SQLite
+    # sẽ nổ 500 lúc truy vấn bảng users thay vì trả 503 rõ ràng. Nhánh NP-1 thiếu
+    # cả 5 route này; test hợp đồng tests/test_api_surface_contract.py bắt được.
+    dependencies=[Depends(require_pg)],
+    description="Applies a bounded optimistic preference patch and records consent changes atomically.",
+)
+async def update_my_preferences(
+    response: Response,
+    body: Any = Body(...),
+    user=Depends(require_user),
+    _csrf=Depends(require_csrf),
+):
+    from ratelimit import check_rate
+
+    _require_rollout("PREFERENCE_PROFILE_V1")
+    owner = str(user["id"])
+    check_rate(
+        f"preferences-patch:{owner}",
+        PREFERENCE_PATCH_RATE_LIMIT,
+        300,
+        "Too many preference updates",
+    )
+    try:
+        validated = PreferencePatchIn.model_validate(body)
+    except ValidationError:
+        raise HTTPException(422, "Invalid preference patch") from None
+    values = validated.model_dump(exclude_unset=True)
+    expected_revision = values.pop("revision")
+    confirmation_token = values.pop("location_confirmation_token", None)
+    try:
+        confirmation = (
+            verify_location_confirmation(confirmation_token, owner)
+            if confirmation_token is not None
+            else None
+        )
+        if (
+            confirmation is not None
+            and confirmation.preference_revision != expected_revision
+        ):
+            current = await asyncio.to_thread(load_preferences, owner)
+            return JSONResponse(
+                status_code=409,
+                content=jsonable_encoder(current),
+                headers={"Cache-Control": "no-store"},
+            )
+        confirmed_location = (
+            confirmation.resolution if confirmation is not None else None
+        )
+        snapshot = await asyncio.to_thread(
+            patch_preferences_with_consents,
+            owner,
+            values,
+            expected_revision,
+            confirmed_location=confirmed_location,
+        )
+    except PreferenceRevisionConflict:
+        current = await asyncio.to_thread(load_preferences, owner)
+        return JSONResponse(
+            status_code=409,
+            content=jsonable_encoder(_public_snapshot(current)),
+            headers={"Cache-Control": "no-store"},
+        )
+    except (LocationConfirmationError, PreferenceValidationError):
+        raise HTTPException(422, "Invalid preference patch") from None
+    response.headers["Cache-Control"] = "no-store"
+    return _public_snapshot(snapshot)
+
+
+@router.get(
+    "/me/preferences/consents",
+    summary="Get current user preference consent history",
+    # §1.3: route đòi đăng nhập PHẢI khai require_pg. Không có nó, chạy trên SQLite
+    # sẽ nổ 500 lúc truy vấn bảng users thay vì trả 503 rõ ràng. Nhánh NP-1 thiếu
+    # cả 5 route này; test hợp đồng tests/test_api_surface_contract.py bắt được.
+    dependencies=[Depends(require_pg)],
+    description="Returns bounded consent decisions without IP or location coordinates.",
+)
+async def get_my_preference_consents(
+    response: Response, user=Depends(require_user)
+):
+    from ratelimit import check_rate
+
+    _require_rollout("PREFERENCE_PROFILE_V1")
+    owner = str(user["id"])
+    check_rate(
+        f"preferences-consents:{owner}",
+        PREFERENCE_READ_RATE_LIMIT,
+        300,
+        "Too many preference requests",
+    )
+    response.headers["Cache-Control"] = "no-store"
+    consents = await asyncio.to_thread(load_preference_consents, owner)
+    return {"consents": consents}
+
+
+@router.post(
+    "/me/recommendations/reset",
+    summary="Reset recommendation history",
+    # §1.3: route đòi đăng nhập PHẢI khai require_pg. Không có nó, chạy trên SQLite
+    # sẽ nổ 500 lúc truy vấn bảng users thay vì trả 503 rõ ràng. Nhánh NP-1 thiếu
+    # cả 5 route này; test hợp đồng tests/test_api_surface_contract.py bắt được.
+    dependencies=[Depends(require_pg)],
+    description="Advances the recommendation cutoff without deleting workspace data.",
+)
+async def reset_my_recommendations(
+    response: Response,
+    user=Depends(require_user),
+    _csrf=Depends(require_csrf),
+):
+    from ratelimit import check_rate
+
+    _require_rollout("PREFERENCE_PROFILE_V1")
+    owner = str(user["id"])
+    check_rate(
+        f"recommendations-reset:{owner}",
+        RECOMMENDATION_RESET_RATE_LIMIT,
+        3600,
+        "Too many recommendation resets",
+    )
+    snapshot = await asyncio.to_thread(record_recommendation_reset, owner)
+    response.headers["Cache-Control"] = "no-store"
+    return _public_snapshot(snapshot)
+
+
+@router.post(
+    "/me/location/resolve",
+    summary="Resolve current user location",
+    # §1.3: route đòi đăng nhập PHẢI khai require_pg. Không có nó, chạy trên SQLite
+    # sẽ nổ 500 lúc truy vấn bảng users thay vì trả 503 rõ ràng. Nhánh NP-1 thiếu
+    # cả 5 route này; test hợp đồng tests/test_api_surface_contract.py bắt được.
+    dependencies=[Depends(require_pg)],
+    description="Returns a transient normalized region suggestion without persisting it.",
+)
+async def resolve_my_location(
+    request: Request,
+    response: Response,
+    user=Depends(require_user),
+    _csrf=Depends(require_csrf),
+    reverse_geocoder: ReverseGeocoder = Depends(get_reverse_geocoder),
+    ip_geocoder: IpGeocoder = Depends(get_ip_geocoder),
+):
+    from ratelimit import check_rate
+
+    _require_rollout("LOCATION_RESOLVER_V1")
+    owner = str(user["id"])
+    check_rate(
+        f"location-resolve:{owner}",
+        LOCATION_RESOLVE_RATE_LIMIT,
+        300,
+        "Too many location resolution requests",
+    )
+    try:
+        body = await request.json()
+        validated = LocationResolveIn.model_validate(body)
+        if validated.mode == "gps":
+            if validated.latitude is None or validated.longitude is None:
+                raise LocationInputError("Invalid location input")
+            resolution = await asyncio.to_thread(
+                resolve_gps,
+                validated.latitude,
+                validated.longitude,
+                reverse_geocoder,
+            )
+        else:
+            if validated.latitude is not None or validated.longitude is not None:
+                raise LocationInputError("Invalid location input")
+            resolution = await asyncio.to_thread(
+                resolve_ip,
+                get_client_ip(request),
+                ip_geocoder,
+            )
+    except (LocationInputError, ValidationError, ValueError):
+        raise HTTPException(422, "Invalid location input") from None
+    response.headers["Cache-Control"] = "no-store"
+    payload = asdict(resolution)
+    preferences = await asyncio.to_thread(load_preferences, owner)
+    confirmation_token = issue_location_confirmation(
+        resolution, owner, preferences["revision"]
+    )
+    if confirmation_token is not None:
+        payload["confirmation_token"] = confirmation_token
+    return payload
 
 
 @router.post("/me/events",
@@ -885,11 +1284,30 @@ def _contextual_recommendations(user_id: str, context: str, entity_id: str | Non
              dependencies=[Depends(require_pg)],
              summary="Track a user experience event",
              description="Stores a bounded first-party event for personalized recommendations. Requires login and CSRF.")
-async def track_user_event(body: UserEventIn, request: Request, user=Depends(require_user), _csrf=Depends(require_csrf)):
+async def track_user_event(
+    body: UserEventIn,
+    request: Request,
+    response: Response,
+    user=Depends(require_user),
+    _csrf=Depends(require_csrf),
+):
     """Ghi nhận một sự kiện trải nghiệm của user đang đăng nhập vào log sự kiện (HTTP 202).
 
     event_type ngoài danh sách trắng → 400; các trường text bị cắt ngắn; giới hạn 120 sự
     kiện/300 giây mỗi user. Bản ghi lưu hash IP rút gọn, không lưu IP thô.
+
+    HỢP TỪ HAI NHÁNH. Cả `main` lẫn `codex/np1-identity-location-trust` đều định nghĩa
+    hàm này và bản union thô để lọt hai `async def` trùng tên — bản sau âm thầm thắng,
+    tức toàn bộ khâu làm sạch của main biến mất. Ruff F811 bắt được.
+
+    NP-1 **thay hẳn kho lưu**: bỏ log JSONL trên đĩa (`USER_EVENTS_FILE`,
+    `_log_user_event`, `_read_user_events`, `_safe_event_metadata` — nhánh xoá cả bốn)
+    sang bảng Postgres qua `write_personalization_event`. Giữ hướng đó, đúng §1.1
+    (DB là nguồn sự thật). KHÔNG ghi kép: file JSONL đã bị khai tử có chủ đích.
+
+    Nhưng giữ lại khâu LÀM SẠCH của main, thứ bản NP-1 không có: lọc trắng
+    `event_type`, cắt ngắn mọi trường text, kiểm `entity_id`. Đây là ranh giới đầu vào,
+    mất nó thì client gửi gì cũng xuống thẳng DB.
     """
     from ratelimit import check_rate
     event_type = (body.event_type or "").strip().lower()
@@ -906,7 +1324,13 @@ async def track_user_event(body: UserEventIn, request: Request, user=Depends(req
     body.area = _clean_short_text(body.area, 120)
     body.query = _clean_short_text(body.query, 200)
     check_rate(f"user-event:{user['id']}", 120, 300, "Too many events")
-    await asyncio.to_thread(_log_user_event, str(user["id"]), body, request)
+    try:
+        await asyncio.to_thread(
+            write_personalization_event, str(user["id"]), body.model_dump()
+        )
+    except PersonalizationEventError:
+        raise HTTPException(422, "Invalid personalization event") from None
+    response.headers["Cache-Control"] = "no-store"
     return {"accepted": True}
 
 
@@ -922,13 +1346,11 @@ async def get_my_insights(response: Response, user=Depends(require_user)):
     response.headers["Cache-Control"] = "no-store"
     profile = await asyncio.to_thread(_build_user_interest_profile, str(user["id"]))
     return {
-        "interests": profile.get("interests", []),
-        "areas": profile.get("areas", []),
-        "types": profile.get("types", []),
-        "recent_intents": profile.get("recent_intents", []),
-        "confidence": profile.get("confidence", 0),
+        "interests": _project_public_profile_entries(profile.get("interests")),
+        "areas": _project_public_profile_entries(profile.get("areas")),
+        "types": _project_public_profile_entries(profile.get("types")),
         "signal_count": profile.get("signal_count", 0),
-        "next_actions": _profile_next_actions(profile),
+        "next_actions": _project_public_next_actions(profile),
     }
 
 
@@ -1073,7 +1495,7 @@ def _entity_card_shape(entity: dict, *, score: float | None = None, reason_vi: s
     projected = _project_public_entity_media(entity, limit=2)
     area = projected.get("place_area") or projected.get("area") or projected.get("legacyArea") or ""
     place = projected.get("place") or projected.get("place_name") or ""
-    return {
+    card = {
         "id": projected.get("id"),
         "name": projected.get("name", ""),
         "type": projected.get("type", ""),
@@ -1086,6 +1508,14 @@ def _entity_card_shape(entity: dict, *, score: float | None = None, reason_vi: s
         "score": round(float(score or 0), 4),
         "reason_vi": reason_vi,
     }
+    if _rollout_enabled("RECOMMENDATION_EXPLANATIONS_V1"):
+        card["explanation"] = build_explanation(
+            entity, [reason_vi] if reason_vi else [], None
+        )
+    if _rollout_enabled("TRUST_DRAWER_V1"):
+        card["source_tier"] = derive_source_tier(entity)
+        card["freshness_status"] = derive_freshness(entity)
+    return card
 
 def _similar_reason_vi(reason: str) -> str:
     raw = str(reason or "")
@@ -1395,7 +1825,8 @@ async def get_entity(
         e["relationships"] = rels
         _enrich_entity_place(e)
         e["quality"] = entity_quality(e)
-        e["source_freshness"] = _build_source_freshness(e)
+        if _rollout_enabled("TRUST_DRAWER_V1"):
+            e["source_freshness"] = _build_source_freshness(e)
         e["practical_facts"] = _build_practical_facts(e)
         return _project_public_entity_media(e)
     entity = await asyncio.to_thread(_query)

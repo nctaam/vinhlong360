@@ -75,7 +75,7 @@ def _column_is_declared(corpus: str, table: str, column: str) -> bool:
     )
 
 
-def test_075_filename_matches_runner_convention_and_is_the_next_prefix():
+def test_075_filename_matches_runner_convention_and_chain_has_no_gap():
     assert MIGRATION.exists()
     match = RUNNER_FILENAME_RE.fullmatch(MIGRATION_NAME)
     assert match, f"{MIGRATION_NAME} không khớp quy ước ^\\d{{3}}_[a-z0-9_]+\\.sql$"
@@ -88,7 +88,11 @@ def test_075_filename_matches_runner_convention_and_is_the_next_prefix():
     )
     assert len(prefixes) == len(set(prefixes)), f"trùng số thứ tự migration: {prefixes}"
     assert prefixes == list(range(prefixes[0], prefixes[-1] + 1)), "chuỗi migration đứt số"
-    assert prefixes[-1] == 75, "075 phải là migration mới nhất"
+    # KHÔNG khẳng định 075 là mới nhất nữa: hợp `codex/np1-identity-location-trust`
+    # vào main thêm 076-078 (ba migration của nhánh đó, đánh số lại từ 071-073 vì
+    # trunk đã dùng ba số ấy cho việc khác). Cái đáng khoá ở đây là chuỗi KHÔNG ĐỨT
+    # SỐ và không trùng số — hai thứ đó mới làm runner chạy sai thứ tự.
+    assert prefixes[-1] >= 75, "075 phải nằm trong chuỗi"
 
 
 def test_075_records_schema_version_75_monotonically():
@@ -164,10 +168,22 @@ def test_075_sets_session_timeouts_on_the_application_role_only_when_allowed():
     assert "lock_timeout" not in EXEC_SQL
 
 
-def test_migration_gate_still_passes_with_075_as_latest():
+def test_migration_gate_still_passes_after_075():
+    """Cổng migration phải sạch, và số mới nhất phải khớp tên file mới nhất.
+
+    Bản đầu ghim `latest == 075`; sau khi hợp NP-1 thì 078 mới là mới nhất. Ghim tên
+    cứng làm test đỏ mỗi lần thêm migration vì một lý do vô nghĩa — nay suy ra từ
+    chính thư mục, và vẫn khoá được điều thật sự quan trọng: gate không có lỗi, và
+    `latest_schema_version` khớp với số trong TÊN file mới nhất (đúng cái bẫy đã sập
+    một lần: đổi tên file mà quên đổi số bên trong file SQL).
+    """
     gate = _load_script("check_migration_gate")
     issues, stats = gate.validate_static(MIGRATIONS)
 
     assert [issue for issue in issues if issue.severity == "error"] == []
-    assert stats["latest"] == MIGRATION_NAME
-    assert stats["latest_schema_version"] == 75
+    newest = max(
+        (path for path in MIGRATIONS.glob("*.sql") if RUNNER_FILENAME_RE.fullmatch(path.name)),
+        key=lambda path: int(RUNNER_FILENAME_RE.fullmatch(path.name).group(1)),
+    )
+    assert stats["latest"] == newest.name
+    assert stats["latest_schema_version"] == int(RUNNER_FILENAME_RE.fullmatch(newest.name).group(1))

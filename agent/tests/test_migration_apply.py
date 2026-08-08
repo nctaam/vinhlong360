@@ -64,6 +64,7 @@ _CORE_TABLES = (
     "trusted_devices", "shared_rate_limits", "request_idempotency_keys",
     "admin_audit_events", "schema_version",
     "feedback_receipts", "feedback_daily_rollups",
+    "personalization_legacy_purge_queue",
 )
 
 
@@ -167,7 +168,7 @@ def test_schema_version_tracks_latest_migration():
     with db._conn() as conn:
         row = db._fetchone(conn, "SELECT version FROM schema_version WHERE component = 'agent'", ())
     assert row is not None
-    assert int(db._row_to_dict(row)["version"]) >= 74  # đã áp tới 074
+    assert int(db._row_to_dict(row)['version']) >= 78  # đã áp tới 078
 
 
 

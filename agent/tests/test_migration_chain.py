@@ -186,7 +186,10 @@ def test_init_sql_contains_final_feedback_schema():
 
 
 def test_database_readiness_requires_erasure_schema_version_74():
-    assert database.PG_REQUIRED_SCHEMA_VERSION == 74
+    # Tên hàm giữ nguyên (74 = mốc erasure) nhưng NGƯỠNG đã tiến: hợp NP-1 vào main
+    # thêm migration 076-078, và code NP-1 đọc user_preferences/consents/events nên
+    # nó thật sự cần cả ba đã chạy. Ngưỡng phải >= 78, không còn dừng ở 74.
+    assert database.PG_REQUIRED_SCHEMA_VERSION == 78
     assert {"feedback_receipts", "feedback_daily_rollups"} <= database.PG_REQUIRED_TABLES
     assert {
         "token_digest",
@@ -269,3 +272,14 @@ def test_074_clears_non_nullable_actor_and_claim_fields_before_scrub():
         assert f"ALTER COLUMN {column} DROP NOT NULL" in normalized, (
             f"074 must make {table}.{column} nullable for exact actor/claim scrubbing"
         )
+def test_073_owns_location_remediation_contract():
+    migration = ROOT / "agent" / "migrations" / "078_location_preference_remediation.sql"
+    sql = migration.read_text(encoding="utf-8")
+
+    assert "location_reconfirm_required" in sql
+    assert "location_provenance_version" in sql
+    assert "location-confirmation" not in sql
+    assert "resolver-v2" in sql
+    # 73 -> 78: migration nay duoc danh so lai khi hop NP-1 vao main (071-073 da bi dung).
+    assert "VALUES ('agent', 78," in sql
+    assert "CREATE TABLE" not in sql

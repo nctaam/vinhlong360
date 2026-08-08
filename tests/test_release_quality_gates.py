@@ -25,8 +25,8 @@ def test_migration_gate_static_contracts_pass_current_repo():
     errors = [issue for issue in issues if issue.severity == "error"]
 
     assert errors == []
-    assert stats["latest"] == "075_hot_path_indexes_and_session_timeouts.sql"
-    assert stats["latest_schema_version"] == 75
+    assert stats["latest"] == "078_location_preference_remediation.sql"
+    assert stats["latest_schema_version"] == 78
 
 def test_shared_rate_limit_and_idempotency_contracts_exist():
     migration = (ROOT / "agent" / "migrations" / "056_shared_rate_idempotency.sql").read_text(encoding="utf-8")
@@ -210,7 +210,7 @@ def test_perf_quality_trend_migration_contracts_exist():
     ):
         assert token in migration
     assert "quality_metric_snapshots" in init_sql
-    assert "PG_REQUIRED_SCHEMA_VERSION = 74" in database
+    assert "PG_REQUIRED_SCHEMA_VERSION = 78" in database
 
 def test_itinerary_areas_schema_migration_contracts_exist():
     migration = (ROOT / "agent" / "migrations" / "058_itinerary_areas_schema.sql").read_text(encoding="utf-8")
@@ -269,7 +269,7 @@ def test_apply_migrations_runner_uses_legacy_baseline_and_latest_plan():
     pending_after_legacy_baseline = [m.path.name for m in migrations if m.version > runner.LEGACY_BASELINE_VERSION]
 
     assert runner.LEGACY_BASELINE_VERSION == 52
-    assert migrations[-1].path.name == "075_hot_path_indexes_and_session_timeouts.sql"
+    assert migrations[-1].path.name == "078_location_preference_remediation.sql"
     assert pending_after_legacy_baseline == [
         "053_saved_kind_superadmin.sql",
         "054_admin_audit_events.sql",
@@ -294,6 +294,9 @@ def test_apply_migrations_runner_uses_legacy_baseline_and_latest_plan():
         "073_account_erasure_state.sql",
         "074_erasure_delete_actions.sql",
         "075_hot_path_indexes_and_session_timeouts.sql",
+        "076_identity_location_preferences.sql",
+        "077_personalization_legacy_purge_queue.sql",
+        "078_location_preference_remediation.sql",
     ]
 
 def test_chrome_smoke_redacts_sensitive_urls():
