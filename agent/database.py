@@ -125,7 +125,6 @@ PG_REQUIRED_COLUMNS = {
         "tool_bucket",
         "positive_count",
         "negative_count",
-        "created_at",
     },
     "user_preferences": {
         "user_id", "region_id", "region_label", "region_scope",

@@ -1914,3 +1914,65 @@ def test_export_all_returns_all_data(db):
     assert len(result["relationships"]) >= 1
     rel = result["relationships"][0]
     assert "from" in rel and "to" in rel and "type" in rel
+
+
+def test_pg_required_columns_only_names_columns_that_really_exist():
+    """Hợp đồng cột KHÔNG được nêu cột không tồn tại trong schema.
+
+    Bài này sinh ra từ một lỗi thật: khi hợp hai nhánh, khối `PG_REQUIRED_COLUMNS`
+    xung đột giữa `feedback_daily_rollups` (phía main) và `user_preferences` (phía
+    NP-1); người gộp thêm một dòng `"created_at",` để nối hai phía rồi đóng ngoặc —
+    nhưng bảng đó không có cột ấy. Hậu quả: MỌI tiến trình nối Postgres tự từ chối
+    khởi động với `schema is not ready ... missing columns`, còn SQLite thì im lặng
+    vì `_verify_pg_schema` chỉ chạy khi `_use_pg`. Không test nào bắt được, chỉ CI
+    trên Postgres thật mới lộ.
+
+    Cách kiểm: gom mọi tên cột xuất hiện trong `init.sql` + `agent/migrations/*.sql`
+    (CREATE TABLE và ALTER TABLE ... ADD COLUMN) rồi đòi hợp đồng là tập con. Cố ý
+    đối chiếu theo TỪNG BẢNG chứ không gộp chung, để không bỏ lọt cột đúng tên nhưng
+    sai bảng.
+    """
+    import re
+
+    root = Path(__file__).resolve().parents[2]
+    declared: dict[str, set[str]] = {}
+    for path in [root / "init.sql", *sorted((root / "agent" / "migrations").glob("*.sql"))]:
+        sql = path.read_text(encoding="utf-8")
+        for block in re.finditer(
+            r"CREATE TABLE(?:\s+IF NOT EXISTS)?\s+(\w+)\s*\((.*?)\n\)\s*;", sql, re.S | re.I
+        ):
+            cols = declared.setdefault(block.group(1).lower(), set())
+            for line in block.group(2).splitlines():
+                name = re.match(r"\s*(\w+)\s+\w", line)
+                if name and name.group(1).upper() not in {
+                    "CONSTRAINT", "PRIMARY", "UNIQUE", "FOREIGN", "CHECK", "EXCLUDE",
+                }:
+                    cols.add(name.group(1).lower())
+        # ALTER TABLE có thể trải NHIỀU DÒNG và mang NHIỀU mệnh đề ADD COLUMN
+        # (ví dụ agent/migrations/078:4-6). Bắt cả câu lệnh tới dấu `;` rồi mới quét
+        # từng mệnh đề — regex một-dòng sẽ báo nhầm là cột không tồn tại.
+        for stmt in re.finditer(
+            r"ALTER TABLE(?:\s+IF EXISTS)?\s+(\w+)(.*?);", sql, re.S | re.I
+        ):
+            table_cols = declared.setdefault(stmt.group(1).lower(), set())
+            for add in re.finditer(
+                r"ADD COLUMN(?:\s+IF NOT EXISTS)?\s+(\w+)", stmt.group(2), re.I
+            ):
+                table_cols.add(add.group(1).lower())
+
+    # Chốt để bài test không tự rỗng nếu regex hỏng.
+    assert len(declared) > 30, f"đọc được quá ít bảng ({len(declared)}) — logic quét hỏng?"
+
+    invented: list[str] = []
+    for table, columns in database_module.PG_REQUIRED_COLUMNS.items():
+        known = declared.get(table.lower())
+        if not known:
+            continue  # bảng do nguồn khác tạo — bài khác lo, không đoán ở đây
+        for column in columns:
+            if column.lower() not in known:
+                invented.append(f"{table}.{column}")
+
+    assert not invented, (
+        "PG_REQUIRED_COLUMNS nêu cột KHÔNG có trong init.sql/migrations — "
+        "Postgres sẽ từ chối khởi động: " + ", ".join(sorted(invented))
+    )
