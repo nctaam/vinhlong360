@@ -62,6 +62,7 @@ describe('public page-state primitives', () => {
     await actions[1]!.trigger('click')
     expect(retry).toHaveBeenCalledWith('directions')
     expect(retry).toHaveBeenCalledOnce()
+    expect(wrapper.emitted('retry')).toBeUndefined()
     expect(actions.every(action => action.attributes('disabled') !== undefined)).toBe(true)
     expect(actions[1]!.text()).toContain('Đang tải lại')
 
@@ -90,12 +91,27 @@ describe('public page-state primitives', () => {
     await action.trigger('click')
     await action.trigger('click')
     expect(retry).toHaveBeenCalledOnce()
+    expect(wrapper.emitted('retry')).toBeUndefined()
     expect(action.attributes('disabled')).toBeDefined()
     pending.resolve()
     await pending.promise
     await vi.waitFor(() => expect(action.attributes('disabled')).toBeUndefined())
     await action.trigger('click')
     expect(retry).toHaveBeenCalledTimes(2)
+  })
+
+  it('does not expose an event-only retry path outside the callback guard', async () => {
+    const eventOnlyRetry = vi.fn(() => Promise.resolve())
+    const wrapper = await mountSuspended(PageState, {
+      props: {
+        state: { kind: 'error', retry: { label: 'Tải lại' } },
+        onRetry: eventOnlyRetry,
+      } as never,
+    })
+    wrappers.push(wrapper)
+
+    expect(wrapper.find('[data-page-state-retry]').exists()).toBe(false)
+    expect(eventOnlyRetry).not.toHaveBeenCalled()
   })
 
   it('renders empty recovery and cached offline content', async () => {

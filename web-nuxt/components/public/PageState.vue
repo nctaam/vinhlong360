@@ -15,7 +15,7 @@
         <IconLine name="alert-triangle" aria-hidden="true" />
         <p class="page-state__copy">Một vài phần chưa tải được. Nội dung còn lại vẫn có thể sử dụng.</p>
       </div>
-      <div v-if="state.failedPanels.length" class="page-state__actions" aria-label="Khôi phục phần chưa tải">
+      <div v-if="retry && state.failedPanels.length" class="page-state__actions" aria-label="Khôi phục phần chưa tải">
         <button v-for="panel in state.failedPanels" :key="panel" type="button" class="page-state__action" data-page-state-retry :data-page-state-panel="panel" :disabled="retryInFlight" :aria-busy="retryInFlight || undefined" @click="retryPanel(panel)">
           {{ retryInFlight ? 'Đang tải lại' : `Tải lại ${panelLabel(panel)}` }}
         </button>
@@ -39,7 +39,7 @@
     <template v-else-if="state.kind === 'error'">
       <p class="page-state__title">{{ title }}</p>
       <p class="page-state__copy">Không thể tải nội dung lúc này.</p>
-      <button type="button" class="page-state__action" data-page-state-retry :disabled="retryInFlight" :aria-busy="retryInFlight || undefined" @click="retryPanel()">{{ retryInFlight ? 'Đang tải lại' : state.retry.label || 'Thử lại' }}</button>
+      <button v-if="retry" type="button" class="page-state__action" data-page-state-retry :disabled="retryInFlight" :aria-busy="retryInFlight || undefined" @click="retryPanel()">{{ retryInFlight ? 'Đang tải lại' : state.retry.label || 'Thử lại' }}</button>
       <div v-if="state.fallback !== undefined" class="page-state__available" data-page-state-available><slot /></div>
     </template>
 
@@ -69,7 +69,7 @@ const props = withDefaults(defineProps<{
   recovery: undefined,
 })
 
-const emit = defineEmits<{ retry: [panel?: string]; recovery: [] }>()
+const emit = defineEmits<{ recovery: [] }>()
 const liveRole = computed(() => props.state.kind === 'error' ? 'alert' : props.state.kind === 'ready' ? undefined : 'status')
 const livePoliteness = computed(() => liveRole.value === 'alert' ? 'assertive' : liveRole.value ? 'polite' : undefined)
 const retryInFlight = ref(false)
@@ -78,9 +78,7 @@ async function retryPanel(panel?: string) {
   if (retryInFlight.value) return
   retryInFlight.value = true
   try {
-    const pendingRetry = props.retry?.(panel)
-    emit('retry', panel)
-    await pendingRetry
+    await props.retry?.(panel)
   } finally {
     retryInFlight.value = false
   }
