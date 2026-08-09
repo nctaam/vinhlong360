@@ -966,3 +966,6 @@ a.thread-author:hover { color: var(--primary-fg); }
   .card, .section, .block, .skeleton-card { page-break-inside: avoid; }
   p, li { orphans: 2; widows: 2; }
 }
+/* The semantic theme marker mirrors the color-mode classes used by legacy CSS. */
+html[data-theme="nocturne"] { color-scheme: dark; }
+html[data-theme="parchment"] { color-scheme: light; }

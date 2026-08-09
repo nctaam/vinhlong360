@@ -90,7 +90,7 @@ function mountDefaultLayout() {
         LazyUserMenu: true,
         SearchAutocomplete: true,
         ShellPublicBottomNav: true,
-        ShellPublicContextBar: true,
+        ShellPublicContextBar: { template: '<div data-public-context-line />' },
       },
     },
   })
@@ -197,8 +197,31 @@ describe('UI foundation shell', () => {
 
     const links = wrapper.findAll('a')
     expect(links).toHaveLength(5)
+    expect(wrapper.findAll('[data-mobile-nav-item]')).toHaveLength(5)
     expect(links.map(link => link.attributes('href'))).toEqual(['/', '/du-lich', '/ban-do', '/cong-dong', '/tai-khoan'])
     expect(links.find(link => link.attributes('href') === '/ban-do')?.attributes('aria-current')).toBe('page')
+  })
+
+  it('keeps context changes on the current route and redacts location coordinates', async () => {
+    const wrapper = await mountSuspended(PublicContextBar, { route: '/ban-do' })
+    wrappers.push(wrapper)
+    const router = (wrapper.vm as unknown as { $router: { currentRoute: { value: { path: string } } } }).$router
+    expect(router.currentRoute.value.path).toBe('/ban-do')
+
+    await wrapper.get('select').setValue('ben-tre')
+
+    expect(router.currentRoute.value.path).toBe('/ban-do')
+    expect(wrapper.get('[data-public-context-line]').attributes('data-location-mode')).toBe('unavailable')
+    expect(wrapper.get('.public-context-current').text()).toContain('Bến Tre')
+    expect(wrapper.html()).not.toMatch(/\b(?:latitude|longitude|lat|lng|coordinates?)\b/i)
+  })
+
+  it('exposes a stable public shell anatomy for public pages', async () => {
+    const wrapper = await mountDefaultLayout()
+    wrappers.push(wrapper)
+
+    expect(wrapper.get('[data-public-shell]').attributes('data-public-shell')).toBe('nocturne')
+    expect(wrapper.findAll('[data-public-context-line]')).toHaveLength(1)
   })
 
   it('restores focus to the public mobile menu trigger after Escape', async () => {

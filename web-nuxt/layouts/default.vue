@@ -1,5 +1,5 @@
 <template>
-  <div class="public-shell">
+  <div class="public-shell" data-public-shell="nocturne">
     <a href="#main-content" class="skip-link">Bỏ qua điều hướng</a>
     <div class="public-shell-chrome" :class="{ scrolled: topbarScrolled }">
       <ShellPublicContextBar />

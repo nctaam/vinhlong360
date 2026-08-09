@@ -5,6 +5,7 @@
       :key="item.to"
       :to="item.to"
       class="public-bottom-nav-item"
+      data-mobile-nav-item
       :class="{ active: isActive(item.to) }"
       :aria-current="isActive(item.to) ? 'page' : undefined"
     >

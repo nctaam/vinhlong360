@@ -1,5 +1,11 @@
 <template>
-  <div class="public-context-bar" role="region" aria-label="Ngữ cảnh khu vực">
+  <div
+    class="public-context-bar"
+    data-public-context-line
+    :data-location-mode="envelope.location.mode"
+    role="region"
+    aria-label="Ngữ cảnh khu vực"
+  >
     <div class="public-context-inner">
       <div class="public-context-copy">
         <IconLine name="locate" aria-hidden="true" />
@@ -26,6 +32,7 @@ import { AREA_META } from '~/composables/useConstants'
 import type { RegionSlug } from '~/composables/useRegionPref'
 
 const { region, setRegion } = useRegionPref()
+const { envelope } = usePublicContextEnvelope()
 const allRegionsSummary = 'Vĩnh Long · Bến Tre · Trà Vinh'
 
 const regionOptions = computed<Array<{ value: RegionSlug; label: string; summary: string }>>(() => [

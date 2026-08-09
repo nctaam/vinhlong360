@@ -6,7 +6,7 @@
       type="button"
       :data-theme-mode="mode.value"
       :aria-pressed="isActive(mode.value)"
-      :aria-label="`${mode.label}: ${mode.description}`"
+      :aria-label="mode.label"
       :title="mode.description"
       @click="selectMode(mode.value, $event)"
     >
@@ -30,6 +30,7 @@ const hydrated = ref(false)
 watch(() => colorMode.preference, (preference) => {
   if (hydrated.value && (preference === 'light' || preference === 'dark')) {
     selectedMode.value = preference
+    setDocumentTheme(preference)
   }
 })
 
@@ -46,6 +47,7 @@ onMounted(() => {
   const initialMode: Mode = bootstrapMode ?? prepaintedMode ?? (colorMode.preference === 'light' ? 'light' : 'dark')
   if (colorMode.preference !== initialMode) colorMode.preference = initialMode
   selectedMode.value = initialMode
+  setDocumentTheme(initialMode)
   hydrated.value = true
 })
 
@@ -56,6 +58,11 @@ function isActive(mode: Mode) {
 function selectMode(mode: Mode, event: MouseEvent) {
   selectedMode.value = mode
   colorMode.preference = mode
+  setDocumentTheme(mode)
   ;(event.currentTarget as HTMLButtonElement).focus()
+}
+
+function setDocumentTheme(mode: Mode) {
+  document.documentElement.dataset.theme = mode === 'light' ? 'parchment' : 'nocturne'
 }
 </script>

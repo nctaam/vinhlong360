@@ -14,6 +14,7 @@ afterEach(() => {
   colorMode.value = 'dark'
   colorMode.preference = 'dark'
   document.documentElement.classList.remove('light', 'dark')
+  delete document.documentElement.dataset.theme
   delete runtimeWindow.__NUXT_COLOR_MODE__
 })
 
@@ -27,6 +28,7 @@ describe('public theme mode control', () => {
     expect(wrapper.get('button[data-theme-mode="light"]').text()).toContain('Nền sáng dễ đọc')
     expect(wrapper.findAll('button')).toHaveLength(2)
     expect(wrapper.get('button[data-theme-mode="dark"]').attributes('aria-pressed')).toBe('true')
+    expect(document.documentElement.dataset.theme).toBe('nocturne')
   })
 
   it('uses Nocturne as the deterministic SSR fallback for unsupported values', async () => {
@@ -40,9 +42,10 @@ describe('public theme mode control', () => {
   it('persists the selected mode through useColorMode and keeps focus', async () => {
     const wrapper = await mountSuspended(ThemeModeControl, { attachTo: document.body })
     wrappers.push(wrapper)
-    const light = wrapper.get<HTMLButtonElement>('button[data-theme-mode="light"]')
+    const light = wrapper.get<HTMLButtonElement>('button[aria-label="Nền sáng dễ đọc"]')
     await light.trigger('click')
     expect(colorMode.preference).toBe('light')
+    expect(document.documentElement.dataset.theme).toBe('parchment')
     expect(document.activeElement).toBe(light.element)
   })
 
