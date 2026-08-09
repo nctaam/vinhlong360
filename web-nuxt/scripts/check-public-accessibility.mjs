@@ -8,6 +8,7 @@ import { gzipSync } from 'node:zlib'
 
 const webRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const previewUrl = 'http://127.0.0.1:4173/'
+const apiFixturePath = '/api/places?limit=1'
 const mainVisibleBudgetMs = 5000
 const lcpBudgetMs = 2500
 const clsBudget = 0.1
@@ -16,6 +17,35 @@ const apiBudgetMs = 1500
 const textScaleTarget = 2
 const axeSourcePath = join(webRoot, 'node_modules', 'axe-core', 'axe.min.js')
 const bundleBudgetPath = resolve(webRoot, '..', 'docs', 'standards', 'bundle-budget.json')
+
+export function measureApiFixtureResources(resources, fixtureUrl) {
+  const matches = resources.filter(entry => entry?.name === fixtureUrl)
+  const durations = matches.map(entry => entry.duration)
+  return {
+    apiObservedCount: matches.length,
+    apiMaxMs: durations.length > 0 && durations.every(Number.isFinite) ? Math.max(...durations) : null,
+  }
+}
+
+export async function fulfillApiFixtureRequest(cdp, paused, fixtureUrl) {
+  const matches = paused?.requestId
+    && paused.request?.method === 'GET'
+    && paused.request.url === fixtureUrl
+  if (!matches) {
+    if (paused?.requestId) {
+      await cdp.send('Fetch.failRequest', { requestId: paused.requestId, errorReason: 'Aborted' })
+    }
+    return false
+  }
+  await cdp.send('Fetch.fulfillRequest', {
+    requestId: paused.requestId,
+    responseCode: 200,
+    responsePhrase: 'OK',
+    responseHeaders: [{ name: 'Content-Type', value: 'application/json; charset=utf-8' }],
+    body: Buffer.from('{"places":[]}', 'utf8').toString('base64'),
+  })
+  return true
+}
 
 export function evaluatePublicAccessibilitySnapshot(snapshot) {
   const reasons = []
@@ -48,8 +78,11 @@ export function evaluatePublicAccessibilitySnapshot(snapshot) {
   if (snapshot.inpAvailable !== true) reasons.push('inp-audit-unavailable')
   if (snapshot.inpEvidence !== 'rendered-interaction') reasons.push('inp-evidence-not-rendered')
   if (Number.isFinite(snapshot.inpMs) && snapshot.inpMs > inpBudgetMs) reasons.push('inp-budget-exceeded')
+  if (snapshot.apiFixtureFulfilled !== true) reasons.push('api-fixture-unavailable')
   if (!Number.isFinite(snapshot.apiObservedCount) || snapshot.apiObservedCount < 1) reasons.push('api-audit-empty')
-  if (Number.isFinite(snapshot.apiMaxMs) && snapshot.apiMaxMs > apiBudgetMs) reasons.push('api-budget-exceeded')
+  if (snapshot.apiObservedCount >= 1 && snapshot.apiResponseSuccessful !== true) reasons.push('api-response-unsuccessful')
+  if (!Number.isFinite(snapshot.apiMaxMs)) reasons.push('api-duration-unavailable')
+  else if (snapshot.apiMaxMs > apiBudgetMs) reasons.push('api-budget-exceeded')
   if (snapshot.bundleAuditAvailable !== true) reasons.push('bundle-audit-unavailable')
   if (snapshot.bundleViolations > 0) reasons.push('bundle-budget-exceeded')
   return reasons
@@ -226,6 +259,29 @@ async function navigateAndWait(cdp, method, params) {
   await load
 }
 
+async function runApiFixtureProbe(cdp) {
+  const fixtureUrl = new URL(apiFixturePath, previewUrl).href
+  const urlPattern = fixtureUrl.replace(/[?*\\]/g, character => `\\${character}`)
+  await cdp.send('Fetch.enable', { patterns: [{ urlPattern, requestStage: 'Request' }] })
+  const pausedRequest = cdp.waitFor('Fetch.requestPaused', 5000)
+  const evaluation = cdp.send('Runtime.evaluate', {
+    expression: `(async () => { const fixtureUrl = ${JSON.stringify(fixtureUrl)}; window.__vl360Perf.apiRequestUrl = fixtureUrl; const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), 3000); try { const response = await fetch(fixtureUrl, { cache: 'no-store', signal: controller.signal }); window.__vl360Perf.apiResponseSuccessful = response.ok && response.url === fixtureUrl } catch (_) { window.__vl360Perf.apiResponseSuccessful = false } finally { clearTimeout(timeout) } })()`,
+    awaitPromise: true,
+  })
+  let fulfilled = false
+  try {
+    fulfilled = await fulfillApiFixtureRequest(cdp, await pausedRequest, fixtureUrl)
+    await evaluation
+  } catch { /* snapshot records the unavailable fixture below */ }
+  finally {
+    await cdp.send('Fetch.disable').catch(() => {})
+    await evaluation.catch(() => {})
+  }
+  await cdp.send('Runtime.evaluate', {
+    expression: `window.__vl360Perf.apiFixtureFulfilled = ${JSON.stringify(fulfilled)}`,
+  })
+}
+
 async function contrastAudit(cdp) {
   if (!existsSync(axeSourcePath)) return { contrastAuditAvailable: false, contrastViolations: 1 }
   const source = readFileSync(axeSourcePath, 'utf8')
@@ -329,7 +385,7 @@ async function browserSnapshot(cdp) {
   })
 
   await cdp.send('Runtime.evaluate', {
-    expression: `window.__vl360Perf = { lcp: null, cls: 0, inp: null, inpSupported: PerformanceObserver.supportedEntryTypes.includes('event') || PerformanceObserver.supportedEntryTypes.includes('first-input'), inpEvidence: 'unsupported' }; try { new PerformanceObserver(list => { const entries = list.getEntries(); const last = entries[entries.length - 1]; if (last) window.__vl360Perf.lcp = last.startTime }).observe({ type: 'largest-contentful-paint', buffered: true }); new PerformanceObserver(list => { window.__vl360Perf.cls += list.getEntries().filter(entry => !entry.hadRecentInput).reduce((sum, entry) => sum + entry.value, 0) }).observe({ type: 'layout-shift', buffered: true }); if (PerformanceObserver.supportedEntryTypes.includes('event')) new PerformanceObserver(list => { window.__vl360Perf.inp = Math.max(window.__vl360Perf.inp || 0, ...list.getEntries().map(entry => entry.duration)) }).observe({ type: 'event', durationThreshold: 16, buffered: true }); if (PerformanceObserver.supportedEntryTypes.includes('first-input')) new PerformanceObserver(list => { window.__vl360Perf.inp = Math.max(window.__vl360Perf.inp || 0, ...list.getEntries().map(entry => entry.duration)) }).observe({ type: 'first-input', buffered: true }); if (window.__vl360Perf.inpSupported) { const target = [...document.querySelectorAll('button,[role="button"],a[href]')].find(el => { const r = el.getBoundingClientRect(); const s = getComputedStyle(el); return r.width > 0 && r.height > 0 && s.display !== 'none' && s.visibility !== 'hidden' && Number(s.opacity) > 0 }); if (target) { target.setAttribute('data-vl360-inp-target', ''); window.__vl360Perf.inpEvidence = 'rendered-interaction' } } } catch (_) { window.__vl360Perf.inpSupported = false }`,
+    expression: `(() => { const observerCtor = window.PerformanceObserver; const supportedEntryTypes = Array.isArray(observerCtor?.supportedEntryTypes) ? observerCtor.supportedEntryTypes : []; window.__vl360Perf = { lcp: null, cls: 0, inp: null, inpSupported: supportedEntryTypes.includes('event') || supportedEntryTypes.includes('first-input'), inpEvidence: 'unsupported' }; try { if (observerCtor) { new observerCtor(list => { const entries = list.getEntries(); const last = entries[entries.length - 1]; if (last) window.__vl360Perf.lcp = last.startTime }).observe({ type: 'largest-contentful-paint', buffered: true }); new observerCtor(list => { window.__vl360Perf.cls += list.getEntries().filter(entry => !entry.hadRecentInput).reduce((sum, entry) => sum + entry.value, 0) }).observe({ type: 'layout-shift', buffered: true }); if (supportedEntryTypes.includes('event')) new observerCtor(list => { window.__vl360Perf.inp = Math.max(window.__vl360Perf.inp || 0, ...list.getEntries().map(entry => entry.duration)) }).observe({ type: 'event', durationThreshold: 16, buffered: true }); if (supportedEntryTypes.includes('first-input')) new observerCtor(list => { window.__vl360Perf.inp = Math.max(window.__vl360Perf.inp || 0, ...list.getEntries().map(entry => entry.duration)) }).observe({ type: 'first-input', buffered: true }); } if (window.__vl360Perf.inpSupported) { const target = [...document.querySelectorAll('button,[role="button"],a[href]')].find(el => { const r = el.getBoundingClientRect(); const s = getComputedStyle(el); return r.width > 0 && r.height > 0 && s.display !== 'none' && s.visibility !== 'hidden' && Number(s.opacity) > 0 }); if (target) { target.setAttribute('data-vl360-inp-target', ''); window.__vl360Perf.inpEvidence = 'rendered-interaction' } } } catch (_) { window.__vl360Perf.inpSupported = false } })()`,
   })
   const point = await cdp.send('Runtime.evaluate', { expression: "(() => { const el = document.querySelector('[data-vl360-inp-target]'); if (!el) return null; const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 } })()", returnByValue: true })
   if (point.result?.value) {
@@ -337,13 +393,10 @@ async function browserSnapshot(cdp) {
     await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: point.result.value.x, y: point.result.value.y, button: 'left', clickCount: 1 })
   }
   await new Promise(resolveWait => setTimeout(resolveWait, 100))
-  await cdp.send('Runtime.evaluate', {
-    expression: "(async () => { const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), 3000); try { await fetch('/api/places?limit=1', { cache: 'no-store', signal: controller.signal }) } catch (_) {} finally { clearTimeout(timeout) } })()",
-    awaitPromise: true,
-  })
+  await runApiFixtureProbe(cdp)
   const forcedContrast = await contrastAudit(cdp)
   const perf = await cdp.send('Runtime.evaluate', {
-    expression: "(() => { const state = window.__vl360Perf || {}; const resources = performance.getEntriesByType('resource').filter(entry => entry.initiatorType === 'fetch' || entry.initiatorType === 'xmlhttprequest' || /\\/api\\//.test(entry.name)); const apiMaxMs = resources.reduce((max, entry) => Math.max(max, entry.duration), 0); return { lcpMs: state.lcp ?? performance.getEntriesByType('largest-contentful-paint').at(-1)?.startTime ?? null, cls: state.cls, inpAvailable: state.inpSupported === true && Number.isFinite(state.inp), inpMs: state.inp, inpEvidence: state.inpEvidence, apiObservedCount: resources.length, apiMaxMs } })()",
+    expression: `(() => { const state = window.__vl360Perf || {}; const api = (${measureApiFixtureResources.toString()})(performance.getEntriesByType('resource'), state.apiRequestUrl); return { lcpMs: state.lcp ?? performance.getEntriesByType('largest-contentful-paint').at(-1)?.startTime ?? null, cls: state.cls, inpAvailable: state.inpSupported === true && Number.isFinite(state.inp), inpMs: state.inp, inpEvidence: state.inpEvidence, ...api, apiResponseSuccessful: state.apiResponseSuccessful === true, apiFixtureFulfilled: state.apiFixtureFulfilled === true } })()`,
     returnByValue: true,
   })
   return {

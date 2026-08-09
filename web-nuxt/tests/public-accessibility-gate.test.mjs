@@ -3,7 +3,9 @@ import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import { evaluatePublicAccessibilitySnapshot, launchChrome } from '../scripts/check-public-accessibility.mjs'
+import * as publicAccessibilityGate from '../scripts/check-public-accessibility.mjs'
+
+const { evaluatePublicAccessibilitySnapshot, launchChrome } = publicAccessibilityGate
 
 const passingSnapshot = {
   forcedColorsActive: true,
@@ -33,6 +35,8 @@ const passingSnapshot = {
   inpEvidence: 'rendered-interaction',
   apiMaxMs: 500,
   apiObservedCount: 1,
+  apiResponseSuccessful: true,
+  apiFixtureFulfilled: true,
   bundleAuditAvailable: true,
   bundleViolations: 0,
 }
@@ -143,6 +147,61 @@ describe('public accessibility browser gate', () => {
       apiObservedCount: 0,
       apiMaxMs: 0,
     })).toContain('api-audit-empty')
+  })
+
+  it('fails closed when an observed API request has no finite duration', () => {
+    expect(evaluatePublicAccessibilitySnapshot({
+      ...passingSnapshot,
+      apiObservedCount: 1,
+      apiMaxMs: Number.NaN,
+    })).toContain('api-duration-unavailable')
+  })
+
+  it('fails closed when the API fixture response is unsuccessful', () => {
+    expect(evaluatePublicAccessibilitySnapshot({
+      ...passingSnapshot,
+      apiResponseSuccessful: false,
+    })).toContain('api-response-unsuccessful')
+  })
+
+  it('fails closed when the self-contained API fixture was not fulfilled', () => {
+    expect(evaluatePublicAccessibilitySnapshot({
+      ...passingSnapshot,
+      apiFixtureFulfilled: false,
+    })).toContain('api-fixture-unavailable')
+  })
+
+  it('uses only the exact fixture URL when measuring API timing', () => {
+    const fixtureUrl = 'http://127.0.0.1:4173/api/places?limit=1'
+    expect(publicAccessibilityGate.measureApiFixtureResources([
+      { name: 'http://127.0.0.1:4173/api/other', duration: 25 },
+    ], fixtureUrl)).toEqual({ apiObservedCount: 0, apiMaxMs: null })
+  })
+
+  it('fulfills the exact fixture request with a successful same-origin response', async () => {
+    const calls = []
+    const cdp = { send: async (method, params) => { calls.push({ method, params }) } }
+    const fixtureUrl = 'http://127.0.0.1:4173/api/places?limit=1'
+
+    await expect(publicAccessibilityGate.fulfillApiFixtureRequest(cdp, {
+      requestId: 'fixture-request',
+      request: { url: fixtureUrl, method: 'GET' },
+    }, fixtureUrl)).resolves.toBe(true)
+    expect(calls).toEqual([expect.objectContaining({
+      method: 'Fetch.fulfillRequest',
+      params: expect.objectContaining({ requestId: 'fixture-request', responseCode: 200 }),
+    })])
+  })
+
+  it('fails closed when the INP observer capability is unsupported', () => {
+    expect(evaluatePublicAccessibilitySnapshot({
+      ...passingSnapshot,
+      inpAvailable: false,
+      inpEvidence: 'unsupported',
+    })).toEqual(expect.arrayContaining([
+      'inp-audit-unavailable',
+      'inp-evidence-not-rendered',
+    ]))
   })
 
   it('kills Chrome when CDP startup fails after the child is spawned', async () => {
