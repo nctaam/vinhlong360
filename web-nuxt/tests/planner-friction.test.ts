@@ -40,6 +40,46 @@ describe('planner friction projection', () => {
     wrapper.unmount()
   })
 
+  it('distinguishes unavailable, partial, and genuine zero durations', async () => {
+    const unavailable = await mountSuspended(PlannerSummary, {
+      props: {
+        stopCount: 2,
+        totalDuration: null,
+        travelDuration: null,
+        warnings: [],
+      },
+    })
+    expect(unavailable.get('[data-summary-total-duration]').text()).toBe('Chưa xác định')
+    expect(unavailable.get('[data-summary-travel-duration]').text()).toBe('Chưa xác định')
+    unavailable.unmount()
+
+    const partial = await mountSuspended(PlannerSummary, {
+      props: {
+        stopCount: 2,
+        totalDuration: 7200,
+        totalDurationPartial: true,
+        travelDuration: null,
+        warnings: [],
+      },
+    })
+    expect(partial.get('[data-summary-total-duration]').text()).toContain('2 giờ')
+    expect(partial.get('[data-summary-total-duration]').text()).toContain('chưa gồm di chuyển')
+    expect(partial.get('[data-summary-travel-duration]').text()).toBe('Chưa xác định')
+    partial.unmount()
+
+    const zero = await mountSuspended(PlannerSummary, {
+      props: {
+        stopCount: 1,
+        totalDuration: 0,
+        travelDuration: 0,
+        warnings: [],
+      },
+    })
+    expect(zero.get('[data-summary-total-duration]').text()).toBe('0 phút')
+    expect(zero.get('[data-summary-travel-duration]').text()).toBe('0 phút')
+    zero.unmount()
+  })
+
   it('reports an opening-hour conflict with a targeted recovery', () => {
     const project = (plannerOptimization as Record<string, unknown>)
       .projectPlannerFrictions as undefined | ((input: Record<string, unknown>) => Array<Record<string, unknown>>)
@@ -150,6 +190,11 @@ describe('planner friction projection', () => {
       coords: [10, 106] as [number, number],
       time: '08:00-09:00',
       notes: 'ghi chú local',
+      sourceFreshness: {
+        status: 'stale',
+        updatedAt: '2026-06-01T00:00:00Z',
+        sourceTitle: 'Nguồn cũ',
+      },
       transient: 'không lưu',
     }]
     const snapshot = createSnapshot({
@@ -166,11 +211,21 @@ describe('planner friction projection', () => {
       stops: [{
         id: 'a', name: 'A', type: 'attraction', coords: [10, 106],
         time: '08:00-09:00', notes: 'ghi chú local',
+        sourceFreshness: {
+          status: 'stale',
+          updatedAt: '2026-06-01T00:00:00Z',
+          sourceTitle: 'Nguồn cũ',
+        },
       }],
       revision: 7,
       savedAt: '2026-08-09T09:00:00Z',
       source: 'local',
       travelBudgetMinutes: 120,
+    })
+    expect(plannerOptimization.parsePlannerDraftSnapshot(snapshot)?.stops[0]?.sourceFreshness).toEqual({
+      status: 'stale',
+      updatedAt: '2026-06-01T00:00:00Z',
+      sourceTitle: 'Nguồn cũ',
     })
     expect(stops[0]?.transient).toBe('không lưu')
   })

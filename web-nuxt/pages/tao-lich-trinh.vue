@@ -144,7 +144,7 @@
           />
         </div>
 
-        <section v-if="plannerConflictDiff.length" class="planner-conflict-diff" data-planner-conflict-diff aria-label="Khác biệt bản nháp">
+        <section ref="plannerConflictEl" v-if="plannerConflictDiff.length" class="planner-conflict-diff" data-planner-conflict-diff aria-label="Khác biệt bản nháp" tabindex="-1">
           <h2>Khác biệt theo điểm dừng</h2>
           <ul>
             <li v-for="conflict in plannerConflictDiff" :key="`${conflict.id}-${conflict.changedFields.join('-')}`">
@@ -153,8 +153,9 @@
             </li>
           </ul>
           <div class="planner-conflict-diff__actions">
-            <button type="button" class="btn btn-sm btn-outline" @click="choosePlannerConflict('local')">Giữ bản cục bộ</button>
-            <button type="button" class="btn btn-sm btn-ghost" @click="choosePlannerConflict('server')">Dùng bản máy chủ</button>
+            <button type="button" class="btn btn-sm btn-outline" data-conflict-local @click="choosePlannerConflict('local')">Giữ bản cục bộ</button>
+            <button type="button" class="btn btn-sm btn-ghost" data-conflict-server @click="choosePlannerConflict('server')">Dùng bản máy chủ</button>
+            <button type="button" class="btn btn-sm btn-ghost" data-conflict-manual @click="choosePlannerConflict('manual')">Tiếp tục đối chiếu</button>
           </div>
         </section>
 
@@ -272,7 +273,8 @@
           <PlannerSummary
             :stop-count="stops.length"
             :total-duration="plannerTotalDuration"
-            :travel-duration="routeResult?.totalDuration || 0"
+            :total-duration-partial="plannerTotalDurationPartial"
+            :travel-duration="plannerTravelDuration"
             :warnings="plannerSummaryWarnings"
           />
         </div>
@@ -325,6 +327,8 @@ import {
   mergeOptimizedStops,
   plannerMetadataForEntity,
   plannerMetadataForLoadedStop,
+  plannerFreshnessEvidenceForEntity,
+  isPlannerStopFreshnessStale,
   requestOptimizedOrder,
   routeLegForStopIndex,
   runPlannerOptimization,
@@ -341,6 +345,7 @@ import {
   type CurrentPlannerOptimizationResult,
   type RoutableStop,
   type PlannerScheduleMetadata,
+  type PlannerStopFreshnessEvidence,
 } from '~/composables/useItineraryOptimization'
 import PlannerFrictionNotice from '~/components/planner/PlannerFrictionNotice.vue'
 import PlannerOptimizationPreview from '~/components/planner/PlannerOptimizationPreview.vue'
@@ -361,6 +366,7 @@ interface PlanStop {
   coords: [number, number] | null
   time: string
   notes: string
+  sourceFreshness?: PlannerStopFreshnessEvidence
 }
 
 interface SavedPlan {
@@ -370,6 +376,27 @@ interface SavedPlan {
   savedAt: string
   is_public?: boolean
   revision?: number
+}
+
+interface PlannerServerSnapshot {
+  id: string
+  title: string
+  stops: PlanStop[]
+  revision: number
+  savedAt?: string
+}
+
+interface PlannerRevisionConflictEvidence {
+  localRevision: number
+  serverRevision: number
+  serverTitle: string
+  serverStops: PlanStop[]
+}
+
+type OpeningHourConflict = {
+  stopId: string
+  requestedTime?: string | null
+  openingHours?: string | null
 }
 
 const { favorites: favList, count: favCount } = useFavorites()
@@ -441,11 +468,14 @@ const plannerOnline = ref(true)
 const draftSavedAt = ref<string | null>(null)
 const draftSource = ref<'local' | 'server'>('local')
 const localDraftRevision = ref(0)
-const serverDraftRevision = ref<number | null>(null)
-const serverDraftStops = ref<PlanStop[]>([])
+const localDirty = ref(false)
+const activeServerPlanId = ref<string | null>(null)
+const baseServerRevision = ref<number | null>(null)
+const plannerRevisionConflict = ref<PlannerRevisionConflictEvidence | null>(null)
 const travelBudgetMinutes = ref<number | null>(null)
-const staleStopIds = ref<string[]>([])
-const openingHourConflicts = ref<Array<{ stopId: string; requestedTime?: string | null; openingHours?: string | null }>>([])
+const candidateOpeningHourConflicts = ref<OpeningHourConflict[]>([])
+const confirmedOpeningHourConflicts = ref<OpeningHourConflict[]>([])
+const plannerConflictEl = ref<HTMLElement | null>(null)
 const MAX_STOPS = 20
 const LS_DRAFT = 'vl360_planner_draft'
 let savePulseTimer: ReturnType<typeof setTimeout> | null = null
@@ -470,11 +500,25 @@ const optimizeRouteTitle = computed(() => {
   return 'Giữ nguyên điểm đầu, điểm cuối và tối ưu các điểm ở giữa'
 })
 
+const stalePlannerStops = computed(() => stops.value
+  .filter(stop => isPlannerStopFreshnessStale(stop.sourceFreshness))
+  .map(stop => ({
+    stopId: stop.id,
+    label: stop.name || stop.id,
+    status: stop.sourceFreshness?.status,
+    updatedAt: stop.sourceFreshness?.updatedAt,
+  })))
+const visibleOpeningHourConflicts = computed(() => (
+  optimizationPreview.value
+    ? candidateOpeningHourConflicts.value
+    : confirmedOpeningHourConflicts.value
+))
+
 const plannerFrictionNotices = computed<PlannerFriction[]>(() => projectPlannerFrictions({
-  openingHourConflicts: openingHourConflicts.value,
+  openingHourConflicts: visibleOpeningHourConflicts.value,
   travelMinutes: routeResult.value ? Math.round(routeResult.value.totalDuration / 60) : null,
   travelBudgetMinutes: travelBudgetMinutes.value,
-  staleStopIds: staleStopIds.value,
+  staleStops: stalePlannerStops.value,
   missingCoordinateStopIds: stops.value
     .filter(stop => !stop.coords)
     .map(stop => stop.name || stop.id),
@@ -483,26 +527,34 @@ const plannerFrictionNotices = computed<PlannerFriction[]>(() => projectPlannerF
     savedAt: draftSavedAt.value,
     source: draftSource.value,
   },
-  revisionConflict: serverDraftRevision.value !== null && serverDraftRevision.value !== localDraftRevision.value
-    ? {
-        localRevision: localDraftRevision.value,
-        serverRevision: serverDraftRevision.value,
-      }
-    : false,
+  revisionConflict: plannerRevisionConflict.value || false,
   routeUnavailable: routeError.value,
 }))
 
 const plannerSummaryWarnings = computed(() => plannerFrictionNotices.value.map(notice => notice.reason))
-const plannerTotalDuration = computed(() => {
-  const visitDuration = stops.value.reduce((total, stop) => (
+const plannerVisitDuration = computed(() => {
+  return stops.value.reduce((total, stop) => (
     total + ((plannerScheduleMetadata.get(stop)?.visitMinutes || 0) * 60)
   ), 0)
-  return (routeResult.value?.totalDuration || 0) + visitDuration
+})
+const plannerTravelDuration = computed<number | null>(() => {
+  if (stops.value.length < 2) return 0
+  return routeResult.value?.totalDuration ?? null
+})
+const plannerTotalDurationPartial = computed(() => (
+  stops.value.length >= 2 && plannerTravelDuration.value === null
+))
+const plannerTotalDuration = computed<number | null>(() => {
+  const visitDuration = plannerVisitDuration.value
+  const travelDuration = plannerTravelDuration.value
+  return travelDuration === null
+    ? (visitDuration > 0 ? visitDuration : null)
+    : travelDuration + visitDuration
 })
 const plannerConflictDiff = computed<PlannerStopConflict<PlanStop>[]>(() => (
-  serverDraftRevision.value === null
+  plannerRevisionConflict.value === null
     ? []
-    : diffPlannerStops(stops.value, serverDraftStops.value)
+    : diffPlannerStops(stops.value, plannerRevisionConflict.value.serverStops)
 ))
 
 const { createMap: createNDAMap } = useNDAMap()
@@ -545,7 +597,17 @@ const pickerResults = computed(() => {
   if (sourceTab.value === 'saved') {
     list = favList.value.map(f => {
       const fav = f as any
-      return { id: fav.id, name: fav.name, type: fav.type, place_name: fav.place_name, summary: fav.summary, coordinates: fav.coordinates, attributes: fav.attributes }
+      return {
+        id: fav.id,
+        name: fav.name,
+        type: fav.type,
+        place_name: fav.place_name,
+        summary: fav.summary,
+        coordinates: fav.coordinates,
+        attributes: fav.attributes,
+        source_freshness: fav.source_freshness,
+        quality: fav.quality,
+      }
     })
   } else {
     list = allEntities.value
@@ -572,7 +634,14 @@ function extractCoords(entity: Entity): [number, number] | null {
 function clearPendingOptimizationPreview() {
   optimizationPreview.value = null
   pendingOptimization = null
-  openingHourConflicts.value = []
+  candidateOpeningHourConflicts.value = []
+}
+
+function plannerStopFromDraft(stop: PlanStop): PlanStop {
+  const serialized = serializePlanStops([stop])[0] as PlanStop
+  return stop.sourceFreshness
+    ? { ...serialized, sourceFreshness: { ...stop.sourceFreshness } }
+    : serialized
 }
 
 function persistPlannerDraft() {
@@ -598,13 +667,14 @@ function restorePlannerDraft() {
     if (!raw) return
     const parsed = parsePlannerDraftSnapshot(JSON.parse(raw))
     if (!parsed?.stops.length) return
-    stops.value = serializePlanStops(parsed.stops)
+    stops.value = parsed.stops.map(stop => plannerStopFromDraft(stop))
     planTitle.value = parsed.title
     localDraftRevision.value = parsed.revision
     plannerInputState.version = localDraftRevision.value
     draftSavedAt.value = parsed.savedAt
     draftSource.value = parsed.source
     travelBudgetMinutes.value = parsed.travelBudgetMinutes
+    localDirty.value = true
     stops.value.forEach((stop) => {
       plannerScheduleMetadata.set(stop, plannerMetadataForLoadedStop(stop.type))
     })
@@ -622,7 +692,11 @@ function handleFrictionRecovery(notice: PlannerFriction) {
     return
   }
   if (notice.recovery.action === 'refresh-stop') {
-    void refreshPicker()
+    if (notice.stopId) void refreshPlannerStopEvidence(notice.stopId)
+    return
+  }
+  if (notice.recovery.action === 'review-conflict') {
+    void nextTick(() => plannerConflictEl.value?.focus())
     return
   }
   if (notice.recovery.action === 'edit-stop' || notice.recovery.action === 'use-timeline') {
@@ -630,21 +704,112 @@ function handleFrictionRecovery(notice: PlannerFriction) {
   }
 }
 
-async function choosePlannerConflict(choice: 'local' | 'server') {
+function isPlanStopSnapshot(value: unknown): value is PlanStop {
+  if (!value || typeof value !== 'object') return false
+  const stop = value as Partial<PlanStop>
+  const validCoords = stop.coords === null || (
+    Array.isArray(stop.coords)
+    && stop.coords.length >= 2
+    && Number.isFinite(stop.coords[0])
+    && Number.isFinite(stop.coords[1])
+  )
+  return typeof stop.id === 'string'
+    && typeof stop.name === 'string'
+    && typeof stop.type === 'string'
+    && typeof stop.time === 'string'
+    && typeof stop.notes === 'string'
+    && validCoords
+}
+
+function normalizePlannerServerSnapshot(value: unknown): PlannerServerSnapshot | null {
+  if (!value || typeof value !== 'object') return null
+  const candidate = value as Partial<PlannerServerSnapshot>
+  if (
+    typeof candidate.id !== 'string'
+    || typeof candidate.title !== 'string'
+    || !Number.isInteger(candidate.revision)
+    || (candidate.revision ?? -1) < 0
+    || !Array.isArray(candidate.stops)
+    || !candidate.stops.every(isPlanStopSnapshot)
+  ) return null
+  return {
+    id: candidate.id,
+    title: candidate.title,
+    revision: candidate.revision as number,
+    stops: serializePlanStops(candidate.stops) as PlanStop[],
+    ...(typeof candidate.savedAt === 'string' ? { savedAt: candidate.savedAt } : {}),
+  }
+}
+
+function observePlannerServerSnapshot(
+  value: unknown,
+  options: { revisionMismatch?: boolean } = {},
+): boolean {
+  const snapshot = normalizePlannerServerSnapshot(value)
+  if (!snapshot || !activeServerPlanId.value || snapshot.id !== activeServerPlanId.value) return false
+  const isNewer = baseServerRevision.value !== null && snapshot.revision > baseServerRevision.value
+  if (!isNewer && !options.revisionMismatch) return false
+  plannerRevisionConflict.value = {
+    localRevision: localDraftRevision.value,
+    serverRevision: snapshot.revision,
+    serverTitle: snapshot.title,
+    serverStops: snapshot.stops,
+  }
+  return true
+}
+
+function observePlannerRevisionMismatch(error: unknown): boolean {
+  if (getStatusCode(error) !== 409) return false
+  const failure = error as {
+    response?: { _data?: Record<string, unknown> }
+    data?: Record<string, unknown>
+  }
+  const payload = failure.response?._data ?? failure.data
+  const snapshot = payload?.serverPlan ?? payload?.server_plan ?? payload?.plan
+  return observePlannerServerSnapshot(snapshot, { revisionMismatch: true })
+}
+
+async function choosePlannerConflict(choice: 'local' | 'server' | 'manual') {
+  if (choice === 'manual') {
+    await nextTick()
+    plannerConflictEl.value?.focus()
+    return
+  }
+  const conflict = plannerRevisionConflict.value
+  if (!conflict) return
   const persistenceWasReady = draftPersistenceReady
   draftPersistenceReady = false
-  if (choice === 'server' && serverDraftStops.value.length) {
+  if (choice === 'server') {
     invalidatePlannerSchedule()
-    stops.value = serializePlanStops(serverDraftStops.value)
+    planTitle.value = conflict.serverTitle
+    stops.value = serializePlanStops(conflict.serverStops) as PlanStop[]
     stops.value.forEach(stop => plannerScheduleMetadata.set(stop, plannerMetadataForLoadedStop(stop.type)))
-    localDraftRevision.value = serverDraftRevision.value ?? localDraftRevision.value
+    localDraftRevision.value += 1
     draftSource.value = 'server'
+    localDirty.value = false
+  } else {
+    localDirty.value = true
   }
-  serverDraftRevision.value = null
-  serverDraftStops.value = []
+  baseServerRevision.value = conflict.serverRevision
+  plannerRevisionConflict.value = null
   await nextTick()
   draftPersistenceReady = persistenceWasReady
   persistPlannerDraft()
+}
+
+async function refreshPlannerStopEvidence(stopId: string): Promise<boolean> {
+  const stop = stops.value.find(candidate => candidate.id === stopId)
+  if (!stop) return false
+  try {
+    const detail = await publicApi.getEntity(stopId)
+    if (!stops.value.includes(stop)) return false
+    const evidence = plannerFreshnessEvidenceForEntity(detail)
+    if (!evidence) return false
+    stop.sourceFreshness = evidence
+    return true
+  } catch {
+    return false
+  }
 }
 
 async function addStop(entity: Entity) {
@@ -655,6 +820,7 @@ async function addStop(entity: Entity) {
   }
   invalidatePlannerSchedule()
   optimizationMessage.value = ''
+  const sourceFreshness = plannerFreshnessEvidenceForEntity(entity)
   const stop = reactive<PlanStop>({
     id: entity.id,
     name: entity.name,
@@ -663,6 +829,7 @@ async function addStop(entity: Entity) {
     coords: extractCoords(entity),
     time: '',
     notes: '',
+    ...(sourceFreshness ? { sourceFreshness } : {}),
   })
   plannerScheduleMetadata.set(
     stop,
@@ -676,11 +843,12 @@ async function addStop(entity: Entity) {
   addingTimer = setTimeout(() => { addingId.value = null }, 300)
   // P0-19: saved items (favorites) carry no coordinates → fetch detail so the
   // stop can be routed/mapped. Falls back silently (stop still listed) on error.
-  if (!stop.coords && entity.id) {
+  if ((!stop.coords || !stop.sourceFreshness) && entity.id) {
     try {
+      const detail = await publicApi.getEntity(entity.id)
       await enrichPlannerStopFromDetail({
         stop,
-        fetchDetail: () => publicApi.getEntity(entity.id),
+        fetchDetail: () => Promise.resolve(detail),
         isCurrentStop: currentStop => stops.value.includes(currentStop),
         coordinatesFromDetail: detail => normalizeCoords(detail?.coordinates),
         metadataFromDetail: detail => plannerMetadataForEntity(
@@ -690,6 +858,8 @@ async function addStop(entity: Entity) {
         metadataByStop: plannerScheduleMetadata,
         invalidate: invalidatePlannerSchedule,
       })
+      const evidence = plannerFreshnessEvidenceForEntity(detail)
+      if (evidence) stop.sourceFreshness = evidence
     } catch { /* coords stay null */ }
   }
 }
@@ -769,6 +939,10 @@ async function _doSave() {
       plan.id = res.id
       if (Number.isInteger(res.revision)) plan.revision = res.revision
     } catch (e: unknown) {
+      if (observePlannerRevisionMismatch(e)) {
+        showToast('Bản máy chủ mới hơn cần được đối chiếu trước khi lưu.', 'warning')
+        return
+      }
       showToast(extractErrorMessage(e, 'Không thể lưu lên tài khoản'), 'error')
       return
     }
@@ -777,13 +951,20 @@ async function _doSave() {
   }
   if (plan.id) {
     draftSource.value = 'server'
+    activeServerPlanId.value = plan.id
+    plannerRevisionConflict.value = null
     if (plan.revision !== undefined) {
-      localDraftRevision.value = plan.revision
-      serverDraftRevision.value = plan.revision
-      serverDraftStops.value = serializePlanStops(plan.stops)
+      baseServerRevision.value = plan.revision
+    } else {
+      baseServerRevision.value = null
     }
+    localDirty.value = false
   } else {
     draftSource.value = 'local'
+    activeServerPlanId.value = null
+    baseServerRevision.value = null
+    plannerRevisionConflict.value = null
+    localDirty.value = false
   }
   persistPlannerDraft()
   savedPlans.value.unshift(plan)
@@ -813,13 +994,18 @@ async function loadPlan(idx: number) {
     plannerScheduleMetadata.set(stop, plannerMetadataForLoadedStop(stop.type))
   })
   draftSource.value = plan.id ? 'server' : 'local'
-  localDraftRevision.value = plan.revision ?? (localDraftRevision.value + 1)
-  serverDraftRevision.value = plan.revision ?? null
-  serverDraftStops.value = plan.revision === undefined ? [] : serializePlanStops(plan.stops)
+  localDraftRevision.value += 1
+  localDirty.value = false
+  activeServerPlanId.value = plan.id ?? null
+  baseServerRevision.value = Number.isInteger(plan.revision) ? plan.revision as number : null
+  plannerRevisionConflict.value = null
   optimizationMessage.value = ''
   await nextTick()
   draftPersistenceReady = persistenceWasReady
   persistPlannerDraft()
+  void Promise.all(stops.value
+    .filter(stop => !stop.sourceFreshness)
+    .map(stop => refreshPlannerStopEvidence(stop.id)))
 }
 
 async function deletePlan(idx: number) {
@@ -945,6 +1131,7 @@ function plannerRouteLeg(stopIndex: number) {
 
 function invalidatePlannerSchedule() {
   clearPendingOptimizationPreview()
+  confirmedOpeningHourConflicts.value = []
   invalidatePlannerInputs(
     plannerInputState,
     stops.value,
@@ -1015,12 +1202,15 @@ function optimizationTradeoffs(
   return [...new Set(messages)]
 }
 
-function updateOpeningHourConflicts(result: CurrentPlannerOptimizationResult<PlanStop>) {
+function openingHourConflictsFor(
+  result: CurrentPlannerOptimizationResult<PlanStop>,
+  routed: RoutableStop<PlanStop>[],
+): OpeningHourConflict[] {
   const schedule = result.outcome.optimization.schedule
-  openingHourConflicts.value = (schedule?.skipped || [])
+  return (schedule?.skipped || [])
     .filter(item => item.reason.toLowerCase().includes('opening'))
     .map((item) => {
-      const routedStop = pendingOptimization?.routed.find(candidate => candidate.key === item.stop_id)
+      const routedStop = routed.find(candidate => candidate.key === item.stop_id)
       const metadata = routedStop ? plannerScheduleMetadata.get(routedStop.stop) : undefined
       return {
         stopId: routedStop?.stop.name || item.stop_id,
@@ -1074,7 +1264,7 @@ async function optimizePlanRoute() {
       plannerResult.outcome.ordered.map(item => item.key),
     )
     pendingOptimization = { result: plannerResult, routed }
-    updateOpeningHourConflicts(plannerResult)
+    candidateOpeningHourConflicts.value = openingHourConflictsFor(plannerResult, routed)
     optimizationPreview.value = await createPlannerOptimizationPreview(
       stops.value,
       candidateStops,
@@ -1152,6 +1342,7 @@ async function confirmOptimizationPreview() {
     if (!committedResult || !isPlannerLifecycleActive()) return
     autoRouteScheduler.discardPending(optimizerWatcherRequest)
     const message = optimizationTradeoffs(committedResult, transaction.routed).join(' ')
+    confirmedOpeningHourConflicts.value = candidateOpeningHourConflicts.value.map(conflict => ({ ...conflict }))
     clearPendingOptimizationPreview()
     await announceOptimization(message || 'Đã áp dụng thứ tự đề xuất.')
   } finally {
@@ -1340,6 +1531,7 @@ watch(transportMode, invalidatePlannerSchedule)
 watch([planTitle, stops, travelBudgetMinutes], () => {
   if (!draftPersistenceReady) return
   localDraftRevision.value += 1
+  localDirty.value = true
   persistPlannerDraft()
 }, { deep: true })
 

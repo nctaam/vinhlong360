@@ -11,7 +11,7 @@
       </div>
       <div>
         <dt>Tổng thời gian</dt>
-        <dd data-summary-total-duration>{{ displayDuration(totalDuration) }}</dd>
+        <dd data-summary-total-duration>{{ displayDuration(totalDuration, totalDurationPartial) }}</dd>
       </div>
       <div>
         <dt>Di chuyển</dt>
@@ -35,14 +35,17 @@ import type { PlannerFrictionNotice } from '~/composables/useItineraryOptimizati
 
 const props = defineProps<{
   stopCount: number
-  totalDuration: number | string
-  travelDuration: number | string
+  totalDuration: number | string | null
+  totalDurationPartial?: boolean
+  travelDuration: number | string | null
   warnings: Array<string | PlannerFrictionNotice>
 }>()
 
-function displayDuration(value: number | string): string {
+function displayDuration(value: number | string | null, partial = false): string {
+  if (value === null) return 'Chưa xác định'
   if (typeof value === 'string') return value
-  return formatDuration(value)
+  const duration = value === 0 ? '0 phút' : formatDuration(value)
+  return partial ? `${duration} đã biết · chưa gồm di chuyển` : duration
 }
 
 function warningText(value: string | PlannerFrictionNotice): string {

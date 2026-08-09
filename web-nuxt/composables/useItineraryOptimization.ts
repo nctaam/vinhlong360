@@ -112,6 +112,12 @@ export interface PlannerFrictionInput {
   travelMinutes?: number | null
   travelBudgetMinutes?: number | null
   staleStopIds?: string[]
+  staleStops?: Array<{
+    stopId: string
+    label?: string
+    status?: PlannerStopFreshnessStatus
+    updatedAt?: string | null
+  }>
   missingCoordinateStopIds?: string[]
   offlineDraft?: { revision: number; savedAt?: string | null; source?: 'local' | 'server' } | boolean
   revisionConflict?: { localRevision: number; serverRevision: number } | boolean
@@ -169,9 +175,23 @@ export interface SavedPlanStopShape {
   notes: string
 }
 
+export type PlannerStopFreshnessStatus = 'fresh' | 'aging' | 'stale' | 'conflict' | 'unknown'
+
+export interface PlannerStopFreshnessEvidence {
+  status: PlannerStopFreshnessStatus
+  updatedAt?: string
+  verifiedAt?: string
+  sourceTitle?: string
+  sourceUrl?: string
+}
+
+export interface PlannerDraftStopShape extends SavedPlanStopShape {
+  sourceFreshness?: PlannerStopFreshnessEvidence
+}
+
 export interface PlannerDraftSnapshot {
   title: string
-  stops: SavedPlanStopShape[]
+  stops: PlannerDraftStopShape[]
   revision: number
   savedAt: string
   source: 'local' | 'server'
@@ -565,7 +585,87 @@ export function serializePlanStops<T extends SavedPlanStopShape>(
   })
 }
 
-export function createPlannerDraftSnapshot<T extends SavedPlanStopShape>(input: {
+function freshnessText(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined
+  const text = value.trim()
+  return text || undefined
+}
+
+function plannerFreshnessStatus(value: unknown): PlannerStopFreshnessStatus {
+  return value === 'fresh'
+    || value === 'aging'
+    || value === 'stale'
+    || value === 'conflict'
+    ? value
+    : 'unknown'
+}
+
+function normalizePlannerFreshnessEvidence(value: unknown): PlannerStopFreshnessEvidence | null {
+  if (!value || typeof value !== 'object') return null
+  const candidate = value as Record<string, unknown>
+  const evidence: PlannerStopFreshnessEvidence = {
+    status: plannerFreshnessStatus(candidate.status),
+  }
+  const updatedAt = freshnessText(candidate.updatedAt)
+  const verifiedAt = freshnessText(candidate.verifiedAt)
+  const sourceTitle = freshnessText(candidate.sourceTitle)
+  const sourceUrl = freshnessText(candidate.sourceUrl)
+  if (updatedAt) evidence.updatedAt = updatedAt
+  if (verifiedAt) evidence.verifiedAt = verifiedAt
+  if (sourceTitle) evidence.sourceTitle = sourceTitle
+  if (sourceUrl) evidence.sourceUrl = sourceUrl
+  return evidence.status !== 'unknown' || updatedAt || verifiedAt || sourceTitle || sourceUrl
+    ? evidence
+    : null
+}
+
+export function plannerFreshnessEvidenceForEntity(entity: {
+  source_freshness?: {
+    freshness_status?: unknown
+    updated_at?: unknown
+    verified_at?: unknown
+    source_title?: unknown
+    source_url?: unknown
+  } | null
+  quality?: {
+    freshness_status?: unknown
+    updated_at?: unknown
+    verified_at?: unknown
+    source_title?: unknown
+    source_url?: unknown
+  } | null
+}): PlannerStopFreshnessEvidence | null {
+  const source = entity.source_freshness ?? {}
+  const quality = entity.quality ?? {}
+  return normalizePlannerFreshnessEvidence({
+    status: source.freshness_status ?? quality.freshness_status,
+    updatedAt: source.updated_at ?? quality.updated_at,
+    verifiedAt: source.verified_at ?? quality.verified_at,
+    sourceTitle: source.source_title ?? quality.source_title,
+    sourceUrl: source.source_url ?? quality.source_url,
+  })
+}
+
+export function isPlannerStopFreshnessStale(
+  evidence?: PlannerStopFreshnessEvidence | null,
+): boolean {
+  return evidence?.status === 'aging'
+    || evidence?.status === 'stale'
+    || evidence?.status === 'conflict'
+}
+
+function serializePlannerDraftStops<
+  T extends SavedPlanStopShape & { sourceFreshness?: PlannerStopFreshnessEvidence },
+>(stops: T[]): PlannerDraftStopShape[] {
+  return serializePlanStops(stops).map((stop, index) => {
+    const sourceFreshness = normalizePlannerFreshnessEvidence(stops[index]?.sourceFreshness)
+    return sourceFreshness ? { ...stop, sourceFreshness } : stop
+  })
+}
+
+export function createPlannerDraftSnapshot<
+  T extends SavedPlanStopShape & { sourceFreshness?: PlannerStopFreshnessEvidence },
+>(input: {
   title: string
   stops: T[]
   revision: number
@@ -575,7 +675,7 @@ export function createPlannerDraftSnapshot<T extends SavedPlanStopShape>(input: 
 }): PlannerDraftSnapshot {
   return {
     title: input.title,
-    stops: serializePlanStops(input.stops),
+    stops: serializePlannerDraftStops(input.stops),
     revision: Math.max(0, Math.trunc(input.revision)),
     savedAt: input.savedAt,
     source: input.source ?? 'local',
@@ -598,7 +698,7 @@ export function parsePlannerDraftSnapshot(value: unknown): PlannerDraftSnapshot 
     || revision < 0
     || typeof candidate.savedAt !== 'string'
   ) return null
-  const stops = candidate.stops.filter((stop): stop is SavedPlanStopShape => (
+  const stops = candidate.stops.filter((stop): stop is PlannerDraftStopShape => (
     Boolean(stop)
     && typeof stop === 'object'
     && typeof (stop as SavedPlanStopShape).id === 'string'
@@ -608,9 +708,13 @@ export function parsePlannerDraftSnapshot(value: unknown): PlannerDraftSnapshot 
     && typeof (stop as SavedPlanStopShape).notes === 'string'
   ))
   if (stops.length !== candidate.stops.length) return null
+  const draftStops = serializePlanStops(stops).map((stop, index) => {
+    const sourceFreshness = normalizePlannerFreshnessEvidence(stops[index]?.sourceFreshness)
+    return sourceFreshness ? { ...stop, sourceFreshness } : stop
+  })
   return {
     title: candidate.title,
-    stops: serializePlanStops(stops),
+    stops: draftStops,
     revision,
     savedAt: candidate.savedAt,
     source: candidate.source === 'server' ? 'server' : 'local',
@@ -662,12 +766,22 @@ export function projectPlannerFrictions(
     })
   }
 
-  input.staleStopIds?.forEach((stopId) => {
+  const staleStops: NonNullable<PlannerFrictionInput['staleStops']> = input.staleStops
+    ?? input.staleStopIds?.map(stopId => ({ stopId }))
+    ?? []
+  staleStops.forEach((stop) => {
+    const label = stop.label || stop.stopId
+    const status = stop.status === 'conflict'
+      ? ' có dữ kiện mâu thuẫn'
+      : stop.status === 'aging'
+        ? ' cần được kiểm tra lại'
+        : ' có thể đã cũ'
+    const updatedAt = stop.updatedAt ? ` (cập nhật ${stop.updatedAt})` : ''
     notices.push({
       code: 'stale-stop-facts',
       severity: 'warning',
-      stopId,
-      reason: `Dữ kiện của điểm dừng ${stopId} có thể đã cũ.`,
+      stopId: stop.stopId,
+      reason: `Dữ kiện của điểm dừng ${label}${status}${updatedAt}.`,
       recovery: frictionRecovery('Làm mới dữ kiện', 'refresh-stop'),
     })
   })
@@ -781,7 +895,8 @@ export function diffPlannerStops<T extends { id: string }>(
       return
     }
     const changedFields = Object.keys(localStop).filter(field => (
-      JSON.stringify(localStop[field as keyof T]) !== JSON.stringify(serverStop[field as keyof T])
+      field !== 'sourceFreshness'
+      && JSON.stringify(localStop[field as keyof T]) !== JSON.stringify(serverStop[field as keyof T])
     ))
     if (localEntry?.index !== serverEntry?.index) changedFields.unshift('position')
     if (changedFields.length) conflicts.push({ id, local: localStop, server: serverStop, changedFields })
