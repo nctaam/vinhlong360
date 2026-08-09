@@ -82,6 +82,7 @@ const results = [
     quality: { source_tier: 'community' },
   },
 ]
+const searchEntrySessionKey = 'vinhlong360:public-search-entries:v2'
 const wrappers: Array<{ unmount: () => void }> = []
 
 beforeEach(() => {
@@ -272,6 +273,114 @@ describe('shared search view continuity', () => {
     expect(view.state.value.scrollKey).toBe('list:144')
     expect(view.committedViewport.value).toEqual(expect.objectContaining({ zoom: 11 }))
     expect(view.viewportPending.value).toBe(false)
+  })
+
+  it('gives same-URL destinations distinct ownership and restores each private state', async () => {
+    const route = '/tim-kiem?q=g%E1%BB%91m'
+    window.history.replaceState({ position: 4, current: route }, '', route)
+    const scope = effectScope()
+    const view = scope.run(() => useSearchViewState())!
+
+    view.selectResult('same-url-a')
+    view.openPanel('map')
+    view.setScrollKey('list:144')
+    const firstState = structuredClone(window.history.state)
+
+    view.setQuery('gốm')
+    view.selectResult('same-url-b')
+    view.openPanel('list')
+    view.setScrollKey('list:24')
+    const secondState = structuredClone(window.history.state)
+
+    expect(firstState.publicSearchEntryId).toEqual(expect.any(String))
+    expect(secondState.publicSearchEntryId).toEqual(expect.any(String))
+    expect(secondState.publicSearchEntryId).not.toBe(firstState.publicSearchEntryId)
+
+    window.history.replaceState(firstState, '', route)
+    window.dispatchEvent(new PopStateEvent('popstate', { state: firstState }))
+    expect(view.state.value.selectedId).toBe('same-url-a')
+    expect(view.state.value.panel).toBe('map')
+    expect(view.state.value.scrollKey).toBe('list:144')
+
+    window.history.replaceState(secondState, '', route)
+    window.dispatchEvent(new PopStateEvent('popstate', { state: secondState }))
+    expect(view.state.value.selectedId).toBe('same-url-b')
+    expect(view.state.value.panel).toBe('list')
+    expect(view.state.value.scrollKey).toBe('list:24')
+    scope.stop()
+  })
+
+  it('keys colliding router positions by entry ownership instead of position', () => {
+    const firstRoute = '/tim-kiem?q=mot'
+    window.history.replaceState({ position: 12, current: firstRoute }, '', firstRoute)
+    const scope = effectScope()
+    const view = scope.run(() => useSearchViewState())!
+
+    view.selectResult('position-a')
+    const firstState = structuredClone(window.history.state)
+    view.setQuery('hai')
+    view.selectResult('position-b')
+    const secondState = structuredClone(window.history.state)
+    const stored = JSON.parse(sessionStorage.getItem(searchEntrySessionKey) || '{}') as Record<string, unknown>
+
+    expect(firstState.position).toBe(12)
+    expect(secondState.position).toBe(12)
+    expect(firstState.publicSearchEntryId).not.toBe(secondState.publicSearchEntryId)
+    expect(Object.keys(stored).sort()).toEqual([
+      firstState.publicSearchEntryId,
+      secondState.publicSearchEntryId,
+    ].sort())
+    expect(Object.keys(stored).some(key => key.startsWith('position:') || key.startsWith('url:'))).toBe(false)
+    scope.stop()
+  })
+
+  it('defaults and freshly stamps a legacy destination despite colliding session snapshots', () => {
+    const route = '/tim-kiem?q=legacy'
+    const stolenSnapshot = {
+      url: route,
+      privateState: { selectedId: 'stolen', panel: 'map', scrollKey: 'list:999' },
+      committedViewport: { center: [105.62, 9.91], zoom: 13 },
+      viewportPending: true,
+    }
+    sessionStorage.setItem(searchEntrySessionKey, JSON.stringify({
+      'position:12': stolenSnapshot,
+      [`url:${route}`]: stolenSnapshot,
+      latest: stolenSnapshot,
+    }))
+    window.history.replaceState({ position: 12, current: route }, '', route)
+    const scope = effectScope()
+    const view = scope.run(() => useSearchViewState())!
+
+    expect(view.state.value.selectedId).toBeUndefined()
+    expect(view.state.value.panel).toBe('list')
+    expect(view.state.value.scrollKey).toBeUndefined()
+    expect(view.committedViewport.value).toBeUndefined()
+    expect(view.viewportPending.value).toBe(false)
+    expect(window.history.state.publicSearchEntryId).toEqual(expect.any(String))
+    expect(window.history.state.publicSearchPrivate).toEqual({ panel: 'list' })
+    scope.stop()
+  })
+
+  it('retains ownership for replacement and creates it anew for push navigation', async () => {
+    vi.useFakeTimers()
+    const route = '/tim-kiem?q=g%E1%BB%91m'
+    window.history.replaceState({ position: 8, current: route }, '', route)
+    const scope = effectScope()
+    const view = scope.run(() => useSearchViewState())!
+
+    view.selectResult('entry-a')
+    const initialEntryId = window.history.state.publicSearchEntryId
+    expect(initialEntryId).toEqual(expect.any(String))
+    view.openPanel('map')
+    expect(window.history.state.publicSearchEntryId).toBe(initialEntryId)
+    view.setViewport({ center: [105.62, 9.91], zoom: 11 })
+    await vi.advanceTimersByTimeAsync(250)
+    expect(window.history.state.publicSearchEntryId).toBe(initialEntryId)
+
+    view.setQuery('hai')
+    expect(window.history.state.publicSearchEntryId).toEqual(expect.any(String))
+    expect(window.history.state.publicSearchEntryId).not.toBe(initialEntryId)
+    scope.stop()
   })
 })
 

@@ -12,18 +12,22 @@ export type SearchViewRuntimeState = SearchViewState & { scrollKey?: string }
 type PrivateSearchState = Pick<SearchViewRuntimeState, 'selectedId' | 'panel' | 'scrollKey'>
 type HistoryMode = 'push' | 'replace'
 type PublicSearchHistoryState = Record<string, unknown> & {
+  publicSearchEntryId?: string
   publicSearchPrivate?: Partial<PrivateSearchState>
   publicSearchCommittedViewport?: MapViewport | null
   publicSearchViewportPending?: boolean
   publicSearchUrl?: string
 }
 type SearchEntrySnapshot = {
+  entryId: string
   url: string
   privateState: PrivateSearchState
   committedViewport: MapViewport | undefined
   viewportPending: boolean
 }
 type StoredSearchEntrySnapshot = Omit<SearchEntrySnapshot, 'committedViewport'> & { committedViewport: MapViewport | null }
+
+let fallbackEntrySequence = 0
 
 function firstValue(value: string | null) {
   return typeof value === 'string' ? value : ''
@@ -51,9 +55,14 @@ function legacyCompatibleParams(url: URL) {
 function normalizePrivateState(value: unknown): PrivateSearchState | undefined {
   if (!value || typeof value !== 'object') return undefined
   const parsed = value as Partial<PrivateSearchState>
+  if (parsed.panel !== 'map' && parsed.panel !== 'list') return undefined
+  if (Object.prototype.hasOwnProperty.call(parsed, 'selectedId')
+    && (typeof parsed.selectedId !== 'string' || !parsed.selectedId)) return undefined
+  if (Object.prototype.hasOwnProperty.call(parsed, 'scrollKey')
+    && (typeof parsed.scrollKey !== 'string' || !parsed.scrollKey)) return undefined
   return {
     ...(typeof parsed.selectedId === 'string' && parsed.selectedId ? { selectedId: parsed.selectedId } : {}),
-    panel: parsed.panel === 'map' ? 'map' : 'list',
+    panel: parsed.panel,
     ...(typeof parsed.scrollKey === 'string' && parsed.scrollKey ? { scrollKey: parsed.scrollKey } : {}),
   }
 }
@@ -85,40 +94,72 @@ function entryUrl(input: string) {
   return `${parsed.pathname}${parsed.search}`
 }
 
+function isPublicSearchEntryId(value: unknown): value is string {
+  return typeof value === 'string' && /^ps-[a-z0-9-]{16,128}$/i.test(value)
+}
+
+function publicSearchEntryIdFromHistory(value: unknown) {
+  if (!value || typeof value !== 'object') return undefined
+  const entryId = (value as PublicSearchHistoryState).publicSearchEntryId
+  return isPublicSearchEntryId(entryId) ? entryId : undefined
+}
+
+function ownedEntryIdFromHistory(value: unknown, input: string) {
+  if (!value || typeof value !== 'object') return undefined
+  const historyState = value as PublicSearchHistoryState
+  const entryId = publicSearchEntryIdFromHistory(historyState)
+  if (!entryId || historyState.publicSearchUrl !== entryUrl(input)) return undefined
+  return entryId
+}
+
+function createPublicSearchEntryId() {
+  const webCrypto = globalThis.crypto
+  if (typeof webCrypto?.randomUUID === 'function') return `ps-${webCrypto.randomUUID()}`
+  fallbackEntrySequence += 1
+  if (typeof webCrypto?.getRandomValues === 'function') {
+    const random = webCrypto.getRandomValues(new Uint32Array(4))
+    return `ps-${Array.from(random, value => value.toString(16).padStart(8, '0')).join('')}-${fallbackEntrySequence.toString(36)}`
+  }
+  return `ps-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 13)}-${fallbackEntrySequence.toString(36)}`
+}
+
 function entrySnapshotFromHistory(value: unknown, input: string, fallbackViewport?: MapViewport): SearchEntrySnapshot | undefined {
   if (!value || typeof value !== 'object') return undefined
   const historyState = value as PublicSearchHistoryState
+  const entryId = ownedEntryIdFromHistory(historyState, input)
+  const privateState = privateStateFromHistory(historyState)
   const targetUrl = entryUrl(input)
-  if (historyState.publicSearchUrl !== targetUrl) return undefined
-  const committedViewport = committedViewportFromHistory(historyState, fallbackViewport)
+  if (!entryId || !privateState) return undefined
+  const sessionSnapshot = readSessionSnapshot(historyState, input)
+  const committedViewport = Object.prototype.hasOwnProperty.call(historyState, 'publicSearchCommittedViewport')
+    ? committedViewportFromHistory(historyState, fallbackViewport)
+    : sessionSnapshot?.committedViewport ?? fallbackViewport
   const viewportPending = Object.prototype.hasOwnProperty.call(historyState, 'publicSearchViewportPending')
     ? historyState.publicSearchViewportPending === true
-    : !sameViewport(fallbackViewport, committedViewport)
+    : sessionSnapshot?.viewportPending ?? !sameViewport(fallbackViewport, committedViewport)
   return {
+    entryId,
     url: targetUrl,
-    privateState: privateStateFromHistory(historyState) || { panel: 'list' },
+    privateState,
     committedViewport,
     viewportPending,
   }
 }
 
-function sessionEntryKey(value: unknown, input: string) {
-  if (value && typeof value === 'object') {
-    const position = (value as Record<string, unknown>).position
-    if (typeof position === 'number' || typeof position === 'string') return `position:${position}`
-  }
-  return `url:${entryUrl(input)}`
-}
-
 function readSessionSnapshot(value: unknown, input: string): SearchEntrySnapshot | undefined {
   if (!import.meta.client) return undefined
+  const entryId = ownedEntryIdFromHistory(value, input)
+  if (!entryId || !privateStateFromHistory(value)) return undefined
   try {
     const stored = JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}') as Record<string, StoredSearchEntrySnapshot>
-    const snapshot = stored[sessionEntryKey(value, input)]
-    if (!snapshot || snapshot.url !== entryUrl(input)) return undefined
+    const snapshot = stored[entryId]
+    if (!snapshot || snapshot.entryId !== entryId || snapshot.url !== entryUrl(input)) return undefined
+    const privateState = normalizePrivateState(snapshot.privateState)
+    if (!privateState) return undefined
     return {
+      entryId,
       url: snapshot.url,
-      privateState: normalizePrivateState(snapshot.privateState) || { panel: 'list' },
+      privateState,
       committedViewport: snapshot.committedViewport ? sanitizedViewport(snapshot.committedViewport) : undefined,
       viewportPending: snapshot.viewportPending === true,
     }
@@ -127,18 +168,21 @@ function readSessionSnapshot(value: unknown, input: string): SearchEntrySnapshot
   }
 }
 
-function persistSessionSnapshot(value: unknown, snapshot: SearchEntrySnapshot) {
+function persistSessionSnapshot(snapshot: SearchEntrySnapshot) {
   if (!import.meta.client) return
   try {
-    const stored = JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}') as Record<string, StoredSearchEntrySnapshot>
-    stored[sessionEntryKey(value, snapshot.url)] = {
+    const parsed = JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}') as Record<string, StoredSearchEntrySnapshot>
+    const stored = Object.fromEntries(Object.entries(parsed).filter(([entryId, value]) => (
+      isPublicSearchEntryId(entryId) && value?.entryId === entryId
+    ))) as Record<string, StoredSearchEntrySnapshot>
+    stored[snapshot.entryId] = {
       ...snapshot,
       committedViewport: sanitizedViewport(snapshot.committedViewport) || null,
     }
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(stored))
   } catch {
     sessionStorage.setItem(SESSION_KEY, JSON.stringify({
-      [sessionEntryKey(value, snapshot.url)]: {
+      [snapshot.entryId]: {
         ...snapshot,
         committedViewport: sanitizedViewport(snapshot.committedViewport) || null,
       },
@@ -173,7 +217,6 @@ export function useSearchViewState(input?: string) {
     && browserUrl.search === initial.url.search
   const historyCandidate = initialUsesBrowserEntry ? window.history.state as PublicSearchHistoryState | null : null
   const initialSnapshot = entrySnapshotFromHistory(historyCandidate, initialInput, initial.parsed.viewport)
-    || readSessionSnapshot(historyCandidate, initialInput)
   const privateState = initialSnapshot?.privateState || { panel: 'list' }
   const state = ref<SearchViewRuntimeState>({
     ...initial.parsed,
@@ -188,6 +231,7 @@ export function useSearchViewState(input?: string) {
   const sourceMode = ref(initial.url.searchParams.get('source') === 'saved' ? 'saved' : '')
   let viewportTimer: ReturnType<typeof setTimeout> | null = null
   let plannedNavigation: SearchEntrySnapshot | undefined
+  let currentEntryId = initialSnapshot?.entryId
 
   function currentPrivateState(): PrivateSearchState {
     return {
@@ -197,21 +241,28 @@ export function useSearchViewState(input?: string) {
     }
   }
 
-  function historyStateWithSearchState(base: unknown, privateValue = currentPrivateState(), entryUrl = url.value): PublicSearchHistoryState {
+  function historyStateWithSearchState(
+    base: unknown,
+    entryId: string,
+    privateValue = currentPrivateState(),
+    entryUrlValue = url.value,
+  ): PublicSearchHistoryState {
     const historyState = base && typeof base === 'object' ? base as Record<string, unknown> : {}
     return {
       ...historyState,
       // Vue Router consults this field before its next push; keep pending replacements from being reverted.
-      ...(Object.prototype.hasOwnProperty.call(historyState, 'current') ? { current: entryUrl } : {}),
+      ...(Object.prototype.hasOwnProperty.call(historyState, 'current') ? { current: entryUrlValue } : {}),
+      publicSearchEntryId: entryId,
       publicSearchPrivate: privateValue,
       publicSearchCommittedViewport: sanitizedViewport(committedViewport.value) || null,
       publicSearchViewportPending: viewportPending.value,
-      publicSearchUrl: entryUrl,
+      publicSearchUrl: entryUrl(entryUrlValue),
     }
   }
 
-  function currentEntrySnapshot(entryUrlValue = url.value): SearchEntrySnapshot {
+  function currentEntrySnapshot(entryId: string, entryUrlValue = url.value): SearchEntrySnapshot {
     return {
+      entryId,
       url: entryUrl(entryUrlValue),
       privateState: currentPrivateState(),
       committedViewport: sanitizedViewport(committedViewport.value),
@@ -223,27 +274,35 @@ export function useSearchViewState(input?: string) {
     if (!import.meta.client) return
     const privateValue = currentPrivateState()
     const currentUrl = window.location.pathname + window.location.search
-    window.history.replaceState(historyStateWithSearchState(window.history.state, privateValue, currentUrl), '', window.location.href)
-    persistSessionSnapshot(window.history.state, currentEntrySnapshot(currentUrl))
+    const entryId = currentEntryId || publicSearchEntryIdFromHistory(window.history.state) || createPublicSearchEntryId()
+    currentEntryId = entryId
+    window.history.replaceState(historyStateWithSearchState(window.history.state, entryId, privateValue, currentUrl), '', window.location.href)
+    persistSessionSnapshot(currentEntrySnapshot(entryId, currentUrl))
   }
 
-  function stampCurrentEntry(entryUrlValue?: string) {
+  function stampCurrentEntry(entryUrlValue?: string, requestedEntryId?: string) {
     if (!import.meta.client) return
     const targetUrl = entryUrlValue || window.location.pathname + window.location.search
     if (entryUrl(window.location.pathname + window.location.search) !== entryUrl(targetUrl)) return
     const privateValue = currentPrivateState()
-    window.history.replaceState(historyStateWithSearchState(window.history.state, privateValue, entryUrl(targetUrl)), '', window.location.href)
-    persistSessionSnapshot(window.history.state, currentEntrySnapshot(targetUrl))
+    const entryId = isPublicSearchEntryId(requestedEntryId) ? requestedEntryId : createPublicSearchEntryId()
+    currentEntryId = entryId
+    window.history.replaceState(historyStateWithSearchState(window.history.state, entryId, privateValue, targetUrl), '', window.location.href)
+    persistSessionSnapshot(currentEntrySnapshot(entryId, targetUrl))
   }
 
   function writeUrl(mode: HistoryMode) {
     url.value = publicUrl(currentPath.value, state.value, sourceMode.value || undefined)
     if (!import.meta.client) return
     const privateValue = currentPrivateState()
-    const nextState = historyStateWithSearchState(window.history.state, privateValue)
+    const entryId = mode === 'push'
+      ? createPublicSearchEntryId()
+      : currentEntryId || publicSearchEntryIdFromHistory(window.history.state) || createPublicSearchEntryId()
+    const nextState = historyStateWithSearchState(window.history.state, entryId, privateValue)
     if (mode === 'push') window.history.pushState(nextState, '', url.value)
     else window.history.replaceState(nextState, '', url.value)
-    persistSessionSnapshot(window.history.state, currentEntrySnapshot(url.value))
+    currentEntryId = entryId
+    persistSessionSnapshot(currentEntrySnapshot(entryId, url.value))
   }
 
   function restorePublic(inputValue: string, historyState?: unknown, plannedSnapshot?: SearchEntrySnapshot) {
@@ -251,7 +310,6 @@ export function useSearchViewState(input?: string) {
     const restoredSnapshot = plannedSnapshot?.url === entryUrl(inputValue)
       ? plannedSnapshot
       : entrySnapshotFromHistory(historyState, inputValue, next.parsed.viewport)
-        || readSessionSnapshot(historyState, inputValue)
     const restoredPrivate = restoredSnapshot?.privateState || { panel: 'list' }
     currentPath.value = next.url.pathname
     sourceMode.value = next.url.searchParams.get('source') === 'saved' ? 'saved' : ''
@@ -260,7 +318,7 @@ export function useSearchViewState(input?: string) {
     url.value = publicUrl(currentPath.value, state.value, sourceMode.value || undefined)
     hasMalformedUrl.value = next.malformed
     viewportPending.value = restoredSnapshot?.viewportPending || false
-    stampCurrentEntry(inputValue)
+    stampCurrentEntry(inputValue, restoredSnapshot?.entryId)
   }
 
   function flushPendingEntry() {
@@ -365,6 +423,7 @@ export function useSearchViewState(input?: string) {
     else delete nextState.viewport
     const target = publicUrl(currentPath.value, nextState, sourceMode.value || undefined)
     plannedNavigation = {
+      entryId: createPublicSearchEntryId(),
       url: entryUrl(target),
       privateState: currentPrivateState(),
       committedViewport: sanitizedViewport(committedViewport.value),
@@ -383,7 +442,7 @@ export function useSearchViewState(input?: string) {
 
   if (import.meta.client) {
     if (initialUsesBrowserEntry) {
-      stampCurrentEntry(initialInput)
+      stampCurrentEntry(initialInput, initialSnapshot?.entryId)
     }
     const onPopState = (event: PopStateEvent) => {
       plannedNavigation = undefined
