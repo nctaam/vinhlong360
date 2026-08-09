@@ -192,6 +192,26 @@
 .dark .ical-btn { background: var(--card); border-color: var(--line); color: var(--ink); }
 .dark .ical-btn:hover { background: rgba(255,255,255,.08); }
 
+/* Explicit and system contrast preferences stay on semantic Nocturne tokens. */
+html[data-high-contrast="true"].dark {
+  --color-border: var(--color-text-muted);
+  --focus-outline: var(--color-focus);
+}
+
+@media (prefers-contrast: more) {
+  .dark {
+    --color-border: var(--color-text-muted);
+    --focus-outline: var(--color-focus);
+  }
+}
+
+@media (forced-colors: active) {
+  .dark .maplibregl-canvas,
+  .dark .maplibregl-popup-content {
+    filter: none;
+  }
+}
+
 /* ── Lưu trú ── */
 .dark .quick-pick-count { background: rgba(var(--river-rgb, var(--primary-rgb)), .18); color: var(--ink); }
 .dark .quick-pick.active .quick-pick-count,

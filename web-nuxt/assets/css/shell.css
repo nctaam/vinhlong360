@@ -18,6 +18,7 @@
   -webkit-backdrop-filter: saturate(1.15) blur(14px);
   backdrop-filter: saturate(1.15) blur(14px);
   transition: box-shadow var(--duration-normal) var(--ease-out);
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 .public-shell-chrome.scrolled {
@@ -389,6 +390,16 @@
   color: var(--color-text);
 }
 
+html[data-density="compact"] .public-context-inner,
+html[data-density="compact"] .public-shell-command-row {
+  gap: var(--space-2);
+}
+
+html[data-density="compact"] .public-shell-task-nav a,
+html[data-density="compact"] .public-bottom-nav-item {
+  min-height: 44px;
+}
+
 .public-shell .site-footer::before,
 .public-shell .footer-col h2::before {
   content: none;
@@ -613,6 +624,12 @@
     animation: none;
     transition: none;
   }
+}
+
+html[data-reduced-motion="true"] .public-shell-catalog.open,
+html[data-reduced-motion="true"] .public-shell-catalog-button .line-icon {
+  animation: none;
+  transition: none;
 }
 
 @media (prefers-contrast: more) and (forced-colors: none) {

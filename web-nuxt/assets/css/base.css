@@ -1,5 +1,6 @@
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+:root { --a11y-text-scale: 1; --a11y-text-scale-percent: 100%; }
+html { scroll-behavior: smooth; scroll-padding-top: 72px; font-size: var(--a11y-text-scale-percent); }
 /* 100vw full-bleed sections (StorySpread: width:100vw + margin-inline:calc(50%-50vw)) overshoot
    the content area by the scrollbar width → ~5px horizontal page-scroll on desktop. Clip it on
    <main>, which holds the page content but NOT the sticky topbar (a sibling) → topbar sticky is
@@ -8,7 +9,7 @@ html { scroll-behavior: smooth; scroll-padding-top: 72px; }
    position:sticky still works. Verified live on prod: 5px→0, topbar sticky intact. */
 #main-content { overflow-x: clip; }
 html, body { margin: 0; padding: 0; }
-body { font-family: var(--font-sans); color: var(--ink); background: var(--bg); line-height: var(--leading-normal); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-feature-settings: 'cv11' 1; text-rendering: optimizeLegibility; -webkit-tap-highlight-color: transparent; overflow-x: hidden; transition: background .35s var(--ease-out), color .35s var(--ease-out); }
+body { font-family: var(--font-sans); color: var(--ink); background: var(--bg); line-height: var(--leading-normal); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-feature-settings: 'cv11' 1; text-rendering: optimizeLegibility; -webkit-tap-highlight-color: transparent; overflow-x: hidden; overflow-wrap: break-word; transition: background .35s var(--ease-out), color .35s var(--ease-out); }
 body { accent-color: var(--primary); }
 h1, h2, h3 { text-wrap: balance; }
 .icon-inline { vertical-align: -2px; margin-inline-end: var(--space-1); }
@@ -218,6 +219,31 @@ a:focus:not(:focus-visible), button:focus:not(:focus-visible) { outline: none; }
 :where(a[href], button, [role="button"], input:not([type="hidden"]), select, textarea, summary) { min-height: var(--touch-min); }
 :where(p a, li a, td a, .prose a) { min-height: auto; }
 
+/* User-selected density may tighten whitespace, never targets or focus affordances. */
+html[data-density="compact"] {
+  --flow-space: var(--space-3);
+  --cluster-gap: var(--space-2);
+}
+
+html[data-keyboard-first="true"] :where(a[href], button, input, select, textarea, summary,
+  [tabindex]:not([tabindex="-1"])):focus {
+  outline: 3px solid var(--focus-outline);
+  outline-offset: 3px;
+}
+
+html[data-reduced-motion="true"] {
+  scroll-behavior: auto;
+}
+
+html[data-reduced-motion="true"] *,
+html[data-reduced-motion="true"] *::before,
+html[data-reduced-motion="true"] *::after {
+  animation-duration: .01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: .01ms !important;
+  scroll-behavior: auto !important;
+}
+
 /* ── Skeleton shimmer (GPU-accelerated) ── */
 .sk-shimmer { position: relative; overflow: hidden; background: var(--sk-base); border-radius: var(--sk-radius-line); }
 .sk-shimmer::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent 0%, var(--sk-highlight) 50%, transparent 100%); transform: translateX(-100%); animation: sk-shimmer-sweep var(--sk-duration) infinite; will-change: transform; }
@@ -295,6 +321,12 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
 .reveal.revealed:nth-child(7) { animation-delay: .36s; }
 .reveal.revealed:nth-child(8) { animation-delay: .42s; }
 @media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
   html { scroll-behavior: auto; }
   .reveal, html.js .reveal { opacity: 1; transform: none; }
   .reveal.revealed { animation: none; }
@@ -957,6 +989,15 @@ a.thread-author:hover { color: var(--primary-fg); }
   .card, .step-card, .route-card, .cross-card, .quick-pick, .interest-card, .route-preview { border-width: 1px; }
 }
 
+html[data-high-contrast="true"] {
+  --line: var(--color-text-muted);
+  --focus-outline: var(--color-focus);
+}
+
+html[data-high-contrast="true"] :where(.card, .step-card, .route-card, .cross-card, .quick-pick, .interest-card, .route-preview) {
+  border-width: 1px;
+}
+
 /* ── Reduced transparency (solid fallbacks for glass effects) ── */
 @media (prefers-reduced-transparency: reduce) {
   :root { --glass-bg: var(--bg); --glass-bg-heavy: var(--bg); --surface-translucent: var(--bg); }
@@ -966,6 +1007,7 @@ a.thread-author:hover { color: var(--primary-fg); }
 
 /* ── Forced-colors / Windows High Contrast ── */
 @media (forced-colors: active) {
+  * { forced-color-adjust: auto; }
   .btn, .tag, .chip, .badge, .auth-btn { border: 1px solid ButtonText; }
   a:focus-visible, button:focus-visible, [role="button"]:focus-visible { outline: 2px solid Highlight; }
   .topbar, .site-footer { border-bottom: 1px solid CanvasText; }
@@ -977,6 +1019,13 @@ a.thread-author:hover { color: var(--primary-fg); }
   .thread-type-badge { border: 1px solid GrayText; }
   .stop-num { border: 1px solid Highlight; }
   .stop-connector, .thread-line { background: CanvasText; }
+}
+
+/* Narrow CSS viewports include browser zoom at 200%; preserve readable flow. */
+@media (max-width: 40rem) {
+  :where(main, section, article, aside, form, fieldset, table, pre) { min-width: 0; max-width: 100%; }
+  :where(pre, table, [role="table"]) { overflow-x: auto; }
+  :where(input, select, textarea, button) { max-width: 100%; }
 }
 
 /* ── Print ── */

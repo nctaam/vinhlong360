@@ -191,6 +191,7 @@ describe('service worker policy', () => {
     new FakeRequest('https://vinhlong360.vn/api/entities/a'),
     new FakeRequest('https://vinhlong360.vn/events'),
     new FakeRequest('https://vinhlong360.vn/recommend'),
+    new FakeRequest('https://vinhlong360.vn/feedback/public-telemetry', { method: 'POST' }),
     new FakeRequest('https://vinhlong360.vn/seo'),
     new FakeRequest('https://vinhlong360.vn/seo/jsonld/a'),
     new FakeRequest('https://vinhlong360.vn/_nuxt/app.js', { cache: 'no-store' }),

@@ -1,20 +1,41 @@
-import { featureFlagDefault } from '~/utils/featureFlags'
+import {
+  PUBLIC_CAPABILITY_FLAGS,
+  resolveFeatureFlag,
+  resolvePublicCapabilityMode,
+  type PublicCapability,
+} from '~/utils/featureFlags'
 
 /**
  * A4 — read feature flags from the CMS.
- * `enabled(key)`: explicit override in `features.flags` → registry default →
- * true. Default-true means nothing disappears until an admin opts out.
+ * Existing modules keep their registry defaults. Unknown and adaptive rollout
+ * flags fail closed so deterministic search/detail/planner UI remains usable.
  */
 export function useFeature() {
   const { get } = useSiteSettings()
-  const flags = computed<Record<string, boolean>>(
-    () => (get('features.flags', {}) as Record<string, boolean>) || {},
-  )
+  const source = computed<{ available: boolean; flags: Record<string, unknown> }>(() => {
+    try {
+      const value = get('features.flags', {})
+      return value && typeof value === 'object' && !Array.isArray(value)
+        ? { available: true, flags: value as Record<string, unknown> }
+        : { available: false, flags: {} }
+    } catch {
+      return { available: false, flags: {} }
+    }
+  })
+  const flags = computed(() => source.value.flags)
 
   function enabled(key: string): boolean {
-    const v = flags.value?.[key]
-    return typeof v === 'boolean' ? v : featureFlagDefault(key)
+    if (!source.value.available) return false
+    return resolveFeatureFlag(key, flags.value)
   }
 
-  return { flags, enabled }
+  function capabilityMode(capability: PublicCapability) {
+    return resolvePublicCapabilityMode(capability, flags.value)
+  }
+
+  const capabilityModes = computed(() => Object.fromEntries(
+    (Object.keys(PUBLIC_CAPABILITY_FLAGS) as PublicCapability[]).map(capability => [capability, capabilityMode(capability)]),
+  ) as Record<PublicCapability, ReturnType<typeof capabilityMode>>)
+
+  return { flags, enabled, capabilityMode, capabilityModes }
 }

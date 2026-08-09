@@ -5,6 +5,8 @@ import { createLaunchRawArtifactPlugin } from './build/launchRawArtifactPlugin'
 const apiBase = process.env.API_BASE || 'http://localhost:8360'
 const siteNoindex = process.env.NUXT_PUBLIC_SITE_NOINDEX !== 'false'
 const itineraryScheduleV2 = process.env.NUXT_PUBLIC_ITINERARY_SCHEDULE_V2 === '1'
+const publicTelemetryEnabled = process.env.NUXT_PUBLIC_TELEMETRY_ENABLED === '1'
+const publicTelemetryEndpoint = process.env.NUXT_PUBLIC_TELEMETRY_ENDPOINT || '/feedback/public-telemetry'
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
@@ -108,6 +110,7 @@ export default defineNuxtConfig({
       ],
       script: [
         { innerHTML: "try{var k='vl360-color-mode',v=localStorage.getItem(k);if(v==='system'||v==='auto')localStorage.setItem(k,'dark')}catch(_){ }", tagPosition: 'head' },
+        { innerHTML: "try{var d=document.documentElement,p=JSON.parse(localStorage.getItem('vl360-accessibility-profile')||'null')||{},s=[1,1.25,1.5,2].includes(p.textScale)?p.textScale:1,t=p.theme==='parchment'?'parchment':'nocturne',n=p.density==='compact'?'compact':'comfortable';d.dataset.theme=t;d.dataset.density=n;d.style.setProperty('--a11y-text-scale',String(s));d.style.setProperty('--a11y-text-scale-percent',(s*100)+'%')}catch(_){ }", tagPosition: 'head' },
         // Add `js` to <html> BEFORE first paint so the JS-gated .reveal rule
         // (html.js .reveal { opacity:0 }) only ever hides content when JS is
         // present — no flash-of-hidden, and full visibility when JS is off/slow.
@@ -155,6 +158,8 @@ export default defineNuxtConfig({
       // headers are now derived from the request-local launch safety decision.
       siteNoindex,
       itineraryScheduleV2,
+      publicTelemetryEnabled,
+      publicTelemetryEndpoint,
     },
   },
 
