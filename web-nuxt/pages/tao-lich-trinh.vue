@@ -804,7 +804,7 @@ async function refreshPlannerStopEvidence(stopId: string): Promise<boolean> {
     const detail = await publicApi.getEntity(stopId)
     if (!stops.value.includes(stop)) return false
     const evidence = plannerFreshnessEvidenceForEntity(detail)
-    if (!evidence) return false
+    if (!evidence || evidence.status === 'unknown') return false
     stop.sourceFreshness = evidence
     return true
   } catch {

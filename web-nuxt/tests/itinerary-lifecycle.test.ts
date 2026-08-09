@@ -246,6 +246,56 @@ describe('planner page lifecycle', () => {
     wrapper.unmount()
   })
 
+  it('keeps known stale evidence when refresh returns partial, malformed, or status-less detail', async () => {
+    const originalEvidence = {
+      status: 'stale',
+      updatedAt: '2026-06-01T00:00:00Z',
+      sourceTitle: 'Nguồn kiểm chứng',
+    }
+    mocks.listEntities.mockResolvedValue({
+      total: 1,
+      entities: [entityWithFreshness('start', 'Start', 'stale', originalEvidence.updatedAt)],
+    })
+    mocks.getEntity
+      .mockResolvedValueOnce({
+        id: 'start', name: 'Start', type: 'attraction', coordinates: [10.01, 106.01],
+        source_freshness: { source_title: 'Nguồn chỉ có tên' },
+      })
+      .mockResolvedValueOnce({
+        id: 'start', name: 'Start', type: 'attraction', coordinates: [10.01, 106.01],
+        source_freshness: {
+          freshness_status: 'recent-enough',
+          updated_at: '2026-08-09T11:00:00Z',
+        },
+      })
+      .mockResolvedValueOnce({
+        id: 'start', name: 'Start', type: 'attraction', coordinates: [10.01, 106.01],
+      })
+    const wrapper = await mountSuspended(PlannerPage, {
+      global: { stubs: plannerStubs() },
+    })
+
+    try {
+      await wrapper.get('.picker-item').trigger('click')
+      await flushContinuation()
+      const vm = wrapper.vm as unknown as {
+        stops: Array<{ id: string; sourceFreshness?: typeof originalEvidence }>
+      }
+
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        await wrapper.get('[data-friction-code="stale-stop-facts"] [data-friction-recovery]').trigger('click')
+        await flushContinuation()
+        expect(wrapper.find('[data-friction-code="stale-stop-facts"]').exists()).toBe(true)
+        expect(vm.stops[0]?.sourceFreshness).toEqual(originalEvidence)
+      }
+
+      const persisted = JSON.parse(localStorage.getItem('vl360_planner_draft') || '{}')
+      expect(persisted.stops?.[0]?.sourceFreshness).toEqual(originalEvidence)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
   it('promotes confirmed opening-hour conflicts, clears them on schedule edits, and drops cancelled candidates', async () => {
     mocks.runPlannerOptimization.mockResolvedValue(currentResult(undefined, [{
       stop_id: 'planner-stop-1',
