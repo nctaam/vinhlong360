@@ -15,6 +15,10 @@ const passingSnapshot = {
   viewportWidth: 720,
   screenWidth: 1440,
   devicePixelRatio: 2,
+  nativeBrowserZoomApplied: true,
+  nativeBrowserZoomFactor: 2,
+  nativeBrowserZoomLayoutFactor: 2,
+  nativeBrowserZoomVisualScale: 1,
   textScale: 2,
   textScaleApplied: true,
   horizontalOverflow: 0,
@@ -50,8 +54,18 @@ describe('public accessibility browser gate', () => {
     expect(ci).toContain('npm run check:public-accessibility')
   })
 
-  it('accepts forced-colors and a bounded 200%-layout equivalent snapshot', () => {
+  it('accepts forced-colors and a native 200% browser-zoom snapshot', () => {
     expect(evaluatePublicAccessibilitySnapshot(passingSnapshot)).toEqual([])
+  })
+
+  it('rejects page-scale magnification presented as native browser zoom', () => {
+    expect(evaluatePublicAccessibilitySnapshot({
+      ...passingSnapshot,
+      nativeBrowserZoomApplied: false,
+      nativeBrowserZoomFactor: 1,
+      nativeBrowserZoomLayoutFactor: 1,
+      nativeBrowserZoomVisualScale: 2,
+    })).toContain('native-browser-zoom-not-200-percent')
   })
 
   it('blocks missing forced-colors evidence, overflow, undersized controls, and slow main content', () => {
@@ -66,7 +80,7 @@ describe('public accessibility browser gate', () => {
     })).toEqual(expect.arrayContaining([
       'forced-colors-inactive',
       'forced-control-border-missing',
-      'zoom-layout-not-2x',
+      'native-browser-zoom-not-200-percent',
       'horizontal-overflow',
       'undersized-controls',
       'main-visible-budget-exceeded',

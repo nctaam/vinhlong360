@@ -15,6 +15,7 @@ const clsBudget = 0.1
 const inpBudgetMs = 200
 const apiBudgetMs = 1500
 const textScaleTarget = 2
+const nativeBrowserZoomTarget = 2
 const axeSourcePath = join(webRoot, 'node_modules', 'axe-core', 'axe.min.js')
 const bundleBudgetPath = resolve(webRoot, '..', 'docs', 'standards', 'bundle-budget.json')
 
@@ -58,8 +59,17 @@ export function evaluatePublicAccessibilitySnapshot(snapshot) {
     reasons.push('forced-control-border-missing')
   }
   if (snapshot.textScale !== textScaleTarget || snapshot.textScaleApplied !== true) reasons.push('text-scale-not-200-percent')
-  if (snapshot.devicePixelRatio < 2
-    || Math.abs((snapshot.viewportWidth * 2) - snapshot.screenWidth) > 2) reasons.push('zoom-layout-not-2x')
+  if (snapshot.nativeBrowserZoomApplied !== true
+    || !Number.isFinite(snapshot.nativeBrowserZoomFactor)
+    || Math.abs(snapshot.nativeBrowserZoomFactor - nativeBrowserZoomTarget) > 0.02
+    || !Number.isFinite(snapshot.nativeBrowserZoomLayoutFactor)
+    || Math.abs(snapshot.nativeBrowserZoomLayoutFactor - nativeBrowserZoomTarget) > 0.02
+    || !Number.isFinite(snapshot.nativeBrowserZoomVisualScale)
+    || Math.abs(snapshot.nativeBrowserZoomVisualScale - 1) > 0.02
+    || snapshot.devicePixelRatio < nativeBrowserZoomTarget
+    || Math.abs((snapshot.viewportWidth * nativeBrowserZoomTarget) - snapshot.screenWidth) > 2) {
+    reasons.push('native-browser-zoom-not-200-percent')
+  }
   if (snapshot.horizontalOverflow > 0) reasons.push('horizontal-overflow')
   if (!snapshot.mainVisible || snapshot.mainUsable !== true) reasons.push('main-content-hidden')
   if (snapshot.controlsBelow44 > 0) reasons.push('undersized-controls')
@@ -259,6 +269,55 @@ async function navigateAndWait(cdp, method, params) {
   await load
 }
 
+async function readNativeBrowserZoomState(cdp) {
+  const evaluated = await cdp.send('Runtime.evaluate', {
+    expression: '({ viewportWidth: innerWidth, devicePixelRatio, visualScale: visualViewport?.scale ?? null })',
+    returnByValue: true,
+  })
+  return evaluated.result.value
+}
+
+export async function applyNativeBrowserZoom(cdp) {
+  const baseline = await readNativeBrowserZoomState(cdp)
+  let current = baseline
+  let steps = 0
+  const modifier = process.platform === 'darwin' ? 4 : 2
+
+  while (steps < 8 && current.devicePixelRatio / baseline.devicePixelRatio < nativeBrowserZoomTarget - 0.02) {
+    await cdp.send('Input.dispatchKeyEvent', {
+      type: 'rawKeyDown',
+      modifiers: modifier,
+      key: '+',
+      code: 'Equal',
+      windowsVirtualKeyCode: 187,
+      nativeVirtualKeyCode: 187,
+    })
+    await cdp.send('Input.dispatchKeyEvent', {
+      type: 'keyUp',
+      modifiers: modifier,
+      key: '+',
+      code: 'Equal',
+      windowsVirtualKeyCode: 187,
+      nativeVirtualKeyCode: 187,
+    })
+    steps += 1
+    current = await readNativeBrowserZoomState(cdp)
+  }
+
+  const nativeBrowserZoomFactor = current.devicePixelRatio / baseline.devicePixelRatio
+  const nativeBrowserZoomLayoutFactor = baseline.viewportWidth / current.viewportWidth
+  const nativeBrowserZoomVisualScale = current.visualScale
+  return {
+    nativeBrowserZoomApplied: Math.abs(nativeBrowserZoomFactor - nativeBrowserZoomTarget) <= 0.02
+      && Math.abs(nativeBrowserZoomLayoutFactor - nativeBrowserZoomTarget) <= 0.02
+      && Math.abs(nativeBrowserZoomVisualScale - 1) <= 0.02,
+    nativeBrowserZoomFactor,
+    nativeBrowserZoomLayoutFactor,
+    nativeBrowserZoomVisualScale,
+    nativeBrowserZoomSteps: steps,
+  }
+}
+
 async function runApiFixtureProbe(cdp) {
   const fixtureUrl = new URL(apiFixturePath, previewUrl).href
   const urlPattern = fixtureUrl.replace(/[?*\\]/g, character => `\\${character}`)
@@ -299,11 +358,11 @@ async function browserSnapshot(cdp) {
   await cdp.send('Page.enable')
   await cdp.send('Runtime.enable')
   await cdp.send('Emulation.setDeviceMetricsOverride', {
-    width: 720,
-    height: 450,
+    width: 1440,
+    height: 900,
     screenWidth: 1440,
     screenHeight: 900,
-    deviceScaleFactor: 2,
+    deviceScaleFactor: 1,
     mobile: false,
     scale: 1,
   })
@@ -316,6 +375,7 @@ async function browserSnapshot(cdp) {
   })
 
   await navigateAndWait(cdp, 'Page.navigate', { url: previewUrl })
+  const nativeBrowserZoom = await applyNativeBrowserZoom(cdp)
   await cdp.send('Runtime.evaluate', {
     expression: `localStorage.setItem('vl360-accessibility-profile', ${JSON.stringify(JSON.stringify({ theme: 'nocturne', density: 'comfortable', textScale: 2 }))})`,
   })
@@ -401,6 +461,7 @@ async function browserSnapshot(cdp) {
   })
   return {
     ...evaluated.result.value,
+    ...nativeBrowserZoom,
     mainVisible,
     mainUsable,
     mainVisibleMs,

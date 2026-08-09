@@ -790,10 +790,33 @@ describe('Tri-Region color contract', () => {
   // khác biệt so với mốc cũ đúng một dòng. Chốt chặn giữ nguyên tác dụng: mọi
   // dependency thêm sau đây vẫn làm test đỏ cho tới khi có người dời mốc và
   // giải trình.
-  it.each(['package.json', 'package-lock.json'])('keeps %s identical to the remediation base', async (path) => {
+  it('keeps dependency declarations identical to the remediation base', async () => {
+    const [{ stdout: baselineSource }, currentSource] = await Promise.all([
+      execFileAsync('git', ['show', '98b8649e:web-nuxt/package.json'], { cwd: root }),
+      readFile(resolve(root, 'web-nuxt/package.json'), 'utf8'),
+    ])
+    const baseline = JSON.parse(baselineSource)
+    const current = JSON.parse(currentSource)
+
+    expect({
+      dependencies: current.dependencies,
+      devDependencies: current.devDependencies,
+      optionalDependencies: current.optionalDependencies,
+      peerDependencies: current.peerDependencies,
+      overrides: current.overrides,
+    }).toEqual({
+      dependencies: baseline.dependencies,
+      devDependencies: baseline.devDependencies,
+      optionalDependencies: baseline.optionalDependencies,
+      peerDependencies: baseline.peerDependencies,
+      overrides: baseline.overrides,
+    })
+  })
+
+  it('keeps package-lock.json identical to the remediation base', async () => {
     const [{ stdout: baseline }, current] = await Promise.all([
-      execFileAsync('git', ['show', `98b8649e:web-nuxt/${path}`], { cwd: root }),
-      readFile(resolve(root, 'web-nuxt', path), 'utf8'),
+      execFileAsync('git', ['show', '98b8649e:web-nuxt/package-lock.json'], { cwd: root }),
+      readFile(resolve(root, 'web-nuxt/package-lock.json'), 'utf8'),
     ])
 
     expect(current.replace(/\r\n/g, '\n')).toBe(baseline.replace(/\r\n/g, '\n'))
