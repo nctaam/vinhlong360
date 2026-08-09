@@ -12,6 +12,7 @@ vi.mock('../composables/useUnifiedSearch', () => ({
   useUnifiedSearch: () => ({
     searchAll: searchAllMock,
     fetchEntitySuggestions: fetchSuggestionsMock,
+    zeroResultRecoveryActions: () => [{ id: 'recent-saved', label: 'Xem mục gần đây và đã lưu', to: '/da-luu' }],
   }),
 }))
 

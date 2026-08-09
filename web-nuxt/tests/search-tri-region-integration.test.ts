@@ -20,6 +20,7 @@ vi.mock('../composables/useUnifiedSearch', () => ({
   useUnifiedSearch: () => ({
     searchAll: searchAllMock,
     fetchEntitySuggestions: fetchSuggestionsMock,
+    zeroResultRecoveryActions: () => [{ id: 'recent-saved', label: 'Xem mục gần đây và đã lưu', to: '/da-luu' }],
   }),
 }))
 vi.mock('../composables/useFeature', () => ({
@@ -68,6 +69,7 @@ const pageStubs = {
   SaveButton: true,
   ImageDisclosure: true,
   JourneyActionRail: true,
+  MapListSurface: { props: ['results', 'selectedId', 'viewport', 'mapState'], template: '<div data-map-list-surface-stub><span v-for="result in results" :key="result.id">{{ result.name }}</span></div>' },
   IconLine: { props: ['name'], template: '<i :data-icon="name" />' },
 }
 const componentStubs = {
@@ -254,6 +256,24 @@ it('submits the query through the existing encoded search route', async () => {
   await wrapper.get('input[type="search"]').setValue('bưởi Năm Roi')
   await wrapper.get('[data-color-role="action-primary"]').trigger('click')
   expect(navigateToMock).toHaveBeenCalledWith('/tim-kiem?q=b%C6%B0%E1%BB%9Fi%20N%C4%83m%20Roi')
+})
+
+it('adds the coordinated map sibling without changing the existing search response shape', async () => {
+  searchAllMock.mockResolvedValue({
+    entities: [{ id: 'craft-1', type: 'craft_village', name: 'Gốm đỏ Mang Thít', coordinates: { lat: 10.24, lng: 106.01 }, quality: { source_tier: 'official' } }],
+    posts: [],
+    users: [],
+    totals: { entities: 1, posts: 0, users: 0 },
+  })
+  const wrapper = await mountSuspended(SearchPage, {
+    route: '/tim-kiem?q=g%E1%BB%91m',
+    global: { stubs: pageStubs },
+  })
+  wrappers.push(wrapper)
+  await flushUi()
+
+  expect(wrapper.find('[data-map-list-surface-stub]').exists()).toBe(true)
+  expect(searchAllMock).toHaveBeenCalledWith('gốm', 100)
 })
 
 it('keeps Arrow, Enter and Escape combobox behavior with aria-activedescendant', async () => {

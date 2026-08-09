@@ -5,10 +5,12 @@ const OSM_TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
 
 type MapLibreModule = typeof import('maplibre-gl')
 type MapCreateResult = { map: Map; maplibregl: MapLibreModule }
+export type NDAMapState = 'loading' | 'ready' | 'fallback' | 'error'
 type MapCreatePositionOptions = {
   center?: [number, number]
   zoom?: number
   theme?: 'day' | 'night'
+  onStateChange?: (state: NDAMapState) => void
 }
 type LifecycleMapCreateOptions = MapCreatePositionOptions & {
   isActive: () => boolean
@@ -61,35 +63,60 @@ export function useNDAMap() {
     const isActive = mapOptions.isActive ?? (() => true)
     if (!isActive()) return null
 
-    const maplibregl = await import('maplibre-gl')
+    mapOptions.onStateChange?.('loading')
+
+    let maplibregl: MapLibreModule
+    try {
+      maplibregl = await import('maplibre-gl')
+    } catch (error) {
+      mapOptions.onStateChange?.('error')
+      throw error
+    }
     if (!isActive()) return null
-    await import('maplibre-gl/dist/maplibre-gl.css')
+    try {
+      await import('maplibre-gl/dist/maplibre-gl.css')
+    } catch (error) {
+      mapOptions.onStateChange?.('error')
+      throw error
+    }
     if (!isActive()) return null
 
-    const map = new maplibregl.Map({
-      container,
-      // Không có khoá tile thì đi thẳng vào nền OpenStreetMap thay vì bắn một
-      // request chắc chắn hỏng rồi mới rơi vào nhánh lỗi.
-      style: apiKey ? getStyleUrl(mapOptions.theme ?? 'day') : getFallbackStyle(mapOptions.theme ?? 'day') as any,
-      center: mapOptions.center ?? [106.0, 10.25],
-      zoom: mapOptions.zoom ?? 10,
-      attributionControl: false,
-    })
+    let map: Map
+    try {
+      map = new maplibregl.Map({
+        container,
+        // Không có khoá tile thì đi thẳng vào nền OpenStreetMap thay vì bắn một
+        // request chắc chắn hỏng rồi mới rơi vào nhánh lỗi.
+        style: apiKey ? getStyleUrl(mapOptions.theme ?? 'day') : getFallbackStyle(mapOptions.theme ?? 'day') as any,
+        center: mapOptions.center ?? [106.0, 10.25],
+        zoom: mapOptions.zoom ?? 10,
+        attributionControl: false,
+      })
+    } catch (error) {
+      mapOptions.onStateChange?.('error')
+      throw error
+    }
     if (!isActive()) {
       map.remove()
       return null
     }
 
-    let fallbackApplied = false
+    let fallbackApplied = !apiKey
     map.on('error', (event: { error?: unknown }) => {
-      if (!isActive() || fallbackApplied || !isRecoverableMapResourceError(event?.error)) return
-      fallbackApplied = true
-      try {
-        map.setStyle(getFallbackStyle(mapOptions.theme ?? 'day') as any)
-      } catch {
-        // MapLibre can emit after teardown during route navigation; keep map failures non-fatal.
+      if (!isActive()) return
+      if (!fallbackApplied && isRecoverableMapResourceError(event?.error)) {
+        fallbackApplied = true
+        mapOptions.onStateChange?.('fallback')
+        try {
+          map.setStyle(getFallbackStyle(mapOptions.theme ?? 'day') as any)
+          return
+        } catch {
+          // Fall through to the list-preserving error state.
+        }
       }
+      mapOptions.onStateChange?.('error')
     })
+    map.on('load', () => { if (isActive()) mapOptions.onStateChange?.('ready') })
     if (!isActive()) {
       map.remove()
       return null

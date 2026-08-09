@@ -1,29 +1,36 @@
 export function useFilterUrl(filters: Record<string, Ref<string>>, defaults: Record<string, string> = {}) {
   const route = useRoute()
   const router = useRouter()
+  let restoringFromRoute = false
 
-  for (const [key, ref] of Object.entries(filters)) {
-    const queryVal = route.query[key]
-    if (typeof queryVal === 'string' && queryVal) {
-      ref.value = queryVal
+  function restoreFromRoute() {
+    restoringFromRoute = true
+    for (const [key, filterRef] of Object.entries(filters)) {
+      const rawValue = route.query[key]
+      const queryValue = Array.isArray(rawValue) ? rawValue[0] : rawValue
+      filterRef.value = typeof queryValue === 'string' && queryValue ? queryValue : defaults[key] || 'all'
     }
+    nextTick(() => { restoringFromRoute = false })
   }
+  restoreFromRoute()
 
   function syncToUrl() {
+    if (restoringFromRoute) return
     const query: Record<string, string | undefined> = { ...route.query as Record<string, string> }
-    for (const [key, ref] of Object.entries(filters)) {
+    for (const [key, filterRef] of Object.entries(filters)) {
       const defaultVal = defaults[key] || 'all'
-      if (ref.value && ref.value !== defaultVal) {
-        query[key] = ref.value
+      if (filterRef.value && filterRef.value !== defaultVal) {
+        query[key] = filterRef.value
       } else {
         delete query[key]
       }
     }
-    router.replace({ query })
+    return router.replace({ query })
   }
 
-  for (const ref of Object.values(filters)) {
-    watch(ref, syncToUrl)
+  watch(() => route.query, restoreFromRoute, { deep: true })
+  for (const filterRef of Object.values(filters)) {
+    watch(filterRef, syncToUrl)
   }
 
   return { syncToUrl }

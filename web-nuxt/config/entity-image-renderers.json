@@ -530,7 +530,7 @@
       "test_file": "tests/event-image-disclosure.test.ts"
     },
     {
-      "file": "pages/ban-do.vue",
+      "file": "components/public/MapListSurface.vue",
       "surface": "map-popup",
       "access_path": "popup",
       "source_class": "none",

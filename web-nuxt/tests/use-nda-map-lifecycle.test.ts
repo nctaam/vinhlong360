@@ -110,4 +110,18 @@ describe('useNDAMap lifecycle boundary', () => {
     expect(mocks.addListener).not.toHaveBeenCalled()
     expect(mocks.addControl).not.toHaveBeenCalled()
   })
+
+  it('reports a non-recoverable renderer error without throwing away caller-owned results', async () => {
+    const onStateChange = vi.fn()
+    const { createMap } = useNDAMap()
+
+    await createMap(document.createElement('div'), {
+      isActive: () => true,
+      onStateChange,
+    })
+    const errorHandler = mocks.addListener.mock.calls.find(call => call[0] === 'error')?.[1] as ((event: { error?: unknown }) => void) | undefined
+    errorHandler?.({ error: new Error('WebGL context lost') })
+
+    expect(onStateChange).toHaveBeenCalledWith('error')
+  })
 })

@@ -44,6 +44,10 @@
       </ClientOnly>
     </NuxtErrorBoundary>
 
+    <p v-if="searchView.hasMalformedUrl.value" class="search-state-notice" role="status">
+      {{ searchView.malformedNotice.value }}
+    </p>
+
     <SkeletonGrid v-if="searching" :count="6" />
     <EmptyState
       v-else-if="hasError"
@@ -65,9 +69,24 @@
         <p class="result-strap" aria-live="polite">
           <span class="result-strap-query">„{{ q }}"</span> — {{ resultStrapLine }}
         </p>
-        <div class="grid">
-          <EntityCard v-for="e in results" :key="e.id" :entity="e" color-recipe="tri-region-v1" />
-        </div>
+        <MapListSurface
+          :results="results"
+          :selected-id="searchView.state.value.selectedId"
+          :viewport="searchView.state.value.viewport"
+          :map-state="mapNetworkState"
+          :panel="searchView.state.value.panel"
+          @select="searchView.selectResult"
+          @viewport-change="searchView.setViewport"
+          @search-area="searchView.commitViewport"
+          @panel-change="searchView.openPanel"
+        >
+          <template #result="{ result }">
+            <div class="search-map-entity-card" data-entity-contract="entity-row">
+              <EntityCard :entity="result" color-recipe="tri-region-v1" />
+              <p class="map-result-row__address">{{ result.attributes?.address || result.place_name || result.place_area || result.area || 'Chưa có địa chỉ chi tiết' }}</p>
+            </div>
+          </template>
+        </MapListSurface>
       </template>
 
       <!-- Cũng có trong cộng đồng: người dùng + bài viết, thứ yếu so với kết quả địa điểm -->
@@ -107,8 +126,16 @@
       <template v-if="!results.length && !postResults.length && !userResults.length">
         <EmptyState title="Chưa thấy đúng ý bạn" message="Nhưng biết đâu những gợi ý dưới đây lại hợp — phù sa vẫn còn nhiều thứ để kể." color-recipe="tri-region-v1">
           <template #actions>
-            <NuxtLink to="/du-lich" class="btn btn-outline">Khám phá du lịch</NuxtLink>
-            <NuxtLink to="/san-pham" class="btn btn-outline">Xem sản phẩm</NuxtLink>
+            <button
+              v-for="action in zeroResultRecoverySteps"
+              :key="action.id"
+              type="button"
+              class="btn btn-outline"
+              :data-recovery-action="action.id"
+              @click="activateZeroResultRecovery(action)"
+            >
+              {{ action.label }}
+            </button>
           </template>
         </EmptyState>
         <NuxtErrorBoundary>
@@ -116,11 +143,6 @@
             <LazySmartRecommendations context="search" :query="q" title="Có phải bạn muốn tìm…" :limit="6" color-recipe="tri-region-v1" />
           </ClientOnly>
         </NuxtErrorBoundary>
-        <JourneyActionRail
-          :actions="zeroResultActions"
-          title="Có thể đi tiếp theo hướng này"
-          compact
-        />
       </template>
     </template>
 
@@ -190,7 +212,7 @@
     <section class="block band catalog-cross reveal">
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
-        <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
+        <NuxtLink :to="mapContinuityPath" class="cross-card" no-prefetch>
           <span class="quick-pick-icon cross-glyph-icon" :style="{ backgroundImage: categoryPlaceholderBg('cross-ban-do', 'place') }">
             <span class="quick-pick-glyph" v-html="categoryGlyph('place')"></span>
           </span>
@@ -224,6 +246,8 @@
 <script setup lang="ts">
 import { TYPE_META } from '~/composables/useConstants'
 import { useJourneyActions } from '~/composables/useJourneyActions'
+import type { ZeroResultRecoveryAction } from '~/composables/useUnifiedSearch'
+import MapListSurface from '~/components/public/MapListSurface.vue'
 import { generateCategoryIcon, generateCategoryPlaceholder } from '~/composables/useCategoryPlaceholder'
 import type { ImageDescriptor } from '~/types/image'
 import type { RecentItem } from '~/composables/useRecentlyViewed'
@@ -232,9 +256,9 @@ useReveal()
 const { f: pc } = usePageContent('tim_kiem')
 const { recentItems } = useRecentlyViewed()
 const { trackSearch } = useUserEvents()
-const { searchAll, fetchEntitySuggestions } = useUnifiedSearch()
-const { searchRecoveryActions, searchSuccessActions } = useJourneyActions()
-const route = useRoute()
+const { searchAll, fetchEntitySuggestions, zeroResultRecoveryActions } = useUnifiedSearch()
+const { searchSuccessActions } = useJourneyActions()
+const searchView = useSearchViewState()
 const recentImageErrors = ref<Record<string, boolean>>({})
 
 function recentImageDescriptor(item: RecentItem): ImageDescriptor {
@@ -311,8 +335,18 @@ const quickPicks = [
 function firstQueryValue(value: unknown) {
   return Array.isArray(value) ? String(value[0] || '') : String(value || '')
 }
-const q = computed(() => firstQueryValue(route.query.q))
+const q = computed(() => searchView.state.value.query)
 const searchInput = ref(q.value)
+const mapNetworkState = ref<'ready' | 'offline'>('ready')
+const mapContinuityPath = computed(() => searchView.url.value.replace(/^\/tim-kiem/, '/ban-do'))
+const recoveryQueryAliases: Record<string, string> = {
+  'gom do': 'gốm đỏ',
+  'bun nuoc leo': 'bún nước lèo',
+  'buoi nam roi': 'bưởi Năm Roi',
+  'dua sap': 'dừa sáp',
+  homestay: 'lưu trú miệt vườn',
+}
+const suggestedRecoveryQuery = computed(() => recoveryQueryAliases[q.value.trim().toLocaleLowerCase('vi-VN')])
 
 const { data, error: searchError, status } = await useAsyncData(
   'search-results',
@@ -327,7 +361,29 @@ const postResults = computed(() => (data.value?.posts || []).slice(0, 6))
 const userResults = computed(() => (data.value?.users || []).slice(0, 8))
 const totalSearchResults = computed(() => results.value.length + postResults.value.length + userResults.value.length)
 const searchNextActions = computed(() => q.value && totalSearchResults.value ? searchSuccessActions(q.value, results.value.length) : [])
-const zeroResultActions = computed(() => q.value ? searchRecoveryActions(q.value) : [])
+const zeroResultRecoverySteps = computed(() => zeroResultRecoveryActions(searchView.state.value, {
+  suggestedQuery: suggestedRecoveryQuery.value,
+  hasRecentOrSaved: recentItems.value.length > 0,
+}))
+
+function activateZeroResultRecovery(action: ZeroResultRecoveryAction) {
+  if (action.to) {
+    navigateTo(action.to)
+    return
+  }
+  if (action.id === 'remove-filter' && action.patch?.filters) {
+    for (const key of Object.keys(searchView.state.value.filters)) {
+      if (!(key in action.patch.filters)) searchView.setFilter(key, undefined)
+    }
+    return
+  }
+  if (action.id === 'widen-area') {
+    searchView.setArea(undefined)
+    return
+  }
+  if (action.patch?.query !== undefined) searchView.setQuery(action.patch.query)
+  if (action.patch?.intent) searchView.setIntent(action.patch.intent)
+}
 
 if (import.meta.client) {
   watch([q, results, postResults, userResults], ([term, entityList, postList, userList]) => {
@@ -382,6 +438,7 @@ function doSearch() {
   sugClose()
   if (searchInput.value.trim()) {
     trackSearch(searchInput.value, { context: 'search_submit' })
+    searchView.setQuery(searchInput.value)
     navigateTo(`/tim-kiem?q=${encodeURIComponent(searchInput.value.trim())}`)
   }
 }
@@ -444,10 +501,22 @@ function onEnter() {
 
 watch(q, (v) => { searchInput.value = v; sugClose() })
 
+function updateNetworkState() {
+  mapNetworkState.value = navigator.onLine ? 'ready' : 'offline'
+}
+
+onMounted(() => {
+  updateNetworkState()
+  window.addEventListener('online', updateNetworkState)
+  window.addEventListener('offline', updateNetworkState)
+})
+
 onBeforeUnmount(() => {
   if (sugTimer) clearTimeout(sugTimer)
   if (blurTimer) clearTimeout(blurTimer)
   sugAbort?.abort()
+  window.removeEventListener('online', updateNetworkState)
+  window.removeEventListener('offline', updateNetworkState)
 })
 
 useSeoMeta({

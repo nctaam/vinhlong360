@@ -319,6 +319,32 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
 .revealed .scroll-row > *:nth-child(7), .revealed .grid > *:nth-child(7), .revealed .sidebar-list > *:nth-child(7), .revealed .quick-picks > *:nth-child(7) { animation-delay: .35s; }
 .revealed .scroll-row > *:nth-child(8), .revealed .grid > *:nth-child(8), .revealed .sidebar-list > *:nth-child(8), .revealed .quick-picks > *:nth-child(8) { animation-delay: .4s; }
 .map-popup-link { font-weight: 700; color: var(--primary-fg-strong); }
+.map-locator-marker {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 3px solid var(--card);
+  border-radius: 50% 50% 50% 12%;
+  background: var(--primary);
+  box-shadow: 0 5px 16px rgba(var(--black-rgb), .3);
+  cursor: pointer;
+  transform: rotate(-45deg);
+  transition: width .16s var(--ease-out), height .16s var(--ease-out), background .16s var(--ease-out);
+}
+.map-locator-marker::after {
+  content: '';
+  position: absolute;
+  inset: 9px;
+  border-radius: 50%;
+  background: var(--card);
+}
+.map-locator-marker.is-selected {
+  width: 44px;
+  height: 44px;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 26%, transparent), 0 7px 20px rgba(var(--black-rgb), .34);
+}
+.map-locator-marker:focus-visible { outline: 3px solid var(--focus-ring, var(--primary)); outline-offset: 4px; }
 .search-row-spaced { margin-bottom: var(--space-4); }
 .chip-row-spaced { margin-bottom: var(--space-3); }
 .lead-flush { margin-top: 0; }
