@@ -21,6 +21,10 @@ describe('public state URL', () => {
     expect(restored.viewport?.center[0]).toBeLessThan(180)
     expect(restored.viewport?.center[1]).toBeGreaterThan(-90)
     expect(restored.viewport?.center[1]).toBeLessThan(90)
+    const z = restored.viewport!.zoom; const n = 2 ** z
+    const x = Math.floor(((restored.viewport!.center[0] + 180) / 360) * n)
+    const y = Math.floor((1 - Math.asinh(Math.tan((restored.viewport!.center[1] * Math.PI) / 180)) / Math.PI) / 2 * n)
+    expect(encoded).toContain(`viewport=${z}%2F${x}%2F${y}`)
     expect(parseSearchViewState('?viewport=99/1/1').viewport).toBeUndefined()
     expect(parseSearchViewState('?area=../../secret').area).toBeUndefined()
     expect(encoded).not.toMatch(/105\.9|10\.2/)
