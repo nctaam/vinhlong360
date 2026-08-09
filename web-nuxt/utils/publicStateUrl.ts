@@ -3,6 +3,7 @@ import type { FilterSet, Intent, SearchViewState } from '~/types/publicExperienc
 const MAX_QUERY = 120
 const INTENTS = new Set<Intent>(['place', 'service', 'event', 'story', 'all'])
 const AREA_ID = /^[a-z0-9][a-z0-9-]{0,63}$/i
+const FILTER_KEY = /^[a-z][a-z0-9_-]{0,31}$/i
 function bounded(value: unknown, max: number) { return typeof value === 'string' ? value.trim().slice(0, max) : '' }
 
 export function serializeSearchViewState(state: Partial<SearchViewState>): string {
@@ -12,7 +13,7 @@ export function serializeSearchViewState(state: Partial<SearchViewState>): strin
   if (state.area?.id && AREA_ID.test(state.area.id)) params.set('area', state.area.id)
   if (state.filters && Object.keys(state.filters).length) {
     const filters: FilterSet = {}
-    for (const key of Object.keys(state.filters).sort().slice(0, 20)) {
+    for (const key of Object.keys(state.filters).sort().filter(key => FILTER_KEY.test(key)).slice(0, 20)) {
       const value = state.filters[key]
       if (typeof value === 'string') filters[key] = bounded(value, 80)
       else if (typeof value === 'boolean' || typeof value === 'number') filters[key] = value
@@ -42,7 +43,7 @@ export function parseSearchViewState(input: string | URLSearchParams | Record<st
     const parsed = JSON.parse(p.get('filters') || '{}')
     if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
       for (const [key, value] of Object.entries(parsed).slice(0, 20)) {
-        if (!/^[a-z][a-z0-9_-]{0,31}$/i.test(key)) continue
+        if (!FILTER_KEY.test(key)) continue
         if (typeof value === 'string') filters[key] = bounded(value, 80)
         else if (typeof value === 'boolean' || (typeof value === 'number' && Number.isFinite(value))) filters[key] = value
         else if (Array.isArray(value)) filters[key] = value.filter(v => typeof v === 'string').map(v => bounded(v, 40)).filter(Boolean).slice(0, 20)

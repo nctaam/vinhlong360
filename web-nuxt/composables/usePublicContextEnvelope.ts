@@ -5,14 +5,15 @@ import type { ContextEnvelope } from '~/types/publicExperience'
 
 export function usePublicContextEnvelope() {
   const region = useRegionPref()
+  const preferences = usePersonalizationPreferences()
   const envelope = computed<ContextEnvelope>(() => {
     const now = new Date()
-    const snapshot = usePersonalizationPreferences().snapshot.value
+    const snapshot = preferences.snapshot.value
     const selected = region.region.value && region.region.value !== 'all' ? { id: region.region.value } : undefined
     const source = snapshot.location_source
     const enabled = snapshot.location_enabled
     const inferred = source === 'gps' || source === 'ip'
-    const locationMode = !enabled || (!selected && !inferred) ? 'unavailable' : inferred ? (snapshot.location_accuracy === 'ward' ? 'exact' : 'approximate') : 'selected'
+    const locationMode = selected && source === 'manual' ? 'selected' : !enabled || (!selected && !inferred) ? 'unavailable' : inferred ? (snapshot.location_accuracy === 'ward' ? 'exact' : 'approximate') : 'selected'
     const locationConfidence = locationMode === 'exact' ? 'high' : locationMode === 'selected' ? 'medium' : locationMode === 'approximate' ? 'low' : 'low'
     const localParts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(now)
     const part = (type: string) => localParts.find(item => item.type === type)?.value || '00'
