@@ -318,7 +318,11 @@ describe('homepage Existing Screen Evolution B1', () => {
     const temporal = wrapper.get('[data-home-section="signals"]')
     expect(temporal.text()).toContain('Đêm đờn ca')
     expect(temporal.text()).not.toContain('Lễ hội sông nước')
-    expect(wrapper.findAll('.home-season-row').map(row => row.text())).toEqual(['Bưởi Năm RoiXem theo mùa'])
+    const seasonalRows = wrapper.findAll('.home-season-row')
+    expect(seasonalRows).toHaveLength(1)
+    expect(seasonalRows[0]!.text()).toContain('Bưởi Năm Roi')
+    expect(seasonalRows[0]!.get('[data-source-mark]').text()).toContain('Chưa rõ nguồn')
+    expect(seasonalRows[0]!.get('[data-freshness-line]').text()).toContain('Chưa rõ thời điểm cập nhật')
     expect(wrapper.text()).not.toContain('Bánh xèo hến')
   })
 

@@ -118,9 +118,33 @@
         <div v-if="seasonalList.length" class="happening-section">
           <p class="happening-label" data-material-accent="amber"><IconLine name="calendar" /> Đang vào mùa tháng {{ currentMonth }}</p>
           <div class="home-season-ledger" role="list" aria-label="Đặc sản theo mùa">
-            <NuxtLink v-for="e in seasonalList" :key="e.id" :to="entityPath(e.id)" class="home-season-row" role="listitem">
-              <span>{{ e.name }}</span>
-              <span>Xem theo mùa</span>
+            <NuxtLink
+              v-for="e in seasonalList"
+              :key="e.id"
+              :to="entityPath(e.id)"
+              class="home-season-row"
+              role="listitem"
+              data-home-signal
+              data-home-seasonal-signal
+            >
+              <span class="home-season-row__body">
+                <strong>{{ e.name }}</strong>
+                <span class="home-signal-evidence">
+                  <SourceMark
+                    :tier="eventSourceTier(e)"
+                    :source-title="eventSourceTitle(e)"
+                    :source-url="eventSourceUrl(e)"
+                    :verified-at="eventVerifiedAt(e)"
+                    compact
+                    data-signal-source
+                  />
+                  <FreshnessLine
+                    :status="eventFreshnessStatus(e)"
+                    :updated-label="eventFreshnessLabel(e)"
+                  />
+                </span>
+              </span>
+              <span class="home-season-row__action">Xem theo mùa</span>
             </NuxtLink>
           </div>
         </div>

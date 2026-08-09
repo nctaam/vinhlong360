@@ -57,12 +57,17 @@ function cascadeFixture(tokens: Record<string, string>) {
       style: tokens,
     }, [
       h('section', { class: 'hero', 'data-test-hero': '' }, [
-        h(SearchAutocomplete, {
-          class: 'hero-search hero-ac',
-          'data-home-search': '',
-          'data-color-role': 'action-primary',
-        }),
-        h('a', { class: 'hero-nearby', href: '#nearby' }, 'Tìm quanh tôi'),
+        h('div', { class: 'hero-main' }, [
+          h('span', { class: 'hero-kicker' }, 'Du lịch & Đặc sản Vĩnh Long'),
+          h('h1', 'Khám phá Vĩnh Long theo cách của người bản địa'),
+          h('p', { class: 'hero-sub' }, 'Tìm điểm đến, món ngon và lịch trình phù hợp.'),
+          h(SearchAutocomplete, {
+            class: 'hero-search hero-ac',
+            'data-home-search': '',
+            'data-color-role': 'action-primary',
+          }),
+          h('a', { class: 'hero-nearby', href: '#nearby' }, 'Tìm quanh tôi'),
+        ]),
         h(HomeFeatureDossier, {
           eyebrow: 'Gợi ý nổi bật',
           title: 'Một ngày ven sông',
@@ -143,7 +148,7 @@ describe('Homepage Nocturne computed color cascade', () => {
       onAction: 'rgb(7, 18, 16)',
       hero: 'rgb(0, 0, 0)',
     },
-  ])('maps action focus locally and keeps a dual media ring robust in $theme', async ({ theme, action, onAction, hero }) => {
+  ])('keeps the active hero and search surface semantic and free of legacy premium decoration in $theme', async ({ theme, action, onAction, hero }) => {
     document.documentElement.classList.add(theme)
     const wrapper = await mountCascade({
       '--color-action': action,
@@ -164,19 +169,26 @@ describe('Homepage Nocturne computed color cascade', () => {
     const searchStyle = getComputedStyle(search)
     const inputStyle = getComputedStyle(input)
     expect(searchStyle.backgroundColor).toBe(action)
+    expect(searchStyle.boxShadow).toBe('none')
+    expect(searchStyle.borderRadius).toBe('8px')
+    expect(searchStyle.transform).toBe('none')
+    expect(searchStyle.transition).not.toContain('box-shadow')
+    expect(searchStyle.transition).not.toContain('transform')
+    expect(searchStyle.backdropFilter || '').not.toContain('blur')
     expect(inputStyle.outlineColor).toBe(onAction)
-    expect(inputStyle.boxShadow).toContain('rgb(0, 0, 0)')
+    expect(inputStyle.boxShadow).toBe('none')
     expect(contrast(rgb(inputStyle.outlineColor), rgb(searchStyle.backgroundColor))).toBeGreaterThanOrEqual(3)
+
+    for (const selector of ['.hero-kicker', 'h1', '.hero-sub', '.hero-nearby']) {
+      expect(getComputedStyle(wrapper.get<HTMLElement>(selector).element).textShadow).toBe('none')
+    }
 
     const nearby = wrapper.get<HTMLElement>('.hero-nearby').element
     nearby.focus()
     expect(document.activeElement).toBe(nearby)
     const nearbyStyle = getComputedStyle(nearby)
-    const outline = rgb(nearbyStyle.outlineColor)
-    const halo = rgb(nearbyStyle.boxShadow)
-    expect(nearbyStyle.outlineColor).toBe('rgb(253, 252, 249)')
-    expect(nearbyStyle.boxShadow).toContain('rgb(0, 0, 0)')
-    expect(Math.max(contrast(outline, rgb(hero)), contrast(halo, rgb(hero)))).toBeGreaterThanOrEqual(3)
+    expect(nearbyStyle.color).toBe(action)
+    expect(['', 'none']).toContain(nearbyStyle.boxShadow)
   })
 
   it('keeps both feature actions on the semantic secondary recipe after component styles', async () => {

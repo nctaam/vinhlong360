@@ -108,7 +108,10 @@ function homeFixture() {
         },
       },
     ],
-    seasonal: [],
+    seasonal: [
+      { id: 'season-1', name: 'Chôm chôm Bình Hòa Phước', type: 'product' },
+      { id: 'season-2', name: 'Bưởi Năm Roi', type: 'product' },
+    ],
     top_dishes: [],
     itineraries: [],
     area_counts: { 'long-ho': 1 },
@@ -195,6 +198,26 @@ describe('Adaptive Nocturne public discovery composition', () => {
     expect(wrapper.text()).not.toMatch(/\b5[,.]0\b|\b\d+\s+(lượt xem|đánh giá|thành viên)\b/i)
   })
 
+  it('renders honest evidence for seasonal signals even when source metadata is absent', async () => {
+    apiFetchMock.mockImplementation((url: unknown) => {
+      const path = String(url)
+      if (path === '/api/homepage') return Promise.resolve(homeFixture())
+      if (path === '/api/feed?limit=10') return Promise.resolve({ posts: [] })
+      if (path.startsWith('/api/community/')) return Promise.resolve(null)
+      if (path.startsWith('/api/entities/popular?')) return Promise.resolve({ entities: [] })
+      return Promise.resolve({})
+    })
+
+    const wrapper = await mountSuspended(HomePage, { global: { stubs: homeStubs } })
+    wrappers.push(wrapper)
+    await flushUi()
+
+    const seasonal = wrapper.get('[data-home-seasonal-signal]')
+    expect(seasonal.text()).toContain('Bưởi Năm Roi')
+    expect(seasonal.get('[data-signal-source]').text()).toContain('Chưa rõ nguồn')
+    expect(seasonal.get('[data-freshness-line]').text()).toContain('Chưa rõ thời điểm cập nhật')
+  })
+
   it('orders catalog orientation, decisions, results, evidence, and continuation using row/tile contracts', async () => {
     apiFetchMock.mockResolvedValue(catalogFixture())
 
@@ -222,6 +245,22 @@ describe('Adaptive Nocturne public discovery composition', () => {
 
     const continuationLinks = wrapper.get('[data-catalog-section="continuation"]').findAll('a')
     expect(continuationLinks.map(link => link.attributes('href'))).toEqual(['/ban-do', '/lich-trinh'])
+  })
+
+  it('hydrates catalog orientation from the effective deep-linked type filter', async () => {
+    apiFetchMock.mockResolvedValue(catalogFixture())
+
+    const wrapper = await mountSuspended(TourismPage, {
+      route: '/du-lich?type=accommodation',
+      global: { stubs: catalogStubs },
+    })
+    wrappers.push(wrapper)
+    await flushUi()
+
+    expect(wrapper.get('[data-route-node-active]').text()).toContain('Lưu trú')
+    expect(wrapper.get('.mode-pill[aria-pressed="true"]').text()).toContain('Lưu trú')
+    expect(wrapper.get('[data-catalog-section="results"]').text()).toContain('Nhà vườn Cù Lao An Bình')
+    expect(wrapper.get('[data-catalog-section="results"]').text()).not.toContain('Làng gốm Mang Thít')
   })
 
   it('uses text and line icons for catalog decisions instead of structural emoji or glyph buttons', async () => {

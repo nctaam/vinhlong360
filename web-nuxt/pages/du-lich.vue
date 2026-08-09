@@ -185,7 +185,7 @@ useReveal()
 const { f: pc } = usePageContent('du_lich')
 const TYPES = TOURISM_TYPES as readonly string[]
 function typeMeta(type: string) {
-  return TYPE_META[type] || { label: type, cat: type }
+  return TYPE_META[type] || { label: type, cat: type, icon: 'compass' }
 }
 
 const typeChips = TYPES.map(t => ({
@@ -213,11 +213,44 @@ const heroModes: readonly DiscoveryMode[] = [
   { key: 'lang-nghe', icon: 'vase', label: 'Làng nghề', line: 'Theo dấu đất, lửa và những nghề còn được truyền lại.', sub: 'Gốm đỏ, chiếu lác và các không gian nghề có thể ghé thăm.', filterType: 'craft_village', accent: 'clay' },
   { key: 'luu-tru', icon: 'home', label: 'Lưu trú', line: 'Tìm một điểm nghỉ phù hợp với nhịp hành trình.', sub: 'Nhà vườn và lưu trú ven sông được đưa vào cùng mặt kết quả.', filterType: 'accommodation', accent: 'river' },
 ]
-const activeModeKey = ref(heroModes[0]!.key)
-const activeMode = computed(() => heroModes.find(m => m.key === activeModeKey.value) || heroModes[0]!)
+const overviewMode: DiscoveryMode = {
+  key: 'tat-ca',
+  icon: 'compass',
+  label: 'Tất cả loại hình',
+  line: 'Đọc toàn bộ chỉ mục trước khi chọn một nhịp khám phá.',
+  sub: 'Miệt vườn, điểm tham quan, làng nghề, ẩm thực và lưu trú trong cùng một mặt kết quả.',
+  filterType: 'all',
+  accent: 'river',
+}
+const filterAccents: Readonly<Record<string, RegionalAccent>> = {
+  experience: 'leaf',
+  attraction: 'leaf',
+  nature: 'leaf',
+  dish: 'amber',
+  craft_village: 'clay',
+  history: 'clay',
+  accommodation: 'river',
+}
+const activeMode = computed<DiscoveryMode>(() => {
+  const effectiveType = typeFilter.value
+  const mode = heroModes.find(candidate => candidate.filterType === effectiveType)
+  if (mode) return mode
+  if (effectiveType === 'all') return overviewMode
+
+  const meta = typeMeta(effectiveType)
+  return {
+    key: `type-${effectiveType}`,
+    icon: meta.icon,
+    label: meta.label,
+    line: `Khám phá ${meta.label.toLocaleLowerCase('vi-VN')} theo dữ liệu hiện có.`,
+    sub: 'Dòng địa bàn phản ánh trực tiếp loại kết quả đang được lọc.',
+    filterType: effectiveType,
+    accent: filterAccents[effectiveType] || 'river',
+  }
+})
+const activeModeKey = computed(() => activeMode.value.key)
 
 function selectDiscoveryMode(mode: DiscoveryMode) {
-  activeModeKey.value = mode.key
   typeFilter.value = mode.filterType
 }
 

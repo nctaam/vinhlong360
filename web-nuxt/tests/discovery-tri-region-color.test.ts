@@ -19,7 +19,11 @@ const stubs = {
   NuxtImg: NuxtImgStub,
   Breadcrumb: true,
   CountUp: { props: ['value'], template: '<span>{{ value }}</span>' },
-  FilterChips: true,
+  FilterChips: {
+    props: ['filters', 'modelValue'],
+    emits: ['update:modelValue'],
+    template: '<div data-filter-chips><button v-for="filter in filters" :key="filter.key" type="button" :data-filter-key="filter.key" @click="$emit(\'update:modelValue\', [filter.key])">{{ filter.label }}</button></div>',
+  },
   EmptyState: true,
   SkeletonGrid: true,
   SaveButton: true,
@@ -86,13 +90,38 @@ describe('Discovery Tri-Region color recipe', () => {
     }
   })
 
-  it('keeps filter selection understandable without relying on color', async () => {
+  it('keeps the unfiltered orientation truthful and mode selection understandable without relying on color', async () => {
     const wrapper = await mountSuspended(TourismPage, { global: { stubs } })
     wrappers.push(wrapper)
     await flushUi()
 
-    const selected = wrapper.get('.mode-pill[aria-pressed="true"]')
+    expect(wrapper.get('[data-route-node-active]').text()).toContain('Tất cả loại hình')
+    expect(wrapper.find('.mode-pill[aria-pressed="true"]').exists()).toBe(false)
+
+    const selected = wrapper.findAll('.mode-pill').find(button => button.text().includes('Trải nghiệm'))!
+    await selected.trigger('click')
+    await nextTick()
     expect(selected.text()).toContain('Trải nghiệm')
     expect(selected.classes()).toContain('active')
+    expect(selected.attributes('aria-pressed')).toBe('true')
+  })
+
+  it('updates the orientation trace when a type chip changes the effective filter', async () => {
+    apiFetchMock.mockResolvedValue({ entities: [], total: 0 })
+    const wrapper = await mountSuspended(TourismPage, { global: { stubs } })
+    wrappers.push(wrapper)
+    await flushUi()
+
+    await wrapper.get('[data-filter-key="dish"]').trigger('click')
+    await nextTick()
+    expect(wrapper.get('[data-route-node-active]').text()).toContain('Ẩm thực')
+    expect(wrapper.get('.mode-pill[aria-pressed="true"]').text()).toContain('Ẩm thực')
+    expect(wrapper.get('[data-page-recipe="discovery"]').attributes('data-material-accent')).toBe('amber')
+
+    await wrapper.get('[data-filter-key="accommodation"]').trigger('click')
+    await nextTick()
+    expect(wrapper.get('[data-route-node-active]').text()).toContain('Lưu trú')
+    expect(wrapper.get('.mode-pill[aria-pressed="true"]').text()).toContain('Lưu trú')
+    expect(wrapper.get('[data-page-recipe="discovery"]').attributes('data-material-accent')).toBe('river')
   })
 })
