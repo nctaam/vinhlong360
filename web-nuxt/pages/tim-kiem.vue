@@ -73,6 +73,7 @@
           :results="results"
           :selected-id="searchView.state.value.selectedId"
           :viewport="searchView.state.value.viewport"
+          :viewport-pending="searchView.viewportPending.value"
           :map-state="mapNetworkState"
           :panel="searchView.state.value.panel"
           :scroll-key="searchView.state.value.scrollKey"

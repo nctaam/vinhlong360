@@ -1,6 +1,6 @@
 import { clearNuxtData } from '#app'
 import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
-import { effectScope, nextTick } from 'vue'
+import { defineComponent, effectScope, h, nextTick } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import MapListSurface from '../components/public/MapListSurface.vue'
 import MapPage from '../pages/ban-do.vue'
@@ -151,6 +151,128 @@ describe('shared search view continuity', () => {
     expect(view.hasMalformedUrl.value).toBe(true)
     expect(view.malformedNotice.value).toContain('không hợp lệ')
   })
+
+  it('submits with the committed viewport and restores entry-owned pending actions in both history directions', async () => {
+    const initialRoute = '/tim-kiem?q=g%E1%BB%91m&viewport=11/1627/965'
+    window.history.replaceState({}, '', initialRoute)
+    let view!: ReturnType<typeof useSearchViewState>
+    const Host = defineComponent({
+      setup() {
+        view = useSearchViewState()
+        return () => h(MapListSurface, {
+          results,
+          selectedId: view.state.value.selectedId,
+          viewport: view.state.value.viewport,
+          viewportPending: view.viewportPending.value,
+          mapState: 'ready',
+          panel: view.state.value.panel,
+          scrollKey: view.state.value.scrollKey,
+          onViewportChange: view.setViewport,
+          onSearchArea: view.commitViewport,
+        })
+      },
+    })
+    const wrapper = await mountSuspended(Host, {
+      route: initialRoute,
+      global: { stubs: { IconLine: true, SourceMark: true, FreshnessLine: true } },
+    })
+    wrappers.push(wrapper)
+    await nextTick()
+    await nextTick()
+
+    view.selectResult('entity-42')
+    view.openPanel('map')
+    view.setScrollKey('list:144')
+    vi.useFakeTimers()
+    view.setViewport({ center: [105.62, 9.91], zoom: 11 })
+    await vi.advanceTimersByTimeAsync(250)
+    vi.useRealTimers()
+    const target = view.urlForQuery('dừa sáp')
+    expect(new URL(target, 'https://vinhlong360.local').searchParams.get('viewport')).toBe('11/1627/965')
+
+    await wrapper.vm.$router.push(target)
+    await vi.waitFor(() => expect(view.state.value.query).toBe('dừa sáp'))
+    expect(view.viewportPending.value).toBe(false)
+    expect(wrapper.find('[data-search-area]').exists()).toBe(false)
+    view.selectResult('entity-99')
+    view.openPanel('list')
+    view.setScrollKey('list:24')
+    const committedEntryUrl = window.location.pathname + window.location.search
+    const committedEntryState = structuredClone(window.history.state)
+
+    window.history.back()
+    await vi.waitFor(() => expect(view.state.value.query).toBe('gốm'))
+    await vi.waitFor(() => expect(wrapper.vm.$router.currentRoute.value.query.q).toBe('gốm'))
+    await nextTick()
+    const pendingEntryUrl = window.location.pathname + window.location.search
+    const pendingEntryState = structuredClone(window.history.state)
+    expect(view.committedViewport.value).toBeDefined()
+    expect(view.viewportPending.value).toBe(true)
+    expect(view.state.value.selectedId).toBe('entity-42')
+    expect(view.state.value.panel).toBe('map')
+    expect(view.state.value.scrollKey).toBe('list:144')
+    expect(wrapper.find('[data-search-area]').exists()).toBe(true)
+
+    window.history.replaceState(committedEntryState, '', committedEntryUrl)
+    window.dispatchEvent(new PopStateEvent('popstate', { state: committedEntryState }))
+    await vi.waitFor(() => expect(view.state.value.query).toBe('dừa sáp'))
+    expect(view.viewportPending.value).toBe(false)
+    expect(view.state.value.selectedId).toBe('entity-99')
+    expect(view.state.value.panel).toBe('list')
+    expect(view.state.value.scrollKey).toBe('list:24')
+    expect(wrapper.find('[data-search-area]').exists()).toBe(false)
+
+    window.history.replaceState(pendingEntryState, '', pendingEntryUrl)
+    window.dispatchEvent(new PopStateEvent('popstate', { state: pendingEntryState }))
+    await vi.waitFor(() => expect(view.state.value.query).toBe('gốm'))
+    expect(view.viewportPending.value).toBe(true)
+    expect(view.state.value.selectedId).toBe('entity-42')
+    expect(view.state.value.panel).toBe('map')
+    expect(view.state.value.scrollKey).toBe('list:144')
+    expect(wrapper.find('[data-search-area]').exists()).toBe(true)
+  })
+
+  it('stamps router-created destinations and never borrows private state for an untracked destination', async () => {
+    const initialRoute = '/tim-kiem?q=g%E1%BB%91m&viewport=11/1627/965'
+    window.history.replaceState({}, '', initialRoute)
+    let view!: ReturnType<typeof useSearchViewState>
+    const Host = defineComponent({
+      setup() {
+        view = useSearchViewState()
+        return () => h('div')
+      },
+    })
+    const wrapper = await mountSuspended(Host, { route: initialRoute })
+    wrappers.push(wrapper)
+
+    view.selectResult('entry-a')
+    view.openPanel('map')
+    view.setScrollKey('list:144')
+    const plannedTarget = view.urlForQuery('hai')
+    await wrapper.vm.$router.push(plannedTarget)
+    await vi.waitFor(() => expect(view.state.value.query).toBe('hai'))
+    expect(view.state.value.selectedId).toBe('entry-a')
+    expect(view.state.value.panel).toBe('map')
+    expect(view.state.value.scrollKey).toBe('list:144')
+    expect(view.viewportPending.value).toBe(false)
+
+    await wrapper.vm.$router.push('/tim-kiem?q=legacy')
+    await vi.waitFor(() => expect(view.state.value.query).toBe('legacy'))
+    expect(view.state.value.selectedId).toBeUndefined()
+    expect(view.state.value.panel).toBe('list')
+    expect(view.state.value.scrollKey).toBeUndefined()
+
+    view.selectResult('entry-latest')
+    view.openPanel('list')
+    view.setScrollKey('list:24')
+    window.history.back()
+    await vi.waitFor(() => expect(view.state.value.query).toBe('hai'))
+    expect(view.state.value.selectedId).toBe('entry-a')
+    expect(view.state.value.panel).toBe('map')
+    expect(view.state.value.scrollKey).toBe('list:144')
+    expect(view.committedViewport.value).toEqual(expect.objectContaining({ zoom: 11 }))
+    expect(view.viewportPending.value).toBe(false)
+  })
 })
 
 describe('MapListSurface coordination and recovery', () => {
@@ -249,6 +371,30 @@ describe('MapListSurface coordination and recovery', () => {
 
     expect(mapHarness.jumpTo).toHaveBeenCalledTimes(1)
     expect(mapHarness.jumpTo).toHaveBeenCalledWith({ center: [105.62, 9.91], zoom: 12 })
+    for (const callback of mapHarness.listeners.get('moveend') || []) callback()
+    expect(wrapper.emitted('viewport-change')).toBeUndefined()
+  })
+
+  it('resets an existing map once when an external viewport is cleared without emitting a move loop', async () => {
+    const wrapper = await mountSuspended(MapListSurface, {
+      props: {
+        results,
+        selectedId: undefined,
+        viewport: { center: [105.62, 9.91], zoom: 12 },
+        mapState: 'ready',
+      },
+      global: { stubs: { IconLine: true, SourceMark: true, FreshnessLine: true } },
+    })
+    wrappers.push(wrapper)
+    await nextTick()
+    await nextTick()
+    mapHarness.jumpTo.mockClear()
+
+    await wrapper.setProps({ viewport: undefined })
+    await nextTick()
+
+    expect(mapHarness.jumpTo).toHaveBeenCalledTimes(1)
+    expect(mapHarness.jumpTo).toHaveBeenCalledWith({ center: [106, 10.25], zoom: 10 })
     for (const callback of mapHarness.listeners.get('moveend') || []) callback()
     expect(wrapper.emitted('viewport-change')).toBeUndefined()
   })

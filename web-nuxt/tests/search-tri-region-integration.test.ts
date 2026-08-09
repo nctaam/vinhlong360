@@ -70,7 +70,7 @@ const pageStubs = {
   ImageDisclosure: true,
   JourneyActionRail: true,
   MapListSurface: {
-    props: ['results', 'selectedId', 'viewport', 'mapState'],
+    props: ['results', 'selectedId', 'viewport', 'viewportPending', 'mapState'],
     emits: ['viewport-change', 'search-area'],
     template: `<div data-map-list-surface-stub>
       <span v-for="result in results" :key="result.id" :data-search-result-id="result.id">{{ result.name }}</span>
@@ -255,6 +255,12 @@ it('propagates the Search recipe through real SmartRecommendations and EntityCar
 
 it('submits once while preserving canonical intent, filters, area and viewport', async () => {
   const filters = encodeURIComponent(JSON.stringify({ type: ['craft_village'] }))
+  searchAllMock.mockResolvedValue({
+    entities: [{ id: 'craft-1', type: 'craft_village', name: 'Gốm đỏ Mang Thít', coordinates: { lat: 10.23, lng: 105.56 } }],
+    posts: [],
+    users: [],
+    totals: { entities: 1, posts: 0, users: 0 },
+  })
   const wrapper = await mountSuspended(SearchPage, {
     route: `/tim-kiem?q=g%E1%BB%91m&intent=place&area=vinh-long&filters=${filters}&viewport=11/1624/965`,
     global: { stubs: pageStubs },
@@ -263,6 +269,7 @@ it('submits once while preserving canonical intent, filters, area and viewport',
   await flushUi()
   const pushState = vi.spyOn(window.history, 'pushState')
 
+  await wrapper.get('[data-search-pan]').trigger('click')
   await wrapper.get('input[type="search"]').setValue('bưởi Năm Roi')
   await wrapper.get('[data-color-role="action-primary"]').trigger('click')
   expect(navigateToMock).toHaveBeenCalledTimes(1)

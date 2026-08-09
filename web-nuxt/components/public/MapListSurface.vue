@@ -110,6 +110,7 @@ type MapListResult = Entity & {
 }
 
 type PublicMapState = 'loading' | 'ready' | 'partial' | 'stale' | 'error' | 'offline'
+const DEFAULT_VIEWPORT: MapViewport = { center: [106, 10.25], zoom: 10 }
 
 const props = withDefaults(defineProps<{
   results: MapListResult[]
@@ -118,11 +119,13 @@ const props = withDefaults(defineProps<{
   mapState: PublicMapState
   panel?: 'list' | 'map'
   scrollKey?: string
+  viewportPending?: boolean
 }>(), {
   selectedId: undefined,
   viewport: undefined,
   panel: 'list',
   scrollKey: undefined,
+  viewportPending: false,
 })
 
 const emit = defineEmits<{
@@ -136,7 +139,9 @@ const emit = defineEmits<{
 const mapElement = ref<HTMLElement | null>(null)
 const listElement = ref<HTMLElement | null>(null)
 const internalMapState = ref<NDAMapState>('loading')
-const pendingViewport = ref<MapViewport | null>(null)
+const pendingViewport = ref<MapViewport | null>(props.viewportPending && props.viewport
+  ? { center: [...props.viewport.center], zoom: props.viewport.zoom }
+  : null)
 const rowElements = new Map<string, HTMLElement>()
 const markers = new Map<string, { marker: { remove: () => void }; element: HTMLButtonElement }>()
 const { createMap } = useNDAMap()
@@ -299,12 +304,13 @@ function onViewportChange() {
   emit('viewport-change', viewport)
 }
 
-function syncExternalViewport(viewport?: MapViewport) {
-  if (!map || !viewport || sameViewport(lastMapViewport, viewport)) return
-  lastMapViewport = { center: [...viewport.center], zoom: viewport.zoom }
-  pendingViewport.value = null
+function syncExternalViewport(viewport?: MapViewport, isPending = props.viewportPending) {
+  const target = viewport || DEFAULT_VIEWPORT
+  pendingViewport.value = isPending && viewport ? { center: [...viewport.center], zoom: viewport.zoom } : null
+  if (!map || sameViewport(lastMapViewport, target)) return
+  lastMapViewport = { center: [...target.center], zoom: target.zoom }
   suppressNextMoveEnd = true
-  map.jumpTo?.({ center: viewport.center, zoom: viewport.zoom })
+  map.jumpTo?.({ center: target.center, zoom: target.zoom })
 }
 
 function commitSearchArea() {
@@ -327,7 +333,7 @@ async function startMap() {
     if (!created || !active) return
     map = created.map
     maplibregl = created.maplibregl
-    lastMapViewport = props.viewport ? { center: [...props.viewport.center], zoom: props.viewport.zoom } : currentViewport() || undefined
+    lastMapViewport = props.viewport ? { center: [...props.viewport.center], zoom: props.viewport.zoom } : DEFAULT_VIEWPORT
     map.on('load', syncMarkers)
     map.on('moveend', onViewportChange)
     syncMarkers()
@@ -348,7 +354,7 @@ function retryMap() {
 }
 
 watch(() => props.selectedId, syncMarkerSelection)
-watch(() => props.viewport, viewport => syncExternalViewport(viewport), { deep: true })
+watch([() => props.viewport, () => props.viewportPending], ([viewport, isPending]) => syncExternalViewport(viewport, isPending), { deep: true })
 watch(() => props.scrollKey, scrollKey => nextTick(() => restoreListScroll(scrollKey)))
 watch(mappableResults, () => {
   if (map) syncMarkers()
