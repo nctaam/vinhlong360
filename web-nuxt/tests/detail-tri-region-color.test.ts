@@ -490,6 +490,12 @@ describe('entity detail tri-region behavior', () => {
     expect(mainRule?.[1]).toMatch(/(?:^|;)\s*min-width\s*:\s*(?:0|0px)\s*(?:;|$)/)
   })
 
+  it('resets semantic fact value margins inside the narrow detail sidebar', () => {
+    const factValueRule = detailCss.match(/\.fact \.v\s*\{([^}]*)\}/)
+
+    expect(factValueRule?.[1]).toMatch(/(?:^|;)\s*margin\s*:\s*(?:0|0px)\s*(?:;|$)/)
+  })
+
   it('does not reveal a completed hero whose natural width is zero', async () => {
     stubHeroImageState({ complete: true, naturalWidth: 0, naturalHeight: 0 })
     const wrapper = await mountDetailHero()

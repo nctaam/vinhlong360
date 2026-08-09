@@ -201,7 +201,7 @@
 .fact:hover .fact-ic { transform: scale(1.12); }
 .fact-ic { flex: 0 0 26px; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: var(--radius-sm); background: var(--card); border: .5px solid var(--line); font-size: .85rem; line-height: 1; transition: transform .35s var(--ease-spring-gentle); }
 .fact .k { flex: 0 0 123px; display: flex; align-items: center; gap: var(--space-3); color: var(--muted); font-weight: var(--weight-semibold); transition: color .3s var(--ease-out); }
-.fact .v { flex: 1; min-width: 0; font-weight: var(--weight-medium); color: var(--ink); }
+.fact .v { flex: 1; min-width: 0; margin: 0; font-weight: var(--weight-medium); color: var(--ink); }
 .fact-link { color: var(--primary-fg); font-weight: var(--weight-semibold); min-height: 44px; display: inline-flex; align-items: center; }
 .website-link { word-break: break-all; }
 .quality-report { display: inline-flex; align-items: center; margin-top: var(--space-3); color: var(--primary-fg); font-weight: var(--weight-bold); font-size: var(--text-sm); min-height: 44px; }
