@@ -28,6 +28,7 @@
     <!-- Cover + Hero Image. The descriptor remains authoritative through gallery navigation. -->
     <div
       data-entity-hero
+      data-detail-region="identity"
       :class="['detail-cover', `cat-${typeMeta.cat}`, { 'has-cover-img': hasEntityImages }]"
       :style="!hasEntityImages ? { backgroundImage: heroPlaceholderBg } : undefined"
       :aria-describedby="heroDisclosureId"
@@ -108,12 +109,21 @@
 
     <LazyImageLightbox v-if="entityImageDescriptors.length" v-model="lightboxOpen" :images="entityImageDescriptors" :start-index="lbIndex" />
 
+    <PageState
+      v-if="galleryPartial"
+      class="detail-partial-state"
+      :state="{ kind: 'partial', data: entity, failedPanels: ['media'] }"
+      :retry="refreshGallery"
+    >
+      <p>Thông tin địa điểm vẫn dùng được trong khi hình ảnh được tải lại.</p>
+    </PageState>
+
     <!-- Body -->
     <div class="detail-body">
-      <article class="detail-main" aria-label="Thông tin chi tiết">
+      <article class="detail-main" data-detail-region="narrative" aria-label="Thông tin chi tiết">
         <!-- Highlights quét nhanh (Baymard: 78% site thiếu; chống info bị chôn dưới fold) -->
         <div v-if="hasHighlights" class="highlights">
-          <a v-if="zaloLink" class="hl hl-action" data-color-role="action-primary" :href="zaloLink" target="_blank" rel="nofollow noopener" :aria-label="`Nhắn Zalo ${entity.name}`">💬 Zalo</a>
+          <a v-if="zaloLink" class="hl hl-action" data-color-role="action-secondary" :href="zaloLink" target="_blank" rel="nofollow noopener" :aria-label="`Nhắn Zalo ${entity.name}`">💬 Zalo</a>
           <a v-if="entity.attributes?.phone" class="hl hl-action" data-color-role="action-secondary" data-contact-action="phone" :href="telHref(entity.attributes.phone)" :aria-label="`Gọi ${entity.name}`" @click="trackContact('phone')">📞 Gọi</a>
           <NuxtLink v-if="hasCoords" class="hl hl-action" data-color-role="action-secondary" data-contact-action="map" :to="mapUrl" :aria-label="`Xem ${entity.name} trên bản đồ`" @click="trackContact('map')">🗺️ Bản đồ</NuxtLink>
           <span v-if="entity.attributes?.hours" class="hl"><span aria-hidden="true">🕒</span> {{ entity.attributes.hours }}</span>
@@ -177,7 +187,14 @@
         </div>
 
         <!-- Know Before You Go -->
-        <KnowBeforeYouGo v-if="entity.attributes" :attributes="entity.attributes" :entity-type="entity.type" />
+        <KnowBeforeYouGo
+          v-if="entity.attributes"
+          :attributes="entity.attributes"
+          :entity-type="entity.type"
+          :source-tier="trustTier"
+          :freshness-status="trustFreshnessStatus"
+          :updated-label="trustUpdatedLabel"
+        />
 
         <!-- Food specialties (dish/product only) -->
         <div v-if="foodSpecialties.length" class="food-specialties reveal">
@@ -213,7 +230,7 @@
         </div>
 
         <!-- Relationships -->
-        <div v-if="relationships.length" class="rel-block reveal">
+        <div v-if="relationships.length" class="rel-block reveal" data-detail-region="related">
           <h2 class="sediment-head">{{ ss('labels.detail.relationships_heading', 'Liên kết') }}</h2>
           <ul class="rel-list">
             <li v-for="rel in relationships" :key="`${rel.target_id}-${rel.rel_type}`">
@@ -276,17 +293,80 @@
 
       <!-- Sidebar -->
       <aside class="detail-aside" aria-label="Thông tin bổ sung">
-        <!-- Contact Widget (sticky, replaces old contact-row on desktop) -->
-        <LazyContactWidget :entity="entity" class="detail-contact-widget" />
+        <div class="detail-trust-region" data-detail-region="trust">
+          <p class="entity-byline"><IconLine name="user" /> {{ bylineText }} · <strong>Ban biên tập vinhlong360</strong> · <NuxtLink to="/gioi-thieu#ban-bien-tap">phương pháp biên tập</NuxtLink></p>
 
-        <!-- declutter-3 T17 (B5d): Save/Share dời từ hero về sidebar (desktop) —
-             state sync qua useFavorites, cùng composable với JourneyBar -->
-        <ClientOnly>
-          <div class="aside-actions">
+          <EntityTrustPanel
+            v-if="!trustVisible"
+            class="trust-card"
+            :tier="trustTier"
+            :source-title="trustSourceTitle"
+            :source-url="trustSourceUrl || undefined"
+            :freshness-status="trustFreshnessStatus"
+            :updated-label="trustUpdatedLabel"
+            :note="trustNote"
+            :report-to="reportUrl"
+            :conflicts="trustConflicts"
+          />
+
+          <section v-if="trustVisible" class="trust-card" aria-labelledby="trust-card-title">
+            <div class="trust-card-head">
+              <h2 id="trust-card-title" class="sediment-head">Độ tin cậy dữ liệu</h2>
+              <span :class="['trust-status', trustStatusTone]">{{ trustStatusLabel }}</span>
+            </div>
+            <p class="trust-source"><IconLine :name="trustSourceTier === 'community' ? 'users' : 'shield-check'" aria-hidden="true" /> {{ trustSourceTitle }}</p>
+            <button
+              type="button"
+              class="trust-open"
+              data-action="open-source-trust"
+              aria-haspopup="dialog"
+              :aria-expanded="trustDrawerOpen"
+              @click="trustDrawerOpen = true"
+            >
+              Xem nguồn và cách đánh giá
+              <IconLine name="panel-left-open" aria-hidden="true" />
+            </button>
+          </section>
+
+          <SourceTrustDrawer
+            :open="trustDrawerOpen"
+            :source-tier="trustSourceTier"
+            :source-title="trustSourceTitle"
+            :source-url="trustSourceUrl"
+            :verified-at="trustVerifiedAt"
+            :updated-at="trustUpdatedAt"
+            :freshness-status="trustStatus"
+            :community-context="trustCommunityContext"
+            @close="trustDrawerOpen = false"
+            @report="reportTrustIssue"
+          />
+        </div>
+
+        <ActionDock class="detail-action-dock" data-detail-region="action" data-detail-action-safe-area>
+          <template #primary>
+            <a
+              v-if="detailPrimaryAction.id === 'call'"
+              class="detail-primary-action"
+              data-color-role="action-primary"
+              data-contact-action="phone"
+              :href="detailPrimaryAction.href"
+              @click="trackContact('phone')"
+            >{{ detailPrimaryAction.label }}</a>
+            <NuxtLink
+              v-else
+              class="detail-primary-action"
+              data-color-role="action-primary"
+              :data-contact-action="detailPrimaryAction.id === 'directions' ? 'map' : undefined"
+              :to="detailPrimaryAction.href"
+              no-prefetch
+              @click="detailPrimaryAction.id === 'directions' && trackContact('map')"
+            >{{ detailPrimaryAction.label }}</NuxtLink>
+          </template>
+          <ClientOnly>
             <SaveButton :entity="entity" :show-label="true" />
             <ShareButton :title="entity.name" :text="entity.summary" :descriptor="heroDescriptor" />
-          </div>
-        </ClientOnly>
+          </ClientOnly>
+        </ActionDock>
 
         <!-- OCOP highlight -->
         <div v-if="entity.attributes?.ocop" class="ocop-highlight">
@@ -306,63 +386,68 @@
           <span v-if="entity.attributes?.review_count" class="rd-count">({{ entity.attributes.review_count }} đánh giá)</span>
         </div>
 
-        <h2 class="facts-heading sediment-head"><span class="facts-heading-icon" aria-hidden="true">📑</span>{{ ss('labels.detail.info_heading', 'Thông tin') }}</h2>
-        <div class="facts-card">
+        <div data-detail-region="facts">
+          <h2 class="facts-heading sediment-head"><span class="facts-heading-icon" aria-hidden="true">📑</span>{{ ss('labels.detail.info_heading', 'Thông tin') }}</h2>
+          <dl class="facts-card">
           <div class="fact-group">
             <h3 class="fg-label">Tổng quan</h3>
             <div class="fact">
               <IconLine :name="typeMeta.icon" class="fact-ic" />
-              <span class="k">{{ ss('labels.detail.fact_type', 'Loại') }}</span>
-              <span class="v">{{ typeMeta.label }}</span>
+              <dt class="k">{{ ss('labels.detail.fact_type', 'Loại') }}</dt>
+              <dd class="v">{{ typeMeta.label }}</dd>
             </div>
             <div v-if="entity.place_name" class="fact">
               <span class="fact-ic" aria-hidden="true">📍</span>
-              <span class="k">{{ ss('labels.detail.fact_place', 'Địa điểm') }}</span>
-              <span class="v">
+              <dt class="k">{{ ss('labels.detail.fact_place', 'Địa điểm') }}</dt>
+              <dd class="v">
                 <NuxtLink v-if="entity.placeId" :to="`/xa-phuong/${entity.placeId}`" class="fact-link">{{ entity.place_name }}</NuxtLink>
                 <template v-else>{{ entity.place_name }}</template>
-              </span>
+              </dd>
             </div>
             <div v-if="entity.place_area" class="fact">
               <span class="fact-ic" aria-hidden="true">🗺️</span>
-              <span class="k">{{ ss('labels.detail.fact_area', 'Khu vực') }}</span>
-              <span class="v">
+              <dt class="k">{{ ss('labels.detail.fact_area', 'Khu vực') }}</dt>
+              <dd class="v">
                 <NuxtLink :to="`/khu-vuc/${entity.place_area}`" class="fact-link">{{ areaName }}</NuxtLink>
-              </span>
+              </dd>
             </div>
             <div v-if="entity.season" class="fact">
               <span class="fact-ic" aria-hidden="true">🌤️</span>
-              <span class="k">{{ ss('labels.detail.fact_season', 'Mùa') }}</span>
-              <span class="v">{{ seasonLabel }}</span>
+              <dt class="k">{{ ss('labels.detail.fact_season', 'Mùa') }}</dt>
+              <dd class="v">{{ seasonLabel }}</dd>
             </div>
           </div>
 
           <div v-if="hasVisitFacts" class="fact-group">
             <h3 class="fg-label">Tham quan</h3>
+            <div class="fact-evidence">
+              <SourceMark :tier="trustTier" compact />
+              <FreshnessLine :status="trustFreshnessStatus" :updated-label="trustUpdatedLabel" />
+            </div>
             <div v-if="entity.attributes?.hours" class="fact">
               <span class="fact-ic" aria-hidden="true">🕒</span>
-              <span class="k">{{ ss('labels.detail.fact_hours', 'Giờ mở cửa') }}</span>
-              <span class="v">{{ entity.attributes.hours }}</span>
+              <dt class="k">{{ ss('labels.detail.fact_hours', 'Giờ mở cửa') }}</dt>
+              <dd class="v">{{ entity.attributes.hours }}</dd>
             </div>
             <div v-if="entity.attributes?.price" class="fact">
               <span class="fact-ic" aria-hidden="true">💰</span>
-              <span class="k">{{ ss('labels.detail.fact_price', 'Giá tham khảo') }}</span>
-              <span class="v">{{ entity.attributes.price }}</span>
+              <dt class="k">{{ ss('labels.detail.fact_price', 'Giá tham khảo') }}</dt>
+              <dd class="v">{{ entity.attributes.price }}</dd>
             </div>
             <div v-if="entity.attributes?.fee" class="fact">
               <span class="fact-ic" aria-hidden="true">🎫</span>
-              <span class="k">{{ ss('labels.detail.fact_fee', 'Phí vào cửa') }}</span>
-              <span class="v">{{ entity.attributes.fee }}</span>
+              <dt class="k">{{ ss('labels.detail.fact_fee', 'Phí vào cửa') }}</dt>
+              <dd class="v">{{ entity.attributes.fee }}</dd>
             </div>
             <div v-if="entity.attributes?.suggested_duration" class="fact">
               <span class="fact-ic" aria-hidden="true">⏱️</span>
-              <span class="k">Thời gian tham quan</span>
-              <span class="v">{{ entity.attributes.suggested_duration }}</span>
+              <dt class="k">Thời gian tham quan</dt>
+              <dd class="v">{{ entity.attributes.suggested_duration }}</dd>
             </div>
             <div v-if="entity.attributes?.transport" class="fact">
               <span class="fact-ic" aria-hidden="true">🚗</span>
-              <span class="k">{{ ss('labels.detail.fact_transport', 'Di chuyển') }}</span>
-              <span class="v">{{ entity.attributes.transport }}</span>
+              <dt class="k">{{ ss('labels.detail.fact_transport', 'Di chuyển') }}</dt>
+              <dd class="v">{{ entity.attributes.transport }}</dd>
             </div>
           </div>
 
@@ -370,23 +455,23 @@
             <h3 class="fg-label">Liên hệ</h3>
             <div v-if="entity.attributes?.phone" class="fact">
               <span class="fact-ic" aria-hidden="true">📞</span>
-              <span class="k">{{ ss('labels.detail.fact_phone', 'Liên hệ') }}</span>
-              <span class="v"><a :href="telHref(entity.attributes.phone)" class="fact-link" data-contact-action="phone" @click="trackContact('phone')">{{ entity.attributes.phone }}</a><button type="button" class="fact-copy" @click="copyText(entity.attributes.phone!, 'số điện thoại')" aria-label="Sao chép số điện thoại" title="Sao chép"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></span>
+              <dt class="k">{{ ss('labels.detail.fact_phone', 'Liên hệ') }}</dt>
+              <dd class="v"><a :href="telHref(entity.attributes.phone)" class="fact-link" data-contact-action="phone" @click="trackContact('phone')">{{ entity.attributes.phone }}</a><button type="button" class="fact-copy" @click="copyText(entity.attributes.phone!, 'số điện thoại')" aria-label="Sao chép số điện thoại" title="Sao chép"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></dd>
             </div>
             <div v-if="entity.attributes?.address" class="fact">
               <span class="fact-ic" aria-hidden="true">🏠</span>
-              <span class="k">{{ ss('labels.detail.fact_address', 'Địa chỉ') }}</span>
-              <span class="v">{{ entity.attributes.address }}<button type="button" class="fact-copy" @click="copyText(entity.attributes.address!, 'địa chỉ')" aria-label="Sao chép địa chỉ" title="Sao chép"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></span>
+              <dt class="k">{{ ss('labels.detail.fact_address', 'Địa chỉ') }}</dt>
+              <dd class="v">{{ entity.attributes.address }}<button type="button" class="fact-copy" @click="copyText(entity.attributes.address!, 'địa chỉ')" aria-label="Sao chép địa chỉ" title="Sao chép"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></dd>
             </div>
             <div v-if="entity.attributes?.coords_approximate && hasCoords" class="fact fact-approx">
               <span class="fact-ic" aria-hidden="true">📍</span>
-              <span class="k">{{ ss('labels.detail.fact_location', 'Vị trí') }}</span>
-              <span class="v">{{ ss('labels.detail.coords_approximate', 'Gần đúng (trung tâm xã/phường) — chưa có toạ độ chính xác') }}</span>
+              <dt class="k">{{ ss('labels.detail.fact_location', 'Vị trí') }}</dt>
+              <dd class="v">{{ ss('labels.detail.coords_approximate', 'Gần đúng (trung tâm xã/phường) — chưa có toạ độ chính xác') }}</dd>
             </div>
             <div v-if="entity.attributes?.website" class="fact">
               <span class="fact-ic" aria-hidden="true">🔗</span>
-              <span class="k">{{ ss('labels.detail.fact_website', 'Website') }}</span>
-              <span class="v"><a :href="safeUrl(entity.attributes.website)" target="_blank" rel="noopener nofollow" class="fact-link website-link" data-contact-action="website" @click="trackContact('website')">{{ entity.attributes?.website?.replace(/^https?:\/\//, '') }}</a></span>
+              <dt class="k">{{ ss('labels.detail.fact_website', 'Website') }}</dt>
+              <dd class="v"><a :href="safeUrl(entity.attributes.website)" target="_blank" rel="noopener nofollow" class="fact-link website-link" data-contact-action="website" @click="trackContact('website')">{{ entity.attributes?.website?.replace(/^https?:\/\//, '') }}</a></dd>
             </div>
           </div>
 
@@ -394,75 +479,17 @@
             <h3 class="fg-label">Đặc điểm</h3>
             <div v-if="entity.attributes?.amenities" class="fact">
               <span class="fact-ic" aria-hidden="true">✅</span>
-              <span class="k">{{ ss('labels.detail.fact_amenities', 'Tiện ích') }}</span>
-              <span class="v">{{ Array.isArray(entity.attributes.amenities) ? entity.attributes.amenities.join(', ') : entity.attributes.amenities }}</span>
+              <dt class="k">{{ ss('labels.detail.fact_amenities', 'Tiện ích') }}</dt>
+              <dd class="v">{{ Array.isArray(entity.attributes.amenities) ? entity.attributes.amenities.join(', ') : entity.attributes.amenities }}</dd>
             </div>
             <div v-if="entity.attributes?.price_range" class="fact">
               <span class="fact-ic" aria-hidden="true">💵</span>
-              <span class="k">Mức giá</span>
-              <span class="v">{{ entity.attributes.price_range }}</span>
+              <dt class="k">Mức giá</dt>
+              <dd class="v">{{ entity.attributes.price_range }}</dd>
             </div>
           </div>
+          </dl>
         </div>
-
-        <!-- P0-5: byline biên tập (Who) — always-on, ngoài trust-card -->
-        <p class="entity-byline"><IconLine name="user" /> {{ bylineText }} · <strong>Ban biên tập vinhlong360</strong> · <NuxtLink to="/gioi-thieu#ban-bien-tap">phương pháp biên tập</NuxtLink></p>
-
-        <!--
-          Hai thiết kế cho cùng một vai trò, hợp từ hai nhánh:
-          · main: EntityTrustPanel — thẻ nội tuyến, luôn hiện.
-          · NP-1: thẻ "Độ tin cậy dữ liệu" + SourceTrustDrawer, sau cờ `trust_drawer_v1`
-            và chỉ khi CÓ nguồn công khai thật (`trustVisible`).
-          Chặn hai thẻ cùng hiện bằng `v-if="!trustVisible"`: bật cờ thì bản NP-1 thắng
-          vì nó nói được nhiều hơn; tắt cờ thì rơi về bản đã ship trên main.
-        -->
-        <EntityTrustPanel
-          v-if="!trustVisible"
-          class="trust-card"
-          :tier="trustTier"
-          :source-title="trustSourceTitle"
-          :source-url="trustSourceUrl || undefined"
-          :freshness-status="trustFreshnessStatus"
-          :updated-label="trustUpdatedLabel"
-          :note="trustNote"
-          :report-to="reportUrl"
-        />
-
-        <section v-if="trustVisible" class="trust-card" aria-labelledby="trust-card-title">
-          <div class="trust-card-head">
-            <h2 id="trust-card-title" class="sediment-head">Độ tin cậy dữ liệu</h2>
-            <span :class="['trust-status', trustStatusTone]">{{ trustStatusLabel }}</span>
-          </div>
-          <p class="trust-source"><IconLine :name="trustSourceTier === 'community' ? 'users' : 'shield-check'" aria-hidden="true" /> {{ trustSourceTitle }}</p>
-          <button
-            type="button"
-            class="trust-open"
-            data-action="open-source-trust"
-            aria-haspopup="dialog"
-            :aria-expanded="trustDrawerOpen"
-            @click="trustDrawerOpen = true"
-          >
-            Xem nguồn và cách đánh giá
-            <IconLine name="panel-left-open" aria-hidden="true" />
-          </button>
-        </section>
-
-        <SourceTrustDrawer
-          :open="trustDrawerOpen"
-          :source-tier="trustSourceTier"
-          :source-title="trustSourceTitle"
-          :source-url="trustSourceUrl"
-          :verified-at="trustVerifiedAt"
-          :updated-at="trustUpdatedAt"
-          :freshness-status="trustStatus"
-          :community-context="trustCommunityContext"
-          @close="trustDrawerOpen = false"
-          @report="reportTrustIssue"
-        />
-
-        <!-- declutter-3 T17 (B5c/D12): đúng 1 kênh Báo sai mỗi trang — trust-card ưu tiên;
-             fallback này chỉ hiện khi entity KHÔNG có nguồn (trust-card ẩn) -->
-        <NuxtLink v-if="!trustVisible" class="quality-report" :to="reportUrl">{{ ss('labels.detail.cta_report', 'Báo sai dữ liệu') }}</NuxtLink>
 
         <NuxtErrorBoundary>
           <ClientOnly>
@@ -488,45 +515,42 @@
       </aside>
     </div>
 
-    <!-- Sticky mobile CTA bar (always visible, thumb zone).
-         Always renders so mobile users never hit a "CTA void"; when there's no
-         phone/Zalo/map, fall back to the guaranteed next action (add to itinerary). -->
-    <div class="sticky-cta-bar">
-      <a v-if="zaloLink" class="scta-zalo" data-color-role="action-primary" :href="zaloLink" target="_blank" rel="nofollow noopener" aria-label="Nhắn Zalo">💬 Zalo</a>
-      <a v-if="entity.attributes?.phone" class="scta-phone" data-color-role="action-secondary" data-contact-action="phone" :href="telHref(entity.attributes.phone)" aria-label="Gọi điện thoại" @click="trackContact('phone')">📞 Gọi</a>
-      <NuxtLink v-if="hasCoords" class="scta-map" data-color-role="action-secondary" data-contact-action="map" :to="mapUrl" aria-label="Xem trên bản đồ" @click="trackContact('map')">🗺️ Bản đồ</NuxtLink>
-      <NuxtLink v-if="!hasStickyContact" :to="planAddUrl" no-prefetch class="scta-plan" data-color-role="action-primary" aria-label="Thêm vào lịch trình">📋 {{ ss('labels.detail.next_add_itinerary', 'Thêm vào lịch trình') }}</NuxtLink>
-    </div>
   </section>
-  <section v-else-if="fetchError" class="page">
-    <EmptyState
-      :icon="fetchError.statusCode === 404 ? '🔍' : '⚠️'"
-      :title="fetchError.statusCode === 404 ? 'Không tìm thấy địa điểm này' : 'Không thể tải dữ liệu'"
-      :message="fetchError.statusCode === 404
-        ? 'Có thể nội dung đã được di chuyển hoặc đường dẫn chưa đúng. Bạn thử khám phá các điểm đến khác nhé.'
-        : 'Đã có lỗi khi tải dữ liệu. Vui lòng thử lại sau.'"
-      :tone="fetchError.statusCode === 404 ? undefined : 'error'"
-    >
-      <template #actions>
-        <button v-if="fetchError.statusCode !== 404" type="button" class="btn btn-primary" @click="refreshEntity()">Thử lại</button>
-        <NuxtLink to="/du-lich" class="btn btn-primary">Khám phá điểm đến</NuxtLink>
-        <NuxtLink to="/" class="btn btn-ghost">Về trang chủ</NuxtLink>
-      </template>
-    </EmptyState>
-  </section>
-  <section v-else class="page">
+  <section v-else-if="detailFetchResolution?.kind === 'not_found'" class="page">
     <EmptyState icon="🔍" title="Không tìm thấy địa điểm này" message="Có thể nội dung đã được di chuyển hoặc đường dẫn chưa đúng. Bạn thử khám phá các điểm đến khác nhé.">
       <template #actions>
         <NuxtLink to="/du-lich" class="btn btn-primary">Khám phá điểm đến</NuxtLink>
-        <NuxtLink to="/" class="btn btn-ghost">Về trang chủ</NuxtLink>
+        <button type="button" class="btn btn-ghost" @click="goBack">Quay lại</button>
       </template>
     </EmptyState>
+  </section>
+  <section v-else-if="detailFetchResolution?.kind === 'hidden'" class="page">
+    <EmptyState icon="🔒" title="Nội dung chưa công khai" message="Nội dung này hiện không có trên bề mặt công khai. Bạn có thể quay lại kết quả trước đó hoặc khám phá nội dung khác.">
+      <template #actions>
+        <button type="button" class="btn btn-primary" @click="goBack">Quay lại</button>
+        <NuxtLink to="/du-lich" class="btn btn-ghost">Khám phá điểm đến</NuxtLink>
+      </template>
+    </EmptyState>
+  </section>
+  <section v-else class="page detail-recovery-page">
+    <PageState
+      :state="entityStatus === 'idle' || entityStatus === 'pending'
+        ? { kind: 'loading' }
+        : { kind: 'error', retry: { label: 'Thử lại' } }"
+      title="Không thể tải dữ liệu"
+      :retry="entityStatus === 'idle' || entityStatus === 'pending' ? undefined : refreshEntity"
+    />
+    <nav class="detail-recovery-links" aria-label="Điều hướng khôi phục">
+      <button type="button" class="btn btn-ghost" @click="goBack">Quay lại kết quả trước</button>
+      <NuxtLink to="/du-lich" class="btn btn-outline">Khám phá điểm đến</NuxtLink>
+    </nav>
   </section>
 </template>
 
 <script setup lang="ts">
 import type { Entity } from '~/types'
 import type { ImageDescriptor } from '~/types/image'
+import type { DetailFetchResolution } from '~/utils/detailExperience'
 import { TYPE_META, AREA_META, REL_FWD, REL_BWD } from '~/composables/useConstants'
 import { seasonText } from '~/composables/useSeason'
 import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
@@ -536,7 +560,10 @@ import { adminUnitCrumb, withAdminUnitBreadcrumb } from '~/utils/adminUnit'
 import { aiDisclosure } from '~/utils/aiDisclosure'
 import { currentGalleryDescriptors, type GalleryDescriptorCarrier } from '~/utils/entityGallery'
 import { describeEntityImages, parseGalleryDescriptor } from '~/utils/imageDescriptors'
+import { resolveDetailAction, resolveDetailFetchError } from '~/utils/detailExperience'
 import { resolveFreshnessStatus, resolveRegionalAccent, resolveSourceTier } from '~/utils/regionalColor'
+import ActionDock from '~/components/public/ActionDock.vue'
+import PageState from '~/components/public/PageState.vue'
 import SourceTrustDrawer from '~/components/SourceTrustDrawer.vue'
 
 interface LaunchEntityCarrier extends Entity {
@@ -546,6 +573,10 @@ interface LaunchEntityCarrier extends Entity {
 
 interface GalleryResponse {
   readonly images: unknown[]
+}
+
+interface DetailGalleryCarrier extends GalleryDescriptorCarrier {
+  readonly failed: boolean
 }
 
 useReveal()
@@ -735,24 +766,29 @@ const { data: entity, error: fetchError, status: entityStatus, refresh: refreshE
   { watch: [id, () => route.fullPath], deep: false }
 )
 
-const { data: galleryCarrier } = await useAsyncData(
+const { data: galleryCarrier, refresh: refreshGalleryData } = await useAsyncData(
   computed(() => `entity-gallery-${id.value}`),
-  async (): Promise<GalleryDescriptorCarrier> => {
+  async (): Promise<DetailGalleryCarrier> => {
     const requestId = id.value
     try {
       const response = await apiFetch<GalleryResponse>(`/api/entities/${encodedId.value}/gallery`)
-      if (!response || !Array.isArray(response.images)) return { requestId, descriptors: [] }
+      if (!response || !Array.isArray(response.images)) return { requestId, descriptors: [], failed: true }
       const descriptors = response.images.flatMap((raw) => {
         const descriptor = parseGalleryDescriptor(raw)
         return descriptor && descriptor.source_class !== 'user-uploaded' ? [descriptor] : []
       })
-      return { requestId, descriptors }
-    } catch { return { requestId, descriptors: [] } }
+      return { requestId, descriptors, failed: false }
+    } catch { return { requestId, descriptors: [], failed: true } }
   },
   { watch: [id], deep: false },
 )
 
 const galleryDescriptors = computed(() => currentGalleryDescriptors(galleryCarrier.value, id.value))
+const galleryPartial = computed(() => galleryCarrier.value?.requestId === id.value && galleryCarrier.value.failed)
+
+async function refreshGallery() {
+  await refreshGalleryData()
+}
 
 async function refreshEntity() {
   entityLaunchGeneration.begin()
@@ -797,7 +833,11 @@ const { data: backendJsonLd } = await useAsyncData(
 
 // SSR: throw 404 so the server responds with proper status code.
 // Client-side: show error state in-page (fetchError ref drives the template).
-if (import.meta.server && fetchError.value) {
+const detailFetchResolution = computed<DetailFetchResolution | null>(() => (
+  fetchError.value ? resolveDetailFetchError(fetchError.value) : null
+))
+
+if (import.meta.server && detailFetchResolution.value?.kind === 'not_found') {
   throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy nội dung' })
 }
 
@@ -1003,6 +1043,10 @@ const mapUrl = computed(() => {
   return c ? `${base}&lat=${c[0]}&lng=${c[1]}` : base
 })
 const planAddUrl = computed(() => `/tao-lich-trinh?add=${encodeURIComponent(id.value)}`)
+const detailPrimaryAction = computed(() => resolveDetailAction({
+  coords: normalizeCoords(entity.value?.coordinates),
+  phone: entity.value?.attributes?.phone,
+}, { family: 'entity', id: id.value }))
 
 // Đo lượt bấm CTA liên hệ (contact-funnel). Fire-and-forget, KHÔNG await:
 // `tel:` rời trang ngay nên beacon dùng keepalive; endpoint chết thì nút vẫn chạy.
@@ -1013,10 +1057,6 @@ const hasHighlights = computed(() => !!(entity.value?.attributes?.phone || zaloL
 const hasVisitFacts = computed(() => { const a = entity.value?.attributes; return !!(a?.hours || a?.price || a?.fee || a?.suggested_duration || a?.transport) })
 const hasContactFacts = computed(() => { const a = entity.value?.attributes; return !!(a?.phone || a?.address || (a?.coords_approximate && hasCoords.value) || a?.website) })
 const hasFeatureFacts = computed(() => { const a = entity.value?.attributes; return !!(a?.amenities || a?.price_range || a?.atmosphere || a?.famous_for || a?.significance) })
-// Sticky bar always renders; this tells the template whether any "contact" CTA
-// (phone/Zalo/map) is present. If not, the bar shows the itinerary fallback CTA.
-const hasStickyContact = computed(() => !!(entity.value?.attributes?.phone || zaloLink.value || hasCoords.value))
-
 const practicalTips = computed(() => {
   const a = entity.value?.attributes
   if (!a) return []
@@ -1074,19 +1114,43 @@ const trustStatusLabel = computed(() => {
   if (trustFreshnessStatus.value === 'fresh') return 'Mới cập nhật'
   if (trustFreshnessStatus.value === 'aging') return 'Cần kiểm tra định kỳ'
   if (trustFreshnessStatus.value === 'stale') return 'Có thể đã cũ'
+  if (trustFreshnessStatus.value === 'conflict') return 'Thông tin có mâu thuẫn'
   return 'Chưa rõ'
 })
 const trustNote = computed(() => {
   if (trustFreshnessStatus.value === 'fresh') return 'Thông tin này có tín hiệu cập nhật gần đây.'
   if (trustFreshnessStatus.value === 'aging') return 'Thông tin vẫn dùng được nhưng nên kiểm tra lại nếu bạn sắp đi.'
   if (trustFreshnessStatus.value === 'stale') return 'Thông tin có thể đã cũ; hãy báo sai nếu bạn thấy khác thực tế.'
+  if (trustFreshnessStatus.value === 'conflict') return 'Các nguồn đang ghi khác nhau; xem từng giá trị và thời điểm trước khi quyết định.'
   return 'Hệ thống chưa có đủ tín hiệu nguồn/ngày cập nhật cho mục này.'
 })
 const trustStatusTone = computed(() => {
   if (trustStatus.value === 'fresh') return 'fresh'
   if (trustStatus.value === 'aging') return 'aging'
   if (trustStatus.value === 'stale') return 'stale'
+  if (trustStatus.value === 'conflict') return 'conflict'
   return 'unknown'
+})
+const trustConflicts = computed(() => {
+  const raw = entity.value?.attributes?.source_conflicts
+  if (!Array.isArray(raw)) return []
+  return raw.flatMap((item): Array<{ label: string; value: string; sourceTitle?: string; updatedLabel?: string }> => {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) return []
+    const conflict = item as Record<string, unknown>
+    const label = typeof conflict.label === 'string' ? conflict.label.trim() : ''
+    const value = typeof conflict.value === 'string' ? conflict.value.trim() : ''
+    if (!label || !value) return []
+    return [{
+      label,
+      value,
+      ...(typeof conflict.source_title === 'string' && conflict.source_title.trim()
+        ? { sourceTitle: conflict.source_title.trim() }
+        : {}),
+      ...(typeof conflict.updated_at === 'string' && conflict.updated_at.trim()
+        ? { updatedLabel: formatDateVN(conflict.updated_at) }
+        : {}),
+    }]
+  })
 })
 const trustCommunityContext = computed(() => trustSourceTier.value === 'community'
   ? 'Nguồn cộng đồng đã qua bước kiểm duyệt nội dung; không phải thông tin chính thức.'
@@ -1485,7 +1549,8 @@ useHead({
 }
 .trust-status.fresh { color: var(--success); background: var(--success-bg); border-color: var(--success-border); }
 .trust-status.aging { color: var(--warning); background: var(--warning-bg); border-color: var(--warning-border); }
-.trust-status.stale { color: var(--error); background: var(--error-bg); border-color: var(--error-border); }
+.trust-status.stale,
+.trust-status.conflict { color: var(--error); background: var(--error-bg); border-color: var(--error-border); }
 .trust-status.unknown { color: var(--muted); background: var(--bg-warm); }
 .trust-source { display: flex; align-items: flex-start; gap: var(--space-2); margin: 0; color: var(--muted); font-size: var(--text-sm); line-height: var(--leading-snug); }
 .trust-source .line-icon { margin-top: .12rem; color: var(--color-action); }

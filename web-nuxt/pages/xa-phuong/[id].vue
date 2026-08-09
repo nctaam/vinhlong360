@@ -1,20 +1,35 @@
 <template>
-  <section v-if="fetchFailed" class="page">
-    <EmptyState icon="⚠️" title="Không thể tải trang" message="Lỗi kết nối. Vui lòng thử lại.">
-      <button type="button" class="btn btn-outline btn-sm" @click="refreshWard()">Thử lại</button>
-    </EmptyState>
-  </section>
-
-  <section v-else-if="!data?.place" class="page">
+  <section v-if="wardFetchResolution?.kind === 'not_found'" class="page">
     <EmptyState icon="🔍" title="Không tìm thấy xã/phường" message="Có thể đơn vị hành chính đã được sắp xếp lại hoặc đường dẫn chưa đúng.">
       <template #actions>
         <NuxtLink to="/danh-ba" class="btn btn-primary">Danh bạ hành chính</NuxtLink>
-        <NuxtLink to="/" class="btn btn-ghost">Về trang chủ</NuxtLink>
+        <button type="button" class="btn btn-ghost" @click="goBack">Quay lại</button>
       </template>
     </EmptyState>
   </section>
 
-  <section v-else class="wp ce-ward">
+  <section v-else-if="wardFetchResolution?.kind === 'hidden'" class="page">
+    <EmptyState icon="🔒" title="Nội dung chưa công khai" message="Đơn vị này hiện không có trên bề mặt công khai.">
+      <template #actions>
+        <button type="button" class="btn btn-primary" @click="goBack">Quay lại</button>
+        <NuxtLink to="/danh-ba" class="btn btn-ghost">Danh bạ hành chính</NuxtLink>
+      </template>
+    </EmptyState>
+  </section>
+
+  <section v-else-if="wardFetchResolution?.kind === 'error'" class="page ward-recovery-page">
+    <PageState
+      :state="{ kind: 'error', retry: { label: 'Thử lại' } }"
+      title="Không thể tải trang"
+      :retry="refreshWard"
+    />
+    <nav class="ward-recovery-links" aria-label="Điều hướng khôi phục">
+      <button type="button" class="btn btn-ghost" @click="goBack">Quay lại kết quả trước</button>
+      <NuxtLink to="/danh-ba" class="btn btn-outline">Danh bạ hành chính</NuxtLink>
+    </nav>
+  </section>
+
+  <section v-else-if="data?.place" class="wp ce-ward">
     <!-- Breadcrumb -->
     <nav class="breadcrumb" aria-label="Breadcrumb">
       <button type="button" class="bc-back" aria-label="Quay lại" @click="goBack">
@@ -28,7 +43,7 @@
     </nav>
 
     <!-- Hero -->
-    <header class="wp-hero" :class="`area-${data.place.area}`">
+    <header class="wp-hero" data-detail-region="identity" :class="`area-${data.place.area}`">
       <div class="wp-hero-motif" aria-hidden="true" v-html="heroMotif"></div>
       <div class="wp-hero-inner">
         <span class="wp-level">{{ data.place.level === 'phuong' ? 'Phường' : 'Xã' }}</span>
@@ -37,96 +52,80 @@
           <span class="wp-region-emoji">{{ areaMeta.emoji }}</span>
           <NuxtLink :to="`/khu-vuc/${data.place.area}`">{{ areaMeta.name }}</NuxtLink>
         </p>
-        <div v-if="hasStats" class="wp-stats">
-          <div v-if="attrs.area_km2" class="wp-stat">
-            <span class="wp-stat-val">{{ attrs.area_km2 }} km²</span>
-            <span class="wp-stat-label">Diện tích</span>
-          </div>
-          <div v-if="attrs.population" class="wp-stat">
-            <span class="wp-stat-val">{{ formatPop(attrs.population) }}</span>
-            <span class="wp-stat-label">Dân số</span>
-          </div>
-          <div class="wp-stat">
-            <span class="wp-stat-val">{{ totalContent }}</span>
-            <span class="wp-stat-label">Địa điểm</span>
-          </div>
-        </div>
       </div>
     </header>
 
-    <!-- Summary -->
-    <p v-if="data.place.summary" class="wp-summary">{{ data.place.summary }}</p>
-
-    <!-- Map -->
-    <ClientOnly>
-      <section v-if="data.place.coordinates" class="wp-map-sec">
-        <EmptyState v-if="mapLoadError" tone="error" icon="🗺️" message="Không tải được bản đồ. Kiểm tra kết nối và thử lại." />
-        <div v-show="!mapLoadError" ref="mapEl" class="wp-map-container" :class="{ 'wp-map-loading': !mapReady }" role="application" aria-roledescription="bản đồ tương tác" :aria-label="`Bản đồ ${data.place.name}. Dùng chuột hoặc cảm ứng để di chuyển.`"></div>
-      </section>
-    </ClientOnly>
-
     <!-- Main content -->
     <div class="wp-body">
-      <div class="wp-main">
-        <!-- Tham quan nổi bật -->
-        <section v-if="data.tourism?.length" class="wp-sec">
-          <p class="wp-eyebrow">📍 Tham quan</p>
-          <h2>Địa điểm tham quan <span class="cnt">({{ data.tourism.length }})</span></h2>
-          <div class="wp-grid grid">
-            <EntityCard v-for="e in data.tourism" :key="e.id" :entity="e" />
-          </div>
-        </section>
-
-        <!-- Lưu trú -->
-        <section v-if="data.lodging?.length" class="wp-sec reveal">
-          <div class="wp-divider" aria-hidden="true"></div>
-          <p class="wp-eyebrow">🏨 Nghỉ ngơi</p>
-          <h2>Lưu trú <span class="cnt">({{ data.lodging.length }})</span></h2>
-          <div class="wp-grid grid">
-            <EntityCard v-for="e in data.lodging" :key="e.id" :entity="e" />
-          </div>
-        </section>
-
-        <!-- Sản phẩm -->
-        <section v-if="data.products?.length" class="wp-sec reveal">
-          <div class="wp-divider" aria-hidden="true"></div>
-          <p class="wp-eyebrow">🛍️ Đặc sản</p>
-          <h2>Đặc sản &amp; sản phẩm <span class="cnt">({{ data.products.length }})</span></h2>
-          <div class="wp-grid grid">
-            <EntityCard v-for="e in data.products" :key="e.id" :entity="e" />
-          </div>
-        </section>
-
-        <!-- Empty state -->
-        <div v-if="!totalContent" class="wp-empty-card">
-          <div class="wp-empty-motif" aria-hidden="true"></div>
-          <span class="wp-empty-icon" aria-hidden="true">🗺️</span>
-          <p class="wp-empty-title">Trang đang được xây dựng</p>
-          <p class="wp-empty-msg">Chưa có dữ liệu địa điểm cho {{ data.place.name }}. Du lịch, lưu trú và đặc sản của khu vực này đang được bổ sung.</p>
-          <p class="wp-empty-hint">Quay lại sau hoặc khám phá các xã/phường lân cận qua trang khu vực.</p>
-        </div>
-      </div>
-
-      <!-- Sidebar -->
       <aside class="wp-aside">
-        <!-- sr-only: when wp-main has zero content sections (no h2 rendered above),
-             this keeps the sidebar's h3's from skipping straight from h1 (WCAG 1.3.1). -->
-        <h2 class="sr-only">Thông tin liên hệ</h2>
-        <!-- Liên hệ cơ quan (declutter-3 T2: chỉ hiện khi có số thật — hết "Đang cập nhật" mơ hồ) -->
-        <div v-if="attrs.police_phone" class="wp-card">
-          <h3>📞 Liên hệ khẩn cấp</h3>
-          <div class="wp-contact">
+        <EntityTrustPanel
+          data-detail-region="trust"
+          :tier="wardTrustTier"
+          :source-title="wardSourceTitle"
+          :source-url="wardSourceUrl || undefined"
+          :freshness-status="wardFreshnessStatus"
+          :updated-label="wardUpdatedLabel"
+          :note="wardTrustNote"
+          :report-to="wardReportUrl"
+          :conflicts="wardTrustConflicts"
+        />
+
+        <ActionDock class="ward-action-dock" data-detail-region="action" data-detail-action-safe-area>
+          <template #primary>
+            <a
+              v-if="wardPrimaryAction.id === 'call'"
+              class="ward-primary-action"
+              data-color-role="action-primary"
+              :href="wardPrimaryAction.href"
+            >{{ wardPrimaryAction.label }}</a>
+            <NuxtLink
+              v-else
+              class="ward-primary-action"
+              data-color-role="action-primary"
+              :to="wardPrimaryAction.href"
+              no-prefetch
+            >{{ wardPrimaryAction.label }}</NuxtLink>
+          </template>
+        </ActionDock>
+
+        <section class="wp-card wp-facts-card" data-detail-region="facts" aria-labelledby="ward-facts-title">
+          <h2 id="ward-facts-title">Thông tin nhanh</h2>
+          <div class="wp-fact-evidence">
+            <SourceMark :tier="wardTrustTier" compact />
+            <FreshnessLine :status="wardFreshnessStatus" :updated-label="wardUpdatedLabel" />
+          </div>
+          <dl class="wp-facts">
+            <div>
+              <dt>Đơn vị</dt>
+              <dd>{{ data.place.level === 'phuong' ? 'Phường' : 'Xã' }}</dd>
+            </div>
+            <div v-if="data.place.area">
+              <dt>Khu vực</dt>
+              <dd>{{ areaMeta.name }}</dd>
+            </div>
+            <div v-if="attrs.area_km2">
+              <dt>Diện tích</dt>
+              <dd>{{ attrs.area_km2 }} km²</dd>
+            </div>
+            <div v-if="attrs.population">
+              <dt>Dân số</dt>
+              <dd>{{ formatPop(attrs.population) }}</dd>
+            </div>
+            <div>
+              <dt>Địa điểm</dt>
+              <dd>{{ totalContent }}</dd>
+            </div>
+          </dl>
+
+          <div v-if="attrs.police_phone" class="wp-contact">
             <div class="wp-contact-item wp-contact-main">
               <span class="wp-contact-label">👮 Công an {{ data.place.name }}</span>
               <a :href="telHref(attrs.police_phone)" class="wp-phone" :aria-label="`Gọi công an ${data.place.name}`">{{ attrs.police_phone }}</a>
             </div>
           </div>
-        </div>
 
-        <!-- Danh bạ hành chính -->
-        <div v-if="data.facilities?.length" class="wp-card">
-          <h3>🏛️ Danh bạ hành chính</h3>
-          <ul class="wp-fac-list">
+          <h3 v-if="data.facilities?.length">🏛️ Danh bạ hành chính</h3>
+          <ul v-if="data.facilities?.length" class="wp-fac-list">
             <li v-for="f in data.facilities" :key="f.id" class="wp-fac">
               <span class="wp-fac-kind"><span class="wp-fac-emoji" aria-hidden="true">{{ kindMeta(f).emoji }}</span> {{ kindMeta(f).label }}</span>
               <strong>{{ f.name }}</strong>
@@ -134,22 +133,73 @@
               <div v-if="attr(f,'phone')" class="wp-fac-row">📞 <a :href="telHref(attr(f,'phone'))" :aria-label="`Gọi ${f.name}`">{{ attr(f,'phone') }}</a></div>
             </li>
           </ul>
-        </div>
-
-        <!-- Map link -->
-        <NuxtLink v-if="data.place.coordinates" :to="mapUrl" class="wp-map-btn">
-          🗺️ Xem trên bản đồ
-        </NuxtLink>
+        </section>
       </aside>
+
+      <main class="wp-main" data-detail-region="narrative">
+        <p v-if="data.place.summary" class="wp-summary">{{ data.place.summary }}</p>
+
+        <ClientOnly>
+          <section v-if="data.place.coordinates" class="wp-map-sec">
+            <EmptyState v-if="mapLoadError" tone="error" icon="🗺️" message="Không tải được bản đồ. Kiểm tra kết nối và thử lại." />
+            <div v-show="!mapLoadError" ref="mapEl" class="wp-map-container" :class="{ 'wp-map-loading': !mapReady }" role="application" aria-roledescription="bản đồ tương tác" :aria-label="`Bản đồ ${data.place.name}. Dùng chuột hoặc cảm ứng để di chuyển.`"></div>
+          </section>
+        </ClientOnly>
+
+        <div data-detail-region="related">
+          <section v-if="data.tourism?.length" class="wp-sec">
+            <p class="wp-eyebrow">📍 Tham quan</p>
+            <h2>Địa điểm tham quan <span class="cnt">({{ data.tourism.length }})</span></h2>
+            <div class="wp-grid grid">
+              <EntityCard v-for="e in data.tourism" :key="e.id" :entity="e" />
+            </div>
+          </section>
+
+          <section v-if="data.lodging?.length" class="wp-sec reveal">
+            <div class="wp-divider" aria-hidden="true"></div>
+            <p class="wp-eyebrow">🏨 Nghỉ ngơi</p>
+            <h2>Lưu trú <span class="cnt">({{ data.lodging.length }})</span></h2>
+            <div class="wp-grid grid">
+              <EntityCard v-for="e in data.lodging" :key="e.id" :entity="e" />
+            </div>
+          </section>
+
+          <section v-if="data.products?.length" class="wp-sec reveal">
+            <div class="wp-divider" aria-hidden="true"></div>
+            <p class="wp-eyebrow">🛍️ Đặc sản</p>
+            <h2>Đặc sản &amp; sản phẩm <span class="cnt">({{ data.products.length }})</span></h2>
+            <div class="wp-grid grid">
+              <EntityCard v-for="e in data.products" :key="e.id" :entity="e" />
+            </div>
+          </section>
+
+          <div v-if="!totalContent" class="wp-empty-card">
+            <div class="wp-empty-motif" aria-hidden="true"></div>
+            <span class="wp-empty-icon" aria-hidden="true">🗺️</span>
+            <p class="wp-empty-title">Trang đang được xây dựng</p>
+            <p class="wp-empty-msg">Chưa có dữ liệu địa điểm cho {{ data.place.name }}. Du lịch, lưu trú và đặc sản của khu vực này đang được bổ sung.</p>
+            <p class="wp-empty-hint">Quay lại sau hoặc khám phá các xã/phường lân cận qua trang khu vực.</p>
+          </div>
+        </div>
+      </main>
     </div>
+  </section>
+
+  <section v-else class="page">
+    <PageState :state="{ kind: 'loading' }" />
   </section>
 </template>
 
 <script setup lang="ts">
 import type { Entity } from '~/types'
+import type { DetailFetchResolution } from '~/utils/detailExperience'
 import { AREA_META, OFFICE_KIND, TYPE_META } from '~/composables/useConstants'
 import { isCurrentLaunchResult } from '~/composables/useLaunchSafety'
+import { resolveDetailAction, resolveDetailFetchError } from '~/utils/detailExperience'
 import { describeEntityImages } from '~/utils/imageDescriptors'
+import { resolveFreshnessStatus, resolveSourceTier } from '~/utils/regionalColor'
+import ActionDock from '~/components/public/ActionDock.vue'
+import PageState from '~/components/public/PageState.vue'
 
 useReveal()
 
@@ -175,12 +225,14 @@ interface WardOverviewResult {
   readonly requestId: string
   readonly overview: WardOverviewResponse | null
   readonly failed: boolean
+  readonly error: unknown | null
 }
 
 interface WardPolicyCarrierResult {
   readonly generation: number
   readonly requestId: string
   readonly carrier: Record<string, unknown> | null
+  readonly error: unknown | null
 }
 
 const route = useRoute()
@@ -210,9 +262,9 @@ const {
   const requestId = id.value
   try {
     const overview = await apiFetch<WardOverviewResponse>(`/api/places/${encodedId.value}/overview`)
-    return { generation, requestId, overview, failed: false } satisfies WardOverviewResult
-  } catch {
-    return { generation, requestId, overview: null, failed: true } satisfies WardOverviewResult
+    return { generation, requestId, overview, failed: false, error: null } satisfies WardOverviewResult
+  } catch (error) {
+    return { generation, requestId, overview: null, failed: true, error } satisfies WardOverviewResult
   }
 }, { watch: [id, () => route.fullPath], deep: false })
 
@@ -246,10 +298,14 @@ const {
     const generation = wardLaunchGeneration.current()
     const requestId = id.value
     if (!launchSafety.canRefineEntityPolicy.value) {
-      return { generation, requestId, carrier: null } satisfies WardPolicyCarrierResult
+      return { generation, requestId, carrier: null, error: null } satisfies WardPolicyCarrierResult
     }
-    const carrier = await apiFetch<Record<string, unknown>>(`/api/entities/${encodedId.value}`)
-    return { generation, requestId, carrier } satisfies WardPolicyCarrierResult
+    try {
+      const carrier = await apiFetch<Record<string, unknown>>(`/api/entities/${encodedId.value}`)
+      return { generation, requestId, carrier, error: null } satisfies WardPolicyCarrierResult
+    } catch (error) {
+      return { generation, requestId, carrier: null, error } satisfies WardPolicyCarrierResult
+    }
   },
   { watch: [id, () => route.fullPath], deep: false },
 )
@@ -258,6 +314,36 @@ async function refreshWard() {
   wardLaunchGeneration.begin()
   await Promise.all([refreshWardOverview(), refreshWardPolicy()])
 }
+
+const currentWardPolicy = computed(() => {
+  const result = wardPolicyCarrier.value
+  return isCurrentLaunchResult(wardLaunchGeneration, result, id.value) ? result : null
+})
+
+const wardOverviewResolution = computed<DetailFetchResolution | null>(() => (
+  currentWardOverview.value?.error ? resolveDetailFetchError(currentWardOverview.value.error) : null
+))
+const wardPolicyResolution = computed<DetailFetchResolution | null>(() => {
+  const error = currentWardPolicy.value?.error || wardPolicyError.value
+  return error ? resolveDetailFetchError(error) : null
+})
+const wardFetchResolution = computed<DetailFetchResolution | null>(() => {
+  if (data.value?.place) return null
+  const resolutions = [wardOverviewResolution.value, wardPolicyResolution.value].filter(
+    (resolution): resolution is DetailFetchResolution => Boolean(resolution),
+  )
+  const hidden = resolutions.find(resolution => resolution.kind === 'hidden')
+  if (hidden) return hidden
+  const notFound = resolutions.find(resolution => resolution.kind === 'not_found')
+  if (notFound) return notFound
+  if (resolutions.length) return { kind: 'error', retryable: true }
+  if (
+    wardOverviewStatus.value === 'success'
+    && wardPolicyStatus.value === 'success'
+    && !data.value?.place
+  ) return { kind: 'error', retryable: true }
+  return null
+})
 
 async function refineCurrentWardLaunchDecision() {
   if (
@@ -287,6 +373,7 @@ async function refineCurrentWardLaunchDecision() {
       && wardLaunchGeneration.isCurrent(wardPolicyCarrier.value?.generation)
       && wardPolicyCarrier.value?.requestId === id.value
       && wardPolicyCarrier.value.carrier?.id === id.value
+      && !wardPolicyCarrier.value.error
       && wardPolicyStatus.value === 'success'
       && !wardPolicyError.value
       ? wardPolicyCarrier.value.carrier
@@ -310,7 +397,7 @@ watch(
   () => { void refineCurrentWardLaunchDecision() },
   { flush: 'post' },
 )
-if (import.meta.server && !data.value?.place && !fetchFailed.value) {
+if (import.meta.server && wardFetchResolution.value?.kind === 'not_found') {
   throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy xã/phường' })
 }
 
@@ -327,7 +414,6 @@ const MOTIFS: Record<string, string> = {
 }
 const heroMotif = computed(() => MOTIFS[data.value?.place?.area || ''] || MOTIFS['vinh-long'])
 const attrs = computed(() => data.value?.place?.attributes || {})
-const hasStats = computed(() => !!(attrs.value.area_km2 || attrs.value.population))
 const totalContent = computed(() => {
   const c = data.value?.counts || {}
   return (c.tourism || 0) + (c.lodging || 0) + (c.products || 0)
@@ -337,6 +423,57 @@ const mapUrl = computed(() => {
   const c = normalizeCoords(data.value?.place?.coordinates)
   if (!c) return '/ban-do'
   return `/ban-do?lat=${c[0]}&lng=${c[1]}&zoom=15`
+})
+const wardPrimaryAction = computed(() => resolveDetailAction({
+  coords: normalizeCoords(data.value?.place?.coordinates),
+  phone: attrs.value.phone,
+}, { family: 'ward', id: id.value }))
+
+const wardSourceFreshness = computed(() => data.value?.place?.source_freshness)
+const wardTrustTier = computed(() => resolveSourceTier(
+  wardSourceFreshness.value?.source_tier || data.value?.place?.quality?.source_tier,
+))
+const wardSourceUrl = computed(() => (
+  wardSourceFreshness.value?.source_url || data.value?.place?.quality?.source_url || ''
+))
+const wardSourceTitle = computed(() => (
+  wardSourceFreshness.value?.source_title
+  || data.value?.place?.quality?.source_title
+  || (wardSourceUrl.value ? 'Nguồn tham khảo' : 'Chưa có nguồn công khai')
+))
+const wardUpdatedAt = computed(() => (
+  wardSourceFreshness.value?.updated_at || data.value?.place?.updatedAt || ''
+))
+const wardUpdatedLabel = computed(() => wardUpdatedAt.value ? formatDateVN(wardUpdatedAt.value) : '')
+const wardFreshnessStatus = computed(() => resolveFreshnessStatus(wardSourceFreshness.value?.freshness_status))
+const wardTrustNote = computed(() => {
+  if (wardFreshnessStatus.value === 'fresh') return 'Thông tin này có tín hiệu cập nhật gần đây.'
+  if (wardFreshnessStatus.value === 'aging') return 'Thông tin vẫn dùng được nhưng nên kiểm tra lại trước khi liên hệ.'
+  if (wardFreshnessStatus.value === 'stale') return 'Thông tin có thể đã cũ; hãy báo sai nếu bạn thấy khác thực tế.'
+  if (wardFreshnessStatus.value === 'conflict') return 'Các nguồn đang ghi khác nhau; xem từng giá trị và thời điểm trước khi quyết định.'
+  return 'Hệ thống chưa có đủ tín hiệu nguồn/ngày cập nhật cho mục này.'
+})
+const wardReportUrl = computed(() => `/cong-dong?report=${encodeURIComponent(id.value)}`)
+const wardTrustConflicts = computed(() => {
+  const raw = attrs.value.source_conflicts
+  if (!Array.isArray(raw)) return []
+  return raw.flatMap((item): Array<{ label: string; value: string; sourceTitle?: string; updatedLabel?: string }> => {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) return []
+    const conflict = item as Record<string, unknown>
+    const label = typeof conflict.label === 'string' ? conflict.label.trim() : ''
+    const value = typeof conflict.value === 'string' ? conflict.value.trim() : ''
+    if (!label || !value) return []
+    return [{
+      label,
+      value,
+      ...(typeof conflict.source_title === 'string' && conflict.source_title.trim()
+        ? { sourceTitle: conflict.source_title.trim() }
+        : {}),
+      ...(typeof conflict.updated_at === 'string' && conflict.updated_at.trim()
+        ? { updatedLabel: formatDateVN(conflict.updated_at) }
+        : {}),
+    }]
+  })
 })
 
 function formatPop(n: number | string) {
@@ -512,6 +649,8 @@ onUnmounted(() => {
 
 <style scoped>
 .wp { max-width: var(--maxw, 1100px); margin: 0 auto; padding: 0 var(--space-4) var(--space-16); }
+.ward-recovery-page { display: grid; gap: var(--space-4); }
+.ward-recovery-links { display: flex; flex-wrap: wrap; gap: var(--space-3); }
 
 /* Hero */
 .wp-hero { border-radius: var(--radius-lg, 16px); padding: var(--space-8) var(--space-6); margin-top: var(--space-2); color: var(--text-on-dark, var(--white)); position: relative; overflow: hidden; }
@@ -568,7 +707,15 @@ onUnmounted(() => {
 :deep(.wp-marker:hover) { transform: scale(1.25); }
 
 /* Body layout */
-.wp-body { display: grid; grid-template-columns: 1fr 320px; gap: var(--space-6); margin-top: var(--space-5); align-items: start; }
+.wp-body {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(16rem, 1fr);
+  grid-template-areas: 'main aside';
+  gap: var(--space-6);
+  margin-top: var(--space-5);
+  align-items: start;
+}
+.wp-main { grid-area: main; min-width: 0; }
 
 /* Sections */
 .wp-sec { margin-bottom: var(--space-6); }
@@ -614,7 +761,25 @@ onUnmounted(() => {
 .wp-empty-hint { color: var(--muted); font-size: var(--text-xs); max-width: 44ch; margin: 0 auto; position: relative; z-index: 1; }
 
 /* Sidebar cards */
-.wp-aside { display: flex; flex-direction: column; gap: var(--space-4); position: sticky; top: 78px; }
+.wp-aside { grid-area: aside; display: flex; flex-direction: column; gap: var(--space-4); position: sticky; top: 78px; }
+.wp-aside :deep(.entity-trust-panel) { margin: 0; }
+.ward-action-dock { margin: 0; }
+.ward-action-dock :deep(.action-dock__primary) { flex: 1 1 100%; }
+.ward-primary-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-3) var(--space-4);
+  color: var(--text-on-dark, var(--white));
+  font-weight: var(--weight-bold);
+  text-align: center;
+  background: var(--color-action);
+  border-radius: var(--radius-control);
+}
+.ward-primary-action:hover { background: var(--color-action-hover); }
+.ward-primary-action:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .wp-card { position: relative; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg, 16px); padding: var(--space-5); box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
 .wp-card::before {
   content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
@@ -627,6 +792,16 @@ onUnmounted(() => {
 .dark .wp-card:hover::before { opacity: .5; }
 .wp-card h3 { font-size: var(--text-base); font-weight: var(--weight-semibold); margin: 0 0 var(--space-3); position: relative; z-index: 1; }
 .wp-card .wp-contact, .wp-card .wp-fac-list { position: relative; z-index: 1; }
+.wp-facts-card h2 { margin: 0 0 var(--space-3); font-size: var(--text-base); }
+.wp-fact-evidence { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); }
+.wp-facts { display: grid; gap: var(--space-2); margin: 0; }
+.wp-facts > div { display: grid; grid-template-columns: minmax(5rem, .8fr) minmax(0, 1.2fr); gap: var(--space-3); padding-block: var(--space-2); border-bottom: .5px solid var(--line); }
+.wp-facts > div:last-child { border-bottom: 0; }
+.wp-facts dt { color: var(--muted); font-size: var(--text-sm); }
+.wp-facts dd { margin: 0; color: var(--ink); font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
+.wp-facts + .wp-contact,
+.wp-facts + h3,
+.wp-contact + h3 { margin-top: var(--space-4); padding-top: var(--space-4); border-top: .5px solid var(--line); }
 
 /* Contact list */
 .wp-contact { display: flex; flex-direction: column; gap: var(--space-3); }
@@ -657,13 +832,13 @@ onUnmounted(() => {
 
 /* Responsive */
 @media (max-width: 840px) {
-  .wp-body { grid-template-columns: 1fr; gap: var(--space-4); }
+  .wp-body { grid-template-columns: 1fr; grid-template-areas: 'aside' 'main'; gap: var(--space-5); }
   /* min-width: 0 — grid items default to min-width:auto; without this the
      nested .wp-grid EntityCard rows force .wp-main (and, through it, the
      single .wp-body track) wider than the viewport, causing page-level
      horizontal scroll on mobile. */
-  .wp-main { min-width: 0; }
-  .wp-aside { position: static; margin-top: var(--space-6); }
+  .wp-aside { position: static; margin-top: 0; }
+  .ward-action-dock[data-detail-action-safe-area] { padding-bottom: max(var(--space-3), env(safe-area-inset-bottom, 0px)); }
   .wp-stats { gap: var(--space-4); }
 }
 @media (max-width: 480px) {

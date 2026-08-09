@@ -638,18 +638,15 @@ describe('entity detail tri-region behavior', () => {
     const highlightActions = wrapper.findAll('.highlights .hl-action')
     expect(highlightActions.map(action => action.text())).toEqual(['💬 Zalo', '📞 Gọi', '🗺️ Bản đồ'])
     expect(highlightActions.map(action => action.attributes('data-color-role'))).toEqual([
-      'action-primary',
+      'action-secondary',
       'action-secondary',
       'action-secondary',
     ])
 
-    const stickyActions = wrapper.findAll('.sticky-cta-bar a')
-    expect(stickyActions.map(action => action.text())).toEqual(['💬 Zalo', '📞 Gọi', '🗺️ Bản đồ'])
-    expect(stickyActions.map(action => action.attributes('data-color-role'))).toEqual([
-      'action-primary',
-      'action-secondary',
-      'action-secondary',
-    ])
+    const primaryActions = wrapper.findAll('[data-action-dock-primary] [data-color-role="action-primary"]')
+    expect(primaryActions).toHaveLength(1)
+    expect(primaryActions[0]!.text()).toBe('Chỉ đường')
+    expect(wrapper.findAll('.sticky-cta-bar a')).toHaveLength(0)
   })
 
   it('generates the material border pseudo-element for every detail hero', () => {

@@ -8,6 +8,12 @@
     <a v-if="sourceHref" data-source-link :href="sourceHref" target="_blank" rel="noopener nofollow">{{ sourceTitle }}</a>
     <span v-else data-source-label>{{ sourceTitle }}</span>
     <p>{{ note }}</p>
+    <dl v-if="conflicts.length" class="entity-trust-panel__conflicts" data-source-conflicts>
+      <div v-for="(conflict, index) in conflicts" :key="`${conflict.label}-${index}`">
+        <dt>{{ conflict.label }}</dt>
+        <dd>{{ conflictText(conflict) }}</dd>
+      </div>
+    </dl>
     <NuxtLink data-report-action :to="reportTo">Báo sai hoặc bổ sung nguồn</NuxtLink>
   </section>
 </template>
@@ -16,7 +22,14 @@
 import type { FreshnessStatus, SourceTier } from '../utils/regionalColor'
 import { safeUrl } from '~/utils/safe'
 
-const props = defineProps<{
+type TrustConflict = {
+  label: string
+  value: string
+  sourceTitle?: string
+  updatedLabel?: string
+}
+
+const props = withDefaults(defineProps<{
   tier: SourceTier
   sourceTitle: string
   sourceUrl?: string
@@ -24,7 +37,11 @@ const props = defineProps<{
   updatedLabel: string
   note: string
   reportTo: string
-}>()
+  conflicts?: TrustConflict[]
+}>(), {
+  sourceUrl: undefined,
+  conflicts: () => [],
+})
 
 const sourceHref = computed(() => {
   const raw = props.sourceUrl?.trim()
@@ -32,6 +49,13 @@ const sourceHref = computed(() => {
   const safe = safeUrl(raw)
   return safe === '#' ? '' : safe
 })
+
+function conflictText(conflict: TrustConflict) {
+  return [conflict.value, conflict.sourceTitle, conflict.updatedLabel]
+    .map(value => value?.trim())
+    .filter(Boolean)
+    .join(' · ')
+}
 </script>
 
 <style scoped>
@@ -63,6 +87,7 @@ const sourceHref = computed(() => {
 }
 
 .entity-trust-panel p,
+[data-source-conflicts],
 [data-source-label],
 [data-source-link],
 [data-report-action] {
@@ -72,6 +97,27 @@ const sourceHref = computed(() => {
 
 [data-source-label],
 .entity-trust-panel p {
+  color: var(--color-text-muted);
+}
+
+.entity-trust-panel__conflicts {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.entity-trust-panel__conflicts > div {
+  padding-inline-start: var(--space-3);
+  border-inline-start: 2px solid var(--color-error);
+}
+
+.entity-trust-panel__conflicts dt {
+  color: var(--color-text);
+  font-weight: var(--weight-semibold);
+}
+
+.entity-trust-panel__conflicts dd {
+  margin: var(--space-1) 0 0;
   color: var(--color-text-muted);
 }
 

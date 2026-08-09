@@ -5,6 +5,10 @@
         <span class="emoji-chip" aria-hidden="true">🎒</span>
         Biết trước khi đi
       </h2>
+      <div v-if="hasTimeSensitiveFacts" class="kbyg-evidence" data-kbyg-evidence>
+        <SourceMark :tier="sourceTier" compact />
+        <FreshnessLine :status="freshnessStatus" :updated-label="updatedLabel" />
+      </div>
     </div>
 
     <!-- Amenity badges -->
@@ -16,29 +20,29 @@
     </div>
 
     <!-- Golden hours -->
-    <div v-if="goldenHours || peakDays" class="kbyg-golden">
+    <dl v-if="hasTimeSensitiveFacts" class="kbyg-golden" data-kbyg-facts>
       <div v-if="goldenHours" class="kbyg-golden-item">
         <span class="kbyg-golden-icon emoji-chip" aria-hidden="true">⏰</span>
         <div>
-          <strong>Giờ vàng</strong>
-          <span>{{ goldenHours }}</span>
+          <dt>Giờ vàng</dt>
+          <dd>{{ goldenHours }}</dd>
         </div>
       </div>
       <div v-if="peakDays" class="kbyg-golden-item">
         <span class="kbyg-golden-icon emoji-chip" aria-hidden="true">📅</span>
         <div>
-          <strong>Ngày đông</strong>
-          <span>{{ peakDays }}</span>
+          <dt>Ngày đông</dt>
+          <dd>{{ peakDays }}</dd>
         </div>
       </div>
       <div v-if="crowdLevel" class="kbyg-golden-item">
         <span class="kbyg-golden-icon emoji-chip" aria-hidden="true">👥</span>
         <div>
-          <strong>Mức đông</strong>
-          <span>{{ crowdLevel }}</span>
+          <dt>Mức đông</dt>
+          <dd>{{ crowdLevel }}</dd>
         </div>
       </div>
-    </div>
+    </dl>
 
     <!-- Tips -->
     <div v-if="tips.length" class="kbyg-tips">
@@ -62,10 +66,19 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
+import type { FreshnessStatus, SourceTier } from '../utils/regionalColor'
+
+const props = withDefaults(defineProps<{
   attributes: Record<string, unknown> | null | undefined
   entityType: string
-}>()
+  sourceTier?: SourceTier
+  freshnessStatus?: FreshnessStatus
+  updatedLabel?: string
+}>(), {
+  sourceTier: 'unknown',
+  freshnessStatus: 'unknown',
+  updatedLabel: '',
+})
 
 const AMENITY_MAP: Record<string, { icon: string; label: string }> = {
   wifi: { icon: '📶', label: 'Wi-Fi' },
@@ -121,6 +134,7 @@ const amenities = computed(() => {
 const goldenHours = computed(() => (attrs.value.golden_hours as string) || '')
 const peakDays = computed(() => (attrs.value.peak_days as string) || '')
 const crowdLevel = computed(() => (attrs.value.crowd_level as string) || '')
+const hasTimeSensitiveFacts = computed(() => Boolean(goldenHours.value || peakDays.value || crowdLevel.value))
 
 const tips = computed(() => {
   const t = attrs.value.kbyg_tips
@@ -156,7 +170,7 @@ const hasContent = computed(() => amenities.value.length > 0 || goldenHours.valu
   background-image: var(--grain); background-size: 120px 120px; opacity: .05;
 }
 .kbyg-head, .kbyg-badges, .kbyg-golden, .kbyg-tips, .kbyg-checklist { position: relative; z-index: 1; }
-.kbyg-head { margin: 0 0 var(--space-4); }
+.kbyg-head { display: grid; gap: var(--space-2); margin: 0 0 var(--space-4); }
 .kbyg-title {
   display: flex; align-items: center; gap: var(--space-2);
   font-family: var(--font-editorial);
@@ -208,8 +222,9 @@ const hasContent = computed(() => amenities.value.length > 0 || goldenHours.valu
   flex: 1 1 160px; min-width: 160px;
 }
 .kbyg-golden-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
-.kbyg-golden-item strong { display: block; font-size: .78rem; color: var(--muted); margin-bottom: 2px; }
-.kbyg-golden-item span { font-size: .88rem; font-variant-numeric: tabular-nums; }
+.kbyg-golden-item dt { font-size: .78rem; font-weight: var(--weight-semibold); color: var(--muted); margin-bottom: 2px; }
+.kbyg-golden-item dd { margin: 0; font-size: .88rem; font-variant-numeric: tabular-nums; }
+.kbyg-evidence { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
 
 /* Tips */
 .kbyg-tips {
