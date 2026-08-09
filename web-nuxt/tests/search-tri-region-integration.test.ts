@@ -69,7 +69,15 @@ const pageStubs = {
   SaveButton: true,
   ImageDisclosure: true,
   JourneyActionRail: true,
-  MapListSurface: { props: ['results', 'selectedId', 'viewport', 'mapState'], template: '<div data-map-list-surface-stub><span v-for="result in results" :key="result.id">{{ result.name }}</span></div>' },
+  MapListSurface: {
+    props: ['results', 'selectedId', 'viewport', 'mapState'],
+    emits: ['viewport-change', 'search-area'],
+    template: `<div data-map-list-surface-stub>
+      <span v-for="result in results" :key="result.id" :data-search-result-id="result.id">{{ result.name }}</span>
+      <button data-search-pan @click="$emit('viewport-change', { center: [105.62, 9.91], zoom: 11 })" />
+      <button data-search-commit @click="$emit('search-area', { center: [105.62, 9.91], zoom: 11 })" />
+    </div>`,
+  },
   IconLine: { props: ['name'], template: '<i :data-icon="name" />' },
 }
 const componentStubs = {
@@ -245,17 +253,28 @@ it('propagates the Search recipe through real SmartRecommendations and EntityCar
   expect(wrapper.get('[data-source-mark]').text()).toContain('Chính thức')
 })
 
-it('submits the query through the existing encoded search route', async () => {
+it('submits once while preserving canonical intent, filters, area and viewport', async () => {
+  const filters = encodeURIComponent(JSON.stringify({ type: ['craft_village'] }))
   const wrapper = await mountSuspended(SearchPage, {
-    route: '/tim-kiem',
+    route: `/tim-kiem?q=g%E1%BB%91m&intent=place&area=vinh-long&filters=${filters}&viewport=11/1624/965`,
     global: { stubs: pageStubs },
   })
   wrappers.push(wrapper)
   await flushUi()
+  const pushState = vi.spyOn(window.history, 'pushState')
 
   await wrapper.get('input[type="search"]').setValue('bưởi Năm Roi')
   await wrapper.get('[data-color-role="action-primary"]').trigger('click')
-  expect(navigateToMock).toHaveBeenCalledWith('/tim-kiem?q=b%C6%B0%E1%BB%9Fi%20N%C4%83m%20Roi')
+  expect(navigateToMock).toHaveBeenCalledTimes(1)
+  const target = new URL(String(navigateToMock.mock.calls[0]?.[0]), 'https://vinhlong360.local')
+  expect(target.pathname).toBe('/tim-kiem')
+  expect(target.searchParams.get('q')).toBe('bưởi Năm Roi')
+  expect(target.searchParams.get('intent')).toBe('place')
+  expect(target.searchParams.get('area')).toBe('vinh-long')
+  expect(JSON.parse(target.searchParams.get('filters') || '{}')).toEqual({ type: ['craft_village'] })
+  expect(target.searchParams.get('viewport')).toBe('11/1624/965')
+  expect(pushState).not.toHaveBeenCalled()
+  pushState.mockRestore()
 })
 
 it('adds the coordinated map sibling without changing the existing search response shape', async () => {
@@ -274,6 +293,32 @@ it('adds the coordinated map sibling without changing the existing search respon
 
   expect(wrapper.find('[data-map-list-surface-stub]').exists()).toBe(true)
   expect(searchAllMock).toHaveBeenCalledWith('gốm', 100)
+})
+
+it('changes search result ids only after the explicit spatial commit', async () => {
+  searchAllMock.mockResolvedValue({
+    entities: [
+      { id: 'near', type: 'craft_village', name: 'Gốm đỏ', coordinates: { lat: 10.24, lng: 106.01 } },
+      { id: 'far', type: 'product', name: 'Dừa sáp', coordinates: { lat: 9.91, lng: 105.62 } },
+    ],
+    posts: [],
+    users: [],
+    totals: { entities: 2, posts: 0, users: 0 },
+  })
+  const wrapper = await mountSuspended(SearchPage, {
+    route: '/tim-kiem?q=%C4%91%E1%BA%B7c+s%E1%BA%A3n',
+    global: { stubs: pageStubs },
+  })
+  wrappers.push(wrapper)
+  await flushUi()
+  expect(wrapper.findAll('[data-search-result-id]').map(node => node.attributes('data-search-result-id')).sort()).toEqual(['far', 'near'])
+
+  await wrapper.get('[data-search-pan]').trigger('click')
+  expect(wrapper.findAll('[data-search-result-id]').map(node => node.attributes('data-search-result-id')).sort()).toEqual(['far', 'near'])
+
+  await wrapper.get('[data-search-commit]').trigger('click')
+  await nextTick()
+  expect(wrapper.findAll('[data-search-result-id]').map(node => node.attributes('data-search-result-id'))).toEqual(['far'])
 })
 
 it('keeps Arrow, Enter and Escape combobox behavior with aria-activedescendant', async () => {

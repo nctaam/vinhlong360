@@ -75,10 +75,12 @@
           :viewport="searchView.state.value.viewport"
           :map-state="mapNetworkState"
           :panel="searchView.state.value.panel"
+          :scroll-key="searchView.state.value.scrollKey"
           @select="searchView.selectResult"
           @viewport-change="searchView.setViewport"
           @search-area="searchView.commitViewport"
           @panel-change="searchView.openPanel"
+          @scroll-key-change="searchView.setScrollKey"
         >
           <template #result="{ result }">
             <div class="search-map-entity-card" data-entity-contract="entity-row">
@@ -252,6 +254,8 @@ import { generateCategoryIcon, generateCategoryPlaceholder } from '~/composables
 import type { ImageDescriptor } from '~/types/image'
 import type { RecentItem } from '~/composables/useRecentlyViewed'
 import { describeEntityPlaceholder } from '~/utils/imageDescriptors'
+import { normalizeCoords } from '~/composables/useCoords'
+import { viewportTileBounds } from '~/utils/publicStateUrl'
 useReveal()
 const { f: pc } = usePageContent('tim_kiem')
 const { recentItems } = useRecentlyViewed()
@@ -355,7 +359,16 @@ const { data, error: searchError, status } = await useAsyncData(
 )
 const searching = computed(() => status.value === 'pending' && !!q.value)
 
-const results = computed(() => data.value?.entities || data.value?.results || [])
+const rawResults = computed(() => data.value?.entities || data.value?.results || [])
+const committedBounds = computed(() => searchView.committedViewport.value ? viewportTileBounds(searchView.committedViewport.value) : undefined)
+const results = computed(() => rawResults.value.filter((entity: any) => {
+  const bounds = committedBounds.value
+  if (!bounds) return true
+  const coordinates = normalizeCoords(entity.coordinates || { lat: entity.lat, lng: entity.lng })
+  if (!coordinates) return false
+  const [lat, lng] = coordinates
+  return lng >= bounds.west && lng <= bounds.east && lat >= bounds.south && lat <= bounds.north
+}))
 const hasError = computed(() => status.value !== 'pending' && !!searchError.value)
 const postResults = computed(() => (data.value?.posts || []).slice(0, 6))
 const userResults = computed(() => (data.value?.users || []).slice(0, 8))
@@ -438,8 +451,7 @@ function doSearch() {
   sugClose()
   if (searchInput.value.trim()) {
     trackSearch(searchInput.value, { context: 'search_submit' })
-    searchView.setQuery(searchInput.value)
-    navigateTo(`/tim-kiem?q=${encodeURIComponent(searchInput.value.trim())}`)
+    navigateTo(searchView.urlForQuery(searchInput.value))
   }
 }
 

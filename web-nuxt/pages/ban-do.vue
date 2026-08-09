@@ -40,10 +40,12 @@
         :viewport="searchView.state.value.viewport"
         map-state="partial"
         :panel="searchView.state.value.panel"
+        :scroll-key="searchView.state.value.scrollKey"
         @select="searchView.selectResult"
         @viewport-change="searchView.setViewport"
         @search-area="commitSearchArea"
         @panel-change="searchView.openPanel"
+        @scroll-key-change="searchView.setScrollKey"
       />
     </PageState>
     <MapListSurface
@@ -53,10 +55,12 @@
       :viewport="searchView.state.value.viewport"
       :map-state="mapNetworkState"
       :panel="searchView.state.value.panel"
+      :scroll-key="searchView.state.value.scrollKey"
       @select="searchView.selectResult"
       @viewport-change="searchView.setViewport"
       @search-area="commitSearchArea"
       @panel-change="searchView.openPanel"
+      @scroll-key-change="searchView.setScrollKey"
     />
     <p v-if="scopeAnnouncement" class="sr-only" aria-live="polite">{{ scopeAnnouncement }}</p>
   </section>
@@ -67,6 +71,8 @@ import MapListSurface from '~/components/public/MapListSurface.vue'
 import PageState from '~/components/public/PageState.vue'
 import type { Entity } from '~/types'
 import type { MapViewport } from '~/types/publicExperience'
+import { normalizeCoords } from '~/composables/useCoords'
+import { viewportTileBounds } from '~/utils/publicStateUrl'
 
 type MapListResult = Entity & {
   lat?: number | string
@@ -149,25 +155,37 @@ const { data, error: fetchError, status, refresh } = await useAsyncData(
 const retryData = () => refresh()
 
 const mapPins = computed(() => Array.isArray(data.value) ? data.value : [])
+const committedBounds = computed(() => searchView.committedViewport.value ? viewportTileBounds(searchView.committedViewport.value) : undefined)
 const filteredPins = computed(() => mapPins.value.filter((pin) => {
   const matchesQuery = !mapSearchQuery.value || [pin.name, pin.type, pin.place_name, pin.place_area, pin.area]
     .some(part => String(part || '').toLocaleLowerCase('vi-VN').includes(mapSearchQuery.value))
+  const bounds = committedBounds.value
+  const coordinates = bounds ? normalizeCoords(pin.coordinates || { lat: pin.lat, lng: pin.lng }) : null
+  const matchesViewport = !bounds || Boolean(coordinates
+    && coordinates[1] >= bounds.west
+    && coordinates[1] <= bounds.east
+    && coordinates[0] >= bounds.south
+    && coordinates[0] <= bounds.north)
   return (
     (!savedMode.value || savedPinIds.value.has(String(pin.id)))
     && (activeTypeArray.value.includes('all') || activeTypeArray.value.includes(pin.type))
     && (!areaQuery.value || pin.place_area === areaQuery.value || pin.area === areaQuery.value)
     && matchesQuery
+    && matchesViewport
   )
 }))
 
-const mapResults = computed<MapListResult[]>(() => filteredPins.value.slice(0, 120).map(pin => ({
-  ...pin,
-  coordinates: { lat: Number(pin.lat), lng: Number(pin.lng) },
-  attributes: {
-    ...(pin.attributes || {}),
-    address: pin.attributes?.address || pin.place_name || pin.place_area || pin.area || '',
-  },
-})))
+const mapResults = computed<MapListResult[]>(() => filteredPins.value.slice(0, 120).map((pin) => {
+  const coordinates = normalizeCoords(pin.coordinates || { lat: pin.lat, lng: pin.lng })
+  return {
+    ...pin,
+    ...(coordinates ? { coordinates: { lat: coordinates[0], lng: coordinates[1] } } : {}),
+    attributes: {
+      ...(pin.attributes || {}),
+      address: pin.attributes?.address || pin.place_name || pin.place_area || pin.area || '',
+    },
+  }
+}))
 
 const visibleLabel = computed(() => savedMode.value
   ? `${filteredPins.value.length} địa điểm đã lưu`

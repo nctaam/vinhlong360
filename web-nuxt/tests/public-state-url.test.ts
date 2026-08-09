@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseSearchViewState, serializeSearchViewState } from '~/utils/publicStateUrl'
+import { parseSearchViewState, parseSearchViewStateWithMeta, serializeSearchViewState, viewportTileBounds } from '~/utils/publicStateUrl'
 
 describe('public state URL', () => {
   it('never serializes raw location coordinates', () => {
@@ -31,14 +31,26 @@ describe('public state URL', () => {
   })
   it('bounds and whitelists nested filter values', () => {
     const huge = 'x'.repeat(500)
-    const parsed = parseSearchViewState(`?filters=${encodeURIComponent(JSON.stringify({ ok: huge, 'bad.key': huge, list: [huge, 3] }))}`)
-    expect((parsed.filters.ok as string).length).toBe(80)
+    const parsed = parseSearchViewState(`?filters=${encodeURIComponent(JSON.stringify({ sort: huge, 'bad.key': huge, type: [huge, 3] }))}`)
+    expect((parsed.filters.sort as string).length).toBe(80)
     expect(parsed.filters['bad.key']).toBeUndefined()
-    expect(parsed.filters.list).toEqual([huge.slice(0, 40)])
+    expect(parsed.filters.type).toEqual([huge.slice(0, 40)])
   })
   it('uses the same filter key grammar while serializing and parsing', () => {
-    const encoded = serializeSearchViewState({ filters: { 'bad.key': 'drop', valid_key: 'keep' } })
+    const encoded = serializeSearchViewState({ filters: { 'bad.key': 'drop', type: 'keep' } })
     expect(encoded).not.toContain('bad.key')
-    expect(parseSearchViewState(encoded).filters).toEqual({ valid_key: 'keep' })
+    expect(parseSearchViewState(encoded).filters).toEqual({ type: 'keep' })
+  })
+  it('marks unsupported filter keys and value types as malformed', () => {
+    const inspected = parseSearchViewStateWithMeta(`?filters=${encodeURIComponent(JSON.stringify({ unknown: 'x', type: { nested: true }, season: [8] }))}`)
+    expect(inspected.state.filters).toEqual({})
+    expect(inspected.malformed).toBe(true)
+  })
+  it('derives deterministic bounds from the sanitized viewport tile', () => {
+    const bounds = viewportTileBounds({ center: [105.62, 9.91], zoom: 11 })
+    expect(bounds.west).toBeLessThan(105.62)
+    expect(bounds.east).toBeGreaterThan(105.62)
+    expect(bounds.south).toBeLessThan(9.91)
+    expect(bounds.north).toBeGreaterThan(9.91)
   })
 })

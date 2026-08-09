@@ -1,6 +1,6 @@
 import { computed, getCurrentScope, onScopeDispose, ref, watch, type Ref } from 'vue'
 import type { AreaRef, FilterSet, Intent, MapViewport, SearchViewState } from '~/types/publicExperience'
-import { parseSearchViewState, serializeSearchViewState } from '~/utils/publicStateUrl'
+import { parseSearchViewState, parseSearchViewStateWithMeta, serializeSearchViewState } from '~/utils/publicStateUrl'
 
 const SESSION_KEY = 'vinhlong360:public-search-view:v1'
 const URL_WRITE_DELAY = 200
@@ -11,6 +11,11 @@ export type SearchViewRuntimeState = SearchViewState & { scrollKey?: string }
 
 type PrivateSearchState = Pick<SearchViewRuntimeState, 'selectedId' | 'panel' | 'scrollKey'>
 type HistoryMode = 'push' | 'replace'
+type PublicSearchHistoryState = Record<string, unknown> & {
+  publicSearchPrivate?: Partial<PrivateSearchState>
+  publicSearchCommittedViewport?: MapViewport | null
+  publicSearchUrl?: string
+}
 
 function firstValue(value: string | null) {
   return typeof value === 'string' ? value : ''
@@ -35,34 +40,28 @@ function legacyCompatibleParams(url: URL) {
   return params
 }
 
-function malformedUrlState(params: URLSearchParams, parsed: SearchViewState) {
-  const intent = params.get('intent')
-  if (intent && !INTENTS.has(intent as Intent)) return true
-  if (params.has('area') && !parsed.area) return true
-  if (params.has('viewport') && !parsed.viewport) return true
-  if (params.has('filters')) {
-    try {
-      const filters = JSON.parse(params.get('filters') || '{}')
-      if (!filters || typeof filters !== 'object' || Array.isArray(filters)) return true
-    } catch {
-      return true
-    }
+function normalizePrivateState(value: unknown): PrivateSearchState | undefined {
+  if (!value || typeof value !== 'object') return undefined
+  const parsed = value as Partial<PrivateSearchState>
+  return {
+    ...(typeof parsed.selectedId === 'string' && parsed.selectedId ? { selectedId: parsed.selectedId } : {}),
+    panel: parsed.panel === 'map' ? 'map' : 'list',
+    ...(typeof parsed.scrollKey === 'string' && parsed.scrollKey ? { scrollKey: parsed.scrollKey } : {}),
   }
-  return false
 }
 
 function readPrivateState(): PrivateSearchState {
   if (!import.meta.client) return { panel: 'list' }
   try {
-    const parsed = JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}') as Partial<PrivateSearchState>
-    return {
-      ...(typeof parsed.selectedId === 'string' && parsed.selectedId ? { selectedId: parsed.selectedId } : {}),
-      panel: parsed.panel === 'map' ? 'map' : 'list',
-      ...(typeof parsed.scrollKey === 'string' && parsed.scrollKey ? { scrollKey: parsed.scrollKey } : {}),
-    }
+    return normalizePrivateState(JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}')) || { panel: 'list' }
   } catch {
     return { panel: 'list' }
   }
+}
+
+function privateStateFromHistory(value: unknown) {
+  if (!value || typeof value !== 'object') return undefined
+  return normalizePrivateState((value as PublicSearchHistoryState).publicSearchPrivate)
 }
 
 function sameViewport(left?: MapViewport, right?: MapViewport) {
@@ -70,10 +69,23 @@ function sameViewport(left?: MapViewport, right?: MapViewport) {
   return left.zoom === right.zoom && left.center[0] === right.center[0] && left.center[1] === right.center[1]
 }
 
+function sanitizedViewport(viewport?: MapViewport) {
+  if (!viewport) return undefined
+  return parseSearchViewState(serializeSearchViewState({ viewport })).viewport
+}
+
+function committedViewportFromHistory(value: unknown, fallback?: MapViewport) {
+  if (!value || typeof value !== 'object') return fallback
+  const historyState = value as PublicSearchHistoryState
+  if (!Object.prototype.hasOwnProperty.call(historyState, 'publicSearchCommittedViewport')) return fallback
+  return historyState.publicSearchCommittedViewport ? sanitizedViewport(historyState.publicSearchCommittedViewport) : undefined
+}
+
 function publicStateFromUrl(input: string) {
   const url = safeUrl(input)
   const params = legacyCompatibleParams(url)
-  return { url, params, parsed: parseSearchViewState(params) }
+  const inspected = parseSearchViewStateWithMeta(params)
+  return { url, params, parsed: inspected.state, malformed: inspected.malformed }
 }
 
 function publicUrl(pathname: string, state: SearchViewRuntimeState, source?: string) {
@@ -90,47 +102,78 @@ export function useSearchViewState(input?: string) {
   const route = input === undefined ? useRoute() : null
   const initialInput = input ?? route?.fullPath ?? '/tim-kiem'
   const initial = publicStateFromUrl(initialInput)
-  const privateState = readPrivateState()
+  const browserUrl = import.meta.client ? safeUrl(window.location.pathname + window.location.search) : undefined
+  const initialUsesBrowserEntry = input === undefined
+    && browserUrl?.pathname === initial.url.pathname
+    && browserUrl.search === initial.url.search
+  const historyCandidate = initialUsesBrowserEntry ? window.history.state as PublicSearchHistoryState | null : null
+  const initialEntryUrl = `${initial.url.pathname}${initial.url.search}`
+  const initialHistoryState = historyCandidate?.publicSearchUrl === initialEntryUrl ? historyCandidate : undefined
+  const privateState = privateStateFromHistory(initialHistoryState) || readPrivateState()
   const state = ref<SearchViewRuntimeState>({
     ...initial.parsed,
     ...privateState,
     panel: privateState.panel,
   }) as Ref<SearchViewRuntimeState>
+  const committedViewport = ref<MapViewport | undefined>(committedViewportFromHistory(initialHistoryState, initial.parsed.viewport))
   const url = ref(publicUrl(initial.url.pathname, state.value, initial.url.searchParams.get('source') || undefined))
-  const hasMalformedUrl = ref(malformedUrlState(initial.params, initial.parsed))
-  const viewportPending = ref(false)
+  const hasMalformedUrl = ref(initial.malformed)
+  const viewportPending = ref(!sameViewport(state.value.viewport, committedViewport.value))
   const currentPath = ref(initial.url.pathname)
   const sourceMode = ref(initial.url.searchParams.get('source') === 'saved' ? 'saved' : '')
   let viewportTimer: ReturnType<typeof setTimeout> | null = null
 
-  function persistPrivate() {
-    if (!import.meta.client) return
-    const privateValue: PrivateSearchState = {
+  function currentPrivateState(): PrivateSearchState {
+    return {
       ...(state.value.selectedId ? { selectedId: state.value.selectedId } : {}),
       panel: state.value.panel,
       ...(state.value.scrollKey ? { scrollKey: state.value.scrollKey } : {}),
     }
+  }
+
+  function historyStateWithSearchState(base: unknown, privateValue = currentPrivateState(), entryUrl = url.value): PublicSearchHistoryState {
+    const historyState = base && typeof base === 'object' ? base as Record<string, unknown> : {}
+    return {
+      ...historyState,
+      publicSearchPrivate: privateValue,
+      publicSearchCommittedViewport: sanitizedViewport(committedViewport.value) || null,
+      publicSearchUrl: entryUrl,
+    }
+  }
+
+  function persistPrivateSession(privateValue: PrivateSearchState) {
+    if (!import.meta.client) return
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(privateValue))
-    window.history.replaceState({ ...window.history.state, publicSearchPrivate: privateValue }, '', window.location.href)
+  }
+
+  function persistPrivate() {
+    if (!import.meta.client) return
+    const privateValue = currentPrivateState()
+    persistPrivateSession(privateValue)
+    const entryUrl = window.location.pathname + window.location.search
+    window.history.replaceState(historyStateWithSearchState(window.history.state, privateValue, entryUrl), '', window.location.href)
   }
 
   function writeUrl(mode: HistoryMode) {
     url.value = publicUrl(currentPath.value, state.value, sourceMode.value || undefined)
     if (!import.meta.client) return
-    const nextState = { ...window.history.state, publicSearchPrivate: readPrivateState() }
+    const privateValue = currentPrivateState()
+    persistPrivateSession(privateValue)
+    const nextState = historyStateWithSearchState(window.history.state, privateValue)
     if (mode === 'push') window.history.pushState(nextState, '', url.value)
     else window.history.replaceState(nextState, '', url.value)
   }
 
-  function restorePublic(inputValue: string) {
+  function restorePublic(inputValue: string, historyState?: unknown) {
     const next = publicStateFromUrl(inputValue)
-    const privateValue = readPrivateState()
     currentPath.value = next.url.pathname
     sourceMode.value = next.url.searchParams.get('source') === 'saved' ? 'saved' : ''
-    state.value = { ...next.parsed, ...privateValue, panel: privateValue.panel }
+    state.value = { ...next.parsed, panel: 'list' }
+    committedViewport.value = committedViewportFromHistory(historyState, next.parsed.viewport)
     url.value = publicUrl(currentPath.value, state.value, sourceMode.value || undefined)
-    hasMalformedUrl.value = malformedUrlState(next.params, next.parsed)
-    viewportPending.value = false
+    hasMalformedUrl.value = next.malformed
+    viewportPending.value = !sameViewport(state.value.viewport, committedViewport.value)
+    restoreBackStack(historyState)
   }
 
   function setQuery(query: string) {
@@ -174,7 +217,13 @@ export function useSearchViewState(input?: string) {
   }
 
   function commitViewport(viewport?: MapViewport) {
-    if (viewport) state.value = { ...state.value, viewport }
+    if (viewport) {
+      state.value = {
+        ...state.value,
+        viewport: { center: [Number(viewport.center[0]), Number(viewport.center[1])], zoom: Number(viewport.zoom) },
+      }
+    }
+    committedViewport.value = state.value.viewport
     viewportPending.value = false
     if (viewportTimer) {
       clearTimeout(viewportTimer)
@@ -200,24 +249,33 @@ export function useSearchViewState(input?: string) {
     persistPrivate()
   }
 
-  function restoreBackStack() {
-    const historyPrivate = import.meta.client ? window.history.state?.publicSearchPrivate as Partial<PrivateSearchState> | undefined : undefined
-    const restored = historyPrivate && typeof historyPrivate === 'object' ? historyPrivate : readPrivateState()
+  function restoreBackStack(historyState?: unknown) {
+    const currentHistoryState = historyState === undefined && import.meta.client ? window.history.state : historyState
+    const restored = privateStateFromHistory(currentHistoryState) || readPrivateState()
+    const { selectedId: _selectedId, scrollKey: _scrollKey, ...publicState } = state.value
     state.value = {
-      ...state.value,
-      ...(typeof restored.selectedId === 'string' && restored.selectedId ? { selectedId: restored.selectedId } : {}),
-      panel: restored.panel === 'map' ? 'map' : 'list',
-      ...(typeof restored.scrollKey === 'string' && restored.scrollKey ? { scrollKey: restored.scrollKey } : {}),
+      ...publicState,
+      ...restored,
+      panel: restored.panel,
     }
+    persistPrivateSession(restored)
     return state.value
   }
 
+  function urlForQuery(query: string) {
+    return publicUrl(currentPath.value, { ...state.value, query: query.trim().slice(0, 120) }, sourceMode.value || undefined)
+  }
+
   if (route) {
-    watch(() => route.fullPath, fullPath => restorePublic(fullPath))
+    watch(() => route.fullPath, fullPath => restorePublic(fullPath, import.meta.client ? window.history.state : undefined))
   }
 
   if (import.meta.client) {
-    const onPopState = () => restorePublic(window.location.pathname + window.location.search)
+    if (initialUsesBrowserEntry) {
+      const entryUrl = window.location.pathname + window.location.search
+      window.history.replaceState(historyStateWithSearchState(window.history.state, privateState, entryUrl), '', window.location.href)
+    }
+    const onPopState = (event: PopStateEvent) => restorePublic(window.location.pathname + window.location.search, event.state)
     window.addEventListener('popstate', onPopState)
     if (getCurrentScope()) onScopeDispose(() => window.removeEventListener('popstate', onPopState))
   }
@@ -234,6 +292,7 @@ export function useSearchViewState(input?: string) {
     hasMalformedUrl,
     malformedNotice: computed(() => hasMalformedUrl.value ? 'Một phần trạng thái tìm kiếm không hợp lệ đã được đưa về mặc định an toàn.' : ''),
     viewportPending,
+    committedViewport,
     setQuery,
     setIntent,
     setFilter,
@@ -244,5 +303,6 @@ export function useSearchViewState(input?: string) {
     openPanel,
     setScrollKey,
     restoreBackStack,
+    urlForQuery,
   }
 }

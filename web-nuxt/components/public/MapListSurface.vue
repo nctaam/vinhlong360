@@ -18,7 +18,7 @@
     </header>
 
     <div class="map-list-surface__body">
-      <div class="map-list-surface__list" role="list" aria-label="Kết quả tìm kiếm theo địa chỉ">
+      <div ref="listElement" class="map-list-surface__list" role="list" aria-label="Kết quả tìm kiếm theo địa chỉ" @scroll="onListScroll">
         <article
           v-for="result in results"
           :key="result.id"
@@ -117,10 +117,12 @@ const props = withDefaults(defineProps<{
   viewport?: MapViewport
   mapState: PublicMapState
   panel?: 'list' | 'map'
+  scrollKey?: string
 }>(), {
   selectedId: undefined,
   viewport: undefined,
   panel: 'list',
+  scrollKey: undefined,
 })
 
 const emit = defineEmits<{
@@ -128,9 +130,11 @@ const emit = defineEmits<{
   'viewport-change': [viewport: MapViewport]
   'search-area': [viewport: MapViewport]
   'panel-change': [panel: 'list' | 'map']
+  'scroll-key-change': [scrollKey: string]
 }>()
 
 const mapElement = ref<HTMLElement | null>(null)
+const listElement = ref<HTMLElement | null>(null)
 const internalMapState = ref<NDAMapState>('loading')
 const pendingViewport = ref<MapViewport | null>(null)
 const rowElements = new Map<string, HTMLElement>()
@@ -140,6 +144,8 @@ let map: any = null
 let maplibregl: any = null
 let active = true
 let starting = false
+let suppressNextMoveEnd = false
+let lastMapViewport: MapViewport | undefined
 
 const mappableResults = computed(() => props.results.flatMap(result => {
   const coordinates = resultCoordinates(result)
@@ -201,6 +207,16 @@ function rememberRow(id: string, element: Element | ComponentPublicInstance | nu
   const htmlElement = element instanceof HTMLElement ? element : element && '$el' in element ? element.$el as HTMLElement : null
   if (htmlElement) rowElements.set(id, htmlElement)
   else rowElements.delete(id)
+}
+
+function restoreListScroll(scrollKey?: string) {
+  const match = /^list:(\d+)$/.exec(scrollKey || '')
+  if (listElement.value && match) listElement.value.scrollTop = Number(match[1])
+}
+
+function onListScroll() {
+  if (!listElement.value) return
+  emit('scroll-key-change', `list:${Math.max(0, Math.round(listElement.value.scrollTop))}`)
 }
 
 function selectFromList(id: string) {
@@ -266,11 +282,29 @@ function currentViewport(): MapViewport | null {
   return { center: [Number(center.lng), Number(center.lat)], zoom }
 }
 
+function sameViewport(left?: MapViewport, right?: MapViewport) {
+  if (!left || !right) return left === right
+  return left.zoom === right.zoom && left.center[0] === right.center[0] && left.center[1] === right.center[1]
+}
+
 function onViewportChange() {
+  if (suppressNextMoveEnd) {
+    suppressNextMoveEnd = false
+    return
+  }
   const viewport = currentViewport()
   if (!viewport) return
+  lastMapViewport = viewport
   pendingViewport.value = viewport
   emit('viewport-change', viewport)
+}
+
+function syncExternalViewport(viewport?: MapViewport) {
+  if (!map || !viewport || sameViewport(lastMapViewport, viewport)) return
+  lastMapViewport = { center: [...viewport.center], zoom: viewport.zoom }
+  pendingViewport.value = null
+  suppressNextMoveEnd = true
+  map.jumpTo?.({ center: viewport.center, zoom: viewport.zoom })
 }
 
 function commitSearchArea() {
@@ -293,9 +327,9 @@ async function startMap() {
     if (!created || !active) return
     map = created.map
     maplibregl = created.maplibregl
+    lastMapViewport = props.viewport ? { center: [...props.viewport.center], zoom: props.viewport.zoom } : currentViewport() || undefined
     map.on('load', syncMarkers)
     map.on('moveend', onViewportChange)
-    map.on('zoomend', onViewportChange)
     syncMarkers()
   } catch {
     internalMapState.value = 'error'
@@ -314,6 +348,8 @@ function retryMap() {
 }
 
 watch(() => props.selectedId, syncMarkerSelection)
+watch(() => props.viewport, viewport => syncExternalViewport(viewport), { deep: true })
+watch(() => props.scrollKey, scrollKey => nextTick(() => restoreListScroll(scrollKey)))
 watch(mappableResults, () => {
   if (map) syncMarkers()
   else nextTick(startMap)
@@ -324,6 +360,7 @@ watch(() => props.mapState, state => {
 
 onMounted(() => {
   if (!navigator.onLine) internalMapState.value = 'error'
+  restoreListScroll(props.scrollKey)
   startMap()
 })
 
@@ -332,6 +369,7 @@ onBeforeUnmount(() => {
   clearMarkers()
   map?.remove?.()
   map = null
+  listElement.value = null
   rowElements.clear()
 })
 </script>
