@@ -405,6 +405,7 @@ const { user, isLoggedIn, authHeaders } = useAuth()
 const journeyThread = useJourneyThread({
   ownerScope: () => isLoggedIn.value ? String(user.value?.id || 'authenticated') : 'guest',
 })
+const journeyOwner = computed(() => isLoggedIn.value ? String(user.value?.id || 'authenticated') : 'guest')
 const routeError = ref(false)   // OSRM không tính được route (≥2 điểm có toạ độ)
 const planBusy = ref(-1)
 
@@ -1544,8 +1545,15 @@ function updatePlannerConnectivity() {
   plannerOnline.value = navigator.onLine
 }
 
+function advancePlannerJourney() {
+  const restored = journeyThread.restore()
+  journeyThread.pushIntent('plan', { currentPath: route.fullPath, returnPath: restored?.returnPath || '/du-lich' })
+}
+
+watch(journeyOwner, advancePlannerJourney)
+
 onMounted(async () => {
-  journeyThread.pushIntent('plan', { currentPath: route.fullPath })
+  advancePlannerJourney()
   updatePlannerConnectivity()
   window.addEventListener('online', updatePlannerConnectivity)
   window.addEventListener('offline', updatePlannerConnectivity)

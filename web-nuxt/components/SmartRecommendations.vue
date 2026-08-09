@@ -48,7 +48,9 @@
       v-if="ff('recommendation_explanations_v1')"
       :open="whyOpen"
       :explanation="selectedExplanation"
-      :adaptive-reasons="adaptiveSignals"
+      :adaptive-reasons="selectedAdaptiveReasons"
+      :show-reset-priority="canResetSelectedPriority"
+      :show-dismiss-suggestion="canDismissSelectedSuggestion"
       preference-href="/cai-dat#khu-vuc-de-xuat"
       @close="closeExplanation"
       @open-preferences="closeExplanation"
@@ -84,8 +86,10 @@ const {
   profile,
   loading,
   source,
-  adaptiveSignals,
   priority,
+  adaptiveReasonsFor,
+  attentionOwnerScope,
+  attentionVersion,
   canShowSuggestion,
   dismissSuggestion,
   resetSuggestionSession,
@@ -103,16 +107,19 @@ const selectedExplanation = ref<Partial<RecommendationExplanation> | null>(null)
 const drawerStatus = ref('')
 const drawerActionPending = ref(false)
 const showDefaultPriority = ref(false)
-const locallyDismissedIds = ref<string[]>([])
 
 const prioritizedItems = computed<RecommendationCard[]>(() => {
   if (showDefaultPriority.value || !priority.value.reversible) return items.value
   return priority.value.orderedBlocks as unknown as RecommendationCard[]
 })
-const visibleItems = computed(() => prioritizedItems.value
-  .filter(item => !locallyDismissedIds.value.includes(item.id))
-  .filter(item => canShowSuggestion(item.id))
-  .slice(0, 3))
+const visibleItems = computed(() => {
+  void attentionOwnerScope.value
+  void attentionVersion.value
+  return prioritizedItems.value.filter(item => canShowSuggestion(item.id)).slice(0, 3)
+})
+const selectedAdaptiveReasons = computed(() => selectedEntityId.value ? adaptiveReasonsFor(selectedEntityId.value) : [])
+const canResetSelectedPriority = computed(() => priority.value.reversible && selectedAdaptiveReasons.value.length > 0)
+const canDismissSelectedSuggestion = computed(() => selectedAdaptiveReasons.value.length > 0)
 const visible = computed(() => ff('ai_recommendations') && (loading.value || visibleItems.value.length > 0))
 const skeletonCount = computed(() => Math.min(Math.max(props.limit || 4, 1), 4))
 const subtitle = computed(() => {
@@ -149,6 +156,7 @@ function closeExplanation() {
 }
 
 function resetPriority() {
+  if (!canResetSelectedPriority.value) return
   showDefaultPriority.value = true
   resetSuggestionSession()
   drawerStatus.value = 'Đã chuyển sang Hiển thị mặc định.'
@@ -157,11 +165,10 @@ function resetPriority() {
 
 function dismissSelectedSuggestion() {
   const id = selectedEntityId.value
-  if (!id || !dismissSuggestion(id)) {
+  if (!id || !canDismissSelectedSuggestion.value || !dismissSuggestion(id)) {
     drawerStatus.value = 'Không thể thu gọn gợi ý lúc này.'
     return
   }
-  locallyDismissedIds.value = [...new Set([...locallyDismissedIds.value, id])]
   drawerStatus.value = 'Hiển thị gọn hơn: đã ẩn gợi ý này.'
   closeExplanation()
 }

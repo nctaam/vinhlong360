@@ -1,3 +1,5 @@
+import { computed, readonly, ref } from 'vue'
+
 interface BudgetStorage {
   getItem(key: string): string | null
   setItem(key: string, value: string): void
@@ -51,10 +53,15 @@ export function useAttentionBudget(options: AttentionBudgetOptions = {}) {
   const maxSuggestions = Math.min(Math.max(Math.floor(options.maxSuggestions ?? DEFAULT_MAX_SUGGESTIONS), 1), 10)
   const dismissalTtlMs = Math.min(Math.max(Math.floor(options.dismissalTtlMs ?? DEFAULT_DISMISSAL_TTL_MS), 1), DEFAULT_DISMISSAL_TTL_MS)
   const now = options.now || Date.now
+  const version = ref(0)
+  function resolveOwnerScope() {
+    const rawOwner = typeof options.ownerScope === 'function' ? options.ownerScope() : options.ownerScope
+    return ownerFingerprint(String(rawOwner || 'guest'))
+  }
+  const ownerScope = computed(resolveOwnerScope)
 
   function storageKeys() {
-    const rawOwner = typeof options.ownerScope === 'function' ? options.ownerScope() : options.ownerScope
-    const scope = ownerFingerprint(String(rawOwner || 'guest'))
+    const scope = resolveOwnerScope()
     return {
       sessionKey: `${namespace}:${scope}:session`,
       dismissalKey: `${namespace}:${scope}:dismissed`,
@@ -115,13 +122,15 @@ export function useAttentionBudget(options: AttentionBudgetOptions = {}) {
     const bounded = Object.fromEntries(Object.entries(dismissals).sort((left, right) => right[1] - left[1]).slice(0, MAX_DISMISSALS))
     const { dismissalKey } = storageKeys()
     try { persistent?.setItem(dismissalKey, JSON.stringify(bounded)) } catch { return false }
+    version.value += 1
     return true
   }
 
   function resetSession() {
     const { sessionKey } = storageKeys()
     try { session?.removeItem(sessionKey) } catch {}
+    version.value += 1
   }
 
-  return { canSuggest, dismiss, resetSession }
+  return { canSuggest, dismiss, resetSession, ownerScope, version: readonly(version) }
 }

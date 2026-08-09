@@ -268,14 +268,16 @@ const { user, isLoggedIn } = useAuth()
 const journeyThread = useJourneyThread({
   ownerScope: () => isLoggedIn.value ? String(user.value?.id || 'authenticated') : 'guest',
 })
+const journeyOwner = computed(() => isLoggedIn.value ? String(user.value?.id || 'authenticated') : 'guest')
 const recentImageErrors = ref<Record<string, boolean>>({})
 
 function snapshotSearchJourney() {
   const returnPath = searchView.url.value
+  journeyThread.restore()
   journeyThread.snapshot({ intent: 'explore', returnPath, currentPath: returnPath })
 }
 
-if (import.meta.client) watch(searchView.url, snapshotSearchJourney, { immediate: true })
+if (import.meta.client) watch([searchView.url, journeyOwner], snapshotSearchJourney, { immediate: true })
 
 function recentImageDescriptor(item: RecentItem): ImageDescriptor {
   return recentImageErrors.value[item.id] ? describeEntityPlaceholder(item) : item.image_descriptor

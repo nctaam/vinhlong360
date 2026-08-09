@@ -75,6 +75,38 @@ describe('useJourneyThread', () => {
     expect(thread.returnPath.value).toBe('')
   })
 
+  it('re-snapshots only the safe public search path for a new owner before detail and planner advance', () => {
+    const storage = memoryStorage()
+    let owner = 'guest'
+    const thread = useJourneyThread({ storage, ownerScope: () => owner, now: () => 3_500 })
+    const searchPath = '/tim-kiem?q=g%E1%BB%91m&intent=place&area=vinh-long'
+
+    thread.snapshot({ intent: 'explore', returnPath: searchPath, currentPath: searchPath })
+    owner = 'account-a'
+    expect(thread.restore()).toBeNull()
+
+    thread.snapshot({ intent: 'explore', returnPath: searchPath, currentPath: searchPath })
+    const detail = thread.restore()
+    expect(detail?.returnPath).toBe(searchPath)
+    thread.pushIntent('explore', { currentPath: '/dia-diem/gom-do-mang-thit', returnPath: detail?.returnPath })
+
+    const detailJourney = thread.restore()
+    thread.pushIntent('plan', { currentPath: '/tao-lich-trinh?source=gom-do-mang-thit', returnPath: detailJourney?.returnPath })
+    const plannerJourney = thread.restore()
+    expect(plannerJourney).toEqual(expect.objectContaining({
+      intent: 'plan',
+      currentPath: '/tao-lich-trinh?source=gom-do-mang-thit',
+      returnPath: searchPath,
+    }))
+    expect(plannerJourney?.returnPath).toBe(searchPath)
+    expect([...storage.raw.values()].join('')).not.toContain('account-a')
+
+    thread.clear()
+    expect(thread.restore()).toBeNull()
+    expect(thread.snapshot({ intent: 'explore', returnPath: '//evil.example/steal' })).toBeNull()
+    expect([...storage.raw.values()].join('')).toBe('')
+  })
+
   it('persists only bounded public continuity fields', () => {
     const storage = memoryStorage()
     const thread = useJourneyThread({ storage, ownerScope: 'guest', now: () => 3_000 })

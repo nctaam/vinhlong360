@@ -44,10 +44,8 @@
           <div class="why-secondary-actions" aria-label="Điều khiển đề xuất">
             <button type="button" data-action="reset" @click="emit('reset')">Làm mới đề xuất</button>
             <button type="button" data-action="disable-personalization" @click="emit('disable-personalization')">Tắt cá nhân hóa</button>
-            <template v-if="adaptiveReasonLabels.length">
-              <button type="button" data-action="reset-priority" @click="emit('reset-priority')">Hiển thị mặc định</button>
-              <button type="button" data-action="dismiss-suggestion" @click="emit('dismiss-suggestion')">Hiển thị gọn hơn</button>
-            </template>
+            <button v-if="showResetPriority && adaptiveReasonLabels.length" type="button" data-action="reset-priority" @click="emit('reset-priority')">Hiển thị mặc định</button>
+            <button v-if="showDismissSuggestion && adaptiveReasonLabels.length" type="button" data-action="dismiss-suggestion" @click="emit('dismiss-suggestion')">Hiển thị gọn hơn</button>
           </div>
 
           <div class="disclosure-primary-wrap">
@@ -74,11 +72,15 @@ const props = withDefaults(defineProps<{
   explanation?: Partial<RecommendationExplanation> | null
   preferenceHref?: string
   adaptiveReasons?: AdaptiveReasonCode[]
+  showResetPriority?: boolean
+  showDismissSuggestion?: boolean
 }>(), {
   open: false,
   explanation: null,
   preferenceHref: '/cai-dat#khu-vuc-de-xuat',
   adaptiveReasons: () => [],
+  showResetPriority: true,
+  showDismissSuggestion: true,
 })
 
 const emit = defineEmits<{

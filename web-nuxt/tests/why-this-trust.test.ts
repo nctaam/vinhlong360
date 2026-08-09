@@ -2,7 +2,7 @@
 
 import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { defineComponent, h, nextTick, ref } from 'vue'
+import { defineComponent, h, nextTick, ref, watch } from 'vue'
 
 import WhyThisDrawer from '../components/WhyThisDrawer.vue'
 import SourceTrustDrawer from '../components/SourceTrustDrawer.vue'
@@ -77,6 +77,17 @@ async function mountSmart(loggedIn: boolean, limit = 1) {
     setup() {
       const { user } = useAuth()
       user.value = loggedIn ? { id: `recommendation-user-${userSequence}` } : null
+      return () => h(SmartRecommendations, { context: 'home', limit })
+    },
+  })
+  return await mountSuspended(Harness, { attachTo: document.body })
+}
+
+async function mountSmartWithOwner(owner: ReturnType<typeof ref<{ id: string } | null>>, limit = 6) {
+  const Harness = defineComponent({
+    setup() {
+      const auth = useAuth()
+      watch(owner, value => { auth.user.value = value ?? null }, { immediate: true })
       return () => h(SmartRecommendations, { context: 'home', limit })
     },
   })
@@ -421,6 +432,86 @@ describe('WhyThisDrawer contract', () => {
 })
 
 describe('recommendation and detail integration', () => {
+  it('shows adaptive controls only for the selected card and actual reversible decision', async () => {
+    const cards = [
+      recommendationFixture({
+        id: 'generic-rec',
+        name: 'Gợi ý chung',
+        explanation: { primary_reason: 'Được cộng đồng quan tâm', reasons: ['Được cộng đồng quan tâm'] },
+      }),
+      recommendationFixture({
+        id: 'area-rec',
+        name: 'Gợi ý theo khu vực',
+        explanation: { primary_reason: 'Cùng khu vực bạn quan tâm', reasons: ['Cùng khu vực bạn quan tâm'] },
+      }),
+    ]
+    apiFetchMock.mockImplementation((url: string) => {
+      if (url.startsWith('/api/me/recommendations/contextual?')) return Promise.resolve({ items: cards, reasons: {}, profile: { signal_count: 2 } })
+      if (url.startsWith('/api/entities/popular?')) return Promise.resolve({ entities: cards })
+      return Promise.resolve({ entities: [] })
+    })
+
+    const wrapper = await mountSmart(true, 6)
+    wrappers.push(wrapper)
+    await vi.waitFor(() => expect(wrapper.findAll('.smart-rec-item')).toHaveLength(2))
+
+    await wrapper.findAll('[data-action="why-this"]')[1]!.trigger('click')
+    await flushUi()
+    let dialog = document.body.querySelector('[role="dialog"][data-why-this]') as HTMLElement
+    expect(dialog.querySelector('[data-action="reset-priority"]')).toBeNull()
+    expect(dialog.querySelector('[data-action="dismiss-suggestion"]')).toBeNull()
+    ;(dialog.querySelector('[aria-label="Đóng giải thích"]') as HTMLButtonElement).click()
+    await flushUi()
+
+    await wrapper.find('[data-action="why-this"]').trigger('click')
+    await flushUi()
+    dialog = document.body.querySelector('[role="dialog"][data-why-this]') as HTMLElement
+    expect(dialog.textContent).toContain('Gần khu vực đã chọn')
+    expect(dialog.querySelector('[data-action="reset-priority"]')).toBeTruthy()
+    expect(dialog.querySelector('[data-action="dismiss-suggestion"]')).toBeTruthy()
+  })
+
+  it('isolates dismissal immediately when the mounted owner changes', async () => {
+    const cards = [
+      recommendationFixture({
+        id: 'owner-switch-generic',
+        name: 'Gợi ý chung',
+        explanation: { primary_reason: 'Được cộng đồng quan tâm', reasons: ['Được cộng đồng quan tâm'] },
+      }),
+      recommendationFixture({
+        id: 'owner-switch-adaptive',
+        name: 'Gợi ý theo khu vực',
+        explanation: { primary_reason: 'Cùng khu vực bạn quan tâm', reasons: ['Cùng khu vực bạn quan tâm'] },
+      }),
+    ]
+    apiFetchMock.mockImplementation((url: string) => {
+      if (url.startsWith('/api/me/recommendations/contextual?')) return Promise.resolve({ items: cards, reasons: {}, profile: { signal_count: 1 } })
+      if (url.startsWith('/api/entities/popular?')) return Promise.resolve({ entities: cards })
+      return Promise.resolve({ entities: [] })
+    })
+    const owner = ref<{ id: string } | null>({ id: 'round2-owner-a' })
+    const wrapper = await mountSmartWithOwner(owner)
+    wrappers.push(wrapper)
+    await vi.waitFor(() => expect(wrapper.findAll('.smart-rec-item')).toHaveLength(2))
+
+    await wrapper.find('[data-action="why-this"]').trigger('click')
+    await flushUi()
+    ;(document.body.querySelector('[data-action="dismiss-suggestion"]') as HTMLButtonElement).click()
+    await flushUi()
+    expect(wrapper.findAll('.smart-rec-item')).toHaveLength(1)
+
+    owner.value = null
+    await flushUi()
+    expect(wrapper.findAll('.smart-rec-item')).toHaveLength(2)
+    owner.value = { id: 'round2-owner-b' }
+    await flushUi()
+    expect(wrapper.findAll('.smart-rec-item')).toHaveLength(2)
+
+    owner.value = { id: 'round2-owner-a' }
+    await flushUi()
+    expect(wrapper.findAll('.smart-rec-item')).toHaveLength(1)
+  })
+
   it('caps visible recommendations, exposes adaptive controls, and persists owner-scoped dismissal', async () => {
     const cards = Array.from({ length: 4 }, (_, index) => recommendationFixture({
       id: `entity-rec-${index + 1}`,

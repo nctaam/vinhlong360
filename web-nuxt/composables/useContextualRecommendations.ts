@@ -57,7 +57,10 @@ export function useContextualRecommendations(options: ContextualRecommendationOp
     storageNamespace: 'vl360:recommendations-attention:v1',
     ownerScope: () => isLoggedIn.value ? String(user.value?.id || 'authenticated') : 'guest',
   })
-  const itemAdaptiveReasons = computed(() => items.value.map(recommendationAdaptiveReason).filter((value): value is AdaptiveReasonCode => !!value))
+  const itemAdaptiveReasonMap = computed<Record<string, AdaptiveReasonCode | undefined>>(() => Object.fromEntries(
+    items.value.map(item => [item.id, recommendationAdaptiveReason(item)]),
+  ))
+  const itemAdaptiveReasons = computed(() => Object.values(itemAdaptiveReasonMap.value).filter((value): value is AdaptiveReasonCode => !!value))
   const adaptiveSignals = computed<AdaptiveReasonCode[]>(() => [...new Set([
     ...projectAdaptivePreferenceSignals(preferences.snapshot.value),
     ...itemAdaptiveReasons.value,
@@ -72,6 +75,7 @@ export function useContextualRecommendations(options: ContextualRecommendationOp
     }),
     adaptiveOrder: optionValue<Record<string, number> | undefined>(options.adaptiveOrder, recommendationAdaptiveOrder(items.value)),
     reason: optionValue<AdaptiveReasonCode | undefined>(options.adaptiveReason, adaptiveSignals.value[0]),
+    reasons: itemAdaptiveReasonMap.value,
   }))
 
   let requestId = 0
@@ -148,6 +152,11 @@ export function useContextualRecommendations(options: ContextualRecommendationOp
     return !!id && suggestionBudget.dismiss(id)
   }
 
+  function adaptiveReasonsFor(itemId: string) {
+    const reason = itemAdaptiveReasonMap.value[itemId]
+    return reason && priority.value.reasonCodes.includes(reason) ? [reason] : []
+  }
+
   if (import.meta.client && options.immediate !== false) {
     onMounted(refresh)
     watch(
@@ -174,6 +183,9 @@ export function useContextualRecommendations(options: ContextualRecommendationOp
     source,
     adaptiveSignals,
     priority,
+    adaptiveReasonsFor,
+    attentionOwnerScope: suggestionBudget.ownerScope,
+    attentionVersion: suggestionBudget.version,
     canShowSuggestion,
     dismissSuggestion,
     resetSuggestionSession: suggestionBudget.resetSession,
@@ -212,6 +224,7 @@ export function resolveContextualRecommendationPriority<T extends { id: string }
   intent?: AdaptiveIntent
   adaptiveOrder?: Record<string, number>
   reason?: AdaptiveReasonCode
+  reasons?: Record<string, AdaptiveReasonCode | undefined>
 }) {
   return useAdaptivePriority().resolve({
     context: input.context,
@@ -221,7 +234,7 @@ export function resolveContextualRecommendationPriority<T extends { id: string }
       kind: 'metadata' as const,
       defaultOrder: index,
       adaptiveRank: input.adaptiveOrder?.[item.id] ?? index,
-      reason: input.reason,
+      reason: input.reasons?.[item.id] ?? input.reason,
     })),
   })
 }

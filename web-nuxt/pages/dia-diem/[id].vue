@@ -633,6 +633,7 @@ const { openAuth } = useAuthModal()
 const journeyThread = useJourneyThread({
   ownerScope: () => isLoggedIn.value ? String(user.value?.id || 'authenticated') : 'guest',
 })
+const journeyOwner = computed(() => isLoggedIn.value ? String(user.value?.id || 'authenticated') : 'guest')
 const { show: _showToast } = useToast()
 
 async function copyText(text: string, label: string) {
@@ -728,8 +729,15 @@ function trackCurrentEntity() {
   trackEntityView(entity.value, 'entity')
 }
 
+function advanceDetailJourney() {
+  const restored = journeyThread.restore()
+  journeyThread.pushIntent('explore', { currentPath: route.fullPath, returnPath: restored?.returnPath || '/du-lich' })
+}
+
+watch(journeyOwner, advanceDetailJourney)
+
 onMounted(async () => {
-  journeyThread.pushIntent('explore', { currentPath: route.fullPath })
+  advanceDetailJourney()
   await revealHeroImageAfterUpdate()
   trackCurrentEntity()
   if (!isLoggedIn.value) return

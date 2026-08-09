@@ -8,6 +8,7 @@ import AISearchAssist from '../components/AISearchAssist.vue'
 import EmptyState from '../components/EmptyState.vue'
 import SmartRecommendations from '../components/SmartRecommendations.vue'
 import SearchPage from '../pages/tim-kiem.vue'
+import { useAuth } from '../composables/useAuth'
 import { extractNuxtCssPaths } from './helpers/installHomepageStyles'
 
 const searchAllMock = vi.hoisted(() => vi.fn())
@@ -37,7 +38,10 @@ vi.mock('../composables/useContextualRecommendations', async () => {
       error: ref(false),
       source: ref('fallback'),
       adaptiveSignals: ref([]),
-      priority: ref({ orderedBlocks: [], suggestions: [], reasons: [], primaryCta: 'view', reversible: false, resetAction: null }),
+      priority: ref({ orderedBlocks: [], suggestions: [], reasonCodes: [], reasons: [], primaryCta: 'view', reversible: false, resetAction: null }),
+      adaptiveReasonsFor: vi.fn(() => []),
+      attentionOwnerScope: ref('scope-guest'),
+      attentionVersion: ref(0),
       canShowSuggestion: vi.fn(() => true),
       dismissSuggestion: vi.fn(() => true),
       resetSuggestionSession: vi.fn(),
@@ -310,6 +314,35 @@ it('records the safe serialized search return path in the guest Journey Thread',
     currentPath: '/tim-kiem?intent=place&area=vinh-long&q=g%E1%BB%91m',
   }))
   expect(JSON.stringify(stored)).not.toMatch(/10\.25|105\.97|203\.0\.113|auth|user-/i)
+})
+
+it('re-snapshots the same canonical search URL when the auth owner changes without remounting', async () => {
+  searchAllMock.mockResolvedValue({
+    entities: [{ id: 'craft-1', type: 'craft_village', name: 'Gốm đỏ Mang Thít' }],
+    posts: [],
+    users: [],
+    totals: { entities: 1, posts: 0, users: 0 },
+  })
+  const wrapper = await mountSuspended(SearchPage, {
+    route: '/tim-kiem?q=gốm&intent=place&area=vinh-long',
+    global: { stubs: pageStubs },
+  })
+  wrappers.push(wrapper)
+  await flushUi()
+
+  const auth = useAuth()
+  const guestOwnerScope = JSON.parse(sessionStorage.getItem('vl360:journey-thread:v1') || 'null')?.ownerScope
+  auth.user.value = { id: 'round2-account-a' }
+  await flushUi()
+
+  const stored = JSON.parse(sessionStorage.getItem('vl360:journey-thread:v1') || 'null')
+  expect(stored.ownerScope).not.toBe(guestOwnerScope)
+  expect(stored).toEqual(expect.objectContaining({
+    intent: 'explore',
+    returnPath: '/tim-kiem?intent=place&area=vinh-long&q=g%E1%BB%91m',
+    currentPath: '/tim-kiem?intent=place&area=vinh-long&q=g%E1%BB%91m',
+  }))
+  expect(stored.ownerScope).not.toContain('round2-account-a')
 })
 
 it('adds the coordinated map sibling without changing the existing search response shape', async () => {
