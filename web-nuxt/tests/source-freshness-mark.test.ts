@@ -12,7 +12,6 @@ afterEach(() => {
 describe('source and freshness primitives', () => {
   it.each([
     ['official', 'Chính thức', 'shield'],
-    ['verified', 'Có nguồn đối tác', 'check'],
     ['community', 'Cộng đồng', 'user'],
     ['unknown', 'Chưa rõ nguồn', 'info'],
   ] as const)('shows icon and visible label for %s', async (tier, label, icon) => {
@@ -29,7 +28,6 @@ describe('source and freshness primitives', () => {
 
   it.each([
     ['official', 'shield'],
-    ['verified', 'check'],
     ['community', 'user'],
     ['unknown', 'info'],
   ] as const)('renders the real %s tier with its %s icon instead of fallback', async (tier, icon) => {
@@ -55,6 +53,37 @@ describe('source and freshness primitives', () => {
     expect(wrapper.text()).toContain('Có thể đã cũ')
     expect(wrapper.text()).toContain('12/07/2026')
     expect(wrapper.find('[data-source-mark]').exists()).toBe(false)
+  })
+
+  it('degrades a bare verified tier to unknown until public evidence is supplied', async () => {
+    const wrapper = await mountSuspended(SourceMark, {
+      props: { tier: 'verified' },
+      global: { stubs: { IconLine: { props: ['name'], template: '<i :data-icon="name" />' } } },
+    })
+    wrappers.push(wrapper)
+
+    const mark = wrapper.get('[data-source-mark]')
+    expect(mark.attributes('data-source-tier')).toBe('unknown')
+    expect(mark.text()).toContain('Chưa rõ nguồn')
+    expect(mark.get('[data-icon="info"]')).toBeTruthy()
+  })
+
+  it('shows a verified tier only with a public source and valid evidence date', async () => {
+    const wrapper = await mountSuspended(SourceMark, {
+      props: {
+        tier: 'verified',
+        sourceTitle: 'Đối tác dữ liệu địa phương',
+        sourceUrl: 'https://partner.example.vn/entity-1',
+        verifiedAt: '2026-07-18T00:00:00Z',
+      },
+      global: { stubs: { IconLine: { props: ['name'], template: '<i :data-icon="name" />' } } },
+    })
+    wrappers.push(wrapper)
+
+    const mark = wrapper.get('[data-source-mark]')
+    expect(mark.attributes('data-source-tier')).toBe('verified')
+    expect(mark.text()).toContain('Có nguồn đối tác')
+    expect(mark.get('[data-icon="check"]')).toBeTruthy()
   })
 
   it('makes conflicting freshness evidence explicit', async () => {

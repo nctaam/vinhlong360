@@ -40,6 +40,7 @@ const normalizedReason = computed(() => props.reason.trim() || 'Được cộng 
 const normalizedSignals = computed(() => [...new Set(props.signals.map(signal => signal.trim()).filter(Boolean))])
 
 function reset() {
+  // Vue invokes the public onReset listener through this declared reset event.
   emit('reset')
 }
 </script>

@@ -15,10 +15,8 @@
 <script setup lang="ts">
 import type { FreshnessStatus } from '../utils/regionalColor'
 
-type PublicFreshnessStatus = FreshnessStatus | 'conflict'
-
 const props = defineProps<{
-  status: PublicFreshnessStatus
+  status: FreshnessStatus
   updatedLabel: string
 }>()
 

@@ -32,6 +32,7 @@ describe('regional color resolver', () => {
     expect(resolveFreshnessStatus('fresh')).toBe('fresh')
     expect(resolveFreshnessStatus('aging')).toBe('aging')
     expect(resolveFreshnessStatus('stale')).toBe('stale')
+    expect(resolveFreshnessStatus('conflict')).toBe('conflict')
     expect(resolveFreshnessStatus('yesterday')).toBe('unknown')
   })
 })

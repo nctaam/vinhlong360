@@ -3,7 +3,7 @@
     class="page-state"
     :data-page-state="state.kind"
     :role="liveRole"
-    :aria-live="liveRole ? 'polite' : undefined"
+    :aria-live="livePoliteness"
   >
     <template v-if="state.kind === 'loading'">
       <p class="page-state__copy">Đang tải nội dung.</p>
@@ -16,8 +16,8 @@
         <p class="page-state__copy">Một vài phần chưa tải được. Nội dung còn lại vẫn có thể sử dụng.</p>
       </div>
       <div v-if="state.failedPanels.length" class="page-state__actions" aria-label="Khôi phục phần chưa tải">
-        <button v-for="panel in state.failedPanels" :key="panel" type="button" class="page-state__action" data-page-state-retry :data-page-state-panel="panel" @click="retryPanel(panel)">
-          Tải lại {{ panelLabel(panel) }}
+        <button v-for="panel in state.failedPanels" :key="panel" type="button" class="page-state__action" data-page-state-retry :data-page-state-panel="panel" :disabled="retryInFlight" :aria-busy="retryInFlight || undefined" @click="retryPanel(panel)">
+          {{ retryInFlight ? 'Đang tải lại' : `Tải lại ${panelLabel(panel)}` }}
         </button>
       </div>
     </template>
@@ -39,7 +39,7 @@
     <template v-else-if="state.kind === 'error'">
       <p class="page-state__title">{{ title }}</p>
       <p class="page-state__copy">Không thể tải nội dung lúc này.</p>
-      <button type="button" class="page-state__action" data-page-state-retry @click="retryPanel()">{{ state.retry.label || 'Thử lại' }}</button>
+      <button type="button" class="page-state__action" data-page-state-retry :disabled="retryInFlight" :aria-busy="retryInFlight || undefined" @click="retryPanel()">{{ retryInFlight ? 'Đang tải lại' : state.retry.label || 'Thử lại' }}</button>
       <div v-if="state.fallback !== undefined" class="page-state__available" data-page-state-available><slot /></div>
     </template>
 
@@ -61,7 +61,7 @@ import type { SurfaceState } from '~/types/publicExperience'
 const props = withDefaults(defineProps<{
   state: SurfaceState<unknown>
   title?: string
-  retry?: (panel?: string) => void
+  retry?: (panel?: string) => void | Promise<unknown>
   recovery?: () => void
 }>(), {
   title: 'Chúng tôi cần thêm thời gian',
@@ -71,10 +71,19 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{ retry: [panel?: string]; recovery: [] }>()
 const liveRole = computed(() => props.state.kind === 'error' ? 'alert' : props.state.kind === 'ready' ? undefined : 'status')
+const livePoliteness = computed(() => liveRole.value === 'alert' ? 'assertive' : liveRole.value ? 'polite' : undefined)
+const retryInFlight = ref(false)
 
-function retryPanel(panel?: string) {
-  props.retry?.(panel)
-  emit('retry', panel)
+async function retryPanel(panel?: string) {
+  if (retryInFlight.value) return
+  retryInFlight.value = true
+  try {
+    const pendingRetry = props.retry?.(panel)
+    emit('retry', panel)
+    await pendingRetry
+  } finally {
+    retryInFlight.value = false
+  }
 }
 
 function recover() {

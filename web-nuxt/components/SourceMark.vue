@@ -3,7 +3,7 @@
     class="source-mark"
     data-source-mark
     data-color-role="trust"
-    :data-source-tier="tier"
+    :data-source-tier="effectiveTier"
     :class="{ 'source-mark--compact': compact }"
     :aria-label="meta.ariaLabel"
   >
@@ -14,12 +14,19 @@
 
 <script setup lang="ts">
 import type { SourceTier } from '../utils/regionalColor'
+import { safeUrl } from '~/utils/safe'
 
 const props = withDefaults(defineProps<{
   tier: SourceTier
   compact?: boolean
+  sourceTitle?: string | null
+  sourceUrl?: string | null
+  verifiedAt?: string | null
 }>(), {
   compact: false,
+  sourceTitle: '',
+  sourceUrl: '',
+  verifiedAt: '',
 })
 
 const SOURCE_META = Object.freeze({
@@ -29,7 +36,29 @@ const SOURCE_META = Object.freeze({
   unknown: { label: 'Chưa rõ nguồn', icon: 'info', ariaLabel: 'Nguồn chưa rõ' },
 } as const)
 
-const meta = computed(() => SOURCE_META[props.tier])
+function validDate(value?: string | null) {
+  if (typeof value !== 'string' || !value.trim()) return ''
+  const normalized = value.trim()
+  const datePart = /^(\d{4})-(\d{2})-(\d{2})(?:T|$)/.exec(normalized)
+  if (!datePart || !Number.isFinite(Date.parse(normalized))) return ''
+  const year = Number(datePart[1])
+  const month = Number(datePart[2])
+  const day = Number(datePart[3])
+  const calendarDate = new Date(Date.UTC(year, month - 1, day))
+  return calendarDate.getUTCFullYear() === year
+    && calendarDate.getUTCMonth() === month - 1
+    && calendarDate.getUTCDate() === day
+    ? normalized
+    : ''
+}
+
+const hasVerifiedEvidence = computed(() => Boolean(
+  validDate(props.verifiedAt)
+  && props.sourceTitle?.trim()
+  && safeUrl(props.sourceUrl) !== '#',
+))
+const effectiveTier = computed<SourceTier>(() => props.tier === 'verified' && !hasVerifiedEvidence.value ? 'unknown' : props.tier)
+const meta = computed(() => SOURCE_META[effectiveTier.value])
 </script>
 
 <style scoped>

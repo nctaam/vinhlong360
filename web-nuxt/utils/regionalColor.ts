@@ -1,6 +1,6 @@
 export type RegionalAccent = 'clay' | 'leaf' | 'river' | 'amber' | 'neutral'
 export type SourceTier = 'official' | 'verified' | 'community' | 'unknown'
-export type FreshnessStatus = 'fresh' | 'aging' | 'stale' | 'unknown'
+export type FreshnessStatus = 'fresh' | 'aging' | 'stale' | 'conflict' | 'unknown'
 
 const REGIONAL_ACCENT_BY_CATEGORY: Readonly<Record<string, RegionalAccent>> = Object.freeze({
   craft: 'clay',
@@ -42,5 +42,5 @@ export function resolveSourceTier(sourceTier?: unknown): SourceTier {
 }
 
 export function resolveFreshnessStatus(status?: unknown): FreshnessStatus {
-  return status === 'fresh' || status === 'aging' || status === 'stale' ? status : 'unknown'
+  return status === 'fresh' || status === 'aging' || status === 'stale' || status === 'conflict' ? status : 'unknown'
 }
