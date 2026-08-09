@@ -42,15 +42,29 @@ export const PUBLIC_CAPABILITY_FLAGS = Object.freeze({
 export type PublicCapability = keyof typeof PUBLIC_CAPABILITY_FLAGS
 export type PublicCapabilityMode = 'enhanced' | 'deterministic'
 
+const LEGACY_PUBLIC_CAPABILITY: Partial<Record<string, PublicCapability>> = Object.freeze({
+  preference_ui_v1: 'personalization',
+  recommendation_explanations_v1: 'personalization',
+  ai_recommendations: 'recommendation',
+  ai_tips: 'proactiveNotices',
+  ai_best_time: 'proactiveNotices',
+})
+
 export function featureFlagDefault(key: string): boolean {
   return FEATURE_FLAGS.find(f => f.key === key)?.default ?? false
 }
 
 export function resolveFeatureFlag(key: string, flags: Record<string, unknown> | null | undefined): boolean {
   const override = flags?.[key]
-  if (typeof override === 'boolean') return override
-  if (flags && Object.prototype.hasOwnProperty.call(flags, key)) return false
-  return featureFlagDefault(key)
+  const legacyEnabled = typeof override === 'boolean'
+    ? override
+    : flags && Object.prototype.hasOwnProperty.call(flags, key)
+      ? false
+      : featureFlagDefault(key)
+  const capability = LEGACY_PUBLIC_CAPABILITY[key]
+  if (!capability) return legacyEnabled
+  const capabilityOverride = flags?.[PUBLIC_CAPABILITY_FLAGS[capability]]
+  return legacyEnabled && capabilityOverride === true
 }
 
 export function resolvePublicCapabilityMode(capability: PublicCapability, flags: Record<string, unknown> | null | undefined): PublicCapabilityMode {

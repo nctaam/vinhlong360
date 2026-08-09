@@ -17,6 +17,9 @@ const publicFlags = vi.hoisted(() => ({
   preference_ui_v1: false,
   recommendation_explanations_v1: false,
   trust_drawer_v1: false,
+  public_personalization_v1: true,
+  public_recommendation_v1: true,
+  public_proactive_notices_v1: true,
 }))
 const authState = vi.hoisted(() => ({
   user: { __v_isRef: true, value: { id: 'flag-user' } as { id: string } | null },
@@ -95,6 +98,9 @@ beforeEach(() => {
   publicFlags.preference_ui_v1 = false
   publicFlags.recommendation_explanations_v1 = false
   publicFlags.trust_drawer_v1 = false
+  publicFlags.public_personalization_v1 = true
+  publicFlags.public_recommendation_v1 = true
+  publicFlags.public_proactive_notices_v1 = true
   authState.user.value = { id: 'flag-user' }
   authState.isLoggedIn.value = true
   apiFetchMock.mockReset()

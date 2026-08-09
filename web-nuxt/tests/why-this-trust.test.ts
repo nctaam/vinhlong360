@@ -21,7 +21,13 @@ vi.mock('../utils/apiFetch', () => ({ apiFetch: apiFetchMock }))
 mockNuxtImport('navigateTo', () => navigateToMock)
 mockNuxtImport('useSiteSettings', () => () => ({
   get: (key: string, fallback?: unknown) => key === 'features.flags'
-    ? { recommendation_explanations_v1: true, trust_drawer_v1: true }
+    ? {
+        ai_recommendations: true,
+        recommendation_explanations_v1: true,
+        trust_drawer_v1: true,
+        public_personalization_v1: true,
+        public_recommendation_v1: true,
+      }
     : fallback,
 }))
 

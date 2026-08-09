@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import {
+  resolvePublicTelemetryEndpoint,
   sanitizePublicTelemetry,
   usePublicTelemetry,
 } from '../composables/usePublicTelemetry'
@@ -59,6 +60,37 @@ describe('public telemetry privacy boundary', () => {
       eventName: 'call-0909123456',
       outcomeClass: 'result-shown',
     })).not.toHaveProperty('eventName')
+  })
+
+  it('rejects arbitrary slug-shaped private values from closed telemetry dimensions', () => {
+    expect(sanitizePublicTelemetry({
+      eventName: 'visitor-lan-nguyen',
+      outcomeClass: 'email-lan-example-com',
+      harmClass: 'home-address-cai-be',
+      areaId: 'nguyen-van-a',
+      routeFamily: 'detail',
+      viewport: 'mobile',
+      network: 'online',
+      theme: 'nocturne',
+    })).toEqual({
+      routeFamily: 'detail',
+      viewport: 'mobile',
+      network: 'online',
+      theme: 'nocturne',
+    })
+  })
+
+  it('resolves only same-origin telemetry endpoints', () => {
+    const origin = 'https://vinhlong360.vn'
+
+    expect(resolvePublicTelemetryEndpoint('/feedback/public-telemetry', origin)).toBe(
+      'https://vinhlong360.vn/feedback/public-telemetry',
+    )
+    expect(resolvePublicTelemetryEndpoint('https://vinhlong360.vn/feedback/public-telemetry', origin)).toBe(
+      'https://vinhlong360.vn/feedback/public-telemetry',
+    )
+    expect(resolvePublicTelemetryEndpoint('//collector.example/private', origin)).toBeUndefined()
+    expect(resolvePublicTelemetryEndpoint('https://collector.example/private', origin)).toBeUndefined()
   })
 
   it('emits outcome, harm and performance events through one sanitized transport', () => {

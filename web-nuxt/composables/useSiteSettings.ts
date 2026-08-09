@@ -14,12 +14,19 @@ export function useSiteSettingsData() {
 }
 
 export function useSiteSettings() {
-  const { data } = useSiteSettingsData()
+  const { data, error, status } = useSiteSettingsData()
+  const available = computed(() => (
+    status.value === 'success'
+    && error.value == null
+    && !!data.value
+    && typeof data.value === 'object'
+    && !Array.isArray(data.value)
+  ))
 
   function get<T>(key: string, fallback: T): T {
     const val = (data.value as Record<string, unknown> | null | undefined)?.[key]
     return (val !== undefined && val !== null ? val : fallback) as T
   }
 
-  return { settings: data, get }
+  return { settings: data, available, get }
 }

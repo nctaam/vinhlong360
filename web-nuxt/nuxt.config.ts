@@ -109,8 +109,7 @@ export default defineNuxtConfig({
         { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
       ],
       script: [
-        { innerHTML: "try{var k='vl360-color-mode',v=localStorage.getItem(k);if(v==='system'||v==='auto')localStorage.setItem(k,'dark')}catch(_){ }", tagPosition: 'head' },
-        { innerHTML: "try{var d=document.documentElement,p=JSON.parse(localStorage.getItem('vl360-accessibility-profile')||'null')||{},s=[1,1.25,1.5,2].includes(p.textScale)?p.textScale:1,t=p.theme==='parchment'?'parchment':'nocturne',n=p.density==='compact'?'compact':'comfortable';d.dataset.theme=t;d.dataset.density=n;d.style.setProperty('--a11y-text-scale',String(s));d.style.setProperty('--a11y-text-scale-percent',(s*100)+'%')}catch(_){ }", tagPosition: 'head' },
+        { innerHTML: "try{var d=document.documentElement,p=JSON.parse(localStorage.getItem('vl360-accessibility-profile')||'null')||{},s=[1,1.25,1.5,2].includes(p.textScale)?p.textScale:1,t=p.theme==='parchment'?'parchment':'nocturne',m=t==='parchment'?'light':'dark',n=p.density==='compact'?'compact':'comfortable';localStorage.setItem('vl360-color-mode',m);d.classList.remove('light','dark');d.classList.add(m);d.dataset.theme=t;d.dataset.density=n;d.style.setProperty('--a11y-text-scale',String(s));d.style.setProperty('--a11y-text-scale-percent',(s*100)+'%')}catch(_){ }", tagPosition: 'head' },
         // Add `js` to <html> BEFORE first paint so the JS-gated .reveal rule
         // (html.js .reveal { opacity:0 }) only ever hides content when JS is
         // present — no flash-of-hidden, and full visibility when JS is off/slow.

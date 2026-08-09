@@ -19,6 +19,7 @@ const mocks = vi.hoisted(() => ({
   runPlannerOptimization: vi.fn(),
   showToast: vi.fn(),
 }))
+const publicOptimizerMode = vi.hoisted(() => ({ mode: 'enhanced' as 'enhanced' | 'deterministic' }))
 
 vi.mock('~/composables/usePublicApi', () => ({
   usePublicApi: () => ({
@@ -93,8 +94,12 @@ mockNuxtImport('useConfirm', () => () => ({ confirmDialog: vi.fn() }))
 mockNuxtImport('useFavorites', () => () => ({ count: ref(0), favorites: ref([]) }))
 mockNuxtImport('useNDAMap', () => () => ({ createMap: mocks.createMap }))
 mockNuxtImport('useToast', () => () => ({ show: mocks.showToast }))
+mockNuxtImport('useFeature', () => () => ({
+  capabilityMode: (capability: string) => capability === 'optimizer' ? publicOptimizerMode.mode : 'deterministic',
+}))
 
 beforeEach(() => {
+  publicOptimizerMode.mode = 'enhanced'
   mocks.applyPlacements = 0
   mocks.commitMapGate = null
   mocks.commitMap = 0
@@ -114,6 +119,16 @@ beforeEach(() => {
 })
 
 describe('planner page lifecycle', () => {
+  it('keeps planner editing and saving usable when optimizer enhancement is disabled', async () => {
+    publicOptimizerMode.mode = 'deterministic'
+    const wrapper = await mountPlannerWithThreeStops()
+
+    expect(wrapper.find('.optimize-route-btn').exists()).toBe(false)
+    expect(wrapper.find('.builder-title').exists()).toBe(true)
+    expect(wrapper.find('.planner-action-dock').exists()).toBe(true)
+    wrapper.unmount()
+  })
+
   it('keeps normal title, budget, and stop edits local without fabricating a server conflict', async () => {
     const wrapper = await mountSuspended(PlannerPage, {
       global: { stubs: plannerStubs() },

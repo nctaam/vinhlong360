@@ -11,10 +11,27 @@ import {
  * flags fail closed so deterministic search/detail/planner UI remains usable.
  */
 export function useFeature() {
-  const { get } = useSiteSettings()
+  const siteSettings = useSiteSettings() as {
+    get: (key: string, fallback?: unknown) => unknown
+    settings?: { value: unknown }
+    available?: { value: boolean }
+  }
   const source = computed<{ available: boolean; flags: Record<string, unknown> }>(() => {
+    if (siteSettings.settings || siteSettings.available) {
+      if (siteSettings.available?.value !== true) return { available: false, flags: {} }
+      const raw = siteSettings.settings?.value
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)
+        || !Object.prototype.hasOwnProperty.call(raw, 'features.flags')) {
+        return { available: false, flags: {} }
+      }
+      const value = (raw as Record<string, unknown>)['features.flags']
+      return value && typeof value === 'object' && !Array.isArray(value)
+        ? { available: true, flags: value as Record<string, unknown> }
+        : { available: false, flags: {} }
+    }
+
     try {
-      const value = get('features.flags', {})
+      const value = siteSettings.get('features.flags', {})
       return value && typeof value === 'object' && !Array.isArray(value)
         ? { available: true, flags: value as Record<string, unknown> }
         : { available: false, flags: {} }

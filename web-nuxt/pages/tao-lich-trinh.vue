@@ -92,7 +92,7 @@
             {{ m.icon }} {{ m.label }}
           </button>
           <button
-            v-if="stops.length >= 3"
+            v-if="stops.length >= 3 && optimizerEnabled"
             type="button"
             class="btn btn-sm btn-outline optimize-route-btn"
             :disabled="!canOptimizeRoute || optimizing"
@@ -402,6 +402,8 @@ type OpeningHourConflict = {
 const { favorites: favList, count: favCount } = useFavorites()
 const { confirmDialog } = useConfirm()
 const { user, isLoggedIn, authHeaders } = useAuth()
+const { capabilityMode } = useFeature()
+const optimizerEnabled = computed(() => capabilityMode('optimizer') === 'enhanced')
 const journeyThread = useJourneyThread({
   ownerScope: () => isLoggedIn.value ? String(user.value?.id || 'authenticated') : 'guest',
 })
@@ -492,12 +494,14 @@ function isPlannerLifecycleActive() {
 
 const currentRoutableStops = computed(() => collectRoutableStops(stops.value))
 const canOptimizeRoute = computed(() => {
+  if (!optimizerEnabled.value) return false
   const routed = currentRoutableStops.value
   return routed.length >= 3
     && routed[0]?.originalIndex === 0
     && routed[routed.length - 1]?.originalIndex === stops.value.length - 1
 })
 const optimizeRouteTitle = computed(() => {
+  if (!optimizerEnabled.value) return 'Tối ưu nâng cao đang tạm tắt; bạn vẫn có thể chỉnh và lưu lịch trình'
   if (stops.value.length < 3) return 'Cần ít nhất 3 điểm để tối ưu thứ tự'
   if (currentRoutableStops.value.length < 3) return 'Cần ít nhất 3 điểm có tọa độ'
   if (!canOptimizeRoute.value) return 'Điểm đầu và điểm cuối cần có tọa độ hợp lệ'

@@ -1,5 +1,5 @@
 <template>
-  <div class="ai-search-assist" :data-color-recipe="colorRecipe || undefined">
+  <div v-if="searchExpansionEnabled" class="ai-search-assist" :data-color-recipe="colorRecipe || undefined">
     <button type="button" v-if="!aiReply && !loading && !errored" class="ai-toggle-btn ai-toggle-btn-emoji" @click="load"><IconLine name="sparkles" class="emoji-chip" /> Gợi ý AI cho "{{ query }}"</button>
     <div v-else-if="loading" class="ai-loading ai-loading-padded" role="status" aria-label="Đang tải gợi ý"><div class="spinner spinner-center"></div></div>
     <div v-else-if="errored" class="ai-error" role="status">
@@ -26,6 +26,9 @@ const props = defineProps<{
   query: string
   colorRecipe?: 'tri-region-v1'
 }>()
+
+const { capabilityMode } = useFeature()
+const searchExpansionEnabled = computed(() => capabilityMode('searchExpansion') === 'enhanced')
 
 const { get: ss } = useSiteSettings()
 const disclaimerText = computed(() => ss('ai.disclaimer_text', 'Gợi ý do AI tạo — mang tính tham khảo.'))
@@ -65,6 +68,7 @@ function writeCache(q: string, reply: string, sugg: string[]) {
 }
 
 async function load() {
+  if (!searchExpansionEnabled.value) return
   if (loading.value) return
   const q = props.query
   if (!q || q.length < 2) return

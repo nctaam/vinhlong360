@@ -26,12 +26,16 @@ describe('Adaptive Nocturne theme contract', () => {
     expect(nuxtConfig).toContain("preference: 'dark'")
     expect(nuxtConfig).toContain("fallback: 'dark'")
     expect(nuxtConfig).not.toContain("preference: 'system'")
-    expect(nuxtConfig).toContain("var k='vl360-color-mode'")
-    expect(nuxtConfig).toContain('localStorage.getItem(k)')
-    expect(nuxtConfig).toContain("localStorage.setItem(k,'dark')")
-    expect(nuxtConfig.indexOf("var k='vl360-color-mode'")).toBeLessThan(
+    expect(nuxtConfig).toContain("localStorage.getItem('vl360-accessibility-profile')")
+    expect(nuxtConfig).toContain("localStorage.setItem('vl360-color-mode',m)")
+    expect(nuxtConfig).toContain("d.classList.add(m)")
+    expect(nuxtConfig.indexOf("localStorage.getItem('vl360-accessibility-profile')")).toBeLessThan(
       nuxtConfig.indexOf("document.documentElement.classList.add('js')"),
     )
+
+    const settingsPage = await readFile(resolve(root, 'web-nuxt/pages/cai-dat.vue'), 'utf8')
+    expect(settingsPage).not.toContain("setColorMode('system')")
+    expect(settingsPage).not.toContain('Chế độ "Hệ thống"')
   })
 
   it('defines semantic Nocturne, Parchment, typography, and dossier tokens', async () => {

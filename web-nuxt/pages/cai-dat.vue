@@ -298,17 +298,14 @@
       <div class="sf-field">
         <span class="sf-label">Chế độ màu</span>
         <div class="theme-options">
-          <button type="button" :class="['theme-btn', { active: colorMode === 'light' }]" @click="setColorMode('light')">
-            <span class="theme-icon">☀️</span> Sáng
+          <button type="button" :class="['theme-btn', { active: colorMode === 'parchment' }]" @click="setColorMode('parchment')">
+            <span class="theme-icon">☀️</span> Parchment sáng
           </button>
-          <button type="button" :class="['theme-btn', { active: colorMode === 'dark' }]" @click="setColorMode('dark')">
-            <span class="theme-icon">🌙</span> Tối
-          </button>
-          <button type="button" :class="['theme-btn', { active: colorMode === 'system' }]" @click="setColorMode('system')">
-            <span class="theme-icon">💻</span> Hệ thống
+          <button type="button" :class="['theme-btn', { active: colorMode === 'nocturne' }]" @click="setColorMode('nocturne')">
+            <span class="theme-icon">🌙</span> Nocturne mặc định
           </button>
         </div>
-        <span class="sf-hint">Chế độ "Hệ thống" tự động theo cài đặt thiết bị của bạn.</span>
+        <span class="sf-hint">Giao diện chỉ đổi khi bạn chọn; hệ thống không tự đổi theo thiết bị hoặc thời gian.</span>
       </div>
     </div>
 
@@ -649,6 +646,7 @@
 <script setup lang="ts">
 import type { HideablePost } from '~/composables/useHiddenPosts'
 import { usePersonalizationPreferences } from '~/composables/usePersonalizationPreferences'
+import type { AccessibilityTheme } from '~/types/accessibility'
 import type { PreferencePatch, PreferenceRegionChoice, PreferenceSnapshot } from '~/types/personalization'
 
 const { user, isLoggedIn, authHeaders, fetchMe, handleSessionExpired } = useAuth()
@@ -656,10 +654,11 @@ const { enabled: ff } = useFeature()
 const { openAuth } = useAuthModal()
 const { show: showToast } = useToast()
 const colorModeState = useColorMode()
-const colorMode = computed(() => colorModeState.preference)
+const accessibility = useAccessibilityProfile({ colorMode: colorModeState })
+const colorMode = computed(() => accessibility.profile.value.theme)
 watch(isLoggedIn, (v) => { if (!v) navigateTo('/') })
-function setColorMode(mode: 'light' | 'dark' | 'system') {
-  colorModeState.preference = mode
+function setColorMode(mode: AccessibilityTheme) {
+  accessibility.setProfile({ theme: mode })
 }
 useHead({
   title: 'Cài đặt',

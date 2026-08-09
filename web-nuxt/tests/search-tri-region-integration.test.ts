@@ -25,7 +25,10 @@ vi.mock('../composables/useUnifiedSearch', () => ({
   }),
 }))
 vi.mock('../composables/useFeature', () => ({
-  useFeature: () => ({ enabled: () => true }),
+  useFeature: () => ({
+    enabled: () => true,
+    capabilityMode: () => 'enhanced',
+  }),
 }))
 vi.mock('../composables/useContextualRecommendations', async () => {
   const { ref } = await import('vue')
