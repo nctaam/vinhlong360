@@ -271,11 +271,19 @@ const props = defineProps<{ visible: boolean }>()
 const emit = defineEmits<{ (e: 'close'): void }>()
 
 const { requestOtp, verifyOtp, checkPhone, login, setPassword, verifyTwoFactor } = useAuth()
-const { onLoginSuccess } = useAuthModal()
+const route = useRoute()
+const { onLoginSuccess, rememberReturnPath } = useAuthModal()
+
+watch(() => props.visible, (visible) => {
+  if (visible) rememberReturnPath(route.fullPath)
+}, { immediate: true })
 
 const step = ref<'phone' | 'register' | 'password' | 'otp' | 'set-password' | 'twofactor' | 'done'>('phone')
-watch(step, (v) => {
-  if (v === 'done') onLoginSuccess()
+watch(step, async (v) => {
+  if (v === 'done') {
+    const returnPath = onLoginSuccess()
+    if (returnPath && returnPath !== route.fullPath) await navigateTo(returnPath)
+  }
   nextTick(() => modalEl.value?.querySelector<HTMLElement>('h3')?.focus())
 })
 const phone = ref('')

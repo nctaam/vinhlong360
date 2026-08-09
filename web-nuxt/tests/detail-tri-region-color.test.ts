@@ -1,5 +1,5 @@
 import { clearNuxtData, clearNuxtState, useState } from '#app'
-import { mountSuspended } from '@nuxt/test-utils/runtime'
+import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { defineComponent, h, nextTick } from 'vue'
@@ -7,11 +7,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import ContactWidget from '../components/ContactWidget.vue'
 import EntityTrustPanel from '../components/EntityTrustPanel.vue'
 import { useAuthModal } from '../composables/useAuthModal'
+import { useJourneyThread } from '../composables/useJourneyThread'
 import EntityDetailPage from '../pages/dia-diem/[id].vue'
 import { aiDisclosure } from '../utils/aiDisclosure'
 
 const apiFetchMock = vi.hoisted(() => vi.fn())
+const navigateToMock = vi.hoisted(() => vi.fn(() => Promise.resolve()))
 vi.mock('../utils/apiFetch', () => ({ apiFetch: apiFetchMock }))
+mockNuxtImport('navigateTo', () => navigateToMock)
 
 const triRegionCss = readFileSync(resolve(process.cwd(), 'assets/css/tri-region-color.css'), 'utf8')
 const detailCss = readFileSync(resolve(process.cwd(), 'assets/css/detail.css'), 'utf8')
@@ -143,6 +146,8 @@ async function cleanupDetailTestState() {
   vi.restoreAllMocks()
   vi.unstubAllGlobals()
   apiFetchMock.mockReset()
+  navigateToMock.mockReset()
+  sessionStorage.clear()
   await clearNuxtData()
   clearNuxtState('auth-user')
   const { openAuth, closeAuth } = useAuthModal()
@@ -153,6 +158,27 @@ async function cleanupDetailTestState() {
 afterEach(cleanupDetailTestState)
 
 describe('entity detail tri-region behavior', () => {
+  it('advances the guest Journey Thread and uses its search path for fallback back navigation', async () => {
+    sessionStorage.clear()
+    useJourneyThread({ ownerScope: 'guest' }).snapshot({
+      intent: 'explore',
+      returnPath: '/tim-kiem?q=g%E1%BB%91m&intent=place',
+      currentPath: '/tim-kiem?q=g%E1%BB%91m&intent=place',
+    })
+    vi.spyOn(window.history, 'length', 'get').mockReturnValue(1)
+
+    const wrapper = await mountDetailHero({ route: '/dia-diem/cong-vien-an-hoi' })
+    const restored = useJourneyThread({ ownerScope: 'guest' }).restore()
+    expect(restored).toEqual(expect.objectContaining({
+      intent: 'explore',
+      returnPath: '/tim-kiem?q=g%E1%BB%91m&intent=place',
+      currentPath: '/dia-diem/cong-vien-an-hoi',
+    }))
+
+    await wrapper.get('.bc-back').trigger('click')
+    expect(navigateToMock).toHaveBeenCalledWith('/tim-kiem?q=g%E1%BB%91m&intent=place')
+  })
+
   it('hides a loaded hero while a reused detail navigation is still resolving', async () => {
     stubHeroImageState({ complete: true, naturalWidth: 800, naturalHeight: 533 })
     const wrapper = await mountDetailHero({

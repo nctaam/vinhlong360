@@ -2,6 +2,7 @@ import { unref, type Ref } from 'vue'
 import { useAdaptivePriority, type AdaptiveIntent, type AdaptiveReasonCode } from './useAdaptivePriority'
 import { useAttentionBudget } from './useAttentionBudget'
 import { projectAdaptivePreferenceSignals, usePersonalizationPreferences } from './usePersonalizationPreferences'
+import { projectRecommendationExplanation } from '~/utils/recommendationExplanation'
 import type { RecommendationCard, RecommendationResponse, RecommendationSource } from '~/types/api'
 import type { ContextEnvelope } from '~/types/publicExperience'
 import { normalizeSavedImageSnapshot, type SavedImageSnapshot } from '~/utils/savedImageDescriptors'
@@ -50,15 +51,26 @@ export function useContextualRecommendations(options: ContextualRecommendationOp
   const loading = ref(false)
   const error = ref(false)
   const source = ref<RecommendationSource>('fallback')
-  const { isLoggedIn, authHeaders, fetchCsrf } = useAuth()
+  const { user, isLoggedIn, authHeaders, fetchCsrf } = useAuth()
   const preferences = usePersonalizationPreferences()
-  const suggestionBudget = useAttentionBudget({ storageNamespace: 'vl360:recommendations-attention:v1' })
-  const adaptiveSignals = computed<AdaptiveReasonCode[]>(() => projectAdaptivePreferenceSignals(preferences.snapshot.value))
+  const suggestionBudget = useAttentionBudget({
+    storageNamespace: 'vl360:recommendations-attention:v1',
+    ownerScope: () => isLoggedIn.value ? String(user.value?.id || 'authenticated') : 'guest',
+  })
+  const itemAdaptiveReasons = computed(() => items.value.map(recommendationAdaptiveReason).filter((value): value is AdaptiveReasonCode => !!value))
+  const adaptiveSignals = computed<AdaptiveReasonCode[]>(() => [...new Set([
+    ...projectAdaptivePreferenceSignals(preferences.snapshot.value),
+    ...itemAdaptiveReasons.value,
+  ])])
   const priority = computed(() => resolveContextualRecommendationPriority({
     items: items.value,
     context: optionValue<Pick<ContextEnvelope, 'network'> | undefined>(options.contextEnvelope, undefined),
-    intent: optionValue<AdaptiveIntent | undefined>(options.intent, { confidence: 'low', defaultCta: 'view' }),
-    adaptiveOrder: optionValue<Record<string, number> | undefined>(options.adaptiveOrder, undefined),
+    intent: optionValue<AdaptiveIntent | undefined>(options.intent, {
+      confidence: source.value === 'personalized' && adaptiveSignals.value.length ? 'medium' : 'low',
+      defaultCta: 'view',
+      reason: adaptiveSignals.value[0],
+    }),
+    adaptiveOrder: optionValue<Record<string, number> | undefined>(options.adaptiveOrder, recommendationAdaptiveOrder(items.value)),
     reason: optionValue<AdaptiveReasonCode | undefined>(options.adaptiveReason, adaptiveSignals.value[0]),
   }))
 
@@ -173,6 +185,25 @@ export function recommendationSuggestionId(value: unknown) {
   if (typeof value !== 'string') return ''
   const id = value.trim().toLowerCase()
   return /^[a-z0-9][a-z0-9:_-]{0,43}$/.test(id) ? `recommendation:${id}` : ''
+}
+
+function recommendationAdaptiveReason(item: RecommendationCard): AdaptiveReasonCode | undefined {
+  const projected = projectRecommendationExplanation(item.explanation || {
+    primary_reason: item.reason_vi || item.reason,
+    reasons: [item.reason_vi || item.reason].filter((value): value is string => !!value),
+  })
+  const text = projected.reasons.join(' ').toLocaleLowerCase('vi-VN')
+  if (/khu vực|gần khu vực/.test(text)) return 'selected-area'
+  if (/sở thích/.test(text)) return 'explicit-interest'
+  if (/vừa xem|đã lưu|gần đây/.test(text)) return 'recent-item'
+  if (/mùa|thời gian/.test(text)) return 'seasonal'
+  if (/chính thức|cảnh báo/.test(text)) return 'official-notice'
+  if (/mới cập nhật|nguồn mới/.test(text)) return 'fresh-source'
+  return undefined
+}
+
+function recommendationAdaptiveOrder(items: RecommendationCard[]) {
+  return Object.fromEntries(items.map((item, index) => [item.id, recommendationAdaptiveReason(item) ? index - items.length : index]))
 }
 
 export function resolveContextualRecommendationPriority<T extends { id: string }>(input: {

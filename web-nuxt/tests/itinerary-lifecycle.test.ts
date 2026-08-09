@@ -2,6 +2,7 @@ import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick, ref, watch } from 'vue'
 import PlannerPage from '../pages/tao-lich-trinh.vue'
+import { useJourneyThread } from '../composables/useJourneyThread'
 
 const mocks = vi.hoisted(() => ({
   applyPlacements: 0,
@@ -109,6 +110,7 @@ beforeEach(() => {
   mocks.runPlannerOptimization.mockReset()
   mocks.showToast.mockReset()
   localStorage.clear()
+  sessionStorage.clear()
 })
 
 describe('planner page lifecycle', () => {
@@ -540,6 +542,29 @@ describe('planner page lifecycle', () => {
     expect(effectsAtUnmount).not.toBeNull()
     expect(plannerState(vm)).toEqual(stateAtUnmount)
     expect(lifecycleEffects()).toEqual(effectsAtUnmount)
+  })
+
+  it('advances the guest Journey Thread to planning and clears it with an explicit plan reset', async () => {
+    useJourneyThread({ ownerScope: 'guest' }).snapshot({
+      intent: 'explore',
+      returnPath: '/tim-kiem?q=g%E1%BB%91m',
+      currentPath: '/dia-diem/cong-vien-an-hoi',
+    })
+    const wrapper = await mountSuspended(PlannerPage, {
+      route: '/tao-lich-trinh',
+      global: { stubs: plannerStubs() },
+    })
+    const vm = wrapper.vm as unknown as { clearPlan: () => Promise<void> }
+
+    expect(useJourneyThread({ ownerScope: 'guest' }).restore()).toEqual(expect.objectContaining({
+      intent: 'plan',
+      returnPath: '/tim-kiem?q=g%E1%BB%91m',
+      currentPath: '/tao-lich-trinh',
+    }))
+
+    await vm.clearPlan()
+    expect(useJourneyThread({ ownerScope: 'guest' }).restore()).toBeNull()
+    wrapper.unmount()
   })
 })
 

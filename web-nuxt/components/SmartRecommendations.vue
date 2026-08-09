@@ -12,7 +12,12 @@
       <div v-for="i in skeletonCount" :key="i" class="smart-rec-skel"></div>
     </div>
     <div v-else class="grid smart-rec-grid">
-      <div v-for="entity in items" :key="entity.id" class="smart-rec-item">
+      <div
+        v-for="(entity, index) in visibleItems"
+        :key="entity.id"
+        class="smart-rec-item"
+        :data-suggestion-role="index === 0 ? 'primary' : 'secondary'"
+      >
         <!-- `color-recipe` giữ từ main (hệ màu theo vùng); nhánh NP-1 rẽ trước khi có nó. -->
         <EntityCard :entity="entity" :color-recipe="colorRecipe" />
         <!--
@@ -43,11 +48,14 @@
       v-if="ff('recommendation_explanations_v1')"
       :open="whyOpen"
       :explanation="selectedExplanation"
+      :adaptive-reasons="adaptiveSignals"
       preference-href="/cai-dat#khu-vuc-de-xuat"
       @close="closeExplanation"
       @open-preferences="closeExplanation"
       @reset="resetRecommendations"
       @disable-personalization="disablePersonalization"
+      @reset-priority="resetPriority"
+      @dismiss-suggestion="dismissSelectedSuggestion"
     />
   </section>
 </template>
@@ -70,7 +78,19 @@ const props = withDefaults(defineProps<{
 })
 
 const { enabled: ff } = useFeature()
-const { items, reasons, profile, loading, source, refresh } = useContextualRecommendations({
+const {
+  items,
+  reasons,
+  profile,
+  loading,
+  source,
+  adaptiveSignals,
+  priority,
+  canShowSuggestion,
+  dismissSuggestion,
+  resetSuggestionSession,
+  refresh,
+} = useContextualRecommendations({
   context: computed(() => props.context),
   entityId: computed(() => props.entityId),
   query: computed(() => props.query),
@@ -82,8 +102,18 @@ const selectedEntityId = ref('')
 const selectedExplanation = ref<Partial<RecommendationExplanation> | null>(null)
 const drawerStatus = ref('')
 const drawerActionPending = ref(false)
+const showDefaultPriority = ref(false)
+const locallyDismissedIds = ref<string[]>([])
 
-const visible = computed(() => ff('ai_recommendations') && (loading.value || items.value.length > 0))
+const prioritizedItems = computed<RecommendationCard[]>(() => {
+  if (showDefaultPriority.value || !priority.value.reversible) return items.value
+  return priority.value.orderedBlocks as unknown as RecommendationCard[]
+})
+const visibleItems = computed(() => prioritizedItems.value
+  .filter(item => !locallyDismissedIds.value.includes(item.id))
+  .filter(item => canShowSuggestion(item.id))
+  .slice(0, 3))
+const visible = computed(() => ff('ai_recommendations') && (loading.value || visibleItems.value.length > 0))
 const skeletonCount = computed(() => Math.min(Math.max(props.limit || 4, 1), 4))
 const subtitle = computed(() => {
   if (source.value !== 'personalized') return ''
@@ -116,6 +146,24 @@ function openExplanation(entity: RecommendationCard) {
 
 function closeExplanation() {
   whyOpen.value = false
+}
+
+function resetPriority() {
+  showDefaultPriority.value = true
+  resetSuggestionSession()
+  drawerStatus.value = 'Đã chuyển sang Hiển thị mặc định.'
+  closeExplanation()
+}
+
+function dismissSelectedSuggestion() {
+  const id = selectedEntityId.value
+  if (!id || !dismissSuggestion(id)) {
+    drawerStatus.value = 'Không thể thu gọn gợi ý lúc này.'
+    return
+  }
+  locallyDismissedIds.value = [...new Set([...locallyDismissedIds.value, id])]
+  drawerStatus.value = 'Hiển thị gọn hơn: đã ẩn gợi ý này.'
+  closeExplanation()
 }
 
 async function resetRecommendations() {

@@ -628,8 +628,11 @@ onUnmounted(() => {
 })
 
 // ── Đã-đi/Muốn-đi + theo-dõi địa-điểm (Tier-1 MXH) ──
-const { isLoggedIn, authHeaders } = useAuth()
+const { user, isLoggedIn, authHeaders } = useAuth()
 const { openAuth } = useAuthModal()
+const journeyThread = useJourneyThread({
+  ownerScope: () => isLoggedIn.value ? String(user.value?.id || 'authenticated') : 'guest',
+})
 const { show: _showToast } = useToast()
 
 async function copyText(text: string, label: string) {
@@ -726,6 +729,7 @@ function trackCurrentEntity() {
 }
 
 onMounted(async () => {
+  journeyThread.pushIntent('explore', { currentPath: route.fullPath })
   await revealHeroImageAfterUpdate()
   trackCurrentEntity()
   if (!isLoggedIn.value) return
@@ -746,7 +750,7 @@ onMounted(async () => {
 
 const RELATIONSHIP_BATCH_SIZE = 24
 
-const goBack = () => goBackOr('/du-lich')
+const goBack = () => goBackOr(journeyThread.returnPath.value || '/du-lich')
 
 const { data: entity, error: fetchError, status: entityStatus, refresh: refreshEntityData } = await useAsyncData(
   computed(() => `entity-${id.value}`),

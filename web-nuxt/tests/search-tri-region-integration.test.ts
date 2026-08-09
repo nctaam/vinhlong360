@@ -36,6 +36,11 @@ vi.mock('../composables/useContextualRecommendations', async () => {
       loading: ref(false),
       error: ref(false),
       source: ref('fallback'),
+      adaptiveSignals: ref([]),
+      priority: ref({ orderedBlocks: [], suggestions: [], reasons: [], primaryCta: 'view', reversible: false, resetAction: null }),
+      canShowSuggestion: vi.fn(() => true),
+      dismissSuggestion: vi.fn(() => true),
+      resetSuggestionSession: vi.fn(),
       refresh: vi.fn(),
     }),
   }
@@ -282,6 +287,29 @@ it('submits once while preserving canonical intent, filters, area and viewport',
   expect(target.searchParams.get('viewport')).toBe('11/1624/965')
   expect(pushState).not.toHaveBeenCalled()
   pushState.mockRestore()
+})
+
+it('records the safe serialized search return path in the guest Journey Thread', async () => {
+  searchAllMock.mockResolvedValue({
+    entities: [{ id: 'craft-1', type: 'craft_village', name: 'Gốm đỏ Mang Thít' }],
+    posts: [],
+    users: [],
+    totals: { entities: 1, posts: 0, users: 0 },
+  })
+  const wrapper = await mountSuspended(SearchPage, {
+    route: '/tim-kiem?q=gốm&intent=place&area=vinh-long',
+    global: { stubs: pageStubs },
+  })
+  wrappers.push(wrapper)
+  await flushUi()
+
+  const stored = JSON.parse(sessionStorage.getItem('vl360:journey-thread:v1') || 'null')
+  expect(stored).toEqual(expect.objectContaining({
+    intent: 'explore',
+    returnPath: '/tim-kiem?intent=place&area=vinh-long&q=g%E1%BB%91m',
+    currentPath: '/tim-kiem?intent=place&area=vinh-long&q=g%E1%BB%91m',
+  }))
+  expect(JSON.stringify(stored)).not.toMatch(/10\.25|105\.97|203\.0\.113|auth|user-/i)
 })
 
 it('adds the coordinated map sibling without changing the existing search response shape', async () => {

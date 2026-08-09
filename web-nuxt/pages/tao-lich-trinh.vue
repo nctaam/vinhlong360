@@ -401,7 +401,10 @@ type OpeningHourConflict = {
 
 const { favorites: favList, count: favCount } = useFavorites()
 const { confirmDialog } = useConfirm()
-const { isLoggedIn, authHeaders } = useAuth()
+const { user, isLoggedIn, authHeaders } = useAuth()
+const journeyThread = useJourneyThread({
+  ownerScope: () => isLoggedIn.value ? String(user.value?.id || 'authenticated') : 'guest',
+})
 const routeError = ref(false)   // OSRM không tính được route (≥2 điểm có toạ độ)
 const planBusy = ref(-1)
 
@@ -916,6 +919,7 @@ async function clearPlan() {
   planTitle.value = ''
   routeResult.value = null
   optimizationMessage.value = ''
+  journeyThread.clear()
 }
 
 async function savePlan() {
@@ -1541,6 +1545,7 @@ function updatePlannerConnectivity() {
 }
 
 onMounted(async () => {
+  journeyThread.pushIntent('plan', { currentPath: route.fullPath })
   updatePlannerConnectivity()
   window.addEventListener('online', updatePlannerConnectivity)
   window.addEventListener('offline', updatePlannerConnectivity)

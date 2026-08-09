@@ -123,8 +123,9 @@ export function useAdaptivePriority() {
       ? candidates.find(candidate => candidate.kind === 'action' && candidate.cta === requestedCandidate)
       : undefined
     const actionDataValid = input.intent?.candidateValid !== false
-      && (!candidates.length || !!matchingAction)
-      && (!matchingAction || (matchingAction.valid !== false && !!String(matchingAction.cta || '').trim()))
+      && !!matchingAction
+      && matchingAction.valid !== false
+      && !!String(matchingAction.cta || '').trim()
     const ctaResult = resolvePriority({
       confidence,
       defaultCta: input.intent?.defaultCta,
@@ -138,12 +139,24 @@ export function useAdaptivePriority() {
     const reasonCodes = changed
       ? [input.intent?.reason, ...ranked.filter(candidate => candidate.reason).map(candidate => candidate.reason)]
       : []
+    const reasonLabels = uniqueReasonLabels(reasonCodes)
+
+    if (changed && !reasonLabels.length) {
+      return {
+        primaryCta: defaultCta,
+        orderedBlocks: capActionRoles(defaults.filter(candidate => candidate.kind !== 'suggestion')),
+        suggestions: defaults.filter(candidate => candidate.kind === 'suggestion').slice(0, 2).map(candidate => ({ ...candidate })),
+        reasons: [],
+        reversible: false,
+        resetAction: null,
+      }
+    }
 
     return {
       primaryCta: ctaResult.primaryCta,
       orderedBlocks,
       suggestions,
-      reasons: uniqueReasonLabels(reasonCodes),
+      reasons: reasonLabels,
       reversible: changed,
       resetAction: changed ? { id: 'show-default', label: 'Hiển thị mặc định' } as const : null,
     }

@@ -9,6 +9,7 @@ function memoryStorage() {
     getItem: (key: string) => values.get(key) ?? null,
     setItem: (key: string, value: string) => { values.set(key, value) },
     removeItem: (key: string) => { values.delete(key) },
+    entries: () => [...values.entries()],
   }
 }
 
@@ -48,5 +49,37 @@ describe('useAttentionBudget', () => {
     const reloaded = useAttentionBudget({ sessionStorage: memoryStorage(), persistentStorage: local, dismissalTtlMs: 500, now: () => now })
     expect(reloaded.canSuggest('nearby')).toBe(true)
     expect(reloaded.dismiss('query=secret&gps=10.25,105.97')).toBe(false)
+  })
+
+  it('partitions live session frequency and persistent dismissals by opaque owner scope', () => {
+    const session = memoryStorage()
+    const local = memoryStorage()
+    let owner = 'account-alpha@example.vn'
+    const budget = useAttentionBudget({
+      sessionStorage: session,
+      persistentStorage: local,
+      ownerScope: () => owner,
+      maxSuggestions: 1,
+      now: () => 4_000,
+    })
+
+    expect(budget.canSuggest('nearby')).toBe(true)
+    expect(budget.canSuggest('seasonal')).toBe(false)
+    expect(budget.dismiss('nearby')).toBe(true)
+
+    owner = 'account-beta@example.vn'
+    expect(budget.canSuggest('nearby')).toBe(true)
+    expect(budget.canSuggest('seasonal')).toBe(false)
+
+    owner = 'guest'
+    expect(budget.canSuggest('nearby')).toBe(true)
+
+    owner = 'account-alpha@example.vn'
+    budget.resetSession()
+    expect(budget.canSuggest('nearby')).toBe(false)
+
+    const serializedStorage = JSON.stringify([...session.entries(), ...local.entries()])
+    expect(serializedStorage).not.toContain('account-alpha@example.vn')
+    expect(serializedStorage).not.toContain('account-beta@example.vn')
   })
 })

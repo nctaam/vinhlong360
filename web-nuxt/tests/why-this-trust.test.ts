@@ -72,12 +72,12 @@ async function flushUi() {
   await nextTick()
 }
 
-async function mountSmart(loggedIn: boolean) {
+async function mountSmart(loggedIn: boolean, limit = 1) {
   const Harness = defineComponent({
     setup() {
       const { user } = useAuth()
       user.value = loggedIn ? { id: `recommendation-user-${userSequence}` } : null
-      return () => h(SmartRecommendations, { context: 'home', limit: 1 })
+      return () => h(SmartRecommendations, { context: 'home', limit })
     },
   })
   return await mountSuspended(Harness, { attachTo: document.body })
@@ -138,6 +138,8 @@ beforeEach(() => {
   })
   vi.stubGlobal('$fetch', pageFetchMock)
   window.history.replaceState(null, '', '/')
+  localStorage.clear()
+  sessionStorage.clear()
 })
 
 afterEach(() => {
@@ -419,6 +421,70 @@ describe('WhyThisDrawer contract', () => {
 })
 
 describe('recommendation and detail integration', () => {
+  it('caps visible recommendations, exposes adaptive controls, and persists owner-scoped dismissal', async () => {
+    const cards = Array.from({ length: 4 }, (_, index) => recommendationFixture({
+      id: `entity-rec-${index + 1}`,
+      name: `Điểm ghé ${index + 1}`,
+      explanation: index === 1
+        ? {
+            primary_reason: 'Cùng khu vực bạn quan tâm',
+            reasons: ['Cùng khu vực bạn quan tâm'],
+            region_label: 'Vĩnh Long',
+          }
+        : {
+            primary_reason: 'Được cộng đồng quan tâm',
+            reasons: ['Được cộng đồng quan tâm'],
+          },
+    }))
+    apiFetchMock.mockImplementation((url: string) => {
+      if (url.startsWith('/api/me/recommendations/contextual?')) {
+        return Promise.resolve({ items: cards, reasons: {}, profile: { signal_count: 3 } })
+      }
+      if (url === '/api/me/preferences') return Promise.resolve(preferenceSnapshot({ location_enabled: true }))
+      return Promise.resolve({ entities: [] })
+    })
+
+    let wrapper = await mountSmart(true, 6)
+    wrappers.push(wrapper)
+    await vi.waitFor(() => expect(wrapper.findAll('.smart-rec-item')).toHaveLength(3))
+    expect(wrapper.findAll('[data-suggestion-role="primary"]')).toHaveLength(1)
+    expect(wrapper.findAll('[data-suggestion-role="secondary"]').length).toBeLessThanOrEqual(2)
+    expect(wrapper.findAll('.smart-rec-item')[0]?.text()).toContain('Điểm ghé 2')
+
+    await wrapper.find('[data-action="why-this"]').trigger('click')
+    await flushUi()
+    let dialog = document.body.querySelector('[role="dialog"][data-why-this]') as HTMLElement
+    expect(dialog.textContent).toContain('Gần khu vực đã chọn')
+    expect(dialog.querySelector('[data-action="reset-priority"]')).toBeTruthy()
+    expect(dialog.querySelector('[data-action="dismiss-suggestion"]')).toBeTruthy()
+
+    ;(dialog.querySelector('[data-action="dismiss-suggestion"]') as HTMLButtonElement).click()
+    await flushUi()
+    expect(wrapper.findAll('.smart-rec-item')).toHaveLength(2)
+    expect(wrapper.get('[role="status"]').text()).toContain('Hiển thị gọn hơn')
+    wrapper.unmount()
+    wrappers.pop()
+
+    wrapper = await mountSmart(true, 6)
+    wrappers.push(wrapper)
+    await vi.waitFor(() => expect(wrapper.findAll('.smart-rec-item')).toHaveLength(2))
+
+    wrapper.unmount()
+    wrappers.pop()
+    userSequence += 1
+    wrapper = await mountSmart(true, 6)
+    wrappers.push(wrapper)
+    await vi.waitFor(() => expect(wrapper.findAll('.smart-rec-item')).toHaveLength(3))
+
+    ;(wrapper.find('[data-action="why-this"]').element as HTMLButtonElement).click()
+    await flushUi()
+    dialog = document.body.querySelector('[role="dialog"][data-why-this]') as HTMLElement
+    ;(dialog.querySelector('[data-action="reset-priority"]') as HTMLButtonElement).click()
+    await flushUi()
+    expect(wrapper.get('[role="status"]').text()).toContain('Hiển thị mặc định')
+    expect(wrapper.findAll('.smart-rec-item')[0]?.text()).toContain('Điểm ghé 1')
+  })
+
   it('opens WhyThis from a reason_vi-only personalized recommendation', async () => {
     const wrapper = await mountSmartRecommendations({
       source: 'personalized',

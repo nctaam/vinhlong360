@@ -70,6 +70,40 @@ describe('adaptive priority', () => {
     expect(valid.reasons).toContain('Liên quan tác vụ bạn đang tiếp tục')
   })
 
+  it('preserves the default CTA when high confidence has no action candidates', () => {
+    const result = useAdaptivePriority().resolve({
+      context: { network: 'online' },
+      intent: {
+        confidence: 'high',
+        defaultCta: 'view',
+        candidateCta: 'directions',
+        reason: 'unfinished-task',
+      },
+      candidates: [],
+    })
+
+    expect(result.primaryCta).toBe('view')
+    expect(result.reversible).toBe(false)
+    expect(result.reasons).toEqual([])
+  })
+
+  it('collapses an unexplained non-default order back to exact defaults', () => {
+    const result = useAdaptivePriority().resolve({
+      context: { network: 'online' },
+      intent: { confidence: 'medium', defaultCta: 'view' },
+      candidates: [
+        { id: 'default-first', kind: 'metadata', defaultOrder: 0, adaptiveRank: 2 },
+        { id: 'adaptive-first', kind: 'metadata', defaultOrder: 1, adaptiveRank: 1 },
+      ],
+    })
+
+    expect(result.primaryCta).toBe('view')
+    expect(result.orderedBlocks.map(item => item.id)).toEqual(['default-first', 'adaptive-first'])
+    expect(result.reversible).toBe(false)
+    expect(result.reasons).toEqual([])
+    expect(result.resetAction).toBeNull()
+  })
+
   it('projects only broad, opted-in preference signals', () => {
     expect(projectAdaptivePreferenceSignals({
       personalization_enabled: true,
