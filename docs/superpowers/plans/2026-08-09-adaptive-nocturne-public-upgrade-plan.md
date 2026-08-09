@@ -71,7 +71,7 @@ Expected: FAIL because the new types/composables and serializers do not exist.
 
 Implement `SurfaceState<T>` transitions with explicit `loading`, `ready`, `partial`, `stale`, `empty`, `error` and `offline` constructors. `usePublicContextEnvelope()` must default to `location.mode = 'unavailable'`, use the persisted region preference only as `selected`, and expose `explainableSignals` without raw coordinates.
 
-Implement URL parsing with a whitelist of query/intent/filter/area/viewport keys, bounded string lengths and deterministic defaults. Reject malformed values instead of throwing during SSR.
+Implement URL parsing with a whitelist of query/intent/filter/area/viewport keys, bounded string lengths and deterministic defaults. Serialize viewport only as a rounded map tile key (`z/x/y`) or selected area key; never serialize raw coordinate pairs. Reject malformed values instead of throwing during SSR.
 
 - [ ] **Step 4: Run focused tests and typecheck**
 
