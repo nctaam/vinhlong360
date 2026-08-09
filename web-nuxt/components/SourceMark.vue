@@ -5,6 +5,7 @@
     data-color-role="trust"
     :data-source-tier="tier"
     :class="{ 'source-mark--compact': compact }"
+    :aria-label="meta.ariaLabel"
   >
     <IconLine :name="meta.icon" aria-hidden="true" />
     <span>{{ meta.label }}</span>
@@ -22,10 +23,10 @@ const props = withDefaults(defineProps<{
 })
 
 const SOURCE_META = Object.freeze({
-  official: { label: 'Chính thức', icon: 'shield' },
-  verified: { label: 'Đã xác minh', icon: 'check' },
-  community: { label: 'Cộng đồng', icon: 'user' },
-  unknown: { label: 'Chưa rõ nguồn', icon: 'info' },
+  official: { label: 'Chính thức', icon: 'shield', ariaLabel: 'Nguồn chính thức' },
+  verified: { label: 'Có nguồn đối tác', icon: 'check', ariaLabel: 'Nguồn đối tác' },
+  community: { label: 'Cộng đồng', icon: 'user', ariaLabel: 'Nguồn cộng đồng' },
+  unknown: { label: 'Chưa rõ nguồn', icon: 'info', ariaLabel: 'Nguồn chưa rõ' },
 } as const)
 
 const meta = computed(() => SOURCE_META[props.tier])

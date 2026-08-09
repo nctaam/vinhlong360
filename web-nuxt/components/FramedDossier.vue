@@ -3,6 +3,7 @@
     class="framed-dossier"
     :class="{ 'framed-dossier--with-media': hasMedia }"
     data-framed-dossier
+    :data-density="density"
   >
     <figure v-if="hasMedia" class="framed-dossier__media" data-dossier-media>
       <img :src="mediaSrc" :alt="mediaAlt || ''">
@@ -24,7 +25,7 @@
       <div v-if="$slots.meta" class="framed-dossier__meta">
         <slot name="meta" />
       </div>
-      <div v-if="$slots.action" class="framed-dossier__action">
+      <div v-if="$slots.action" class="framed-dossier__action" data-dossier-action>
         <slot name="action" />
       </div>
     </div>
@@ -39,6 +40,7 @@ type Props = {
   mediaSrc?: string
   mediaAlt?: string
   mediaDisclosure?: string
+  density?: 'comfortable' | 'compact'
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -47,6 +49,7 @@ const props = withDefaults(defineProps<Props>(), {
   mediaSrc: undefined,
   mediaAlt: '',
   mediaDisclosure: undefined,
+  density: 'comfortable',
 })
 
 const hasMedia = computed(() => Boolean(props.mediaSrc?.trim()))

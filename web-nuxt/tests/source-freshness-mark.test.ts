@@ -12,7 +12,7 @@ afterEach(() => {
 describe('source and freshness primitives', () => {
   it.each([
     ['official', 'Chính thức', 'shield'],
-    ['verified', 'Đã xác minh', 'check'],
+    ['verified', 'Có nguồn đối tác', 'check'],
     ['community', 'Cộng đồng', 'user'],
     ['unknown', 'Chưa rõ nguồn', 'info'],
   ] as const)('shows icon and visible label for %s', async (tier, label, icon) => {
@@ -55,5 +55,18 @@ describe('source and freshness primitives', () => {
     expect(wrapper.text()).toContain('Có thể đã cũ')
     expect(wrapper.text()).toContain('12/07/2026')
     expect(wrapper.find('[data-source-mark]').exists()).toBe(false)
+  })
+
+  it('makes conflicting freshness evidence explicit', async () => {
+    const wrapper = await mountSuspended(FreshnessLine, {
+      props: { status: 'conflict', updatedLabel: '' },
+      global: { stubs: { IconLine: { props: ['name'], template: '<i :data-icon="name" />' } } },
+    })
+    wrappers.push(wrapper)
+
+    const line = wrapper.get('[data-freshness-line]')
+    expect(line.text()).toContain('Thông tin có mâu thuẫn')
+    expect(line.attributes('aria-label')).toContain('Thông tin có mâu thuẫn')
+    expect(line.get('[data-icon="alert-triangle"]')).toBeTruthy()
   })
 })

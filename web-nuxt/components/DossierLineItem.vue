@@ -5,7 +5,7 @@
     data-dossier-line="true"
     role="listitem"
   >
-    <span class="dossier-line-item__label">{{ label }}</span>
+    <span class="dossier-line-item__label" data-dossier-line-label>{{ label }}</span>
     <NuxtLink
       v-if="href"
       class="dossier-line-item__value"

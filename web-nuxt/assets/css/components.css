@@ -1,3 +1,119 @@
+.action-dock {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-surface);
+  background: var(--color-surface-raised);
+}
+
+.action-dock__primary,
+.action-dock__secondary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.action-dock__primary > :is(a, button) {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.why-this-control {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.why-this-control__trigger,
+.why-this-control__reset,
+.page-state__action {
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--color-action-border);
+  border-radius: var(--radius-control);
+  background: var(--color-action-surface);
+  color: var(--color-action);
+  font: inherit;
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.why-this-control__trigger {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+  justify-content: center;
+  padding-inline: var(--space-3);
+}
+
+.why-this-control__content {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-inline-start: 2px solid var(--color-border);
+  background: var(--color-surface-subtle);
+  color: var(--color-text);
+}
+
+.why-this-control__reason,
+.why-this-control__signals {
+  margin: 0;
+}
+
+.why-this-control__signals {
+  display: grid;
+  gap: var(--space-1);
+  padding-inline-start: var(--space-5);
+  color: var(--color-text-muted);
+}
+
+.page-state {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-surface);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.page-state__notice {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  color: var(--color-text-muted);
+}
+
+.page-state__title,
+.page-state__copy {
+  margin: 0;
+}
+
+.page-state__title {
+  color: var(--color-text);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+}
+
+.page-state__available {
+  min-width: 0;
+}
+
+.page-state__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.why-this-control :is(button, a):focus-visible,
+.page-state :is(button, a):focus-visible,
+.action-dock :is(button, a):focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
 /* ── Buttons (Apple HIG) ── */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
