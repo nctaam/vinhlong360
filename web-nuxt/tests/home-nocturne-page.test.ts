@@ -119,9 +119,9 @@ function contrast(foreground: Rgba, background: Rgba) {
 
 describe('homepage Existing Screen Evolution B1', () => {
   it.each([
-    { theme: 'light', canvas: [249, 247, 241, 1] as Rgba },
-    { theme: 'dark', canvas: [7, 18, 16, 1] as Rgba },
-  ])('renders the real hero subtitle with an accessible on-media plate in $theme', async ({ theme, canvas }) => {
+    { theme: 'light', canvas: [249, 247, 241, 1] as Rgba, text: [8, 26, 22, 1] as Rgba, muted: [65, 84, 80, 1] as Rgba, brand: [149, 64, 43, 1] as Rgba, action: [3, 90, 105, 1] as Rgba },
+    { theme: 'dark', canvas: [7, 18, 16, 1] as Rgba, text: [237, 235, 229, 1] as Rgba, muted: [164, 177, 174, 1] as Rgba, brand: [199, 133, 117, 1] as Rgba, action: [125, 174, 186, 1] as Rgba },
+  ])('renders the useful hero copy directly on the semantic canvas in $theme', async ({ theme, canvas, text, muted, brand, action }) => {
     document.documentElement.classList.add(theme)
     stylesheets.push(await installActualHomepageStyles({ srgbFallback: true }))
     apiFetchMock.mockImplementation((url: unknown) => {
@@ -140,19 +140,22 @@ describe('homepage Existing Screen Evolution B1', () => {
     await flushUi()
 
     const root = wrapper.get<HTMLElement>('[data-home-pilot="nocturne-b1"]')
+    const title = wrapper.get<HTMLElement>('.hero-main h1')
+    const kicker = wrapper.get<HTMLElement>('.hero-kicker')
     const subtitle = wrapper.get<HTMLElement>('.hero-sub')
+    const nearby = wrapper.get<HTMLElement>('.hero-nearby')
     const rootBackground = rgba(getComputedStyle(root.element).backgroundColor)
     const subtitleStyle = getComputedStyle(subtitle.element)
-    const subtitleText = rgba(subtitleStyle.color)
-    const subtitlePlate = rgba(subtitleStyle.backgroundColor)
-    const renderedPlate = composite(subtitlePlate, rootBackground)
 
     expect(subtitle.text()).toContain('Tìm điểm đến')
     expect(rootBackground).toEqual(canvas)
-    expect(subtitleText).toEqual([253, 252, 249, 1])
-    expect(subtitlePlate.slice(0, 3)).toEqual([0, 0, 0])
-    expect(subtitlePlate[3]).toBeGreaterThanOrEqual(.72)
-    expect(contrast(subtitleText, renderedPlate)).toBeGreaterThanOrEqual(4.5)
+    expect(rgba(getComputedStyle(title.element).color)).toEqual(text)
+    expect(rgba(getComputedStyle(kicker.element).color)).toEqual(brand)
+    expect(rgba(subtitleStyle.color)).toEqual(muted)
+    expect(rgba(getComputedStyle(nearby.element).color)).toEqual(action)
+    expect(subtitleStyle.backgroundColor === '' || subtitleStyle.backgroundColor === 'transparent').toBe(true)
+    expect(contrast(muted, rootBackground)).toBeGreaterThanOrEqual(4.5)
+    expect(wrapper.get('.hero-main').element.compareDocumentPosition(wrapper.get('[data-home-feature-media]').element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
   it.each([
@@ -194,7 +197,7 @@ describe('homepage Existing Screen Evolution B1', () => {
     expect(rootBackground).toEqual(canvas)
     expect(eventBackground[3]).toBe(0)
     expect(rgba(todayStyle.color)).toEqual(text)
-    expect(todayStyle.boxShadow).toContain(error)
+    expect(todayStyle.borderTopColor).toBe(error)
   })
 
   it('renders the homepage recipe with River action, Clay context and visible source tier', async () => {
@@ -221,7 +224,7 @@ describe('homepage Existing Screen Evolution B1', () => {
     expect(wrapper.get('[data-home-search]').attributes('data-color-role')).toBe('action-primary')
     expect(wrapper.get('[data-source-mark]').text()).toContain('Chính thức')
     expect(wrapper.get('[data-source-mark]').attributes('data-source-tier')).toBe('official')
-    expect(wrapper.get('[data-home-section="events-seasonal"]').attributes('data-material-accent')).toBe('amber')
+    expect(wrapper.get('[data-home-section="signals"] section[data-material-accent="amber"]')).toBeTruthy()
     expect(wrapper.get('.ec-countdown').attributes('data-material-accent')).toBe('amber')
     expect(wrapper.get('[data-home-section="community"]').attributes('data-material-accent')).toBe('neutral')
   })
@@ -245,7 +248,7 @@ describe('homepage Existing Screen Evolution B1', () => {
     expect(wrapper.text()).not.toContain('Đã xác minh')
   })
 
-  it('renders the category editorial fallback with disclosure when spotlight descriptors are empty', async () => {
+  it('preserves the sole dossier geometry and disclosure when its media is unavailable', async () => {
     const fixture = homeFixture()
     fixture.experiences = [Object.assign(fixture.experiences[0]!, {
       images: [],
@@ -267,16 +270,14 @@ describe('homepage Existing Screen Evolution B1', () => {
     wrappers.push(wrapper)
     await flushUi()
 
-    const spotlight = wrapper.get('.spotlight')
-    const visual = spotlight.get('.spot-visual')
+    const dossier = wrapper.get('[data-home-feature-dossier]')
+    const visual = dossier.get('[data-home-feature-media]')
     const disclosure = visual.get('[data-full-disclosure]')
-    expect(spotlight.text()).toContain('Vườn ven sông')
-    expect(visual.attributes('aria-label')).toBe('Vườn ven sông — Ảnh minh họa danh mục Trải nghiệm — Vườn ven sông chưa có ảnh riêng')
-    expect(visual.attributes('role')).toBeUndefined()
-    expect(visual.attributes('style')).toContain('/img/cat-du-lich.webp')
-    expect(visual.get('[data-short-label]').text()).toBe('Minh họa AI')
-    expect(disclosure.text()).toBe('Ảnh minh họa do AI dựng — không phải ảnh chụp tại chỗ.')
-    expect(visual.attributes('aria-describedby')).toBe(disclosure.attributes('id'))
+    expect(dossier.text()).toContain('Vườn ven sông')
+    expect(visual.classes()).toContain('home-feature-dossier__media--empty')
+    expect(visual.find('img').exists()).toBe(false)
+    expect(visual.find('[data-short-label]').exists()).toBe(false)
+    expect(disclosure.text()).toBe('Minh họa đồ họa — chưa có ảnh riêng cho địa điểm.')
   })
 
   it('renders the controlled top zone and removes decision items from following collections', async () => {
@@ -314,11 +315,11 @@ describe('homepage Existing Screen Evolution B1', () => {
     expect(wrapper.find('.dx-num').exists()).toBe(false)
     expect(wrapper.text()).not.toContain('Đã xác minh')
     expect(wrapper.text()).not.toContain('Nguồn:')
-    const temporal = wrapper.get('[data-home-section="events-seasonal"]')
+    const temporal = wrapper.get('[data-home-section="signals"]')
     expect(temporal.text()).toContain('Đêm đờn ca')
     expect(temporal.text()).not.toContain('Lễ hội sông nước')
-    expect(wrapper.findAll('[data-entity-card]').map(card => card.text())).toEqual(['Bưởi Năm Roi'])
-    expect(wrapper.text()).toContain('Bánh xèo hến')
+    expect(wrapper.findAll('.home-season-row').map(row => row.text())).toEqual(['Bưởi Năm RoiXem theo mùa'])
+    expect(wrapper.text()).not.toContain('Bánh xèo hến')
   })
 
   it('keeps navigation and retry available when the homepage request fails', async () => {
@@ -441,9 +442,11 @@ describe('homepage Existing Screen Evolution B1', () => {
     wrappers.push(wrapper)
     await flushUi()
 
-    expect(wrapper.get('[data-existing-entity-feature]')).toBeTruthy()
-    expect(wrapper.get('[data-existing-story-spread]')).toBeTruthy()
-    expect(wrapper.get('[data-home-section="spotlight-food"]')).toBeTruthy()
+    expect(wrapper.find('[data-existing-entity-feature]').exists()).toBe(false)
+    expect(wrapper.find('[data-existing-story-spread]').exists()).toBe(false)
+    expect(wrapper.findAll('[data-media-led-feature]')).toHaveLength(1)
+    expect(wrapper.get('[data-home-section="signals"]')).toBeTruthy()
+    expect(wrapper.get('[data-home-section="journey-continuation"]')).toBeTruthy()
     expect(wrapper.get('[data-home-section="community"] a[href="/cong-dong"]')).toBeTruthy()
     expect(wrapper.find('[data-home-section="for-you"]').exists()).toBe(false)
   })
@@ -466,13 +469,11 @@ describe('homepage Existing Screen Evolution B1', () => {
     await flushUi()
 
     const stableSections = new Set([
-      'hero',
-      'decisions',
-      'categories',
-      'events-seasonal',
-      'editorial-feature',
-      'spotlight-food',
-      'story-spread',
+      'context',
+      'editorial-lead',
+      'quick-decisions',
+      'signals',
+      'journey-continuation',
     ])
     const sectionOrder = () => wrapper
       .findAll('[data-home-section]')
@@ -484,13 +485,11 @@ describe('homepage Existing Screen Evolution B1', () => {
     await nextTick()
     expect(sectionOrder()).toEqual(nocturneOrder)
     expect(nocturneOrder).toEqual([
-      'hero',
-      'decisions',
-      'categories',
-      'events-seasonal',
-      'editorial-feature',
-      'spotlight-food',
-      'story-spread',
+      'context',
+      'editorial-lead',
+      'quick-decisions',
+      'signals',
+      'journey-continuation',
     ])
   })
 
@@ -515,11 +514,13 @@ describe('homepage Existing Screen Evolution B1', () => {
     wrappers.push(wrapper)
     await flushUi()
 
-    const foodLedger = wrapper.get('[data-home-section="spotlight-food"]')
-    expect(foodLedger.text()).toContain('Bánh xèo hến')
-    expect(foodLedger.find('.dish-rating-badge').exists()).toBe(false)
-    expect(foodLedger.text()).not.toContain('Mới')
-    expect(foodLedger.text()).not.toContain('0 đánh giá')
+    const foodDecision = wrapper.get('[data-home-decision-entry] [data-tone="food"]')
+    expect(foodDecision.text()).toContain('Cá tai tượng chiên xù')
+    expect(foodDecision.text()).toContain('4.8 điểm')
+    expect(wrapper.text()).not.toContain('Bánh xèo hến')
+    expect(wrapper.find('.dish-rating-badge').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('Mới')
+    expect(wrapper.text()).not.toContain('0 đánh giá')
   })
 
   it('uses Vietnamese language for community trend context', async () => {

@@ -14,6 +14,7 @@
     class="home-local-briefing"
     :data-material-accent="accent"
     :data-weather-status="reading.status"
+    data-home-signal
     aria-labelledby="home-local-briefing-title"
   >
     <h2 id="home-local-briefing-title" class="home-local-briefing__title">
@@ -32,13 +33,24 @@
           <IconLine name="wind" aria-hidden="true" /> Gió {{ windLabel }}
         </span>
       </p>
-      <p class="home-local-briefing__source">{{ sourceLine }}</p>
+      <div class="home-local-briefing__evidence">
+        <p class="home-local-briefing__source" data-signal-source>{{ sourceLine }}</p>
+        <FreshnessLine :status="freshnessStatus" :updated-label="freshnessLabel" />
+      </div>
     </template>
 
-    <p v-else class="home-local-briefing__estimate">
-      Ước theo mùa, chưa nối được dịch vụ đo. Số duy nhất đang có là giá trị mặc định theo
-      tháng chứ không phải số đo thực tế, nên tụi mình không hiện nhiệt độ ở đây.
-    </p>
+    <template v-else>
+      <p class="home-local-briefing__estimate">
+        Ước theo mùa, chưa nối được dịch vụ đo. Số duy nhất đang có là giá trị mặc định theo
+        tháng chứ không phải số đo thực tế, nên tụi mình không hiện nhiệt độ ở đây.
+      </p>
+      <div class="home-local-briefing__evidence">
+        <p class="home-local-briefing__source" data-signal-source>
+          Nguồn: lịch mùa vụ theo tháng · chưa có số đo trực tiếp
+        </p>
+        <FreshnessLine status="unknown" updated-label="" />
+      </div>
+    </template>
 
     <NuxtLink class="home-local-briefing__link" :to="seasonLink">
       Lịch mùa vụ tháng {{ currentMonth }} →
@@ -117,6 +129,23 @@ const sourceLine = computed(() => {
   return parts.join(' · ')
 })
 
+const freshnessStatus = computed<'fresh' | 'aging' | 'stale' | 'unknown'>(() => {
+  const observedAt = reading.value.observedAt
+  if (!observedAt) return 'unknown'
+  const ageMs = Date.now() - observedAt.getTime()
+  if (!Number.isFinite(ageMs) || ageMs < 0) return 'unknown'
+  if (ageMs <= 3 * 60 * 60 * 1000) return 'fresh'
+  if (ageMs <= 12 * 60 * 60 * 1000) return 'aging'
+  return 'stale'
+})
+
+const freshnessLabel = computed(() => {
+  const observedAt = reading.value.observedAt
+  if (!observedAt) return ''
+  const clock = vnClock(observedAt)
+  return clock ? `Nhận dữ liệu lúc ${clock}` : ''
+})
+
 /**
  * Tháng hiện tại đọc ở client. An toàn với hydration vì cả khối chỉ xuất hiện SAU khi
  * fetch client-side xong (useWeather dùng `server: false`) — SSR không render nhánh này.
@@ -191,6 +220,14 @@ const seasonLink = computed(() => `/theo-mua?mua=${currentMonth.value}`)
   margin: 0;
   color: var(--color-text-muted);
   font-size: var(--text-xs);
+}
+
+.home-local-briefing__evidence {
+  display: flex;
+  flex: 1 1 20rem;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
 }
 
 .home-local-briefing__estimate {

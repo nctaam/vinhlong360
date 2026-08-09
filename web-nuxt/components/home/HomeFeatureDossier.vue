@@ -1,5 +1,9 @@
 <template>
-  <aside class="home-feature-dossier" data-home-feature-dossier>
+  <aside
+    class="home-feature-dossier"
+    data-home-feature-dossier
+    data-media-led-feature="editorial-lead"
+  >
     <NuxtLink
       v-if="descriptor.url"
       :to="detailTo"

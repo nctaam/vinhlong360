@@ -179,10 +179,10 @@
     },
     {
       "file": "pages/index.vue",
-      "surface": "home-hero",
-      "access_path": "entity.images",
+      "surface": "home-feature-dossier",
+      "access_path": "entity.images|entity.image|entity.image_descriptor|entity.image_descriptors",
       "source_class": "ai-generated",
-      "descriptor_producer": "describeEntityImages",
+      "descriptor_producer": "HomeFeatureDossier",
       "render_policy": "render",
       "presentation": "short",
       "accessibility": "aria-describedby-full-copy",
@@ -190,21 +190,10 @@
     },
     {
       "file": "pages/index.vue",
-      "surface": "home-hero",
-      "access_path": "entity.images",
+      "surface": "home-feature-dossier",
+      "access_path": "entity.images|entity.image|entity.image_descriptor|entity.image_descriptors",
       "source_class": "placeholder",
-      "descriptor_producer": "describeEntityPlaceholder",
-      "render_policy": "render",
-      "presentation": "short",
-      "accessibility": "aria-describedby-full-copy",
-      "test_file": "tests/entity-card-disclosure.test.ts"
-    },
-    {
-      "file": "pages/index.vue",
-      "surface": "home-spotlight",
-      "access_path": "entity.images",
-      "source_class": "ai-generated",
-      "descriptor_producer": "describeEntityImages",
+      "descriptor_producer": "HomeFeatureDossier",
       "render_policy": "render",
       "presentation": "short",
       "accessibility": "aria-describedby-full-copy",
@@ -244,17 +233,6 @@
       "test_file": "tests/entity-card-disclosure.test.ts"
     },
     {
-      "file": "pages/index.vue",
-      "surface": "home-entity-card-consumer",
-      "access_path": "entity.images",
-      "source_class": "ai-generated",
-      "descriptor_producer": "EntityCard",
-      "render_policy": "render",
-      "presentation": "short",
-      "accessibility": "aria-describedby-full-copy",
-      "test_file": "tests/entity-card-disclosure.test.ts"
-    },
-    {
       "file": "pages/dia-diem/index.vue",
       "surface": "listing-entity-card-consumer",
       "access_path": "entity.images",
@@ -268,7 +246,7 @@
     {
       "file": "pages/du-lich.vue",
       "surface": "tourism-entity-card-consumer",
-      "access_path": "entity.images",
+      "access_path": "entity.images|entity.image_urls|entity.image",
       "source_class": "ai-generated",
       "descriptor_producer": "EntityCard",
       "render_policy": "render",

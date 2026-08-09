@@ -6,10 +6,17 @@
     data-page-recipe="homepage"
     data-material-accent="clay"
   >
-    <!-- 1. Hero — dynamic tagline + search + stats inline -->
-    <section class="hero" aria-label="Giới thiệu" data-home-section="hero">
-      <HeroIllustration />
-      <div class="hero-scrim" aria-hidden="true"></div>
+    <section class="home-context-line" data-home-section="context" aria-label="Ngữ cảnh khám phá">
+      <div>
+        <span class="home-context-line__label">Khu vực khám phá</span>
+        <strong>Vĩnh Long</strong>
+        <span>Dữ liệu theo khu vực bạn đang chọn</span>
+      </div>
+      <NuxtLink to="/ban-do" class="home-context-line__action">Đổi khu vực</NuxtLink>
+    </section>
+
+    <!-- One editorial thesis: useful action first, one disclosed media dossier second. -->
+    <section class="hero" aria-label="Giới thiệu" data-home-section="editorial-lead">
       <div class="hero-inner">
         <div class="hero-main hero-enter">
           <span class="hero-kicker" data-color-role="brand"><span class="hero-kicker-dot" aria-hidden="true"></span>{{ ss('homepage.hero_kicker', 'Du lịch & Đặc sản Vĩnh Long') }}</span>
@@ -38,26 +45,13 @@
       </div>
     </section>
 
-    <!-- 1a-pre. Bản tin địa phương — lớp utility "giờ này đang thế nào", giữa hero (đây là
-         đâu) và decision ledger (vậy làm gì). Tự ẩn khi chưa có dữ liệu đo. -->
-    <HomeLocalBriefing data-home-section="briefing" />
-
-    <!-- 1a. Bắt đầu hành trình — data-driven decision layer -->
-    <HomeDecisionLedger :entries="homePresentation.decisionEntries" data-home-section="decisions" />
-
-    <!-- ClientOnly: homeJourneyActions is personalized from client-only state (localStorage
-         favorites/recently-viewed + isLoggedIn) → SSR (anon/empty) ≠ client → hydration
-         mismatch that swapped nodes and broke the scroll-reveal observer. Client-only removes it. -->
-    <ClientOnly>
-      <JourneyActionRail
-        v-if="!homePending && homeJourneyActions.length"
-        :actions="homeJourneyActions"
-        title="Tiếp tục hành trình của bạn"
-        subtitle="Từ những gì bạn đã lưu và vừa xem."
-        aria-label="Gợi ý hành trình trên trang chủ"
-        compact
+    <div class="home-quick-decisions" data-home-section="quick-decisions">
+      <HomeDecisionLedger :entries="homePresentation.decisionEntries" />
+      <HomeCategoryIndex
+        v-if="!homePending"
+        :groups="homePresentation.categoryGroups"
       />
-    </ClientOnly>
+    </div>
 
     <!-- Degraded/empty fallback -->
     <section v-if="homeFailed" class="block reveal" data-home-section="recovery">
@@ -74,128 +68,64 @@
       <SkeletonGrid :count="3" />
     </section>
 
-    <!-- 1b. Khám phá nhanh — compact category grid (always visible for navigation) -->
-    <HomeCategoryIndex
-      v-if="!homePending"
-      :groups="homePresentation.categoryGroups"
-      data-home-section="categories"
-    />
+    <div class="home-signals" data-home-section="signals">
+      <HomeLocalBriefing />
 
-    <!-- 2. "Đang diễn ra" — upcoming events + seasonal -->
-    <section v-if="upcomingEventList.length || seasonalList.length" class="block reveal" aria-label="Sự kiện và lễ hội" data-home-section="events-seasonal" data-material-accent="amber">
-      <div class="section-head">
-        <div class="sh-text">
-          <h2>Đang <em class="ac-amber">diễn ra</em></h2>
-          <p class="sh-sub">Sự kiện &amp; lễ hội sắp tới</p>
-        </div>
-        <NuxtLink class="see-all" to="/su-kien">Xem lịch →</NuxtLink>
-      </div>
-
-      <!-- declutter-3 T16 (B1-2): event-hero đã bỏ — event #1 sống ở decision card
-           "Có lịch gần nhất"; 3 mini giữ nhịp lịch, không lặp -->
-      <div v-if="upcomingEventList.length" class="happening-rest">
-        <NuxtLink v-for="ev in upcomingEventList" :key="ev.id" :to="entityPath(ev.id)" class="event-mini">
-          <div class="ec-date ec-date-sm" data-material-accent="amber">
-            <span class="ec-day">{{ formatEventDay(ev) }}</span>
-            <span class="ec-month">{{ formatEventMonth(ev) }}</span>
+      <section v-if="upcomingEventList.length || seasonalList.length" class="block reveal" aria-label="Tín hiệu địa phương" data-material-accent="amber">
+        <div class="section-head">
+          <div class="sh-text">
+            <h2>Tín hiệu địa phương</h2>
+            <p class="sh-sub">Lịch đang tới và mùa vụ đang có dữ liệu.</p>
           </div>
-          <div class="ec-info">
-            <h3>{{ ev.name }}</h3>
-            <span v-if="ev.days_until != null" class="ec-countdown" data-material-accent="amber" :class="{ 'ec-today': ev.days_until === 0 }">
-              {{ ev.days_until === 0 ? 'Hôm nay!' : ev.days_until === 1 ? 'Ngày mai' : `Còn ${ev.days_until} ngày` }}
-            </span>
-          </div>
-        </NuxtLink>
-      </div>
-
-      <div v-if="seasonalList.length" class="happening-section">
-        <p class="happening-label" data-material-accent="amber"><IconLine name="flame" /> Đang vào mùa tháng {{ currentMonth }}</p>
-        <div class="scroll-row" role="region" aria-label="Đặc sản theo mùa" tabindex="0">
-          <EntityCard v-for="e in seasonalList" :key="e.id" :entity="e" :season-filter="String(currentMonth)" />
+          <NuxtLink class="see-all" to="/su-kien">Xem lịch</NuxtLink>
         </div>
-      </div>
-    </section>
 
-    <!-- 2b. Feature — photo-led editorial block (Trải nghiệm miệt vườn) -->
-    <section class="block reveal" aria-label="Trải nghiệm nổi bật" data-home-section="editorial-feature" data-material-accent="leaf">
-      <EntityFeature
-        :image="FEATURE_EXPERIENCE_IMAGE"
-        v-bind="FEATURE_EXPERIENCE"
-        accent="mở cửa"
-        accent-tone="leaf"
-        :thumbs="experienceThumbs"
-        side="left"
-        :priority="true"
-      />
-    </section>
-
-    <!-- 3. Nổi bật — spotlight magazine + quán ngon rating -->
-    <section v-if="spotlight || topDishes.length" class="block reveal band" aria-label="Nổi bật" data-home-section="spotlight-food">
-      <div class="section-head">
-        <div class="sh-text">
-          <h2><em class="ac-river">Nổi bật</em></h2>
-          <p class="sh-sub">Điểm đến &amp; quán ăn được cộng đồng yêu thích</p>
-        </div>
-      </div>
-
-      <div class="home-spotlight-dossier">
-        <div v-if="spotlight" class="spotlight">
+        <div v-if="upcomingEventList.length" class="happening-rest">
           <NuxtLink
-            :to="entityPath(spotlight.id)"
-            class="spot-visual"
-            :style="{ backgroundImage: spotBgCss }"
-            :aria-label="`${spotlight.name} — ${spotDescriptor.alt}`"
-            data-background-image
-            :aria-describedby="spotDisclosureId"
+            v-for="ev in upcomingEventList"
+            :key="ev.id"
+            :to="entityPath(ev.id)"
+            class="event-mini"
+            data-home-signal
           >
-            <span v-if="spotRegion" class="spot-region">{{ spotRegion }}</span>
-            <ImageDisclosure :id="spotDisclosureId" :descriptor="spotDescriptor" presentation="short" />
+            <div class="ec-date ec-date-sm" data-material-accent="amber">
+              <span class="ec-day">{{ formatEventDay(ev) }}</span>
+              <span class="ec-month">{{ formatEventMonth(ev) }}</span>
+            </div>
+            <div class="ec-info">
+              <h3>{{ ev.name }}</h3>
+              <span v-if="ev.days_until != null" class="ec-countdown" data-material-accent="amber" :class="{ 'ec-today': ev.days_until === 0 }">
+                {{ ev.days_until === 0 ? 'Hôm nay!' : ev.days_until === 1 ? 'Ngày mai' : `Còn ${ev.days_until} ngày` }}
+              </span>
+              <span class="home-signal-evidence">
+                <SourceMark
+                  :tier="eventSourceTier(ev)"
+                  :source-title="eventSourceTitle(ev)"
+                  :source-url="eventSourceUrl(ev)"
+                  :verified-at="eventVerifiedAt(ev)"
+                  compact
+                  data-signal-source
+                />
+                <FreshnessLine
+                  :status="eventFreshnessStatus(ev)"
+                  :updated-label="eventFreshnessLabel(ev)"
+                />
+              </span>
+            </div>
           </NuxtLink>
-          <div class="spot-body">
-            <span class="spot-kicker">{{ spotMeta?.label }} · Nổi bật</span>
-            <h3 class="spot-name">{{ spotlight.name }}</h3>
-            <p v-if="spotlight.summary" class="spot-sum">{{ spotlight.summary }}</p>
-            <NuxtLink :to="entityPath(spotlight.id)" class="btn btn-primary spot-cta">Đọc câu chuyện {{ spotlight.name }} →</NuxtLink>
-          </div>
         </div>
 
-        <div v-if="topDishesList.length" class="home-food-ledger">
-          <h3 class="dishes-heading">⭐ Quán ngon nổi bật</h3>
-          <div class="dishes-list">
-            <NuxtLink v-for="d in topDishesList" :key="d.id" :to="entityPath(d.id)" class="dish-item" data-material-accent="amber">
-              <span v-if="Number(d.attributes?.rating) > 0" class="dish-rating-badge" data-material-accent="amber">
-                <span class="dish-star">★</span>
-                <span class="dish-score">{{ formatRating(d.attributes?.rating || 0) }}</span>
-              </span>
-              <span class="dish-info">
-                <span class="dish-name">{{ d.name }}</span>
-                <span v-if="d.attributes?.review_count" class="dish-reviews">{{ d.attributes.review_count }} đánh giá</span>
-              </span>
-              <span class="dish-arrow">→</span>
+        <div v-if="seasonalList.length" class="happening-section">
+          <p class="happening-label" data-material-accent="amber"><IconLine name="calendar" /> Đang vào mùa tháng {{ currentMonth }}</p>
+          <div class="home-season-ledger" role="list" aria-label="Đặc sản theo mùa">
+            <NuxtLink v-for="e in seasonalList" :key="e.id" :to="entityPath(e.id)" class="home-season-row" role="listitem">
+              <span>{{ e.name }}</span>
+              <span>Xem theo mùa</span>
             </NuxtLink>
           </div>
-          <div class="block-cta">
-            <NuxtLink to="/kham-pha/am-thuc" class="btn btn-outline"><IconLine name="bowl" /> Còn nhiều quán ngon nữa</NuxtLink>
-          </div>
         </div>
-      </div>
-    </section>
-
-    <!-- 3a. Story spread — full-bleed signature moment -->
-    <StorySpread
-      data-home-section="story-spread"
-      image="/img/spread/cu-lao-an-binh.webp"
-      srcset="/img/spread/cu-lao-an-binh-640.webp 640w, /img/spread/cu-lao-an-binh-1024.webp 1024w, /img/spread/cu-lao-an-binh.webp 1536w"
-      v-bind="SPREAD"
-      image-alt="Cù lao An Bình giữa sông Cổ Chiên lúc hoàng hôn — vườn cây trái và dừa nước ven bờ, chiếc xuồng gỗ đậu sát mé sông."
-    />
-
-    <!-- declutter-3 T16 (B1-5): EntityFeature #2 OCOP đã bỏ — 1 feature-block/trang là đủ
-         nhịp editorial; OCOP vẫn có trong chỉ mục địa phương. GIỮ feature #1
-         (Trải nghiệm, LCP priority). -->
-
-    <!-- declutter-3 T16 (B1-4): strip "Lịch trình gợi ý" đã bỏ — luồng lịch trình
-         vẫn có trong chỉ mục tiện ích; itineraries GIỮ trong hasHomepageContent (degraded logic). -->
+      </section>
+    </div>
 
     <!-- 5. Từ cộng đồng — compact + trending tags; else always-populated editorial story.
          ClientOnly: communityData is lazy → renders null at prerender but resolves into the
@@ -296,6 +226,28 @@
       </section>
     </ClientOnly>
 
+    <section class="home-continuation" data-home-section="journey-continuation" aria-labelledby="home-continuation-title">
+      <div>
+        <p class="home-continuation__eyebrow">Tiếp tục hành trình</p>
+        <h2 id="home-continuation-title">Giữ mạch khám phá khi bạn đã có một điểm bắt đầu</h2>
+      </div>
+      <!-- Personalized continuation is client-only because it reads saved/recent local state. -->
+      <ClientOnly>
+        <JourneyActionRail
+          v-if="!homePending && homeJourneyActions.length"
+          :actions="homeJourneyActions"
+          title="Tiếp tục hành trình của bạn"
+          subtitle="Từ những gì bạn đã lưu và vừa xem."
+          aria-label="Gợi ý hành trình trên trang chủ"
+          compact
+        />
+      </ClientOnly>
+      <nav class="home-continuation__links" aria-label="Bước tiếp theo">
+        <NuxtLink to="/ban-do">Mở bản đồ</NuxtLink>
+        <NuxtLink to="/lich-trinh">Xem lịch trình</NuxtLink>
+      </nav>
+    </section>
+
   </div>
 </template>
 
@@ -303,16 +255,15 @@
 import { TYPE_META, AREA_META } from '~/composables/useConstants'
 import { generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
 import { useJourneyActions } from '~/composables/useJourneyActions'
-import EntityFeature from '~/components/home/EntityFeature.vue'
 import HomeCategoryIndex from '~/components/home/HomeCategoryIndex.vue'
 import HomeDecisionLedger from '~/components/home/HomeDecisionLedger.vue'
 import HomeFeatureDossier from '~/components/home/HomeFeatureDossier.vue'
 import HomeLocalBriefing from '~/components/home/HomeLocalBriefing.vue'
-import StorySpread from '~/components/home/StorySpread.vue'
 import ImageDisclosure from '~/components/ImageDisclosure.vue'
 import { describeEntityImages, describeEntityPlaceholder } from '~/utils/imageDescriptors'
 import { createHomeNocturnePresentation } from '~/utils/homeNocturnePresentation'
-import { resolveSourceTier } from '~/utils/regionalColor'
+import type { HomePresentationEntity } from '~/utils/homeNocturnePresentation'
+import { resolveFreshnessStatus, resolveSourceTier } from '~/utils/regionalColor'
 import { aiDisclosure } from '~/utils/aiDisclosure'
 import type { ImageDescriptor } from '~/types/image'
 import { useId } from 'vue'
@@ -553,6 +504,61 @@ function formatEventMonth(ev: any) {
   if (!ds) return ''
   const m = parseInt(ds.split('-')[1] || '0', 10)
   return isNaN(m) || m === 0 ? '' : `Th${m}`
+}
+
+function formatFreshnessLabel(value?: string | null): string {
+  if (!value || !Number.isFinite(Date.parse(value))) return ''
+  return `Cập nhật ${new Intl.DateTimeFormat('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    timeZone: 'Asia/Ho_Chi_Minh',
+  }).format(new Date(value))}`
+}
+
+function metadataRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' ? value as Record<string, unknown> : {}
+}
+
+function metadataText(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+function eventMetadata(event: HomePresentationEntity) {
+  return {
+    source: metadataRecord(event.source_freshness),
+    quality: metadataRecord(event.quality),
+  }
+}
+
+function eventSourceTier(event: HomePresentationEntity) {
+  const { source, quality } = eventMetadata(event)
+  return resolveSourceTier(source.source_tier || quality.source_tier)
+}
+
+function eventSourceTitle(event: HomePresentationEntity): string {
+  const { source, quality } = eventMetadata(event)
+  return metadataText(source.source_title) || metadataText(quality.source_title)
+}
+
+function eventSourceUrl(event: HomePresentationEntity): string {
+  const { source, quality } = eventMetadata(event)
+  return metadataText(source.source_url) || metadataText(quality.source_url)
+}
+
+function eventVerifiedAt(event: HomePresentationEntity): string {
+  const { source, quality } = eventMetadata(event)
+  return metadataText(source.verified_at) || metadataText(quality.verified_at)
+}
+
+function eventFreshnessStatus(event: HomePresentationEntity) {
+  return resolveFreshnessStatus(eventMetadata(event).source.freshness_status)
+}
+
+function eventFreshnessLabel(event: HomePresentationEntity): string {
+  const sourceUpdatedAt = metadataText(eventMetadata(event).source.updated_at)
+  const entityUpdatedAt = metadataText(event.updatedAt)
+  return formatFreshnessLabel(sourceUpdatedAt || entityUpdatedAt)
 }
 
 function formatRating(rating: number | string): string {

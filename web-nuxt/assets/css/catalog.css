@@ -100,6 +100,434 @@
   .catalog-hero::before { animation: none; }
 }
 
+/* Adaptive Nocturne discovery slice: orientation -> decision -> result -> evidence -> continuation. */
+[data-page-recipe="discovery"] .atlas-hero {
+  container: catalog-orientation / inline-size;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(18rem, .6fr);
+  gap: var(--space-10);
+  align-items: end;
+  margin-block-end: var(--space-6);
+  padding: clamp(var(--space-8), 6vw, var(--space-14)) var(--space-6);
+  border-block: 1px solid var(--color-border);
+  background: var(--color-surface-subtle);
+  box-shadow: none;
+}
+
+[data-page-recipe="discovery"] .atlas-hero-inner {
+  max-width: 65ch;
+}
+
+[data-page-recipe="discovery"] .atlas-hero-eyebrow,
+[data-page-recipe="discovery"] :is(.catalog-filter-ledger__header, .catalog-evidence, .catalog-continuation) > :is(p, div > p, header > p) {
+  margin-block: 0 var(--space-3);
+  color: var(--color-brand);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+[data-page-recipe="discovery"] .atlas-hero-title {
+  margin-block: 0 var(--space-4);
+  text-wrap: balance;
+}
+
+[data-page-recipe="discovery"] .atlas-hero-line1 {
+  display: block;
+  color: var(--color-text);
+  font-family: var(--font-editorial-display);
+  font-size: clamp(var(--text-3xl), 5vw, var(--text-5xl));
+  font-weight: var(--weight-semibold);
+  line-height: 1.12;
+}
+
+[data-page-recipe="discovery"] .atlas-hero-line2 {
+  display: block;
+  margin-block-start: var(--space-3);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
+}
+
+[data-page-recipe="discovery"] .atlas-hero-sub {
+  max-width: 58ch;
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: var(--leading-relaxed);
+}
+
+[data-page-recipe="discovery"] .catalog-route-trace {
+  position: relative;
+  display: grid;
+  gap: var(--space-5);
+  margin: 0;
+  padding: 0 0 0 var(--space-6);
+  list-style: none;
+}
+
+[data-page-recipe="discovery"] .catalog-route-trace::before {
+  position: absolute;
+  inset-block: var(--space-3);
+  inset-inline-start: var(--space-2);
+  width: 1px;
+  background: var(--color-material-river);
+  content: "";
+}
+
+[data-page-recipe="discovery"] .catalog-route-trace li {
+  position: relative;
+  display: grid;
+  gap: var(--space-1);
+}
+
+[data-page-recipe="discovery"] .catalog-route-trace li::before {
+  position: absolute;
+  inset-block-start: var(--space-2);
+  inset-inline-start: calc(-1 * var(--space-6));
+  width: var(--space-4);
+  height: var(--space-4);
+  border: 2px solid var(--color-surface-subtle);
+  border-radius: var(--radius-pill);
+  background: var(--color-material-river);
+  content: "";
+}
+
+[data-page-recipe="discovery"] .catalog-route-trace [data-route-node-active]::before {
+  background: var(--color-brand);
+}
+
+[data-page-recipe="discovery"] .catalog-route-trace span {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+[data-page-recipe="discovery"] .catalog-filter-ledger {
+  container: catalog-filters / inline-size;
+  border-block: 1px solid var(--color-border);
+}
+
+[data-page-recipe="discovery"] .catalog-filter-ledger__header {
+  display: grid;
+  grid-template-columns: minmax(14rem, .7fr) minmax(0, 1.3fr);
+  gap: var(--space-8);
+  align-items: end;
+  margin-block-end: var(--space-6);
+}
+
+[data-page-recipe="discovery"] .catalog-filter-ledger__header h2,
+[data-page-recipe="discovery"] .catalog-evidence h2,
+[data-page-recipe="discovery"] .catalog-continuation h2 {
+  margin: 0;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--text-xl);
+  line-height: var(--leading-snug);
+}
+
+[data-page-recipe="discovery"] .catalog-filter-ledger__header > p,
+[data-page-recipe="discovery"] .catalog-evidence > p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-base);
+  font-weight: var(--weight-regular);
+  letter-spacing: normal;
+  line-height: var(--leading-relaxed);
+  text-transform: none;
+}
+
+[data-page-recipe="discovery"] .mode-dial {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-block-start: 1px solid var(--color-border);
+  border-inline-start: 1px solid var(--color-border);
+}
+
+[data-page-recipe="discovery"] .mode-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  border-inline-end: 1px solid var(--color-border);
+  border-block-end: 1px solid var(--color-border);
+  border-radius: 0;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  cursor: pointer;
+  box-shadow: none;
+  transform: none;
+}
+
+[data-page-recipe="discovery"] .mode-pill:is(:hover, :active) {
+  border-color: var(--color-action);
+  background: var(--color-action-surface);
+  box-shadow: none;
+  transform: none;
+}
+
+[data-page-recipe="discovery"] .mode-pill[aria-pressed="true"] {
+  border-inline-start: 3px solid var(--color-brand);
+  background: var(--color-brand-surface);
+  box-shadow: none;
+}
+
+[data-page-recipe="discovery"] .mode-pill:focus-visible,
+[data-page-recipe="discovery"] :is(.vt-btn, .filter-clear):focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: var(--space-1);
+}
+
+[data-page-recipe="discovery"] .controls {
+  position: static;
+  z-index: auto;
+  margin-block: var(--space-5) 0;
+  padding: var(--space-5) 0 0;
+  border: 0;
+  border-block-start: 1px solid var(--color-border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+[data-page-recipe="discovery"] .controls .search-row {
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  box-shadow: none;
+}
+
+[data-page-recipe="discovery"] .controls .search-row::before {
+  content: none;
+}
+
+[data-page-recipe="discovery"] .controls .search-row:focus-within {
+  border-color: var(--color-focus);
+  background: var(--color-surface);
+  box-shadow: none;
+}
+
+[data-page-recipe="discovery"] .controls .chip:is(.active, :hover) {
+  box-shadow: none;
+  transform: none;
+}
+
+[data-page-recipe="discovery"] .filter-status {
+  border-color: var(--color-border);
+}
+
+[data-page-recipe="discovery"] .catalog-results {
+  container: catalog-results / inline-size;
+}
+
+[data-page-recipe="discovery"] .result-meta {
+  border: 0;
+  border-radius: 0;
+  color: var(--color-text-muted);
+  box-shadow: none;
+  animation: none;
+}
+
+[data-page-recipe="discovery"] .result-meta::before {
+  content: none;
+  animation: none;
+}
+
+[data-page-recipe="discovery"] .view-toggle {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+}
+
+[data-page-recipe="discovery"] .vt-btn {
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
+  border-radius: var(--radius-control);
+  color: var(--color-text-muted);
+}
+
+[data-page-recipe="discovery"] .vt-btn.active {
+  background: var(--color-action-surface);
+  color: var(--color-action);
+  box-shadow: none;
+}
+
+[data-page-recipe="discovery"] .catalog-result-surface {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: var(--space-4);
+  margin-block-start: var(--space-5);
+}
+
+[data-page-recipe="discovery"] .catalog-result-item[data-entity-contract="entity-row"] {
+  grid-column: 1 / -1;
+}
+
+[data-page-recipe="discovery"] .catalog-result-item[data-entity-contract="entity-row"] .card {
+  display: block;
+  border: 0;
+  border-block-end: 1px solid var(--color-border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+[data-page-recipe="discovery"] .catalog-result-item[data-entity-contract="entity-row"] .cover {
+  display: none;
+}
+
+[data-page-recipe="discovery"] .catalog-result-item[data-entity-contract="entity-row"] .card-b {
+  min-height: var(--touch-min);
+  padding: var(--space-4) 0;
+}
+
+[data-page-recipe="discovery"] .catalog-result-item[data-entity-contract="entity-tile"] .card {
+  height: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-surface);
+  background: var(--color-surface);
+  box-shadow: none;
+}
+
+[data-page-recipe="discovery"] .block .empty-state {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-surface);
+  background: var(--color-surface);
+  box-shadow: none;
+}
+
+[data-page-recipe="discovery"] .block .empty-state::before {
+  content: none;
+}
+
+[data-page-recipe="discovery"] .catalog-evidence {
+  display: grid;
+  grid-template-columns: minmax(14rem, .65fr) minmax(0, 1.35fr);
+  gap: var(--space-8);
+  border-block: 1px solid var(--color-border);
+}
+
+[data-page-recipe="discovery"] .catalog-evidence header {
+  grid-row: span 2;
+}
+
+[data-page-recipe="discovery"] .catalog-evidence__list {
+  border-block-start: 1px solid var(--color-border);
+}
+
+[data-page-recipe="discovery"] .catalog-evidence__row {
+  display: grid;
+  grid-template-columns: minmax(12rem, .8fr) minmax(0, 1.2fr);
+  gap: var(--space-4);
+  align-items: center;
+  min-height: var(--touch-min);
+  padding-block: var(--space-3);
+  border-block-end: 1px solid var(--color-border);
+}
+
+[data-page-recipe="discovery"] .catalog-evidence__row > a {
+  color: var(--color-text);
+  font-weight: var(--weight-semibold);
+}
+
+[data-page-recipe="discovery"] .catalog-evidence__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+[data-page-recipe="discovery"] .catalog-evidence__empty {
+  color: var(--color-text-muted);
+}
+
+[data-page-recipe="discovery"] .catalog-continuation {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, .7fr);
+  gap: var(--space-8);
+  align-items: start;
+}
+
+[data-page-recipe="discovery"] .catalog-continuation nav {
+  display: grid;
+  border-block-start: 1px solid var(--color-border);
+}
+
+[data-page-recipe="discovery"] .catalog-continuation nav a {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  border-block-end: 1px solid var(--color-border);
+  color: var(--color-action);
+}
+
+@container catalog-orientation (max-width: 50rem) {
+  [data-page-recipe="discovery"] .atlas-hero {
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+  }
+}
+
+@container catalog-filters (max-width: 48rem) {
+  [data-page-recipe="discovery"] .catalog-filter-ledger__header {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  [data-page-recipe="discovery"] .mode-dial {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@container catalog-results (max-width: 40rem) {
+  [data-page-recipe="discovery"] .catalog-result-surface {
+    grid-template-columns: 1fr;
+  }
+
+  [data-page-recipe="discovery"] .catalog-result-item {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 48rem) {
+  [data-page-recipe="discovery"] .atlas-hero,
+  [data-page-recipe="discovery"] :is(.catalog-evidence, .catalog-continuation) {
+    grid-template-columns: 1fr;
+  }
+
+  [data-page-recipe="discovery"] .catalog-evidence header {
+    grid-row: auto;
+  }
+
+  [data-page-recipe="discovery"] .catalog-evidence__row {
+    grid-template-columns: 1fr;
+  }
+
+  [data-page-recipe="discovery"] .catalog-evidence__meta {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 32rem) {
+  [data-page-recipe="discovery"] .mode-dial {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-page-recipe="discovery"] :is(.mode-fade-enter-active, .mode-fade-leave-active) {
+    transition: none;
+  }
+}
+
 .catalog-hero-inner {
   display: flex; align-items: flex-start; gap: var(--space-5);
 }
@@ -751,4 +1179,11 @@
   .result-meta { animation: none; }
   .result-meta::before { animation: none; }
   .reveal .scroll-row > * { animation: none; opacity: 1; transform: none; }
+}
+
+[data-color-system="tri-region-v1"][data-page-recipe="discovery"] .mode-pill[aria-pressed="true"] {
+  border-inline-start: 3px solid var(--color-brand);
+  background: var(--color-brand-surface);
+  color: var(--color-text);
+  box-shadow: none;
 }

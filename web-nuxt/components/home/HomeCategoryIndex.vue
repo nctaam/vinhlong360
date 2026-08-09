@@ -11,6 +11,7 @@
         :to="link.to"
         class="home-category-index__primary-link"
         :data-material-accent="link.accent"
+        data-decision-route
       >
         <IconLine :name="link.icon" aria-hidden="true" />
         <span>
@@ -29,6 +30,7 @@
           :to="link.to"
           class="home-category-index__utility-link"
           :data-material-accent="link.accent"
+          data-decision-route
         >
           <IconLine :name="link.icon" aria-hidden="true" />
           <span>

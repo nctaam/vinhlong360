@@ -1058,7 +1058,7 @@ def _metadata_proof(text: str, entry: dict, root: Path) -> bool:
 
 
 def _delegation_proof(text: str, producer: str) -> bool:
-    if producer in {"EntityCard", "SavedEntityCard", "PostCard", "PhotoGallery", "ImageLightbox"}:
+    if producer in {"EntityCard", "SavedEntityCard", "PostCard", "PhotoGallery", "ImageLightbox", "HomeFeatureDossier"}:
         return re.search(rf"<{re.escape(producer)}\b", text) is not None
     return producer in text and not find_image_render_sinks(text, require_raw_source=True, raw_aliases=trace_raw_image_aliases(text))
 
@@ -1069,14 +1069,14 @@ def _is_metadata_entry(entry: dict) -> bool:
 
 
 def _is_component_delegation(entry: dict) -> bool:
-    return entry["descriptor_producer"] in {"EntityCard", "SavedEntityCard", "PostCard", "PhotoGallery", "ImageLightbox"}
+    return entry["descriptor_producer"] in {"EntityCard", "SavedEntityCard", "PostCard", "PhotoGallery", "ImageLightbox", "HomeFeatureDossier"}
 
 
 def _has_delegated_presentation(text: str, presentation: str) -> bool:
     if presentation == "full":
         return bool(re.search(r"<(?:Lazy)?(?:PhotoGallery|ImageLightbox)\b", text))
     if presentation == "short":
-        return bool(re.search(r"<(?:EntityCard|SavedEntityCard|PostCard)\b", text))
+        return bool(re.search(r"<(?:EntityCard|SavedEntityCard|PostCard|HomeFeatureDossier)\b", text))
     return False
 
 

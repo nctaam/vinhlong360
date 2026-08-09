@@ -3,6 +3,7 @@
     v-if="entries.length"
     class="home-decision-ledger"
     data-home-decision-ledger
+    data-route-trace="home-decisions"
     aria-labelledby="home-decision-title"
   >
     <header class="home-decision-ledger__intro">
@@ -16,6 +17,7 @@
         :key="entry.id"
         class="home-decision-ledger__row"
         data-home-decision-entry
+        data-route-node
       >
         <NuxtLink
           :to="entry.to"

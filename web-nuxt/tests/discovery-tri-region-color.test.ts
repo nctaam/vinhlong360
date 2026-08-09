@@ -62,10 +62,11 @@ describe('Discovery Tri-Region color recipe', () => {
 
     const root = wrapper.get('[data-page-recipe="discovery"]')
     expect(wrapper.text()).toContain('Chính thức')
-    expect(wrapper.text()).toContain('Đã xác minh')
-    expect(wrapper.get('.cspot').attributes('data-color-recipe')).toBe('tri-region-v1')
-    expect(wrapper.get('.cspot').attributes('data-material-accent')).toBe('clay')
-    expect(wrapper.get('.catalog-interstitial').attributes('data-material-accent')).toBe('amber')
+    expect(wrapper.text()).toContain('Chưa rõ nguồn')
+    expect(wrapper.text()).not.toContain('Đã xác minh')
+    expect(wrapper.find('.cspot').exists()).toBe(false)
+    expect(wrapper.find('.catalog-interstitial').exists()).toBe(false)
+    expect(wrapper.get('[data-catalog-section="evidence"]')).toBeTruthy()
 
     for (const [label, accent] of [
       ['Trải nghiệm', 'leaf'],

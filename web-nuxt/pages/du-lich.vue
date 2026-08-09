@@ -7,12 +7,14 @@
   >
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Du lịch' }]" />
 
-    <!-- Hero — "living atlas" thesis: mode dial swaps scene before any scroll -->
-    <section class="atlas-hero" :class="`mode-${activeMode.key}`" aria-label="Giới thiệu du lịch">
-      <span class="atlas-hero-grain" aria-hidden="true"></span>
-      <span class="atlas-hero-motif" aria-hidden="true" v-html="activeMode.motif"></span>
+    <section
+      class="atlas-hero"
+      :class="`mode-${activeMode.key}`"
+      aria-label="Định hướng khám phá"
+      data-catalog-section="orientation"
+    >
       <div class="atlas-hero-inner">
-        <p class="atlas-hero-eyebrow">TỈNH VĨNH LONG · MIỆT VƯỜN — XỨ DỪA — ĐẤT CHÙA KHMER</p>
+        <p class="atlas-hero-eyebrow">Vĩnh Long · chỉ mục khám phá theo địa bàn</p>
         <h1 class="atlas-hero-title">
           <span class="atlas-hero-line1">{{ pc('hero_title', 'Ba tỉnh, một nhịp sông.') }}</span>
           <Transition name="mode-fade" mode="out-in">
@@ -22,102 +24,35 @@
         <Transition name="mode-fade" mode="out-in">
           <p class="atlas-hero-sub" :key="activeModeKey">{{ pc('hero_subtitle', activeMode.sub) }}</p>
         </Transition>
-        <div class="mode-dial" role="group" aria-label="Chọn cách khám phá">
-          <button type="button"
-            v-for="m in heroModes"
-            :key="m.key"
-            :class="['mode-pill', { active: activeModeKey === m.key }]"
-            :aria-pressed="activeModeKey === m.key"
-            @click="activeModeKey = m.key"
-          >{{ m.emoji }} {{ m.label }}</button>
-        </div>
       </div>
-      <div v-if="allEntities.length" class="atlas-hero-stats">
-        <div class="stat-item" v-for="s in stats" :key="s.label">
-          <CountUp :value="s.count" class="stat-num" />
-          <span class="stat-label">{{ s.label }}</span>
-        </div>
-      </div>
+      <ol class="catalog-route-trace" data-route-trace="catalog-context" aria-label="Dòng địa bàn hiện tại">
+        <li data-route-node><span>Khu vực</span><strong>Vĩnh Long</strong></li>
+        <li data-route-node data-route-node-active><span>Cách khám phá</span><strong>{{ activeMode.label }}</strong></li>
+        <li data-route-node><span>Thời điểm</span><strong>Tháng {{ currentMonthNumber }}</strong></li>
+      </ol>
     </section>
 
-    <!-- Bốn cách sống trong ngày — the information-scent layer: one click to a
-         pre-filtered grid view, replacing the flat "browse or search only" gap -->
-    <section class="block reveal">
-      <div class="sediment-head">
-        <h2>Bốn cách sống trong ngày</h2>
-      </div>
-      <div class="life-quad">
-        <button v-for="l in lifeRegisters" :key="l.key" type="button" class="life-tile" :class="`life-${l.key}`" @click="typeFilter = l.filterType; scrollToGrid()">
-          <span class="life-tile-motif" aria-hidden="true" v-html="l.motif"></span>
-          <p class="life-tile-kicker">{{ l.kicker }}</p>
-          <p class="life-tile-line">{{ l.line }}</p>
+    <section class="catalog-filter-ledger block reveal" data-catalog-section="filters" aria-labelledby="catalog-filter-title">
+      <header class="catalog-filter-ledger__header">
+        <div>
+          <p>Quyết định khám phá</p>
+          <h2 id="catalog-filter-title">Chọn cách khám phá</h2>
+        </div>
+        <p>Chọn một nhịp đi, rồi tinh chỉnh loại và thời điểm trước khi đọc kết quả.</p>
+      </header>
+      <div class="mode-dial" role="group" aria-label="Chọn cách khám phá">
+        <button
+          v-for="m in heroModes"
+          :key="m.key"
+          type="button"
+          :class="['mode-pill', { active: activeModeKey === m.key }]"
+          :aria-pressed="activeModeKey === m.key"
+          @click="selectDiscoveryMode(m)"
+        >
+          <IconLine :name="m.icon" aria-hidden="true" />
+          <span>{{ m.label }}</span>
         </button>
       </div>
-    </section>
-
-    <!-- Spotlight nổi bật (magazine, dùng-chung) -->
-    <CatalogSpotlight :items="allEntities" color-recipe="tri-region-v1" />
-
-    <!-- Featured -->
-    <section v-if="featured.length" class="block band reveal">
-      <div class="sediment-head section-head">
-        <h2>Nổi bật</h2>
-      </div>
-      <div class="scroll-row" role="region" aria-label="Trải nghiệm nổi bật" tabindex="0">
-        <EntityCard v-for="e in featured" :key="e.id" :entity="e" color-recipe="tri-region-v1" />
-      </div>
-    </section>
-
-    <!-- Category sections — season is the connective tissue: "here's what's
-         good to do, and here's why now" -->
-    <section v-for="(cat, ci) in categories" :key="cat.key" :class="['block', 'reveal', { band: ci % 2 === 0 }]">
-      <div class="sediment-head section-head">
-        <h2>{{ cat.emoji }} {{ cat.label }}</h2>
-        <div class="see-all-group">
-          <button v-for="f in cat.jumpFilters" :key="f.type" type="button" class="see-all" @click="typeFilter = f.type; scrollToGrid()">{{ f.text }}</button>
-        </div>
-      </div>
-      <p class="section-desc">{{ cat.desc }}</p>
-      <p v-if="cat.seasonNote" class="season-note">{{ cat.seasonNote }}</p>
-      <div class="scroll-row" role="region" :aria-label="cat.label" tabindex="0">
-        <EntityCard v-for="e in cat.items.slice(0, 5)" :key="e.id" :entity="e" color-recipe="tri-region-v1" />
-      </div>
-    </section>
-
-    <!-- Interstitial -->
-    <!-- Editorial (declutter-2 A2: interstitial inline vào mạch bài, hết section rời) -->
-    <section v-once class="page-article reveal">
-      <div class="sediment-head"><h2>Vì sao chọn Vĩnh Long, Bến Tre, Trà Vinh?</h2></div>
-      <div class="editorial-body drop-cap">
-        <p>Tỉnh Vĩnh Long mới — hợp nhất ba vùng đất Vĩnh Long, Bến Tre, Trà Vinh — nằm trọn giữa nơi sông Tiền và sông Hậu chia thành hàng chục nhánh nhỏ, tạo nên mạng lưới kênh rạch chằng chịt. Đây là vùng đất của những cù lao xanh mát quanh năm — An Bình, Bình Hoà Phước, Minh, Ông Hổ — nơi cuộc sống vẫn giữ nhịp chậm rãi của miệt vườn Nam Bộ.</p>
-        <p>Khác với các điểm du lịch đông đúc, khu vực này mang đến trải nghiệm gần gũi: chèo xuồng qua rạch dừa nước, đạp xe trên đường làng, tát mương bắt cá cùng nông dân, hoặc đơn giản là ngồi võng nghe chim hót trong vườn trái cây. Du khách không chỉ ngắm cảnh mà thực sự sống cùng nhịp sinh hoạt bản địa. Ở Trà Vinh, nhịp sống ấy còn mang thêm màu sắc Khmer — mái chùa vàng-đỏ giữa vườn dừa, tiếng chuông chùa hoà vào tiếng ghe máy trên sông. Từ TP.HCM chỉ khoảng 2 giờ theo cao tốc Trung Lương – Mỹ Thuận là tới; trong vùng, xe máy hay chiếc xe đạp homestay cho mượn là cách hay nhất để len vào cù lao — <NuxtLink to="/ban-do">mở bản đồ</NuxtLink> rồi cứ để đường làng dẫn đi.</p>
-      </div>
-
-      <CatalogInterstitial
-        fact="Vĩnh Long, Bến Tre và Trà Vinh có hơn 200 điểm du lịch sinh thái — phần lớn nằm trên các cù lao giữa sông Tiền và sông Hậu."
-        icon="🌊"
-        variant="warm"
-        material-accent="amber"
-        :links="[{ to: '/ban-do', label: 'Xem bản đồ' }, { to: '/lich-trinh', label: 'Lịch trình gợi ý' }]"
-      />
-
-      <!-- declutter-3 T15: H2 "Trải nghiệm theo mùa" đã bỏ — mode-dial hero + season-note
-           badge từng section nói cùng nội dung theo ngữ cảnh; H2 "Di chuyển và lưu ý" đã bỏ —
-           rút thành 1 câu inline có link /ban-do cuối đoạn "Vì sao chọn" ở trên. -->
-      <div class="sediment-head"><h2>Làng nghề trăm năm</h2></div>
-      <div class="editorial-body">
-        <p>Vùng đất này nổi tiếng với những làng nghề tồn tại hàng trăm năm: gốm đỏ Mang Thít với hàng ngàn lò gạch dọc sông Cổ Chiên, kẹo dừa Bến Tre được làm thủ công từ nước cốt dừa tươi, hoa kiểng Cái Mơn ươm trên đất cù lao Chợ Lách, hay bánh tráng Mỹ Lồng nướng trên than hồng. Mỗi sản phẩm kể một câu chuyện về đời sống và tri thức bản địa truyền qua nhiều thế hệ.</p>
-      </div>
-
-    </section>
-
-    <!-- Divider -->
-    <div class="catalog-divider">
-      <span class="catalog-divider-text">Duyệt tất cả</span>
-    </div>
-
-    <!-- Full filterable grid -->
-    <section ref="gridSection" class="block reveal" aria-label="Duyệt tất cả du lịch">
       <div class="controls">
         <div class="search-row">
           <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm trong du lịch…" aria-label="Tìm kiếm" />
@@ -149,28 +84,39 @@
           <button type="button" class="filter-clear" @click="clearFilters">Xóa tất cả</button>
         </div>
       </div>
+    </section>
+
+    <section ref="gridSection" class="catalog-results block reveal" data-catalog-section="results" aria-label="Duyệt tất cả du lịch">
       <div class="result-bar">
         <p class="result-meta" aria-live="polite">{{ filtered.length }} kết quả{{ sortBy !== 'relevant' ? ` · ${sortLabels[sortBy]}` : '' }}</p>
         <div class="view-toggle" role="group" aria-label="Chế độ hiển thị">
-          <button type="button" :class="['vt-btn', { active: viewMode === 'grid' }]" :aria-pressed="viewMode === 'grid'" @click="viewMode = 'grid'" title="Dạng lưới" aria-label="Dạng lưới">⊞</button>
-          <button type="button" :class="['vt-btn', { active: viewMode === 'list' }]" :aria-pressed="viewMode === 'list'" @click="viewMode = 'list'" title="Dạng danh sách" aria-label="Dạng danh sách">☰</button>
+          <button type="button" :class="['vt-btn', { active: viewMode === 'grid' }]" :aria-pressed="viewMode === 'grid'" @click="viewMode = 'grid'" title="Dạng lưới" aria-label="Dạng lưới"><IconLine name="layout-dashboard" aria-hidden="true" /></button>
+          <button type="button" :class="['vt-btn', { active: viewMode === 'list' }]" :aria-pressed="viewMode === 'list'" @click="viewMode = 'list'" title="Dạng danh sách" aria-label="Dạng danh sách"><IconLine name="list" aria-hidden="true" /></button>
         </div>
       </div>
-      <EmptyState v-if="fetchError" icon="⚠️" title="Không thể tải dữ liệu" message="Mạng có thể đang chập chờn. Thử tải lại nhé.">
+      <EmptyState v-if="fetchError" title="Không thể tải dữ liệu" message="Mạng có thể đang chập chờn. Thử tải lại nhé.">
         <template #actions>
           <button type="button" class="btn btn-outline" @click="refreshNuxtData('catalog-tourism')">Thử lại</button>
         </template>
       </EmptyState>
       <SkeletonGrid v-else-if="!data" :count="6" />
-      <div v-else-if="filtered.length" :class="viewMode === 'list' ? 'list-view' : 'grid'">
-        <EntityCard v-for="e in visible" :key="e.id" :entity="e" :season-filter="seasonFilter" color-recipe="tri-region-v1" />
+      <div v-else-if="filtered.length" :class="['catalog-result-surface', viewMode === 'list' ? 'list-view' : 'grid']">
+        <div
+          v-for="e in visible"
+          :key="e.id"
+          class="catalog-result-item"
+          :data-entity-contract="catalogEntityContract(e)"
+          data-catalog-result
+        >
+          <EntityCard :entity="e" :season-filter="seasonFilter" color-recipe="tri-region-v1" />
+        </div>
       </div>
-      <EmptyState v-else icon="🌿" title="Không tìm thấy kết quả" message="Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.">
+      <EmptyState v-else title="Không tìm thấy kết quả" message="Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.">
         <template #actions>
           <button type="button" class="btn btn-outline" @click="clearFilters">Xóa bộ lọc</button>
-          <NuxtLink to="/theo-mua" class="btn btn-outline">🗓️ Xem theo mùa</NuxtLink>
-          <NuxtLink to="/san-pham" class="btn btn-outline">🍊 Đặc sản</NuxtLink>
-          <NuxtLink to="/le-hoi" class="btn btn-outline">🎋 Lễ hội</NuxtLink>
+          <NuxtLink to="/theo-mua" class="btn btn-outline"><IconLine name="calendar" aria-hidden="true" /> Xem theo mùa</NuxtLink>
+          <NuxtLink to="/san-pham" class="btn btn-outline"><IconLine name="gift" aria-hidden="true" /> Đặc sản</NuxtLink>
+          <NuxtLink to="/le-hoi" class="btn btn-outline"><IconLine name="flag" aria-hidden="true" /> Lễ hội</NuxtLink>
         </template>
       </EmptyState>
       <button
@@ -183,19 +129,44 @@
       </button>
     </section>
 
-    <!-- Cross-links (declutter-2 A1: 4 hardcode → 3 từ mảng script; bỏ Bản-đồ — đã có
-         ở interstitial links + nav) -->
-    <section class="block band catalog-cross reveal" aria-label="Khám phá thêm">
-      <h2>Khám phá thêm</h2>
-      <div class="cross-links">
-        <NuxtLink v-for="c in relatedCatalogs" :key="c.to" :to="c.to" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">{{ c.icon }}</span>
-          <div><strong>{{ c.label }}</strong><p>{{ c.desc }}</p></div>
-        </NuxtLink>
+    <section class="catalog-evidence block reveal" data-catalog-section="evidence" aria-labelledby="catalog-evidence-title">
+      <header>
+        <p>Nguồn và độ mới</p>
+        <h2 id="catalog-evidence-title">Đọc bằng chứng trước khi quyết định</h2>
+      </header>
+      <p>Những dòng dưới đây phản ánh đúng metadata nguồn hiện có; dữ liệu thiếu bằng chứng sẽ giữ nhãn chưa rõ thay vì được nâng cấp thành xác minh.</p>
+      <div v-if="evidenceEntities.length" class="catalog-evidence__list" role="list">
+        <article v-for="entity in evidenceEntities" :key="entity.id" class="catalog-evidence__row" role="listitem">
+          <NuxtLink :to="entityPath(entity.id)">{{ entity.name }}</NuxtLink>
+          <span class="catalog-evidence__meta">
+            <SourceMark
+              :tier="entitySourceTier(entity)"
+              :source-title="entitySourceTitle(entity)"
+              :source-url="entitySourceUrl(entity)"
+              :verified-at="entityVerifiedAt(entity)"
+              compact
+            />
+            <FreshnessLine
+              :status="entityFreshnessStatus(entity)"
+              :updated-label="catalogUpdatedLabel(entity)"
+            />
+          </span>
+        </article>
       </div>
+      <p v-else class="catalog-evidence__empty">Chưa có kết quả để đối chiếu nguồn. Bộ lọc vẫn được giữ để bạn thử lại.</p>
     </section>
-    <!-- declutter-3 T14 (A3c): JourneyBar page-level — trang thuộc luồng lập-kế-hoạch -->
-    <ClientOnly><LazyJourneyBar /></ClientOnly>
+
+    <section class="catalog-continuation block reveal" data-catalog-section="continuation" aria-labelledby="catalog-continuation-title">
+      <div>
+        <p>Tiếp tục hành trình</p>
+        <h2 id="catalog-continuation-title">Mang lựa chọn sang bản đồ hoặc lịch trình</h2>
+      </div>
+      <nav aria-label="Bước tiếp theo">
+        <NuxtLink to="/ban-do"><IconLine name="map" aria-hidden="true" /> Xem trên bản đồ</NuxtLink>
+        <NuxtLink to="/lich-trinh"><IconLine name="route" aria-hidden="true" /> Mở lịch trình</NuxtLink>
+      </nav>
+      <ClientOnly><LazyJourneyBar /></ClientOnly>
+    </section>
   </div>
 </template>
 
@@ -206,63 +177,49 @@ const MONTH_ABBR = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10',
 <script setup lang="ts">
 import type { Entity } from '~/types'
 import type { RegionalAccent } from '~/utils/regionalColor'
+import { resolveFreshnessStatus, resolveSourceTier } from '~/utils/regionalColor'
 import { TYPE_META, TOURISM_TYPES } from '~/composables/useConstants'
 import { inSeason, relevanceScore } from '~/composables/useSeason'
-import { generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
 
 useReveal()
 const { f: pc } = usePageContent('du_lich')
 const TYPES = TOURISM_TYPES as readonly string[]
 function typeMeta(type: string) {
-  return TYPE_META[type] || { emoji: '📍', label: type, cat: type }
+  return TYPE_META[type] || { label: type, cat: type }
 }
 
 const typeChips = TYPES.map(t => ({
   value: t,
-  label: `${typeMeta(t).emoji} ${typeMeta(t).label}`,
+  label: typeMeta(t).label,
 }))
 
 const q = ref('')
 const typeFilter = ref('all')
 const seasonFilter = ref('all')
 
-// Hero mode-dial — the signature moment: clicking a mode cross-fades the
-// hero's own background/copy (CSS transition on the section's mode-* class),
-// no grid interaction, zero extra data cost (concept §2/§10).
-const heroModes: ReadonlyArray<{
+type DiscoveryMode = {
   key: string
-  emoji: string
+  icon: string
   label: string
   line: string
   sub: string
-  motif: string
+  filterType: string
   accent: RegionalAccent
-}> = [
-  { key: 'trai-nghiem', emoji: '🌾', label: 'Trải nghiệm', line: 'Khám phá theo mùa nước, theo mùa trái, theo mùa lễ.', sub: 'Miệt vườn, cù lao, làng nghề trăm năm — khám phá theo mùa nước, mùa trái, mùa lễ hội.', motif: generateCategoryIcon('experience'), accent: 'leaf' },
-  { key: 'am-thuc', emoji: '🍲', label: 'Ẩm thực', line: 'Một tô bún nước lèo, một mẻ bánh xèo mới đổ.', sub: 'Hương vị sông nước — món ăn nào cũng có một câu chuyện đứng sau nó.', motif: generateCategoryIcon('dish'), accent: 'amber' },
-  { key: 'lang-nghe', emoji: '🏺', label: 'Làng nghề', line: 'Tiếng lò gạch Mang Thít, mùi kẹo dừa mới sên.', sub: 'Gốm đỏ, kẹo dừa, chiếu lác, bánh tráng — nghề trăm năm vẫn còn đỏ lửa mỗi sáng.', motif: generateCategoryIcon('craft'), accent: 'clay' },
-  { key: 'luu-tru', emoji: '🏡', label: 'Lưu trú', line: 'Một buổi sáng thức dậy giữa vườn trái cây.', sub: 'Homestay nhà vườn, resort ven sông — nơi bạn muốn mở mắt vào buổi sáng giữa miệt vườn.', motif: generateCategoryIcon('accommodation'), accent: 'river' },
+}
+
+const heroModes: readonly DiscoveryMode[] = [
+  { key: 'trai-nghiem', icon: 'compass', label: 'Trải nghiệm', line: 'Khám phá theo mùa nước, theo mùa trái, theo mùa lễ.', sub: 'Miệt vườn, cù lao và những hoạt động gắn với nhịp sống địa phương.', filterType: 'experience', accent: 'leaf' },
+  { key: 'am-thuc', icon: 'bowl', label: 'Ẩm thực', line: 'Một tô bún nước lèo, một mẻ bánh xèo mới đổ.', sub: 'Chọn món ăn và địa chỉ có dữ liệu nguồn để tiếp tục khám phá.', filterType: 'dish', accent: 'amber' },
+  { key: 'lang-nghe', icon: 'vase', label: 'Làng nghề', line: 'Theo dấu đất, lửa và những nghề còn được truyền lại.', sub: 'Gốm đỏ, chiếu lác và các không gian nghề có thể ghé thăm.', filterType: 'craft_village', accent: 'clay' },
+  { key: 'luu-tru', icon: 'home', label: 'Lưu trú', line: 'Tìm một điểm nghỉ phù hợp với nhịp hành trình.', sub: 'Nhà vườn và lưu trú ven sông được đưa vào cùng mặt kết quả.', filterType: 'accommodation', accent: 'river' },
 ]
 const activeModeKey = ref(heroModes[0]!.key)
 const activeMode = computed(() => heroModes.find(m => m.key === activeModeKey.value) || heroModes[0]!)
 
-// declutter-2 A1: cross-links cuối trang — 3 card, script-driven (bỏ Bản-đồ: đã có
-// ở interstitial links + nav chính).
-const relatedCatalogs = [
-  { to: '/san-pham', icon: '🍊', label: 'Đặc sản', desc: 'Sản phẩm theo mùa' },
-  { to: '/lich-trinh', icon: '🗓️', label: 'Lịch trình', desc: 'Tuyến đi sẵn' },
-  { to: '/luu-tru', icon: '🏡', label: 'Lưu trú', desc: 'Homestay, nhà vườn' },
-]
-
-// Bốn cách sống trong ngày — information-scent quad: one click to a
-// pre-filtered grid view (concept §3/§6). Maps to real cultural registers
-// already present in the taxonomy (sông nước / miệt vườn / làng nghề / tâm linh).
-const lifeRegisters = [
-  { key: 'song-nuoc', kicker: 'SÔNG NƯỚC', line: 'Chèo xuồng qua rạch dừa nước lúc sáng sớm, khi sương còn chưa tan trên mặt kênh.', filterType: 'experience', motif: generateCategoryIcon('experience') },
-  { key: 'miet-vuon', kicker: 'MIỆT VƯỜN', line: 'Ngồi võng nghe chim hót trong vườn trái cây, tự tay hái chôm chôm chín đỏ.', filterType: 'nature', motif: generateCategoryIcon('nature') },
-  { key: 'lang-nghe', kicker: 'LÀNG NGHỀ', line: 'Nghe tiếng khung dệt chiếu Cà Hom, ngửi mùi kẹo dừa sên trên bếp than.', filterType: 'craft_village', motif: generateCategoryIcon('craft') },
-  { key: 'tam-linh', kicker: 'TÂM LINH · DI TÍCH', line: 'Mái chùa Khmer vàng-đỏ giữa vườn dừa, chuông chùa hoà vào tiếng ghe máy trên sông.', filterType: 'attraction', motif: generateCategoryIcon('attraction') },
-]
+function selectDiscoveryMode(mode: DiscoveryMode) {
+  activeModeKey.value = mode.key
+  typeFilter.value = mode.filterType
+}
 
 const typeFilterOptions = computed(() => [
   { key: 'all', label: 'Tất cả' },
@@ -271,12 +228,13 @@ const typeFilterOptions = computed(() => [
 const seasonFilterOptions = computed(() => [
   { key: 'all', label: 'Tất cả' },
   ...Array.from({ length: 12 }, (_, i) => ({ key: String(i + 1), label: MONTH_ABBR[i] || String(i + 1) })),
-  { key: 'flood', label: 'Mùa nước nổi', icon: '🌊' },
+  { key: 'flood', label: 'Mùa nước nổi' },
 ])
 const sortBy = ref('relevant')
 const sortLabels: Record<string, string> = { popular: 'Phổ biến', newest: 'Mới nhất', name: 'Tên A-Z' }
 const viewMode = ref('grid')
 const gridSection = ref<HTMLElement | null>(null)
+const currentMonthNumber = new Date().getMonth() + 1
 
 useFilterUrl({ q, type: typeFilter, mua: seasonFilter, sort: sortBy }, { q: '', type: 'all', mua: 'all', sort: 'relevant' })
 const { sortByRegion } = useRegionPref()
@@ -301,88 +259,6 @@ const allEntities = computed(() => {
   if (!raw) return []
   return raw.entities || []
 })
-
-const stats = computed(() => {
-  const counts: Record<string, number> = {}
-  for (const e of allEntities.value) counts[e.type] = (counts[e.type] || 0) + 1
-  return TYPES
-    .filter(t => counts[t])
-    .map(t => ({ label: typeMeta(t).label, count: counts[t] || 0 }))
-})
-
-const featured = computed(() => {
-  return allEntities.value
-    .filter((e: Entity) => e.images?.length)
-    .slice(0, 6)
-})
-
-const CATEGORY_DESC: Record<string, string> = {
-  experience: 'Chèo xuồng, đạp xe miệt vườn, tát mương bắt cá — trải nghiệm đời sống sông nước Nam Bộ.',
-  attraction: 'Chùa cổ, di tích lịch sử, cù lao, vườn trái cây — những điểm đến đáng ghé nhất.',
-  craft_village: 'Gốm Mang Thít, kẹo dừa, chiếu lác, bánh tráng — nghề truyền thống hàng trăm năm.',
-  dish: 'Bún nước lèo, bánh xèo, hủ tiếu, chả lụi — hương vị bản địa khó tìm nơi khác.',
-  accommodation: 'Homestay nhà vườn, resort sông nước, nhà nghỉ dân dã — nơi lưu lại qua đêm.',
-}
-
-// "đang đúng mùa" contextual note per category — data already computed via
-// inSeason/relevanceScore (useSeason.ts), no new fetch/logic (concept §3/§11):
-// gives a reason to check back ("what's in season now?") instead of a static list.
-const currentMonthKey = String(new Date().getMonth() + 1)
-function categorySeasonNote(items: Entity[]): string {
-  const peak = items.filter(e => relevanceScore(e, currentMonthKey) === 4)
-  if (!peak.length) return ''
-  const name = peak[0]!.name
-  return peak.length > 1
-    ? `Đang đúng mùa — ${name} và ${peak.length - 1} nơi khác đang vào lúc đẹp nhất.`
-    : `Đang đúng mùa — ${name} đang vào lúc đẹp nhất.`
-}
-
-// declutter-3 T15: 7 hàng type → 4 hero + 1 gộp "Tâm linh, lịch sử & thiên nhiên".
-// ACCOMMODATION rơi khỏi rows (đã có /luu-tru + chip đủ 7 loại trong FilterChips grid
-// + mode-dial hero). jumpFilters giữ hành vi filter TỪNG type ở section gộp.
-const HERO_ROW_TYPES = ['experience', 'attraction', 'craft_village', 'dish'] as const
-const MERGED_ROW = {
-  key: 'nature-history',
-  types: ['nature', 'history'] as const,
-  label: 'Tâm linh, lịch sử & thiên nhiên',
-  desc: 'Chùa Khmer, đình làng thời khẩn hoang và những mảng xanh ven sông — lớp trầm tích lặng nhất của vùng đất.',
-}
-
-const categories = computed(() => {
-  const byType = (t: string) => allEntities.value.filter((e: Entity) => e.type === t)
-  const sections = HERO_ROW_TYPES.map(t => {
-    const items = byType(t)
-    return {
-      key: t as string,
-      emoji: typeMeta(t).emoji,
-      label: typeMeta(t).label,
-      desc: CATEGORY_DESC[t] || '',
-      items,
-      seasonNote: categorySeasonNote(items),
-      jumpFilters: [{ type: t as string, text: `${items.length} kết quả →` }],
-    }
-  })
-  const mergedItems = MERGED_ROW.types.flatMap(byType)
-  if (mergedItems.length) {
-    sections.push({
-      key: MERGED_ROW.key,
-      emoji: typeMeta('nature').emoji,
-      label: MERGED_ROW.label,
-      desc: MERGED_ROW.desc,
-      items: mergedItems,
-      seasonNote: categorySeasonNote(mergedItems),
-      jumpFilters: MERGED_ROW.types
-        .map(t => ({ t: t as string, n: byType(t).length }))
-        .filter(x => x.n > 0)
-        .map(x => ({ type: x.t, text: `${x.n} ${typeMeta(x.t).label.toLowerCase()} →` })),
-    })
-  }
-  return sections.filter(c => c.items.length > 0)
-})
-
-function scrollToGrid() {
-  nextTick(() => gridSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
-}
 
 const activeFilterCount = computed(() => {
   let n = 0
@@ -445,7 +321,58 @@ const filtered = computed(() => {
 const PAGE_SIZE = 24
 const visibleCount = ref(PAGE_SIZE)
 const visible = computed(() => filtered.value.slice(0, visibleCount.value))
+const evidenceEntities = computed(() => visible.value.slice(0, 3))
 watch([q, typeFilter, seasonFilter, sortBy], () => { visibleCount.value = PAGE_SIZE })
+
+function firstText(...values: unknown[]): string {
+  const value = values.find(item => typeof item === 'string' && item.trim())
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+function hasCatalogMedia(entity: Entity): boolean {
+  return Boolean(
+    entity.image_descriptor?.url
+    || entity.image_descriptors?.some(descriptor => descriptor.url)
+    || entity.images?.some(Boolean)
+    || entity.image_urls?.some(Boolean)
+    || entity.image,
+  )
+}
+
+function catalogEntityContract(entity: Entity): 'entity-row' | 'entity-tile' {
+  return viewMode.value === 'grid' && hasCatalogMedia(entity) ? 'entity-tile' : 'entity-row'
+}
+
+function entitySourceTier(entity: Entity) {
+  return resolveSourceTier(entity.source_freshness?.source_tier || entity.quality?.source_tier)
+}
+
+function entitySourceTitle(entity: Entity): string {
+  return firstText(entity.source_freshness?.source_title, entity.quality?.source_title, entity.source?.[0]?.name)
+}
+
+function entitySourceUrl(entity: Entity): string {
+  return firstText(entity.source_freshness?.source_url, entity.quality?.source_url, entity.source?.[0]?.url)
+}
+
+function entityVerifiedAt(entity: Entity): string {
+  return firstText(entity.source_freshness?.verified_at, entity.quality?.verified_at)
+}
+
+function entityFreshnessStatus(entity: Entity) {
+  return resolveFreshnessStatus(entity.source_freshness?.freshness_status)
+}
+
+function catalogUpdatedLabel(entity: Entity): string {
+  const value = firstText(entity.source_freshness?.updated_at, entity.updatedAt)
+  if (!value || !Number.isFinite(Date.parse(value))) return ''
+  return `Cập nhật ${new Intl.DateTimeFormat('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    timeZone: 'Asia/Ho_Chi_Minh',
+  }).format(new Date(value))}`
+}
 
 useSeoMeta({
   title: () => pc('seo_title'),
@@ -494,194 +421,3 @@ useHead(() => ({
   }],
 }))
 </script>
-
-<style scoped>
-/* declutter-3 T15: section gộp có 2 nút jump (thiên nhiên / lịch sử) */
-.see-all-group { display: inline-flex; gap: var(--space-1); flex-wrap: wrap; justify-content: flex-end; }
-
-.controls {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-/* .filter-status/.result-bar/.view-toggle/.vt-btn/.list-view moved to
-   assets/css/catalog.css (was identical across du-lich/ocop/san-pham). */
-
-/* The selected mode changes one material accent while the structure and
-   semantic action/trust colors remain stable. */
-.atlas-hero {
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
-  border-radius: var(--radius-xl);
-  padding: clamp(var(--space-8), 4vw + var(--space-6), 4.5rem) var(--space-6) var(--space-6);
-  margin-bottom: var(--space-6);
-  border: .5px solid var(--line);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--tri-region-material-accent) 14%, transparent) 0%, var(--color-surface-subtle) 70%);
-  transition: background 1.1s var(--ease-cinematic);
-}
-.dark .atlas-hero { border-color: var(--color-border); }
-
-.atlas-hero-grain {
-  position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background-image: var(--grain); background-size: 140px 140px; opacity: .04;
-}
-.dark .atlas-hero-grain { opacity: .07; }
-
-/* Oversized off-centre category motif — bleeds off the edge, changes per mode */
-.atlas-hero-motif {
-  position: absolute; right: -4%; bottom: -10%; z-index: 0; pointer-events: none;
-  width: clamp(140px, 22vw, 260px); color: var(--tri-region-material-accent);
-  opacity: .1;
-  transition: color .8s var(--ease-cinematic);
-}
-.atlas-hero-motif :deep(svg) { width: 100%; height: auto; display: block; }
-
-.atlas-hero-inner { position: relative; z-index: 1; max-width: 64ch; }
-.atlas-hero-eyebrow {
-  margin: 0 0 var(--space-4);
-  font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
-  text-transform: uppercase; letter-spacing: var(--tracking-caps);
-  color: var(--color-brand);
-}
-.atlas-hero-title {
-  margin: 0 0 var(--space-4); font-family: var(--font-editorial); font-weight: 600;
-  letter-spacing: var(--tracking-tighter); text-wrap: balance;
-}
-.atlas-hero-line1 {
-  display: block; font-size: clamp(2rem, 1.6rem + 2.6vw, var(--text-5xl));
-  line-height: var(--leading-tight); color: var(--color-brand);
-}
-.atlas-hero-line2 {
-  display: block; margin-top: var(--space-2);
-  font-family: var(--font-sans); font-weight: var(--weight-medium);
-  font-size: clamp(1rem, .9rem + .6vw, var(--text-lg));
-  color: var(--muted); letter-spacing: normal;
-}
-.atlas-hero-sub {
-  margin: 0 0 var(--space-5); color: var(--ink);
-  font-size: var(--text-base); line-height: var(--leading-relaxed); max-width: 56ch;
-}
-/* Mode-dial cross-fade — deliberately slower than a UI toggle (600ms,
-   cinematic ease) so swapping modes reads as "the scene changes" (§10). */
-.mode-fade-enter-active,
-.mode-fade-leave-active { transition: opacity .6s var(--ease-cinematic); }
-.mode-fade-enter-from,
-.mode-fade-leave-to { opacity: 0; }
-@media (prefers-reduced-motion: reduce) {
-  .mode-fade-enter-active,
-  .mode-fade-leave-active { transition: none; }
-}
-
-/* Mode dial — the signature interaction */
-.mode-dial { display: flex; gap: var(--space-2); flex-wrap: wrap; }
-.mode-pill {
-  min-height: 44px; padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-full); border: .5px solid var(--line);
-  background: var(--card); color: var(--ink);
-  font-size: var(--text-sm); font-weight: var(--weight-medium); cursor: pointer;
-  transition: background .3s var(--ease-out), color .3s var(--ease-out), border-color .3s var(--ease-out), transform .2s var(--ease-spring-gentle), box-shadow .3s var(--ease-out);
-}
-.mode-pill:hover { border-color: var(--color-brand); transform: translateY(-1px); }
-.mode-pill:active { transform: scale(.96); transition-duration: .08s; }
-.mode-pill:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
-.mode-pill.active {
-  background: var(--color-brand-surface); color: var(--color-text); border-color: var(--color-brand);
-  box-shadow: inset 3px 0 0 var(--color-brand);
-}
-.dark .mode-pill { background: var(--card); border-color: var(--line); }
-
-.atlas-hero-stats {
-  position: relative; z-index: 1;
-  display: flex; gap: var(--space-6); margin-top: var(--space-6); padding-top: var(--space-4);
-  border-top: .5px solid var(--line); flex-wrap: wrap;
-}
-
-@media (max-width: 640px) {
-  .atlas-hero { padding: var(--space-6) var(--space-4); }
-  .atlas-hero-line1 { font-size: var(--text-2xl); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .atlas-hero { transition: none; }
-  .mode-pill:hover, .mode-pill:active { transform: none; }
-  .atlas-hero-motif { transition: none; }
-}
-
-/* ══════════════════════════════════════════════════════════════════════
-   BỐN CÁCH SỐNG TRONG NGÀY — information-scent quad. Each tile: kicker +
-   one sensory sentence, reads as story not category chip (anti-slop §7).
-   ══════════════════════════════════════════════════════════════════════ */
-.life-quad {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-4);
-}
-.life-tile {
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
-  display: block;
-  text-align: left;
-  padding: var(--space-6) var(--space-5);
-  border-radius: var(--radius-lg);
-  background: var(--card); border: .5px solid var(--line);
-  cursor: pointer; min-height: 44px;
-  transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out-expo), border-color .2s var(--ease-out);
-}
-.life-tile:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--border); }
-.life-tile:active { transform: scale(.98); transition-duration: .08s; }
-.life-tile:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
-/* asymmetric bleed motif per tile — editorial, not icon-in-a-box */
-.life-tile-motif {
-  position: absolute; right: -8%; bottom: -14%; z-index: 0;
-  width: 110px; height: 110px; opacity: .09; color: var(--color-material-river);
-  pointer-events: none;
-}
-.life-tile.life-miet-vuon .life-tile-motif { color: var(--color-material-leaf); }
-.life-tile.life-lang-nghe .life-tile-motif { color: var(--color-material-clay); }
-.life-tile.life-tam-linh .life-tile-motif { color: var(--color-brand); }
-.life-tile-motif :deep(svg) { width: 100%; height: 100%; display: block; }
-.life-tile-kicker {
-  position: relative; z-index: 1; margin: 0 0 var(--space-3);
-  font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
-  letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
-}
-.life-tile-line {
-  position: relative; z-index: 1; margin: 0;
-  font-family: var(--font-editorial); font-size: var(--text-lg);
-  line-height: var(--leading-snug); color: var(--ink);
-}
-.dark .life-tile { background: var(--card); border-color: var(--line); }
-.dark .life-tile:hover { border-color: rgba(var(--white-rgb),.1); }
-
-@media (max-width: 760px) {
-  .life-quad { grid-template-columns: 1fr; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .life-tile:hover, .life-tile:active { transform: none; }
-}
-
-/* ══════════════════════════════════════════════════════════════════════
-   SEASON NOTE — "đang đúng mùa" contextual note per category row: the
-   connective tissue that turns a static list into "here's what's good
-   to do, and why now" (concept §3/§6, data-driven, no fabrication).
-   ══════════════════════════════════════════════════════════════════════ */
-.season-note {
-  display: inline-flex; align-items: center; gap: var(--space-2);
-  margin: 0 0 var(--space-4); padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-full);
-  background: color-mix(in srgb, var(--color-warning) 10%, transparent);
-  color: var(--color-warning);
-  font-size: var(--text-xs); font-weight: var(--weight-semibold);
-}
-/* Static dot, deliberately NOT breathing — the page can render several
-   season-notes at once (one per category row); an ambient pulse on each
-   would stack into exactly the "everything breathing" anti-slop tell the
-   narrative system forbids (§3 "one ambient element per viewport"). The
-   sweep/mode-dial already claims this page's one moving signature. */
-.season-note::before {
-  content: ""; width: 6px; height: 6px; border-radius: 50%;
-  background: currentColor; flex-shrink: 0;
-}
-.dark .season-note { background: color-mix(in srgb, var(--color-warning) 16%, transparent); }
-</style>
