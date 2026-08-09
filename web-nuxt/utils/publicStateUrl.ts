@@ -39,5 +39,15 @@ export function parseSearchViewState(input: string | URLSearchParams | Record<st
   let filters: FilterSet = {}
   try { const parsed = JSON.parse(p.get('filters') || '{}'); if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) filters = parsed } catch { /* malformed URL state is ignored */ }
   const areaId = bounded(p.get('area'), 64)
-  return { query: bounded(p.get('query'), MAX_QUERY), intent, filters, ...(areaId ? { area: { id: areaId } } : {}), panel: 'list' }
+  let viewport: SearchViewState['viewport']
+  const tile = /^([0-9]{1,2})\/([0-9]+)\/([0-9]+)$/.exec(p.get('viewport') || '')
+  if (tile) {
+    const z = Number(tile[1]); const n = 2 ** z; const x = Number(tile[2]); const y = Number(tile[3])
+    if (z <= 22 && x < n && y < n) {
+      const lng = (x + 0.5) / n * 360 - 180
+      const lat = 180 / Math.PI * Math.atan(Math.sinh(Math.PI * (1 - 2 * (y + 0.5) / n)))
+      viewport = { center: [lng, lat], zoom: z }
+    }
+  }
+  return { query: bounded(p.get('query'), MAX_QUERY), intent, filters, ...(areaId ? { area: { id: areaId } } : {}), ...(viewport ? { viewport } : {}), panel: 'list' }
 }
