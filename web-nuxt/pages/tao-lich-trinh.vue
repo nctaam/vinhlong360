@@ -77,14 +77,11 @@
 
       <!-- Right: Itinerary builder -->
       <div class="planner-builder">
+        <div class="planner-timeline-column">
         <div class="builder-header">
           <div class="builder-title-wrap">
             <input v-model="planTitle" class="input builder-title" placeholder="Tên lịch trình (VD: 2 ngày khám phá Vĩnh Long)" aria-label="Tên lịch trình" maxlength="100" />
             <span v-if="planTitle.length > 80" class="title-counter" :class="{ warn: planTitle.length >= 95 }">{{ planTitle.length }}/100</span>
-          </div>
-          <div class="builder-actions">
-            <button type="button" class="btn btn-sm btn-ghost" @click="clearPlan" :disabled="!stops.length">Xóa tất cả</button>
-            <button type="button" :class="['btn', 'btn-sm', 'btn-primary', { 'save-pulse': savePulse }]" @click="savePlan" :disabled="!stops.length || saving">{{ saving ? 'Đang lưu…' : 'Lưu lịch trình' }}</button>
           </div>
         </div>
 
@@ -118,6 +115,59 @@
           {{ optimizationMessage || optimizeRouteTitle }}
         </p>
 
+        <div v-if="stops.length >= 2" class="planner-budget" data-planner-budget>
+          <label for="planner-time-budget">Ngân sách thời gian di chuyển</label>
+          <div class="planner-budget__control">
+            <input
+              id="planner-time-budget"
+              v-model.number="travelBudgetMinutes"
+              class="input"
+              type="number"
+              min="1"
+              step="5"
+              placeholder="Không đặt giới hạn"
+              @input="invalidatePlannerSchedule"
+            />
+            <span>phút</span>
+          </div>
+        </div>
+
+        <div v-if="plannerFrictionNotices.length" class="planner-frictions" data-planner-frictions aria-label="Lưu ý lịch trình">
+          <PlannerFrictionNotice
+            v-for="notice in plannerFrictionNotices"
+            :key="`${notice.code}-${notice.stopId || 'plan'}`"
+            :code="notice.code"
+            :severity="notice.severity"
+            :reason="notice.reason"
+            :recovery="notice.recovery"
+            @recover="handleFrictionRecovery(notice)"
+          />
+        </div>
+
+        <section v-if="plannerConflictDiff.length" class="planner-conflict-diff" data-planner-conflict-diff aria-label="Khác biệt bản nháp">
+          <h2>Khác biệt theo điểm dừng</h2>
+          <ul>
+            <li v-for="conflict in plannerConflictDiff" :key="`${conflict.id}-${conflict.changedFields.join('-')}`">
+              <strong>{{ conflict.local?.name || conflict.server?.name || conflict.id }}</strong>
+              <span>{{ conflict.changedFields.join(', ') }}</span>
+            </li>
+          </ul>
+          <div class="planner-conflict-diff__actions">
+            <button type="button" class="btn btn-sm btn-outline" @click="choosePlannerConflict('local')">Giữ bản cục bộ</button>
+            <button type="button" class="btn btn-sm btn-ghost" @click="choosePlannerConflict('server')">Dùng bản máy chủ</button>
+          </div>
+        </section>
+
+        <PlannerOptimizationPreview
+          v-if="optimizationPreview"
+          :before="optimizationPreview.before"
+          :after="optimizationPreview.after"
+          :changes="optimizationPreview.changes"
+          :tradeoffs="optimizationPreview.tradeoffs"
+          @confirm="confirmOptimizationPreview"
+          @cancel="cancelOptimizationPreview"
+        />
+
         <p v-if="stops.length >= 20" class="max-stops-warn" role="status">Đã đạt tối đa 20 điểm mỗi lịch trình.</p>
         <span class="sr-only" aria-live="polite" aria-atomic="true">{{ stopAnnounce }}</span>
         <div v-if="!stops.length" class="builder-empty">
@@ -126,7 +176,16 @@
 
         <div v-else class="stop-list">
           <template v-for="(stop, idx) in stops" :key="stop.id + '-' + idx">
-            <div class="stop-item" :style="{ animationDelay: `${idx * 50}ms` }">
+            <div
+              class="stop-item"
+              :style="{ animationDelay: `${idx * 50}ms` }"
+              draggable="true"
+              :data-stop-index="idx"
+              @dragstart="beginStopDrag(idx, $event)"
+              @dragover.prevent
+              @drop="dropStop(idx)"
+              @dragend="draggedStopIndex = null"
+            >
               <div class="stop-num">{{ idx + 1 }}</div>
               <div class="stop-connector" v-if="idx < stops.length - 1"></div>
               <div class="stop-card">
@@ -173,14 +232,59 @@
             </div>
           </template>
         </div>
+        </div>
 
         <!-- Route map -->
+        <div class="planner-map-column" data-planner-map-column>
+        <button
+          v-if="stops.length >= 2"
+          type="button"
+          class="btn btn-outline planner-map-sheet-toggle"
+          :aria-expanded="mapSheetOpen"
+          aria-controls="planner-map-sheet"
+          @click="mapSheetOpen = !mapSheetOpen"
+        >
+          {{ mapSheetOpen ? 'Đóng bản đồ' : 'Mở bản đồ' }}
+        </button>
         <ClientOnly>
-          <div v-if="stops.length >= 2" class="route-map-section">
+          <div v-if="stops.length >= 2" id="planner-map-sheet" class="route-map-section" :class="{ 'is-open': mapSheetOpen }">
             <h2 class="sediment-head">Bản đồ lộ trình</h2>
-            <div ref="routeMapEl" class="route-map"></div>
+            <div v-show="mapState !== 'error'" ref="routeMapEl" class="route-map" :data-map-state="mapState"></div>
+            <div v-if="mapState === 'error'" class="planner-map-fallback" data-map-fallback role="status">
+              <strong>Bản đồ chưa khả dụng</strong>
+              <p>Timeline vẫn giữ nguyên thứ tự và chỉnh sửa thủ công được.</p>
+              <button type="button" class="btn btn-sm btn-outline" @click="retryMap">Thử lại bản đồ</button>
+            </div>
           </div>
         </ClientOnly>
+        </div>
+
+        <button
+          type="button"
+          class="btn btn-outline planner-summary-toggle"
+          :aria-expanded="summaryDrawerOpen"
+          aria-controls="planner-summary-drawer"
+          @click="summaryDrawerOpen = !summaryDrawerOpen"
+        >
+          Tóm tắt lịch trình
+        </button>
+        <div id="planner-summary-drawer" class="planner-summary-shell" :class="{ 'is-open': summaryDrawerOpen }">
+          <PlannerSummary
+            :stop-count="stops.length"
+            :total-duration="plannerTotalDuration"
+            :travel-duration="routeResult?.totalDuration || 0"
+            :warnings="plannerSummaryWarnings"
+          />
+        </div>
+
+        <ActionDock class="planner-action-dock" data-planner-action-safe-area>
+          <template #primary>
+            <button type="button" :class="['btn', optimizationPreview ? 'btn-outline' : 'btn-primary', { 'save-pulse': savePulse }]" @click="savePlan" :disabled="!stops.length || saving">
+              {{ saving ? 'Đang lưu…' : 'Lưu lịch trình' }}
+            </button>
+          </template>
+          <button type="button" class="btn btn-ghost" @click="clearPlan" :disabled="!stops.length">Xóa tất cả</button>
+        </ActionDock>
 
         <!-- Saved itineraries -->
         <div v-if="savedPlans.length" class="saved-plans">
@@ -191,7 +295,7 @@
               <small>{{ plan.stops.length }} điểm · Lưu {{ formatDate(plan.savedAt) }}</small>
             </button>
             <div class="saved-plan-actions">
-              <button v-if="plan.id" type="button" :class="['btn btn-sm', plan.is_public ? 'btn-primary' : 'btn-ghost']" :disabled="planBusy === pi" @click="publishPlan(pi)">
+              <button v-if="plan.id" type="button" :class="['btn btn-sm', plan.is_public ? 'btn-outline' : 'btn-ghost']" :disabled="planBusy === pi" @click="publishPlan(pi)">
                 {{ planBusy === pi ? '…' : plan.is_public ? '🌐 Công khai' : '🔒 Riêng tư' }}
               </button>
               <button type="button" class="btn btn-sm btn-ghost" :disabled="planBusy === pi" @click="sharePlan(pi)">Chia sẻ</button>
@@ -209,7 +313,7 @@ import type { Entity } from '~/types'
 import type { EntityListResponse } from '~/types/api'
 import { usePublicApi } from '~/composables/usePublicApi'
 import { TYPE_META, CARD_TYPES, getTypeMeta } from '~/composables/useConstants'
-import { fetchRoute, fetchRouteTable, formatDistance, formatDuration, type TransportMode, type RouteResult } from '~/composables/useRouting'
+import { fetchRoute, fetchRouteTable, formatDistance, formatDuration, resolvePlannerRouteSurface, type TransportMode, type RouteResult } from '~/composables/useRouting'
 import {
   applySchedulePlacements,
   collectRoutableStops,
@@ -225,9 +329,23 @@ import {
   routeLegForStopIndex,
   runPlannerOptimization,
   serializePlanStops,
+  createPlannerOptimizationPreview,
+  createPlannerDraftSnapshot,
+  diffPlannerStops,
+  parsePlannerDraftSnapshot,
+  projectPlannerFrictions,
   type PlannerInputState,
+  type PlannerFrictionNotice as PlannerFriction,
+  type PlannerOptimizationPreview as PlannerPreviewTransaction,
+  type PlannerStopConflict,
+  type CurrentPlannerOptimizationResult,
+  type RoutableStop,
   type PlannerScheduleMetadata,
 } from '~/composables/useItineraryOptimization'
+import PlannerFrictionNotice from '~/components/planner/PlannerFrictionNotice.vue'
+import PlannerOptimizationPreview from '~/components/planner/PlannerOptimizationPreview.vue'
+import PlannerSummary from '~/components/planner/PlannerSummary.vue'
+import ActionDock from '~/components/public/ActionDock.vue'
 
 const LS_PLANS = 'vl360_plans'
 const route = useRoute()
@@ -251,6 +369,7 @@ interface SavedPlan {
   stops: PlanStop[]
   savedAt: string
   is_public?: boolean
+  revision?: number
 }
 
 const { favorites: favList, count: favCount } = useFavorites()
@@ -300,6 +419,13 @@ const routeResult = ref<RouteResult | null>(null)
 const routeLoading = ref(false)
 const optimizing = ref(false)
 const optimizationMessage = ref('')
+const summaryDrawerOpen = ref(false)
+const mapSheetOpen = ref(false)
+const optimizationPreview = ref<PlannerPreviewTransaction<PlanStop> | null>(null)
+let pendingOptimization: {
+  result: CurrentPlannerOptimizationResult<PlanStop>
+  routed: RoutableStop<PlanStop>[]
+} | null = null
 const suspendAutoRoute = ref(false)
 let latestAutoRouteRequest: number | null = null
 const plannerInputState = reactive<PlannerInputState>({ version: 0 })
@@ -310,9 +436,21 @@ let addingTimer: ReturnType<typeof setTimeout> | null = null
 const savePulse = ref(false)
 const saving = ref(false)
 const stopAnnounce = ref('')
+const draggedStopIndex = ref<number | null>(null)
+const plannerOnline = ref(true)
+const draftSavedAt = ref<string | null>(null)
+const draftSource = ref<'local' | 'server'>('local')
+const localDraftRevision = ref(0)
+const serverDraftRevision = ref<number | null>(null)
+const serverDraftStops = ref<PlanStop[]>([])
+const travelBudgetMinutes = ref<number | null>(null)
+const staleStopIds = ref<string[]>([])
+const openingHourConflicts = ref<Array<{ stopId: string; requestedTime?: string | null; openingHours?: string | null }>>([])
 const MAX_STOPS = 20
+const LS_DRAFT = 'vl360_planner_draft'
 let savePulseTimer: ReturnType<typeof setTimeout> | null = null
 let plannerLifecycleActive = true
+let draftPersistenceReady = false
 
 function isPlannerLifecycleActive() {
   return plannerLifecycleActive
@@ -332,10 +470,46 @@ const optimizeRouteTitle = computed(() => {
   return 'Giữ nguyên điểm đầu, điểm cuối và tối ưu các điểm ở giữa'
 })
 
+const plannerFrictionNotices = computed<PlannerFriction[]>(() => projectPlannerFrictions({
+  openingHourConflicts: openingHourConflicts.value,
+  travelMinutes: routeResult.value ? Math.round(routeResult.value.totalDuration / 60) : null,
+  travelBudgetMinutes: travelBudgetMinutes.value,
+  staleStopIds: staleStopIds.value,
+  missingCoordinateStopIds: stops.value
+    .filter(stop => !stop.coords)
+    .map(stop => stop.name || stop.id),
+  offlineDraft: plannerOnline.value ? false : {
+    revision: localDraftRevision.value,
+    savedAt: draftSavedAt.value,
+    source: draftSource.value,
+  },
+  revisionConflict: serverDraftRevision.value !== null && serverDraftRevision.value !== localDraftRevision.value
+    ? {
+        localRevision: localDraftRevision.value,
+        serverRevision: serverDraftRevision.value,
+      }
+    : false,
+  routeUnavailable: routeError.value,
+}))
+
+const plannerSummaryWarnings = computed(() => plannerFrictionNotices.value.map(notice => notice.reason))
+const plannerTotalDuration = computed(() => {
+  const visitDuration = stops.value.reduce((total, stop) => (
+    total + ((plannerScheduleMetadata.get(stop)?.visitMinutes || 0) * 60)
+  ), 0)
+  return (routeResult.value?.totalDuration || 0) + visitDuration
+})
+const plannerConflictDiff = computed<PlannerStopConflict<PlanStop>[]>(() => (
+  serverDraftRevision.value === null
+    ? []
+    : diffPlannerStops(stops.value, serverDraftStops.value)
+))
+
 const { createMap: createNDAMap } = useNDAMap()
 let mapInstance: any = null
 let maplibre: any = null
 let markers: any[] = []
+const mapState = ref<'idle' | 'loading' | 'ready' | 'error'>('idle')
 
 const plannerQueryKey = computed(() => [
   sourceTab.value,
@@ -393,6 +567,84 @@ const pickerResults = computed(() => {
 // F4: dùng chuẩn chung normalizeCoords (validate + hoán đổi lat/lng đảo)
 function extractCoords(entity: Entity): [number, number] | null {
   return normalizeCoords(entity.coordinates)
+}
+
+function clearPendingOptimizationPreview() {
+  optimizationPreview.value = null
+  pendingOptimization = null
+  openingHourConflicts.value = []
+}
+
+function persistPlannerDraft() {
+  if (!import.meta.client) return
+  const savedAt = new Date().toISOString()
+  draftSavedAt.value = savedAt
+  try {
+    localStorage.setItem(LS_DRAFT, JSON.stringify(createPlannerDraftSnapshot({
+      title: planTitle.value,
+      stops: stops.value,
+      revision: localDraftRevision.value,
+      savedAt,
+      source: draftSource.value,
+      travelBudgetMinutes: travelBudgetMinutes.value,
+    })))
+  } catch { /* local storage is an optional offline cache */ }
+}
+
+function restorePlannerDraft() {
+  if (!import.meta.client || stops.value.length) return
+  try {
+    const raw = localStorage.getItem(LS_DRAFT)
+    if (!raw) return
+    const parsed = parsePlannerDraftSnapshot(JSON.parse(raw))
+    if (!parsed?.stops.length) return
+    stops.value = serializePlanStops(parsed.stops)
+    planTitle.value = parsed.title
+    localDraftRevision.value = parsed.revision
+    plannerInputState.version = localDraftRevision.value
+    draftSavedAt.value = parsed.savedAt
+    draftSource.value = parsed.source
+    travelBudgetMinutes.value = parsed.travelBudgetMinutes
+    stops.value.forEach((stop) => {
+      plannerScheduleMetadata.set(stop, plannerMetadataForLoadedStop(stop.type))
+    })
+  } catch { /* malformed draft is ignored without blocking the timeline */ }
+}
+
+function handleFrictionRecovery(notice: PlannerFriction) {
+  if (!import.meta.client) return
+  if (notice.recovery.action === 'edit-budget') {
+    document.getElementById('planner-time-budget')?.focus()
+    return
+  }
+  if (notice.recovery.action === 'edit-time') {
+    document.querySelector<HTMLInputElement>('.stop-time-input')?.focus()
+    return
+  }
+  if (notice.recovery.action === 'refresh-stop') {
+    void refreshPicker()
+    return
+  }
+  if (notice.recovery.action === 'edit-stop' || notice.recovery.action === 'use-timeline') {
+    document.querySelector<HTMLElement>('.stop-list, .planner-timeline-column')?.focus()
+  }
+}
+
+async function choosePlannerConflict(choice: 'local' | 'server') {
+  const persistenceWasReady = draftPersistenceReady
+  draftPersistenceReady = false
+  if (choice === 'server' && serverDraftStops.value.length) {
+    invalidatePlannerSchedule()
+    stops.value = serializePlanStops(serverDraftStops.value)
+    stops.value.forEach(stop => plannerScheduleMetadata.set(stop, plannerMetadataForLoadedStop(stop.type)))
+    localDraftRevision.value = serverDraftRevision.value ?? localDraftRevision.value
+    draftSource.value = 'server'
+  }
+  serverDraftRevision.value = null
+  serverDraftStops.value = []
+  await nextTick()
+  draftPersistenceReady = persistenceWasReady
+  persistPlannerDraft()
 }
 
 async function addStop(entity: Entity) {
@@ -465,6 +717,28 @@ function moveStop(idx: number, dir: number) {
   nextTick(() => { stopAnnounce.value = `${temp.name} chuyển sang vị trí ${target + 1}.` })
 }
 
+function beginStopDrag(index: number, event: DragEvent) {
+  draggedStopIndex.value = index
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.setData('text/plain', String(index))
+  }
+}
+
+function dropStop(targetIndex: number) {
+  const sourceIndex = draggedStopIndex.value
+  draggedStopIndex.value = null
+  if (sourceIndex === null || sourceIndex === targetIndex) return
+  const stop = stops.value[sourceIndex]
+  if (!stop) return
+  invalidatePlannerSchedule()
+  stops.value.splice(sourceIndex, 1)
+  stops.value.splice(targetIndex, 0, stop)
+  optimizationMessage.value = ''
+  stopAnnounce.value = ''
+  nextTick(() => { stopAnnounce.value = `${stop.name} chuyển sang vị trí ${targetIndex + 1}.` })
+}
+
 async function clearPlan() {
   if (stops.value.length && !await confirmDialog('Xóa toàn bộ điểm trong lịch trình đang tạo?', { danger: true, confirmText: 'Xóa' })) return
   invalidatePlannerSchedule()
@@ -488,11 +762,12 @@ async function _doSave() {
   if (isLoggedIn.value) {
     // Đồng-bộ tài-khoản (cross-device)
     try {
-      const res = await $fetch<{ id: string }>('/api/my-plans', {
+      const res = await $fetch<{ id: string; revision?: number }>('/api/my-plans', {
         method: 'POST', headers: authHeaders(),
         body: { title: plan.title, stops: plan.stops },
       })
       plan.id = res.id
+      if (Number.isInteger(res.revision)) plan.revision = res.revision
     } catch (e: unknown) {
       showToast(extractErrorMessage(e, 'Không thể lưu lên tài khoản'), 'error')
       return
@@ -500,6 +775,17 @@ async function _doSave() {
   } else {
     persistLocal([plan, ...savedPlans.value])
   }
+  if (plan.id) {
+    draftSource.value = 'server'
+    if (plan.revision !== undefined) {
+      localDraftRevision.value = plan.revision
+      serverDraftRevision.value = plan.revision
+      serverDraftStops.value = serializePlanStops(plan.stops)
+    }
+  } else {
+    draftSource.value = 'local'
+  }
+  persistPlannerDraft()
   savedPlans.value.unshift(plan)
   // brief spring feedback on the button to reinforce the save toast
   savePulse.value = true
@@ -518,13 +804,22 @@ async function loadPlan(idx: number) {
   if (stops.value.length && !await confirmDialog('Thay thế lịch trình đang tạo bằng bản đã lưu?', { confirmText: 'Thay thế' })) return
   const plan = savedPlans.value[idx]
   if (!plan) return
+  const persistenceWasReady = draftPersistenceReady
+  draftPersistenceReady = false
   planTitle.value = plan.title
   invalidatePlannerSchedule()
   stops.value = serializePlanStops(plan.stops)
   stops.value.forEach((stop) => {
     plannerScheduleMetadata.set(stop, plannerMetadataForLoadedStop(stop.type))
   })
+  draftSource.value = plan.id ? 'server' : 'local'
+  localDraftRevision.value = plan.revision ?? (localDraftRevision.value + 1)
+  serverDraftRevision.value = plan.revision ?? null
+  serverDraftStops.value = plan.revision === undefined ? [] : serializePlanStops(plan.stops)
   optimizationMessage.value = ''
+  await nextTick()
+  draftPersistenceReady = persistenceWasReady
+  persistPlannerDraft()
 }
 
 async function deletePlan(idx: number) {
@@ -649,6 +944,7 @@ function plannerRouteLeg(stopIndex: number) {
 }
 
 function invalidatePlannerSchedule() {
+  clearPendingOptimizationPreview()
   invalidatePlannerInputs(
     plannerInputState,
     stops.value,
@@ -691,6 +987,57 @@ function plannerWarningMessage(
   return warning
 }
 
+function optimizationTradeoffs(
+  result: CurrentPlannerOptimizationResult<PlanStop>,
+  routed: RoutableStop<PlanStop>[],
+): string[] {
+  const messages: string[] = []
+  const { outcome } = result
+  if (outcome.optimization.saved_distance_km > 0.05) {
+    messages.push(`Giảm khoảng ${formatDistance(outcome.optimization.saved_distance_km * 1000)} theo ước tính hình học.`)
+  } else {
+    messages.push('Ước tính khoảng cách không giảm đáng kể.')
+  }
+  const missingCoordinates = stops.value.length - routed.length
+  if (missingCoordinates > 0) messages.push(`${missingCoordinates} điểm thiếu tọa độ được giữ nguyên vị trí.`)
+  if (outcome.route && !outcome.unresolvedUturn) messages.push('Không phát hiện thao tác quay đầu trên tuyến ứng viên.')
+  if (outcome.unresolvedUturn) messages.push('Tuyến ứng viên vẫn có rủi ro quay đầu; hãy kiểm tra thủ công.')
+  messages.push(...result.scheduleWarnings.map(warning => plannerWarningMessage(warning, routed)))
+  messages.push(...outcome.warnings.map(warning => plannerWarningMessage(warning, routed)))
+  const schedule = outcome.optimization.schedule
+  if (itineraryScheduleV2 && !schedule) messages.push('Không có khung giờ đề xuất; ứng viên chỉ đổi thứ tự tuyến.')
+  if (schedule?.matrix_source === 'haversine-fallback') {
+    messages.push('Thời gian di chuyển dùng ước tính Haversine vì ma trận OSRM không khả dụng.')
+  }
+  if (schedule && schedule.overtime_minutes > 0) {
+    messages.push(`Ứng viên vượt cuối ngày ${Math.round(schedule.overtime_minutes)} phút.`)
+  }
+  return [...new Set(messages)]
+}
+
+function updateOpeningHourConflicts(result: CurrentPlannerOptimizationResult<PlanStop>) {
+  const schedule = result.outcome.optimization.schedule
+  openingHourConflicts.value = (schedule?.skipped || [])
+    .filter(item => item.reason.toLowerCase().includes('opening'))
+    .map((item) => {
+      const routedStop = pendingOptimization?.routed.find(candidate => candidate.key === item.stop_id)
+      const metadata = routedStop ? plannerScheduleMetadata.get(routedStop.stop) : undefined
+      return {
+        stopId: routedStop?.stop.name || item.stop_id,
+        requestedTime: routedStop?.stop.time || null,
+        openingHours: metadata?.openingHours || null,
+      }
+    })
+}
+
+async function announceOptimization(message: string) {
+  optimizationMessage.value = message
+  if (!isPlannerLifecycleActive()) return
+  stopAnnounce.value = ''
+  await nextTick()
+  if (isPlannerLifecycleActive()) stopAnnounce.value = message
+}
+
 async function optimizePlanRoute() {
   if (!canOptimizeRoute.value || optimizing.value) {
     optimizationMessage.value = optimizeRouteTitle.value
@@ -702,6 +1049,7 @@ async function optimizePlanRoute() {
   suspendAutoRoute.value = true
   routeLoading.value = true
   routeError.value = false
+  clearPendingOptimizationPreview()
   optimizationMessage.value = ''
   autoRouteScheduler.cancelScheduled()
 
@@ -718,95 +1066,21 @@ async function optimizePlanRoute() {
         : requestOptimizedOrder(ordered, blockedEdges),
       route: coordinates => fetchRoute(coordinates, transportMode.value),
     })
-    if (!isPlannerLifecycleActive()) return
-    const routeRequestBeforeCommit = latestAutoRouteRequest
-    let reorderInputVersion: number | null = null
-    let optimizerWatcherRequest: number | null = null
-    const committedResult = await commitPlannerOptimizationResult(plannerResult, {
-      isActive: isPlannerLifecycleActive,
-      applyPlacements: (result) => {
-        const schedule = result.outcome.optimization.schedule
-        if (schedule) {
-          applySchedulePlacements(
-            routed,
-            schedule.placements,
-            plannerScheduleMetadata,
-            plannerInputState,
-          )
-        }
-        else if (itineraryScheduleV2) {
-          applySchedulePlacements(routed, [], plannerScheduleMetadata, plannerInputState)
-        }
-      },
-      reorderStops: (orderedKeys) => {
-        reorderInputVersion = plannerInputState.version
-        stops.value = mergeOptimizedStops(stops.value, routed, orderedKeys)
-      },
-      applyRoute: (route) => {
-        routeResult.value = route
-        routeError.value = !route
-      },
-      updateMap: async (route) => {
-        await nextTick()
-        if (!isPlannerLifecycleActive()) return
-        if (
-          reorderInputVersion !== null
-          && plannerInputState.version === reorderInputVersion
-          && latestAutoRouteRequest !== routeRequestBeforeCommit
-        ) {
-          optimizerWatcherRequest = latestAutoRouteRequest
-        }
-        if (!isPlannerLifecycleActive()) return
-        await updateMap(route)
-      },
-    })
-    if (!committedResult || !isPlannerLifecycleActive()) {
-      return
-    }
-    autoRouteScheduler.discardPending(optimizerWatcherRequest)
-    const { outcome } = committedResult
+    if (!isPlannerLifecycleActive() || plannerResult.status === 'stale') return
 
-    const messages: string[] = []
-    if (outcome.optimization.saved_distance_km > 0.05) {
-      messages.push(
-        `Đã giảm khoảng ${formatDistance(outcome.optimization.saved_distance_km * 1000)} theo ước tính hình học.`,
-      )
-    } else {
-      messages.push('Thứ tự hiện tại đã phù hợp với hướng tuyến.')
-    }
-    const missingCoordinates = stops.value.length - routed.length
-    if (missingCoordinates > 0) {
-      messages.push(`${missingCoordinates} điểm thiếu tọa độ được giữ nguyên vị trí.`)
-    }
-    if (outcome.route && !outcome.unresolvedUturn) {
-      messages.push('OSRM không phát hiện thao tác quay đầu trên tuyến cuối.')
-    }
-    messages.push(...committedResult.scheduleWarnings.map(warning => (
-      plannerWarningMessage(warning, routed)
-    )))
-    const schedule = outcome.optimization.schedule
-    if (itineraryScheduleV2 && !schedule) {
-      messages.push('Không có khung giờ đề xuất; kết quả hiện tại chỉ tối ưu thứ tự tuyến.')
-    }
-    if (schedule?.matrix_source === 'haversine-fallback') {
-      messages.push('Khung giờ dùng thời gian di chuyển ước tính Haversine do không có ma trận OSRM.')
-    }
-    if (schedule?.skipped.length) {
-      const reasons = [...new Set(schedule.skipped.map(item => item.reason))].join(', ')
-      messages.push(`${schedule.skipped.length} điểm tùy chọn bị bỏ qua (${reasons}).`)
-    }
-    if (schedule && schedule.overtime_minutes > 0) {
-      messages.push(`Lịch dự kiến vượt cuối ngày ${Math.round(schedule.overtime_minutes)} phút.`)
-    }
-    messages.push(...outcome.warnings.map(warning => (
-      plannerWarningMessage(warning, routed)
-    )))
-    optimizationMessage.value = [...new Set(messages)].join(' ')
-    if (!isPlannerLifecycleActive()) return
-    stopAnnounce.value = ''
-    await nextTick()
-    if (!isPlannerLifecycleActive()) return
-    stopAnnounce.value = optimizationMessage.value
+    const candidateStops = mergeOptimizedStops(
+      stops.value,
+      routed,
+      plannerResult.outcome.ordered.map(item => item.key),
+    )
+    pendingOptimization = { result: plannerResult, routed }
+    updateOpeningHourConflicts(plannerResult)
+    optimizationPreview.value = await createPlannerOptimizationPreview(
+      stops.value,
+      candidateStops,
+      { tradeoffs: optimizationTradeoffs(plannerResult, routed) },
+    )
+    await announceOptimization('Đã tạo bản xem trước. Thứ tự hiện tại chưa thay đổi.')
   } catch (error: unknown) {
     if (!isPlannerLifecycleActive()) return
     const message = extractErrorMessage(error, 'Không thể tối ưu tuyến lúc này')
@@ -823,10 +1097,84 @@ async function optimizePlanRoute() {
   }
 }
 
+async function confirmOptimizationPreview() {
+  const transaction = pendingOptimization
+  if (!transaction || !optimizationPreview.value) return
+  for (let attempt = 0; attempt < 3 && optimizing.value; attempt += 1) {
+    await nextTick()
+  }
+  if (optimizing.value || !isPlannerLifecycleActive()) return
+  optimizing.value = true
+  suspendAutoRoute.value = true
+  routeLoading.value = true
+  autoRouteScheduler.cancelScheduled()
+  const routeRequestBeforeCommit = latestAutoRouteRequest
+  let reorderInputVersion: number | null = null
+  let optimizerWatcherRequest: number | null = null
+
+  try {
+    const committedResult = await commitPlannerOptimizationResult(transaction.result, {
+      isActive: isPlannerLifecycleActive,
+      applyPlacements: (result) => {
+        const schedule = result.outcome.optimization.schedule
+        if (schedule) {
+          applySchedulePlacements(
+            transaction.routed,
+            schedule.placements,
+            plannerScheduleMetadata,
+            plannerInputState,
+          )
+        } else if (itineraryScheduleV2) {
+          applySchedulePlacements(transaction.routed, [], plannerScheduleMetadata, plannerInputState)
+        }
+      },
+      reorderStops: (orderedKeys) => {
+        reorderInputVersion = plannerInputState.version
+        stops.value = mergeOptimizedStops(stops.value, transaction.routed, orderedKeys)
+      },
+      applyRoute: (route) => {
+        routeResult.value = route
+        routeError.value = resolvePlannerRouteSurface(transaction.routed.length, route).kind === 'fallback'
+      },
+      updateMap: async (route) => {
+        await nextTick()
+        if (!isPlannerLifecycleActive()) return
+        if (
+          reorderInputVersion !== null
+          && plannerInputState.version === reorderInputVersion
+          && latestAutoRouteRequest !== routeRequestBeforeCommit
+        ) {
+          optimizerWatcherRequest = latestAutoRouteRequest
+        }
+        await updateMap(route)
+      },
+    })
+    if (!committedResult || !isPlannerLifecycleActive()) return
+    autoRouteScheduler.discardPending(optimizerWatcherRequest)
+    const message = optimizationTradeoffs(committedResult, transaction.routed).join(' ')
+    clearPendingOptimizationPreview()
+    await announceOptimization(message || 'Đã áp dụng thứ tự đề xuất.')
+  } finally {
+    if (!isPlannerLifecycleActive()) return
+    routeLoading.value = false
+    suspendAutoRoute.value = false
+    autoRouteScheduler.resume()
+    optimizing.value = false
+  }
+}
+
+async function cancelOptimizationPreview() {
+  if (!optimizationPreview.value) return
+  optimizationPreview.value.cancel()
+  clearPendingOptimizationPreview()
+  await announceOptimization('Đã giữ nguyên thứ tự hiện tại.')
+}
+
 async function computeRoute() {
   const coords = stops.value.map(s => s.coords).filter(Boolean) as [number, number][]
   if (coords.length < 2) {
     routeResult.value = null
+    routeError.value = false
     updateMap(null)
     return
   }
@@ -834,7 +1182,7 @@ async function computeRoute() {
   routeError.value = false
   const result = await fetchRoute(coords, transportMode.value)
   routeResult.value = result
-  routeError.value = !result  // OSRM lỗi/null mà vẫn có ≥2 điểm → báo, không im lặng
+  routeError.value = resolvePlannerRouteSurface(coords.length, result).kind === 'fallback'
   routeLoading.value = false
   updateMap(result)
 }
@@ -880,6 +1228,7 @@ async function updateMap(result: RouteResult | null) {
   }
 
   updatingMap = true
+  mapState.value = 'loading'
   try {
 
   if (!mapInstance) {
@@ -888,7 +1237,10 @@ async function updateMap(result: RouteResult | null) {
       if (res?.map && typeof (res.map as any).remove === 'function') (res.map as any).remove()
       return
     }
-    if (!res) return
+    if (!res) {
+      mapState.value = 'error'
+      return
+    }
     mapInstance = res.map
     maplibre = res.maplibregl
     mapInstance.on('styleimagemissing', (e: any) => {
@@ -909,7 +1261,10 @@ async function updateMap(result: RouteResult | null) {
   const stopsWithCoords = stops.value
     .map((s, i) => ({ ...s, idx: i }))
     .filter(hasCoords)
-  if (!stopsWithCoords.length) return
+  if (!stopsWithCoords.length) {
+    mapState.value = 'error'
+    return
+  }
 
   stopsWithCoords.forEach((s) => {
     const num = s.idx + 1
@@ -943,7 +1298,22 @@ async function updateMap(result: RouteResult | null) {
     fitMapToCoords(coords)
   }
 
-  } finally { updatingMap = false }
+  mapState.value = 'ready'
+  } catch {
+    mapState.value = 'error'
+  } finally {
+    updatingMap = false
+    if (pendingUpdate && mapState.value !== 'error') {
+      pendingUpdate = false
+      void updateMap(lastRouteResult)
+    }
+  }
+}
+
+async function retryMap() {
+  mapState.value = 'loading'
+  await nextTick()
+  await updateMap(lastRouteResult)
 }
 
 watch(routeMapEl, (el) => {
@@ -953,6 +1323,13 @@ watch(routeMapEl, (el) => {
   }
 })
 
+watch(mapSheetOpen, async (open) => {
+  if (!open) return
+  await nextTick()
+  if (mapInstance && typeof mapInstance.resize === 'function') mapInstance.resize()
+  await updateMap(lastRouteResult)
+})
+
 // Chỉ tính lại route khi TOẠ-ĐỘ/THỨ-TỰ stop hoặc phương-tiện đổi — KHÔNG khi sửa giờ/ghi-chú.
 watch(
   () => [stops.value.map(s => (s.coords ? s.coords.join(',') : 'x')).join('|'), transportMode.value],
@@ -960,7 +1337,24 @@ watch(
 )
 watch(transportMode, invalidatePlannerSchedule)
 
+watch([planTitle, stops, travelBudgetMinutes], () => {
+  if (!draftPersistenceReady) return
+  localDraftRevision.value += 1
+  persistPlannerDraft()
+}, { deep: true })
+
+function updatePlannerConnectivity() {
+  if (!import.meta.client) return
+  plannerOnline.value = navigator.onLine
+}
+
 onMounted(async () => {
+  updatePlannerConnectivity()
+  window.addEventListener('online', updatePlannerConnectivity)
+  window.addEventListener('offline', updatePlannerConnectivity)
+  restorePlannerDraft()
+  await nextTick()
+  draftPersistenceReady = true
   let local: SavedPlan[] = []
   try {
     const raw = localStorage.getItem(LS_PLANS)
@@ -993,6 +1387,8 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   plannerLifecycleActive = false
+  window.removeEventListener('online', updatePlannerConnectivity)
+  window.removeEventListener('offline', updatePlannerConnectivity)
   autoRouteScheduler.dispose()
   if (addingTimer) clearTimeout(addingTimer)
   if (savePulseTimer) clearTimeout(savePulseTimer)
@@ -1074,7 +1470,7 @@ useHead({
   cursor: pointer;
   transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle);
 }
-.picker-item:hover { background: var(--bg-warm); transform: translateX(3px); }
+.picker-item:hover { background: var(--bg-warm); }
 .picker-item:active { transform: scale(.98); transition-duration: .08s; }
 .picker-item:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-md); }
 .picker-emoji { font-size: var(--text-lg); flex-shrink: 0; }
@@ -1100,7 +1496,7 @@ useHead({
   margin-bottom: var(--space-3);
   transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo), transform .35s var(--ease-spring-gentle);
 }
-.stop-card:hover { border-color: var(--border); box-shadow: var(--shadow-sm); transform: translateY(-2px); }
+.stop-card:hover { border-color: var(--border); box-shadow: var(--shadow-sm); }
 .stop-card-head { display: flex; align-items: center; gap: var(--space-3); }
 .stop-emoji { font-size: var(--text-lg); }
 .stop-card-info { flex: 1; min-width: 0; }

@@ -114,6 +114,53 @@ beforeEach(() => {
 })
 
 describe('planner page lifecycle', () => {
+  it('keeps live stops unchanged until confirm and preserves revision on cancel', async () => {
+    mocks.runPlannerOptimization.mockResolvedValue(currentResult([
+      'planner-stop-0',
+      'planner-stop-2',
+      'planner-stop-1',
+    ]))
+    const wrapper = await mountPlannerWithThreeStops()
+    const vm = wrapper.vm as unknown as {
+      stops: Array<{ id: string }>
+      plannerInputState: { version: number }
+    }
+    const beforeIds = vm.stops.map(stop => stop.id)
+    const beforeRevision = vm.plannerInputState.version
+
+    await wrapper.get('.optimize-route-btn').trigger('click')
+    await flushContinuation()
+    expect(vm.stops.map(stop => stop.id)).toEqual(beforeIds)
+    expect(mocks.applyPlacements).toBe(0)
+    await wrapper.get('[data-preview-cancel]').trigger('click')
+    expect(vm.stops.map(stop => stop.id)).toEqual(beforeIds)
+    expect(vm.plannerInputState.version).toBe(beforeRevision)
+
+    await wrapper.get('.optimize-route-btn').trigger('click')
+    await flushContinuation()
+    await wrapper.get('[data-preview-confirm]').trigger('click')
+    await flushContinuation()
+    expect(vm.stops.map(stop => stop.id)).toEqual(['start', 'end', 'middle'])
+    expect(mocks.applyPlacements).toBe(1)
+    wrapper.unmount()
+  })
+
+  it('reorders the editable timeline by drag while retaining button alternatives', async () => {
+    const wrapper = await mountPlannerWithThreeStops()
+    const vm = wrapper.vm as unknown as { stops: Array<{ id: string }> }
+    const rows = wrapper.findAll('.stop-item')
+    const dataTransfer = { effectAllowed: '', setData: vi.fn() }
+
+    await rows[0]!.trigger('dragstart', { dataTransfer })
+    await rows[2]!.trigger('drop')
+    await nextTick()
+
+    expect(vm.stops.map(stop => stop.id)).toEqual(['middle', 'end', 'start'])
+    expect(wrapper.findAll('.stop-card-actions .move')).toHaveLength(4)
+    wrapper.unmount()
+  })
+
+
   it('does not apply a planner result or finish UI and routing state after unmount', async () => {
     let resolveOptimization!: (result: ReturnType<typeof currentResult>) => void
     const pending = new Promise<ReturnType<typeof currentResult>>((resolve) => {
@@ -167,6 +214,8 @@ describe('planner page lifecycle', () => {
     const vm = wrapper.vm as unknown as Record<string, unknown>
 
     await wrapper.get('.optimize-route-btn').trigger('click')
+    expect(mocks.commitMap).toBe(0)
+    await wrapper.get('[data-preview-confirm]').trigger('click')
     await waitForCommitBoundary()
     expect(mocks.commitMap).toBe(1)
 
@@ -223,6 +272,8 @@ describe('planner page lifecycle', () => {
     }))
 
     await wrapper.get('.optimize-route-btn').trigger('click')
+    expect(mocks.createMap).not.toHaveBeenCalled()
+    await wrapper.get('[data-preview-confirm]').trigger('click')
     await flushContinuation()
 
     expect(mocks.createMap).toHaveBeenCalledTimes(1)
@@ -329,7 +380,11 @@ function plannerState(vm: Record<string, unknown>) {
   }
 }
 
-function currentResult() {
+function currentResult(orderedKeys = [
+  'planner-stop-0',
+  'planner-stop-1',
+  'planner-stop-2',
+]) {
   return {
     status: 'current' as const,
     outcome: {
@@ -338,7 +393,7 @@ function currentResult() {
         backtrack_ratio: 0,
         distance_after_km: 1,
         distance_before_km: 2,
-        ordered_ids: ['planner-stop-0', 'planner-stop-1', 'planner-stop-2'],
+        ordered_ids: orderedKeys,
         saved_distance_km: 1,
         schedule: {
           matrix_source: 'request' as const,
@@ -357,11 +412,7 @@ function currentResult() {
         solver: 'schedule-exact' as const,
         warnings: [],
       },
-      ordered: [
-        { key: 'planner-stop-0' },
-        { key: 'planner-stop-1' },
-        { key: 'planner-stop-2' },
-      ],
+      ordered: orderedKeys.map(key => ({ key })),
       route: {
         geometry: [],
         legs: [

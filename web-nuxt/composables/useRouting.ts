@@ -19,6 +19,23 @@ export interface RouteTableResult {
   source: 'osrm-table'
 }
 
+export type PlannerRouteSurface =
+  | { kind: 'ready'; route: RouteResult; timelineEditable: true }
+  | { kind: 'fallback'; reason: 'missing-coordinates' | 'route-unavailable'; timelineEditable: true }
+
+export function resolvePlannerRouteSurface(
+  coordinateCount: number,
+  route: RouteResult | null,
+): PlannerRouteSurface {
+  if (coordinateCount < 2) {
+    return { kind: 'fallback', reason: 'missing-coordinates', timelineEditable: true }
+  }
+  if (!route) {
+    return { kind: 'fallback', reason: 'route-unavailable', timelineEditable: true }
+  }
+  return { kind: 'ready', route, timelineEditable: true }
+}
+
 const OSRM_HOST = 'https://router.project-osrm.org'
 const OSRM_BASE = `${OSRM_HOST}/route/v1`
 const OSRM_TABLE_BASE = `${OSRM_HOST}/table/v1`

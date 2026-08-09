@@ -79,6 +79,68 @@ export interface PlannerInputState {
   version: number
 }
 
+export type PlannerFrictionCode =
+  | 'opening-hours-conflict'
+  | 'travel-time-over-budget'
+  | 'stale-stop-facts'
+  | 'missing-coordinates'
+  | 'offline-draft'
+  | 'revision-conflict'
+  | 'route-unavailable'
+
+export type PlannerFrictionSeverity = 'info' | 'warning' | 'error'
+
+export interface PlannerFrictionRecovery {
+  label: string
+  action: string
+}
+
+export interface PlannerFrictionNotice {
+  code: PlannerFrictionCode
+  severity: PlannerFrictionSeverity
+  reason: string
+  recovery: PlannerFrictionRecovery
+  stopId?: string
+}
+
+export interface PlannerFrictionInput {
+  openingHourConflicts?: Array<{
+    stopId: string
+    requestedTime?: string | null
+    openingHours?: string | null
+  }>
+  travelMinutes?: number | null
+  travelBudgetMinutes?: number | null
+  staleStopIds?: string[]
+  missingCoordinateStopIds?: string[]
+  offlineDraft?: { revision: number; savedAt?: string | null; source?: 'local' | 'server' } | boolean
+  revisionConflict?: { localRevision: number; serverRevision: number } | boolean
+  routeUnavailable?: boolean
+}
+
+export interface PlannerOptimizationChange<T> {
+  id: string
+  from: number
+  to: number
+  stop: T
+}
+
+export interface PlannerOptimizationPreview<T extends { id: string }> {
+  before: T[]
+  after: T[]
+  changes: PlannerOptimizationChange<T>[]
+  tradeoffs: string[]
+  confirm: () => T[]
+  cancel: () => T[]
+}
+
+export interface PlannerStopConflict<T> {
+  id: string
+  local: T | null
+  server: T | null
+  changedFields: string[]
+}
+
 export interface PlannerStopDetailEnrichmentOptions<
   T extends StopWithCoords,
   TDetail,
@@ -105,6 +167,15 @@ export interface SavedPlanStopShape {
   coords: Coordinates | null
   time: string
   notes: string
+}
+
+export interface PlannerDraftSnapshot {
+  title: string
+  stops: SavedPlanStopShape[]
+  revision: number
+  savedAt: string
+  source: 'local' | 'server'
+  travelBudgetMinutes: number | null
 }
 
 export interface BoundedOptimizationResult<T extends StopWithCoords> {
@@ -492,6 +563,230 @@ export function serializePlanStops<T extends SavedPlanStopShape>(
     if (stop.place_name !== undefined) serialized.place_name = stop.place_name
     return serialized
   })
+}
+
+export function createPlannerDraftSnapshot<T extends SavedPlanStopShape>(input: {
+  title: string
+  stops: T[]
+  revision: number
+  savedAt: string
+  source?: 'local' | 'server'
+  travelBudgetMinutes?: number | null
+}): PlannerDraftSnapshot {
+  return {
+    title: input.title,
+    stops: serializePlanStops(input.stops),
+    revision: Math.max(0, Math.trunc(input.revision)),
+    savedAt: input.savedAt,
+    source: input.source ?? 'local',
+    travelBudgetMinutes: typeof input.travelBudgetMinutes === 'number'
+      && Number.isFinite(input.travelBudgetMinutes)
+      ? input.travelBudgetMinutes
+      : null,
+  }
+}
+
+export function parsePlannerDraftSnapshot(value: unknown): PlannerDraftSnapshot | null {
+  if (!value || typeof value !== 'object') return null
+  const candidate = value as Partial<PlannerDraftSnapshot>
+  const revision = candidate.revision
+  if (
+    typeof candidate.title !== 'string'
+    || !Array.isArray(candidate.stops)
+    || typeof revision !== 'number'
+    || !Number.isInteger(revision)
+    || revision < 0
+    || typeof candidate.savedAt !== 'string'
+  ) return null
+  const stops = candidate.stops.filter((stop): stop is SavedPlanStopShape => (
+    Boolean(stop)
+    && typeof stop === 'object'
+    && typeof (stop as SavedPlanStopShape).id === 'string'
+    && typeof (stop as SavedPlanStopShape).name === 'string'
+    && typeof (stop as SavedPlanStopShape).type === 'string'
+    && typeof (stop as SavedPlanStopShape).time === 'string'
+    && typeof (stop as SavedPlanStopShape).notes === 'string'
+  ))
+  if (stops.length !== candidate.stops.length) return null
+  return {
+    title: candidate.title,
+    stops: serializePlanStops(stops),
+    revision,
+    savedAt: candidate.savedAt,
+    source: candidate.source === 'server' ? 'server' : 'local',
+    travelBudgetMinutes: typeof candidate.travelBudgetMinutes === 'number'
+      && Number.isFinite(candidate.travelBudgetMinutes)
+      ? candidate.travelBudgetMinutes
+      : null,
+  }
+}
+
+function frictionRecovery(
+  label: string,
+  action: string,
+): PlannerFrictionRecovery {
+  return { label, action }
+}
+
+export function projectPlannerFrictions(
+  input: PlannerFrictionInput,
+): PlannerFrictionNotice[] {
+  const notices: PlannerFrictionNotice[] = []
+
+  input.openingHourConflicts?.forEach((conflict) => {
+    const requested = conflict.requestedTime ? ` ${conflict.requestedTime}` : ''
+    const opening = conflict.openingHours ? `; giờ mở cửa ${conflict.openingHours}` : ''
+    notices.push({
+      code: 'opening-hours-conflict',
+      severity: 'warning',
+      stopId: conflict.stopId,
+      reason: `Khung giờ${requested} của điểm dừng không khớp dữ liệu mở cửa${opening}.`,
+      recovery: frictionRecovery('Điều chỉnh khung giờ', 'edit-time'),
+    })
+  })
+
+  const travelMinutes = input.travelMinutes
+  const travelBudgetMinutes = input.travelBudgetMinutes
+  if (
+    typeof travelMinutes === 'number'
+    && Number.isFinite(travelMinutes)
+    && typeof travelBudgetMinutes === 'number'
+    && Number.isFinite(travelBudgetMinutes)
+    && travelMinutes > travelBudgetMinutes
+  ) {
+    notices.push({
+      code: 'travel-time-over-budget',
+      severity: 'warning',
+      reason: `Thời gian di chuyển ${Math.round(travelMinutes)} phút vượt ngân sách ${Math.round(travelBudgetMinutes)} phút.`,
+      recovery: frictionRecovery('Điều chỉnh ngân sách', 'edit-budget'),
+    })
+  }
+
+  input.staleStopIds?.forEach((stopId) => {
+    notices.push({
+      code: 'stale-stop-facts',
+      severity: 'warning',
+      stopId,
+      reason: `Dữ kiện của điểm dừng ${stopId} có thể đã cũ.`,
+      recovery: frictionRecovery('Làm mới dữ kiện', 'refresh-stop'),
+    })
+  })
+
+  input.missingCoordinateStopIds?.forEach((stopId) => {
+    notices.push({
+      code: 'missing-coordinates',
+      severity: 'warning',
+      stopId,
+      reason: `Điểm dừng ${stopId} chưa có tọa độ hợp lệ; timeline vẫn có thể chỉnh sửa.`,
+      recovery: frictionRecovery('Mở chỉnh sửa thủ công', 'edit-stop'),
+    })
+  })
+
+  if (input.offlineDraft) {
+    const draft = typeof input.offlineDraft === 'object' ? input.offlineDraft : null
+    const savedAt = draft?.savedAt ? ` lúc ${draft.savedAt}` : ''
+    const revision = draft ? ` (bản cục bộ ${draft.revision})` : ''
+    const source = draft?.source === 'server' ? ' từ bản máy chủ gần nhất' : ''
+    notices.push({
+      code: 'offline-draft',
+      severity: 'info',
+      reason: `Đang ngoại tuyến; thay đổi được giữ trong bản nháp cục bộ${revision}${source}${savedAt}.`,
+      recovery: frictionRecovery('Tiếp tục chỉnh sửa cục bộ', 'keep-local'),
+    })
+  }
+
+  if (input.revisionConflict) {
+    const conflict = typeof input.revisionConflict === 'object'
+      ? input.revisionConflict
+      : null
+    const reason = conflict
+      ? `Bản nháp cục bộ (revision ${conflict.localRevision}) khác bản máy chủ (revision ${conflict.serverRevision}).`
+      : 'Bản nháp cục bộ đã khác bản máy chủ.'
+    notices.push({
+      code: 'revision-conflict',
+      severity: 'error',
+      reason,
+      recovery: frictionRecovery('So sánh từng điểm dừng', 'review-conflict'),
+    })
+  }
+
+  if (input.routeUnavailable) {
+    notices.push({
+      code: 'route-unavailable',
+      severity: 'info',
+      reason: 'Không lấy được tuyến hoặc bản đồ; timeline và thứ tự thủ công vẫn khả dụng.',
+      recovery: frictionRecovery('Dùng danh sách timeline', 'use-timeline'),
+    })
+  }
+
+  return notices
+}
+
+export async function createPlannerOptimizationPreview<T extends { id: string }>(
+  before: T[],
+  after: T[],
+  options: { tradeoffs?: string[] } = {},
+): Promise<PlannerOptimizationPreview<T>> {
+  const beforeSnapshot = before
+  const afterSnapshot = after.slice()
+  const changes: PlannerOptimizationChange<T>[] = []
+  const beforeIndexByObject = new Map<T, number>()
+  beforeSnapshot.forEach((stop, index) => beforeIndexByObject.set(stop, index))
+  afterSnapshot.forEach((stop, to) => {
+    const from = beforeIndexByObject.get(stop)
+      ?? beforeSnapshot.findIndex(candidate => candidate.id === stop.id)
+    if (from >= 0 && from !== to) {
+      changes.push({ id: stop.id, from, to, stop })
+    }
+  })
+  changes.sort((left, right) => left.from - right.from)
+
+  return {
+    before: beforeSnapshot,
+    after: afterSnapshot,
+    changes,
+    tradeoffs: [...(options.tradeoffs ?? [])],
+    confirm: () => afterSnapshot.slice(),
+    cancel: () => beforeSnapshot,
+  }
+}
+
+export function diffPlannerStops<T extends { id: string }>(
+  local: T[],
+  server: T[],
+): PlannerStopConflict<T>[] {
+  const indexStops = (stops: T[]) => {
+    const occurrences = new Map<string, number>()
+    const indexed = new Map<string, { stop: T; index: number }>()
+    stops.forEach((stop, index) => {
+      const occurrence = occurrences.get(stop.id) ?? 0
+      occurrences.set(stop.id, occurrence + 1)
+      indexed.set(`${stop.id}:${occurrence}`, { stop, index })
+    })
+    return indexed
+  }
+  const localStops = indexStops(local)
+  const serverStops = indexStops(server)
+  const keys = new Set([...localStops.keys(), ...serverStops.keys()])
+  const conflicts: PlannerStopConflict<T>[] = []
+
+  keys.forEach((key) => {
+    const localEntry = localStops.get(key)
+    const serverEntry = serverStops.get(key)
+    const localStop = localEntry?.stop ?? null
+    const serverStop = serverEntry?.stop ?? null
+    const id = localStop?.id || serverStop?.id || key.slice(0, key.lastIndexOf(':'))
+    if (!localStop || !serverStop) {
+      conflicts.push({ id, local: localStop, server: serverStop, changedFields: ['stop'] })
+      return
+    }
+    const changedFields = Object.keys(localStop).filter(field => (
+      JSON.stringify(localStop[field as keyof T]) !== JSON.stringify(serverStop[field as keyof T])
+    ))
+    if (localEntry?.index !== serverEntry?.index) changedFields.unshift('position')
+    if (changedFields.length) conflicts.push({ id, local: localStop, server: serverStop, changedFields })
+  })
+  return conflicts
 }
 
 export function buildPlannerScheduleEnvelope<

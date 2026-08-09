@@ -5,8 +5,23 @@ import {
   buildRouteUrl,
   parseRouteResponse,
 } from '../composables/useRouting'
+import * as routing from '../composables/useRouting'
 
 describe('itinerary OSRM routing', () => {
+  it('returns an editable timeline fallback when route service data is unavailable', () => {
+    const resolveFallback = (routing as Record<string, unknown>)
+      .resolvePlannerRouteSurface as undefined | ((coordinateCount: number, route: unknown) => Record<string, unknown>)
+
+    expect(resolveFallback).toEqual(expect.any(Function))
+    if (!resolveFallback) return
+
+    expect(resolveFallback(3, null)).toEqual({
+      kind: 'fallback',
+      reason: 'route-unavailable',
+      timelineEditable: true,
+    })
+  })
+
   it('requests route steps and continue-straight', () => {
     expect(buildRouteUrl([[10, 106], [10.5, 106.5]])).toBe(
       'https://router.project-osrm.org/route/v1/car/'
