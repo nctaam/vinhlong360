@@ -1,5 +1,9 @@
+import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { describe, expect, it } from 'vitest'
-import { projectLocation, usePublicContextEnvelope } from '~/composables/usePublicContextEnvelope'
+import { defineComponent, h } from 'vue'
+import { usePublicContextEnvelope } from '~/composables/usePublicContextEnvelope'
+import type { RegionSlug } from '~/composables/useRegionPref'
+import type { ContextEnvelope } from '~/types/publicExperience'
 import type { PreferenceSnapshot } from '~/types/personalization'
 
 const snapshot = (overrides: Partial<PreferenceSnapshot> = {}): PreferenceSnapshot => ({
@@ -7,6 +11,23 @@ const snapshot = (overrides: Partial<PreferenceSnapshot> = {}): PreferenceSnapsh
   location_consent_state: 'unknown', location_enabled: false, personalization_enabled: false, explicit_interests: [],
   recommendation_reset_at: null, consent_version: null, location_reconfirm_required: false, revision: 0, ...overrides,
 })
+
+async function envelopeFor(region: RegionSlug | null, preferences: PreferenceSnapshot): Promise<ContextEnvelope> {
+  useState('auth-user').value = null
+  useState<RegionSlug | null>('regionPref', () => null).value = region
+  useState<PreferenceSnapshot>('personalization-preferences-snapshot', snapshot).value = preferences
+  let context: ReturnType<typeof usePublicContextEnvelope> | undefined
+  const Harness = defineComponent({
+    setup() {
+      context = usePublicContextEnvelope()
+      return () => h('div')
+    },
+  })
+  const wrapper = await mountSuspended(Harness)
+  const envelope = context!.envelope.value
+  wrapper.unmount()
+  return envelope
+}
 
 describe('public context envelope', () => {
   it('defaults location to unavailable and does not expose coordinates', () => {
@@ -20,18 +41,45 @@ describe('public context envelope', () => {
     expect(envelope.value.time.localTime).toMatch(/^\d{2}:\d{2}$/)
   })
   it.each([
-    ['manual-off', 'vinh-long', snapshot({ location_source: 'manual', location_accuracy: 'province', location_enabled: false }), 'selected', 'manual', 'province'],
-    ['gps', 'vinh-long', snapshot({ location_source: 'gps', location_accuracy: 'province', location_enabled: true }), 'approximate', 'gps', 'province'],
-    ['ip', 'vinh-long', snapshot({ location_source: 'ip', location_accuracy: 'ward', location_enabled: true }), 'exact', 'ip', 'ward'],
-    ['unavailable', null, snapshot(), 'unavailable', 'default', 'unknown'],
-  ])('projects %s provenance without raw location', (_name, region, prefs, mode, source, accuracy) => {
-    const result = projectLocation(region, prefs)
-    expect(result.mode).toBe(mode)
-    expect(result.source).toBe(source)
-    expect(result.accuracy).toBe(accuracy)
-    expect(JSON.stringify(result)).not.toMatch(/latitude|longitude|coords/i)
-  })
-  it('keeps the envelope TTL explicit', () => {
-    expect(usePublicContextEnvelope().envelope.value.ttlSeconds).toBe(300)
+    {
+      name: 'manual selection while location is disabled',
+      region: 'vinh-long' as const,
+      preferences: snapshot({ location_source: 'manual', location_accuracy: 'province', location_enabled: false }),
+      location: { mode: 'selected', confidence: 'medium', source: 'manual', accuracy: 'province' },
+      signals: ['selected-region'],
+      area: { id: 'vinh-long' },
+    },
+    {
+      name: 'GPS-derived region',
+      region: 'vinh-long' as const,
+      preferences: snapshot({ location_source: 'gps', location_accuracy: 'province', location_enabled: true }),
+      location: { mode: 'approximate', confidence: 'low', source: 'gps', accuracy: 'province' },
+      signals: ['location-signal'],
+      area: { id: 'vinh-long' },
+    },
+    {
+      name: 'IP-derived region',
+      region: 'vinh-long' as const,
+      preferences: snapshot({ location_source: 'ip', location_accuracy: 'ward', location_enabled: true }),
+      location: { mode: 'exact', confidence: 'high', source: 'ip', accuracy: 'ward' },
+      signals: ['location-signal'],
+      area: { id: 'vinh-long' },
+    },
+    {
+      name: 'unavailable location',
+      region: null,
+      preferences: snapshot(),
+      location: { mode: 'unavailable', confidence: 'low', source: 'default', accuracy: 'unknown' },
+      signals: [],
+      area: undefined,
+    },
+  ])('emits the complete $name envelope projection', async ({ region, preferences, location, signals, area }) => {
+    const envelope = await envelopeFor(region, preferences)
+
+    expect(envelope.location).toEqual(location)
+    expect(envelope.ttlSeconds).toBe(300)
+    expect(envelope.explainableSignals).toEqual(signals)
+    expect(envelope.area).toEqual(area)
+    expect(JSON.stringify(envelope)).not.toMatch(/latitude|longitude|coords/i)
   })
 })
