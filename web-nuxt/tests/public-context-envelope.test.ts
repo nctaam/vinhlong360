@@ -7,4 +7,9 @@ describe('public context envelope', () => {
     expect(['unavailable', 'selected']).toContain(envelope.value.location.mode)
     expect(JSON.stringify(envelope.value)).not.toMatch(/latitude|longitude|coords|gps/i)
   })
+  it('uses Bangkok local time fields rather than UTC serialization', () => {
+    const { envelope } = usePublicContextEnvelope()
+    expect(envelope.value.time.localDate).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    expect(envelope.value.time.localTime).toMatch(/^\d{2}:\d{2}$/)
+  })
 })

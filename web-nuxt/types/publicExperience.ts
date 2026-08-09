@@ -32,7 +32,7 @@ export interface ContextEnvelope {
   source: string
   ttlSeconds: number
   area?: AreaRef
-  location: { mode: 'exact' | 'approximate' | 'selected' | 'unavailable'; confidence: 'high' | 'medium' | 'low' }
+  location: { mode: 'exact' | 'approximate' | 'selected' | 'unavailable'; confidence: 'high' | 'medium' | 'low'; source?: string; accuracy?: string }
   intent?: IntentState
   time: { localDate: string; localTime: string; season?: string }
   freshness: { updatedAt?: string; source?: string }
