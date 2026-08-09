@@ -7,6 +7,7 @@ export interface JourneyAction {
   text?: string
   to: string
   tone?: JourneyActionTone
+  role?: 'primary' | 'secondary'
 }
 
 function cleanQuery(q: string | undefined) {
@@ -22,13 +23,20 @@ function positiveNumber(value: unknown) {
   return Math.max(0, Number(value) || 0)
 }
 
+function publicRail(actions: JourneyAction[], limit = 3) {
+  return actions.slice(0, Math.min(Math.max(limit, 1), 3)).map((action, index) => ({
+    ...action,
+    role: index === 0 ? 'primary' as const : 'secondary' as const,
+  }))
+}
+
 export function useJourneyActions() {
   function searchRecoveryActions(q: string): JourneyAction[] {
     const term = cleanQuery(q)
-    return [
+    return publicRail([
       {
         id: 'catalog',
-        icon: '🔎',
+        icon: 'search',
         label: term ? 'Tìm rộng trong địa điểm' : 'Khám phá địa điểm',
         text: term ? `Mở catalog với từ khóa "${term}".` : 'Duyệt toàn bộ điểm đến theo loại và khu vực.',
         to: withQuery('/dia-diem', term),
@@ -36,7 +44,7 @@ export function useJourneyActions() {
       },
       {
         id: 'map',
-        icon: '🗺️',
+        icon: 'map',
         label: 'Mở bản đồ',
         text: 'Chuyển sang khám phá theo vị trí và khu vực.',
         to: '/ban-do',
@@ -44,13 +52,13 @@ export function useJourneyActions() {
       },
       {
         id: 'community',
-        icon: '💬',
+        icon: 'message',
         label: 'Hỏi cộng đồng',
         text: 'Đặt câu hỏi khi hệ thống chưa có nội dung phù hợp.',
         to: term ? `/cong-dong?q=${encodeURIComponent(term)}` : '/cong-dong',
         tone: 'community',
       },
-    ]
+    ])
   }
 
   function searchSuccessActions(q: string, resultCount: number): JourneyAction[] {
@@ -59,7 +67,7 @@ export function useJourneyActions() {
     if (resultCount > 0) {
       actions.push({
         id: 'map',
-        icon: '🗺️',
+        icon: 'map',
         label: 'Xem trên bản đồ',
         text: 'Đổi sang chế độ vị trí để so sánh các điểm gần nhau.',
         to: withQuery('/ban-do', term),
@@ -67,7 +75,7 @@ export function useJourneyActions() {
       })
       actions.push({
         id: 'planner',
-        icon: '📋',
+        icon: 'clipboard-list',
         label: 'Tạo lịch trình',
         text: 'Chọn các điểm phù hợp rồi sắp xếp thành chuyến đi.',
         to: '/tao-lich-trinh',
@@ -77,14 +85,14 @@ export function useJourneyActions() {
     if (term) {
       actions.push({
         id: 'catalog',
-        icon: '🔎',
+        icon: 'search',
         label: 'Lọc sâu hơn',
         text: 'Mở catalog để thêm bộ lọc loại hình và khu vực.',
         to: withQuery('/dia-diem', term),
         tone: 'primary',
       })
     }
-    return actions.slice(0, 3)
+    return publicRail(actions)
   }
 
   function savedWorkspaceActions(input: {
@@ -98,7 +106,7 @@ export function useJourneyActions() {
     if (input.entityCount > 0) {
       actions.push({
         id: 'saved-to-plan',
-        icon: '📋',
+        icon: 'clipboard-list',
         label: 'Tạo lịch trình từ đã lưu',
         text: `${input.entityCount} địa điểm có thể đưa vào kế hoạch.`,
         to: '/tao-lich-trinh?source=saved',
@@ -106,7 +114,7 @@ export function useJourneyActions() {
       })
       actions.push({
         id: 'saved-map',
-        icon: '🗺️',
+        icon: 'map',
         label: 'Xem các điểm trên bản đồ',
         text: 'Dùng bản đồ để nhóm các điểm gần nhau.',
         to: query ? `/ban-do?source=saved&q=${encodeURIComponent(query)}` : '/ban-do?source=saved',
@@ -115,7 +123,7 @@ export function useJourneyActions() {
     } else {
       actions.push({
         id: 'discover',
-        icon: '🔎',
+        icon: 'search',
         label: 'Tìm điểm để lưu',
         text: 'Bắt đầu với danh sách điểm đến và đặc sản nổi bật.',
         to: '/dia-diem',
@@ -125,7 +133,7 @@ export function useJourneyActions() {
     if (input.itineraryCount === 0) {
       actions.push({
         id: 'planner',
-        icon: '🧭',
+        icon: 'compass',
         label: 'Mở bộ lập lịch trình',
         text: 'Tạo kế hoạch riêng trước khi đi.',
         to: '/tao-lich-trinh',
@@ -135,14 +143,14 @@ export function useJourneyActions() {
     if (query) {
       actions.unshift({
         id: 'search-system',
-        icon: '🔎',
+        icon: 'search',
         label: 'Tìm trên toàn hệ thống',
         text: `Không chỉ trong mục đã lưu: "${query}".`,
         to: `/tim-kiem?q=${encodeURIComponent(query)}`,
         tone: 'primary',
       })
     }
-    return actions.slice(0, 3)
+    return publicRail(actions)
   }
 
   function homepageDecisionActions(input: {
@@ -166,7 +174,7 @@ export function useJourneyActions() {
     if (input.isLoggedIn && savedCount > 0) {
       actions.push({
         id: 'home-continue-saved',
-        icon: '💾',
+        icon: 'bookmark',
         label: 'Tiếp tục từ mục đã lưu',
         text: `${savedCount} mục đã lưu có thể gom thành lịch trình.`,
         to: '/tao-lich-trinh?source=saved',
@@ -177,7 +185,7 @@ export function useJourneyActions() {
     if (recentCount > 0) {
       actions.push({
         id: 'home-recent',
-        icon: '🕘',
+        icon: 'clock',
         label: 'Nối tiếp điểm vừa xem',
         text: `${recentCount} nội dung gần đây, mở lại để so sánh trước khi lưu.`,
         to: '/da-luu?tab=recent',
@@ -185,7 +193,7 @@ export function useJourneyActions() {
       })
     }
 
-    return actions.slice(0, 2)
+    return publicRail(actions, 2)
   }
 
   // (declutter-2 A7: builder userCpJourneyActions đã xoá — rail tai-khoan bị bỏ vì
@@ -210,7 +218,7 @@ export function useJourneyActions() {
     if (input.healthStatus && input.healthStatus !== 'ok') {
       actions.push({
         id: 'admin-health',
-        icon: '⚠️',
+        icon: 'alert-triangle',
         label: 'Kiểm tra hệ thống degraded',
         text: 'Health/internal đang báo cần chú ý trước khi xử lý nội dung.',
         to: '/admin/thong-ke',
@@ -220,7 +228,7 @@ export function useJourneyActions() {
     if (!input.releaseGateOk || !input.deployHealthBlocking || !input.deployHostConfigured) {
       actions.push({
         id: 'admin-release',
-        icon: '🚦',
+        icon: 'flag',
         label: 'Khóa lại release gate',
         text: input.deployHostConfigured === false ? 'Thiếu cấu hình deploy host hoặc gate chưa đủ chặt.' : 'Đảm bảo gate chặn deploy khi smoke/health lỗi.',
         to: '/admin/ai',
@@ -230,7 +238,7 @@ export function useJourneyActions() {
     if (!input.rollbackReady) {
       actions.push({
         id: 'admin-rollback',
-        icon: '🛟',
+        icon: 'shield',
         label: 'Chuẩn bị rollback',
         text: 'Chưa thấy backup gần nhất, nên tạo backup trước batch dữ liệu lớn.',
         to: '/admin/nhat-ky',
@@ -240,7 +248,7 @@ export function useJourneyActions() {
     if (moderation > 0 || reports > 0) {
       actions.push({
         id: 'admin-moderation',
-        icon: '🛡️',
+        icon: 'shield-check',
         label: 'Dọn hàng đợi kiểm duyệt',
         text: `${moderation} mục kiểm duyệt và ${reports} báo cáo đang chờ xử lý.`,
         to: moderation >= reports ? '/admin/kiem-duyet' : '/admin/bao-cao',
@@ -250,7 +258,7 @@ export function useJourneyActions() {
     if (dataQuality > 0 || Number(input.dataQualityCoverage || 100) < 85) {
       actions.push({
         id: 'admin-data-quality',
-        icon: '🔎',
+        icon: 'search',
         label: 'Xử lý quality queue',
         text: dataQuality > 0 ? `${dataQuality} candidate dữ liệu cần duyệt hoặc apply.` : `Coverage dữ liệu đang ở ${input.dataQualityCoverage || 0}%.`,
         to: '/admin/data-quality',
@@ -260,7 +268,7 @@ export function useJourneyActions() {
     if (media > 0) {
       actions.push({
         id: 'admin-media',
-        icon: '🖼️',
+        icon: 'images',
         label: 'Duyệt media',
         text: `${media} ảnh hoặc media đang chờ kiểm tra.`,
         to: '/admin/media',
@@ -270,7 +278,7 @@ export function useJourneyActions() {
     if (!actions.length) {
       actions.push({
         id: 'admin-all-clear',
-        icon: '✓',
+        icon: 'check',
         label: 'Tiếp tục audit định kỳ',
         text: 'Không có tín hiệu khẩn cấp; ưu tiên rà soát dữ liệu và nhật ký.',
         to: '/admin/data-quality',
@@ -303,7 +311,7 @@ export function useJourneyActions() {
     if (selectedAuto > 0) {
       actions.push({
         id: 'dq-dry-run-selected',
-        icon: '🧪',
+        icon: 'flask',
         label: 'Dry-run trước khi apply',
         text: `${selectedAuto} candidate đã chọn, nên xem diff trước khi ghi dữ liệu public.`,
         to: '/admin/data-quality',
@@ -312,7 +320,7 @@ export function useJourneyActions() {
     } else if (autoApply > 0) {
       actions.push({
         id: 'dq-select-auto',
-        icon: '✅',
+        icon: 'check',
         label: 'Chọn nhóm auto-apply',
         text: `${autoApply} candidate đủ evidence có thể xử lý theo batch.`,
         to: '/admin/data-quality?bucket=auto_apply',
@@ -322,7 +330,7 @@ export function useJourneyActions() {
     if (needsReview > 0) {
       actions.push({
         id: 'dq-review',
-        icon: '👁️',
+        icon: 'info',
         label: 'Duyệt candidate cần người xem',
         text: `${needsReview} candidate cần kiểm tra evidence trước khi apply.`,
         to: '/admin/data-quality?bucket=needs_review',
@@ -332,7 +340,7 @@ export function useJourneyActions() {
     if (missingSource + missingLocation + missingPlaceId > 0) {
       actions.push({
         id: 'dq-gap',
-        icon: '📌',
+        icon: 'pin',
         label: 'Ưu tiên lỗ hổng dữ liệu',
         text: `${missingSource} thiếu nguồn, ${missingLocation} thiếu tọa độ, ${missingPlaceId} thiếu placeId.`,
         to: '/admin/data-quality',
@@ -342,7 +350,7 @@ export function useJourneyActions() {
     if (reject > 0) {
       actions.push({
         id: 'dq-reject',
-        icon: '🧹',
+        icon: 'repeat',
         label: 'Rà soát nhóm loại',
         text: `${reject} candidate bị đánh dấu reject, nên kiểm tra mẫu lỗi lặp.`,
         to: '/admin/data-quality?bucket=reject',

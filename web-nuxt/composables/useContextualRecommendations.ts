@@ -1,5 +1,9 @@
 import { unref, type Ref } from 'vue'
+import { useAdaptivePriority, type AdaptiveIntent, type AdaptiveReasonCode } from './useAdaptivePriority'
+import { useAttentionBudget } from './useAttentionBudget'
+import { projectAdaptivePreferenceSignals, usePersonalizationPreferences } from './usePersonalizationPreferences'
 import type { RecommendationCard, RecommendationResponse, RecommendationSource } from '~/types/api'
+import type { ContextEnvelope } from '~/types/publicExperience'
 import { normalizeSavedImageSnapshot, type SavedImageSnapshot } from '~/utils/savedImageDescriptors'
 
 type MaybeRef<T> = T | Ref<T>
@@ -9,6 +13,10 @@ interface ContextualRecommendationOptions {
   entityId?: MaybeRef<string | undefined>
   query?: MaybeRef<string | undefined>
   limit?: MaybeRef<number | undefined>
+  intent?: MaybeRef<AdaptiveIntent | undefined>
+  contextEnvelope?: MaybeRef<Pick<ContextEnvelope, 'network'> | undefined>
+  adaptiveOrder?: MaybeRef<Record<string, number> | undefined>
+  adaptiveReason?: MaybeRef<AdaptiveReasonCode | undefined>
   immediate?: boolean
 }
 
@@ -43,6 +51,16 @@ export function useContextualRecommendations(options: ContextualRecommendationOp
   const error = ref(false)
   const source = ref<RecommendationSource>('fallback')
   const { isLoggedIn, authHeaders, fetchCsrf } = useAuth()
+  const preferences = usePersonalizationPreferences()
+  const suggestionBudget = useAttentionBudget({ storageNamespace: 'vl360:recommendations-attention:v1' })
+  const adaptiveSignals = computed<AdaptiveReasonCode[]>(() => projectAdaptivePreferenceSignals(preferences.snapshot.value))
+  const priority = computed(() => resolveContextualRecommendationPriority({
+    items: items.value,
+    context: optionValue<Pick<ContextEnvelope, 'network'> | undefined>(options.contextEnvelope, undefined),
+    intent: optionValue<AdaptiveIntent | undefined>(options.intent, { confidence: 'low', defaultCta: 'view' }),
+    adaptiveOrder: optionValue<Record<string, number> | undefined>(options.adaptiveOrder, undefined),
+    reason: optionValue<AdaptiveReasonCode | undefined>(options.adaptiveReason, adaptiveSignals.value[0]),
+  }))
 
   let requestId = 0
   let refreshTimer: ReturnType<typeof setTimeout> | null = null
@@ -108,6 +126,16 @@ export function useContextualRecommendations(options: ContextualRecommendationOp
     refreshTimer = setTimeout(() => { void refresh() }, 120)
   }
 
+  function canShowSuggestion(itemId: string) {
+    const id = recommendationSuggestionId(itemId)
+    return !!id && suggestionBudget.canSuggest(id)
+  }
+
+  function dismissSuggestion(itemId: string) {
+    const id = recommendationSuggestionId(itemId)
+    return !!id && suggestionBudget.dismiss(id)
+  }
+
   if (import.meta.client && options.immediate !== false) {
     onMounted(refresh)
     watch(
@@ -125,5 +153,44 @@ export function useContextualRecommendations(options: ContextualRecommendationOp
     })
   }
 
-  return { items, reasons, profile, loading, error, source, refresh }
+  return {
+    items,
+    reasons,
+    profile,
+    loading,
+    error,
+    source,
+    adaptiveSignals,
+    priority,
+    canShowSuggestion,
+    dismissSuggestion,
+    resetSuggestionSession: suggestionBudget.resetSession,
+    refresh,
+  }
+}
+
+export function recommendationSuggestionId(value: unknown) {
+  if (typeof value !== 'string') return ''
+  const id = value.trim().toLowerCase()
+  return /^[a-z0-9][a-z0-9:_-]{0,43}$/.test(id) ? `recommendation:${id}` : ''
+}
+
+export function resolveContextualRecommendationPriority<T extends { id: string }>(input: {
+  items: T[]
+  context?: Pick<ContextEnvelope, 'network'>
+  intent?: AdaptiveIntent
+  adaptiveOrder?: Record<string, number>
+  reason?: AdaptiveReasonCode
+}) {
+  return useAdaptivePriority().resolve({
+    context: input.context,
+    intent: input.intent,
+    candidates: input.items.map((item, index) => ({
+      ...item,
+      kind: 'metadata' as const,
+      defaultOrder: index,
+      adaptiveRank: input.adaptiveOrder?.[item.id] ?? index,
+      reason: input.reason,
+    })),
+  })
 }

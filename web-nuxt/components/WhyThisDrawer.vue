@@ -25,6 +25,10 @@
               <span class="why-signal-icon" aria-hidden="true"><IconLine :name="index === 0 ? 'compass' : 'list'" /></span>
               <span>{{ reason }}</span>
             </div>
+            <div v-for="reason in adaptiveReasonLabels" :key="`adaptive-${reason}`" class="why-signal">
+              <span class="why-signal-icon" aria-hidden="true"><IconLine name="route" /></span>
+              <span>{{ reason }}</span>
+            </div>
             <div v-if="regionLabel" class="why-signal">
               <span class="why-signal-icon" aria-hidden="true"><IconLine name="pin" /></span>
               <span>Khu vực đã chọn: <strong>{{ regionLabel }}</strong></span>
@@ -40,6 +44,10 @@
           <div class="why-secondary-actions" aria-label="Điều khiển đề xuất">
             <button type="button" data-action="reset" @click="emit('reset')">Làm mới đề xuất</button>
             <button type="button" data-action="disable-personalization" @click="emit('disable-personalization')">Tắt cá nhân hóa</button>
+            <template v-if="adaptiveReasonLabels.length">
+              <button type="button" data-action="reset-priority" @click="emit('reset-priority')">Hiển thị mặc định</button>
+              <button type="button" data-action="dismiss-suggestion" @click="emit('dismiss-suggestion')">Hiển thị gọn hơn</button>
+            </template>
           </div>
 
           <div class="disclosure-primary-wrap">
@@ -56,6 +64,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { adaptiveReasonLabel, type AdaptiveReasonCode } from '~/composables/useAdaptivePriority'
 import type { RecommendationExplanation } from '~/types/api'
 import { projectRecommendationExplanation } from '~/utils/recommendationExplanation'
 import IconLine from './IconLine.vue'
@@ -64,10 +73,12 @@ const props = withDefaults(defineProps<{
   open?: boolean
   explanation?: Partial<RecommendationExplanation> | null
   preferenceHref?: string
+  adaptiveReasons?: AdaptiveReasonCode[]
 }>(), {
   open: false,
   explanation: null,
   preferenceHref: '/cai-dat#khu-vuc-de-xuat',
+  adaptiveReasons: () => [],
 })
 
 const emit = defineEmits<{
@@ -75,6 +86,8 @@ const emit = defineEmits<{
   reset: []
   'open-preferences': []
   'disable-personalization': []
+  'reset-priority': []
+  'dismiss-suggestion': []
 }>()
 
 const drawerEl = ref<HTMLElement | null>(null)
@@ -83,6 +96,7 @@ const safeExplanation = computed(() => projectRecommendationExplanation(props.ex
 const broadReasons = computed(() => safeExplanation.value.reasons)
 const regionLabel = computed(() => safeExplanation.value.regionLabel)
 const interestLabels = computed(() => safeExplanation.value.interestLabels)
+const adaptiveReasonLabels = computed(() => [...new Set(props.adaptiveReasons.map(adaptiveReasonLabel).filter((value): value is string => !!value))])
 
 useModalA11y(openState, drawerEl, { onClose: () => emit('close') })
 </script>

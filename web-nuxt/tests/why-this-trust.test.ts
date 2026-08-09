@@ -281,6 +281,28 @@ describe('SourceTrustDrawer contract', () => {
 })
 
 describe('WhyThisDrawer contract', () => {
+  it('shows only allowlisted adaptive reasons with dismissal and reset controls', async () => {
+    const wrapper = await mountSuspended(WhyThisDrawer, {
+      props: {
+        open: true,
+        adaptiveReasons: ['selected-area', 'recent-item', 'raw-query' as never],
+      },
+      attachTo: document.body,
+    })
+    wrappers.push(wrapper)
+
+    const dialog = document.body.querySelector('[role="dialog"][data-why-this]') as HTMLElement
+    expect(dialog.textContent).toContain('Gần khu vực đã chọn')
+    expect(dialog.textContent).toContain('Liên quan nội dung vừa xem hoặc lưu')
+    expect(dialog.textContent).not.toContain('raw-query')
+
+    for (const action of ['reset-priority', 'dismiss-suggestion'] as const) {
+      ;(dialog.querySelector(`[data-action="${action}"]`) as HTMLButtonElement).click()
+      await flushUi()
+      expect(wrapper.emitted(action)).toHaveLength(1)
+    }
+  })
+
   it('shows only allowlisted broad explanation signals and emits preference controls', async () => {
     const wrapper = await mountSuspended(WhyThisDrawer, {
       props: {

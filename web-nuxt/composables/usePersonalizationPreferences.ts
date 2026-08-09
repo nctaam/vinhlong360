@@ -20,6 +20,14 @@ const LOCATION_ACCURACIES = new Set<PreferenceLocationAccuracy>(['ward', 'distri
 const CONSENT_STATES = new Set<PreferenceConsentState>(['unknown', 'granted', 'denied', 'off', 'expired'])
 const AGE_BANDS = new Set<PreferenceAgeBand>(['under_18', '18_24', '25_34', '35_49', '50_plus', 'unknown'])
 
+export function projectAdaptivePreferenceSignals(snapshot: Partial<PreferenceSnapshot>) {
+  if (snapshot.personalization_enabled !== true) return []
+  const signals: Array<'selected-area' | 'explicit-interest'> = []
+  if (snapshot.location_enabled === true && typeof snapshot.region_id === 'string' && snapshot.region_id.trim()) signals.push('selected-area')
+  if (Array.isArray(snapshot.explicit_interests) && snapshot.explicit_interests.some(value => typeof value === 'string' && value.trim())) signals.push('explicit-interest')
+  return signals
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object' && !Array.isArray(value)
 }

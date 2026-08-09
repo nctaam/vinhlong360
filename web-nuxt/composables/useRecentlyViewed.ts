@@ -12,6 +12,7 @@ export interface RecentItem {
 
 const STORAGE_KEY = 'vl360_recent'
 const MAX_ITEMS = 12
+export const RECENT_CONTEXT_TTL_MS = 30 * 60 * 1_000
 
 let loaded = false
 
@@ -54,6 +55,11 @@ export function createRecentItem(entity: Record<string, any>, viewedAt = Date.no
   }) as RecentItem
 }
 
+export function filterCurrentRecentItems(items: RecentItem[], now = Date.now(), ttlMs = RECENT_CONTEXT_TTL_MS) {
+  const cutoff = now - Math.max(1, ttlMs)
+  return items.filter(item => Number.isFinite(item.viewedAt) && item.viewedAt > cutoff).slice(0, MAX_ITEMS)
+}
+
 export function useRecentlyViewed() {
   const items = useState<RecentItem[]>('recentlyViewed', () => [])
 
@@ -79,5 +85,7 @@ export function useRecentlyViewed() {
     save()
   }
 
-  return { recentItems: items, track }
+  const currentRecentItems = computed(() => filterCurrentRecentItems(items.value))
+
+  return { recentItems: items, currentRecentItems, track }
 }

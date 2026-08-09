@@ -11,7 +11,7 @@
         :to="action.to"
         :class="['journey-action', `tone-${action.tone || 'neutral'}`]"
       >
-        <span class="journey-action-icon" aria-hidden="true">{{ action.icon }}</span>
+        <span class="journey-action-icon" aria-hidden="true"><IconLine :name="action.icon" /></span>
         <span class="journey-action-copy">
           <strong>{{ action.label }}</strong>
           <small v-if="action.text">{{ action.text }}</small>
@@ -23,6 +23,7 @@
 
 <script setup lang="ts">
 import type { JourneyAction } from '~/composables/useJourneyActions'
+import IconLine from './IconLine.vue'
 
 withDefaults(defineProps<{
   actions: JourneyAction[]
