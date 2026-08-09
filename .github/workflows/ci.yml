@@ -338,6 +338,9 @@ jobs:
           BUILD_REVISION: ${{ github.sha }}
         run: npm run build
 
+      - name: Public accessibility gate
+        run: npm run check:public-accessibility
+
       # R30.7 chỉ đo được khi ĐÃ có web-nuxt/.output. `run_hard.py --all` chạy ở
       # job Python — nơi frontend chưa từng build — nên ở đó cổng luôn graceful-skip
       # về 0 và không bao giờ chặn được gì. Đây là nơi duy nhất nó có răng.

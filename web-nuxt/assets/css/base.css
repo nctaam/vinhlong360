@@ -1008,7 +1008,10 @@ html[data-high-contrast="true"] :where(.card, .step-card, .route-card, .cross-ca
 /* ── Forced-colors / Windows High Contrast ── */
 @media (forced-colors: active) {
   * { forced-color-adjust: auto; }
-  .btn, .tag, .chip, .badge, .auth-btn { border: 1px solid ButtonText; }
+  .btn, .tag, .chip, .badge, .auth-btn,
+  [data-color-role="action-primary"], .btn-primary, button, input, select, textarea, summary, [role="button"] {
+    border: 1px solid ButtonText !important;
+  }
   a:focus-visible, button:focus-visible, [role="button"]:focus-visible { outline: 2px solid Highlight; }
   .topbar, .site-footer { border-bottom: 1px solid CanvasText; }
   .card, .step-card, .route-card, .sidebar-card, .stop-card, .saved-plan-item { border: 1px solid CanvasText; }

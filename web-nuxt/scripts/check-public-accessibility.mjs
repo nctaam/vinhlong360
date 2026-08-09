@@ -1,24 +1,51 @@
 import { spawn } from 'node:child_process'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { gzipSync } from 'node:zlib'
 
 const webRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const previewUrl = 'http://127.0.0.1:4173/'
 const mainVisibleBudgetMs = 5000
+const lcpBudgetMs = 2500
+const clsBudget = 0.1
+const inpBudgetMs = 200
+const apiBudgetMs = 1500
+const textScaleTarget = 2
+const axeSourcePath = join(webRoot, 'node_modules', 'axe-core', 'axe.min.js')
+const bundleBudgetPath = resolve(webRoot, '..', 'docs', 'standards', 'bundle-budget.json')
 
 export function evaluatePublicAccessibilitySnapshot(snapshot) {
   const reasons = []
   if (!snapshot.forcedColorsActive) reasons.push('forced-colors-inactive')
   if (snapshot.forcedColorAdjust !== 'auto') reasons.push('forced-color-adjust-not-auto')
-  if (!snapshot.forcedControlBorderVisible) reasons.push('forced-control-border-missing')
+  if (!snapshot.forcedControlBorderVisible
+    || !snapshot.forcedRepresentativeControls
+    || snapshot.forcedRepresentativeControls.total < 1
+    || snapshot.forcedRepresentativeControls.bounded < snapshot.forcedRepresentativeControls.total) {
+    reasons.push('forced-control-border-missing')
+  }
+  if (snapshot.textScale !== textScaleTarget || snapshot.textScaleApplied !== true) reasons.push('text-scale-not-200-percent')
   if (snapshot.devicePixelRatio < 2
     || Math.abs((snapshot.viewportWidth * 2) - snapshot.screenWidth) > 2) reasons.push('zoom-layout-not-2x')
   if (snapshot.horizontalOverflow > 0) reasons.push('horizontal-overflow')
-  if (!snapshot.mainVisible) reasons.push('main-content-hidden')
+  if (!snapshot.mainVisible || snapshot.mainUsable !== true) reasons.push('main-content-hidden')
   if (snapshot.controlsBelow44 > 0) reasons.push('undersized-controls')
   if (snapshot.mainVisibleMs > mainVisibleBudgetMs) reasons.push('main-visible-budget-exceeded')
+  if (snapshot.contrastAuditAvailable !== true) reasons.push('contrast-audit-unavailable')
+  if (!Number.isFinite(snapshot.contrastAuditedCount) || snapshot.contrastAuditedCount < 1) reasons.push('contrast-audit-empty')
+  if (snapshot.contrastViolations > 0) reasons.push('contrast-violations')
+  if (!Number.isFinite(snapshot.lcpMs)) reasons.push('lcp-audit-unavailable')
+  else if (snapshot.lcpMs > lcpBudgetMs) reasons.push('lcp-budget-exceeded')
+  if (!Number.isFinite(snapshot.cls)) reasons.push('cls-audit-unavailable')
+  else if (snapshot.cls > clsBudget) reasons.push('cls-budget-exceeded')
+  if (snapshot.inpAvailable !== true) reasons.push('inp-audit-unavailable')
+  if (Number.isFinite(snapshot.inpMs) && snapshot.inpMs > inpBudgetMs) reasons.push('inp-budget-exceeded')
+  if (Number.isFinite(snapshot.apiMaxMs) && snapshot.apiMaxMs > apiBudgetMs) reasons.push('api-budget-exceeded')
+  if (snapshot.bundleAuditAvailable !== true) reasons.push('bundle-audit-unavailable')
+  if (snapshot.bundleViolations > 0) reasons.push('bundle-budget-exceeded')
   return reasons
 }
 
@@ -57,8 +84,10 @@ async function waitForHttp(url, timeoutMs = 30000) {
   throw new Error(`Preview did not become ready: ${url}`)
 }
 
-async function launchChrome(chromePath, profileDir) {
-  const child = spawn(chromePath, [
+export async function launchChrome(chromePath, profileDir, options = {}) {
+  const spawnProcess = options.spawnProcess || spawn
+  const fetchImpl = options.fetchImpl || fetch
+  const child = spawnProcess(chromePath, [
     '--headless=new',
     '--disable-background-networking',
     '--disable-component-update',
@@ -74,23 +103,33 @@ async function launchChrome(chromePath, profileDir) {
     'about:blank',
   ], { stdio: ['ignore', 'ignore', 'pipe'], windowsHide: true })
 
-  const websocketUrl = await new Promise((resolveUrl, reject) => {
-    const timer = setTimeout(() => reject(new Error('Chrome CDP startup timed out')), 20000)
-    child.once('error', reject)
-    child.stderr.setEncoding('utf8')
-    child.stderr.on('data', chunk => {
-      const match = chunk.match(/DevTools listening on (ws:\/\/[^\s]+)/)
-      if (!match) return
-      clearTimeout(timer)
-      resolveUrl(match[1])
+  try {
+    const websocketUrl = await new Promise((resolveUrl, reject) => {
+      const timer = setTimeout(() => reject(new Error('Chrome CDP startup timed out')), 20000)
+      const fail = error => {
+        clearTimeout(timer)
+        reject(error)
+      }
+      child.once('error', fail)
+      child.once('exit', code => fail(new Error(`Chrome exited before CDP startup (${code ?? 'unknown'})`)))
+      child.stderr?.setEncoding?.('utf8')
+      child.stderr?.on('data', chunk => {
+        const match = chunk.match(/DevTools listening on (ws:\/\/[^\s]+)/)
+        if (!match) return
+        clearTimeout(timer)
+        resolveUrl(match[1])
+      })
     })
-  })
 
-  const port = new URL(websocketUrl).port
-  const targets = await fetch(`http://127.0.0.1:${port}/json/list`).then(response => response.json())
-  const pageTarget = targets.find(target => target.type === 'page')
-  if (!pageTarget?.webSocketDebuggerUrl) throw new Error('Chrome page target unavailable')
-  return { child, websocketUrl: pageTarget.webSocketDebuggerUrl }
+    const port = new URL(websocketUrl).port
+    const targets = await fetchImpl(`http://127.0.0.1:${port}/json/list`).then(response => response.json())
+    const pageTarget = targets.find(target => target.type === 'page')
+    if (!pageTarget?.webSocketDebuggerUrl) throw new Error('Chrome page target unavailable')
+    return { child, websocketUrl: pageTarget.webSocketDebuggerUrl }
+  } catch (error) {
+    await stopChild(child)
+    throw error
+  }
 }
 
 class CdpClient {
@@ -146,6 +185,54 @@ class CdpClient {
   }
 }
 
+function allFiles(root) {
+  if (!existsSync(root)) return []
+  return readdirSync(root, { withFileTypes: true }).flatMap(entry => {
+    const path = join(root, entry.name)
+    return entry.isDirectory() ? allFiles(path) : [path]
+  })
+}
+
+function bundleSnapshot() {
+  const outputRoot = resolve(webRoot, '.output', 'public', '_nuxt')
+  if (!existsSync(outputRoot)) return { bundleAuditAvailable: false, bundleViolations: 1 }
+  let budget = { total_gz_kb: 800, max_chunk_gz_kb: 280, total_css_gz_kb: 190 }
+  try { budget = { ...budget, ...JSON.parse(readFileSync(bundleBudgetPath, 'utf8')) } } catch { /* fail below */ }
+  const js = readdirSync(outputRoot, { withFileTypes: true })
+    .filter(entry => entry.isFile() && entry.name.endsWith('.js'))
+    .map(entry => join(outputRoot, entry.name))
+  const css = allFiles(outputRoot).filter(path => path.endsWith('.css'))
+  if (!js.length) return { bundleAuditAvailable: false, bundleViolations: 1 }
+  const gzKb = path => Math.floor(gzipSync(readFileSync(path)).length / 1024)
+  const jsSizes = js.map(path => ({ path, kb: gzKb(path) }))
+  const totalJs = jsSizes.reduce((sum, item) => sum + item.kb, 0)
+  const maxJs = Math.max(...jsSizes.map(item => item.kb))
+  const totalCss = css.reduce((sum, path) => sum + gzKb(path), 0)
+  const bundleViolations = Number(totalJs > budget.total_gz_kb)
+    + Number(maxJs > budget.max_chunk_gz_kb)
+    + Number(totalCss > budget.total_css_gz_kb)
+  return { bundleAuditAvailable: true, bundleViolations, bundleTotalGzKb: totalJs, bundleMaxGzKb: maxJs, bundleCssGzKb: totalCss }
+}
+
+async function navigateAndWait(cdp, method, params) {
+  const load = cdp.waitFor('Page.loadEventFired')
+  await cdp.send(method, params)
+  await load
+}
+
+async function contrastAudit(cdp) {
+  if (!existsSync(axeSourcePath)) return { contrastAuditAvailable: false, contrastViolations: 1 }
+  const source = readFileSync(axeSourcePath, 'utf8')
+  await cdp.send('Runtime.evaluate', { expression: source })
+  const evaluated = await cdp.send('Runtime.evaluate', {
+    expression: "(() => { const context = [...document.querySelectorAll('.btn,button,[role=button]')].filter(el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 }); return axe.run(context, { runOnly: { type: 'rule', values: ['color-contrast'] } }).then(result => JSON.stringify({ audited: context.length, violations: result.violations.length, ratios: result.violations.flatMap(v => v.nodes.flatMap(n => (n.any || []).map(check => check.data?.contrastRatio).filter(Number.isFinite))), details: result.violations.flatMap(v => v.nodes.map(n => ({ target: n.target, data: (n.any || []).map(check => check.data).filter(Boolean) }))) })) })()",
+    awaitPromise: true,
+    returnByValue: true,
+  })
+  const value = JSON.parse(evaluated.result?.value || '{}')
+  return { contrastAuditAvailable: true, contrastAuditedCount: Number(value.audited || 0), contrastViolations: Number(value.violations || 0), contrastMinRatio: value.ratios?.length ? Math.min(...value.ratios) : null }
+}
+
 async function browserSnapshot(cdp) {
   await cdp.send('Page.enable')
   await cdp.send('Runtime.enable')
@@ -166,18 +253,24 @@ async function browserSnapshot(cdp) {
     ],
   })
 
+  await navigateAndWait(cdp, 'Page.navigate', { url: previewUrl })
+  await cdp.send('Runtime.evaluate', {
+    expression: `localStorage.setItem('vl360-accessibility-profile', ${JSON.stringify(JSON.stringify({ theme: 'nocturne', density: 'comfortable', textScale: 2 }))})`,
+  })
   const load = cdp.waitFor('Page.loadEventFired')
   const navigationStarted = Date.now()
-  await cdp.send('Page.navigate', { url: previewUrl })
+  await cdp.send('Page.reload', { ignoreCache: true })
   await load
 
   let mainVisible = false
+  let mainUsable = false
   while (!mainVisible && Date.now() - navigationStarted <= mainVisibleBudgetMs) {
     const evaluated = await cdp.send('Runtime.evaluate', {
-      expression: "Boolean(document.querySelector('main, #main-content')?.getBoundingClientRect().height)",
+      expression: "(() => { const el = document.querySelector('main, #main-content'); if (!el) return { visible: false, usable: false }; const r = el.getBoundingClientRect(); const s = getComputedStyle(el); return { visible: r.width > 0 && r.height > 0, usable: r.width > 0 && r.height > 0 && s.display !== 'none' && s.visibility !== 'hidden' && Number(s.opacity) > 0 }; })()",
       returnByValue: true,
     })
-    mainVisible = evaluated.result.value === true
+    mainVisible = evaluated.result.value?.visible === true
+    mainUsable = evaluated.result.value?.usable === true
     if (!mainVisible) await new Promise(resolveWait => setTimeout(resolveWait, 50))
   }
   const mainVisibleMs = Date.now() - navigationStarted
@@ -187,26 +280,51 @@ async function browserSnapshot(cdp) {
       const root = document.documentElement
       const controls = [...document.querySelectorAll('a[href],button,input:not([type="hidden"]),select,textarea,summary')]
         .filter(el => { const r = el.getBoundingClientRect(); const s = getComputedStyle(el); return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.display !== 'none' })
-      const forcedControlBorderVisible = controls.some(el => {
+      const hasBoundary = el => {
         const s = getComputedStyle(el)
-        return (s.borderStyle !== 'none' && parseFloat(s.borderWidth) > 0)
-          || (s.outlineStyle !== 'none' && parseFloat(s.outlineWidth) > 0)
-      })
+        const visibleColor = value => value && value !== 'transparent' && !(value.startsWith('rgba') && value.endsWith(', 0)'))
+        return ((s.borderStyle !== 'none' && parseFloat(s.borderWidth) > 0 && visibleColor(s.borderColor))
+          || (s.outlineStyle !== 'none' && parseFloat(s.outlineWidth) > 0 && visibleColor(s.outlineColor)))
+      }
+      const representatives = controls.filter(el => el.matches('[data-color-role="action-primary"],.btn-primary,button,input,select,textarea,summary,[role="button"]'))
+      const boundedControls = (representatives.length ? representatives : controls).filter(hasBoundary)
+      const main = document.querySelector('main, #main-content')
+      const mainRect = main?.getBoundingClientRect()
+      const mainStyle = main ? getComputedStyle(main) : null
       return {
         forcedColorsActive: matchMedia('(forced-colors: active)').matches,
         forcedColorAdjust: getComputedStyle(root).forcedColorAdjust,
-        forcedControlBorderVisible,
+        forcedControlBorderVisible: boundedControls.length > 0 && boundedControls.length === (representatives.length || controls.length),
+        forcedRepresentativeControls: { total: representatives.length || controls.length, bounded: boundedControls.length },
         viewportWidth: innerWidth,
         screenWidth: screen.width,
         devicePixelRatio,
+        textScale: Number.parseFloat(getComputedStyle(root).getPropertyValue('--a11y-text-scale')),
+        textScaleApplied: Number.parseFloat(getComputedStyle(root).getPropertyValue('--a11y-text-scale')) === 2,
         horizontalOverflow: Math.max(0, root.scrollWidth - root.clientWidth),
         controlsBelow44: controls.filter(el => el.getBoundingClientRect().height < 44).length,
+        mainVisible: Boolean(mainRect?.width && mainRect.height),
+        mainUsable: Boolean(mainRect?.width && mainRect.height && mainStyle?.display !== 'none' && mainStyle?.visibility !== 'hidden' && Number(mainStyle?.opacity) > 0),
       }
     })()`,
     returnByValue: true,
   })
 
-  return { ...evaluated.result.value, mainVisible, mainVisibleMs }
+  await cdp.send('Runtime.evaluate', {
+    expression: `window.__vl360Perf = { lcp: null, cls: 0, inp: null, inpSupported: PerformanceObserver.supportedEntryTypes.includes('event') }; try { new PerformanceObserver(list => { const entries = list.getEntries(); const last = entries[entries.length - 1]; if (last) window.__vl360Perf.lcp = last.startTime }).observe({ type: 'largest-contentful-paint', buffered: true }); new PerformanceObserver(list => { window.__vl360Perf.cls += list.getEntries().filter(entry => !entry.hadRecentInput).reduce((sum, entry) => sum + entry.value, 0) }).observe({ type: 'layout-shift', buffered: true }); if (window.__vl360Perf.inpSupported) { new PerformanceObserver(list => { window.__vl360Perf.inp = Math.max(window.__vl360Perf.inp || 0, ...list.getEntries().map(entry => entry.duration)) }).observe({ type: 'event', durationThreshold: 16, buffered: true }); const probe = document.createElement('button'); probe.id = '__vl360-inp-probe'; probe.style.cssText = 'position:fixed;left:0;top:0;width:48px;height:48px;opacity:.01;z-index:2147483647'; probe.addEventListener('click', () => { const until = performance.now() + 24; while (performance.now() < until) {} }); document.body.appendChild(probe) } } catch (_) { window.__vl360Perf.inpSupported = false }`,
+  })
+  const point = await cdp.send('Runtime.evaluate', { expression: "(() => { const el = document.querySelector('#__vl360-inp-probe'); if (!el) return null; const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 } })()", returnByValue: true })
+  if (point.result?.value) {
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: point.result.value.x, y: point.result.value.y, button: 'left', clickCount: 1 })
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: point.result.value.x, y: point.result.value.y, button: 'left', clickCount: 1 })
+  }
+  await new Promise(resolveWait => setTimeout(resolveWait, 100))
+  const contrast = await contrastAudit(cdp)
+  const perf = await cdp.send('Runtime.evaluate', {
+    expression: "(() => { const state = window.__vl360Perf || {}; const resources = performance.getEntriesByType('resource').filter(entry => entry.initiatorType === 'fetch' || entry.initiatorType === 'xmlhttprequest' || /\\/api\\//.test(entry.name)); const apiMaxMs = resources.reduce((max, entry) => Math.max(max, entry.duration), 0); return { lcpMs: state.lcp ?? performance.getEntriesByType('largest-contentful-paint').at(-1)?.startTime ?? null, cls: state.cls, inpAvailable: state.inpSupported === true && Number.isFinite(state.inp), inpMs: state.inp, apiMaxMs } })()",
+    returnByValue: true,
+  })
+  return { ...evaluated.result.value, mainVisible, mainUsable, mainVisibleMs, ...contrast, ...perf.result.value, ...bundleSnapshot() }
 }
 
 async function run() {

@@ -1,6 +1,8 @@
 import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { defineComponent, h } from 'vue'
 import ThemeModeControl from '../components/shell/ThemeModeControl.vue'
+import { useAccessibilityProfile } from '../composables/useAccessibilityProfile'
 
 const colorMode = vi.hoisted(() => ({ value: 'dark' as unknown, preference: 'dark' as unknown }))
 mockNuxtImport('useColorMode', () => () => colorMode)
@@ -63,5 +65,25 @@ describe('public theme mode control', () => {
     expect(document.documentElement.dataset.theme).toBe('parchment')
     expect(wrapper.get('button[data-theme-mode="light"]').attributes('aria-pressed')).toBe('true')
     expect(wrapper.get('button[data-theme-mode="dark"]').attributes('aria-pressed')).toBe('false')
+  })
+
+  it('shares the selected profile with a second mounted consumer without remounting', async () => {
+    let settingsConsumer: ReturnType<typeof useAccessibilityProfile> | undefined
+    const SettingsConsumer = defineComponent({
+      setup() {
+        settingsConsumer = useAccessibilityProfile({ colorMode: { preference: 'dark' }, autoHydrate: false })
+        return () => h('output', { 'data-settings-theme': settingsConsumer?.profile.value.theme })
+      },
+    })
+    const Harness = defineComponent({
+      setup: () => () => h('div', [h(ThemeModeControl), h(SettingsConsumer)]),
+    })
+    const wrapper = await mountSuspended(Harness, { attachTo: document.body })
+    wrappers.push(wrapper)
+
+    await wrapper.get('button[data-theme-mode="light"]').trigger('click')
+
+    expect(settingsConsumer?.profile.value.theme).toBe('parchment')
+    expect(wrapper.get('[data-settings-theme]').attributes('data-settings-theme')).toBe('parchment')
   })
 })

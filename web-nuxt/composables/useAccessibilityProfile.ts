@@ -27,6 +27,17 @@ export interface AccessibilityProfileOptions {
 const THEMES = new Set<AccessibilityTheme>(['nocturne', 'parchment'])
 const DENSITIES = new Set<AccessibilityDensity>(['comfortable', 'compact'])
 const TEXT_SCALES = new Set<AccessibilityTextScale>([1, 1.25, 1.5, 2])
+let fallbackProfile: Ref<AccessibilityProfile> | null = null
+
+function sharedProfileState(): Ref<AccessibilityProfile> {
+  try {
+    return useState<AccessibilityProfile>('vl360-accessibility-profile', () => ({ ...DEFAULT_ACCESSIBILITY_PROFILE }))
+  } catch {
+    // Direct unit tests may call the composable without a Nuxt app context.
+    fallbackProfile ??= ref({ ...DEFAULT_ACCESSIBILITY_PROFILE })
+    return fallbackProfile
+  }
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object' && !Array.isArray(value)
@@ -109,7 +120,7 @@ function browserMatchMedia(): MediaMatcher | null {
 }
 
 export function useAccessibilityProfile(options: AccessibilityProfileOptions = {}) {
-  const profile: Ref<AccessibilityProfile> = ref({ ...DEFAULT_ACCESSIBILITY_PROFILE })
+  const profile = sharedProfileState()
   const storage = options.storage === undefined ? browserStorage() : options.storage
   const root = options.root === undefined ? browserRoot() : options.root
   const matchMedia = options.matchMedia === undefined ? browserMatchMedia() : options.matchMedia
