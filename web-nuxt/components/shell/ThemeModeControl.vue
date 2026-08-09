@@ -24,32 +24,54 @@ const modes = [
 
 type Mode = (typeof modes)[number]['value']
 const colorMode = useColorMode()
-const selectedMode = ref<Mode>('dark')
-const hydrated = ref(false)
+const selectedMode = ref<Mode>(resolveInitialMode())
+const semanticTheme = computed(() => selectedMode.value === 'light' ? 'parchment' : 'nocturne')
+
+useHead({
+  htmlAttrs: { 'data-theme': semanticTheme },
+  script: [{
+    key: 'vl360-semantic-theme-prepaint',
+    innerHTML: "try{var d=document.documentElement,v=localStorage.getItem('vl360-color-mode');d.dataset.theme=v==='light'?'parchment':'nocturne'}catch(_){document.documentElement.dataset.theme='nocturne'}",
+    tagPosition: 'head',
+  }],
+})
+
+if (import.meta.client) setDocumentTheme(selectedMode.value)
 
 watch(() => colorMode.preference, (preference) => {
-  if (hydrated.value && (preference === 'light' || preference === 'dark')) {
+  if (isMode(preference)) {
     selectedMode.value = preference
     setDocumentTheme(preference)
   }
 })
 
 onMounted(() => {
-  const bootstrap = (window as Window & {
-    __NUXT_COLOR_MODE__?: { preference?: unknown; value?: unknown }
-  }).__NUXT_COLOR_MODE__
-  const bootstrapMode: Mode | null = bootstrap?.preference === 'light' || bootstrap?.preference === 'dark'
-    ? bootstrap.preference
-    : null
-  // The color-mode bootstrap can paint a stored choice before Nuxt hydrates.
-  const prepaintedMode = document.documentElement.classList.contains('light') ? 'light' :
-    document.documentElement.classList.contains('dark') ? 'dark' : null
-  const initialMode: Mode = bootstrapMode ?? prepaintedMode ?? (colorMode.preference === 'light' ? 'light' : 'dark')
+  const initialMode = resolveInitialMode()
   if (colorMode.preference !== initialMode) colorMode.preference = initialMode
   selectedMode.value = initialMode
   setDocumentTheme(initialMode)
-  hydrated.value = true
 })
+
+function isMode(value: unknown): value is Mode {
+  return value === 'light' || value === 'dark'
+}
+
+function resolveInitialMode(): Mode {
+  if (import.meta.client) {
+    const bootstrap = (window as Window & {
+      __NUXT_COLOR_MODE__?: { preference?: unknown; value?: unknown }
+    }).__NUXT_COLOR_MODE__
+    const bootstrapMode = isMode(bootstrap?.preference) ? bootstrap.preference :
+      isMode(bootstrap?.value) ? bootstrap.value : null
+    const prepaintedMode = document.documentElement.classList.contains('light') ? 'light' :
+      document.documentElement.classList.contains('dark') ? 'dark' : null
+    if (bootstrapMode) return bootstrapMode
+    if (prepaintedMode) return prepaintedMode
+  }
+
+  if (isMode(colorMode.preference)) return colorMode.preference
+  return isMode(colorMode.value) ? colorMode.value : 'dark'
+}
 
 function isActive(mode: Mode) {
   return selectedMode.value === mode
@@ -63,6 +85,6 @@ function selectMode(mode: Mode, event: MouseEvent) {
 }
 
 function setDocumentTheme(mode: Mode) {
-  document.documentElement.dataset.theme = mode === 'light' ? 'parchment' : 'nocturne'
+  if (import.meta.client) document.documentElement.dataset.theme = mode === 'light' ? 'parchment' : 'nocturne'
 }
 </script>
