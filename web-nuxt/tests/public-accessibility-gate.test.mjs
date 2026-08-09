@@ -23,11 +23,16 @@ const passingSnapshot = {
   contrastAuditAvailable: true,
   contrastAuditedCount: 5,
   contrastViolations: 0,
+  normalContrastAuditAvailable: true,
+  normalContrastAuditedCount: 5,
+  normalContrastViolations: 0,
   lcpMs: 1800,
   cls: 0.02,
   inpAvailable: true,
   inpMs: 100,
+  inpEvidence: 'rendered-interaction',
   apiMaxMs: 500,
+  apiObservedCount: 1,
   bundleAuditAvailable: true,
   bundleViolations: 0,
 }
@@ -89,6 +94,8 @@ describe('public accessibility browser gate', () => {
       ...passingSnapshot,
       contrastAuditAvailable: false,
       contrastViolations: 1,
+      normalContrastAuditAvailable: false,
+      normalContrastViolations: 1,
       lcpMs: 3000,
       cls: 0.2,
       inpAvailable: false,
@@ -114,6 +121,28 @@ describe('public accessibility browser gate', () => {
       ...passingSnapshot,
       contrastAuditedCount: 0,
     })).toContain('contrast-audit-empty')
+  })
+
+  it('requires both normal and forced-colors contrast audits', () => {
+    expect(evaluatePublicAccessibilitySnapshot({
+      ...passingSnapshot,
+      normalContrastAuditAvailable: false,
+    })).toContain('contrast-audit-unavailable')
+  })
+
+  it('rejects synthetic INP evidence and unsupported rendered interactions', () => {
+    expect(evaluatePublicAccessibilitySnapshot({
+      ...passingSnapshot,
+      inpEvidence: 'synthetic-probe',
+    })).toContain('inp-evidence-not-rendered')
+  })
+
+  it('fails closed when no API request timing was observed', () => {
+    expect(evaluatePublicAccessibilitySnapshot({
+      ...passingSnapshot,
+      apiObservedCount: 0,
+      apiMaxMs: 0,
+    })).toContain('api-audit-empty')
   })
 
   it('kills Chrome when CDP startup fails after the child is spawned', async () => {

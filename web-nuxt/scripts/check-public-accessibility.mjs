@@ -34,15 +34,21 @@ export function evaluatePublicAccessibilitySnapshot(snapshot) {
   if (!snapshot.mainVisible || snapshot.mainUsable !== true) reasons.push('main-content-hidden')
   if (snapshot.controlsBelow44 > 0) reasons.push('undersized-controls')
   if (snapshot.mainVisibleMs > mainVisibleBudgetMs) reasons.push('main-visible-budget-exceeded')
-  if (snapshot.contrastAuditAvailable !== true) reasons.push('contrast-audit-unavailable')
-  if (!Number.isFinite(snapshot.contrastAuditedCount) || snapshot.contrastAuditedCount < 1) reasons.push('contrast-audit-empty')
-  if (snapshot.contrastViolations > 0) reasons.push('contrast-violations')
+  const contrastAudits = [
+    { available: snapshot.normalContrastAuditAvailable, audited: snapshot.normalContrastAuditedCount, violations: snapshot.normalContrastViolations },
+    { available: snapshot.contrastAuditAvailable, audited: snapshot.contrastAuditedCount, violations: snapshot.contrastViolations },
+  ]
+  if (contrastAudits.some(audit => audit.available !== true)) reasons.push('contrast-audit-unavailable')
+  if (contrastAudits.some(audit => !Number.isFinite(audit.audited) || audit.audited < 1)) reasons.push('contrast-audit-empty')
+  if (contrastAudits.some(audit => audit.violations > 0)) reasons.push('contrast-violations')
   if (!Number.isFinite(snapshot.lcpMs)) reasons.push('lcp-audit-unavailable')
   else if (snapshot.lcpMs > lcpBudgetMs) reasons.push('lcp-budget-exceeded')
   if (!Number.isFinite(snapshot.cls)) reasons.push('cls-audit-unavailable')
   else if (snapshot.cls > clsBudget) reasons.push('cls-budget-exceeded')
   if (snapshot.inpAvailable !== true) reasons.push('inp-audit-unavailable')
+  if (snapshot.inpEvidence !== 'rendered-interaction') reasons.push('inp-evidence-not-rendered')
   if (Number.isFinite(snapshot.inpMs) && snapshot.inpMs > inpBudgetMs) reasons.push('inp-budget-exceeded')
+  if (!Number.isFinite(snapshot.apiObservedCount) || snapshot.apiObservedCount < 1) reasons.push('api-audit-empty')
   if (Number.isFinite(snapshot.apiMaxMs) && snapshot.apiMaxMs > apiBudgetMs) reasons.push('api-budget-exceeded')
   if (snapshot.bundleAuditAvailable !== true) reasons.push('bundle-audit-unavailable')
   if (snapshot.bundleViolations > 0) reasons.push('bundle-budget-exceeded')
@@ -248,7 +254,7 @@ async function browserSnapshot(cdp) {
   await cdp.send('Emulation.setEmulatedMedia', {
     media: 'screen',
     features: [
-      { name: 'forced-colors', value: 'active' },
+      { name: 'forced-colors', value: 'none' },
       { name: 'prefers-reduced-motion', value: 'reduce' },
     ],
   })
@@ -261,6 +267,18 @@ async function browserSnapshot(cdp) {
   const navigationStarted = Date.now()
   await cdp.send('Page.reload', { ignoreCache: true })
   await load
+  const normalContrast = await contrastAudit(cdp)
+
+  await cdp.send('Emulation.setEmulatedMedia', {
+    media: 'screen',
+    features: [
+      { name: 'forced-colors', value: 'active' },
+      { name: 'prefers-reduced-motion', value: 'reduce' },
+    ],
+  })
+  const forcedLoad = cdp.waitFor('Page.loadEventFired')
+  await cdp.send('Page.reload', { ignoreCache: true })
+  await forcedLoad
 
   let mainVisible = false
   let mainUsable = false
@@ -311,20 +329,36 @@ async function browserSnapshot(cdp) {
   })
 
   await cdp.send('Runtime.evaluate', {
-    expression: `window.__vl360Perf = { lcp: null, cls: 0, inp: null, inpSupported: PerformanceObserver.supportedEntryTypes.includes('event') }; try { new PerformanceObserver(list => { const entries = list.getEntries(); const last = entries[entries.length - 1]; if (last) window.__vl360Perf.lcp = last.startTime }).observe({ type: 'largest-contentful-paint', buffered: true }); new PerformanceObserver(list => { window.__vl360Perf.cls += list.getEntries().filter(entry => !entry.hadRecentInput).reduce((sum, entry) => sum + entry.value, 0) }).observe({ type: 'layout-shift', buffered: true }); if (window.__vl360Perf.inpSupported) { new PerformanceObserver(list => { window.__vl360Perf.inp = Math.max(window.__vl360Perf.inp || 0, ...list.getEntries().map(entry => entry.duration)) }).observe({ type: 'event', durationThreshold: 16, buffered: true }); const probe = document.createElement('button'); probe.id = '__vl360-inp-probe'; probe.style.cssText = 'position:fixed;left:0;top:0;width:48px;height:48px;opacity:.01;z-index:2147483647'; probe.addEventListener('click', () => { const until = performance.now() + 24; while (performance.now() < until) {} }); document.body.appendChild(probe) } } catch (_) { window.__vl360Perf.inpSupported = false }`,
+    expression: `window.__vl360Perf = { lcp: null, cls: 0, inp: null, inpSupported: PerformanceObserver.supportedEntryTypes.includes('event') || PerformanceObserver.supportedEntryTypes.includes('first-input'), inpEvidence: 'unsupported' }; try { new PerformanceObserver(list => { const entries = list.getEntries(); const last = entries[entries.length - 1]; if (last) window.__vl360Perf.lcp = last.startTime }).observe({ type: 'largest-contentful-paint', buffered: true }); new PerformanceObserver(list => { window.__vl360Perf.cls += list.getEntries().filter(entry => !entry.hadRecentInput).reduce((sum, entry) => sum + entry.value, 0) }).observe({ type: 'layout-shift', buffered: true }); if (PerformanceObserver.supportedEntryTypes.includes('event')) new PerformanceObserver(list => { window.__vl360Perf.inp = Math.max(window.__vl360Perf.inp || 0, ...list.getEntries().map(entry => entry.duration)) }).observe({ type: 'event', durationThreshold: 16, buffered: true }); if (PerformanceObserver.supportedEntryTypes.includes('first-input')) new PerformanceObserver(list => { window.__vl360Perf.inp = Math.max(window.__vl360Perf.inp || 0, ...list.getEntries().map(entry => entry.duration)) }).observe({ type: 'first-input', buffered: true }); if (window.__vl360Perf.inpSupported) { const target = [...document.querySelectorAll('button,[role="button"],a[href]')].find(el => { const r = el.getBoundingClientRect(); const s = getComputedStyle(el); return r.width > 0 && r.height > 0 && s.display !== 'none' && s.visibility !== 'hidden' && Number(s.opacity) > 0 }); if (target) { target.setAttribute('data-vl360-inp-target', ''); window.__vl360Perf.inpEvidence = 'rendered-interaction' } } } catch (_) { window.__vl360Perf.inpSupported = false }`,
   })
-  const point = await cdp.send('Runtime.evaluate', { expression: "(() => { const el = document.querySelector('#__vl360-inp-probe'); if (!el) return null; const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 } })()", returnByValue: true })
+  const point = await cdp.send('Runtime.evaluate', { expression: "(() => { const el = document.querySelector('[data-vl360-inp-target]'); if (!el) return null; const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 } })()", returnByValue: true })
   if (point.result?.value) {
     await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: point.result.value.x, y: point.result.value.y, button: 'left', clickCount: 1 })
     await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: point.result.value.x, y: point.result.value.y, button: 'left', clickCount: 1 })
   }
   await new Promise(resolveWait => setTimeout(resolveWait, 100))
-  const contrast = await contrastAudit(cdp)
+  await cdp.send('Runtime.evaluate', {
+    expression: "(async () => { const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), 3000); try { await fetch('/api/places?limit=1', { cache: 'no-store', signal: controller.signal }) } catch (_) {} finally { clearTimeout(timeout) } })()",
+    awaitPromise: true,
+  })
+  const forcedContrast = await contrastAudit(cdp)
   const perf = await cdp.send('Runtime.evaluate', {
-    expression: "(() => { const state = window.__vl360Perf || {}; const resources = performance.getEntriesByType('resource').filter(entry => entry.initiatorType === 'fetch' || entry.initiatorType === 'xmlhttprequest' || /\\/api\\//.test(entry.name)); const apiMaxMs = resources.reduce((max, entry) => Math.max(max, entry.duration), 0); return { lcpMs: state.lcp ?? performance.getEntriesByType('largest-contentful-paint').at(-1)?.startTime ?? null, cls: state.cls, inpAvailable: state.inpSupported === true && Number.isFinite(state.inp), inpMs: state.inp, apiMaxMs } })()",
+    expression: "(() => { const state = window.__vl360Perf || {}; const resources = performance.getEntriesByType('resource').filter(entry => entry.initiatorType === 'fetch' || entry.initiatorType === 'xmlhttprequest' || /\\/api\\//.test(entry.name)); const apiMaxMs = resources.reduce((max, entry) => Math.max(max, entry.duration), 0); return { lcpMs: state.lcp ?? performance.getEntriesByType('largest-contentful-paint').at(-1)?.startTime ?? null, cls: state.cls, inpAvailable: state.inpSupported === true && Number.isFinite(state.inp), inpMs: state.inp, inpEvidence: state.inpEvidence, apiObservedCount: resources.length, apiMaxMs } })()",
     returnByValue: true,
   })
-  return { ...evaluated.result.value, mainVisible, mainUsable, mainVisibleMs, ...contrast, ...perf.result.value, ...bundleSnapshot() }
+  return {
+    ...evaluated.result.value,
+    mainVisible,
+    mainUsable,
+    mainVisibleMs,
+    ...forcedContrast,
+    normalContrastAuditAvailable: normalContrast.contrastAuditAvailable,
+    normalContrastAuditedCount: normalContrast.contrastAuditedCount,
+    normalContrastViolations: normalContrast.contrastViolations,
+    normalContrastMinRatio: normalContrast.contrastMinRatio,
+    ...perf.result.value,
+    ...bundleSnapshot(),
+  }
 }
 
 async function run() {
