@@ -5,8 +5,12 @@ import ThemeModeControl from '../components/shell/ThemeModeControl.vue'
 
 const colorMode = vi.hoisted(() => ({ value: 'dark' as unknown, preference: 'dark' as unknown }))
 const headEntries = vi.hoisted(() => [] as unknown[])
+const initialHeadThemes = vi.hoisted(() => [] as unknown[])
 mockNuxtImport('useColorMode', () => () => colorMode)
-mockNuxtImport('useHead', () => (entry: unknown) => { headEntries.push(entry) })
+mockNuxtImport('useHead', () => (entry: unknown) => {
+  headEntries.push(entry)
+  initialHeadThemes.push(unref((entry as { htmlAttrs: { 'data-theme': unknown } }).htmlAttrs['data-theme']))
+})
 const wrappers: Array<{ unmount: () => void }> = []
 const runtimeWindow = window as Window & {
   __NUXT_COLOR_MODE__?: { preference?: string; value?: string }
@@ -20,6 +24,7 @@ afterEach(() => {
   delete document.documentElement.dataset.theme
   delete runtimeWindow.__NUXT_COLOR_MODE__
   headEntries.splice(0)
+  initialHeadThemes.splice(0)
 })
 
 describe('public theme mode control', () => {
@@ -63,11 +68,15 @@ describe('public theme mode control', () => {
     expect(document.activeElement).toBe(light.element)
   })
 
-  it('synchronizes a pre-painted Parchment choice before the first interaction', async () => {
+  it('emits deterministic Nocturne markup before synchronizing pre-painted Parchment', async () => {
     document.documentElement.classList.add('light')
+    document.documentElement.dataset.theme = 'parchment'
+    colorMode.value = 'light'
+    colorMode.preference = 'light'
     const wrapper = await mountSuspended(ThemeModeControl, { attachTo: document.body })
     wrappers.push(wrapper)
-    await new Promise<void>(resolve => queueMicrotask(resolve))
+
+    expect(initialHeadThemes.at(-1)).toBe('nocturne')
     expect(colorMode.preference).toBe('light')
     expect(document.documentElement.dataset.theme).toBe('parchment')
     expect(wrapper.get('button[data-theme-mode="light"]').attributes('aria-pressed')).toBe('true')

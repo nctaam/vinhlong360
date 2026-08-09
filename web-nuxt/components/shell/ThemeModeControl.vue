@@ -24,7 +24,8 @@ const modes = [
 
 type Mode = (typeof modes)[number]['value']
 const colorMode = useColorMode()
-const selectedMode = ref<Mode>(resolveInitialMode())
+// Hydration must match the Nocturne SSR fallback; persisted choices apply after mount.
+const selectedMode = ref<Mode>('dark')
 const semanticTheme = computed(() => selectedMode.value === 'light' ? 'parchment' : 'nocturne')
 
 useHead({
@@ -36,8 +37,6 @@ useHead({
   }],
 })
 
-if (import.meta.client) setDocumentTheme(selectedMode.value)
-
 watch(() => colorMode.preference, (preference) => {
   if (isMode(preference)) {
     selectedMode.value = preference
@@ -46,7 +45,7 @@ watch(() => colorMode.preference, (preference) => {
 })
 
 onMounted(() => {
-  const initialMode = resolveInitialMode()
+  const initialMode = resolveMountedMode()
   if (colorMode.preference !== initialMode) colorMode.preference = initialMode
   selectedMode.value = initialMode
   setDocumentTheme(initialMode)
@@ -56,7 +55,7 @@ function isMode(value: unknown): value is Mode {
   return value === 'light' || value === 'dark'
 }
 
-function resolveInitialMode(): Mode {
+function resolveMountedMode(): Mode {
   if (import.meta.client) {
     const bootstrap = (window as Window & {
       __NUXT_COLOR_MODE__?: { preference?: unknown; value?: unknown }
