@@ -6,8 +6,10 @@ import { afterEach, describe, expect, it } from 'vitest'
 import EntityTrustPanel from '../components/EntityTrustPanel.vue'
 import FramedDossier from '../components/FramedDossier.vue'
 import KnowBeforeYouGo from '../components/KnowBeforeYouGo.vue'
+import SourceTrustDrawer from '../components/SourceTrustDrawer.vue'
 
 const wrappers: Array<{ unmount: () => void }> = []
+const entityDetailSource = readFileSync(resolve(process.cwd(), 'pages/dia-diem/[id].vue'), 'utf8')
 const wardDetailSource = readFileSync(resolve(process.cwd(), 'pages/xa-phuong/[id].vue'), 'utf8')
 
 afterEach(() => {
@@ -122,10 +124,50 @@ describe('detail dossier surface states', () => {
     wrappers.push(wrapper)
 
     const facts = wrapper.get('dl[data-kbyg-facts]')
-    expect(facts.findAll('dt').map(node => node.text())).toEqual(['Giờ vàng', 'Ngày đông', 'Mức đông'])
+    expect(facts.findAll('dt > span:not([aria-hidden])').map(node => node.text())).toEqual(['Giờ vàng', 'Ngày đông', 'Mức đông'])
     expect(facts.findAll('dd').map(node => node.text())).toEqual(['06:00-08:00', 'Cuối tuần', 'Đông vừa'])
     expect(wrapper.get('[data-kbyg-evidence] [data-source-mark]').text()).toContain('Chính thức')
     expect(wrapper.get('[data-kbyg-evidence] [data-freshness-line]').text()).toContain('Cần kiểm tra định kỳ')
+
+    for (const group of facts.findAll(':scope > div')) {
+      expect(group.element.children).toHaveLength(2)
+      expect(Array.from(group.element.children).map(child => child.tagName)).toEqual(['DT', 'DD'])
+    }
+  })
+
+  it('keeps entity focus order semantic and places related content after recommendations', () => {
+    const regions = ['identity', 'trust', 'action', 'facts', 'narrative', 'related']
+    const offsets = regions.map(region => entityDetailSource.indexOf(`data-detail-region="${region}"`))
+
+    expect(offsets.every(offset => offset >= 0)).toBe(true)
+    expect(offsets).toEqual([...offsets].sort((left, right) => left - right))
+    expect(offsets.at(-1)).toBeGreaterThan(entityDetailSource.indexOf('<LazySmartRecommendations'))
+  })
+
+  it('keeps source tier precedence and conflicts in the feature-enabled drawer branch', async () => {
+    expect(entityDetailSource).toContain('sourceFreshness.value?.source_tier || entity.value?.quality?.source_tier')
+    expect(entityDetailSource).toContain(':conflicts="trustConflicts"')
+
+    const wrapper = await mountSuspended(SourceTrustDrawer, {
+      props: {
+        open: true,
+        sourceTier: 'official',
+        sourceTitle: 'Cổng thông tin tỉnh',
+        sourceUrl: 'https://example.gov.vn/place',
+        freshnessStatus: 'conflict',
+        conflicts: [
+          { label: 'Giờ mở cửa', value: '07:00', sourceTitle: 'Trang đơn vị', updatedLabel: '01/08/2026' },
+          { label: 'Giờ mở cửa', value: '08:00', sourceTitle: 'Danh bạ cộng đồng', updatedLabel: '02/08/2026' },
+        ],
+      },
+      global: { stubs: { IconLine: true } },
+    })
+    wrappers.push(wrapper)
+
+    const conflicts = document.body.querySelector('[data-source-conflicts]')
+    expect(conflicts?.querySelectorAll('dd')).toHaveLength(2)
+    expect(conflicts?.textContent).toContain('07:00 · Trang đơn vị · 01/08/2026')
+    expect(conflicts?.textContent).toContain('08:00 · Danh bạ cộng đồng · 02/08/2026')
   })
 
   it('keeps ward transport failures retryable and reserves 404 for a confirmed not_found', () => {

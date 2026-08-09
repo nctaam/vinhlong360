@@ -14,20 +14,14 @@
         <dd>{{ conflictText(conflict) }}</dd>
       </div>
     </dl>
-    <NuxtLink data-report-action :to="reportTo">Báo sai hoặc bổ sung nguồn</NuxtLink>
+    <NuxtLink class="quality-report" data-report-action :to="reportTo">Báo sai hoặc bổ sung nguồn</NuxtLink>
   </section>
 </template>
 
 <script setup lang="ts">
+import type { DetailTrustConflict } from '../utils/detailExperience'
 import type { FreshnessStatus, SourceTier } from '../utils/regionalColor'
 import { safeUrl } from '~/utils/safe'
-
-type TrustConflict = {
-  label: string
-  value: string
-  sourceTitle?: string
-  updatedLabel?: string
-}
 
 const props = withDefaults(defineProps<{
   tier: SourceTier
@@ -37,7 +31,7 @@ const props = withDefaults(defineProps<{
   updatedLabel: string
   note: string
   reportTo: string
-  conflicts?: TrustConflict[]
+  conflicts?: DetailTrustConflict[]
 }>(), {
   sourceUrl: undefined,
   conflicts: () => [],
@@ -50,7 +44,7 @@ const sourceHref = computed(() => {
   return safe === '#' ? '' : safe
 })
 
-function conflictText(conflict: TrustConflict) {
+function conflictText(conflict: DetailTrustConflict) {
   return [conflict.value, conflict.sourceTitle, conflict.updatedLabel]
     .map(value => value?.trim())
     .filter(Boolean)

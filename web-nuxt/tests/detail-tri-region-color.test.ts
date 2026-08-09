@@ -635,6 +635,15 @@ describe('entity detail tri-region behavior', () => {
     expect(wrapper.get('[data-image-disclosure]').text()).not.toContain('Chính thức')
     expect(wrapper.get('[data-entity-trust-panel]').text()).not.toContain('Ảnh minh họa')
 
+    const facts = wrapper.get('[data-detail-region="facts"]')
+    for (const group of facts.findAll('.fact-group')) {
+      expect(group.element.tagName).toBe('SECTION')
+      const list = group.get('dl')
+      for (const pair of list.findAll(':scope > div')) {
+        expect(Array.from(pair.element.children).map(child => child.tagName)).toEqual(['DT', 'DD'])
+      }
+    }
+
     const highlightActions = wrapper.findAll('.highlights .hl-action')
     expect(highlightActions.map(action => action.text())).toEqual(['💬 Zalo', '📞 Gọi', '🗺️ Bản đồ'])
     expect(highlightActions.map(action => action.attributes('data-color-role'))).toEqual([

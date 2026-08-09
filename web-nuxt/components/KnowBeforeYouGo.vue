@@ -22,25 +22,16 @@
     <!-- Golden hours -->
     <dl v-if="hasTimeSensitiveFacts" class="kbyg-golden" data-kbyg-facts>
       <div v-if="goldenHours" class="kbyg-golden-item">
-        <span class="kbyg-golden-icon emoji-chip" aria-hidden="true">⏰</span>
-        <div>
-          <dt>Giờ vàng</dt>
-          <dd>{{ goldenHours }}</dd>
-        </div>
+        <dt><span class="kbyg-golden-icon emoji-chip" aria-hidden="true">⏰</span><span>Giờ vàng</span></dt>
+        <dd>{{ goldenHours }}</dd>
       </div>
       <div v-if="peakDays" class="kbyg-golden-item">
-        <span class="kbyg-golden-icon emoji-chip" aria-hidden="true">📅</span>
-        <div>
-          <dt>Ngày đông</dt>
-          <dd>{{ peakDays }}</dd>
-        </div>
+        <dt><span class="kbyg-golden-icon emoji-chip" aria-hidden="true">📅</span><span>Ngày đông</span></dt>
+        <dd>{{ peakDays }}</dd>
       </div>
       <div v-if="crowdLevel" class="kbyg-golden-item">
-        <span class="kbyg-golden-icon emoji-chip" aria-hidden="true">👥</span>
-        <div>
-          <dt>Mức đông</dt>
-          <dd>{{ crowdLevel }}</dd>
-        </div>
+        <dt><span class="kbyg-golden-icon emoji-chip" aria-hidden="true">👥</span><span>Mức đông</span></dt>
+        <dd>{{ crowdLevel }}</dd>
       </div>
     </dl>
 
@@ -216,13 +207,13 @@ const hasContent = computed(() => amenities.value.length > 0 || goldenHours.valu
   margin-bottom: var(--space-4);
 }
 .kbyg-golden-item {
-  display: flex; align-items: flex-start; gap: var(--space-2);
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-1);
   padding: 10px 14px; border-radius: var(--radius-md);
   background: rgba(var(--accent-rgb), .08);
   flex: 1 1 160px; min-width: 160px;
 }
-.kbyg-golden-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
-.kbyg-golden-item dt { font-size: .78rem; font-weight: var(--weight-semibold); color: var(--muted); margin-bottom: 2px; }
+.kbyg-golden-icon { font-size: 1.1rem; flex-shrink: 0; }
+.kbyg-golden-item dt { display: flex; align-items: center; gap: var(--space-2); font-size: .78rem; font-weight: var(--weight-semibold); color: var(--muted); }
 .kbyg-golden-item dd { margin: 0; font-size: .88rem; font-variant-numeric: tabular-nums; }
 .kbyg-evidence { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
 

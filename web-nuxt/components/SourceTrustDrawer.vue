@@ -54,6 +54,13 @@
             </div>
           </dl>
 
+          <dl v-if="conflicts.length" class="trust-conflicts" data-source-conflicts>
+            <div v-for="(conflict, index) in conflicts" :key="`${conflict.label}-${index}`">
+              <dt>{{ conflict.label }}</dt>
+              <dd>{{ conflictText(conflict) }}</dd>
+            </div>
+          </dl>
+
           <p class="trust-guidance"><IconLine name="circle-help" aria-hidden="true" /> Nếu thông tin khác thực tế, báo cho ban biên tập để kiểm tra và bổ sung nguồn.</p>
 
           <div class="trust-primary-wrap">
@@ -71,6 +78,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { RecommendationFreshnessStatus, RecommendationSourceTier } from '~/types/api'
+import type { DetailTrustConflict } from '~/utils/detailExperience'
 import { formatDateVN, safeUrl } from '~/utils/safe'
 import IconLine from './IconLine.vue'
 
@@ -83,6 +91,7 @@ const props = withDefaults(defineProps<{
   updatedAt?: string | null
   freshnessStatus?: RecommendationFreshnessStatus | string
   communityContext?: string | boolean
+  conflicts?: DetailTrustConflict[]
 }>(), {
   open: false,
   sourceTier: 'unknown',
@@ -92,6 +101,7 @@ const props = withDefaults(defineProps<{
   updatedAt: '',
   freshnessStatus: 'unknown',
   communityContext: false,
+  conflicts: () => [],
 })
 
 const emit = defineEmits<{ close: []; report: [] }>()
@@ -161,9 +171,17 @@ const freshnessLabel = computed(() => {
   if (props.freshnessStatus === 'fresh') return 'Mới cập nhật'
   if (props.freshnessStatus === 'aging') return 'Cần kiểm tra định kỳ'
   if (props.freshnessStatus === 'stale') return 'Có thể đã cũ'
+  if (props.freshnessStatus === 'conflict') return 'Thông tin có mâu thuẫn'
   return 'Chưa rõ độ mới'
 })
-const freshnessTone = computed(() => ['fresh', 'aging', 'stale'].includes(props.freshnessStatus) ? props.freshnessStatus : 'unknown')
+const freshnessTone = computed(() => ['fresh', 'aging', 'stale', 'conflict'].includes(props.freshnessStatus) ? props.freshnessStatus : 'unknown')
+
+function conflictText(conflict: DetailTrustConflict) {
+  return [conflict.value, conflict.sourceTitle, conflict.updatedLabel]
+    .map(value => value?.trim())
+    .filter(Boolean)
+    .join(' · ')
+}
 
 useModalA11y(openState, drawerEl, { onClose: () => emit('close') })
 </script>
@@ -232,10 +250,15 @@ useModalA11y(openState, drawerEl, { onClose: () => emit('close') })
 .trust-evidence dt { color: var(--muted); font-size: var(--text-xs); font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: .04em; }
 .trust-evidence dd { min-width: 0; margin: 0; font-size: var(--text-sm); overflow-wrap: anywhere; }
 .trust-evidence a { color: var(--primary-fg); font-weight: var(--weight-semibold); text-decoration: underline; text-underline-offset: 3px; }
+.trust-conflicts { display: grid; gap: var(--space-2); margin: var(--space-4) 0 0; }
+.trust-conflicts > div { padding: var(--space-3); border-inline-start: 3px solid var(--error); background: var(--error-bg); }
+.trust-conflicts dt { color: var(--ink); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+.trust-conflicts dd { margin: var(--space-1) 0 0; color: var(--muted); font-size: var(--text-sm); }
 .freshness-mark { display: inline-flex; align-items: center; min-height: 28px; padding: 0 var(--space-2); border: 1px solid var(--line); border-radius: var(--radius-full); color: var(--muted); background: var(--bg-warm); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
 .freshness-mark.fresh { color: var(--success); border-color: var(--success-border); background: var(--success-bg); }
 .freshness-mark.aging { color: var(--warning); border-color: var(--warning-border); background: var(--warning-bg); }
 .freshness-mark.stale { color: var(--error); border-color: var(--error-border); background: var(--error-bg); }
+.freshness-mark.conflict { color: var(--error); border-color: var(--error-border); background: var(--error-bg); }
 .trust-guidance { display: flex; align-items: flex-start; gap: var(--space-2); margin: var(--space-5) 0; color: var(--muted); font-size: var(--text-xs); line-height: var(--leading-relaxed); }
 .trust-guidance .line-icon { margin-top: .15rem; color: var(--primary-fg); }
 .trust-primary-wrap { position: sticky; bottom: calc(-1 * var(--space-5)); margin: auto calc(-1 * var(--space-6)) calc(-1 * var(--space-5)); padding: var(--space-4) var(--space-6) var(--space-5); border-top: .5px solid var(--line); background: var(--surface); }

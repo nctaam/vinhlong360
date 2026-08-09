@@ -16,6 +16,13 @@ export type DetailAction = {
   href: string
 }
 
+export type DetailTrustConflict = {
+  label: string
+  value: string
+  sourceTitle?: string
+  updatedLabel?: string
+}
+
 type DetailActionEntity = {
   coords?: unknown
   coordinates?: unknown
@@ -28,14 +35,14 @@ function record(value: unknown): UnknownRecord | null {
     : null
 }
 
-function detailValue(error: unknown): string {
+function trustedDetailValue(error: unknown): string {
   const source = record(error)
   if (!source) return ''
   const response = record(source.response)
   const responseData = record(response?._data)
   const data = record(source.data)
-  const detail = responseData?.detail ?? data?.detail ?? source.detail ?? source.kind
-  return typeof detail === 'string' ? detail.trim().toLowerCase() : ''
+  const detail = responseData?.detail ?? data?.detail
+  return typeof detail === 'string' ? detail : ''
 }
 
 function statusValue(error: unknown): number | null {
@@ -47,18 +54,25 @@ function statusValue(error: unknown): number | null {
 }
 
 export function resolveDetailFetchError(error: unknown): DetailFetchResolution {
-  const detail = detailValue(error)
+  const detail = trustedDetailValue(error)
   const status = statusValue(error)
   if (status === 404 && detail === 'not_found') return { kind: 'not_found' }
   if (detail === 'hidden' || detail === 'private') return { kind: 'hidden', retryable: false }
   return { kind: 'error', retryable: true }
 }
 
+function coordinateMember(value: unknown): number | null {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null
+  if (typeof value !== 'string' || !value.trim()) return null
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
 function validCoordinates(value: unknown): [number, number] | null {
-  if (Array.isArray(value) && value.length >= 2) {
-    const lat = Number(value[0])
-    const lng = Number(value[1])
-    return Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180
+  if (Array.isArray(value) && value.length === 2) {
+    const lat = coordinateMember(value[0])
+    const lng = coordinateMember(value[1])
+    return lat !== null && lng !== null && Math.abs(lat) <= 90 && Math.abs(lng) <= 180
       ? [lat, lng]
       : null
   }

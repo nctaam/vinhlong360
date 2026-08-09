@@ -18,6 +18,32 @@ describe('detail fetch error resolution', () => {
       .toEqual({ kind: 'error', retryable: true })
   })
 
+  it.each([
+    { statusCode: 404, kind: 'not_found' },
+    { statusCode: 404, detail: 'not_found' },
+    { statusCode: 404, message: 'not_found' },
+    { statusCode: 404, statusMessage: 'not_found' },
+  ])('does not trust forged top-level absence metadata %#', (failure) => {
+    expect(resolveDetailFetchError(failure)).toEqual({ kind: 'error', retryable: true })
+  })
+
+  it('requires an exact trusted API detail value', () => {
+    expect(resolveDetailFetchError({
+      response: { status: 404, _data: { detail: 'not_found' } },
+    })).toEqual({ kind: 'not_found' })
+    expect(resolveDetailFetchError({
+      statusCode: 404,
+      data: { detail: 'not_found' },
+    })).toEqual({ kind: 'not_found' })
+    expect(resolveDetailFetchError({
+      statusCode: 404,
+      data: { detail: ' NOT_FOUND ' },
+    })).toEqual({ kind: 'error', retryable: true })
+    expect(resolveDetailFetchError({
+      response: { status: 404, _data: { detail: 'route unavailable' } },
+    })).toEqual({ kind: 'error', retryable: true })
+  })
+
   it('does not convert a timeout into not-found', () => {
     const result = resolveDetailFetchError({ statusCode: 504, kind: 'timeout' })
     expect(result).toEqual({ kind: 'error', retryable: true })
@@ -45,6 +71,10 @@ describe('detail primary action resolution', () => {
 
   it.each([
     [null, '0900'],
+    [[null, null], '0900'],
+    [['', ''], '0900'],
+    [[false, false], '0900'],
+    [[10.2, 105.9, 106], '0900'],
     [[91, 105.9], '0900'],
     [[10.2, 181], '0900'],
     [[Number.NaN, 105.9], '0900'],
@@ -68,5 +98,16 @@ describe('detail primary action resolution', () => {
 
   it('never fabricates a call action from an invalid phone', () => {
     expect(resolveDetailAction({ coords: null, phone: 'đang cập nhật' }, selectedContext).id).toBe('plan')
+  })
+
+  it('keeps explicitly numeric zero coordinates valid', () => {
+    expect(resolveDetailAction({ coords: [0, 105.9], phone: null }, selectedContext)).toMatchObject({
+      id: 'directions',
+      href: '/ban-do?id=cho-ben-tre&lat=0&lng=105.9',
+    })
+    expect(resolveDetailAction({ coords: [10.2, 0], phone: null }, selectedContext)).toMatchObject({
+      id: 'directions',
+      href: '/ban-do?id=cho-ben-tre&lat=10.2&lng=0',
+    })
   })
 })
