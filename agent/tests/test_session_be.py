@@ -400,6 +400,7 @@ def test_plans_endpoints_mounted():
     pairs = _route_pairs(app)
     assert ("GET", "/api/my-plans") in pairs
     assert ("POST", "/api/my-plans") in pairs
+    assert ("PUT", "/api/my-plans/{plan_id}") in pairs
 
 
 def test_visits_endpoints_mounted():
@@ -419,6 +420,7 @@ def test_plans_pg_guard():
     if not db._use_pg:
         assert client.get("/api/my-plans").status_code == 503
         assert client.post("/api/my-plans", json={"title": "test"}).status_code == 503
+        assert client.put("/api/my-plans/test", json={"title": "test", "stops": [], "expected_revision": 1}).status_code == 503
 
 
 def test_visits_pg_guard():

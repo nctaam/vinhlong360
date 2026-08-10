@@ -389,6 +389,7 @@ private-network-only and does not change the global `noindex` state.
 | POST | `/api/saved/merge` | Yes | Merge local favorites on login |
 | GET | `/api/my-plans` | Yes | List personal plans |
 | POST | `/api/my-plans` | Yes | Create plan |
+| PUT | `/api/my-plans/{id}` | Yes | Update plan with optimistic concurrency (`expected_revision`) |
 | DELETE | `/api/my-plans/{id}` | Yes | Delete plan |
 | POST | `/api/my-plans/{id}/publish` | Yes | Toggle plan public/private |
 | GET | `/api/shared-plans` | No | List public plans |
@@ -718,17 +719,25 @@ Các mục ở phần trên tài liệu mới là hợp đồng có ràng buộc
 | POST | `/api/notifications/{notif_id}/read` | `mark_notification_read` | Đặt is_read = TRUE cho một thông báo thuộc về người dùng đang đăng nhập. |
 | POST | `/api/report-ugc` | `create_report` | Ghi một báo cáo kiểm duyệt vào bảng reports cho target post/comment/user/entity. |
 
-### `agent/plans.py` (7 route)
+### `agent/plans.py` (8 route)
 
 | Method | Path | Handler | Mô tả (docstring) |
 |---|---|---|---|
 | GET | `/api/my-plans` | `list_plans` |  |
 | POST | `/api/my-plans` | `add_plan` |  |
+| PUT | `/api/my-plans/{plan_id}` | `update_plan` |  |
 | POST | `/api/my-plans/merge` | `merge_plans` |  |
 | DELETE | `/api/my-plans/{plan_id}` | `remove_plan` |  |
 | POST | `/api/my-plans/{plan_id}/publish` | `publish_plan` |  |
 | GET | `/api/shared-plans` | `list_shared` |  |
 | GET | `/api/shared-plans/{plan_id}` | `get_shared` |  |
+
+#### Planner revision contract
+
+`PUT /api/my-plans/{plan_id}` accepts `{ "title": string, "stops": object[], "expected_revision": integer }`.
+The revision token is required and must be a positive integer. A successful update returns `200` with a `plan` snapshot containing `id`, `title`, `stops`, `is_public`, `savedAt`, `revision`, and `updatedAt`; the server increments `revision` atomically.
+
+If the plan is missing, or is not owned by the authenticated user, the endpoint returns `404`. If the supplied revision is stale, it returns a top-level JSON `409` payload with `code: "plan_revision_conflict"` and `current` containing the latest `PlanSnapshot`, allowing the client to reconcile without losing server changes.
 
 ### `agent/public_api.py` (47 route)
 

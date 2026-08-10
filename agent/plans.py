@@ -9,6 +9,7 @@ import json
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, field_validator
 
 from auth_middleware import require_user, require_csrf, validate_path_id
@@ -38,6 +39,10 @@ class PlanBody(BaseModel):
         return v
 
 
+class PlanUpdateBody(PlanBody):
+    expected_revision: int = Field(ge=1, strict=True)
+
+
 class MergeBody(BaseModel):
     plans: list[PlanBody] = Field(default_factory=list, max_length=100)
 
@@ -57,27 +62,29 @@ def _row_plan(row) -> dict:
         "stops": stops if isinstance(stops, list) else [],
         "is_public": bool(d.get("is_public")),
         "savedAt": str(d.get("created_at") or ""),
+        "revision": int(d.get("revision") or 1),
+        "updatedAt": str(d.get("updated_at") or d.get("created_at") or ""),
     }
 
 
 def _list(conn, uid: str) -> list[dict]:
     ph = db._ph
     rows = db._fetchall(conn, f"""
-        SELECT id, title, stops, is_public, created_at FROM user_plans
+        SELECT id, title, stops, is_public, created_at, revision, updated_at FROM user_plans
         WHERE user_id = {ph}::uuid ORDER BY created_at DESC LIMIT 100
     """, (uid,))
     return [_row_plan(r) for r in rows]
 
 
-def _insert(conn, uid: str, body: PlanBody) -> str:
+def _insert(conn, uid: str, body: PlanBody) -> dict:
     ph = db._ph
     stops = (body.stops or [])[:MAX_STOPS]
     row = db._fetchone(conn, f"""
-        INSERT INTO user_plans (user_id, title, stops)
-        VALUES ({ph}::uuid, {ph}, {ph}::jsonb)
-        RETURNING id
+        INSERT INTO user_plans (user_id, title, stops, revision, updated_at)
+        VALUES ({ph}::uuid, {ph}, {ph}::jsonb, 1, NOW())
+        RETURNING id, title, stops, is_public, created_at, revision, updated_at
     """, (uid, (body.title or "Lịch trình")[:120], json.dumps(stops, ensure_ascii=False)))
-    return str(db._row_to_dict(row)["id"])
+    return _row_plan(row)
 
 
 @router.get("",
@@ -103,8 +110,57 @@ async def add_plan(body: PlanBody, user=Depends(require_user), _csrf=Depends(req
             cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM user_plans WHERE user_id = {ph}::uuid", (uid,))
             if cnt and int(db._row_to_dict(cnt)["c"]) >= MAX_PLANS:
                 raise HTTPException(400, f"Tối đa {MAX_PLANS} lịch trình. Hãy xoá bớt.")
-            pid = _insert(conn, uid, body)
-            return {"id": pid, "saved": True}
+            plan = _insert(conn, uid, body)
+            return {"id": plan["id"], "saved": True, "plan": plan}
+    return await asyncio.to_thread(_query)
+
+
+@router.put("/{plan_id}",
+            summary="Update a plan with optimistic concurrency",
+            description="Updates a user's itinerary only when expected_revision matches the server revision. Returns 409 with the current snapshot when another device has changed it.")
+async def update_plan(
+    plan_id: str,
+    body: PlanUpdateBody,
+    user=Depends(require_user),
+    _csrf=Depends(require_csrf),
+):
+    plan_id = validate_path_id(plan_id, "plan_id")
+    check_rate(f"plan:{user['id']}", 30, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
+    uid = str(user["id"])
+
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            updated = db._fetchone(conn, f"""
+                UPDATE user_plans
+                SET title = {ph}, stops = {ph}::jsonb,
+                    revision = revision + 1, updated_at = NOW()
+                WHERE id::text = {ph} AND user_id = {ph}::uuid
+                  AND revision = {ph}
+                RETURNING id, title, stops, is_public, created_at, revision, updated_at
+            """, (
+                (body.title or "Lịch trình")[:120],
+                json.dumps((body.stops or [])[:MAX_STOPS], ensure_ascii=False),
+                plan_id,
+                uid,
+                body.expected_revision,
+            ))
+            if updated:
+                return {"plan": _row_plan(updated)}
+
+            current = db._fetchone(conn, f"""
+                SELECT id, title, stops, is_public, created_at, revision, updated_at
+                FROM user_plans
+                WHERE id::text = {ph} AND user_id = {ph}::uuid
+            """, (plan_id, uid))
+            if not current:
+                raise HTTPException(404, "Lịch trình không tồn tại hoặc không thuộc về bạn")
+            return JSONResponse(status_code=409, content={
+                "detail": "Lịch trình đã thay đổi trên thiết bị khác",
+                "code": "plan_revision_conflict",
+                "current": _row_plan(current),
+            })
+
     return await asyncio.to_thread(_query)
 
 
@@ -168,16 +224,28 @@ class PublishBody(BaseModel):
 async def publish_plan(plan_id: str, body: PublishBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
     plan_id = validate_path_id(plan_id, "plan_id")
     check_rate(f"plan:{user['id']}", 30, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
+    def _ensure_updated(cur):
+        if hasattr(cur, "rowcount") and cur.rowcount == 0:
+            raise HTTPException(404, "Lịch trình không tồn tại hoặc không thuộc về bạn")
+
     def _query():
         ph = db._ph
         with db._conn() as conn:
             cur = db._execute(conn, f"""
-                UPDATE user_plans SET is_public = {ph} WHERE id::text = {ph} AND user_id = {ph}::uuid
+                UPDATE user_plans
+                SET is_public = {ph}, revision = revision + 1, updated_at = NOW()
+                WHERE id::text = {ph} AND user_id = {ph}::uuid
+                RETURNING revision
             """, (body.is_public, plan_id, str(user["id"])))
-            if hasattr(cur, "rowcount") and cur.rowcount == 0:
-                raise HTTPException(404, "Lịch trình không tồn tại hoặc không thuộc về bạn")
-    await asyncio.to_thread(_query)
-    return {"is_public": body.is_public}
+            _ensure_updated(cur)
+            row = cur.fetchone() if hasattr(cur, "fetchone") else None
+            revision = int(db._row_to_dict(row).get("revision")) if row else None
+            return revision
+    revision = await asyncio.to_thread(_query)
+    out = {"is_public": body.is_public}
+    if revision is not None:
+        out["revision"] = revision
+    return out
 
 
 # ── Public (no-auth): xem lịch trình được chia-sẻ công-khai ──
@@ -192,7 +260,8 @@ async def list_shared(limit: int = Query(30, ge=1, le=60)):
         ph = db._ph
         with db._conn() as conn:
             rows = db._fetchall(conn, f"""
-                SELECT p.id, p.title, p.stops, p.is_public, p.created_at, u.display_name AS author
+                SELECT p.id, p.title, p.stops, p.is_public, p.created_at,
+                       p.revision, p.updated_at, u.display_name AS author
                 FROM user_plans p JOIN users u ON u.id = p.user_id
                 WHERE p.is_public = TRUE ORDER BY p.created_at DESC LIMIT {ph}
             """, (limit,))
@@ -216,7 +285,8 @@ async def get_shared(plan_id: str):
         ph = db._ph
         with db._conn() as conn:
             row = db._fetchone(conn, f"""
-                SELECT p.id, p.title, p.stops, p.is_public, p.created_at, u.display_name AS author
+                SELECT p.id, p.title, p.stops, p.is_public, p.created_at,
+                       p.revision, p.updated_at, u.display_name AS author
                 FROM user_plans p JOIN users u ON u.id = p.user_id
                 WHERE p.id::text = {ph} AND p.is_public = TRUE
             """, (plan_id,))

@@ -458,6 +458,11 @@ class TestPathValidationPlans:
         block = function_source(src, "publish_plan")
         assert "validate_path_id" in block
 
+    def test_update_plan_validates_plan_id(self):
+        src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
+        block = function_source(src, "update_plan")
+        assert "validate_path_id" in block
+
     def test_get_shared_validates_plan_id(self):
         src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
@@ -703,7 +708,7 @@ class TestSecurityPosture:
 
     def test_csrf_on_all_plan_mutations(self):
         src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
-        for fn in ("add_plan", "remove_plan", "merge_plans", "publish_plan"):
+        for fn in ("add_plan", "update_plan", "remove_plan", "merge_plans", "publish_plan"):
             idx = src.find(f"def {fn}")
             block = src[idx:idx+200]
             assert "require_csrf" in block, f"{fn} missing CSRF"
@@ -717,7 +722,7 @@ class TestSecurityPosture:
         for module, fns in [
             ("saved", ["remove_saved"]),
             ("visits", ["check_visit", "remove_visit"]),
-            ("plans", ["remove_plan", "publish_plan", "get_shared"]),
+            ("plans", ["update_plan", "remove_plan", "publish_plan", "get_shared"]),
         ]:
             src = (Path(__file__).resolve().parent.parent / f"{module}.py").read_text(encoding="utf-8")
             for fn in fns:
