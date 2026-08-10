@@ -11,7 +11,6 @@ import { fileURLToPath } from 'node:url'
 import {
   captureThemeBoundAssets,
   captureLinuxProcessSnapshot,
-  cleanupOwnedProcessSet,
   collectAssetSetFailures,
   collectStateFailures,
   classifyBrowserError,
@@ -23,9 +22,9 @@ import {
   recordGateReason as addReason,
   runCaptured,
   serializeBoundedGateEvidence,
-  terminateExactProcessIdentities,
   waitForStableCondition,
 } from './detail-grid-gate-core.mjs'
+import { cleanupOwnedBrowserProcesses } from './detail-grid-browser-cleanup.mjs'
 
 const ROUTE = '/dia-diem/cong-vien-an-hoi'
 const REVISION_PATTERN = /^[a-f0-9]{40}$/u
@@ -291,21 +290,11 @@ async function listOwnedBrowserProcesses({ profile, browserPath, marker }, {
   return processes.filter(processInfo => ownedIds.has(processInfo.pid))
 }
 
-async function cleanupOwnedBrowserProcesses(browser) {
-  return cleanupOwnedProcessSet({
-    listOwnedProcesses: options => listOwnedBrowserProcesses(browser, options),
-    terminateOwnedProcesses: (identities, options) => terminateExactProcessIdentities(identities, {
-      ...options,
-      marker: browser.marker,
-      timeoutMs: Math.min(5000, options.timeoutMs),
-    }),
-    rootPid: browser.child?.pid,
-  })
-}
-
 async function stopChrome(browser) {
   if (!browser?.profile || !browser?.browserPath) return
-  const remaining = await cleanupOwnedBrowserProcesses(browser)
+  const remaining = await cleanupOwnedBrowserProcesses(browser, {
+    listOwnedProcesses: (currentBrowser, options) => listOwnedBrowserProcesses(currentBrowser, options),
+  })
   if (remaining.length > 0) {
     throw new Error('Chrome did not exit after identity-verified cleanup: ' + remaining.map(processInfo => processInfo.pid).join(','))
   }
@@ -377,7 +366,9 @@ async function launchChrome() {
     let profileCanBeRemoved = false
     try { await stopChrome(browser) } catch (cleanupError) { cleanupErrors.push('chrome:' + safeMessage(cleanupError)) }
     try {
-      const remaining = await cleanupOwnedBrowserProcesses(browser)
+      const remaining = await cleanupOwnedBrowserProcesses(browser, {
+        listOwnedProcesses: (currentBrowser, options) => listOwnedBrowserProcesses(currentBrowser, options),
+      })
       profileCanBeRemoved = remaining.length === 0
       if (remaining.length > 0) cleanupErrors.push('owned-processes:' + remaining.map(processInfo => processInfo.pid).join(','))
     } catch (cleanupError) {
@@ -1607,7 +1598,9 @@ async function run(args, evidence) {
     let profileCanBeRemoved = false
     if (chrome?.profile && chrome?.browserPath) {
       try {
-        const remaining = await cleanupOwnedBrowserProcesses(chrome)
+        const remaining = await cleanupOwnedBrowserProcesses(chrome, {
+          listOwnedProcesses: (currentBrowser, options) => listOwnedBrowserProcesses(currentBrowser, options),
+        })
         evidence.cleanup.owned_processes_remaining = remaining.map(processInfo => processInfo.pid)
         profileCanBeRemoved = remaining.length === 0
         if (remaining.length > 0) {

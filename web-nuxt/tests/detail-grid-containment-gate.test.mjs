@@ -6,6 +6,7 @@ import { join } from 'node:path'
 import { PassThrough } from 'node:stream'
 import { describe, expect, it, vi } from 'vitest'
 
+import { cleanupOwnedBrowserProcesses } from '../scripts/detail-grid-browser-cleanup.mjs'
 import * as gateCore from '../scripts/detail-grid-gate-core.mjs'
 
 import {
@@ -579,6 +580,55 @@ describe('Detail grid containment gate contracts', () => {
     expect(remaining).toEqual([])
   })
 
+  it('defines the production cleanup wiring policy budgets', () => {
+    expect(gateCore.defaultCapturedProcessCleanupTimeoutMs('win32')).toBe(30000)
+    expect(gateCore.defaultCapturedProcessCleanupTimeoutMs('linux')).toBe(12000)
+    expect(gateCore.controlHelperCleanupBudgetMs({ hasDeadline: true, cleanupTimeoutMs: 5000 })).toBe(2000)
+    expect(gateCore.controlHelperCleanupBudgetMs({ hasDeadline: false, cleanupTimeoutMs: 5000 })).toBe(5000)
+    expect(gateCore.capturedProcessHelperTimeoutMs(30000, 'win32')).toBe(10000)
+    expect(gateCore.capturedProcessHelperTimeoutMs(5000, 'win32')).toBe(4000)
+    expect(gateCore.capturedProcessHelperTimeoutMs(30000, 'linux')).toBe(4000)
+  })
+
+  it('passes production cleanup wiring through the browser cleanup caller', async () => {
+    const browser = { child: { pid: 4321 }, marker: 'vl360-browser-owned' }
+    const identities = [{ pid: 4322 }]
+
+    const exercise = async platform => {
+      const listOptions = { deadline: 9000, timeoutMs: 7000 }
+      const terminateOptions = { deadline: 9000, timeoutMs: 8000 }
+      const listOwnedProcesses = vi.fn(async () => identities)
+      const terminateOwnedProcesses = vi.fn(async () => [])
+      let cleanupOptions
+      const cleanup = vi.fn(async options => {
+        cleanupOptions = options
+        await options.listOwnedProcesses(listOptions)
+        await options.terminateOwnedProcesses(identities, terminateOptions)
+        return []
+      })
+
+      await expect(cleanupOwnedBrowserProcesses(browser, {
+        cleanup,
+        listOwnedProcesses,
+        terminateOwnedProcesses,
+        platform,
+      })).resolves.toEqual([])
+
+      expect(cleanup).toHaveBeenCalledOnce()
+      expect(cleanupOptions.rootPid).toBe(4321)
+      expect(listOwnedProcesses).toHaveBeenCalledWith(browser, listOptions)
+      expect(terminateOwnedProcesses).toHaveBeenCalledWith(identities, {
+        deadline: 9000,
+        timeoutMs: 5000,
+        marker: 'vl360-browser-owned',
+      })
+      return cleanupOptions
+    }
+
+    expect((await exercise('win32')).timeoutMs).toBe(30000)
+    expect((await exercise('linux')).timeoutMs).toBe(10000)
+  })
+
   it('returns the third full stable-empty snapshot without a redundant verification capture', async () => {
     const unrelated = {
       pid: 901,
@@ -823,7 +873,7 @@ describe('Detail grid containment gate contracts', () => {
       try {
         await runCaptured(process.execPath, ['-e', parentSource, marker], {
           timeoutMs: 1000,
-          cleanupTimeoutMs: 12000,
+          cleanupTimeoutMs: gateCore.WINDOWS_EXACT_PROCESS_CLEANUP_TIMEOUT_MS,
           ownershipMarker: marker,
         })
       } catch (error) {
@@ -857,7 +907,7 @@ describe('Detail grid containment gate contracts', () => {
       }
       rmSync(directory, { recursive: true, force: true })
     }
-  }, 30000)
+  }, 45000)
 
   it.runIf(process.platform === 'win32')('prevents a control-helper descendant from surviving its timeout and writing a delayed side effect', async () => {
     const directory = mkdtempSync(join(tmpdir(), 'vl360-control-helper-tree-'))
@@ -896,6 +946,54 @@ describe('Detail grid containment gate contracts', () => {
     }
   }, 30000)
 
+  it.runIf(process.platform === 'win32')('keeps Job cleanup verification after an exhausted helper operation deadline', async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'vl360-control-helper-deadline-'))
+    const pidPath = join(directory, 'pids.json')
+    const sideEffectPath = join(directory, 'late-side-effect.txt')
+    const marker = `vl360-control-helper-deadline-${Date.now()}-${Math.random()}`
+    const parentSource = timedTreeSource({ marker, pidPath, sideEffectPath, sideEffectDelayMs: 10000, lifetimeMs: 15000 })
+    const startedAt = Date.now()
+    let pids
+    let timeoutError
+
+    try {
+      try {
+        await gateCore.runControlHelper(process.execPath, ['-e', parentSource, marker], {
+          timeoutMs: 8000,
+          cleanupTimeoutMs: 5000,
+          deadline: Date.now() + 6000,
+          ownershipMarker: marker,
+        })
+      } catch (error) {
+        timeoutError = error
+      }
+
+      expect(timeoutError).toBeInstanceOf(Error)
+      expect(timeoutError?.message).toMatch(/timed out after/)
+      expect(timeoutError?.cleanupVerified).toBe(true)
+      expect(existsSync(pidPath)).toBe(true)
+      pids = JSON.parse(readFileSync(pidPath, 'utf8'))
+      expect(isRunning(pids.parent)).toBe(false)
+      expect(isRunning(pids.child)).toBe(false)
+      await sleep(Math.max(0, 11000 - (Date.now() - startedAt)))
+      expect(existsSync(sideEffectPath)).toBe(false)
+    } finally {
+      if (!pids && existsSync(pidPath)) pids = JSON.parse(readFileSync(pidPath, 'utf8'))
+      const targetPids = [pids?.child, pids?.parent].filter(pid => Number.isInteger(pid) && pid > 0)
+      if (targetPids.some(isRunning)) {
+        const targetPidSet = new Set(targetPids)
+        const snapshot = await gateCore.captureProcessSnapshot(4000)
+        const retained = snapshot
+          .filter(identity => targetPidSet.has(identity.pid) && identity.commandLine.includes(marker))
+          .sort((left, right) => targetPids.indexOf(left.pid) - targetPids.indexOf(right.pid))
+        if (retained.length > 0) {
+          await gateCore.terminateExactProcessIdentities(retained, { marker, timeoutMs: 5000 })
+        }
+      }
+      rmSync(directory, { recursive: true, force: true })
+    }
+  }, 30000)
+
   it('waits for control-helper pipes to close before returning complete buffered JSON', async () => {
     const child = new EventEmitter()
     child.stdout = new PassThrough({ highWaterMark: 16384 })
@@ -919,6 +1017,32 @@ describe('Detail grid containment gate contracts', () => {
     expect(parsed.payload).toHaveLength(100000)
     expect(parsed.tail).toBe('VL360_CLOSE_SENTINEL')
     expect(result.stdout.endsWith('"VL360_CLOSE_SENTINEL"}')).toBe(true)
+  })
+
+  it('rejects close-after-deadline even when exit precedes the semantic deadline', async () => {
+    const child = new EventEmitter()
+    child.stdout = new PassThrough({ highWaterMark: 16384 })
+    child.stderr = new PassThrough({ highWaterMark: 16384 })
+    child.exitCode = null
+    child.signalCode = null
+    child.kill = () => true
+    const resultPromise = gateCore.observeJobBoundControlHelper(child, process.execPath, 30, 100)
+
+    setTimeout(() => {
+      child.exitCode = 0
+      child.emit('exit', 0, null)
+    }, 5)
+    setTimeout(() => child.stdout.write('late-output'), 40)
+    setTimeout(() => {
+      child.stdout.end()
+      child.stderr.end()
+      child.emit('close', 0, null)
+    }, 60)
+
+    await expect(resultPromise).rejects.toMatchObject({
+      message: expect.stringMatching(/timed out after 30ms/),
+      cleanupVerified: true,
+    })
   })
 
   it.each([

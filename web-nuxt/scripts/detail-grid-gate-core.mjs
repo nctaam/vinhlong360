@@ -4,6 +4,27 @@ import { readdir, readFile, readlink } from 'node:fs/promises'
 import { basename, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+export const WINDOWS_EXACT_PROCESS_CLEANUP_TIMEOUT_MS = 30_000
+export const WINDOWS_EXACT_PROCESS_HELPER_TIMEOUT_MS = 10_000
+export const CONTROL_HELPER_JOB_CLOSE_GRACE_MS = 2_000
+
+export function defaultCapturedProcessCleanupTimeoutMs(platform = process.platform) {
+  return platform === 'win32' ? WINDOWS_EXACT_PROCESS_CLEANUP_TIMEOUT_MS : 12_000
+}
+
+export function controlHelperCleanupBudgetMs({ hasDeadline, cleanupTimeoutMs }) {
+  return hasDeadline
+    ? Math.max(1, Math.min(cleanupTimeoutMs, CONTROL_HELPER_JOB_CLOSE_GRACE_MS))
+    : cleanupTimeoutMs
+}
+
+export function capturedProcessHelperTimeoutMs(cleanupTimeoutMs, platform = process.platform) {
+  return Math.max(1000, Math.min(
+    platform === 'win32' ? WINDOWS_EXACT_PROCESS_HELPER_TIMEOUT_MS : 4000,
+    cleanupTimeoutMs - 1000,
+  ))
+}
+
 export function hasExactZeroMinWidth(declarations) {
   return /(?:^|;)\s*min-width\s*:\s*(?:0|0px)\s*(?:;|$)/iu.test(String(declarations || ''))
 }
@@ -474,9 +495,10 @@ export function runControlHelper(command, args, {
     ? timeoutMs + cleanupTimeoutMs
     : remainingDeadlineMs(sharedDeadline, 'control helper')
   const operationTimeoutMs = Math.max(1, Math.min(timeoutMs, remaining))
-  const cleanupBudgetMs = sharedDeadline === null
-    ? cleanupTimeoutMs
-    : Math.max(1, Math.min(cleanupTimeoutMs, sharedDeadline - Date.now() - operationTimeoutMs))
+  const cleanupBudgetMs = controlHelperCleanupBudgetMs({
+    hasDeadline: sharedDeadline !== null,
+    cleanupTimeoutMs,
+  })
   const wrappedArgs = wrapPowerShellControlHelperArgs(command, args, ownershipMarker)
   const supervisor = spawn(process.env.PYTHON || 'python', [
     WINDOWS_JOB_SUPERVISOR,
@@ -519,7 +541,8 @@ export function observeJobBoundControlHelper(child, command, timeoutMs, cleanupT
     let exitCode = null
     let childError = null
     let operationTimer
-    let cleanupTimer
+    let pipeCloseTimer
+    let cleanupObservationTimer
     const append = (current, chunk) => (current + String(chunk)).slice(-512 * 1024)
     const onStdout = chunk => { stdout = append(stdout, chunk) }
     const onStderr = chunk => { stderr = append(stderr, chunk) }
@@ -527,7 +550,8 @@ export function observeJobBoundControlHelper(child, command, timeoutMs, cleanupT
       if (settled) return
       settled = true
       clearTimeout(operationTimer)
-      clearTimeout(cleanupTimer)
+      clearTimeout(pipeCloseTimer)
+      clearTimeout(cleanupObservationTimer)
       child.stdout?.off('data', onStdout)
       child.stderr?.off('data', onStderr)
       child.off('error', onError)
@@ -545,8 +569,7 @@ export function observeJobBoundControlHelper(child, command, timeoutMs, cleanupT
       exitObserved = true
       exitCode = code
       if (!timedOut) {
-        clearTimeout(operationTimer)
-        cleanupTimer = setTimeout(() => {
+        pipeCloseTimer = setTimeout(() => {
           child.stdout?.destroy()
           child.stderr?.destroy()
           const error = new Error(basename(command) + ' control helper pipes did not close within cleanup budget')
@@ -570,17 +593,22 @@ export function observeJobBoundControlHelper(child, command, timeoutMs, cleanupT
     child.once('close', onClose)
     operationTimer = setTimeout(() => {
       timedOut = true
-      try {
-        const killRequested = child.kill('SIGKILL')
-        if (!killRequested && !childExited(child)) {
-          return finish(reject, timeoutError(false))
+      clearTimeout(pipeCloseTimer)
+      child.stdout?.off('data', onStdout)
+      child.stderr?.off('data', onStderr)
+      if (!childExited(child)) {
+        try {
+          const killRequested = child.kill('SIGKILL')
+          if (!killRequested && !childExited(child)) {
+            return finish(reject, timeoutError(false))
+          }
+        } catch (error) {
+          const failure = timeoutError(false)
+          failure.cause = error
+          return finish(reject, failure)
         }
-      } catch (error) {
-        const failure = timeoutError(false)
-        failure.cause = error
-        return finish(reject, failure)
       }
-      cleanupTimer = setTimeout(() => {
+      cleanupObservationTimer = setTimeout(() => {
         child.stdout?.destroy()
         child.stderr?.destroy()
         finish(reject, timeoutError(false))
@@ -967,7 +995,7 @@ async function terminateCapturedProcessTree(child, cleanupTimeoutMs, initialIden
   const deadline = Number.isFinite(sharedDeadline)
     ? Math.min(Number(sharedDeadline), Date.now() + cleanupTimeoutMs)
     : Date.now() + cleanupTimeoutMs
-  const helperTimeoutMs = Math.max(1000, Math.min(4000, cleanupTimeoutMs - 1000))
+  const helperTimeoutMs = capturedProcessHelperTimeoutMs(cleanupTimeoutMs)
   let initialIdentity = await initialIdentityPromise
   if (!initialIdentity && ownershipMarker) {
     const recoverySnapshot = await captureProcessSnapshot(
@@ -1053,7 +1081,7 @@ async function terminateCapturedProcessTree(child, cleanupTimeoutMs, initialIden
 export function runCaptured(command, args, options = {}) {
   const {
     timeoutMs = 10000,
-    cleanupTimeoutMs = 12000,
+    cleanupTimeoutMs = defaultCapturedProcessCleanupTimeoutMs(),
     deadline,
     ownershipMarker = '',
     ...spawnOptions
