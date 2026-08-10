@@ -14,6 +14,7 @@ const mapHarness = vi.hoisted(() => {
   const listeners = new Map<string, Array<() => void>>()
   const removeMap = vi.fn()
   const jumpTo = vi.fn()
+  const popupSetHTML = vi.fn()
 
   class FakeMarker {
     private element: HTMLElement
@@ -28,6 +29,15 @@ const mapHarness = vi.hoisted(() => {
       return this
     }
     remove() { this.element.remove() }
+  }
+
+  class FakePopup {
+    setLngLat() { return this }
+    setHTML(html: string) {
+      popupSetHTML(html)
+      return this
+    }
+    addTo() { return this }
   }
 
   const map = {
@@ -47,9 +57,11 @@ const mapHarness = vi.hoisted(() => {
 
   return {
     FakeMarker,
+    FakePopup,
     jumpTo,
     listeners,
     map,
+    popupSetHTML,
     removeMap,
     setContainer(value: HTMLElement) { container = value },
   }
@@ -59,7 +71,13 @@ vi.mock('../composables/useNDAMap', () => ({
   useNDAMap: () => ({
     createMap: vi.fn(async (container: HTMLElement) => {
       mapHarness.setContainer(container)
-      return { map: mapHarness.map, maplibregl: { Marker: mapHarness.FakeMarker } }
+      return {
+        map: mapHarness.map,
+        maplibregl: {
+          Marker: mapHarness.FakeMarker,
+          Popup: mapHarness.FakePopup,
+        },
+      }
     }),
   }),
 }))
@@ -90,6 +108,7 @@ beforeEach(() => {
   window.history.replaceState({}, '', '/tim-kiem')
   mapHarness.removeMap.mockClear()
   mapHarness.jumpTo.mockClear()
+  mapHarness.popupSetHTML.mockClear()
   mapHarness.listeners.clear()
   apiFetchMock.mockReset()
 })
@@ -385,6 +404,35 @@ describe('shared search view continuity', () => {
 })
 
 describe('MapListSurface coordination and recovery', () => {
+  it('keeps image-bearing results out of MapLibre popup HTML', async () => {
+    const wrapper = await mountSuspended(MapListSurface, {
+      props: {
+        results: [{
+          ...results[0],
+          images: ['https://cdn.example.test/entity.webp'],
+        }],
+        selectedId: undefined,
+        viewport: { center: [106, 10.2], zoom: 10 },
+        mapState: 'ready',
+      },
+      global: { stubs: { IconLine: true, SourceMark: true, FreshnessLine: true } },
+    })
+    wrappers.push(wrapper)
+    await nextTick()
+    await nextTick()
+
+    await wrapper.get('[data-result-id="entity-42"][data-result-role="marker"]').trigger('click')
+
+    expect(mapHarness.popupSetHTML).toHaveBeenCalledTimes(1)
+    const html = String(mapHarness.popupSetHTML.mock.calls[0]?.[0] || '')
+    const popup = new DOMParser().parseFromString(html, 'text/html')
+    const root = popup.querySelector<HTMLElement>('[data-entity-image-policy]')
+    expect(root?.dataset.entityImagePolicy).toBe('no-image-invariant')
+    expect(popup.querySelectorAll('img, picture, source, video')).toHaveLength(0)
+    expect(popup.querySelectorAll('[style*="background-image"]')).toHaveLength(0)
+    expect(root?.querySelector('.map-popup-link')?.getAttribute('href')).toBe('/dia-diem/entity-42')
+  })
+
   it('uses the same stable id for list rows and markers and selects without moving the camera', async () => {
     const wrapper = await mountSuspended(MapListSurface, {
       props: {

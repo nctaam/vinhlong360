@@ -220,15 +220,3 @@ describe('event image disclosure source boundaries', () => {
     }
   })
 })
-
-describe('map popup no-image invariant', () => {
-  it('marks popup roots as no-image and keeps imagery out of the HTML contract', () => {
-    const source = readFileSync(resolve(process.cwd(), 'components/public/MapListSurface.vue'), 'utf8')
-    const popupStart = source.indexOf('function popupHTML')
-    const popupEnd = source.indexOf('\n}\n\nfunction selectFromMarker', popupStart)
-    const popupFunction = popupStart >= 0 && popupEnd > popupStart ? source.slice(popupStart, popupEnd) : ''
-    expect(popupFunction).toContain('data-entity-image-policy="no-image-invariant"')
-    expect(popupFunction).not.toMatch(/<img|NuxtImg|background-image|image\s*[:(]/i)
-    expect(popupFunction).not.toMatch(/image\s*[,(]/i)
-  })
-})
