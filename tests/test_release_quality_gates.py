@@ -309,4 +309,4 @@ def test_chrome_smoke_redacts_sensitive_urls():
     assert "vl360_token" in smoke
     assert "Bearer [redacted]" in smoke
     assert "net::ERR_FAILED" in smoke
-    assert "redactSensitiveUrl(params.response.url)" in smoke
+    assert "redactSensitiveUrl(issue.url)" in smoke

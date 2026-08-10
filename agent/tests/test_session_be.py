@@ -2116,7 +2116,9 @@ class TestPhase12DependencySecurity:
 
     def test_python_multipart_version(self):
         """python-multipart must be >=0.0.11 (CVE-2024-24762)."""
-        reqs = (Path(__file__).resolve().parent.parent.parent / "requirements.txt").read_text()
+        reqs = (
+            Path(__file__).resolve().parent.parent.parent / "requirements.txt"
+        ).read_text(encoding="utf-8")
         assert "python-multipart>=0.0.11" in reqs
 
     def test_esms_uses_https(self):
