@@ -17,12 +17,13 @@
  */
 import { spawn } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
-import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { SCRIM_SELECTORS, scrimShieldsText } from './axe_scrim_filter.mjs'
+import { finalizeAxeReport } from './axe_scan_result.mjs'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = path.resolve(HERE, '..')
@@ -312,7 +313,7 @@ async function main() {
     await rm(profile, { recursive: true, force: true }).catch(() => {})
   }
 
-  await writeFile(OUT_FILE, JSON.stringify(report, null, 2), 'utf8')
+  const exitCode = await finalizeAxeReport(report, skipped, OUT_FILE)
   if (skipped.length) {
     // In ra chứ không nuốt: quét thiếu trang mà báo 'sạch' là thông tin sai.
     console.log(`
@@ -321,7 +322,7 @@ async function main() {
   }
   const severe = report.flatMap(r => r.violations).filter(v => ['serious', 'critical'].includes(v.impact))
   console.log(`\n→ ${OUT_FILE} (${ROUTES.length} trang × ${COLOR_MODES.length} chế độ, ${severe.length} violation serious+)`)
-  return 0
+  return exitCode
 }
 
 // Chỉ tự chạy khi được gọi trực tiếp — để test import được `scrimShieldsText`

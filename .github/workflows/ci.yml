@@ -384,14 +384,30 @@ jobs:
       - name: Start preview server for a11y scan
         if: always()
         run: |
-          if [ ! -d .output ]; then
-            echo "a11y-unavailable: build output missing" | tee ../a11y-status.txt
+          mark_a11y_unavailable() {
+            echo "a11y-unavailable: $1" | tee ../a11y-status.txt
             echo "A11Y_AVAILABLE=false" >> "$GITHUB_ENV"
+          }
+          if [ ! -d .output ]; then
+            mark_a11y_unavailable "build output missing"
             exit 1
           fi
           npm run preview &
-          echo "PREVIEW_PID=$!" >> "$GITHUB_ENV"
-          echo "A11Y_AVAILABLE=true" >> "$GITHUB_ENV"
+          PREVIEW_PID=$!
+          echo "PREVIEW_PID=$PREVIEW_PID" >> "$GITHUB_ENV"
+          for attempt in $(seq 1 60); do
+            if ! kill -0 "$PREVIEW_PID" 2>/dev/null; then
+              mark_a11y_unavailable "preview process exited before readiness"
+              exit 1
+            fi
+            if curl --fail --silent --max-time 2 http://127.0.0.1:3000/ >/dev/null; then
+              echo "A11Y_AVAILABLE=true" >> "$GITHUB_ENV"
+              exit 0
+            fi
+            sleep 1
+          done
+          mark_a11y_unavailable "preview readiness timeout"
+          exit 1
         env:
           NUXT_PUBLIC_SITE_NOINDEX: "true"
 

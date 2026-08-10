@@ -16,6 +16,10 @@ function workflowStep(workflow, name) {
   return workflow.slice(start, next === -1 ? workflow.length : next)
 }
 
+function workflowCondition(step) {
+  return step.match(/^        if: (.+)$/m)?.[1]
+}
+
 const passingSnapshot = {
   forcedColorsActive: true,
   forcedColorAdjust: 'auto',
@@ -65,18 +69,48 @@ describe('public accessibility browser gate', () => {
 
   it('runs visual and accessibility evidence independently after failures', async () => {
     const ci = await readFile(resolve(import.meta.dirname, '../../.github/workflows/ci.yml'), 'utf8')
-    for (const name of [
+    const independentSteps = [
       'Capture fresh public visual evidence',
       'Start preview server for a11y scan',
       'Accessibility scan (axe-core, 14 trang)',
       'Accessibility gate (R30.6)',
       'Stop preview server',
       'Upload axe report',
-    ]) {
-      expect(workflowStep(ci, name)).toContain('if: always()')
+    ]
+    for (const name of independentSteps) {
+      const step = workflowStep(ci, name)
+      expect(workflowCondition(step)).toBe('always()')
+      expect(step).not.toContain('continue-on-error')
     }
-    expect(workflowStep(ci, 'Start preview server for a11y scan')).toContain('a11y-unavailable')
-    expect(workflowStep(ci, 'Accessibility scan (axe-core, 14 trang)')).toContain('A11Y_AVAILABLE')
+
+    const preview = workflowStep(ci, 'Start preview server for a11y scan')
+    expect(preview).toContain('http://127.0.0.1:3000')
+    expect(preview).toContain('tee ../a11y-status.txt')
+    expect(preview).toContain('A11Y_AVAILABLE=false')
+    expect(preview).toContain('for attempt in $(seq 1 60); do')
+    expect(preview).toContain('kill -0 "$PREVIEW_PID"')
+    expect(preview).toContain('curl --fail')
+    expect(preview).toContain('mark_a11y_unavailable "preview process exited before readiness"')
+    expect(preview).toContain('mark_a11y_unavailable "preview readiness timeout"')
+    expect(preview).toContain('A11Y_AVAILABLE=true')
+    expect(preview.indexOf('A11Y_AVAILABLE=true')).toBeGreaterThan(preview.indexOf('curl --fail'))
+
+    for (const name of [
+      'Accessibility scan (axe-core, 14 trang)',
+      'Accessibility gate (R30.6)',
+    ]) {
+      expect(workflowStep(ci, name)).toMatch(
+        /if \[ "\$\{A11Y_AVAILABLE:-false\}" != "true" \]; then[\s\S]*exit 1[\s\S]*fi/,
+      )
+    }
+
+    const teardown = workflowStep(ci, 'Stop preview server')
+    expect(teardown).toContain('[ -n "${PREVIEW_PID:-}" ]')
+    expect(teardown).toContain('kill "$PREVIEW_PID"')
+
+    const upload = workflowStep(ci, 'Upload axe report')
+    expect(upload).toContain('axe-report.json')
+    expect(upload).toContain('a11y-status.txt')
   })
 
   it('accepts forced-colors and a native 200% browser-zoom snapshot', () => {
