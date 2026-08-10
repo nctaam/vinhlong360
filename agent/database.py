@@ -147,11 +147,10 @@ PG_REQUIRED_COLUMNS = {
     "schema_version": {"component", "version", "migration", "updated_at"},
 }
 
-# 78 = migration mới nhất sau khi hợp NP-1 (078_location_preference_remediation).
-# Trước hợp: main yêu cầu 74, nhánh NP-1 yêu cầu 73 (chính là 073 của nó, nay đánh
-# số lại thành 078). Code NP-1 đọc user_preferences/consents/events nên nó THẬT SỰ
-# cần cả ba migration 076-078 đã chạy — lấy số cao hơn, không lấy số của một bên.
-PG_REQUIRED_SCHEMA_VERSION = 78
+# 79 = migration mới nhất sau khi thêm revision/updated_at cho user_plans.
+# Các migration trước đó vẫn phải chạy theo thứ tự; readiness chỉ mở khi migration
+# 079 đã được áp dụng, vì planner update SQL đọc và ghi cả hai cột mới.
+PG_REQUIRED_SCHEMA_VERSION = 79
 PG_REQUIRED_TRIGGERS = {
     "trg_entity_ratings": "posts",
     "trg_entity_ratings_del": "posts",

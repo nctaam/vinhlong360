@@ -187,9 +187,8 @@ def test_init_sql_contains_final_feedback_schema():
 
 def test_database_readiness_requires_erasure_schema_version_74():
     # Tên hàm giữ nguyên (74 = mốc erasure) nhưng NGƯỠNG đã tiến: hợp NP-1 vào main
-    # thêm migration 076-078, và code NP-1 đọc user_preferences/consents/events nên
-    # nó thật sự cần cả ba đã chạy. Ngưỡng phải >= 78, không còn dừng ở 74.
-    assert database.PG_REQUIRED_SCHEMA_VERSION == 78
+    # thêm migration 076-078, và 079 bổ sung revision-safe planner updates.
+    assert database.PG_REQUIRED_SCHEMA_VERSION == 79
     assert {"feedback_receipts", "feedback_daily_rollups"} <= database.PG_REQUIRED_TABLES
     assert {
         "token_digest",

@@ -1,3 +1,4 @@
+-- Migration authority: schema_version 79 (079_user_plans_revision.sql).
 ALTER TABLE user_plans
     ADD COLUMN IF NOT EXISTS revision INTEGER NOT NULL DEFAULT 1,
     ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();

@@ -150,6 +150,7 @@ class _FakeCursor:
                 76: "076_identity_location_preferences.sql",
                 77: "077_personalization_legacy_purge_queue.sql",
                 78: "078_location_preference_remediation.sql",
+                79: "079_user_plans_revision.sql",
             }.get(self.observed_version, f"{self.observed_version:03d}_observed.sql")
             return (
                 self.observed_version,
@@ -226,7 +227,7 @@ def test_db_gate_requires_the_latest_version_from_the_supplied_migration_chain(
 ) -> None:
     assert (
         sorted(MIGRATIONS.glob("*.sql"))[-1].name
-        == "078_location_preference_remediation.sql"
+        == "079_user_plans_revision.sql"
     )
 
     status, output, statements, sessions = _run_gate(
@@ -236,7 +237,7 @@ def test_db_gate_requires_the_latest_version_from_the_supplied_migration_chain(
     )
 
     assert status == 1
-    assert "78" in output
+    assert "79" in output
     assert any("schema_version" in sql.lower() for sql, _params in statements)
     assert sessions == [(True, True)]
 
@@ -248,7 +249,7 @@ def test_db_gate_accepts_the_exact_latest_version_from_the_supplied_chain(
     status, output, _statements, _sessions = _run_gate(
         monkeypatch,
         capsys,
-        observed_version=78,
+        observed_version=79,
     )
 
     assert status == 0, output

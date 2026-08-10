@@ -543,6 +543,12 @@ class TestRateLimitMutationEndpoints:
         # cố định — xem agent/tests/_source_window.py.
         assert "check_rate" in function_source(src, "add_plan")
 
+    def test_plans_update_has_rate_limit(self):
+        src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
+        # cố định — xem agent/tests/_source_window.py.
+        assert "check_rate" in function_source(src, "update_plan")
+
     def test_plans_remove_has_rate_limit(self):
         src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự

@@ -171,7 +171,7 @@ def test_075_sets_session_timeouts_on_the_application_role_only_when_allowed():
 def test_migration_gate_still_passes_after_075():
     """Cổng migration phải sạch, và số mới nhất phải khớp tên file mới nhất.
 
-    Bản đầu ghim `latest == 075`; sau khi hợp NP-1 thì 078 mới là mới nhất. Ghim tên
+    Bản đầu ghim `latest == 075`; sau khi hợp NP-1 và planner revision thì 079 mới là mới nhất. Ghim tên
     cứng làm test đỏ mỗi lần thêm migration vì một lý do vô nghĩa — nay suy ra từ
     chính thư mục, và vẫn khoá được điều thật sự quan trọng: gate không có lỗi, và
     `latest_schema_version` khớp với số trong TÊN file mới nhất (đúng cái bẫy đã sập

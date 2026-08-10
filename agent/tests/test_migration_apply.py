@@ -168,7 +168,7 @@ def test_schema_version_tracks_latest_migration():
     with db._conn() as conn:
         row = db._fetchone(conn, "SELECT version FROM schema_version WHERE component = 'agent'", ())
     assert row is not None
-    assert int(db._row_to_dict(row)['version']) >= 78  # đã áp tới 078
+    assert int(db._row_to_dict(row)['version']) >= 79  # đã áp tới 079
 
 
 
