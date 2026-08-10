@@ -11,12 +11,18 @@
  *  (b) endpoint chết/lỗi mạng thì điều hướng `tel:` / bản đồ / website VẪN chạy;
  *  (c) bấm liên tiếp không gửi trùng (không đốt rate-limit 10 lượt/60s/IP).
  */
-import { mountSuspended } from '@nuxt/test-utils/runtime'
+import { clearNuxtData } from '#app'
+import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { nextTick } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import ContactWidget from '../components/ContactWidget.vue'
+import WardPage from '../pages/xa-phuong/[id].vue'
 import { resetContactBeaconDedupe, trackContactView } from '../composables/useContactBeacon'
+
+const apiFetchMock = vi.hoisted(() => vi.fn())
+mockNuxtImport('apiFetch', () => apiFetchMock)
 
 const detailSource = readFileSync(resolve(process.cwd(), 'pages/dia-diem/[id].vue'), 'utf8')
 const directorySource = readFileSync(resolve(process.cwd(), 'pages/danh-ba.vue'), 'utf8')
@@ -29,6 +35,45 @@ function stubFetch(impl: (...args: any[]) => any = () => Promise.resolve({ ok: t
   fetchMock = vi.fn(impl)
   vi.stubGlobal('fetch', fetchMock)
   return fetchMock
+}
+
+const wardStubs = {
+  ActionDock: { template: '<div><slot name="primary" /></div>' },
+  EntityCard: true,
+  EntityTrustPanel: true,
+  EmptyState: true,
+  FreshnessLine: true,
+  IconLine: { props: ['name'], template: '<i :data-icon="name" />' },
+  PageState: true,
+  SourceMark: true,
+}
+
+async function flushWardUi() {
+  await new Promise(resolve => setTimeout(resolve, 0))
+  await nextTick()
+  await new Promise(resolve => setTimeout(resolve, 0))
+  await nextTick()
+}
+
+async function mountWard(options: {
+  place: Record<string, unknown>
+  facilities: Array<Record<string, unknown>>
+}) {
+  apiFetchMock.mockImplementation((url: unknown) => {
+    const path = String(url)
+    if (path.includes('/overview')) {
+      return Promise.resolve({ place: options.place, facilities: options.facilities, tourism: [], lodging: [], products: [] })
+    }
+    if (path.includes('/api/entities/')) return Promise.resolve(options.place)
+    return Promise.resolve(null)
+  })
+  const wrapper = await mountSuspended(WardPage, {
+    route: '/xa-phuong/phuong-1',
+    global: { stubs: wardStubs },
+  })
+  wrappers.push(wrapper)
+  await flushWardUi()
+  return wrapper
 }
 
 /**
@@ -54,14 +99,72 @@ async function mountWidget(attributes: Record<string, unknown>, id = 'nha-vuon-v
 
 beforeEach(() => {
   resetContactBeaconDedupe()
+  apiFetchMock.mockReset()
   stubFetch()
 })
 
-afterEach(() => {
+afterEach(async () => {
   while (wrappers.length) wrappers.pop()!.unmount()
   vi.unstubAllGlobals()
+  await clearNuxtData()
   vi.useRealTimers()
   vi.restoreAllMocks()
+})
+
+describe('ward phone contact actions', () => {
+  it('instruments every rendered ward phone action without blocking tel navigation', async () => {
+    const wrapper = await mountWard({
+      place: {
+        id: 'phuong-1',
+        name: 'Phường 1',
+        level: 'phuong',
+        area: 'vinh-long',
+        attributes: { phone: '02703822100', police_phone: '02703822101' },
+      },
+      facilities: [{ id: 'tram-y-te-1', name: 'Trạm y tế', attributes: { phone: '02703822102' } }],
+    })
+
+    const links = wrapper.findAll('a[href^="tel:"]')
+    expect(links.length).toBeGreaterThanOrEqual(3)
+    for (const link of links) {
+      expect(link.attributes('data-contact-action')).toBe('phone')
+      expect(link.attributes('data-contact-surface')).toMatch(/^ward-(detail|directory)$/)
+      expect(link.attributes('data-contact-entity-id')).toBeTruthy()
+      expect(link.attributes('data-contact-outcome')).toBe('navigation')
+      const event = new MouseEvent('click', { bubbles: true, cancelable: true })
+      expect(link.element.dispatchEvent(event)).toBe(true)
+      expect(event.defaultPrevented).toBe(false)
+    }
+
+    expect(fetchMock.mock.calls.every(([url]) => !String(url).includes('02703822'))).toBe(true)
+  })
+
+  it('deduplicates repeated clicks while counting separate facility entities independently', async () => {
+    const wrapper = await mountWard({
+      place: {
+        id: 'phuong-1',
+        name: 'Phường 1',
+        level: 'phuong',
+        area: 'vinh-long',
+        attributes: { phone: '02703822100' },
+      },
+      facilities: [
+        { id: 'tram-y-te-1', name: 'Trạm y tế 1', attributes: { phone: '02703822102' } },
+        { id: 'tram-y-te-2', name: 'Trạm y tế 2', attributes: { phone: '02703822103' } },
+      ],
+    })
+
+    const facilityLinks = wrapper.findAll('a[data-contact-surface="ward-directory"]')
+    expect(facilityLinks).toHaveLength(2)
+    await facilityLinks[0]!.trigger('click')
+    await facilityLinks[0]!.trigger('click')
+    await facilityLinks[1]!.trigger('click')
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
+      '/api/entities/tram-y-te-1/view-contact?action=phone',
+      '/api/entities/tram-y-te-2/view-contact?action=phone',
+    ])
+  })
 })
 
 describe('(a) bấm CTA liên hệ thì gửi beacon', () => {

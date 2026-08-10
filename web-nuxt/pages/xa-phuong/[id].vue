@@ -76,7 +76,12 @@
               v-if="wardPrimaryAction.id === 'call'"
               class="ward-primary-action"
               data-color-role="action-primary"
+              data-contact-action="phone"
+              data-contact-surface="ward-detail"
+              :data-contact-entity-id="data.place.id"
+              data-contact-outcome="navigation"
               :href="wardPrimaryAction.href"
+              @click="trackContactView(data.place.id, 'phone')"
             >{{ wardPrimaryAction.label }}</a>
             <NuxtLink
               v-else
@@ -120,7 +125,16 @@
           <div v-if="attrs.police_phone" class="wp-contact">
             <div class="wp-contact-item wp-contact-main">
               <span class="wp-contact-label"><IconLine name="user" aria-hidden="true" /> Công an {{ data.place.name }}</span>
-              <a :href="telHref(attrs.police_phone)" class="wp-phone" :aria-label="`Gọi công an ${data.place.name}`">{{ attrs.police_phone }}</a>
+              <a
+                :href="telHref(attrs.police_phone)"
+                class="wp-phone"
+                data-contact-action="phone"
+                data-contact-surface="ward-detail"
+                :data-contact-entity-id="data.place.id"
+                data-contact-outcome="navigation"
+                :aria-label="`Gọi công an ${data.place.name}`"
+                @click="trackContactView(data.place.id, 'phone')"
+              >{{ attrs.police_phone }}</a>
             </div>
           </div>
 
@@ -130,7 +144,18 @@
               <span class="wp-fac-kind"><IconLine class="wp-fac-icon" :name="kindMeta(f).icon" aria-hidden="true" /> {{ kindMeta(f).label }}</span>
               <strong>{{ f.name }}</strong>
               <div v-if="attr(f,'address')" class="wp-fac-row"><IconLine name="pin" aria-hidden="true" /> {{ attr(f,'address') }}</div>
-              <div v-if="attr(f,'phone')" class="wp-fac-row"><IconLine name="phone" aria-hidden="true" /> <a :href="telHref(attr(f,'phone'))" :aria-label="`Gọi ${f.name}`">{{ attr(f,'phone') }}</a></div>
+              <div v-if="attr(f,'phone')" class="wp-fac-row">
+                <IconLine name="phone" aria-hidden="true" />
+                <a
+                  :href="telHref(attr(f,'phone'))"
+                  data-contact-action="phone"
+                  data-contact-surface="ward-directory"
+                  :data-contact-entity-id="f.id"
+                  data-contact-outcome="navigation"
+                  :aria-label="`Gọi ${f.name}`"
+                  @click="trackContactView(f.id, 'phone')"
+                >{{ attr(f,'phone') }}</a>
+              </div>
             </li>
           </ul>
         </section>
@@ -194,6 +219,7 @@
 import type { Entity } from '~/types'
 import type { DetailFetchResolution } from '~/utils/detailExperience'
 import { AREA_META, OFFICE_KIND, TYPE_META } from '~/composables/useConstants'
+import { trackContactView } from '~/composables/useContactBeacon'
 import { isCurrentLaunchResult } from '~/composables/useLaunchSafety'
 import { resolveDetailAction, resolveDetailFetchError } from '~/utils/detailExperience'
 import { describeEntityImages } from '~/utils/imageDescriptors'
