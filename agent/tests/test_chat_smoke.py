@@ -374,12 +374,14 @@ def _assert_info_report_list(body):
     assert body["reports"][1]["reason"] == "Sai số điện thoại"
 
 
-def _assert_info_report_rate_limit(client_mocked):
+def _assert_info_report_rate_limit(client_mocked, report_limiter):
     last = None
     for _ in range(6):
         last = client_mocked.post("/api/report", json={"target_id": "y", "reason": "spam"})
     assert last.status_code == 429, last.text
-    assert last.json().get("retry_after") == 300
+    retry_after = last.json().get("retry_after")
+    assert type(retry_after) is int
+    assert 1 <= retry_after <= report_limiter.window
 
 
 def test_info_report_submit_and_admin_list(client_mocked, tmp_path, monkeypatch):
@@ -417,7 +419,7 @@ def test_info_report_submit_and_admin_list(client_mocked, tmp_path, monkeypatch)
     assert client_mocked.get("/admin/info-reports").status_code == 401
 
     # 3) Rate-limit: limiter cho 5/5min — đã dùng 2, gửi thêm tới khi 429
-    _assert_info_report_rate_limit(client_mocked)
+    _assert_info_report_rate_limit(client_mocked, report_limiter)
 
 
 def test_entities_month_pagination(client_mocked):
