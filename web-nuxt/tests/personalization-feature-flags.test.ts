@@ -8,7 +8,7 @@ import OnboardingSheet from '../components/OnboardingSheet.vue'
 import SmartRecommendations from '../components/SmartRecommendations.vue'
 import SettingsPage from '../pages/cai-dat.vue'
 import DetailPage from '../pages/dia-diem/[id].vue'
-import { featureFlagDefault } from '../utils/featureFlags'
+import { featureFlagDefault, resolveFeatureFlag, resolvePublicCapabilityMode } from '../utils/featureFlags'
 
 const apiFetchMock = vi.hoisted(() => vi.fn())
 const pageFetchMock = vi.hoisted(() => vi.fn())
@@ -141,6 +141,41 @@ describe('NP-1 public feature flag defaults', () => {
     expect(featureFlagDefault('preference_ui_v1')).toBe(false)
     expect(featureFlagDefault('recommendation_explanations_v1')).toBe(false)
     expect(featureFlagDefault('trust_drawer_v1')).toBe(false)
+  })
+})
+
+describe('feature flag resilience', () => {
+  it.each([undefined, null, {}, { ai_recommendations: 'false' }, []])(
+    'preserves established defaults for malformed settings %#',
+    (flags) => {
+      expect(resolveFeatureFlag('ai_recommendations', flags as Record<string, unknown>)).toBe(true)
+      expect(resolveFeatureFlag('ai_tips', flags as Record<string, unknown>)).toBe(true)
+      expect(resolveFeatureFlag('ai_best_time', flags as Record<string, unknown>)).toBe(true)
+    },
+  )
+
+  it('honors explicit established overrides without a rollout capability', () => {
+    expect(resolveFeatureFlag('ai_recommendations', { ai_recommendations: false })).toBe(false)
+    expect(resolveFeatureFlag('ai_recommendations', { ai_recommendations: true })).toBe(true)
+    expect(resolveFeatureFlag('ai_recommendations', { public_recommendation_v1: false })).toBe(true)
+  })
+
+  it('fails closed for rollout and unknown keys', () => {
+    expect(resolveFeatureFlag('public_recommendation_v1', {})).toBe(false)
+    expect(resolveFeatureFlag('preference_ui_v1', { preference_ui_v1: 'true' })).toBe(false)
+    expect(resolveFeatureFlag('unknown_flag', { unknown_flag: true })).toBe(false)
+    expect(resolvePublicCapabilityMode('recommendation', null)).toBe('deterministic')
+  })
+
+  it('keeps new enhancement flags behind their public capability', () => {
+    expect(resolveFeatureFlag('recommendation_explanations_v1', {
+      recommendation_explanations_v1: true,
+      public_personalization_v1: false,
+    })).toBe(false)
+    expect(resolveFeatureFlag('recommendation_explanations_v1', {
+      recommendation_explanations_v1: true,
+      public_personalization_v1: true,
+    })).toBe(true)
   })
 })
 

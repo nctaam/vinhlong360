@@ -42,29 +42,41 @@ export const PUBLIC_CAPABILITY_FLAGS = Object.freeze({
 export type PublicCapability = keyof typeof PUBLIC_CAPABILITY_FLAGS
 export type PublicCapabilityMode = 'enhanced' | 'deterministic'
 
+const ESTABLISHED_FEATURE_FLAGS = Object.freeze(new Set([
+  'chat_widget',
+  'ai_recommendations',
+  'ai_tips',
+  'ai_best_time',
+  'reviews',
+  'nearby',
+  'onboarding',
+]))
+
 const LEGACY_PUBLIC_CAPABILITY: Partial<Record<string, PublicCapability>> = Object.freeze({
   preference_ui_v1: 'personalization',
   recommendation_explanations_v1: 'personalization',
-  ai_recommendations: 'recommendation',
-  ai_tips: 'proactiveNotices',
-  ai_best_time: 'proactiveNotices',
 })
+
+export function isEstablishedFeatureFlag(key: string): boolean {
+  return ESTABLISHED_FEATURE_FLAGS.has(key)
+}
 
 export function featureFlagDefault(key: string): boolean {
   return FEATURE_FLAGS.find(f => f.key === key)?.default ?? false
 }
 
 export function resolveFeatureFlag(key: string, flags: Record<string, unknown> | null | undefined): boolean {
-  const override = flags?.[key]
-  const legacyEnabled = typeof override === 'boolean'
+  const definition = FEATURE_FLAGS.find(flag => flag.key === key)
+  if (!definition) return false
+
+  const safeFlags = flags && typeof flags === 'object' && !Array.isArray(flags) ? flags : null
+  const override = safeFlags?.[key]
+  const enabled = typeof override === 'boolean'
     ? override
-    : flags && Object.prototype.hasOwnProperty.call(flags, key)
-      ? false
-      : featureFlagDefault(key)
+    : isEstablishedFeatureFlag(key) ? definition.default : false
   const capability = LEGACY_PUBLIC_CAPABILITY[key]
-  if (!capability) return legacyEnabled
-  const capabilityOverride = flags?.[PUBLIC_CAPABILITY_FLAGS[capability]]
-  return legacyEnabled && capabilityOverride === true
+  if (!capability || !enabled) return enabled
+  return safeFlags?.[PUBLIC_CAPABILITY_FLAGS[capability]] === true
 }
 
 export function resolvePublicCapabilityMode(capability: PublicCapability, flags: Record<string, unknown> | null | undefined): PublicCapabilityMode {
