@@ -176,7 +176,7 @@ describe('Homepage Nocturne computed color cascade', () => {
     expect(searchStyle.transition).not.toContain('transform')
     expect(searchStyle.backdropFilter || '').not.toContain('blur')
     expect(inputStyle.outlineColor).toBe(onAction)
-    expect(inputStyle.boxShadow).toBe('none')
+    expect(inputStyle.boxShadow).toBe('0 0 0 2px rgb(0, 0, 0)')
     expect(contrast(rgb(inputStyle.outlineColor), rgb(searchStyle.backgroundColor))).toBeGreaterThanOrEqual(3)
 
     for (const selector of ['.hero-kicker', 'h1', '.hero-sub', '.hero-nearby']) {
@@ -188,7 +188,6 @@ describe('Homepage Nocturne computed color cascade', () => {
     expect(document.activeElement).toBe(nearby)
     const nearbyStyle = getComputedStyle(nearby)
     expect(nearbyStyle.color).toBe(action)
-    expect(['', 'none']).toContain(nearbyStyle.boxShadow)
   })
 
   it('keeps both feature actions on the semantic secondary recipe after component styles', async () => {

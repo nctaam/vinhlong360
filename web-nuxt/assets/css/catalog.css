@@ -834,9 +834,9 @@
   border-radius: var(--radius-full);
 }
 .map-list-surface__toggle button[aria-pressed='true'] {
-  color: var(--primary-fg);
+  color: var(--color-action);
   background: var(--bg-warm);
-  border-color: color-mix(in srgb, var(--primary) 42%, var(--line));
+  border-color: var(--color-action-border);
 }
 
 .map-list-surface__body {
@@ -867,12 +867,12 @@
 .map-result-row:focus-visible {
   position: relative;
   z-index: 1;
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--color-focus);
   outline-offset: -3px;
 }
 .map-result-row.is-selected {
   background: color-mix(in srgb, var(--bg-warm) 82%, var(--card));
-  box-shadow: inset 4px 0 0 var(--primary);
+  box-shadow: inset 4px 0 0 var(--color-action);
 }
 .map-result-row__copy { min-width: 0; }
 .search-map-entity-card { min-width: 0; width: 100%; }
@@ -890,13 +890,13 @@
   line-height: var(--leading-tight);
   text-decoration: none;
 }
-.map-result-row__title:hover { color: var(--primary-fg); text-decoration: underline; text-underline-offset: 3px; }
+.map-result-row__title:hover { color: var(--color-action); text-decoration: underline; text-underline-offset: 3px; }
 .map-result-row__address { margin: var(--space-1) 0 var(--space-2); color: var(--muted); font-size: var(--text-sm); }
 .map-result-row__evidence { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
 .map-result-row__selected {
   flex: none;
   padding: var(--space-1) var(--space-2);
-  color: var(--primary-fg);
+  color: var(--color-action);
   font-size: var(--text-2xs);
   font-weight: var(--weight-bold);
   text-transform: uppercase;
@@ -932,7 +932,7 @@
     repeating-linear-gradient(135deg, transparent 0 18px, color-mix(in srgb, var(--line) 30%, transparent) 18px 19px),
     var(--bg-alt);
 }
-.map-list-fallback-state > .line-icon { color: var(--primary-fg); font-size: 2rem; }
+.map-list-fallback-state > .line-icon { color: var(--color-action); font-size: 2rem; }
 .map-list-fallback-state h3 { margin: 0 0 var(--space-2); font-family: var(--font-editorial); }
 .map-list-fallback-state p { max-width: 46ch; margin: 0; color: var(--muted); }
 .map-list-fallback-state__continuity { margin-top: var(--space-2) !important; color: var(--ink) !important; font-weight: var(--weight-semibold); }

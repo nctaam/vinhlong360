@@ -12,6 +12,15 @@ const FilterHost = defineComponent({
   template: '<output data-area>{{ area }}</output>',
 })
 
+const SearchFilterHost = defineComponent({
+  setup() {
+    const query = ref('seed')
+    useFilterUrl({ q: query }, { q: '' })
+    return { query }
+  },
+  template: '<output data-query>{{ query }}</output>',
+})
+
 it('restores bound filters when browser history changes the incoming route', async () => {
   const wrapper = await mountSuspended(FilterHost, { route: '/du-lich?vung=vinh-long' })
   expect(wrapper.get('[data-area]').text()).toBe('vinh-long')
@@ -20,4 +29,17 @@ it('restores bound filters when browser history changes the incoming route', asy
   await nextTick()
 
   expect(wrapper.get('[data-area]').text()).toBe('ben-tre')
+})
+
+it('preserves an explicit empty-string default instead of inventing an all query', async () => {
+  const wrapper = await mountSuspended(SearchFilterHost, { route: '/du-lich' })
+
+  expect(wrapper.get('[data-query]').text()).toBe('')
+
+  wrapper.vm.query = 'gốm'
+  await nextTick()
+  wrapper.vm.query = ''
+  await nextTick()
+
+  expect(wrapper.vm.$route.query.q).toBeUndefined()
 })

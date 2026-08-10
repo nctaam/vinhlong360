@@ -8,7 +8,7 @@
 //     màn hình, role, aria-*, liên kết. KHÔNG assert chuỗi trong source — loại
 //     test đó đỏ khi refactor đúng và xanh khi hành vi sai.
 import { clearNuxtData } from '#app'
-import { mountSuspended } from '@nuxt/test-utils/runtime'
+import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import { defineComponent, h, nextTick } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import EntityDetailPage from '../pages/dia-diem/[id].vue'
@@ -17,7 +17,7 @@ import TourismPage from '../pages/du-lich.vue'
 import { aiDisclosure } from '../utils/aiDisclosure'
 
 const apiFetchMock = vi.hoisted(() => vi.fn())
-vi.mock('../utils/apiFetch', () => ({ apiFetch: apiFetchMock }))
+mockNuxtImport('apiFetch', () => apiFetchMock)
 
 // ── Mạng giả: mỗi test khai báo backend trả gì cho từng đường dẫn thật ────────
 type Backend = (url: string) => unknown
@@ -180,9 +180,9 @@ describe('Luồng người dùng: tìm kiếm', () => {
 
     const wrapper = await mountPage(SearchPage, '/tim-kiem?q=g%E1%BB%91m', searchStubs)
 
-    const grid = wrapper.get('.grid')
-    expect(grid.text()).toContain('Gốm đỏ Mang Thít')
-    expect(grid.get('a.card-body-link').attributes('href')).toBe('/dia-diem/gom-do-mang-thit')
+    const results = wrapper.get('[data-map-list-surface]')
+    expect(results.text()).toContain('Gốm đỏ Mang Thít')
+    expect(results.get('a.card-body-link').attributes('href')).toBe('/dia-diem/gom-do-mang-thit')
     expect(wrapper.text()).toContain('„gốm"')
     expect(wrapper.find('[role="alert"]').exists()).toBe(false)
     expect(wrapper.find('.empty-state').exists()).toBe(false)
@@ -199,9 +199,9 @@ describe('Luồng người dùng: tìm kiếm', () => {
     // "Có nghĩa" = có câu giải thích thật, không phải một ô trống hay dấu ba chấm.
     expect(empty.get('.empty-text').text().length).toBeGreaterThan(20)
     // Và có ít nhất một lối đi tiếp, để đây không phải ngõ cụt.
-    const exits = empty.findAll('a').map(link => link.attributes('href'))
-    expect(exits).toContain('/du-lich')
-    expect(exits).toContain('/san-pham')
+    const exits = empty.findAll('[data-recovery-action]').map(button => button.attributes('data-recovery-action'))
+    expect(exits).toContain('recent-saved')
+    expect(exits.length).toBeGreaterThan(0)
     expect(wrapper.find('.grid').exists()).toBe(false)
   })
 

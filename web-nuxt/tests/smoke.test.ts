@@ -6,6 +6,13 @@ import { resolve } from 'node:path'
 import { useAuth } from '../composables/useAuth'
 import SearchPage from '../pages/tim-kiem.vue'
 import { entityPath, normalizeRouteParam, notificationTargetPath, postPath, savedItemPath, userPath } from '../utils/routePaths'
+import {
+  SMOKE_JOURNEY_STEPS,
+  activateVisibleControl,
+  classifySmokeIssue,
+  evaluateSmokeJourneyEvidence,
+  selectPendingVisualScenarios,
+} from '../../scripts/smoke_e2e_chrome.mjs'
 
 const originalItineraryScheduleV2 = process.env.NUXT_PUBLIC_ITINERARY_SCHEDULE_V2
 
@@ -88,6 +95,86 @@ describe('Component smoke tests', () => {
   it('imports JourneyActionRail component', async () => {
     const mod = await import('../components/JourneyActionRail.vue')
     expect(mod.default).toBeTruthy()
+  })
+})
+
+describe('Adaptive Nocturne public browser smoke contract', () => {
+  it('resumes an interrupted visual run without recapturing completed baselines', () => {
+    const scenarios = [
+      { fileName: 'home__nocturne__375px__ready.png' },
+      { fileName: 'planner__parchment__390px__ready.png' },
+    ]
+
+    expect(selectPendingVisualScenarios(scenarios, new Set([
+      'home__nocturne__375px__ready.png',
+    ]), true)).toEqual([
+      { fileName: 'planner__parchment__390px__ready.png' },
+    ])
+    expect(selectPendingVisualScenarios(scenarios, new Set(), false)).toEqual(scenarios)
+  })
+
+  it('falls back to the visible element click when a headless pointer event is lost', async () => {
+    let panel = 'list'
+    let pointerClicks = 0
+    let elementClicks = 0
+
+    const result = await activateVisibleControl({
+      pointerClick: async () => { pointerClicks += 1 },
+      elementClick: async () => { elementClicks += 1; panel = 'map' },
+      isActivated: async () => panel === 'map',
+      settle: async () => {},
+    })
+
+    expect(result).toEqual({ method: 'element', attempts: 1 })
+    expect(pointerClicks).toBe(1)
+    expect(elementClicks).toBe(1)
+    expect(panel).toBe('map')
+  })
+
+  it('keeps the complete journey ordered through planner back-navigation and recovery states', () => {
+    expect(SMOKE_JOURNEY_STEPS.map(step => step.id)).toEqual([
+      'homepage',
+      'search',
+      'map-panel',
+      'list-panel',
+      'detail',
+      'planner',
+      'back-to-detail',
+      'back-to-search',
+      'map-failure',
+      'detail-retryable-5xx',
+    ])
+  })
+
+  it('fails on lost search state, console errors or action-dock overlap', () => {
+    const reasons = evaluateSmokeJourneyEvidence({
+      expectedSearchUrl: '/tim-kiem?q=g%E1%BB%91m&intent=place&area=vinh-long&type=craft_village',
+      restoredSearchUrl: '/tim-kiem?q=g%E1%BB%91m',
+      consoleErrors: ['ReferenceError: broken'],
+      actionDockOverlaps: [{ route: '/tao-lich-trinh', pixels: 12 }],
+      completedSteps: SMOKE_JOURNEY_STEPS.map(step => step.id),
+      mapFallbackVisible: true,
+      detailRetryVisible: true,
+      detailConfirmed404: false,
+    })
+
+    expect(reasons).toContain('search-state-not-preserved')
+    expect(reasons).toContain('console-error')
+    expect(reasons).toContain('action-dock-overlap')
+  })
+
+  it('records a recovered backend 5xx as an external limitation, not a product regression', () => {
+    expect(classifySmokeIssue({
+      kind: 'http',
+      url: 'http://127.0.0.1:8360/api/entities/gom-do-mang-thit',
+      status: 503,
+      renderedRecovery: 'retryable-detail',
+    })).toBe('external-backend-limitation')
+
+    expect(classifySmokeIssue({
+      kind: 'console',
+      message: 'TypeError: Cannot read properties of undefined',
+    })).toBe('product-regression')
   })
 })
 
@@ -176,10 +263,10 @@ describe('UserCP regressions', () => {
     const map = src('pages/ban-do.vue')
     const ndaMap = src('composables/useNDAMap.ts')
     expect(map).toContain('mapPinApiPath')
-    expect(map).toContain("params.set('type', type)")
+    expect(map).toContain("params.set('type', activeTypeQuery.value)")
     expect(map).toContain('mapSearchQuery')
-    expect(map).toContain('syncMapRoute')
-    expect(map).toContain('visibleListPins')
+    expect(map).toContain('commitSearchArea')
+    expect(map).toContain('filteredPins')
     expect(map).not.toContain('/api/entities?limit=700')
     expect(ndaMap).toContain('getFallbackStyle')
     expect(ndaMap).toContain("map.on('error'")
@@ -457,7 +544,7 @@ describe('UserCP regressions', () => {
       })))
       expect(fetchMock.mock.calls.filter(([url]) => url === '/api/me/events')).toHaveLength(1)
       expect(navigateToMock).toHaveBeenCalledTimes(2)
-      expect(navigateToMock).toHaveBeenLastCalledWith('/tim-kiem?q=ch%E1%BB%A3%20n%E1%BB%95i')
+      expect(navigateToMock).toHaveBeenLastCalledWith('/tim-kiem?q=ch%E1%BB%A3+n%E1%BB%95i')
       expect(wrapper.get('.search-hero').isVisible()).toBe(true)
       expect((searchInput.element as HTMLInputElement).value).toBe('  chợ nổi  ')
       expect(unexpectedApiCalls).toEqual([])
@@ -489,7 +576,7 @@ describe('UserCP regressions', () => {
     expect(unified).toContain('normalizedEntities')
     expect(searchPage).toContain('searchAll(q.value, 100)')
     expect(searchPage).toContain('useJourneyActions')
-    expect(searchPage).toContain('searchRecoveryActions')
+    expect(searchPage).toContain('zeroResultRecoveryActions')
     expect(searchPage).toContain('searchSuccessActions')
     expect(searchPage).toContain('JourneyActionRail')
     expect(searchPage).toContain('zero_result')

@@ -1,12 +1,12 @@
 import { clearNuxtData } from '#app'
-import { mountSuspended } from '@nuxt/test-utils/runtime'
+import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import { defineComponent, h, nextTick } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import HomePage from '../pages/index.vue'
 import TourismPage from '../pages/du-lich.vue'
 
 const apiFetchMock = vi.hoisted(() => vi.fn())
-vi.mock('../utils/apiFetch', () => ({ apiFetch: apiFetchMock }))
+mockNuxtImport('apiFetch', () => apiFetchMock)
 
 const wrappers: Array<{ unmount: () => void }> = []
 const NuxtImgStub = defineComponent({

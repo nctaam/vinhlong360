@@ -71,7 +71,7 @@ const requiredBoundaries = [
   ['pages/le-hoi.vue', 'event-thumbnail', 'placeholder'],
   ['pages/su-kien.vue', 'event-thumbnail', 'ai-generated'],
   ['pages/su-kien.vue', 'event-thumbnail', 'placeholder'],
-  ['pages/ban-do.vue', 'map-popup', 'none'],
+  ['components/public/MapListSurface.vue', 'map-popup', 'none'],
   ['pages/admin/entities.vue', 'admin-entity-thumbnail', 'ai-generated'],
   ['pages/admin/entities.vue', 'admin-entity-thumbnail', 'placeholder'],
   ['pages/admin/entities.vue', 'admin-entity-editor', 'ai-generated'],

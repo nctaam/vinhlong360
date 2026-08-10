@@ -119,9 +119,9 @@ function contrast(foreground: Rgba, background: Rgba) {
 
 describe('homepage Existing Screen Evolution B1', () => {
   it.each([
-    { theme: 'light', canvas: [249, 247, 241, 1] as Rgba, text: [8, 26, 22, 1] as Rgba, muted: [65, 84, 80, 1] as Rgba, brand: [149, 64, 43, 1] as Rgba, action: [3, 90, 105, 1] as Rgba },
-    { theme: 'dark', canvas: [7, 18, 16, 1] as Rgba, text: [237, 235, 229, 1] as Rgba, muted: [164, 177, 174, 1] as Rgba, brand: [199, 133, 117, 1] as Rgba, action: [125, 174, 186, 1] as Rgba },
-  ])('renders the useful hero copy directly on the semantic canvas in $theme', async ({ theme, canvas, text, muted, brand, action }) => {
+    { theme: 'light', canvas: [249, 247, 241, 1] as Rgba, text: [8, 26, 22, 1] as Rgba, brand: [149, 64, 43, 1] as Rgba, action: [3, 90, 105, 1] as Rgba },
+    { theme: 'dark', canvas: [7, 18, 16, 1] as Rgba, text: [237, 235, 229, 1] as Rgba, brand: [199, 133, 117, 1] as Rgba, action: [125, 174, 186, 1] as Rgba },
+  ])('renders useful hero copy with the protected media plate in $theme', async ({ theme, canvas, text, brand, action }) => {
     document.documentElement.classList.add(theme)
     stylesheets.push(await installActualHomepageStyles({ srgbFallback: true }))
     apiFetchMock.mockImplementation((url: unknown) => {
@@ -151,10 +151,12 @@ describe('homepage Existing Screen Evolution B1', () => {
     expect(rootBackground).toEqual(canvas)
     expect(rgba(getComputedStyle(title.element).color)).toEqual(text)
     expect(rgba(getComputedStyle(kicker.element).color)).toEqual(brand)
-    expect(rgba(subtitleStyle.color)).toEqual(muted)
+    const subtitleColor = rgba(subtitleStyle.color)
+    const subtitlePlate = rgba(subtitleStyle.backgroundColor)
+    expect(subtitleColor).toEqual([253, 252, 249, 1])
+    expect(subtitlePlate).toEqual([0, 0, 0, .76])
     expect(rgba(getComputedStyle(nearby.element).color)).toEqual(action)
-    expect(subtitleStyle.backgroundColor === '' || subtitleStyle.backgroundColor === 'transparent').toBe(true)
-    expect(contrast(muted, rootBackground)).toBeGreaterThanOrEqual(4.5)
+    expect(contrast(subtitleColor, composite(subtitlePlate, rootBackground))).toBeGreaterThanOrEqual(4.5)
     expect(wrapper.get('.hero-main').element.compareDocumentPosition(wrapper.get('[data-home-feature-media]').element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 

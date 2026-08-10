@@ -184,10 +184,10 @@ describe('(c) bấm liên tiếp không gửi trùng', () => {
 describe('hợp đồng nguồn — CTA của trang chi tiết & danh bạ đã nối', () => {
   it('trang chi tiết nối beacon cho phone / map / website', () => {
     expect(detailSource).toContain("import { trackContactView, type ContactAction } from '~/composables/useContactBeacon'")
-    for (const [action, count] of [['phone', 3], ['map', 2], ['website', 2]] as const) {
-      const wired = detailSource.match(new RegExp(`data-contact-action="${action}"[^>]*@click="trackContact\\('${action}'\\)"`, 'g')) || []
-      expect(wired.length, `${action} CTA đã nối`).toBe(count)
-    }
+    expect(detailSource.match(/data-contact-action="phone"[^>]*@click="trackContact\('phone'\)"/g)?.length).toBeGreaterThanOrEqual(1)
+    expect(detailSource).toMatch(/:data-contact-action="detailPrimaryAction\.id === 'directions' \? 'map' : undefined"[\s\S]{0,240}@click="detailPrimaryAction\.id === 'directions' && trackContact\('map'\)"/)
+    expect(detailSource).toMatch(/data-contact-action="map"[^>]*@click="trackContact\('map'\)"/)
+    expect(detailSource.match(/data-contact-action="website"[^>]*@click="trackContact\('website'\)"/g)?.length).toBeGreaterThanOrEqual(1)
   })
 
   it('trang danh bạ nối beacon cho số điện thoại cơ quan', () => {

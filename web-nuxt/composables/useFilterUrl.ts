@@ -8,7 +8,7 @@ export function useFilterUrl(filters: Record<string, Ref<string>>, defaults: Rec
     for (const [key, filterRef] of Object.entries(filters)) {
       const rawValue = route.query[key]
       const queryValue = Array.isArray(rawValue) ? rawValue[0] : rawValue
-      filterRef.value = typeof queryValue === 'string' && queryValue ? queryValue : defaults[key] || 'all'
+      filterRef.value = typeof queryValue === 'string' && queryValue ? queryValue : defaults[key] ?? 'all'
     }
     nextTick(() => { restoringFromRoute = false })
   }
@@ -18,7 +18,7 @@ export function useFilterUrl(filters: Record<string, Ref<string>>, defaults: Rec
     if (restoringFromRoute) return
     const query: Record<string, string | undefined> = { ...route.query as Record<string, string> }
     for (const [key, filterRef] of Object.entries(filters)) {
-      const defaultVal = defaults[key] || 'all'
+      const defaultVal = defaults[key] ?? 'all'
       if (filterRef.value && filterRef.value !== defaultVal) {
         query[key] = filterRef.value
       } else {
