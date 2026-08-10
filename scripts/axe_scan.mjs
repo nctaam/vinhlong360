@@ -313,12 +313,16 @@ async function main() {
     await rm(profile, { recursive: true, force: true }).catch(() => {})
   }
 
-  const exitCode = await finalizeAxeReport(report, skipped, OUT_FILE)
+  const expectedCoverage = ROUTES.length * COLOR_MODES.length
+  const exitCode = await finalizeAxeReport(report, skipped, OUT_FILE, expectedCoverage)
   if (skipped.length) {
     // In ra chứ không nuốt: quét thiếu trang mà báo 'sạch' là thông tin sai.
     console.log(`
 ! ${skipped.length} trang KHÔNG quét được:`)
     for (const line of skipped) console.log(`    ${line}`)
+  }
+  if (report.length !== expectedCoverage) {
+    console.log(`! axe coverage incomplete: ${report.length}/${expectedCoverage} route-mode targets completed`)
   }
   const severe = report.flatMap(r => r.violations).filter(v => ['serious', 'critical'].includes(v.impact))
   console.log(`\n→ ${OUT_FILE} (${ROUTES.length} trang × ${COLOR_MODES.length} chế độ, ${severe.length} violation serious+)`)

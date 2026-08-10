@@ -104,6 +104,14 @@ describe('public accessibility browser gate', () => {
       )
     }
 
+    const scan = workflowStep(ci, 'Accessibility scan (axe-core, 14 trang)')
+    expect(scan).toContain('a11y-unavailable:')
+    expect(scan).toContain('node scripts/axe_scan.mjs')
+
+    const gate = workflowStep(ci, 'Accessibility gate (R30.6)')
+    expect(gate).toContain('a11y-unavailable:')
+    expect(gate).toContain('python3 -m checks.check_axe')
+
     const teardown = workflowStep(ci, 'Stop preview server')
     expect(teardown).toContain('[ -n "${PREVIEW_PID:-}" ]')
     expect(teardown).toContain('kill "$PREVIEW_PID"')
