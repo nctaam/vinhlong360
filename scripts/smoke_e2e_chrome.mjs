@@ -3,6 +3,7 @@ import { createHash, randomUUID } from 'node:crypto'
 import { existsSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { createServer as createTcpServer } from 'node:net'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -752,6 +753,184 @@ export function smokeRunMode(env = process.env) {
   return { legacySweepOnly: env.SMOKE_LEGACY_SWEEP_ONLY === '1' }
 }
 
+export async function assertManagedPortAvailable({ host, port, createServerImpl = createTcpServer }) {
+  if (!host || !Number.isInteger(port) || port <= 0 || port > 65535) {
+    throw new Error(`Invalid managed smoke listener: ${host || '<missing>'}:${port}`)
+  }
+
+  await new Promise((resolve, reject) => {
+    const server = createServerImpl()
+    let settled = false
+    const finish = (error) => {
+      if (settled) return
+      settled = true
+      if (error) reject(error)
+      else resolve()
+    }
+
+    server.unref?.()
+    server.once('error', (error) => {
+      if (error?.code === 'EADDRINUSE' || error?.code === 'EACCES') {
+        finish(new Error(`Managed smoke port ${host}:${port} is already occupied`))
+        return
+      }
+      finish(new Error(`Unable to verify managed smoke port ${host}:${port}: ${error?.message || error}`))
+    })
+    server.listen({ host, port, exclusive: true }, () => {
+      server.close(error => finish(error
+        ? new Error(`Unable to release managed smoke preflight listener ${host}:${port}: ${error.message}`)
+        : null))
+    })
+  })
+}
+
+function parsePidList(values) {
+  return [...new Set((Array.isArray(values) ? values : values == null ? [] : [values])
+    .map(value => Number(value))
+    .filter(value => Number.isInteger(value) && value > 0))].sort((left, right) => left - right)
+}
+
+function windowsManagedPortOwnership({ rootPid, port, run }) {
+  const script = `
+$rootProcessId = ${rootPid}
+$listenerPort = ${port}
+$processes = @(Get-CimInstance Win32_Process -ErrorAction Stop | Select-Object ProcessId, ParentProcessId)
+$tree = @($rootProcessId)
+do {
+  $children = @($processes | Where-Object { $tree -contains [int]$_.ParentProcessId } | ForEach-Object { [int]$_.ProcessId })
+  $newChildren = @($children | Where-Object { $tree -notcontains $_ })
+  $tree += $newChildren
+} while ($newChildren.Count -gt 0)
+$listeners = @(Get-NetTCPConnection -State Listen -LocalPort $listenerPort -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique | ForEach-Object { [int]$_ })
+[pscustomobject]@{ treePids = @($tree | Sort-Object -Unique); listenerPids = @($listeners | Sort-Object -Unique) } | ConvertTo-Json -Compress
+`
+  const result = run('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', script], {
+    encoding: 'utf8',
+    windowsHide: true,
+    timeout: 10_000,
+  })
+  if (result?.error || result?.status !== 0) {
+    throw new Error(`Unable to inspect Windows managed port ownership: ${result?.error?.message || String(result?.stderr || '').trim() || `exit ${result?.status}`}`)
+  }
+  try {
+    const parsed = JSON.parse(String(result.stdout || '{}').trim() || '{}')
+    return {
+      treePids: parsePidList(parsed.treePids),
+      listenerPids: parsePidList(parsed.listenerPids),
+    }
+  } catch (error) {
+    throw new Error(`Unable to parse Windows managed port ownership: ${error.message}`)
+  }
+}
+
+function unixManagedPortOwnership({ rootPid, port, run }) {
+  const processResult = run('ps', ['-eo', 'pid=,ppid='], { encoding: 'utf8', timeout: 10_000 })
+  if (processResult?.error || processResult?.status !== 0) {
+    throw new Error(`Unable to inspect managed process tree: ${processResult?.error?.message || String(processResult?.stderr || '').trim() || `exit ${processResult?.status}`}`)
+  }
+  const processes = String(processResult.stdout || '').split(/\r?\n/).flatMap((line) => {
+    const match = line.trim().match(/^(\d+)\s+(\d+)$/)
+    return match ? [{ pid: Number(match[1]), parentPid: Number(match[2]) }] : []
+  })
+  const treePids = [rootPid]
+  for (let cursor = 0; cursor < treePids.length; cursor += 1) {
+    const parentPid = treePids[cursor]
+    for (const process of processes) {
+      if (process.parentPid === parentPid && !treePids.includes(process.pid)) treePids.push(process.pid)
+    }
+  }
+
+  let listenerPids = []
+  const lsofResult = run('lsof', ['-nP', `-iTCP:${port}`, '-sTCP:LISTEN', '-t'], { encoding: 'utf8', timeout: 10_000 })
+  if (!lsofResult?.error && lsofResult?.status === 0) {
+    listenerPids = String(lsofResult.stdout || '').split(/\s+/).filter(Boolean)
+  } else {
+    const ssResult = run('ss', ['-ltnp'], { encoding: 'utf8', timeout: 10_000 })
+    if (ssResult?.error || ssResult?.status !== 0) {
+      throw new Error(`Unable to inspect managed listener ownership: ${lsofResult?.error?.message || ssResult?.error?.message || 'lsof and ss unavailable'}`)
+    }
+    listenerPids = String(ssResult.stdout || '').split(/\r?\n/)
+      .filter(line => new RegExp(`:${port}(?:\\s|$)`).test(line))
+      .flatMap(line => [...line.matchAll(/pid=(\d+)/g)].map(match => match[1]))
+  }
+  return { treePids: parsePidList(treePids), listenerPids: parsePidList(listenerPids) }
+}
+
+export function inspectManagedPortOwnership({ rootPid, port, platform = process.platform, run = spawnSync }) {
+  if (!Number.isInteger(rootPid) || rootPid <= 0) throw new Error(`Invalid managed root PID: ${rootPid}`)
+  if (!Number.isInteger(port) || port <= 0 || port > 65535) throw new Error(`Invalid managed listener port: ${port}`)
+  const evidence = platform === 'win32'
+    ? windowsManagedPortOwnership({ rootPid, port, run })
+    : unixManagedPortOwnership({ rootPid, port, run })
+  const owned = evidence.listenerPids.some(pid => evidence.treePids.includes(pid))
+  return Object.freeze({ ...evidence, owned })
+}
+
+export async function launchManagedSmokeApp({
+  baseUrl: requestedBaseUrl,
+  host,
+  port,
+  command,
+  args,
+  spawnOptions,
+  spawnProcess = spawn,
+  assertPortAvailable = assertManagedPortAvailable,
+  probe = probeApp,
+  inspectOwnership = inspectManagedPortOwnership,
+  terminate = terminateManagedProcess,
+  pause = sleep,
+  startupTimeoutMs = managedSmokeStartupTimeout(),
+  now = Date.now,
+}) {
+  await assertPortAvailable({ host, port })
+
+  const startupOutput = []
+  let spawnError = null
+  const child = spawnProcess(command, args, {
+    ...spawnOptions,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  })
+  const rememberOutput = chunk => {
+    startupOutput.push(redactSensitiveText(chunk).slice(-2000))
+    if (startupOutput.length > 10) startupOutput.shift()
+  }
+  child.stdout?.on('data', rememberOutput)
+  child.stderr?.on('data', rememberOutput)
+  child.once('error', error => { spawnError = error })
+
+  const assertChildAlive = () => {
+    if (spawnError) throw new Error(`Nuxt dev server failed to start: ${spawnError.message}`)
+    if (child.exitCode !== null) {
+      throw new Error(`Nuxt dev server exited with code ${child.exitCode}: ${startupOutput.join('\n').slice(-4000)}`)
+    }
+  }
+
+  const deadline = now() + startupTimeoutMs
+  try {
+    while (now() < deadline) {
+      assertChildAlive()
+      if (await probe(requestedBaseUrl)) {
+        assertChildAlive()
+        const ownership = await inspectOwnership({ rootPid: child.pid, host, port })
+        assertChildAlive()
+        if (!ownership?.owned) {
+          const listeners = parsePidList(ownership?.listenerPids)
+          const tree = parsePidList(ownership?.treePids)
+          const listenerLabel = listeners.length ? listeners.join(',') : '<unresolved>'
+          const treeLabel = tree.length ? tree.join(',') : String(child.pid || '<unknown>')
+          throw new Error(`Managed smoke URL ${requestedBaseUrl} responded, but listener ${listenerLabel} is outside managed process tree ${treeLabel}`)
+        }
+        return child
+      }
+      await pause(250)
+    }
+    throw new Error(`Nuxt dev server did not become ready at ${requestedBaseUrl} within ${startupTimeoutMs}ms: ${startupOutput.join('\n').slice(-4000)}`)
+  } catch (error) {
+    if (child.exitCode === null) terminate(child)
+    throw error
+  }
+}
+
 export function terminateManagedProcess(appProcess, options = {}) {
   if (!appProcess) return
   const platform = options.platform || process.platform
@@ -803,33 +982,18 @@ async function resolveWebApp() {
     && !existsSync(managedCommand.args[0])) {
     throw new Error(`Managed preview build is missing: ${managedCommand.args[0]}`)
   }
-  const startupOutput = []
-  let spawnError = null
-  const child = spawn(managedCommand.command, managedCommand.args, {
-    cwd: repoRoot,
-    env: { ...process.env, ...managedCommand.env },
-    shell: managedCommand.shell,
-    stdio: ['ignore', 'pipe', 'pipe'],
+  return launchManagedSmokeApp({
+    baseUrl,
+    host: launch.host,
+    port: launch.port,
+    command: managedCommand.command,
+    args: managedCommand.args,
+    spawnOptions: {
+      cwd: repoRoot,
+      env: { ...process.env, ...managedCommand.env },
+      shell: managedCommand.shell,
+    },
   })
-  const rememberOutput = chunk => {
-    startupOutput.push(redactSensitiveText(chunk).slice(-2000))
-    if (startupOutput.length > 10) startupOutput.shift()
-  }
-  child.stdout?.on('data', rememberOutput)
-  child.stderr?.on('data', rememberOutput)
-  child.once('error', error => { spawnError = error })
-
-  const deadline = Date.now() + managedSmokeStartupTimeout()
-  while (Date.now() < deadline) {
-    if (await probeApp(baseUrl)) return child
-    if (spawnError) throw new Error(`Nuxt dev server failed to start: ${spawnError.message}`)
-    if (child.exitCode !== null) {
-      throw new Error(`Nuxt dev server exited with code ${child.exitCode}: ${startupOutput.join('\n').slice(-4000)}`)
-    }
-    await sleep(250)
-  }
-  child.kill()
-  throw new Error(`Nuxt dev server did not become ready at ${baseUrl} within ${managedSmokeStartupTimeout()}ms: ${startupOutput.join('\n').slice(-4000)}`)
 }
 
 async function evaluateValue(cdp, expression) {

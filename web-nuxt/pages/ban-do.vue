@@ -156,7 +156,13 @@ const { data, error: fetchError, status, refresh } = await useAsyncData(
 )
 const retryData = () => refresh()
 
-const mapPins = computed(() => Array.isArray(data.value) ? data.value : [])
+const lastSuccessfulMapPins = ref<MapPin[]>([])
+watch(data, (value) => {
+  if (Array.isArray(value)) lastSuccessfulMapPins.value = value
+}, { immediate: true })
+const mapPins = computed(() => Array.isArray(data.value)
+  ? data.value
+  : fetchError.value ? lastSuccessfulMapPins.value : [])
 const committedBounds = computed(() => searchView.committedViewport.value ? viewportTileBounds(searchView.committedViewport.value) : undefined)
 const filteredPins = computed(() => mapPins.value.filter((pin) => {
   const matchesQuery = !mapSearchQuery.value || [pin.name, pin.type, pin.place_name, pin.place_area, pin.area]

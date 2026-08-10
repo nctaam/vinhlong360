@@ -2,6 +2,7 @@ import { loadNuxtConfig } from '@nuxt/kit'
 import { afterEach, describe, it, expect, vi } from 'vitest'
 import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import { readFileSync } from 'node:fs'
+import { createServer } from 'node:net'
 import { resolve } from 'node:path'
 import { useAuth } from '../composables/useAuth'
 import SearchPage from '../pages/tim-kiem.vue'
@@ -13,6 +14,7 @@ import {
   closeSmokeServers,
   evaluateRuntimeSmokeIssues,
   evaluateSmokeJourneyEvidence,
+  launchManagedSmokeApp,
   managedSmokeLaunchConfig,
   managedSmokeCommand,
   managedSmokeStartupTimeout,
@@ -222,6 +224,115 @@ describe('Adaptive Nocturne public browser smoke contract', () => {
     }).startManaged).toBe(false)
   })
 
+  it('rejects an occupied forced-managed port before spawning or terminating any process', async () => {
+    const occupier = createServer()
+    await new Promise<void>((resolveListen, reject) => {
+      occupier.once('error', reject)
+      occupier.listen(0, '127.0.0.1', resolveListen)
+    })
+    const address = occupier.address()
+    expect(address && typeof address !== 'string').toBe(true)
+    const port = typeof address === 'string' || !address ? 0 : address.port
+    const spawnProcess = vi.fn()
+    const terminate = vi.fn()
+
+    try {
+      await expect(launchManagedSmokeApp({
+        baseUrl: `http://127.0.0.1:${port}`,
+        host: '127.0.0.1',
+        port,
+        command: 'node',
+        args: ['server.mjs'],
+        spawnOptions: { cwd: process.cwd(), env: {}, shell: false },
+        spawnProcess,
+        terminate,
+      })).rejects.toThrow(/already occupied/i)
+      expect(spawnProcess).not.toHaveBeenCalled()
+      expect(terminate).not.toHaveBeenCalled()
+    }
+    finally {
+      await new Promise<void>(resolveClose => occupier.close(() => resolveClose()))
+    }
+  })
+
+  it('rejects a healthy old responder when the managed child exits after losing the bind race', async () => {
+    const child = managedChild(30101)
+    const probe = vi.fn(async () => {
+      child.exitCode = 1
+      return true
+    })
+    const inspectOwnership = vi.fn()
+
+    await expect(launchManagedSmokeApp({
+      baseUrl: 'http://127.0.0.1:3010',
+      host: '127.0.0.1',
+      port: 3010,
+      command: 'node',
+      args: ['server.mjs'],
+      spawnOptions: { cwd: process.cwd(), env: {}, shell: false },
+      spawnProcess: managedSpawn(child),
+      assertPortAvailable: vi.fn().mockResolvedValue(undefined),
+      probe,
+      inspectOwnership,
+      pause: vi.fn(),
+      startupTimeoutMs: 1000,
+    })).rejects.toThrow(/exited with code 1/i)
+
+    expect(probe).toHaveBeenCalledOnce()
+    expect(inspectOwnership).not.toHaveBeenCalled()
+  })
+
+  it('rejects a responder owned outside the managed child tree and terminates only that child', async () => {
+    const child = managedChild(30101)
+    const terminate = vi.fn()
+
+    await expect(launchManagedSmokeApp({
+      baseUrl: 'http://127.0.0.1:3010',
+      host: '127.0.0.1',
+      port: 3010,
+      command: 'node',
+      args: ['server.mjs'],
+      spawnOptions: { cwd: process.cwd(), env: {}, shell: false },
+      spawnProcess: managedSpawn(child),
+      assertPortAvailable: vi.fn().mockResolvedValue(undefined),
+      probe: vi.fn().mockResolvedValue(true),
+      inspectOwnership: vi.fn().mockReturnValue({
+        owned: false,
+        listenerPids: [7000],
+        treePids: [30101, 30102],
+      }),
+      terminate,
+      pause: vi.fn(),
+      startupTimeoutMs: 1000,
+    })).rejects.toThrow(/listener 7000.*outside managed process tree/i)
+
+    expect(terminate).toHaveBeenCalledOnce()
+    expect(terminate).toHaveBeenCalledWith(child)
+  })
+
+  it('accepts readiness only when a live managed process tree owns the responding port', async () => {
+    const child = managedChild(30101)
+
+    await expect(launchManagedSmokeApp({
+      baseUrl: 'http://127.0.0.1:3010',
+      host: '127.0.0.1',
+      port: 3010,
+      command: 'node',
+      args: ['server.mjs'],
+      spawnOptions: { cwd: process.cwd(), env: {}, shell: false },
+      spawnProcess: managedSpawn(child),
+      assertPortAvailable: vi.fn().mockResolvedValue(undefined),
+      probe: vi.fn().mockResolvedValue(true),
+      inspectOwnership: vi.fn().mockReturnValue({
+        owned: true,
+        listenerPids: [30102],
+        treePids: [30101, 30102],
+      }),
+      pause: vi.fn(),
+      startupTimeoutMs: 1000,
+    })).resolves.toBe(child)
+  })
+
   it('bounds managed startup and closes the fixture even when app resolution fails', async () => {
     expect(managedSmokeStartupTimeout({ SMOKE_APP_STARTUP_TIMEOUT_MS: '45000' })).toBe(45000)
     expect(managedSmokeStartupTimeout({ SMOKE_APP_STARTUP_TIMEOUT_MS: 'invalid' })).toBe(60000)
@@ -277,6 +388,21 @@ describe('Adaptive Nocturne public browser smoke contract', () => {
     })
   })
 })
+
+function managedChild(pid: number) {
+  return {
+    pid,
+    exitCode: null as number | null,
+    stdout: { on: vi.fn() },
+    stderr: { on: vi.fn() },
+    once: vi.fn(),
+    kill: vi.fn(),
+  }
+}
+
+function managedSpawn(child: ReturnType<typeof managedChild>) {
+  return vi.fn(() => child) as unknown as typeof import('node:child_process').spawn
+}
 
 describe('UserCP regressions', () => {
   const src = (file: string) => readFileSync(resolve(process.cwd(), file), 'utf8').replaceAll('\r\n', '\n')
