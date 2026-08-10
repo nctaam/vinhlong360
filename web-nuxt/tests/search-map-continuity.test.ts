@@ -408,7 +408,7 @@ describe('MapListSurface coordination and recovery', () => {
     const wrapper = await mountSuspended(MapListSurface, {
       props: {
         results: [{
-          ...results[0],
+          ...results[0]!,
           images: ['https://cdn.example.test/entity.webp'],
         }],
         selectedId: undefined,
