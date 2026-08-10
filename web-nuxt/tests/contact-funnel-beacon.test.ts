@@ -131,11 +131,33 @@ describe('ward phone contact actions', () => {
       expect(link.attributes('data-contact-surface')).toMatch(/^ward-(detail|directory)$/)
       expect(link.attributes('data-contact-entity-id')).toBeTruthy()
       expect(link.attributes('data-contact-outcome')).toBe('navigation')
+    }
+
+    const primary = wrapper.get('a.ward-primary-action[href^="tel:"]')
+    const police = wrapper.get('a.wp-phone[href^="tel:"]')
+    const facility = wrapper.get('a[data-contact-surface="ward-directory"]')
+    for (const link of [primary, police, facility]) {
       const event = new MouseEvent('click', { bubbles: true, cancelable: true })
       expect(link.element.dispatchEvent(event)).toBe(true)
       expect(event.defaultPrevented).toBe(false)
+
+      if (link === primary) {
+        expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
+          '/api/entities/phuong-1/view-contact?action=phone',
+        ])
+      }
+      if (link === police) {
+        // Ward-level numbers share one entity/action dedupe key.
+        expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
+          '/api/entities/phuong-1/view-contact?action=phone',
+        ])
+      }
     }
 
+    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
+      '/api/entities/phuong-1/view-contact?action=phone',
+      '/api/entities/tram-y-te-1/view-contact?action=phone',
+    ])
     expect(fetchMock.mock.calls.every(([url]) => !String(url).includes('02703822'))).toBe(true)
   })
 
