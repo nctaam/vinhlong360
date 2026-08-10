@@ -58,7 +58,7 @@
             :class="['picker-item', { adding: addingId === e.id }]"
             @click="addStop(e)"
           >
-            <span class="picker-emoji">{{ getTypeMeta(e.type).emoji }}</span>
+            <IconLine class="picker-emoji" :name="getTypeMeta(e.type).icon" aria-hidden="true" />
             <div class="picker-info">
               <strong :title="e.name">{{ e.name }}</strong>
               <small>{{ e.place_name || '' }} · {{ getTypeMeta(e.type).label }}</small>
@@ -66,12 +66,12 @@
             <span class="btn btn-sm btn-ghost" aria-hidden="true">+</span>
           </button>
           <p v-if="status === 'pending' && !pickerResults.length" class="empty picker-empty" data-picker-state="loading" role="status">Đang tải danh sách điểm đến…</p>
-          <p v-else-if="fetchError" class="empty picker-empty">⚠️ Không thể tải danh sách. <button type="button" class="btn btn-outline btn-sm" @click="refreshPicker()">Thử lại</button></p>
+          <p v-else-if="fetchError" class="empty picker-empty"><IconLine name="alert-triangle" aria-hidden="true" /> Không thể tải danh sách. <button type="button" class="btn btn-outline btn-sm" @click="refreshPicker()">Thử lại</button></p>
           <div v-else-if="sourceTab === 'saved' && !favCount" class="premium-empty-state">
-            <EmptyState icon="❤️" title="Chưa có điểm đã lưu" message="Nhấn hình trái tim ở các điểm đến để lưu lại, rồi quay lại đây thêm vào lịch trình." />
+            <EmptyState title="Chưa có điểm đã lưu" message="Nhấn hình trái tim ở các điểm đến để lưu lại, rồi quay lại đây thêm vào lịch trình." />
           </div>
           <div v-else-if="!pickerResults.length" class="premium-empty-state">
-            <EmptyState icon="🔎" title="Không tìm thấy" message="Thử từ khóa khác hoặc bỏ bộ lọc loại nhé." />
+            <EmptyState title="Không tìm thấy" message="Thử từ khóa khác hoặc bỏ bộ lọc loại nhé." />
           </div>
         </div>
       </div>
@@ -90,7 +90,7 @@
         <div v-if="stops.length >= 2" class="transport-mode">
           <span class="tm-label">Phương tiện:</span>
           <button type="button" v-for="m in transportModes" :key="m.value" :class="['chip', { active: transportMode === m.value }]" :aria-pressed="transportMode === m.value" :disabled="optimizing" @click="transportMode = m.value">
-            {{ m.icon }} {{ m.label }}
+            <IconLine :name="m.icon" aria-hidden="true" /> {{ m.label }}
           </button>
           <button
             v-if="stops.length >= 3 && optimizerEnabled"
@@ -106,7 +106,7 @@
             {{ formatDistance(routeResult.totalDistance) }} · {{ formatDuration(routeResult.totalDuration) }}
           </div>
           <div v-if="routeLoading" class="route-total route-loading">Đang tính...</div>
-          <div v-else-if="routeError" class="route-total" role="status">⚠️ Chưa tính được lộ trình (thử lại sau)</div>
+          <div v-else-if="routeError" class="route-total" role="status"><IconLine name="alert-triangle" aria-hidden="true" /> Chưa tính được lộ trình (thử lại sau)</div>
         </div>
         <p
           v-if="optimizationMessage || (stops.length >= 3 && !canOptimizeRoute)"
@@ -145,21 +145,6 @@
           />
         </div>
 
-        <section ref="plannerConflictEl" v-if="plannerConflictDiff.length" class="planner-conflict-diff" data-planner-conflict-diff aria-label="Khác biệt bản nháp" tabindex="-1">
-          <h2>Khác biệt theo điểm dừng</h2>
-          <ul>
-            <li v-for="conflict in plannerConflictDiff" :key="`${conflict.id}-${conflict.changedFields.join('-')}`">
-              <strong>{{ conflict.local?.name || conflict.server?.name || conflict.id }}</strong>
-              <span>{{ conflict.changedFields.join(', ') }}</span>
-            </li>
-          </ul>
-          <div class="planner-conflict-diff__actions">
-            <button type="button" class="btn btn-sm btn-outline" data-conflict-local @click="choosePlannerConflict('local')">Giữ bản cục bộ</button>
-            <button type="button" class="btn btn-sm btn-ghost" data-conflict-server @click="choosePlannerConflict('server')">Dùng bản máy chủ</button>
-            <button type="button" class="btn btn-sm btn-ghost" data-conflict-manual @click="choosePlannerConflict('manual')">Tiếp tục đối chiếu</button>
-          </div>
-        </section>
-
         <PlannerOptimizationPreview
           v-if="optimizationPreview"
           :before="optimizationPreview.before"
@@ -192,15 +177,15 @@
               <div class="stop-connector" v-if="idx < stops.length - 1"></div>
               <div class="stop-card">
                 <div class="stop-card-head">
-                  <span class="stop-emoji">{{ getTypeMeta(stop.type).emoji }}</span>
+                  <IconLine class="stop-emoji" :name="getTypeMeta(stop.type).icon" aria-hidden="true" />
                   <div class="stop-card-info">
                     <strong>{{ stop.name }}</strong>
                     <small>{{ stop.place_name || '' }} · {{ getTypeMeta(stop.type).label }}</small>
                   </div>
                   <div class="stop-card-actions">
-                    <button type="button" v-if="idx > 0" class="btn-icon-sm move" title="Lên" aria-label="Di chuyển lên" @click="moveStop(idx, -1)">↑</button>
-                    <button type="button" v-if="idx < stops.length - 1" class="btn-icon-sm move" title="Xuống" aria-label="Di chuyển xuống" @click="moveStop(idx, 1)">↓</button>
-                    <button type="button" class="btn-icon-sm danger" title="Xóa" aria-label="Xóa điểm dừng" @click="removeStop(idx)">✕</button>
+                    <button type="button" v-if="idx > 0" class="btn-icon-sm move" title="Lên" aria-label="Di chuyển lên" @click="moveStop(idx, -1)"><IconLine name="arrow-up" aria-hidden="true" /></button>
+                    <button type="button" v-if="idx < stops.length - 1" class="btn-icon-sm move" title="Xuống" aria-label="Di chuyển xuống" @click="moveStop(idx, 1)"><IconLine name="arrow-down" aria-hidden="true" /></button>
+                    <button type="button" class="btn-icon-sm danger" title="Xóa" aria-label="Xóa điểm dừng" @click="removeStop(idx)"><IconLine name="trash" aria-hidden="true" /></button>
                   </div>
                 </div>
                 <div class="stop-card-fields">
@@ -299,7 +284,7 @@
             </button>
             <div class="saved-plan-actions">
               <button v-if="plan.id" type="button" :class="['btn btn-sm', plan.is_public ? 'btn-outline' : 'btn-ghost']" :disabled="planBusy === pi" @click="publishPlan(pi)">
-                {{ planBusy === pi ? '…' : plan.is_public ? '🌐 Công khai' : '🔒 Riêng tư' }}
+                {{ planBusy === pi ? 'Đang cập nhật' : plan.is_public ? 'Công khai' : 'Riêng tư' }}
               </button>
               <button type="button" class="btn btn-sm btn-ghost" :disabled="planBusy === pi" @click="sharePlan(pi)">Chia sẻ</button>
               <button type="button" class="btn btn-sm btn-ghost danger" :disabled="planBusy === pi" @click="deletePlan(pi)">Xóa</button>
@@ -336,13 +321,11 @@ import {
   serializePlanStops,
   createPlannerOptimizationPreview,
   createPlannerDraftSnapshot,
-  diffPlannerStops,
   parsePlannerDraftSnapshot,
   projectPlannerFrictions,
   type PlannerInputState,
   type PlannerFrictionNotice as PlannerFriction,
   type PlannerOptimizationPreview as PlannerPreviewTransaction,
-  type PlannerStopConflict,
   type CurrentPlannerOptimizationResult,
   type RoutableStop,
   type PlannerScheduleMetadata,
@@ -376,22 +359,6 @@ interface SavedPlan {
   stops: PlanStop[]
   savedAt: string
   is_public?: boolean
-  revision?: number
-}
-
-interface PlannerServerSnapshot {
-  id: string
-  title: string
-  stops: PlanStop[]
-  revision: number
-  savedAt?: string
-}
-
-interface PlannerRevisionConflictEvidence {
-  localRevision: number
-  serverRevision: number
-  serverTitle: string
-  serverStops: PlanStop[]
 }
 
 type OpeningHourConflict = {
@@ -418,7 +385,7 @@ const typeChips = TYPES.map((t) => {
   const meta = TYPE_META[t] ?? getTypeMeta(t)
   return {
     value: t,
-    label: `${meta.emoji} ${meta.label}`,
+    label: meta.label,
   }
 })
 
@@ -427,9 +394,9 @@ function isPlannerType(type: string): type is PlannerType {
 }
 
 const transportModes = [
-  { value: 'driving' as TransportMode, icon: '🚗', label: 'Ô tô' },
-  { value: 'cycling' as TransportMode, icon: '🚲', label: 'Xe đạp' },
-  { value: 'foot' as TransportMode, icon: '🚶', label: 'Đi bộ' },
+  { value: 'driving' as TransportMode, icon: 'car', label: 'Ô tô' },
+  { value: 'cycling' as TransportMode, icon: 'bike', label: 'Xe đạp' },
+  { value: 'foot' as TransportMode, icon: 'foot', label: 'Đi bộ' },
 ]
 
 const sourceTab = ref(normalizeRouteParam(route.query.source as any) === 'saved' ? 'saved' : 'all')
@@ -439,7 +406,7 @@ const publicApi = usePublicApi()
 
 const sourceTabOptions = computed(() => [
   { key: 'all', label: 'Tất cả' },
-  { key: 'saved', label: 'Đã lưu', icon: '❤️', count: favCount.value },
+  { key: 'saved', label: 'Đã lưu', count: favCount.value },
 ])
 const typeFilterOptions = computed(() => [
   { key: 'all', label: 'Tất cả' },
@@ -476,13 +443,9 @@ const draftSavedAt = ref<string | null>(null)
 const draftSource = ref<'local' | 'server'>('local')
 const localDraftRevision = ref(0)
 const localDirty = ref(false)
-const activeServerPlanId = ref<string | null>(null)
-const baseServerRevision = ref<number | null>(null)
-const plannerRevisionConflict = ref<PlannerRevisionConflictEvidence | null>(null)
 const travelBudgetMinutes = ref<number | null>(null)
 const candidateOpeningHourConflicts = ref<OpeningHourConflict[]>([])
 const confirmedOpeningHourConflicts = ref<OpeningHourConflict[]>([])
-const plannerConflictEl = ref<HTMLElement | null>(null)
 const MAX_STOPS = 20
 const LS_DRAFT = 'vl360_planner_draft'
 let savePulseTimer: ReturnType<typeof setTimeout> | null = null
@@ -536,7 +499,6 @@ const plannerFrictionNotices = computed<PlannerFriction[]>(() => projectPlannerF
     savedAt: draftSavedAt.value,
     source: draftSource.value,
   },
-  revisionConflict: plannerRevisionConflict.value || false,
   routeUnavailable: routeError.value,
 }))
 
@@ -560,12 +522,6 @@ const plannerTotalDuration = computed<number | null>(() => {
     ? (visitDuration > 0 ? visitDuration : null)
     : travelDuration + visitDuration
 })
-const plannerConflictDiff = computed<PlannerStopConflict<PlanStop>[]>(() => (
-  plannerRevisionConflict.value === null
-    ? []
-    : diffPlannerStops(stops.value, plannerRevisionConflict.value.serverStops)
-))
-
 const { createMap: createNDAMap } = useNDAMap()
 let mapInstance: any = null
 let maplibre: any = null
@@ -718,106 +674,9 @@ function handleFrictionRecovery(notice: PlannerFriction) {
     if (notice.stopId) void refreshPlannerStopEvidence(notice.stopId)
     return
   }
-  if (notice.recovery.action === 'review-conflict') {
-    void nextTick(() => plannerConflictEl.value?.focus())
-    return
-  }
   if (notice.recovery.action === 'edit-stop' || notice.recovery.action === 'use-timeline') {
     document.querySelector<HTMLElement>('.stop-list, .planner-timeline-column')?.focus()
   }
-}
-
-function isPlanStopSnapshot(value: unknown): value is PlanStop {
-  if (!value || typeof value !== 'object') return false
-  const stop = value as Partial<PlanStop>
-  const validCoords = stop.coords === null || (
-    Array.isArray(stop.coords)
-    && stop.coords.length >= 2
-    && Number.isFinite(stop.coords[0])
-    && Number.isFinite(stop.coords[1])
-  )
-  return typeof stop.id === 'string'
-    && typeof stop.name === 'string'
-    && typeof stop.type === 'string'
-    && typeof stop.time === 'string'
-    && typeof stop.notes === 'string'
-    && validCoords
-}
-
-function normalizePlannerServerSnapshot(value: unknown): PlannerServerSnapshot | null {
-  if (!value || typeof value !== 'object') return null
-  const candidate = value as Partial<PlannerServerSnapshot>
-  if (
-    typeof candidate.id !== 'string'
-    || typeof candidate.title !== 'string'
-    || !Number.isInteger(candidate.revision)
-    || (candidate.revision ?? -1) < 0
-    || !Array.isArray(candidate.stops)
-    || !candidate.stops.every(isPlanStopSnapshot)
-  ) return null
-  return {
-    id: candidate.id,
-    title: candidate.title,
-    revision: candidate.revision as number,
-    stops: serializePlanStops(candidate.stops) as PlanStop[],
-    ...(typeof candidate.savedAt === 'string' ? { savedAt: candidate.savedAt } : {}),
-  }
-}
-
-function observePlannerServerSnapshot(
-  value: unknown,
-  options: { revisionMismatch?: boolean } = {},
-): boolean {
-  const snapshot = normalizePlannerServerSnapshot(value)
-  if (!snapshot || !activeServerPlanId.value || snapshot.id !== activeServerPlanId.value) return false
-  const isNewer = baseServerRevision.value !== null && snapshot.revision > baseServerRevision.value
-  if (!isNewer && !options.revisionMismatch) return false
-  plannerRevisionConflict.value = {
-    localRevision: localDraftRevision.value,
-    serverRevision: snapshot.revision,
-    serverTitle: snapshot.title,
-    serverStops: snapshot.stops,
-  }
-  return true
-}
-
-function observePlannerRevisionMismatch(error: unknown): boolean {
-  if (getStatusCode(error) !== 409) return false
-  const failure = error as {
-    response?: { _data?: Record<string, unknown> }
-    data?: Record<string, unknown>
-  }
-  const payload = failure.response?._data ?? failure.data
-  const snapshot = payload?.serverPlan ?? payload?.server_plan ?? payload?.plan
-  return observePlannerServerSnapshot(snapshot, { revisionMismatch: true })
-}
-
-async function choosePlannerConflict(choice: 'local' | 'server' | 'manual') {
-  if (choice === 'manual') {
-    await nextTick()
-    plannerConflictEl.value?.focus()
-    return
-  }
-  const conflict = plannerRevisionConflict.value
-  if (!conflict) return
-  const persistenceWasReady = draftPersistenceReady
-  draftPersistenceReady = false
-  if (choice === 'server') {
-    invalidatePlannerSchedule()
-    planTitle.value = conflict.serverTitle
-    stops.value = serializePlanStops(conflict.serverStops) as PlanStop[]
-    stops.value.forEach(stop => plannerScheduleMetadata.set(stop, plannerMetadataForLoadedStop(stop.type)))
-    localDraftRevision.value += 1
-    draftSource.value = 'server'
-    localDirty.value = false
-  } else {
-    localDirty.value = true
-  }
-  baseServerRevision.value = conflict.serverRevision
-  plannerRevisionConflict.value = null
-  await nextTick()
-  draftPersistenceReady = persistenceWasReady
-  persistPlannerDraft()
 }
 
 async function refreshPlannerStopEvidence(stopId: string): Promise<boolean> {
@@ -956,17 +815,12 @@ async function _doSave() {
   if (isLoggedIn.value) {
     // Đồng-bộ tài-khoản (cross-device)
     try {
-      const res = await $fetch<{ id: string; revision?: number }>('/api/my-plans', {
+      const res = await $fetch<{ id: string }>('/api/my-plans', {
         method: 'POST', headers: authHeaders(),
         body: { title: plan.title, stops: plan.stops },
       })
       plan.id = res.id
-      if (Number.isInteger(res.revision)) plan.revision = res.revision
     } catch (e: unknown) {
-      if (observePlannerRevisionMismatch(e)) {
-        showToast('Bản máy chủ mới hơn cần được đối chiếu trước khi lưu.', 'warning')
-        return
-      }
       showToast(extractErrorMessage(e, 'Không thể lưu lên tài khoản'), 'error')
       return
     }
@@ -975,19 +829,9 @@ async function _doSave() {
   }
   if (plan.id) {
     draftSource.value = 'server'
-    activeServerPlanId.value = plan.id
-    plannerRevisionConflict.value = null
-    if (plan.revision !== undefined) {
-      baseServerRevision.value = plan.revision
-    } else {
-      baseServerRevision.value = null
-    }
     localDirty.value = false
   } else {
     draftSource.value = 'local'
-    activeServerPlanId.value = null
-    baseServerRevision.value = null
-    plannerRevisionConflict.value = null
     localDirty.value = false
   }
   persistPlannerDraft()
@@ -1020,9 +864,6 @@ async function loadPlan(idx: number) {
   draftSource.value = plan.id ? 'server' : 'local'
   localDraftRevision.value += 1
   localDirty.value = false
-  activeServerPlanId.value = plan.id ?? null
-  baseServerRevision.value = Number.isInteger(plan.revision) ? plan.revision as number : null
-  plannerRevisionConflict.value = null
   optimizationMessage.value = ''
   await nextTick()
   draftPersistenceReady = persistenceWasReady

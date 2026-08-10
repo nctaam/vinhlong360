@@ -724,7 +724,7 @@ a.thread-author:hover { color: var(--primary-fg); }
 .stop-card-info strong { font-size: .95rem; }
 .stop-card-info small { display: block; font-size: .78rem; color: var(--muted); }
 .stop-card-actions { display: flex; gap: var(--space-1); }
-.btn-icon-sm { width: 44px; height: 44px; border: none; background: var(--bg-warm); border-radius: var(--radius-sm, 8px); cursor: pointer; font-size: .85rem; display: flex; align-items: center; justify-content: center; transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
+.btn-icon-sm { inline-size: var(--touch-min); block-size: var(--touch-min); min-inline-size: var(--touch-min); min-block-size: var(--touch-min); padding: 0; border: none; background: var(--bg-warm); border-radius: var(--radius-sm, 8px); cursor: pointer; font-size: .85rem; display: flex; align-items: center; justify-content: center; transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
 .btn-icon-sm:hover { background: var(--line); }
 .btn-icon-sm:active { transform: scale(.92); transition-duration: .08s; box-shadow: none; }
 .btn-icon-sm.danger:hover { background: var(--error-bg); color: var(--error); }

@@ -110,7 +110,7 @@ export function evaluatePublicStateEvidence(scenario, evidence) {
   const reasons = []
   if (!evidence?.shellVisible) reasons.push('shell-not-visible')
   if (!evidence?.mainVisible) reasons.push('main-not-visible')
-  if (Number(evidence?.actionDockOverlap || 0) > 0) reasons.push('action-dock-overlap')
+  // DOM state tests cannot measure layout geometry; CDP smoke owns that evidence.
   if (scenario.expected.preserveContent && !evidence?.contentVisible) reasons.push('content-not-preserved')
   if (scenario.expected.contentVisible && !evidence?.contentVisible) reasons.push('ready-content-not-visible')
   if (scenario.expected.confirmed404 !== Boolean(evidence?.confirmed404)) {
@@ -154,6 +154,32 @@ function sha256Bytes(value) {
   return createHash('sha256').update(value).digest('hex')
 }
 
+const SOURCE_REVISION_PATTERN = /^[0-9a-f]{40}$/u
+
+export function resolveVisualSourceRevision(options = {}) {
+  const env = options.env ?? process.env
+  const repositoryRoot = options.repositoryRoot ?? path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+  const gitCommand = options.gitCommand ?? 'git'
+  for (const name of ['SMOKE_SOURCE_REVISION', 'BUILD_REVISION', 'GIT_COMMIT', 'SOURCE_REVISION']) {
+    if (!Object.hasOwn(env, name) || env[name] === undefined) continue
+    const value = env[name]
+    if (typeof value !== 'string' || !SOURCE_REVISION_PATTERN.test(value)) {
+      throw new Error(`${name} must be a lowercase 40-hex source revision`)
+    }
+    return value
+  }
+  const result = spawnSync(gitCommand, ['rev-parse', '--verify', 'HEAD'], {
+    cwd: repositoryRoot,
+    encoding: 'utf8',
+    windowsHide: true,
+  })
+  const revision = result.status === 0 ? result.stdout.trim() : ''
+  if (!SOURCE_REVISION_PATTERN.test(revision)) {
+    throw new Error('visual source revision unavailable: set SMOKE_SOURCE_REVISION for captures without git')
+  }
+  return revision
+}
+
 function visualIdentitySha256(scenario) {
   return sha256Bytes(JSON.stringify(visualScenarioIdentity(scenario)))
 }
@@ -171,10 +197,11 @@ export function evaluateVisualReadiness(scenario, evidence) {
   return reasons
 }
 
-export function createVisualArtifactManifest({ scenario, runId, capturedAt, screenshotBytes, readiness }) {
+export function createVisualArtifactManifest({ scenario, runId, sourceRevision, capturedAt, screenshotBytes, readiness }) {
   return Object.freeze({
     schemaRevision: PUBLIC_VISUAL_SCHEMA_REVISION,
     runId,
+    sourceRevision,
     capturedAt,
     fileName: scenario.fileName,
     scenarioIdentitySha256: visualIdentitySha256(scenario),
@@ -190,16 +217,45 @@ export function createVisualArtifactManifest({ scenario, runId, capturedAt, scre
   })
 }
 
-export function validateVisualArtifactForResume(scenario, artifact, screenshotBytes, runId) {
+export function createVisualRunManifest({ runId, sourceRevision, comparisonMode, baselineDirectory, artifacts }) {
+  return Object.freeze({
+    schemaRevision: PUBLIC_VISUAL_SCHEMA_REVISION,
+    runId,
+    sourceRevision,
+    comparisonMode,
+    baselineDirectory,
+    artifacts: [...artifacts].sort((left, right) => left.fileName.localeCompare(right.fileName)),
+  })
+}
+
+export function validateVisualRunManifestForResume(manifest, runId, sourceRevision) {
+  const reasons = []
+  if (!manifest || typeof manifest !== 'object') return ['manifest-missing']
+  if (manifest.schemaRevision !== PUBLIC_VISUAL_SCHEMA_REVISION) reasons.push('schema-revision-mismatch')
+  if (manifest.runId !== runId) reasons.push('run-id-mismatch')
+  if (manifest.sourceRevision !== sourceRevision) reasons.push('source-revision-mismatch')
+  if (!Array.isArray(manifest.artifacts)) reasons.push('artifact-list-missing')
+  return reasons
+}
+
+export function validateVisualArtifactForResume(scenario, artifact, screenshotBytes, runId, sourceRevision) {
   const reasons = []
   if (!artifact) return ['manifest-entry-missing']
   if (artifact.schemaRevision !== PUBLIC_VISUAL_SCHEMA_REVISION) reasons.push('schema-revision-mismatch')
   if (artifact.runId !== runId) reasons.push('run-id-mismatch')
+  if (artifact.sourceRevision !== sourceRevision) reasons.push('source-revision-mismatch')
   if (artifact.scenarioIdentitySha256 !== visualIdentitySha256(scenario)) reasons.push('scenario-identity-mismatch')
   if (!screenshotBytes) reasons.push('screenshot-missing')
   else if (artifact.screenshotSha256 !== sha256Bytes(screenshotBytes)) reasons.push('screenshot-digest-mismatch')
   if (!String(artifact.contentIdentity || '').trim()) reasons.push('content-identity-missing')
   return reasons
+}
+
+export function validateVisualResumeEntry({ scenario, manifest, artifact, screenshotBytes, runId, sourceRevision }) {
+  return [
+    ...validateVisualRunManifestForResume(manifest, runId, sourceRevision),
+    ...validateVisualArtifactForResume(scenario, artifact, screenshotBytes, runId, sourceRevision),
+  ]
 }
 
 export function compareVisualArtifacts(candidate, baseline) {
@@ -284,6 +340,7 @@ const settleMs = Number(process.env.SMOKE_SETTLE_MS || 1200)
 const visualDir = process.env.SMOKE_VISUAL_DIR || path.join(tmpdir(), 'vinhlong360-task10-visual')
 const visualBaselineDir = process.env.SMOKE_VISUAL_BASELINE_DIR || ''
 const visualRunId = process.env.SMOKE_VISUAL_RUN_ID || `visual-${new Date().toISOString()}-${randomUUID()}`
+const visualSourceRevision = resolveVisualSourceRevision()
 const visualManifestName = 'visual-manifest.json'
 
 const defaultRoutes = [
@@ -1153,21 +1210,25 @@ async function setTheme(cdp, theme) {
 async function readVisualManifest(directory) {
   try {
     const parsed = JSON.parse(await readFile(path.join(directory, visualManifestName), 'utf8'))
-    if (parsed?.schemaRevision !== PUBLIC_VISUAL_SCHEMA_REVISION || !Array.isArray(parsed.artifacts)) return new Map()
-    return new Map(parsed.artifacts.map(artifact => [artifact.fileName, artifact]))
+    return parsed && typeof parsed === 'object' ? parsed : null
   } catch {
-    return new Map()
+    return null
   }
 }
 
+function visualArtifactMap(manifest) {
+  if (!Array.isArray(manifest?.artifacts)) return new Map()
+  return new Map(manifest.artifacts.map(artifact => [artifact.fileName, artifact]))
+}
+
 async function writeVisualManifest(directory, artifacts) {
-  const payload = {
-    schemaRevision: PUBLIC_VISUAL_SCHEMA_REVISION,
+  const payload = createVisualRunManifest({
     runId: visualRunId,
+    sourceRevision: visualSourceRevision,
     comparisonMode: visualBaselineDir ? 'authoritative-exact-sha256' : 'capture-for-review',
     baselineDirectory: visualBaselineDir ? path.resolve(visualBaselineDir) : null,
     artifacts: [...artifacts.values()].sort((left, right) => left.fileName.localeCompare(right.fileName)),
-  }
+  })
   await writeFile(path.join(directory, visualManifestName), `${JSON.stringify(payload, null, 2)}\n`)
 }
 
@@ -1239,6 +1300,7 @@ async function captureVisual(cdp, scenario) {
   return createVisualArtifactManifest({
     scenario,
     runId: visualRunId,
+    sourceRevision: visualSourceRevision,
     capturedAt: new Date().toISOString(),
     screenshotBytes,
     readiness,
@@ -1414,22 +1476,25 @@ async function main() {
         throw new Error('SMOKE_VISUAL_BASELINE_DIR must be separate from SMOKE_VISUAL_DIR')
       }
       const scenarios = createVisualBaselineScenarios()
-      const candidateArtifacts = await readVisualManifest(visualDir)
+      const candidateManifest = await readVisualManifest(visualDir)
+      const candidateArtifacts = visualArtifactMap(candidateManifest)
       const artifactValidation = new Map()
       for (const scenario of scenarios) {
         const screenshotBytes = await readVisualPng(visualDir, scenario.fileName)
         artifactValidation.set(
           scenario.fileName,
-          validateVisualArtifactForResume(
+          validateVisualResumeEntry({
             scenario,
-            candidateArtifacts.get(scenario.fileName),
+            manifest: candidateManifest,
+            artifact: candidateArtifacts.get(scenario.fileName),
             screenshotBytes,
-            visualRunId,
-          ),
+            runId: visualRunId,
+            sourceRevision: visualSourceRevision,
+          }),
         )
       }
       const visualScenarios = selectPendingVisualScenarios(scenarios, artifactValidation, process.env.SMOKE_RESUME_VISUALS === '1')
-      console.log(`[VISUAL] mode=${visualBaselineDir ? 'authoritative-exact-sha256' : 'capture-for-review'} run=${visualRunId}`)
+      console.log(`[VISUAL] mode=${visualBaselineDir ? 'authoritative-exact-sha256' : 'capture-for-review'} run=${visualRunId} source=${visualSourceRevision}`)
       console.log(`[VISUAL] ${visualScenarios.length} pending of ${scenarios.length}`)
       for (const scenario of visualScenarios) {
         const artifact = await captureVisual(cdp, scenario)
@@ -1439,7 +1504,8 @@ async function main() {
       }
 
       if (visualBaselineDir) {
-        const baselineArtifacts = await readVisualManifest(visualBaselineDir)
+        const baselineManifest = await readVisualManifest(visualBaselineDir)
+        const baselineArtifacts = visualArtifactMap(baselineManifest)
         for (const scenario of scenarios) {
           const candidate = candidateArtifacts.get(scenario.fileName)
           const baseline = baselineArtifacts.get(scenario.fileName)
@@ -1448,7 +1514,8 @@ async function main() {
             scenario,
             baseline,
             baselineBytes,
-            baseline?.runId,
+            baselineManifest?.runId,
+            baselineManifest?.sourceRevision,
           )
           const comparison = compareVisualArtifacts(candidate, baseline)
           const reasons = [...baselineIntegrity, ...comparison]

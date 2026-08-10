@@ -149,7 +149,7 @@
 .link-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 2px; }
 
 .btn-sm { padding: var(--space-2) var(--space-4); font-size: var(--text-sm); min-height: 44px; }
-.btn-icon { padding: var(--space-2); border-radius: 50%; min-width: var(--touch-min); min-height: var(--touch-min); display: inline-flex; align-items: center; justify-content: center; }
+.btn-icon { padding: 0; border-radius: 50%; inline-size: var(--touch-min); block-size: var(--touch-min); min-inline-size: var(--touch-min); min-block-size: var(--touch-min); display: inline-flex; align-items: center; justify-content: center; }
 
 /* ── Inputs (Apple HIG) ── */
 .input, .textarea, .select {

@@ -91,15 +91,15 @@ type MapPin = MapListResult & {
 }
 
 const typeFilters = [
-  { value: 'all', label: '🌐 Tất cả' },
-  { value: 'attraction', label: '🛕 Tham quan' },
-  { value: 'experience', label: '🌾 Trải nghiệm' },
-  { value: 'nature', label: '🌿 Thiên nhiên' },
-  { value: 'history', label: '🏛️ Lịch sử' },
-  { value: 'dish', label: '🍲 Ẩm thực' },
-  { value: 'craft_village', label: '🏺 Làng nghề' },
-  { value: 'accommodation', label: '🏡 Lưu trú' },
-  { value: 'product', label: '🍊 Đặc sản' },
+  { value: 'all', label: 'Tất cả' },
+  { value: 'attraction', label: 'Tham quan' },
+  { value: 'experience', label: 'Trải nghiệm' },
+  { value: 'nature', label: 'Thiên nhiên' },
+  { value: 'history', label: 'Lịch sử' },
+  { value: 'dish', label: 'Ẩm thực' },
+  { value: 'craft_village', label: 'Làng nghề' },
+  { value: 'accommodation', label: 'Lưu trú' },
+  { value: 'product', label: 'Đặc sản' },
 ]
 
 const allowedTypes = new Set(typeFilters.map(filter => filter.value))
@@ -125,11 +125,8 @@ const savedPinIds = computed(() => new Set(
   favorites.value.map((item: { id?: unknown }) => String(item?.id || '').trim()).filter(Boolean),
 ))
 
-type MapFilterOption = { key: string; label: string; icon?: string }
-const typeFilterOptions: MapFilterOption[] = typeFilters.map((filter) => {
-  const parts = filter.label.match(/^(\S+)\s+(.+)$/)
-  return parts ? { key: filter.value, label: parts[2] || filter.label, icon: parts[1] || undefined } : { key: filter.value, label: filter.label }
-})
+type MapFilterOption = { key: string; label: string }
+const typeFilterOptions: MapFilterOption[] = typeFilters.map(filter => ({ key: filter.value, label: filter.label }))
 
 function onTypeFilterChange(values: string[]) {
   const current = activeTypeArray.value

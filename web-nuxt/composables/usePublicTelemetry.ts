@@ -40,6 +40,22 @@ export type PublicTelemetryEvent = Partial<PublicTelemetryContext> & {
 export type PublicTelemetryTransport = (event: Readonly<PublicTelemetryEvent>) => void | Promise<void>
 
 export interface PublicTelemetryOptions { transport?: PublicTelemetryTransport }
+type PublicTelemetryRuntimeConfig = {
+  public?: {
+    publicTelemetryEnabled?: unknown
+    publicTelemetryEndpoint?: unknown
+  }
+}
+type TelemetryBeacon = (url: string, data: BodyInit | null) => boolean
+type TelemetryFetch = (url: string, init: RequestInit) => unknown
+
+export interface DefaultPublicTelemetryTransportOptions {
+  config: PublicTelemetryRuntimeConfig
+  origin: string
+  sendBeacon?: TelemetryBeacon
+  fetch?: TelemetryFetch
+  Blob?: typeof Blob
+}
 
 const ROUTE_FAMILIES = new Set<PublicRouteFamily>(['home', 'catalog', 'search', 'detail', 'planner', 'community', 'settings', 'other'])
 const VIEWPORTS = new Set<PublicViewport>(['mobile', 'tablet', 'desktop'])
@@ -112,16 +128,37 @@ export function resolvePublicTelemetryEndpoint(input: unknown, origin: string): 
   }
 }
 
+export function createDefaultPublicTelemetryTransport(options: DefaultPublicTelemetryTransportOptions): PublicTelemetryTransport {
+  return (event) => {
+    if (options.config.public?.publicTelemetryEnabled !== true) return
+    const endpoint = resolvePublicTelemetryEndpoint(options.config.public?.publicTelemetryEndpoint, options.origin)
+    if (!endpoint) return
+    try {
+      const body = JSON.stringify(event)
+      const beaconBody = options.Blob ? new options.Blob([body], { type: 'application/json' }) : body
+      if (options.sendBeacon?.(endpoint, beaconBody)) return
+      const pending = options.fetch?.(endpoint, { method: 'POST', body, headers: { 'content-type': 'application/json' }, keepalive: true })
+      if (pending && typeof (pending as Promise<unknown>).catch === 'function') {
+        void (pending as Promise<unknown>).catch(() => {})
+      }
+    } catch {
+      // Observability is best-effort and must never block search, detail or planner.
+    }
+  }
+}
+
 function defaultTransport(event: Readonly<PublicTelemetryEvent>): void {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') return
   try {
-    const config = useRuntimeConfig()
-    if (config.public.publicTelemetryEnabled !== true) return
-    const endpoint = resolvePublicTelemetryEndpoint(config.public.publicTelemetryEndpoint, window.location.origin)
-    if (!endpoint) return
-    const body = JSON.stringify(event)
-    if (typeof navigator.sendBeacon === 'function' && navigator.sendBeacon(endpoint, new Blob([body], { type: 'application/json' }))) return
-    void fetch(endpoint, { method: 'POST', body, headers: { 'content-type': 'application/json' }, keepalive: true }).catch(() => {})
+    const config = useRuntimeConfig() as PublicTelemetryRuntimeConfig
+    const transport = createDefaultPublicTelemetryTransport({
+      config,
+      origin: window.location.origin,
+      sendBeacon: typeof navigator.sendBeacon === 'function' ? navigator.sendBeacon.bind(navigator) : undefined,
+      fetch: typeof fetch === 'function' ? fetch : undefined,
+      Blob: typeof Blob === 'undefined' ? undefined : Blob,
+    })
+    transport(event)
   } catch {
     // Observability is best-effort and must never block search, detail or planner.
   }

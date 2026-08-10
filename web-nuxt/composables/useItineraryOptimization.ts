@@ -85,7 +85,6 @@ export type PlannerFrictionCode =
   | 'stale-stop-facts'
   | 'missing-coordinates'
   | 'offline-draft'
-  | 'revision-conflict'
   | 'route-unavailable'
 
 export type PlannerFrictionSeverity = 'info' | 'warning' | 'error'
@@ -120,7 +119,6 @@ export interface PlannerFrictionInput {
   }>
   missingCoordinateStopIds?: string[]
   offlineDraft?: { revision: number; savedAt?: string | null; source?: 'local' | 'server' } | boolean
-  revisionConflict?: { localRevision: number; serverRevision: number } | boolean
   routeUnavailable?: boolean
 }
 
@@ -138,13 +136,6 @@ export interface PlannerOptimizationPreview<T extends { id: string }> {
   tradeoffs: string[]
   confirm: () => T[]
   cancel: () => T[]
-}
-
-export interface PlannerStopConflict<T> {
-  id: string
-  local: T | null
-  server: T | null
-  changedFields: string[]
 }
 
 export interface PlannerStopDetailEnrichmentOptions<
@@ -809,21 +800,6 @@ export function projectPlannerFrictions(
     })
   }
 
-  if (input.revisionConflict) {
-    const conflict = typeof input.revisionConflict === 'object'
-      ? input.revisionConflict
-      : null
-    const reason = conflict
-      ? `Bản nháp cục bộ (revision ${conflict.localRevision}) khác bản máy chủ (revision ${conflict.serverRevision}).`
-      : 'Bản nháp cục bộ đã khác bản máy chủ.'
-    notices.push({
-      code: 'revision-conflict',
-      severity: 'error',
-      reason,
-      recovery: frictionRecovery('So sánh từng điểm dừng', 'review-conflict'),
-    })
-  }
-
   if (input.routeUnavailable) {
     notices.push({
       code: 'route-unavailable',
@@ -863,45 +839,6 @@ export async function createPlannerOptimizationPreview<T extends { id: string }>
     confirm: () => afterSnapshot.slice(),
     cancel: () => beforeSnapshot,
   }
-}
-
-export function diffPlannerStops<T extends { id: string }>(
-  local: T[],
-  server: T[],
-): PlannerStopConflict<T>[] {
-  const indexStops = (stops: T[]) => {
-    const occurrences = new Map<string, number>()
-    const indexed = new Map<string, { stop: T; index: number }>()
-    stops.forEach((stop, index) => {
-      const occurrence = occurrences.get(stop.id) ?? 0
-      occurrences.set(stop.id, occurrence + 1)
-      indexed.set(`${stop.id}:${occurrence}`, { stop, index })
-    })
-    return indexed
-  }
-  const localStops = indexStops(local)
-  const serverStops = indexStops(server)
-  const keys = new Set([...localStops.keys(), ...serverStops.keys()])
-  const conflicts: PlannerStopConflict<T>[] = []
-
-  keys.forEach((key) => {
-    const localEntry = localStops.get(key)
-    const serverEntry = serverStops.get(key)
-    const localStop = localEntry?.stop ?? null
-    const serverStop = serverEntry?.stop ?? null
-    const id = localStop?.id || serverStop?.id || key.slice(0, key.lastIndexOf(':'))
-    if (!localStop || !serverStop) {
-      conflicts.push({ id, local: localStop, server: serverStop, changedFields: ['stop'] })
-      return
-    }
-    const changedFields = Object.keys(localStop).filter(field => (
-      field !== 'sourceFreshness'
-      && JSON.stringify(localStop[field as keyof T]) !== JSON.stringify(serverStop[field as keyof T])
-    ))
-    if (localEntry?.index !== serverEntry?.index) changedFields.unshift('position')
-    if (changedFields.length) conflicts.push({ id, local: localStop, server: serverStop, changedFields })
-  })
-  return conflicts
 }
 
 export function buildPlannerScheduleEnvelope<

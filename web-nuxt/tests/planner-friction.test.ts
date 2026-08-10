@@ -118,7 +118,6 @@ describe('planner friction projection', () => {
     ['stale-stop-facts', { staleStopIds: ['market'] }],
     ['missing-coordinates', { missingCoordinateStopIds: ['orchard'] }],
     ['offline-draft', { offlineDraft: { revision: 4, savedAt: '2026-08-09T08:00:00Z' } }],
-    ['revision-conflict', { revisionConflict: { localRevision: 4, serverRevision: 5 } }],
   ])('reports the recoverable %s friction state', (code, input) => {
     const project = (plannerOptimization as Record<string, unknown>)
       .projectPlannerFrictions as undefined | ((value: Record<string, unknown>) => Array<Record<string, unknown>>)
@@ -143,37 +142,6 @@ describe('planner friction projection', () => {
       severity: 'info',
       recovery: expect.objectContaining({ label: expect.stringContaining('danh sách') }),
     })
-  })
-
-  it('diffs a revision conflict per stop without choosing a winner', () => {
-    const local = [
-      { id: 'a', name: 'A', notes: 'ghi chú local' },
-      { id: 'b', name: 'B', notes: '' },
-    ]
-    const server = [
-      { id: 'a', name: 'A', notes: 'ghi chú server' },
-      { id: 'c', name: 'C', notes: '' },
-    ]
-
-    expect(plannerOptimization.diffPlannerStops(local, server)).toEqual([
-      { id: 'a', local: local[0], server: server[0], changedFields: ['notes'] },
-      { id: 'b', local: local[1], server: null, changedFields: ['stop'] },
-      { id: 'c', local: null, server: server[1], changedFields: ['stop'] },
-    ])
-    expect(local.map(stop => stop.id)).toEqual(['a', 'b'])
-  })
-
-  it('treats a server reorder as a per-stop position diff', () => {
-    const local = [{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }]
-    const server = [local[1]!, local[0]!]
-
-    expect(plannerOptimization.diffPlannerStops(local, server).map(conflict => ({
-      id: conflict.id,
-      changedFields: conflict.changedFields,
-    }))).toEqual([
-      { id: 'a', changedFields: ['position'] },
-      { id: 'b', changedFields: ['position'] },
-    ])
   })
 
   it('creates a deterministic offline draft without mutating editable stops', () => {

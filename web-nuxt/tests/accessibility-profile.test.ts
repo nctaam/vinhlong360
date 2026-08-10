@@ -1,4 +1,6 @@
+import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { defineComponent, h, nextTick } from 'vue'
 
 import {
   applyAccessibilityProfile,
@@ -6,6 +8,22 @@ import {
   resolveAccessibilityProfile,
   useAccessibilityProfile,
 } from '../composables/useAccessibilityProfile'
+
+function mediaQuery(matches = false) {
+  let current = matches
+  const listeners = new Set<(event: MediaQueryListEvent) => void>()
+  return {
+    get matches() {
+      return current
+    },
+    addEventListener: vi.fn((_type: 'change', listener: (event: MediaQueryListEvent) => void) => listeners.add(listener)),
+    removeEventListener: vi.fn((_type: 'change', listener: (event: MediaQueryListEvent) => void) => listeners.delete(listener)),
+    setMatches(next: boolean) {
+      current = next
+      for (const listener of listeners) listener({ matches: next } as MediaQueryListEvent)
+    },
+  }
+}
 
 describe('public accessibility profile', () => {
   beforeEach(() => {
@@ -86,6 +104,38 @@ describe('public accessibility profile', () => {
     })
     expect(matches).toHaveBeenCalledWith('(prefers-reduced-motion: reduce)')
     expect(matches).toHaveBeenCalledWith('(prefers-contrast: more)')
+  })
+
+  it('updates and releases OS media preference listeners after hydration', async () => {
+    const reducedMotion = mediaQuery(false)
+    const highContrast = mediaQuery(false)
+    const matchMedia = vi.fn((query: string) => query === '(prefers-reduced-motion: reduce)' ? reducedMotion : highContrast)
+    let accessibility: ReturnType<typeof useAccessibilityProfile> | undefined
+    const Harness = defineComponent({
+      setup() {
+        accessibility = useAccessibilityProfile({
+          storage: localStorage,
+          root: document.documentElement,
+          matchMedia,
+        })
+        return () => h('div')
+      },
+    })
+    const wrapper = await mountSuspended(Harness)
+    try {
+      reducedMotion.setMatches(true)
+      highContrast.setMatches(true)
+      await nextTick()
+      expect(accessibility!.profile.value).toMatchObject({ reducedMotion: true, highContrast: true })
+
+      wrapper.unmount()
+      reducedMotion.setMatches(false)
+      highContrast.setMatches(false)
+      await nextTick()
+      expect(accessibility!.profile.value).toMatchObject({ reducedMotion: true, highContrast: true })
+    } finally {
+      if (wrapper.exists()) wrapper.unmount()
+    }
   })
 
   it('applies profile state through semantic document attributes', () => {

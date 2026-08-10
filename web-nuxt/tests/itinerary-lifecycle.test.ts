@@ -19,6 +19,10 @@ const mocks = vi.hoisted(() => ({
   runPlannerOptimization: vi.fn(),
   showToast: vi.fn(),
 }))
+const authState = vi.hoisted(() => ({
+  isLoggedIn: { value: false },
+  user: { value: null as { id: string } | null },
+}))
 const publicOptimizerMode = vi.hoisted(() => ({ mode: 'enhanced' as 'enhanced' | 'deterministic' }))
 
 vi.mock('~/composables/usePublicApi', () => ({
@@ -87,8 +91,8 @@ vi.mock('~/composables/useItineraryOptimization', async importOriginal => {
 mockNuxtImport('useAuth', () => () => ({
   authHeaders: () => ({}),
   fetchMe: vi.fn().mockResolvedValue(null),
-  isLoggedIn: ref(false),
-  user: ref(null),
+  isLoggedIn: authState.isLoggedIn,
+  user: authState.user,
 }))
 mockNuxtImport('useConfirm', () => () => ({ confirmDialog: vi.fn() }))
 mockNuxtImport('useFavorites', () => () => ({ count: ref(0), favorites: ref([]) }))
@@ -99,6 +103,8 @@ mockNuxtImport('useFeature', () => () => ({
 }))
 
 beforeEach(() => {
+  authState.isLoggedIn.value = false
+  authState.user.value = null
   publicOptimizerMode.mode = 'enhanced'
   mocks.applyPlacements = 0
   mocks.commitMapGate = null
@@ -158,70 +164,54 @@ describe('planner page lifecycle', () => {
     wrapper.unmount()
   })
 
-  it('opens only an explicit newer server snapshot and wires manual, keep-local, and accept-server resolution', async () => {
+  it('treats a create-only save conflict as a save failure without inventing revision resolution UI', async () => {
+    authState.isLoggedIn.value = true
+    authState.user.value = { id: 'planner-user' }
+    const createPlan = vi.fn().mockRejectedValue({
+      response: {
+        status: 409,
+        _data: {
+          serverPlan: {
+            id: 'server-plan',
+            title: 'Server revision 5',
+            revision: 5,
+            stops: [planStop('start', 'Start', 'Server note')],
+          },
+        },
+      },
+    })
+    vi.stubGlobal('$fetch', createPlan)
     const wrapper = await mountSuspended(PlannerPage, {
       global: { stubs: plannerStubs() },
     })
-    const vm = wrapper.vm as unknown as {
-      observePlannerServerSnapshot?: (plan: Record<string, unknown>) => boolean
-      loadPlan: (index: number) => Promise<void>
-      savedPlans: Array<Record<string, unknown>>
-      stops: Array<{ id: string; notes: string }>
-      planTitle: string
-    }
-    vm.savedPlans = [{
-      id: 'server-plan',
-      title: 'Baseline',
-      revision: 4,
-      savedAt: '2026-08-09T08:00:00Z',
-      stops: [planStop('start', 'Start')],
-    }]
-    await vm.loadPlan(0)
-    await nextTick()
-    await wrapper.get('.stop-note-input').setValue('Local note')
+    try {
+      const vm = wrapper.vm as unknown as {
+        loadPlan: (index: number) => Promise<void>
+        savedPlans: Array<Record<string, unknown>>
+        stops: Array<{ id: string; notes: string }>
+      }
+      vm.savedPlans = [{
+        id: 'server-plan',
+        title: 'Baseline',
+        revision: 4,
+        savedAt: '2026-08-09T08:00:00Z',
+        stops: [planStop('start', 'Start')],
+      }]
+      await vm.loadPlan(0)
+      await nextTick()
+      await wrapper.get('.stop-note-input').setValue('Local note')
+      await nextTick()
+      await wrapper.get('.planner-action-dock .btn').trigger('click')
+      await nextTick()
 
-    if (!vm.observePlannerServerSnapshot) {
+      expect(createPlan).toHaveBeenCalledWith('/api/my-plans', expect.objectContaining({ method: 'POST' }))
+      expect(mocks.showToast).toHaveBeenCalledWith('Không thể lưu lên tài khoản', 'error')
+      expect(vm.stops[0]?.notes).toBe('Local note')
+      expect(wrapper.find('[data-friction-code="revision-conflict"]').exists()).toBe(false)
+      expect(wrapper.find('[data-planner-conflict-diff]').exists()).toBe(false)
+    } finally {
       wrapper.unmount()
-      expect(vm.observePlannerServerSnapshot).toEqual(expect.any(Function))
-      return
     }
-    expect(vm.observePlannerServerSnapshot({
-      id: 'server-plan',
-      title: 'Server revision 5',
-      revision: 5,
-      savedAt: '2026-08-09T09:00:00Z',
-      stops: [planStop('start', 'Start', 'Server note')],
-    })).toBe(true)
-    await nextTick()
-
-    expect(wrapper.get('[data-friction-code="revision-conflict"]').text()).toContain('revision 5')
-    expect(wrapper.get('[data-planner-conflict-diff]').text()).toContain('notes')
-
-    await wrapper.get('[data-conflict-manual]').trigger('click')
-    expect(wrapper.find('[data-planner-conflict-diff]').exists()).toBe(true)
-    expect(vm.stops[0]?.notes).toBe('Local note')
-
-    await wrapper.get('[data-conflict-local]').trigger('click')
-    await nextTick()
-    expect(wrapper.find('[data-planner-conflict-diff]').exists()).toBe(false)
-    expect(vm.stops[0]?.notes).toBe('Local note')
-
-    expect(vm.observePlannerServerSnapshot({
-      id: 'server-plan',
-      title: 'Server revision 6',
-      revision: 6,
-      savedAt: '2026-08-09T10:00:00Z',
-      stops: [planStop('server', 'Server stop', 'Server wins')],
-    })).toBe(true)
-    await nextTick()
-    await wrapper.get('[data-conflict-server]').trigger('click')
-    await nextTick()
-
-    expect(vm.planTitle).toBe('Server revision 6')
-    expect(vm.stops.map(stop => stop.id)).toEqual(['server'])
-    expect(vm.stops[0]?.notes).toBe('Server wins')
-    expect(wrapper.find('[data-planner-conflict-diff]').exists()).toBe(false)
-    wrapper.unmount()
   })
 
   it('derives stale stop evidence and refreshes only the affected stop from returned facts', async () => {

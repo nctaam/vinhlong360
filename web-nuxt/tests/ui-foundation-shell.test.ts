@@ -121,6 +121,13 @@ describe('UI foundation shell', () => {
     expect(wrapper.find('svg').attributes('stroke-width')).toBe('1.75')
   })
 
+  it.each(['car', 'bike', 'foot', 'arrow-up', 'arrow-down', 'trash'])('renders the %s public action icon without falling back to help', async (name) => {
+    const wrapper = await mountSuspended(IconLine, { props: { name } })
+    wrappers.push(wrapper)
+
+    expect(wrapper.find(`.li-${name}`).exists()).toBe(true)
+  })
+
   it('renders a safe help icon when a requested icon is unknown', async () => {
     const wrapper = await mountSuspended(IconLine, { props: { name: 'khong-ton-tai' } })
     wrappers.push(wrapper)

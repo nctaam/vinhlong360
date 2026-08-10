@@ -353,6 +353,29 @@ jobs:
       - name: Run tests
         run: npm test
 
+      # Capture a complete new candidate set on every CI run. The smoke runner
+      # binds each PNG and its manifest to this exact checkout revision.
+      - name: Capture fresh public visual evidence
+        working-directory: .
+        env:
+          SMOKE_BASE_URL: http://127.0.0.1:4173
+          SMOKE_FORCE_MANAGED_APP: "1"
+          SMOKE_MANAGED_APP_MODE: preview
+          SMOKE_RESUME_VISUALS: "0"
+          SMOKE_SOURCE_REVISION: ${{ github.sha }}
+          SMOKE_VISUAL_DIR: ${{ github.workspace }}/artifacts/public-visual
+          SMOKE_VISUAL_RUN_ID: ci-${{ github.run_id }}-${{ github.run_attempt }}
+        run: node scripts/smoke_e2e_chrome.mjs
+
+      - name: Upload public visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-visual-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/public-visual
+          if-no-files-found: warn
+          retention-days: 14
+
       # R30.6 cần axe-report.json, mà trước 2026-08-05 KHÔNG nơi nào trong repo
       # sinh ra nó — cổng hard-ratchet đó chưa bao giờ chạy. Quét bằng CDP thuần
       # (scripts/axe_scan.mjs) trên Chrome có sẵn của runner: không thêm

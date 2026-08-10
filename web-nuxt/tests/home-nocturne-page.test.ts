@@ -118,6 +118,27 @@ function contrast(foreground: Rgba, background: Rgba) {
 }
 
 describe('homepage Existing Screen Evolution B1', () => {
+  it('does not preload obsolete fixed hero artwork ahead of the data-driven dossier', async () => {
+    apiFetchMock.mockImplementation((url: unknown) => {
+      const path = String(url)
+      if (path === '/api/homepage') return Promise.resolve(homeFixture())
+      if (path === '/api/feed?limit=10') return Promise.resolve({ posts: [] })
+      if (path === '/api/community/stats') return Promise.resolve(null)
+      if (path === '/api/community/leaderboard?limit=3') return Promise.resolve({ leaders: [] })
+      if (path === '/api/community/trending-tags?limit=8') return Promise.resolve({ tags: [] })
+      if (path.startsWith('/api/entities/popular?')) return Promise.resolve({ entities: [] })
+      return Promise.resolve({})
+    })
+    const wrapper = await mountSuspended(HomePage, { global: { stubs: pageStubs } })
+    wrappers.push(wrapper)
+    await flushUi()
+
+    const preloadedImages = [...document.head.querySelectorAll('link[rel="preload"][as="image"]')]
+      .map(link => link.getAttribute('href'))
+    expect(preloadedImages).not.toContain('/img/hero-mobile.webp')
+    expect(preloadedImages).not.toContain('/img/hero.webp')
+  })
+
   it.each([
     { theme: 'light', canvas: [249, 247, 241, 1] as Rgba, text: [8, 26, 22, 1] as Rgba, brand: [149, 64, 43, 1] as Rgba, action: [3, 90, 105, 1] as Rgba },
     { theme: 'dark', canvas: [7, 18, 16, 1] as Rgba, text: [237, 235, 229, 1] as Rgba, brand: [199, 133, 117, 1] as Rgba, action: [125, 174, 186, 1] as Rgba },

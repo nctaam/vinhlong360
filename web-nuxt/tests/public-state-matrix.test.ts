@@ -43,7 +43,7 @@ type RouteKey = typeof PUBLIC_ROUTE_SPECS[number]['key']
 type StateKind = typeof PUBLIC_STATE_KINDS[number]
 
 const wrappers: Array<{ unmount: () => void }> = []
-const executedStateRows = new Set<string>()
+const executedStateRows = new Map<string, number>()
 
 const NuxtImgStub = defineComponent({
   inheritAttrs: false,
@@ -116,7 +116,6 @@ interface RouteStateEvidence {
   readonly contentVisible: boolean
   readonly actions: string[]
   readonly confirmed404: boolean
-  readonly actionDockOverlap: number
 }
 
 function captureRouteStateEvidence(route: RouteKey, state: StateKind, wrapper: any): RouteStateEvidence {
@@ -152,7 +151,6 @@ function captureRouteStateEvidence(route: RouteKey, state: StateKind, wrapper: a
     contentVisible: wrapper.find(contentSelectors[route]).exists(),
     actions,
     confirmed404: wrapper.text().includes('Không tìm thấy địa điểm này'),
-    actionDockOverlap: 0,
   }
 }
 
@@ -164,7 +162,8 @@ function stateIt(route: RouteKey, state: StateKind, run: () => Promise<RouteStat
     expect(evidence, `${route}:${state} must capture route-owned DOM evidence`).not.toBeNull()
     const scenario = buildPublicStateMatrix().find(item => item.route.key === route && item.state === state)!
     expect(evaluatePublicStateEvidence(scenario, evidence)).toEqual([])
-    executedStateRows.add(`${route}:${state}`)
+    const row = `${route}:${state}`
+    executedStateRows.set(row, (executedStateRows.get(row) || 0) + 1)
   })
 }
 
@@ -379,7 +378,6 @@ describe.sequential('public vertical-slice state matrix contracts', () => {
         contentVisible: false,
         actions: state === 'partial' ? ['retry-panel'] : [],
         confirmed404: false,
-        actionDockOverlap: 0,
       })
       expect(reasons).toContain('content-not-preserved')
     }
@@ -398,7 +396,6 @@ describe.sequential('public vertical-slice state matrix contracts', () => {
       contentVisible: false,
       actions: ['back-to-results'],
       confirmed404: true,
-      actionDockOverlap: 0,
     }
     expect(evaluatePublicStateEvidence(detail404, validEvidence)).toEqual([])
 
@@ -908,8 +905,9 @@ describe.sequential('planner route state evidence', () => {
 
 describe.sequential('route-owned state evidence coverage', () => {
   it('executes and validates every matrix row exactly once', () => {
-    expect([...executedStateRows].sort()).toEqual(
-      buildPublicStateMatrix().map(scenario => `${scenario.route.key}:${scenario.state}`).sort(),
+    const expectedRows = buildPublicStateMatrix().map(scenario => `${scenario.route.key}:${scenario.state}`).sort()
+    expect([...executedStateRows.entries()].sort(([left], [right]) => left.localeCompare(right))).toEqual(
+      expectedRows.map(row => [row, 1]),
     )
   })
 })

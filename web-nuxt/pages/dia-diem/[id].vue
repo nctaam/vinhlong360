@@ -69,19 +69,19 @@
           <ClientOnly>
             <div class="dc-trip">
               <button v-if="entity.type === 'event'" type="button" :class="['trip-btn', { active: rsvpGoing }]" :aria-pressed="rsvpGoing" :disabled="actionPending" @click="toggleRsvp">
-                {{ rsvpGoing ? '✓ Sẽ đi' : '🎉 Tôi sẽ đi' }}<span v-if="rsvpCount" class="trip-count">{{ rsvpCount }}</span>
+                {{ rsvpGoing ? 'Sẽ đi' : 'Tôi sẽ đi' }}<span v-if="rsvpCount" class="trip-count">{{ rsvpCount }}</span>
               </button>
               <template v-else>
-                <button type="button" :class="['trip-btn', { active: visitStatus === 'visited' }]" :aria-pressed="visitStatus === 'visited'" :disabled="actionPending" @click="setVisit('visited')">✓ Đã đến</button>
-                <button type="button" :class="['trip-btn', { active: visitStatus === 'want' }]" :aria-pressed="visitStatus === 'want'" :disabled="actionPending" @click="setVisit('want')">♡ Muốn đến</button>
+                <button type="button" :class="['trip-btn', { active: visitStatus === 'visited' }]" :aria-pressed="visitStatus === 'visited'" :disabled="actionPending" @click="setVisit('visited')"><IconLine name="check" aria-hidden="true" /> Đã đến</button>
+                <button type="button" :class="['trip-btn', { active: visitStatus === 'want' }]" :aria-pressed="visitStatus === 'want'" :disabled="actionPending" @click="setVisit('want')"><IconLine name="heart" aria-hidden="true" /> Muốn đến</button>
               </template>
-              <button type="button" :class="['trip-btn', { active: isFollowingPlace }]" :aria-pressed="isFollowingPlace" :disabled="actionPending" @click="toggleFollowPlace">{{ isFollowingPlace ? '🔔 Đang theo dõi' : '🔔 Theo dõi' }}</button>
+              <button type="button" :class="['trip-btn', { active: isFollowingPlace }]" :aria-pressed="isFollowingPlace" :disabled="actionPending" @click="toggleFollowPlace"><IconLine name="bell" aria-hidden="true" /> {{ isFollowingPlace ? 'Đang theo dõi' : 'Theo dõi' }}</button>
             </div>
           </ClientOnly>
         </div>
       </div>
       <button type="button" v-if="hasEntityImages" class="dc-photo-btn" :aria-label="entityImageDescriptors.length === 1 ? 'Xem ảnh' : `Xem ${entityImageDescriptors.length} ảnh`" @click="openCoverLightbox()">
-        <span class="dc-photo-icon" aria-hidden="true">📷</span>
+        <IconLine class="dc-photo-icon" name="camera" aria-hidden="true" />
         {{ entityImageDescriptors.length === 1 ? 'Xem ảnh' : `${entityImageDescriptors.length} ảnh` }}
       </button>
       <div v-if="hasEntityImages && entityImageDescriptors.length > 1" class="dc-thumbs">
@@ -208,7 +208,7 @@
         <!-- OCOP highlight -->
         <div v-if="entity.attributes?.ocop" class="ocop-highlight">
           <div class="ocop-stars">
-            <span v-for="s in ocopStars" :key="s" class="ocop-star">⭐</span>
+            <IconLine v-for="s in ocopStars" :key="s" class="ocop-star" name="star" aria-hidden="true" />
           </div>
           <strong>{{ ss('labels.detail.ocop_product_prefix', 'Sản phẩm OCOP') }} {{ entity.attributes.ocop }}</strong>
           <small>{{ ss('labels.detail.ocop_program', 'Chương trình Mỗi xã Một sản phẩm') }}</small>
@@ -217,14 +217,14 @@
         <!-- Rating -->
         <div v-if="entity.attributes?.rating" class="rating-display">
           <div class="rd-stars">
-            <span v-for="s in 5" :key="s" :class="['rd-star', { filled: s <= Math.round(Number(entity.attributes.rating)) }]">★</span>
+            <IconLine v-for="s in 5" :key="s" :class="['rd-star', { filled: s <= Math.round(Number(entity.attributes.rating)) }]" name="star" aria-hidden="true" />
           </div>
           <span class="rd-score">{{ entity.attributes.rating }}</span>
           <span v-if="entity.attributes?.review_count" class="rd-count">({{ entity.attributes.review_count }} đánh giá)</span>
         </div>
 
         <div data-detail-region="facts">
-          <h2 class="facts-heading sediment-head"><span class="facts-heading-icon" aria-hidden="true">📑</span>{{ ss('labels.detail.info_heading', 'Thông tin') }}</h2>
+          <h2 class="facts-heading sediment-head"><IconLine class="facts-heading-icon" name="clipboard-list" aria-hidden="true" />{{ ss('labels.detail.info_heading', 'Thông tin') }}</h2>
           <div class="facts-card">
             <section class="fact-group">
               <h3 class="fg-label">Tổng quan</h3>
@@ -234,18 +234,18 @@
                   <dd class="v">{{ typeMeta.label }}</dd>
                 </div>
                 <div v-if="entity.place_name" class="fact">
-                  <dt class="k"><span class="fact-ic" aria-hidden="true">📍</span><span>{{ ss('labels.detail.fact_place', 'Địa điểm') }}</span></dt>
+                  <dt class="k"><IconLine class="fact-ic" name="pin" aria-hidden="true" /><span>{{ ss('labels.detail.fact_place', 'Địa điểm') }}</span></dt>
                   <dd class="v">
                     <NuxtLink v-if="entity.placeId" :to="`/xa-phuong/${entity.placeId}`" class="fact-link">{{ entity.place_name }}</NuxtLink>
                     <template v-else>{{ entity.place_name }}</template>
                   </dd>
                 </div>
                 <div v-if="entity.place_area" class="fact">
-                  <dt class="k"><span class="fact-ic" aria-hidden="true">🗺️</span><span>{{ ss('labels.detail.fact_area', 'Khu vực') }}</span></dt>
+                  <dt class="k"><IconLine class="fact-ic" name="map" aria-hidden="true" /><span>{{ ss('labels.detail.fact_area', 'Khu vực') }}</span></dt>
                   <dd class="v"><NuxtLink :to="`/khu-vuc/${entity.place_area}`" class="fact-link">{{ areaName }}</NuxtLink></dd>
                 </div>
                 <div v-if="entity.season" class="fact">
-                  <dt class="k"><span class="fact-ic" aria-hidden="true">🌤️</span><span>{{ ss('labels.detail.fact_season', 'Mùa') }}</span></dt>
+                  <dt class="k"><IconLine class="fact-ic" name="sun" aria-hidden="true" /><span>{{ ss('labels.detail.fact_season', 'Mùa') }}</span></dt>
                   <dd class="v">{{ seasonLabel }}</dd>
                 </div>
               </dl>
@@ -259,23 +259,23 @@
               </div>
               <dl>
                 <div v-if="entity.attributes?.hours" class="fact">
-                  <dt class="k"><span class="fact-ic" aria-hidden="true">🕒</span><span>{{ ss('labels.detail.fact_hours', 'Giờ mở cửa') }}</span></dt>
+                  <dt class="k"><IconLine class="fact-ic" name="clock" aria-hidden="true" /><span>{{ ss('labels.detail.fact_hours', 'Giờ mở cửa') }}</span></dt>
                   <dd class="v">{{ entity.attributes.hours }}</dd>
                 </div>
                 <div v-if="entity.attributes?.price" class="fact">
-                  <dt class="k"><span class="fact-ic" aria-hidden="true">💰</span><span>{{ ss('labels.detail.fact_price', 'Giá tham khảo') }}</span></dt>
+                  <dt class="k"><IconLine class="fact-ic" name="tag" aria-hidden="true" /><span>{{ ss('labels.detail.fact_price', 'Giá tham khảo') }}</span></dt>
                   <dd class="v">{{ entity.attributes.price }}</dd>
                 </div>
                 <div v-if="entity.attributes?.fee" class="fact">
-                  <dt class="k"><span class="fact-ic" aria-hidden="true">🎫</span><span>{{ ss('labels.detail.fact_fee', 'Phí vào cửa') }}</span></dt>
+                  <dt class="k"><IconLine class="fact-ic" name="tag" aria-hidden="true" /><span>{{ ss('labels.detail.fact_fee', 'Phí vào cửa') }}</span></dt>
                   <dd class="v">{{ entity.attributes.fee }}</dd>
                 </div>
                 <div v-if="entity.attributes?.suggested_duration" class="fact">
-                  <dt class="k"><span class="fact-ic" aria-hidden="true">⏱️</span><span>Thời gian tham quan</span></dt>
+                  <dt class="k"><IconLine class="fact-ic" name="clock" aria-hidden="true" /><span>Thời gian tham quan</span></dt>
                   <dd class="v">{{ entity.attributes.suggested_duration }}</dd>
                 </div>
                 <div v-if="entity.attributes?.transport" class="fact">
-                  <dt class="k"><span class="fact-ic" aria-hidden="true">🚗</span><span>{{ ss('labels.detail.fact_transport', 'Di chuyển') }}</span></dt>
+                  <dt class="k"><IconLine class="fact-ic" name="car" aria-hidden="true" /><span>{{ ss('labels.detail.fact_transport', 'Di chuyển') }}</span></dt>
                   <dd class="v">{{ entity.attributes.transport }}</dd>
                 </div>
               </dl>
@@ -285,19 +285,19 @@
               <h3 class="fg-label">Liên hệ</h3>
               <dl>
                 <div v-if="entity.attributes?.phone" class="fact">
-                  <dt class="k"><span class="fact-ic" aria-hidden="true">📞</span><span>{{ ss('labels.detail.fact_phone', 'Liên hệ') }}</span></dt>
+                  <dt class="k"><IconLine class="fact-ic" name="phone" aria-hidden="true" /><span>{{ ss('labels.detail.fact_phone', 'Liên hệ') }}</span></dt>
                   <dd class="v"><a :href="telHref(entity.attributes.phone)" class="fact-link" data-contact-action="phone" @click="trackContact('phone')">{{ entity.attributes.phone }}</a><button type="button" class="fact-copy" @click="copyText(entity.attributes.phone!, 'số điện thoại')" aria-label="Sao chép số điện thoại" title="Sao chép"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></dd>
                 </div>
                 <div v-if="entity.attributes?.address" class="fact">
-                  <dt class="k"><span class="fact-ic" aria-hidden="true">🏠</span><span>{{ ss('labels.detail.fact_address', 'Địa chỉ') }}</span></dt>
+                  <dt class="k"><IconLine class="fact-ic" name="home" aria-hidden="true" /><span>{{ ss('labels.detail.fact_address', 'Địa chỉ') }}</span></dt>
                   <dd class="v">{{ entity.attributes.address }}<button type="button" class="fact-copy" @click="copyText(entity.attributes.address!, 'địa chỉ')" aria-label="Sao chép địa chỉ" title="Sao chép"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></dd>
                 </div>
                 <div v-if="entity.attributes?.coords_approximate && hasCoords" class="fact fact-approx">
-                  <dt class="k"><span class="fact-ic" aria-hidden="true">📍</span><span>{{ ss('labels.detail.fact_location', 'Vị trí') }}</span></dt>
+                  <dt class="k"><IconLine class="fact-ic" name="pin" aria-hidden="true" /><span>{{ ss('labels.detail.fact_location', 'Vị trí') }}</span></dt>
                   <dd class="v">{{ ss('labels.detail.coords_approximate', 'Gần đúng (trung tâm xã/phường) — chưa có toạ độ chính xác') }}</dd>
                 </div>
                 <div v-if="entity.attributes?.website" class="fact">
-                  <dt class="k"><span class="fact-ic" aria-hidden="true">🔗</span><span>{{ ss('labels.detail.fact_website', 'Website') }}</span></dt>
+                  <dt class="k"><IconLine class="fact-ic" name="globe" aria-hidden="true" /><span>{{ ss('labels.detail.fact_website', 'Website') }}</span></dt>
                   <dd class="v"><a :href="safeUrl(entity.attributes.website)" target="_blank" rel="noopener nofollow" class="fact-link website-link" data-contact-action="website" @click="trackContact('website')">{{ entity.attributes?.website?.replace(/^https?:\/\//, '') }}</a></dd>
                 </div>
               </dl>
@@ -307,11 +307,11 @@
               <h3 class="fg-label">Đặc điểm</h3>
               <dl>
                 <div v-if="entity.attributes?.amenities" class="fact">
-                  <dt class="k"><span class="fact-ic" aria-hidden="true">✅</span><span>{{ ss('labels.detail.fact_amenities', 'Tiện ích') }}</span></dt>
+                  <dt class="k"><IconLine class="fact-ic" name="check" aria-hidden="true" /><span>{{ ss('labels.detail.fact_amenities', 'Tiện ích') }}</span></dt>
                   <dd class="v">{{ Array.isArray(entity.attributes.amenities) ? entity.attributes.amenities.join(', ') : entity.attributes.amenities }}</dd>
                 </div>
                 <div v-if="entity.attributes?.price_range" class="fact">
-                  <dt class="k"><span class="fact-ic" aria-hidden="true">💵</span><span>Mức giá</span></dt>
+                  <dt class="k"><IconLine class="fact-ic" name="tag" aria-hidden="true" /><span>Mức giá</span></dt>
                   <dd class="v">{{ entity.attributes.price_range }}</dd>
                 </div>
               </dl>
@@ -330,26 +330,26 @@
           <h2 class="ns-title sediment-head">{{ ss('labels.detail.next_steps_title', 'Bước tiếp theo') }}</h2>
           <!-- Save affordance lives in the hero (SaveButton) — avoid a second, divergent toggle here.
                Next step is the active-planning CTA, labeled to distinguish it from "save for later". -->
-        <NuxtLink :to="planAddUrl" no-prefetch class="ns-action">📋 {{ ss('labels.detail.next_add_itinerary', 'Thêm vào lịch trình') }}</NuxtLink>
+        <NuxtLink :to="planAddUrl" no-prefetch class="ns-action"><IconLine name="clipboard-list" aria-hidden="true" /> {{ ss('labels.detail.next_add_itinerary', 'Thêm vào lịch trình') }}</NuxtLink>
           <!-- declutter-1 T5: buy-contact dời từ contact-row (đã bỏ — desktop bị CSS ẩn,
                mobile ContactWidget che); ContactWidget không có kênh hỏi-mua nên giữ ở đây. -->
-          <a v-if="buyContactUrl" :href="buyContactUrl" target="_blank" rel="nofollow noopener" class="ns-action" data-contact-action="website" :aria-label="`Hỏi mua ${entity.name}`" @click="trackContact('website')">🛒 {{ ss('labels.detail.cta_buy_contact', 'Hỏi mua trực tiếp') }}</a>
-          <NuxtLink v-if="entity.type !== 'accommodation'" to="/luu-tru" class="ns-action">🏡 {{ ss('labels.detail.next_find_stay', 'Tìm chỗ ở gần đây') }}</NuxtLink>
-        <NuxtLink :to="mapUrl" no-prefetch class="ns-action">🗺️ {{ ss('labels.detail.next_view_map', 'Xem trên bản đồ') }}</NuxtLink>
-          <NuxtLink to="/tuyen-duong" class="ns-action">🛤️ {{ ss('labels.detail.next_route', 'Tuyến đường gợi ý') }}</NuxtLink>
+          <a v-if="buyContactUrl" :href="buyContactUrl" target="_blank" rel="nofollow noopener" class="ns-action" data-contact-action="website" :aria-label="`Hỏi mua ${entity.name}`" @click="trackContact('website')"><IconLine name="gift" aria-hidden="true" /> {{ ss('labels.detail.cta_buy_contact', 'Hỏi mua trực tiếp') }}</a>
+          <NuxtLink v-if="entity.type !== 'accommodation'" to="/luu-tru" class="ns-action"><IconLine name="home" aria-hidden="true" /> {{ ss('labels.detail.next_find_stay', 'Tìm chỗ ở gần đây') }}</NuxtLink>
+        <NuxtLink :to="mapUrl" no-prefetch class="ns-action"><IconLine name="map" aria-hidden="true" /> {{ ss('labels.detail.next_view_map', 'Xem trên bản đồ') }}</NuxtLink>
+          <NuxtLink to="/tuyen-duong" class="ns-action"><IconLine name="route" aria-hidden="true" /> {{ ss('labels.detail.next_route', 'Tuyến đường gợi ý') }}</NuxtLink>
           <!-- declutter-3 T17 (B5e): claim-cta DỜI vào next-steps (di chuyển, không bỏ) -->
-          <NuxtLink :to="claimUrl" class="ns-action claim-cta">🏷️ {{ ss('labels.detail.cta_claim', 'Đây là cơ sở của tôi — đăng ký quản lý') }}</NuxtLink>
+          <NuxtLink :to="claimUrl" class="ns-action claim-cta"><IconLine name="tag" aria-hidden="true" /> {{ ss('labels.detail.cta_claim', 'Đây là cơ sở của tôi — đăng ký quản lý') }}</NuxtLink>
         </div>
       </aside>
 
       <article class="detail-main" data-detail-region="narrative" aria-label="Thông tin chi tiết">
         <!-- Highlights quét nhanh (Baymard: 78% site thiếu; chống info bị chôn dưới fold) -->
         <div v-if="hasHighlights" class="highlights">
-          <a v-if="zaloLink" class="hl hl-action" data-color-role="action-secondary" :href="zaloLink" target="_blank" rel="nofollow noopener" :aria-label="`Nhắn Zalo ${entity.name}`">💬 Zalo</a>
-          <a v-if="entity.attributes?.phone" class="hl hl-action" data-color-role="action-secondary" data-contact-action="phone" :href="telHref(entity.attributes.phone)" :aria-label="`Gọi ${entity.name}`" @click="trackContact('phone')">📞 Gọi</a>
-          <NuxtLink v-if="hasCoords" class="hl hl-action" data-color-role="action-secondary" data-contact-action="map" :to="mapUrl" :aria-label="`Xem ${entity.name} trên bản đồ`" @click="trackContact('map')">🗺️ Bản đồ</NuxtLink>
-          <span v-if="entity.attributes?.hours" class="hl"><span aria-hidden="true">🕒</span> {{ entity.attributes.hours }}</span>
-          <span v-if="addressText" class="hl"><span aria-hidden="true">📍</span> {{ addressText }}</span>
+          <a v-if="zaloLink" class="hl hl-action" data-color-role="action-secondary" data-contact-action="zalo" :href="zaloLink" target="_blank" rel="nofollow noopener" :aria-label="`Nhắn Zalo ${entity.name}`" @click="trackContact('zalo')"><IconLine name="message" aria-hidden="true" /> Zalo</a>
+          <a v-if="entity.attributes?.phone" class="hl hl-action" data-color-role="action-secondary" data-contact-action="phone" :href="telHref(entity.attributes.phone)" :aria-label="`Gọi ${entity.name}`" @click="trackContact('phone')"><IconLine name="phone" aria-hidden="true" /> Gọi</a>
+          <NuxtLink v-if="hasCoords" class="hl hl-action" data-color-role="action-secondary" data-contact-action="map" :to="mapUrl" :aria-label="`Xem ${entity.name} trên bản đồ`" @click="trackContact('map')"><IconLine name="map" aria-hidden="true" /> Bản đồ</NuxtLink>
+          <span v-if="entity.attributes?.hours" class="hl"><IconLine name="clock" aria-hidden="true" /> {{ entity.attributes.hours }}</span>
+          <span v-if="addressText" class="hl"><IconLine name="pin" aria-hidden="true" /> {{ addressText }}</span>
         </div>
         <p class="lead">{{ entity.summary }}</p>
 
@@ -378,17 +378,17 @@
         <!-- Extra content sections from attributes -->
         <div v-if="extraContentSections.length" class="extra-content">
           <div v-for="sec in extraContentSections" :key="sec.title" class="extra-section">
-            <h2 class="section-subtitle"><span aria-hidden="true">{{ sec.icon }}</span> {{ sec.title }}</h2>
+            <h2 class="section-subtitle"><IconLine :name="sec.icon" aria-hidden="true" /> {{ sec.title }}</h2>
             <p>{{ sec.text }}</p>
           </div>
         </div>
 
         <!-- Lưu ý thực tế — Scenarios 2,3,6,9: practical tips for food/family/OCOP/delegation -->
         <div v-if="practicalTips.length" class="practical-tips reveal">
-          <h2 class="section-subtitle sediment-head">📋 {{ ss('labels.detail.practical_tips_heading', 'Lưu ý thực tế') }}</h2>
+          <h2 class="section-subtitle sediment-head"><IconLine name="clipboard-list" aria-hidden="true" /> {{ ss('labels.detail.practical_tips_heading', 'Lưu ý thực tế') }}</h2>
           <ul class="pt-list">
             <li v-for="tip in practicalTips" :key="tip.icon" class="pt-item">
-              <span class="pt-icon">{{ tip.icon }}</span>
+              <IconLine class="pt-icon" :name="tip.icon" aria-hidden="true" />
               <div class="pt-content">
                 <strong>{{ tip.label }}</strong>
                 <span>{{ tip.value }}</span>
@@ -401,7 +401,7 @@
         <!-- declutter-1 T6: best_time chỉ render 1 chỗ (callout này); đã bỏ khỏi practicalTips
              nên guard chống-trùng cũ không cần nữa. -->
         <div v-if="bestTimeText" class="best-time-callout reveal">
-          <span class="btc-icon" aria-hidden="true">🕐</span>
+          <IconLine class="btc-icon" name="clock" aria-hidden="true" />
           <div class="btc-body">
             <strong>Thời điểm lý tưởng</strong>
             <span>{{ bestTimeText }}</span>
@@ -420,10 +420,10 @@
 
         <!-- Food specialties (dish/product only) -->
         <div v-if="foodSpecialties.length" class="food-specialties reveal">
-          <h2 class="section-subtitle sediment-head">🍽️ Nên thử</h2>
+          <h2 class="section-subtitle sediment-head"><IconLine name="bowl" aria-hidden="true" /> Nên thử</h2>
           <ul class="fs-list">
             <li v-for="item in foodSpecialties" :key="item.label" class="fs-item">
-              <span class="fs-icon" aria-hidden="true">{{ item.icon }}</span>
+              <IconLine class="fs-icon" :name="item.icon" aria-hidden="true" />
               <div class="fs-content">
                 <strong>{{ item.label }}</strong>
                 <span>{{ item.value }}</span>
@@ -448,7 +448,7 @@
             <span class="ms-cell on peak ms-legend-swatch"></span> {{ ss('labels.detail.season_legend_peak', 'Rộ nhất') }}
           </div>
           <p v-if="entity.attributes?.season_note" class="season-note">{{ entity.attributes.season_note }}</p>
-          <p v-if="entity.attributes?.peak_event" class="season-note peak-event">🎉 {{ entity.attributes.peak_event }}</p>
+          <p v-if="entity.attributes?.peak_event" class="season-note peak-event"><IconLine name="calendar" aria-hidden="true" /> {{ entity.attributes.peak_event }}</p>
         </div>
 
         <!-- Nearby entities (same area, different type) -->
@@ -517,7 +517,7 @@
 
   </section>
   <section v-else-if="detailFetchResolution?.kind === 'not_found'" class="page">
-    <EmptyState icon="🔍" title="Không tìm thấy địa điểm này" message="Có thể nội dung đã được di chuyển hoặc đường dẫn chưa đúng. Bạn thử khám phá các điểm đến khác nhé.">
+    <EmptyState title="Không tìm thấy địa điểm này" message="Có thể nội dung đã được di chuyển hoặc đường dẫn chưa đúng. Bạn thử khám phá các điểm đến khác nhé.">
       <template #actions>
         <NuxtLink to="/du-lich" class="btn btn-primary">Khám phá điểm đến</NuxtLink>
         <button type="button" class="btn btn-ghost" @click="goBack">Quay lại</button>
@@ -525,7 +525,7 @@
     </EmptyState>
   </section>
   <section v-else-if="detailFetchResolution?.kind === 'hidden'" class="page">
-    <EmptyState icon="🔒" title="Nội dung chưa công khai" message="Nội dung này hiện không có trên bề mặt công khai. Bạn có thể quay lại kết quả trước đó hoặc khám phá nội dung khác.">
+    <EmptyState title="Nội dung chưa công khai" message="Nội dung này hiện không có trên bề mặt công khai. Bạn có thể quay lại kết quả trước đó hoặc khám phá nội dung khác.">
       <template #actions>
         <button type="button" class="btn btn-primary" @click="goBack">Quay lại</button>
         <NuxtLink to="/du-lich" class="btn btn-ghost">Khám phá điểm đến</NuxtLink>
@@ -694,7 +694,7 @@ async function toggleRsvp() {
     const r = await $fetch<{ going: boolean; count: number }>(`/api/events/${encodeURIComponent(id.value)}/rsvp`, { method: 'POST', headers: authHeaders() })
     rsvpGoing.value = r.going
     rsvpCount.value = r.count
-    if (r.going) _showToast('Đã đăng ký đi sự kiện này 🎉', 'success')
+    if (r.going) _showToast('Đã đăng ký đi sự kiện này', 'success')
   } catch { rsvpGoing.value = prevGoing; rsvpCount.value = prevCount; _showToast('Không thể đăng ký, thử lại', 'error') }
   finally { actionPending.value = false }
 }
@@ -1027,13 +1027,13 @@ const extraContentSections = computed(() => {
   if (!a) return []
   const sections: { icon: string; title: string; text: string }[] = []
   if (a.significance && typeof a.significance === 'string')
-    sections.push({ icon: '🏛️', title: 'Ý nghĩa', text: a.significance })
+    sections.push({ icon: 'landmark', title: 'Ý nghĩa', text: a.significance })
   if (a.atmosphere && typeof a.atmosphere === 'string')
-    sections.push({ icon: '🌿', title: 'Không gian', text: a.atmosphere })
+    sections.push({ icon: 'leaf', title: 'Không gian', text: a.atmosphere })
   if (a.famous_for && typeof a.famous_for === 'string')
-    sections.push({ icon: '⭐', title: 'Nổi tiếng với', text: a.famous_for })
+    sections.push({ icon: 'star', title: 'Nổi tiếng với', text: a.famous_for })
   if (a.travel_tips && typeof a.travel_tips === 'string')
-    sections.push({ icon: '💡', title: 'Mẹo du lịch', text: a.travel_tips })
+    sections.push({ icon: 'bulb', title: 'Mẹo du lịch', text: a.travel_tips })
   return sections
 })
 
@@ -1084,18 +1084,18 @@ const practicalTips = computed(() => {
   const a = entity.value?.attributes
   if (!a) return []
   const tips: { icon: string; label: string; value: string }[] = []
-  if (a.highlight) tips.push({ icon: '✨', label: 'Điểm nhấn', value: a.highlight })
-  if (a.booking_note) tips.push({ icon: '📝', label: 'Đặt trước', value: a.booking_note })
-  if (a.transport) tips.push({ icon: '🚗', label: 'Di chuyển', value: a.transport })
-  if (a.fee) tips.push({ icon: '🎫', label: 'Phí vào cửa', value: a.fee })
+  if (a.highlight) tips.push({ icon: 'sparkles', label: 'Điểm nhấn', value: a.highlight })
+  if (a.booking_note) tips.push({ icon: 'clipboard-list', label: 'Đặt trước', value: a.booking_note })
+  if (a.transport) tips.push({ icon: 'car', label: 'Di chuyển', value: a.transport })
+  if (a.fee) tips.push({ icon: 'tag', label: 'Phí vào cửa', value: a.fee })
   // declutter-3 T17 (A8 thu-scope D5): amenities 1 nguồn duy nhất = facts-card "Tiện ích"
   // (bảng tham chiếu) — bỏ dòng lặp trong practical-tips.
   if (a.family_friendly || a.suitable_for?.includes('family'))
-    tips.push({ icon: '👨‍👩‍👧‍👦', label: 'Gia đình', value: 'Phù hợp cho gia đình có trẻ em' })
-  if (a.parking) tips.push({ icon: '🅿️', label: 'Đậu xe', value: a.parking })
+    tips.push({ icon: 'users', label: 'Gia đình', value: 'Phù hợp cho gia đình có trẻ em' })
+  if (a.parking) tips.push({ icon: 'pin', label: 'Đậu xe', value: a.parking })
   if (Array.isArray(a.travel_tips)) {
     for (const t of a.travel_tips.slice(0, 3)) {
-      if (t) tips.push({ icon: '💡', label: 'Mẹo', value: t })
+      if (t) tips.push({ icon: 'bulb', label: 'Mẹo', value: t })
     }
   }
   return tips
@@ -1108,12 +1108,12 @@ const foodSpecialties = computed(() => {
   const t = entity.value?.type
   if (!a || (t !== 'dish' && t !== 'product' && t !== 'craft_village')) return []
   const items: { icon: string; label: string; value: string }[] = []
-  if (a.must_order) items.push({ icon: '⭐', label: 'Phải thử', value: Array.isArray(a.must_order) ? a.must_order.join(', ') : a.must_order })
-  if (a.signature_dish) items.push({ icon: '👨‍🍳', label: 'Món đặc trưng', value: a.signature_dish })
-  if (a.best_dish) items.push({ icon: '🥇', label: 'Món hay gọi nhất', value: a.best_dish })
-  if (a.specialty) items.push({ icon: '🎯', label: 'Đặc sản', value: Array.isArray(a.specialty) ? a.specialty.join(', ') : a.specialty })
-  if (a.ingredients) items.push({ icon: '🧄', label: 'Nguyên liệu', value: Array.isArray(a.ingredients) ? a.ingredients.join(', ') : a.ingredients })
-  if (a.what_to_buy) items.push({ icon: '🛍️', label: 'Nên mua', value: Array.isArray(a.what_to_buy) ? a.what_to_buy.join(', ') : a.what_to_buy })
+  if (a.must_order) items.push({ icon: 'star', label: 'Phải thử', value: Array.isArray(a.must_order) ? a.must_order.join(', ') : a.must_order })
+  if (a.signature_dish) items.push({ icon: 'bowl', label: 'Món đặc trưng', value: a.signature_dish })
+  if (a.best_dish) items.push({ icon: 'trophy', label: 'Món hay gọi nhất', value: a.best_dish })
+  if (a.specialty) items.push({ icon: 'gift', label: 'Đặc sản', value: Array.isArray(a.specialty) ? a.specialty.join(', ') : a.specialty })
+  if (a.ingredients) items.push({ icon: 'bowl', label: 'Nguyên liệu', value: Array.isArray(a.ingredients) ? a.ingredients.join(', ') : a.ingredients })
+  if (a.what_to_buy) items.push({ icon: 'gift', label: 'Nên mua', value: Array.isArray(a.what_to_buy) ? a.what_to_buy.join(', ') : a.what_to_buy })
   return items
 })
 

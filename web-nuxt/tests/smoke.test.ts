@@ -12,6 +12,8 @@ import {
   activateVisibleControl,
   classifySmokeIssue,
   closeSmokeServers,
+  buildPublicStateMatrix,
+  evaluatePublicStateEvidence,
   evaluateRuntimeSmokeIssues,
   evaluateSmokeJourneyEvidence,
   inspectManagedPortOwnership,
@@ -173,6 +175,20 @@ describe('Adaptive Nocturne public browser smoke contract', () => {
     expect(reasons).toContain('search-state-not-preserved')
     expect(reasons).toContain('console-error')
     expect(reasons).toContain('action-dock-overlap')
+  })
+
+  it('leaves action-dock collision evidence to browser smoke measurements', () => {
+    const scenario = buildPublicStateMatrix().find(item => item.route.key === 'detail' && item.state === 'ready')!
+    const reasons = evaluatePublicStateEvidence(scenario, {
+      shellVisible: true,
+      mainVisible: true,
+      contentVisible: true,
+      actions: [],
+      confirmed404: false,
+      actionDockOverlap: 12,
+    })
+
+    expect(reasons).not.toContain('action-dock-overlap')
   })
 
   it('records a recovered backend 5xx as an external limitation, not a product regression', () => {

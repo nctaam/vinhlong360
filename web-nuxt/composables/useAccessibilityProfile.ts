@@ -1,4 +1,4 @@
-import { onMounted, ref, type Ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref, type Ref } from 'vue'
 
 import {
   DEFAULT_ACCESSIBILITY_PROFILE,
@@ -14,7 +14,15 @@ export const ACCESSIBILITY_STORAGE_KEY = 'vl360-accessibility-profile'
 type AccessibilityStorage = Pick<Storage, 'getItem' | 'setItem'>
 type AccessibilityRoot = Pick<HTMLElement, 'dataset' | 'style'>
 type ColorModePreference = { preference: unknown }
-type MediaMatcher = (query: string) => Pick<MediaQueryList, 'matches'>
+type MediaChangeListener = (event: Pick<MediaQueryListEvent, 'matches'>) => void
+type MediaQuery = {
+  matches: boolean
+  addEventListener?: (type: 'change', listener: MediaChangeListener) => void
+  removeEventListener?: (type: 'change', listener: MediaChangeListener) => void
+  addListener?: (listener: MediaChangeListener) => void
+  removeListener?: (listener: MediaChangeListener) => void
+}
+type MediaMatcher = (query: string) => MediaQuery
 
 export interface AccessibilityProfileOptions {
   storage?: AccessibilityStorage | null
@@ -124,32 +132,69 @@ export function useAccessibilityProfile(options: AccessibilityProfileOptions = {
   const storage = options.storage === undefined ? browserStorage() : options.storage
   const root = options.root === undefined ? browserRoot() : options.root
   const matchMedia = options.matchMedia === undefined ? browserMatchMedia() : options.matchMedia
+  let removeMediaListeners: (() => void) | undefined
 
   function syncTheme(next: AccessibilityTheme) {
     if (options.colorMode) options.colorMode.preference = next === 'parchment' ? 'light' : 'dark'
   }
 
-  function hydrate() {
-    const selected = readAccessibilityPreferences(storage)
-    profile.value = resolveAccessibilityProfile({
-      ...selected,
-      reducedMotion: matchMedia?.('(prefers-reduced-motion: reduce)').matches === true,
-      highContrast: matchMedia?.('(prefers-contrast: more)').matches === true,
-    })
+  function applyProfile(next: AccessibilityProfile) {
+    profile.value = next
     syncTheme(profile.value.theme)
     applyAccessibilityProfile(profile.value, root)
+    return profile.value
+  }
+
+  function subscribeToMediaPreferences(reducedMotion: MediaQuery | undefined, highContrast: MediaQuery | undefined) {
+    removeMediaListeners?.()
+    if (!reducedMotion && !highContrast) return
+
+    const syncMediaPreferences: MediaChangeListener = () => {
+      applyProfile(resolveAccessibilityProfile({
+        ...profile.value,
+        reducedMotion: reducedMotion?.matches === true,
+        highContrast: highContrast?.matches === true,
+      }))
+    }
+    const cleanup = [reducedMotion, highContrast].flatMap((media) => {
+      if (!media) return []
+      if (media.addEventListener && media.removeEventListener) {
+        media.addEventListener('change', syncMediaPreferences)
+        return [() => media.removeEventListener?.('change', syncMediaPreferences)]
+      }
+      if (media.addListener && media.removeListener) {
+        media.addListener(syncMediaPreferences)
+        return [() => media.removeListener?.(syncMediaPreferences)]
+      }
+      return []
+    })
+    removeMediaListeners = () => {
+      cleanup.forEach(remove => remove())
+      removeMediaListeners = undefined
+    }
+  }
+
+  function hydrate() {
+    const selected = readAccessibilityPreferences(storage)
+    const reducedMotion = matchMedia?.('(prefers-reduced-motion: reduce)')
+    const highContrast = matchMedia?.('(prefers-contrast: more)')
+    applyProfile(resolveAccessibilityProfile({
+      ...selected,
+      reducedMotion: reducedMotion?.matches === true,
+      highContrast: highContrast?.matches === true,
+    }))
+    subscribeToMediaPreferences(reducedMotion, highContrast)
     return profile.value
   }
 
   function setProfile(values: Partial<AccessibilityProfile>) {
-    profile.value = resolveAccessibilityProfile({ ...profile.value, ...values })
+    applyProfile(resolveAccessibilityProfile({ ...profile.value, ...values }))
     persistAccessibilityPreferences(profile.value, storage)
-    syncTheme(profile.value.theme)
-    applyAccessibilityProfile(profile.value, root)
     return profile.value
   }
 
   if (options.autoHydrate !== false) onMounted(hydrate)
+  onBeforeUnmount(() => removeMediaListeners?.())
 
   return { profile, hydrate, setProfile }
 }

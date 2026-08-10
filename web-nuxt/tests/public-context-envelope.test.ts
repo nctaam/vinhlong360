@@ -1,6 +1,7 @@
 import { mountSuspended } from '@nuxt/test-utils/runtime'
-import { describe, expect, it } from 'vitest'
-import { defineComponent, h } from 'vue'
+import { describe, expect, it, vi } from 'vitest'
+import { defineComponent, h, nextTick } from 'vue'
+import { useAccessibilityProfile } from '~/composables/useAccessibilityProfile'
 import { usePublicContextEnvelope } from '~/composables/usePublicContextEnvelope'
 import type { RegionSlug } from '~/composables/useRegionPref'
 import type { ContextEnvelope } from '~/types/publicExperience'
@@ -29,6 +30,20 @@ async function envelopeFor(region: RegionSlug | null, preferences: PreferenceSna
   return envelope
 }
 
+async function mountedEnvelope() {
+  let context: ReturnType<typeof usePublicContextEnvelope> | undefined
+  let accessibility: ReturnType<typeof useAccessibilityProfile> | undefined
+  const Harness = defineComponent({
+    setup() {
+      context = usePublicContextEnvelope()
+      accessibility = useAccessibilityProfile({ autoHydrate: false })
+      return () => h('div')
+    },
+  })
+  const wrapper = await mountSuspended(Harness)
+  return { context: context!, accessibility: accessibility!, wrapper }
+}
+
 describe('public context envelope', () => {
   it('defaults location to unavailable and does not expose coordinates', () => {
     const { envelope } = usePublicContextEnvelope()
@@ -39,6 +54,40 @@ describe('public context envelope', () => {
     const { envelope } = usePublicContextEnvelope()
     expect(envelope.value.time.localDate).toMatch(/^\d{4}-\d{2}-\d{2}$/)
     expect(envelope.value.time.localTime).toMatch(/^\d{2}:\d{2}$/)
+  })
+  it('refreshes time-derived context after the declared TTL', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-08-10T00:00:00.000Z'))
+    try {
+      const { context, wrapper } = await mountedEnvelope()
+
+      expect(context.envelope.value.time.localTime).toBe('07:00')
+      vi.advanceTimersByTime(context.envelope.value.ttlSeconds * 1000)
+      await nextTick()
+      expect(context.envelope.value.time.localTime).toBe('07:05')
+
+      wrapper.unmount()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+  it('projects shared accessibility preferences and live connectivity changes', async () => {
+    const { context, accessibility, wrapper } = await mountedEnvelope()
+    try {
+      accessibility.setProfile({ reducedMotion: true, highContrast: true, textScale: 1.5 })
+      await nextTick()
+      expect(context.envelope.value.accessibility).toEqual({ reducedMotion: true, highContrast: true, textScale: 1.5 })
+
+      window.dispatchEvent(new Event('offline'))
+      await nextTick()
+      expect(context.envelope.value.network).toBe('offline')
+
+      window.dispatchEvent(new Event('online'))
+      await nextTick()
+      expect(context.envelope.value.network).toBe('online')
+    } finally {
+      wrapper.unmount()
+    }
   })
   it.each([
     {

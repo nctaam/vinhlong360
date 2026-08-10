@@ -43,7 +43,6 @@ const codeLabels: Record<string, string> = {
   'stale-stop-facts': 'Dữ kiện có thể đã cũ',
   'missing-coordinates': 'Thiếu tọa độ',
   'offline-draft': 'Bản nháp ngoại tuyến',
-  'revision-conflict': 'Xung đột revision',
   'route-unavailable': 'Tuyến tạm thời không khả dụng',
 }
 

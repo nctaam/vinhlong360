@@ -16,12 +16,7 @@ const rating = computed(() => {
   return r > 0 ? r : null
 })
 const reviewCount = computed(() => parseInt(props.entity.attributes?.review_count) || 0)
-const stars = computed(() => {
-  if (!rating.value) return ''
-  const full = Math.floor(rating.value)
-  const half = rating.value - full >= 0.5 ? '½' : ''
-  return '★'.repeat(full) + half
-})
+const starCount = computed(() => rating.value ? Math.round(rating.value) : 0)
 
 const hasContact = computed(() => !!phone.value || !!zalo.value)
 const mapUrl = computed(() => `/ban-do?highlight=${encodeURIComponent(props.entity.id)}`)
@@ -54,7 +49,9 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
 
       <!-- Rating -->
       <div v-if="rating" class="cw-rating">
-        <span class="cw-stars" aria-hidden="true">{{ stars }}</span>
+        <span class="cw-stars" aria-hidden="true">
+          <IconLine v-for="star in starCount" :key="star" name="star" />
+        </span>
         <span class="cw-score">{{ rating.toFixed(1) }}</span>
         <span class="cw-count">({{ reviewCount }} đánh giá)</span>
       </div>
@@ -63,21 +60,21 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
       <button v-if="placeName" type="button" :class="['cw-row cw-copyable', { copied: copiedField === 'place' }]" :aria-label="`Sao chép địa chỉ: ${placeName}`" @click="copyText(placeName, 'place')">
         <IconLine name="pin" class="cw-icon" />
         <span class="cw-text">{{ placeName }}</span>
-        <span class="cw-check" aria-hidden="true">✓</span>
+        <span class="cw-check" aria-hidden="true"><IconLine name="check" /></span>
       </button>
 
       <!-- Hours -->
       <button v-if="hours" type="button" :class="['cw-row cw-copyable', { copied: copiedField === 'hours' }]" :aria-label="`Sao chép giờ mở cửa: ${hours}`" @click="copyText(hours, 'hours')">
         <IconLine name="clock" class="cw-icon" />
         <span class="cw-text">{{ hours }}</span>
-        <span class="cw-check" aria-hidden="true">✓</span>
+        <span class="cw-check" aria-hidden="true"><IconLine name="check" /></span>
       </button>
 
       <div v-if="hasContact" class="cw-divider" role="presentation"></div>
 
       <!-- CTA buttons -->
       <div class="cw-ctas">
-        <a v-if="zalo" :href="`https://zalo.me/${zalo}`" target="_blank" rel="noopener" class="cw-btn cw-btn-primary" data-color-role="action-primary" :aria-label="`Nhắn Zalo cho ${entity.name}`">
+        <a v-if="zalo" :href="`https://zalo.me/${zalo}`" target="_blank" rel="noopener" class="cw-btn cw-btn-primary" data-color-role="action-primary" data-contact-action="zalo" :aria-label="`Nhắn Zalo cho ${entity.name}`" @click="trackContact('zalo')">
           <IconLine name="message" class="cw-icon" /> Nhắn Zalo
         </a>
         <a v-if="phone" :href="`tel:${phone}`" class="cw-btn cw-btn-secondary" data-color-role="action-secondary" data-contact-action="phone" :aria-label="`Gọi điện cho ${entity.name}`" @click="trackContact('phone')">
@@ -132,7 +129,7 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
   align-items: baseline;
   gap: var(--space-1h);
 }
-.cw-stars { color: var(--accent); font-size: var(--text-lg); letter-spacing: -1px; }
+.cw-stars { display: inline-flex; gap: 1px; color: var(--accent); font-size: var(--text-lg); }
 .cw-score { font-size: var(--text-lg); font-weight: var(--weight-bold, 700); color: var(--ink); font-variant-numeric: tabular-nums; }
 .cw-count { font-size: var(--text-sm); color: var(--muted); font-variant-numeric: tabular-nums; }
 

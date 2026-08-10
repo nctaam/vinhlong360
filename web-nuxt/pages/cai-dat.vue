@@ -29,7 +29,7 @@
         :tabindex="activeTab === t.key ? 0 : -1"
         @click="setTab(t.key)"
       >
-        <span class="settings-tab-icon" aria-hidden="true">{{ t.icon }}</span>
+        <IconLine class="settings-tab-icon" :name="t.icon" aria-hidden="true" />
         {{ t.label }}
       </button>
     </nav>
@@ -42,7 +42,7 @@
           <button type="button" class="sf-avatar-preview" aria-label="Thay đổi ảnh đại diện" @click="($refs.avatarInput as HTMLInputElement)?.click()">
             <img v-if="(avatarPreview || user?.avatar_url) && !avatarBroken" :src="avatarPreview || user?.avatar_url!" alt="Avatar" class="sf-avatar-img" width="96" height="96" loading="lazy" decoding="async" @error="avatarBroken = true" />
             <AvatarPlaceholder v-if="avatarBroken || (!avatarPreview && !user?.avatar_url)" :initial="user?.display_name?.[0]?.toUpperCase()" />
-            <span class="sf-avatar-overlay">&#128247;</span>
+            <IconLine class="sf-avatar-overlay" name="camera" aria-hidden="true" />
           </button>
           <div class="sf-avatar-info">
             <span class="sf-label">Ảnh đại diện</span>
@@ -60,7 +60,7 @@
             <div v-else class="sf-cover-placeholder">
               <span>Thêm ảnh bìa</span>
             </div>
-            <span class="sf-avatar-overlay">&#128247;</span>
+            <IconLine class="sf-avatar-overlay" name="camera" aria-hidden="true" />
           </button>
           <div class="sf-avatar-info">
             <span class="sf-label">Ảnh bìa</span>
@@ -201,7 +201,7 @@
           </div>
         </template>
         <template v-else-if="twoFA.enabled">
-          <p class="sf-hint">✅ Đã bật. Còn {{ twoFA.recovery_remaining }} mã khôi phục.</p>
+          <p class="sf-hint"><IconLine name="check" aria-hidden="true" /> Đã bật. Còn {{ twoFA.recovery_remaining }} mã khôi phục.</p>
           <label class="sf-field">
             <span class="sf-label">Nhập mã để tắt 2FA</span>
             <input v-model="disableCode" type="text" inputmode="numeric" class="sf-input" placeholder="Mã 6 số hoặc mã khôi phục" />
@@ -266,7 +266,7 @@
               <span class="session-ua">{{ h.method === 'otp' ? 'OTP' : 'Mật khẩu' }} — {{ h.success ? 'Thành công' : 'Thất bại' }}</span>
               <span class="sf-hint">{{ h.ip }} &middot; {{ timeAgo(h.created_at) }}</span>
             </div>
-            <span :class="h.success ? 'login-ok' : 'login-bad'">{{ h.success ? '✓' : '✗' }}</span>
+            <IconLine :class="h.success ? 'login-ok' : 'login-bad'" :name="h.success ? 'check' : 'x'" aria-hidden="true" />
           </div>
         </div>
         <p v-else class="sf-hint">Chưa có lịch sử.</p>
@@ -281,7 +281,7 @@
       <div v-else class="notif-prefs">
         <label v-for="np in NOTIF_TYPES" :key="np.key" class="notif-pref-item">
           <div class="notif-pref-info">
-            <span class="notif-pref-icon" aria-hidden="true">{{ np.icon }}</span>
+            <IconLine class="notif-pref-icon" :name="np.icon" aria-hidden="true" />
             <div>
               <strong>{{ np.label }}</strong>
               <span class="sf-hint">{{ np.desc }}</span>
@@ -299,10 +299,10 @@
         <span class="sf-label">Chế độ màu</span>
         <div class="theme-options">
           <button type="button" :class="['theme-btn', { active: colorMode === 'parchment' }]" @click="setColorMode('parchment')">
-            <span class="theme-icon">☀️</span> Parchment sáng
+            <IconLine class="theme-icon" name="sun" aria-hidden="true" /> Parchment sáng
           </button>
           <button type="button" :class="['theme-btn', { active: colorMode === 'nocturne' }]" @click="setColorMode('nocturne')">
-            <span class="theme-icon">🌙</span> Nocturne mặc định
+            <IconLine class="theme-icon" name="moon" aria-hidden="true" /> Nocturne mặc định
           </button>
         </div>
         <span class="sf-hint">Giao diện chỉ đổi khi bạn chọn; hệ thống không tự đổi theo thiết bị hoặc thời gian.</span>
@@ -331,7 +331,7 @@
         </div>
         <label class="notif-pref-item">
           <div class="notif-pref-info">
-            <span class="notif-pref-icon">📊</span>
+            <IconLine class="notif-pref-icon" name="chart" aria-hidden="true" />
             <div>
               <strong>Hiển thị hoạt động</strong>
               <span class="sf-hint">Cho người khác xem bạn đã thích, bình luận gì gần đây.</span>
@@ -341,7 +341,7 @@
         </label>
         <label class="notif-pref-item">
           <div class="notif-pref-info">
-            <span class="notif-pref-icon">💾</span>
+            <IconLine class="notif-pref-icon" name="bookmark" aria-hidden="true" />
             <div>
               <strong>Hiển thị danh sách đã lưu</strong>
               <span class="sf-hint">Cho người khác xem địa điểm bạn đã lưu.</span>
@@ -590,7 +590,7 @@
         <h3>Xuất dữ liệu</h3>
         <p class="sf-hint">Tải toàn bộ dữ liệu tài khoản (hồ sơ, bài viết, bình luận, lưu, theo dõi) dưới dạng JSON.</p>
         <button type="button" class="btn btn-secondary" :disabled="exportLoading" @click="exportData">
-          {{ exportLoading ? 'Đang tạo...' : '📥 Tải dữ liệu' }}
+          {{ exportLoading ? 'Đang tạo...' : 'Tải dữ liệu' }}
         </button>
       </div>
 
@@ -666,17 +666,17 @@ useHead({
 })
 
 const TABS = [
-  { key: 'ho-so', label: 'Hồ sơ', icon: '\u{1F464}' },
-  { key: 'bao-mat', label: 'Bảo mật', icon: '\u{1F512}' },
-  { key: 'thong-bao', label: 'Thông báo', icon: '🔔' },
-  { key: 'giao-dien', label: 'Giao diện', icon: '🎨' },
-  { key: 'rieng-tu', label: 'Riêng tư', icon: '🔒' },
-  { key: 'khu-vuc-de-xuat', label: 'Khu vực & đề xuất', icon: '🧭' },
-  { key: 'chan', label: 'Chặn', icon: '\u{1F6AB}' },
-  { key: 'tat-tieng', label: 'Tắt tiếng', icon: '\u{1F507}' },
-  { key: 'bai-da-an', label: 'Bài đã ẩn', icon: '\u{1F648}' },
-  { key: 'du-lieu', label: 'Dữ liệu', icon: '📋' },
-  { key: 'nguy-hiem', label: 'Nguy hiểm', icon: '⚠️' },
+  { key: 'ho-so', label: 'Hồ sơ', icon: 'user' },
+  { key: 'bao-mat', label: 'Bảo mật', icon: 'shield' },
+  { key: 'thong-bao', label: 'Thông báo', icon: 'bell' },
+  { key: 'giao-dien', label: 'Giao diện', icon: 'settings' },
+  { key: 'rieng-tu', label: 'Riêng tư', icon: 'shield-check' },
+  { key: 'khu-vuc-de-xuat', label: 'Khu vực & đề xuất', icon: 'compass' },
+  { key: 'chan', label: 'Chặn', icon: 'eye-off' },
+  { key: 'tat-tieng', label: 'Tắt tiếng', icon: 'bell' },
+  { key: 'bai-da-an', label: 'Bài đã ẩn', icon: 'eye-off' },
+  { key: 'du-lieu', label: 'Dữ liệu', icon: 'clipboard-list' },
+  { key: 'nguy-hiem', label: 'Nguy hiểm', icon: 'alert-triangle' },
 ] as const
 type TabKey = typeof TABS[number]['key']
 
@@ -1348,11 +1348,11 @@ async function unhideHiddenPost(postId: string) {
 }
 
 const NOTIF_TYPES = [
-  { key: 'like', pref: 'pref_like', icon: '❤️', label: 'Lượt thích', desc: 'Khi ai đó thích bài viết của bạn' },
-  { key: 'comment', pref: 'pref_comment', icon: '💬', label: 'Bình luận', desc: 'Khi ai đó bình luận bài viết của bạn' },
-  { key: 'follow', pref: 'pref_follow', icon: '👤', label: 'Theo dõi', desc: 'Khi ai đó theo dõi bạn' },
-  { key: 'mention', pref: 'pref_mention', icon: '📣', label: 'Nhắc đến', desc: 'Khi ai đó nhắc đến bạn' },
-  { key: 'system', pref: 'pref_system', icon: '🔔', label: 'Hệ thống', desc: 'Thông báo từ hệ thống và quản trị' },
+  { key: 'like', pref: 'pref_like', icon: 'heart', label: 'Lượt thích', desc: 'Khi ai đó thích bài viết của bạn' },
+  { key: 'comment', pref: 'pref_comment', icon: 'message', label: 'Bình luận', desc: 'Khi ai đó bình luận bài viết của bạn' },
+  { key: 'follow', pref: 'pref_follow', icon: 'user', label: 'Theo dõi', desc: 'Khi ai đó theo dõi bạn' },
+  { key: 'mention', pref: 'pref_mention', icon: 'megaphone', label: 'Nhắc đến', desc: 'Khi ai đó nhắc đến bạn' },
+  { key: 'system', pref: 'pref_system', icon: 'bell', label: 'Hệ thống', desc: 'Thông báo từ hệ thống và quản trị' },
 ] as const
 
 const notifPrefs = ref<Record<string, boolean>>({ pref_like: true, pref_comment: true, pref_follow: true, pref_mention: true, pref_system: true })

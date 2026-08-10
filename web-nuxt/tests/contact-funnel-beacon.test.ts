@@ -20,6 +20,7 @@ import { resetContactBeaconDedupe, trackContactView } from '../composables/useCo
 
 const detailSource = readFileSync(resolve(process.cwd(), 'pages/dia-diem/[id].vue'), 'utf8')
 const directorySource = readFileSync(resolve(process.cwd(), 'pages/danh-ba.vue'), 'utf8')
+const widgetSource = readFileSync(resolve(process.cwd(), 'components/ContactWidget.vue'), 'utf8')
 
 const wrappers: Array<{ unmount: () => void }> = []
 let fetchMock: ReturnType<typeof vi.fn>
@@ -85,6 +86,22 @@ describe('(a) bấm CTA liên hệ thì gửi beacon', () => {
     const mapOnly = await mountWidget({}, 'chua-phu-ly')
     await mapOnly.get('[data-contact-action="map"]').trigger('click')
     expect(fetchMock.mock.calls.at(-1)![0]).toBe('/api/entities/chua-phu-ly/view-contact?action=map')
+  })
+
+  it('sends a matching beacon for every rendered contact link', async () => {
+    const wrapper = await mountWidget({
+      phone: '0270 3822 100',
+      zalo: '0901234567',
+      website: 'https://vd.example/x',
+    })
+    const contactLinks = wrapper.findAll('[href^="tel:"], [href^="https://zalo.me/"], [data-contact-action="website"]')
+
+    for (const link of contactLinks) {
+      const action = link.attributes('data-contact-action')
+      expect(action).toBeTruthy()
+      await link.trigger('click')
+      expect(fetchMock.mock.calls.at(-1)![0]).toBe(`/api/entities/nha-vuon-ven-song/view-contact?action=${action}`)
+    }
   })
 
   it('escape id lạ và chỉ gửi entity id + kênh — KHÔNG dữ liệu cá nhân', async () => {
@@ -182,24 +199,43 @@ describe('(c) bấm liên tiếp không gửi trùng', () => {
 })
 
 describe('hợp đồng nguồn — CTA của trang chi tiết & danh bạ đã nối', () => {
-  it('trang chi tiết nối beacon cho phone / map / website', () => {
-    expect(detailSource).toContain("import { trackContactView, type ContactAction } from '~/composables/useContactBeacon'")
-    expect(detailSource.match(/data-contact-action="phone"[^>]*@click="trackContact\('phone'\)"/g)?.length).toBeGreaterThanOrEqual(1)
-    expect(detailSource).toMatch(/:data-contact-action="detailPrimaryAction\.id === 'directions' \? 'map' : undefined"[\s\S]{0,240}@click="detailPrimaryAction\.id === 'directions' && trackContact\('map'\)"/)
-    expect(detailSource).toMatch(/data-contact-action="map"[^>]*@click="trackContact\('map'\)"/)
-    expect(detailSource.match(/data-contact-action="website"[^>]*@click="trackContact\('website'\)"/g)?.length).toBeGreaterThanOrEqual(1)
+  it('uses line icons instead of structural emoji in the contact widget', () => {
+    expect(widgetSource).toContain('name="star"')
+    expect(widgetSource).toContain('name="check"')
+    expect(widgetSource.match(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu) ?? []).toEqual([])
   })
 
-  it('trang danh bạ nối beacon cho số điện thoại cơ quan', () => {
+  it('keeps every rendered detail contact action paired with its telemetry handler', () => {
+    expect(detailSource).toContain("import { trackContactView, type ContactAction } from '~/composables/useContactBeacon'")
+    const contactTags = detailSource.match(/<(?:a|NuxtLink)\b[^>]*(?::)?data-contact-action[^>]*>/g) || []
+
+    expect(contactTags).not.toEqual([])
+    for (const tag of contactTags) {
+      const action = /\bdata-contact-action="(phone|zalo|website|map)"/.exec(tag)?.[1]
+      if (action) {
+        expect(tag).toContain(`@click="trackContact('${action}')"`)
+        continue
+      }
+      expect(tag).toContain("@click=\"detailPrimaryAction.id === 'directions' && trackContact('map')\"")
+    }
+  })
+
+  it('keeps every rendered directory contact action paired with its telemetry handler', () => {
     expect(directorySource).toContain("import { trackContactView } from '~/composables/useContactBeacon'")
-    expect(directorySource).toMatch(/href="telHref\(attr\(f, 'phone'\)\)"[^>]*@click="trackContactView\(f\.id, 'phone'\)"/)
+    const contactTags = directorySource.match(/<(?:a|NuxtLink)\b[^>]*(?::)?data-contact-action[^>]*>/g) || []
+
+    expect(contactTags).not.toEqual([])
+    for (const tag of contactTags) {
+      const action = /\bdata-contact-action="(phone|zalo|website|map)"/.exec(tag)?.[1]
+      expect(action).toBeTruthy()
+      expect(tag).toContain(`@click="trackContactView(f.id, '${action}')"`)
+    }
   })
 
   it('nhãn CTA giữ luật §1.4 — không có chữ giao dịch', () => {
     // Đối chiếu agent/moderation.py::_TRANSACTIONAL_CTA — copy của mình không được
     // vi phạm chính luật mình áp cho UGC.
     const banned = /(đặt\s*(ngay|tour|phòng|vé|hàng)|mua\s*ngay|thanh\s*toán|giỏ\s*hàng|checkout|add\s*to\s*cart|book\s*now|buy\s*now|đặt\s*cọc|chuyển\s*khoản|pay\s*now|order\s*now|đặt\s*bàn|giữ\s*chỗ|đặt\s*lịch)/i
-    const widgetSource = readFileSync(resolve(process.cwd(), 'components/ContactWidget.vue'), 'utf8')
     for (const [name, source] of [['ContactWidget', widgetSource], ['dia-diem/[id]', detailSource], ['danh-ba', directorySource]] as const) {
       const labels = source.match(/data-contact-action="[^"]+"[\s\S]{0,400}?<\/(?:a|NuxtLink)>/g) || []
       expect(labels.length, `${name} có CTA đã nối`).toBeGreaterThan(0)

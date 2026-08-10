@@ -2,7 +2,7 @@
   <section v-if="hasContent" class="kbyg reveal">
     <div class="sediment-head kbyg-head">
       <h2 class="kbyg-title">
-        <span class="emoji-chip" aria-hidden="true">🎒</span>
+        <IconLine class="icon-chip" name="briefcase" aria-hidden="true" />
         Biết trước khi đi
       </h2>
       <div v-if="hasTimeSensitiveFacts" class="kbyg-evidence" data-kbyg-evidence>
@@ -14,7 +14,7 @@
     <!-- Amenity badges -->
     <div v-if="amenities.length" class="kbyg-badges">
       <span v-for="b in amenities" :key="b.key" class="kbyg-badge" :title="b.label">
-        <span class="kbyg-badge-icon emoji-chip" aria-hidden="true">{{ b.icon }}</span>
+        <IconLine class="kbyg-badge-icon" :name="b.icon" aria-hidden="true" />
         <span class="kbyg-badge-text">{{ b.label }}</span>
       </span>
     </div>
@@ -22,15 +22,15 @@
     <!-- Golden hours -->
     <dl v-if="hasTimeSensitiveFacts" class="kbyg-golden" data-kbyg-facts>
       <div v-if="goldenHours" class="kbyg-golden-item">
-        <dt><span class="kbyg-golden-icon emoji-chip" aria-hidden="true">⏰</span><span>Giờ vàng</span></dt>
+        <dt><IconLine class="kbyg-golden-icon" name="clock" aria-hidden="true" /><span>Giờ vàng</span></dt>
         <dd>{{ goldenHours }}</dd>
       </div>
       <div v-if="peakDays" class="kbyg-golden-item">
-        <dt><span class="kbyg-golden-icon emoji-chip" aria-hidden="true">📅</span><span>Ngày đông</span></dt>
+        <dt><IconLine class="kbyg-golden-icon" name="calendar" aria-hidden="true" /><span>Ngày đông</span></dt>
         <dd>{{ peakDays }}</dd>
       </div>
       <div v-if="crowdLevel" class="kbyg-golden-item">
-        <dt><span class="kbyg-golden-icon emoji-chip" aria-hidden="true">👥</span><span>Mức đông</span></dt>
+        <dt><IconLine class="kbyg-golden-icon" name="users" aria-hidden="true" /><span>Mức đông</span></dt>
         <dd>{{ crowdLevel }}</dd>
       </div>
     </dl>
@@ -38,17 +38,17 @@
     <!-- Tips -->
     <div v-if="tips.length" class="kbyg-tips">
       <div v-for="(tip, i) in tips" :key="i" class="kbyg-tip">
-        <span class="kbyg-tip-icon emoji-chip" aria-hidden="true">💡</span>
+        <IconLine class="kbyg-tip-icon" name="bulb" aria-hidden="true" />
         <span>{{ tip }}</span>
       </div>
     </div>
 
     <!-- Checklist -->
     <div v-if="checklist.length" class="kbyg-checklist">
-      <h3 class="kbyg-checklist-title"><span class="emoji-chip" aria-hidden="true">🧳</span> Nên chuẩn bị</h3>
+      <h3 class="kbyg-checklist-title"><IconLine class="icon-chip" name="clipboard-list" aria-hidden="true" /> Nên chuẩn bị</h3>
       <ul class="kbyg-check-list">
         <li v-for="(item, i) in checklist" :key="i" class="kbyg-check-item">
-          <span class="kbyg-check-box" aria-hidden="true">☐</span>
+          <IconLine class="kbyg-check-box" name="check" aria-hidden="true" />
           <span>{{ item }}</span>
         </li>
       </ul>
@@ -72,16 +72,16 @@ const props = withDefaults(defineProps<{
 })
 
 const AMENITY_MAP: Record<string, { icon: string; label: string }> = {
-  wifi: { icon: '📶', label: 'Wi-Fi' },
-  wheelchair: { icon: '♿', label: 'Xe lăn' },
-  cash_only: { icon: '💵', label: 'Chỉ tiền mặt' },
-  pet_friendly: { icon: '🐕', label: 'Thú cưng OK' },
-  air_conditioned: { icon: '❄️', label: 'Máy lạnh' },
-  kid_friendly: { icon: '👶', label: 'Trẻ em OK' },
-  free_entry: { icon: '🆓', label: 'Miễn phí' },
-  guided_tour: { icon: '🎙️', label: 'Có hướng dẫn' },
-  restroom: { icon: '🚻', label: 'Nhà vệ sinh' },
-  photography: { icon: '📸', label: 'Chụp ảnh OK' },
+  wifi: { icon: 'wind', label: 'Wi-Fi' },
+  wheelchair: { icon: 'users', label: 'Xe lăn' },
+  cash_only: { icon: 'tag', label: 'Chỉ tiền mặt' },
+  pet_friendly: { icon: 'heart', label: 'Thú cưng OK' },
+  air_conditioned: { icon: 'wind', label: 'Máy lạnh' },
+  kid_friendly: { icon: 'users', label: 'Trẻ em OK' },
+  free_entry: { icon: 'check', label: 'Miễn phí' },
+  guided_tour: { icon: 'message', label: 'Có hướng dẫn' },
+  restroom: { icon: 'building', label: 'Nhà vệ sinh' },
+  photography: { icon: 'camera', label: 'Chụp ảnh OK' },
 }
 
 const TYPE_CHECKLIST: Record<string, string[]> = {
@@ -170,9 +170,8 @@ const hasContent = computed(() => amenities.value.length > 0 || goldenHours.valu
   color: var(--ink);
 }
 
-/* Emoji-in-chip idiom (replicated locally per-component; see PostCard.vue
-   for the shared source pattern) — never a bare emoji beside serif text. */
-.emoji-chip {
+/* Compact line-icon treatment keeps labels scannable without glyph artwork. */
+.icon-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;

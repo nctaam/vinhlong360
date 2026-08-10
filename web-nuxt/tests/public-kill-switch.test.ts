@@ -7,7 +7,7 @@ import { PUBLIC_CAPABILITY_FLAGS, featureFlagDefault } from '../utils/featureFla
 const settings = vi.hoisted(() => ({
   status: 'success' as 'success' | 'error',
   present: true,
-  flags: {} as Record<string, unknown>,
+  flags: {} as unknown,
 }))
 
 mockNuxtImport('useSiteSettings', () => () => ({
@@ -66,26 +66,23 @@ describe('public feature kill switches', () => {
     expect(feature.enabled('ai_tips')).toBe(false)
   })
 
-  it('fails closed with the production fallback pattern for missing or failed settings', () => {
-    settings.present = false
-    let feature = useFeature()
-    expect(feature.capabilityMode('personalization')).toBe('deterministic')
-    expect(feature.enabled('ai_recommendations')).toBe(false)
+  it.each([
+    ['missing settings', 'success', false, {}],
+    ['failed settings request', 'error', true, { ai_recommendations: true }],
+    ['malformed settings flags', 'success', true, 'not-a-feature-flag-object'],
+  ] as const)('keeps legacy defaults but fails every public capability closed for %s', (_name, status, present, flags) => {
+    settings.status = status
+    settings.present = present
+    settings.flags = flags
 
-    settings.present = true
-    settings.status = 'error'
-    settings.flags = { ai_recommendations: true }
-    feature = useFeature()
-    expect(feature.enabled('ai_recommendations')).toBe(false)
+    const feature = useFeature()
 
-    settings.status = 'success'
-    settings.flags = {
-      [PUBLIC_CAPABILITY_FLAGS.personalization]: 'yes',
-      ai_recommendations: 'yes',
-    }
-    feature = useFeature()
-    expect(feature.capabilityMode('personalization')).toBe('deterministic')
-    expect(feature.enabled('ai_recommendations')).toBe(false)
+    expect(feature.enabled('chat_widget')).toBe(true)
+    expect(feature.enabled('reviews')).toBe(true)
     expect(feature.enabled('unknown-public-enhancement')).toBe(false)
+    for (const capability of Object.keys(PUBLIC_CAPABILITY_FLAGS) as Array<keyof typeof PUBLIC_CAPABILITY_FLAGS>) {
+      expect(feature.enabled(PUBLIC_CAPABILITY_FLAGS[capability])).toBe(false)
+      expect(feature.capabilityMode(capability)).toBe('deterministic')
+    }
   })
 })

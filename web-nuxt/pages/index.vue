@@ -420,7 +420,7 @@ const spotlight = computed<any>(() => {
   })
 })
 const spotId = computed(() => spotlight.value?.id)
-const spotMeta = computed(() => spotlight.value ? (TYPE_META[spotlight.value.type] || { emoji: '📍', label: spotlight.value.type, cat: 'place' }) : null)
+const spotMeta = computed(() => spotlight.value ? (TYPE_META[spotlight.value.type] || { icon: 'pin', label: spotlight.value.type, cat: 'place' }) : null)
 // Real AI-photo backdrop keyed off the spotlight's category — robust to spotlight
 // rotation (no per-entity generation). Replaces the flat gradient + centered leaf icon.
 const SPOT_CAT_PHOTO: Record<string, string> = {
@@ -463,7 +463,7 @@ const spotRegion = computed(() => {
 })
 
 const heroFeature = computed<any>(() => experiences.value.find((e: any) => e.id !== spotId.value) || spotlight.value || null)
-const hfMeta = computed(() => heroFeature.value ? (TYPE_META[heroFeature.value.type] || { emoji: '📍', label: heroFeature.value.type, cat: 'place' }) : null)
+const hfMeta = computed(() => heroFeature.value ? (TYPE_META[heroFeature.value.type] || { icon: 'pin', label: heroFeature.value.type, cat: 'place' }) : null)
 const heroFeatureDescriptor = computed<ImageDescriptor>(() => {
   const descriptor = heroFeature.value ? describeEntityImages(heroFeature.value)[0] : null
   return descriptor || describeEntityPlaceholder(heroFeature.value || { name: 'Gợi ý nổi bật' })
@@ -641,8 +641,6 @@ const eventListSchema = computed(() => {
 useHead({
   link: [
     { rel: 'canonical', href: canonicalUrl('/') },
-    { rel: 'preload', as: 'image', href: '/img/hero-mobile.webp', fetchpriority: 'high', media: '(max-width: 640px)', imagesrcset: '/img/hero-mobile.webp', imagesizes: '100vw' },
-    { rel: 'preload', as: 'image', href: '/img/hero.webp', fetchpriority: 'high', media: '(min-width: 641px)', imagesrcset: '/img/hero.webp', imagesizes: '100vw' },
   ],
   script: [
     {

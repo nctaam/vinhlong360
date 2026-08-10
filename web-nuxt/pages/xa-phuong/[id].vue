@@ -1,6 +1,6 @@
 <template>
   <section v-if="wardFetchResolution?.kind === 'not_found'" class="page">
-    <EmptyState icon="🔍" title="Không tìm thấy xã/phường" message="Có thể đơn vị hành chính đã được sắp xếp lại hoặc đường dẫn chưa đúng.">
+    <EmptyState title="Không tìm thấy xã/phường" message="Có thể đơn vị hành chính đã được sắp xếp lại hoặc đường dẫn chưa đúng.">
       <template #actions>
         <NuxtLink to="/danh-ba" class="btn btn-primary">Danh bạ hành chính</NuxtLink>
         <button type="button" class="btn btn-ghost" @click="goBack">Quay lại</button>
@@ -9,7 +9,7 @@
   </section>
 
   <section v-else-if="wardFetchResolution?.kind === 'hidden'" class="page">
-    <EmptyState icon="🔒" title="Nội dung chưa công khai" message="Đơn vị này hiện không có trên bề mặt công khai.">
+    <EmptyState title="Nội dung chưa công khai" message="Đơn vị này hiện không có trên bề mặt công khai.">
       <template #actions>
         <button type="button" class="btn btn-primary" @click="goBack">Quay lại</button>
         <NuxtLink to="/danh-ba" class="btn btn-ghost">Danh bạ hành chính</NuxtLink>
@@ -49,7 +49,7 @@
         <span class="wp-level">{{ data.place.level === 'phuong' ? 'Phường' : 'Xã' }}</span>
         <h1>{{ data.place.name }}</h1>
         <p class="wp-region">
-          <span class="wp-region-emoji">{{ areaMeta.emoji }}</span>
+          <IconLine class="wp-region-icon" :name="areaMeta.icon" aria-hidden="true" />
           <NuxtLink :to="`/khu-vuc/${data.place.area}`">{{ areaMeta.name }}</NuxtLink>
         </p>
       </div>
@@ -119,18 +119,18 @@
 
           <div v-if="attrs.police_phone" class="wp-contact">
             <div class="wp-contact-item wp-contact-main">
-              <span class="wp-contact-label">👮 Công an {{ data.place.name }}</span>
+              <span class="wp-contact-label"><IconLine name="user" aria-hidden="true" /> Công an {{ data.place.name }}</span>
               <a :href="telHref(attrs.police_phone)" class="wp-phone" :aria-label="`Gọi công an ${data.place.name}`">{{ attrs.police_phone }}</a>
             </div>
           </div>
 
-          <h3 v-if="data.facilities?.length">🏛️ Danh bạ hành chính</h3>
+          <h3 v-if="data.facilities?.length"><IconLine name="landmark" aria-hidden="true" /> Danh bạ hành chính</h3>
           <ul v-if="data.facilities?.length" class="wp-fac-list">
             <li v-for="f in data.facilities" :key="f.id" class="wp-fac">
-              <span class="wp-fac-kind"><span class="wp-fac-emoji" aria-hidden="true">{{ kindMeta(f).emoji }}</span> {{ kindMeta(f).label }}</span>
+              <span class="wp-fac-kind"><IconLine class="wp-fac-icon" :name="kindMeta(f).icon" aria-hidden="true" /> {{ kindMeta(f).label }}</span>
               <strong>{{ f.name }}</strong>
-              <div v-if="attr(f,'address')" class="wp-fac-row">📍 {{ attr(f,'address') }}</div>
-              <div v-if="attr(f,'phone')" class="wp-fac-row">📞 <a :href="telHref(attr(f,'phone'))" :aria-label="`Gọi ${f.name}`">{{ attr(f,'phone') }}</a></div>
+              <div v-if="attr(f,'address')" class="wp-fac-row"><IconLine name="pin" aria-hidden="true" /> {{ attr(f,'address') }}</div>
+              <div v-if="attr(f,'phone')" class="wp-fac-row"><IconLine name="phone" aria-hidden="true" /> <a :href="telHref(attr(f,'phone'))" :aria-label="`Gọi ${f.name}`">{{ attr(f,'phone') }}</a></div>
             </li>
           </ul>
         </section>
@@ -141,14 +141,14 @@
 
         <ClientOnly>
           <section v-if="data.place.coordinates" class="wp-map-sec">
-            <EmptyState v-if="mapLoadError" tone="error" icon="🗺️" message="Không tải được bản đồ. Kiểm tra kết nối và thử lại." />
+            <EmptyState v-if="mapLoadError" tone="error" message="Không tải được bản đồ. Kiểm tra kết nối và thử lại." />
             <div v-show="!mapLoadError" ref="mapEl" class="wp-map-container" :class="{ 'wp-map-loading': !mapReady }" role="application" aria-roledescription="bản đồ tương tác" :aria-label="`Bản đồ ${data.place.name}. Dùng chuột hoặc cảm ứng để di chuyển.`"></div>
           </section>
         </ClientOnly>
 
         <div data-detail-region="related">
           <section v-if="data.tourism?.length" class="wp-sec">
-            <p class="wp-eyebrow">📍 Tham quan</p>
+            <p class="wp-eyebrow"><IconLine name="pin" aria-hidden="true" /> Tham quan</p>
             <h2>Địa điểm tham quan <span class="cnt">({{ data.tourism.length }})</span></h2>
             <div class="wp-grid grid">
               <EntityCard v-for="e in data.tourism" :key="e.id" :entity="e" />
@@ -157,7 +157,7 @@
 
           <section v-if="data.lodging?.length" class="wp-sec reveal">
             <div class="wp-divider" aria-hidden="true"></div>
-            <p class="wp-eyebrow">🏨 Nghỉ ngơi</p>
+            <p class="wp-eyebrow"><IconLine name="home" aria-hidden="true" /> Nghỉ ngơi</p>
             <h2>Lưu trú <span class="cnt">({{ data.lodging.length }})</span></h2>
             <div class="wp-grid grid">
               <EntityCard v-for="e in data.lodging" :key="e.id" :entity="e" />
@@ -166,7 +166,7 @@
 
           <section v-if="data.products?.length" class="wp-sec reveal">
             <div class="wp-divider" aria-hidden="true"></div>
-            <p class="wp-eyebrow">🛍️ Đặc sản</p>
+            <p class="wp-eyebrow"><IconLine name="gift" aria-hidden="true" /> Đặc sản</p>
             <h2>Đặc sản &amp; sản phẩm <span class="cnt">({{ data.products.length }})</span></h2>
             <div class="wp-grid grid">
               <EntityCard v-for="e in data.products" :key="e.id" :entity="e" />
@@ -175,7 +175,7 @@
 
           <div v-if="!totalContent" class="wp-empty-card">
             <div class="wp-empty-motif" aria-hidden="true"></div>
-            <span class="wp-empty-icon" aria-hidden="true">🗺️</span>
+            <IconLine class="wp-empty-icon" name="map" aria-hidden="true" />
             <p class="wp-empty-title">Trang đang được xây dựng</p>
             <p class="wp-empty-msg">Chưa có dữ liệu địa điểm cho {{ data.place.name }}. Du lịch, lưu trú và đặc sản của khu vực này đang được bổ sung.</p>
             <p class="wp-empty-hint">Quay lại sau hoặc khám phá các xã/phường lân cận qua trang khu vực.</p>
@@ -403,7 +403,7 @@ if (import.meta.server && wardFetchResolution.value?.kind === 'not_found') {
 
 const areaMeta = computed(() => {
   const area = data.value?.place?.area
-  return (area ? AREA_META[area] : null) || { name: '', emoji: '📍', blurb: '' }
+  return (area ? AREA_META[area] : null) || { name: '', icon: 'pin', blurb: '' }
 })
 
 // Region-keyed decorative hero motif (inline SVG, no external/copyrighted assets)
@@ -485,7 +485,7 @@ function formatPop(n: number | string) {
 function attr(f: Entity, k: string) { return (f.attributes || {})[k] }
 function kindMeta(f: Entity) {
   const key = String(attr(f, 'office_kind') || '')
-  return OFFICE_KIND[key] || OFFICE_KIND.khac || { emoji: '🏢', label: 'Cơ quan' }
+  return OFFICE_KIND[key] || OFFICE_KIND.khac || { icon: 'building', label: 'Cơ quan' }
 }
 
 const allWardEntities = computed<Entity[]>(() => {
@@ -619,10 +619,9 @@ watch(mapEl, async (el) => {
   for (const ent of entities) {
     const c = normalizeCoords(ent.coordinates)
     if (!c) continue
-    const meta = TYPE_META[ent.type] || { emoji: '📍', label: '' }
+    const meta = TYPE_META[ent.type] || { icon: 'pin', label: '' }
     const el = document.createElement('div')
     el.className = 'wp-marker'
-    el.textContent = meta.emoji
     el.title = ent.name
     new maplibregl.Marker({ element: el })
       .setLngLat([c[1], c[0]])
@@ -687,7 +686,7 @@ onUnmounted(() => {
 .wp-region { margin: 0; opacity: .9; font-size: var(--text-sm); }
 .wp-region a { color: var(--text-on-dark, var(--white)); text-decoration: underline; text-underline-offset: 3px; border-radius: var(--radius-sm); }
 .wp-region a:focus-visible { outline: 2px solid var(--text-on-dark, var(--white)); outline-offset: 2px; }
-.wp-region-emoji { margin-inline-end: var(--space-1); }
+.wp-region-icon { margin-inline-end: var(--space-1); }
 
 .wp-stats { display: flex; flex-wrap: wrap; gap: var(--space-6); margin-top: var(--space-5); padding-top: var(--space-4); border-top: .5px solid rgba(var(--white-rgb),.25); }
 .dark .wp-stats { border-top-color: rgba(var(--white-rgb),.12); }
@@ -703,8 +702,8 @@ onUnmounted(() => {
 .wp-map-container { width: 100%; height: 380px; border-radius: var(--radius-lg, 16px); overflow: hidden; border: .5px solid var(--line); box-shadow: var(--shadow-sm); transition: box-shadow .35s var(--ease-out-expo); }
 .wp-map-loading { background: linear-gradient(100deg, var(--bg-warm) 30%, var(--line) 50%, var(--bg-warm) 70%); background-size: 200% 100%; animation: wp-shimmer 1.4s var(--ease-out) infinite; }
 @keyframes wp-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
-:deep(.wp-marker) { font-size: 1.6rem; cursor: pointer; filter: drop-shadow(0 1px 3px rgba(var(--black-rgb),.4)); line-height: 1; transition: transform .35s var(--ease-spring-gentle); }
-:deep(.wp-marker:hover) { transform: scale(1.25); }
+:deep(.wp-marker) { width: 1rem; height: 1rem; cursor: pointer; background: var(--primary); border: 2px solid var(--text-on-dark, var(--white)); border-radius: 50% 50% 50% 0; box-shadow: 0 1px 3px rgba(var(--black-rgb),.4); transform: rotate(-45deg); transition: transform .35s var(--ease-spring-gentle); }
+:deep(.wp-marker:hover) { transform: rotate(-45deg) scale(1.25); }
 
 /* Body layout */
 .wp-body {
@@ -819,7 +818,7 @@ onUnmounted(() => {
 .wp-fac:hover { background: rgba(var(--primary-rgb), .04); transform: translateX(2px); }
 .wp-fac:last-child { border-bottom: none; }
 .wp-fac-kind { font-size: var(--text-xs); color: var(--primary-fg); display: inline-flex; align-items: center; gap: var(--space-1); margin-bottom: 2px; }
-.wp-fac-emoji { font-size: 1.1rem; line-height: 1; flex-shrink: 0; }
+.wp-fac-icon { font-size: 1.1rem; line-height: 1; flex-shrink: 0; }
 .wp-fac-row { font-size: var(--text-sm); color: var(--muted); margin-top: 2px; }
 .wp-fac-row a { color: var(--primary); }
 .wp-fac-row a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }

@@ -42,7 +42,6 @@ export function useFeature() {
   const flags = computed(() => source.value.flags)
 
   function enabled(key: string): boolean {
-    if (!source.value.available) return false
     return resolveFeatureFlag(key, flags.value)
   }
 

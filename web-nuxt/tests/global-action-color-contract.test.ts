@@ -279,6 +279,22 @@ function expectChatRecipe(css: string) {
 }
 
 describe('Global public-shell action color contract', () => {
+  it('keeps square icon actions at the touch minimum on both logical axes', async () => {
+    const componentsCss = await readFile(resolve(root, 'assets/css/components.css'), 'utf8')
+    const baseCss = await readFile(resolve(root, 'assets/css/base.css'), 'utf8')
+
+    for (const [selector, css] of [
+      ['.btn-icon', componentsCss],
+      ['.btn-icon-sm', baseCss],
+    ] as const) {
+      const rule = readRule(css, selector)
+      expect(rule).toMatch(/inline-size:\s*var\(--touch-min\)/)
+      expect(rule).toMatch(/block-size:\s*var\(--touch-min\)/)
+      expect(rule).toMatch(/min-inline-size:\s*var\(--touch-min\)/)
+      expect(rule).toMatch(/min-block-size:\s*var\(--touch-min\)/)
+    }
+  })
+
   it('keeps the secondary login recipe entirely on River action semantics', async () => {
     const css = await readFile(resolve(root, 'assets/css/components.css'), 'utf8')
     expectLoginRecipe(css)

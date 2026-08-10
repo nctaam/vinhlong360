@@ -436,10 +436,16 @@ describe('entity detail tri-region behavior', () => {
       button.classes().includes('trip-btn') || button.classes().includes('dc-photo-btn'))
 
     expect(actions.map(action => action.text())).toEqual([
-      '✓ Đã đến',
-      '♡ Muốn đến',
-      '🔔 Theo dõi',
-      '📷 Xem ảnh',
+      'Đã đến',
+      'Muốn đến',
+      'Theo dõi',
+      'Xem ảnh',
+    ])
+    expect(actions.map(action => action.get('[data-icon]').attributes('data-icon'))).toEqual([
+      'check',
+      'heart',
+      'bell',
+      'camera',
     ])
 
     const follow = wrapper.findAll('.trip-btn').find(button => button.text().includes('Theo dõi'))!
@@ -450,7 +456,8 @@ describe('entity detail tri-region behavior', () => {
     await flushUi()
 
     expect(follow.attributes('aria-pressed')).toBe('true')
-    expect(follow.text()).toBe('🔔 Đang theo dõi')
+    expect(follow.text()).toBe('Đang theo dõi')
+    expect(follow.get('[data-icon]').attributes('data-icon')).toBe('bell')
     expect(document.body.querySelector('[role="dialog"][aria-label="Xem ảnh"]')).toBeNull()
 
     await wrapper.get('.dc-photo-btn').trigger('click')
@@ -460,7 +467,7 @@ describe('entity detail tri-region behavior', () => {
     expect(dialog).not.toBeNull()
     expect(dialog?.querySelector('[data-active-media]')?.getAttribute('alt')).toBe(heroDescriptor.alt)
     expect(follow.attributes('aria-pressed')).toBe('true')
-    expect(follow.text()).toBe('🔔 Đang theo dõi')
+    expect(follow.text()).toBe('Đang theo dõi')
   })
 
   it('clears seeded auth-user and guest auth-modal state without wiping unrelated Nuxt state', async () => {
@@ -479,7 +486,8 @@ describe('entity detail tri-region behavior', () => {
 
       expect(authModalOpen.value).toBe(true)
       expect(follow.attributes('aria-pressed')).toBe('false')
-      expect(follow.text()).toBe('🔔 Theo dõi')
+      expect(follow.text()).toBe('Theo dõi')
+      expect(follow.get('[data-icon]').attributes('data-icon')).toBe('bell')
 
       authUser.value = { id: 'cleanup-leak-user', has_password: true }
       await cleanupDetailTestState()
@@ -677,7 +685,8 @@ describe('entity detail tri-region behavior', () => {
     }
 
     const highlightActions = wrapper.findAll('.highlights .hl-action')
-    expect(highlightActions.map(action => action.text())).toEqual(['💬 Zalo', '📞 Gọi', '🗺️ Bản đồ'])
+    expect(highlightActions.map(action => action.text())).toEqual(['Zalo', 'Gọi', 'Bản đồ'])
+    expect(highlightActions.map(action => action.get('[data-icon]').attributes('data-icon'))).toEqual(['message', 'phone', 'map'])
     expect(highlightActions.map(action => action.attributes('data-color-role'))).toEqual([
       'action-secondary',
       'action-secondary',
