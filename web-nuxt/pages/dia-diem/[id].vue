@@ -7,6 +7,13 @@
     :data-material-accent="detailMaterialAccent"
   >
     <div class="scroll-progress" :style="{ transform: `scaleX(${progress})` }" aria-hidden="true" />
+    <PageState
+      v-if="!detailOnline"
+      class="detail-offline-state"
+      :state="{ kind: 'offline', cached: entity }"
+    >
+      <p>Hồ sơ địa điểm đã tải vẫn có thể đọc và dùng để tiếp tục hành trình.</p>
+    </PageState>
     <!-- Breadcrumb -->
     <nav class="breadcrumb" aria-label="Breadcrumb">
       <button type="button" class="bc-back" aria-label="Quay lại" @click="goBack">
@@ -582,6 +589,7 @@ const router = useRouter()
 const id = computed(() => normalizeRouteParam(route.params.id))
 const encodedId = computed(() => encodePathId(id.value))
 const heroLoaded = ref(false)
+const detailOnline = ref(true)
 const launchSafety = useLaunchSafety()
 const entityLaunchGeneration = createLaunchGenerationGuard(() => launchSafety.resetForNavigation())
 entityLaunchGeneration.initialize()
@@ -625,6 +633,8 @@ const removeHeroNavigationCompletionHook = router.afterEach((to, from, failure) 
 onUnmounted(() => {
   removeHeroNavigationGuard()
   removeHeroNavigationCompletionHook()
+  window.removeEventListener('online', updateDetailConnectivity)
+  window.removeEventListener('offline', updateDetailConnectivity)
 })
 
 // ── Đã-đi/Muốn-đi + theo-dõi địa-điểm (Tier-1 MXH) ──
@@ -734,9 +744,17 @@ function advanceDetailJourney() {
   journeyThread.pushIntent('explore', { currentPath: route.fullPath, returnPath: restored?.returnPath || '/du-lich' })
 }
 
+function updateDetailConnectivity() {
+  if (!import.meta.client) return
+  detailOnline.value = navigator.onLine
+}
+
 watch(journeyOwner, advanceDetailJourney)
 
 onMounted(async () => {
+  updateDetailConnectivity()
+  window.addEventListener('online', updateDetailConnectivity)
+  window.addEventListener('offline', updateDetailConnectivity)
   advanceDetailJourney()
   await revealHeroImageAfterUpdate()
   trackCurrentEntity()

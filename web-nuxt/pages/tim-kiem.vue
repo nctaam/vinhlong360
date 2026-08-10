@@ -50,7 +50,7 @@
 
     <SkeletonGrid v-if="searching" :count="6" />
     <EmptyState
-      v-else-if="hasError"
+      v-else-if="hasError && !totalSearchResults"
       title="Lỗi tìm kiếm"
       message="Không thể tìm kiếm lúc này. Vui lòng thử lại."
       tone="error"
@@ -59,10 +59,10 @@
       data-color-role="status-error"
     >
       <template #actions>
-        <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData('search-results')">Thử lại</button>
+        <button type="button" class="btn btn-outline btn-sm" @click="refreshSearch">Thử lại</button>
       </template>
     </EmptyState>
-    <template v-else-if="q">
+    <PageState v-else-if="q" :state="searchSurfaceState" :retry="refreshSearch">
       <!-- Địa điểm / sản phẩm -->
       <template v-if="results.length">
         <h2 class="sr-only">Kết quả tìm kiếm cho "{{ q }}"</h2>
@@ -87,6 +87,11 @@
             <div class="search-map-entity-card" data-entity-contract="entity-row">
               <EntityCard :entity="result" color-recipe="tri-region-v1" />
               <p class="map-result-row__address">{{ result.attributes?.address || result.place_name || result.place_area || result.area || 'Chưa có địa chỉ chi tiết' }}</p>
+              <FreshnessLine
+                v-if="result.source_freshness?.updated_at"
+                :status="resolveFreshnessStatus(result.source_freshness?.freshness_status)"
+                :updated-label="String(result.source_freshness.updated_at)"
+              />
             </div>
           </template>
         </MapListSurface>
@@ -147,7 +152,7 @@
           </ClientOnly>
         </NuxtErrorBoundary>
       </template>
-    </template>
+    </PageState>
 
     <!-- Trước khi gõ: tầng khám phá — trọng tâm thật sự của trang này -->
     <template v-if="!q">
@@ -251,12 +256,14 @@ import { TYPE_META } from '~/composables/useConstants'
 import { useJourneyActions } from '~/composables/useJourneyActions'
 import type { ZeroResultRecoveryAction } from '~/composables/useUnifiedSearch'
 import MapListSurface from '~/components/public/MapListSurface.vue'
+import PageState from '~/components/public/PageState.vue'
 import { generateCategoryIcon, generateCategoryPlaceholder } from '~/composables/useCategoryPlaceholder'
 import type { ImageDescriptor } from '~/types/image'
 import type { RecentItem } from '~/composables/useRecentlyViewed'
 import { describeEntityPlaceholder } from '~/utils/imageDescriptors'
 import { normalizeCoords } from '~/composables/useCoords'
 import { viewportTileBounds } from '~/utils/publicStateUrl'
+import { resolveFreshnessStatus } from '~/utils/regionalColor'
 useReveal()
 const { f: pc } = usePageContent('tim_kiem')
 const { recentItems } = useRecentlyViewed()
@@ -366,14 +373,32 @@ const recoveryQueryAliases: Record<string, string> = {
 }
 const suggestedRecoveryQuery = computed(() => recoveryQueryAliases[q.value.trim().toLocaleLowerCase('vi-VN')])
 
-const { data, error: searchError, status } = await useAsyncData(
+const emptySearchData = () => ({ entities: [], posts: [], users: [], totals: { entities: 0, posts: 0, users: 0 } })
+type SearchData = Awaited<ReturnType<typeof searchAll>>
+type SearchDataCarrier = { readonly key: string; readonly data: SearchData }
+
+const { data, error: searchError, status, refresh } = await useAsyncData<SearchDataCarrier>(
   'search-results',
-  () => q.value ? searchAll(q.value, 100) : Promise.resolve({ entities: [], posts: [], users: [], totals: { entities: 0, posts: 0, users: 0 } }),
+  async () => {
+    const key = q.value
+    const value = key ? await searchAll(q.value, 100) : emptySearchData()
+    return { key, data: value as SearchData }
+  },
   { watch: [q] }
 )
-const searching = computed(() => status.value === 'pending' && !!q.value)
+const lastSuccessfulSearchData = ref<SearchDataCarrier | null>(null)
+watch(data, (value) => {
+  if (value) lastSuccessfulSearchData.value = value
+}, { immediate: true })
+const currentSearchData = computed(() => data.value?.key === q.value ? data.value.data : null)
+const retainedSearchData = computed(() => lastSuccessfulSearchData.value?.key === q.value
+  ? lastSuccessfulSearchData.value.data
+  : null)
+const effectiveSearchData = computed(() => currentSearchData.value || (searchError.value ? retainedSearchData.value : null))
+const searching = computed(() => status.value === 'pending' && !!q.value && !effectiveSearchData.value)
+const refreshSearch = () => refresh()
 
-const rawResults = computed(() => data.value?.entities || data.value?.results || [])
+const rawResults = computed(() => effectiveSearchData.value?.entities || effectiveSearchData.value?.results || [])
 const committedBounds = computed(() => searchView.committedViewport.value ? viewportTileBounds(searchView.committedViewport.value) : undefined)
 const results = computed(() => rawResults.value.filter((entity: any) => {
   const bounds = committedBounds.value
@@ -384,9 +409,18 @@ const results = computed(() => rawResults.value.filter((entity: any) => {
   return lng >= bounds.west && lng <= bounds.east && lat >= bounds.south && lat <= bounds.north
 }))
 const hasError = computed(() => status.value !== 'pending' && !!searchError.value)
-const postResults = computed(() => (data.value?.posts || []).slice(0, 6))
-const userResults = computed(() => (data.value?.users || []).slice(0, 8))
+const postResults = computed(() => (effectiveSearchData.value?.posts || []).slice(0, 6))
+const userResults = computed(() => (effectiveSearchData.value?.users || []).slice(0, 8))
 const totalSearchResults = computed(() => results.value.length + postResults.value.length + userResults.value.length)
+const searchSurfaceState = computed(() => {
+  if (mapNetworkState.value === 'offline' && effectiveSearchData.value) {
+    return { kind: 'offline' as const, cached: effectiveSearchData.value }
+  }
+  if (hasError.value && effectiveSearchData.value) {
+    return { kind: 'partial' as const, data: effectiveSearchData.value, failedPanels: ['results'] }
+  }
+  return { kind: 'ready' as const, data: effectiveSearchData.value || emptySearchData() }
+})
 const searchNextActions = computed(() => q.value && totalSearchResults.value ? searchSuccessActions(q.value, results.value.length) : [])
 const zeroResultRecoverySteps = computed(() => zeroResultRecoveryActions(searchView.state.value, {
   suggestedQuery: suggestedRecoveryQuery.value,

@@ -94,12 +94,29 @@
           <button type="button" :class="['vt-btn', { active: viewMode === 'list' }]" :aria-pressed="viewMode === 'list'" @click="viewMode = 'list'" title="Dạng danh sách" aria-label="Dạng danh sách"><IconLine name="list" aria-hidden="true" /></button>
         </div>
       </div>
-      <EmptyState v-if="fetchError" title="Không thể tải dữ liệu" message="Mạng có thể đang chập chờn. Thử tải lại nhé.">
+      <SkeletonGrid v-if="status === 'pending' && !allEntities.length" :count="6" />
+      <EmptyState v-else-if="fetchError && !allEntities.length" title="Không thể tải dữ liệu" message="Mạng có thể đang chập chờn. Thử tải lại nhé.">
         <template #actions>
-          <button type="button" class="btn btn-outline" @click="refreshNuxtData('catalog-tourism')">Thử lại</button>
+          <button type="button" class="btn btn-outline" @click="refreshCatalog">Thử lại</button>
         </template>
       </EmptyState>
-      <SkeletonGrid v-else-if="!data" :count="6" />
+      <PageState
+        v-else-if="catalogContinuityState"
+        :state="catalogContinuityState"
+        :retry="refreshCatalog"
+      >
+        <div :class="['catalog-result-surface', viewMode === 'list' ? 'list-view' : 'grid']">
+          <div
+            v-for="e in visible"
+            :key="e.id"
+            class="catalog-result-item"
+            :data-entity-contract="catalogEntityContract(e)"
+            data-catalog-result
+          >
+            <EntityCard :entity="e" :season-filter="seasonFilter" color-recipe="tri-region-v1" />
+          </div>
+        </div>
+      </PageState>
       <div v-else-if="filtered.length" :class="['catalog-result-surface', viewMode === 'list' ? 'list-view' : 'grid']">
         <div
           v-for="e in visible"
@@ -180,6 +197,7 @@ import type { RegionalAccent } from '~/utils/regionalColor'
 import { resolveFreshnessStatus, resolveSourceTier } from '~/utils/regionalColor'
 import { TYPE_META, TOURISM_TYPES } from '~/composables/useConstants'
 import { inSeason, relevanceScore } from '~/composables/useSeason'
+import PageState from '~/components/public/PageState.vue'
 
 useReveal()
 const { f: pc } = usePageContent('du_lich')
@@ -283,14 +301,45 @@ onMounted(() => {
   onUnmounted(() => document.removeEventListener('keydown', h))
 })
 
-const { data, error: fetchError } = await useAsyncData('catalog-tourism', () =>
+const { data, error: fetchError, status, refresh } = await useAsyncData('catalog-tourism', () =>
   apiFetch<{ entities: Entity[]; total: number }>(`/api/entities?type=${TYPES.join(',')}&limit=500`)
 )
 
+const catalogOnline = ref(true)
+const lastSuccessfulCatalog = ref<Entity[]>([])
+watch(data, (value) => {
+  if (Array.isArray(value?.entities)) lastSuccessfulCatalog.value = value.entities
+}, { immediate: true })
+
 const allEntities = computed(() => {
   const raw = data.value
-  if (!raw) return []
-  return raw.entities || []
+  if (Array.isArray(raw?.entities)) return raw.entities
+  return fetchError.value ? lastSuccessfulCatalog.value : []
+})
+
+const catalogContinuityState = computed(() => {
+  if (!allEntities.value.length) return null
+  if (!catalogOnline.value) return { kind: 'offline' as const, cached: allEntities.value }
+  if (fetchError.value) return { kind: 'partial' as const, data: allEntities.value, failedPanels: ['catalog'] }
+  return null
+})
+
+const refreshCatalog = () => refresh()
+
+function updateCatalogConnectivity() {
+  if (!import.meta.client) return
+  catalogOnline.value = navigator.onLine
+}
+
+onMounted(() => {
+  updateCatalogConnectivity()
+  window.addEventListener('online', updateCatalogConnectivity)
+  window.addEventListener('offline', updateCatalogConnectivity)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('online', updateCatalogConnectivity)
+  window.removeEventListener('offline', updateCatalogConnectivity)
 })
 
 const activeFilterCount = computed(() => {

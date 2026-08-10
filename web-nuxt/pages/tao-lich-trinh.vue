@@ -65,7 +65,8 @@
             </div>
             <span class="btn btn-sm btn-ghost" aria-hidden="true">+</span>
           </button>
-          <p v-if="fetchError" class="empty picker-empty">⚠️ Không thể tải danh sách. <button type="button" class="btn btn-outline btn-sm" @click="refreshPicker()">Thử lại</button></p>
+          <p v-if="status === 'pending' && !pickerResults.length" class="empty picker-empty" data-picker-state="loading" role="status">Đang tải danh sách điểm đến…</p>
+          <p v-else-if="fetchError" class="empty picker-empty">⚠️ Không thể tải danh sách. <button type="button" class="btn btn-outline btn-sm" @click="refreshPicker()">Thử lại</button></p>
           <div v-else-if="sourceTab === 'saved' && !favCount" class="premium-empty-state">
             <EmptyState icon="❤️" title="Chưa có điểm đã lưu" message="Nhấn hình trái tim ở các điểm đến để lưu lại, rồi quay lại đây thêm vào lịch trình." />
           </div>
@@ -578,23 +579,37 @@ const plannerQueryKey = computed(() => [
 ].join('|'))
 
 const emptyEntityList = (): EntityListResponse => ({ total: 0, entities: [] })
+type PickerDataCarrier = { readonly key: string; readonly data: EntityListResponse; readonly resolved: boolean }
 
-const { data, error: fetchError, refresh: refreshPicker } = await useAsyncData<EntityListResponse>('planner-entities', () => {
-  if (sourceTab.value !== 'all') return Promise.resolve(emptyEntityList())
-  return publicApi.listEntities({
-    q: searchQ.value.trim() || undefined,
-    type: typeFilter.value !== 'all' ? typeFilter.value : undefined,
-    fields: 'minimal',
-    limit: 50,
-    offset: 0,
-  })
+const { data, error: fetchError, status, refresh: refreshPicker } = await useAsyncData<PickerDataCarrier>('planner-entities', async () => {
+  const key = plannerQueryKey.value
+  const value = sourceTab.value !== 'all'
+    ? emptyEntityList()
+    : await publicApi.listEntities({
+        q: searchQ.value.trim() || undefined,
+        type: typeFilter.value !== 'all' ? typeFilter.value : undefined,
+        fields: 'minimal',
+        limit: 50,
+        offset: 0,
+      })
+  return { key, data: value, resolved: true }
 }, {
   watch: [plannerQueryKey],
-  default: emptyEntityList,
+  default: () => ({ key: plannerQueryKey.value, data: emptyEntityList(), resolved: false }),
 })
 
+const lastSuccessfulPickerData = ref<PickerDataCarrier | null>(null)
+watch(data, (value) => {
+  if (value?.resolved && value.data.entities?.length) lastSuccessfulPickerData.value = value
+}, { immediate: true })
+const currentPickerData = computed(() => data.value?.resolved && data.value.key === plannerQueryKey.value ? data.value.data : null)
+const retainedPickerData = computed(() => lastSuccessfulPickerData.value?.key === plannerQueryKey.value
+  ? lastSuccessfulPickerData.value.data
+  : null)
+const effectivePickerData = computed(() => currentPickerData.value || (fetchError.value ? retainedPickerData.value : null))
+
 const allEntities = computed(() => {
-  const raw = data.value
+  const raw = effectivePickerData.value
   if (!raw) return []
   return (raw.entities || []).filter((e: Entity) => isPlannerType(e.type))
 })

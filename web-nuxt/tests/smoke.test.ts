@@ -14,8 +14,10 @@ import {
   closeSmokeServers,
   evaluateRuntimeSmokeIssues,
   evaluateSmokeJourneyEvidence,
+  inspectManagedPortOwnership,
   launchManagedSmokeApp,
   managedSmokeLaunchConfig,
+  managedSmokeBaseUrl,
   managedSmokeCommand,
   managedSmokeStartupTimeout,
   selectPendingVisualScenarios,
@@ -224,6 +226,41 @@ describe('Adaptive Nocturne public browser smoke contract', () => {
     }).startManaged).toBe(false)
   })
 
+  it('uses an explicit IPv4 origin when the default path must start a managed app', () => {
+    expect(managedSmokeBaseUrl({})).toBe('http://127.0.0.1:3000')
+  })
+
+  it('rejects localhost forced-managed configuration before spawn when IPv4 is already occupied', async () => {
+    const occupier = createServer()
+    await new Promise<void>((resolveListen, reject) => {
+      occupier.once('error', reject)
+      occupier.listen(0, '127.0.0.1', resolveListen)
+    })
+    const address = occupier.address()
+    expect(address && typeof address !== 'string').toBe(true)
+    const port = typeof address === 'string' || !address ? 0 : address.port
+    const spawnProcess = vi.fn()
+    const terminate = vi.fn()
+
+    try {
+      const configureAndSpawn = () => {
+        const config = managedSmokeLaunchConfig({
+          baseUrl: `http://localhost:${port}`,
+          explicitBaseUrl: true,
+          forceManaged: true,
+        })
+        spawnProcess(config)
+      }
+
+      expect(configureAndSpawn).toThrow(/127\.0\.0\.1/i)
+      expect(spawnProcess).not.toHaveBeenCalled()
+      expect(terminate).not.toHaveBeenCalled()
+    }
+    finally {
+      await new Promise<void>(resolveClose => occupier.close(() => resolveClose()))
+    }
+  })
+
   it('rejects an occupied forced-managed port before spawning or terminating any process', async () => {
     const occupier = createServer()
     await new Promise<void>((resolveListen, reject) => {
@@ -299,6 +336,7 @@ describe('Adaptive Nocturne public browser smoke contract', () => {
       inspectOwnership: vi.fn().mockReturnValue({
         owned: false,
         listenerPids: [7000],
+        listeners: [{ address: '127.0.0.1', port: 3010, pid: 7000 }],
         treePids: [30101, 30102],
       }),
       terminate,
@@ -308,6 +346,82 @@ describe('Adaptive Nocturne public browser smoke contract', () => {
 
     expect(terminate).toHaveBeenCalledOnce()
     expect(terminate).toHaveBeenCalledWith(child)
+  })
+
+  it('rejects a child-tree listener on another address when the target responder is unrelated', async () => {
+    const child = managedChild(30101)
+    const terminate = vi.fn()
+
+    await expect(launchManagedSmokeApp({
+      baseUrl: 'http://127.0.0.1:3010',
+      host: '127.0.0.1',
+      port: 3010,
+      command: 'node',
+      args: ['server.mjs'],
+      spawnOptions: { cwd: process.cwd(), env: {}, shell: false },
+      spawnProcess: managedSpawn(child),
+      assertPortAvailable: vi.fn().mockResolvedValue(undefined),
+      probe: vi.fn().mockResolvedValue(true),
+      inspectOwnership: vi.fn().mockReturnValue({
+        owned: true,
+        listenerPids: [7000, 30102],
+        listeners: [
+          { address: '127.0.0.1', port: 3010, pid: 7000 },
+          { address: '127.0.0.2', port: 3010, pid: 30102 },
+        ],
+        treePids: [30101, 30102],
+      }),
+      terminate,
+      pause: vi.fn(),
+      startupTimeoutMs: 1000,
+    })).rejects.toThrow(/127\.0\.0\.1:3010.*7000.*outside managed process tree/i)
+
+    expect(terminate).toHaveBeenCalledOnce()
+    expect(terminate).toHaveBeenCalledWith(child)
+  })
+
+  it('preserves the Windows listener address used to prove target ownership', () => {
+    const run = vi.fn(() => ({
+      status: 0,
+      stdout: JSON.stringify({
+        treePids: [30101, 30102],
+        listeners: [
+          { address: '127.0.0.1', port: 3010, pid: 30102 },
+          { address: '127.0.0.2', port: 3010, pid: 7000 },
+        ],
+      }),
+    }))
+
+    expect(inspectManagedPortOwnership({
+      rootPid: 30101,
+      host: '127.0.0.1',
+      port: 3010,
+      platform: 'win32',
+      run: run as unknown as typeof import('node:child_process').spawnSync,
+    })).toMatchObject({
+      owned: true,
+      listenerPids: [7000, 30102],
+      targetAddress: '127.0.0.1',
+      targetListeners: [{ address: '127.0.0.1', port: 3010, pid: 30102 }],
+    })
+  })
+
+  it('preserves Unix listener addresses from lsof ownership evidence', () => {
+    const run = vi.fn((command: string) => command === 'ps'
+      ? { status: 0, stdout: '30101 1\n30102 30101\n7000 1\n' }
+      : { status: 0, stdout: 'p30102\nn127.0.0.1:3010\np7000\nn127.0.0.2:3010\n' })
+
+    expect(inspectManagedPortOwnership({
+      rootPid: 30101,
+      host: '127.0.0.1',
+      port: 3010,
+      platform: 'linux',
+      run: run as unknown as typeof import('node:child_process').spawnSync,
+    })).toMatchObject({
+      owned: true,
+      listenerPids: [7000, 30102],
+      targetListeners: [{ address: '127.0.0.1', port: 3010, pid: 30102 }],
+    })
   })
 
   it('accepts readiness only when a live managed process tree owns the responding port', async () => {
@@ -326,6 +440,7 @@ describe('Adaptive Nocturne public browser smoke contract', () => {
       inspectOwnership: vi.fn().mockReturnValue({
         owned: true,
         listenerPids: [30102],
+        listeners: [{ address: '127.0.0.1', port: 3010, pid: 30102 }],
         treePids: [30101, 30102],
       }),
       pause: vi.fn(),

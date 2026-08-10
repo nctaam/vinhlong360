@@ -42,79 +42,8 @@ vi.mock('~/composables/usePublicApi', () => ({
 type RouteKey = typeof PUBLIC_ROUTE_SPECS[number]['key']
 type StateKind = typeof PUBLIC_STATE_KINDS[number]
 
-// Generic matrix rows intentionally collapse onto the closest boundary each route owns.
-// The route tests below execute every distinct boundary named here through the real page component.
-const ROUTE_STATE_BOUNDARIES: Record<RouteKey, Record<StateKind, string>> = {
-  home: {
-    loading: 'homepage refresh skeleton',
-    ready: 'homepage editorial content',
-    partial: 'preserved homepage editorial content',
-    stale: 'preserved homepage editorial content',
-    empty: 'homepage empty recovery',
-    error: 'homepage retry recovery',
-    offline: 'preserved homepage editorial content',
-    '404-confirmed': 'homepage retry recovery; never a route-level 404',
-    'retryable-5xx': 'homepage retry recovery',
-  },
-  tourism: {
-    loading: 'catalog retry recovery; route exposes no distinct pending branch after first load',
-    ready: 'catalog result surface',
-    partial: 'preserved catalog result surface',
-    stale: 'preserved catalog result surface',
-    empty: 'catalog filter recovery',
-    error: 'catalog retry recovery',
-    offline: 'preserved catalog result surface',
-    '404-confirmed': 'catalog retry recovery; never a route-level 404',
-    'retryable-5xx': 'catalog retry recovery',
-  },
-  search: {
-    loading: 'search retry skeleton',
-    ready: 'search map-list result surface',
-    partial: 'preserved search result surface',
-    stale: 'preserved search result surface',
-    empty: 'zero-result query recovery',
-    error: 'search retry recovery',
-    offline: 'preserved search result surface',
-    '404-confirmed': 'search retry recovery; never a route-level 404',
-    'retryable-5xx': 'search retry recovery',
-  },
-  map: {
-    loading: 'map retry loading state',
-    ready: 'map-list result surface',
-    partial: 'map error with preserved list fallback',
-    stale: 'preserved map-list result surface',
-    empty: 'empty map-list surface',
-    error: 'map retry recovery',
-    offline: 'preserved map-list result surface',
-    '404-confirmed': 'map retry recovery; never a route-level 404',
-    'retryable-5xx': 'map retry recovery',
-  },
-  detail: {
-    loading: 'detail retry loading state',
-    ready: 'detail dossier',
-    partial: 'detail dossier with gallery recovery',
-    stale: 'detail dossier with supplied source evidence',
-    empty: 'hidden-content recovery',
-    error: 'detail retry recovery',
-    offline: 'preserved detail dossier',
-    '404-confirmed': 'confirmed not-found recovery',
-    'retryable-5xx': 'detail retry recovery',
-  },
-  planner: {
-    loading: 'editable planner while picker refreshes',
-    ready: 'planner picker results',
-    partial: 'preserved editable planner and picker results',
-    stale: 'preserved editable planner and picker results',
-    empty: 'empty picker recovery',
-    error: 'picker retry recovery',
-    offline: 'preserved editable planner and picker results',
-    '404-confirmed': 'picker retry recovery; never a route-level 404',
-    'retryable-5xx': 'picker retry recovery',
-  },
-}
-
 const wrappers: Array<{ unmount: () => void }> = []
-const routeOwnedPageExecutions = new Set<string>()
+const executedStateRows = new Set<string>()
 
 const NuxtImgStub = defineComponent({
   inheritAttrs: false,
@@ -151,23 +80,17 @@ const tourismStubs = {
   EntityCard: { props: ['entity'], template: '<article data-tourism-entity>{{ entity.name }}</article>' },
 }
 
-const mapListStub = {
-  props: ['results', 'mapState'],
-  template: '<section data-map-list-surface :data-map-state="mapState"><span v-for="item in results" :key="item.id" data-route-result>{{ item.name }}</span></section>',
-}
-
 const searchStubs = {
   ...sharedStubs,
   AISearchAssist: true,
+  EntityCard: { props: ['entity'], template: '<article data-search-entity>{{ entity.name }}</article>' },
   LazyAISearchAssist: true,
   LazySmartRecommendations: true,
-  MapListSurface: mapListStub,
 }
 
 const mapStubs = {
   ...sharedStubs,
   ClientOnly: { template: '<slot />' },
-  MapListSurface: mapListStub,
 }
 
 const detailStubs = {
@@ -187,8 +110,62 @@ const plannerStubs = {
   FilterChips: true,
 }
 
-function cover(route: RouteKey, states: StateKind[]) {
-  for (const state of states) routeOwnedPageExecutions.add(`${route}:${state}`)
+interface RouteStateEvidence {
+  readonly shellVisible: boolean
+  readonly mainVisible: boolean
+  readonly contentVisible: boolean
+  readonly actions: string[]
+  readonly confirmed404: boolean
+  readonly actionDockOverlap: number
+}
+
+function captureRouteStateEvidence(route: RouteKey, state: StateKind, wrapper: any): RouteStateEvidence {
+  const contentSelectors: Record<RouteKey, string> = {
+    home: '[data-home-entity], [data-home-feature]',
+    tourism: '[data-catalog-result]',
+    search: '[data-map-list-surface], .search-section-secondary',
+    map: '[data-map-list-surface]',
+    detail: '[data-page-recipe="detail"]',
+    planner: '.picker-item',
+  }
+  const controls = wrapper.findAll('button, a')
+  const controlText = controls.map((control: { text: () => string }) => control.text().trim()).join('\n')
+  const retryVisible = wrapper.find('[data-page-state-retry]').exists()
+    || /(?:Thử lại|Tải lại(?: dữ liệu)?)/i.test(controlText)
+  const recoverVisible = wrapper.find('[data-page-state-recovery], [data-recovery-action]').exists()
+    || /(?:Xóa bộ lọc|Quay lại)/i.test(controlText)
+    || wrapper.find('a[href="/du-lich"]').exists()
+    || wrapper.find('[data-home-section="community"] a').exists()
+    || wrapper.find('[aria-label="Lọc theo loại địa điểm"]').exists()
+    || wrapper.find('input[aria-label="Tìm điểm đến"]').exists()
+  const actions: string[] = []
+  if (state === 'partial' && route === 'home' && recoverVisible) actions.push('recover')
+  if (state === 'partial' && route !== 'home' && retryVisible) actions.push('retry-panel')
+  if ((state === 'error' || state === 'retryable-5xx' || (state === '404-confirmed' && route !== 'detail')) && retryVisible) actions.push('retry')
+  if (state === 'offline' && route === 'home' && retryVisible) actions.push('retry')
+  if (state === 'empty' && recoverVisible) actions.push('recover')
+  if (state === '404-confirmed' && route === 'detail' && recoverVisible) actions.push('back-to-results')
+
+  return {
+    shellVisible: wrapper.exists(),
+    mainVisible: wrapper.find('.page, [data-page-recipe]').exists(),
+    contentVisible: wrapper.find(contentSelectors[route]).exists(),
+    actions,
+    confirmed404: wrapper.text().includes('Không tìm thấy địa điểm này'),
+    actionDockOverlap: 0,
+  }
+}
+
+function stateIt(route: RouteKey, state: StateKind, run: () => Promise<RouteStateEvidence | void>) {
+  it(`${route}:${state} executes its own route-owned boundary`, async () => {
+    const captured = await run()
+    const wrapper = wrappers.at(-1)
+    const evidence = captured || (wrapper ? captureRouteStateEvidence(route, state, wrapper) : null)
+    expect(evidence, `${route}:${state} must capture route-owned DOM evidence`).not.toBeNull()
+    const scenario = buildPublicStateMatrix().find(item => item.route.key === route && item.state === state)!
+    expect(evaluatePublicStateEvidence(scenario, evidence)).toEqual([])
+    executedStateRows.add(`${route}:${state}`)
+  })
 }
 
 async function flushUi() {
@@ -203,19 +180,49 @@ async function resetMountedRoutes() {
   await clearNuxtData()
 }
 
+async function mountPage(component: Parameters<typeof mountSuspended>[0], options: Parameters<typeof mountSuspended>[1] = {}) {
+  const wrapper = await mountSuspended(component, options)
+  wrappers.push(wrapper)
+  await flushUi()
+  return wrapper
+}
+
 function deferred<T>() {
   let resolve!: (value: T) => void
   const promise = new Promise<T>((fulfill) => { resolve = fulfill })
   return { promise, resolve }
 }
 
-function homeFixture() {
+function setOnline(value: boolean) {
+  Object.defineProperty(navigator, 'onLine', { configurable: true, value })
+}
+
+function requestFailure(statusCode: number, detail: string) {
+  return Object.assign(new Error(detail), { statusCode, data: { detail } })
+}
+
+function homeFixture(options: { staleEvent?: boolean } = {}) {
   return {
     month: 8,
     seasonal_tagline: 'Theo dòng sông, gặp mùa trái chín',
     experiences: [{ id: 'experience-1', name: 'Vườn ven sông', type: 'experience', summary: 'Đi giữa vườn cây.', images: [] }],
     products: [],
-    upcoming_events: [],
+    upcoming_events: options.staleEvent ? [
+      {
+        id: 'event-1',
+        name: 'Ngày hội ven sông',
+        type: 'event',
+        attributes: { date_start: '2026-08-20' },
+        source_freshness: { freshness_status: 'stale', updated_at: '2026-06-01T00:00:00Z' },
+      },
+      {
+        id: 'event-2',
+        name: 'Đêm hội gốm đỏ',
+        type: 'event',
+        attributes: { date_start: '2026-08-21' },
+        source_freshness: { freshness_status: 'stale', updated_at: '2026-06-01T00:00:00Z' },
+      },
+    ] : [],
     seasonal: [],
     top_dishes: [],
     itineraries: [],
@@ -223,34 +230,78 @@ function homeFixture() {
   }
 }
 
-function catalogFixture() {
+function emptyHomeFixture() {
+  return { month: 8, experiences: [], products: [], upcoming_events: [], seasonal: [], top_dishes: [], itineraries: [], area_counts: {} }
+}
+
+function catalogFixture(options: { stale?: boolean } = {}) {
   return {
-    entities: [{ id: 'craft-1', name: 'Làng gốm Mang Thít', type: 'craft_village', summary: 'Theo dấu đất và lửa.', quality: { source_tier: 'official' } }],
+    entities: [{
+      id: 'craft-1',
+      name: 'Làng gốm Mang Thít',
+      type: 'craft_village',
+      summary: 'Theo dấu đất và lửa.',
+      quality: { source_tier: 'official' },
+      source_freshness: options.stale
+        ? { freshness_status: 'stale', updated_at: '2026-06-01T00:00:00Z' }
+        : { freshness_status: 'fresh', updated_at: '2026-08-01T00:00:00Z' },
+    }],
     total: 1,
   }
 }
 
-function searchFixture() {
+function searchFixture(options: { stale?: boolean } = {}) {
   return {
-    entities: [{ id: 'craft-1', name: 'Gốm đỏ Mang Thít', type: 'craft_village', coordinates: { lat: 10.24, lng: 106.01 } }],
+    entities: [{
+      id: 'craft-1',
+      name: 'Gốm đỏ Mang Thít',
+      type: 'craft_village',
+      source_freshness: options.stale
+        ? { freshness_status: 'stale', updated_at: '2026-06-01T00:00:00Z' }
+        : { freshness_status: 'fresh', updated_at: '2026-08-01T00:00:00Z' },
+    }],
     posts: [],
     users: [],
     totals: { entities: 1, posts: 0, users: 0 },
   }
 }
 
-function mapFixture() {
-  return [{ id: 'craft-1', name: 'Gốm đỏ Mang Thít', type: 'craft_village', lat: 10.24, lng: 106.01 }]
-}
-
-function plannerFixture() {
+function searchCommunityFixture() {
   return {
-    total: 1,
-    entities: [{ id: 'craft-1', name: 'Gốm đỏ Mang Thít', type: 'craft_village', coordinates: [10.24, 106.01] }],
+    entities: [],
+    posts: [{ id: 'post-1', display_name: 'Lan', content: 'Chia sẻ đường về làng gốm.' }],
+    users: [{ id: 'user-1', username: 'lan', display_name: 'Lan', post_count: 3 }],
+    totals: { entities: 0, posts: 1, users: 1 },
   }
 }
 
-function detailEntity() {
+function mapFixture(options: { stale?: boolean } = {}) {
+  return [{
+    id: 'craft-1',
+    name: 'Gốm đỏ Mang Thít',
+    type: 'craft_village',
+    source_freshness: options.stale
+      ? { freshness_status: 'stale', updated_at: '2026-06-01T00:00:00Z' }
+      : { freshness_status: 'fresh', updated_at: '2026-08-01T00:00:00Z' },
+  }]
+}
+
+function plannerFixture(options: { stale?: boolean } = {}) {
+  return {
+    total: 1,
+    entities: [{
+      id: 'craft-1',
+      name: 'Gốm đỏ Mang Thít',
+      type: 'craft_village',
+      coordinates: [10.24, 106.01],
+      source_freshness: options.stale
+        ? { freshness_status: 'stale', updated_at: '2026-06-01T00:00:00Z' }
+        : { freshness_status: 'fresh', updated_at: '2026-08-01T00:00:00Z' },
+    }],
+  }
+}
+
+function detailEntity(freshness: 'fresh' | 'stale' = 'fresh') {
   return {
     id: 'gom-do-mang-thit',
     name: 'Gốm đỏ Mang Thít',
@@ -259,19 +310,25 @@ function detailEntity() {
     description: 'Thông tin chi tiết về làng gốm.',
     attributes: {},
     images: [],
-    source_freshness: { freshness_status: 'stale', updated_at: '2026-06-01T00:00:00Z' },
+    source_freshness: {
+      freshness_status: freshness,
+      updated_at: freshness === 'stale' ? '2026-06-01T00:00:00Z' : '2026-08-01T00:00:00Z',
+    },
   }
 }
 
-function detailFailure(statusCode: number, detail: string) {
-  return Object.assign(new Error(detail), { statusCode, data: { detail } })
-}
-
-function mockBackgroundApi(path: string) {
+function mockBackgroundApi(path: string, fail = false) {
+  if (fail && (path.startsWith('/api/feed?') || path.startsWith('/api/community/'))) return Promise.reject(new Error('community unavailable'))
   if (path === '/api/feed?limit=10') return Promise.resolve({ posts: [] })
   if (path.startsWith('/api/community/')) return Promise.resolve(null)
   if (path.startsWith('/api/entities/popular?')) return Promise.resolve({ entities: [] })
   return Promise.resolve({})
+}
+
+function mockHome(result: () => Promise<unknown>, failBackground = false) {
+  apiFetchMock.mockImplementation((url: unknown) => String(url) === '/api/homepage'
+    ? result()
+    : mockBackgroundApi(String(url), failBackground))
 }
 
 function mockDetailApi(baseResult: () => Promise<unknown>, galleryResult: () => Promise<unknown> = () => Promise.resolve({ images: [] })) {
@@ -285,13 +342,6 @@ function mockDetailApi(baseResult: () => Promise<unknown>, galleryResult: () => 
   })
 }
 
-async function mountPage(component: Parameters<typeof mountSuspended>[0], options: Parameters<typeof mountSuspended>[1] = {}) {
-  const wrapper = await mountSuspended(component, options)
-  wrappers.push(wrapper)
-  await flushUi()
-  return wrapper
-}
-
 beforeEach(() => {
   apiFetchMock.mockReset()
   navigateToMock.mockReset()
@@ -300,22 +350,19 @@ beforeEach(() => {
   searchAllMock.mockReset()
   localStorage.clear()
   sessionStorage.clear()
+  setOnline(true)
 })
 
 afterEach(resetMountedRoutes)
 
-describe.sequential('public vertical-slice state matrix', () => {
-  it('covers every required route and state without collapsing retryable 5xx into 404', () => {
+describe.sequential('public vertical-slice state matrix contracts', () => {
+  it('requires every route and state without collapsing retryable 5xx into 404', () => {
     const matrix = buildPublicStateMatrix()
 
     expect(matrix).toHaveLength(PUBLIC_ROUTE_SPECS.length * PUBLIC_STATE_KINDS.length)
     expect(new Set(matrix.map(scenario => `${scenario.route.key}:${scenario.state}`)).size).toBe(matrix.length)
-
     for (const route of PUBLIC_ROUTE_SPECS) {
-      expect(matrix.filter(scenario => scenario.route.key === route.key).map(scenario => scenario.state))
-        .toEqual(PUBLIC_STATE_KINDS)
-      expect(Object.keys(ROUTE_STATE_BOUNDARIES[route.key])).toEqual(PUBLIC_STATE_KINDS)
-      expect(Object.values(ROUTE_STATE_BOUNDARIES[route.key]).every(Boolean)).toBe(true)
+      expect(matrix.filter(scenario => scenario.route.key === route.key).map(scenario => scenario.state)).toEqual(PUBLIC_STATE_KINDS)
     }
 
     const retryableDetail = matrix.find(scenario => scenario.route.key === 'detail' && scenario.state === 'retryable-5xx')!
@@ -334,9 +381,13 @@ describe.sequential('public vertical-slice state matrix', () => {
         confirmed404: false,
         actionDockOverlap: 0,
       })
-
       expect(reasons).toContain('content-not-preserved')
     }
+
+    const homePartial = buildPublicStateMatrix().find(item => item.route.key === 'home' && item.state === 'partial')!
+    expect(homePartial.expected).toMatchObject({ preserveContent: true, actions: ['recover'] })
+    const homeOffline = buildPublicStateMatrix().find(item => item.route.key === 'home' && item.state === 'offline')!
+    expect(homeOffline.expected).toMatchObject({ preserveContent: false, actions: ['retry'] })
   })
 
   it('accepts confirmed 404 only on detail and requires a way back to prior results', () => {
@@ -349,209 +400,515 @@ describe.sequential('public vertical-slice state matrix', () => {
       confirmed404: true,
       actionDockOverlap: 0,
     }
-
     expect(evaluatePublicStateEvidence(detail404, validEvidence)).toEqual([])
 
     const search404 = buildPublicStateMatrix().find(item => item.route.key === 'search' && item.state === '404-confirmed')!
     expect(evaluatePublicStateEvidence(search404, validEvidence)).toContain('false-404')
   })
+})
 
-  it('executes homepage content, empty, retry, and pending-refresh boundaries', async () => {
-    apiFetchMock.mockImplementation((url: unknown) => String(url) === '/api/homepage'
-      ? Promise.resolve(homeFixture())
-      : mockBackgroundApi(String(url)))
-    let wrapper = await mountPage(HomePage, { global: { stubs: homeStubs } })
-    expect(wrapper.get('[data-page-recipe="homepage"]').text()).toContain('Theo dòng sông, gặp mùa trái chín')
-    cover('home', ['ready', 'partial', 'stale', 'offline'])
-
-    await resetMountedRoutes()
-    apiFetchMock.mockImplementation((url: unknown) => String(url) === '/api/homepage'
-      ? Promise.resolve({ month: 8, experiences: [], products: [], upcoming_events: [], seasonal: [], top_dishes: [], itineraries: [], area_counts: {} })
-      : mockBackgroundApi(String(url)))
-    wrapper = await mountPage(HomePage, { global: { stubs: homeStubs } })
-    expect(wrapper.get('[data-home-section="recovery"]').text()).toContain('Đang cập nhật nội dung')
-    cover('home', ['empty'])
-
-    await resetMountedRoutes()
-    apiFetchMock.mockImplementation((url: unknown) => String(url) === '/api/homepage'
-      ? Promise.reject(new Error('homepage unavailable'))
-      : mockBackgroundApi(String(url)))
-    wrapper = await mountPage(HomePage, { global: { stubs: homeStubs } })
-    expect(wrapper.get('[data-home-section="recovery"] button').text()).toContain('Tải lại')
-    cover('home', ['error', '404-confirmed', 'retryable-5xx'])
-
-    await resetMountedRoutes()
+describe.sequential('home route state evidence', () => {
+  stateIt('home', 'loading', async () => {
     const pending = deferred<ReturnType<typeof homeFixture>>()
-    let homepageAttempts = 0
-    apiFetchMock.mockImplementation((url: unknown) => {
-      if (String(url) !== '/api/homepage') return mockBackgroundApi(String(url))
-      homepageAttempts += 1
-      return homepageAttempts === 1 ? Promise.reject(new Error('retry')) : pending.promise
-    })
-    wrapper = await mountPage(HomePage, { global: { stubs: homeStubs } })
+    let attempts = 0
+    mockHome(() => ++attempts === 1 ? Promise.reject(new Error('retry')) : pending.promise)
+    const wrapper = await mountPage(HomePage, { global: { stubs: homeStubs } })
     expect(wrapper.find('[data-skeleton-grid]').exists()).toBe(true)
-    cover('home', ['loading'])
+    const evidence = captureRouteStateEvidence('home', 'loading', wrapper)
     pending.resolve(homeFixture())
+    await flushUi()
+    return evidence
   })
 
-  it('executes tourism results, empty recovery, retry, and retry loading', async () => {
-    apiFetchMock.mockResolvedValue(catalogFixture())
-    let wrapper = await mountPage(TourismPage, { global: { stubs: tourismStubs } })
-    expect(wrapper.get('[data-catalog-result]').text()).toContain('Làng gốm Mang Thít')
-    cover('tourism', ['ready', 'partial', 'stale', 'offline'])
-
-    await resetMountedRoutes()
-    apiFetchMock.mockResolvedValue({ entities: [], total: 0 })
-    wrapper = await mountPage(TourismPage, { global: { stubs: tourismStubs } })
-    expect(wrapper.get('[data-catalog-section="results"]').text()).toContain('Không tìm thấy kết quả')
-    cover('tourism', ['empty'])
-
-    await resetMountedRoutes()
-    apiFetchMock.mockRejectedValue(new Error('catalog unavailable'))
-    wrapper = await mountPage(TourismPage, { global: { stubs: tourismStubs } })
-    const retry = wrapper.get('[data-catalog-section="results"]').findAll('button')
-      .find(button => button.text().includes('Thử lại'))!
-    expect(retry.text()).toContain('Thử lại')
-    cover('tourism', ['loading', 'error', '404-confirmed', 'retryable-5xx'])
-    apiFetchMock.mockResolvedValue(catalogFixture())
-    await retry.trigger('click')
-    await vi.waitFor(() => expect(wrapper.find('[data-catalog-result]').exists()).toBe(true))
+  stateIt('home', 'ready', async () => {
+    mockHome(() => Promise.resolve(homeFixture()))
+    const wrapper = await mountPage(HomePage, { global: { stubs: homeStubs } })
+    expect(wrapper.get('[data-page-recipe="homepage"]').text()).toContain('Theo dòng sông, gặp mùa trái chín')
   })
 
-  it('executes search results, zero results, retry, and retry loading', async () => {
-    searchAllMock.mockResolvedValue(searchFixture())
-    let wrapper = await mountPage(SearchPage, { route: '/tim-kiem?q=g%E1%BB%91m', global: { stubs: searchStubs } })
-    expect(wrapper.get('[data-map-list-surface]').text()).toContain('Gốm đỏ Mang Thít')
-    cover('search', ['ready', 'partial', 'stale', 'offline'])
+  stateIt('home', 'partial', async () => {
+    mockHome(() => Promise.resolve(homeFixture()), true)
+    const wrapper = await mountPage(HomePage, { global: { stubs: homeStubs } })
+    expect(wrapper.get('[data-page-recipe="homepage"]').text()).toContain('Vườn ven sông')
+    expect(wrapper.get('[data-home-section="community"]').text()).toContain('Cộng đồng đang khởi động')
+    expect(wrapper.get('[data-home-section="community"] a').text()).toContain('Tham gia cộng đồng')
+  })
 
-    await resetMountedRoutes()
-    searchAllMock.mockResolvedValue({ entities: [], posts: [], users: [], totals: { entities: 0, posts: 0, users: 0 } })
-    wrapper = await mountPage(SearchPage, { route: '/tim-kiem?q=g%E1%BB%91m', global: { stubs: searchStubs } })
-    expect(wrapper.text()).toContain('Chưa thấy đúng ý bạn')
-    cover('search', ['empty'])
+  stateIt('home', 'stale', async () => {
+    mockHome(() => Promise.resolve(homeFixture({ staleEvent: true })))
+    const wrapper = await mountPage(HomePage, { global: { stubs: homeStubs } })
+    expect(wrapper.get('[data-freshness-status="stale"]').text()).toContain('Có thể đã cũ')
+    expect(wrapper.text()).toContain('Đêm hội gốm đỏ')
+  })
 
-    await resetMountedRoutes()
-    const pending = deferred<ReturnType<typeof searchFixture>>()
-    searchAllMock.mockRejectedValueOnce(new Error('search unavailable')).mockImplementationOnce(() => pending.promise)
-    wrapper = await mountPage(SearchPage, { route: '/tim-kiem?q=g%E1%BB%91m', global: { stubs: searchStubs } })
-    const retry = wrapper.get('[role="alert"] button')
-    expect(retry.text()).toContain('Thử lại')
-    cover('search', ['error', '404-confirmed', 'retryable-5xx'])
+  stateIt('home', 'empty', async () => {
+    mockHome(() => Promise.resolve(emptyHomeFixture()))
+    const wrapper = await mountPage(HomePage, { global: { stubs: homeStubs } })
+    expect(wrapper.get('[data-home-section="recovery"]').text()).toContain('Đang cập nhật nội dung')
+  })
+
+  stateIt('home', 'error', async () => {
+    mockHome(() => Promise.reject(new Error('homepage unavailable')))
+    const wrapper = await mountPage(HomePage, { global: { stubs: homeStubs } })
+    expect(wrapper.get('[data-home-section="recovery"] button').text()).toContain('Tải lại')
+  })
+
+  stateIt('home', 'offline', async () => {
+    setOnline(false)
+    mockHome(() => Promise.reject(new TypeError('Failed to fetch')))
+    const wrapper = await mountPage(HomePage, { global: { stubs: homeStubs } })
+    expect(wrapper.get('[data-home-section="recovery"]').text()).toContain('Mạng chậm')
+    expect(wrapper.get('[data-home-section="recovery"] button').text()).toContain('Tải lại')
+  })
+
+  stateIt('home', '404-confirmed', async () => {
+    mockHome(() => Promise.reject(requestFailure(404, 'not_found')))
+    const wrapper = await mountPage(HomePage, { global: { stubs: homeStubs } })
+    expect(wrapper.get('[data-home-section="recovery"] button').text()).toContain('Tải lại')
+    expect(wrapper.text()).not.toContain('Không tìm thấy địa điểm này')
+  })
+
+  stateIt('home', 'retryable-5xx', async () => {
+    mockHome(() => Promise.reject(requestFailure(503, 'temporarily_unavailable')))
+    const wrapper = await mountPage(HomePage, { global: { stubs: homeStubs } })
+    expect(wrapper.get('[data-home-section="recovery"] button').text()).toContain('Tải lại')
+  })
+})
+
+describe.sequential('tourism route state evidence', () => {
+  stateIt('tourism', 'loading', async () => {
+    const pending = deferred<ReturnType<typeof catalogFixture>>()
+    let retrying = false
+    apiFetchMock.mockImplementation(() => retrying ? pending.promise : Promise.reject(new Error('catalog unavailable')))
+    const wrapper = await mountPage(TourismPage, { global: { stubs: tourismStubs } })
+    const retry = wrapper.findAll('[data-catalog-section="results"] button').find(button => button.text().includes('Thử lại'))!
+    expect(retry).toBeTruthy()
+    retrying = true
     await retry.trigger('click')
     await vi.waitFor(() => expect(wrapper.find('[data-skeleton-grid]').exists()).toBe(true))
-    cover('search', ['loading'])
-    pending.resolve(searchFixture())
+    const evidence = captureRouteStateEvidence('tourism', 'loading', wrapper)
+    pending.resolve(catalogFixture())
+    await flushUi()
+    return evidence
   })
 
-  it('executes map results, empty, preserved fallback, retry, and retry loading', async () => {
-    apiFetchMock.mockResolvedValue(mapFixture())
-    let wrapper = await mountPage(MapPage, { route: '/ban-do', global: { stubs: mapStubs } })
-    expect(wrapper.get('[data-map-list-surface]').text()).toContain('Gốm đỏ Mang Thít')
-    cover('map', ['ready', 'stale', 'offline'])
+  stateIt('tourism', 'ready', async () => {
+    apiFetchMock.mockResolvedValue(catalogFixture())
+    const wrapper = await mountPage(TourismPage, { global: { stubs: tourismStubs } })
+    expect(wrapper.get('[data-catalog-result]').text()).toContain('Làng gốm Mang Thít')
+  })
 
+  stateIt('tourism', 'partial', async () => {
+    apiFetchMock.mockResolvedValue(catalogFixture())
+    const wrapper = await mountPage(TourismPage, { global: { stubs: tourismStubs } })
+    apiFetchMock.mockRejectedValue(new Error('catalog refresh unavailable'))
+    await refreshNuxtData('catalog-tourism')
+    await vi.waitFor(() => expect(wrapper.find('[data-page-state="partial"]').exists()).toBe(true))
+    expect(wrapper.get('[data-page-state="partial"]').text()).toContain('Làng gốm Mang Thít')
+    expect(wrapper.find('[data-page-state="partial"] [data-page-state-retry]').exists()).toBe(true)
+  })
+
+  stateIt('tourism', 'stale', async () => {
+    apiFetchMock.mockResolvedValue(catalogFixture({ stale: true }))
+    const wrapper = await mountPage(TourismPage, { global: { stubs: tourismStubs } })
+    expect(wrapper.get('[data-freshness-status="stale"]').text()).toContain('Có thể đã cũ')
+    expect(wrapper.text()).toContain('Làng gốm Mang Thít')
+  })
+
+  stateIt('tourism', 'empty', async () => {
+    apiFetchMock.mockResolvedValue({ entities: [], total: 0 })
+    const wrapper = await mountPage(TourismPage, { global: { stubs: tourismStubs } })
+    expect(wrapper.get('[data-catalog-section="results"]').text()).toContain('Không tìm thấy kết quả')
+    expect(wrapper.findAll('[data-catalog-section="results"] button').some(button => button.text().includes('Xóa bộ lọc'))).toBe(true)
+  })
+
+  stateIt('tourism', 'error', async () => {
+    apiFetchMock.mockRejectedValue(new Error('catalog unavailable'))
+    const wrapper = await mountPage(TourismPage, { global: { stubs: tourismStubs } })
+    expect(wrapper.findAll('[data-catalog-section="results"] button').some(button => button.text().includes('Thử lại'))).toBe(true)
+  })
+
+  stateIt('tourism', 'offline', async () => {
+    apiFetchMock.mockResolvedValue(catalogFixture())
+    const wrapper = await mountPage(TourismPage, { global: { stubs: tourismStubs } })
+    setOnline(false)
+    window.dispatchEvent(new Event('offline'))
+    await flushUi()
+    expect(wrapper.get('[data-page-state="offline"]').text()).toContain('Bạn đang ngoại tuyến')
+    expect(wrapper.get('[data-page-state="offline"]').text()).toContain('Làng gốm Mang Thít')
+  })
+
+  stateIt('tourism', '404-confirmed', async () => {
+    apiFetchMock.mockRejectedValue(requestFailure(404, 'not_found'))
+    const wrapper = await mountPage(TourismPage, { global: { stubs: tourismStubs } })
+    expect(wrapper.findAll('[data-catalog-section="results"] button').some(button => button.text().includes('Thử lại'))).toBe(true)
+    expect(wrapper.text()).not.toContain('Không tìm thấy địa điểm này')
+  })
+
+  stateIt('tourism', 'retryable-5xx', async () => {
+    apiFetchMock.mockRejectedValue(requestFailure(503, 'temporarily_unavailable'))
+    const wrapper = await mountPage(TourismPage, { global: { stubs: tourismStubs } })
+    expect(wrapper.findAll('[data-catalog-section="results"] button').some(button => button.text().includes('Thử lại'))).toBe(true)
+  })
+})
+
+describe.sequential('search route state evidence', () => {
+  const route = '/tim-kiem?q=g%E1%BB%91m'
+
+  stateIt('search', 'loading', async () => {
+    const pending = deferred<ReturnType<typeof searchFixture>>()
+    searchAllMock.mockRejectedValueOnce(new Error('search unavailable')).mockImplementationOnce(() => pending.promise)
+    const wrapper = await mountPage(SearchPage, { route, global: { stubs: searchStubs } })
+    await wrapper.get('[role="alert"] button').trigger('click')
+    await vi.waitFor(() => expect(wrapper.find('[data-skeleton-grid]').exists()).toBe(true))
+    const evidence = captureRouteStateEvidence('search', 'loading', wrapper)
+    pending.resolve(searchFixture())
+    await flushUi()
+    return evidence
+  })
+
+  stateIt('search', 'ready', async () => {
+    searchAllMock.mockResolvedValue(searchFixture())
+    const wrapper = await mountPage(SearchPage, { route, global: { stubs: searchStubs } })
+    expect(wrapper.get('[data-map-list-surface]').text()).toContain('Gốm đỏ Mang Thít')
+  })
+
+  stateIt('search', 'partial', async () => {
+    searchAllMock.mockResolvedValue(searchFixture())
+    const wrapper = await mountPage(SearchPage, { route, global: { stubs: searchStubs } })
+    searchAllMock.mockRejectedValue(new Error('search refresh unavailable'))
+    await refreshNuxtData('search-results')
+    await vi.waitFor(() => expect(wrapper.find('[data-page-state="partial"]').exists()).toBe(true))
+    expect(wrapper.get('[data-page-state="partial"]').text()).toContain('Gốm đỏ Mang Thít')
+    expect(wrapper.find('[data-page-state="partial"] [data-page-state-retry]').exists()).toBe(true)
+  })
+
+  it('does not reuse results from a different query after the new query fails', async () => {
+    searchAllMock.mockImplementation((query: string) => query === 'gốm'
+      ? Promise.resolve(searchFixture())
+      : Promise.reject(new Error('new query unavailable')))
+    const wrapper = await mountPage(SearchPage, { route, global: { stubs: searchStubs } })
+    expect(wrapper.text()).toContain('Gốm đỏ Mang Thít')
+
+    await wrapper.vm.$router.push('/tim-kiem?q=sen')
+    await flushUi()
+
+    expect(wrapper.get('[role="alert"]').text()).toContain('Lỗi tìm kiếm')
+    expect(wrapper.text()).not.toContain('Gốm đỏ Mang Thít')
+  })
+
+  it('preserves post and user results with offline precedence after refresh failure', async () => {
+    searchAllMock.mockResolvedValue(searchCommunityFixture())
+    const wrapper = await mountPage(SearchPage, { route, global: { stubs: searchStubs } })
+    expect(wrapper.text()).toContain('Chia sẻ đường về làng gốm.')
+    expect(wrapper.text()).toContain('Lan')
+
+    setOnline(false)
+    window.dispatchEvent(new Event('offline'))
+    searchAllMock.mockRejectedValue(new Error('offline refresh unavailable'))
+    await refreshNuxtData('search-results')
+    await flushUi()
+
+    expect(wrapper.get('[data-page-state="offline"]').text()).toContain('Bạn đang ngoại tuyến')
+    expect(wrapper.get('[data-page-state="offline"]').text()).toContain('Chia sẻ đường về làng gốm.')
+    expect(wrapper.get('[data-page-state="offline"]').text()).toContain('Lan')
+  })
+
+  stateIt('search', 'stale', async () => {
+    searchAllMock.mockResolvedValue(searchFixture({ stale: true }))
+    const wrapper = await mountPage(SearchPage, { route, global: { stubs: searchStubs } })
+    expect(wrapper.get('[data-freshness-status="stale"]').text()).toContain('Có thể đã cũ')
+    expect(wrapper.text()).toContain('Gốm đỏ Mang Thít')
+  })
+
+  stateIt('search', 'empty', async () => {
+    searchAllMock.mockResolvedValue({ entities: [], posts: [], users: [], totals: { entities: 0, posts: 0, users: 0 } })
+    const wrapper = await mountPage(SearchPage, { route, global: { stubs: searchStubs } })
+    expect(wrapper.text()).toContain('Chưa thấy đúng ý bạn')
+    expect(wrapper.get('[data-recovery-action="browse"]').text()).toContain('Khám phá du lịch')
+  })
+
+  stateIt('search', 'error', async () => {
+    searchAllMock.mockRejectedValue(new Error('search unavailable'))
+    const wrapper = await mountPage(SearchPage, { route, global: { stubs: searchStubs } })
+    expect(wrapper.get('[role="alert"] button').text()).toContain('Thử lại')
+  })
+
+  stateIt('search', 'offline', async () => {
+    searchAllMock.mockResolvedValue(searchFixture())
+    const wrapper = await mountPage(SearchPage, { route, global: { stubs: searchStubs } })
+    setOnline(false)
+    window.dispatchEvent(new Event('offline'))
+    await flushUi()
+    expect(wrapper.get('[data-map-list-surface]').attributes('data-map-state')).toBe('offline')
+    expect(wrapper.get('[data-map-list-surface]').text()).toContain('Gốm đỏ Mang Thít')
+  })
+
+  stateIt('search', '404-confirmed', async () => {
+    searchAllMock.mockRejectedValue(requestFailure(404, 'not_found'))
+    const wrapper = await mountPage(SearchPage, { route, global: { stubs: searchStubs } })
+    expect(wrapper.get('[role="alert"] button').text()).toContain('Thử lại')
+    expect(wrapper.text()).not.toContain('Không tìm thấy địa điểm này')
+  })
+
+  stateIt('search', 'retryable-5xx', async () => {
+    searchAllMock.mockRejectedValue(requestFailure(503, 'temporarily_unavailable'))
+    const wrapper = await mountPage(SearchPage, { route, global: { stubs: searchStubs } })
+    expect(wrapper.get('[role="alert"] button').text()).toContain('Thử lại')
+  })
+})
+
+describe.sequential('map route state evidence', () => {
+  stateIt('map', 'loading', async () => {
+    const pending = deferred<ReturnType<typeof mapFixture>>()
+    apiFetchMock.mockRejectedValueOnce(new Error('map unavailable')).mockImplementationOnce(() => pending.promise)
+    const wrapper = await mountPage(MapPage, { route: '/ban-do', global: { stubs: mapStubs } })
+    await wrapper.get('[data-page-state-retry]').trigger('click')
+    await vi.waitFor(() => expect(wrapper.find('[data-page-state="loading"]').exists()).toBe(true))
+    const evidence = captureRouteStateEvidence('map', 'loading', wrapper)
+    pending.resolve(mapFixture())
+    await flushUi()
+    return evidence
+  })
+
+  stateIt('map', 'ready', async () => {
+    apiFetchMock.mockResolvedValue(mapFixture())
+    const wrapper = await mountPage(MapPage, { route: '/ban-do', global: { stubs: mapStubs } })
+    expect(wrapper.get('[data-map-list-surface]').text()).toContain('Gốm đỏ Mang Thít')
+  })
+
+  stateIt('map', 'partial', async () => {
+    apiFetchMock.mockResolvedValue(mapFixture())
+    const wrapper = await mountPage(MapPage, { route: '/ban-do', global: { stubs: mapStubs } })
     apiFetchMock.mockRejectedValue(new Error('map refresh unavailable'))
     await refreshNuxtData('map-pins-all-all')
     await vi.waitFor(() => expect(wrapper.find('[data-page-state="error"]').exists()).toBe(true))
-    expect(wrapper.get('[data-page-state="error"] [data-map-list-surface]').text()).toContain('Gốm đỏ Mang Thít')
-    cover('map', ['partial'])
-
-    await resetMountedRoutes()
-    apiFetchMock.mockResolvedValue([])
-    wrapper = await mountPage(MapPage, { route: '/ban-do', global: { stubs: mapStubs } })
-    expect(wrapper.get('[data-map-list-surface]').findAll('[data-route-result]')).toHaveLength(0)
-    cover('map', ['empty'])
-
-    await resetMountedRoutes()
-    const pending = deferred<ReturnType<typeof mapFixture>>()
-    apiFetchMock.mockRejectedValueOnce(new Error('map unavailable')).mockImplementationOnce(() => pending.promise)
-    wrapper = await mountPage(MapPage, { route: '/ban-do', global: { stubs: mapStubs } })
-    const retry = wrapper.get('[data-page-state-retry]')
-    expect(wrapper.get('[data-page-state="error"]')).toBeTruthy()
-    cover('map', ['error', '404-confirmed', 'retryable-5xx'])
-    await retry.trigger('click')
-    await vi.waitFor(() => expect(wrapper.find('[data-page-state="loading"]').exists()).toBe(true))
-    cover('map', ['loading'])
-    pending.resolve(mapFixture())
+    expect(wrapper.get('[data-page-state="error"]').text()).toContain('Gốm đỏ Mang Thít')
+    expect(wrapper.find('[data-page-state="error"] [data-page-state-retry]').exists()).toBe(true)
   })
 
-  it('executes detail dossier, partial media, hidden, confirmed 404, and retryable failure boundaries', async () => {
-    mockDetailApi(() => Promise.resolve(detailEntity()))
-    let wrapper = await mountPage(DetailPage, { route: '/dia-diem/gom-do-mang-thit', global: { stubs: detailStubs } })
-    expect(wrapper.get('[data-page-recipe="detail"]').text()).toContain('Gốm đỏ Mang Thít')
-    cover('detail', ['ready', 'stale', 'offline'])
-
-    await resetMountedRoutes()
-    mockDetailApi(() => Promise.resolve(detailEntity()), () => Promise.reject(new Error('gallery unavailable')))
-    wrapper = await mountPage(DetailPage, { route: '/dia-diem/gom-do-mang-thit', global: { stubs: detailStubs } })
-    expect(wrapper.get('[data-page-state="partial"]')).toBeTruthy()
+  stateIt('map', 'stale', async () => {
+    apiFetchMock.mockResolvedValue(mapFixture({ stale: true }))
+    const wrapper = await mountPage(MapPage, { route: '/ban-do', global: { stubs: mapStubs } })
+    expect(wrapper.get('[data-freshness-status="stale"]').text()).toContain('Có thể đã cũ')
     expect(wrapper.text()).toContain('Gốm đỏ Mang Thít')
-    cover('detail', ['partial'])
+  })
 
-    await resetMountedRoutes()
-    mockDetailApi(() => Promise.reject(detailFailure(403, 'hidden')))
-    wrapper = await mountPage(DetailPage, { route: '/dia-diem/gom-do-mang-thit', global: { stubs: detailStubs } })
+  stateIt('map', 'empty', async () => {
+    apiFetchMock.mockResolvedValue([])
+    const wrapper = await mountPage(MapPage, { route: '/ban-do', global: { stubs: mapStubs } })
+    expect(wrapper.get('[data-map-list-surface]').text()).toContain('0 kết quả')
+    expect(wrapper.get('[data-map-fallback]').text()).toContain('Chưa có vị trí để đặt trên bản đồ')
+  })
+
+  stateIt('map', 'error', async () => {
+    apiFetchMock.mockRejectedValue(new Error('map unavailable'))
+    const wrapper = await mountPage(MapPage, { route: '/ban-do', global: { stubs: mapStubs } })
+    expect(wrapper.get('[data-page-state="error"] [data-page-state-retry]').text()).toContain('Tải lại dữ liệu')
+  })
+
+  stateIt('map', 'offline', async () => {
+    apiFetchMock.mockResolvedValue(mapFixture())
+    const wrapper = await mountPage(MapPage, { route: '/ban-do', global: { stubs: mapStubs } })
+    setOnline(false)
+    window.dispatchEvent(new Event('offline'))
+    await flushUi()
+    expect(wrapper.get('[data-map-list-surface]').attributes('data-map-state')).toBe('offline')
+    expect(wrapper.get('[data-map-list-surface]').text()).toContain('Gốm đỏ Mang Thít')
+  })
+
+  stateIt('map', '404-confirmed', async () => {
+    apiFetchMock.mockRejectedValue(requestFailure(404, 'not_found'))
+    const wrapper = await mountPage(MapPage, { route: '/ban-do', global: { stubs: mapStubs } })
+    expect(wrapper.get('[data-page-state="error"] [data-page-state-retry]').text()).toContain('Tải lại dữ liệu')
+    expect(wrapper.text()).not.toContain('Không tìm thấy địa điểm này')
+  })
+
+  stateIt('map', 'retryable-5xx', async () => {
+    apiFetchMock.mockRejectedValue(requestFailure(503, 'temporarily_unavailable'))
+    const wrapper = await mountPage(MapPage, { route: '/ban-do', global: { stubs: mapStubs } })
+    expect(wrapper.get('[data-page-state="error"] [data-page-state-retry]').text()).toContain('Tải lại dữ liệu')
+  })
+})
+
+describe.sequential('detail route state evidence', () => {
+  const route = '/dia-diem/gom-do-mang-thit'
+
+  stateIt('detail', 'loading', async () => {
+    const pending = deferred<ReturnType<typeof detailEntity>>()
+    let attempts = 0
+    mockDetailApi(() => ++attempts === 1 ? Promise.reject(new Error('detail unavailable')) : pending.promise)
+    const wrapper = await mountPage(DetailPage, { route, global: { stubs: detailStubs } })
+    await wrapper.get('[data-page-state-retry]').trigger('click')
+    await vi.waitFor(() => expect(wrapper.find('[data-page-state="loading"]').exists()).toBe(true))
+    const evidence = captureRouteStateEvidence('detail', 'loading', wrapper)
+    pending.resolve(detailEntity())
+    await flushUi()
+    return evidence
+  })
+
+  stateIt('detail', 'ready', async () => {
+    mockDetailApi(() => Promise.resolve(detailEntity()))
+    const wrapper = await mountPage(DetailPage, { route, global: { stubs: detailStubs } })
+    expect(wrapper.get('[data-page-recipe="detail"]').text()).toContain('Gốm đỏ Mang Thít')
+  })
+
+  stateIt('detail', 'partial', async () => {
+    mockDetailApi(() => Promise.resolve(detailEntity()), () => Promise.reject(new Error('gallery unavailable')))
+    const wrapper = await mountPage(DetailPage, { route, global: { stubs: detailStubs } })
+    expect(wrapper.get('[data-page-state="partial"]').text()).toContain('Thông tin địa điểm vẫn dùng được')
+    expect(wrapper.text()).toContain('Gốm đỏ Mang Thít')
+    expect(wrapper.find('[data-page-state="partial"] [data-page-state-retry]').exists()).toBe(true)
+  })
+
+  stateIt('detail', 'stale', async () => {
+    mockDetailApi(() => Promise.resolve(detailEntity('stale')))
+    const wrapper = await mountPage(DetailPage, { route, global: { stubs: detailStubs } })
+    expect(wrapper.get('[data-freshness-status="stale"]').text()).toContain('Có thể đã cũ')
+    expect(wrapper.text()).toContain('Gốm đỏ Mang Thít')
+  })
+
+  stateIt('detail', 'empty', async () => {
+    mockDetailApi(() => Promise.reject(requestFailure(403, 'hidden')))
+    const wrapper = await mountPage(DetailPage, { route, global: { stubs: detailStubs } })
     expect(wrapper.text()).toContain('Nội dung chưa công khai')
-    expect(wrapper.text()).toContain('Quay lại')
-    cover('detail', ['empty'])
+    expect(wrapper.get('button').text()).toContain('Quay lại')
+  })
 
-    await resetMountedRoutes()
-    mockDetailApi(() => Promise.reject(detailFailure(404, 'not_found')))
-    wrapper = await mountPage(DetailPage, { route: '/dia-diem/gom-do-mang-thit', global: { stubs: detailStubs } })
+  stateIt('detail', 'error', async () => {
+    mockDetailApi(() => Promise.reject(new Error('detail unavailable')))
+    const wrapper = await mountPage(DetailPage, { route, global: { stubs: detailStubs } })
+    expect(wrapper.get('[data-page-state="error"] [data-page-state-retry]').text()).toContain('Thử lại')
+    expect(wrapper.text()).toContain('Quay lại kết quả trước')
+  })
+
+  stateIt('detail', 'offline', async () => {
+    mockDetailApi(() => Promise.resolve(detailEntity()))
+    const wrapper = await mountPage(DetailPage, { route, global: { stubs: detailStubs } })
+    setOnline(false)
+    window.dispatchEvent(new Event('offline'))
+    await flushUi()
+    expect(wrapper.get('[data-page-state="offline"]').text()).toContain('Bạn đang ngoại tuyến')
+    expect(wrapper.get('[data-page-recipe="detail"]').text()).toContain('Gốm đỏ Mang Thít')
+  })
+
+  stateIt('detail', '404-confirmed', async () => {
+    mockDetailApi(() => Promise.reject(requestFailure(404, 'not_found')))
+    const wrapper = await mountPage(DetailPage, { route, global: { stubs: detailStubs } })
     expect(wrapper.text()).toContain('Không tìm thấy địa điểm này')
     expect(wrapper.text()).toContain('Khám phá điểm đến')
     expect(wrapper.get('button').text()).toContain('Quay lại')
-    cover('detail', ['404-confirmed'])
-
-    await resetMountedRoutes()
-    const pending = deferred<ReturnType<typeof detailEntity>>()
-    let detailAttempts = 0
-    mockDetailApi(() => {
-      detailAttempts += 1
-      return detailAttempts === 1
-        ? Promise.reject(detailFailure(503, 'temporarily_unavailable'))
-        : pending.promise
-    })
-    wrapper = await mountPage(DetailPage, { route: '/dia-diem/gom-do-mang-thit', global: { stubs: detailStubs } })
-    expect(wrapper.get('.detail-recovery-page').text()).toContain('Quay lại kết quả trước')
-    expect(wrapper.get('.detail-recovery-page').text()).toContain('Khám phá điểm đến')
-    const retry = wrapper.get('[data-page-state-retry]')
-    cover('detail', ['error', 'retryable-5xx'])
-    await retry.trigger('click')
-    await vi.waitFor(() => expect(wrapper.find('[data-page-state="loading"]').exists()).toBe(true))
-    cover('detail', ['loading'])
-    pending.resolve(detailEntity())
   })
 
-  it('executes planner picker results, empty, retry, and editable pending-refresh boundaries', async () => {
-    plannerListEntitiesMock.mockResolvedValue(plannerFixture())
-    let wrapper = await mountPage(PlannerPage, { route: '/tao-lich-trinh', global: { stubs: plannerStubs } })
-    expect(wrapper.get('.picker-list').text()).toContain('Gốm đỏ Mang Thít')
-    expect(wrapper.find('.planner-action-dock').exists()).toBe(true)
-    cover('planner', ['ready', 'partial', 'stale', 'offline'])
+  stateIt('detail', 'retryable-5xx', async () => {
+    mockDetailApi(() => Promise.reject(requestFailure(503, 'temporarily_unavailable')))
+    const wrapper = await mountPage(DetailPage, { route, global: { stubs: detailStubs } })
+    expect(wrapper.get('[data-page-state="error"] [data-page-state-retry]').text()).toContain('Thử lại')
+    expect(wrapper.text()).not.toContain('Không tìm thấy địa điểm này')
+  })
+})
 
-    await resetMountedRoutes()
-    plannerListEntitiesMock.mockResolvedValue({ total: 0, entities: [] })
-    wrapper = await mountPage(PlannerPage, { route: '/tao-lich-trinh', global: { stubs: plannerStubs } })
-    expect(wrapper.get('.picker-list').text()).toContain('Không tìm thấy')
-    cover('planner', ['empty'])
+describe.sequential('planner route state evidence', () => {
+  const route = '/tao-lich-trinh'
 
-    await resetMountedRoutes()
+  stateIt('planner', 'loading', async () => {
     const pending = deferred<ReturnType<typeof plannerFixture>>()
     plannerListEntitiesMock.mockRejectedValueOnce(new Error('picker unavailable')).mockImplementationOnce(() => pending.promise)
-    wrapper = await mountPage(PlannerPage, { route: '/tao-lich-trinh', global: { stubs: plannerStubs } })
-    const retry = wrapper.get('.picker-empty button')
-    expect(retry.text()).toContain('Thử lại')
-    cover('planner', ['error', '404-confirmed', 'retryable-5xx'])
-    await retry.trigger('click')
-    await nextTick()
-    expect(wrapper.find('.planner-action-dock').exists()).toBe(true)
+    const wrapper = await mountPage(PlannerPage, { route, global: { stubs: plannerStubs } })
+    await wrapper.get('.picker-empty button').trigger('click')
+    await flushUi()
+    expect(wrapper.get('[data-picker-state="loading"]').text()).toContain('Đang tải danh sách')
     expect(wrapper.find('.builder-empty').exists()).toBe(true)
-    cover('planner', ['loading'])
+    expect(wrapper.find('.planner-action-dock').exists()).toBe(true)
+    const evidence = captureRouteStateEvidence('planner', 'loading', wrapper)
     pending.resolve(plannerFixture())
+    await flushUi()
+    return evidence
   })
 
-  it('binds every matrix row to an executed route-owned page boundary', () => {
-    expect([...routeOwnedPageExecutions].sort()).toEqual(
+  stateIt('planner', 'ready', async () => {
+    plannerListEntitiesMock.mockResolvedValue(plannerFixture())
+    const wrapper = await mountPage(PlannerPage, { route, global: { stubs: plannerStubs } })
+    expect(wrapper.get('.picker-list').text()).toContain('Gốm đỏ Mang Thít')
+    expect(wrapper.find('.planner-action-dock').exists()).toBe(true)
+  })
+
+  stateIt('planner', 'partial', async () => {
+    plannerListEntitiesMock.mockResolvedValue(plannerFixture())
+    const wrapper = await mountPage(PlannerPage, { route, global: { stubs: plannerStubs } })
+    plannerListEntitiesMock.mockRejectedValue(new Error('picker refresh unavailable'))
+    await refreshNuxtData('planner-entities')
+    await vi.waitFor(() => expect(wrapper.text()).toContain('Không thể tải danh sách'))
+    expect(wrapper.get('.picker-list').text()).toContain('Gốm đỏ Mang Thít')
+    expect(wrapper.get('.picker-empty button').text()).toContain('Thử lại')
+    expect(wrapper.find('.planner-action-dock').exists()).toBe(true)
+  })
+
+  it('does not reuse picker results from a different query after the new query fails', async () => {
+    plannerListEntitiesMock.mockImplementation((options: { q?: string }) => options.q === 'sen'
+      ? Promise.reject(new Error('new picker query unavailable'))
+      : Promise.resolve(plannerFixture()))
+    const wrapper = await mountPage(PlannerPage, { route, global: { stubs: plannerStubs } })
+    expect(wrapper.get('.picker-list').text()).toContain('Gốm đỏ Mang Thít')
+
+    await wrapper.get('input[aria-label="Tìm điểm đến"]').setValue('sen')
+    await flushUi()
+
+    expect(wrapper.get('.picker-empty button').text()).toContain('Thử lại')
+    expect(wrapper.get('.picker-list').text()).not.toContain('Gốm đỏ Mang Thít')
+  })
+
+  stateIt('planner', 'stale', async () => {
+    plannerListEntitiesMock.mockResolvedValue(plannerFixture({ stale: true }))
+    const wrapper = await mountPage(PlannerPage, { route, global: { stubs: plannerStubs } })
+    await wrapper.get('.picker-item').trigger('click')
+    await flushUi()
+    expect(wrapper.get('[data-friction-code="stale-stop-facts"]').text()).toContain('Dữ kiện có thể đã cũ')
+    expect(wrapper.text()).toContain('Gốm đỏ Mang Thít')
+  })
+
+  stateIt('planner', 'empty', async () => {
+    plannerListEntitiesMock.mockResolvedValue({ total: 0, entities: [] })
+    const wrapper = await mountPage(PlannerPage, { route, global: { stubs: plannerStubs } })
+    expect(wrapper.get('.picker-list').text()).toContain('Không tìm thấy')
+    expect(wrapper.find('.builder-empty').exists()).toBe(true)
+  })
+
+  stateIt('planner', 'error', async () => {
+    plannerListEntitiesMock.mockRejectedValue(new Error('picker unavailable'))
+    const wrapper = await mountPage(PlannerPage, { route, global: { stubs: plannerStubs } })
+    expect(wrapper.get('.picker-empty button').text()).toContain('Thử lại')
+    expect(wrapper.find('.planner-action-dock').exists()).toBe(true)
+  })
+
+  stateIt('planner', 'offline', async () => {
+    plannerListEntitiesMock.mockResolvedValue(plannerFixture())
+    const wrapper = await mountPage(PlannerPage, { route, global: { stubs: plannerStubs } })
+    setOnline(false)
+    window.dispatchEvent(new Event('offline'))
+    await flushUi()
+    expect(wrapper.get('[data-friction-code="offline-draft"]').text()).toContain('Bản nháp ngoại tuyến')
+    expect(wrapper.find('.planner-action-dock').exists()).toBe(true)
+  })
+
+  stateIt('planner', '404-confirmed', async () => {
+    plannerListEntitiesMock.mockRejectedValue(requestFailure(404, 'not_found'))
+    const wrapper = await mountPage(PlannerPage, { route, global: { stubs: plannerStubs } })
+    expect(wrapper.get('.picker-empty button').text()).toContain('Thử lại')
+    expect(wrapper.text()).not.toContain('Không tìm thấy địa điểm này')
+  })
+
+  stateIt('planner', 'retryable-5xx', async () => {
+    plannerListEntitiesMock.mockRejectedValue(requestFailure(503, 'temporarily_unavailable'))
+    const wrapper = await mountPage(PlannerPage, { route, global: { stubs: plannerStubs } })
+    expect(wrapper.get('.picker-empty button').text()).toContain('Thử lại')
+    expect(wrapper.find('.planner-action-dock').exists()).toBe(true)
+  })
+})
+
+describe.sequential('route-owned state evidence coverage', () => {
+  it('executes and validates every matrix row exactly once', () => {
+    expect([...executedStateRows].sort()).toEqual(
       buildPublicStateMatrix().map(scenario => `${scenario.route.key}:${scenario.state}`).sort(),
     )
   })

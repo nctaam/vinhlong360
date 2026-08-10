@@ -54,13 +54,15 @@ export const SMOKE_JOURNEY_STEPS = Object.freeze([
 
 function expectedStateContract(route, state) {
   const detail404 = route.key === 'detail' && state === '404-confirmed'
+  const homeOffline = route.key === 'home' && state === 'offline'
   const actions = []
-  if (state === 'partial') actions.push('retry-panel')
+  if (state === 'partial') actions.push(route.key === 'home' ? 'recover' : 'retry-panel')
   if (state === 'empty') actions.push('recover')
   if (state === 'error' || state === 'retryable-5xx' || (state === '404-confirmed' && !detail404)) actions.push('retry')
+  if (homeOffline) actions.push('retry')
   if (detail404) actions.push('back-to-results')
   return Object.freeze({
-    preserveContent: ['partial', 'stale', 'offline'].includes(state),
+    preserveContent: ['partial', 'stale', 'offline'].includes(state) && !homeOffline,
     contentVisible: state === 'ready',
     confirmed404: detail404,
     actions: Object.freeze(actions),
@@ -268,7 +270,11 @@ export async function activateVisibleControl({ pointerClick, elementClick, isAct
   throw new Error(`Visible control did not reach its expected state after ${maxAttempts} attempts`)
 }
 
-let baseUrl = process.env.SMOKE_BASE_URL || 'http://localhost:3000'
+export function managedSmokeBaseUrl(env = process.env) {
+  return env.SMOKE_BASE_URL || 'http://127.0.0.1:3000'
+}
+
+let baseUrl = managedSmokeBaseUrl()
 let apiBaseUrl = process.env.SMOKE_API_BASE_URL || baseUrl
 const phone = process.env.SMOKE_PHONE || '0909090909'
 const password = process.env.SMOKE_PASSWORD || 'PassHomnay.2'
@@ -716,8 +722,8 @@ export function managedSmokeLaunchConfig({ baseUrl: requestedBaseUrl, explicitBa
   const requested = new URL(requestedBaseUrl)
   const port = Number(requested.port || (requested.protocol === 'https:' ? 443 : 80))
   const host = requested.hostname
-  if (forceManaged && !['127.0.0.1', 'localhost'].includes(host)) {
-    throw new Error('SMOKE_FORCE_MANAGED_APP only supports an explicit loopback base URL')
+  if (forceManaged && (requested.protocol !== 'http:' || host !== '127.0.0.1')) {
+    throw new Error('SMOKE_FORCE_MANAGED_APP only supports an explicit http://127.0.0.1:<port> base URL')
   }
   if (forceManaged && (!explicitBaseUrl || !requested.port || !Number.isInteger(port) || port <= 0)) {
     throw new Error('SMOKE_FORCE_MANAGED_APP requires SMOKE_BASE_URL with an explicit port')
@@ -790,6 +796,36 @@ function parsePidList(values) {
     .filter(value => Number.isInteger(value) && value > 0))].sort((left, right) => left - right)
 }
 
+function normalizeListenerAddress(value) {
+  const address = String(value || '').trim().replace(/^\[|\]$/g, '')
+  return address.startsWith('::ffff:') ? address.slice('::ffff:'.length) : address
+}
+
+function normalizeListenerEntries(values) {
+  const input = Array.isArray(values) ? values : values == null ? [] : [values]
+  const unique = new Map()
+  for (const value of input) {
+    const address = normalizeListenerAddress(value?.address)
+    const port = Number(value?.port)
+    const pid = Number(value?.pid)
+    if (!address || !Number.isInteger(port) || port <= 0 || !Number.isInteger(pid) || pid <= 0) continue
+    unique.set(`${address}:${port}:${pid}`, Object.freeze({ address, port, pid }))
+  }
+  return [...unique.values()].sort((left, right) => left.address.localeCompare(right.address) || left.port - right.port || left.pid - right.pid)
+}
+
+function parseListenerEndpoint(value, fallbackPort) {
+  const endpoint = String(value || '').trim().split(/\s+/)[0] || ''
+  const bracketed = endpoint.match(/^\[([^\]]+)\]:(\d+)$/)
+  if (bracketed) return { address: normalizeListenerAddress(bracketed[1]), port: Number(bracketed[2]) }
+  const separator = endpoint.lastIndexOf(':')
+  if (separator < 0) return { address: normalizeListenerAddress(endpoint), port: fallbackPort }
+  return {
+    address: normalizeListenerAddress(endpoint.slice(0, separator)),
+    port: Number(endpoint.slice(separator + 1)) || fallbackPort,
+  }
+}
+
 function windowsManagedPortOwnership({ rootPid, port, run }) {
   const script = `
 $rootProcessId = ${rootPid}
@@ -801,8 +837,10 @@ do {
   $newChildren = @($children | Where-Object { $tree -notcontains $_ })
   $tree += $newChildren
 } while ($newChildren.Count -gt 0)
-$listeners = @(Get-NetTCPConnection -State Listen -LocalPort $listenerPort -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique | ForEach-Object { [int]$_ })
-[pscustomobject]@{ treePids = @($tree | Sort-Object -Unique); listenerPids = @($listeners | Sort-Object -Unique) } | ConvertTo-Json -Compress
+$listeners = @(Get-NetTCPConnection -State Listen -LocalPort $listenerPort -ErrorAction SilentlyContinue | ForEach-Object {
+  [pscustomobject]@{ address = [string]$_.LocalAddress; port = [int]$_.LocalPort; pid = [int]$_.OwningProcess }
+})
+[pscustomobject]@{ treePids = @($tree | Sort-Object -Unique); listeners = @($listeners) } | ConvertTo-Json -Compress
 `
   const result = run('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', script], {
     encoding: 'utf8',
@@ -814,9 +852,11 @@ $listeners = @(Get-NetTCPConnection -State Listen -LocalPort $listenerPort -Erro
   }
   try {
     const parsed = JSON.parse(String(result.stdout || '{}').trim() || '{}')
+    const listeners = normalizeListenerEntries(parsed.listeners)
     return {
       treePids: parsePidList(parsed.treePids),
-      listenerPids: parsePidList(parsed.listenerPids),
+      listenerPids: parsePidList(listeners.map(listener => listener.pid)),
+      listeners,
     }
   } catch (error) {
     throw new Error(`Unable to parse Windows managed port ownership: ${error.message}`)
@@ -840,30 +880,47 @@ function unixManagedPortOwnership({ rootPid, port, run }) {
     }
   }
 
-  let listenerPids = []
-  const lsofResult = run('lsof', ['-nP', `-iTCP:${port}`, '-sTCP:LISTEN', '-t'], { encoding: 'utf8', timeout: 10_000 })
+  let listeners = []
+  const lsofResult = run('lsof', ['-nP', `-iTCP:${port}`, '-sTCP:LISTEN', '-Fpn'], { encoding: 'utf8', timeout: 10_000 })
   if (!lsofResult?.error && lsofResult?.status === 0) {
-    listenerPids = String(lsofResult.stdout || '').split(/\s+/).filter(Boolean)
+    let listenerPid = null
+    for (const line of String(lsofResult.stdout || '').split(/\r?\n/)) {
+      if (line.startsWith('p')) listenerPid = Number(line.slice(1))
+      if (!line.startsWith('n') || !Number.isInteger(listenerPid) || listenerPid <= 0) continue
+      const endpoint = parseListenerEndpoint(line.slice(1), port)
+      listeners.push({ ...endpoint, pid: listenerPid })
+    }
   } else {
     const ssResult = run('ss', ['-ltnp'], { encoding: 'utf8', timeout: 10_000 })
     if (ssResult?.error || ssResult?.status !== 0) {
       throw new Error(`Unable to inspect managed listener ownership: ${lsofResult?.error?.message || ssResult?.error?.message || 'lsof and ss unavailable'}`)
     }
-    listenerPids = String(ssResult.stdout || '').split(/\r?\n/)
-      .filter(line => new RegExp(`:${port}(?:\\s|$)`).test(line))
-      .flatMap(line => [...line.matchAll(/pid=(\d+)/g)].map(match => match[1]))
+    listeners = String(ssResult.stdout || '').split(/\r?\n/).flatMap((line) => {
+      const columns = line.trim().split(/\s+/)
+      const endpoint = parseListenerEndpoint(columns[3], port)
+      if (endpoint.port !== port) return []
+      return [...line.matchAll(/pid=(\d+)/g)].map(match => ({ ...endpoint, pid: Number(match[1]) }))
+    })
   }
-  return { treePids: parsePidList(treePids), listenerPids: parsePidList(listenerPids) }
+  const normalizedListeners = normalizeListenerEntries(listeners)
+  return {
+    treePids: parsePidList(treePids),
+    listenerPids: parsePidList(normalizedListeners.map(listener => listener.pid)),
+    listeners: normalizedListeners,
+  }
 }
 
-export function inspectManagedPortOwnership({ rootPid, port, platform = process.platform, run = spawnSync }) {
+export function inspectManagedPortOwnership({ rootPid, host, port, platform = process.platform, run = spawnSync }) {
   if (!Number.isInteger(rootPid) || rootPid <= 0) throw new Error(`Invalid managed root PID: ${rootPid}`)
+  if (!host) throw new Error('Invalid managed listener host: <missing>')
   if (!Number.isInteger(port) || port <= 0 || port > 65535) throw new Error(`Invalid managed listener port: ${port}`)
   const evidence = platform === 'win32'
     ? windowsManagedPortOwnership({ rootPid, port, run })
     : unixManagedPortOwnership({ rootPid, port, run })
-  const owned = evidence.listenerPids.some(pid => evidence.treePids.includes(pid))
-  return Object.freeze({ ...evidence, owned })
+  const targetAddress = normalizeListenerAddress(host)
+  const targetListeners = evidence.listeners.filter(listener => listener.address === targetAddress && listener.port === port)
+  const owned = targetListeners.some(listener => evidence.treePids.includes(listener.pid))
+  return Object.freeze({ ...evidence, targetAddress, targetListeners: Object.freeze(targetListeners), owned })
 }
 
 export async function launchManagedSmokeApp({
@@ -913,12 +970,15 @@ export async function launchManagedSmokeApp({
         assertChildAlive()
         const ownership = await inspectOwnership({ rootPid: child.pid, host, port })
         assertChildAlive()
-        if (!ownership?.owned) {
-          const listeners = parsePidList(ownership?.listenerPids)
+        const targetListeners = normalizeListenerEntries(ownership?.listeners)
+          .filter(listener => listener.address === normalizeListenerAddress(host) && listener.port === port)
+        const targetOwned = targetListeners.some(listener => parsePidList(ownership?.treePids).includes(listener.pid))
+        if (!targetOwned) {
+          const listeners = parsePidList(targetListeners.map(listener => listener.pid))
           const tree = parsePidList(ownership?.treePids)
           const listenerLabel = listeners.length ? listeners.join(',') : '<unresolved>'
           const treeLabel = tree.length ? tree.join(',') : String(child.pid || '<unknown>')
-          throw new Error(`Managed smoke URL ${requestedBaseUrl} responded, but listener ${listenerLabel} is outside managed process tree ${treeLabel}`)
+          throw new Error(`Managed smoke URL ${requestedBaseUrl} responded at ${host}:${port}, but target listener ${listenerLabel} is outside managed process tree ${treeLabel}`)
         }
         return child
       }
@@ -952,7 +1012,7 @@ export async function closeSmokeServers({ appProcess, fixtureServer }) {
 
 async function resolveWebApp() {
   const forceManaged = process.env.SMOKE_FORCE_MANAGED_APP === '1'
-  const launch = managedSmokeLaunchConfig({
+  let launch = managedSmokeLaunchConfig({
     baseUrl,
     explicitBaseUrl: Boolean(process.env.SMOKE_BASE_URL),
     forceManaged,
@@ -969,6 +1029,11 @@ async function resolveWebApp() {
         return null
       }
     }
+    launch = managedSmokeLaunchConfig({
+      baseUrl,
+      explicitBaseUrl: true,
+      forceManaged: true,
+    })
   }
 
   const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
