@@ -7,6 +7,15 @@ import * as publicAccessibilityGate from '../scripts/check-public-accessibility.
 
 const { evaluatePublicAccessibilitySnapshot, launchChrome } = publicAccessibilityGate
 
+function workflowStep(workflow, name) {
+  workflow = workflow.replaceAll('\r\n', '\n')
+  const marker = `      - name: ${name}\n`
+  const start = workflow.indexOf(marker)
+  expect(start).toBeGreaterThanOrEqual(0)
+  const next = workflow.indexOf('\n      - name:', start + marker.length)
+  return workflow.slice(start, next === -1 ? workflow.length : next)
+}
+
 const passingSnapshot = {
   forcedColorsActive: true,
   forcedColorAdjust: 'auto',
@@ -52,6 +61,22 @@ describe('public accessibility browser gate', () => {
 
     expect(packageJson.scripts['check:public-accessibility']).toBe('node scripts/check-public-accessibility.mjs')
     expect(ci).toContain('npm run check:public-accessibility')
+  })
+
+  it('runs visual and accessibility evidence independently after failures', async () => {
+    const ci = await readFile(resolve(import.meta.dirname, '../../.github/workflows/ci.yml'), 'utf8')
+    for (const name of [
+      'Capture fresh public visual evidence',
+      'Start preview server for a11y scan',
+      'Accessibility scan (axe-core, 14 trang)',
+      'Accessibility gate (R30.6)',
+      'Stop preview server',
+      'Upload axe report',
+    ]) {
+      expect(workflowStep(ci, name)).toContain('if: always()')
+    }
+    expect(workflowStep(ci, 'Start preview server for a11y scan')).toContain('a11y-unavailable')
+    expect(workflowStep(ci, 'Accessibility scan (axe-core, 14 trang)')).toContain('A11Y_AVAILABLE')
   })
 
   it('accepts forced-colors and a native 200% browser-zoom snapshot', () => {

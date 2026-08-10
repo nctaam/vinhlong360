@@ -356,6 +356,7 @@ jobs:
       # Capture a complete new candidate set on every CI run. The smoke runner
       # binds each PNG and its manifest to this exact checkout revision.
       - name: Capture fresh public visual evidence
+        if: always()
         working-directory: .
         env:
           SMOKE_BASE_URL: http://127.0.0.1:4173
@@ -381,34 +382,56 @@ jobs:
       # (scripts/axe_scan.mjs) trên Chrome có sẵn của runner: không thêm
       # puppeteer/playwright, không tải browser riêng.
       - name: Start preview server for a11y scan
+        if: always()
         run: |
+          if [ ! -d .output ]; then
+            echo "a11y-unavailable: build output missing" | tee ../a11y-status.txt
+            echo "A11Y_AVAILABLE=false" >> "$GITHUB_ENV"
+            exit 1
+          fi
           npm run preview &
-          echo "PREVIEW_PID=$!" >> $GITHUB_ENV
+          echo "PREVIEW_PID=$!" >> "$GITHUB_ENV"
+          echo "A11Y_AVAILABLE=true" >> "$GITHUB_ENV"
         env:
           NUXT_PUBLIC_SITE_NOINDEX: "true"
 
       - name: Accessibility scan (axe-core, 14 trang)
+        if: always()
         working-directory: .
-        run: node scripts/axe_scan.mjs
+        run: |
+          if [ "${A11Y_AVAILABLE:-false}" != "true" ]; then
+            echo "a11y-unavailable: preview not started" | tee a11y-status.txt
+            exit 1
+          fi
+          node scripts/axe_scan.mjs
         env:
           AXE_BASE_URL: http://localhost:3000
 
       - name: Accessibility gate (R30.6)
+        if: always()
         working-directory: .
         env:
           PYTHONPATH: scripts
-        run: python3 -m checks.check_axe
+        run: |
+          if [ "${A11Y_AVAILABLE:-false}" != "true" ]; then
+            echo "a11y-unavailable: preview not started" | tee a11y-status.txt
+            exit 1
+          fi
+          python3 -m checks.check_axe
 
       - name: Stop preview server
         if: always()
-        run: kill "$PREVIEW_PID" 2>/dev/null || true
+        run: if [ -n "${PREVIEW_PID:-}" ]; then kill "$PREVIEW_PID" 2>/dev/null || true; fi
 
       - name: Upload axe report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: axe-report
-          path: axe-report.json
+          path: |
+            axe-report.json
+            a11y-status.txt
+          if-no-files-found: warn
           retention-days: 14
 
   # ── 5. Docker build (agent) ──────────────────────────────────
