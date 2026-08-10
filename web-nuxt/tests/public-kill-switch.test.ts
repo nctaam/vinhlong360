@@ -63,7 +63,7 @@ describe('public feature kill switches', () => {
     expect(feature.capabilityMode('recommendation')).toBe('enhanced')
     expect(feature.enabled('ai_recommendations')).toBe(true)
     expect(feature.enabled('preference_ui_v1')).toBe(false)
-    expect(feature.enabled('ai_tips')).toBe(false)
+    expect(feature.enabled('ai_tips')).toBe(true)
   })
 
   it.each([
