@@ -1,18 +1,19 @@
-import { spawn } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
+import { createHash, randomUUID } from 'node:crypto'
 import { existsSync } from 'node:fs'
 import { createServer } from 'node:http'
-import { mkdir, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 export const PUBLIC_ROUTE_SPECS = Object.freeze([
-  Object.freeze({ key: 'home', path: '/', visualPath: '/' }),
-  Object.freeze({ key: 'tourism', path: '/du-lich', visualPath: '/du-lich' }),
-  Object.freeze({ key: 'search', path: '/tim-kiem', visualPath: '/tim-kiem?q=g%E1%BB%91m&intent=place&area=vinh-long&type=craft_village' }),
-  Object.freeze({ key: 'map', path: '/ban-do', visualPath: '/ban-do?q=g%E1%BB%91m&intent=place&area=vinh-long&type=craft_village' }),
-  Object.freeze({ key: 'detail', path: '/dia-diem/{id}', visualPath: '/dia-diem/gom-do-mang-thit' }),
-  Object.freeze({ key: 'planner', path: '/tao-lich-trinh', visualPath: '/tao-lich-trinh?add=gom-do-mang-thit' }),
+  Object.freeze({ key: 'home', path: '/', visualPath: '/', recipe: 'homepage', readySelector: '[data-home-section="editorial-lead"] h1' }),
+  Object.freeze({ key: 'tourism', path: '/du-lich', visualPath: '/du-lich', recipe: 'discovery', readySelector: '[data-catalog-result]' }),
+  Object.freeze({ key: 'search', path: '/tim-kiem', visualPath: '/tim-kiem?q=g%E1%BB%91m&intent=place&area=vinh-long&type=craft_village', recipe: 'search', readySelector: '[data-map-list-surface]' }),
+  Object.freeze({ key: 'map', path: '/ban-do', visualPath: '/ban-do?q=g%E1%BB%91m&intent=place&area=vinh-long&type=craft_village', recipe: 'map', readySelector: '[data-map-list-surface]' }),
+  Object.freeze({ key: 'detail', path: '/dia-diem/{id}', visualPath: '/dia-diem/gom-do-mang-thit', recipe: 'detail', readySelector: '[data-detail-action-safe-area]' }),
+  Object.freeze({ key: 'planner', path: '/tao-lich-trinh', visualPath: '/tao-lich-trinh?add=gom-do-mang-thit', recipe: 'planner', readySelector: '.planner-picker' }),
 ])
 
 export const PUBLIC_STATE_KINDS = Object.freeze([
@@ -28,6 +29,7 @@ export const PUBLIC_STATE_KINDS = Object.freeze([
 ])
 
 export const PUBLIC_VISUAL_THEMES = Object.freeze(['nocturne', 'parchment'])
+export const PUBLIC_VISUAL_SCHEMA_REVISION = 'adaptive-nocturne-public-v2'
 export const PUBLIC_VISUAL_VIEWPORTS = Object.freeze([
   Object.freeze({ width: 375, height: 812 }),
   Object.freeze({ width: 390, height: 844 }),
@@ -72,6 +74,35 @@ export function buildPublicStateMatrix() {
   })))
 }
 
+export function buildPublicStateFixture(scenario) {
+  const fixtures = {
+    loading: { kind: 'loading' },
+    ready: { kind: 'ready', data: { id: scenario.route.key } },
+    partial: { kind: 'partial', data: { id: scenario.route.key }, failedPanels: ['media'] },
+    stale: { kind: 'stale', data: { id: scenario.route.key }, updatedAt: '2026-08-09' },
+    empty: { kind: 'empty', recovery: { id: 'browse', label: 'Xem tất cả' } },
+    error: { kind: 'error', retry: { label: 'Thử lại' } },
+    offline: { kind: 'offline', cached: { id: scenario.route.key }, cachedAt: '2026-08-09' },
+    '404-confirmed': { kind: 'error', retry: { label: 'Thử lại' } },
+    'retryable-5xx': { kind: 'error', retry: { label: 'Thử lại' } },
+  }
+  const isConfirmedDetail404 = scenario.route.key === 'detail' && scenario.state === '404-confirmed'
+  const isDetailFailure = scenario.route.key === 'detail'
+    && ['404-confirmed', 'retryable-5xx'].includes(scenario.state)
+
+  return Object.freeze({
+    surfaceState: isConfirmedDetail404 ? null : Object.freeze(fixtures[scenario.state]),
+    detailFailure: isDetailFailure
+      ? Object.freeze(scenario.state === '404-confirmed'
+          ? { response: { status: 404, _data: { detail: 'not_found' } } }
+          : { response: { status: 503, _data: { detail: 'temporarily_unavailable' } } })
+      : null,
+    detailResolution: isDetailFailure
+      ? scenario.state === '404-confirmed' ? 'not_found' : 'error'
+      : null,
+  })
+}
+
 export function evaluatePublicStateEvidence(scenario, evidence) {
   const reasons = []
   if (!evidence?.shellVisible) reasons.push('shell-not-visible')
@@ -102,9 +133,87 @@ export function createVisualBaselineScenarios() {
   }))))
 }
 
-export function selectPendingVisualScenarios(scenarios, existingFileNames, resume = false) {
+function visualScenarioIdentity(scenario) {
+  return Object.freeze({
+    schemaRevision: PUBLIC_VISUAL_SCHEMA_REVISION,
+    routeKey: scenario.route.key,
+    visualPath: scenario.route.visualPath,
+    recipe: scenario.route.recipe,
+    readySelector: scenario.route.readySelector,
+    theme: scenario.theme,
+    viewport: scenario.viewport,
+    state: scenario.state,
+    fileName: scenario.fileName,
+  })
+}
+
+function sha256Bytes(value) {
+  return createHash('sha256').update(value).digest('hex')
+}
+
+function visualIdentitySha256(scenario) {
+  return sha256Bytes(JSON.stringify(visualScenarioIdentity(scenario)))
+}
+
+export function evaluateVisualReadiness(scenario, evidence) {
+  const reasons = []
+  const expectedPathname = new URL(scenario.route.visualPath, 'http://visual.local').pathname
+  if (evidence?.pathname !== expectedPathname) reasons.push('route-mismatch')
+  if (evidence?.recipe !== scenario.route.recipe) reasons.push('recipe-mismatch')
+  if (!evidence?.hydrated) reasons.push('not-hydrated')
+  if (evidence?.theme !== scenario.theme) reasons.push('theme-mismatch')
+  if (!(Number(evidence?.mainHeight) > 0)) reasons.push('main-not-visible')
+  if (!evidence?.readySelectorVisible || !String(evidence?.contentIdentity || '').trim()) reasons.push('ready-content-missing')
+  for (const state of evidence?.blockingStates || []) reasons.push(`blocking-state:${state}`)
+  return reasons
+}
+
+export function createVisualArtifactManifest({ scenario, runId, capturedAt, screenshotBytes, readiness }) {
+  return Object.freeze({
+    schemaRevision: PUBLIC_VISUAL_SCHEMA_REVISION,
+    runId,
+    capturedAt,
+    fileName: scenario.fileName,
+    scenarioIdentitySha256: visualIdentitySha256(scenario),
+    screenshotSha256: sha256Bytes(screenshotBytes),
+    routeKey: scenario.route.key,
+    visualPath: scenario.route.visualPath,
+    theme: scenario.theme,
+    viewport: scenario.viewport,
+    state: scenario.state,
+    recipe: scenario.route.recipe,
+    readySelector: scenario.route.readySelector,
+    contentIdentity: String(readiness?.contentIdentity || '').trim().slice(0, 500),
+  })
+}
+
+export function validateVisualArtifactForResume(scenario, artifact, screenshotBytes, runId) {
+  const reasons = []
+  if (!artifact) return ['manifest-entry-missing']
+  if (artifact.schemaRevision !== PUBLIC_VISUAL_SCHEMA_REVISION) reasons.push('schema-revision-mismatch')
+  if (artifact.runId !== runId) reasons.push('run-id-mismatch')
+  if (artifact.scenarioIdentitySha256 !== visualIdentitySha256(scenario)) reasons.push('scenario-identity-mismatch')
+  if (!screenshotBytes) reasons.push('screenshot-missing')
+  else if (artifact.screenshotSha256 !== sha256Bytes(screenshotBytes)) reasons.push('screenshot-digest-mismatch')
+  if (!String(artifact.contentIdentity || '').trim()) reasons.push('content-identity-missing')
+  return reasons
+}
+
+export function compareVisualArtifacts(candidate, baseline) {
+  const reasons = []
+  if (!baseline) return ['authoritative-baseline-missing']
+  if (candidate?.scenarioIdentitySha256 !== baseline.scenarioIdentitySha256) reasons.push('baseline-scenario-identity-mismatch')
+  if (candidate?.screenshotSha256 !== baseline.screenshotSha256) reasons.push('baseline-pixel-digest-mismatch')
+  if (candidate?.contentIdentity !== baseline.contentIdentity) reasons.push('baseline-content-identity-mismatch')
+  return reasons
+}
+
+export function selectPendingVisualScenarios(scenarios, artifactValidation, resume = false) {
   if (!resume) return scenarios
-  return scenarios.filter(scenario => !existingFileNames.has(scenario.fileName))
+  return scenarios.filter(scenario => {
+    const reasons = artifactValidation.get(scenario.fileName)
+    return !reasons || reasons.length > 0
+  })
 }
 
 export function classifySmokeIssue(issue) {
@@ -114,6 +223,20 @@ export function classifySmokeIssue(issue) {
     return 'external-backend-limitation'
   }
   return 'product-regression'
+}
+
+function formatRuntimeSmokeIssue(issue) {
+  if (issue?.kind === 'http') return `HTTP ${issue.status} ${redactSensitiveUrl(issue.url)}`
+  if (issue?.kind === 'log') return `log ${redactSensitiveText(issue.text)}`
+  if (issue?.kind === 'console') return `console ${redactSensitiveText(issue.message)}`
+  if (issue?.kind === 'exception') return `exception ${redactSensitiveText(issue.message)}`
+  return `runtime ${redactSensitiveText(JSON.stringify(issue))}`
+}
+
+export function evaluateRuntimeSmokeIssues(issues) {
+  return issues
+    .filter(issue => classifySmokeIssue(issue) === 'product-regression')
+    .map(formatRuntimeSmokeIssue)
 }
 
 export function evaluateSmokeJourneyEvidence(evidence) {
@@ -152,6 +275,9 @@ const username = process.env.SMOKE_USERNAME || 'testuser09'
 const port = Number(process.env.SMOKE_CDP_PORT || 9223)
 const settleMs = Number(process.env.SMOKE_SETTLE_MS || 1200)
 const visualDir = process.env.SMOKE_VISUAL_DIR || path.join(tmpdir(), 'vinhlong360-task10-visual')
+const visualBaselineDir = process.env.SMOKE_VISUAL_BASELINE_DIR || ''
+const visualRunId = process.env.SMOKE_VISUAL_RUN_ID || `visual-${new Date().toISOString()}-${randomUUID()}`
+const visualManifestName = 'visual-manifest.json'
 
 const defaultRoutes = [
   '/',
@@ -179,6 +305,7 @@ const routes = process.env.SMOKE_ROUTES
   ? process.env.SMOKE_ROUTES.split(',').map(s => s.trim()).filter(Boolean)
   : defaultRoutes
 
+let activeSmokeRoute = ''
 const fixtureMode = { mapFailure: false, detailFailure: false }
 const fixtureEntity = Object.freeze({
   id: 'gom-do-mang-thit',
@@ -223,6 +350,17 @@ function fixturePayload(url) {
   if (pathname === '/api/community/stats') return null
   if (pathname === '/api/community/leaderboard') return { leaders: [] }
   if (pathname === '/api/community/trending-tags') return { tags: [] }
+  if (pathname === `/api/users/${username}`) {
+    return {
+      user: {
+        id: 'smoke-user',
+        username,
+        display_name: 'Người dùng smoke',
+        bio: 'Hồ sơ kiểm tra tuyến công khai.',
+      },
+    }
+  }
+  if (pathname === '/api/itineraries') return []
   if (pathname === '/api/search') {
     return { entities: [fixtureEntity], results: [fixtureEntity], posts: [], users: [], totals: { entities: 1, posts: 0, users: 0 } }
   }
@@ -456,7 +594,7 @@ const routeContracts = [
   {
     name: 'map explorer',
     match: route => route === '/ban-do',
-    selectors: ['.cat-map', '#mapContainer'],
+    selectors: ['.cat-map', '[data-map-list-surface]'],
   },
   {
     name: 'saved workspace',
@@ -487,6 +625,83 @@ async function runRouteContract(cdp, route, routeFailures) {
   }
 }
 
+async function runLegacyRouteSweep(cdp, failures, runtimeIssues) {
+  for (const route of routes) {
+    const routeFailures = []
+    const routeAssetFailures = []
+    const offConsole = cdp.on('Runtime.consoleAPICalled', params => {
+      if (['error', 'assert'].includes(params.type)) {
+        const issue = { kind: 'console', message: summarizeConsole(params), pageRoute: route }
+        runtimeIssues.push(issue)
+        routeFailures.push(formatRuntimeSmokeIssue(issue))
+      }
+    })
+    const offException = cdp.on('Runtime.exceptionThrown', params => {
+      const issue = {
+        kind: 'exception',
+        message: String(params.exceptionDetails?.text || params.exceptionDetails?.exception?.description || '').slice(0, 500),
+        pageRoute: route,
+      }
+      runtimeIssues.push(issue)
+      routeFailures.push(formatRuntimeSmokeIssue(issue))
+    })
+    const offLog = cdp.on('Log.entryAdded', params => {
+      if (params.entry?.level !== 'error') return
+      const entry = params.entry
+      const suffix = entry.url ? ` (${redactSensitiveUrl(entry.url)}${entry.networkRequestId ? ` #${entry.networkRequestId}` : ''})` : ''
+      const issue = { kind: 'log', level: entry.level, text: `${entry.text}${suffix}`, url: entry.url, pageRoute: route }
+      if (String(entry.text || '').includes('net::ERR_FAILED') && entry.url && isSameOriginNuxtAsset(entry.url)) {
+        routeAssetFailures.push({ url: entry.url, issue })
+      } else {
+        runtimeIssues.push(issue)
+        routeFailures.push(formatRuntimeSmokeIssue(issue))
+      }
+    })
+    const offResponse = cdp.on('Network.responseReceived', params => {
+      const status = params.response?.status || 0
+      if (status < 500) return
+      const issue = { kind: 'http', status, url: params.response.url, pageRoute: route }
+      runtimeIssues.push(issue)
+      routeFailures.push(formatRuntimeSmokeIssue(issue))
+    })
+
+    activeSmokeRoute = route
+    const load = cdp.waitFor('Page.loadEventFired', 20000).catch(error => {
+      routeFailures.push(error.message)
+    })
+    await cdp.send('Page.navigate', { url: absoluteUrl(route) })
+    await load
+    await sleep(settleMs)
+
+    const title = await cdp.send('Runtime.evaluate', {
+      expression: 'document.title',
+      returnByValue: true,
+    }).catch(() => ({ result: { value: '' } }))
+    if (String(title.result?.value || '').match(/\b500\b|Internal Server Error/i)) {
+      routeFailures.push(`document title looks like an error: ${title.result.value}`)
+    }
+    await runRouteContract(cdp, route, routeFailures)
+    for (const item of routeAssetFailures) {
+      if (!(await probeSameOriginAsset(item.url))) {
+        runtimeIssues.push(item.issue)
+        routeFailures.push(formatRuntimeSmokeIssue(item.issue))
+      }
+    }
+
+    offConsole()
+    offException()
+    offLog()
+    offResponse()
+
+    if (routeFailures.length) {
+      failures.push({ route, failures: [...new Set(routeFailures)] })
+      console.log(`[FAIL] ${route}`)
+    } else {
+      console.log(`[OK] ${route}`)
+    }
+  }
+}
+
 async function probeApp(url) {
   try {
     const response = await fetch(url, { redirect: 'manual' })
@@ -496,33 +711,125 @@ async function probeApp(url) {
   }
 }
 
+export function managedSmokeLaunchConfig({ baseUrl: requestedBaseUrl, explicitBaseUrl, forceManaged }) {
+  const requested = new URL(requestedBaseUrl)
+  const port = Number(requested.port || (requested.protocol === 'https:' ? 443 : 80))
+  const host = requested.hostname
+  if (forceManaged && !['127.0.0.1', 'localhost'].includes(host)) {
+    throw new Error('SMOKE_FORCE_MANAGED_APP only supports an explicit loopback base URL')
+  }
+  if (forceManaged && (!explicitBaseUrl || !requested.port || !Number.isInteger(port) || port <= 0)) {
+    throw new Error('SMOKE_FORCE_MANAGED_APP requires SMOKE_BASE_URL with an explicit port')
+  }
+  return { startManaged: Boolean(forceManaged), host, port }
+}
+
+export function managedSmokeStartupTimeout(env = process.env) {
+  const requested = Number(env.SMOKE_APP_STARTUP_TIMEOUT_MS)
+  return Number.isFinite(requested) && requested >= 5_000 && requested <= 120_000
+    ? Math.round(requested)
+    : 60_000
+}
+
+export function managedSmokeCommand({ mode, repoRoot, host, port, platform = process.platform, nodePath = process.execPath }) {
+  if (mode === 'preview') {
+    return {
+      command: nodePath,
+      args: [path.join(repoRoot, 'web-nuxt', '.output', 'server', 'index.mjs')],
+      shell: false,
+      env: { NITRO_HOST: host, NITRO_PORT: String(port) },
+    }
+  }
+  return {
+    command: platform === 'win32' ? 'npm.cmd' : 'npm',
+    args: ['--prefix', 'web-nuxt', 'run', 'dev', '--', '--host', host, '--port', String(port)],
+    shell: platform === 'win32',
+    env: { NUXT_IGNORE_LOCK: '1' },
+  }
+}
+
+export function smokeRunMode(env = process.env) {
+  return { legacySweepOnly: env.SMOKE_LEGACY_SWEEP_ONLY === '1' }
+}
+
+export function terminateManagedProcess(appProcess, options = {}) {
+  if (!appProcess) return
+  const platform = options.platform || process.platform
+  const run = options.run || spawnSync
+  if (platform === 'win32' && Number.isInteger(appProcess.pid) && appProcess.pid > 0) {
+    const result = run('taskkill.exe', ['/PID', String(appProcess.pid), '/T', '/F'], {
+      stdio: 'ignore',
+      timeout: 10_000,
+    })
+    if (result?.status === 0) return
+  }
+  appProcess.kill()
+}
+
+export async function closeSmokeServers({ appProcess, fixtureServer }) {
+  terminateManagedProcess(appProcess)
+  if (fixtureServer) await new Promise(resolve => fixtureServer.close(resolve))
+}
+
 async function resolveWebApp() {
-  if (process.env.SMOKE_BASE_URL) {
+  const forceManaged = process.env.SMOKE_FORCE_MANAGED_APP === '1'
+  const launch = managedSmokeLaunchConfig({
+    baseUrl,
+    explicitBaseUrl: Boolean(process.env.SMOKE_BASE_URL),
+    forceManaged,
+  })
+  if (process.env.SMOKE_BASE_URL && !forceManaged) {
     if (!(await probeApp(baseUrl))) throw new Error(`Smoke base URL is unavailable: ${baseUrl}`)
     return null
   }
-  for (const candidate of [baseUrl, 'http://127.0.0.1:4173']) {
-    if (await probeApp(candidate)) {
-      baseUrl = candidate
-      apiBaseUrl = process.env.SMOKE_API_BASE_URL || candidate
-      return null
+  if (!forceManaged) {
+    for (const candidate of [baseUrl, 'http://127.0.0.1:4173']) {
+      if (await probeApp(candidate)) {
+        baseUrl = candidate
+        apiBaseUrl = process.env.SMOKE_API_BASE_URL || candidate
+        return null
+      }
     }
   }
 
   const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-  const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm'
-  const child = spawn(npmCommand, ['--prefix', 'web-nuxt', 'run', 'dev', '--', '--host', '127.0.0.1', '--port', '3000'], {
-    cwd: repoRoot,
-    env: { ...process.env, NUXT_IGNORE_LOCK: '1' },
-    stdio: 'ignore',
+  const managedCommand = managedSmokeCommand({
+    mode: process.env.SMOKE_MANAGED_APP_MODE || 'dev',
+    repoRoot,
+    host: launch.host,
+    port: launch.port,
   })
-  for (let attempt = 0; attempt < 120; attempt++) {
+  if (managedCommand.args[0]?.endsWith(path.join('.output', 'server', 'index.mjs'))
+    && !existsSync(managedCommand.args[0])) {
+    throw new Error(`Managed preview build is missing: ${managedCommand.args[0]}`)
+  }
+  const startupOutput = []
+  let spawnError = null
+  const child = spawn(managedCommand.command, managedCommand.args, {
+    cwd: repoRoot,
+    env: { ...process.env, ...managedCommand.env },
+    shell: managedCommand.shell,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  })
+  const rememberOutput = chunk => {
+    startupOutput.push(redactSensitiveText(chunk).slice(-2000))
+    if (startupOutput.length > 10) startupOutput.shift()
+  }
+  child.stdout?.on('data', rememberOutput)
+  child.stderr?.on('data', rememberOutput)
+  child.once('error', error => { spawnError = error })
+
+  const deadline = Date.now() + managedSmokeStartupTimeout()
+  while (Date.now() < deadline) {
     if (await probeApp(baseUrl)) return child
-    if (child.exitCode !== null) throw new Error(`Nuxt dev server exited with code ${child.exitCode}`)
+    if (spawnError) throw new Error(`Nuxt dev server failed to start: ${spawnError.message}`)
+    if (child.exitCode !== null) {
+      throw new Error(`Nuxt dev server exited with code ${child.exitCode}: ${startupOutput.join('\n').slice(-4000)}`)
+    }
     await sleep(250)
   }
   child.kill()
-  throw new Error(`Nuxt dev server did not become ready at ${baseUrl}`)
+  throw new Error(`Nuxt dev server did not become ready at ${baseUrl} within ${managedSmokeStartupTimeout()}ms: ${startupOutput.join('\n').slice(-4000)}`)
 }
 
 async function evaluateValue(cdp, expression) {
@@ -540,6 +847,7 @@ async function waitForCondition(cdp, expression, label, timeoutMs = 15000) {
 }
 
 async function navigate(cdp, route) {
+  activeSmokeRoute = route
   const load = cdp.waitFor('Page.loadEventFired', 30000)
   await cdp.send('Page.navigate', { url: absoluteUrl(route) })
   await load
@@ -613,6 +921,71 @@ async function setTheme(cdp, theme) {
   })()`)
 }
 
+async function readVisualManifest(directory) {
+  try {
+    const parsed = JSON.parse(await readFile(path.join(directory, visualManifestName), 'utf8'))
+    if (parsed?.schemaRevision !== PUBLIC_VISUAL_SCHEMA_REVISION || !Array.isArray(parsed.artifacts)) return new Map()
+    return new Map(parsed.artifacts.map(artifact => [artifact.fileName, artifact]))
+  } catch {
+    return new Map()
+  }
+}
+
+async function writeVisualManifest(directory, artifacts) {
+  const payload = {
+    schemaRevision: PUBLIC_VISUAL_SCHEMA_REVISION,
+    runId: visualRunId,
+    comparisonMode: visualBaselineDir ? 'authoritative-exact-sha256' : 'capture-for-review',
+    baselineDirectory: visualBaselineDir ? path.resolve(visualBaselineDir) : null,
+    artifacts: [...artifacts.values()].sort((left, right) => left.fileName.localeCompare(right.fileName)),
+  }
+  await writeFile(path.join(directory, visualManifestName), `${JSON.stringify(payload, null, 2)}\n`)
+}
+
+async function readVisualPng(directory, fileName) {
+  return readFile(path.join(directory, fileName)).catch(() => null)
+}
+
+async function collectVisualReadiness(cdp, scenario) {
+  return evaluateValue(cdp, `(() => {
+    const ready = document.querySelector(${JSON.stringify(scenario.route.readySelector)});
+    const visible = element => {
+      if (!element) return false;
+      const style = getComputedStyle(element);
+      const rect = element.getBoundingClientRect();
+      return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+    };
+    const blockingStates = [];
+    if (document.querySelector('[data-page-state="loading"], [aria-label*="Đang tải"], .skeleton-grid')) blockingStates.push('loading');
+    if (document.querySelector('[data-page-state="error"], .detail-recovery-page, [data-color-role="status-error"]')) blockingStates.push('error');
+    if (document.querySelector('[data-home-section="recovery"]')) blockingStates.push('home-recovery');
+    if (document.querySelector('vite-error-overlay, nuxt-error-page, #nuxt-error')) blockingStates.push('nuxt-error-overlay');
+    return {
+      pathname: location.pathname,
+      recipe: document.querySelector('[data-page-recipe]')?.getAttribute('data-page-recipe') || '',
+      hydrated: Boolean(document.querySelector('#__nuxt')?.__vue_app__),
+      theme: document.documentElement.dataset.theme || '',
+      mainHeight: document.querySelector('main')?.getBoundingClientRect().height || 0,
+      readySelectorVisible: visible(ready),
+      contentIdentity: ready?.textContent?.replace(/\\s+/g, ' ').trim().slice(0, 500) || '',
+      blockingStates,
+    };
+  })()`)
+}
+
+async function waitForVisualReadiness(cdp, scenario, timeoutMs = 20000) {
+  const deadline = Date.now() + timeoutMs
+  let evidence = null
+  let reasons = ['readiness-not-evaluated']
+  while (Date.now() < deadline) {
+    evidence = await collectVisualReadiness(cdp, scenario)
+    reasons = evaluateVisualReadiness(scenario, evidence)
+    if (!reasons.length) return evidence
+    await sleep(100)
+  }
+  throw new Error(`Visual ${scenario.fileName} is not ready: ${reasons.join(', ')}; evidence=${JSON.stringify(evidence)}`)
+}
+
 async function captureVisual(cdp, scenario) {
   await cdp.send('Emulation.setDeviceMetricsOverride', {
     width: scenario.viewport.width,
@@ -623,7 +996,7 @@ async function captureVisual(cdp, scenario) {
   await navigate(cdp, scenario.route.visualPath)
   await setTheme(cdp, scenario.theme)
   await navigate(cdp, scenario.route.visualPath)
-  await waitForCondition(cdp, `document.querySelector('main')?.getBoundingClientRect().height > 0`, 'visual main content')
+  const readiness = await waitForVisualReadiness(cdp, scenario)
   const metrics = await cdp.send('Page.getLayoutMetrics')
   const size = metrics.cssContentSize || metrics.contentSize
   const screenshot = await cdp.send('Page.captureScreenshot', {
@@ -632,29 +1005,24 @@ async function captureVisual(cdp, scenario) {
     fromSurface: true,
     clip: { x: 0, y: 0, width: Math.ceil(size.width), height: Math.ceil(size.height), scale: 1 },
   }, 30000)
-  await writeFile(path.join(visualDir, scenario.fileName), Buffer.from(screenshot.data, 'base64'))
+  const screenshotBytes = Buffer.from(screenshot.data, 'base64')
+  await writeFile(path.join(visualDir, scenario.fileName), screenshotBytes)
+  return createVisualArtifactManifest({
+    scenario,
+    runId: visualRunId,
+    capturedAt: new Date().toISOString(),
+    screenshotBytes,
+    readiness,
+  })
 }
 
 async function main() {
   const chromePath = findChrome()
   if (!chromePath) throw new Error('Chrome/Edge not found. Set CHROME_PATH to a Chromium executable.')
 
-  const fixtureServer = await startFixtureServer()
-  const appProcess = await resolveWebApp()
-  const token = process.env.SMOKE_REQUIRE_LOGIN === '1' ? await login() : ''
-  await mkdir(visualDir, { recursive: true })
-  const userDataDir = await mkdtemp(path.join(tmpdir(), 'vl360-smoke-'))
-  const chrome = spawn(chromePath, [
-    '--headless=new',
-    `--remote-debugging-port=${port}`,
-    `--user-data-dir=${userDataDir}`,
-    '--disable-gpu',
-    '--no-first-run',
-    '--no-default-browser-check',
-    'about:blank',
-  ], { stdio: 'ignore' })
-
   const failures = []
+  const legacyRuntimeIssues = []
+  const journeyRuntimeIssues = []
   const evidence = {
     expectedSearchUrl: '/tim-kiem?q=g%E1%BB%91m&intent=place&area=vinh-long&type=craft_village',
     restoredSearchUrl: '',
@@ -665,8 +1033,27 @@ async function main() {
     detailRetryVisible: false,
     detailConfirmed404: false,
   }
+  let fixtureServer = null
+  let appProcess = null
+  let userDataDir = ''
+  let chrome = null
   let cdp
   try {
+    fixtureServer = await startFixtureServer()
+    appProcess = await resolveWebApp()
+    const token = process.env.SMOKE_REQUIRE_LOGIN === '1' ? await login() : ''
+    await mkdir(visualDir, { recursive: true })
+    userDataDir = await mkdtemp(path.join(tmpdir(), 'vl360-smoke-'))
+    chrome = spawn(chromePath, [
+      '--headless=new',
+      `--remote-debugging-port=${port}`,
+      `--user-data-dir=${userDataDir}`,
+      '--disable-gpu',
+      '--no-first-run',
+      '--no-default-browser-check',
+      'about:blank',
+    ], { stdio: 'ignore' })
+
     await waitForChrome()
     cdp = new CdpClient(await createPageTarget())
     await cdp.connect()
@@ -687,11 +1074,35 @@ async function main() {
       })
     }
 
+    await runLegacyRouteSweep(cdp, failures, legacyRuntimeIssues)
+
+    if (!smokeRunMode().legacySweepOnly) {
     const offConsole = cdp.on('Runtime.consoleAPICalled', params => {
       if (['error', 'assert'].includes(params.type)) evidence.consoleErrors.push(summarizeConsole(params))
     })
     const offException = cdp.on('Runtime.exceptionThrown', params => {
       evidence.consoleErrors.push(redactSensitiveText(params.exceptionDetails?.text || params.exceptionDetails?.exception?.description || '').slice(0, 500))
+    })
+    const offLog = cdp.on('Log.entryAdded', params => {
+      if (params.entry?.level !== 'error') return
+      journeyRuntimeIssues.push({
+        kind: 'log',
+        level: params.entry.level,
+        text: params.entry.text,
+        url: params.entry.url,
+        pageRoute: activeSmokeRoute,
+      })
+    })
+    const offResponse = cdp.on('Network.responseReceived', params => {
+      const status = params.response?.status || 0
+      if (status >= 500) {
+        journeyRuntimeIssues.push({
+          kind: 'http',
+          status,
+          url: params.response.url,
+          pageRoute: activeSmokeRoute,
+        })
+      }
     })
 
     await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false })
@@ -753,34 +1164,86 @@ async function main() {
     evidence.completedSteps.push('detail-retryable-5xx')
     fixtureMode.detailFailure = false
 
+    for (const issue of journeyRuntimeIssues) {
+      if (issue.kind === 'http'
+        && String(issue.pageRoute).startsWith('/dia-diem/gom-do-mang-thit')
+        && evidence.detailRetryVisible) {
+        issue.renderedRecovery = 'retryable-detail'
+      }
+      if (issue.kind === 'http'
+        && String(issue.pageRoute).startsWith('/ban-do')
+        && evidence.mapFallbackVisible) {
+        issue.renderedRecovery = 'map-fallback'
+      }
+    }
+    const runtimeFailures = evaluateRuntimeSmokeIssues(journeyRuntimeIssues)
+    if (runtimeFailures.length) failures.push({ route: 'public-journey-runtime', failures: [...new Set(runtimeFailures)] })
     for (const reason of evaluateSmokeJourneyEvidence(evidence)) failures.push({ route: 'public-journey', failures: [reason] })
 
     if (process.env.SMOKE_SKIP_VISUALS !== '1') {
-      const existingFileNames = process.env.SMOKE_RESUME_VISUALS === '1'
-        ? new Set(await readdir(visualDir).catch(() => []))
-        : new Set()
-      const visualScenarios = selectPendingVisualScenarios(
-        createVisualBaselineScenarios(),
-        existingFileNames,
-        process.env.SMOKE_RESUME_VISUALS === '1',
-      )
-      console.log(`[VISUAL] ${visualScenarios.length} pending of ${createVisualBaselineScenarios().length}`)
+      if (visualBaselineDir && path.resolve(visualBaselineDir) === path.resolve(visualDir)) {
+        throw new Error('SMOKE_VISUAL_BASELINE_DIR must be separate from SMOKE_VISUAL_DIR')
+      }
+      const scenarios = createVisualBaselineScenarios()
+      const candidateArtifacts = await readVisualManifest(visualDir)
+      const artifactValidation = new Map()
+      for (const scenario of scenarios) {
+        const screenshotBytes = await readVisualPng(visualDir, scenario.fileName)
+        artifactValidation.set(
+          scenario.fileName,
+          validateVisualArtifactForResume(
+            scenario,
+            candidateArtifacts.get(scenario.fileName),
+            screenshotBytes,
+            visualRunId,
+          ),
+        )
+      }
+      const visualScenarios = selectPendingVisualScenarios(scenarios, artifactValidation, process.env.SMOKE_RESUME_VISUALS === '1')
+      console.log(`[VISUAL] mode=${visualBaselineDir ? 'authoritative-exact-sha256' : 'capture-for-review'} run=${visualRunId}`)
+      console.log(`[VISUAL] ${visualScenarios.length} pending of ${scenarios.length}`)
       for (const scenario of visualScenarios) {
-        await captureVisual(cdp, scenario)
+        const artifact = await captureVisual(cdp, scenario)
+        candidateArtifacts.set(scenario.fileName, artifact)
+        await writeVisualManifest(visualDir, candidateArtifacts)
         console.log(`[SHOT] ${scenario.fileName}`)
+      }
+
+      if (visualBaselineDir) {
+        const baselineArtifacts = await readVisualManifest(visualBaselineDir)
+        for (const scenario of scenarios) {
+          const candidate = candidateArtifacts.get(scenario.fileName)
+          const baseline = baselineArtifacts.get(scenario.fileName)
+          const baselineBytes = await readVisualPng(visualBaselineDir, scenario.fileName)
+          const baselineIntegrity = validateVisualArtifactForResume(
+            scenario,
+            baseline,
+            baselineBytes,
+            baseline?.runId,
+          )
+          const comparison = compareVisualArtifacts(candidate, baseline)
+          const reasons = [...baselineIntegrity, ...comparison]
+          if (reasons.length) failures.push({ route: `visual:${scenario.fileName}`, failures: reasons })
+        }
+      } else {
+        console.log('[VISUAL] No authoritative baseline supplied; fresh candidates require review before promotion.')
       }
     }
 
     offConsole()
     offException()
-    console.log(`Smoke evidence: ${JSON.stringify({ ...evidence, visualDir })}`)
+    offLog()
+    offResponse()
+    console.log(`Smoke evidence: ${JSON.stringify({ ...evidence, visualDir, legacyRuntimeIssueCount: legacyRuntimeIssues.length, journeyRuntimeIssues })}`)
+    } else {
+      console.log(`Smoke evidence: ${JSON.stringify({ mode: 'legacy-sweep-only', routes, legacyRuntimeIssueCount: legacyRuntimeIssues.length })}`)
+    }
   } finally {
     cdp?.close()
-    chrome.kill()
-    await sleep(500)
-    appProcess?.kill()
-    if (fixtureServer) await new Promise(resolve => fixtureServer.close(resolve))
-    if (!process.env.SMOKE_KEEP_BROWSER) {
+    chrome?.kill()
+    if (chrome) await sleep(500)
+    await closeSmokeServers({ appProcess, fixtureServer })
+    if (userDataDir && !process.env.SMOKE_KEEP_BROWSER) {
       try {
         await rm(userDataDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 250 })
       } catch {

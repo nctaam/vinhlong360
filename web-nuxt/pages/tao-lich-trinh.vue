@@ -1,5 +1,5 @@
 <template>
-  <section class="page">
+  <section class="page" data-page-recipe="planner">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch trình', to: '/lich-trinh' }, { label: 'Tạo lịch trình' }]" />
 
     <!-- Hero: chrome-only CE pass — masthead eyebrow + serif H1, builder/picker logic untouched -->

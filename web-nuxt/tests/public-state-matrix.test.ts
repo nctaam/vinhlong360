@@ -1,10 +1,21 @@
-import { describe, expect, it } from 'vitest'
+import { mountSuspended } from '@nuxt/test-utils/runtime'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+
+import PageState from '../components/public/PageState.vue'
+import { resolveDetailFetchError } from '../utils/detailExperience'
 import {
   PUBLIC_ROUTE_SPECS,
   PUBLIC_STATE_KINDS,
+  buildPublicStateFixture,
   buildPublicStateMatrix,
   evaluatePublicStateEvidence,
 } from '../../scripts/smoke_e2e_chrome.mjs'
+
+const wrappers: Array<{ unmount: () => void }> = []
+
+afterEach(() => {
+  for (const wrapper of wrappers.splice(0)) wrapper.unmount()
+})
 
 describe('public vertical-slice state matrix', () => {
   it('covers every required route and state without collapsing retryable 5xx into 404', () => {
@@ -54,5 +65,46 @@ describe('public vertical-slice state matrix', () => {
 
     const search404 = buildPublicStateMatrix().find(item => item.route.key === 'search' && item.state === '404-confirmed')!
     expect(evaluatePublicStateEvidence(search404, validEvidence)).toContain('false-404')
+  })
+
+  it('executes every matrix row through the real page-state and detail resolution behavior', async () => {
+    for (const scenario of buildPublicStateMatrix()) {
+      const fixture = buildPublicStateFixture(scenario)
+      const routePath = scenario.route.path.replace('{id}', 'gom-do-mang-thit')
+      await navigateTo(routePath)
+
+      if (fixture.detailFailure) {
+        const resolution = resolveDetailFetchError(fixture.detailFailure)
+        expect(resolution.kind, `${scenario.route.key}:${scenario.state}`).toBe(fixture.detailResolution)
+        if (resolution.kind === 'not_found') {
+          expect(scenario.expected.actions).toContain('back-to-results')
+          continue
+        }
+      }
+
+      const retry = vi.fn(() => Promise.resolve())
+      const recovery = vi.fn()
+      const wrapper = await mountSuspended(PageState, {
+        route: routePath,
+        props: { state: fixture.surfaceState!, retry, recovery },
+        slots: { default: '<p data-matrix-content>Nội dung tuyến công khai</p>' },
+      })
+      wrappers.push(wrapper)
+
+      expect(wrapper.vm.$route.path, `${scenario.route.key}:${scenario.state}`).toBe(routePath)
+      expect(wrapper.get(`[data-page-state="${fixture.surfaceState!.kind}"]`)).toBeTruthy()
+
+      if (scenario.expected.preserveContent || scenario.expected.contentVisible) {
+        expect(wrapper.get('[data-matrix-content]').text()).toContain('Nội dung tuyến công khai')
+      }
+      if (scenario.expected.actions.includes('retry') || scenario.expected.actions.includes('retry-panel')) {
+        await wrapper.get('[data-page-state-retry]').trigger('click')
+        expect(retry).toHaveBeenCalledOnce()
+      }
+      if (scenario.expected.actions.includes('recover')) {
+        await wrapper.get('[data-page-state-recovery]').trigger('click')
+        expect(recovery).toHaveBeenCalledOnce()
+      }
+    }
   })
 })

@@ -10,8 +10,15 @@ import {
   SMOKE_JOURNEY_STEPS,
   activateVisibleControl,
   classifySmokeIssue,
+  closeSmokeServers,
+  evaluateRuntimeSmokeIssues,
   evaluateSmokeJourneyEvidence,
+  managedSmokeLaunchConfig,
+  managedSmokeCommand,
+  managedSmokeStartupTimeout,
   selectPendingVisualScenarios,
+  smokeRunMode,
+  terminateManagedProcess,
 } from '../../scripts/smoke_e2e_chrome.mjs'
 
 const originalItineraryScheduleV2 = process.env.NUXT_PUBLIC_ITINERARY_SCHEDULE_V2
@@ -105,12 +112,13 @@ describe('Adaptive Nocturne public browser smoke contract', () => {
       { fileName: 'planner__parchment__390px__ready.png' },
     ]
 
-    expect(selectPendingVisualScenarios(scenarios, new Set([
-      'home__nocturne__375px__ready.png',
+    expect(selectPendingVisualScenarios(scenarios, new Map([
+      ['home__nocturne__375px__ready.png', []],
+      ['planner__parchment__390px__ready.png', ['run-id-mismatch']],
     ]), true)).toEqual([
       { fileName: 'planner__parchment__390px__ready.png' },
     ])
-    expect(selectPendingVisualScenarios(scenarios, new Set(), false)).toEqual(scenarios)
+    expect(selectPendingVisualScenarios(scenarios, new Map(), false)).toEqual(scenarios)
   })
 
   it('falls back to the visible element click when a headless pointer event is lost', async () => {
@@ -175,6 +183,98 @@ describe('Adaptive Nocturne public browser smoke contract', () => {
       kind: 'console',
       message: 'TypeError: Cannot read properties of undefined',
     })).toBe('product-regression')
+  })
+
+  it('fails runtime Log and Network issues unless a 5xx has a visible supported recovery', () => {
+    expect(evaluateRuntimeSmokeIssues([
+      { kind: 'http', status: 503, url: '/api/entities/gom-do-mang-thit', renderedRecovery: 'retryable-detail' },
+      { kind: 'http', status: 502, url: '/api/unexpected' },
+      { kind: 'log', level: 'error', text: 'Uncaught render failure' },
+    ])).toEqual([
+      'HTTP 502 /api/unexpected',
+      'log Uncaught render failure',
+    ])
+  })
+
+  it('keeps the 20-route contract and asset sweep wired into the executable smoke main', () => {
+    const source = readFileSync(resolve(process.cwd(), '../scripts/smoke_e2e_chrome.mjs'), 'utf8')
+    const mainStart = source.indexOf('async function main()')
+    const sweepCall = source.indexOf('await runLegacyRouteSweep(cdp', mainStart)
+
+    expect(sweepCall).toBeGreaterThan(mainStart)
+    expect(source).toContain("cdp.on('Log.entryAdded'")
+    expect(source).toContain("cdp.on('Network.responseReceived'")
+    expect(source).toContain('await runRouteContract(cdp, route, routeFailures)')
+    expect(source).toContain('await probeSameOriginAsset(item.url)')
+  })
+
+  it('can force a fresh managed app on an explicit free port without attaching to an existing preview', () => {
+    expect(managedSmokeLaunchConfig({
+      baseUrl: 'http://127.0.0.1:3010',
+      explicitBaseUrl: true,
+      forceManaged: true,
+    })).toEqual({ startManaged: true, host: '127.0.0.1', port: 3010 })
+
+    expect(managedSmokeLaunchConfig({
+      baseUrl: 'http://127.0.0.1:4173',
+      explicitBaseUrl: true,
+      forceManaged: false,
+    }).startManaged).toBe(false)
+  })
+
+  it('bounds managed startup and closes the fixture even when app resolution fails', async () => {
+    expect(managedSmokeStartupTimeout({ SMOKE_APP_STARTUP_TIMEOUT_MS: '45000' })).toBe(45000)
+    expect(managedSmokeStartupTimeout({ SMOKE_APP_STARTUP_TIMEOUT_MS: 'invalid' })).toBe(60000)
+
+    const appProcess = { kill: vi.fn() }
+    const fixtureServer = {
+      close: vi.fn((done: () => void) => done()),
+    }
+    await closeSmokeServers({ appProcess, fixtureServer })
+    expect(appProcess.kill).toHaveBeenCalledOnce()
+    expect(fixtureServer.close).toHaveBeenCalledOnce()
+
+    const startupFailedFixture = {
+      close: vi.fn((done: () => void) => done()),
+    }
+    await closeSmokeServers({ appProcess: null, fixtureServer: startupFailedFixture })
+    expect(startupFailedFixture.close).toHaveBeenCalledOnce()
+  })
+
+  it('supports a bounded legacy-sweep-only diagnostic without running the public journey', () => {
+    expect(smokeRunMode({ SMOKE_LEGACY_SWEEP_ONLY: '1' })).toEqual({ legacySweepOnly: true })
+    expect(smokeRunMode({})).toEqual({ legacySweepOnly: false })
+  })
+
+  it('terminates the exact Windows managed-app process tree with a bounded command', () => {
+    const run = vi.fn(() => ({ status: 0 }))
+    const appProcess = { pid: 30101, kill: vi.fn() }
+
+    terminateManagedProcess(appProcess, { platform: 'win32', run })
+
+    expect(run).toHaveBeenCalledWith('taskkill.exe', ['/PID', '30101', '/T', '/F'], {
+      stdio: 'ignore',
+      timeout: 10_000,
+    })
+    expect(appProcess.kill).not.toHaveBeenCalled()
+  })
+
+  it('can verify the built production server without a shell or dev compiler stream', () => {
+    const command = managedSmokeCommand({
+      mode: 'preview',
+      repoRoot: 'C:\\repo',
+      host: '127.0.0.1',
+      port: 3010,
+      platform: 'win32',
+      nodePath: 'C:\\node.exe',
+    })
+
+    expect(command).toMatchObject({
+      command: 'C:\\node.exe',
+      args: ['C:\\repo\\web-nuxt\\.output\\server\\index.mjs'],
+      shell: false,
+      env: { NITRO_HOST: '127.0.0.1', NITRO_PORT: '3010' },
+    })
   })
 })
 
