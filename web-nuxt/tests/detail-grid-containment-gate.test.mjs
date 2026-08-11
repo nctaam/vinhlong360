@@ -903,7 +903,9 @@ describe('Detail grid containment gate contracts', () => {
       expect(parentIdentity?.startIdentity).not.toBe(childIdentity?.startIdentity)
       expect(parentIdentity?.commandLine).toContain(marker)
       expect(childIdentity?.commandLine).toContain(marker)
-      const postCleanupSnapshot = await gateCore.captureProcessSnapshot(4000)
+      const postCleanupSnapshot = await gateCore.captureProcessSnapshot(
+        gateCore.WINDOWS_EXACT_PROCESS_HELPER_TIMEOUT_MS,
+      )
       expect(postCleanupSnapshot.some(identity => matchesProcessIdentity(parentIdentity, identity))).toBe(false)
       expect(postCleanupSnapshot.some(identity => matchesProcessIdentity(childIdentity, identity))).toBe(false)
       await sleep(Math.max(0, 8500 - (Date.now() - startedAt)))
