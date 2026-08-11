@@ -185,9 +185,9 @@
             </ul>
           </div>
           <div class="planner-conflict-diff__actions" aria-label="Cách xử lý xung đột">
-            <button type="button" class="btn btn-sm btn-outline" data-conflict-local @click="choosePlannerConflict('local')">Giữ bản cục bộ</button>
-            <button type="button" class="btn btn-sm btn-ghost" data-conflict-server @click="choosePlannerConflict('server')">Dùng bản máy chủ</button>
-            <button type="button" class="btn btn-sm btn-ghost" data-conflict-manual @click="choosePlannerConflict('manual')">So sánh thủ công</button>
+            <button type="button" class="btn btn-sm btn-outline" data-conflict-local :disabled="saving" @click="choosePlannerConflict('local')">Giữ bản cục bộ</button>
+            <button type="button" class="btn btn-sm btn-ghost" data-conflict-server :disabled="saving" @click="choosePlannerConflict('server')">Dùng bản máy chủ</button>
+            <button type="button" class="btn btn-sm btn-ghost" data-conflict-manual :disabled="saving" @click="choosePlannerConflict('manual')">So sánh thủ công</button>
           </div>
         </section>
 
@@ -317,14 +317,14 @@
               {{ saving ? 'Đang lưu…' : 'Lưu lịch trình' }}
             </button>
           </template>
-          <button type="button" class="btn btn-ghost" @click="clearPlan" :disabled="!stops.length">Xóa tất cả</button>
+          <button type="button" class="btn btn-ghost" @click="clearPlan" :disabled="!stops.length || saving">Xóa tất cả</button>
         </ActionDock>
 
         <!-- Saved itineraries -->
         <div v-if="savedPlans.length" class="saved-plans">
           <h2 class="sediment-head">Lịch trình đã lưu</h2>
           <div v-for="(plan, pi) in savedPlans" :key="pi" class="saved-plan-item">
-            <button type="button" class="saved-plan-info saved-plan-btn" @click="loadPlan(pi)">
+            <button type="button" class="saved-plan-info saved-plan-btn" :disabled="saving" @click="loadPlan(pi)">
               <strong>{{ plan.title || 'Lịch trình chưa đặt tên' }}</strong>
               <small>{{ plan.stops.length }} điểm · Lưu {{ formatDate(plan.savedAt) }}</small>
             </button>
@@ -333,14 +333,14 @@
                 v-if="plan.id"
                 type="button"
                 :class="['btn btn-sm', plan.is_public ? 'btn-outline' : 'btn-ghost']"
-                :disabled="planBusy === pi || publishBlockedByConflict(plan)"
+                :disabled="saving || planBusy === pi || publishBlockedByConflict(plan)"
                 :aria-describedby="publishBlockedByConflict(plan) ? 'planner-publish-conflict-reason' : undefined"
                 @click="publishPlan(pi)"
               >
                 {{ planBusy === pi ? 'Đang cập nhật' : plan.is_public ? 'Công khai' : 'Riêng tư' }}
               </button>
               <button type="button" class="btn btn-sm btn-ghost" :disabled="planBusy === pi" @click="sharePlan(pi)">Chia sẻ</button>
-              <button type="button" class="btn btn-sm btn-ghost danger" :disabled="planBusy === pi" @click="deletePlan(pi)">Xóa</button>
+              <button type="button" class="btn btn-sm btn-ghost danger" :disabled="saving || planBusy === pi" @click="deletePlan(pi)">Xóa</button>
             </div>
           </div>
         </div>
@@ -514,6 +514,7 @@ const localDirty = ref(false)
 const activeServerPlanId = ref<string | null>(null)
 const baseServerRevision = ref<number | null>(null)
 const plannerRevisionConflict = ref<PlanSnapshot | null>(null)
+const plannerDraftGeneration = ref(0)
 const plannerConflictEl = ref<HTMLElement | null>(null)
 const travelBudgetMinutes = ref<number | null>(null)
 const candidateOpeningHourConflicts = ref<OpeningHourConflict[]>([])
@@ -727,23 +728,33 @@ function normalizePlanSnapshot(value: unknown): PlanSnapshot | null {
 
 function replaceSavedServerPlan(snapshot: PlanSnapshot) {
   const index = savedPlans.value.findIndex(plan => plan.id === snapshot.id)
-  if (index >= 0) savedPlans.value.splice(index, 1, snapshot)
+  if (index < 0) return
+  const currentRevision = savedPlans.value[index]?.revision
+  if (!positiveRevision(currentRevision) || snapshot.revision >= currentRevision) {
+    savedPlans.value.splice(index, 1, snapshot)
+  }
+}
+
+function advancePlannerDraftGeneration() {
+  plannerDraftGeneration.value += 1
 }
 
 function clearActiveServerPlan() {
+  advancePlannerDraftGeneration()
   activeServerPlanId.value = null
   baseServerRevision.value = null
   plannerRevisionConflict.value = null
 }
 
 function acceptServerComparisonBase(snapshot: PlanSnapshot) {
+  advancePlannerDraftGeneration()
   replaceSavedServerPlan(snapshot)
   activeServerPlanId.value = snapshot.id
   baseServerRevision.value = snapshot.revision
   draftSource.value = 'server'
 }
 
-function conflictSnapshot(error: unknown): PlanSnapshot | null {
+function conflictSnapshot(error: unknown, expectedPlanId = activeServerPlanId.value): PlanSnapshot | null {
   if (getStatusCode(error) !== 409) return null
   const failure = error as {
     response?: { _data?: Record<string, unknown> }
@@ -752,7 +763,7 @@ function conflictSnapshot(error: unknown): PlanSnapshot | null {
   const payload = failure.response?._data ?? failure.data
   if (payload?.code !== 'plan_revision_conflict') return null
   const snapshot = normalizePlanSnapshot(payload.current)
-  return snapshot?.id === activeServerPlanId.value ? snapshot : null
+  return snapshot?.id === expectedPlanId ? snapshot : null
 }
 
 function diffPlannerPlanStops(local: PlanStop[], server: PlanStop[]): PlannerConflictDifference[] {
@@ -794,6 +805,7 @@ function diffPlannerPlanStops(local: PlanStop[], server: PlanStop[]): PlannerCon
 }
 
 async function choosePlannerConflict(choice: 'local' | 'server' | 'manual') {
+  if (saving.value) return
   if (choice === 'manual') {
     await nextTick()
     plannerConflictEl.value?.focus()
@@ -998,7 +1010,9 @@ function dropStop(targetIndex: number) {
 }
 
 async function clearPlan() {
+  if (saving.value) return
   if (stops.value.length && !await confirmDialog('Xóa toàn bộ điểm trong lịch trình đang tạo?', { danger: true, confirmText: 'Xóa' })) return
+  if (saving.value) return
   invalidatePlannerSchedule()
   stops.value = []
   planTitle.value = ''
@@ -1015,47 +1029,76 @@ async function savePlan() {
   try { await _doSave() } finally { saving.value = false }
 }
 async function _doSave() {
-  let plan: SavedPlan = {
+  const request = {
     title: planTitle.value.trim() || 'Lịch trình chưa đặt tên',
     stops: serializePlanStops(stops.value),
     savedAt: new Date().toISOString(),
+    activeServerPlanId: activeServerPlanId.value,
+    baseServerRevision: baseServerRevision.value,
+    draftRevision: localDraftRevision.value,
+    draftSource: draftSource.value,
+    conflict: plannerRevisionConflict.value,
+    draftGeneration: plannerDraftGeneration.value,
+  }
+  const identityStillMatches = () => (
+    activeServerPlanId.value === request.activeServerPlanId
+    && baseServerRevision.value === request.baseServerRevision
+    && draftSource.value === request.draftSource
+    && plannerRevisionConflict.value === request.conflict
+    && plannerDraftGeneration.value === request.draftGeneration
+  )
+  const discardStaleResult = () => {
+    showToast('Kết quả lưu cũ đã được bỏ qua vì lịch trình đang mở đã thay đổi.', 'warning')
+  }
+  let plan: SavedPlan = {
+    title: request.title,
+    stops: request.stops,
+    savedAt: request.savedAt,
   }
   if (isLoggedIn.value) {
     // Đồng-bộ tài-khoản (cross-device)
     try {
-      if (revisionSafeSaveEnabled.value && activeServerPlanId.value) {
-        if (!positiveRevision(baseServerRevision.value)) {
+      if (revisionSafeSaveEnabled.value && request.activeServerPlanId) {
+        if (!positiveRevision(request.baseServerRevision)) {
           showToast('Không thể xác định phiên bản máy chủ. Hãy tải lại lịch trình đã lưu.', 'error')
           return
         }
-        const res = await $fetch<{ plan: unknown }>(`/api/my-plans/${activeServerPlanId.value}`, {
+        const res = await $fetch<{ plan: unknown }>(`/api/my-plans/${request.activeServerPlanId}`, {
           method: 'PUT', headers: authHeaders(),
           body: {
-            title: plan.title,
-            stops: plan.stops,
-            expected_revision: baseServerRevision.value,
+            title: request.title,
+            stops: request.stops,
+            expected_revision: request.baseServerRevision,
           },
         })
+        if (!identityStillMatches()) {
+          discardStaleResult()
+          return
+        }
         const snapshot = normalizePlanSnapshot(res.plan)
-        if (!snapshot || snapshot.id !== activeServerPlanId.value) {
+        if (!snapshot || snapshot.id !== request.activeServerPlanId) {
           showToast('Phản hồi lưu lịch trình không hợp lệ. Hãy tải lại trước khi tiếp tục.', 'error')
           return
         }
         acceptServerComparisonBase(snapshot)
         plannerRevisionConflict.value = null
-        localDirty.value = false
+        localDirty.value = localDraftRevision.value !== request.draftRevision
         persistPlannerDraft()
         finishSaveFeedback(snapshot.title)
         return
       }
-      if (revisionSafeSaveEnabled.value && draftSource.value === 'server') {
+      if (revisionSafeSaveEnabled.value && request.draftSource === 'server') {
         showToast('Bản nháp máy chủ thiếu thông tin phiên bản. Hãy tải lại lịch trình đã lưu trước khi lưu.', 'error')
         return
       }
       const res = await $fetch<{ id: string; revision?: number; updatedAt?: string; plan?: unknown }>('/api/my-plans', {
         method: 'POST', headers: authHeaders(),
-        body: { title: plan.title, stops: plan.stops },
+        body: { title: request.title, stops: request.stops },
       })
+      if (!identityStillMatches()) {
+        discardStaleResult()
+        return
+      }
       const snapshot = normalizePlanSnapshot(res.plan)
       plan = snapshot || {
         ...plan,
@@ -1064,7 +1107,11 @@ async function _doSave() {
         ...(typeof res.updatedAt === 'string' ? { updatedAt: res.updatedAt } : {}),
       }
     } catch (e: unknown) {
-      const snapshot = conflictSnapshot(e)
+      if (!identityStillMatches()) {
+        discardStaleResult()
+        return
+      }
+      const snapshot = conflictSnapshot(e, request.activeServerPlanId)
       if (snapshot) {
         plannerRevisionConflict.value = snapshot
         await nextTick()
@@ -1079,11 +1126,12 @@ async function _doSave() {
     persistLocal([plan, ...savedPlans.value])
   }
   if (plan.id) {
+    advancePlannerDraftGeneration()
     draftSource.value = 'server'
     activeServerPlanId.value = plan.id
     baseServerRevision.value = positiveRevision(plan.revision) ? plan.revision : null
     plannerRevisionConflict.value = null
-    localDirty.value = false
+    localDirty.value = localDraftRevision.value !== request.draftRevision
   } else {
     draftSource.value = 'local'
     clearActiveServerPlan()
@@ -1109,7 +1157,9 @@ function persistLocal(plans: SavedPlan[]) {
 }
 
 async function loadPlan(idx: number) {
+  if (saving.value) return
   if (stops.value.length && !await confirmDialog('Thay thế lịch trình đang tạo bằng bản đã lưu?', { confirmText: 'Thay thế' })) return
+  if (saving.value) return
   const plan = savedPlans.value[idx]
   if (!plan) return
   const persistenceWasReady = draftPersistenceReady
@@ -1124,6 +1174,7 @@ async function loadPlan(idx: number) {
   localDraftRevision.value += 1
   localDirty.value = false
   if (plan.id) {
+    advancePlannerDraftGeneration()
     activeServerPlanId.value = plan.id
     baseServerRevision.value = positiveRevision(plan.revision) ? plan.revision : null
     plannerRevisionConflict.value = null
@@ -1140,8 +1191,10 @@ async function loadPlan(idx: number) {
 }
 
 async function deletePlan(idx: number) {
+  if (saving.value) return
   const plan = savedPlans.value[idx]
   if (!await confirmDialog(`Xóa lịch trình "${plan?.title || 'chưa đặt tên'}"?`, { danger: true, confirmText: 'Xóa' })) return
+  if (saving.value) return
   planBusy.value = idx
   try {
     if (plan?.id && isLoggedIn.value) {
@@ -1220,37 +1273,61 @@ function publishBlockedByConflict(plan: SavedPlan): boolean {
 }
 
 async function publishPlan(idx: number) {
+  if (saving.value) return
   const plan = savedPlans.value[idx]
   if (!plan?.id) return
   if (publishBlockedByConflict(plan)) return
+  if (!positiveRevision(plan.revision)) {
+    showToast('Không thể xác định phiên bản máy chủ. Hãy tải lại lịch trình đã lưu.', 'error')
+    return
+  }
+  const planId = plan.id
+  const expectedRevision = plan.revision
+  const conflictAtStart = plannerRevisionConflict.value
   planBusy.value = idx
   const next = !plan.is_public
   try {
     const res = await $fetch<{ is_public?: boolean; revision?: number; plan?: unknown }>(`/api/my-plans/${plan.id}/publish`, {
-      method: 'POST', headers: authHeaders(), body: { is_public: next },
+      method: 'POST', headers: authHeaders(), body: { is_public: next, expected_revision: expectedRevision },
     })
     const snapshot = normalizePlanSnapshot(res.plan)
-    if (snapshot) {
-      snapshot.is_public = next
-      replaceSavedServerPlan(snapshot)
-    } else {
-      plan.is_public = next
-      if (positiveRevision(res.revision)) plan.revision = res.revision
+    if (!snapshot || snapshot.id !== planId || snapshot.revision !== expectedRevision + 1) {
+      showToast('Phản hồi đổi trạng thái không hợp lệ. Hãy tải lại trước khi tiếp tục.', 'error')
+      return
     }
-    const returnedRevision = snapshot?.revision ?? (positiveRevision(res.revision) ? res.revision : null)
-    if (plan.id === activeServerPlanId.value && returnedRevision !== null) {
-      baseServerRevision.value = returnedRevision
-      plannerRevisionConflict.value = null
+    replaceSavedServerPlan(snapshot)
+    if (planId === activeServerPlanId.value
+      && baseServerRevision.value === expectedRevision
+      && plannerRevisionConflict.value === conflictAtStart) {
+      advancePlannerDraftGeneration()
+      baseServerRevision.value = snapshot.revision
       persistPlannerDraft()
     }
-    if (next && import.meta.client) {
-      const link = `${location.origin}/lich-trinh-chia-se/${plan.id}`
+    if (snapshot.is_public && import.meta.client) {
+      const link = `${location.origin}/lich-trinh-chia-se/${planId}`
       try { await navigator.clipboard?.writeText(link); showToast('Đã công khai — link đã sao chép', 'success') }
       catch { showToast('Đã công khai', 'success') }
     } else {
       showToast('Đã chuyển về riêng tư', 'success')
     }
-  } catch (e: unknown) { showToast(extractErrorMessage(e, 'Không thể đổi trạng thái'), 'error') }
+  } catch (e: unknown) {
+    const snapshot = conflictSnapshot(e, planId)
+    if (snapshot) {
+      if (activeServerPlanId.value === planId
+        && baseServerRevision.value === expectedRevision
+        && plannerRevisionConflict.value === conflictAtStart) {
+        plannerRevisionConflict.value = snapshot
+        await nextTick()
+        plannerConflictEl.value?.focus()
+        showToast('Bản máy chủ mới hơn cần được đối chiếu trước khi đổi trạng thái.', 'warning')
+      } else {
+        replaceSavedServerPlan(snapshot)
+        showToast('Lịch trình đã thay đổi trên thiết bị khác. Hãy tải lại rồi thử lại.', 'warning')
+      }
+      return
+    }
+    showToast(extractErrorMessage(e, 'Không thể đổi trạng thái'), 'error')
+  }
   finally { planBusy.value = -1 }
 }
 

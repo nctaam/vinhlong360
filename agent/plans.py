@@ -216,36 +216,49 @@ async def merge_plans(body: MergeBody, user=Depends(require_user), _csrf=Depends
 
 class PublishBody(BaseModel):
     is_public: bool = True
+    expected_revision: int = Field(ge=1, strict=True)
 
 
 @router.post("/{plan_id}/publish",
              summary="Toggle plan visibility",
-             description="Sets a plan's public/private status. Public plans are visible in the shared plans listing. Returns the new is_public value.")
+             description="Sets a plan's public/private status only when expected_revision matches. Returns the complete updated plan snapshot or a 409 revision conflict.")
 async def publish_plan(plan_id: str, body: PublishBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
     plan_id = validate_path_id(plan_id, "plan_id")
     check_rate(f"plan:{user['id']}", 30, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
-    def _ensure_updated(cur):
-        if hasattr(cur, "rowcount") and cur.rowcount == 0:
-            raise HTTPException(404, "Lịch trình không tồn tại hoặc không thuộc về bạn")
+    uid = str(user["id"])
 
     def _query():
         ph = db._ph
         with db._conn() as conn:
-            cur = db._execute(conn, f"""
+            updated = db._fetchone(conn, f"""
                 UPDATE user_plans
                 SET is_public = {ph}, revision = revision + 1, updated_at = NOW()
                 WHERE id::text = {ph} AND user_id = {ph}::uuid
-                RETURNING revision
-            """, (body.is_public, plan_id, str(user["id"])))
-            _ensure_updated(cur)
-            row = cur.fetchone() if hasattr(cur, "fetchone") else None
-            revision = int(db._row_to_dict(row).get("revision")) if row else None
-            return revision
-    revision = await asyncio.to_thread(_query)
-    out = {"is_public": body.is_public}
-    if revision is not None:
-        out["revision"] = revision
-    return out
+                  AND revision = {ph}
+                RETURNING id, title, stops, is_public, created_at, revision, updated_at
+            """, (body.is_public, plan_id, uid, body.expected_revision))
+            if updated:
+                plan = _row_plan(updated)
+                return {
+                    "is_public": plan["is_public"],
+                    "revision": plan["revision"],
+                    "plan": plan,
+                }
+
+            current = db._fetchone(conn, f"""
+                SELECT id, title, stops, is_public, created_at, revision, updated_at
+                FROM user_plans
+                WHERE id::text = {ph} AND user_id = {ph}::uuid
+            """, (plan_id, uid))
+            if not current:
+                raise HTTPException(404, "Lịch trình không tồn tại hoặc không thuộc về bạn")
+            return JSONResponse(status_code=409, content={
+                "detail": "Lịch trình đã thay đổi trên thiết bị khác",
+                "code": "plan_revision_conflict",
+                "current": _row_plan(current),
+            })
+
+    return await asyncio.to_thread(_query)
 
 
 # ── Public (no-auth): xem lịch trình được chia-sẻ công-khai ──

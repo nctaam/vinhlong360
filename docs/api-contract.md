@@ -739,6 +739,10 @@ The revision token is required and must be a positive integer. A successful upda
 
 If the plan is missing, or is not owned by the authenticated user, the endpoint returns `404`. If the supplied revision is stale, it returns a top-level JSON `409` payload with `code: "plan_revision_conflict"` and `current` containing the latest `PlanSnapshot`, allowing the client to reconcile without losing server changes.
 
+`POST /api/my-plans/{plan_id}/publish` accepts `{ "is_public": boolean, "expected_revision": integer }`. The revision token is required, must be a positive integer, and rejects JSON booleans. The owner-bound update changes visibility only when the stored revision matches, increments the revision exactly once, and returns compatibility fields `is_public` and `revision` plus the complete updated `plan` snapshot.
+
+Publish uses the same privacy and conflict contract as update: missing and cross-owner IDs return indistinguishable `404` responses, while a stale revision returns the top-level `409` `plan_revision_conflict` payload with the complete `current` snapshot and does not change visibility or revision.
+
 ### `agent/public_api.py` (47 route)
 
 | Method | Path | Handler | Mô tả (docstring) |

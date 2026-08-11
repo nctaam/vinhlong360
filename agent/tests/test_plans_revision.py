@@ -31,13 +31,6 @@ class _Conn:
         return False
 
 
-class _Cursor:
-    rowcount = 1
-
-    def fetchone(self):
-        return {"revision": 2}
-
-
 def test_revision_migration_is_additive_and_idempotent():
     sql = MIGRATION.read_text(encoding="utf-8")
     assert "ADD COLUMN IF NOT EXISTS revision INTEGER NOT NULL DEFAULT 1" in sql
@@ -51,6 +44,12 @@ def test_revision_migration_is_additive_and_idempotent():
 def test_update_body_rejects_non_positive_integer_revision(bad):
     with pytest.raises(ValidationError):
         plans.PlanUpdateBody(title="A", stops=[], expected_revision=bad)
+
+
+@pytest.mark.parametrize("bad", [True, "3", 0, -1])
+def test_publish_body_rejects_non_positive_integer_revision(bad):
+    with pytest.raises(ValidationError):
+        plans.PublishBody(is_public=True, expected_revision=bad)
 
 
 def test_row_plan_exposes_revision_and_updated_at():
@@ -72,7 +71,7 @@ def recording_db(monkeypatch):
 
     monkeypatch.setattr(plans.db, "_conn", lambda: _Conn())
     monkeypatch.setattr(plans.db, "_fetchone", fake_fetchone)
-    monkeypatch.setattr(plans.db, "_execute", lambda conn, sql, params=(): calls["execute"].append((sql, params)) or _Cursor())
+    monkeypatch.setattr(plans.db, "_execute", lambda conn, sql, params=(): calls["execute"].append((sql, params)))
     monkeypatch.setattr(plans, "check_rate", lambda *args: None)
     return calls
 
@@ -136,18 +135,72 @@ def test_merge_remains_create_only():
     assert "UPDATE user_plans" not in merge
 
 
-def test_publish_increments_revision_and_returns_revision(monkeypatch):
-    executed = []
-    monkeypatch.setattr(plans.db, "_conn", lambda: _Conn())
-    monkeypatch.setattr(plans.db, "_execute", lambda conn, sql, params=(): executed.append(sql) or _Cursor())
-    monkeypatch.setattr(plans, "check_rate", lambda *args: None)
+def test_publish_matching_revision_is_atomic_owner_bound_and_returns_snapshot(recording_db):
+    recording_db["update_row"] = {
+        **SERVER_SNAPSHOT_ROW,
+        "is_public": True,
+        "revision": 5,
+        "updated_at": "2026-08-10T03:00:00+00:00",
+    }
     out = asyncio.run(plans.publish_plan(
         plan_id=PLAN_ID,
-        body=plans.PublishBody(is_public=True),
+        body=plans.PublishBody(is_public=True, expected_revision=4),
         user={"id": OWNER_ID},
         _csrf=None,
     ))
+
+    sql, params = recording_db["fetchone"][0]
+    assert "WHERE id::text" in sql
+    assert "user_id" in sql
+    assert "revision =" in sql
+    assert "revision = revision + 1" in sql
+    assert "RETURNING id, title, stops, is_public, created_at, revision, updated_at" in sql
+    assert params == (True, PLAN_ID, OWNER_ID, 4)
     assert out["is_public"] is True
-    assert out["revision"] == 2
-    assert "revision = revision + 1" in executed[0]
-    assert "updated_at = NOW()" in executed[0]
+    assert out["revision"] == 5
+    assert out["plan"] == {
+        "id": PLAN_ID,
+        "title": "Server",
+        "stops": [],
+        "is_public": True,
+        "savedAt": "2026-08-10T01:00:00+00:00",
+        "revision": 5,
+        "updatedAt": "2026-08-10T03:00:00+00:00",
+    }
+
+
+def test_stale_publish_returns_409_with_current_snapshot_without_mutation(recording_db):
+    recording_db["update_row"] = None
+    recording_db["current_row"] = SERVER_SNAPSHOT_ROW.copy()
+
+    response = asyncio.run(plans.publish_plan(
+        plan_id=PLAN_ID,
+        body=plans.PublishBody(is_public=True, expected_revision=3),
+        user={"id": OWNER_ID},
+        _csrf=None,
+    ))
+
+    assert response.status_code == 409
+    payload = json.loads(response.body)
+    assert payload == {
+        "detail": "Lịch trình đã thay đổi trên thiết bị khác",
+        "code": "plan_revision_conflict",
+        "current": plans._row_plan(SERVER_SNAPSHOT_ROW),
+    }
+    assert recording_db["current_row"]["is_public"] is False
+    assert recording_db["current_row"]["revision"] == 4
+
+
+def test_missing_or_foreign_owner_publish_returns_404(recording_db):
+    recording_db["update_row"] = None
+    recording_db["current_row"] = None
+
+    with pytest.raises(HTTPException) as exc:
+        asyncio.run(plans.publish_plan(
+            plan_id=PLAN_ID,
+            body=plans.PublishBody(is_public=True, expected_revision=4),
+            user={"id": OWNER_ID},
+            _csrf=None,
+        ))
+
+    assert exc.value.status_code == 404

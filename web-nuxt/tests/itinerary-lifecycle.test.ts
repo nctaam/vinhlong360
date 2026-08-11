@@ -321,7 +321,7 @@ describe('planner page lifecycle', () => {
         throw revisionConflict(current, 'response')
       }
       if (url === '/api/my-plans/other-plan/publish' && options.method === 'POST') {
-        return { is_public: true, revision: 3 }
+        return { is_public: true, revision: 3, plan: { ...other, is_public: true, revision: 3 } }
       }
       throw new Error(`Unexpected request: ${options.method || 'GET'} ${url}`)
     })
@@ -365,8 +365,104 @@ describe('planner page lifecycle', () => {
       await publishButtons[1]!.trigger('click')
       await flushContinuation()
       expect(fetchPlan).toHaveBeenCalledWith('/api/my-plans/other-plan/publish', {
-        method: 'POST', headers: {}, body: { is_public: true },
+        method: 'POST', headers: {}, body: { is_public: true, expected_revision: 2 },
       })
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('keeps the active local draft and old comparison base when conditional publish conflicts', async () => {
+    const current = serverPlan({
+      title: 'Server title',
+      revision: 5,
+      updatedAt: '2026-08-11T10:45:00Z',
+      stops: [planStop('start', 'Start', 'Server note')],
+    })
+    const fetchPlan = vi.fn(async (url: string, options: Record<string, any> = {}) => {
+      if (url === '/api/my-plans' && !options.method) return { plans: [serverPlan()] }
+      if (url === '/api/my-plans/server-plan/publish' && options.method === 'POST') {
+        throw revisionConflict(current, 'response')
+      }
+      throw new Error(`Unexpected request: ${options.method || 'GET'} ${url}`)
+    })
+    const wrapper = await mountAuthenticatedPlanner(fetchPlan)
+    try {
+      await loadFirstSavedPlan(wrapper)
+      await wrapper.get('.builder-title').setValue('Local title')
+      await wrapper.get('.stop-note-input').setValue('Local note')
+      await wrapper.get('.saved-plan-actions .btn').trigger('click')
+      await flushContinuation()
+
+      expect(fetchPlan).toHaveBeenCalledWith('/api/my-plans/server-plan/publish', {
+        method: 'POST',
+        headers: {},
+        body: { is_public: true, expected_revision: 4 },
+      })
+      const vm = wrapper.vm as unknown as {
+        baseServerRevision: number
+        plannerRevisionConflict: { revision: number }
+        planTitle: string
+        stops: Array<{ notes: string }>
+      }
+      expect(vm.baseServerRevision).toBe(4)
+      expect(vm.plannerRevisionConflict.revision).toBe(5)
+      expect(vm.planTitle).toBe('Local title')
+      expect(vm.stops[0]?.notes).toBe('Local note')
+      expect(wrapper.get('[data-planner-conflict-diff]').text()).toContain('Bản máy chủ 5')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('refreshes only the saved snapshot when a non-active conditional publish conflicts', async () => {
+    const other = serverPlan({ id: 'other-plan', title: 'Other plan', revision: 2 })
+    const currentOther = serverPlan({
+      id: 'other-plan',
+      title: 'Other plan updated elsewhere',
+      revision: 3,
+      updatedAt: '2026-08-11T10:50:00Z',
+      is_public: true,
+    })
+    const fetchPlan = vi.fn(async (url: string, options: Record<string, any> = {}) => {
+      if (url === '/api/my-plans' && !options.method) return { plans: [serverPlan(), other] }
+      if (url === '/api/my-plans/other-plan/publish' && options.method === 'POST') {
+        throw revisionConflict(currentOther, 'data')
+      }
+      throw new Error(`Unexpected request: ${options.method || 'GET'} ${url}`)
+    })
+    const wrapper = await mountAuthenticatedPlanner(fetchPlan, 2)
+    try {
+      await loadFirstSavedPlan(wrapper)
+      await wrapper.get('.builder-title').setValue('Local active title')
+      await wrapper.findAll('.saved-plan-actions .btn')[3]!.trigger('click')
+      await flushContinuation()
+
+      expect(fetchPlan).toHaveBeenCalledWith('/api/my-plans/other-plan/publish', {
+        method: 'POST',
+        headers: {},
+        body: { is_public: true, expected_revision: 2 },
+      })
+      const vm = wrapper.vm as unknown as {
+        activeServerPlanId: string
+        baseServerRevision: number
+        plannerRevisionConflict: unknown
+        planTitle: string
+        savedPlans: Array<{ id?: string; revision?: number; title: string }>
+      }
+      expect(vm.activeServerPlanId).toBe('server-plan')
+      expect(vm.baseServerRevision).toBe(4)
+      expect(vm.planTitle).toBe('Local active title')
+      expect(vm.plannerRevisionConflict).toBeNull()
+      expect(vm.savedPlans[1]).toEqual(expect.objectContaining({
+        id: 'other-plan',
+        revision: 3,
+        title: 'Other plan updated elsewhere',
+      }))
+      expect(mocks.showToast).toHaveBeenCalledWith(
+        'Lịch trình đã thay đổi trên thiết bị khác. Hãy tải lại rồi thử lại.',
+        'warning',
+      )
     } finally {
       wrapper.unmount()
     }
@@ -437,7 +533,7 @@ describe('planner page lifecycle', () => {
     }
   })
 
-  it('persists the revision returned by publish for the next PUT after remount', async () => {
+  it('persists the snapshot revision returned by conditional publish for the next PUT after remount', async () => {
     const published = serverPlan({ revision: 5, is_public: true, updatedAt: '2026-08-11T11:00:00Z' })
     const updated = serverPlan({
       revision: 6,
@@ -448,7 +544,7 @@ describe('planner page lifecycle', () => {
     const fetchPlan = vi.fn(async (url: string, options: Record<string, any> = {}) => {
       if (url === '/api/my-plans' && !options.method) return { plans: [serverPlan()] }
       if (url === '/api/my-plans/server-plan/publish' && options.method === 'POST') {
-        return { is_public: true, revision: published.revision }
+        return { is_public: true, revision: published.revision, plan: published }
       }
       if (url === '/api/my-plans/server-plan' && options.method === 'PUT') return { plan: updated }
       throw new Error(`Unexpected request: ${options.method || 'GET'} ${url}`)
@@ -458,6 +554,11 @@ describe('planner page lifecycle', () => {
       await loadFirstSavedPlan(wrapper)
       await wrapper.get('.saved-plan-actions .btn').trigger('click')
       await flushContinuation()
+      expect(fetchPlan).toHaveBeenCalledWith('/api/my-plans/server-plan/publish', {
+        method: 'POST',
+        headers: {},
+        body: { is_public: true, expected_revision: 4 },
+      })
       wrapper.unmount()
       wrapper = await mountAuthenticatedPlanner(fetchPlan)
       await wrapper.get('.stop-note-input').setValue('After publish')
@@ -660,6 +761,353 @@ describe('planner page lifecycle', () => {
         },
       })
       expect(fetchPlan.mock.calls.some(([url, options]) => url === '/api/my-plans/server-plan' && options?.method === 'PUT')).toBe(false)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('guards saved-plan loading while an authenticated create is pending and preserves later local edits', async () => {
+    const pendingCreate = deferred<{ plan: ReturnType<typeof serverPlan> }>()
+    const existing = serverPlan({ id: 'other-plan', title: 'Other plan', revision: 2 })
+    const created = serverPlan({
+      id: 'created-plan',
+      title: 'Create draft',
+      revision: 1,
+      updatedAt: '2026-08-11T13:00:00Z',
+      stops: [planStop('start', 'Start')],
+    })
+    const fetchPlan = vi.fn(async (url: string, options: Record<string, any> = {}) => {
+      if (url === '/api/my-plans' && !options.method) return { plans: [existing] }
+      if (url === '/api/my-plans' && options.method === 'POST') return pendingCreate.promise
+      throw new Error(`Unexpected request: ${options.method || 'GET'} ${url}`)
+    })
+    const wrapper = await mountAuthenticatedPlanner(fetchPlan)
+    try {
+      await wrapper.get('.picker-item').trigger('click')
+      await wrapper.get('.builder-title').setValue('Create draft')
+      const vm = wrapper.vm as unknown as {
+        activeServerPlanId: string | null
+        baseServerRevision: number | null
+        loadPlan: (index: number) => Promise<void>
+        localDirty: boolean
+        planTitle: string
+        savePlan: () => Promise<void>
+        saving: boolean
+        stops: Array<{ notes: string }>
+      }
+      const save = vm.savePlan()
+      await nextTick()
+
+      const loadControl = wrapper.get('.saved-plan-btn')
+      expect(loadControl.attributes('disabled')).toBeDefined()
+      const confirmationsBefore = mocks.confirmDialog.mock.calls.length
+      await loadControl.trigger('click')
+      await vm.loadPlan(0)
+      expect(mocks.confirmDialog).toHaveBeenCalledTimes(confirmationsBefore)
+      expect(vm.planTitle).toBe('Create draft')
+      expect(vm.activeServerPlanId).toBeNull()
+
+      await wrapper.get('.builder-title').setValue('Create draft edited')
+      await wrapper.get('.stop-note-input').setValue('Later local edit')
+      pendingCreate.resolve({ plan: created })
+      await save
+      await flushContinuation()
+
+      expect(vm.activeServerPlanId).toBe('created-plan')
+      expect(vm.baseServerRevision).toBe(1)
+      expect(vm.planTitle).toBe('Create draft edited')
+      expect(vm.stops[0]?.notes).toBe('Later local edit')
+      expect(vm.localDirty).toBe(true)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('guards clear through the rendered control and handler until an authenticated create settles', async () => {
+    const pendingCreate = deferred<{ plan: ReturnType<typeof serverPlan> }>()
+    const created = serverPlan({
+      id: 'created-plan',
+      title: 'Create draft',
+      revision: 1,
+      updatedAt: '2026-08-11T13:05:00Z',
+      stops: [planStop('start', 'Start')],
+    })
+    const fetchPlan = vi.fn(async (url: string, options: Record<string, any> = {}) => {
+      if (url === '/api/my-plans' && !options.method) return { plans: [serverPlan()] }
+      if (url === '/api/my-plans' && options.method === 'POST') return pendingCreate.promise
+      throw new Error(`Unexpected request: ${options.method || 'GET'} ${url}`)
+    })
+    const wrapper = await mountAuthenticatedPlanner(fetchPlan)
+    try {
+      await wrapper.get('.picker-item').trigger('click')
+      await wrapper.get('.builder-title').setValue('Create draft')
+      const vm = wrapper.vm as unknown as {
+        activeServerPlanId: string | null
+        clearPlan: () => Promise<void>
+        planTitle: string
+        savePlan: () => Promise<void>
+        stops: Array<{ id: string }>
+      }
+      const save = vm.savePlan()
+      await nextTick()
+
+      const clearControl = wrapper.get('.planner-action-dock .btn-ghost')
+      expect(clearControl.attributes('disabled')).toBeDefined()
+      const confirmationsBefore = mocks.confirmDialog.mock.calls.length
+      await clearControl.trigger('click')
+      await vm.clearPlan()
+      expect(mocks.confirmDialog).toHaveBeenCalledTimes(confirmationsBefore)
+      expect(vm.planTitle).toBe('Create draft')
+      expect(vm.stops.map(stop => stop.id)).toEqual(['start'])
+      expect(vm.activeServerPlanId).toBeNull()
+
+      pendingCreate.resolve({ plan: created })
+      await save
+      await flushContinuation()
+      expect(vm.activeServerPlanId).toBe('created-plan')
+      expect(vm.planTitle).toBe('Create draft')
+      expect(vm.stops.map(stop => stop.id)).toEqual(['start'])
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('rechecks saving after a pending clear confirmation before mutating the draft', async () => {
+    const pendingConfirmation = deferred<boolean>()
+    const pendingCreate = deferred<{ plan: ReturnType<typeof serverPlan> }>()
+    const created = serverPlan({
+      id: 'created-plan',
+      title: 'Create draft',
+      revision: 1,
+      updatedAt: '2026-08-11T13:15:00Z',
+      stops: [planStop('start', 'Start')],
+    })
+    mocks.confirmDialog.mockImplementationOnce(() => pendingConfirmation.promise)
+    const fetchPlan = vi.fn(async (url: string, options: Record<string, any> = {}) => {
+      if (url === '/api/my-plans' && !options.method) return { plans: [serverPlan()] }
+      if (url === '/api/my-plans' && options.method === 'POST') return pendingCreate.promise
+      throw new Error(`Unexpected request: ${options.method || 'GET'} ${url}`)
+    })
+    const wrapper = await mountAuthenticatedPlanner(fetchPlan)
+    try {
+      await wrapper.get('.picker-item').trigger('click')
+      await wrapper.get('.builder-title').setValue('Create draft')
+      const vm = wrapper.vm as unknown as {
+        activeServerPlanId: string | null
+        clearPlan: () => Promise<void>
+        planTitle: string
+        savePlan: () => Promise<void>
+        stops: Array<{ id: string }>
+      }
+
+      const clear = vm.clearPlan()
+      expect(mocks.confirmDialog).toHaveBeenCalledTimes(1)
+      const save = vm.savePlan()
+      await nextTick()
+      expect(wrapper.get('.planner-action-dock .btn-ghost').attributes('disabled')).toBeDefined()
+
+      pendingConfirmation.resolve(true)
+      await clear
+      pendingCreate.resolve({ plan: created })
+      await save
+      await flushContinuation()
+
+      expect(vm.planTitle).toBe('Create draft')
+      expect(vm.stops.map(stop => stop.id)).toEqual(['start'])
+      expect(vm.activeServerPlanId).toBe('created-plan')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('rechecks saving after a pending load confirmation before switching the draft', async () => {
+    const pendingConfirmation = deferred<boolean>()
+    const pendingCreate = deferred<{ plan: ReturnType<typeof serverPlan> }>()
+    const existing = serverPlan({ id: 'other-plan', title: 'Other plan', revision: 2 })
+    const created = serverPlan({
+      id: 'created-plan',
+      title: 'Create draft',
+      revision: 1,
+      updatedAt: '2026-08-11T13:20:00Z',
+      stops: [planStop('start', 'Start')],
+    })
+    mocks.confirmDialog.mockImplementationOnce(() => pendingConfirmation.promise)
+    const fetchPlan = vi.fn(async (url: string, options: Record<string, any> = {}) => {
+      if (url === '/api/my-plans' && !options.method) return { plans: [existing] }
+      if (url === '/api/my-plans' && options.method === 'POST') return pendingCreate.promise
+      throw new Error(`Unexpected request: ${options.method || 'GET'} ${url}`)
+    })
+    const wrapper = await mountAuthenticatedPlanner(fetchPlan)
+    try {
+      await wrapper.get('.picker-item').trigger('click')
+      await wrapper.get('.builder-title').setValue('Create draft')
+      const vm = wrapper.vm as unknown as {
+        activeServerPlanId: string | null
+        loadPlan: (index: number) => Promise<void>
+        planTitle: string
+        savePlan: () => Promise<void>
+        stops: Array<{ id: string }>
+      }
+
+      const load = vm.loadPlan(0)
+      expect(mocks.confirmDialog).toHaveBeenCalledTimes(1)
+      const save = vm.savePlan()
+      await nextTick()
+      expect(wrapper.get('.saved-plan-btn').attributes('disabled')).toBeDefined()
+
+      pendingConfirmation.resolve(true)
+      await load
+      pendingCreate.resolve({ plan: created })
+      await save
+      await flushContinuation()
+
+      expect(vm.planTitle).toBe('Create draft')
+      expect(vm.stops.map(stop => stop.id)).toEqual(['start'])
+      expect(vm.activeServerPlanId).toBe('created-plan')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('rechecks saving after a pending delete confirmation before deleting a saved plan', async () => {
+    const pendingConfirmation = deferred<boolean>()
+    const pendingCreate = deferred<{ plan: ReturnType<typeof serverPlan> }>()
+    const created = serverPlan({
+      id: 'created-plan',
+      title: 'Create draft',
+      revision: 1,
+      updatedAt: '2026-08-11T13:25:00Z',
+      stops: [planStop('start', 'Start')],
+    })
+    let deletes = 0
+    mocks.confirmDialog.mockImplementationOnce(() => pendingConfirmation.promise)
+    const fetchPlan = vi.fn(async (url: string, options: Record<string, any> = {}) => {
+      if (url === '/api/my-plans' && !options.method) return { plans: [serverPlan()] }
+      if (url === '/api/my-plans' && options.method === 'POST') return pendingCreate.promise
+      if (url === '/api/my-plans/server-plan' && options.method === 'DELETE') {
+        deletes += 1
+        return {}
+      }
+      throw new Error(`Unexpected request: ${options.method || 'GET'} ${url}`)
+    })
+    const wrapper = await mountAuthenticatedPlanner(fetchPlan)
+    try {
+      await wrapper.get('.picker-item').trigger('click')
+      const vm = wrapper.vm as unknown as {
+        deletePlan: (index: number) => Promise<void>
+        savePlan: () => Promise<void>
+        savedPlans: Array<{ id?: string }>
+      }
+
+      const remove = vm.deletePlan(0)
+      expect(mocks.confirmDialog).toHaveBeenCalledTimes(1)
+      const save = vm.savePlan()
+      await nextTick()
+      expect(wrapper.get('.saved-plan-actions .danger').attributes('disabled')).toBeDefined()
+
+      pendingConfirmation.resolve(true)
+      await remove
+      pendingCreate.resolve({ plan: created })
+      await save
+      await flushContinuation()
+
+      expect(deletes).toBe(0)
+      expect(vm.savedPlans.map(plan => plan.id)).toEqual(['created-plan', 'server-plan'])
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('discards a late create result when the draft generation advances with the same identity tuple', async () => {
+    const pendingCreate = deferred<{ plan: ReturnType<typeof serverPlan> }>()
+    const created = serverPlan({
+      id: 'created-plan',
+      title: 'Create draft',
+      revision: 1,
+      updatedAt: '2026-08-11T13:30:00Z',
+      stops: [planStop('start', 'Start')],
+    })
+    const fetchPlan = vi.fn(async (url: string, options: Record<string, any> = {}) => {
+      if (url === '/api/my-plans' && !options.method) return { plans: [serverPlan()] }
+      if (url === '/api/my-plans' && options.method === 'POST') return pendingCreate.promise
+      throw new Error(`Unexpected request: ${options.method || 'GET'} ${url}`)
+    })
+    const wrapper = await mountAuthenticatedPlanner(fetchPlan)
+    try {
+      await wrapper.get('.picker-item').trigger('click')
+      await wrapper.get('.builder-title').setValue('Create draft')
+      const vm = wrapper.vm as unknown as {
+        activeServerPlanId: string | null
+        clearActiveServerPlan: () => void
+        planTitle: string
+        savePlan: () => Promise<void>
+        savedPlans: Array<{ id?: string }>
+        stops: Array<{ id: string }>
+      }
+
+      const save = vm.savePlan()
+      await nextTick()
+      vm.clearActiveServerPlan()
+      pendingCreate.resolve({ plan: created })
+      await save
+      await flushContinuation()
+
+      expect(vm.activeServerPlanId).toBeNull()
+      expect(vm.planTitle).toBe('Create draft')
+      expect(vm.stops.map(stop => stop.id)).toEqual(['start'])
+      expect(vm.savedPlans.some(plan => plan.id === 'created-plan')).toBe(false)
+      expect(mocks.showToast).toHaveBeenCalledWith(
+        'Kết quả lưu cũ đã được bỏ qua vì lịch trình đang mở đã thay đổi.',
+        'warning',
+      )
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('guards publish and delete controls and handlers while a save is pending', async () => {
+    const pendingCreate = deferred<{ plan: ReturnType<typeof serverPlan> }>()
+    const created = serverPlan({
+      id: 'created-plan',
+      title: 'Create draft',
+      revision: 1,
+      updatedAt: '2026-08-11T13:10:00Z',
+      stops: [planStop('start', 'Start')],
+    })
+    const fetchPlan = vi.fn(async (url: string, options: Record<string, any> = {}) => {
+      if (url === '/api/my-plans' && !options.method) return { plans: [serverPlan()] }
+      if (url === '/api/my-plans' && options.method === 'POST') return pendingCreate.promise
+      throw new Error(`Unexpected request: ${options.method || 'GET'} ${url}`)
+    })
+    const wrapper = await mountAuthenticatedPlanner(fetchPlan)
+    try {
+      await wrapper.get('.picker-item').trigger('click')
+      const vm = wrapper.vm as unknown as {
+        deletePlan: (index: number) => Promise<void>
+        publishPlan: (index: number) => Promise<void>
+        savePlan: () => Promise<void>
+        savedPlans: Array<{ id?: string }>
+      }
+      const save = vm.savePlan()
+      await nextTick()
+
+      const publishControl = wrapper.get('.saved-plan-actions .btn')
+      const deleteControl = wrapper.get('.saved-plan-actions .danger')
+      expect(publishControl.attributes('disabled')).toBeDefined()
+      expect(deleteControl.attributes('disabled')).toBeDefined()
+      const requestsBefore = fetchPlan.mock.calls.length
+      const confirmationsBefore = mocks.confirmDialog.mock.calls.length
+      await publishControl.trigger('click')
+      await deleteControl.trigger('click')
+      await vm.publishPlan(0)
+      await vm.deletePlan(0)
+      expect(fetchPlan).toHaveBeenCalledTimes(requestsBefore)
+      expect(mocks.confirmDialog).toHaveBeenCalledTimes(confirmationsBefore)
+      expect(vm.savedPlans[0]?.id).toBe('server-plan')
+
+      pendingCreate.resolve({ plan: created })
+      await save
+      await flushContinuation()
     } finally {
       wrapper.unmount()
     }
@@ -1039,7 +1487,7 @@ async function mountPlannerWithThreeStops(options: { includeMap?: boolean } = {}
   return wrapper
 }
 
-async function mountAuthenticatedPlanner(fetchPlan: ReturnType<typeof vi.fn>) {
+async function mountAuthenticatedPlanner(fetchPlan: ReturnType<typeof vi.fn>, expectedPlanCount = 1) {
   authState.isLoggedIn.value = true
   authState.user.value = { id: 'planner-user' }
   vi.stubGlobal('$fetch', fetchPlan)
@@ -1047,7 +1495,7 @@ async function mountAuthenticatedPlanner(fetchPlan: ReturnType<typeof vi.fn>) {
     global: { stubs: plannerStubs() },
   })
   await flushContinuation()
-  expect(wrapper.findAll('.saved-plan-item')).toHaveLength(1)
+  expect(wrapper.findAll('.saved-plan-item')).toHaveLength(expectedPlanCount)
   return wrapper
 }
 
@@ -1097,6 +1545,16 @@ function serverPlan(overrides: Partial<{
     is_public: false,
     ...overrides,
   }
+}
+
+function deferred<T>() {
+  let resolve!: (value: T) => void
+  let reject!: (reason?: unknown) => void
+  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise
+    reject = rejectPromise
+  })
+  return { promise, resolve, reject }
 }
 
 async function flushContinuation() {
