@@ -250,7 +250,7 @@ describe('planner page lifecycle', () => {
     }
   })
 
-  it('keeps the local draft and retries the normal PUT with the returned server revision', async () => {
+  it('keeps the local comparison base across remount and retries PUT with the returned revision', async () => {
     const current = serverPlan({
       title: 'Server title',
       revision: 5,
@@ -273,7 +273,7 @@ describe('planner page lifecycle', () => {
       }
       throw new Error(`Unexpected request: ${options.method || 'GET'} ${url}`)
     })
-    const wrapper = await mountAuthenticatedPlanner(fetchPlan)
+    let wrapper = await mountAuthenticatedPlanner(fetchPlan)
     try {
       await loadFirstSavedPlan(wrapper)
       await wrapper.get('.builder-title').setValue('Local title')
@@ -285,6 +285,10 @@ describe('planner page lifecycle', () => {
 
       expect(wrapper.find('[data-planner-conflict-diff]').exists()).toBe(false)
       expect((wrapper.get('.builder-title').element as HTMLInputElement).value).toBe('Local title')
+      wrapper.unmount()
+      wrapper = await mountAuthenticatedPlanner(fetchPlan)
+      expect((wrapper.get('.builder-title').element as HTMLInputElement).value).toBe('Local title')
+      expect((wrapper.get('.stop-note-input').element as HTMLInputElement).value).toBe('Local note')
       await wrapper.get('.planner-action-dock .btn').trigger('click')
       await flushContinuation()
 
@@ -296,6 +300,72 @@ describe('planner page lifecycle', () => {
         title: 'Local title',
         stops: [planStop('start', 'Start', 'Local note')],
         expected_revision: 5,
+      })
+      expect(fetchPlan.mock.calls.some(([url, options]) => url === '/api/my-plans' && options?.method === 'POST')).toBe(false)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('blocks active-plan publish at the control and handler while a conflict is unresolved', async () => {
+    const current = serverPlan({
+      title: 'Server title',
+      revision: 5,
+      updatedAt: '2026-08-11T10:45:00Z',
+      stops: [planStop('start', 'Start', 'Server note')],
+    })
+    const other = serverPlan({ id: 'other-plan', title: 'Other plan', revision: 2 })
+    const fetchPlan = vi.fn(async (url: string, options: Record<string, any> = {}) => {
+      if (url === '/api/my-plans' && !options.method) return { plans: [serverPlan(), other] }
+      if (url === '/api/my-plans/server-plan' && options.method === 'PUT') {
+        throw revisionConflict(current, 'response')
+      }
+      if (url === '/api/my-plans/other-plan/publish' && options.method === 'POST') {
+        return { is_public: true, revision: 3 }
+      }
+      throw new Error(`Unexpected request: ${options.method || 'GET'} ${url}`)
+    })
+    authState.isLoggedIn.value = true
+    authState.user.value = { id: 'planner-user' }
+    vi.stubGlobal('$fetch', fetchPlan)
+    const wrapper = await mountSuspended(PlannerPage, { global: { stubs: plannerStubs() } })
+    try {
+      await flushContinuation()
+      await loadFirstSavedPlan(wrapper)
+      await wrapper.get('.builder-title').setValue('Local title')
+      await wrapper.get('.stop-note-input').setValue('Local note')
+      await wrapper.get('.planner-action-dock .btn').trigger('click')
+      await flushContinuation()
+
+      const publishButtons = wrapper.findAll('.saved-plan-actions .btn').filter(button => (
+        button.text() === 'Riêng tư' || button.text() === 'Công khai'
+      ))
+      expect(publishButtons).toHaveLength(2)
+      expect(publishButtons[0]!.attributes('disabled')).toBeDefined()
+      expect(publishButtons[0]!.attributes('aria-describedby')).toBe('planner-publish-conflict-reason')
+      expect(wrapper.get('#planner-publish-conflict-reason').text()).toContain('Hãy xử lý xung đột trước')
+      expect(publishButtons[1]!.attributes('disabled')).toBeUndefined()
+
+      const vm = wrapper.vm as unknown as {
+        publishPlan: (index: number) => Promise<void>
+        baseServerRevision: number
+        plannerRevisionConflict: { revision: number }
+        planTitle: string
+        stops: Array<{ notes: string }>
+      }
+      const callsBeforeGuard = fetchPlan.mock.calls.length
+      await vm.publishPlan(0)
+      await nextTick()
+      expect(fetchPlan).toHaveBeenCalledTimes(callsBeforeGuard)
+      expect(vm.baseServerRevision).toBe(4)
+      expect(vm.plannerRevisionConflict.revision).toBe(5)
+      expect(vm.planTitle).toBe('Local title')
+      expect(vm.stops[0]?.notes).toBe('Local note')
+
+      await publishButtons[1]!.trigger('click')
+      await flushContinuation()
+      expect(fetchPlan).toHaveBeenCalledWith('/api/my-plans/other-plan/publish', {
+        method: 'POST', headers: {}, body: { is_public: true },
       })
     } finally {
       wrapper.unmount()
@@ -367,7 +437,7 @@ describe('planner page lifecycle', () => {
     }
   })
 
-  it('retains the revision returned by publish for the next active-plan PUT', async () => {
+  it('persists the revision returned by publish for the next PUT after remount', async () => {
     const published = serverPlan({ revision: 5, is_public: true, updatedAt: '2026-08-11T11:00:00Z' })
     const updated = serverPlan({
       revision: 6,
@@ -383,11 +453,13 @@ describe('planner page lifecycle', () => {
       if (url === '/api/my-plans/server-plan' && options.method === 'PUT') return { plan: updated }
       throw new Error(`Unexpected request: ${options.method || 'GET'} ${url}`)
     })
-    const wrapper = await mountAuthenticatedPlanner(fetchPlan)
+    let wrapper = await mountAuthenticatedPlanner(fetchPlan)
     try {
       await loadFirstSavedPlan(wrapper)
       await wrapper.get('.saved-plan-actions .btn').trigger('click')
       await flushContinuation()
+      wrapper.unmount()
+      wrapper = await mountAuthenticatedPlanner(fetchPlan)
       await wrapper.get('.stop-note-input').setValue('After publish')
       await wrapper.get('.planner-action-dock .btn').trigger('click')
       await flushContinuation()
@@ -401,6 +473,81 @@ describe('planner page lifecycle', () => {
           expected_revision: 5,
         },
       })
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('fails closed for a restored legacy server draft without identity', async () => {
+    localStorage.setItem('vl360_planner_draft', JSON.stringify({
+      title: 'Legacy local title',
+      stops: [planStop('start', 'Start', 'Legacy local note')],
+      revision: 7,
+      savedAt: '2026-08-11T12:00:00Z',
+      source: 'server',
+      travelBudgetMinutes: null,
+    }))
+    const fetchPlan = vi.fn(async (url: string, options: Record<string, any> = {}) => {
+      if (url === '/api/my-plans' && !options.method) return { plans: [serverPlan()] }
+      throw new Error(`Unexpected request: ${options.method || 'GET'} ${url}`)
+    })
+    const wrapper = await mountAuthenticatedPlanner(fetchPlan)
+    try {
+      expect((wrapper.get('.builder-title').element as HTMLInputElement).value).toBe('Legacy local title')
+      expect((wrapper.get('.stop-note-input').element as HTMLInputElement).value).toBe('Legacy local note')
+      await wrapper.get('.planner-action-dock .btn').trigger('click')
+      await flushContinuation()
+
+      expect(fetchPlan.mock.calls).toEqual([['/api/my-plans', { headers: {} }]])
+      expect(mocks.showToast).toHaveBeenCalledWith(
+        'Bản nháp máy chủ thiếu thông tin phiên bản. Hãy tải lại lịch trình đã lưu trước khi lưu.',
+        'error',
+      )
+      expect((wrapper.get('.builder-title').element as HTMLInputElement).value).toBe('Legacy local title')
+      expect((wrapper.get('.stop-note-input').element as HTMLInputElement).value).toBe('Legacy local note')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('drops deleted active-plan identity before remount so the draft creates instead of updating', async () => {
+    let deleted = false
+    const created = serverPlan({ id: 'replacement-plan', title: 'Baseline', revision: 1 })
+    const fetchPlan = vi.fn(async (url: string, options: Record<string, any> = {}) => {
+      if (url === '/api/my-plans' && !options.method) {
+        return { plans: deleted ? [] : [serverPlan()] }
+      }
+      if (url === '/api/my-plans/server-plan' && options.method === 'DELETE') {
+        deleted = true
+        return {}
+      }
+      if (url === '/api/my-plans' && options.method === 'POST') {
+        return { id: created.id, revision: created.revision, plan: created }
+      }
+      throw new Error(`Unexpected request: ${options.method || 'GET'} ${url}`)
+    })
+    let wrapper = await mountAuthenticatedPlanner(fetchPlan)
+    try {
+      await loadFirstSavedPlan(wrapper)
+      await wrapper.get('.saved-plan-actions .danger').trigger('click')
+      await flushContinuation()
+      wrapper.unmount()
+
+      wrapper = await mountSuspended(PlannerPage, { global: { stubs: plannerStubs() } })
+      await flushContinuation()
+      expect(wrapper.findAll('.saved-plan-item')).toHaveLength(0)
+      await wrapper.get('.planner-action-dock .btn').trigger('click')
+      await flushContinuation()
+
+      expect(fetchPlan).toHaveBeenCalledWith('/api/my-plans', {
+        method: 'POST', headers: {}, body: {
+          title: 'Baseline',
+          stops: [planStop('start', 'Start')],
+        },
+      })
+      expect(fetchPlan.mock.calls.some(([url, options]) => (
+        url === '/api/my-plans/server-plan' && options?.method === 'PUT'
+      ))).toBe(false)
     } finally {
       wrapper.unmount()
     }

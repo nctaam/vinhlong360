@@ -161,8 +161,8 @@
             </div>
             <span class="planner-conflict-diff__revision">Bản máy chủ {{ plannerRevisionConflict.revision }}</span>
           </div>
-          <p class="planner-conflict-diff__freshness">
-            Cập nhật {{ formatDate(plannerRevisionConflict.updatedAt) }}. Bản cục bộ vẫn được giữ nguyên để bạn đối chiếu.
+          <p id="planner-publish-conflict-reason" class="planner-conflict-diff__freshness">
+            Cập nhật {{ formatDate(plannerRevisionConflict.updatedAt) }}. Bản cục bộ vẫn được giữ nguyên để bạn đối chiếu. Hãy xử lý xung đột trước khi đổi trạng thái công khai.
           </p>
           <dl class="planner-conflict-diff__titles">
             <div>
@@ -329,7 +329,14 @@
               <small>{{ plan.stops.length }} điểm · Lưu {{ formatDate(plan.savedAt) }}</small>
             </button>
             <div class="saved-plan-actions">
-              <button v-if="plan.id" type="button" :class="['btn btn-sm', plan.is_public ? 'btn-outline' : 'btn-ghost']" :disabled="planBusy === pi" @click="publishPlan(pi)">
+              <button
+                v-if="plan.id"
+                type="button"
+                :class="['btn btn-sm', plan.is_public ? 'btn-outline' : 'btn-ghost']"
+                :disabled="planBusy === pi || publishBlockedByConflict(plan)"
+                :aria-describedby="publishBlockedByConflict(plan) ? 'planner-publish-conflict-reason' : undefined"
+                @click="publishPlan(pi)"
+              >
                 {{ planBusy === pi ? 'Đang cập nhật' : plan.is_public ? 'Công khai' : 'Riêng tư' }}
               </button>
               <button type="button" class="btn btn-sm btn-ghost" :disabled="planBusy === pi" @click="sharePlan(pi)">Chia sẻ</button>
@@ -825,6 +832,8 @@ function persistPlannerDraft() {
       savedAt,
       source: draftSource.value,
       travelBudgetMinutes: travelBudgetMinutes.value,
+      serverPlanId: activeServerPlanId.value,
+      serverRevision: baseServerRevision.value,
     })))
   } catch { /* local storage is an optional offline cache */ }
 }
@@ -842,6 +851,13 @@ function restorePlannerDraft() {
     plannerInputState.version = localDraftRevision.value
     draftSavedAt.value = parsed.savedAt
     draftSource.value = parsed.source
+    if (parsed.serverPlanId && positiveRevision(parsed.serverRevision)) {
+      activeServerPlanId.value = parsed.serverPlanId
+      baseServerRevision.value = parsed.serverRevision
+    } else {
+      activeServerPlanId.value = null
+      baseServerRevision.value = null
+    }
     travelBudgetMinutes.value = parsed.travelBudgetMinutes
     localDirty.value = true
     stops.value.forEach((stop) => {
@@ -1032,6 +1048,10 @@ async function _doSave() {
         finishSaveFeedback(snapshot.title)
         return
       }
+      if (revisionSafeSaveEnabled.value && draftSource.value === 'server') {
+        showToast('Bản nháp máy chủ thiếu thông tin phiên bản. Hãy tải lại lịch trình đã lưu trước khi lưu.', 'error')
+        return
+      }
       const res = await $fetch<{ id: string; revision?: number; updatedAt?: string; plan?: unknown }>('/api/my-plans', {
         method: 'POST', headers: authHeaders(),
         body: { title: plan.title, stops: plan.stops },
@@ -1131,6 +1151,7 @@ async function deletePlan(idx: number) {
     if (plan?.id === activeServerPlanId.value) {
       draftSource.value = 'local'
       clearActiveServerPlan()
+      persistPlannerDraft()
     }
     persistLocal(savedPlans.value)
     showToast('Đã xóa lịch trình', 'success')
@@ -1190,9 +1211,18 @@ watch([allEntities, pendingAddId], async () => {
   showToast(`Đã thêm "${entity.name}" vào lịch trình`, 'success')
 }, { immediate: true })
 
+function publishBlockedByConflict(plan: SavedPlan): boolean {
+  return Boolean(
+    plannerRevisionConflict.value
+    && plan.id
+    && plan.id === activeServerPlanId.value,
+  )
+}
+
 async function publishPlan(idx: number) {
   const plan = savedPlans.value[idx]
   if (!plan?.id) return
+  if (publishBlockedByConflict(plan)) return
   planBusy.value = idx
   const next = !plan.is_public
   try {
@@ -1211,6 +1241,7 @@ async function publishPlan(idx: number) {
     if (plan.id === activeServerPlanId.value && returnedRevision !== null) {
       baseServerRevision.value = returnedRevision
       plannerRevisionConflict.value = null
+      persistPlannerDraft()
     }
     if (next && import.meta.client) {
       const link = `${location.origin}/lich-trinh-chia-se/${plan.id}`

@@ -187,6 +187,8 @@ export interface PlannerDraftSnapshot {
   savedAt: string
   source: 'local' | 'server'
   travelBudgetMinutes: number | null
+  serverPlanId?: string
+  serverRevision?: number
 }
 
 export interface BoundedOptimizationResult<T extends StopWithCoords> {
@@ -663,17 +665,30 @@ export function createPlannerDraftSnapshot<
   savedAt: string
   source?: 'local' | 'server'
   travelBudgetMinutes?: number | null
+  serverPlanId?: string | null
+  serverRevision?: number | null
 }): PlannerDraftSnapshot {
+  const source = input.source ?? 'local'
+  const serverPlanId = typeof input.serverPlanId === 'string' ? input.serverPlanId.trim() : ''
+  const hasServerIdentity = source === 'server'
+    && Boolean(serverPlanId)
+    && typeof input.serverRevision === 'number'
+    && Number.isInteger(input.serverRevision)
+    && input.serverRevision > 0
   return {
     title: input.title,
     stops: serializePlannerDraftStops(input.stops),
     revision: Math.max(0, Math.trunc(input.revision)),
     savedAt: input.savedAt,
-    source: input.source ?? 'local',
+    source,
     travelBudgetMinutes: typeof input.travelBudgetMinutes === 'number'
       && Number.isFinite(input.travelBudgetMinutes)
       ? input.travelBudgetMinutes
       : null,
+    ...(hasServerIdentity ? {
+      serverPlanId,
+      serverRevision: input.serverRevision as number,
+    } : {}),
   }
 }
 
@@ -703,16 +718,27 @@ export function parsePlannerDraftSnapshot(value: unknown): PlannerDraftSnapshot 
     const sourceFreshness = normalizePlannerFreshnessEvidence(stops[index]?.sourceFreshness)
     return sourceFreshness ? { ...stop, sourceFreshness } : stop
   })
+  const source = candidate.source === 'server' ? 'server' : 'local'
+  const serverPlanId = typeof candidate.serverPlanId === 'string' ? candidate.serverPlanId.trim() : ''
+  const hasServerIdentity = source === 'server'
+    && Boolean(serverPlanId)
+    && typeof candidate.serverRevision === 'number'
+    && Number.isInteger(candidate.serverRevision)
+    && candidate.serverRevision > 0
   return {
     title: candidate.title,
     stops: draftStops,
     revision,
     savedAt: candidate.savedAt,
-    source: candidate.source === 'server' ? 'server' : 'local',
+    source,
     travelBudgetMinutes: typeof candidate.travelBudgetMinutes === 'number'
       && Number.isFinite(candidate.travelBudgetMinutes)
       ? candidate.travelBudgetMinutes
       : null,
+    ...(hasServerIdentity ? {
+      serverPlanId,
+      serverRevision: candidate.serverRevision as number,
+    } : {}),
   }
 }
 
