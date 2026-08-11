@@ -866,6 +866,8 @@ describe('Detail grid containment gate contracts', () => {
     const marker = `vl360-run-captured-tree-${Date.now()}-${Math.random()}`
     const parentSource = timedTreeSource({ marker, pidPath, sideEffectPath, lifetimeMs: 12000 })
     const startedAt = Date.now()
+    const callerDeadline = startedAt + gateCore.WINDOWS_EXACT_PROCESS_CLEANUP_TIMEOUT_MS
+    let initialIdentityCapture
     let pids
     let timeoutError
 
@@ -874,7 +876,12 @@ describe('Detail grid containment gate contracts', () => {
         await runCaptured(process.execPath, ['-e', parentSource, marker], {
           timeoutMs: 1000,
           cleanupTimeoutMs: gateCore.WINDOWS_EXACT_PROCESS_CLEANUP_TIMEOUT_MS,
+          deadline: callerDeadline,
           ownershipMarker: marker,
+          captureInitialIdentity: async (...args) => {
+            initialIdentityCapture = args
+            return gateCore.captureProcessIdentity(...args)
+          },
         })
       } catch (error) {
         timeoutError = error
@@ -882,6 +889,8 @@ describe('Detail grid containment gate contracts', () => {
 
       expect(timeoutError).toBeInstanceOf(Error)
       expect(timeoutError?.message).toMatch(/timed out after 1000ms/)
+      expect(initialIdentityCapture?.[1]).toBe(10_000)
+      expect(initialIdentityCapture?.[2]).toBe(callerDeadline)
       const cleanupDiagnostic = [timeoutError?.message, timeoutError?.cause?.message].filter(Boolean).join('; cause: ')
       expect(timeoutError?.cleanupVerified, cleanupDiagnostic).toBe(true)
       expect(existsSync(pidPath)).toBe(true)

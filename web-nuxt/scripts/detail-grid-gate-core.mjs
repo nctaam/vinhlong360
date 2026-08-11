@@ -1084,6 +1084,7 @@ export function runCaptured(command, args, options = {}) {
     cleanupTimeoutMs = defaultCapturedProcessCleanupTimeoutMs(),
     deadline,
     ownershipMarker = '',
+    captureInitialIdentity = captureProcessIdentity,
     ...spawnOptions
   } = options
   const sharedDeadline = Number.isFinite(deadline) ? Number(deadline) : null
@@ -1106,12 +1107,12 @@ export function runCaptured(command, args, options = {}) {
     let settled = false
     let timer
     const identityTimeoutMs = Math.max(1, Math.min(
-      4000,
+      capturedProcessHelperTimeoutMs(cleanupTimeoutMs),
       cleanupTimeoutMs,
       sharedDeadline === null ? cleanupTimeoutMs : sharedDeadline - Date.now(),
     ))
     const initialIdentityPromise = child.pid
-      ? captureProcessIdentity(
+      ? captureInitialIdentity(
           child.pid,
           identityTimeoutMs,
           sharedDeadline === null ? Date.now() + identityTimeoutMs : sharedDeadline,
