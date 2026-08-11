@@ -1445,15 +1445,29 @@ class TestDeepScanBatch3:
         assert lock_idx > 0 and reset_idx > 0, "Pool must have lock and reset"
         assert reset_idx > lock_idx, "Reset must happen INSIDE the lock, not before it"
 
-    def test_publish_plan_verifies_rowcount(self):
-        """publish_plan must check rowcount to detect missing/unauthorized plans."""
+    def test_publish_plan_returning_preserves_atomic_owner_revision_contract(self):
+        """Prevent a publish race from bypassing owner or revision checks."""
         src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
-        # Find the publish_plan context
-        pub_idx = src.find("publish_plan")
-        assert pub_idx > 0
-        block = src[pub_idx:pub_idx+700]
-        assert "rowcount" in block, "publish_plan must check cursor.rowcount"
-        assert "404" in block, "publish_plan must raise 404 on zero rows"
+        block = function_source(src, "publish_plan")
+        update_sql = block.split("UPDATE user_plans", 1)[1].split('""", (body.is_public', 1)[0]
+        update_call = block.split("updated = db._fetchone", 1)[1].split("if updated:", 1)[0]
+        success_branch = block.split("if updated:", 1)[1].split("current = db._fetchone", 1)[0]
+
+        assert "WHERE id::text = {ph} AND user_id = {ph}::uuid" in update_sql
+        assert "AND revision = {ph}" in update_sql
+        assert "(body.is_public, plan_id, uid, body.expected_revision)" in update_call
+        assert "RETURNING id, title, stops, is_public, created_at, revision, updated_at" in update_sql
+        assert "updated = db._fetchone" in block
+        assert "plan = _row_plan(updated)" in success_branch
+        assert '"plan": plan' in success_branch
+
+        # A failed conditional update must not disclose another owner's plan.
+        assert "current = db._fetchone" in block
+        assert "WHERE id::text = {ph} AND user_id = {ph}::uuid" in block
+        assert "if not current:" in block
+        assert "raise HTTPException(404" in block
+        assert "JSONResponse(status_code=409" in block
+        assert '"current": _row_plan(current)' in block
 
     def test_ip_reputation_per_ip_cap(self):
         """IP reputation tracker must cap per-IP entries to prevent memory growth."""
