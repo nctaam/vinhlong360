@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   applyPlacements: 0,
   commitMapGate: null as Promise<void> | null,
   commitMap: 0,
+  confirmDialog: vi.fn(),
   createMap: vi.fn(),
   discardPending: 0,
   fetchRoute: vi.fn(),
@@ -94,7 +95,7 @@ mockNuxtImport('useAuth', () => () => ({
   isLoggedIn: authState.isLoggedIn,
   user: authState.user,
 }))
-mockNuxtImport('useConfirm', () => () => ({ confirmDialog: vi.fn() }))
+mockNuxtImport('useConfirm', () => () => ({ confirmDialog: mocks.confirmDialog }))
 mockNuxtImport('useFavorites', () => () => ({ count: ref(0), favorites: ref([]) }))
 mockNuxtImport('useNDAMap', () => () => ({ createMap: mocks.createMap }))
 mockNuxtImport('useToast', () => () => ({ show: mocks.showToast }))
@@ -109,6 +110,8 @@ beforeEach(() => {
   mocks.applyPlacements = 0
   mocks.commitMapGate = null
   mocks.commitMap = 0
+  mocks.confirmDialog.mockReset()
+  mocks.confirmDialog.mockResolvedValue(true)
   mocks.createMap.mockReset()
   mocks.discardPending = 0
   mocks.fetchRoute.mockReset()
@@ -120,6 +123,7 @@ beforeEach(() => {
   mocks.resumeRoute = 0
   mocks.runPlannerOptimization.mockReset()
   mocks.showToast.mockReset()
+  vi.unstubAllGlobals()
   localStorage.clear()
   sessionStorage.clear()
 })
@@ -164,51 +168,351 @@ describe('planner page lifecycle', () => {
     wrapper.unmount()
   })
 
-  it('treats a create-only save conflict as a save failure without inventing revision resolution UI', async () => {
-    authState.isLoggedIn.value = true
-    authState.user.value = { id: 'planner-user' }
-    const createPlan = vi.fn().mockRejectedValue({
-      response: {
-        status: 409,
-        _data: {
-          serverPlan: {
-            id: 'server-plan',
-            title: 'Server revision 5',
-            revision: 5,
-            stops: [planStop('start', 'Start', 'Server note')],
-          },
-        },
-      },
+  it('updates the loaded server plan with its revision without duplicating the saved row', async () => {
+    const updated = serverPlan({
+      title: 'Local title',
+      revision: 5,
+      updatedAt: '2026-08-11T09:30:00Z',
+      stops: [planStop('start', 'Start', 'Local note')],
     })
-    vi.stubGlobal('$fetch', createPlan)
-    const wrapper = await mountSuspended(PlannerPage, {
-      global: { stubs: plannerStubs() },
+    const fetchPlan = vi.fn(async (url: string, options: Record<string, any> = {}) => {
+      if (url === '/api/my-plans' && !options.method) return { plans: [serverPlan()] }
+      if (url === '/api/my-plans/server-plan' && options.method === 'PUT') return { plan: updated }
+      throw new Error(`Unexpected request: ${options.method || 'GET'} ${url}`)
     })
+    const wrapper = await mountAuthenticatedPlanner(fetchPlan)
     try {
-      const vm = wrapper.vm as unknown as {
-        loadPlan: (index: number) => Promise<void>
-        savedPlans: Array<Record<string, unknown>>
-        stops: Array<{ id: string; notes: string }>
-      }
-      vm.savedPlans = [{
-        id: 'server-plan',
-        title: 'Baseline',
-        revision: 4,
-        savedAt: '2026-08-09T08:00:00Z',
-        stops: [planStop('start', 'Start')],
-      }]
-      await vm.loadPlan(0)
-      await nextTick()
+      await loadFirstSavedPlan(wrapper)
+      await wrapper.get('.builder-title').setValue('Local title')
       await wrapper.get('.stop-note-input').setValue('Local note')
-      await nextTick()
       await wrapper.get('.planner-action-dock .btn').trigger('click')
+      await flushContinuation()
+
+      expect(fetchPlan).toHaveBeenCalledWith('/api/my-plans/server-plan', {
+        method: 'PUT',
+        headers: {},
+        body: {
+          title: 'Local title',
+          stops: [planStop('start', 'Start', 'Local note')],
+          expected_revision: 4,
+        },
+      })
+      expect(wrapper.findAll('.saved-plan-item')).toHaveLength(1)
+      expect(wrapper.get('.saved-plan-info').text()).toContain('Local title')
+      const vm = wrapper.vm as unknown as {
+        baseServerRevision: number
+        localDirty: boolean
+        savedPlans: Array<{ updatedAt?: string }>
+      }
+      expect(vm.baseServerRevision).toBe(5)
+      expect(vm.localDirty).toBe(false)
+      expect(vm.savedPlans[0]?.updatedAt).toBe('2026-08-11T09:30:00Z')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('preserves the local draft and renders the exact 409 current snapshot for recovery', async () => {
+    const current = serverPlan({
+      title: 'Server title',
+      revision: 5,
+      updatedAt: '2026-08-11T10:45:00Z',
+      stops: [
+        planStop('start', 'Start', 'Server note'),
+        planStop('middle', 'Middle', 'Server-only stop'),
+      ],
+    })
+    const fetchPlan = conflictFetch(current, 'response')
+    const wrapper = await mountAuthenticatedPlanner(fetchPlan)
+    try {
+      await loadFirstSavedPlan(wrapper)
+      await wrapper.get('.builder-title').setValue('Local title')
+      await wrapper.get('.stop-note-input').setValue('Local note')
+      await wrapper.get('.planner-action-dock .btn').trigger('click')
+      await flushContinuation()
+
+      const vm = wrapper.vm as unknown as { planTitle: string; stops: Array<{ notes: string }> }
+      expect(vm.planTitle).toBe('Local title')
+      expect(vm.stops[0]?.notes).toBe('Local note')
+      const recovery = wrapper.get('[data-planner-conflict-diff]')
+      expect(recovery.attributes('role')).toBe('alert')
+      expect(recovery.text()).toContain('Server title')
+      expect(recovery.text()).toContain('Local title')
+      expect(recovery.text()).toContain('Bản máy chủ 5')
+      expect(recovery.text()).toContain('Cập nhật 11/8/2026')
+      expect(recovery.text()).toContain('Start')
+      expect(recovery.text()).toContain('Middle')
+      expect(recovery.text()).toContain('Ghi chú')
+      expect(recovery.text()).toContain('Chỉ có trên máy chủ')
+      expect(fetchPlan).toHaveBeenCalledWith('/api/my-plans/server-plan', expect.objectContaining({ method: 'PUT' }))
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('keeps the local draft and retries the normal PUT with the returned server revision', async () => {
+    const current = serverPlan({
+      title: 'Server title',
+      revision: 5,
+      updatedAt: '2026-08-11T10:45:00Z',
+      stops: [planStop('start', 'Start', 'Server note')],
+    })
+    const overwritten = serverPlan({
+      title: 'Local title',
+      revision: 6,
+      updatedAt: '2026-08-11T10:47:00Z',
+      stops: [planStop('start', 'Start', 'Local note')],
+    })
+    let puts = 0
+    const fetchPlan = vi.fn(async (url: string, options: Record<string, any> = {}) => {
+      if (url === '/api/my-plans' && !options.method) return { plans: [serverPlan()] }
+      if (url === '/api/my-plans/server-plan' && options.method === 'PUT') {
+        puts += 1
+        if (puts === 1) throw revisionConflict(current, 'data')
+        return { plan: overwritten }
+      }
+      throw new Error(`Unexpected request: ${options.method || 'GET'} ${url}`)
+    })
+    const wrapper = await mountAuthenticatedPlanner(fetchPlan)
+    try {
+      await loadFirstSavedPlan(wrapper)
+      await wrapper.get('.builder-title').setValue('Local title')
+      await wrapper.get('.stop-note-input').setValue('Local note')
+      await wrapper.get('.planner-action-dock .btn').trigger('click')
+      await flushContinuation()
+      await wrapper.get('[data-conflict-local]').trigger('click')
       await nextTick()
 
-      expect(createPlan).toHaveBeenCalledWith('/api/my-plans', expect.objectContaining({ method: 'POST' }))
-      expect(mocks.showToast).toHaveBeenCalledWith('Không thể lưu lên tài khoản', 'error')
-      expect(vm.stops[0]?.notes).toBe('Local note')
-      expect(wrapper.find('[data-friction-code="revision-conflict"]').exists()).toBe(false)
       expect(wrapper.find('[data-planner-conflict-diff]').exists()).toBe(false)
+      expect((wrapper.get('.builder-title').element as HTMLInputElement).value).toBe('Local title')
+      await wrapper.get('.planner-action-dock .btn').trigger('click')
+      await flushContinuation()
+
+      const putCalls = fetchPlan.mock.calls.filter(([url, options]) => (
+        url === '/api/my-plans/server-plan' && options?.method === 'PUT'
+      ))
+      expect(putCalls).toHaveLength(2)
+      expect(putCalls[1]?.[1]?.body).toEqual({
+        title: 'Local title',
+        stops: [planStop('start', 'Start', 'Local note')],
+        expected_revision: 5,
+      })
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('uses the returned server snapshot when the user selects the server recovery', async () => {
+    const current = serverPlan({
+      title: 'Server title',
+      revision: 5,
+      updatedAt: '2026-08-11T10:45:00Z',
+      stops: [planStop('start', 'Start', 'Server note')],
+    })
+    const wrapper = await mountAuthenticatedPlanner(conflictFetch(current, 'response'))
+    try {
+      await loadFirstSavedPlan(wrapper)
+      await wrapper.get('.builder-title').setValue('Local title')
+      await wrapper.get('.stop-note-input').setValue('Local note')
+      await wrapper.get('.planner-action-dock .btn').trigger('click')
+      await flushContinuation()
+      await wrapper.get('[data-conflict-server]').trigger('click')
+      await flushContinuation()
+
+      const vm = wrapper.vm as unknown as {
+        planTitle: string
+        stops: Array<{ notes: string }>
+        savedPlans: Array<{ title: string; revision: number }>
+        baseServerRevision: number
+      }
+      expect(vm.planTitle).toBe('Server title')
+      expect(vm.stops[0]?.notes).toBe('Server note')
+      expect(vm.savedPlans).toHaveLength(1)
+      expect(vm.savedPlans[0]).toEqual(expect.objectContaining({ title: 'Server title', revision: 5 }))
+      expect(vm.baseServerRevision).toBe(5)
+      expect(wrapper.find('[data-planner-conflict-diff]').exists()).toBe(false)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('keeps both snapshots unchanged and the comparison focused for manual recovery', async () => {
+    const current = serverPlan({
+      title: 'Server title',
+      revision: 5,
+      updatedAt: '2026-08-11T10:45:00Z',
+      stops: [planStop('start', 'Start', 'Server note')],
+    })
+    const wrapper = await mountAuthenticatedPlanner(conflictFetch(current, 'response'))
+    try {
+      await loadFirstSavedPlan(wrapper)
+      await wrapper.get('.builder-title').setValue('Local title')
+      await wrapper.get('.stop-note-input').setValue('Local note')
+      await wrapper.get('.planner-action-dock .btn').trigger('click')
+      await flushContinuation()
+      const recoveryBefore = wrapper.get('[data-planner-conflict-diff]')
+      const before = recoveryBefore.text()
+      const focus = vi.spyOn(recoveryBefore.element as HTMLElement, 'focus')
+      await wrapper.get('[data-conflict-manual]').trigger('click')
+      await nextTick()
+
+      const recovery = wrapper.get('[data-planner-conflict-diff]')
+      const vm = wrapper.vm as unknown as { planTitle: string; stops: Array<{ notes: string }> }
+      expect(recovery.text()).toBe(before)
+      expect(focus).toHaveBeenCalledTimes(1)
+      expect(vm.planTitle).toBe('Local title')
+      expect(vm.stops[0]?.notes).toBe('Local note')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('retains the revision returned by publish for the next active-plan PUT', async () => {
+    const published = serverPlan({ revision: 5, is_public: true, updatedAt: '2026-08-11T11:00:00Z' })
+    const updated = serverPlan({
+      revision: 6,
+      is_public: true,
+      updatedAt: '2026-08-11T11:02:00Z',
+      stops: [planStop('start', 'Start', 'After publish')],
+    })
+    const fetchPlan = vi.fn(async (url: string, options: Record<string, any> = {}) => {
+      if (url === '/api/my-plans' && !options.method) return { plans: [serverPlan()] }
+      if (url === '/api/my-plans/server-plan/publish' && options.method === 'POST') {
+        return { is_public: true, revision: published.revision }
+      }
+      if (url === '/api/my-plans/server-plan' && options.method === 'PUT') return { plan: updated }
+      throw new Error(`Unexpected request: ${options.method || 'GET'} ${url}`)
+    })
+    const wrapper = await mountAuthenticatedPlanner(fetchPlan)
+    try {
+      await loadFirstSavedPlan(wrapper)
+      await wrapper.get('.saved-plan-actions .btn').trigger('click')
+      await flushContinuation()
+      await wrapper.get('.stop-note-input').setValue('After publish')
+      await wrapper.get('.planner-action-dock .btn').trigger('click')
+      await flushContinuation()
+
+      expect(fetchPlan).toHaveBeenCalledWith('/api/my-plans/server-plan', {
+        method: 'PUT',
+        headers: {},
+        body: {
+          title: 'Baseline',
+          stops: [planStop('start', 'Start', 'After publish')],
+          expected_revision: 5,
+        },
+      })
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('keeps the rollout-disabled rollback path create-only', async () => {
+    publicOptimizerMode.mode = 'deterministic'
+    const created = serverPlan({
+      id: 'server-copy',
+      revision: 1,
+      updatedAt: '2026-08-11T12:00:00Z',
+      stops: [planStop('start', 'Start', 'Rollback note')],
+    })
+    const fetchPlan = vi.fn(async (url: string, options: Record<string, any> = {}) => {
+      if (url === '/api/my-plans' && !options.method) return { plans: [serverPlan()] }
+      if (url === '/api/my-plans' && options.method === 'POST') return { id: created.id, plan: created }
+      throw new Error(`Unexpected request: ${options.method || 'GET'} ${url}`)
+    })
+    const wrapper = await mountAuthenticatedPlanner(fetchPlan)
+    try {
+      await loadFirstSavedPlan(wrapper)
+      await wrapper.get('.stop-note-input').setValue('Rollback note')
+      await wrapper.get('.planner-action-dock .btn').trigger('click')
+      await flushContinuation()
+
+      expect(fetchPlan).toHaveBeenCalledWith('/api/my-plans', {
+        method: 'POST',
+        headers: {},
+        body: {
+          title: 'Baseline',
+          stops: [planStop('start', 'Start', 'Rollback note')],
+        },
+      })
+      expect(fetchPlan.mock.calls.some(([url, options]) => url.includes('server-plan') && options?.method === 'PUT')).toBe(false)
+      expect(wrapper.findAll('.saved-plan-item')).toHaveLength(2)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('creates a new server plan after the active server draft is explicitly cleared', async () => {
+    const created = serverPlan({
+      id: 'new-server-plan',
+      title: 'Lịch trình chưa đặt tên',
+      revision: 1,
+      updatedAt: '2026-08-11T12:30:00Z',
+    })
+    const fetchPlan = vi.fn(async (url: string, options: Record<string, any> = {}) => {
+      if (url === '/api/my-plans' && !options.method) return { plans: [serverPlan()] }
+      if (url === '/api/my-plans' && options.method === 'POST') return { id: created.id, plan: created }
+      throw new Error(`Unexpected request: ${options.method || 'GET'} ${url}`)
+    })
+    const wrapper = await mountAuthenticatedPlanner(fetchPlan)
+    try {
+      await loadFirstSavedPlan(wrapper)
+      await wrapper.get('.planner-action-dock .btn-ghost').trigger('click')
+      await flushContinuation()
+      await wrapper.get('.picker-item').trigger('click')
+      await flushContinuation()
+      await wrapper.get('.planner-action-dock .btn').trigger('click')
+      await flushContinuation()
+
+      expect(fetchPlan).toHaveBeenCalledWith('/api/my-plans', {
+        method: 'POST',
+        headers: {},
+        body: {
+          title: 'Lịch trình chưa đặt tên',
+          stops: [planStop('start', 'Start')],
+        },
+      })
+      expect(fetchPlan.mock.calls.some(([url, options]) => url === '/api/my-plans/server-plan' && options?.method === 'PUT')).toBe(false)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('clears the active server identity when a local saved plan is loaded', async () => {
+    const created = serverPlan({
+      id: 'local-promoted-plan',
+      title: 'Local saved plan',
+      revision: 1,
+      updatedAt: '2026-08-11T12:45:00Z',
+    })
+    const fetchPlan = vi.fn(async (url: string, options: Record<string, any> = {}) => {
+      if (url === '/api/my-plans' && !options.method) return { plans: [serverPlan()] }
+      if (url === '/api/my-plans' && options.method === 'POST') return { id: created.id, plan: created }
+      throw new Error(`Unexpected request: ${options.method || 'GET'} ${url}`)
+    })
+    const wrapper = await mountAuthenticatedPlanner(fetchPlan)
+    try {
+      await loadFirstSavedPlan(wrapper)
+      const vm = wrapper.vm as unknown as { savedPlans: Array<Record<string, unknown>> }
+      vm.savedPlans.push({
+        title: 'Local saved plan',
+        stops: [planStop('start', 'Start')],
+        savedAt: '2026-08-11T12:40:00Z',
+      })
+      await nextTick()
+      await wrapper.findAll('.saved-plan-btn')[1]!.trigger('click')
+      await flushContinuation()
+      await wrapper.get('.planner-action-dock .btn').trigger('click')
+      await flushContinuation()
+
+      expect(fetchPlan).toHaveBeenCalledWith('/api/my-plans', {
+        method: 'POST',
+        headers: {},
+        body: {
+          title: 'Local saved plan',
+          stops: [planStop('start', 'Start')],
+        },
+      })
+      expect(fetchPlan.mock.calls.some(([url, options]) => url === '/api/my-plans/server-plan' && options?.method === 'PUT')).toBe(false)
     } finally {
       wrapper.unmount()
     }
@@ -586,6 +890,66 @@ async function mountPlannerWithThreeStops(options: { includeMap?: boolean } = {}
   await nextTick()
   expect(wrapper.findAll('.stop-item')).toHaveLength(3)
   return wrapper
+}
+
+async function mountAuthenticatedPlanner(fetchPlan: ReturnType<typeof vi.fn>) {
+  authState.isLoggedIn.value = true
+  authState.user.value = { id: 'planner-user' }
+  vi.stubGlobal('$fetch', fetchPlan)
+  const wrapper = await mountSuspended(PlannerPage, {
+    global: { stubs: plannerStubs() },
+  })
+  await flushContinuation()
+  expect(wrapper.findAll('.saved-plan-item')).toHaveLength(1)
+  return wrapper
+}
+
+async function loadFirstSavedPlan(wrapper: Awaited<ReturnType<typeof mountSuspended>>) {
+  await wrapper.get('.saved-plan-btn').trigger('click')
+  await flushContinuation()
+  expect(wrapper.findAll('.stop-item')).toHaveLength(1)
+}
+
+function conflictFetch(current: ReturnType<typeof serverPlan>, surface: 'response' | 'data') {
+  return vi.fn(async (url: string, options: Record<string, any> = {}) => {
+    if (url === '/api/my-plans' && !options.method) return { plans: [serverPlan()] }
+    if (url === '/api/my-plans/server-plan' && options.method === 'PUT') {
+      throw revisionConflict(current, surface)
+    }
+    throw new Error(`Unexpected request: ${options.method || 'GET'} ${url}`)
+  })
+}
+
+function revisionConflict(current: ReturnType<typeof serverPlan>, surface: 'response' | 'data') {
+  const payload = {
+    detail: 'Lịch trình đã thay đổi trên thiết bị khác',
+    code: 'plan_revision_conflict',
+    current,
+  }
+  return surface === 'response'
+    ? { response: { status: 409, _data: payload } }
+    : { statusCode: 409, data: payload }
+}
+
+function serverPlan(overrides: Partial<{
+  id: string
+  title: string
+  stops: ReturnType<typeof planStop>[]
+  savedAt: string
+  updatedAt: string
+  revision: number
+  is_public: boolean
+}> = {}) {
+  return {
+    id: 'server-plan',
+    title: 'Baseline',
+    stops: [planStop('start', 'Start')],
+    savedAt: '2026-08-09T08:00:00Z',
+    updatedAt: '2026-08-10T08:00:00Z',
+    revision: 4,
+    is_public: false,
+    ...overrides,
+  }
 }
 
 async function flushContinuation() {

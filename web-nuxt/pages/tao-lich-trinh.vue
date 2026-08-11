@@ -145,6 +145,52 @@
           />
         </div>
 
+        <section
+          v-if="plannerRevisionConflict"
+          ref="plannerConflictEl"
+          class="planner-conflict-diff"
+          data-planner-conflict-diff
+          role="alert"
+          aria-labelledby="planner-conflict-title"
+          tabindex="-1"
+        >
+          <div class="planner-conflict-diff__head">
+            <div>
+              <span class="planner-conflict-diff__eyebrow">Cần bạn quyết định</span>
+              <h2 id="planner-conflict-title">Lịch trình đã thay đổi trên thiết bị khác</h2>
+            </div>
+            <span class="planner-conflict-diff__revision">Bản máy chủ {{ plannerRevisionConflict.revision }}</span>
+          </div>
+          <p class="planner-conflict-diff__freshness">
+            Cập nhật {{ formatDate(plannerRevisionConflict.updatedAt) }}. Bản cục bộ vẫn được giữ nguyên để bạn đối chiếu.
+          </p>
+          <dl class="planner-conflict-diff__titles">
+            <div>
+              <dt>Bản cục bộ</dt>
+              <dd>{{ planTitle.trim() || 'Lịch trình chưa đặt tên' }}</dd>
+            </div>
+            <div>
+              <dt>Máy chủ</dt>
+              <dd>{{ plannerRevisionConflict.title }}</dd>
+            </div>
+          </dl>
+          <div class="planner-conflict-diff__stops">
+            <h3>Khác biệt theo điểm dừng</h3>
+            <p v-if="!plannerConflictDifferences.length">Các điểm dừng giống nhau; chỉ tiêu đề hoặc thời điểm cập nhật khác.</p>
+            <ul v-else>
+              <li v-for="difference in plannerConflictDifferences" :key="difference.key">
+                <strong>{{ difference.name }}</strong>
+                <span>{{ difference.detail }}</span>
+              </li>
+            </ul>
+          </div>
+          <div class="planner-conflict-diff__actions" aria-label="Cách xử lý xung đột">
+            <button type="button" class="btn btn-sm btn-outline" data-conflict-local @click="choosePlannerConflict('local')">Giữ bản cục bộ</button>
+            <button type="button" class="btn btn-sm btn-ghost" data-conflict-server @click="choosePlannerConflict('server')">Dùng bản máy chủ</button>
+            <button type="button" class="btn btn-sm btn-ghost" data-conflict-manual @click="choosePlannerConflict('manual')">So sánh thủ công</button>
+          </div>
+        </section>
+
         <PlannerOptimizationPreview
           v-if="optimizationPreview"
           :before="optimizationPreview.before"
@@ -359,6 +405,20 @@ interface SavedPlan {
   stops: PlanStop[]
   savedAt: string
   is_public?: boolean
+  revision?: number
+  updatedAt?: string
+}
+
+interface PlanSnapshot extends SavedPlan {
+  id: string
+  revision: number
+  updatedAt: string
+}
+
+interface PlannerConflictDifference {
+  key: string
+  name: string
+  detail: string
 }
 
 type OpeningHourConflict = {
@@ -372,6 +432,7 @@ const { confirmDialog } = useConfirm()
 const { user, isLoggedIn, authHeaders } = useAuth()
 const { capabilityMode } = useFeature()
 const optimizerEnabled = computed(() => capabilityMode('optimizer') === 'enhanced')
+const revisionSafeSaveEnabled = optimizerEnabled
 const journeyThread = useJourneyThread({
   ownerScope: () => isLoggedIn.value ? String(user.value?.id || 'authenticated') : 'guest',
 })
@@ -443,6 +504,10 @@ const draftSavedAt = ref<string | null>(null)
 const draftSource = ref<'local' | 'server'>('local')
 const localDraftRevision = ref(0)
 const localDirty = ref(false)
+const activeServerPlanId = ref<string | null>(null)
+const baseServerRevision = ref<number | null>(null)
+const plannerRevisionConflict = ref<PlanSnapshot | null>(null)
+const plannerConflictEl = ref<HTMLElement | null>(null)
 const travelBudgetMinutes = ref<number | null>(null)
 const candidateOpeningHourConflicts = ref<OpeningHourConflict[]>([])
 const confirmedOpeningHourConflicts = ref<OpeningHourConflict[]>([])
@@ -503,6 +568,11 @@ const plannerFrictionNotices = computed<PlannerFriction[]>(() => projectPlannerF
 }))
 
 const plannerSummaryWarnings = computed(() => plannerFrictionNotices.value.map(notice => notice.reason))
+const plannerConflictDifferences = computed<PlannerConflictDifference[]>(() => (
+  plannerRevisionConflict.value
+    ? diffPlannerPlanStops(stops.value, plannerRevisionConflict.value.stops)
+    : []
+))
 const plannerVisitDuration = computed(() => {
   return stops.value.reduce((total, stop) => (
     total + ((plannerScheduleMetadata.get(stop)?.visitMinutes || 0) * 60)
@@ -621,6 +691,126 @@ function plannerStopFromDraft(stop: PlanStop): PlanStop {
   return stop.sourceFreshness
     ? { ...serialized, sourceFreshness: { ...stop.sourceFreshness } }
     : serialized
+}
+
+function positiveRevision(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value > 0
+}
+
+function normalizePlanSnapshot(value: unknown): PlanSnapshot | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null
+  const candidate = value as Record<string, unknown>
+  if (typeof candidate.id !== 'string' || !candidate.id.trim()
+    || typeof candidate.title !== 'string'
+    || !Array.isArray(candidate.stops)
+    || typeof candidate.savedAt !== 'string'
+    || !positiveRevision(candidate.revision)
+    || typeof candidate.updatedAt !== 'string'
+    || !candidate.updatedAt.trim()) return null
+  return {
+    id: candidate.id,
+    title: candidate.title,
+    stops: serializePlanStops(candidate.stops as PlanStop[]) as PlanStop[],
+    savedAt: candidate.savedAt,
+    revision: candidate.revision,
+    updatedAt: candidate.updatedAt,
+    ...(typeof candidate.is_public === 'boolean' ? { is_public: candidate.is_public } : {}),
+  }
+}
+
+function replaceSavedServerPlan(snapshot: PlanSnapshot) {
+  const index = savedPlans.value.findIndex(plan => plan.id === snapshot.id)
+  if (index >= 0) savedPlans.value.splice(index, 1, snapshot)
+}
+
+function clearActiveServerPlan() {
+  activeServerPlanId.value = null
+  baseServerRevision.value = null
+  plannerRevisionConflict.value = null
+}
+
+function acceptServerComparisonBase(snapshot: PlanSnapshot) {
+  replaceSavedServerPlan(snapshot)
+  activeServerPlanId.value = snapshot.id
+  baseServerRevision.value = snapshot.revision
+  draftSource.value = 'server'
+}
+
+function conflictSnapshot(error: unknown): PlanSnapshot | null {
+  if (getStatusCode(error) !== 409) return null
+  const failure = error as {
+    response?: { _data?: Record<string, unknown> }
+    data?: Record<string, unknown>
+  }
+  const payload = failure.response?._data ?? failure.data
+  if (payload?.code !== 'plan_revision_conflict') return null
+  const snapshot = normalizePlanSnapshot(payload.current)
+  return snapshot?.id === activeServerPlanId.value ? snapshot : null
+}
+
+function diffPlannerPlanStops(local: PlanStop[], server: PlanStop[]): PlannerConflictDifference[] {
+  const indexStops = (items: PlanStop[]) => {
+    const occurrences = new Map<string, number>()
+    const indexed = new Map<string, { stop: PlanStop; index: number }>()
+    items.forEach((stop, index) => {
+      const occurrence = occurrences.get(stop.id) ?? 0
+      occurrences.set(stop.id, occurrence + 1)
+      indexed.set(`${stop.id}:${occurrence}`, { stop, index })
+    })
+    return indexed
+  }
+  const localStops = indexStops(local)
+  const serverStops = indexStops(server)
+  const keys = [...new Set([...localStops.keys(), ...serverStops.keys()])]
+  const labels: Record<string, string> = {
+    name: 'Tên điểm',
+    place_name: 'Khu vực',
+    type: 'Loại điểm',
+    coords: 'Tọa độ',
+    time: 'Thời gian',
+    notes: 'Ghi chú',
+  }
+  return keys.flatMap((key) => {
+    const localEntry = localStops.get(key)
+    const serverEntry = serverStops.get(key)
+    const localStop = localEntry?.stop
+    const serverStop = serverEntry?.stop
+    const name = localStop?.name || serverStop?.name || key
+    if (!localStop) return [{ key, name, detail: 'Chỉ có trên máy chủ' }]
+    if (!serverStop) return [{ key, name, detail: 'Chỉ có trong bản cục bộ' }]
+    const changed = Object.keys(labels).filter(field => (
+      JSON.stringify(localStop[field as keyof PlanStop]) !== JSON.stringify(serverStop[field as keyof PlanStop])
+    )).map(field => labels[field])
+    if (localEntry.index !== serverEntry.index) changed.unshift('Thứ tự')
+    return changed.length ? [{ key, name, detail: changed.join(', ') }] : []
+  })
+}
+
+async function choosePlannerConflict(choice: 'local' | 'server' | 'manual') {
+  if (choice === 'manual') {
+    await nextTick()
+    plannerConflictEl.value?.focus()
+    return
+  }
+  const snapshot = plannerRevisionConflict.value
+  if (!snapshot) return
+  const persistenceWasReady = draftPersistenceReady
+  draftPersistenceReady = false
+  acceptServerComparisonBase(snapshot)
+  if (choice === 'server') {
+    invalidatePlannerSchedule()
+    planTitle.value = snapshot.title
+    stops.value = serializePlanStops(snapshot.stops) as PlanStop[]
+    stops.value.forEach(stop => plannerScheduleMetadata.set(stop, plannerMetadataForLoadedStop(stop.type)))
+    localDraftRevision.value += 1
+    localDirty.value = false
+  } else {
+    localDirty.value = true
+  }
+  plannerRevisionConflict.value = null
+  await nextTick()
+  draftPersistenceReady = persistenceWasReady
+  persistPlannerDraft()
 }
 
 function persistPlannerDraft() {
@@ -798,6 +988,8 @@ async function clearPlan() {
   planTitle.value = ''
   routeResult.value = null
   optimizationMessage.value = ''
+  draftSource.value = 'local'
+  clearActiveServerPlan()
   journeyThread.clear()
 }
 
@@ -807,7 +999,7 @@ async function savePlan() {
   try { await _doSave() } finally { saving.value = false }
 }
 async function _doSave() {
-  const plan: SavedPlan = {
+  let plan: SavedPlan = {
     title: planTitle.value.trim() || 'Lịch trình chưa đặt tên',
     stops: serializePlanStops(stops.value),
     savedAt: new Date().toISOString(),
@@ -815,12 +1007,51 @@ async function _doSave() {
   if (isLoggedIn.value) {
     // Đồng-bộ tài-khoản (cross-device)
     try {
-      const res = await $fetch<{ id: string }>('/api/my-plans', {
+      if (revisionSafeSaveEnabled.value && activeServerPlanId.value) {
+        if (!positiveRevision(baseServerRevision.value)) {
+          showToast('Không thể xác định phiên bản máy chủ. Hãy tải lại lịch trình đã lưu.', 'error')
+          return
+        }
+        const res = await $fetch<{ plan: unknown }>(`/api/my-plans/${activeServerPlanId.value}`, {
+          method: 'PUT', headers: authHeaders(),
+          body: {
+            title: plan.title,
+            stops: plan.stops,
+            expected_revision: baseServerRevision.value,
+          },
+        })
+        const snapshot = normalizePlanSnapshot(res.plan)
+        if (!snapshot || snapshot.id !== activeServerPlanId.value) {
+          showToast('Phản hồi lưu lịch trình không hợp lệ. Hãy tải lại trước khi tiếp tục.', 'error')
+          return
+        }
+        acceptServerComparisonBase(snapshot)
+        plannerRevisionConflict.value = null
+        localDirty.value = false
+        persistPlannerDraft()
+        finishSaveFeedback(snapshot.title)
+        return
+      }
+      const res = await $fetch<{ id: string; revision?: number; updatedAt?: string; plan?: unknown }>('/api/my-plans', {
         method: 'POST', headers: authHeaders(),
         body: { title: plan.title, stops: plan.stops },
       })
-      plan.id = res.id
+      const snapshot = normalizePlanSnapshot(res.plan)
+      plan = snapshot || {
+        ...plan,
+        id: res.id,
+        ...(positiveRevision(res.revision) ? { revision: res.revision } : {}),
+        ...(typeof res.updatedAt === 'string' ? { updatedAt: res.updatedAt } : {}),
+      }
     } catch (e: unknown) {
+      const snapshot = conflictSnapshot(e)
+      if (snapshot) {
+        plannerRevisionConflict.value = snapshot
+        await nextTick()
+        plannerConflictEl.value?.focus()
+        showToast('Bản máy chủ mới hơn cần được đối chiếu trước khi lưu.', 'warning')
+        return
+      }
       showToast(extractErrorMessage(e, 'Không thể lưu lên tài khoản'), 'error')
       return
     }
@@ -829,18 +1060,26 @@ async function _doSave() {
   }
   if (plan.id) {
     draftSource.value = 'server'
+    activeServerPlanId.value = plan.id
+    baseServerRevision.value = positiveRevision(plan.revision) ? plan.revision : null
+    plannerRevisionConflict.value = null
     localDirty.value = false
   } else {
     draftSource.value = 'local'
+    clearActiveServerPlan()
     localDirty.value = false
   }
   persistPlannerDraft()
   savedPlans.value.unshift(plan)
+  finishSaveFeedback(plan.title)
+}
+
+function finishSaveFeedback(title: string) {
   // brief spring feedback on the button to reinforce the save toast
   savePulse.value = true
   if (savePulseTimer) clearTimeout(savePulseTimer)
   savePulseTimer = setTimeout(() => { savePulse.value = false }, 220)
-  showToast(`Đã lưu "${plan.title}"${isLoggedIn.value ? ' (đồng bộ tài khoản)' : ''}`, 'success')
+  showToast(`Đã lưu "${title}"${isLoggedIn.value ? ' (đồng bộ tài khoản)' : ''}`, 'success')
 }
 
 function persistLocal(plans: SavedPlan[]) {
@@ -864,6 +1103,13 @@ async function loadPlan(idx: number) {
   draftSource.value = plan.id ? 'server' : 'local'
   localDraftRevision.value += 1
   localDirty.value = false
+  if (plan.id) {
+    activeServerPlanId.value = plan.id
+    baseServerRevision.value = positiveRevision(plan.revision) ? plan.revision : null
+    plannerRevisionConflict.value = null
+  } else {
+    clearActiveServerPlan()
+  }
   optimizationMessage.value = ''
   await nextTick()
   draftPersistenceReady = persistenceWasReady
@@ -882,6 +1128,10 @@ async function deletePlan(idx: number) {
       await $fetch(`/api/my-plans/${plan.id}`, { method: 'DELETE', headers: authHeaders() })
     }
     savedPlans.value.splice(idx, 1)
+    if (plan?.id === activeServerPlanId.value) {
+      draftSource.value = 'local'
+      clearActiveServerPlan()
+    }
     persistLocal(savedPlans.value)
     showToast('Đã xóa lịch trình', 'success')
   } catch (e: unknown) {
@@ -946,8 +1196,22 @@ async function publishPlan(idx: number) {
   planBusy.value = idx
   const next = !plan.is_public
   try {
-    await $fetch(`/api/my-plans/${plan.id}/publish`, { method: 'POST', headers: authHeaders(), body: { is_public: next } })
-    plan.is_public = next
+    const res = await $fetch<{ is_public?: boolean; revision?: number; plan?: unknown }>(`/api/my-plans/${plan.id}/publish`, {
+      method: 'POST', headers: authHeaders(), body: { is_public: next },
+    })
+    const snapshot = normalizePlanSnapshot(res.plan)
+    if (snapshot) {
+      snapshot.is_public = next
+      replaceSavedServerPlan(snapshot)
+    } else {
+      plan.is_public = next
+      if (positiveRevision(res.revision)) plan.revision = res.revision
+    }
+    const returnedRevision = snapshot?.revision ?? (positiveRevision(res.revision) ? res.revision : null)
+    if (plan.id === activeServerPlanId.value && returnedRevision !== null) {
+      baseServerRevision.value = returnedRevision
+      plannerRevisionConflict.value = null
+    }
     if (next && import.meta.client) {
       const link = `${location.origin}/lich-trinh-chia-se/${plan.id}`
       try { await navigator.clipboard?.writeText(link); showToast('Đã công khai — link đã sao chép', 'success') }
@@ -1652,6 +1916,49 @@ useHead({
 /* ── Route loading: pulsing text while computing ──────────── */
 .route-loading { animation: route-loading-pulse 1.2s var(--ease-out) infinite; }
 @keyframes route-loading-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+
+.planner-conflict-diff {
+  margin: 0 0 var(--space-5);
+  padding: var(--space-5);
+  border: 1px solid var(--warning-border);
+  border-radius: var(--radius-xl);
+  background:
+    linear-gradient(135deg, rgba(var(--warning-rgb), .1), transparent 58%),
+    var(--card);
+  box-shadow: var(--shadow-sm);
+}
+.planner-conflict-diff:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+.planner-conflict-diff__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); }
+.planner-conflict-diff__eyebrow {
+  display: block; margin-bottom: var(--space-1); color: var(--warning);
+  font-size: var(--text-2xs); font-weight: var(--weight-bold); letter-spacing: var(--tracking-caps); text-transform: uppercase;
+}
+.planner-conflict-diff h2 { margin: 0; color: var(--ink); font-family: var(--font-serif); font-size: var(--text-xl); line-height: 1.2; }
+.planner-conflict-diff__revision {
+  flex: 0 0 auto; padding: var(--space-2) var(--space-3); border: 1px solid var(--warning-border);
+  border-radius: var(--radius-full); color: var(--ink); background: var(--bg-alt); font-size: var(--text-xs); font-weight: var(--weight-bold);
+}
+.planner-conflict-diff__freshness { margin: var(--space-3) 0; color: var(--muted); font-size: var(--text-sm); }
+.planner-conflict-diff__titles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); margin: 0; }
+.planner-conflict-diff__titles > div { padding: var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-md); background: var(--bg-alt); }
+.planner-conflict-diff__titles dt { color: var(--muted); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
+.planner-conflict-diff__titles dd { margin: var(--space-1) 0 0; color: var(--ink); font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
+.planner-conflict-diff__stops { margin-top: var(--space-4); }
+.planner-conflict-diff__stops h3 { margin: 0 0 var(--space-2); color: var(--ink); font-size: var(--text-sm); }
+.planner-conflict-diff__stops p { margin: 0; color: var(--muted); font-size: var(--text-sm); }
+.planner-conflict-diff__stops ul { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.planner-conflict-diff__stops li { display: flex; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) var(--space-3); border-inline-start: 3px solid var(--warning); background: var(--bg-alt); }
+.planner-conflict-diff__stops li span { color: var(--muted); font-size: var(--text-sm); text-align: end; }
+.planner-conflict-diff__actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-4); }
+
+@media (max-width: 640px) {
+  .planner-conflict-diff { padding: var(--space-4); }
+  .planner-conflict-diff__head { flex-direction: column; }
+  .planner-conflict-diff__titles { grid-template-columns: 1fr; }
+  .planner-conflict-diff__stops li { flex-direction: column; gap: var(--space-1); }
+  .planner-conflict-diff__stops li span { text-align: start; }
+  .planner-conflict-diff__actions .btn { width: 100%; }
+}
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
