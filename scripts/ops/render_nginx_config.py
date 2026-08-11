@@ -15,9 +15,12 @@ from pathlib import Path
 import re
 import sys
 import tempfile
+import time
 
 
 TOPOLOGIES = {"compose", "systemd"}
+WINDOWS_REPLACE_MAX_ATTEMPTS = 5
+WINDOWS_REPLACE_RETRY_SECONDS = 0.01
 
 
 def render_config(source: str, *, topology: str) -> str:
@@ -66,6 +69,23 @@ def render_config(source: str, *, topology: str) -> str:
     return rendered
 
 
+def _replace_rendered_file(temporary: Path, destination: Path) -> None:
+    for attempt in range(WINDOWS_REPLACE_MAX_ATTEMPTS):
+        if destination.is_symlink():
+            raise ValueError("destination path must not be a symlink")
+        try:
+            os.replace(temporary, destination)
+            return
+        except PermissionError as error:
+            if getattr(error, "winerror", None) != 5:
+                raise
+            if attempt + 1 == WINDOWS_REPLACE_MAX_ATTEMPTS:
+                raise
+            time.sleep(WINDOWS_REPLACE_RETRY_SECONDS)
+
+    raise AssertionError("Windows replace retry loop exhausted without an error")
+
+
 def render_file(source_path: Path, destination: Path, *, topology: str) -> None:
     if source_path.is_symlink():
         raise ValueError("source path must not be a symlink")
@@ -91,9 +111,7 @@ def render_file(source_path: Path, destination: Path, *, topology: str) -> None:
             handle.flush()
             os.fsync(handle.fileno())
 
-        if destination.is_symlink():
-            raise ValueError("destination path must not be a symlink")
-        os.replace(temporary, destination)
+        _replace_rendered_file(temporary, destination)
     finally:
         if open_descriptor is not None:
             os.close(open_descriptor)

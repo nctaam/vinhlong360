@@ -21,6 +21,12 @@ INTERNAL_PATHS = (
 )
 
 
+def _windows_permission_error(path: Path, *, winerror: int) -> PermissionError:
+    error = PermissionError(13, "Access is denied", str(path))
+    error.winerror = winerror
+    return error
+
+
 @dataclass(frozen=True)
 class Token:
     kind: str
@@ -772,6 +778,155 @@ def test_render_file_cleans_unique_temp_on_write_failure(
         renderer.render_file(source, destination, topology="systemd")
 
     assert destination.read_bytes() == b"previous\n"
+    assert list(tmp_path.glob(f".{destination.name}.*.tmp")) == []
+
+
+def test_render_file_retries_transient_windows_access_denied_and_cleans_temp(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    import scripts.ops.render_nginx_config as renderer
+
+    source = tmp_path / "source.conf"
+    destination = tmp_path / "rendered.conf"
+    source.write_text("events {}\n", encoding="utf-8")
+    destination.write_bytes(b"previous\n")
+    real_replace = renderer.os.replace
+    attempted_sources: list[Path] = []
+
+    def collide_once(temporary, target):
+        attempted_sources.append(Path(temporary))
+        if len(attempted_sources) == 1:
+            raise _windows_permission_error(Path(target), winerror=5)
+        real_replace(temporary, target)
+
+    monkeypatch.setattr(renderer.os, "replace", collide_once)
+
+    renderer.render_file(source, destination, topology="systemd")
+
+    assert destination.read_bytes() == b"events {}\n"
+    assert len(attempted_sources) == 2
+    assert attempted_sources[0] == attempted_sources[1]
+    assert attempted_sources[0].name.startswith(f".{destination.name}.")
+    assert list(tmp_path.glob(f".{destination.name}.*.tmp")) == []
+
+
+def test_render_file_retry_budget_is_not_consumed_by_scheduler_delay(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    import scripts.ops.render_nginx_config as renderer
+
+    source = tmp_path / "source.conf"
+    destination = tmp_path / "rendered.conf"
+    source.write_text("events {}\n", encoding="utf-8")
+    real_replace = renderer.os.replace
+    attempts = 0
+    now = 0.0
+
+    def collide_once(temporary, target):
+        nonlocal attempts
+        attempts += 1
+        if attempts == 1:
+            raise _windows_permission_error(Path(target), winerror=5)
+        real_replace(temporary, target)
+
+    def monotonic():
+        return now
+
+    def delayed_wakeup(_seconds):
+        nonlocal now
+        now += 1.0
+
+    monkeypatch.setattr(renderer.os, "replace", collide_once)
+    monkeypatch.setattr(renderer.time, "monotonic", monotonic)
+    monkeypatch.setattr(renderer.time, "sleep", delayed_wakeup)
+
+    renderer.render_file(source, destination, topology="systemd")
+
+    assert attempts == 2
+    assert destination.read_bytes() == b"events {}\n"
+    assert list(tmp_path.glob(f".{destination.name}.*.tmp")) == []
+
+
+def test_render_file_bounds_persistent_windows_access_denied_and_cleans_temp(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    import scripts.ops.render_nginx_config as renderer
+
+    source = tmp_path / "source.conf"
+    destination = tmp_path / "rendered.conf"
+    source.write_text("events {}\n", encoding="utf-8")
+    destination.write_bytes(b"previous\n")
+    attempts = 0
+
+    def always_denied(_temporary, target):
+        nonlocal attempts
+        attempts += 1
+        raise _windows_permission_error(Path(target), winerror=5)
+
+    monkeypatch.setattr(renderer.os, "replace", always_denied)
+
+    with pytest.raises(PermissionError) as raised:
+        renderer.render_file(source, destination, topology="systemd")
+
+    assert raised.value.winerror == 5
+    assert 2 <= attempts <= 5
+    assert destination.read_bytes() == b"previous\n"
+    assert list(tmp_path.glob(f".{destination.name}.*.tmp")) == []
+
+
+def test_render_file_does_not_retry_unrelated_permission_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    import scripts.ops.render_nginx_config as renderer
+
+    source = tmp_path / "source.conf"
+    destination = tmp_path / "rendered.conf"
+    source.write_text("events {}\n", encoding="utf-8")
+    destination.write_bytes(b"previous\n")
+    attempts = 0
+
+    def sharing_violation(_temporary, target):
+        nonlocal attempts
+        attempts += 1
+        raise _windows_permission_error(Path(target), winerror=32)
+
+    monkeypatch.setattr(renderer.os, "replace", sharing_violation)
+
+    with pytest.raises(PermissionError) as raised:
+        renderer.render_file(source, destination, topology="systemd")
+
+    assert raised.value.winerror == 32
+    assert attempts == 1
+    assert destination.read_bytes() == b"previous\n"
+    assert list(tmp_path.glob(f".{destination.name}.*.tmp")) == []
+
+
+def test_render_file_rechecks_destination_symlink_before_replace_retry(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    import scripts.ops.render_nginx_config as renderer
+
+    source = tmp_path / "source.conf"
+    destination = tmp_path / "rendered.conf"
+    victim = tmp_path / "victim.conf"
+    source.write_text("events {}\n", encoding="utf-8")
+    victim.write_bytes(b"victim\n")
+    attempts = 0
+
+    def collide_then_link(_temporary, target):
+        nonlocal attempts
+        attempts += 1
+        Path(target).symlink_to(victim)
+        raise _windows_permission_error(Path(target), winerror=5)
+
+    monkeypatch.setattr(renderer.os, "replace", collide_then_link)
+
+    with pytest.raises(ValueError, match="destination path must not be a symlink"):
+        renderer.render_file(source, destination, topology="systemd")
+
+    assert attempts == 1
+    assert destination.is_symlink()
+    assert victim.read_bytes() == b"victim\n"
     assert list(tmp_path.glob(f".{destination.name}.*.tmp")) == []
 
 
