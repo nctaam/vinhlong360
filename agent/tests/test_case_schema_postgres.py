@@ -9,6 +9,7 @@ import os
 import sys
 import asyncio
 import json
+import subprocess
 from contextlib import contextmanager
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
@@ -276,6 +277,120 @@ def test_change_set_item_linkage_is_relational_and_immutable(pg_db):
         with pytest.raises(Exception, match="immutable_case_ledger"):
             pg_db._fetchone(conn, "DELETE FROM correction_change_sets WHERE change_set_id=%s", (change_id,))
         conn.rollback()
+
+
+@pg_only
+def test_case_decision_outcome_constraint_matches_the_locked_contract(pg_db):
+    permitted = (
+        "corrected", "confirmed_current", "insufficient_evidence", "out_of_scope",
+        "duplicate_linked", "unable_to_verify", "withdrawn_by_requester",
+    )
+    rejected = ("accepted", "rejected", "pending", "")
+    with pg_db._conn(commit_on_success=False) as conn:
+        pg_db._execute(conn, (ROOT / "agent" / "migrations" / "080_correction_case_kernel.sql").read_text(encoding="utf-8"), ())
+        case_id = pg_db._row_to_dict(pg_db._fetchone(
+            conn,
+            "INSERT INTO cases(service_kind, category, phase, activity, disposition_family, reporter_privacy, owner_ref, promise_policy_ref) VALUES ('correction', 'outcome-test', 'intake', 'active', 'undetermined', 'anonymous', 'person:test', 'policy:test') RETURNING case_id",
+            (),
+        ))["case_id"]
+        for outcome in permitted:
+            pg_db._execute(
+                conn,
+                "INSERT INTO case_decisions(case_id, outcome_code, reason_code, decision_maker_ref, policy_revision) VALUES (%s, %s, 'schema-test', 'person:test', 'policy:test')",
+                (case_id, outcome),
+            )
+        for outcome in rejected:
+            pg_db._execute(conn, "SAVEPOINT invalid_outcome", ())
+            with pytest.raises(Exception):
+                pg_db._execute(
+                    conn,
+                    "INSERT INTO case_decisions(case_id, outcome_code, reason_code, decision_maker_ref, policy_revision) VALUES (%s, %s, 'schema-test', 'person:test', 'policy:test')",
+                    (case_id, outcome),
+                )
+            pg_db._execute(conn, "ROLLBACK TO SAVEPOINT invalid_outcome", ())
+        conn.rollback()
+
+
+def _git_file_at(revision: str, path: str) -> str:
+    return subprocess.run(
+        ["git", "show", f"{revision}:{path}"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+    ).stdout.decode("utf-8")
+
+
+@pg_only
+def test_rerunning_080_upgrades_the_provisional_dac9960b_shape(pg_db):
+    """080 must reconcile its provisional shape when replayed directly."""
+    old_init = _git_file_at("dac9960b", "init.sql")
+    old_080 = _git_file_at("dac9960b", "agent/migrations/080_correction_case_kernel.sql")
+    current_080 = (ROOT / "agent" / "migrations" / "080_correction_case_kernel.sql").read_text(encoding="utf-8")
+    with pg_db._conn(commit_on_success=False) as conn:
+        try:
+            pg_db._execute(conn, "DROP SCHEMA public CASCADE", ())
+            pg_db._execute(conn, "CREATE SCHEMA public", ())
+            pg_db._execute(conn, old_init, ())
+            pg_db._execute(conn, old_080, ())
+            case_id = pg_db._row_to_dict(pg_db._fetchone(
+                conn,
+                "INSERT INTO cases(service_kind, category, phase, activity, disposition_family, reporter_privacy, owner_ref, promise_policy_ref) VALUES ('correction', 'replay-test', 'intake', 'active', 'undetermined', 'anonymous', 'person:test', 'policy:test') RETURNING case_id",
+                (),
+            ))["case_id"]
+            item_id = pg_db._row_to_dict(pg_db._fetchone(
+                conn,
+                "INSERT INTO correction_items(case_id, field_path, base_entity_revision, risk_class, evidence_level) VALUES (%s, 'name', 1, 'R0', 'E0') RETURNING item_id",
+                (case_id,),
+            ))["item_id"]
+            pg_db._execute(
+                conn,
+                "INSERT INTO correction_change_sets(case_id, item_ids, base_entity_revision, before_patch, after_patch, inverse_patch, policy_revision, risk_class, decision_maker_ref) VALUES (%s, %s::jsonb, 1, '{}'::jsonb, '{}'::jsonb, '{}'::jsonb, 'policy:test', 'R0', 'person:test')",
+                (case_id, json.dumps([str(item_id)])),
+            )
+            pg_db._execute(conn, current_080, ())
+            columns = pg_db._fetchall(
+                conn,
+                "SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name='correction_change_sets'",
+                (),
+            )
+            assert "item_ids" not in {pg_db._row_to_dict(row)["column_name"] for row in columns}
+            constraints = pg_db._fetchall(
+                conn,
+                "SELECT pg_get_constraintdef(oid) AS definition FROM pg_constraint WHERE conname='case_decisions_outcome_code_check'",
+                (),
+            )
+            assert "accepted" not in pg_db._row_to_dict(constraints[0])["definition"]
+            links = pg_db._fetchall(conn, "SELECT item_id FROM correction_change_set_items", ())
+            assert {str(pg_db._row_to_dict(row)["item_id"]) for row in links} == {str(item_id)}
+        finally:
+            conn.rollback()
+
+
+@pg_only
+def test_rerunning_080_fails_closed_for_unmigratable_provisional_item_ids(pg_db):
+    old_init = _git_file_at("dac9960b", "init.sql")
+    old_080 = _git_file_at("dac9960b", "agent/migrations/080_correction_case_kernel.sql")
+    current_080 = (ROOT / "agent" / "migrations" / "080_correction_case_kernel.sql").read_text(encoding="utf-8")
+    with pg_db._conn(commit_on_success=False) as conn:
+        try:
+            pg_db._execute(conn, "DROP SCHEMA public CASCADE", ())
+            pg_db._execute(conn, "CREATE SCHEMA public", ())
+            pg_db._execute(conn, old_init, ())
+            pg_db._execute(conn, old_080, ())
+            case_id = pg_db._row_to_dict(pg_db._fetchone(
+                conn,
+                "INSERT INTO cases(service_kind, category, phase, activity, disposition_family, reporter_privacy, owner_ref, promise_policy_ref) VALUES ('correction', 'replay-invalid', 'intake', 'active', 'undetermined', 'anonymous', 'person:test', 'policy:test') RETURNING case_id",
+                (),
+            ))["case_id"]
+            pg_db._execute(
+                conn,
+                "INSERT INTO correction_change_sets(case_id, item_ids, base_entity_revision, before_patch, after_patch, inverse_patch, policy_revision, risk_class, decision_maker_ref) VALUES (%s, '{\"not\": \"an array\"}'::jsonb, 1, '{}'::jsonb, '{}'::jsonb, '{}'::jsonb, 'policy:test', 'R0', 'person:test')",
+                (case_id,),
+            )
+            with pytest.raises(Exception, match="correction_change_set_item_ids_unmigratable"):
+                pg_db._execute(conn, current_080, ())
+        finally:
+            conn.rollback()
 
 
 @pg_only

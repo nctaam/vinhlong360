@@ -327,8 +327,12 @@ def test_dormant_core_contract_excludes_case_revision_but_enabled_contract_requi
 
 
 def test_080_binds_case_vocabularies_and_relational_change_set_linkage():
-    assert "outcome_code TEXT NOT NULL CHECK" in MIG_080
-    assert "corrected" in MIG_080 and "confirmed_current" in MIG_080
+    outcome = re.search(r"outcome_code TEXT NOT NULL CHECK \(outcome_code IN \(([^)]*)\)\)", MIG_080)
+    assert outcome
+    assert set(re.findall(r"'([^']+)'", outcome.group(1))) == {
+        "corrected", "confirmed_current", "insufficient_evidence", "out_of_scope",
+        "duplicate_linked", "unable_to_verify", "withdrawn_by_requester",
+    }
     assert "resolved" not in MIG_080 and "dismissed" not in MIG_080
     assert "from_phase TEXT" in MIG_080 and "to_phase TEXT NOT NULL CHECK" in MIG_080
     assert "correction_change_set_items" in MIG_080

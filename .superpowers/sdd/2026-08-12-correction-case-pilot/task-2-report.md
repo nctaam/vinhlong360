@@ -106,4 +106,40 @@ Result before implementation: `4 failed, 28 passed, 9 skipped`. The failures wer
 
 ### Commit
 
+This fix round's scoped commit contains this report entry.
+
+## Fix round 2
+
+### Finding resolutions
+
+- Tightened `case_decisions.outcome_code` to exactly the seven `CorrectionOutcome` values in migration 080 and `init.sql`; `accepted` and `rejected` are no longer valid decision outcomes.
+- Verified the reviewer replay premise against `scripts/apply_migrations.py`: the normal runner applies only migrations with a version greater than `schema_version`, so an already-version-80 provisional database does not rerun edited 080 automatically.
+- Kept the locked one-migration/080 plan. Directly rerunning 080 now idempotently reconciles its own provisional shape: it replaces named outcome and transition checks, copies validated JSONB `item_ids` into `correction_change_set_items`, then removes the obsolete column and installs the relational triggers.
+- Reconciliation fails closed with `correction_change_set_item_ids_unmigratable` if legacy `item_ids` is not an array, contains a non-string/non-UUID value, or references an item outside its change set's case. No values are discarded.
+
+### RED evidence
+
+- `VL360_TEST_DATABASE_URL=postgresql://...@127.0.0.1:5432/vl360_case_task2_test python -m pytest -q agent/tests/test_case_schema_postgres.py -k "outcome_constraint or rerunning_080"`
+  -> `2 failed, 9 deselected`: provisional 080 accepted invalid outcome values and did not reconcile an old `dac9960b` shape. The first attempt also exposed and then fixed a Windows-only test-helper decoding error before the schema fixture could run.
+- The focused outcome/replay command initially confirmed the exact constraint failure; after adding the replay test it exercised direct old-080 then current-080 execution, not the normal version-gated runner.
+
+### GREEN evidence
+
+- Focused exact outcome/replay coverage -> `2 passed, 9 deselected`.
+- Fail-closed malformed replay coverage:
+  `VL360_TEST_DATABASE_URL=postgresql://...@127.0.0.1:5432/vl360_case_task2_test python -m pytest -q agent/tests/test_case_schema_postgres.py -k "rerunning_080"`
+  -> `2 passed, 10 deselected`.
+- Required Task 2 gate with guarded loopback `VL360_TEST_DATABASE_URL` and `MIGRATION_APPLY_TEST_DATABASE_URL` -> `65 passed`.
+- Compatibility/readiness gate -> `233 passed, 1 xfailed` (pre-existing expected xfail).
+- Ruff on touched Python -> `All checks passed!`; `python scripts/check_migration_gate.py` -> `OK`; `git diff --check` -> exit 0.
+- Fresh migration-chain versus `init.sql` parity on Task 2 tables plus `entities.revision`, comparing `(table, column, type, nullability, default)` -> `Task 2 case schema column parity: 191 rows`.
+
+### Self-review
+
+- The normal runner still intentionally does not rerun version 80. The direct replay path is specifically idempotent for the unmerged provisional migration shape, satisfying the task's replay-safe requirement without introducing prohibited migration 081.
+- The data validation occurs before `item_ids` removal in the same transaction; a failure rolls back the link copy and preserves the prior JSONB column/data.
+- Fresh `init.sql` remains at the final relational shape and matches the current migration chain column-for-column.
+
+### Commit
+
 Pending this fix-round commit.

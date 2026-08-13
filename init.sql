@@ -708,7 +708,7 @@ CREATE TABLE IF NOT EXISTS case_decisions (
     decision_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     case_id UUID NOT NULL REFERENCES cases(case_id) ON DELETE CASCADE,
     item_id UUID,
-    outcome_code TEXT NOT NULL CHECK (outcome_code IN ('accepted', 'rejected', 'corrected', 'confirmed_current', 'insufficient_evidence', 'out_of_scope', 'duplicate_linked', 'unable_to_verify', 'withdrawn_by_requester')),
+    outcome_code TEXT NOT NULL CHECK (outcome_code IN ('corrected', 'confirmed_current', 'insufficient_evidence', 'out_of_scope', 'duplicate_linked', 'unable_to_verify', 'withdrawn_by_requester')),
     reason_code TEXT NOT NULL,
     evidence_refs JSONB NOT NULL DEFAULT '[]'::jsonb,
     decision_maker_ref TEXT NOT NULL,

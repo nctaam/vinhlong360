@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS case_decisions (
     decision_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     case_id UUID NOT NULL REFERENCES cases(case_id) ON DELETE CASCADE,
     item_id UUID,
-    outcome_code TEXT NOT NULL CHECK (outcome_code IN ('accepted', 'rejected', 'corrected', 'confirmed_current', 'insufficient_evidence', 'out_of_scope', 'duplicate_linked', 'unable_to_verify', 'withdrawn_by_requester')),
+    outcome_code TEXT NOT NULL CHECK (outcome_code IN ('corrected', 'confirmed_current', 'insufficient_evidence', 'out_of_scope', 'duplicate_linked', 'unable_to_verify', 'withdrawn_by_requester')),
     reason_code TEXT NOT NULL,
     evidence_refs JSONB NOT NULL DEFAULT '[]'::jsonb,
     decision_maker_ref TEXT NOT NULL,
@@ -99,6 +99,14 @@ CREATE TABLE IF NOT EXISTS case_decisions (
     policy_revision TEXT NOT NULL
 );
 ALTER TABLE case_decisions OWNER TO vl360;
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'case_decisions_outcome_code_check' AND conrelid = 'case_decisions'::regclass) THEN
+        ALTER TABLE case_decisions DROP CONSTRAINT case_decisions_outcome_code_check;
+    END IF;
+    ALTER TABLE case_decisions ADD CONSTRAINT case_decisions_outcome_code_check
+        CHECK (outcome_code IN ('corrected', 'confirmed_current', 'insufficient_evidence', 'out_of_scope', 'duplicate_linked', 'unable_to_verify', 'withdrawn_by_requester'));
+END $$;
 
 CREATE TABLE IF NOT EXISTS case_promise_clocks (
     clock_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -175,6 +183,19 @@ CREATE TABLE IF NOT EXISTS case_transitions (
     CONSTRAINT case_transitions_revision_order CHECK (to_revision >= 1 AND (from_revision IS NULL OR to_revision = from_revision + 1))
 );
 ALTER TABLE case_transitions OWNER TO vl360;
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'case_transitions_from_phase_check' AND conrelid = 'case_transitions'::regclass) THEN
+        ALTER TABLE case_transitions DROP CONSTRAINT case_transitions_from_phase_check;
+    END IF;
+    IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'case_transitions_to_phase_check' AND conrelid = 'case_transitions'::regclass) THEN
+        ALTER TABLE case_transitions DROP CONSTRAINT case_transitions_to_phase_check;
+    END IF;
+    ALTER TABLE case_transitions ADD CONSTRAINT case_transitions_from_phase_check
+        CHECK (from_phase IS NULL OR from_phase IN ('intake', 'triage', 'investigation', 'decision', 'fulfillment', 'closed'));
+    ALTER TABLE case_transitions ADD CONSTRAINT case_transitions_to_phase_check
+        CHECK (to_phase IN ('intake', 'triage', 'investigation', 'decision', 'fulfillment', 'closed'));
+END $$;
 
 CREATE OR REPLACE FUNCTION reject_case_ledger_mutation() RETURNS trigger
 LANGUAGE plpgsql AS $$
@@ -308,6 +329,40 @@ CREATE TABLE IF NOT EXISTS correction_change_set_items (
     PRIMARY KEY (change_set_id, item_id)
 );
 ALTER TABLE correction_change_set_items OWNER TO vl360;
+
+DO $$
+DECLARE
+    invalid_item_ids BOOLEAN;
+BEGIN
+    IF to_regclass('public.correction_change_sets') IS NOT NULL
+       AND EXISTS (
+           SELECT 1 FROM information_schema.columns
+           WHERE table_schema = 'public' AND table_name = 'correction_change_sets' AND column_name = 'item_ids'
+       ) THEN
+        IF EXISTS (SELECT 1 FROM correction_change_sets WHERE jsonb_typeof(item_ids) <> 'array') THEN
+            RAISE EXCEPTION 'correction_change_set_item_ids_unmigratable';
+        END IF;
+        SELECT EXISTS (
+            SELECT 1
+            FROM correction_change_sets c
+            CROSS JOIN LATERAL jsonb_array_elements(c.item_ids) value
+            WHERE jsonb_typeof(value) <> 'string'
+               OR NOT EXISTS (
+                   SELECT 1 FROM correction_items i
+                   WHERE i.item_id = (value #>> '{}')::uuid AND i.case_id = c.case_id
+               )
+        ) INTO invalid_item_ids;
+        IF invalid_item_ids THEN
+            RAISE EXCEPTION 'correction_change_set_item_ids_unmigratable';
+        END IF;
+        INSERT INTO correction_change_set_items(change_set_id, item_id)
+        SELECT c.change_set_id, (value #>> '{}')::uuid
+        FROM correction_change_sets c
+        CROSS JOIN LATERAL jsonb_array_elements(c.item_ids) value
+        ON CONFLICT DO NOTHING;
+        ALTER TABLE correction_change_sets DROP COLUMN item_ids;
+    END IF;
+END $$;
 
 CREATE OR REPLACE FUNCTION enforce_change_set_item_same_case() RETURNS trigger
 LANGUAGE plpgsql AS $$
