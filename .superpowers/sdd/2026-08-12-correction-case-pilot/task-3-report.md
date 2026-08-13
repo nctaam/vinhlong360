@@ -41,3 +41,26 @@ Output: collection failed with three `ImportError`s for absent Task 3 contracts 
 
 ## Concerns
 - `run_hard --all` cannot pass in this worktree without a fresh coverage artifact and baseline-wide complexity remediation. This Task 3 scope does not alter coverage infrastructure or unrelated legacy complexity. The staged R20.7 gate passes.
+
+## Fix round 1
+
+### Review Verification and RED
+- Verified every Critical/Important review finding against sections 6, 9, 11, and 12 plus the Task 3 brief. The initial pure layer did not persist waiting context, guarded only `corrected` closure, used enum identity without boundary validation, had no phase graph, ignored clock lineage/`now` and R1 policy, and represented R3 independence only as a supplier recusal.
+- Added focused tests first. `python -m pytest -q agent/tests/test_case_transitions.py agent/tests/test_case_properties.py agent/tests/test_case_queue_policy.py` produced 14 expected failures: missing waiting state, terminal-publication bypasses, deserialized string acceptance, illegal phase acceptance, absent clock lineage, ignored R1 policy, and missing R3 work relationship metadata. Hypothesis import then failed because it is not installed; deterministic Cartesian generation replaces it without adding a dependency.
+
+### Changes
+- `WaitingContext` is immutable and carried by both the replacement snapshot and immutable transition draft. It records requester-safe request copy, concrete requester actor/reference, evidence reference, next review, and wait start.
+- `CaseSnapshot` carries immutable original `PromiseClock` tuples. Queue derivation evaluates all clocks with explicit `now`, retains due timestamps, and escalates the most severe health without changing wait lineage.
+- Transition boundaries fail closed for deserialized/invalid enum values and invalid correction item values. An explicit, monotonic phase graph permits same-phase orthogonal updates and rejects skips/backward moves; closed snapshots remain immutable.
+- Every terminal transition rejects unresolved accepted public changes (unverified, publication failed, or rollback failed), preventing alternate outcomes from bypassing fulfillment/recovery. A non-public/no-action terminal result remains valid when no such unresolved accepted change exists.
+- R1 now derives from the validated `risk_registry.R1.independent_review` field; the default policy yields a decision maker and an injected validated policy view yields independent review. E3/E4 remains the narrow authoritative-evidence inference for R2 based on the existing evidence ladder; the Task 1 policy does not define a broader evidence authority field.
+- R3 drafts include deterministic work identities and `independent_of_work_refs`; independent reviewers also carry evidence-supplier recusal and explicit independent-review requirement. Lease-expiry/abandonment has no Task 3 immutable input, so is deferred to a later work/lease state layer. Package exports remain deferred because Task 4 imports domain modules directly and no current downstream import needs the extra package surface.
+
+### GREEN and Self-Review
+- `python -m pytest -q agent/tests/test_case_transitions.py agent/tests/test_case_properties.py agent/tests/test_case_queue_policy.py agent/tests/test_case_domain.py agent/tests/test_domain.py agent/tests/test_case_policy.py agent/tests/test_case_schema_postgres.py` -> `202 passed, 8 skipped`.
+- Touched-file Ruff, `git diff --check`, and focused R20.8 complexity check pass; no touched policy function exceeds the complexity ratchet.
+- Rechecked all terminal paths, waiting persistence/clock lineage, public-change recovery, runtime validation, phase moves, R1/R2/R3 work derivation, and deterministic property coverage against sections 6, 9, 11, and 12.
+
+### Commit and Remaining Concern
+- This round's scoped commit follows this report update.
+- The original repository-wide `run_hard --all` concern remains: it needs a fresh coverage artifact and has unrelated legacy complexity baseline debt. The staged R20.7 gate is run after staging this round.

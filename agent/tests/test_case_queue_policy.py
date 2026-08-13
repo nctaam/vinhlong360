@@ -65,3 +65,41 @@ def test_escalations_cover_missing_owner_promise_conflict_and_publication_failur
     work = derive_work_items(snapshot(owner_ref="", promise_health=PromiseHealth.AT_RISK), (item,), load_case_policy(), now=NOW)
     reasons = {draft.escalation_reason for draft in work if draft.kind == "escalation"}
     assert {"missing_owner", "promise_at_risk", "evidence_conflict", "publication_failure"} <= reasons
+
+
+def test_work_derivation_recomputes_breached_health_from_original_clock_without_wait_reset():
+    from cases.domain import PromiseClock
+    from cases.queue_policy import derive_work_items
+
+    clock = PromiseClock("update", NOW - timedelta(days=3), NOW - timedelta(hours=1))
+    work = derive_work_items(snapshot(owner_ref="owner-1", promise_clocks=(clock,)), (), load_case_policy(), now=NOW)
+    assert any(draft.escalation_reason == "promise_breached" for draft in work)
+
+
+def test_r1_policy_can_require_an_independent_reviewer():
+    from cases.queue_policy import derive_work_items
+
+    policy = replace(load_case_policy(), risk_registry={
+        **load_case_policy().risk_registry, "R1": {"independent_review": True},
+    })
+    work = derive_work_items(snapshot(owner_ref="owner-1"), (CorrectionItem("item-1", RiskClass.R1, EvidenceLevel.E2),), policy, now=NOW)
+    assert [draft.kind for draft in work] == ["independent_review"]
+
+
+def test_r1_policy_can_allow_a_decision_maker():
+    from cases.queue_policy import derive_work_items
+
+    work = derive_work_items(snapshot(owner_ref="owner-1"),
+                             (CorrectionItem("item-1", RiskClass.R1, EvidenceLevel.E2),),
+                             load_case_policy(), now=NOW)
+    assert [draft.kind for draft in work] == ["decision"]
+
+
+def test_r3_review_forbids_the_maker_and_evidence_supplier():
+    from cases.queue_policy import derive_work_items
+
+    item = CorrectionItem("item-1", RiskClass.R3, EvidenceLevel.E2, evidence_supplier_ref="supplier")
+    work = derive_work_items(snapshot(owner_ref="owner-1"), (item,), load_case_policy(), now=NOW)
+    maker = next(draft for draft in work if draft.kind == "decision")
+    reviews = [draft for draft in work if draft.kind.endswith("review")]
+    assert all(maker.work_identity in draft.independent_of_work_refs for draft in reviews)

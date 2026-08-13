@@ -34,7 +34,7 @@ def command(**changes):
     from cases.transitions import CaseTransitionCommand
 
     default = CaseTransitionCommand(
-        phase=CasePhase.INVESTIGATION, activity=CaseActivity.ACTIVE,
+        phase=CasePhase.FULFILLMENT, activity=CaseActivity.ACTIVE,
         disposition_family=DispositionFamily.UNDETERMINED, domain_outcome=None,
         actor=ActorContext("operator-1", Channel.WEB, frozenset(), "corr-1"),
         reason_code="investigate", expected_revision=4,
@@ -111,3 +111,62 @@ def test_transition_audit_carries_actor_reason_policy_and_correlation():
     assert result.transition.reason_code == "investigate"
     assert result.transition.policy_revision == "correction-pilot-v1"
     assert result.transition.correlation_id == "corr-1"
+
+
+def test_requester_waiting_persists_resumption_metadata_in_snapshot_and_transition():
+    from cases.transitions import transition_case
+
+    result = transition_case(
+        case(),
+        command(
+            activity=CaseActivity.WAITING_ON_REQUESTER,
+            requester_request="Confirm phone.", safe_message="Confirm phone.",
+            waiting_on_ref="requester-1", waiting_evidence_ref="interaction-1",
+            next_review_at=NOW + timedelta(days=1),
+        ),
+        load_case_policy(), now=NOW,
+    )
+    assert result.snapshot.waiting.requester_request == "Confirm phone."
+    assert result.transition.waiting.next_review_at == NOW + timedelta(days=1)
+
+
+@pytest.mark.parametrize("outcome", [CorrectionOutcome.CONFIRMED_CURRENT, CorrectionOutcome.OUT_OF_SCOPE])
+def test_terminal_outcome_cannot_bypass_unresolved_publication_recovery(outcome):
+    from cases.transitions import TransitionRejected, transition_case
+
+    item = CorrectionItem("item-1", RiskClass.R2, EvidenceLevel.E3, accepted=True,
+                          requires_public_change=True, publication_failed=True)
+    with pytest.raises(TransitionRejected, match="publication_recovery_required"):
+        transition_case(
+            case(), command(phase=CasePhase.CLOSED, domain_outcome=outcome,
+                            disposition_family=DispositionFamily.NO_ACTION),
+            load_case_policy(), now=NOW, correction_items=(item,),
+        )
+
+
+@pytest.mark.parametrize("field,value", [("phase", "closed"), ("activity", "active"),
+                                            ("domain_outcome", "corrected")])
+def test_runtime_strings_fail_closed_instead_of_bypassing_enum_guards(field, value):
+    from cases.transitions import TransitionRejected, transition_case
+
+    with pytest.raises(TransitionRejected, match="invalid_case_contract"):
+        transition_case(replace(case(), **{field: value}), command(), load_case_policy(), now=NOW)
+
+
+def test_runtime_string_on_correction_item_publication_state_fails_closed():
+    from cases.transitions import TransitionRejected, transition_case
+
+    invalid = CorrectionItem("item-1", RiskClass.R1, EvidenceLevel.E2, publication_state="verified")
+    with pytest.raises(TransitionRejected, match="invalid_case_contract"):
+        transition_case(case(), command(), load_case_policy(), now=NOW, correction_items=(invalid,))
+
+
+@pytest.mark.parametrize("source,target", [
+    (CasePhase.INTAKE, CasePhase.INVESTIGATION), (CasePhase.DECISION, CasePhase.TRIAGE),
+    (CasePhase.FULFILLMENT, CasePhase.INVESTIGATION), (CasePhase.INVESTIGATION, CasePhase.CLOSED),
+])
+def test_illegal_phase_moves_are_rejected(source, target):
+    from cases.transitions import TransitionRejected, transition_case
+
+    with pytest.raises(TransitionRejected, match="illegal_phase_transition"):
+        transition_case(case(phase=source), command(phase=target), load_case_policy(), now=NOW)

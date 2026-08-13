@@ -16,3 +16,20 @@ def test_correction_item_preserves_the_field_level_contract():
         "entity-1", "contact.phone", 4,
     )
     assert item.publication_state is PublicationState.PENDING
+
+
+def test_case_snapshot_keeps_waiting_and_original_promise_lineage_immutable():
+    from datetime import datetime, timezone
+    from cases.domain import (
+        CaseActivity, CasePhase, CaseSnapshot, DispositionFamily, PromiseClock,
+        PromiseHealth, ServiceKind, WaitingContext,
+    )
+
+    now = datetime(2026, 8, 12, tzinfo=timezone.utc)
+    waiting = WaitingContext("Confirm phone.", "Confirm phone.", "requester-1", "interaction-1", now, now)
+    snapshot = CaseSnapshot("case-1", ServiceKind.CORRECTION, "listing", CasePhase.TRIAGE,
+                            CaseActivity.WAITING_ON_REQUESTER, DispositionFamily.UNDETERMINED,
+                            None, None, "anonymous", "owner-1", 1, "policy", now, now, None,
+                            PromiseHealth.ON_TRACK, waiting, (PromiseClock("update", now, now),))
+    assert snapshot.waiting == waiting
+    assert snapshot.promise_clocks[0].due_at == now

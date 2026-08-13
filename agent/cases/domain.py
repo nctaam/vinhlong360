@@ -45,8 +45,12 @@ class ActorContext:
 class CommandEnvelope:
     idempotency_key: str; expected_revision: int | None; actor: ActorContext
 @dataclass(frozen=True)
+class WaitingContext:
+    requester_request: str; safe_message: str; waiting_on_ref: str
+    evidence_ref: str; next_review_at: datetime; started_at: datetime
+@dataclass(frozen=True)
 class CaseSnapshot:
-    case_id: str; service_kind: ServiceKind; category: str; phase: CasePhase; activity: CaseActivity; disposition_family: DispositionFamily; domain_outcome: str | None; severity: str | None; reporter_privacy: str; owner_ref: str; current_revision: int; promise_policy_ref: str; created_at: datetime; updated_at: datetime; closed_at: datetime | None; promise_health: PromiseHealth = PromiseHealth.ON_TRACK
+    case_id: str; service_kind: ServiceKind; category: str; phase: CasePhase; activity: CaseActivity; disposition_family: DispositionFamily; domain_outcome: str | None; severity: str | None; reporter_privacy: str; owner_ref: str; current_revision: int; promise_policy_ref: str; created_at: datetime; updated_at: datetime; closed_at: datetime | None; promise_health: PromiseHealth = PromiseHealth.ON_TRACK; waiting: WaitingContext | None = None; promise_clocks: tuple['PromiseClock', ...] = ()
 @dataclass(frozen=True)
 class PublicCaseStatus:
     public_reference: str; received_at: datetime; current_step: str; waiting_for: str | None; next_action: str; next_update_at: datetime; promise_health: PromiseHealth; item_decisions: tuple[PublicItemDecision, ...]; item_publication_states: tuple[PublicItemPublication, ...]; review_path: str
