@@ -58,6 +58,26 @@ def test_policy_keeps_operational_structures_and_validates_assisted_coverage():
     assert policy.assisted_coverage['timezone'] == 'Asia/Ho_Chi_Minh'
 
 
+@pytest.mark.parametrize('field,value', [
+    ('resolution_target_seconds_by_risk', {'R0': 1, 'R1': 1, 'R2': 1, 'R3': 1, 'RX': 1}),
+    ('risk_registry', {'R0': {}, 'R1': {}, 'R2': {'independent_review': True}, 'R3': {'independent_review': True}, 'RX': {}}),
+    ('maker_checker_rules', {'R2': True, 'R3': True, 'RX': False}),
+    ('retention', {'case_days': 1, 'receipt_days': 1, 'extra': 1}),
+    ('notification_channel', {'name': 'outbox'}),
+    ('assisted_coverage', {'timezone': 'x', 'weekdays': [], 'hours': 'x', 'duty_roster': 'x', 'fallback_copy': 'x'}),
+])
+def test_policy_rejects_malformed_nested_structure(tmp_path, field, value):
+    from cases.policy import load_case_policy
+    import json
+    source = Path(__file__).parents[2] / 'config' / 'case-service-policy.json'
+    data = json.loads(source.read_text())
+    data[field] = value
+    target = tmp_path / 'policy.json'
+    target.write_text(json.dumps(data))
+    with pytest.raises(ValueError):
+        load_case_policy(target)
+
+
 @pytest.mark.parametrize('owner,key', [('x', 'sufficient-key-material'), ('person:alice', '   ')])
 def test_enabled_flags_reject_inadequate_owner_or_encryption(owner, key):
     from config import Settings

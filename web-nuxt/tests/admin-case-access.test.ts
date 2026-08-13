@@ -16,4 +16,7 @@ describe('case admin access', () => {
   it('does not route non-operators to the correction operator page', () => {
     expect(firstAdminRoute(['truth.review'])).toBe('/')
   })
+  it('keeps an admin combination on the admin landing route', () => {
+    expect(firstAdminRoute(['case.supervisor', 'content.editor', 'service.operator'])).toBe('/admin')
+  })
 })
