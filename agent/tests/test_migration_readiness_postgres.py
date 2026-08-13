@@ -154,14 +154,16 @@ def fresh_migrated_database():
 def test_fresh_migration_chain_reaches_release_readiness(fresh_migrated_database):
     adapter, applied = fresh_migrated_database
 
-    assert [migration.version for migration in applied][-3:] == [71, 72, 73]
+    assert [migration.version for migration in applied][-3:] == [78, 79, 80]
     adapter._dsn = _validate_test_database_url(adapter._dsn)
     with adapter._conn(commit_on_success=False) as conn:
         adapter._verify_pg_schema(conn)
     status = adapter.pg_schema_status()
-    assert status == {
-        "backend": "postgresql",
-        "ok": True,
-        "schema_version": 73,
-        "required_schema_version": 73,
-    }
+    assert status["backend"] == "postgresql"
+    assert status["ok"] is True
+    assert status["schema_version"] == 80
+    assert status["required_schema_version"] == 80
+    assert status["missing_tables"] == []
+    assert status["missing_columns"] == []
+    assert status["missing_triggers"] == []
+    assert status["issues"] == []

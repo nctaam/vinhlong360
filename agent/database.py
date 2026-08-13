@@ -94,8 +94,18 @@ PG_REQUIRED_TABLES = {
     "profile_views",
 }
 
+CASE_KERNEL_REQUIRED_TABLES = {
+    "cases", "case_interactions", "case_party_authorities", "case_work_items",
+    "case_decisions", "case_promise_clocks", "case_receipts", "case_access_sessions",
+    "case_admin_access_sessions", "case_transitions", "case_audit_events", "case_outbox",
+    "case_idempotency", "case_contact_challenges", "correction_items", "correction_evidence",
+    "correction_change_sets", "legacy_intake_records", "case_capacity_events",
+}
+PG_REQUIRED_TABLES |= CASE_KERNEL_REQUIRED_TABLES
+PG_CORE_REQUIRED_TABLES = PG_REQUIRED_TABLES - CASE_KERNEL_REQUIRED_TABLES
+
 PG_REQUIRED_COLUMNS = {
-    "entities": {"id", "type", "name", "status", "verified", "coordinates", "attributes", "images"},
+    "entities": {"id", "type", "name", "status", "verified", "coordinates", "attributes", "images", "revision"},
     "itineraries": {"id", "title", "area", "areas", "stops"},
     "users": {"id", "phone", "password_hash", "username", "role", "is_active"},
     "posts": {"id", "user_id", "entity_id", "content", "moderation_status", "deleted_at", "is_draft"},
@@ -147,10 +157,37 @@ PG_REQUIRED_COLUMNS = {
     "schema_version": {"component", "version", "migration", "updated_at"},
 }
 
-# 79 = migration mới nhất sau khi thêm revision/updated_at cho user_plans.
-# Các migration trước đó vẫn phải chạy theo thứ tự; readiness chỉ mở khi migration
-# 079 đã được áp dụng, vì planner update SQL đọc và ghi cả hai cột mới.
-PG_REQUIRED_SCHEMA_VERSION = 79
+CASE_KERNEL_REQUIRED_COLUMNS = {
+    "cases": {"case_id", "service_kind", "category", "phase", "activity", "disposition_family", "domain_outcome", "reporter_privacy", "owner_ref", "current_revision", "promise_policy_ref", "review_of_case_id", "created_at", "updated_at", "closed_at"},
+    "case_interactions": {"interaction_id", "case_id", "channel", "actor_ref", "direction", "consent_ref", "identity_assurance", "payload_enc", "created_at"},
+    "case_party_authorities": {"party_authority_id", "case_id", "party_ref", "authority_kind", "scope", "assurance_level", "granted_at", "expires_at", "revoked_at"},
+    "case_work_items": {"work_item_id", "case_id", "kind", "required_role", "risk_class", "status", "assignee_ref", "lease_expires_at", "ready_at", "next_review_at", "priority", "revision"},
+    "case_decisions": {"decision_id", "case_id", "item_id", "outcome_code", "reason_code", "evidence_refs", "decision_maker_ref", "reviewer_ref", "decided_at", "policy_revision"},
+    "case_promise_clocks": {"clock_id", "case_id", "kind", "started_at", "due_at", "health", "policy_revision", "observed_at"},
+    "case_receipts": {"receipt_id", "case_id", "public_reference", "capability_digest", "capability_key_version", "notification_consent_ref", "expires_at", "revoked_at", "created_at"},
+    "case_access_sessions": {"access_session_id", "case_id", "receipt_id", "session_digest", "expires_at", "revoked_at", "created_at"},
+    "case_admin_access_sessions": {"admin_access_session_id", "case_id", "actor_ref", "scope", "session_digest", "expires_at", "revoked_at", "created_at"},
+    "case_transitions": {"transition_id", "case_id", "from_phase", "to_phase", "from_revision", "to_revision", "actor_ref", "reason_code", "policy_revision", "correlation_id", "created_at"},
+    "case_audit_events": {"audit_event_id", "case_id", "actor_ref", "actor_scopes", "channel", "reason_code", "policy_revision", "correlation_id", "before_snapshot", "after_snapshot", "created_at"},
+    "case_outbox": {"outbox_id", "case_id", "idempotency_key", "topic", "payload", "status", "available_at", "attempts", "last_error_code", "created_at"},
+    "case_idempotency": {"idempotency_id", "idempotency_key", "actor_ref", "request_digest", "response_enc", "expires_at", "created_at"},
+    "case_contact_challenges": {"challenge_id", "case_id", "contact_digest", "challenge_digest", "channel", "expires_at", "verified_at", "created_at"},
+    "correction_items": {"item_id", "case_id", "entity_id", "field_path", "reported_value_enc", "proposed_value_enc", "base_entity_revision", "risk_class", "evidence_level", "created_at"},
+    "correction_evidence": {"evidence_id", "case_id", "item_id", "evidence_level", "source_ref", "descriptor", "content_enc", "created_by_ref", "created_at"},
+    "correction_change_sets": {"change_set_id", "case_id", "item_ids", "base_entity_revision", "before_patch", "after_patch", "inverse_patch", "evidence_refs", "policy_revision", "risk_class", "decision_maker_ref", "reviewer_ref", "apply_status", "public_projection_verified_at", "created_at"},
+    "legacy_intake_records": {"legacy_intake_id", "source_file", "source_line", "raw_record_digest", "imported_case_id", "legacy_status", "missing_data_flags", "mapping_decision", "import_result", "reconciliation_result", "imported_at"},
+    "case_capacity_events": {"capacity_event_id", "case_id", "channel", "risk_class", "event_kind", "observed_at", "duration_seconds", "metadata"},
+}
+PG_REQUIRED_COLUMNS.update(CASE_KERNEL_REQUIRED_COLUMNS)
+PG_CORE_REQUIRED_COLUMNS = {
+    table: columns
+    for table, columns in PG_REQUIRED_COLUMNS.items()
+    if table not in CASE_KERNEL_REQUIRED_COLUMNS
+}
+
+# 80 adds the PostgreSQL-only Correction Case Kernel and entity revision guard.
+PG_REQUIRED_SCHEMA_VERSION = 80
+PG_CORE_REQUIRED_SCHEMA_VERSION = 79
 PG_REQUIRED_TRIGGERS = {
     "trg_entity_ratings": "posts",
     "trg_entity_ratings_del": "posts",
@@ -270,10 +307,11 @@ def _env_truthy(name: str, default: str = "false") -> bool:
 # ── Shared WHERE-clause builders (extract-method từ search/list/count để giảm complexity;
 #    di chuyển NGUYÊN VĂN từng khối, mutate conditions/params tại chỗ, giữ đúng thứ tự gọi) ──
 
-def _pg_missing_columns(cur, tables: set) -> list:
+def _pg_missing_columns(cur, tables: set, required_columns=None) -> list:
     """Quét cột thiếu theo PG_REQUIRED_COLUMNS (extract nguyên văn từ _verify_pg_schema)."""
     missing_columns: list[str] = []
-    for table, columns in PG_REQUIRED_COLUMNS.items():
+    required_columns = required_columns or PG_REQUIRED_COLUMNS
+    for table, columns in required_columns.items():
         if table not in tables:
             continue
         cur.execute(
@@ -316,6 +354,8 @@ def _pg_schema_issues(
     missing_columns: list[str],
     missing_triggers: list[str],
     schema_version: int,
+    *,
+    required_schema_version: int = PG_REQUIRED_SCHEMA_VERSION,
 ) -> list[str]:
     """Dựng danh sách issue (extract nguyên văn từ _verify_pg_schema)."""
     issues: list[str] = []
@@ -325,8 +365,8 @@ def _pg_schema_issues(
         issues.append("missing columns: " + ", ".join(missing_columns))
     if missing_triggers:
         issues.append("missing triggers: " + ", ".join(missing_triggers))
-    if schema_version < PG_REQUIRED_SCHEMA_VERSION:
-        issues.append(f"schema_version agent={schema_version}, expected >= {PG_REQUIRED_SCHEMA_VERSION}")
+    if schema_version < required_schema_version:
+        issues.append(f"schema_version agent={schema_version}, expected >= {required_schema_version}")
     return issues
 
 
@@ -340,8 +380,10 @@ def _pg_schema_snapshot(conn) -> dict[str, object]:
         """
     )
     tables = {row["table_name"] for row in cur.fetchall()}
-    missing_tables = sorted(PG_REQUIRED_TABLES - tables)
-    missing_columns = _pg_missing_columns(cur, tables)
+    missing_tables = sorted(PG_CORE_REQUIRED_TABLES - tables)
+    missing_columns = _pg_missing_columns(cur, tables, PG_CORE_REQUIRED_COLUMNS)
+    case_missing_tables = sorted(CASE_KERNEL_REQUIRED_TABLES - tables)
+    case_missing_columns = _pg_missing_columns(cur, tables, CASE_KERNEL_REQUIRED_COLUMNS)
     missing_triggers = _pg_missing_triggers(cur)
 
     schema_version = 0
@@ -358,14 +400,36 @@ def _pg_schema_snapshot(conn) -> dict[str, object]:
         missing_columns,
         missing_triggers,
         schema_version,
+        required_schema_version=PG_CORE_REQUIRED_SCHEMA_VERSION,
+    )
+    case_issues = _pg_schema_issues(
+        case_missing_tables,
+        case_missing_columns,
+        [],
+        schema_version,
+        required_schema_version=PG_REQUIRED_SCHEMA_VERSION,
     )
     return {
         "schema_version": schema_version,
         "missing_tables": missing_tables,
         "missing_columns": missing_columns,
         "missing_triggers": missing_triggers,
+        "case_missing_tables": case_missing_tables,
+        "case_missing_columns": case_missing_columns,
+        "case_issues": case_issues,
         "issues": issues,
     }
+
+
+def case_kernel_schema_status(schema: Mapping[str, object], *, enabled: bool) -> dict[str, object]:
+    """Project the global PostgreSQL schema result into the Case Kernel boundary."""
+    if not enabled:
+        return {"ok": True, "state": "dormant", "code": "case_kernel_dormant"}
+    if schema.get("backend") != "postgresql":
+        return {"ok": False, "state": "blocked", "code": "case_postgresql_required"}
+    if schema.get("ok") and not schema.get("case_issues"):
+        return {"ok": True, "state": "ready", "code": "case_kernel_ready"}
+    return {"ok": False, "state": "blocked", "code": "case_schema_not_ready"}
 
 
 _COORD_INVALID = object()  # sentinel: decode thất bại → _parse_coordinates trả None
@@ -835,6 +899,7 @@ class Database:
                 "ok": True,
                 "schema_version": None,
                 "required_schema_version": PG_REQUIRED_SCHEMA_VERSION,
+                "core_required_schema_version": PG_CORE_REQUIRED_SCHEMA_VERSION,
                 "required_triggers": dict(PG_REQUIRED_TRIGGERS),
                 "missing_triggers": [],
             }
@@ -846,6 +911,7 @@ class Database:
                 "backend": "postgresql",
                 "ok": not snapshot["issues"],
                 "required_schema_version": PG_REQUIRED_SCHEMA_VERSION,
+                "core_required_schema_version": PG_CORE_REQUIRED_SCHEMA_VERSION,
                 "required_triggers": dict(PG_REQUIRED_TRIGGERS),
                 **snapshot,
             }
@@ -855,6 +921,7 @@ class Database:
                 "ok": False,
                 "schema_version": 0,
                 "required_schema_version": PG_REQUIRED_SCHEMA_VERSION,
+                "core_required_schema_version": PG_CORE_REQUIRED_SCHEMA_VERSION,
                 "required_triggers": dict(PG_REQUIRED_TRIGGERS),
                 "missing_triggers": [],
                 "error": type(exc).__name__,

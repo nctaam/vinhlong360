@@ -94,8 +94,8 @@ def test_pg_initialize_verifies_schema_before_legacy_repair_code():
 
 def test_pg_schema_contract_tracks_latest_release_tables():
     # 71 phục hồi trigger rating; 72-74 thêm feedback + vòng đời xoá tài khoản;
-    # 75 index đường nóng; 76-78 là NP-1 identity/location/trust; 79 là planner revision.
-    assert PG_REQUIRED_SCHEMA_VERSION == 79
+    # 75 index đường nóng; 76-78 là NP-1 identity/location/trust; 79 planner revision; 80 Case Kernel.
+    assert PG_REQUIRED_SCHEMA_VERSION == 80
     assert {"schema_version", "admin_audit_events", "shared_rate_limits", "request_idempotency_keys"} <= PG_REQUIRED_TABLES
     assert {"feedback_receipts", "feedback_daily_rollups"} <= PG_REQUIRED_TABLES
     assert {"entity_changes", "site_settings_history"} <= PG_REQUIRED_TABLES
@@ -268,7 +268,7 @@ def test_pg_startup_rejects_schema_version_72():
     """
     database = Database.__new__(Database)
 
-    expected = database_module.PG_REQUIRED_SCHEMA_VERSION
+    expected = database_module.PG_CORE_REQUIRED_SCHEMA_VERSION
     assert expected >= 79, "planner revision migration 079 must be readiness-gated"
     with pytest.raises(
         RuntimeError, match=rf"schema_version agent=72, expected >= {expected}"

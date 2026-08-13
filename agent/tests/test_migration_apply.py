@@ -168,7 +168,23 @@ def test_schema_version_tracks_latest_migration():
     with db._conn() as conn:
         row = db._fetchone(conn, "SELECT version FROM schema_version WHERE component = 'agent'", ())
     assert row is not None
-    assert int(db._row_to_dict(row)['version']) >= 79  # đã áp tới 079
+    assert int(db._row_to_dict(row)['version']) >= 80  # đã áp tới 080
+
+
+@pg_only
+def test_migration_080_built_case_kernel_tables():
+    with db._conn() as conn:
+        rows = db._fetchall(
+            conn,
+            "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'",
+            (),
+        )
+    tables = {db._row_to_dict(row)["table_name"] for row in rows}
+    assert {
+        "cases", "case_work_items", "case_receipts", "case_transitions",
+        "case_audit_events", "correction_items", "correction_change_sets",
+        "legacy_intake_records",
+    } <= tables
 
 
 

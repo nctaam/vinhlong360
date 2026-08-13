@@ -72,6 +72,8 @@ MIG_072 = (ROOT / "agent" / "migrations" / "072_feedback_receipts.sql").read_tex
 MIG_073 = (ROOT / "agent" / "migrations" / "073_account_erasure_state.sql").read_text(encoding="utf-8")
 MIG_074_PATH = ROOT / "agent" / "migrations" / "074_erasure_delete_actions.sql"
 MIG_074 = MIG_074_PATH.read_text(encoding="utf-8") if MIG_074_PATH.exists() else ""
+MIG_080_PATH = ROOT / "agent" / "migrations" / "080_correction_case_kernel.sql"
+MIG_080 = MIG_080_PATH.read_text(encoding="utf-8") if MIG_080_PATH.exists() else ""
 
 UNIVERSAL = ["address", "phone", "website", "hours", "price_range", "sub_category", "best_time", "highlight"]
 CTI_TABLES = [
@@ -187,8 +189,8 @@ def test_init_sql_contains_final_feedback_schema():
 
 def test_database_readiness_requires_erasure_schema_version_74():
     # Tên hàm giữ nguyên (74 = mốc erasure) nhưng NGƯỠNG đã tiến: hợp NP-1 vào main
-    # thêm migration 076-078, và 079 bổ sung revision-safe planner updates.
-    assert database.PG_REQUIRED_SCHEMA_VERSION == 79
+    # thêm migration 076-078, 079 planner revision và 080 Case Kernel.
+    assert database.PG_REQUIRED_SCHEMA_VERSION == 80
     assert {"feedback_receipts", "feedback_daily_rollups"} <= database.PG_REQUIRED_TABLES
     assert {
         "token_digest",
@@ -271,6 +273,53 @@ def test_074_clears_non_nullable_actor_and_claim_fields_before_scrub():
         assert f"ALTER COLUMN {column} DROP NOT NULL" in normalized, (
             f"074 must make {table}.{column} nullable for exact actor/claim scrubbing"
         )
+
+
+CASE_TABLES = {
+    "cases", "case_interactions", "case_party_authorities", "case_work_items",
+    "case_decisions", "case_promise_clocks", "case_receipts", "case_access_sessions",
+    "case_admin_access_sessions", "case_transitions", "case_audit_events", "case_outbox",
+    "case_idempotency", "case_contact_challenges", "correction_items", "correction_evidence",
+    "correction_change_sets", "legacy_intake_records", "case_capacity_events",
+}
+
+
+def test_080_is_additive_replay_safe_and_registers_schema_version():
+    assert MIG_080_PATH.exists(), "migration 080 must exist"
+    assert "DROP TABLE" not in MIG_080.upper()
+    assert "TRUNCATE" not in MIG_080.upper()
+    assert "DELETE FROM" not in MIG_080.upper()
+    assert "VALUES ('agent', 80, '080_correction_case_kernel.sql'" in MIG_080
+    assert "GREATEST(schema_version.version, EXCLUDED.version)" in MIG_080
+    for table in CASE_TABLES:
+        assert f"CREATE TABLE IF NOT EXISTS {table}" in MIG_080
+
+
+def test_080_uses_digest_or_ciphertext_names_for_private_payloads():
+    for forbidden in ("capability TEXT", "contact TEXT", "evidence TEXT", "capability_digest BYTEA"):
+        assert forbidden not in MIG_080
+    assert "capability_digest" in MIG_080
+    assert "*_enc" not in MIG_080  # wildcard is documentation, concrete names are required
+    assert "payload_enc" in MIG_080
+    assert "content_enc" in MIG_080
+
+
+def test_init_sql_contains_case_kernel_parity_and_entity_revision():
+    for table in CASE_TABLES:
+        assert f"CREATE TABLE IF NOT EXISTS {table}" in INIT_SQL
+    assert "ADD COLUMN IF NOT EXISTS revision" in MIG_080
+    entities = _create_block(INIT_SQL, "entities")
+    assert re.search(r"\brevision\s+INTEGER\s+NOT NULL\s+DEFAULT\s+1", entities, re.I)
+    assert "entities_revision_positive" in INIT_SQL
+
+
+def test_database_readiness_requires_case_schema_version_80():
+    assert database.PG_REQUIRED_SCHEMA_VERSION == 80
+    assert CASE_TABLES <= database.PG_REQUIRED_TABLES
+    assert {"revision"} <= database.PG_REQUIRED_COLUMNS["entities"]
+    assert {"case_id", "current_revision", "service_kind", "phase"} <= database.PG_REQUIRED_COLUMNS["cases"]
+
+
 def test_073_owns_location_remediation_contract():
     migration = ROOT / "agent" / "migrations" / "078_location_preference_remediation.sql"
     sql = migration.read_text(encoding="utf-8")

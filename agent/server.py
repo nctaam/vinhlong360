@@ -4127,6 +4127,8 @@ async def readiness_probe():
         from data_lifecycle import lifecycle_registry_readiness
         from database import db as _db
         from privacy_policy import privacy_policy_readiness
+        from cases.policy import load_case_policy
+        from database import case_kernel_schema_status
         data_source = getattr(knowledge, "_data_source", None) or "unknown"
         entity_count = len(getattr(knowledge, "_entities", None) or {})
         checks = {
@@ -4145,6 +4147,22 @@ async def readiness_probe():
         schema = _db.pg_schema_status()
         checks["schema"] = bool(schema.get("ok"))
         checks["schema_version"] = schema
+        case_enabled = any((
+            _settings.CASE_KERNEL_ENABLED,
+            _settings.CORRECTION_INTAKE_ENABLED,
+            _settings.CORRECTION_ADMIN_ENABLED,
+            _settings.CORRECTION_ASSISTED_ENABLED,
+            _settings.CORRECTION_PUBLICATION_ENABLED,
+        ))
+        checks["case_kernel_schema"] = case_kernel_schema_status(schema, enabled=case_enabled)
+        if not case_enabled:
+            checks["case_policy"] = {"ok": True, "state": "dormant", "code": "case_policy_dormant"}
+        else:
+            try:
+                load_case_policy()
+                checks["case_policy"] = {"ok": True, "state": "ready", "code": "case_policy_ready"}
+            except Exception:
+                checks["case_policy"] = {"ok": False, "state": "blocked", "code": "case_policy_invalid"}
         erasure_status = scheduler_status().get("erasure", {})
         checks["erasure_scheduler"] = {
             "ok": bool(schema.get("ok")) and "audit_only" in erasure_status,

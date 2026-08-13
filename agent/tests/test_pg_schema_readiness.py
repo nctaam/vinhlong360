@@ -22,8 +22,8 @@ class TriggerCursor:
 
 
 def test_required_schema_version_and_rating_trigger_registry():
-    # 74 -> 78 khi hợp NP-1; 79 adds revision-safe planner columns.
-    assert PG_REQUIRED_SCHEMA_VERSION == 79
+    # 74 -> 78 khi hợp NP-1; 79 planner revision; 80 adds Case Kernel.
+    assert PG_REQUIRED_SCHEMA_VERSION == 80
     assert PG_REQUIRED_TRIGGERS == {
         "trg_entity_ratings": "posts",
         "trg_entity_ratings_del": "posts",
