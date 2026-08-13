@@ -7,7 +7,10 @@ from .domain import (
     PublicationState, WaitingContext,
 )
 from .policy import CasePolicy
-from .validation import PolicyRejected, aware, validate_actor, validate_clock, validate_item, validate_policy, validate_snapshot
+from .validation import (
+    PolicyRejected, aware, validate_actor, validate_clock, validate_item,
+    validate_identifier, validate_policy, validate_snapshot, validate_text,
+)
 
 
 class TransitionRejected(ValueError):
@@ -50,8 +53,6 @@ def _validate_audit(snapshot: CaseSnapshot, command: CaseTransitionCommand) -> N
         raise TransitionRejected('closed_case_immutable')
     if command.expected_revision != snapshot.current_revision:
         raise TransitionRejected('revision_conflict')
-    if not command.actor.actor_ref or not command.actor.correlation_id or not command.reason_code:
-        raise TransitionRejected('transition_audit_incomplete')
 
 
 def _validate_clock(clock: PromiseClock, now: datetime) -> None:
@@ -64,21 +65,44 @@ def _validate_clock(clock: PromiseClock, now: datetime) -> None:
 def _validate_contract(snapshot: CaseSnapshot, command: CaseTransitionCommand,
                        correction_items: tuple[CorrectionItem, ...], now: datetime) -> None:
     try:
-        if not isinstance(command, CaseTransitionCommand):
+        if type(command) is not CaseTransitionCommand:
             raise PolicyRejected('invalid_case_contract')
         validate_snapshot(snapshot, now)
         validate_actor(command.actor)
-        if not isinstance(correction_items, tuple):
-            raise PolicyRejected('invalid_case_contract')
-        for item in correction_items:
-            validate_item(item)
+        _validate_command_contract(command)
+        _validate_items(correction_items)
     except PolicyRejected as exc:
         raise TransitionRejected(str(exc)) from None
-    if (not isinstance(command.phase, CasePhase)
-            or not isinstance(command.activity, CaseActivity)
-            or not isinstance(command.disposition_family, DispositionFamily)
-            or command.domain_outcome is not None and not isinstance(command.domain_outcome, CorrectionOutcome)):
+    if (type(command.phase) is not CasePhase
+            or type(command.activity) is not CaseActivity
+            or type(command.disposition_family) is not DispositionFamily
+            or command.domain_outcome is not None and type(command.domain_outcome) is not CorrectionOutcome):
         raise TransitionRejected('invalid_case_contract')
+
+
+def _validate_command_contract(command: CaseTransitionCommand) -> None:
+    validate_text(command.reason_code)
+    if command.expected_revision is not None and type(command.expected_revision) is not int:
+        raise PolicyRejected('invalid_case_contract')
+    if command.activity is not CaseActivity.WAITING_ON_REQUESTER or command.phase is CasePhase.CLOSED:
+        return
+    supplied = (
+        command.requester_request, command.safe_message, command.waiting_on_ref,
+        command.waiting_evidence_ref,
+    )
+    if not all(value is not None for value in supplied):
+        return
+    validate_text(command.requester_request)
+    validate_text(command.safe_message)
+    validate_identifier(command.waiting_on_ref)
+    validate_identifier(command.waiting_evidence_ref)
+
+
+def _validate_items(correction_items: object) -> None:
+    if not isinstance(correction_items, tuple):
+        raise PolicyRejected('invalid_case_contract')
+    for item in correction_items:
+        validate_item(item)
 
 
 def _validate_phase_move(snapshot: CaseSnapshot, command: CaseTransitionCommand) -> None:

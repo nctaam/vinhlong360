@@ -1,7 +1,7 @@
 # Task 3 Report: Correction Case Pure Policy
 
 ## Status
-DONE_WITH_CONCERNS. The pure, deterministic correction-case policy layer is committed as `26c99baf` and verified.
+DONE_WITH_CONCERNS. The pure, deterministic correction-case policy layer is implemented and verified through fix round 4; commit history is recorded per round below.
 
 ## Files
 - Modified: `agent/cases/domain.py`
@@ -95,3 +95,21 @@ Output: collection failed with three `ImportError`s for absent Task 3 contracts 
 ### GREEN and Concern
 - Task 3 plus Task 1 regression suite -> `238 passed, 8 skipped`; touched-file Ruff and `git diff --check` pass. The staged R20.7 gate follows staging this report.
 - `run_hard --all` remains outside this fix scope because it needs a fresh coverage artifact and unrelated legacy complexity remediation.
+
+## Fix round 4
+
+### Review Verification and RED
+- Verified the remaining findings at the public pure boundaries. `priority_key` dereferenced and ranked unvalidated nominal drafts; transition and queue snapshot validation omitted persisted waiting coherence and several consumed nested scalars; identifiers permitted whitespace ambiguity; policy revision and supplier references could reach output or hashing unchecked.
+- Added focused regressions first for direct/mixed priority inputs, waiting object/time/coherence, exact revisions and enums, policy revisions, unsafe/unhashable suppliers, command/actor/item scalars, strict identity components, and multi-item R0-R3 reference closure. The RED command reported exactly `59 failed, 219 passed`.
+- `priority_key` accepts an aware future `ready_at` because this observation-independent ordering boundary has no `now`; it requires `received_at <= ready_at`. `derive_work_items` still produces ready work from validated snapshot timestamps at or before its explicit `now`.
+
+### Changes
+- Shared validation is now composable and exact: domain containers/enums/booleans/positive revisions, trimmed required text, actor scopes, policy revision/R1 policy shape, correction references/evidence tuples, clock lineage, and snapshot service/phase/activity/disposition/promise fields are validated before dereference or hashing.
+- Persisted requester waiting requires an exact `WaitingContext`, coherent requester-wait activity on a nonclosed case, safe trimmed copy and references, aware `started_at <= now`, and aware `next_review_at > now`; every other activity requires `waiting=None`.
+- `priority_key` validates the exact `WorkItemDraft` and consumed priority fields and raises stable `QueuePolicyRejected('invalid_work_item')` instead of leaking mapping, attribute, or datetime comparison exceptions. Identifier validation preserves safe opaque punctuation while rejecting blanks, trimming differences, whitespace, controls, and the `:` work-identity separator.
+
+### GREEN and Gates
+- Task 3 plus relevant Task 1/domain/schema regression -> `322 passed, 8 skipped`.
+- Touched-file Ruff -> `All checks passed!`; `git diff --check` -> exit 0; focused touched-file R20.8 complexity -> `0` violations.
+- `python scripts/checks/run_hard.py --all` was rerun and remains nonblocking baseline-wide debt: R20.8 reports `40 > 36` across the full repository, and R20.4 reports a missing coverage artifact `1 > 0`. No touched production function contributes an R20.8 violation.
+- `python scripts/checks/run_hard.py --staged` -> `hard=0, ratchet not increased`, including R20.7 test pairing.

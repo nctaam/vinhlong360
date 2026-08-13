@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from cases.domain import (
     ActorContext, CaseActivity, CasePhase, CaseSnapshot, Channel,
     CorrectionItem, CorrectionOutcome, DispositionFamily, EvidenceLevel,
-    PublicationState, RiskClass, ServiceKind,
+    PublicationState, RiskClass, ServiceKind, WaitingContext,
 )
 from cases.policy import load_case_policy
 
@@ -68,6 +68,25 @@ def test_waiting_on_requester_needs_concrete_safe_request_evidence_and_review_ti
     )
     assert result.snapshot.activity is CaseActivity.WAITING_ON_REQUESTER
     assert result.snapshot.current_revision == 5
+
+
+@pytest.mark.parametrize("field,value", [
+    ("requester_request", " "),
+    ("safe_message", " unsafe "),
+    ("waiting_on_ref", "requester ref"),
+    ("waiting_evidence_ref", "interaction:1"),
+])
+def test_waiting_command_rejects_unsafe_copy_and_references(field, value):
+    from cases.transitions import TransitionRejected, transition_case
+
+    waiting = command(
+        activity=CaseActivity.WAITING_ON_REQUESTER,
+        requester_request="Confirm phone.", safe_message="Confirm phone.",
+        waiting_on_ref="requester-1", waiting_evidence_ref="interaction-1",
+        next_review_at=NOW + timedelta(days=1),
+    )
+    with pytest.raises(TransitionRejected, match="^invalid_case_contract$"):
+        transition_case(case(), replace(waiting, **{field: value}), load_case_policy(), now=NOW)
 
 
 def test_corrected_close_requires_every_accepted_public_change_to_be_verified():
@@ -144,8 +163,11 @@ def test_terminal_outcome_cannot_bypass_unresolved_publication_recovery(outcome)
         )
 
 
-@pytest.mark.parametrize("field,value", [("phase", "closed"), ("activity", "active"),
-                                            ("domain_outcome", "corrected")])
+@pytest.mark.parametrize("field,value", [
+    ("service_kind", "correction"), ("phase", "closed"), ("activity", "active"),
+    ("disposition_family", "action_taken"), ("promise_health", "on_track"),
+    ("domain_outcome", "corrected"),
+])
 def test_runtime_strings_fail_closed_instead_of_bypassing_enum_guards(field, value):
     from cases.transitions import TransitionRejected, transition_case
 
@@ -217,3 +239,80 @@ def test_nested_malformed_contract_values_fail_closed(mutate):
     snapshot, current_command, current_now = mutate(case(), command(), NOW)
     with pytest.raises(TransitionRejected, match="invalid_case_contract|invalid_case_time|waiting_request_incomplete"):
         transition_case(snapshot, current_command, load_case_policy(), now=current_now)
+
+
+def _persisted_waiting(**changes):
+    waiting = WaitingContext(
+        "Confirm phone.", "Confirm phone.", "requester-1", "interaction-1",
+        NOW + timedelta(hours=1), NOW - timedelta(hours=2),
+    )
+    return replace(waiting, **changes)
+
+
+@pytest.mark.parametrize("activity,waiting", [
+    (CaseActivity.WAITING_ON_REQUESTER, None),
+    (CaseActivity.WAITING_ON_REQUESTER, object()),
+    (CaseActivity.WAITING_ON_REQUESTER, _persisted_waiting(next_review_at=NOW)),
+    (CaseActivity.WAITING_ON_REQUESTER, _persisted_waiting(started_at=NOW.replace(tzinfo=None))),
+    (CaseActivity.WAITING_ON_REQUESTER, _persisted_waiting(waiting_on_ref=" ")),
+    (CaseActivity.ACTIVE, _persisted_waiting()),
+])
+def test_transition_rejects_malformed_or_incoherent_persisted_waiting(activity, waiting):
+    from cases.transitions import TransitionRejected, transition_case
+
+    snapshot = case(activity=activity, waiting=waiting)
+    with pytest.raises(TransitionRejected, match="invalid_case_contract|invalid_case_time"):
+        transition_case(snapshot, command(), load_case_policy(), now=NOW)
+
+
+@pytest.mark.parametrize("revision", [True, "4"])
+def test_transition_rejects_non_exact_snapshot_revisions(revision):
+    from cases.transitions import TransitionRejected, transition_case
+
+    with pytest.raises(TransitionRejected, match="^invalid_case_contract$"):
+        transition_case(case(current_revision=revision), command(expected_revision=revision),
+                        load_case_policy(), now=NOW)
+
+
+@pytest.mark.parametrize("revision", [None, "", " "])
+def test_transition_rejects_blank_or_non_string_policy_revisions(revision):
+    from cases.transitions import TransitionRejected, transition_case
+
+    with pytest.raises(TransitionRejected, match="^invalid_case_policy$"):
+        transition_case(case(), command(), replace(load_case_policy(), revision=revision), now=NOW)
+
+
+@pytest.mark.parametrize("scopes", [set(), frozenset({1}), frozenset({" "})])
+def test_transition_rejects_non_exact_or_malformed_actor_scopes(scopes):
+    from cases.transitions import TransitionRejected, transition_case
+
+    invalid_actor = replace(command().actor, scopes=scopes)
+    with pytest.raises(TransitionRejected, match="^invalid_case_contract$"):
+        transition_case(case(), command(actor=invalid_actor), load_case_policy(), now=NOW)
+
+
+@pytest.mark.parametrize("field,value", [
+    ("reason_code", " "),
+    ("expected_revision", True),
+])
+def test_transition_rejects_malformed_command_scalars(field, value):
+    from cases.transitions import TransitionRejected, transition_case
+
+    snapshot = case(current_revision=1) if field == "expected_revision" else case()
+    with pytest.raises(TransitionRejected, match="^invalid_case_contract$"):
+        transition_case(snapshot, command(**{field: value}), load_case_policy(), now=NOW)
+
+
+@pytest.mark.parametrize("changes", [
+    {"risk_class": "R1"},
+    {"evidence_level": "E2"},
+    {"accepted": 1},
+    {"evidence_supplier_ref": []},
+])
+def test_transition_rejects_malformed_nested_correction_item_fields(changes):
+    from cases.transitions import TransitionRejected, transition_case
+
+    invalid = replace(CorrectionItem("item-1", RiskClass.R1, EvidenceLevel.E2), **changes)
+    with pytest.raises(TransitionRejected, match="^invalid_case_contract$"):
+        transition_case(case(), command(), load_case_policy(), now=NOW,
+                        correction_items=(invalid,))

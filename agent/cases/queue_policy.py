@@ -4,7 +4,7 @@ from datetime import datetime
 from .domain import CaseSnapshot, CorrectionItem, EvidenceLevel, PromiseClock, PromiseHealth, RiskClass
 from .policy import CasePolicy
 from .transitions import promise_health
-from .validation import PolicyRejected, validate_item, validate_policy, validate_snapshot
+from .validation import PolicyRejected, aware, validate_item, validate_policy, validate_snapshot
 
 
 @dataclass(frozen=True)
@@ -23,6 +23,12 @@ class QueuePolicyRejected(ValueError):
 
 def priority_key(item: WorkItemDraft) -> tuple[int, int, int, datetime, datetime]:
     """Ascending tuple implements the published queue precedence."""
+    if (type(item) is not WorkItemDraft or type(item.emergency) is not bool
+            or type(item.promise_health) is not PromiseHealth
+            or type(item.risk_class) is not RiskClass
+            or not aware(item.ready_at) or not aware(item.received_at)
+            or item.received_at > item.ready_at):
+        raise QueuePolicyRejected('invalid_work_item')
     promise_rank = {
         PromiseHealth.BREACHED: 0, PromiseHealth.AT_RISK: 1,
         PromiseHealth.RECOVERY: 2, PromiseHealth.ON_TRACK: 3,
