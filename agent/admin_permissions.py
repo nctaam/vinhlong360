@@ -56,10 +56,6 @@ def admin_scopes_for_user(user: dict | None) -> list[str]:
         return ["*"]
 
     scopes = set(ADMIN_ROLE_SCOPES.get(str(user.get("role") or "user"), set()))
-    # Preserve the legacy AdminCP scope payload; case actions are granted by
-    # dedicated explicit grants while remaining registered above.
-    if str(user.get("role") or "") == "admin":
-        scopes -= CASE_ACTION_SCOPES
     for field in ("admin_scopes", "scopes", "permissions"):
         scopes.update(coerce_scope_list(user.get(field)))
 

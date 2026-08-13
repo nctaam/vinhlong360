@@ -21,11 +21,16 @@ def test_admin_receives_all_operational_scopes():
     from admin_permissions import admin_scopes_for_user
 
     assert admin_scopes_for_user({"role": "admin"}) == [
+        "case.supervisor",
         "content.editor",
+        "correction.decide",
         "moderation.manager",
         "ops.deploy",
+        "publication.apply",
         "security.admin",
+        "service.operator",
         "settings.admin",
+        "truth.review",
     ]
 
 

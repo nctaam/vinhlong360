@@ -52,10 +52,6 @@ const FIRST_ROUTE_BY_SCOPE: Record<AdminScope, string> = {
   'settings.admin': '/admin/cai-dat',
   'security.admin': '/admin/users',
   'service.operator': '/admin/yeu-cau',
-  'correction.decide': '/admin/yeu-cau',
-  'truth.review': '/admin/yeu-cau',
-  'publication.apply': '/admin/yeu-cau',
-  'case.supervisor': '/admin/yeu-cau',
 }
 
 function normalizeAdminPath(path: string) {
@@ -102,5 +98,5 @@ export function firstAdminRoute(scopes: readonly string[]): string {
   const normalized = normalizeScopeValues(scopes)
   if (!normalized.length) return '/'
   if (normalized.includes('*') || normalized.includes('ops.deploy')) return '/admin'
-  return FIRST_ROUTE_BY_SCOPE[normalized[0] as AdminScope] || '/'
+  return FIRST_ROUTE_BY_SCOPE[normalized[0] as keyof typeof FIRST_ROUTE_BY_SCOPE] || '/'
 }

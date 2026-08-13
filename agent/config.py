@@ -19,6 +19,13 @@ POSTGRES_URL_PREFIXES = ("postgres://", "postgresql://")
 def is_postgresql_url(value: str) -> bool:
     return value.strip().lower().startswith(POSTGRES_URL_PREFIXES)
 
+
+def _is_individual_actor_ref(value: str) -> bool:
+    """Validate the reference shape; a later resolver verifies actor existence."""
+    if any(token in value.lower() for token in ("@", "mailbox", "team", "group", "alias")):
+        return False
+    return value.startswith("person:") and len(value) > len("person:") and value[7:].replace("-", "").replace("_", "").isalnum()
+
 from privacy_policy import load_privacy_policy
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
@@ -166,6 +173,20 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_production_keys(self):
+        case_flags = (
+            self.CASE_KERNEL_ENABLED, self.CORRECTION_INTAKE_ENABLED,
+            self.CORRECTION_ADMIN_ENABLED, self.CORRECTION_ASSISTED_ENABLED,
+            self.CORRECTION_PUBLICATION_ENABLED,
+        )
+        if any(case_flags) and not is_postgresql_url(self.DATABASE_URL):
+            raise ValueError("case_postgresql_required")
+        if any(case_flags):
+            owner = self.CASE_SERVICE_OWNER_REF.strip()
+            key = self.CASE_KERNEL_ENCRYPTION_KEY.strip()
+            if not key or len(key) < 16:
+                raise ValueError("case_encryption_key_required")
+            if not _is_individual_actor_ref(owner):
+                raise ValueError("case_owner_individual_required")
         if self.is_production:
             missing = []
             if not self.LLM_API_KEY:
@@ -181,19 +202,6 @@ class Settings(BaseSettings):
                 missing.append("DATABASE_URL (PostgreSQL required)")
             if not self.ENTITY_DETAILS_TABLES:
                 missing.append("ENTITY_DETAILS_TABLES=true")
-            case_flags = (
-                self.CASE_KERNEL_ENABLED,
-                self.CORRECTION_INTAKE_ENABLED,
-                self.CORRECTION_ADMIN_ENABLED,
-                self.CORRECTION_ASSISTED_ENABLED,
-                self.CORRECTION_PUBLICATION_ENABLED,
-            )
-            if any(case_flags):
-                if not self.CASE_KERNEL_ENCRYPTION_KEY:
-                    missing.append("CASE_KERNEL_ENCRYPTION_KEY")
-                owner = self.CASE_SERVICE_OWNER_REF.strip()
-                if not owner or any(token in owner.lower() for token in ("@", "mailbox", "team", "group", "alias")):
-                    missing.append("CASE_SERVICE_OWNER_REF (named individual required)")
             if missing:
                 raise ValueError(f"Production requires: {', '.join(missing)}")
             policy_values = {
