@@ -80,3 +80,18 @@ Output: collection failed with three `ImportError`s for absent Task 3 contracts 
 
 ### Remaining Concern
 - As in earlier rounds, `run_hard --all` depends on a fresh repository coverage artifact and unrelated legacy complexity baseline. The staged R20.7 gate is required and run for this round.
+
+## Fix round 3
+
+### RED and Scope
+- Focused queue/transition RED confirmed raw malformed inputs could reach queue dereferences, while special/duplicate IDs could make work identities ambiguous. The correction stays limited to shared pure boundary and temporal validation.
+- The earlier concern is corrected: `PromiseClock.observed_at` after `due_at` is valid; it represents a breached promise. Validation requires `started_at <= observed_at <= now`, not `observed_at <= due_at`.
+
+### Changes
+- Added a small shared `cases.validation` layer for stable input rejection in both transition and queue entry points. It validates object/container types before dereference, exact consumed enum/bool/int fields, identifier safety, policy fields used for R1, and aware time lineage.
+- Snapshot validation now enforces create/update/close phase coherence; clock validation permits post-due observations while preserving original due time. Queue converts malformed entry inputs into `QueuePolicyRejected` code strings rather than raw Python errors.
+- Added deterministic malformed queue matrices, policy/clock/now variants, safe identifier checks, and an explicit post-due observation regression. R3 supplier/maker eligibility remains unchanged: the spec restricts suppliers from independent reviews, which the current metadata and tests enforce.
+
+### GREEN and Concern
+- Task 3 plus Task 1 regression suite -> `238 passed, 8 skipped`; touched-file Ruff and `git diff --check` pass. The staged R20.7 gate follows staging this report.
+- `run_hard --all` remains outside this fix scope because it needs a fresh coverage artifact and unrelated legacy complexity remediation.

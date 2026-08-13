@@ -127,3 +127,26 @@ def test_duplicate_item_ids_are_rejected_fail_closed():
              CorrectionItem("item-1", RiskClass.R2, EvidenceLevel.E3))
     with pytest.raises(QueuePolicyRejected, match="duplicate_item_id"):
         derive_work_items(snapshot(owner_ref="owner-1"), items, load_case_policy(), now=NOW)
+
+
+@pytest.mark.parametrize("bad_snapshot,bad_items,bad_policy,bad_now", [
+    (None, (), None, NOW), (object(), (), load_case_policy(), NOW),
+    (snapshot(owner_ref="owner-1", promise_clocks=(object(),)), (), load_case_policy(), NOW),
+    (snapshot(owner_ref="owner-1"), ({"item_id": "item"},), load_case_policy(), NOW),
+    (snapshot(owner_ref="owner-1"), (), {"risk_registry": {}}, NOW),
+    (snapshot(owner_ref="owner-1"), (), load_case_policy(), NOW.replace(tzinfo=None)),
+])
+def test_queue_malformed_inputs_raise_stable_policy_error(bad_snapshot, bad_items, bad_policy, bad_now):
+    from cases.queue_policy import QueuePolicyRejected, derive_work_items
+
+    with pytest.raises(QueuePolicyRejected, match="invalid_case_contract|invalid_case_policy|invalid_case_time"):
+        derive_work_items(bad_snapshot, bad_items, bad_policy, now=bad_now)
+
+
+def test_work_identity_uses_safe_case_and_item_identifiers():
+    from cases.queue_policy import QueuePolicyRejected, derive_work_items
+
+    with pytest.raises(QueuePolicyRejected, match="invalid_case_contract"):
+        derive_work_items(snapshot(case_id="case:ambiguous", owner_ref="owner-1"),
+                          (CorrectionItem("item:ambiguous", RiskClass.R1, EvidenceLevel.E1),),
+                          load_case_policy(), now=NOW)

@@ -131,3 +131,11 @@ def test_generated_closed_cases_are_immutable_for_every_target(target):
     with pytest.raises(TransitionRejected, match="closed_case_immutable"):
         transition_case(replace(snapshot(4), phase=CasePhase.CLOSED, closed_at=NOW), command,
                         load_case_policy(), now=NOW)
+
+
+def test_clock_observed_after_due_is_valid_and_breached():
+    from cases.transitions import promise_health
+
+    clock = PromiseClock("update", NOW - timedelta(days=3), NOW - timedelta(days=2),
+                         observed_at=NOW - timedelta(days=1))
+    assert promise_health(clock, now=NOW) is PromiseHealth.BREACHED

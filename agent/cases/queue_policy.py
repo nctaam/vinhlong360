@@ -4,6 +4,7 @@ from datetime import datetime
 from .domain import CaseSnapshot, CorrectionItem, EvidenceLevel, PromiseClock, PromiseHealth, RiskClass
 from .policy import CasePolicy
 from .transitions import promise_health
+from .validation import PolicyRejected, validate_item, validate_policy, validate_snapshot
 
 
 @dataclass(frozen=True)
@@ -89,6 +90,15 @@ def _escalations(snapshot: CaseSnapshot, items: tuple[CorrectionItem, ...]) -> t
 
 def derive_work_items(snapshot: CaseSnapshot, correction_items: tuple[CorrectionItem, ...],
                       policy: CasePolicy, *, now: datetime) -> tuple[WorkItemDraft, ...]:
+    try:
+        validate_snapshot(snapshot, now)
+        validate_policy(policy)
+        if not isinstance(correction_items, tuple):
+            raise PolicyRejected('invalid_case_contract')
+        for item in correction_items:
+            validate_item(item)
+    except PolicyRejected as exc:
+        raise QueuePolicyRejected(str(exc)) from None
     if len({item.item_id for item in correction_items}) != len(correction_items):
         raise QueuePolicyRejected('duplicate_item_id')
     clocks: tuple[PromiseClock, ...] = snapshot.promise_clocks
