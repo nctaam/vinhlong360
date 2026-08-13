@@ -15,6 +15,7 @@ ADMIN_ROLE_SCOPES: dict[str, set[str]] = {
         "ops.deploy",
         "settings.admin",
         "security.admin",
+        "service.operator", "correction.decide", "truth.review", "publication.apply", "case.supervisor",
     },
     "superadmin": {"*"},
 }
@@ -25,7 +26,9 @@ ADMIN_ENTRY_SCOPES = frozenset({
     "ops.deploy",
     "settings.admin",
     "security.admin",
+    "service.operator", "correction.decide", "truth.review", "publication.apply", "case.supervisor",
 })
+CASE_ACTION_SCOPES = {"service.operator", "correction.decide", "truth.review", "publication.apply", "case.supervisor"}
 
 ADMIN_BADGE_KEYS_BY_SCOPE: dict[str, frozenset[str]] = {
     "content.editor": frozenset({"images", "unclassified", "provisional"}),
@@ -53,6 +56,10 @@ def admin_scopes_for_user(user: dict | None) -> list[str]:
         return ["*"]
 
     scopes = set(ADMIN_ROLE_SCOPES.get(str(user.get("role") or "user"), set()))
+    # Preserve the legacy AdminCP scope payload; case actions are granted by
+    # dedicated explicit grants while remaining registered above.
+    if str(user.get("role") or "") == "admin":
+        scopes -= CASE_ACTION_SCOPES
     for field in ("admin_scopes", "scopes", "permissions"):
         scopes.update(coerce_scope_list(user.get(field)))
 

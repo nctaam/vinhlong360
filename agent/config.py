@@ -27,6 +27,13 @@ _PRIVACY_POLICY = load_privacy_policy()
 
 
 class Settings(BaseSettings):
+    CASE_KERNEL_ENABLED: bool = False
+    CORRECTION_INTAKE_ENABLED: bool = False
+    CORRECTION_ADMIN_ENABLED: bool = False
+    CORRECTION_ASSISTED_ENABLED: bool = False
+    CORRECTION_PUBLICATION_ENABLED: bool = False
+    CASE_KERNEL_ENCRYPTION_KEY: str = ""
+    CASE_SERVICE_OWNER_REF: str = ""
     # ── LLM ──
     LLM_API_KEY: str = ""
     LLM_BASE_URL: str = ""
@@ -174,6 +181,19 @@ class Settings(BaseSettings):
                 missing.append("DATABASE_URL (PostgreSQL required)")
             if not self.ENTITY_DETAILS_TABLES:
                 missing.append("ENTITY_DETAILS_TABLES=true")
+            case_flags = (
+                self.CASE_KERNEL_ENABLED,
+                self.CORRECTION_INTAKE_ENABLED,
+                self.CORRECTION_ADMIN_ENABLED,
+                self.CORRECTION_ASSISTED_ENABLED,
+                self.CORRECTION_PUBLICATION_ENABLED,
+            )
+            if any(case_flags):
+                if not self.CASE_KERNEL_ENCRYPTION_KEY:
+                    missing.append("CASE_KERNEL_ENCRYPTION_KEY")
+                owner = self.CASE_SERVICE_OWNER_REF.strip()
+                if not owner or any(token in owner.lower() for token in ("@", "mailbox", "team", "group", "alias")):
+                    missing.append("CASE_SERVICE_OWNER_REF (named individual required)")
             if missing:
                 raise ValueError(f"Production requires: {', '.join(missing)}")
             policy_values = {

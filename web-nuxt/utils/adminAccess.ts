@@ -6,6 +6,11 @@ export const ADMIN_SCOPES = [
   'ops.deploy',
   'settings.admin',
   'security.admin',
+  'service.operator',
+  'correction.decide',
+  'truth.review',
+  'publication.apply',
+  'case.supervisor',
 ] as const
 
 export type AdminScope = typeof ADMIN_SCOPES[number]
@@ -36,6 +41,7 @@ const ADMIN_ROUTE_SCOPE_RULES: Array<readonly [string, AdminScope]> = [
   ['/admin/media', 'content.editor'],
   ['/admin/users', 'security.admin'],
   ['/admin/ai', 'ops.deploy'],
+  ['/admin/yeu-cau', 'service.operator'],
 ]
 ADMIN_ROUTE_SCOPE_RULES.sort((a, b) => b[0].length - a[0].length)
 
@@ -45,6 +51,11 @@ const FIRST_ROUTE_BY_SCOPE: Record<AdminScope, string> = {
   'ops.deploy': '/admin/thong-ke',
   'settings.admin': '/admin/cai-dat',
   'security.admin': '/admin/users',
+  'service.operator': '/admin/yeu-cau',
+  'correction.decide': '/admin/yeu-cau',
+  'truth.review': '/admin/yeu-cau',
+  'publication.apply': '/admin/yeu-cau',
+  'case.supervisor': '/admin/yeu-cau',
 }
 
 function normalizeAdminPath(path: string) {
