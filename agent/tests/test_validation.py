@@ -30,7 +30,21 @@ def test_identifier_validation_rejects_whitespace_and_identity_separator(value):
         validate_identifier(value)
 
 
-@pytest.mark.parametrize("value", ["opaque-id", "opaque_id", "opaque.id", "opaque/id", "opaque@id"])
+@pytest.mark.parametrize("value", [
+    "nul\0value", "bell\x07value", "escape\x1bvalue", "bidi\u202evalue",
+    "joiner\u200dvalue",
+])
+def test_identifier_validation_rejects_control_and_format_characters(value):
+    from cases.validation import PolicyRejected, validate_identifier
+
+    with pytest.raises(PolicyRejected, match="^invalid_case_contract$"):
+        validate_identifier(value)
+
+
+@pytest.mark.parametrize("value", [
+    "opaque-id", "opaque_id", "opaque.id", "opaque/id", "opaque@id",
+    "định-danh", "案件", "opaque—id", "opaque!id",
+])
 def test_identifier_validation_preserves_safe_opaque_special_characters(value):
     from cases.validation import validate_identifier
 

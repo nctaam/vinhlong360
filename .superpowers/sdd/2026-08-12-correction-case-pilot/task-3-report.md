@@ -113,3 +113,21 @@ Output: collection failed with three `ImportError`s for absent Task 3 contracts 
 - Touched-file Ruff -> `All checks passed!`; `git diff --check` -> exit 0; focused touched-file R20.8 complexity -> `0` violations.
 - `python scripts/checks/run_hard.py --all` was rerun and remains nonblocking baseline-wide debt: R20.8 reports `40 > 36` across the full repository, and R20.4 reports a missing coverage artifact `1 > 0`. No touched production function contributes an R20.8 violation.
 - `python scripts/checks/run_hard.py --staged` -> `hard=0, ratchet not increased`, including R20.7 test pairing.
+
+## Fix round 5
+
+### RED and Root Cause
+- The inherited focused RED command `python -m pytest -q agent/tests/test_validation.py agent/tests/test_case_transitions.py agent/tests/test_case_queue_policy.py` reported exactly `36 failed, 167 passed` before the round-5 implementation edits. Failures showed eager comparison/dereference after failed nominal type checks, malformed policy mapping access, unsafe identifier controls, and unvalidated priority identity/reference containers leaking raw Python exceptions.
+- A line-by-line follow-up audit of `validation.py` and priority validation added narrow hostile-input probes before the final fixes. The retained queue/priority probes demonstrated raw truthiness and tuple-iteration leaks before the exact-type gates were added.
+
+### Changes and Audit
+- Validation now gates exact scalar/container types sequentially before comparison, iteration, or mapping access: correction-item revisions are compared only after an exact `int` check, risk registry access occurs only after exact `dict` checks, and nominal `str`/`datetime`/tuple/frozenset inputs reject subclasses before invoking their behavior.
+- Identifiers reject Unicode control and format categories `Cc`/`Cf` in addition to whitespace and the work-identity separator, while safe printable opaque Unicode and punctuation remain accepted.
+- `priority_key` validates every identity and reference field on the exact `WorkItemDraft`, including work-identity components, exact frozenset containers, independent-work references, review booleans, and an exact-string gate before truthiness. Queue derivation also rejects correction-item tuple subclasses before iteration.
+- The audit covered snapshot `current_revision`, promise-clock and waiting comparisons, snapshot/item/actor tuple and frozenset iteration, policy lookups, duplicate-ID hashing, priority datetime comparison/ranking, and nested work identity/reference containers. No remaining touched validator performs a dereference, comparison, iteration, lookup, or hash after a failed exact-type gate.
+
+### GREEN and Gates
+- Focused round-5 command -> `207 passed`.
+- Task 3 plus relevant Task 1/domain/schema regression -> `387 passed, 8 skipped`.
+- Touched-file Ruff -> `All checks passed!`; `git diff --check` -> exit 0; focused touched-production R20.8 complexity -> `0 violations`.
+- Fresh `python scripts/checks/run_hard.py --all` reproduces the baseline-wide nonblocking concern: R20.8 complexity is `40 > baseline 36`, and R20.4 coverage artifact debt is `1 > baseline 0`. The staged R20.7/hard gate is run after staging this report.

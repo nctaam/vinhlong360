@@ -1,4 +1,5 @@
 from datetime import datetime
+from unicodedata import category
 
 from .domain import (
     ActorContext, CaseActivity, CasePhase, CaseSnapshot, Channel, CorrectionItem,
@@ -13,11 +14,11 @@ class PolicyRejected(ValueError):
 
 
 def aware(value: object) -> bool:
-    return isinstance(value, datetime) and value.tzinfo is not None and value.utcoffset() is not None
+    return type(value) is datetime and value.tzinfo is not None and value.utcoffset() is not None
 
 
 def _text(value: object) -> bool:
-    return isinstance(value, str) and bool(value.strip()) and value == value.strip()
+    return type(value) is str and bool(value.strip()) and value == value.strip()
 
 
 def validate_text(value: object) -> None:
@@ -26,7 +27,9 @@ def validate_text(value: object) -> None:
 
 
 def valid_identifier(value: object) -> bool:
-    return _text(value) and ':' not in value and not any(character.isspace() for character in value)
+    return (_text(value) and ':' not in value
+            and not any(character.isspace() or category(character) in {'Cc', 'Cf'}
+                        for character in value))
 
 
 def validate_identifier(value: object) -> None:
@@ -72,12 +75,11 @@ def validate_clock(clock: object, now: object) -> None:
 
 
 def _valid_item_core(item: CorrectionItem) -> bool:
-    return not any((
-        not valid_identifier(item.item_id), type(item.risk_class) is not RiskClass,
-        type(item.evidence_level) is not EvidenceLevel,
-        type(item.publication_state) is not PublicationState,
-        type(item.base_entity_revision) is not int, item.base_entity_revision < 1,
-    ))
+    if (not valid_identifier(item.item_id) or type(item.risk_class) is not RiskClass
+            or type(item.evidence_level) is not EvidenceLevel
+            or type(item.publication_state) is not PublicationState):
+        return False
+    return type(item.base_entity_revision) is int and item.base_entity_revision >= 1
 
 
 def _valid_item_references(item: CorrectionItem) -> bool:
@@ -102,7 +104,7 @@ def validate_item(item: object) -> None:
         raise PolicyRejected('invalid_case_contract')
     if not _valid_item_core(item) or not _valid_item_references(item) or not _valid_item_flags(item):
         raise PolicyRejected('invalid_case_contract')
-    if not isinstance(item.evidence_refs, tuple):
+    if type(item.evidence_refs) is not tuple:
         raise PolicyRejected('invalid_case_contract')
     if any(not valid_identifier(reference) for reference in item.evidence_refs):
         raise PolicyRejected('invalid_case_contract')
@@ -136,10 +138,10 @@ def _valid_snapshot_fields(snapshot: CaseSnapshot) -> bool:
         type(snapshot.promise_health) is not PromiseHealth,
         snapshot.domain_outcome is not None and type(snapshot.domain_outcome) is not CorrectionOutcome,
         not _optional_text(snapshot.severity), not _text(snapshot.reporter_privacy),
-        not isinstance(snapshot.owner_ref, str),
-        isinstance(snapshot.owner_ref, str) and snapshot.owner_ref != snapshot.owner_ref.strip(),
+        type(snapshot.owner_ref) is not str,
+        type(snapshot.owner_ref) is str and snapshot.owner_ref != snapshot.owner_ref.strip(),
         type(snapshot.current_revision) is not int, not _text(snapshot.promise_policy_ref),
-        not isinstance(snapshot.promise_clocks, tuple),
+        type(snapshot.promise_clocks) is not tuple,
     ))
 
 
@@ -173,7 +175,7 @@ def validate_actor(actor: object) -> None:
         raise PolicyRejected('invalid_case_contract')
     if any((
         type(actor.channel) is not Channel, not valid_identifier(actor.actor_ref),
-        not valid_identifier(actor.correlation_id), not isinstance(actor.scopes, frozenset),
+        not valid_identifier(actor.correlation_id), type(actor.scopes) is not frozenset,
     )):
         raise PolicyRejected('invalid_case_contract')
     if any(not valid_identifier(scope) for scope in actor.scopes):
@@ -183,10 +185,10 @@ def validate_actor(actor: object) -> None:
 def validate_policy(policy: object) -> None:
     if type(policy) is not CasePolicy:
         raise PolicyRejected('invalid_case_policy')
-    if any((
-        not _text(policy.revision), not isinstance(policy.risk_registry, dict),
-        not isinstance(policy.risk_registry.get('R1'), dict),
-    )):
+    if not _text(policy.revision) or type(policy.risk_registry) is not dict:
         raise PolicyRejected('invalid_case_policy')
-    if type(policy.risk_registry['R1'].get('independent_review')) is not bool:
+    r1_policy = policy.risk_registry.get('R1')
+    if type(r1_policy) is not dict:
+        raise PolicyRejected('invalid_case_policy')
+    if type(r1_policy.get('independent_review')) is not bool:
         raise PolicyRejected('invalid_case_policy')

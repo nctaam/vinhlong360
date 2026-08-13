@@ -4,7 +4,10 @@ from datetime import datetime
 from .domain import CaseSnapshot, CorrectionItem, EvidenceLevel, PromiseClock, PromiseHealth, RiskClass
 from .policy import CasePolicy
 from .transitions import promise_health
-from .validation import PolicyRejected, aware, validate_item, validate_policy, validate_snapshot
+from .validation import (
+    PolicyRejected, aware, valid_identifier, validate_item, validate_policy,
+    validate_snapshot,
+)
 
 
 @dataclass(frozen=True)
@@ -21,13 +24,42 @@ class QueuePolicyRejected(ValueError):
     pass
 
 
+def _valid_work_identity(value: object) -> bool:
+    if type(value) is not str or not value or value != value.strip():
+        return False
+    return all(part and valid_identifier(part) for part in value.split(':'))
+
+
+def _valid_refs(value: object, *, work: bool = False) -> bool:
+    if type(value) is not frozenset:
+        return False
+    validator = _valid_work_identity if work else valid_identifier
+    return all(validator(reference) for reference in value)
+
+
+def _valid_work_fields(item: WorkItemDraft) -> bool:
+    if (not valid_identifier(item.case_id) or not valid_identifier(item.kind)
+            or not valid_identifier(item.required_role)):
+        return False
+    if item.escalation_reason is not None and not valid_identifier(item.escalation_reason):
+        return False
+    if type(item.work_identity) is not str:
+        return False
+    if item.work_identity and not _valid_work_identity(item.work_identity):
+        return False
+    return (type(item.requires_independent_review) is bool
+            and _valid_refs(item.recused_actor_refs)
+            and _valid_refs(item.forbidden_actor_refs)
+            and _valid_refs(item.independent_of_work_refs, work=True))
+
+
 def priority_key(item: WorkItemDraft) -> tuple[int, int, int, datetime, datetime]:
     """Ascending tuple implements the published queue precedence."""
     if (type(item) is not WorkItemDraft or type(item.emergency) is not bool
             or type(item.promise_health) is not PromiseHealth
             or type(item.risk_class) is not RiskClass
             or not aware(item.ready_at) or not aware(item.received_at)
-            or item.received_at > item.ready_at):
+            or item.received_at > item.ready_at or not _valid_work_fields(item)):
         raise QueuePolicyRejected('invalid_work_item')
     promise_rank = {
         PromiseHealth.BREACHED: 0, PromiseHealth.AT_RISK: 1,
@@ -99,7 +131,7 @@ def derive_work_items(snapshot: CaseSnapshot, correction_items: tuple[Correction
     try:
         validate_snapshot(snapshot, now)
         validate_policy(policy)
-        if not isinstance(correction_items, tuple):
+        if type(correction_items) is not tuple:
             raise PolicyRejected('invalid_case_contract')
         for item in correction_items:
             validate_item(item)

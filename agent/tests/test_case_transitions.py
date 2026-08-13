@@ -316,3 +316,91 @@ def test_transition_rejects_malformed_nested_correction_item_fields(changes):
     with pytest.raises(TransitionRejected, match="^invalid_case_contract$"):
         transition_case(case(), command(), load_case_policy(), now=NOW,
                         correction_items=(invalid,))
+
+
+@pytest.mark.parametrize("revision", ["1", True, None, object()])
+def test_transition_rejects_wrong_typed_item_revision_with_stable_code(revision):
+    from cases.transitions import TransitionRejected, transition_case
+
+    invalid = replace(
+        CorrectionItem("item-1", RiskClass.R1, EvidenceLevel.E2),
+        base_entity_revision=revision,
+    )
+    with pytest.raises(TransitionRejected, match="^invalid_case_contract$"):
+        transition_case(case(), command(), load_case_policy(), now=NOW,
+                        correction_items=(invalid,))
+
+
+@pytest.mark.parametrize("policy", [None, [], object(), "policy"])
+def test_transition_rejects_wrong_typed_policy_with_stable_code(policy):
+    from cases.transitions import TransitionRejected, transition_case
+
+    with pytest.raises(TransitionRejected, match="^invalid_case_policy$"):
+        transition_case(case(), command(), policy, now=NOW)
+
+
+@pytest.mark.parametrize("registry", [
+    None, [], object(), "registry", {}, {"R1": None}, {"R1": []},
+    {"R1": object()}, {"R1": {"independent_review": None}},
+    {"R1": {"independent_review": "false"}},
+])
+def test_transition_rejects_malformed_risk_registry_with_stable_code(registry):
+    from cases.transitions import TransitionRejected, transition_case
+
+    policy = replace(load_case_policy(), risk_registry=registry)
+    with pytest.raises(TransitionRejected, match="^invalid_case_policy$"):
+        transition_case(case(), command(), policy, now=NOW)
+
+
+@pytest.mark.parametrize("target,value", [
+    ("case", "case\0hidden"),
+    ("case", "case\u202ehidden"),
+    ("actor", "actor\x07hidden"),
+    ("correlation", "correlation\x1bhidden"),
+    ("item", "item\u200dhidden"),
+])
+def test_transition_rejects_control_characters_in_public_identities(target, value):
+    from cases.transitions import TransitionRejected, transition_case
+
+    snapshot = case(case_id=value) if target == "case" else case()
+    current_command = command()
+    items = ()
+    if target == "actor":
+        current_command = replace(current_command, actor=replace(current_command.actor, actor_ref=value))
+    elif target == "correlation":
+        current_command = replace(current_command, actor=replace(current_command.actor, correlation_id=value))
+    elif target == "item":
+        items = (CorrectionItem(value, RiskClass.R1, EvidenceLevel.E2),)
+    with pytest.raises(TransitionRejected, match="^invalid_case_contract$"):
+        transition_case(snapshot, current_command, load_case_policy(), now=NOW,
+                        correction_items=items)
+
+
+def test_transition_rejects_hostile_nominal_subclasses_before_using_them():
+    from cases.transitions import TransitionRejected, transition_case
+
+    class HostileText(str):
+        def strip(self, *args, **kwargs):
+            raise AssertionError("hostile text was used")
+
+    class HostileTuple(tuple):
+        def __iter__(self):
+            raise AssertionError("hostile tuple was iterated")
+
+    class HostileFrozenSet(frozenset):
+        def __iter__(self):
+            raise AssertionError("hostile frozenset was iterated")
+
+    invalid_inputs = (
+        (case(owner_ref=HostileText("owner")), command(), ()),
+        (case(promise_clocks=HostileTuple()), command(), ()),
+        (case(), replace(command(), actor=replace(
+            command().actor, scopes=HostileFrozenSet(("case:transition",)))), ()),
+        (case(), command(), (replace(
+            CorrectionItem("item-1", RiskClass.R1, EvidenceLevel.E2),
+            evidence_refs=HostileTuple(("evidence-1",))),)),
+    )
+    for snapshot, current_command, items in invalid_inputs:
+        with pytest.raises(TransitionRejected, match="^invalid_case_contract$"):
+            transition_case(snapshot, current_command, load_case_policy(), now=NOW,
+                            correction_items=items)

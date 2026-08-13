@@ -328,3 +328,120 @@ def test_multi_item_r0_to_r3_work_identities_are_unique_and_review_refs_close():
     referenced = {ref for draft in work for ref in draft.independent_of_work_refs}
     assert len(identities) == len(work)
     assert referenced <= identities
+
+
+@pytest.mark.parametrize("revision", ["1", True, None, object()])
+def test_queue_rejects_wrong_typed_item_revision_with_stable_code(revision):
+    from cases.queue_policy import QueuePolicyRejected, derive_work_items
+
+    item = replace(
+        CorrectionItem("item-1", RiskClass.R1, EvidenceLevel.E2),
+        base_entity_revision=revision,
+    )
+    with pytest.raises(QueuePolicyRejected, match="^invalid_case_contract$"):
+        derive_work_items(snapshot(owner_ref="owner-1"), (item,), load_case_policy(), now=NOW)
+
+
+@pytest.mark.parametrize("policy", [None, [], object(), "policy"])
+def test_queue_rejects_wrong_typed_policy_with_stable_code(policy):
+    from cases.queue_policy import QueuePolicyRejected, derive_work_items
+
+    with pytest.raises(QueuePolicyRejected, match="^invalid_case_policy$"):
+        derive_work_items(snapshot(owner_ref="owner-1"), (), policy, now=NOW)
+
+
+@pytest.mark.parametrize("registry", [
+    None, [], object(), "registry", {}, {"R1": None}, {"R1": []},
+    {"R1": object()}, {"R1": {"independent_review": None}},
+    {"R1": {"independent_review": "false"}},
+])
+def test_queue_rejects_malformed_risk_registry_with_stable_code(registry):
+    from cases.queue_policy import QueuePolicyRejected, derive_work_items
+
+    policy = replace(load_case_policy(), risk_registry=registry)
+    with pytest.raises(QueuePolicyRejected, match="^invalid_case_policy$"):
+        derive_work_items(snapshot(owner_ref="owner-1"), (), policy, now=NOW)
+
+
+@pytest.mark.parametrize("target,value", [
+    ("case", "case\0hidden"),
+    ("item", "item\u202ehidden"),
+    ("supplier", "supplier\x07hidden"),
+])
+def test_queue_rejects_control_characters_in_derived_identities(target, value):
+    from cases.queue_policy import QueuePolicyRejected, derive_work_items
+
+    current_snapshot = snapshot(owner_ref="owner-1", case_id=value) if target == "case" else snapshot(owner_ref="owner-1")
+    item = CorrectionItem(
+        value if target == "item" else "item-1", RiskClass.R3, EvidenceLevel.E2,
+        evidence_supplier_ref=value if target == "supplier" else None,
+    )
+    with pytest.raises(QueuePolicyRejected, match="^invalid_case_contract$"):
+        derive_work_items(current_snapshot, (item,), load_case_policy(), now=NOW)
+
+
+@pytest.mark.parametrize("field,value", [
+    ("case_id", "case\0hidden"),
+    ("kind", "decision\u202ehidden"),
+    ("required_role", "role\x1bhidden"),
+    ("work_identity", "case:item:decision\u200dhidden"),
+    ("recused_actor_refs", []),
+    ("recused_actor_refs", frozenset({"actor\x07hidden"})),
+    ("forbidden_actor_refs", None),
+    ("independent_of_work_refs", frozenset({"case:item:decision\u202ehidden"})),
+    ("requires_independent_review", 1),
+])
+def test_priority_key_rejects_malformed_identity_fields_with_stable_code(field, value):
+    from cases.queue_policy import QueuePolicyRejected, WorkItemDraft, priority_key
+
+    draft = WorkItemDraft("case", "decision", "decision_maker", RiskClass.R0, NOW, NOW,
+                          PromiseHealth.ON_TRACK)
+    with pytest.raises(QueuePolicyRejected, match="^invalid_work_item$"):
+        priority_key(replace(draft, **{field: value}))
+
+
+def test_priority_key_rejects_hostile_scalar_subclasses_before_using_them():
+    from cases.queue_policy import QueuePolicyRejected, WorkItemDraft, priority_key
+
+    class HostileText(str):
+        def strip(self, *args, **kwargs):
+            raise AssertionError("hostile text was used")
+
+    class HostileDateTime(datetime):
+        def utcoffset(self):
+            raise AssertionError("hostile datetime was used")
+
+    draft = WorkItemDraft("case", "decision", "decision_maker", RiskClass.R0, NOW, NOW,
+                          PromiseHealth.ON_TRACK)
+    invalid = (
+        replace(draft, kind=HostileText("decision")),
+        replace(draft, ready_at=HostileDateTime(2026, 8, 12, tzinfo=timezone.utc)),
+    )
+    for item in invalid:
+        with pytest.raises(QueuePolicyRejected, match="^invalid_work_item$"):
+            priority_key(item)
+
+
+def test_priority_key_rejects_hostile_work_identity_before_truthiness():
+    from cases.queue_policy import QueuePolicyRejected, WorkItemDraft, priority_key
+
+    class HostileIdentity:
+        def __bool__(self):
+            raise AssertionError("hostile identity truthiness was used")
+
+    draft = WorkItemDraft("case", "decision", "decision_maker", RiskClass.R0, NOW, NOW,
+                          PromiseHealth.ON_TRACK)
+    with pytest.raises(QueuePolicyRejected, match="^invalid_work_item$"):
+        priority_key(replace(draft, work_identity=HostileIdentity()))
+
+
+def test_queue_rejects_hostile_correction_item_tuple_before_iteration():
+    from cases.queue_policy import QueuePolicyRejected, derive_work_items
+
+    class HostileTuple(tuple):
+        def __iter__(self):
+            raise AssertionError("hostile correction items were iterated")
+
+    with pytest.raises(QueuePolicyRejected, match="^invalid_case_contract$"):
+        derive_work_items(snapshot(owner_ref="owner-1"), HostileTuple(),
+                          load_case_policy(), now=NOW)
