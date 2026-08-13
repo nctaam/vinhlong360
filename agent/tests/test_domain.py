@@ -1,4 +1,4 @@
-from cases import Channel, ItemDecision, ItemPublication
+from cases import Channel, PublicItemDecision, PublicItemPublication
 from cases.domain import CaseActivity, CasePhase, DispositionFamily, ServiceKind, PublicCaseStatus
 
 
@@ -14,5 +14,5 @@ def test_case_state_fabric_uses_orthogonal_vocabulary():
 
 def test_channel_and_projection_records_are_exported_and_typed():
     assert Channel.WEB.value == 'web'
-    assert PublicCaseStatus.__annotations__['item_decisions'] == tuple[ItemDecision, ...]
-    assert PublicCaseStatus.__annotations__['item_publication_states'] == tuple[ItemPublication, ...]
+    assert PublicCaseStatus.__annotations__['item_decisions'] == tuple[PublicItemDecision, ...]
+    assert PublicCaseStatus.__annotations__['item_publication_states'] == tuple[PublicItemPublication, ...]

@@ -39,7 +39,7 @@ def load_case_policy(path: Path | None = None) -> CasePolicy:
     resolution = _risk_mapping(data['resolution_target_seconds_by_risk'], 'resolution targets')
     for value in resolution.values(): _positive(value, 'resolution clock')
     registry = _risk_mapping(data['risk_registry'], 'risk registry')
-    if any(not isinstance(config, dict) or set(config) - {'independent_review'} for config in registry.values()): raise ValueError('risk registry entries are invalid')
+    if any(not isinstance(config, dict) or set(config) != {'independent_review'} or type(config['independent_review']) is not bool for config in registry.values()): raise ValueError('risk registry independence must be boolean')
     rules = _high_risk_rules(data['maker_checker_rules'])
     if any(registry[risk].get('independent_review') is not True or rules[risk] is not True for risk in ('R2', 'R3')): raise ValueError('R2/R3 require independent review')
     retention = data['retention']

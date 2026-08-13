@@ -97,7 +97,9 @@ export function canAccessAdminPath(path: string, scopes: readonly string[]): boo
 export function firstAdminRoute(scopes: readonly string[]): string {
   const normalized = normalizeScopeValues(scopes)
   if (!normalized.length) return '/'
+  if (normalized.includes('*') || normalized.includes('ops.deploy')) return '/admin'
+  if (normalized.includes('service.operator')) return '/admin/yeu-cau'
   const hasCaseScope = normalized.some(scope => ['service.operator', 'correction.decide', 'truth.review', 'publication.apply', 'case.supervisor'].includes(scope))
-  if (normalized.includes('*') || normalized.includes('ops.deploy') || (hasCaseScope && normalized.includes('content.editor'))) return '/admin'
+  if (hasCaseScope && normalized.includes('content.editor')) return '/admin'
   return FIRST_ROUTE_BY_SCOPE[normalized[0] as keyof typeof FIRST_ROUTE_BY_SCOPE] || '/'
 }

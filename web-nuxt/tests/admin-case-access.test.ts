@@ -17,6 +17,9 @@ describe('case admin access', () => {
     expect(firstAdminRoute(['truth.review'])).toBe('/')
   })
   it('keeps an admin combination on the admin landing route', () => {
-    expect(firstAdminRoute(['case.supervisor', 'content.editor', 'service.operator'])).toBe('/admin')
+    expect(firstAdminRoute(['case.supervisor', 'content.editor', 'ops.deploy', 'service.operator'])).toBe('/admin')
+  })
+  it.each(['correction.decide', 'truth.review', 'publication.apply', 'case.supervisor'])('prioritizes service.operator over %s', scope => {
+    expect(firstAdminRoute(['service.operator', scope])).toBe('/admin/yeu-cau')
   })
 })

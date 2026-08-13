@@ -30,10 +30,10 @@ class PublicationState(_Values):
     NOT_REQUIRED = 'not_required'; PENDING = 'pending'; APPLIED = 'applied'; VERIFIED = 'verified'; ROLLED_BACK = 'rolled_back'
 
 @dataclass(frozen=True)
-class ItemDecision:
+class PublicItemDecision:
     item_id: str; outcome: str | None; disposition_family: DispositionFamily
 @dataclass(frozen=True)
-class ItemPublication:
+class PublicItemPublication:
     item_id: str; state: PublicationState
 
 @dataclass(frozen=True)
@@ -47,7 +47,7 @@ class CaseSnapshot:
     case_id: str; service_kind: ServiceKind; category: str; phase: CasePhase; activity: CaseActivity; disposition_family: DispositionFamily; domain_outcome: str | None; severity: str | None; reporter_privacy: str; owner_ref: str; current_revision: int; promise_policy_ref: str; created_at: datetime; updated_at: datetime; closed_at: datetime | None
 @dataclass(frozen=True)
 class PublicCaseStatus:
-    public_reference: str; received_at: datetime; current_step: str; waiting_for: str | None; next_action: str; next_update_at: datetime; promise_health: PromiseHealth; item_decisions: tuple[ItemDecision, ...]; item_publication_states: tuple[ItemPublication, ...]; review_path: str
+    public_reference: str; received_at: datetime; current_step: str; waiting_for: str | None; next_action: str; next_update_at: datetime; promise_health: PromiseHealth; item_decisions: tuple[PublicItemDecision, ...]; item_publication_states: tuple[PublicItemPublication, ...]; review_path: str
 @dataclass(frozen=True)
 class CaseProblem:
     code: str; detail: str; status: int = 400

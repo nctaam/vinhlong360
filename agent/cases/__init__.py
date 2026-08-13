@@ -9,8 +9,8 @@ from .domain import (
     CorrectionOutcome,
     DispositionFamily,
     EvidenceLevel,
-    ItemDecision,
-    ItemPublication,
+    PublicItemDecision,
+    PublicItemPublication,
     PromiseHealth,
     PublicationState,
     PublicCaseStatus,
@@ -22,6 +22,6 @@ from .policy import CasePolicy, load_case_policy
 __all__ = [
     "ActorContext", "CaseActivity", "CasePhase", "CasePolicy", "CaseProblem", "Channel",
     "CaseSnapshot", "CommandEnvelope", "CorrectionOutcome", "DispositionFamily",
-    "EvidenceLevel", "ItemDecision", "ItemPublication", "PromiseHealth", "PublicationState", "PublicCaseStatus",
+    "EvidenceLevel", "PromiseHealth", "PublicationState", "PublicCaseStatus", "PublicItemDecision", "PublicItemPublication",
     "RiskClass", "ServiceKind", "load_case_policy",
 ]

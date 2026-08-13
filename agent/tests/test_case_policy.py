@@ -75,6 +75,18 @@ def test_policy_rejects_malformed_nested_structure(tmp_path, field, value):
     target = tmp_path / 'policy.json'
     target.write_text(json.dumps(data))
     with pytest.raises(ValueError):
+            load_case_policy(target)
+
+
+def test_policy_rejects_non_boolean_low_risk_independence(tmp_path):
+    from cases.policy import load_case_policy
+    import json
+    source = Path(__file__).parents[2] / 'config' / 'case-service-policy.json'
+    data = json.loads(source.read_text())
+    data['risk_registry']['R0'] = {'independent_review': 'yes'}
+    target = tmp_path / 'policy.json'
+    target.write_text(json.dumps(data))
+    with pytest.raises(ValueError, match='boolean'):
         load_case_policy(target)
 
 
