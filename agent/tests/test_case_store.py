@@ -323,6 +323,29 @@ def test_direct_audit_draft_rejects_non_allowlisted_snapshot_fields():
         )
 
 
+def test_append_audit_revalidates_and_serializes_before_business_sql():
+    database = _DatabaseDouble()
+    draft = CaseAuditDraft(
+        case_id=CASE_ID,
+        actor_ref="person:operator",
+        actor_scopes=("case:read",),
+        channel=Channel.WEB,
+        reason_code="case_created",
+        policy_revision="correction-pilot-v1",
+        correlation_id="correlation-1",
+        before_snapshot=None,
+        after_snapshot={"phase": "intake"},
+        occurred_at=NOW,
+    )
+    object.__setattr__(draft, "after_snapshot", {"phase": {"contact": "private"}})
+
+    with pytest.raises(ValueError, match="unsafe_case_audit_snapshot"):
+        with PostgresCaseStore(database).transaction() as transaction:
+            transaction.append_audit(draft)
+
+    assert not any("case_audit_events" in sql for sql, _params in database.sql)
+
+
 def test_repository_boundary_exposes_append_only_ledgers_without_mutation_methods():
     store = PostgresCaseStore(_DatabaseDouble())
 

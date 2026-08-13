@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import os
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
 from datetime import datetime, timedelta, timezone
@@ -265,11 +266,38 @@ def test_for_update_blocks_second_transaction_until_first_releases_lock(pg_db):
     with store.transaction() as transaction:
         transaction.insert_case(_snapshot(case_id))
 
-    attempted = Event()
     acquired = Event()
+    marker = f"case-lock-{case_id}"
+
+    def wait_until_contender_is_blocked(future) -> None:
+        deadline = time.monotonic() + 3
+        while time.monotonic() < deadline:
+            if future.done():
+                future.result()
+                pytest.fail("contender acquired the lock before observation")
+            with pg_db._conn(commit_on_success=False) as observer:
+                row = pg_db._fetchone(
+                    observer,
+                    """
+                    SELECT wait_event_type, wait_event
+                    FROM pg_stat_activity
+                    WHERE application_name = %s
+                      AND query ILIKE '%%FROM cases%%FOR UPDATE%%'
+                    """,
+                    (marker,),
+                )
+            if row is not None and pg_db._row_to_dict(row)["wait_event_type"] == "Lock":
+                return
+            time.sleep(0.01)
+        pytest.fail("contender never reached a PostgreSQL row-lock wait")
+
     def contender():
-        attempted.set()
         with store.transaction() as transaction:
+            pg_db._execute(
+                transaction._conn,
+                "SET LOCAL application_name = %s",
+                (marker,),
+            )
             transaction.load_case(case_id, for_update=True)
             acquired.set()
 
@@ -277,10 +305,36 @@ def test_for_update_blocks_second_transaction_until_first_releases_lock(pg_db):
         with store.transaction() as transaction:
             transaction.load_case(case_id, for_update=True)
             future = pool.submit(contender)
-            assert attempted.wait(2)
-            assert not acquired.wait(0.2)
+            wait_until_contender_is_blocked(future)
+            assert not acquired.is_set()
         assert acquired.wait(2)
         future.result(timeout=2)
+
+
+@pg_only
+def test_invalid_audit_rolls_back_case_written_earlier_in_the_transaction(pg_db):
+    import uuid
+
+    case_id = str(uuid.uuid4())
+    draft = CaseAuditDraft.from_snapshots(
+        actor=_actor(),
+        reason_code="case_created",
+        policy_revision="correction-pilot-v1",
+        before=None,
+        after=_snapshot(case_id),
+        occurred_at=NOW,
+    )
+    object.__setattr__(draft, "after_snapshot", {"phase": {"contact": "private"}})
+
+    with pytest.raises(ValueError, match="unsafe_case_audit_snapshot"):
+        with PostgresCaseStore(pg_db).transaction() as transaction:
+            transaction.insert_case(_snapshot(case_id))
+            transaction.append_audit(draft)
+
+    with pg_db._conn(commit_on_success=False) as conn:
+        assert pg_db._fetchone(
+            conn, "SELECT 1 FROM cases WHERE case_id=%s", (case_id,)
+        ) is None
 
 
 @pg_only

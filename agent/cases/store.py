@@ -8,7 +8,7 @@ from enum import Enum
 from types import MappingProxyType
 from typing import Mapping
 
-from .audit import CaseAuditDraft
+from .audit import CaseAuditDraft, serialize_case_projection
 from .domain import (
     CaseActivity,
     CasePhase,
@@ -424,6 +424,8 @@ class CaseTransaction:
         self._require_active()
         if type(draft) is not CaseAuditDraft:
             raise ValueError("invalid_case_audit")
+        before_snapshot = serialize_case_projection(draft.before_snapshot)
+        after_snapshot = serialize_case_projection(draft.after_snapshot)
         self._db._execute(
             self._conn,
             """
@@ -441,12 +443,8 @@ class CaseTransaction:
                 draft.reason_code,
                 draft.policy_revision,
                 draft.correlation_id,
-                None
-                if draft.before_snapshot is None
-                else json.dumps(dict(draft.before_snapshot), sort_keys=True),
-                None
-                if draft.after_snapshot is None
-                else json.dumps(dict(draft.after_snapshot), sort_keys=True),
+                before_snapshot,
+                after_snapshot,
                 draft.occurred_at,
             ),
         )

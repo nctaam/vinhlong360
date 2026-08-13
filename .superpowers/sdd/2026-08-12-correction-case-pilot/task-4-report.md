@@ -43,3 +43,24 @@ DONE. The PostgreSQL-only correction-case transaction boundary, canonical audit 
 
 ## Concerns
 - None. The disposable test database was dropped after verification.
+
+## Fix round 1
+
+### Review Verification And RED
+- Verified the audit finding: direct drafts accepted nested contact/evidence/capability mappings, bytes, objects, enums, datetimes, and non-finite floats beneath allowlisted top-level fields. The focused RED command reported `10 failed, 4 passed`.
+- Verified the lock-test finding: the previous event fired before the contender opened its transaction. Replacing it with a `pg_stat_activity` lock-wait assertion initially failed (`1 failed`) because the contender had no unique PostgreSQL application marker.
+
+### Changes
+- Replaced the shallow audit-key allowlist with a field-specific scalar schema. Audit projections now require known enum strings, positive integer revisions, required/optional text, and canonical timezone-aware ISO timestamps. Nested containers, bytes, arbitrary objects, domain enum objects in direct mappings, datetimes in direct mappings, and non-finite floats are rejected.
+- `safe_case_projection()` explicitly canonicalizes normal frozen domain enum and datetime values into the same schema accepted by direct drafts. Both paths produce immutable, JSON-safe mappings.
+- `append_audit()` revalidates and serializes both projections with `allow_nan=False` before executing audit SQL. Unit coverage proves no audit SQL is attempted for a corrupted draft; real PostgreSQL coverage proves an earlier case insert rolls back when audit validation fails.
+- The row-lock test sets a unique transaction-local `application_name` immediately before `SELECT ... FOR UPDATE`, then polls `pg_stat_activity` until PostgreSQL reports `wait_event_type='Lock'` for that exact query. It surfaces contender exceptions while polling, asserts the contender has not acquired the row, releases the first transaction, and then requires bounded acquisition.
+
+### GREEN And Gates
+- Focused audit suite -> `14 passed`; audit module -> `12 passed`; deterministic lock test -> `1 passed`; lock plus rollback regression -> `2 passed`.
+- Expanded disposable PostgreSQL store/database/schema/migration/Task 3 regression -> `460 passed, 1 xfailed`.
+- Final local requested suite -> `215 passed, 7 skipped, 1 xfailed`; the seven skips are the explicitly guarded PostgreSQL cases already exercised on the disposable database.
+- Touched-file Ruff -> `All checks passed!`; `git diff --check` -> exit 0. The staged R20.7/hard gate follows this report update.
+
+### Concerns
+- None. The disposable database is dropped after the final staged verification.
