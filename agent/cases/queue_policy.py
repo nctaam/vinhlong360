@@ -16,6 +16,10 @@ class WorkItemDraft:
     requires_independent_review: bool = False
 
 
+class QueuePolicyRejected(ValueError):
+    pass
+
+
 def priority_key(item: WorkItemDraft) -> tuple[int, int, int, datetime, datetime]:
     """Ascending tuple implements the published queue precedence."""
     promise_rank = {
@@ -85,9 +89,14 @@ def _escalations(snapshot: CaseSnapshot, items: tuple[CorrectionItem, ...]) -> t
 
 def derive_work_items(snapshot: CaseSnapshot, correction_items: tuple[CorrectionItem, ...],
                       policy: CasePolicy, *, now: datetime) -> tuple[WorkItemDraft, ...]:
+    if len({item.item_id for item in correction_items}) != len(correction_items):
+        raise QueuePolicyRejected('duplicate_item_id')
     clocks: tuple[PromiseClock, ...] = snapshot.promise_clocks
     healths = tuple(promise_health(clock, now=now) for clock in clocks)
     rank = {PromiseHealth.ON_TRACK: 0, PromiseHealth.RECOVERY: 1, PromiseHealth.AT_RISK: 2, PromiseHealth.BREACHED: 3}
     effective = max((snapshot.promise_health, *healths), key=rank.__getitem__)
     current = replace(snapshot, promise_health=effective)
-    return tuple(draft for item in correction_items for draft in _item_work(current, item, policy)) + _escalations(current, correction_items)
+    drafts = tuple(draft for item in correction_items for draft in _item_work(current, item, policy)) + _escalations(current, correction_items)
+    return tuple(replace(draft, work_identity=draft.work_identity or
+                         f'{snapshot.case_id}:{index}:{draft.kind}:{draft.required_role}')
+                 for index, draft in enumerate(drafts))

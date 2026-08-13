@@ -170,3 +170,50 @@ def test_illegal_phase_moves_are_rejected(source, target):
 
     with pytest.raises(TransitionRejected, match="illegal_phase_transition"):
         transition_case(case(phase=source), command(phase=target), load_case_policy(), now=NOW)
+
+
+def test_closing_normalizes_waiting_activity_and_clears_waiting_context():
+    from cases.transitions import transition_case
+
+    waiting = transition_case(
+        case(), command(activity=CaseActivity.WAITING_ON_REQUESTER, requester_request="Confirm.",
+                        safe_message="Confirm.", waiting_on_ref="requester", waiting_evidence_ref="interaction",
+                        next_review_at=NOW + timedelta(days=1)), load_case_policy(), now=NOW,
+    ).snapshot
+    close = command(phase=CasePhase.CLOSED, activity=CaseActivity.WAITING_ON_REQUESTER,
+                    domain_outcome=CorrectionOutcome.CONFIRMED_CURRENT,
+                    disposition_family=DispositionFamily.NO_ACTION, expected_revision=waiting.current_revision)
+    result = transition_case(waiting, close, load_case_policy(), now=NOW + timedelta(hours=1))
+    assert result.snapshot.activity is CaseActivity.ACTIVE
+    assert result.snapshot.waiting is None
+
+
+def test_exiting_waiting_same_phase_clears_context():
+    from cases.transitions import transition_case
+
+    waiting = transition_case(
+        case(), command(activity=CaseActivity.WAITING_ON_REQUESTER, requester_request="Confirm.",
+                        safe_message="Confirm.", waiting_on_ref="requester", waiting_evidence_ref="interaction",
+                        next_review_at=NOW + timedelta(days=1)), load_case_policy(), now=NOW,
+    ).snapshot
+    result = transition_case(waiting, command(phase=CasePhase.FULFILLMENT, expected_revision=waiting.current_revision),
+                             load_case_policy(), now=NOW + timedelta(hours=1))
+    assert result.snapshot.activity is CaseActivity.ACTIVE
+    assert result.snapshot.waiting is None
+
+
+@pytest.mark.parametrize("mutate", [
+    lambda snapshot, command, now: (snapshot, replace(command, actor=replace(command.actor, channel="web")), now),
+    lambda snapshot, command, now: (replace(snapshot, promise_clocks=(
+        __import__('cases.domain', fromlist=['PromiseClock']).PromiseClock('update', now, now, health='on_track'),)), command, now),
+    lambda snapshot, command, now: (snapshot, command, now.replace(tzinfo=None)),
+    lambda snapshot, command, now: (snapshot, replace(command, activity=CaseActivity.WAITING_ON_REQUESTER,
+        requester_request='Confirm.', safe_message='Confirm.', waiting_on_ref='requester',
+        waiting_evidence_ref='interaction', next_review_at=now), now),
+])
+def test_nested_malformed_contract_values_fail_closed(mutate):
+    from cases.transitions import TransitionRejected, transition_case
+
+    snapshot, current_command, current_now = mutate(case(), command(), NOW)
+    with pytest.raises(TransitionRejected, match="invalid_case_contract|invalid_case_time|waiting_request_incomplete"):
+        transition_case(snapshot, current_command, load_case_policy(), now=current_now)

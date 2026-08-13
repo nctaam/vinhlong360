@@ -4,7 +4,7 @@ from datetime import datetime
 from .domain import (
     ActorContext, CaseActivity, CasePhase, CaseSnapshot, CorrectionItem, EvidenceLevel,
     CorrectionOutcome, DispositionFamily, PromiseClock, PromiseHealth,
-    PublicationState, RiskClass, ServiceKind, WaitingContext,
+    Channel, PublicationState, RiskClass, ServiceKind, WaitingContext,
 )
 from .policy import CasePolicy
 
@@ -36,6 +36,7 @@ class TransitionResult:
 
 
 def promise_health(clock: PromiseClock, *, now: datetime) -> PromiseHealth:
+    _validate_clock(clock, now)
     if now >= clock.due_at:
         return PromiseHealth.BREACHED
     if clock.risk_at is not None and now >= clock.risk_at:
@@ -52,8 +53,22 @@ def _validate_audit(snapshot: CaseSnapshot, command: CaseTransitionCommand) -> N
         raise TransitionRejected('transition_audit_incomplete')
 
 
+def _aware(value: object) -> bool:
+    return isinstance(value, datetime) and value.tzinfo is not None and value.utcoffset() is not None
+
+
+def _validate_clock(clock: PromiseClock, now: datetime) -> None:
+    if (not isinstance(clock, PromiseClock) or not isinstance(clock.health, PromiseHealth)
+            or not _aware(now) or not _aware(clock.started_at) or not _aware(clock.due_at)
+            or clock.started_at > clock.due_at
+            or clock.risk_at is not None and (not _aware(clock.risk_at)
+                                             or not clock.started_at <= clock.risk_at <= clock.due_at)
+            or clock.observed_at is not None and not _aware(clock.observed_at)):
+        raise TransitionRejected('invalid_case_time')
+
+
 def _validate_contract(snapshot: CaseSnapshot, command: CaseTransitionCommand,
-                       correction_items: tuple[CorrectionItem, ...]) -> None:
+                       correction_items: tuple[CorrectionItem, ...], now: datetime) -> None:
     snapshot_values = (
         (snapshot.service_kind, ServiceKind), (snapshot.phase, CasePhase),
         (snapshot.activity, CaseActivity), (snapshot.disposition_family, DispositionFamily),
@@ -67,14 +82,21 @@ def _validate_contract(snapshot: CaseSnapshot, command: CaseTransitionCommand,
     if (not all(isinstance(value, expected) for value, expected in snapshot_values + command_values)
             or any(outcome is not None and not isinstance(outcome, CorrectionOutcome) for outcome in outcomes)
             or not isinstance(command.actor, ActorContext)
+            or not isinstance(command.actor.channel, Channel)
+            or not _aware(now) or not _aware(snapshot.created_at) or not _aware(snapshot.updated_at)
+            or snapshot.created_at > snapshot.updated_at or snapshot.updated_at > now
+            or snapshot.closed_at is not None and (not _aware(snapshot.closed_at) or snapshot.closed_at > now)
             or not all(_valid_item(item) for item in correction_items)):
         raise TransitionRejected('invalid_case_contract')
+    for clock in snapshot.promise_clocks:
+        _validate_clock(clock, now)
 
 
 def _valid_item(item: CorrectionItem) -> bool:
     return (isinstance(item, CorrectionItem) and isinstance(item.risk_class, RiskClass)
             and isinstance(item.evidence_level, EvidenceLevel)
-            and isinstance(item.publication_state, PublicationState))
+            and isinstance(item.publication_state, PublicationState)
+            and type(item.base_entity_revision) is int and item.base_entity_revision >= 1)
 
 
 def _validate_phase_move(snapshot: CaseSnapshot, command: CaseTransitionCommand) -> None:
@@ -89,11 +111,11 @@ def _validate_phase_move(snapshot: CaseSnapshot, command: CaseTransitionCommand)
         raise TransitionRejected('illegal_phase_transition')
 
 
-def _validate_waiting(command: CaseTransitionCommand) -> None:
-    if command.activity is CaseActivity.WAITING_ON_REQUESTER and not (
+def _validate_waiting(command: CaseTransitionCommand, now: datetime) -> None:
+    if command.phase is not CasePhase.CLOSED and command.activity is CaseActivity.WAITING_ON_REQUESTER and not (
         command.requester_request and command.safe_message and command.waiting_on_ref
         and command.waiting_evidence_ref
-        and command.next_review_at
+        and _aware(command.next_review_at) and command.next_review_at > now
     ):
         raise TransitionRejected('waiting_request_incomplete')
 
@@ -112,11 +134,11 @@ def _validate_terminal_close(snapshot: CaseSnapshot, command: CaseTransitionComm
 
 
 def _validate(snapshot: CaseSnapshot, command: CaseTransitionCommand,
-              policy: CasePolicy, correction_items: tuple[CorrectionItem, ...]) -> None:
+              policy: CasePolicy, correction_items: tuple[CorrectionItem, ...], now: datetime) -> None:
     del policy
-    _validate_contract(snapshot, command, correction_items)
+    _validate_contract(snapshot, command, correction_items, now)
     _validate_audit(snapshot, command)
-    _validate_waiting(command)
+    _validate_waiting(command, now)
     _validate_terminal_close(snapshot, command, correction_items)
     _validate_phase_move(snapshot, command)
     if command.phase is CasePhase.CLOSED and command.domain_outcome is None:
@@ -126,13 +148,14 @@ def _validate(snapshot: CaseSnapshot, command: CaseTransitionCommand,
 def transition_case(snapshot: CaseSnapshot, command: CaseTransitionCommand,
                     policy: CasePolicy, *, now: datetime,
                     correction_items: tuple[CorrectionItem, ...] = ()) -> TransitionResult:
-    _validate(snapshot, command, policy, correction_items)
+    _validate(snapshot, command, policy, correction_items, now)
     closed_at = now if command.phase is CasePhase.CLOSED else None
+    activity = CaseActivity.ACTIVE if command.phase is CasePhase.CLOSED else command.activity
     waiting = (WaitingContext(command.requester_request, command.safe_message, command.waiting_on_ref,
                               command.waiting_evidence_ref, command.next_review_at, now)
-               if command.activity is CaseActivity.WAITING_ON_REQUESTER else None)
+               if activity is CaseActivity.WAITING_ON_REQUESTER else None)
     next_snapshot = replace(
-        snapshot, phase=command.phase, activity=command.activity,
+        snapshot, phase=command.phase, activity=activity,
         disposition_family=command.disposition_family, domain_outcome=command.domain_outcome,
         current_revision=snapshot.current_revision + 1, updated_at=now, closed_at=closed_at, waiting=waiting,
     )

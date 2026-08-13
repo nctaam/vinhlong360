@@ -3,6 +3,8 @@ from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from cases.domain import (
@@ -103,3 +105,25 @@ def test_r3_review_forbids_the_maker_and_evidence_supplier():
     maker = next(draft for draft in work if draft.kind == "decision")
     reviews = [draft for draft in work if draft.kind.endswith("review")]
     assert all(maker.work_identity in draft.independent_of_work_refs for draft in reviews)
+    assert maker.recused_actor_refs == frozenset()
+    assert all("supplier" in draft.forbidden_actor_refs for draft in reviews)
+
+
+@pytest.mark.parametrize("risk", list(RiskClass))
+@pytest.mark.parametrize("evidence", list(EvidenceLevel))
+def test_every_risk_evidence_work_draft_has_a_nonblank_unique_identity(risk, evidence):
+    from cases.queue_policy import derive_work_items
+
+    work = derive_work_items(snapshot(owner_ref="owner-1"), (CorrectionItem("item-1", risk, evidence, validated=True),),
+                             load_case_policy(), now=NOW)
+    identities = [draft.work_identity for draft in work]
+    assert identities and all(identities) and len(identities) == len(set(identities))
+
+
+def test_duplicate_item_ids_are_rejected_fail_closed():
+    from cases.queue_policy import QueuePolicyRejected, derive_work_items
+
+    items = (CorrectionItem("item-1", RiskClass.R1, EvidenceLevel.E2),
+             CorrectionItem("item-1", RiskClass.R2, EvidenceLevel.E3))
+    with pytest.raises(QueuePolicyRejected, match="duplicate_item_id"):
+        derive_work_items(snapshot(owner_ref="owner-1"), items, load_case_policy(), now=NOW)

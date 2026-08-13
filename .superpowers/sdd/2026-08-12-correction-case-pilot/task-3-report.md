@@ -64,3 +64,19 @@ Output: collection failed with three `ImportError`s for absent Task 3 contracts 
 ### Commit and Remaining Concern
 - This round's scoped commit follows this report update.
 - The original repository-wide `run_hard --all` concern remains: it needs a fresh coverage artifact and has unrelated legacy complexity baseline debt. The staged R20.7 gate is run after staging this round.
+
+## Fix round 2
+
+### RED and Decisions
+- Focused RED tests exposed terminal snapshots retaining requester-waiting state, unchecked nested channel/clock/time values, blank work identities across R0-R2, and duplicate item ID collisions. The focused RED command reported 18 failures after correcting a missing test import.
+- The R3 reviewer premise was narrowed to the written rule: section 11.3 excludes an evidence supplier from an independence-required review; it does not exclude that actor from decision making. The policy retains supplier eligibility for maker work while review drafts explicitly forbid the supplier and require independence from the maker identity.
+
+### Changes and GREEN
+- Closed transitions normalize activity to locked-vocabulary `active` and clear wait context; leaving waiting does likewise.
+- Nested actor channel, promise health/timestamps, explicit `now`, snapshot timestamp ordering, item revision values, and requester next-review ordering fail closed. Clock comparisons only run after timezone-aware validation.
+- All work drafts gain a deterministic nonblank identity; duplicate item IDs fail closed before derivation. Maker-review references point to real identities.
+- Deterministic Cartesian tests cover all risk/evidence combinations, identity uniqueness, duplicate IDs, nested malformed values, terminal/wait activity normalization, and separation metadata.
+- Focused Task 3 queue/transition tests -> `51 passed` after implementation. Final regression/gate evidence is recorded by the fix commit workflow.
+
+### Remaining Concern
+- As in earlier rounds, `run_hard --all` depends on a fresh repository coverage artifact and unrelated legacy complexity baseline. The staged R20.7 gate is required and run for this round.
