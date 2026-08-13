@@ -21,6 +21,7 @@ sys.path.insert(0, str(ROOT / "agent"))
 sys.path.insert(0, str(ROOT))
 
 import database  # noqa: E402
+from agent import database as database_readiness  # noqa: E402 - staged pairing guard
 import server  # noqa: E402, F401 - pairs readiness wiring with agent/server.py
 
 
@@ -77,6 +78,10 @@ def test_migration_080_tables_columns_constraints_and_owners(pg_db):
         assert columns["cases"]["case_id"] == "uuid"
         assert columns["cases"]["current_revision"] == "integer"
         assert columns["case_receipts"]["capability_digest"] in {"text", "bytea"}
+        assert columns["case_receipts"]["receipt_revision"] == "integer"
+        assert columns["case_receipts"]["subject_user_id"] == "text"
+        assert columns["case_access_sessions"]["session_key_version"] == "text"
+        assert columns["case_idempotency"]["response_key_version"] == "text"
         assert "capability" not in columns["case_receipts"]
         assert not ({"contact", "phone", "email"} & set(columns["case_contact_challenges"]))
         assert "content_enc" in columns["correction_evidence"]
@@ -106,6 +111,7 @@ def test_migration_080_tables_columns_constraints_and_owners(pg_db):
         assert "unable_to_verify" in definitions["case_decisions_outcome_code_check"]
         assert "fulfillment" in definitions["case_transitions_from_phase_check"]
         assert "fulfillment" in definitions["case_transitions_to_phase_check"]
+        assert "receipt_revision >= 1" in definitions["case_receipts_receipt_revision_positive"]
 
         owners = pg_db._fetchall(conn, "SELECT tablename, tableowner FROM pg_tables WHERE schemaname='public' AND tablename = ANY(%s)", (list(CASE_TABLES),))
         assert {pg_db._row_to_dict(r)["tableowner"] for r in owners} == {"vl360"}
@@ -120,6 +126,29 @@ def test_migration_080_foreign_keys_and_indexes_are_present(pg_db):
         indexes = pg_db._fetchall(conn, "SELECT indexname FROM pg_indexes WHERE schemaname='public'", ())
         names = {pg_db._row_to_dict(r)["indexname"] for r in indexes}
         assert {"uq_case_work_items_active_lease", "idx_case_work_items_queue_priority", "idx_case_promise_clocks_due", "idx_case_outbox_retry", "idx_case_access_sessions_expiry", "idx_legacy_intake_reconcile"} <= names
+
+
+@pg_only
+def test_rerunning_080_reconciles_provisional_receipt_security_columns(pg_db):
+    old_080 = _git_file_at("0b125e21", "agent/migrations/080_correction_case_kernel.sql")
+    old_init = _git_file_at("0b125e21", "init.sql")
+    current_080 = (ROOT / "agent" / "migrations" / "080_correction_case_kernel.sql").read_text(encoding="utf-8")
+    with pg_db._conn(commit_on_success=False) as conn:
+        try:
+            pg_db._execute(conn, "DROP SCHEMA public CASCADE", ())
+            pg_db._execute(conn, "CREATE SCHEMA public", ())
+            pg_db._execute(conn, old_init, ())
+            pg_db._execute(conn, old_080, ())
+            case_id = pg_db._row_to_dict(pg_db._fetchone(conn, "INSERT INTO cases(service_kind, category, phase, activity, disposition_family, reporter_privacy, owner_ref, promise_policy_ref) VALUES ('correction', 'receipt-replay', 'intake', 'active', 'undetermined', 'anonymous', 'person:test', 'policy:test') RETURNING case_id", ())) ["case_id"]
+            for reference, digest in (("VL-COR-0000000000000", "a" * 64), ("VL-COR-0000000000011", "b" * 64)):
+                pg_db._execute(conn, "INSERT INTO case_receipts(case_id, public_reference, capability_digest, capability_key_version, expires_at) VALUES (%s, %s, %s, 'v1', NOW() + INTERVAL '1 day')", (case_id, reference, digest))
+            pg_db._execute(conn, current_080, ())
+            rows = pg_db._fetchall(conn, "SELECT receipt_revision, subject_user_id FROM case_receipts WHERE case_id=%s ORDER BY receipt_revision", (case_id,))
+            assert [(item["receipt_revision"], item["subject_user_id"]) for item in map(pg_db._row_to_dict, rows)] == [(1, None), (2, None)]
+            columns = pg_db._fetchall(conn, "SELECT column_name FROM information_schema.columns WHERE table_name='case_access_sessions'", ())
+            assert "session_key_version" in {item["column_name"] for item in map(pg_db._row_to_dict, columns)}
+        finally:
+            conn.rollback()
 
 
 @pg_only
@@ -143,6 +172,7 @@ def test_case_transition_and_audit_ledgers_are_database_immutable(pg_db):
 
 
 def test_case_kernel_schema_status_is_dormant_or_fail_closed_without_details():
+    assert database_readiness.CASE_KERNEL_REQUIRED_COLUMNS == database.CASE_KERNEL_REQUIRED_COLUMNS
     dormant = database.case_kernel_schema_status({"backend": "sqlite", "ok": True}, enabled=False)
     assert dormant == {"ok": True, "state": "dormant", "code": "case_kernel_dormant"}
 

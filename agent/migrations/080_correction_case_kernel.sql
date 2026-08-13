@@ -131,26 +131,54 @@ CREATE TABLE IF NOT EXISTS case_receipts (
     public_reference TEXT NOT NULL UNIQUE,
     capability_digest TEXT NOT NULL UNIQUE,
     capability_key_version TEXT NOT NULL,
+    receipt_revision INTEGER NOT NULL DEFAULT 1,
+    subject_user_id TEXT,
     notification_consent_ref TEXT,
     expires_at TIMESTAMPTZ NOT NULL,
     revoked_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT case_receipts_capability_digest_shape CHECK (capability_digest ~ '^[0-9a-f]{64}$'),
+    CONSTRAINT case_receipts_receipt_revision_positive CHECK (receipt_revision >= 1),
+    CONSTRAINT case_receipts_case_revision_unique UNIQUE (case_id, receipt_revision),
     CONSTRAINT case_receipts_expiry_order CHECK (expires_at > created_at)
 );
 ALTER TABLE case_receipts OWNER TO vl360;
+
+ALTER TABLE case_receipts ADD COLUMN IF NOT EXISTS receipt_revision INTEGER;
+ALTER TABLE case_receipts ADD COLUMN IF NOT EXISTS subject_user_id TEXT;
+WITH ranked AS (
+    SELECT receipt_id, row_number() OVER (PARTITION BY case_id ORDER BY created_at, receipt_id) AS revision
+    FROM case_receipts WHERE receipt_revision IS NULL
+)
+UPDATE case_receipts receipt SET receipt_revision = ranked.revision
+FROM ranked WHERE receipt.receipt_id = ranked.receipt_id;
+ALTER TABLE case_receipts ALTER COLUMN receipt_revision SET DEFAULT 1;
+ALTER TABLE case_receipts ALTER COLUMN receipt_revision SET NOT NULL;
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'case_receipts_receipt_revision_positive' AND conrelid = 'case_receipts'::regclass) THEN
+        ALTER TABLE case_receipts ADD CONSTRAINT case_receipts_receipt_revision_positive CHECK (receipt_revision >= 1);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'case_receipts_case_revision_unique' AND conrelid = 'case_receipts'::regclass) THEN
+        ALTER TABLE case_receipts ADD CONSTRAINT case_receipts_case_revision_unique UNIQUE (case_id, receipt_revision);
+    END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS case_access_sessions (
     access_session_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     case_id UUID NOT NULL REFERENCES cases(case_id) ON DELETE CASCADE,
     receipt_id UUID NOT NULL REFERENCES case_receipts(receipt_id) ON DELETE CASCADE,
     session_digest TEXT NOT NULL UNIQUE,
+    session_key_version TEXT NOT NULL DEFAULT 'v1',
     expires_at TIMESTAMPTZ NOT NULL,
     revoked_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT case_access_sessions_expiry_order CHECK (expires_at > created_at)
 );
 ALTER TABLE case_access_sessions OWNER TO vl360;
+ALTER TABLE case_access_sessions ADD COLUMN IF NOT EXISTS session_key_version TEXT;
+UPDATE case_access_sessions SET session_key_version = 'legacy-unusable' WHERE session_key_version IS NULL;
+ALTER TABLE case_access_sessions ALTER COLUMN session_key_version SET NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_case_access_sessions_expiry
     ON case_access_sessions(expires_at, access_session_id)
     WHERE revoked_at IS NULL;
@@ -243,12 +271,16 @@ CREATE TABLE IF NOT EXISTS case_idempotency (
     actor_ref TEXT NOT NULL,
     request_digest TEXT NOT NULL,
     response_enc TEXT NOT NULL,
+    response_key_version TEXT NOT NULL DEFAULT 'v1',
     expires_at TIMESTAMPTZ NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT case_idempotency_key_actor_unique UNIQUE (idempotency_key, actor_ref),
     CONSTRAINT case_idempotency_expiry_order CHECK (expires_at > created_at)
 );
 ALTER TABLE case_idempotency OWNER TO vl360;
+ALTER TABLE case_idempotency ADD COLUMN IF NOT EXISTS response_key_version TEXT;
+UPDATE case_idempotency SET response_key_version = 'legacy-unusable' WHERE response_key_version IS NULL;
+ALTER TABLE case_idempotency ALTER COLUMN response_key_version SET NOT NULL;
 
 CREATE TABLE IF NOT EXISTS case_contact_challenges (
     challenge_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

@@ -741,11 +741,15 @@ CREATE TABLE IF NOT EXISTS case_receipts (
     public_reference TEXT NOT NULL UNIQUE,
     capability_digest TEXT NOT NULL UNIQUE,
     capability_key_version TEXT NOT NULL,
+    receipt_revision INTEGER NOT NULL DEFAULT 1,
+    subject_user_id TEXT,
     notification_consent_ref TEXT,
     expires_at TIMESTAMPTZ NOT NULL,
     revoked_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT case_receipts_capability_digest_shape CHECK (capability_digest ~ '^[0-9a-f]{64}$'),
+    CONSTRAINT case_receipts_receipt_revision_positive CHECK (receipt_revision >= 1),
+    CONSTRAINT case_receipts_case_revision_unique UNIQUE (case_id, receipt_revision),
     CONSTRAINT case_receipts_expiry_order CHECK (expires_at > created_at)
 );
 ALTER TABLE case_receipts OWNER TO vl360;
@@ -755,6 +759,7 @@ CREATE TABLE IF NOT EXISTS case_access_sessions (
     case_id UUID NOT NULL REFERENCES cases(case_id) ON DELETE CASCADE,
     receipt_id UUID NOT NULL REFERENCES case_receipts(receipt_id) ON DELETE CASCADE,
     session_digest TEXT NOT NULL UNIQUE,
+    session_key_version TEXT NOT NULL DEFAULT 'v1',
     expires_at TIMESTAMPTZ NOT NULL,
     revoked_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -840,6 +845,7 @@ CREATE TABLE IF NOT EXISTS case_idempotency (
     actor_ref TEXT NOT NULL,
     request_digest TEXT NOT NULL,
     response_enc TEXT NOT NULL,
+    response_key_version TEXT NOT NULL DEFAULT 'v1',
     expires_at TIMESTAMPTZ NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT case_idempotency_key_actor_unique UNIQUE (idempotency_key, actor_ref),

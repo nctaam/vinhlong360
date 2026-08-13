@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import json
+import hmac
 from contextlib import contextmanager
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from types import MappingProxyType
 from typing import Mapping
@@ -548,3 +549,102 @@ class PostgresCaseStore:
                 conn.commit()
             finally:
                 transaction._close()
+
+    def _require_pg(self) -> None:
+        if not self._db._use_pg:
+            raise RuntimeError("case_postgresql_required")
+
+    def _insert_receipt(self, conn, case_id, crypto, *, now, current_user_id, revision):
+        from .security import ReceiptGrant
+
+        expires_at = now + timedelta(days=365)
+        for _attempt in range(4):
+            reference = crypto.issue_public_reference()
+            capability = crypto.issue_capability()
+            digest = crypto.digest_capability(capability)
+            try:
+                row = self._db._fetchone(conn, """
+                    INSERT INTO case_receipts(case_id, public_reference, capability_digest,
+                        capability_key_version, receipt_revision, subject_user_id, expires_at, created_at)
+                    VALUES (%s, %s, %s, 'v1', %s, %s, %s, %s)
+                    RETURNING receipt_id
+                """, (case_id, reference, digest, revision, current_user_id, expires_at, now))
+                return ReceiptGrant(str(_row_dict(self._db, row)["receipt_id"]), case_id, reference, capability, expires_at, revision, current_user_id)
+            except Exception as exc:
+                if _attempt == 3 or "unique" not in str(exc).lower():
+                    raise
+        raise RuntimeError("case_receipt_collision")
+
+    def issue_receipt(self, case_id, crypto, *, now, current_user_id=None):
+        """Persist only a capability digest; the caller receives the raw value once."""
+        self._require_pg()
+        with self._db._conn(commit_on_success=False) as conn:
+            self._db._fetchone(conn, "SELECT case_id FROM cases WHERE case_id=%s FOR UPDATE", (case_id,))
+            grant = self._insert_receipt(conn, case_id, crypto, now=now, current_user_id=current_user_id, revision=1)
+            conn.commit()
+        return grant
+
+    def exchange_receipt(self, public_reference, capability, crypto, *, now, current_user_id=None):
+        from .security import AccessGrant, CaseSecurityError
+
+        self._require_pg()
+        if not crypto.validate_public_reference(public_reference):
+            raise CaseSecurityError("invalid_case_credential")
+        digest = crypto.digest_capability(capability)
+        with self._db._conn(commit_on_success=False) as conn:
+            row = self._db._fetchone(conn, """
+                SELECT receipt_id, case_id, receipt_revision, subject_user_id FROM case_receipts
+                WHERE public_reference=%s AND capability_digest=%s AND revoked_at IS NULL AND expires_at > %s
+                FOR UPDATE
+            """, (public_reference, digest, now))
+            if row is None:
+                raise CaseSecurityError("invalid_case_credential")
+            receipt = _row_dict(self._db, row)
+            if receipt["subject_user_id"] is not None and not hmac.compare_digest(str(receipt["subject_user_id"]), current_user_id or ""):
+                raise CaseSecurityError("invalid_case_credential")
+            token = crypto.issue_capability()
+            session_digest = crypto.digest_capability(token)
+            self._db._execute(conn, """
+                INSERT INTO case_access_sessions(case_id, receipt_id, session_digest, session_key_version, expires_at, created_at)
+                VALUES (%s, %s, %s, 'v1', %s, %s)
+            """, (receipt["case_id"], receipt["receipt_id"], session_digest, now + timedelta(minutes=15), now))
+            conn.commit()
+        access = crypto.make_access(str(receipt["case_id"]), str(receipt["receipt_id"]), int(receipt["receipt_revision"]), session_digest, current_user_id)
+        return AccessGrant(token, access)
+
+    def validate_access(self, token, crypto, *, now, current_user_id=None):
+        from .security import CaseSecurityError
+
+        self._require_pg()
+        digest = crypto.digest_capability(token)
+        with self._db._conn(commit_on_success=False) as conn:
+            row = self._db._fetchone(conn, """
+                SELECT s.case_id, s.receipt_id, s.session_digest, s.session_key_version, r.receipt_revision, r.subject_user_id
+                FROM case_access_sessions s JOIN case_receipts r ON r.receipt_id=s.receipt_id
+                WHERE s.session_digest=%s AND s.revoked_at IS NULL AND s.expires_at > %s
+                  AND r.revoked_at IS NULL AND r.expires_at > %s AND s.session_key_version = 'v1'
+            """, (digest, now, now))
+        if row is None:
+            raise CaseSecurityError("invalid_case_credential")
+        item = _row_dict(self._db, row)
+        if item["subject_user_id"] is not None and not hmac.compare_digest(str(item["subject_user_id"]), current_user_id or ""):
+            raise CaseSecurityError("invalid_case_credential")
+        return crypto.make_access(str(item["case_id"]), str(item["receipt_id"]), int(item["receipt_revision"]), str(item["session_digest"]), current_user_id)
+
+    def revoke_access(self, case_id, *, now):
+        self._require_pg()
+        with self._db._conn(commit_on_success=False) as conn:
+            self._db._execute(conn, "UPDATE case_receipts SET revoked_at=%s WHERE case_id=%s AND revoked_at IS NULL", (now, case_id))
+            self._db._execute(conn, "UPDATE case_access_sessions SET revoked_at=%s WHERE case_id=%s AND revoked_at IS NULL", (now, case_id))
+            conn.commit()
+
+    def rotate_receipt(self, access_token, crypto, *, now, current_user_id=None):
+        access = self.validate_access(access_token, crypto, now=now, current_user_id=current_user_id)
+        with self._db._conn(commit_on_success=False) as conn:
+            self._db._fetchone(conn, "SELECT case_id FROM cases WHERE case_id=%s FOR UPDATE", (access.case_id,))
+            self._db._execute(conn, "UPDATE case_receipts SET revoked_at=%s WHERE receipt_id=%s AND revoked_at IS NULL", (now, access.receipt_id))
+            self._db._execute(conn, "UPDATE case_access_sessions SET revoked_at=%s WHERE receipt_id=%s AND revoked_at IS NULL", (now, access.receipt_id))
+            row = self._db._fetchone(conn, "SELECT COALESCE(MAX(receipt_revision), 0) + 1 AS revision FROM case_receipts WHERE case_id=%s", (access.case_id,))
+            grant = self._insert_receipt(conn, access.case_id, crypto, now=now, current_user_id=current_user_id, revision=int(_row_dict(self._db, row)["revision"]))
+            conn.commit()
+        return grant

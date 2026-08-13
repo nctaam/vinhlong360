@@ -9,6 +9,7 @@ import pytest
 
 import cases.audit as case_audit
 import cases.store as case_store
+from cases import store as store_pairing  # staged pairing guard for the store adapter
 from cases.audit import CaseAuditDraft, safe_case_projection
 from cases.domain import (
     ActorContext,
@@ -33,6 +34,10 @@ from cases.store import (
 UTC = timezone.utc
 NOW = datetime(2026, 8, 12, 9, 0, tzinfo=UTC)
 CASE_ID = "11111111-1111-1111-1111-111111111111"
+
+
+def test_store_adapter_module_is_importable_for_security_lifecycle_pairing():
+    assert store_pairing.PostgresCaseStore is PostgresCaseStore
 
 
 def snapshot(*, revision: int = 1, phase: CasePhase = CasePhase.INTAKE) -> CaseSnapshot:

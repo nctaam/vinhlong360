@@ -304,6 +304,16 @@ def test_080_uses_digest_or_ciphertext_names_for_private_payloads():
     assert "content_enc" in MIG_080
 
 
+def test_080_receipt_security_columns_have_replay_safe_contracts():
+    for source in (MIG_080, INIT_SQL):
+        assert "receipt_revision INTEGER NOT NULL" in source
+        assert "subject_user_id TEXT" in source
+        assert "session_key_version TEXT NOT NULL" in source
+        assert "response_key_version TEXT NOT NULL" in source
+        assert "UNIQUE (case_id, receipt_revision)" in source
+        assert "case_receipts_receipt_revision_positive" in source
+
+
 def test_init_sql_contains_case_kernel_parity_and_entity_revision():
     for table in CASE_TABLES:
         assert f"CREATE TABLE IF NOT EXISTS {table}" in INIT_SQL
