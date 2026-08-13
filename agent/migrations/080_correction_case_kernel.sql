@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS case_decisions (
     decision_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     case_id UUID NOT NULL REFERENCES cases(case_id) ON DELETE CASCADE,
     item_id UUID,
-    outcome_code TEXT NOT NULL,
+    outcome_code TEXT NOT NULL CHECK (outcome_code IN ('accepted', 'rejected', 'corrected', 'confirmed_current', 'insufficient_evidence', 'out_of_scope', 'duplicate_linked', 'unable_to_verify', 'withdrawn_by_requester')),
     reason_code TEXT NOT NULL,
     evidence_refs JSONB NOT NULL DEFAULT '[]'::jsonb,
     decision_maker_ref TEXT NOT NULL,
@@ -163,8 +163,8 @@ ALTER TABLE case_admin_access_sessions OWNER TO vl360;
 CREATE TABLE IF NOT EXISTS case_transitions (
     transition_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     case_id UUID NOT NULL REFERENCES cases(case_id) ON DELETE CASCADE,
-    from_phase TEXT,
-    to_phase TEXT NOT NULL,
+    from_phase TEXT CHECK (from_phase IS NULL OR from_phase IN ('intake', 'triage', 'investigation', 'decision', 'fulfillment', 'closed')),
+    to_phase TEXT NOT NULL CHECK (to_phase IN ('intake', 'triage', 'investigation', 'decision', 'fulfillment', 'closed')),
     from_revision INTEGER,
     to_revision INTEGER NOT NULL,
     actor_ref TEXT NOT NULL,
@@ -175,6 +175,13 @@ CREATE TABLE IF NOT EXISTS case_transitions (
     CONSTRAINT case_transitions_revision_order CHECK (to_revision >= 1 AND (from_revision IS NULL OR to_revision = from_revision + 1))
 );
 ALTER TABLE case_transitions OWNER TO vl360;
+
+CREATE OR REPLACE FUNCTION reject_case_ledger_mutation() RETURNS trigger
+LANGUAGE plpgsql AS $$
+BEGIN
+    RAISE EXCEPTION 'immutable_case_ledger';
+END;
+$$;
 
 CREATE TABLE IF NOT EXISTS case_audit_events (
     audit_event_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -278,7 +285,6 @@ ALTER TABLE correction_evidence OWNER TO vl360;
 CREATE TABLE IF NOT EXISTS correction_change_sets (
     change_set_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     case_id UUID NOT NULL REFERENCES cases(case_id) ON DELETE CASCADE,
-    item_ids JSONB NOT NULL DEFAULT '[]'::jsonb,
     base_entity_revision INTEGER NOT NULL,
     before_patch JSONB NOT NULL,
     after_patch JSONB NOT NULL,
@@ -294,6 +300,59 @@ CREATE TABLE IF NOT EXISTS correction_change_sets (
     CONSTRAINT correction_change_sets_base_revision_positive CHECK (base_entity_revision >= 1)
 );
 ALTER TABLE correction_change_sets OWNER TO vl360;
+
+CREATE TABLE IF NOT EXISTS correction_change_set_items (
+    change_set_id UUID NOT NULL REFERENCES correction_change_sets(change_set_id) ON DELETE CASCADE,
+    item_id UUID NOT NULL REFERENCES correction_items(item_id) ON DELETE RESTRICT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (change_set_id, item_id)
+);
+ALTER TABLE correction_change_set_items OWNER TO vl360;
+
+CREATE OR REPLACE FUNCTION enforce_change_set_item_same_case() RETURNS trigger
+LANGUAGE plpgsql AS $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM correction_change_sets c
+        JOIN correction_items i ON i.item_id = NEW.item_id
+        WHERE c.change_set_id = NEW.change_set_id AND c.case_id = i.case_id
+    ) THEN
+        RAISE EXCEPTION 'change_set_item_case_mismatch';
+    END IF;
+    RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS correction_change_set_items_same_case ON correction_change_set_items;
+CREATE TRIGGER correction_change_set_items_same_case
+BEFORE INSERT OR UPDATE ON correction_change_set_items
+FOR EACH ROW EXECUTE FUNCTION enforce_change_set_item_same_case();
+
+CREATE OR REPLACE FUNCTION enforce_linked_correction_item_same_case() RETURNS trigger
+LANGUAGE plpgsql AS $$
+BEGIN
+    IF NEW.case_id IS DISTINCT FROM OLD.case_id AND EXISTS (
+        SELECT 1
+        FROM correction_change_set_items link
+        JOIN correction_change_sets c ON c.change_set_id = link.change_set_id
+        WHERE link.item_id = OLD.item_id AND c.case_id IS DISTINCT FROM NEW.case_id
+    ) THEN
+        RAISE EXCEPTION 'change_set_item_case_mismatch';
+    END IF;
+    RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS correction_items_linked_case_immutable ON correction_items;
+CREATE TRIGGER correction_items_linked_case_immutable
+BEFORE UPDATE OF case_id ON correction_items
+FOR EACH ROW EXECUTE FUNCTION enforce_linked_correction_item_same_case();
+
+DROP TRIGGER IF EXISTS correction_change_sets_immutable ON correction_change_sets;
+CREATE TRIGGER correction_change_sets_immutable BEFORE UPDATE OR DELETE ON correction_change_sets
+FOR EACH ROW EXECUTE FUNCTION reject_case_ledger_mutation();
+DROP TRIGGER IF EXISTS correction_change_set_items_immutable ON correction_change_set_items;
+CREATE TRIGGER correction_change_set_items_immutable BEFORE UPDATE OR DELETE ON correction_change_set_items
+FOR EACH ROW EXECUTE FUNCTION reject_case_ledger_mutation();
 
 CREATE TABLE IF NOT EXISTS legacy_intake_records (
     legacy_intake_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -325,12 +384,6 @@ CREATE TABLE IF NOT EXISTS case_capacity_events (
 );
 ALTER TABLE case_capacity_events OWNER TO vl360;
 
-CREATE OR REPLACE FUNCTION reject_case_ledger_mutation() RETURNS trigger
-LANGUAGE plpgsql AS $$
-BEGIN
-    RAISE EXCEPTION 'immutable_case_ledger';
-END;
-$$;
 DROP TRIGGER IF EXISTS case_transitions_immutable ON case_transitions;
 CREATE TRIGGER case_transitions_immutable BEFORE UPDATE OR DELETE ON case_transitions
 FOR EACH ROW EXECUTE FUNCTION reject_case_ledger_mutation();

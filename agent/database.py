@@ -99,13 +99,13 @@ CASE_KERNEL_REQUIRED_TABLES = {
     "case_decisions", "case_promise_clocks", "case_receipts", "case_access_sessions",
     "case_admin_access_sessions", "case_transitions", "case_audit_events", "case_outbox",
     "case_idempotency", "case_contact_challenges", "correction_items", "correction_evidence",
-    "correction_change_sets", "legacy_intake_records", "case_capacity_events",
+    "correction_change_sets", "correction_change_set_items", "legacy_intake_records", "case_capacity_events",
 }
 PG_REQUIRED_TABLES |= CASE_KERNEL_REQUIRED_TABLES
 PG_CORE_REQUIRED_TABLES = PG_REQUIRED_TABLES - CASE_KERNEL_REQUIRED_TABLES
 
 PG_REQUIRED_COLUMNS = {
-    "entities": {"id", "type", "name", "status", "verified", "coordinates", "attributes", "images", "revision"},
+    "entities": {"id", "type", "name", "status", "verified", "coordinates", "attributes", "images"},
     "itineraries": {"id", "title", "area", "areas", "stops"},
     "users": {"id", "phone", "password_hash", "username", "role", "is_active"},
     "posts": {"id", "user_id", "entity_id", "content", "moderation_status", "deleted_at", "is_draft"},
@@ -158,7 +158,8 @@ PG_REQUIRED_COLUMNS = {
 }
 
 CASE_KERNEL_REQUIRED_COLUMNS = {
-    "cases": {"case_id", "service_kind", "category", "phase", "activity", "disposition_family", "domain_outcome", "reporter_privacy", "owner_ref", "current_revision", "promise_policy_ref", "review_of_case_id", "created_at", "updated_at", "closed_at"},
+    "entities": {"revision"},
+    "cases": {"case_id", "service_kind", "category", "phase", "activity", "disposition_family", "domain_outcome", "severity", "reporter_privacy", "owner_ref", "current_revision", "promise_policy_ref", "review_of_case_id", "created_at", "updated_at", "closed_at"},
     "case_interactions": {"interaction_id", "case_id", "channel", "actor_ref", "direction", "consent_ref", "identity_assurance", "payload_enc", "created_at"},
     "case_party_authorities": {"party_authority_id", "case_id", "party_ref", "authority_kind", "scope", "assurance_level", "granted_at", "expires_at", "revoked_at"},
     "case_work_items": {"work_item_id", "case_id", "kind", "required_role", "risk_class", "status", "assignee_ref", "lease_expires_at", "ready_at", "next_review_at", "priority", "revision"},
@@ -174,15 +175,17 @@ CASE_KERNEL_REQUIRED_COLUMNS = {
     "case_contact_challenges": {"challenge_id", "case_id", "contact_digest", "challenge_digest", "channel", "expires_at", "verified_at", "created_at"},
     "correction_items": {"item_id", "case_id", "entity_id", "field_path", "reported_value_enc", "proposed_value_enc", "base_entity_revision", "risk_class", "evidence_level", "created_at"},
     "correction_evidence": {"evidence_id", "case_id", "item_id", "evidence_level", "source_ref", "descriptor", "content_enc", "created_by_ref", "created_at"},
-    "correction_change_sets": {"change_set_id", "case_id", "item_ids", "base_entity_revision", "before_patch", "after_patch", "inverse_patch", "evidence_refs", "policy_revision", "risk_class", "decision_maker_ref", "reviewer_ref", "apply_status", "public_projection_verified_at", "created_at"},
+    "correction_change_sets": {"change_set_id", "case_id", "base_entity_revision", "before_patch", "after_patch", "inverse_patch", "evidence_refs", "policy_revision", "risk_class", "decision_maker_ref", "reviewer_ref", "apply_status", "public_projection_verified_at", "created_at"},
+    "correction_change_set_items": {"change_set_id", "item_id", "created_at"},
     "legacy_intake_records": {"legacy_intake_id", "source_file", "source_line", "raw_record_digest", "imported_case_id", "legacy_status", "missing_data_flags", "mapping_decision", "import_result", "reconciliation_result", "imported_at"},
     "case_capacity_events": {"capacity_event_id", "case_id", "channel", "risk_class", "event_kind", "observed_at", "duration_seconds", "metadata"},
 }
-PG_REQUIRED_COLUMNS.update(CASE_KERNEL_REQUIRED_COLUMNS)
+for _table, _columns in CASE_KERNEL_REQUIRED_COLUMNS.items():
+    PG_REQUIRED_COLUMNS.setdefault(_table, set()).update(_columns)
 PG_CORE_REQUIRED_COLUMNS = {
-    table: columns
+    table: columns - CASE_KERNEL_REQUIRED_COLUMNS.get(table, set())
     for table, columns in PG_REQUIRED_COLUMNS.items()
-    if table not in CASE_KERNEL_REQUIRED_COLUMNS
+    if columns - CASE_KERNEL_REQUIRED_COLUMNS.get(table, set())
 }
 
 # 80 adds the PostgreSQL-only Correction Case Kernel and entity revision guard.
@@ -427,6 +430,8 @@ def case_kernel_schema_status(schema: Mapping[str, object], *, enabled: bool) ->
         return {"ok": True, "state": "dormant", "code": "case_kernel_dormant"}
     if schema.get("backend") != "postgresql":
         return {"ok": False, "state": "blocked", "code": "case_postgresql_required"}
+    if schema.get("case_config_code") in {"case_encryption_key_required", "case_owner_individual_required"}:
+        return {"ok": False, "state": "blocked", "code": schema["case_config_code"]}
     if schema.get("ok") and not schema.get("case_issues"):
         return {"ok": True, "state": "ready", "code": "case_kernel_ready"}
     return {"ok": False, "state": "blocked", "code": "case_schema_not_ready"}

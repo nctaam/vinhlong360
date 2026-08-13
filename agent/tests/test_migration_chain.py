@@ -280,7 +280,7 @@ CASE_TABLES = {
     "case_decisions", "case_promise_clocks", "case_receipts", "case_access_sessions",
     "case_admin_access_sessions", "case_transitions", "case_audit_events", "case_outbox",
     "case_idempotency", "case_contact_challenges", "correction_items", "correction_evidence",
-    "correction_change_sets", "legacy_intake_records", "case_capacity_events",
+    "correction_change_sets", "correction_change_set_items", "legacy_intake_records", "case_capacity_events",
 }
 
 
@@ -318,6 +318,22 @@ def test_database_readiness_requires_case_schema_version_80():
     assert CASE_TABLES <= database.PG_REQUIRED_TABLES
     assert {"revision"} <= database.PG_REQUIRED_COLUMNS["entities"]
     assert {"case_id", "current_revision", "service_kind", "phase"} <= database.PG_REQUIRED_COLUMNS["cases"]
+
+
+def test_dormant_core_contract_excludes_case_revision_but_enabled_contract_requires_it():
+    assert "revision" not in database.PG_CORE_REQUIRED_COLUMNS["entities"]
+    assert "revision" in database.CASE_KERNEL_REQUIRED_COLUMNS["entities"]
+    assert "severity" in database.CASE_KERNEL_REQUIRED_COLUMNS["cases"]
+
+
+def test_080_binds_case_vocabularies_and_relational_change_set_linkage():
+    assert "outcome_code TEXT NOT NULL CHECK" in MIG_080
+    assert "corrected" in MIG_080 and "confirmed_current" in MIG_080
+    assert "resolved" not in MIG_080 and "dismissed" not in MIG_080
+    assert "from_phase TEXT" in MIG_080 and "to_phase TEXT NOT NULL CHECK" in MIG_080
+    assert "correction_change_set_items" in MIG_080
+    assert "item_ids JSONB" not in MIG_080
+    assert "correction_items_linked_case_immutable" in MIG_080
 
 
 def test_073_owns_location_remediation_contract():

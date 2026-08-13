@@ -7,6 +7,9 @@ from __future__ import annotations
 
 import os
 import sys
+import asyncio
+import json
+from contextlib import contextmanager
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
@@ -55,7 +58,7 @@ CASE_TABLES = (
     "case_decisions", "case_promise_clocks", "case_receipts", "case_access_sessions",
     "case_admin_access_sessions", "case_transitions", "case_audit_events", "case_outbox",
     "case_idempotency", "case_contact_challenges", "correction_items", "correction_evidence",
-    "correction_change_sets", "legacy_intake_records", "case_capacity_events",
+    "correction_change_sets", "correction_change_set_items", "legacy_intake_records", "case_capacity_events",
 )
 
 
@@ -67,7 +70,7 @@ def test_migration_080_tables_columns_constraints_and_owners(pg_db):
         assert set(CASE_TABLES) <= tables
 
         columns = {}
-        for table in CASE_TABLES:
+        for table in (*CASE_TABLES, "entities"):
             rows = pg_db._fetchall(conn, "SELECT column_name, data_type FROM information_schema.columns WHERE table_schema='public' AND table_name=%s", (table,))
             columns[table] = {pg_db._row_to_dict(r)["column_name"]: pg_db._row_to_dict(r)["data_type"] for r in rows}
         assert columns["cases"]["case_id"] == "uuid"
@@ -76,7 +79,10 @@ def test_migration_080_tables_columns_constraints_and_owners(pg_db):
         assert "capability" not in columns["case_receipts"]
         assert not ({"contact", "phone", "email"} & set(columns["case_contact_challenges"]))
         assert "content_enc" in columns["correction_evidence"]
+        assert "severity" in columns["cases"]
         assert "payload_enc" in columns["case_interactions"]
+        for table, required in database.CASE_KERNEL_REQUIRED_COLUMNS.items():
+            assert required <= set(columns[table]), f"readiness map drift for {table}"
 
         constraints = pg_db._fetchall(
             conn,
@@ -95,6 +101,10 @@ def test_migration_080_tables_columns_constraints_and_owners(pg_db):
         assert expected <= set(definitions)
         assert "revision >= 1" in definitions["entities_revision_positive"]
         assert "^[0-9a-f]{64}$" in definitions["case_receipts_capability_digest_shape"]
+        assert "confirmed_current" in definitions["case_decisions_outcome_code_check"]
+        assert "unable_to_verify" in definitions["case_decisions_outcome_code_check"]
+        assert "fulfillment" in definitions["case_transitions_from_phase_check"]
+        assert "fulfillment" in definitions["case_transitions_to_phase_check"]
 
         owners = pg_db._fetchall(conn, "SELECT tablename, tableowner FROM pg_tables WHERE schemaname='public' AND tablename = ANY(%s)", (list(CASE_TABLES),))
         assert {pg_db._row_to_dict(r)["tableowner"] for r in owners} == {"vl360"}
@@ -105,7 +115,7 @@ def test_migration_080_foreign_keys_and_indexes_are_present(pg_db):
     with pg_db._conn() as conn:
         fks = pg_db._fetchall(conn, "SELECT conname FROM pg_constraint WHERE contype='f' AND connamespace='public'::regnamespace", ())
         fk_names = {pg_db._row_to_dict(r)["conname"] for r in fks}
-        assert {"case_interactions_case_id_fkey", "case_work_items_case_id_fkey", "correction_change_sets_case_id_fkey"} <= fk_names
+        assert {"case_interactions_case_id_fkey", "case_work_items_case_id_fkey", "correction_change_sets_case_id_fkey", "correction_change_set_items_change_set_id_fkey", "correction_change_set_items_item_id_fkey"} <= fk_names
         indexes = pg_db._fetchall(conn, "SELECT indexname FROM pg_indexes WHERE schemaname='public'", ())
         names = {pg_db._row_to_dict(r)["indexname"] for r in indexes}
         assert {"uq_case_work_items_active_lease", "idx_case_work_items_queue_priority", "idx_case_promise_clocks_due", "idx_case_outbox_retry", "idx_case_access_sessions_expiry", "idx_legacy_intake_reconcile"} <= names
@@ -146,6 +156,58 @@ def test_case_kernel_schema_status_is_dormant_or_fail_closed_without_details():
     assert "canary" not in repr(schema_blocked)
 
 
+def test_case_activation_status_codes_cover_owner_and_key_failures_without_secret_leaks():
+    for code in ("case_encryption_key_required", "case_owner_individual_required"):
+        status = database.case_kernel_schema_status(
+            {"backend": "postgresql", "ok": True, "case_issues": [], "case_config_code": code},
+            enabled=True,
+        )
+        assert status == {"ok": False, "state": "blocked", "code": code}
+    assert "secret-value" not in repr(status)
+
+
+def test_enabled_readiness_reports_stable_key_and_owner_codes(monkeypatch):
+    import config
+    import data_lifecycle
+    import privacy_policy
+
+    @contextmanager
+    def fake_conn():
+        yield object()
+
+    monkeypatch.setattr(server.knowledge, "_entities", {"sentinel": {}})
+    monkeypatch.setattr(server.knowledge, "_data_source", "db")
+    monkeypatch.setattr(server, "privacy_boundary_readiness", lambda: True)
+    monkeypatch.setattr(server, "scheduler_status", lambda: {"erasure": {"audit_only": True}})
+    monkeypatch.setattr(data_lifecycle, "lifecycle_registry_readiness", lambda: {"ok": True})
+    monkeypatch.setattr(privacy_policy, "privacy_policy_readiness", lambda _settings: True)
+    monkeypatch.setattr(database.db, "_conn", fake_conn)
+    monkeypatch.setattr(database.db, "_fetchone", lambda *_args, **_kwargs: (1,))
+    monkeypatch.setattr(database.db, "pg_schema_status", lambda: {"backend": "postgresql", "ok": True, "case_issues": []})
+    monkeypatch.setattr(config.settings, "CASE_KERNEL_ENABLED", True)
+    for flag in ("CORRECTION_INTAKE_ENABLED", "CORRECTION_ADMIN_ENABLED", "CORRECTION_ASSISTED_ENABLED", "CORRECTION_PUBLICATION_ENABLED"):
+        monkeypatch.setattr(config.settings, flag, False)
+
+    monkeypatch.setattr(config.settings, "CASE_KERNEL_ENCRYPTION_KEY", "")
+    monkeypatch.setattr(config.settings, "CASE_SERVICE_OWNER_REF", "person:owner")
+    response = asyncio.run(server.readiness_probe())
+    payload = json.loads(response.body)
+    assert response.status_code == 503
+    assert payload["checks"]["case_kernel_schema"] == {"ok": True, "state": "ready", "code": "case_kernel_ready"}
+    assert payload["checks"]["case_kernel_key"] == {"ok": False, "state": "blocked", "code": "case_encryption_key_required"}
+    assert payload["checks"]["case_owner"] == {"ok": True, "state": "ready", "code": "case_owner_ready"}
+
+    monkeypatch.setattr(config.settings, "CASE_KERNEL_ENCRYPTION_KEY", "adequate-secret-material")
+    monkeypatch.setattr(config.settings, "CASE_SERVICE_OWNER_REF", "team:operators")
+    response = asyncio.run(server.readiness_probe())
+    payload = json.loads(response.body)
+    assert response.status_code == 503
+    assert payload["checks"]["case_kernel_schema"] == {"ok": True, "state": "ready", "code": "case_kernel_ready"}
+    assert payload["checks"]["case_kernel_key"] == {"ok": True, "state": "ready", "code": "case_kernel_key_ready"}
+    assert payload["checks"]["case_owner"] == {"ok": False, "state": "blocked", "code": "case_owner_individual_required"}
+    assert "adequate-secret-material" not in repr(payload)
+
+
 def test_core_schema_can_remain_ready_while_case_kernel_is_dormant():
     schema = {
         "backend": "postgresql",
@@ -159,6 +221,61 @@ def test_core_schema_can_remain_ready_while_case_kernel_is_dormant():
         "state": "blocked",
         "code": "case_schema_not_ready",
     }
+
+
+@pg_only
+def test_change_set_item_linkage_is_relational_and_immutable(pg_db):
+    with pg_db._conn(commit_on_success=False) as conn:
+        case_rows = pg_db._fetchall(
+            conn,
+            "INSERT INTO cases(service_kind, category, phase, activity, disposition_family, reporter_privacy, owner_ref, promise_policy_ref) VALUES ('correction', 'linkage-test', 'intake', 'active', 'undetermined', 'anonymous', 'person:test', 'policy:test') RETURNING case_id",
+            (),
+        )
+        case_id = pg_db._row_to_dict(case_rows[0])["case_id"]
+        item_row = pg_db._fetchone(
+            conn,
+            "INSERT INTO correction_items(case_id, field_path, base_entity_revision, risk_class, evidence_level) VALUES (%s, 'name', 1, 'R0', 'E0') RETURNING item_id",
+            (case_id,),
+        )
+        item_id = pg_db._row_to_dict(item_row)["item_id"]
+        other_case = pg_db._fetchone(
+            conn,
+            "INSERT INTO cases(service_kind, category, phase, activity, disposition_family, reporter_privacy, owner_ref, promise_policy_ref) VALUES ('correction', 'other-case', 'intake', 'active', 'undetermined', 'anonymous', 'person:test', 'policy:test') RETURNING case_id",
+            (),
+        )
+        other_case_id = pg_db._row_to_dict(other_case)["case_id"]
+        other_item = pg_db._fetchone(
+            conn,
+            "INSERT INTO correction_items(case_id, field_path, base_entity_revision, risk_class, evidence_level) VALUES (%s, 'name', 1, 'R0', 'E0') RETURNING item_id",
+            (other_case_id,),
+        )
+        other_item_id = pg_db._row_to_dict(other_item)["item_id"]
+        change_row = pg_db._fetchone(
+            conn,
+            "INSERT INTO correction_change_sets(case_id, base_entity_revision, before_patch, after_patch, inverse_patch, policy_revision, risk_class, decision_maker_ref) VALUES (%s, 1, '{}'::jsonb, '{}'::jsonb, '{}'::jsonb, 'policy:test', 'R0', 'person:test') RETURNING change_set_id",
+            (case_id,),
+        )
+        change_id = pg_db._row_to_dict(change_row)["change_set_id"]
+        pg_db._execute(conn, "INSERT INTO correction_change_set_items(change_set_id, item_id) VALUES (%s, %s)", (change_id, item_id))
+        pg_db._execute(conn, "SAVEPOINT invalid_item", ())
+        with pytest.raises(Exception):
+            pg_db._execute(conn, "INSERT INTO correction_change_set_items(change_set_id, item_id) VALUES (%s, %s)", (change_id, "00000000-0000-0000-0000-000000000000"))
+        pg_db._execute(conn, "ROLLBACK TO SAVEPOINT invalid_item", ())
+        pg_db._execute(conn, "SAVEPOINT cross_case_item", ())
+        with pytest.raises(Exception, match="change_set_item_case_mismatch"):
+            pg_db._execute(conn, "INSERT INTO correction_change_set_items(change_set_id, item_id) VALUES (%s, %s)", (change_id, other_item_id))
+        pg_db._execute(conn, "ROLLBACK TO SAVEPOINT cross_case_item", ())
+        pg_db._execute(conn, "SAVEPOINT linked_item_case_move", ())
+        with pytest.raises(Exception, match="change_set_item_case_mismatch"):
+            pg_db._execute(conn, "UPDATE correction_items SET case_id=%s WHERE item_id=%s", (other_case_id, item_id))
+        pg_db._execute(conn, "ROLLBACK TO SAVEPOINT linked_item_case_move", ())
+        pg_db._execute(conn, "SAVEPOINT immutable_link", ())
+        with pytest.raises(Exception, match="immutable_case_ledger"):
+            pg_db._execute(conn, "DELETE FROM correction_change_set_items WHERE change_set_id=%s AND item_id=%s", (change_id, item_id))
+        pg_db._execute(conn, "ROLLBACK TO SAVEPOINT immutable_link", ())
+        with pytest.raises(Exception, match="immutable_case_ledger"):
+            pg_db._fetchone(conn, "DELETE FROM correction_change_sets WHERE change_set_id=%s", (change_id,))
+        conn.rollback()
 
 
 @pg_only

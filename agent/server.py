@@ -4123,7 +4123,7 @@ async def health_internal(request: Request):
 async def readiness_probe():
     """Lightweight readiness probe for load balancers / orchestrators."""
     def _probe():
-        from config import settings as _settings
+        from config import settings as _settings, _is_individual_actor_ref
         from data_lifecycle import lifecycle_registry_readiness
         from database import db as _db
         from privacy_policy import privacy_policy_readiness
@@ -4157,7 +4157,20 @@ async def readiness_probe():
         checks["case_kernel_schema"] = case_kernel_schema_status(schema, enabled=case_enabled)
         if not case_enabled:
             checks["case_policy"] = {"ok": True, "state": "dormant", "code": "case_policy_dormant"}
+            checks["case_kernel_key"] = {"ok": True, "state": "dormant", "code": "case_kernel_key_dormant"}
+            checks["case_owner"] = {"ok": True, "state": "dormant", "code": "case_owner_dormant"}
         else:
+            key = _settings.CASE_KERNEL_ENCRYPTION_KEY.strip()
+            checks["case_kernel_key"] = (
+                {"ok": True, "state": "ready", "code": "case_kernel_key_ready"}
+                if len(key) >= 16
+                else {"ok": False, "state": "blocked", "code": "case_encryption_key_required"}
+            )
+            checks["case_owner"] = (
+                {"ok": True, "state": "ready", "code": "case_owner_ready"}
+                if _is_individual_actor_ref(_settings.CASE_SERVICE_OWNER_REF.strip())
+                else {"ok": False, "state": "blocked", "code": "case_owner_individual_required"}
+            )
             try:
                 load_case_policy()
                 checks["case_policy"] = {"ok": True, "state": "ready", "code": "case_policy_ready"}
