@@ -659,6 +659,10 @@ class PostgresCaseStore:
     def revoke_access(self, case_id, *, now):
         self._require_pg()
         with self._db._conn(commit_on_success=False) as conn:
+            locked = self._db._fetchone(conn, "SELECT case_id FROM cases WHERE case_id=%s FOR UPDATE", (case_id,))
+            if locked is None:
+                from .security import CaseSecurityError
+                raise CaseSecurityError("invalid_case_credential")
             self._db._execute(conn, "UPDATE case_receipts SET revoked_at=%s WHERE case_id=%s AND revoked_at IS NULL", (now, case_id))
             self._db._execute(conn, "UPDATE case_access_sessions SET revoked_at=%s WHERE case_id=%s AND revoked_at IS NULL", (now, case_id))
             conn.commit()

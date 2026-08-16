@@ -5,6 +5,8 @@ import hashlib
 import hmac
 import json
 import secrets
+import re
+from contextvars import ContextVar
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Callable, Mapping
@@ -27,6 +29,8 @@ class CaseSecurityError(PermissionError):
 
 def validate_case_encryption_key(master_key: str | bytes) -> bytes:
     if isinstance(master_key, str):
+        if not re.fullmatch(r"[A-Za-z0-9_-]{43}", master_key):
+            raise CaseSecurityError("case_encryption_key_required")
         material = master_key.encode("ascii")
     elif isinstance(master_key, bytes):
         material = master_key
@@ -130,6 +134,8 @@ class CaseCrypto:
 
     def decrypt_replay(self, ciphertext: str, *, now: datetime) -> dict:
         try:
+            if type(ciphertext) is not str:
+                raise ValueError
             decoded = json.loads(self._fernet.decrypt(ciphertext.encode("ascii")).decode("utf-8"))
             issued = datetime.fromisoformat(decoded["iat"])
             payload = decoded["payload"]
@@ -183,6 +189,7 @@ class CaseSecurityService:
         self._store = store
         self._crypto = crypto
 
+
     def issue_receipt(self, case_id: str, *, now: datetime, current_user_id: str | None = None, idempotency_key: str | None = None) -> ReceiptGrant:
         if self._store is None:
             raise CaseSecurityError("case_postgresql_required")
@@ -209,6 +216,24 @@ class CaseSecurityService:
         self._store.revoke_access(case_id, now=now)
 
 
+_configured_service: ContextVar[CaseSecurityService | None] = ContextVar("vl360_case_security_service", default=None)
+
+
+def configure_case_security(service: CaseSecurityService) -> None:
+    if not isinstance(service, CaseSecurityService):
+        raise CaseSecurityError("case_security_unconfigured")
+    if _configured_service.get() is not None:
+        raise CaseSecurityError("case_security_already_configured")
+    _configured_service.set(service)
+
+
+def _service_or_configured(service: CaseSecurityService | None) -> CaseSecurityService:
+    selected = service or _configured_service.get()
+    if selected is None:
+        raise CaseSecurityError("case_security_unconfigured")
+    return selected
+
+
 # These stateless helpers keep the brief's small crypto surface available without
 # retaining a process-global test key or service instance.
 def digest_capability(secret: str, *, master_key: str | bytes) -> str:
@@ -225,24 +250,24 @@ def decrypt_replay(ciphertext: str, *, master_key: str | bytes, now: datetime) -
 
 # Dependency-injected module wrappers preserve the brief surface without an
 # ambient mutable security service or process-global key.
-def issue_receipt(service: CaseSecurityService, case_id: str, *, now: datetime, current_user_id: str | None = None, idempotency_key: str | None = None) -> ReceiptGrant:
-    return service.issue_receipt(case_id, now=now, current_user_id=current_user_id, idempotency_key=idempotency_key)
+def issue_receipt(case_id: str, *, now: datetime, current_user_id: str | None = None, idempotency_key: str | None = None, service: CaseSecurityService | None = None) -> ReceiptGrant:
+    return _service_or_configured(service).issue_receipt(case_id, now=now, current_user_id=current_user_id, idempotency_key=idempotency_key)
 
 
-def exchange_receipt(service: CaseSecurityService, public_reference: str, capability: str, *, now: datetime, current_user_id: str | None = None) -> AccessGrant:
-    return service.exchange_receipt(public_reference, capability, now=now, current_user_id=current_user_id)
+def exchange_receipt(public_reference: str, capability: str, *, now: datetime, current_user_id: str | None = None, service: CaseSecurityService | None = None) -> AccessGrant:
+    return _service_or_configured(service).exchange_receipt(public_reference, capability, now=now, current_user_id=current_user_id)
 
 
-def rotate_receipt(service: CaseSecurityService, access_token: str, *, now: datetime, current_user_id: str | None = None) -> ReceiptGrant:
-    return service.rotate_receipt(access_token, now=now, current_user_id=current_user_id)
+def rotate_receipt(access_token: str, *, now: datetime, current_user_id: str | None = None, service: CaseSecurityService | None = None) -> ReceiptGrant:
+    return _service_or_configured(service).rotate_receipt(access_token, now=now, current_user_id=current_user_id)
 
 
-def revoke_access(service: CaseSecurityService, case_id: str, *, now: datetime) -> None:
-    service.revoke_access(case_id, now=now)
+def revoke_access(case_id: str, *, now: datetime, service: CaseSecurityService | None = None) -> None:
+    _service_or_configured(service).revoke_access(case_id, now=now)
 
 
-def validate_access(service: CaseSecurityService, token: str, *, now: datetime, current_user_id: str | None = None) -> CaseAccess:
-    return service.validate_access(token, now=now, current_user_id=current_user_id)
+def validate_access(token: str, *, now: datetime, current_user_id: str | None = None, service: CaseSecurityService | None = None) -> CaseAccess:
+    return _service_or_configured(service).validate_access(token, now=now, current_user_id=current_user_id)
 
 
 def issue_case_csrf(crypto: CaseCrypto, access: CaseAccess) -> str:

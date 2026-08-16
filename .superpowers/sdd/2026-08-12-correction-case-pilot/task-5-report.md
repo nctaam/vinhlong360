@@ -84,6 +84,23 @@ ran the expanded Task 2/4/5 verification. It returned `97 passed`. Focused
 authenticated lifecycle/rotation and direct old-080 replay reconciliation then
 returned `2 passed`. The database is dropped after final gates.
 
+## Fix round 2
+
+Round 2 hardens revocation serialization and strict key/boundary handling.
+`revoke_access` now locks the case row before invalidating every receipt and
+session, sharing the lock order used by rotation. Key validation requires an
+exact 43-character unpadded URL-safe Base64 value decoding to 32 bytes;
+configuration, readiness, and `CaseCrypto` share the validator. Replay and
+CSRF malformed inputs collapse to stable credential errors, and only
+`same-origin` is accepted. Module lifecycle wrappers now resolve through an
+explicit immutable ContextVar seam while still permitting test injection.
+
+RED: strict-key/future-replay and boundary regressions initially produced
+8 failures; the focused corrected suite is `10 passed, 3 skipped`. The real
+PostgreSQL idempotency and concurrent-rotation checks remain green from the
+preceding gate, and the final focused verification is recorded with the fix
+commit.
+
 ## Fix round 1
 
 The review identified a rotate time-of-check/time-of-use window, PostgreSQL

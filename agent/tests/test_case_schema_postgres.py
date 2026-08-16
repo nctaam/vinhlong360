@@ -229,7 +229,7 @@ def test_enabled_readiness_reports_stable_key_and_owner_codes(monkeypatch):
     assert payload["checks"]["case_owner"] == {"ok": True, "state": "ready", "code": "case_owner_ready"}
 
     import base64
-    monkeypatch.setattr(config.settings, "CASE_KERNEL_ENCRYPTION_KEY", base64.urlsafe_b64encode(b"r" * 32).decode("ascii"))
+    monkeypatch.setattr(config.settings, "CASE_KERNEL_ENCRYPTION_KEY", base64.urlsafe_b64encode(b"r" * 32).rstrip(b"=").decode("ascii"))
     monkeypatch.setattr(config.settings, "CASE_SERVICE_OWNER_REF", "team:operators")
     response = asyncio.run(server.readiness_probe())
     payload = json.loads(response.body)

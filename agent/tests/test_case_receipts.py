@@ -16,7 +16,7 @@ from cases.security import (
 
 UTC = timezone.utc
 NOW = datetime(2026, 8, 12, 9, 0, tzinfo=UTC)
-KEY = base64.urlsafe_b64encode(b"k" * 32).decode("ascii")
+KEY = base64.urlsafe_b64encode(b"k" * 32).rstrip(b"=").decode("ascii")
 
 
 def _bytes(count: int) -> bytes:
@@ -46,6 +46,9 @@ def test_reference_capability_digest_and_replay_contract():
 def test_weak_case_key_fails_closed():
     with pytest.raises(CaseSecurityError, match="case_encryption_key_required"):
         CaseCrypto("short")
+    for invalid in ("!" * 43, "+" * 43, KEY[:-1] + "="):
+        with pytest.raises(CaseSecurityError, match="case_encryption_key_required"):
+            CaseCrypto(invalid)
 
 
 def test_stateless_helpers_accept_explicit_key_material():

@@ -44,6 +44,10 @@ def test_store_security_methods_remain_on_the_transaction_adapter():
     assert {"issue_receipt", "rotate_receipt", "revoke_access"} <= set(dir(PostgresCaseStore))
 
 
+def test_store_rotation_is_postgres_only_at_the_security_boundary():
+    assert "_require_pg" in PostgresCaseStore.rotate_receipt.__code__.co_names
+
+
 def snapshot(*, revision: int = 1, phase: CasePhase = CasePhase.INTAKE) -> CaseSnapshot:
     return CaseSnapshot(
         case_id=CASE_ID,

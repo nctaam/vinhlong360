@@ -16,7 +16,7 @@ from cases.store import PostgresCaseStore
 
 UTC = timezone.utc
 NOW = datetime(2026, 8, 12, 9, 0, tzinfo=UTC)
-KEY = base64.urlsafe_b64encode(b"s" * 32).decode("ascii")
+KEY = base64.urlsafe_b64encode(b"s" * 32).rstrip(b"=").decode("ascii")
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "agent"))
 
