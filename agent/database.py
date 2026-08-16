@@ -387,6 +387,20 @@ def _pg_schema_snapshot(conn) -> dict[str, object]:
     missing_columns = _pg_missing_columns(cur, tables, PG_CORE_REQUIRED_COLUMNS)
     case_missing_tables = sorted(CASE_KERNEL_REQUIRED_TABLES - tables)
     case_missing_columns = _pg_missing_columns(cur, tables, CASE_KERNEL_REQUIRED_COLUMNS)
+    case_security_issues: list[str] = []
+    if {"case_receipts", "case_access_sessions", "case_idempotency"} <= tables:
+        cur.execute("SELECT conname FROM pg_constraint WHERE connamespace='public'::regnamespace")
+        constraints = {row["conname"] for row in cur.fetchall()}
+        required_constraints = {
+            "case_receipts_receipt_revision_positive",
+            "case_receipts_case_revision_unique",
+            "case_receipts_capability_digest_shape",
+            "case_receipts_expiry_order",
+            "case_access_sessions_expiry_order",
+            "case_idempotency_expiry_order",
+        }
+        if not required_constraints <= constraints:
+            case_security_issues.append("case receipt security constraints missing")
     missing_triggers = _pg_missing_triggers(cur)
 
     schema_version = 0
@@ -419,7 +433,7 @@ def _pg_schema_snapshot(conn) -> dict[str, object]:
         "missing_triggers": missing_triggers,
         "case_missing_tables": case_missing_tables,
         "case_missing_columns": case_missing_columns,
-        "case_issues": case_issues,
+        "case_issues": case_issues + case_security_issues,
         "issues": issues,
     }
 

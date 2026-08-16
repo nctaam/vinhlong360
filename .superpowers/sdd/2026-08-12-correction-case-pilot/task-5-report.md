@@ -83,3 +83,35 @@ guarded `VL360_TEST_DATABASE_URL` and `MIGRATION_APPLY_TEST_DATABASE_URL`, and
 ran the expanded Task 2/4/5 verification. It returned `97 passed`. Focused
 authenticated lifecycle/rotation and direct old-080 replay reconciliation then
 returned `2 passed`. The database is dropped after final gates.
+
+## Fix round 1
+
+The review identified a rotate time-of-check/time-of-use window, PostgreSQL
+unique-violation retry aborts, absent lost-response replay, incomplete bearer
+input checks, divergent key validation, and a Python-only source guard.
+
+The receipt insertion path now brackets each collision-prone attempt in a
+savepoint. Rotation validates the session digest, key version, expiry,
+revocation, receipt subject, and case authority in one `FOR UPDATE` join
+transaction before revoking and creating the successor. The real PostgreSQL
+two-rotation race produced exactly one revision-2 successor and one
+`invalid_case_credential` loser.
+
+Issue operations accept an explicit idempotency key. The request digest and
+actor are bound to a 24-hour Fernet-encrypted receipt replay in
+`case_idempotency`; an exact retry returns the original raw capability without
+inserting another receipt, and another actor receives the public credential
+error. The guarded PostgreSQL replay test passed.
+
+`CaseCrypto`, production configuration, and readiness now share strict
+URL-safe-base64 32-byte key validation. CSRF accepts only `same-origin`,
+normalizes no non-empty subject value, rejects malformed boundary values, and
+replay rejects future issue timestamps beyond five minutes. The source guard
+now scans production Python AST call spans and frontend sources for named case
+bearers routed to logs, query parsing, notifications, or persistence.
+
+Focused RED evidence included `3 failed, 7 passed, 1 skipped` for future
+replay/same-site/subject helpers, followed by green `10 passed, 1 skipped`.
+The idempotency delegation RED was one missing keyword-argument failure;
+the guarded PostgreSQL replay test and concurrent rotation test subsequently
+passed. Final verification is recorded with the fix commit.

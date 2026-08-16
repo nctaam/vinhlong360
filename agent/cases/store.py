@@ -558,29 +558,54 @@ class PostgresCaseStore:
         from .security import ReceiptGrant
 
         expires_at = now + timedelta(days=365)
-        for _attempt in range(4):
+        for attempt in range(4):
             reference = crypto.issue_public_reference()
             capability = crypto.issue_capability()
             digest = crypto.digest_capability(capability)
             try:
+                savepoint = f"receipt_attempt_{attempt}"
+                self._db._execute(conn, f"SAVEPOINT {savepoint}", ())
                 row = self._db._fetchone(conn, """
                     INSERT INTO case_receipts(case_id, public_reference, capability_digest,
                         capability_key_version, receipt_revision, subject_user_id, expires_at, created_at)
                     VALUES (%s, %s, %s, 'v1', %s, %s, %s, %s)
                     RETURNING receipt_id
                 """, (case_id, reference, digest, revision, current_user_id, expires_at, now))
+                self._db._execute(conn, f"RELEASE SAVEPOINT {savepoint}", ())
                 return ReceiptGrant(str(_row_dict(self._db, row)["receipt_id"]), case_id, reference, capability, expires_at, revision, current_user_id)
             except Exception as exc:
-                if _attempt == 3 or "unique" not in str(exc).lower():
+                self._db._execute(conn, f"ROLLBACK TO SAVEPOINT {savepoint}", ())
+                self._db._execute(conn, f"RELEASE SAVEPOINT {savepoint}", ())
+                if attempt == 3 or "unique" not in str(exc).lower():
                     raise
         raise RuntimeError("case_receipt_collision")
 
-    def issue_receipt(self, case_id, crypto, *, now, current_user_id=None):
+    def _replay_request_digest(self, crypto, case_id, current_user_id, idempotency_key):
+        return crypto.digest_capability(f"issue:{case_id}:{current_user_id or 'anonymous'}:{idempotency_key}")
+
+    def issue_receipt(self, case_id, crypto, *, now, current_user_id=None, idempotency_key=None):
         """Persist only a capability digest; the caller receives the raw value once."""
+        from .security import CaseSecurityError, ReceiptGrant
+
         self._require_pg()
+        if idempotency_key is not None and (type(idempotency_key) is not str or not idempotency_key):
+            raise CaseSecurityError("invalid_case_credential")
         with self._db._conn(commit_on_success=False) as conn:
             self._db._fetchone(conn, "SELECT case_id FROM cases WHERE case_id=%s FOR UPDATE", (case_id,))
+            if idempotency_key:
+                actor_ref = current_user_id or "anonymous"
+                request_digest = self._replay_request_digest(crypto, case_id, current_user_id, idempotency_key)
+                replay = self._db._fetchone(conn, "SELECT actor_ref, request_digest, response_enc, response_key_version FROM case_idempotency WHERE idempotency_key=%s AND expires_at>%s FOR UPDATE", (idempotency_key, now))
+                if replay is not None:
+                    item = _row_dict(self._db, replay)
+                    if not hmac.compare_digest(str(item["actor_ref"]), actor_ref) or item["response_key_version"] != "v1" or not hmac.compare_digest(str(item["request_digest"]), request_digest):
+                        raise CaseSecurityError("invalid_case_credential")
+                    payload = crypto.decrypt_replay(str(item["response_enc"]), now=now)
+                    return ReceiptGrant(payload["receipt_id"], case_id, payload["public_reference"], payload["capability"], datetime.fromisoformat(payload["expires_at"]), int(payload["revision"]), current_user_id)
             grant = self._insert_receipt(conn, case_id, crypto, now=now, current_user_id=current_user_id, revision=1)
+            if idempotency_key:
+                payload = {"receipt_id": grant.receipt_id, "public_reference": grant.public_reference, "capability": grant.capability, "expires_at": grant.expires_at.isoformat(), "revision": grant.revision}
+                self._db._execute(conn, "INSERT INTO case_idempotency(idempotency_key, actor_ref, request_digest, response_enc, response_key_version, expires_at, created_at) VALUES (%s,%s,%s,%s,'v1',%s,%s)", (idempotency_key, actor_ref, request_digest, crypto.encrypt_replay(payload, now=now), now + timedelta(hours=24), now))
             conn.commit()
         return grant
 
@@ -639,12 +664,26 @@ class PostgresCaseStore:
             conn.commit()
 
     def rotate_receipt(self, access_token, crypto, *, now, current_user_id=None):
-        access = self.validate_access(access_token, crypto, now=now, current_user_id=current_user_id)
+        from .security import CaseSecurityError
+
+        digest = crypto.digest_capability(access_token)
         with self._db._conn(commit_on_success=False) as conn:
-            self._db._fetchone(conn, "SELECT case_id FROM cases WHERE case_id=%s FOR UPDATE", (access.case_id,))
-            self._db._execute(conn, "UPDATE case_receipts SET revoked_at=%s WHERE receipt_id=%s AND revoked_at IS NULL", (now, access.receipt_id))
-            self._db._execute(conn, "UPDATE case_access_sessions SET revoked_at=%s WHERE receipt_id=%s AND revoked_at IS NULL", (now, access.receipt_id))
-            row = self._db._fetchone(conn, "SELECT COALESCE(MAX(receipt_revision), 0) + 1 AS revision FROM case_receipts WHERE case_id=%s", (access.case_id,))
-            grant = self._insert_receipt(conn, access.case_id, crypto, now=now, current_user_id=current_user_id, revision=int(_row_dict(self._db, row)["revision"]))
+            access_row = self._db._fetchone(conn, """
+                SELECT s.case_id, s.receipt_id, r.subject_user_id FROM case_access_sessions s
+                JOIN case_receipts r ON r.receipt_id=s.receipt_id JOIN cases c ON c.case_id=s.case_id
+                WHERE s.session_digest=%s AND s.session_key_version='v1' AND s.revoked_at IS NULL AND s.expires_at>%s
+                  AND r.revoked_at IS NULL AND r.expires_at>%s FOR UPDATE OF s, r, c
+            """, (digest, now, now))
+            if access_row is None:
+                raise CaseSecurityError("invalid_case_credential")
+            access = _row_dict(self._db, access_row)
+            if access["subject_user_id"] is not None and not hmac.compare_digest(str(access["subject_user_id"]), current_user_id or ""):
+                raise CaseSecurityError("invalid_case_credential")
+            updated = self._db._fetchone(conn, "UPDATE case_receipts SET revoked_at=%s WHERE receipt_id=%s AND revoked_at IS NULL RETURNING receipt_id", (now, access["receipt_id"]))
+            if updated is None:
+                raise CaseSecurityError("invalid_case_credential")
+            self._db._execute(conn, "UPDATE case_access_sessions SET revoked_at=%s WHERE receipt_id=%s AND revoked_at IS NULL", (now, access["receipt_id"]))
+            row = self._db._fetchone(conn, "SELECT COALESCE(MAX(receipt_revision), 0) + 1 AS revision FROM case_receipts WHERE case_id=%s", (access["case_id"],))
+            grant = self._insert_receipt(conn, str(access["case_id"]), crypto, now=now, current_user_id=current_user_id, revision=int(_row_dict(self._db, row)["revision"]))
             conn.commit()
         return grant

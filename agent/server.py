@@ -4160,10 +4160,15 @@ async def readiness_probe():
             checks["case_kernel_key"] = {"ok": True, "state": "dormant", "code": "case_kernel_key_dormant"}
             checks["case_owner"] = {"ok": True, "state": "dormant", "code": "case_owner_dormant"}
         else:
-            key = _settings.CASE_KERNEL_ENCRYPTION_KEY.strip()
+            from cases.security import validate_case_encryption_key
+            try:
+                validate_case_encryption_key(_settings.CASE_KERNEL_ENCRYPTION_KEY.strip())
+                key_valid = True
+            except Exception:
+                key_valid = False
             checks["case_kernel_key"] = (
                 {"ok": True, "state": "ready", "code": "case_kernel_key_ready"}
-                if len(key) >= 16
+                if key_valid
                 else {"ok": False, "state": "blocked", "code": "case_encryption_key_required"}
             )
             checks["case_owner"] = (

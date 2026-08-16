@@ -53,3 +53,13 @@ def test_stateless_helpers_accept_explicit_key_material():
 
     assert digest_capability("secret", master_key=KEY) == CaseCrypto(KEY).digest_capability("secret")
     assert decrypt_replay(replay, master_key=KEY, now=NOW)["case_id"] == "case-1"
+
+
+def test_replay_rejects_future_issue_time_and_bad_boundary_inputs():
+    future = encrypt_replay({"case_id": "case-1"}, master_key=KEY, now=NOW + timedelta(minutes=6))
+    with pytest.raises(CaseSecurityError, match="invalid_case_credential"):
+        decrypt_replay(future, master_key=KEY, now=NOW)
+    crypto = CaseCrypto(KEY)
+    for value in (None, b"secret", "\ud800"):
+        with pytest.raises(CaseSecurityError, match="invalid_case_credential"):
+            crypto.digest_capability(value)

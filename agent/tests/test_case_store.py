@@ -40,6 +40,10 @@ def test_store_adapter_module_is_importable_for_security_lifecycle_pairing():
     assert store_pairing.PostgresCaseStore is PostgresCaseStore
 
 
+def test_store_security_methods_remain_on_the_transaction_adapter():
+    assert {"issue_receipt", "rotate_receipt", "revoke_access"} <= set(dir(PostgresCaseStore))
+
+
 def snapshot(*, revision: int = 1, phase: CasePhase = CasePhase.INTAKE) -> CaseSnapshot:
     return CaseSnapshot(
         case_id=CASE_ID,

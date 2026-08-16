@@ -25,6 +25,22 @@ class CaseSecurityError(PermissionError):
     pass
 
 
+def validate_case_encryption_key(master_key: str | bytes) -> bytes:
+    if isinstance(master_key, str):
+        material = master_key.encode("ascii")
+    elif isinstance(master_key, bytes):
+        material = master_key
+    else:
+        raise CaseSecurityError("case_encryption_key_required")
+    try:
+        decoded = base64.urlsafe_b64decode(material + b"=" * (-len(material) % 4))
+    except Exception as exc:
+        raise CaseSecurityError("case_encryption_key_required") from exc
+    if len(decoded) != 32:
+        raise CaseSecurityError("case_encryption_key_required")
+    return decoded
+
+
 @dataclass(frozen=True)
 class ReceiptGrant:
     receipt_id: str
@@ -59,18 +75,7 @@ def _utc(now: datetime) -> datetime:
 
 class CaseCrypto:
     def __init__(self, master_key: str | bytes, *, random_bytes: Callable[[int], bytes] = secrets.token_bytes) -> None:
-        if isinstance(master_key, str):
-            material = master_key.encode("ascii")
-        elif isinstance(master_key, bytes):
-            material = master_key
-        else:
-            raise CaseSecurityError("case_encryption_key_required")
-        try:
-            decoded = base64.urlsafe_b64decode(material + b"=" * (-len(material) % 4))
-        except Exception as exc:
-            raise CaseSecurityError("case_encryption_key_required") from exc
-        if len(decoded) != 32:
-            raise CaseSecurityError("case_encryption_key_required")
+        decoded = validate_case_encryption_key(master_key)
         self._random_bytes = random_bytes
         self._replay_key = self._derive(decoded, _REPLAY_SALT)
         self._capability_key = self._derive(decoded, _CAPABILITY_SALT)
@@ -106,7 +111,18 @@ class CaseCrypto:
     def digest_capability(self, secret: str) -> str:
         if type(secret) is not str:
             raise CaseSecurityError(_PUBLIC_ERROR)
-        return hmac.new(self._capability_key, secret.encode("ascii"), hashlib.sha256).hexdigest()
+        try:
+            return hmac.new(self._capability_key, secret.encode("ascii"), hashlib.sha256).hexdigest()
+        except UnicodeError as exc:
+            raise CaseSecurityError(_PUBLIC_ERROR) from exc
+
+    @staticmethod
+    def normalize_subject(current_user_id: str | None) -> str | None:
+        if current_user_id is None:
+            return None
+        if type(current_user_id) is not str or not current_user_id.strip():
+            raise CaseSecurityError(_PUBLIC_ERROR)
+        return current_user_id
 
     def encrypt_replay(self, payload: Mapping[str, object], *, now: datetime | None = None) -> str:
         issued = _utc(now) if now is not None else datetime.now(timezone.utc)
@@ -117,7 +133,8 @@ class CaseCrypto:
             decoded = json.loads(self._fernet.decrypt(ciphertext.encode("ascii")).decode("utf-8"))
             issued = datetime.fromisoformat(decoded["iat"])
             payload = decoded["payload"]
-            if not isinstance(payload, dict) or _utc(now) > _utc(issued) + timedelta(hours=24):
+            current = _utc(now)
+            if not isinstance(payload, dict) or _utc(issued) > current + timedelta(minutes=5) or current > _utc(issued) + timedelta(hours=24):
                 raise ValueError
             return payload
         except (InvalidToken, KeyError, TypeError, ValueError, UnicodeError, json.JSONDecodeError) as exc:
@@ -134,6 +151,8 @@ class CaseCrypto:
 
     def validate_case_csrf(self, access: CaseAccess, presented_token: str) -> None:
         try:
+            if type(presented_token) is not str:
+                raise ValueError
             nonce, signature = presented_token.split(".", 1)
             expected = hmac.new(self._capability_key, f"csrf:{access.session_digest}:{nonce}".encode("ascii"), hashlib.sha256).digest()
             received = base64.urlsafe_b64decode(signature + "=" * (-len(signature) % 4))
@@ -150,8 +169,11 @@ class CaseCrypto:
     def case_csrf_cookie(token: str, *, production: bool = True) -> dict[str, object]:
         return {"key": "vl360_case_csrf", "value": token, "httponly": False, "secure": production, "samesite": "lax", "path": "/api/cases", "max_age": 900}
 
+    def case_cookies(self, access_token: str, csrf_token: str, *, production: bool) -> dict[str, dict[str, object]]:
+        return {"access": self.case_access_cookie(access_token, production=production), "csrf": self.case_csrf_cookie(csrf_token, production=production)}
+
     def validate_case_mutation(self, access: CaseAccess, cookie_token: str, header_token: str, *, origin: str | None, expected_origin: str, sec_fetch_site: str | None) -> None:
-        if sec_fetch_site not in {"same-origin", "same-site"} or not hmac.compare_digest(origin or "", expected_origin) or not hmac.compare_digest(cookie_token, header_token):
+        if not all(type(value) is str for value in (cookie_token, header_token, origin, expected_origin, sec_fetch_site)) or sec_fetch_site != "same-origin" or not hmac.compare_digest(origin, expected_origin) or not hmac.compare_digest(cookie_token, header_token):
             raise CaseSecurityError(_PUBLIC_ERROR)
         self.validate_case_csrf(access, header_token)
 
@@ -161,25 +183,25 @@ class CaseSecurityService:
         self._store = store
         self._crypto = crypto
 
-    def issue_receipt(self, case_id: str, *, now: datetime, current_user_id: str | None = None) -> ReceiptGrant:
+    def issue_receipt(self, case_id: str, *, now: datetime, current_user_id: str | None = None, idempotency_key: str | None = None) -> ReceiptGrant:
         if self._store is None:
             raise CaseSecurityError("case_postgresql_required")
-        return self._store.issue_receipt(case_id, self._crypto, now=now, current_user_id=current_user_id)
+        return self._store.issue_receipt(case_id, self._crypto, now=now, current_user_id=self._crypto.normalize_subject(current_user_id), idempotency_key=idempotency_key)
 
     def exchange_receipt(self, public_reference: str, capability: str, *, now: datetime, current_user_id: str | None = None) -> AccessGrant:
         if self._store is None:
             raise CaseSecurityError("case_postgresql_required")
-        return self._store.exchange_receipt(public_reference, capability, self._crypto, now=now, current_user_id=current_user_id)
+        return self._store.exchange_receipt(public_reference, capability, self._crypto, now=now, current_user_id=self._crypto.normalize_subject(current_user_id))
 
     def validate_access(self, token: str, *, now: datetime, current_user_id: str | None = None) -> CaseAccess:
         if self._store is None:
             raise CaseSecurityError("case_postgresql_required")
-        return self._store.validate_access(token, self._crypto, now=now, current_user_id=current_user_id)
+        return self._store.validate_access(token, self._crypto, now=now, current_user_id=self._crypto.normalize_subject(current_user_id))
 
     def rotate_receipt(self, access_token: str, *, now: datetime, current_user_id: str | None = None) -> ReceiptGrant:
         if self._store is None:
             raise CaseSecurityError("case_postgresql_required")
-        return self._store.rotate_receipt(access_token, self._crypto, now=now, current_user_id=current_user_id)
+        return self._store.rotate_receipt(access_token, self._crypto, now=now, current_user_id=self._crypto.normalize_subject(current_user_id))
 
     def revoke_access(self, case_id: str, *, now: datetime) -> None:
         if self._store is None:
@@ -199,3 +221,33 @@ def encrypt_replay(payload: Mapping[str, object], *, master_key: str | bytes, no
 
 def decrypt_replay(ciphertext: str, *, master_key: str | bytes, now: datetime) -> dict:
     return CaseCrypto(master_key).decrypt_replay(ciphertext, now=now)
+
+
+# Dependency-injected module wrappers preserve the brief surface without an
+# ambient mutable security service or process-global key.
+def issue_receipt(service: CaseSecurityService, case_id: str, *, now: datetime, current_user_id: str | None = None, idempotency_key: str | None = None) -> ReceiptGrant:
+    return service.issue_receipt(case_id, now=now, current_user_id=current_user_id, idempotency_key=idempotency_key)
+
+
+def exchange_receipt(service: CaseSecurityService, public_reference: str, capability: str, *, now: datetime, current_user_id: str | None = None) -> AccessGrant:
+    return service.exchange_receipt(public_reference, capability, now=now, current_user_id=current_user_id)
+
+
+def rotate_receipt(service: CaseSecurityService, access_token: str, *, now: datetime, current_user_id: str | None = None) -> ReceiptGrant:
+    return service.rotate_receipt(access_token, now=now, current_user_id=current_user_id)
+
+
+def revoke_access(service: CaseSecurityService, case_id: str, *, now: datetime) -> None:
+    service.revoke_access(case_id, now=now)
+
+
+def validate_access(service: CaseSecurityService, token: str, *, now: datetime, current_user_id: str | None = None) -> CaseAccess:
+    return service.validate_access(token, now=now, current_user_id=current_user_id)
+
+
+def issue_case_csrf(crypto: CaseCrypto, access: CaseAccess) -> str:
+    return crypto.issue_case_csrf(access)
+
+
+def validate_case_csrf(crypto: CaseCrypto, access: CaseAccess, presented_token: str) -> None:
+    crypto.validate_case_csrf(access, presented_token)

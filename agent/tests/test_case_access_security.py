@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import os
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlparse
@@ -40,16 +41,17 @@ def test_service_delegates_only_digests_and_encrypted_replay_to_the_store():
         def __init__(self):
             self.calls = []
 
-        def issue_receipt(self, case_id, crypto, *, now, current_user_id):
-            self.calls.append((case_id, crypto, now, current_user_id))
+        def issue_receipt(self, case_id, crypto, *, now, current_user_id, idempotency_key):
+            self.calls.append((case_id, crypto, now, current_user_id, idempotency_key))
             return "stored"
 
     store = Store()
     service = CaseSecurityService(store, CaseCrypto(KEY))
 
-    assert service.issue_receipt("case-1", now=NOW, current_user_id="user-1") == "stored"
+    assert service.issue_receipt("case-1", now=NOW, current_user_id="user-1", idempotency_key="issue-1") == "stored"
     assert store.calls[0][0] == "case-1"
     assert store.calls[0][3] == "user-1"
+    assert store.calls[0][4] == "issue-1"
 
 
 def test_store_module_is_covered_by_the_case_access_service_contract():
@@ -92,6 +94,19 @@ def test_cookie_csrf_and_origin_contract():
     ) is None
     with pytest.raises(CaseSecurityError, match="invalid_case_credential"):
         crypto.validate_case_mutation(access, token, token, origin="https://evil.example", expected_origin="https://vl360.example", sec_fetch_site="cross-site")
+    with pytest.raises(CaseSecurityError, match="invalid_case_credential"):
+        crypto.validate_case_mutation(access, token, token, origin="https://vl360.example", expected_origin="https://vl360.example", sec_fetch_site="same-site")
+    for malformed in (None, b"x", 1):
+        with pytest.raises(CaseSecurityError, match="invalid_case_credential"):
+            crypto.validate_case_csrf(access, malformed)
+
+
+def test_subject_rejects_blank_identity_and_cookie_helper_returns_both_specs():
+    crypto = CaseCrypto(KEY)
+    with pytest.raises(CaseSecurityError, match="invalid_case_credential"):
+        crypto.normalize_subject(" ")
+    cookies = crypto.case_cookies("access", "csrf", production=True)
+    assert set(cookies) == {"access", "csrf"}
 
 
 @pg_only
@@ -129,3 +144,65 @@ def test_postgres_lifecycle_persists_only_digests_and_revocation_wins():
     service.revoke_access(case_id, now=NOW + timedelta(minutes=1))
     with pytest.raises(CaseSecurityError, match="invalid_case_credential"):
         service.validate_access(exchanged.access_token, now=NOW + timedelta(minutes=2))
+
+
+@pg_only
+def test_postgres_issue_idempotency_replays_same_raw_grant_and_rejects_actor_reuse():
+    import database
+    import psycopg2
+    import psycopg2.extras
+    import uuid
+
+    database.psycopg2 = psycopg2
+    database.psycopg2.extras = psycopg2.extras
+    db = database.Database()
+    db._use_pg = True
+    db._dsn = _test_dsn()
+    case_id = str(uuid.uuid4())
+    with db._conn(commit_on_success=False) as conn:
+        db._execute(conn, "INSERT INTO cases(case_id, service_kind, category, phase, activity, disposition_family, reporter_privacy, owner_ref, promise_policy_ref) VALUES (%s, 'correction', 'idempotency-test', 'intake', 'active', 'undetermined', 'anonymous', 'person:test', 'policy:test')", (case_id,))
+        conn.commit()
+    service = CaseSecurityService(PostgresCaseStore(db), CaseCrypto(KEY))
+    operation_key = f"issue-{case_id}"
+    first = service.issue_receipt(case_id, now=NOW, current_user_id="user-1", idempotency_key=operation_key)
+    replayed = service.issue_receipt(case_id, now=NOW + timedelta(minutes=1), current_user_id="user-1", idempotency_key=operation_key)
+    assert replayed == first
+    with db._conn(commit_on_success=False) as conn:
+        row = db._fetchone(conn, "SELECT COUNT(*) AS count FROM case_receipts WHERE case_id=%s", (case_id,))
+    assert db._row_to_dict(row)["count"] == 1
+    with pytest.raises(CaseSecurityError, match="invalid_case_credential"):
+        service.issue_receipt(case_id, now=NOW, current_user_id="user-2", idempotency_key=operation_key)
+
+
+@pg_only
+def test_postgres_two_rotations_of_one_bearer_create_one_successor():
+    import database
+    import psycopg2
+    import psycopg2.extras
+    import uuid
+
+    database.psycopg2 = psycopg2
+    database.psycopg2.extras = psycopg2.extras
+    db = database.Database()
+    db._use_pg = True
+    db._dsn = _test_dsn()
+    case_id = str(uuid.uuid4())
+    with db._conn(commit_on_success=False) as conn:
+        db._execute(conn, "INSERT INTO cases(case_id, service_kind, category, phase, activity, disposition_family, reporter_privacy, owner_ref, promise_policy_ref) VALUES (%s, 'correction', 'rotation-race', 'intake', 'active', 'undetermined', 'anonymous', 'person:test', 'policy:test')", (case_id,))
+        conn.commit()
+    service = CaseSecurityService(PostgresCaseStore(db), CaseCrypto(KEY))
+    grant = service.issue_receipt(case_id, now=NOW, current_user_id="user-1")
+    access = service.exchange_receipt(grant.public_reference, grant.capability, now=NOW, current_user_id="user-1")
+
+    def rotate():
+        try:
+            return ("success", service.rotate_receipt(access.access_token, now=NOW, current_user_id="user-1").revision)
+        except CaseSecurityError as exc:
+            return ("error", str(exc))
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        outcomes = list(pool.map(lambda _unused: rotate(), range(2)))
+    assert sorted(outcomes) == [("error", "invalid_case_credential"), ("success", 2)]
+    with db._conn(commit_on_success=False) as conn:
+        row = db._fetchone(conn, "SELECT COUNT(*) AS count FROM case_receipts WHERE case_id=%s", (case_id,))
+    assert db._row_to_dict(row)["count"] == 2
