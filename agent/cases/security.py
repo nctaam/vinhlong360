@@ -40,7 +40,7 @@ def validate_case_encryption_key(master_key: str | bytes) -> bytes:
         decoded = base64.urlsafe_b64decode(material + b"=" * (-len(material) % 4))
     except Exception as exc:
         raise CaseSecurityError("case_encryption_key_required") from exc
-    if len(decoded) != 32:
+    if len(decoded) != 32 or base64.urlsafe_b64encode(decoded).rstrip(b"=").decode("ascii") != material.decode("ascii"):
         raise CaseSecurityError("case_encryption_key_required")
     return decoded
 

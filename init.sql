@@ -770,6 +770,18 @@ CREATE INDEX IF NOT EXISTS idx_case_access_sessions_expiry
     ON case_access_sessions(expires_at, access_session_id)
     WHERE revoked_at IS NULL;
 
+CREATE OR REPLACE FUNCTION enforce_case_access_same_case() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM case_receipts WHERE receipt_id = NEW.receipt_id AND case_id = NEW.case_id) THEN
+        RAISE EXCEPTION 'case_access_receipt_case_mismatch';
+    END IF;
+    RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS case_access_sessions_same_case ON case_access_sessions;
+CREATE TRIGGER case_access_sessions_same_case BEFORE INSERT OR UPDATE ON case_access_sessions
+FOR EACH ROW EXECUTE FUNCTION enforce_case_access_same_case();
+
 CREATE TABLE IF NOT EXISTS case_admin_access_sessions (
     admin_access_session_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     case_id UUID NOT NULL REFERENCES cases(case_id) ON DELETE CASCADE,

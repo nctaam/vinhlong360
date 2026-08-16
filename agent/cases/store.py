@@ -618,13 +618,15 @@ class PostgresCaseStore:
         digest = crypto.digest_capability(capability)
         with self._db._conn(commit_on_success=False) as conn:
             row = self._db._fetchone(conn, """
-                SELECT receipt_id, case_id, receipt_revision, subject_user_id FROM case_receipts
-                WHERE public_reference=%s AND capability_digest=%s AND revoked_at IS NULL AND expires_at > %s
+                SELECT receipt_id, case_id, receipt_revision, subject_user_id, capability_digest FROM case_receipts
+                WHERE public_reference=%s AND revoked_at IS NULL AND expires_at > %s
                 FOR UPDATE
-            """, (public_reference, digest, now))
+            """, (public_reference, now))
             if row is None:
                 raise CaseSecurityError("invalid_case_credential")
             receipt = _row_dict(self._db, row)
+            if not hmac.compare_digest(str(receipt["capability_digest"]), digest):
+                raise CaseSecurityError("invalid_case_credential")
             if receipt["subject_user_id"] is not None and not hmac.compare_digest(str(receipt["subject_user_id"]), current_user_id or ""):
                 raise CaseSecurityError("invalid_case_credential")
             token = crypto.issue_capability()
@@ -646,12 +648,14 @@ class PostgresCaseStore:
             row = self._db._fetchone(conn, """
                 SELECT s.case_id, s.receipt_id, s.session_digest, s.session_key_version, r.receipt_revision, r.subject_user_id
                 FROM case_access_sessions s JOIN case_receipts r ON r.receipt_id=s.receipt_id
-                WHERE s.session_digest=%s AND s.revoked_at IS NULL AND s.expires_at > %s
+                WHERE s.revoked_at IS NULL AND s.expires_at > %s
                   AND r.revoked_at IS NULL AND r.expires_at > %s AND s.session_key_version = 'v1'
-            """, (digest, now, now))
+            """, (now, now))
         if row is None:
             raise CaseSecurityError("invalid_case_credential")
         item = _row_dict(self._db, row)
+        if not hmac.compare_digest(str(item["session_digest"]), digest):
+            raise CaseSecurityError("invalid_case_credential")
         if item["subject_user_id"] is not None and not hmac.compare_digest(str(item["subject_user_id"]), current_user_id or ""):
             raise CaseSecurityError("invalid_case_credential")
         return crypto.make_access(str(item["case_id"]), str(item["receipt_id"]), int(item["receipt_revision"]), str(item["session_digest"]), current_user_id)
@@ -670,6 +674,7 @@ class PostgresCaseStore:
     def rotate_receipt(self, access_token, crypto, *, now, current_user_id=None):
         from .security import CaseSecurityError
 
+        self._require_pg()
         digest = crypto.digest_capability(access_token)
         with self._db._conn(commit_on_success=False) as conn:
             access_row = self._db._fetchone(conn, """

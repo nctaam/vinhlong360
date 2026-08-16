@@ -38,3 +38,8 @@ def test_source_guard_detects_multiline_frontend_and_python_sinks(tmp_path):
     python.write_text("logger.info(\n    access_token\n)\n", encoding="utf-8")
     frontend.write_text("localStorage.setItem(\n  'case', case_capability\n)\n", encoding="utf-8")
     assert len(case_security_source_violations((python, frontend))) == 2
+
+
+def test_security_module_has_canonical_key_validation_boundary():
+    source = (ROOT / "agent" / "cases" / "security.py").read_text(encoding="utf-8")
+    assert "validate_case_encryption_key" in source

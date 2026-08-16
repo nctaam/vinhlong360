@@ -45,7 +45,10 @@ def test_store_security_methods_remain_on_the_transaction_adapter():
 
 
 def test_store_rotation_is_postgres_only_at_the_security_boundary():
-    assert "_require_pg" in PostgresCaseStore.rotate_receipt.__code__.co_names
+    store = PostgresCaseStore.__new__(PostgresCaseStore)
+    store._db = type("Db", (), {"_use_pg": False})()
+    with pytest.raises(RuntimeError, match="case_postgresql_required"):
+        store.rotate_receipt("token", None, now=NOW)
 
 
 def snapshot(*, revision: int = 1, phase: CasePhase = CasePhase.INTAKE) -> CaseSnapshot:

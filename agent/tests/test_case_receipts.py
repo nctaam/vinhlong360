@@ -66,3 +66,8 @@ def test_replay_rejects_future_issue_time_and_bad_boundary_inputs():
     for value in (None, b"secret", "\ud800"):
         with pytest.raises(CaseSecurityError, match="invalid_case_credential"):
             crypto.digest_capability(value)
+
+
+def test_canonical_key_validator_rejects_noncanonical_base64():
+    with pytest.raises(CaseSecurityError, match="case_encryption_key_required"):
+        CaseCrypto(KEY[:-1] + "_")

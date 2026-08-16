@@ -84,6 +84,17 @@ ran the expanded Task 2/4/5 verification. It returned `97 passed`. Focused
 authenticated lifecycle/rotation and direct old-080 replay reconciliation then
 returned `2 passed`. The database is dropped after final gates.
 
+## Fix round 2 (persistence and readiness gaps)
+
+This continuation adds the missing PostgreSQL guard on rotation, canonical
+unpadded key re-encoding checks, Python constant-time digest comparison after
+candidate lookup, and a replay-safe same-case access-session trigger in both
+080 and `init.sql`. A focused RED test first reached the unguarded rotation
+crypto call; it now fails closed with `case_postgresql_required`. The guarded
+PostgreSQL rotation race remains one successor plus one credential failure, and
+the focused suite is green. The disposable `vl360_case_task5_fix2_test` is
+dropped after the final gate.
+
 ## Fix round 2
 
 Round 2 hardens revocation serialization and strict key/boundary handling.
@@ -100,6 +111,18 @@ RED: strict-key/future-replay and boundary regressions initially produced
 PostgreSQL idempotency and concurrent-rotation checks remain green from the
 preceding gate, and the final focused verification is recorded with the fix
 commit.
+
+## Fix round 2 (continued)
+
+The follow-up review found a missing PostgreSQL guard on rotation, noncanonical
+key acceptance, SQL-only digest comparison, and missing same-case ownership
+enforcement. Rotation now fails closed before touching crypto when PostgreSQL
+is unavailable. The shared key validator requires canonical unpadded URL-safe
+Base64 re-encoding. Exchange/validation perform a Python constant-time digest
+comparison after candidate lookup, and migration/init install an idempotent
+same-case access-session trigger. The focused guard RED was reproduced first
+and then passed after the fix; final focused verification is attached to the
+new commit.
 
 ## Fix round 1
 
