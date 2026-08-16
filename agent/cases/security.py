@@ -190,9 +190,11 @@ class CaseSecurityService:
         self._crypto = crypto
 
 
-    def issue_receipt(self, case_id: str, *, now: datetime, current_user_id: str | None = None, idempotency_key: str | None = None) -> ReceiptGrant:
+    def issue_receipt(self, case_id: str, *, now: datetime, current_user_id: str | None = None, idempotency_key: str | None = None, transaction=None) -> ReceiptGrant:
         if self._store is None:
             raise CaseSecurityError("case_postgresql_required")
+        if transaction is not None:
+            return transaction.issue_receipt(case_id, self._crypto, now=now, current_user_id=self._crypto.normalize_subject(current_user_id), idempotency_key=idempotency_key)
         return self._store.issue_receipt(case_id, self._crypto, now=now, current_user_id=self._crypto.normalize_subject(current_user_id), idempotency_key=idempotency_key)
 
     def exchange_receipt(self, public_reference: str, capability: str, *, now: datetime, current_user_id: str | None = None) -> AccessGrant:
@@ -205,10 +207,10 @@ class CaseSecurityService:
             raise CaseSecurityError("case_postgresql_required")
         return self._store.validate_access(token, self._crypto, now=now, current_user_id=self._crypto.normalize_subject(current_user_id))
 
-    def rotate_receipt(self, access_token: str, *, now: datetime, current_user_id: str | None = None) -> ReceiptGrant:
+    def rotate_receipt(self, access_token: str, *, now: datetime, current_user_id: str | None = None, idempotency_key: str | None = None) -> ReceiptGrant:
         if self._store is None:
             raise CaseSecurityError("case_postgresql_required")
-        return self._store.rotate_receipt(access_token, self._crypto, now=now, current_user_id=self._crypto.normalize_subject(current_user_id))
+        return self._store.rotate_receipt(access_token, self._crypto, now=now, current_user_id=self._crypto.normalize_subject(current_user_id), idempotency_key=idempotency_key)
 
     def revoke_access(self, case_id: str, *, now: datetime) -> None:
         if self._store is None:
@@ -258,8 +260,8 @@ def exchange_receipt(public_reference: str, capability: str, *, now: datetime, c
     return _service_or_configured(service).exchange_receipt(public_reference, capability, now=now, current_user_id=current_user_id)
 
 
-def rotate_receipt(access_token: str, *, now: datetime, current_user_id: str | None = None, service: CaseSecurityService | None = None) -> ReceiptGrant:
-    return _service_or_configured(service).rotate_receipt(access_token, now=now, current_user_id=current_user_id)
+def rotate_receipt(access_token: str, *, now: datetime, current_user_id: str | None = None, idempotency_key: str | None = None, service: CaseSecurityService | None = None) -> ReceiptGrant:
+    return _service_or_configured(service).rotate_receipt(access_token, now=now, current_user_id=current_user_id, idempotency_key=idempotency_key)
 
 
 def revoke_access(case_id: str, *, now: datetime, service: CaseSecurityService | None = None) -> None:

@@ -4162,7 +4162,7 @@ async def readiness_probe():
         else:
             from cases.security import validate_case_encryption_key
             try:
-                validate_case_encryption_key(_settings.CASE_KERNEL_ENCRYPTION_KEY.strip())
+                validate_case_encryption_key(_settings.CASE_KERNEL_ENCRYPTION_KEY)
                 key_valid = True
             except Exception:
                 key_valid = False
@@ -4173,7 +4173,7 @@ async def readiness_probe():
             )
             checks["case_owner"] = (
                 {"ok": True, "state": "ready", "code": "case_owner_ready"}
-                if _is_individual_actor_ref(_settings.CASE_SERVICE_OWNER_REF.strip())
+                if _is_individual_actor_ref(_settings.CASE_SERVICE_OWNER_REF)
                 else {"ok": False, "state": "blocked", "code": "case_owner_individual_required"}
             )
             try:

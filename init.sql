@@ -753,6 +753,12 @@ CREATE TABLE IF NOT EXISTS case_receipts (
     CONSTRAINT case_receipts_expiry_order CHECK (expires_at > created_at)
 );
 ALTER TABLE case_receipts OWNER TO vl360;
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'case_receipts_case_receipt_unique' AND conrelid = 'case_receipts'::regclass) THEN
+        ALTER TABLE case_receipts ADD CONSTRAINT case_receipts_case_receipt_unique UNIQUE (case_id, receipt_id);
+    END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS case_access_sessions (
     access_session_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -766,6 +772,13 @@ CREATE TABLE IF NOT EXISTS case_access_sessions (
     CONSTRAINT case_access_sessions_expiry_order CHECK (expires_at > created_at)
 );
 ALTER TABLE case_access_sessions OWNER TO vl360;
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'case_access_sessions_case_receipt_fkey' AND conrelid = 'case_access_sessions'::regclass) THEN
+        ALTER TABLE case_access_sessions ADD CONSTRAINT case_access_sessions_case_receipt_fkey
+            FOREIGN KEY (case_id, receipt_id) REFERENCES case_receipts(case_id, receipt_id) ON DELETE CASCADE;
+    END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS idx_case_access_sessions_expiry
     ON case_access_sessions(expires_at, access_session_id)
     WHERE revoked_at IS NULL;
@@ -778,6 +791,15 @@ BEGIN
     RETURN NEW;
 END;
 $$;
+CREATE OR REPLACE FUNCTION reject_case_receipt_case_move() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    IF OLD.case_id IS DISTINCT FROM NEW.case_id THEN RAISE EXCEPTION 'case_receipt_case_immutable'; END IF;
+    RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS case_receipts_case_immutable ON case_receipts;
+CREATE TRIGGER case_receipts_case_immutable BEFORE UPDATE OF case_id ON case_receipts
+FOR EACH ROW EXECUTE FUNCTION reject_case_receipt_case_move();
 DROP TRIGGER IF EXISTS case_access_sessions_same_case ON case_access_sessions;
 CREATE TRIGGER case_access_sessions_same_case BEFORE INSERT OR UPDATE ON case_access_sessions
 FOR EACH ROW EXECUTE FUNCTION enforce_case_access_same_case();

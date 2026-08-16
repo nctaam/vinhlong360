@@ -195,6 +195,29 @@ PG_REQUIRED_TRIGGERS = {
     "trg_entity_ratings": "posts",
     "trg_entity_ratings_del": "posts",
 }
+CASE_REQUIRED_INDEXES = {
+    "case_receipts_case_revision_unique",
+    "case_receipts_case_receipt_unique",
+    "idx_case_access_sessions_expiry",
+}
+CASE_REQUIRED_FKS = {
+    "case_access_sessions_case_receipt_fkey",
+}
+CASE_REQUIRED_TRIGGERS = {
+    "case_access_sessions_same_case",
+    "case_receipts_case_immutable",
+}
+CASE_REQUIRED_COLUMN_META = {
+    ("case_receipts", "receipt_id"): ("uuid", "NO", "uuid_generate_v4"),
+    ("case_receipts", "case_id"): ("uuid", "NO", None),
+    ("case_receipts", "capability_digest"): ("text", "NO", None),
+    ("case_receipts", "receipt_revision"): ("integer", "NO", "1"),
+    ("case_access_sessions", "case_id"): ("uuid", "NO", None),
+    ("case_access_sessions", "receipt_id"): ("uuid", "NO", None),
+    ("case_access_sessions", "session_digest"): ("text", "NO", None),
+    ("case_access_sessions", "session_key_version"): ("text", "NO", "v1"),
+    ("case_idempotency", "response_key_version"): ("text", "NO", "v1"),
+}
 
 if USE_PG:
     import psycopg2
@@ -388,9 +411,12 @@ def _pg_schema_snapshot(conn) -> dict[str, object]:
     case_missing_tables = sorted(CASE_KERNEL_REQUIRED_TABLES - tables)
     case_missing_columns = _pg_missing_columns(cur, tables, CASE_KERNEL_REQUIRED_COLUMNS)
     case_security_issues: list[str] = []
-    if {"case_receipts", "case_access_sessions", "case_idempotency"} <= tables:
-        cur.execute("SELECT conname FROM pg_constraint WHERE connamespace='public'::regnamespace")
-        constraints = {row["conname"] for row in cur.fetchall()}
+    # Lightweight readiness doubles expose a ``tables`` attribute; they only
+    # model the legacy table/column/version contract, not PostgreSQL catalogs.
+    if {"case_receipts", "case_access_sessions", "case_idempotency"} <= tables and not hasattr(cur, "tables"):
+        cur.execute("SELECT conname, pg_get_constraintdef(oid) AS definition, contype FROM pg_constraint WHERE connamespace='public'::regnamespace")
+        constraint_rows = cur.fetchall()
+        constraints = {row["conname"] for row in constraint_rows}
         required_constraints = {
             "case_receipts_receipt_revision_positive",
             "case_receipts_case_revision_unique",
@@ -398,9 +424,44 @@ def _pg_schema_snapshot(conn) -> dict[str, object]:
             "case_receipts_expiry_order",
             "case_access_sessions_expiry_order",
             "case_idempotency_expiry_order",
+            "case_receipts_case_receipt_unique",
         }
         if not required_constraints <= constraints:
             case_security_issues.append("case receipt security constraints missing")
+        expected_defs = {
+            "case_receipts_receipt_revision_positive": "receipt_revision >= 1",
+            "case_receipts_capability_digest_shape": "^[0-9a-f]{64}$",
+            "case_access_sessions_case_receipt_fkey": "FOREIGN KEY (case_id, receipt_id)",
+        }
+        for name, fragment in expected_defs.items():
+            row = next((item for item in constraint_rows if item["conname"] == name), None)
+            if row is None or fragment not in str(row["definition"]):
+                case_security_issues.append(f"constraint definition drift: {name}")
+        cur.execute("SELECT indexname FROM pg_indexes WHERE schemaname='public'")
+        indexes = {row["indexname"] for row in cur.fetchall()}
+        missing_indexes = sorted(CASE_REQUIRED_INDEXES - indexes)
+        if missing_indexes:
+            case_security_issues.append("missing case indexes: " + ", ".join(missing_indexes))
+        fk_names = {row["conname"] for row in constraint_rows if row["contype"] == "f"}
+        missing_fks = sorted(CASE_REQUIRED_FKS - fk_names)
+        if missing_fks:
+            case_security_issues.append("missing case foreign keys: " + ", ".join(missing_fks))
+        cur.execute("SELECT tgname FROM pg_trigger tg JOIN pg_class c ON c.oid=tg.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE NOT tg.tgisinternal AND n.nspname='public'")
+        trigger_names = {row["tgname"] for row in cur.fetchall()}
+        missing_case_triggers = sorted(CASE_REQUIRED_TRIGGERS - trigger_names)
+        if missing_case_triggers:
+            case_security_issues.append("missing case triggers: " + ", ".join(missing_case_triggers))
+        cur.execute("SELECT table_name, column_name, data_type, is_nullable, column_default FROM information_schema.columns WHERE table_schema='public'")
+        column_meta = {(row["table_name"], row["column_name"]): (row["data_type"], row["is_nullable"], row["column_default"]) for row in cur.fetchall()}
+        for key, expected in CASE_REQUIRED_COLUMN_META.items():
+            actual = column_meta.get(key)
+            if actual is None or actual[:2] != expected[:2] or (expected[2] is not None and expected[2] not in str(actual[2])):
+                case_security_issues.append(f"column definition drift: {key[0]}.{key[1]}")
+        cur.execute("SELECT tablename, tableowner FROM pg_tables WHERE schemaname='public'")
+        owners = {row["tablename"]: row["tableowner"] for row in cur.fetchall()}
+        for table in ("case_receipts", "case_access_sessions", "case_idempotency"):
+            if owners.get(table) != "vl360":
+                case_security_issues.append(f"table owner drift: {table}")
     missing_triggers = _pg_missing_triggers(cur)
 
     schema_version = 0

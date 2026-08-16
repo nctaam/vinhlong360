@@ -181,10 +181,10 @@ class Settings(BaseSettings):
         if any(case_flags) and not is_postgresql_url(self.DATABASE_URL):
             raise ValueError("case_postgresql_required")
         if any(case_flags):
-            owner = self.CASE_SERVICE_OWNER_REF.strip()
+            owner = self.CASE_SERVICE_OWNER_REF
             try:
                 from cases.security import validate_case_encryption_key
-                validate_case_encryption_key(self.CASE_KERNEL_ENCRYPTION_KEY.strip())
+                validate_case_encryption_key(self.CASE_KERNEL_ENCRYPTION_KEY)
             except Exception:
                 raise ValueError("case_encryption_key_required")
             if not _is_individual_actor_ref(owner):

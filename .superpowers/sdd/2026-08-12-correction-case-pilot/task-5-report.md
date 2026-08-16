@@ -124,6 +124,34 @@ same-case access-session trigger. The focused guard RED was reproduced first
 and then passed after the fix; final focused verification is attached to the
 new commit.
 
+## Fix round 3 (receipt authority and readiness)
+
+The final continuation closes deterministic bearer lookup, same-case receipt
+ownership, expired idempotency reuse, collision retry classification, and
+schema readiness drift. Access validation now narrows by session digest and
+asserts the joined receipt has the same case before the Python constant-time
+comparison. Receipts have a composite `(case_id, receipt_id)` key, access
+sessions have the matching composite foreign key, and receipt case moves are
+rejected by idempotent triggers in migration 080 and `init.sql`.
+
+Idempotency keys are serialized with a transaction advisory lock; expired
+rows are removed before reuse, preventing raw unique violations under same-
+actor concurrency. Receipt collision retries now require SQLSTATE `23505` and
+one of the expected public-reference/capability constraints. Transaction-
+bound receipt issuance is available on `CaseTransaction`, and rotation replay
+is supported when an explicit idempotency key is supplied. Configuration and
+readiness no longer strip key or owner inputs before shared validation.
+
+Readiness now checks case column types/nullability/defaults, owners,
+constraint definitions, indexes, foreign keys, and triggers while preserving
+the dormant schema-79 behavior and stable `case_schema_not_ready` code.
+
+Verification: database readiness `191 passed, 1 xfailed`; guarded migration,
+readiness, and schema contracts `50 passed`; case store/transaction contracts
+`23 passed`; access/receipt/source guards `17 passed`; Ruff and `git diff
+--check` passed. The disposable `vl360_case_task5_fix2_test` database was
+dropped after verification.
+
 ## Fix round 1
 
 The review identified a rotate time-of-check/time-of-use window, PostgreSQL
