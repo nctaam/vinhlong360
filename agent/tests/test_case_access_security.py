@@ -101,6 +101,16 @@ def test_cookie_csrf_and_origin_contract():
             crypto.validate_case_csrf(access, malformed)
 
 
+def test_csrf_rejects_noncanonical_base64_signature_suffixes():
+    crypto = CaseCrypto(KEY)
+    access = crypto.make_access("case-1", "receipt-1", 1, "a" * 64, None)
+    token = crypto.issue_case_csrf(access, random_bytes=lambda _count: b"x" * 16)
+    nonce, signature = token.split(".", 1)
+    for malformed in (f"{nonce}.{signature}=", f"{nonce}.{signature}junk"):
+        with pytest.raises(CaseSecurityError, match="invalid_case_credential"):
+            crypto.validate_case_csrf(access, malformed)
+
+
 def test_subject_rejects_blank_identity_and_cookie_helper_returns_both_specs():
     crypto = CaseCrypto(KEY)
     with pytest.raises(CaseSecurityError, match="invalid_case_credential"):
@@ -206,3 +216,31 @@ def test_postgres_two_rotations_of_one_bearer_create_one_successor():
     with db._conn(commit_on_success=False) as conn:
         row = db._fetchone(conn, "SELECT COUNT(*) AS count FROM case_receipts WHERE case_id=%s", (case_id,))
     assert db._row_to_dict(row)["count"] == 2
+
+
+@pg_only
+def test_rotation_replay_requires_the_original_authorized_bearer_and_case():
+    import database
+    import psycopg2
+    import psycopg2.extras
+    import uuid
+
+    database.psycopg2 = psycopg2
+    database.psycopg2.extras = psycopg2.extras
+    db = database.Database()
+    db._use_pg = True
+    db._dsn = _test_dsn()
+    case_ids = [str(uuid.uuid4()), str(uuid.uuid4())]
+    with db._conn(commit_on_success=False) as conn:
+        for category, case_id in (("replay-owner-a", case_ids[0]), ("replay-owner-b", case_ids[1])):
+            db._execute(conn, "INSERT INTO cases(case_id, service_kind, category, phase, activity, disposition_family, reporter_privacy, owner_ref, promise_policy_ref) VALUES (%s, 'correction', %s, 'intake', 'active', 'undetermined', 'anonymous', 'person:test', 'policy:test')", (case_id, category))
+        conn.commit()
+    service = CaseSecurityService(PostgresCaseStore(db), CaseCrypto(KEY))
+    grants = [service.issue_receipt(case_id, now=NOW, current_user_id="user-1") for case_id in case_ids]
+    accesses = [service.exchange_receipt(grant.public_reference, grant.capability, now=NOW, current_user_id="user-1") for grant in grants]
+    operation_key = f"rotate-replay-{case_ids[0]}"
+    first = service.rotate_receipt(accesses[0].access_token, now=NOW, current_user_id="user-1", idempotency_key=operation_key)
+    assert first.revision == 2
+    for token in ("not-a-bearer", accesses[1].access_token):
+        with pytest.raises(CaseSecurityError, match="invalid_case_credential"):
+            service.rotate_receipt(token, now=NOW, current_user_id="user-1", idempotency_key=operation_key)

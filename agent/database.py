@@ -414,7 +414,12 @@ def _pg_schema_snapshot(conn) -> dict[str, object]:
     # Lightweight readiness doubles expose a ``tables`` attribute; they only
     # model the legacy table/column/version contract, not PostgreSQL catalogs.
     if {"case_receipts", "case_access_sessions", "case_idempotency"} <= tables and not hasattr(cur, "tables"):
-        cur.execute("SELECT conname, pg_get_constraintdef(oid) AS definition, contype FROM pg_constraint WHERE connamespace='public'::regnamespace")
+        cur.execute("""
+            SELECT conname, pg_get_constraintdef(oid) AS definition, contype,
+                   conrelid::regclass::text AS table_name
+            FROM pg_constraint
+            WHERE connamespace='public'::regnamespace
+        """)
         constraint_rows = cur.fetchall()
         constraints = {row["conname"] for row in constraint_rows}
         required_constraints = {
@@ -431,26 +436,78 @@ def _pg_schema_snapshot(conn) -> dict[str, object]:
         expected_defs = {
             "case_receipts_receipt_revision_positive": "receipt_revision >= 1",
             "case_receipts_capability_digest_shape": "^[0-9a-f]{64}$",
-            "case_access_sessions_case_receipt_fkey": "FOREIGN KEY (case_id, receipt_id)",
+            "case_receipts_expiry_order": "expires_at > created_at",
+            "case_access_sessions_expiry_order": "expires_at > created_at",
+            "case_access_sessions_case_receipt_fkey": "FOREIGN KEY (case_id, receipt_id) REFERENCES case_receipts(case_id, receipt_id) ON DELETE CASCADE",
+        }
+        expected_owners = {
+            "case_receipts_receipt_revision_positive": "case_receipts",
+            "case_receipts_capability_digest_shape": "case_receipts",
+            "case_receipts_expiry_order": "case_receipts",
+            "case_access_sessions_expiry_order": "case_access_sessions",
+            "case_access_sessions_case_receipt_fkey": "case_access_sessions",
         }
         for name, fragment in expected_defs.items():
             row = next((item for item in constraint_rows if item["conname"] == name), None)
-            if row is None or fragment not in str(row["definition"]):
+            if row is None or row.get("table_name") != expected_owners[name] or fragment not in " ".join(str(row["definition"]).split()):
                 case_security_issues.append(f"constraint definition drift: {name}")
-        cur.execute("SELECT indexname FROM pg_indexes WHERE schemaname='public'")
-        indexes = {row["indexname"] for row in cur.fetchall()}
+        expected_unique_constraints = {
+            "case_receipts_public_reference_key": ("case_receipts", "UNIQUE (public_reference)"),
+            "case_receipts_capability_digest_key": ("case_receipts", "UNIQUE (capability_digest)"),
+            "case_access_sessions_session_digest_key": ("case_access_sessions", "UNIQUE (session_digest)"),
+        }
+        for name, (table_name, fragment) in expected_unique_constraints.items():
+            row = next((item for item in constraint_rows if item["conname"] == name), None)
+            if row is None or row.get("table_name") != table_name or fragment not in " ".join(str(row["definition"]).split()):
+                case_security_issues.append(f"unique constraint definition drift: {name}")
+        cur.execute("SELECT indexname, tablename, indexdef FROM pg_indexes WHERE schemaname='public'")
+        index_rows = cur.fetchall()
+        indexes = {row["indexname"] for row in index_rows}
         missing_indexes = sorted(CASE_REQUIRED_INDEXES - indexes)
         if missing_indexes:
             case_security_issues.append("missing case indexes: " + ", ".join(missing_indexes))
+        expected_index_owners = {
+            "case_receipts_case_revision_unique": "case_receipts",
+            "case_receipts_case_receipt_unique": "case_receipts",
+            "idx_case_access_sessions_expiry": "case_access_sessions",
+        }
+        for name, table_name in expected_index_owners.items():
+            row = next((item for item in index_rows if item["indexname"] == name), None)
+            if row is None or row.get("tablename") != table_name:
+                case_security_issues.append(f"index definition drift: {name}")
         fk_names = {row["conname"] for row in constraint_rows if row["contype"] == "f"}
         missing_fks = sorted(CASE_REQUIRED_FKS - fk_names)
         if missing_fks:
             case_security_issues.append("missing case foreign keys: " + ", ".join(missing_fks))
-        cur.execute("SELECT tgname FROM pg_trigger tg JOIN pg_class c ON c.oid=tg.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE NOT tg.tgisinternal AND n.nspname='public'")
-        trigger_names = {row["tgname"] for row in cur.fetchall()}
+        expected_fks = {
+            "case_access_sessions_case_id_fkey": ("case_access_sessions", "FOREIGN KEY (case_id) REFERENCES cases(case_id) ON DELETE CASCADE"),
+            "case_access_sessions_receipt_id_fkey": ("case_access_sessions", "FOREIGN KEY (receipt_id) REFERENCES case_receipts(receipt_id) ON DELETE CASCADE"),
+            "case_access_sessions_case_receipt_fkey": ("case_access_sessions", "FOREIGN KEY (case_id, receipt_id) REFERENCES case_receipts(case_id, receipt_id) ON DELETE CASCADE"),
+        }
+        for name, (table_name, fragment) in expected_fks.items():
+            row = next((item for item in constraint_rows if item["conname"] == name), None)
+            if row is None or row.get("table_name") != table_name or fragment not in " ".join(str(row["definition"]).split()):
+                case_security_issues.append(f"foreign key definition drift: {name}")
+        cur.execute("""
+            SELECT tg.tgname, c.relname AS table_name, pg_get_triggerdef(tg.oid) AS definition
+            FROM pg_trigger tg
+            JOIN pg_class c ON c.oid=tg.tgrelid
+            JOIN pg_namespace n ON n.oid=c.relnamespace
+            WHERE NOT tg.tgisinternal AND n.nspname='public'
+        """)
+        trigger_rows = cur.fetchall()
+        trigger_names = {row["tgname"] for row in trigger_rows}
         missing_case_triggers = sorted(CASE_REQUIRED_TRIGGERS - trigger_names)
         if missing_case_triggers:
             case_security_issues.append("missing case triggers: " + ", ".join(missing_case_triggers))
+        expected_trigger_defs = {
+            "case_receipts_case_immutable": ("case_receipts", "EXECUTE FUNCTION reject_case_receipt_case_move()"),
+            "case_access_sessions_same_case": ("case_access_sessions", "EXECUTE FUNCTION enforce_case_access_same_case()"),
+        }
+        for name, (table_name, fragment) in expected_trigger_defs.items():
+            row = next((item for item in trigger_rows if item["tgname"] == name), None)
+            if row is None or row.get("table_name") != table_name or fragment not in " ".join(str(row["definition"]).split()):
+                case_security_issues.append(f"trigger definition drift: {name}")
         cur.execute("SELECT table_name, column_name, data_type, is_nullable, column_default FROM information_schema.columns WHERE table_schema='public'")
         column_meta = {(row["table_name"], row["column_name"]): (row["data_type"], row["is_nullable"], row["column_default"]) for row in cur.fetchall()}
         for key, expected in CASE_REQUIRED_COLUMN_META.items():
@@ -459,7 +516,7 @@ def _pg_schema_snapshot(conn) -> dict[str, object]:
                 case_security_issues.append(f"column definition drift: {key[0]}.{key[1]}")
         cur.execute("SELECT tablename, tableowner FROM pg_tables WHERE schemaname='public'")
         owners = {row["tablename"]: row["tableowner"] for row in cur.fetchall()}
-        for table in ("case_receipts", "case_access_sessions", "case_idempotency"):
+        for table in CASE_KERNEL_REQUIRED_TABLES:
             if owners.get(table) != "vl360":
                 case_security_issues.append(f"table owner drift: {table}")
     missing_triggers = _pg_missing_triggers(cur)

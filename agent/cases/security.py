@@ -159,13 +159,30 @@ class CaseCrypto:
         try:
             if type(presented_token) is not str:
                 raise ValueError
-            nonce, signature = presented_token.split(".", 1)
+            if presented_token.count(".") != 1:
+                raise ValueError
+            nonce, signature = presented_token.split(".")
+            nonce_bytes = self._decode_canonical_b64url(nonce, expected_len=16)
             expected = hmac.new(self._capability_key, f"csrf:{access.session_digest}:{nonce}".encode("ascii"), hashlib.sha256).digest()
-            received = base64.urlsafe_b64decode(signature + "=" * (-len(signature) % 4))
+            received = self._decode_canonical_b64url(signature, expected_len=32)
             if not hmac.compare_digest(expected, received):
                 raise ValueError
-        except (AttributeError, ValueError, UnicodeError) as exc:
+            if not nonce_bytes:
+                raise ValueError
+        except (AttributeError, ValueError, UnicodeError, TypeError) as exc:
             raise CaseSecurityError(_PUBLIC_ERROR) from exc
+
+    @staticmethod
+    def _decode_canonical_b64url(value: str, *, expected_len: int) -> bytes:
+        """Decode unpadded URL-safe base64 without accepting junk or aliases."""
+        if type(value) is not str or not value or not re.fullmatch(r"[A-Za-z0-9_-]+", value):
+            raise ValueError
+        padded = value + "=" * (-len(value) % 4)
+        decoded = base64.b64decode(padded.encode("ascii"), altchars=b"-_", validate=True)
+        canonical = base64.urlsafe_b64encode(decoded).rstrip(b"=").decode("ascii")
+        if len(decoded) != expected_len or canonical != value:
+            raise ValueError
+        return decoded
 
     @staticmethod
     def case_access_cookie(token: str, *, production: bool) -> dict[str, object]:

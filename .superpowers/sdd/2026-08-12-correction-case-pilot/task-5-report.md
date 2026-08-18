@@ -183,3 +183,30 @@ replay/same-site/subject helpers, followed by green `10 passed, 1 skipped`.
 The idempotency delegation RED was one missing keyword-argument failure;
 the guarded PostgreSQL replay test and concurrent rotation test subsequently
 passed. Final verification is recorded with the fix commit.
+
+## Fix round 4 (replay authority and exact readiness)
+
+Rotation replay now resolves the presented bearer before reading encrypted
+idempotency output and binds the request digest to the operation key, actor,
+case, and session digest. Invalid tokens and valid tokens from another case
+receive the same public credential error. Revoke and rotate explicitly acquire
+PostgreSQL row locks in the shared case, ordered-receipts, ordered-sessions
+sequence, including the real concurrent rotation regression.
+
+Readiness now verifies the owning table and catalog definition for the required
+receipt/session constraints, indexes, foreign keys, and triggers; checks the
+foreign-key target and delete action; requires unique public references,
+capability digests, and session digests; and checks every Case Kernel table
+owner while retaining the dormant schema-79 projection. CSRF validation uses
+strict canonical unpadded URL-safe base64 decoding for both nonce and signature.
+The source guard tracks exact bearer identifiers and direct aliases only inside
+Python/Nuxt logger, query, route, notification, persistence, DOM, local-storage,
+and session-storage call arguments rather than treating the whole file as a
+single sink.
+
+RED evidence: the CSRF suffix regression failed because an extra `=` was
+accepted; the exact-capability alias regression failed with `0` detected sinks
+instead of `2`. GREEN evidence: combined focused verification returned
+`221 passed, 13 skipped, 1 xfailed`; the freshly migrated disposable PostgreSQL
+suite returned `45 passed`; Ruff and `git diff --check` passed. The disposable
+`vl360_case_task5_fix4_test` database was dropped after verification.

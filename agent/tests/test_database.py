@@ -120,6 +120,19 @@ def test_pg_schema_contract_tracks_latest_release_tables():
     } <= PG_REQUIRED_COLUMNS["user_preferences"]
 
 
+def test_case_readiness_checks_exact_security_catalog_definitions():
+    source = inspect.getsource(database_module._pg_schema_snapshot)
+    for required in (
+        "case_receipts_public_reference_key",
+        "case_receipts_capability_digest_key",
+        "case_access_sessions_session_digest_key",
+        "REFERENCES case_receipts(case_id, receipt_id) ON DELETE CASCADE",
+        "EXECUTE FUNCTION enforce_case_access_same_case()",
+        "for table in CASE_KERNEL_REQUIRED_TABLES",
+    ):
+        assert required in source
+
+
 _NP1_REQUIRED_COLUMNS = {
     "user_preferences": {
         "user_id", "region_id", "region_label", "region_scope",
