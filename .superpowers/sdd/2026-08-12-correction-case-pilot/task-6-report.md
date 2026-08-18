@@ -179,3 +179,48 @@ row lock, so a concurrent delete between the check and the insert produced the
 Verification after the fixes: the two new-file suites `29 passed` twice in a row;
 the plan's GREEN command `37 passed`; the full case, schema, readiness and
 database sweep `340 passed, 1 xfailed`; Ruff clean; `git diff --check` exit 0.
+
+## Second independent review, and its three findings
+
+A second cloud review over the same base returned three findings. Two were
+accepted in full and one was accepted only in part.
+
+**A signed-in reporter filing anonymously was locked out of their own receipt.**
+`_commit_case` issued the receipt with `current_user_id=session_user_ref`, while
+reporter privacy, identity assurance and party authority all read
+`command.authenticated_user_ref`. A reporter who was signed in but deliberately
+did not link the case therefore got a receipt bound to their account, and
+`exchange_receipt` rejects a bound receipt presented without that account. After
+logging out, from another device, or after clearing cookies, the capability was
+unusable, and for an anonymous case the capability is the only way back in. The
+receipt now follows the opt-in, and a regression test files while signed in with
+no linkage and asserts the receipt subject is NULL, privacy stays anonymous and
+no party authority is written.
+
+**Reporter privacy fed the digest and nothing else.** The field was part of the
+locked command signature but the stored value was re-derived from the session,
+so two retries differing only in that field conflicted while producing identical
+cases. Rather than drop a field the handoff pins, the service now uses the
+reporter's stated choice, bounded to `anonymous` or `attributed`, and rejects
+`attributed` without a session. Signing in still never forces attribution. One
+earlier test asserted the old derivation and was updated to the corrected
+contract.
+
+**The English marker list repeated the substring mistake — partly.** `dying`
+matched `studying` and `khan cap` matched `Khan Capital`, the same class of
+defect the diacritic split had just fixed on the Vietnamese side. Folded markers
+are now matched on word boundaries, which fixes both of those.
+
+Accepted only in part: the review also listed `assault course training gym`,
+`kidnap simulation drill` and `suicide squad film screening`. Word boundaries do
+not help there, and neither does the fix the review proposed, because in those
+strings the marker really is a standalone word. Removing the markers is the only
+way to silence them, and that would trade a rare rejected venue-name correction
+for a missed report of real harm. The markers stay, the deliberate choice is now
+pinned by its own test, and the test expectations written from the review's
+examples were corrected to what word boundaries can actually deliver rather than
+left asserting a fix that does not exist.
+
+Verification: the two create suites `30 passed` twice; the plan's GREEN command
+`38 passed`; the full case, schema, readiness and database sweep
+`353 passed, 1 xfailed`; Ruff clean; `git diff --check` exit 0.

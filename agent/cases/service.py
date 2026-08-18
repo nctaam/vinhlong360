@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hmac
 import json
+import re
 import unicodedata
 import uuid
 from dataclasses import dataclass
@@ -54,6 +55,7 @@ CORRECTABLE_FIELD_PATHS: dict[str, RiskClass] = {
     "attributes.website": RiskClass.R1,
     "attributes.price_range": RiskClass.R0,
 }
+REPORTER_PRIVACY_CHOICES = frozenset({"anonymous", "attributed"})
 MAX_CORRECTION_ITEMS = 10
 MAX_CORRECTION_VALUE = 2000
 
@@ -74,6 +76,12 @@ _URGENT_FOLDED = (
     "emergency", "dying", "suicide", "kidnap", "assault", "death threat",
 )
 
+# Whole words only. "dying" is a substring of "studying" and "khan cap" of
+# "Khan Capital", so bare containment repeats on the English list exactly the
+# mistake the diacritic split fixed on the Vietnamese one.
+_URGENT_FOLDED_PATTERN = re.compile(
+    r"\b(?:" + "|".join(re.escape(marker) for marker in _URGENT_FOLDED) + r")\b"
+)
 _SAFE_URGENT_MESSAGE = (
     "Việc này cần cơ quan chức năng xử lý ngay, không phải kênh đính chính nội dung. "
     "Gọi 113 (công an), 114 (cứu hoả) hoặc 115 (cấp cứu) để được hỗ trợ khẩn cấp. "
@@ -165,8 +173,7 @@ def _looks_urgent(text: str) -> bool:
     lowered = text.lower()
     if any(marker in lowered for marker in _URGENT_EXACT):
         return True
-    folded = _fold(text)
-    return any(marker in folded for marker in _URGENT_FOLDED)
+    return _URGENT_FOLDED_PATTERN.search(_fold(text)) is not None
 
 
 class CaseService:
@@ -187,7 +194,8 @@ class CaseService:
         return "session" if command.authenticated_user_ref else "none"
 
     def reporter_privacy_for(self, command: CreateCorrectionCommand) -> str:
-        return "attributed" if command.authenticated_user_ref else "anonymous"
+        """The reporter's stated choice, which `_validate_privacy` has bounded."""
+        return command.reporter_privacy
 
     def party_authority_draft_for(
         self, command: CreateCorrectionCommand, *, case_id: str, now: datetime
@@ -220,6 +228,18 @@ class CaseService:
             raise _reject(
                 "authenticated_ref_not_server_derived",
                 "Account linkage is taken from the signed-in session only.",
+                status=403,
+            )
+
+    def _validate_privacy(self, command: CreateCorrectionCommand) -> None:
+        if command.reporter_privacy not in REPORTER_PRIVACY_CHOICES:
+            raise _reject("invalid_reporter_privacy", "That reporting choice is not offered.")
+        # Signing in never forces attribution, but claiming attribution without a
+        # session would put a name on a case nobody proved they own.
+        if command.reporter_privacy == "attributed" and not command.authenticated_user_ref:
+            raise _reject(
+                "attribution_requires_a_session",
+                "Sign in to file this correction under your account.",
                 status=403,
             )
 
@@ -373,6 +393,7 @@ class CaseService:
         if type(now) is not datetime or now.tzinfo is None:
             raise _reject("invalid_command_clock", "An aware timestamp is required.")
         self._validate_actor(command, session_user_ref)
+        self._validate_privacy(command)
         self._validate_handoff(command)
         self._validate_items(command)
         self._route_safety(command)
@@ -583,11 +604,14 @@ class CaseService:
             )
         )
 
+        # Bind the receipt to the account only when the reporter opted in.
+        # Using the session here would silently lock a signed-in reporter who
+        # filed anonymously out of their own capability after logging out.
         grant = transaction.issue_receipt(
             case_id,
             crypto,
             now=now,
-            current_user_id=session_user_ref,
+            current_user_id=command.authenticated_user_ref,
         )
 
         # Intent only: the dispatcher re-checks consent, verification and

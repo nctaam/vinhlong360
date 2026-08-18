@@ -143,7 +143,7 @@ def test_contact_details_never_raise_identity_assurance():
     assert service.identity_assurance_for(with_phone) == "none"
     assert service.reporter_privacy_for(with_phone) == "anonymous"
 
-    signed_in = _command(authenticated_user_ref="user:7")
+    signed_in = _command(reporter_privacy="attributed", authenticated_user_ref="user:7")
     assert service.identity_assurance_for(signed_in) == "session"
     assert service.reporter_privacy_for(signed_in) == "attributed"
 
@@ -230,3 +230,78 @@ def test_the_contact_value_is_bound_to_the_idempotency_digest():
     absent = service._request_digest(_command())
 
     assert len({first, second, absent}) == 3
+
+
+# ── Review round 2 ──
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "the students are studying at 8 to 10",
+        "Khan Capital Tower, tang 3",
+        "emergencyroom is not a word here",
+    ],
+)
+def test_english_words_that_merely_contain_a_marker_are_not_urgent(text):
+    """bug_001: the same substring defect as 'từ từ', on the English list."""
+    assert _looks_urgent(text) is False
+
+
+@pytest.mark.parametrize(
+    "text",
+    ["assault course training gym", "suicide squad film screening"],
+)
+def test_a_standalone_harm_word_still_routes_even_inside_a_venue_name(text):
+    """Deliberate: word boundaries cannot disambiguate a real standalone word.
+
+    Routing a cinema listing to the safety lane costs one rejected correction
+    with copy pointing at the emergency services; not routing a real report
+    costs far more, so the fail-safe direction wins here.
+    """
+    assert _looks_urgent(text) is True
+
+
+@pytest.mark.parametrize(
+    "text",
+    ["a customer is dying", "this is an emergency", "reports of an assault here"],
+)
+def test_english_markers_still_route_as_whole_words(text):
+    assert _looks_urgent(text) is True
+
+
+def test_reporter_privacy_is_taken_from_the_command_not_re_derived():
+    """bug_003: the field fed the idempotency digest but nothing else."""
+    service = _service()
+
+    assert service.reporter_privacy_for(_command(reporter_privacy="anonymous")) == "anonymous"
+    assert (
+        service.reporter_privacy_for(
+            _command(reporter_privacy="attributed", authenticated_user_ref="user:7")
+        )
+        == "attributed"
+    )
+
+
+@pytest.mark.parametrize(
+    ("privacy", "user_ref", "code"),
+    [
+        ("attributed", None, "attribution_requires_a_session"),
+        ("public", None, "invalid_reporter_privacy"),
+        ("", None, "invalid_reporter_privacy"),
+    ],
+)
+def test_reporter_privacy_must_agree_with_the_session(privacy, user_ref, code):
+    command = _command(reporter_privacy=privacy, authenticated_user_ref=user_ref)
+
+    with pytest.raises(CorrectionRejected) as excinfo:
+        _service().create_correction(command, now=NOW, session_user_ref=user_ref)
+
+    assert excinfo.value.problem.code == code
+
+
+def test_signing_in_does_not_force_attribution():
+    """A signed-in reporter may still file anonymously."""
+    command = _command(reporter_privacy="anonymous", authenticated_user_ref=None)
+
+    assert _service().reporter_privacy_for(command) == "anonymous"
+    assert _service().party_authority_draft_for(command, case_id="c", now=NOW) is None

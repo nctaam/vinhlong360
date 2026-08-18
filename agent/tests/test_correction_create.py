@@ -410,3 +410,31 @@ def test_receipt_failure_rolls_the_whole_case_back(pg_database):
     with pg_database._conn(commit_on_success=False) as conn:
         after = pg_database._fetchone(conn, "SELECT count(*) AS n FROM cases")["n"]
     assert after == before
+
+
+@pg_only
+def test_a_signed_in_reporter_filing_anonymously_keeps_an_unbound_receipt(pg_database):
+    """bug_002: binding the receipt to the session locks them out after logout."""
+    service = _service(pg_database)
+
+    result = service.create_correction(
+        _command(envelope=_envelope(key="anon-while-signed-in-1")),
+        now=NOW,
+        session_user_ref="user:77",          # signed in ...
+        rate_subject="192.0.2.41",
+    )                                         # ... but authenticated_user_ref stays None
+
+    with pg_database._conn(commit_on_success=False) as conn:
+        receipt = pg_database._fetchone(
+            conn, "SELECT subject_user_id FROM case_receipts WHERE case_id=%s", (result.case_id,)
+        )
+        case = pg_database._fetchone(
+            conn, "SELECT reporter_privacy FROM cases WHERE case_id=%s", (result.case_id,)
+        )
+        authority = pg_database._fetchone(
+            conn, "SELECT count(*) AS n FROM case_party_authorities WHERE case_id=%s",
+            (result.case_id,),
+        )
+    assert receipt["subject_user_id"] is None
+    assert case["reporter_privacy"] == "anonymous"
+    assert authority["n"] == 0
