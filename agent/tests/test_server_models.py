@@ -157,3 +157,30 @@ class TestDynamicAgentCreateRequest:
         assert len(req.trigger_patterns) == 2
 
 # GĐ6/11: TestMultimodalAnalyzeRequest đã gỡ — model thuộc module multimodal_engine (đã xoá).
+
+
+# ── Task 7: the case router must be mounted inert and classified no-store ──
+
+def _server_source() -> str:
+    return (Path(__file__).resolve().parents[1] / "server.py").read_text(encoding="utf-8")
+
+
+def test_the_case_router_is_mounted_after_the_public_router():
+    source = _server_source()
+    assert "from cases.public_api import case_public_router" in source
+    assert source.index("app.include_router(public_router)") < source.index(
+        "app.include_router(case_public_router)"
+    )
+
+
+def test_case_credential_headers_are_allowed_by_cors():
+    source = _server_source()
+    allow_headers = source.split("allow_headers=[", 1)[1].split("]", 1)[0]
+    assert "Idempotency-Key" in allow_headers
+    assert "X-Case-CSRF" in allow_headers
+
+
+def test_case_responses_are_classified_no_store():
+    source = _server_source()
+    no_store_block = source.split('"/api/notification-preferences",', 1)[1].split("))", 1)[0]
+    assert '"/api/cases"' in no_store_block

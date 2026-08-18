@@ -986,3 +986,44 @@ Publish uses the same privacy and conflict contract as update: missing and cross
 | DELETE | `/api/me/visits/{entity_id}` | `remove_visit` | Xoá dấu want/visited của người dùng hiện tại cho một entity, luôn trả status null. |
 
 <!-- ROUTE-APPENDIX:END -->
+
+## Correction cases (`/api/cases`)
+
+Every route below is flag-gated. While `CASE_KERNEL_ENABLED` is false — the
+default — each one answers `404` with code `capability_unavailable` rather than
+`403`, so a disabled capability never advertises itself. Intake additionally
+requires `CORRECTION_INTAKE_ENABLED`. All responses carry `Cache-Control:
+no-store`, and every error is an RFC 9457 problem document
+`{type,title,status,detail,code,request_id}` that never echoes a credential.
+
+`POST /api/cases/corrections` files a correction. It requires JSON content type,
+an exact allowed `Origin` with `Sec-Fetch-Site: same-origin`, and an
+`Idempotency-Key` header; a missing key is `400 idempotency_key_required`. The
+body accepts only `items[]` (`entityId`, `fieldPath`, `reportedValue`,
+`proposedValue`, `baseEntityRevision`), `reporterPrivacy`, and the optional
+`optionalPhone`, `notificationConsent`, `handoffDigest`, `handoffConfirmed`; any
+other field is `422 invalid_request`. Success is `201` with `publicReference`,
+the one-time `capability`, `receivedAt`, `nextUpdateAt` and `replayed`. The
+capability appears in the body once and never in a header, a URL or a cookie.
+
+`POST /api/cases/access` exchanges `{publicReference, capability}` for a session.
+It answers `204` and sets `vl360_case_access` (HttpOnly, `SameSite=Lax`, path
+`/api/cases`, 900 seconds) plus the readable `vl360_case_csrf` cookie.
+
+`GET /api/cases/status` requires the access cookie and returns only
+`publicReference`, `receivedAt`, `currentStep`, `waitingFor`, `nextAction`,
+`nextUpdateAt`, `promiseHealth`, `itemDecisions`, `itemPublicationStates` and
+`reviewPath`. Backstage vocabulary — case id, owner, severity, risk class,
+evidence, raw phase or activity, capability digest and audit — never appears.
+
+`POST /api/cases/receipts/rotate`, `DELETE /api/cases/access`,
+`POST /api/cases/review`, `POST /api/cases/contact/request` and
+`POST /api/cases/contact/verify` are cookie-authenticated mutations. Each
+requires the access cookie, a same-origin request, and an `X-Case-CSRF` header
+matching the CSRF cookie; a missing or mismatched token is `403
+invalid_case_credential`. Rotation returns a fresh `publicReference` and
+`capability`. `DELETE /api/cases/access` answers `204` and expires both cookies.
+`POST /api/cases/review` takes `{reason, expectedRevision}` and answers `201`
+with the linked review case's reference and capability; it never reopens the
+original. The two contact routes enforce the same transport contract and answer
+`503 contact_verification_unavailable` until phone verification ships.

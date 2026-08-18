@@ -75,6 +75,7 @@ from admin import router as admin_router
 from auth import router as auth_router
 from notifications import router as community_router
 from public_api import router as public_router
+from cases.public_api import case_public_router
 import public_api as _public_api
 from saved import router as saved_router
 from plans import router as plans_router, public_router as plans_public_router
@@ -1118,7 +1119,7 @@ app.add_middleware(
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-    allow_headers=["Content-Type", "X-Admin-Key", "Authorization", "X-CSRF-Token"],
+    allow_headers=["Content-Type", "X-Admin-Key", "Authorization", "X-CSRF-Token", "Idempotency-Key", "X-Case-CSRF"],
 )
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
@@ -1216,6 +1217,9 @@ async def _global_exception_handler(request: Request, exc: Exception):
 app.include_router(admin_router)
 app.include_router(auth_router)
 app.include_router(public_router)
+# Flag-gated: every route answers 404 capability_unavailable while the case
+# flags are off, so mounting it is inert until rollout is explicit.
+app.include_router(case_public_router)
 app.include_router(saved_router)
 app.include_router(plans_router)
 app.include_router(plans_public_router)
@@ -1404,6 +1408,7 @@ async def track_response_time(request: Request, call_next):
                 "/api/following",
                 "/api/blocked-users",
                 "/api/notification-preferences",
+                "/api/cases",
             )):
                 response.headers["Cache-Control"] = "no-store"
             elif path.startswith(("/seo/", "/api/entities", "/api/transparency")):
