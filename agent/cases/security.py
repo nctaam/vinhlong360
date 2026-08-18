@@ -146,6 +146,29 @@ class CaseCrypto:
         except (InvalidToken, KeyError, TypeError, ValueError, UnicodeError, json.JSONDecodeError) as exc:
             raise CaseSecurityError(_PUBLIC_ERROR) from exc
 
+    def encrypt_private_payload(self, payload: Mapping[str, object]) -> str:
+        """Durable envelope for reported/proposed values.
+
+        Deliberately the same Fernet as replay so no third HKDF salt is
+        introduced, but without the replay freshness envelope: correction values
+        outlive the 24-hour lost-response window and must stay readable.
+        """
+        return self._fernet.encrypt(json.dumps({"typ": "private", "payload": dict(payload)}, separators=(",", ":")).encode("utf-8")).decode("ascii")
+
+    def decrypt_private_payload(self, ciphertext: str) -> dict:
+        try:
+            if type(ciphertext) is not str:
+                raise ValueError
+            decoded = json.loads(self._fernet.decrypt(ciphertext.encode("ascii")).decode("utf-8"))
+            payload = decoded["payload"]
+            # The envelope is tagged so a replay token, which carries a raw
+            # capability, can never be read back through this path.
+            if decoded.get("typ") != "private" or not isinstance(payload, dict):
+                raise ValueError
+            return payload
+        except (InvalidToken, KeyError, TypeError, ValueError, UnicodeError, json.JSONDecodeError) as exc:
+            raise CaseSecurityError(_PUBLIC_ERROR) from exc
+
     def make_access(self, case_id: str, receipt_id: str, receipt_revision: int, session_digest: str, current_user_id: str | None) -> CaseAccess:
         return CaseAccess(case_id, receipt_id, receipt_revision, session_digest, current_user_id)
 

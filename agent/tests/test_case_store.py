@@ -388,3 +388,102 @@ def test_transaction_cannot_be_used_after_its_context_exits():
 
     with pytest.raises(RuntimeError, match="case_transaction_closed"):
         transaction.load_case(CASE_ID)
+
+
+# ── Task 6 additions: evidence, entity guard, and idempotency claims ──
+
+class _RecordingDatabase:
+    _use_pg = True
+
+    def __init__(self, rows=None) -> None:
+        self.statements: list[tuple[str, tuple]] = []
+        self._rows = list(rows or [])
+
+    def _execute(self, conn, sql, params):
+        self.statements.append((" ".join(sql.split()), params))
+
+    def _fetchone(self, conn, sql, params):
+        self.statements.append((" ".join(sql.split()), params))
+        return self._rows.pop(0) if self._rows else None
+
+    @staticmethod
+    def _row_as_dict(row):
+        return row
+
+
+def _transaction(database):
+    return case_store.CaseTransaction(database, object())
+
+
+def test_require_entities_rejects_an_unknown_correction_target():
+    database = _RecordingDatabase(rows=[None])
+
+    with pytest.raises(CaseNotFound):
+        _transaction(database).require_entities(("p-missing",))
+
+
+def test_require_entities_checks_each_distinct_target_once():
+    database = _RecordingDatabase(rows=[{"id": "p-a"}, {"id": "p-b"}])
+
+    _transaction(database).require_entities(("p-b", "p-a", "p-b"))
+
+    assert [params for _, params in database.statements] == [("p-a",), ("p-b",)]
+
+
+@pytest.mark.parametrize("entity_ids", [["p-a"], ("",), (None,), "p-a"])
+def test_require_entities_refuses_a_malformed_reference(entity_ids):
+    with pytest.raises(ValueError, match="invalid_entity_reference"):
+        _transaction(_RecordingDatabase()).require_entities(entity_ids)
+
+
+def test_claim_idempotency_takes_a_transaction_lock_before_reading_the_row():
+    database = _RecordingDatabase(rows=[None, None])
+
+    assert _transaction(database).claim_idempotency("create:k", now=NOW) is None
+
+    assert "pg_advisory_xact_lock" in database.statements[0][0]
+    assert "FOR UPDATE" in database.statements[1][0]
+
+
+@pytest.mark.parametrize(
+    ("key", "now"),
+    [("", NOW), ("create:k", datetime(2026, 8, 12, 9, 0)), (None, NOW)],
+)
+def test_claim_idempotency_refuses_a_malformed_claim(key, now):
+    with pytest.raises(ValueError, match="invalid_idempotency_claim"):
+        _transaction(_RecordingDatabase()).claim_idempotency(key, now=now)
+
+
+def test_record_idempotency_stores_a_bounded_ttl_and_the_current_key_version():
+    database = _RecordingDatabase()
+
+    _transaction(database).record_idempotency(
+        "create:k", actor_ref="anonymous", request_digest="d" * 64,
+        response_enc="cipher", now=NOW,
+    )
+
+    sql, params = database.statements[0]
+    assert "'v1'" in sql
+    assert params[4] == NOW + timedelta(hours=24)
+    assert "cipher" in params
+
+
+def test_evidence_drafts_must_carry_a_real_evidence_level():
+    draft = case_store.CorrectionEvidenceDraft(
+        case_id=CASE_ID, item_id=None, evidence_level="E0", source_ref=None,
+        descriptor={}, content_enc=None, created_by_ref="anonymous",
+    )
+
+    with pytest.raises(ValueError, match="invalid_correction_evidence_drafts"):
+        _transaction(_RecordingDatabase()).insert_correction_evidence((draft,))
+
+
+def test_evidence_descriptors_cannot_smuggle_contact_or_secret_keys():
+    draft = case_store.CorrectionEvidenceDraft(
+        case_id=CASE_ID, item_id=None, evidence_level=case_store.EvidenceLevel.E0,
+        source_ref=None, descriptor={"contact": "0901234567"}, content_enc=None,
+        created_by_ref="anonymous",
+    )
+
+    with pytest.raises(ValueError, match="unsafe_outbox_descriptor"):
+        _transaction(_RecordingDatabase()).insert_correction_evidence((draft,))

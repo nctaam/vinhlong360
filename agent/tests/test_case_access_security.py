@@ -244,3 +244,34 @@ def test_rotation_replay_requires_the_original_authorized_bearer_and_case():
     for token in ("not-a-bearer", accesses[1].access_token):
         with pytest.raises(CaseSecurityError, match="invalid_case_credential"):
             service.rotate_receipt(token, now=NOW, current_user_id="user-1", idempotency_key=operation_key)
+
+
+# ── Task 6 addition: durable private payloads for correction values ──
+
+def test_private_payload_round_trips_without_the_replay_freshness_window():
+    crypto = CaseCrypto("0" * 43)
+    token = crypto.encrypt_private_payload({"value": "0270 111 2222"})
+
+    assert "0270 111 2222" not in token
+    assert crypto.decrypt_private_payload(token) == {"value": "0270 111 2222"}
+
+
+def test_private_payloads_are_not_interchangeable_with_replay_envelopes():
+    crypto = CaseCrypto("0" * 43)
+
+    with pytest.raises(CaseSecurityError):
+        crypto.decrypt_private_payload(crypto.encrypt_replay({"a": 1}))
+    with pytest.raises(CaseSecurityError):
+        crypto.decrypt_replay(
+            crypto.encrypt_private_payload({"a": 1}), now=datetime(2026, 8, 18, tzinfo=timezone.utc)
+        )
+
+
+def test_a_tampered_private_payload_fails_with_the_public_credential_error():
+    crypto = CaseCrypto("0" * 43)
+    token = crypto.encrypt_private_payload({"value": "x"})
+
+    with pytest.raises(CaseSecurityError, match="invalid_case_credential"):
+        crypto.decrypt_private_payload(token[:-2] + "AA")
+    with pytest.raises(CaseSecurityError, match="invalid_case_credential"):
+        crypto.decrypt_private_payload(None)

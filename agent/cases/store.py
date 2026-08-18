@@ -72,6 +72,18 @@ class CorrectionItemDraft:
     created_at: datetime | None = None
 
 
+@dataclass(frozen=True)
+class CorrectionEvidenceDraft:
+    case_id: str
+    item_id: str | None
+    evidence_level: EvidenceLevel
+    source_ref: str | None
+    descriptor: Mapping[str, object]
+    content_enc: str | None
+    created_by_ref: str
+    created_at: datetime | None = None
+
+
 def _freeze_json(value: object) -> object:
     if isinstance(value, Mapping):
         return MappingProxyType(
@@ -346,6 +358,43 @@ class CaseTransaction:
             item_ids.append(str(_row_dict(self._db, row)["item_id"]))
         return tuple(item_ids)
 
+    def insert_correction_evidence(
+        self, drafts: tuple[CorrectionEvidenceDraft, ...]
+    ) -> tuple[str, ...]:
+        self._require_active()
+        if type(drafts) is not tuple or not all(
+            type(draft) is CorrectionEvidenceDraft for draft in drafts
+        ):
+            raise ValueError("invalid_correction_evidence_drafts")
+        evidence_ids = []
+        for draft in drafts:
+            if type(draft.evidence_level) is not EvidenceLevel:
+                raise ValueError("invalid_correction_evidence_drafts")
+            descriptor = _freeze_json(draft.descriptor)
+            _validate_descriptor(descriptor)
+            row = self._db._fetchone(
+                self._conn,
+                """
+                INSERT INTO correction_evidence (
+                    case_id, item_id, evidence_level, source_ref, descriptor,
+                    content_enc, created_by_ref, created_at
+                ) VALUES (%s, %s, %s, %s, %s::jsonb, %s, %s, COALESCE(%s, NOW()))
+                RETURNING evidence_id
+                """,
+                (
+                    draft.case_id,
+                    draft.item_id,
+                    draft.evidence_level.value,
+                    draft.source_ref,
+                    json.dumps(_plain_json(descriptor), sort_keys=True),
+                    draft.content_enc,
+                    draft.created_by_ref,
+                    draft.created_at,
+                ),
+            )
+            evidence_ids.append(str(_row_dict(self._db, row)["evidence_id"]))
+        return tuple(evidence_ids)
+
     def insert_promise_clocks(
         self, case_id: str, clocks: tuple[PromiseClock, ...]
     ) -> None:
@@ -468,6 +517,54 @@ class CaseTransaction:
                 json.dumps(_plain_json(draft.descriptor), sort_keys=True),
                 draft.available_at,
             ),
+        )
+
+    def require_entities(self, entity_ids: tuple[str, ...]) -> None:
+        """Fail closed on an unknown correction target before any insert runs."""
+        self._require_active()
+        if type(entity_ids) is not tuple or not all(
+            type(entity_id) is str and entity_id for entity_id in entity_ids
+        ):
+            raise ValueError("invalid_entity_reference")
+        for entity_id in sorted(set(entity_ids)):
+            row = self._db._fetchone(
+                self._conn, "SELECT id FROM entities WHERE id = %s", (entity_id,)
+            )
+            if row is None:
+                raise CaseNotFound(entity_id)
+
+    def claim_idempotency(self, key: str, *, now: datetime) -> dict | None:
+        """Serialize one operation key inside this transaction and read its row."""
+        self._require_active()
+        if type(key) is not str or not key or type(now) is not datetime or now.tzinfo is None:
+            raise ValueError("invalid_idempotency_claim")
+        self._db._fetchone(
+            self._conn, "SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))", (key,)
+        )
+        row = self._db._fetchone(
+            self._conn,
+            """
+            SELECT actor_ref, request_digest, response_enc, response_key_version, expires_at
+            FROM case_idempotency WHERE idempotency_key = %s FOR UPDATE
+            """,
+            (key,),
+        )
+        return None if row is None else dict(_row_dict(self._db, row))
+
+    def record_idempotency(
+        self, key: str, *, actor_ref: str, request_digest: str, response_enc: str,
+        now: datetime, ttl_hours: int = 24,
+    ) -> None:
+        self._require_active()
+        self._db._execute(
+            self._conn,
+            """
+            INSERT INTO case_idempotency (
+                idempotency_key, actor_ref, request_digest, response_enc,
+                response_key_version, expires_at, created_at
+            ) VALUES (%s, %s, %s, %s, 'v1', %s, %s)
+            """,
+            (key, actor_ref, request_digest, response_enc, now + timedelta(hours=ttl_hours), now),
         )
 
     def load_case(self, case_id: str, *, for_update: bool = False) -> CaseSnapshot:
