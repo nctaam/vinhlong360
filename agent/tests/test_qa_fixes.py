@@ -325,9 +325,11 @@ class TestSMSRetry:
     def test_send_sms_has_retry_loop(self):
         import sms_provider
 
-        src = inspect.getsource(sms_provider.EsmsProvider.send_async)
+        # The loop lives on the blocking entry point; send_async offloads to it,
+        # so both callers get the same retry behaviour from one implementation.
+        src = inspect.getsource(sms_provider.EsmsProvider.send)
         assert "MAX_RETRIES" in src or "range(" in src
-        assert "asyncio.sleep" in src
+        assert "time.sleep" in src
 
     def test_send_sms_has_backoff(self):
         import sms_provider

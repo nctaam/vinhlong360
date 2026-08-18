@@ -1,6 +1,6 @@
 # Task 8 Report: Optional Phone Verification And At-Least-Once Notification Outbox
 
-## Status: PARTIAL — contact and outbox landed, the eSMS extraction is deferred
+## Status: COMPLETE
 
 Two of the three moving parts are complete, tested and wired. The third, Step 3's
 extraction of the live eSMS transport out of `agent/auth.py` into
@@ -149,3 +149,47 @@ Verification: the plan's Step 5 command `219 passed`; the wider sweep across
 contact, outbox, provider, public API, service, store, create, idempotency, QA
 fixes, auth hardening, advanced security and database `653 passed, 1 xfailed`.
 Ruff clean on every touched file; `git diff --check` exit 0.
+
+## Step 3 completed: the eSMS POST is pinned
+
+`PinnedHTTPClient.post_json` now exists and the outstanding item above is closed.
+
+**The verb.** `_fetch_hop` was parameterised with a method, body and content
+type, defaulting to the previous GET behaviour so the existing path is
+untouched; the whole pinned suite passes unchanged. `post_json` reuses exactly
+the same machinery as `get` — exact-origin check, resolver, approved-socket
+dial, peer verification, total and inactivity deadlines, bounded body read — and
+is deliberately **stricter** in one respect: it makes a single hop and treats any
+redirect as a policy error rather than following it. Following one would replay
+the request body at a destination the caller never approved, which is the whole
+reason this module exists. It also refuses a payload that is not a JSON object
+and refuses a request body over the encoded cap before opening a socket.
+
+**The consumer.** `agent/sms_provider.py` now posts through a module-level
+`_PINNED_HTTP` with a literal `audit_context="sms_provider"`, matching the
+convention the registry verifies statically, against a policy whose only allowed
+origin is `https://rest.esms.vn` and whose `max_redirects` is zero. The
+deliberate exemption added earlier is gone: `sms_provider` moved out of
+`KNOWN_UNPINNED_FETCHERS` and into `MAPPED_FETCHERS`, so the documented unpinned
+egress surface is back to what it was before this task started. The registry's
+audit-context extractor was extended to recognise `post_json` alongside `get`.
+
+**One transport, two entry points, still.** `send` runs the pinned client and
+owns the retry loop and backoff; `send_async` offloads to it with
+`asyncio.to_thread`, so an event loop is never blocked on the socket and both
+callers share one implementation. The seven characterisation tests still hold —
+dev no-op, international form, exact endpoint, retry to the bound, exception then
+success, and no credential, message or full phone in the log — with the fake
+moved from httpx to the injected poster seam, because the transport underneath
+changed on purpose.
+
+Two source-shape assertions in `test_qa_fixes.py` were repointed again, to
+`EsmsProvider.send` and `time.sleep`, since the loop now lives on the blocking
+entry point. The Finding-018 guarantee is unchanged; the behavioural tests added
+in this task are the stronger guard.
+
+Verification: the plan's Step 5 command `222 passed`; the pinned family
+(`test_pinned_http.py`, `test_pinned_http_consumers.py`,
+`test_admin_pinned_http.py`) `306 passed` including ten new `post_json` cases;
+provider, QA fixes, auth hardening, scheduler and outbox together `509 passed`.
+Ruff clean; `git diff --check` exit 0. Task 8 is complete.

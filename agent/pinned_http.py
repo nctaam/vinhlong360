@@ -28,6 +28,7 @@ is tracked as residual egress debt, not an oversight.
 from __future__ import annotations
 
 import ipaddress
+import json
 import logging
 import re
 import select
@@ -1120,6 +1121,9 @@ def _fetch_hop(
     budget: DeadlineBudget,
     transport_factory: TransportFactory,
     monotonic: MonotonicClock = time.monotonic,
+    method: str = "GET",
+    body: bytes | None = None,
+    content_type: str | None = None,
 ) -> tuple[int, tuple[tuple[str, str], ...], bytes, str | None]:
     try:
         budget.remaining(monotonic=monotonic)
@@ -1143,9 +1147,12 @@ def _fetch_hop(
             # follow_redirects=False, and raises RemoteProtocolError for a malformed
             # Location before this function ever sees it. Calling the transport
             # directly keeps this module the sole arbiter of redirect-target validity.
+            request_headers = {"Content-Type": content_type} if content_type else None
             request = client.build_request(
-                "GET",
+                method,
                 str(hop.url),
+                content=body,
+                headers=request_headers,
                 timeout=httpx.Timeout(policy.inactivity_timeout_seconds),
             )
             response = transport.handle_request(request)
@@ -1195,6 +1202,58 @@ class PinnedHTTPClient:
         self._resolver = resolver
         self._transport_factory = transport_factory
         self._monotonic = monotonic
+
+    def post_json(
+        self,
+        url: str,
+        *,
+        payload: object,
+        user_agent: str,
+        policy: EgressPolicy,
+        audit_context: str,
+    ) -> PinnedResponse:
+        """A single pinned POST carrying a JSON object.
+
+        Deliberately stricter than `get`: exactly one hop, and any redirect is a
+        policy error rather than something to follow. Following one would replay
+        the request body at a destination the caller never approved, which is
+        the whole reason this module exists.
+        """
+        if not isinstance(payload, dict):
+            raise ValueError("invalid_json_payload")
+        body = json.dumps(payload, separators=(",", ":")).encode("utf-8")
+        if len(body) > policy.max_encoded_bytes:
+            raise PinnedBodyLimitError("request body exceeds the encoded cap")
+
+        budget = DeadlineBudget.start(
+            policy.total_timeout_seconds,
+            monotonic=self._monotonic,
+        )
+        current = _parse_url(url)
+        if not _origin_is_allowed(current, policy):
+            raise InvalidDestinationError("destination origin is not allowed")
+        try:
+            budget.remaining(monotonic=self._monotonic)
+            hop = _resolve_hop(current, self._resolver, budget)
+            status, headers, content, location = _fetch_hop(
+                hop,
+                user_agent=user_agent,
+                cookie_header=None,
+                policy=policy,
+                budget=budget,
+                transport_factory=self._transport_factory,
+                monotonic=self._monotonic,
+                method="POST",
+                body=body,
+                content_type="application/json",
+            )
+            if location is not None:
+                raise RedirectPolicyError("a redirected POST would replay the body")
+            budget.remaining(monotonic=self._monotonic)
+            return PinnedResponse(status, str(hop.url), headers, content, ())
+        except (BlockedAddressError, PeerMismatchError, RedirectPolicyError) as exc:
+            _log_security_denial(audit_context, current, 0, exc)
+            raise
 
     def get(
         self,

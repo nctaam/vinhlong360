@@ -7,6 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 MAPPED_FETCHERS = {
     "agent/admin.py": {"_approve_fetch_image_data"},
+    "agent/sms_provider.py": {"_pinned_post"},
     "agent/auto_learn.py": {"fetch_url"},
     "agent/crawler.py": {"fetch_page"},
     "agent/geocode.py": {"_query_nominatim"},
@@ -15,6 +16,7 @@ MAPPED_FETCHERS = {
 }
 EXPECTED_AUDIT_CONTEXTS = {
     ("agent/admin.py", "_approve_fetch_image_data"): "admin_image_review",
+    ("agent/sms_provider.py", "_pinned_post"): "sms_provider",
     ("agent/auto_learn.py", "fetch_url"): "auto_learn",
     ("agent/crawler.py", "fetch_page"): "crawler",
     ("agent/geocode.py", "_query_nominatim"): "geocode",
@@ -60,6 +62,7 @@ def _module_pinned_http_imports(path: Path) -> set[str]:
 def test_mapped_fetcher_registry_scope_is_exact() -> None:
     assert MAPPED_FETCHERS == {
         "agent/admin.py": {"_approve_fetch_image_data"},
+        "agent/sms_provider.py": {"_pinned_post"},
         "agent/auto_learn.py": {"fetch_url"},
         "agent/crawler.py": {"fetch_page"},
         "agent/geocode.py": {"_query_nominatim"},
@@ -86,8 +89,10 @@ def _audit_context_literals(path: Path, function_name: str) -> set[str]:
     for node in ast.walk(function):
         if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Attribute):
             continue
+        # post_json joined get when the eSMS transport was pinned; both carry
+        # the same audit_context contract.
         if (
-            node.func.attr != "get"
+            node.func.attr not in {"get", "post_json"}
             or not isinstance(node.func.value, ast.Name)
             or node.func.value.id != "_PINNED_HTTP"
         ):
@@ -113,12 +118,6 @@ KNOWN_UNPINNED_FETCHERS = {
     # design, so these cannot migrate without widening that contract.
     ("agent/scheduler.py", "_digest_send"),
     ("agent/scheduler.py", "_send_telegram_admins"),
-    # Outbound POST to the eSMS provider, same GET-only limitation. This egress
-    # is not new: it was the identical call inside agent/auth.py._send_sms
-    # before the transport was extracted, so the real surface is unchanged.
-    # Pinning it needs PinnedHTTPClient.post_json, which is the outstanding
-    # piece of Task 8 Step 3.
-    ("agent/sms_provider.py", "send"),
 }
 
 _GENERAL_HTTP_CALLS = {

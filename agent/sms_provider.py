@@ -16,7 +16,7 @@ import logging
 import time
 from dataclasses import dataclass
 
-import httpx
+from pinned_http import EgressPolicy, PinnedHTTPClient
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +24,36 @@ ESMS_ENDPOINT = "https://rest.esms.vn/MainService.svc/json/SendMultipleMessage_V
 ESMS_SUCCESS_CODE = "100"
 MAX_RETRIES = 3
 REQUEST_TIMEOUT_SECONDS = 10
+ESMS_ORIGIN = "https://rest.esms.vn"
+USER_AGENT = "vinhlong360-sms/1.0"
+
+# The provider answers with a small JSON object; anything larger is not an
+# answer we should be reading.
+EGRESS_POLICY = EgressPolicy(
+    max_encoded_bytes=64 * 1024,
+    max_decoded_bytes=128 * 1024,
+    accepted_encodings=("gzip", "identity"),
+    inactivity_timeout_seconds=float(REQUEST_TIMEOUT_SECONDS),
+    total_timeout_seconds=float(REQUEST_TIMEOUT_SECONDS) * 2,
+    max_redirects=0,
+    allowed_origins=(ESMS_ORIGIN,),
+)
+_PINNED_HTTP = PinnedHTTPClient()
+
+
+def _pinned_post(url: str, payload: dict) -> object:
+    """One pinned POST: exact origin, approved sockets, no redirect, bounded body."""
+    import json as _json
+
+    response = _PINNED_HTTP.post_json(
+        url,
+        payload=payload,
+        user_agent=USER_AGENT,
+        policy=EGRESS_POLICY,
+        # A literal on purpose: the consumer registry verifies it statically.
+        audit_context="sms_provider",
+    )
+    return _json.loads(response.content)
 
 
 @dataclass(frozen=True)
@@ -70,10 +100,12 @@ def backoff_seconds(attempt: int) -> float:
 
 
 class EsmsProvider:
-    def __init__(self, *, api_key: str, secret: str, brandname: str) -> None:
+    def __init__(self, *, api_key: str, secret: str, brandname: str, poster=None) -> None:
         self._api_key = api_key or ""
         self._secret = secret or ""
         self._brandname = brandname or ""
+        # Injectable so tests never open a socket; the default is the pinned client.
+        self._poster = poster or _pinned_post
 
     @property
     def configured(self) -> bool:
@@ -95,17 +127,17 @@ class EsmsProvider:
             attempt + 1, mask_phone(phone), outcome.error_code,
         )
 
-    def send(self, phone: str, message: str, *, delivery_key: str) -> SmsDeliveryResult:
-        """Blocking send for the outbox dispatcher."""
+    def send(self, phone: str, message: str, *, delivery_key: str = "") -> SmsDeliveryResult:
+        """Blocking send. One transport, shared by both entry points."""
         if not self.configured:
             return self._dev_result(phone)
         outcome = SmsDeliveryResult(False, "provider_unavailable", True)
         for attempt in range(MAX_RETRIES):
             try:
-                with httpx.Client(timeout=REQUEST_TIMEOUT_SECONDS) as client:
-                    response = client.post(ESMS_ENDPOINT, json=self._payload(phone, message))
-                    outcome = classify_provider_result(response.json())
-            except Exception:  # noqa: BLE001 - provider outage, never a credential leak
+                outcome = classify_provider_result(
+                    self._poster(ESMS_ENDPOINT, self._payload(phone, message))
+                )
+            except Exception:  # noqa: BLE001 - outage or policy denial, never a leak
                 logger.warning(
                     "SMS attempt %d exception for %s", attempt + 1, mask_phone(phone)
                 )
@@ -118,25 +150,9 @@ class EsmsProvider:
         return outcome
 
     async def send_async(self, phone: str, message: str, *, delivery_key: str = "") -> SmsDeliveryResult:
-        """Non-blocking send for handlers already on the event loop."""
+        """Same send, offloaded so an event loop is never blocked on the socket."""
         if not self.configured:
             return self._dev_result(phone)
-        outcome = SmsDeliveryResult(False, "provider_unavailable", True)
-        for attempt in range(MAX_RETRIES):
-            try:
-                async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT_SECONDS) as client:
-                    response = await client.post(
-                        ESMS_ENDPOINT, json=self._payload(phone, message)
-                    )
-                    outcome = classify_provider_result(response.json())
-            except Exception:  # noqa: BLE001
-                logger.warning(
-                    "SMS attempt %d exception for %s", attempt + 1, mask_phone(phone)
-                )
-                outcome = SmsDeliveryResult(False, "provider_unavailable", True)
-            if outcome.delivered:
-                return outcome
-            self._record(attempt, phone, outcome)
-            if attempt < MAX_RETRIES - 1:
-                await asyncio.sleep(backoff_seconds(attempt))
-        return outcome
+        return await asyncio.to_thread(
+            self.send, phone, message, delivery_key=delivery_key
+        )

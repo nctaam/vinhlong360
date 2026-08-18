@@ -63,9 +63,17 @@ def fake_sms(monkeypatch):
     _FakeAsyncClient.init_kwargs = {}
     import sms_provider
 
-    # The transport now lives only in sms_provider; auth no longer imports httpx.
-    monkeypatch.setattr(sms_provider.httpx, "AsyncClient", _FakeAsyncClient)
-    monkeypatch.setattr(sms_provider.asyncio, "sleep", _no_sleep)
+    # The transport is the pinned client now, so the fake sits at the injected
+    # poster seam instead of at httpx. The assertions below are unchanged.
+    def _fake_post(url, payload):
+        _FakeAsyncClient.calls.append((url, payload))
+        outcome = _FakeAsyncClient.script.pop(0) if _FakeAsyncClient.script else {"CodeResult": "100"}
+        if isinstance(outcome, Exception):
+            raise outcome
+        return outcome
+
+    monkeypatch.setattr(sms_provider, "_pinned_post", _fake_post)
+    monkeypatch.setattr(sms_provider.time, "sleep", lambda _s: None)
     monkeypatch.setattr(auth, "ESMS_API_KEY", "test-key")
     monkeypatch.setattr(auth, "ESMS_SECRET", "test-secret")
     monkeypatch.setattr(auth, "ESMS_BRANDNAME", "VL360")

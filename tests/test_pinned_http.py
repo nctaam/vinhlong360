@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import gzip
 import inspect
+import json
 import logging
 import math
 import socket
@@ -2920,3 +2921,122 @@ def test_concurrent_calls_do_not_leak_pinned_hops() -> None:
     assert [result.content.decode("ascii") for result in results] == hosts
     assert {host for host, _approved in observed} == set(hosts)
     assert len(observed) == len(hosts)
+
+
+# ── post_json: the same pinning as get, with no body ever replayed ──
+
+def _client_capturing_post(
+    *,
+    status: int = 200,
+    body: bytes = b"{}",
+    headers: tuple[tuple[str, str], ...] = (),
+    seen: list | None = None,
+) -> ph.PinnedHTTPClient:
+    def resolver(host: str, port: int, budget: ph.DeadlineBudget):
+        return _public_resolver(host, port, budget)
+
+    def factory(_hop, _policy, _budget):
+        def handler(request: httpx.Request) -> httpx.Response:
+            if seen is not None:
+                seen.append(request)
+            return httpx.Response(
+                status,
+                headers=headers,
+                stream=_ChunkStream([body]),
+                request=request,
+            )
+
+        return httpx.MockTransport(handler)
+
+    return ph.PinnedHTTPClient(resolver=resolver, transport_factory=factory)
+
+
+def test_post_json_sends_the_payload_as_json_to_the_exact_url():
+    seen: list[httpx.Request] = []
+    client = _client_capturing_post(body=b'{"CodeResult":"100"}', seen=seen)
+
+    response = client.post_json(
+        "https://example.com/send",
+        payload={"Phone": "84901234567"},
+        user_agent="vl360-test",
+        policy=_policy(allowed_origins=("https://example.com",)),
+        audit_context="sms_provider",
+    )
+
+    assert response.status_code == 200
+    assert json.loads(response.content) == {"CodeResult": "100"}
+    assert len(seen) == 1
+    assert seen[0].method == "POST"
+    assert str(seen[0].url) == "https://example.com/send"
+    assert seen[0].headers["content-type"] == "application/json"
+    assert json.loads(seen[0].content) == {"Phone": "84901234567"}
+
+
+def test_post_json_refuses_an_origin_outside_the_policy():
+    client = _client_capturing_post()
+
+    with pytest.raises(ph.InvalidDestinationError):
+        client.post_json(
+            "https://elsewhere.example/send",
+            payload={},
+            user_agent="vl360-test",
+            policy=_policy(allowed_origins=("https://example.com",)),
+            audit_context="sms_provider",
+        )
+
+
+@pytest.mark.parametrize("status", [301, 302, 303, 307, 308])
+def test_post_json_never_follows_a_redirect(status):
+    """Following one would replay the request body at a new destination."""
+    client = _client_capturing_post(
+        status=status, headers=(("location", "https://example.com/elsewhere"),)
+    )
+
+    with pytest.raises(ph.RedirectPolicyError):
+        client.post_json(
+            "https://example.com/send",
+            payload={},
+            user_agent="vl360-test",
+            policy=_policy(allowed_origins=("https://example.com",)),
+            audit_context="sms_provider",
+        )
+
+
+def test_post_json_applies_the_response_body_cap():
+    client = _client_capturing_post(body=b"x" * 4096)
+
+    with pytest.raises(ph.PinnedBodyLimitError):
+        client.post_json(
+            "https://example.com/send",
+            payload={},
+            user_agent="vl360-test",
+            policy=_policy(max_encoded_bytes=64, allowed_origins=("https://example.com",)),
+            audit_context="sms_provider",
+        )
+
+
+def test_post_json_refuses_an_oversized_request_body():
+    client = _client_capturing_post()
+
+    with pytest.raises(ph.PinnedBodyLimitError):
+        client.post_json(
+            "https://example.com/send",
+            payload={"blob": "x" * 5000},
+            user_agent="vl360-test",
+            policy=_policy(max_encoded_bytes=256, allowed_origins=("https://example.com",)),
+            audit_context="sms_provider",
+        )
+
+
+def test_post_json_refuses_a_payload_that_is_not_a_json_object():
+    client = _client_capturing_post()
+
+    for payload in ("a string", 7, None, [1, 2]):
+        with pytest.raises(ValueError, match="invalid_json_payload"):
+            client.post_json(
+                "https://example.com/send",
+                payload=payload,
+                user_agent="vl360-test",
+                policy=_policy(allowed_origins=("https://example.com",)),
+                audit_context="sms_provider",
+            )
