@@ -167,3 +167,72 @@ def test_fresh_migration_chain_reaches_release_readiness(fresh_migrated_database
     assert status["missing_columns"] == []
     assert status["missing_triggers"] == []
     assert status["issues"] == []
+
+
+@pg_only
+def test_case_readiness_fails_closed_for_catalog_definition_drift(
+    fresh_migrated_database,
+):
+    adapter, _applied = fresh_migrated_database
+    probes = (
+        (
+            (
+                "ALTER TABLE case_receipts DROP CONSTRAINT "
+                "case_receipts_receipt_revision_positive",
+                "ALTER TABLE case_receipts ADD CONSTRAINT "
+                "case_receipts_revision_positive_renamed "
+                "CHECK (receipt_revision >= 1)",
+            ),
+            "constraint definition drift: case_receipts_receipt_revision_positive",
+        ),
+        (
+            (
+                "ALTER TABLE case_receipts DROP CONSTRAINT "
+                "case_receipts_receipt_revision_positive",
+                "ALTER TABLE case_receipts ADD CONSTRAINT "
+                "case_receipts_receipt_revision_positive "
+                "CHECK (receipt_revision >= 0)",
+            ),
+            "constraint definition drift: case_receipts_receipt_revision_positive",
+        ),
+        (
+            (
+                "ALTER TABLE case_receipts DROP CONSTRAINT "
+                "case_receipts_case_revision_unique",
+                "CREATE INDEX case_receipts_case_revision_unique "
+                "ON case_receipts(receipt_revision, case_id)",
+            ),
+            "index definition drift: case_receipts_case_revision_unique",
+        ),
+        (
+            (
+                "ALTER TABLE case_access_sessions DROP CONSTRAINT "
+                "case_access_sessions_case_receipt_fkey",
+                "ALTER TABLE case_access_sessions ADD CONSTRAINT "
+                "case_access_sessions_case_receipt_fkey "
+                "FOREIGN KEY (case_id, receipt_id) "
+                "REFERENCES case_receipts(case_id, receipt_id) ON DELETE RESTRICT",
+            ),
+            "foreign key definition drift: case_access_sessions_case_receipt_fkey",
+        ),
+        (
+            (
+                "DROP TRIGGER case_receipts_case_immutable ON case_receipts",
+                "CREATE TRIGGER case_receipts_case_immutable "
+                "AFTER UPDATE ON case_receipts FOR EACH ROW "
+                "EXECUTE FUNCTION enforce_case_access_same_case()",
+            ),
+            "trigger definition drift: case_receipts_case_immutable",
+        ),
+    )
+    with adapter._conn(commit_on_success=False) as conn:
+        for position, (statements, expected_issue) in enumerate(probes):
+            savepoint = f"catalog_drift_{position}"
+            adapter._execute(conn, f"SAVEPOINT {savepoint}", ())
+            try:
+                for statement in statements:
+                    adapter._execute(conn, statement, ())
+                snapshot = database_module._pg_schema_snapshot(conn)
+                assert expected_issue in snapshot["case_issues"]
+            finally:
+                adapter._execute(conn, f"ROLLBACK TO SAVEPOINT {savepoint}", ())

@@ -219,6 +219,92 @@ CASE_REQUIRED_COLUMN_META = {
     ("case_idempotency", "response_key_version"): ("text", "NO", "v1"),
 }
 
+_CASE_REQUIRED_CONSTRAINT_DEFINITIONS = {
+    "case_receipts_receipt_revision_positive": {
+        "constraint_type": "c", "table_name": "case_receipts",
+        "check_expression": "(receipt_revision>=1)",
+    },
+    "case_receipts_capability_digest_shape": {
+        "constraint_type": "c", "table_name": "case_receipts",
+        "check_expression": "(capability_digest~'^[0-9a-f]{64}$'::text)",
+    },
+    "case_receipts_expiry_order": {
+        "constraint_type": "c", "table_name": "case_receipts",
+        "check_expression": "(expires_at>created_at)",
+    },
+    "case_access_sessions_expiry_order": {
+        "constraint_type": "c", "table_name": "case_access_sessions",
+        "check_expression": "(expires_at>created_at)",
+    },
+    "case_idempotency_expiry_order": {
+        "constraint_type": "c", "table_name": "case_idempotency",
+        "check_expression": "(expires_at>created_at)",
+    },
+    "case_receipts_case_revision_unique": {
+        "constraint_type": "u", "table_name": "case_receipts",
+        "columns": ("case_id", "receipt_revision"),
+    },
+    "case_receipts_case_receipt_unique": {
+        "constraint_type": "u", "table_name": "case_receipts",
+        "columns": ("case_id", "receipt_id"),
+    },
+    "case_receipts_public_reference_key": {
+        "constraint_type": "u", "table_name": "case_receipts",
+        "columns": ("public_reference",),
+    },
+    "case_receipts_capability_digest_key": {
+        "constraint_type": "u", "table_name": "case_receipts",
+        "columns": ("capability_digest",),
+    },
+    "case_access_sessions_session_digest_key": {
+        "constraint_type": "u", "table_name": "case_access_sessions",
+        "columns": ("session_digest",),
+    },
+}
+_CASE_REQUIRED_FK_DEFINITIONS = {
+    "case_access_sessions_case_id_fkey": {
+        "constraint_type": "f", "table_name": "case_access_sessions",
+        "columns": ("case_id",), "target_table": "cases",
+        "target_columns": ("case_id",), "delete_action": "c",
+    },
+    "case_access_sessions_receipt_id_fkey": {
+        "constraint_type": "f", "table_name": "case_access_sessions",
+        "columns": ("receipt_id",), "target_table": "case_receipts",
+        "target_columns": ("receipt_id",), "delete_action": "c",
+    },
+    "case_access_sessions_case_receipt_fkey": {
+        "constraint_type": "f", "table_name": "case_access_sessions",
+        "columns": ("case_id", "receipt_id"), "target_table": "case_receipts",
+        "target_columns": ("case_id", "receipt_id"), "delete_action": "c",
+    },
+}
+_CASE_REQUIRED_INDEX_DEFINITIONS = {
+    "case_receipts_case_revision_unique": {
+        "table_name": "case_receipts", "columns": ("case_id", "receipt_revision"),
+        "predicate": None, "unique": True,
+    },
+    "case_receipts_case_receipt_unique": {
+        "table_name": "case_receipts", "columns": ("case_id", "receipt_id"),
+        "predicate": None, "unique": True,
+    },
+    "idx_case_access_sessions_expiry": {
+        "table_name": "case_access_sessions", "columns": ("expires_at", "access_session_id"),
+        "predicate": "(revoked_atisnull)", "unique": False,
+    },
+}
+_CASE_REQUIRED_TRIGGER_DEFINITIONS = {
+    "case_receipts_case_immutable": {
+        "table_name": "case_receipts", "function_schema": "public",
+        "function_name": "reject_case_receipt_case_move", "trigger_type": 19,
+        "enabled": "O", "update_columns": ("case_id",),
+    },
+    "case_access_sessions_same_case": {
+        "table_name": "case_access_sessions", "function_schema": "public",
+        "function_name": "enforce_case_access_same_case", "trigger_type": 23,
+        "enabled": "O", "update_columns": (),
+    },
+}
+
 if USE_PG:
     import psycopg2
     import psycopg2.extras
@@ -396,6 +482,60 @@ def _pg_schema_issues(
     return issues
 
 
+def _normalize_catalog_sql(value) -> str | None:
+    if value is None:
+        return None
+    return "".join(str(value).lower().split())
+
+
+def _catalog_definition_matches(row, expected: Mapping[str, object]) -> bool:
+    if row is None:
+        return False
+    for key, value in expected.items():
+        actual = row.get(key)
+        if key in {"columns", "target_columns", "update_columns"}:
+            actual = tuple(actual or ())
+        elif key in {"check_expression", "predicate"}:
+            actual = _normalize_catalog_sql(actual)
+        if actual != value:
+            return False
+    return all(
+        row.get(key) is expected_value
+        for key, expected_value in (
+            ("validated", True),
+            ("deferrable", False),
+            ("deferred", False),
+        )
+        if key in row
+    )
+
+
+def _case_catalog_issues(constraint_rows, index_rows, trigger_rows) -> list[str]:
+    issues: list[str] = []
+    constraints = {row["constraint_name"]: row for row in constraint_rows}
+    for name, expected in _CASE_REQUIRED_CONSTRAINT_DEFINITIONS.items():
+        if not _catalog_definition_matches(constraints.get(name), expected):
+            issues.append(f"constraint definition drift: {name}")
+    for name, expected in _CASE_REQUIRED_FK_DEFINITIONS.items():
+        if not _catalog_definition_matches(constraints.get(name), expected):
+            issues.append(f"foreign key definition drift: {name}")
+
+    indexes = {row["index_name"]: row for row in index_rows}
+    index_health = {
+        "valid": True, "ready": True, "live": True, "access_method": "btree",
+    }
+    for name, expected in _CASE_REQUIRED_INDEX_DEFINITIONS.items():
+        definition = {**expected, **index_health}
+        if not _catalog_definition_matches(indexes.get(name), definition):
+            issues.append(f"index definition drift: {name}")
+
+    triggers = {row["trigger_name"]: row for row in trigger_rows}
+    for name, expected in _CASE_REQUIRED_TRIGGER_DEFINITIONS.items():
+        if not _catalog_definition_matches(triggers.get(name), expected):
+            issues.append(f"trigger definition drift: {name}")
+    return issues
+
+
 def _pg_schema_snapshot(conn) -> dict[str, object]:
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cur.execute(
@@ -415,99 +555,86 @@ def _pg_schema_snapshot(conn) -> dict[str, object]:
     # model the legacy table/column/version contract, not PostgreSQL catalogs.
     if {"case_receipts", "case_access_sessions", "case_idempotency"} <= tables and not hasattr(cur, "tables"):
         cur.execute("""
-            SELECT conname, pg_get_constraintdef(oid) AS definition, contype,
-                   conrelid::regclass::text AS table_name
-            FROM pg_constraint
-            WHERE connamespace='public'::regnamespace
+            SELECT con.conname AS constraint_name,
+                   con.contype::text AS constraint_type,
+                   source.relname AS table_name,
+                   ARRAY(
+                       SELECT attribute.attname
+                       FROM unnest(con.conkey) WITH ORDINALITY AS source_key(attnum, position)
+                       JOIN pg_attribute AS attribute
+                         ON attribute.attrelid = con.conrelid
+                        AND attribute.attnum = source_key.attnum
+                       ORDER BY source_key.position
+                   ) AS columns,
+                   target.relname AS target_table,
+                   ARRAY(
+                       SELECT attribute.attname
+                       FROM unnest(con.confkey) WITH ORDINALITY AS target_key(attnum, position)
+                       JOIN pg_attribute AS attribute
+                         ON attribute.attrelid = con.confrelid
+                        AND attribute.attnum = target_key.attnum
+                       ORDER BY target_key.position
+                   ) AS target_columns,
+                   con.confdeltype::text AS delete_action,
+                   pg_get_expr(con.conbin, con.conrelid, true) AS check_expression,
+                   con.convalidated AS validated,
+                   con.condeferrable AS deferrable,
+                   con.condeferred AS deferred
+            FROM pg_constraint AS con
+            JOIN pg_class AS source ON source.oid = con.conrelid
+            JOIN pg_namespace AS source_ns ON source_ns.oid = source.relnamespace
+            LEFT JOIN pg_class AS target ON target.oid = con.confrelid
+            WHERE source_ns.nspname = 'public'
         """)
         constraint_rows = cur.fetchall()
-        constraints = {row["conname"] for row in constraint_rows}
-        required_constraints = {
-            "case_receipts_receipt_revision_positive",
-            "case_receipts_case_revision_unique",
-            "case_receipts_capability_digest_shape",
-            "case_receipts_expiry_order",
-            "case_access_sessions_expiry_order",
-            "case_idempotency_expiry_order",
-            "case_receipts_case_receipt_unique",
-        }
-        if not required_constraints <= constraints:
-            case_security_issues.append("case receipt security constraints missing")
-        expected_defs = {
-            "case_receipts_receipt_revision_positive": "receipt_revision >= 1",
-            "case_receipts_capability_digest_shape": "^[0-9a-f]{64}$",
-            "case_receipts_expiry_order": "expires_at > created_at",
-            "case_access_sessions_expiry_order": "expires_at > created_at",
-            "case_access_sessions_case_receipt_fkey": "FOREIGN KEY (case_id, receipt_id) REFERENCES case_receipts(case_id, receipt_id) ON DELETE CASCADE",
-        }
-        expected_owners = {
-            "case_receipts_receipt_revision_positive": "case_receipts",
-            "case_receipts_capability_digest_shape": "case_receipts",
-            "case_receipts_expiry_order": "case_receipts",
-            "case_access_sessions_expiry_order": "case_access_sessions",
-            "case_access_sessions_case_receipt_fkey": "case_access_sessions",
-        }
-        for name, fragment in expected_defs.items():
-            row = next((item for item in constraint_rows if item["conname"] == name), None)
-            if row is None or row.get("table_name") != expected_owners[name] or fragment not in " ".join(str(row["definition"]).split()):
-                case_security_issues.append(f"constraint definition drift: {name}")
-        expected_unique_constraints = {
-            "case_receipts_public_reference_key": ("case_receipts", "UNIQUE (public_reference)"),
-            "case_receipts_capability_digest_key": ("case_receipts", "UNIQUE (capability_digest)"),
-            "case_access_sessions_session_digest_key": ("case_access_sessions", "UNIQUE (session_digest)"),
-        }
-        for name, (table_name, fragment) in expected_unique_constraints.items():
-            row = next((item for item in constraint_rows if item["conname"] == name), None)
-            if row is None or row.get("table_name") != table_name or fragment not in " ".join(str(row["definition"]).split()):
-                case_security_issues.append(f"unique constraint definition drift: {name}")
-        cur.execute("SELECT indexname, tablename, indexdef FROM pg_indexes WHERE schemaname='public'")
-        index_rows = cur.fetchall()
-        indexes = {row["indexname"] for row in index_rows}
-        missing_indexes = sorted(CASE_REQUIRED_INDEXES - indexes)
-        if missing_indexes:
-            case_security_issues.append("missing case indexes: " + ", ".join(missing_indexes))
-        expected_index_owners = {
-            "case_receipts_case_revision_unique": "case_receipts",
-            "case_receipts_case_receipt_unique": "case_receipts",
-            "idx_case_access_sessions_expiry": "case_access_sessions",
-        }
-        for name, table_name in expected_index_owners.items():
-            row = next((item for item in index_rows if item["indexname"] == name), None)
-            if row is None or row.get("tablename") != table_name:
-                case_security_issues.append(f"index definition drift: {name}")
-        fk_names = {row["conname"] for row in constraint_rows if row["contype"] == "f"}
-        missing_fks = sorted(CASE_REQUIRED_FKS - fk_names)
-        if missing_fks:
-            case_security_issues.append("missing case foreign keys: " + ", ".join(missing_fks))
-        expected_fks = {
-            "case_access_sessions_case_id_fkey": ("case_access_sessions", "FOREIGN KEY (case_id) REFERENCES cases(case_id) ON DELETE CASCADE"),
-            "case_access_sessions_receipt_id_fkey": ("case_access_sessions", "FOREIGN KEY (receipt_id) REFERENCES case_receipts(receipt_id) ON DELETE CASCADE"),
-            "case_access_sessions_case_receipt_fkey": ("case_access_sessions", "FOREIGN KEY (case_id, receipt_id) REFERENCES case_receipts(case_id, receipt_id) ON DELETE CASCADE"),
-        }
-        for name, (table_name, fragment) in expected_fks.items():
-            row = next((item for item in constraint_rows if item["conname"] == name), None)
-            if row is None or row.get("table_name") != table_name or fragment not in " ".join(str(row["definition"]).split()):
-                case_security_issues.append(f"foreign key definition drift: {name}")
         cur.execute("""
-            SELECT tg.tgname, c.relname AS table_name, pg_get_triggerdef(tg.oid) AS definition
-            FROM pg_trigger tg
-            JOIN pg_class c ON c.oid=tg.tgrelid
-            JOIN pg_namespace n ON n.oid=c.relnamespace
-            WHERE NOT tg.tgisinternal AND n.nspname='public'
+            SELECT index_class.relname AS index_name,
+                   table_class.relname AS table_name,
+                   ARRAY(
+                       SELECT pg_get_indexdef(idx.indexrelid, position, true)
+                       FROM generate_series(1, idx.indnkeyatts) AS key_position(position)
+                       ORDER BY position
+                   ) AS columns,
+                   pg_get_expr(idx.indpred, idx.indrelid, true) AS predicate,
+                   idx.indisunique AS unique,
+                   idx.indisvalid AS valid,
+                   idx.indisready AS ready,
+                   idx.indislive AS live,
+                   access_method.amname AS access_method
+            FROM pg_index AS idx
+            JOIN pg_class AS index_class ON index_class.oid = idx.indexrelid
+            JOIN pg_class AS table_class ON table_class.oid = idx.indrelid
+            JOIN pg_namespace AS table_ns ON table_ns.oid = table_class.relnamespace
+            JOIN pg_am AS access_method ON access_method.oid = index_class.relam
+            WHERE table_ns.nspname = 'public'
+        """)
+        index_rows = cur.fetchall()
+        cur.execute("""
+            SELECT tg.tgname AS trigger_name,
+                   table_class.relname AS table_name,
+                   function_ns.nspname AS function_schema,
+                   function.proname AS function_name,
+                   tg.tgtype::integer AS trigger_type,
+                   tg.tgenabled AS enabled,
+                   ARRAY(
+                       SELECT attribute.attname
+                       FROM unnest(tg.tgattr::smallint[]) WITH ORDINALITY AS trigger_key(attnum, position)
+                       JOIN pg_attribute AS attribute
+                         ON attribute.attrelid = tg.tgrelid
+                        AND attribute.attnum = trigger_key.attnum
+                       ORDER BY trigger_key.position
+                   ) AS update_columns
+            FROM pg_trigger AS tg
+            JOIN pg_class AS table_class ON table_class.oid = tg.tgrelid
+            JOIN pg_namespace AS table_ns ON table_ns.oid = table_class.relnamespace
+            JOIN pg_proc AS function ON function.oid = tg.tgfoid
+            JOIN pg_namespace AS function_ns ON function_ns.oid = function.pronamespace
+            WHERE NOT tg.tgisinternal AND table_ns.nspname = 'public'
         """)
         trigger_rows = cur.fetchall()
-        trigger_names = {row["tgname"] for row in trigger_rows}
-        missing_case_triggers = sorted(CASE_REQUIRED_TRIGGERS - trigger_names)
-        if missing_case_triggers:
-            case_security_issues.append("missing case triggers: " + ", ".join(missing_case_triggers))
-        expected_trigger_defs = {
-            "case_receipts_case_immutable": ("case_receipts", "EXECUTE FUNCTION reject_case_receipt_case_move()"),
-            "case_access_sessions_same_case": ("case_access_sessions", "EXECUTE FUNCTION enforce_case_access_same_case()"),
-        }
-        for name, (table_name, fragment) in expected_trigger_defs.items():
-            row = next((item for item in trigger_rows if item["tgname"] == name), None)
-            if row is None or row.get("table_name") != table_name or fragment not in " ".join(str(row["definition"]).split()):
-                case_security_issues.append(f"trigger definition drift: {name}")
+        case_security_issues.extend(
+            _case_catalog_issues(constraint_rows, index_rows, trigger_rows)
+        )
         cur.execute("SELECT table_name, column_name, data_type, is_nullable, column_default FROM information_schema.columns WHERE table_schema='public'")
         column_meta = {(row["table_name"], row["column_name"]): (row["data_type"], row["is_nullable"], row["column_default"]) for row in cur.fetchall()}
         for key, expected in CASE_REQUIRED_COLUMN_META.items():

@@ -210,3 +210,32 @@ instead of `2`. GREEN evidence: combined focused verification returned
 `221 passed, 13 skipped, 1 xfailed`; the freshly migrated disposable PostgreSQL
 suite returned `45 passed`; Ruff and `git diff --check` passed. The disposable
 `vl360_case_task5_fix4_test` database was dropped after verification.
+
+## Fix round 5 (catalog identity and bearer sink coverage)
+
+Readiness now consumes structured PostgreSQL catalog identity instead of
+owner/name checks or definition substrings. Required CHECK and UNIQUE
+constraints are matched by exact normalized expression or ordered columns;
+foreign keys include ordered source and target columns plus cascade action;
+indexes include ordered keys, predicate, uniqueness, btree method, and
+valid/ready/live state; triggers include table, function schema/name, exact
+event bitmask, enabled state, and `UPDATE OF` columns. Constraint validation and
+deferrability are also fail-closed. Dormant schema-79 behavior and migration
+080/`init.sql` remain unchanged.
+
+The source guard now detects Python `parse_qs`/`parse_qsl` bearer use and
+annotated direct aliases, and detects Nuxt/TypeScript typed aliases at
+`console`, `URLSearchParams`, route/query, notification, persistence, DOM,
+local-storage, and session-storage call spans. It reports the exact call line
+and remains argument/dataflow scoped, so unrelated field names and string
+literals in the same file do not create file-wide false positives.
+
+RED evidence: the focused regression run returned `8 failed, 1 passed` for a
+renamed/weakened CHECK, wrong composite FK target/action, wrong ordered or
+non-unique/predicate index, wrong trigger function/events, query parsing,
+typed logger/console aliases, URL construction, and browser sinks. GREEN
+evidence: source guard `7 passed`; access security with PostgreSQL `11 passed`;
+case store `15 passed`; PostgreSQL transaction `8 passed`; PostgreSQL schema
+`13 passed`; migration/readiness including live catalog drift probes `14
+passed`; database `198 passed, 1 xfailed`. Ruff passed on all touched Python
+files, and final staged hard-gate evidence is recorded with the commit.
