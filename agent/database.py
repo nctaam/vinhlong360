@@ -602,7 +602,10 @@ def _pg_schema_snapshot(conn) -> dict[str, object]:
                    ) AS target_columns,
                    con.confdeltype::text AS delete_action,
                    con.confupdtype::text AS update_action,
-                   pg_get_expr(con.conbin, con.conrelid, true) AS check_expression,
+                   -- Canonical, not pretty: pretty-printing drops the outer
+                   -- parentheses on PostgreSQL 16, so a correct CHECK read as
+                   -- drift and readiness could never report ready.
+                   pg_get_expr(con.conbin, con.conrelid, false) AS check_expression,
                    con.convalidated AS validated,
                    con.condeferrable AS deferrable,
                    con.condeferred AS deferred
@@ -622,7 +625,7 @@ def _pg_schema_snapshot(conn) -> dict[str, object]:
                        FROM generate_series(1, idx.indnkeyatts) AS key_position(position)
                        ORDER BY position
                    ) AS columns,
-                   pg_get_expr(idx.indpred, idx.indrelid, true) AS predicate,
+                   pg_get_expr(idx.indpred, idx.indrelid, false) AS predicate,
                    idx.indisunique AS unique,
                    idx.indisvalid AS valid,
                    idx.indisready AS ready,

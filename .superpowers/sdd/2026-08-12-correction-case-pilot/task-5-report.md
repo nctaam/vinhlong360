@@ -353,3 +353,48 @@ reported findings, and it is left untouched pending an owner decision because
 the fix changes production readiness semantics in a locked area. The existing
 drift tests never caught it because they assert only that an expected issue is
 present, never that a healthy schema yields an empty issue set.
+
+## Breaker remediation — blocking readiness defect (PostgreSQL 16 rendering)
+
+The defect recorded in the previous section is now fixed on owner instruction.
+
+Root cause, measured rather than inferred: the constraint and partial-index
+queries asked `pg_get_expr` for pretty output. Pretty rendering is a
+presentation format and PostgreSQL 16 omits the outer parentheses, so
+`receipt_revision >= 1` was compared against the pinned
+`(receipt_revision>=1)` and five CHECK constraints plus the access-session
+partial index reported drift on a schema that was entirely correct.
+Non-pretty rendering is the canonical form and reproduces the pinned
+expectations exactly for all six.
+
+The fix asks for canonical output instead of loosening the expectations, so
+drift detection is not weakened: no pinned constant changed. Index key columns
+are unaffected because `pg_get_indexdef` returns identical text in both modes.
+Trigger predicates continue to render through `pg_get_triggerdef`, which is
+only consulted when a predicate exists and therefore only ever appears on the
+drift path.
+
+The real test gap was that no test asserted the healthy direction. Every drift
+case asserted that an expected issue was present, which remains true when the
+entire catalog is reported as drifted, so a permanently blocked readiness was
+indistinguishable from a working one. Two tests now close that gap: a live
+assertion that a freshly migrated database yields no Case Kernel issues and
+reports `case_kernel_ready`, and a pure assertion that the untampered catalog
+doubles produce no issues.
+
+RED: the live healthy-schema test failed with the six pre-existing issues while
+the pure test passed, which localised the defect to SQL rendering rather than
+to the expectations or the doubles.
+
+GREEN: migration and readiness `15 passed`; `test_database.py`
+`205 passed, 1 xfailed`; case schema `13 passed`; receipts, access security and
+privacy logging `22 passed`; case store, PostgreSQL transaction and source
+guard `33 passed`. A freshly created and migrated disposable database now
+reports `{'ok': True, 'state': 'ready', 'code': 'case_kernel_ready'}` with an
+empty issue set, and ten hostile mutations were confirmed still detected
+against that clean baseline: a weakened CHECK bound, a renamed CHECK, a
+loosened digest-shape regex, a dropped index predicate, a foreign key moved to
+another namespace, a foreign key switched to `ON UPDATE CASCADE`, a restrictive
+trigger predicate, two no-op guard bodies, and a disabled trigger. Ruff passed
+and `git diff --check` exited 0. The disposable databases created for this
+verification were dropped afterwards.

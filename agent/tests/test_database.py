@@ -125,7 +125,8 @@ def test_case_readiness_checks_exact_security_catalog_definitions():
     source = inspect.getsource(database_module._pg_schema_snapshot)
     for required in (
         "_case_catalog_issues",
-        "pg_get_expr(con.conbin, con.conrelid, true)",
+        "pg_get_expr(con.conbin, con.conrelid, false)",
+        "pg_get_expr(idx.indpred, idx.indrelid, false)",
         "pg_get_indexdef(idx.indexrelid, position, true)",
         "tg.tgtype::integer",
         "target_ns.nspname AS target_schema",
@@ -188,6 +189,11 @@ def _valid_case_catalog_rows():
         {"trigger_name": "case_access_sessions_same_case", "table_name": "case_access_sessions", "function_schema": "public", "function_name": "enforce_case_access_same_case", "trigger_type": 23, "enabled": "O", "update_columns": [], "when_expression": None, "function_body": database_module._CASE_TRIGGER_FUNCTION_BODIES["enforce_case_access_same_case"]},
     ]
     return constraints, indexes, triggers
+
+
+def test_case_catalog_validation_accepts_an_untampered_catalog():
+    """Guards the healthy direction; every other case only asserts drift."""
+    assert database_module._case_catalog_issues(*_valid_case_catalog_rows()) == []
 
 
 @pytest.mark.parametrize(

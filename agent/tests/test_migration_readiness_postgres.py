@@ -170,6 +170,30 @@ def test_fresh_migration_chain_reaches_release_readiness(fresh_migrated_database
 
 
 @pg_only
+def test_case_readiness_reports_clean_for_an_untampered_schema(fresh_migrated_database):
+    """Fail-closed is only half the contract: a correct schema must read ready.
+
+    Every other drift probe asserts that an expected issue is present, which
+    stays true even when the whole catalog is reported as drifted, so nothing
+    covered the healthy direction.
+    """
+    adapter, _applied = fresh_migrated_database
+
+    with adapter._conn(commit_on_success=False) as conn:
+        snapshot = database_module._pg_schema_snapshot(conn)
+
+    assert snapshot["case_missing_tables"] == []
+    assert snapshot["case_missing_columns"] == []
+    assert snapshot["case_issues"] == []
+
+    status = database_module.case_kernel_schema_status(
+        {**snapshot, "backend": "postgresql", "ok": not snapshot["issues"]},
+        enabled=True,
+    )
+    assert status == {"ok": True, "state": "ready", "code": "case_kernel_ready"}
+
+
+@pg_only
 def test_case_readiness_fails_closed_for_catalog_definition_drift(
     fresh_migrated_database,
 ):
