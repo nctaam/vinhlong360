@@ -199,3 +199,42 @@ class TestFeedbackReceiptCleanup:
         output = "\n".join(record.getMessage() for record in caplog.records)
         assert "FEEDBACK_RECEIPT_CLEANUP_FAILED" in output
         assert "secret@example.com" not in output
+
+
+# ── Task 8: the case notification dispatcher runs here, inert by default ──
+
+def test_case_outbox_is_a_registered_task():
+    import scheduler
+
+    names = [task.name for task in scheduler.TASKS]
+    assert "case-outbox" in names
+    task = next(task for task in scheduler.TASKS if task.name == "case-outbox")
+    assert task.interval == 60
+
+
+def test_case_outbox_does_nothing_while_the_kernel_flag_is_off(monkeypatch):
+    import scheduler
+    from types import SimpleNamespace
+
+    monkeypatch.setitem(
+        sys.modules, "config",
+        SimpleNamespace(settings=SimpleNamespace(CASE_KERNEL_ENABLED=False)),
+    )
+
+    # No database, no provider, no exception: a disabled capability is a no-op.
+    assert scheduler.task_case_outbox() is None
+
+
+def test_a_dispatcher_failure_cannot_escape_into_the_scheduler_loop(monkeypatch):
+    import scheduler
+    from types import SimpleNamespace
+
+    monkeypatch.setitem(
+        sys.modules, "config",
+        SimpleNamespace(settings=SimpleNamespace(
+            CASE_KERNEL_ENABLED=True, CASE_KERNEL_ENCRYPTION_KEY="not-a-valid-key"
+        )),
+    )
+
+    # A bad key blows up inside the task; unrelated jobs must not be affected.
+    assert scheduler.task_case_outbox() is None

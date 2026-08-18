@@ -1247,10 +1247,51 @@ def task_weekly_digest():
         _sched_logger.error("weekly-digest error: %s", exc)
 
 
+def task_case_outbox():
+    """Deliver queued correction notifications.
+
+    Flag-gated and inert by default: with CASE_KERNEL_ENABLED false this returns
+    without touching the database. A failure here is contained by the scheduler's
+    per-task handling, so an SMS outage never stops unrelated jobs, and the
+    dispatcher's own SKIP LOCKED claim keeps a second worker from double-sending.
+    """
+    try:
+        from config import settings
+    except Exception:  # noqa: BLE001 - configuration unavailable, nothing to do
+        return
+    if not getattr(settings, "CASE_KERNEL_ENABLED", False):
+        return
+    try:
+        from datetime import datetime, timezone
+
+        from cases.outbox import configure_case_outbox, dispatch_case_outbox
+        from cases.security import CaseCrypto
+        from sms_provider import EsmsProvider
+
+        configure_case_outbox(
+            crypto=CaseCrypto(settings.CASE_KERNEL_ENCRYPTION_KEY),
+            provider=EsmsProvider(
+                api_key=getattr(settings, "ESMS_API_KEY", ""),
+                secret=getattr(settings, "ESMS_SECRET", ""),
+                brandname=getattr(settings, "ESMS_BRANDNAME", ""),
+            ),
+        )
+        summary = dispatch_case_outbox(now=datetime.now(timezone.utc))
+        if summary.claimed:
+            _sched_logger.info(
+                "case-outbox: claimed=%d sent=%d retried=%d suppressed=%d dead=%d",
+                summary.claimed, summary.sent, summary.retried,
+                summary.suppressed, summary.dead_lettered,
+            )
+    except Exception as exc:  # noqa: BLE001
+        _sched_logger.error("case-outbox error: %s", exc)
+
+
 TASKS = [
     ScheduledTask("auto-learn",     task_auto_learn,            interval_seconds=AUTO_LEARN_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),   # 3h (env)
     ScheduledTask("relationships",  task_relationship_discovery, interval_seconds=12 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 12h
     ScheduledTask("data-sync",      task_sync_data,              interval_seconds=3600),        # 1h
+    ScheduledTask("case-outbox",    task_case_outbox,            interval_seconds=60),          # 1m, inert while the case flags are off
     ScheduledTask("analytics-cleanup", task_cleanup_analytics,   interval_seconds=24 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 24h
     ScheduledTask("feedback-receipt-cleanup", task_cleanup_feedback_receipts, interval_seconds=3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 1h
     # Digest quản lý MIỄN PHÍ (không LLM) — chạy bất kể AUTONOMOUS_TASKS_ENABLED; no-op nếu chưa cấu hình admin TG.

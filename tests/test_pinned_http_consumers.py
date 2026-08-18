@@ -113,6 +113,12 @@ KNOWN_UNPINNED_FETCHERS = {
     # design, so these cannot migrate without widening that contract.
     ("agent/scheduler.py", "_digest_send"),
     ("agent/scheduler.py", "_send_telegram_admins"),
+    # Outbound POST to the eSMS provider, same GET-only limitation. This egress
+    # is not new: it was the identical call inside agent/auth.py._send_sms
+    # before the transport was extracted, so the real surface is unchanged.
+    # Pinning it needs PinnedHTTPClient.post_json, which is the outstanding
+    # piece of Task 8 Step 3.
+    ("agent/sms_provider.py", "send"),
 }
 
 _GENERAL_HTTP_CALLS = {

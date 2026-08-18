@@ -29,7 +29,6 @@ from datetime import datetime, timedelta, timezone
 
 logger = logging.getLogger("auth")
 
-import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, UploadFile, File
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field, field_validator
@@ -513,43 +512,29 @@ def _verify_password(password: str, stored: str, *, _return_legacy=False):
     return (matched, matched) if _return_legacy else matched
 
 
-_SMS_MAX_RETRIES = 3
+# _SMS_MAX_RETRIES stays re-exported: it is part of this module's surface and
+# agent/tests/test_qa_fixes.py asserts the bound through it.
+from sms_provider import MAX_RETRIES as _SMS_MAX_RETRIES  # noqa: F401
+from sms_provider import EsmsProvider
+
+
+def _sms_provider() -> EsmsProvider:
+    """Built per call so a rotated key or a monkeypatched module is picked up."""
+    return EsmsProvider(
+        api_key=ESMS_API_KEY, secret=ESMS_SECRET, brandname=ESMS_BRANDNAME
+    )
+
 
 async def _send_sms(phone: str, message: str) -> bool:
-    """Send SMS via eSMS.vn API with retry + exponential backoff."""
-    if not ESMS_API_KEY:
-        logger.debug("DEV MODE — SMS to %s: %s", phone, message)
-        return True
+    """Send SMS via eSMS.vn with retry + exponential backoff.
 
-    intl_phone = "84" + phone[1:] if phone.startswith("0") else phone
-    payload = {
-        "ApiKey": ESMS_API_KEY,
-        "Content": message,
-        "Phone": intl_phone,
-        "SecretKey": ESMS_SECRET,
-        "SmsType": "2",
-        "Brandname": ESMS_BRANDNAME,
-    }
-    for attempt in range(_SMS_MAX_RETRIES):
-        try:
-            async with httpx.AsyncClient(timeout=10) as client:
-                resp = await client.post(
-                    "https://rest.esms.vn/MainService.svc/json/SendMultipleMessage_V4_post_json/",
-                    json=payload,
-                )
-                data = resp.json()
-                if data.get("CodeResult") == "100":
-                    return True
-                logger.warning("SMS attempt %d failed for %s: code=%s",
-                               attempt + 1, _mask_phone(phone), data.get("CodeResult"))
-        except Exception:
-            logger.warning("SMS attempt %d exception for %s",
-                           attempt + 1, _mask_phone(phone), exc_info=True)
-        if attempt < _SMS_MAX_RETRIES - 1:
-            await asyncio.sleep(0.5 * (2 ** attempt))
-    logger.error("SMS delivery failed after %d attempts for %s",
-                 _SMS_MAX_RETRIES, _mask_phone(phone))
-    return False
+    The transport, retry bound, backoff and result classification moved to
+    `sms_provider` so case notifications reuse exactly this behaviour. OTP
+    semantics are unchanged: a dev environment without a provider key still
+    reports success, and a delivered message is still a plain True.
+    """
+    result = await _sms_provider().send_async(phone, message)
+    return result.delivered
 
 
 # ── Endpoints ──

@@ -318,13 +318,21 @@ class TestReviewStatsLimit:
 class TestSMSRetry:
     """Finding-018: SMS delivery with retry + exponential backoff."""
 
+    # The retry loop and backoff moved into sms_provider so case notifications
+    # reuse the same transport; the Finding-018 guarantee is unchanged, and
+    # agent/tests/test_sms_provider.py now proves it by behaviour rather than by
+    # searching for text in a function body.
     def test_send_sms_has_retry_loop(self):
-        src = inspect.getsource(auth._send_sms)
-        assert "_SMS_MAX_RETRIES" in src or "range(" in src
+        import sms_provider
+
+        src = inspect.getsource(sms_provider.EsmsProvider.send_async)
+        assert "MAX_RETRIES" in src or "range(" in src
         assert "asyncio.sleep" in src
 
     def test_send_sms_has_backoff(self):
-        src = inspect.getsource(auth._send_sms)
+        import sms_provider
+
+        src = inspect.getsource(sms_provider.backoff_seconds)
         assert "2 **" in src or "2**" in src
 
     def test_max_retries_is_reasonable(self):

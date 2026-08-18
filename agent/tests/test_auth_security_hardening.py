@@ -821,3 +821,30 @@ class TestModerationCoverage:
         import social
         src = inspect.getsource(social.upload_image)
         assert "MAX_IMAGE" in src or "max_size" in src.lower() or "5 * 1024" in src or "5_000_000" in src or "5242880" in src
+
+
+# ── Task 8: OTP delivery delegates without changing its contract ──
+
+def test_send_sms_still_answers_with_a_plain_boolean():
+    import inspect
+
+    import auth
+
+    assert inspect.iscoroutinefunction(auth._send_sms)
+    source = inspect.getsource(auth._send_sms)
+    # The transport moved; the observable contract did not.
+    assert "send_async" in source
+    assert "result.delivered" in source
+
+
+def test_the_retry_bound_is_still_exposed_on_auth():
+    import auth
+
+    assert 2 <= auth._SMS_MAX_RETRIES <= 5
+
+
+def test_auth_no_longer_holds_its_own_http_client():
+    import auth
+
+    # A second copy of the transport is how the two paths drift apart.
+    assert not hasattr(auth, "httpx")

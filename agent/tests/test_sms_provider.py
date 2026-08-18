@@ -1,0 +1,177 @@
+"""SMS transport contract.
+
+The first half characterises `auth._send_sms` exactly as it behaves today. It is
+a safety net for extracting that code, so these assertions must keep passing
+before and after the move — authentication OTP semantics do not change.
+"""
+from __future__ import annotations
+
+import asyncio
+import sys
+from pathlib import Path
+from types import SimpleNamespace
+
+import pytest
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "agent"))
+
+import auth  # noqa: E402
+
+
+class _Response:
+    def __init__(self, payload) -> None:
+        self._payload = payload
+
+    def json(self):
+        if isinstance(self._payload, Exception):
+            raise self._payload
+        return self._payload
+
+
+class _FakeAsyncClient:
+    """Stands in for httpx.AsyncClient so no test ever reaches the network."""
+
+    calls: list[tuple[str, dict]] = []
+    script: list = []
+
+    def __init__(self, *args, **kwargs) -> None:
+        type(self).init_kwargs = kwargs
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *exc):
+        return False
+
+    async def post(self, url, json=None):
+        type(self).calls.append((url, json))
+        outcome = type(self).script.pop(0) if type(self).script else {"CodeResult": "100"}
+        if isinstance(outcome, Exception):
+            raise outcome
+        return _Response(outcome)
+
+
+async def _no_sleep(_seconds):
+    return None
+
+
+@pytest.fixture
+def fake_sms(monkeypatch):
+    _FakeAsyncClient.calls = []
+    _FakeAsyncClient.script = []
+    _FakeAsyncClient.init_kwargs = {}
+    import sms_provider
+
+    # The transport now lives only in sms_provider; auth no longer imports httpx.
+    monkeypatch.setattr(sms_provider.httpx, "AsyncClient", _FakeAsyncClient)
+    monkeypatch.setattr(sms_provider.asyncio, "sleep", _no_sleep)
+    monkeypatch.setattr(auth, "ESMS_API_KEY", "test-key")
+    monkeypatch.setattr(auth, "ESMS_SECRET", "test-secret")
+    monkeypatch.setattr(auth, "ESMS_BRANDNAME", "VL360")
+    # A local shim, not a patch of the real asyncio module: patching the module
+    # attribute in place makes the replacement call itself.
+    monkeypatch.setattr(auth, "asyncio", SimpleNamespace(sleep=_no_sleep))
+    return _FakeAsyncClient
+
+
+# ── Characterisation: today's behaviour, which the extraction must preserve ──
+
+def test_without_a_provider_key_the_send_is_a_dev_no_op(monkeypatch):
+    monkeypatch.setattr(auth, "ESMS_API_KEY", "")
+
+    assert asyncio.run(auth._send_sms("0901234567", "ma 123456")) is True
+
+
+def test_a_success_code_reports_delivered_and_posts_once(fake_sms):
+    fake_sms.script = [{"CodeResult": "100"}]
+
+    assert asyncio.run(auth._send_sms("0901234567", "ma 123456")) is True
+    assert len(fake_sms.calls) == 1
+
+
+def test_the_national_number_is_sent_in_international_form(fake_sms):
+    asyncio.run(auth._send_sms("0901234567", "ma 123456"))
+
+    _url, payload = fake_sms.calls[0]
+    assert payload["Phone"] == "84901234567"
+    assert payload["Content"] == "ma 123456"
+    assert payload["SmsType"] == "2"
+
+
+def test_the_request_goes_to_the_exact_provider_endpoint(fake_sms):
+    asyncio.run(auth._send_sms("0901234567", "ma 123456"))
+
+    url, _payload = fake_sms.calls[0]
+    assert url == (
+        "https://rest.esms.vn/MainService.svc/json/SendMultipleMessage_V4_post_json/"
+    )
+
+
+def test_a_rejected_code_retries_up_to_the_bound_then_reports_failure(fake_sms):
+    fake_sms.script = [{"CodeResult": "99"}, {"CodeResult": "99"}, {"CodeResult": "99"}]
+
+    assert asyncio.run(auth._send_sms("0901234567", "ma 123456")) is False
+    assert len(fake_sms.calls) == 3
+
+
+def test_a_transport_exception_retries_and_can_still_succeed(fake_sms):
+    fake_sms.script = [RuntimeError("boom"), {"CodeResult": "100"}]
+
+    assert asyncio.run(auth._send_sms("0901234567", "ma 123456")) is True
+    assert len(fake_sms.calls) == 2
+
+
+def test_the_provider_credentials_never_reach_the_log(fake_sms, caplog):
+    fake_sms.script = [{"CodeResult": "99"}, {"CodeResult": "99"}, {"CodeResult": "99"}]
+
+    with caplog.at_level("WARNING"):
+        asyncio.run(auth._send_sms("0901234567", "ma 123456"))
+
+    rendered = caplog.text
+    assert "test-key" not in rendered
+    assert "test-secret" not in rendered
+    assert "ma 123456" not in rendered
+    assert "0901234567" not in rendered
+
+
+# ── The extracted provider ──
+
+def test_the_provider_exposes_one_send_operation():
+    from sms_provider import EsmsProvider, SmsDeliveryResult
+
+    provider = EsmsProvider(api_key="k", secret="s", brandname="b")
+
+    assert hasattr(provider, "send")
+    assert SmsDeliveryResult(True, None, False).delivered is True
+
+
+def test_a_provider_without_credentials_reports_a_dev_delivery():
+    from sms_provider import EsmsProvider
+
+    provider = EsmsProvider(api_key="", secret="", brandname="")
+
+    result = provider.send("0901234567", "ma 123456", delivery_key="k1")
+
+    assert result.delivered is True
+    assert result.error_code == "dev_no_provider"
+
+
+def test_the_provider_classifies_a_rejection_as_not_retryable():
+    from sms_provider import classify_provider_result
+
+    assert classify_provider_result({"CodeResult": "100"}).delivered is True
+    rejected = classify_provider_result({"CodeResult": "99"})
+    assert rejected.delivered is False
+    assert rejected.retryable is False
+    assert rejected.error_code == "provider_code_99"
+
+
+def test_the_provider_classifies_a_missing_answer_as_retryable():
+    from sms_provider import classify_provider_result
+
+    unknown = classify_provider_result(None)
+
+    assert unknown.delivered is False
+    assert unknown.retryable is True
+    assert unknown.error_code == "provider_unavailable"

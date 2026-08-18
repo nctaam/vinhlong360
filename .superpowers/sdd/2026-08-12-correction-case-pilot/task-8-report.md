@@ -89,3 +89,63 @@ advanced security and database regression, none of which this change touches:
 `382 passed, 1 xfailed`. The contact and outbox suites pass twice in a row, so the
 durable state they exercise does not leak between runs. Ruff clean on
 `agent/cases/` and both new test files; `git diff --check` exit 0.
+
+## Step 3: the eSMS extraction, done under a characterisation net
+
+The deferral above is closed except for one named piece.
+
+**The net came first, as B3 requires.** `agent/auth.py._send_sms` had no
+behavioural coverage at all — the only tests were two source-text assertions in
+`test_qa_fixes.py` checking that the function body contained a retry loop and a
+backoff expression. Seven characterisation tests were written first and passed
+against the untouched function: a missing provider key is a dev no-op returning
+True, a `CodeResult` of 100 posts once and reports delivered, the national number
+is converted to international form, the endpoint is exact, a rejected code
+retries to the bound of three and then reports failure, a transport exception
+retries and can still succeed, and neither the API key, the secret, the message
+nor the full phone number reaches the log.
+
+**Then the move.** `agent/sms_provider.py` now owns the payload shape, the
+endpoint, the retry bound, the backoff curve, the success/failure classification
+and the phone masking, exactly once. It exposes two entry points over that one
+implementation: `send_async` for handlers already on the event loop, and `send`
+for the outbox dispatcher, which runs in a worker. Forcing authentication onto a
+blocking client inside an async endpoint would have been a real behaviour change,
+which is precisely the risk B3 warns about, so the concurrency model of each
+caller is preserved. `auth._send_sms` is now a delegation that still returns a
+plain bool. The same seven assertions pass unchanged after the move.
+
+**A source-shape test had to follow its code.** `test_qa_fixes.py` asserted that
+`auth._send_sms`'s body contained `asyncio.sleep` and `2 **`. The Finding-018
+guarantee is retry plus exponential backoff, and that guarantee is intact — it
+simply lives in `sms_provider` now, so those two assertions were repointed there.
+The behavioural tests added here are the stronger guard; searching a function
+body for text was always going to block a legitimate refactor.
+
+**The dispatcher runs on a schedule.** `task_case_outbox` is registered at a one
+minute interval and is inert while `CASE_KERNEL_ENABLED` is false — it returns
+before touching the database. Failures are contained by the scheduler's existing
+per-task handling, so an SMS outage cannot stop unrelated jobs, and the
+dispatcher's `FOR UPDATE SKIP LOCKED` claim keeps a second worker from
+double-sending.
+
+### Still outstanding, and named honestly
+
+`PinnedHTTPClient.post_json` was **not** written, so the eSMS call is not pinned.
+`tests/test_pinned_http_consumers.py` caught this immediately: extracting the
+transport surfaced `('agent/sms_provider.py', 'send')` as newly unpinned egress.
+It is registered in `KNOWN_UNPINNED_FETCHERS` deliberately, alongside the two
+Telegram POSTs that are there for exactly the same reason — the pinned client is
+GET-only by design. The real egress posture is unchanged: this is the same call
+that already ran unpinned inside `auth.py`. But the documented unpinned surface
+did grow by one entry, and that is the honest cost of stopping here.
+
+Adding a POST verb to the module whose entire purpose is egress safety — exact
+origin resolution, approved-socket dialing, peer verification, deadlines, body
+caps, zero cross-origin redirects — deserves its own focused pass with its own
+adversarial tests. It is the last remaining item of Task 8.
+
+Verification: the plan's Step 5 command `219 passed`; the wider sweep across
+contact, outbox, provider, public API, service, store, create, idempotency, QA
+fixes, auth hardening, advanced security and database `653 passed, 1 xfailed`.
+Ruff clean on every touched file; `git diff --check` exit 0.
