@@ -925,6 +925,41 @@ class CaseService:
         return grant
 
 
+    def request_contact_verification(
+        self,
+        *,
+        access_token: str,
+        phone: str,
+        consent: bool,
+        session_user_ref: str | None = None,
+        now: datetime | None = None,
+    ):
+        """The case comes from the session; the body never names one."""
+        from .contact import request_contact_verification as _request
+
+        now = self._now(now)
+        access = self._store.validate_access(
+            access_token, self._crypto, now=now, current_user_id=session_user_ref
+        )
+        return _request(access, phone, consent, now=now)
+
+    def verify_contact(
+        self,
+        *,
+        access_token: str,
+        code: str,
+        session_user_ref: str | None = None,
+        now: datetime | None = None,
+    ):
+        from .contact import verify_contact as _verify
+
+        now = self._now(now)
+        access = self._store.validate_access(
+            access_token, self._crypto, now=now, current_user_id=session_user_ref
+        )
+        return _verify(access, code, now=now)
+
+
 # ── Public status projection ──
 #
 # Backstage vocabulary never crosses this boundary. Phase, activity, outcome,

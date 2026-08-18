@@ -424,11 +424,24 @@ async def request_contact_verification(request: Request):
     body, invalid = await _model(request, _ContactRequestIn)
     if invalid is not None:
         return invalid
-    # Verification itself is Task 8; the transport contract is enforced now so
-    # the endpoint cannot be reached without a same-origin, CSRF-bound session.
-    return _problem(
-        503, "contact_verification_unavailable", "Contact verification is not enabled yet."
-    )
+    try:
+        _service().request_contact_verification(
+            access_token=request.cookies.get(ACCESS_COOKIE),
+            phone=body.phone,
+            consent=True,
+        )
+    except ValueError as exc:
+        if "invalid_contact_phone" not in str(exc):
+            raise
+        return _problem(400, "invalid_contact_phone", "That phone number is not usable.")
+    except Exception as exc:  # noqa: BLE001
+        mapped = _map_domain_error(exc)
+        if mapped is None:
+            raise
+        return mapped
+    # 202, not 200: a code was queued, and the answer never reveals whether the
+    # number exists or was reachable.
+    return Response(status_code=202, headers=dict(_NO_STORE))
 
 
 @case_public_router.post("/contact/verify")
@@ -439,6 +452,13 @@ async def verify_contact(request: Request):
     body, invalid = await _model(request, _ContactVerifyIn)
     if invalid is not None:
         return invalid
-    return _problem(
-        503, "contact_verification_unavailable", "Contact verification is not enabled yet."
-    )
+    try:
+        _service().verify_contact(
+            access_token=request.cookies.get(ACCESS_COOKIE), code=body.code
+        )
+    except Exception as exc:  # noqa: BLE001
+        mapped = _map_domain_error(exc)
+        if mapped is None:
+            raise
+        return mapped
+    return Response(status_code=204, headers=dict(_NO_STORE))

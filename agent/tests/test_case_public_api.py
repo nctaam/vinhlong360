@@ -37,6 +37,8 @@ class _ServiceDouble:
         self.rotated = []
         self.reviewed = []
         self.revoked = []
+        self.contact_requests = []
+        self.contact_verifications = []
 
     def create_correction_from_transport(self, payload, **kwargs):
         self.created.append((payload, kwargs))
@@ -86,6 +88,12 @@ class _ServiceDouble:
 
     def revoke_access(self, **kwargs):
         self.revoked.append(kwargs)
+
+    def request_contact_verification(self, **kwargs):
+        self.contact_requests.append(kwargs)
+
+    def verify_contact(self, **kwargs):
+        self.contact_verifications.append(kwargs)
 
 
 def _flags(**overrides):

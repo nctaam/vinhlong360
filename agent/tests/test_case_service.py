@@ -438,3 +438,29 @@ def test_a_review_never_reopens_the_case_it_reviews():
     # It inserts a new case and links it; it must not update the original's phase.
     assert "insert_case" in source and "link_review_case" in source
     assert "update_case" not in source
+
+
+# ── Task 8: the contact adapters take authority from the session ──
+
+def test_the_contact_adapters_never_accept_a_case_identifier():
+    import inspect
+
+    for name in ("request_contact_verification", "verify_contact"):
+        parameters = inspect.signature(getattr(CaseService, name)).parameters
+        assert "case_id" not in parameters, name
+        assert "access_token" in parameters, name
+        assert all(
+            parameter.kind is inspect.Parameter.KEYWORD_ONLY
+            for key, parameter in parameters.items()
+            if key != "self"
+        ), name
+
+
+def test_the_contact_adapters_validate_the_session_before_touching_contact():
+    import inspect
+
+    for name in ("request_contact_verification", "verify_contact"):
+        source = inspect.getsource(getattr(CaseService, name))
+        assert "validate_access" in source, name
+        # The validated access object is what reaches the contact module.
+        assert source.index("validate_access") < source.rindex("access"), name
