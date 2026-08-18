@@ -30,10 +30,59 @@ PYTHON_SINK_METHODS = {
     "info", "insert", "notify", "parse_qs", "parse_qsl", "persist", "query",
     "save", "send", "update", "warning",
 }
+FRONTEND_ASSIGNMENT_SINK_ROOTS = {
+    "document", "history", "localStorage", "location", "navigator",
+    "sessionStorage", "top", "window",
+}
+FRONTEND_ASSIGNMENT_SINK_PROPERTIES = {
+    "action", "cookie", "hash", "href", "innerHTML", "innerText", "name",
+    "outerHTML", "pathname", "search", "src", "srcdoc", "textContent",
+    "title", "value",
+}
+ASSIGNMENT = re.compile(
+    r"(?P<target>[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*|\[[^\]\r\n]{0,80}\])+)"
+    r"\s*(?:\+|\|\||\?\?)?=(?!=)"
+)
 
 
 def _strip_literals(value: str) -> str:
-    return re.sub(r"(['\"])(?:\\.|(?!\1).)*\1|`(?:\\.|[^`])*`", "", value, flags=re.DOTALL)
+    """Drop literal text but keep executable ``${...}`` template expressions.
+
+    Removing a whole backtick literal also removed the interpolated expressions
+    inside it, so a bearer routed through ```${access_token}``` reached a sink
+    unseen. Line count is preserved so callers can still locate a violation.
+    """
+    kept: list[str] = []
+    index, length = 0, len(value)
+    while index < length:
+        char = value[index]
+        if char not in "'\"`":
+            kept.append(char)
+            index += 1
+            continue
+        quote, index = char, index + 1
+        while index < length:
+            if value[index] == "\\":
+                if value[index + 1:index + 2] == "\n":
+                    kept.append("\n")
+                index += 2
+                continue
+            if value[index] == quote:
+                index += 1
+                break
+            if quote == "`" and value[index] == "$" and value[index + 1:index + 2] == "{":
+                index += 2
+                depth, start = 1, index
+                while index < length and depth:
+                    depth += {"{": 1, "}": -1}.get(value[index], 0)
+                    index += 1
+                kept.append(f" {value[start:index - 1]} ")
+                continue
+            if value[index] == "\n":
+                kept.append("\n")
+            index += 1
+        kept.append(" ")
+    return "".join(kept)
 
 
 def _call_arguments(source: str, start: int) -> str:
@@ -139,7 +188,7 @@ def _is_frontend_sink(callee: str) -> bool:
     )
 
 
-def _frontend_violations(source: str) -> list[int]:
+def _frontend_aliases(source: str) -> set[str]:
     aliases = set(FORBIDDEN)
     alias_pattern = re.compile(
         r"\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)"
@@ -152,6 +201,32 @@ def _frontend_violations(source: str) -> list[int]:
             if match.group(2) in aliases and match.group(1) not in aliases:
                 aliases.add(match.group(1))
                 changed = True
+    return aliases
+
+
+def _assignment_sink_violations(scrubbed: str, aliases: set[str]) -> list[int]:
+    """Browser property-assignment sinks: they persist a bearer without a call."""
+    violations = []
+    for match in ASSIGNMENT.finditer(scrubbed):
+        parts = [
+            part
+            for part in (item.strip() for item in re.split(r"[.\[\]]+", match.group("target")))
+            if part
+        ]
+        if (
+            parts[0] not in FRONTEND_ASSIGNMENT_SINK_ROOTS
+            and parts[-1] not in FRONTEND_ASSIGNMENT_SINK_PROPERTIES
+        ):
+            continue
+        tail = scrubbed[match.end():match.end() + 200].lstrip()
+        assigned = re.split(r"[;\r\n]", tail, maxsplit=1)[0]
+        if set(IDENTIFIER.findall(assigned)) & aliases:
+            violations.append(scrubbed.count("\n", 0, match.start()) + 1)
+    return violations
+
+
+def _frontend_violations(source: str) -> list[int]:
+    aliases = _frontend_aliases(source)
     violations = []
     for match in CALL.finditer(source):
         if not _is_frontend_sink(match.group("callee")):
@@ -159,7 +234,8 @@ def _frontend_violations(source: str) -> list[int]:
         args = _strip_literals(_call_arguments(source, match.end()))
         if set(IDENTIFIER.findall(args)) & aliases:
             violations.append(source.count("\n", 0, match.start()) + 1)
-    return violations
+    violations.extend(_assignment_sink_violations(_strip_literals(source), aliases))
+    return sorted(set(violations))
 
 
 def case_security_source_violations(paths: tuple[Path, ...]) -> list[str]:
@@ -251,6 +327,50 @@ def test_source_guard_covers_route_notification_persistence_dom_and_browser_stor
         "sinks.vue:6",
         "sinks.vue:7",
     ]
+
+
+def test_source_guard_detects_bearers_inside_executable_template_expressions(tmp_path):
+    frontend = tmp_path / "template.ts"
+    frontend.write_text(
+        "console.log(`case=${access_token}`)\n"
+        "localStorage.setItem('case', `${case_capability}`)\n"
+        "console.log(`case=${publicReference}`)\n",
+        encoding="utf-8",
+    )
+
+    assert case_security_source_violations((frontend,)) == ["template.ts:1", "template.ts:2"]
+
+
+def test_source_guard_detects_browser_property_assignment_sinks(tmp_path):
+    frontend = tmp_path / "assign.vue"
+    frontend.write_text(
+        "window.location.href = access_token\n"
+        "document.body.textContent = case_capability\n"
+        "localStorage.caseToken = receipt_secret\n"
+        "sessionStorage['case'] = access_token\n"
+        "element.innerHTML = case_capability\n"
+        "anchor.href +=\n  case_capability\n",
+        encoding="utf-8",
+    )
+
+    assert case_security_source_violations((frontend,)) == [
+        "assign.vue:1", "assign.vue:2", "assign.vue:3",
+        "assign.vue:4", "assign.vue:5", "assign.vue:6",
+    ]
+
+
+def test_source_guard_does_not_flag_comparisons_or_non_bearer_assignment_sinks(tmp_path):
+    frontend = tmp_path / "safe.ts"
+    frontend.write_text(
+        "if (location.href === access_token) { redirect() }\n"
+        "const rendered = `case=${publicReference}`\n"
+        "document.title = publicReference\n"
+        "const capability = LEGACY_PUBLIC_CAPABILITY[key]\n"
+        "state.capabilityMode = resolvePublicCapabilityMode(capability, flags)\n",
+        encoding="utf-8",
+    )
+
+    assert case_security_source_violations((frontend,)) == []
 
 
 def test_source_guard_does_not_join_unrelated_occurrences_across_one_file(tmp_path):

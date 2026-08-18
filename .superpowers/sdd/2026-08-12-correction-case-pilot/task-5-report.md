@@ -239,3 +239,57 @@ case store `15 passed`; PostgreSQL transaction `8 passed`; PostgreSQL schema
 `13 passed`; migration/readiness including live catalog drift probes `14
 passed`; database `198 passed, 1 xfailed`. Ruff passed on all touched Python
 files, and final staged hard-gate evidence is recorded with the commit.
+
+## Breaker remediation after the five-round ceiling — finding 2 (source-guard bypasses)
+
+This is not fix round 6. Task 5 hit the five-round ceiling at `9b265f45` with two
+Important findings retained by the final independent review. This entry records
+remediation of the second finding only; finding 1 (catalog readiness) is still
+open, and a fresh independent review of both is still owed before Task 5 may be
+marked complete.
+
+Both bypasses were reproduced before any code changed, by driving the committed
+scanner directly rather than trusting the review text. `console.log` with a
+bearer inside an executable template expression returned no violation, and
+`localStorage.setItem('case', ...)` returned no violation once its argument was
+wrapped in a template literal — so the bypass also defeated a sink the guard
+already claimed to cover. Five browser property-assignment sinks
+(`location.href`, `document.body.textContent`, a `localStorage` property, a
+computed `sessionStorage` key, and `innerHTML`) likewise returned nothing,
+because the frontend scanner only walked call spans.
+
+RED: three tests were added first. Template-expression and property-assignment
+coverage failed with an empty violation list against the expected two and six
+entries; the accompanying negative test passed immediately, confirming the new
+expectations did not simply widen the guard.
+
+GREEN: `_strip_literals` was replaced with a linear scanner that drops literal
+text but preserves `${...}` expressions and the source line count, so bearers
+interpolated into templates stay visible to identifier analysis without
+reintroducing file-wide false positives. A separate assignment pass matches a
+member or computed target whose root is a browser sink object or whose final
+property is a persisting sink, rejects comparison operators, and reads only the
+bounded right-hand expression. Alias resolution was extracted so call and
+assignment passes share one alias set, and results are now deduplicated and
+ordered. The scanner remains a bounded Python analyser: adding a Node parser
+would have introduced an npm dependency and a subprocess boundary into a Python
+test, which is the Windows-versus-Linux class of defect recorded in CLAUDE.md
+section 5b.
+
+Verification: the source-guard suite returned `10 passed`. Ten hostile variants
+were then confirmed caught, including three not covered by the new tests
+(`document.cookie`, `window.name`, and a templated `srcdoc`), while a strict
+comparison, a string literal naming a bearer, and a non-bearer assignment to a
+sink stayed unflagged. The whole-repository scan over 448 production sources
+returned no violations in 4.88 seconds, so the broadened guard added no false
+positive to real code. Regression suites were unchanged: receipts, access
+security and privacy logging `22 passed`; case store `15 passed`; PostgreSQL
+transaction `8 passed`; database `198 passed, 1 xfailed`. Ruff passed,
+`git diff --check` exited 0, and the staged repository hard gate reported
+`hard=0` with no ratchet increase.
+
+Watch item for any future sink expansion: `capability` is a live frontend domain
+term in `web-nuxt/composables/useFeature.ts` and `web-nuxt/utils/featureFlags.ts`
+that is unrelated to case bearers. It reaches no sink today, and the negative
+test pins that pattern, but those two files must be re-measured before the sink
+lists grow again.
