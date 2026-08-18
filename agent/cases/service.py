@@ -23,10 +23,14 @@ from .domain import (
     CaseSnapshot,
     Channel,
     CommandEnvelope,
+    CorrectionItem,
     DispositionFamily,
     EvidenceLevel,
     PromiseClock,
     PromiseHealth,
+    PublicCaseStatus,
+    PublicItemDecision,
+    PublicItemPublication,
     RiskClass,
     ServiceKind,
 )
@@ -652,3 +656,95 @@ class CaseService:
             next_update_at=now + timedelta(seconds=policy.update_target_seconds),
             replayed=False,
         )
+
+
+# ── Public status projection ──
+#
+# Backstage vocabulary never crosses this boundary. Phase, activity, outcome,
+# publication state and promise health select a line from a fixed catalog; the
+# case id, owner, severity, risk, evidence and any operator note stay behind.
+_PUBLIC_STEPS = {
+    CasePhase.INTAKE: "received",
+    CasePhase.TRIAGE: "checking",
+    CasePhase.INVESTIGATION: "checking",
+    CasePhase.DECISION: "deciding",
+    CasePhase.FULFILLMENT: "updating",
+    CasePhase.CLOSED: "closed",
+}
+_WAITING_ACTORS = {
+    CaseActivity.ACTIVE: None,
+    CaseActivity.WAITING_ON_REQUESTER: "requester",
+    CaseActivity.WAITING_ON_EXTERNAL: "external_source",
+}
+_SAFE_NEXT_ACTIONS = {
+    ("received", None): "Chúng tôi đã nhận yêu cầu và sẽ xem trong thời gian tới.",
+    ("checking", None): "Chúng tôi đang đối chiếu thông tin bạn gửi.",
+    ("deciding", None): "Chúng tôi đang kết luận yêu cầu này.",
+    ("updating", None): "Kết luận đã có; phần hiển thị công khai đang được xử lý.",
+    ("closed", None): "Yêu cầu đã khép lại. Bạn có thể xin xem xét lại.",
+    ("received", "requester"): "Chúng tôi cần bạn bổ sung thông tin để đi tiếp.",
+    ("checking", "requester"): "Chúng tôi cần bạn bổ sung thông tin để đi tiếp.",
+    ("deciding", "requester"): "Chúng tôi cần bạn bổ sung thông tin để đi tiếp.",
+    ("updating", "requester"): "Chúng tôi cần bạn bổ sung thông tin để đi tiếp.",
+    ("received", "external_source"): "Chúng tôi đang chờ phản hồi từ một nguồn bên ngoài.",
+    ("checking", "external_source"): "Chúng tôi đang chờ phản hồi từ một nguồn bên ngoài.",
+    ("deciding", "external_source"): "Chúng tôi đang chờ phản hồi từ một nguồn bên ngoài.",
+    ("updating", "external_source"): "Chúng tôi đang chờ phản hồi từ một nguồn bên ngoài.",
+}
+_PUBLIC_FALLBACK_ACTION = "Chúng tôi sẽ cập nhật cho bạn theo lịch đã hẹn."
+
+
+def _clock_due(case: CaseSnapshot, kind: str) -> datetime | None:
+    for clock in case.promise_clocks:
+        if clock.kind == kind:
+            return clock.due_at
+    return None
+
+
+def project_public_status(
+    case: CaseSnapshot,
+    items: tuple[CorrectionItem, ...],
+    *,
+    review_relation: str,
+    public_reference: str,
+) -> PublicCaseStatus:
+    """Render only what a reporter may see, from a fixed safe-copy catalog."""
+    if type(case) is not CaseSnapshot or type(items) is not tuple:
+        raise ValueError("invalid_public_projection")
+    if type(review_relation) is not str or not review_relation:
+        raise ValueError("invalid_public_projection")
+    if type(public_reference) is not str or not public_reference:
+        raise ValueError("invalid_public_projection")
+
+    step = _PUBLIC_STEPS[case.phase]
+    waiting_for = _WAITING_ACTORS[case.activity]
+    next_action = _SAFE_NEXT_ACTIONS.get((step, waiting_for), _PUBLIC_FALLBACK_ACTION)
+    # The resolution clock is measured internally but never published, so the
+    # update clock alone carries the public promise.
+    next_update_at = _clock_due(case, "update") or case.updated_at
+
+    return PublicCaseStatus(
+        public_reference=public_reference,
+        received_at=case.created_at,
+        current_step=step,
+        waiting_for=waiting_for,
+        next_action=next_action,
+        next_update_at=next_update_at,
+        promise_health=case.promise_health,
+        item_decisions=tuple(
+            PublicItemDecision(
+                item_id=item.item_id,
+                outcome=str(item.decision_ref) if item.decision_ref else None,
+                disposition_family=(
+                    DispositionFamily.ACTION_TAKEN if item.accepted
+                    else DispositionFamily.UNDETERMINED
+                ),
+            )
+            for item in items
+        ),
+        item_publication_states=tuple(
+            PublicItemPublication(item_id=item.item_id, state=item.publication_state)
+            for item in items
+        ),
+        review_path=review_relation,
+    )

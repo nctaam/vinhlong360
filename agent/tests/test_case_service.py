@@ -356,3 +356,47 @@ def test_the_idempotency_scope_follows_the_opt_in_and_the_channel():
     )
     # The channel is part of the scope, as the approved plan requires.
     assert Channel.WEB.value in service._idempotency_actor(anonymous, session_user_ref=None)
+
+
+# ── Task 7: public projection boundary ──
+
+def test_the_projection_refuses_malformed_input_rather_than_guessing():
+    from cases.service import project_public_status
+
+    with pytest.raises(ValueError, match="invalid_public_projection"):
+        project_public_status(None, (), review_relation="none", public_reference="VL-COR-X")
+    with pytest.raises(ValueError, match="invalid_public_projection"):
+        # a list, not the frozen tuple the projection contract requires
+        project_public_status(
+            _case_snapshot(), [], review_relation="none", public_reference="VL-COR-X"
+        )
+    with pytest.raises(ValueError, match="invalid_public_projection"):
+        project_public_status(
+            _case_snapshot(), (), review_relation="none", public_reference=""
+        )
+
+
+def _case_snapshot():
+    from cases.domain import (
+        CaseActivity, CasePhase, CaseSnapshot, DispositionFamily, ServiceKind,
+    )
+
+    return CaseSnapshot(
+        case_id="c-1", service_kind=ServiceKind.CORRECTION, category="correction",
+        phase=CasePhase.INTAKE, activity=CaseActivity.ACTIVE,
+        disposition_family=DispositionFamily.UNDETERMINED, domain_outcome=None,
+        severity=None, reporter_privacy="anonymous", owner_ref="person:owner",
+        current_revision=1, promise_policy_ref="correction-pilot-v1",
+        created_at=NOW, updated_at=NOW, closed_at=None,
+    )
+
+
+def test_the_public_catalog_never_contains_a_backstage_word():
+    from cases.service import _PUBLIC_STEPS, _SAFE_NEXT_ACTIONS
+
+    assert set(_PUBLIC_STEPS.values()) == {
+        "received", "checking", "deciding", "updating", "closed",
+    }
+    catalog = " ".join(_SAFE_NEXT_ACTIONS.values()).lower()
+    for backstage in ("triage", "investigation", "fulfillment", "operator", "risk", "evidence"):
+        assert backstage not in catalog
