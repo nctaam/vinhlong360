@@ -257,6 +257,11 @@ def test_case_readiness_fails_closed_for_catalog_definition_drift(
                 "CREATE TABLE shadow.case_receipts ("
                 "case_id UUID NOT NULL, receipt_id UUID NOT NULL, "
                 "PRIMARY KEY (case_id, receipt_id))",
+                # PostgreSQL validates the new foreign key against existing
+                # rows, so leave the probe self-contained rather than relying
+                # on the table happening to be empty; the savepoint rolls the
+                # delete back with everything else.
+                "DELETE FROM case_access_sessions",
                 "ALTER TABLE case_access_sessions DROP CONSTRAINT "
                 "case_access_sessions_case_receipt_fkey",
                 "ALTER TABLE case_access_sessions ADD CONSTRAINT "

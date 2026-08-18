@@ -398,3 +398,67 @@ another namespace, a foreign key switched to `ON UPDATE CASCADE`, a restrictive
 trigger predicate, two no-op guard bodies, and a disabled trigger. Ruff passed
 and `git diff --check` exited 0. The disposable databases created for this
 verification were dropped afterwards.
+
+## Breaker remediation — review findings against the remediation itself
+
+An adversarial pass over the three remediation commits returned five findings,
+all against the source guard and its live probe. None were in the readiness
+change. All five are fixed here, each reproduced before being fixed.
+
+The serious one: the rewritten scrubber never terminated a single- or
+double-quoted string at a newline, so a single apostrophe in a `//` comment
+opened a quote scan that deleted every following line. A file whose first line
+read `// we don't persist bearers here` and whose second line wrote
+`window.location.href = access_token` reported nothing at all, meaning the very
+assignment pass added to close the second breaker finding could be disabled by
+ordinary prose. A quote with no partner on its own line is now treated as prose
+or as part of a regex literal and kept verbatim, because a JavaScript string
+cannot span a raw newline.
+
+Comments are now removed as well. Previously a bearer named only in a warning
+comment beside a sink assignment was read as the assigned value, so
+`document.title = publicReference // never put access_token here` failed the
+repository-wide gate; a commented-out sink call was reported for the same
+reason. Comment removal is deliberately conservative, triggering only where the
+delimiter follows whitespace or begins the line, so `https://` inside ordinary
+text and escaped slashes inside regular expressions are untouched. Both passes
+now read the same scrubbed text, which removes the previous split between a
+raw-source call scan and a scrubbed assignment scan.
+
+The sink vocabulary was inconsistent. Navigation and history objects were
+recognised for assignments but not for calls, so `location.assign(...)`,
+`history.pushState(...)`, `history.replaceState(...)` and `window.open(...)`
+all passed while `window.location.href = ...` was caught; `location.replace`
+was caught only because `replace` happened to be a known method name. Those
+roots and methods are now shared. Separately, `el.dataset.token = ...` matched
+neither an approved root nor an approved property and escaped, while
+`document.body.dataset.token = ...` was caught, so the same leak was detected or
+missed depending on how the element reference was obtained; any `dataset`
+segment now counts as a sink.
+
+The live shadow-namespace probe added a foreign key without first clearing
+`case_access_sessions`. PostgreSQL validates a new foreign key against existing
+rows, so with even one session row present the probe died with
+`ForeignKeyViolation` instead of asserting drift. Demonstrated directly: with a
+seeded case, receipt and session row the original statement list crashed while
+the corrected list still reported
+`foreign key definition drift: case_access_sessions_case_receipt_fkey`. The
+probe now deletes inside its own savepoint and no longer depends on the fixture
+leaving the table empty.
+
+Verification: source guard `14 passed`; migration readiness and case schema
+`28 passed`; `test_database.py` `205 passed, 1 xfailed`; receipts, access
+security, privacy logging, case store and PostgreSQL transaction `45 passed`.
+Eighteen hostile variants were confirmed caught, including both bypasses from
+the original finding, all four navigation and history call forms, a dataset
+write, and both bypasses hidden behind an apostrophe. Eight benign patterns
+stayed unflagged, among them a strict comparison, a bearer named in a line
+comment, a bearer named in a block comment, a commented-out sink call, and the
+`capability` feature-flag idiom used by the real frontend. The whole-repository
+scan over 448 sources remained empty. Ruff passed and `git diff --check`
+exited 0.
+
+Cost note: the frontend scan is slower than before the guard was broadened,
+measured at 3.59 seconds for 280 files against 7.14 seconds for the untouched
+Python path, 9.12 seconds combined. No single file dominates; the slowest is
+0.179 seconds.

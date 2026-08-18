@@ -12,14 +12,15 @@ CALL = re.compile(
 )
 IDENTIFIER = re.compile(r"\b[A-Za-z_$][\w$]*\b")
 FRONTEND_SINK_ROOTS = {
-    "$fetch", "analytics", "axios", "console", "document", "localStorage",
-    "notification", "notify", "query", "route", "router", "sessionStorage",
+    "$fetch", "analytics", "axios", "console", "document", "history",
+    "localStorage", "location", "notification", "notify", "query", "route",
+    "router", "sessionStorage", "top", "window",
 }
 FRONTEND_SINK_METHODS = {
-    "append", "appendChild", "create", "createTextNode", "execute", "fetch",
-    "insert", "log", "navigateTo", "persist", "push", "replace",
-    "replaceChildren", "save", "send", "setAttribute", "setItem", "update",
-    "write",
+    "append", "appendChild", "assign", "create", "createTextNode", "execute",
+    "fetch", "insert", "log", "navigateTo", "open", "persist", "push",
+    "pushState", "replace", "replaceChildren", "replaceState", "save", "send",
+    "setAttribute", "setItem", "update", "write",
 }
 PYTHON_SINK_ROOTS = {
     "analytics", "document", "logger", "logging", "notification", "notify",
@@ -46,31 +47,60 @@ ASSIGNMENT = re.compile(
 
 
 def _strip_literals(value: str) -> str:
-    """Drop literal text but keep executable ``${...}`` template expressions.
+    """Drop literal and comment text but keep executable ``${...}`` expressions.
 
     Removing a whole backtick literal also removed the interpolated expressions
     inside it, so a bearer routed through ```${access_token}``` reached a sink
-    unseen. Line count is preserved so callers can still locate a violation.
+    unseen. Comments go too, otherwise a warning that merely names a bearer
+    reads as a leak. A quote with no partner on its own line is prose (``don't``)
+    or part of a regex literal rather than a string, so it is kept verbatim
+    instead of swallowing every sink below it. Line count is preserved so
+    callers can still locate a violation.
     """
     kept: list[str] = []
     index, length = 0, len(value)
     while index < length:
         char = value[index]
-        if char not in "'\"`":
+        following = value[index + 1:index + 2]
+        if char == "/" and following in {"/", "*"} and (index == 0 or value[index - 1].isspace()):
+            if following == "/":
+                while index < length and value[index] != "\n":
+                    index += 1
+                continue
+            index += 2
+            while index < length and value[index:index + 2] != "*/":
+                if value[index] == "\n":
+                    kept.append("\n")
+                index += 1
+            index += 2
+            kept.append(" ")
+            continue
+        if char in "'\"":
+            close = index + 1
+            while close < length and value[close] not in (char, "\n"):
+                close += 2 if value[close] == "\\" else 1
+            if close >= length or value[close] != char:
+                kept.append(char)
+                index += 1
+                continue
+            kept.append(" ")
+            index = close + 1
+            continue
+        if char != "`":
             kept.append(char)
             index += 1
             continue
-        quote, index = char, index + 1
+        index += 1
         while index < length:
             if value[index] == "\\":
                 if value[index + 1:index + 2] == "\n":
                     kept.append("\n")
                 index += 2
                 continue
-            if value[index] == quote:
+            if value[index] == "`":
                 index += 1
                 break
-            if quote == "`" and value[index] == "$" and value[index + 1:index + 2] == "{":
+            if value[index] == "$" and value[index + 1:index + 2] == "{":
                 index += 2
                 depth, start = 1, index
                 while index < length and depth:
@@ -216,6 +246,9 @@ def _assignment_sink_violations(scrubbed: str, aliases: set[str]) -> list[int]:
         if (
             parts[0] not in FRONTEND_ASSIGNMENT_SINK_ROOTS
             and parts[-1] not in FRONTEND_ASSIGNMENT_SINK_PROPERTIES
+            # A dataset write persists into a data-* attribute whatever the
+            # element variable is called and whatever key the author picks.
+            and "dataset" not in parts
         ):
             continue
         tail = scrubbed[match.end():match.end() + 200].lstrip()
@@ -226,15 +259,18 @@ def _assignment_sink_violations(scrubbed: str, aliases: set[str]) -> list[int]:
 
 
 def _frontend_violations(source: str) -> list[int]:
-    aliases = _frontend_aliases(source)
+    # Both passes read the scrubbed source so a commented-out sink cannot be
+    # reported and a bearer named in a comment cannot be mistaken for a value.
+    scrubbed = _strip_literals(source)
+    aliases = _frontend_aliases(scrubbed)
     violations = []
-    for match in CALL.finditer(source):
+    for match in CALL.finditer(scrubbed):
         if not _is_frontend_sink(match.group("callee")):
             continue
-        args = _strip_literals(_call_arguments(source, match.end()))
+        args = _call_arguments(scrubbed, match.end())
         if set(IDENTIFIER.findall(args)) & aliases:
-            violations.append(source.count("\n", 0, match.start()) + 1)
-    violations.extend(_assignment_sink_violations(_strip_literals(source), aliases))
+            violations.append(scrubbed.count("\n", 0, match.start()) + 1)
+    violations.extend(_assignment_sink_violations(scrubbed, aliases))
     return sorted(set(violations))
 
 
@@ -356,6 +392,63 @@ def test_source_guard_detects_browser_property_assignment_sinks(tmp_path):
     assert case_security_source_violations((frontend,)) == [
         "assign.vue:1", "assign.vue:2", "assign.vue:3",
         "assign.vue:4", "assign.vue:5", "assign.vue:6",
+    ]
+
+
+def test_source_guard_survives_apostrophes_in_comments_and_regex_literals(tmp_path):
+    """An unpaired quote is prose or a regex, and must not silence later sinks."""
+    frontend = tmp_path / "prose.ts"
+    frontend.write_text(
+        "// we don't persist bearers here\n"
+        "window.location.href = access_token\n"
+        "const pattern = /it's/\n"
+        "document.body.textContent = case_capability\n",
+        encoding="utf-8",
+    )
+
+    assert case_security_source_violations((frontend,)) == ["prose.ts:2", "prose.ts:4"]
+
+
+def test_source_guard_ignores_bearer_names_mentioned_only_in_comments(tmp_path):
+    frontend = tmp_path / "commented.vue"
+    frontend.write_text(
+        "document.title = publicReference // never put access_token here\n"
+        "/* case_capability must never reach localStorage */\n"
+        "localStorage.setItem('case', publicReference)\n"
+        "// localStorage.setItem('case', access_token)\n",
+        encoding="utf-8",
+    )
+
+    assert case_security_source_violations((frontend,)) == []
+
+
+def test_source_guard_covers_navigation_and_history_call_sinks(tmp_path):
+    frontend = tmp_path / "nav.ts"
+    frontend.write_text(
+        "location.assign(access_token)\n"
+        "history.pushState({}, '', access_token)\n"
+        "history.replaceState({}, '', access_token)\n"
+        "window.open(access_token)\n"
+        "location.assign(publicReference)\n",
+        encoding="utf-8",
+    )
+
+    assert case_security_source_violations((frontend,)) == [
+        "nav.ts:1", "nav.ts:2", "nav.ts:3", "nav.ts:4",
+    ]
+
+
+def test_source_guard_covers_dataset_property_writes(tmp_path):
+    frontend = tmp_path / "dataset.vue"
+    frontend.write_text(
+        "el.dataset.token = access_token\n"
+        "row.dataset.caseCapability = case_capability\n"
+        "el.dataset.reference = publicReference\n",
+        encoding="utf-8",
+    )
+
+    assert case_security_source_violations((frontend,)) == [
+        "dataset.vue:1", "dataset.vue:2",
     ]
 
 
