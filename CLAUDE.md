@@ -2,6 +2,8 @@
 
 > File này được nạp mỗi phiên. Nó là **giao thức bắt buộc** khi làm việc trên dự án.
 > Cập nhật lớn 2026-07-07 (đợt "truth-sync"): đồng bộ với 3 bước ngoặt — sáp nhập 1 tỉnh, định vị Vĩnh-Long-đặc-thù, ảnh AI-only. Tài liệu cũ mâu thuẫn với file này → file này thắng.
+>
+> **Branch-specific continuation:** khi đang ở branch `codex/correction-case-pilot`, đọc `docs/superpowers/handoffs/2026-08-18-claude-code-desktop-correction-case-pilot.md` trước khi hành động.
 
 ---
 
