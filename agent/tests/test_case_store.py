@@ -487,3 +487,12 @@ def test_evidence_descriptors_cannot_smuggle_contact_or_secret_keys():
 
     with pytest.raises(ValueError, match="unsafe_outbox_descriptor"):
         _transaction(_RecordingDatabase()).insert_correction_evidence((draft,))
+
+
+def test_require_entities_holds_the_row_against_a_concurrent_delete():
+    """The guard must outlive the check, or the FK raises a driver error later."""
+    database = _RecordingDatabase(rows=[{"id": "p-a"}])
+
+    _transaction(database).require_entities(("p-a",))
+
+    assert "FOR KEY SHARE" in database.statements[0][0]

@@ -127,3 +127,55 @@ six Task 6 files together `93 passed`; receipts, privacy logging, source guard,
 case schema, migration readiness and database `258 passed, 1 xfailed`; Ruff
 clean across `agent/cases/` and every touched test; staged hard gate reports
 `hard=0` with no ratchet increase.
+
+## Independent review of Task 6, and its five findings
+
+A multi-agent cloud review against `breaker-base` returned five findings, all in
+this task's code, all confirmed by reproduction before being fixed. Three were
+graded normal and two nit; every one was accepted.
+
+**Vietnamese values crashed intake.** `_request_digest` serialised the canonical
+body with `ensure_ascii=False` and fed it to `digest_capability`, which encodes
+ASCII and converts the resulting `UnicodeEncodeError` into
+`CaseSecurityError("invalid_case_credential")`. Reproduced directly: a routine
+address correction reading `Ấp Phú Đông, xã Long Hồ` raised an auth-shaped error
+before any transaction opened. On a Vietnamese-first product with `name`,
+`summary`, `description` and `attributes.address` all correctable, this broke
+essentially every real submission. Every fixture in this task used ASCII values,
+which is exactly why the suite stayed green. Fixed by keeping the canonical form
+ASCII, and covered by a create test that files a correction in Vietnamese.
+
+**The safety classifier blocked ordinary wording.** Folding diacritics collapses
+`từ từ` (slowly) onto `tự tử` (suicide) and `tủ sát` (cabinet against) onto
+`tự sát`. Measured false positives included `cửa hàng mở từ từ 8h đến 22h`,
+`tăng giá từ tuần sau` and `tủ sát tường`, each of which would have been rejected
+with 409 and told to call the police over an opening-hours correction. Word
+boundaries do not fix this, because the folded forms are identical; the markers
+are now matched with their diacritics, and only the markers that stay
+unambiguous when folded are also matched unaccented, so a reporter without
+Vietnamese input still routes correctly.
+
+**A lost-response retry could not collect its receipt.** The rate bucket was
+consumed before the replay branch was reached, so each retry of a dropped
+response spent a slot and the sixth attempt returned 429 instead of replaying,
+stranding a capability that was already committed with a 24-hour TTL. The
+service now recognises a clean replay on an unlocked peek and returns it without
+touching the bucket; a conflicting body still pays for a slot, so the limiter
+keeps gating new work. The peek runs on its own connection rather than nested
+inside the case transaction, because the PostgreSQL pool is shared and nesting
+could exhaust it.
+
+**A corrected phone replayed silently.** The digest bound only whether a contact
+was present, so retrying with a fixed typo returned the original grant and left
+the dispatcher pointed at the old number. The keyed digest of the contact is now
+bound, so an edited phone conflicts; the number itself never enters the digest
+input.
+
+**The entity guard could still leak a driver error.** `require_entities` took no
+row lock, so a concurrent delete between the check and the insert produced the
+`ForeignKeyViolation` the guard exists to convert. The read now takes
+`FOR KEY SHARE`, the lock the foreign key would acquire anyway.
+
+Verification after the fixes: the two new-file suites `29 passed` twice in a row;
+the plan's GREEN command `37 passed`; the full case, schema, readiness and
+database sweep `340 passed, 1 xfailed`; Ruff clean; `git diff --check` exit 0.

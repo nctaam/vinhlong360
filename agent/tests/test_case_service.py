@@ -146,3 +146,87 @@ def test_contact_details_never_raise_identity_assurance():
     signed_in = _command(authenticated_user_ref="user:7")
     assert service.identity_assurance_for(signed_in) == "session"
     assert service.reporter_privacy_for(signed_in) == "attributed"
+
+
+# ── Review round 1: defects found by the independent cloud review ──
+
+def test_vietnamese_values_survive_the_idempotency_digest():
+    """bug_001: this is a Vietnamese-first product; diacritics are the norm."""
+    from cases.security import CaseCrypto
+
+    service = CaseService(
+        store=None, crypto=CaseCrypto("0" * 43), policy=None, owner_ref="person:owner"
+    )
+    command = _command(
+        items=(
+            CorrectionItemInput(
+                entity_id="p-x",
+                field_path="attributes.address",
+                reported_value="Số 1 đường Nguyễn Huệ",
+                proposed_value="Ấp Phú Đông, xã Long Hồ",
+                base_entity_revision=7,
+            ),
+        )
+    )
+
+    digest = service._request_digest(command)
+
+    assert len(digest) == 64
+    # A different Vietnamese value must still change the digest.
+    other = _command(
+        items=(
+            CorrectionItemInput(
+                entity_id="p-x",
+                field_path="attributes.address",
+                reported_value="Số 1 đường Nguyễn Huệ",
+                proposed_value="Ấp Phú Tây, xã Long Hồ",
+                base_entity_revision=7,
+            ),
+        )
+    )
+    assert service._request_digest(other) != digest
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "cửa hàng mở từ từ 8h đến 22h",
+        "tăng giá từ tuần sau",
+        "tủ sát tường bên trái",
+        "cà phê pha từ từ",
+        "mở cửa từ thứ hai",
+    ],
+)
+def test_ordinary_vietnamese_wording_is_not_routed_to_the_emergency_lane(text):
+    """bug_002: folding diacritics makes 'từ từ' collide with 'tự tử'."""
+    assert _looks_urgent(text) is False
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "có người dọa giết chủ quán",
+        "chủ quán bị đánh đập",
+        "nó tự tử",
+        "nghi bị hiếp dâm",
+        "DOA GIET nhau",
+        "this is an emergency",
+        "someone is dying",
+    ],
+)
+def test_real_urgent_language_still_routes(text):
+    assert _looks_urgent(text) is True
+
+
+def test_the_contact_value_is_bound_to_the_idempotency_digest():
+    """bug_004: a corrected phone under the same key must not silently replay."""
+    from cases.security import CaseCrypto
+
+    service = CaseService(
+        store=None, crypto=CaseCrypto("0" * 43), policy=None, owner_ref="person:owner"
+    )
+    first = service._request_digest(_command(optional_phone="0270 111 2222"))
+    second = service._request_digest(_command(optional_phone="0270 111 2223"))
+    absent = service._request_digest(_command())
+
+    assert len({first, second, absent}) == 3

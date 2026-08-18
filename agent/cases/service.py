@@ -59,11 +59,21 @@ MAX_CORRECTION_VALUE = 2000
 
 # Bounded pre-intake classifier. It only decides that a report belongs on the
 # existing safety lane; it never grades the report and never creates a case.
-_EMERGENCY_MARKERS = (
-    "doa giet", "de doa tinh mang", "giet nguoi", "tu tu", "tu sat",
-    "cap cuu", "khan cap", "bat coc", "hiep dam", "danh dap",
+# Two sets on purpose. Folding diacritics makes "từ từ" (slowly) collide with
+# "tự tử" (suicide) and "tủ sát" (cabinet against) with "tự sát", so the
+# Vietnamese markers are matched WITH their diacritics. Only markers that stay
+# unambiguous once folded are also matched without them, for reporters typing
+# on a keyboard without Vietnamese input.
+_URGENT_EXACT = (
+    "dọa giết", "đe dọa tính mạng", "giết người", "tự tử", "tự sát",
+    "cấp cứu", "khẩn cấp", "bắt cóc", "hiếp dâm", "đánh đập",
+)
+_URGENT_FOLDED = (
+    "doa giet", "de doa tinh mang", "giet nguoi", "bat coc", "hiep dam",
+    "danh dap", "cap cuu", "khan cap",
     "emergency", "dying", "suicide", "kidnap", "assault", "death threat",
 )
+
 _SAFE_URGENT_MESSAGE = (
     "Việc này cần cơ quan chức năng xử lý ngay, không phải kênh đính chính nội dung. "
     "Gọi 113 (công an), 114 (cứu hoả) hoặc 115 (cấp cứu) để được hỗ trợ khẩn cấp. "
@@ -152,8 +162,11 @@ def _fold(value: str) -> str:
 
 
 def _looks_urgent(text: str) -> bool:
+    lowered = text.lower()
+    if any(marker in lowered for marker in _URGENT_EXACT):
+        return True
     folded = _fold(text)
-    return any(marker in folded for marker in _EMERGENCY_MARKERS)
+    return any(marker in folded for marker in _URGENT_FOLDED)
 
 
 class CaseService:
@@ -262,7 +275,12 @@ class CaseService:
         body = {
             "reporter_privacy": command.reporter_privacy,
             "notification_consent": bool(command.notification_consent),
-            "has_contact": command.optional_phone is not None,
+            # The value, not just its presence: a corrected phone under the same
+            # key must conflict rather than silently replay the old grant. Only
+            # the keyed digest enters the canonical body, never the number.
+            "contact": self._crypto.digest_capability(command.optional_phone.strip())
+            if command.optional_phone
+            else None,
             "handoff": command.handoff.conversation_digest if command.handoff else None,
             "items": [
                 {
@@ -275,8 +293,19 @@ class CaseService:
                 for item in command.items
             ],
         }
-        canonical = json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+        # ensure_ascii keeps the canonical form inside digest_capability's ASCII
+        # contract; a Vietnamese value would otherwise raise a credential error.
+        canonical = json.dumps(body, sort_keys=True, separators=(",", ":"))
         return self._crypto.digest_capability(f"create:{canonical}")
+
+    @staticmethod
+    def _replays_cleanly(row, *, actor_ref: str, request_digest: str, now: datetime) -> bool:
+        return (
+            row["expires_at"] > now
+            and row["response_key_version"] == "v1"
+            and hmac.compare_digest(str(row["actor_ref"]), actor_ref)
+            and hmac.compare_digest(str(row["request_digest"]), request_digest)
+        )
 
     def _replay(self, row, *, actor_ref, request_digest, now) -> CreateCorrectionResult:
         if row["expires_at"] <= now:
@@ -349,6 +378,22 @@ class CaseService:
         self._route_safety(command)
 
         actor_ref = session_user_ref or "anonymous"
+        key = f"create:{command.envelope.idempotency_key}"
+        request_digest = self._request_digest(command)
+
+        # A lost-response retry must not spend a rate slot. Without this, a
+        # client that retries a dropped response burns the bucket and the very
+        # request that should replay the receipt is answered with 429 instead,
+        # leaving a committed capability the reporter can never collect. Only a
+        # clean replay skips the bucket; a conflicting body still pays for it.
+        settled = self._store.peek_idempotency(key)
+        if settled is not None and self._replays_cleanly(
+            settled, actor_ref=actor_ref, request_digest=request_digest, now=now
+        ):
+            return self._replay(
+                settled, actor_ref=actor_ref, request_digest=request_digest, now=now
+            )
+
         if self._database is not None:
             allowed = check_case_rate_limit(
                 "correction_create",
@@ -363,8 +408,6 @@ class CaseService:
                     "case_rate_limited", "Too many corrections from here; try again later.", status=429
                 )
 
-        key = f"create:{command.envelope.idempotency_key}"
-        request_digest = self._request_digest(command)
         with self._store.transaction() as transaction:
             existing = transaction.claim_idempotency(key, now=now)
             if existing is not None:

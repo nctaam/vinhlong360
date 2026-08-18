@@ -528,7 +528,12 @@ class CaseTransaction:
             raise ValueError("invalid_entity_reference")
         for entity_id in sorted(set(entity_ids)):
             row = self._db._fetchone(
-                self._conn, "SELECT id FROM entities WHERE id = %s", (entity_id,)
+                self._conn,
+                # KEY SHARE is the lock the foreign key would take at insert
+                # time; taking it now stops a concurrent delete from turning
+                # this guard into a driver error later in the transaction.
+                "SELECT id FROM entities WHERE id = %s FOR KEY SHARE",
+                (entity_id,),
             )
             if row is None:
                 raise CaseNotFound(entity_id)
@@ -662,6 +667,29 @@ class PostgresCaseStore:
     def _require_pg(self) -> None:
         if not self._db._use_pg:
             raise RuntimeError("case_postgresql_required")
+
+    def peek_idempotency(self, key: str) -> dict | None:
+        """Unlocked read on its own connection.
+
+        Callers use this to recognise a lost-response retry before spending a
+        rate slot. It is advisory only: the authoritative, locked claim still
+        happens inside the case transaction, and nesting a second pooled
+        connection inside that transaction could exhaust a small pool.
+        """
+        self._require_pg()
+        if type(key) is not str or not key:
+            raise ValueError("invalid_idempotency_claim")
+        with self._db._conn(commit_on_success=False) as conn:
+            row = self._db._fetchone(
+                conn,
+                """
+                SELECT actor_ref, request_digest, response_enc, response_key_version,
+                       expires_at
+                FROM case_idempotency WHERE idempotency_key = %s
+                """,
+                (key,),
+            )
+            return None if row is None else dict(_row_dict(self._db, row))
 
     def _insert_receipt(self, conn, case_id, crypto, *, now, current_user_id, revision):
         from .security import ReceiptGrant

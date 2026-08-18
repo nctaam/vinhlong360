@@ -218,3 +218,69 @@ def test_replay_is_scoped_to_the_original_actor(pg_database):
         service.create_correction(
             other_actor, now=NOW, session_user_ref="user:99", rate_subject="192.0.2.24"
         )
+
+
+@pg_only
+def test_a_lost_response_retry_replays_even_when_the_rate_bucket_is_full(pg_database):
+    """bug_003: burning a slot per retry made the receipt unrecoverable."""
+    service = _service(pg_database)
+    command = _command("idem-rate-replay-1")
+    subject = "192.0.2.31"
+
+    first = service.create_correction(command, now=NOW, rate_subject=subject)
+    for index in range(service.create_rate_limit + 2):
+        try:
+            service.create_correction(
+                _command(f"idem-burn-{index}"), now=NOW, rate_subject=subject
+            )
+        except Exception:  # the bucket saturates part-way through, which is the point
+            pass
+
+    replayed = service.create_correction(command, now=NOW, rate_subject=subject)
+
+    assert replayed.replayed is True
+    assert replayed.capability == first.capability
+
+
+@pg_only
+def test_a_corrected_contact_under_the_same_key_conflicts(pg_database):
+    """bug_004: the phone was bound as a presence bit, so an edit replayed silently."""
+    service = _service(pg_database)
+    key = "idem-contact-1"
+    service.create_correction(
+        replace(_command(key), optional_phone="0270 111 2222"),
+        now=NOW,
+        rate_subject="192.0.2.32",
+    )
+
+    with pytest.raises(IdempotencyConflict) as excinfo:
+        service.create_correction(
+            replace(_command(key), optional_phone="0270 111 2223"),
+            now=NOW,
+            rate_subject="192.0.2.32",
+        )
+
+    assert excinfo.value.problem.code == "idempotency_conflict"
+
+
+@pg_only
+def test_a_vietnamese_correction_can_actually_be_filed(pg_database):
+    """bug_001: every fixture used ASCII, so the whole product language was untested."""
+    service = _service(pg_database)
+    command = replace(
+        _command("idem-vietnamese-1"),
+        items=(
+            CorrectionItemInput(
+                entity_id="p-vinh-long",
+                field_path="attributes.address",
+                reported_value="Số 1 đường Nguyễn Huệ",
+                proposed_value="Ấp Phú Đông, xã Long Hồ",
+                base_entity_revision=7,
+            ),
+        ),
+    )
+
+    result = service.create_correction(command, now=NOW, rate_subject="192.0.2.33")
+
+    assert result.replayed is False
+    assert result.public_reference.startswith("VL-COR-")
