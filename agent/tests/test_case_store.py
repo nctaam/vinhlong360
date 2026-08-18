@@ -569,3 +569,77 @@ def test_linking_a_review_updates_only_the_new_case_row():
     sql, params = database.statements[0]
     assert sql.startswith("UPDATE cases SET review_of_case_id")
     assert params == (CASE_ID, "r-1")
+
+
+# ── Task 10: decision and change-set write paths ──
+
+def test_the_change_set_read_selects_the_ciphertext_the_public_read_must_not():
+    public = _ReadingDatabase(many=[[]])
+    private = _ReadingDatabase(many=[[]])
+
+    _transaction(public).load_correction_items(CASE_ID)
+    _transaction(private).load_correction_item_payloads(CASE_ID, ("i-1",))
+
+    public_sql = public.statements[0][0]
+    private_sql = private.statements[0][0]
+    # One read feeds the public projection, the other builds a change set.
+    assert "reported_value_enc" not in public_sql
+    assert "reported_value_enc" in private_sql and "proposed_value_enc" in private_sql
+
+
+@pytest.mark.parametrize("item_ids", [(), ["i-1"], "i-1"])
+def test_the_change_set_read_refuses_a_malformed_selection(item_ids):
+    with pytest.raises(ValueError, match="invalid_correction_item_selection"):
+        _transaction(_ReadingDatabase()).load_correction_item_payloads(CASE_ID, item_ids)
+
+
+def test_a_lease_check_only_counts_a_live_claim_by_that_actor():
+    database = _ReadingDatabase(rows=[None])
+
+    assert _transaction(database).actor_holds_lease(CASE_ID, "person:x", now=NOW) is False
+
+    sql = database.statements[0][0]
+    assert "status = 'claimed'" in sql
+    assert "assignee_ref = %s" in sql
+    assert "lease_expires_at > %s" in sql
+
+
+def test_a_change_set_is_always_inserted_pending():
+    database = _ReadingDatabase(rows=[{"change_set_id": "cs-1"}])
+
+    _transaction(database).insert_change_set(
+        case_id=CASE_ID, base_entity_revision=7, before_patch={"a": 1}, after_patch={"a": 2},
+        inverse_patch={"a": 1}, evidence_refs=("e-1",), policy_revision="correction-pilot-v1",
+        risk_class="R1", decision_maker_ref="person:maker", reviewer_ref=None, created_at=NOW,
+    )
+
+    sql = database.statements[0][0]
+    assert "'pending'" in sql
+    # Nothing here may pre-declare a public projection as verified.
+    assert "public_projection_verified_at" not in sql
+
+
+def test_a_decision_row_carries_its_lineage_and_policy_revision():
+    database = _ReadingDatabase(rows=[{"decision_id": "d-1"}])
+
+    decision_id = _transaction(database).insert_decision(
+        case_id=CASE_ID, item_id="i-1", outcome_code="corrected",
+        reason_code="source_confirms", evidence_refs=("e-1", "e-2"),
+        decision_maker_ref="person:maker", reviewer_ref="person:checker",
+        policy_revision="correction-pilot-v1", decided_at=NOW,
+    )
+
+    sql, params = database.statements[0]
+    assert decision_id == "d-1"
+    assert "evidence_refs" in sql and "policy_revision" in sql
+    assert '["e-1","e-2"]' in params
+    assert "person:checker" in params
+
+
+def test_linking_change_set_items_is_repeatable():
+    database = _ReadingDatabase()
+
+    _transaction(database).link_change_set_items("cs-1", ("i-1", "i-2"))
+
+    assert len(database.statements) == 2
+    assert all("ON CONFLICT DO NOTHING" in sql for sql, _ in database.statements)

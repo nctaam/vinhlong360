@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -140,3 +140,198 @@ def test_building_a_change_set_never_reaches_the_entity_writer():
         assert forbidden not in source
     # apply_status starts pending; publication is a separate, later decision.
     assert 'apply_status' in source and 'pending' in source
+
+
+# ── Persistence, against real PostgreSQL ──
+
+import os  # noqa: E402
+from urllib.parse import parse_qs, urlparse  # noqa: E402
+
+import database  # noqa: E402
+from cases.domain import ActorContext, Channel  # noqa: E402
+from cases.policy import load_case_policy  # noqa: E402
+from cases.security import CaseCrypto  # noqa: E402
+
+
+def _pg_url():
+    raw = os.environ.get("VL360_TEST_DATABASE_URL", "").strip()
+    if not raw:
+        return None
+    parsed = urlparse(raw)
+    if parsed.scheme not in {"postgres", "postgresql"} or parsed.hostname not in {
+        "localhost", "127.0.0.1", "::1",
+    }:
+        return None
+    if {"host", "hostaddr"} & parse_qs(parsed.query, keep_blank_values=True).keys():
+        return None
+    return raw
+
+
+TEST_DATABASE_URL = _pg_url()
+pg_only = pytest.mark.skipif(
+    TEST_DATABASE_URL is None,
+    reason="set VL360_TEST_DATABASE_URL to a disposable loopback PostgreSQL database",
+)
+MASTER_KEY = "0" * 43
+
+
+@pytest.fixture
+def pg_database():
+    if TEST_DATABASE_URL is None:
+        pytest.skip("set VL360_TEST_DATABASE_URL to a disposable loopback PostgreSQL database")
+    import psycopg2
+    import psycopg2.extras
+
+    from cases.correction import configure_case_correction
+
+    database.psycopg2 = psycopg2
+    database.psycopg2.extras = psycopg2.extras
+    adapter = database.Database()
+    adapter._use_pg = True
+    adapter._dsn = TEST_DATABASE_URL
+    with adapter._conn(commit_on_success=False) as conn:
+        adapter._execute(
+            conn,
+            "INSERT INTO entities (id, type, name, revision) VALUES (%s,'place','Vinh Long',7)"
+            " ON CONFLICT (id) DO UPDATE SET revision = 7",
+            ("p-cs",),
+        )
+        conn.commit()
+    configure_case_correction(
+        database=adapter, crypto=CaseCrypto(MASTER_KEY), policy=load_case_policy()
+    )
+    yield adapter
+    configure_case_correction(database=None, crypto=None, policy=None)
+
+
+def _decider(ref="person:maker", scopes=("cases:work", "cases:decide")):
+    return ActorContext(actor_ref=ref, channel=Channel.WEB, scopes=frozenset(scopes),
+                        correlation_id="corr-persist")
+
+
+def _seed_case_with_item(adapter, *, entity_id="p-cs", field_path="attributes.phone",
+                         risk="R1", holder="person:maker"):
+    from cases.security import CaseCrypto as _Crypto
+
+    crypto = _Crypto(MASTER_KEY)
+    with adapter._conn(commit_on_success=False) as conn:
+        case_id = str(adapter._fetchone(
+            conn,
+            """
+            INSERT INTO cases (service_kind, category, phase, activity, disposition_family,
+                               reporter_privacy, owner_ref, current_revision, promise_policy_ref)
+            VALUES ('correction','correction','decision','active','undetermined','anonymous',
+                    'person:owner',1,'correction-pilot-v1')
+            RETURNING case_id
+            """,
+            (),
+        )["case_id"])
+        item_id = str(adapter._fetchone(
+            conn,
+            """
+            INSERT INTO correction_items (case_id, entity_id, field_path, reported_value_enc,
+                                          proposed_value_enc, base_entity_revision,
+                                          risk_class, evidence_level)
+            VALUES (%s,%s,%s,%s,%s,7,%s,'E0') RETURNING item_id
+            """,
+            (case_id, entity_id, field_path,
+             crypto.encrypt_private_payload({"value": "0270 111 2222"}),
+             crypto.encrypt_private_payload({"value": "0270 333 4444"}), risk),
+        )["item_id"])
+        if holder:
+            adapter._execute(
+                conn,
+                """
+                INSERT INTO case_work_items (case_id, kind, required_role, risk_class, status,
+                                             assignee_ref, lease_expires_at, ready_at, priority)
+                VALUES (%s,'decide','case_operator',%s,'claimed',%s,%s,%s,0)
+                """,
+                (case_id, risk, holder, NOW + timedelta(hours=1), NOW),
+            )
+        conn.commit()
+    return case_id, item_id
+
+
+@pg_only
+def test_building_a_change_set_commits_the_whole_fulfilment_step_at_once(pg_database):
+    from cases.correction import build_change_set
+
+    case_id, item_id = _seed_case_with_item(pg_database)
+
+    change_set = build_change_set(
+        case_id, (item_id,), _decider(), expected_revision=1,
+        evidence_refs=("e-1",), now=NOW,
+    )
+
+    assert change_set.apply_status == "pending"
+    with pg_database._conn(commit_on_success=False) as conn:
+        stored = dict(pg_database._fetchone(
+            conn,
+            "SELECT base_entity_revision, before_patch::text AS before,"
+            " after_patch::text AS after, inverse_patch::text AS inverse, apply_status,"
+            " public_projection_verified_at"
+            " FROM correction_change_sets WHERE case_id=%s",
+            (case_id,),
+        ))
+        linked = pg_database._fetchone(
+            conn,
+            "SELECT count(*) AS n FROM correction_change_set_items WHERE item_id=%s",
+            (item_id,),
+        )["n"]
+        phase = pg_database._fetchone(
+            conn, "SELECT phase FROM cases WHERE case_id=%s", (case_id,)
+        )["phase"]
+        work = pg_database._fetchone(
+            conn,
+            "SELECT count(*) AS n FROM case_work_items WHERE case_id=%s AND kind='publication'",
+            (case_id,),
+        )["n"]
+        audits = pg_database._fetchone(
+            conn,
+            "SELECT count(*) AS n FROM case_audit_events WHERE case_id=%s"
+            " AND reason_code='change_set_built'",
+            (case_id,),
+        )["n"]
+        outbox = pg_database._fetchone(
+            conn, "SELECT count(*) AS n FROM case_outbox WHERE case_id=%s", (case_id,)
+        )["n"]
+        entity_revision = pg_database._fetchone(
+            conn, "SELECT revision FROM entities WHERE id='p-cs'"
+        )["revision"]
+
+    assert stored["apply_status"] == "pending"
+    assert stored["public_projection_verified_at"] is None
+    assert stored["base_entity_revision"] == 7
+    assert "0270 111 2222" in stored["before"] and "0270 333 4444" in stored["after"]
+    assert stored["inverse"] == stored["before"]
+    assert linked == 1
+    assert phase == "fulfillment"
+    assert work == 1
+    assert audits == 1
+    assert outbox == 1
+    # The live entry is untouched: publication is a separate, later decision.
+    assert entity_revision == 7
+
+
+@pg_only
+def test_a_change_set_is_refused_when_the_entity_moved_since_intake(pg_database):
+    from cases.correction import CorrectionRejected as Refused
+    from cases.correction import build_change_set
+
+    case_id, item_id = _seed_case_with_item(pg_database)
+    with pg_database._conn(commit_on_success=False) as conn:
+        pg_database._execute(conn, "UPDATE entities SET revision = 9 WHERE id='p-cs'", ())
+        conn.commit()
+
+    with pytest.raises(Refused) as excinfo:
+        build_change_set(
+            case_id, (item_id,), _decider(), expected_revision=1,
+            evidence_refs=("e-1",), now=NOW,
+        )
+
+    assert excinfo.value.problem.code == "entity_revision_moved"
+    with pg_database._conn(commit_on_success=False) as conn:
+        count = pg_database._fetchone(
+            conn, "SELECT count(*) AS n FROM correction_change_sets WHERE case_id=%s", (case_id,)
+        )["n"]
+    assert count == 0

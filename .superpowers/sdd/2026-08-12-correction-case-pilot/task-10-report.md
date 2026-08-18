@@ -1,6 +1,6 @@
 # Task 10 Report: Evidence Registry, Risk Decisions, Domain Outcomes, Immutable Change Sets
 
-## Status: PARTIAL — the decision rules landed, persistence did not
+## Status: COMPLETE
 
 `agent/cases/correction.py` holds the evidence model, the risk rules, the
 decision contract and change-set construction, with 30 tests across the three
@@ -67,3 +67,50 @@ it must enforce are pinned.
 Plan Step 5 command: `38 passed`. Case regression across work control, public
 API, create, service, outbox and database: `343 passed, 1 xfailed`. Ruff clean;
 `git diff --check` exit 0. Not independently reviewed.
+
+## Completion: the persistence layer
+
+Everything listed as not delivered above is now written and covered.
+
+**Store.** `CaseTransaction` gained `actor_holds_lease`,
+`load_correction_item_payloads`, `entity_revision`, `insert_decision`,
+`insert_change_set` and `link_change_set_items`. The payload read is
+deliberately separate from `load_correction_items`: the public projection's read
+must never select an encrypted value, and keeping one read for each purpose is
+what makes that guarantee checkable rather than a convention.
+
+**Action precondition.** Every command requires the caller to be holding a live
+work lease on that case, checked inside the same transaction that does the
+write. A stranger with the decide scope but no lease is refused
+`active_lease_required`, which a test pins. This is the Task 9 lease being load
+bearing rather than decorative.
+
+**Evidence.** `add_evidence` stores the payload through
+`encrypt_private_payload`, so the content never lands in the clear; the test
+asserts the plaintext is absent from `content_enc` and that the author is
+recorded as the acting operator, not as free text from the caller.
+
+**Decisions.** `decide_item` validates first and only then opens a transaction,
+so a refused decision writes nothing — asserted directly by counting rows after
+an R3 decision without a reviewer is rejected. The stored row carries the
+outcome, bounded reason, evidence lineage, both refs and the policy revision.
+
+**Change sets.** `build_change_set` reads the item ciphertexts, decrypts them to
+build the before/after/inverse patches, re-reads the live entity revision and
+refuses `entity_revision_moved` when the entry changed since intake — with a
+test asserting no change set row is left behind on that path. On success the
+change set, its item linkage, the case's move to fulfilment, the transition, the
+publication work item, the audit and the notification intent all commit in one
+transaction.
+
+The test that matters most asserts what does **not** happen: after a successful
+build, `entities.revision` is still 7. The change set sits at
+`apply_status='pending'` with `public_projection_verified_at` null. Accepting
+records a debt; paying it is Task 12's decision behind its own kill switch.
+
+## Verification
+
+Plan Step 5 command: `43 passed`. The three suites pass twice in a row, so the
+rows they commit do not leak between runs. Case regression across work control,
+public API, create, store, service, outbox, contact and database: `397 passed,
+1 xfailed`. Ruff clean; `git diff --check` exit 0.

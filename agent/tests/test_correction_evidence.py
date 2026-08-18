@@ -154,3 +154,152 @@ def test_a_ruling_states_why_it_refused():
         "insufficient_evidence_level", "independent_source_required",
         "author_recusal_required", "evidence_conflict",
     }
+
+
+# ── Persistence, against real PostgreSQL ──
+
+import os  # noqa: E402
+from urllib.parse import parse_qs, urlparse  # noqa: E402
+
+import pytest  # noqa: E402
+
+import database  # noqa: E402
+from cases.domain import ActorContext, Channel  # noqa: E402
+from cases.policy import load_case_policy  # noqa: E402
+from cases.security import CaseCrypto  # noqa: E402
+
+
+def _pg_url():
+    raw = os.environ.get("VL360_TEST_DATABASE_URL", "").strip()
+    if not raw:
+        return None
+    parsed = urlparse(raw)
+    if parsed.scheme not in {"postgres", "postgresql"} or parsed.hostname not in {
+        "localhost", "127.0.0.1", "::1",
+    }:
+        return None
+    if {"host", "hostaddr"} & parse_qs(parsed.query, keep_blank_values=True).keys():
+        return None
+    return raw
+
+
+TEST_DATABASE_URL = _pg_url()
+pg_only = pytest.mark.skipif(
+    TEST_DATABASE_URL is None,
+    reason="set VL360_TEST_DATABASE_URL to a disposable loopback PostgreSQL database",
+)
+MASTER_KEY = "0" * 43
+
+
+@pytest.fixture
+def pg_database():
+    if TEST_DATABASE_URL is None:
+        pytest.skip("set VL360_TEST_DATABASE_URL to a disposable loopback PostgreSQL database")
+    import psycopg2
+    import psycopg2.extras
+
+    from cases.correction import configure_case_correction
+
+    database.psycopg2 = psycopg2
+    database.psycopg2.extras = psycopg2.extras
+    adapter = database.Database()
+    adapter._use_pg = True
+    adapter._dsn = TEST_DATABASE_URL
+    with adapter._conn(commit_on_success=False) as conn:
+        adapter._execute(
+            conn,
+            "INSERT INTO entities (id, type, name, revision) VALUES (%s,'place','Vinh Long',7)"
+            " ON CONFLICT (id) DO UPDATE SET revision = 7",
+            ("p-cs",),
+        )
+        conn.commit()
+    configure_case_correction(
+        database=adapter, crypto=CaseCrypto(MASTER_KEY), policy=load_case_policy()
+    )
+    yield adapter
+    configure_case_correction(database=None, crypto=None, policy=None)
+
+
+def _decider(ref="person:maker", scopes=("cases:work", "cases:decide")):
+    return ActorContext(actor_ref=ref, channel=Channel.WEB, scopes=frozenset(scopes),
+                        correlation_id="corr-persist")
+
+
+def _seed_case_with_item(adapter, *, entity_id="p-cs", field_path="attributes.phone",
+                         risk="R1", holder="person:maker"):
+    from cases.security import CaseCrypto as _Crypto
+
+    crypto = _Crypto(MASTER_KEY)
+    with adapter._conn(commit_on_success=False) as conn:
+        case_id = str(adapter._fetchone(
+            conn,
+            """
+            INSERT INTO cases (service_kind, category, phase, activity, disposition_family,
+                               reporter_privacy, owner_ref, current_revision, promise_policy_ref)
+            VALUES ('correction','correction','decision','active','undetermined','anonymous',
+                    'person:owner',1,'correction-pilot-v1')
+            RETURNING case_id
+            """,
+            (),
+        )["case_id"])
+        item_id = str(adapter._fetchone(
+            conn,
+            """
+            INSERT INTO correction_items (case_id, entity_id, field_path, reported_value_enc,
+                                          proposed_value_enc, base_entity_revision,
+                                          risk_class, evidence_level)
+            VALUES (%s,%s,%s,%s,%s,7,%s,'E0') RETURNING item_id
+            """,
+            (case_id, entity_id, field_path,
+             crypto.encrypt_private_payload({"value": "0270 111 2222"}),
+             crypto.encrypt_private_payload({"value": "0270 333 4444"}), risk),
+        )["item_id"])
+        if holder:
+            adapter._execute(
+                conn,
+                """
+                INSERT INTO case_work_items (case_id, kind, required_role, risk_class, status,
+                                             assignee_ref, lease_expires_at, ready_at, priority)
+                VALUES (%s,'decide','case_operator',%s,'claimed',%s,%s,%s,0)
+                """,
+                (case_id, risk, holder, NOW + timedelta(hours=1), NOW),
+            )
+        conn.commit()
+    return case_id, item_id
+
+
+@pg_only
+def test_add_evidence_stores_the_payload_encrypted_and_needs_a_live_lease(pg_database):
+    from cases.correction import AddEvidenceCommand, CorrectionRejected, add_evidence
+
+    case_id, item_id = _seed_case_with_item(pg_database)
+    command = AddEvidenceCommand(
+        case_id=case_id, item_id=item_id, level=EvidenceLevel.E3,
+        source_scope="place.contact", source_ref="https://a.example",
+        descriptor={"kind": "authoritative_source"},
+        content="scan of the licence", actor=_decider(),
+        observed_at=NOW - timedelta(days=1), effective_at=NOW - timedelta(days=1),
+        expires_at=NOW + timedelta(days=30), asserted_value="0270 333 4444",
+    )
+
+    record = add_evidence(command, now=NOW)
+
+    assert record.evidence_id
+    with pg_database._conn(commit_on_success=False) as conn:
+        row = dict(pg_database._fetchone(
+            conn,
+            "SELECT evidence_level, source_ref, content_enc, created_by_ref"
+            " FROM correction_evidence WHERE evidence_id=%s",
+            (record.evidence_id,),
+        ))
+    assert row["evidence_level"] == "E3"
+    assert "scan of the licence" not in str(row["content_enc"])
+    assert row["created_by_ref"] == "person:maker"
+
+    # Somebody without the lease cannot put evidence on this case.
+    with pytest.raises(CorrectionRejected) as excinfo:
+        add_evidence(
+            AddEvidenceCommand(**{**command.__dict__, "actor": _decider("person:stranger")}),
+            now=NOW,
+        )
+    assert excinfo.value.problem.code == "active_lease_required"

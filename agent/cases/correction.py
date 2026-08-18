@@ -16,11 +16,23 @@ patch carries its own inverse so a rollback needs no guesswork.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime
 
-from .domain import CaseProblem, CorrectionOutcome, EvidenceLevel, RiskClass
+from .audit import CaseAuditDraft, safe_case_projection
+from .domain import (
+    CaseProblem,
+    CasePhase,
+    Channel,
+    CorrectionOutcome,
+    EvidenceLevel,
+    PromiseHealth,
+    RiskClass,
+)
+from .queue_policy import WorkItemDraft
 from .service import CORRECTABLE_FIELD_PATHS
+from .store import CorrectionEvidenceDraft, OutboxDraft
+from .transitions import TransitionDraft
 
 DECIDE_SCOPE = "cases:decide"
 MAX_REASON_LENGTH = 200
@@ -271,3 +283,265 @@ def validate_change_set(
     if all(change.before_value == change.after_value for change in draft.changes):
         raise _reject("change_set_is_a_no_op", "This change set would change nothing.")
     return draft
+
+
+# ── Persistence ──
+#
+# Every command below validates first and only then opens a transaction, so a
+# refusal never leaves a partial write behind. None of them touches an entity.
+
+_DATABASE = None
+_CRYPTO = None
+_POLICY = None
+
+
+def configure_case_correction(*, database=None, crypto=None, policy=None) -> None:
+    global _DATABASE, _CRYPTO, _POLICY
+    _DATABASE = database
+    _CRYPTO = crypto
+    _POLICY = policy
+
+
+def _store():
+    from .store import PostgresCaseStore
+
+    return PostgresCaseStore(_DATABASE) if _DATABASE is not None else PostgresCaseStore()
+
+
+def _crypto():
+    if _CRYPTO is None:
+        raise RuntimeError("case_correction_not_configured")
+    return _CRYPTO
+
+
+def _policy_revision() -> str:
+    return getattr(_POLICY, "revision", "correction-pilot-v1")
+
+
+def _require_lease(transaction, case_id: str, actor, *, now: datetime) -> str:
+    """An action is only allowed while its author is holding the work."""
+    actor_ref = getattr(actor, "actor_ref", "unknown")
+    if not transaction.actor_holds_lease(case_id, actor_ref, now=now):
+        raise _reject(
+            "active_lease_required",
+            "Claim the work item before recording anything on this case.",
+            status=403,
+        )
+    return actor_ref
+
+
+@dataclass(frozen=True)
+class AddEvidenceCommand:
+    case_id: str
+    item_id: str | None
+    level: EvidenceLevel
+    source_scope: str
+    source_ref: str | None
+    descriptor: dict
+    content: str | None
+    actor: object
+    observed_at: datetime
+    effective_at: datetime
+    expires_at: datetime | None = None
+    asserted_value: str | None = None
+
+
+def add_evidence(command: AddEvidenceCommand, *, now: datetime) -> EvidenceRecord:
+    if type(command.level) is not EvidenceLevel:
+        raise _reject("invalid_evidence_level", "That evidence level is not offered.")
+    if type(command.source_scope) is not str or not command.source_scope.strip():
+        raise _reject("evidence_scope_required", "Evidence needs a source scope.", status=400)
+    if command.observed_at > now:
+        raise _reject("evidence_not_yet_observed", "Evidence cannot come from the future.")
+
+    crypto = _crypto()
+    store = _store()
+    with store.transaction() as transaction:
+        actor_ref = _require_lease(transaction, command.case_id, command.actor, now=now)
+        evidence_ids = transaction.insert_correction_evidence(
+            (
+                CorrectionEvidenceDraft(
+                    case_id=command.case_id,
+                    item_id=command.item_id,
+                    evidence_level=command.level,
+                    source_ref=command.source_ref,
+                    descriptor=dict(command.descriptor or {}),
+                    # The payload is a private artifact, never a public descriptor.
+                    content_enc=(
+                        crypto.encrypt_private_payload({"content": command.content})
+                        if command.content is not None
+                        else None
+                    ),
+                    created_by_ref=actor_ref,
+                    created_at=now,
+                ),
+            )
+        )
+    return EvidenceRecord(
+        evidence_id=evidence_ids[0],
+        case_id=command.case_id,
+        item_id=command.item_id,
+        level=command.level,
+        source_scope=command.source_scope,
+        author_ref=actor_ref,
+        observed_at=command.observed_at,
+        effective_at=command.effective_at,
+        expires_at=command.expires_at,
+        source_ref=command.source_ref,
+        asserted_value=command.asserted_value,
+    )
+
+
+def decide_item(command: DecideItemCommand, *, now: datetime) -> DecisionOutcome:
+    """Validate the ruling first; a refused decision writes nothing at all."""
+    decision = validate_decision(command, now=now)
+    store = _store()
+    with store.transaction() as transaction:
+        _require_lease(transaction, command.case_id, command.actor, now=now)
+        transaction.insert_decision(
+            case_id=decision.case_id,
+            item_id=decision.item_id,
+            outcome_code=decision.outcome_code.value,
+            reason_code=decision.reason_code,
+            evidence_refs=decision.evidence_refs,
+            decision_maker_ref=decision.decision_maker_ref,
+            reviewer_ref=decision.reviewer_ref,
+            policy_revision=_policy_revision(),
+            decided_at=now,
+        )
+    return decision
+
+
+def build_change_set(
+    case_id: str,
+    accepted_item_ids: tuple[str, ...],
+    actor,
+    expected_revision: int,
+    *,
+    evidence_refs: tuple[str, ...],
+    now: datetime,
+) -> ChangeSetDraft:
+    """Accepting owes a public change; this records that debt, it does not pay it.
+
+    The change set, its item linkage, the move to fulfilment, the publication
+    work, the audit and the notification intent all commit together. The live
+    entity is not touched here — publication is Task 12's decision, behind its
+    own kill switch.
+    """
+    crypto = _crypto()
+    store = _store()
+    with store.transaction() as transaction:
+        actor_ref = _require_lease(transaction, case_id, actor, now=now)
+        snapshot = transaction.load_case(case_id, for_update=True)
+        if snapshot.current_revision != expected_revision:
+            raise _reject("case_revision_conflict", "This case changed; reload it.")
+
+        payloads = transaction.load_correction_item_payloads(case_id, tuple(accepted_item_ids))
+        if len(payloads) != len(set(accepted_item_ids)):
+            raise _reject("correction_item_not_found", "One of those items is not on this case.")
+
+        entity_ids = {str(row["entity_id"]) for row in payloads}
+        if len(entity_ids) != 1:
+            raise _reject("change_set_spans_entities", "One change set, one entry.")
+        entity_id = entity_ids.pop()
+
+        changes = tuple(
+            ProposedChange(
+                item_id=str(row["item_id"]),
+                entity_id=entity_id,
+                field_path=str(row["field_path"]),
+                before_value=crypto.decrypt_private_payload(str(row["reported_value_enc"]))["value"],
+                after_value=crypto.decrypt_private_payload(str(row["proposed_value_enc"]))["value"],
+            )
+            for row in payloads
+        )
+        risk = max((str(row["risk_class"]) for row in payloads), default="R0")
+        draft = ChangeSetDraft(
+            case_id=case_id,
+            entity_id=entity_id,
+            base_entity_revision=int(payloads[0]["base_entity_revision"]),
+            changes=changes,
+            risk_class=risk,
+            decision_maker_ref=actor_ref,
+            reviewer_ref=getattr(actor, "reviewer_ref", None),
+            evidence_refs=tuple(evidence_refs),
+        )
+        live_revision = transaction.entity_revision(entity_id)
+        if live_revision is None:
+            raise _reject("correction_entity_unknown", "That entry is not published here.",
+                          status=404)
+        validate_change_set(draft, current_entity_revision=live_revision, now=now)
+
+        before, after, inverse = build_patches(draft)
+        change_set_id = transaction.insert_change_set(
+            case_id=case_id,
+            base_entity_revision=draft.base_entity_revision,
+            before_patch=before,
+            after_patch=after,
+            inverse_patch=inverse,
+            evidence_refs=draft.evidence_refs,
+            policy_revision=_policy_revision(),
+            risk_class=risk,
+            decision_maker_ref=actor_ref,
+            reviewer_ref=draft.reviewer_ref,
+            created_at=now,
+        )
+        transaction.link_change_set_items(change_set_id, tuple(accepted_item_ids))
+
+        updated = transaction.update_case(
+            snapshot.current_revision,
+            replace(
+                snapshot,
+                phase=CasePhase.FULFILLMENT,
+                current_revision=snapshot.current_revision + 1,
+                updated_at=now,
+            ),
+        )
+        transaction.append_transition(
+            TransitionDraft(
+                case_id=case_id,
+                from_phase=snapshot.phase,
+                to_phase=CasePhase.FULFILLMENT,
+                from_revision=snapshot.current_revision,
+                to_revision=updated.current_revision,
+                actor_ref=actor_ref,
+                reason_code="change_set_built",
+                policy_revision=_policy_revision(),
+                correlation_id=getattr(actor, "correlation_id", "correction"),
+                occurred_at=now,
+                waiting=None,
+            )
+        )
+        transaction.insert_work_items(
+            (
+                WorkItemDraft(
+                    case_id=case_id, kind="publication", required_role="case_operator",
+                    risk_class=RiskClass(risk), ready_at=now, received_at=now,
+                    promise_health=PromiseHealth.ON_TRACK,
+                ),
+            )
+        )
+        transaction.append_audit(
+            CaseAuditDraft(
+                case_id=case_id,
+                actor_ref=actor_ref,
+                actor_scopes=tuple(sorted(set(getattr(actor, "scopes", ()) or ()))),
+                channel=getattr(actor, "channel", Channel.WEB),
+                reason_code="change_set_built",
+                policy_revision=_policy_revision(),
+                correlation_id=getattr(actor, "correlation_id", "correction"),
+                before_snapshot=safe_case_projection(snapshot),
+                after_snapshot=safe_case_projection(updated),
+                occurred_at=now,
+            )
+        )
+        transaction.enqueue_outbox(
+            OutboxDraft(
+                case_id=case_id,
+                idempotency_key=f"notify:{change_set_id}:decided",
+                topic="correction.updated",
+                descriptor={"reason": "decided", "policy_revision": _policy_revision()},
+                available_at=now,
+            )
+        )
+    return replace(draft, apply_status="pending")

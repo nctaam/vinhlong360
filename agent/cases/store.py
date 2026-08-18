@@ -588,6 +588,117 @@ class CaseTransaction:
             (review_of_case_id, case_id),
         )
 
+    def actor_holds_lease(self, case_id: str, actor_ref: str, *, now: datetime) -> bool:
+        """A decision is only allowed while its author is actually holding the work."""
+        self._require_active()
+        row = self._db._fetchone(
+            self._conn,
+            """
+            SELECT 1 FROM case_work_items
+            WHERE case_id = %s AND assignee_ref = %s AND status = 'claimed'
+              AND lease_expires_at > %s
+            LIMIT 1
+            """,
+            (case_id, actor_ref, now),
+        )
+        return row is not None
+
+    def load_correction_item_payloads(
+        self, case_id: str, item_ids: tuple[str, ...]
+    ) -> tuple[dict, ...]:
+        """The ciphertext-bearing read, used only to build a change set.
+
+        Deliberately separate from `load_correction_items`, which feeds the
+        public projection and must never select an encrypted value.
+        """
+        self._require_active()
+        if type(item_ids) is not tuple or not item_ids:
+            raise ValueError("invalid_correction_item_selection")
+        rows = self._db._fetchall(
+            self._conn,
+            """
+            SELECT item_id, entity_id, field_path, reported_value_enc, proposed_value_enc,
+                   base_entity_revision, risk_class
+            FROM correction_items
+            WHERE case_id = %s AND item_id = ANY(%s::uuid[])
+            ORDER BY created_at, item_id
+            """,
+            (case_id, list(item_ids)),
+        )
+        return tuple(dict(_row_dict(self._db, row)) for row in rows)
+
+    def entity_revision(self, entity_id: str) -> int | None:
+        self._require_active()
+        row = self._db._fetchone(
+            self._conn, "SELECT revision FROM entities WHERE id = %s", (entity_id,)
+        )
+        return None if row is None else int(_row_dict(self._db, row)["revision"])
+
+    def insert_decision(
+        self, *, case_id: str, item_id: str | None, outcome_code: str, reason_code: str,
+        evidence_refs: tuple[str, ...], decision_maker_ref: str, reviewer_ref: str | None,
+        policy_revision: str, decided_at: datetime,
+    ) -> str:
+        self._require_active()
+        row = self._db._fetchone(
+            self._conn,
+            """
+            INSERT INTO case_decisions (
+                case_id, item_id, outcome_code, reason_code, evidence_refs,
+                decision_maker_ref, reviewer_ref, policy_revision, decided_at
+            ) VALUES (%s, %s, %s, %s, %s::jsonb, %s, %s, %s, %s)
+            RETURNING decision_id
+            """,
+            (
+                case_id, item_id, outcome_code, reason_code,
+                json.dumps(list(evidence_refs), separators=(",", ":")),
+                decision_maker_ref, reviewer_ref, policy_revision, decided_at,
+            ),
+        )
+        return str(_row_dict(self._db, row)["decision_id"])
+
+    def insert_change_set(
+        self, *, case_id: str, base_entity_revision: int, before_patch: dict,
+        after_patch: dict, inverse_patch: dict, evidence_refs: tuple[str, ...],
+        policy_revision: str, risk_class: str, decision_maker_ref: str,
+        reviewer_ref: str | None, created_at: datetime,
+    ) -> str:
+        """Always inserted `pending`; publication is a separate, later decision."""
+        self._require_active()
+        row = self._db._fetchone(
+            self._conn,
+            """
+            INSERT INTO correction_change_sets (
+                case_id, base_entity_revision, before_patch, after_patch, inverse_patch,
+                evidence_refs, policy_revision, risk_class, decision_maker_ref,
+                reviewer_ref, apply_status, created_at
+            ) VALUES (%s, %s, %s::jsonb, %s::jsonb, %s::jsonb, %s::jsonb, %s, %s, %s, %s,
+                      'pending', %s)
+            RETURNING change_set_id
+            """,
+            (
+                case_id, base_entity_revision,
+                json.dumps(before_patch, sort_keys=True, separators=(",", ":")),
+                json.dumps(after_patch, sort_keys=True, separators=(",", ":")),
+                json.dumps(inverse_patch, sort_keys=True, separators=(",", ":")),
+                json.dumps(list(evidence_refs), separators=(",", ":")),
+                policy_revision, risk_class, decision_maker_ref, reviewer_ref, created_at,
+            ),
+        )
+        return str(_row_dict(self._db, row)["change_set_id"])
+
+    def link_change_set_items(self, change_set_id: str, item_ids: tuple[str, ...]) -> None:
+        self._require_active()
+        for item_id in item_ids:
+            self._db._execute(
+                self._conn,
+                """
+                INSERT INTO correction_change_set_items (change_set_id, item_id)
+                VALUES (%s, %s) ON CONFLICT DO NOTHING
+                """,
+                (change_set_id, item_id),
+            )
+
     def require_entities(self, entity_ids: tuple[str, ...]) -> None:
         """Fail closed on an unknown correction target before any insert runs."""
         self._require_active()
