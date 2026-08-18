@@ -407,7 +407,7 @@ class _RecordingDatabase:
         return self._rows.pop(0) if self._rows else None
 
     @staticmethod
-    def _row_as_dict(row):
+    def _row_to_dict(row):
         return row
 
 
@@ -496,3 +496,76 @@ def test_require_entities_holds_the_row_against_a_concurrent_delete():
     _transaction(database).require_entities(("p-a",))
 
     assert "FOR KEY SHARE" in database.statements[0][0]
+
+
+# ── Task 7: reads that feed the public projection ──
+
+class _ReadingDatabase(_RecordingDatabase):
+    def __init__(self, rows=None, many=None) -> None:
+        super().__init__(rows)
+        self._many = list(many or [])
+
+    def _fetchall(self, conn, sql, params):
+        self.statements.append((" ".join(sql.split()), params))
+        return self._many.pop(0) if self._many else []
+
+
+def test_the_item_read_never_selects_an_encrypted_value():
+    database = _ReadingDatabase(many=[[]])
+
+    _transaction(database).load_correction_items(CASE_ID)
+
+    sql = database.statements[0][0]
+    assert "reported_value_enc" not in sql and "proposed_value_enc" not in sql
+    assert "risk_class" in sql and "evidence_level" in sql
+
+
+def test_items_are_returned_as_domain_objects_in_creation_order():
+    database = _ReadingDatabase(many=[[
+        {"item_id": "i-1", "entity_id": "p-a", "field_path": "attributes.phone",
+         "base_entity_revision": 7, "risk_class": "R1", "evidence_level": "E0"},
+    ]])
+
+    items = _transaction(database).load_correction_items(CASE_ID)
+
+    assert len(items) == 1
+    assert items[0].item_id == "i-1"
+    assert items[0].risk_class.value == "R1"
+    assert "ORDER BY created_at, item_id" in database.statements[0][0]
+
+
+def test_the_public_reference_read_ignores_a_revoked_receipt():
+    database = _ReadingDatabase(rows=[{"public_reference": "VL-COR-ABCDEFGHJKMN0"}])
+
+    reference = _transaction(database).load_public_reference(CASE_ID)
+
+    sql = database.statements[0][0]
+    assert reference == "VL-COR-ABCDEFGHJKMN0"
+    assert "revoked_at IS NULL" in sql
+    assert "ORDER BY receipt_revision DESC" in sql
+
+
+def test_a_case_with_no_live_receipt_reports_no_reference():
+    assert _transaction(_ReadingDatabase(rows=[None])).load_public_reference(CASE_ID) is None
+
+
+@pytest.mark.parametrize(
+    ("phase", "expected"),
+    [("intake", "requested"), ("triage", "in_progress"), ("closed", "completed")],
+)
+def test_review_links_map_a_backstage_phase_to_a_review_status(phase, expected):
+    database = _ReadingDatabase(many=[[{"case_id": "r-1", "phase": phase}]])
+
+    links = _transaction(database).load_review_links(CASE_ID)
+
+    assert links[0].status.value == expected
+
+
+def test_linking_a_review_updates_only_the_new_case_row():
+    database = _ReadingDatabase()
+
+    _transaction(database).link_review_case("r-1", review_of_case_id=CASE_ID)
+
+    sql, params = database.statements[0]
+    assert sql.startswith("UPDATE cases SET review_of_case_id")
+    assert params == (CASE_ID, "r-1")

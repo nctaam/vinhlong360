@@ -13,10 +13,11 @@ import re
 import unicodedata
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from .audit import CaseAuditDraft, safe_case_projection
 from .domain import (
+    ActorContext,
     CaseActivity,
     CasePhase,
     CaseProblem,
@@ -34,6 +35,7 @@ from .domain import (
     RiskClass,
     ServiceKind,
 )
+from .domain import review_relation
 from .queue_policy import WorkItemDraft
 from .rate_limit import check_case_rate_limit, rate_subject_digest
 from .store import (
@@ -154,6 +156,12 @@ class CreateCorrectionCommand:
     notification_consent: bool = False
     authenticated_user_ref: str | None = None
     handoff: ZaloHandoff | None = None
+
+
+@dataclass(frozen=True)
+class PublicAccessGrant:
+    access_token: str
+    csrf_token: str
 
 
 @dataclass(frozen=True)
@@ -656,6 +664,265 @@ class CaseService:
             next_update_at=now + timedelta(seconds=policy.update_target_seconds),
             replayed=False,
         )
+
+
+    # ── Transport adapters ──
+    #
+    # The router hands over validated transport models and gets domain results
+    # or domain exceptions back; it never reaches the store itself.
+
+    @staticmethod
+    def _now(now: datetime | None) -> datetime:
+        return now if now is not None else datetime.now(timezone.utc)
+
+    def _limit(
+        self, bucket: str, rate_subject: str, *, limit: int, window: int, now: datetime
+    ) -> None:
+        allowed = check_case_rate_limit(
+            bucket,
+            rate_subject_digest(rate_subject, master_key=self._digest_key()),
+            limit=limit,
+            window=window,
+            now=now,
+            database=self._database,
+        )
+        if not allowed:
+            raise _reject("case_rate_limited", "Too many attempts; try again later.", status=429)
+
+    def create_correction_from_transport(
+        self,
+        payload,
+        *,
+        idempotency_key: str,
+        correlation_id: str,
+        rate_subject: str,
+        session_user_ref: str | None = None,
+        now: datetime | None = None,
+    ) -> CreateCorrectionResult:
+        handoff = None
+        if getattr(payload, "handoff_digest", None):
+            handoff = ZaloHandoff(
+                conversation_digest=payload.handoff_digest,
+                user_confirmed=bool(payload.handoff_confirmed),
+            )
+        command = CreateCorrectionCommand(
+            envelope=CommandEnvelope(
+                idempotency_key=idempotency_key,
+                expected_revision=None,
+                actor=ActorContext(
+                    actor_ref=session_user_ref or "anonymous",
+                    channel=Channel.ZALO_AI_HANDOFF if handoff else Channel.WEB,
+                    scopes=frozenset(),
+                    correlation_id=correlation_id,
+                ),
+            ),
+            reporter_privacy=payload.reporter_privacy,
+            items=tuple(
+                CorrectionItemInput(
+                    entity_id=item.entity_id,
+                    field_path=item.field_path,
+                    reported_value=item.reported_value,
+                    proposed_value=item.proposed_value,
+                    base_entity_revision=item.base_entity_revision,
+                )
+                for item in payload.items
+            ),
+            optional_phone=payload.optional_phone,
+            notification_consent=payload.notification_consent,
+            authenticated_user_ref=session_user_ref,
+            handoff=handoff,
+        )
+        return self.create_correction(
+            command,
+            now=self._now(now),
+            rate_subject=rate_subject,
+            session_user_ref=session_user_ref,
+        )
+
+    def exchange_receipt(
+        self,
+        *,
+        public_reference: str,
+        capability: str,
+        rate_subject: str,
+        session_user_ref: str | None = None,
+        now: datetime | None = None,
+    ) -> PublicAccessGrant:
+        now = self._now(now)
+        self._limit("receipt_exchange", rate_subject, limit=10, window=3600, now=now)
+        grant = self._store.exchange_receipt(
+            public_reference,
+            capability,
+            self._crypto,
+            now=now,
+            current_user_id=session_user_ref,
+        )
+        return PublicAccessGrant(
+            access_token=grant.access_token,
+            csrf_token=self._crypto.issue_case_csrf(grant.access),
+        )
+
+    def public_status(
+        self,
+        *,
+        access_token: str,
+        session_user_ref: str | None = None,
+        now: datetime | None = None,
+    ) -> PublicCaseStatus:
+        now = self._now(now)
+        access = self._store.validate_access(
+            access_token, self._crypto, now=now, current_user_id=session_user_ref
+        )
+        with self._store.transaction() as transaction:
+            case = transaction.load_case(access.case_id)
+            items = transaction.load_correction_items(access.case_id)
+            reference = transaction.load_public_reference(access.case_id)
+            links = transaction.load_review_links(access.case_id)
+        return project_public_status(
+            case,
+            items,
+            review_relation=review_relation(links),
+            public_reference=reference or "",
+        )
+
+    def rotate_receipt(
+        self,
+        *,
+        access_token: str,
+        rate_subject: str,
+        session_user_ref: str | None = None,
+        now: datetime | None = None,
+    ):
+        now = self._now(now)
+        self._limit("receipt_rotation", rate_subject, limit=5, window=3600, now=now)
+        return self._store.rotate_receipt(
+            access_token, self._crypto, now=now, current_user_id=session_user_ref
+        )
+
+    def revoke_access(
+        self,
+        *,
+        access_token: str,
+        session_user_ref: str | None = None,
+        now: datetime | None = None,
+    ) -> None:
+        now = self._now(now)
+        access = self._store.validate_access(
+            access_token, self._crypto, now=now, current_user_id=session_user_ref
+        )
+        self._store.revoke_access(access.case_id, now=now)
+
+    def open_review(
+        self,
+        *,
+        access_token: str,
+        reason: str,
+        expected_revision: int,
+        rate_subject: str,
+        session_user_ref: str | None = None,
+        now: datetime | None = None,
+    ):
+        """A review is a new linked case; the closed original is never reopened."""
+        now = self._now(now)
+        self._limit("case_review", rate_subject, limit=3, window=86400, now=now)
+        access = self._store.validate_access(
+            access_token, self._crypto, now=now, current_user_id=session_user_ref
+        )
+        actor_ref = session_user_ref or "anonymous"
+        correlation_id = uuid.uuid4().hex
+        with self._store.transaction() as transaction:
+            original = transaction.load_case(access.case_id, for_update=True)
+            if original.phase is not CasePhase.CLOSED:
+                raise _reject(
+                    "review_requires_a_closed_case",
+                    "This case is still open; a review starts after it closes.",
+                    status=409,
+                )
+            if original.current_revision != expected_revision:
+                raise _reject(
+                    "case_revision_conflict",
+                    "That case changed since you read it; reload and try again.",
+                    status=409,
+                )
+            review_id = str(uuid.uuid4())
+            stored = transaction.insert_case(
+                CaseSnapshot(
+                    case_id=review_id,
+                    service_kind=ServiceKind.CORRECTION,
+                    category="review",
+                    phase=CasePhase.INTAKE,
+                    activity=CaseActivity.ACTIVE,
+                    disposition_family=DispositionFamily.UNDETERMINED,
+                    domain_outcome=None,
+                    severity=None,
+                    reporter_privacy=original.reporter_privacy,
+                    owner_ref=self._owner_ref,
+                    current_revision=1,
+                    promise_policy_ref=self._policy.revision,
+                    created_at=now,
+                    updated_at=now,
+                    closed_at=None,
+                )
+            )
+            transaction.link_review_case(review_id, review_of_case_id=original.case_id)
+            transaction.insert_interaction(
+                CaseInteractionDraft(
+                    case_id=review_id,
+                    channel=Channel.WEB,
+                    actor_ref=actor_ref,
+                    direction="inbound",
+                    identity_assurance="session" if session_user_ref else "none",
+                    payload_enc=self._crypto.encrypt_private_payload({"reason": reason}),
+                    created_at=now,
+                )
+            )
+            transaction.insert_promise_clocks(review_id, self._clocks(now=now, risk=RiskClass.R1))
+            transaction.insert_work_items(
+                (
+                    WorkItemDraft(
+                        case_id=review_id,
+                        kind="review",
+                        required_role="case_operator",
+                        risk_class=RiskClass.R1,
+                        ready_at=now,
+                        received_at=now,
+                        promise_health=PromiseHealth.ON_TRACK,
+                    ),
+                )
+            )
+            transaction.append_transition(
+                TransitionDraft(
+                    case_id=review_id,
+                    from_phase=None,
+                    to_phase=CasePhase.INTAKE,
+                    from_revision=0,
+                    to_revision=1,
+                    actor_ref=actor_ref,
+                    reason_code="review_requested",
+                    policy_revision=self._policy.revision,
+                    correlation_id=correlation_id,
+                    occurred_at=now,
+                    waiting=None,
+                )
+            )
+            transaction.append_audit(
+                CaseAuditDraft(
+                    case_id=review_id,
+                    actor_ref=actor_ref,
+                    actor_scopes=(),
+                    channel=Channel.WEB,
+                    reason_code="review_requested",
+                    policy_revision=self._policy.revision,
+                    correlation_id=correlation_id,
+                    before_snapshot=None,
+                    after_snapshot=safe_case_projection(stored),
+                    occurred_at=now,
+                )
+            )
+            grant = transaction.issue_receipt(
+                review_id, self._crypto, now=now, current_user_id=session_user_ref
+            )
+        return grant
 
 
 # ── Public status projection ──

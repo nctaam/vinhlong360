@@ -1,10 +1,10 @@
 # Task 7 Report: Public Case API, Status Projection, Receipt Rotation, And ReviewCase
 
-## Status: PARTIAL — transport and projection landed, service adapters not yet
+## Status: COMPLETE
 
-Two of the four moving parts are complete, tested and wired. The service-side
-adapters the router calls are **not implemented yet**, so this task is not done.
-That is stated plainly here rather than implied by a green suite.
+All four moving parts are complete, tested and wired end to end against real
+PostgreSQL. The section below that lists remaining work was written when only
+the transport had landed; the closing section records how each item was closed.
 
 ## Delivered
 
@@ -111,3 +111,49 @@ ten public status fields.
 Final gates: plan Step 5 command `97 passed`; case regression `136 passed`; Ruff
 clean; `git diff --check` exit 0; staged hard gate `hard=0` with no ratchet
 increase.
+
+## Completion: the service adapters, review semantics, and end-to-end proof
+
+Every item listed as remaining above is now closed.
+
+**Store reads.** `CaseTransaction` gained `load_correction_items`,
+`load_public_reference`, `load_review_links` and `link_review_case`. The item
+read deliberately selects identifiers and classification only — never the
+encrypted reported or proposed values — because its single consumer is the
+public projection. `load_public_reference` returns the live receipt, so a
+rotated or revoked one is not mistaken for the current reference.
+
+**Adapters.** `CaseService` gained `create_correction_from_transport`,
+`exchange_receipt`, `public_status`, `rotate_receipt`, `revoke_access` and
+`open_review`. The router hands over validated transport models and receives
+domain results or domain exceptions; it never touches the store. Per-route
+buckets are wired to the names already reserved in `agent/cases/rate_limit.py`:
+receipt exchange 10/hour, rotation 5/hour, review 3/day.
+
+**Error mapping.** `CorrectionRejected` and `IdempotencyConflict` render as their
+own problem code and status; `SafetyRoutingRequired` renders the safe routing
+copy as the detail, so the answer names the emergency services; `CaseSecurityError`
+and `CaseNotFound` both collapse to `403 invalid_case_credential`, so a reporter
+cannot probe which references exist. Anything unmapped is re-raised rather than
+swallowed into a misleading 200.
+
+**Review semantics.** `POST /review` requires a closed case, a reason and the
+expected terminal revision. It creates a new `service_kind=correction`,
+`category=review`, `review_of_case_id=<closed>` case with its own receipt,
+interaction, clocks, work item, transition and audit, all in one transaction.
+The end-to-end test asserts all three behaviours: an open case is
+`409 review_requires_a_closed_case`, a stale revision is
+`409 case_revision_conflict`, and after a successful review the original stays
+`closed` at its terminal revision — asking for a review never reopens it.
+
+**End-to-end proof.** Six tests drive the router wired to the real service and a
+real PostgreSQL database: file then read your own status; a rejected field path
+becomes a problem document rather than a traceback; urgent language answers with
+the safe routing problem naming 113; an unknown reference is indistinguishable
+from an invalid capability; rotation issues a new capability and the retired one
+no longer opens a session; and the review graph above.
+
+Final gates: plan Step 5 command `103 passed`; the API suite `36 passed` twice in
+a row, so the durable state it touches does not leak between runs; case, schema,
+transaction and database regression `348 passed, 1 xfailed`; Ruff clean;
+`git diff --check` exit 0.

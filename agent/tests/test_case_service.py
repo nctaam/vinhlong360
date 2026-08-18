@@ -400,3 +400,41 @@ def test_the_public_catalog_never_contains_a_backstage_word():
     catalog = " ".join(_SAFE_NEXT_ACTIONS.values()).lower()
     for backstage in ("triage", "investigation", "fulfillment", "operator", "risk", "evidence"):
         assert backstage not in catalog
+
+
+# ── Task 7: the transport adapter surface ──
+
+def test_every_transport_adapter_takes_its_inputs_by_keyword():
+    import inspect
+
+    for name in ("exchange_receipt", "public_status", "rotate_receipt",
+                 "revoke_access", "open_review"):
+        parameters = list(inspect.signature(getattr(CaseService, name)).parameters.values())
+        assert parameters[0].name == "self"
+        assert all(
+            parameter.kind is inspect.Parameter.KEYWORD_ONLY
+            for parameter in parameters[1:]
+        ), name
+
+
+def test_each_credential_route_spends_its_own_rate_bucket():
+    import inspect
+
+    from cases.rate_limit import CASE_RATE_BUCKETS
+
+    used = set()
+    for name in ("exchange_receipt", "rotate_receipt", "open_review"):
+        source = inspect.getsource(getattr(CaseService, name))
+        used.update(bucket for bucket in CASE_RATE_BUCKETS if f'"{bucket}"' in source)
+    assert used == {"receipt_exchange", "receipt_rotation", "case_review"}
+
+
+def test_a_review_never_reopens_the_case_it_reviews():
+    import inspect
+
+    source = inspect.getsource(CaseService.open_review)
+    assert "review_requires_a_closed_case" in source
+    assert "case_revision_conflict" in source
+    # It inserts a new case and links it; it must not update the original's phase.
+    assert "insert_case" in source and "link_review_case" in source
+    assert "update_case" not in source

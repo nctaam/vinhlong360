@@ -15,10 +15,13 @@ from .domain import (
     CasePhase,
     CaseSnapshot,
     Channel,
+    CorrectionItem,
     DispositionFamily,
     EvidenceLevel,
     PromiseClock,
     PromiseHealth,
+    ReviewCaseLink,
+    ReviewCaseStatus,
     RiskClass,
     ServiceKind,
 )
@@ -517,6 +520,72 @@ class CaseTransaction:
                 json.dumps(_plain_json(draft.descriptor), sort_keys=True),
                 draft.available_at,
             ),
+        )
+
+    def load_correction_items(self, case_id: str) -> tuple[CorrectionItem, ...]:
+        """Public-projection view: identifiers and classification, never values."""
+        self._require_active()
+        rows = self._db._fetchall(
+            self._conn,
+            """
+            SELECT item_id, entity_id, field_path, base_entity_revision,
+                   risk_class, evidence_level
+            FROM correction_items WHERE case_id = %s ORDER BY created_at, item_id
+            """,
+            (case_id,),
+        )
+        return tuple(
+            CorrectionItem(
+                item_id=str(item["item_id"]),
+                risk_class=RiskClass(item["risk_class"]),
+                evidence_level=EvidenceLevel(item["evidence_level"]),
+                entity_id=item["entity_id"],
+                field_path=item["field_path"],
+                base_entity_revision=int(item["base_entity_revision"]),
+            )
+            for item in (_row_dict(self._db, row) for row in rows)
+        )
+
+    def load_public_reference(self, case_id: str) -> str | None:
+        """The live receipt's reference; a rotated or revoked one is not it."""
+        self._require_active()
+        row = self._db._fetchone(
+            self._conn,
+            """
+            SELECT public_reference FROM case_receipts
+            WHERE case_id = %s AND revoked_at IS NULL
+            ORDER BY receipt_revision DESC LIMIT 1
+            """,
+            (case_id,),
+        )
+        return None if row is None else str(_row_dict(self._db, row)["public_reference"])
+
+    def load_review_links(self, case_id: str) -> tuple[ReviewCaseLink, ...]:
+        self._require_active()
+        rows = self._db._fetchall(
+            self._conn,
+            "SELECT case_id, phase FROM cases WHERE review_of_case_id = %s ORDER BY created_at",
+            (case_id,),
+        )
+        statuses = {
+            CasePhase.INTAKE.value: ReviewCaseStatus.REQUESTED,
+            CasePhase.CLOSED.value: ReviewCaseStatus.COMPLETED,
+        }
+        return tuple(
+            ReviewCaseLink(
+                review_case_id=str(item["case_id"]),
+                status=statuses.get(item["phase"], ReviewCaseStatus.IN_PROGRESS),
+            )
+            for item in (_row_dict(self._db, row) for row in rows)
+        )
+
+    def link_review_case(self, case_id: str, *, review_of_case_id: str) -> None:
+        """Additive linkage written inside the same transaction as the new case."""
+        self._require_active()
+        self._db._execute(
+            self._conn,
+            "UPDATE cases SET review_of_case_id = %s WHERE case_id = %s",
+            (review_of_case_id, case_id),
         )
 
     def require_entities(self, entity_ids: tuple[str, ...]) -> None:

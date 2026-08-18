@@ -157,6 +157,32 @@ async def _model(request: Request, model: type[BaseModel]):
         return None, _problem(400, "invalid_request", "That request body is not readable.")
 
 
+def _rate_subject(request: Request) -> str:
+    return request.client.host if request.client else "unknown"
+
+
+def _map_domain_error(exc: Exception) -> JSONResponse | None:
+    """Domain failures become problem documents, never tracebacks or 500s."""
+    from .security import CaseSecurityError
+    from .service import CorrectionRejected, IdempotencyConflict, SafetyRoutingRequired
+    from .store import CaseNotFound
+
+    if isinstance(exc, SafetyRoutingRequired):
+        # The safe routing copy is the whole point of this answer, so it is the
+        # detail; it names the emergency services and no case is created.
+        return _problem(exc.problem.status, exc.problem.code, exc.safe_message)
+    if isinstance(exc, (CorrectionRejected, IdempotencyConflict)):
+        return _problem(exc.problem.status, exc.problem.code, exc.problem.detail)
+    if isinstance(exc, CaseSecurityError):
+        # One shape for invalid, expired, revoked and unknown alike: a reporter
+        # must not be able to probe which case references exist.
+        return _problem(403, *_CREDENTIAL)
+    if isinstance(exc, CaseNotFound):
+        return _problem(404, *_CREDENTIAL)
+    return None
+
+
+
 # ── Request models: documented JSON names only, nothing extra ──
 
 class _ItemIn(BaseModel):
@@ -256,12 +282,18 @@ async def create_correction(request: Request):
     if invalid is not None:
         return invalid
 
-    result = _service().create_correction_from_transport(
-        body,
-        idempotency_key=idempotency_key,
-        correlation_id=request.headers.get("x-request-id") or uuid.uuid4().hex,
-        rate_subject=request.client.host if request.client else "unknown",
-    )
+    try:
+        result = _service().create_correction_from_transport(
+            body,
+            idempotency_key=idempotency_key,
+            correlation_id=request.headers.get("x-request-id") or uuid.uuid4().hex,
+            rate_subject=_rate_subject(request),
+        )
+    except Exception as exc:  # noqa: BLE001 - mapped or re-raised below
+        mapped = _map_domain_error(exc)
+        if mapped is None:
+            raise
+        return mapped
     return JSONResponse(
         {
             "publicReference": result.public_reference,
@@ -284,9 +316,17 @@ async def exchange_receipt(request: Request):
     if invalid is not None:
         return invalid
 
-    grant = _service().exchange_receipt(
-        public_reference=body.public_reference, capability=body.capability
-    )
+    try:
+        grant = _service().exchange_receipt(
+            public_reference=body.public_reference,
+            capability=body.capability,
+            rate_subject=_rate_subject(request),
+        )
+    except Exception as exc:  # noqa: BLE001
+        mapped = _map_domain_error(exc)
+        if mapped is None:
+            raise
+        return mapped
     response = Response(status_code=204, headers=dict(_NO_STORE))
     _set_session_cookies(response, grant.access_token, grant.csrf_token)
     return response
@@ -299,7 +339,13 @@ async def read_status(request: Request):
     token = request.cookies.get(ACCESS_COOKIE)
     if not token:
         return _problem(401, *_CREDENTIAL)
-    status = _service().public_status(access_token=token)
+    try:
+        status = _service().public_status(access_token=token)
+    except Exception as exc:  # noqa: BLE001
+        mapped = _map_domain_error(exc)
+        if mapped is None:
+            raise
+        return mapped
     return JSONResponse(status_payload(status), headers=dict(_NO_STORE))
 
 
@@ -308,7 +354,16 @@ async def rotate_receipt(request: Request):
     blocked = _guard_session_mutation(request)
     if blocked is not None:
         return blocked
-    grant = _service().rotate_receipt(access_token=request.cookies.get(ACCESS_COOKIE))
+    try:
+        grant = _service().rotate_receipt(
+            access_token=request.cookies.get(ACCESS_COOKIE),
+            rate_subject=_rate_subject(request),
+        )
+    except Exception as exc:  # noqa: BLE001
+        mapped = _map_domain_error(exc)
+        if mapped is None:
+            raise
+        return mapped
     return JSONResponse(
         {"publicReference": grant.public_reference, "capability": grant.capability},
         headers=dict(_NO_STORE),
@@ -320,7 +375,13 @@ async def revoke_access(request: Request):
     blocked = _guard_session_mutation(request)
     if blocked is not None:
         return blocked
-    _service().revoke_access(access_token=request.cookies.get(ACCESS_COOKIE))
+    try:
+        _service().revoke_access(access_token=request.cookies.get(ACCESS_COOKIE))
+    except Exception as exc:  # noqa: BLE001
+        mapped = _map_domain_error(exc)
+        if mapped is None:
+            raise
+        return mapped
     response = Response(status_code=204, headers=dict(_NO_STORE))
     for name in (ACCESS_COOKIE, CSRF_COOKIE):
         response.set_cookie(key=name, value="", max_age=0, path="/api/cases", samesite="lax")
@@ -336,11 +397,18 @@ async def open_review(request: Request):
     if invalid is not None:
         return invalid
 
-    review = _service().open_review(
-        access_token=request.cookies.get(ACCESS_COOKIE),
-        reason=body.reason,
-        expected_revision=body.expected_revision,
-    )
+    try:
+        review = _service().open_review(
+            access_token=request.cookies.get(ACCESS_COOKIE),
+            reason=body.reason,
+            expected_revision=body.expected_revision,
+            rate_subject=_rate_subject(request),
+        )
+    except Exception as exc:  # noqa: BLE001
+        mapped = _map_domain_error(exc)
+        if mapped is None:
+            raise
+        return mapped
     return JSONResponse(
         {"publicReference": review.public_reference, "capability": review.capability},
         status_code=201,
