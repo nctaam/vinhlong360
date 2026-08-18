@@ -224,3 +224,21 @@ left asserting a fix that does not exist.
 Verification: the two create suites `30 passed` twice; the plan's GREEN command
 `38 passed`; the full case, schema, readiness and database sweep
 `353 passed, 1 xfailed`; Ruff clean; `git diff --check` exit 0.
+
+## Owner disposition on the three deviations
+
+The project owner reviewed and **approved all three deviations** recorded above
+on 2026-08-18. They are no longer open questions:
+
+1. `agent/cases/security.py` may carry `encrypt_private_payload` /
+   `decrypt_private_payload` even though the task's file list did not name it.
+   The envelope reuses the existing replay Fernet, so the locked HKDF salt list
+   is unchanged, and the tagged envelope keeps a replay token from being read
+   back through the private path.
+2. `CORRECTABLE_FIELD_PATHS` stays in `agent/cases/service.py`. Promoting it into
+   `config/case-service-policy.json` would change a locked policy structure and
+   require a revision bump; that remains available as a later, deliberate change
+   rather than a silent one.
+3. The `require_entities` guard and the `correction_entity_unknown` (404) problem
+   stay, so the real foreign key on `correction_items.entity_id` cannot leak a
+   driver error to the transport layer.
