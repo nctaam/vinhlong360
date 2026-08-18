@@ -113,7 +113,7 @@ def test_safety_routing_never_presents_this_service_as_an_emergency_authority():
     )
 
     with pytest.raises(SafetyRoutingRequired) as excinfo:
-        _service().create_correction(urgent, now=NOW)
+        _service().create_correction(urgent, now=NOW, rate_subject="test")
 
     message = excinfo.value.safe_message
     assert "113" in message and "115" in message
@@ -131,7 +131,7 @@ def test_handoff_rejects_a_transcript_and_a_malformed_digest():
 
 def test_a_naive_timestamp_is_refused_before_any_store_call():
     with pytest.raises(CorrectionRejected) as excinfo:
-        _service().create_correction(_command(), now=datetime(2026, 8, 18, 9, 0))
+        _service().create_correction(_command(), now=datetime(2026, 8, 18, 9, 0), rate_subject="test")
 
     assert excinfo.value.problem.code == "invalid_command_clock"
 
@@ -294,7 +294,7 @@ def test_reporter_privacy_must_agree_with_the_session(privacy, user_ref, code):
     command = _command(reporter_privacy=privacy, authenticated_user_ref=user_ref)
 
     with pytest.raises(CorrectionRejected) as excinfo:
-        _service().create_correction(command, now=NOW, session_user_ref=user_ref)
+        _service().create_correction(command, now=NOW, rate_subject="test", session_user_ref=user_ref)
 
     assert excinfo.value.problem.code == code
 
@@ -305,3 +305,54 @@ def test_signing_in_does_not_force_attribution():
 
     assert _service().reporter_privacy_for(command) == "anonymous"
     assert _service().party_authority_draft_for(command, case_id="c", now=NOW) is None
+
+
+# ── Review round 3 ──
+
+def test_rate_limiting_fails_closed_when_no_database_is_wired():
+    """A missing dependency must not silently remove an abuse control."""
+    import inspect
+
+    source = inspect.getsource(CaseService.create_correction)
+    assert "if self._database is not None:" not in source
+
+    from cases.security import CaseCrypto
+
+    class _NoReplayStore:
+        @staticmethod
+        def peek_idempotency(key):
+            return None
+
+    unwired = CaseService(
+        store=_NoReplayStore(), crypto=CaseCrypto("0" * 43), policy=None,
+        owner_ref="person:owner",
+    )
+    with pytest.raises(RuntimeError, match="case_postgresql_required"):
+        unwired.create_correction(_command(), now=NOW, rate_subject="203.0.113.5")
+
+
+def test_the_rate_subject_must_be_supplied_by_the_caller():
+    """A default collapses every reporter into one site-wide bucket."""
+    import inspect
+
+    parameter = inspect.signature(CaseService.create_correction).parameters["rate_subject"]
+    assert parameter.default is inspect.Parameter.empty
+    assert parameter.kind is inspect.Parameter.KEYWORD_ONLY
+
+
+def test_the_idempotency_scope_follows_the_opt_in_and_the_channel():
+    """bug: the replay was scoped to the browser session, the receipt was not."""
+    service = _service()
+    anonymous = _command()
+    signed_in = _command(reporter_privacy="attributed", authenticated_user_ref="user:9")
+
+    # Signing in without linking must not change the scope of an anonymous filing.
+    assert service._idempotency_actor(anonymous, session_user_ref=None) == service._idempotency_actor(
+        anonymous, session_user_ref="user:9"
+    )
+    # Linking the account does change it, so one reporter cannot replay another's.
+    assert service._idempotency_actor(signed_in, session_user_ref="user:9") != service._idempotency_actor(
+        anonymous, session_user_ref=None
+    )
+    # The channel is part of the scope, as the approved plan requires.
+    assert Channel.WEB.value in service._idempotency_actor(anonymous, session_user_ref=None)

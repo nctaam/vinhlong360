@@ -148,7 +148,7 @@ def test_public_create_rejects_an_operator_actor():
     command = _command(envelope=_envelope(scopes=("cases:operate",)))
 
     with pytest.raises(CorrectionRejected) as excinfo:
-        _service().create_correction(command, now=NOW)
+        _service().create_correction(command, now=NOW, rate_subject="test")
 
     assert excinfo.value.problem.code == "operator_actor_not_allowed"
     assert excinfo.value.problem.status == 403
@@ -159,7 +159,7 @@ def test_create_rejects_a_client_supplied_user_reference():
     command = _command(authenticated_user_ref="user:attacker")
 
     with pytest.raises(CorrectionRejected) as excinfo:
-        _service().create_correction(command, now=NOW, session_user_ref=None)
+        _service().create_correction(command, now=NOW, rate_subject="test", session_user_ref=None)
 
     assert excinfo.value.problem.code == "authenticated_ref_not_server_derived"
 
@@ -168,7 +168,7 @@ def test_create_rejects_a_user_reference_that_contradicts_the_session():
     command = _command(authenticated_user_ref="user:attacker")
 
     with pytest.raises(CorrectionRejected) as excinfo:
-        _service().create_correction(command, now=NOW, session_user_ref="user:real")
+        _service().create_correction(command, now=NOW, rate_subject="test", session_user_ref="user:real")
 
     assert excinfo.value.problem.code == "authenticated_ref_not_server_derived"
 
@@ -188,7 +188,7 @@ def test_create_rejects_a_user_reference_that_contradicts_the_session():
 )
 def test_create_enforces_bounded_multi_item_fields(items, code):
     with pytest.raises(CorrectionRejected) as excinfo:
-        _service().create_correction(_command(items=items), now=NOW)
+        _service().create_correction(_command(items=items), now=NOW, rate_subject="test")
 
     assert excinfo.value.problem.code == code
 
@@ -201,7 +201,7 @@ def test_emergency_language_routes_to_the_safety_lane_without_creating_a_case(re
     command = _command(items=(_item(reported_value=reported),))
 
     with pytest.raises(SafetyRoutingRequired) as excinfo:
-        _service().create_correction(command, now=NOW)
+        _service().create_correction(command, now=NOW, rate_subject="test")
 
     problem = excinfo.value.problem
     assert problem.code == "correction_safety_routing"
@@ -218,7 +218,7 @@ def test_zalo_handoff_requires_explicit_confirmation_and_carries_no_transcript()
     )
 
     with pytest.raises(CorrectionRejected) as excinfo:
-        _service().create_correction(unconfirmed, now=NOW)
+        _service().create_correction(unconfirmed, now=NOW, rate_subject="test")
 
     assert excinfo.value.problem.code == "handoff_confirmation_required"
 

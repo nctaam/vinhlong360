@@ -291,6 +291,22 @@ class CaseService:
 
     # ── Idempotency ──
 
+    @staticmethod
+    def _idempotency_actor(
+        command: CreateCorrectionCommand, *, session_user_ref: str | None
+    ) -> str:
+        """Normalized actor plus channel, per the approved plan.
+
+        Deliberately the opt-in rather than the browser session: the receipt is
+        bound the same way, so a reporter who filed anonymously while signed in
+        can still replay after logging out. The trade is that anonymous filings
+        share one scope, which is why the request digest - covering every item
+        value and the keyed contact - stays part of the match.
+        """
+        del session_user_ref  # never widens or narrows the scope on its own
+        subject = command.authenticated_user_ref or "anonymous"
+        return f"{command.envelope.actor.channel.value}:{subject}"
+
     def _request_digest(self, command: CreateCorrectionCommand) -> str:
         body = {
             "reporter_privacy": command.reporter_privacy,
@@ -385,8 +401,8 @@ class CaseService:
         command: CreateCorrectionCommand,
         *,
         now: datetime,
+        rate_subject: str,
         session_user_ref: str | None = None,
-        rate_subject: str = "anonymous",
     ) -> CreateCorrectionResult:
         if type(command) is not CreateCorrectionCommand:
             raise _reject("invalid_command", "A create-correction command is required.")
@@ -398,7 +414,7 @@ class CaseService:
         self._validate_items(command)
         self._route_safety(command)
 
-        actor_ref = session_user_ref or "anonymous"
+        actor_ref = self._idempotency_actor(command, session_user_ref=session_user_ref)
         key = f"create:{command.envelope.idempotency_key}"
         request_digest = self._request_digest(command)
 
@@ -415,19 +431,21 @@ class CaseService:
                 settled, actor_ref=actor_ref, request_digest=request_digest, now=now
             )
 
-        if self._database is not None:
-            allowed = check_case_rate_limit(
-                "correction_create",
-                rate_subject_digest(rate_subject, master_key=self._digest_key()),
-                limit=self.create_rate_limit,
-                window=self.create_rate_window,
-                now=now,
-                database=self._database,
+        # Unconditional: with no database wired this raises
+        # case_postgresql_required rather than quietly accepting unlimited
+        # submissions, so a missing dependency fails closed.
+        allowed = check_case_rate_limit(
+            "correction_create",
+            rate_subject_digest(rate_subject, master_key=self._digest_key()),
+            limit=self.create_rate_limit,
+            window=self.create_rate_window,
+            now=now,
+            database=self._database,
+        )
+        if not allowed:
+            raise _reject(
+                "case_rate_limited", "Too many corrections from here; try again later.", status=429
             )
-            if not allowed:
-                raise _reject(
-                    "case_rate_limited", "Too many corrections from here; try again later.", status=429
-                )
 
         with self._store.transaction() as transaction:
             existing = transaction.claim_idempotency(key, now=now)

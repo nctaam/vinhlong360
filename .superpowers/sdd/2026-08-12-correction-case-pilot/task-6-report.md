@@ -242,3 +242,48 @@ on 2026-08-18. They are no longer open questions:
 3. The `require_entities` guard and the `correction_entity_unknown` (404) problem
    stay, so the real foreign key on `correction_items.entity_id` cannot leak a
    driver error to the transport layer.
+
+## Third review round: two fail-open/fail-closed defaults and a scope mismatch
+
+The billed cloud quota was exhausted, so this round was a local review. It found
+three defects, all in `agent/cases/service.py`, all fixed here.
+
+**Rate limiting was skipped when no database was wired.** The whole limiter sat
+behind `if self._database is not None:`, and `CaseService` accepts
+`database=None` without complaint. A perfectly working construction that omits
+the argument — plausible when Task 7 wires transport, since the store carries its
+own handle — would have accepted unlimited anonymous submissions with no error
+and no log. `check_case_rate_limit` already resolves the global database itself,
+so the call is now unconditional: with nothing wired it raises
+`case_postgresql_required` instead of quietly disappearing.
+
+**The rate subject defaulted to a single constant.** `rate_subject="anonymous"`
+digests to one fixed key, so any caller relying on the default would have put the
+entire site into one bucket of five creates per hour. Combined with the previous
+defect the two defaults failed in opposite directions: omit the database and
+nobody is limited, omit the subject and everybody is. `rate_subject` is now a
+required keyword argument, so both omissions become an error at the call site
+rather than a silent production surprise.
+
+**The replay scope still followed the browser session.** The previous round moved
+receipt binding onto the opt-in but left idempotency scoped to
+`session_user_ref`, so the same signed-in-but-anonymous reporter whose lockout
+was just fixed would still be refused with `idempotency_conflict` if they
+retried after logging out. The scope is now the normalized actor plus channel,
+which is what the approved plan specifies and what the receipt binding already
+does.
+
+That last change is a judgement call and is recorded as one. Scoping anonymous
+filings together means an attacker who both guesses an idempotency key and
+reproduces the exact request body — every item value plus the keyed contact
+digest, all covered by `_request_digest` — could replay a capability for a case
+whose contents they already knew. The alternative, keeping the session scope,
+strands legitimate reporters instead. The owner instructed that all three
+findings be fixed; if that trade is unwanted, the change is one method
+(`_idempotency_actor`) and can be reversed or replaced with a per-submission
+client secret without touching anything else.
+
+Verification: Task 6 suites `129 passed`; the two create suites `31 passed`
+twice; the plan's GREEN command `39 passed`; receipts, privacy logging, source
+guard, case schema, migration readiness and database `258 passed, 1 xfailed`;
+Ruff clean; `git diff --check` exit 0.

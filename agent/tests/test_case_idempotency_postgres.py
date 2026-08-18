@@ -284,3 +284,21 @@ def test_a_vietnamese_correction_can_actually_be_filed(pg_database):
 
     assert result.replayed is False
     assert result.public_reference.startswith("VL-COR-")
+
+
+@pg_only
+def test_an_anonymous_filing_still_replays_after_the_reporter_logs_out(pg_database):
+    """The receipt follows the opt-in, so the replay scope must too."""
+    service = _service(pg_database)
+    command = _command("idem-logout-1")
+
+    first = service.create_correction(
+        command, now=NOW, session_user_ref="user:88", rate_subject="192.0.2.51"
+    )
+    after_logout = service.create_correction(
+        command, now=NOW, session_user_ref=None, rate_subject="192.0.2.51"
+    )
+
+    assert first.replayed is False
+    assert after_logout.replayed is True
+    assert after_logout.capability == first.capability
