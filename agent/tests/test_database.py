@@ -8,6 +8,7 @@ Chạy trên SQLite tạm, không đụng DB thật.
 
 import json
 import inspect
+import re
 import sqlite3
 import sys
 from pathlib import Path
@@ -127,25 +128,55 @@ def test_case_readiness_checks_exact_security_catalog_definitions():
         "pg_get_expr(con.conbin, con.conrelid, true)",
         "pg_get_indexdef(idx.indexrelid, position, true)",
         "tg.tgtype::integer",
+        "target_ns.nspname AS target_schema",
+        "con.confupdtype::text AS update_action",
+        "CASE WHEN tg.tgqual IS NULL THEN NULL",
+        "ELSE pg_get_triggerdef(tg.oid, true) END AS when_expression",
+        "function.prosrc AS function_body",
     ):
         assert required in source
 
 
+def test_case_trigger_function_bodies_match_migration_080_and_init_sql():
+    """A readiness-pinned body is only safe while both schema sources agree."""
+    body_pattern = re.compile(
+        r"CREATE OR REPLACE FUNCTION\s+(\w+)\(\)\s+RETURNS trigger\s+"
+        r"LANGUAGE plpgsql AS \$\$(.*?)\$\$;",
+        re.S,
+    )
+
+    def bodies(path):
+        source = path.read_text(encoding="utf-8")
+        return {
+            name: database_module._normalize_catalog_sql(body)
+            for name, body in body_pattern.findall(source)
+        }
+
+    root = Path(database_module.__file__).resolve().parents[1]
+    migration = bodies(root / "agent" / "migrations" / "080_correction_case_kernel.sql")
+    baseline = bodies(root / "init.sql")
+
+    for name, expected in database_module._CASE_TRIGGER_FUNCTION_BODIES.items():
+        normalized = database_module._normalize_catalog_sql(expected)
+        assert migration[name] == normalized, f"migration 080 drifted from readiness: {name}"
+        assert baseline[name] == normalized, f"init.sql drifted from readiness: {name}"
+
+
 def _valid_case_catalog_rows():
     constraints = [
-        {"constraint_name": "case_receipts_receipt_revision_positive", "constraint_type": "c", "table_name": "case_receipts", "columns": ["receipt_revision"], "target_table": None, "target_columns": [], "delete_action": " ", "check_expression": "(receipt_revision >= 1)", "validated": True, "deferrable": False, "deferred": False},
-        {"constraint_name": "case_receipts_capability_digest_shape", "constraint_type": "c", "table_name": "case_receipts", "columns": ["capability_digest"], "target_table": None, "target_columns": [], "delete_action": " ", "check_expression": "(capability_digest ~ '^[0-9a-f]{64}$'::text)", "validated": True, "deferrable": False, "deferred": False},
-        {"constraint_name": "case_receipts_expiry_order", "constraint_type": "c", "table_name": "case_receipts", "columns": ["expires_at", "created_at"], "target_table": None, "target_columns": [], "delete_action": " ", "check_expression": "(expires_at > created_at)", "validated": True, "deferrable": False, "deferred": False},
-        {"constraint_name": "case_access_sessions_expiry_order", "constraint_type": "c", "table_name": "case_access_sessions", "columns": ["expires_at", "created_at"], "target_table": None, "target_columns": [], "delete_action": " ", "check_expression": "(expires_at > created_at)", "validated": True, "deferrable": False, "deferred": False},
-        {"constraint_name": "case_idempotency_expiry_order", "constraint_type": "c", "table_name": "case_idempotency", "columns": ["expires_at", "created_at"], "target_table": None, "target_columns": [], "delete_action": " ", "check_expression": "(expires_at > created_at)", "validated": True, "deferrable": False, "deferred": False},
-        {"constraint_name": "case_receipts_case_revision_unique", "constraint_type": "u", "table_name": "case_receipts", "columns": ["case_id", "receipt_revision"], "target_table": None, "target_columns": [], "delete_action": " ", "check_expression": None, "validated": True, "deferrable": False, "deferred": False},
-        {"constraint_name": "case_receipts_case_receipt_unique", "constraint_type": "u", "table_name": "case_receipts", "columns": ["case_id", "receipt_id"], "target_table": None, "target_columns": [], "delete_action": " ", "check_expression": None, "validated": True, "deferrable": False, "deferred": False},
-        {"constraint_name": "case_receipts_public_reference_key", "constraint_type": "u", "table_name": "case_receipts", "columns": ["public_reference"], "target_table": None, "target_columns": [], "delete_action": " ", "check_expression": None, "validated": True, "deferrable": False, "deferred": False},
-        {"constraint_name": "case_receipts_capability_digest_key", "constraint_type": "u", "table_name": "case_receipts", "columns": ["capability_digest"], "target_table": None, "target_columns": [], "delete_action": " ", "check_expression": None, "validated": True, "deferrable": False, "deferred": False},
-        {"constraint_name": "case_access_sessions_session_digest_key", "constraint_type": "u", "table_name": "case_access_sessions", "columns": ["session_digest"], "target_table": None, "target_columns": [], "delete_action": " ", "check_expression": None, "validated": True, "deferrable": False, "deferred": False},
-        {"constraint_name": "case_access_sessions_case_id_fkey", "constraint_type": "f", "table_name": "case_access_sessions", "columns": ["case_id"], "target_table": "cases", "target_columns": ["case_id"], "delete_action": "c", "check_expression": None, "validated": True, "deferrable": False, "deferred": False},
-        {"constraint_name": "case_access_sessions_receipt_id_fkey", "constraint_type": "f", "table_name": "case_access_sessions", "columns": ["receipt_id"], "target_table": "case_receipts", "target_columns": ["receipt_id"], "delete_action": "c", "check_expression": None, "validated": True, "deferrable": False, "deferred": False},
-        {"constraint_name": "case_access_sessions_case_receipt_fkey", "constraint_type": "f", "table_name": "case_access_sessions", "columns": ["case_id", "receipt_id"], "target_table": "case_receipts", "target_columns": ["case_id", "receipt_id"], "delete_action": "c", "check_expression": None, "validated": True, "deferrable": False, "deferred": False},
+        {"constraint_name": "case_receipts_receipt_revision_positive", "constraint_type": "c", "table_name": "case_receipts", "columns": ["receipt_revision"], "target_table": None, "target_columns": [], "delete_action": " ", "target_schema": None, "update_action": " ", "check_expression": "(receipt_revision >= 1)", "validated": True, "deferrable": False, "deferred": False},
+        {"constraint_name": "case_receipts_capability_digest_shape", "constraint_type": "c", "table_name": "case_receipts", "columns": ["capability_digest"], "target_table": None, "target_columns": [], "delete_action": " ", "target_schema": None, "update_action": " ", "check_expression": "(capability_digest ~ '^[0-9a-f]{64}$'::text)", "validated": True, "deferrable": False, "deferred": False},
+        {"constraint_name": "case_receipts_expiry_order", "constraint_type": "c", "table_name": "case_receipts", "columns": ["expires_at", "created_at"], "target_table": None, "target_columns": [], "delete_action": " ", "target_schema": None, "update_action": " ", "check_expression": "(expires_at > created_at)", "validated": True, "deferrable": False, "deferred": False},
+        {"constraint_name": "case_access_sessions_expiry_order", "constraint_type": "c", "table_name": "case_access_sessions", "columns": ["expires_at", "created_at"], "target_table": None, "target_columns": [], "delete_action": " ", "target_schema": None, "update_action": " ", "check_expression": "(expires_at > created_at)", "validated": True, "deferrable": False, "deferred": False},
+        {"constraint_name": "case_idempotency_expiry_order", "constraint_type": "c", "table_name": "case_idempotency", "columns": ["expires_at", "created_at"], "target_table": None, "target_columns": [], "delete_action": " ", "target_schema": None, "update_action": " ", "check_expression": "(expires_at > created_at)", "validated": True, "deferrable": False, "deferred": False},
+        {"constraint_name": "case_receipts_case_revision_unique", "constraint_type": "u", "table_name": "case_receipts", "columns": ["case_id", "receipt_revision"], "target_table": None, "target_columns": [], "delete_action": " ", "target_schema": None, "update_action": " ", "check_expression": None, "validated": True, "deferrable": False, "deferred": False},
+        {"constraint_name": "case_receipts_case_receipt_unique", "constraint_type": "u", "table_name": "case_receipts", "columns": ["case_id", "receipt_id"], "target_table": None, "target_columns": [], "delete_action": " ", "target_schema": None, "update_action": " ", "check_expression": None, "validated": True, "deferrable": False, "deferred": False},
+        {"constraint_name": "case_receipts_public_reference_key", "constraint_type": "u", "table_name": "case_receipts", "columns": ["public_reference"], "target_table": None, "target_columns": [], "delete_action": " ", "target_schema": None, "update_action": " ", "check_expression": None, "validated": True, "deferrable": False, "deferred": False},
+        {"constraint_name": "case_receipts_capability_digest_key", "constraint_type": "u", "table_name": "case_receipts", "columns": ["capability_digest"], "target_table": None, "target_columns": [], "delete_action": " ", "target_schema": None, "update_action": " ", "check_expression": None, "validated": True, "deferrable": False, "deferred": False},
+        {"constraint_name": "case_access_sessions_session_digest_key", "constraint_type": "u", "table_name": "case_access_sessions", "columns": ["session_digest"], "target_table": None, "target_columns": [], "delete_action": " ", "target_schema": None, "update_action": " ", "check_expression": None, "validated": True, "deferrable": False, "deferred": False},
+        {"constraint_name": "case_access_sessions_case_id_fkey", "constraint_type": "f", "table_name": "case_access_sessions", "columns": ["case_id"], "target_table": "cases", "target_columns": ["case_id"], "delete_action": "c", "target_schema": "public", "update_action": "a", "check_expression": None, "validated": True, "deferrable": False, "deferred": False},
+        {"constraint_name": "case_access_sessions_receipt_id_fkey", "constraint_type": "f", "table_name": "case_access_sessions", "columns": ["receipt_id"], "target_table": "case_receipts", "target_columns": ["receipt_id"], "delete_action": "c", "target_schema": "public", "update_action": "a", "check_expression": None, "validated": True, "deferrable": False, "deferred": False},
+        {"constraint_name": "case_access_sessions_case_receipt_fkey", "constraint_type": "f", "table_name": "case_access_sessions", "columns": ["case_id", "receipt_id"], "target_table": "case_receipts", "target_columns": ["case_id", "receipt_id"], "delete_action": "c", "target_schema": "public", "update_action": "a", "check_expression": None, "validated": True, "deferrable": False, "deferred": False},
     ]
     indexes = [
         {"index_name": "case_receipts_case_revision_unique", "table_name": "case_receipts", "columns": ["case_id", "receipt_revision"], "predicate": None, "unique": True, "valid": True, "ready": True, "live": True, "access_method": "btree"},
@@ -153,8 +184,8 @@ def _valid_case_catalog_rows():
         {"index_name": "idx_case_access_sessions_expiry", "table_name": "case_access_sessions", "columns": ["expires_at", "access_session_id"], "predicate": "(revoked_at IS NULL)", "unique": False, "valid": True, "ready": True, "live": True, "access_method": "btree"},
     ]
     triggers = [
-        {"trigger_name": "case_receipts_case_immutable", "table_name": "case_receipts", "function_schema": "public", "function_name": "reject_case_receipt_case_move", "trigger_type": 19, "enabled": "O", "update_columns": ["case_id"]},
-        {"trigger_name": "case_access_sessions_same_case", "table_name": "case_access_sessions", "function_schema": "public", "function_name": "enforce_case_access_same_case", "trigger_type": 23, "enabled": "O", "update_columns": []},
+        {"trigger_name": "case_receipts_case_immutable", "table_name": "case_receipts", "function_schema": "public", "function_name": "reject_case_receipt_case_move", "trigger_type": 19, "enabled": "O", "update_columns": ["case_id"], "when_expression": None, "function_body": database_module._CASE_TRIGGER_FUNCTION_BODIES["reject_case_receipt_case_move"]},
+        {"trigger_name": "case_access_sessions_same_case", "table_name": "case_access_sessions", "function_schema": "public", "function_name": "enforce_case_access_same_case", "trigger_type": 23, "enabled": "O", "update_columns": [], "when_expression": None, "function_body": database_module._CASE_TRIGGER_FUNCTION_BODIES["enforce_case_access_same_case"]},
     ]
     return constraints, indexes, triggers
 
@@ -168,6 +199,11 @@ def _valid_case_catalog_rows():
         ("indexes", "case_receipts_case_revision_unique", {"columns": ["receipt_revision", "case_id"], "unique": False}, "index definition drift: case_receipts_case_revision_unique"),
         ("indexes", "idx_case_access_sessions_expiry", {"predicate": None}, "index definition drift: idx_case_access_sessions_expiry"),
         ("triggers", "case_receipts_case_immutable", {"function_name": "enforce_case_access_same_case", "trigger_type": 21, "update_columns": []}, "trigger definition drift: case_receipts_case_immutable"),
+        ("constraints", "case_access_sessions_case_receipt_fkey", {"target_schema": "shadow"}, "foreign key definition drift: case_access_sessions_case_receipt_fkey"),
+        ("constraints", "case_access_sessions_case_receipt_fkey", {"update_action": "c"}, "foreign key definition drift: case_access_sessions_case_receipt_fkey"),
+        ("triggers", "case_receipts_case_immutable", {"when_expression": "(false)"}, "trigger definition drift: case_receipts_case_immutable"),
+        ("triggers", "case_receipts_case_immutable", {"function_body": "BEGIN RETURN NEW; END;"}, "trigger definition drift: case_receipts_case_immutable"),
+        ("triggers", "case_access_sessions_same_case", {"function_body": "BEGIN RETURN NEW; END;"}, "trigger definition drift: case_access_sessions_same_case"),
     ],
 )
 def test_case_catalog_validation_fails_closed_on_exact_definition_drift(catalog, name, changes, issue):

@@ -278,6 +278,12 @@ _CASE_REQUIRED_FK_DEFINITIONS = {
         "target_columns": ("case_id", "receipt_id"), "delete_action": "c",
     },
 }
+# A same-named target in another namespace satisfies every other field, so the
+# schema is part of the identity; NO ACTION on update keeps a case move from
+# being propagated instead of rejected.
+for _fk_definition in _CASE_REQUIRED_FK_DEFINITIONS.values():
+    _fk_definition["target_schema"] = "public"
+    _fk_definition["update_action"] = "a"
 _CASE_REQUIRED_INDEX_DEFINITIONS = {
     "case_receipts_case_revision_unique": {
         "table_name": "case_receipts", "columns": ("case_id", "receipt_revision"),
@@ -292,16 +298,33 @@ _CASE_REQUIRED_INDEX_DEFINITIONS = {
         "predicate": "(revoked_atisnull)", "unique": False,
     },
 }
+# Trigger identity is not the trigger row alone: a matching name can be paired
+# with a no-op body, so the body is pinned here. Whitespace is normalised before
+# comparison, which is what lets migration 080 and init.sql keep their own
+# formatting; test_database.py asserts both sources still agree with these.
+_CASE_TRIGGER_FUNCTION_BODIES = {
+    "reject_case_receipt_case_move": (
+        "BEGIN IF OLD.case_id IS DISTINCT FROM NEW.case_id THEN "
+        "RAISE EXCEPTION 'case_receipt_case_immutable'; END IF; RETURN NEW; END;"
+    ),
+    "enforce_case_access_same_case": (
+        "BEGIN IF NOT EXISTS (SELECT 1 FROM case_receipts "
+        "WHERE receipt_id = NEW.receipt_id AND case_id = NEW.case_id) THEN "
+        "RAISE EXCEPTION 'case_access_receipt_case_mismatch'; END IF; RETURN NEW; END;"
+    ),
+}
 _CASE_REQUIRED_TRIGGER_DEFINITIONS = {
     "case_receipts_case_immutable": {
         "table_name": "case_receipts", "function_schema": "public",
         "function_name": "reject_case_receipt_case_move", "trigger_type": 19,
-        "enabled": "O", "update_columns": ("case_id",),
+        "enabled": "O", "update_columns": ("case_id",), "when_expression": None,
+        "function_body": _CASE_TRIGGER_FUNCTION_BODIES["reject_case_receipt_case_move"],
     },
     "case_access_sessions_same_case": {
         "table_name": "case_access_sessions", "function_schema": "public",
         "function_name": "enforce_case_access_same_case", "trigger_type": 23,
-        "enabled": "O", "update_columns": (),
+        "enabled": "O", "update_columns": (), "when_expression": None,
+        "function_body": _CASE_TRIGGER_FUNCTION_BODIES["enforce_case_access_same_case"],
     },
 }
 
@@ -495,8 +518,9 @@ def _catalog_definition_matches(row, expected: Mapping[str, object]) -> bool:
         actual = row.get(key)
         if key in {"columns", "target_columns", "update_columns"}:
             actual = tuple(actual or ())
-        elif key in {"check_expression", "predicate"}:
+        elif key in {"check_expression", "predicate", "when_expression", "function_body"}:
             actual = _normalize_catalog_sql(actual)
+            value = _normalize_catalog_sql(value)
         if actual != value:
             return False
     return all(
@@ -567,6 +591,7 @@ def _pg_schema_snapshot(conn) -> dict[str, object]:
                        ORDER BY source_key.position
                    ) AS columns,
                    target.relname AS target_table,
+                   target_ns.nspname AS target_schema,
                    ARRAY(
                        SELECT attribute.attname
                        FROM unnest(con.confkey) WITH ORDINALITY AS target_key(attnum, position)
@@ -576,6 +601,7 @@ def _pg_schema_snapshot(conn) -> dict[str, object]:
                        ORDER BY target_key.position
                    ) AS target_columns,
                    con.confdeltype::text AS delete_action,
+                   con.confupdtype::text AS update_action,
                    pg_get_expr(con.conbin, con.conrelid, true) AS check_expression,
                    con.convalidated AS validated,
                    con.condeferrable AS deferrable,
@@ -584,6 +610,7 @@ def _pg_schema_snapshot(conn) -> dict[str, object]:
             JOIN pg_class AS source ON source.oid = con.conrelid
             JOIN pg_namespace AS source_ns ON source_ns.oid = source.relnamespace
             LEFT JOIN pg_class AS target ON target.oid = con.confrelid
+            LEFT JOIN pg_namespace AS target_ns ON target_ns.oid = target.relnamespace
             WHERE source_ns.nspname = 'public'
         """)
         constraint_rows = cur.fetchall()
@@ -616,6 +643,9 @@ def _pg_schema_snapshot(conn) -> dict[str, object]:
                    function.proname AS function_name,
                    tg.tgtype::integer AS trigger_type,
                    tg.tgenabled AS enabled,
+                   CASE WHEN tg.tgqual IS NULL THEN NULL
+                        ELSE pg_get_triggerdef(tg.oid, true) END AS when_expression,
+                   function.prosrc AS function_body,
                    ARRAY(
                        SELECT attribute.attname
                        FROM unnest(tg.tgattr::smallint[]) WITH ORDINALITY AS trigger_key(attnum, position)

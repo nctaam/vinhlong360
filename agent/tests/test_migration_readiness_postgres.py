@@ -224,6 +224,51 @@ def test_case_readiness_fails_closed_for_catalog_definition_drift(
             ),
             "trigger definition drift: case_receipts_case_immutable",
         ),
+        (
+            # A same-named target in another namespace keeps every catalog field
+            # the readiness query used to compare, while public.case_receipts is
+            # no longer the referenced table.
+            (
+                "CREATE SCHEMA shadow",
+                "CREATE TABLE shadow.case_receipts ("
+                "case_id UUID NOT NULL, receipt_id UUID NOT NULL, "
+                "PRIMARY KEY (case_id, receipt_id))",
+                "ALTER TABLE case_access_sessions DROP CONSTRAINT "
+                "case_access_sessions_case_receipt_fkey",
+                "ALTER TABLE case_access_sessions ADD CONSTRAINT "
+                "case_access_sessions_case_receipt_fkey "
+                "FOREIGN KEY (case_id, receipt_id) "
+                "REFERENCES shadow.case_receipts(case_id, receipt_id) ON DELETE CASCADE",
+            ),
+            "foreign key definition drift: case_access_sessions_case_receipt_fkey",
+        ),
+        (
+            # A restrictive WHEN predicate leaves table, function, event bitmask,
+            # enabled state and UPDATE OF columns intact but never fires.
+            (
+                "DROP TRIGGER case_receipts_case_immutable ON case_receipts",
+                "CREATE TRIGGER case_receipts_case_immutable "
+                "BEFORE UPDATE OF case_id ON case_receipts FOR EACH ROW "
+                "WHEN (false) EXECUTE FUNCTION reject_case_receipt_case_move()",
+            ),
+            "trigger definition drift: case_receipts_case_immutable",
+        ),
+        (
+            # Replacing the body keeps the expected function name and every
+            # trigger row field, yet the case-move guard becomes a no-op.
+            (
+                "CREATE OR REPLACE FUNCTION reject_case_receipt_case_move() "
+                "RETURNS trigger LANGUAGE plpgsql AS $body$ BEGIN RETURN NEW; END; $body$",
+            ),
+            "trigger definition drift: case_receipts_case_immutable",
+        ),
+        (
+            (
+                "CREATE OR REPLACE FUNCTION enforce_case_access_same_case() "
+                "RETURNS trigger LANGUAGE plpgsql AS $body$ BEGIN RETURN NEW; END; $body$",
+            ),
+            "trigger definition drift: case_access_sessions_same_case",
+        ),
     )
     with adapter._conn(commit_on_success=False) as conn:
         for position, (statements, expected_issue) in enumerate(probes):

@@ -293,3 +293,63 @@ term in `web-nuxt/composables/useFeature.ts` and `web-nuxt/utils/featureFlags.ts
 that is unrelated to case bearers. It reaches no sink today, and the negative
 test pins that pattern, but those two files must be re-measured before the sink
 lists grow again.
+
+## Breaker remediation after the five-round ceiling — finding 1 (catalog readiness)
+
+Still not a fix round. This entry closes the first retained Important finding.
+
+Both bypasses were reproduced on live PostgreSQL 16.15 before any code changed.
+Repointing `case_access_sessions_case_receipt_fkey` at a same-named table in a
+`shadow` namespace left `target_table`, ordered source and target columns, the
+delete action and `convalidated` all identical, and readiness reported no issue
+at all. Adding `WHEN (false)` to `case_receipts_case_immutable`, and separately
+replacing `public.reject_case_receipt_case_move` and
+`public.enforce_case_access_same_case` with `BEGIN RETURN NEW; END;` bodies,
+each left every compared trigger field intact while disabling the guard.
+
+RED: five pure catalog-drift cases and one schema-parity test were added first
+and failed, and the live drift probe failed on the shadow-namespace foreign key.
+
+GREEN: the constraint query now selects the target namespace and the update
+action, joined through `pg_namespace` on the referenced relation, and the
+foreign-key expectations pin `public` and `NO ACTION`. The trigger query now
+selects the trigger predicate and the function body, and the trigger
+expectations pin no predicate plus the exact body of each guard. Bodies are
+compared after whitespace normalisation, which lets migration 080 and
+`init.sql` keep their own formatting; a new test re-extracts both files and
+asserts they still agree with the readiness constants, so a future edit to
+either schema source cannot silently diverge from what readiness accepts.
+
+The predicate is read through `pg_get_triggerdef` rather than
+`pg_get_expr(tgqual, ...)`: the pre-existing `trg_entity_ratings` triggers on
+`posts` carry a qualification spanning both OLD and NEW, which makes
+`pg_get_expr` fail with `expression contains variables of more than one
+relation` across the whole-catalog scan. Readiness now records no predicate as
+NULL and any predicate as the rendered trigger definition, so it stays
+fail-closed without depending on single-relation rendering.
+
+Verification: `test_database.py` `204 passed, 1 xfailed`, up from 198 by the
+five drift cases and the schema-parity test. Migration and readiness including
+the live drift probes `14 passed`. Case schema `13 passed`; receipts, access
+security and privacy logging `22 passed`; case store `15 passed`; PostgreSQL
+transaction `8 passed`; source guard `10 passed`. Five hostile mutations were
+then confirmed detected live, including a foreign key switched to
+`ON UPDATE CASCADE`, which is the same class as the reported target-namespace
+gap. Comparing the readiness output of `909dd42c` and this change against the
+same healthy schema produced an identical issue set, so the broadened checks
+introduced no false positive. Ruff passed and `git diff --check` exited 0.
+
+### Blocking defect found during verification, NOT fixed here
+
+On PostgreSQL 16.15 a freshly migrated database reports six Case Kernel issues
+before any tampering: the five expiry, revision and digest-shape CHECK
+constraints and the partial access-session index. `pg_get_expr(..., pretty)`
+renders `receipt_revision >= 1`, while the pinned expectation is
+`(receipt_revision>=1)`; the outer parentheses are not emitted by this server
+version. `case_kernel_schema_status` therefore returns `case_schema_not_ready`
+for a correct schema, so the Case Kernel cannot report ready once its flag is
+enabled. This is a third defect, pre-existing at `909dd42c`, outside both
+reported findings, and it is left untouched pending an owner decision because
+the fix changes production readiness semantics in a locked area. The existing
+drift tests never caught it because they assert only that an expected issue is
+present, never that a healthy schema yields an empty issue set.
