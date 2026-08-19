@@ -37,6 +37,7 @@ def _unwire():
     yield
     # Leave no configured global behind for the rest of the suite.
     from cases.admin_api import configure_case_admin_api
+    from cases.contact import configure_case_contact
     from cases.correction import configure_case_correction
     from cases.metrics import configure_case_metrics
     from cases.public_api import configure_case_public_api
@@ -49,6 +50,7 @@ def _unwire():
     configure_case_work_control(database=None, policy=None)
     configure_case_admin_api(database=None, crypto=None, projection_fetcher=None,
                              service=None)
+    configure_case_contact(database=None, crypto=None, provider=None)
     configure_case_metrics(database=None)
 
 
@@ -73,6 +75,11 @@ def test_raising_the_flag_configures_every_module():
     assert public_api._service() is not None
     assert admin_api._SERVICE is not None and admin_api._CRYPTO is not None
     assert metrics._DATABASE is not None
+    # Contact belongs to the same all-or-nothing wiring: unconfigured, every
+    # notification the reporter consented to would 500 at the moment it mattered.
+    from cases import contact
+
+    assert contact._DATABASE is not None and contact._PROVIDER is not None
 
 
 def test_the_public_origin_is_the_deployment_https_origin():

@@ -410,3 +410,50 @@ def test_work_stranded_by_a_dead_worker_comes_due_again(pg_database):
     later = NOW + timedelta(seconds=LEASE_SECONDS + 1)
     assert dispatch_case_outbox(now=later).claimed == 1
     assert _row(pg_database, "notify:stranded:1")["status"] == "sent"
+
+
+def test_every_topic_the_system_enqueues_has_copy_to_send():
+    import re
+
+    from cases.outbox import _TOPIC_COPY
+
+    # Enqueue sites and templates drifted apart once already: publication.py
+    # enqueued 'correction.escalated' and no template existed, so the escalation
+    # notice could never be sent.
+    source = (Path(__file__).resolve().parents[1] / "cases").glob("*.py")
+    enqueued = set()
+    for module in source:
+        enqueued |= set(re.findall(r'topic="(correction\.[a-z_]+)"', module.read_text("utf-8")))
+
+    assert enqueued, "no enqueue sites found — the scan is broken, not the code"
+    assert enqueued <= set(_TOPIC_COPY), f"no copy for {enqueued - set(_TOPIC_COPY)}"
+
+
+@pg_only
+def test_one_unsendable_row_does_not_stop_the_queue(pg_database, monkeypatch):
+    case_id = _case(pg_database)
+    _enqueue(pg_database, case_id, key="notify:poison:1")
+    _enqueue(pg_database, case_id, key="notify:poison:2")
+    # One row carries a topic nobody wrote copy for.
+    with pg_database._conn(commit_on_success=False) as conn:
+        pg_database._execute(
+            conn,
+            "UPDATE case_outbox SET topic='correction.unwritten'"
+            " WHERE idempotency_key='notify:poison:1'",
+        )
+        conn.commit()
+
+    provider = _FakeProvider()
+    configure_case_outbox(
+        database=pg_database, crypto=CaseCrypto(MASTER_KEY), provider=provider,
+        contact_lookup=lambda case_id, **_: "0901234567",
+    )
+
+    summary = dispatch_case_outbox(now=NOW)
+
+    # The bad row dead-letters; the good one still goes out. Letting the error
+    # escape would abort the run and strand every later item behind it.
+    assert summary.dead_lettered == 1
+    assert summary.sent == 1
+    assert _row(pg_database, "notify:poison:1")["last_error_code"] == "unknown_outbox_topic"
+    assert _row(pg_database, "notify:poison:2")["status"] == "sent"

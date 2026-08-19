@@ -596,3 +596,44 @@ def test_a_successful_create_is_observed_as_one_arrival(client, monkeypatch):
     assert response.status_code == 201
     # One arrival, on the web channel; a replayed create would add nothing.
     assert events == [("received", "web")]
+
+
+def test_the_declared_wire_format_is_camel_case_and_only_that():
+    """The exact bodies web-nuxt/composables/useCorrectionCases.ts sends.
+
+    These models carry an alias on every field and forbid extras, so there is no
+    "close enough": a snake_case body is two errors per field. Nothing caught
+    that for the whole pilot because every test built the models the way the
+    server likes them. This one is written the way the browser sends them.
+    """
+    from cases.public_api import _AccessIn, _CreateIn, _ItemIn
+
+    item = {
+        "entityId": "p-quan-com", "fieldPath": "attributes.phone",
+        "reportedValue": "0270 111 2222", "proposedValue": "0270 333 4444",
+        "baseEntityRevision": 7,
+    }
+    parsed = _CreateIn(
+        reporterPrivacy="anonymous", items=[_ItemIn(**item)],
+        optionalPhone=None, notificationConsent=False,
+        handoffDigest=None, handoffConfirmed=False,
+    )
+    assert parsed.items[0].entity_id == "p-quan-com"
+
+    access = _AccessIn(publicReference="VL-COR-0000000000001", capability="A" * 43)
+    assert access.public_reference == "VL-COR-0000000000001"
+
+
+def test_a_snake_case_body_is_refused_outright():
+    import pytest as _pytest
+    from pydantic import ValidationError
+
+    from cases.public_api import _ItemIn
+
+    # Not a warning, not a coercion: the reporter's whole submission dies here,
+    # and the page has no way to tell them it was our bug and not their code.
+    with _pytest.raises(ValidationError):
+        _ItemIn(
+            entity_id="p-quan-com", field_path="attributes.phone",
+            reported_value="a", proposed_value="b", base_entity_revision=7,
+        )

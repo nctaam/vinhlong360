@@ -32,6 +32,10 @@ _TOPIC_COPY = {
         "vinhlong360: yeu cau {reference} co cap nhat moi. "
         "Tra cuu tien do bang ma nay tren trang tra cuu. Khong chia se ma voi ai."
     ),
+    "correction.escalated": (
+        "vinhlong360: yeu cau {reference} da duoc chuyen len muc uu tien cao hon. "
+        "Tra cuu tien do bang ma nay tren trang tra cuu. Khong chia se ma voi ai."
+    ),
     "correction.closed": (
         "vinhlong360: yeu cau {reference} da khep lai. "
         "Tra cuu ket qua bang ma nay tren trang tra cuu. Khong chia se ma voi ai."
@@ -208,7 +212,19 @@ def dispatch_case_outbox(*, now: datetime, limit: int = 100) -> DispatchSummary:
                 conn.commit()
                 continue
 
-            message = notification_message(public_reference=reference, topic=str(item["topic"]))
+            try:
+                message = notification_message(
+                    public_reference=reference, topic=str(item["topic"])
+                )
+            except ValueError:
+                # A topic with no copy is a programming error, but it belongs to
+                # one row: letting it escape would abort the whole run and leave
+                # every later item leased and unsent behind it.
+                dead += 1
+                _settle(database, conn, outbox_id, status="failed", attempts=attempts,
+                        error_code="unknown_outbox_topic", available_at=now)
+                conn.commit()
+                continue
             result = _PROVIDER.send(contact, message, delivery_key=delivery_key(outbox_id))
 
             if result.delivered:

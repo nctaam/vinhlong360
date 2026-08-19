@@ -122,19 +122,23 @@ export function useCorrectionCases(fetcher = apiFetch): CorrectionCasesApi {
   async function createCorrection(submission: CorrectionSubmission): Promise<CaseReceipt> {
     // One key for this submit and its retries; a new submit gets a new one.
     const idempotencyKey = newIdempotencyKey()
+    // camelCase, because that is the wire format the API declares: every field
+    // in agent/cases/public_api.py carries an alias and the models forbid
+    // extras, so a snake_case body is not "close enough" — it is two errors per
+    // field and a 422 the page would show the reporter as their mistake.
     const receipt = await post<CaseReceipt>('/api/cases/corrections', {
-      reporter_privacy: submission.reporterPrivacy,
+      reporterPrivacy: submission.reporterPrivacy,
       items: submission.items.map(item => ({
-        entity_id: item.entityId,
-        field_path: item.fieldPath,
-        reported_value: item.reportedValue,
-        proposed_value: item.proposedValue,
-        base_entity_revision: item.baseEntityRevision,
+        entityId: item.entityId,
+        fieldPath: item.fieldPath,
+        reportedValue: item.reportedValue,
+        proposedValue: item.proposedValue,
+        baseEntityRevision: item.baseEntityRevision,
       })),
-      optional_phone: submission.optionalPhone ?? null,
-      notification_consent: Boolean(submission.notificationConsent),
-      handoff_digest: submission.handoffDigest ?? null,
-      handoff_confirmed: Boolean(submission.handoffConfirmed),
+      optionalPhone: submission.optionalPhone ?? null,
+      notificationConsent: Boolean(submission.notificationConsent),
+      handoffDigest: submission.handoffDigest ?? null,
+      handoffConfirmed: Boolean(submission.handoffConfirmed),
     }, idempotencyKey)
     secretState.capability = receipt.capability
     publicReference.value = receipt.publicReference
@@ -145,7 +149,7 @@ export function useCorrectionCases(fetcher = apiFetch): CorrectionCasesApi {
     // In the body, never the URL: a query string reaches history, logs and
     // referrers, and this value opens somebody's case.
     await post<unknown>('/api/cases/access', {
-      public_reference: reference,
+      publicReference: reference,
       capability: secret,
     })
     publicReference.value = reference

@@ -210,3 +210,31 @@ describe('refusals', () => {
     await expect(cases.loadStatus()).rejects.not.toBeInstanceOf(CaseAccessError)
   })
 })
+
+describe('the wire format', () => {
+  it('sends the field names the API actually declares', async () => {
+    const { fetcher, call } = recordingFetcher()
+    const cases = useCorrectionCases(fetcher as any)
+
+    await cases.createCorrection(SUBMISSION)
+    await cases.exchangeReceipt('VL-COR-0000000000001', 'A'.repeat(43))
+
+    // Every field in agent/cases/public_api.py carries a camelCase alias and the
+    // models forbid extras, so snake_case is not a near miss — it is a 422 for
+    // the whole submission, which the page can only show the reporter as their
+    // own mistake. This shipped that way until an audit walked the two sides.
+    const create = call(0).options.body as Record<string, unknown>
+    expect(Object.keys(create)).toEqual(expect.arrayContaining([
+      'reporterPrivacy', 'optionalPhone', 'notificationConsent',
+      'handoffDigest', 'handoffConfirmed',
+    ]))
+    expect(Object.keys(create)).not.toEqual(expect.arrayContaining(['reporter_privacy']))
+    expect(Object.keys((create.items as Record<string, unknown>[])[0]!)).toEqual([
+      'entityId', 'fieldPath', 'reportedValue', 'proposedValue', 'baseEntityRevision',
+    ])
+
+    const access = call(1).options.body as Record<string, unknown>
+    expect(access).toHaveProperty('publicReference')
+    expect(access).not.toHaveProperty('public_reference')
+  })
+})

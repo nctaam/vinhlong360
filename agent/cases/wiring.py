@@ -63,6 +63,17 @@ def build_projection_fetcher(settings):
     return fetch
 
 
+def _sms_provider(settings):
+    """The one eSMS transport, built the same way the scheduler builds it."""
+    from sms_provider import EsmsProvider
+
+    return EsmsProvider(
+        api_key=getattr(settings, "ESMS_API_KEY", ""),
+        secret=getattr(settings, "ESMS_SECRET", ""),
+        brandname=getattr(settings, "ESMS_BRANDNAME", ""),
+    )
+
+
 def wire_case_kernel(database, settings) -> bool:
     """Configure every case module against the live database, or nothing at all.
 
@@ -104,6 +115,13 @@ def wire_case_kernel(database, settings) -> bool:
             projection_fetcher=build_projection_fetcher(settings),
             service=service,
         )
+        # The optional-phone promise is part of intake, so its module is part of
+        # the same all-or-nothing wiring: unconfigured, every notification the
+        # reporter consented to would 500 at the moment it mattered.
+        from .contact import configure_case_contact
+
+        configure_case_contact(database=database, crypto=crypto,
+                               provider=_sms_provider(settings))
         configure_case_metrics(database=database)
         logger.info("case kernel wired (owner=%s)", settings.CASE_SERVICE_OWNER_REF)
         return True
