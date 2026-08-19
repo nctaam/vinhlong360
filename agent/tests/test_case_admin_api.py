@@ -115,11 +115,18 @@ import database  # noqa: E402
 from cases.security import CaseCrypto  # noqa: E402
 
 UTC = timezone.utc
-# Live, not frozen: case_admin_access_sessions checks expires_at against the
-# database's own created_at DEFAULT NOW(). A pinned date here is a time bomb
-# that starts failing the moment the wall clock passes it.
-NOW = datetime.now(UTC).replace(microsecond=0)
 MASTER_KEY = "0" * 43
+
+
+def _now():
+    """Per-call, never module-level: the table checks expires_at against the
+    database's own clock, and a stamp taken at collection time is already stale
+    by the time a 20-minute full-suite run reaches these tests."""
+    return datetime.now(UTC).replace(microsecond=0)
+
+
+# Kept for call sites: evaluating it per use via _now() is the point.
+
 
 
 def _pg_url():
@@ -182,10 +189,10 @@ def test_a_fresh_grant_opens_the_report_for_the_person_who_earned_it(pg_case):
 
     _adapter, case_id = pg_case
 
-    grant = grant_private_evidence_access(case_id, _operator(), now=NOW)
-    require_private_evidence_access(case_id, _operator(), grant.secret, now=NOW)
+    grant = grant_private_evidence_access(case_id, _operator(), now=_now())
+    require_private_evidence_access(case_id, _operator(), grant.secret, now=_now())
 
-    assert grant.expires_at == NOW + timedelta(minutes=15)
+    assert timedelta(minutes=14) < grant.expires_at - _now() <= timedelta(minutes=15)
 
 
 @pg_only
@@ -194,7 +201,7 @@ def test_only_the_digest_of_a_grant_is_ever_stored(pg_case):
 
     adapter, case_id = pg_case
 
-    grant = grant_private_evidence_access(case_id, _operator(), now=NOW)
+    grant = grant_private_evidence_access(case_id, _operator(), now=_now())
 
     with adapter._conn(commit_on_success=False) as conn:
         stored = adapter._fetchone(
@@ -218,12 +225,12 @@ def test_every_way_a_clearance_can_be_absent_fails_the_same(pg_case, scenario):
     )
 
     _adapter, case_id = pg_case
-    grant = grant_private_evidence_access(case_id, _operator(), now=NOW)
-    secret, actor, when = grant.secret, _operator(), NOW
+    grant = grant_private_evidence_access(case_id, _operator(), now=_now())
+    secret, actor, when = grant.secret, _operator(), _now()
     if scenario == "expired":
-        when = NOW + timedelta(minutes=16)
+        when = _now() + timedelta(minutes=16)
     elif scenario == "revoked":
-        revoke_private_evidence_access(case_id, _operator(), now=NOW)
+        revoke_private_evidence_access(case_id, _operator(), now=_now())
     elif scenario == "wrong_secret":
         secret = "0" * 43
     elif scenario == "missing":
@@ -245,7 +252,7 @@ def test_a_shared_admin_key_can_never_hold_somebody_else_report(pg_case):
     _adapter, case_id = pg_case
 
     with pytest.raises(StepUpRefused) as excinfo:
-        grant_private_evidence_access(case_id, _operator("admin-key"), now=NOW)
+        grant_private_evidence_access(case_id, _operator("admin-key"), now=_now())
 
     # A deployment key identifies no person, so nobody could be held answerable.
     assert excinfo.value.code == "human_operator_required"
@@ -260,12 +267,12 @@ def test_re_authenticating_replaces_the_old_clearance_rather_than_stacking(pg_ca
     )
 
     _adapter, case_id = pg_case
-    first = grant_private_evidence_access(case_id, _operator(), now=NOW)
-    second = grant_private_evidence_access(case_id, _operator(), now=NOW)
+    first = grant_private_evidence_access(case_id, _operator(), now=_now())
+    second = grant_private_evidence_access(case_id, _operator(), now=_now())
 
-    require_private_evidence_access(case_id, _operator(), second.secret, now=NOW)
+    require_private_evidence_access(case_id, _operator(), second.secret, now=_now())
     with pytest.raises(StepUpRefused):
-        require_private_evidence_access(case_id, _operator(), first.secret, now=NOW)
+        require_private_evidence_access(case_id, _operator(), first.secret, now=_now())
 
 
 # ── The router is actually mounted ──

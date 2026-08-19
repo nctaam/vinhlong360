@@ -842,3 +842,44 @@ def test_evidence_can_be_narrowed_to_one_item():
     sql, params = database.statements[0]
     assert "AND item_id = %s" in sql
     assert params == ("c-1", "i-1")
+
+
+# ── The legacy ledger (Task 17) ──
+
+def test_a_ledger_row_is_keyed_so_replays_are_no_ops():
+    database = _RowsDatabase()
+    now = datetime(2026, 8, 19, 9, 0, tzinfo=timezone.utc)
+
+    _transaction(database).record_legacy_intake(
+        source_file="agent/data/reports.jsonl", source_line=7,
+        raw_record_digest="d" * 64, legacy_status="open",
+        mapping_decision="factual_field_report", import_result="correction",
+        missing_data_flags=[], imported_at=now,
+    )
+
+    sql, params = database.statements[0]
+    # The conflict clause on the locator key is what makes a re-run idempotent.
+    assert "ON CONFLICT (source_file, source_line) DO NOTHING" in sql
+    assert params[0] == "agent/data/reports.jsonl" and params[1] == 7
+
+
+def test_the_ledger_summary_counts_every_explanation_bucket():
+    database = _RowsDatabase(rows=[{"rows": 5, "corrections": 1,
+                                    "duplicates": 1, "unexplained": 0}])
+
+    summary = _transaction(database).legacy_intake_summary("agent/data/reports.jsonl")
+
+    sql, _params = database.statements[0]
+    # A row whose import_result is outside the vocabulary counts as unexplained,
+    # and reconciliation fails cutover on anything above zero.
+    assert "NOT IN" in sql and "unexplained" in sql
+    assert summary == {"rows": 5, "corrections": 1, "duplicates": 1, "unexplained": 0}
+
+
+def test_the_freeze_probe_asks_only_for_the_marker_row():
+    database = _RowsDatabase(rows=[{"?column?": 1}])
+
+    assert _transaction(database).legacy_freeze_present("__correction_write_freeze__") is True
+    sql, params = database.statements[0]
+    assert "import_result = 'freeze'" in sql
+    assert params == ("__correction_write_freeze__",)

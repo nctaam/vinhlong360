@@ -850,6 +850,59 @@ class CaseTransaction:
         )
         return row is not None
 
+    def record_legacy_intake(self, *, source_file: str, source_line: int,
+                             raw_record_digest: str, legacy_status, mapping_decision: str,
+                             import_result: str, missing_data_flags, imported_at,
+                             imported_case_id=None) -> None:
+        """One ledger row per source line; replaying the same line is a no-op.
+
+        ON CONFLICT DO NOTHING on the (source_file, source_line) key is what
+        makes a re-run idempotent instead of a second import.
+        """
+        self._require_active()
+        self._db._execute(
+            self._conn,
+            """
+            INSERT INTO legacy_intake_records
+                (source_file, source_line, raw_record_digest, imported_case_id,
+                 legacy_status, missing_data_flags, mapping_decision, import_result,
+                 imported_at)
+            VALUES (%s, %s, %s, %s, %s, %s::jsonb, %s, %s, %s)
+            ON CONFLICT (source_file, source_line) DO NOTHING
+            """,
+            (source_file, source_line, raw_record_digest, imported_case_id,
+             legacy_status, json.dumps(list(missing_data_flags or [])),
+             mapping_decision, import_result, imported_at),
+        )
+
+    def legacy_intake_summary(self, source_file: str) -> dict:
+        self._require_active()
+        row = self._db._fetchone(
+            self._conn,
+            """
+            SELECT count(*) AS rows,
+                   count(*) FILTER (WHERE import_result = 'correction') AS corrections,
+                   count(*) FILTER (WHERE import_result = 'duplicate') AS duplicates,
+                   count(*) FILTER (WHERE import_result NOT IN
+                       ('correction','moderation_link','manual_triage','rejected','duplicate')
+                   ) AS unexplained
+            FROM legacy_intake_records WHERE source_file = %s
+            """,
+            (source_file,),
+        )
+        item = _row_dict(self._db, row)
+        return {key: int(item[key] or 0) for key in
+                ("rows", "corrections", "duplicates", "unexplained")}
+
+    def legacy_freeze_present(self, freeze_source: str) -> bool:
+        self._require_active()
+        return self._db._fetchone(
+            self._conn,
+            "SELECT 1 FROM legacy_intake_records WHERE source_file = %s"
+            " AND import_result = 'freeze' LIMIT 1",
+            (freeze_source,),
+        ) is not None
+
     def set_promise_health(self, case_id: str, health: str, *, observed_at: datetime) -> None:
         self._require_active()
         self._db._execute(
