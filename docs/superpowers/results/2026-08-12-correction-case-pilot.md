@@ -46,16 +46,64 @@
 4. Task 17 **không** thêm cờ config — freeze phải sống sót trôi dạt env.
 5. Assisted intake sửa `service.py` ngoài danh sách file Task 13 (bắt buộc để cùng transaction).
 
+## Rà soát đối kháng 2026-08-20 (workflow 12 agent)
+
+12 phát hiện được nêu; 8 cái xếp hạng cao nhất bị đưa qua vòng **phản biện có chủ đích
+bác bỏ** (mỗi chiều 2 cái). Kết quả: **7 đứng vững, 1 bị bác** (`public_api.py:161`
+— chủ thể rate-limit `request.client.host`: cả hai tiền đề sai với topology thực).
+4 phát hiện xếp hạng thấp **chưa qua phản biện** — ghi lại nguyên trạng, chưa được coi là đã chứng minh.
+
+**Đã sửa trong đợt này** (`7df5529c`, `af21a845`, `837705df`):
+
+| Khiếm khuyết | Vị trí | Vì sao nó nguy hiểm |
+|---|---|---|
+| Client nói snake_case, API chỉ nhận camelCase | `useCorrectionCases.ts` | Toàn bộ hành trình người dân **422**, và trang đổ lỗi cho mã của họ |
+| `configure_case_contact` không được gọi | `wiring.py` | Mọi thông báo người dân đã đồng ý nhận sẽ 500 đúng lúc cần |
+| `correction.escalated` không có bản mẫu | `outbox.py` | Không gửi được, và **làm hỏng cả lượt dispatch** |
+| Cả lô gửi trong MỘT transaction | `outbox.py` | Lỗi giữa chừng → **gửi lại SMS cho người đã nhận** |
+| Kernel không có composition root | `wiring.py` (mới) | Bật cờ = router đã mount trả 500 ngay request đầu |
+
+**Còn mở — cần quyết định của chủ dự án, không phải bản vá** (xếp theo mức hại):
+
+1. **`service.py:1190` — 6/7 kết luận bị gộp thành "Đang xem xét".** `disposition_family`
+   chỉ đọc `item.accepted` (= `outcome_code == 'corrected'`). Người bị **từ chối**
+   (`confirmed_current`, `insufficient_evidence`, `out_of_scope`, `unable_to_verify`,
+   `transferred`, `withdrawn`, `duplicate`) mãi mãi thấy "đang xem xét" — và không bao
+   giờ thấy nút phản hồi để khiếu nại. Đây là vi phạm trực diện §1.7 CLAUDE.md.
+2. **`correction.py:494` — cổng quyết định có thể đi vòng.** `build_change_set` không
+   đòi item phải có phán quyết `corrected`. Item **chưa từng được quyết định** — hoặc đã
+   bị từ chối vì thiếu chứng cứ — vẫn dựng và đăng được lên entity thật, rồi `verify`
+   đóng hồ sơ là CLOSED/ACTION_TAKEN. Phơi nhiễm tới **R2, gồm cả trường `name`**.
+   (R3 không lọt vì `ActorContext` không mang `reviewer_ref`.)
+3. **`work_control.py:18` — người trực không thể làm việc.** Guard đòi `cases:work`,
+   `cases:high_risk`, `cases:decide` — bộ từ vựng mà registry quyền AdminCP **không bao
+   giờ phát ra** — và so sánh bằng `in` thuần, không hiểu `"*"`. Hàng đợi trả 403 và
+   giao diện nuốt lỗi.
+4. **`correction.py:508` — rollback ghi lời khai chưa kiểm chứng của người báo.**
+   `before_value` lấy thẳng `reportedValue`; không đường nào đọc giá trị thật của entity.
+   Rollback ghi chuỗi do người lạ cung cấp lên trang công khai, provenance
+   `correction-rollback`. Cách sửa đã có sẵn trong repo: đọc giá trị hiện tại lúc intake
+   như `agent/public_api.py:3409-3412` làm.
+5. **`store.py:1008`** (chưa phản biện) — purge lưu trữ xoá cả contact challenge **đã xác
+   minh**, giết mọi thông báo người dân đã đồng ý.
+6. **`work_control.py:440`** (chưa phản biện) — `scan_escalations` không có nơi gọi trong
+   production, nên đồng hồ trễ hạn không bao giờ sinh việc giám sát; runbook mô tả **ngược lại**.
+7. **`service.py:1176`** (chưa phản biện) — hạn "Cập nhật trước" đóng băng lúc intake,
+   không tính lại, trong khi câu chữ trễ-hạn nói nó vẫn còn hiệu lực.
+
 ## Rủi ro chưa đóng
 
-- ~35 commit chưa qua rà soát độc lập (Review Protocol mục 6) — quota ultrareview hết, cần credit.
+- ~40 commit: đã qua **một** vòng rà soát đối kháng tự động (mục trên), **chưa** qua rà soát người/ultrareview (Review Protocol mục 6).
 - Accessibility/smoke chưa có → chưa có bằng chứng trình duyệt; đường dẫn artifact trình duyệt: **chưa tồn tại**.
 - Bốn kiểm thử journey spec (Zalo handoff, provider outage giữa journey, ReviewCase, legacy-trong-journey) đang phủ **rời rạc** ở suite từng task, chưa gom một mạch.
 - Flake FE `detail-grid-containment-gate` khi chạy song song (backlog).
 
 ## Điều kiện trước khi bật bất kỳ cờ nào
 
+0. **Đóng 4 mục BLOCKER/quan trọng còn mở ở phần rà soát 2026-08-20.** Riêng mục 1 và 2
+   là điều kiện tuyệt đối: một cái nói dối người dân về kết luận, một cái cho phép đăng
+   thay đổi chưa hề được phán quyết.
 1. Chạy trọn cổng Step 5 Task 18 (17 suite BE + ruff + 8 suite FE + typecheck + build + `run_hard --all`) và cập nhật mục "Số liệu" ở trên bằng exit code thật.
 2. Hoàn tất browser smoke (accessibility gate đã có; smoke CDP còn thiếu).
-3. Rà soát độc lập chuỗi commit.
+3. Rà soát độc lập chuỗi commit (vòng tự động đã có; vòng người chưa).
 4. Quyết định phát hành có tên người trực và bằng chứng năng lực (`public_sla_eligible` chỉ là input, không phải công tắc).
