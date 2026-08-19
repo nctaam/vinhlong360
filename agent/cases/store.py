@@ -564,8 +564,16 @@ class CaseTransaction:
             """
             SELECT i.item_id, i.entity_id, i.field_path, i.base_entity_revision,
                    i.risk_class, i.evidence_level,
-                   cs.apply_status, cs.public_projection_verified_at
+                   cs.apply_status, cs.public_projection_verified_at,
+                   d.outcome_code
             FROM correction_items i
+            -- The ruling, so the reporter's page can say more than "đang xem
+            -- xét" once one exists. Latest per item: a review may re-rule.
+            LEFT JOIN LATERAL (
+                SELECT outcome_code FROM case_decisions
+                WHERE item_id = i.item_id
+                ORDER BY decided_at DESC LIMIT 1
+            ) d ON TRUE
             -- The item owes a public change only through a change set, and its
             -- latest one is what the reporter is currently being told about.
             LEFT JOIN LATERAL (
@@ -587,6 +595,7 @@ class CaseTransaction:
                 entity_id=item["entity_id"],
                 field_path=item["field_path"],
                 base_entity_revision=int(item["base_entity_revision"]),
+                accepted=item.get("outcome_code") == "corrected",
                 publication_state=_publication_state(item),
             )
             for item in (_row_dict(self._db, row) for row in rows)

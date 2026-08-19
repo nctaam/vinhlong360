@@ -937,3 +937,20 @@ def test_deidentifying_capacity_keeps_the_rows_and_drops_the_link():
     sql, _params = database.statements[0]
     # UPDATE, not DELETE: the numbers stay; the person-linkable key goes.
     assert sql.startswith("UPDATE case_capacity_events SET case_id = NULL")
+
+
+def test_public_items_carry_the_latest_ruling_so_the_page_can_answer():
+    database = _RowsDatabase(many=[[
+        {"item_id": "i-1", "entity_id": "p-1", "field_path": "attributes.phone",
+         "base_entity_revision": 3, "risk_class": "R1", "evidence_level": "E3",
+         "apply_status": None, "public_projection_verified_at": None,
+         "outcome_code": "corrected"},
+    ]])
+
+    items = _transaction(database).load_correction_items("c-1")
+
+    sql, _params = database.statements[0]
+    # Latest per item, because a review may re-rule; without this join the
+    # reporter's page said "đang xem xét" forever, whatever was decided.
+    assert "case_decisions" in sql and "ORDER BY decided_at DESC LIMIT 1" in sql
+    assert items[0].accepted is True
