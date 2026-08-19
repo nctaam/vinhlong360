@@ -1451,6 +1451,20 @@ _MINIMAL_FIELDS = {"id", "name", "type", "summary", "image_descriptors", "place_
                     "place_area", "coordinates", "attributes"}
 
 
+def _public_entity_revision(entity: dict) -> int:
+    """The revision a reader is actually being served.
+
+    Publication verification compares this against the revision it wrote, which
+    is how a stale cache or prerender gets caught. That makes it a declared part
+    of the projection rather than something surviving by accident of a
+    permissive response model.
+    """
+    try:
+        return max(1, int(entity.get("revision")))
+    except (TypeError, ValueError):
+        return 1
+
+
 def _project_public_entity_media(entity: dict, *, limit: int | None = None) -> dict:
     """Return an owned public projection with descriptor-only entity media."""
     projected = dict(entity)
@@ -1826,6 +1840,7 @@ async def get_entity(
         e["relationship_total"] = rel_total
         e["relationships"] = rels
         _enrich_entity_place(e)
+        e["revision"] = _public_entity_revision(e)
         e["quality"] = entity_quality(e)
         if _rollout_enabled("TRUST_DRAWER_V1"):
             e["source_freshness"] = _build_source_freshness(e)

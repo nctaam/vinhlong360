@@ -256,6 +256,70 @@ def test_core_schema_can_remain_ready_while_case_kernel_is_dormant():
 
 
 @pg_only
+def test_a_change_set_records_its_outcome_while_its_decision_stays_frozen(pg_db):
+    """Migration 081: the lifecycle columns open, the decision does not.
+
+    080 shipped apply_status and public_projection_verified_at on a table whose
+    trigger rejected every UPDATE, so a published correction could never be
+    marked as published. 081 names the decision columns in the trigger instead.
+    """
+    with pg_db._conn(commit_on_success=False) as conn:
+        case_id = pg_db._row_to_dict(pg_db._fetchone(
+            conn,
+            "INSERT INTO cases(service_kind, category, phase, activity, disposition_family,"
+            " reporter_privacy, owner_ref, promise_policy_ref) VALUES ('correction',"
+            " 'lifecycle-test', 'intake', 'active', 'undetermined', 'anonymous',"
+            " 'person:test', 'policy:test') RETURNING case_id",
+            (),
+        ))["case_id"]
+        change_id = pg_db._row_to_dict(pg_db._fetchone(
+            conn,
+            "INSERT INTO correction_change_sets(case_id, base_entity_revision, before_patch,"
+            " after_patch, inverse_patch, policy_revision, risk_class, decision_maker_ref)"
+            " VALUES (%s, 1, '{}'::jsonb, '{}'::jsonb, '{}'::jsonb, 'policy:test', 'R0',"
+            " 'person:test') RETURNING change_set_id",
+            (case_id,),
+        ))["change_set_id"]
+
+        pg_db._execute(
+            conn,
+            "UPDATE correction_change_sets SET apply_status='applied',"
+            " public_projection_verified_at=NOW() WHERE change_set_id=%s",
+            (change_id,),
+        )
+        assert pg_db._row_to_dict(pg_db._fetchone(
+            conn,
+            "SELECT apply_status FROM correction_change_sets WHERE change_set_id=%s",
+            (change_id,),
+        ))["apply_status"] == "applied"
+
+        # Which entry, which revision, which patch, whose evidence, decided by
+        # whom: none of that may be rewritten after the fact.
+        for column, value in (
+            ("base_entity_revision", "2"),
+            ("after_patch", "'{\"name\": \"x\"}'::jsonb"),
+            ("risk_class", "'R3'"),
+            ("decision_maker_ref", "'person:someone_else'"),
+        ):
+            pg_db._execute(conn, "SAVEPOINT frozen_column", ())
+            with pytest.raises(Exception, match="immutable_case_ledger"):
+                pg_db._execute(
+                    conn,
+                    f"UPDATE correction_change_sets SET {column}={value}"
+                    " WHERE change_set_id=%s",
+                    (change_id,),
+                )
+            pg_db._execute(conn, "ROLLBACK TO SAVEPOINT frozen_column", ())
+
+        # An applied change set must stay answerable, so it still cannot vanish.
+        with pytest.raises(Exception, match="immutable_case_ledger"):
+            pg_db._execute(
+                conn, "DELETE FROM correction_change_sets WHERE change_set_id=%s", (change_id,)
+            )
+        conn.rollback()
+
+
+@pg_only
 def test_change_set_item_linkage_is_relational_and_immutable(pg_db):
     with pg_db._conn(commit_on_success=False) as conn:
         case_rows = pg_db._fetchall(
@@ -425,10 +489,23 @@ def test_rerunning_080_fails_closed_for_unmigratable_provisional_item_ids(pg_db)
 
 
 @pg_only
-def test_migration_080_schema_version_is_registered(pg_db):
+def test_the_database_is_at_the_head_of_the_migration_chain(pg_db):
+    """Pinned to the chain, not to a filename.
+
+    This asserted "080_correction_case_kernel.sql" and so became a tripwire the
+    moment 081 shipped, which says nothing about whether the database is current.
+    What matters is that the recorded migration is the last one on disk.
+    """
+    migrations = sorted(
+        path.name
+        for path in (ROOT / "agent" / "migrations").glob("*.sql")
+        if path.name[:3].isdigit()
+    )
+    latest = migrations[-1]
+
     with pg_db._conn() as conn:
         row = pg_db._fetchone(conn, "SELECT version, migration FROM schema_version WHERE component='agent'", ())
     assert row is not None
     item = pg_db._row_to_dict(row)
-    assert int(item["version"]) >= 80
-    assert item["migration"] == "080_correction_case_kernel.sql"
+    assert int(item["version"]) >= int(latest[:3])
+    assert item["migration"] == latest

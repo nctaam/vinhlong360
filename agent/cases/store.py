@@ -20,6 +20,7 @@ from .domain import (
     EvidenceLevel,
     PromiseClock,
     PromiseHealth,
+    PublicationState,
     ReviewCaseLink,
     ReviewCaseStatus,
     RiskClass,
@@ -28,9 +29,19 @@ from .domain import (
 from .queue_policy import WorkItemDraft
 from .transitions import TransitionDraft
 
+import entity_write as _entity_write
+
 
 class CaseNotFound(LookupError):
     pass
+
+
+class ChangeSetNotFound(LookupError):
+    pass
+
+
+class ChangeSetStateConflict(RuntimeError):
+    """Somebody else moved this change set between the read and the write."""
 
 
 class RevisionConflict(RuntimeError):
@@ -191,6 +202,29 @@ def _promise_clocks(database, conn, case_id: str) -> tuple[PromiseClock, ...]:
         )
         for item in (_row_dict(database, row) for row in rows)
     )
+
+
+def _publication_state(item: Mapping) -> PublicationState:
+    """What the reporter is owed, and how far it has got.
+
+    Derived rather than stored: the change set is the only record of a promised
+    public change, so reading it here cannot drift from what actually happened.
+    """
+    status = item.get("apply_status")
+    if not status:
+        return PublicationState.NOT_REQUIRED
+    if status == "pending":
+        return PublicationState.PENDING
+    if status == "rolled_back":
+        return PublicationState.ROLLED_BACK
+    if status == "applied":
+        # Applied says we wrote it. Verified says somebody checked the page.
+        return (
+            PublicationState.VERIFIED
+            if item.get("public_projection_verified_at")
+            else PublicationState.APPLIED
+        )
+    return PublicationState.NOT_REQUIRED
 
 
 def _snapshot_from_row(database, conn, row) -> CaseSnapshot:
@@ -528,9 +562,20 @@ class CaseTransaction:
         rows = self._db._fetchall(
             self._conn,
             """
-            SELECT item_id, entity_id, field_path, base_entity_revision,
-                   risk_class, evidence_level
-            FROM correction_items WHERE case_id = %s ORDER BY created_at, item_id
+            SELECT i.item_id, i.entity_id, i.field_path, i.base_entity_revision,
+                   i.risk_class, i.evidence_level,
+                   cs.apply_status, cs.public_projection_verified_at
+            FROM correction_items i
+            -- The item owes a public change only through a change set, and its
+            -- latest one is what the reporter is currently being told about.
+            LEFT JOIN LATERAL (
+                SELECT c.apply_status, c.public_projection_verified_at
+                FROM correction_change_set_items link
+                JOIN correction_change_sets c ON c.change_set_id = link.change_set_id
+                WHERE link.item_id = i.item_id
+                ORDER BY c.created_at DESC LIMIT 1
+            ) cs ON TRUE
+            WHERE i.case_id = %s ORDER BY i.created_at, i.item_id
             """,
             (case_id,),
         )
@@ -542,6 +587,7 @@ class CaseTransaction:
                 entity_id=item["entity_id"],
                 field_path=item["field_path"],
                 base_entity_revision=int(item["base_entity_revision"]),
+                publication_state=_publication_state(item),
             )
             for item in (_row_dict(self._db, row) for row in rows)
         )
@@ -686,6 +732,106 @@ class CaseTransaction:
             ),
         )
         return str(_row_dict(self._db, row)["change_set_id"])
+
+    def load_change_set(self, change_set_id: str, *, for_update: bool = False) -> dict:
+        self._require_active()
+        lock = " FOR UPDATE" if for_update else ""
+        row = self._db._fetchone(
+            self._conn,
+            f"""
+            SELECT change_set_id, case_id, base_entity_revision, before_patch, after_patch,
+                   inverse_patch, policy_revision, risk_class, decision_maker_ref,
+                   reviewer_ref, apply_status, public_projection_verified_at
+            FROM correction_change_sets WHERE change_set_id = %s{lock}
+            """,
+            (change_set_id,),
+        )
+        if row is None:
+            raise ChangeSetNotFound(change_set_id)
+        return _row_dict(self._db, row)
+
+    def load_change_set_target(self, change_set_id: str) -> tuple[str, tuple[str, ...]]:
+        """The one entry a change set touches, and the items that asked for it."""
+        self._require_active()
+        rows = self._db._fetchall(
+            self._conn,
+            """
+            SELECT i.item_id, i.entity_id
+            FROM correction_change_set_items link
+            JOIN correction_items i ON i.item_id = link.item_id
+            WHERE link.change_set_id = %s ORDER BY i.created_at, i.item_id
+            """,
+            (change_set_id,),
+        )
+        items = tuple(_row_dict(self._db, row) for row in rows)
+        entity_ids = {str(item["entity_id"]) for item in items}
+        if len(entity_ids) != 1:
+            # Task 10 refuses to build such a set; reaching here means the rows drifted.
+            raise ValueError("change_set_spans_entities")
+        return entity_ids.pop(), tuple(str(item["item_id"]) for item in items)
+
+    def set_change_set_apply_status(
+        self, change_set_id: str, *, expected_status: str, status: str,
+        verified_at: datetime | None = None,
+    ) -> None:
+        """Compare-and-set: two publishers cannot both believe they applied this."""
+        self._require_active()
+        row = self._db._fetchone(
+            self._conn,
+            """
+            UPDATE correction_change_sets
+            SET apply_status = %s,
+                public_projection_verified_at = COALESCE(%s, public_projection_verified_at)
+            WHERE change_set_id = %s AND apply_status = %s
+            RETURNING change_set_id
+            """,
+            (status, verified_at, change_set_id, expected_status),
+        )
+        if row is None:
+            raise ChangeSetStateConflict(change_set_id)
+
+    def set_promise_health(self, case_id: str, health: str, *, observed_at: datetime) -> None:
+        self._require_active()
+        self._db._execute(
+            self._conn,
+            "UPDATE case_promise_clocks SET health = %s, observed_at = %s WHERE case_id = %s",
+            (health, observed_at, case_id),
+        )
+
+    def complete_work_item_of_kind(self, case_id: str, kind: str, *, now: datetime) -> None:
+        """Close out the work this step was claimed for, on this transaction."""
+        self._require_active()
+        self._db._execute(
+            self._conn,
+            """
+            UPDATE case_work_items
+            SET status = 'completed', lease_expires_at = NULL, revision = revision + 1,
+                next_review_at = %s
+            WHERE case_id = %s AND kind = %s AND status <> 'completed'
+            """,
+            (now, case_id, kind),
+        )
+
+    def load_entity_for_update(self, entity_id: str):
+        """Lock the live entry inside this transaction before deciding anything."""
+        self._require_active()
+        return _entity_write.EntityWriteService(self._db).load_for_update(self._conn, entity_id)
+
+    def apply_entity_patch(self, entity_id: str, patch: dict, *, expected_revision: int,
+                           actor: str, provenance: str):
+        """The only door from a case to a live entry, and it opens on THIS transaction.
+
+        Routing through the writer keeps the entity row, its change audit and every
+        case record in one transaction, so a correction cannot be half-published.
+        """
+        self._require_active()
+        writer = _entity_write.EntityWriteService(self._db)
+        result = writer.apply_patch(
+            self._conn, entity_id, patch, expected_revision=expected_revision,
+            actor=actor, provenance=provenance,
+        )
+        writer.write_change_audit(self._conn, result, actor=actor, provenance=provenance)
+        return result
 
     def link_change_set_items(self, change_set_id: str, item_ids: tuple[str, ...]) -> None:
         self._require_active()

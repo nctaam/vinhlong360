@@ -18,6 +18,7 @@ verification command — never through a correction apply or an admin edit.
 """
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 
 import entity_details as _entity_details
@@ -43,7 +44,16 @@ AUDITED_FIELDS = (
     "attributes", "images", "coordinates", "area",
 )
 VERIFICATION_MARKERS = frozenset({"verifiedAt", "attributes.verifiedAt", "verified"})
+# Stored as jsonb on PostgreSQL and as JSON text on SQLite: either way the
+# driver is handed a string, never a live Python container.
+JSON_FIELDS = frozenset({"season", "attributes", "images", "coordinates"})
 MAX_AUDIT_VALUE = 2000
+
+
+def _as_parameter(name: str, value):
+    if name in JSON_FIELDS and isinstance(value, (dict, list, tuple)):
+        return json.dumps(value, ensure_ascii=False)
+    return value
 
 
 class EntityWriteRejected(RuntimeError):
@@ -84,7 +94,7 @@ class EntityWriteService:
         lock = " FOR UPDATE" if self._db._use_pg else ""
         row = self._db._fetchone(
             conn,
-            f"SELECT id, name, type, summary, description, revision"
+            f"SELECT id, name, type, summary, description, attributes, revision"
             f" FROM entities WHERE id = {ph}{lock}",
             (entity_id,),
         )
@@ -96,7 +106,7 @@ class EntityWriteService:
             revision=int(item["revision"] or 1),
             values={
                 key: item.get(key)
-                for key in ("name", "type", "summary", "description")
+                for key in ("name", "type", "summary", "description", "attributes")
             },
         )
 
@@ -172,7 +182,8 @@ class EntityWriteService:
 
         ph = self._placeholder()
         assignments = ", ".join(f"{name} = {ph}" for name in changed)
-        params = tuple(patch[name] for name in changed) + (entity_id, expected_revision)
+        params = tuple(_as_parameter(name, patch[name]) for name in changed) + (
+            entity_id, expected_revision)
         row = self._db._fetchone(
             conn,
             f'UPDATE entities SET {assignments}, revision = revision + 1, "updatedAt" = NOW()'

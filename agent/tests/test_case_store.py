@@ -531,7 +531,8 @@ def test_items_are_returned_as_domain_objects_in_creation_order():
     assert len(items) == 1
     assert items[0].item_id == "i-1"
     assert items[0].risk_class.value == "R1"
-    assert "ORDER BY created_at, item_id" in database.statements[0][0]
+    # Same ordering contract; the columns are aliased now that the query joins.
+    assert "ORDER BY i.created_at, i.item_id" in database.statements[0][0]
 
 
 def test_the_public_reference_read_ignores_a_revoked_receipt():
@@ -643,3 +644,115 @@ def test_linking_change_set_items_is_repeatable():
 
     assert len(database.statements) == 2
     assert all("ON CONFLICT DO NOTHING" in sql for sql, _ in database.statements)
+
+
+# ── Change set lifecycle (Task 12) ──
+
+class _RowsDatabase(_RecordingDatabase):
+    """A recording double that can also answer multi-row reads."""
+
+    def __init__(self, rows=None, many=None) -> None:
+        super().__init__(rows)
+        self._many = list(many or [])
+
+    def _fetchall(self, conn, sql, params):
+        self.statements.append((" ".join(sql.split()), params))
+        return self._many.pop(0) if self._many else []
+
+
+def test_loading_a_change_set_for_update_takes_the_lock():
+    database = _RowsDatabase(rows=[{"change_set_id": "cs-1", "apply_status": "pending"}])
+
+    _transaction(database).load_change_set("cs-1", for_update=True)
+
+    assert "FOR UPDATE" in database.statements[0][0]
+
+
+def test_an_unknown_change_set_is_reported_as_missing_not_as_empty():
+    with pytest.raises(case_store.ChangeSetNotFound):
+        _transaction(_RowsDatabase()).load_change_set("cs-nope")
+
+
+def test_a_change_set_target_is_one_entry_and_the_items_that_asked_for_it():
+    database = _RowsDatabase(many=[[
+        {"item_id": "i-1", "entity_id": "p-1"},
+        {"item_id": "i-2", "entity_id": "p-1"},
+    ]])
+
+    entity_id, item_ids = _transaction(database).load_change_set_target("cs-1")
+
+    assert entity_id == "p-1"
+    assert item_ids == ("i-1", "i-2")
+
+
+def test_a_change_set_whose_rows_drifted_across_entries_is_refused():
+    database = _RowsDatabase(many=[[
+        {"item_id": "i-1", "entity_id": "p-1"},
+        {"item_id": "i-2", "entity_id": "p-2"},
+    ]])
+
+    # Task 10 refuses to build one; reaching here means the rows moved under us,
+    # and publishing would edit an entry nobody decided about.
+    with pytest.raises(ValueError, match="change_set_spans_entities"):
+        _transaction(database).load_change_set_target("cs-1")
+
+
+def test_marking_a_change_set_is_a_compare_and_set():
+    database = _RowsDatabase(rows=[{"change_set_id": "cs-1"}])
+
+    _transaction(database).set_change_set_apply_status(
+        "cs-1", expected_status="pending", status="applied"
+    )
+
+    sql, params = database.statements[0]
+    assert "apply_status = %s" in sql
+    assert sql.endswith("RETURNING change_set_id")
+    assert "AND apply_status = %s" in sql
+    assert params[-1] == "pending"
+
+
+def test_a_change_set_that_moved_underneath_refuses_the_mark():
+    # No row came back: somebody else marked it between the read and the write.
+    with pytest.raises(case_store.ChangeSetStateConflict):
+        _transaction(_RowsDatabase()).set_change_set_apply_status(
+            "cs-1", expected_status="pending", status="applied"
+        )
+
+
+def test_completing_work_touches_only_the_kind_it_was_asked_for():
+    database = _RowsDatabase()
+    now = datetime(2026, 8, 19, 9, 0, tzinfo=timezone.utc)
+
+    _transaction(database).complete_work_item_of_kind("case-1", "publication", now=now)
+
+    sql, params = database.statements[0]
+    assert "status = 'completed'" in sql
+    assert "AND kind = %s" in sql
+    assert "status <> 'completed'" in sql
+    assert params[1:] == ("case-1", "publication")
+
+
+def test_an_item_with_no_change_set_owes_the_public_nothing():
+    from cases.domain import PublicationState
+
+    assert case_store._publication_state({}) is PublicationState.NOT_REQUIRED
+
+
+def test_applied_and_verified_are_different_things_to_tell_the_reporter():
+    from cases.domain import PublicationState
+
+    applied = {"apply_status": "applied", "public_projection_verified_at": None}
+    verified = {"apply_status": "applied", "public_projection_verified_at": "2026-08-19"}
+
+    # Telling somebody their correction is live before anyone looked at the page
+    # is the claim this distinction exists to prevent.
+    assert case_store._publication_state(applied) is PublicationState.APPLIED
+    assert case_store._publication_state(verified) is PublicationState.VERIFIED
+
+
+def test_a_withdrawn_change_reads_as_rolled_back_not_as_done():
+    from cases.domain import PublicationState
+
+    assert case_store._publication_state(
+        {"apply_status": "rolled_back", "public_projection_verified_at": "2026-08-19"}
+    ) is PublicationState.ROLLED_BACK

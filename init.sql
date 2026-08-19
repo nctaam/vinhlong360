@@ -1006,7 +1006,13 @@ BEFORE UPDATE OF case_id ON correction_items
 FOR EACH ROW EXECUTE FUNCTION enforce_linked_correction_item_same_case();
 
 DROP TRIGGER IF EXISTS correction_change_sets_immutable ON correction_change_sets;
-CREATE TRIGGER correction_change_sets_immutable BEFORE UPDATE OR DELETE ON correction_change_sets
+-- Content is frozen; the two lifecycle columns (apply_status,
+-- public_projection_verified_at) are what publication writes. See 081.
+CREATE TRIGGER correction_change_sets_immutable
+BEFORE UPDATE OF case_id, base_entity_revision, before_patch, after_patch, inverse_patch,
+                 evidence_refs, policy_revision, risk_class, decision_maker_ref,
+                 reviewer_ref, created_at
+    OR DELETE ON correction_change_sets
 FOR EACH ROW EXECUTE FUNCTION reject_case_ledger_mutation();
 DROP TRIGGER IF EXISTS correction_change_set_items_immutable ON correction_change_set_items;
 CREATE TRIGGER correction_change_set_items_immutable BEFORE UPDATE OR DELETE ON correction_change_set_items

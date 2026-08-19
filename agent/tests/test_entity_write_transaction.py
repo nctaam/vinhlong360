@@ -199,6 +199,9 @@ def test_load_for_update_reports_the_current_revision(pg_database):
     assert type(snapshot) is EntitySnapshot
     assert snapshot.revision == 3
     assert snapshot.values["summary"] == "tóm tắt cũ"
+    # attributes rides along because a nested correction (attributes.phone) has to
+    # merge into the stored map, and reading it outside this lock would race.
+    assert "attributes" in snapshot.values
 
 
 # ── The trust marker is not editable here ──

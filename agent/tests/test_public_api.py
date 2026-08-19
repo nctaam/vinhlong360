@@ -75,3 +75,20 @@ def test_public_projection_removes_legacy_verified_at() -> None:
         {"id": "entity-1", "verifiedAt": "2026-07-27T00:00:00Z"}
     )
     assert "verifiedAt" not in projected
+
+
+# ── The revision the projection is serving (publication verification reads it) ──
+
+def test_the_projection_states_the_revision_it_is_serving():
+    from public_api import _public_entity_revision
+
+    assert _public_entity_revision({"revision": 8}) == 8
+
+
+def test_a_missing_or_unusable_revision_reads_as_the_first_one():
+    from public_api import _public_entity_revision
+
+    # Never None and never zero: verification compares this number, and a blank
+    # would compare equal to nothing and quietly pass.
+    for entity in ({}, {"revision": None}, {"revision": "x"}, {"revision": 0}):
+        assert _public_entity_revision(entity) == 1
