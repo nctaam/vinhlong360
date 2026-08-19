@@ -248,6 +248,10 @@ class ChangeSetDraft:
     apply_status: str = "pending"
 
 
+# The plan's locked type name for an immutable change bundle.
+CorrectionChangeSet = ChangeSetDraft
+
+
 def build_patches(draft: ChangeSetDraft) -> tuple[dict, dict, dict]:
     """Before, after, and the inverse that undoes after without recomputation."""
     before = {change.field_path: change.before_value for change in draft.changes}

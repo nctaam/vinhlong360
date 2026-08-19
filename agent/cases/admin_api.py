@@ -308,6 +308,7 @@ async def get_case_workbench(request: Request, case_id: str):
         with _store().transaction() as transaction:
             snapshot = transaction.load_case(case_id)
             items = transaction.load_correction_items(case_id)
+            change_set = transaction.latest_change_set_for_case(case_id)
     except Exception as error:  # noqa: BLE001
         raise _fail(error) from error
     return {
@@ -317,6 +318,14 @@ async def get_case_workbench(request: Request, case_id: str):
         "disposition_family": str(snapshot.disposition_family),
         "current_revision": snapshot.current_revision,
         "promise_health": str(snapshot.promise_health),
+        # What apply/verify/rollback act on. Without this the workbench could
+        # only post an empty change_set_id, which no command accepts.
+        "change_set": None if change_set is None else {
+            "change_set_id": str(change_set["change_set_id"]),
+            "apply_status": str(change_set["apply_status"]),
+            "risk_class": str(change_set["risk_class"]),
+            "base_entity_revision": int(change_set["base_entity_revision"]),
+        },
         "items": [
             {
                 "item_id": item.item_id,
@@ -668,25 +677,35 @@ class DecisionBody(BaseModel):
     item_id: StrictStr
     outcome_code: StrictStr
     reason_code: StrictStr = Field(max_length=200)
-    risk_class: StrictStr
+    # Accepted for compatibility, never trusted: risk comes from the stored item.
+    risk_class: StrictStr | None = None
     reviewer_ref: StrictStr | None = Field(default=None, max_length=200)
 
 
 @case_admin_router.post("/decisions", dependencies=[_guard("item.decide")])
 async def decide_case_item(request: Request, body: DecisionBody):
     from .correction import DecideItemCommand, decide_item, load_evidence_records
-    from .domain import CorrectionOutcome, RiskClass
+    from .domain import CorrectionOutcome
 
     try:
         # Read the evidence back out of storage rather than trusting the caller
-        # to say what supported their own ruling.
+        # to say what supported their own ruling — and the risk class likewise:
+        # a caller-supplied risk would let any decision be judged by R1's rules.
         evidence = load_evidence_records(body.case_id, body.item_id)
+        with _store().transaction() as transaction:
+            stored = {
+                item.item_id: item
+                for item in transaction.load_correction_items(body.case_id)
+            }.get(body.item_id)
+        if stored is None:
+            raise StepUpRefused("correction_item_not_found",
+                                "That item is not on this case.", status=404)
         outcome = decide_item(
             DecideItemCommand(
                 case_id=body.case_id, item_id=body.item_id,
                 outcome_code=CorrectionOutcome(body.outcome_code),
                 reason_code=body.reason_code, evidence=evidence,
-                risk_class=RiskClass(body.risk_class), actor=_actor(request),
+                risk_class=stored.risk_class, actor=_actor(request),
                 reviewer_ref=body.reviewer_ref,
             ),
             now=_now(),
@@ -695,7 +714,7 @@ async def decide_case_item(request: Request, body: DecisionBody):
         raise _fail(error) from error
     from . import metrics as _metrics
 
-    _metrics.observe("decided", channel="web", risk_class=body.risk_class,
+    _metrics.observe("decided", channel="web", risk_class=str(stored.risk_class),
                      case_id=body.case_id)
     return {"item_id": outcome.item_id, "outcome_code": str(outcome.outcome_code),
             "reason_code": outcome.reason_code}
@@ -712,12 +731,20 @@ class BuildChangeSetBody(BaseModel):
 
 @case_admin_router.post("/change-sets", dependencies=[_guard("changeset.build")])
 async def build_case_change_set(request: Request, body: BuildChangeSetBody):
-    from .correction import build_change_set
+    from .correction import build_change_set, load_evidence_records
 
     try:
+        # Lineage comes from storage, not from the caller's say-so. An empty
+        # list from the UI means "use what was recorded", and a build with no
+        # recorded evidence still fails exactly as the domain demands.
+        evidence_refs = tuple(body.evidence_refs) or tuple(
+            record.evidence_id
+            for item_id in body.item_ids
+            for record in load_evidence_records(body.case_id, item_id)
+        )
         draft = build_change_set(
             body.case_id, tuple(body.item_ids), _actor(request), body.expected_revision,
-            evidence_refs=tuple(body.evidence_refs), now=_now(),
+            evidence_refs=evidence_refs, now=_now(),
         )
     except Exception as error:  # noqa: BLE001
         raise _fail(error) from error

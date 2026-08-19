@@ -802,6 +802,20 @@ class CaseTransaction:
             raise ValueError("change_set_spans_entities")
         return entity_ids.pop(), tuple(str(item["item_id"]) for item in items)
 
+    def latest_change_set_for_case(self, case_id: str) -> dict | None:
+        """The change set the workbench acts on: newest first, safe fields only."""
+        self._require_active()
+        row = self._db._fetchone(
+            self._conn,
+            """
+            SELECT change_set_id, apply_status, risk_class, base_entity_revision
+            FROM correction_change_sets WHERE case_id = %s
+            ORDER BY created_at DESC LIMIT 1
+            """,
+            (case_id,),
+        )
+        return None if row is None else _row_dict(self._db, row)
+
     def set_change_set_apply_status(
         self, change_set_id: str, *, expected_status: str, status: str,
         verified_at: datetime | None = None,

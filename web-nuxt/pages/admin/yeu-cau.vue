@@ -56,23 +56,43 @@ async function openWorkItem(item: AdminQueueItem) {
   })
 }
 
+// The backend lease is thirty minutes (work_control lease_duration_seconds);
+// a cosmetic countdown that disagrees teaches operators to distrust the clock.
+const LEASE_SECONDS = 30 * 60
+const HEARTBEAT_EVERY_SECONDS = 5 * 60
+let heartbeatTimer: ReturnType<typeof setInterval> | null = null
+
 async function claimSelected(item: AdminQueueItem) {
   await run(async () => {
     await cases.claim(item.work_item_id, item.revision)
     claimedWorkItem.value = item
-    leaseSecondsLeft.value = 15 * 60
+    leaseSecondsLeft.value = LEASE_SECONDS
     if (leaseTimer) clearInterval(leaseTimer)
     leaseTimer = setInterval(() => {
       if (leaseSecondsLeft.value != null && leaseSecondsLeft.value > 0) {
         leaseSecondsLeft.value -= 1
       }
     }, 1000)
+    // Heartbeats keep the lease honest while the operator is actually here;
+    // each success resets the countdown to what the server just granted.
+    if (heartbeatTimer) clearInterval(heartbeatTimer)
+    heartbeatTimer = setInterval(() => {
+      cases.heartbeat(item.work_item_id)
+        .then(() => { leaseSecondsLeft.value = LEASE_SECONDS })
+        .catch(() => {})
+    }, HEARTBEAT_EVERY_SECONDS * 1000)
     await cases.loadQueue()
   })
 }
 
 onBeforeUnmount(() => {
   if (leaseTimer) clearInterval(leaseTimer)
+  if (heartbeatTimer) clearInterval(heartbeatTimer)
+  // Walking away releases the work instead of squatting on the lease until it
+  // rots; a failed release simply lets expiry do its job.
+  if (claimedWorkItem.value) {
+    cases.release(claimedWorkItem.value.work_item_id).catch(() => {})
+  }
 })
 
 await useAsyncData('admin-case-queue', async () => {
@@ -115,20 +135,24 @@ await useAsyncData('admin-case-queue', async () => {
           :conflict="conflict"
           :busy="busy"
           @reload="run(() => cases.openCase(cases.current.value!.case_id))"
-          @decide="body => run(() => cases.decide({ case_id: cases.current.value!.case_id, risk_class: 'R1', ...body }))"
+          @decide="body => run(() => cases.decide({ case_id: cases.current.value!.case_id, ...body }))"
           @build-change-set="itemIds => run(() => cases.buildChangeSet({
             case_id: cases.current.value!.case_id, item_ids: itemIds,
             expected_revision: cases.current.value!.current_revision, evidence_refs: [],
           }))"
           @apply-change-set="run(() => cases.applyChangeSet({
-            case_id: cases.current.value!.case_id, change_set_id: '',
+            case_id: cases.current.value!.case_id,
+            change_set_id: cases.current.value!.change_set!.change_set_id,
             expected_case_revision: cases.current.value!.current_revision,
+            expected_entity_revision: cases.current.value!.change_set!.base_entity_revision,
           }))"
           @verify-change-set="run(() => cases.verifyChangeSet({
-            case_id: cases.current.value!.case_id, change_set_id: '',
+            case_id: cases.current.value!.case_id,
+            change_set_id: cases.current.value!.change_set!.change_set_id,
           }))"
           @rollback-change-set="run(() => cases.rollbackChangeSet({
-            case_id: cases.current.value!.case_id, change_set_id: '',
+            case_id: cases.current.value!.case_id,
+            change_set_id: cases.current.value!.change_set!.change_set_id,
             expected_case_revision: cases.current.value!.current_revision,
           }))"
         />

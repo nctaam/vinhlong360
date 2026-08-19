@@ -1018,3 +1018,23 @@ def test_a_dead_rotation_bearer_is_refused_for_every_reason_alike():
             PostgresCaseStore._require_live_rotation_bearer(
                 {**live, **poison}, now=now, current_user_id=None,
             )
+
+
+def test_the_workbench_reads_the_newest_change_set_first():
+    database = _RowsDatabase(rows=[{
+        "change_set_id": "cs-2", "apply_status": "pending",
+        "risk_class": "R1", "base_entity_revision": 7,
+    }])
+
+    row = _transaction(database).latest_change_set_for_case("case-1")
+
+    sql, params = database.statements[0]
+    # Newest first: after a rollback the workbench must act on the set that is
+    # actually pending, not on the one history already answered.
+    assert "ORDER BY created_at DESC LIMIT 1" in sql
+    assert params == ("case-1",)
+    assert row["change_set_id"] == "cs-2"
+
+
+def test_a_case_with_no_change_set_reads_as_none_not_as_an_error():
+    assert _transaction(_RowsDatabase()).latest_change_set_for_case("case-1") is None

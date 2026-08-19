@@ -183,3 +183,32 @@ def test_the_provider_classifies_a_missing_answer_as_retryable():
     assert unknown.delivered is False
     assert unknown.retryable is True
     assert unknown.error_code == "provider_unavailable"
+
+
+def test_a_missing_key_in_production_is_a_refusal_not_a_delivery(monkeypatch):
+    from config import settings
+    from sms_provider import EsmsProvider
+
+    monkeypatch.setattr(type(settings), "is_production", property(lambda self: True))
+    provider = EsmsProvider(api_key="", secret="", brandname="")
+
+    outcome = provider.send("0901234567", "tin nhắn")
+
+    # "Sent" while nothing left the building would settle the outbox as done and
+    # leave the reporter waiting on a message that never existed.
+    assert outcome.delivered is False
+    assert outcome.error_code == "provider_unconfigured"
+    assert outcome.retryable is False
+
+
+def test_dev_without_a_key_still_suppresses_quietly(monkeypatch):
+    from config import settings
+    from sms_provider import EsmsProvider
+
+    monkeypatch.setattr(type(settings), "is_production", property(lambda self: False))
+    provider = EsmsProvider(api_key="", secret="", brandname="")
+
+    outcome = provider.send("0901234567", "tin nhắn")
+
+    assert outcome.delivered is True
+    assert outcome.error_code == "dev_no_provider"

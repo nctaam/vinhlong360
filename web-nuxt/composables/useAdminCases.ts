@@ -33,6 +33,13 @@ export interface AdminCaseItem {
   publication_state: string
 }
 
+export interface AdminCaseChangeSet {
+  change_set_id: string
+  apply_status: string
+  risk_class: string
+  base_entity_revision: number
+}
+
 export interface AdminCaseDetail {
   case_id: string
   phase: string
@@ -41,6 +48,7 @@ export interface AdminCaseDetail {
   current_revision: number
   promise_health: string
   items: AdminCaseItem[]
+  change_set?: AdminCaseChangeSet | null
 }
 
 /** A 409 carries the truth the screen no longer shows. */

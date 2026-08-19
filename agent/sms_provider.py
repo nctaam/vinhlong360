@@ -118,6 +118,14 @@ class EsmsProvider:
         )
 
     def _dev_result(self, phone: str) -> SmsDeliveryResult:
+        from config import settings
+
+        if settings.is_production:
+            # A missing key in production is a misconfiguration, not a delivery.
+            # Pretending success here would settle the outbox as "sent" while the
+            # reporter waits for a message that never left the building.
+            logger.error("SMS provider unconfigured in production — delivery refused")
+            return SmsDeliveryResult(False, "provider_unconfigured", False)
         logger.debug("DEV MODE — SMS to %s suppressed (no provider key)", mask_phone(phone))
         return SmsDeliveryResult(True, "dev_no_provider", False)
 
@@ -156,3 +164,7 @@ class EsmsProvider:
         return await asyncio.to_thread(
             self.send, phone, message, delivery_key=delivery_key
         )
+
+
+# The plan's locked interface name; EsmsProvider is its implementation.
+SmsProvider = EsmsProvider

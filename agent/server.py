@@ -1222,6 +1222,14 @@ app.include_router(public_router)
 # flags are off, so mounting it is inert until rollout is explicit.
 app.include_router(case_public_router)
 app.include_router(case_admin_router)
+# The kernel's composition root: with the flag off this is a no-op and every
+# case route stays a clean 404. With it on, every case module is configured
+# against the live database — or none are, and the reason is in the log.
+from cases.wiring import wire_case_kernel  # noqa: E402
+from config import settings as _case_settings  # noqa: E402
+from database import db as _case_db  # noqa: E402
+
+wire_case_kernel(_case_db, _case_settings)
 app.include_router(saved_router)
 app.include_router(plans_router)
 app.include_router(plans_public_router)

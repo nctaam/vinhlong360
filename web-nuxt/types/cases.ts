@@ -40,6 +40,9 @@ export interface CaseItemPublication {
   state: CasePublicationState
 }
 
+// Locked cross-task name from the plan; CaseStatus is its shape.
+export type PublicCaseStatus = CaseStatus
+
 export interface CaseStatus {
   publicReference: string
   receivedAt: string

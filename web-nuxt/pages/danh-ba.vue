@@ -338,9 +338,6 @@ useHead(() => ({
 .fac-report:hover:not(:disabled) { color: var(--primary-fg); background: rgba(var(--primary-rgb), .06); }
 .fac-report:active:not(:disabled) { transform: scale(.97); }
 .fac-report:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-.fac-report:disabled { cursor: default; text-decoration: none; color: var(--success); }
-.fac-report-form { margin-top: var(--space-2); display: flex; flex-direction: column; gap: var(--space-2); }
-.fac-report-actions { display: flex; gap: var(--space-2); }
 .fac-skeleton { display: grid; gap: var(--space-3); }
 .fac-sk-item { border: .5px solid var(--line); border-left: 4px solid var(--secondary-fg); border-radius: var(--radius-lg); padding: var(--space-5); background: var(--card); display: flex; flex-direction: column; gap: var(--space-2); }
 .sk-bar {

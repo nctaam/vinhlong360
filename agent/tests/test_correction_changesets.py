@@ -335,3 +335,10 @@ def test_a_change_set_is_refused_when_the_entity_moved_since_intake(pg_database)
             conn, "SELECT count(*) AS n FROM correction_change_sets WHERE case_id=%s", (case_id,)
         )["n"]
     assert count == 0
+
+
+def test_the_plan_locked_type_name_reaches_the_same_class():
+    from cases.correction import ChangeSetDraft, CorrectionChangeSet
+
+    # Cross-task code written against the plan's name must find the real thing.
+    assert CorrectionChangeSet is ChangeSetDraft

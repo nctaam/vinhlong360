@@ -39,20 +39,10 @@ const DECISION_REASONS = [
   { code: 'unable_to_verify', label: 'Không kiểm chứng được' },
 ] as const
 
-const PROMISE_LABEL: Record<string, string> = {
-  on_track: 'Đúng hạn',
-  at_risk: 'Sắp trễ hạn',
-  breached: 'Đã trễ hạn',
-  recovery: 'Đang khắc phục sự cố',
-}
-
-const PUBLICATION_LABEL: Record<string, string> = {
-  not_required: 'Không cần đăng',
-  pending: 'Chờ đăng',
-  applied: 'Đã ghi, chờ kiểm chứng',
-  verified: 'Đã kiểm chứng trên trang',
-  rolled_back: 'Đã hoàn tác',
-}
+import {
+  CASE_ADMIN_PUBLICATION_LABEL as PUBLICATION_LABEL,
+  CASE_HEALTH_LABEL as PROMISE_LABEL,
+} from '../../../utils/caseLabels'
 
 const decideItemId = ref('')
 const decideOutcome = ref('corrected')
@@ -62,8 +52,11 @@ const holds = (scope: string) => props.scopes.includes('*') || props.scopes.incl
 // Visibility follows the scope, authorization stays with the server: a crafted
 // click without the scope still gets the backend's 403.
 const canDecide = computed(() => holds('correction.decide'))
-const canPublish = computed(() => holds('publication.apply'))
-const canVerify = computed(() => holds('publication.verify'))
+// Publication acts on a change set; with none built there is nothing to offer,
+// and a button that can only post an empty id is a lie about capability.
+const hasChangeSet = computed(() => Boolean(props.detail.change_set))
+const canPublish = computed(() => holds('publication.apply') && hasChangeSet.value)
+const canVerify = computed(() => holds('publication.verify') && hasChangeSet.value)
 
 const leaseLabel = computed(() => {
   if (props.leaseSecondsLeft == null) return null

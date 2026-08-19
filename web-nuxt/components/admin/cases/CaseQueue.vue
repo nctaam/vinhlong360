@@ -4,12 +4,10 @@
 // every state carries its words, so a monochrome screen reads the same.
 import type { AdminQueueItem } from '../../../composables/useAdminCases'
 
-const HEALTH_LABEL: Record<string, string> = {
-  on_track: 'Đúng hạn',
-  at_risk: 'Sắp trễ hạn',
-  breached: 'Đã trễ hạn',
-  recovery: 'Đang khắc phục',
-}
+import {
+  CASE_HEALTH_LABEL as HEALTH_LABEL,
+  CASE_KIND_LABEL as KIND_LABEL,
+} from '../../../utils/caseLabels'
 
 defineProps<{
   items: AdminQueueItem[]
@@ -18,11 +16,6 @@ defineProps<{
 
 const emit = defineEmits<{ (event: 'open', item: AdminQueueItem): void }>()
 
-const KIND_LABEL: Record<string, string> = {
-  decide: 'Cần quyết định',
-  publication: 'Cần đăng',
-  verify: 'Cần kiểm chứng',
-}
 </script>
 
 <template>

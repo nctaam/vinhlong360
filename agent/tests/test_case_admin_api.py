@@ -329,27 +329,45 @@ def test_every_command_in_the_table_now_has_a_route_except_guided_intake():
     assert set(CASE_ACTION_SCOPE) - wired == set()
 
 
-def test_a_ruling_through_the_route_is_observed_as_decided(monkeypatch):
+def test_a_ruling_is_judged_and_observed_at_the_stored_risk(monkeypatch):
     import asyncio
+    from contextlib import contextmanager
 
     from cases.admin_api import DecisionBody, decide_case_item
+    from cases.domain import RiskClass
 
     events = []
+    seen = {}
     monkeypatch.setattr("cases.metrics.observe",
                         lambda kind, **kw: events.append((kind, kw.get("risk_class"))) or True)
     monkeypatch.setattr("cases.correction.load_evidence_records", lambda case_id, item_id: ())
-    monkeypatch.setattr(
-        "cases.correction.decide_item",
-        lambda command, now: SimpleNamespace(item_id=command.item_id,
-                                            outcome_code="corrected",
-                                            reason_code=command.reason_code),
-    )
 
+    def fake_decide(command, now):
+        seen["risk"] = command.risk_class
+        return SimpleNamespace(item_id=command.item_id, outcome_code="corrected",
+                               reason_code=command.reason_code)
+
+    monkeypatch.setattr("cases.correction.decide_item", fake_decide)
+
+    class _Tx:
+        def load_correction_items(self, case_id):
+            return (SimpleNamespace(item_id="i-1", risk_class=RiskClass.R2),)
+
+    class _Store:
+        @contextmanager
+        def transaction(self):
+            yield _Tx()
+
+    monkeypatch.setattr("cases.admin_api._store", lambda: _Store())
+
+    # The caller claims R1; the stored item says R2. Storage wins, or any
+    # decision could be judged by the easiest rules on offer.
     body = DecisionBody(case_id="c-1", item_id="i-1", outcome_code="corrected",
                         reason_code="source_confirms_change", risk_class="R1")
     asyncio.run(decide_case_item(SimpleNamespace(state=SimpleNamespace()), body))
 
-    assert events == [("decided", "R1")]
+    assert seen["risk"] is RiskClass.R2
+    assert events == [("decided", "RiskClass.R2")] or events == [("decided", "R2")]
 
 
 def test_the_queue_route_serialises_the_full_grammar(monkeypatch):

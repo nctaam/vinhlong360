@@ -31,6 +31,10 @@ const DETAIL: AdminCaseDetail = {
     item_id: 'i-1', entity_id: 'p-quan-com', field_path: 'attributes.phone',
     risk_class: 'R1', evidence_level: 'E3', publication_state: 'pending',
   }],
+  change_set: {
+    change_set_id: 'cs-1', apply_status: 'pending',
+    risk_class: 'R1', base_entity_revision: 7,
+  },
 }
 
 const ALL_SCOPES = ['service.operator', 'correction.decide',
@@ -141,6 +145,18 @@ describe('the workbench', () => {
     const publisher = workbench({ scopes: ['publication.apply'] })
     expect(publisher.find('[data-role="apply"]').exists()).toBe(true)
     expect(publisher.find('[data-role="verify"]').exists()).toBe(false)
+  })
+
+  it('offers no publication action while no change set exists', () => {
+    const bare = workbench({ detail: { ...DETAIL, change_set: null } })
+
+    // A button that can only post an empty change_set_id is a lie about
+    // capability; with nothing built, publication simply is not offered.
+    expect(bare.find('[data-role="apply"]').exists()).toBe(false)
+    expect(bare.find('[data-role="verify"]').exists()).toBe(false)
+    expect(bare.find('[data-role="rollback"]').exists()).toBe(false)
+    // Deciding is still there: that is the work that CREATES the change set.
+    expect(bare.find('[data-role="decision-form"]').exists()).toBe(true)
   })
 })
 
