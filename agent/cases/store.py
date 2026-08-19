@@ -903,6 +903,136 @@ class CaseTransaction:
             (freeze_source,),
         ) is not None
 
+    # ── Capacity evidence (Task 18) ──
+
+    def record_capacity_event(self, *, kind: str, channel: str, risk_class,
+                              case_id, duration_seconds, metadata: dict,
+                              observed_at: datetime) -> None:
+        self._require_active()
+        self._db._execute(
+            self._conn,
+            """
+            INSERT INTO case_capacity_events
+                (case_id, channel, risk_class, event_kind, observed_at,
+                 duration_seconds, metadata)
+            VALUES (%s, %s, %s, %s, %s, %s, %s::jsonb)
+            """,
+            (case_id, channel, risk_class, kind, observed_at,
+             duration_seconds, json.dumps(metadata)),
+        )
+
+    def capacity_daily_counts(self, start_day, end_day) -> list[dict]:
+        """One row per UTC day that has any events; the caller finds the gaps."""
+        self._require_active()
+        rows = self._db._fetchall(
+            self._conn,
+            """
+            SELECT (observed_at AT TIME ZONE 'UTC')::date AS day,
+                   COALESCE(risk_class, 'none') AS risk_class, channel,
+                   count(*) FILTER (WHERE event_kind = 'received') AS arrivals,
+                   count(*) FILTER (WHERE event_kind = 'completed') AS completions,
+                   count(*) AS events
+            FROM case_capacity_events
+            WHERE (observed_at AT TIME ZONE 'UTC')::date BETWEEN %s AND %s
+            GROUP BY 1, 2, 3 ORDER BY 1
+            """,
+            (start_day, end_day),
+        )
+        days: dict = {}
+        for row in rows:
+            item = _row_dict(self._db, row)
+            entry = days.setdefault(item["day"], {
+                "day": item["day"], "arrivals": 0, "completions": 0,
+                "by_risk": {}, "by_channel": {},
+            })
+            entry["arrivals"] += int(item["arrivals"] or 0)
+            entry["completions"] += int(item["completions"] or 0)
+            events = int(item["events"] or 0)
+            risk = str(item["risk_class"])
+            channel = str(item["channel"])
+            entry["by_risk"][risk] = entry["by_risk"].get(risk, 0) + events
+            entry["by_channel"][channel] = entry["by_channel"].get(channel, 0) + events
+        return [days[key] for key in sorted(days)]
+
+    # ── Retention (Task 18) ──
+
+    def _count_execute(self, sql: str, params: tuple) -> int:
+        cursor = self._db._execute(self._conn, sql, params)
+        return int(getattr(cursor, "rowcount", 0) or 0)
+
+    def purge_expired_access_sessions(self, *, now: datetime) -> int:
+        self._require_active()
+        return self._count_execute(
+            "DELETE FROM case_access_sessions WHERE expires_at < %s", (now,)
+        )
+
+    def purge_expired_idempotency(self, *, now: datetime) -> int:
+        self._require_active()
+        return self._count_execute(
+            "DELETE FROM case_idempotency WHERE expires_at < %s", (now,)
+        )
+
+    def purge_expired_contact_challenges(self, *, now: datetime) -> int:
+        self._require_active()
+        return self._count_execute(
+            "DELETE FROM case_contact_challenges WHERE expires_at < %s", (now,)
+        )
+
+    def redact_closed_case_contacts(self, *, closed_before: datetime) -> int:
+        """The optional reply address, 90 days after a terminal close.
+
+        The interaction row stays — that a contact once existed is part of the
+        lineage; the address itself is what stops being ours to hold.
+        """
+        self._require_active()
+        return self._count_execute(
+            """
+            UPDATE case_interactions SET payload_enc = NULL
+            WHERE payload_enc IS NOT NULL
+              AND case_id IN (
+                  SELECT case_id FROM cases
+                  WHERE closed_at IS NOT NULL AND closed_at < %s
+              )
+            """,
+            (closed_before,),
+        )
+
+    def redact_private_payloads(self, *, closed_before: datetime,
+                                excluded_case_ids: tuple) -> tuple[int, tuple]:
+        """Encrypted evidence and values, 365 days on — unless a hold is named."""
+        self._require_active()
+        exclusion = ""
+        params: tuple = (closed_before,)
+        if excluded_case_ids:
+            exclusion = " AND case_id != ALL(%s::uuid[])"
+            params = (closed_before, list(excluded_case_ids))
+        eligible = (
+            "SELECT case_id FROM cases WHERE closed_at IS NOT NULL"
+            " AND closed_at < %s" + exclusion
+        )
+        count = self._count_execute(
+            f"UPDATE correction_evidence SET content_enc = NULL"
+            f" WHERE content_enc IS NOT NULL AND case_id IN ({eligible})",
+            params,
+        )
+        count += self._count_execute(
+            f"UPDATE correction_items SET reported_value_enc = NULL,"
+            f" proposed_value_enc = NULL"
+            f" WHERE (reported_value_enc IS NOT NULL OR proposed_value_enc IS NOT NULL)"
+            f" AND case_id IN ({eligible})",
+            params,
+        )
+        return count, tuple(excluded_case_ids)
+
+    def deidentify_capacity_events(self, *, observed_before: datetime) -> int:
+        """After 730 days the numbers stay and the case linkage goes."""
+        self._require_active()
+        return self._count_execute(
+            "UPDATE case_capacity_events SET case_id = NULL"
+            " WHERE case_id IS NOT NULL AND observed_at < %s",
+            (observed_before,),
+        )
+
     def set_promise_health(self, case_id: str, health: str, *, observed_at: datetime) -> None:
         self._require_active()
         self._db._execute(

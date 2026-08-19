@@ -883,3 +883,57 @@ def test_the_freeze_probe_asks_only_for_the_marker_row():
     sql, params = database.statements[0]
     assert "import_result = 'freeze'" in sql
     assert params == ("__correction_write_freeze__",)
+
+
+# ── Capacity and retention (Task 18) ──
+
+def test_a_capacity_event_travels_with_its_grouping_and_json_metadata():
+    database = _RowsDatabase()
+    now = datetime(2026, 8, 19, 9, 0, tzinfo=timezone.utc)
+
+    _transaction(database).record_capacity_event(
+        kind="received", channel="web", risk_class="R1", case_id=None,
+        duration_seconds=None, metadata={"queue": "decide"}, observed_at=now,
+    )
+
+    sql, params = database.statements[0]
+    assert "INSERT INTO case_capacity_events" in sql
+    assert params[3] == "received" and '"queue"' in params[6]
+
+
+def test_contact_redaction_only_reaches_terminally_closed_cases():
+    database = _RowsDatabase()
+
+    _transaction(database).redact_closed_case_contacts(
+        closed_before=datetime(2026, 5, 19, tzinfo=timezone.utc)
+    )
+
+    sql, _params = database.statements[0]
+    # An open case has no terminal close, so its clock has not started.
+    assert "closed_at IS NOT NULL" in sql
+    assert "payload_enc = NULL" in sql
+
+
+def test_payload_redaction_names_its_holds_in_the_query():
+    database = _RowsDatabase()
+
+    count, held = _transaction(database).redact_private_payloads(
+        closed_before=datetime(2025, 8, 19, tzinfo=timezone.utc),
+        excluded_case_ids=("case-held",),
+    )
+
+    sql, params = database.statements[0]
+    assert "case_id != ALL(%s::uuid[])" in sql
+    assert held == ("case-held",)
+
+
+def test_deidentifying_capacity_keeps_the_rows_and_drops_the_link():
+    database = _RowsDatabase()
+
+    _transaction(database).deidentify_capacity_events(
+        observed_before=datetime(2024, 8, 19, tzinfo=timezone.utc)
+    )
+
+    sql, _params = database.statements[0]
+    # UPDATE, not DELETE: the numbers stay; the person-linkable key goes.
+    assert sql.startswith("UPDATE case_capacity_events SET case_id = NULL")
