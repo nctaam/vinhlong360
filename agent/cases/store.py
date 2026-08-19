@@ -790,6 +790,51 @@ class CaseTransaction:
         if row is None:
             raise ChangeSetStateConflict(change_set_id)
 
+    def grant_admin_access(self, *, case_id: str, actor_ref: str, scope: str,
+                           session_digest: str, expires_at: datetime) -> None:
+        """A short-lived clearance to read what somebody actually reported.
+
+        Only the digest is stored. The operator holds the secret for as long as
+        the grant lasts, and a database copy could not be used to impersonate it.
+        """
+        self._require_active()
+        self._db._execute(
+            self._conn,
+            """
+            INSERT INTO case_admin_access_sessions
+                (case_id, actor_ref, scope, session_digest, expires_at)
+            VALUES (%s, %s, %s, %s, %s)
+            """,
+            (case_id, actor_ref, scope, session_digest, expires_at),
+        )
+
+    def revoke_admin_access(self, *, case_id: str, actor_ref: str, now: datetime) -> None:
+        self._require_active()
+        self._db._execute(
+            self._conn,
+            """
+            UPDATE case_admin_access_sessions SET revoked_at = %s
+            WHERE case_id = %s AND actor_ref = %s AND revoked_at IS NULL
+            """,
+            (now, case_id, actor_ref),
+        )
+
+    def admin_access_is_live(self, *, case_id: str, actor_ref: str, scope: str,
+                             session_digest: str, now: datetime) -> bool:
+        """Every condition in one query: right case, right person, unexpired, unrevoked."""
+        self._require_active()
+        row = self._db._fetchone(
+            self._conn,
+            """
+            SELECT 1 FROM case_admin_access_sessions
+            WHERE case_id = %s AND actor_ref = %s AND scope = %s AND session_digest = %s
+              AND revoked_at IS NULL AND expires_at > %s
+            LIMIT 1
+            """,
+            (case_id, actor_ref, scope, session_digest, now),
+        )
+        return row is not None
+
     def set_promise_health(self, case_id: str, health: str, *, observed_at: datetime) -> None:
         self._require_active()
         self._db._execute(

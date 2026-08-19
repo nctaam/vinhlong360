@@ -756,3 +756,62 @@ def test_a_withdrawn_change_reads_as_rolled_back_not_as_done():
     assert case_store._publication_state(
         {"apply_status": "rolled_back", "public_projection_verified_at": "2026-08-19"}
     ) is PublicationState.ROLLED_BACK
+
+
+# ── Private-data clearance (Task 13) ──
+
+def test_a_clearance_is_stored_by_digest_and_nothing_else():
+    database = _RowsDatabase()
+
+    _transaction(database).grant_admin_access(
+        case_id="case-1", actor_ref="user:7", scope="case.private_evidence",
+        session_digest="d" * 64,
+        expires_at=datetime(2026, 8, 19, 9, 15, tzinfo=timezone.utc),
+    )
+
+    sql, params = database.statements[0]
+    assert "INSERT INTO case_admin_access_sessions" in sql
+    assert "session_digest" in sql
+    # The column list must not carry the secret itself under any name.
+    assert "secret" not in sql and "capability" not in sql
+    assert "d" * 64 in params
+
+
+def test_checking_a_clearance_tests_every_condition_in_one_query():
+    database = _RowsDatabase(rows=[{"?column?": 1}])
+
+    live = _transaction(database).admin_access_is_live(
+        case_id="case-1", actor_ref="user:7", scope="case.private_evidence",
+        session_digest="d" * 64, now=datetime(2026, 8, 19, 9, 5, tzinfo=timezone.utc),
+    )
+
+    sql, _params = database.statements[0]
+    assert live is True
+    # Splitting these would let a revoked or expired grant pass one check and be
+    # judged on another.
+    for condition in ("case_id = %s", "actor_ref = %s", "scope = %s",
+                      "session_digest = %s", "revoked_at IS NULL", "expires_at > %s"):
+        assert condition in sql
+
+
+def test_an_absent_clearance_reads_as_absent_rather_than_erroring():
+    live = _transaction(_RowsDatabase()).admin_access_is_live(
+        case_id="case-1", actor_ref="user:7", scope="case.private_evidence",
+        session_digest="d" * 64, now=datetime(2026, 8, 19, 9, 5, tzinfo=timezone.utc),
+    )
+
+    assert live is False
+
+
+def test_revoking_takes_back_every_live_clearance_that_person_holds():
+    database = _RowsDatabase()
+
+    _transaction(database).revoke_admin_access(
+        case_id="case-1", actor_ref="user:7",
+        now=datetime(2026, 8, 19, 9, 5, tzinfo=timezone.utc),
+    )
+
+    sql, _params = database.statements[0]
+    assert "SET revoked_at = %s" in sql
+    # Not just the newest one: logging out has to close all of them.
+    assert "revoked_at IS NULL" in sql

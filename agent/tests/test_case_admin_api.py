@@ -35,9 +35,27 @@ class _AdminDouble:
 
 @pytest.fixture
 def admin_double(monkeypatch):
+    from config import settings
+
     double = _AdminDouble()
     monkeypatch.setitem(sys.modules, "admin", double)
+    monkeypatch.setattr(settings, "CASE_KERNEL_ENABLED", True, raising=False)
     return double
+
+
+def test_a_dormant_kernel_answers_404_before_it_checks_anybody_scope(monkeypatch):
+    from fastapi import HTTPException
+
+    from config import settings
+
+    monkeypatch.setattr(settings, "CASE_KERNEL_ENABLED", False, raising=False)
+
+    with pytest.raises(HTTPException) as excinfo:
+        _run(require_case_action("queue.view"))
+
+    # 403 would confirm the workbench is there and only the scope is missing.
+    assert excinfo.value.status_code == 404
+    assert excinfo.value.detail["code"] == "capability_unavailable"
 
 
 def _run(guard, request=None):
@@ -85,3 +103,200 @@ def test_the_module_does_not_export_a_bare_router_symbol():
     # A second module-level name `router` makes the static route registry read
     # the earlier route module as unmounted; this package learned that once.
     assert not hasattr(admin_api, "router")
+
+
+# ── Private-data clearance ──
+
+import os  # noqa: E402
+from datetime import datetime, timedelta, timezone  # noqa: E402
+from urllib.parse import parse_qs, urlparse  # noqa: E402
+
+import database  # noqa: E402
+from cases.security import CaseCrypto  # noqa: E402
+
+UTC = timezone.utc
+NOW = datetime(2026, 8, 19, 9, 0, tzinfo=UTC)
+MASTER_KEY = "0" * 43
+
+
+def _pg_url():
+    raw = os.environ.get("VL360_TEST_DATABASE_URL", "").strip()
+    if not raw:
+        return None
+    parsed = urlparse(raw)
+    if parsed.scheme not in {"postgres", "postgresql"} or parsed.hostname not in {
+        "localhost", "127.0.0.1", "::1",
+    }:
+        return None
+    if {"host", "hostaddr"} & parse_qs(parsed.query, keep_blank_values=True).keys():
+        return None
+    return raw
+
+
+TEST_DATABASE_URL = _pg_url()
+pg_only = pytest.mark.skipif(
+    TEST_DATABASE_URL is None,
+    reason="set VL360_TEST_DATABASE_URL to a disposable loopback PostgreSQL database",
+)
+
+
+@pytest.fixture
+def pg_case():
+    if TEST_DATABASE_URL is None:
+        pytest.skip("set VL360_TEST_DATABASE_URL to a disposable loopback PostgreSQL database")
+    import psycopg2
+    import psycopg2.extras
+
+    from cases.admin_api import configure_case_admin_api
+
+    database.psycopg2 = psycopg2
+    database.psycopg2.extras = psycopg2.extras
+    adapter = database.Database()
+    adapter._use_pg = True
+    adapter._dsn = TEST_DATABASE_URL
+    with adapter._conn(commit_on_success=False) as conn:
+        case_id = str(adapter._fetchone(
+            conn,
+            "INSERT INTO cases (service_kind, category, phase, activity, disposition_family,"
+            " reporter_privacy, owner_ref, current_revision, promise_policy_ref)"
+            " VALUES ('correction','correction','triage','active','undetermined','anonymous',"
+            " 'person:owner',1,'correction-pilot-v1') RETURNING case_id",
+            (),
+        )["case_id"])
+        conn.commit()
+    configure_case_admin_api(database=adapter, crypto=CaseCrypto(MASTER_KEY))
+    yield adapter, case_id
+    configure_case_admin_api(database=None, crypto=None)
+
+
+def _operator(ref="user:7"):
+    return SimpleNamespace(actor_ref=ref)
+
+
+@pg_only
+def test_a_fresh_grant_opens_the_report_for_the_person_who_earned_it(pg_case):
+    from cases.admin_api import grant_private_evidence_access, require_private_evidence_access
+
+    _adapter, case_id = pg_case
+
+    grant = grant_private_evidence_access(case_id, _operator(), now=NOW)
+    require_private_evidence_access(case_id, _operator(), grant.secret, now=NOW)
+
+    assert grant.expires_at == NOW + timedelta(minutes=15)
+
+
+@pg_only
+def test_only_the_digest_of_a_grant_is_ever_stored(pg_case):
+    from cases.admin_api import grant_private_evidence_access
+
+    adapter, case_id = pg_case
+
+    grant = grant_private_evidence_access(case_id, _operator(), now=NOW)
+
+    with adapter._conn(commit_on_success=False) as conn:
+        stored = adapter._fetchone(
+            conn,
+            "SELECT session_digest FROM case_admin_access_sessions WHERE case_id=%s",
+            (case_id,),
+        )["session_digest"]
+    # A database copy must not be usable as the clearance itself.
+    assert grant.secret not in stored
+    assert len(stored) == 64
+
+
+@pg_only
+@pytest.mark.parametrize("scenario", ["expired", "revoked", "wrong_secret", "missing", "other_person"])
+def test_every_way_a_clearance_can_be_absent_fails_the_same(pg_case, scenario):
+    from cases.admin_api import (
+        StepUpRefused,
+        grant_private_evidence_access,
+        revoke_private_evidence_access,
+        require_private_evidence_access,
+    )
+
+    _adapter, case_id = pg_case
+    grant = grant_private_evidence_access(case_id, _operator(), now=NOW)
+    secret, actor, when = grant.secret, _operator(), NOW
+    if scenario == "expired":
+        when = NOW + timedelta(minutes=16)
+    elif scenario == "revoked":
+        revoke_private_evidence_access(case_id, _operator(), now=NOW)
+    elif scenario == "wrong_secret":
+        secret = "0" * 43
+    elif scenario == "missing":
+        secret = None
+    else:
+        actor = _operator("user:8")
+
+    with pytest.raises(StepUpRefused) as excinfo:
+        require_private_evidence_access(case_id, actor, secret, now=when)
+
+    # One code for all five: telling them which half was right is a hint.
+    assert excinfo.value.code == "case_private_access_required"
+
+
+@pg_only
+def test_a_shared_admin_key_can_never_hold_somebody_else_report(pg_case):
+    from cases.admin_api import StepUpRefused, grant_private_evidence_access
+
+    _adapter, case_id = pg_case
+
+    with pytest.raises(StepUpRefused) as excinfo:
+        grant_private_evidence_access(case_id, _operator("admin-key"), now=NOW)
+
+    # A deployment key identifies no person, so nobody could be held answerable.
+    assert excinfo.value.code == "human_operator_required"
+
+
+@pg_only
+def test_re_authenticating_replaces_the_old_clearance_rather_than_stacking(pg_case):
+    from cases.admin_api import (
+        StepUpRefused,
+        grant_private_evidence_access,
+        require_private_evidence_access,
+    )
+
+    _adapter, case_id = pg_case
+    first = grant_private_evidence_access(case_id, _operator(), now=NOW)
+    second = grant_private_evidence_access(case_id, _operator(), now=NOW)
+
+    require_private_evidence_access(case_id, _operator(), second.secret, now=NOW)
+    with pytest.raises(StepUpRefused):
+        require_private_evidence_access(case_id, _operator(), first.secret, now=NOW)
+
+
+# ── The router is actually mounted ──
+
+import server  # noqa: E402
+
+
+def test_every_workbench_command_is_reachable_on_the_running_app():
+    paths = {getattr(route, "path", "") for route in server.app.routes}
+
+    # A module full of routes nobody mounted is the quietest way to ship nothing.
+    assert {
+        "/admin/cases",
+        "/admin/cases/{case_id}",
+        "/admin/cases/access/step-up",
+        "/admin/cases/work/claim",
+        "/admin/cases/work/heartbeat",
+        "/admin/cases/work/release",
+        "/admin/cases/work/takeover",
+        "/admin/cases/work/recuse",
+        "/admin/cases/change-sets/apply",
+        "/admin/cases/change-sets/rollback",
+    } <= paths
+
+
+def test_no_workbench_route_was_left_without_an_action_guard():
+    actions = set()
+    for route in server.app.routes:
+        if not getattr(route, "path", "").startswith("/admin/cases"):
+            continue
+        for dependency in getattr(route, "dependencies", ()):
+            action = getattr(dependency.dependency, "case_action", None)
+            if action:
+                actions.add(action)
+    # Every mounted route carries one, and each names a command from the table.
+    assert actions <= set(CASE_ACTION_SCOPE)
+    assert len(actions) >= 10

@@ -76,6 +76,7 @@ from auth import router as auth_router
 from notifications import router as community_router
 from public_api import router as public_router
 from cases.public_api import case_public_router
+from cases.admin_api import case_admin_router
 import public_api as _public_api
 from saved import router as saved_router
 from plans import router as plans_router, public_router as plans_public_router
@@ -1220,6 +1221,7 @@ app.include_router(public_router)
 # Flag-gated: every route answers 404 capability_unavailable while the case
 # flags are off, so mounting it is inert until rollout is explicit.
 app.include_router(case_public_router)
+app.include_router(case_admin_router)
 app.include_router(saved_router)
 app.include_router(plans_router)
 app.include_router(plans_public_router)
