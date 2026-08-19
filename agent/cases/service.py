@@ -93,7 +93,14 @@ _SAFE_URGENT_MESSAGE = (
     "Gọi 113 (công an), 114 (cứu hoả) hoặc 115 (cấp cứu) để được hỗ trợ khẩn cấp. "
     "Kênh đính chính không trực 24/7 và không thay thế các số khẩn cấp trên."
 )
-_OPERATOR_SCOPES = frozenset({"cases:operate", "cases:admin", "cases:decide"})
+# Both vocabularies: the internal one and the AdminCP scope names a real
+# operator actually carries. Listing only the first left the guard blind to
+# the very actors it exists to keep off the self-service path.
+_OPERATOR_SCOPES = frozenset({
+    "cases:operate", "cases:admin", "cases:decide",
+    "service.operator", "correction.decide", "truth.review",
+    "publication.apply", "publication.verify", "case.supervisor",
+})
 
 
 class CorrectionRejected(ValueError):
@@ -148,6 +155,25 @@ class ZaloHandoff:
 
 
 @dataclass(frozen=True)
+class AssistedIntake:
+    """What the operator must already have done before the words were taken down.
+
+    A transcriber is a weaker position than self-service, not a stronger one: the
+    reporter cannot see the screen. So the record carries which notice was read
+    out, what they agreed to, when, and that the values were read back and
+    confirmed in their hearing. Without those the case would rest on the
+    operator's word alone.
+    """
+
+    operator_ref: str
+    privacy_notice_revision: str
+    consent_scope: str
+    consent_given_at: datetime
+    read_back_confirmed: bool
+    reporter_confirmed: bool
+
+
+@dataclass(frozen=True)
 class CreateCorrectionCommand:
     envelope: CommandEnvelope
     reporter_privacy: str
@@ -156,12 +182,29 @@ class CreateCorrectionCommand:
     notification_consent: bool = False
     authenticated_user_ref: str | None = None
     handoff: ZaloHandoff | None = None
+    assisted: AssistedIntake | None = None
 
 
 @dataclass(frozen=True)
 class PublicAccessGrant:
     access_token: str
     csrf_token: str
+
+
+@dataclass(frozen=True)
+class AssistedCorrectionResult:
+    """What the operator may read back down the phone, and nothing more.
+
+    No capability: that is the reporter's key to their own case. An operator
+    holding it would have standing access to somebody else's private thread long
+    after the call ended.
+    """
+
+    case_id: str
+    public_reference: str
+    received_at: datetime
+    next_update_at: datetime
+    read_back: tuple = ()
 
 
 @dataclass(frozen=True)
@@ -203,7 +246,24 @@ class CaseService:
 
     def identity_assurance_for(self, command: CreateCorrectionCommand) -> str:
         """An optional contact is a reply address, never proof of who someone is."""
+        if command.assisted is not None:
+            # The operator's identity is known; the caller's is not. Recording
+            # "session" here would credit the reporter with the operator's login.
+            return "transcribed"
         return "session" if command.authenticated_user_ref else "none"
+
+    def consent_ref_for(self, command: CreateCorrectionCommand) -> str | None:
+        """The consent this case rests on, in a form that can be read back later."""
+        if command.assisted is not None:
+            assisted = command.assisted
+            return (
+                f"assisted:{assisted.privacy_notice_revision}"
+                f":{assisted.consent_scope}"
+                f":{assisted.consent_given_at.isoformat()}"
+                f":read_back={'yes' if assisted.read_back_confirmed else 'no'}"
+                f":confirmed={'yes' if assisted.reporter_confirmed else 'no'}"
+            )
+        return "notify:granted" if command.notification_consent else None
 
     def reporter_privacy_for(self, command: CreateCorrectionCommand) -> str:
         """The reporter's stated choice, which `_validate_privacy` has bounded."""
@@ -212,6 +272,17 @@ class CaseService:
     def party_authority_draft_for(
         self, command: CreateCorrectionCommand, *, case_id: str, now: datetime
     ) -> PartyAuthorityDraft | None:
+        if command.assisted is not None:
+            # Scoped to transcribing this one case. It is not authority to act for
+            # the reporter anywhere else, and it is the operator who is named.
+            return PartyAuthorityDraft(
+                case_id=case_id,
+                party_ref=command.assisted.operator_ref,
+                authority_kind="transcriber",
+                scope="correction:transcribe",
+                assurance_level="operator_session",
+                granted_at=now,
+            )
         if not command.authenticated_user_ref:
             return None
         return PartyAuthorityDraft(
@@ -229,7 +300,7 @@ class CaseService:
         envelope = command.envelope
         if type(envelope) is not CommandEnvelope or not envelope.idempotency_key:
             raise _reject("invalid_command_envelope", "A command envelope is required.")
-        if _OPERATOR_SCOPES & set(envelope.actor.scopes):
+        if _OPERATOR_SCOPES & set(envelope.actor.scopes) and command.assisted is None:
             raise _reject(
                 "operator_actor_not_allowed",
                 "Operator actors must use the assisted intake path.",
@@ -330,6 +401,18 @@ class CaseService:
             if command.optional_phone
             else None,
             "handoff": command.handoff.conversation_digest if command.handoff else None,
+            # A different consent scope or notice is a different request, not a
+            # replay of the last one under the same key.
+            "assisted": (
+                {
+                    "operator_ref": command.assisted.operator_ref,
+                    "privacy_notice_revision": command.assisted.privacy_notice_revision,
+                    "consent_scope": command.assisted.consent_scope,
+                    "consent_given_at": command.assisted.consent_given_at.isoformat(),
+                }
+                if command.assisted
+                else None
+            ),
             "items": [
                 {
                     "entity_id": item.entity_id,
@@ -539,7 +622,7 @@ class CaseService:
                 channel=actor.channel,
                 actor_ref=actor.actor_ref,
                 direction="inbound",
-                consent_ref="notify:granted" if command.notification_consent else None,
+                consent_ref=self.consent_ref_for(command),
                 identity_assurance=self.identity_assurance_for(command),
                 payload_enc=crypto.encrypt_private_payload(
                     {
@@ -688,6 +771,64 @@ class CaseService:
         )
         if not allowed:
             raise _reject("case_rate_limited", "Too many attempts; try again later.", status=429)
+
+    def create_assisted_correction(
+        self,
+        *,
+        items: tuple[CorrectionItemInput, ...],
+        assisted: AssistedIntake,
+        channel: Channel,
+        reporter_privacy: str,
+        idempotency_key: str,
+        correlation_id: str,
+        rate_subject: str,
+        optional_phone: str | None = None,
+        notification_consent: bool = False,
+        now: datetime,
+    ) -> "AssistedCorrectionResult":
+        """File a correction somebody gave over the phone, through the same Kernel.
+
+        Same case, same receipt, same clocks and same work as self-service: an
+        assisted report is not a lesser record. What differs is who is named and
+        what the file has to prove — the operator, and the consent they took.
+
+        The capability is deliberately not returned. It is the reporter's key to
+        their own case, and handing it to the person who typed the report would
+        give an operator standing access to somebody else's private thread.
+        """
+        result = self.create_correction(
+            CreateCorrectionCommand(
+                envelope=CommandEnvelope(
+                    idempotency_key=idempotency_key,
+                    expected_revision=None,
+                    actor=ActorContext(
+                        actor_ref=assisted.operator_ref,
+                        channel=channel,
+                        scopes=frozenset({"service.operator"}),
+                        correlation_id=correlation_id,
+                    ),
+                ),
+                reporter_privacy=reporter_privacy,
+                items=items,
+                optional_phone=optional_phone,
+                notification_consent=notification_consent,
+                authenticated_user_ref=None,
+                assisted=assisted,
+            ),
+            now=now,
+            rate_subject=rate_subject,
+        )
+        return AssistedCorrectionResult(
+            case_id=result.case_id,
+            public_reference=result.public_reference,
+            received_at=result.received_at,
+            next_update_at=result.next_update_at,
+            read_back=tuple(
+                {"entity_id": item.entity_id, "field_path": item.field_path,
+                 "proposed_value": item.proposed_value}
+                for item in items
+            ),
+        )
 
     def create_correction_from_transport(
         self,

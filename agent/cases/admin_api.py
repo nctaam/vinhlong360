@@ -125,13 +125,16 @@ PRIVATE_EVIDENCE_SCOPE = "case.private_evidence"
 _DATABASE = None
 _CRYPTO = None
 _PROJECTION_FETCHER = None
+_SERVICE = None
 
 
-def configure_case_admin_api(*, database=None, crypto=None, projection_fetcher=None) -> None:
-    global _DATABASE, _CRYPTO, _PROJECTION_FETCHER
+def configure_case_admin_api(*, database=None, crypto=None, projection_fetcher=None,
+                             service=None) -> None:
+    global _DATABASE, _CRYPTO, _PROJECTION_FETCHER, _SERVICE
     _DATABASE = database
     _CRYPTO = crypto
     _PROJECTION_FETCHER = projection_fetcher
+    _SERVICE = service
 
 
 def _store():
@@ -533,10 +536,56 @@ def validate_assisted_intake(body: AssistedCorrectionBody, *, now: datetime) -> 
                             "The reporter has to agree before this is filed.", status=422)
 
 
-# The route is deliberately not mounted yet. Filing has to create the interaction,
-# the scoped authority and the consent record inside the same transaction as the
-# case, and until that exists an endpoint here would advertise a capability that
-# does not work. The schema and its checks are what a route will stand on.
+@case_admin_router.post("/assisted/corrections", dependencies=[_guard("assisted.create")])
+async def create_assisted_correction(request: Request, body: AssistedCorrectionBody):
+    """File what somebody said on the phone, through the same Kernel as self-service."""
+    import uuid
+
+    from .domain import Channel as _Channel
+    from .service import AssistedIntake, CorrectionItemInput
+
+    validate_assisted_intake(body, now=_now())
+    if _SERVICE is None:
+        raise HTTPException(503, detail={"code": "case_service_unavailable",
+                                         "detail": "Case intake is not configured."})
+    actor = _actor(request)
+    try:
+        result = _SERVICE.create_assisted_correction(
+            items=tuple(
+                CorrectionItemInput(
+                    entity_id=item.entity_id, field_path=item.field_path,
+                    reported_value=item.reported_value, proposed_value=item.proposed_value,
+                    base_entity_revision=item.base_entity_revision,
+                )
+                for item in body.items
+            ),
+            assisted=AssistedIntake(
+                operator_ref=actor.actor_ref,
+                privacy_notice_revision=body.privacy_notice_revision,
+                consent_scope=body.consent_scope,
+                consent_given_at=body.consent_given_at,
+                read_back_confirmed=all(item.read_back_confirmed for item in body.items),
+                reporter_confirmed=body.reporter_confirmed,
+            ),
+            channel=_Channel(body.channel),
+            reporter_privacy=body.reporter_privacy,
+            idempotency_key=f"assisted:{uuid.uuid4()}",
+            correlation_id=actor.correlation_id,
+            rate_subject=actor.actor_ref,
+            optional_phone=body.optional_phone,
+            notification_consent=body.notification_consent,
+            now=_now(),
+        )
+    except Exception as error:  # noqa: BLE001
+        raise _fail(error) from error
+    # The reference the reporter can quote back, and the values to read out. The
+    # capability stays with the case: an operator must not carry somebody's key.
+    return {
+        "case_id": result.case_id,
+        "public_reference": result.public_reference,
+        "next_update_at": result.next_update_at.isoformat(),
+        "read_back": list(result.read_back),
+    }
 
 
 def parse_assisted_body(payload: dict) -> AssistedCorrectionBody:

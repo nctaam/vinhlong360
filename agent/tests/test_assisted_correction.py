@@ -154,3 +154,232 @@ def test_there_is_nowhere_to_put_a_recording_or_a_transcript():
     for field in ("recording_url", "transcript", "call_audio", "notes"):
         with pytest.raises(StepUpRefused):
             parse_assisted_body(_body(**{field: "x"}))
+
+
+# ── Filing it, through the same Kernel as self-service ──
+
+import os  # noqa: E402
+from urllib.parse import parse_qs, urlparse  # noqa: E402
+
+import database  # noqa: E402
+from cases.domain import ActorContext, Channel  # noqa: E402
+from cases.policy import load_case_policy  # noqa: E402
+from cases.security import CaseCrypto  # noqa: E402
+from cases.service import (  # noqa: E402
+    AssistedIntake,
+    CaseService,
+    CommandEnvelope,
+    CorrectionItemInput,
+    CorrectionRejected,
+    CreateCorrectionCommand,
+)
+from cases.store import PostgresCaseStore  # noqa: E402
+
+MASTER_KEY = "0" * 43
+ENTITY_ID = "p-assisted"
+
+
+def _pg_url():
+    raw = os.environ.get("VL360_TEST_DATABASE_URL", "").strip()
+    if not raw:
+        return None
+    parsed = urlparse(raw)
+    if parsed.scheme not in {"postgres", "postgresql"} or parsed.hostname not in {
+        "localhost", "127.0.0.1", "::1",
+    }:
+        return None
+    if {"host", "hostaddr"} & parse_qs(parsed.query, keep_blank_values=True).keys():
+        return None
+    return raw
+
+
+TEST_DATABASE_URL = _pg_url()
+pg_only = pytest.mark.skipif(
+    TEST_DATABASE_URL is None,
+    reason="set VL360_TEST_DATABASE_URL to a disposable loopback PostgreSQL database",
+)
+
+
+@pytest.fixture
+def case_service():
+    if TEST_DATABASE_URL is None:
+        pytest.skip("set VL360_TEST_DATABASE_URL to a disposable loopback PostgreSQL database")
+    import psycopg2
+    import psycopg2.extras
+
+    database.psycopg2 = psycopg2
+    database.psycopg2.extras = psycopg2.extras
+    adapter = database.Database()
+    adapter._use_pg = True
+    adapter._dsn = TEST_DATABASE_URL
+    with adapter._conn(commit_on_success=False) as conn:
+        adapter._execute(
+            conn,
+            "INSERT INTO entities (id, type, name, revision) VALUES (%s,'place','Quan Ba Nam',7)"
+            " ON CONFLICT (id) DO UPDATE SET revision = 7",
+            (ENTITY_ID,),
+        )
+        conn.commit()
+    service = CaseService(
+        PostgresCaseStore(adapter), CaseCrypto(MASTER_KEY), load_case_policy(),
+        owner_ref="person:owner", database=adapter,
+    )
+    return adapter, service
+
+
+def _intake(**overrides) -> AssistedIntake:
+    base = dict(
+        operator_ref="user:7", privacy_notice_revision="privacy-2026-07",
+        consent_scope="correction.contact", consent_given_at=NOW - timedelta(minutes=2),
+        read_back_confirmed=True, reporter_confirmed=True,
+    )
+    base.update(overrides)
+    return AssistedIntake(**base)
+
+
+def _file(service, *, subject="operator-7", **overrides):
+    import uuid
+
+    return service.create_assisted_correction(
+        items=(CorrectionItemInput(
+            entity_id=ENTITY_ID, field_path="attributes.phone",
+            reported_value="0270 111 2222", proposed_value="0270 333 4444",
+            base_entity_revision=7,
+        ),),
+        assisted=_intake(**overrides),
+        channel=Channel.PHONE,
+        reporter_privacy="anonymous",
+        idempotency_key=f"assisted:{uuid.uuid4()}",
+        correlation_id="corr-assisted",
+        rate_subject=subject,
+        now=NOW,
+    )
+
+
+@pg_only
+def test_a_transcribed_call_becomes_a_real_case_with_a_reference(case_service):
+    _adapter, service = case_service
+
+    result = _file(service)
+
+    assert result.case_id
+    assert result.public_reference.startswith("VL-")
+    assert result.next_update_at > NOW
+
+
+@pg_only
+def test_the_operator_is_never_handed_the_reporter_key(case_service):
+    _adapter, service = case_service
+
+    result = _file(service, subject="operator-key-check")
+
+    # The capability opens somebody else's private thread. An operator holding it
+    # would keep standing access long after the call ended.
+    assert not hasattr(result, "capability")
+    assert "capability" not in str(result.read_back)
+
+
+@pg_only
+def test_the_consent_that_was_taken_is_written_into_the_file(case_service):
+    adapter, service = case_service
+
+    result = _file(service, subject="operator-consent")
+
+    with adapter._conn(commit_on_success=False) as conn:
+        row = dict(adapter._fetchone(
+            conn,
+            "SELECT channel, consent_ref, identity_assurance FROM case_interactions"
+            " WHERE case_id=%s",
+            (result.case_id,),
+        ))
+    assert row["channel"] == "phone"
+    # Which notice, what it covered, when, and that the values were read back.
+    assert "privacy-2026-07" in row["consent_ref"]
+    assert "correction.contact" in row["consent_ref"]
+    assert "read_back=yes" in row["consent_ref"]
+    assert "confirmed=yes" in row["consent_ref"]
+    # The reporter did not sign in. Crediting them with the operator's login
+    # would be a claim about identity that nobody made.
+    assert row["identity_assurance"] == "transcribed"
+
+
+@pg_only
+def test_the_operator_authority_is_scoped_to_transcribing_this_one_case(case_service):
+    adapter, service = case_service
+
+    result = _file(service, subject="operator-authority")
+
+    with adapter._conn(commit_on_success=False) as conn:
+        row = dict(adapter._fetchone(
+            conn,
+            "SELECT party_ref, authority_kind, scope, assurance_level"
+            " FROM case_party_authorities WHERE case_id=%s",
+            (result.case_id,),
+        ))
+    assert row["party_ref"] == "user:7"
+    assert row["authority_kind"] == "transcriber"
+    # Not authority to act for the reporter anywhere else.
+    assert row["scope"] == "correction:transcribe"
+    assert row["assurance_level"] == "operator_session"
+
+
+@pg_only
+def test_an_assisted_case_gets_the_same_receipt_clocks_and_work_as_self_service(case_service):
+    adapter, service = case_service
+
+    result = _file(service, subject="operator-parity")
+
+    with adapter._conn(commit_on_success=False) as conn:
+        counts = {
+            table: adapter._fetchone(
+                conn, "SELECT count(*) AS n FROM " + table + " WHERE case_id=%s",
+                (result.case_id,),
+            )["n"]
+            for table in ("case_receipts", "case_promise_clocks", "case_work_items",
+                          "case_audit_events")
+        }
+    # A report taken down the phone is not a lesser record than one typed in.
+    assert counts["case_receipts"] == 1
+    assert counts["case_promise_clocks"] >= 1
+    assert counts["case_work_items"] >= 1
+    assert counts["case_audit_events"] >= 1
+
+
+@pg_only
+def test_the_operator_gets_the_values_to_read_back_and_nothing_private(case_service):
+    _adapter, service = case_service
+
+    result = _file(service, subject="operator-readback")
+
+    assert result.read_back[0]["proposed_value"] == "0270 333 4444"
+    assert result.read_back[0]["field_path"] == "attributes.phone"
+
+
+@pg_only
+def test_a_self_service_actor_still_cannot_pretend_to_be_transcribing(case_service):
+    _adapter, service = case_service
+
+    # An operator-scoped actor on the ordinary path is still refused. The assisted
+    # context is what makes those scopes legitimate, and it is built server-side
+    # from what the operator recorded, never taken from the request body.
+    with pytest.raises(CorrectionRejected) as excinfo:
+        service.create_correction(
+            CreateCorrectionCommand(
+                envelope=CommandEnvelope(
+                    idempotency_key="assisted-impostor",
+                    expected_revision=None,
+                    actor=ActorContext(
+                        actor_ref="user:7", channel=Channel.PHONE,
+                        scopes=frozenset({"service.operator"}), correlation_id="c",
+                    ),
+                ),
+                reporter_privacy="anonymous",
+                items=(CorrectionItemInput(
+                    entity_id=ENTITY_ID, field_path="attributes.phone",
+                    reported_value="a", proposed_value="b", base_entity_revision=7,
+                ),),
+            ),
+            now=NOW, rate_subject="impostor",
+        )
+
+    assert excinfo.value.problem.code == "operator_actor_not_allowed"

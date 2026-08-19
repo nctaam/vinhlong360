@@ -464,3 +464,105 @@ def test_the_contact_adapters_validate_the_session_before_touching_contact():
         assert "validate_access" in source, name
         # The validated access object is what reaches the contact module.
         assert source.index("validate_access") < source.rindex("access"), name
+
+
+# ── Assisted intake changes the record, not the rules (Task 13) ──
+
+def _assisted_intake(**overrides):
+    from datetime import datetime, timedelta, timezone
+
+    from cases.service import AssistedIntake
+
+    base = dict(
+        operator_ref="user:7", privacy_notice_revision="privacy-2026-07",
+        consent_scope="correction.contact",
+        consent_given_at=datetime(2026, 8, 19, 9, 0, tzinfo=timezone.utc) - timedelta(minutes=2),
+        read_back_confirmed=True, reporter_confirmed=True,
+    )
+    base.update(overrides)
+    return AssistedIntake(**base)
+
+
+def _bare_command(**overrides):
+    from cases.domain import ActorContext, Channel, CommandEnvelope
+    from cases.service import CorrectionItemInput, CreateCorrectionCommand
+
+    base = dict(
+        envelope=CommandEnvelope(
+            idempotency_key="k", expected_revision=None,
+            actor=ActorContext(actor_ref="anonymous", channel=Channel.WEB,
+                               scopes=frozenset(), correlation_id="c"),
+        ),
+        reporter_privacy="anonymous",
+        items=(CorrectionItemInput(
+            entity_id="p-1", field_path="attributes.phone",
+            reported_value="a", proposed_value="b", base_entity_revision=1,
+        ),),
+    )
+    base.update(overrides)
+    return CreateCorrectionCommand(**base)
+
+
+def _bare_service():
+    from cases.service import CaseService
+
+    return CaseService(object(), object(), object(), owner_ref="person:owner")
+
+
+def test_the_consent_reference_records_what_the_reporter_was_actually_given():
+    reference = _bare_service().consent_ref_for(_bare_command(assisted=_assisted_intake()))
+
+    # Which notice was read out, what it covered, when, and that the values were
+    # read back and confirmed. Without these the case rests on one person's word.
+    assert "privacy-2026-07" in reference
+    assert "correction.contact" in reference
+    assert "read_back=yes" in reference
+    assert "confirmed=yes" in reference
+
+
+def test_an_unconfirmed_read_back_is_recorded_as_unconfirmed_not_omitted():
+    reference = _bare_service().consent_ref_for(
+        _bare_command(assisted=_assisted_intake(read_back_confirmed=False))
+    )
+
+    # Silence would read as "not applicable" later; "no" reads as what happened.
+    assert "read_back=no" in reference
+
+
+def test_a_self_service_report_keeps_its_own_consent_reference():
+    service = _bare_service()
+
+    assert service.consent_ref_for(_bare_command(notification_consent=True)) == "notify:granted"
+    assert service.consent_ref_for(_bare_command()) is None
+
+
+def test_a_transcribed_report_does_not_borrow_the_operator_login_as_identity():
+    service = _bare_service()
+
+    assert service.identity_assurance_for(_bare_command(assisted=_assisted_intake())) == "transcribed"
+    # The reporter did not sign in; only the operator did.
+    assert service.identity_assurance_for(_bare_command()) == "none"
+
+
+def test_the_transcriber_authority_names_the_operator_and_stops_at_this_case():
+    from datetime import datetime, timezone
+
+    now = datetime(2026, 8, 19, 9, 0, tzinfo=timezone.utc)
+
+    draft = _bare_service().party_authority_draft_for(
+        _bare_command(assisted=_assisted_intake()), case_id="case-1", now=now
+    )
+
+    assert draft.party_ref == "user:7"
+    assert draft.authority_kind == "transcriber"
+    # Not authority to act for the reporter anywhere else, and not the reporter's.
+    assert draft.scope == "correction:transcribe"
+    assert draft.assurance_level == "operator_session"
+
+
+def test_the_operator_guard_knows_the_scope_names_a_real_operator_carries():
+    from cases.service import _OPERATOR_SCOPES
+
+    # It listed only the internal vocabulary, so an actor holding the AdminCP
+    # scopes walked straight past the check meant to keep them off this path.
+    assert {"service.operator", "correction.decide", "publication.apply"} <= _OPERATOR_SCOPES
