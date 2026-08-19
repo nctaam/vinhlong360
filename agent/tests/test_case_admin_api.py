@@ -115,7 +115,10 @@ import database  # noqa: E402
 from cases.security import CaseCrypto  # noqa: E402
 
 UTC = timezone.utc
-NOW = datetime(2026, 8, 19, 9, 0, tzinfo=UTC)
+# Live, not frozen: case_admin_access_sessions checks expires_at against the
+# database's own created_at DEFAULT NOW(). A pinned date here is a time bomb
+# that starts failing the moment the wall clock passes it.
+NOW = datetime.now(UTC).replace(microsecond=0)
 MASTER_KEY = "0" * 43
 
 

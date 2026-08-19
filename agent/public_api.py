@@ -18,7 +18,9 @@ import unicodedata
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Annotated, Any, Literal, Optional
+from uuid import uuid4
 
 logger = logging.getLogger(__name__)
 
@@ -3341,6 +3343,116 @@ class ReportIn(BaseModel):
     field: Optional[str] = Field(None, max_length=20)
 
 
+# ── Legacy correction adapter (Task 15) ──
+#
+# One write authority per report. While correction intake is off the old JSONL
+# behaviour stands untouched. While it is on, a factual field report the kernel
+# can hold is filed there alone and answered with the canonical receipt; the
+# JSONL file is not written. Cutover is recorded as a file, so rolling the flag
+# back cannot quietly reopen the JSONL lane for corrections — a forked record is
+# worse than an honest refusal.
+
+LEGACY_STALE_FIELD_PATHS = {
+    "phone": "attributes.phone",
+    "hours": "attributes.opening_hours",
+    "address": "attributes.address",
+    "name": "name",
+    "price": "attributes.price_range",
+}
+
+
+def _correction_cutover_marker() -> Path:
+    # Derived from REPORTS_FILE so tests that redirect one redirect both.
+    return REPORTS_FILE.with_name("corrections-cutover.marker")
+
+
+def _correction_intake_live() -> bool:
+    from config import settings
+
+    return bool(getattr(settings, "CASE_KERNEL_ENABLED", False)) and bool(
+        getattr(settings, "CORRECTION_INTAKE_ENABLED", False)
+    )
+
+
+def _legacy_value_at(entity: dict, field_path: str) -> str:
+    node = entity
+    for part in field_path.split("."):
+        node = node.get(part) if isinstance(node, dict) else None
+        if node is None:
+            return ""
+    return str(node)
+
+
+def _file_legacy_correction(entity_id: str, field: str, detail: str, request: Request):
+    """Route one legacy factual report into the kernel, or refuse honestly."""
+    from cases.public_api import _service as _case_service
+    from cases.service import CorrectionRejected
+
+    field_path = LEGACY_STALE_FIELD_PATHS[field]
+    entity = _get_public_entity(entity_id)
+    if not entity:
+        return _err(404, "not_found")
+    proposed = detail.strip()
+    if not proposed:
+        # A correction is a claim about what the page should say; with nothing
+        # proposed there is nothing to decide, and downgrading to the old lane
+        # would fork the record by the reporter's punctuation.
+        return JSONResponse(status_code=422, content={
+            "error": "proposed_value_required",
+            "message": "Hãy ghi thông tin đúng để chúng tôi sửa theo.",
+        })
+    payload = SimpleNamespace(
+        reporter_privacy="anonymous",
+        items=(SimpleNamespace(
+            entity_id=str(entity["id"]),
+            field_path=field_path,
+            # What the page says now is ours to read, never the reporter's to
+            # assert: trusting them for both sides would let one request forge
+            # the diff a decision is judged on.
+            reported_value=_legacy_value_at(entity, field_path),
+            proposed_value=proposed,
+            base_entity_revision=int(entity.get("revision") or 1),
+        ),),
+        optional_phone=None,
+        notification_consent=False,
+        handoff_digest=None,
+        handoff_confirmed=False,
+    )
+    try:
+        result = _case_service().create_correction_from_transport(
+            payload,
+            idempotency_key=f"legacy:{uuid4().hex}",
+            correlation_id=request.headers.get("x-request-id") or uuid4().hex,
+            rate_subject=get_client_ip(request),
+        )
+    except CorrectionRejected as exc:
+        return JSONResponse(status_code=exc.problem.status, content={
+            "error": exc.problem.code, "message": exc.problem.detail,
+        })
+    # The kernel now owns corrections; record that durably before answering.
+    marker = _correction_cutover_marker()
+    if not marker.exists():
+        marker.parent.mkdir(exist_ok=True)
+        marker.write_text(datetime.now(timezone.utc).isoformat(), encoding="utf-8")
+    return JSONResponse(status_code=201, content={
+        "publicReference": result.public_reference,
+        "capability": result.capability,
+        "receivedAt": result.received_at.isoformat(),
+        "nextUpdateAt": result.next_update_at.isoformat(),
+        "replayed": result.replayed,
+    })
+
+
+def _legacy_correction_closed() -> JSONResponse | None:
+    """After cutover, the JSONL lane for corrections stays closed, flag or not."""
+    if _correction_cutover_marker().exists():
+        return JSONResponse(status_code=503, content={
+            "error": "correction_intake_paused",
+            "message": "Kênh sửa thông tin đang tạm dừng. Vui lòng quay lại sau.",
+        })
+    return None
+
+
 @router.post("/report",
              summary="Submit a report",
              description="Submits a report for incorrect information or policy-violating content. Stored in JSONL for admin review. Rate-limited per IP.")
@@ -3356,6 +3468,17 @@ async def submit_report(payload: ReportIn, request: Request):
                     retry_after=info.get("retry_after", 60))
     target_type = payload.target_type if payload.target_type in _VALID_TARGET_TYPES else "other"
     report_field = payload.field if payload.field and payload.field in _REPORT_FIELD_OPTIONS else None
+    # A factual entity report the kernel can hold is a correction, and after the
+    # cutover the kernel is its only authority. Content reports (post/comment)
+    # are moderation work and keep their lane untouched.
+    if target_type in {"entity", "facility"} and report_field in LEGACY_STALE_FIELD_PATHS:
+        if _correction_intake_live():
+            return _file_legacy_correction(
+                payload.target_id.strip(), report_field, payload.detail, request
+            )
+        closed = _legacy_correction_closed()
+        if closed is not None:
+            return closed
     record = {
         "ts": datetime.now(timezone.utc).isoformat(),
         "target_id": payload.target_id.strip(),
@@ -3407,6 +3530,12 @@ async def report_stale_field(entity_id: str, payload: ReportStaleIn, request: Re
     if not allowed:
         return _err(429, "Bạn gửi quá nhiều yêu cầu. Vui lòng thử lại sau.",
                     retry_after=info.get("retry_after", 60))
+    if payload.field in LEGACY_STALE_FIELD_PATHS:
+        if _correction_intake_live():
+            return _file_legacy_correction(entity_id, payload.field, payload.detail, request)
+        closed = _legacy_correction_closed()
+        if closed is not None:
+            return closed
     record = {
         "ts": datetime.now(timezone.utc).isoformat(),
         "target_id": entity_id,

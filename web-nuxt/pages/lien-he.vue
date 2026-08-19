@@ -8,7 +8,7 @@
         <p class="bm-eyebrow"><span class="bm-tick" aria-hidden="true"></span>Liên hệ</p>
         <h1>{{ pc('hero_title') }}</h1>
         <p class="bm-sub">{{ pc('hero_subtitle') }}</p>
-        <p class="bm-sla"><span aria-hidden="true">●</span> Thường trả lời trong 24–48 giờ — người thật đọc từng tin nhắn, không phải chatbot.</p>
+        <p class="bm-sla"><span aria-hidden="true">●</span> Người thật đọc từng tin nhắn, không phải chatbot. Yêu cầu sửa thông tin có mã tra cứu và hạn cập nhật riêng.</p>
       </div>
       <svg class="bm-motif" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
         <path d="M44 30c-10 6-16 18-14 30 2 13 12 22 25 24" fill="none" stroke-width="1.6" stroke-linecap="round" />
@@ -33,10 +33,20 @@
         <p class="card-note">Hoặc nhắn Zalo: <strong>{{ zaloName }}</strong></p>
       </section>
 
+      <section class="contact-card card-correction">
+        <div class="card-icon" aria-hidden="true"><span class="card-icon-glyph">📝</span></div>
+        <h2>Sửa thông tin chưa đúng</h2>
+        <p>Số điện thoại, địa chỉ, giờ mở cửa… hiển thị sai? Gửi yêu cầu có mã tra cứu — bạn theo dõi được từng bước và biết trước khi nào có cập nhật.</p>
+        <div class="card-action">
+          <NuxtLink to="/yeu-cau/sua-thong-tin" class="btn btn-primary">Gửi yêu cầu sửa thông tin</NuxtLink>
+        </div>
+        <p class="card-note"><NuxtLink to="/yeu-cau/tra-cuu">Tra cứu yêu cầu đã gửi</NuxtLink> bằng mã trên biên nhận.</p>
+      </section>
+
       <section class="contact-card card-general">
         <div class="card-icon" aria-hidden="true"><span class="card-icon-glyph">📬</span></div>
-        <h2>Gửi yêu cầu</h2>
-        <p>Mọi yêu cầu về nội dung, dữ liệu cá nhân, báo cáo vi phạm hoặc khiếu nại bản quyền.</p>
+        <h2>Gửi yêu cầu khác</h2>
+        <p>Dữ liệu cá nhân, khiếu nại bản quyền, hoặc việc chưa có kênh riêng. Khiếu nại nội dung và khôi phục tài khoản hiện xử lý qua email — chưa có trang theo dõi trực tuyến.</p>
         <div class="card-action">
           <a :href="`mailto:${contactEmail}`" class="btn btn-primary">📧 {{ contactEmail }}</a>
         </div>
@@ -54,7 +64,7 @@
       <section class="contact-card card-report">
         <div class="card-icon" aria-hidden="true"><span class="card-icon-glyph">🛡️</span></div>
         <h2>Báo cáo vi phạm</h2>
-        <p>Dùng nút <strong>Báo cáo</strong> ngay trên mỗi bài đăng/bình luận. Chúng tôi xử lý trong vòng 48 giờ.</p>
+        <p>Dùng nút <strong>Báo cáo</strong> ngay trên mỗi bài đăng/bình luận. Đội kiểm duyệt xem xét theo thứ tự tiếp nhận.</p>
       </section>
 
       <section class="contact-card card-privacy">

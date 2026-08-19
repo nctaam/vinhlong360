@@ -1117,7 +1117,9 @@ const foodSpecialties = computed(() => {
   return items
 })
 
-const reportUrl = computed(() => `/cong-dong?report=${encodeURIComponent(id.value)}`)
+// The trust CTA files a correction against this entry. It used to drop the
+// reader into a community search, which records nothing and promises less.
+const reportUrl = computed(() => correctionIntakeLink(id.value, { source: 'dia-diem' }))
 
 const sourceFreshness = computed(() => entity.value?.source_freshness)
 const trustTier = computed(() => resolveSourceTier(sourceFreshness.value?.source_tier || entity.value?.quality?.source_tier))

@@ -96,16 +96,12 @@
             <span v-else>{{ sourceName(f) }}</span>
             <time v-if="f.updatedAt" :datetime="f.updatedAt"> · cập nhật {{ relativeUpdated(f.updatedAt) }}</time>
           </footer>
-          <button type="button" class="fac-report" :disabled="reported[f.id]" :aria-expanded="reportingId === f.id" :aria-controls="`report-${f.id}`" @click="openReport(f)">
-            {{ reported[f.id] ? '✓ Đã gửi báo sai' : '⚠️ Báo thông tin sai' }}
-          </button>
-          <div v-if="reportingId === f.id" :id="`report-${f.id}`" class="fac-report-form" role="region" :aria-label="`Báo sai thông tin ${f.name}`">
-            <textarea v-model="reportDetail" class="textarea" rows="2" placeholder="Thông tin nào sai? (địa chỉ / SĐT / giờ làm việc…)" aria-label="Mô tả thông tin sai"></textarea>
-            <div class="fac-report-actions">
-              <button type="button" class="btn btn-primary btn-sm" :disabled="reportSending || reportDetail.trim().length < 3" @click="submitReport(f)">{{ reportSending ? 'Đang gửi…' : 'Gửi' }}</button>
-              <button type="button" class="btn btn-ghost btn-sm" @click="reportingId = ''">Hủy</button>
-            </div>
-          </div>
+          <!-- One canonical journey: the correction gets a case, a receipt and a
+               deadline. The old inline form dropped it into a JSONL file with a
+               thank-you nothing tracked. -->
+          <NuxtLink class="fac-report" :to="correctionIntakeLink(f.id, { source: 'danh-ba' })" :aria-label="`Báo thông tin chưa đúng của ${f.name}`">
+            ⚠️ Báo thông tin chưa đúng
+          </NuxtLink>
         </li>
       </ul>
       <EmptyState v-else-if="facilitiesError" icon="⚠️" title="Không thể tải danh bạ" message="Có lỗi khi tải dữ liệu. Vui lòng thử lại.">
@@ -238,33 +234,6 @@ function relativeUpdated(raw: string) {
   if (days < 30) return `${days} ngày trước`
   if (days < 365) return `${Math.floor(days / 30)} tháng trước`
   return `${Math.floor(days / 365)} năm trước`
-}
-
-const reported = ref<Record<string, boolean>>({})
-const reportingId = ref('')
-const reportDetail = ref('')
-const reportSending = ref(false)
-
-function openReport(f: Entity) {
-  if (reported.value[f.id]) return
-  reportingId.value = reportingId.value === f.id ? '' : f.id
-  reportDetail.value = ''
-}
-
-async function submitReport(f: Entity) {
-  const detail = reportDetail.value.trim()
-  if (!detail) return
-  reportSending.value = true
-  try {
-    await $fetch('/api/report', {
-      method: 'POST',
-      body: { target_id: f.id, target_type: 'facility', reason: 'Báo sai thông tin danh bạ', detail },
-    })
-    reported.value = { ...reported.value, [f.id]: true }
-    reportingId.value = ''
-    showToast('Đã gửi báo sai. Cảm ơn bạn!', 'success')
-  } catch { showToast('Không thể gửi báo sai. Vui lòng thử lại.', 'error') }
-  reportSending.value = false
 }
 
 let facilitiesAbort: AbortController | null = null

@@ -20,6 +20,8 @@ const props = defineProps<{
   handoffDigest?: string | null
   /** Configured support hours, shown only when the deployment provides them. */
   assistedHours?: string | null
+  /** A convenience hint from the entry link; anything unrecognised is ignored. */
+  initialFieldPath?: string | null
   busy?: boolean
 }>()
 
@@ -46,7 +48,12 @@ interface DraftItem {
   proposedValue: string
 }
 
-const items = reactive<DraftItem[]>([{ fieldPath: '', reportedValue: '', proposedValue: '' }])
+const initialField = FIELD_CHOICES.some(choice => choice.path === props.initialFieldPath)
+  ? String(props.initialFieldPath)
+  : ''
+const items = reactive<DraftItem[]>([
+  { fieldPath: initialField, reportedValue: '', proposedValue: '' },
+])
 const reporterPrivacy = ref<'anonymous' | 'attributed'>('anonymous')
 const optionalPhone = ref('')
 const phoneConsent = ref(false)

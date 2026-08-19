@@ -11,6 +11,7 @@ import CorrectionIntakeForm from '../../components/cases/CorrectionIntakeForm.vu
 import { CaseAccessError, useCorrectionCases } from '../../composables/useCorrectionCases'
 import type { CaseReceipt, CorrectionSubmission } from '../../types/cases'
 import { apiFetch } from '../../utils/apiFetch'
+import { CORRECTION_FIELD_HINTS } from '../../utils/correctionLink'
 
 const route = useRoute()
 const cases = useCorrectionCases()
@@ -18,6 +19,13 @@ const cases = useCorrectionCases()
 const entityId = computed(() => {
   const raw = String(route.query.entity ?? '').slice(0, 200)
   return /^[a-z0-9][a-z0-9-]*$/i.test(raw) ? raw : ''
+})
+
+// A hint, never data: the form only preselects a field it already offers, and
+// the values themselves are typed by the reporter against the live entry.
+const fieldHint = computed(() => {
+  const raw = String(route.query.field ?? '')
+  return CORRECTION_FIELD_HINTS.has(raw) ? raw : null
 })
 
 // Name and revision come from the live projection, never from the URL: the
@@ -101,6 +109,7 @@ useSeoMeta({
         :entity-id="entity.id"
         :entity-name="entity.name"
         :base-entity-revision="entity.revision"
+        :initial-field-path="fieldHint"
         :busy="busy"
         @submit="submit"
         @request-phone-verification="verifyPhone"

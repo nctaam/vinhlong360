@@ -479,7 +479,7 @@ const wardTrustNote = computed(() => {
   if (wardFreshnessStatus.value === 'conflict') return 'Các nguồn đang ghi khác nhau; xem từng giá trị và thời điểm trước khi quyết định.'
   return 'Hệ thống chưa có đủ tín hiệu nguồn/ngày cập nhật cho mục này.'
 })
-const wardReportUrl = computed(() => `/cong-dong?report=${encodeURIComponent(id.value)}`)
+const wardReportUrl = computed(() => correctionIntakeLink(id.value, { source: 'xa-phuong' }))
 const wardTrustConflicts = computed(() => {
   const raw = attrs.value.source_conflicts
   if (!Array.isArray(raw)) return []

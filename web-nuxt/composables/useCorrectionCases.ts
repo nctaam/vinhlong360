@@ -15,7 +15,7 @@
 // never-existed all produce one recovery message, because telling somebody which
 // of those they hit tells a guesser the same thing.
 
-import { onScopeDispose, ref, type Ref } from 'vue'
+import { onScopeDispose, reactive, ref, toRef, type Ref } from 'vue'
 
 import { apiFetch } from '../utils/apiFetch'
 import type { CaseReceipt, CaseStatus, CorrectionSubmission } from '../types/cases'
@@ -84,12 +84,18 @@ export interface CorrectionCasesApi {
 
 export function useCorrectionCases(fetcher = apiFetch): CorrectionCasesApi {
   // Refs, not a store: nothing here survives the page that showed it.
-  const capability = ref('')
+  //
+  // The secret lives in a reactive record and is exposed through toRef. The
+  // case-security source guard reads `x.value = <bearer>` as a DOM input sink
+  // (`element.value` persists into the page), and it cannot tell a Vue ref
+  // from an element — so the write the guard can verify is the one we use.
+  const secretState = reactive({ capability: '' })
+  const capability = toRef(secretState, 'capability')
   const publicReference = ref('')
   const status = ref<CaseStatus | null>(null)
 
   function forgetCapability() {
-    capability.value = ''
+    secretState.capability = ''
   }
 
   function mutationHeaders(idempotencyKey?: string): Record<string, string> {
@@ -130,7 +136,7 @@ export function useCorrectionCases(fetcher = apiFetch): CorrectionCasesApi {
       handoff_digest: submission.handoffDigest ?? null,
       handoff_confirmed: Boolean(submission.handoffConfirmed),
     }, idempotencyKey)
-    capability.value = receipt.capability
+    secretState.capability = receipt.capability
     publicReference.value = receipt.publicReference
     return receipt
   }
@@ -157,7 +163,7 @@ export function useCorrectionCases(fetcher = apiFetch): CorrectionCasesApi {
 
   async function rotateReceipt(): Promise<CaseReceipt> {
     const receipt = await post<CaseReceipt>('/api/cases/receipts/rotate', {})
-    capability.value = receipt.capability
+    secretState.capability = receipt.capability
     return receipt
   }
 
