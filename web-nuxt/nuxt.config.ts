@@ -159,6 +159,9 @@ export default defineNuxtConfig({
       itineraryScheduleV2,
       publicTelemetryEnabled,
       publicTelemetryEndpoint,
+      // Support hours for phone-assisted corrections. Empty means the intake
+      // page simply does not offer the phone lane — no fake availability.
+      caseAssistedHours: process.env.NUXT_PUBLIC_CASE_ASSISTED_HOURS || '',
     },
   },
 

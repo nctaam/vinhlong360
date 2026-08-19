@@ -161,8 +161,15 @@ def _entity_patch(after_patch: dict, stored_attributes) -> dict:
     return patch
 
 
-def _require_independent_review(row: dict, actor_ref: str) -> None:
-    """R3 changes the name of a place. One person is not enough to do that."""
+def _require_independent_review(transaction, row: dict, case_id: str,
+                                actor_ref: str) -> None:
+    """R3 changes the name of a place. One person is not enough to do that.
+
+    Two proofs, both required: the change set names a reviewer who is not its
+    maker, and somebody other than the maker has actually FINISHED the
+    truth_review work the queue derived for this risk class. A name on the row
+    is intent; a completed work item is the review having happened.
+    """
     if str(row["risk_class"]) not in INDEPENDENT_REVIEW_RISK:
         return
     reviewer = row["reviewer_ref"]
@@ -171,6 +178,13 @@ def _require_independent_review(row: dict, actor_ref: str) -> None:
         raise _reject(
             "independent_review_required",
             "This risk class needs a second person to have reviewed it.",
+            status=403,
+        )
+    finished_by = transaction.completed_work_assignees(case_id, "truth_review")
+    if not any(assignee != maker for assignee in finished_by):
+        raise _reject(
+            "truth_review_required",
+            "This risk class needs the truth review completed before publishing.",
             status=403,
         )
 
@@ -187,7 +201,7 @@ def apply_change_set(command: ApplyChangeSetCommand, *, now: datetime) -> Public
             raise _reject("change_set_not_on_case", "That change set belongs to another case.")
         if str(row["apply_status"]) != "pending":
             raise _reject("change_set_not_pending", "That change set was already decided.")
-        _require_independent_review(row, actor_ref)
+        _require_independent_review(transaction, row, command.case_id, actor_ref)
 
         snapshot = transaction.load_case(command.case_id, for_update=True)
         if snapshot.current_revision != command.expected_case_revision:

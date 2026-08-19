@@ -483,6 +483,14 @@ class CaseTransaction:
 
     def append_transition(self, draft: TransitionDraft) -> None:
         self._require_active()
+        if draft.waiting is not None:
+            from . import metrics as _metrics
+
+            # Observed at append time. Metrics are operational evidence, not a
+            # ledger: a rolled-back transition may leave one stray waiting event,
+            # which is noise the 28-day window tolerates and audit does not use.
+            _metrics.observe("waiting", channel="web", case_id=draft.case_id,
+                             now=draft.occurred_at)
         if type(draft) is not TransitionDraft:
             raise ValueError("invalid_transition_draft")
         self._db._execute(
@@ -1062,6 +1070,29 @@ class CaseTransaction:
             WHERE case_id = %s AND kind = %s AND status <> 'completed'
             """,
             (now, case_id, kind),
+        )
+
+    def access_session_count(self, case_id: str) -> int:
+        self._require_active()
+        row = self._db._fetchone(
+            self._conn,
+            "SELECT count(*) AS n FROM case_access_sessions WHERE case_id = %s",
+            (case_id,),
+        )
+        return int(_row_dict(self._db, row)["n"])
+
+    def completed_work_assignees(self, case_id: str, kind: str) -> tuple:
+        """Who finished this kind of work on the case — the R3 review proof."""
+        self._require_active()
+        rows = self._db._fetchall(
+            self._conn,
+            "SELECT assignee_ref FROM case_work_items"
+            " WHERE case_id = %s AND kind = %s AND status = 'completed'",
+            (case_id, kind),
+        )
+        return tuple(
+            str(_row_dict(self._db, row)["assignee_ref"])
+            for row in rows if _row_dict(self._db, row)["assignee_ref"]
         )
 
     def load_entity_for_update(self, entity_id: str):

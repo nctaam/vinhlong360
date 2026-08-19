@@ -239,3 +239,38 @@ describe('the reports page handover', () => {
     expect(page).toContain('v-else-if="(r.status || \'open\') === \'open\'"')
   })
 })
+
+describe('the queue grammar', () => {
+  it('reads promise health and owner in words on every row', () => {
+    const queue = mount(CaseQueue, {
+      props: {
+        items: [{
+          work_item_id: 'w-1', case_id: 'c-1', kind: 'decide',
+          risk_class: 'R2', status: 'claimed', revision: 3,
+          promise_health: 'breached', owner_ref: 'user:7',
+        }],
+      },
+    })
+
+    const text = queue.text()
+    // queue → promise health → owner → next action, all spelled out.
+    expect(text).toContain('Đã trễ hạn')
+    expect(text).toContain('Người giữ: user:7')
+    expect(text).toContain('Cần quyết định')
+  })
+
+  it('reads on-track and unowned rows honestly too', () => {
+    const queue = mount(CaseQueue, {
+      props: {
+        items: [{
+          work_item_id: 'w-2', case_id: 'c-2', kind: 'publication',
+          risk_class: 'R1', status: 'ready', revision: 1,
+          promise_health: 'on_track', owner_ref: null,
+        }],
+      },
+    })
+
+    expect(queue.text()).toContain('Đúng hạn')
+    expect(queue.text()).toContain('Chưa ai nhận')
+  })
+})

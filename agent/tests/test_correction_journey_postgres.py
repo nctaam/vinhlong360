@@ -315,3 +315,30 @@ def test_every_wrong_key_fails_the_same_neutral_way(journey):
             seen.append(type(error).__name__)
     # Wrong and differently-wrong read identically: nothing confirms a near miss.
     assert len(seen) == 2 and len(set(seen)) == 1
+
+
+@pg_only
+def test_coming_back_for_the_same_case_is_counted_as_failure_demand(journey, monkeypatch):
+    adapter, service = journey
+    events = []
+    monkeypatch.setattr("cases.metrics.observe",
+                        lambda kind, **kw: events.append(kind) or True)
+    receipt = _report(service, subject="repeat-a")
+    grant = service.exchange_receipt(
+        public_reference=receipt.public_reference, capability=receipt.capability,
+        rate_subject="repeat-a", now=NOW + timedelta(minutes=1),
+    )
+    assert "repeated_contact" not in events, "the first visit is the service working"
+
+    rotated = service.rotate_receipt(
+        access_token=grant.access_token, rate_subject="repeat-a",
+        now=NOW + timedelta(minutes=2),
+    )
+    service.exchange_receipt(
+        public_reference=rotated.public_reference, capability=rotated.capability,
+        rate_subject="repeat-a", now=NOW + timedelta(minutes=3),
+    )
+
+    # The second successful opening of the same case is the reporter having to
+    # come back: the first answer did not settle it.
+    assert events.count("repeated_contact") == 1

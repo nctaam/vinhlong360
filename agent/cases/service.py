@@ -898,6 +898,15 @@ class CaseService:
             now=now,
             current_user_id=session_user_ref,
         )
+        with self._store.transaction() as transaction:
+            sessions = transaction.access_session_count(grant.access.case_id)
+        if sessions > 1:
+            from . import metrics as _metrics
+
+            # Coming back for the same case is failure demand: the first answer
+            # did not settle it. One event per return visit, none for the first.
+            _metrics.observe("repeated_contact", channel="web",
+                             case_id=grant.access.case_id, now=now)
         return PublicAccessGrant(
             access_token=grant.access_token,
             csrf_token=self._crypto.issue_case_csrf(grant.access),

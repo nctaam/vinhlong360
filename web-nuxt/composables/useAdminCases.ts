@@ -20,6 +20,8 @@ export interface AdminQueueItem {
   risk_class: string
   status: string
   revision: number
+  promise_health?: string
+  owner_ref?: string | null
 }
 
 export interface AdminCaseItem {

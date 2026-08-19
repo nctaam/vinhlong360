@@ -350,3 +350,28 @@ def test_a_ruling_through_the_route_is_observed_as_decided(monkeypatch):
     asyncio.run(decide_case_item(SimpleNamespace(state=SimpleNamespace()), body))
 
     assert events == [("decided", "R1")]
+
+
+def test_the_queue_route_serialises_the_full_grammar(monkeypatch):
+    import asyncio
+
+    from cases.admin_api import list_case_queue
+
+    class _Page:
+        items = [SimpleNamespace(
+            work_item_id="w-1", case_id="c-1", kind="decide", risk_class="R2",
+            status="claimed", revision=3, promise_health="breached",
+            assignee_ref="user:7",
+        )]
+
+    monkeypatch.setattr("cases.work_control.list_queue",
+                        lambda actor, filters, now: _Page())
+
+    payload = asyncio.run(list_case_queue(SimpleNamespace(state=SimpleNamespace())))
+
+    row = payload["items"][0]
+    # queue -> promise health -> owner -> next action: a rank that only sorts
+    # is a rank the operator cannot see, so every row carries its words.
+    assert row["promise_health"] == "breached"
+    assert row["owner_ref"] == "user:7"
+    assert row["kind"] == "decide" and row["revision"] == 3

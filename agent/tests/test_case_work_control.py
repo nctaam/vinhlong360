@@ -438,3 +438,31 @@ def test_a_lease_expiry_scan_leaves_a_capacity_trace(pg_database, monkeypatch):
     scan_escalations(now=NOW)
 
     assert ("lease_expired", case_id) in events
+
+
+@pg_only
+def test_claiming_decision_work_marks_the_start_of_triage(pg_database, monkeypatch):
+    events = []
+    monkeypatch.setattr("cases.metrics.observe",
+                        lambda kind, **kw: events.append((kind, kw.get("case_id"))) or True)
+    case_id = _case(pg_database)
+    item = _work(pg_database, case_id, kind="decide")
+
+    claim_work_item(item, _actor(), 1, now=NOW)
+
+    # Nothing earlier involves a person looking at the case.
+    assert ("triaged", case_id) in events
+
+
+@pg_only
+def test_the_queue_row_carries_the_promise_health_it_is_ordered_by(pg_database):
+    case_id = _case(pg_database)
+    _work(pg_database, case_id)
+    _clock(pg_database, case_id, due_at=NOW - timedelta(hours=2))
+
+    page = list_queue(_actor(), now=NOW)
+
+    row = next(item for item in page.items if item.case_id == case_id)
+    # The grammar is queue -> promise health -> owner -> next action; a rank
+    # that only sorts silently is a rank the operator cannot see.
+    assert row.promise_health == "breached"

@@ -49,6 +49,8 @@ class WorkItem:
     ready_at: datetime
     priority: int
     revision: int
+    # Derived from the case's promise clocks at read time, never stored here.
+    promise_health: str = "on_track"
 
 
 @dataclass(frozen=True)
@@ -97,6 +99,9 @@ def _row_to_item(database, row) -> WorkItem:
         ready_at=item["ready_at"],
         priority=int(item["priority"]),
         revision=int(item["revision"]),
+        promise_health={2: "breached", 1: "at_risk"}.get(
+            int(item.get("health_rank") or 0), "on_track"
+        ),
     )
 
 
@@ -181,7 +186,7 @@ def _audit(database, conn, item: WorkItem, actor, *, reason_code: str, now: date
 # ── Queue ──
 
 _QUEUE_SQL = f"""
-SELECT {_COLUMNS}
+SELECT {_COLUMNS}, COALESCE(health.health_rank, 0) AS health_rank
 FROM case_work_items AS work
 LEFT JOIN LATERAL (
     SELECT max(
@@ -258,6 +263,13 @@ def claim_work_item(work_item_id: str, actor, expected_revision: int, *, now: da
         )
         _audit(database, conn, claimed, actor, reason_code="work_claimed", now=now)
         conn.commit()
+    if claimed.kind in ("decide", "decision"):
+        from . import metrics as _metrics
+
+        # The moment somebody picks the decision work up is when triage starts;
+        # nothing earlier involves a person looking at the case.
+        _metrics.observe("triaged", channel="web", risk_class=str(claimed.risk_class),
+                         case_id=claimed.case_id, now=now)
     return claimed
 
 

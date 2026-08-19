@@ -954,3 +954,39 @@ def test_public_items_carry_the_latest_ruling_so_the_page_can_answer():
     # reporter's page said "đang xem xét" forever, whatever was decided.
     assert "case_decisions" in sql and "ORDER BY decided_at DESC LIMIT 1" in sql
     assert items[0].accepted is True
+
+
+def test_a_waiting_transition_is_observed_when_it_is_appended(monkeypatch):
+    from cases.domain import CasePhase, WaitingContext
+    from cases.transitions import TransitionDraft
+
+    events = []
+    monkeypatch.setattr("cases.metrics.observe",
+                        lambda kind, **kw: events.append((kind, kw.get("case_id"))) or True)
+    database = _RowsDatabase(rows=[{"transition_id": "t-1"}])
+    now = datetime(2026, 8, 19, 9, 0, tzinfo=timezone.utc)
+    waiting = WaitingContext(
+        requester_request="giấy phép", safe_message="đang chờ bạn bổ sung",
+        waiting_on_ref="requester", evidence_ref="e-1",
+        next_review_at=now + timedelta(days=2), started_at=now,
+    )
+
+    _transaction(database).append_transition(TransitionDraft(
+        case_id="case-1", from_phase=CasePhase.TRIAGE, to_phase=CasePhase.INVESTIGATION,
+        from_revision=1, to_revision=2, actor_ref="person:op",
+        reason_code="waiting_on_requester", policy_revision="p", correlation_id="c",
+        occurred_at=now, waiting=waiting,
+    ))
+
+    assert ("waiting", "case-1") in events
+
+
+def test_completed_work_assignees_reads_only_finished_work():
+    database = _RowsDatabase(many=[[{"assignee_ref": "person:checker"}]])
+
+    finished = _transaction(database).completed_work_assignees("case-1", "truth_review")
+
+    sql, params = database.statements[0]
+    assert "status = 'completed'" in sql
+    assert params == ("case-1", "truth_review")
+    assert finished == ("person:checker",)

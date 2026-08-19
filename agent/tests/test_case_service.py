@@ -566,3 +566,54 @@ def test_the_operator_guard_knows_the_scope_names_a_real_operator_carries():
     # It listed only the internal vocabulary, so an actor holding the AdminCP
     # scopes walked straight past the check meant to keep them off this path.
     assert {"service.operator", "correction.decide", "publication.apply"} <= _OPERATOR_SCOPES
+
+
+def test_a_return_visit_is_observed_and_a_first_visit_is_not(monkeypatch):
+    from contextlib import contextmanager
+    from datetime import datetime, timezone
+
+    from cases.service import CaseService
+
+    events = []
+    monkeypatch.setattr("cases.metrics.observe",
+                        lambda kind, **kw: events.append(kind) or True)
+    monkeypatch.setattr(CaseService, "_limit",
+                        lambda self, *a, **k: None)
+
+    class _Access:
+        case_id = "case-1"
+
+    class _Grant:
+        access_token = "t"
+        access = _Access()
+
+    sessions = {"n": 1}
+
+    class _Tx:
+        def access_session_count(self, case_id):
+            return sessions["n"]
+
+    class _Store:
+        def exchange_receipt(self, *a, **k):
+            return _Grant()
+
+        @contextmanager
+        def transaction(self):
+            yield _Tx()
+
+    class _Crypto:
+        def issue_case_csrf(self, access):
+            return "csrf"
+
+    service = CaseService(_Store(), _Crypto(), object(), owner_ref="person:owner")
+    now = datetime(2026, 8, 19, 9, 0, tzinfo=timezone.utc)
+
+    service.exchange_receipt(public_reference="VL-1", capability="c" * 43,
+                             rate_subject="s", now=now)
+    # The first opening is the service working, not failure demand.
+    assert events == []
+
+    sessions["n"] = 2
+    service.exchange_receipt(public_reference="VL-1", capability="c" * 43,
+                             rate_subject="s", now=now)
+    assert events == ["repeated_contact"]

@@ -296,3 +296,22 @@ def test_provider_failures_are_observed_as_capacity_events(pg_database, monkeypa
 
     # The failure demand ledger sees what the reporter felt: the provider broke.
     assert ("provider_failure", "sms") in events
+
+
+@pg_only
+def test_a_delivered_notification_is_the_reporter_being_updated(pg_database, monkeypatch):
+    events = []
+    monkeypatch.setattr("cases.metrics.observe",
+                        lambda kind, **kw: events.append(kind) or True)
+    case_id = _case(pg_database)
+    _enqueue(pg_database, case_id, key="notify:updated:1")
+    provider = _FakeProvider([DeliveryResult(True, None, False)])
+    configure_case_outbox(
+        database=pg_database, crypto=CaseCrypto(MASTER_KEY), provider=provider,
+        contact_lookup=lambda case_id, **_: "0901234567",
+    )
+
+    dispatch_case_outbox(now=NOW)
+
+    # Updated means the word reached them, not that we queued the word.
+    assert events == ["updated"]

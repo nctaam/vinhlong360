@@ -397,12 +397,58 @@ def test_the_highest_risk_class_cannot_be_published_by_the_person_who_decided_it
 
 
 @pg_only
+def _finish_truth_review(adapter, case_id, *, by="person:checker"):
+    with adapter._conn(commit_on_success=False) as conn:
+        adapter._execute(
+            conn,
+            "INSERT INTO case_work_items (case_id, kind, required_role, risk_class,"
+            " status, assignee_ref, ready_at, priority)"
+            " VALUES (%s,'truth_review','truth_reviewer','R3','completed',%s,%s,0)",
+            (case_id, by, NOW),
+        )
+        conn.commit()
+
+
+@pg_only
+def test_a_named_reviewer_is_not_enough_until_the_truth_review_is_finished(pg_database):
+    from cases.publication import PublicationRejected, apply_change_set
+
+    case_id, item_id, change_set_id = _seed_change_set(
+        pg_database, risk="R3", reviewer="person:checker"
+    )
+
+    # A name on the change set is intent; only a completed truth_review work
+    # item says the review actually happened.
+    with pytest.raises(PublicationRejected) as excinfo:
+        apply_change_set(_command(case_id, change_set_id), now=NOW)
+
+    assert excinfo.value.problem.code == "truth_review_required"
+    assert _change_set(pg_database, change_set_id)["apply_status"] == "pending"
+
+
+@pg_only
+def test_a_truth_review_finished_by_the_maker_does_not_count(pg_database):
+    from cases.publication import PublicationRejected, apply_change_set
+
+    case_id, item_id, change_set_id = _seed_change_set(
+        pg_database, risk="R3", reviewer="person:checker"
+    )
+    _finish_truth_review(pg_database, case_id, by="person:maker")
+
+    with pytest.raises(PublicationRejected) as excinfo:
+        apply_change_set(_command(case_id, change_set_id), now=NOW)
+
+    assert excinfo.value.problem.code == "truth_review_required"
+
+
+@pg_only
 def test_the_highest_risk_class_applies_once_a_second_person_has_reviewed(pg_database):
     from cases.publication import apply_change_set
 
     case_id, item_id, change_set_id = _seed_change_set(
         pg_database, risk="R3", reviewer="person:checker"
     )
+    _finish_truth_review(pg_database, case_id)
 
     result = apply_change_set(_command(case_id, change_set_id), now=NOW)
 

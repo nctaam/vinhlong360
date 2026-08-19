@@ -291,6 +291,10 @@ async def list_case_queue(request: Request, kind: str | None = None):
                 "risk_class": str(item.risk_class),
                 "status": item.status,
                 "revision": item.revision,
+                # The queue grammar: promise health and owner ride every row,
+                # because a rank that only sorts is a rank nobody can see.
+                "promise_health": item.promise_health,
+                "owner_ref": item.assignee_ref,
             }
             for item in page.items
         ]

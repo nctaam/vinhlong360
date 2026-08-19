@@ -15,6 +15,8 @@ import { CORRECTION_FIELD_HINTS } from '../../utils/correctionLink'
 
 const route = useRoute()
 const cases = useCorrectionCases()
+// Deployment-provided; an empty value hides the phone lane entirely.
+const assistedHours = String(useRuntimeConfig().public.caseAssistedHours || '')
 
 const entityId = computed(() => {
   const raw = String(route.query.entity ?? '').slice(0, 200)
@@ -110,6 +112,7 @@ useSeoMeta({
         :entity-name="entity.name"
         :base-entity-revision="entity.revision"
         :initial-field-path="fieldHint"
+        :assisted-hours="assistedHours || null"
         :busy="busy"
         @submit="submit"
         @request-phone-verification="verifyPhone"

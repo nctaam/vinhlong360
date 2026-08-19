@@ -174,6 +174,10 @@ def dispatch_case_outbox(*, now: datetime, limit: int = 100) -> DispatchSummary:
 
             if result.delivered:
                 sent += 1
+                from . import metrics as _metrics
+
+                _metrics.observe("updated", channel="sms",
+                                 case_id=str(item["case_id"]), now=now)
                 _settle(database, conn, outbox_id, status="sent", attempts=attempts,
                         error_code=None, available_at=now)
             elif result.retryable and attempts < MAX_ATTEMPTS:

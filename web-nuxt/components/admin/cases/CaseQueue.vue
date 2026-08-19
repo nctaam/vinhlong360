@@ -4,6 +4,13 @@
 // every state carries its words, so a monochrome screen reads the same.
 import type { AdminQueueItem } from '../../../composables/useAdminCases'
 
+const HEALTH_LABEL: Record<string, string> = {
+  on_track: 'Đúng hạn',
+  at_risk: 'Sắp trễ hạn',
+  breached: 'Đã trễ hạn',
+  recovery: 'Đang khắc phục',
+}
+
 defineProps<{
   items: AdminQueueItem[]
   selectedCaseId?: string | null
@@ -31,10 +38,16 @@ const KIND_LABEL: Record<string, string> = {
           :data-risk="item.risk_class"
           @click="emit('open', item)"
         >
+          <!-- The grammar, in reading order: next action, promise health,
+               owner, then the identifiers. All words, no colour-only state. -->
           <span class="queue-kind">{{ KIND_LABEL[item.kind] ?? item.kind }}</span>
-          <!-- The words carry the risk; the tint only underlines them. -->
+          <span class="queue-health" :data-health="item.promise_health">
+            {{ HEALTH_LABEL[item.promise_health ?? 'on_track'] ?? item.promise_health }}
+          </span>
+          <span class="queue-owner">
+            {{ item.owner_ref ? `Người giữ: ${item.owner_ref}` : 'Chưa ai nhận' }}
+          </span>
           <span class="queue-risk">Mức rủi ro {{ item.risk_class }}</span>
-          <span class="queue-status">{{ item.status === 'claimed' ? 'Đang có người giữ' : 'Chưa ai nhận' }}</span>
           <span class="queue-case">{{ item.case_id.slice(0, 8) }}…</span>
         </button>
       </li>
@@ -73,8 +86,13 @@ const KIND_LABEL: Record<string, string> = {
 .queue-kind {
   font-weight: 600;
 }
+.queue-health[data-health='breached'],
+.queue-health[data-health='at_risk'] {
+  font-weight: 700;
+}
 .queue-risk,
-.queue-status,
+.queue-health,
+.queue-owner,
 .queue-case {
   font-size: 0.8rem;
   color: var(--text-muted, #78716c);
