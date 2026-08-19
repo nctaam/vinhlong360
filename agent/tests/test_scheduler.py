@@ -238,3 +238,21 @@ def test_a_dispatcher_failure_cannot_escape_into_the_scheduler_loop(monkeypatch)
 
     # A bad key blows up inside the task; unrelated jobs must not be affected.
     assert scheduler.task_case_outbox() is None
+
+
+def test_case_lifecycle_cleanup_is_a_no_op_while_the_kernel_sleeps(monkeypatch):
+    import scheduler as scheduler_module
+    from config import settings
+
+    monkeypatch.setattr(settings, "CASE_KERNEL_ENABLED", False, raising=False)
+
+    # No kernel, no shelves to walk — and above all, no database touched.
+    assert scheduler_module.task_case_lifecycle_cleanup() == 0
+
+
+def test_case_lifecycle_cleanup_is_scheduled_daily():
+    import scheduler as scheduler_module
+
+    task = next(t for t in scheduler_module.TASKS if t.name == "case-lifecycle-cleanup")
+
+    assert task.interval == 24 * 3600

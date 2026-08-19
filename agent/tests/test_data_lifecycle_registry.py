@@ -12,6 +12,7 @@ import data_lifecycle
 
 
 EXPECTED_SUBJECT_STORES = {
+    "case_subject_links",
     "hot_memory",
     "cold_memory",
     "memory_graph",

@@ -140,3 +140,41 @@ def public_sla_eligible(window: CapacityWindow, *, coverage_named: str = "",
         coverage_named=coverage_named.strip(),
         computed_at=now or datetime.now(timezone.utc),
     )
+
+
+# ── Instrumentation ──
+#
+# `observe` is what the transports call. It opens its own short transaction and
+# never raises: a broken metrics pipe must never break the business action it
+# is watching, so every failure lands in the log and nowhere else.
+
+import logging
+
+_DATABASE = None
+_logger = logging.getLogger("cases.metrics")
+
+
+def configure_case_metrics(*, database=None) -> None:
+    global _DATABASE
+    _DATABASE = database
+
+
+def observe(kind: str, *, channel: str, risk_class: str | None = None,
+            case_id: str | None = None, duration_seconds: int | None = None,
+            metadata: dict | None = None, now: datetime | None = None) -> bool:
+    """Record one boundary event; True if it landed, False if it was dropped."""
+    if _DATABASE is None:
+        return False
+    try:
+        from .store import PostgresCaseStore
+
+        with PostgresCaseStore(_DATABASE).transaction() as transaction:
+            record_capacity_event(
+                transaction, kind=kind, channel=channel, risk_class=risk_class,
+                case_id=case_id, duration_seconds=duration_seconds,
+                metadata=metadata, now=now,
+            )
+        return True
+    except Exception:  # noqa: BLE001 - measurement must never break the action
+        _logger.warning("capacity event dropped: %s", kind, exc_info=True)
+        return False

@@ -518,6 +518,34 @@ def task_cleanup_feedback_receipts():
         return 0
 
 
+def task_case_lifecycle_cleanup():
+    """Walk the case retention shelves once (Task 18); kernel-off is a no-op."""
+    try:
+        from config import settings
+
+        if not getattr(settings, "CASE_KERNEL_ENABLED", False):
+            return 0
+        from cases.lifecycle import cleanup_case_data
+        from cases.store import PostgresCaseStore
+        from database import db
+
+        if not getattr(db, "_use_pg", False):
+            return 0
+        with PostgresCaseStore(db).transaction() as transaction:
+            summary = cleanup_case_data(transaction)
+        _sched_logger.info(
+            "Case lifecycle cleanup: %d access, %d idem, %d challenges,"
+            " %d contacts, %d payloads, %d capacity links",
+            summary.expired_access_sessions, summary.expired_idempotency,
+            summary.expired_challenges, summary.contacts_redacted,
+            summary.private_payloads_redacted, summary.capacity_links_removed,
+        )
+        return 1
+    except Exception:
+        _sched_logger.error("CASE_LIFECYCLE_CLEANUP_FAILED")
+        return 0
+
+
 def _digest_kb_part(parts: list):
     """Thêm dòng thống kê tri thức (nội dung/địa điểm/lịch trình) vào digest."""
     try:
@@ -1294,6 +1322,7 @@ TASKS = [
     ScheduledTask("case-outbox",    task_case_outbox,            interval_seconds=60),          # 1m, inert while the case flags are off
     ScheduledTask("analytics-cleanup", task_cleanup_analytics,   interval_seconds=24 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 24h
     ScheduledTask("feedback-receipt-cleanup", task_cleanup_feedback_receipts, interval_seconds=3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 1h
+    ScheduledTask("case-lifecycle-cleanup", task_case_lifecycle_cleanup, interval_seconds=24 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 24h, no-op khi CASE_KERNEL_ENABLED=false
     # Digest quản lý MIỄN PHÍ (không LLM) — chạy bất kể AUTONOMOUS_TASKS_ENABLED; no-op nếu chưa cấu hình admin TG.
     ScheduledTask("admin-digest",      task_admin_digest,         interval_seconds=24 * 3600, run_immediately=False),  # 24h
     # Agent tự động gọi LLM CÓ CAP (§B8 ngoại lệ kiểm soát) — task tự gate qua AUTONOMOUS_AGENT_ENABLED

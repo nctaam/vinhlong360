@@ -424,3 +424,17 @@ def test_escalation_never_edits_the_case_it_escalates(pg_database):
             (case_id,),
         ))
     assert after == before
+
+
+@pg_only
+def test_a_lease_expiry_scan_leaves_a_capacity_trace(pg_database, monkeypatch):
+    events = []
+    monkeypatch.setattr("cases.metrics.observe",
+                        lambda kind, **kw: events.append((kind, kw.get("case_id"))) or True)
+    case_id = _case(pg_database)
+    _work(pg_database, case_id)
+    _clock(pg_database, case_id, due_at=NOW - timedelta(hours=2))
+
+    scan_escalations(now=NOW)
+
+    assert ("lease_expired", case_id) in events

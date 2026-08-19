@@ -218,3 +218,31 @@ def test_events_round_trip_through_postgres_grouped_by_day(tmp_path):
     assert window.arrivals == 2 and window.completions == 1
     assert window.covered_days == 2
     assert window.by_channel == {"web": 3}
+
+
+# ── The observer at the boundaries ──
+
+def test_observe_without_a_database_is_a_quiet_no_op():
+    from cases.metrics import configure_case_metrics, observe
+
+    configure_case_metrics(database=None)
+
+    assert observe("received", channel="web") is False
+
+
+def test_observe_swallows_a_broken_pipe_instead_of_breaking_the_action(monkeypatch):
+    from cases import metrics as metrics_module
+
+    class _Broken:
+        def transaction(self):
+            raise RuntimeError("db down")
+
+    monkeypatch.setattr(metrics_module, "configure_case_metrics", metrics_module.configure_case_metrics)
+    metrics_module.configure_case_metrics(database=object())
+    monkeypatch.setattr("cases.store.PostgresCaseStore", lambda db: _Broken())
+
+    try:
+        # Measurement failing must never raise into the business action.
+        assert metrics_module.observe("received", channel="web") is False
+    finally:
+        metrics_module.configure_case_metrics(database=None)

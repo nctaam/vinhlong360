@@ -477,3 +477,18 @@ def test_the_reporter_is_told_the_change_is_applied_not_that_it_is_done(pg_datab
     # The public status page reads this. Before Task 12 it said not_required
     # forever, which would have told the reporter nothing was owed to them.
     assert [item.publication_state for item in items] == [PublicationState.APPLIED]
+
+
+@pg_only
+def test_an_apply_leaves_an_applied_capacity_trace(pg_database, monkeypatch):
+    from cases.publication import apply_change_set
+
+    events = []
+    monkeypatch.setattr("cases.metrics.observe",
+                        lambda kind, **kw: events.append(kind) or True)
+    case_id, item_id, change_set_id = _seed_change_set(pg_database)
+
+    apply_change_set(_command(case_id, change_set_id), now=NOW)
+
+    # Applied only: nothing may claim verified or completed at this boundary.
+    assert events == ["applied"]

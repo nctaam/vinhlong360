@@ -294,6 +294,11 @@ async def create_correction(request: Request):
         if mapped is None:
             raise
         return mapped
+    if not result.replayed:
+        # A replay is the same arrival answered twice, not a second arrival.
+        from . import metrics as _metrics
+
+        _metrics.observe("received", channel="web", case_id=result.case_id)
     return JSONResponse(
         {
             "publicReference": result.public_reference,

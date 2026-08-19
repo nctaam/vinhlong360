@@ -243,6 +243,10 @@ def apply_change_set(command: ApplyChangeSetCommand, *, now: datetime) -> Public
                 available_at=now,
             )
         )
+    from . import metrics as _metrics
+
+    _metrics.observe("applied", channel="web", risk_class=str(row["risk_class"]),
+                     case_id=command.case_id, now=now)
     return PublicationResult(
         change_set_id=command.change_set_id,
         case_id=command.case_id,
@@ -385,6 +389,11 @@ def _record_verification_success(transaction, command, snapshot, actor_ref: str,
             available_at=now,
         )
     )
+    from . import metrics as _metrics
+
+    # Two facts on purpose: the projection checked out, and the case finished.
+    _metrics.observe("verified", channel="web", case_id=command.case_id, now=now)
+    _metrics.observe("completed", channel="web", case_id=command.case_id, now=now)
     return VerificationResult(
         change_set_id=command.change_set_id,
         state=PublicationState.VERIFIED,
@@ -419,6 +428,9 @@ def _record_verification_failure(transaction, command, snapshot, actor_ref: str,
             available_at=next_update_at,
         )
     )
+    from . import metrics as _metrics
+
+    _metrics.observe("recovery", channel="web", case_id=command.case_id, now=now)
     return VerificationResult(
         change_set_id=command.change_set_id,
         state=PublicationState.APPLIED,

@@ -601,3 +601,15 @@ def test_review_on_a_closed_case_creates_a_linked_case_and_leaves_the_original_a
     # The closed original is never reopened by asking for a review.
     assert untouched["phase"] == "closed"
     assert untouched["current_revision"] == 2
+
+
+def test_a_successful_create_is_observed_as_one_arrival(client, monkeypatch):
+    events = []
+    monkeypatch.setattr("cases.metrics.observe",
+                        lambda kind, **kw: events.append((kind, kw.get("channel"))) or True)
+
+    response = client.post("/api/cases/corrections", headers=_headers(), json=_body())
+
+    assert response.status_code == 201
+    # One arrival, on the web channel; a replayed create would add nothing.
+    assert events == [("received", "web")]

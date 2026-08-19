@@ -277,3 +277,22 @@ def test_the_delivery_key_is_deterministic_for_one_item(pg_database):
 
     keys = [key for _, _, key in provider.sent]
     assert len(keys) == 2 and keys[0] == keys[1]
+
+
+@pg_only
+def test_provider_failures_are_observed_as_capacity_events(pg_database, monkeypatch):
+    events = []
+    monkeypatch.setattr("cases.metrics.observe",
+                        lambda kind, **kw: events.append((kind, kw.get("channel"))) or True)
+    case_id = _case(pg_database)
+    _enqueue(pg_database, case_id, key="notify:observe:1")
+    provider = _FakeProvider([DeliveryResult(False, "provider_rejected", False)])
+    configure_case_outbox(
+        database=pg_database, crypto=CaseCrypto(MASTER_KEY), provider=provider,
+        contact_lookup=lambda case_id, **_: "0901234567",
+    )
+
+    dispatch_case_outbox(now=NOW)
+
+    # The failure demand ledger sees what the reporter felt: the provider broke.
+    assert ("provider_failure", "sms") in events

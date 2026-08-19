@@ -578,6 +578,9 @@ async def create_assisted_correction(request: Request, body: AssistedCorrectionB
         )
     except Exception as error:  # noqa: BLE001
         raise _fail(error) from error
+    from . import metrics as _metrics
+
+    _metrics.observe("received", channel=body.channel, case_id=result.case_id)
     # The reference the reporter can quote back, and the values to read out. The
     # capability stays with the case: an operator must not carry somebody's key.
     return {
@@ -686,6 +689,10 @@ async def decide_case_item(request: Request, body: DecisionBody):
         )
     except Exception as error:  # noqa: BLE001
         raise _fail(error) from error
+    from . import metrics as _metrics
+
+    _metrics.observe("decided", channel="web", risk_class=body.risk_class,
+                     case_id=body.case_id)
     return {"item_id": outcome.item_id, "outcome_code": str(outcome.outcome_code),
             "reason_code": outcome.reason_code}
 

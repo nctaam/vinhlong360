@@ -327,3 +327,26 @@ def test_every_command_in_the_table_now_has_a_route_except_guided_intake():
 
     # Every command the table names is now reachable.
     assert set(CASE_ACTION_SCOPE) - wired == set()
+
+
+def test_a_ruling_through_the_route_is_observed_as_decided(monkeypatch):
+    import asyncio
+
+    from cases.admin_api import DecisionBody, decide_case_item
+
+    events = []
+    monkeypatch.setattr("cases.metrics.observe",
+                        lambda kind, **kw: events.append((kind, kw.get("risk_class"))) or True)
+    monkeypatch.setattr("cases.correction.load_evidence_records", lambda case_id, item_id: ())
+    monkeypatch.setattr(
+        "cases.correction.decide_item",
+        lambda command, now: SimpleNamespace(item_id=command.item_id,
+                                            outcome_code="corrected",
+                                            reason_code=command.reason_code),
+    )
+
+    body = DecisionBody(case_id="c-1", item_id="i-1", outcome_code="corrected",
+                        reason_code="source_confirms_change", risk_class="R1")
+    asyncio.run(decide_case_item(SimpleNamespace(state=SimpleNamespace()), body))
+
+    assert events == [("decided", "R1")]

@@ -440,6 +440,11 @@ def scan_escalations(*, now: datetime, limit: int = 200) -> EscalationSummary:
             {"now": now, "kind": ESCALATION_KIND, "limit": limit},
         )
         case_ids = [str(database._row_to_dict(row)["case_id"]) for row in rows]
+        from . import metrics as _metrics
+
+        for expired_case_id in case_ids:
+            _metrics.observe("lease_expired", channel="web",
+                             case_id=expired_case_id, now=now)
         for case_id in case_ids:
             database._execute(
                 conn,

@@ -74,6 +74,12 @@ def notification_message(*, public_reference: str, topic: str) -> str:
     return template.format(reference=public_reference)
 
 
+def _observe_provider_failure(case_id: str, now) -> None:
+    from . import metrics as _metrics
+
+    _metrics.observe("provider_failure", channel="sms", case_id=case_id, now=now)
+
+
 def delivery_key(outbox_id: str, attempt: int) -> str:
     """Stable per item, so a provider that deduplicates sees one logical send."""
     return hashlib.sha256(f"vl360-case-outbox:{outbox_id}".encode("ascii")).hexdigest()[:32]
@@ -172,12 +178,14 @@ def dispatch_case_outbox(*, now: datetime, limit: int = 100) -> DispatchSummary:
                         error_code=None, available_at=now)
             elif result.retryable and attempts < MAX_ATTEMPTS:
                 retried += 1
+                _observe_provider_failure(str(item["case_id"]), now)
                 backoff = _BACKOFF_SECONDS[min(attempts, len(_BACKOFF_SECONDS)) - 1]
                 _settle(database, conn, outbox_id, status="pending", attempts=attempts,
                         error_code=result.error_code,
                         available_at=now + timedelta(seconds=backoff))
             else:
                 dead += 1
+                _observe_provider_failure(str(item["case_id"]), now)
                 _settle(database, conn, outbox_id, status="failed", attempts=attempts,
                         error_code=result.error_code, available_at=now)
         conn.commit()

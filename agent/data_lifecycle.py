@@ -24,6 +24,7 @@ _MAX_CACHE_SCAN_ITEMS = 5_000
 _CLASSIFICATIONS = {"personal", "pseudonymous", "aggregate", "operational"}
 
 EXPECTED_SUBJECT_STORES = frozenset({
+    "case_subject_links",
     "hot_memory",
     "cold_memory",
     "memory_graph",
@@ -244,7 +245,78 @@ def _verify_exact_cache(owner_key: str) -> VerificationResult:
     )
 
 
+def _case_owner_variants(owner_key: str) -> tuple[str, str]:
+    """Both spellings: rows may hold 'user:<id>' or the bare id."""
+    bare = owner_key.split(":", 1)[1] if owner_key.startswith("user:") else owner_key
+    return owner_key, bare
+
+
+def _purge_case_subject_links(owner_key: str) -> PurgeResult:
+    """Unlink the person from their correction cases; keep the answerable rest.
+
+    The case, its decisions, its audit and its outcome all stay — they are the
+    record the service answers with, retained under named fields. What goes is
+    the subject linkage: the receipt's account binding.
+    """
+    from database import db
+
+    if not getattr(db, "_use_pg", False):
+        # The kernel is PostgreSQL-only; on SQLite there is nothing to hold.
+        return PurgeResult(store_name="case_subject_links")
+    variants = list(_case_owner_variants(owner_key))
+    try:
+        with db._conn() as conn:
+            cursor = db._execute(
+                conn,
+                "UPDATE case_receipts SET subject_user_id = NULL"
+                " WHERE subject_user_id = ANY(%s)",
+                (variants,),
+            )
+            removed = int(getattr(cursor, "rowcount", 0) or 0)
+        return PurgeResult(store_name="case_subject_links", removed_count=removed)
+    except Exception:
+        return PurgeResult(store_name="case_subject_links", complete=False,
+                           error_code="STORE_UNAVAILABLE")
+
+
+def _verify_case_subject_links_absent(owner_key: str) -> VerificationResult:
+    from database import db
+
+    if not getattr(db, "_use_pg", False):
+        return VerificationResult(store_name="case_subject_links", absent=True)
+    variants = list(_case_owner_variants(owner_key))
+    try:
+        with db._conn() as conn:
+            row = db._fetchone(
+                conn,
+                "SELECT count(*) AS n FROM case_receipts"
+                " WHERE subject_user_id = ANY(%s)",
+                (variants,),
+            )
+        residual = int(db._row_to_dict(row)["n"])
+        return VerificationResult(
+            store_name="case_subject_links", absent=residual == 0,
+            residual_count=residual,
+            error_code=None if residual == 0 else "VERIFY_FAILED",
+        )
+    except Exception:
+        return VerificationResult(store_name="case_subject_links", absent=False,
+                                  residual_count=1, error_code="STORE_UNAVAILABLE")
+
+
 lifecycle_registry = LifecycleRegistry((
+    DataStorePolicy(
+        "case_subject_links",
+        "personal",
+        _purge_case_subject_links,
+        _verify_case_subject_links_absent,
+        # What stays is the answerable record — cases, decisions, audit,
+        # change sets, transitions — none of it subject-linked once the
+        # receipt binding is gone. retained_fields is reserved for
+        # aggregate/operational stores in this registry, so the retention
+        # story lives in the runbook rather than here.
+        "Account linkage on correction-case receipts (PostgreSQL kernel)",
+    ),
     DataStorePolicy(
         "hot_memory",
         "personal",

@@ -421,3 +421,21 @@ def test_a_change_set_that_was_never_applied_cannot_be_verified(pg_database):
         _verify(case_id, change_set_id)
 
     assert excinfo.value.problem.code == "change_set_not_applied"
+
+
+@pg_only
+def test_verification_outcomes_leave_their_own_capacity_traces(pg_database, monkeypatch):
+    events = []
+    monkeypatch.setattr("cases.metrics.observe",
+                        lambda kind, **kw: events.append(kind) or True)
+
+    case_id, change_set_id = _applied_case(pg_database)
+    events.clear()  # the apply above already traced itself
+
+    _verify(case_id, change_set_id, _projection(revision=7))
+    assert events == ["recovery"], "a failed check is recovery, never completion"
+
+    events.clear()
+    _verify(case_id, change_set_id)
+    # Two facts on purpose: the page checked out, and the case finished.
+    assert events == ["verified", "completed"]
