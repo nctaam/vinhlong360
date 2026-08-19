@@ -354,29 +354,12 @@ def test_problem_details_carry_a_request_id_and_no_secret(client):
 
 # ── End to end against real PostgreSQL: the router wired to the real service ──
 
-import os  # noqa: E402
-from urllib.parse import parse_qs, urlparse  # noqa: E402
 
 
-def _pg_url() -> str | None:
-    raw = os.environ.get("VL360_TEST_DATABASE_URL", "").strip()
-    if not raw:
-        return None
-    parsed = urlparse(raw)
-    if parsed.scheme not in {"postgres", "postgresql"} or parsed.hostname not in {
-        "localhost", "127.0.0.1", "::1",
-    }:
-        return None
-    if {"host", "hostaddr"} & parse_qs(parsed.query, keep_blank_values=True).keys():
-        return None
-    return raw
 
 
-TEST_DATABASE_URL = _pg_url()
-pg_only = pytest.mark.skipif(
-    TEST_DATABASE_URL is None,
-    reason="set VL360_TEST_DATABASE_URL to a disposable loopback PostgreSQL database",
-)
+# One loopback-only rule for every suite that opens the disposable database.
+from _pg_test_database import TEST_DATABASE_URL, pg_only  # noqa: E402
 
 
 @pytest.fixture

@@ -155,33 +155,16 @@ def test_accepted_is_an_item_decision_not_a_case_terminal_state():
 
 # ── Persistence, against real PostgreSQL ──
 
-import os  # noqa: E402
-from urllib.parse import parse_qs, urlparse  # noqa: E402
 
 import database  # noqa: E402
 from cases.policy import load_case_policy  # noqa: E402
 from cases.security import CaseCrypto  # noqa: E402
 
 
-def _pg_url():
-    raw = os.environ.get("VL360_TEST_DATABASE_URL", "").strip()
-    if not raw:
-        return None
-    parsed = urlparse(raw)
-    if parsed.scheme not in {"postgres", "postgresql"} or parsed.hostname not in {
-        "localhost", "127.0.0.1", "::1",
-    }:
-        return None
-    if {"host", "hostaddr"} & parse_qs(parsed.query, keep_blank_values=True).keys():
-        return None
-    return raw
 
 
-TEST_DATABASE_URL = _pg_url()
-pg_only = pytest.mark.skipif(
-    TEST_DATABASE_URL is None,
-    reason="set VL360_TEST_DATABASE_URL to a disposable loopback PostgreSQL database",
-)
+# One loopback-only rule for every suite that opens the disposable database.
+from _pg_test_database import TEST_DATABASE_URL, pg_only  # noqa: E402
 MASTER_KEY = "0" * 43
 
 
