@@ -283,8 +283,12 @@ def test_every_workbench_command_is_reachable_on_the_running_app():
         "/admin/cases/work/release",
         "/admin/cases/work/takeover",
         "/admin/cases/work/recuse",
+        "/admin/cases/change-sets",
         "/admin/cases/change-sets/apply",
         "/admin/cases/change-sets/rollback",
+        "/admin/cases/change-sets/verify",
+        "/admin/cases/evidence",
+        "/admin/cases/decisions",
     } <= paths
 
 
@@ -299,4 +303,17 @@ def test_no_workbench_route_was_left_without_an_action_guard():
                 actions.add(action)
     # Every mounted route carries one, and each names a command from the table.
     assert actions <= set(CASE_ACTION_SCOPE)
-    assert len(actions) >= 10
+    assert len(actions) >= 15
+
+
+def test_every_command_in_the_table_now_has_a_route_except_guided_intake():
+    wired = set()
+    for route in server.app.routes:
+        for dependency in getattr(route, "dependencies", ()):
+            action = getattr(dependency.dependency, "case_action", None)
+            if action:
+                wired.add(action)
+
+    # Guided intake is validated but deliberately unmounted until filing exists;
+    # everything else the table promises is reachable.
+    assert set(CASE_ACTION_SCOPE) - wired == {"assisted.create"}

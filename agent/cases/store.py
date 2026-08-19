@@ -592,6 +592,21 @@ class CaseTransaction:
             for item in (_row_dict(self._db, row) for row in rows)
         )
 
+    def load_correction_evidence(self, case_id: str, item_id: str | None = None) -> tuple:
+        """Descriptors only. The private payload stays in its encrypted column."""
+        self._require_active()
+        sql = """
+            SELECT evidence_id, case_id, item_id, evidence_level, source_ref,
+                   descriptor, created_by_ref, created_at
+            FROM correction_evidence WHERE case_id = %s
+        """
+        params = (case_id,)
+        if item_id is not None:
+            sql += " AND item_id = %s"
+            params = (case_id, item_id)
+        rows = self._db._fetchall(self._conn, sql + " ORDER BY created_at, evidence_id", params)
+        return tuple(_row_dict(self._db, row) for row in rows)
+
     def load_public_reference(self, case_id: str) -> str | None:
         """The live receipt's reference; a rotated or revoked one is not it."""
         self._require_active()

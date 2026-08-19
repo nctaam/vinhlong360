@@ -124,12 +124,14 @@ PRIVATE_EVIDENCE_SCOPE = "case.private_evidence"
 
 _DATABASE = None
 _CRYPTO = None
+_PROJECTION_FETCHER = None
 
 
-def configure_case_admin_api(*, database=None, crypto=None) -> None:
-    global _DATABASE, _CRYPTO
+def configure_case_admin_api(*, database=None, crypto=None, projection_fetcher=None) -> None:
+    global _DATABASE, _CRYPTO, _PROJECTION_FETCHER
     _DATABASE = database
     _CRYPTO = crypto
+    _PROJECTION_FETCHER = projection_fetcher
 
 
 def _store():
@@ -560,3 +562,138 @@ def parse_assisted_body(payload: dict) -> AssistedCorrectionBody:
             "These fields are not accepted here: " + ", ".join(fields),
             status=422,
         ) from None
+
+
+# ── Evidence, decisions, change sets ──
+
+class EvidenceBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    case_id: StrictStr
+    item_id: StrictStr | None = None
+    level: StrictStr
+    source_scope: StrictStr = Field(max_length=100)
+    source_ref: StrictStr | None = Field(default=None, max_length=500)
+    observed_at: datetime
+    effective_at: datetime
+    expires_at: datetime | None = None
+    asserted_value: StrictStr | None = Field(default=None, max_length=MAX_READ_BACK)
+    content: StrictStr | None = Field(default=None, max_length=MAX_READ_BACK)
+
+
+@case_admin_router.post("/evidence", dependencies=[_guard("evidence.add")])
+async def add_case_evidence(request: Request, body: EvidenceBody):
+    from .correction import AddEvidenceCommand, add_evidence
+    from .domain import EvidenceLevel
+
+    try:
+        record = add_evidence(
+            AddEvidenceCommand(
+                case_id=body.case_id, item_id=body.item_id,
+                level=EvidenceLevel(body.level), source_scope=body.source_scope,
+                source_ref=body.source_ref, descriptor={}, content=body.content,
+                actor=_actor(request), observed_at=body.observed_at,
+                effective_at=body.effective_at, expires_at=body.expires_at,
+                asserted_value=body.asserted_value,
+            ),
+            now=_now(),
+        )
+    except Exception as error:  # noqa: BLE001
+        raise _fail(error) from error
+    # The identifier and its classification, never the payload back again.
+    return {"evidence_id": record.evidence_id, "level": str(record.level),
+            "source_scope": record.source_scope}
+
+
+class DecisionBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    case_id: StrictStr
+    item_id: StrictStr
+    outcome_code: StrictStr
+    reason_code: StrictStr = Field(max_length=200)
+    risk_class: StrictStr
+    reviewer_ref: StrictStr | None = Field(default=None, max_length=200)
+
+
+@case_admin_router.post("/decisions", dependencies=[_guard("item.decide")])
+async def decide_case_item(request: Request, body: DecisionBody):
+    from .correction import DecideItemCommand, decide_item, load_evidence_records
+    from .domain import CorrectionOutcome, RiskClass
+
+    try:
+        # Read the evidence back out of storage rather than trusting the caller
+        # to say what supported their own ruling.
+        evidence = load_evidence_records(body.case_id, body.item_id)
+        outcome = decide_item(
+            DecideItemCommand(
+                case_id=body.case_id, item_id=body.item_id,
+                outcome_code=CorrectionOutcome(body.outcome_code),
+                reason_code=body.reason_code, evidence=evidence,
+                risk_class=RiskClass(body.risk_class), actor=_actor(request),
+                reviewer_ref=body.reviewer_ref,
+            ),
+            now=_now(),
+        )
+    except Exception as error:  # noqa: BLE001
+        raise _fail(error) from error
+    return {"item_id": outcome.item_id, "outcome_code": str(outcome.outcome_code),
+            "reason_code": outcome.reason_code}
+
+
+class BuildChangeSetBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    case_id: StrictStr
+    item_ids: tuple[StrictStr, ...]
+    expected_revision: StrictInt
+    evidence_refs: tuple[StrictStr, ...]
+
+
+@case_admin_router.post("/change-sets", dependencies=[_guard("changeset.build")])
+async def build_case_change_set(request: Request, body: BuildChangeSetBody):
+    from .correction import build_change_set
+
+    try:
+        draft = build_change_set(
+            body.case_id, tuple(body.item_ids), _actor(request), body.expected_revision,
+            evidence_refs=tuple(body.evidence_refs), now=_now(),
+        )
+    except Exception as error:  # noqa: BLE001
+        raise _fail(error) from error
+    return {"case_id": draft.case_id, "entity_id": draft.entity_id,
+            "risk_class": draft.risk_class, "apply_status": draft.apply_status}
+
+
+class VerifyBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    case_id: StrictStr
+    change_set_id: StrictStr
+
+
+@case_admin_router.post("/change-sets/verify", dependencies=[_guard("changeset.verify")])
+async def verify_case_projection(request: Request, body: VerifyBody):
+    from .publication import VerifyProjectionCommand, verify_public_projection
+
+    fetcher = _PROJECTION_FETCHER
+    if fetcher is None:
+        # Refusing is not the same as a failed check. A failed check escalates and
+        # tells the reporter their correction may not be visible; a missing
+        # fetcher means we never looked, and must not be recorded as if we had.
+        raise HTTPException(503, detail={
+            "code": "verification_fetcher_unconfigured",
+            "detail": "No public projection reader is configured.",
+        })
+    try:
+        result = verify_public_projection(
+            VerifyProjectionCommand(case_id=body.case_id, change_set_id=body.change_set_id,
+                                    actor=_actor(request)),
+            fetcher, now=_now(),
+        )
+    except Exception as error:  # noqa: BLE001
+        raise _fail(error) from error
+    return {"change_set_id": result.change_set_id, "verified": result.verified,
+            "state": str(result.state), "mismatches": list(result.mismatches),
+            "next_update_at": result.next_update_at.isoformat()
+            if result.next_update_at else None}

@@ -346,6 +346,57 @@ class AddEvidenceCommand:
     asserted_value: str | None = None
 
 
+def _evidence_descriptor(command: AddEvidenceCommand) -> dict:
+    """Everything a later decision needs to judge this evidence, kept with it.
+
+    The table has columns for the level and the source reference only. Scope and
+    the three timestamps decide whether evidence is in scope, observed before the
+    ruling and still unexpired -- so leaving them in memory meant a decision could
+    never be re-checked, or made at all, from what was written down.
+
+    Content stays out. It is private and lives encrypted in its own column; this
+    is the descriptor, and descriptors are readable.
+    """
+    descriptor = dict(command.descriptor or {})
+    descriptor.update({
+        "source_scope": command.source_scope,
+        "observed_at": command.observed_at.isoformat(),
+        "effective_at": command.effective_at.isoformat(),
+        "expires_at": command.expires_at.isoformat() if command.expires_at else None,
+        "asserted_value": command.asserted_value,
+    })
+    return descriptor
+
+
+def load_evidence_records(case_id: str, item_id: str | None = None) -> tuple[EvidenceRecord, ...]:
+    """Rebuild what was written down, so a ruling can be judged on it later."""
+    store = _store()
+    with store.transaction() as transaction:
+        rows = transaction.load_correction_evidence(case_id, item_id)
+    return tuple(
+        EvidenceRecord(
+            evidence_id=str(row["evidence_id"]),
+            case_id=str(row["case_id"]),
+            item_id=str(row["item_id"]) if row["item_id"] else None,
+            level=EvidenceLevel(row["evidence_level"]),
+            source_scope=str((row["descriptor"] or {}).get("source_scope") or ""),
+            author_ref=str(row["created_by_ref"]),
+            observed_at=_moment((row["descriptor"] or {}).get("observed_at")),
+            effective_at=_moment((row["descriptor"] or {}).get("effective_at")),
+            expires_at=_moment((row["descriptor"] or {}).get("expires_at")),
+            source_ref=row["source_ref"],
+            asserted_value=(row["descriptor"] or {}).get("asserted_value"),
+        )
+        for row in rows
+    )
+
+
+def _moment(value) -> datetime | None:
+    if not value:
+        return None
+    return value if type(value) is datetime else datetime.fromisoformat(str(value))
+
+
 def add_evidence(command: AddEvidenceCommand, *, now: datetime) -> EvidenceRecord:
     if type(command.level) is not EvidenceLevel:
         raise _reject("invalid_evidence_level", "That evidence level is not offered.")
@@ -365,7 +416,7 @@ def add_evidence(command: AddEvidenceCommand, *, now: datetime) -> EvidenceRecor
                     item_id=command.item_id,
                     evidence_level=command.level,
                     source_ref=command.source_ref,
-                    descriptor=dict(command.descriptor or {}),
+                    descriptor=_evidence_descriptor(command),
                     # The payload is a private artifact, never a public descriptor.
                     content_enc=(
                         crypto.encrypt_private_payload({"content": command.content})

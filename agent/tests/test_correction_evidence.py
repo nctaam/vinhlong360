@@ -303,3 +303,66 @@ def test_add_evidence_stores_the_payload_encrypted_and_needs_a_live_lease(pg_dat
             now=NOW,
         )
     assert excinfo.value.problem.code == "active_lease_required"
+
+
+@pg_only
+def test_evidence_can_be_judged_again_from_what_was_written_down(pg_database):
+    """A ruling has to be re-checkable from storage, not only in the request that made it.
+
+    The table has columns for the level and the source reference. Scope and the
+    three timestamps decide whether evidence is in scope, was observed before the
+    ruling and has not expired — so until they were written into the descriptor,
+    a decision could never be reconstructed from the record it claims to rest on.
+    """
+    from cases.correction import AddEvidenceCommand, add_evidence, load_evidence_records
+
+    case_id, item_id = _seed_case_with_item(pg_database)
+    add_evidence(
+        AddEvidenceCommand(
+            case_id=case_id, item_id=item_id, level=EvidenceLevel.E3,
+            source_scope="place.contact", source_ref="https://a.example",
+            descriptor={"kind": "authoritative_source"},
+            content="scan of the licence", actor=_decider(),
+            observed_at=NOW - timedelta(days=1), effective_at=NOW - timedelta(days=1),
+            expires_at=NOW + timedelta(days=30), asserted_value="0270 333 4444",
+        ),
+        now=NOW,
+    )
+
+    loaded = load_evidence_records(case_id, item_id)
+
+    assert len(loaded) == 1
+    record = loaded[0]
+    assert record.source_scope == "place.contact"
+    assert record.observed_at == NOW - timedelta(days=1)
+    assert record.effective_at == NOW - timedelta(days=1)
+    assert record.expires_at == NOW + timedelta(days=30)
+    assert record.asserted_value == "0270 333 4444"
+    assert record.author_ref == "person:maker"
+
+
+@pg_only
+def test_the_private_payload_is_not_carried_in_the_readable_descriptor(pg_database):
+    from cases.correction import AddEvidenceCommand, add_evidence
+
+    case_id, item_id = _seed_case_with_item(pg_database)
+    record = add_evidence(
+        AddEvidenceCommand(
+            case_id=case_id, item_id=item_id, level=EvidenceLevel.E3,
+            source_scope="place.contact", source_ref=None, descriptor={},
+            content="the reporter said the owner is her brother", actor=_decider(),
+            observed_at=NOW - timedelta(days=1), effective_at=NOW - timedelta(days=1),
+        ),
+        now=NOW,
+    )
+
+    with pg_database._conn(commit_on_success=False) as conn:
+        descriptor = str(pg_database._fetchone(
+            conn,
+            "SELECT descriptor::text AS descriptor FROM correction_evidence"
+            " WHERE evidence_id=%s",
+            (record.evidence_id,),
+        )["descriptor"])
+    # Descriptors are readable; the payload stays in its encrypted column.
+    assert "her brother" not in descriptor
+    assert "place.contact" in descriptor

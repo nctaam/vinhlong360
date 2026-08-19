@@ -815,3 +815,30 @@ def test_revoking_takes_back_every_live_clearance_that_person_holds():
     assert "SET revoked_at = %s" in sql
     # Not just the newest one: logging out has to close all of them.
     assert "revoked_at IS NULL" in sql
+
+
+def test_loading_evidence_returns_descriptors_and_never_the_payload():
+    database = _RowsDatabase(many=[[
+        {"evidence_id": "e-1", "case_id": "c-1", "item_id": "i-1",
+         "evidence_level": "E3", "source_ref": None,
+         "descriptor": {"source_scope": "place.contact"},
+         "created_by_ref": "person:maker", "created_at": None},
+    ]])
+
+    rows = _transaction(database).load_correction_evidence("c-1")
+
+    sql, params = database.statements[0]
+    # content_enc is the private column; a reader of descriptors must not get it.
+    assert "content_enc" not in sql
+    assert params == ("c-1",)
+    assert rows[0]["descriptor"]["source_scope"] == "place.contact"
+
+
+def test_evidence_can_be_narrowed_to_one_item():
+    database = _RowsDatabase(many=[[]])
+
+    _transaction(database).load_correction_evidence("c-1", "i-1")
+
+    sql, params = database.statements[0]
+    assert "AND item_id = %s" in sql
+    assert params == ("c-1", "i-1")
