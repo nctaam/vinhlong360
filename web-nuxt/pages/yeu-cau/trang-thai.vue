@@ -115,11 +115,11 @@ useSeoMeta({
 .case-failure {
   padding: 0.6rem 0.8rem;
   border-radius: 8px;
-  border: 1px solid var(--color-danger, #b91c1c);
+  border: 1px solid var(--color-error);
 }
 .case-note {
   margin: 0;
-  color: var(--color-source-verified, #3f6212);
+  color: var(--color-source-verified);
 }
 .case-session-actions {
   display: flex;

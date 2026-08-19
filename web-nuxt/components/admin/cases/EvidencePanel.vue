@@ -56,7 +56,7 @@ const expiresLabel = computed(() => props.stepUpExpiresAt
 .evidence-panel {
   display: grid;
   gap: 0.6rem;
-  border: 1px solid var(--border-soft, rgba(120, 113, 108, 0.3));
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 0.8rem 1rem;
 }

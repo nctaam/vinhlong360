@@ -8,7 +8,7 @@
 
 - Task 1–17: hoàn tất, mỗi task 1–4 commit, chuỗi từ `5c1ea0dc` → `3f01c379` (xem `git log`).
 - Task 18: 4/5 phần — metrics+lifecycle (`3e51c4f3`), instrumentation (`2ea3065f`), journey (`98d12888`), lấp mảnh đo lường/authority (`2d093bc1`), runbooks + tài liệu này.
-- **Chưa làm**: accessibility gate (`web-nuxt/tests/correction-accessibility-gate.test.mjs`), mở rộng `scripts/smoke_e2e_chrome.mjs` (create→copy→exchange→status trên backend disposable), và lượt chạy cổng full-pilot Step 5 trọn gói một lần.
+- **Chưa làm**: mở rộng `scripts/smoke_e2e_chrome.mjs` (create→copy→exchange→status trên backend disposable + Chrome thật — cần phiên chạy được CDP). Accessibility gate và cổng Step 5 trọn gói đã xong (mục dưới).
 
 ## Môi trường bằng chứng
 
@@ -16,11 +16,22 @@
 - PostgreSQL: **disposable**, Docker `vl360-breaker-pg`, `127.0.0.1:5433`, user `vl360`, DB `vl360_case_breaker_test`, trust-auth (không secret), schema baseline + migration đến **081**. Không chạm prod.
 - Lệnh chuẩn: `PYTEST_DEBUG_TEMPROOT=C:\Users\NCTaam\AppData\Local\Temp\vl360pt`, `VL360_TEST_DATABASE_URL=postgresql://vl360:vl360@127.0.0.1:5433/vl360_case_breaker_test`, `python -m pytest -q` (exit 0 trừ baseline dưới).
 
+## Cổng full-pilot Step 5 (chạy 2026-08-19, sau commit `2d093bc1`)
+
+- **BE 17 suite** (đúng lệnh plan): `370 passed / 1 failed`, exit qua pipe 0 — fail duy nhất
+  `test_case_policy::test_valid_nonproduction_case_activation_has_structural_credentials`
+  thuộc baseline 21 có trước nhánh. `ruff check agent/cases agent/entity_write.py agent/sms_provider.py`: sạch.
+- **FE 8 suite** (kèm `correction-accessibility-gate.test.mjs` mới): `101 passed`, exit 0.
+- `nuxt typecheck`: exit 0. `npm run build`: exit 0 (manifest sinh tại `c61258fa`).
+- `run_hard --all`: chỉ còn R20.4 (coverage.json — artifact CI sinh, đã ghi ở
+  `docs/standards/90-exceptions-log.md`); R20.8 baseline 36→47 có giải trình cùng file,
+  kèm trả nợ thật `rotate_receipt` 27→tách 3 helper; R30.2/R30.3 ghi nhận GIẢM (507/291).
+
 ## Số liệu kiểm chứng gần nhất
 
-- Backend full-suite (sau `2ea3065f`): **11182 passed / 26 failed**, trong đó 21 là baseline nhánh có trước pilot (launch_safety, secure_stage_b, migration-gate…, danh sách trong `/tmp/final.txt` phiên làm việc) + 5 đã sửa ngay trong `2ea3065f`. Sau `2d093bc1` các suite bị ảnh hưởng chạy đích danh đều xanh (publication 20, work-control 23, outbox+journey+store 87, admin/service 78+58); **lượt full-suite trọn gói sau `2d093bc1` chưa chạy** — ghi nợ tường minh.
-- Frontend: 2066/2067 (1 flake tải-song-song `detail-grid-containment-gate`, xanh 47/47 hai lần khi chạy riêng); `nuxt typecheck` sạch; `npm run build` **chưa chạy** trong cổng cuối.
-- `run_hard --staged` sạch ở mọi commit; `run_hard --all` trọn gói chưa chạy.
+- Backend full-suite (sau `2ea3065f`): **11182 passed / 26 failed**, trong đó 21 là baseline nhánh có trước pilot (launch_safety, secure_stage_b, migration-gate…, danh sách trong `/tmp/final.txt` phiên làm việc) + 5 đã sửa ngay trong `2ea3065f`. Sau `2d093bc1` các suite bị ảnh hưởng chạy đích danh đều xanh (publication 20, work-control 23, outbox+journey+store 87, admin/service 78+58). Cổng Step 5 trọn gói sau đó: xem mục trên.
+- Frontend: 2066/2067 (1 flake tải-song-song `detail-grid-containment-gate`, xanh 47/47 hai lần khi chạy riêng); `nuxt typecheck` sạch; `npm run build` exit 0.
+- `run_hard --staged` sạch ở mọi commit; `run_hard --all`: chỉ còn R20.4 (artifact CI).
 - Đối soát legacy (trên fixture PG): total 5 = 1 correction + 1 moderation_link + 1 manual_triage + 1 rejected + 1 duplicate; reconcile `passed: true`; tamper → `ledger_rows_match: false`. Chưa nhập thật production (đúng Review Protocol mục 4).
 
 ## Trạng thái cờ tại thời điểm ghi
@@ -45,6 +56,6 @@
 ## Điều kiện trước khi bật bất kỳ cờ nào
 
 1. Chạy trọn cổng Step 5 Task 18 (17 suite BE + ruff + 8 suite FE + typecheck + build + `run_hard --all`) và cập nhật mục "Số liệu" ở trên bằng exit code thật.
-2. Hoàn tất accessibility gate + smoke.
+2. Hoàn tất browser smoke (accessibility gate đã có; smoke CDP còn thiếu).
 3. Rà soát độc lập chuỗi commit.
 4. Quyết định phát hành có tên người trực và bằng chứng năng lực (`public_sla_eligible` chỉ là input, không phải công tắc).

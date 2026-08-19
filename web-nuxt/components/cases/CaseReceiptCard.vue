@@ -78,7 +78,7 @@ function confirmSaved() {
 
 <style scoped>
 .receipt-card {
-  border: 1px solid var(--border-soft, rgba(120, 113, 108, 0.3));
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 1.25rem;
   display: grid;
@@ -87,7 +87,7 @@ function confirmSaved() {
 .receipt-label {
   margin: 0;
   font-size: 0.8rem;
-  color: var(--text-muted, #78716c);
+  color: var(--muted);
 }
 .receipt-value {
   margin: 0.15rem 0 0;
@@ -99,8 +99,8 @@ function confirmSaved() {
   margin: 0.5rem 0 0;
   padding: 0.6rem 0.8rem;
   border-radius: 8px;
-  background: var(--surface-warning, #fef3c7);
-  color: var(--text-warning, #713f12);
+  background: var(--bg-warm);
+  color: var(--color-warning);
 }
 .receipt-actions {
   display: flex;
@@ -115,7 +115,7 @@ function confirmSaved() {
 }
 .receipt-meta dt {
   font-size: 0.8rem;
-  color: var(--text-muted, #78716c);
+  color: var(--muted);
 }
 .receipt-meta dd {
   margin: 0;

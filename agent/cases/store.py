@@ -1437,8 +1437,52 @@ class PostgresCaseStore:
             self._db._execute(conn, "UPDATE case_access_sessions SET revoked_at=%s WHERE case_id=%s AND revoked_at IS NULL", (now, case_id))
             conn.commit()
 
-    def rotate_receipt(self, access_token, crypto, *, now, current_user_id=None, idempotency_key=None):
+    @staticmethod
+    def _require_live_rotation_bearer(bearer, *, now, current_user_id) -> None:
+        """Every way the presented session can be dead, checked in one place."""
+        from .security import CaseSecurityError
+
+        if (
+            bearer["session_key_version"] != "v1"
+            or bearer["session_revoked_at"] is not None
+            or bearer["session_expires_at"] <= now
+            or bearer["receipt_revoked_at"] is not None
+            or bearer["receipt_expires_at"] <= now
+        ):
+            raise CaseSecurityError("invalid_case_credential")
+        if bearer["subject_user_id"] is not None and not hmac.compare_digest(
+            str(bearer["subject_user_id"]), current_user_id or ""
+        ):
+            raise CaseSecurityError("invalid_case_credential")
+
+    @staticmethod
+    def _rotation_replay_grant(item, bearer, crypto, *, case_id, actor_ref,
+                               rotation_digest, now, current_user_id):
+        """Re-answer a rotation the same actor already performed — or refuse."""
         from .security import CaseSecurityError, ReceiptGrant
+
+        if (
+            item["response_key_version"] != "v1"
+            or not hmac.compare_digest(str(item["actor_ref"]), actor_ref)
+            or not hmac.compare_digest(str(item["request_digest"]), rotation_digest)
+        ):
+            raise CaseSecurityError("invalid_case_credential")
+        if bearer["session_key_version"] != "v1" or (
+            bearer["subject_user_id"] is not None
+            and not hmac.compare_digest(str(bearer["subject_user_id"]), actor_ref)
+        ):
+            raise CaseSecurityError("invalid_case_credential")
+        payload = crypto.decrypt_replay(str(item["response_enc"]), now=now)
+        if str(payload.get("case_id")) != case_id:
+            raise CaseSecurityError("invalid_case_credential")
+        return ReceiptGrant(
+            payload["receipt_id"], payload["case_id"], payload["public_reference"],
+            payload["capability"], datetime.fromisoformat(payload["expires_at"]),
+            int(payload["revision"]), current_user_id,
+        )
+
+    def rotate_receipt(self, access_token, crypto, *, now, current_user_id=None, idempotency_key=None):
+        from .security import CaseSecurityError
 
         self._require_pg()
         digest = crypto.digest_capability(access_token)
@@ -1471,19 +1515,14 @@ class PostgresCaseStore:
             self._db._fetchall(conn, "SELECT access_session_id FROM case_access_sessions WHERE case_id=%s ORDER BY access_session_id FOR UPDATE", (case_id,))
             replay = self._db._fetchone(conn, "SELECT actor_ref, request_digest, response_enc, response_key_version FROM case_idempotency WHERE idempotency_key=%s FOR UPDATE", (rotation_key,)) if rotation_key else None
             if replay is not None:
-                item = _row_dict(self._db, replay)
-                if item["response_key_version"] != "v1" or not hmac.compare_digest(str(item["actor_ref"]), actor_ref) or not hmac.compare_digest(str(item["request_digest"]), rotation_digest):
-                    raise CaseSecurityError("invalid_case_credential")
-                if bearer["session_key_version"] != "v1" or bearer["subject_user_id"] is not None and not hmac.compare_digest(str(bearer["subject_user_id"]), actor_ref):
-                    raise CaseSecurityError("invalid_case_credential")
-                payload = crypto.decrypt_replay(str(item["response_enc"]), now=now)
-                if str(payload.get("case_id")) != case_id:
-                    raise CaseSecurityError("invalid_case_credential")
-                return ReceiptGrant(payload["receipt_id"], payload["case_id"], payload["public_reference"], payload["capability"], datetime.fromisoformat(payload["expires_at"]), int(payload["revision"]), current_user_id)
-            if bearer["session_key_version"] != "v1" or bearer["session_revoked_at"] is not None or bearer["session_expires_at"] <= now or bearer["receipt_revoked_at"] is not None or bearer["receipt_expires_at"] <= now:
-                raise CaseSecurityError("invalid_case_credential")
-            if bearer["subject_user_id"] is not None and not hmac.compare_digest(str(bearer["subject_user_id"]), current_user_id or ""):
-                raise CaseSecurityError("invalid_case_credential")
+                return self._rotation_replay_grant(
+                    _row_dict(self._db, replay), bearer, crypto,
+                    case_id=case_id, actor_ref=actor_ref,
+                    rotation_digest=rotation_digest, now=now,
+                    current_user_id=current_user_id,
+                )
+            self._require_live_rotation_bearer(bearer, now=now,
+                                               current_user_id=current_user_id)
             updated = self._db._fetchone(conn, "UPDATE case_receipts SET revoked_at=%s WHERE receipt_id=%s AND revoked_at IS NULL RETURNING receipt_id", (now, bearer["receipt_id"]))
             if updated is None:
                 raise CaseSecurityError("invalid_case_credential")

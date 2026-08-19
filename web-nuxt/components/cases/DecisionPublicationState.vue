@@ -41,7 +41,7 @@ const settled = computed(() => ['verified', 'not_required'].includes(props.publi
 
 <style scoped>
 .dps-item {
-  border: 1px solid var(--border-soft, rgba(120, 113, 108, 0.25));
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 0.75rem 1rem;
 }
@@ -56,12 +56,12 @@ const settled = computed(() => ['verified', 'not_required'].includes(props.publi
 }
 .dps-fact dt {
   font-size: 0.8rem;
-  color: var(--text-muted, #78716c);
+  color: var(--muted);
 }
 .dps-fact dd {
   margin: 0;
 }
 .dps-settled {
-  color: var(--color-source-verified, #3f6212);
+  color: var(--color-source-verified);
 }
 </style>

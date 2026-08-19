@@ -990,3 +990,31 @@ def test_completed_work_assignees_reads_only_finished_work():
     assert "status = 'completed'" in sql
     assert params == ("case-1", "truth_review")
     assert finished == ("person:checker",)
+
+
+def test_a_dead_rotation_bearer_is_refused_for_every_reason_alike():
+    from cases.security import CaseSecurityError
+    from cases.store import PostgresCaseStore
+
+    now = datetime(2026, 8, 19, 9, 0, tzinfo=timezone.utc)
+    live = {
+        "session_key_version": "v1", "session_revoked_at": None,
+        "session_expires_at": now + timedelta(minutes=10),
+        "receipt_revoked_at": None, "receipt_expires_at": now + timedelta(days=1),
+        "subject_user_id": None,
+    }
+
+    # The live bearer passes; every single way it can be dead refuses alike.
+    PostgresCaseStore._require_live_rotation_bearer(live, now=now, current_user_id=None)
+    for poison in (
+        {"session_key_version": "v0"},
+        {"session_revoked_at": now},
+        {"session_expires_at": now},
+        {"receipt_revoked_at": now},
+        {"receipt_expires_at": now},
+        {"subject_user_id": "user:1001"},
+    ):
+        with pytest.raises(CaseSecurityError):
+            PostgresCaseStore._require_live_rotation_bearer(
+                {**live, **poison}, now=now, current_user_id=None,
+            )

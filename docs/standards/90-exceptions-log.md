@@ -68,3 +68,13 @@
   **~~CÒN LÀM ĐƯỢC, chưa làm~~ → ĐÃ LÀM cùng ngày, R20.8 18 → 17 — `_build_day_schedule` (cx 19 → 11).** Không phải essential: tách được bằng cách gộp-trùng `_project_placements` dùng chung với `_project_selection_schedule`. Chưa làm vì cần 5 test mở đường trước (39 dòng hiện không test nào phủ) và có một bẫy đã nhận diện: khoá `warnings` được tính từ **nguồn khác nhau** ở hai chỗ gọi — helper mà tự đọc `schedule.warnings` sẽ âm thầm thêm warning lịch vào đường selection. Đã làm sau khi viết đủ 5 test mở đường, trong đó test thứ 5 ghim đúng cái bẫy: `_project_placements` nhận CHÍNH đối tượng schedule (không phải SelectionResult) và `_schedule_core_diagnostics` cố ý KHÔNG có khoá `warnings`, để mỗi chỗ gọi tự ghép warnings từ nguồn của mình.
 
 ## SKIP-log (tự động ghi bởi run_hard khi SKIP_CHECKS hợp lệ)
+
+## 2026-08-19 — R20.8 complexity baseline 36 → 47 (correction-case pilot)
+
+Pilot (Task 1–18, nhánh `codex/correction-case-pilot`) thêm nguyên một subsystem
+(`agent/cases/*`, ~20 module) nên tổng hàm vượt ngưỡng tăng 36 → 47 dù mọi commit
+đều qua `run_hard --staged` sạch (staged chỉ so file đổi). Đã trả nợ thật một
+phần: `store.rotate_receipt` 27 → tách 3 helper (commit này), còn lại 11 hàm
+(audit ×2, correction ×2, policy ×2, service ×1, outbox ×1, store ×1, ngoài-pilot ×2)
+ghi ở backlog tối ưu — giảm dần, KHÔNG được tăng tiếp từ 47. R30.2 507 và R30.3
+291 là ghi nhận tiến bộ (giảm), không phải nợ mới.

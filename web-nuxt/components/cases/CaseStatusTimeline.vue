@@ -115,7 +115,7 @@ const publicationByItem = computed(() => new Map(
   margin: 0;
 }
 .timeline-promise {
-  color: var(--text-warning, #713f12);
+  color: var(--color-warning);
 }
 .timeline-items {
   display: grid;

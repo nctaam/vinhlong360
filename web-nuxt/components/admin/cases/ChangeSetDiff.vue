@@ -44,7 +44,7 @@ defineProps<{
 }
 .diff-side dt {
   font-size: 0.75rem;
-  color: var(--text-muted, #78716c);
+  color: var(--muted);
 }
 .diff-side dd {
   margin: 0;
@@ -53,9 +53,9 @@ defineProps<{
   overflow-wrap: anywhere;
 }
 .diff-before dd {
-  background: var(--surface-removed, #fee2e2);
+  background: color-mix(in srgb, var(--color-error) 12%, var(--bg));
 }
 .diff-after dd {
-  background: var(--surface-added, #dcfce7);
+  background: color-mix(in srgb, var(--color-success) 12%, var(--bg));
 }
 </style>

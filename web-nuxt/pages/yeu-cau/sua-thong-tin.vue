@@ -135,12 +135,12 @@ useSeoMeta({
 }
 .case-trust-note {
   margin: 0;
-  color: var(--text-muted, #78716c);
+  color: var(--muted);
 }
 .case-failure {
   padding: 0.6rem 0.8rem;
   border-radius: 8px;
-  border: 1px solid var(--color-danger, #b91c1c);
+  border: 1px solid var(--color-error);
 }
 .case-missing {
   display: grid;

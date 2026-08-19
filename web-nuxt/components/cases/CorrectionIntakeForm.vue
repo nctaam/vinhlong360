@@ -257,10 +257,10 @@ function submit() {
   margin: 0;
   padding: 0.6rem 0.8rem;
   border-radius: 8px;
-  background: var(--surface-muted, #f5f5f4);
+  background: var(--bg-alt);
 }
 .intake-errors {
-  border: 1px solid var(--color-danger, #b91c1c);
+  border: 1px solid var(--color-error);
   border-radius: 8px;
   padding: 0.75rem 1rem;
 }
@@ -272,7 +272,7 @@ function submit() {
   padding-left: 1.1rem;
 }
 fieldset {
-  border: 1px solid var(--border-soft, rgba(120, 113, 108, 0.3));
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 0.9rem 1rem;
   display: grid;
@@ -295,16 +295,16 @@ fieldset {
 }
 .intake-actions {
   position: sticky;
-  bottom: calc(var(--bottom-nav-height, 56px) + 0.5rem);
+  bottom: calc(var(--shell-public-bottom-nav-reserved-height) + 0.5rem);
   display: grid;
   gap: 0.3rem;
-  background: var(--surface-page, #fff);
+  background: var(--bg);
   padding-block: 0.5rem;
 }
 .intake-promise-note {
   margin: 0;
   font-size: 0.85rem;
-  color: var(--text-muted, #78716c);
+  color: var(--muted);
 }
 
 @media (prefers-reduced-motion: no-preference) {

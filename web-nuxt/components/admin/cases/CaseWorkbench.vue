@@ -174,7 +174,7 @@ const leaseLabel = computed(() => {
   min-inline-size: 0;
 }
 .wb-conflict {
-  border: 1px solid var(--color-danger, #b91c1c);
+  border: 1px solid var(--color-error);
   border-radius: 8px;
   padding: 0.6rem 0.8rem;
   display: grid;
@@ -192,7 +192,7 @@ const leaseLabel = computed(() => {
 }
 .wb-facts dt {
   font-size: 0.75rem;
-  color: var(--text-muted, #78716c);
+  color: var(--muted);
 }
 .wb-facts dd {
   margin: 0;
@@ -205,7 +205,7 @@ const leaseLabel = computed(() => {
   gap: 0.6rem;
 }
 .wb-items li {
-  border: 1px solid var(--border-soft, rgba(120, 113, 108, 0.3));
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 0.55rem 0.75rem;
 }
@@ -216,7 +216,7 @@ const leaseLabel = computed(() => {
 .wb-item-meta {
   margin: 0.15rem 0 0;
   font-size: 0.8rem;
-  color: var(--text-muted, #78716c);
+  color: var(--muted);
 }
 .wb-decide {
   display: grid;

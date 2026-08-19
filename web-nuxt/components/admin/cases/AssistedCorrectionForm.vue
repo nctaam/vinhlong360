@@ -116,7 +116,7 @@ function submit() {
   align-items: flex-start;
 }
 .assisted-item {
-  border: 1px solid var(--border-soft, rgba(120, 113, 108, 0.3));
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 0.8rem 1rem;
   display: grid;
@@ -125,6 +125,6 @@ function submit() {
 .assisted-note {
   margin: 0;
   font-size: 0.85rem;
-  color: var(--text-muted, #78716c);
+  color: var(--muted);
 }
 </style>

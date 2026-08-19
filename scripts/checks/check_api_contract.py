@@ -22,6 +22,8 @@ HTTP_METHODS = {"get", "post", "put", "delete", "patch"}
 # nguyên do frontend Nitro phục vụ chứ không phải agent/.
 CONTRACT_NON_ROUTE_ENTRIES = {
     "/", "/api", "/admin", "/auth", "/_internal/", "/chat",
+    # Router prefix cho case kernel; cũng là cookie path của vl360_case_access.
+    "/api/cases",
     "/robots.txt", "/sitemap.xml", "/sitemap-index.xml", "/sitemap-media.xml",
 }
 

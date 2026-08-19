@@ -162,7 +162,7 @@ await useAsyncData('admin-case-queue', async () => {
 }
 .admin-cases-failure {
   margin: 0;
-  color: var(--color-danger, #b91c1c);
+  color: var(--color-error);
 }
 /* Mobile first: one stacked task view. */
 .admin-cases-split {
@@ -179,7 +179,7 @@ await useAsyncData('admin-case-queue', async () => {
 }
 .admin-cases-empty {
   margin: 0;
-  color: var(--text-muted, #78716c);
+  color: var(--muted);
 }
 /* Desktop: queue beside the case, queue resizable within its column. */
 @media (min-width: 64rem) {

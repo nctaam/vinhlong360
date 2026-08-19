@@ -75,13 +75,13 @@ const KIND_LABEL: Record<string, string> = {
   gap: 0.15rem 0.6rem;
   text-align: start;
   padding: 0.5rem 0.7rem;
-  border: 1px solid var(--border-soft, rgba(120, 113, 108, 0.3));
+  border: 1px solid var(--border);
   border-radius: 8px;
   background: none;
   cursor: pointer;
 }
 .queue-row[aria-current='true'] {
-  border-color: var(--primary, #1d4ed8);
+  border-color: var(--primary);
 }
 .queue-kind {
   font-weight: 600;
@@ -95,7 +95,7 @@ const KIND_LABEL: Record<string, string> = {
 .queue-owner,
 .queue-case {
   font-size: 0.8rem;
-  color: var(--text-muted, #78716c);
+  color: var(--muted);
 }
 .queue-row[data-risk='R3'] .queue-risk {
   font-weight: 700;
