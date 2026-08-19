@@ -10,6 +10,7 @@ export const ADMIN_SCOPES = [
   'correction.decide',
   'truth.review',
   'publication.apply',
+  'publication.verify',
   'case.supervisor',
 ] as const
 
@@ -45,7 +46,10 @@ const ADMIN_ROUTE_SCOPE_RULES: Array<readonly [string, AdminScope]> = [
 ]
 ADMIN_ROUTE_SCOPE_RULES.sort((a, b) => b[0].length - a[0].length)
 
-const FIRST_ROUTE_BY_SCOPE: Record<AdminScope, string> = {
+// Partial on purpose: a scope can be real without owning a landing page.
+// Declaring it total made every case scope a type error the moment they
+// were added, which is noise rather than a finding.
+const FIRST_ROUTE_BY_SCOPE: Partial<Record<AdminScope, string>> = {
   'content.editor': '/admin/entities',
   'moderation.manager': '/admin/kiem-duyet',
   'ops.deploy': '/admin/thong-ke',
@@ -99,7 +103,8 @@ export function firstAdminRoute(scopes: readonly string[]): string {
   if (!normalized.length) return '/'
   if (normalized.includes('*') || normalized.includes('ops.deploy')) return '/admin'
   if (normalized.includes('service.operator')) return '/admin/yeu-cau'
-  const hasCaseScope = normalized.some(scope => ['service.operator', 'correction.decide', 'truth.review', 'publication.apply', 'case.supervisor'].includes(scope))
+  const hasCaseScope = normalized.some(scope => ['service.operator', 'correction.decide', 'truth.review', 'publication.apply',
+    'publication.verify', 'case.supervisor'].includes(scope))
   if (hasCaseScope && normalized.includes('content.editor')) return '/admin'
   return FIRST_ROUTE_BY_SCOPE[normalized[0] as keyof typeof FIRST_ROUTE_BY_SCOPE] || '/'
 }

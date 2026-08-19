@@ -10,7 +10,7 @@ describe('case admin access', () => {
     expect(resolveAdminScopes({ role: 'user', admin_scopes: ['service.operator', 'wat'] })).toEqual(['service.operator'])
     expect(canAccessAdminPath('/admin/yeu-cau', ['wat'])).toBe(false)
   })
-  it.each(['service.operator', 'correction.decide', 'truth.review', 'publication.apply', 'case.supervisor'])('normalizes %s', scope => {
+  it.each(['service.operator', 'correction.decide', 'truth.review', 'publication.apply', 'publication.verify', 'case.supervisor'])('normalizes %s', scope => {
     expect(resolveAdminScopes({ role: 'user', admin_scopes: [scope] })).toEqual([scope])
   })
   it('does not route non-operators to the correction operator page', () => {
@@ -19,7 +19,7 @@ describe('case admin access', () => {
   it('keeps an admin combination on the admin landing route', () => {
     expect(firstAdminRoute(['case.supervisor', 'content.editor', 'ops.deploy', 'service.operator'])).toBe('/admin')
   })
-  it.each(['correction.decide', 'truth.review', 'publication.apply', 'case.supervisor'])('prioritizes service.operator over %s', scope => {
+  it.each(['correction.decide', 'truth.review', 'publication.apply', 'publication.verify', 'case.supervisor'])('prioritizes service.operator over %s', scope => {
     expect(firstAdminRoute(['service.operator', scope])).toBe('/admin/yeu-cau')
   })
 })
