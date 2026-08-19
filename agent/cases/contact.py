@@ -156,7 +156,7 @@ def request_contact_verification(access, phone: str, consent: bool, *, now: date
         )
         conn.commit()
 
-    key = delivery_key(challenge_id, 1)
+    key = delivery_key(challenge_id)
     _PROVIDER.send(number, _MESSAGE.format(code=code), delivery_key=key)
     return ContactChallenge(
         challenge_id=challenge_id, case_id=case_id, expires_at=expires_at, delivery_key=key

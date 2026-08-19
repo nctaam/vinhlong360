@@ -2,11 +2,9 @@
 from __future__ import annotations
 
 import hashlib
-import os
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
 
 import pytest
 
@@ -29,25 +27,10 @@ NOW = datetime(2026, 8, 18, 9, 0, tzinfo=UTC)
 MASTER_KEY = "0" * 43
 
 
-def _validated_url() -> str | None:
-    raw = os.environ.get("VL360_TEST_DATABASE_URL", "").strip()
-    if not raw:
-        return None
-    parsed = urlparse(raw)
-    if parsed.scheme not in {"postgres", "postgresql"} or parsed.hostname not in {
-        "localhost", "127.0.0.1", "::1",
-    }:
-        return None
-    if {"host", "hostaddr"} & parse_qs(parsed.query, keep_blank_values=True).keys():
-        return None
-    return raw
 
 
-TEST_DATABASE_URL = _validated_url()
-pg_only = pytest.mark.skipif(
-    TEST_DATABASE_URL is None,
-    reason="set VL360_TEST_DATABASE_URL to a disposable loopback PostgreSQL database",
-)
+# One loopback-only rule for every suite that opens the disposable database.
+from _pg_test_database import TEST_DATABASE_URL, pg_only  # noqa: E402
 
 
 class _FakeProvider:
@@ -140,6 +123,20 @@ def _row(adapter, key) -> dict:
                 (key,),
             )
         )
+
+
+def _all_rows(adapter, case_id) -> list[dict]:
+    with adapter._conn(commit_on_success=False) as conn:
+        return [
+            dict(adapter._row_to_dict(row))
+            for row in adapter._fetchall(
+                conn,
+                "SELECT idempotency_key, status, attempts FROM case_outbox"
+                " WHERE case_id=%s ORDER BY idempotency_key",
+                (case_id,),
+            )
+        ]
+
 
 
 # ── Message safety: pure, no database ──
@@ -315,3 +312,101 @@ def test_a_delivered_notification_is_the_reporter_being_updated(pg_database, mon
 
     # Updated means the word reached them, not that we queued the word.
     assert events == ["updated"]
+
+
+@pg_only
+def test_a_failure_midway_never_resends_what_already_went_out(pg_database):
+    case_id = _case(pg_database)
+    _enqueue(pg_database, case_id, key="notify:midway:1")
+    _enqueue(pg_database, case_id, key="notify:midway:2")
+
+    class _DiesOnTheSecond:
+        def __init__(self):
+            self.sent = []
+
+        def send(self, phone, message, *, delivery_key):
+            self.sent.append(delivery_key)
+            if len(self.sent) == 2:
+                raise RuntimeError("provider library blew up")
+            return DeliveryResult(True, None, False)
+
+    provider = _DiesOnTheSecond()
+    configure_case_outbox(
+        database=pg_database, crypto=CaseCrypto(MASTER_KEY), provider=provider,
+        contact_lookup=lambda case_id, **_: "0901234567",
+    )
+
+    with pytest.raises(RuntimeError):
+        dispatch_case_outbox(now=NOW)
+
+    # Both items share an available_at, so which one goes first is up to the
+    # database — the invariant is about outcomes, not about names. One message
+    # really was delivered and its record survives; the one that blew up keeps
+    # its lease and comes due again. Under a single transaction per batch the
+    # delivered one would have rolled back too, and the next run would send
+    # that person the same SMS a second time.
+    statuses = sorted(row["status"] for row in _all_rows(pg_database, case_id))
+    assert statuses == ["processing", "sent"]
+    assert len(provider.sent) == 2
+
+
+@pg_only
+def test_the_lease_is_committed_before_anything_is_sent(pg_database):
+    case_id = _case(pg_database)
+    _enqueue(pg_database, case_id, key="notify:lease:1")
+    seen_while_sending = {}
+
+    class _LooksAtTheRow:
+        sent = []
+
+        def send(self, phone, message, *, delivery_key):
+            # A second connection: what a concurrent dispatcher would see.
+            with pg_database._conn(commit_on_success=False) as other:
+                row = pg_database._fetchone(
+                    other,
+                    "SELECT status, available_at FROM case_outbox"
+                    " WHERE case_id=%s LIMIT 1", (case_id,),
+                )
+                seen_while_sending.update(dict(pg_database._row_to_dict(row)))
+            return DeliveryResult(True, None, False)
+
+    configure_case_outbox(
+        database=pg_database, crypto=CaseCrypto(MASTER_KEY), provider=_LooksAtTheRow(),
+        contact_lookup=lambda case_id, **_: "0901234567",
+    )
+
+    dispatch_case_outbox(now=NOW)
+
+    # Taken, visibly, by someone — not merely read inside an uncommitted
+    # transaction that another worker would sail straight past.
+    assert seen_while_sending["status"] == "processing"
+    assert seen_while_sending["available_at"] > NOW
+
+
+@pg_only
+def test_work_stranded_by_a_dead_worker_comes_due_again(pg_database):
+    from cases.outbox import LEASE_SECONDS
+
+    case_id = _case(pg_database)
+    _enqueue(pg_database, case_id, key="notify:stranded:1")
+    with pg_database._conn(commit_on_success=False) as conn:
+        pg_database._execute(
+            conn,
+            "UPDATE case_outbox SET status='processing', available_at=%s WHERE case_id=%s",
+            (NOW + timedelta(seconds=LEASE_SECONDS), case_id),
+        )
+        conn.commit()
+
+    provider = _FakeProvider()
+    configure_case_outbox(
+        database=pg_database, crypto=CaseCrypto(MASTER_KEY), provider=provider,
+        contact_lookup=lambda case_id, **_: "0901234567",
+    )
+
+    # Inside the lease the item belongs to the worker that took it, even though
+    # that worker is never coming back.
+    assert dispatch_case_outbox(now=NOW).claimed == 0
+
+    later = NOW + timedelta(seconds=LEASE_SECONDS + 1)
+    assert dispatch_case_outbox(now=later).claimed == 1
+    assert _row(pg_database, "notify:stranded:1")["status"] == "sent"

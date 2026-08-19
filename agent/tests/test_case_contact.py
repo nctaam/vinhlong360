@@ -261,3 +261,12 @@ def test_the_contact_digest_is_keyed_and_not_a_bare_hash():
 
     assert digest != hashlib.sha256(b"0901234567").hexdigest()
     assert len(digest) == 64
+
+
+def test_the_challenge_key_needs_no_attempt_number():
+    from cases.outbox import delivery_key
+
+    # It identifies one logical send, not one attempt at it. The parameter that
+    # used to be here was always passed 1 and never reached the hash.
+    assert delivery_key("challenge-1") == delivery_key("challenge-1")
+    assert delivery_key("challenge-1") != delivery_key("challenge-2")

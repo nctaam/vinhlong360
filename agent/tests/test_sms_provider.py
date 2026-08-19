@@ -212,3 +212,22 @@ def test_dev_without_a_key_still_suppresses_quietly(monkeypatch):
 
     assert outcome.delivered is True
     assert outcome.error_code == "dev_no_provider"
+
+
+def test_a_failed_attempt_names_the_delivery_it_belongs_to(caplog):
+    import logging
+
+    from sms_provider import EsmsProvider
+
+    provider = EsmsProvider(api_key="k", secret="s", brandname="b",
+                            poster=lambda url, payload: {"CodeResult": "99"})
+
+    with caplog.at_level(logging.WARNING):
+        provider.send("0901234567", "tin nhắn", delivery_key="abc123")
+
+    # The eSMS payload has no idempotency field, so the key never leaves the
+    # process; logging it is the only way a complaint about a message gets
+    # traced back to the row that sent it.
+    assert any("abc123" in record.getMessage() for record in caplog.records)
+    # And the phone number is still masked in that same line.
+    assert not any("0901234567" in record.getMessage() for record in caplog.records)

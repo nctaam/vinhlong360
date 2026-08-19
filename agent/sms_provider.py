@@ -129,10 +129,14 @@ class EsmsProvider:
         logger.debug("DEV MODE — SMS to %s suppressed (no provider key)", mask_phone(phone))
         return SmsDeliveryResult(True, "dev_no_provider", False)
 
-    def _record(self, attempt: int, phone: str, outcome: SmsDeliveryResult) -> None:
+    def _record(self, attempt: int, phone: str, outcome: SmsDeliveryResult,
+                delivery_key: str = "") -> None:
+        # The delivery key is logged, not sent: the eSMS payload has no
+        # idempotency field, so this is how a complaint about a message gets
+        # traced back to the row that sent it.
         logger.warning(
-            "SMS attempt %d failed for %s: %s",
-            attempt + 1, mask_phone(phone), outcome.error_code,
+            "SMS attempt %d failed for %s (delivery %s): %s",
+            attempt + 1, mask_phone(phone), delivery_key or "-", outcome.error_code,
         )
 
     def send(self, phone: str, message: str, *, delivery_key: str = "") -> SmsDeliveryResult:
@@ -152,7 +156,7 @@ class EsmsProvider:
                 outcome = SmsDeliveryResult(False, "provider_unavailable", True)
             if outcome.delivered:
                 return outcome
-            self._record(attempt, phone, outcome)
+            self._record(attempt, phone, outcome, delivery_key)
             if attempt < MAX_RETRIES - 1:
                 time.sleep(backoff_seconds(attempt))
         return outcome
