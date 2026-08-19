@@ -986,8 +986,10 @@ async def update_entity(entity_id: str, update: EntityUpdate):
         norm_attrs, warnings = _validate_attributes(existing.get("type", ""), existing.get("attributes"))
         existing["attributes"] = norm_attrs
         existing["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        db.upsert_entity(existing)
-        db.log_entity_changes(entity_id, old_snapshot, existing)
+        # One transaction for the row and its audit: an edit that cannot be
+        # recorded must not land, or nobody can answer for it later.
+        db.upsert_entity_with_audit(existing, old_snapshot,
+                                    actor="admin", provenance="admin-editor")
         _sync_kb()
         from public_api import invalidate_entity_cache, invalidate_place_cache
         invalidate_entity_cache(entity_id)

@@ -45,6 +45,9 @@ ALLOWED_WRITE_SITES = {
     ("scripts/fix_tinh_moi.py", "apply_sqlite", "dynamic-update"),
     ("scripts/fix_tinh_moi.py", "apply_pg", "attributes-update"),
     ("scripts/fix_tinh_moi.py", "apply_pg", "dynamic-update"),
+    # The correction write boundary: caller-owned transaction, no verification
+    # marker writable, revision checked. See agent/entity_write.py.
+    ("agent/entity_write.py", "EntityWriteService.apply_patch", "dynamic-update"),
 }
 ALLOWED_WRITE_SITE_COUNTS = {
     site: 2
@@ -77,6 +80,9 @@ _ASSIGNMENT_RE = re.compile(
     r'(?:^|,)\s*(?P<column>\{\}|(?:"[^"]+"|[a-z_][a-z0-9_]*)(?:\.(?:"[^"]+"|[a-z_][a-z0-9_]*))?)\s*=',
     re.IGNORECASE,
 )
+# A placeholder opening the SET clause, or following a comma, occupies the slot
+# a column name would: the statement decides at run time what it writes.
+_DYNAMIC_COLUMN_RE = re.compile(r"(?:^|,)\s*\{\}")
 _INTEGRITY_COLUMNS = {
     "attributes",
     "type",
@@ -142,7 +148,15 @@ def _classify_sql(node: ast.AST, bindings: dict[str, str | None]) -> str | None:
     }
     if "attributes" in columns:
         return "attributes-update"
-    if "{}" in columns or (not columns and assignment_text.lstrip().startswith("{}")):
+    # A placeholder standing in COLUMN position means the column list is built at
+    # run time, so no reading of this statement can say "only these columns are
+    # touched". Demanding that the placeholder be the WHOLE clause let the most
+    # natural shape -- f"SET {assignments}, revision = revision + 1" -- through
+    # unseen: there the placeholder is followed by a comma rather than an "=", so
+    # it was not read as a column, and its literal companions kept the
+    # empty-columns fallback from firing. Position is what separates that from a
+    # plain parameter, "SET description = {}", where the column list is literal.
+    if "{}" in columns or _DYNAMIC_COLUMN_RE.search(assignment_text):
         return "dynamic-update"
     if columns & _INTEGRITY_COLUMNS:
         return "integrity-update"

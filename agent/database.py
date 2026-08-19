@@ -48,6 +48,7 @@ RELATIONSHIP_TYPE_PRIORITY = {
 }
 
 import entity_details as _entity_details
+import entity_write as _entity_write
 
 PG_REQUIRED_TABLES = {
     "entities",
@@ -1369,22 +1370,33 @@ class Database:
 
     # ── Entity CRUD ──
 
-    def upsert_entity(self, entity: dict):
-        """Insert or update an entity."""
-        self.initialize()
-        _validate_place_level(entity)
-        season_val, attrs_val, source_val, images_val, coords_val, updated, attrs_store = \
-            _normalize_upsert_fields(entity)
+    def _entity_writer(self):
+        return _entity_write.EntityWriteService(self)
 
+    def upsert_entity(self, entity: dict):
+        """Insert or update an entity. Owns one transaction, delegates the writing."""
+        self.initialize()
         with _entity_details.detail_cache_write_scope():
             with self._conn() as conn:
-                self._write_entity_row(conn, entity, season_val, attrs_store,
-                                       source_val, images_val, coords_val, updated)
-                # GĐ-C dual-write: cột phổ quát + bảng CTI phản chiếu attrs (cùng transaction).
-                mutation = _entity_details.sync_entity_details(
-                    conn, self._use_pg, entity["id"], entity["type"],
-                    attrs_val if isinstance(attrs_val, dict) else {})
-            _entity_details.apply_detail_cache_mutations([mutation])
+                mutations = self._entity_writer().upsert(conn, entity)
+            # Only now: the transaction closed cleanly, so the change is real.
+            _entity_details.apply_detail_cache_mutations(list(mutations))
+
+    def upsert_entity_with_audit(self, entity: dict, old: dict | None = None, *,
+                                 actor: str = "admin", provenance: str = "admin-editor"):
+        """Entity row, detail mirror and change audit under ONE transaction.
+
+        Split across two, a failure between them leaves an edited entry with no
+        record of who edited it, and that record is the only thing that makes the
+        edit answerable afterwards.
+        """
+        self.initialize()
+        with _entity_details.detail_cache_write_scope():
+            with self._conn() as conn:
+                mutations = self._entity_writer().upsert(conn, entity)
+                self.log_entity_changes(entity.get("id", ""), old or {}, entity,
+                                        f"{actor}|{provenance}", conn=conn)
+            _entity_details.apply_detail_cache_mutations(list(mutations))
 
     def _write_entity_row(self, conn, entity, season_val, attrs_store,
                           source_val, images_val, coords_val, updated) -> None:
@@ -1438,7 +1450,26 @@ class Database:
                         "parentId" = EXCLUDED."parentId",
                         "legacyArea" = EXCLUDED."legacyArea",
                         status = CASE WHEN %s THEN EXCLUDED.status ELSE entities.status END,
-                        verified = CASE WHEN %s THEN EXCLUDED.verified ELSE entities.verified END
+                        verified = CASE WHEN %s THEN EXCLUDED.verified ELSE entities.verified END,
+                        -- The number a pending correction was written against. It has
+                        -- to move whenever the content moves, or the conflict check
+                        -- waves through a correction aimed at wording already gone.
+                        -- Only on a real difference: re-imports re-save identical rows
+                        -- constantly, and bumping there would make every correction in
+                        -- flight look stale over a change that never happened. The
+                        -- compared set is exactly what this boundary calls writable;
+                        -- "updatedAt" and source are bookkeeping, not content.
+                        revision = entities.revision + CASE WHEN (
+                            entities.type, entities.name, entities.summary,
+                            entities.description, entities."placeId", entities.confidence,
+                            entities.season, entities.attributes, entities.images,
+                            entities.coordinates, entities.area
+                        ) IS DISTINCT FROM (
+                            EXCLUDED.type, EXCLUDED.name, EXCLUDED.summary,
+                            EXCLUDED.description, EXCLUDED."placeId", EXCLUDED.confidence,
+                            EXCLUDED.season, EXCLUDED.attributes, EXCLUDED.images,
+                            EXCLUDED.coordinates, EXCLUDED.area
+                        ) THEN 1 ELSE 0 END
                 """, values)
         else:
             old_fts_row = conn.execute(
@@ -2310,7 +2341,8 @@ class Database:
 
     # ── Entity change history ──
 
-    def log_entity_changes(self, entity_id: str, old: dict, new: dict, actor: str = "admin"):
+    def log_entity_changes(self, entity_id: str, old: dict, new: dict,
+                           actor: str = "admin", *, conn=None):
         tracked = ("name", "type", "summary", "placeId", "confidence", "season", "attributes", "images", "coordinates", "area")
         changes = []
         for field in tracked:
@@ -2320,13 +2352,21 @@ class Database:
                 changes.append((entity_id, field, old_val[:2000], new_val[:2000], actor))
         if not changes:
             return
+        if conn is not None:
+            # Ride the caller's transaction: an audit that outlives a rollback of
+            # the change it describes is a record of something that never happened.
+            self._write_entity_change_rows(conn, changes)
+            return
+        with self._conn() as own_conn:
+            self._write_entity_change_rows(own_conn, changes)
+
+    def _write_entity_change_rows(self, conn, changes) -> None:
         ph = self._ph
-        with self._conn() as conn:
-            for c in changes:
-                self._execute(conn, f"""
-                    INSERT INTO entity_changes (entity_id, field, old_value, new_value, actor)
-                    VALUES ({ph}, {ph}, {ph}, {ph}, {ph})
-                """, c)
+        for c in changes:
+            self._execute(conn, f"""
+                INSERT INTO entity_changes (entity_id, field, old_value, new_value, actor)
+                VALUES ({ph}, {ph}, {ph}, {ph}, {ph})
+            """, c)
 
     def get_entity_history(self, entity_id: str, limit: int = 50) -> list[dict]:
         self.initialize()

@@ -105,6 +105,48 @@ def test_update_entity():
     assert r.status_code == 200
 
 
+def test_update_entity_records_who_edited_it(isolated_sqlite_db):
+    _create_entity("update-audited")
+
+    r = client.put("/admin/entities/test-mutation-update-audited", json={
+        "name": "Test Entity Audited",
+        "type": "attraction",
+    }, headers=H)
+
+    assert r.status_code == 200
+    history = isolated_sqlite_db.get_entity_history("test-mutation-update-audited")
+    names = [row for row in history if row["field"] == "name"]
+    assert names, "an admin edit must leave a record of itself"
+    # Provenance is what later tells an admin edit apart from a correction apply.
+    assert "admin-editor" in names[0]["actor"]
+
+
+def test_update_entity_that_cannot_be_audited_does_not_edit_the_entity(isolated_sqlite_db,
+                                                                       monkeypatch):
+    _create_entity("update-unauditable")
+    original = isolated_sqlite_db._execute
+
+    def failing(conn, sql, *args, **kwargs):
+        if "INSERT INTO entity_changes" in sql:
+            raise RuntimeError("injected failure writing the audit")
+        return original(conn, sql, *args, **kwargs)
+
+    monkeypatch.setattr(isolated_sqlite_db, "_execute", failing)
+
+    response = client.put("/admin/entities/test-mutation-update-unauditable", json={
+        "name": "Never Lands",
+        "type": "attraction",
+    }, headers=H, follow_redirects=False)
+
+    # The middleware turns the failure into a 500; what matters is what it left.
+    assert response.status_code >= 500
+    monkeypatch.setattr(isolated_sqlite_db, "_execute", original)
+    # The row and its audit share one transaction, so an edit nobody could record
+    # is an edit that did not happen.
+    assert isolated_sqlite_db.get_entity(
+        "test-mutation-update-unauditable")["name"] != "Never Lands"
+
+
 def _assert_ai_only_response(response):
     assert response.status_code == 400
     assert response.json()["detail"]["code"] == "ai_only_media"

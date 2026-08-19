@@ -33,6 +33,7 @@ EXPECTED_REPOSITORY_WRITE_SITES = {
     ("scripts/fix_tinh_moi.py", "apply_sqlite", "dynamic-update"),
     ("scripts/fix_tinh_moi.py", "apply_pg", "attributes-update"),
     ("scripts/fix_tinh_moi.py", "apply_pg", "dynamic-update"),
+    ("agent/entity_write.py", "EntityWriteService.apply_patch", "dynamic-update"),
 }
 
 
@@ -123,6 +124,52 @@ def dynamic_list(cur, sets):
     assert [(site.function, site.kind) for site in sites] == [
         ("dynamic_list", "dynamic-update")
     ]
+
+
+def test_scanner_detects_a_dynamic_assignment_list_beside_literal_columns(tmp_path):
+    """The shape a real dynamic update actually takes, and the one that escaped.
+
+    A built column list is rarely alone: it is followed by the bookkeeping columns
+    the writer always sets. Until this case was covered, the placeholder sat before
+    a comma rather than an "=", so it was not read as a column, and the literal
+    companions meant the clause was not empty either -- the write went unlisted.
+    """
+    checker = _load_checker()
+    _write_source(
+        tmp_path / "mixed_list.py",
+        """
+def mixed_list(cur, sets):
+    cur.execute(
+        f'UPDATE entities SET {sets}, revision = revision + 1, \"updatedAt\" = NOW()'
+        f' WHERE id = ? AND revision = ? RETURNING revision',
+        (),
+    )
+""",
+    )
+
+    sites = checker.find_write_sites(tmp_path)
+
+    assert [(site.function, site.kind) for site in sites] == [
+        ("mixed_list", "dynamic-update")
+    ]
+
+
+def test_scanner_reads_a_value_placeholder_as_a_value_not_a_column_list(tmp_path):
+    """`SET description = {ph}` names its one column outright; nothing is dynamic.
+
+    Treating every placeholder as a built column list would drag every ordinary
+    parameterised update into the registry and drown the entries that matter.
+    """
+    checker = _load_checker()
+    _write_source(
+        tmp_path / "value_placeholder.py",
+        """
+def one_column(cur, ph, value):
+    cur.execute(f'UPDATE entities SET description = {ph} WHERE id = {ph}', (value, 'x'))
+""",
+    )
+
+    assert checker.find_write_sites(tmp_path) == []
 
 
 def test_scanner_detects_literal_entity_type_update(tmp_path):
