@@ -11,6 +11,7 @@ import data_lifecycle
 ROOT = Path(__file__).resolve().parents[2]
 GATE_CALL = "owner_write_gate.assert_writable"
 OWNER_GATE_FILES = {
+    "case_subject_links": "agent/data_lifecycle.py",
     "hot_memory": "agent/memory.py",
     "cold_memory": "agent/memory.py",
     "memory_graph": "agent/memory_graph.py",

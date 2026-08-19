@@ -287,7 +287,10 @@ def case_security_source_violations(paths: tuple[Path, ...]) -> list[str]:
 
 
 def test_case_security_production_sources_do_not_handle_bearers_at_unsafe_sinks():
-    paths = tuple(path for root in (ROOT / "agent", ROOT / "web-nuxt") for path in root.rglob("*") if path.suffix in {".py", ".js", ".ts", ".vue"} and "tests" not in path.parts and "node_modules" not in path.parts)
+    paths = tuple(path for root in (ROOT / "agent", ROOT / "web-nuxt") for path in root.rglob("*") if path.suffix in {".py", ".js", ".ts", ".vue"} and "tests" not in path.parts and "node_modules" not in path.parts
+                  # Build output is minified soup, not a source anybody edits; scanning
+                  # it makes the guard fail on whoever last ran `npm run build`.
+                  and ".output" not in path.parts and ".nuxt" not in path.parts and "dist" not in path.parts)
     assert case_security_source_violations(paths) == []
 
 

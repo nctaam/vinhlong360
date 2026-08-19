@@ -251,6 +251,9 @@ def _case_owner_variants(owner_key: str) -> tuple[str, str]:
     return owner_key, bare
 
 
+from owner_write_gate import owner_write_gate  # noqa: E402 - shared erasure gate
+
+
 def _purge_case_subject_links(owner_key: str) -> PurgeResult:
     """Unlink the person from their correction cases; keep the answerable rest.
 
@@ -260,6 +263,9 @@ def _purge_case_subject_links(owner_key: str) -> PurgeResult:
     """
     from database import db
 
+    # Same discipline as every other subject store: no erasure write while the
+    # owner's write gate says this account is mid-flight elsewhere.
+    owner_write_gate.assert_writable(owner_key)
     if not getattr(db, "_use_pg", False):
         # The kernel is PostgreSQL-only; on SQLite there is nothing to hold.
         return PurgeResult(store_name="case_subject_links")
