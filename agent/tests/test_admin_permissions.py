@@ -27,6 +27,7 @@ def test_admin_receives_all_operational_scopes():
         "moderation.manager",
         "ops.deploy",
         "publication.apply",
+        "publication.verify",
         "security.admin",
         "service.operator",
         "settings.admin",

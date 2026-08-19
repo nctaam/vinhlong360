@@ -15,7 +15,8 @@ ADMIN_ROLE_SCOPES: dict[str, set[str]] = {
         "ops.deploy",
         "settings.admin",
         "security.admin",
-        "service.operator", "correction.decide", "truth.review", "publication.apply", "case.supervisor",
+        "service.operator", "correction.decide", "truth.review", "publication.apply",
+        "publication.verify", "case.supervisor",
     },
     "superadmin": {"*"},
 }
@@ -26,9 +27,13 @@ ADMIN_ENTRY_SCOPES = frozenset({
     "ops.deploy",
     "settings.admin",
     "security.admin",
-    "service.operator", "correction.decide", "truth.review", "publication.apply", "case.supervisor",
+    "service.operator", "correction.decide", "truth.review", "publication.apply",
+        "publication.verify", "case.supervisor",
 })
-CASE_ACTION_SCOPES = {"service.operator", "correction.decide", "truth.review", "publication.apply", "case.supervisor"}
+# Publishing and checking that the public can see it are separate authorities:
+# one writes the row, the other claims a reader gets it back.
+CASE_ACTION_SCOPES = {"service.operator", "correction.decide", "truth.review",
+                      "publication.apply", "publication.verify", "case.supervisor"}
 
 ADMIN_BADGE_KEYS_BY_SCOPE: dict[str, frozenset[str]] = {
     "content.editor": frozenset({"images", "unclassified", "provisional"}),
