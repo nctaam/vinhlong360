@@ -682,7 +682,8 @@ describe('recommendation and detail integration', () => {
     expect(dialog.textContent).toContain('Nguồn chính thức')
     expect(dialog.textContent).toContain('Cổng thông tin tỉnh Vĩnh Long')
     ;(dialog.querySelector('[data-action="report"]') as HTMLButtonElement).click()
-    await vi.waitFor(() => expect(navigateToMock).toHaveBeenCalledWith('/cong-dong?report=detail-official'))
+    await vi.waitFor(() => expect(navigateToMock).toHaveBeenCalledWith(
+      '/yeu-cau/sua-thong-tin?entity=detail-official&source=dia-diem'))
     expect(document.body.querySelector('[role="dialog"][data-source-trust]')).toBeNull()
   })
 
@@ -709,7 +710,8 @@ describe('recommendation and detail integration', () => {
 
     await vi.waitFor(() => expect(wrapper.find('.quality-report').exists()).toBe(true))
     expect(wrapper.find('[data-action="open-source-trust"]').exists()).toBe(false)
-    expect(wrapper.get('.quality-report').attributes('href')).toBe('/cong-dong?report=detail-fallback')
+    expect(wrapper.get('.quality-report').attributes('href'))
+      .toBe('/yeu-cau/sua-thong-tin?entity=detail-fallback&source=dia-diem')
     expect(document.body.querySelector('[role="dialog"][data-source-trust]')).toBeNull()
   })
 })

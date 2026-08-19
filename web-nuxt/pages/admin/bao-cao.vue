@@ -147,7 +147,13 @@
               <td>{{ infoStatus(r.status) }}</td>
               <td class="admin-td-muted"><time :datetime="r.ts">{{ formatDate(r.ts) }}</time></td>
               <td class="admin-actions">
-                <template v-if="(r.status || 'open') === 'open'">
+                <!-- A correction row is a case now, not a checkbox. Resolving it
+                     here would close nothing anywhere; the workbench is where it
+                     is decided, and this archive row stays read-only. -->
+                <NuxtLink v-if="isCorrectionRow(r)" to="/admin/yeu-cau" class="admin-link" data-role="to-workbench">
+                  Xử lý tại Yêu cầu sửa thông tin
+                </NuxtLink>
+                <template v-else-if="(r.status || 'open') === 'open'">
                   <button type="button" class="btn-success" :disabled="infoActing === r.ts" @click="infoAction(r, 'resolved')">Xử lý</button>
                   <button type="button" class="btn-danger" :disabled="infoActing === r.ts" @click="infoAction(r, 'dismissed')">Bỏ qua</button>
                 </template>
@@ -206,6 +212,13 @@ const infoActing = ref<string | null>(null)
 // ── Filters / pagination / selection (client-side over loaded data) ──
 const PAGE_SIZE = 20
 const REASON_LIMIT = 120
+// The rows the kernel now owns: field-level factual reports. Moderation rows
+// (posts, comments) keep their resolve/dismiss lane untouched.
+function isCorrectionRow(r: { target_type?: string, field?: string }): boolean {
+  if (r.target_type === 'stale_field') return true
+  return (r.target_type === 'entity' || r.target_type === 'facility') && Boolean(r.field)
+}
+
 const statusFilter = ref<'all' | 'open' | 'resolved' | 'dismissed'>('all')
 const typeFilter = ref<'all' | 'entity' | 'post' | 'user'>('all')
 const visibleCount = ref(PAGE_SIZE)

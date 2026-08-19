@@ -63,6 +63,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     id: 'community',
     label: 'Cộng đồng & tin cậy',
     items: [
+      { id: 'case-corrections', label: 'Yêu cầu sửa thông tin', to: '/admin/yeu-cau', icon: 'clipboard-check', scope: 'service.operator' },
       { id: 'moderation', label: 'Kiểm duyệt', to: '/admin/kiem-duyet', icon: 'shield-check', badge: 'moderation', scope: 'moderation.manager' },
       { id: 'image-review', label: 'Duyệt ảnh', to: '/admin/duyet-anh', icon: 'images', badge: 'images', scope: 'content.editor' },
       { id: 'users', label: 'Thành viên', to: '/admin/users', icon: 'users', scope: 'security.admin' },

@@ -256,7 +256,9 @@ describe('trust_drawer_v1 behavior', () => {
     })
     await vi.waitFor(() => expect(wrapper.find('h1').text()).toContain('Nhà cổ ven sông'))
     expect(wrapper.find('[data-action="open-source-trust"]').exists()).toBe(false)
-    expect(wrapper.get('.quality-report').attributes('href')).toBe(`/cong-dong?report=${sourcedEntity.id}`)
+    // Task 15: the report fallback files a correction case, not a community search.
+    expect(wrapper.get('.quality-report').attributes('href'))
+      .toBe(`/yeu-cau/sua-thong-tin?entity=${sourcedEntity.id}&source=dia-diem`)
     wrapper.unmount()
 
     publicFlags.trust_drawer_v1 = true
