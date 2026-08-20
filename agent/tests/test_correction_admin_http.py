@@ -344,3 +344,54 @@ def test_verification_refuses_rather_than_pretending_it_looked(operator):
     # recorded as the first one.
     assert response.status_code == 503
     assert response.json()["detail"]["code"] == "verification_fetcher_unconfigured"
+
+
+@pg_only
+def test_a_rollback_puts_back_what_the_entry_actually_held(operator):
+    """The other route that writes to the public page, and the riskier one.
+
+    The inverse patch used to be built from the reporter's own claim about the
+    old value — a string nobody had reviewed, replayed onto a live entry under
+    provenance 'correction-rollback'. It is read from the entry now, and this
+    walks that through the route rather than the function.
+    """
+    client, adapter, _ = operator
+    case_id, item_id = _seed(adapter, risk="R1")
+
+    assert client.post("/admin/cases/decisions", json={
+        "case_id": case_id, "item_id": item_id,
+        "outcome_code": "corrected", "reason_code": "source_confirms_change",
+    }).status_code == 200
+    assert client.post("/admin/cases/change-sets", json={
+        "case_id": case_id, "item_ids": [item_id],
+        "expected_revision": 1, "evidence_refs": [],
+    }).status_code == 200
+
+    workbench = client.get(f"/admin/cases/{case_id}").json()
+    change_set = workbench["change_set"]
+    assert client.post("/admin/cases/change-sets/apply", json={
+        "case_id": case_id, "change_set_id": change_set["change_set_id"],
+        "expected_case_revision": workbench["current_revision"],
+        "expected_entity_revision": change_set["base_entity_revision"],
+    }).status_code == 200
+
+    mid = client.get(f"/admin/cases/{case_id}").json()
+    rolled = client.post("/admin/cases/change-sets/rollback", json={
+        "case_id": case_id, "change_set_id": change_set["change_set_id"],
+        "expected_case_revision": mid["current_revision"],
+        "reason_code": "source_withdrawn",
+    })
+    assert rolled.status_code == 200, rolled.text
+
+    with adapter._conn(commit_on_success=False) as conn:
+        live = dict(adapter._row_to_dict(adapter._fetchone(
+            conn, "SELECT attributes, revision FROM entities WHERE id=%s", (ENTITY_ID,),
+        )))
+    # Forward, never backward: the undo is a new revision that happens to say
+    # what the old one said, so the audit trail keeps both events.
+    assert "0270 111 2222" in str(live["attributes"])
+    assert "0270 333 4444" not in str(live["attributes"])
+    assert int(live["revision"]) > int(mid["current_revision"])
+
+    after = client.get(f"/admin/cases/{case_id}").json()
+    assert after["items"][0]["publication_state"] == "rolled_back"

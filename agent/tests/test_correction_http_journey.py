@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import sys
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -26,6 +27,7 @@ from _pg_test_database import TEST_DATABASE_URL, pg_only  # noqa: E402
 MASTER_KEY = "0" * 43
 ENTITY_ID = "p-http-journey"
 ORIGIN = "http://testserver"
+UTC = timezone.utc
 
 
 @pytest.fixture
@@ -238,3 +240,92 @@ def test_status_without_a_session_says_nothing_about_any_case(client):
 
     assert response.status_code in (401, 403)
     assert "VL-COR" not in response.text
+
+
+@pg_only
+def test_the_phone_a_reporter_confirms_is_the_one_delivery_will_use(client):
+    """The consent flow over HTTP, end to end into what the dispatcher reads.
+
+    This carries a phone number and a one-time code across three boundaries, and
+    the record it produces is the same one a retention sweep deleted ten minutes
+    after it was given until this week. None of it had ever run through a route.
+    """
+    from cases import contact as contact_module
+    from cases.contact import configure_case_contact, deliverable_contact_for
+    from cases.public_api import CSRF_COOKIE
+    from cases.security import CaseCrypto
+
+    created = client.post("/api/cases/corrections", json=_body(), headers=_headers())
+    receipt = created.json()
+    client.post(
+        "/api/cases/access",
+        json={"publicReference": receipt["publicReference"],
+              "capability": receipt["capability"]},
+        headers={"Origin": ORIGIN, "Sec-Fetch-Site": "same-origin"},
+    )
+    # Double submit: the browser reads the CSRF cookie and echoes it back in a
+    # header no other site can set. A session cookie alone is not enough here.
+    session_headers = {
+        "Origin": ORIGIN, "Sec-Fetch-Site": "same-origin",
+        "X-Case-CSRF": client.cookies.get(CSRF_COOKIE) or "",
+    }
+
+    sent = []
+
+    class _Provider:
+        def send(self, phone, message, *, delivery_key=""):
+            from sms_provider import SmsDeliveryResult
+
+            sent.append((phone, message))
+            return SmsDeliveryResult(True, None, False)
+
+    configure_case_contact(
+        database=contact_module._DATABASE, crypto=CaseCrypto(MASTER_KEY),
+        provider=_Provider(), code_source=lambda: "123456",
+    )
+
+    asked = client.post("/api/cases/contact/request",
+                        json={"phone": "0901234567"}, headers=session_headers)
+    assert asked.status_code in (200, 202, 204), asked.text
+    # The code goes to the phone, never back to the caller in the response.
+    assert "123456" not in asked.text
+    assert sent and "123456" in sent[0][1]
+
+    confirmed = client.post("/api/cases/contact/verify",
+                            json={"code": "123456"}, headers=session_headers)
+    assert confirmed.status_code in (200, 204), confirmed.text
+
+    with contact_module._DATABASE._conn(commit_on_success=False) as conn:
+        case_id = str(contact_module._DATABASE._row_to_dict(
+            contact_module._DATABASE._fetchone(
+                conn,
+                "SELECT case_id FROM case_receipts WHERE public_reference=%s",
+                (receipt["publicReference"],),
+            )
+        )["case_id"])
+
+    # The whole point: what the reporter confirmed is what the dispatcher finds
+    # when a notification comes due, minutes or days later.
+    assert deliverable_contact_for(case_id, now=datetime.now(UTC)) == "0901234567"
+
+
+@pg_only
+def test_a_session_cookie_without_the_csrf_echo_cannot_add_a_phone(client):
+    created = client.post("/api/cases/corrections", json=_body(), headers=_headers())
+    receipt = created.json()
+    client.post(
+        "/api/cases/access",
+        json={"publicReference": receipt["publicReference"],
+              "capability": receipt["capability"]},
+        headers={"Origin": ORIGIN, "Sec-Fetch-Site": "same-origin"},
+    )
+
+    response = client.post(
+        "/api/cases/contact/request", json={"phone": "0901234567"},
+        headers={"Origin": ORIGIN, "Sec-Fetch-Site": "same-origin"},
+    )
+
+    # Another site can make the browser send its cookies; it cannot read them
+    # to set this header. That difference is the whole defence.
+    assert response.status_code == 403
+    assert response.json()["code"] == "invalid_case_credential"
