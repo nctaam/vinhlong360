@@ -58,3 +58,39 @@ def test_refusals_and_acceptance_do_not_read_the_same():
         assert disposition_for(refusal) is DispositionFamily.NO_ACTION
     assert disposition_for("duplicate_linked") is DispositionFamily.DUPLICATE
     assert disposition_for("withdrawn_by_requester") is DispositionFamily.WITHDRAWN
+
+
+def test_the_guards_accept_the_scopes_a_real_session_carries():
+    from admin_permissions import ADMIN_ROLE_SCOPES
+    from cases.domain import holds_authority
+
+    admin = ADMIN_ROLE_SCOPES["admin"]
+
+    # The bug this replaced: the domain asked for cases:work / cases:decide /
+    # cases:high_risk, the registry issued none of them, so every operator who
+    # reached these guards was refused work they were entitled to do.
+    assert holds_authority(admin, "cases:work")
+    assert holds_authority(admin, "cases:decide")
+    assert holds_authority(admin, "cases:high_risk")
+    assert holds_authority(admin, "case.supervisor")
+
+
+def test_a_superadmin_wildcard_satisfies_every_authority():
+    from cases.domain import holds_authority
+
+    # A plain `in` test failed the wildcard, so the one account that holds
+    # everything held nothing here.
+    for authority in ("cases:work", "cases:decide", "cases:high_risk", "case.supervisor"):
+        assert holds_authority({"*"}, authority)
+
+
+def test_the_mapping_is_not_a_widening():
+    from cases.domain import holds_authority
+
+    # Nobody gets work authority from nothing, and — the distinction an existing
+    # work-control test defends — supervising is not clearance for R2/R3.
+    assert not holds_authority(set(), "cases:work")
+    assert not holds_authority({"content.editor"}, "cases:work")
+    assert not holds_authority({"case.supervisor"}, "cases:high_risk")
+    assert not holds_authority({"service.operator"}, "cases:decide")
+    assert not holds_authority({"service.operator"}, "case.supervisor")

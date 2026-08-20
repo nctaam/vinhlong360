@@ -653,3 +653,15 @@ def test_a_refused_item_reads_as_settled_in_the_public_status():
     assert disposition_for(item.outcome_code) is DispositionFamily.NO_ACTION
     # And the published field is the ruling, not the id of the row holding it.
     assert item.outcome_code == "insufficient_evidence"
+
+
+def test_a_superadmin_cannot_slip_onto_the_self_service_path():
+    from cases.service import _OPERATOR_SCOPES
+
+    # The block reads "does this actor hold any staff scope". A superadmin holds
+    # the wildcard and nothing else, so a plain set intersection saw them as a
+    # member of the public and let them file through the reporter's own form.
+    admin_like = {"*"}
+    assert not (_OPERATOR_SCOPES & admin_like)
+    source = (Path(__file__).resolve().parents[1] / "cases" / "service.py").read_text("utf-8")
+    assert "'*' in actor_scopes" in source

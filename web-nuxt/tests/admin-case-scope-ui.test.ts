@@ -63,3 +63,20 @@ describe('hidden is not authorized', () => {
     expect(composable).not.toContain('may_perform')
   })
 })
+
+describe('an empty queue that is not empty', () => {
+  const page = readFileSync(resolve(__dirname, '..', 'pages', 'admin', 'yeu-cau.vue'), 'utf8')
+
+  it('tells the operator when the queue was refused, not just nothing', () => {
+    // `loadQueue().catch(() => {})` made a 403 look exactly like a quiet
+    // morning, and an operator without the scope would never learn why.
+    expect(page).not.toContain('cases.loadQueue().catch(() => {})')
+    expect(page).toContain('data-role="queue-failure"')
+    expect(page).toContain('chưa có quyền xử lý yêu cầu')
+  })
+
+  it('separates a missing permission from a broken connection', () => {
+    expect(page).toContain('statusCode === 403')
+    expect(page).toContain('Không tải được hàng đợi')
+  })
+})

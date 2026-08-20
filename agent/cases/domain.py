@@ -114,6 +114,37 @@ def disposition_for(outcome_code: str | None) -> DispositionFamily:
         return DispositionFamily.UNDETERMINED
 
 
+# The domain speaks one authority vocabulary; a real AdminCP session carries
+# another. Nothing issues `cases:work`, `cases:high_risk` or `cases:decide` —
+# agent/admin_permissions.py grants only the six case scopes and, to superadmin,
+# the wildcard — so the guards below rejected every operator who ever reached
+# them, and a plain `in` test failed the wildcard too. The names stay (internal
+# callers and tests use them); what each one MEANS is written down here once.
+_AUTHORITY_ALIASES: dict[str, tuple[str, ...]] = {
+    'cases:work': ('service.operator', 'case.supervisor'),
+    # NOT case.supervisor: taking work off somebody and being cleared to touch
+    # R2/R3 are separate authorities on purpose, and a test says so. This one
+    # had no AdminCP name at all, so one was added to the registry rather than
+    # borrowed from a neighbour.
+    'cases:high_risk': ('case.high_risk',),
+    'cases:decide': ('correction.decide',),
+    'case.supervisor': (),
+}
+
+
+def holds_authority(scopes, authority: str) -> bool:
+    """Does this actor hold `authority`, in either vocabulary?
+
+    Deliberately not a widening: each internal name maps to the AdminCP scope
+    that already means the same thing, and nothing else. The wildcard is
+    honoured because superadmin genuinely carries it and nothing else.
+    """
+    held = set(scopes or ())
+    if '*' in held or authority in held:
+        return True
+    return any(alias in held for alias in _AUTHORITY_ALIASES.get(authority, ()))
+
+
 def review_relation(links: tuple[ReviewCaseLink, ...]) -> str:
     if not links:
         return 'none'

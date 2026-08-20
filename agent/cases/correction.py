@@ -28,6 +28,7 @@ from .domain import (
     EvidenceLevel,
     PromiseHealth,
     RiskClass,
+    holds_authority,
 )
 from .queue_policy import WorkItemDraft
 from .service import CORRECTABLE_FIELD_PATHS
@@ -187,7 +188,7 @@ def validate_decision(command: DecideItemCommand, *, now: datetime) -> DecisionO
     if command.outcome_code not in TERMINAL_OUTCOMES:
         raise _reject("unknown_correction_outcome", "That outcome is not offered.")
     scopes = set(getattr(command.actor, "scopes", ()) or ())
-    if DECIDE_SCOPE not in scopes:
+    if not holds_authority(scopes, DECIDE_SCOPE):
         raise _reject("decide_scope_required", "You cannot decide correction items.", status=403)
     reason = command.reason_code
     if type(reason) is not str or not reason.strip() or len(reason) > MAX_REASON_LENGTH:

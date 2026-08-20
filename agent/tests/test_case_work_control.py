@@ -466,3 +466,19 @@ def test_the_queue_row_carries_the_promise_health_it_is_ordered_by(pg_database):
     # The grammar is queue -> promise health -> owner -> next action; a rank
     # that only sorts silently is a rank the operator cannot see.
     assert row.promise_health == "breached"
+
+
+def test_claiming_accepts_an_operator_and_still_refuses_a_bystander():
+    from admin_permissions import ADMIN_ROLE_SCOPES
+    from cases.domain import holds_authority
+    from cases.work_control import HIGH_RISK_SCOPE, SUPERVISOR_SCOPE, WORK_SCOPE
+
+    admin = ADMIN_ROLE_SCOPES["admin"]
+    assert holds_authority(admin, WORK_SCOPE)
+    assert holds_authority(admin, HIGH_RISK_SCOPE)
+    assert holds_authority(admin, SUPERVISOR_SCOPE)
+
+    # A content editor is staff and still has no business holding case work.
+    assert not holds_authority({"content.editor"}, WORK_SCOPE)
+    # And the separation this module's own takeover test defends stays intact.
+    assert not holds_authority({"case.supervisor"}, HIGH_RISK_SCOPE)

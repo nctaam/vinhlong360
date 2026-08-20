@@ -28,6 +28,7 @@ const conflict = ref(false)
 const failure = ref('')
 const busy = ref(false)
 const claimedWorkItem = ref<AdminQueueItem | null>(null)
+const queueFailure = ref('')
 const leaseSecondsLeft = ref<number | null>(null)
 let leaseTimer: ReturnType<typeof setInterval> | null = null
 
@@ -96,7 +97,15 @@ onBeforeUnmount(() => {
 })
 
 await useAsyncData('admin-case-queue', async () => {
-  await cases.loadQueue().catch(() => {})
+  // A swallowed failure here is indistinguishable from an empty queue, and the
+  // operator spends the morning believing there is no work. Say what happened.
+  try {
+    await cases.loadQueue()
+  } catch (error) {
+    queueFailure.value = (error as { statusCode?: number })?.statusCode === 403
+      ? 'Tài khoản của bạn chưa có quyền xử lý yêu cầu. Liên hệ quản trị để được cấp.'
+      : 'Không tải được hàng đợi. Thử tải lại trang.'
+  }
   return true
 })
 </script>
@@ -106,6 +115,9 @@ await useAsyncData('admin-case-queue', async () => {
     <header class="admin-cases-head">
       <h1>Yêu cầu sửa thông tin</h1>
       <p v-if="failure" role="alert" class="admin-cases-failure">{{ failure }}</p>
+      <p v-if="queueFailure" role="alert" class="admin-cases-failure" data-role="queue-failure">
+        {{ queueFailure }}
+      </p>
     </header>
 
     <div class="admin-cases-split">

@@ -13,7 +13,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-from .domain import CaseProblem, RiskClass
+from .domain import CaseProblem, RiskClass, holds_authority
 
 WORK_SCOPE = "cases:work"
 HIGH_RISK_SCOPE = "cases:high_risk"
@@ -118,9 +118,10 @@ def _require_clock(now: datetime) -> None:
 
 def _require_scopes(actor, item: WorkItem | None) -> None:
     scopes = set(getattr(actor, "scopes", ()) or ())
-    if WORK_SCOPE not in scopes:
+    if not holds_authority(scopes, WORK_SCOPE):
         raise _reject("work_scope_required", "You cannot take backstage work.", status=403)
-    if item is not None and item.risk_class in HIGH_RISK_CLASSES and HIGH_RISK_SCOPE not in scopes:
+    if (item is not None and item.risk_class in HIGH_RISK_CLASSES
+            and not holds_authority(scopes, HIGH_RISK_SCOPE)):
         # A supervisor may reassign work; nobody may reassign the risk rules.
         raise _reject(
             "risk_clearance_required",
@@ -321,7 +322,7 @@ def release_work_item(work_item_id: str, actor, *, now: datetime) -> WorkItem:
 def takeover_work_item(work_item_id: str, actor, reason: str, *, now: datetime) -> WorkItem:
     _require_clock(now)
     scopes = set(getattr(actor, "scopes", ()) or ())
-    if SUPERVISOR_SCOPE not in scopes:
+    if not holds_authority(scopes, SUPERVISOR_SCOPE):
         raise _reject("supervisor_scope_required", "Only a supervisor can take work over.", status=403)
     if type(reason) is not str or not reason.strip():
         raise _reject("takeover_reason_required", "A takeover needs a stated reason.", status=400)

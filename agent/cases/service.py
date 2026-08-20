@@ -300,7 +300,9 @@ class CaseService:
         envelope = command.envelope
         if type(envelope) is not CommandEnvelope or not envelope.idempotency_key:
             raise _reject("invalid_command_envelope", "A command envelope is required.")
-        if _OPERATOR_SCOPES & set(envelope.actor.scopes) and command.assisted is None:
+        actor_scopes = set(envelope.actor.scopes)
+        is_operator = bool(_OPERATOR_SCOPES & actor_scopes) or '*' in actor_scopes
+        if is_operator and command.assisted is None:
             raise _reject(
                 "operator_actor_not_allowed",
                 "Operator actors must use the assisted intake path.",

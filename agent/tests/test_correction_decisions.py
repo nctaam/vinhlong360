@@ -302,3 +302,15 @@ def test_a_refused_decision_writes_nothing(pg_database):
             conn, "SELECT count(*) AS n FROM case_decisions WHERE case_id=%s", (case_id,)
         )["n"]
     assert count == 0
+
+
+def test_the_decide_guard_accepts_the_scope_an_editor_actually_holds():
+    from admin_permissions import ADMIN_ROLE_SCOPES
+    from cases.correction import DECIDE_SCOPE
+    from cases.domain import holds_authority
+
+    # `cases:decide` is issued by nothing; `correction.decide` is what an admin
+    # session carries and what the route guard already demands. The guard used
+    # to compare against the first name only, so it refused everyone.
+    assert holds_authority(ADMIN_ROLE_SCOPES["admin"], DECIDE_SCOPE)
+    assert not holds_authority({"service.operator"}, DECIDE_SCOPE)

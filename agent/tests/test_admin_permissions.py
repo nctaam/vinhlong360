@@ -21,6 +21,9 @@ def test_admin_receives_all_operational_scopes():
     from admin_permissions import admin_scopes_for_user
 
     assert admin_scopes_for_user({"role": "admin"}) == [
+        # Clearance for R2/R3 work — the authority the case guards ask for and
+        # that, until now, no role could actually hold.
+        "case.high_risk",
         "case.supervisor",
         "content.editor",
         "correction.decide",
