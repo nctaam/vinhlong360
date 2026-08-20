@@ -1,6 +1,6 @@
 # Kết quả thực thi — Correction Case Pilot (plan 2026-08-12)
 
-> STATUS: active (cập nhật lần cuối 2026-08-20, sau commit `04bd3c17`)
+> STATUS: active (cập nhật lần cuối 2026-08-20, sau commit `adf66aa0`)
 > Mức Definition Ladder: **works-on-disposable-postgres + full-suite-green-at-baseline**.
 > KHÔNG claim `production-proven`. KHÔNG claim SLA công khai. Mọi cờ case đang **false**; kích hoạt thuộc quyết định phát hành riêng của chủ dự án (Review Protocol mục 5).
 
@@ -205,6 +205,19 @@ gọi `observe` ra đúng 3 chỗ, không hơn.
 
 409 kia không giải mã được vì `_fail` **không log gì** cho ngoại lệ nó không ánh xạ được — nay
 log kiểu và traceback. Đó chính là cách tìm ra: lần thử đầu chỉ thấy `case_command_refused`.
+
+**Ba đường nối cuối cùng chưa từng thấy route (`adf66aa0`)** — mỗi cái đều mang thứ đáng kể:
+
+- **Rollback qua route**, sau một apply thật. Đây là đường ghi trang công khai nguy hiểm hơn:
+  inverse patch từng dựng từ chính lời khai của người báo về giá trị cũ. Test đòi giá trị
+  **entry thật sự từng có** quay lại, giá trị đã sửa biến mất, và revision **tiến chứ không
+  lùi** để audit giữ cả hai sự kiện.
+- **Luồng đồng ý trọn vẹn**: xin mã → mã tới đúng số điện thoại và **không lọt vào phản hồi** →
+  xác nhận → rồi hỏi `deliverable_contact_for` xem dispatcher sẽ tìm thấy gì sau nhiều ngày.
+  Đó chính là bản ghi mà retention từng xoá sau 10 phút.
+- **CSRF double-submit** hoá ra đang hoạt động đúng như thiết kế: chỉ có cookie phiên thì bị từ
+  chối, vì site khác **bắt trình duyệt gửi cookie được nhưng không đọc được cookie** để đặt
+  header echo. Nay có test giữ đúng ranh giới đó.
 
 ## Rủi ro chưa đóng
 
