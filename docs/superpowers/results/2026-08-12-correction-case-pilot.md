@@ -1,6 +1,6 @@
 # Kết quả thực thi — Correction Case Pilot (plan 2026-08-12)
 
-> STATUS: active (cập nhật lần cuối 2026-08-20, sau commit `adf66aa0`)
+> STATUS: active (cập nhật lần cuối 2026-08-20, sau commit `70efd7c3`)
 > Mức Definition Ladder: **works-on-disposable-postgres + full-suite-green-at-baseline**.
 > KHÔNG claim `production-proven`. KHÔNG claim SLA công khai. Mọi cờ case đang **false**; kích hoạt thuộc quyết định phát hành riêng của chủ dự án (Review Protocol mục 5).
 
@@ -218,6 +218,24 @@ log kiểu và traceback. Đó chính là cách tìm ra: lần thử đầu ch�
 - **CSRF double-submit** hoá ra đang hoạt động đúng như thiết kế: chỉ có cookie phiên thì bị từ
   chối, vì site khác **bắt trình duyệt gửi cookie được nhưng không đọc được cookie** để đặt
   header echo. Nay có test giữ đúng ranh giới đó.
+
+**Guard bắc cầu hai ngôn ngữ (`9cc0742e`, `70efd7c3`)** — hai lỗi đắt nhất phiên này cùng một
+hình dạng: payload và interface TypeScript bất đồng, **không có gì ở giữa**. Không bên nào sai
+riêng lẻ; chúng sai **về nhau**, và test Python chỉ thấy Python, vitest chỉ thấy TypeScript.
+
+`test_case_payload_contract.py` đọc payload **thật từ route đang chạy** và danh sách trường từ
+chính file `.ts`, rồi đòi khớp **hai chiều**: trường frontend chờ mà route không gửi sẽ render
+ra `undefined` trước mặt người đang đợi câu trả lời; khoá route gửi mà frontend không khai là
+hoặc rác, hoặc một kiểu dữ liệu nói dối. Phủ 4 payload: status + receipt của người dân, case
+detail + hàng đợi của người trực.
+
+Thêm một tầng nữa: **fixture của vitest** được so với payload thật. Fixture lệch khỏi route là
+một suite xanh **không đo gì cả** — đúng thứ đã xảy ra, `DETAIL` không có `change_set` suốt cả
+pilot nên mọi test workbench đều đồng tình với một trang không đăng được.
+
+5/10 test ở đây tồn tại để **canh chính guard**: bộ đọc interface phải thật sự tìm ra trường,
+interface không tồn tại phải ném lỗi chứ không trả tập rỗng, và một trường bịa phải bị báo
+thiếu. Hiện cả 4 payload lẫn 2 fixture đều khớp — lần đầu điều đó được *kiểm* thay vì *tin*.
 
 ## Rủi ro chưa đóng
 
