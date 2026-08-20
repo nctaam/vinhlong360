@@ -1038,3 +1038,18 @@ def test_the_workbench_reads_the_newest_change_set_first():
 
 def test_a_case_with_no_change_set_reads_as_none_not_as_an_error():
     assert _transaction(_RowsDatabase()).latest_change_set_for_case("case-1") is None
+
+
+def test_the_recorded_ruling_travels_with_the_item():
+    database = _RowsDatabase(many=[[{
+        "item_id": "i-1", "risk_class": "R1", "evidence_level": "E3",
+        "entity_id": "p-1", "field_path": "attributes.phone",
+        "base_entity_revision": 3, "outcome_code": "insufficient_evidence",
+    }]])
+
+    items = _transaction(database).load_correction_items("case-1")
+
+    # Dropping everything but "was it corrected" is what left a refused reporter
+    # reading "đang xem xét" on a case that had been answered weeks earlier.
+    assert items[0].outcome_code == "insufficient_evidence"
+    assert items[0].accepted is False

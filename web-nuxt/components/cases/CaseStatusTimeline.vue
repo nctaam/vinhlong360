@@ -72,7 +72,8 @@ const publicationByItem = computed(() => new Map(
         <DecisionPublicationState
           v-for="decision in status.itemDecisions"
           :key="decision.itemId"
-          :field-label="decision.outcome ?? 'Nội dung đã báo'"
+          field-label="Nội dung đã báo"
+          :outcome="decision.outcome"
           :disposition-family="decision.dispositionFamily"
           :publication-state="publicationByItem.get(decision.itemId) ?? 'not_required'"
         />

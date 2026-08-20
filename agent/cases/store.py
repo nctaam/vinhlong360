@@ -604,6 +604,9 @@ class CaseTransaction:
                 field_path=item["field_path"],
                 base_entity_revision=int(item["base_entity_revision"]),
                 accepted=item.get("outcome_code") == "corrected",
+                # The ruling itself, not just whether it happened to be "yes":
+                # the public status derives its answer from this.
+                outcome_code=item.get("outcome_code"),
                 publication_state=_publication_state(item),
             )
             for item in (_row_dict(self._db, row) for row in rows)

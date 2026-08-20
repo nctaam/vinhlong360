@@ -316,3 +316,42 @@ describe('the three pages', () => {
     }
   })
 })
+
+describe('a ruling the reporter can act on', () => {
+  const refused = statusWith({
+    itemDecisions: [{
+      itemId: 'i-1', outcome: 'insufficient_evidence', dispositionFamily: 'no_action',
+    }],
+  })
+
+  it('names which refusal it was, not just that nothing changed', () => {
+    const timeline = mount(CaseStatusTimeline, { props: { status: refused } })
+
+    // "Không thay đổi" covers three different refusals with three different
+    // next steps. Somebody told no deserves to know which one they got.
+    expect(timeline.get('[data-role="decision"]').text()).toContain('Chưa đủ căn cứ')
+    expect(timeline.get('[data-role="decision"]').text()).toContain('gửi thêm nguồn')
+  })
+
+  it('offers the review action once the answer is settled, refusal included', () => {
+    const timeline = mount(CaseStatusTimeline, { props: { status: refused } })
+
+    // This is the control a declined reporter uses to contest. While every
+    // refusal read as 'undetermined' it never appeared for them at all.
+    expect(timeline.find('[data-role="request-review"]').exists()).toBe(true)
+  })
+
+  it('still withholds it while nothing is decided', () => {
+    const undecided = statusWith()
+
+    expect(mount(CaseStatusTimeline, { props: { status: undecided } })
+      .find('[data-role="request-review"]').exists()).toBe(false)
+  })
+
+  it('never shows an internal decision reference as a heading', () => {
+    const timeline = mount(CaseStatusTimeline, { props: { status: refused } })
+
+    expect(timeline.text()).not.toContain('decision-row')
+    expect(timeline.text()).toContain('Nội dung đã báo')
+  })
+})

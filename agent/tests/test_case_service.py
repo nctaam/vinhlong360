@@ -617,3 +617,39 @@ def test_a_return_visit_is_observed_and_a_first_visit_is_not(monkeypatch):
     service.exchange_receipt(public_reference="VL-1", capability="c" * 43,
                              rate_subject="s", now=now)
     assert events == ["repeated_contact"]
+
+
+def test_every_ruling_reaches_the_reporter_as_its_own_answer():
+    from cases.domain import CorrectionOutcome, DispositionFamily, disposition_for
+
+    # Six of these used to collapse into UNDETERMINED, so anyone told no was
+    # told "still being looked at" forever — and the review action, which is
+    # only offered on a settled answer, never appeared for them.
+    assert disposition_for(None) is DispositionFamily.UNDETERMINED
+    assert disposition_for("corrected") is DispositionFamily.ACTION_TAKEN
+    assert disposition_for("confirmed_current") is DispositionFamily.NO_ACTION
+    assert disposition_for("insufficient_evidence") is DispositionFamily.NO_ACTION
+    assert disposition_for("out_of_scope") is DispositionFamily.NO_ACTION
+    assert disposition_for("unable_to_verify") is DispositionFamily.NO_ACTION
+    assert disposition_for("duplicate_linked") is DispositionFamily.DUPLICATE
+    assert disposition_for("withdrawn_by_requester") is DispositionFamily.WITHDRAWN
+
+    # No outcome an editor can record may fall through to "still deciding".
+    for outcome in CorrectionOutcome:
+        assert disposition_for(outcome.value) is not DispositionFamily.UNDETERMINED
+
+
+def test_a_refused_item_reads_as_settled_in_the_public_status():
+    from cases.domain import (
+        CorrectionItem, DispositionFamily, EvidenceLevel, RiskClass, disposition_for,
+    )
+
+    item = CorrectionItem(
+        item_id="i-1", risk_class=RiskClass.R1, evidence_level=EvidenceLevel.E3,
+        accepted=False, outcome_code="insufficient_evidence",
+        decision_ref="decision-row-77",
+    )
+
+    assert disposition_for(item.outcome_code) is DispositionFamily.NO_ACTION
+    # And the published field is the ruling, not the id of the row holding it.
+    assert item.outcome_code == "insufficient_evidence"

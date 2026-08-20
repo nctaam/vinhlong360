@@ -6,6 +6,7 @@ import { computed } from 'vue'
 
 import {
   CASE_DECISION_COPY,
+  CASE_OUTCOME_COPY,
   CASE_PUBLICATION_COPY,
   type CaseDispositionFamily,
   type CasePublicationState,
@@ -15,9 +16,16 @@ const props = defineProps<{
   fieldLabel: string
   dispositionFamily: CaseDispositionFamily
   publicationState: CasePublicationState
+  outcome?: string | null
 }>()
 
-const decisionText = computed(() => CASE_DECISION_COPY[props.dispositionFamily])
+// The specific ruling when there is one, the family when there is not. Three
+// different refusals reading as one "Không thay đổi" leaves the reporter with
+// no idea whether sending another source would help.
+const decisionText = computed(() =>
+  (props.outcome ? CASE_OUTCOME_COPY[props.outcome] : null)
+  ?? CASE_DECISION_COPY[props.dispositionFamily],
+)
 const publicationText = computed(() => CASE_PUBLICATION_COPY[props.publicationState])
 // The waiting states carry the promise; the settled ones carry the answer.
 const settled = computed(() => ['verified', 'not_required'].includes(props.publicationState))

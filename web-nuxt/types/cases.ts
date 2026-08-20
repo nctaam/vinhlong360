@@ -104,6 +104,24 @@ export const CASE_PUBLICATION_COPY: Record<CasePublicationState, string> = {
   rolled_back: 'Đã hoàn tác, yêu cầu được mở lại',
 }
 
+/**
+ * The ruling itself, in the reporter's words rather than the editor's code.
+ *
+ * The family alone is too coarse to be fair: "Không thay đổi" is true of a
+ * request refused for want of evidence, one ruled outside what this site edits,
+ * and one nobody could check — three different things to do next. Somebody told
+ * no deserves to know which one it was.
+ */
+export const CASE_OUTCOME_COPY: Record<string, string> = {
+  corrected: 'Đã sửa theo thông tin bạn báo',
+  confirmed_current: 'Đã đối chiếu nguồn — thông tin cũ là đúng, nên giữ nguyên',
+  insufficient_evidence: 'Chưa đủ căn cứ để sửa — bạn có thể gửi thêm nguồn',
+  out_of_scope: 'Nội dung này ngoài phạm vi trang tự sửa được',
+  unable_to_verify: 'Không kiểm chứng được bằng nguồn nào — chưa thể sửa',
+  duplicate_linked: 'Trùng với một yêu cầu đã có, đã gộp vào yêu cầu đó',
+  withdrawn_by_requester: 'Bạn đã rút yêu cầu này',
+}
+
 /** The decision on an item, which is not the same thing as a public change. */
 export const CASE_DECISION_COPY: Record<CaseDispositionFamily, string> = {
   undetermined: 'Đang xem xét',

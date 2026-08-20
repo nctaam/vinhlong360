@@ -71,6 +71,7 @@ class CorrectionItem:
     reported_value: object | None = None; proposed_value: object | None = None
     base_entity_revision: int = 1; evidence_refs: tuple[str, ...] = ()
     decision_ref: str | None = None; changeset_ref: str | None = None
+    outcome_code: str | None = None
 
 
 @dataclass(frozen=True)
@@ -83,6 +84,34 @@ class PromiseClock:
 @dataclass(frozen=True)
 class ReviewCaseLink:
     review_case_id: str; status: ReviewCaseStatus
+
+
+# Every ruling an editor can record, and what it means to the person who
+# reported the mistake. Collapsing the six non-accepting outcomes into
+# UNDETERMINED told anyone who was told no that they were still being
+# considered — and, because the review action is only offered on a settled
+# answer, took away the one control they had to contest it.
+_DISPOSITION_BY_OUTCOME = {
+    CorrectionOutcome.CORRECTED: DispositionFamily.ACTION_TAKEN,
+    CorrectionOutcome.CONFIRMED_CURRENT: DispositionFamily.NO_ACTION,
+    CorrectionOutcome.INSUFFICIENT_EVIDENCE: DispositionFamily.NO_ACTION,
+    CorrectionOutcome.OUT_OF_SCOPE: DispositionFamily.NO_ACTION,
+    CorrectionOutcome.UNABLE_TO_VERIFY: DispositionFamily.NO_ACTION,
+    CorrectionOutcome.DUPLICATE_LINKED: DispositionFamily.DUPLICATE,
+    CorrectionOutcome.WITHDRAWN_BY_REQUESTER: DispositionFamily.WITHDRAWN,
+}
+
+
+def disposition_for(outcome_code: str | None) -> DispositionFamily:
+    """The public family for a recorded ruling; UNDETERMINED only when none is."""
+    if not outcome_code:
+        return DispositionFamily.UNDETERMINED
+    try:
+        return _DISPOSITION_BY_OUTCOME[CorrectionOutcome(outcome_code)]
+    except (KeyError, ValueError):
+        # An outcome nobody mapped is a programming error. Saying "still being
+        # looked at" would be a lie; saying nothing settled is at least true.
+        return DispositionFamily.UNDETERMINED
 
 
 def review_relation(links: tuple[ReviewCaseLink, ...]) -> str:

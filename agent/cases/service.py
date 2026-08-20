@@ -35,7 +35,7 @@ from .domain import (
     RiskClass,
     ServiceKind,
 )
-from .domain import review_relation
+from .domain import disposition_for, review_relation
 from .queue_policy import WorkItemDraft
 from .rate_limit import check_case_rate_limit, rate_subject_digest
 from .store import (
@@ -1186,11 +1186,10 @@ def project_public_status(
         item_decisions=tuple(
             PublicItemDecision(
                 item_id=item.item_id,
-                outcome=str(item.decision_ref) if item.decision_ref else None,
-                disposition_family=(
-                    DispositionFamily.ACTION_TAKEN if item.accepted
-                    else DispositionFamily.UNDETERMINED
-                ),
+                # The ruling, not the row id that recorded it: an internal
+                # reference tells the reporter nothing they can act on.
+                outcome=item.outcome_code,
+                disposition_family=disposition_for(item.outcome_code),
             )
             for item in items
         ),

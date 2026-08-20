@@ -33,3 +33,28 @@ def test_case_snapshot_keeps_waiting_and_original_promise_lineage_immutable():
                             PromiseHealth.ON_TRACK, waiting, (PromiseClock("update", now, now),))
     assert snapshot.waiting == waiting
     assert snapshot.promise_clocks[0].due_at == now
+
+def test_no_recordable_ruling_falls_through_to_still_deciding():
+    from cases.domain import CorrectionOutcome, DispositionFamily, disposition_for
+
+    # The whole vocabulary, held against the map. A new outcome added without a
+    # family would silently tell that reporter their case is still open.
+    for outcome in CorrectionOutcome:
+        assert disposition_for(outcome.value) is not DispositionFamily.UNDETERMINED
+
+    assert disposition_for(None) is DispositionFamily.UNDETERMINED
+    assert disposition_for("") is DispositionFamily.UNDETERMINED
+    # An unknown code is a bug, and "no settled family" is the honest answer to
+    # it — claiming the case is still under review would not be.
+    assert disposition_for("invented_by_nobody") is DispositionFamily.UNDETERMINED
+
+
+def test_refusals_and_acceptance_do_not_read_the_same():
+    from cases.domain import DispositionFamily, disposition_for
+
+    assert disposition_for("corrected") is DispositionFamily.ACTION_TAKEN
+    for refusal in ("confirmed_current", "insufficient_evidence",
+                    "out_of_scope", "unable_to_verify"):
+        assert disposition_for(refusal) is DispositionFamily.NO_ACTION
+    assert disposition_for("duplicate_linked") is DispositionFamily.DUPLICATE
+    assert disposition_for("withdrawn_by_requester") is DispositionFamily.WITHDRAWN
