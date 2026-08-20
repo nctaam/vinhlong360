@@ -204,6 +204,11 @@ jobs:
           --health-retries 10
     env:
       DATABASE_URL: postgresql://vl360:vl360@localhost:5432/vinhlong360
+      # Correction-case tests gate on THIS name, not DATABASE_URL. Without it
+      # every PostgreSQL test in the case kernel skipped silently, and CI was
+      # green on a kernel it had never once exercised against a database — which
+      # is how a query naming a column that does not exist reached a commit.
+      VL360_TEST_DATABASE_URL: postgresql://vl360:vl360@localhost:5432/vinhlong360
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -267,7 +272,9 @@ jobs:
           CORS_ORIGINS: "http://localhost:8360"
           DESTRUCTIVE_OPS_LOCKED: "1"
         run: |
-          # DATABASE_URL=postgres → db._use_pg=True → các test @pg_only chạy (không skip).
+          # DATABASE_URL=postgres → db._use_pg=True cho tầng cũ; các test case kernel
+          # gate bằng VL360_TEST_DATABASE_URL (đặt ở env của job) — thiếu nó thì
+          # chúng SKIP im lặng chứ không đỏ.
           # `python -m` bắt buộc, cùng lý do với job test ở trên: `pytest` trần không
           # chèn cwd vào sys.path nên 8 file launch_safety vỡ ở bước collect.
           python -m pytest tests/ agent/tests/ \

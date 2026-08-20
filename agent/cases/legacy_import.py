@@ -155,16 +155,25 @@ def shadow_import(path: Path, store, *, dry_run: bool = True,
     return report
 
 
-def reconcile_import(path: Path, store) -> dict:
+def reconcile_import(path: Path, store, *, expected_digest: str | None = None) -> dict:
     """Count algebra against the ledger; any mismatch fails cutover.
 
-    total = valid + rejected + duplicates, ledger rows match the walk one for
-    one, and the file's bytes still hash to what the import saw.
+    total = valid + rejected + duplicates, and the ledger rows match the walk
+    one for one.
+
+    `expected_digest` is the digest of the file the operator reviewed and
+    imported. Supplied, it proves the bytes on disk are still those bytes.
+    Withheld, the check reports `None` — "not performed" — because the previous
+    version hardcoded it to True, which reported success for a property nothing
+    had checked: legacy_intake_records stores no digest, so there was never
+    anything to compare against. A cutover proof that cannot fail is not proof.
     """
     fresh = shadow_import(path, store, dry_run=True)
     ledger = store.legacy_intake_summary(str(path))
     checks = {
-        "source_digest_unchanged": True,  # fresh walk IS the current bytes
+        "source_digest_unchanged": (
+            None if expected_digest is None else fresh.source_digest == expected_digest
+        ),
         "count_algebra": fresh.total_lines == fresh.valid + fresh.rejected + fresh.duplicates,
         "ledger_rows_match": ledger["rows"] == fresh.total_lines,
         "ledger_corrections_match": ledger["corrections"] == fresh.corrections,
@@ -175,7 +184,9 @@ def reconcile_import(path: Path, store) -> dict:
         "source_file": str(path),
         "source_digest": fresh.source_digest,
         "checks": checks,
-        "passed": all(checks.values()),
+        # A check that was not performed is not a check that passed.
+        "passed": all(value is True for value in checks.values()),
+        "digest_verified": checks["source_digest_unchanged"] is True,
         "report": fresh,
         "ledger": ledger,
     }

@@ -102,7 +102,11 @@ def main(argv: list[str] | None = None) -> int:
         _require_gates(args, source=args.source)
         store = _store()
         with store.transaction() as transaction:
-            outcome = li.reconcile_import(args.source, transaction)
+            # The operator already stated which bytes they reviewed; hold
+            # the reconcile to that instead of letting it assume.
+            outcome = li.reconcile_import(
+                args.source, transaction, expected_digest=args.input_digest,
+            )
         print(json.dumps({"passed": outcome["passed"], "checks": outcome["checks"]},
                          indent=2))
         return 0 if outcome["passed"] else 1

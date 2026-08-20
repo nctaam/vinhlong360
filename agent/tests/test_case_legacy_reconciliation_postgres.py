@@ -103,13 +103,17 @@ def test_replaying_the_same_file_changes_nothing(pg_store, tmp_path):
 def test_reconciliation_passes_when_the_ledger_explains_every_line(pg_store, tmp_path):
     source = _source(tmp_path)
 
+    import hashlib
+
+    digest = hashlib.sha256(source.read_bytes()).hexdigest()
     with pg_store.transaction() as transaction:
         shadow_import(source, transaction, dry_run=False)
     with pg_store.transaction() as transaction:
-        outcome = reconcile_import(source, transaction)
+        outcome = reconcile_import(source, transaction, expected_digest=digest)
 
     assert outcome["passed"] is True
-    assert all(outcome["checks"].values())
+    assert outcome["digest_verified"] is True
+    assert all(value is True for value in outcome["checks"].values())
 
 
 @pg_only
@@ -140,3 +144,42 @@ def test_the_freeze_marker_is_durable_and_idempotent(pg_store):
     with pg_store.transaction() as transaction:
         assert correction_writes_frozen(transaction) is True
         assert transaction.legacy_intake_summary(FREEZE_SOURCE)["rows"] == 1
+
+
+@pg_only
+def test_a_cutover_without_a_stated_digest_does_not_claim_to_have_checked(
+    pg_store, tmp_path,
+):
+    source = _source(tmp_path)
+    with pg_store.transaction() as transaction:
+        shadow_import(source, transaction, dry_run=False)
+
+    with pg_store.transaction() as transaction:
+        outcome = reconcile_import(source, transaction)
+
+    # This check used to be hardcoded True. legacy_intake_records stores no
+    # digest, so there was never anything to compare against — the cutover proof
+    # reported success for a property nothing had verified.
+    assert outcome["checks"]["source_digest_unchanged"] is None
+    assert outcome["digest_verified"] is False
+    assert outcome["passed"] is False
+
+
+@pg_only
+def test_a_file_edited_after_import_fails_the_cutover(pg_store, tmp_path):
+    import hashlib
+
+    source = _source(tmp_path)
+    reviewed = hashlib.sha256(source.read_bytes()).hexdigest()
+    with pg_store.transaction() as transaction:
+        shadow_import(source, transaction, dry_run=False)
+
+    # Somebody edits the file between the review and the cutover.
+    with source.open("a", encoding="utf-8") as handle:
+        handle.write(_line(field="hours", detail="7h-21h") + chr(10))
+
+    with pg_store.transaction() as transaction:
+        outcome = reconcile_import(source, transaction, expected_digest=reviewed)
+
+    assert outcome["checks"]["source_digest_unchanged"] is False
+    assert outcome["passed"] is False

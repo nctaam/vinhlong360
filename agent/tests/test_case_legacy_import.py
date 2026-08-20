@@ -168,3 +168,18 @@ def test_freezing_writes_the_durable_marker_row():
     assert row["source_file"] == "__correction_write_freeze__"
     assert row["import_result"] == "freeze"
     assert row["raw_record_digest"] == digest and len(digest) == 64
+
+
+def test_the_reconcile_signature_admits_the_digest_it_needs():
+    import inspect
+
+    from cases.legacy_import import reconcile_import
+
+    signature = inspect.signature(reconcile_import)
+    parameter = signature.parameters["expected_digest"]
+
+    # legacy_intake_records stores no digest, so a reconcile that took no
+    # expected value had nothing to compare and reported True regardless. The
+    # operator states the digest they reviewed; the reconcile is held to it.
+    assert parameter.kind is inspect.Parameter.KEYWORD_ONLY
+    assert parameter.default is None
