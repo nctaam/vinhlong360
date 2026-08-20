@@ -1,6 +1,6 @@
 # Kết quả thực thi — Correction Case Pilot (plan 2026-08-12)
 
-> STATUS: active (cập nhật lần cuối 2026-08-20, sau commit `30e65b65`)
+> STATUS: active (cập nhật lần cuối 2026-08-20, sau commit `04bd3c17`)
 > Mức Definition Ladder: **works-on-disposable-postgres + full-suite-green-at-baseline**.
 > KHÔNG claim `production-proven`. KHÔNG claim SLA công khai. Mọi cờ case đang **false**; kích hoạt thuộc quyết định phát hành riêng của chủ dự án (Review Protocol mục 5).
 
@@ -182,6 +182,29 @@ lời từ chối trung tính khác nhau ở `request_id` (id tương quan, khô
 
 Xác nhận thêm chứ không phải lỗi: cờ bật mà thiếu `CASE_KERNEL_ENCRYPTION_KEY` thì kernel
 **từ chối wire và ghi log** — fail-closed đúng thiết kế.
+
+**Chuỗi xuất bản chạy trọn qua route (`04bd3c17`)** — decide → build → apply → verify, ghi
+lên entity thật. Lượt đầu mất **34 giây** rồi trả 409 trần: nó đang **chờ chính cái khoá nó
+đang giữ**.
+
+`verify_public_projection` mở transaction, `FOR UPDATE` hàng `cases`, cập nhật nó. Bên trong
+đó `_record_verification_success` gọi `metrics.observe`, mà hàm này **mở connection thứ hai**.
+Bản ghi capacity có khoá ngoại tới `cases`, nên PostgreSQL cần `FOR KEY SHARE` đúng hàng
+connection thứ nhất đang khoá — trong khi connection thứ nhất đứng chờ `observe` trả về.
+PostgreSQL **không thấy được chu trình** (một đầu bị chặn ở tầng ứng dụng), nên không báo
+deadlock: câu lệnh chạy tới `statement_timeout` rồi connection bị bỏ vì idle-in-transaction.
+
+Trên production: **mọi lần kiểm chứng thành công đều treo rồi hỏng bằng một 409 không giải mã
+được**, để lại đính chính đã-ghi-nhưng-chưa-bao-giờ-được-đánh-dấu-kiểm-chứng — người dân bị
+nói "đã ghi, đang kiểm tra trang công khai" mãi mãi, cho một thay đổi thực ra đã lên trang và
+đúng. Đường `recovery` mắc cùng lỗi.
+
+`metrics.observe_on` ghi trên transaction của caller; `observe` giữ connection riêng cho các
+nơi thật sự không có transaction (outbox, intake). Quét AST tìm hàm nhận `transaction` mà vẫn
+gọi `observe` ra đúng 3 chỗ, không hơn.
+
+409 kia không giải mã được vì `_fail` **không log gì** cho ngoại lệ nó không ánh xạ được — nay
+log kiểu và traceback. Đó chính là cách tìm ra: lần thử đầu chỉ thấy `case_command_refused`.
 
 ## Rủi ro chưa đóng
 
