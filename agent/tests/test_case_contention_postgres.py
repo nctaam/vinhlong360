@@ -345,3 +345,163 @@ def test_racing_applies_write_the_entry_once(pg):
         settings.CORRECTION_PUBLICATION_ENABLED = original
         configure_case_correction(database=None, crypto=None, policy=None)
         configure_case_publication(database=None, crypto=None, policy=None)
+
+
+@pg_only
+def test_racing_rollbacks_undo_the_entry_once(pg):
+    """Two operators both reaching for undo on a correction that went live.
+
+    Rollback is the other writer to the public page, and the one somebody
+    reaches for in a hurry — a complaint, a retracted source, a wrong call. Two
+    of them landing would replay the inverse patch twice and leave two audit
+    rows each claiming to be the moment the page was put back.
+    """
+    from cases.correction import configure_case_correction
+    from cases.domain import Channel
+    from cases.policy import load_case_policy
+    from cases.publication import (
+        ApplyChangeSetCommand,
+        RollbackChangeSetCommand,
+        apply_change_set,
+        configure_case_publication,
+        rollback_change_set,
+    )
+    from cases.security import CaseCrypto
+    from config import settings
+
+    crypto = CaseCrypto(MASTER_KEY)
+    policy = load_case_policy()
+    configure_case_correction(database=pg, crypto=crypto, policy=policy)
+    configure_case_publication(database=pg, crypto=crypto, policy=policy)
+    original = settings.CORRECTION_PUBLICATION_ENABLED
+    settings.CORRECTION_PUBLICATION_ENABLED = True
+    entity_id = f"p-undo-{uuid.uuid4().hex[:8]}"
+    try:
+        case_id, change_set_id, revision = _decided_change_set(pg, crypto, entity_id)
+
+        class _Maker:
+            actor_ref = "person:maker"
+            reviewer_ref = None
+            scopes = ("cases:work", "cases:decide", "publication.apply")
+            channel = Channel.WEB
+            correlation_id = "race-undo"
+
+        apply_change_set(
+            ApplyChangeSetCommand(
+                case_id=case_id, change_set_id=change_set_id,
+                expected_case_revision=revision, expected_entity_revision=3,
+                actor=_Maker(),
+            ),
+            now=_now(),
+        )
+        with pg._conn(commit_on_success=False) as conn:
+            # Rollback carries no expected revision: it is a compare-and-set on
+            # the change set's own apply_status, which is what makes racing
+            # undos safe without the caller having to hold a revision.
+            pg._execute(
+                conn,
+                "UPDATE case_work_items SET status='claimed', assignee_ref='person:maker',"
+                " lease_expires_at=%s WHERE case_id=%s",
+                (_now() + timedelta(hours=2), case_id),
+            )
+            conn.commit()
+
+        def work(_index):
+            return rollback_change_set(
+                RollbackChangeSetCommand(
+                    case_id=case_id, change_set_id=change_set_id,
+                    actor=_Maker(), reason_code="source_withdrawn",
+                ),
+                now=_now(),
+            )
+
+        results, errors = race(work, count=4)
+
+        undone = [item for item in results if item is not None]
+        assert len(undone) == 1, f"{len(undone)} rollbacks believed they undid it"
+        assert len([e for e in errors if e is not None]) == 3
+        with pg._conn(commit_on_success=False) as conn:
+            live = dict(pg._row_to_dict(pg._fetchone(
+                conn, "SELECT attributes, revision FROM entities WHERE id=%s", (entity_id,),
+            )))
+            changes = int(pg._fetchone(
+                conn,
+                "SELECT count(*) AS n FROM entity_changes WHERE entity_id=%s", (entity_id,),
+            )["n"])
+        assert "0270 111 2222" in str(live["attributes"])
+        # Base 3, applied 4, undone 5 — forward only, and two writes total.
+        assert int(live["revision"]) == 5
+        assert changes == 2
+    finally:
+        settings.CORRECTION_PUBLICATION_ENABLED = original
+        configure_case_correction(database=None, crypto=None, policy=None)
+        configure_case_publication(database=None, crypto=None, policy=None)
+
+
+def _decided_change_set(pg, crypto, entity_id: str):
+    """A case decided and built, ready to publish — the state before apply."""
+    from cases.correction import build_change_set
+    from cases.domain import Channel
+
+    case_id = _case(pg)
+    now = _now()
+    with pg._conn(commit_on_success=False) as conn:
+        pg._execute(
+            conn,
+            "INSERT INTO entities (id, type, name, attributes, revision)"
+            " VALUES (%s,'place','Bến Đò',%s,3)",
+            (entity_id, '{"phone": "0270 111 2222"}'),
+        )
+        item_id = str(pg._fetchone(
+            conn,
+            "INSERT INTO correction_items (case_id, entity_id, field_path,"
+            " reported_value_enc, proposed_value_enc, base_entity_revision,"
+            " risk_class, evidence_level) VALUES (%s,%s,'attributes.phone',%s,%s,3,"
+            "'R1','E3') RETURNING item_id",
+            (case_id, entity_id,
+             crypto.encrypt_private_payload({"value": "0270 111 2222"}),
+             crypto.encrypt_private_payload({"value": "0270 333 4444"})),
+        )["item_id"])
+        pg._execute(
+            conn,
+            "INSERT INTO case_work_items (case_id, kind, required_role, risk_class,"
+            " status, assignee_ref, lease_expires_at, ready_at, priority)"
+            " VALUES (%s,'decide','case_operator','R1','claimed','person:maker',%s,%s,0)",
+            (case_id, now + timedelta(hours=2), now),
+        )
+        pg._execute(
+            conn,
+            "INSERT INTO case_decisions (case_id, item_id, outcome_code, reason_code,"
+            " evidence_refs, decision_maker_ref, policy_revision, decided_at)"
+            " VALUES (%s,%s,'corrected','source_confirms_change','[\"e-1\"]'::jsonb,"
+            " 'person:maker','correction-pilot-v1',%s)",
+            (case_id, item_id, now),
+        )
+        conn.commit()
+
+    class _Maker:
+        actor_ref = "person:maker"
+        reviewer_ref = None
+        scopes = ("cases:work", "cases:decide", "publication.apply")
+        channel = Channel.WEB
+        correlation_id = "race-setup"
+
+    build_change_set(case_id, (item_id,), _Maker(), expected_revision=1,
+                     evidence_refs=("e-1",), now=now)
+    with pg._conn(commit_on_success=False) as conn:
+        change_set_id = str(pg._fetchone(
+            conn,
+            "SELECT change_set_id FROM correction_change_sets WHERE case_id=%s",
+            (case_id,),
+        )["change_set_id"])
+        revision = int(pg._fetchone(
+            conn, "SELECT current_revision FROM cases WHERE case_id=%s", (case_id,),
+        )["current_revision"])
+        pg._execute(
+            conn,
+            "UPDATE case_work_items SET status='claimed', assignee_ref='person:maker',"
+            " lease_expires_at=%s WHERE case_id=%s",
+            (now + timedelta(hours=2), case_id),
+        )
+        conn.commit()
+    return case_id, change_set_id, revision
