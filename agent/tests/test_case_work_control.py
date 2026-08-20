@@ -502,3 +502,116 @@ def test_the_escalation_scan_finally_has_a_production_caller():
     assert 'ScheduledTask("case-promise-watch"' in registered
     # Inert while the flags are off, like every other case task.
     assert 'if not getattr(settings, "CASE_KERNEL_ENABLED", False):' in registered
+
+
+@pg_only
+def test_nobody_can_recuse_somebody_else_out_of_their_work(pg_database):
+    from cases.work_control import WorkControlRejected, claim_work_item, recuse_actor
+
+    case_id = _case(pg_database)
+    work_id = _work(pg_database, case_id)
+    claim_work_item(work_id, _actor("person:holder"), expected_revision=1, now=NOW)
+
+    # A recusal is stepping back from your own work. Letting any operator cancel
+    # anybody's claim is a takeover without the supervisor scope takeover needs.
+    with pytest.raises(WorkControlRejected) as excinfo:
+        recuse_actor(work_id, _actor("person:bystander"), reason="not mine", now=NOW)
+
+    assert excinfo.value.problem.code == "work_item_held_by_another"
+    with pg_database._conn(commit_on_success=False) as conn:
+        row = dict(pg_database._row_to_dict(pg_database._fetchone(
+            conn,
+            "SELECT status, assignee_ref FROM case_work_items WHERE work_item_id=%s",
+            (work_id,),
+        )))
+    assert row["status"] == "claimed"
+    assert row["assignee_ref"] == "person:holder"
+
+
+@pg_only
+def test_the_holder_can_still_step_back(pg_database):
+    from cases.work_control import claim_work_item, recuse_actor
+
+    case_id = _case(pg_database)
+    work_id = _work(pg_database, case_id)
+    claim_work_item(work_id, _actor("person:holder"), expected_revision=1, now=NOW)
+
+    replacement = recuse_actor(work_id, _actor("person:holder"),
+                               reason="knows the reporter", now=NOW)
+
+    assert replacement.work_item_id != work_id
+    assert replacement.status == "ready"
+
+
+@pg_only
+def test_a_completed_review_still_names_who_did_it(pg_database):
+    from cases.store import PostgresCaseStore
+    from cases.work_control import claim_work_item, complete_work_item
+
+    case_id = _case(pg_database)
+    work_id = _work(pg_database, case_id, kind="truth_review")
+    claim_work_item(work_id, _actor("person:reviewer"), expected_revision=1, now=NOW)
+    complete_work_item(work_id, _actor("person:reviewer"), result_ref="review-1", now=NOW)
+
+    with PostgresCaseStore(pg_database).transaction() as transaction:
+        finished_by = transaction.completed_work_assignees(case_id, "truth_review")
+
+    # This tuple is the R3 proof that somebody other than the maker checked the
+    # facts. Nulling assignee_ref on completion emptied it, so a correctly
+    # reviewed R3 change could never be published — the gate refused with
+    # "truth_review_required" for a review that had just been done.
+    assert finished_by == ("person:reviewer",)
+
+
+@pg_only
+def test_routing_unclaimed_work_away_from_yourself_is_still_allowed(pg_database):
+    from cases.work_control import recuse_actor
+
+    case_id = _case(pg_database)
+    work_id = _work(pg_database, case_id)
+
+    # "This will land on me and it should not" is a legitimate recusal. Demanding
+    # the caller already hold the item would have made it impossible.
+    replacement = recuse_actor(work_id, _actor("person:conflicted"),
+                               reason="knows the reporter", now=NOW)
+
+    assert replacement.status == "ready"
+
+
+@pg_only
+def test_a_brand_new_case_raises_no_escalation_and_reads_on_track(pg_database):
+    from cases.work_control import list_queue, scan_escalations
+
+    case_id = _case(pg_database)
+    work_id = _work(pg_database, case_id)
+    intake = NOW
+    with pg_database._conn(commit_on_success=False) as conn:
+        for kind, seconds in (("receipt", 5), ("triage", 86400),
+                              ("update", 259200), ("resolution", 604800)):
+            pg_database._execute(
+                conn,
+                "INSERT INTO case_promise_clocks (case_id, kind, started_at, due_at,"
+                " health, policy_revision, observed_at)"
+                " VALUES (%s,%s,%s,%s,'on_track','correction-pilot-v1',%s)",
+                (case_id, kind, intake, intake + timedelta(seconds=seconds), intake),
+            )
+        conn.commit()
+
+    just_after = intake + timedelta(seconds=30)
+    summary = scan_escalations(now=just_after)
+    queued = {item.work_item_id: item
+              for item in list_queue(_actor(), now=just_after).items}
+
+    # The receipt clock is due five seconds in and satisfied by construction.
+    # Counting it filed a supervisor escalation for every open case in the
+    # system and painted the entire queue breached.
+    with pg_database._conn(commit_on_success=False) as conn:
+        mine = int(pg_database._fetchone(
+            conn,
+            "SELECT count(*) AS n FROM case_work_items"
+            " WHERE case_id=%s AND kind='escalation'",
+            (case_id,),
+        )["n"])
+    assert mine == 0
+    assert summary.created >= 0
+    assert queued[work_id].promise_health == "on_track"

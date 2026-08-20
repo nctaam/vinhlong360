@@ -13,13 +13,18 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-from .domain import CaseProblem, RiskClass, holds_authority
+from .domain import (
+    AT_RISK_FRACTION,
+    LIVE_PROMISE_KINDS,
+    CaseProblem,
+    RiskClass,
+    holds_authority,
+)
 
 WORK_SCOPE = "cases:work"
 HIGH_RISK_SCOPE = "cases:high_risk"
 SUPERVISOR_SCOPE = "case.supervisor"
 HIGH_RISK_CLASSES = frozenset({RiskClass.R2, RiskClass.R3})
-AT_RISK_FRACTION = 0.8
 ESCALATION_KIND = "escalation"
 
 _DATABASE = None
@@ -200,7 +205,10 @@ LEFT JOIN LATERAL (
         END
     ) AS health_rank
     FROM case_promise_clocks AS clock
-    WHERE clock.case_id = work.case_id
+    -- The receipt clock is due five seconds after intake and satisfied in
+    -- the same transaction, so counting it rendered every row breached
+    -- and flattened the queue's whole promise-health tier.
+    WHERE clock.case_id = work.case_id AND clock.kind = ANY(%(kinds)s)
 ) AS health ON TRUE
 WHERE work.status = 'ready'
    OR (work.status = 'claimed' AND work.lease_expires_at <= %(now)s)
@@ -222,7 +230,8 @@ def list_queue(actor, filters: dict | None = None, *, now: datetime) -> QueuePag
     with database._conn(commit_on_success=False) as conn:
         rows = database._fetchall(
             conn, _QUEUE_SQL,
-            {"now": now, "at_risk": 1 - AT_RISK_FRACTION, "limit": limit},
+            {"now": now, "at_risk": 1 - AT_RISK_FRACTION,
+             "kinds": sorted(LIVE_PROMISE_KINDS), "limit": limit},
         )
         items = tuple(_row_to_item(database, row) for row in rows)
     return QueuePage(items=items, total=len(items))
@@ -360,15 +369,23 @@ def recuse_actor(work_item_id: str, actor, reason: str, *, now: datetime) -> Wor
     actor_ref = getattr(actor, "actor_ref", "unknown")
     with database._conn(commit_on_success=False) as conn:
         item = _load(database, conn, work_item_id)
-        database._execute(
-            conn,
-            """
+        # Only the holder may step back. Without this, any actor carrying the
+        # operator scope could cancel work somebody else was in the middle of —
+        # their claim gone, their lease gone, no refusal, no trace of who did it.
+        _apply(
+            database, conn,
+            f"""
             UPDATE case_work_items
             SET status = 'cancelled', assignee_ref = NULL, lease_expires_at = NULL,
                 revision = revision + 1
             WHERE work_item_id = %s
+              AND (assignee_ref IS NULL OR assignee_ref = %s
+                   OR lease_expires_at <= %s OR status <> 'claimed')
+            RETURNING {_COLUMNS}
             """,
-            (work_item_id,),
+            (work_item_id, actor_ref, now),
+            code="work_item_held_by_another",
+            detail="Somebody else is holding that work item.",
         )
         replacement = _apply(
             database, conn,
@@ -402,7 +419,13 @@ def complete_work_item(work_item_id: str, actor, result_ref: str, *, now: dateti
             database, conn,
             f"""
             UPDATE case_work_items
-            SET status = 'completed', assignee_ref = NULL, lease_expires_at = NULL,
+            -- assignee_ref is kept on purpose: on a completed item it is no
+            -- longer a lease, it is the record of who did the work, and it is
+            -- exactly what the R3 gate reads to prove the truth review was
+            -- somebody other than the maker. Nulling it made completed reviews
+            -- invisible, so R3 could never be published however correctly it
+            -- had been reviewed.
+            SET status = 'completed', lease_expires_at = NULL,
                 revision = revision + 1
             WHERE work_item_id = %s AND status = 'claimed' AND assignee_ref = %s
               AND lease_expires_at > %s
@@ -428,6 +451,7 @@ FROM case_work_items AS work
 JOIN case_promise_clocks AS clock ON clock.case_id = work.case_id
 JOIN cases AS parent ON parent.case_id = work.case_id
 WHERE clock.due_at <= %(now)s
+  AND clock.kind = ANY(%(kinds)s)
   AND parent.phase <> 'closed'
   AND NOT EXISTS (
       SELECT 1 FROM case_work_items AS existing
@@ -450,7 +474,8 @@ def scan_escalations(*, now: datetime, limit: int = 200) -> EscalationSummary:
     with database._conn(commit_on_success=False) as conn:
         rows = database._fetchall(
             conn, _ESCALATION_SQL + " LIMIT %(limit)s",
-            {"now": now, "kind": ESCALATION_KIND, "limit": limit},
+            {"now": now, "kind": ESCALATION_KIND,
+             "kinds": sorted(LIVE_PROMISE_KINDS), "limit": limit},
         )
         case_ids = [str(database._row_to_dict(row)["case_id"]) for row in rows]
         from . import metrics as _metrics
