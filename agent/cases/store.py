@@ -12,6 +12,7 @@ from typing import Mapping
 from .audit import CaseAuditDraft, serialize_case_projection
 from .domain import (
     AT_RISK_FRACTION,
+    LIVE_PROMISE_KINDS,
     CaseActivity,
     CasePhase,
     CaseSnapshot,
@@ -1116,6 +1117,7 @@ class CaseTransaction:
             JOIN case_promise_clocks k ON k.case_id = c.case_id
             WHERE c.closed_at IS NULL
               AND k.health <> 'breached'
+              AND k.kind = ANY(%s)
               -- At risk OR overdue. Keying on due_at alone would have meant
               -- AT_RISK was still never written anywhere, which is half the
               -- bug this query exists to fix.
@@ -1123,7 +1125,7 @@ class CaseTransaction:
             ORDER BY c.updated_at
             LIMIT %s
             """,
-            (AT_RISK_FRACTION, now, limit),
+            (sorted(LIVE_PROMISE_KINDS), AT_RISK_FRACTION, now, limit),
         )
         out = []
         for row in rows:

@@ -175,3 +175,40 @@ def test_the_worst_clock_is_the_case_health_and_only_one_rule_says_so():
     assert recorded_health(mixed) is PromiseHealth.AT_RISK
     assert recorded_health((*mixed, _clock("x", now, ahead, PromiseHealth.BREACHED))) \
         is PromiseHealth.BREACHED
+
+
+def test_a_fresh_case_is_not_already_late():
+    from datetime import datetime, timedelta, timezone
+
+    from cases.domain import PromiseHealth, promise_health_at
+
+    now = datetime(2026, 8, 20, 9, 0, tzinfo=timezone.utc)
+    intake = now - timedelta(seconds=30)
+    # Exactly what intake writes: receipt_target_seconds is 5, so this clock is
+    # overdue half a minute after the case exists — and it is satisfied by
+    # construction, because the receipt is written in the same transaction.
+    clocks = (
+        _clock("receipt", intake, intake + timedelta(seconds=5)),
+        _clock("triage", intake, intake + timedelta(days=1)),
+        _clock("update", intake, intake + timedelta(days=3)),
+        _clock("resolution", intake, intake + timedelta(days=7)),
+    )
+
+    # Counting the receipt clock told every reporter we were already late,
+    # thirty seconds after they filed, and handed a supervisor an escalation
+    # for every case in the system.
+    assert promise_health_at(clocks, now) is PromiseHealth.ON_TRACK
+
+
+def test_the_promises_a_case_is_actually_keeping_are_the_ones_measured():
+    from datetime import datetime, timedelta, timezone
+
+    from cases.domain import LIVE_PROMISE_KINDS, PromiseHealth, promise_health_at
+
+    now = datetime(2026, 8, 20, 9, 0, tzinfo=timezone.utc)
+    assert "receipt" not in LIVE_PROMISE_KINDS
+    assert {"triage", "update", "resolution"} <= LIVE_PROMISE_KINDS
+
+    for kind in sorted(LIVE_PROMISE_KINDS):
+        overdue = (_clock(kind, now - timedelta(days=4), now - timedelta(days=1)),)
+        assert promise_health_at(overdue, now) is PromiseHealth.BREACHED, kind

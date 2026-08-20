@@ -1106,3 +1106,17 @@ def test_only_cases_whose_stamp_could_be_wrong_are_restamped():
     # actual schema.
     assert "closed_at IS NULL" in sql
     assert "JOIN case_promise_clocks" in sql
+
+
+def test_the_sweep_ignores_the_clock_that_is_satisfied_by_construction():
+    database = _RowsDatabase(many=[[]])
+
+    _transaction(database).open_case_clocks(now=NOW)
+
+    sql, params = database.statements[0]
+    # The receipt target is five seconds and the receipt is written in the same
+    # transaction as the case, so counting it selected every case that has ever
+    # existed, forever.
+    assert "k.kind = ANY(%s)" in sql
+    assert "receipt" not in params[0]
+    assert set(params[0]) == {"triage", "update", "resolution"}

@@ -18,12 +18,19 @@ logger = logging.getLogger("cases.wiring")
 
 
 def site_origin(settings) -> str | None:
-    """The one public origin this deployment answers on."""
-    origins = [o for o in settings.cors_origins_list() if o.startswith("https://")]
-    if origins:
-        return origins[0]
-    fallback = settings.cors_origins_list()
-    return fallback[0] if fallback else None
+    """The one public origin this deployment answers on.
+
+    `cors_origins_list` is a @property. Calling it raised TypeError inside
+    wire_case_kernel's try block, which logged and left the kernel dormant — so
+    the composition root added to fix "nothing wires the kernel" wired nothing
+    itself. The unit test missed it because its fake settings object supplied a
+    callable, matching the mistake rather than the real object.
+    """
+    configured = list(settings.cors_origins_list)
+    secure = [origin for origin in configured if origin.startswith("https://")]
+    if secure:
+        return secure[0]
+    return configured[0] if configured else None
 
 
 def build_projection_fetcher(settings):

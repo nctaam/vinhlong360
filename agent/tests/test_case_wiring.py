@@ -21,15 +21,32 @@ from cases import wiring  # noqa: E402
 MASTER_KEY = "0" * 43
 
 
+class _Settings(SimpleNamespace):
+    """A stand-in that keeps the real object's SHAPE, not a convenient one.
+
+    cors_origins_list is a @property on the real Settings. The first version of
+    this fake made it a callable, which matched the production code's mistake
+    instead of the production object — so a TypeError that killed the entire
+    composition root passed every test here.
+    """
+
+    @property
+    def cors_origins_list(self):
+        return list(self._origins)
+
+
 def _settings(**overrides):
+    origins = overrides.pop(
+        "origins", ["http://localhost:3000", "https://vinhlong360.vn"],
+    )
     base = dict(
         CASE_KERNEL_ENABLED=True,
         CASE_KERNEL_ENCRYPTION_KEY=MASTER_KEY,
         CASE_SERVICE_OWNER_REF="person:owner",
-        cors_origins_list=lambda: ["http://localhost:3000", "https://vinhlong360.vn"],
+        _origins=origins,
     )
     base.update(overrides)
-    return SimpleNamespace(**base)
+    return _Settings(**base)
 
 
 @pytest.fixture(autouse=True)
@@ -100,7 +117,7 @@ def test_a_broken_key_leaves_the_kernel_dormant_not_half_alive():
 
 def test_without_https_there_is_no_projection_fetcher():
     fetcher = wiring.build_projection_fetcher(
-        _settings(cors_origins_list=lambda: ["http://localhost:3000"])
+        _settings(origins=["http://localhost:3000"])
     )
 
     # Verify then answers 503 honestly instead of pretending it looked.
@@ -128,3 +145,18 @@ def test_the_fetcher_pins_exactly_our_own_origin(monkeypatch):
     assert seen["policy"].allowed_origins == ("https://vinhlong360.vn:443",)
     assert seen["policy"].max_redirects == 0
     assert seen["audit_context"] == "projection_verify"
+
+
+def test_the_real_settings_object_survives_the_composition_root():
+    """The shape check no fake can give you.
+
+    site_origin reads settings.cors_origins_list. On the real object that is a
+    @property; the version of this file that preceded this test handed the code
+    a callable and so agreed with the bug. Read the production object.
+    """
+    from config import settings
+
+    origin = wiring.site_origin(settings)
+
+    assert origin is None or isinstance(origin, str)
+    assert not callable(type(settings).cors_origins_list.__get__(settings))

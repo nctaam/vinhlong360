@@ -109,6 +109,13 @@ _DISPOSITION_BY_OUTCOME = {
 # hạn" beside an update date that had passed weeks earlier, and the operator
 # queue — which ranks BREACHED first — never saw a late case at all.
 AT_RISK_FRACTION = 0.8
+# The promises a case is still keeping. `receipt` is excluded on purpose: its
+# target is five seconds and the receipt is written in the same transaction as
+# the case, so it is satisfied by construction and can never be outstanding.
+# Counting it made every case read BREACHED five seconds after intake — telling
+# every reporter we were already late, and handing a supervisor an escalation
+# for every case ever filed.
+LIVE_PROMISE_KINDS = frozenset({"triage", "update", "resolution"})
 
 
 _HEALTH_RANK = {
@@ -140,6 +147,8 @@ def promise_health_at(clocks, now: datetime, *, recorded=None) -> 'PromiseHealth
         return PromiseHealth.RECOVERY
     worst = PromiseHealth.ON_TRACK
     for clock in clocks or ():
+        if clock.kind not in LIVE_PROMISE_KINDS:
+            continue
         if now >= clock.due_at:
             return PromiseHealth.BREACHED
         elapsed = (now - clock.started_at).total_seconds()
