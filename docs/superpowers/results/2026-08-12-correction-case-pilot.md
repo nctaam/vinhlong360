@@ -1,6 +1,6 @@
 # Kết quả thực thi — Correction Case Pilot (plan 2026-08-12)
 
-> STATUS: active (cập nhật lần cuối 2026-08-20, sau commit `70efd7c3`)
+> STATUS: active (cập nhật lần cuối 2026-08-20, sau commit `6e2f588e`)
 > Mức Definition Ladder: **works-on-disposable-postgres + full-suite-green-at-baseline**.
 > KHÔNG claim `production-proven`. KHÔNG claim SLA công khai. Mọi cờ case đang **false**; kích hoạt thuộc quyết định phát hành riêng của chủ dự án (Review Protocol mục 5).
 
@@ -236,6 +236,31 @@ pilot nên mọi test workbench đều đồng tình với một trang không đ
 5/10 test ở đây tồn tại để **canh chính guard**: bộ đọc interface phải thật sự tìm ra trường,
 interface không tồn tại phải ném lỗi chứ không trả tập rỗng, và một trường bịa phải bị báo
 thiếu. Hiện cả 4 payload lẫn 2 fixture đều khớp — lần đầu điều đó được *kiểm* thay vì *tin*.
+
+**Tranh chấp thật, không phải đọc chuỗi SQL (`c1028ba1`, `6e2f588e`)** — mọi khẳng định về
+`FOR UPDATE SKIP LOCKED`, compare-and-set và lease tới lúc này chỉ được kiểm bằng cách **đọc
+văn bản câu SQL**. Một chuỗi có chữ "SKIP LOCKED" chứng minh có người đã gõ nó, không chứng
+minh hai worker không cùng gửi một tin nhắn.
+
+Tám luồng trên tám connection thật, thả cùng lúc bằng barrier, trên PostgreSQL disposable.
+Assert vào **bất biến chứ không vào thời gian**:
+
+| Đua | Bất biến giữ được |
+|---|---|
+| 8 người trực nhận **một** việc | đúng 1 người giữ, 7 bị từ chối, revision +1 |
+| 8 dispatcher chạy outbox | tin nhắn ra **đúng một lần**, `attempts = 1` |
+| 4 apply một change set | đúng 1 lần đăng, entity +1 revision, **1 dòng** `entity_changes` |
+| 4 rollback một đính chính đã đăng | đúng 1 lần hoàn tác; 3→4→5, tổng **2 dòng** thay đổi |
+
+Hai thứ giữ chính bộ khung trung thực. Một test đòi barrier **thật sự làm các luồng chồng
+nhau** — một cuộc đua âm thầm tuần tự hoá thì không chứng minh gì. Và bản đầu của assert
+dispatcher đếm **mọi** tin nhắn provider thấy, mà DB disposable còn hàng đợi của mọi suite
+khác: nó báo **34 lần gửi** và sẽ bị đọc thành một lỗi gửi-trùng thảm khốc. Nay đếm đúng
+delivery key của hàng đó — một con số về cái lease, không phải về fixture.
+
+Phụ: một nghi ngờ được **đo rồi bỏ** thay vì vá bừa — promise watch chỉ UPDATE `health` và
+`observed_at`, không đụng `case_id`, nên PostgreSQL **không** lấy khoá FK trên hàng `cases`;
+nó không tranh chấp với người trực như deadlock verify đã làm.
 
 ## Rủi ro chưa đóng
 
