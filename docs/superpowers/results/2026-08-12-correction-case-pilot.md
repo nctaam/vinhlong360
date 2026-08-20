@@ -1,6 +1,6 @@
 # Kết quả thực thi — Correction Case Pilot (plan 2026-08-12)
 
-> STATUS: active (cập nhật lần cuối 2026-08-20, sau commit `6b7bb980`)
+> STATUS: active (cập nhật lần cuối 2026-08-20, sau commit `ecb19c7b`)
 > Mức Definition Ladder: **works-on-disposable-postgres + full-suite-green-at-baseline**.
 > KHÔNG claim `production-proven`. KHÔNG claim SLA công khai. Mọi cờ case đang **false**; kích hoạt thuộc quyết định phát hành riêng của chủ dự án (Review Protocol mục 5).
 
@@ -112,6 +112,47 @@ trigger là đồng hồ quá hạn) — đã sửa cho khớp mã.
 
 **Không còn phát hiện nào của hai đợt rà soát để mở.**
 
+## Quét sâu đợt 3 (2026-08-20) — nhắm vào mặt chưa ai soi
+
+4 chiều mới: **mã viết trong chính phiên này**, đồng thời, chất lượng test, schema+legacy.
+12 agent; 8 claim qua phản biện, **4 đứng / 4 bị bác**. Ba lỗi nữa do tôi tự đọc lại mà thấy.
+
+**Lỗi trong mã của chính đợt sửa trước** (`3e50074d`, `c2496648`, `dea736f6`):
+
+1. `open_case_clocks` chọn `cases.promise_health` — **cột chưa bao giờ tồn tại**. Query ném
+   UndefinedColumn vào `except` của task → log, nuốt, `return 0`. Bản vá cho 2 phát hiện
+   đã-xác-nhận **chết ngay khi sinh**. Test của tôi dùng double ghi âm và assert *văn bản*
+   câu SQL, nên nó vui vẻ chấp nhận tên cột không có thật.
+2. `settings.cors_origins_list` là **@property**, `wiring.site_origin` gọi nó như hàm →
+   TypeError → `wire_case_kernel` nuốt → **composition root không lắp gì cả**. Test xanh vì
+   fake settings của tôi cấp một callable, dựng theo giả định sai của chính tôi.
+3. `receipt_target_seconds = 5` và đồng hồ receipt được ghi cùng transaction với hồ sơ, nên
+   nó **quá hạn vĩnh viễn và đã thoả mãn theo cấu tạo**. Đếm nó → mọi hồ sơ đọc ra BREACHED
+   30 giây sau khi nhận: mọi người dân được báo "đã trễ", mọi hồ sơ bị đóng dấu lại, và
+   **mỗi hồ sơ từng tồn tại sinh một việc giám sát**. Tôi lọc ở projection + sweep rồi dừng;
+   verifier bắt được nửa còn lại trong `work_control` (escalation scan + queue health).
+
+**Lỗi có sẵn, đã sửa** (`dea736f6`, `ecb19c7b`):
+
+4. `recuse_actor` huỷ **bất kỳ** việc nào theo id, không kiểm sở hữu: một operator chỉ có
+   `service.operator` đá được đồng nghiệp khỏi việc R3 đang làm dở; lease biến mất, và audit
+   ghi rằng *kẻ tấn công* đã rút lui.
+5. **CI chưa từng chạy một test PostgreSQL nào của case kernel** — job đặt `DATABASE_URL`,
+   test gate bằng `VL360_TEST_DATABASE_URL`. Tất cả SKIP im lặng, và comment ngay đó khẳng
+   định điều ngược lại. Đây là lý do gốc khiến các lỗi trên lọt được vào commit.
+6. `reconcile_import` báo `source_digest_unchanged: True` **cứng** trong khi
+   `legacy_intake_records` không lưu digest nào — bằng chứng cutover cho một tính chất chưa
+   ai kiểm. Nay nhận `expected_digest` (CLI đã đòi sẵn `--input-digest`); không có thì báo
+   `None` = *chưa kiểm*, và `passed` đòi mọi mục phải thật sự True.
+
+**Guard mới** (`cefd17b0`): `test_case_sql_contract.py` bắt PostgreSQL **PREPARE 107/111 câu
+SQL** của package — 4 câu còn lại dựng động, được đếm và ratchet. Kèm hai test canh chính
+guard: một cái đỏ nếu bộ thu ngừng tìm thấy gì, một cái nạp đúng cột ma của lỗi #1.
+
+**Bị bác** (4): test tautology ở `test_case_contact` (là lỗ mutation-coverage, không phải lỗi
+sản phẩm), một cái re-report lỗi đã sửa, `complete_work_item` (không có route `/work/complete`),
+và `sms_provider` (thật, nhưng đã sửa trước đó).
+
 ## Rủi ro chưa đóng
 
 - ~40 commit: đã qua **một** vòng rà soát đối kháng tự động (mục trên), **chưa** qua rà soát người/ultrareview (Review Protocol mục 6).
@@ -125,5 +166,7 @@ trigger là đồng hồ quá hạn) — đã sửa cho khớp mã.
    đã-phản-biện đều đã đóng (xem mục trên).
 1. Chạy trọn cổng Step 5 Task 18 (17 suite BE + ruff + 8 suite FE + typecheck + build + `run_hard --all`) và cập nhật mục "Số liệu" ở trên bằng exit code thật.
 2. Hoàn tất browser smoke (accessibility gate đã có; smoke CDP còn thiếu).
+2b. **Xem vòng CI đầu tiên sau khi `VL360_TEST_DATABASE_URL` được thêm** — các test
+   PostgreSQL của case kernel chưa từng chạy trên CI, nên vòng đầu có thể lộ fail có sẵn.
 3. Rà soát độc lập chuỗi commit (vòng tự động đã có; vòng người chưa).
 4. Quyết định phát hành có tên người trực và bằng chứng năng lực (`public_sla_eligible` chỉ là input, không phải công tắc).
