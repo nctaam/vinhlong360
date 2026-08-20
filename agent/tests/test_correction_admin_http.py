@@ -242,3 +242,105 @@ def test_the_queue_answers_with_work_and_not_with_an_exception(operator):
     # late, whatever the five-second receipt clock says.
     for row in payload["items"]:
         assert row["promise_health"] in {"on_track", "at_risk", "breached", "recovery"}
+
+
+@pg_only
+def test_the_whole_publication_chain_runs_through_its_routes(operator):
+    """Decide, build, apply, verify — over HTTP, onto a live entry.
+
+    Every step here was reachable only by calling functions until now. The
+    workbench's own chain was dead for the whole pilot because the payload
+    carried no change set to act on, and no route-level test existed to notice.
+    """
+    from cases.admin_api import configure_case_admin_api
+    from cases.security import CaseCrypto
+
+    client, adapter, _ = operator
+    case_id, item_id = _seed(adapter, risk="R1")
+
+    decided = client.post("/admin/cases/decisions", json={
+        "case_id": case_id, "item_id": item_id,
+        "outcome_code": "corrected", "reason_code": "source_confirms_change",
+    })
+    assert decided.status_code == 200, decided.text
+
+    # evidence_refs deliberately empty: the route derives lineage from what was
+    # recorded, because the caller is not the authority on its own support.
+    built = client.post("/admin/cases/change-sets", json={
+        "case_id": case_id, "item_ids": [item_id],
+        "expected_revision": 1, "evidence_refs": [],
+    })
+    assert built.status_code == 200, built.text
+
+    workbench = client.get(f"/admin/cases/{case_id}").json()
+    change_set = workbench["change_set"]
+    assert change_set is not None, "the workbench still has nothing to publish"
+    assert change_set["apply_status"] == "pending"
+
+    applied = client.post("/admin/cases/change-sets/apply", json={
+        "case_id": case_id, "change_set_id": change_set["change_set_id"],
+        "expected_case_revision": workbench["current_revision"],
+        "expected_entity_revision": change_set["base_entity_revision"],
+    })
+    assert applied.status_code == 200, applied.text
+
+    with adapter._conn(commit_on_success=False) as conn:
+        live = dict(adapter._row_to_dict(adapter._fetchone(
+            conn, "SELECT attributes, revision FROM entities WHERE id=%s", (ENTITY_ID,),
+        )))
+    # The point of the whole system: the public entry now says the corrected
+    # thing, at a new revision, through the one write path cases may use.
+    assert "0270 333 4444" in str(live["attributes"])
+    assert int(live["revision"]) > 3
+
+    # Verification reads what a reader is served. Applied is not verified, and
+    # the fetcher is the injection point that keeps those two facts separate.
+    configure_case_admin_api(
+        database=adapter, crypto=CaseCrypto(MASTER_KEY), service=None,
+        projection_fetcher=lambda entity_id: {
+            "id": entity_id, "attributes": {"phone": "0270 333 4444"},
+            "revision": int(live["revision"]),
+            # A corrected entry that no longer says where it came from is not
+            # fixed, and the checker treats a missing source as a mismatch.
+            "source": "vinhlong360",
+        },
+    )
+    verified = client.post("/admin/cases/change-sets/verify", json={
+        "case_id": case_id, "change_set_id": change_set["change_set_id"],
+    })
+
+    # 200 is not a verdict. The route answers with what it found, and a failed
+    # check is a legitimate 200 carrying verified: false — my first draft of
+    # this test read the status code as the answer and was wrong.
+    assert verified.status_code == 200, verified.text
+    assert verified.json()["verified"] is True, verified.text
+    assert verified.json()["mismatches"] == []
+    # It also has to have RETURNED. Recording the capacity event on a second
+    # connection made this call block on the row its own transaction held,
+    # until the statement timeout killed the connection.
+
+    after = client.get(f"/admin/cases/{case_id}").json()
+    assert after["items"][0]["publication_state"] == "verified"
+
+
+@pg_only
+def test_verification_refuses_rather_than_pretending_it_looked(operator):
+    from cases.admin_api import configure_case_admin_api
+    from cases.security import CaseCrypto
+
+    client, adapter, _ = operator
+    case_id, _ = _seed(adapter, risk="R1")
+    configure_case_admin_api(
+        database=adapter, crypto=CaseCrypto(MASTER_KEY), service=None,
+        projection_fetcher=None,
+    )
+
+    response = client.post("/admin/cases/change-sets/verify", json={
+        "case_id": case_id, "change_set_id": str(uuid.uuid4()),
+    })
+
+    # A failed check escalates and warns the reporter their correction may not
+    # be visible. Never having looked is a different fact and must not be
+    # recorded as the first one.
+    assert response.status_code == 503
+    assert response.json()["detail"]["code"] == "verification_fetcher_unconfigured"

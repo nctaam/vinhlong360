@@ -392,3 +392,37 @@ def test_the_route_guard_declares_its_request_as_a_request():
     # carrying the guard answered 422 "request field required" before
     # authentication ever ran — the whole operator surface dead over HTTP.
     assert annotation in (Request, "Request")
+
+
+def test_an_undecoded_failure_leaves_a_traceback_behind(caplog):
+    import logging
+
+    from cases.admin_api import _fail
+
+    with caplog.at_level(logging.ERROR, logger="cases.admin_api"):
+        problem = _fail(RuntimeError("the database went away"))
+
+    # A bare 409 with nothing in the log is how a verification deadlock looked
+    # from the outside for an entire pilot: refused, no reason, nowhere to look.
+    assert problem.status_code == 409
+    assert problem.detail["code"] == "case_command_refused"
+    assert any("CASE_COMMAND_UNDECODED_FAILURE" in record.getMessage()
+               for record in caplog.records)
+    assert any(record.exc_info for record in caplog.records)
+
+
+def test_a_domain_refusal_still_answers_as_itself(caplog):
+    import logging
+
+    from cases.admin_api import _fail
+    from cases.domain import CaseProblem
+
+    class _Refused(Exception):
+        problem = CaseProblem("change_set_not_applied", "Not applied yet.", 409)
+
+    with caplog.at_level(logging.ERROR, logger="cases.admin_api"):
+        problem = _fail(_Refused())
+
+    # A refusal is an answer, not a fault; it must not be logged as a bug.
+    assert problem.detail["code"] == "change_set_not_applied"
+    assert not caplog.records

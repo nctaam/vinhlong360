@@ -527,8 +527,12 @@ def test_an_apply_leaves_an_applied_capacity_trace(pg_database, monkeypatch):
     from cases.publication import apply_change_set
 
     events = []
+    # Both entry points: publication records on its own transaction now, and a
+    # capture that watches only the connection-opening one sees nothing.
     monkeypatch.setattr("cases.metrics.observe",
                         lambda kind, **kw: events.append(kind) or True)
+    monkeypatch.setattr("cases.metrics.observe_on",
+                        lambda transaction, kind, **kw: events.append(kind) or True)
     case_id, item_id, change_set_id = _seed_change_set(pg_database)
 
     apply_change_set(_command(case_id, change_set_id), now=NOW)

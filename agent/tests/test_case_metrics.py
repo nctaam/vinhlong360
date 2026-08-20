@@ -229,3 +229,41 @@ def test_observe_swallows_a_broken_pipe_instead_of_breaking_the_action(monkeypat
         assert metrics_module.observe("received", channel="web") is False
     finally:
         metrics_module.configure_case_metrics(database=None)
+
+
+def test_observing_on_a_transaction_opens_no_second_connection():
+    from cases import metrics
+
+    recorded = []
+
+    class _Transaction:
+        def record_capacity_event(self, **fields):
+            recorded.append(fields)
+
+    class _Exploding:
+        """Any use of this is the bug: a second connection inside a held lock."""
+
+        def transaction(self):
+            raise AssertionError("observe_on must not open its own transaction")
+
+    previous = metrics._DATABASE
+    metrics.configure_case_metrics(database=_Exploding())
+    try:
+        assert metrics.observe_on(_Transaction(), "verified", channel="web",
+                                  case_id="c-1") is True
+    finally:
+        metrics.configure_case_metrics(database=previous)
+
+    assert recorded and recorded[0]["kind"] == "verified"
+
+
+def test_a_bad_event_kind_does_not_poison_the_caller_transaction():
+    from cases import metrics
+
+    class _Transaction:
+        def record_capacity_event(self, **fields):
+            raise AssertionError("should never reach the database")
+
+    # Refused before any statement runs, so the publication it was measuring
+    # still commits. Measurement must not be able to undo the action.
+    assert metrics.observe_on(_Transaction(), "invented_kind", channel="web") is False

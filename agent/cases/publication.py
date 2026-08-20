@@ -406,8 +406,12 @@ def _record_verification_success(transaction, command, snapshot, actor_ref: str,
     from . import metrics as _metrics
 
     # Two facts on purpose: the projection checked out, and the case finished.
-    _metrics.observe("verified", channel="web", case_id=command.case_id, now=now)
-    _metrics.observe("completed", channel="web", case_id=command.case_id, now=now)
+    # On the caller's transaction: a second connection would block on the very
+    # `cases` row this one has locked, and hang until the statement timeout.
+    _metrics.observe_on(transaction, "verified", channel="web",
+                        case_id=command.case_id, now=now)
+    _metrics.observe_on(transaction, "completed", channel="web",
+                        case_id=command.case_id, now=now)
     return VerificationResult(
         change_set_id=command.change_set_id,
         state=PublicationState.VERIFIED,
@@ -444,7 +448,8 @@ def _record_verification_failure(transaction, command, snapshot, actor_ref: str,
     )
     from . import metrics as _metrics
 
-    _metrics.observe("recovery", channel="web", case_id=command.case_id, now=now)
+    _metrics.observe_on(transaction, "recovery", channel="web",
+                        case_id=command.case_id, now=now)
     return VerificationResult(
         change_set_id=command.change_set_id,
         state=PublicationState.APPLIED,

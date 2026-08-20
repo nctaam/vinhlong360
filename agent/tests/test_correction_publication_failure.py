@@ -426,8 +426,12 @@ def test_a_change_set_that_was_never_applied_cannot_be_verified(pg_database):
 @pg_only
 def test_verification_outcomes_leave_their_own_capacity_traces(pg_database, monkeypatch):
     events = []
+    # Both entry points: publication records on its own transaction now, and a
+    # capture that watches only the connection-opening one sees nothing.
     monkeypatch.setattr("cases.metrics.observe",
                         lambda kind, **kw: events.append(kind) or True)
+    monkeypatch.setattr("cases.metrics.observe_on",
+                        lambda transaction, kind, **kw: events.append(kind) or True)
 
     case_id, change_set_id = _applied_case(pg_database)
     events.clear()  # the apply above already traced itself

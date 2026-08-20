@@ -13,6 +13,8 @@ queue never carries it at all.
 """
 from __future__ import annotations
 
+import logging
+
 import sys
 from pathlib import Path
 
@@ -268,6 +270,11 @@ def _fail(error) -> HTTPException:
     if isinstance(error, StepUpRefused):
         return HTTPException(error.status, detail={"code": error.code,
                                                    "detail": error.detail})
+    # An undecoded failure is a bug, not a refusal. Log it with its traceback so
+    # the next one is diagnosable instead of being a bare 409 in somebody's face.
+    logging.getLogger("cases.admin_api").exception(
+        "CASE_COMMAND_UNDECODED_FAILURE: %s", type(error).__name__
+    )
     return HTTPException(409, detail={"code": "case_command_refused",
                                       "detail": "That command was refused."})
 

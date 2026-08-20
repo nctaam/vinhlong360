@@ -159,6 +159,34 @@ def configure_case_metrics(*, database=None) -> None:
     _DATABASE = database
 
 
+def observe_on(transaction, kind: str, *, channel: str, risk_class: str | None = None,
+               case_id: str | None = None, duration_seconds: int | None = None,
+               metadata: dict | None = None, now: datetime | None = None) -> bool:
+    """Record on the caller's OPEN transaction, never on a second connection.
+
+    `observe` opens one of its own. Called from inside a transaction that holds
+    FOR UPDATE on a `cases` row, that second connection blocks: the capacity
+    insert carries a foreign key to `cases` and so needs FOR KEY SHARE on the
+    very row the caller has locked, while the caller sits waiting for this
+    function to return. PostgreSQL cannot see that cycle — one side is blocked
+    in the application — so nothing raises a deadlock; the statement runs to its
+    timeout and the connection is dropped as idle-in-transaction. Verification
+    hung and then failed with an undecodable 409, every single time.
+    """
+    try:
+        record_capacity_event(
+            transaction, kind=kind, channel=channel, risk_class=risk_class,
+            case_id=case_id, duration_seconds=duration_seconds,
+            metadata=metadata, now=now,
+        )
+        return True
+    except CapacityEventRejected:
+        # A bad kind or duration is a programming error, not a database fault,
+        # and swallowing it here would keep the caller's transaction usable.
+        _logger.warning("capacity event refused: %s", kind, exc_info=True)
+        return False
+
+
 def observe(kind: str, *, channel: str, risk_class: str | None = None,
             case_id: str | None = None, duration_seconds: int | None = None,
             metadata: dict | None = None, now: datetime | None = None) -> bool:
