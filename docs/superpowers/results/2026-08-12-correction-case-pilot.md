@@ -1,6 +1,6 @@
 # Kết quả thực thi — Correction Case Pilot (plan 2026-08-12)
 
-> STATUS: active (cập nhật lần cuối 2026-08-19, sau commit `2d093bc1`)
+> STATUS: active (cập nhật lần cuối 2026-08-20, sau commit `9c9331d0`)
 > Mức Definition Ladder: **works-on-disposable-postgres + full-suite-green-at-baseline**.
 > KHÔNG claim `production-proven`. KHÔNG claim SLA công khai. Mọi cờ case đang **false**; kích hoạt thuộc quyết định phát hành riêng của chủ dự án (Review Protocol mục 5).
 
@@ -63,33 +63,39 @@ bác bỏ** (mỗi chiều 2 cái). Kết quả: **7 đứng vững, 1 bị bác
 | Cả lô gửi trong MỘT transaction | `outbox.py` | Lỗi giữa chừng → **gửi lại SMS cho người đã nhận** |
 | Kernel không có composition root | `wiring.py` (mới) | Bật cờ = router đã mount trả 500 ngay request đầu |
 
-**Còn mở — cần quyết định của chủ dự án, không phải bản vá** (xếp theo mức hại):
+**Đã đóng tiếp 2026-08-20 đợt 2** (`72509165`, `1abe22ae`, `f989180f`, `9c9331d0`):
 
-1. **`service.py:1190` — 6/7 kết luận bị gộp thành "Đang xem xét".** `disposition_family`
-   chỉ đọc `item.accepted` (= `outcome_code == 'corrected'`). Người bị **từ chối**
-   (`confirmed_current`, `insufficient_evidence`, `out_of_scope`, `unable_to_verify`,
-   `transferred`, `withdrawn`, `duplicate`) mãi mãi thấy "đang xem xét" — và không bao
-   giờ thấy nút phản hồi để khiếu nại. Đây là vi phạm trực diện §1.7 CLAUDE.md.
-2. **`correction.py:494` — cổng quyết định có thể đi vòng.** `build_change_set` không
-   đòi item phải có phán quyết `corrected`. Item **chưa từng được quyết định** — hoặc đã
-   bị từ chối vì thiếu chứng cứ — vẫn dựng và đăng được lên entity thật, rồi `verify`
-   đóng hồ sơ là CLOSED/ACTION_TAKEN. Phơi nhiễm tới **R2, gồm cả trường `name`**.
-   (R3 không lọt vì `ActorContext` không mang `reviewer_ref`.)
-3. **`work_control.py:18` — người trực không thể làm việc.** Guard đòi `cases:work`,
-   `cases:high_risk`, `cases:decide` — bộ từ vựng mà registry quyền AdminCP **không bao
-   giờ phát ra** — và so sánh bằng `in` thuần, không hiểu `"*"`. Hàng đợi trả 403 và
-   giao diện nuốt lỗi.
-4. **`correction.py:508` — rollback ghi lời khai chưa kiểm chứng của người báo.**
-   `before_value` lấy thẳng `reportedValue`; không đường nào đọc giá trị thật của entity.
-   Rollback ghi chuỗi do người lạ cung cấp lên trang công khai, provenance
-   `correction-rollback`. Cách sửa đã có sẵn trong repo: đọc giá trị hiện tại lúc intake
-   như `agent/public_api.py:3409-3412` làm.
-5. **`store.py:1008`** (chưa phản biện) — purge lưu trữ xoá cả contact challenge **đã xác
-   minh**, giết mọi thông báo người dân đã đồng ý.
-6. **`work_control.py:440`** (chưa phản biện) — `scan_escalations` không có nơi gọi trong
-   production, nên đồng hồ trễ hạn không bao giờ sinh việc giám sát; runbook mô tả **ngược lại**.
-7. **`service.py:1176`** (chưa phản biện) — hạn "Cập nhật trước" đóng băng lúc intake,
-   không tính lại, trong khi câu chữ trễ-hạn nói nó vẫn còn hiệu lực.
+1. **Kết luận bị gộp** — `domain.disposition_for` ánh xạ đủ 7 kết luận sang họ của nó;
+   `UNDETERMINED` nay chỉ còn nghĩa "chưa có phán quyết". Người bị từ chối thấy đúng lý do
+   (kèm "bạn có thể gửi thêm nguồn" khi đúng) và **thấy được nút phản hồi**. Trường
+   `outcome` công khai nay là phán quyết, không còn là id dòng dữ liệu — trước đó id đó
+   còn bị render làm tiêu đề mục.
+2. **Cổng quyết định đi vòng** — `build_change_set` join phán quyết mới nhất và từ chối
+   mọi item không được phán `corrected`. Mới nhất, vì một lần phúc tra có thể lật lại.
+   5 fixture ở 4 suite trước đây dựng change set mà không có phán quyết nào (một cái còn
+   ghi docstring "đã quyết định rồi") — nay phải đi qua cổng thật.
+3. **Người trực không làm việc được** — `domain.holds_authority` dịch một lần giữa hai bộ
+   từ vựng và hiểu `"*"`. Bản nháp đầu ánh xạ `cases:high_risk → case.supervisor` và bị một
+   test có sẵn bác đúng: giám sát ≠ thẩm quyền rủi ro cao. Thẩm quyền đó **chưa hề tồn tại**,
+   nên đã thêm `case.high_risk` vào registry (cấp cho vai `admin`) thay vì mượn tên hàng xóm.
+   Hàng đợi 403 nay nói rõ là thiếu quyền hay hỏng kết nối.
+4. **Rollback ghi lời khai chưa kiểm chứng** — before-state đọc từ chính entity dưới khoá,
+   đúng như `agent/public_api.py` vẫn làm cho báo cáo legacy. Trường không tồn tại thì undo
+   về không-tồn-tại, không về phỏng đoán.
+
+Phụ: journey suite trước đây **không chạy lại được** (NOW đông cứng → hit rate-limit không
+bao giờ hết hạn); fixture nay dọn cửa sổ, chạy hai lượt liên tiếp đều xanh.
+
+**Còn mở — cả ba CHƯA qua phản biện; đo lại trước khi tin là thật**:
+
+1. **`store.py:1008`** — purge lưu trữ xoá cả contact challenge **đã xác minh**, có thể giết
+   mọi thông báo người dân đã đồng ý nhận.
+2. **`work_control.py:440`** — `scan_escalations` không có nơi gọi trong production, nên đồng
+   hồ trễ hạn có thể không bao giờ sinh việc giám sát; runbook mô tả **ngược lại**.
+3. **`service.py:1176`** — hạn "Cập nhật trước" đóng băng lúc intake và không tính lại, trong
+   khi câu chữ trễ-hạn nói nó vẫn còn hiệu lực.
+
+Cả 4 phát hiện BLOCKER/quan trọng đã-phản-biện đều đã đóng ở hai đợt trên.
 
 ## Rủi ro chưa đóng
 
@@ -100,9 +106,8 @@ bác bỏ** (mỗi chiều 2 cái). Kết quả: **7 đứng vững, 1 bị bác
 
 ## Điều kiện trước khi bật bất kỳ cờ nào
 
-0. **Đóng 4 mục BLOCKER/quan trọng còn mở ở phần rà soát 2026-08-20.** Riêng mục 1 và 2
-   là điều kiện tuyệt đối: một cái nói dối người dân về kết luận, một cái cho phép đăng
-   thay đổi chưa hề được phán quyết.
+0. **Phản biện và xử lý 3 mục còn mở ở phần rà soát 2026-08-20** (retention, escalation,
+   hạn cập nhật). Bốn mục BLOCKER/quan trọng đã-phản-biện đã đóng.
 1. Chạy trọn cổng Step 5 Task 18 (17 suite BE + ruff + 8 suite FE + typecheck + build + `run_hard --all`) và cập nhật mục "Số liệu" ở trên bằng exit code thật.
 2. Hoàn tất browser smoke (accessibility gate đã có; smoke CDP còn thiếu).
 3. Rà soát độc lập chuỗi commit (vòng tự động đã có; vòng người chưa).
