@@ -174,3 +174,83 @@ def operator(monkeypatch):
 
     yield from admin_operator.__wrapped__(monkeypatch)
 
+
+
+def _fixture_keys(source: Path, anchor: str) -> set[str]:
+    """Top-level keys of one object literal in a vitest fixture."""
+    text = source.read_text(encoding="utf-8")
+    start = text.index(anchor) + len(anchor)
+    depth, end = 0, None
+    for index in range(start, len(text)):
+        if text[index] == "{":
+            depth += 1
+        elif text[index] == "}":
+            depth -= 1
+            if depth == 0:
+                end = index
+                break
+    assert end is not None, f"could not read the object after {anchor!r}"
+    # From just inside the opening brace: counting it would leave every line
+    # of the object one level deep and collect nothing at all.
+    body, keys, nesting = text[start + 1:end], set(), 0
+    for line in body.split("\n"):
+        stripped = line.strip()
+        if nesting == 0:
+            declaration = re.match(r"([A-Za-z_][A-Za-z0-9_]*):", stripped)
+            if declaration:
+                keys.add(declaration.group(1))
+        nesting += stripped.count("{") + stripped.count("[")
+        nesting -= stripped.count("}") + stripped.count("]")
+    return keys
+
+
+def test_the_fixture_reader_reads_a_real_fixture():
+    keys = _fixture_keys(WEB / "tests" / "admin-case-workbench.test.ts",
+                         "const DETAIL: AdminCaseDetail = ")
+
+    # Same rule as everywhere else here: a reader that finds nothing would make
+    # the comparison below pass no matter how far the fixture had drifted.
+    assert {"case_id", "phase", "items"} <= keys
+
+
+@pg_only
+def test_the_workbench_fixture_matches_what_the_route_really_sends(operator):
+    """The fixture the frontend tests trust, against the payload it stands for.
+
+    The vitest DETAIL fixture had no change_set for the entire pilot, so every
+    frontend test agreed with a page that could not publish. A fixture that has
+    drifted from the route is a green suite measuring nothing.
+    """
+    from test_correction_admin_http import _seed
+
+    client, adapter, _ = operator
+    case_id, _ = _seed(adapter)
+    payload = client.get(f"/admin/cases/{case_id}").json()
+
+    fixture = _fixture_keys(WEB / "tests" / "admin-case-workbench.test.ts",
+                            "const DETAIL: AdminCaseDetail = ")
+
+    missing = sorted(set(payload) - fixture)
+    assert not missing, f"the fixture is missing keys the route sends: {missing}"
+    invented = sorted(fixture - set(payload))
+    assert not invented, f"the fixture invents keys the route never sends: {invented}"
+
+
+@pg_only
+def test_the_status_fixture_matches_what_the_route_really_sends(client):
+    from test_correction_http_journey import _body, _headers, ORIGIN
+
+    created = client.post("/api/cases/corrections", json=_body(), headers=_headers())
+    receipt = created.json()
+    client.post(
+        "/api/cases/access",
+        json={"publicReference": receipt["publicReference"],
+              "capability": receipt["capability"]},
+        headers={"Origin": ORIGIN, "Sec-Fetch-Site": "same-origin"},
+    )
+    payload = client.get("/api/cases/status").json()
+
+    fixture = _fixture_keys(WEB / "tests" / "correction-case-pages.test.ts",
+                            "function statusWith(overrides: Partial<CaseStatus> = {}): CaseStatus {\n  return ")
+
+    assert not sorted(set(payload) - fixture - {"..."}), "fixture is missing route keys"
