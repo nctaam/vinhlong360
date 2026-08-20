@@ -376,3 +376,19 @@ def test_the_queue_route_serialises_the_full_grammar(monkeypatch):
     assert row["promise_health"] == "breached"
     assert row["owner_ref"] == "user:7"
     assert row["kind"] == "decide" and row["revision"] == 3
+
+
+def test_the_route_guard_declares_its_request_as_a_request():
+    import inspect
+
+    from fastapi import Request
+
+    from cases.admin_api import require_case_action
+
+    guard = require_case_action("queue.view")
+    annotation = inspect.signature(guard).parameters["request"].annotation
+
+    # Unannotated, FastAPI resolved this as a query parameter, so every route
+    # carrying the guard answered 422 "request field required" before
+    # authentication ever ran — the whole operator surface dead over HTTP.
+    assert annotation in (Request, "Request")

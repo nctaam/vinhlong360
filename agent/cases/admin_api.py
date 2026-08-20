@@ -91,7 +91,12 @@ def require_case_action(action: str):
     """
     scope = action_scope(action)
 
-    async def guard(request):
+    async def guard(request: Request):
+        # The annotation is load-bearing. FastAPI resolves dependency parameters
+        # by type; unannotated, `request` became a REQUIRED QUERY PARAMETER, so
+        # every route carrying this guard answered 422 "request field required"
+        # before authentication ever ran. The whole operator surface was dead
+        # over HTTP, and no test noticed because none of them drove a route.
         import admin
 
         _require_kernel()
