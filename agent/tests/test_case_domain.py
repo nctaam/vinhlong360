@@ -152,3 +152,26 @@ def test_no_clocks_at_all_is_not_a_breach():
     now = datetime(2026, 8, 20, 9, 0, tzinfo=timezone.utc)
     assert promise_health_at((), now) is PromiseHealth.ON_TRACK
     assert promise_health_at(None, now) is PromiseHealth.ON_TRACK
+
+
+def test_the_worst_clock_is_the_case_health_and_only_one_rule_says_so():
+    from datetime import datetime, timedelta, timezone
+
+    from cases.domain import PromiseHealth, recorded_health
+
+    now = datetime(2026, 8, 20, 9, 0, tzinfo=timezone.utc)
+    ahead = now + timedelta(days=1)
+
+    assert recorded_health(()) is PromiseHealth.ON_TRACK
+    assert recorded_health(None) is PromiseHealth.ON_TRACK
+    mixed = (
+        _clock("receipt", now, ahead, PromiseHealth.ON_TRACK),
+        _clock("update", now, ahead, PromiseHealth.AT_RISK),
+        _clock("resolution", now, ahead, PromiseHealth.RECOVERY),
+    )
+    # There is no cases.promise_health column — a case's health has always been
+    # the worst of its clocks. Two copies of that rank map is how the snapshot
+    # and the watch would start disagreeing about the same case.
+    assert recorded_health(mixed) is PromiseHealth.AT_RISK
+    assert recorded_health((*mixed, _clock("x", now, ahead, PromiseHealth.BREACHED))) \
+        is PromiseHealth.BREACHED

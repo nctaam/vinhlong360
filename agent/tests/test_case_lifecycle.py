@@ -301,3 +301,148 @@ def test_consent_retires_with_the_address_it_authorised(pg):
             (case_id,),
         )["n"]
     assert int(remaining) == 0
+
+
+@pg_only
+def test_the_promise_watch_query_runs_against_the_real_schema(pg):
+    """Executed, not string-matched.
+
+    The first version of this query selected cases.promise_health — a column
+    that has never existed. It passed a recording-double unit test, and in
+    production would have raised UndefinedColumn into the scheduler task's
+    except block: logged, swallowed, and the whole promise watch silently doing
+    nothing. Only a query run against the actual schema catches that.
+    """
+    from cases.domain import PromiseHealth
+
+    adapter, store = pg
+    case_id = _case(adapter, closed_days_ago=None)
+    with adapter._conn(commit_on_success=False) as conn:
+        adapter._execute(
+            conn,
+            "INSERT INTO case_promise_clocks (case_id, kind, started_at, due_at,"
+            " health, policy_revision, observed_at)"
+            " VALUES (%s,'update',%s,%s,'on_track','correction-pilot-v1',%s)",
+            (case_id, NOW - timedelta(days=4), NOW - timedelta(days=1), NOW),
+        )
+        conn.commit()
+
+    with store.transaction() as transaction:
+        # A generous limit: this disposable database carries thousands of cases
+        # left by other suites, and production's default 500 would page past a
+        # freshly inserted one.
+        rows = transaction.open_case_clocks(now=NOW, limit=100_000)
+
+    found = {case for case, _, _ in rows}
+    assert case_id in found
+    clocks, recorded = next((c, r) for case, c, r in rows if case == case_id)
+    assert recorded is PromiseHealth.ON_TRACK
+    assert clocks and clocks[0].due_at < NOW
+
+
+@pg_only
+def test_a_case_merely_at_risk_is_picked_up_too(pg):
+    from cases.domain import PromiseHealth, promise_health_at
+
+    adapter, store = pg
+    case_id = _case(adapter, closed_days_ago=None)
+    started = NOW - timedelta(hours=90)
+    due = started + timedelta(hours=100)
+    with adapter._conn(commit_on_success=False) as conn:
+        adapter._execute(
+            conn,
+            "INSERT INTO case_promise_clocks (case_id, kind, started_at, due_at,"
+            " health, policy_revision, observed_at)"
+            " VALUES (%s,'update',%s,%s,'on_track','correction-pilot-v1',%s)",
+            (case_id, started, due, NOW),
+        )
+        conn.commit()
+
+    with store.transaction() as transaction:
+        rows = transaction.open_case_clocks(now=NOW, limit=100_000)
+
+    # Keying the sweep on due_at alone would have left AT_RISK still unwritten
+    # anywhere — half the defect the watch exists to close.
+    clocks = next(c for case, c, _ in rows if case == case_id)
+    assert promise_health_at(clocks, NOW) is PromiseHealth.AT_RISK
+
+
+@pg_only
+def test_a_closed_case_keeps_no_promise_to_restamp(pg):
+    adapter, store = pg
+    case_id = _case(adapter, closed_days_ago=5)
+    with adapter._conn(commit_on_success=False) as conn:
+        adapter._execute(
+            conn,
+            "INSERT INTO case_promise_clocks (case_id, kind, started_at, due_at,"
+            " health, policy_revision, observed_at)"
+            " VALUES (%s,'update',%s,%s,'on_track','correction-pilot-v1',%s)",
+            (case_id, NOW - timedelta(days=40), NOW - timedelta(days=30), NOW),
+        )
+        conn.commit()
+
+    with store.transaction() as transaction:
+        rows = transaction.open_case_clocks(now=NOW, limit=100_000)
+
+    assert case_id not in {case for case, _, _ in rows}
+
+
+@pg_only
+def test_the_watch_task_actually_restamps_and_escalates(pg, monkeypatch):
+    """The scheduler task end to end, on a real database.
+
+    Its except block logs and returns 0, so any error inside — a bad column, a
+    missing configure, a wrong signature — looks exactly like "nothing to do".
+    Nothing tested it against PostgreSQL until this.
+    """
+    import database as _database_module
+    import scheduler
+    from config import settings
+
+    adapter, store = pg
+    case_id = _case(adapter, closed_days_ago=None)
+    with adapter._conn(commit_on_success=False) as conn:
+        # The sweep takes the stalest cases first and caps at 500; this shared
+        # disposable database holds thousands, so the case has to be genuinely
+        # old to be in the batch — which is also the case a real backlog would
+        # surface first.
+        adapter._execute(
+            conn, "UPDATE cases SET updated_at=%s WHERE case_id=%s",
+            (NOW - timedelta(days=4000), case_id),
+        )
+        adapter._execute(
+            conn,
+            "INSERT INTO case_promise_clocks (case_id, kind, started_at, due_at,"
+            " health, policy_revision, observed_at)"
+            " VALUES (%s,'update',%s,%s,'on_track','correction-pilot-v1',%s)",
+            (case_id, NOW - timedelta(days=400), NOW - timedelta(days=390), NOW),
+        )
+        adapter._execute(
+            conn,
+            "INSERT INTO case_work_items (case_id, kind, required_role, risk_class,"
+            " status, ready_at, priority) VALUES (%s,'decide','case_operator','R1',"
+            "'ready',%s,0)",
+            (case_id, NOW - timedelta(days=400)),
+        )
+        conn.commit()
+
+    monkeypatch.setattr(settings, "CASE_KERNEL_ENABLED", True, raising=False)
+    monkeypatch.setattr(_database_module, "db", adapter, raising=False)
+
+    assert scheduler.task_case_promise_watch() == 1
+
+    with adapter._conn(commit_on_success=False) as conn:
+        health = str(dict(adapter._row_to_dict(adapter._fetchone(
+            conn, "SELECT health FROM case_promise_clocks WHERE case_id=%s", (case_id,),
+        )))["health"])
+        escalations = int(adapter._fetchone(
+            conn,
+            "SELECT count(*) AS n FROM case_work_items"
+            " WHERE case_id=%s AND kind='escalation'",
+            (case_id,),
+        )["n"])
+
+    # Both halves of the same omission: the queue can now sort late work up,
+    # and a supervisor finally has something to pick up.
+    assert health == "breached"
+    assert escalations == 1

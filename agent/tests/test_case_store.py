@@ -1099,8 +1099,10 @@ def test_only_cases_whose_stamp_could_be_wrong_are_restamped():
     _transaction(database).open_case_clocks(now=NOW)
 
     sql = database.statements[0][0]
-    # Already-breached and recovery cases need no restamping, and a closed case
-    # has no promise left to keep.
+    # A shape check only. The first version of this test asserted the text of a
+    # query that named a column — cases.promise_health — which has never
+    # existed, and the recording double happily accepted it. The real proof is
+    # test_case_lifecycle's PostgreSQL test, which executes this against the
+    # actual schema.
     assert "closed_at IS NULL" in sql
-    assert "promise_health NOT IN ('breached', 'recovery')" in sql
-    assert "due_at <= %s" in sql
+    assert "JOIN case_promise_clocks" in sql

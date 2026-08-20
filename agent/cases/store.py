@@ -11,6 +11,7 @@ from typing import Mapping
 
 from .audit import CaseAuditDraft, serialize_case_projection
 from .domain import (
+    AT_RISK_FRACTION,
     CaseActivity,
     CasePhase,
     CaseSnapshot,
@@ -20,6 +21,7 @@ from .domain import (
     EvidenceLevel,
     PromiseClock,
     PromiseHealth,
+    recorded_health,
     PublicationState,
     ReviewCaseLink,
     ReviewCaseStatus,
@@ -230,16 +232,7 @@ def _publication_state(item: Mapping) -> PublicationState:
 def _snapshot_from_row(database, conn, row) -> CaseSnapshot:
     item = _row_dict(database, row)
     clocks = _promise_clocks(database, conn, str(item["case_id"]))
-    health_rank = {
-        PromiseHealth.ON_TRACK: 0,
-        PromiseHealth.RECOVERY: 1,
-        PromiseHealth.AT_RISK: 2,
-        PromiseHealth.BREACHED: 3,
-    }
-    health = max(
-        (PromiseHealth.ON_TRACK, *(clock.health for clock in clocks)),
-        key=health_rank.__getitem__,
-    )
+    health = recorded_health(clocks)
     return CaseSnapshot(
         case_id=str(item["case_id"]),
         service_kind=ServiceKind(item["service_kind"]),
@@ -1118,29 +1111,25 @@ class CaseTransaction:
         rows = self._db._fetchall(
             self._conn,
             """
-            SELECT c.case_id, c.promise_health
+            SELECT DISTINCT c.case_id, c.updated_at
             FROM cases c
+            JOIN case_promise_clocks k ON k.case_id = c.case_id
             WHERE c.closed_at IS NULL
-              AND c.promise_health NOT IN ('breached', 'recovery')
-              AND EXISTS (
-                  SELECT 1 FROM case_promise_clocks k
-                  WHERE k.case_id = c.case_id
-                    AND k.due_at <= %s
-              )
+              AND k.health <> 'breached'
+              -- At risk OR overdue. Keying on due_at alone would have meant
+              -- AT_RISK was still never written anywhere, which is half the
+              -- bug this query exists to fix.
+              AND k.started_at + (k.due_at - k.started_at) * %s <= %s
             ORDER BY c.updated_at
             LIMIT %s
             """,
-            (now, limit),
+            (AT_RISK_FRACTION, now, limit),
         )
         out = []
         for row in rows:
-            item = _row_dict(self._db, row)
-            case_id = str(item["case_id"])
-            out.append((
-                case_id,
-                _promise_clocks(self._db, self._conn, case_id),
-                PromiseHealth(item["promise_health"]),
-            ))
+            case_id = str(_row_dict(self._db, row)["case_id"])
+            clocks = _promise_clocks(self._db, self._conn, case_id)
+            out.append((case_id, clocks, recorded_health(clocks)))
         return tuple(out)
 
     def set_promise_health(self, case_id: str, health: str, *, observed_at: datetime) -> None:

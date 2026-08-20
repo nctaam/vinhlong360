@@ -111,6 +111,25 @@ _DISPOSITION_BY_OUTCOME = {
 AT_RISK_FRACTION = 0.8
 
 
+_HEALTH_RANK = {
+    PromiseHealth.ON_TRACK: 0, PromiseHealth.RECOVERY: 1,
+    PromiseHealth.AT_RISK: 2, PromiseHealth.BREACHED: 3,
+}
+
+
+def recorded_health(clocks) -> 'PromiseHealth':
+    """What the stored clock rows already say, worst-first.
+
+    There is no cases.promise_health column — a case's health has always been
+    the worst of its clocks. Reading it in two places with two copies of the
+    rank map is how the two answers start disagreeing.
+    """
+    return max(
+        (PromiseHealth.ON_TRACK, *(clock.health for clock in clocks or ())),
+        key=_HEALTH_RANK.__getitem__,
+    )
+
+
 def promise_health_at(clocks, now: datetime, *, recorded=None) -> 'PromiseHealth':
     """The health the clocks actually justify at `now`.
 
