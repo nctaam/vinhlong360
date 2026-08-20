@@ -1,6 +1,6 @@
 # Kết quả thực thi — Correction Case Pilot (plan 2026-08-12)
 
-> STATUS: active (cập nhật lần cuối 2026-08-20, sau commit `ecb19c7b`)
+> STATUS: active (cập nhật lần cuối 2026-08-20, sau commit `30e65b65`)
 > Mức Definition Ladder: **works-on-disposable-postgres + full-suite-green-at-baseline**.
 > KHÔNG claim `production-proven`. KHÔNG claim SLA công khai. Mọi cờ case đang **false**; kích hoạt thuộc quyết định phát hành riêng của chủ dự án (Review Protocol mục 5).
 
@@ -152,6 +152,36 @@ guard: một cái đỏ nếu bộ thu ngừng tìm thấy gì, một cái nạp
 **Bị bác** (4): test tautology ở `test_case_contact` (là lỗ mutation-coverage, không phải lỗi
 sản phẩm), một cái re-report lỗi đã sửa, `complete_work_item` (không có route `/work/complete`),
 và `sms_provider` (thật, nhưng đã sửa trước đó).
+
+## Đợt 4 (2026-08-20) — chạy thật các route, không chạy vòng quanh chúng
+
+Mọi test journey trước đó gọi thẳng **tầng service**. Đó chính là lý do lỗi camelCase sống
+sót cả một pilot: thứ được kiểm chưa bao giờ là thứ trình duyệt chạm tới. Validation, cổng
+cờ, guard same-origin, cookie, hình dạng JSON — tất cả nằm **trên** service và chưa từng chạy.
+
+Hai file mới lái `TestClient` qua router đã mount, trên PostgreSQL disposable, wire qua đúng
+composition root thật (`059eefed`, `30e65b65`):
+
+- **`test_correction_http_journey.py`** — hành trình người dân: tạo → đổi capability lấy
+  phiên → đọc trạng thái, gửi **đúng body composable gửi**. Kèm: body snake_case bị từ chối
+  mà không dội lại nội dung; thiếu Idempotency-Key bị chặn trước khi ghi gì; cùng key hai lần
+  ra **một** hồ sơ và báo `replayed`; sai capability và mã không tồn tại hỏng **giống hệt
+  nhau** (không thành oracle); `/status` không phiên không hé lộ hồ sơ nào.
+- **`test_correction_admin_http.py`** — phía người trực, auth AdminCP được giả lập có chủ đích
+  (nó có suite riêng); phần kiểm là *route case làm gì khi đã có operator hợp lệ với scope X*.
+
+**Blocker tìm được ngay ở assert đầu tiên**: `require_case_action` khai
+`async def guard(request)` **không annotation**. FastAPI phân giải tham số dependency theo
+kiểu, nên `request` không annotation trở thành **tham số query bắt buộc** — **mọi route admin
+case trả 422 "request field required"**, trước cả xác thực, trước cả kiểm cờ. Phía người trực
+chết trên HTTP đúng theo cách phía người dân đã chết, và vì đúng một lý do: **không gì từng
+chạy một route nào**.
+
+Hai giả định của tôi sai, route đúng: `/access` trả **204** (phiên nằm trong cookie), và hai
+lời từ chối trung tính khác nhau ở `request_id` (id tương quan, không nói gì về hồ sơ).
+
+Xác nhận thêm chứ không phải lỗi: cờ bật mà thiếu `CASE_KERNEL_ENCRYPTION_KEY` thì kernel
+**từ chối wire và ghi log** — fail-closed đúng thiết kế.
 
 ## Rủi ro chưa đóng
 
