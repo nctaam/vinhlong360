@@ -193,7 +193,7 @@ def _decider(ref="person:maker", scopes=("cases:work", "cases:decide")):
 
 
 def _seed_case_with_item(adapter, *, entity_id="p-cs", field_path="attributes.phone",
-                         risk="R1", holder="person:maker"):
+                         risk="R1", holder="person:maker", decided="corrected"):
     from cases.security import CaseCrypto as _Crypto
 
     crypto = _Crypto(MASTER_KEY)
@@ -230,6 +230,21 @@ def _seed_case_with_item(adapter, *, entity_id="p-cs", field_path="attributes.ph
                 VALUES (%s,'decide','case_operator',%s,'claimed',%s,%s,%s,0)
                 """,
                 (case_id, risk, holder, NOW + timedelta(hours=1), NOW),
+            )
+        if decided:
+            # A change set is the consequence of a ruling. Seeding one without a
+            # decision used to work, which was the hole: the build path walked
+            # around the evidence, risk and recusal gate the decide path applies.
+            adapter._execute(
+                conn,
+                """
+                INSERT INTO case_decisions (case_id, item_id, outcome_code, reason_code,
+                                            evidence_refs, decision_maker_ref,
+                                            policy_revision, decided_at)
+                VALUES (%s,%s,%s,'source_confirms_change','["e-1"]'::jsonb,
+                        'person:maker','correction-pilot-v1',%s)
+                """,
+                (case_id, item_id, decided, NOW),
             )
         conn.commit()
     return case_id, item_id
@@ -325,3 +340,60 @@ def test_the_plan_locked_type_name_reaches_the_same_class():
 
     # Cross-task code written against the plan's name must find the real thing.
     assert CorrectionChangeSet is ChangeSetDraft
+
+
+@pg_only
+def test_nothing_is_published_without_a_ruling_that_says_so(pg_database):
+    from cases.correction import CorrectionRejected, build_change_set
+
+    case_id, item_id = _seed_case_with_item(pg_database, decided=None)
+
+    # The decide path weighs evidence, risk class and recusal. Without this
+    # check the build path walked around every one of them, applied the
+    # reporter's text to the live entry, and verification then closed the case
+    # as a properly answered correction.
+    with pytest.raises(CorrectionRejected) as excinfo:
+        build_change_set(case_id, (item_id,), _decider(), expected_revision=1,
+                         evidence_refs=("e-1",), now=NOW)
+
+    assert excinfo.value.problem.code == "correction_item_not_decided"
+
+
+@pg_only
+@pytest.mark.parametrize("refusal", ["insufficient_evidence", "out_of_scope",
+                                     "unable_to_verify", "confirmed_current"])
+def test_a_refused_item_cannot_be_published_either(pg_database, refusal):
+    from cases.correction import CorrectionRejected, build_change_set
+
+    case_id, item_id = _seed_case_with_item(pg_database, decided=refusal)
+
+    # A ruling of "no" is a ruling. Treating any recorded decision as licence
+    # would publish exactly what the editor refused.
+    with pytest.raises(CorrectionRejected) as excinfo:
+        build_change_set(case_id, (item_id,), _decider(), expected_revision=1,
+                         evidence_refs=("e-1",), now=NOW)
+
+    assert excinfo.value.problem.code == "correction_item_not_decided"
+
+
+@pg_only
+def test_the_newest_ruling_governs_after_a_review(pg_database):
+    from cases.correction import build_change_set
+
+    case_id, item_id = _seed_case_with_item(pg_database, decided="insufficient_evidence")
+    with pg_database._conn(commit_on_success=False) as conn:
+        pg_database._execute(
+            conn,
+            "INSERT INTO case_decisions (case_id, item_id, outcome_code, reason_code,"
+            " evidence_refs, decision_maker_ref, policy_revision, decided_at)"
+            " VALUES (%s,%s,'corrected','source_confirms_change','[\"e-2\"]'::jsonb,"
+            " 'person:reviewer','correction-pilot-v1',%s)",
+            (case_id, item_id, NOW + timedelta(hours=1)),
+        )
+        conn.commit()
+
+    # A review may overturn a refusal; the later ruling is the one in force.
+    change_set = build_change_set(case_id, (item_id,), _decider(), expected_revision=1,
+                                  evidence_refs=("e-2",), now=NOW)
+
+    assert change_set.apply_status == "pending"

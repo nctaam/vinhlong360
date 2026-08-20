@@ -1053,3 +1053,19 @@ def test_the_recorded_ruling_travels_with_the_item():
     # reading "đang xem xét" on a case that had been answered weeks earlier.
     assert items[0].outcome_code == "insufficient_evidence"
     assert items[0].accepted is False
+
+
+def test_the_build_read_carries_the_ruling_and_still_hides_nothing_extra():
+    database = _RowsDatabase(many=[[{
+        "item_id": "i-1", "entity_id": "p-1", "field_path": "attributes.phone",
+        "reported_value_enc": "x", "proposed_value_enc": "y",
+        "base_entity_revision": 7, "risk_class": "R1", "outcome_code": "corrected",
+    }]])
+
+    rows = _transaction(database).load_correction_item_payloads("case-1", ("i-1",))
+
+    sql = database.statements[0][0]
+    # The build path needs the ruling to know an item may be published at all;
+    # newest first, because a review may overturn an earlier refusal.
+    assert "case_decisions" in sql and "ORDER BY decided_at DESC LIMIT 1" in sql
+    assert rows[0]["outcome_code"] == "corrected"

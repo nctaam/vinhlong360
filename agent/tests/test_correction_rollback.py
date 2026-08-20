@@ -111,6 +111,16 @@ def _applied_case(adapter):
             " VALUES (%s,'decide','case_operator','R1','claimed',%s,%s,%s,0)",
             (case_id, "person:maker", NOW + timedelta(hours=3), NOW),
         )
+        # The ruling the change set is a consequence of; without one the build
+        # path now refuses, which is the point of that gate.
+        adapter._execute(
+            conn,
+            "INSERT INTO case_decisions (case_id, item_id, outcome_code, reason_code,"
+            " evidence_refs, decision_maker_ref, policy_revision, decided_at)"
+            " VALUES (%s,%s,'corrected','source_confirms_change','[\"e-1\"]'::jsonb,"
+            " 'person:maker','correction-pilot-v1',%s)",
+            (case_id, item_id, NOW),
+        )
         adapter._execute(
             conn,
             "INSERT INTO case_promise_clocks (case_id, kind, started_at, due_at, health,"

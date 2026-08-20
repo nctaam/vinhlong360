@@ -698,11 +698,19 @@ class CaseTransaction:
         rows = self._db._fetchall(
             self._conn,
             """
-            SELECT item_id, entity_id, field_path, reported_value_enc, proposed_value_enc,
-                   base_entity_revision, risk_class
-            FROM correction_items
-            WHERE case_id = %s AND item_id = ANY(%s::uuid[])
-            ORDER BY created_at, item_id
+            SELECT i.item_id, i.entity_id, i.field_path, i.reported_value_enc,
+                   i.proposed_value_enc, i.base_entity_revision, i.risk_class,
+                   d.outcome_code
+            FROM correction_items i
+            -- The ruling that entitles this item to be published at all. Latest
+            -- per item: a review may re-rule, and the newest ruling governs.
+            LEFT JOIN LATERAL (
+                SELECT outcome_code FROM case_decisions
+                WHERE item_id = i.item_id
+                ORDER BY decided_at DESC LIMIT 1
+            ) d ON TRUE
+            WHERE i.case_id = %s AND i.item_id = ANY(%s::uuid[])
+            ORDER BY i.created_at, i.item_id
             """,
             (case_id, list(item_ids)),
         )

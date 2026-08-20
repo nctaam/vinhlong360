@@ -496,6 +496,20 @@ def build_change_set(
         if len(payloads) != len(set(accepted_item_ids)):
             raise _reject("correction_item_not_found", "One of those items is not on this case.")
 
+        # Nothing reaches the public entry without a ruling that says so. The
+        # decide path weighs evidence, risk and recusal; without this check the
+        # build path simply walked around all of it, and verification then
+        # closed the case as a properly answered correction.
+        unruled = tuple(
+            str(row["item_id"]) for row in payloads
+            if row.get("outcome_code") != CorrectionOutcome.CORRECTED.value
+        )
+        if unruled:
+            raise _reject(
+                "correction_item_not_decided",
+                "Every item in a change set needs a recorded ruling of 'corrected'.",
+            )
+
         entity_ids = {str(row["entity_id"]) for row in payloads}
         if len(entity_ids) != 1:
             raise _reject("change_set_spans_entities", "One change set, one entry.")

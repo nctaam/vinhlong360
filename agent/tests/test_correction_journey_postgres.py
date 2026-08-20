@@ -61,6 +61,10 @@ def journey(monkeypatch):
     adapter._use_pg = True
     adapter._dsn = TEST_DATABASE_URL
     with adapter._conn(commit_on_success=False) as conn:
+        # This suite reports at a frozen NOW, so its rate-limit hits never age
+        # out of the window: run it twice against the same disposable database
+        # and the second run is throttled by the first. Start from clean.
+        adapter._execute(conn, "DELETE FROM shared_rate_limits WHERE key LIKE %s", ("case:%",))
         adapter._execute(conn, "DELETE FROM entity_changes WHERE entity_id=%s", (ENTITY_ID,))
         adapter._execute(
             conn,

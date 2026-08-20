@@ -123,6 +123,20 @@ def _seed_change_set(adapter, *, risk="R1", reviewer=None, publisher="person:pub
             """,
             (case_id, risk, maker, NOW + timedelta(hours=1), NOW),
         )
+        # The ruling that entitles this item to be published. The helper's
+        # docstring always claimed the case "has already decided"; until the
+        # build path started checking, nothing here made that true.
+        adapter._execute(
+            conn,
+            """
+            INSERT INTO case_decisions (case_id, item_id, outcome_code, reason_code,
+                                        evidence_refs, decision_maker_ref,
+                                        policy_revision, decided_at)
+            VALUES (%s,%s,'corrected','source_confirms_change','["e-1"]'::jsonb,
+                    %s,'correction-pilot-v1',%s)
+            """,
+            (case_id, item_id, maker, NOW),
+        )
         conn.commit()
 
     class _Decider:
