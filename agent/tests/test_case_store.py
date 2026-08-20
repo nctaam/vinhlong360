@@ -1091,3 +1091,16 @@ def test_consent_is_swept_on_the_contact_shelf_not_the_code_window():
     assert "verified_at IS NOT NULL" in sql
     # Tied to a terminal close, the same shelf the reply address retires on.
     assert "closed_at IS NOT NULL AND closed_at <" in sql
+
+
+def test_only_cases_whose_stamp_could_be_wrong_are_restamped():
+    database = _RowsDatabase(many=[[]])
+
+    _transaction(database).open_case_clocks(now=NOW)
+
+    sql = database.statements[0][0]
+    # Already-breached and recovery cases need no restamping, and a closed case
+    # has no promise left to keep.
+    assert "closed_at IS NULL" in sql
+    assert "promise_health NOT IN ('breached', 'recovery')" in sql
+    assert "due_at <= %s" in sql

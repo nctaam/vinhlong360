@@ -19,7 +19,12 @@ Ràng buộc kèm: PostgreSQL bắt buộc (`case_postgresql_required` nếu l�
 ## Hàng đợi & lease
 
 - Grammar hàng đợi: **việc kế tiếp → sức khoẻ lời hứa → người giữ → rủi ro**. Sắp theo priority, health, risk, tuổi.
-- Lease 15 phút, heartbeat gia hạn; hết lease thì scan escalation tạo việc giám sát và ghi sự kiện `lease_expired`.
+- Lease **30 phút** (`lease_duration_seconds`, mặc định 1800), heartbeat gia hạn; rời trang thì giao diện tự trả việc.
+- Leo thang KHÔNG kích bằng hết-lease mà bằng **đồng hồ lời hứa quá hạn** (`due_at <= now`):
+  task `case-promise-watch` (10 phút/lần, no-op khi `CASE_KERNEL_ENABLED=false`) đóng dấu lại
+  sức khoẻ lời hứa cho hàng đợi sắp xếp, rồi `scan_escalations` tạo việc `escalation` cho
+  `case_supervisor` — mỗi hồ sơ tối đa một việc đang mở. Sự kiện ghi ra hiện mang tên
+  `lease_expired` (tên cũ, đo cái khác — không sửa tên vì đã có dữ liệu theo tên đó).
 - Takeover chỉ `case.supervisor`, phải ghi lý do; guard R2/R3 KHÔNG bị takeover bỏ qua.
 - R3: cần reviewer ≠ maker trên change set **và** work item `truth_review` đã completed bởi người ≠ maker; người áp dụng ≠ maker.
 

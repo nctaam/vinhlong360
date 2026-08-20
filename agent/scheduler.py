@@ -1275,6 +1275,62 @@ def task_weekly_digest():
         _sched_logger.error("weekly-digest error: %s", exc)
 
 
+def task_case_promise_watch():
+    """Look at the promise clocks, which nothing else in the system does.
+
+    AT_RISK and BREACHED existed in the vocabulary and were never written, so a
+    late case looked healthy to the reporter and sorted like a fresh one in the
+    operator queue; and scan_escalations, whose whole job is to raise supervisor
+    work on a breach, had no caller anywhere. Both are the same omission: the
+    clocks were set and never read.
+
+    Flag-gated and inert by default, like every other case task.
+    """
+    try:
+        from config import settings
+    except Exception:  # noqa: BLE001 - configuration unavailable, nothing to do
+        return 0
+    if not getattr(settings, "CASE_KERNEL_ENABLED", False):
+        return 0
+    try:
+        from datetime import datetime, timezone
+
+        from cases.domain import promise_health_at
+        from cases.store import PostgresCaseStore
+        from cases.work_control import configure_case_work_control, scan_escalations
+        from database import db
+
+        if not getattr(db, "_use_pg", False):
+            return 0
+        now = datetime.now(timezone.utc)
+
+        # Record what the clocks justify, so the queue can sort by it. Cases
+        # already marked RECOVERY are left alone: somebody observed a real
+        # failure there and said so, which outranks arithmetic on a due date.
+        restamped = 0
+        store = PostgresCaseStore(db)
+        with store.transaction() as transaction:
+            for case_id, clocks, recorded in transaction.open_case_clocks(now=now):
+                health = promise_health_at(clocks, now, recorded=recorded)
+                if health is not recorded:
+                    transaction.set_promise_health(case_id, health.value, observed_at=now)
+                    restamped += 1
+
+        from cases.policy import load_case_policy
+
+        configure_case_work_control(database=db, policy=load_case_policy())
+        summary = scan_escalations(now=now)
+        if restamped or summary.created:
+            _sched_logger.info(
+                "case-promise-watch: %d restamped, %d escalations created (scanned %d)",
+                restamped, summary.created, summary.scanned,
+            )
+        return 1
+    except Exception:
+        _sched_logger.error("CASE_PROMISE_WATCH_FAILED")
+        return 0
+
+
 def task_case_outbox():
     """Deliver queued correction notifications.
 
@@ -1322,6 +1378,7 @@ TASKS = [
     ScheduledTask("case-outbox",    task_case_outbox,            interval_seconds=60),          # 1m, inert while the case flags are off
     ScheduledTask("analytics-cleanup", task_cleanup_analytics,   interval_seconds=24 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 24h
     ScheduledTask("feedback-receipt-cleanup", task_cleanup_feedback_receipts, interval_seconds=3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 1h
+    ScheduledTask("case-promise-watch", task_case_promise_watch, interval_seconds=600),  # 10m, inert while the case flags are off
     ScheduledTask("case-lifecycle-cleanup", task_case_lifecycle_cleanup, interval_seconds=24 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 24h, no-op khi CASE_KERNEL_ENABLED=false
     # Digest quản lý MIỄN PHÍ (không LLM) — chạy bất kể AUTONOMOUS_TASKS_ENABLED; no-op nếu chưa cấu hình admin TG.
     ScheduledTask("admin-digest",      task_admin_digest,         interval_seconds=24 * 3600, run_immediately=False),  # 24h

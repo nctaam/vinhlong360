@@ -256,3 +256,25 @@ def test_case_lifecycle_cleanup_is_scheduled_daily():
     task = next(t for t in scheduler_module.TASKS if t.name == "case-lifecycle-cleanup")
 
     assert task.interval == 24 * 3600
+
+
+def test_the_promise_watch_stays_asleep_while_the_case_flags_are_off(monkeypatch):
+    import scheduler
+    from config import settings
+
+    monkeypatch.setattr(settings, "CASE_KERNEL_ENABLED", False, raising=False)
+
+    # Every case task is inert by default; this one is new and must be no
+    # different, because it writes to cases and creates supervisor work.
+    assert scheduler.task_case_promise_watch() == 0
+
+
+def test_the_promise_watch_is_registered_and_runs_often_enough_to_matter():
+    import scheduler
+
+    task = next(t for t in scheduler.TASKS if t.name == "case-promise-watch")
+
+    # A breach that nobody notices for a day is a promise nobody kept. Ten
+    # minutes is the cadence the queue needs to sort late work to the top.
+    assert task.interval <= 900
+    assert task.func is scheduler.task_case_promise_watch

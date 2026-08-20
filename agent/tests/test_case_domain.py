@@ -94,3 +94,61 @@ def test_the_mapping_is_not_a_widening():
     assert not holds_authority({"case.supervisor"}, "cases:high_risk")
     assert not holds_authority({"service.operator"}, "cases:decide")
     assert not holds_authority({"service.operator"}, "case.supervisor")
+
+
+def _clock(kind, started, due, health=None):
+    from cases.domain import PromiseClock, PromiseHealth
+
+    return PromiseClock(kind=kind, started_at=started, due_at=due,
+                        health=health or PromiseHealth.ON_TRACK)
+
+
+def test_a_passed_due_date_reads_as_breached_not_as_on_track():
+    from datetime import datetime, timedelta, timezone
+
+    from cases.domain import PromiseHealth, promise_health_at
+
+    now = datetime(2026, 8, 20, 9, 0, tzinfo=timezone.utc)
+    clocks = (_clock("update", now - timedelta(days=4), now - timedelta(days=1)),)
+
+    # Nothing in the system ever wrote AT_RISK or BREACHED, so a reporter three
+    # days late was shown "Đúng hạn" beside a date that had already passed.
+    assert promise_health_at(clocks, now) is PromiseHealth.BREACHED
+
+
+def test_the_last_fifth_of_the_window_is_already_at_risk():
+    from datetime import datetime, timedelta, timezone
+
+    from cases.domain import PromiseHealth, promise_health_at
+
+    now = datetime(2026, 8, 20, 9, 0, tzinfo=timezone.utc)
+    started = now - timedelta(hours=90)
+    due = started + timedelta(hours=100)
+
+    assert promise_health_at((_clock("update", started, due),), now) is PromiseHealth.AT_RISK
+    early = (_clock("update", now - timedelta(hours=10), now + timedelta(hours=90)),)
+    assert promise_health_at(early, now) is PromiseHealth.ON_TRACK
+
+
+def test_a_recorded_recovery_outranks_arithmetic_on_a_due_date():
+    from datetime import datetime, timedelta, timezone
+
+    from cases.domain import PromiseHealth, promise_health_at
+
+    now = datetime(2026, 8, 20, 9, 0, tzinfo=timezone.utc)
+    clocks = (_clock("update", now - timedelta(days=4), now - timedelta(days=1)),)
+
+    # Somebody observed a real failure and said so; that is a stronger claim
+    # than a comparison against a date, and it must not be overwritten.
+    assert promise_health_at(clocks, now, recorded=PromiseHealth.RECOVERY) \
+        is PromiseHealth.RECOVERY
+
+
+def test_no_clocks_at_all_is_not_a_breach():
+    from datetime import datetime, timezone
+
+    from cases.domain import PromiseHealth, promise_health_at
+
+    now = datetime(2026, 8, 20, 9, 0, tzinfo=timezone.utc)
+    assert promise_health_at((), now) is PromiseHealth.ON_TRACK
+    assert promise_health_at(None, now) is PromiseHealth.ON_TRACK

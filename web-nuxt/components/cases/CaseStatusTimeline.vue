@@ -15,12 +15,17 @@ const emit = defineEmits<{ (event: 'request-review'): void }>()
 const receivedOn = computed(() => new Date(props.status.receivedAt).toLocaleString('vi-VN'))
 const nextUpdate = computed(() => new Date(props.status.nextUpdateAt).toLocaleString('vi-VN'))
 
+// The date below is what we promised at the start, and it does not move. Once
+// it has passed, calling it "still in effect" is the site telling somebody the
+// deadline it already missed is fine. Say the true thing instead.
 const promiseNote = computed(() => {
   switch (props.status.promiseHealth) {
     case 'recovery':
       return 'Có trục trặc khi hoàn tất; chúng tôi đang khắc phục và sẽ báo lại.'
-    case 'at_risk':
     case 'breached':
+      return 'Chúng tôi đã trễ hạn dưới đây. Hồ sơ đã được chuyển lên mức ưu tiên cao hơn'
+        + ' và chúng tôi sẽ cập nhật sớm nhất có thể.'
+    case 'at_risk':
       return 'Việc xử lý đang chậm hơn dự kiến; hạn cập nhật bên dưới vẫn có hiệu lực.'
     default:
       return null
@@ -61,7 +66,10 @@ const publicationByItem = computed(() => new Map(
       <li>
         <h3>Việc kế tiếp</h3>
         <p data-role="next-action">{{ status.nextAction }}</p>
-        <p data-role="next-update">Cập nhật trước: {{ nextUpdate }}</p>
+        <p data-role="next-update">
+          {{ status.promiseHealth === 'breached' ? 'Hạn đã hứa' : 'Cập nhật trước' }}:
+          {{ nextUpdate }}
+        </p>
         <p v-if="promiseNote" class="timeline-promise" data-role="promise-note">{{ promiseNote }}</p>
       </li>
     </ol>

@@ -1107,6 +1107,42 @@ class CaseTransaction:
             (observed_before,),
         )
 
+    def open_case_clocks(self, *, now: datetime, limit: int = 500):
+        """Every unclosed case with its clocks, for the one job that reads them.
+
+        Only cases whose stamped health could still be wrong are returned: an
+        already-BREACHED case needs no restamping, and a case whose earliest
+        due date is comfortably ahead is not at risk yet either.
+        """
+        self._require_active()
+        rows = self._db._fetchall(
+            self._conn,
+            """
+            SELECT c.case_id, c.promise_health
+            FROM cases c
+            WHERE c.closed_at IS NULL
+              AND c.promise_health NOT IN ('breached', 'recovery')
+              AND EXISTS (
+                  SELECT 1 FROM case_promise_clocks k
+                  WHERE k.case_id = c.case_id
+                    AND k.due_at <= %s
+              )
+            ORDER BY c.updated_at
+            LIMIT %s
+            """,
+            (now, limit),
+        )
+        out = []
+        for row in rows:
+            item = _row_dict(self._db, row)
+            case_id = str(item["case_id"])
+            out.append((
+                case_id,
+                _promise_clocks(self._db, self._conn, case_id),
+                PromiseHealth(item["promise_health"]),
+            ))
+        return tuple(out)
+
     def set_promise_health(self, case_id: str, health: str, *, observed_at: datetime) -> None:
         self._require_active()
         self._db._execute(

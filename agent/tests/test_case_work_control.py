@@ -482,3 +482,23 @@ def test_claiming_accepts_an_operator_and_still_refuses_a_bystander():
     assert not holds_authority({"content.editor"}, WORK_SCOPE)
     # And the separation this module's own takeover test defends stays intact.
     assert not holds_authority({"case.supervisor"}, HIGH_RISK_SCOPE)
+
+
+def test_the_escalation_scan_finally_has_a_production_caller():
+    import ast
+    from pathlib import Path
+
+    source = Path(__file__).resolve().parents[1] / "scheduler.py"
+    tree = ast.parse(source.read_text("utf-8"))
+    names = {
+        node.func.attr if isinstance(node.func, ast.Attribute) else getattr(node.func, "id", "")
+        for node in ast.walk(tree) if isinstance(node, ast.Call)
+    }
+
+    # It existed and nothing called it, so a breached promise clock raised no
+    # supervisor work at all — the queue's whole escalation path was test-only.
+    assert "scan_escalations" in names
+    registered = source.read_text("utf-8")
+    assert 'ScheduledTask("case-promise-watch"' in registered
+    # Inert while the flags are off, like every other case task.
+    assert 'if not getattr(settings, "CASE_KERNEL_ENABLED", False):' in registered

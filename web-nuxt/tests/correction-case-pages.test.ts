@@ -355,3 +355,28 @@ describe('a ruling the reporter can act on', () => {
     expect(timeline.text()).toContain('Nội dung đã báo')
   })
 })
+
+describe('a promise the site has missed', () => {
+  const late = statusWith({ promiseHealth: 'breached' })
+
+  it('does not call a deadline it already missed still in effect', () => {
+    const timeline = mount(CaseStatusTimeline, { props: { status: late } })
+
+    const note = timeline.get('[data-role="promise-note"]').text()
+    expect(note).toContain('đã trễ hạn')
+    expect(note).not.toContain('vẫn có hiệu lực')
+  })
+
+  it('relabels the date as what was promised, not what is coming', () => {
+    const timeline = mount(CaseStatusTimeline, { props: { status: late } })
+
+    expect(timeline.get('[data-role="next-update"]').text()).toContain('Hạn đã hứa')
+  })
+
+  it('still reads as a live promise while the case is on time', () => {
+    const timeline = mount(CaseStatusTimeline, { props: { status: statusWith() } })
+
+    expect(timeline.get('[data-role="next-update"]').text()).toContain('Cập nhật trước')
+    expect(timeline.find('[data-role="promise-note"]').exists()).toBe(false)
+  })
+})

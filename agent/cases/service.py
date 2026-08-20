@@ -35,7 +35,7 @@ from .domain import (
     RiskClass,
     ServiceKind,
 )
-from .domain import disposition_for, review_relation
+from .domain import disposition_for, promise_health_at, review_relation
 from .queue_policy import WorkItemDraft
 from .rate_limit import check_case_rate_limit, rate_subject_digest
 from .store import (
@@ -935,6 +935,7 @@ class CaseService:
             items,
             review_relation=review_relation(links),
             public_reference=reference or "",
+            now=now,
         )
 
     def rotate_receipt(
@@ -1161,6 +1162,7 @@ def project_public_status(
     *,
     review_relation: str,
     public_reference: str,
+    now: datetime | None = None,
 ) -> PublicCaseStatus:
     """Render only what a reporter may see, from a fixed safe-copy catalog."""
     if type(case) is not CaseSnapshot or type(items) is not tuple:
@@ -1170,12 +1172,17 @@ def project_public_status(
     if type(public_reference) is not str or not public_reference:
         raise ValueError("invalid_public_projection")
 
+    now = now or datetime.now(timezone.utc)
     step = _PUBLIC_STEPS[case.phase]
     waiting_for = _WAITING_ACTORS[case.activity]
     next_action = _SAFE_NEXT_ACTIONS.get((step, waiting_for), _PUBLIC_FALLBACK_ACTION)
     # The resolution clock is measured internally but never published, so the
     # update clock alone carries the public promise.
     next_update_at = _clock_due(case, "update") or case.updated_at
+    # The health the clocks justify right now, not the one stamped at intake.
+    # Nothing in the system ever writes AT_RISK or BREACHED, so publishing the
+    # stored value told every overdue reporter their case was on track.
+    health = promise_health_at(case.promise_clocks, now, recorded=case.promise_health)
 
     return PublicCaseStatus(
         public_reference=public_reference,
@@ -1184,7 +1191,7 @@ def project_public_status(
         waiting_for=waiting_for,
         next_action=next_action,
         next_update_at=next_update_at,
-        promise_health=case.promise_health,
+        promise_health=health,
         item_decisions=tuple(
             PublicItemDecision(
                 item_id=item.item_id,

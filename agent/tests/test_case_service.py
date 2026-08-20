@@ -665,3 +665,38 @@ def test_a_superadmin_cannot_slip_onto_the_self_service_path():
     assert not (_OPERATOR_SCOPES & admin_like)
     source = (Path(__file__).resolve().parents[1] / "cases" / "service.py").read_text("utf-8")
     assert "'*' in actor_scopes" in source
+
+
+def test_the_public_status_publishes_the_health_the_clocks_justify():
+    from datetime import datetime, timedelta, timezone
+
+    from cases.domain import (
+        CaseActivity, CasePhase, CaseSnapshot, DispositionFamily, PromiseClock,
+        PromiseHealth, ServiceKind,
+    )
+    from cases.service import project_public_status
+
+    now = datetime(2026, 8, 20, 9, 0, tzinfo=timezone.utc)
+    overdue = PromiseClock(kind="update", started_at=now - timedelta(days=4),
+                           due_at=now - timedelta(days=1))
+    case = CaseSnapshot(
+        case_id="c-1", service_kind=ServiceKind.CORRECTION, category="correction",
+        phase=CasePhase.DECISION, activity=CaseActivity.ACTIVE,
+        disposition_family=DispositionFamily.UNDETERMINED, domain_outcome=None,
+        severity=None, reporter_privacy="anonymous", owner_ref="person:owner",
+        current_revision=1, promise_policy_ref="correction-pilot-v1",
+        created_at=now - timedelta(days=4), updated_at=now - timedelta(days=2),
+        closed_at=None,
+        # The stamp nothing ever updated.
+        promise_health=PromiseHealth.ON_TRACK,
+        promise_clocks=(overdue,),
+    )
+
+    status = project_public_status(
+        case, (), review_relation="none", public_reference="VL-COR-1", now=now,
+    )
+
+    # Publishing the stored stamp told a reporter three days late that their
+    # case was on track, beside an update date that had already passed.
+    assert status.promise_health is PromiseHealth.BREACHED
+    assert status.next_update_at == overdue.due_at

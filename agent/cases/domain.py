@@ -102,6 +102,34 @@ _DISPOSITION_BY_OUTCOME = {
 }
 
 
+# A promise clock is only a promise if somebody looks at it. AT_RISK and
+# BREACHED were in the vocabulary from the start and nothing in the system ever
+# wrote either one: health was stamped ON_TRACK at intake, moved to RECOVERY by
+# the two publication failure paths, and left there. So a reporter saw "Đúng
+# hạn" beside an update date that had passed weeks earlier, and the operator
+# queue — which ranks BREACHED first — never saw a late case at all.
+AT_RISK_FRACTION = 0.8
+
+
+def promise_health_at(clocks, now: datetime, *, recorded=None) -> 'PromiseHealth':
+    """The health the clocks actually justify at `now`.
+
+    RECOVERY wins when it is recorded: somebody observed a real failure and said
+    so, which is a stronger statement than any arithmetic on a due date.
+    """
+    if recorded is PromiseHealth.RECOVERY:
+        return PromiseHealth.RECOVERY
+    worst = PromiseHealth.ON_TRACK
+    for clock in clocks or ():
+        if now >= clock.due_at:
+            return PromiseHealth.BREACHED
+        elapsed = (now - clock.started_at).total_seconds()
+        window = (clock.due_at - clock.started_at).total_seconds()
+        if window > 0 and elapsed / window >= AT_RISK_FRACTION:
+            worst = PromiseHealth.AT_RISK
+    return worst
+
+
 def disposition_for(outcome_code: str | None) -> DispositionFamily:
     """The public family for a recorded ruling; UNDETERMINED only when none is."""
     if not outcome_code:
