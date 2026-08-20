@@ -194,3 +194,110 @@ def test_old_capacity_events_lose_their_case_link_and_keep_their_numbers(pg):
         ))
     assert row["case_id"] is None and row["event_kind"] == "received"
     assert summary.capacity_links_removed >= 1
+
+
+@pg_only
+def test_consent_survives_the_code_that_carried_it(pg):
+    adapter, store = pg
+    """A verified contact must outlive the ten-minute one-time code window."""
+    from cases.lifecycle import cleanup_case_data
+
+    case_id = _case(adapter, closed_days_ago=None)
+    with adapter._conn(commit_on_success=False) as conn:
+        adapter._execute(
+            conn,
+            "INSERT INTO case_contact_challenges (case_id, contact_digest, challenge_digest,"
+            " channel, expires_at, verified_at, created_at)"
+            " VALUES (%s,'digest-verified','chal','phone',%s,%s,%s)",
+            (case_id, NOW - timedelta(minutes=5), NOW - timedelta(minutes=6),
+             NOW - timedelta(minutes=16)),
+        )
+        adapter._execute(
+            conn,
+            "INSERT INTO case_contact_challenges (case_id, contact_digest, challenge_digest,"
+            " channel, expires_at, verified_at, created_at)"
+            " VALUES (%s,'digest-abandoned','chal2','phone',%s,NULL,%s)",
+            (case_id, NOW - timedelta(minutes=5), NOW - timedelta(minutes=16)),
+        )
+        conn.commit()
+
+    with store.transaction() as transaction:
+        summary = cleanup_case_data(transaction, now=NOW)
+
+    with adapter._conn(commit_on_success=False) as conn:
+        left = [
+            str(dict(adapter._row_to_dict(row))["contact_digest"])
+            for row in adapter._fetchall(
+                conn,
+                "SELECT contact_digest FROM case_contact_challenges WHERE case_id=%s",
+                (case_id,),
+            )
+        ]
+
+    # expires_at is the code's window, and verifying never moved it. Sweeping on
+    # that column alone deleted the consent ten minutes after it was given, and
+    # every message the reporter had agreed to receive was suppressed after that.
+    assert left == ["digest-verified"]
+    assert summary.expired_challenges == 1
+
+
+@pg_only
+def test_a_verified_contact_still_reaches_delivery_after_a_cleanup(pg):
+    adapter, store = pg
+    from cases.contact import configure_case_contact, verified_contact_for
+    from cases.lifecycle import cleanup_case_data
+
+    configure_case_contact(database=adapter, crypto=None, provider=None)
+
+    case_id = _case(adapter, closed_days_ago=None)
+    with adapter._conn(commit_on_success=False) as conn:
+        adapter._execute(
+            conn,
+            "INSERT INTO case_contact_challenges (case_id, contact_digest, challenge_digest,"
+            " channel, expires_at, verified_at, created_at)"
+            " VALUES (%s,'digest-live','chal','phone',%s,%s,%s)",
+            (case_id, NOW - timedelta(minutes=5), NOW - timedelta(minutes=6),
+             NOW - timedelta(minutes=16)),
+        )
+        conn.commit()
+
+    with store.transaction() as transaction:
+        cleanup_case_data(transaction, now=NOW)
+
+    # The one authority delivery consults still answers.
+    try:
+        assert verified_contact_for(case_id, now=NOW) == "digest-live"
+    finally:
+        configure_case_contact(database=None, crypto=None, provider=None)
+
+
+@pg_only
+def test_consent_retires_with_the_address_it_authorised(pg):
+    adapter, store = pg
+    from cases.lifecycle import cleanup_case_data
+
+    case_id = _case(adapter, closed_days_ago=200)
+    with adapter._conn(commit_on_success=False) as conn:
+        adapter._execute(
+            conn,
+            "INSERT INTO case_contact_challenges (case_id, contact_digest, challenge_digest,"
+            " channel, expires_at, verified_at, created_at)"
+            " VALUES (%s,'digest-old','chal','phone',%s,%s,%s)",
+            (case_id, NOW - timedelta(days=200), NOW - timedelta(days=200),
+             NOW - timedelta(days=201)),
+        )
+        conn.commit()
+
+    with store.transaction() as transaction:
+        summary = cleanup_case_data(transaction, now=NOW)
+
+    # Sparing verified rows must not mean keeping a phone digest forever: once
+    # the reply address is redacted there is nothing left for consent to permit.
+    assert summary.consent_records_purged == 1
+    with adapter._conn(commit_on_success=False) as conn:
+        remaining = adapter._fetchone(
+            conn,
+            "SELECT count(*) AS n FROM case_contact_challenges WHERE case_id=%s",
+            (case_id,),
+        )["n"]
+    assert int(remaining) == 0

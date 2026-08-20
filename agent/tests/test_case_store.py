@@ -1069,3 +1069,25 @@ def test_the_build_read_carries_the_ruling_and_still_hides_nothing_extra():
     # newest first, because a review may overturn an earlier refusal.
     assert "case_decisions" in sql and "ORDER BY decided_at DESC LIMIT 1" in sql
     assert rows[0]["outcome_code"] == "corrected"
+
+
+def test_the_challenge_sweep_only_takes_the_unanswered_ones():
+    database = _RecordingDatabase()
+
+    _transaction(database).purge_expired_contact_challenges(now=NOW)
+
+    sql = database.statements[0][0]
+    # Without this clause the sweep deleted the verified row ten minutes after
+    # somebody consented, and delivery lost its only authority to message them.
+    assert "verified_at IS NULL" in sql
+
+
+def test_consent_is_swept_on_the_contact_shelf_not_the_code_window():
+    database = _RecordingDatabase()
+
+    _transaction(database).purge_consent_records(closed_before=NOW)
+
+    sql = database.statements[0][0]
+    assert "verified_at IS NOT NULL" in sql
+    # Tied to a terminal close, the same shelf the reply address retires on.
+    assert "closed_at IS NOT NULL AND closed_at <" in sql

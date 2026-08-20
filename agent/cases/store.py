@@ -1015,9 +1015,41 @@ class CaseTransaction:
         )
 
     def purge_expired_contact_challenges(self, *, now: datetime) -> int:
+        """Unanswered one-time codes only.
+
+        expires_at is the code's ten-minute window, and verifying does not move
+        it. Sweeping on that column alone deleted the VERIFIED row ten minutes
+        after somebody consented — and that row is the only thing
+        contact.verified_contact_for reads, so every message they had agreed to
+        receive was suppressed from then on, silently. A verified challenge is
+        the consent record; it retires with the address it belongs to.
+        """
         self._require_active()
         return self._count_execute(
-            "DELETE FROM case_contact_challenges WHERE expires_at < %s", (now,)
+            "DELETE FROM case_contact_challenges"
+            " WHERE expires_at < %s AND verified_at IS NULL",
+            (now,),
+        )
+
+    def purge_consent_records(self, *, closed_before: datetime) -> int:
+        """The verified challenge, retiring with the address it authorised.
+
+        Same shelf as redact_closed_case_contacts: once the reply address is
+        gone there is nothing left for the consent to authorise, and holding a
+        contact digest past that point holds a person's phone number in a form
+        we promised to let go.
+        """
+        self._require_active()
+        return self._count_execute(
+            """
+            DELETE FROM case_contact_challenges
+            WHERE verified_at IS NOT NULL
+              AND case_id IN (
+                  SELECT case_id FROM cases
+                  WHERE closed_at IS NOT NULL AND closed_at < %s
+              )
+            """,
+            (closed_before,),
         )
 
     def redact_closed_case_contacts(self, *, closed_before: datetime) -> int:

@@ -29,6 +29,7 @@ class CleanupSummary:
     expired_access_sessions: int = 0
     expired_idempotency: int = 0
     expired_challenges: int = 0
+    consent_records_purged: int = 0
     contacts_redacted: int = 0
     private_payloads_redacted: int = 0
     capacity_links_removed: int = 0
@@ -53,6 +54,8 @@ def cleanup_case_data(transaction, *, now: datetime | None = None,
     contacts = transaction.redact_closed_case_contacts(
         closed_before=now - CONTACT_RETENTION
     )
+    # The consent that authorised that address goes with it, on the same shelf.
+    consent = transaction.purge_consent_records(closed_before=now - CONTACT_RETENTION)
     payloads, held = transaction.redact_private_payloads(
         closed_before=now - PRIVATE_EVIDENCE_RETENTION,
         excluded_case_ids=tuple(sorted(audited_holds)),
@@ -65,6 +68,7 @@ def cleanup_case_data(transaction, *, now: datetime | None = None,
         expired_access_sessions=expired_access,
         expired_idempotency=expired_idempotency,
         expired_challenges=expired_challenges,
+        consent_records_purged=consent,
         contacts_redacted=contacts,
         private_payloads_redacted=payloads,
         capacity_links_removed=delinked,
