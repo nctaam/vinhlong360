@@ -1,6 +1,6 @@
 # Kết quả thực thi — Correction Case Pilot (plan 2026-08-12)
 
-> STATUS: active (cập nhật lần cuối 2026-08-20, sau commit `9c9331d0`)
+> STATUS: active (cập nhật lần cuối 2026-08-20, sau commit `6b7bb980`)
 > Mức Definition Ladder: **works-on-disposable-postgres + full-suite-green-at-baseline**.
 > KHÔNG claim `production-proven`. KHÔNG claim SLA công khai. Mọi cờ case đang **false**; kích hoạt thuộc quyết định phát hành riêng của chủ dự án (Review Protocol mục 5).
 
@@ -86,16 +86,31 @@ bác bỏ** (mỗi chiều 2 cái). Kết quả: **7 đứng vững, 1 bị bác
 Phụ: journey suite trước đây **không chạy lại được** (NOW đông cứng → hit rate-limit không
 bao giờ hết hạn); fixture nay dọn cửa sổ, chạy hai lượt liên tiếp đều xanh.
 
-**Còn mở — cả ba CHƯA qua phản biện; đo lại trước khi tin là thật**:
+**Đợt phản biện 3 (2026-08-20)** — 6 agent, mỗi phát hiện 2 góc (một người *phải* cố bác,
+một người xét mức hại). Kết quả: retention **2/2 xác nhận**, escalation **2/2 xác nhận**,
+deadline **1 bác / 1 xác nhận** — nhưng cả hai độc lập tìm ra cùng một sự thật sâu hơn.
+Đã đóng cả ba (`66487aaa`, `6b7bb980`):
 
-1. **`store.py:1008`** — purge lưu trữ xoá cả contact challenge **đã xác minh**, có thể giết
-   mọi thông báo người dân đã đồng ý nhận.
-2. **`work_control.py:440`** — `scan_escalations` không có nơi gọi trong production, nên đồng
-   hồ trễ hạn có thể không bao giờ sinh việc giám sát; runbook mô tả **ngược lại**.
-3. **`service.py:1176`** — hạn "Cập nhật trước" đóng băng lúc intake và không tính lại, trong
-   khi câu chữ trễ-hạn nói nó vẫn còn hiệu lực.
+1. **Xoá mất sự đồng ý 10 phút sau khi được cho** — `purge_expired_contact_challenges` quét
+   theo `expires_at`, mà đó là cửa sổ 10 phút của mã OTP và bước xác minh **không nới nó**.
+   Dòng đã-xác-minh là thứ DUY NHẤT `verified_contact_for` đọc, nên sau lượt dọn theo lịch,
+   mọi thông báo người dân đã đồng ý đều bị chặn — **im lặng**, dưới cùng mã lỗi
+   `suppressed_at_delivery` như khi họ chủ động rút. Nay chỉ quét mã chưa dùng; dòng đã xác
+   minh là **hồ sơ đồng ý**, nghỉ cùng địa chỉ nó cho phép (kệ 90 ngày).
+2. **Không ai nhìn đồng hồ lời hứa** — `AT_RISK`/`BREACHED` có trong từ vựng từ đầu và
+   **chưa từng được ghi**; `scan_escalations` **không có nơi gọi nào**. Hệ quả: người trễ 3
+   ngày vẫn thấy "Đúng hạn", hàng đợi xếp hồ sơ trễ như hồ sơ mới, và không việc giám sát nào
+   được tạo. `domain.promise_health_at` suy ra sức khoẻ từ chính đồng hồ (RECOVERY đã ghi thì
+   vẫn thắng); task `case-promise-watch` 10 phút/lần (no-op khi cờ tắt) đóng dấu lại cho hàng
+   đợi rồi chạy escalation.
+3. **Hạn đã lỡ vẫn được gọi là còn hiệu lực** — `next_update_at` **cố ý không đổi**: đó là bản
+   ghi điều đã hứa, sửa nó là xoá dấu vết đã lỡ. Thay vào đó trang thôi nói dối: khi trễ, câu
+   chữ nói đã trễ và hồ sơ đã được nâng ưu tiên, và nhãn đổi thành "Hạn đã hứa".
 
-Cả 4 phát hiện BLOCKER/quan trọng đã-phản-biện đều đã đóng ở hai đợt trên.
+Kèm: runbook nói "lease 15 phút" (thực tế 30) và "hết lease thì scan escalation" (thực tế
+trigger là đồng hồ quá hạn) — đã sửa cho khớp mã.
+
+**Không còn phát hiện nào của hai đợt rà soát để mở.**
 
 ## Rủi ro chưa đóng
 
@@ -106,8 +121,8 @@ Cả 4 phát hiện BLOCKER/quan trọng đã-phản-biện đều đã đóng �
 
 ## Điều kiện trước khi bật bất kỳ cờ nào
 
-0. **Phản biện và xử lý 3 mục còn mở ở phần rà soát 2026-08-20** (retention, escalation,
-   hạn cập nhật). Bốn mục BLOCKER/quan trọng đã-phản-biện đã đóng.
+0. ~~Phản biện và xử lý các mục rà soát 2026-08-20~~ — **xong**: cả 7 phát hiện
+   đã-phản-biện đều đã đóng (xem mục trên).
 1. Chạy trọn cổng Step 5 Task 18 (17 suite BE + ruff + 8 suite FE + typecheck + build + `run_hard --all`) và cập nhật mục "Số liệu" ở trên bằng exit code thật.
 2. Hoàn tất browser smoke (accessibility gate đã có; smoke CDP còn thiếu).
 3. Rà soát độc lập chuỗi commit (vòng tự động đã có; vòng người chưa).
