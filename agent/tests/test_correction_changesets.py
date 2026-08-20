@@ -175,9 +175,10 @@ def pg_database():
     with adapter._conn(commit_on_success=False) as conn:
         adapter._execute(
             conn,
-            "INSERT INTO entities (id, type, name, revision) VALUES (%s,'place','Vinh Long',7)"
-            " ON CONFLICT (id) DO UPDATE SET revision = 7",
-            ("p-cs",),
+            "INSERT INTO entities (id, type, name, attributes, revision)"
+            " VALUES (%s,'place','Vinh Long',%s,7)"
+            " ON CONFLICT (id) DO UPDATE SET revision = 7, attributes = EXCLUDED.attributes",
+            ("p-cs", '{"phone": "0270 111 2222"}'),
         )
         conn.commit()
     configure_case_correction(
@@ -397,3 +398,61 @@ def test_the_newest_ruling_governs_after_a_review(pg_database):
                                   evidence_refs=("e-2",), now=NOW)
 
     assert change_set.apply_status == "pending"
+
+
+@pg_only
+def test_the_undo_records_what_the_entry_held_not_what_was_claimed(pg_database):
+    from cases.correction import build_change_set
+
+    with pg_database._conn(commit_on_success=False) as conn:
+        pg_database._execute(
+            conn,
+            "UPDATE entities SET attributes = %s WHERE id = %s",
+            ('{"phone": "02703822111"}', "p-cs"),
+        )
+        conn.commit()
+    # The reporter transcribed it with spaces — or, in the case this really
+    # guards, wrote something defamatory into a field nobody ever reads back.
+    case_id, item_id = _seed_case_with_item(pg_database)
+
+    build_change_set(case_id, (item_id,), _decider(), expected_revision=1,
+                     evidence_refs=("e-1",), now=NOW)
+
+    with pg_database._conn(commit_on_success=False) as conn:
+        stored = dict(pg_database._fetchone(
+            conn,
+            "SELECT before_patch::text AS before, inverse_patch::text AS inverse"
+            " FROM correction_change_sets WHERE case_id=%s",
+            (case_id,),
+        ))
+    # A rollback replays the inverse onto the live entry. Built from the
+    # reporter's string it would publish a value the entry never held, under
+    # provenance 'correction-rollback', with nobody having authored it.
+    assert "02703822111" in stored["before"]
+    assert "02703822111" in stored["inverse"]
+    assert "0270 111 2222" not in stored["inverse"]
+
+
+@pg_only
+def test_an_absent_field_undoes_to_absent_rather_than_to_a_guess(pg_database):
+    from cases.correction import build_change_set
+
+    with pg_database._conn(commit_on_success=False) as conn:
+        pg_database._execute(
+            conn, "UPDATE entities SET attributes = %s WHERE id = %s", ('{}', "p-cs"),
+        )
+        conn.commit()
+    case_id, item_id = _seed_case_with_item(pg_database)
+
+    build_change_set(case_id, (item_id,), _decider(), expected_revision=1,
+                     evidence_refs=("e-1",), now=NOW)
+
+    with pg_database._conn(commit_on_success=False) as conn:
+        inverse = str(pg_database._fetchone(
+            conn,
+            "SELECT inverse_patch::text AS inverse FROM correction_change_sets WHERE case_id=%s",
+            (case_id,),
+        )["inverse"])
+    # Nothing was there, so the undo says nothing was there.
+    assert "null" in inverse
+    assert "0270 111 2222" not in inverse

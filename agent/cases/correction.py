@@ -253,6 +253,21 @@ class ChangeSetDraft:
 CorrectionChangeSet = ChangeSetDraft
 
 
+def live_value_at(values: dict, field_path: str):
+    """What the entry actually says at `field_path`, traversing dotted paths.
+
+    Same reading agent/public_api.py does for legacy reports. The inverse patch
+    is an undo, and an undo built from anything but the observed value is a
+    guess dressed as a record.
+    """
+    node = values
+    for part in field_path.split("."):
+        node = node.get(part) if isinstance(node, dict) else None
+        if node is None:
+            return None
+    return node
+
+
 def build_patches(draft: ChangeSetDraft) -> tuple[dict, dict, dict]:
     """Before, after, and the inverse that undoes after without recomputation."""
     before = {change.field_path: change.before_value for change in draft.changes}
@@ -515,12 +530,18 @@ def build_change_set(
             raise _reject("change_set_spans_entities", "One change set, one entry.")
         entity_id = entity_ids.pop()
 
+        # What the entry says now is ours to read, never the reporter's to
+        # assert. The before-state becomes the inverse patch, so trusting their
+        # transcription would mean a rollback republishing a string nobody
+        # authored and nobody ever reviewed — the reported value is seen at no
+        # other point in the system.
+        live = transaction.load_entity_for_update(entity_id)
         changes = tuple(
             ProposedChange(
                 item_id=str(row["item_id"]),
                 entity_id=entity_id,
                 field_path=str(row["field_path"]),
-                before_value=crypto.decrypt_private_payload(str(row["reported_value_enc"]))["value"],
+                before_value=live_value_at(live.values, str(row["field_path"])),
                 after_value=crypto.decrypt_private_payload(str(row["proposed_value_enc"]))["value"],
             )
             for row in payloads
