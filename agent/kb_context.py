@@ -139,7 +139,13 @@ def get_kb_context(entities: dict) -> str:
 
 
 def invalidate():
-    """Clear the cached digest (call after KB reload)."""
+    """Clear the cached digest (call after KB reload).
+
+    Not optional. This cache has no TTL and its stored `count` is written but
+    never compared, so without this call it serves the first digest it ever
+    built for the life of the process — which is how a deleted entity kept
+    being named to the model as real, long after the row was gone.
+    """
     with _lock:
         _cache["text"] = None
         _cache["mode"] = None

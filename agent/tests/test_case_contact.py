@@ -270,3 +270,24 @@ def test_the_challenge_key_needs_no_attempt_number():
     # used to be here was always passed 1 and never reached the hash.
     assert delivery_key("challenge-1") == delivery_key("challenge-1")
     assert delivery_key("challenge-1") != delivery_key("challenge-2")
+
+
+def test_a_takedown_clears_the_catalogue_the_chat_speaks_from():
+    import ast
+    from pathlib import Path
+
+    source = (Path(__file__).resolve().parents[1] / "admin.py").read_text("utf-8")
+    tree = ast.parse(source)
+    sync = next(node for node in ast.walk(tree)
+                if isinstance(node, ast.FunctionDef) and node.name == "_sync_kb")
+    called = {
+        node.func.attr for node in ast.walk(sync)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+    }
+
+    # kb_context.invalidate has always existed and its docstring has always said
+    # "call after KB reload". _sync_kb reloads knowledge at all 12 admin write
+    # sites and never called it, so a deleted entity stayed in the chat's
+    # catalogue — named to the model as real — for the life of the process.
+    assert "reload" in called
+    assert "invalidate" in called

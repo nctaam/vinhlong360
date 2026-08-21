@@ -107,6 +107,14 @@ def _sync_kb():
         cache.invalidate_all()
     except Exception:
         logger.warning("LLM cache invalidation failed after KB sync")
+    try:
+        # The chat's KB catalogue, which has no TTL of its own. Without this a
+        # takedown removes the row while every later /chat still names the
+        # entity — the one guarantee the catalogue exists to provide.
+        import kb_context
+        kb_context.invalidate()
+    except Exception:
+        logger.warning("KB context invalidation failed after KB sync")
     _invalidate_admin_caches()
 
 
@@ -5563,8 +5571,16 @@ async def list_claims(
                 SELECT COUNT(*) as cnt FROM entity_claims c {where}
             """, tuple(params))
         total = db._row_to_dict(total_row)["cnt"] if total_row else 0
+        def _claim_row(row):
+            # Every other endpoint masks; this one did not, and it is the only
+            # place in the API that returned a registered user's raw phone.
+            item = dict(db._row_to_dict(row))
+            if item.get("claimant_phone"):
+                item["claimant_phone"] = _mask(str(item["claimant_phone"]))
+            return item
+
         return {
-            "claims": [db._row_to_dict(r) for r in rows],
+            "claims": [_claim_row(r) for r in rows],
             "total": total,
             "limit": limit,
             "offset": offset,

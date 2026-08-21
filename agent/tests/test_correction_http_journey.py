@@ -329,3 +329,67 @@ def test_a_session_cookie_without_the_csrf_echo_cannot_add_a_phone(client):
     # to set this header. That difference is the whole defence.
     assert response.status_code == 403
     assert response.json()["code"] == "invalid_case_credential"
+
+
+@pg_only
+def test_a_reporter_can_take_their_phone_number_back(client):
+    """Withdrawal has to be as reachable as consent.
+
+    The privacy policy promises "rút lại đồng ý — trong vòng 15 ngày". The
+    domain has always supported it; the route hardcoded consent=True and the
+    request model forbade the field, so an anonymous reporter — who has no
+    account to delete either — had no way to exercise the promise.
+    """
+    from cases import contact as contact_module
+    from cases.contact import configure_case_contact, deliverable_contact_for
+    from cases.public_api import CSRF_COOKIE
+    from cases.security import CaseCrypto
+
+    created = client.post("/api/cases/corrections", json=_body(), headers=_headers())
+    receipt = created.json()
+    client.post(
+        "/api/cases/access",
+        json={"publicReference": receipt["publicReference"],
+              "capability": receipt["capability"]},
+        headers={"Origin": ORIGIN, "Sec-Fetch-Site": "same-origin"},
+    )
+    session_headers = {
+        "Origin": ORIGIN, "Sec-Fetch-Site": "same-origin",
+        "X-Case-CSRF": client.cookies.get(CSRF_COOKIE) or "",
+    }
+
+    class _Provider:
+        def send(self, phone, message, *, delivery_key=""):
+            from sms_provider import SmsDeliveryResult
+
+            return SmsDeliveryResult(True, None, False)
+
+    configure_case_contact(
+        database=contact_module._DATABASE, crypto=CaseCrypto(MASTER_KEY),
+        provider=_Provider(), code_source=lambda: "123456",
+    )
+    client.post("/api/cases/contact/request",
+                json={"phone": "0901234567"}, headers=session_headers)
+    client.post("/api/cases/contact/verify",
+                json={"code": "123456"}, headers=session_headers)
+
+    with contact_module._DATABASE._conn(commit_on_success=False) as conn:
+        case_id = str(contact_module._DATABASE._row_to_dict(
+            contact_module._DATABASE._fetchone(
+                conn,
+                "SELECT case_id FROM case_receipts WHERE public_reference=%s",
+                (receipt["publicReference"],),
+            )
+        )["case_id"])
+    assert deliverable_contact_for(case_id, now=datetime.now(UTC)) == "0901234567"
+
+    withdrawn = client.post(
+        "/api/cases/contact/request",
+        json={"phone": "0901234567", "consent": False},
+        headers=session_headers,
+    )
+
+    assert withdrawn.status_code in (200, 202, 204), withdrawn.text
+    # The dispatcher's own authority now finds nothing, so a queued notification
+    # suppresses instead of reaching somebody who asked us to stop.
+    assert deliverable_contact_for(case_id, now=datetime.now(UTC)) is None

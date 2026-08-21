@@ -96,3 +96,24 @@ class TestTokenBudget:
         kb_context.invalidate()
         text = kb_context.build_kb_index(big)
         assert len(text) <= kb_context._MAX_CHARS["index"] + 50
+
+
+def test_invalidate_really_drops_the_cached_catalogue():
+    import kb_context
+
+    entities = {"e-1": {"id": "e-1", "type": "attraction", "name": "Chợ Nổi Trà Ôn"}}
+    if kb_context.MODE == "off":
+        import pytest
+
+        pytest.skip("KB context is switched off in this environment")
+
+    first = kb_context.get_kb_context(entities)
+    assert "Chợ Nổi Trà Ôn" in first
+
+    kb_context.invalidate()
+    # A deleted entity must be gone from the next build. Without the call the
+    # cache has no TTL and no count check, so it would serve `first` forever —
+    # naming an entity the database no longer has.
+    rebuilt = kb_context.get_kb_context({})
+
+    assert "Chợ Nổi Trà Ôn" not in rebuilt

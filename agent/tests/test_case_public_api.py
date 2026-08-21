@@ -637,3 +637,24 @@ def test_a_snake_case_body_is_refused_outright():
             entity_id="p-quan-com", field_path="attributes.phone",
             reported_value="a", proposed_value="b", base_entity_revision=7,
         )
+
+
+def test_the_contact_route_accepts_a_withdrawal():
+    from cases.public_api import _ContactRequestIn
+
+    # Consent defaults to true so an ordinary request is unchanged, and false is
+    # now expressible — the model forbade extra fields, so before this the
+    # privacy policy's "rút lại đồng ý trong 15 ngày" had no route to happen on.
+    assert _ContactRequestIn(phone="0901234567").consent is True
+    assert _ContactRequestIn(phone="0901234567", consent=False).consent is False
+
+
+def test_the_route_passes_the_caller_choice_rather_than_a_constant():
+    import inspect
+
+    from cases.public_api import request_contact_verification
+
+    source = inspect.getsource(request_contact_verification)
+
+    assert "consent=body.consent" in source
+    assert "consent=True" not in source

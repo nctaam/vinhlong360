@@ -119,3 +119,19 @@ class TestImageURLValidation:
     def test_too_long(self):
         url = "https://example.com/" + "x" * 500
         assert len(url) > 500
+
+
+def test_the_claims_list_masks_the_one_phone_it_used_to_leak():
+    import ast
+    from pathlib import Path
+
+    source = (Path(__file__).resolve().parents[1] / "admin.py").read_text("utf-8")
+
+    # GET /admin/claims joined users.phone and returned every row raw, while
+    # every other endpoint masked and _mask sat ten lines above it. It is the
+    # only place in the API that returned a registered user's raw number.
+    assert '"claims": [_claim_row(r) for r in rows]' in source
+    assert 'item["claimant_phone"] = _mask(str(item["claimant_phone"]))' in source
+    tree = ast.parse(source)
+    assert any(isinstance(node, ast.FunctionDef) and node.name == "_mask"
+               for node in ast.walk(tree)), "the masking helper vanished"

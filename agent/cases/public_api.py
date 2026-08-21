@@ -226,6 +226,12 @@ class _ContactRequestIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     phone: str = Field(min_length=1, max_length=32)
+    # Withdrawal has to be as reachable as consent. The domain has always
+    # supported consent=False — it leaves no live challenge and no verified
+    # contact — but the route hardcoded True and this model forbade the field,
+    # so a reporter who had given their number had no way to take it back.
+    # The privacy policy promises exactly that within 15 days.
+    consent: bool = True
 
 
 class _ContactVerifyIn(BaseModel):
@@ -433,7 +439,7 @@ async def request_contact_verification(request: Request):
         _service().request_contact_verification(
             access_token=request.cookies.get(ACCESS_COOKIE),
             phone=body.phone,
-            consent=True,
+            consent=body.consent,
         )
     except ValueError as exc:
         if "invalid_contact_phone" not in str(exc):
