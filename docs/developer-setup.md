@@ -49,8 +49,21 @@ docker compose ps  # should show "healthy"
 # Schema is auto-initialized via init.sql mount
 ```
 
-Default connection (from docker-compose.yml):
-- Host: `localhost:5432`
+> ⚠️ **`docker-compose.yml` publishes NO host port** — it declares `expose: "5432"`,
+> which opens the port to other containers only, and there is no override file.
+> `localhost:5432` therefore does **not** connect from the host.
+> Do **not** add a `ports:` mapping to fix this: `tests/launch_safety/test_compose_contract.py:217`
+> asserts its absence on purpose. Reach the database one of these ways instead:
+> ```bash
+> # a) run psql inside the container
+> docker compose exec postgres psql -U vl360 -d vinhlong360
+>
+> # b) publish a port for this session only, without touching the tracked file
+> docker compose run --rm --service-ports -p 5432:5432 postgres
+> ```
+
+Connection details (from docker-compose.yml):
+- Host: reachable **inside the compose network** as `postgres:5432`; see the note above for host access
 - Database: `vinhlong360`
 - User: `vl360`
 - Password: `vl360_dev_password`

@@ -1,7 +1,7 @@
 """
 vinhlong360 — Knowledge layer.
 
-Đọc dữ liệu từ web/data.js, cung cấp các hàm truy vấn
+Đọc dữ liệu từ web/data.json, cung cấp các hàm truy vấn
 cho Knowledge Agent (tương đương store.js phía Python).
 """
 
@@ -17,16 +17,17 @@ logger = logging.getLogger(__name__)
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "web"
 
-# ── Parse data.js ──
+# ── Parse data.json ──
 
 def _parse_data_js():
-    """Trích xuất entities, relationships, itineraries từ data.js bằng regex."""
+    """Trích xuất entities, relationships, itineraries từ data.json."""
 
     # Bóc tách mảng places và items bằng cách eval qua JSON không được
     # (JS syntax ≠ JSON). Ta chuyển sang approach: export JSON riêng.
-    # Nhưng hiện tại data.js là nguồn duy nhất → ta parse thủ công.
+    # Nguồn thật là data.json (mở ở dưới). Comment cũ ghi 'data.js là nguồn
+    # duy nhất' — sai, và đủ để đọc nhầm module này hai lần trong ba phút.
 
-    # Approach: dùng data.js như source of truth, sinh ra data.json 1 lần.
+    # Approach: đọc thẳng data.json.
     json_path = DATA_DIR / "data.json"
     if json_path.exists():
         with open(json_path, encoding="utf-8") as f:

@@ -425,3 +425,17 @@ class TestDirectorySearch:
             results = knowledge.directory_search("Nguồn")
         assert len(results) == 1
         assert results[0]["source"] is None
+
+
+def test_the_module_names_the_file_it_actually_opens():
+    from pathlib import Path
+
+    source = (Path(__file__).resolve().parents[1] / "knowledge.py").read_text("utf-8")
+    head = source[:source.index("def ")]
+
+    # The docstring said it parsed web/data.js with regex and that "data.js là
+    # nguồn duy nhất". The code opens data.json. A comment that lies about its
+    # own source is how a reader reaches the wrong conclusion twice in a row.
+    assert "data.json" in head
+    assert "data.js," not in head and "data.js " not in head
+    assert 'DATA_DIR / "data.json"' in source

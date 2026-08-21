@@ -81,7 +81,8 @@ MXH du lịch / OCOP / cộng đồng cho **tỉnh Vĩnh Long mới** (sáp nh�
 
 **Script:** `scripts/deploy.sh` (chạy từ repo-root trong **Git Bash**):
 - `--frontend [--skip-build]` · `--backend` · `--data` · `--replace` (re-import data.json vào prod PG, DESTRUCTIVE — **đè mất chỉnh sửa AdminCP write-through trên prod**; chỉ khi chủ chỉ đạo trực tiếp, xem B7) · `--no-backup` (nguy-hiểm).
-- Tự: pre-flight health → (build) → backup prod (db dump + code tar) → scp → `rm -rf .output` + extract → npm/pip → restart → verify (home 200 + agent_health 200).
+- Tự: pre-flight health → (build) → scp → `rm -rf .output` + extract → npm/pip → restart → verify (home 200 + agent_health 200).
+- ⚠️ **`deploy.sh` KHÔNG tự backup.** Tài liệu này từng ghi là có (db dump + code tar); grep `pg_dump|backup|tar|rotate` trong script chỉ ra đúng một kết quả: cờ `--no-backup` in ra *"obsolete for the atomic closed-release installer"*. **Trước khi deploy, tự chạy `pg_dump` và giữ lại bản archive** — B1 là bất biến, và đây là chỗ dễ tin nhầm nhất vì người ta đọc mục này đúng lúc cần khôi phục.
 
 **QUY TRÌNH FE chuẩn (tránh timeout giết build → ship .output rỗng → 502):**
 ```
@@ -94,7 +95,7 @@ cd .. && bash scripts/deploy.sh --frontend --skip-build
 - Build prod: nếu có `web-nuxt/.env` chứa `API_BASE` → bị bake vào routeRules → 502. **Xoá `.env` trước khi build.**
 - LUÔN verify: `home=200` và `agent_health=200` (agent_health = curl `/api/homepage` qua nginx). Bất kỳ deploy đụng startup/DB-load của agent PHẢI verify `:8360/health`, không chỉ home.
 - **Migrations KHÔNG được deploy.sh ship** → áp tay: `ssh -i ~/.ssh/vinhlong_vps root@66.42.57.202 "sudo -u postgres psql -d vinhlong360 -f -"`; bảng MỚI cần `ALTER TABLE x OWNER TO vl360`.
-- **Đĩa VPS 23GB**: backup pre-deploy ~150MB/lần. deploy.sh đã thêm **xoay-vòng giữ 6 bản**. Nếu "build+deploy mà prod vẫn bản cũ" → `ssh ... 'df -h /'` (từng đầy 100% → deploy ship nhầm .output cũ) + so CSS hash deployed vs local.
+- **Đĩa VPS 23GB**: một bản dump ~150MB. Xoay vòng **do `scripts/ops/backup_db_daily.sh` làm** (giữ 7 bản daily), KHÔNG phải deploy.sh — câu "deploy.sh đã thêm xoay-vòng giữ 6 bản" ở đây trước kia là sai. Nếu "build+deploy mà prod vẫn bản cũ" → `ssh ... 'df -h /'` (từng đầy 100% → deploy ship nhầm .output cũ) + so CSS hash deployed vs local.
 
 ## 6. ⚠️ GOTCHA QUAN TRỌNG NHẤT — SSR fetch
 
