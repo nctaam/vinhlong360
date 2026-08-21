@@ -298,6 +298,98 @@ tương tự với người tiếp theo.
 
 ---
 
+## 4b. Nghiên cứu vòng 2 — tự đi lấy văn bản gốc
+
+Workflow deep-research bị tiến trình giết **ba lần** giữa chừng. Vòng này tôi **tự fetch**
+nguồn, đồng bộ, nên không mất giữa đường. Mỗi mục dưới đây khớp **≥2 nguồn độc lập** hoặc là
+cổng Chính phủ/Bộ chủ quản.
+
+### 4b.1 🟢 Miễn trừ theo quy mô — tin tốt, và nó đổi kế hoạch
+
+Nguồn: [xaydungchinhsach.chinhphu.vn](https://xaydungchinhsach.chinhphu.vn/quoc-hoi-da-thong-qua-luat-bao-ve-du-lieu-ca-nhan-119250626153701582.htm)
+(Cổng TTĐT Chính phủ), khớp với kết quả tìm kiếm trên miền `.gov.vn`.
+
+> Doanh nghiệp nhỏ, doanh nghiệp khởi nghiệp **được quyền lựa chọn thực hiện hoặc không thực
+> hiện** các quy định về **lập hồ sơ đánh giá tác động**, **chỉ định bộ phận/nhân sự bảo vệ dữ
+> liệu cá nhân** **trong thời hạn 05 năm** kể từ ngày Luật có hiệu lực, và **miễn thực hiện đối
+> với hộ kinh doanh, doanh nghiệp siêu nhỏ**.
+
+**Nghĩa là với vinhlong360** (solo dev, <10k user, ngân sách <1 triệu/tháng): bộ máy tuân thủ
+*nặng* — hồ sơ đánh giá tác động, nhân sự chuyên trách — **không phải dựng trước khi bật cờ**.
+Miễn hẳn nếu là hộ kinh doanh/siêu nhỏ; được chọn tới **01/01/2031** nếu là doanh nghiệp nhỏ.
+
+Đây là điều đáng biết **trước** khi đầu tư công sức vào hồ sơ tuân thủ.
+
+### 4b.2 🔴 Nhưng nghĩa vụ KHÔNG được miễn lại đúng chỗ dự án đang hở
+
+Miễn trừ trên chỉ chạm hai nghĩa vụ *thủ tục*. Các nghĩa vụ **nội dung** không được miễn cho
+ai cả — và Điều 4 liệt kê quyền của chủ thể dữ liệu gồm: được biết, **đồng ý và rút lại đồng
+ý**, xem/chỉnh sửa, yêu cầu cung cấp/**xoá**/hạn chế xử lý, phản đối, khiếu nại/khởi kiện.
+
+Bộ Công an còn nêu nghĩa vụ với dịch vụ trực tuyến: **cơ chế opt-out theo dõi**, **chính sách
+riêng tư minh bạch**, và **người dùng truy cập được dữ liệu của mình**; đồng thời **không được
+đòi ảnh/video giấy tờ tuỳ thân** làm yếu tố xác thực.
+([mps.gov.vn](https://mps.gov.vn/chinh-sach-phap-luat/bai-viet/mot-so-quy-dinh-dang-chu-y-trong-luat-bao-ve-du-lieu-ca-nhan-2025-1753847906))
+
+**→ Đây chính là chỗ §4b.4 dưới đây cắn.** Quyền rút lại đồng ý nằm trong nhóm *không được
+miễn*, và trang chính sách của dự án đã **hứa** nó — nhưng mã không nhận được.
+
+### 4b.3 🟡 Chế tài — thang tiền so với ngân sách dự án
+
+Cùng nguồn Cổng TTĐT Chính phủ:
+
+| Hành vi | Mức |
+|---|---|
+| Mua/bán dữ liệu cá nhân (**bị cấm tuyệt đối**) | tới **10 lần** khoản thu bất hợp pháp |
+| Chuyển dữ liệu xuyên biên giới trái quy định | tối đa **5% doanh thu năm trước** |
+| Vi phạm khác | tới **3 tỷ đồng** |
+| Cá nhân vi phạm | **một nửa** mức của tổ chức |
+
+Trần 3 tỷ đồng cho "vi phạm khác" là con số cần đặt cạnh ngân sách <1 triệu đồng/tháng khi
+cân nhắc bật cờ.
+
+### 4b.4 🔴 Phát hiện của riêng tôi: chính sách hứa một quyền mà mã không nhận được
+
+Bốn file, tôi tự đọc và đối chiếu:
+
+| File | Sự thật |
+|---|---|
+| `web-nuxt/utils/legalContent.ts:44` | Hứa **"Rút lại đồng ý — trong vòng 15 ngày"**, không giới hạn cho người có tài khoản |
+| `agent/cases/public_api.py:436` | Route liên hệ **ghim cứng `consent=True`** |
+| `agent/cases/public_api.py:225` | `_ContactRequestIn` chỉ khai `phone`, `extra="forbid"` → gửi kèm `consent` là **422** |
+| `agent/cases/contact.py:121` | Cơ chế rút **có thật** ở tầng domain, comment ghi rõ *"Withdrawing consent simply leaves no live challenge"* — nhưng **không HTTP nào chạm tới** |
+
+Người báo ẩn danh **không có tài khoản** để dùng đường "xoá tài khoản 30 ngày"
+(`accountErasureDeadlineDays = 30`). Nên với họ, lời hứa 15 ngày hiện **không có đường thực
+hiện**. Cơ chế đã viết xong; chỉ thiếu một trường trong model và một dòng ở route.
+
+**Cần nói cho công bằng:** phần *lấy* đồng ý của dự án làm **tốt** — số điện thoại là tuỳ
+chọn, ô đồng ý chỉ hiện khi có nhập số, câu chữ giới hạn mục đích rõ ràng (*"dùng số này để
+báo kết quả yêu cầu, và chỉ việc đó"*), và nhập số mà chưa tick là **lỗi chặn gửi**
+(`CorrectionIntakeForm.vue:84`). Thiếu là ở phía **rút lại** và **thời hạn lưu**: mục 3 chính
+sách chỉ ghi *"giữ trong thời gian cần thiết"*, trong khi kernel cài kệ cụ thể 90/365/730 ngày
+mà người báo không được cho biết.
+
+### 4b.5 🟡 NĐ147/2024 — ràng buộc với "trang thông tin điện tử tổng hợp"
+
+Hiệu lực **25/12/2024**. Với trang tổng hợp: đăng lại tin **chậm hơn 1 giờ** so với nguồn;
+nguồn từ **≥3 cơ quan báo chí**; **người dùng KHÔNG được bình luận** trên bài của trang tổng
+hợp; không dùng tên miền/tên trang gây nhầm với báo chí.
+
+Dự án chỉ trích **tiêu đề + đoạn + link** (đúng B6 CLAUDE.md), nên nhiều khả năng không phải
+trang tổng hợp — nhưng vế *"người dùng không được bình luận"* đáng hỏi luật sư nếu site có UGC.
+Điều 24 (điều kiện miễn giấy phép) tôi **chưa lấy được toàn văn** — `mic.gov.vn` không phân
+giải được DNS lúc chạy, và bản PDF ký trên `datafiles.chinhphu.vn` là **ảnh scan không trích
+được chữ**. Ghi ra thay vì đoán.
+
+### 4b.6 Giới hạn của vòng này
+
+- Bản ký gốc Luật 91/2025 là **PDF scan ảnh**; máy không có `poppler` để render, nên tôi
+  **không tự đọc được từng điều khoản**. Các con số trên lấy từ cổng Chính phủ và Bộ chủ quản,
+  khớp chéo — **không phải** tôi đọc thẳng luật.
+- `thuvienphapluat.vn` trả **403**, `mic.gov.vn` **không phân giải DNS**.
+- Vì vậy: mọi mục §4b vẫn là **đầu vào cho luật sư**, không phải kết luận pháp lý.
+
 ## 5. Việc nên làm, xếp theo tỉ lệ giá trị/công sức
 
 **Nhóm A — rẻ, giá trị cao, tôi làm được ngay**
@@ -312,7 +404,11 @@ tương tự với người tiếp theo.
 
 **Nhóm B — cần quyết định của chủ dự án**
 
-8. **Rà lại toàn bộ ghi chú pháp lý theo Luật 91/2025/QH15** (§2.1) — Track-H, cần luật sư.
+8. **Rà lại toàn bộ ghi chú pháp lý theo Luật 91/2025/QH15** (§2.1, §4b) — Track-H, cần
+   luật sư. Mang theo §4b.1 (miễn trừ quy mô) để hỏi đúng câu: dự án thuộc nhóm nào.
+8b. **Mở đường rút lại đồng ý** (§4b.4): thêm `consent: bool` vào `_ContactRequestIn` và
+   truyền xuống thay cho hằng `True`. Cơ chế đã có sẵn ở `contact.py`. Kèm nêu thời hạn lưu
+   thật (90 ngày sau khi khép hồ sơ) cho người báo thấy.
 9. **Xem lại §1.4 CLAUDE.md** về premium/featured listing dưới điều kiện "trả phí gián tiếp"
    (§2.2) — cần luật sư trước khi mở bất kỳ tính năng tự-quản-lý-trang nào.
 10. Trả nợ R20.8 (47) hoặc chấp nhận nhánh không merge được (§1.1).
