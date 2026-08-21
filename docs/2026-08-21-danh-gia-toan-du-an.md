@@ -392,21 +392,21 @@ giải được DNS lúc chạy, và bản PDF ký trên `datafiles.chinhphu.vn`
 
 ## 5. Việc nên làm, xếp theo tỉ lệ giá trị/công sức
 
-**Nhóm A — rẻ, giá trị cao, tôi làm được ngay**
+**Nhóm A — ĐÃ LÀM XONG 2026-08-21** (`2db15aec`, `ce20282d`, `e2d60952`)
 
-1. Che `claimant_phone` ở `admin.py:5567` (§3.2) — một dòng, có `_mask` sẵn.
-2. Thêm `kb_context.invalidate()` vào `_sync_kb()` (§3.1) — vá đường gỡ bỏ.
-3. Đảo thứ tự kiểm-trước-xoay-vòng ở `backup_db_daily.sh` (§3.4).
-4. Sửa `HANDOFF.md §5` cho khớp `deploy.sh` thật (§3.3) — chỉ sửa tài liệu.
-5. Sửa `developer-setup.md` (§3.6) — chỉ sửa tài liệu, **không** đụng compose.
-6. Sửa docstring `knowledge.py` (§4).
-7. Thêm bước xem-lại-trước-khi-gửi cho form báo lỗi → **đạt WCAG SC 3.3.4** (§2.6).
+1. ✅ Che `claimant_phone` ở `admin.py:5567` (§3.2) — một dòng, có `_mask` sẵn.
+2. ✅ Thêm `kb_context.invalidate()` vào `_sync_kb()` (§3.1) — vá đường gỡ bỏ.
+3. ✅ Đảo thứ tự kiểm-trước-xoay-vòng ở `backup_db_daily.sh` (§3.4).
+4. ✅ Sửa `HANDOFF.md §5` cho khớp `deploy.sh` thật (§3.3) — chỉ sửa tài liệu.
+5. ✅ Sửa `developer-setup.md` (§3.6) — chỉ sửa tài liệu, **không** đụng compose.
+6. ✅ Sửa docstring `knowledge.py` (§4).
+7. ✅ Thêm bước xem-lại-trước-khi-gửi cho form báo lỗi → **đạt WCAG SC 3.3.4** (§2.6).
 
 **Nhóm B — cần quyết định của chủ dự án**
 
 8. **Rà lại toàn bộ ghi chú pháp lý theo Luật 91/2025/QH15** (§2.1, §4b) — Track-H, cần
    luật sư. Mang theo §4b.1 (miễn trừ quy mô) để hỏi đúng câu: dự án thuộc nhóm nào.
-8b. **Mở đường rút lại đồng ý** (§4b.4): thêm `consent: bool` vào `_ContactRequestIn` và
+8b. ✅ **Mở đường rút lại đồng ý** — ĐÃ LÀM (`2db15aec`). (§4b.4): thêm `consent: bool` vào `_ContactRequestIn` và
    truyền xuống thay cho hằng `True`. Cơ chế đã có sẵn ở `contact.py`. Kèm nêu thời hạn lưu
    thật (90 ngày sau khi khép hồ sơ) cho người báo thấy.
 9. **Xem lại §1.4 CLAUDE.md** về premium/featured listing dưới điều kiện "trả phí gián tiếp"
