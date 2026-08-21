@@ -102,6 +102,18 @@ function validate(): boolean {
   return found.length === 0
 }
 
+// WCAG 2.2 SC 3.3.4 Error Prevention (Legal, Financial, Data), Level AA. It is
+// triggered here not because money changes hands but because this submission
+// modifies user-controllable data in a storage system. The criterion is
+// disjunctive — reversible, checked, or confirmed — and a review-and-confirm
+// step alone satisfies it. Claiming AA without one would be claiming wrongly.
+const reviewing = ref(false)
+
+function requestReview() {
+  if (!validate()) return
+  reviewing.value = true
+}
+
 function submit() {
   if (!validate()) return
   const payload: CorrectionItemInput[] = items.map(item => ({
@@ -233,11 +245,44 @@ function submit() {
       </label>
     </fieldset>
 
+    <section
+      v-if="reviewing"
+      class="intake-review"
+      role="group"
+      aria-labelledby="review-heading"
+      data-role="review-panel"
+    >
+      <h2 id="review-heading">Xem lại trước khi gửi</h2>
+      <ul class="intake-review-list">
+        <li v-for="(item, index) in items" :key="`review-${index}`">
+          <strong>{{ FIELD_CHOICES.find(f => f.path === item.fieldPath)?.label ?? item.fieldPath }}</strong>
+          <span data-role="review-reported">Hiện tại: {{ item.reportedValue.trim() || '—' }}</span>
+          <span data-role="review-proposed">Sửa thành: {{ item.proposedValue.trim() }}</span>
+        </li>
+      </ul>
+      <p v-if="optionalPhone.trim() && phoneConsent" data-role="review-phone">
+        Báo kết quả về số {{ optionalPhone.trim() }} — và chỉ việc đó.
+      </p>
+      <p v-else data-role="review-no-phone">Không để lại số điện thoại.</p>
+      <button type="button" data-role="review-back" @click="reviewing = false">
+        Quay lại sửa
+      </button>
+    </section>
+
     <!-- A stable action region: the submit button never moves as sections
          reveal, so a thumb mid-reach is never betrayed by a reflow. -->
     <div class="intake-actions">
-      <button type="submit" :disabled="busy" data-role="submit">
-        {{ busy ? 'Đang gửi…' : 'Gửi yêu cầu sửa' }}
+      <button
+        v-if="!reviewing"
+        type="button"
+        :disabled="busy"
+        data-role="review"
+        @click="requestReview"
+      >
+        Xem lại trước khi gửi
+      </button>
+      <button v-else type="submit" :disabled="busy" data-role="submit">
+        {{ busy ? 'Đang gửi…' : 'Xác nhận gửi yêu cầu' }}
       </button>
       <p class="intake-promise-note">
         Sau khi gửi, bạn nhận mã tra cứu và mốc cập nhật kế tiếp.

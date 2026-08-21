@@ -380,3 +380,53 @@ describe('a promise the site has missed', () => {
     expect(timeline.find('[data-role="promise-note"]').exists()).toBe(false)
   })
 })
+
+describe('review before submit (WCAG 2.2 SC 3.3.4)', () => {
+  function filled() {
+    const form = mount(CorrectionIntakeForm, {
+      props: { entityId: 'p-quan-com', entityName: 'Quán Cơm Bà Tư', baseEntityRevision: 7 },
+    })
+    return form
+  }
+
+  it('does not submit straight from the form', async () => {
+    const form = filled()
+
+    // SC 3.3.4 is Level AA and is triggered by this submission because it
+    // modifies user-controllable data in a storage system — not because money
+    // is involved. Claiming AA without one of reversible/checked/confirmed
+    // would be claiming wrongly.
+    expect(form.find('[data-role="review"]').exists()).toBe(true)
+    expect(form.find('[data-role="submit"]').exists()).toBe(false)
+  })
+
+  it('shows what will be sent, and lets the reporter go back and change it', async () => {
+    const form = filled()
+    await form.get('#item-0-field').setValue('attributes.phone')
+    await form.get('#item-0-reported').setValue('0270 111 2222')
+    await form.get('#item-0-proposed').setValue('0270 333 4444')
+
+    await form.get('[data-role="review"]').trigger('click')
+
+    const panel = form.get('[data-role="review-panel"]')
+    expect(panel.text()).toContain('Số điện thoại')
+    expect(panel.get('[data-role="review-proposed"]').text()).toContain('0270 333 4444')
+    // Confirmed, not merely warned: the submit button only exists here.
+    expect(form.find('[data-role="submit"]').exists()).toBe(true)
+
+    await form.get('[data-role="review-back"]').trigger('click')
+    expect(form.find('[data-role="review-panel"]').exists()).toBe(false)
+    expect(form.find('[data-role="submit"]').exists()).toBe(false)
+  })
+
+  it('says plainly when no phone was left', async () => {
+    const form = filled()
+    await form.get('#item-0-field').setValue('attributes.phone')
+    await form.get('#item-0-reported').setValue('a')
+    await form.get('#item-0-proposed').setValue('b')
+
+    await form.get('[data-role="review"]').trigger('click')
+
+    expect(form.get('[data-role="review-no-phone"]').text()).toContain('Không để lại số')
+  })
+})
