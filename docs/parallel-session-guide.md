@@ -309,7 +309,7 @@ SAU KHI XONG: DỪNG.
 ## Phạm vi file (TUYỆT ĐỐI)
 
 ĐƯỢC sửa: scripts/*.py (trừ deploy.sh), tests/test_*.py,
-          web/data.json, web/data.js,
+          web/data.json,
           web-nuxt/public/data/**, docs/** (reports, guides)
 KHÔNG ĐƯỢC sửa: agent/**, web-nuxt/{components,pages,composables}/**,
                 CLAUDE.md, .env.example, docker-compose.yml, .gitignore

@@ -41,12 +41,13 @@ def test_remote_docker_host_is_rejected_before_cli_calls(monkeypatch: pytest.Mon
 
 
 def test_head_snapshot_parser_allows_rename_and_copy_targets():
-    # Vế C dùng hai path sinh-ra-lúc-build trong ALLOWED_DIRTY_PATHS. Trước đây nó
-    # dùng "web/data.js"; file đó đã gỡ (2026-08-22) và rút khỏi allowlist, nên
-    # fixture phải đổi — bản thân test không nói gì về data.js, nó soi parser.
+    # Thứ tự trường của `git status --porcelain=v1 -z` cho R/C là
+    # `XY <đường-dẫn-MỚI>NUL<đường-dẫn-CŨ>NUL` — đo bằng git thật, không suy đoán.
+    # Vế C dùng hai path sinh-ra-lúc-build trong ALLOWED_DIRTY_PATHS; trước đây nó
+    # dùng "web/data.js", file đó đã gỡ (2026-08-22) và rút khỏi allowlist.
     harness.assert_head_snapshot_safe(
-        "R  tests/launch_safety/integration/old.py\0"
-        "tests/launch_safety/integration/new.py\0"
+        "R  tests/launch_safety/integration/new.py\0"
+        "tests/launch_safety/integration/old.py\0"
         "C  web-nuxt/pnpm-workspace.yaml\0"
         "web-nuxt/pnpm-lock.yaml\0"
     )

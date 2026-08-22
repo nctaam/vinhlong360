@@ -320,7 +320,7 @@ Quét toàn worktree (bỏ `.git`, `.nuxt`, `node_modules`, `__pycache__`, `data
 
 | File | Số lần |
 |---|---:|
-| `web/data.js` | 4413 |
+| ~~`web/data.js`~~ | ~~4413~~ — file đã gỡ 2026-08-22 (`8afdbfb0`) |
 | `docs/data-verification-web-log.csv` | 188 |
 | `docs/data-verification-claims.csv` | 169 |
 | `docs/data-verification-sources.csv` | 142 |
@@ -336,7 +336,10 @@ Quét toàn worktree (bỏ `.git`, `.nuxt`, `node_modules`, `__pycache__`, `data
 
 Đáng lưu ý:
 
-- **`web/data.js` (5,4 MB, ĐANG ĐƯỢC GIT THEO DÕI)** là **bản sao thứ hai của toàn bộ roster**, chạm lần cuối ở commit `6c8c95c4`. Không có cơ chế nào bảo đảm nó được sinh lại cùng lúc với `data.json` → đổi slug mà quên file này thì nó thành **nguồn cũ âm thầm**.
+- ~~**`web/data.js` (5,4 MB, ĐANG ĐƯỢC GIT THEO DÕI)** là bản sao thứ hai của toàn bộ roster.~~
+  **RỦI RO NÀY ĐÃ MẤT** (2026-08-22, `8afdbfb0`): file đã gỡ, nên không còn bản sao thứ hai
+  nào để quên đồng bộ khi đổi slug. Giữ đoạn gạch ngang để người đọc bản cũ hiểu vì sao
+  cảnh báo này từng tồn tại.
 - **`agent/auto_learn.py` (38) và `agent/crawler.py` (26) là code chạy thật**, không phải dữ liệu — id ghi cứng ở đó sẽ **âm thầm sai** sau khi đổi slug, không có test nào bắt được nếu chỉ đổi dữ liệu.
 
 ### 6.4 Chỗ báo cáo này CHƯA đo được

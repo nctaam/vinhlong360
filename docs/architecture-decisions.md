@@ -9,7 +9,7 @@ Status: Accepted — reflects decisions through 2026-07-07
 
 1. The **only** frontend is `web-nuxt` (Nuxt 4 SSR).
    - `web-astro` has been removed (commit 949c843).
-   - `web/` retains only `data.json` (tracked export/backup + prerender seed — **KEEP**, see decision 4), `data.js` (legacy export), and an empty `media/`. The `admin*.html` admin UI was removed in GĐ6.1 (replaced by `web-nuxt/pages/admin/`). Only `data.js` and `media/` remain removal candidates — `data.json` is NOT.
+   - `web/` retains only `data.json` (tracked export/backup + prerender seed — **KEEP**, see decision 4) and an empty `media/`. The `admin*.html` admin UI was removed in GĐ6.1 (replaced by `web-nuxt/pages/admin/`); `data.js` was removed on 2026-08-22 (`8afdbfb0`) once its only named consumer, `web/index.html`, turned out to be long gone. Only `media/` remains a removal candidate — `data.json` is NOT.
 
 2. The primary backend is the FastAPI application in `agent`.
    - New public API behavior should be implemented behind explicit routers/services.
@@ -26,7 +26,7 @@ Status: Accepted — reflects decisions through 2026-07-07
 4. **Database is the source of truth** (DB-as-SoT, finalized GĐ3).
    - `web/data.json` is an **export** from the database, not the source. It serves as a tracked seed for rebuilding SQLite dev cache and as a prerender data source.
    - Admin CRUD writes to DB → `knowledge.reload()` → in-memory graph updated (split-brain eliminated).
-   - `web/data.js` (`window.__DATA__`) is a legacy format kept for backward compatibility.
+   - `web/data.js` (`window.__DATA__`) was a legacy export regenerated hourly from `data.json`. Removed 2026-08-22 (`8afdbfb0`): nothing read it once `web/index.html` was gone.
 
 5. The canonical entity coordinate field is `coordinates`.
    - Existing `coords` values may remain temporarily for legacy compatibility.
@@ -110,7 +110,7 @@ Redis
 ## Non-goals (updated)
 
 - ~~Rewrite the whole backend.~~ Stable; incremental improvement only.
-- ~~Delete the static frontend immediately.~~ `web-astro` and `web/` legacy JS/HTML/admin pages removed; only the `data.json` export + `data.js` remain.
+- ~~Delete the static frontend immediately.~~ `web-astro` and `web/` legacy JS/HTML/admin pages removed; `data.js` followed on 2026-08-22 (`8afdbfb0`). Only the `data.json` export remains.
 - ~~Delete SQLite immediately.~~ SQLite kept as dev cache; UGC is Postgres-only.
 - Deploy to a public production environment without an explicit release step.
 - Rotate secrets automatically from code.

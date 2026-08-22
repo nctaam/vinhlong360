@@ -4,7 +4,7 @@ vinhlong360 — Knowledge Agent Server (v3 — Production).
 FastAPI server cung cấp:
   POST /chat          — chat endpoint (JSON) + rate limiting
   POST /chat/stream   — SSE streaming chat + rate limiting
-  POST /reload        — hot-reload data + cache invalidation + data sync
+  POST /reload        — hot-reload data + cache invalidation + rebuild index
   GET  /health        — health check + cache stats + response times
   GET  /              — trang chat
   /admin/*            — Admin API (CRUD, review, analytics, trigger-learn)
@@ -3969,7 +3969,7 @@ async def reload_data(request: Request):
         return _error_response(403, "Cần X-Admin-Key hoặc phiên admin")
 
     def _reload_blocking():
-        # GĐ11.4: toàn bộ phần nặng (reload DB + rebuild index + sync) chạy trong thread
+        # GĐ11.4: toàn bộ phần nặng (reload DB + rebuild index) chạy trong thread
         # → event loop không bị đóng băng (/health vẫn đáp ứng trong lúc reload).
         result = knowledge.reload()
         cache.invalidate_all()

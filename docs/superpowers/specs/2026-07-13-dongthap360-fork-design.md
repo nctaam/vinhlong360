@@ -89,7 +89,7 @@ Slug vùng không chỉ là dữ liệu; nó còn là **CSS class**, **key Recor
 
 DB **không nằm trong git** ⇒ bản fork không mang DB, chỉ mang schema + migrations.
 
-- **XOÁ khỏi fork:** `web/data.json` → `{"entities":[],"relationships":[],"itineraries":[]}`; regen `web/data.js`; xoá `agent/crawled/` (50 file), `web-nuxt/public/img/entities/` (60 ảnh), `img/area-*.webp`, `img/spread/`, `web-nuxt/public/data/areas.json`; dọn artifact local (`agent/data/*.db`, `geocode_cache.json`, `discovery_cursor.json`).
+- **XOÁ khỏi fork:** `web/data.json` → `{"entities":[],"relationships":[],"itineraries":[]}` (KHÔNG còn bước regen `web/data.js` — file đó đã gỡ 2026-08-22, `8afdbfb0`); xoá `agent/crawled/` (50 file), `web-nuxt/public/img/entities/` (60 ảnh), `img/area-*.webp`, `img/spread/`, `web-nuxt/public/data/areas.json`; dọn artifact local (`agent/data/*.db`, `geocode_cache.json`, `discovery_cursor.json`).
 - **GIỮ + tham số hoá:** `init.sql` + 69 migrations (province-agnostic sẵn); pipeline nạp; `seed_site_settings.py` (generate từ config).
 - **Nới landmine giả định 124 xã/phường:** `scripts/validate_data.py` (`EXPECTED_XA_PHUONG=124`), `tests/test_validate_data.py` (test roster-124 + id cứng), comment `database.py:1492`, bbox null-hoá toạ độ (`database.py:103`, `geocode.py`), gate `PG_REQUIRED_SCHEMA_VERSION`.
 - **Quy trình nạp dữ liệu tỉnh mới (SP2):** `apply_migrations.py --init-baseline` → `seed_site_settings.py` → `discover_province.py --apply` (LLM liệt kê → lọc `neighbors` → dedup → geocode OSM → DB) → `export_data.py` → `export_fe_data.py` → `gen_entity_images.py` (ảnh AI) → build FE.

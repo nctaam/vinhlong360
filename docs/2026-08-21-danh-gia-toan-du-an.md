@@ -462,8 +462,17 @@ giải được DNS lúc chạy, và bản PDF ký trên `datafiles.chinhphu.vn`
     - `--sync` trong `scheduler.py` **giữ lại làm no-op có lời giải thích** thay vì xoá hẳn,
       để lệnh cũ trong tay người vận hành nhận được một câu trả lời chứ không phải lỗi argparse.
 
-    Còn lại **cố ý** vài chỗ nhắc tên `data.js`: chúng là ghi chú lịch sử ("từng sinh ra file
-    này") và các test khẳng định file **không** còn — xoá chữ đi thì mất luôn lời giải thích.
+    **Đính chính (2026-08-22, sau một vòng quét lại):** câu trước đó của tôi ở đây — rằng mọi
+    chỗ còn nhắc `data.js` đều là ghi chú lịch sử — **SAI**. Một đợt quét trọn `docs/` tìm thấy
+    **8 chỗ trong tài liệu đang ACTIVE** vẫn nói file phải giữ hoặc phải regen:
+    `architecture-decisions.md` (3 chỗ, gồm câu "kept for backward compatibility"),
+    `ROADMAP.md` (2), `dongthap360-fork-design.md` (bước "regen `web/data.js`" nay không còn
+    đường sinh), `doi-chieu-ma-hanh-chinh.md` (2). Đã vá cả 8 cùng ngày.
+
+    Sau khi vá, phần CÒN LẠI mới đúng là cố ý: ghi chú lịch sử ("từng sinh ra file này"),
+    bản ghi phiên đã đóng (`> STATUS: complete`), `docs/archive/` (theo CLAUDE.md §3.1 là lịch
+    sử, không làm theo), và các test khẳng định file **không** còn — xoá chữ đi thì mất luôn
+    lời giải thích.
 
 **Nhóm C — đã ghi nhận, chưa cần làm ngay**
 
