@@ -7,6 +7,19 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
+# Đầu chuỗi migration bị GHIM ở nhiều chỗ — đó là chủ ý (CLAUDE.md B4: một thay
+# đổi schema = một test), để không ai thêm migration mà không có người nhìn.
+# Nhưng tripwire chỉ có tác dụng nếu nó nói ra phải làm gì: 080 và 081 vào repo
+# rồi nằm đỏ suốt hai migration, và bị gộp vào rọ "fail đã biết" thay vì được sửa.
+# THÊM MIGRATION MỚI = cập nhật ĐỦ NĂM chỗ:
+#   1. agent/database.py                   PG_REQUIRED_SCHEMA_VERSION
+#   2. tests/test_check_migration_gate.py  LATEST_MIGRATION + dict tên ở cursor giả
+#   3. tests/test_release_quality_gates.py LATEST_MIGRATION / LATEST_SCHEMA_VERSION
+#   4. tests/test_release_quality_gates.py bản kê chuỗi sau LEGACY_BASELINE
+#   5. tests/test_release_quality_gates.py token PG_REQUIRED_SCHEMA_VERSION
+LATEST_MIGRATION = "081_change_set_lifecycle.sql"
+LATEST_SCHEMA_VERSION = 81
+
 
 def load_script(name: str):
     path = ROOT / "scripts" / f"{name}.py"
@@ -25,8 +38,8 @@ def test_migration_gate_static_contracts_pass_current_repo():
     errors = [issue for issue in issues if issue.severity == "error"]
 
     assert errors == []
-    assert stats["latest"] == "079_user_plans_revision.sql"
-    assert stats["latest_schema_version"] == 79
+    assert stats["latest"] == LATEST_MIGRATION
+    assert stats["latest_schema_version"] == LATEST_SCHEMA_VERSION
 
 def test_shared_rate_limit_and_idempotency_contracts_exist():
     migration = (ROOT / "agent" / "migrations" / "056_shared_rate_idempotency.sql").read_text(encoding="utf-8")
@@ -210,7 +223,7 @@ def test_perf_quality_trend_migration_contracts_exist():
     ):
         assert token in migration
     assert "quality_metric_snapshots" in init_sql
-    assert "PG_REQUIRED_SCHEMA_VERSION = 79" in database
+    assert f"PG_REQUIRED_SCHEMA_VERSION = {LATEST_SCHEMA_VERSION}" in database
 
 def test_itinerary_areas_schema_migration_contracts_exist():
     migration = (ROOT / "agent" / "migrations" / "058_itinerary_areas_schema.sql").read_text(encoding="utf-8")
@@ -269,7 +282,7 @@ def test_apply_migrations_runner_uses_legacy_baseline_and_latest_plan():
     pending_after_legacy_baseline = [m.path.name for m in migrations if m.version > runner.LEGACY_BASELINE_VERSION]
 
     assert runner.LEGACY_BASELINE_VERSION == 52
-    assert migrations[-1].path.name == "079_user_plans_revision.sql"
+    assert migrations[-1].path.name == LATEST_MIGRATION
     assert pending_after_legacy_baseline == [
         "053_saved_kind_superadmin.sql",
         "054_admin_audit_events.sql",
@@ -298,6 +311,8 @@ def test_apply_migrations_runner_uses_legacy_baseline_and_latest_plan():
         "077_personalization_legacy_purge_queue.sql",
         "078_location_preference_remediation.sql",
         "079_user_plans_revision.sql",
+        "080_correction_case_kernel.sql",
+        "081_change_set_lifecycle.sql",
     ]
 
 def test_chrome_smoke_redacts_sensitive_urls():

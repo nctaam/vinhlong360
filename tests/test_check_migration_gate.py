@@ -14,6 +14,19 @@ ROOT = Path(__file__).resolve().parents[1]
 CHECKER = ROOT / "scripts" / "check_migration_gate.py"
 MIGRATIONS = ROOT / "agent" / "migrations"
 
+# Đầu chuỗi migration bị GHIM ở nhiều chỗ — đó là chủ ý (CLAUDE.md B4: một thay
+# đổi schema = một test), để không ai thêm migration mà không có người nhìn.
+# Nhưng tripwire chỉ có tác dụng nếu nó nói ra phải làm gì: 080 và 081 vào repo
+# rồi nằm đỏ suốt hai migration, và bị gộp vào rọ "fail đã biết" thay vì được sửa.
+# THÊM MIGRATION MỚI = cập nhật ĐỦ NĂM chỗ:
+#   1. agent/database.py                   PG_REQUIRED_SCHEMA_VERSION
+#   2. tests/test_check_migration_gate.py  LATEST_MIGRATION + dict tên ở cursor giả
+#   3. tests/test_release_quality_gates.py LATEST_MIGRATION / LATEST_SCHEMA_VERSION
+#   4. tests/test_release_quality_gates.py bản kê chuỗi sau LEGACY_BASELINE
+#   5. tests/test_release_quality_gates.py token PG_REQUIRED_SCHEMA_VERSION
+LATEST_MIGRATION = "081_change_set_lifecycle.sql"
+LATEST_SCHEMA_VERSION = 81
+
 
 def _complexity(node: ast.AST) -> int:
     score = 1
@@ -151,6 +164,8 @@ class _FakeCursor:
                 77: "077_personalization_legacy_purge_queue.sql",
                 78: "078_location_preference_remediation.sql",
                 79: "079_user_plans_revision.sql",
+                80: "080_correction_case_kernel.sql",
+                81: "081_change_set_lifecycle.sql",
             }.get(self.observed_version, f"{self.observed_version:03d}_observed.sql")
             return (
                 self.observed_version,
@@ -225,9 +240,9 @@ def test_db_gate_requires_the_latest_version_from_the_supplied_migration_chain(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    assert (
-        sorted(MIGRATIONS.glob("*.sql"))[-1].name
-        == "079_user_plans_revision.sql"
+    assert sorted(MIGRATIONS.glob("*.sql"))[-1].name == LATEST_MIGRATION, (
+        "chuỗi migration trong repo đã đi trước hằng ghim ở đây — xem ghi chú "
+        "LATEST_MIGRATION ở đầu file để biết phải cập nhật những chỗ nào"
     )
 
     status, output, statements, sessions = _run_gate(
@@ -237,7 +252,7 @@ def test_db_gate_requires_the_latest_version_from_the_supplied_migration_chain(
     )
 
     assert status == 1
-    assert "79" in output
+    assert str(LATEST_SCHEMA_VERSION) in output
     assert any("schema_version" in sql.lower() for sql, _params in statements)
     assert sessions == [(True, True)]
 
@@ -249,7 +264,7 @@ def test_db_gate_accepts_the_exact_latest_version_from_the_supplied_chain(
     status, output, _statements, _sessions = _run_gate(
         monkeypatch,
         capsys,
-        observed_version=79,
+        observed_version=LATEST_SCHEMA_VERSION,
     )
 
     assert status == 0, output
