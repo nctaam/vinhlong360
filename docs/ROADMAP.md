@@ -499,3 +499,39 @@ Thứ tự cũ → mới. Không commit nào chạm prod; không commit nào ghi
 - **[P0/Pháp lý] Vòng xác thực số điện thoại KHÔNG khép lại được qua sản phẩm — cả hai nửa đều thiếu chỗ dùng.** Nút "Gửi mã xác nhận số điện thoại" (`web-nuxt/components/cases/CorrectionIntakeForm.vue:230-237`) nằm trên form intake, tức TRƯỚC khi hồ sơ tồn tại; `_guard_session_mutation` (`agent/cases/public_api.py:144`) trả **401** khi chưa có cookie `vl360_case_access`, và `verifyPhone` ở `pages/yeu-cau/sua-thong-tin.vue:67-72` **nuốt lỗi im lặng** (`catch { }`) nên người dùng không thấy gì. Nửa còn lại còn tệ hơn: `verifyContact(code)` có trong `composables/useCorrectionCases.ts:193` nhưng **KHÔNG component nào gọi** — không có ô nhập mã. Hệ quả pháp lý: số điện thoại được thu cho một mục đích ("báo kết quả") mà sản phẩm **không thể phục vụ**. Chỗ đúng cho vòng này là `CaseReceiptCard.vue` (hiện sau khi gửi, lúc đó đã có cookie). **Không tự dựng vì đây là làm tính năng, không phải sửa lỗi (CLAUDE.md §3.5).** Phơi nhiễm thực tế = 0: cờ tắt, chưa người dùng thật.
 - **[P0/Pháp lý] Tác vụ xoá tài khoản chạy chế độ CHỈ-ĐẾM theo mặc định.** `_effective_erasure_audit_only()` (`agent/scheduler.py:137`) trả True trừ khi **cả hai** cờ mở, và `agent/config.py:85` đặt `ERASURE_AUDIT_ONLY: bool = True`. `erase_due_accounts` có mã xoá thật và CÓ đăng ký trong TASKS, nhưng nhánh `if audit_only:` (`agent/erasure.py:394`) trả về trước khi xoá. Chính sách hứa **30 ngày**. Mặc-định-an-toàn cho một thao tác không hoàn tác được là lựa chọn kỹ thuật hợp lý — nhưng nếu prod chạy mặc định thì lời hứa không được giữ. **Bật cờ = thao tác phá huỷ trên prod, thuộc chủ dự án (CLAUDE.md §4/B7).** Cần chủ dự án xác nhận cấu hình prod thật.
 - **[P1/Pháp lý] "Rút lại đồng ý" hiện nghĩa là ngưng nhắn tin, KHÔNG phải ngưng giữ số.** `agent/cases/contact.py:123-128`: nhánh `consent=False` xoá `case_contact_challenges` rồi return ngay, **không đụng** `case_interactions.payload_enc` — nơi số thật nằm. Đường xoá số có tồn tại (`redact_closed_case_contacts`, `agent/cases/store.py:1050`) nhưng chạy theo **đồng hồ lưu trữ 90 ngày**, không theo **hành động rút lại**. Hai thứ khác nhau về mặt luật. Đã đưa thành câu hỏi 4 và 5 trong `docs/2026-08-22-cau-hoi-cho-luat-su.md` §2. Chờ luật sư trả lời trước khi chọn cách làm.
+
+## Fail-đã-biết — danh sách chuẩn (đo 2026-08-22 trên `codex/correction-case-pilot`)
+
+> CLAUDE.md §3.4 bảo mỗi phiên phải đối chiếu "danh sách fail-đã-biết", nhưng danh
+> sách đó **chưa từng tồn tại ở đâu**. Thiếu nó thì "21 fail đã biết" là một con số
+> truyền miệng, và đúng chuyện đó đã xảy ra: 5 fail cổng migration nằm trong rọ suốt
+> hai migration mà không ai ghi nhận (vá ở `8f5d5a23`). Danh sách phải sống ở đây.
+>
+> **Baseline hiện tại: 16 fail.** Lệnh đo (Windows, cần container PG cho nhóm case):
+> ```
+> # temp-root phải NGẮN (MAX_PATH) và ghi được; đặt bằng đường dẫn tuyệt đối của bạn
+> $env:PYTEST_DEBUG_TEMPROOT='<temp-root-ngan>'
+> $env:VL360_TEST_DATABASE_URL='postgresql://vl360:vl360@127.0.0.1:5433/<db-test>'
+> python -m pytest -q --tb=no
+> ```
+> Xuất hiện fail NGOÀI danh sách này = hồi quy thật, DỪNG và báo người (§3.3).
+
+**(W) — 12 test hỏng vì đặc quyền/ngữ nghĩa Windows, kỳ vọng xanh trên Linux CI.**
+`ci.yml` chạy `python -m pytest tests/ agent/tests/ -m "not slow"` nên nhóm này CÓ
+chạy trên Linux — giả định "sẽ xanh" là kiểm được, không phải suy đoán:
+
+- `tests/launch_safety/test_artifact_packaging.py` — `test_backend_archive_excludes_private_runtime_and_unsafe_symlinks`, `test_candidate_scanner_rejects_alias_symlink_and_non_file`
+- `tests/launch_safety/test_nginx_contract.py` — `test_render_file_ignores_preexisting_fixed_temp_symlink`, `test_render_file_rechecks_destination_symlink_before_replace_retry`, `test_render_file_rejects_destination_symlink_without_touching_victim`, `test_render_file_rejects_source_symlink`
+- `tests/launch_safety/test_rollback_runbook.py::test_local_rehearsal_failure_injection_preserves_status_and_records_recovery`
+- `tests/launch_safety/test_systemd_contract.py::test_probe_rejects_final_symlink_without_touching_victim`
+- `tests/test_secure_stage_b_artifacts.py` — 4 test ACL/normalize (`..._trailing_root_separator...`, `..._safe_inheritance...`, `..._nested_protected_parent`, `..._before_strict_acl_fails_without_evidence[NormalizeAndVerify]`)
+
+**(S) — 4 test kỳ vọng lệch, KHÔNG phải sản phẩm hỏng:**
+
+- `agent/tests/test_phase16_coverage.py::TestPhase17SecurityChecks::test_esms_uses_https` và `agent/tests/test_session_be.py::TestPhase12DependencySecurity::test_esms_uses_https` — cùng một assertion về endpoint eSMS.
+- `agent/tests/test_case_policy.py::test_valid_nonproduction_case_activation_has_structural_credentials`
+- `tests/test_api_surface_contract.py::test_write_routes_under_api_require_an_auth_guard` — **có chủ đích một nửa:** các route đính chính công khai CỐ Ý mở cho khách không tài khoản (người dân báo sai sót). Test chưa biết ngoại lệ đó. Cần khai vào `PUBLIC_WRITE_ALLOWLIST` kèm lý do, HOẶC chấp nhận có ghi chú — chưa ai quyết.
+
+**(P) — lỗi sản phẩm thật: 0.** Đợt quét 2026-08-22 rà từng test một; không cái nào
+che một defect sản phẩm. 5 test cổng migration từng nằm trong nhóm (S) đã vá, không
+phải nới assertion mà đưa hằng ghim về đúng đầu chuỗi (081/81).
