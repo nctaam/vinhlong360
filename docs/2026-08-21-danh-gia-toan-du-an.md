@@ -411,14 +411,48 @@ giải được DNS lúc chạy, và bản PDF ký trên `datafiles.chinhphu.vn`
    thật (90 ngày sau khi khép hồ sơ) cho người báo thấy.
 9. **Xem lại §1.4 CLAUDE.md** về premium/featured listing dưới điều kiện "trả phí gián tiếp"
    (§2.2) — cần luật sư trước khi mở bất kỳ tính năng tự-quản-lý-trang nào.
-10. Trả nợ R20.8 hoặc chấp nhận nhánh không merge được (§1.1). **Cập nhật:** phần nợ do
+10. **Trả nợ R20.8 hoặc ghi nhận chấp nhận (§1.1) — số liệu đã đo, 2026-08-22.**
+    Mốc gốc backend = **250**, nợ hiện tại = **48**. Điểm = 100 × (1 − nợ/gốc), nên:
+
+    | Muốn đạt | Nợ phải xuống |
+    |---|---|
+    | 99 (mức lịch sử, tức hết tụt điểm) | **≤ 2** |
+    | 95 (đích chương trình) | ≤ 12 |
+    | 90 (sàn world-class) | ≤ 25 |
+
+    `pre_merge_check` chặn khi **tụt so với entry gần nhất (99)**, nên để qua cổng bằng cách
+    trả nợ thì phải xoá **46/48** vi phạm — gồm `chat_stream()` 142, `select_and_schedule_day()`
+    126, `chat()` 125, `_event_stream_body()` 94. Đó là viết lại lõi chat và lõi lịch trình.
+    **Không phải việc chèn vào cuối một phiên.**
+
+    Hai đường đi trung thực: (a) xếp lịch một dự án trả nợ có phạm vi, hoặc (b) chủ dự án
+    **ghi nhận chấp nhận** — chạy `python scripts/scorecard.py` (có ghi history) *một cách có
+    chủ đích*, kèm giải trình ở `docs/standards/90-exceptions-log.md`. Tôi **không** tự làm (b):
+    đó là hạ thanh chất lượng của dự án, thuộc quyền chủ dự án.
+
+    **Cập nhật:** phần nợ do
     phiên này tạo ra đã trả (`6c63a3f7` — `dispatch_case_outbox` 15 → dưới ngưỡng, outbox.py
     còn 0 vi phạm). Nợ còn **47**, và những cái to nhất là `chat_stream()` 142, `chat()` 125,
     `select_and_schedule_day()` 126, `_event_stream_body()` 94 — mã lõi lâu đời, mỏng test.
     Tôi **cố ý không đụng**: sửa chúng để dời một số nguyên trên scorecard là tối ưu chỉ số
     bằng rủi ro sản phẩm. Đây là một dự án có phạm vi mà chủ dự án xếp lịch, hoặc một quyết
     định chấp nhận có ghi lý do.
-11. `web/data.js`: giữ hay bỏ (§4) — bỏ thì gọn 5,43 MB và một suite test.
+11. **`web/data.js`: giữ hay bỏ (§4).** Đã điều tra xong 2026-08-22 — bằng chứng đầy đủ:
+    - `web/index.html`, consumer duy nhất được nêu tên, **không còn tồn tại** (`web/` không có
+      file `.html` nào).
+    - `agent/scheduler.py:98` vẫn sinh lại file **5,43 MB** này mỗi lần khởi động và mỗi giờ.
+    - `scripts/validate_data.py:1341` vẫn **kiểm** nó, theo hợp đồng với chính `index.html` đã
+      xoá — thông điệp lỗi ghi nguyên văn *"web/index.html loads it as a plain script"*.
+    - `agent/tests/test_scheduler_repo_isolation.py` có 10 tham chiếu, tồn tại để canh cho tác
+      vụ nền khỏi giẫm lên file tracked này.
+
+    Tức **ba nơi bảo trì một file không ai đọc**. Gỡ thì bớt 5,43 MB khỏi git, một tác vụ nền
+    chạy mỗi giờ, một nhánh validator, và phần lớn một suite test.
+
+    **Tôi không tự gỡ**: xoá file/dữ liệu được git theo dõi mà không có chỉ đạo rõ là điều kiện
+    dừng theo CLAUDE.md §4. Khi chủ dự án quyết, các bước là: xoá `sync_data_json_to_js` +
+    đăng ký task trong `scheduler.py`, gỡ nhánh `data_js_*` trong `validate_data.py`, rút
+    `test_scheduler_repo_isolation.py` về phần còn ý nghĩa, rồi `git rm web/data.js`.
 
 **Nhóm C — đã ghi nhận, chưa cần làm ngay**
 
