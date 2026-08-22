@@ -286,11 +286,12 @@ def _persist_to_db(unique, data):
         logger.warning("ghi DB that bai: %s", exc)
 
 
-def _sync_and_reload():
+def _reload_knowledge_index():
     """Reload the knowledge index after writing data.json.
 
-    Used to also regenerate web/data.js; that export was removed once its only
-    consumer, web/index.html, turned out to be long gone.
+    Used to also regenerate a JS export before reloading; that export was removed
+    on 2026-08-22 (8afdbfb0) once its only consumer, web/index.html, turned out to
+    be long gone. The old name still promised the sync half, so it went too.
     """
     try:
         import knowledge
@@ -321,7 +322,7 @@ def _apply_discovery(unique, data, places, model, label, summary):
     added, current = mutate_json(DATA, append_current)
     summary["added"] = len(added)
     _persist_to_db(added, current)
-    _sync_and_reload()
+    _reload_knowledge_index()
     return summary
 
 

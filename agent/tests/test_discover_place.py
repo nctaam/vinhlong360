@@ -65,7 +65,7 @@ def test_apply_discovery_preserves_concurrent_fields(tmp_path, monkeypatch):
             if entity["id"] in {item["id"] for item in unique}
         ),
     )
-    monkeypatch.setattr(discover_province, "_sync_and_reload", lambda: None)
+    monkeypatch.setattr(discover_province, "_reload_knowledge_index", lambda: None)
 
     summary = discover_province._apply_discovery(
         [{"id": "new-place", "name": "New Place", "type": "attraction",

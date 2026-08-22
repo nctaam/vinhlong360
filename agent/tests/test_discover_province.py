@@ -1,5 +1,5 @@
 """
-Test discover_province._sync_and_reload — nạp lại chỉ mục sau khi ghi provisional.
+Test discover_province._reload_knowledge_index — nạp lại chỉ mục sau khi ghi provisional.
 
 Hàm này từng gọi `scheduler.sync_data_json_to_js()` TRƯỚC `knowledge.reload()`.
 Bản sinh `web/data.js` đã được gỡ (2026-08-22, không còn ai đọc), nên coupling đó
@@ -13,7 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import discover_province
-from discover_province import _sync_and_reload
+from discover_province import _reload_knowledge_index
 
 
 class _FakeKnowledge:
@@ -28,7 +28,7 @@ class _ExplodingScheduler:
     """Mọi truy cập thuộc tính đều nổ — đứng thế chỗ module scheduler."""
 
     def __getattr__(self, name):
-        raise AssertionError(f"_sync_and_reload khong duoc cham scheduler.{name}")
+        raise AssertionError(f"_reload_knowledge_index khong duoc cham scheduler.{name}")
 
 
 def test_reload_chay_du_scheduler_co_no_hay_khong(monkeypatch):
@@ -37,7 +37,7 @@ def test_reload_chay_du_scheduler_co_no_hay_khong(monkeypatch):
     monkeypatch.setitem(sys.modules, "knowledge", fake)
     monkeypatch.setitem(sys.modules, "scheduler", _ExplodingScheduler())
 
-    _sync_and_reload()
+    _reload_knowledge_index()
 
     assert fake.reload_calls == 1
 
@@ -51,7 +51,7 @@ def test_loi_khi_reload_khong_lan_ra_ngoai(monkeypatch):
 
     monkeypatch.setitem(sys.modules, "knowledge", _Broken())
 
-    _sync_and_reload()  # không được ném
+    _reload_knowledge_index()  # không được ném
 
 
 def test_module_khong_con_tham_chieu_bo_sinh_data_js():
