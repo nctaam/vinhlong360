@@ -411,12 +411,21 @@ giải được DNS lúc chạy, và bản PDF ký trên `datafiles.chinhphu.vn`
    thật (90 ngày sau khi khép hồ sơ) cho người báo thấy.
 9. **Xem lại §1.4 CLAUDE.md** về premium/featured listing dưới điều kiện "trả phí gián tiếp"
    (§2.2) — cần luật sư trước khi mở bất kỳ tính năng tự-quản-lý-trang nào.
-10. Trả nợ R20.8 (47) hoặc chấp nhận nhánh không merge được (§1.1).
+10. Trả nợ R20.8 hoặc chấp nhận nhánh không merge được (§1.1). **Cập nhật:** phần nợ do
+    phiên này tạo ra đã trả (`6c63a3f7` — `dispatch_case_outbox` 15 → dưới ngưỡng, outbox.py
+    còn 0 vi phạm). Nợ còn **47**, và những cái to nhất là `chat_stream()` 142, `chat()` 125,
+    `select_and_schedule_day()` 126, `_event_stream_body()` 94 — mã lõi lâu đời, mỏng test.
+    Tôi **cố ý không đụng**: sửa chúng để dời một số nguyên trên scorecard là tối ưu chỉ số
+    bằng rủi ro sản phẩm. Đây là một dự án có phạm vi mà chủ dự án xếp lịch, hoặc một quyết
+    định chấp nhận có ghi lý do.
 11. `web/data.js`: giữ hay bỏ (§4) — bỏ thì gọn 5,43 MB và một suite test.
 
 **Nhóm C — đã ghi nhận, chưa cần làm ngay**
 
-12. `learn_loop` backfill (§3.5) — chỉ chạy khi được kích hoạt thủ công.
+12. ✅ `learn_loop` backfill (§3.5) — ĐÃ SỬA (`604f6184`). Đo trước khi sửa: **1734 entity
+    dùng `coordinates`, 0 dùng `coords`**. Bộ chọn lọc theo khoá chết nên quét cả 1621
+    non-place; bộ ghi ghi vào `coords` mà trang chi tiết đọc `coordinates`; và chỉ ghi
+    `data.json` trong khi trang công khai đọc DB. Nay lọc đúng, ghi đúng khoá, ghi kép sang DB.
 13. Thông báo hai chiều, công bố quyết định, báo cáo định kỳ (§2.5) — cho hồ sơ B2G.
 
 ---
