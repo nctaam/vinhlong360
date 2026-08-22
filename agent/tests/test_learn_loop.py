@@ -149,3 +149,55 @@ def test_persist_new_entities_rechecks_names_and_near_duplicates(tmp_path, monke
     assert added == 0
     assert [entity["id"] for entity in persisted["entities"]] == ["existing"]
     assert saved_to_db == []
+
+
+def test_the_backfill_only_picks_entities_that_really_lack_coordinates():
+    from learn_loop import _coord_backfill_candidates
+
+    kb = {"entities": [
+        {"id": "a", "type": "attraction", "name": "Có toạ độ", "coordinates": [10.2, 106.0]},
+        {"id": "b", "type": "attraction", "name": "Thiếu toạ độ"},
+        {"id": "c", "type": "place", "name": "Phường"},
+        {"id": "d", "type": "attraction", "name": "Legacy", "coords": [9.9, 105.5]},
+        {"id": "e", "type": "attraction"},
+    ]}
+
+    picked = [e["id"] for e in _coord_backfill_candidates(kb)]
+
+    # Filtering on the dead `coords` key selected every non-place entity —
+    # 1609 of which already had `coordinates` — so the 15-slot window went to
+    # rows the write side would skip, and the ones truly missing never came up.
+    assert picked == ["b"]
+
+
+def test_freshly_learned_entities_are_offered_first():
+    from learn_loop import _coord_backfill_candidates
+
+    kb = {"entities": [
+        {"id": "settled", "type": "attraction", "name": "Đã duyệt", "verified": 1},
+        {"id": "fresh", "type": "attraction", "name": "Mới học", "verified": 0},
+        {"id": "prov", "type": "attraction", "name": "Tạm", "status": "provisional"},
+    ]}
+
+    picked = [e["id"] for e in _coord_backfill_candidates(kb)]
+
+    # `e.get("verified") is False` never matched the integer 0 the database and
+    # the JSON actually store, so this ordering was dead code.
+    assert picked[-1] == "settled"
+    assert set(picked[:2]) == {"fresh", "prov"}
+
+
+def test_the_backfill_writes_the_key_the_detail_page_reads():
+    import inspect
+
+    from learn_loop import _persist_backfilled_coords
+
+    source = inspect.getsource(_persist_backfilled_coords)
+
+    # web-nuxt/pages/dia-diem/[id].vue reads entity.coordinates. Writing the
+    # legacy `coords` key meant a successful geocode still left the map empty.
+    assert 'entity["coordinates"] = updates[entity["id"]]' in source
+    assert 'entity["coords"] = updates' not in source
+    # And data.json is an export: the public pages read the database, so the
+    # work has to land there too, like the two sibling paths in this file.
+    assert "db.upsert_entity(entity)" in source

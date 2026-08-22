@@ -744,31 +744,59 @@ def _geocode_candidate(_geo, e: dict, places_by_id: dict):
 
 
 def _coord_backfill_candidates(kb: dict) -> list[dict]:
-    """Entity non-place thiếu coords, provisional/unverified xếp trước."""
+    """Entity non-place thực sự thiếu toạ độ, provisional/unverified xếp trước.
+
+    Khoá sống là `coordinates` (1734/1746 entity dùng nó; `coords` legacy: 0).
+    Lọc theo `coords` như trước nghĩa là chọn TẤT CẢ non-place — kể cả 1609 cái
+    đã có toạ độ — nên cửa sổ 15 slot tiêu gần hết vào những entity mà phía ghi
+    sẽ bỏ qua, và số thật sự thiếu không bao giờ tới lượt.
+    """
     candidates = [e for e in kb["entities"]
-                  if e.get("type") != "place" and not e.get("coords") and e.get("name")]
+                  if e.get("type") != "place" and e.get("name")
+                  and not e.get("coordinates") and not e.get("coords")]
     # Provisional/unverified first — they're the freshly auto-learned ones.
-    candidates.sort(key=lambda e: 0 if (e.get("status") == "provisional" or e.get("verified") is False) else 1)
+    # `is False` không bao giờ khớp số nguyên 0 mà DB và JSON thật sự lưu, nên
+    # vế đó trước đây là mã chết; dùng phép kiểm falsy.
+    candidates.sort(key=lambda e: 0 if (e.get("status") == "provisional"
+                                        or not e.get("verified")) else 1)
     return candidates
 
 
 def _persist_backfilled_coords(kb: dict, geocoded: list):
     """Lưu KB + reload knowledge sau khi backfill coords."""
-    updates = {entity["id"]: copy.deepcopy(entity["coords"])
-               for entity in kb["entities"] if entity["id"] in geocoded and entity.get("coords")}
+    updates = {
+        entity["id"]: copy.deepcopy(entity.get("coordinates") or entity.get("coords"))
+        for entity in kb["entities"]
+        if entity["id"] in geocoded and (entity.get("coordinates") or entity.get("coords"))
+    }
 
     def apply_current(current: dict) -> tuple[bool, list]:
         applied = []
         for entity in current["entities"]:
             if entity["id"] not in updates or entity.get("coords") or entity.get("coordinates"):
                 continue
-            entity["coords"] = updates[entity["id"]]
+            # `coordinates` là khoá trang chi tiết đọc (dia-diem/[id].vue:1061).
+            # Ghi `coords` như trước là ghi vào chỗ không ai đọc: geocode xong
+            # mà bản đồ vẫn trống.
+            entity["coordinates"] = updates[entity["id"]]
             applied.append(entity["id"])
         return bool(applied), applied
 
     persisted = mutate_json(DATA_JSON, apply_current)
     if not persisted:
         return []
+    # Ghi kép sang DB như hai đường anh em trong chính file này (:306, :446).
+    # data.json là bản export; trang công khai đọc DB, nên chỉ ghi JSON thì
+    # công sức geocode không bao giờ tới người dùng.
+    try:
+        from database import db
+        by_id = {entity["id"]: entity for entity in kb["entities"]}
+        for entity_id in persisted:
+            entity = by_id.get(entity_id)
+            if entity is not None:
+                db.upsert_entity(entity)
+    except Exception as exc:  # noqa: BLE001
+        _logger.error("learn_loop: ghi DB toa do that bai: %s", exc)
     try:
         import knowledge
         knowledge.reload()
