@@ -176,6 +176,58 @@ def _settle(database, conn, outbox_id: str, *, status: str, attempts: int,
     )
 
 
+def _deliver_one(database, conn, item, *, now: datetime) -> str:
+    """Deliver one queued notification and commit its outcome. Returns the outcome.
+
+    Its own function because each branch ends the same way — settle, commit,
+    move on — and the counting loop has no business knowing why. The commit is
+    inside: one transaction across a whole batch would roll back the records of
+    messages already delivered, and the next run would send them again.
+    """
+    outbox_id = str(item["outbox_id"])
+    case_id = str(item["case_id"])
+    attempts = int(item["attempts"]) + 1
+
+    def settle(status: str, *, error_code: str | None, available_at: datetime) -> None:
+        _settle(database, conn, outbox_id, status=status, attempts=attempts,
+                error_code=error_code, available_at=available_at)
+        conn.commit()
+
+    # Authority is re-read here, not trusted from enqueue time: consent
+    # withdrawn after the row was queued means the message is never sent.
+    contact = _contact_for(case_id, now=now)
+    reference = _public_reference(database, conn, case_id)
+    if not contact or not reference:
+        settle("failed", error_code=_SUPPRESSED, available_at=now)
+        return "suppressed"
+
+    try:
+        message = notification_message(public_reference=reference, topic=str(item["topic"]))
+    except ValueError:
+        # A topic with no copy is a programming error, but it belongs to one
+        # row: letting it escape would abort the whole run and leave every
+        # later item leased and unsent behind it.
+        settle("failed", error_code="unknown_outbox_topic", available_at=now)
+        return "dead"
+
+    result = _PROVIDER.send(contact, message, delivery_key=delivery_key(outbox_id))
+    if result.delivered:
+        from . import metrics as _metrics
+
+        _metrics.observe("updated", channel="sms", case_id=case_id, now=now)
+        settle("sent", error_code=None, available_at=now)
+        return "sent"
+
+    _observe_provider_failure(case_id, now)
+    if result.retryable and attempts < MAX_ATTEMPTS:
+        backoff = _BACKOFF_SECONDS[min(attempts, len(_BACKOFF_SECONDS)) - 1]
+        settle("pending", error_code=result.error_code,
+               available_at=now + timedelta(seconds=backoff))
+        return "retried"
+    settle("failed", error_code=result.error_code, available_at=now)
+    return "dead"
+
+
 def dispatch_case_outbox(*, now: datetime, limit: int = 100) -> DispatchSummary:
     """Claim due items, re-check authority, deliver, and record the outcome."""
     if type(now) is not datetime or now.tzinfo is None:
@@ -186,72 +238,19 @@ def dispatch_case_outbox(*, now: datetime, limit: int = 100) -> DispatchSummary:
     if not database._use_pg:
         raise RuntimeError("case_postgresql_required")
 
-    claimed = sent = retried = suppressed = dead = 0
-    # The lease is taken and committed first. Everything after it sends real
-    # messages to real people, and each outcome is committed on its own: one
-    # transaction spanning a whole batch means a failure on item fifty rolls
-    # back the records of the forty-nine messages already delivered, and the
-    # next run sends every one of them again.
+    # The lease is taken and committed before a single message is sent, so a
+    # worker that dies mid-batch strands nothing and a concurrent dispatcher
+    # sees these rows as taken rather than sending them a second time.
     with database._conn(commit_on_success=False) as conn:
         due = _claim(database, conn, now, limit)
         conn.commit()
 
+    tally = {"sent": 0, "retried": 0, "suppressed": 0, "dead": 0}
     with database._conn(commit_on_success=False) as conn:
         for item in due:
-            claimed += 1
-            outbox_id = str(item["outbox_id"])
-            attempts = int(item["attempts"]) + 1
-
-            # Authority is re-read here, not trusted from enqueue time.
-            contact = _contact_for(str(item["case_id"]), now=now)
-            reference = _public_reference(database, conn, str(item["case_id"]))
-            if not contact or not reference:
-                suppressed += 1
-                _settle(database, conn, outbox_id, status="failed", attempts=attempts,
-                        error_code=_SUPPRESSED, available_at=now)
-                conn.commit()
-                continue
-
-            try:
-                message = notification_message(
-                    public_reference=reference, topic=str(item["topic"])
-                )
-            except ValueError:
-                # A topic with no copy is a programming error, but it belongs to
-                # one row: letting it escape would abort the whole run and leave
-                # every later item leased and unsent behind it.
-                dead += 1
-                _settle(database, conn, outbox_id, status="failed", attempts=attempts,
-                        error_code="unknown_outbox_topic", available_at=now)
-                conn.commit()
-                continue
-            result = _PROVIDER.send(contact, message, delivery_key=delivery_key(outbox_id))
-
-            if result.delivered:
-                sent += 1
-                from . import metrics as _metrics
-
-                _metrics.observe("updated", channel="sms",
-                                 case_id=str(item["case_id"]), now=now)
-                _settle(database, conn, outbox_id, status="sent", attempts=attempts,
-                        error_code=None, available_at=now)
-                conn.commit()
-            elif result.retryable and attempts < MAX_ATTEMPTS:
-                retried += 1
-                _observe_provider_failure(str(item["case_id"]), now)
-                backoff = _BACKOFF_SECONDS[min(attempts, len(_BACKOFF_SECONDS)) - 1]
-                _settle(database, conn, outbox_id, status="pending", attempts=attempts,
-                        error_code=result.error_code,
-                        available_at=now + timedelta(seconds=backoff))
-                conn.commit()
-            else:
-                dead += 1
-                _observe_provider_failure(str(item["case_id"]), now)
-                _settle(database, conn, outbox_id, status="failed", attempts=attempts,
-                        error_code=result.error_code, available_at=now)
-                conn.commit()
+            tally[_deliver_one(database, conn, item, now=now)] += 1
 
     return DispatchSummary(
-        claimed=claimed, sent=sent, retried=retried,
-        suppressed=suppressed, dead_lettered=dead,
+        claimed=len(due), sent=tally["sent"], retried=tally["retried"],
+        suppressed=tally["suppressed"], dead_lettered=tally["dead"],
     )

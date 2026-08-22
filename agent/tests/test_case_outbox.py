@@ -457,3 +457,34 @@ def test_one_unsendable_row_does_not_stop_the_queue(pg_database, monkeypatch):
     assert summary.sent == 1
     assert _row(pg_database, "notify:poison:1")["last_error_code"] == "unknown_outbox_topic"
     assert _row(pg_database, "notify:poison:2")["status"] == "sent"
+
+
+def test_one_item_delivery_is_its_own_function_with_its_own_commit():
+    import inspect
+
+    from cases.outbox import _deliver_one, dispatch_case_outbox
+
+    dispatcher = inspect.getsource(dispatch_case_outbox)
+    deliver = inspect.getsource(_deliver_one)
+
+    # The commit belongs inside the per-item helper. One transaction across a
+    # whole batch would roll back the records of messages already delivered,
+    # and the next run would send them to those people again.
+    assert "conn.commit()" in deliver
+    # The counting loop only counts; every settle path lives in the helper.
+    assert "_settle(" not in dispatcher
+    assert dispatcher.count("conn.commit()") == 1, "only the lease commits here"
+
+
+def test_every_delivery_outcome_the_helper_returns_is_counted():
+    import inspect
+    import re
+
+    from cases.outbox import _deliver_one, dispatch_case_outbox
+
+    returned = set(re.findall(r'return "(\w+)"', inspect.getsource(_deliver_one)))
+    counted = set(re.findall(r'"(\w+)": 0', inspect.getsource(dispatch_case_outbox)))
+
+    # An outcome the helper can return but the tally has no slot for would be a
+    # KeyError in production and a silently missing number in the log.
+    assert returned == counted, f"helper returns {returned}, tally counts {counted}"
