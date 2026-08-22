@@ -41,12 +41,33 @@ def test_remote_docker_host_is_rejected_before_cli_calls(monkeypatch: pytest.Mon
 
 
 def test_head_snapshot_parser_allows_rename_and_copy_targets():
+    # Vế C dùng hai path sinh-ra-lúc-build trong ALLOWED_DIRTY_PATHS. Trước đây nó
+    # dùng "web/data.js"; file đó đã gỡ (2026-08-22) và rút khỏi allowlist, nên
+    # fixture phải đổi — bản thân test không nói gì về data.js, nó soi parser.
     harness.assert_head_snapshot_safe(
         "R  tests/launch_safety/integration/old.py\0"
         "tests/launch_safety/integration/new.py\0"
-        "C  web/data.js\0"
+        "C  web-nuxt/pnpm-workspace.yaml\0"
         "web-nuxt/pnpm-lock.yaml\0"
     )
+
+
+def test_head_snapshot_parser_checks_the_second_half_of_a_copy_pair():
+    """Nửa sau của cặp R/C phải bị SOI, không được nuốt rồi cho qua.
+
+    Test ở trên không phân biệt được: mọi path trong fixture của nó đều hợp lệ,
+    nên một parser chỉ đọc trường đầu rồi vứt trường sau vẫn xanh. Ở đây trường
+    đầu hợp lệ còn trường sau thì không — chỉ parser soi cả hai mới đỏ đúng lúc.
+    """
+    with pytest.raises(
+        AssertionError,
+        match="runtime snapshot differs from HEAD",
+    ) as failure:
+        harness.assert_head_snapshot_safe(
+            "C  web-nuxt/pnpm-lock.yaml\0"
+            "docker-compose.yml\0"
+        )
+    assert "docker-compose.yml" not in str(failure.value)
 
 
 def test_head_snapshot_parser_rejects_runtime_paths_without_leaking_path():
