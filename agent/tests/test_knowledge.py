@@ -439,3 +439,12 @@ def test_the_module_names_the_file_it_actually_opens():
     assert "data.json" in head
     assert "data.js," not in head and "data.js " not in head
     assert 'DATA_DIR / "data.json"' in source
+
+    # Cái tên cũng là tài liệu. Hàm nạp từng tên _parse_data_js dù chỉ mở
+    # data.json; head ở trên không bắt được vì tên nằm ĐÚNG ở `def` đầu tiên,
+    # tức ngay sau chỗ head dừng. Một định danh quảng cáo định dạng nó không đọc
+    # gây đúng cái đọc nhầm mà test này sinh ra để chặn.
+    dead_name = "_parse_data" + "_js"
+    assert dead_name not in source, (
+        f"{dead_name} chỉ mở data.json — đổi tên cho khớp thứ nó thật sự đọc"
+    )

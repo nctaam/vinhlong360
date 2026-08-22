@@ -316,7 +316,7 @@ Tập trung cao nhất: `p-long-chau` 213 entity, `p-tra-vinh` 116, `p-phuoc-hau
 
 ### 6.3 Id ghi cứng ngoài `data.json`
 
-Quét toàn worktree (bỏ `.git`, `.nuxt`, `node_modules`, `__pycache__`, `data.json`): **5.739 lần xuất hiện id xã/phường trong 51 file**.
+Quét toàn worktree (bỏ `.git`, `.nuxt`, `node_modules`, `__pycache__`, `data.json`): **5.739 lần xuất hiện id xã/phường trong 51 file** — số đo ngày 2026-08-07. **Cập nhật 2026-08-22:** gỡ `web/data.js` (`8afdbfb0`) làm **4.413 lần trong số đó biến mất cùng file**, còn lại ~1.326 trong 50 file. Bảng dưới giữ số cũ để so sánh.
 
 | File | Số lần |
 |---|---:|

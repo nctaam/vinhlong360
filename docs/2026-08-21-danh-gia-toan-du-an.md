@@ -281,6 +281,9 @@ lỗ hổng bảo mật nghiêm trọng **không có thật**. Vòng phản bi�
 
 ## 4. Phát hiện của riêng tôi khi tự đo
 
+> Mục này ghi hiện trạng **đo ngày 2026-08-21**, giữ nguyên thì hiện tại để thấy vấn đề
+> lúc phát hiện. Cả hai phát hiện dưới đây **đã xử lý ngày 2026-08-22** — xem mục 11.
+
 **`web/data.js` — 5,43 MB được sinh lại cho một người đọc không còn tồn tại.**
 `agent/scheduler.py:98` chạy `sync_data_json_to_js()` mỗi lần khởi động và mỗi giờ, ghi đè
 file **được git theo dõi**. Comment ở `:110` nói lý do: *"web/index.html loads data.js without

@@ -17,17 +17,17 @@ logger = logging.getLogger(__name__)
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "web"
 
-# ── Parse data.json ──
+# ── Đọc data.json ──
 
-def _parse_data_js():
+def _load_data_json():
     """Trích xuất entities, relationships, itineraries từ data.json."""
 
-    # Bóc tách mảng places và items bằng cách eval qua JSON không được
-    # (JS syntax ≠ JSON). Ta chuyển sang approach: export JSON riêng.
-    # Nguồn thật là data.json (mở ở dưới). Comment cũ ghi 'data.js là nguồn
-    # duy nhất' — sai, và đủ để đọc nhầm module này hai lần trong ba phút.
-
-    # Approach: đọc thẳng data.json.
+    # Tên cũ của hàm này quảng cáo một bản export JS, và khối comment ở đây bàn
+    # chuyện eval file đó. Module chưa bao giờ mở nó — luôn đọc data.json — nên
+    # cái tên là một định danh chết, đủ sai để đọc nhầm module hai lần trong ba
+    # phút. Bản export JS đã gỡ hẳn ngày 2026-08-22 (8afdbfb0). Tên cũ cố ý
+    # KHÔNG viết ra đây: test_the_module_names_the_file_it_actually_opens quét
+    # cả file, nên nhắc lại nguyên văn sẽ làm chính nó đỏ.
     json_path = DATA_DIR / "data.json"
     if json_path.exists():
         with open(json_path, encoding="utf-8") as f:
@@ -39,7 +39,7 @@ def _parse_data_js():
 
 def _load_from_json():
     """Seed/fallback: đọc trực tiếp từ web/data.json."""
-    data = _parse_data_js()
+    data = _load_data_json()
     entities = {e["id"]: e for e in data["entities"]}
     relationships = data["relationships"]
     itineraries = {it["id"]: it for it in data["itineraries"]}
