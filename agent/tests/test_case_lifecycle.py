@@ -446,3 +446,24 @@ def test_the_watch_task_actually_restamps_and_escalates(pg, monkeypatch):
     # and a supervisor finally has something to pick up.
     assert health == "breached"
     assert escalations == 1
+
+
+def test_the_policy_page_states_the_retention_the_code_actually_applies():
+    from pathlib import Path
+
+    from cases.lifecycle import (
+        CONTACT_RETENTION,
+        LINEAGE_RETENTION,
+        PRIVATE_EVIDENCE_RETENTION,
+    )
+
+    policy = (Path(__file__).resolve().parents[2] / "web-nuxt" / "utils"
+              / "legalContent.ts").read_text("utf-8")
+
+    # "We keep data as long as necessary" is true of anything. A reporter who
+    # hands over a phone number is owed the actual number of days, and a number
+    # in prose drifts from the constant unless something holds them together.
+    for days in (CONTACT_RETENTION.days, PRIVATE_EVIDENCE_RETENTION.days,
+                 LINEAGE_RETENTION.days):
+        assert f"{days} ngày" in policy, f"policy never states the {days}-day shelf"
+    assert "rút lại đồng ý bất cứ lúc nào" in policy

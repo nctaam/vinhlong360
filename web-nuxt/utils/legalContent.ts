@@ -37,7 +37,14 @@ export const LEGAL_PRIVACY: LegalDoc = {
     },
     {
       heading: '3. Lưu trữ & bảo mật',
-      body: 'Dữ liệu được lưu trên hạ tầng có kiểm soát truy cập. Mã OTP được băm (hash), không lưu dạng thô. Chúng tôi giữ dữ liệu trong thời gian cần thiết cho mục đích nêu trên hoặc theo yêu cầu pháp luật.',
+      body: `Dữ liệu được lưu trên hạ tầng có kiểm soát truy cập. Mã OTP được băm (hash), không lưu dạng thô. Chúng tôi giữ dữ liệu trong thời gian cần thiết cho mục đích nêu trên hoặc theo yêu cầu pháp luật.
+
+**Với yêu cầu sửa thông tin**, thời hạn là cụ thể chứ không chung chung:
+- **Số điện thoại bạn để lại**: xoá sau **90 ngày** kể từ khi hồ sơ được khép lại.
+- **Nội dung riêng tư bạn gửi kèm** (ảnh, tài liệu, giá trị bạn báo): xoá sau **365 ngày**.
+- **Liên kết thống kê vận hành**: gỡ danh tính sau **730 ngày**; phần còn lại là số liệu ẩn danh.
+
+Bạn có thể rút lại đồng ý bất cứ lúc nào mà không cần chờ hết thời hạn — xem mục 4.`,
     },
     {
       heading: '4. Quyền của bạn',
