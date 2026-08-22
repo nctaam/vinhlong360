@@ -299,6 +299,60 @@ def test_reporter_privacy_must_agree_with_the_session(privacy, user_ref, code):
     assert excinfo.value.problem.code == code
 
 
+def test_a_phone_without_consent_is_refused_by_the_server_not_only_the_form():
+    """Cổng đồng ý từng CHỈ tồn tại ở form Vue.
+
+    API nhận optionalPhone và notificationConsent như hai trường độc lập, và
+    create_correction mã hoá số vào payload tương tác VÔ ĐIỀU KIỆN trong khi
+    consent_ref_for trả None. Một POST thẳng, không đi qua form, vì thế nộp
+    được số điện thoại mà không để lại bản ghi đồng ý nào.
+    """
+    command = _command(optional_phone="0901234567", notification_consent=False)
+
+    with pytest.raises(CorrectionRejected) as excinfo:
+        _service().create_correction(command, now=NOW, rate_subject="test")
+
+    assert excinfo.value.problem.code == "phone_requires_consent"
+
+
+def test_the_consent_gate_does_not_block_what_it_should_not():
+    """Chỉ đúng tổ hợp thiếu-đồng-ý bị chặn, không phải mọi thứ có số."""
+    service = _service()
+
+    # Có số + có đồng ý: hợp lệ.
+    service._validate_privacy(_command(optional_phone="0901234567", notification_consent=True))
+    # Không số + không đồng ý: không có gì để đồng ý.
+    service._validate_privacy(_command(optional_phone=None, notification_consent=False))
+    # Chuỗi rỗng không phải là một số điện thoại.
+    service._validate_privacy(_command(optional_phone="", notification_consent=False))
+
+
+def test_assisted_intake_keeps_its_own_consent_record():
+    """Nhánh trợ giúp qua điện thoại được miễn vì nó mang bản ghi đồng ý riêng.
+
+    Người báo không nhìn thấy màn hình, nên hồ sơ ghi bản thông báo nào được đọc
+    ra, họ đồng ý phạm vi gì, lúc nào, và các giá trị đã được đọc lại và xác nhận.
+    Đó là bản ghi đồng ý mạnh hơn một ô tick — chặn nó là chặn nhầm.
+    """
+    from cases.service import AssistedIntake
+
+    assisted = AssistedIntake(
+        operator_ref="operator:3",
+        privacy_notice_revision="2026-08-01",
+        consent_scope="correction:notify",
+        consent_given_at=NOW,
+        read_back_confirmed=True,
+        reporter_confirmed=True,
+    )
+    command = _command(
+        optional_phone="0901234567",
+        notification_consent=False,
+        assisted=assisted,
+    )
+
+    _service()._validate_privacy(command)  # không được ném
+
+
 def test_signing_in_does_not_force_attribution():
     """A signed-in reporter may still file anonymously."""
     command = _command(reporter_privacy="anonymous", authenticated_user_ref=None)

@@ -26,6 +26,12 @@ Hiện **toàn bộ cờ tính năng của kênh này đang TẮT**. Chưa có n
 
 ## 2. Bốn câu hỏi cần trả lời
 
+> **Ghi chú về độ tin cậy của bảng §2 (thêm 2026-08-22):** một đợt rà soát mã nguồn đã tìm ra
+> **hai dòng trong bảng dưới đây nói quá** so với hệ thống thật, và một mốc thứ ba (xoá tài khoản
+> 30 ngày) có mã xoá nhưng **chạy ở chế độ chỉ-đếm theo mặc định** (`ERASURE_AUDIT_ONLY=true` ở
+> `agent/config.py:85`). Các dòng đã được đính chính tại chỗ. Nêu ra đây vì một tài liệu gửi luật
+> sư mà khai vống một biện pháp kiểm soát thì nguy hơn khai thiếu.
+
 ### Câu 1 — Dự án thuộc nhóm nào theo Luật 91/2025, và vì thế được miễn gì?
 
 **Vì sao hỏi:** Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15 (thông qua 26/06/2025, hiệu lực
@@ -49,10 +55,10 @@ Bảng dưới là **hiện trạng thật của hệ thống**, để luật s�
 
 | Nghĩa vụ | Hệ thống hiện có | Ghi chú |
 |---|---|---|
-| Sự đồng ý trước khi thu số điện thoại | ✅ Ô đồng ý riêng, chỉ hiện khi người dùng nhập số; nhập số mà không tick thì **chặn gửi** | |
+| Sự đồng ý trước khi thu số điện thoại | ✅ Ô đồng ý riêng ở form; nhập số mà không tick thì **chặn gửi** | **Đính chính 2026-08-22:** cổng này trước đó CHỈ có ở form. API nhận `optionalPhone` và `notificationConsent` như hai trường độc lập, nên một POST thẳng vẫn lưu được số mà không để lại bản ghi đồng ý. Đã vá phía máy chủ cùng ngày (`_validate_privacy` → `phone_requires_consent`). Không có phơi nhiễm thực tế: cờ tính năng tắt, chưa người dùng thật nào đi qua |
 | Giới hạn mục đích | ✅ Câu chữ: *"dùng số này để báo kết quả yêu cầu, và chỉ việc đó"* | |
-| **Rút lại đồng ý** | ✅ Vừa mở đường (2026-08-22) | Trang chính sách hứa **15 ngày**; trước đó API không nhận được yêu cầu rút |
-| Quyền xoá | ⚠️ Có đường xoá **tài khoản** (30 ngày) | Người báo **ẩn danh không có tài khoản** — cần xác định họ dùng đường nào |
+| **Rút lại đồng ý** | ⚠️ Có ở API, **người dùng không tới được** | **Đính chính 2026-08-22:** tôi từng ghi ✅ ở đây — nói quá. Sự thật: (a) API nhận `consent:false`, nhưng composable `useCorrectionCases.ts` chỉ gửi `{ phone }` nên **không diễn đạt được** lựa chọn đó, và **không có nút nào trong UI** gọi tới; (b) `consent:false` xoá *thách thức đang chờ* (`case_contact_challenges`), **KHÔNG xoá số đã lưu** trong `case_interactions.payload_enc`. Tức hiện tại nó nghĩa là *ngưng nhắn tin*, không phải *ngưng giữ số* |
+| Quyền xoá | ⚠️ Có đường xoá **tài khoản** (30 ngày) nhưng **mặc định không xoá** | Người báo **ẩn danh không có tài khoản** — cần xác định họ dùng đường nào. **Thêm 2026-08-22:** tác vụ `account-erasure` có đăng ký chạy, nhưng `_effective_erasure_audit_only()` (`agent/scheduler.py:137`) trả True trừ khi **cả hai** cờ `ERASURE_AUDIT_ONLY=false` VÀ `ERASURE_ACTIVATION_ENABLED=true`; mặc định `ERASURE_AUDIT_ONLY=True`. Nó **đếm** hồ sơ tới hạn chứ không xoá. Bật là quyết định của chủ dự án (thao tác phá huỷ, CLAUDE.md §4) |
 | Thông báo thời hạn lưu | ❌ Chính sách chỉ ghi *"trong thời gian cần thiết"* | Hệ thống thật dùng **90 ngày** sau khi khép hồ sơ (số điện thoại), 365 ngày (chứng cứ riêng tư), 730 ngày (liên kết thống kê) |
 | Thông báo khi có vi phạm dữ liệu | ⚠️ Chính sách có mục 5 | Chưa đối chiếu thời hạn theo Luật mới |
 
@@ -62,6 +68,10 @@ Bảng dưới là **hiện trạng thật của hệ thống**, để luật s�
 2. Người báo **ẩn danh** (không tài khoản) thực hiện quyền xoá bằng cách nào cho đúng luật?
 3. Cam kết "rút lại đồng ý trong 15 ngày" đang ghi trong chính sách — có phải là mốc phù hợp,
    hay Luật đòi ngắn hơn?
+4. **Rút lại đồng ý có bắt buộc kèm XOÁ dữ liệu đã thu không, hay chỉ cần ngưng xử lý?**
+   Hệ thống hiện làm vế sau. Nếu Luật đòi vế trước thì đây là việc phải làm trước khi bật cờ.
+5. Chính sách hứa một quyền mà **giao diện không có chỗ để thực hiện** thì đứng ở đâu về
+   pháp lý? (Đường API có, nhưng người dân bình thường không tới được.)
 
 ### Câu 3 — Mô hình doanh thu có đẩy site thành sàn giao dịch TMĐT không?
 

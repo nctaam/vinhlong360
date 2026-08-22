@@ -248,14 +248,14 @@ def test_a_corrected_contact_under_the_same_key_conflicts(pg_database):
     service = _service(pg_database)
     key = "idem-contact-1"
     service.create_correction(
-        replace(_command(key), optional_phone="0270 111 2222"),
+        replace(_command(key), optional_phone="0270 111 2222", notification_consent=True),
         now=NOW,
         rate_subject="192.0.2.32",
     )
 
     with pytest.raises(IdempotencyConflict) as excinfo:
         service.create_correction(
-            replace(_command(key), optional_phone="0270 111 2223"),
+            replace(_command(key), optional_phone="0270 111 2223", notification_consent=True),
             now=NOW,
             rate_subject="192.0.2.32",
         )

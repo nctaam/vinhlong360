@@ -327,6 +327,19 @@ class CaseService:
                 "Sign in to file this correction under your account.",
                 status=403,
             )
+        # The consent gate has to live on the server. The browser form refuses to
+        # submit a phone number with the box unticked, but a direct POST never
+        # sees that form: the API takes optionalPhone and notificationConsent as
+        # two independent fields, and create_correction encrypts the number into
+        # the interaction payload unconditionally while consent_ref_for returns
+        # None. That combination is personal data collected with no consent record
+        # against it. Assisted intake is exempt because it carries its own record
+        # (notice revision, scope, time, read-back and reporter confirmation).
+        if command.optional_phone and command.assisted is None and not command.notification_consent:
+            raise _reject(
+                "phone_requires_consent",
+                "Tick the consent box to leave a phone number, or send the correction without one.",
+            )
 
     def _validate_handoff(self, command: CreateCorrectionCommand) -> None:
         if command.envelope.actor.channel is Channel.ZALO_AI_HANDOFF and command.handoff is None:
