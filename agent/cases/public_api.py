@@ -8,6 +8,7 @@ headers and RFC 9457 problem details — and never renders backstage state.
 """
 from __future__ import annotations
 
+import asyncio
 import hmac
 import uuid
 
@@ -436,7 +437,15 @@ async def request_contact_verification(request: Request):
     if invalid is not None:
         return invalid
     try:
-        _service().request_contact_verification(
+        # Ra khỏi event loop. Route này là route công khai DUY NHẤT gọi ra
+        # ngoài mạng: EsmsProvider.send thử 3 lần, mỗi lần total_timeout 20s,
+        # xen time.sleep(0.5) và time.sleep(1.0) — tối đa ~61,5 giây. Gọi thẳng
+        # trong async handler thì một POST đóng băng CẢ vl-agent, không riêng
+        # luồng đính chính. sms_provider.send_async đã tồn tại đúng vì lý do đó
+        # ("offloaded so an event loop is never blocked on the socket"), nhưng
+        # đường này đi qua contact.py vốn đồng bộ, nên offload ở đây.
+        await asyncio.to_thread(
+            _service().request_contact_verification,
             access_token=request.cookies.get(ACCESS_COOKIE),
             phone=body.phone,
             consent=body.consent,

@@ -108,6 +108,22 @@ def request_contact_verification(access, phone: str, consent: bool, *, now: date
     case_id = access.case_id
     number = normalize_phone(phone)
 
+    # Ngân sách theo SỐ ĐÍCH, kiểm trước ngân sách theo hồ sơ. Hai cái kia đều
+    # khoá theo case_id, mà mở một hồ sơ mới thì gần như miễn phí — nên chúng
+    # không hề chặn việc dựng N hồ sơ rồi bắn 5N tin nhắn vào CÙNG MỘT số. Tiền
+    # tin nhắn và brandname vinhlong360 đều là của dự án (CLAUDE.md B8), còn
+    # người hứng là một người thứ ba không liên quan.
+    #
+    # Đánh đổi có ý thức: kẻ tấn công đốt được ngân sách của một số, nên chủ số
+    # đó phải chờ hết cửa sổ mới xác thực được. Chờ 15 phút là cái giá nhỏ hơn
+    # nhiều so với bị dội tin không giới hạn.
+    if not check_case_rate_limit(
+        "contact_otp_dest",
+        rate_subject_digest(f"dest:{number}", master_key=crypto.digest_capability("case-contact-subject")),
+        limit=VERIFY_ATTEMPT_LIMIT, window=VERIFY_ATTEMPT_WINDOW, now=now, database=database,
+    ):
+        raise CaseSecurityError(_PUBLIC_ERROR)
+
     if not check_case_rate_limit(
         "contact_otp",
         rate_subject_digest(f"request:{case_id}", master_key=crypto.digest_capability("case-contact-subject")),

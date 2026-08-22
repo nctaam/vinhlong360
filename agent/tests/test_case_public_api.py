@@ -37,7 +37,9 @@ class _ServiceDouble:
         self.rotated = []
         self.reviewed = []
         self.revoked = []
+        self.revoke_threads = []
         self.contact_requests = []
+        self.contact_request_threads = []
         self.contact_verifications = []
 
     def create_correction_from_transport(self, payload, **kwargs):
@@ -87,9 +89,15 @@ class _ServiceDouble:
         )
 
     def revoke_access(self, **kwargs):
+        import threading
+
+        self.revoke_threads.append(threading.get_ident())
         self.revoked.append(kwargs)
 
     def request_contact_verification(self, **kwargs):
+        import threading
+
+        self.contact_request_threads.append(threading.get_ident())
         self.contact_requests.append(kwargs)
 
     def verify_contact(self, **kwargs):
@@ -647,6 +655,38 @@ def test_the_contact_route_accepts_a_withdrawal():
     # privacy policy's "rút lại đồng ý trong 15 ngày" had no route to happen on.
     assert _ContactRequestIn(phone="0901234567").consent is True
     assert _ContactRequestIn(phone="0901234567", consent=False).consent is False
+
+
+def test_the_blocking_sms_send_never_runs_on_the_event_loop(client):
+    """Route công khai DUY NHẤT gọi ra ngoài mạng phải được đẩy khỏi event loop.
+
+    EsmsProvider.send thử 3 lần, mỗi lần total_timeout 20s, xen time.sleep(0.5)
+    và time.sleep(1.0) — tối đa ~61,5 giây. Gọi thẳng trong async handler thì
+    một POST /api/cases/contact/request đóng băng CẢ vl-agent: chat, /api/entities,
+    /auth đứng theo, không riêng luồng đính chính.
+
+    Đo bằng danh tính LUỒNG, không so chuỗi mã nguồn: /access chạy thẳng trên
+    event loop nên nó là mốc đối chứng; /contact/request phải rơi vào luồng khác.
+    """
+    client.post(
+        "/api/cases/access",
+        headers=_headers(),
+        json={"publicReference": REFERENCE, "capability": CAPABILITY},
+    )
+    csrf = _headers(**{"X-Case-CSRF": "b" * 43})
+    client.post(
+        "/api/cases/contact/request", headers=csrf, json={"phone": "0901234567"}
+    )
+    client.delete("/api/cases/access", headers=csrf)
+
+    assert client.service.revoke_threads, "route đối chứng chưa chạy"
+    assert client.service.contact_request_threads, "route gửi SMS chưa chạy"
+    loop_thread = client.service.revoke_threads[0]
+    send_thread = client.service.contact_request_threads[0]
+    assert send_thread != loop_thread, (
+        "lời gọi gửi SMS chạy trên chính luồng event loop — một lần thử lại của "
+        "nhà mạng sẽ đóng băng toàn bộ tiến trình tới ~61 giây"
+    )
 
 
 def test_the_route_passes_the_caller_choice_rather_than_a_constant():

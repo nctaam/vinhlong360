@@ -15,6 +15,7 @@ sys.path.insert(0, str(ROOT / "agent"))
 
 import database  # noqa: E402
 from cases.contact import (  # noqa: E402
+    VERIFY_ATTEMPT_LIMIT,
     ContactChallenge,
     VerifiedContact,
     configure_case_contact,
@@ -235,12 +236,47 @@ def test_attempts_are_bounded_by_the_shared_contact_bucket(pg_database, provider
         buckets = pg_database._fetchone(
             conn,
             "SELECT count(*) AS n FROM shared_rate_limits WHERE key LIKE %s",
-            ("case:contact_otp:%",),
+            # Mẫu cũ là 'case:contact_otp:%' nên nó KHÔNG nhìn thấy bucket
+            # 'case:contact_otp_dest:…' — một dấu hai chấm đủ để đếm hụt một
+            # ngân sách và làm test tưởng mọi thứ vẫn như cũ.
+            ("case:contact_otp%",),
         )["n"]
-    # Two budgets on purpose: one stops flooding a phone with codes, the other
-    # stops guessing a code. Sharing them would let either attack spend the
-    # other's allowance.
-    assert buckets == 2
+    # Ba ngân sách, mỗi cái chặn một kiểu tấn công khác nhau; gộp lại thì kiểu
+    # này tiêu mất phần của kiểu kia:
+    #   request:{case_id}  — dội mã từ MỘT hồ sơ
+    #   verify:{case_id}   — đoán mã
+    #   dest:{số}          — dội mã vào MỘT SỐ từ nhiều hồ sơ khác nhau
+    assert buckets == 3
+
+
+@pg_only
+def test_many_cases_cannot_gang_up_on_one_phone_number(pg_database, provider):
+    """Mở hồ sơ mới gần như miễn phí, nên ngân sách theo hồ sơ không chặn được gì.
+
+    Kịch bản thật: dựng N hồ sơ, mỗi hồ sơ xin 5 mã cho CÙNG một số → 5N tin nhắn
+    vào một người thứ ba không liên quan, bằng tiền và brandname của dự án. Ngân
+    sách theo SỐ ĐÍCH là thứ duy nhất chặn được, vì nó không phụ thuộc case_id.
+    """
+    victim = "0901234567"
+    sent_before = len(provider.sent)
+
+    delivered = 0
+    for _ in range(4):                      # bốn hồ sơ KHÁC NHAU
+        case_id = _case(pg_database)
+        for _ in range(3):                  # dưới hạn mức theo-hồ-sơ (5)
+            try:
+                request_contact_verification(
+                    _Access(case_id), victim, consent=True, now=NOW
+                )
+                delivered += 1
+            except CaseSecurityError:
+                pass
+
+    assert delivered <= VERIFY_ATTEMPT_LIMIT, (
+        f"{delivered} tin nhắn tới một số trong một cửa sổ — ngân sách theo số "
+        "đích không chặn, nên nhiều hồ sơ vẫn dội được vào cùng một người"
+    )
+    assert len(provider.sent) - sent_before == delivered
 
 
 @pg_only
