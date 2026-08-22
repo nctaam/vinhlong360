@@ -17,7 +17,17 @@ function getServerApiBase() {
 }
 
 export function apiFetch<T = unknown>(url: string, opts: Record<string, unknown> = {}): Promise<T> {
-  const requestOptions = { timeout: DEFAULT_API_TIMEOUT_MS, ...opts }
+  // retry: 0 là CHỦ Ý, không phải bỏ sót. ofetch mặc định tự thử lại GET/HEAD
+  // một lần, TỨC THÌ, khi gặp 408/409/425/429/500/502/503/504 — không ai khai và
+  // không ai thấy. Đo trên trang chủ (2026-08-23): GET /weather?area=vinh-long
+  // trả 502 và xuất hiện HAI LẦN trong network log vì đúng cơ chế này.
+  //
+  // Thử lại tức thì là sai hướng với dự án này: backend chạy VPS 1GB/1CPU
+  // (§B8 ngân sách), và 502 thường nghĩa là backend đang quá tải — nện thêm một
+  // phát ngay lập tức chỉ làm nó tệ hơn. Bên gọi nào thật sự cần chống nhiễu
+  // tạm thời thì tự truyền `retry`/`retryDelay`, để lựa chọn đó nhìn thấy được
+  // tại chỗ gọi.
+  const requestOptions = { retry: 0 as const, timeout: DEFAULT_API_TIMEOUT_MS, ...opts }
   if (/^https?:\/\//i.test(url)) return $fetch<T, string>(url, requestOptions)
   const requestUrl = url.startsWith('/') ? url : `/${url}`
   const baseURL = import.meta.server ? getServerApiBase() : ''

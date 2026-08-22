@@ -124,6 +124,13 @@
   --sand-300: #E6E0D4;
   --sand-400: #D9D3C7;
   --ink-700:  #586860; /* muted text — đậm hơn để đạt WCAG 4.5:1 trên cream/white */
+  /* Ba bậc dưới đây ĐƯỢC DÙNG nhưng chưa từng được định nghĩa (đo 2026-08-23:
+     12 biến thiếu / 27 lần dùng, không cái nào có fallback). var() hỏng làm cả
+     khai báo mất hiệu lực, nên ví dụ tên người dùng ở cong-dong.vue:1910 mất
+     màu ở CẢ hai chế độ. Giá trị chọn theo tương phản đo được, không theo mắt. */
+  --ink-800:  #45514B; /* chữ mạnh, dưới 900 — 8.09:1 trên card sáng */
+  --ink-500:  #586860; /* nhãn + viền hover — 5.74:1 trên card sáng */
+  --ink-200:  #586860; /* dải nhạt; chỗ dùng thật chỉ nằm trong .dark */
   --ink-900:  #2B2622;
   --white:    #FFFFFF;
 
@@ -143,6 +150,11 @@
   --tertiary: var(--color-action);
   /* Brand foreground (dùng làm CHỮ) — light = base; dark lighten (xem .dark) để đạt WCAG trên nền tối */
   --primary-fg: var(--primary);
+  /* Huy hiệu ngày (.event-date-badge): nền thương hiệu ĐẬM + chữ trắng.
+     Đo: trắng/#95402b = 6.89 · chip/card sáng = 6.72. */
+  --date-badge-bg: var(--primary);
+  --date-badge-ink: #FFFFFF;
+  --date-badge-ring: transparent;   /* sáng: chip đã 9.86 so với card, không cần viền */
   --primary-fg-strong: var(--primary-dark);
   --secondary-fg: var(--secondary);
   --tertiary-fg: var(--tertiary);
@@ -337,14 +349,17 @@
   --space-05: 2px;
   --space-1:  4px;
   --space-1h: 6px;
+  --space-2h:  10px; /* nửa bậc, cùng lối đặt tên với --space-1h (6px) */
   --space-2:  8px;
   --space-3:  12px;
   --space-4:  16px;
   --space-5:  20px;
   --space-6:  24px;
+  --space-7:   28px; /* dùng ở 9 chỗ (admin cai-dat/*) trước khi có định nghĩa */
   --space-8:  32px;
   --space-10: 40px;
   --space-12: 48px;
+  --space-14:  56px; /* dùng ở catalog.css trước khi có định nghĩa */
   --space-16: 64px;
   --space-20: 80px;
   --space-24: 96px;
@@ -836,6 +851,40 @@
   --divider-subtle: 1px solid rgba(255,255,255,.06);
   --divider-default: 1px solid var(--line);
   --divider-strong: 1px solid rgba(255,255,255,.15);
+  /* Thang chữ --ink-* CHƯA TỪNG có bản chế-độ-tối: khối .dark không định nghĩa
+     --ink-700/--ink-900 nên chế độ tối kế thừa nguyên giá trị của chế độ sáng —
+     mà giá trị đó được chỉnh riêng cho nền kem (xem chú thích ở :126 "để đạt
+     WCAG 4.5:1 trên cream/white"). Đo trên app đang chạy (2026-08-23):
+       --ink-700 #586860 trên --card #111d1b = 2.93  (78 chỗ dùng)
+       --ink-900 #2B2622 trên --bg   #071210 = 1.27  (10 chỗ, có ConfirmDialog:
+                                                      nền --bg + chữ --ink-900,
+                                                      tức gần như vô hình)
+     Giá trị dưới đây giữ nguyên tông màu, chỉ nâng độ sáng tới khi đạt ngưỡng,
+     và giữ đúng TRẬT TỰ bậc như chế độ sáng (ink > ink-900 > muted > ink-700):
+       --ink     #EDEBE5  14.49 | --ink-900 #DCD6D2  12.01
+       --muted   #A4B1AE   7.80 | --ink-700 #86998F   5.73
+     --ink-700 chỉnh theo nền tối SÁNG NHẤT đang dùng (#2a2d2a), không theo --card:
+     bản đầu #74897E vừa khít --card (4.63) nhưng rớt 4.37 trên #162220 — axe bắt
+     đúng chỗ đó ở .smart-rec-reason. Token dùng 78 nơi thì phải chọn theo nền
+     khó nhất, không theo nền tiêu biểu.
+     axe không bắt được hai lỗi này: --ink-900 chỉ hiện khi mở hộp thoại, còn
+     bản quét "light" của R30.6 thực ra chạy chế độ tối hai lần (đã sửa cùng đợt
+     ở scripts/axe_scan.mjs). */
+  --ink-700: #86998F;
+  --ink-900: #DCD6D2;
+  --ink-800: #A6B4AD;  /* 8.02:1 trên card tối */
+  --ink-500: #86998F;  /* cùng giá trị --ink-700: đạt ≥4.5 trên MỌI nền tối */
+  --ink-200: #A4B1AE;  /* 7.80:1 — dùng ở .dark .md-name (cong-dong.vue:1913) */
+  /* Huy hiệu ngày ở chế độ tối: GIỮ chip đậm + chữ trắng (10.12:1), và giải
+     bài toán "chip chìm vào card" bằng VIỀN chứ không bằng cách làm sáng nền.
+     Ép một màu gánh cả hai ràng buộc thì dải hợp lệ chỉ còn hẹp tí: nền phải
+     ≥3.0 so với card NHƯNG vẫn ≤ ngưỡng để chữ trắng đạt 4.5 — điểm tốt nhất
+     tìm được là #CB4D2E, chữ trắng chỉ dư 0.03. Tách hai ràng buộc ra thì cả
+     hai đều dư dả. Cách cũ rgba(var(--primary-rgb), .88) hoà ra tông GIỮA
+     #c4694f, hỏng cho cả chữ trắng (3.83) lẫn chữ đậm (3.91) — đúng vùng chết. */
+  --date-badge-bg: var(--primary-dark);
+  --date-badge-ink: #FFFFFF;
+  --date-badge-ring: var(--primary-fg);   /* #d98a6f trên card tối = 6.43 */
   /* brand-foreground lighten (đạt ≥4.5:1 trên card tối) — nút nền brand vẫn dùng --primary đậm + chữ trắng */
   --primary-fg: #D98A6F;
   --primary-fg-strong: #E09980;

@@ -1620,6 +1620,11 @@ useHead({
 .dc-nophoto-note {
   position: absolute; right: var(--space-4); bottom: var(--space-3); z-index: 2;
   font-size: var(--text-2xs); color: rgba(var(--white-rgb), .82);
+  /* Cùng rủi ro với .dc-disclosure ở trên, và ghi chú này CHỈ hiện đúng lúc
+     hero là gradient (entity không ảnh) — tức luôn ở đúng trường hợp nguy hiểm. */
+  background: rgba(var(--black-rgb), .62);
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
   text-shadow: 0 1px 3px rgba(var(--black-rgb), .5); max-width: 58%; text-align: right; line-height: 1.3;
 }
 .detail-cover .dc-placeholder {
@@ -1633,6 +1638,15 @@ useHead({
   bottom: var(--space-3);
   z-index: 3;
   color: rgba(var(--white-rgb), .9);
+  /* Nền che BẮT BUỘC, không chỉ text-shadow. Chữ trắng ở đây được thiết kế để
+     nằm đè ẢNH bìa, nhưng entity KHÔNG có ảnh thì hero là gradient riêng theo
+     entity — và gradient đó có thể SÁNG. Đo thật: #fcfcfc trên #deddda = 1.32.
+     Bóng chữ không cứu nổi mức đó. Lớp che .62 cho 7.39 trên nền đo được và
+     vẫn còn 6.04 ở trường hợp xấu nhất tuyệt đối (nền trắng tinh).
+     Cùng lối giải đã dùng sẵn cho nhãn thumbnail ở .dc-thumb-btn bên dưới. */
+  background: rgba(var(--black-rgb), .62);
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
   text-shadow: 0 1px 3px rgba(var(--black-rgb), .45);
 }
 .dc-thumb-btn { position: relative; }

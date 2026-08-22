@@ -67,7 +67,15 @@ export function useNDAMap() {
 
     let maplibregl: MapLibreModule
     try {
-      maplibregl = await import('maplibre-gl')
+      // Interop CJS/ESM BẮT BUỘC ở đây. maplibre-gl 5.24.0 khai "type": "module"
+      // trong package.json nhưng `main` trỏ tới dist/maplibre-gl.js — một bundle
+      // UMD kết thúc bằng `}));` và KHÔNG có một câu `export` nào. Namespace thu
+      // được vì thế không có `.Map`, nên `new maplibregl.Map(...)` ném
+      // "maplibregl.Map is not a constructor" và MỌI bản đồ trên site chết:
+      // /ban-do dựng 0 canvas, data-map-state="error" (đo 2026-08-23).
+      // `.default ?? mod` đúng cho cả hai chiều — là no-op nếu gói trả named export.
+      const mod = await import('maplibre-gl') as unknown as { default?: MapLibreModule }
+      maplibregl = (mod.default ?? mod) as MapLibreModule
     } catch (error) {
       mapOptions.onStateChange?.('error')
       throw error

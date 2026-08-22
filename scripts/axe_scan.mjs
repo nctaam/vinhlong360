@@ -171,16 +171,56 @@ async function newTarget() {
 }
 
 async function applyColorMode(cdp, mode) {
-  // @nuxtjs/color-mode đọc localStorage['vl360-color-mode'] (nuxt.config.ts:25).
+  // @nuxtjs/color-mode đọc localStorage['vl360-color-mode'] (nuxt.config.ts:27),
+  // NHƯNG nó không phải nguồn sự thật. useAccessibilityProfile.ts mới là chủ:
+  // nó đọc localStorage['vl360-accessibility-profile'], mặc định theme 'nocturne'
+  // (:78,:84), rồi ĐẨY NGƯỢC vào colorMode.preference (:138). Đặt mỗi
+  // 'vl360-color-mode' thì hồ sơ tiếp cận ghi đè lại thành dark ngay lúc tải.
+  //
+  // Hậu quả trước khi sửa (đo 2026-08-23): bản quét 'light' KHÔNG hề đổi giao
+  // diện — nó quét chế độ tối lần thứ hai rồi dán nhãn 'light'. Report khoe
+  // "25 trang × 2 chế độ" nhưng chế độ sáng CHƯA TỪNG được quét, và 8 vi phạm
+  // serious+ thực ra là 4 lỗi chế-độ-tối bị đếm đôi. Bằng chứng: cả hai nhãn
+  // báo y hệt #f3e7e4 trên #af6048, trong khi đo tay ở chế độ sáng thật cho
+  // 7.75:1 (đạt).
+  //
   // Phải đứng trên trang CÙNG ORIGIN mới ghi được, nên navigate về base trước.
+  const theme = mode === 'light' ? 'parchment' : 'nocturne'
   await cdp.send('Page.navigate', { url: baseUrl })
   await sleep(settleMs)
   await cdp.send('Runtime.evaluate', {
-    expression: `localStorage.setItem('vl360-color-mode', ${JSON.stringify(mode)})`,
+    expression: `(() => {
+      localStorage.setItem('vl360-color-mode', ${JSON.stringify(mode)});
+      localStorage.setItem('vl360-accessibility-profile', JSON.stringify({
+        theme: ${JSON.stringify(theme)}, density: 'comfortable', textScale: 1,
+      }));
+    })()`,
   })
   await cdp.send('Emulation.setEmulatedMedia', {
     features: [{ name: 'prefers-color-scheme', value: mode }],
   }).catch(() => {})
+}
+
+async function assertColorModeApplied(cdp, mode) {
+  // Cổng chỉ có giá trị nếu nó biết mình đang quét cái gì. Đợt trước bản quét
+  // 'light' im lặng chạy ở chế độ tối suốt nhiều tháng vì không ai kiểm lại.
+  const want = mode === 'light' ? 'parchment' : 'nocturne'
+  const res = await cdp.send('Runtime.evaluate', {
+    expression: `JSON.stringify({
+      theme: document.documentElement.dataset.theme || null,
+      dark: document.documentElement.classList.contains('dark'),
+    })`,
+    returnByValue: true,
+  })
+  const seen = JSON.parse(res.result?.value || '{}')
+  const darkOk = mode === 'light' ? seen.dark === false : seen.dark === true
+  if (seen.theme !== want || !darkOk) {
+    throw new Error(
+      `chế độ màu KHÔNG áp dụng được: yêu cầu '${mode}' (data-theme=${want}) ` +
+      `nhưng trang đang ở data-theme=${seen.theme}, .dark=${seen.dark}. ` +
+      `Quét tiếp sẽ cho ra một lượt trùng lặp đội lốt chế độ khác — dừng.`
+    )
+  }
 }
 
 async function scanRoute(cdp, axeSource, route) {
@@ -288,6 +328,11 @@ async function main() {
     for (const mode of COLOR_MODES) {
       console.log(`\n— chế độ ${mode} —`)
       await applyColorMode(cdp, mode)
+      // Điều hướng một lần nữa rồi mới kiểm: hồ sơ tiếp cận được áp lúc mount,
+      // nên trang vừa dùng để GHI localStorage chưa phản ánh giá trị mới.
+      await cdp.send('Page.navigate', { url: baseUrl })
+      await sleep(settleMs)
+      await assertColorModeApplied(cdp, mode)
       for (const route of ROUTES) {
         // Một trang nặng làm axe.run vượt timeout KHÔNG được kéo sập cả lượt —
         // trước đây mất trắng 24 trang đã quét xong chỉ vì trang thứ 25.

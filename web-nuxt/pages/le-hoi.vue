@@ -626,6 +626,8 @@ useHead({
 .lehoi-badge {
   background: var(--primary-dark);
 }
+/* Không cần bản .dark riêng: --primary-dark đã đậm ở cả hai chế độ nên chữ
+   trắng đạt 10.12:1, và ranh giới do vòng viền ở .dark .event-date-badge lo. */
 .lehoi-dot {
   background: var(--primary-dark);
 }

@@ -505,7 +505,13 @@ html[data-density="compact"] .public-bottom-nav-item {
   }
 }
 
-@media (max-width: 767px) {
+/* 820px, KHÔNG phải 767px: `.public-shell-task-row` tắt ở `max-width: 820px`
+   (:461) còn cả hệ thanh điều hướng dưới trước đây chỉ bật ở 767px, nên dải
+   768–820px KHÔNG CÒN thanh điều hướng chính nào — đo ở 800px: task row cao 0px,
+   .public-bottom-nav display:none, người dùng chỉ còn nút ba-gạch.
+   Khối này thuần về thanh dưới và phần đệm nội dung dành chỗ cho nó, nên nâng
+   ngưỡng không kéo theo quy tắc mobile nào khác. */
+@media (max-width: 820px) {
   .public-shell main {
     padding-bottom: calc(var(--shell-public-bottom-nav-reserved-height) + var(--space-2));
   }

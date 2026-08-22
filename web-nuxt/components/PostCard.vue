@@ -7,7 +7,16 @@
     data-entity-image-policy="no-image-invariant"
   >
     <div class="thread-left">
-      <NuxtLink v-if="post.user_id" :to="userPath(post.username || post.user_id)" class="thread-avatar-link">
+      <!-- aria-label BẮT BUỘC: link này chỉ bọc ảnh đại diện, và khi người dùng
+           chưa có ảnh thì AvatarPlaceholder dựng <svg aria-hidden="true"> — link
+           không còn nội dung nào đọc được. axe bắt 16 link như vậy chỉ riêng
+           trang /cong-dong (rule link-name, mức serious). -->
+      <NuxtLink
+        v-if="post.user_id"
+        :to="userPath(post.username || post.user_id)"
+        class="thread-avatar-link"
+        :aria-label="`Trang cá nhân của ${post.display_name || 'người dùng'}`"
+      >
         <span class="avatar thread-avatar">
           <AvatarPlaceholder :src="post.avatar" :initial="authorInitial" :alt="post.display_name" />
         </span>

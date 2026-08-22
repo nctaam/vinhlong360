@@ -2041,7 +2041,7 @@ useHead({
   display: block; margin-bottom: var(--space-1); color: var(--warning);
   font-size: var(--text-2xs); font-weight: var(--weight-bold); letter-spacing: var(--tracking-caps); text-transform: uppercase;
 }
-.planner-conflict-diff h2 { margin: 0; color: var(--ink); font-family: var(--font-serif); font-size: var(--text-xl); line-height: 1.2; }
+.planner-conflict-diff h2 { margin: 0; color: var(--ink); font-family: var(--font-editorial); font-size: var(--text-xl); line-height: 1.2; }
 .planner-conflict-diff__revision {
   flex: 0 0 auto; padding: var(--space-2) var(--space-3); border: 1px solid var(--warning-border);
   border-radius: var(--radius-full); color: var(--ink); background: var(--bg-alt); font-size: var(--text-xs); font-weight: var(--weight-bold);
