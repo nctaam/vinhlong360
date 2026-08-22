@@ -36,7 +36,7 @@ báo backend **tụt 99 → 81**, và `pre_merge_check` bước 7 chặn đúng 
 | `tests/**/*.py` + `agent/tests` | 63.274 dòng |
 | `docs/**/*.md` | 104.155 dòng |
 | `scripts/**/*.py` | 32.285 dòng |
-| `web/data.js` | **5,43 MB** (1 file, 166.646 dòng) |
+| `web/data.js` | ~~**5,43 MB** (1 file, 166.646 dòng)~~ — đã gỡ 2026-08-22, xem mục 11 |
 | `web/data.json` | 4,43 MB · 1.746 entity · 12.060 quan hệ · 33 lịch trình |
 
 **Scorecard (`scripts/scorecard.py --no-append`)**
@@ -437,7 +437,8 @@ giải được DNS lúc chạy, và bản PDF ký trên `datafiles.chinhphu.vn`
     Tôi **cố ý không đụng**: sửa chúng để dời một số nguyên trên scorecard là tối ưu chỉ số
     bằng rủi ro sản phẩm. Đây là một dự án có phạm vi mà chủ dự án xếp lịch, hoặc một quyết
     định chấp nhận có ghi lý do.
-11. **`web/data.js`: giữ hay bỏ (§4).** Đã điều tra xong 2026-08-22 — bằng chứng đầy đủ:
+11. ✅ **`web/data.js` — ĐÃ GỠ 2026-08-22** theo chỉ đạo trực tiếp của chủ dự án.
+    Bằng chứng dẫn tới quyết định:
     - `web/index.html`, consumer duy nhất được nêu tên, **không còn tồn tại** (`web/` không có
       file `.html` nào).
     - `agent/scheduler.py:98` vẫn sinh lại file **5,43 MB** này mỗi lần khởi động và mỗi giờ.
@@ -449,10 +450,20 @@ giải được DNS lúc chạy, và bản PDF ký trên `datafiles.chinhphu.vn`
     Tức **ba nơi bảo trì một file không ai đọc**. Gỡ thì bớt 5,43 MB khỏi git, một tác vụ nền
     chạy mỗi giờ, một nhánh validator, và phần lớn một suite test.
 
-    **Tôi không tự gỡ**: xoá file/dữ liệu được git theo dõi mà không có chỉ đạo rõ là điều kiện
-    dừng theo CLAUDE.md §4. Khi chủ dự án quyết, các bước là: xoá `sync_data_json_to_js` +
-    đăng ký task trong `scheduler.py`, gỡ nhánh `data_js_*` trong `validate_data.py`, rút
-    `test_scheduler_repo_isolation.py` về phần còn ý nghĩa, rồi `git rm web/data.js`.
+    **Đã làm** (backup B1 trước: `scratch/backups/20260822-191421`): gỡ `sync_data_json_to_js`,
+    `task_sync_data` và `ScheduledTask("data-sync")` khỏi `scheduler.py`; gỡ nhánh
+    `_check_data_js` + khoá `data_js_status` khỏi `validate_data.py`; gỡ lời gọi ở
+    `server.py` (`/reload`) và `discover_province.py`; rồi `git rm web/data.js`.
+
+    Hai điều chỉnh đáng ghi vì chúng đổi *ý nghĩa* của test chứ không chỉ dời mã:
+    - `test_scheduler_repo_isolation.py` trước đây canh **đúng một tên file**. Nay nó hỏi
+      `git status --porcelain --untracked-files=no` — tức canh **mọi file tracked**. Cùng
+      mục đích, nhưng không chết theo file vừa gỡ, và bắt được cả tác vụ nền tương lai.
+    - `--sync` trong `scheduler.py` **giữ lại làm no-op có lời giải thích** thay vì xoá hẳn,
+      để lệnh cũ trong tay người vận hành nhận được một câu trả lời chứ không phải lỗi argparse.
+
+    Còn lại **cố ý** vài chỗ nhắc tên `data.js`: chúng là ghi chú lịch sử ("từng sinh ra file
+    này") và các test khẳng định file **không** còn — xoá chữ đi thì mất luôn lời giải thích.
 
 **Nhóm C — đã ghi nhận, chưa cần làm ngay**
 

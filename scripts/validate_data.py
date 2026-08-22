@@ -1329,22 +1329,6 @@ def _check_duplicate_name_type(entities: list[Any], issues: list[Issue]) -> int:
     return len(duplicate_name_type)
 
 
-def _check_data_js(data_path: Path, issues: list[Issue]) -> str:
-    data_js = data_path.with_name("data.js")
-    data_js_status = "missing"
-    if data_js.exists():
-        text = data_js.read_text(encoding="utf-8", errors="replace")
-        if "window.VL_DATA" in text or "globalThis.VL_DATA" in text:
-            data_js_status = "window"
-        elif "export const" in text:
-            data_js_status = "module_export"
-            issues.append(Issue("error", "data_js_not_legacy_script", "web/data.js uses module exports but web/index.html loads it as a plain script"))
-        else:
-            data_js_status = "unknown"
-            issues.append(Issue("warning", "data_js_unknown_shape", "web/data.js shape is not recognized"))
-    return data_js_status
-
-
 def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[str, Any]]:
     issues: list[Issue] = []
     entities, relationships, itineraries = _normalize_top_level(data, issues)
@@ -1451,7 +1435,6 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
 
     duplicate_names = _check_duplicate_names(entities, issues)
     stats_dup_name_type = _check_duplicate_name_type(entities, issues)
-    data_js_status = _check_data_js(data_path, issues)
 
     entity_types_dist = dict(Counter(e.get("type") for e in entities if isinstance(e, dict)).most_common())
     non_place_total = sum(1 for e in entities if isinstance(e, dict) and e.get("type") != "place")
@@ -1527,7 +1510,6 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         "coords_without_address": coords_without_address,
         "summary_truncated": summary_truncated,
         "duplicate_source_urls": duplicate_source_urls,
-        "data_js_status": data_js_status,
     }
 
     # DI-014: per-type SEO attribute coverage
@@ -1618,7 +1600,7 @@ DATA_QUALITY_KEYS = [
 def _print_report_header(stats: dict[str, Any]) -> None:
     print("VinhLong360 data validation")
     print("===========================")
-    for key in ["entities", "relationships", "itineraries", "legacy_coords_only", "broken_relationships", "data_js_status"]:
+    for key in ["entities", "relationships", "itineraries", "legacy_coords_only", "broken_relationships"]:
         print(f"{key}: {stats.get(key)}")
     print("\nEntity types:")
     for name, count in stats.get("entity_types", {}).items():

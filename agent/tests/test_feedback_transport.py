@@ -68,7 +68,6 @@ def _install_forbidden_state_mutations(monkeypatch):
     monkeypatch.setattr(learn_loop, "_save_feedback", forbidden)
     monkeypatch.setattr(database.db, "save_feedback", forbidden)
     monkeypatch.setattr(server.knowledge, "reload", forbidden)
-    monkeypatch.setattr(server, "sync_data_json_to_js", forbidden)
 
 
 @pytest.mark.anyio

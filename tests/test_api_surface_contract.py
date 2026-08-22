@@ -98,8 +98,7 @@ def app():
     os.environ.setdefault("BACKGROUND_INDEX_BUILD", "false")
     os.environ.setdefault("SCHEDULER_ENABLED", "false")
     os.environ.setdefault("ADMIN_API_KEY", "test-admin-key")
-    with patch("server.start_scheduler", MagicMock()), \
-         patch("server.sync_data_json_to_js", MagicMock()):
+    with patch("server.start_scheduler", MagicMock()):
         from server import app as fastapi_app
     return fastapi_app
 

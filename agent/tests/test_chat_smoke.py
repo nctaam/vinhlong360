@@ -152,11 +152,11 @@ def test_reload_requires_admin_and_reads_db(client_mocked):
     """GĐ3.8: /reload an toàn (nạp từ DB) nhưng yêu cầu admin."""
     from middleware import ADMIN_API_KEY as _ADMIN_KEY
     assert client_mocked.post("/reload").status_code == 401  # ẩn danh bị chặn
-    with patch.object(server, "sync_data_json_to_js") as sync_mock:
-        r = client_mocked.post("/reload", headers={"X-Admin-Key": _ADMIN_KEY})
+    r = client_mocked.post("/reload", headers={"X-Admin-Key": _ADMIN_KEY})
     assert r.status_code == 200, r.text
+    # From the database, not from an export: /reload used to also regenerate
+    # web/data.js, which nothing read.
     assert r.json().get("source") == "db"
-    sync_mock.assert_called_once_with()
 
 
 def test_provisional_sources_export_endpoints(client_mocked):

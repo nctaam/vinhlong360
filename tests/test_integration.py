@@ -60,8 +60,7 @@ def client():
     """Create a TestClient for the FastAPI app with mocked dependencies."""
     import threading
     with patch("server.get_client", lambda: _mock_client), \
-         patch("server.start_scheduler", MagicMock()), \
-         patch("server.sync_data_json_to_js", MagicMock()):
+         patch("server.start_scheduler", MagicMock()):
         from server import app
         from memory import memory_manager
         from fastapi.testclient import TestClient
@@ -497,8 +496,7 @@ def test_chat_stream_concurrent_non_blocking():
     async def _run():
         with patch("server.get_client", lambda: slow), \
              patch("server.start_scheduler", MagicMock()), \
-             patch("server.stop_scheduler", MagicMock()), \
-             patch("server.sync_data_json_to_js", MagicMock()):
+             patch("server.stop_scheduler", MagicMock()):
             import server
             from server import app
             # bỏ rate-limit để 2 request đồng thời đều qua

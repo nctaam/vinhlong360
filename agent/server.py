@@ -94,7 +94,7 @@ from middleware import (
 )
 from policy_http import PolicyHttpMiddleware
 from itinerary_gen import generate_itinerary
-from scheduler import start_scheduler, stop_scheduler, scheduler_status, sync_data_json_to_js
+from scheduler import start_scheduler, stop_scheduler, scheduler_status
 from chat_identity import resolve_chat_owner, set_chat_owner_cookie
 from owner_write_gate import owner_write_gate
 from feedback_policy import (
@@ -3983,7 +3983,6 @@ async def reload_data(request: Request):
             result["indexes"] = build_search_indexes()
         except Exception as e:
             logger.error(f"Index rebuild on reload failed: {e}")
-        sync_data_json_to_js()
         return result
 
     result = await asyncio.to_thread(_reload_blocking)

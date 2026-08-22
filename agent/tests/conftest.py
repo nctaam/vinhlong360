@@ -24,8 +24,8 @@ if str(TESTS_DIR) not in sys.path:
 os.environ.setdefault("ENVIRONMENT", "test")
 os.environ.setdefault("LOG_LEVEL", "WARNING")
 os.environ.setdefault("ADMIN_API_KEY", "test-admin-key-12345")
-# Scheduler nền PHẢI tắt trong test: task "data-sync" (run_immediately=True) gọi
-# sync_data_json_to_js() → GHI ĐÈ file tracked web/data.js ngay tick đầu tiên.
+# Scheduler nền PHẢI tắt trong test: tác vụ nền chạy ngay tick đầu tiên khi mở
+# app, và có tác vụ ghi vào file tracked → worktree bẩn.
 # 17 file test đã đặt cờ này ở module-level, nhưng scheduler.py đọc env LÚC IMPORT
 # nên cách đó thua nếu một file khác import server (→ scheduler) trước → cờ chốt
 # True → file test đầu tiên mở lifespan làm bẩn worktree. conftest được import

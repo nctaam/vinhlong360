@@ -22,8 +22,7 @@ def app_routes():
     os.environ.setdefault("BUILD_SEARCH_INDEXES", "false")
     os.environ.setdefault("BACKGROUND_INDEX_BUILD", "false")
     os.environ.setdefault("SCHEDULER_ENABLED", "false")
-    with patch("server.start_scheduler", MagicMock()), \
-         patch("server.sync_data_json_to_js", MagicMock()):
+    with patch("server.start_scheduler", MagicMock()):
         from server import app
     return list(app.routes)
 

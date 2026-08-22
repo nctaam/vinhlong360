@@ -2,11 +2,9 @@
 Tests for scheduler.py — task scheduling engine.
 """
 
-import json
 import sys
 import time
 from pathlib import Path
-from unittest.mock import patch
 
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -15,7 +13,6 @@ from scheduler import (
     ScheduledTask,
     TASKS,
     scheduler_status,
-    sync_data_json_to_js,
     task_cleanup_feedback_receipts,
 )
 
@@ -87,7 +84,6 @@ class TestTaskRegistry:
         expected = {
             "auto-learn",
             "relationships",
-            "data-sync",
             "analytics-cleanup",
             "feedback-receipt-cleanup",
             "learning-loop",
@@ -139,33 +135,6 @@ class TestSchedulerStatus:
             assert "interval_hours" in task_info
             assert "next_run_after" in task_info
             assert "run_count" in task_info
-
-
-class TestDataSync:
-    """Test data.json → data.js sync."""
-
-    def test_sync_creates_js(self, sample_data, tmp_path):
-        json_path = tmp_path / "data.json"
-        json_path.write_text(json.dumps(sample_data, ensure_ascii=False), encoding="utf-8")
-
-        with patch.object(sys.modules['scheduler'], 'PROJECT_DIR', tmp_path):
-            # Create web/ directory structure
-            web_dir = tmp_path / "web"
-            web_dir.mkdir()
-            web_json = web_dir / "data.json"
-            web_json.write_text(json.dumps(sample_data, ensure_ascii=False), encoding="utf-8")
-            result = sync_data_json_to_js()
-            assert result is True
-            web_js = web_dir / "data.js"
-            assert web_js.exists()
-            content = web_js.read_text(encoding="utf-8")
-            assert "window.VL_DATA" in content
-            assert "entities: places.concat(items)" in content
-
-    def test_sync_no_file(self, tmp_path):
-        with patch.object(sys.modules['scheduler'], 'PROJECT_DIR', tmp_path):
-            result = sync_data_json_to_js()
-            assert result is False
 
 
 class TestFeedbackReceiptCleanup:

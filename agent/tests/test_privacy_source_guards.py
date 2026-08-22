@@ -35,7 +35,6 @@ FORBIDDEN_FEEDBACK_TOKENS = (
     "record_feedback(",
     "save_feedback(",
     "_adjust_entity_confidence(",
-    "sync_data_json_to_js(",
     "data.json",
 )
 LOG_METHODS = {"debug", "info", "warning", "error", "exception", "critical"}

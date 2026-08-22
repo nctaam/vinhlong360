@@ -4,7 +4,6 @@ vinhlong360 — Task Scheduler.
 Chạy các tác vụ nền định kỳ:
   - Auto-learn từ knowledge gaps (mỗi 3h, cấu hình LEARN_INTERVAL_AUTOLEARN)
   - Relationship discovery (mỗi 24h)
-  - Data sync (data.json → data.js) sau mỗi thay đổi
   - Analytics cleanup (mỗi 24h)
   - Cache cleanup (mỗi 1h)
 
@@ -89,52 +88,6 @@ def _get_task(name: str):
         if t.name == name:
             return t
     return None
-
-
-# ══════════════════════════════════════════════════
-#  DATA SYNC: data.json → data.js
-# ══════════════════════════════════════════════════
-
-def sync_data_json_to_js():
-    """Đồng bộ data.json → data.js khi data.json thay đổi."""
-    json_path = PROJECT_DIR / "web" / "data.json"
-    js_path = PROJECT_DIR / "web" / "data.js"
-
-    if not json_path.exists():
-        _sched_logger.warning("data.json not found, skip sync")
-        return False
-
-    try:
-        data = json.loads(json_path.read_text(encoding="utf-8"))
-
-        # Build a plain script because web/index.html loads data.js without type="module".
-        places = [e for e in data["entities"] if e["type"] == "place"]
-        entities = [e for e in data["entities"] if e["type"] != "place"]
-        relationships = data.get("relationships", [])
-        itineraries = data.get("itineraries", [])
-
-        js_content = (
-            "/* vinhlong360 data - auto-synced from data.json */\n"
-            "(function () {\n"
-            f"var places = {json.dumps(places, ensure_ascii=False, indent=2)};\n"
-            f"var items = {json.dumps(entities, ensure_ascii=False, indent=2)};\n"
-            f"var relationships = {json.dumps(relationships, ensure_ascii=False, indent=2)};\n"
-            f"var itineraries = {json.dumps(itineraries, ensure_ascii=False, indent=2)};\n"
-            "window.VL_DATA = {\n"
-            "  entities: places.concat(items),\n"
-            "  relationships: relationships,\n"
-            "  itineraries: itineraries,\n"
-            "  ALL_MONTHS: [1,2,3,4,5,6,7,8,9,10,11,12]\n"
-            "};\n"
-            "})();\n"
-        )
-        js_path.write_text(js_content, encoding="utf-8")
-
-        _sched_logger.info("Synced data.json → data.js (%d places, %d entities, %d rels, %d itineraries)", len(places), len(entities), len(relationships), len(itineraries))
-        return True
-    except Exception as e:
-        _sched_logger.error("Data sync error: %s", e)
-        return False
 
 
 # ══════════════════════════════════════════════════
@@ -474,11 +427,6 @@ def task_relationship_discovery():
         _sched_logger.error("Relationship discovery timeout (300s)")
     except Exception as e:
         _sched_logger.error("Relationship discovery error: %s\n%s", e, traceback.format_exc())
-
-
-def task_sync_data():
-    """Đồng bộ data."""
-    sync_data_json_to_js()
 
 
 def task_cleanup_analytics():
@@ -1374,7 +1322,6 @@ def task_case_outbox():
 TASKS = [
     ScheduledTask("auto-learn",     task_auto_learn,            interval_seconds=AUTO_LEARN_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),   # 3h (env)
     ScheduledTask("relationships",  task_relationship_discovery, interval_seconds=12 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 12h
-    ScheduledTask("data-sync",      task_sync_data,              interval_seconds=3600),        # 1h
     ScheduledTask("case-outbox",    task_case_outbox,            interval_seconds=60),          # 1m, inert while the case flags are off
     ScheduledTask("analytics-cleanup", task_cleanup_analytics,   interval_seconds=24 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 24h
     ScheduledTask("feedback-receipt-cleanup", task_cleanup_feedback_receipts, interval_seconds=3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 1h
@@ -1487,7 +1434,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="vinhlong360 Task Scheduler")
     parser.add_argument("--once", action="store_true", help="Run all tasks once then exit")
     parser.add_argument("--task", type=str, help="Run a specific task once")
-    parser.add_argument("--sync", action="store_true", help="Just sync data.json → data.js")
+    parser.add_argument("--sync", action="store_true", help="Retired no-op (kept so old invocations explain themselves)")
     args = parser.parse_args()
 
     print("=" * 50)
@@ -1495,7 +1442,7 @@ if __name__ == "__main__":
     print("=" * 50)
 
     if args.sync:
-        sync_data_json_to_js()
+        print("--sync is retired: web/data.js had no reader left (web/index.html is gone).")
     elif args.task:
         task_map = {t.name: t for t in TASKS}
         if args.task in task_map:

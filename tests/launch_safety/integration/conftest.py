@@ -27,8 +27,9 @@ REQUIRE_DOCKER = "VL360_REQUIRE_DOCKER_INTEGRATION"
 SOURCE_REVISION = re.compile(r"^[a-f0-9]{40}$")
 MAX_CAPTURE = 1_500_000
 ALLOWED_DIRTY_PREFIXES = ("tests/launch_safety/integration/",)
+# web/data.js đứng đây vì tác vụ nền sinh lại nó mỗi giờ; file đã gỡ 2026-08-22
+# nên bỏ luôn khỏi danh sách — để lại thì một file lạ trùng tên sẽ được cho qua.
 ALLOWED_DIRTY_PATHS = {
-    "web/data.js",
     "web-nuxt/pnpm-lock.yaml",
     "web-nuxt/pnpm-workspace.yaml",
 }

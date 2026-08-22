@@ -1,30 +1,18 @@
-"""Suite KHÔNG được ghi đè file tracked `web/data.js` (hồi quy 2026-08-07).
+"""Suite KHÔNG được làm bẩn worktree bằng cách chạy scheduler nền.
 
-Triệu chứng thật (đo 3 lần): chạy full suite xong `git status` luôn có
-` M web/data.js` (~8 dòng đổi — data.js ở HEAD đã cũ hơn data.json). Ai chạy
-suite rồi `git add -A` sẽ commit nhầm bản sinh lại.
+Hồi quy 2026-08-07: mở lifespan của app trong phiên test bật thread nền, tick đầu
+tiên ghi đè `web/data.js` — một file được git theo dõi — nên `git status` bẩn và
+một agent khác suýt `stash` mất việc đang dở.
 
-Chuỗi nhân quả:
-  1. `scheduler.SCHEDULER_ENABLED` đọc env **lúc import module**.
-  2. 17 file test đặt `os.environ["SCHEDULER_ENABLED"]="false"` ở module-level —
-     vô tác dụng nếu một file khác đã `import server` (→ `scheduler`) TRƯỚC đó
-     (vd `test_account_deletion_transport.py` đứng trước `test_chat_*` theo thứ
-     tự collect) → cờ chốt cứng True cho cả process.
-  3. File test đầu tiên mở lifespan (`with TestClient(server.app)`) →
-     `start_scheduler()` thật → thread nền.
-  4. `_scheduler_loop` chạy TASKS ngay tick đầu; `ScheduledTask("data-sync", ...)`
-     dùng `run_immediately=True` mặc định → `next_run_after=0` → chạy liền.
-  5. `sync_data_json_to_js()` ghi `PROJECT_DIR/web/data.js` = file repo thật.
+`web/data.js` đã được gỡ (2026-08-22: không còn ai đọc; `web/index.html`, consumer
+duy nhất, đã biến mất từ trước). Nhưng *loại* lỗi thì không mất theo: bất kỳ tác vụ
+nền nào chạy trong phiên test và ghi vào file tracked đều tái hiện đúng sự cố đó.
+Vì vậy test cuối hỏi git xem worktree có bẩn thêm không, thay vì canh một tên file.
 
-Tái hiện tối thiểu (trước khi vá):
-    python -m pytest agent/tests/test_account_deletion_transport.py \
-                     agent/tests/test_chat_history_continuity.py -q -n0
-    git status --short web/data.js   # -> " M web/data.js"
-
-Bản vá: `os.environ.setdefault("SCHEDULER_ENABLED", "false")` trong
-`agent/tests/conftest.py` + `tests/conftest.py` (conftest được import trước mọi
-test module nên kịp chốt cờ). File này KHÔNG tự đặt env — nó phải đỏ nếu ai gỡ
-dòng đó khỏi conftest, kể cả khi chạy một mình.
+Ba việc suite này giữ:
+  1. Phiên test không được bật scheduler nền.
+  2. `start_scheduler()` không được spawn thread khi test đang chạy.
+  3. Mở/đóng lifespan của app không được làm bẩn bất kỳ file tracked nào.
 """
 
 import os
@@ -47,8 +35,6 @@ os.environ.setdefault("BACKGROUND_INDEX_BUILD", "false")
 
 import scheduler  # noqa: E402
 
-DATA_JS = PROJECT_ROOT / "web" / "data.js"
-
 
 def _scheduler_threads() -> list[threading.Thread]:
     return [t for t in threading.enumerate() if t.name == "scheduler"]
@@ -57,8 +43,8 @@ def _scheduler_threads() -> list[threading.Thread]:
 def test_phien_test_khong_bat_scheduler_nen():
     """Cờ phải là False *trong process test*, bất kể file nào import trước."""
     assert scheduler.SCHEDULER_ENABLED is False, (
-        "SCHEDULER_ENABLED đang True trong phiên test → thread nền sẽ chạy task "
-        "data-sync và ghi đè web/data.js. Kiểm tra os.environ.setdefault"
+        "SCHEDULER_ENABLED đang True trong phiên test → thread nền sẽ chạy và "
+        "có thể ghi vào file tracked. Kiểm tra os.environ.setdefault"
         "('SCHEDULER_ENABLED','false') ở agent/tests/conftest.py và tests/conftest.py, "
         "hoặc env ngoài đang ép SCHEDULER_ENABLED=true."
     )
@@ -82,52 +68,35 @@ def test_start_scheduler_khong_spawn_thread_nen(monkeypatch):
         scheduler.stop_scheduler()
 
 
-def test_task_data_sync_van_ghi_that_khi_tro_vao_tmp(tmp_path, monkeypatch):
-    """Chốt chặn ngược: hai test trên chỉ có nghĩa nếu data-sync THẬT SỰ biết ghi.
+def test_mo_lifespan_app_khong_lam_ban_worktree():
+    """Hồi quy end-to-end: mở/đóng lifespan của app không được làm bẩn worktree.
 
-    Trỏ PROJECT_DIR vào tmp_path rồi chạy đúng hàm task → phải sinh data.js.
-    Nếu ngày nào đó sync bị vô hiệu hoá, test này đỏ và ta biết hai test trên đã
-    thành xanh-giả.
+    Bản gốc canh đúng một file, `web/data.js`, vì đó là file đã bị ghi đè năm
+    2026-08-07. File đó nay đã gỡ (không còn ai đọc), nhưng *loại* lỗi thì vẫn
+    còn: một thread nền chạy trong phiên test và ghi vào file được git theo dõi.
+    Nên test hỏi git, thay vì hỏi một tên file.
     """
-    web = tmp_path / "web"
-    web.mkdir()
-    (web / "data.json").write_text(
-        '{"entities": [{"id": "x", "type": "place", "name": "X"}],'
-        ' "relationships": [], "itineraries": []}',
-        encoding="utf-8",
-    )
-    monkeypatch.setattr(scheduler, "PROJECT_DIR", tmp_path)
+    import subprocess
 
-    scheduler.task_sync_data()
-
-    assert (web / "data.js").exists()
-    assert "window.VL_DATA" in (web / "data.js").read_text(encoding="utf-8")
-
-
-def test_mo_lifespan_app_khong_ghi_de_web_data_js():
-    """Hồi quy end-to-end: mở/đóng lifespan của app không được đụng web/data.js.
-
-    Đây đúng là đường đã làm bẩn worktree. Test tự khôi phục file nếu bị ghi, để
-    một lần đỏ không để lại rác trong working tree.
-    """
     import server
     from fastapi.testclient import TestClient
 
-    original = DATA_JS.read_bytes()
-    before_mtime = DATA_JS.stat().st_mtime_ns
-    try:
-        with TestClient(server.app):
-            pass
-        # Thread nền (nếu bị bật) ghi ngay tick đầu; chờ có giới hạn để test
-        # không phải ngủ đủ 3s ở đường xanh.
-        deadline = time.monotonic() + 3.0
-        while time.monotonic() < deadline and DATA_JS.stat().st_mtime_ns == before_mtime:
-            time.sleep(0.05)
+    def dirty() -> set[str]:
+        out = subprocess.run(
+            ["git", "status", "--porcelain", "--untracked-files=no"],
+            cwd=PROJECT_ROOT, capture_output=True, text=True, check=True,
+        ).stdout
+        return {line[3:].strip() for line in out.splitlines() if line.strip()}
 
-        assert DATA_JS.read_bytes() == original, (
-            "web/data.js (file tracked) bị suite ghi đè khi mở lifespan — "
-            "scheduler nền đang chạy trong test"
-        )
-    finally:
-        if DATA_JS.read_bytes() != original:
-            DATA_JS.write_bytes(original)
+    before = dirty()
+    with TestClient(server.app):
+        pass
+    # Thread nền (nếu bị bật) ghi ngay tick đầu; chờ có giới hạn để test không
+    # phải ngủ đủ 3s ở đường xanh.
+    deadline = time.monotonic() + 3.0
+    while time.monotonic() < deadline and dirty() == before:
+        time.sleep(0.05)
+
+    assert dirty() == before, (
+        "mở lifespan làm bẩn file tracked — scheduler nền đang chạy trong test"
+    )

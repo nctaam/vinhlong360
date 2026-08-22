@@ -12,7 +12,7 @@ Kiến trúc:
   - Mỗi luồng: GPT 9router liệt kê mục CÓ THẬT → lọc ngoài tỉnh → dedup →
     geocode qua OSM (địa điểm: theo tên; nông sản/OCOP: theo vùng trồng) →
     entity provisional (toạ độ KHÔNG do GPT sinh).
-  - Gộp → dedup chéo + vs KB → snapshot → ghi provisional → sync data.js + reload.
+  - Gộp → dedup chéo + vs KB → snapshot → ghi provisional → reload index.
 
 Chạy:
   # 1 vòng tất cả chủ đề
@@ -287,10 +287,12 @@ def _persist_to_db(unique, data):
 
 
 def _sync_and_reload():
-    """Sync data.json → data.js and reload knowledge index."""
+    """Reload the knowledge index after writing data.json.
+
+    Used to also regenerate web/data.js; that export was removed once its only
+    consumer, web/index.html, turned out to be long gone.
+    """
     try:
-        import scheduler
-        scheduler.sync_data_json_to_js()
         import knowledge
         knowledge.reload()
     except Exception as exc:
