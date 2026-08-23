@@ -942,3 +942,34 @@ Rà nguồn còn **19 quy tắc** đặt `font-size < 16px` cho input/select/tex
 phần lớn ở khu admin (`.usr-role-select`, `.cpl-place-select`,
 `.admin-select-inline`, `.ent-inline-select`…). Sửa gốc là nâng độ đặc hiệu của
 chính khối sàn — thay đổi diện rộng, cần đo riêng.
+
+#### Mục 10 — ĐÃ XỬ LÝ XONG (2026-08-23)
+
+18 quy tắc đã có sàn 16px trên thiết bị cảm ứng (17 quy tắc / 11 file, cộng
+`.public-context-control select` ở shell.css).
+
+**Cách vá và vì sao chọn nó:** thêm khối `@media (pointer: coarse)` NGAY TRONG
+FILE chứa quy tắc gốc, dùng `font-size: max(16px, <cỡ gốc>)`.
+- Cùng file ⇒ khớp scope. Với `<style scoped>` của Vue, quy tắc mang `[data-v-*]`
+  (độ đặc hiệu 0,2,0) nên một quy tắc toàn cục KHÔNG bao giờ thắng được; chỉ có
+  thể vá từ bên trong chính component đó.
+- Đặt sau ⇒ thắng theo thứ tự nguồn khi độ đặc hiệu ngang nhau.
+- `max()` ⇒ giữ nguyên ý định cỡ chữ ở màn hình chuột.
+- Thuần cộng thêm (§2 B2): không sửa quy tắc nào có sẵn, gỡ ra là về nguyên trạng.
+
+**Đã cân nhắc và LOẠI cách sửa gốc** (nâng độ đặc hiệu của chính khối sàn chung):
+sàn dùng `max(16px, 1em)`, mà `1em` là cỡ chữ của phần tử CHA chứ không phải của
+chính ô nhập. Nếu ép nó thắng bằng `!important`, một ô nhập cố ý đặt 20px sẽ bị
+kéo về `max(16px, cỡ-cha)` — tức có thể CO LẠI. Vá từng chỗ thì không có rủi ro đó.
+
+**Hai cái bị loại khỏi danh sách 19 sau khi kiểm từng phần tử:**
+- `.dq-select-all` là `<label>`, không phải điều khiển nhập. Máy dò khớp theo
+  chuỗi "select" trong TÊN LỚP nên bắt nhầm.
+- `.admin-select-inline` (`layouts/admin.vue:540`) không được dùng ở bất kỳ
+  template nào — **CSS chết**, nên gỡ trong một task dọn riêng.
+
+**Đo hai chiều:**
+- cảm ứng 375px: 4/4 ô nhập ở 16px, gồm `.error-search-input` là style scoped —
+  xác nhận chèn đúng khối `<style>` thì có hiệu lực.
+- chuột 1280px: giữ nguyên cỡ gốc (`.topbar-search input` 14,4px;
+  `.stop-time-input`/`.stop-note-input` 13,6px). Sàn KHÔNG rò sang desktop.
