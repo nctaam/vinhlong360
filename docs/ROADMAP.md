@@ -973,3 +973,41 @@ kéo về `max(16px, cỡ-cha)` — tức có thể CO LẠI. Vá từng chỗ t
   xác nhận chèn đúng khối `<style>` thì có hiệu lực.
 - chuột 1280px: giữ nguyên cỡ gốc (`.topbar-search input` 14,4px;
   `.stop-time-input`/`.stop-note-input` 13,6px). Sàn KHÔNG rò sang desktop.
+
+#### Mục 9 — cập nhật: đã xong 5 file (2026-08-23)
+
+| File | Đã đổi | Cỡ khác nhau | Lệch tối đa |
+|---|---|---|---|
+| `shell.css` | 11 | 8 → 3 (375px) · 7 → 3 (1280px) | 1,00px |
+| `base.css` dải xs | 8 | 3 → 1 | 1,07px |
+| `base.css` dải sm | 18 | 6 → 3 | 1,55px |
+| `catalog.css` | 3 | — | 0,67px |
+| `components.css` | 24 | 9 → 3 (13/16/18px) | 2,40px |
+| `cards.css` | 6 | 4 → 2 | — |
+
+**Tổng: 70 khai báo đã về thang token.**
+
+Mỗi đợt đều có **nhóm đối chứng icon** (ví dụ `.star-rating .star` 24px,
+`.avatar` 14,4px) để chứng minh không đụng nhầm sang nhóm cỡ-hình.
+
+`components.css` được kiểm vỡ bố cục bằng cách **mở thật hộp Đăng nhập**: 1280px
+modal 399×456, 360px modal 312×703 — cả hai đều 0 phần tử tràn.
+
+#### Giới hạn kiểm chứng phải biết
+
+Dev local **không có dữ liệu entity** (API 502), nên `.card` không render kèm nội
+dung — trên `/dia-diem` thẻ cao 2px, tiêu đề 0 dòng. Vì vậy đợt `cards.css`
+KHÔNG kiểm được hình học thẻ với chữ thật; riêng `.card h3` có
+`-webkit-line-clamp: 2` nên đổi 17px → 16/18px sẽ làm chiều cao vùng kẹp đổi
+theo. Cần xem lại trên môi trường có dữ liệu.
+
+#### Còn lại, kèm lý do hoãn
+
+- `events.css` (10 khai báo): là **lưới lịch**, ô ngày chật, cỡ hiện tại 8–12px.
+  Tăng cỡ có nguy cơ vỡ ô nên phải đo vừa-ô từng breakpoint. Riêng
+  `.cal-lunar.lunar-mid::before` 8px và `.cal-lunar` 9px ở ≤380px là **dưới xa
+  mọi sàn cỡ chữ** — cần chủ dự án quyết là chấp nhận hay đổi cách hiển thị.
+- `detail.css` (5), `detail-shared.css` (3), `dossier.css` (4): phần lớn là
+  tiêu đề và cỡ container (`.framed-dossier` đặt 1rem cho cả khối), đổi sẽ kéo
+  theo mọi thứ bên trong — cần một đợt riêng tập trung vào thang tiêu đề.
+- Các trang `.vue`: chưa đụng.
