@@ -1,7 +1,7 @@
 <template>
   <section class="not-found">
     <div class="nf-inner">
-      <span class="nf-emoji">🗺️</span>
+      <span class="nf-emoji" aria-hidden="true"><IconLine name="map" /></span>
       <h1 class="nf-code">404</h1>
       <p class="nf-msg">Trang bạn tìm không tồn tại hoặc đã bị xóa.</p>
       <form class="nf-search" @submit.prevent="onSearch">
