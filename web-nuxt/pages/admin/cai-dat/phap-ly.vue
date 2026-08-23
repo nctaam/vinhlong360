@@ -22,12 +22,12 @@
     <Transition name="cs-fade">
       <div v-if="!loading" class="cs-form-wrap">
         <section class="legal-doc">
-          <h2 class="legal-doc-title">🔒 Chính sách bảo mật</h2>
+          <h2 class="legal-doc-title"><IconLine name="shield" /> Chính sách bảo mật</h2>
           <AdminSettingsForm :category="'legal'" :object-key="'legal.privacy'" :object-value="privacyVal" :fields="fields" @saved="reload" />
         </section>
 
         <section class="legal-doc">
-          <h2 class="legal-doc-title">📜 Điều khoản sử dụng</h2>
+          <h2 class="legal-doc-title"><IconLine name="file-text" /> Điều khoản sử dụng</h2>
           <AdminSettingsForm :category="'legal'" :object-key="'legal.terms'" :object-value="termsVal" :fields="fields" @saved="reload" />
         </section>
       </div>
