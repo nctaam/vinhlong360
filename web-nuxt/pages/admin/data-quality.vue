@@ -105,7 +105,7 @@
 
     <div v-if="applyResult" class="dq-apply-result" :class="{ 'dq-apply-result--warn': Number(applyResult.skipped_count) > 0 && !Number(applyResult.applied_count) }" role="status">
       <div class="dq-apply-result-head">
-        <span class="dq-apply-result-icon">{{ Number(applyResult.skipped_count) > 0 && !Number(applyResult.applied_count) ? '⚠' : '✓' }}</span>
+        <span class="dq-apply-result-icon" aria-hidden="true"><IconLine :name="Number(applyResult.skipped_count) > 0 && !Number(applyResult.applied_count) ? 'alert-triangle' : 'check'" /></span>
         <strong>{{ applyResult.dry_run ? 'Dry-run hoàn tất' : 'Apply hoàn tất' }}</strong>
       </div>
       <div class="dq-apply-result-stats">
@@ -181,7 +181,7 @@
           <tr v-if="!loading && !candidates.length">
             <td colspan="8" class="dq-empty-cell">
               <div class="admin-empty-state">
-                <div class="admin-empty-state-icon">{{ hasActiveFilters ? '🔍' : '✓' }}</div>
+                <div class="admin-empty-state-icon" aria-hidden="true"><IconLine :name="hasActiveFilters ? 'search' : 'check'" /></div>
                 <div class="admin-empty-state-text">{{ hasActiveFilters ? 'Không có vấn đề' : 'Chất lượng dữ liệu tốt' }}</div>
                 <div class="admin-empty-state-hint">{{ hasActiveFilters ? 'Dữ liệu hiện tại đáp ứng tiêu chí lọc.' : 'Không còn candidate nào chờ kiểm duyệt.' }}</div>
               </div>
