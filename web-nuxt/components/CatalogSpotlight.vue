@@ -47,7 +47,7 @@ const pick = computed<any>(() => {
     (cur?.summary || '').length > (best?.summary || '').length ? cur : best
   )
 })
-const meta = computed(() => pick.value ? (TYPE_META[pick.value.type] || { emoji: '📍', label: pick.value.type, cat: 'place' }) : null)
+const meta = computed(() => pick.value ? (TYPE_META[pick.value.type] || { label: pick.value.type, cat: 'place' }) : null)
 const spotlightMaterialAccent = computed(() => props.colorRecipe === 'tri-region-v1'
   ? resolveRegionalAccent(pick.value?.type)
   : undefined)

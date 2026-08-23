@@ -42,7 +42,11 @@ describe('EmptyState — hai đường vẽ biểu tượng', () => {
   })
 
   it('biểu tượng luôn ẩn khỏi cây a11y — nghĩa nằm ở title/message', () => {
-    for (const props of [{ icon: '⚠️' }, { iconName: 'alert-triangle' }]) {
+    const cases: Array<{ icon?: string; iconName?: string }> = [
+      { icon: '⚠️' },
+      { iconName: 'alert-triangle' },
+    ]
+    for (const props of cases) {
       const w = mount(EmptyState, { props, global })
       expect(w.find('.empty-icon').attributes('aria-hidden')).toBe('true')
     }

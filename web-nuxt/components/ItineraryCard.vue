@@ -66,7 +66,7 @@ const placeholderBg = computed(() => generateCategoryPlaceholder(props.itinerary
 const placeholderSvg = computed(() => generateCategoryIcon('itinerary'))
 
 const itineraryAreas = computed(() => Array.isArray(props.itinerary.areas) ? props.itinerary.areas.filter(Boolean) : [])
-const areaMeta = computed(() => AREA_META[props.itinerary.area] || { emoji: '📍', name: props.itinerary.area })
+const areaMeta = computed(() => AREA_META[props.itinerary.area] || { name: props.itinerary.area })
 const areaName = computed(() => {
   const primary = areaMeta.value.name
   const extra = itineraryAreas.value

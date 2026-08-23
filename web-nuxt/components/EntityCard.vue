@@ -94,7 +94,7 @@ const props = defineProps<{
 const imgError = ref(false)
 const activeSlide = ref(0)
 const cardPath = computed(() => entityPath(props.entity.id))
-const typeMeta = computed(() => TYPE_META[props.entity.type] || { emoji: '•', label: props.entity.type, cat: 'place' })
+const typeMeta = computed(() => TYPE_META[props.entity.type] || { label: props.entity.type, cat: 'place' })
 const cardMaterialAccent = computed(() => props.colorRecipe === 'tri-region-v1'
   ? resolveRegionalAccent(props.entity.type)
   : undefined)
