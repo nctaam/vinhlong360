@@ -1711,7 +1711,7 @@ onUnmounted(() => {
 .preference-section-head p { margin: 0; color: var(--ink-700); font-size: .84rem; }
 .preference-options { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
 .preference-option { min-height: 44px; padding: .55rem .85rem; border: 1px solid var(--border-input); border-radius: var(--radius-full); background: var(--bg); color: var(--ink-700); font: inherit; font-size: .86rem; cursor: pointer; transition: border-color .2s, background .2s, color .2s; }
-.preference-option:hover:not(:disabled) { border-color: var(--ink-500); color: var(--ink); }
+.preference-option:hover:not(:disabled) { border-color: var(--muted); color: var(--ink); }
 .preference-option.selected { border-color: var(--primary); background: color-mix(in oklab, var(--primary) 9%, transparent); color: var(--ink); font-weight: 650; }
 .preference-option:focus-visible, .preference-banner .btn:focus-visible, .preference-reset .btn:focus-visible, .delete-confirm .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .preference-option:disabled { cursor: not-allowed; opacity: .55; }
@@ -1741,7 +1741,7 @@ onUnmounted(() => {
   background: var(--bg); color: var(--ink-700); cursor: pointer; font-size: .9rem;
   transition: border-color .2s, background .2s;
 }
-.theme-btn:hover { border-color: var(--ink-500); }
+.theme-btn:hover { border-color: var(--muted); }
 .theme-btn.active { border-color: var(--accent, var(--primary)); background: color-mix(in oklab, var(--accent, var(--primary)) 8%, transparent); color: var(--ink); font-weight: 600; }
 .theme-icon { font-size: 1.1rem; }
 

@@ -129,8 +129,6 @@
      khai báo mất hiệu lực, nên ví dụ tên người dùng ở cong-dong.vue:1910 mất
      màu ở CẢ hai chế độ. Giá trị chọn theo tương phản đo được, không theo mắt. */
   --ink-800:  #45514B; /* chữ mạnh, dưới 900 — 8.09:1 trên card sáng */
-  --ink-500:  #586860; /* nhãn + viền hover — 5.74:1 trên card sáng */
-  --ink-200:  #586860; /* dải nhạt; chỗ dùng thật chỉ nằm trong .dark */
   --ink-900:  #2B2622;
   --white:    #FFFFFF;
 
@@ -884,8 +882,6 @@
   --ink-700: #86998F;
   --ink-900: #DCD6D2;
   --ink-800: #A6B4AD;  /* 8.02:1 trên card tối */
-  --ink-500: #86998F;  /* cùng giá trị --ink-700: đạt ≥4.5 trên MỌI nền tối */
-  --ink-200: #A4B1AE;  /* 7.80:1 — dùng ở .dark .md-name (cong-dong.vue:1913) */
   /* Huy hiệu ngày ở chế độ tối: GIỮ chip đậm + chữ trắng (10.12:1), và giải
      bài toán "chip chìm vào card" bằng VIỀN chứ không bằng cách làm sáng nền.
      Ép một màu gánh cả hai ràng buộc thì dải hợp lệ chỉ còn hẹp tí: nền phải
