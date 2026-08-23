@@ -501,6 +501,31 @@
   }
 }
 
+/* Ô tìm kiếm là hành động chính của trang chủ, nhưng theo thứ tự DOM nó nằm SAU
+   tiêu đề và phụ đề. Đo trên máy 360x740: nó rơi xuống 629–693px, bị thanh nav
+   dưới (bắt đầu 676) che mất 17px đáy và nút chat (616–664) đè 23x30px lên góc
+   phải — tức hành động chính bị hai thanh cố định che ngay khi mở trang.
+
+   Ở màn hẹp, đưa ô tìm kiếm lên ngay dưới kicker. Dùng `order` chứ không đổi
+   DOM: h1 và .hero-sub KHÔNG focus được, nên thứ tự bàn phím (ô tìm kiếm ->
+   "Tìm quanh tôi") vẫn đúng chiều từ trên xuống. Trình đọc màn hình vẫn nghe
+   theo DOM (tiêu đề trước, rồi ô tìm) — vẫn là một trình tự hợp nghĩa.
+
+   36rem thay vì 52rem của khối dưới: 52rem là ngưỡng xếp-một-cột, còn chỗ này
+   chỉ nhắm điện thoại, không đổi trật tự biên tập trên máy tính bảng. */
+@container home-lead (max-width: 36rem) {
+  [data-home-pilot="nocturne-b1"] .hero-main {
+    display: flex;
+    flex-direction: column;
+  }
+
+  [data-home-pilot="nocturne-b1"] .hero-main > .hero-kicker { order: 1; }
+  [data-home-pilot="nocturne-b1"] .hero-main > .hero-search { order: 2; }
+  [data-home-pilot="nocturne-b1"] .hero-main > h1 { order: 3; }
+  [data-home-pilot="nocturne-b1"] .hero-main > .hero-sub { order: 4; }
+  [data-home-pilot="nocturne-b1"] .hero-main > .hero-nearby { order: 5; }
+}
+
 @container home-decisions (max-width: 44rem) {
   [data-home-pilot="nocturne-b1"] .home-decision-ledger__link {
     grid-template-columns: 1fr auto;
