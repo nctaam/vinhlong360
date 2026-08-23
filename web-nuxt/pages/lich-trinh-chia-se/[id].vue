@@ -5,7 +5,7 @@
     <div v-if="plan" class="shared-plan card">
       <h1>{{ plan.title }}</h1>
       <p class="sp-meta">
-        <span v-if="plan.author">👤 {{ plan.author }}</span>
+        <span v-if="plan.author"><IconLine name="user" /> {{ plan.author }}</span>
         <span>· {{ plan.stops.length }} điểm</span>
       </p>
       <ol class="sp-stops">
@@ -14,8 +14,8 @@
           <div class="sp-stop-body">
             <NuxtLink v-if="s.id" :to="entityPath(s.id)" class="sp-stop-name">{{ s.name }}</NuxtLink>
             <strong v-else class="sp-stop-name">{{ s.name }}</strong>
-            <small v-if="s.place_name" class="sp-stop-place">📍 {{ s.place_name }}</small>
-            <small v-if="s.time" class="sp-stop-time">🕒 {{ s.time }}</small>
+            <small v-if="s.place_name" class="sp-stop-place"><IconLine name="pin" /> {{ s.place_name }}</small>
+            <small v-if="s.time" class="sp-stop-time"><IconLine name="clock" /> {{ s.time }}</small>
             <p v-if="s.notes" class="sp-stop-notes">{{ s.notes }}</p>
           </div>
         </li>
@@ -24,7 +24,7 @@
     </div>
 
     <SkeletonList v-else-if="status === 'pending'" :count="4" />
-    <EmptyState v-else icon="🗺️" title="Không tìm thấy lịch trình" message="Lịch trình này không tồn tại hoặc chưa được công khai.">
+    <EmptyState v-else icon-name="map" title="Không tìm thấy lịch trình" message="Lịch trình này không tồn tại hoặc chưa được công khai.">
       <NuxtLink to="/lich-trinh" class="btn btn-outline">Xem lịch trình gợi ý</NuxtLink>
     </EmptyState>
   </section>

@@ -95,7 +95,7 @@
     <CatalogInterstitial
       v-if="itineraries?.length"
       fact="Mỗi lịch trình được thiết kế dựa trên kinh nghiệm thực tế — lưu vào tài khoản để xem lại khi đi."
-      icon="💡"
+      icon-name="bulb"
       :links="[
         { to: '/tao-lich-trinh', label: 'Tự tạo lịch trình' },
         { to: '/du-lich', label: 'Khám phá du lịch' },
