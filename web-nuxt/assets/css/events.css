@@ -717,7 +717,7 @@
 .cal-event-dot:hover { opacity: .85; transform: scale(1.04); }
 .cal-event-dot:active { transform: scale(.93); }
 .cal-more {
-  font-size: 10px;
+  font-size: var(--text-2xs);
   color: var(--ink-tertiary);
   padding-inline-start: var(--space-1);
 }
@@ -735,7 +735,7 @@
 .cal-lunar {
   font-family: var(--font-editorial);
   font-style: italic;
-  font-size: 11px;
+  font-size: var(--text-2xs);
   color: var(--ink-tertiary);
   opacity: .85;
   transition: color .2s var(--ease-out), opacity .2s var(--ease-out);
@@ -743,13 +743,13 @@
 .cal-cell:not(.cal-empty):hover .cal-lunar { color: var(--secondary-fg, var(--secondary)); opacity: 1; }
 .register-su-kien .cal-cell:not(.cal-empty):hover .cal-lunar { color: var(--accent-dark); }
 .cal-lunar.lunar-first {
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--error);
   font-weight: var(--weight-semibold);
   opacity: 1;
 }
 .cal-lunar.lunar-mid {
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--accent-dark);
   font-weight: var(--weight-semibold);
   opacity: 1;
@@ -843,7 +843,7 @@
 
 /* ── Responsive: ultra-small phones ── */
 @media (max-width: 380px) {
-  .cal-cell { min-height: 64px; font-size: 0.75rem; }
-  .cal-lunar { font-size: 9px; }
-  .cal-lunar.lunar-first, .cal-lunar.lunar-mid { font-size: 10px; }
+  .cal-cell { min-height: 64px; font-size: var(--text-xs); }
+  .cal-lunar { font-size: var(--text-2xs); }
+  .cal-lunar.lunar-first, .cal-lunar.lunar-mid { font-size: var(--text-2xs); }
 }
