@@ -95,7 +95,7 @@
           <div class="lt-stops-head">
             <label class="admin-label lt-stops-label">Điểm dừng <span class="lt-stops-count">{{ stops.length }}</span></label>
             <button type="button" class="lt-mode-toggle" @click="toggleJsonMode">
-              {{ jsonMode ? '☰ Dạng danh sách' : '{ } Dạng JSON' }}
+              <IconLine :name="jsonMode ? 'list' : 'file-text'" /> {{ jsonMode ? 'Dạng danh sách' : 'Dạng JSON' }}
             </button>
           </div>
 
