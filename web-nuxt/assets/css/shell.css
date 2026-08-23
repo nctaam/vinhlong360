@@ -204,7 +204,13 @@
   border-inline-end: 1px solid var(--theme-control-border);
   background: transparent;
   color: var(--color-text-muted);
-  font: 600 .76rem/1.1 var(--font-body);
+  /* Tách khỏi shorthand: .76rem viết cứng, và line-height 1.1 thấp hơn hẳn tỉ lệ
+     mực tiếng Việt 1,33. Đo nhãn "Nền sáng dễ đọc": hộp glyph tràn khỏi hộp dòng
+     1,62px — nặng nhất trong ba chỗ cùng lỗi tìm được. */
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  line-height: 1.4;
   cursor: pointer;
 }
 
