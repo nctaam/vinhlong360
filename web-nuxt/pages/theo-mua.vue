@@ -77,7 +77,7 @@
       </div>
     </section>
 
-    <EmptyState v-if="fetchError" icon="⚠️" tone="error" title="Không thể tải dữ liệu" message="Mạng có thể đang chập chờn. Thử tải lại nhé.">
+    <EmptyState v-if="fetchError" icon-name="alert-triangle" tone="error" title="Không thể tải dữ liệu" message="Mạng có thể đang chập chờn. Thử tải lại nhé.">
       <template #actions>
         <button type="button" class="btn btn-outline" @click="refreshNuxtData('season-entities')">Thử lại</button>
       </template>
@@ -87,7 +87,7 @@
     <!-- Peak highlights (honor row) -->
     <section ref="resultsSection" v-if="peakItems.length" class="block band reveal">
       <div class="seasonal-banner peak-banner">
-        <span class="seasonal-banner-icon">🔥</span>
+        <span class="seasonal-banner-icon" aria-hidden="true"><IconLine name="flame" /></span>
         <div>
           <strong>Cao điểm tháng {{ month }}</strong>
           <p>Những mục chính vụ, thời điểm ngon nhất — không nên bỏ lỡ.</p>
@@ -163,7 +163,7 @@
       <!-- declutter-2 A2: interstitial inline vào mạch bài (đặt đúng ngữ cảnh mùa-nước-nổi) -->
       <CatalogInterstitial
         fact="Mùa nước nổi (tháng 8–11) mang đến cá linh, bông điên điển, bông súng — những đặc sản chỉ có vài tháng mỗi năm."
-        icon="🌾"
+        icon-name="sprout"
         variant="accent"
         :links="[{ to: '/san-pham', label: 'Xem đặc sản' }, { to: '/kham-pha/am-thuc', label: 'Ẩm thực bản địa' }]"
       />
@@ -231,7 +231,7 @@
     </section>
     <EmptyState
       v-else-if="data"
-      icon="📅"
+      icon-name="calendar"
       :title="`Chưa có dữ liệu mùa tháng ${month}`"
       message="Dữ liệu mùa đang được bổ sung cho tháng này. Những tháng khác có nội dung phong phú hơn nhé."
       hint="Chọn một tháng khác ở trên, hoặc khám phá theo chủ đề bên dưới."
