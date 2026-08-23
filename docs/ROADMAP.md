@@ -1129,3 +1129,40 @@ ngang** — bố cục bình thường, không phải nút nhỏ bấm nhầm.
 
 Điểm chung của cả ba: tôi tin con số mà không hỏi "con số này có hợp lý không".
 Khi kết quả nói "0" hoặc "100%" hoặc lệch quá lớn, phải nghi máy đo trước.
+
+### 12. `/theo-mua` — cảnh báo cũ SAI, và ràng buộc hình học thật (2026-08-24)
+
+Đợt quét trước ghi `/theo-mua` "dùng màu làm kênh duy nhất nối chú giải với 12
+tháng (WCAG 1.4.1), swatch 2,1:1". **Đo lại thì không đúng.**
+
+**Không có lỗi 1.4.1.** Vòng mùa là `role="group"` +
+`aria-label="Chọn tháng trên vòng mùa"`, bên trong là **12 `<button class="ring-notch">`**,
+mỗi nút có `aria-label="Tháng N"` và **`aria-pressed`** (12/12). Trạng thái chọn
+được phơi cho trình đọc màn hình, không phải chỉ bằng màu. Các badge cũng mang
+chữ ("Cao điểm", "T5–10") chứ không dựa vào màu.
+
+**Vùng chạm thì đúng là nhỏ — nhưng vẫn hợp chuẩn.** Đo bằng `elementFromPoint`
+trên từng nút (không dùng `getBoundingClientRect`, vì nút BỊ XOAY nên hộp bao
+không phải vùng chạm):
+
+| | Kết quả |
+|---|---|
+| Đạt 44×44 | **0/12** |
+| Hẹp nhất | **18×44** (Tháng 1) |
+| Dải | 18×44 · 32×32 · 45×24 · 44×23 · 46×24 |
+
+Và **không sửa được bằng cách phóng to**: 12 nút quanh vòng bán kính 43px chỉ có
+~22,5px cung mỗi nút. Muốn 44px thì vòng phải to hơn ~168px đường kính.
+
+**Vì sao vẫn hợp chuẩn:** WCAG 2.5.5 có ngoại lệ **"Equivalent"** — vùng chạm nhỏ
+được phép nếu cùng chức năng đạt được qua điều khiển khác đủ lớn trên **cùng
+trang**. Ở đây mỗi tháng đều có `.quick-pick` **111×83px** (12 cái) và nút mùa
+**58×67px**. Vòng mùa là lớp làm giàu, không phải đường duy nhất.
+
+⚠️ **Điều kiện ràng buộc:** nếu sau này bỏ `.quick-pick` hoặc nhóm nút mùa thì
+vòng mùa lập tức TRỞ THÀNH vi phạm 2.5.5. Ghi ở đây để ai đụng vào hai nhóm đó
+biết mà kiểm lại.
+
+**Đã sửa chú thích sai trong mã** (`pages/theo-mua.vue`): nó viết "26px hit-target
+giữ được ý định 44px-ish" — đo ra 18–32px, không phải "44px-ish". Nay chú thích
+ghi đúng số đo, lý do hình học, và điều kiện ràng buộc ở trên.

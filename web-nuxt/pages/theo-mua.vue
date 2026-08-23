@@ -509,8 +509,16 @@ useHead(() => ({
    individually rotated + pushed out to its own clock position (NOT a
    full-circle overlapping hit-target — that would stack all 12 buttons on
    top of each other and only let the last one in DOM order receive clicks).
-   A generous 26px circular hit-target keeps the 44px-ish tap-target intent
-   even though the visible tick itself is a thin 2px sliver. */
+   Vung cham: 26px, KHONG phai "44px-ish" nhu chu thich cu viet. Do 2026-08-24
+   bang elementFromPoint tren tung nut: 0/12 dat 44x44; thuc te 18x44 (Thang 1)
+   den 32x32, hep nhat la 18px. Va khong the sua bang cach phong to: 12 nut quanh
+   vong ban kinh 43px chi co ~22,5px cung moi nut, nen 44px KHONG BAO GIO vua.
+
+   Vi sao van chap nhan duoc: WCAG 2.5.5 co ngoai le "Equivalent" — vung cham nho
+   duoc phep neu CUNG CHUC NANG dat duoc qua dieu khien khac du lon tren CUNG
+   TRANG. O day moi thang deu co .quick-pick 111x83px va nut mua 58x67px.
+   => Vong mua la lop lam giau, khong phai duong duy nhat. Neu sau nay bo hai
+   nhom kia thi vong mua thanh vi pham. */
 .ring-notch {
   position: absolute; z-index: 2; left: 50%; top: 50%;
   width: 26px; height: 26px; margin: -13px 0 0 -13px;
