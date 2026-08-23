@@ -691,3 +691,74 @@ hợp đồng CMS nên **cần chủ dự án quyết**, không tự làm.
 
 **(c) `useConstants.ts` chưa bỏ được trường `emoji`** (39 glyph) vì (a) và (b) còn
 đọc tới. Bỏ được ngay sau khi hai mục trên xong.
+
+---
+
+## Backlog phát sinh — Rà UI đo-trên-máy-thật (2026-08-23)
+
+Đo bằng trình duyệt ở 320/360/375px, cả chế độ sáng lẫn tối. Màu đọc bằng pixel
+thật (token là `oklch`, regex trên token cho ra rác).
+
+### ĐÃ VÁ (xem git log cùng ngày)
+- 7 chỗ tương phản 2.98:1 → 6.38 (tối) / 6.89 (sáng): `.skip-link`,
+  `.main-nav a.active`, `.chat-panel-head`, `.chat-panel-input button`,
+  `.stop-num`, `.route-marker .rm-num`, `a.hl`.
+- Nhãn thanh nav dưới: dấu tiếng Việt tràn khỏi hộp dòng 2.39px → `line-height`
+  1.1 → 1.4, cỡ chữ `clamp(.66rem, 3.2vw, .75rem)`.
+- Thanh đỉnh ở 360px chỉ dư 1.6px → thu khe còn 8px, nay dư 9.6px.
+- "Đổi khu vực" gãy hai dòng → `white-space: nowrap`.
+
+### CHƯA VÁ — cần quyết định thiết kế
+
+**(1) Trên máy 360×740, ô tìm kiếm chính bị che.** Đây nhiều khả năng là thứ
+làm giao diện "thấy chưa ổn" rõ nhất.
+
+Ngân sách dọc đo được (cuộn ở đỉnh):
+
+| Khối | Từ → đến | Cao |
+|---|---|---|
+| thanh ngữ cảnh | 0 → 45 | 45 |
+| header | 45 → 105 | 60 |
+| khối khu vực `.home-context-line` | 106 → 245 | **139** |
+| kicker | 294 → 311 | 17 |
+| `h1` (3 dòng) | 325 → 475 | **150** |
+| `.hero-sub` | 509 → 605 | 96 |
+| **ô tìm kiếm** | 629 → **693** | 64 |
+| nav dưới (fixed) | **676** → 740 | 64 |
+| nút chat (fixed) | 616 → 664 | 48 |
+
+Hệ quả: nav dưới che **17px đáy** ô tìm kiếm, và nút chat đè lên góc phải ô
+(chồng 23×30px). Người dùng mở trang chủ trên điện thoại phổ thông thì hành
+động chính — ô tìm kiếm — bị hai thanh cố định che một phần.
+
+Ba đòn bẩy, chưa chọn:
+- Rút gọn khối khu vực (139px cho một chỉ báo phụ, nhiều hơn cả ô tìm kiếm).
+- Giới hạn `h1` còn 2 dòng ở màn nhỏ (hiện `max-width: 13ch` cho 3 dòng).
+- Đưa ô tìm kiếm lên TRÊN `h1` trên màn hẹp.
+
+**(2) Màn 320px vẫn tràn ngang ~30px.** Dưới 820px hàng lệnh chỉ còn ba con và
+cả ba không co được: logo 130.4px + `.auth-area` 136px + nút menu 44px. Muốn hết
+phải rút một trong hai thứ: chữ thương hiệu, hoặc gộp điều khiển chủ đề hai-nút
+thành một nút. Cái sau đổi một affordance tiếp cận VÀ điều khiển chủ đề CHỈ có ở
+header (không có trong menu ba-gạch), nên không tự quyết.
+
+**(3) Hai quy tắc `line-height` chọi nhau cho `.hero h1`, cùng độ đặc hiệu.**
+`pages/index.vue:753` đặt `.98`, `assets/css/home-nocturne.css:67` đặt `1.12`;
+thắng thua chỉ do THỨ TỰ NẠP. Hiện `1.12` thắng nên không hại — mực thật của
+Fraunces cho đúng câu tiêu đề đó đo được là 1.05× cỡ chữ, nên 1.12 vẫn hở.
+Nhưng nếu thứ tự nạp đổi thì `.98` thắng và các dòng chồng nhau ngay (0.98 <
+1.005 kể cả với chữ Latin thuần). Nên gỡ một trong hai.
+
+### HAI ĐIỀU TÔI TỪNG KẾT LUẬN SAI, ĐÃ ĐO LẠI
+
+- **Nền đen sau `.hero-sub` KHÔNG phải tàn dư.** `rgba(0,0,0,.76)` là thiết kế
+  có chủ đích và ĐƯỢC TEST RÀNG BUỘC: `tests/tri-region-color-contract.test.ts:168-176`
+  ("an opaque local plate"), kèm kiểm trắng-trên-đế đạt 10.55:1. Không đụng.
+- **Ô tìm kiếm trên header KHÔNG phải bẫy bàn phím.** Nó rộng 0px nhưng thẻ bọc
+  `.public-shell-search` là `display: none` dưới 820px; phép thử focus thật trả
+  về `false`.
+
+Bài học chung cho lần sau: `getComputedStyle(el).display` của CHÍNH phần tử
+không nói lên nó có hiển thị hay không — phải duyệt tổ tiên, hoặc thử focus
+thật. Và `backgroundColor` không thấy được gradient: nút `.btn-primary` từng bị
+máy đo của tôi chấm 1.03:1, sự thật là 6.89:1 ở điểm dừng yếu nhất.
