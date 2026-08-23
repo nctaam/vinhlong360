@@ -1011,3 +1011,31 @@ theo. Cần xem lại trên môi trường có dữ liệu.
   tiêu đề và cỡ container (`.framed-dossier` đặt 1rem cho cả khối), đổi sẽ kéo
   theo mọi thứ bên trong — cần một đợt riêng tập trung vào thang tiêu đề.
 - Các trang `.vue`: chưa đụng.
+
+#### Mục 9 — đợt 6, và một đính chính
+
+`detail.css`: đổi 3 chỗ chữ lá (`.dc-credit` → `--text-2xs`, `.ms-cell` và
+`.dc-photo-btn` → `--text-xs`). Giữ 4 chỗ: drop cap `::first-letter` (3.1em, cỡ
+tương đối + thủ pháp biên tập), `.facts-heading-icon`, `.fact-ic` (**đã kiểm: là
+hộp icon `flex: 0 0 26px; width/height: 26px`**), và `.detail-cover h1` (thuộc
+thang tiêu đề, để đợt riêng).
+
+**ĐÍNH CHÍNH cho commit f785d700.** Trong đó tôi viết rằng
+`.framed-dossier__eyebrow` render 14,1px thay vì 16px vì "có stylesheet khác đè
+với độ đặc hiệu cao hơn". **Sai.** Đo lại kỹ hơn: quét toàn bộ **69 stylesheet
+(0 cái không đọc được)** thì **KHÔNG quy tắc nào nhắc tới class
+`framed-dossier__eyebrow`**. Không có gì "đè" cả.
+
+Sự thật đo được:
+- Phần tử là `<p class="framed-dossier__eyebrow">`, cha `.framed-dossier__body`
+  đang ở **16px**, còn nó ở **14,0972px** — đúng bằng `--text-sm` ở 360px.
+- Vậy cỡ đến từ một quy tắc nhắm **thẻ `p`** trong phạm vi đó, chứ không phải
+  quy tắc nhắm class.
+- `nuxt.config.ts:63` có khai `~/assets/css/dossier.css` là CSS toàn cục, nhưng
+  không stylesheet nào chứa class ấy ⇒ nghi **dossier.css không thực sự tới được
+  DOM này**, hoặc class chưa bao giờ khớp. Chưa xác định dứt điểm.
+
+Hệ quả cần theo: `dossier.css` có thể là **CSS chết hoặc chết một phần**. Trước
+khi di cư nó, phải trả lời được câu "quy tắc nào đang thật sự tạo kiểu cho khối
+dossier" — di cư một file không ai dùng là công vô ích, mà tệ hơn là tưởng đã
+sửa trong khi giao diện không đổi gì.
