@@ -224,10 +224,18 @@
 
 /* ── Ceremonial ledger (vertical, full-width rows) replaces the horizontal scroll-row ── */
 .ledger {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
 }
+/* <li> chỉ là vỏ ngữ nghĩa: .ledger là flex-column, nên nếu không khai gì thì <li>
+   thành flex item còn .ledger-row co lại theo nội dung. display:flex trên vỏ giữ
+   .ledger-row trải hết chiều rộng đúng như khi nó là con trực tiếp. */
+.ledger-item { display: flex; }
+.ledger-item > .ledger-row { flex: 1 1 auto; }
 .ledger-row {
   display: flex;
   align-items: center;

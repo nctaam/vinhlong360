@@ -75,12 +75,15 @@
       <div class="sediment-head">
         <h2>Sắp diễn ra</h2>
       </div>
-      <div class="ledger" role="list" aria-label="Sự kiện sắp diễn ra, theo thứ tự gần nhất">
+      <ul class="ledger" aria-label="Sự kiện sắp diễn ra, theo thứ tự gần nhất">
+        <!-- ul/li: role="listitem" đặt thẳng lên NuxtLink làm thẻ <a> MẤT vai trò
+             link (ARIA ghi đè vai trò ngầm) và mất luôn tên khả truy cập, vì
+             listitem là name-from-author. Trình đọc màn hình đọc các hàng này là
+             "mục danh sách" trống thay vì đọc tên và cho biết bấm được. -->
+        <li v-for="e in upcoming" :key="e.id" class="ledger-item">
         <NuxtLink
-          v-for="e in upcoming" :key="e.id"
           :to="entityPath(e.id)"
           class="ledger-row"
-          role="listitem"
         >
           <div class="event-date-badge">
             <span class="edb-month">{{ formatMonth(e) }}</span>
@@ -94,7 +97,8 @@
             {{ e.name }}
           </h3>
         </NuxtLink>
-      </div>
+        </li>
+      </ul>
       <button type="button" class="ical-bulk-btn" @click="downloadIcalBulk">
         📅 Thêm tất cả sự kiện sắp tới vào lịch của bạn
       </button>

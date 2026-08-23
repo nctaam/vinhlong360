@@ -455,7 +455,9 @@ describe('MapListSurface coordination and recovery', () => {
 
     const row = wrapper.get('[data-result-id="entity-42"][data-result-role="list"]')
     const marker = wrapper.get('[data-result-id="entity-42"][data-result-role="marker"]')
-    await row.trigger('focus')
+    // focusin (nổi bọt) chứ không focus: hàng không còn tabindex, việc đồng bộ
+    // bản đồ nay bắt từ bất cứ thứ gì bên trong hàng nhận tiêu điểm.
+    await row.trigger('focusin')
     await marker.trigger('click')
 
     expect(wrapper.emitted('select')).toEqual([['entity-42'], ['entity-42']])

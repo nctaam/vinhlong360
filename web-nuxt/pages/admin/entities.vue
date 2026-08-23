@@ -674,6 +674,21 @@ watch(() => route.query.kind, () => {
   typeFilter.value = ''
   fetchEntities(true)
 })
+
+// Tập đã chọn thuộc về KHUNG NHÌN hiện tại, không phải cả phiên làm việc.
+//
+// bulkDelete gửi trọn [...selected.value] lên /admin-api/entities/bulk-delete, và
+// hộp xác nhận chỉ nói "Xóa N entity đã chọn?" — không liệt kê là những cái nào.
+// Trước dòng này, lựa chọn chỉ bị xoá khi đổi `route.query.kind`, sau bulk-assign,
+// sau bulk-delete và khi bấm Esc — KHÔNG xoá khi đổi trang, đổi từ khoá tìm, đổi
+// bộ lọc loại hay đổi số dòng mỗi trang. Chọn 5 mục ở trang 1, sang trang 2 chọn
+// thêm 3, lọc lại rồi bấm Xóa: hộp thoại báo 8, và 5 trong đó là entity đã trôi
+// khỏi màn hình, không có cách nào biết trước. Đây là thao tác KHÔNG hoàn tác được.
+//
+// Cùng quy ước với watcher `route.query.kind` ngay trên.
+watch([page, search, typeFilter, limit, orphansOnly], () => {
+  if (selected.value.size) selected.value = new Set()
+})
 // GĐ-A: gán trường hàng loạt cho các entity đã chọn (đi qua PUT sẵn có → giữ validate + audit log)
 const UNIVERSAL_BULK: { key: string; label: string; widget: 'text' | 'number' | 'select' | 'bool'; options?: string[] }[] = [
   { key: 'address', label: 'Địa chỉ', widget: 'text' },

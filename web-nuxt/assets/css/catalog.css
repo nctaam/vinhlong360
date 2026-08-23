@@ -418,6 +418,10 @@
 }
 
 [data-page-recipe="discovery"] .catalog-evidence__list {
+  /* reset <ul> — khối này trước là <div role="list"> */
+  list-style: none;
+  margin: 0;
+  padding: 0;
   border-block-start: 1px solid var(--color-border);
 }
 
@@ -846,6 +850,11 @@
 }
 
 .map-list-surface__list {
+  /* Reset của <ul>: mặc định UA có padding-left 40px và marker. Khối này trước
+     đây là <div role="list"> nên không cần; đổi sang <ul> thì phải khai lại. */
+  list-style: none;
+  margin: 0;
+  padding: 0;
   max-height: min(68dvh, 720px);
   overflow: auto;
   overscroll-behavior: contain;
@@ -864,7 +873,10 @@
   background: color-mix(in srgb, var(--card) 96%, transparent);
   transition: background .18s var(--ease-out), border-color .18s var(--ease-out);
 }
-.map-result-row:focus-visible {
+/* :focus-within chứ không :focus-visible — hàng không còn tabindex nên tự nó
+   không bao giờ nhận tiêu điểm; cái nhận là link (hoặc nội dung slot) bên
+   trong. Không đổi thì viền tiêu điểm của hàng chết hẳn. */
+.map-result-row:focus-within {
   position: relative;
   z-index: 1;
   outline: 2px solid var(--color-focus);

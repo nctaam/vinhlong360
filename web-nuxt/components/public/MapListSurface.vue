@@ -18,8 +18,24 @@
     </header>
 
     <div class="map-list-surface__body">
-      <div ref="listElement" class="map-list-surface__list" role="list" aria-label="Kết quả tìm kiếm theo địa chỉ" @scroll="onListScroll">
-        <article
+      <!-- ul/li chứ không phải div[role=list] + article[role=listitem]: <article>
+           có vai trò ngầm là article và ARIA-in-HTML KHÔNG cho nó nhận listitem,
+           nên 120 hàng × 2 chế độ = 240 trong tổng 274 node aria-allowed-role của
+           cả đợt quét đều từ đây. Nặng hơn cái axe báo: vai trò listitem là
+           name-from-author nên 120 hàng đó KHÔNG có tên khả truy cập, mà vẫn
+           tabindex="0" — người dùng NVDA nghe 120 lần "list item" trống rỗng.
+
+           Bỏ tabindex khỏi hàng: /ban-do có 240 điểm dừng Tab liên tiếp (đo được:
+           điểm dừng thứ 20 đến 259, chỉ còn ~31 phần tử sau đó), không phím mũi
+           tên, không link bỏ qua. Hàng tự nó không phải điều khiển — cái bấm được
+           là link bên trong. Bỏ đi còn 120.
+
+           @focusin chứ không @focus: focusin NỔI BỌT, nên việc đồng bộ bản đồ vẫn
+           chạy khi bất cứ thứ gì bên trong hàng nhận tiêu điểm — kể cả nội dung do
+           bên dùng thay qua <slot name="result"> (tim-kiem.vue:72 dùng EntityCard).
+           Gắn thẳng vào link mặc định thì các slot đó mất đồng bộ. -->
+      <ul ref="listElement" class="map-list-surface__list" aria-label="Kết quả tìm kiếm theo địa chỉ" @scroll="onListScroll">
+        <li
           v-for="result in results"
           :key="result.id"
           :ref="element => rememberRow(result.id, element)"
@@ -28,9 +44,7 @@
           :data-result-id="result.id"
           :data-material-accent="resolveRegionalAccent(result.type)"
           data-result-role="list"
-          role="listitem"
-          tabindex="0"
-          @focus="selectFromList(result.id)"
+          @focusin="selectFromList(result.id)"
         >
           <slot name="result" :result="result">
             <div class="map-result-row__copy">
@@ -53,8 +67,8 @@
             </div>
           </slot>
           <span v-if="result.id === selectedId" class="map-result-row__selected" aria-label="Đang chọn">Đang chọn</span>
-        </article>
-      </div>
+        </li>
+      </ul>
 
       <div class="map-list-surface__map-pane" aria-label="Bản đồ kết quả">
         <button type="button" class="map-list-surface__mobile-close" aria-label="Đóng bản đồ và trở lại danh sách" @click="emit('panel-change', 'list')">

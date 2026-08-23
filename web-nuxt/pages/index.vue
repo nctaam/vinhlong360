@@ -117,13 +117,13 @@
 
         <div v-if="seasonalList.length" class="happening-section">
           <p class="happening-label" data-material-accent="amber"><IconLine name="calendar" /> Đang vào mùa tháng {{ currentMonth }}</p>
-          <div class="home-season-ledger" role="list" aria-label="Đặc sản theo mùa">
+          <!-- ul/li: role="listitem" trên NuxtLink ghi đè vai trò link của thẻ <a>
+               và xoá luôn tên khả truy cập (listitem là name-from-author). -->
+          <ul class="home-season-ledger" aria-label="Đặc sản theo mùa">
+            <li v-for="e in seasonalList" :key="e.id" class="home-season-item">
             <NuxtLink
-              v-for="e in seasonalList"
-              :key="e.id"
               :to="entityPath(e.id)"
               class="home-season-row"
-              role="listitem"
               data-home-signal
               data-home-seasonal-signal
             >
@@ -146,7 +146,8 @@
               </span>
               <span class="home-season-row__action">Xem theo mùa</span>
             </NuxtLink>
-          </div>
+            </li>
+          </ul>
         </div>
       </section>
     </div>

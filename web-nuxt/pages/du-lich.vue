@@ -152,8 +152,10 @@
         <h2 id="catalog-evidence-title">Đọc bằng chứng trước khi quyết định</h2>
       </header>
       <p>Những dòng dưới đây phản ánh đúng metadata nguồn hiện có; dữ liệu thiếu bằng chứng sẽ giữ nhãn chưa rõ thay vì được nâng cấp thành xác minh.</p>
-      <div v-if="evidenceEntities.length" class="catalog-evidence__list" role="list">
-        <article v-for="entity in evidenceEntities" :key="entity.id" class="catalog-evidence__row" role="listitem">
+      <!-- ul/li: <article> có vai trò ngầm là article, ARIA-in-HTML không cho nó
+           nhận listitem. Dùng thẻ đúng thì khỏi cần khai role nào. -->
+      <ul v-if="evidenceEntities.length" class="catalog-evidence__list">
+        <li v-for="entity in evidenceEntities" :key="entity.id" class="catalog-evidence__row">
           <NuxtLink :to="entityPath(entity.id)">{{ entity.name }}</NuxtLink>
           <span class="catalog-evidence__meta">
             <SourceMark
@@ -168,8 +170,8 @@
               :updated-label="catalogUpdatedLabel(entity)"
             />
           </span>
-        </article>
-      </div>
+        </li>
+      </ul>
       <p v-else class="catalog-evidence__empty">Chưa có kết quả để đối chiếu nguồn. Bộ lọc vẫn được giữ để bạn thử lại.</p>
     </section>
 
