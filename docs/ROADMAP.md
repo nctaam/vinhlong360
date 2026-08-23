@@ -882,3 +882,63 @@ trị viết cứng thì cố định. Đổi `.78rem` (12,5px ở mọi khổ) 
 (12→13px) làm ĐỔI hành vi trên máy lớn. Phải làm từng file, đo ảnh trước/sau ở
 ít nhất 375/768/1280, không gộp một commit. Đề xuất thứ tự: `shell.css` (22 khai
 báo, chi phối khung mọi trang) → `base.css` (53) → `catalog.css` (14).
+
+### 9. Di cư thang chữ — đợt 1 đã xong 3 file (2026-08-23)
+
+Chủ dự án chọn **hướng 2**: đẩy dải 13,6–16,5px lên `--text-sm`, chấp nhận chữ
+nhỏ to lên trên máy lớn (hợp hướng chuẩn: ưa body ≥16px).
+
+| File | Khai báo đã đổi | Cỡ khác nhau (360px) | Cỡ khác nhau (1280px) | Lệch tối đa |
+|---|---|---|---|---|
+| `shell.css` | 11 | 8 → **3** | 7 → **3** | 1,00px |
+| `base.css` dải xs | 8 | 3 → **1** | 3 → **1** | 1,07px |
+| `base.css` dải sm | 18 | 6 → **3** | 6 → **3** | 1,55px |
+| `catalog.css` | 3 | — | — | 0,67px |
+
+Kiểm hồi quy mỗi đợt: tràn ngang 0; 0 phần tử tràn khỏi cha ở 1280px; hàng lệnh
+header vẫn dư 9,6px; vitest xanh.
+
+#### Quyết định thiết kế đã áp dụng
+
+- Hai chỗ đang ở 16px là **tiêu đề** (`.chat-panel-head h3`) và **nút chính**
+  (`.hero-search button`) — KHÔNG đẩy xuống `--text-sm` (sẽ thành 14,1px trên
+  điện thoại, hạ cấp vai trò). Đưa lên `--text-base` (16→18).
+- `.brand .tld` (".vn") cho về `--text-xs` ở CẢ base.css lẫn shell.css — hai quy
+  tắc cho cùng một thứ, trước đó lệch nhau.
+
+#### KHÔNG đụng, có lý do
+
+- **Ô nhập ở 16px** (`.hero-search input`, khối `@media max-width:640px`): đó là
+  ngưỡng chặn iOS Safari tự phóng to. `--text-sm` cho 14,1px ở điện thoại, tức
+  làm lỗi quay lại.
+- **Cỡ icon**: trong dự án này `font-size` cũng là cách đặt kích thước IconLine
+  (SVG 1em). `catalog.css` có 14 khai báo nhưng **11 là icon/glyph/chữ display**.
+- **`a[href]::after` trong `@media print`**: `.8em` là cỡ tương đối; `--text-xs`
+  là `clamp()` có `vw`, mà bản in không có viewport.
+
+#### ĐÍNH CHÍNH số liệu tôi đã nêu
+
+Tôi từng báo **"772 font-size viết cứng"** như thể tất cả là nợ chữ. Đếm lại
+trên 723 khai báo đọc được bộ chọn: **160 (22%) là cỡ icon/glyph/logo**, **563
+(78%)** mới là chữ nội dung. Nợ thật ~563, không phải 772.
+
+#### Còn lại
+
+~540 khai báo chữ nằm rải ở các file khác (`events.css`, `detail.css`,
+`editorial.css`, `cards.css`, và các trang `.vue`). Cùng cách làm: map theo dải,
+đo trước/sau ở 360/1280, giữ ngân sách lệch ≤1px, nhóm đối chứng cho icon.
+
+### 10. Bẫy độ đặc hiệu của "sàn 16px" cho ô nhập
+
+`base.css:915` có sàn `@media (pointer: coarse) { input…, select { font-size:
+max(16px, 1em) } }` nhưng dùng **bộ chọn trần** — độ đặc hiệu (0,0,1). Mọi quy
+tắc có lớp đều thắng nó.
+
+Đo trên thiết bị cảm ứng 375px: `.public-context-control select` ra **12,07px**
+→ iOS Safari tự phóng to khi chạm, và không tự thu lại. **Đã vá tại chỗ** bằng
+`max(16px, var(--text-xs))`; đo lại 4/4 ô nhập ở 16px.
+
+Rà nguồn còn **19 quy tắc** đặt `font-size < 16px` cho input/select/textarea,
+phần lớn ở khu admin (`.usr-role-select`, `.cpl-place-select`,
+`.admin-select-inline`, `.ent-inline-select`…). Sửa gốc là nâng độ đặc hiệu của
+chính khối sàn — thay đổi diện rộng, cần đo riêng.
