@@ -2,7 +2,7 @@
   <div>
     <div class="admin-head-row">
       <div>
-        <h1>{{ currentKind ? `${currentKind.emoji} ${currentKind.label}` : 'Quản lý Entities' }}</h1>
+        <h1><IconLine v-if="currentKind" :name="currentKind.icon" aria-hidden="true" /> {{ currentKind ? currentKind.label : 'Quản lý Entities' }}</h1>
         <p class="ent-subtitle">{{ entities.length ? `${entities.length} kết quả` : '' }}</p>
       </div>
       <button type="button" class="admin-refresh" :disabled="loading" @click="fetchEntities()">
@@ -37,7 +37,7 @@
       <div class="ent-kinds-grid">
         <div v-for="k in kindGroups" :key="k.kind" class="ent-kind-card">
           <div class="ent-kind-head">
-            <span class="ent-kind-emoji" aria-hidden="true">{{ k.emoji }}</span>
+            <span class="ent-kind-emoji" aria-hidden="true"><IconLine :name="kindIcon(k.kind)" /></span>
             <span class="ent-kind-label">{{ k.label }}</span>
             <span class="ent-kind-count">{{ k.total }}</span>
           </div>
@@ -45,7 +45,7 @@
             <button v-for="t in k.types" :key="t.type" type="button"
               class="ent-kind-chip" :class="{ active: typeFilter === t.type }"
               :title="`Lọc: ${t.label} (${t.count})`" @click="filterByType(t.type)">
-              {{ t.emoji }} {{ t.label }} <span class="ent-kind-chip-n">{{ t.count }}</span>
+              <IconLine :name="typeIcon(t.type)" aria-hidden="true" /> {{ t.label }} <span class="ent-kind-chip-n">{{ t.count }}</span>
             </button>
           </div>
         </div>
@@ -281,7 +281,7 @@
           <!-- Trường theo loại (content-model registry) -->
           <fieldset v-for="grp in currentSchemaGroups" :key="grp.legend" class="ent-fieldset ent-typed-fieldset">
             <legend class="ent-fieldset-legend">
-              {{ entitySchemas[form.type]?.emoji }} {{ grp.legend }}
+              <IconLine :name="typeIcon(form.type)" aria-hidden="true" /> {{ grp.legend }}
               <span class="ent-typed-hint">— {{ entitySchemas[form.type]?.label }}</span>
             </legend>
             <div class="ent-typed-grid">
@@ -656,6 +656,14 @@ watch(() => form.value.type, () => { initTypedAttrs(typedAttrs.value) })
 
 // GĐ-A: chế độ xem theo nhóm (?kind=) — cột/bộ lọc đặc thù (utils/adminKinds)
 const route = useRoute()
+// /admin-api/entity-kinds chỉ trả về `emoji`. Ánh xạ sang tên IconLine bằng hai
+// bảng đã có sẵn trong mã nguồn (ADMIN_KINDS, TYPE_META) thay vì đổi backend.
+function kindIcon(kind: string) {
+  return ADMIN_KINDS.find(k => k.kind === kind)?.icon || 'tag'
+}
+function typeIcon(type: string) {
+  return TYPE_META[type]?.icon || 'tag'
+}
 const currentKind = computed(() => ADMIN_KINDS.find(k => k.kind === String(route.query.kind || '')) || null)
 const kindTypes = computed(() => currentKind.value ? currentKind.value.types : types)
 const activeChips = ref<Set<string>>(new Set())
@@ -1449,6 +1457,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .ent-kind-card { border: 1px solid var(--line); border-radius: 8px; padding: var(--space-2) var(--space-3); background: var(--bg-alt); }
 .ent-kind-head { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); }
 .ent-kind-emoji { font-size: 1.1rem; }
+.ent-kind-emoji .line-icon { font-size: inherit; }
 .ent-kind-label { font-weight: 600; font-size: .85rem; }
 .ent-kind-count { margin-left: auto; font-weight: 700; color: var(--primary); font-size: .9rem; }
 .ent-kind-types { display: flex; flex-wrap: wrap; gap: 4px; }
