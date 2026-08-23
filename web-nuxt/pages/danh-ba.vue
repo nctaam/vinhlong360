@@ -24,7 +24,7 @@
     </section>
 
     <!-- Error state -->
-    <EmptyState v-if="placesError && !places?.length" icon="⚠️" title="Không thể tải dữ liệu" message="Vui lòng thử lại sau.">
+    <EmptyState v-if="placesError && !places?.length" icon-name="alert-triangle" title="Không thể tải dữ liệu" message="Vui lòng thử lại sau.">
       <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData('dir-places')">Thử lại</button>
     </EmptyState>
 
@@ -71,7 +71,7 @@
     </div>
     <template v-else>
       <p class="ward-hub-link">
-        <NuxtLink :to="`/xa-phuong/${wardId}`">🏘️ Xem trang đầy đủ xã/phường này (du lịch · lưu trú · đặc sản) →</NuxtLink>
+        <NuxtLink :to="`/xa-phuong/${wardId}`"><IconLine name="home" /> Xem trang đầy đủ xã/phường này (du lịch · lưu trú · đặc sản) →</NuxtLink>
       </p>
       <div v-if="loading" class="fac-skeleton" role="status" aria-label="Đang tải dữ liệu" aria-busy="true">
         <div v-for="i in 3" :key="i" class="fac-sk-item">
@@ -87,11 +87,11 @@
             <span class="fac-kind">{{ kindMeta(f).emoji }} {{ kindMeta(f).label }}</span>
             <strong>{{ f.name }}</strong>
           </div>
-          <div v-if="attr(f, 'address')" class="fac-row">📍 {{ attr(f, 'address') }}</div>
-          <div v-if="attr(f, 'phone')" class="fac-row">📞 <a :href="telHref(attr(f, 'phone'))" data-contact-action="phone" @click="trackContactView(f.id, 'phone')">{{ attr(f, 'phone') }}</a></div>
-          <div v-if="attr(f, 'hours')" class="fac-row">🕒 {{ attr(f, 'hours') }}</div>
+          <div v-if="attr(f, 'address')" class="fac-row"><IconLine name="pin" /> {{ attr(f, 'address') }}</div>
+          <div v-if="attr(f, 'phone')" class="fac-row"><IconLine name="phone" /> <a :href="telHref(attr(f, 'phone'))" data-contact-action="phone" @click="trackContactView(f.id, 'phone')">{{ attr(f, 'phone') }}</a></div>
+          <div v-if="attr(f, 'hours')" class="fac-row"><IconLine name="clock" /> {{ attr(f, 'hours') }}</div>
           <footer v-if="sourceUrl(f) || f.updatedAt" class="fac-src">
-            <span v-if="isOfficialSource(f)" class="fac-verified" title="Nguồn chính thống">✓</span>
+            <span v-if="isOfficialSource(f)" class="fac-verified" title="Nguồn chính thống" role="img" aria-label="Nguồn chính thống"><IconLine name="check" /></span>
             Nguồn: <a v-if="sourceUrl(f)" :href="sourceUrl(f)" target="_blank" rel="nofollow noopener">{{ sourceName(f) || 'nguồn' }}</a>
             <span v-else>{{ sourceName(f) }}</span>
             <time v-if="f.updatedAt" :datetime="f.updatedAt"> · cập nhật {{ relativeUpdated(f.updatedAt) }}</time>
@@ -100,14 +100,14 @@
                deadline. The old inline form dropped it into a JSONL file with a
                thank-you nothing tracked. -->
           <NuxtLink class="fac-report" :to="correctionIntakeLink(f.id, { source: 'danh-ba' })" :aria-label="`Báo thông tin chưa đúng của ${f.name}`">
-            ⚠️ Báo thông tin chưa đúng
+            <IconLine name="alert-triangle" /> Báo thông tin chưa đúng
           </NuxtLink>
         </li>
       </ul>
-      <EmptyState v-else-if="facilitiesError" icon="⚠️" title="Không thể tải danh bạ" message="Có lỗi khi tải dữ liệu. Vui lòng thử lại.">
+      <EmptyState v-else-if="facilitiesError" icon-name="alert-triangle" title="Không thể tải danh bạ" message="Có lỗi khi tải dữ liệu. Vui lòng thử lại.">
         <button type="button" class="btn btn-outline btn-sm" @click="loadFacilities">Thử lại</button>
       </EmptyState>
-      <EmptyState v-else icon="📋" title="Chưa có danh bạ" message="Chưa có dữ liệu danh bạ cho xã/phường này. Dữ liệu đang được bổ sung từ nguồn chính thống." />
+      <EmptyState v-else icon-name="list" title="Chưa có danh bạ" message="Chưa có dữ liệu danh bạ cho xã/phường này. Dữ liệu đang được bổ sung từ nguồn chính thống." />
     </template>
 
     <!-- Cross-links -->
