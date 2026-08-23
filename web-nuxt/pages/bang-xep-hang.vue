@@ -22,7 +22,7 @@
 
     <EmptyState
       v-else-if="fetchFailed && !leaders.length"
-      icon="⚠️" tone="error" title="Không thể tải bảng xếp hạng"
+      icon-name="alert-triangle" tone="error" title="Không thể tải bảng xếp hạng"
       message="Lỗi kết nối. Vui lòng thử lại."
     >
       <template #actions>
@@ -32,7 +32,7 @@
 
     <EmptyState
       v-else-if="!leaders.length"
-      icon="🏆" title="Chưa có dữ liệu xếp hạng"
+      icon-name="trophy" title="Chưa có dữ liệu xếp hạng"
       message="Hãy chia sẻ và đánh giá để trở thành thành viên tích cực đầu tiên!"
     >
       <template #actions>
