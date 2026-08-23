@@ -5,7 +5,11 @@
     :role="tone === 'error' ? 'alert' : 'status'"
     :data-color-recipe="colorRecipe || undefined"
   >
-    <span v-if="icon" class="empty-icon" aria-hidden="true">{{ icon }}</span>
+    <!-- iconName: đường mới, dùng IconLine. `icon` (emoji dạng chuỗi) giữ nguyên
+         để 61 nơi gọi hiện có không vỡ — thêm đường mới rồi mới bỏ đường cũ (B2).
+         iconName thắng khi cả hai cùng có. -->
+    <span v-if="iconName" class="empty-icon" aria-hidden="true"><IconLine :name="iconName" /></span>
+    <span v-else-if="icon" class="empty-icon" aria-hidden="true">{{ icon }}</span>
     <svg v-else viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="empty-illust">
       <defs>
         <linearGradient id="empty-sediment" x1="0" y1="0" x2="1" y2="1">
@@ -40,6 +44,8 @@
 const props = withDefaults(defineProps<{
   message?: string
   icon?: string
+  /** Tên biểu tượng IconLine — thay cho `icon` dạng emoji. */
+  iconName?: string
   title?: string
   hint?: string
   tone?: 'empty' | 'error'
@@ -89,6 +95,9 @@ const recipeDecorationColor = computed(() => props.colorRecipe === 'tri-region-v
 /* Optional contextual hint line below the message — used e.g. for region/star context on OCOP empty results. */
 .empty-hint { font-size: var(--text-sm); color: var(--muted); margin: var(--space-3) 0 var(--space-4); }
 .empty-icon { display: block; transition: transform .4s var(--ease-spring-gentle); }
+/* IconLine kế thừa cỡ chữ của .empty-icon (SVG là 1em), nên biểu tượng có cùng
+   kích thước với emoji nó thay thế — không cần chỉnh riêng. */
+.empty-icon .line-icon { font-size: inherit; }
 .empty-state:hover .empty-icon { transform: scale(1.1) rotate(-4deg); }
 .empty-illust { transition: transform .4s var(--ease-spring-gentle); }
 .empty-state:hover .empty-illust { transform: scale(1.04); }
