@@ -17,9 +17,9 @@
           <p class="ledger-dek">{{ allOcop.length }} sản phẩm, từ 3 đến 5 sao — mỗi ngôi sao là một vòng kiểm định đã qua.</p>
           <p>{{ pc('hero_subtitle') }}</p>
           <div class="hero-creds">
-            <span class="hero-cred hero-cred-seal">🏅 Chuẩn OCOP <em>Nhà nước</em></span>
-            <span class="hero-cred">✓ Kiểm chứng</span>
-            <span v-if="allOcop.length" class="hero-cred">📊 {{ allOcop.length }} sản phẩm</span>
+            <span class="hero-cred hero-cred-seal"><IconLine name="trophy" /> Chuẩn OCOP <em>Nhà nước</em></span>
+            <span class="hero-cred"><IconLine name="check" /> Kiểm chứng</span>
+            <span v-if="allOcop.length" class="hero-cred"><IconLine name="chart" /> {{ allOcop.length }} sản phẩm</span>
           </div>
         </div>
       </div>
@@ -45,7 +45,7 @@
         :aria-pressed="starFilter === s.stars"
         @click="starFilter = starFilter === s.stars ? 0 : s.stars; scrollToGrid()"
       >
-        <span class="quick-pick-icon">{{ '⭐'.repeat(s.stars) }}</span>
+        <span class="quick-pick-icon" :aria-label="`Hạng ${s.stars} sao`"><IconLine v-for="n in s.stars" :key="n" name="star" /></span>
         <span class="quick-pick-label">{{ s.stars }} sao</span>
         <span class="quick-pick-count">{{ s.count }} sản phẩm</span>
       </button>
@@ -57,7 +57,7 @@
          word. Bands reveal top-down staggered (5 first, 3 last). -->
     <section v-if="fiveStarHighlights.length" class="block reveal ocop-band ocop-band--5" data-stagger="0">
       <div class="section-head sediment-head">
-        <h2>⭐ Bậc 5 sao</h2>
+        <h2><IconLine name="star" /> Bậc 5 sao</h2>
         <button type="button" class="see-all" @click="starFilter = 5; scrollToGrid()">Xem tất cả →</button>
       </div>
       <p class="section-desc">Bậc cao nhất, hiếm nhất — sản phẩm đã chứng minh được cả chất lượng lẫn khả năng vươn xa.</p>
@@ -103,7 +103,7 @@
 
       <CatalogInterstitial
         fact="Chương trình OCOP đã chứng nhận hàng trăm sản phẩm từ 3 tỉnh — mỗi sản phẩm đều qua đánh giá nghiêm ngặt về chất lượng và nguồn gốc."
-        icon="🏅"
+        icon-name="trophy"
         variant="warm"
         :links="[{ to: '/san-pham', label: 'Tất cả sản phẩm' }, { to: '/theo-mua', label: 'Theo mùa vụ' }]"
       />
@@ -169,10 +169,10 @@
         <p class="result-meta" aria-live="polite">{{ filtered.length }} sản phẩm OCOP{{ sortBy !== 'relevant' ? ` · ${sortLabels[sortBy]}` : '' }}</p>
         <div class="view-toggle" role="group" aria-label="Chế độ hiển thị">
           <button type="button" :class="['vt-btn', { active: viewMode === 'grid' }]" :aria-pressed="viewMode === 'grid'" @click="viewMode = 'grid'" title="Dạng lưới" aria-label="Dạng lưới">⊞</button>
-          <button type="button" :class="['vt-btn', { active: viewMode === 'list' }]" :aria-pressed="viewMode === 'list'" @click="viewMode = 'list'" title="Dạng danh sách" aria-label="Dạng danh sách">☰</button>
+          <button type="button" :class="['vt-btn', { active: viewMode === 'list' }]" :aria-pressed="viewMode === 'list'" @click="viewMode = 'list'" title="Dạng danh sách" aria-label="Dạng danh sách"><IconLine name="list" /></button>
         </div>
       </div>
-      <EmptyState v-if="fetchError" icon="⚠️" title="Không thể tải sản phẩm OCOP" message="Mạng có thể đang chập chờn. Thử lại giúp mình nhé.">
+      <EmptyState v-if="fetchError" icon-name="alert-triangle" title="Không thể tải sản phẩm OCOP" message="Mạng có thể đang chập chờn. Thử lại giúp mình nhé.">
         <template #actions>
           <button type="button" class="btn btn-outline" @click="refreshNuxtData('catalog-ocop')">Thử lại</button>
         </template>
@@ -181,11 +181,11 @@
       <div v-else-if="filtered.length" :class="viewMode === 'list' ? 'list-view' : 'grid'">
         <EntityCard v-for="e in visible" :key="e.id" :entity="e" :season-filter="seasonFilter" />
       </div>
-      <EmptyState v-else icon="⭐" title="Không tìm thấy sản phẩm OCOP" message="Thử thay đổi hạng sao, khu vực hoặc tháng mùa vụ.">
+      <EmptyState v-else icon-name="star" title="Không tìm thấy sản phẩm OCOP" message="Thử thay đổi hạng sao, khu vực hoặc tháng mùa vụ.">
         <template #actions>
           <button type="button" class="btn btn-outline" @click="clearFilters">Xóa bộ lọc</button>
-          <NuxtLink to="/san-pham" class="btn btn-outline">🍊 Tất cả sản phẩm</NuxtLink>
-          <NuxtLink to="/du-lich" class="btn btn-outline">🌿 Du lịch</NuxtLink>
+          <NuxtLink to="/san-pham" class="btn btn-outline"><IconLine name="fruit" /> Tất cả sản phẩm</NuxtLink>
+          <NuxtLink to="/du-lich" class="btn btn-outline"><IconLine name="leaf" /> Du lịch</NuxtLink>
         </template>
       </EmptyState>
       <button
