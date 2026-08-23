@@ -1,7 +1,7 @@
 <template>
   <details class="kc-panel">
     <summary class="kc-summary">
-      📈 Độ đầy đủ dữ liệu
+      <IconLine name="chart" /> Độ đầy đủ dữ liệu
       <span v-if="total" class="kc-total">{{ total }} entity</span>
     </summary>
     <div v-if="loading" class="kc-loading">Đang tính…</div>
