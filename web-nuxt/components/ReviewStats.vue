@@ -13,7 +13,7 @@
 
     <div v-if="rating.count && hasReviews" class="er-distribution" aria-label="Phân bố đánh giá">
       <div v-for="star in 5" :key="star" class="er-dist-row">
-        <span class="er-dist-label">{{ 6 - star }}★</span>
+        <span class="er-dist-label"><span class="sr-only">{{ 6 - star }} sao</span><span aria-hidden="true">{{ 6 - star }}<IconLine name="star" /></span></span>
         <div class="er-dist-track">
           <div class="er-dist-fill" :style="{ width: distPercent(6 - star) + '%' }" />
         </div>
