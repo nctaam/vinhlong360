@@ -29,7 +29,7 @@
           <span class="day-arc-dot-num" aria-hidden="true">{{ i + 1 }}</span>
         </span>
         <div class="day-arc-legend" aria-hidden="true">
-          <span>🌅 Sáng sớm</span><span>☀️ Trưa</span><span>🌇 Hoàng hôn</span>
+          <span><IconLine name="cloud-sun" /> Sáng sớm</span><span><IconLine name="sun" /> Trưa</span><span><IconLine name="haze" /> Hoàng hôn</span>
         </div>
       </div>
     </section>
@@ -39,7 +39,7 @@
       <ClientOnly>
         <SaveButton :entity="itinerarySaveShape" :show-label="true" />
         <ShareButton :title="itineraryTitle" :text="itinerary.summary || itinerary.description" />
-        <button type="button" class="btn btn-ghost btn-sm" aria-label="Báo cáo lịch trình" @click="openReport('entity', id)">🚩 Báo cáo</button>
+        <button type="button" class="btn btn-ghost btn-sm" aria-label="Báo cáo lịch trình" @click="openReport('entity', id)"><IconLine name="flag" /> Báo cáo</button>
       </ClientOnly>
         <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-outline btn-sm">+ Tự tạo lịch trình</NuxtLink>
     </div>
@@ -106,7 +106,7 @@
         <div v-if="routeLoading" class="route-total route-loading">Đang tính...</div>
         <div v-if="routeError && !routeLoading" class="route-total" role="status">Chưa tính được lộ trình. <button type="button" class="chip" @click="computeRoute">Thử lại</button></div>
         <div class="route-map-wrap">
-          <div v-if="routeLoading" class="route-map-loading" role="status">🗺️ Đang vẽ lộ trình…</div>
+          <div v-if="routeLoading" class="route-map-loading" role="status"><IconLine name="map" /> Đang vẽ lộ trình…</div>
           <div ref="routeMapEl" class="route-map"></div>
         </div>
       </div>
@@ -125,7 +125,7 @@
     <SkeletonList :count="4" />
   </div>
   <div v-else-if="fetchError" class="page">
-    <EmptyState icon="⚠️" tone="error" title="Không thể tải lịch trình" message="Lỗi kết nối. Vui lòng thử lại.">
+    <EmptyState icon-name="alert-triangle" tone="error" title="Không thể tải lịch trình" message="Lỗi kết nối. Vui lòng thử lại.">
       <template #actions><NuxtLink to="/lich-trinh" class="btn btn-outline btn-sm">Về danh sách</NuxtLink></template>
     </EmptyState>
   </div>
