@@ -36,7 +36,15 @@ def build_checks(root: Path | None = None) -> list:
             # backtrack `\s*` về rỗng, lookahead soi đúng ký tự space nên `rgb( var(--x) )`
             # vẫn bị tính là màu cứng. Đếm theo dòng che lỗi này (cùng dòng đã có
             # match khác); bật count_matches mới lộ ra.
-            patterns=[r"#[0-9a-fA-F]{6}\b", r"#[0-9a-fA-F]{3}\b(?![0-9a-fA-F])", r"\brgba?\((?!\s*var\()"],
+            # (?<!&) BAT BUOC: HTML entity dang &#128640; (= emoji ten lua) khop phan
+            # "#128640" cua pattern hex-6. Do 2026-08-23: 46/165 khop la entity, KHONG
+            # phai mau — no R30.3 bi thoi len dung 46 don vi.
+            #
+            # LUU Y cho nguoi doc sau: chinh nhung entity do la emoji viet o dang khong
+            # dau, nen chung cung THOAT khoi rule emoji R30.2 (pattern _EMOJI chi khop
+            # ky tu emoji that). Mo rong R30.2 de bat entity se LAM TANG no 507 -> can
+            # nang baseline kem giai trinh (§3.7), nen de chu du an quyet.
+            patterns=[r"(?<!&)#[0-9a-fA-F]{6}\b", r"(?<!&)#[0-9a-fA-F]{3}\b(?![0-9a-fA-F])", r"\brgba?\((?!\s*var\()"],
             globs=["*.vue"], roots=_ROOTS,
             exclude_paths=["web-nuxt/node_modules"],
             neg_context=None, count_matches=True,

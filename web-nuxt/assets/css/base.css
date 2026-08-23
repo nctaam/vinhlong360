@@ -24,9 +24,15 @@ img[loading="lazy"].loaded, img[loading="lazy"][complete] { opacity: 1; }
 .dark ::selection { background: rgba(var(--primary-rgb), .3); }
 
 /* ── Placeholder (consistent cross-browser) ── */
-::placeholder { color: var(--muted); opacity: 1; transition: opacity .2s var(--ease-out); }
-:focus::placeholder { opacity: .5; }
-.dark ::placeholder { color: rgba(255,255,255,.35); }
+/* Một quy tắc, dùng token, cho cả hai chế độ. Trước đây có ba quy tắc và hai
+   trong số đó làm chữ gợi ý không đọc được ở chế độ tối — vốn là chế độ MẶC ĐỊNH:
+     .dark ::placeholder { color: rgba(255,255,255,.35) }  -> 3.21:1 trên --card
+     :focus::placeholder { opacity: .5 }                    -> 1.74:1 khi focus
+   Nhân hai lớp mờ làm chữ gần như biến mất đúng vào lúc người dùng đang đọc gợi
+   ý; gõ một ký tự là placeholder tự mất, nên việc "làm mờ cho đỡ vướng" không
+   mua được gì. Bỏ cả hai: var(--muted) cho 7.80 trên --card tối và 7.43 ở chế độ
+   sáng, không thêm token nào, và xoá luôn một màu cứng khỏi CSS. */
+::placeholder { color: var(--muted); opacity: 1; }
 
 /* ── Autofill override (prevent ugly yellow/blue browser autofill) ── */
 input:-webkit-autofill,
@@ -986,8 +992,13 @@ a.thread-author:hover { color: var(--primary-fg); }
 @media (prefers-contrast: more) {
   :root {
     --line: rgba(0,0,0,.25); --shadow-sm: 0 1px 3px rgba(0,0,0,.15);
-    --muted: #4A5B53;
-    --ink-tertiary: #545458;
+    /* Hai giá trị này TỪNG LÀM GIẢM tương phản ở chế độ sáng — người dùng bảo hệ
+       điều hành "cho tôi tương phản cao hơn" thì lại nhận được ít hơn:
+         --muted        #4A5B53 = 6.73 so với mặc định #415550 = 7.43
+         --ink-tertiary #545458 = 7.04
+       Làm đậm theo đúng tông cũ để chế độ này thật sự tăng tương phản. */
+    --muted: #344440;        /* 9.58 trên --bg, 10.00 trên --card */
+    --ink-tertiary: #404044; /* 9.63 trên --bg */
   }
   .dark {
     --line: rgba(255,255,255,.25); --shadow-sm: 0 1px 3px rgba(0,0,0,.4);
@@ -995,8 +1006,9 @@ a.thread-author:hover { color: var(--primary-fg); }
     --ink-tertiary: #B0B0B5;
     --primary-fg: #EAA78E;
   }
-  .dark ::placeholder { color: rgba(255,255,255,.5); }
-  :focus::placeholder { opacity: .7; }
+  /* Hai quy tắc placeholder ở đây ĐÃ GỠ: chúng cho 5.18 (và 3.21 khi focus) trong
+     khi để quy tắc gốc dùng var(--muted) — vốn đã được nâng ngay trong khối này —
+     cho 8.75. Chế độ tương phản cao không cần quy tắc riêng cho placeholder. */
   a:focus-visible, button:focus-visible, [role="button"]:focus-visible { outline-width: 3px; }
   .card, .step-card, .route-card, .cross-card, .quick-pick, .interest-card, .route-preview { border-width: 1px; }
 }

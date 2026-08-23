@@ -789,10 +789,21 @@
   --text-muted: var(--muted);
   /* Surface elevation: see primary-tinted block above */
   /* On-color pairs (dark) */
-  --on-primary: #FFFFFF;
-  --on-secondary: #FFFFFF;
+  /* Ba cặp này TỪNG giữ nguyên #FFFFFF trong khi --primary/--secondary/--tertiary
+     đều sáng lên ở chế độ tối — hợp đồng "on-X đọc được trên X" tự lật ngược.
+     Đo trên app đang chạy: trắng trên --primary 2.98:1, trên --secondary 2.80,
+     trên --tertiary 2.43. Hai cặp kề bên (--on-error, --on-warning) đã được lật
+     đúng, ba cặp này bị bỏ sót.
+     --on-primary có 11 nơi dùng, đều cặp với background: var(--primary) — trong
+     đó pages/lich-trinh-chia-se/[id].vue:64 (.sp-num) hiện ngay lúc tải, không
+     sau cờ tính năng nào. axe không thấy được phần còn lại vì chúng nằm trong
+     drawer chỉ mở khi bấm, hoặc trong admin cần đăng nhập.
+     Dùng --night-canvas như hai token cùng họ mới hơn đã làm (:628, :710) —
+     không thêm màu cứng nào. Đo lại: 6.38 / 6.79 / 7.83. */
+  --on-primary: var(--night-canvas);
+  --on-secondary: var(--night-canvas);
   --on-accent: #2B2622;
-  --on-tertiary: #FFFFFF;
+  --on-tertiary: var(--night-canvas);
   --on-error: #601410;
   --on-warning: #4A2800;
   /* Container colors (dark — higher mix %) */
