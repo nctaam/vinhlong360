@@ -71,7 +71,7 @@
     </div>
 
     <p class="result-meta" aria-live="polite">{{ filtered.length }} kết quả</p>
-    <EmptyState v-if="fetchError" tone="error" icon="⚠️" title="Không thể tải dữ liệu" message="Lỗi kết nối. Vui lòng thử lại.">
+    <EmptyState v-if="fetchError" tone="error" icon-name="alert-triangle" title="Không thể tải dữ liệu" message="Lỗi kết nối. Vui lòng thử lại.">
       <template #actions>
         <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData(`interest-${interest}`)">Thử lại</button>
       </template>
