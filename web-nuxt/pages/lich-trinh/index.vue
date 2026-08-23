@@ -41,7 +41,7 @@
     <ClientOnly>
       <section v-if="count > 0" class="block saved-section reveal">
         <div class="section-head">
-          <h2>❤️ Đã lưu <span class="saved-count">({{ count }})</span></h2>
+          <h2><IconLine name="heart" /> Đã lưu <span class="saved-count">({{ count }})</span></h2>
           <button type="button" class="btn btn-sm btn-ghost danger" @click="clearAll">Xóa tất cả</button>
         </div>
         <div class="journey-stats">
@@ -55,7 +55,7 @@
           <SavedEntityCard v-for="fav in recentSaved" :key="fav.id" :item="fav" />
         </div>
         <div class="saved-cta">
-          <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-primary">📋 Tạo lịch trình từ danh sách đã lưu</NuxtLink>
+          <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-primary"><IconLine name="list" /> Tạo lịch trình từ danh sách đã lưu</NuxtLink>
         </div>
       </section>
     </ClientOnly>
@@ -123,7 +123,7 @@
 
       <p class="result-meta" aria-live="polite">{{ filtered.length }} lịch trình</p>
 
-      <EmptyState v-if="fetchError" icon="⚠️" title="Không tải được lịch trình" message="Có thể mạng đang chập chờn. Thử lại nhé.">
+      <EmptyState v-if="fetchError" icon-name="alert-triangle" title="Không tải được lịch trình" message="Có thể mạng đang chập chờn. Thử lại nhé.">
         <template #actions>
           <button type="button" class="btn btn-outline" @click="refreshNuxtData('itineraries')">Thử lại</button>
         </template>
@@ -147,7 +147,7 @@
         </div>
       </template>
       <div v-else class="block empty-state itin-empty">
-        <EmptyState icon="🗺️" title="Khám phá từ vùng khác" :message="emptyMessage">
+        <EmptyState icon-name="map" title="Khám phá từ vùng khác" :message="emptyMessage">
           <template #actions>
             <button type="button" class="btn btn-outline" @click="areaFilter = 'all'">Xem tất cả khu vực</button>
             <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-primary">Tạo lịch trình</NuxtLink>
