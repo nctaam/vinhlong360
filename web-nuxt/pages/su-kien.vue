@@ -108,7 +108,7 @@
     <CatalogInterstitial
       v-if="allEvents.length"
       fact="Mỗi sự kiện đều có nút tải .ics — thêm vào Google Calendar hoặc Apple Calendar chỉ một chạm."
-      icon="📅"
+      icon-name="calendar"
       variant="accent"
       :links="[
         { to: '/le-hoi', label: 'Lễ hội truyền thống' },
@@ -169,7 +169,7 @@
       <button type="button" :class="['toggle-btn', { active: view === 'calendar' }]" :aria-pressed="view === 'calendar'" @click="view = 'calendar'"><IconLine name="calendar" /> Lịch</button>
     </div>
 
-    <EmptyState v-if="fetchError" icon="⚠️" title="Chưa tải được sự kiện" message="Có thể do mạng chập chờn. Thử lại nhé.">
+    <EmptyState v-if="fetchError" icon-name="alert-triangle" title="Chưa tải được sự kiện" message="Có thể do mạng chập chờn. Thử lại nhé.">
       <template #actions>
         <button type="button" class="btn btn-outline" @click="refreshNuxtData('events')">Thử lại</button>
       </template>
@@ -209,7 +209,7 @@
           <button v-if="e.attributes?.date_start" type="button" class="ical-btn" title="Thêm vào lịch" aria-label="Thêm sự kiện này vào lịch" @click.stop.prevent="downloadIcal(e)"><IconLine name="calendar" /></button>
         </NuxtLink>
       </div>
-      <EmptyState v-else icon="🎪" title="Không tìm thấy sự kiện" message="Thử đổi trạng thái, khu vực hoặc từ khóa khác nhé.">
+      <EmptyState v-else icon-name="flag" title="Không tìm thấy sự kiện" message="Thử đổi trạng thái, khu vực hoặc từ khóa khác nhé.">
         <template #actions>
           <button type="button" class="btn btn-outline" @click="statusFilter = 'all'; areaFilter = 'all'; q = ''">Xóa bộ lọc</button>
           <button type="button" class="btn btn-outline" @click="view = 'calendar'"><IconLine name="calendar" /> Xem lịch</button>
