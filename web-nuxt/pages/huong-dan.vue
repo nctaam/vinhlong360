@@ -7,13 +7,13 @@
           <input v-model="search" type="search" enterkeyhint="search" placeholder="Tìm trong hướng dẫn..." aria-label="Tìm trong hướng dẫn" class="search-input" />
         </div>
         <nav class="sidebar-nav" aria-label="Mục lục hướng dẫn">
-          <a href="#bat-dau" class="snav-link" :class="{ active: activeId === 'bat-dau' }" @click.prevent="scrollTo('bat-dau')">🚀 Bắt đầu nhanh</a>
+          <a href="#bat-dau" class="snav-link" :class="{ active: activeId === 'bat-dau' }" @click.prevent="scrollTo('bat-dau')"><IconLine name="sparkles" /> Bắt đầu nhanh</a>
           <template v-for="s in filteredSections" :key="s.id">
             <a :href="`#${s.id}`" class="snav-link" :class="{ active: activeId === s.id }" @click.prevent="scrollTo(s.id)">
               {{ s.icon }} {{ s.title }}
             </a>
           </template>
-          <a href="#khac-phuc" class="snav-link" :class="{ active: activeId === 'khac-phuc' }" @click.prevent="scrollTo('khac-phuc')">🔧 Khắc phục sự cố</a>
+          <a href="#khac-phuc" class="snav-link" :class="{ active: activeId === 'khac-phuc' }" @click.prevent="scrollTo('khac-phuc')"><IconLine name="settings" /> Khắc phục sự cố</a>
         </nav>
         <p v-if="search && !filteredSections.length" class="sidebar-empty">Không tìm thấy mục nào.</p>
       </div>
@@ -40,14 +40,14 @@
       <!-- Mobile TOC (declutter-3 T7: gộp search vào trong details — mobile 2 khối
            xếp chồng → 1; desktop dùng sidebar. Số phần: sections + bắt-đầu + khắc-phục) -->
       <details class="mobile-toc reveal">
-        <summary class="mobile-toc-toggle">📑 Mục lục ({{ sections.length + 2 }} phần)</summary>
+        <summary class="mobile-toc-toggle"><IconLine name="list" /> Mục lục ({{ sections.length + 2 }} phần)</summary>
         <div class="mobile-toc-search">
           <input v-model="search" type="search" placeholder="Tìm trong hướng dẫn..." aria-label="Tìm trong hướng dẫn" class="search-input" />
         </div>
         <nav class="mobile-toc-nav" aria-label="Mục lục hướng dẫn">
-          <a href="#bat-dau" @click.prevent="scrollTo('bat-dau')">🚀 Bắt đầu nhanh</a>
+          <a href="#bat-dau" @click.prevent="scrollTo('bat-dau')"><IconLine name="sparkles" /> Bắt đầu nhanh</a>
           <a v-for="s in sections" :key="s.id" :href="`#${s.id}`" @click.prevent="scrollTo(s.id)">{{ s.icon }} {{ s.title }}</a>
-          <a href="#khac-phuc" @click.prevent="scrollTo('khac-phuc')">🔧 Khắc phục sự cố</a>
+          <a href="#khac-phuc" @click.prevent="scrollTo('khac-phuc')"><IconLine name="settings" /> Khắc phục sự cố</a>
         </nav>
       </details>
 
@@ -70,7 +70,7 @@
               <span class="qs-num">2</span>
               <div>
                 <strong>Xem chi tiết & lưu yêu thích</strong>
-                <p>Nhấn vào bất kỳ địa điểm nào. Xem ảnh, liên hệ, mùa vụ. Nhấn ❤️ để lưu — danh sách lưu trên trình duyệt, không cần tài khoản.</p>
+                <p>Nhấn vào bất kỳ địa điểm nào. Xem ảnh, liên hệ, mùa vụ. Nhấn <IconLine name="heart" /> để lưu — danh sách lưu trên trình duyệt, không cần tài khoản.</p>
               </div>
             </div>
           </li>
