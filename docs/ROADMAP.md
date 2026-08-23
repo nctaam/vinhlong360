@@ -652,3 +652,42 @@ kiện dừng (§4) — cần chủ dự án.
 Kèm theo, cùng chỗ đó: ba link vùng dựng "Vĩnh Long / Bến Tre / Trà Vinh" thành ba
 nơi ngang hàng ngay trên điều hướng chính — cùng loại vi phạm §1.6 với mục 3, nhưng
 ở vị trí nổi bật hơn nhiều.
+
+### 6. Đợt 2 — lớp `.emoji` trong dữ liệu (2026-08-23, tiếp theo mục 5)
+
+Đã xử lý 6 chỗ **đọc** trường `.emoji`, dùng trường `icon` vốn đã có sẵn cạnh nó:
+
+- `pages/danh-ba.vue` (:44, :87, :208) — làm nốt đợt mà `pages/xa-phuong/[id].vue` đã làm xong từ trước
+- `components/SearchAutocomplete.vue` (:83) — **lỗi tiếp cận thật**: emoji loại hình đọc thành lời trong `role="option"`; nay `aria-hidden` + IconLine
+- `pages/dia-diem/index.vue` (:51) — con dấu khu vực
+- `pages/admin/entities.vue` (:5, :40, :48, :284) — ánh xạ ở client qua ADMIN_KINDS/TYPE_META, không đổi backend
+
+Gỡ thêm 3 trường `emoji` **chết** trong object dự phòng (CatalogSpotlight,
+EntityCard, ItineraryCard) — đã rà từng nơi đọc trước khi gỡ.
+
+#### Còn lại, và VÌ SAO chưa làm
+
+**(a) Bốn chỗ nằm trong `<option>` — HTML không cho.**
+`pages/admin/danh-ba.vue:24`, `pages/admin/entities.vue:21` và `:262`,
+`pages/admin/lich-trinh.vue:174`. Thẻ `<option>` chỉ render **văn bản thuần**; mọi
+phần tử con bị bỏ qua, nên `<IconLine>` trong đó cho ra ô chọn TRỐNG. Đây là ràng
+buộc của nền tảng, không phải việc làm dở. Muốn có icon trong ô chọn thì phải thay
+`<select>` bằng listbox tự dựng — việc lớn, có đánh đổi về tiếp cận, cần quyết
+riêng.
+
+**(b) `OnboardingSheet.vue:14` + `utils/onboardingContent.ts` — hợp đồng dữ liệu CMS.**
+Hai cái bẫy chồng nhau:
+
+1. `OnboardingFeature.icon` **tên là `icon` nhưng giá trị là emoji** (`'🗺️'`,
+   `'📅'`, `'💬'`). Đổi thẳng chỗ render sang `<IconLine :name="f.icon">` sẽ đi
+   tìm icon tên "🗺️" — hỏng, mà hỏng lặng lẽ.
+2. Cả khối này **CMS ghi đè được** (key `onboarding`, `mergeOnboarding()`). Thêm
+   hay đổi nghĩa trường là sửa hợp đồng dữ liệu với settings đang chạy trên prod:
+   override cũ vẫn mang emoji cho tới khi có người vào AdminCP sửa.
+
+Đường đi additive (§2 B2) có sẵn: thêm `icon_name` song song, ưu tiên nó, rơi về
+`emoji`/`icon` cũ — giống hệt cách `EmptyState` đã thêm `iconName`. Nhưng nó nới
+hợp đồng CMS nên **cần chủ dự án quyết**, không tự làm.
+
+**(c) `useConstants.ts` chưa bỏ được trường `emoji`** (39 glyph) vì (a) và (b) còn
+đọc tới. Bỏ được ngay sau khi hai mục trên xong.
