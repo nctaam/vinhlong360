@@ -29,7 +29,7 @@
     </div>
     <p class="ri-content" :class="{ 'ri-content-testimony': featured }">{{ review.content }}</p>
     <button type="button" :class="['ri-helpful', { active: review.user_liked }]" :aria-pressed="!!review.user_liked" @click="$emit('toggle-helpful', review)">
-      👍 Hữu ích<span v-if="review.likes" class="ri-helpful-count">{{ review.likes }}</span>
+      <IconLine name="thumbs-up" /> Hữu ích<span v-if="review.likes" class="ri-helpful-count">{{ review.likes }}</span>
     </button>
   </div>
 </template>
