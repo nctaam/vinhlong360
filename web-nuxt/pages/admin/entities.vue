@@ -31,7 +31,7 @@
     <!-- Phase 2: tổng quan theo danh mục (7 nhóm chủ trên 17 type) -->
     <details v-if="kindGroups.length" class="ent-kinds-panel">
       <summary class="ent-kinds-summary">
-        📊 Tổng quan theo danh mục
+        <IconLine name="chart" /> Tổng quan theo danh mục
         <span class="ent-kinds-total">{{ kindGrandTotal.toLocaleString('vi-VN') }} entity</span>
       </summary>
       <div class="ent-kinds-grid">
@@ -175,7 +175,8 @@
             <td v-for="c in currentKind?.columns || []" :key="c.key" class="ent-kind-cell">
               <button v-if="c.widget === 'bool'" type="button" class="ent-bool-toggle"
                 :aria-label="`Bật/tắt ${c.label} cho ${e.name}`" @click="toggleBoolAttr(e, c.key)">
-                {{ ((e as any).attributes || {})[c.key] ? '✓' : '—' }}
+                <IconLine v-if="((e as any).attributes || {})[c.key]" name="check" />
+                <template v-else>—</template>
               </button>
               <template v-else-if="inlineEdit.id === e.id && inlineEdit.field === 'attr:' + c.key">
                 <select v-if="c.widget === 'select'" v-model="inlineEdit.value" class="input ent-inline-select"
@@ -195,9 +196,9 @@
               </span>
             </td>
             <td class="ent-health-cell">
-              <span class="ent-dot" :class="e.summary ? 'dot-ok' : 'dot-miss'" :title="e.summary ? 'Có tóm tắt' : 'Thiếu tóm tắt'" :aria-label="e.summary ? 'Có tóm tắt' : 'Thiếu tóm tắt'" role="img">{{ e.summary ? '✓' : '✗' }}</span>
-              <span class="ent-dot" :class="imageCount ? 'dot-ok' : 'dot-miss'" :title="imageCount ? `${imageCount} ảnh` : 'Thiếu ảnh'" :aria-label="imageCount ? `${imageCount} ảnh` : 'Thiếu ảnh'" role="img">{{ imageCount ? '✓' : '✗' }}</span>
-              <span class="ent-dot" :class="e.placeId ? 'dot-ok' : 'dot-miss'" :title="e.placeId ? 'Có địa điểm' : 'Thiếu địa điểm'" :aria-label="e.placeId ? 'Có địa điểm' : 'Thiếu địa điểm'" role="img">{{ e.placeId ? '✓' : '✗' }}</span>
+              <span class="ent-dot" :class="e.summary ? 'dot-ok' : 'dot-miss'" :title="e.summary ? 'Có tóm tắt' : 'Thiếu tóm tắt'" :aria-label="e.summary ? 'Có tóm tắt' : 'Thiếu tóm tắt'" role="img"><IconLine :name="e.summary ? 'check' : 'x'" /></span>
+              <span class="ent-dot" :class="imageCount ? 'dot-ok' : 'dot-miss'" :title="imageCount ? `${imageCount} ảnh` : 'Thiếu ảnh'" :aria-label="imageCount ? `${imageCount} ảnh` : 'Thiếu ảnh'" role="img"><IconLine :name="imageCount ? 'check' : 'x'" /></span>
+              <span class="ent-dot" :class="e.placeId ? 'dot-ok' : 'dot-miss'" :title="e.placeId ? 'Có địa điểm' : 'Thiếu địa điểm'" :aria-label="e.placeId ? 'Có địa điểm' : 'Thiếu địa điểm'" role="img"><IconLine :name="e.placeId ? 'check' : 'x'" /></span>
             </td>
             <td class="admin-actions">
               <button type="button" class="btn-success" @click="openEdit(e)" :aria-label="`Sửa ${e.name}`">Sửa</button>
@@ -295,7 +296,7 @@
 
           <!-- Mùa (season) — tháng có mặt + cao điểm -->
           <details class="ent-kbyg-details">
-            <summary class="admin-label ent-kbyg-summary">🗓️ Mùa / thời điểm ({{ seasonMonths.length }} tháng<span v-if="seasonPeak.length">, {{ seasonPeak.length }} cao điểm</span>)</summary>
+            <summary class="admin-label ent-kbyg-summary"><IconLine name="calendar" /> Mùa / thời điểm ({{ seasonMonths.length }} tháng<span v-if="seasonPeak.length">, {{ seasonPeak.length }} cao điểm</span>)</summary>
             <div class="ent-kbyg-fields">
               <p class="sf-help ent-season-hint">Bấm mỗi tháng để chuyển: không → có mùa → cao điểm → tắt.</p>
               <div class="ent-season-grid" role="group" aria-label="Chọn tháng theo mùa">
@@ -313,7 +314,7 @@
 
           <!-- KBYG — Know Before You Go -->
           <details class="ent-kbyg-details">
-            <summary class="admin-label ent-kbyg-summary">🎒 Biết trước khi đi (KBYG)</summary>
+            <summary class="admin-label ent-kbyg-summary"><IconLine name="briefcase" /> Biết trước khi đi (KBYG)</summary>
             <div class="ent-kbyg-fields">
               <div class="ent-field">
                 <label class="form-label" for="kbyg-tips">Mẹo du lịch (mỗi dòng = 1 mẹo)</label>
@@ -355,7 +356,7 @@
 
           <!-- Thuộc tính nâng cao (bespoke tail — không có trong schema/KBYG) -->
           <details class="ent-kbyg-details">
-            <summary class="admin-label ent-kbyg-summary">🧩 Thuộc tính nâng cao (JSON)</summary>
+            <summary class="admin-label ent-kbyg-summary"><IconLine name="sliders" /> Thuộc tính nâng cao (JSON)</summary>
             <div class="ent-kbyg-fields">
               <p class="sf-help">Các thuộc tính đặc thù không có ô riêng (vd sac_phong, deity_worshipped…). Sửa trực tiếp JSON — các trường đã có ô riêng ở trên sẽ được giữ tách biệt.</p>
               <textarea v-model="advancedJson" class="input admin-textarea ent-advanced-json" rows="6" spellcheck="false"
@@ -399,7 +400,8 @@
             </div>
             <div class="admin-inline-add">
               <label class="btn btn-outline btn-sm" style="cursor:pointer; margin:0">
-                {{ uploadingImg ? 'Đang tải & tối ưu…' : '📷 Tải ảnh AI biên tập (tự nén WebP)' }}
+                <template v-if="uploadingImg">Đang tải &amp; tối ưu…</template>
+                <template v-else><IconLine name="camera" /> Tải ảnh AI biên tập (tự nén WebP)</template>
                 <input type="file" accept="image/*" class="sr-only" :disabled="uploadingImg" @change="uploadImageFile" />
               </label>
             </div>
