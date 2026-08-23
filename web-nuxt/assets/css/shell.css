@@ -372,7 +372,7 @@
   padding: 8px;
   border-radius: var(--radius-control);
   color: var(--color-text-muted);
-  font-size: .86rem;
+  font-size: var(--text-sm);
 }
 
 .public-shell-catalog-group a:is(:hover, :focus-visible),
@@ -418,7 +418,7 @@ html[data-density="compact"] .public-bottom-nav-item {
   padding-left: 0;
   color: var(--color-text);
   font-family: var(--font-sans);
-  font-size: .86rem;
+  font-size: var(--text-sm);
   font-weight: 600;
 }
 
@@ -426,7 +426,7 @@ html[data-density="compact"] .public-bottom-nav-item {
   color: var(--color-text-muted);
   font-family: var(--font-sans);
   font-style: normal;
-  font-size: .92rem;
+  font-size: var(--text-sm);
 }
 
 .public-shell .footer-social a,
@@ -865,7 +865,7 @@ html[data-reduced-motion="true"] .public-shell-catalog-button .line-icon {
   border: 1px solid transparent;
   border-radius: var(--radius-control);
   color: var(--color-admin-text-muted);
-  font-size: .82rem;
+  font-size: var(--text-xs);
   font-weight: 500;
   transition: background var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out);
 }
@@ -1170,7 +1170,7 @@ html[data-reduced-motion="true"] .public-shell-catalog-button .line-icon {
   .admin-shell .admin-nav a.nav-sub {
     min-height: 44px;
     padding: 8px var(--space-3);
-    font-size: .82rem;
+    font-size: var(--text-xs);
     white-space: normal;
   }
 
