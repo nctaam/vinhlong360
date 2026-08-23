@@ -68,7 +68,7 @@
           </span>
         </div>
         <div v-if="isSelf && (profile.login_streak ?? 0) > 0" class="streak-chip" :class="{ 'streak-milestone': isStreakMilestone }">
-          🔥 {{ profile.login_streak }} ngày liên tiếp ghé bến
+          <IconLine name="flame" /> {{ profile.login_streak }} ngày liên tiếp ghé bến
         </div>
         <!-- declutter-3 T6 (chủ duyệt 2026-07-06): showcase collapse mặc định — summary
              "Thành tích (N/M)" chính là CTA mở; tính năng giữ nguyên. -->
@@ -149,7 +149,7 @@
            một phần profile-stats phía trên. -->
 
       <div v-if="profile.is_private" class="profile-private-notice">
-        <p>🔒 Hồ sơ riêng tư — theo dõi để xem nội dung.</p>
+        <p><IconLine name="eye-off" /> Hồ sơ riêng tư — theo dõi để xem nội dung.</p>
       </div>
 
       <!-- declutter-3 T6 (chủ duyệt 2026-07-06): heatmap collapse sau toggle — giữ
@@ -184,11 +184,11 @@
             <SavedEntityCard v-for="fav in favorites" :key="fav.id" :item="fav" />
           </div>
           <div v-if="favorites.length" class="saved-cta">
-            <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-primary btn-sm">📋 Tạo lịch trình từ danh sách đã lưu</NuxtLink>
+            <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-primary btn-sm"><IconLine name="list" /> Tạo lịch trình từ danh sách đã lưu</NuxtLink>
           </div>
           <EmptyState
             v-else
-            icon="❤️"
+            icon-name="heart"
             title="Chưa lưu địa điểm nào"
             message="Lưu địa điểm yêu thích để xem lại nhanh và ghép vào lịch trình."
             hint="Nhấn nút lưu ở bất kỳ địa điểm nào để bắt đầu."
@@ -217,7 +217,7 @@
             </div>
             <EmptyState
               v-else
-              icon="🗂️"
+              icon-name="bookmark"
               title="Chưa có danh sách nào"
               message="Tạo danh sách để sắp xếp bài viết yêu thích theo chủ đề."
               hint="Nhấn “+ Tạo danh sách” để bắt đầu."
@@ -230,7 +230,7 @@
               <div class="modal" role="dialog" aria-modal="true" aria-labelledby="create-collection-title" ref="createCollectionModalEl">
                 <div class="modal-head">
                   <h2 id="create-collection-title">Tạo danh sách mới</h2>
-                  <button type="button" class="modal-close" aria-label="Đóng" @click="closeCreateCollection">✕</button>
+                  <button type="button" class="modal-close" aria-label="Đóng" @click="closeCreateCollection"><IconLine name="x" /></button>
                 </div>
                 <div class="modal-body">
                   <form @submit.prevent="handleCreateCollection">
@@ -268,7 +268,11 @@
                   </template>
                   <template v-else-if="item.type === 'review'">
                     Đã đánh giá <strong>{{ item.data.entity_name || 'địa điểm' }}</strong>
-                    <span v-if="item.data.rating" class="tl-rating">{{ '⭐'.repeat(Math.min(item.data.rating, 5)) }}</span>
+                    <span
+                  v-if="item.data.rating"
+                  class="tl-rating"
+                  :aria-label="`Đánh giá ${Math.min(item.data.rating, 5)} trên 5 sao`"
+                ><IconLine v-for="n in Math.min(item.data.rating, 5)" :key="n" name="star" /></span>
                   </template>
                   <template v-else-if="item.type === 'follow'">
                     Đã theo dõi <strong>{{ item.data.target_name }}</strong>
@@ -279,7 +283,7 @@
               </div>
             </article>
           </div>
-          <EmptyState v-else icon="📅" title="Chưa có hoạt động" message="Hoạt động sẽ hiện khi người dùng tương tác trên cộng đồng." />
+          <EmptyState v-else icon-name="calendar" title="Chưa có hoạt động" message="Hoạt động sẽ hiện khi người dùng tương tác trên cộng đồng." />
           <div v-if="timelineLoading && timelineItems.length" class="profile-loading" role="status"><div class="spinner"></div></div>
           <div ref="timelineSentinel" style="height:1px" />
         </template>
@@ -302,14 +306,14 @@
           </TransitionGroup>
           <EmptyState
             v-if="postsFetchFailed && !filteredPosts.length && !loading"
-            icon="⚠️" tone="error" title="Không thể tải bài viết" message="Lỗi kết nối. Vui lòng thử lại."
+            icon-name="alert-triangle" tone="error" title="Không thể tải bài viết" message="Lỗi kết nối. Vui lòng thử lại."
           >
             <button type="button" class="btn btn-outline btn-sm" @click="fetchPosts">Thử lại</button>
           </EmptyState>
           <Transition name="fade">
             <EmptyState
               v-if="!postsFetchFailed && !filteredPosts.length && !loading"
-              :icon="tab === 'reviews' ? '⭐' : '✍️'"
+              :icon-name="tab === 'reviews' ? 'star' : 'file-text'"
               :title="tab === 'reviews' ? 'Chưa có đánh giá' : 'Chưa có bài viết'"
               :message="tab === 'reviews' ? 'Chưa có đánh giá nào.' : 'Chưa có bài viết nào.'"
               :hint="emptyHint"
@@ -325,10 +329,10 @@
       </div>
     </div>
 
-    <EmptyState v-else-if="profileFetchFailed" icon="⚠️" tone="error" title="Không thể tải trang" message="Lỗi kết nối. Vui lòng thử lại.">
+    <EmptyState v-else-if="profileFetchFailed" icon-name="alert-triangle" tone="error" title="Không thể tải trang" message="Lỗi kết nối. Vui lòng thử lại.">
       <button type="button" class="btn btn-outline btn-sm" @click="refreshProfile()">Thử lại</button>
     </EmptyState>
-    <EmptyState v-else-if="profileNotFound" icon="👤" title="Không tìm thấy người dùng" message="Hồ sơ này không tồn tại hoặc đã được đổi tên." />
+    <EmptyState v-else-if="profileNotFound" icon-name="user" title="Không tìm thấy người dùng" message="Hồ sơ này không tồn tại hoặc đã được đổi tên." />
     <EmptyState v-else message="Không tìm thấy người dùng." />
 
     <!-- Modal danh sách theo dõi -->
