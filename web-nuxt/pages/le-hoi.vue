@@ -190,7 +190,7 @@
       <button type="button" :class="['toggle-btn', { active: view === 'calendar' }]" :aria-pressed="view === 'calendar'" @click="view = 'calendar'"><IconLine name="calendar" /> Lịch</button>
     </div>
 
-    <EmptyState v-if="fetchError" icon="⚠️" title="Không tải được lễ hội" message="Có thể mạng đang chập chờn. Thử lại nhé.">
+    <EmptyState v-if="fetchError" icon-name="alert-triangle" title="Không tải được lễ hội" message="Có thể mạng đang chập chờn. Thử lại nhé.">
       <template #actions>
         <button type="button" class="btn btn-outline" @click="refreshNuxtData('festivals')">Thử lại</button>
       </template>
@@ -230,7 +230,7 @@
           <button v-if="e.attributes?.date_start" type="button" class="ical-btn" title="Thêm vào lịch" aria-label="Thêm lễ hội này vào lịch" @click.stop.prevent="downloadIcal(e)"><IconLine name="calendar" /></button>
         </NuxtLink>
       </div>
-      <EmptyState v-else icon="🎋" title="Không tìm thấy lễ hội" message="Thử thay đổi trạng thái, khu vực hoặc từ khóa tìm kiếm.">
+      <EmptyState v-else icon-name="lantern" title="Không tìm thấy lễ hội" message="Thử thay đổi trạng thái, khu vực hoặc từ khóa tìm kiếm.">
         <template #actions>
           <button type="button" class="btn btn-outline" @click="statusFilter = 'all'; areaFilter = 'all'; q = ''">Xóa bộ lọc</button>
           <button type="button" class="btn btn-outline" @click="view = 'calendar'"><IconLine name="calendar" /> Xem lịch</button>
