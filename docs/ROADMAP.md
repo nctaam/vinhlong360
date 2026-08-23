@@ -820,3 +820,65 @@ Chữ đang mang sắc xanh (`rgb(8,26,22)`, hue 167) trong khi bề mặt là k
 (hue 41–45). Ấm–lạnh đặt cạnh nhau là chủ ý (bộ token tên `--alluvial-*`,
 `--river-*`, `--leaf-*` — bảng màu miền sông nước) hay là điều cần chỉnh? Đổi
 sắc chữ là quyết định nhận diện, không tự làm.
+
+### 8. Đối chiếu TIÊU CHUẨN thiết kế trước khi đổi (2026-08-23)
+
+Chủ dự án yêu cầu nghiên cứu chuẩn trước khi quyết. Nguồn: bộ quy tắc trong
+skill `ui-ux-pro-max` (`references/quick-reference.md` §6 Typography & Color,
+`references/pro-rules.md`), đối chiếu bằng số đo trên trình duyệt ở 375px và
+1280px.
+
+#### Kết luận 1 — RÚT LẠI đề xuất đổi sắc chữ
+
+Lượt trước tôi nêu: chữ mang sắc xanh (hue 167) trên bề mặt kem ấm (hue 41–45)
+có thể là chỗ gợn. **Đo lại thì đây là kỹ thuật ĐÚNG CHUẨN, không phải lỗi.**
+
+| | Màu | Chroma |
+|---|---|---|
+| Chữ | `rgb(8,26,22)` | **7,1%** |
+| Bề mặt | `rgb(249,247,241)` | **3,1%** |
+
+Material Design 3 dựng bảng neutral bằng cách **pha sắc từ màu nguồn ở chroma
+thấp** — đúng dải này. Bộ token tên `--alluvial-*`, `--river-*`, `--leaf-*` cho
+thấy đó là chủ ý nhận diện miền sông nước. **Không đổi.**
+
+#### Kết luận 2 — ĐÃ VÁ: giãn dòng body
+
+Quy tắc `line-height`: body phải 1.5–1.75. Đo được 5/10 khối body ở 1.3
+(`.cm-content`, `.home .sh-sub`). Trùng khớp với ngưỡng vật lý tiếng Việt: tỉ lệ
+mực đo được của Be Vietnam Pro là **1.33** — 1.3 nằm dưới cả hai. Đã sửa; đo lại
+0/10 vi phạm.
+
+#### Kết luận 3 — CHẨN ĐOÁN CHÍNH: hệ thống tốt, nhưng bị đi vòng
+
+Quy tắc `color-semantic` nói thẳng: *"dùng token ngữ nghĩa, KHÔNG dùng hex thô
+trong component"*. Quy tắc `font-scale`: *"thang chữ nhất quán"*. Dự án **có đủ
+cả hai hệ**, nhưng phần lớn mã đi vòng qua chúng:
+
+| Tầng | Hệ có sẵn | Số chỗ đi vòng | Số file |
+|---|---|---|---|
+| Màu | 53 token `--color-*` | **629** lần dùng thang thô | **88** |
+| Chữ | 10 bậc `--text-2xs`…`--text-5xl` | **772** `font-size` viết cứng, **70** giá trị | **104** |
+
+Riêng dải 0.7–0.9rem có **mười một** cỡ chữ: `.7 .72 .75 .76 .78 .8 .82 .84 .85
+.88 .9` — chen trong 3.2px. Không ai nhìn ra đó là các bậc có chủ ý; nó đọc ra
+thành thiếu nhất quán. Đây là nguyên nhân đo được của cảm giác "bố cục chưa ổn".
+
+**Tin tốt: bệnh phân theo TUỔI của file, không lan đều.**
+
+| File | Khai báo `font-size` cứng | Số giá trị |
+|---|---|---|
+| `assets/css/base.css` | 53 | 22 |
+| `assets/css/shell.css` | 22 | 14 |
+| `assets/css/catalog.css` | 14 | 8 |
+| `pages/index.vue` | **1** | 1 |
+| `assets/css/home-nocturne.css` | **0** | 0 |
+
+File mới (nocturne, index.vue) dùng thang chuẩn đúng. Sprawl nằm ở CSS dùng
+chung đời cũ. Nghĩa là di cư được theo từng file, không phải viết lại toàn bộ.
+
+**VÌ SAO CHƯA LÀM NGAY:** thang `--text-*` là `clamp()` co giãn theo màn, còn giá
+trị viết cứng thì cố định. Đổi `.78rem` (12,5px ở mọi khổ) thành `--text-xs`
+(12→13px) làm ĐỔI hành vi trên máy lớn. Phải làm từng file, đo ảnh trước/sau ở
+ít nhất 375/768/1280, không gộp một commit. Đề xuất thứ tự: `shell.css` (22 khai
+báo, chi phối khung mọi trang) → `base.css` (53) → `catalog.css` (14).
