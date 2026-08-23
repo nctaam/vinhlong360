@@ -104,7 +104,6 @@
   --clay-400: #C4694E;
   --clay-600: #9C3D22;
   --clay-700: #7A2E18;
-  --clay-900: #4A1C0E;
   /* Amber (đặc sản / nắng) */
   --amber-100: #FAEBD0;
   --amber-500: #E8A33D;
@@ -115,7 +114,6 @@
   --leaf-600: #2E7D5B;
   --leaf-700: #1F5C41;
   /* River (sông nước phù sa) */
-  --river-100: #DCEAEC;
   --river-600: #035A69;
   /* Sand (nền ấm) + Ink (chữ) — neutral */
   --sand-50:  #FAF4E8;
@@ -164,16 +162,8 @@
   --on-error: #FFFFFF;
   --on-warning: #FFFFFF;
   /* Container colors (M3: tinted surfaces for chips/cards) */
-  --primary-container: color-mix(in oklch, var(--primary) 12%, var(--card));
-  --on-primary-container: var(--clay-700);
-  --secondary-container: color-mix(in oklch, var(--secondary) 12%, var(--card));
-  --on-secondary-container: var(--leaf-700);
-  --tertiary-container: color-mix(in oklch, var(--tertiary) 12%, var(--card));
-  --on-tertiary-container: var(--river-600);
   --accent-container: color-mix(in oklch, var(--accent) 15%, var(--card));
-  --on-accent-container: #6B4A0F;
   --error-container: color-mix(in oklch, var(--error) 10%, var(--card));
-  --on-error-container: #8B1A10;
 
   --bg: var(--color-canvas);
   --bg-warm: var(--sand-100);
@@ -193,13 +183,9 @@
   --text-muted: var(--muted);
   /* Status / feedback */
   --success: var(--color-success);
-  --on-success: #FFFFFF;
   --success-bg: rgba(46, 125, 50, .08);
   --success-border: rgba(46, 125, 50, .25);
   --info: #1565C0;
-  --on-info: #FFFFFF;
-  --info-bg: rgba(21, 101, 192, .08);
-  --info-border: rgba(21, 101, 192, .25);
   --warning: var(--color-warning);
   --on-warning: #FFFFFF;
   --warning-bg: rgba(230, 126, 34, .08);
@@ -235,7 +221,6 @@
   --state-focus:    color-mix(in oklch, var(--state-color) 12%, transparent);
   --state-pressed:  color-mix(in oklch, var(--state-color) 10%, transparent);
   --state-dragged:  color-mix(in oklch, var(--state-color) 16%, transparent);
-  --state-selected: color-mix(in oklch, var(--state-color) 8%, transparent);
 
   /* ── RGB channels (for rgba() usage without inline fallbacks) ── */
   --primary-rgb: 156, 61, 34;
@@ -262,7 +247,6 @@
 
   /* ── Overlay / scrim tokens ── */
   --overlay-dark: rgba(0,0,0,.72);
-  --overlay-dark-heavy: rgba(0,0,0,.86);
   --overlay-light: rgba(255,255,255,.15);
   --overlay-subtle: rgba(128,128,128,.04);
 
@@ -279,8 +263,6 @@
   --tracking-caps: .06em;
 
   /* ── Computed shades (color-mix) ── */
-  --primary-hover: color-mix(in oklab, var(--primary) 85%, black);
-  --primary-focus: color-mix(in oklab, var(--primary) 92%, transparent);
 
   /* ── Typography scale (Apple HIG-inspired, base 16px) ── */
   --font-sans: 'Be Vietnam Pro', 'Segoe UI', system-ui, sans-serif;
@@ -391,18 +373,12 @@
   --weight-display: 400;
 
   /* ── Surface container names (M3 mapping) ── */
-  --surface-dim: var(--sand-200);
-  --surface-bright: var(--white);
-  --surface-container-lowest: var(--white);
   --surface-container-low: var(--sand-50);
   --surface-container: var(--sand-100);
   --surface-container-high: var(--sand-200);
-  --surface-container-highest: var(--sand-300);
 
   /* ── Outline tokens ── */
   --outline: var(--border);
-  --outline-variant: var(--line);
-  --outline-input: var(--border-input);
 
   /* ── Inverse + scrim ── */
   --scrim: rgba(0,0,0,0.72);
@@ -414,7 +390,6 @@
   --text-high: var(--ink);
   --text-medium: var(--muted);
   --text-low: var(--ink-tertiary);
-  --text-lowest: rgba(0,0,0,.25);
 
   /* ── Image aspect ratios ── */
   --ratio-hero: 16 / 9;
@@ -522,11 +497,8 @@
   --bp-xlarge:   1600px;
 
   /* ── Surface elevation (flat in light; ramped in dark — see .dark below) ── */
-  --surface-1: var(--card);
   --surface-2: var(--card);
   --surface-3: var(--card);
-  --surface-4: var(--card);
-  --surface-5: var(--card);
 
   /* ── Z-index scale (coherent layering — bottom→top) ── */
   --z-base: 0;
@@ -760,13 +732,10 @@
   --focus-ring: 0 0 0 3px rgba(196, 105, 78, .25);
   --focus-outline: var(--primary-fg);
   --overlay-dark: rgba(0,0,0,.40);
-  --overlay-dark-heavy: rgba(0,0,0,.55);
   --overlay-light: rgba(255,255,255,.14);
   --overlay-subtle: rgba(255,255,255,.08);
   --shadow-text: 0 1px 4px rgba(0,0,0,.6);
   --shadow-text-heavy: 0 2px 12px rgba(0,0,0,.7), 0 1px 3px rgba(0,0,0,.5);
-  --primary-hover: color-mix(in oklab, var(--primary-fg) 85%, white);
-  --primary-focus: color-mix(in oklab, var(--primary-fg) 92%, transparent);
   --glass-subtle: rgba(255, 255, 255, .05);
   --glass-light: rgba(255, 255, 255, .08);
   --glass-border: rgba(255, 255, 255, .14);
@@ -805,25 +774,13 @@
   --on-error: #601410;
   --on-warning: #4A2800;
   /* Container colors (dark — higher mix %) */
-  --primary-container: color-mix(in oklch, var(--primary) 22%, var(--card));
-  --on-primary-container: #E8B8A0;
-  --secondary-container: color-mix(in oklch, var(--secondary) 22%, var(--card));
-  --on-secondary-container: #8DD4B0;
-  --tertiary-container: color-mix(in oklch, var(--tertiary) 22%, var(--card));
-  --on-tertiary-container: #9ECCD8;
   --accent-container: color-mix(in oklch, var(--accent) 22%, var(--card));
-  --on-accent-container: #E8C88A;
   --error-container: color-mix(in oklch, var(--error) 18%, var(--card));
-  --on-error-container: #FFB4AB;
   /* Status (dark) */
   --success: var(--color-success);
-  --on-success: #1B3A1C;
   --success-bg: rgba(102, 187, 106, .12);
   --success-border: rgba(102, 187, 106, .3);
   --info: #64B5F6;
-  --on-info: #0D2B4A;
-  --info-bg: rgba(100, 181, 246, .12);
-  --info-border: rgba(100, 181, 246, .3);
   --on-warning: #4A2800;
   --warning-border: rgba(240, 160, 80, .3);
   --error-border: rgba(255, 105, 97, .3);
@@ -831,32 +788,22 @@
   --sk-base: var(--bg-warm);
   --sk-highlight: var(--line);
   /* Surface elevation: primary-tinted (M3 tonal elevation) */
-  --surface-1: color-mix(in oklch, #1c1c1e 96%, var(--primary) 4%);
   --surface-2: color-mix(in oklch, #2c2c2e 94%, var(--primary) 6%);
   --surface-3: color-mix(in oklch, #3a3a3c 92%, var(--primary) 8%);
-  --surface-4: color-mix(in oklch, #48484a 90%, var(--primary) 10%);
-  --surface-5: color-mix(in oklch, #545456 88%, var(--primary) 12%);
   /* Dark mode semantic overrides */
   --text-high: var(--ink);
   --text-medium: var(--muted);
   --text-low: var(--ink-tertiary);
-  --text-lowest: rgba(255,255,255,.18);
   --outline: #48484a;
-  --outline-variant: rgba(255,255,255,.08);
-  --outline-input: #7e7e82;
   --elevation-highlight: inset 0 .5px 0 rgba(255,255,255,.06);
   --elevation-border: .5px solid rgba(255,255,255,.08);
   --inverse-surface: var(--sand-50);
   --on-inverse-surface: var(--ink-900);
   --inverse-primary: var(--clay-600);
   --scrim: rgba(0,0,0,0.82);
-  --surface-dim: #1a1a1e;
-  --surface-bright: #48484e;
-  --surface-container-lowest: #1a1a1e;
   --surface-container-low: #282830;
   --surface-container: #343438;
   --surface-container-high: #424248;
-  --surface-container-highest: #505058;
   --divider-subtle: 1px solid rgba(255,255,255,.06);
   --divider-default: 1px solid var(--line);
   --divider-strong: 1px solid rgba(255,255,255,.15);
