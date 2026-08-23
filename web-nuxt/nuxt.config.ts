@@ -29,7 +29,17 @@ export default defineNuxtConfig({
   // Self-host font (bỏ Google CDN) — giảm latency bên thứ 3 + CLS (font-metric optimization).
   fonts: {
     defaults: { weights: [400, 500, 600, 700], subsets: ['vietnamese', 'latin', 'latin-ext'] },
-    families: [{ name: 'Be Vietnam Pro', provider: 'google' }],
+    // Fraunces khai TƯỜNG MINH. Trước đây nó chỉ lọt vào đây do @nuxt/fonts tự
+    // quét CSS và giải quyết mọi font-family lạ (qua --font-editorial) — một phụ
+    // thuộc ngầm, và nó tồn tại SONG SONG với bản tự-host ở assets/css/fonts.css.
+    // Kết quả đo trên trang thật: 66 khối @font-face cho riêng Fraunces (48 từ
+    // /_fonts/, 12 tự-host, 6 khối fallback-metric), khối THẮNG cascade là
+    // /_fonts/, trong khi hai file DUY NHẤT được preload lại là hai file tự-host
+    // thua cascade — 45,2 kB tải ở ưu tiên cao nhất rồi vứt.
+    families: [
+      { name: 'Be Vietnam Pro', provider: 'google' },
+      { name: 'Fraunces', provider: 'google' },
+    ],
   },
 
   // Ảnh: provider weserv (miễn phí, transcode WebP off-VPS) — KHÔNG dùng IPX
@@ -43,7 +53,9 @@ export default defineNuxtConfig({
   },
 
   css: [
-    '~/assets/css/fonts.css',
+    // fonts.css (tự-host Fraunces) ĐÃ GỠ khỏi đây: @nuxt/fonts nay khai Fraunces
+    // tường minh và cũng tự-host (phục vụ từ /_fonts/, không gọi CDN Google lúc
+    // chạy), nên giữ hai nguồn chỉ tạo trùng lặp và một preload sai đích.
     '~/assets/css/variables.css',
     '~/assets/css/base.css',
     '~/assets/css/shell.css',
@@ -97,8 +109,11 @@ export default defineNuxtConfig({
         // Palatino fallback then swaps (FOUT flash + metric shift). Only these 2 of the 6 subsets
         // (skip latin-ext + italic — not above-the-fold on load). `crossorigin` required for the
         // preload to match the woff2 fetch. Files are stable /fonts/*.woff2 (self-host, not hashed).
-        { rel: 'preload', as: 'font', type: 'font/woff2', href: '/fonts/fraunces-latin.woff2', crossorigin: '' },
-        { rel: 'preload', as: 'font', type: 'font/woff2', href: '/fonts/fraunces-vietnamese.woff2', crossorigin: '' },
+        // Hai preload /fonts/fraunces-*.woff2 ĐÃ GỠ: chúng trỏ vào bản tự-host THUA
+        // cascade, nên trình duyệt tải 45,2 kB ở ưu tiên cao nhất rồi vẽ chữ bằng
+        // bản /_fonts/. Chống nháy chữ nay do chính @nuxt/fonts lo, bằng họ
+        // fallback có khớp metric ("Fraunces Fallback: Times New Roman"/Georgia/
+        // Noto Serif — đo được trên document.fonts), đúng cơ chế chống CLS.
         { rel: 'canonical', href: 'https://vinhlong360.vn' },
         { rel: 'preconnect', href: 'https://vinhlong360.vn' },
         { rel: 'dns-prefetch', href: '//vinhlong360.vn' },
