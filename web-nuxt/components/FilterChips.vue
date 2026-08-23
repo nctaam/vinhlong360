@@ -3,6 +3,8 @@ interface FilterOption {
   key: string
   label: string
   icon?: string
+  /** Tên biểu tượng IconLine — thay cho `icon` dạng emoji (B2: thêm đường mới). */
+  iconName?: string
   count?: number
 }
 
@@ -36,7 +38,8 @@ function toggle(key: string) {
       :aria-pressed="modelValue.includes(f.key)"
       @click="toggle(f.key)"
     >
-      <span v-if="f.icon" class="fc-icon" aria-hidden="true">{{ f.icon }}</span>
+      <span v-if="f.iconName" class="fc-icon" aria-hidden="true"><IconLine :name="f.iconName" /></span>
+      <span v-else-if="f.icon" class="fc-icon" aria-hidden="true">{{ f.icon }}</span>
       <span class="fc-label">{{ f.label }}</span>
       <span v-if="f.count != null" class="fc-count">{{ f.count }}</span>
     </button>
@@ -105,6 +108,7 @@ function toggle(key: string) {
 }
 
 .fc-icon { font-size: 1.1em; }
+.fc-icon .line-icon { font-size: inherit; }
 
 .fc-count {
   font-size: var(--text-xs);

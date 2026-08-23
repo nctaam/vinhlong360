@@ -74,7 +74,7 @@
 
       <CatalogInterstitial
         fact="Tỉnh Vĩnh Long — hợp từ ba vùng đất Vĩnh Long, Bến Tre, Trà Vinh — là một trong những vựa trái cây lớn nhất đồng bằng, mỗi mùa mang một hương vị riêng."
-        icon="🍊"
+        icon-name="fruit"
         variant="accent"
         :links="[{ to: '/theo-mua', label: 'Xem theo mùa' }, { to: '/ocop', label: 'Sản phẩm OCOP' }]"
       />
@@ -120,7 +120,7 @@
           @update:model-value="v => seasonFilter = v[0] || 'all'"
         />
         <FilterChips
-          :filters="[{ key: 'ocop', label: 'Chỉ sản phẩm OCOP', icon: '⭐' }]"
+          :filters="[{ key: 'ocop', label: 'Chỉ sản phẩm OCOP', iconName: 'star' }]"
           :model-value="ocopOnly ? ['ocop'] : []"
           aria-label="Lọc nâng cao"
           @update:model-value="v => ocopOnly = v.includes('ocop')"
@@ -134,10 +134,10 @@
         <p class="result-meta" aria-live="polite">{{ filtered.length }} kết quả{{ sortBy !== 'relevant' ? ` · ${sortLabels[sortBy]}` : '' }}</p>
         <div class="view-toggle" role="group" aria-label="Chế độ hiển thị">
           <button type="button" :class="['vt-btn', { active: viewMode === 'grid' }]" :aria-pressed="viewMode === 'grid'" @click="viewMode = 'grid'" title="Dạng lưới" aria-label="Dạng lưới">⊞</button>
-          <button type="button" :class="['vt-btn', { active: viewMode === 'list' }]" :aria-pressed="viewMode === 'list'" @click="viewMode = 'list'" title="Dạng danh sách" aria-label="Dạng danh sách">☰</button>
+          <button type="button" :class="['vt-btn', { active: viewMode === 'list' }]" :aria-pressed="viewMode === 'list'" @click="viewMode = 'list'" title="Dạng danh sách" aria-label="Dạng danh sách"><IconLine name="list" /></button>
         </div>
       </div>
-      <EmptyState v-if="fetchError" icon="⚠️" title="Không thể tải dữ liệu" message="Lỗi kết nối. Thử tải lại nhé.">
+      <EmptyState v-if="fetchError" icon-name="alert-triangle" title="Không thể tải dữ liệu" message="Lỗi kết nối. Thử tải lại nhé.">
         <template #actions>
           <button type="button" class="btn btn-outline" @click="refreshNuxtData('catalog-products')">Thử lại</button>
         </template>
@@ -146,12 +146,12 @@
       <div v-else-if="filtered.length" :class="viewMode === 'list' ? 'list-view' : 'grid'">
         <EntityCard v-for="e in visible" :key="e.id" :entity="e" :season-filter="seasonFilter" />
       </div>
-      <EmptyState v-else icon="🍊" title="Không tìm thấy sản phẩm" message="Thử chọn tháng khác hoặc bỏ bộ lọc OCOP.">
+      <EmptyState v-else icon-name="fruit" title="Không tìm thấy sản phẩm" message="Thử chọn tháng khác hoặc bỏ bộ lọc OCOP.">
         <template #actions>
           <button type="button" class="btn btn-outline" @click="clearFilters">Xóa bộ lọc</button>
-          <NuxtLink to="/ocop" class="btn btn-outline">⭐ OCOP</NuxtLink>
-          <NuxtLink to="/du-lich" class="btn btn-outline">🌿 Du lịch</NuxtLink>
-          <NuxtLink to="/theo-mua" class="btn btn-outline">🗓️ Theo mùa</NuxtLink>
+          <NuxtLink to="/ocop" class="btn btn-outline"><IconLine name="star" /> OCOP</NuxtLink>
+          <NuxtLink to="/du-lich" class="btn btn-outline"><IconLine name="leaf" /> Du lịch</NuxtLink>
+          <NuxtLink to="/theo-mua" class="btn btn-outline"><IconLine name="calendar" /> Theo mùa</NuxtLink>
         </template>
       </EmptyState>
       <button
