@@ -83,7 +83,7 @@
 
       <CatalogInterstitial
         fact="Vĩnh Long, Bến Tre và Trà Vinh có hơn 1.500 điểm đến, đặc sản và dịch vụ — từ cù lao xanh mát đến làng nghề trăm năm, tất cả được xác minh và cập nhật liên tục."
-        icon="📊"
+        icon-name="chart"
         variant="warm"
         :links="[{ to: '/ban-do', label: 'Xem bản đồ' }, { to: '/du-lich', label: 'Du lịch sinh thái' }]"
       />
@@ -109,7 +109,7 @@
 
     <EmptyState
       v-else-if="listError && !items.length"
-      icon="⚠️" title="Không thể tải danh sách"
+      icon-name="alert-triangle" title="Không thể tải danh sách"
       message="Đã có lỗi khi tải dữ liệu. Vui lòng thử lại."
       tone="error"
     >
@@ -120,7 +120,7 @@
 
     <EmptyState
       v-else-if="!items.length"
-      icon="🔍" :title="emptyTitle"
+      icon-name="search" :title="emptyTitle"
       :message="emptyMessage"
     >
       <template #actions>
