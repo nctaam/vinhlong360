@@ -37,7 +37,12 @@
       <div class="seasonal-banner seasonal-banner-live">
         <span class="seasonal-banner-icon" aria-hidden="true">🔥</span>
         <div>
-          <strong>Chợ phiên tháng này</strong>
+          <!-- h2 chứ không phải strong: đây LÀ tiêu đề của khối, và khối này chứa
+               bốn thẻ sản phẩm mang h3. Dùng strong thì cây tiêu đề nhảy thẳng
+               h1 → h3 (axe heading-order, /san-pham cả hai chế độ màu) và người
+               điều hướng bằng heading không có mắt nào để dừng ở khối này.
+               Cỡ chữ và độ đậm giữ y hệt strong nên diện mạo không đổi. -->
+          <h2 class="seasonal-banner-title">Chợ phiên tháng này</h2>
           <p>Trái chín đúng độ, người vườn vừa hái, chưa kịp nguội hơi đất.</p>
         </div>
         <span class="seasonal-banner-month" aria-hidden="true">Tháng {{ currentMonth }}</span>
@@ -443,6 +448,13 @@ useHead(() => ({
 /* Stats row restyled onto the sediment-tick section-head visual language
    (river→amber→clay tick) — echoes .sediment-head without misapplying that
    class to non-<h2> markup. */
+.seasonal-banner-title {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: var(--weight-bold);
+  line-height: inherit;
+  color: inherit;
+}
 .market-stats { position: relative; padding-left: var(--space-4); }
 .market-stats::before {
   content: "";

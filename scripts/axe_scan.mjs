@@ -33,6 +33,8 @@ const OUT_FILE = path.join(REPO_ROOT, 'axe-report.json')
 const baseUrl = process.env.AXE_BASE_URL || 'http://localhost:3000'
 const port = Number(process.env.AXE_CDP_PORT || 9224)
 const settleMs = Number(process.env.AXE_SETTLE_MS || 900)
+// Trần cho waitForQuiet: animation lặp vô hạn (spinner) không bao giờ dừng.
+const quietTimeoutMs = Number(process.env.AXE_QUIET_TIMEOUT_MS || 3000)
 // Site mặc định Nocturne (nuxt.config.ts: preference 'dark'), nên sweep trước
 // 2026-08-06 CHỈ kiểm chế độ tối — Parchment chưa từng được axe chạm tới. Quét cả
 // hai nhân đôi phạm vi cổng R30.6 mà gần như không tốn thêm hạ tầng.
@@ -223,10 +225,41 @@ async function assertColorModeApplied(cdp, mode) {
   }
 }
 
+/**
+ * Đợi trang ĐỨNG YÊN trước khi đo, thay vì chỉ đợi một khoảng cố định.
+ *
+ * `settleMs` một mình không đủ và sai theo CẢ HAI chiều (đo 2026-08-23):
+ *  - Dương tính giả: /cong-dong báo 70 vi phạm color-contrast, ví dụ chữ
+ *    #a9b0ab trên #f9f7f1 = 2.06. Đo tay ở trạng thái ổn định cho #415550 =
+ *    7.43 (đạt). Chênh lệch là do axe chụp đúng lúc phần tử còn mang lớp
+ *    `post-list-enter-from` của Vue Transition: opacity giữa chừng hoà màu chữ
+ *    về phía nền.
+ *  - Âm tính giả: /le-hoi từng báo 0 vi phạm ở một lượt và 28 ở lượt sau mà
+ *    không có dòng CSS nào đổi — nội dung tải qua API, chưa render kịp thì
+ *    không có gì để soi, và "sạch" là kết luận rỗng.
+ *
+ * getAnimations() phủ cả animation lẫn transition của CSS và Web Animations
+ * API, nên nó là một tín hiệu đúng cho "hiệu ứng đã xong". Vẫn giữ trần thời
+ * gian: một animation lặp vô hạn (spinner) sẽ không bao giờ hết.
+ */
+async function waitForQuiet(cdp) {
+  const deadline = Date.now() + quietTimeoutMs
+  while (Date.now() < deadline) {
+    const res = await cdp.send('Runtime.evaluate', {
+      expression: `document.getAnimations().filter(a => a.playState === 'running').length`,
+      returnByValue: true,
+    })
+    if (Number(res.result?.value ?? 0) === 0) return true
+    await sleep(120)
+  }
+  return false
+}
+
 async function scanRoute(cdp, axeSource, route) {
   const url = new URL(route, baseUrl).toString()
   await cdp.send('Page.navigate', { url })
   await sleep(settleMs)
+  await waitForQuiet(cdp)
   await cdp.send('Runtime.evaluate', { expression: axeSource, returnByValue: false })
   const result = await cdp.send('Runtime.evaluate', {
     // Chỉ lấy trường cần cho cổng; nguyên bản axe kèm cả DOM snapshot rất nặng.

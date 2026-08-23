@@ -231,7 +231,13 @@
             <p class="sh-sub">Nội dung bạn vừa xem, đã lưu và gợi ý theo bạn.</p>
           </div>
         </div>
-        <div class="scroll-row for-you-row" role="region" aria-label="Dành cho bạn" tabindex="0">
+        <!-- Tên khác với section cha: cha đã là landmark region tên "Dành cho bạn",
+             nên vùng cuộn bên trong mang y hệt tên đó tạo hai landmark trùng cả vai
+             trò lẫn tên (axe landmark-unique) — người dùng trình đọc màn hình thấy
+             hai mục giống hệt trong danh sách landmark, không biết cái nào là cái
+             nào. Mọi scroll-row khác trên site đều đặt tên theo NỘI DUNG; theo đúng
+             quy ước đó. -->
+        <div class="scroll-row for-you-row" role="region" aria-label="Danh sách nội dung gợi ý" tabindex="0">
           <NuxtLink v-for="item in forYou" :key="item.id" :to="item.to" class="fy-chip">
             <span class="fy-media">
               <span class="fy-thumb" :class="`cat-${getFavTypeMeta(item.type).cat}`">

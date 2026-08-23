@@ -7,7 +7,12 @@
   >
     <IconLine :name="state === 'offline' ? 'globe' : state === 'loading' ? 'clock' : 'map-pin-off'" aria-hidden="true" />
     <div>
-      <h3>{{ title }}</h3>
+      <!-- h2: khối này là nội dung trực tiếp dưới h1 của trang (/ban-do có
+           đúng hai tiêu đề: h1 "Bản đồ" rồi cái này), nên h3 làm cây tiêu đề
+           nhảy mức. Component hiện chỉ có MỘT nơi gọi — MapListSurface.vue:73 —
+           nên chốt cứng h2 là đúng; thêm nơi gọi ở ngữ cảnh khác thì đổi thành
+           prop mức tiêu đề. -->
+      <h2>{{ title }}</h2>
       <p>{{ message }}</p>
       <p class="map-list-fallback-state__continuity">
         Danh sách vẫn dùng được<span v-if="resultCount"> với {{ resultCount }} kết quả</span><span v-if="selectedAddress"> · {{ selectedAddress }}</span>.
