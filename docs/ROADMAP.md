@@ -762,3 +762,61 @@ Bài học chung cho lần sau: `getComputedStyle(el).display` của CHÍNH ph�
 không nói lên nó có hiển thị hay không — phải duyệt tổ tiên, hoặc thử focus
 thật. Và `backgroundColor` không thấy được gradient: nút `.btn-primary` từng bị
 máy đo của tôi chấm 1.03:1, sự thật là 6.89:1 ở điểm dừng yếu nhất.
+
+### 7. Hệ màu — đo thay vì cảm (2026-08-23)
+
+Chủ dự án nêu: "chưa hài lòng về màu sắc… không cần quá nhiều màu". Dưới đây là
+số đo, kèm hai lần tôi phải sửa lại chính kết luận của mình.
+
+**Bảng màu HIỂN THỊ thực tế KHÔNG loạn.** Đo trang chủ (sáng), lọc theo *chroma
+RGB* ≥ 40 (không dùng độ bão hoà HSL — xem bẫy bên dưới): đúng **ba tông nhấn**,
+mỗi tông một nhiệm vụ tách bạch:
+
+| Tông | Màu | Số chỗ | Diện tích | Việc |
+|---|---|---|---|---|
+| teal 180° | `rgb(3,90,105)` | 89 | 453.024 px² | hành động (nút, icon, select) |
+| hổ phách 30° | `rgb(126,84,3)`, `rgb(142,93,16)` | 18 | 58.550 px² | thời gian/sự kiện (`ec-date`, `ec-countdown`) |
+| terracotta 0° | `rgb(149,64,43)` | 9 | 44.592 px² | nhãn thương hiệu (`hero-kicker`, `.dot`) |
+
+Ba tông nhấn có nhiệm vụ riêng là mức bình thường, không phải thừa.
+
+**Chỗ thật sự phức tạp: HAI BỘ TỪ VỰNG MÀU SONG SONG.**
+
+| | Token | Số lần dùng | Số file |
+|---|---|---|---|
+| Ngữ nghĩa `--color-*` | 53 | 588 | 35 |
+| Thang thô `--sand/clay/leaf/river/night/alluvial-*` | 39 | **629** | **88** |
+
+88 file với tay qua lớp ngữ nghĩa để lấy thẳng màu thô. Hệ quả đo được: hai sắc
+kem gần trùng nhau ra đời từ hai hệ khác nhau — `--color-surface-subtle: #F1EEE6`
+và `--sand-200: #F0EBE0` (ΔE 1.97, mắt không phân biệt được).
+
+Đây mới là việc đáng làm, nhưng nó là **di cư 629 chỗ trên 88 file** — rủi ro hồi
+quy hình ảnh diện rộng, phải làm theo đợt có ảnh đối chiếu, không gộp vào một
+commit. Chưa làm.
+
+**ĐÃ LÀM: gỡ 28 token màu chết** (53 dòng). Kiểm bằng "dấu vân màu" — tập hợp
+mọi màu thực sự được vẽ của mọi phần tử hiển thị: trước và sau đều 63 mục, cùng
+mã băm. Không đổi một pixel.
+
+#### Hai lần tôi kết luận sai, ghi lại để không lặp
+
+1. **"54 cặp token trùng nhau (ΔE < 3)" là SAI.** Tôi so sánh giá trị hex ở
+   *một* chế độ. Kiểm lại từng cái: `--on-primary` có **4 bản** định nghĩa
+   (`#FFFFFF` / `var(--night-canvas)` / hai bản tri-region), `--ink-900` đảo hẳn
+   (`#2B2622` sáng → `#DCD6D2` tối), `--on-warning` có 4 bản. Chúng chỉ *trùng ở
+   chế độ sáng*; mỗi tên mang một hợp đồng theo chế độ. Gộp lại sẽ vỡ chế độ tối.
+   Trong 54 cặp, chỉ `--date-badge-ink` là thật sự hằng — một token, không đáng
+   một đợt refactor.
+
+2. **Bẫy đo: độ bão hoà HSL nói dối với màu gần trắng.** `#FDFCF9` cho
+   `saturation = 50%` nên nền kem bị xếp nhầm vào nhóm "hổ phách", làm diện tích
+   nhóm đó phồng lên 8,26 triệu px². Phải lọc bằng **chroma RGB** (max−min kênh);
+   `#FDFCF9` có chroma = 4, đúng là trung tính.
+
+#### Câu hỏi còn lại cho chủ dự án
+
+Chữ đang mang sắc xanh (`rgb(8,26,22)`, hue 167) trong khi bề mặt là kem ấm
+(hue 41–45). Ấm–lạnh đặt cạnh nhau là chủ ý (bộ token tên `--alluvial-*`,
+`--river-*`, `--leaf-*` — bảng màu miền sông nước) hay là điều cần chỉnh? Đổi
+sắc chữ là quyết định nhận diện, không tự làm.
