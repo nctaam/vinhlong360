@@ -430,7 +430,7 @@ useHead(() => ({
   transform: scaleX(0); transform-origin: left; transition: transform .3s var(--ease-out-expo);
 }
 .int-filmstrip-chip:hover::after, .int-filmstrip-chip:focus-visible::after, .int-filmstrip-chip.active::after { transform: scaleX(1); }
-.dark .int-filmstrip-chip::after { background: linear-gradient(90deg, #74ABB5, var(--amber-500), var(--clay-400)); }
+.dark .int-filmstrip-chip::after { background: linear-gradient(90deg, var(--river-legacy-dark), var(--amber-500), var(--clay-400)); }
 
 /* ============================================================
    GRID DIVIDER — typographic interruption every 9 cards in the

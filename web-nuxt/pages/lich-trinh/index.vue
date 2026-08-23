@@ -410,7 +410,7 @@ useHead(() => ({
   width: 4px; height: 1.05em; border-radius: var(--radius-full);
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
-.dark .pace-shelf-kicker::before { background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
+.dark .pace-shelf-kicker::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 
 .saved-section { margin-bottom: var(--space-4); padding-bottom: var(--space-6); border-bottom: .5px solid var(--line); }
 .saved-count { font-weight: var(--weight-normal); color: var(--muted); font-size: var(--text-base); }

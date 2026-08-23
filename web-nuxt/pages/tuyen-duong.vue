@@ -389,8 +389,8 @@ useHead(() => ({
 .dark .rstat-num { color: var(--primary); }
 .dark .route-season-tag { background: rgba(var(--secondary-rgb), .16); border-color: rgba(var(--secondary-rgb), .3); }
 .dark .route-season-tag:hover { background: rgba(var(--secondary-rgb), .24); }
-.dark .route-header.area-lien-vung { background: linear-gradient(135deg, #74ABB5, var(--amber-500) 55%, var(--clay-400)); }
-.dark .route-card.area-lien-vung .route-rail::before { background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 50%, var(--clay-400) 100%); }
+.dark .route-header.area-lien-vung { background: linear-gradient(135deg, var(--river-legacy-dark), var(--amber-500) 55%, var(--clay-400)); }
+.dark .route-card.area-lien-vung .route-rail::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 50%, var(--clay-400) 100%); }
 
 /* Mobile: tighten card padding so emoji + name don't crowd narrow screens */
 @media (max-width: 640px) {
@@ -463,9 +463,9 @@ useHead(() => ({
   font-size: var(--text-2xs); color: var(--muted); text-transform: uppercase; letter-spacing: var(--tracking-caps);
   font-weight: var(--weight-semibold); padding: 0 var(--space-1);
 }
-.dark .rv-river { stroke: #74ABB5; }
+.dark .rv-river { stroke: var(--river-legacy-dark); }
 .dark .rv-road { stroke: var(--clay-400); }
-.dark .rv-pin.area-tra-vinh .rv-pin-dot { background: #74ABB5; }
+.dark .rv-pin.area-tra-vinh .rv-pin-dot { background: var(--river-legacy-dark); }
 .dark .rv-pin.area-lien-vung .rv-pin-dot { background: var(--clay-400); }
 .dark .rv-pin-dot { box-shadow: 0 0 0 2px var(--card), 0 1px 3px rgba(var(--black-rgb),.4); }
 @media (max-width: 640px) {

@@ -107,7 +107,7 @@ const mentionChips = computed(() => {
   background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 55%, var(--clay-600) 100%);
   transition: width 400ms var(--ease-out, ease); min-width: 2px;
 }
-.dark .er-dist-fill { background: linear-gradient(90deg, #74ABB5 0%, var(--amber-500) 55%, var(--clay-400) 100%); }
+.dark .er-dist-fill { background: linear-gradient(90deg, var(--river-legacy-dark) 0%, var(--amber-500) 55%, var(--clay-400) 100%); }
 .er-dist-count { font-size: var(--text-xs); color: var(--muted); font-variant-numeric: tabular-nums; }
 
 .er-categories { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-bottom: var(--space-5); max-width: 400px; }
@@ -115,7 +115,7 @@ const mentionChips = computed(() => {
 .er-cat-label { font-size: var(--text-xs); font-weight: var(--weight-medium, 500); color: var(--ink); }
 .er-cat-track { height: 4px; border-radius: var(--radius-full); background: var(--bg-warm, var(--bg-alt)); overflow: hidden; }
 .er-cat-fill { height: 100%; border-radius: var(--radius-full); background: var(--river-600); }
-.dark .er-cat-fill { background: #74ABB5; }
+.dark .er-cat-fill { background: var(--river-legacy-dark); }
 .er-cat-placeholder { width: 0%; }
 .er-cat-score { font-size: var(--text-xs); color: var(--muted); }
 .er-cat-hint { grid-column: 1 / -1; font-size: var(--text-xs); color: var(--muted); font-style: italic; margin: 0; }
@@ -129,7 +129,7 @@ const mentionChips = computed(() => {
   background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 50%, var(--clay-600) 100%);
   opacity: .18;
 }
-.dark .er-sediment-rule { background: linear-gradient(90deg, #74ABB5 0%, var(--amber-500) 50%, var(--clay-400) 100%); opacity: .22; }
+.dark .er-sediment-rule { background: linear-gradient(90deg, var(--river-legacy-dark) 0%, var(--amber-500) 50%, var(--clay-400) 100%); opacity: .22; }
 
 @media (prefers-reduced-motion: reduce) {
   .er-dist-fill { transition: none; }

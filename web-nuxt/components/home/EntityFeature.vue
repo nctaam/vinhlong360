@@ -178,7 +178,7 @@ if (props.priority && props.image.url) {
 .ef-ac-amber { color: var(--amber-700); }
 .dark .ef-ac-clay  { color: var(--clay-400); }
 .dark .ef-ac-leaf  { color: #64BE93; }
-.dark .ef-ac-river { color: #74ABB5; }
+.dark .ef-ac-river { color: var(--river-legacy-dark); }
 .dark .ef-ac-amber { color: var(--amber-500); }
 .ef-lede {
   margin: 0;

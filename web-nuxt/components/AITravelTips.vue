@@ -105,7 +105,7 @@ function retryFetch() {
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
 .dark .ai-tips-header h3::before {
-  background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+  background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%);
 }
 .ai-tips-header-right { display: inline-flex; align-items: center; gap: var(--space-3); }
 /* Quiet "AI-assisted" label — hairline tag, not a decorative badge. */

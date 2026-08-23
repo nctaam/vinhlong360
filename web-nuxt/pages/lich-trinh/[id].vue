@@ -612,7 +612,7 @@ if (itinerary.value && !itinerary.value.error) {
   width: 3px; height: .95em; border-radius: var(--radius-full);
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
-.dark .tc-label::before { background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
+.dark .tc-label::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 
 .step { position: relative; }
 /* Connector dot anchoring each step to the spine */

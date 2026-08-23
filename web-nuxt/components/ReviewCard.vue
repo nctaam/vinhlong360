@@ -80,7 +80,7 @@ const { timeAgo } = useTimeAgo()
   color: var(--river-600);
   opacity: .5;
 }
-.dark .ri-content-testimony::before { color: #74ABB5; opacity: .55; }
+.dark .ri-content-testimony::before { color: var(--river-legacy-dark); opacity: .55; }
 
 .ri-helpful { margin-top: var(--space-2); display: inline-flex; align-items: center; gap: .3rem; font-size: var(--text-sm); padding: .3rem .7rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--ink-700); cursor: pointer; min-height: 44px; }
 .ri-helpful.active { background: color-mix(in srgb, var(--primary) 12%, var(--bg)); border-color: var(--primary); color: var(--primary-fg); }
@@ -104,7 +104,7 @@ const { timeAgo } = useTimeAgo()
   border-radius: var(--radius-md);
 }
 .dark .review-featured {
-  border-image: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 55%, var(--clay-400) 100%) 1;
+  border-image: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 55%, var(--clay-400) 100%) 1;
 }
 /* background tint for .review-featured in dark stays in dark-overrides.css */
 </style>

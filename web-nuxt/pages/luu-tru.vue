@@ -560,7 +560,7 @@ useHead(() => ({
   background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
 .dark .region-window.active::after {
-  background: linear-gradient(90deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+  background: linear-gradient(90deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%);
 }
 .rw-motif { font-size: 1.6rem; transition: transform .35s var(--ease-spring-gentle); }
 .region-window:hover .rw-motif { transform: scale(1.12); }

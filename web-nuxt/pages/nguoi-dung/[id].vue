@@ -1019,7 +1019,7 @@ useSeoMeta({
   background: linear-gradient(90deg, transparent 0%, var(--river-600) 15%, var(--amber-600) 50%, var(--clay-600) 85%, transparent 100%);
   opacity: .55;
 }
-.dark .hairline-phusa { background: linear-gradient(90deg, transparent 0%, #74ABB5 15%, var(--amber-500) 50%, var(--clay-400) 85%, transparent 100%); }
+.dark .hairline-phusa { background: linear-gradient(90deg, transparent 0%, var(--river-legacy-dark) 15%, var(--amber-500) 50%, var(--clay-400) 85%, transparent 100%); }
 
 .profile-stats { display: flex; gap: var(--space-6); margin-top: var(--space-4); }
 .stat-item { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding: var(--space-2) var(--space-3); background: var(--bg-warm); border: .5px solid var(--line); border-radius: var(--radius-md); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out), border-color .3s var(--ease-out); }

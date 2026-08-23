@@ -640,7 +640,7 @@ useHead(() => ({
   border-radius: var(--radius-full);
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
-.dark .ledger-stats::before { background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
+.dark .ledger-stats::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 
 /* Star-rank quick-jump nav — compact, subordinate to the ledger bands below */
 .star-jump { display: flex; flex-wrap: wrap; gap: var(--space-2); }

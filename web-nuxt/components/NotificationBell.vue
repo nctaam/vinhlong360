@@ -114,7 +114,7 @@ onUnmounted(() => stopPolling())
   margin: 0 var(--space-4) var(--space-2);
   background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
-.dark .notif-rule { background: linear-gradient(90deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
+.dark .notif-rule { background: linear-gradient(90deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 .notif-see-all { display: block; text-align: center; padding: var(--space-3); border-top: .5px solid var(--line); font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--primary-fg); text-decoration: none; }
 .notif-see-all:hover { background: var(--bg-alt); }
 .notif-error { text-align: center; padding: var(--space-5); color: var(--muted); font-size: .88rem; display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }

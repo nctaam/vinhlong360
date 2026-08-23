@@ -468,7 +468,7 @@ useHead({
   transform: scaleX(0); transform-origin: left; transition: transform .3s var(--ease-out-expo);
 }
 .dd-type-card:hover::after, .dd-type-card:focus-visible::after, .dd-type-card.active::after { transform: scaleX(1); }
-.dark .dd-type-card::after { background: linear-gradient(90deg, #74ABB5, var(--amber-500), var(--clay-400)); }
+.dark .dd-type-card::after { background: linear-gradient(90deg, var(--river-legacy-dark), var(--amber-500), var(--clay-400)); }
 @media (prefers-reduced-motion: reduce) {
   .dd-type-card::after { transition: none; }
 }
@@ -524,7 +524,7 @@ useHead({
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
   transition: transform .1s linear;
 }
-.dark .almanac-progress-fill { background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
+.dark .almanac-progress-fill { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 @media (min-width: 1200px) { .almanac-progress { display: block; } }
 @media (prefers-reduced-motion: reduce) {
   .almanac-progress { display: none; }

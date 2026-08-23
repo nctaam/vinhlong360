@@ -350,7 +350,7 @@ if (import.meta.client) {
   padding-left: calc(var(--space-4) - 3px);
 }
 .dark .ac-dropdown :deep(.ac-item.highlighted) {
-  border-image: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%) 1;
+  border-image: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%) 1;
 }
 .ac-recent-row {
   display: flex;
@@ -391,7 +391,7 @@ if (import.meta.client) {
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
 .dark .ac-hint-tick {
-  background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+  background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%);
 }
 .ac-hint-title {
   font-size: var(--text-xs); font-weight: var(--weight-semibold);

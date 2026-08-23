@@ -52,7 +52,7 @@ withDefaults(defineProps<{ count?: number }>(), { count: 6 })
    26×2px). This is the card's constant design signature, not unknown data,
    so it doesn't shimmer like the text placeholders around it. */
 .sk-rule { width: 26px; height: 2px; border-radius: 2px; margin: 3px 0 4px; background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%); }
-.dark .sk-rule { background: linear-gradient(90deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
+.dark .sk-rule { background: linear-gradient(90deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 .sk-text { width: 100%; height: 12px; }
 .sk-text.short { width: 50%; }
 /* Badge-cluster placeholders — mirror card's season/ocop badge row for better load anticipation. */

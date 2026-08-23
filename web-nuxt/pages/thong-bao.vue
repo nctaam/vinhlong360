@@ -272,7 +272,7 @@ useHead({
 .dark .tb-item { background: var(--bg-alt); border-color: var(--line); }
 .dark .tb-item:hover { background: color-mix(in srgb, var(--bg-alt) 80%, var(--ink) 5%); }
 .dark .tb-item.unread { background: color-mix(in srgb, var(--primary) 8%, var(--bg-alt)); border-color: var(--primary); }
-.dark .tb-item::before { background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
+.dark .tb-item::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 .dark .tb-icon-chip { background: rgba(var(--white-rgb),.06); }
 .dark .tb-item.unread .tb-icon-chip { background: color-mix(in srgb, var(--primary) 18%, transparent); }
 

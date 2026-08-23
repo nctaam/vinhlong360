@@ -240,7 +240,7 @@ useHead({
   background: linear-gradient(90deg, transparent 0%, var(--river-600) 15%, var(--amber-600) 50%, var(--clay-600) 85%, transparent 100%);
   opacity: .55;
 }
-.dark .hairline-phusa { background: linear-gradient(90deg, transparent 0%, #74ABB5 15%, var(--amber-500) 50%, var(--clay-400) 85%, transparent 100%); }
+.dark .hairline-phusa { background: linear-gradient(90deg, transparent 0%, var(--river-legacy-dark) 15%, var(--amber-500) 50%, var(--clay-400) 85%, transparent 100%); }
 
 @media (max-width: 620px) {
   .bxh-podium { grid-template-columns: 1fr; gap: var(--space-2); }

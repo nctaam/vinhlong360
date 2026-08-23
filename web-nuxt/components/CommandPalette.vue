@@ -180,7 +180,7 @@ defineExpose({ open })
   content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 2px; border-radius: 2px;
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
-.dark .cmd-item.active::before { background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
+.dark .cmd-item.active::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 .cmd-item:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
 .cmd-icon-chip {
   flex-shrink: 0; width: 26px; height: 26px; border-radius: var(--radius-full, 999px);

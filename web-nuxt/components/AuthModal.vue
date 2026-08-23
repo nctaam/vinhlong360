@@ -620,7 +620,7 @@ function onOtpPaste(e: ClipboardEvent) {
   margin: 0 var(--space-6) var(--space-2);
   background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
-.dark .modal-rule { background: linear-gradient(90deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
+.dark .modal-rule { background: linear-gradient(90deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 /* step eyebrow — small-caps label above each step's own heading, restrained */
 .step-label {
   font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.005em;

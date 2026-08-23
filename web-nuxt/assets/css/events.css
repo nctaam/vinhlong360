@@ -75,7 +75,7 @@
   border-radius: var(--radius-full);
   opacity: .55;
 }
-.dark .lunar-ribbon-track { background: linear-gradient(90deg, #74ABB5, var(--amber-500) 52%, var(--clay-400)); }
+.dark .lunar-ribbon-track { background: linear-gradient(90deg, var(--river-legacy-dark), var(--amber-500) 52%, var(--clay-400)); }
 
 .lunar-ribbon-tick {
   position: absolute;

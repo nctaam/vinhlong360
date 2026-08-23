@@ -355,7 +355,7 @@ if (areaMeta) {
   width: 4px; height: 1.05em; border-radius: var(--radius-full);
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
-.dark .ce-area .section-head h2::before { background: linear-gradient(180deg, var(--river-400, #74ABB5) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
+.dark .ce-area .section-head h2::before { background: linear-gradient(180deg, var(--river-400, var(--river-legacy-dark)) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 
 /* ── SIGNATURE: cinematic per-region hero photo (logic-matched — each region shows its own
    signature scene: VL gạch gốm + miệt vườn · Bến Tre xứ dừa · Trà Vinh chùa Khmer).

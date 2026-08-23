@@ -816,5 +816,5 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
 .dark .sediment-head h2::before, .dark h2.sediment-head::before {
-  background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+  background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%);
 }

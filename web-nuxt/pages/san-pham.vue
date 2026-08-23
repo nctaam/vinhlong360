@@ -467,7 +467,7 @@ useHead(() => ({
   border-radius: var(--radius-full);
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
-.dark .market-stats::before { background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
+.dark .market-stats::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 
 /* Seasonal rail restyled as a "chợ phiên" horizontal shelf — subtle warm
    market-stall backdrop band, CSS gradient only, not an image. */

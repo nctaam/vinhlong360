@@ -135,7 +135,7 @@ watch(() => props.query, () => {
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
 .dark .ai-search-h3::before {
-  background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+  background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%);
 }
 .ai-search-assist[data-color-recipe='tri-region-v1'] .ai-search-h3 {
   border-left: 4px solid var(--color-material-neutral);

@@ -94,7 +94,7 @@ function retry() {
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
 .dark .ai-besttime-head h3::before {
-  background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+  background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%);
 }
 /* Quiet "AI-assisted" label — a hairline-bordered tag, not a decorative badge,
    so the panel reads as clearly-machine-authored without shouting about it. */

@@ -95,7 +95,7 @@ const dateline = computed(() => `Lịch trình · ${areaName.value}`)
   display: block; width: 26px; height: 2px; border-radius: 2px; margin: 5px 0 6px;
   background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
-.dark .card-rule { background: linear-gradient(90deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
+.dark .card-rule { background: linear-gradient(90deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 .card-teaser { color: var(--muted); }
 /* grain overlay — turns the flat generated-placeholder gradient into an intentional
    illustration instead of a bare gradient (anti-slop tell #1) */
