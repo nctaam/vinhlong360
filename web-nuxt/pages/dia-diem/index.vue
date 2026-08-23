@@ -48,7 +48,7 @@
           :aria-pressed="areaFilter === key"
           @click="pickArea(key as string)"
         >
-          <span class="stamp-mark" aria-hidden="true">{{ meta.emoji }}</span>
+          <span class="stamp-mark" aria-hidden="true"><IconLine :name="meta.icon" /></span>
           <span class="stamp-name">{{ meta.name }}</span>
           <span class="stamp-caption">{{ meta.blurb }}</span>
         </button>
@@ -439,6 +439,8 @@ useHead({
   position: absolute; top: var(--space-3); right: var(--space-3);
   font-size: 1.4rem; opacity: .9;
 }
+/* IconLine là SVG 1em nên kế thừa đúng 1.4rem ở trên. */
+.stamp-mark .line-icon { font-size: inherit; }
 .stamp-name {
   font-family: var(--font-editorial); font-weight: 600; font-size: var(--text-lg);
   color: var(--ink); letter-spacing: var(--tracking-tight); padding-right: 2rem;
