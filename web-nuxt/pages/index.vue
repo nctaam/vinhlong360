@@ -857,7 +857,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .home .ac-amber { color: var(--color-material-amber); }
 .home .ac-neutral { color: var(--color-material-neutral); }
 .home .section-head .sh-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.home .sh-sub { padding-left: var(--space-4); margin: 0; font-size: var(--text-sm); font-weight: var(--weight-normal); color: var(--muted); line-height: var(--leading-snug); max-width: 62ch; }
+.home .sh-sub { padding-left: var(--space-4); margin: 0; font-size: var(--text-sm); font-weight: var(--weight-normal); color: var(--muted); line-height: var(--leading-normal); max-width: 62ch; }
 /* Tight variant — itineraries + personalization rows: smaller heading, less bottom margin,
    so these secondary sections read as a compact strip rather than a full-weight section. */
 .home .section-head-tight { margin-bottom: var(--space-3); }
@@ -1031,7 +1031,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .cm-avatar { width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--color-source-community-surface); color: var(--color-source-community); font-size: var(--text-xs); font-weight: var(--weight-semibold); flex-shrink: 0; }
 .cm-name { font-size: var(--text-sm); font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cm-type { margin-left: auto; font-size: var(--text-xs); color: var(--muted); background: var(--bg-alt); padding: 1px 8px; border-radius: var(--radius-full); white-space: nowrap; flex-shrink: 0; }
-.cm-content { margin: 0; font-size: var(--text-sm); color: var(--ink-700); line-height: var(--leading-snug); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.cm-content { margin: 0; font-size: var(--text-sm); color: var(--ink-700); line-height: var(--leading-normal); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .cm-meta { display: flex; flex-wrap: wrap; gap: var(--space-3); font-size: var(--text-xs); color: var(--muted); }
 .cm-place { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%; }
 .dark .cm-card { background: var(--card); border-color: var(--line); }
