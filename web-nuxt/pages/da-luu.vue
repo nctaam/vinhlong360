@@ -78,7 +78,7 @@
         <div v-else-if="filteredEntities.length" class="saved-grid">
           <SavedEntityCard v-for="item in filteredEntities" :key="item.id" :item="item">
             <template #action>
-              <button type="button" class="saved-remove" aria-label="Bỏ lưu" @click="removeEntity(item.id)">✕</button>
+              <button type="button" class="saved-remove" aria-label="Bỏ lưu" @click="removeEntity(item.id)"><IconLine name="x" /></button>
             </template>
           </SavedEntityCard>
         </div>
@@ -104,7 +104,7 @@
                 {{ post.author_name || 'Người dùng' }} · {{ timeAgo(post.bookmarked_at || post.created_at) }}
               </span>
             </NuxtLink>
-            <button type="button" class="saved-remove" aria-label="Bỏ lưu" @click="removeBookmark(post.id)">✕</button>
+            <button type="button" class="saved-remove" aria-label="Bỏ lưu" @click="removeBookmark(post.id)"><IconLine name="x" /></button>
           </div>
         </div>
         <div v-else class="saved-empty">
@@ -130,7 +130,7 @@
               <span class="saved-post-title">{{ plan.title || `Lịch trình ${plan.days || ''}` }}</span>
               <span class="saved-post-meta">{{ timeAgo(plan.savedAt || plan.created_at) }}</span>
             </NuxtLink>
-            <button type="button" class="saved-remove" aria-label="Xóa lịch trình" @click="removeItinerary(plan.id)">✕</button>
+            <button type="button" class="saved-remove" aria-label="Xóa lịch trình" @click="removeItinerary(plan.id)"><IconLine name="x" /></button>
           </div>
         </div>
         <div v-else class="saved-empty">
