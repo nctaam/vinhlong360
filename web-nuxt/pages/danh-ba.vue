@@ -41,7 +41,7 @@
           :aria-pressed="selectedArea === g.area"
           @click="selectedArea = selectedArea === g.area ? '' : g.area"
         >
-          <span class="quick-pick-icon">{{ AREA_META[g.area]?.emoji }}</span>
+          <span class="quick-pick-icon" aria-hidden="true"><IconLine :name="AREA_META[g.area]?.icon || 'pin'" /></span>
           <span class="quick-pick-label">{{ g.label }}</span>
           <span class="quick-pick-count">{{ g.wards.length }} xã/phường</span>
         </button>
@@ -84,7 +84,7 @@
       <ul v-else-if="facilities.length" class="fac-list">
         <li v-for="f in facilities" :key="f.id" class="fac">
           <div class="fac-head">
-            <span class="fac-kind">{{ kindMeta(f).emoji }} {{ kindMeta(f).label }}</span>
+            <span class="fac-kind"><IconLine :name="kindMeta(f).icon" aria-hidden="true" /> {{ kindMeta(f).label }}</span>
             <strong>{{ f.name }}</strong>
           </div>
           <div v-if="attr(f, 'address')" class="fac-row"><IconLine name="pin" /> {{ attr(f, 'address') }}</div>
@@ -205,8 +205,8 @@ function attr(f: Entity, k: string): string {
   const value = (f.attributes || {})[k]
   return typeof value === 'string' ? value : value == null ? '' : String(value)
 }
-function kindMeta(f: Entity): { emoji: string; label: string } {
-  return OFFICE_KIND[attr(f, 'office_kind')] || OFFICE_KIND.khac || { emoji: '🏛️', label: 'Cơ quan' }
+function kindMeta(f: Entity): { icon: string; label: string } {
+  return OFFICE_KIND[attr(f, 'office_kind')] || OFFICE_KIND.khac || { icon: 'building', label: 'Cơ quan' }
 }
 function primarySource(f: Entity): EntitySource | undefined {
   return Array.isArray(f.source) ? f.source[0] : f.source
