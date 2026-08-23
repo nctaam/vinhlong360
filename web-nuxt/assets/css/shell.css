@@ -668,7 +668,11 @@ html[data-density="compact"] .public-bottom-nav-item {
 
   .public-shell-command-row .auth-area {
     margin-left: auto;
-    gap: 2px;
+    /* 2px la con so cu tu hoi header con chat. Khe giua HAI vung cham khac nhau
+       phai >= 8px (chuan Touch & Interaction), khong thi de bam nham nut chu de
+       khi dinh bam Dang nhap. Khe hang lenh da thu 12->8px o dot truoc nen nay
+       du cho: o 360px hang can 332,4px trong 336px. */
+    gap: var(--space-2);
   }
 
 }
