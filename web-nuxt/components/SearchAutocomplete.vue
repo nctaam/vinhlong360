@@ -80,7 +80,7 @@
         :aria-selected="recentOffset + i === highlightIndex"
         @mousedown.prevent="goTo(item)"
       >
-        <span class="ac-emoji">{{ typeEmoji(item.type) }}</span>
+        <span class="ac-emoji" aria-hidden="true"><IconLine :name="typeIcon(item.type)" /></span>
         <span class="ac-info">
           <span class="ac-name" v-html="highlightMatch(item.name)"></span>
           <span class="ac-meta">
@@ -183,8 +183,8 @@ function useRecent(term: string) {
   onInput()
 }
 
-function typeEmoji(type: string) {
-  return TYPE_META[type]?.emoji || '📍'
+function typeIcon(type: string) {
+  return TYPE_META[type]?.icon || 'pin'
 }
 
 function typeLabel(type: string) {
