@@ -64,8 +64,8 @@
     <section class="block reveal">
       <div class="register-toggle" role="group" aria-label="Chọn sổ lễ hội">
         <!-- aria-current, KHÔNG phải aria-pressed — xem ghi chú ở le-hoi.vue. -->
-        <NuxtLink to="/le-hoi" class="register-toggle-tab tone-leaf">🎋 Lễ hội truyền thống</NuxtLink>
-        <NuxtLink to="/su-kien" class="register-toggle-tab is-active tone-amber" aria-current="page">🎪 Sự kiện &amp; hội chợ</NuxtLink>
+        <NuxtLink to="/le-hoi" class="register-toggle-tab tone-leaf"><IconLine name="lantern" /> Lễ hội truyền thống</NuxtLink>
+        <NuxtLink to="/su-kien" class="register-toggle-tab is-active tone-amber" aria-current="page"><IconLine name="megaphone" /> Sự kiện &amp; hội chợ</NuxtLink>
       </div>
     </section>
 
@@ -93,14 +93,14 @@
             {{ isHappeningNow(e) ? 'Đang diễn ra' : countdownLabel(e) }}
           </span>
           <h3 class="ledger-name">
-            <span v-if="e.attributes?.category === 'mua'" class="cat-badge cat-mua">🌾 Mùa vụ</span>
+            <span v-if="e.attributes?.category === 'mua'" class="cat-badge cat-mua"><IconLine name="sprout" /> Mùa vụ</span>
             {{ e.name }}
           </h3>
         </NuxtLink>
         </li>
       </ul>
       <button type="button" class="ical-bulk-btn" @click="downloadIcalBulk">
-        📅 Thêm tất cả sự kiện sắp tới vào lịch của bạn
+        <IconLine name="calendar" /> Thêm tất cả sự kiện sắp tới vào lịch của bạn
       </button>
     </section>
 
@@ -165,8 +165,8 @@
     </div>
 
     <div class="view-toggle" role="group" aria-label="Chế độ hiển thị">
-      <button type="button" :class="['toggle-btn', { active: view === 'list' }]" :aria-pressed="view === 'list'" @click="view = 'list'">📋 Danh sách</button>
-      <button type="button" :class="['toggle-btn', { active: view === 'calendar' }]" :aria-pressed="view === 'calendar'" @click="view = 'calendar'">📅 Lịch</button>
+      <button type="button" :class="['toggle-btn', { active: view === 'list' }]" :aria-pressed="view === 'list'" @click="view = 'list'"><IconLine name="list" /> Danh sách</button>
+      <button type="button" :class="['toggle-btn', { active: view === 'calendar' }]" :aria-pressed="view === 'calendar'" @click="view = 'calendar'"><IconLine name="calendar" /> Lịch</button>
     </div>
 
     <EmptyState v-if="fetchError" icon="⚠️" title="Chưa tải được sự kiện" message="Có thể do mạng chập chờn. Thử lại nhé.">
@@ -190,13 +190,13 @@
             <span class="edb-day">{{ formatDay(e) }}</span>
           </div>
           <div class="event-info">
-            <span v-if="e.attributes?.category === 'mua'" class="cat-badge cat-mua">🌾 Mùa vụ</span>
+            <span v-if="e.attributes?.category === 'mua'" class="cat-badge cat-mua"><IconLine name="sprout" /> Mùa vụ</span>
             <h3>{{ e.name }}</h3>
             <p v-if="e.summary" class="event-summary">{{ truncateText(e.summary, 120) }}</p>
             <div class="event-meta">
-              <span v-if="e.place_name" class="event-place">📍 {{ e.place_name }}</span>
+              <span v-if="e.place_name" class="event-place"><IconLine name="pin" /> {{ e.place_name }}</span>
               <span v-if="getArea(e)" class="event-area">{{ AREA_META[getArea(e)]?.emoji }} {{ AREA_META[getArea(e)]?.name }}</span>
-              <span v-if="dateRange(e)" class="event-dates">🗓️ {{ dateRange(e) }}</span>
+              <span v-if="dateRange(e)" class="event-dates"><IconLine name="calendar" /> {{ dateRange(e) }}</span>
             </div>
           </div>
           <div v-if="eventImageUrl(e)" class="event-media">
@@ -206,14 +206,14 @@
             </div>
             <span class="event-disclosure"><ImageDisclosure :id="eventDisclosureId(e, index)" :descriptor="eventImage(e)!" presentation="short" /></span>
           </div>
-          <button v-if="e.attributes?.date_start" type="button" class="ical-btn" title="Thêm vào lịch" @click.stop.prevent="downloadIcal(e)">📅</button>
+          <button v-if="e.attributes?.date_start" type="button" class="ical-btn" title="Thêm vào lịch" aria-label="Thêm sự kiện này vào lịch" @click.stop.prevent="downloadIcal(e)"><IconLine name="calendar" /></button>
         </NuxtLink>
       </div>
       <EmptyState v-else icon="🎪" title="Không tìm thấy sự kiện" message="Thử đổi trạng thái, khu vực hoặc từ khóa khác nhé.">
         <template #actions>
           <button type="button" class="btn btn-outline" @click="statusFilter = 'all'; areaFilter = 'all'; q = ''">Xóa bộ lọc</button>
-          <button type="button" class="btn btn-outline" @click="view = 'calendar'">📅 Xem lịch</button>
-          <NuxtLink to="/le-hoi" class="btn btn-outline">🎋 Lễ hội</NuxtLink>
+          <button type="button" class="btn btn-outline" @click="view = 'calendar'"><IconLine name="calendar" /> Xem lịch</button>
+          <NuxtLink to="/le-hoi" class="btn btn-outline"><IconLine name="lantern" /> Lễ hội</NuxtLink>
         </template>
       </EmptyState>
     </template>
