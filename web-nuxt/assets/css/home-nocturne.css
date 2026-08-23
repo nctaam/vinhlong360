@@ -45,6 +45,11 @@
   align-items: center;
   min-height: var(--touch-min);
   color: var(--color-action);
+  /* Do tren may 360px: hang la flex nowrap, link chi duoc chia 75.2px nen
+     "Doi khu vuc" gay lam HAI dong (cao 48px = 2 x line-height 24px). Ghim mot
+     dong; o hep hon thi link giu nguyen be rong con khoi chu ben trai co lai —
+     no von da la khoi nhieu dong nen co them khong lam vo gi. */
+  white-space: nowrap;
 }
 
 [data-home-pilot="nocturne-b1"] .hero {
