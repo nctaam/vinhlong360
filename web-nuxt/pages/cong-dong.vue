@@ -79,7 +79,7 @@
 
             <div v-if="quotingPost" class="quote-preview">
               <div class="quote-preview-body">
-                <span class="qp-head">✍️ Trích dẫn <strong>{{ quotingPost.author || quotingPost.display_name || 'Người dùng' }}</strong></span>
+                <span class="qp-head"><IconLine name="file-text" /> Trích dẫn <strong>{{ quotingPost.author || quotingPost.display_name || 'Người dùng' }}</strong></span>
                 <span class="qp-content">{{ quotingPost.content || '(bài viết)' }}</span>
               </div>
               <button type="button" class="qp-remove" aria-label="Bỏ trích dẫn" @click="cancelQuote">&times;</button>
@@ -177,7 +177,7 @@
 
         <!-- Bài đã lên lịch -->
         <details v-if="isLoggedIn && scheduledPosts.length" class="scheduled-section">
-          <summary class="scheduled-summary">📅 Bài đã lên lịch ({{ scheduledPosts.length }})</summary>
+          <summary class="scheduled-summary"><IconLine name="calendar" /> Bài đã lên lịch ({{ scheduledPosts.length }})</summary>
           <div class="scheduled-list">
             <div v-for="sp in scheduledPosts" :key="sp.id" class="scheduled-item">
               <p>{{ sp.content?.slice(0, 100) }}{{ (sp.content?.length || 0) > 100 ? '...' : '' }}</p>
@@ -209,7 +209,7 @@
         <!-- Đang xem kết quả tìm -->
         <div v-if="searchMode" class="tag-banner" role="status">
           <span><strong>{{ displayPosts.length }}</strong> kết quả cho <strong>&ldquo;{{ searchQuery }}&rdquo;</strong></span>
-          <button type="button" class="tag-clear" @click="clearSearch">✕ Bỏ tìm</button>
+          <button type="button" class="tag-clear" @click="clearSearch"><IconLine name="x" /> Bỏ tìm</button>
         </div>
 
         <!-- Người dùng tìm thấy -->
@@ -280,7 +280,7 @@
         <!-- Đang lọc theo hashtag -->
         <div v-if="activeTag" class="tag-banner" role="status">
           <span>Đang xem <strong>#{{ activeTag }}</strong></span>
-          <button type="button" class="tag-clear" @click="clearTag">✕ Bỏ lọc</button>
+          <button type="button" class="tag-clear" @click="clearTag"><IconLine name="x" /> Bỏ lọc</button>
         </div>
 
         <!-- Post type filter (only for feed tabs, not bookmarks/search) -->
@@ -322,13 +322,13 @@
 
         <EmptyState
           v-if="searchMode && !searchResults.length && !searchLoading"
-          icon="🔍" title="Không tìm thấy bài viết"
+          icon-name="search" title="Không tìm thấy bài viết"
           :message="`Không có bài viết nào khớp “${searchQuery}”.`"
         />
 
         <EmptyState
           v-else-if="ugcUnavailable"
-          icon="🚧" title="Cộng đồng sắp mở"
+          icon-name="sparkles" title="Cộng đồng sắp mở"
           message="Tính năng cộng đồng đang được hoàn thiện. Bạn sẽ sớm có thể chia sẻ trải nghiệm, đánh giá địa điểm và kết nối với những người yêu Vĩnh Long."
         />
 
@@ -339,13 +339,13 @@
 
         <EmptyState
           v-else-if="activeTab === 'bookmarks' && !bookmarks.length && !bookmarksLoading"
-          icon="🔖" title="Chưa lưu bài viết nào"
+          icon-name="bookmark" title="Chưa lưu bài viết nào"
           message="Nhấn biểu tượng bookmark trên bài viết để lưu lại và xem sau."
         />
 
         <EmptyState
           v-else-if="activeTab === 'following' && !posts.length && !loading && !feedError"
-          icon="👥" title="Chưa có bài từ người bạn theo dõi"
+          icon-name="users" title="Chưa có bài từ người bạn theo dõi"
           message="Theo dõi người dùng và địa điểm để xem bài viết của họ ở đây."
           hint="Mở hồ sơ người dùng hoặc trang địa điểm rồi nhấn “Theo dõi”."
         >
@@ -358,7 +358,7 @@
 
         <EmptyState
           v-else-if="activeTab !== 'bookmarks' && activeTab !== 'following' && !posts.length && !loading && !feedError"
-          icon="💬" title="Cộng đồng đang chờ bạn"
+          icon-name="message" title="Cộng đồng đang chờ bạn"
           message="Chưa có bài viết nào. Hãy là người đầu tiên chia sẻ!"
           hint="Chia sẻ ảnh chuyến đi, đặt câu hỏi, hay để lại đánh giá của bạn."
         >
