@@ -4,6 +4,7 @@ export function useReveal(options: { threshold?: number; rootMargin?: string } =
   const threshold = options.threshold ?? 0.1
   const rootMargin = options.rootMargin ?? '0px 0px -30px 0px'
   let observer: IntersectionObserver | null = null
+  let mutations: MutationObserver | null = null
   const timers: ReturnType<typeof setTimeout>[] = []
 
   const revealAll = () =>
@@ -39,12 +40,37 @@ export function useReveal(options: { threshold?: number; rootMargin?: string } =
           .some(el => el.getBoundingClientRect().top < vh)
         if (stuck) revealAll()
       }, 2000))
+
+      // Hai mốc 400ms/2000ms ở trên là một CUỘC ĐUA, và nới hằng số chỉ dời cuộc
+      // đua chứ không kết thúc nó: phần tử .reveal vào DOM sau lần quét cuối sẽ
+      // không bao giờ được observe, không bao giờ nhận .revealed, và
+      // `html.js .reveal { opacity: 0 }` (base.css:314) giữ nó TÀNG HÌNH VĨNH
+      // VIỄN — kể cả khi người dùng cuộn thẳng tới nó. Đây là mất nội dung, không
+      // phải mất hiệu ứng. Nội dung nạp trễ (danh sách theo bộ lọc, kết quả tìm,
+      // trang phân trang) rơi đúng vào đó.
+      //
+      // MutationObserver là API gốc, không thêm phụ thuộc nào (§B8). Nó xoá hẳn
+      // cuộc đua thay vì dời nó.
+      mutations = new MutationObserver((records) => {
+        for (const record of records) {
+          for (const node of record.addedNodes) {
+            if (!(node instanceof HTMLElement)) continue
+            if (node.classList.contains('reveal') && !node.classList.contains('revealed')) {
+              observer!.observe(node)
+            }
+            node.querySelectorAll?.('.reveal:not(.revealed)').forEach(el => observer!.observe(el))
+          }
+        }
+      })
+      mutations.observe(document.body, { childList: true, subtree: true })
     })
   })
 
   onUnmounted(() => {
     observer?.disconnect()
     observer = null
+    mutations?.disconnect()
+    mutations = null
     timers.forEach(clearTimeout)
   })
 }

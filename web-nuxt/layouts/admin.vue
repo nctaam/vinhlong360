@@ -428,7 +428,26 @@ onUnmounted(() => {
 .cs-help pre { background: var(--bg-alt); padding: var(--space-3); border-radius: 8px; overflow-x: auto; font-size: .8rem; margin: var(--space-2) 0; }
 
 /* ── Tables ── */
-.admin-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 14px; border: .5px solid var(--line); }
+/* overflow: auto + max-height, KHÔNG phải overflow-x một mình.
+   Theo spec CSS Overflow, `overflow-x: auto` với `overflow-y: visible` làm
+   overflow-y TỰ TÍNH thành auto — nên khung bọc này đã là scrollport của phần tử
+   sticky bên trong. Nhưng nó không bị giới hạn chiều cao nên KHÔNG BAO GIỜ cuộn
+   dọc, và `th { position: sticky; top: 0 }` (:438) dính vào một scrollport đứng
+   yên: hàng tiêu đề trôi khỏi màn hình y hệt như không khai sticky. Đúng với CẢ
+   12 bảng admin, tức mọi bảng chủ dự án dùng hàng ngày.
+   Cho khung bọc một trần chiều cao thì nó thành scrollport dọc THẬT và sticky ăn
+   ngay; cuộn ngang giữ nguyên vì `overflow: auto` phủ cả hai trục.
+   --admin-table-max-h để chỉnh được: chrome phía trên bảng (topbar dính + h1 +
+   bộ lọc riêng từng trang) không cố định, và trang admin cần đăng nhập nên chưa
+   đo được chiều cao thật của từng trang. 16rem là ước lượng có căn cứ (topbar
+   ~48px + h1 + một hàng bộ lọc); lệch thì chỉnh đúng một biến này. */
+.admin-table-wrap {
+  overflow: auto;
+  max-height: var(--admin-table-max-h, calc(100dvh - 16rem));
+  -webkit-overflow-scrolling: touch;
+  border-radius: 14px;
+  border: .5px solid var(--line);
+}
 .admin-table { width: 100%; border-collapse: collapse; background: var(--bg); min-width: 600px; }
 .admin-table th {
   text-align: left; padding: var(--space-3) var(--space-4);
