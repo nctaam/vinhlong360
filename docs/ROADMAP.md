@@ -1039,3 +1039,45 @@ Hệ quả cần theo: `dossier.css` có thể là **CSS chết hoặc chết m�
 khi di cư nó, phải trả lời được câu "quy tắc nào đang thật sự tạo kiểu cho khối
 dossier" — di cư một file không ai dùng là công vô ích, mà tệ hơn là tưởng đã
 sửa trong khi giao diện không đổi gì.
+
+#### ĐÍNH CHÍNH LẦN HAI — dossier.css KHÔNG chết. Máy đo của tôi sai.
+
+Mục ngay trên tôi viết: "nghi dossier.css không thực sự tới được DOM… có thể là
+CSS chết hoặc chết một phần". **Sai.** Bằng chứng dứt điểm, đo trên chính phần tử
+`.framed-dossier` ở trang chủ:
+
+| Thuộc tính | Đo được | dossier.css đặt |
+|---|---|---|
+| `display` | `grid` | `grid` |
+| `gap` | `16px` | `var(--framed-dossier-gap)` |
+| `padding` | `24px` | `var(--framed-dossier-padding)` |
+| `font-size` | `16px` | `1rem` |
+
+Bốn thuộc tính khớp chính xác ⇒ **file được nạp và đang áp dụng bình thường.**
+
+**GỐC LỖI — công cụ, không phải hệ thống.** Tôi kết luận dựa trên việc duyệt
+`document.styleSheets` rồi tìm chuỗi trong `selectorText`. Máy đo đó **nói dối**:
+nó chỉ liệt kê được **347 quy tắc** cho toàn site — quá ít so với thực tế
+(riêng base.css + shell.css + components.css + catalog.css đã hơn thế nhiều lần).
+Vite ở chế độ dev nạp CSS qua JS nên CSSOM không phơi đủ. Tôi lại tin con số 0
+mà không hỏi "347 có hợp lý không".
+
+**Vì sao border/background vẫn ra rỗng:** biến giải đúng
+(`--framed-dossier-border: oklch(88% 0.015 90)`,
+`--color-surface: oklch(99% 0.004 90)`) nhưng `borderTopWidth: 0px` và nền trong
+suốt ⇒ có quy tắc SAU đó ghi đè, tức biến thể ở trang chủ cố ý bỏ khung. Đây là
+cascade bình thường, không phải lỗi.
+
+Tương tự, `.framed-dossier__eyebrow` ra 14,1px vì bị một quy tắc đặc hiệu hơn của
+biến thể trang chủ ghi đè — **không phải** vì "không quy tắc nào nhắc tới class"
+như tôi đã viết.
+
+**Bài học ghi lại để khỏi lặp:** khi đo CSS trong dev Vite, KHÔNG dùng
+`document.styleSheets` làm bằng chứng phủ định. Dùng `getComputedStyle` trên
+phần tử thật và so với giá trị mà quy tắc đặt — đó là bằng chứng độc lập với
+việc CSSOM phơi ra được bao nhiêu.
+
+**Hệ quả:** `dossier.css` di cư được bình thường. Điểm cần cân nhắc thật sự là
+`.framed-dossier` đặt `font-size: 1rem` cho CẢ KHỐI — đổi sang `--text-base`
+(16→18px) sẽ phóng to mọi thứ bên trong trên máy lớn, nên phải đo hình học khối
+trước/sau chứ không chỉ đo cỡ chữ.
