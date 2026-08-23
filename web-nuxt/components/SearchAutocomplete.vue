@@ -51,7 +51,7 @@
           :key="'r-' + i"
           class="ac-recent-row"
         >
-          <span class="ac-emoji">🕐</span>
+          <span class="ac-emoji" aria-hidden="true"><IconLine name="clock" /></span>
           <div
             class="ac-item ac-recent"
             :id="'ac-opt-' + i"
@@ -101,7 +101,7 @@
         :aria-selected="highlightIndex === totalItems - 1"
         @mousedown.prevent="onSubmit"
       >
-        🔍 Xem tất cả kết quả cho "{{ query.trim() }}"
+        <IconLine name="search" /> Xem tất cả kết quả cho "{{ query.trim() }}"
       </NuxtLink>
 
       <!-- Fetch error -->
