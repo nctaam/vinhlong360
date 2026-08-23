@@ -99,7 +99,7 @@
             <CommentEditable :comment="c" @updated="onCommentUpdated" @deleted="onCommentDeleted">
               <template #actions>
                 <button v-if="isLoggedIn" type="button" class="comment-reply-btn" @click="startReply(c)">Trả lời</button>
-                <span v-if="isQuestion && c.id === bestAnswerId" class="qa-badge">✓ Câu trả lời hay</span>
+                <span v-if="isQuestion && c.id === bestAnswerId" class="qa-badge"><IconLine name="check" /> Câu trả lời hay</span>
                 <button v-else-if="isQuestion && isQuestionAuthor" type="button" class="qa-pick" @click="setBestAnswer(c.id)">Chọn là câu trả lời hay</button>
               </template>
             </CommentEditable>
@@ -127,12 +127,12 @@
         </div>
 
         <div v-if="commentError && !loading" class="comment-empty">
-          <span class="comment-empty-halo"><span class="comment-empty-icon">⚠️</span></span>
+          <span class="comment-empty-halo"><span class="comment-empty-icon" aria-hidden="true"><IconLine name="alert-triangle" /></span></span>
           <p>Không thể tải bình luận.</p>
           <button type="button" class="btn btn-outline btn-sm" @click="fetchComments()">Thử lại</button>
         </div>
         <div v-else-if="!comments.length && !loading" class="comment-empty">
-          <span class="comment-empty-halo"><span class="comment-empty-icon">💬</span></span>
+          <span class="comment-empty-halo"><span class="comment-empty-icon" aria-hidden="true"><IconLine name="message" /></span></span>
           <p>Chưa có bình luận nào.</p>
           <p class="comment-empty-hint">{{ isLoggedIn ? 'Hãy là người đầu tiên trả lời!' : 'Đăng nhập để bình luận.' }}</p>
         </div>
@@ -170,10 +170,10 @@
     </div>
 
     <div v-else class="empty-state-wrap">
-      <EmptyState v-if="postFetchFailed" icon="⚠️" title="Không thể tải bài viết" message="Lỗi kết nối. Vui lòng thử lại.">
+      <EmptyState v-if="postFetchFailed" icon-name="alert-triangle" title="Không thể tải bài viết" message="Lỗi kết nối. Vui lòng thử lại.">
         <button type="button" class="btn btn-outline btn-sm" @click="refreshPost()">Thử lại</button>
       </EmptyState>
-      <EmptyState v-else icon="🔍" title="Không tìm thấy bài viết" message="Bài viết có thể đã bị xoá hoặc đường dẫn không đúng.">
+      <EmptyState v-else icon-name="search" title="Không tìm thấy bài viết" message="Bài viết có thể đã bị xoá hoặc đường dẫn không đúng.">
         <NuxtLink to="/cong-dong" class="btn btn-outline btn-sm">Về Cộng đồng</NuxtLink>
       </EmptyState>
     </div>
