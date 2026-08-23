@@ -609,3 +609,46 @@ Hệ quả: "artifact không đọc được" và "entity thiếu nguồn" hiệ
 `run_hard.py --staged | tail -1`, mà mã thoát của pipeline là của `tail` → `set -e`
 KHÔNG chặn, commit vẫn lọt dù cổng đỏ. Ghi kết quả ra file rồi kiểm mã thoát, đừng
 nối ống thẳng vào `tail`.
+
+### 5. "Còn 334" nghĩa là gì — bóc ba lớp, và hai vùng R30.2 không nhìn tới
+
+Đo 2026-08-23 trên `web-nuxt/**/*.vue` (trừ `node_modules`, `.output`, `.nuxt`).
+R30.2 đếm MỌI emoji trong file `.vue`, không phân biệt template hay script:
+
+| Lớp | Số | Ghi chú |
+|---|---|---|
+| Trong `<script>` (mảng dữ liệu, hằng, chuỗi) | **244** | Nặng nhất: `pages/huong-dan.vue` 74, `admin/cai-dat/index.vue` 23, `huong-dan-thanh-vien.vue` 17, `tai-khoan.vue` 17, `ocop.vue` 15, `theo-mua.vue` 14 |
+| Template CÓ `aria-hidden` | **88** | Trình đọc màn hình đã không đọc; là nợ hình thức, không phải lỗi tiếp cận |
+| Template KHÔNG `aria-hidden` | **3** | Đúng ba ngoại lệ ở mục 1 |
+
+(Tổng đo được 335, lệch 1 so với baseline 334 vì bộ ký tự tôi quét rộng hơn
+`_EMOJI` của checker một chút — coi là cận trên.)
+
+**Hệ quả cho người đọc log:** đợt di cư này đã xử lý **hết** lớp "template không
+aria-hidden" — lớp duy nhất gây lỗi tiếp cận thật. Phần còn lại là dữ liệu trong
+script và trang trí đã ẩn đúng cách. Đừng đọc "334" thành "334 lỗi UI".
+
+**Vùng mù A — `.ts`/`.js` không bị R30.2 quét** (rule chỉ glob `*.vue`):
+**95 glyph / 12 file**, nặng nhất `composables/useConstants.ts` 39,
+`utils/adminKinds.ts` 13, `utils/pageManifest.ts` 13, `utils/routesContent.ts` 6.
+
+Đáng chú ý: `useConstants.ts` mỗi vùng đã có **cả hai** trường —
+`{ name: 'Bến Tre', emoji: '🥥', icon: 'leaf', ... }`. Đường di cư có sẵn trong
+dữ liệu; việc còn lại chỉ là đổi chỗ render từ `.emoji` sang
+`<IconLine :name="...icon" />` rồi bỏ trường `emoji`.
+
+**Vùng mù B — emoji đến từ settings CMS trên prod, KHÔNG có trong mã.**
+Đo trên `/le-hoi` (dev, `API_BASE=https://vinhlong360.vn`): 6 link trong nav/footer
+đọc thành lời vì không có `aria-hidden` —
+"Đã lưu **❤️**", "**🍊** Vĩnh Long", "**🥥** Bến Tre", "**🛕** Trà Vinh",
+"**🏷️** Đăng ký quản lý trang", "**🤝** Hợp tác quảng bá".
+
+Mặc định trong `layouts/default.vue:207-211` **không có emoji**
+(`{ to: '/khu-vuc/ben-tre', label: 'Bến Tre' }`); giá trị thật đến từ
+`ss('navigation.nav_groups', ...)` / `footer.columns`, tức **dữ liệu settings trên
+prod sửa qua AdminCP**. Không sửa được bằng commit mã, và sửa dữ liệu prod là điều
+kiện dừng (§4) — cần chủ dự án.
+
+Kèm theo, cùng chỗ đó: ba link vùng dựng "Vĩnh Long / Bến Tre / Trà Vinh" thành ba
+nơi ngang hàng ngay trên điều hướng chính — cùng loại vi phạm §1.6 với mục 3, nhưng
+ở vị trí nổi bật hơn nhiều.
