@@ -7,7 +7,7 @@
           <span class="modal-eyebrow">Vinhlong360 · Sổ tay hành trình</span>
           <h2 id="auth-modal-title">{{ modalTitle }}</h2>
         </div>
-        <button type="button" class="modal-close" aria-label="Đóng" @click="close">✕</button>
+        <button type="button" class="modal-close" aria-label="Đóng" @click="close"><IconLine name="x" /></button>
       </div>
       <span class="modal-rule" aria-hidden="true"></span>
       <div class="modal-body">
