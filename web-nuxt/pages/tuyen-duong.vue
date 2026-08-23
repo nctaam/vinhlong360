@@ -65,7 +65,7 @@
       <!-- declutter-2 A2: interstitial inline vào mạch bài -->
       <CatalogInterstitial
         fact="Mỗi tuyến ghi rõ khoảng cách, thời gian và điểm dừng — tải về hoặc lưu vào tài khoản để xem offline khi đi."
-        icon="🛤️"
+        icon-name="route"
         :links="[
           { to: '/lich-trinh', label: 'Lịch trình gợi ý' },
           { to: '/ban-do', label: 'Xem bản đồ' },
@@ -119,9 +119,9 @@
             {{ r.tips }}
           </div>
           <div class="route-links">
-            <NuxtLink :to="`/khu-vuc/${r.area}`" class="btn btn-outline btn-sm">📍 {{ AREA_META[r.area]?.name }}</NuxtLink>
-            <NuxtLink to="/ban-do" no-prefetch class="btn btn-ghost btn-sm">🗺️ Xem bản đồ</NuxtLink>
-            <NuxtLink to="/lien-he" class="btn btn-ghost btn-sm route-contact-cta">📞 Hỏi HTX/homestay dọc tuyến</NuxtLink>
+            <NuxtLink :to="`/khu-vuc/${r.area}`" class="btn btn-outline btn-sm"><IconLine name="pin" /> {{ AREA_META[r.area]?.name }}</NuxtLink>
+            <NuxtLink to="/ban-do" no-prefetch class="btn btn-ghost btn-sm"><IconLine name="map" /> Xem bản đồ</NuxtLink>
+            <NuxtLink to="/lien-he" class="btn btn-ghost btn-sm route-contact-cta"><IconLine name="phone" /> Hỏi HTX/homestay dọc tuyến</NuxtLink>
           </div>
         </div>
       </article>
@@ -130,7 +130,7 @@
     <!-- Designed empty state (e.g. filter to an area with 0 routes) -->
     <div v-else class="block">
       <EmptyState
-        icon="🛤️"
+        icon-name="route"
         title="Không tìm thấy tuyến"
         message="Chưa có tuyến đường gợi ý cho khu vực này. Thử chọn khu vực khác nhé."
       >
