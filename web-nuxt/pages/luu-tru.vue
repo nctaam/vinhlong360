@@ -117,7 +117,7 @@
       </div>
 
       <p class="result-meta" aria-live="polite">{{ filtered.length }} nơi lưu trú</p>
-      <EmptyState v-if="fetchError" tone="error" icon="🌊" title="Rất tiếc, chưa tải được" message="Kết nối mạng đang chập chờn. Bạn thử tải lại một lần nữa nhé." hint="Nếu vẫn chưa được, thử lại sau ít phút giúp mình.">
+      <EmptyState v-if="fetchError" tone="error" icon-name="alert-triangle" title="Rất tiếc, chưa tải được" message="Kết nối mạng đang chập chờn. Bạn thử tải lại một lần nữa nhé." hint="Nếu vẫn chưa được, thử lại sau ít phút giúp mình.">
         <template #actions>
           <button type="button" class="btn btn-outline" @click="refreshNuxtData('catalog-accommodation')">Thử lại</button>
         </template>
@@ -126,7 +126,7 @@
       <div v-else-if="filtered.length" class="grid">
         <EntityCard v-for="e in filtered" :key="e.id" :entity="e" />
       </div>
-      <EmptyState v-else icon="🏡" title="Chưa thấy nơi ở phù hợp" message="Thử đổi khu vực hoặc từ khóa khác xem sao nhé." hint="Bạn có thể khám phá thêm các nơi ở ở Vĩnh Long, Bến Tre và Trà Vinh.">
+      <EmptyState v-else icon-name="home" title="Chưa thấy nơi ở phù hợp" message="Thử đổi khu vực hoặc từ khóa khác xem sao nhé." hint="Bạn có thể khám phá thêm các nơi ở ở Vĩnh Long, Bến Tre và Trà Vinh.">
         <template #actions>
           <button type="button" class="btn btn-outline" @click="areaFilter = 'all'; q = ''; scrollToGrid()">Xóa bộ lọc</button>
           <NuxtLink to="/du-lich" class="btn btn-outline">Khám phá du lịch</NuxtLink>
