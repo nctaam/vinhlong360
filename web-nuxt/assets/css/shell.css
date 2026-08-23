@@ -251,7 +251,15 @@
   border: 0;
   background: transparent;
   color: var(--color-text-muted);
-  font: 600 .84rem/1.2 var(--font-sans);
+  /* Tách khỏi shorthand `font: 600 .84rem/1.2` vì hai lý do đo được:
+     - .84rem = 13,44px viết cứng, ngoài thang --text-*;
+     - line-height 1.2 THẤP HƠN tỉ lệ mực tiếng Việt (đo Be Vietnam Pro: 1,33).
+       Đo trên 5 link nav: hộp glyph 17px trong hộp dòng 16,13px — tràn 0,87px,
+       dấu thanh của "Cộng đồng", "Lịch trình" chen vào phần trên/dưới. */
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  line-height: 1.4;
   cursor: pointer;
 }
 
