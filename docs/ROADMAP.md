@@ -1081,3 +1081,51 @@ việc CSSOM phơi ra được bao nhiêu.
 `.framed-dossier` đặt `font-size: 1rem` cho CẢ KHỐI — đổi sang `--text-base`
 (16→18px) sẽ phóng to mọi thứ bên trong trên máy lớn, nên phải đo hình học khối
 trước/sau chứ không chỉ đo cỡ chữ.
+
+### 11. Rà UX theo bảng ưu tiên bộ chuẩn (2026-08-24)
+
+Đo trên trang chủ, 360px. Ghi cả phần SẠCH để lần sau khỏi rà lại.
+
+#### Đã vá
+
+**Khoảng cách vùng chạm** — `.public-shell-command-row .auth-area` đặt `gap: 2px`
+(shell.css:669), tức nút đổi chủ đề và nút Đăng nhập gần như dính nhau. Chuẩn
+Touch & Interaction (hạng CRITICAL) đòi ≥8px. Đã đưa về `var(--space-2)`.
+Đánh đổi: dư của hàng lệnh ở 360px từ 9,6px xuống 3,6px.
+
+#### Đo được là SẠCH — không cần rà lại
+
+| Chiều | Kết quả |
+|---|---|
+| Thứ bậc tiêu đề | 1 `h1`, chuỗi `1>2>2>2>2>3>2>…`, **0 chỗ nhảy bậc** |
+| Ảnh | 8/8 có kích thước tường minh (**0 rủi ro CLS**), 8/8 có `alt` |
+| Chỉ báo focus | **79/79** phần tử focus được đều có viền thấy rõ, đều khớp `:focus-visible` |
+| Tương phản vòng focus | **6/6** đạt 6,44–7,34:1 (chuẩn ≥3:1), dày 2–3px |
+| Bẫy focus modal | `role="dialog"` + `aria-modal="true"`; một phím Tab kéo được focus từ NGOÀI về trong modal |
+
+`useModalA11y` dùng chung cho **12 component**; nó nhớ phần tử trigger, dời focus
+vào phần tử đầu, bẫy Tab vòng đầu↔cuối, và (`:72`, `:77`) xử lý cả trường hợp
+focus đang ở ngoài thì kéo về.
+
+Ba cặp vùng chạm cách nhau 1px còn lại đều là **thẻ kề nhau trong dải cuộn
+ngang** — bố cục bình thường, không phải nút nhỏ bấm nhầm.
+
+#### BA LẦN MÁY ĐO NÓI DỐI TRONG PHIÊN — ghi để không lặp
+
+1. **`document.styleSheets` trong dev Vite phơi thiếu.** Nó chỉ liệt kê 347 quy
+   tắc cho toàn site. Tôi suýt kết luận `dossier.css` là CSS chết.
+   ⇒ Không dùng nó làm bằng chứng PHỦ ĐỊNH. Dùng `getComputedStyle` trên phần tử
+   thật rồi so với giá trị quy tắc đặt.
+
+2. **`resize` mà không tải lại ⇒ `clamp()`/`vw` giữ giá trị cũ.** Tôi đọc tiêu đề
+   "nhảy 28,39→36px (+27%)" và đã hoàn nguyên cả một commit vì tưởng mình thiết
+   kế lại khối hero. Thực tế 28,39 là giá trị tính theo màn 360px.
+   ⇒ Sau `resize` PHẢI tải lại trước khi đo bất cứ thứ gì dùng `clamp()`/`vw`.
+
+3. **`.focus()` bằng JS không kích hoạt `:focus-visible`.** Quét lần đầu ra
+   "0/79 phần tử có chỉ báo focus" — nghe như thảm hoạ tiếp cận, nhưng là ảo:
+   trình duyệt chỉ bật `:focus-visible` khi focus đến từ bàn phím.
+   ⇒ Bấm Tab THẬT một lần trước, để trình duyệt vào chế độ bàn phím, rồi mới quét.
+
+Điểm chung của cả ba: tôi tin con số mà không hỏi "con số này có hợp lý không".
+Khi kết quả nói "0" hoặc "100%" hoặc lệch quá lớn, phải nghi máy đo trước.
