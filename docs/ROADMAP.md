@@ -1166,3 +1166,73 @@ biết mà kiểm lại.
 **Đã sửa chú thích sai trong mã** (`pages/theo-mua.vue`): nó viết "26px hit-target
 giữ được ý định 44px-ish" — đo ra 18–32px, không phải "44px-ish". Nay chú thích
 ghi đúng số đo, lý do hình học, và điều kiện ràng buộc ở trên.
+
+## KẾ HOẠCH HOÀN THIỆN UI — dựa trên số đo, không phải cảm nhận (2026-08-24)
+
+### A. Hiện trạng, đo được
+
+**Thang chữ:** đã di cư **139 khai báo / 11 file**. Còn lại:
+
+| Khu | Còn | File |
+|---|---|---|
+| Công khai | **129** | 65 |
+| Admin | **327** | 34 |
+
+⇒ 72% nợ chữ còn lại nằm ở **admin**, tức phần người dùng cuối KHÔNG thấy.
+
+**Màu:** con số thô 572 là ảo. Bóc ra:
+
+| Lớp | Số | Là nợ? |
+|---|---|---|
+| Dự phòng trong `var(--x, rgba(...))` | 62 | **Không** — lối viết phòng thủ hợp lệ |
+| Trung tính (trắng/đen/xám có alpha) | 368 | **Phần lớn không** — lớp phủ, bóng, scrim, gradient |
+| **Có sắc (chroma ≥25)** | **140** | **Có** |
+
+Trong 140 đó: admin ~51, công khai ~44, còn lại rải rác.
+
+### B. Việc còn lại, xếp theo GIÁ TRỊ / RỦI RO
+
+| # | Việc | Số | Giá trị | Rủi ro | Ghi chú |
+|---|---|---|---|---|---|
+| B1 | **140 màu có sắc** → token | 140 | Cao | Trung bình | Đây là "quá nhiều màu" mà chủ dự án nêu. Bắt đầu từ 44 chỗ công khai. |
+| B2 | 129 cỡ chữ công khai còn lại | 129 | Trung bình | Thấp | Cùng khuôn mẫu đã chạy 11 lần |
+| B3 | Quét **CSS chết** | ? | Trung bình | Thấp | Đã tình cờ thấy 5: `.region-tile`, `.thread-img-more`, `.admin-select-inline`, 2 dòng `.hero h1`. Cần đo bằng render thật, KHÔNG bằng grep |
+| B4 | 327 cỡ chữ admin | 327 | **Thấp** | Thấp | Người dùng cuối không thấy. Làm sau cùng |
+
+### C. ĐỪNG làm — đã đo và xác nhận KHÔNG phải nợ
+
+- **62 giá trị dự phòng** `var(--token, rgba(...))` — bỏ đi là làm yếu mã.
+- **368 màu trung tính có alpha** — bóng đổ, scrim, gradient. Token hoá chúng
+  sinh ra hàng trăm token dùng-một-lần, tức làm hệ màu PHỨC TẠP HƠN, ngược đúng
+  yêu cầu của chủ dự án.
+- **Icon/glyph dùng `font-size`** — trong dự án này `font-size` là cách đặt cỡ
+  IconLine (SVG 1em). Đếm thô luôn thổi phồng: `catalog.css` 14 khai báo thì 11
+  là icon; nhóm ≥18px có 44 khai báo thì chỉ 12 là chữ.
+- **Vòng mùa `/theo-mua`** — 0/12 nút đạt 44×44 nhưng HỢP CHUẨN nhờ ngoại lệ
+  "Equivalent" của WCAG 2.5.5 (mục 12). Phóng to vòng là phá thiết kế mà không
+  được gì.
+
+### D. Chiều UX CHƯA đo — nên đo trước khi làm thêm
+
+1. **Trạng thái form** — thông báo lỗi đặt ở đâu, có `aria-live` không, có gắn
+   `aria-describedby` vào ô nhập không. Chuẩn xếp hạng MEDIUM nhưng ảnh hưởng
+   trực tiếp tới việc đăng ký/đăng nhập.
+2. **Trạng thái tải / rỗng / lỗi** trên các trang danh sách — đã có `EmptyState`
+   dùng chung, nhưng chưa đo trạng thái ĐANG TẢI (skeleton có giữ chỗ đúng
+   không, hay gây nhảy bố cục).
+3. **Chuyển động** — mới xác nhận `scroll-behavior` tuân `prefers-reduced-motion`.
+   Chưa đo transition/animation nào bỏ quên guard đó.
+4. **Phủ trang** — mới rà 5/~74 route (`/`, `/theo-mua`, `/le-hoi`, `/cai-dat`,
+   404). Nên sweep các trang danh sách chính bằng đúng bộ đo đã dựng.
+
+### E. Bộ đo đã dựng được — dùng lại, đừng dựng lại
+
+| Đo gì | Cách | Bẫy đã gặp |
+|---|---|---|
+| Tương phản | Vẽ ra canvas, mồi **hai màu** khác nhau | Token là `oklch`, regex vô dụng; một màu mồi thì mọi giá trị không-phải-màu đều ra đen |
+| Nền hiệu dụng | Duyệt tổ tiên tới khi gặp nền đục | `alpha` sau khi hợp thành canvas luôn = 255 |
+| Dấu tiếng Việt | `Range.getClientRects()` so hộp glyph với hộp dòng | Tỉ lệ mực Be Vietnam Pro = **1,33**; mọi `line-height` < 1,33 là tràn |
+| Vùng chạm thật | `elementFromPoint` bắn tia từ tâm | `getBoundingClientRect` sai với phần tử BỊ XOAY |
+| Focus | Bấm **Tab thật** một lần trước khi quét | `.focus()` bằng JS không kích hoạt `:focus-visible` |
+| Quy tắc nào đang thắng | `getComputedStyle` trên phần tử thật | `document.styleSheets` trong dev Vite chỉ phơi 347/nhiều nghìn quy tắc |
+| So trước/sau khi đổi khổ | **Tải lại** sau mỗi `resize` | `clamp()`/`vw` giữ giá trị của khổ cũ |
