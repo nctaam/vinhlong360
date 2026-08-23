@@ -1908,7 +1908,7 @@ useHead({
   .md-tag:hover { background: var(--accent); color: var(--text-on-dark, var(--white)); }
   .md-member { display: flex; align-items: center; gap: var(--space-1); padding: var(--space-1) var(--space-2); border-radius: var(--radius-full); background: var(--surface-2); text-decoration: none; white-space: nowrap; }
   /* Không cần .dark override: --ink-800 nay có giá trị chế-độ-tối riêng
-     (#A6B4AD, 8.02:1 trên card tối). */
+     8.02:1 trên card tối). */
   .md-name { font-size: .78rem; color: var(--ink-800); }
   .dark .md-tag { background: var(--surface-3); }
   .dark .md-member { background: var(--surface-3); }

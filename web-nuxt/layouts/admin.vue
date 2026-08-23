@@ -632,8 +632,9 @@ onUnmounted(() => {
     overflow-x: auto; padding: 0 var(--space-3) var(--space-2);
     -webkit-overflow-scrolling: touch;
     scroll-snap-type: x proximity;
-    mask-image: linear-gradient(to right, #000 90%, transparent);
-    -webkit-mask-image: linear-gradient(to right, #000 90%, transparent);
+    /* --mask-opaque: khớp cả giá trị lẫn NGHĨA — đây đúng là màu che của mask. */
+    mask-image: linear-gradient(to right, var(--mask-opaque) 90%, transparent);
+    -webkit-mask-image: linear-gradient(to right, var(--mask-opaque) 90%, transparent);
   }
   .admin-nav:hover, .admin-nav:focus-within { mask-image: none; -webkit-mask-image: none; }
   .admin-nav-group { display: contents; }

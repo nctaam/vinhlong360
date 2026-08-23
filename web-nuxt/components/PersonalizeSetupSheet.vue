@@ -436,7 +436,10 @@ function accuracyLabel(value: string) {
 .setup-rail-item.active, .setup-rail-item.complete { color: var(--ink); }
 .setup-rail-mark { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 1px solid var(--line); border-radius: var(--radius-full); font-size: var(--text-xs); }
 .setup-rail-item.active .setup-rail-mark { border-color: var(--primary-fg); color: var(--primary-fg); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .12); }
-.setup-rail-item.complete .setup-rail-mark { border-color: var(--primary-fg); background: var(--primary-fg); color: var(--text-on-dark, #fff); }
+/* --primary-fg là token CHỮ, dùng làm NỀN thì chữ trắng chỉ đạt 2.69:1 ở chế độ
+   tối (cùng lỗi đã sửa ở huy hiệu ngày). Dùng cặp đúng của hệ: nền --primary,
+   chữ --on-primary — 6.38 ở chế độ tối, 6.89 ở chế độ sáng. */
+.setup-rail-item.complete .setup-rail-mark { border-color: var(--primary); background: var(--primary); color: var(--on-primary); }
 .personalize-header { margin: 0; }
 .sheet-icon-chip { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; margin: 0 auto var(--space-3); border-radius: var(--radius-full); color: var(--primary-fg); background: var(--bg-warm); }
 .personalize-header h2 { margin-bottom: var(--space-2); font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em; }
