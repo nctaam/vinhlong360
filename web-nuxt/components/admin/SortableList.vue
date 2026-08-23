@@ -5,7 +5,7 @@
         <div class="sl-item-head">
           <button type="button" class="sl-handle"
             :aria-label="`Mục ${i + 1}. Shift+mũi tên lên/xuống để di chuyển`"
-            @keydown.up.shift.prevent="moveUp(i)" @keydown.down.shift.prevent="moveDown(i)">☰</button>
+            @keydown.up.shift.prevent="moveUp(i)" @keydown.down.shift.prevent="moveDown(i)"><IconLine name="menu" /></button>
           <div class="sl-item-content">
             <template v-if="editingIndex === i">
               <div class="sl-edit-fields">
@@ -30,9 +30,9 @@
             <button type="button" class="sl-btn" :disabled="i === 0" @click="moveUp(i)" title="Lên" :aria-label="`Di chuyển mục ${i + 1} lên`">▲</button>
             <button type="button" class="sl-btn" :disabled="i === localItems.length - 1" @click="moveDown(i)" title="Xuống" :aria-label="`Di chuyển mục ${i + 1} xuống`">▼</button>
             <button type="button" class="sl-btn sl-btn-edit" @click="toggleEdit(i)" :title="editingIndex === i ? 'Đóng' : 'Sửa'" :aria-label="editingIndex === i ? 'Đóng chỉnh sửa' : 'Sửa mục'">
-              {{ editingIndex === i ? '✓' : '✎' }}
+              <IconLine :name="editingIndex === i ? 'check' : 'file-text'" />
             </button>
-            <button type="button" class="sl-btn sl-btn-remove" @click="removeItem(i)" title="Xoá" aria-label="Xoá mục">✕</button>
+            <button type="button" class="sl-btn sl-btn-remove" @click="removeItem(i)" title="Xoá" aria-label="Xoá mục"><IconLine name="x" /></button>
           </div>
         </div>
         <Transition name="sl-expand">
@@ -46,7 +46,7 @@
                 <input :value="child.to" placeholder="/path" class="sl-edit-input sl-child-input"
                   :aria-label="`Đường dẫn mục con ${indexLabel(ci)}`"
                   @input="updateChild(i, indexNumber(ci), 'to', ($event.target as HTMLInputElement).value)" />
-                <button type="button" class="sl-btn sl-btn-remove" @click="removeChild(i, indexNumber(ci))" aria-label="Xoá mục con">✕</button>
+                <button type="button" class="sl-btn sl-btn-remove" @click="removeChild(i, indexNumber(ci))" aria-label="Xoá mục con"><IconLine name="x" /></button>
               </div>
             </TransitionGroup>
             <button type="button" class="sl-add-child" @click="addChild(i)">+ Thêm mục con</button>
