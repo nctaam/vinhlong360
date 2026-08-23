@@ -38,7 +38,7 @@
     <CatalogInterstitial
       v-if="typeStats.length"
       :fact="`${areaMeta?.name} quy tụ ${typeStats.length} loại hình khác nhau — từ trải nghiệm miệt vườn đến ẩm thực, lưu trú và làng nghề.`"
-      icon="🌟"
+      icon-name="sparkles"
       variant="warm"
       :links="[
         { to: `/du-lich?vung=${areaKey}`, label: `Du lịch ${areaMeta?.name}` },
@@ -47,7 +47,7 @@
     />
 
     <!-- Error state -->
-    <EmptyState v-if="fetchError && !entities.length" tone="error" icon="⚠️" title="Không thể tải dữ liệu" message="Lỗi kết nối. Vui lòng thử lại.">
+    <EmptyState v-if="fetchError && !entities.length" tone="error" icon-name="alert-triangle" title="Không thể tải dữ liệu" message="Lỗi kết nối. Vui lòng thử lại.">
       <template #actions>
         <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData(`area-${areaKey}`)">Thử lại</button>
       </template>
@@ -114,7 +114,7 @@
         <LoadMoreButton :remaining="entities.length - visibleEntities.length" @load="showMore" />
       </div>
     </section>
-    <EmptyState v-else-if="data && !fetchError" icon="📍" title="Chưa có dữ liệu" message="Chưa có dữ liệu cho khu vực này. Dữ liệu đang được cập nhật.">
+    <EmptyState v-else-if="data && !fetchError" icon-name="pin" title="Chưa có dữ liệu" message="Chưa có dữ liệu cho khu vực này. Dữ liệu đang được cập nhật.">
       <template #actions>
         <NuxtLink to="/du-lich" class="btn btn-outline">Khám phá du lịch</NuxtLink>
         <NuxtLink to="/" class="btn btn-outline">Về trang chủ</NuxtLink>
