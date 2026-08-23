@@ -48,7 +48,7 @@
         <h2>Gửi yêu cầu khác</h2>
         <p>Dữ liệu cá nhân, khiếu nại bản quyền, hoặc việc chưa có kênh riêng. Khiếu nại nội dung và khôi phục tài khoản hiện xử lý qua email — chưa có trang theo dõi trực tuyến.</p>
         <div class="card-action">
-          <a :href="`mailto:${contactEmail}`" class="btn btn-primary">📧 {{ contactEmail }}</a>
+          <a :href="`mailto:${contactEmail}`" class="btn btn-primary"><IconLine name="message" /> {{ contactEmail }}</a>
         </div>
       </section>
 
@@ -57,7 +57,7 @@
         <h2>Hợp tác quảng bá</h2>
         <p>Đối tác du lịch, OCOP, cơ quan địa phương muốn giới thiệu sản phẩm, điểm đến trên vinhlong360.</p>
         <div class="card-action">
-          <a :href="`mailto:${contactEmail}?subject=Hợp tác quảng bá`" class="btn btn-outline">📧 Liên hệ hợp tác</a>
+          <a :href="`mailto:${contactEmail}?subject=Hợp tác quảng bá`" class="btn btn-outline"><IconLine name="message" /> Liên hệ hợp tác</a>
         </div>
       </section>
 
