@@ -968,9 +968,29 @@
   --season-hero-gradient: linear-gradient(135deg, rgba(42,107,122,.08), rgba(75,169,125,.04));
   --season-emoji: '🌊';
 }
+/* Bản chế-độ-tối của bốn màu mùa.
+ *
+ * Bốn giá trị ở trên là hex ghim cứng, không có bản tối — cùng lỗ hổng với thang
+ * --ink-* trước đây. Đo trên app đang chạy, --season-accent trên --card tối:
+ *   tết 3.33 · hè 3.46 · nước 2.87 · thu 3.99 — CẢ BỐN đều dưới 4.5.
+ *
+ * Hiện --season-accent có 0 nơi dùng, nên chưa hỏng gì. Nhưng hệ thiết kế đang
+ * KHAI một màu nhấn theo mùa mà dùng làm chữ thì hỏng 100% ở chế độ tối, và lỗi
+ * đó chỉ lộ ra đúng vào mùa tương ứng — loại lỗi tệ nhất để phát hiện muộn.
+ * Vá theo B2 (thêm đường mới, không xoá gì): giá trị nâng sáng tới khi đạt ≥4.6
+ * trên nền tối SÁNG NHẤT đang dùng (#2a2d2a), giữ nguyên tông màu của từng mùa.
+ * Đo lại sau khi đặt: 5.7+ trên --card, 6.3 trên --bg.
+ */
+.dark.season-tet  { --season-accent: #DF766E; }
+.dark.season-he   { --season-accent: #3DA779; }
+.dark.season-nuoc { --season-accent: #3FA1B7; }
+.dark.season-thu  { --season-accent: #DC7C25; }
+
 /* Cuối năm (Dec): harvest earth, warm */
 .season-thu {
-  --season-accent: #b5651d;
+  /* #b5651d chỉ đạt 4.05:1 trên --bg sáng — mùa DUY NHẤT dưới ngưỡng ở chế độ
+     sáng, và nó chỉ hiện ra vào tháng 12. Làm đậm tới khi đạt trên nền khó nhất. */
+  --season-accent: #A85D1B;
   --season-tint: rgba(181,101,29,.05);
   --season-hero-gradient: linear-gradient(135deg, rgba(181,101,29,.06), rgba(232,163,61,.06));
   --season-emoji: '🍂';
