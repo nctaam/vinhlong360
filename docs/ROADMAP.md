@@ -543,3 +543,69 @@ chạy trên Linux — giả định "sẽ xanh" là kiểm được, không ph�
 **(P) — lỗi sản phẩm thật: 0.** Đợt quét 2026-08-22 rà từng test một; không cái nào
 che một defect sản phẩm. 5 test cổng migration từng nằm trong nhóm (S) đã vá, không
 phải nới assertion mà đưa hằng ghim về đúng đầu chuỗi (081/81).
+
+---
+
+## Backlog phát sinh — Đợt di cư emoji → IconLine (2026-08-23; ghi lại, CHƯA làm)
+
+Loạt di cư đã đưa R30.2 từ **507 → 334** (mỗi trang một commit). Bốn việc dưới đây
+phát sinh dọc đường, **cố ý chưa làm** vì vượt phạm vi task kỹ thuật (§3.5).
+
+### 1. Ba emoji giữ lại có chủ đích — KHÔNG phải sót
+
+| Chỗ | Glyph | Vì sao giữ |
+|---|---|---|
+| `web-nuxt/components/EntityReviews.vue:25` | ★ | Nút chấm sao (`role="radio"` + `aria-label="N sao"`). Trạng thái chọn/chưa chọn phân biệt bằng `.star.active { color: var(--accent) }` trên một glyph ĐẶC. Đổi sang icon nét thì cả hai trạng thái đều thành viền mảnh, vẫn chỉ khác nhau bằng màu → **kém hơn hiện tại**. Muốn đổi thì phải làm sao-đặc/sao-rỗng, là việc riêng. |
+| `web-nuxt/pages/admin/cai-dat/danh-muc.vue:13` | 🍜 | Nằm trong `<pre>{ "dish": { "emoji": "🍜" } }</pre>` — đây là **ví dụ tài liệu** mô tả đúng định dạng dữ liệu đang lưu. Đổi thành icon là làm tài liệu nói sai sự thật. |
+| `web-nuxt/pages/admin/cai-dat/footer.vue:75` | 🔗 | `:new-item-template="{ icon: '🔗', ... }"` — **giá trị dữ liệu** ghi vào settings, không phải glyph trong template. Chuyển được chỉ khi bộ render footer biết ánh xạ tên-icon; là task riêng có verify. |
+
+### 2. 67 emoji "tàng hình" với R30.2 — con số thật cao hơn 334
+
+R30.2 chỉ khớp **ký tự emoji thật**. Emoji viết dạng HTML entity (`&#128269;`,
+`&#x1F4F7;`) hoặc escape JS (`\u{1F50D}`) **thoát khỏi rule** — đã ghi trong
+`scripts/checks/check_fe_tokens.py:43-46`, nay bổ sung số đo.
+
+Đo 2026-08-23 trên `web-nuxt/**/*.vue` (trừ `node_modules`, `.output`, `.nuxt`):
+**67 glyph / 66 dòng / 15 file**, gần như toàn bộ ở khu admin — nặng nhất
+`pages/admin/index.vue` (12), `pages/admin/thong-ke.vue` (10),
+`pages/admin/ai.vue` (10), `pages/admin/data-quality.vue` (6),
+`pages/admin/entities.vue` (6).
+
+Đã truy nguồn: chúng là **lối viết gốc của khu admin** (`<GĐ-WC-UI b7>`,
+`[admincp] dashboard...`), KHÔNG phải ai đó đổi emoji-thật thành entity gần đây để
+hạ số cho gate. Không có dấu hiệu lách cổng.
+
+Quyết định cần chủ dự án: mở rộng R30.2 bắt entity/escape sẽ nâng nợ **334 → 401**,
+phải nâng baseline kèm giải trình (§3.7). Hoặc để nguyên và chấp nhận rằng con số
+R30.2 không phải tổng emoji thật.
+
+### 3. `/luu-tru` còn gọi tên ba tỉnh song song — trái §1.6
+
+`web-nuxt/pages/luu-tru.vue:129`, thuộc tính `hint`:
+
+> "Bạn có thể khám phá thêm các nơi ở ở Vĩnh Long, Bến Tre và Trà Vinh."
+
+Viết như ba tỉnh còn tồn tại song song. Từ 7-2025 chỉ còn **một** tỉnh Vĩnh Long;
+theo §1.6, "Bến Tre/Trà Vinh" chỉ được xuất hiện kèm chữ "cũ/trước 7-2025". Đây là
+sửa **nội dung**, không phải sửa kỹ thuật, nên không gộp vào commit di cư icon.
+
+### 4. R10.8 (`data_rich_source`) đỏ giả một lần — cổng fail-closed vì artifact
+
+Trong loạt commit, `run_hard --staged` một lần in
+`✖ RATCHET R10.8 (data_rich_source): 1 vi phạm > baseline 0` rồi các lần sau xanh
+lại; chạy trực tiếp 3 lần liên tiếp đều ra **0 vi phạm**.
+
+Đúng một vi phạm = nhánh `DataRichSourceCheck._artifact_load_failure`
+(`scripts/checks/check_data_schema.py:147-165`): khi `current_policy_evidence()`
+ném lỗi, check trả về **một** violation `index-policy-artifact-load-failed`. Hàm đó
+đọc route manifest + AI disclosure rồi băm sha256
+(`agent/launch_evidence.py:102-114`) — trên Windows một lần khoá file thoáng qua là
+đủ làm cổng đỏ.
+
+Hệ quả: "artifact không đọc được" và "entity thiếu nguồn" hiện **không phân biệt
+được** ở đầu ra. Nên tách mã lỗi/kênh báo, hoặc cho phép thử lại lần đọc artifact.
+
+**Bẫy tự gây, ghi để không lặp:** vòng lặp commit của tôi chạy
+`run_hard.py --staged | tail -1`, mà mã thoát của pipeline là của `tail` → `set -e`
+KHÔNG chặn, commit vẫn lọt dù cổng đỏ. Ghi kết quả ra file rồi kiểm mã thoát, đừng
+nối ống thẳng vào `tail`.
