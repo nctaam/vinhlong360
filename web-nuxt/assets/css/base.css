@@ -126,7 +126,7 @@ h4 { font-size: var(--text-lg);  line-height: var(--lh-lg);  letter-spacing: var
 .main-nav a:hover { background: var(--nav-hover); }
 .main-nav a:active { transform: scale(.95); transition-duration: .08s; }
 .main-nav a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-.main-nav a.active { background: var(--primary); color: var(--text-on-dark, #fff); font-weight: var(--weight-semibold); }
+.main-nav a.active { background: var(--primary); color: var(--on-primary, #fff); font-weight: var(--weight-semibold); }
 .main-nav a.active:focus-visible { outline-color: var(--accent); }
 /* Nav by intent — dropdown (desktop) */
 .nav-group { position: relative; display: flex; }
@@ -558,7 +558,7 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
 .chat-panel { position: fixed; bottom: calc(92px + env(safe-area-inset-bottom)); right: calc(24px + env(safe-area-inset-right)); z-index: var(--z-overlay); width: 400px; max-width: calc(100% - 32px); height: 520px; max-height: 85vh; max-height: min(85vh, calc(100dvh - 140px)); background: var(--glass-bg-heavy); backdrop-filter: var(--glass-heavy); -webkit-backdrop-filter: var(--glass-heavy); border: .5px solid rgba(var(--ink-rgb, 0,0,0),.06); border-radius: var(--radius); box-shadow: var(--shadow-xl); display: flex; flex-direction: column; overflow: hidden; opacity: 0; transform: translateY(16px) scale(.95); transform-origin: bottom right; pointer-events: none; transition: opacity .25s var(--ease-out), transform .35s var(--ease-spring-gentle); }
 .chat-panel:not(.show) { visibility: hidden; }
 .chat-panel.show { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
-.chat-panel-head { background: var(--primary); color: var(--text-on-dark, #fff); padding: var(--space-3) var(--space-4); display: flex; align-items: center; gap: var(--space-3); flex-shrink: 0; }
+.chat-panel-head { background: var(--primary); color: var(--on-primary, #fff); padding: var(--space-3) var(--space-4); display: flex; align-items: center; gap: var(--space-3); flex-shrink: 0; }
 .chat-panel-head h3 { margin: 0; font-size: 1rem; flex: 1; }
 .chat-panel-head .cp-close { background: none; border: none; color: var(--text-on-dark, #fff); font-size: 1.4rem; cursor: pointer; opacity: .8; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); transition: opacity .3s, background .3s; }
 .chat-panel-head .cp-close:hover { opacity: 1; background: rgba(255,255,255,.15); }
@@ -593,7 +593,7 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
 .chat-panel-input { display: flex; gap: var(--space-2); padding: var(--space-3); border-top: .5px solid var(--line); background: var(--card); flex-shrink: 0; }
 .chat-panel-input input { flex: 1; padding: var(--space-2) var(--space-3); border: .5px solid var(--border-input); border-radius: var(--radius-sm); font-size: var(--text-sm); outline: none; transition: border-color .25s var(--ease-out), box-shadow .25s var(--ease-out); }
 .chat-panel-input input:focus { border-color: var(--primary-fg); box-shadow: var(--focus-ring); }
-.chat-panel-input button { padding: 0 var(--space-4); border: none; border-radius: var(--radius-sm); background: var(--primary); color: var(--text-on-dark, #fff); font-weight: var(--weight-bold); cursor: pointer; min-height: 44px; transition: opacity .3s, transform .35s var(--ease-spring-gentle), background .3s; }
+.chat-panel-input button { padding: 0 var(--space-4); border: none; border-radius: var(--radius-sm); background: var(--primary); color: var(--on-primary, #fff); font-weight: var(--weight-bold); cursor: pointer; min-height: 44px; transition: opacity .3s, transform .35s var(--ease-spring-gentle), background .3s; }
 .chat-panel-input button:not(:disabled):hover { background: var(--primary-dark, var(--primary)); }
 .chat-panel-input button:not(:disabled):active { transform: scale(.93); transition-duration: .08s; }
 .chat-panel-input button:disabled { opacity: var(--opacity-disabled); }
@@ -719,7 +719,7 @@ a.thread-author:hover { color: var(--primary-fg); }
 
 .stop-list { display: flex; flex-direction: column; gap: 0; }
 .stop-item { display: flex; gap: var(--space-4); position: relative; padding-bottom: var(--space-2); }
-.stop-num { width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: var(--text-on-dark, #fff); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .85rem; flex-shrink: 0; z-index: 1; }
+.stop-num { width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: var(--on-primary, #fff); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .85rem; flex-shrink: 0; z-index: 1; }
 .stop-connector { position: absolute; left: 15px; top: 32px; bottom: -8px; width: 2px; background: var(--line); }
 .stop-card { flex: 1; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg, 16px); padding: var(--space-4); box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s; }
 .stop-card:hover { box-shadow: var(--shadow-sm); border-color: var(--border); }
@@ -772,7 +772,7 @@ a.thread-author:hover { color: var(--primary-fg); }
    "Lịch trình chi tiết". Same size/margin regardless of level. */
 .route-map-section h2, .route-map-section h3 { font-size: 1.05rem; margin: 0 0 var(--space-3); }
 .route-map { height: 340px; border-radius: var(--radius); border: .5px solid var(--line); z-index: 0; }
-.route-marker .rm-num { width: 28px; height: 28px; border-radius: 50%; background: var(--primary); color: var(--text-on-dark, #fff); font-weight: 800; font-size: .8rem; display: flex; align-items: center; justify-content: center; border: 2px solid var(--white, #fff); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+.route-marker .rm-num { width: 28px; height: 28px; border-radius: 50%; background: var(--primary); color: var(--on-primary, #fff); font-weight: 800; font-size: .8rem; display: flex; align-items: center; justify-content: center; border: 2px solid var(--white, #fff); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
 
 
 .user-profile { margin-top: var(--space-4); }

@@ -242,6 +242,9 @@
   --brand-zalo: var(--color-action);
   --brand-zalo-hover: var(--color-action-hover);
   --text-on-dark: var(--color-on-action);
+  /* --on-primary phai di CUNG CAP voi --primary o tren. Thieu no thi moi cho
+     dung var(--on-primary) se lay gia tri toan cuc thay vi he mau tri-region. */
+  --on-primary: var(--color-on-action);
 }
 
 [data-color-system="tri-region-v1"][data-page-recipe="detail"] :is(.hl-action, .scta-phone, .scta-map, .cw-btn-secondary)[data-color-role="action-secondary"] {
@@ -252,6 +255,7 @@
   --primary-rgb: var(--color-action-rgb);
   --color-on-action: var(--color-action);
   --text-on-dark: var(--color-action);
+  --on-primary: var(--color-action);
   --bg-warm: var(--color-action-surface);
   --bg-alt: var(--color-action-surface-hover);
   --ink: var(--color-action);
