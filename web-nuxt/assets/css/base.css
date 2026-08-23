@@ -105,7 +105,7 @@ h3 { font-size: var(--text-xl);  line-height: var(--lh-xl);  letter-spacing: var
 h4 { font-size: var(--text-lg);  line-height: var(--lh-lg);  letter-spacing: var(--ls-lg);  font-weight: var(--weight-bold); }
 
 /* ── Skip link (a11y) ── */
-.skip-link { position: fixed; top: -100px; left: var(--space-4); z-index: var(--z-skip-link); padding: var(--space-3) var(--space-5); background: var(--primary); color: var(--text-on-dark, #fff); border-radius: 0 0 var(--radius-sm) var(--radius-sm); font-weight: 700; font-size: .9rem; transition: top .3s; }
+.skip-link { position: fixed; top: -100px; left: var(--space-4); z-index: var(--z-skip-link); padding: var(--space-3) var(--space-5); background: var(--primary); color: var(--on-primary, #fff); border-radius: 0 0 var(--radius-sm) var(--radius-sm); font-weight: 700; font-size: .9rem; transition: top .3s; }
 .skip-link:focus { top: 0; }
 /* Programmatic focus on main-content (route change / skip-link) should not show outline */
 #main-content:focus { outline: none; }

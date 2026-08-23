@@ -467,6 +467,19 @@ html[data-density="compact"] .public-bottom-nav-item {
     order: 4;
   }
 
+  /* Do 2026-08-23 tren may that: duoi 820px hang lenh chi con BA con, ca ba deu
+     khong co duoc — logo 130.4px + .auth-area 136px + nut menu 44px. O man 360px
+     hang rong 336px va tong can 334.4px: du dung 1.6px. Bat ky thay doi nho nao
+     (ten thuong hieu dai them, them mot nut) cung lam vo bo cuc.
+     Thu khe tu 12px xuong 8px o <=400px de con 9.6px du, KHONG dong vao le hai
+     ben (giu thang hang voi noi dung ben duoi).
+     Man 320px van tran ~30px — cai do can quyet dinh thiet ke, ghi o ROADMAP. */
+  @media (max-width: 400px) {
+    .public-shell-command-row {
+      gap: var(--space-2);
+    }
+  }
+
   .public-shell-catalog {
     position: fixed;
     top: 104px;
@@ -553,9 +566,15 @@ html[data-density="compact"] .public-bottom-nav-item {
     gap: 4px;
     border-radius: var(--radius-control);
     color: var(--color-text-muted);
-    font-size: .66rem;
+    /* Do tren may 375px: hop glyph cua "Cong dong" cao 14px trong khi hop dong
+       chi 11.6px (line-height 1.1) — dau tieng Viet chong ca tren lan duoi nen
+       tran ra ngoai dong. Ti le glyph/font do duoc la 1.33, nen 1.4 la san toi
+       thieu co du.
+       clamp: 5 cot chia man hinh, nhan rong nhat "Cong dong" = 65.7px @12px.
+       O 320px moi o chi con 61.6px nen phai co lai; o 375px tro len dat 12px. */
+    font-size: clamp(.66rem, 3.2vw, .75rem);
     font-weight: 600;
-    line-height: 1.1;
+    line-height: 1.4;
   }
 
   .public-bottom-nav-item .line-icon {
