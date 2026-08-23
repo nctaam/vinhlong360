@@ -18,7 +18,7 @@
 
         <div class="cs-section" v-if="footerColumns.length || !loading">
           <h2 class="cs-section-title">Cột footer</h2>
-          <p class="cs-hint">Mỗi cột có tiêu đề và danh sách liên kết. Bấm ✎ để sửa.</p>
+          <p class="cs-hint">Mỗi cột có tiêu đề và danh sách liên kết. Bấm nút sửa ở mỗi dòng để đổi tiêu đề và liên kết.</p>
 
           <AdminSortableList
             :items="footerColumns"

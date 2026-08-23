@@ -13,7 +13,7 @@
     </div>
     <Transition name="cs-fade">
       <div v-if="!loading" class="cs-form-wrap">
-        <p class="cs-hint">Bấm ✎ để sửa tên nhóm và các mục con. Dùng ▲▼ để sắp xếp.</p>
+        <p class="cs-hint">Bấm nút sửa để đổi tên nhóm và các mục con. Dùng ▲▼ để sắp xếp.</p>
 
         <AdminSortableList
           :items="navGroups"
