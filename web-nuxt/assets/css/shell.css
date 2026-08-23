@@ -631,7 +631,11 @@ html[data-density="compact"] .public-bottom-nav-item {
     max-width: none;
     flex: 1;
     padding-left: var(--space-8);
-    font-size: var(--text-xs);
+    /* Do tren thiet bi cham 375px: o nay ra 12,07px. San 16px o base.css:915
+       dung bo chon TRAN `select` (do dac hieu 0,0,1) nen bat ky quy tac theo lop
+       nao cung thang no — ke ca quy tac nay. Duoi 16px thi iOS Safari tu phong
+       to khi cham vao o, roi khong tu thu lai. Ghim san ngay tai day. */
+    font-size: max(16px, var(--text-xs));
   }
 
   .public-context-mobile-icon {
