@@ -85,22 +85,22 @@
             {{ eventStatus(e) ? STATUS_LABEL[eventStatus(e)] : countdownLabel(e) }}
           </span>
           <h3 class="ledger-name">{{ e.name }}</h3>
-          <span v-if="e.place_name" class="ledger-place">📍 {{ e.place_name }}</span>
-          <span v-if="e.attributes?.lunar_date" class="lunar-label">🌙 {{ e.attributes.lunar_date }}</span>
+          <span v-if="e.place_name" class="ledger-place"><IconLine name="pin" /> {{ e.place_name }}</span>
+          <span v-if="e.attributes?.lunar_date" class="lunar-label"><IconLine name="moon" /> {{ e.attributes.lunar_date }}</span>
         </NuxtLink>
         </li>
       </ul>
       <button type="button" class="ical-bulk-btn" @click="downloadIcalBulk">
-        📅 Thêm cả mùa lễ hội vào lịch của bạn
+        <IconLine name="calendar" /> Thêm cả mùa lễ hội vào lịch của bạn
       </button>
     </section>
 
     <!-- Off-season mini-preview (no upcoming festivals): whets appetite instead of dead-ending -->
     <section v-else-if="data && !fetchError && allEvents.length" class="block reveal">
-      <p class="lehoi-offseason">🌙 Mùa lễ hội sẽ quay lại — xem lịch bên dưới để biết các mùa lễ hội trong năm.</p>
+      <p class="lehoi-offseason"><IconLine name="moon" /> Mùa lễ hội sẽ quay lại — xem lịch bên dưới để biết các mùa lễ hội trong năm.</p>
       <div v-if="offseasonNext.length" class="offseason-preview">
         <p v-for="e in offseasonNext" :key="e.id" class="offseason-preview-item">
-          <span class="lunar-label" v-if="e.attributes?.lunar_date">🌙 {{ e.attributes.lunar_date }}</span>
+          <span class="lunar-label" v-if="e.attributes?.lunar_date"><IconLine name="moon" /> {{ e.attributes.lunar_date }}</span>
           <NuxtLink :to="entityPath(e.id)"><strong>{{ e.name }}</strong></NuxtLink>
         </p>
       </div>
@@ -112,8 +112,8 @@
         <!-- aria-current, KHÔNG phải aria-pressed: đây là link điều hướng
              (<a>), mà aria-pressed chỉ hợp lệ với role="button" — axe bắt
              critical `aria-allowed-attr` (2026-08-05). -->
-        <NuxtLink to="/le-hoi" class="register-toggle-tab is-active tone-leaf" aria-current="page">🎋 Lễ hội truyền thống</NuxtLink>
-        <NuxtLink to="/su-kien" class="register-toggle-tab tone-amber">🎪 Sự kiện &amp; hội chợ</NuxtLink>
+        <NuxtLink to="/le-hoi" class="register-toggle-tab is-active tone-leaf" aria-current="page"><IconLine name="lantern" /> Lễ hội truyền thống</NuxtLink>
+        <NuxtLink to="/su-kien" class="register-toggle-tab tone-amber"><IconLine name="megaphone" /> Sự kiện &amp; hội chợ</NuxtLink>
       </div>
     </section>
 
@@ -186,8 +186,8 @@
     </div>
 
     <div class="view-toggle" role="group" aria-label="Chế độ hiển thị">
-      <button type="button" :class="['toggle-btn', { active: view === 'list' }]" :aria-pressed="view === 'list'" @click="view = 'list'">📋 Danh sách</button>
-      <button type="button" :class="['toggle-btn', { active: view === 'calendar' }]" :aria-pressed="view === 'calendar'" @click="view = 'calendar'">📅 Lịch</button>
+      <button type="button" :class="['toggle-btn', { active: view === 'list' }]" :aria-pressed="view === 'list'" @click="view = 'list'"><IconLine name="list" /> Danh sách</button>
+      <button type="button" :class="['toggle-btn', { active: view === 'calendar' }]" :aria-pressed="view === 'calendar'" @click="view = 'calendar'"><IconLine name="calendar" /> Lịch</button>
     </div>
 
     <EmptyState v-if="fetchError" icon="⚠️" title="Không tải được lễ hội" message="Có thể mạng đang chập chờn. Thử lại nhé.">
@@ -217,7 +217,7 @@
               <span v-if="e.place_name" class="event-place"><IconLine name="pin" /> {{ e.place_name }}</span>
               <span v-if="getArea(e)" class="event-area"><IconLine :name="AREA_META[getArea(e)]?.icon || 'pin'" /> {{ AREA_META[getArea(e)]?.name }}</span>
               <span v-if="dateRange(e)" class="event-dates"><IconLine name="calendar" /> {{ dateRange(e) }}</span>
-              <span v-if="e.attributes?.lunar_date" class="lunar-label">🌙 {{ e.attributes.lunar_date }}</span>
+              <span v-if="e.attributes?.lunar_date" class="lunar-label"><IconLine name="moon" /> {{ e.attributes.lunar_date }}</span>
             </div>
           </div>
           <div v-if="eventImageUrl(e)" class="event-media">
@@ -227,14 +227,14 @@
             </div>
             <span class="event-disclosure"><ImageDisclosure :id="eventDisclosureId(e, index)" :descriptor="eventImage(e)!" presentation="short" /></span>
           </div>
-          <button v-if="e.attributes?.date_start" type="button" class="ical-btn" title="Thêm vào lịch" @click.stop.prevent="downloadIcal(e)">📅</button>
+          <button v-if="e.attributes?.date_start" type="button" class="ical-btn" title="Thêm vào lịch" aria-label="Thêm lễ hội này vào lịch" @click.stop.prevent="downloadIcal(e)"><IconLine name="calendar" /></button>
         </NuxtLink>
       </div>
       <EmptyState v-else icon="🎋" title="Không tìm thấy lễ hội" message="Thử thay đổi trạng thái, khu vực hoặc từ khóa tìm kiếm.">
         <template #actions>
           <button type="button" class="btn btn-outline" @click="statusFilter = 'all'; areaFilter = 'all'; q = ''">Xóa bộ lọc</button>
-          <button type="button" class="btn btn-outline" @click="view = 'calendar'">📅 Xem lịch</button>
-          <NuxtLink to="/su-kien" class="btn btn-outline">🎪 Sự kiện</NuxtLink>
+          <button type="button" class="btn btn-outline" @click="view = 'calendar'"><IconLine name="calendar" /> Xem lịch</button>
+          <NuxtLink to="/su-kien" class="btn btn-outline"><IconLine name="megaphone" /> Sự kiện</NuxtLink>
         </template>
       </EmptyState>
     </template>
