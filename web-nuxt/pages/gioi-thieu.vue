@@ -261,11 +261,16 @@ useHead({
 .noncommercial-section :deep(.legal-body ul) { list-style: none; padding-inline-start: 0; }
 .noncommercial-section :deep(.legal-body li) { position: relative; padding-inline-start: var(--space-6); }
 .noncommercial-section :deep(.legal-body li)::before {
-  content: '✓';
+  content: '';
   position: absolute;
-  inset-inline-start: 0;
-  color: var(--secondary-fg);
-  font-weight: var(--weight-bold);
+  inset-inline-start: 0.25em;
+  top: 0.42em;
+  width: 0.3em;
+  height: 0.58em;
+  border: 0 solid var(--secondary-fg);
+  border-inline-end-width: 2px;
+  border-block-end-width: 2px;
+  transform: rotate(45deg);
 }
 
 /* ── declutter-3 T8: province-band → sediment-divider + merge-tagline ─
