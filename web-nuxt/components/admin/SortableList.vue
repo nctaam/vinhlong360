@@ -286,4 +286,13 @@ function addChild(parentIdx: number) {
   .sl-expand-enter-active, .sl-expand-leave-active { transition: none; }
   .sl-btn:active:not(:disabled), .sl-add:active, .sl-add-child:active { transform: none; }
 }
+
+/* Sàn 16px cho ô nhập trên thiết bị cảm ứng. Khối sàn chung ở
+   base.css dùng bộ chọn TRẦN (input/select/textarea, độ đặc hiệu
+   0,0,1) nên mọi quy tắc theo lớp — kể cả quy tắc ngay trên — đều
+   thắng nó. Dưới 16px thì iOS Safari tự phóng to khi chạm vào ô và
+   không tự thu lại. max() giữ nguyên ý định cỡ chữ ở màn hình chuột. */
+@media (pointer: coarse) {
+  .sl-edit-input { font-size: max(16px, .85rem); }
+}
 </style>

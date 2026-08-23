@@ -423,4 +423,13 @@ onMounted(load)
 @media (prefers-reduced-motion: reduce) {
   .cpl-place-select, .cpl-bulk-progress, .cpl-loadmore-fill { transition: none; }
 }
+
+/* Sàn 16px cho ô nhập trên thiết bị cảm ứng. Khối sàn chung ở
+   base.css dùng bộ chọn TRẦN (input/select/textarea, độ đặc hiệu
+   0,0,1) nên mọi quy tắc theo lớp — kể cả quy tắc ngay trên — đều
+   thắng nó. Dưới 16px thì iOS Safari tự phóng to khi chạm vào ô và
+   không tự thu lại. max() giữ nguyên ý định cỡ chữ ở màn hình chuột. */
+@media (pointer: coarse) {
+  .cpl-place-select { font-size: max(16px, .82rem); }
+}
 </style>

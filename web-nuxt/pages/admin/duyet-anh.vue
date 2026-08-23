@@ -395,4 +395,13 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .dark .img-tab-count { background: rgba(var(--white-rgb),.12); }
 .dark .img-tabs { background: var(--bg); }
 .dark .img-conf-bar { background: rgba(var(--white-rgb),.12); }
+
+/* Sàn 16px cho ô nhập trên thiết bị cảm ứng. Khối sàn chung ở
+   base.css dùng bộ chọn TRẦN (input/select/textarea, độ đặc hiệu
+   0,0,1) nên mọi quy tắc theo lớp — kể cả quy tắc ngay trên — đều
+   thắng nó. Dưới 16px thì iOS Safari tự phóng to khi chạm vào ô và
+   không tự thu lại. max() giữ nguyên ý định cỡ chữ ở màn hình chuột. */
+@media (pointer: coarse) {
+  .img-reason-input { font-size: max(16px, .85rem); }
+}
 </style>

@@ -1608,4 +1608,14 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .kbyg-amenity-check input[type="checkbox"] { accent-color: var(--primary); }
 .dark .ent-kbyg-summary:hover { background: rgba(var(--white-rgb),.05); }
 .dark .kbyg-amenity-check:hover { background: rgba(var(--white-rgb),.06); }
+
+/* Sàn 16px cho ô nhập trên thiết bị cảm ứng. Khối sàn chung ở
+   base.css dùng bộ chọn TRẦN (input/select/textarea, độ đặc hiệu
+   0,0,1) nên mọi quy tắc theo lớp — kể cả quy tắc ngay trên — đều
+   thắng nó. Dưới 16px thì iOS Safari tự phóng to khi chạm vào ô và
+   không tự thu lại. max() giữ nguyên ý định cỡ chữ ở màn hình chuột. */
+@media (pointer: coarse) {
+  .ent-inline-input { font-size: max(16px, .85rem); }
+  .ent-inline-select { font-size: max(16px, .78rem); }
+}
 </style>

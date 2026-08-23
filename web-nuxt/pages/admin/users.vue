@@ -657,4 +657,14 @@ onMounted(() => fetchUsers())
 
 @media (max-width: 480px) { .ud-drawer { max-width: 100%; } }
 @media (prefers-reduced-motion: reduce) { .ud-drawer { animation: none; } }
+
+/* Sàn 16px cho ô nhập trên thiết bị cảm ứng. Khối sàn chung ở
+   base.css dùng bộ chọn TRẦN (input/select/textarea, độ đặc hiệu
+   0,0,1) nên mọi quy tắc theo lớp — kể cả quy tắc ngay trên — đều
+   thắng nó. Dưới 16px thì iOS Safari tự phóng to khi chạm vào ô và
+   không tự thu lại. max() giữ nguyên ý định cỡ chữ ở màn hình chuột. */
+@media (pointer: coarse) {
+  .usr-filter-select { font-size: max(16px, .85rem); }
+  .usr-role-select { font-size: max(16px, .78rem); }
+}
 </style>

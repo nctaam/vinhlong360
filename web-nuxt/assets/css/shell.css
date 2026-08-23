@@ -88,6 +88,15 @@
   cursor: pointer;
 }
 
+/* Sàn 16px phải theo THIẾT BỊ, không theo bề rộng. Khối `max-width: 640px` phía
+   dưới không với tới máy tính bảng cảm ứng (iPad rộng ~1024px), mà iOS Safari
+   vẫn tự phóng to khi chạm vào ô dưới 16px. Đo ở 1280px: ô này ra 12,48px. */
+@media (pointer: coarse) {
+  .public-context-control select {
+    font-size: max(16px, .78rem);
+  }
+}
+
 .public-context-control select:hover {
   background: color-mix(in srgb, var(--color-action) 8%, transparent);
 }
