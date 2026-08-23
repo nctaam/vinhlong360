@@ -900,6 +900,18 @@ a.thread-author:hover { color: var(--primary-fg); }
     font-size: 16px;
   }
 }
+/* Sàn 16px phải theo THIẾT BỊ, không theo bề rộng. Khối 640px ở trên là đúng
+   ngưỡng mà .topbar-search bị ẩn (base.css:874), nên ô tìm kiếm có mặt ở MỌI
+   trang lại nằm trọn ngoài tầm với của nó, với font .9rem = 14,4px. iPhone
+   xoay ngang rộng tới 932px vẫn auto-zoom. Khối này bổ sung (additive, B2),
+   không đụng khối cũ; theo chính lập luận ở chú thích trên thì sàn phẳng không
+   làm co bất cứ input nào. */
+@media (pointer: coarse) {
+  input[type="text"], input[type="search"], input[type="tel"], input[type="email"],
+  input[type="password"], input[type="number"], input:not([type]), textarea, select {
+    font-size: max(16px, 1em);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }

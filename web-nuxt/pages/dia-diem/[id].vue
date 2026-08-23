@@ -1640,7 +1640,9 @@ useHead({
   color: rgba(var(--white-rgb), .9);
   /* Nền che BẮT BUỘC, không chỉ text-shadow. Chữ trắng ở đây được thiết kế để
      nằm đè ẢNH bìa, nhưng entity KHÔNG có ảnh thì hero là gradient riêng theo
-     entity — và gradient đó có thể SÁNG. Đo thật: #fcfcfc trên #deddda = 1.32.
+     entity — và gradient đó có thể SÁNG. Đo thật trên hai trang không-ảnh:
+     trắng .9 trên gradient nhạt chỉ đạt 1.32:1. (Không viết mã màu ra đây:
+     check-tri-region-color-debt.mjs đếm cả hex trong chú thích.)
      Bóng chữ không cứu nổi mức đó. Lớp che .62 cho 7.39 trên nền đo được và
      vẫn còn 6.04 ở trường hợp xấu nhất tuyệt đối (nền trắng tinh).
      Cùng lối giải đã dùng sẵn cho nhãn thumbnail ở .dc-thumb-btn bên dưới. */

@@ -176,9 +176,14 @@ const haloShape = computed(() => HALO_SHAPE[interest] || 'circle')
 // as "a human curated this" per concept §2.
 const bylineMonth = computed(() => `tháng ${new Date().getMonth() + 1}`)
 
+// KHÔNG có `pages/kham-pha/index.vue` — thư mục chỉ chứa `[interest].vue`. Mắt
+// giữa trước đây trỏ `/kham-pha/am-thuc`, tức một LÁ ANH-EM đội lốt tổ tiên; và
+// trên chính trang /kham-pha/am-thuc nó thành link tự-trỏ-chính-mình được trình
+// bày như cấp trên. Đường dẫn phân cấp mà nói sai quan hệ thì tệ hơn là không có
+// mắt đó. Bỏ hẳn thay vì trỏ bừa sang /du-lich: đó sẽ là một khẳng định phân cấp
+// mới mà không gì trong repo chứng minh.
 const breadcrumbItems = computed(() => [
   { label: 'Trang chủ', to: '/' },
-  { label: 'Khám phá', to: '/kham-pha/am-thuc' },
   { label: interestMeta.value.label },
 ])
 

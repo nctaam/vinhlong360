@@ -604,7 +604,12 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 .ac-section-clear:hover { background: var(--bg-alt); }
 .ac-recent .ac-info { flex: 1; }
 .ac-remove-recent { margin-inline-start: auto; flex-shrink: 0; display: grid; place-items: center; width: 32px; height: 32px; border: 0; background: none; color: var(--muted); border-radius: var(--radius-full); cursor: pointer; opacity: 0; transition: opacity .2s, color .2s, background .2s; }
-.ac-recent:hover .ac-remove-recent, .ac-recent.highlighted .ac-remove-recent { opacity: 1; }
+/* :focus-visible BẮT BUỘC nằm trong danh sách này: nút để opacity:0 mặc định,
+   mà opacity nuốt luôn vòng focus — người dùng bàn phím Tab tới được một nút
+   hoàn toàn vô hình. Hover và .highlighted không phủ được đường bàn phím. */
+.ac-recent:hover .ac-remove-recent,
+.ac-recent.highlighted .ac-remove-recent,
+.ac-remove-recent:focus-visible { opacity: 1; }
 .ac-remove-recent:hover { color: var(--ink); background: var(--bg-alt); }
 .ac-empty { padding: var(--space-5) var(--space-4); text-align: center; color: var(--muted); font-size: var(--text-sm); line-height: 1.5; }
 .ac-loading { display: flex; justify-content: center; padding: var(--space-5); }

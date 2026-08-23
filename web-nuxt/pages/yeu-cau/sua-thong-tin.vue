@@ -32,17 +32,19 @@ const fieldHint = computed(() => {
 
 // Name and revision come from the live projection, never from the URL: the
 // revision pins which wording the correction was written against.
-const { data: entity } = await useAsyncData(
+const { data: entity, error: entityError, refresh: refreshEntity } = await useAsyncData(
   () => entityId.value ? `case-entity:${entityId.value}` : 'case-entity:none',
   async () => {
     if (!entityId.value) return null
-    try {
-      return await apiFetch<{ id: string, name: string, revision: number }>(
-        `/api/entities/${encodeURIComponent(entityId.value)}`,
-      )
-    } catch {
-      return null
-    }
+    // KHÔNG nuốt lỗi ở đây. `catch { return null }` trước đây gộp hai trạng thái
+    // khác hẳn nhau vào một: "chưa chọn địa điểm" và "tải hỏng" cùng rơi vào
+    // nhánh .case-missing, nên người đến ĐÚNG đường vẫn bị bảo đi mở trang địa
+    // điểm rồi bấm nút — tức bảo họ làm lại đúng việc vừa làm, không nút thử
+    // lại, không lời giải thích. Để useAsyncData giữ lỗi thì trang mới phân biệt
+    // được hai đường.
+    return await apiFetch<{ id: string, name: string, revision: number }>(
+      `/api/entities/${encodeURIComponent(entityId.value)}`,
+    )
   },
 )
 
@@ -90,7 +92,14 @@ useSeoMeta({
       </p>
     </header>
 
-    <div v-if="!entityId || !entity" class="case-missing" aria-live="polite">
+    <PageState
+      v-if="entityId && entityError"
+      :state="{ kind: 'error', retry: { label: 'Thử lại' } }"
+      title="Không tải được thông tin địa điểm"
+      :retry="refreshEntity"
+    />
+
+    <div v-else-if="!entityId || !entity" class="case-missing" aria-live="polite">
       <p>
         Hãy mở trang của địa điểm cần sửa và bấm «Báo thông tin chưa đúng» để bắt đầu —
         như vậy yêu cầu gắn đúng vào trang đó.

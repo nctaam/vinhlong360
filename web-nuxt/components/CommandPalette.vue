@@ -9,16 +9,28 @@
         enterkeyhint="search"
         placeholder="Tìm trang, entity, thao tác…"
         aria-label="Tìm trang, entity, thao tác"
+        role="combobox"
+        aria-autocomplete="list"
+        aria-controls="cmd-listbox"
+        :aria-expanded="open"
+        :aria-activedescendant="results.length ? `cmd-opt-${active}` : undefined"
         @keydown.escape="open = false"
         @keydown.down.prevent="move(1)"
         @keydown.up.prevent="move(-1)"
         @keydown.enter.prevent="go"
       />
-      <div class="cmd-results">
+      <!-- Tiêu điểm DOM không bao giờ rời ô nhập (mũi tên chỉ đổi biến `active`),
+           nên nếu không có bộ combobox/listbox thì trạng thái "đang chọn mục nào"
+           chỉ tồn tại dưới dạng MÀU — trình đọc màn hình không hề biết. Bê nguyên
+           khuôn đã chạy đúng ở SearchAutocomplete.vue:11-15,29,59-60. -->
+      <div id="cmd-listbox" class="cmd-results" role="listbox" aria-label="Kết quả tìm nhanh">
         <button
           v-for="(item, i) in results"
+          :id="`cmd-opt-${i}`"
           :key="item.to"
           type="button"
+          role="option"
+          :aria-selected="i === active"
           :class="['cmd-item', { active: i === active }]"
           @click="navigate(item)"
           @mouseenter="active = i"
@@ -29,7 +41,7 @@
           <span class="cmd-label">{{ item.label }}</span>
           <span class="cmd-hint">{{ item.hint }}</span>
         </button>
-        <div v-if="!results.length && query" class="cmd-empty">
+        <div v-if="!results.length && query" class="cmd-empty" role="status">
           <span class="cmd-empty-query">Không tìm thấy "{{ query }}"</span>
           <span class="cmd-empty-hint">Thử: {{ emptySuggestions }}…</span>
         </div>

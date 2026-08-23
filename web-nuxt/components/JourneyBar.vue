@@ -50,6 +50,20 @@ onUnmounted(() => { if (popTimer) clearTimeout(popTimer) })
 .jb-heart { width: 20px; height: 20px; flex-shrink: 0; }
 .jb-actions { display: flex; gap: var(--space-2); }
 
+/* Thanh này Teleport thẳng vào body và nằm fixed bottom:0 với z-index 900, tức
+   CAO HƠN thanh điều hướng dưới (--z-mobile-nav: 101) và không trừ chiều cao của
+   nó — nên trên điện thoại nó phủ KÍN toàn bộ PublicBottomNav, xoá luôn đường
+   điều hướng chính của trang.
+   Hợp đồng đúng đã có sẵn trong repo ở ContactWidget.vue:253-262: nằm TRÊN thanh
+   nav về vị trí, DƯỚI nó về z-index. Dùng lại y hệt, cùng ngưỡng 820px với chỗ
+   thanh nav bật (shell.css). */
+@media (max-width: 820px) {
+  .journey-bar {
+    bottom: var(--shell-public-bottom-nav-reserved-height);
+    z-index: var(--z-sticky);
+  }
+}
+
 .jb-count-pop { animation: jbPop .4s var(--ease-spring-gentle); }
 @keyframes jbPop { 0% { transform: scale(1); } 30% { transform: scale(1.3); } 100% { transform: scale(1); } }
 

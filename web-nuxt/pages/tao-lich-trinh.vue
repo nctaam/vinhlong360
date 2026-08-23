@@ -1247,13 +1247,13 @@ watch([allEntities, pendingAddId], async () => {
   autoAddedFromQuery.value = true
   const entity = await resolvePlannerEntity(requestedId)
   if (!entity) {
-    showToast('Khong tim thay diem de them vao lich trinh', 'error')
+    showToast('Không tìm thấy điểm để thêm vào lịch trình', 'error')
     pendingAddId.value = ''
     clearPlannerAddQuery()
     return
   }
   if (stops.value.some(s => s.id === entity.id)) {
-    showToast(`"${entity.name}" da co trong lich trinh`, 'info')
+    showToast(`"${entity.name}" đã có trong lịch trình`, 'info')
     pendingAddId.value = ''
     clearPlannerAddQuery()
     return

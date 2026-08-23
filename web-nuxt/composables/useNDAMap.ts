@@ -73,9 +73,13 @@ export function useNDAMap() {
       // được vì thế không có `.Map`, nên `new maplibregl.Map(...)` ném
       // "maplibregl.Map is not a constructor" và MỌI bản đồ trên site chết:
       // /ban-do dựng 0 canvas, data-map-state="error" (đo 2026-08-23).
-      // `.default ?? mod` đúng cho cả hai chiều — là no-op nếu gói trả named export.
-      const mod = await import('maplibre-gl') as unknown as { default?: MapLibreModule }
-      maplibregl = (mod.default ?? mod) as MapLibreModule
+      // Chọn theo NĂNG LỰC chứ không theo hình dạng: hỏi "đối tượng nào có
+      // constructor Map" thay vì "có khoá default không". Đọc `.default` trước
+      // sẽ ném trên namespace giả của vitest khi mock không khai default —
+      // tests/use-nda-map-lifecycle.test.ts:57 mock đúng như vậy.
+      const mod = await import('maplibre-gl') as unknown as
+        MapLibreModule & { default?: MapLibreModule }
+      maplibregl = (typeof mod.Map === 'function' ? mod : mod.default) as MapLibreModule
     } catch (error) {
       mapOptions.onStateChange?.('error')
       throw error

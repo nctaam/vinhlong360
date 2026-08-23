@@ -609,7 +609,12 @@ describe('entity detail tri-region behavior', () => {
     expect(variablesCss).toMatch(/--shell-public-bottom-nav-reserved-height\s*:/)
     expect(variablesCss).not.toMatch(/--shell-public-bottom-nav-reserved-height\s*:[^;]*max\(0px,\s*calc\(/)
     expect(shellCss).toMatch(/\.public-bottom-nav\s*\{[\s\S]*?min-height:\s*var\(--shell-public-bottom-nav-reserved-height\)/)
-    expect(shellCss).toMatch(/@media \(max-width:\s*767px\)[\s\S]*?\.public-bottom-nav\s*\{[\s\S]*?display:\s*grid/)
+    // 820px, không phải 767px. `.public-shell-task-row` tắt ở max-width: 820px,
+    // nên khi thanh dưới chỉ bật ở 767px thì dải 768–820 KHÔNG còn thanh điều
+    // hướng chính nào — đo trên app đang chạy ở 800px: task row cao 0px,
+    // .public-bottom-nav display:none, chỉ còn nút ba-gạch. Assertion không bị
+    // nới: nó vẫn đòi thanh dưới chuyển sang grid bên trong media query mobile.
+    expect(shellCss).toMatch(/@media \(max-width:\s*820px\)[\s\S]*?\.public-bottom-nav\s*\{[\s\S]*?display:\s*grid/)
     expect(contactWidgetSource).toMatch(/@media \(max-width:\s*767px\)[\s\S]*?\.cw\s*\{[\s\S]*?bottom:\s*var\(--shell-public-bottom-nav-reserved-height\)/)
     expect(contactWidgetSource).not.toMatch(/@media \(max-width:\s*767px\)[\s\S]*?\.cw\s*\{[^}]*padding:[^;]*safe-area-inset-bottom/)
     expect(shellCss).toMatch(/:has\(\.detail-contact-widget\)[\s\S]*?--shell-mobile-fixed-stack-reserved-height/)

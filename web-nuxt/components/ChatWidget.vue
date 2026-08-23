@@ -1,11 +1,19 @@
 <template>
   <ClientOnly>
     <div v-if="ff('chat_widget') && !isEntityDetail" class="chat-widget">
-      <button type="button" class="chat-fab" data-color-role="action" :class="{ open }" @click="open = !open" :aria-expanded="open" aria-label="Chat AI">
+      <button type="button" class="chat-fab" data-color-role="action" :class="{ open }" @click="open = !open" :aria-expanded="open" aria-controls="chat-panel" aria-label="Chat AI">
         <IconLine :name="open ? 'x' : 'message'" />
       </button>
 
-      <div ref="panelEl" class="chat-panel" :class="{ show: open }" role="dialog" aria-label="Chat hỏi đáp" aria-modal="true">
+      <div
+        id="chat-panel"
+        ref="panelEl"
+        class="chat-panel"
+        :class="{ show: open }"
+        role="dialog"
+        aria-label="Chat hỏi đáp"
+        :aria-modal="isMobileSheet ? 'true' : undefined"
+      >
         <div class="chat-panel-head">
           <h3>{{ chatTitle }}</h3>
           <button type="button" class="cp-close" aria-label="Đóng chat" @click="open = false"><IconLine name="x" /></button>
@@ -58,8 +66,34 @@ const inputText = ref('')
 const messages = ref<{ role: string; content: string; failed?: boolean }[]>([])
 const panelEl = ref<HTMLElement | null>(null)
 
-// Body-scroll lock, focus trap, Escape-to-close + focus restore (SSR-safe).
-useModalA11y(open, panelEl, { onClose: () => { open.value = false } })
+// Panel này CHỈ là modal thật ở màn hình hẹp. Ở `@media (max-width: 480px)`
+// (base.css:956) nó phủ kín viewport — đục, cao 100dvh — nên khoá cuộn, bẫy Tab
+// và aria-modal đều ĐÚNG ở đó. Trên ngưỡng đó nó là hộp 400×520 ở góc phải-dưới,
+// KHÔNG backdrop, KHÔNG chặn chuột: giữ nguyên bộ hành vi modal tạo ra ba trạng
+// thái mâu thuẫn trên cùng một màn hình — chuột bấm được trang phía sau nhưng
+// không cuộn được, bàn phím bị nhốt trong panel, còn trình đọc màn hình bị
+// aria-modal ẩn mất toàn bộ trang vẫn đang hiển thị.
+const MOBILE_SHEET_QUERY = '(max-width: 480px)'
+const isMobileSheet = ref(false)
+let sheetQuery: MediaQueryList | null = null
+function syncSheetMode(event: MediaQueryList | MediaQueryListEvent) {
+  isMobileSheet.value = event.matches
+}
+onMounted(() => {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return
+  sheetQuery = window.matchMedia(MOBILE_SHEET_QUERY)
+  syncSheetMode(sheetQuery)
+  sheetQuery.addEventListener('change', syncSheetMode)
+})
+onUnmounted(() => sheetQuery?.removeEventListener('change', syncSheetMode))
+
+// Escape-to-close và trả tiêu điểm về nút mở luôn giữ ở CẢ hai chế độ; chỉ bẫy
+// Tab và khoá cuộn mới theo viewport.
+useModalA11y(open, panelEl, {
+  onClose: () => { open.value = false },
+  trapFocus: () => isMobileSheet.value,
+  lockScroll: () => isMobileSheet.value,
+})
 
 // Prefer focusing the text input (not the close button) when the panel opens.
 watch(open, (isOpen) => {

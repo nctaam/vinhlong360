@@ -18,13 +18,27 @@
  * @param modalRef   template ref pointing at the dialog root element
  * @param options.onClose    called when the user requests close (Escape)
  * @param options.trapFocus  enable Tab focus-trapping (default true)
+ * @param options.lockScroll khoá cuộn toàn trang khi mở (mặc định true).
+ *   Đặt false cho panel KHÔNG phải modal — thứ nổi ở một góc, không backdrop,
+ *   không chặn chuột. Khoá cuộn ở đó tạo ra trạng thái mâu thuẫn: trang vẫn
+ *   bấm được bằng chuột nhưng không cuộn được.
  */
 export function useModalA11y(
   isOpen: Ref<boolean>,
   modalRef: Ref<HTMLElement | null>,
-  options: { onClose?: () => void; trapFocus?: boolean } = {},
+  options: {
+    onClose?: () => void
+    // Dạng HÀM là bắt buộc cho bên gọi cần đổi theo viewport: options được
+    // destructure đúng một lần lúc setup, nên một giá trị boolean (kể cả lấy
+    // từ getter hay ref) sẽ bị chốt ở trạng thái lúc mount và không bao giờ
+    // đổi nữa. Hàm được gọi lại ở mỗi lần activate/deactivate.
+    trapFocus?: boolean | (() => boolean)
+    lockScroll?: boolean | (() => boolean)
+  } = {},
 ) {
-  const { onClose, trapFocus = true } = options
+  const { onClose, trapFocus = true, lockScroll = true } = options
+  const wantsTrap = () => (typeof trapFocus === 'function' ? trapFocus() : trapFocus)
+  const wantsLock = () => (typeof lockScroll === 'function' ? lockScroll() : lockScroll)
   let triggerEl: HTMLElement | null = null
 
   const FOCUSABLE =
@@ -43,7 +57,7 @@ export function useModalA11y(
       onClose?.()
       return
     }
-    if (!trapFocus || e.key !== 'Tab' || !modalRef.value) return
+    if (!wantsTrap() || e.key !== 'Tab' || !modalRef.value) return
     const list = focusableEls()
     if (!list.length) {
       // Nothing focusable yet — keep focus inside the dialog root.
@@ -70,7 +84,7 @@ export function useModalA11y(
   function activate() {
     if (!import.meta.client) return
     triggerEl = document.activeElement as HTMLElement
-    document.body.style.overflow = 'hidden'
+    if (wantsLock()) document.body.style.overflow = 'hidden'
     document.addEventListener('keydown', onKeydown)
     nextTick(() => {
       if (modalRef.value && !modalRef.value.hasAttribute('tabindex')) {
@@ -83,7 +97,11 @@ export function useModalA11y(
 
   function deactivate(restore = true) {
     if (!import.meta.client) return
-    document.body.style.overflow = ''
+    // Điều kiện lockScroll phải bọc CẢ vế này, không chỉ vế activate. watch chạy
+    // với immediate:true nên deactivate() nổ ngay lúc mount; ghi '' vô điều kiện
+    // ở đây sẽ xoá trắng khoá cuộn mà một thành phần khác vừa đặt (panel nạp trễ
+    // như LazyChatWidget là đúng trường hợp đó).
+    if (wantsLock()) document.body.style.overflow = ''
     document.removeEventListener('keydown', onKeydown)
     if (restore && triggerEl) {
       nextTick(() => triggerEl?.focus?.())

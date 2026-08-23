@@ -59,6 +59,14 @@ const optionalPhone = ref('')
 const phoneConsent = ref(false)
 const handoffConfirmed = ref(false)
 const errors = ref<Array<{ anchor: string, message: string }>>([])
+// Tra lỗi theo neo, để chính ô nhập nói được nó sai gì thay vì bắt người dùng
+// quay lại bảng tóm tắt.
+function errorFor(anchor: string): string | undefined {
+  return errors.value.find(e => e.anchor === anchor)?.message
+}
+function hasError(anchor: string): boolean {
+  return errors.value.some(e => e.anchor === anchor)
+}
 const errorSummary = ref<HTMLElement | null>(null)
 
 const canAddItem = computed(() => items.length < 10)
@@ -77,7 +85,12 @@ function validate(): boolean {
     if (!item.fieldPath) {
       found.push({ anchor: `item-${index}-field`, message: `Mục ${index + 1}: chọn thông tin cần sửa.` })
     }
-    if (!item.proposedValue.trim()) {
+    // Điều kiện item.fieldPath là BẮT BUỘC: hai textarea nằm trong
+    // `<template v-if="item.fieldPath">`, nên với mục chưa chọn loại thông tin,
+    // id `item-N-proposed` KHÔNG có trong DOM — link trong bảng tóm tắt lỗi bấm
+    // vào không đi đâu cả. Khi chưa chọn thì lỗi "chọn thông tin cần sửa" ở trên
+    // đã đủ và trỏ đúng chỗ.
+    if (item.fieldPath && !item.proposedValue.trim()) {
       found.push({ anchor: `item-${index}-proposed`, message: `Mục ${index + 1}: ghi nội dung đúng.` })
     }
   })
@@ -192,7 +205,22 @@ function submit() {
         </div>
         <div class="intake-field">
           <label :for="`item-${index}-proposed`">Thông tin đúng là</label>
-          <textarea :id="`item-${index}-proposed`" v-model="item.proposedValue" rows="2" maxlength="2000" required />
+          <textarea
+            :id="`item-${index}-proposed`"
+            v-model="item.proposedValue"
+            rows="2"
+            maxlength="2000"
+            required
+            :aria-invalid="hasError(`item-${index}-proposed`) || undefined"
+            :aria-describedby="hasError(`item-${index}-proposed`) ? `item-${index}-proposed-error` : undefined"
+          />
+          <!-- Nhảy tới đúng ô mà bản thân ô không nói nó sai gì thì người dùng
+               trình đọc màn hình vẫn phải quay lại bảng tóm tắt để biết lý do. -->
+          <p
+            v-if="hasError(`item-${index}-proposed`)"
+            :id="`item-${index}-proposed-error`"
+            class="intake-field-error"
+          >{{ errorFor(`item-${index}-proposed`) }}</p>
         </div>
       </template>
 
@@ -323,6 +351,14 @@ fieldset {
   display: grid;
   gap: 0.7rem;
   min-inline-size: 0;
+}
+.intake-field-error {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-xs);
+  color: var(--color-error);
+}
+.intake-field textarea[aria-invalid="true"] {
+  border-color: var(--color-error);
 }
 .intake-field {
   display: grid;
