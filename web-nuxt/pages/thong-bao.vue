@@ -10,7 +10,7 @@
     </header>
 
     <div v-if="!isLoggedIn" class="tb-guest">
-      <EmptyState icon="🔔" title="Đăng nhập để xem thông báo" message="Theo dõi lượt thích, bình luận, trả lời và người theo dõi mới.">
+      <EmptyState icon-name="bell" title="Đăng nhập để xem thông báo" message="Theo dõi lượt thích, bình luận, trả lời và người theo dõi mới.">
         <template #actions>
           <button type="button" class="btn btn-primary btn-sm" @click="openAuth()">Đăng nhập</button>
         </template>
@@ -27,10 +27,10 @@
       </div>
 
       <SkeletonList v-if="loading && !items.length" :count="6" />
-      <EmptyState v-else-if="fetchError && !items.length" icon="⚠️" tone="error" title="Không thể tải thông báo" message="Không kết nối được máy chủ. Kiểm tra mạng và thử lại.">
+      <EmptyState v-else-if="fetchError && !items.length" icon-name="alert-triangle" tone="error" title="Không thể tải thông báo" message="Không kết nối được máy chủ. Kiểm tra mạng và thử lại.">
         <template #actions><button type="button" class="btn btn-outline btn-sm" @click="load">Thử lại</button></template>
       </EmptyState>
-      <EmptyState v-else-if="!filtered.length" icon="🔔" :title="filter === 'all' ? 'Chưa có thông báo' : 'Không có thông báo loại này'" :message="emptyHint" />
+      <EmptyState v-else-if="!filtered.length" icon-name="bell" :title="filter === 'all' ? 'Chưa có thông báo' : 'Không có thông báo loại này'" :message="emptyHint" />
       <template v-else>
         <ul class="tb-list">
           <li v-for="n in filtered" :key="n.id" :class="['tb-item', { unread: !n.is_read }]">
@@ -65,7 +65,7 @@
               </span>
               <span v-if="!n.is_read" class="tb-dot" role="status" aria-label="Chưa đọc" title="Chưa đọc"></span>
             </div>
-            <button type="button" class="tb-dismiss" aria-label="Xóa thông báo" @click.stop="dismiss(n)">✕</button>
+            <button type="button" class="tb-dismiss" aria-label="Xóa thông báo" @click.stop="dismiss(n)"><IconLine name="x" /></button>
           </li>
         </ul>
         <LoadMoreButton v-if="hasMore" :loading="loadingMore" @load="loadMore" />
