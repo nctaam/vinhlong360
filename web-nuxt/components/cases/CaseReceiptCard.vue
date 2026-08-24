@@ -91,7 +91,7 @@ function confirmSaved() {
 }
 .receipt-value {
   margin: 0.15rem 0 0;
-  font-family: var(--font-mono, ui-monospace, monospace);
+  font-family: var(--font-mono);
   font-size: 1.05rem;
   overflow-wrap: anywhere;
 }

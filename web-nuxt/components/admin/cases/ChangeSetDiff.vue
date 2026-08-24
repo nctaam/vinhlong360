@@ -34,7 +34,7 @@ defineProps<{
 }
 .diff-field {
   margin: 0;
-  font-family: var(--font-mono, ui-monospace, monospace);
+  font-family: var(--font-mono);
   font-size: 0.85rem;
 }
 .diff-sides {

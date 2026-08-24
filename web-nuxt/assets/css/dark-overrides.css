@@ -113,7 +113,7 @@
 
 /* ── Admin: users ── */
 .dark .status-active { background: rgba(var(--secondary-rgb), .18); color: var(--secondary-fg-strong, #34d399); }
-.dark .status-banned { background: rgba(var(--error-rgb, 220, 38, 38), .16); color: var(--error-light, #f87171); }
+.dark .status-banned { background: rgba(var(--color-error-rgb), .16); color: var(--error-light, #f87171); }
 .dark .admin-select-inline { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.1); color: var(--ink); }
 
 /* ── Admin: stats (thong-ke) ── */

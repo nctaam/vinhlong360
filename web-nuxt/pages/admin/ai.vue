@@ -404,7 +404,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-subtitle { font-size: .82rem; color: var(--muted); margin-top: 2px; }
 
 /* ── Stat card icon ── */
-.ai-model-val { font-size: .9rem; font-family: var(--font-mono, monospace); }
+.ai-model-val { font-size: .9rem; font-family: var(--font-mono); }
 
 /* ── Sections (card containers with left accent bar) ── */
 .ai-section {

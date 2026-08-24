@@ -670,7 +670,7 @@ useHead(() => ({
 .lvn-eyebrow {
   display: flex; align-items: center; gap: var(--space-1h);
   margin: 0 0 var(--space-2);
-  font-size: var(--text-xs); letter-spacing: var(--tracking-wide, .04em);
+  font-size: var(--text-xs); letter-spacing: var(--tracking-wide);
   text-transform: uppercase; color: var(--ink-tertiary);
 }
 .lvn-head h1 { margin: 0; font-size: var(--text-4xl); line-height: var(--leading-tight); }
@@ -690,7 +690,7 @@ useHead(() => ({
 }
 .lvn-today-label {
   font-size: var(--text-2xs); text-transform: uppercase;
-  letter-spacing: var(--tracking-wide, .06em); color: var(--ink-tertiary);
+  letter-spacing: var(--tracking-caps); color: var(--ink-tertiary);
 }
 .lvn-today-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1h); margin: 0; }
 .lvn-sep { color: var(--ink-tertiary); }

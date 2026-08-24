@@ -319,7 +319,7 @@ useHead(() => ({
 .fac:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border); }
 .fac-head { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1); margin-bottom: var(--space-2); }
 .fac strong { font-family: var(--font-editorial); font-weight: 600; }
-.fac-kind { align-self: flex-start; font-size: var(--text-xs); color: var(--primary-fg); font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide, .04em); background: rgba(var(--primary-rgb), .12); border-radius: var(--radius-sm); padding: 2px var(--space-2); line-height: 1.5; }
+.fac-kind { align-self: flex-start; font-size: var(--text-xs); color: var(--primary-fg); font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); background: rgba(var(--primary-rgb), .12); border-radius: var(--radius-sm); padding: 2px var(--space-2); line-height: 1.5; }
 .fac-row { font-size: var(--text-sm); margin: 2px 0; }
 .fac-row a { transition: color .3s var(--ease-out); }
 .fac-row a:hover { color: var(--primary-fg); }

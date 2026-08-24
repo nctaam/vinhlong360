@@ -367,7 +367,10 @@ onMounted(() => fetchReviews())
   transition: background .15s var(--ease-soft);
 }
 .rf-image-remove:hover { background: rgba(var(--black-rgb), .8); }
-.rf-image-remove:focus-visible { outline: 2px solid var(--brand, currentColor); outline-offset: 1px; }
+/* Viền kép: vòng trắng + quầng tối bên ngoài. Nút này nằm ĐÈ LÊN ẢNH nên
+   nền sau viền là không đoán được: chỉ vòng trắng thì trên ảnh trắng chỉ đạt
+   1,06:1. Thêm quầng đen .55 đưa trường hợp xấu nhất lên 4,98:1. */
+.rf-image-remove:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; box-shadow: 0 0 0 5px rgba(var(--black-rgb), .55); }
 .rf-image-add {
   display: inline-flex; align-items: center; gap: var(--space-2);
   min-height: 44px; padding-inline: var(--space-3);
@@ -375,8 +378,8 @@ onMounted(() => fetchReviews())
   font-size: var(--text-sm); color: var(--muted); cursor: pointer; align-self: flex-start;
   transition: border-color .15s var(--ease-soft), color .15s var(--ease-soft);
 }
-.rf-image-add:hover { border-color: var(--brand, var(--muted)); color: var(--ink, var(--muted)); }
-.rf-image-add:focus-within { outline: 2px solid var(--brand, currentColor); outline-offset: 2px; }
+.rf-image-add:hover { border-color: var(--muted); color: var(--ink); }
+.rf-image-add:focus-within { outline: 2px solid currentColor; outline-offset: 2px; }
 .rf-image-add.disabled { opacity: .55; cursor: not-allowed; }
 .rf-image-input { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .rf-error { font-size: var(--text-sm); color: var(--error); margin-top: var(--space-1); }

@@ -524,7 +524,7 @@ onUnmounted(() => {
 .dark .admin-head-row { background: linear-gradient(135deg, rgba(var(--primary-rgb), .06) 0%, rgba(var(--white-rgb),.02) 100%); }
 .admin-muted { color: var(--muted); }
 .admin-td-muted { font-size: .82rem; color: var(--muted); }
-.admin-td-id { font-size: .75rem; color: var(--muted); max-width: 120px; overflow: hidden; text-overflow: ellipsis; font-family: var(--font-mono, monospace); }
+.admin-td-id { font-size: .75rem; color: var(--muted); max-width: 120px; overflow: hidden; text-overflow: ellipsis; font-family: var(--font-mono); }
 .admin-td-truncate { max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .admin-empty-row { text-align: center; padding: var(--space-8); color: var(--muted); font-size: .9rem; }
 .admin-empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: var(--space-12); gap: var(--space-4); color: var(--muted); text-align: center; }
@@ -541,7 +541,7 @@ onUnmounted(() => {
 .admin-select-filter { flex: 0 0 160px; }
 .admin-page-info { padding: var(--space-2) var(--space-3); font-size: .85rem; color: var(--muted); }
 .admin-textarea { resize: vertical; }
-.admin-code { font-family: var(--font-mono, monospace); font-size: var(--text-xs); }
+.admin-code { font-family: var(--font-mono); font-size: var(--text-xs); }
 .admin-th-check { width: 28px; }
 .admin-label { font-weight: 600; font-size: .88rem; }
 .admin-inline-add { display: flex; gap: var(--space-2); margin-top: var(--space-2); }

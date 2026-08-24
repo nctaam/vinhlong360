@@ -276,11 +276,17 @@
   /* ── Standardized values ── */
   --opacity-disabled: .4;
   --tracking-caps: .06em;
+  /* .04em — 7 chỗ từng gọi var(--tracking-wide) trong khi token chưa hề tồn tại. */
+  --tracking-wide: .04em;
 
   /* ── Computed shades (color-mix) ── */
 
   /* ── Typography scale (Apple HIG-inspired, base 16px) ── */
   --font-sans: 'Be Vietnam Pro', 'Segoe UI', system-ui, sans-serif;
+  /* Chưa hề được khai báo dù 7 chỗ gọi tới. Năm chỗ rơi về `monospace`,
+     hai chỗ rơi về `ui-monospace` — trên Windows trùng nhau (đo: 128,66px cả hai),
+     nhưng trên macOS là Courier so với SF Mono. */
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   --font-display: var(--font-sans);
   /* ── Editorial / cinematic layer. Display = a DISTINCTIVE humanist old-style serif
      (Palatino/Iowan family — more character than Georgia) via a zero-download system stack,

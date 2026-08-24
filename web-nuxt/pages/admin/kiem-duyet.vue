@@ -456,7 +456,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 22px; height: 22px; padding: 0 5px; border-radius: 4px;
   background: var(--bg-alt); border: 1px solid var(--line); font-size: .7rem;
-  font-family: var(--font-mono, monospace); font-weight: 600;
+  font-family: var(--font-mono); font-weight: 600;
 }
 .mod-session-stats { margin-left: auto; font-size: .72rem; }
 .mod-session-ok { color: var(--secondary-fg); }

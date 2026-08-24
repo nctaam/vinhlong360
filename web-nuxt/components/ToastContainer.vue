@@ -68,7 +68,7 @@ function iconFor(type?: string) {
 }
 @keyframes toastIconPop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .toast.success .toast-icon { background: rgba(var(--secondary-rgb), .12); color: var(--secondary); }
-.toast.error .toast-icon { background: rgba(var(--error-rgb, 220,53,69), .12); color: var(--error); }
+.toast.error .toast-icon { background: rgba(var(--color-error-rgb), .12); color: var(--error); }
 .toast.warning .toast-icon { background: rgba(var(--accent-rgb), .12); color: var(--accent-dark); }
 .toast.info .toast-icon { background: rgba(var(--primary-rgb), .08); color: var(--primary-fg); }
 
