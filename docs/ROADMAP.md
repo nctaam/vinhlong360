@@ -2000,3 +2000,58 @@ nhắc một địa điểm — vẫn giữ nguyên tính trung thực.
   `HeroIllustration`, `EntityHeroPlaceholder`, `useCategoryPlaceholder`. Chèn MỘT
   khối tràn viền ở khoảng 60–70% chiều dài trang là đúng thứ spec §3 yêu cầu và
   là đòn bẩy lớn nhất cho cảm giác "đỡ rối" — vì nó cho mắt chỗ nghỉ đầu tiên sau hero.
+
+
+### 20. Đo 3 site cùng loại bằng CÙNG một bộ thước (2026-08-24)
+
+Câu hỏi: trang chủ có thừa không, có cần cắt không. Thay vì đọc "best practice"
+chung chung, tôi chạy **đúng bộ đo đã dùng cho trang chủ** lên các site cùng loại:
+cấp vùng/tỉnh, du lịch CỘNG đặc sản địa phương.
+
+| site | màn hình | ảnh lớn | ảnh/màn hình | đơn vị bấm được | px mỗi đơn vị |
+|---|---|---|---|---|---|
+| **vinhlong360** | **4,9** | **1** | **0,2** | 52 | **75** |
+| Emilia Romagna (Ý) | 8,0 | 10 | 1,3 | 48 | 133 |
+| Visit Jeju (Hàn) | 7,0 | 19 | 2,7 | 40 | 140 |
+
+Đo ở 1280×800, chỉ tính phần tử **giao ngang với khung nhìn** (xem "bẫy" dưới).
+
+#### 20.1 Kết luận NGƯỢC với giả định ban đầu
+
+Trang chủ vinhlong360 **ngắn nhất** (4,9 so với 7–8 màn hình), nhồi **nhiều lựa
+chọn nhất** (52 so với 48 và 40) vào **~60% không gian dọc**, với **1/10 đến 1/13
+lượng ảnh**.
+
+Nghĩa là **"cắt bớt nội dung" KHÔNG phải hướng đi**. Trang đã ngắn hơn các site
+cùng loại rồi. Vấn đề là **mật độ**: cùng số lựa chọn nhưng ít hơn 40% chỗ thở, và
+gần như không có hình để mắt nghỉ. Hai site kia dài hơn nhưng **đọc nhẹ hơn**.
+
+Suy ra ưu tiên đúng: **giãn ra và thêm hình**, không phải bỏ mục. Trùng khớp với
+§19.3 (toàn trang chủ có đúng 1 ảnh) và với spec `01-home.md` §3 (thiếu hẳn tầng A
+— khối tràn viền cho mắt nghỉ).
+
+#### 20.2 BẪY ĐO — máy đo đầu tiên của tôi cho số sai gấp 13 lần
+
+Bản đo đầu đếm **244 ảnh lớn** ở Visit Jeju và 288 đơn vị bấm được → 19px mỗi đơn
+vị. Vô lý. Nguyên nhân: site dùng nhiều **carousel**, các slide ngoài màn hình vẫn
+nằm trong DOM với kích thước đầy đủ, nên bị đếm hết.
+
+Sửa: chỉ tính phần tử **giao ngang với khung nhìn** (`rect.left < vw && rect.right > 0`)
+và loại `visibility:hidden` / `display:none` / `opacity:0`. Sau khi sửa: 19 ảnh, 40
+đơn vị, 140px — hợp lý.
+
+**Bài học:** so sánh nhiều site thì bộ đo phải chịu được carousel/lazy-load, nếu
+không thì site nào dùng nhiều carousel sẽ tự động "thắng" một cách giả tạo. Và phải
+**đo lại TẤT CẢ** bằng bộ đã sửa — tôi đã đo lại cả ba, không dùng lẫn số cũ.
+
+#### 20.3 Giới hạn của kết luận này — đọc trước khi dùng
+
+- **n = 3.** Đủ để bác bỏ "cần cắt bớt", KHÔNG đủ để chốt một con số chuẩn.
+- Đo **một lần, một thời điểm, một ngôn ngữ** (bản `/en`). Site du lịch đổi nội dung
+  theo mùa và theo địa lý người xem.
+- Chỉ đo **desktop 1280**. Chưa đo mobile — mà mobile mới là nơi khối "Khám phá theo
+  nhu cầu" có lý do tồn tại (§19.4).
+- **Không đo được thêm site.** Việc đo cần DOM thật qua ô trình duyệt trong ứng dụng,
+  mà thao tác đó đã được xác định là nguyên nhân làm Claude Code Desktop chết
+  (3 lần trùng khớp mốc thời gian: 20:49, 22:34, 22:38). Dừng ở 3 điểm dữ liệu là
+  quyết định có chủ ý, không phải bỏ dở.
