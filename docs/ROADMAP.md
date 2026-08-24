@@ -444,6 +444,17 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 - **Bằng chứng rò knowledge (2026-08-06):** probe RED/GREEN chạy sau `test_resilience.py` trong cùng process — trước khi sửa đỏ đúng `assert {} != {}` (knowledge bị bỏ lại rỗng), sau khi sửa xanh. `test_resilience.py` `173 passed, 1 skipped` → `174 passed, 1 skipped` (thêm probe). Full suite 3 lần liên tiếp đều xanh, **số đếm KHÔNG đổi so với trước khi sửa** (`9470 passed, 77 skipped, 1 xfailed`; 616s/651s/641s) → xác nhận không test nào từng phụ thuộc vào state rò, đúng rủi ro đã nêu lúc defer.
 - **Ghi chú chẩn đoán (tránh mất thời gian lần sau):** `pytest-randomly` KHÔNG được cài → thứ tự test trong một lần chạy là CỐ ĐỊNH, `-p no:randomly` là no-op. Nguồn bất định duy nhất là xdist `--dist loadfile` gán *file* cho worker theo thời điểm worker rảnh, nên "cùng commit lúc đỏ lúc xanh" = polluter và nạn nhân có rơi cùng worker hay không. Cách tái hiện rẻ và tất định: chạy thẳng cặp file nghi ngờ trong **cùng một process** (`pytest <file_polluter> <file_victim>`), KHÔNG cần `-n`.
 
+- **[MỚI 2026-08-24] `tests/detail-grid-containment-gate.test.mjs` đỏ một lần rồi tự xanh.**
+  Ca `observes exact timed-out helper-tree exit and prevents delayed side effects` báo
+  `node.exe timed out after 1000ms; cleanup failed: Bad control character in string literal in
+  JSON at position 122791`. Chạy riêng file: **47/47 xanh**; chạy lại toàn bộ: **2103/2103 xanh**.
+  Không phải do thay đổi CSS cùng đợt — chuỗi 122791 ký tự là payload TỔNG HỢP do chính
+  test sinh ra (`'x'.repeat(100000)` ở dòng 1017), không phải nội dung file dự án.
+  Chẩn đoán: ca này sinh **cây tiến trình thật** rồi đọc file pid do tiến trình con ghi;
+  hạn 1000ms đủ chật để spawn `node.exe` trên Windows vượt quá khi máy đang tải nặng, và
+  file pid có thể bị đọc lúc đang ghi dở → JSON cụt. Đây là **đua ghi/đọc**, không phải
+  hồi quy. Nếu tái diễn: ghi pid ra file tạm rồi `rename` (nguyên tử) thay vì ghi thậng.
+
 ### Backlog phát sinh — 4 test closed-installer chỉ đỏ trên Linux (2026-08-06)
 - **[Security/Chưa làm] Ghim python theo descriptor KHÔNG chống được ghi-đè-tại-chỗ.** `PYTHON_EXECUTOR="/proc/$BASHPID/fd/$FD"` ghim *inode*, nên `> "$path"` (truncate cùng inode) làm mọi `invoke_python` sau đó chạy nội dung của kẻ tấn công — đo được: hook ghi `exit 97` vào executor đã admit thì installer báo `authority-result-record-failed:python-dependencies:97`. Ghim descriptor chỉ chặn *thay đường dẫn* (inode mới), và đó mới là thứ `test_linux_installer_keeps_admitted_python_when_authority_path_is_replaced` đặt tên. Vá thật sẽ tốn kém: hook role được bảo vệ bằng copy-vào-memfd-có-seal + đối chiếu digest mỗi lần gọi, nhưng python KHÔNG áp được cách đó (verify digest cần chạy python — vòng lặp gà-trứng; exec từ memfd thì mất nhận diện venv qua `sys.prefix`, đúng thứ `test_explicit_python_executor_preserves_isolated_venv_runtime` khoá). Cần chủ dự án quyết trước khi động vào.
 - **[Test-coverage/Chưa làm] `test_live_retry_recovers_interruption_immediately_after_bind_mount` chưa từng được chứng minh trên CI.** Nhánh live ghi thẳng `/etc/systemd/system` và CẤM override đường dẫn, nên runner user-thường không lấy nổi install-lock ở đó và chết trước khi chạm bind mount. Nay đã gắn cổng `_systemd_units_writable()` như 5 test live cùng họ → SKIP thay vì đỏ giả. Muốn phủ thật phải chạy bằng root (VPS, hoặc thêm một job CI `sudo -E`) — quyết định của chủ dự án vì nó ghi vào `/etc/systemd/system` của runner.
@@ -1699,11 +1710,39 @@ xem `65edacec`). Còn 21, đáng chú ý:
 - `--error-rgb` = `220,53,69` (đỏ Bootstrap) trong khi `--color-error-rgb` có thật
 - `--secondary-fg-strong` `#34d399`, `--error-light` `#f87171`, `--accent-light`
   `#f59e0b` — bảng màu kiểu Tailwind nằm trong `dark-overrides.css`
-- `--rank-*` và `--lb-*` — **cùng ba màu huy chương khai hai lần dưới hai tên**,
-  nhưng chỉ `--rank-*` có bản chế độ tối; huy chương ở `/cong-dong` và
-  `/bang-xep-hang` vì thế **hiện khác nhau trong chế độ tối**
+- ~~`--rank-*` và `--lb-*` — chỉ `--rank-*` có bản chế độ tối, nên huy chương
+  hai trang **hiện khác nhau trong chế độ tối**~~ — **ĐÃ XỬ, và câu trên SAI**:
+  `cong-dong.vue:1876` có khối `.dark`, tôi đọc sót. Đo thực tế: vàng và bạc
+  trùng khít, riêng đồng nâu lệch `#d4975a` vs `#d4956a` — **ΔE 2,07**, khó thấy
+  chứ không phải "khác nhau". Vẫn là bằng chứng đúng cho luận điểm chép-tay-thì-trôi.
+  Đã gộp thành `--medal-gold/silver/bronze` trong `variables.css`.
 - `--radius-pill` ↔ `--radius-full`, `--page-gutter` ↔ `--container-pad`,
   `--tracking-wide` ↔ `--tracking-caps` — trôi TÊN, không phải trôi giá trị
 
 Chưa xử vì mỗi cái cần một quyết định thiết kế (gộp tên nào, ai là nguồn), không
 phải một phép biến đổi cơ học.
+
+#### 17.5 CHỜ CHỦ DỰ ÁN QUYẾT: huy chương vàng trượt tương phản ở chế độ sáng
+
+Có sẵn từ trước, không phải do đợt gộp token. Đo trên nền thẻ sáng (253,252,249):
+
+| Màu | Tương phản | Ngưỡng cần | Kết |
+|---|---|---|---|
+| `--medal-gold` `#d4a017` | **2,31:1** | 3:1 (số 36px đậm) | **TRƯỢT** |
+| `--medal-gold` `#d4a017` | 2,31:1 | 4,5:1 (số 12px ở `/cong-dong`) | **TRƯỢT** |
+| `--medal-silver` `#8a8d91` | 3,24:1 | 4,5:1 (số 12px) | TRƯỢT |
+| `--medal-bronze` `#b07b4f` | 3,52:1 | 4,5:1 (số 12px) | TRƯỢT |
+
+Chế độ tối thì đạt thoải mái (10,1 / 8,19 / 6,87).
+
+**Vì sao tôi không tự sửa:** giải bằng cách hạ độ sáng thì **vàng đạt 4,5:1 rơi
+ra ngoài gam sRGB** (giữ chroma 0,13 ở L=0,56 cho ra rgb có kênh lam ÂM). Nói
+cách khác, không tồn tại màu vừa "trông như vàng" vừa đủ tương phản trên nền gần
+trắng. Hạ tới 3:1 thì được `#b68b16` — vàng mù tạt sẫm, đạt chữ lớn nhưng vẫn
+trượt số 12px.
+
+Hai hướng, đều là quyết định thẩm mỹ chứ không phải phép tính:
+- **(a) Đổi màu:** `--medal-gold` sáng → `#b68b16`. Đạt số lớn (3,05), vẫn trượt
+  số 12px. Huy chương bớt "vàng".
+- **(b) Đổi cấu trúc:** số thứ hạng dùng `--ink`, còn màu huy chương chuyển sang
+  nền/viền badge. Giữ được sắc vàng, đạt chuẩn ở mọi cỡ, nhưng đổi hình thức.

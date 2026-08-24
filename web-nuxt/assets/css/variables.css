@@ -200,6 +200,12 @@
   --error-bg: rgba(217, 79, 61, .08);
   --error-border: rgba(217, 79, 61, .25);
   --save-red: #dc2626;
+  /* Huy chương xếp hạng: MỘT nguồn cho cả /bang-xep-hang lẫn sidebar
+     /cong-dong. Trước đây mỗi trang tự khai một bộ (--rank-* và --lb-*),
+     và bản chép đã trôi thật: đồng nâu chế độ tối lệch ΔE 2,07. */
+  --medal-gold: #d4a017;
+  --medal-silver: #8a8d91;
+  --medal-bronze: #b07b4f;
   --save-red-bg: rgba(220, 38, 38, .08);
   --save-red-border: rgba(220, 38, 38, .25);
   /* State layer opacities (M3) */
@@ -772,6 +778,9 @@
   --danger: var(--error); /* alias (dark) — keeps var(--danger) on the dark error color */
   --error-bg: rgba(255, 105, 97, .12);
   --save-red: #FF6961;
+  --medal-gold: #f0c040;
+  --medal-silver: #b0b3b8;
+  --medal-bronze: #d4975a;
   --save-red-bg: rgba(255, 105, 97, .12);
   --save-red-border: rgba(255, 105, 97, .3);
   --brand-zalo: #3d8bff;

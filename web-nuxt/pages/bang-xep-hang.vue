@@ -162,8 +162,7 @@ useHead({
 .bxh-row:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .bxh-row:active { transform: scale(.98); transition-duration: .08s; }
 .bxh-rank { flex-shrink: 0; width: 28px; text-align: center; font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--muted); }
-.bxh-rank-1 { color: var(--rank-gold, #d4a017); } .bxh-rank-2 { color: var(--rank-silver, #8a8d91); } .bxh-rank-3 { color: var(--rank-bronze, #b07b4f); }
-.dark .bxh-rank-1 { --rank-gold: #f0c040; } .dark .bxh-rank-2 { --rank-silver: #b0b3b8; } .dark .bxh-rank-3 { --rank-bronze: #d4956a; }
+.bxh-rank-1 { color: var(--medal-gold); } .bxh-rank-2 { color: var(--medal-silver); } .bxh-rank-3 { color: var(--medal-bronze); }
 .bxh-avatar { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--primary-fg, var(--white)); font-weight: var(--weight-semibold); flex-shrink: 0; }
 .bxh-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .1rem; }
 .bxh-name { font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -209,14 +208,14 @@ useHead({
 .podium-1 { order: 2; }
 .podium-2 { order: 1; }
 .podium-3 { order: 3; }
-.podium-1 .podium-link { padding-top: var(--space-6); background: linear-gradient(180deg, color-mix(in srgb, var(--rank-gold, #d4a017) 8%, var(--card)) 0%, var(--card) 60%); }
+.podium-1 .podium-link { padding-top: var(--space-6); background: linear-gradient(180deg, color-mix(in srgb, var(--medal-gold) 8%, var(--card)) 0%, var(--card) 60%); }
 .podium-rank {
   font-family: var(--font-editorial); font-size: var(--text-2xl); font-weight: 600; line-height: 1;
   font-variant-numeric: tabular-nums; color: var(--muted);
 }
-.podium-1 .podium-rank { color: var(--rank-gold, #d4a017); font-size: var(--text-3xl); }
-.podium-2 .podium-rank { color: var(--rank-silver, #8a8d91); }
-.podium-3 .podium-rank { color: var(--rank-bronze, #b07b4f); }
+.podium-1 .podium-rank { color: var(--medal-gold); font-size: var(--text-3xl); }
+.podium-2 .podium-rank { color: var(--medal-silver); }
+.podium-3 .podium-rank { color: var(--medal-bronze); }
 .dark .podium-1 .podium-rank { color: #f0c040; }
 .dark .podium-2 .podium-rank { color: #b0b3b8; }
 .dark .podium-3 .podium-rank { color: #d4956a; }
