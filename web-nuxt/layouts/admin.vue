@@ -696,7 +696,7 @@ onUnmounted(() => {
 .admin-error-panel h2 { color: var(--danger); margin: 0 0 1rem; }
 .admin-error-detail {
   text-align: left; font-size: .8rem; max-height: 200px; overflow: auto;
-  background: var(--surface-alt); padding: .75rem; border-radius: var(--radius, 8px);
+  background: var(--surface-alt, #f5f5f5); padding: .75rem; border-radius: var(--radius, 8px);
   margin-bottom: 1.5rem; white-space: pre-wrap; word-break: break-word;
 }
 .admin-error-actions { display: flex; gap: .75rem; justify-content: center; }

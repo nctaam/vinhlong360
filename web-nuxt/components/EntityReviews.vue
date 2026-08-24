@@ -367,7 +367,7 @@ onMounted(() => fetchReviews())
   transition: background .15s var(--ease-soft);
 }
 .rf-image-remove:hover { background: rgba(var(--black-rgb), .8); }
-.rf-image-remove:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+.rf-image-remove:focus-visible { outline: 2px solid var(--brand, currentColor); outline-offset: 1px; }
 .rf-image-add {
   display: inline-flex; align-items: center; gap: var(--space-2);
   min-height: 44px; padding-inline: var(--space-3);
@@ -376,7 +376,7 @@ onMounted(() => fetchReviews())
   transition: border-color .15s var(--ease-soft), color .15s var(--ease-soft);
 }
 .rf-image-add:hover { border-color: var(--brand, var(--muted)); color: var(--ink, var(--muted)); }
-.rf-image-add:focus-within { outline: 2px solid var(--brand); outline-offset: 2px; }
+.rf-image-add:focus-within { outline: 2px solid var(--brand, currentColor); outline-offset: 2px; }
 .rf-image-add.disabled { opacity: .55; cursor: not-allowed; }
 .rf-image-input { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .rf-error { font-size: var(--text-sm); color: var(--error); margin-top: var(--space-1); }

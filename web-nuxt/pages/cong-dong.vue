@@ -1965,7 +1965,7 @@ useHead({
 .scheduled-item p { margin: 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); overflow-wrap: anywhere; }
 .scheduled-meta { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2); font-size: var(--text-xs); color: var(--muted); }
 .scheduled-cancel { color: var(--error); padding: var(--space-1) var(--space-2); min-height: 32px; }
-.scheduled-cancel:hover { background: rgba(var(--error-rgb), .08); }
+.scheduled-cancel:hover { background: rgba(var(--error-rgb, 220,38,38), .08); }
 
 @media (prefers-reduced-motion: reduce) {
   .cd-toggle, .cd-toggle::after { transition: none; }

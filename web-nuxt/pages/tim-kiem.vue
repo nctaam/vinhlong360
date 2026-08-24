@@ -622,7 +622,7 @@ useHead({
 .dark .result-strap-query { color: var(--ink); }
 
 /* Search input error feedback */
-.search-row.error input { border-color: var(--error); box-shadow: 0 0 0 3px rgba(var(--error-rgb), .12); }
+.search-row.error input { border-color: var(--error); box-shadow: 0 0 0 3px rgba(var(--error-rgb, 217, 79, 61), .12); }
 
 /* Unified search: người dùng + bài viết — secondary strip, smaller than the primary entity grid */
 .search-section-secondary { padding-top: var(--space-6); padding-bottom: var(--space-3); }
