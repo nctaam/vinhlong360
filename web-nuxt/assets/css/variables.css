@@ -206,6 +206,10 @@
   --medal-gold: #d4a017;
   --medal-silver: #8a8d91;
   --medal-bronze: #b07b4f;
+  /* Mực trên huy chương: cố tình KHÔNG đổi theo chế độ. Ba nền huy chương
+     đều sáng ở cả sáng lẫn tối, nên chữ phải sẫm ở cả hai. Đo được:
+     sáng 7,56/5,39/4,95 — tối 10,53/8,54/7,16 (vàng/bạc/đồng), đều đạt AA 4,5. */
+  --medal-ink: #081a16;
   --save-red-bg: rgba(220, 38, 38, .08);
   --save-red-border: rgba(220, 38, 38, .25);
   /* State layer opacities (M3) */

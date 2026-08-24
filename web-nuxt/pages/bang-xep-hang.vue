@@ -162,7 +162,18 @@ useHead({
 .bxh-row:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .bxh-row:active { transform: scale(.98); transition-duration: .08s; }
 .bxh-rank { flex-shrink: 0; width: 28px; text-align: center; font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--muted); }
-.bxh-rank-1 { color: var(--medal-gold); } .bxh-rank-2 { color: var(--medal-silver); } .bxh-rank-3 { color: var(--medal-bronze); }
+/* Hạng 1–3 là huy hiệu tròn tô đầy, chữ đọc bằng --medal-ink.
+   Sắc huy chương đặt lên NỀN chứ không lên CHỮ: đặt lên chữ thì vàng
+   chỉ đạt 2,31:1 trên nền thẻ sáng, mà không có sắc vàng nào vừa đủ tương
+   phản vừa còn trông ra vàng (hạ sáng thì rơi ngoài gam sRGB). */
+.bxh-rank-1, .bxh-rank-2, .bxh-rank-3 {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%;
+  font-size: var(--text-base); color: var(--medal-ink);
+}
+.bxh-rank-1 { background: var(--medal-gold); }
+.bxh-rank-2 { background: var(--medal-silver); }
+.bxh-rank-3 { background: var(--medal-bronze); }
 .bxh-avatar { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--primary-fg, var(--white)); font-weight: var(--weight-semibold); flex-shrink: 0; }
 .bxh-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .1rem; }
 .bxh-name { font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -213,12 +224,14 @@ useHead({
   font-family: var(--font-editorial); font-size: var(--text-2xl); font-weight: 600; line-height: 1;
   font-variant-numeric: tabular-nums; color: var(--muted);
 }
-.podium-1 .podium-rank { color: var(--medal-gold); font-size: var(--text-3xl); }
-.podium-2 .podium-rank { color: var(--medal-silver); }
-.podium-3 .podium-rank { color: var(--medal-bronze); }
-.dark .podium-1 .podium-rank { color: #f0c040; }
-.dark .podium-2 .podium-rank { color: #b0b3b8; }
-.dark .podium-3 .podium-rank { color: #d4956a; }
+.podium-1 .podium-rank, .podium-2 .podium-rank, .podium-3 .podium-rank {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: 50%;
+  font-size: var(--text-xl); color: var(--medal-ink);
+}
+.podium-1 .podium-rank { background: var(--medal-gold); width: 46px; height: 46px; font-size: var(--text-2xl); }
+.podium-2 .podium-rank { background: var(--medal-silver); }
+.podium-3 .podium-rank { background: var(--medal-bronze); }
 .podium-avatar { width: 56px; height: 56px; font-size: var(--text-lg); }
 .podium-1 .podium-avatar { width: 68px; height: 68px; font-size: var(--text-xl); }
 .podium-name { font-weight: var(--weight-semibold); overflow-wrap: anywhere; }

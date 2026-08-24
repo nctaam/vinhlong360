@@ -1722,7 +1722,7 @@ xem `65edacec`). Còn 21, đáng chú ý:
 Chưa xử vì mỗi cái cần một quyết định thiết kế (gộp tên nào, ai là nguồn), không
 phải một phép biến đổi cơ học.
 
-#### 17.5 CHỜ CHỦ DỰ ÁN QUYẾT: huy chương vàng trượt tương phản ở chế độ sáng
+#### 17.5 ✅ ĐÃ QUYẾT (chủ dự án chọn hướng b) — sắc huy chương chuyển sang NỀN badge
 
 Có sẵn từ trước, không phải do đợt gộp token. Đo trên nền thẻ sáng (253,252,249):
 
@@ -1741,8 +1741,34 @@ cách khác, không tồn tại màu vừa "trông như vàng" vừa đủ tươ
 trắng. Hạ tới 3:1 thì được `#b68b16` — vàng mù tạt sẫm, đạt chữ lớn nhưng vẫn
 trượt số 12px.
 
-Hai hướng, đều là quyết định thẩm mỹ chứ không phải phép tính:
-- **(a) Đổi màu:** `--medal-gold` sáng → `#b68b16`. Đạt số lớn (3,05), vẫn trượt
-  số 12px. Huy chương bớt "vàng".
-- **(b) Đổi cấu trúc:** số thứ hạng dùng `--ink`, còn màu huy chương chuyển sang
-  nền/viền badge. Giữ được sắc vàng, đạt chuẩn ở mọi cỡ, nhưng đổi hình thức.
+Hai hướng đã đặt ra — **(a)** đổi `--medal-gold` sáng thành `#b68b16` (vẫn trượt số
+12px), **(b)** chuyển sắc huy chương sang nền badge. **Chủ dự án chọn (b).**
+
+**Đã làm.** Số hạng 1–3 nay là huy hiệu tròn tô đầy sắc huy chương, chữ dùng token
+mới `--medal-ink: #081a16` — cố tình KHÔNG đổi theo chế độ, vì cả ba nền huy chương
+đều sáng ở cả hai chế độ nên chữ phải sẫm ở cả hai.
+
+| | sáng | tối | ngưỡng |
+|---|---|---|---|
+| vàng | **7,56** | **10,53** | 4,5 |
+| bạc | **5,39** | **8,54** | 4,5 |
+| đồng | **4,95** | **7,16** | 4,5 |
+
+Đạt AA ở **mọi cỡ chữ**, kể cả số 11px ở thanh bên `/cong-dong` — trước chỉ 2,31.
+
+**Phải tô ĐẦY chứ không pha nhạt — đo mới biết.** Ý đầu là nền pha nhạt + chữ
+`--ink`; trượt vì **bạc và đồng gần như không phân biệt được**: đE chỉ 2,03 ở mức
+pha 22% và 4,22 ngay cả ở 45% — ngang độ lệch đồng nâu 2,07 mà tôi vừa gọi là "khó
+thấy" ở 36e93fc4. Tô đầy cho đE 17,9 / 9,7 / 13,1.
+
+**Ba bản chép, không phải hai.** Đợt gộp 36e93fc4 bỏ sót `bang-xep-hang.vue:219–221`
+— ba dòng `.dark .podium-*` ghim cứng, một trong đó lại là `#d4956a` (bản đồng nâu
+kia). Nay mọi mã màu huy chương chỉ còn trong `variables.css`.
+
+**Chưa xem được bằng mắt.** Ô trình duyệt không hiển thị nên không chụp được ảnh;
+mới đo được bằng số (màu, cỡ, bo tròn, tương phản, tràn ngang 0, bục giữ thứ bậc
+270px/248px). Cần chủ dự án liếc mắt xác nhận thẩm mỹ.
+
+**CSDL dev chỉ có 2 thành viên** nên hạng 3 và badge trong danh sách không tự render
+được — đã đo trên phần tử dựng bù mang đúng thuộc tính scope của component,
+không phải bằng suy luận từ CSS.
