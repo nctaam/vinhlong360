@@ -2375,3 +2375,70 @@ chính**, kèm đối chiếu dữ liệu 125/125.
 Sự thật chính xác hơn: **hai tầng lệch nhau** — tầng breadcrumb/structured-data của
 entity thì nghiêm ngặt, còn tầng SEO/JSON-LD trang chủ chưa theo kịp. Bản vá vì thế
 cũng nhẹ hơn: đưa 7 chỗ kia về đúng chuẩn mà `adminUnit.ts` đã đặt sẵn.
+
+
+### 25. Học từ bảo tàng/lưu trữ — nhóm ngang hàng đúng cho bài toán "ít ảnh" (2026-08-24)
+
+Chủ dự án muốn học bố cục/màu/thị giác từ mô hình nổi bật thế giới. Tôi KHÔNG lấy
+site du lịch làm chuẩn nữa, vì ràng buộc của dự án rất đặc thù: **nền tối mặc định,
+gần như không ảnh (§1.5 chỉ ảnh AI), nhưng có hệ motif vật liệu rất giàu**.
+
+Nhóm ngang hàng đúng cho bài toán đó là **bảo tàng và lưu trữ**: họ cũng thiếu ảnh
+(vướng bản quyền) và phải truyền đạt văn hoá vật chất bằng chữ, màu, hoa văn.
+
+#### 25.1 Bốn nguyên tắc rút ra, và đối chiếu ngay
+
+| nguyên tắc bảo tàng | vinhlong360 |
+|---|---|
+| Thang chữ trải từ **nhãn nhỏ → chữ tường cỡ lớn** | thang dựng TỐT (10 bậc, 11→64px, fluid) nhưng **thực dùng ~3 bậc** — xem 25.2 |
+| **Ngôn ngữ hoa văn lấy từ kiến trúc**, thay bố cục chung chung | ĐÃ CÓ và làm tốt (§24.1, 12/14 motif) — nhưng trang chủ không dùng (§24.2) |
+| Nền **hai tông**: than chì đậm + giấy kem | đã có: `--color-canvas` tối + `--bg-warm` sand |
+| **Lưới mô-đun nghiêm ngặt** | đã thống nhất ở `f55aeede` (một công thức khung, một nhịp 80px) |
+
+#### 25.2 Đo: 78% lượt dùng nằm ở ba bậc NHỎ NHẤT
+
+```
+--text-2xs   11       91   ████████
+--text-xs    12→13   262   ███████████████████████
+--text-sm    14→16   391   ██████████████████████████████████  ← đỉnh
+--text-base  16→18    76   ███████
+--text-lg    18→22    62   █████
+--text-xl    22→28    34   ███
+--text-2xl   28→36    18   ██
+--text-3xl   36→48     8   █
+--text-4xl   44→56     4
+--text-5xl   52→64     3
+```
+
+**744/949 lượt (78%) ở ba bậc nhỏ nhất. Hai bậc "chữ tường" chỉ 7 lượt = 0,7%.**
+`--text-4xl` xuất hiện ở 4 file, `--text-5xl` ở 3 file — cả site.
+
+Bảo tàng trải thang *từ nhãn tới chữ tường*. Site này gần như **toàn nhãn**: thang có
+10 bậc, thực dùng khoảng 3. Nhịp biên tập sinh ra từ **tương phản giữa hai đầu**, mà
+hai đầu thì đã dựng sẵn nhưng không ai ghé.
+
+Điều này giải thích thêm con số mật độ ở §20 (75px mỗi đơn vị so với 133–140 của
+peers): chữ nhỏ thì nhồi được nhiều đơn vị hơn trên mỗi màn hình.
+
+#### 25.3 ĐÍNH CHÍNH điều tôi suýt kết luận sai
+
+Thấy `--text-sm` (391) gấp 5 lần `--text-base` (76), tôi định kết luận "thân bài chỉ
+14px, dưới ngưỡng đọc 16px". **Sai.** Không có `body { font-size }` nào cả — thân bài
+**kế thừa mặc định trình duyệt 16px**, và đo trên trang chủ xác nhận: `16px ×280`,
+áp đảo mọi cỡ khác.
+
+`--text-sm` nhiều là vì nó dùng cho **nhãn và giao diện**, không phải văn bản. Nên
+đây KHÔNG phải vấn đề đọc được hay không — mà là vấn đề **hiếm khi đi lên đầu trên**
+của thang. Hai chuyện khác hẳn nhau, và tôi suýt báo nhầm chuyện thứ nhất.
+
+#### 25.4 Hệ quả thực tế
+
+Hướng đi KHÔNG phải "phóng to mọi thứ" — mà là **dùng hết dải đã có**. Cụ thể, ba chỗ
+trang chủ đáng được đưa lên đầu thang mà hiện không:
+- tiêu đề mục hiện `--text-2xl` (28→36); bậc `--text-3xl` (36→48) đang gần như trống
+- con số quy mô (kiểu "44 sản phẩm PDO/PGI" của Emilia Romagna, §22.2) — dự án có
+  1746 entity và trang địa điểm đã nêu "1.532 điểm đến", nhưng trang chủ không nêu số nào
+- một câu dẫn cỡ lớn ở khối tầng A (§21) nếu khối đó được thêm
+
+Ba thứ này cộng lại chính là thứ tạo "nhịp biên tập" mà spec `01-home.md` §3 đòi —
+và không cần thêm một tấm ảnh nào.
