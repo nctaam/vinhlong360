@@ -1305,3 +1305,75 @@ Trả lời xong mới biết T3 là "di cư 58 chỗ" hay "để nguyên, ghi n
 4. **Quét CSS chết** bằng render thật (đã tình cờ gặp 5 chỗ).
 5. **T3** — chờ chủ dự án trả lời câu hỏi admin ở trên.
 6. **327 cỡ chữ admin** — sau cùng, người dùng cuối không thấy.
+
+### 13. GỐC RỄ: thang chữ CO GIÃN ghép với thang line-height CỐ ĐỊNH (2026-08-24)
+
+Suốt phiên tôi vá bốn chỗ lẻ "dấu tiếng Việt bị chen" (nav dưới, nav ngang, nút
+chủ đề, `.atlas-hero-line1`). Đo tới tầng token thì cả bốn chỉ là **triệu chứng
+của một lỗi kiến trúc**.
+
+**Nguyên nhân:** `--text-*` là `clamp()` **co giãn theo màn hình**, còn `--lh-*`
+là **rem cố định**:
+
+```
+--text-3xl: clamp(2.25rem, 1.957rem + 1.4634vw, 3rem);   /* 36 → 48px */
+--lh-3xl:   3.25rem;                                      /* 52px, ĐỨNG YÊN */
+```
+
+Màn rộng ra thì cỡ chữ tăng, line-height không tăng ⇒ **tỉ lệ sụp xuống đúng ở
+nơi chữ to nhất**.
+
+**Đo ở 1280px**, ghép `--text-N` với `--lh-N` đúng như thiết kế, chữ mẫu
+"Cộng đồng" (có dấu chồng cả trên `ồ` lẫn dưới `ộ`):
+
+| Bậc | Cỡ chữ | line-height | Tỉ lệ | Hộp glyph | Dư chỗ |
+|---|---|---|---|---|---|
+| 2xs | 11 | 16 | 1.45 | 14 | **+2** |
+| xs | 13 | 16 | 1.23 | 16 | 0 |
+| sm | 16 | 20 | 1.25 | 20 | 0 |
+| base | 18 | 24 | **1.33** | 23 | **+1** |
+| lg | 22 | 28 | 1.27 | 28 | 0 |
+| xl | 28 | 32 | 1.14 | 35 | **−3** |
+| 2xl | 36 | 40 | 1.11 | 46 | **−6** |
+| 3xl | 48 | 52 | 1.08 | 61 | **−9** |
+| 4xl | 56 | 64 | 1.14 | 71 | **−7** |
+| 5xl | 64 | 72 | 1.13 | 81 | **−9** |
+
+**8/10 bậc dưới ngưỡng 1,33. 5/10 bậc chữ TRÀN hẳn khỏi hộp dòng.**
+
+Chỉ hai bậc đạt: `2xs` (dư 2px) và `base` (dư 1px) — và `base` chỉ vừa đúng 1,33.
+
+#### Vì sao chưa ai thấy
+
+Với tiêu đề **một dòng**, `overflow: visible` nên dấu không bị cắt — nó chỉ lấn
+sang khoảng trắng bên trên/dưới. Chỉ khi tiêu đề **xuống hai dòng trở lên** thì
+dấu dòng dưới mới chạm chữ dòng trên. Và nó chỉ xảy ra ở **màn rộng**, nơi tỉ lệ
+đã sụp — trên điện thoại các bậc lớn vẫn còn ~1,4.
+
+#### Đề xuất — nhưng là QUYẾT ĐỊNH THIẾT KẾ, không tự làm
+
+Sửa gốc là đổi `--lh-*` từ **rem cố định** sang **số không đơn vị** (tỉ lệ), để
+leading co giãn cùng cỡ chữ:
+
+```
+--lh-3xl: 1.35;   /* thay cho 3.25rem */
+```
+
+Đánh đổi phải nói trước: mọi tiêu đề lớn sẽ **cao thêm 15–25%** ở màn rộng
+(`3xl` từ 52px lên ~65px mỗi dòng). Đó là thay đổi diện mạo thấy rõ trên mọi
+trang, nên cần chủ dự án duyệt.
+
+Cách khác, ít xáo trộn hơn: chỉ nâng **5 bậc đang tràn** (`xl`…`5xl`) lên vừa đủ
+1,33 thay vì 1,35–1,4, và giữ nguyên `2xs`…`lg`.
+
+#### Bài học phương pháp
+
+Bốn lần trước tôi vá theo kiểu **bắt gặp thì vá**. Chỉ khi dựng phép đo trên
+**cặp token** (`--text-N` ↔ `--lh-N`) thay vì trên từng lớp CSS, mới thấy được
+đây là một lỗi chứ không phải bốn, và mới trả lời được câu "đã hết chưa".
+
+Ghi thêm: kiểm kê nguồn tìm được **104 khai báo `line-height < 1.33`**, nhưng
+phần lớn HỢP LỆ — drop-cap `::first-letter` (0,78–0,82), và `1.00` trên icon
+(`.cmd-icon`, `.card-arrow`, `.sheet-emoji`) hay chữ số (`.podium-points`,
+`.ec-day`, `.error-code`) — những thứ không có dấu. Kiểm kê nguồn KHÔNG phân biệt
+được; phải render mới biết chỗ nào thật sự chứa chữ có dấu.
