@@ -1236,3 +1236,72 @@ Trong 140 đó: admin ~51, công khai ~44, còn lại rải rác.
 | Focus | Bấm **Tab thật** một lần trước khi quét | `.focus()` bằng JS không kích hoạt `:focus-visible` |
 | Quy tắc nào đang thắng | `getComputedStyle` trên phần tử thật | `document.styleSheets` trong dev Vite chỉ phơi 347/nhiều nghìn quy tắc |
 | So trước/sau khi đổi khổ | **Tải lại** sau mỗi `resize` | `clamp()`/`vw` giữ giá trị của khổ cũ |
+
+### KẾ HOẠCH — BẢN SỬA sau khi đo sâu hơn (2026-08-24)
+
+Mục B1 ở bản kế hoạch trên ("di cư 140 màu có sắc") **sai cách đặt vấn đề**. Đo
+kỹ thì 140 đó không phải một bài toán mà là **ba**, và một phần ba số đó là quà
+miễn phí.
+
+#### Tôi đã sai hai lần khi đếm token — ghi lại cách sai
+
+**Lần 1:** trích token bằng regex từ `variables.css`, chỉ bắt được hex/rgb thuần
+⇒ **169 token**. Nhưng file còn **37 `oklch/oklab`**, **19 `color-mix`**, **219
+tham chiếu `var()`**. Ví dụ `--success: var(--color-success)` và `--color-success`
+là oklch — tôi bỏ sót sạch. Kết luận "44 màu không trùng token nào" vì thế bị
+thổi phồng.
+
+**Lần 2:** thử gom tên token từ `document.styleSheets` ⇒ ra **0 token**, đúng cái
+bẫy tôi ĐÃ ghi vào bảng công cụ (mục E) mà vẫn dùng lại.
+
+**Cách đúng:** lấy TÊN token từ nguồn, rồi để trình duyệt GIẢI giá trị bằng
+`getComputedStyle(root).getPropertyValue(name)` — xử được cả oklch, `var()` lồng
+nhau và `color-mix`. Ra **111 token màu giải được**.
+
+#### Ba tầng, không phải một
+
+Đo trên 29 màu dùng nhiều nhất (108/140 lần dùng):
+
+| Tầng | ΔE | Lần dùng | Việc |
+|---|---|---|---|
+| **T1** | **< 5** | **33** | **Đổi thẳng sang token.** Không đẻ token mới, không đổi màu. Rủi ro ~0. |
+| T2 | 5–10 | 17 | Ép về token gần nhất; lệch nhẹ, đo từng chỗ |
+| T3 | ≥ 10 | 58 | **Đổi màu thấy rõ ⇒ quyết định thiết kế, không phải refactor** |
+
+**Ví dụ T1 (đổi được ngay, có lợi ngay):**
+
+| Màu | Lần | Token trùng khít |
+|---|---|---|
+| `rgb(232,163,61)` | **12** | `--accent` |
+| `rgb(116,171,181)` | 4 | `--river-legacy-dark` |
+| `rgb(0,104,255)` | 4 | `--brand-zalo` |
+| `rgb(220,38,38)` | 3 | `--save-red` |
+| `rgb(156,61,34)` | 3 | `--clay-600` |
+| `rgb(46,125,91)` | 3 | `--leaf-600` |
+| `rgb(217,79,61)` | 2 | `--cat-dish-accent` |
+| `rgb(196,135,42)` | 2 | `--accent-dark` |
+
+#### T3 không phải "dọn dẹp" — là hệ màu THỨ HAI
+
+Trong 58 lần dùng ΔE ≥ 10, **26 lần là màu hệ thống Apple/iOS**: iOS green
+`rgb(52,199,89)` ×9, Apple blue `rgb(0,113,227)` ×4, iOS blue `rgb(52,120,246)`
+×4, iOS orange `rgb(255,159,10)` ×4, iOS purple, iOS red, iOS teal. Gần như toàn
+bộ nằm ở **khu admin** (`chua-phan-loai`, `entities`, `ai`, `bao-cao`).
+
+Tức admin đang chạy một **ngôn ngữ màu khác** với phần công khai — không phải
+sprawl ngẫu nhiên. Câu hỏi đúng cho chủ dự án KHÔNG phải "có dọn không" mà là:
+
+> **Khu admin có nên dùng chung bảng màu miền sông nước với phần công khai không,
+> hay giữ bộ màu hệ thống kiểu iOS cho quen tay người vận hành?**
+
+Trả lời xong mới biết T3 là "di cư 58 chỗ" hay "để nguyên, ghi nhận là có chủ ý".
+
+#### Thứ tự đề xuất (thay cho B1–B4 ở bản trên)
+
+1. **T1 — 33 lần đổi thẳng.** Bắt đầu ngay: giảm màu thô, không đổi diện mạo,
+   không thêm token. Đây đúng nghĩa "bớt màu" mà chủ dự án muốn.
+2. **129 cỡ chữ công khai** — khuôn mẫu đã chạy 11 lần, rủi ro thấp.
+3. **T2 — 17 lần**, đo từng chỗ.
+4. **Quét CSS chết** bằng render thật (đã tình cờ gặp 5 chỗ).
+5. **T3** — chờ chủ dự án trả lời câu hỏi admin ở trên.
+6. **327 cỡ chữ admin** — sau cùng, người dùng cuối không thấy.
