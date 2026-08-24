@@ -36,7 +36,12 @@
   --color-canvas: var(--alluvial-paper);
   --color-surface: var(--surface-white);
   --color-surface-subtle: #F1EEE6;
-  --color-surface-raised: var(--surface-white);
+  /* Bac "noi" phai KHAC bac "be mat", neu khong thi khong co chieu sau.
+     Che do TOI da co thang ba bac dung: night-canvas 17% -> night-surface 22%
+     -> night-raised 27% (L cach nhau 5%). Che do SANG thi ca hai cung tro
+     --surface-white ⇒ .action-dock va nen anh dossier khong tach khoi nen.
+     #FFFFFF la bac sang hon duy nhat con lai tren --surface-white (#FDFCF9). */
+  --color-surface-raised: #FFFFFF;
   --color-text: var(--mekong-ink);
   --color-text-muted: var(--mekong-muted);
   --color-border: var(--alluvial-line);
@@ -637,7 +642,12 @@
   --theme-public-default: parchment;
   --color-canvas: var(--alluvial-paper);
   --color-surface: var(--surface-white);
-  --color-surface-raised: var(--surface-white);
+  /* Bac "noi" phai KHAC bac "be mat", neu khong thi khong co chieu sau.
+     Che do TOI da co thang ba bac dung: night-canvas 17% -> night-surface 22%
+     -> night-raised 27% (L cach nhau 5%). Che do SANG thi ca hai cung tro
+     --surface-white ⇒ .action-dock va nen anh dossier khong tach khoi nen.
+     #FFFFFF la bac sang hon duy nhat con lai tren --surface-white (#FDFCF9). */
+  --color-surface-raised: #FFFFFF;
   --color-text: var(--mekong-ink);
   --color-text-muted: var(--mekong-muted);
   --color-border: var(--alluvial-line);
