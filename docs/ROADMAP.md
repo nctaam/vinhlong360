@@ -2442,3 +2442,60 @@ trang chủ đáng được đưa lên đầu thang mà hiện không:
 
 Ba thứ này cộng lại chính là thứ tạo "nhịp biên tập" mà spec `01-home.md` §3 đòi —
 và không cần thêm một tấm ảnh nào.
+
+
+### 26. Atlas Obscura — đối chiếu sát nhất về TƯ TƯỞNG (2026-08-24)
+
+Chủ dự án yêu cầu dùng trình duyệt nghiên cứu nền tảng nổi tiếng. Tôi chọn Atlas
+Obscura vì nó là đối chiếu sát nhất **về tư tưởng**, không phải về quy mô: toàn bộ
+nền tảng đó dựng trên **mồi tò mò** — đúng luận đề trung tâm của dự án,
+*"không có listing, chỉ có story-hook"* (§0 narrative-system).
+
+#### 26.1 Số đo — và con số này mạnh nhất trong cả bảy đợt nghiên cứu
+
+| | vinhlong360 | Atlas Obscura | Emilia Romagna | Visit Jeju |
+|---|---|---|---|---|
+| màn hình | 4,9 | 7,0 | 8,0 | 7,0 |
+| đơn vị bấm được | **52** | **41** | 48 | 40 |
+| **px mỗi đơn vị** | **75** | **323** | 133 | 140 |
+| ảnh/màn hình | 0,2 | 1,9 | 1,3 | 2,7 |
+| họ màu có sắc | 3 | **2** | 4 | — |
+
+**Atlas Obscura cho mỗi mục gấp 4,3 lần không gian, với ÍT mục hơn.**
+
+Đây là xác nhận thứ tư và mạnh nhất cho kết luận §20: **"cắt bớt" không phải hướng
+đi**. Nền tảng nổi tiếng nhất thế giới về nội dung gây tò mò không nhồi nhiều thứ —
+nó cho mỗi thứ nhiều chỗ hơn hẳn.
+
+Và **Atlas Obscura chỉ dùng 2 họ màu có sắc** — ÍT hơn vinhlong360 (3). Lần thứ ba
+số đo nói cùng một điều: màu không phải vấn đề của trang chủ.
+
+#### 26.2 Chữ: một phông, phân cấp bằng cỡ và độ đậm
+
+60 tiêu đề, 29 cái là `h2`, **tất cả cùng một phông** ("Platform Web"), phân cấp bằng
+**bốn cỡ h2** (36 / 24 / 20 / 16) và độ đậm (400–600).
+
+Đối chiếu: vinhlong360 dùng **hai phông** — Fraunces (biên tập) cho tiêu đề mục,
+Be Vietnam Pro cho tiêu đề thẻ/bảng phụ. Đây KHÔNG phải khuyết điểm: đó là cặp
+serif/sans mà spec §4 chốt có chủ đích, và `f55aeede` đã thống nhất tiêu đề mục về
+một giọng. Ghi lại để thấy có hơn một cách đúng.
+
+Điểm đáng học: cỡ h2 lớn nhất của họ là **36px** — **bằng đúng** cỡ tiêu đề mục của
+vinhlong360. Nên khoảng cách giữa hai site KHÔNG nằm ở cỡ chữ tiêu đề, mà ở **khoảng
+trống quanh nó** (§26.1).
+
+#### 26.3 Lỗi trong máy đo của tôi — ghi lại vì dễ tái phạm
+
+Lần chạy đầu trả về `soTieuDe: 0`, tưởng trang không có h1/h2. Nguyên nhân: bộ lọc
+"phần tử nhìn thấy được" của tôi đặt ngưỡng `height > 60`, mà **tiêu đề thường thấp
+hơn 60px**. Hạ xuống `height > 8` thì ra 60 tiêu đề.
+
+Cùng lớp lỗi với bẫy carousel ở §20.2: **ngưỡng lọc đặt cho loại phần tử này thì phá
+phép đo trên loại phần tử khác.** Bộ lọc dùng cho khối lớn không dùng lại được cho
+chữ.
+
+#### 26.4 An toàn khi đo site ngoài
+
+Trước khi mở đã chạy `claude-cuu-ho.ps1 luu` (log ra Desktop), và **đóng tab ngay sau
+khi đo xong** để không lặp lại vòng "khôi phục tab rồi chết" đã ghi ở §22. Ứng dụng
+sống sót cả phiên đo.
