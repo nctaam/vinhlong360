@@ -2133,3 +2133,75 @@ về token)"*. Cả ba **vẫn còn**:
 
 Hai trong ba cái này tôi đã bắt gặp độc lập qua kiểm toán token (§17.4, §18.3) trước
 khi đọc spec. Hai phương pháp khác nhau chỉ về cùng một chỗ — tín hiệu đáng tin.
+
+
+### 22. Cấu trúc mục: đối chiếu 3 site (2026-08-24)
+
+§20 đo *lượng* (màn hình, ảnh, mật độ). Mục này đo *cấu trúc* — mỗi site chia trang
+chủ thành những mục gì, theo thứ tự nào, mỗi mục bảo người dùng làm gì.
+
+Lấy bằng `WebFetch` chứ KHÔNG bằng ô trình duyệt: các lần Claude Code Desktop chết
+đều gắn với việc tải site ngoài trong ô đó (§20.3). WebFetch tải phía máy chủ nên
+không dựng trang trong ứng dụng. Đổi lại mất số đo DOM — nên mục này chỉ nói về
+cấu trúc, không nói về kích thước.
+
+| | vinhlong360 | Emilia Romagna | Visit Jeju |
+|---|---|---|---|
+| mở đầu bằng | ô tìm kiếm + hồ sơ CHỮ | 5 lối vào chuyên đề | **carousel ảnh** |
+| tín hiệu "bây giờ" | Tín hiệu địa phương ✓ | News có ngày ✓ | Lễ hội đang diễn ra ✓ |
+| lối vào danh mục | Khám phá theo nhu cầu ✓ | 5 mục chuyên đề ✓ | Themed Travel ✓ |
+| **giúp khách LẦN ĐẦU** | **không có** | không có | **"First Time To Jeju?"** ✓ |
+| cho người quay lại | Giữ mạch khám phá — **hiện cho TẤT CẢ** | không có | Bucket List |
+| cộng đồng / xã hội | Từ cộng đồng ✓ | "Humans of" Instagram ✓ | 4 nguồn video ✓ |
+| khối biên tập + ảnh giữa trang | **không có** | ✓ "Discover the Region" | carousel |
+| đặc sản địa phương | **mục con** trong "Tín hiệu" | ✓ Food Valley, nêu **44 sản phẩm PDO/PGI** | trong nav |
+
+#### 22.1 Phát hiện 1: có mục cho người QUAY LẠI, không có mục cho người LẦN ĐẦU
+
+Jeju làm **ngược lại**: `"First Time To Jeju?"` là một mục riêng với 4 liên kết —
+bản đồ, thứ cần biết, thời tiết, gợi ý.
+
+Trang chủ vinhlong360 có `"Giữ mạch khám phá khi bạn ĐÃ CÓ một điểm bắt đầu"` —
+tiêu đề nhắm thẳng vào người quay lại — nhưng **hiện cho mọi khách**, và với khách
+lần đầu thì nó chứa đúng 2 liên kết mà cả hai đều đã xuất hiện phía trên (§19.4).
+
+Tức trang đang dành 181px cho nhóm người dùng CHƯA tồn tại, và 0px cho nhóm đang
+đứng trước mặt.
+
+#### 22.2 Phát hiện 2: đặc sản bị HẠ CẤP, không phải vắng mặt
+
+Tôi từng định kết luận "OCOP không có mục nào trên trang chủ". **Sai.**
+`index.vue:122` có `<ul class="home-season-ledger" aria-label="Đặc sản theo mùa">` —
+nhưng nó **lồng bên trong** mục "Tín hiệu địa phương" (`index.vue:74`), không phải
+một lối vào riêng. Đo trước đó xác nhận: "Mật ong rừng bần Mỹ Long Nam", "Cháo Cua
+Đồng" xuất hiện như mục con.
+
+So sánh: Emilia Romagna cũng là vùng được định danh bằng đặc sản, và họ cho nó **một
+trong năm lối vào cấp cao nhất**, kèm **một con số** ("44 sản phẩm PDO/PGI") — con số
+vừa là bằng chứng quy mô vừa là mồi tò mò.
+
+Trong khi tiêu đề site là **"vinhlong360 — Du lịch & Sản phẩm địa phương"**
+(`nuxt.config.ts:83`). Hai vế ngang nhau trong tên, nhưng trên trang chủ vế thứ hai
+nằm trong một danh sách con của mục nói về sự kiện/mùa.
+
+#### 22.3 ĐÍNH CHÍNH §19.4 của chính tôi
+
+Ở §19.4 tôi coi việc "Khám phá theo nhu cầu" trùng 6/7 đích với header và footer là
+một khuyết điểm. Đối chiếu ra thì **cả ba site đều có khối lối-vào-danh-mục** trên
+trang chủ (Emilia Romagna 5 mục, Jeju "Themed Travel"). Đây là **mẫu hình chuẩn của
+ngành**, không phải lỗi. Cộng với việc ở 360px header chỉ còn 1 liên kết nhìn thấy,
+kết luận đúng là: **giữ khối này**.
+
+#### 22.4 Những gì trang chủ ĐANG làm đúng theo chuẩn ngành
+
+- **Tín hiệu "bây giờ"**: cả ba site đều có, và vinhlong360 làm mạnh nhất — "Còn 22
+  ngày", "Tháng 8 · đang vào mùa", "4.9 điểm" là câu-trả-lời-có-lý-do chứ không phải
+  nhãn. Đúng luận đề §0 của `00-narrative-system.md`.
+- **Cộng đồng**: cả ba đều có. Hai site kia dùng feed mạng xã hội nhúng; vinhlong360
+  dùng nội dung tự có — bền hơn, không phụ thuộc bên thứ ba.
+
+#### 22.5 Giới hạn
+
+n=3, và WebFetch chỉ thấy nội dung tĩnh phía máy chủ — mục nào dựng bằng JS sau khi
+tải có thể bị bỏ sót. Bảng trên nói về **cấu trúc biên tập**, không phải bản kiểm kê
+DOM đầy đủ. Đối chiếu với §20 (số đo DOM) để có bức tranh hai chiều.
