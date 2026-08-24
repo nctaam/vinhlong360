@@ -1470,3 +1470,73 @@ chỉ sửa được một thứ, sửa canh lề trước khi sửa màu.**
    thành `var()` trỏ về nó (hoặc xoá). Đây là việc làm cho hệ thống dễ dùng đúng,
    không đổi một pixel nào.
 4. **Xử họ mồ côi H183** và **đều lại chroma trong họ H30**.
+
+## 15. ĐÁNH GIÁ HIỆN TRẠNG — một bảng giải thích cả phiên (2026-08-24)
+
+Đo tỉ lệ áp dụng của **lớp ngữ nghĩa** so với **lớp thô/viết cứng**, trên toàn bộ
+`.vue` + `.css` (trừ `variables.css`):
+
+| Tầng | Dùng token ngữ nghĩa | Dùng thô / viết cứng | Tỉ lệ áp dụng |
+|---|---|---|---|
+| Khoảng cách | 3250 | 321 | **91%** |
+| Chữ | 1053 | 641 | 62% |
+| Màu | 581 | 601 | 49% |
+| **Bề rộng** | 34 | 323 | **10%** |
+| **Độ cao** | 4 | 205 | **2%** |
+
+### Điều bảng này nói
+
+**Dự án KHÔNG thiếu hệ thống thiết kế. Nó đã xây hệ thống bốn lần rồi bỏ hoang
+ba lần.**
+
+- `--elevation-flat/card/card-hover/sticky/dropdown/dialog/tooltip/overlay` — **10
+  mức ngữ nghĩa đầy đủ**, dựng trên `--shadow-xs…xl`. Dùng đúng **4 lần**. Còn
+  lớp thô `--shadow-*` dùng **205 lần**.
+- Bề rộng: chỉ có **2 token** (`--maxw`, `--measure-read`) cho **231 khai báo
+  `max-width`**. Không hề có primitive cho *cột nội dung* — nên mỗi section tự
+  chế padding.
+
+**Và hai tầng bị bỏ hoang nhất đúng là hai thứ gây rối thị giác:**
+
+| Tầng bỏ hoang | Hậu quả đo được |
+|---|---|
+| Bề rộng 10% | Khối cùng cấp bắt đầu ở **105 / 109 / 110 / 122px** — lệch 5–17px (mục 14D) |
+| Độ cao 2% | `--color-surface-raised` == `--color-surface`, `shadow: none` ⇒ **không có chiều sâu**, mắt mất manh mối gom nhóm (mục 14C) |
+
+Ngược lại, tầng **khoảng cách đạt 91%** — và đo trên trang thật thì khoảng cách
+là thứ *duy nhất* sạch (1197/1260 lần dùng đúng thang).
+
+⇒ **Bằng chứng rằng khi lớp ngữ nghĩa là đường dễ đi nhất, nó ĐƯỢC dùng.** Ba
+tầng kia thất bại không phải vì người viết cẩu thả, mà vì:
+- **Độ cao:** `var(--shadow-sm)` ngắn và rõ nghĩa hơn `var(--elevation-card)` —
+  lớp ngữ nghĩa không mang lại lợi ích hiển nhiên nào.
+- **Bề rộng:** không có token nào để dùng cho cột nội dung. Không thể áp dụng
+  thứ không tồn tại.
+- **Màu:** có **ba** hệ tên song song, 47% token là bí danh (mục 14A) — không ai
+  biết nên chọn cái nào.
+
+### Về "một cú nổ big bang"
+
+Chủ dự án chấp nhận thay đổi lớn. Cần nêu rõ: **CLAUDE.md §2 B5 ghi "Không
+big-bang. Commit nhỏ sau mỗi task."** Đó là bất biến của dự án, chủ dự án có
+quyền gỡ — nhưng có cách đạt được QUY MÔ lớn mà không phá B5:
+
+**Big bang về PHẠM VI, không big bang về COMMIT.** Mỗi bước dưới đây là một
+commit độc lập, để lại hệ thống chạy được, có số đo trước/sau; cộng lại thì đủ
+"nổ".
+
+| # | Bước | Đổi diện mạo? | Rủi ro |
+|---|---|---|---|
+| 1 | **Gộp 44 token bí danh** — mỗi màu một tên chính thức, tên cũ thành `var()` trỏ về | **Không, 0 pixel** | Rất thấp |
+| 2 | **Tạo primitive cột nội dung** (`--container-inline`, `--container-pad`) + áp cho các section của MỘT trang mẫu | Có — thẳng hàng lại | Thấp, đo được |
+| 3 | Lan primitive đó ra các trang còn lại, mỗi trang một commit | Có | Thấp |
+| 4 | **Tách `--color-surface-raised` khỏi `--color-surface`** (sáng hơn 1–2% L) + dùng `--elevation-card` cho thẻ | Có — thẻ nổi lên | Trung bình |
+| 5 | Đổi `--lh-*` sang số không đơn vị (mục 13) | Có — tiêu đề cao thêm 15–25% | Trung bình |
+| 6 | 33 màu ΔE<5 đổi thẳng sang token (mục "T1") | Không | Rất thấp |
+
+Bước 1 và 6 **không đổi một pixel nào** mà vẫn gỡ được phần lớn cảm giác "rối"
+ở tầng mã. Bước 2–4 mới là phần đổi diện mạo, và đó là phần cần chủ dự án nhìn
+ảnh trước/sau.
+
+**Đề nghị bắt đầu từ bước 1 + 6** (an toàn tuyệt đối, dọn sạch nền), rồi bước 2
+trên một trang mẫu để chủ dự án duyệt diện mạo trước khi lan ra.
