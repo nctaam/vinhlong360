@@ -301,11 +301,27 @@
   --lh-sm: 1.25rem;      /* 20px */
   --lh-base: 1.5rem;     /* 24px */
   --lh-lg: 1.75rem;      /* 28px */
-  --lh-xl: 2rem;         /* 32px */
-  --lh-2xl: 2.5rem;      /* 40px */
-  --lh-3xl: 3.25rem;     /* 52px */
-  --lh-4xl: 4rem;        /* 64px */
-  --lh-5xl: 4.5rem;      /* 72px */
+  /* NĂM BẬC LỚN DÙNG SỐ KHÔNG ĐƠN VỊ, không phải rem cố định.
+     Lý do đo được: --text-* là clamp() CO GIÃN còn --lh-* là rem ĐỨNG YÊN, nên
+     màn càng rộng thì tỉ lệ càng sụp. Đo ở 1280px với chữ "Cộng đồng":
+        bậc   cỡ chữ  lh cũ   tỉ lệ   hộp glyph   dư chỗ
+        xl     28     32      1.14      35        −3
+        2xl    36     40      1.11      46        −6
+        3xl    48     52      1.08      61        −9
+        4xl    56     64      1.14      71        −7
+        5xl    64     72      1.13      81        −9
+     Dấu tiếng Việt chồng CẢ TRÊN LẪN DƯỚI nên tỉ lệ mực thật của Be Vietnam Pro
+     là 1,33 — năm bậc này đều nằm dưới, tức chữ TRÀN khỏi hộp dòng. Một dòng thì
+     overflow:visible nên không thấy; hai dòng trở lên ở màn rộng thì dấu dòng
+     dưới chạm chữ dòng trên.
+     1.35 = trên ngưỡng 1,33 một chút. Số không đơn vị ⇒ leading co giãn CÙNG cỡ
+     chữ, nên tỉ lệ giữ nguyên ở mọi khổ màn. Các bậc 2xs…lg giữ rem vì đo được
+     dư chỗ ≥ 0 (chỉ chạm mép, không tràn). */
+  --lh-xl: 1.35;
+  --lh-2xl: 1.35;
+  --lh-3xl: 1.35;
+  --lh-4xl: 1.35;
+  --lh-5xl: 1.35;
   /* Per-size letter-spacing (M3: negative for large, positive for small) */
   --ls-2xs: 0.03em;
   --ls-xs: 0.02em;
