@@ -451,6 +451,12 @@
   --radius-xl: 28px;
   --radius-full: 9999px;
   --maxw: 1140px;
+
+  /* Lề trong của CỘT NỘI DUNG. Trước khi có token này, mỗi section tự chọn:
+     .page và .breadcrumb dùng --space-5 (20px), .catalog-hero dùng --space-6
+     (24px). Đo trên /lich-trinh ở 1280px: các khối CÙNG CẤP bắt đầu ở 105 /
+     109 / 110 / 122px — lệch 5–17px, mắt đọc ra ngay là không thẳng hàng. */
+  --container-pad: var(--space-5);
   --duration-instant: .08s;
   --duration-fast: .15s;
   --duration-normal: .25s;

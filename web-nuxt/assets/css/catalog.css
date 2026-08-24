@@ -40,7 +40,7 @@
   position: relative;            /* anchor for ::before motif layer */
   overflow: hidden;             /* clip motif to rounded corners */
   border-radius: var(--radius-xl);
-  padding: var(--space-8) var(--space-6);
+  padding: var(--space-8) var(--container-pad);
   margin-bottom: var(--space-6);
   background: linear-gradient(135deg, var(--primary-light) 0%, var(--bg-warm) 100%);
   border: .5px solid var(--line);
@@ -1242,7 +1242,10 @@
   background: var(--bg-warm);
   background-image: var(--season-hero-gradient);
   border-radius: var(--radius-xl);
-  padding-inline: var(--space-6);
+  /* --space-6 (24px) o day lam .section-head ben trong bat dau o 109px, trong
+     khi cot noi dung chinh o 105px — lech 4px, mat doc ra ngay tren canh dai
+     1000px. Dung chung --container-pad voi .page/.breadcrumb/.catalog-hero. */
+  padding-inline: var(--container-pad);
 }
 .block.band + .block::before,
 .block + .block.band::before {

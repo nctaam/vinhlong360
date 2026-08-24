@@ -10,7 +10,7 @@
    ────────────────────────────────────────────────────────────── */
 
 /* Breadcrumb — horizontal scroll on mobile (Baymard: don't truncate hierarchy) */
-.breadcrumb { max-width: var(--maxw); margin: 0 auto; padding: var(--space-3) var(--space-5) 0; display: flex; align-items: center; gap: var(--space-2); }
+.breadcrumb { max-width: var(--maxw); margin: 0 auto; padding: var(--space-3) var(--container-pad) 0; display: flex; align-items: center; gap: var(--space-2); }
 /* Visible back button — wires the orphaned goBack(); discoverable return path */
 .bc-back { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; min-width: 44px; min-height: 44px; border-radius: var(--radius-full); border: .5px solid var(--line); background: var(--card); color: var(--ink); font-size: 1.15rem; line-height: 1; cursor: pointer; transition: background .3s var(--ease-out), border-color .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
 .bc-back:hover { background: var(--bg-warm); border-color: var(--primary-fg); transform: translateX(-2px); box-shadow: var(--shadow-xs); }

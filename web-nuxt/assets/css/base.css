@@ -207,7 +207,7 @@ h4 { font-size: var(--text-lg);  line-height: var(--lh-lg);  letter-spacing: var
 .region-tile h3 { margin: var(--space-1) 0; font-size: 1.3rem; font-weight: 800; letter-spacing: -.01em; }
 .region-tile p { margin: 0 0 var(--space-1); font-size: var(--text-sm); opacity: .92; line-height: 1.45; }
 
-.page { max-width: var(--maxw); margin: 0 auto; padding: var(--space-8) var(--space-5) var(--space-5); }
+.page { max-width: var(--maxw); margin: 0 auto; padding: var(--space-8) var(--container-pad) var(--space-5); }
 .page-head { margin-bottom: var(--space-6); }
 .page-head h1 { margin: 0 0 var(--space-2); font-size: clamp(1.6rem, 4.5vw, 2.25rem); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tighter); }
 .page-head p { margin: 0; color: var(--muted); max-width: 720px; font-size: var(--text-lg); line-height: var(--leading-relaxed); }
