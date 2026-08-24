@@ -62,7 +62,7 @@
   background-size: auto 92%;
   opacity: .1;
   /* default motif = Mekong river waves (also covers heroes with no specific cat-*) */
-  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22240%22%20viewBox%3D%220%200%20640%20240%22%20fill%3D%22none%22%20stroke%3D%22%23586860%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%3E%20%3Cpath%20d%3D%22M-20%2070%20Q80%2050%20180%2070%20T380%2070%20T580%2070%20T780%2070%22%2F%3E%20%3Cpath%20d%3D%22M-20%20110%20Q80%2090%20180%20110%20T380%20110%20T580%20110%20T780%20110%22%2F%3E%20%3Cpath%20d%3D%22M-20%20150%20Q80%20130%20180%20150%20T380%20150%20T580%20150%20T780%20150%22%2F%3E%20%3Cpath%20d%3D%22M-20%20190%20Q80%20170%20180%20190%20T380%20190%20T580%20190%20T780%20190%22%2F%3E%20%3C%2Fsvg%3E");
+  background-image: var(--hero-motif-waves);
   animation: hero-motif-sway 8s var(--ease-out) infinite;
   will-change: transform;
 }
@@ -767,7 +767,6 @@
 /* Hero motifs in dark mode: swap muted-ink strokes for white (low opacity keeps them subtle) */
 .dark .catalog-hero::before {
   opacity: .08;
-  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22240%22%20viewBox%3D%220%200%20640%20240%22%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%3E%20%3Cpath%20d%3D%22M-20%2070%20Q80%2050%20180%2070%20T380%2070%20T580%2070%20T780%2070%22%2F%3E%20%3Cpath%20d%3D%22M-20%20110%20Q80%2090%20180%20110%20T380%20110%20T580%20110%20T780%20110%22%2F%3E%20%3Cpath%20d%3D%22M-20%20150%20Q80%20130%20180%20150%20T380%20150%20T580%20150%20T780%20150%22%2F%3E%20%3Cpath%20d%3D%22M-20%20190%20Q80%20170%20180%20190%20T380%20190%20T580%20190%20T780%20190%22%2F%3E%20%3C%2Fsvg%3E");
 }
 .dark .catalog-hero.cat-product::before,
 .dark .catalog-hero.cat-ocop::before {

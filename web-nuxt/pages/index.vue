@@ -725,7 +725,22 @@ useHead({
 }
 html.js .home .hero-feature { opacity: 0; transform: translateY(16px); animation: hero-rise .7s var(--ease-out-expo) .5s forwards; }
 
-.home .hero { background-image: none; }
+/* Hero nhan motif song nuoc — cung motif ma `.catalog-hero` dung tren 12 trang.
+   Truoc day dong nay la `background-image: none`, KHONG ghi chu, khien trang chu
+   la trang DUY NHAT tat motif cua ca site (ROADMAP §21.1).
+   KHONG dung `overflow: hidden` nhu `.catalog-hero`: hero trang chu chua panel goi y
+   tim kiem, che tran se cat cut panel do. Motif dung `inset: 0` nen von da khong
+   tran ra duoc. `.home .hero-inner` da co san `position:relative; z-index:1`. */
+.home .hero { position: relative; }
+.home .hero::before {
+  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-repeat: no-repeat; background-position: right -30px center;
+  background-size: auto 92%; opacity: .1;
+  background-image: var(--hero-motif-waves);
+  animation: hero-motif-sway 8s var(--ease-out) infinite;
+  will-change: transform;
+}
+.dark .home .hero::before { opacity: .08; }
 
 /* Kicker */
 /* Editorial dateline eyebrow — a hairline rule + wide-tracked caps, not a glass badge/pill */

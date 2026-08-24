@@ -216,6 +216,10 @@
      lan tieu de muc trang chu. Truoc day gradient nay duoc CHEP o hai noi; chep
      thi troi, dung nhu benh token `-rgb` da vap o ROADMAP §16/§18. */
   --sediment-tick: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+  /* Motif song nuoc Cuu Long cho hero. Hai ban sang/toi CHI khac mau net
+     (%23586860 so voi %23ffffff) — 677/684 ky tu giong nhau, nen tach thanh token
+     thay vi chep. CSS khong noi duoc bien vao trong url() nen phai giu ca hai. */
+  --hero-motif-waves: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22240%22%20viewBox%3D%220%200%20640%20240%22%20fill%3D%22none%22%20stroke%3D%22%23586860%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%3E%20%3Cpath%20d%3D%22M-20%2070%20Q80%2050%20180%2070%20T380%2070%20T580%2070%20T780%2070%22%2F%3E%20%3Cpath%20d%3D%22M-20%20110%20Q80%2090%20180%20110%20T380%20110%20T580%20110%20T780%20110%22%2F%3E%20%3Cpath%20d%3D%22M-20%20150%20Q80%20130%20180%20150%20T380%20150%20T580%20150%20T780%20150%22%2F%3E%20%3Cpath%20d%3D%22M-20%20190%20Q80%20170%20180%20190%20T380%20190%20T580%20190%20T780%20190%22%2F%3E%20%3C%2Fsvg%3E");
   --medal-gold: #d4a017;
   --medal-silver: #8a8d91;
   --medal-bronze: #b07b4f;
@@ -802,6 +806,7 @@
   --error-bg: rgba(255, 105, 97, .12);
   --save-red: #FF6961;
   --sediment-tick: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+  --hero-motif-waves: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22640%22%20height%3D%22240%22%20viewBox%3D%220%200%20640%20240%22%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%3E%20%3Cpath%20d%3D%22M-20%2070%20Q80%2050%20180%2070%20T380%2070%20T580%2070%20T780%2070%22%2F%3E%20%3Cpath%20d%3D%22M-20%20110%20Q80%2090%20180%20110%20T380%20110%20T580%20110%20T780%20110%22%2F%3E%20%3Cpath%20d%3D%22M-20%20150%20Q80%20130%20180%20150%20T380%20150%20T580%20150%20T780%20150%22%2F%3E%20%3Cpath%20d%3D%22M-20%20190%20Q80%20170%20180%20190%20T380%20190%20T580%20190%20T780%20190%22%2F%3E%20%3C%2Fsvg%3E");
   --medal-gold: #f0c040;
   --medal-silver: #b0b3b8;
   --medal-bronze: #d4975a;
