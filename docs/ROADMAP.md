@@ -1540,3 +1540,65 @@ Bước 1 và 6 **không đổi một pixel nào** mà vẫn gỡ được phầ
 
 **Đề nghị bắt đầu từ bước 1 + 6** (an toàn tuyệt đối, dọn sạch nền), rồi bước 2
 trên một trang mẫu để chủ dự án duyệt diện mạo trước khi lan ra.
+
+### 16. Token `-rgb` đã TRÔI khỏi token gốc — ~600 chỗ dùng (2026-08-24)
+
+Định vá 19 màu alpha còn lại bằng `rgba(var(--X-rgb), α)` thì phát hiện cách đó
+**không dùng được**: các token `-rgb` KHÔNG còn khớp token gốc của chúng.
+
+**Xác minh bằng hai cách độc lập** — giải chuỗi `var()` từ nguồn, và đọc
+`getComputedStyle` trên trang thật. Cả hai cho cùng kết luận.
+
+Chế độ TỐI, đo trên trình duyệt — **6/6 lệch**:
+
+| Token | Gốc | `-rgb` | Chênh |
+|---|---|---|---|
+| `--success` | rgb(124,164,131) | **rgb(130,225,170)** | xanh xám ↔ bạc hà sáng |
+| `--warning` | rgb(206,167,112) | rgb(240,160,80) | |
+| `--danger` | rgb(223,127,120) | rgb(255,105,97) | |
+| `--accent` | rgb(232,163,61) | rgb(240,160,80) | |
+| `--primary` | rgb(199,133,117) | rgb(196,105,78) | |
+| `--secondary` | rgb(124,164,131) | rgb(75,169,125) | |
+
+Chế độ SÁNG, giải từ nguồn — **5/6 lệch** (chỉ `--accent` khớp):
+`--success` (37,93,52) ↔ (95,207,138) · `--warning` (133,90,22) ↔ (230,126,34) ·
+`--danger` (189,65,63) ↔ (217,79,61) · `--primary` (149,64,43) ↔ (156,61,34) ·
+`--secondary` (37,93,52) ↔ (46,125,91).
+
+**Bán kính:** `--primary-rgb` 286 lần · `--accent-rgb` 118 · `--secondary-rgb` 97
+· `--warning-rgb` 56 · `--danger-rgb` 32 · `--success-rgb` 8 — **gần 600 lần dùng**.
+
+**Hệ quả thực tế:** ở bất kỳ chỗ nào viết
+`background: rgba(var(--primary-rgb), .1)` cạnh `color: var(--primary)`, nền và
+chữ là HAI MÀU KHÁC NHAU. Đây là một loại "màu không nhất quán" mà không đợt di
+cư nào chữa được, vì nó nằm ở chính tầng token.
+
+**Nguyên nhân:** `-rgb` không được DẪN XUẤT từ gốc mà **viết tay**, nên mỗi lần
+đổi màu gốc là chúng trôi ra. `--accent` còn thiếu hẳn bản khai cho chế độ tối
+trong khi `--accent-rgb` có — nên hai cái phân kỳ đúng ở chế độ tối.
+
+**CHƯA SỬA, và cần chủ dự án quyết trước:** không rõ độ lệch là *lỗi* hay *chủ ý*
+(ví dụ `-rgb` cố tình sáng hơn để làm nền tint). Nếu là lỗi thì sửa 6 token là
+xong; nếu là chủ ý thì phải đổi TÊN chúng (ví dụ `--primary-tint-rgb`) vì tên
+hiện tại nói dối. Sửa mù ~600 chỗ dùng là không được.
+
+#### ĐÍNH CHÍNH commit 5313fa8f
+
+Commit đó ghi "không đổi một pixel nào". **Sai với chế độ tối.** Bảy chỗ tôi đổi
+từ `rgba(232,163,61,α)` sang `rgba(var(--accent-rgb),α)`: ở chế độ tối
+`--accent-rgb` là (240,160,80) chứ không phải (232,163,61), nên bảy chỗ đó ĐỔI
+MÀU trong chế độ tối.
+
+Nhiều khả năng đổi như vậy là ĐÚNG HƠN — chủ đề tối cố ý dùng hổ phách sáng hơn
+(`--accent-text: #e0b366`, chú thích ghi "lighter amber for AA as text on dark
+bg"), mà giá trị viết cứng cũ thì phớt lờ chủ đề. Nhưng đó vẫn là một thay đổi
+nhìn thấy được, và tôi đã tuyên bố ngược lại.
+
+#### Vì sao 19 màu alpha còn lại CHƯA vá
+
+Cả hai đường đều đang bị chặn:
+- `rgba(var(--X-rgb), α)` — lan chính cái trôi ở trên ra thêm 19 chỗ.
+- `color-mix(in srgb, var(--X) α%, transparent)` — về lý thuyết đúng, nhưng tôi
+  CHƯA chứng minh được bằng đo: phép thử hỏng vì canvas không nhận `oklab()` nên
+  `fillStyle` giữ giá trị cũ, cho 4/5 hàng "giống nhau" giả tạo. Cần viết bộ
+  chuyển oklab→sRGB trong JS rồi so số, chưa làm.
