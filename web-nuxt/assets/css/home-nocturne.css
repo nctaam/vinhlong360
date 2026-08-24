@@ -452,12 +452,25 @@
   padding: var(--space-6);
 }
 
+/* .cm-card và .journey-action nhập đàn: nocturne làm phẳng trang chủ nhưng bỏ sót
+   hai cái này — đo được 20px còn đổ bóng, và 14px, nằm cùng màn hình với .fy-chip
+   8px và .event-mini 0px. Cùng là thẻ mà bốn kiểu bo góc. */
 [data-home-pilot="nocturne-b1"] .community-join,
+[data-home-pilot="nocturne-b1"] .cm-card,
+[data-home-pilot="nocturne-b1"] .journey-action,
 [data-home-pilot="nocturne-b1"] .fy-chip {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-control);
   background: var(--color-surface);
   box-shadow: none;
+}
+
+/* BÔ TRONG PHẢI NHỎHN BÔ NGOÀI đúng bằng độ dày đệm. Khung tìm kiếm hero bo 8px,
+   đệm 4px, mà ô nhập bên trong bo 14px — góc ô nhập phình ra ngoài đường cong của
+   khung, viền xanh quanh nó bị bóp méo ở bốn góc. Đây là phần tử nổi bật nhất trang.
+   Dùng calc để quan hệ này tự giữ khi --radius-control đổi. */
+[data-home-pilot="nocturne-b1"] .hero-search input[type="search"] {
+  border-radius: calc(var(--radius-control) - 4px);
 }
 
 [data-home-pilot="nocturne-b1"] :is(.event-mini, .dish-item, .fy-chip):hover {

@@ -598,6 +598,11 @@ const approvedConsumerTuples = new Set([
   ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .ec-countdown.ec-today[data-material-accent="amber"]', 'color', 'var(--home-color-today-text)'],
   ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .ec-countdown.ec-today[data-material-accent="amber"]', 'border', '1px solid var(--color-error)'],
   ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .ec-countdown.ec-today[data-material-accent="amber"]', 'box-shadow', 'inset 0 0 0 1px var(--color-error)'],
+  // Hinh hoc, KHONG phai mau: bo trong phai nho hon bo ngoai dung bang do day dem.
+  // Khung .hero-search bo 8px va dem 4px, o nhap ben trong truoc day bo 14px nen goc
+  // no phinh ra ngoai duong cong cua khung. Bo canh nay bat vi loc theo
+  // startsWith('border-'), von nham vao border-color; border-radius khong doi tuong phan.
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-search input[type="search"]', 'border-radius', 'calc(var(--radius-control) - 4px)'],
 ].map(consumerTupleKey))
 
 function validateProtectedConsumerDeclarations(sources) {

@@ -444,7 +444,7 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 - **Bằng chứng rò knowledge (2026-08-06):** probe RED/GREEN chạy sau `test_resilience.py` trong cùng process — trước khi sửa đỏ đúng `assert {} != {}` (knowledge bị bỏ lại rỗng), sau khi sửa xanh. `test_resilience.py` `173 passed, 1 skipped` → `174 passed, 1 skipped` (thêm probe). Full suite 3 lần liên tiếp đều xanh, **số đếm KHÔNG đổi so với trước khi sửa** (`9470 passed, 77 skipped, 1 xfailed`; 616s/651s/641s) → xác nhận không test nào từng phụ thuộc vào state rò, đúng rủi ro đã nêu lúc defer.
 - **Ghi chú chẩn đoán (tránh mất thời gian lần sau):** `pytest-randomly` KHÔNG được cài → thứ tự test trong một lần chạy là CỐ ĐỊNH, `-p no:randomly` là no-op. Nguồn bất định duy nhất là xdist `--dist loadfile` gán *file* cho worker theo thời điểm worker rảnh, nên "cùng commit lúc đỏ lúc xanh" = polluter và nạn nhân có rơi cùng worker hay không. Cách tái hiện rẻ và tất định: chạy thẳng cặp file nghi ngờ trong **cùng một process** (`pytest <file_polluter> <file_victim>`), KHÔNG cần `-n`.
 
-- **[MỚI 2026-08-24] `tests/detail-grid-containment-gate.test.mjs` đỏ một lần rồi tự xanh.**
+- **[MỚI 2026-08-24] `tests/detail-grid-containment-gate.test.mjs` đỏ rồi tự xanh — ĐÃ HAI LẦN.**
   Ca `observes exact timed-out helper-tree exit and prevents delayed side effects` báo
   `node.exe timed out after 1000ms; cleanup failed: Bad control character in string literal in
   JSON at position 122791`. Chạy riêng file: **47/47 xanh**; chạy lại toàn bộ: **2103/2103 xanh**.
@@ -453,7 +453,11 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
   Chẩn đoán: ca này sinh **cây tiến trình thật** rồi đọc file pid do tiến trình con ghi;
   hạn 1000ms đủ chật để spawn `node.exe` trên Windows vượt quá khi máy đang tải nặng, và
   file pid có thể bị đọc lúc đang ghi dở → JSON cụt. Đây là **đua ghi/đọc**, không phải
-  hồi quy. Nếu tái diễn: ghi pid ra file tạm rồi `rename` (nguyên tử) thay vì ghi thậng.
+  hồi quy. Cách vá: ghi pid ra file tạm rồi `rename` (nguyên tử) thay vì ghi thẳng,
+  hoặc nới hạn 1000ms cho Windows.
+  **ĐÃ TÁI DIỄN — lần 2 cùng ngày, sau khi sửa CSS trang chủ (không liên quan).**
+  Hai lần thì không còn là ngẫu nhiên nữa. Để lâu thì suite mất độ tin cậy: riêng
+  đợt này tôi đã phải chạy lại toàn bộ hai lần chỉ để biết đó là nhiễu hay hồi quy thật.
 
 ### Backlog phát sinh — 4 test closed-installer chỉ đỏ trên Linux (2026-08-06)
 - **[Security/Chưa làm] Ghim python theo descriptor KHÔNG chống được ghi-đè-tại-chỗ.** `PYTHON_EXECUTOR="/proc/$BASHPID/fd/$FD"` ghim *inode*, nên `> "$path"` (truncate cùng inode) làm mọi `invoke_python` sau đó chạy nội dung của kẻ tấn công — đo được: hook ghi `exit 97` vào executor đã admit thì installer báo `authority-result-record-failed:python-dependencies:97`. Ghim descriptor chỉ chặn *thay đường dẫn* (inode mới), và đó mới là thứ `test_linux_installer_keeps_admitted_python_when_authority_path_is_replaced` đặt tên. Vá thật sẽ tốn kém: hook role được bảo vệ bằng copy-vào-memfd-có-seal + đối chiếu digest mỗi lần gọi, nhưng python KHÔNG áp được cách đó (verify digest cần chạy python — vòng lặp gà-trứng; exec từ memfd thì mất nhận diện venv qua `sys.prefix`, đúng thứ `test_explicit_python_executor_preserves_isolated_venv_runtime` khoá). Cần chủ dự án quyết trước khi động vào.
