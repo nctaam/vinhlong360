@@ -1809,3 +1809,77 @@ mới đo được bằng số (màu, cỡ, bo tròn, tương phản, tràn ngan
 **CSDL dev chỉ có 2 thành viên** nên hạng 3 và badge trong danh sách không tự render
 được — đã đo trên phần tử dựng bù mang đúng thuộc tính scope của component,
 không phải bằng suy luận từ CSS.
+
+
+### 18. Soi bằng khuôn token ba tầng (kỹ năng `design-system`) — 2026-08-24
+
+Chủ dự án yêu cầu gọi kỹ năng `design-system`. Khuôn của nó — **nguyên thuỷ →
+ngữ nghĩa → component**, trong đó *tầng trên luôn TRỎ VỀ tầng dưới, không bao
+giờ chép giá trị* — cho một cách gọi tên chính xác hơn hẳn cách tôi đang mò.
+
+#### 18.1 Hai thang bo góc KHÔNG phải hai thang cạnh tranh
+
+Tôi đã đọc sai suốt mấy đợt. Đúng ra:
+
+| | token | vai trò |
+|---|---|---|
+| nguyên thuỷ | `--radius-xs/sm/md/lg/xl/full` = 4/10/14/20/28/9999 | tên theo cỡ, vô nghĩa ngữ cảnh |
+| mục đích | `--radius-control/surface/sheet` = 8/12/20 | tên theo công dụng |
+| component | `--framed-dossier-radius`, `--theme-control-radius` | **đã trỏ về tầng mục đích đúng chuẩn** |
+
+Tầng mục đích **giữ px thô thay vì trỏ về nguyên thuỷ** — đó chính là cơ chế
+trôi, y hệt bệnh `-rgb` ở §16.
+
+Nhưng đo kỹ hơn thì đây **không phải token hoang**: `--radius-control/surface`
+nằm trong `shell.css`, `catalog.css`, `home-nocturne.css` — tức phần mã MỚI.
+Đây là **một cuộc di trú thang bo góc đang dang dở**.
+
+**Mức hoàn thành đo được: thang cũ 370 lượt dùng, thang mới 32 — mới 8%.**
+(Không tính `--radius-full` 159 lượt vì nó dùng chung cho cả hai.)
+
+**CHỜ CHỦ DỰ ÁN QUYẾT.** Tôi KHÔNG tự quyết một cuộc di trú 370 chỗ. Hai hướng:
+- **(a) Đi tiếp:** mã mới chỉ dùng `--radius-control/surface`, dần chuyển 370 chỗ.
+  Vốn là hướng đang đi, nhưng 8% sau nhiều đợt thì tốc độ đó là hàng năm.
+- **(b) Quay về:** `--radius-control: var(--radius-sm)` (8→10px),
+  `--radius-surface: var(--radius-md)` (12→14px). Chỉ đổi 32 chỗ, mỗi chỗ 2px —
+  đo được là không có lỗi hình học nào phát sinh. Xong ngay, còn một thang.
+
+Tôi nghiêng về **(b)**: 2px không ai thấy, mà bỏ hẳn được một thang khỏi đầu.
+Nhưng nó ghi đè lựa chọn 8px có chủ đích của nocturne nên phải hỏi.
+
+#### 18.2 Đã làm ngay (chắc chắn đúng, không cần quyết)
+
+- **Xoá `--radius-sheet: 20px`** — chép y `--radius-lg`, và `var(--radius-sheet)`
+  xuất hiện **0 lần** trong toàn `web-nuxt`. Token chết.
+- **`--medal-ink` nay trỏ về `--mekong-ink`** thay vì chép `#081a16`. Đây là bản
+  sao **do chính tôi tạo ra sáng nay** ở 36e93fc4 — đúng lỗi tôi đang đi sửa.
+
+  **Bẫy đo lại xuất hiện:** máy dò của tôi so *chữ khai báo* nên tưởng hai token
+  bằng nhau (`#081A16`). Nhưng `--mekong-ink` computed ra `oklch(20% 0.025 180)`
+  — có khai báo sau đè lên, y như `--harvest-700` ở §16. Đo thật: mekong
+  (7,9 · 25,8 · 22,4) so với medal (8 · 26 · 22), **ΔE 0,147** — dưới ngưỡng
+  nhìn thấy rất xa. Nên trỏ được. Tương phản huy chương sau khi đổi:
+  sáng 7,57/5,39/4,96 · tối 10,55/8,55/7,17 (trước: 7,56/5,39/4,95 · 10,53/8,54/7,16).
+
+#### 18.3 Lớp lỗi rộng hơn: token CHÉP giá trị thay vì TRỎ
+
+Quét toàn `variables.css` tìm token chép y giá trị thô của token khác trong
+cùng họ (loại các trùng ngẫu nhiên khác thang như `--radius-xs: 4px` với
+`--space-1: 4px`). Còn lại là lỗi tầng thật:
+
+| giá trị | các token cùng chép | nên trỏ về |
+|---|---|---|
+| `#FFFFFF` | `--on-primary`, `--on-secondary`, `--on-tertiary`, `--on-error`, `--on-warning`, `--date-badge-ink`, `--color-surface-raised` | `--white` |
+| `400` / `500` / `600` | `--weight-body/caption/display` · `--weight-label/title-sm` · `--weight-headline/title` | `--weight-normal/medium/semibold` |
+| `1px solid var(--line)` | `--card-outlined-border`, `--detail-divider` | `--divider-default` |
+| `rgba(0,0,0,.72)` | `--scrim` | `--overlay-dark` |
+| `255,255,255` | `--text-on-dark-rgb` | `--white-rgb` |
+| `#2B2622` | `--on-accent` | `--ink-900` |
+| `#7DAEBA` | `--color-admin-action` | `--night-river` |
+| `cubic-bezier(.4,0,.2,1)` | `--ease-standard` | `--ease-in-out` |
+
+**~20 token, đổi xong thị giác KHÔNG đổi một pixel** (giá trị y hệt), nhưng trôi
+trở thành bất khả về mặt cấu trúc. Chưa làm vì 7 token nhóm `#FFFFFF` có override
+theo chế độ (`--on-warning` khai 4 lần, `--color-surface-raised` 5 lần) trong khi
+`--white` chỉ khai 1 lần — phải xử lý TỪNG khai báo, không thay hàng loạt được.
+Việc này nên đi kèm ảnh chụp trước/sau ở cả hai chế độ.

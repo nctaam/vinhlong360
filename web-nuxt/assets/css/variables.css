@@ -93,9 +93,14 @@
   --color-shell-scrim: rgba(0, 0, 0, .52);
 
   /* Shell/component contracts. */
+  /* TẦNG MỤC ĐÍCH (đang di trú). Hai token này là hướng MỚI, dùng trong shell.css,
+     catalog.css, home-nocturne.css; có --framed-dossier-radius và --theme-control-radius
+     trỏ về chúng đúng chuẩn ba tầng. Thang CŨ --radius-xs..xl (4/10/14/20/28) vẫn
+     còn 370 lượt dùng — di trú mới đi được 8%. Đừng thêm giá trị thô vào đây;
+     mã mới dùng hai token này, đừng dùng --radius-sm/md. Quyết định dứt điểm
+     (đi tiếp hay quay về) cần chủ dự án — xem ROADMAP. */
   --radius-control: 8px;
   --radius-surface: 12px;
-  --radius-sheet: 20px;
   --shell-public-header-height: 150px;
   --shell-public-bottom-nav-reserved-height: max(64px, calc(59px + env(safe-area-inset-bottom, 0px)));
   --contact-widget-mobile-reserved-height: calc(var(--contact-cta-height) + var(--space-6) + 1px);
@@ -209,7 +214,7 @@
   /* Mực trên huy chương: cố tình KHÔNG đổi theo chế độ. Ba nền huy chương
      đều sáng ở cả sáng lẫn tối, nên chữ phải sẫm ở cả hai. Đo được:
      sáng 7,56/5,39/4,95 — tối 10,53/8,54/7,16 (vàng/bạc/đồng), đều đạt AA 4,5. */
-  --medal-ink: #081a16;
+  --medal-ink: var(--mekong-ink);
   --save-red-bg: rgba(220, 38, 38, .08);
   --save-red-border: rgba(220, 38, 38, .25);
   /* State layer opacities (M3) */
