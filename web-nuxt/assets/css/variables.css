@@ -212,6 +212,10 @@
   /* Huy chương xếp hạng: MỘT nguồn cho cả /bang-xep-hang lẫn sidebar
      /cong-dong. Trước đây mỗi trang tự khai một bộ (--rank-* và --lb-*),
      và bản chép đã trôi thật: đồng nâu chế độ tối lệch ΔE 2,07. */
+  /* Dai phu sa (sediment tick) — MOT nguon cho ca `.sediment-head` dung chung
+     lan tieu de muc trang chu. Truoc day gradient nay duoc CHEP o hai noi; chep
+     thi troi, dung nhu benh token `-rgb` da vap o ROADMAP §16/§18. */
+  --sediment-tick: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
   --medal-gold: #d4a017;
   --medal-silver: #8a8d91;
   --medal-bronze: #b07b4f;
@@ -797,6 +801,7 @@
   --danger: var(--error); /* alias (dark) — keeps var(--danger) on the dark error color */
   --error-bg: rgba(255, 105, 97, .12);
   --save-red: #FF6961;
+  --sediment-tick: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%);
   --medal-gold: #f0c040;
   --medal-silver: #b0b3b8;
   --medal-bronze: #d4975a;

@@ -847,7 +847,10 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .home .section-head h2::before {
   content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
   width: 4px; height: 1.05em; border-radius: var(--radius-full);
-  background: var(--color-brand);
+  /* Dải phù sa ba màu — giống hệt `.sediment-head` dùng chung. Trước đây chỗ này
+     là một màu phẳng: trang chủ chép hình dạng sediment-tick nhưng bỏ ý nghĩa,
+     trong khi phù sa là ẩn dụ nền tảng của cả site (ROADMAP §24.3). */
+  background: var(--sediment-tick);
 }
 /* Fraunces cất tiếng: chữ nghiêng trong tiêu đề dùng accent vật liệu theo ngữ cảnh,
    không gắn một theme riêng cho từng địa phương. */
@@ -1077,7 +1080,6 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .dark .home .hero-search input { background: var(--bg-warm); color: var(--ink); }
 .dark .home .hero-search input::placeholder { color: rgba(var(--white-rgb),.50); }
 .dark .home .hero-search:focus-within { border-color: var(--color-focus); }
-.dark .home .section-head h2::before { background: var(--color-brand); }
 .dark .home .block + .block::before { background: linear-gradient(90deg, transparent, var(--line) 22%, var(--line) 78%, transparent); opacity: .6; }
 .dark .ec-today { color: var(--color-error); }
 

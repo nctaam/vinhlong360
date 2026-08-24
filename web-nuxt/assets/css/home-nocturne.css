@@ -522,7 +522,9 @@
   width: 4px;
   height: 1.05em;
   border-radius: var(--radius-full);
-  background: var(--color-brand);
+  /* CÙNG dải phù sa với `.home .section-head h2::before` và `.sediment-head`
+     dùng chung — một token, không chép giá trị (ROADMAP §24.3). */
+  background: var(--sediment-tick);
 }
 
 /* Chữ dẫn và chữ phụ thụt theo đúng 16px đó, nếu không chính việc thêm thanh
