@@ -712,7 +712,10 @@ useHead({
 }
 .home .hero-inner {
   position: relative; z-index: 1;
-  width: min(100% - 2 * var(--space-5), 1180px); margin-inline: auto;
+  /* CÙNG công thức khung với `.block` và các mục nocturne. Trước đây dòng này
+     là công thức THỨ BA trên cùng một trang, lại ghim cứng 1180px thay vì token
+     --maxw (1140) — hero rộng hơn mọi mục khác 40px. */
+  max-width: var(--maxw); margin-inline: auto;
 }
 
 /* Hero asymmetric layout: ≥920px two columns */
