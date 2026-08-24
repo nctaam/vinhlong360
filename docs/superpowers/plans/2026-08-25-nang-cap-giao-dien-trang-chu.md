@@ -1,6 +1,6 @@
 # Kế hoạch nâng cấp giao diện trang chủ
 
-> **STATUS (2026-08-25): active — chờ chủ dự án duyệt Đợt 3.**
+> **STATUS (2026-08-25): active — Đợt 1 XONG (T1 8800796e, T2 794d7398); chờ chủ dự án nhìn bằng mắt trước khi sang Đợt 2.**
 > Cơ sở nghiên cứu: `docs/ROADMAP.md` §19–27 (8 đợt đo, 4 site đối chiếu).
 > **1 việc = 1 commit.** Bất biến §2 CLAUDE.md áp dụng nguyên vẹn.
 
@@ -41,7 +41,7 @@ bằng **từ vựng thẻ riêng** thay vì từ vựng của site.
 
 Rủi ro gần bằng không: hình học không đổi, tương phản đã đo.
 
-- [ ] **T1 — Thanh tiêu đề mục nhận lại dải phù sa ba màu.**
+- [x] **T1 — Thanh tiêu đề mục nhận lại dải phù sa ba màu.**
   `pages/index.vue`, quy tắc `.home .section-head h2::before`: đổi
   `background: var(--color-brand)` → gradient river→amber→clay giống
   `assets/css/components.css:813`.
@@ -52,7 +52,7 @@ Rủi ro gần bằng không: hình học không đổi, tương phản đã đo
   4px nên không ràng buộc tương phản.
   **Verify:** `npx vitest run` · `python scripts/checks/run_hard.py --staged` · mắt thường.
 
-- [ ] **T2 — Hero nhận lại motif sóng nước.**
+- [x] **T2 — Hero nhận lại motif sóng nước.**
   `pages/index.vue:728` `.home .hero { background-image: none; }` — gỡ, và cho hero dùng
   lớp `::before` motif như `.catalog-hero` (`assets/css/catalog.css:54`).
   **Vì sao:** 12+ trang đều có motif hero; trang chủ là trang **duy nhất** tắt nó, bằng
@@ -61,6 +61,32 @@ Rủi ro gần bằng không: hình học không đổi, tương phản đã đo
   tương phản `h1` **15,98 → 12,44** và `.hero-sub` **18,52 → 14,41** — vẫn gấp ~3 lần
   ngưỡng AA.
   **Verify:** như T1, cộng đo lại tương phản hero ở cả hai chế độ.
+
+
+## Kết quả Đợt 1 (2026-08-25)
+
+| | commit | đo được |
+|---|---|---|
+| T1 | `8800796e` | 5/5 thanh tiêu đề có dải phù sa, cả hai chế độ; `/dia-diem` 3/3 không hỏng |
+| T2 | `794d7398` | motif hero dựng ở cả hai chế độ; tràn ngang 0; tương phản sáng 16,74/10,85 · tối 15,98/18,52 |
+
+**Cả hai làm bằng TOKEN, không chép giá trị** — thêm `--sediment-tick` và
+`--hero-motif-waves`, mỗi cái khai một lần ở `:root` và một lần ở `.dark`. Nhờ token
+tự biết chế độ, **xoá được 3 quy tắc `.dark` thừa** (components.css, index.vue,
+catalog.css).
+
+**Hai lần verify cứu tôi khỏi giao thiếu/giao sai:**
+- T1 lượt đầu chỉ 2/5 thanh đổi — ba tiêu đề mục dựng bằng component lấy kiểu từ
+  `home-nocturne.css`, quy tắc do chính tôi viết ở `f55aeede`. Sửa file đầu tiên rồi
+  tin là xong thì đã giao một trang nửa vời.
+- T2 lượt đầu đọc ra `hero-sub` tương phản **1,04** và suýt báo động. So sai nền —
+  `.hero-sub` có nền đen riêng, phải chồng lên nền hero rồi mới so, thật ra **10,85**.
+
+**Phát hiện ngoài dự kiến:** `/img/hero.webp` **tồn tại** (190 KB) và `base.css:163`
+có sẵn quy tắc dùng nó, nhưng `home-nocturne.css:64` dùng `background:` dạng rút gọn
+nạp sau nên ảnh không bao giờ hiện. Đã kiểm: sau T2 ảnh vẫn KHÔNG tải (0 request).
+Tôi không tự bật — đó là lựa chọn của đợt nocturne. Nhưng nó liên quan thẳng tới
+§19.3/§20 (trang chủ ít hình nhất trong 4 site): **có sẵn một tấm hero đang nằm không.**
 
 ## ĐỢT 2 — nhắm đúng đối tượng và nới nhịp
 
