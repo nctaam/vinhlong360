@@ -2205,3 +2205,86 @@ kết luận đúng là: **giữ khối này**.
 n=3, và WebFetch chỉ thấy nội dung tĩnh phía máy chủ — mục nào dựng bằng JS sau khi
 tải có thể bị bỏ sót. Bảng trên nói về **cấu trúc biên tập**, không phải bản kiểm kê
 DOM đầy đủ. Đối chiếu với §20 (số đo DOM) để có bức tranh hai chiều.
+
+
+### 23. Xu hướng tương lai — lọc qua ràng buộc của dự án (2026-08-24)
+
+Chủ dự án hỏi về xu hướng tương lai của các mô hình tương tự. Xu hướng chỉ có giá trị
+nếu lọt qua ràng buộc cứng: ngân sách <1tr/tháng, solo dev, không tính năng nặng,
+chỉ ảnh AI (§1.5), không booking (§1.4). Nêu xu hướng không lọc là gây nhiễu.
+
+#### 23.1 Số liệu ngành (2026)
+
+- **1/10 người dùng internet Mỹ nay bắt đầu hành trình tìm chuyến đi BÊN TRONG một
+  công cụ AI tạo sinh** — không phải trên công cụ tìm kiếm.
+- **Tìm kiếm không-nhấp tăng 22,8% → 26,7%** chỉ trong hơn một năm.
+- **64% nhà tiếp thị điểm đến đã đang tạo nội dung hỏi–đáp có cấu trúc** để tăng khả
+  năng được AI trích dẫn.
+- Vai trò website đang được định nghĩa lại: từ *nơi để ghé* thành **kho nội dung có
+  cấu trúc cấp dữ kiện cho các cỗ máy trả lời**.
+
+Hệ quả cho vinhlong360: cạnh tranh thật trong 2–3 năm tới **không phải xếp hạng
+Google, mà là ĐƯỢC TRÍCH DẪN**. Và lợi thế của một cổng cấp tỉnh không nằm ở thẩm mỹ
+— nó nằm ở **dữ kiện địa phương mà không nguồn nào khác có**.
+
+#### 23.2 Hiện trạng đo được: nền tảng TỐT hơn tôi tưởng
+
+**30 file phát JSON-LD**, 16 loại schema:
+`ListItem` 56 · `BreadcrumbList` 20 · `CollectionPage` 10 · `ItemList` 8 · `Place` 5 ·
+`PostalAddress` 4 · `AdministrativeArea` 4 · `Organization` 3 · `GeoCoordinates` 3 ·
+`Event` 3 · `WebSite` 2 · `SearchAction` 2 · `Offer` 2 · `WebPage` · `WebApplication` ·
+`TouristTrip`.
+
+Đây là nền AEO lành mạnh, không phải nợ. Ba khoảng trống dưới đây mới là việc.
+
+#### 23.3 Trống 1: có nội dung hỏi–đáp nhưng KHÔNG đánh dấu schema
+
+`pages/bai-viet/[id].vue` đã có `post_type === "question"` và `bestAnswerId` — tức
+**bài hỏi có câu trả lời được chọn**. Nhưng grep toàn dự án: **0 chỗ** dùng `QAPage`,
+`FAQPage`, `Question`, `acceptedAnswer`.
+
+Đây đúng thứ §23.1 nói 64% đối thủ đang làm, và dữ liệu thì **đã có sẵn trong DB**.
+Thêm schema là thay đổi nhỏ, không dịch vụ mới, không chi phí — đúng loại việc lọt
+qua bộ lọc ngân sách.
+
+#### 23.4 Trống 2: BA TỈNH NGANG HÀNG nằm trong dữ liệu MÁY ĐỌC
+
+`pages/index.vue` JSON-LD:
+```
+areaServed: { '@type': 'AdministrativeArea', name: 'Vĩnh Long, Bến Tre, Trà Vinh' }
+```
+
+Và ít nhất 6 chỗ nữa trong `description`/`title` SEO: `ban-do.vue:7,228`,
+`cong-dong.vue:1473`, `danh-ba.vue:280`, `dia-diem/index.vue:13,299`.
+
+Với người đọc thì đây là lỗi văn phong vi phạm §1.6. **Với cỗ máy trả lời thì nặng
+hơn: nó DẠY SAI một dữ kiện hành chính** — ba tỉnh đã sáp nhập thành một từ 7/2025 —
+và mô hình có thể nhắc lại điều đó. Một cổng tỉnh dạy sai địa giới của chính tỉnh
+mình là thứ phá đúng cái lợi thế "nguồn có thẩm quyền" ở §23.1.
+
+#### 23.5 Trống 3: "Chưa rõ nguồn" ×5 trên cửa trước — đọc lại §19.5 bằng khung mới
+
+Ở §19.5 tôi coi đây là câu hỏi về *tín nhiệm với người đọc*. Trong khung cỗ-máy-trả-lời
+nó còn là câu hỏi về **khả năng được trích dẫn**: một trang tự khai "không rõ nguồn,
+không rõ thời điểm cập nhật" ở 5 mục là tín hiệu thẩm quyền ÂM.
+
+Và đây là chỗ hạ tầng `attributes.verifiedAt` — đã xây, hiện phủ ~0 entity (§1.7) —
+trở thành **tài sản chiến lược** chứ không phải mục dọn dẹp. Trong thế giới mà AI trả
+lời câu hỏi du lịch, thứ phân biệt là **dữ kiện kiểm chứng được mà không ai khác có**.
+
+#### 23.6 Xu hướng KHÔNG lọt qua bộ lọc — nêu để khỏi mất công
+
+| xu hướng | số liệu | vì sao loại |
+|---|---|---|
+| Video ngắn | ROI cao nhất ngành (49%) | cần năng lực sản xuất, lưu trữ, băng thông; đụng §1.5 (chỉ ảnh AI) và "không tính năng nặng" |
+| Trợ lý AI hội thoại | đang phổ biến ở DMO lớn | dự án CÓ ChatWidget nhưng §2-B8 cap cứng chi phí LLM; không nới |
+| WebGL / 3D nhập vai | thắng giải Awwwards | ngân sách và hiệu năng; nhóm ngang hàng của dự án không phải agency |
+
+Awwwards ngành du lịch chủ yếu là agency thương mại chạy WebGL — **không phải nhóm
+ngang hàng** của một cổng cấp tỉnh solo-dev. Đối chiếu với họ sẽ dẫn tới kết luận sai.
+
+#### 23.7 Lưu ý điều kiện tiên quyết
+
+Toàn bộ mục này **chưa có hiệu lực** chừng nào `NUXT_PUBLIC_SITE_NOINDEX` còn bật
+(§1.7). Nhưng ba khoảng trống trên nên vá TRƯỚC khi mở index — mở ra rồi mới sửa thì
+dữ kiện sai đã kịp vào chỉ mục và vào mô hình.
