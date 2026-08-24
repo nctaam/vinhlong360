@@ -330,7 +330,7 @@ useHead(() => ({
 .fac-src { color: var(--muted); display: block; margin: var(--space-3) calc(-1 * var(--space-5)) 0; padding: var(--space-2) var(--space-5); font-size: var(--text-xs); background: var(--overlay-subtle, rgba(var(--black-rgb),.02)); border-top: .5px solid var(--line); }
 .fac-src a { color: var(--ink-secondary); text-decoration: underline; transition: color .3s var(--ease-out); }
 .fac-src a:hover { color: var(--primary-fg); }
-.fac-verified { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; margin-right: 2px; border-radius: 50%; background: rgba(var(--secondary-rgb, 22,163,74), .14); color: var(--success); font-weight: var(--weight-bold); font-size: .65rem; vertical-align: middle; }
+.fac-verified { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; margin-right: 2px; border-radius: 50%; background: rgba(var(--secondary-rgb), .14); color: var(--success); font-weight: var(--weight-bold); font-size: .65rem; vertical-align: middle; }
 .ward-hub-link { margin: 0 0 var(--space-4); }
 .ward-hub-link a { color: var(--primary-fg); font-weight: var(--weight-semibold); transition: opacity .3s var(--ease-out); }
 .ward-hub-link a:active { opacity: .7; }

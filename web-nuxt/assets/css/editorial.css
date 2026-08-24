@@ -11,7 +11,7 @@
   align-items: flex-end;
   overflow: clip;
   isolation: isolate;
-  background: var(--surface-container-high, #1a1a1e);
+  background: var(--surface-container-high);
   color: #fff;
 }
 .cine-hero__media {

@@ -209,7 +209,7 @@ function addChild(parentIdx: number) {
 .sl-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
 .sl-btn:disabled { opacity: .25; cursor: not-allowed; }
 .sl-btn-edit:hover:not(:disabled) { background: rgba(var(--primary-rgb), .06); color: var(--primary); }
-.sl-btn-remove:hover:not(:disabled) { background: rgba(var(--danger-rgb, 217,79,61), .06); color: var(--danger); }
+.sl-btn-remove:hover:not(:disabled) { background: rgba(var(--danger-rgb), .06); color: var(--danger); }
 
 .sl-edit-fields { display: flex; flex-direction: column; gap: var(--space-3); }
 .sl-edit-group { display: flex; flex-direction: column; gap: var(--space-1); }

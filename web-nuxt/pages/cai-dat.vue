@@ -1603,7 +1603,7 @@ onUnmounted(() => {
   font: inherit; transition: border-color .25s var(--ease-out), box-shadow .25s var(--ease-out), background .25s var(--ease-out);
 }
 .sf-input:hover:not(:focus) { border-color: var(--ink-700); }
-.sf-input:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 33,150,83), .15); background: var(--card); }
+.sf-input:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .15); background: var(--card); }
 .sf-textarea { resize: vertical; min-height: 90px; }
 .sf-error { color: var(--danger); font-size: var(--text-sm); }
 .pw-strength { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-1); }
@@ -1694,7 +1694,7 @@ onUnmounted(() => {
 .preference-heading h2 { margin: 0; padding: 0; border: 0; font-family: var(--font-editorial); font-size: var(--text-lg); }
 .preference-revision { flex-shrink: 0; padding: .25rem .55rem; border: 1px solid var(--line); border-radius: var(--radius-full); color: var(--ink-700); font-size: var(--text-xs); }
 .preference-intro { max-width: 68ch; margin: .55rem 0 var(--space-4); line-height: var(--leading-relaxed); }
-.preference-banner { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-4); padding: .8rem .9rem; border: 1px solid var(--line); border-left: 3px solid var(--amber-600, #a56a00); border-radius: var(--radius-md); background: var(--bg-warm); }
+.preference-banner { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-4); padding: .8rem .9rem; border: 1px solid var(--line); border-left: 3px solid var(--amber-600); border-radius: var(--radius-md); background: var(--bg-warm); }
 .preference-banner .btn, [data-action="load-consent-history"] { min-height: 44px; }
 .preference-banner p { margin: .15rem 0 0; color: var(--ink-700); font-size: var(--text-xs); line-height: 1.45; }
 .preference-conflict { border-left-color: var(--danger); }

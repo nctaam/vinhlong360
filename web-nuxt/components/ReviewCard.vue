@@ -93,7 +93,7 @@ const { timeAgo } = useTimeAgo()
   transition: color .15s var(--ease-soft), border-color .15s var(--ease-soft);
 }
 .ri-action-btn:hover { color: var(--error); border-color: var(--error); }
-.ri-action-btn:focus-visible { outline: 2px solid var(--error, currentColor); outline-offset: 1px; }
+.ri-action-btn:focus-visible { outline: 2px solid var(--error); outline-offset: 1px; }
 .ri-action-btn:disabled { opacity: .55; cursor: not-allowed; }
 .rf-error { font-size: var(--text-sm); color: var(--error); margin-top: var(--space-1); }
 /* Sediment accent replaces the generic --accent rail — river→amber→clay wash, echoing the section tick at card scale. */

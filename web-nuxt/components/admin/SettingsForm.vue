@@ -382,7 +382,7 @@ const formatDate = formatDateVN
 .sf-input::placeholder, .sf-textarea::placeholder { color: var(--muted); opacity: .6; }
 .sf-textarea { resize: vertical; min-height: 88px; font-family: inherit; line-height: 1.5; }
 .sf-json { font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace; font-size: .8rem; min-height: 160px; line-height: 1.5; tab-size: 2; }
-.sf-json-invalid { border-color: var(--danger) !important; box-shadow: 0 0 0 3px rgba(var(--danger-rgb, 217,79,61),.08) !important; }
+.sf-json-invalid { border-color: var(--danger) !important; box-shadow: 0 0 0 3px rgba(var(--danger-rgb),.08) !important; }
 .sf-json-error { color: var(--danger); font-size: .75rem; margin-top: var(--space-1); }
 
 /* ── Repeater (A3) ── */
@@ -420,7 +420,7 @@ const formatDate = formatDateVN
   min-height: 44px; display: flex; align-items: center;
   transition: background .2s, color .2s, border-color .2s, transform .15s var(--ease-soft);
 }
-.sf-color-clear:hover { background: rgba(var(--danger-rgb, 217,79,61),.06); color: var(--danger); border-color: rgba(var(--danger-rgb, 217,79,61),.2); }
+.sf-color-clear:hover { background: rgba(var(--danger-rgb),.06); color: var(--danger); border-color: rgba(var(--danger-rgb),.2); }
 .sf-color-clear:active { transform: scale(.95); }
 
 /* ── Toggle ── */

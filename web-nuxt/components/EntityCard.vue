@@ -303,12 +303,12 @@ const ratingDisplay = computed(() => {
 .dark .badge.ocop-5 { box-shadow: 0 0 0 2px rgba(var(--secondary-rgb), .35); }
 .dark .badge.ocop-4 { color: var(--secondary-fg); }
 .badge.new-badge {
-  background: var(--success-bg, rgba(52, 199, 89, .14));
+  background: var(--success-bg);
   color: var(--success);
   font-weight: 600;
 }
 .dark .badge.new-badge {
-  background: rgba(var(--success-rgb, 102, 187, 106), .22);
+  background: rgba(var(--success-rgb), .22);
   color: var(--success);
 }
 .peak-dot {

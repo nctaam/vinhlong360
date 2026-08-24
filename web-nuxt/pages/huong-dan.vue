@@ -952,7 +952,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .snav-link:hover { background: var(--bg-warm); color: var(--ink); }
-.snav-link.active { background: rgba(var(--primary-rgb, 46, 125, 50), .1); color: var(--primary-fg); font-weight: var(--weight-semibold); }
+.snav-link.active { background: rgba(var(--primary-rgb), .1); color: var(--primary-fg); font-weight: var(--weight-semibold); }
 .sidebar-empty { font-size: var(--text-xs); color: var(--muted); padding: var(--space-2) var(--space-3); }
 
 /* Mobile TOC (declutter-3 T7: search gộp vào trong details) */
@@ -967,7 +967,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
   padding: var(--space-7) var(--space-6); margin-bottom: var(--space-6);
   background:
     var(--grain),
-    linear-gradient(120deg, color-mix(in srgb, var(--river-600) 14%, transparent) 0%, var(--bg-warm) 55%, rgba(var(--primary-rgb, 46, 125, 50), .14) 120%);
+    linear-gradient(120deg, color-mix(in srgb, var(--river-600) 14%, transparent) 0%, var(--bg-warm) 55%, rgba(var(--primary-rgb), .14) 120%);
   background-blend-mode: overlay, normal;
   border-radius: var(--radius-xl); border: .5px solid var(--line);
 }
@@ -1071,7 +1071,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
   margin-top: var(--space-3); padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-lg); font-size: var(--text-sm);
 }
-.tip-box { background: rgba(var(--primary-rgb, 46, 125, 50), .06); border: .5px solid rgba(var(--primary-rgb, 46, 125, 50), .15); }
+.tip-box { background: rgba(var(--primary-rgb), .06); border: .5px solid rgba(var(--primary-rgb), .15); }
 .warn-box { background: rgba(var(--warning-rgb), .06); border: .5px solid rgba(var(--warning-rgb), .2); }
 .dyk-box { background: rgba(var(--blue-rgb), .06); border: .5px solid rgba(var(--blue-rgb), .15); }
 .tip-line, .warn-line { margin: 0; line-height: var(--leading-relaxed); color: var(--ink); }
@@ -1080,7 +1080,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 
 .see-also { margin-top: var(--space-3); display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; font-size: var(--text-xs); }
 .see-also-label { color: var(--muted); font-weight: var(--weight-semibold); }
-.see-also-link { color: var(--primary-fg); text-decoration: none; padding: 2px var(--space-2); background: rgba(var(--primary-rgb, 46, 125, 50), .06); border-radius: var(--radius-sm); }
+.see-also-link { color: var(--primary-fg); text-decoration: none; padding: 2px var(--space-2); background: rgba(var(--primary-rgb), .06); border-radius: var(--radius-sm); }
 .see-also-link:hover { text-decoration: underline; }
 
 .topic-link {
@@ -1134,7 +1134,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 .dark .guide-hero.brand-masthead {
   background:
     var(--grain),
-    linear-gradient(120deg, color-mix(in srgb, var(--river-legacy-dark) 10%, transparent) 0%, rgba(var(--white-rgb),.02) 55%, rgba(var(--primary-rgb, 46, 125, 50), .1) 120%);
+    linear-gradient(120deg, color-mix(in srgb, var(--river-legacy-dark) 10%, transparent) 0%, rgba(var(--white-rgb),.02) 55%, rgba(var(--primary-rgb), .1) 120%);
 }
 .dark .bm-motif { color: var(--clay-400); opacity: .65; }
 .dark .guide-topic { background: var(--bg-alt); }

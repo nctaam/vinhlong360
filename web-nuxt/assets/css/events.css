@@ -771,7 +771,7 @@
 .dark .calendar { border-color: var(--line); }
 .dark .cal-nav { border-color: var(--line); background: var(--bg-alt); }
 .dark .cal-nav:hover { background: rgba(255,255,255,.08); }
-.dark .cat-mua { background: rgba(var(--secondary-rgb), .18); color: var(--secondary-fg, #4BA97D); }
+.dark .cat-mua { background: rgba(var(--secondary-rgb), .18); color: var(--secondary-fg); }
 /* Calendar has-events cells need a stronger tint to stay visible on the dark card. */
 .dark .cal-cell.cal-has-events {
   background:

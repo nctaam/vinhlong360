@@ -305,7 +305,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .img-tab:active { transform: scale(.97); }
 .img-tab.active { background: var(--primary); color: var(--text-on-dark); border-color: var(--primary); }
 .img-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-.img-tab-count { font-size: .72rem; font-weight: 700; padding: 0 6px; border-radius: 10px; background: rgba(var(--ink-rgb, 0,0,0),.08); }
+.img-tab-count { font-size: .72rem; font-weight: 700; padding: 0 6px; border-radius: 10px; background: rgba(var(--ink-rgb),.08); }
 .img-tab.active .img-tab-count { background: rgba(var(--white-rgb),.25); }
 
 /* ── Card grid ── */
@@ -331,7 +331,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .img-meta { padding: var(--space-3) var(--space-3) 0; display: flex; flex-direction: column; gap: 6px; }
 .img-entity { font-weight: 600; font-size: .9rem; color: var(--ink); line-height: 1.3; }
 .img-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.img-type-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .7rem; font-weight: 600; background: rgba(var(--ink-rgb, 0,0,0),.06); color: var(--muted); }
+.img-type-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .7rem; font-weight: 600; background: rgba(var(--ink-rgb),.06); color: var(--muted); }
 .img-lic-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .7rem; font-weight: 700; background: rgba(var(--primary-rgb),.12); color: var(--secondary-fg); }
 .img-lic-badge.lic-warn { background: rgba(var(--danger-rgb),.13); color: var(--error); }
 .img-detail { font-size: .76rem; color: var(--muted); line-height: 1.4; }

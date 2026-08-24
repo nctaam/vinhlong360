@@ -67,9 +67,9 @@ function iconFor(type?: string) {
   animation: toastIconPop .35s var(--ease-spring-gentle, cubic-bezier(.2,1.2,.4,1)) .15s both;
 }
 @keyframes toastIconPop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-.toast.success .toast-icon { background: rgba(var(--secondary-rgb, 46,125,91), .12); color: var(--secondary); }
-.toast.error .toast-icon { background: rgba(var(--error-rgb, 220,53,69), .12); color: var(--error); }
-.toast.warning .toast-icon { background: rgba(var(--accent-rgb, 245,166,35), .12); color: var(--accent-dark); }
+.toast.success .toast-icon { background: rgba(var(--secondary-rgb), .12); color: var(--secondary); }
+.toast.error .toast-icon { background: rgba(var(--error-rgb), .12); color: var(--error); }
+.toast.warning .toast-icon { background: rgba(var(--accent-rgb), .12); color: var(--accent-dark); }
 .toast.info .toast-icon { background: rgba(var(--primary-rgb), .08); color: var(--primary-fg); }
 
 .toast-msg { flex: 1; font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--ink); line-height: var(--leading-snug); }
@@ -102,7 +102,7 @@ function iconFor(type?: string) {
 .toast-move { transition: transform .3s var(--ease-spring-gentle, cubic-bezier(.2,1.2,.4,1)); }
 
 /* ── Dark ── */
-.dark .toast { background: var(--card); border-color: rgba(var(--text-on-dark-rgb, 255,255,255),.1); box-shadow: 0 8px 32px rgba(var(--black-rgb),.5); }
+.dark .toast { background: var(--card); border-color: rgba(var(--text-on-dark-rgb),.1); box-shadow: 0 8px 32px rgba(var(--black-rgb),.5); }
 
 @media (max-width: 480px) {
   .toast-container { right: var(--space-2); left: var(--space-2); max-width: none; width: auto; }

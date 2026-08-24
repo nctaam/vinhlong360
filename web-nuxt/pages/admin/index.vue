@@ -798,7 +798,7 @@ onMounted(fetchDashboard)
   padding: 3px 9px; border-radius: 999px; font-size: .72rem; font-weight: 700;
   text-transform: uppercase; letter-spacing: .02em;
 }
-.dash-ops-status.ok { background: rgba(var(--secondary-rgb, 33,150,83), .12); color: var(--secondary); }
+.dash-ops-status.ok { background: rgba(var(--secondary-rgb), .12); color: var(--secondary); }
 .dash-ops-status.attention { background: rgba(var(--warning-rgb), .12); color: rgb(var(--warning-rgb)); }
 .dash-ops-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); }
 .dash-ops-cell {

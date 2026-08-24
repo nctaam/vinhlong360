@@ -1953,7 +1953,7 @@ useHead({
   padding: var(--space-2) var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-md);
   background: var(--bg-alt); color: var(--ink); font-size: var(--text-sm); font-family: inherit; min-height: 44px;
 }
-.cd-input:focus-visible { outline: none; border-color: var(--accent, var(--primary)); box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 33,150,83), .15); }
+.cd-input:focus-visible { outline: none; border-color: var(--accent, var(--primary)); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .15); }
 .cd-hint { font-size: var(--text-xs); color: var(--muted); }
 
 .scheduled-section { margin-bottom: var(--space-4); }
@@ -1965,7 +1965,7 @@ useHead({
 .scheduled-item p { margin: 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); overflow-wrap: anywhere; }
 .scheduled-meta { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2); font-size: var(--text-xs); color: var(--muted); }
 .scheduled-cancel { color: var(--error); padding: var(--space-1) var(--space-2); min-height: 32px; }
-.scheduled-cancel:hover { background: rgba(var(--error-rgb, 220,38,38), .08); }
+.scheduled-cancel:hover { background: rgba(var(--error-rgb), .08); }
 
 @media (prefers-reduced-motion: reduce) {
   .cd-toggle, .cd-toggle::after { transition: none; }

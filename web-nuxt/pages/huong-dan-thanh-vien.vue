@@ -203,7 +203,7 @@ useHead({
 .lv-info { flex: 1; min-width: 0; }
 .lv-name { display: block; font-weight: var(--weight-semibold); }
 .lv-req { font-size: var(--text-xs); color: var(--muted); }
-.lv-tag { font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--primary-fg); background: rgba(var(--primary-rgb, 46, 125, 50), .1); padding: .15rem .5rem; border-radius: var(--radius-full); white-space: nowrap; }
+.lv-tag { font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--primary-fg); background: rgba(var(--primary-rgb), .1); padding: .15rem .5rem; border-radius: var(--radius-full); white-space: nowrap; }
 
 .level-1 { --level-color: var(--leaf-600); border-left: 3px solid var(--level-color); }
 .level-2 { --level-color: var(--river-600); border-left: 3px solid var(--level-color); }

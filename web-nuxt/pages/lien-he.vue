@@ -313,12 +313,12 @@ useHead({
 .dark .contact-card { background: var(--bg-alt); border-color: var(--line); }
 .dark .contact-card:hover { box-shadow: var(--shadow-lg); border-color: rgba(var(--white-rgb),.1); }
 .dark .card-report:hover, .dark .card-privacy:hover { box-shadow: var(--shadow-xs); border-color: var(--line); }
-.dark .card-claim { background: color-mix(in srgb, var(--accent) 10%, var(--bg-alt)); border-color: rgba(var(--accent-rgb, 240,160,80), .35); }
+.dark .card-claim { background: color-mix(in srgb, var(--accent) 10%, var(--bg-alt)); border-color: rgba(var(--accent-rgb), .35); }
 .dark .contact-card p { color: var(--ink-secondary); }
 .dark .contact-card h2 { color: var(--ink); }
 .dark .card-icon { background: rgba(var(--white-rgb),.04); border-color: var(--line); }
 .dark .contact-card:hover .card-icon { border-color: rgba(var(--white-rgb),.16); }
-.dark .card-claim .card-icon { background: rgba(var(--accent-rgb, 240,160,80), .08); }
+.dark .card-claim .card-icon { background: rgba(var(--accent-rgb), .08); }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {

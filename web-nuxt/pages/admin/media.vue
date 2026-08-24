@@ -304,7 +304,7 @@ onMounted(fetchMedia)
 .media-preview-placeholder { display: grid; place-items: center; width: 100%; min-height: 100%; color: var(--muted); font-size: 2rem; }
 .media-dup-badge {
   position: absolute; top: 6px; right: 6px; padding: 2px 8px; border-radius: 100px;
-  background: rgba(var(--warning-rgb, 255,159,10),.9); color: var(--text-on-dark, var(--white)); font-size: .7rem; font-weight: 700;
+  background: rgba(var(--warning-rgb),.9); color: var(--text-on-dark, var(--white)); font-size: .7rem; font-weight: 700;
 }
 .media-card-info { padding: var(--space-2) 10px; display: flex; flex-direction: column; gap: 2px; }
 .media-entity-name { font-weight: 600; font-size: .82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
