@@ -996,7 +996,10 @@
 
 /* Mobile */
 @media (max-width: 640px) {
-  .catalog-hero { padding: var(--space-5) var(--space-4); }
+  /* Ngang phai la --container-pad, khong phai --space-4: o 375px .page va
+     .block.band deu 20px, de 16px o day thi hero lech 4px ra ngoai — dung cung
+     lỗi đã vá o khổ rộng (mep 110 so voi 105). Doc thi giu --space-5. */
+  .catalog-hero { padding: var(--space-5) var(--container-pad); }
   .catalog-hero-inner { flex-direction: column; gap: var(--space-3); }
   .catalog-hero-icon { font-size: 1.8rem; }
   .catalog-hero h1 { font-size: var(--text-xl); }
@@ -1005,8 +1008,12 @@
   .quick-picks { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   /* safe-area aware hero padding on notched phones */
   .catalog-hero {
-    padding-inline-end: max(var(--space-4), env(safe-area-inset-right));
-    padding-inline-start: max(var(--space-4), env(safe-area-inset-left));
+    /* San cua max() phai la --container-pad, khong phai --space-4: tren may
+       KHONG co tai tho thi env(safe-area-inset-*) = 0 nen max() roi ve 16px, de
+       len 20px cua .page/.block.band — dung lech 4px da va o hai cho khac. Voi
+       may CO tai tho thi env() lon hon van thang, giu nguyen y dinh quy tac. */
+    padding-inline-end: max(var(--container-pad), env(safe-area-inset-right));
+    padding-inline-start: max(var(--container-pad), env(safe-area-inset-left));
   }
   /* keep hero icon from crowding the title once stacked */
   .catalog-hero-icon { margin-inline-end: var(--space-2); }
