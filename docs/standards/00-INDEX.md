@@ -30,6 +30,7 @@ Cơ chế: **hard** = 0 vi phạm mọi lúc · **hard-ratchet/soft-ratchet** = 
 | R30.5 | tap-target ≥44 (ngoại lệ season-ring) | checklist-ký | — | — | 30-frontend.md |
 | R30.6 | axe 0 serious+ trên 14 trang sweep | hard-ratchet | check_axe — report sinh bởi `scripts/axe_scan.mjs` ở **job frontend** của CI (job Python không quét axe) | 0 | 30-frontend.md |
 | R30.7 | bundle budget (chunk-max gz + trần CSS + đích entry ≤200kB) | soft-ratchet | check_bundle — chạy ở **job frontend** của CI sau `npm run build` (job Python không có `.output`) | 0 | 30-frontend.md |
+| R30.8 | thang bo góc cũ `--radius-xs/sm/md/lg/xl` → tầng mục đích `--radius-control/surface/sheet` (đếm từng match) | hard-ratchet | check_fe_tokens | 372 | 30-frontend.md |
 | R40.3 | cấm claim đã-xác-minh | hard | check_banned_claims | 0 | 40-ui-design.md |
 | R50.2 | filler giọng cấm (field-aware, bỏ source) | soft-ratchet | check_content_voice | 102 | 50-content.md |
 | R50.3 | cấm công thức mở bài + kết sáo | soft-ratchet | check_content_gates | 7 | 50-content.md |

@@ -1837,12 +1837,35 @@ nằm trong `shell.css`, `catalog.css`, `home-nocturne.css` — tức phần mã
 **Mức hoàn thành đo được: thang cũ 370 lượt dùng, thang mới 32 — mới 8%.**
 (Không tính `--radius-full` 159 lượt vì nó dùng chung cho cả hai.)
 
-**CHỜ CHỦ DỰ ÁN QUYẾT.** Tôi KHÔNG tự quyết một cuộc di trú 370 chỗ. Hai hướng:
+✅ **ĐÃ QUYẾT 2026-08-24: chủ dự án chọn (a) — ĐI TIẾP.** Hai hướng đã đặt ra:
 - **(a) Đi tiếp:** mã mới chỉ dùng `--radius-control/surface`, dần chuyển 370 chỗ.
   Vốn là hướng đang đi, nhưng 8% sau nhiều đợt thì tốc độ đó là hàng năm.
 - **(b) Quay về:** `--radius-control: var(--radius-sm)` (8→10px),
   `--radius-surface: var(--radius-md)` (12→14px). Chỉ đổi 32 chỗ, mỗi chỗ 2px —
   đo được là không có lỗi hình học nào phát sinh. Xong ngay, còn một thang.
+
+Tôi nghiêng về (b) nhưng chủ dự án chọn **(a)**. Đã làm cho quyết định đó **CÓ RĂNG**,
+vì "mã mới dùng token mới" mà không có cổng canh thì chỉ là lời hứa — 8% sẽ nằm yên
+ở 8%:
+
+- **Rule mới R30.8** (`check_fe_tokens`, `fe_radius_scale`), **hard-ratchet**,
+  baseline **372**. Đếm từng match `var(--radius-xs|sm|md|lg|xl)` trên
+  `pages/ components/ layouts/ assets/css/` — R30.8 quét CẢ `assets/css` (khác
+  `_ROOTS` của R30.2/R30.3 vốn chỉ nhắm `.vue`), vì thang bo góc sống chủ yếu ở đó.
+- **KHÔNG bắt** `--radius-full` (dùng chung cả hai thang) và `--radius` (bí danh ngữ
+  nghĩa, sẽ trỏ sang `--radius-sheet` khi di trú xong).
+- **Đã chứng minh ratchet cắn**, không chỉ tin: thêm một `var(--radius-sm)` vào một
+  file thử → count 373 > 372 (chặn); gỡ ra → về 372. Con số 372 cũng được đối chứng
+  bằng hai cách đếm độc lập (script riêng và checker) — trùng khớp.
+
+**ĐẢO LẠI một việc của đợt trước:** 07c6d967 xoá `--radius-sheet` vì lúc đó nó có 0
+lượt dùng — đúng với bằng chứng khi ấy. Nhưng theo hướng (a) thì `--radius-sheet`
+(20px) chính là **đích đến** cho 101 lượt dùng `--radius-lg`. Đã khôi phục kèm ghi chú.
+
+**Khoảng trống cần biết:** thang cũ có 5 bước (4/10/14/20/28), tầng mục đích mới có 3
+(control 8 / surface 12 / sheet 20). Chưa có đích cho `--radius-xs` (4px, 3 lượt) và
+`--radius-xl` (28px, 24 lượt). Gặp chỗ không map được thì đó là **tín hiệu cần thêm
+một bước mục đích**, KHÔNG phải cớ quay lại thang cũ.
 
 Tôi nghiêng về **(b)**: 2px không ai thấy, mà bỏ hẳn được một thang khỏi đầu.
 Nhưng nó ghi đè lựa chọn 8px có chủ đích của nocturne nên phải hỏi.

@@ -25,6 +25,10 @@ _ROOTS = [
     "web-nuxt/app.vue", "web-nuxt/error.vue",
 ]
 
+# R30.8 quet CA assets/css vi thang bo goc song chu yeu o do (base.css 32,
+# components.css 26, catalog.css 24...). _ROOTS von chi nham vao .vue.
+_ROOTS_CSS = _ROOTS + ["web-nuxt/assets/css"]
+
 
 def build_checks(root: Path | None = None) -> list:
     return [
@@ -58,6 +62,24 @@ def build_checks(root: Path | None = None) -> list:
             exclude_paths=["web-nuxt/node_modules"],
             neg_context=None, count_matches=True,
             msg="emoji chức năng — dùng IconLine (R30.2); string-context được phép qua baseline",
+            root=root,
+        ),
+        RegexCheck(
+            name="fe_radius_scale", level="hard-ratchet", rule="R30.8",
+            # Thang bo goc CU (--radius-xs/sm/md/lg/xl) dang duoc thay bang tang MUC DICH
+            # (--radius-control/surface/sheet). Chu du an chon "di tiep" 2026-08-24.
+            # Ratchet nay giu cho no KHONG TANG: ma moi phai dung tang muc dich.
+            # KHONG bat --radius-full (dung chung ca hai thang) va --radius (bi danh
+            # ngu nghia, se tro sang --radius-sheet khi di tru xong).
+            #
+            # Neu mot cho khong map duoc vao control/surface/sheet thi do la TIN HIEU
+            # can them mot buoc muc dich, KHONG phai co quay lai thang cu. Thang cu con
+            # 5 buoc (4/10/14/20/28), tang muc dich moi co 3 (8/12/20).
+            patterns=[r"var\(\s*--radius-(?:xs|sm|md|lg|xl)\s*[),]"],
+            globs=["*.vue", "*.css"], roots=_ROOTS_CSS,
+            exclude_paths=["web-nuxt/node_modules"],
+            neg_context=None, count_matches=True,
+            msg="thang bo goc cũ — dùng --radius-control/surface/sheet (R30.8)",
             root=root,
         ),
     ]
