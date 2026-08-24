@@ -877,8 +877,14 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 /* Even vertical rhythm: every section shares the same symmetric padding as .block-compact
    (32/32) so the gap between ANY two sections is a uniform 64px — was 64px top / 32px bottom,
    giving 96px gaps between blocks vs 64px between compacts (the uneven, oversized whitespace). */
-.home .block { padding-top: var(--space-8); padding-bottom: var(--space-8); content-visibility: auto; contain-intrinsic-size: auto 480px; }
-.home .block-compact { padding-top: var(--space-8); padding-bottom: var(--space-8); }
+/* MỘT nhịp dọc duy nhất: --space-10 (40px) giống các mục nocturne, nên mọi
+   khoảng tách giữa hai mục đều là 80px. Trước đây .block đệm 32 còn mục
+   nocturne đệm 40, nên khoảng tách nhảy 64 / 72 / 80 tuỳ chỗ — đo được bốn
+   giá trị khác nhau trên cùng một trang.
+   Dòng .block-compact cũ đặt ĐÚNG CÙNG giá trị với .block nên không hề làm nó
+   "compact" — đã bỏ. Tính compact của dải đó nằm ở .section-head-tight
+   (tiêu đề nhỏ hơn, lề dưới hẹp hơn), không ở đệm mục. */
+.home .block { padding-top: var(--space-10); padding-bottom: var(--space-10); content-visibility: auto; contain-intrinsic-size: auto 480px; }
 .block-cta { text-align: center; margin-top: var(--space-4); }
 
 /* ═══════════════════════════════════════════════════
