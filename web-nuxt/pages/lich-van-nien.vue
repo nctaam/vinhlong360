@@ -675,7 +675,7 @@ useHead(() => ({
 }
 .lvn-head h1 { margin: 0; font-size: var(--text-4xl); line-height: var(--leading-tight); }
 .lvn-lede {
-  max-width: var(--measure-read, 65ch);
+  max-width: var(--measure-read);
   margin: var(--space-3) 0 0;
   color: var(--ink-secondary); line-height: var(--leading-relaxed);
 }
@@ -699,7 +699,7 @@ useHead(() => ({
 .lvn-h2 { margin: 0 0 var(--space-3); font-size: var(--text-xl); }
 .lvn-h3 { margin: var(--space-6) 0 var(--space-2); font-size: var(--text-base); }
 .lvn-note-inline {
-  max-width: var(--measure-read, 65ch);
+  max-width: var(--measure-read);
   margin: 0 0 var(--space-3); color: var(--ink-secondary); font-size: var(--text-sm);
 }
 
@@ -714,11 +714,11 @@ useHead(() => ({
   display: inline-flex; align-items: center; justify-content: center;
   border: .5px solid var(--line); border-radius: var(--radius-full);
   background: var(--bg); color: var(--ink); cursor: pointer;
-  transition: background var(--duration-fast, .15s) var(--ease-out);
+  transition: background var(--duration-fast) var(--ease-out);
 }
 .lvn-nav-next { transform: rotate(180deg); }
 .lvn-nav:hover:not(:disabled) { background: var(--bg-alt); }
-.lvn-nav:disabled { opacity: var(--opacity-disabled, .38); cursor: not-allowed; }
+.lvn-nav:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
 .lvn-nav:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 .lvn-picker { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-2); }
@@ -739,7 +739,7 @@ useHead(() => ({
   border: .5px solid var(--line); border-radius: var(--radius-control);
   background: var(--bg-alt); color: var(--ink); font: inherit; font-size: var(--text-sm);
   cursor: pointer;
-  transition: background var(--duration-fast, .15s) var(--ease-out);
+  transition: background var(--duration-fast) var(--ease-out);
 }
 .lvn-btn:hover { background: var(--card-hover, var(--line)); }
 .lvn-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
@@ -748,7 +748,7 @@ useHead(() => ({
 
 .lvn-range-error {
   display: flex; gap: var(--space-2); align-items: flex-start;
-  max-width: var(--measure-read, 65ch);
+  max-width: var(--measure-read);
   padding: var(--space-3); border-inline-start: 2px solid var(--error);
   background: rgba(var(--red-rgb, var(--primary-rgb)), .06);
   color: var(--ink); font-size: var(--text-sm); line-height: var(--leading-relaxed);
@@ -771,7 +771,7 @@ useHead(() => ({
   border-block-start: .5px solid var(--line);
   border-inline-start: .5px solid var(--line);
   cursor: pointer;
-  transition: background var(--duration-fast, .15s) var(--ease-out);
+  transition: background var(--duration-fast) var(--ease-out);
 }
 .lvn-row > .lvn-cell:last-child { border-inline-end: .5px solid var(--line); }
 .lvn-row:last-child > .lvn-cell { border-block-end: .5px solid var(--line); }
@@ -858,7 +858,7 @@ useHead(() => ({
 .lvn-term.is-current .lvn-term-date { color: var(--primary-fg); }
 
 /* --- Ranh giới trung thực --- */
-.lvn-scope p { max-width: var(--measure-read, 65ch); color: var(--ink-secondary); line-height: var(--leading-relaxed); }
+.lvn-scope p { max-width: var(--measure-read); color: var(--ink-secondary); line-height: var(--leading-relaxed); }
 .lvn-source { font-size: var(--text-sm); color: var(--ink-tertiary); }
 
 /* --- Cross links: hàng, không phải card bo tròn --- */

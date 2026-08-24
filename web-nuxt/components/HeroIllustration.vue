@@ -178,7 +178,7 @@ onMounted(() => {
    (animating transform on the translated fruit/palm/lotus groups would clobber
    their positioning, so those stay static — they still read as authored). */
 .hero-illustration .motif.motif-anim {
-  animation: hero-motif-sway 8s var(--ease-out, ease-in-out) infinite;
+  animation: hero-motif-sway 8s var(--ease-out) infinite;
   will-change: transform;
 }
 @keyframes hero-motif-sway {

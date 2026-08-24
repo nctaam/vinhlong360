@@ -673,12 +673,12 @@ onUnmounted(() => {
 <style src="~/assets/css/detail.css"></style>
 
 <style scoped>
-.wp { max-width: var(--maxw, 1100px); margin: 0 auto; padding: 0 var(--space-4) var(--space-16); }
+.wp { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--space-4) var(--space-16); }
 .ward-recovery-page { display: grid; gap: var(--space-4); }
 .ward-recovery-links { display: flex; flex-wrap: wrap; gap: var(--space-3); }
 
 /* Hero */
-.wp-hero { border-radius: var(--radius-lg, 16px); padding: var(--space-8) var(--space-6); margin-top: var(--space-2); color: var(--text-on-dark, var(--white)); position: relative; overflow: hidden; }
+.wp-hero { border-radius: var(--radius-lg); padding: var(--space-8) var(--space-6); margin-top: var(--space-2); color: var(--text-on-dark, var(--white)); position: relative; overflow: hidden; }
 .wp-hero.area-vinh-long { background: linear-gradient(135deg, var(--clay-600) 0%, color-mix(in srgb, var(--clay-600), var(--clay-400)) 50%, var(--clay-400) 100%); }
 .wp-hero.area-ben-tre { background: linear-gradient(135deg, var(--leaf-700) 0%, var(--leaf-600) 50%, color-mix(in srgb, var(--leaf-600) 65%, white) 100%); }
 .wp-hero.area-tra-vinh { background: linear-gradient(135deg, color-mix(in srgb, var(--river-600) 80%, black) 0%, var(--river-600) 50%, color-mix(in srgb, var(--river-600) 65%, white) 100%); }
@@ -725,7 +725,7 @@ onUnmounted(() => {
 
 /* Map */
 .wp-map-sec { margin: var(--space-5) 0 var(--space-2); }
-.wp-map-container { width: 100%; height: 380px; border-radius: var(--radius-lg, 16px); overflow: hidden; border: .5px solid var(--line); box-shadow: var(--shadow-sm); transition: box-shadow .35s var(--ease-out-expo); }
+.wp-map-container { width: 100%; height: 380px; border-radius: var(--radius-lg); overflow: hidden; border: .5px solid var(--line); box-shadow: var(--shadow-sm); transition: box-shadow .35s var(--ease-out-expo); }
 .wp-map-loading { background: linear-gradient(100deg, var(--bg-warm) 30%, var(--line) 50%, var(--bg-warm) 70%); background-size: 200% 100%; animation: wp-shimmer 1.4s var(--ease-out) infinite; }
 @keyframes wp-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 :deep(.wp-marker) { width: 1rem; height: 1rem; cursor: pointer; background: var(--primary); border: 2px solid var(--text-on-dark, var(--white)); border-radius: 50% 50% 50% 0; box-shadow: 0 1px 3px rgba(var(--black-rgb),.4); transform: rotate(-45deg); transition: transform .35s var(--ease-spring-gentle); }
@@ -764,7 +764,7 @@ onUnmounted(() => {
 .wp-empty-card {
   position: relative; overflow: hidden; text-align: center;
   background: var(--card); border: .5px solid var(--line);
-  border-radius: var(--radius-lg, 16px); padding: var(--space-10) var(--space-6) var(--space-8);
+  border-radius: var(--radius-lg); padding: var(--space-10) var(--space-6) var(--space-8);
   margin-top: var(--space-2);
   background-image: radial-gradient(circle at 50% 0%, rgba(var(--primary-rgb), .06), transparent 60%);
 }
@@ -805,7 +805,7 @@ onUnmounted(() => {
 }
 .ward-primary-action:hover { background: var(--color-action-hover); }
 .ward-primary-action:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
-.wp-card { position: relative; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg, 16px); padding: var(--space-5); box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
+.wp-card { position: relative; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
 .wp-card::before {
   content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
   background: linear-gradient(180deg, rgba(var(--white-rgb),.6) 0%, transparent 55%);
@@ -850,7 +850,7 @@ onUnmounted(() => {
 .wp-fac-row a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* Map button */
-.wp-map-btn { display: flex; align-items: center; justify-content: center; gap: var(--space-2); padding: var(--space-3); border-radius: var(--radius-lg, 16px); background: var(--bg-warm); border: .5px solid var(--line); font-weight: var(--weight-bold); font-size: var(--text-sm); color: var(--ink); min-height: 44px; transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
+.wp-map-btn { display: flex; align-items: center; justify-content: center; gap: var(--space-2); padding: var(--space-3); border-radius: var(--radius-lg); background: var(--bg-warm); border: .5px solid var(--line); font-weight: var(--weight-bold); font-size: var(--text-sm); color: var(--ink); min-height: 44px; transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
 .wp-map-btn:hover { background: var(--line); transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .wp-map-btn:active { transform: scale(.97); transition-duration: .08s; }
 .wp-map-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }

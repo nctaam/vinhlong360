@@ -500,7 +500,7 @@ onMounted(() => fetchAll())
   display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4); margin-bottom: var(--space-3);
-  border: 1px solid var(--primary); border-radius: var(--radius, 12px);
+  border: 1px solid var(--primary); border-radius: var(--radius);
   background: rgba(0,113,227,.06);
   animation: rpt-slide-in .25s var(--ease-soft);
 }

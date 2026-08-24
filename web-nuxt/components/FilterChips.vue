@@ -71,7 +71,7 @@ function toggle(key: string) {
   background: transparent;
   color: var(--ink);
   font-size: var(--text-sm);
-  font-weight: var(--weight-medium, 500);
+  font-weight: var(--weight-medium);
   letter-spacing: .01em;
   cursor: pointer;
   transition: background-color 150ms, color 150ms, border-color 150ms;
@@ -113,7 +113,7 @@ function toggle(key: string) {
 .fc-count {
   font-size: var(--text-xs);
   opacity: 0.7;
-  font-weight: var(--weight-normal, 400);
+  font-weight: var(--weight-normal);
   font-variant-numeric: tabular-nums;
 }
 .fc-chip.active .fc-count { opacity: 0.85; }

@@ -63,7 +63,7 @@ watch(() => props.kind, load, { immediate: true })
 </script>
 
 <style scoped>
-.kc-panel { margin: var(--space-3) 0; border: 1px solid var(--line); border-radius: var(--radius, 10px); background: var(--card); padding: var(--space-2) var(--space-3); }
+.kc-panel { margin: var(--space-3) 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); padding: var(--space-2) var(--space-3); }
 .kc-summary { cursor: pointer; font-weight: 600; font-size: .92rem; display: flex; align-items: center; gap: var(--space-2); }
 .kc-total { font-weight: 500; font-size: .8rem; color: var(--ink-700); }
 .kc-loading { padding: var(--space-3); color: var(--ink-700); font-size: .85rem; }

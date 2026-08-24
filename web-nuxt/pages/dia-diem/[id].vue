@@ -1510,7 +1510,7 @@ useHead({
 <style scoped>
 /* PhotoGallery placement below hero */
 .detail-gallery {
-  max-width: var(--maxw, 1200px);
+  max-width: var(--maxw);
   margin: var(--space-4) auto;
   padding: 0 var(--space-5);
 }

@@ -299,7 +299,7 @@ onBeforeUnmount(() => {
   text-align: center;
 }
 .cmsg-failed { opacity: .7; border-left: 2px solid var(--error); }
-.cmsg-retry { display: inline-block; margin-top: var(--space-1); font-size: var(--text-2xs); color: var(--primary-fg); background: none; border: none; cursor: pointer; text-decoration: underline; padding: 2px 4px; min-height: 44px; border-radius: var(--radius-sm, 4px); }
+.cmsg-retry { display: inline-block; margin-top: var(--space-1); font-size: var(--text-2xs); color: var(--primary-fg); background: none; border: none; cursor: pointer; text-decoration: underline; padding: 2px 4px; min-height: 44px; border-radius: var(--radius-sm); }
 .cmsg-retry:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .csuggestions button { min-height: 44px; }
 .chat-panel-input button { min-height: 44px; }

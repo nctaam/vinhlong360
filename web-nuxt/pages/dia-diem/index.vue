@@ -482,7 +482,7 @@ useHead({
    FilterChips pair, so it holds just the search field.
    ============================================================ */
 .dd-refine {
-  position: sticky; top: 78px; z-index: var(--z-sticky, 100);
+  position: sticky; top: 78px; z-index: var(--z-sticky);
   background: var(--surface-translucent); backdrop-filter: var(--glass);
   -webkit-backdrop-filter: var(--glass);
   border: .5px solid var(--line); border-top: 1px solid var(--line);
@@ -519,7 +519,7 @@ useHead({
 .almanac-progress {
   position: fixed; left: var(--space-2); top: 15vh; bottom: 15vh; width: 3px;
   border-radius: var(--radius-full); background: var(--line);
-  z-index: var(--z-floating, 75); overflow: hidden; display: none;
+  z-index: var(--z-floating); overflow: hidden; display: none;
 }
 .almanac-progress-fill {
   position: absolute; inset: 0; transform-origin: top; transform: scaleY(0);

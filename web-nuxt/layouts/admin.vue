@@ -361,7 +361,7 @@ onUnmounted(() => {
 
 /* ── Topbar breadcrumb ── */
 .admin-topbar {
-  position: sticky; top: 0; z-index: var(--z-sticky, 100);
+  position: sticky; top: 0; z-index: var(--z-sticky);
   margin: calc(var(--space-6) * -1) calc(var(--space-8) * -1) var(--space-5);
   padding: var(--space-3) var(--space-8);
   background: color-mix(in oklab, var(--bg-alt) 85%, transparent);
@@ -657,11 +657,11 @@ onUnmounted(() => {
 /* ── Toast / feedback (shared across admin pages) ── */
 .admin-toast {
   position: fixed; bottom: var(--space-4); right: var(--space-4);
-  z-index: var(--z-toast, 600); padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-sm, 10px); background: var(--bg, var(--white));
+  z-index: var(--z-toast); padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm); background: var(--bg, var(--white));
   border: 1px solid var(--line); box-shadow: var(--shadow-lg);
   font-size: .88rem; color: var(--ink);
-  animation: toastIn .25s var(--ease-out, ease-out);
+  animation: toastIn .25s var(--ease-out);
 }
 .admin-toast.success { border-left: 4px solid var(--secondary); }
 .admin-toast.error { border-left: 4px solid var(--error); }
@@ -691,12 +691,12 @@ onUnmounted(() => {
 .admin-error-panel {
   max-width: 600px; margin: 3rem auto; padding: 2rem;
   background: var(--surface); border: 1px solid var(--danger);
-  border-radius: var(--radius-lg, 12px); text-align: center;
+  border-radius: var(--radius-lg); text-align: center;
 }
 .admin-error-panel h2 { color: var(--danger); margin: 0 0 1rem; }
 .admin-error-detail {
   text-align: left; font-size: .8rem; max-height: 200px; overflow: auto;
-  background: var(--surface-alt, #f5f5f5); padding: .75rem; border-radius: var(--radius, 8px);
+  background: var(--surface-alt, #f5f5f5); padding: .75rem; border-radius: var(--radius);
   margin-bottom: 1.5rem; white-space: pre-wrap; word-break: break-word;
 }
 .admin-error-actions { display: flex; gap: .75rem; justify-content: center; }

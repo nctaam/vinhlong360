@@ -182,7 +182,7 @@ if (props.priority && props.image.url) {
 .dark .ef-ac-amber { color: var(--amber-500); }
 .ef-lede {
   margin: 0;
-  max-width: var(--measure-read, 68ch);
+  max-width: var(--measure-read);
   font-family: var(--font-editorial);
   font-size: clamp(1.05rem, 1rem + .35vw, 1.2rem);
   line-height: var(--leading-relaxed);

@@ -1689,8 +1689,8 @@ useHead({
   margin-top: var(--space-5);
   position: sticky; top: 78px; z-index: 20;
   background: var(--surface-translucent, var(--bg));
-  backdrop-filter: var(--glass, saturate(160%) blur(12px));
-  -webkit-backdrop-filter: var(--glass, saturate(160%) blur(12px));
+  backdrop-filter: var(--glass);
+  -webkit-backdrop-filter: var(--glass);
 }
 .threads-filter { display: flex; flex: 1; min-width: 0; }
 .threads-tab {

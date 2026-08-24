@@ -1390,7 +1390,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 /* ── Image manager ── */
 .img-mgr { border-top: .5px solid var(--line); padding-top: var(--space-3); margin-top: var(--space-1); }
 .img-row { display: flex; align-items: center; gap: var(--space-2); margin: var(--space-2) 0; }
-.img-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; flex: 0 0 40px; border: .5px solid var(--line); transition: transform .2s var(--ease-out, ease); }
+.img-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; flex: 0 0 40px; border: .5px solid var(--line); transition: transform .2s var(--ease-out); }
 .img-row:hover .img-thumb { transform: scale(var(--img-hover-scale)); }
 .img-url { flex: 1; font-size: .78rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .img-details { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 3px; }
@@ -1412,7 +1412,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .ent-searching {
   position: absolute; left: 0; top: calc(100% + 2px);
   font-size: .72rem; color: var(--muted); opacity: .8;
-  animation: ent-fade-in .2s var(--ease-out, ease);
+  animation: ent-fade-in .2s var(--ease-out);
 }
 @keyframes ent-fade-in { from { opacity: 0; } }
 
@@ -1576,7 +1576,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .ent-sortable { white-space: nowrap; }
 .ent-sort-btn { background: none; border: none; padding: 0; font: inherit; color: inherit; cursor: pointer; user-select: none; }
 .ent-sort-btn:hover { color: var(--primary); }
-.ent-sort-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-xs, 4px); }
+.ent-sort-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-xs); }
 .ent-sort-arrow { font-size: .65rem; opacity: .7; margin-left: 2px; }
 
 .ent-char-count { font-weight: 400; font-size: .78rem; color: var(--muted); transition: color .2s; }

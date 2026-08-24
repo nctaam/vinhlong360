@@ -68,7 +68,7 @@ async function doLogout() {
   font-size: .7rem;
   font-weight: 700;
   padding: 1px 6px;
-  border-radius: var(--radius-full, 9999px);
+  border-radius: var(--radius-full);
   margin-left: auto;
   line-height: 1.3;
 }

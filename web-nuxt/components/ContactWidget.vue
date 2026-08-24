@@ -98,10 +98,10 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
 .cw {
   position: sticky;
   top: calc(var(--header-height, 60px) + var(--space-4));
-  z-index: var(--z-sticky, 2);
+  z-index: var(--z-sticky);
   width: var(--contact-widget-width);
   background: var(--card);
-  border-radius: var(--radius-xl, 16px);
+  border-radius: var(--radius-xl);
   border: 1px solid var(--line);
   box-shadow: var(--shadow-md);
   padding: var(--space-5);
@@ -130,7 +130,7 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
   gap: var(--space-1h);
 }
 .cw-stars { display: inline-flex; gap: 1px; color: var(--accent); font-size: var(--text-lg); }
-.cw-score { font-size: var(--text-lg); font-weight: var(--weight-bold, 700); color: var(--ink); font-variant-numeric: tabular-nums; }
+.cw-score { font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--ink); font-variant-numeric: tabular-nums; }
 .cw-count { font-size: var(--text-sm); color: var(--muted); font-variant-numeric: tabular-nums; }
 
 /* Info rows */
@@ -203,7 +203,7 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
   height: var(--contact-cta-height);
   border-radius: var(--contact-cta-radius);
   font-size: var(--text-base);
-  font-weight: var(--weight-semibold, 600);
+  font-weight: var(--weight-semibold);
   text-decoration: none;
   cursor: pointer;
   transition: background 200ms, transform 200ms, box-shadow 200ms, border-color 200ms;
@@ -258,7 +258,7 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
     right: 0;
     top: auto;
     width: 100%;
-    border-radius: var(--radius-xl, 16px) var(--radius-xl, 16px) 0 0;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     box-shadow: var(--shadow-lg);
     padding: var(--space-3) var(--space-4);
     z-index: var(--z-sticky);

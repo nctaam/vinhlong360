@@ -183,14 +183,14 @@ defineExpose({ open })
 .dark .cmd-item.active::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 .cmd-item:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
 .cmd-icon-chip {
-  flex-shrink: 0; width: 26px; height: 26px; border-radius: var(--radius-full, 999px);
+  flex-shrink: 0; width: 26px; height: 26px; border-radius: var(--radius-full);
   display: flex; align-items: center; justify-content: center;
   background: var(--surface-container, rgba(var(--black-rgb),.04));
 }
 .dark .cmd-icon-chip { background: rgba(var(--white-rgb),.06); }
 .cmd-icon { font-size: .95rem; line-height: 1; }
 .cmd-label { font-weight: 500; flex: 1; }
-.cmd-hint { font-size: .72rem; text-transform: uppercase; letter-spacing: var(--tracking-caps, .06em); color: var(--muted); }
+.cmd-hint { font-size: .72rem; text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--muted); }
 .cmd-empty { padding: var(--space-5); text-align: center; color: var(--muted); font-size: .9rem; display: flex; flex-direction: column; gap: 6px; }
 .cmd-empty-query { font-family: var(--font-editorial); }
 .cmd-empty-hint { font-size: .75rem; opacity: .6; }

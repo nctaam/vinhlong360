@@ -337,7 +337,7 @@ useHead(() => ({
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  animation: int-icon-reveal .6s var(--ease-out-expo, ease-out) both;
+  animation: int-icon-reveal .6s var(--ease-out-expo) both;
 }
 .int-hero-icon::before {
   content: "";

@@ -121,7 +121,7 @@ onUnmounted(() => {
   width: 64px;
   height: 64px;
   margin: 0 auto var(--space-3);
-  border-radius: var(--radius-full, 999px);
+  border-radius: var(--radius-full);
   background: var(--bg-warm);
 }
 .sheet-emoji {

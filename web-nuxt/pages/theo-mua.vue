@@ -548,7 +548,7 @@ useHead(() => ({
    Layers on top of catalog.css's base .cat-season gradient (not replacing
    the shared component — additive override scoped to this page). */
 .catalog-hero.cat-season {
-  transition: background 550ms var(--ease-out-expo, ease);
+  transition: background 550ms var(--ease-out-expo);
 }
 /* --sediment-teal-rgb: rgb() of --river-600 (var(--river-600)) — the sediment/water
    teal used site-wide for the "nước" register (EntityHeroPlaceholder wash,

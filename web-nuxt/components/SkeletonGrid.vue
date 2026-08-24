@@ -25,7 +25,7 @@ withDefaults(defineProps<{ count?: number }>(), { count: 6 })
 .skeleton-card {
   background: var(--card);
   border: .5px solid var(--line);
-  border-radius: var(--radius-lg, 16px);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   animation: skFadeIn .45s var(--ease-out-expo) both;
 }
@@ -45,7 +45,7 @@ withDefaults(defineProps<{ count?: number }>(), { count: 6 })
   background-image: var(--grain); background-size: 120px 120px; opacity: .05;
 }
 .sk-body { padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); }
-.sk-line { border-radius: var(--radius-sm, 6px); background: linear-gradient(90deg, var(--bg-warm) 25%, var(--line, var(--sand-300)) 50%, var(--bg-warm) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+.sk-line { border-radius: var(--radius-sm); background: linear-gradient(90deg, var(--bg-warm) 25%, var(--line, var(--sand-300)) 50%, var(--bg-warm) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
 .sk-type { width: 80px; height: 10px; margin-bottom: 2px; }
 .sk-title { width: 70%; height: 18px; }
 /* Static tri-province rule — mirrors .card-rule exactly (river→amber→clay,
@@ -57,7 +57,7 @@ withDefaults(defineProps<{ count?: number }>(), { count: 6 })
 .sk-text.short { width: 50%; }
 /* Badge-cluster placeholders — mirror card's season/ocop badge row for better load anticipation. */
 .sk-badges { display: flex; gap: var(--space-2); margin-top: var(--space-2); }
-.sk-badge { height: 10px; border-radius: var(--radius-full, 999px); }
+.sk-badge { height: 10px; border-radius: var(--radius-full); }
 .sk-badge-1 { width: 60px; }
 .sk-badge-2 { width: 50px; }
 

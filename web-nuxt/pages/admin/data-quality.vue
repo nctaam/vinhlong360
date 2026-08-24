@@ -725,7 +725,7 @@ onMounted(() => refreshAll())
 .dq-decision-defer { background: rgba(var(--warning-rgb),.13); color: var(--warning); border-color: rgba(var(--warning-rgb),.24); }
 
 /* Apply result status card */
-.dq-apply-result { background: var(--bg-alt); border: .5px solid var(--primary); padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm, 10px); color: var(--ink); display: grid; gap: var(--space-2); }
+.dq-apply-result { background: var(--bg-alt); border: .5px solid var(--primary); padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); color: var(--ink); display: grid; gap: var(--space-2); }
 .dq-apply-result--warn { border-color: var(--warning); background: var(--warning-bg); }
 .dq-apply-result-head { display: flex; align-items: center; gap: var(--space-2); }
 .dq-apply-result-icon { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 999px; background: rgba(var(--primary-rgb),.14); color: var(--primary); font-size: .8rem; }

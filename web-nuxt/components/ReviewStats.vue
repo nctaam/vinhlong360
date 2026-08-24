@@ -96,23 +96,23 @@ const mentionChips = computed(() => {
 
 .er-distribution {
   display: flex; flex-direction: column;
-  gap: var(--space-1h, 6px); margin-bottom: var(--space-5); max-width: 320px;
+  gap: var(--space-1h); margin-bottom: var(--space-5); max-width: 320px;
 }
 .er-dist-row { display: grid; grid-template-columns: 28px 1fr 28px; align-items: center; gap: var(--space-2); }
-.er-dist-label { font-size: var(--text-xs); font-weight: var(--weight-medium, 500); color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.er-dist-label { font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
 .er-dist-track { height: 6px; border-radius: var(--radius-full); background: var(--bg-warm, var(--bg-alt)); overflow: hidden; }
 /* sediment fill: river→amber→clay wash instead of generic --secondary, echoes the tri-province tick at bar scale */
 .er-dist-fill {
   height: 100%; border-radius: var(--radius-full);
   background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 55%, var(--clay-600) 100%);
-  transition: width 400ms var(--ease-out, ease); min-width: 2px;
+  transition: width 400ms var(--ease-out); min-width: 2px;
 }
 .dark .er-dist-fill { background: linear-gradient(90deg, var(--river-legacy-dark) 0%, var(--amber-500) 55%, var(--clay-400) 100%); }
 .er-dist-count { font-size: var(--text-xs); color: var(--muted); font-variant-numeric: tabular-nums; }
 
 .er-categories { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-bottom: var(--space-5); max-width: 400px; }
 .er-cat-item { display: flex; flex-direction: column; gap: var(--space-1); }
-.er-cat-label { font-size: var(--text-xs); font-weight: var(--weight-medium, 500); color: var(--ink); }
+.er-cat-label { font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--ink); }
 .er-cat-track { height: 4px; border-radius: var(--radius-full); background: var(--bg-warm, var(--bg-alt)); overflow: hidden; }
 .er-cat-fill { height: 100%; border-radius: var(--radius-full); background: var(--river-600); }
 .dark .er-cat-fill { background: var(--river-legacy-dark); }
@@ -121,7 +121,7 @@ const mentionChips = computed(() => {
 .er-cat-hint { grid-column: 1 / -1; font-size: var(--text-xs); color: var(--muted); font-style: italic; margin: 0; }
 
 .er-mentions { margin-bottom: var(--space-5); }
-.er-mentions-title { font-family: var(--font-editorial); font-size: var(--text-sm); font-weight: var(--weight-semibold, 600); color: var(--ink); margin: 0 0 var(--space-2); }
+.er-mentions-title { font-family: var(--font-editorial); font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink); margin: 0 0 var(--space-2); }
 
 /* Quiet hairline close — a settled sediment thread under the whole stats block, echoing the section tick without repeating it */
 .er-sediment-rule {

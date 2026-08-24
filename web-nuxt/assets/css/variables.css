@@ -914,7 +914,7 @@
   /* Contact widget */
   --contact-widget-width: 320px;
   --contact-cta-height: 48px;
-  --contact-cta-radius: var(--radius-full, 999px);
+  --contact-cta-radius: var(--radius-full);
 
   /* Detail page */
   --detail-section-gap: var(--space-8);

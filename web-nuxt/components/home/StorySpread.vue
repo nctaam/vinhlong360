@@ -70,7 +70,7 @@ useParallax(() => (imgEl.value ? [imgEl.value] : []), { intensity: 0.12 })
   inset: -6%;
   z-index: -2;
   transform: translate3d(0, var(--parallax, 0), 0) scale(1.06);
-  animation: spread-kenburns var(--dur-kenburns, 24s) var(--ease-in-out) infinite alternate;
+  animation: spread-kenburns var(--dur-kenburns) var(--ease-in-out) infinite alternate;
   will-change: transform;
 }
 .spread-img img {

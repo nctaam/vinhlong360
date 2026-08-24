@@ -43,7 +43,7 @@ const disclosureVisible = computed(() => props.presentation === 'full' || props.
   gap: .35em;
   padding: .2em .45em;
   color: var(--color-text-muted);
-  font-size: var(--text-2xs, .72rem);
+  font-size: var(--text-2xs);
   line-height: 1.3;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);

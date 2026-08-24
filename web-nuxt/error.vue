@@ -131,7 +131,7 @@ useSeoMeta({ title: `${props.error?.statusCode || 'Lỗi'} — vinhlong360` })
 .error-illust { width: 160px; margin: 0 auto var(--space-4); }
 .error-illust svg { width: 100%; height: auto; }
 .illust-halo { transition: opacity .3s var(--ease-out); }
-.illust-sparkles .spark { transform-box: fill-box; transform-origin: center; animation: sparkTwinkle 3.2s var(--ease-in-out, ease-in-out) infinite; }
+.illust-sparkles .spark { transform-box: fill-box; transform-origin: center; animation: sparkTwinkle 3.2s var(--ease-in-out) infinite; }
 .illust-sparkles .spark-2 { animation-delay: .8s; }
 .illust-sparkles .spark-3 { animation-delay: 1.6s; }
 .illust-sparkles .spark-4 { animation-delay: 2.4s; }

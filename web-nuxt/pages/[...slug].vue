@@ -76,7 +76,7 @@ function onSearch() {
   flex: 1;
   padding: var(--space-3) var(--space-4);
   border: .5px solid var(--line);
-  border-radius: var(--radius-full, 100px);
+  border-radius: var(--radius-full);
   background: var(--card);
   font-size: 1rem;
   min-height: 44px;
@@ -94,7 +94,7 @@ function onSearch() {
   background: var(--accent);
   color: var(--text-on-dark, var(--white));
   border: none;
-  border-radius: var(--radius-full, 100px);
+  border-radius: var(--radius-full);
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
   cursor: pointer;
@@ -116,7 +116,7 @@ function onSearch() {
   display: inline-flex;
   align-items: center;
   padding: var(--space-3) var(--space-5);
-  border-radius: var(--radius-full, 100px);
+  border-radius: var(--radius-full);
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
   text-decoration: none;

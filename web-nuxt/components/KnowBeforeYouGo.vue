@@ -195,7 +195,7 @@ const hasContent = computed(() => amenities.value.length > 0 || goldenHours.valu
   background: var(--bg-alt);
   border: 1px solid var(--line);
   color: var(--ink);
-  transition: border-color .2s var(--ease-out, ease), transform .15s ease;
+  transition: border-color .2s var(--ease-out), transform .15s ease;
 }
 .kbyg-badge:hover { border-color: var(--amber-600); transform: scale(1.04); }
 .kbyg-badge-icon { font-size: .9rem; background: transparent; padding: 0; min-width: 0; }

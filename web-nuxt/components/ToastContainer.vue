@@ -50,8 +50,8 @@ function iconFor(type?: string) {
   border: .5px solid var(--line);
   border-left: 3px solid var(--toast-accent, var(--line));
   box-shadow: var(--shadow-lg);
-  backdrop-filter: var(--glass, blur(16px));
-  -webkit-backdrop-filter: var(--glass, blur(16px));
+  backdrop-filter: var(--glass);
+  -webkit-backdrop-filter: var(--glass);
   pointer-events: auto;
 }
 .toast.success { --toast-accent: var(--success); }
@@ -64,7 +64,7 @@ function iconFor(type?: string) {
   display: flex; align-items: center; justify-content: center;
   border-radius: var(--radius-full);
   font-size: var(--text-xs); font-weight: var(--weight-bold);
-  animation: toastIconPop .35s var(--ease-spring-gentle, cubic-bezier(.2,1.2,.4,1)) .15s both;
+  animation: toastIconPop .35s var(--ease-spring-gentle) .15s both;
 }
 @keyframes toastIconPop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .toast.success .toast-icon { background: rgba(var(--secondary-rgb), .12); color: var(--secondary); }
@@ -95,11 +95,11 @@ function iconFor(type?: string) {
 .toast { position: relative; overflow: hidden; }
 
 /* ── Transitions ── */
-.toast-enter-active { transition: transform .35s var(--ease-spring-gentle, cubic-bezier(.2,1.2,.4,1)), opacity .25s var(--ease-out, ease-out); will-change: transform, opacity; }
-.toast-leave-active { transition: transform .2s var(--ease-out, ease-out), opacity .15s var(--ease-out, ease-out); will-change: transform, opacity; }
+.toast-enter-active { transition: transform .35s var(--ease-spring-gentle), opacity .25s var(--ease-out); will-change: transform, opacity; }
+.toast-leave-active { transition: transform .2s var(--ease-out), opacity .15s var(--ease-out); will-change: transform, opacity; }
 .toast-enter-from { transform: translateX(100%) scale(.95); opacity: 0; }
 .toast-leave-to { transform: translateX(40px) scale(.95); opacity: 0; }
-.toast-move { transition: transform .3s var(--ease-spring-gentle, cubic-bezier(.2,1.2,.4,1)); }
+.toast-move { transition: transform .3s var(--ease-spring-gentle); }
 
 /* ── Dark ── */
 .dark .toast { background: var(--card); border-color: rgba(var(--text-on-dark-rgb),.1); box-shadow: 0 8px 32px rgba(var(--black-rgb),.5); }

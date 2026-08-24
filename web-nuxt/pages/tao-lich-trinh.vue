@@ -1929,7 +1929,7 @@ useHead({
 .stop-connector { position: absolute; left: 13px; top: 28px; bottom: -12px; width: 2px; background: var(--primary); opacity: .25; }
 .stop-card {
   flex: 1; background: var(--card); border: .5px solid var(--line);
-  border-radius: var(--radius-lg, 16px); padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg); padding: var(--space-3) var(--space-4);
   margin-bottom: var(--space-3);
   transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo), transform .35s var(--ease-spring-gentle);
 }
@@ -1942,7 +1942,7 @@ useHead({
 .scheduled-interval { display: block; margin-top: var(--space-2); color: var(--primary-fg); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
 .stop-card-actions { display: flex; gap: var(--space-1); }
 .stop-list { margin-bottom: var(--space-4); }
-.route-map { height: 300px; border-radius: var(--radius-lg, 16px); overflow: hidden; border: .5px solid var(--line); box-shadow: var(--shadow-sm); }
+.route-map { height: 300px; border-radius: var(--radius-lg); overflow: hidden; border: .5px solid var(--line); box-shadow: var(--shadow-sm); }
 .stop-card-actions button { min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle); }
 .stop-card-actions button:hover { background: var(--bg-warm); }
 .stop-card-actions button:active { transform: scale(.88); transition-duration: .08s; }
