@@ -1377,3 +1377,96 @@ phần lớn HỢP LỆ — drop-cap `::first-letter` (0,78–0,82), và `1.00` 
 (`.cmd-icon`, `.card-arrow`, `.sheet-emoji`) hay chữ số (`.podium-points`,
 `.ec-day`, `.error-code`) — những thứ không có dấu. Kiểm kê nguồn KHÔNG phân biệt
 được; phải render mới biết chỗ nào thật sự chứa chữ có dấu.
+
+### 14. "Rối" đến từ đâu — đo màu trong OKLCH và đo canh lề (2026-08-24)
+
+Chủ dự án nêu: giao diện rối, nhiều màu không hợp logic và không hợp thị giác.
+Đo trong **OKLCH** (không gian cảm nhận đều) và đo canh lề trên trang thật.
+
+#### A. Bảng màu KHÔNG nhiều màu — nhưng nhiều TÊN
+
+93 token màu giải được chỉ ra **49 màu khác nhau**. Tức **44 token (47%) là bí
+danh** của một token khác.
+
+| Màu | Số tên | Các tên |
+|---|---|---|
+| `rgb(37,93,52)` | **6** | `--color-success` `--green` `--orchard-600` `--secondary` `--secondary-fg` `--success` |
+| `rgb(253,252,249)` | **5** | `--card` `--color-surface` `--color-surface-raised` `--surface` `--surface-white` |
+| `rgb(3,90,105)` | **5** | `--color-action` `--color-focus` `--river-600` `--tertiary` `--tertiary-fg` |
+| `rgb(249,247,241)` | 4 | `--alluvial-paper` `--bg` `--color-canvas` `--cream` |
+| `rgb(149,64,43)` | 4 | `--color-brand` `--mangthit-600` `--primary` `--primary-fg` |
+| `rgb(189,65,63)` | 4 | `--color-error` `--coral-error` `--danger` `--error` |
+
+**Đây mới là gốc của mọi thứ khác.** Ba hệ đặt tên song song (ngữ nghĩa
+`--color-*`, thang `--river-600`, vai trò `--tertiary`) cùng trỏ một giá trị ⇒
+không ai biết nên dùng cái nào ⇒ 88 file với tay qua lớp ngữ nghĩa lấy màu thô
+(mục 7). Vấn đề không phải "quá nhiều màu" mà là **quá nhiều tên cho cùng một màu**.
+
+#### B. Về mặt thị giác, bảng màu thực ra CÓ kỷ luật
+
+45 màu có sắc trải trên **6 họ tông** (tôi từng đếm 7 — sai, vì chia ô 30° cắt
+đôi họ hổ phách; đo lại thì hue 60 và 90 đều là H≈73–77, một họ):
+
+| Họ | Số | Vai trò |
+|---|---|---|
+| H≈30 clay/terracotta | 15 | thương hiệu |
+| H≈73–77 hổ phách | 11 | nhấn / thời gian |
+| H≈150 lá | 10 | thiên nhiên / thành công |
+| H≈210 sông | 5 | hành động |
+| H≈256–273 chàm | 3 | thông tin + thương hiệu Zalo |
+| H≈183 teal | **1** | **mồ côi** — `--cat-attraction-accent` |
+
+Điểm cần chỉnh, không phải "bớt màu" mà là **đều tay**:
+- **Một họ mồ côi** (teal, đúng 1 token) — gộp vào 150 hoặc 210.
+- **Chroma lệch tới 2 lần trong cùng họ** (H30: C từ 10,5 đến 21,5). Màu cùng
+  họ mà cái tươi gấp đôi cái kia thì mắt đọc ra là ngẫu nhiên.
+- **Ngoại lệ chroma cao nhất bảng là `--brand-zalo` (C=23,9)** — màu thương hiệu
+  bên thứ ba, chấp nhận được, nhưng nên biết nó là thứ *chói nhất* trên site.
+- **Thang độ sáng không đều**: họ H30 có L cụm ở 48,1 (×4) và 55 (×3) rồi hở.
+
+#### C. Lỗ hổng chiều sâu: `--color-surface-raised` == `--color-surface`
+
+Cả `--card`, `--surface`, `--color-surface`, `--color-surface-raised`,
+`--surface-white` đều là `rgb(253,252,249)`. Tức **bề mặt "nổi" cùng màu bề mặt
+nền** — không có thang độ cao bằng màu. Cộng với `--framed-dossier-shadow: none`
+(đo ở mục 9), chiều sâu chỉ còn diễn đạt bằng đường viền.
+
+Không có chiều sâu thì mọi khối nằm trên một mặt phẳng, mắt mất manh mối gom
+nhóm — đây là một nguyên nhân "rối" độc lập với số lượng màu.
+
+#### D. Bố cục: khoảng cách RẤT kỷ luật, canh lề thì KHÔNG
+
+Đo `/lich-trinh` ở 1280px:
+
+**Khoảng cách — tốt:** chỉ 11 giá trị khác nhau; **1197/1260 lần dùng nằm trong
+thang `--space-*` (95%)**. Ngoại lệ hầu hết là đường mảnh 2px. Khoảng cách KHÔNG
+phải nguồn gây rối.
+
+**Canh lề — đây mới là chỗ hỏng.** 73 vị trí mép trái khác nhau, và các khối
+CÙNG CẤP bắt đầu ở bốn mép lệch nhau:
+
+| Mép trái | Bề rộng | Khối |
+|---|---|---|
+| 105px | 1060 | breadcrumb, `.controls` |
+| 109px | 1052 | `.section-head`, `.pace-chips` |
+| 110px | 1050 | `.catalog-hero-inner`, `.catalog-stats` |
+| 122px | 1026 | `.chip-row` |
+
+Nguyên nhân: mỗi cấp lồng nhau áp padding riêng — `.page`→`.breadcrumb`→`ol` cộng
+20+20px, còn `.page`→`.catalog-hero`→`.catalog-hero-inner` cộng 20+25px. Bốn cột
+nội dung lệch nhau **5–17px**.
+
+Mắt rất nhạy với lệch mép dọc: 5px lệch trên một cạnh dài 1000px đọc ra ngay là
+"không thẳng hàng", trong khi thêm một sắc cam thì hầu như không ai nhận ra. **Nếu
+chỉ sửa được một thứ, sửa canh lề trước khi sửa màu.**
+
+#### Đề xuất theo thứ tự tác động thị giác
+
+1. **Thống nhất cột nội dung** — một token bề rộng container, mọi section dùng
+   chung. Xoá 3 mép thừa.
+2. **Tạo thang độ cao thật** — `--color-surface-raised` phải khác `--color-surface`
+   (sáng hơn 1–2% L ở chế độ sáng), để thẻ tách khỏi nền.
+3. **Gộp 44 token bí danh** — giữ MỘT tên chính thức mỗi màu, các tên còn lại
+   thành `var()` trỏ về nó (hoặc xoá). Đây là việc làm cho hệ thống dễ dùng đúng,
+   không đổi một pixel nào.
+4. **Xử họ mồ côi H183** và **đều lại chroma trong họ H30**.
