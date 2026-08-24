@@ -2055,3 +2055,81 @@ không thì site nào dùng nhiều carousel sẽ tự động "thắng" một c
   mà thao tác đó đã được xác định là nguyên nhân làm Claude Code Desktop chết
   (3 lần trùng khớp mốc thời gian: 20:49, 22:34, 22:38). Dừng ở 3 điểm dữ liệu là
   quyết định có chủ ý, không phải bỏ dở.
+
+
+### 21. Đối chiếu trang chủ với HIẾN PHÁP THIẾT KẾ của chính dự án (2026-08-24)
+
+Không dùng được trình duyệt (xem §20.3), nên chuyển hướng: đối chiếu mã nguồn với
+`00-narrative-system.md` — tài liệu định-hướng-sáng-tạo mà chưa ai kiểm lại.
+Phần lớn checklist của nó **grep được**.
+
+#### 21.1 Phát hiện chính: trang chủ là trang DUY NHẤT tự tắt motif
+
+```
+pages/index.vue:728    .home .hero { background-image: none; }
+```
+
+Dòng này **không có ghi chú giải thích**, nằm lọt giữa quy tắc lưới responsive và
+phần kicker — trông như reset phòng thủ sót lại, không như quyết định thiết kế.
+
+Trong khi đó `.catalog-hero` có hệ motif hoàn chỉnh, đã ship, có tài liệu:
+- `::before` mang SVG line-art theo vùng (sóng nước / trái cây / dừa / sen), khoá
+  theo biến thể `cat-*` — chú thích trong `catalog.css:49` ghi *"P1: region-themed
+  SVG behind text, CSS-only, zero page edits"*
+- nền `linear-gradient(135deg, --primary-light, --bg-warm)`
+- `animation: hero-motif-sway 8s infinite` — **đúng một ambient/viewport**, hợp lệ
+- **dùng trên 12+ trang**: ban-do, cong-dong, danh-ba, dia-diem, gioi-thieu,
+  kham-pha, khu-vuc, le-hoi, lich-trinh, tuyen-duong…
+
+**Tức mọi trang khác đều có motif sông nước trong hero; riêng trang chủ tắt nó đi.**
+Đây là câu trả lời cụ thể nhất cho "vì sao trang chủ trông trống hơn phần còn lại
+của site" — và nó là MỘT DÒNG CSS.
+
+#### 21.2 `HeroIllustration.vue` được viết xong nhưng CHƯA TỪNG được dùng
+
+Grep toàn `pages/`, `layouts/`, `components/`: **không có nơi nào import hay render**
+nó. Component 200+ dòng, có sẵn ba lớp sóng `wave-drift` lệch pha và `hero-motif-sway`.
+
+Nghĩa là **viên gạch tầng A mà §19.6 nói trang chủ đang thiếu thì đã có sẵn** — chỉ
+chưa nối vào. Nối lại rẻ hơn nhiều so với dựng mới.
+
+*(Bốn vòng lặp ambient vô hạn trong component này vi phạm luật "một ambient/viewport"
+của §4.1 — nhưng vì nó là MÃ CHẾT nên không ảnh hưởng gì lúc chạy. Nếu nối vào thì
+phải rút xuống còn một.)*
+
+#### 21.3 Những gì spec ĐÒI và code ĐÃ LÀM ĐÚNG
+
+Đối chiếu §2 "Story Card" — thứ spec gọi là *"thay đổi đòn bẩy cao nhất toàn site"*.
+`EntityCard.vue` đạt **4/4**: tên dùng `--font-editorial`, có grain overlay, dateline
+eyebrow hairline, rule tri-tỉnh river→amber→clay. Đã làm, không phải nợ.
+
+- **Grain overlay**: 67 chỗ, và có `feTurbulence`/`fractalNoise` thật (3 chỗ) chứ
+  không phải gradient phẳng giả texture — đúng anti-slop tell #1 của §4.4.
+- **Superlative rỗng**: chỉ 1 chỗ (`"không thể bỏ qua"` trong `utils/routesContent.ts`).
+  Sạch hơn tôi tưởng nhiều.
+- **Reduced-motion**: `base.css:332` có kill-switch toàn cục đúng chuẩn, kể cả
+  `animation-iteration-count: 1 !important` để chặn vòng lặp vô hạn.
+
+#### 21.4 Hai lần tôi suýt báo động giả — ghi lại để lần sau đo đúng
+
+- **"Stagger vượt trần 40ms"**: tôi thấy các giá trị 80/120/160/200/240ms và định
+  kết luận vi phạm. Đọc mã (`tuyen-duong.vue:328-332`) thì đó là độ trễ **cộng dồn**
+  theo `nth-child`, bước nhảy đúng **40ms/item**, lại còn **chặn trần 240ms** từ item
+  thứ 6 — kỷ luật tốt. Bài học: đo BƯỚC NHẢY, không đo độ trễ tuyệt đối.
+- **"90 animation infinite là vi phạm"**: tách ra thì 24 cái là skeleton shimmer
+  (dừng khi tải xong), 14 cái là spinner, chỉ còn ambient thật — và ambient thật lại
+  nằm trong mã chết. Bài học: đếm `infinite` mà không phân loại thì vô nghĩa.
+
+#### 21.5 Còn nợ: 3 mã màu lạc chuẩn mà spec §4.3 nêu ĐÍCH DANH
+
+Spec ghi rõ *"Không hex off-brand hardcode (`#c0392b`, `#dc2626`, `#f5f5f5` → resolve
+về token)"*. Cả ba **vẫn còn**:
+
+| hex | chỗ | ghi chú |
+|---|---|---|
+| `#c0392b` | `components/admin/KindCompleteness.vue` ×3 | admin |
+| `#dc2626` | `assets/css/variables.css` (`--save-red`) | đã gặp ở §18.3 |
+| `#f5f5f5` | `layouts/admin.vue` (`--surface-alt`) | đã gặp ở §17.4 |
+
+Hai trong ba cái này tôi đã bắt gặp độc lập qua kiểm toán token (§17.4, §18.3) trước
+khi đọc spec. Hai phương pháp khác nhau chỉ về cùng một chỗ — tín hiệu đáng tin.
