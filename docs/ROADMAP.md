@@ -1201,7 +1201,7 @@ Trong 140 đó: admin ~51, công khai ~44, còn lại rải rác.
 
 ### C. ĐỪNG làm — đã đo và xác nhận KHÔNG phải nợ
 
-- **62 giá trị dự phòng** `var(--token, rgba(...))` — bỏ đi là làm yếu mã.
+- ~~**62 giá trị dự phòng** `var(--token, rgba(...))` — bỏ đi là làm yếu mã.~~ ĐÃ ĐẢO, xem §17.1: 31/40 dự phòng đang nói SAI giá trị token thật. Đã xoá 235 cái CHẾT (đo: 0 thay đổi). Nhưng câu cũ đúng cho dự phòng ĐANG SỐNG — tôi gỡ nhầm 12 cái và đã phải vá (§17.2).
 - **368 màu trung tính có alpha** — bóng đổ, scrim, gradient. Token hoá chúng
   sinh ra hàng trăm token dùng-một-lần, tức làm hệ màu PHỨC TẠP HƠN, ngược đúng
   yêu cầu của chủ dự án.
@@ -1231,7 +1231,7 @@ Trong 140 đó: admin ~51, công khai ~44, còn lại rải rác.
 |---|---|---|
 | Tương phản | Vẽ ra canvas, mồi **hai màu** khác nhau | Token là `oklch`, regex vô dụng; một màu mồi thì mọi giá trị không-phải-màu đều ra đen |
 | Nền hiệu dụng | Duyệt tổ tiên tới khi gặp nền đục | `alpha` sau khi hợp thành canvas luôn = 255 |
-| Dấu tiếng Việt | `Range.getClientRects()` so hộp glyph với hộp dòng | Tỉ lệ mực Be Vietnam Pro = **1,33**; mọi `line-height` < 1,33 là tràn |
+| Dấu tiếng Việt | `Range.getClientRects()` so hộp glyph với hộp dòng | Tỉ lệ mực Be Vietnam Pro = **1,33** — nhưng xem đính chính §17.3: tràn hộp dòng KHÔNG tự nó là lỗi, phải đo khoảng hở giữa hai dòng kề |
 | Vùng chạm thật | `elementFromPoint` bắn tia từ tâm | `getBoundingClientRect` sai với phần tử BỊ XOAY |
 | Focus | Bấm **Tab thật** một lần trước khi quét | `.focus()` bằng JS không kích hoạt `:focus-visible` |
 | Quy tắc nào đang thắng | `getComputedStyle` trên phần tử thật | `document.styleSheets` trong dev Vite chỉ phơi 347/nhiều nghìn quy tắc |
@@ -1602,3 +1602,108 @@ Cả hai đường đều đang bị chặn:
   CHƯA chứng minh được bằng đo: phép thử hỏng vì canvas không nhận `oklab()` nên
   `fillStyle` giữ giá trị cũ, cho 4/5 hàng "giống nhau" giả tạo. Cần viết bộ
   chuyển oklab→sRGB trong JS rồi so số, chưa làm.
+
+---
+
+### 17. Kiểm toán `var(--x, dự-phòng)` — và hai lần tôi tự đính chính (2026-08-24)
+
+#### 17.1 ĐÍNH CHÍNH mục "C. ĐỪNG làm": "62 giá trị dự phòng — bỏ đi là làm yếu mã"
+
+Kết luận cũ đó của tôi **sai một nửa, và nửa đúng nằm ở chỗ tôi không ngờ**.
+
+Đo lại bằng trình duyệt, đối chiếu từng cặp (token thật ↔ dự phòng) ở cả hai
+chế độ: **31/40 dự phòng màu nói SAI giá trị token thật**. Tệ hơn, cùng một
+token có nhiều dự phòng đá nhau giữa các file:
+
+| Token | Các dự phòng gặp trong mã | Giá trị thật |
+|---|---|---|
+| `--accent-rgb` | `245,166,35` · `33,150,83` · `240,160,80` · `255,193,7` | `232,163,61` |
+| `--secondary-rgb` | `46,125,91` · `22,163,74` · `33,150,83` | `124,164,131` |
+| `--ink-rgb` | `0,0,0` · `128,128,128` · `43,38,34` | theo chế độ |
+| `--radius-lg` | `12px` · `16px` | `20px` |
+| `--ease-out` | `ease` · `ease-in-out` · `ease-out` | `cubic-bezier(.2,.8,.2,1)` |
+
+`33,150,83` là màu **lục** trong khi `--accent` là hổ phách. Chúng không thể
+cùng đúng — đây là bản chép cũ còn sót, không phải mặc định có chủ đích.
+
+Đã xoá **235 dự phòng chết** (120 màu ở `fa1bad20`, 115 trục khác ở `268344e4`).
+Chứng minh bằng chụp 23 thuộc tính tính toán của mọi phần tử trước/sau, trên 4
+mốc (trang chủ + `/dia-diem/...`, mỗi trang hai chế độ): **0 khác biệt**.
+
+#### 17.2 Nửa ĐÚNG của kết luận cũ — và lỗi tôi đã gây ra rồi phải vá
+
+`fa1bad20` gỡ nhầm **12 dự phòng ĐANG SỐNG**, vì bộ lọc dùng danh sách **loại
+trừ** và tôi không biết hết cái cần loại. Sáu token đó không khai ở đâu cả, nên
+dự phòng chính là giá trị duy nhất; gỡ xong thì `var(--x)` vô hiệu và thuộc tính
+rơi về kế thừa. Hỏng ở: chữ trạng thái admin chế độ tối, icon toast lỗi, viền
+focus nút ảnh đánh giá, viền ô tìm kiếm lỗi. Đã vá ở `9e5a27ef`.
+
+**Bài học có thể dùng lại: dùng danh sách CHO PHÉP, đừng dùng danh sách LOẠI TRỪ.**
+Chọn sai ở danh sách cho phép thì mất một cơ hội dọn. Chọn sai ở danh sách loại
+trừ thì hỏng sản phẩm. Đợt hai (`268344e4`) làm đúng cách: 37 token, từng cái tự
+hỏi `getComputedStyle(:root)` ở cả hai chế độ, đủ 37/37 mới đưa vào.
+
+**Bài học thứ hai: đo rộng vẫn mù đúng chỗ mình vừa sửa.** 4 mốc × ~950 phần tử
+báo "0 khác biệt" trong khi 12 chỗ đang hỏng — vì cả 4 mốc đều là trang công
+khai, còn chỗ hỏng nằm ở admin/toast/ô-tìm-kiếm-lỗi. Bao phủ theo *số phần tử*
+không thay bao phủ theo *đường đi*.
+
+Còn giữ dự phòng có chủ đích ở 3 nhóm vì chúng đang sống:
+`--rank-*`/`--lb-*` (chỉ đặt trong khối `.dark`), `--card-cover-height` (chỉ đặt
+cho `.card.cat-product`), `--corner-shape` (trong `@supports`).
+
+Thêm một dòng phải giữ vì lý do khác: `.hero-search button:focus-visible` nằm
+trong danh sách trắng của `scripts/check-tri-region-contrast.mjs`, mà danh sách
+đó **so chuỗi nguyên văn** giá trị khai báo. Tôi KHÔNG sửa danh sách trắng cho
+test xanh — đó là cơ chế bảo vệ vùng hero. Đã ghi chú tại chỗ trong `base.css`.
+
+#### 17.3 ĐÍNH CHÍNH: "mọi `line-height` < 1,33 là tràn" — báo động giả
+
+Bảng công cụ đo (mục 12) ghi: *"Tỉ lệ mực Be Vietnam Pro = 1,33; mọi
+`line-height` < 1,33 là tràn"*. Câu đó **đúng về hộp dòng nhưng sai về tác hại**.
+
+Tràn hộp dòng tự nó không phải lỗi. Lỗi là khi **hai dòng liền nhau chạm nhau** —
+cần dấu nặng ở dòng trên gặp dấu mũ ở dòng dưới. Đo khoảng hở thật bằng
+`measureText().actualBoundingBoxAscent/Descent` cho từng cặp dòng, trên 5 trang:
+
+| Trang | Phần tử nhiều dòng đã đo | Va chạm | Hở nhỏ nhất |
+|---|---|---|---|
+| `/` | 38 | 0 | +0,30px |
+| `/cong-dong` | 22 | 0 | +1,40px |
+| `/du-lich` | 35 | 0 | +1,40px |
+| `/lich-trinh` | 80 | 0 | +1,40px |
+| `/gioi-thieu` | 31 | 0 | +1,40px |
+
+Thử luôn **trường hợp xấu nhất** (ép chuỗi `ộậặệợự` trên `ỗẫẵễỡữ` vào từng lớp):
+107 tổ hợp lớp/cỡ, **đúng 1 chỗ âm — `.journey-action-copy strong`, −0,33px**,
+tức dưới một pixel. **Không sửa**: sửa sẽ dịch bố cục 1,4px để đổi lấy thứ mắt
+không thấy.
+
+Hai chỗ trước đây tôi suy sai:
+- h1 trang chủ tỉ lệ **1,12** nghe như hỏng nặng, đo ra hở **+13,48px** và
+  **+5,48px**. Vì nó chạy **Fraunces** chứ không phải Be Vietnam Pro — ngưỡng
+  1,33 đo trên font kia không áp được sang đây.
+- Ngưỡng 1,33 là **trường hợp xấu nhất**, còn chuỗi thật hiếm khi xếp đúng cặp
+  xấu nhất trên hai dòng kề.
+
+⇒ Gỡ mục "các lớp tự đặt `line-height` còn dưới 1,33" khỏi danh sách nợ. Thang
+token vẫn đúng khi sửa (rem cố định ghép clamp co giãn là lỗi thật, mục 13),
+nhưng **các lớp đè lên nó thì không phải nợ**.
+
+#### 17.4 Còn lại: 21 token mồ côi
+
+Token không khai ở đâu, nên dự phòng chính là giá trị đang hiển thị — tức màu
+cứng nấp dưới vỏ token. Đã xử 2 (`--leaf`/`--leaf-fg` = từ khoá CSS `green`,
+xem `65edacec`). Còn 21, đáng chú ý:
+
+- `--error-rgb` = `220,53,69` (đỏ Bootstrap) trong khi `--color-error-rgb` có thật
+- `--secondary-fg-strong` `#34d399`, `--error-light` `#f87171`, `--accent-light`
+  `#f59e0b` — bảng màu kiểu Tailwind nằm trong `dark-overrides.css`
+- `--rank-*` và `--lb-*` — **cùng ba màu huy chương khai hai lần dưới hai tên**,
+  nhưng chỉ `--rank-*` có bản chế độ tối; huy chương ở `/cong-dong` và
+  `/bang-xep-hang` vì thế **hiện khác nhau trong chế độ tối**
+- `--radius-pill` ↔ `--radius-full`, `--page-gutter` ↔ `--container-pad`,
+  `--tracking-wide` ↔ `--tracking-caps` — trôi TÊN, không phải trôi giá trị
+
+Chưa xử vì mỗi cái cần một quyết định thiết kế (gộp tên nào, ai là nguồn), không
+phải một phép biến đổi cơ học.
