@@ -531,6 +531,25 @@
 [data-home-pilot="nocturne-b1"] .home-category-index__header > p,
 [data-home-pilot="nocturne-b1"] .home-continuation__eyebrow {
   padding-left: var(--space-4);
+  margin-block: 0;
+}
+
+/* Nhãn nhóm của khối tiện ích: KHÔNG thụt 16px vì nó không phải chữ dẫn cặp với h2,
+   nó đứng đầu một khối nav và căn theo nội dung của chính nó. Chỉ đưa lề về đúng
+   lưới 4pt: 13px (lề mặc định 1em của trình duyệt) → --space-3 = 12px. */
+[data-home-pilot="nocturne-b1"] .home-category-index__utility > p {
+  margin-block: var(--space-3);
+}
+
+/* LỀ MẶC ĐẮNH CỦA TRÌNH DUYỆT RÒ QUA. Ba header này không có CSS nào đặt lề,
+   nên UA styles áp vào: `p { margin: 1em }` = 13px và `h2 { margin: .83em }` = 29,88px.
+   Đo được khoảng chữ-dẫn → tiêu-đề: 29,9 / 29,9 / 13 — ba giá trị, không cái nào
+   do token điều khiển. Thống nhất chữ ký tiêu đề mà để khoảng cách quanh nó tuỳ tiện
+   thì công dã tràng. --space-2 (8px) lấy theo mức nocturne đã chọn cho .home-continuation. */
+[data-home-pilot="nocturne-b1"] .home-decision-ledger__intro h2,
+[data-home-pilot="nocturne-b1"] .home-category-index__header h2,
+[data-home-pilot="nocturne-b1"] #home-continuation-title {
+  margin-block: var(--space-2) 0;
 }
 
 [data-home-pilot="nocturne-b1"] .home-continuation__links {
