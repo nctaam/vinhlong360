@@ -29,8 +29,8 @@
   inset: 0;
   z-index: -2;
   background:
-    radial-gradient(120% 80% at 15% 0%, rgba(156, 61, 34, .55), transparent 60%),
-    radial-gradient(120% 90% at 85% 20%, rgba(46, 125, 91, .45), transparent 62%),
+    radial-gradient(120% 80% at 15% 0%, color-mix(in srgb, var(--clay-600) 55%, transparent), transparent 60%),
+    radial-gradient(120% 90% at 85% 20%, color-mix(in srgb, var(--leaf-600) 45%, transparent), transparent 62%),
     linear-gradient(160deg, #23343f 0%, #101820 100%);
 }
 .cine-hero__scrim {

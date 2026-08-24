@@ -112,7 +112,7 @@ withDefaults(defineProps<{
 .tone-map .journey-action-icon { background: rgba(var(--river-rgb, 14, 116, 144), .1); }
 .tone-planner .journey-action-icon { background: rgba(var(--accent-rgb), .12); }
 .tone-community .journey-action-icon { background: rgba(var(--secondary-rgb), .12); }
-.tone-saved .journey-action-icon { background: rgba(220, 38, 38, .08); }
+.tone-saved .journey-action-icon { background: color-mix(in srgb, var(--save-red) 8%, transparent); }
 .tone-warning .journey-action-icon { background: rgba(var(--warning-rgb), .12); }
 .tone-danger .journey-action-icon { background: rgba(var(--danger-rgb, 220, 38, 38), .1); }
 .tone-admin .journey-action-icon { background: rgba(var(--blue-rgb, 52, 120, 246), .1); }

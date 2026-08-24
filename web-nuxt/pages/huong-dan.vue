@@ -1134,7 +1134,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 .dark .guide-hero.brand-masthead {
   background:
     var(--grain),
-    linear-gradient(120deg, rgba(116, 171, 181, .1) 0%, rgba(var(--white-rgb),.02) 55%, rgba(var(--primary-rgb, 46, 125, 50), .1) 120%);
+    linear-gradient(120deg, color-mix(in srgb, var(--river-legacy-dark) 10%, transparent) 0%, rgba(var(--white-rgb),.02) 55%, rgba(var(--primary-rgb, 46, 125, 50), .1) 120%);
 }
 .dark .bm-motif { color: var(--clay-400); opacity: .65; }
 .dark .guide-topic { background: var(--bg-alt); }

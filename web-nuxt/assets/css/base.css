@@ -676,7 +676,7 @@ a.thread-author:hover { color: var(--primary-fg); }
 .thread-act:hover { background: var(--bg-alt); color: var(--ink); }
 .thread-act:active { transform: scale(.88); transition-duration: .08s; }
 .thread-act.active { color: var(--save-red, #dc2626); }
-.thread-act.active:hover { background: rgba(220,38,38,.08); }
+.thread-act.active:hover { background: color-mix(in srgb, var(--save-red) 8%, transparent); }
 .thread-act.active svg { color: var(--save-red, #dc2626); }
 .thread-act-end.active { color: var(--primary-fg); }
 .thread-act-end.active:hover { background: rgba(var(--primary-rgb), .08); }
@@ -938,7 +938,7 @@ a.thread-author:hover { color: var(--primary-fg); }
 .dark .thread-menu { background: var(--surface-2); border-color: var(--glass-border); box-shadow: 0 8px 32px rgba(0,0,0,.5); }
 .dark .thread-more:hover { background: var(--overlay-light); }
 .dark .ptb-review { background: rgba(var(--accent-rgb), .22); }
-.dark .ptb-share { background: rgba(46,125,91,.18); }
+.dark .ptb-share { background: color-mix(in srgb, var(--leaf-600) 18%, transparent); }
 .dark .ptb-recommend { background: rgba(51,100,110,.18); }
 .dark .ptb-question { background: rgba(var(--primary-rgb),.16); }
 .dark .ptb-discussion { background: var(--glass-light); }

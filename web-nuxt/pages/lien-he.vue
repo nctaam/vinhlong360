@@ -307,7 +307,7 @@ useHead({
 .dark .brand-masthead {
   background:
     var(--grain),
-    linear-gradient(120deg, rgba(116, 171, 181, .1) 0%, rgba(var(--white-rgb),.02) 55%, rgba(var(--primary-rgb), .12) 120%);
+    linear-gradient(120deg, color-mix(in srgb, var(--river-legacy-dark) 10%, transparent) 0%, rgba(var(--white-rgb),.02) 55%, rgba(var(--primary-rgb), .12) 120%);
 }
 .dark .bm-motif { color: var(--clay-400); opacity: .7; }
 .dark .contact-card { background: var(--bg-alt); border-color: var(--line); }
