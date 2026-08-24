@@ -2288,3 +2288,90 @@ ngang hàng** của một cổng cấp tỉnh solo-dev. Đối chiếu với h�
 Toàn bộ mục này **chưa có hiệu lực** chừng nào `NUXT_PUBLIC_SITE_NOINDEX` còn bật
 (§1.7). Nhưng ba khoảng trống trên nên vá TRƯỚC khi mở index — mở ra rồi mới sửa thì
 dữ kiện sai đã kịp vào chỉ mục và vào mô hình.
+
+
+### 24. Giác quan: hệ đã xây gần xong — trang chủ là nơi duy nhất không dùng (2026-08-24)
+
+Chủ dự án hỏi sâu về giác quan, thành phần nào được hiển thị và vì sao. Đối chiếu
+`00-narrative-system.md` §4.2 (danh sách motif giác quan) với mã nguồn.
+
+#### 24.1 Hệ giác quan KHÔNG phải nợ — 12/14 motif đã có
+
+| nhóm | motif | số chỗ |
+|---|---|---|
+| sông nước | sediment (phù sa) · wave · ripple | 178 · 21 · 3 |
+| phù sa/đất | grain overlay · SVG noise thật · palette clay/leaf/river/amber · nền sand | 67 · 3 · **475** · 144 |
+| mùa/thời gian | âm-lịch-first · month-strip · tín hiệu mùa | **441** · 2 · **661** |
+| văn hoá cụ thể | cần xé đan · guilloché · dấu sáp · số khắc đá chùa · ghe/cầu khỉ/lá dừa/Khmer | 7 · 4 · 11 · 2 · 80 |
+
+Thiếu đúng **2/14**: hairline "dòng chảy" dọc, và đồng hồ trong-ngày (sương sáng /
+nắng đứng bóng / nắng ngả vàng / đèn ghe). Cả hai đều là motif ambient, không phải
+thành phần chức năng.
+
+Đây là một trong những phần **được thực thi tốt nhất** của dự án. Cần xé đan ở trang
+sản phẩm, guilloché + dấu sáp ở OCOP, số khắc đá chùa ở lễ hội — đúng tinh thần §4.4
+*"motif Delta thật, không clip-art du lịch chung"*.
+
+#### 24.2 Nhưng trang chủ dùng gần như KHÔNG CÁI NÀO
+
+| motif | trang chủ | các trang khác |
+|---|---|---|
+| **sediment / phù sa** | **0** | sản phẩm 5 · OCOP 7 · lễ hội 6 |
+| sóng nước | **0** | — |
+| dấu sáp / guilloché | **0** | OCOP 14 |
+| cần xé đan | **0** | sản phẩm 7 |
+| motif SVG nền | **0** | sản phẩm 1 · OCOP 1 |
+| âm lịch | **0** | lễ hội 45 |
+| grain | 2 | — |
+| mùa | 29 | sản phẩm 61 · du lịch 22 |
+
+`sediment` **bằng 0 trên trang chủ** — trong khi phù sa là **ẩn dụ nền tảng**, một
+trong ba hệ quả bắt buộc của luận đề trung tâm (§0 narrative-system). Trang lẽ ra
+phải THIẾT LẬP ẩn dụ lại là trang duy nhất không nói nó.
+
+#### 24.3 Bằng chứng sắc nhất: chép hình dạng, vứt ý nghĩa
+
+Hai quy tắc giống hệt nhau từng chữ, **trừ dòng cuối**:
+
+`assets/css/components.css:813` — lớp dùng chung, chú thích ghi
+*"Shared phù-sa section head (Wave 1 foundation; pages opt in with .sediment-head)"*:
+```css
+width: 4px; height: 1.05em; border-radius: var(--radius-full);
+background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+```
+
+`pages/index.vue` — bản của trang chủ:
+```css
+width: 4px; height: 1.05em; border-radius: var(--radius-full);
+background: var(--color-brand);
+```
+
+Cùng hình học, cùng vị trí, cùng kích thước. Bản dùng chung là **dải phù sa ba màu**
+river→amber→clay; bản trang chủ là **một màu phẳng**. Trang chủ đã chép lại hình dạng
+của sediment-tick rồi bỏ đi ý nghĩa.
+
+**Sửa = đổi MỘT dòng.** Và vì `f55aeede` đã gộp cả 6 tiêu đề mục của trang chủ về
+dùng chung thanh này, nên một dòng đó nâng cấp **cả sáu cùng lúc**. Không rủi ro bố
+cục (hình học không đổi), không rủi ro tương phản (thanh trang trí 4px, không phải chữ).
+
+#### 24.4 Vì sao lại thành ra thế — và điều này KHÔNG phải lỗi của ai
+
+Ghép với §21: trang chủ được dựng lại theo hướng `nocturne` (§19.1), và đợt dựng lại
+đó **không mang theo ngôn ngữ giác quan** của phần còn lại. `background-image: none`
+ở `index.vue:728` và thanh một-màu ở đây là hai mặt của cùng một chuyện: một lớp
+thiết kế mới đè lên, giữ bố cục nhưng đánh rơi ẩn dụ.
+
+Đây là cái giá quen thuộc của việc redesign từng trang trên một hệ đã có bản sắc —
+không phải ai làm ẩu.
+
+#### 24.5 Đính chính §23.4 của chính tôi
+
+Tôi viết "ba tỉnh ngang hàng nằm trong dữ liệu máy đọc → site dạy sai dữ kiện".
+Nói vậy là **quá tay**. `utils/adminUnit.ts` có khối chú thích rất chỉn chu: dẫn đúng
+§1.6, ghi đúng mốc 1/7/2025, đúng 124 xã/phường (35 phường + 89 xã), nói rõ `area`
+là **vùng cũ chỉ để tra cứu** và **không được đứng trong breadcrumb như một cấp hành
+chính**, kèm đối chiếu dữ liệu 125/125.
+
+Sự thật chính xác hơn: **hai tầng lệch nhau** — tầng breadcrumb/structured-data của
+entity thì nghiêm ngặt, còn tầng SEO/JSON-LD trang chủ chưa theo kịp. Bản vá vì thế
+cũng nhẹ hơn: đưa 7 chỗ kia về đúng chuẩn mà `adminUnit.ts` đã đặt sẵn.
