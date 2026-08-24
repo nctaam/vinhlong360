@@ -2499,3 +2499,79 @@ chữ.
 Trước khi mở đã chạy `claude-cuu-ho.ps1 luu` (log ra Desktop), và **đóng tab ngay sau
 khi đo xong** để không lặp lại vòng "khôi phục tab rồi chết" đã ghi ở §22. Ứng dụng
 sống sót cả phiên đo.
+
+
+### 27. GỐC RỄ: trang chủ không dùng EntityCard (2026-08-24)
+
+Đợt nghiên cứu thứ tám, dùng trình duyệt đo **giải phẫu bên trong một đơn vị** của
+Atlas Obscura — thứ §26 chưa trả lời được: *cái gì lấp đầy 323px đó?*
+
+#### 27.1 Câu trả lời: ẢNH lấp đầy
+
+Giải phẫu thẻ Atlas Obscura (đo ở khung 581px):
+
+| lớp thẻ | cao TB | ảnh | % chiều cao thẻ | chữ |
+|---|---|---|---|---|
+| `basis-1/3` | 504px | 541×433 | **83%** | tiêu đề 20/600 |
+| `col-span-6` | 445px | 120×120 | 26% | 20/600 + meta 11/500 |
+| `flex` | 226px | 96×96 | 40% | 20/700 + mô tả 18/400 |
+
+**Không phải đệm rỗng lấp chỗ — ảnh lấp chỗ.** Thẻ chính của họ có 83% chiều cao là ảnh.
+
+Mobile (375px): **15,2 màn hình, vẫn 300px mỗi đơn vị** (desktop 323). Họ **không nén
+lại trên mobile** — họ để trang dài ra. Đây là điểm §20.3 ghi là giới hạn, nay đã đo.
+
+#### 27.2 GỐC RỄ — một dữ kiện giải thích cả bảy đợt trước
+
+```
+EntityCard được dùng ở 12 trang:
+  da-luu · danh-ba · dia-diem · du-lich · kham-pha · khu-vuc
+  lich-trinh · luu-tru · nguoi-dung · ocop · san-pham …
+
+Trang chủ dùng: 0 lần.
+```
+
+Và `EntityCard` chính là nơi chứa **lời giải cho bài toán "không có ảnh"**:
+- `.cover.cover-img` + lớp `cover-generated` khi entity không có ảnh
+- `placeholderBg` — gradient **gieo theo `entity.id`** (một entity luôn một look)
+- `.cover-grain` — lớp grain chống "flat gradient = rẻ"
+- `.cover-svg-icon` với `placeholderSvg` — glyph danh mục lệch tâm
+- `.cover-dateline` — dateline eyebrow
+
+Đúng giải phẫu "Story Card" ở §2 narrative-system — thứ spec gọi là **"thay đổi đòn
+bẩy cao nhất toàn site"**. Đã xây xong, đã đạt 4/4 khi kiểm (§21.3), đang chạy trên
+12 trang.
+
+Trang chủ thay vào đó dùng bộ thẻ **tự chế, không ảnh bìa**: `cm-card`, `fy-chip`
+(ảnh 60×60), `event-mini`, `dish-item`, `journey-action`.
+
+#### 27.3 Một dữ kiện, giải thích tất cả
+
+| phát hiện trước đó | giải thích |
+|---|---|
+| §19.3 toàn trang chủ có 1 ảnh | thẻ tự chế không có ô ảnh bìa |
+| §20 chỉ 0,2 ảnh/màn so với 1,3–2,7 của peers | như trên |
+| §26 75px mỗi đơn vị so với 323 của Atlas Obscura | thẻ không ảnh thì thấp |
+| §24.2 `sediment` = 0 trên trang chủ | ẩn dụ phù sa sống trong `placeholderBg` của EntityCard |
+| §25.2 hai bậc chữ lớn nhất gần như không dùng | thẻ nhỏ thì không cần chữ lớn |
+
+Tức **không phải năm vấn đề — là MỘT vấn đề nhìn từ năm phía**: trang chủ được dựng
+bằng **từ vựng thẻ riêng** thay vì từ vựng của site.
+
+#### 27.4 Hệ quả cho việc sửa
+
+Điều này **đổi thứ tự ưu tiên** tôi đề xuất ở các đợt trước. Hai bản vá một-dòng
+(motif hero, thanh phù sa) vẫn đúng và vẫn rẻ, nhưng chúng là **triệu chứng**. Gốc là
+từ vựng thẻ.
+
+Nhưng gốc KHÔNG có nghĩa là phải làm trước: thay `cm-card`/`fy-chip` bằng `EntityCard`
+là thay đổi lớn, đụng dữ liệu (EntityCard cần một `entity` đầy đủ, còn thẻ cộng đồng
+nhận `post`), và cần nhìn bằng mắt để duyệt. **Cần chủ dự án quyết**, không tự làm.
+
+Đề xuất thứ tự: hai bản vá một-dòng trước (rẻ, đã kiểm trước, thấy được ngay), rồi
+bàn riêng về việc đưa `EntityCard` lên trang chủ.
+
+#### 27.5 An toàn
+
+Chạy `claude-cuu-ho.ps1 luu` trước khi mở, đóng tab ngay sau khi đo. Ứng dụng sống
+sót cả hai phiên đo site ngoài (§26 và §27).
