@@ -1722,6 +1722,39 @@ xem `65edacec`). Còn 21, đáng chú ý:
 Chưa xử vì mỗi cái cần một quyết định thiết kế (gộp tên nào, ai là nguồn), không
 phải một phép biến đổi cơ học.
 
+#### 17.6 CHỜ CHỦ DỰ ÁN: 3 màu Tailwind trong admin — đổi sang bảng màu thì 2/3 trượt AA
+
+`--secondary-fg-strong` `#34d399`, `--error-light` `#f87171`, `--accent-light`
+`#f59e0b` — cả ba **chưa từng được khai báo**, nên fallback chính là thứ đang hiện.
+Đều là màu Tailwind, ngoại lai với bảng màu sông nước. Dùng ở `.dark .status-*`
+(admin: người dùng, báo cáo).
+
+**Đừng đổi thẳng sang token hệ — đo rồi, 2/3 trượt:**
+
+| ô | Tailwind hiện tại | token hệ | đề xuất (giữ hue+chroma bảng màu) |
+|---|---|---|---|
+| active/resolved | `#34d399` **6,68** | `--secondary-fg` **4,44** ✗ | rgb(90,183,139) **5,26** ✓ |
+| banned | `#f87171` **4,91** | `--error` **4,83** ✓ | rgb(230,133,126) **5,21** ✓ |
+| pending | `#f59e0b` **5,73** | `--accent-dark` **4,01** ✗ | rgb(219,157,68) **5,21** ✓ |
+
+Màu Tailwind nằm đó **vì chúng sáng hơn và đạt chuẩn**; bản tương đương trong
+bảng màu quá trầm cho chữ nhỏ trên nền pha ở chế độ tối.
+
+**Có lối ra giữ được bảng màu:** giữ nguyên hue và chroma của token hệ, chỉ nâng
+độ sáng — cột cuối. Đánh đổi: tương phản xanh tụt 6,68→5,26 và hổ phách
+5,73→5,21 (vẫn trên 4,5), đổi lại là hết màu ngoại lai. Mắt người vận hành sẽ
+thấy khác: đE 7,48 / 4,76 / 4,81 so với hiện tại.
+
+**TÔI KHÔNG TỰ ĐỔI, và không phải vì ngại quyết định thẩm mỹ.** Chưa xác định
+được đường render thật: `pages/admin/bao-cao.vue:567` có `.dark .status-pending`
+riêng mang `[data-v-*]` (độ ưu tiên 0,3,0) nên **thắng** quy tắc toàn cục ở
+`dark-overrides.css:124` (0,2,0) và dùng `--accent-text` chứ không phải `--accent-light`.
+Tức `--accent-light` có thể đã CHẾT trên trang báo cáo nhưng còn sống ở trang khác.
+Sửa trước khi biết chỗ nào thật sự vẽ ra cái gì là sửa mò. Cần rà bằng render
+thật trên từng trang admin trước.
+
+Khác với câu hỏi admin ở §15 (26 màu hệ thống kiểu iOS) — đây chỉ là 3 token mồ côi.
+
 #### 17.5 ✅ ĐÃ QUYẾT (chủ dự án chọn hướng b) — sắc huy chương chuyển sang NỀN badge
 
 Có sẵn từ trước, không phải do đợt gộp token. Đo trên nền thẻ sáng (253,252,249):
