@@ -1906,3 +1906,97 @@ trở thành bất khả về mặt cấu trúc. Chưa làm vì 7 token nhóm `#
 theo chế độ (`--on-warning` khai 4 lần, `--color-surface-raised` 5 lần) trong khi
 `--white` chỉ khai 1 lần — phải xử lý TỪNG khai báo, không thay hàng loạt được.
 Việc này nên đi kèm ảnh chụp trước/sau ở cả hai chế độ.
+
+
+### 19. Trang chủ hiển thị gì, vì sao, và cái gì thừa — đo trên trang thật (2026-08-24)
+
+Câu hỏi của chủ dự án: *vì sao trang chủ hiển thị như vậy, cái gì cần, cái gì
+không, vừa đủ, không dư thừa*. Đây là câu hỏi KIẾN TRÚC THÔNG TIN, không phải CSS.
+
+#### 19.1 Đã có spec, và spec đã chẩn đoán đúng bệnh từ tháng 7
+
+`docs/superpowers/specs/redesign-concepts/01-home.md` (STATUS: active) viết:
+
+> *"Trang chủ hiện đọc như MỘT trang landing được lắp từ 12 block độc lập, không
+> như MỘT câu chuyện có mở-thân-kết."*
+
+Spec chốt **ba tầng nhịp** — A (tràn viewport, ảnh lớn, nghỉ mắt) · B (hai cột
+ảnh+chữ) · C (chuỗi ngang lướt nhanh) — và một luật kiểm được:
+**"không cho phép 2 section liên tiếp cùng tầng."**
+
+Nhưng spec cũng ghi *"viết TRƯỚC declutter"* và *"declutter thắng khi xung đột"*.
+Đợt declutter sau đó gỡ đúng các khối tầng A/B mà spec dựa vào (StorySpread,
+EntityFeature #2, "Hỏi trợ lý AI"). **Hai đợt kéo ngược chiều nhau, kết quả là
+trang không còn tầng A lẫn tầng B.**
+
+#### 19.2 Số đo hiện trạng (khách vào LẦN ĐẦU, đã xoá recent/visit)
+
+| mục | cao | đơn vị bấm được | px mỗi đơn vị |
+|---|---|---|---|
+| dòng ngữ cảnh | 77 | 1 | 77 |
+| hero | 894 | 3 | **298** |
+| "Hôm nay bạn muốn bắt đầu…" + "Khám phá theo nhu cầu" | 797 | 11 | **72** |
+| "Tín hiệu địa phương" | 644 | 5 | **129** |
+| "Từ cộng đồng" | 673 | 9 | **75** |
+| "Giữ mạch khám phá" | 181 | 2 | **91** |
+
+**Tổng: 4011px = 5,6 màn hình · 31 lựa chọn bấm được.**
+
+Nhịp lộ ra ngay ở cột cuối: hero cho một đơn vị **298px** thở, rồi tụt xuống
+**72 / 129 / 75 / 91** — bốn khối danh sách dày, đều, liên tiếp. Đúng bốn lần vi
+phạm luật "không 2 section liên tiếp cùng tầng" của spec.
+
+#### 19.3 Phát hiện nặng nhất: TOÀN TRANG CHỦ CÓ ĐÚNG MỘT ẢNH
+
+Đo trên DOM: **1 thẻ `<img>`** (`cua-com-duyen-hai.webp`, 482×327, trong hồ sơ
+hero) · **0 ảnh nền CSS** · **0 SVG minh hoạ lớn**.
+
+Một trang du lịch/OCOP cuộn 5,6 màn hình với một tấm ảnh. Và đây KHÔNG phải "ô
+ảnh bị bỏ trống": mã chỉ có **một ô ảnh duy nhất**, và nó đã được lấp. Trang được
+dựng thành trang chữ-và-hộp.
+
+Đây mới là gốc của cảm giác "rối" hơn là màu hay khoảng cách: **không có gì để
+mắt nghỉ.** Mọi thứ đều là chữ trong khung, cùng một tông xám-xanh, 31 lần.
+
+#### 19.4 Trùng lặp: đo được, nhưng KHÔNG nằm ở chỗ tôi đoán ban đầu
+
+Giữa các mục với nhau, trùng lặp **thấp**: 32 liên kết → 26 đích, chỉ 2 đích lặp
+qua nhiều mục. Trùng lặp thật nằm chỗ khác:
+
+- **"Khám phá theo nhu cầu" (7 ô): 6/7 đích ĐÃ CÓ trong header (20 link) VÀ trong
+  footer (22 link).** Cùng 6 đích xuất hiện ba lần trên một trang.
+  **NHƯNG** đo ở 360px: header chỉ còn hiện **1 link** (logo), 19 cái kia nằm sau
+  nút "Mở danh mục" — còn khối này hiện đủ 7 ô. Tức nó **thừa trên desktop,
+  nhưng là điều hướng DUY NHẤT nhìn thấy được trên mobile**. Không được xoá thẳng.
+- **"Giữ mạch khám phá khi bạn ĐÃ CÓ một điểm bắt đầu"**: với khách lần đầu, mục
+  này vẫn render, tiêu đề nhắm vào người quay lại, và chỉ có 2 link — `/ban-do` và
+  `/lich-trinh` — **cả hai đều đã xuất hiện trước đó trên trang**. Ở trạng thái
+  rỗng nó trùng 100%. Có tín hiệu cá nhân thì JourneyActionRail mới thêm giá trị.
+
+- **Tôi đoán sai một lần, ghi lại:** tôi nghĩ "Hôm nay bạn muốn bắt đầu thế nào?"
+  và "Khám phá theo nhu cầu" là hai menu hỏi cùng một câu. Đọc nhãn thật thì khác
+  hẳn — A đưa **câu trả lời có lý do** ("Còn 22 ngày · Ngày hội Thanh trà",
+  "Tháng 8 · đang vào mùa", "4.9 điểm"), B đưa **danh mục**. A là thứ hiếm và
+  đáng giữ; B mới là thứ trùng chrome.
+
+#### 19.5 CHỜ CHỦ DỰ ÁN: 5 nhãn "Chưa rõ nguồn" trên cửa trước
+
+Đo được **5 mục** trên trang chủ mang nhãn `Chưa rõ nguồn`, trong đó **3 mục** kèm
+`Chưa rõ thời điểm cập nhật`: hồ sơ hero (Cua cốm Duyên Hải), và 4 mục trong "Tín
+hiệu địa phương" (Đờn ca tài tử, Mật ong rừng bần, Peace Farm, Cháo Cua Đồng).
+
+Nhãn này **trung thực và đúng §1.7** — không được claim đã xác minh khi `verifiedAt`
+chưa phủ. Nhưng *trung thực* và *phải phát trên trang chủ* là hai việc khác nhau:
+cửa trước đang nói với mọi khách lần đầu, năm lần, rằng site không biết nguồn nội
+dung của mình. Chuyển tiết lộ đó xuống trang chi tiết — nơi người ta thực sự cân
+nhắc một địa điểm — vẫn giữ nguyên tính trung thực.
+**Đây là quyết định về tín nhiệm, không phải kỹ thuật → tôi không tự làm.**
+
+#### 19.6 Việc làm được ngay, không cần quyết
+
+- Mục "Giữ mạch khám phá" chỉ hiện khi CÓ tín hiệu cá nhân (giống cách "Dành cho
+  bạn" đã làm ở declutter-3 B1-7). Khách lần đầu bớt một mục 181px không mang gì mới.
+- Bù lại tầng A: dự án có `scripts/gen_image.py` (ảnh AI, §1.5) và đã có sẵn
+  `HeroIllustration`, `EntityHeroPlaceholder`, `useCategoryPlaceholder`. Chèn MỘT
+  khối tràn viền ở khoảng 60–70% chiều dài trang là đúng thứ spec §3 yêu cầu và
+  là đòn bẩy lớn nhất cho cảm giác "đỡ rối" — vì nó cho mắt chỗ nghỉ đầu tiên sau hero.
