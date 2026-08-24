@@ -400,7 +400,7 @@ useHead(() => ({
   background: linear-gradient(180deg,
     rgba(28, 42, 61, .6) 0%,
     rgba(51, 100, 110, .42) 38%,
-    rgba(232, 163, 61, .34) 66%,
+    rgba(var(--accent-rgb), .34) 66%,
     rgba(217, 199, 163, .26) 100%);
   animation: wake-sunrise 18s var(--ease-cinematic) 1 both;
 }

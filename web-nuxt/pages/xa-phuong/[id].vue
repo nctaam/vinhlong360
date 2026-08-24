@@ -631,7 +631,7 @@ watch(mapEl, async (el) => {
   // Ward center marker — popup mở mặc định
   const centerPopup = new maplibregl.Popup({ offset: 25, closeOnClick: false })
     .setHTML(`<strong>${escapeHtml(data.value?.place?.name || '')}</strong>`)
-  new maplibregl.Marker({ color: '#9C3D22', scale: 1.1 })
+  new maplibregl.Marker({ color: 'var(--clay-600)', scale: 1.1 })
     .setLngLat([coords[1], coords[0]])
     .setPopup(centerPopup)
     .addTo(map)

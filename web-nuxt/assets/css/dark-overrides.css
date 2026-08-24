@@ -30,7 +30,7 @@
 
 /* ── 404 catch-all ([...slug]) ── */
 .dark .nf-search input { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.1); color: var(--ink); }
-.dark .nf-search input:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(232, 163, 61, .15); }
+.dark .nf-search input:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .15); }
 .dark .nf-search input::placeholder { color: rgba(255,255,255,.35); }
 .dark .nf-btn-outline { border-color: var(--accent); color: var(--accent); }
 

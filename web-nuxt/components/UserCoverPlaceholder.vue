@@ -2,9 +2,9 @@
   <svg viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg" class="user-cover-svg" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <defs>
       <linearGradient id="ucg1" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#9C3D22" stop-opacity=".85" />
-        <stop offset="50%" stop-color="#E8A33D" stop-opacity=".6" />
-        <stop offset="100%" stop-color="#2E7D5B" stop-opacity=".75" />
+        <stop offset="0%" stop-color="var(--clay-600)" stop-opacity=".85" />
+        <stop offset="50%" stop-color="var(--accent)" stop-opacity=".6" />
+        <stop offset="100%" stop-color="var(--leaf-600)" stop-opacity=".75" />
       </linearGradient>
     </defs>
     <rect width="800" height="200" fill="url(#ucg1)" />
