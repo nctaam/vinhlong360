@@ -3028,3 +3028,73 @@ khối-sáng-lớn / khung-son. Nhịp dải ở dark MẠNH HƠN sáng (1,27 vs
 - H1 mobile 44px/3 dòng @375 (hiện trạng production) có quá lớn không — quyết định
   sản phẩm.
 - Xác nhận dữ liệu prod có entity official/partner_verified không (local 0/1746).
+
+---
+
+### 34. Vòng có mắt → bản 4.2: lần đầu phê bình bằng pixel, không bằng mã (2026-08-25)
+
+**Nguồn việc:** chủ dự án — *"tối ưu giao diện hơn, hấp dẫn hơn, thu hút hơn."* Vá lỗ
+hổng phương pháp tồn tại suốt các vòng: mọi phê bình trước đều ĐỌC MÃ, chưa ai NHÌN.
+Dựng công cụ mắt (playwright-core + Edge sẵn của Windows, 0 đồng, trong scratchpad),
+phiên chính tự soi trước, rồi 5 lăng kính + 2 thẩm tra — **mỗi agent bắt buộc chụp ảnh
+và mở ảnh nhìn trước khi kết luận; thẩm tra mở lại từng ảnh chứng minh, đề xuất không
+có ảnh là hạ bậc.** 80 ảnh chứng cứ trong scratchpad phiên.
+
+#### 34.1 Mắt bắt được thứ mã không thấy
+
+- **Bug thật:** thuộc tính `height="…"` của `<img>` thắng `aspect-ratio` CSS (chỉ áp khi
+  height auto) — thẻ Vicosap 400px cạnh bìa 229px, hàng E-full lệch răng cưa. Vá bằng
+  `height:auto`. **Bài học cho production:** mọi img có width/height attr + aspect-ratio
+  CSS cần height:auto tường minh.
+- **Bệnh thẩm mỹ:** bìa sinh v1 ở cỡ thẻ đọc như Ô MÀU TRỐNG — hai thẻ cùng họ cam
+  (product hue 30±15) gần giống hệt; bìa event = khối hồng phẳng như thiếu ảnh. Giám
+  tuyển xác nhận độc lập: mắt dừng 5 chỗ chứ không phải 3 — hai điểm dừng NGOÀI thiết kế
+  là cặp thẻ cam và tấm hồng, đều mang 0 thông tin.
+- **Giả tượng công cụ (ghi để khỏi mất lượt):** fullPage screenshot cuộn nhanh làm ảnh
+  data-URI chưa kịp composite → ô trống GIẢ trong ảnh chụp. Đo naturalWidth/complete
+  trước khi tin "ảnh biến mất".
+
+#### 34.2 Bản 4.2 — 14 mục áp (chi tiết + ảnh chứng cứ trong file kết quả workflow)
+
+1. **Bìa sinh v2 «Tem phù sa»** thay v1 (thắng chung khảo trước «Bản khắc phù sa» của
+   giám tuyển — hai ngôn ngữ cùng renderer, chọn MỘT): chân trời 2 thang sáng (hz
+   140–172), đất lệch ấm −14°, motif token thật theo danh mục (sóng/đan cần xé/guilloché/
+   đèn lồng treo dây), monogram chữ đầu 170px mờ .24, viền tem 2 lớp caller-side, mScale
+   LIÊN TỤC 0.6–1.1 khoá de-twin cặp cùng-chữ-cái. Giữ nguyên hợp đồng v1: tất định theo
+   id, hue theo category, grain caller, mọi tỉ lệ khung. ~3,3KB/bìa.
+2. **Vi tương tác «bồi lắng»** (token mới `--tick-x` ngang, 2 chế độ): vệt phù sa 4px
+   bồi từ trái ở chân thẻ/hàng khi hover; KHÔNG nhấc thẻ (ngược ẩn dụ — bị bác bằng ảnh);
+   hàng sổ nền --shade + biên dưới thành sợi; link 2 bậc (.cta sợi tick-x chạy đè, .seeall
+   underline chạy; biến thể cdai cho link dài có thể wrap); nút Tìm press lún 1px, :active
+   NGOÀI (hover:hover); mọi transition ≤200ms, tắt sạch reduced-motion; production chỉ gắn
+   hover cho hàng ĐÃ là link.
+3. **Sổ vàng thành tờ chứng nhận:** triện son 2 vòng + vân guilloché đồng tâm + drop-cap
+   — điều kiện cứng: gắn với KHỐI toàn 5 sao, danh sách đổi thì PHẢI GỠ (§1.7).
+4. **Passe-partout** cho ảnh tin chính (bản sáng học bài "hộp đèn" của bản tối) — chỉ ảnh
+   "đinh", không áp đại trà.
+5. **Vá hộp tìm tối 1,27:1** — input sáng cố định, ngoại lệ có chủ đích ghi tại chỗ.
+6. **Đồng bộ ngày theo data.json:** Thanh trà 15/09 (số "20 Th9" của mockup cũ là chép
+   sai), đờn ca 20/09; âm lịch derive lại bằng oracle dự án.
+7. **Slot tin dẫn nâng chính sách** "ảnh AI thật trước, bìa sinh khi thiếu" — 2/3 hàng
+   mùa fallback đã có ảnh kho.
+8. Số mục catalog bảo tàng (03/05/07) · Vicosap (ảnh thật) lên đầu hàng E-full · **phiếu
+   hero B full-bleed** dựng CẠNH hiện trạng cho chủ THẤY rồi quyết (§1.5) — diện tích ảnh
+   màn 1 16,2%→91,8%, tự sửa lỗi input tối, +190KB LCP.
+
+**8 đề xuất bị bác bằng ảnh** (giữ làm tiền lệ): nhấc-thẻ+bóng (ngược ẩn dụ), grain trên
+dải sáng (vô hình cả 2 mức opacity), trời-nhạt pastel (mất bản sắc/chói), thanh tick trái
+ledger (vô hình 1x), sinh ảnh đờn-ca-vì-là-kế-tiếp (tiền đề sai theo data.json), cross-map
+ảnh Sokfarm (quyết định dữ liệu của chủ), thumb ledger + ảnh mục 7-9 (trần trung tính
+giữ 6 khối), color-mix 12% input (chưa có ảnh chứng minh — không ship mù).
+
+#### 34.3 Chờ chủ dự án quyết (phiếu — cộng dồn §32.5, §33.5)
+
+- **Phiếu ảnh AI mới** (tiền thật, trần cứng 10 call/đợt): 2 ảnh sổ vàng (mật hoa dừa,
+  sầu riêng Sáu Ri — prompt đã viết theo 8 luật phong cách nhà, khoá không-nhãn-mác) +
+  trọn gói sự kiện tin dẫn (5 event không ảnh từ nay tới 20/09) + 1 dự trữ sau khi chốt
+  shortlist. CỔNG TRÌNH TỰ: chốt danh sách 3 ID E-full trước, rồi mới sinh ảnh.
+- **Phiếu hero.webp:** chọn MỘT — A giữ nguyên / B full-bleed / C ô ảnh phải (C bắt buộc
+  kèm vá input tối; cả B lẫn C cần chỗ mới cho thẻ Cua cốm).
+- **Port bìa v2 vào production** (12 trang + useCategoryPlaceholder.ts): kích hoạt khi
+  chủ duyệt diện mạo v2 trên mockup 4.2 — Backlog phát sinh, có mìn glyph-đôi phải né
+  (hồ sơ trong kết quả workflow).
