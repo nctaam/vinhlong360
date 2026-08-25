@@ -2945,3 +2945,86 @@ DB hàng loạt (task riêng có backup, chờ chủ).
 - Task nội dung DB (backup B1): 2 summary OCOP mâu thuẫn, 42 bản "huyện", 72 bản
   Bến Tre/Trà Vinh thiếu "cũ" — ID nào sạch mới đủ điều kiện vào shortlist.
 - Bật hero AI full-bleed / sinh ảnh mới / sửa nhãn công bố — giữ nguyên trạng đợt này.
+
+---
+
+### 33. Vòng soi bản 4 → bản 4.1: 33 nâng cấp qua thẩm tra, 2 đề xuất bị bác (2026-08-25)
+
+**Nguồn việc:** chủ dự án — *"còn có thể tối ưu và nâng cấp thêm cho bản 4 không."*
+Cách làm: 5 góc soi CHƯA phủ ở các vòng trước (nocturne / mobile / vi-typography-a11y /
+chuyển động / khách lần đầu) → 36 đề xuất → 2 thẩm tra viên đối kháng → 33 LÀM (đã áp
+vào mockup bản 4.1, artifact `1b07f7f5`), 2 BỎ, 5 chờ chủ. Hồ sơ đầy đủ + chi tiết
+33 mục: file kết quả workflow trong scratchpad phiên.
+
+#### 33.1 Phát hiện nặng nhất: nocturne là MẶC ĐỊNH mà hệ điểm dừng vẽ trên giấy sáng
+
+`variables.css:640` — "Default is Nocturne; Parchment is selected only by the user."
+Đo WCAG trên token thật: tấm hero rgba(đen,.76) đạt 10,43:1 ở chế độ sáng nhưng chỉ
+**1,05:1 ở tối** — "khối tối duy nhất" biến mất đúng chế độ đa số khách nhìn thấy.
+Tái phối cho dark (không đổi bản sáng): tấm đổi chất liệu `--raised` (1,27:1 — cùng bậc
+dải) + capsule/input về token; ảnh AI thật (nền sáng, 13–16,6:1 trên canvas tối = đèn
+pha) ghìm `brightness(.86)` về họ ~9,5 cùng bìa sinh; thẻ trên dải KHẮC về `--canvas`
+thay vì nổi (dark `--bg-alt` TRÙNG `--color-surface-raised` — variables.css:761 — thẻ
+hết đường đi lên; phương án lui cộng-đồng-về-alt của §32 sẽ cho 1,00:1 ở dark nếu
+không có đòn này). Bản đọc nheo-mắt nocturne riêng: ba điểm dừng dark = cụm-sáng /
+khối-sáng-lớn / khung-son. Nhịp dải ở dark MẠNH HƠN sáng (1,27 vs 1,11).
+
+#### 33.2 Các nhóm nâng cấp khác (chi tiết 33 mục trong file kết quả)
+
+- **Mobile:** sổ vàng bỏ stack 1 cột (cao 2,2 màn @375) → scroll-row cuộn ngang <769px
+  đúng đặc tả; măng-sét ngữ pháp 2 nhóm chống dấu «·» mồ côi (breakpoint 820px phủ cửa
+  sổ tự phản bội 641–665px); h1 mockup về ĐÚNG clamp production `clamp(44px,7vw,64px)`
+  — thẩm tra ĐẢO CHIỀU đề xuất gốc: rule pilot (home-nocturne.css:80) đè base ở mọi bề
+  rộng, h1 @375 là 44px/3 dòng — sự thật phải nhìn thấy, không được mockup-làm-đẹp;
+  ledger/sig-rows xếp dọc <640px.
+- **Typo:** con số quy mô hạ **4xl→3xl** — h1 cap 64px là chốt, 64/56=1,14 là tranh
+  giọng, 64/48=1,33 đúng bậc (KÈM amendment trong plan để người sau không tưởng code
+  sai spec); 20 giọng chữ mockup quy về thang token; sàn line-height 1,3 cho display
+  Fraunces gãy dòng (đo glyph thật: dấu chồng tiếng Việt cần 1,271em); summary clamp
+  2–3 dòng + measure 68ch áp lên ĐÚNG phần tử mang font-size (bẫy đơn vị ch).
+- **A11y:** focus-visible toàn cục (mockup có 0 rule); search min-height 44px + input
+  16px chống iOS auto-zoom; dossier h3→h2 (production đã dùng h2 —
+  HomeFeatureDossier.vue:42); page→main, catline→nav.
+- **Khách lần đầu:** kicker "Du lịch & Đặc sản Vĩnh Long" trở lại màn 1 (câu trả lời
+  "site này là gì" duy nhất — mockup bản 4 làm rơi, phải vào danh sách "Giữ 100%" của
+  §32 mục 2); cờ mục đứng trước con số quy mô; thang CTA 2 bậc; lối "Lần đầu đến?"
+  nhân bản lên mục 3 (đích /lich-trinh); legend hệ-hạng-nguồn ngay dưới chuỗi 3 lần
+  "Chưa rõ nguồn" + hạ chrome pill tier unknown SCOPE TRANG CHỦ.
+- **Chuyển động:** Sợi chỉ phù sa DỰNG THẬT trong mockup (vệt bồi 3px máng lề trái,
+  clip-path 3 tầng trầm tích, `animation-timeline: view()` + fallback JS 20 dòng,
+  tĩnh-ĐẦY khi reduced-motion/no-JS, ẩn <1200px); reveal Đợt A1 phải đổi chỗ: DẢI
+  không được trượt, chỉ nội dung trong lòng dải trồi (chống hồi quy khi sơn nền lên
+  section mang class reveal); CountUp cho products_total (quy ước nhà 10 trang);
+  chấm pulse ec-today.
+
+#### 33.3 Hai đề xuất bị BÁC bằng dữ liệu
+
+- Con số quy mô 2 bậc 2xl/4xl — thua --text-3xl về tỉ lệ với h1 cap 64px.
+- Ưu tiên entity có nguồn khi chọn hồ sơ hero — quét 1746/1746 entity:
+  official/source_class/source_kind đều None, partner_verified=0 → sort không có gì
+  để sort. (Kéo theo việc chờ chủ xác nhận dữ liệu prod có khác không.)
+
+#### 33.4 Bổ sung cho kế hoạch 12 bước (§32.4) — amendment
+
+- Bước 7 (B2): con số quy mô dùng `--text-3xl` (KHÔNG phải 4xl như §32.2 ghi);
+  CountUp chỉ đếm products_total; ảnh dossier fetchpriority="high" không lazy,
+  leadcover + sổ vàng lazy.
+- Bước 2 (A1): kèm CSS reveal-nội-dung-trong-dải cùng commit; blur-test chụp CẢ dark;
+  quy ước thẻ-trên-dải: sáng NỔI về trắng, tối KHẮC về --canvas.
+- Bước 3 (A2): nhãn mùa măng-sét render có điều kiện (h1 không chứa nó); test 2 nhánh.
+- Bước 10 (D1): mini-row 3 thumb không vừa 333px — cần rule mobile riêng.
+- MỚI, chờ chủ: **Đợt E — SedimentThread** (component riêng + test R20.7 cùng commit,
+  gate ≥1200px, reduced-motion riêng vì nuke .01ms của pilot không chặn scroll-timeline);
+  **commit riêng** cho ẩn-topbar-search-khi-hero-search-trong-khung-nhìn (đụng layout
+  12 trang; visibility:hidden không phải display:none — giữ chỗ chống CLS;
+  IntersectionObserver không tái dùng topbarScrolled).
+
+#### 33.5 Chờ chủ dự án quyết (cộng dồn với §32.5)
+
+- Đợt E (Sợi chỉ phù sa vào repo) — mở rộng kế hoạch 12 bước đã duyệt.
+- Hạ chrome pill "Chưa rõ nguồn" TOÀN SITE hay chỉ trang chủ (dữ liệu hiện 100% unknown
+  — bản toàn site đổi trình bày trust của mọi SourceMark trên 12 trang).
+- Measure summary 54ch (đúng trần 75 kt/dòng) thay token 68ch — lệch token nhà.
+- H1 mobile 44px/3 dòng @375 (hiện trạng production) có quá lớn không — quyết định
+  sản phẩm.
+- Xác nhận dữ liệu prod có entity official/partner_verified không (local 0/1746).
