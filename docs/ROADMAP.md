@@ -2729,3 +2729,62 @@ qua ba mục ROADMAP, và suýt sửa mã theo nó. Cách duy nhất bắt đư�
 
 Quy tắc rút ra: **chỉ số nào có mẫu số thì phải hỏi "mẫu số này đếm đúng thứ mình nghĩ
 không"** trước khi so sánh giữa các site.
+
+---
+
+### 30. Nghiên cứu bố cục: vì sao trang chủ "rối" dù số đo nói không chật (2026-08-25)
+
+**Nguồn việc:** chủ dự án — *"nghiên cứu việc sắp đặt bố cục trang của những trang phổ
+biến trên thế giới và xu hướng, tôi muốn phá vỡ giao diện trang chủ chỉ toàn chữ và quá
+rối như hiện tại."*
+
+#### 30.1 Nghịch lý phải giải: "rối" nhưng không chật
+
+§29 đã đo lại: 91–133px mỗi HÀNG, hero 298px — **không chật**. Nhưng chủ dự án nhìn
+thấy "quá rối". Hai điều này không mâu thuẫn, vì **"rối" không phải là chật**.
+
+Số đo ở §21 nói ra nguyên nhân: **4 mục liên tiếp cùng một tầng nhịp**, cùng bề rộng
+khung, cùng nền, cùng hình dạng thẻ. Cộng lại: **18 đơn vị gần giống hệt nhau nối tiếp
+nhau.** Mắt không có chỗ bám, cũng không có chỗ nghỉ. Đó là **thiếu nhịp**, không phải
+thiếu khoảng trắng — và nới khoảng trắng sẽ **không** chữa được (thêm một lý do T4 sai).
+
+#### 30.2 Ba nguyên lý thu được từ nghiên cứu
+
+**(a) Bento grid — ô không đều trên cùng một lưới.** Xu hướng chủ đạo 2026; **67% top
+100 site SaaS** đã dùng ở trang chủ hoặc trang tính năng. Khác lưới CSS thường ở chỗ nó
+**cố ý bất đối xứng**: nội dung quan trọng được ô lớn, phần còn lại lấp quanh. Nguyên lý
+cốt lõi, và đây là phần trả lời thẳng câu hỏi của chủ dự án:
+
+> *Khi mọi phần tử theo cùng một nhịp, một phần tử lệch nhịp lập tức chiếm lấy sự chú ý
+> — điểm nhấn sinh ra CHÍNH VÌ nhịp xung quanh đã dạy mắt kỳ vọng sự đều đặn.*
+
+Trang chủ hiện tại có nhịp đều nhưng **không có gì lệch nhịp**, nên nhịp đều đó không
+sinh ra điểm nhấn nào — chỉ sinh ra sự đơn điệu.
+
+**(b) Xen kẽ kiểu bàn cờ (checkerboard/zigzag).** Chữ trái–hình phải, mục sau lật lại.
+Đưa mắt đi **chéo** thay vì thẳng xuống, làm trang "động" hơn mà không thêm gì.
+
+**(c) Nhịp cuộn = xen kẽ khối đặc với khối "thở".** Mục dày thông tin thì mục kế phải
+nhẹ; nền các mục đổi sáng–tối để tạo **nhịp sắc độ** dọc trang.
+
+#### 30.3 Đối chiếu với tài sản đã có (không cần ảnh, không cần dịch vụ mới)
+
+| Nguyên lý | vinhlong360 đang có sẵn | Đang dùng? |
+|---|---|---|
+| Ô lớn cần cỡ chữ lớn | thang 10 bậc, `--text-3xl`/`4xl`/`5xl` | **0,7%** (§25.2) |
+| Ô lớn cần bìa | `generateCategoryPlaceholder` sinh bìa từ `entity.id` | 12 trang dùng, **trang chủ 0** (§27) |
+| Nhịp sắc độ | `--surface`/`--canvas`/`--raised` đủ 3 tầng, cả 2 chế độ | các mục **cùng một nền** |
+| Bất đối xứng | CSS Grid, không cần thư viện | các mục **cùng một khuôn** |
+
+**Bốn cột đều là "có sẵn nhưng không dùng"** — cùng đúng một chẩn đoán gốc ở §27.
+
+#### 30.4 Hệ quả cho kế hoạch
+
+- **Phương án A ở mockup (lưới 8 ô ĐỀU) là yếu** — có thêm hình nhưng vẫn lặp lại đúng
+  bệnh "mọi thứ giống nhau". Giữ lại làm đối chứng, **không khuyến nghị**.
+- **Thêm phương án C — bento** (1 ô lớn + 2 vừa + 4 nhỏ) vào mockup. Phá được cả hai
+  triệu chứng cùng lúc: thiếu ảnh (7 bìa) **và** thiếu nhịp (3 cỡ ô), đồng thời kéo
+  `--text-3xl` ra khỏi vùng chết 0,7%.
+- Mockup: `scratchpad/mockup-trang-chu.html` — dữ liệu thật từ `/api/homepage`, đúng
+  thuật toán băm FNV của dự án nên bìa trong mockup **trùng** bìa bản thật.
+- **Chờ chủ dự án chọn** A / B / C trước khi đụng vào mã.
