@@ -3177,3 +3177,60 @@ phần in cuối trang. Cân nặng mockup 1,06MB (chỉ derivative; ảnh eager
 hồ sơ 4 ảnh duyệt biên tập · 3 ảnh mồ côi · shortlist tin chính (sau B1) · chọn
 CHỮ hay KHẢM cho mục lục. Thi công thật: theo 12 bước §32.4 + amendment §33.4/§34.3 +
 các mục 7/14/15/16 của vòng này (B1 backend, registry R20.10, task §1.6, task dọn xác).
+
+---
+
+### 36. Mười site cùng mô hình, cùng hướng bản 4.3 — xác minh trực tiếp (2026-08-25)
+
+**Nguồn việc:** chủ dự án ("treo" thi công) — *"liệt kê 10 website có mô hình tương tự
+vinhlong360 nổi bật có hướng đi tương tự bản 4.3."* Cách làm: 15 ứng viên, 5 agent fetch
+TRỰC TIẾP từng site chấm 7 trục (mô hình / biên tập / thời vụ / vùng / chứng thực /
+kỷ luật ảnh / không-thương-mại) theo cấu trúc trang thật, không theo danh tiếng; 1 agent
+chốt. Site không fetch được thì loại (không chấm mù).
+
+#### 36.1 Top 10 (chi tiết đầy đủ trong file kết quả workflow phiên 2026-08-25)
+
+1. **Slow Food Taitung** (slowfoodtaitung.tw) — cấp huyện, chính quyền hậu thuẫn, không
+   bán; F=3 duy nhất: hệ MINH HOẠ motif thống nhất đọc ra bản sắc → nâng bìa sinh của ta
+   từ "fallback xin lỗi" lên hệ nhận diện chủ động. Tránh: entity thuần client-JS.
+2. **Visit Emilia** (visitemilia.com) — Food Valley; E=3 duy nhất: DOP kể 4 lớp (nguồn
+   gốc → quy trình → cơ quan bảo chứng → NGÀY THĂM ĐƯỢC) → mẫu cho sổ vàng; nhưng họ
+   chôn trang trong — ta đặt ngay trang chủ là vượt.
+3. **Ireland.com** — B=3 duy nhất: MỘT tin chính ẩm thực "nơi chốn–con người–niềm tự
+   hào". Tránh: lạm phát ~30 khối ảnh.
+4. **Visit Okinawa Japan** (visitokinawajapan.com — domain cũ visitokinawa.jp đã chết) —
+   dải thông báo thời-vụ CÓ NGÀY đầu trang; mẫu "vùng lớn + card con" cho Ba vùng.
+   Tránh: Instagram feed cuối trang.
+5. **Visit Alsace** (visit.alsace) — "Follow the guide": mỗi tiểu vùng = 1 ảnh + 1 câu +
+   1 nút. Tránh: carousel 20+ thẻ.
+6. **VisitScotland** — C=3: cặp khối mùa + sự kiện; bài học NGƯỢC quý nhất: có 11 món
+   protected-origin mà giấu trong FAQ.
+7. **Visit Faroe Islands** — kể đặc sản qua KỸ THUẬT + THỜI GIAN (cừu treo gió 5–9
+   tháng); booking tách hẳn site khác. Tránh: mật độ ~30 ảnh nhiếp ảnh gia — AI-only
+   bắt chước sẽ lộ.
+8. **Peru Travel / Gastronomy** (peru.travel/gastronomy) — sản vật chủ lực MỖI THỨ MỘT
+   KHỐI định danh riêng, chia 6 nền ẩm thực theo vùng. Tránh: awards dán logo không chuyện.
+9. **Visit Jeju** (visitjeju.net) — công thức "right now" đặt tên tường minh đầu trang.
+   Tránh: mọi mục đồng hạng; chứng nhận dán badge footer.
+10. **Đà Nẵng FantastiCity** (danangfantasticity.com) — peer VN sống khoẻ nhất: MỘT sự
+    kiện đinh đếm ngược ngay hero. Tránh: 6 dải ~50+ thẻ đồng cỡ — "chợ ảnh" nội địa.
+
+Loại có lý do: OTOP Thailand (không fetch được từ đây — không chấm mù; bản chất
+danh-bạ-catalog), Savor Japan (máy đặt bàn là xương sống), Oita Made (shop thuần —
+KHÔNG phải site OVOP như dễ tưởng), Du lịch Ninh Bình (giọng cổng hành chính),
+TasteAtlas (atlas toàn cầu + shop, lệch hạng mục). Oita Katete xác minh ra là tạp chí
+tuyển dụng — loại nốt.
+
+#### 36.2 Ba kết luận
+
+1. **Mô hình 4.3 đứng trên dòng chảy quốc tế thật**: 10/10 site top đều giới-thiệu-
+   không-bán, giao dịch đẩy ra ngoài — chốt §1.4 của dự án là chuẩn của DMO tử tế,
+   không phải lựa chọn thiểu số.
+2. **Ba trục khó nhất, mỗi trục chỉ MỘT site đạt 3 điểm, không site nào gom được hai**:
+   tin chính (Ireland) · chứng thực kể thành chuyện (Emilia — mà phải xuống trang
+   trong) · kỷ luật ảnh (Taitung). Trang chủ 4.3 làm đồng thời cả ba là VƯỢT mọi mẫu
+   khảo sát, không chỉ bắt kịp. Lỗ hổng chung của cả nhóm: chứng nhận bị chôn/dán logo
+   — sổ vàng OCOP giữa trang chủ là khác biệt thật.
+3. **Lớp thời-vụ mạnh nhất luôn là dữ liệu thật có ngày** (Okinawa cảnh báo có ngày,
+   Jeju "right now", Đà Nẵng đếm ngược 1 sự kiện đinh) — không phải widget mùa tĩnh;
+   đúng hướng tin dẫn 3 bậc + măng-sét âm–dương của 4.3.
