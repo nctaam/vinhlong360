@@ -2877,3 +2877,71 @@ trong scratchpad phiên 2026-08-25.
 - Tài liệu chuẩn lệch máy: 00-INDEX.md ghi R30.2=687/R30.3=307, baseline.json là 330/200.
 - Scorecard đang đỏ sẵn từ trước (backend 99→81, nợ R20.8=47) — chặn pre_merge bước 7,
   KHÔNG liên quan đợt này.
+
+---
+
+### 32. Tổng phổ trang chủ: «Tạp chí Phù Sa — bản hợp nhất» thắng thẩm định 14-agent (2026-08-25)
+
+**Nguồn việc:** chủ dự án — *"nhiều vòng thiết kế chưa đáp ứng yêu cầu bố cục/màu sắc/thị
+giác; nghiên cứu thật sâu, phân tích, phản biện để đưa ra phương án tối ưu nhất, dựa trên
+mockup bản 3."* Cách làm: 4 lăng kính nền → 3 tổng phổ TOÀN TRANG sáng tác độc lập (Tạp chí
+Phù Sa / Bảo tàng sống / Chợ nổi sắc màu) → 3 kẻ phá + 3 giám khảo chấm đúng ba trục chủ
+dự án nêu → 1 tổng hợp. Hồ sơ đầy đủ: file kết quả workflow trong scratchpad phiên.
+
+#### 32.1 Phán quyết
+
+**Thắng: Tạp chí Phù Sa** — 24,5/30 (bố cục 8,5 · màu 8 · thị giác 8; hai bản kia cùng
+21,5). Nhất ở đúng hai trục chẩn đoán gốc: bố cục (6/6 mục một nền, vùng chết 841–1609px)
+và thị giác ("mở trang thấy khác ngay" — chỗ mọi vòng trước thất bại). Cả ba bản đều bị
+kẻ phá bắn thủng (songSot=false cả ba) và cùng chết chung MỘT lỗ dữ liệu gốc: `products`
+trong payload bị cắt limit=8 tại `agent/public_api.py:3089` — bản hợp nhất vá bằng trường
+payload MỚI additive `product_lead` (server chọn trên toàn pool, shortlist chủ duyệt).
+
+Bản hợp nhất ghép 8 mảnh từ hai bản thua (thi công 4 đợt độc lập + thang lui E-lite từ
+Bảo-tàng-sống; mồi cuộn + blocklist ID + luật hue-banding + vá múi giờ SSR từ Chợ-nổi)
+và vá 11 lỗ (3 CHẶN, 2 NẶNG, 3 VỪA, 3 NHẸ) — chi tiết trong file kết quả.
+
+#### 32.2 Tổng phổ 9 mục (mockup bản 4 — artifact `1b07f7f5`)
+
+| # | Mục | Nền | Ghi chú |
+|---|---|---|---|
+| 1 | Măng-sét âm–dương (nâng cấp context, GIỮ tên section) | `--bg-alt` | ngày qua Intl Asia/Ho_Chi_Minh cả server lẫn client; useLunar SẴN CÓ, chỉ formatter |
+| 2 | Hero + hồ sơ ảnh | canvas | ĐIỂM DỪNG 1 — khối tối duy nhất; h1 GIỮ NGUYÊN (đã cap 64px — "nâng h1" là no-op); nén đệm dưới 40–60px làm mồi cuộn |
+| 3 | Mục lục hôm nay (quick-decisions) | `--bg-alt` | nén 11→~6 nhìn thấy; DecisionLedger GIỮ DOM/class/text (test pin toEqual); CategoryIndex nén thành 1–2 hàng link |
+| 4 | TIN CHÍNH ĐẶC SẢN — HomeProductLead (MỚI) | canvas | ĐIỂM DỪNG 2 — mảng màu duy nhất dưới fold; con số quy mô `--text-4xl` từ payload; lưới 2 cột CHỈ ≥900px (vá dải vỡ [768,900)); chính sách ảnh: AI thật trước, bìa sinh khi thiếu (descriptor policy + registry) |
+| 5 | Tín hiệu địa phương | `--bg-alt` | tin dẫn + âm lịch DERIVE từ date_start (không đọc lunar_date, không sửa DB — né bẫy sáu-ô §5c); bìa 4:3 EntityHeroPlaceholder (0 registry) |
+| 6 | Sổ vàng OCOP (MỚI, khe SSR index.vue:153–159) | canvas | ĐIỂM DỪNG 3 — kênh viền dày (2px + halo); HAI TRẠNG THÁI: E-lite mặc định (khung + định nghĩa + link /ocop), E-full CHỜ CHỦ DUYỆT |
+| 7 | Từ cộng đồng | `--bg-warm`* | nén 6→3 hiển thị; *blur-test Đợt A: 1,089 sát mép — trượt thì lui về `--bg-alt` |
+| 8 | Dành cho bạn | canvas | điều kiện, ngoài nhịp chính, GIỮ NGUYÊN |
+| 9 | Giữ mạch khám phá | canvas, khung hẹp 45rem | cadence không phải điểm dừng; GIỮ JourneyActionRail + 2 link; colophon sediment-tick |
+
+Ba điểm dừng = ba kênh tri giác không giẫm nhau (tối / mảng màu / viền dày). Khối hình
+1→6 (sàn 5 khi E-lite). Nheo mắt phải đọc thành: dải—KHỐI TỐI—dải—KHỐI MÀU—dải—KHUNG—dải ấm—kết.
+
+#### 32.3 Không đưa vào (bằng chứng loại)
+
+Bento mọi biến thể (§31) · 4 cổng poster màu danh mục (2/4 cổng trùng họ cam — tự triệt
+tiêu) · thumb hồng trong ledger (81 ngày/năm ≤2 event) · 20 khối hình (vượt trần trung
+tính) · hạ/nâng h1 (đều no-op hoặc phản tác dụng) · dời CategoryIndex thành mục riêng ·
+5 thẻ scroll-row sổ vàng (hình học 4+1 mồ côi) · nguồn `seasonal` cho Đặc sản · viết mới
+thuật toán âm lịch · sợi chỉ phù sa animate (xếp sau, khác đợt) · mọi thay đổi nhãn AI /
+DB hàng loạt (task riêng có backup, chờ chủ).
+
+#### 32.4 Kế hoạch 12 bước (tóm — verify từng bước trong file kết quả)
+
+1. Baseline: `run_hard --all` + pytest, ghim 3 số ratchet (157/330/372).
+2. **A1** nhịp dải nền (CSS thuần, 3 mục đã tràn lề sẵn). 3. **A2** măng-sét âm–dương.
+4. **A3** nén mục lục + mồi cuộn. 5. Nghiệm thu A: check:public-accessibility 2 chế độ + blur-test.
+6. **B1** backend additive: `product_lead` + `products_total` (5 lớp lọc, shortlist chủ duyệt).
+7. **B2** HomeProductLead.vue (scoped, registry ảnh cùng commit). 8. **B3** nghiệm thu tên thật 5 mốc viewport.
+9. **C** tin dẫn tín hiệu + âm lịch derive. 10. **D1** E-lite + mini-row thumb (sàn ≥4 khối hình mọi kịch bản).
+11. **D2** E-full — CHỈ sau khi chủ duyệt 3 ID + task nội dung xong. 12. Chốt hồ sơ KẾT QUẢ (R60.5).
+
+#### 32.5 Chờ chủ dự án quyết (không tự làm)
+
+- Duyệt **shortlist tin chính** (đề cử "Cá phi sả ớt Thạnh Phước") + blocklist ID tổ-chức.
+- **E-lite hay E-full**; nếu full: duyệt 3 ID khác thương hiệu, xác nhận loại "Khoai lang
+  sấy Bình Tân" (mới "đề xuất" 5 sao — lên sổ vàng là khai khống §1.7).
+- Task nội dung DB (backup B1): 2 summary OCOP mâu thuẫn, 42 bản "huyện", 72 bản
+  Bến Tre/Trà Vinh thiếu "cũ" — ID nào sạch mới đủ điều kiện vào shortlist.
+- Bật hero AI full-bleed / sinh ảnh mới / sửa nhãn công bố — giữ nguyên trạng đợt này.
