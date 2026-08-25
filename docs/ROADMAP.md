@@ -3098,3 +3098,82 @@ giữ 6 khối), color-mix 12% input (chưa có ảnh chứng minh — không sh
 - **Port bìa v2 vào production** (12 trang + useCategoryPlaceholder.ts): kích hoạt khi
   chủ duyệt diện mạo v2 trên mockup 4.2 — Backlog phát sinh, có mìn glyph-đôi phải né
   (hồ sơ trong kết quả workflow).
+
+---
+
+### 35. Kiểm kê kho ảnh + audit 16 thành phần → bản 4.3 «nhiều hình từ kho 0 đồng» (2026-08-25)
+
+**Nguồn việc:** chủ dự án — *"muốn có nhiều hình ảnh; xem các thành phần trang chủ có
+đủ, thiếu, dư thừa, không phù hợp gì không"* + tham chiếu bố cục svncoop.vn. Chỉ đạo
+trực tiếp ĐÈ trần "6 khối hình" của §32/§34 (suy luận nội bộ thời chỉ-có-gradient).
+Cách làm: 7 agent (3 kiểm kê / 1 phân bổ / 2 thẩm tra có mắt / 1 chốt) + phiên chính
+tự phân tích svncoop.vn qua headless Edge (KHÔNG dùng pane trong app).
+
+#### 35.1 Kho ảnh: tài sản 0 đồng bị bỏ quên
+
+60 webp đồng nhất 800×533 trong `web-nuxt/public/img/entities/`; **57 khớp CHÍNH XÁC
+entity id** trong data.json (19 product, 9 dish, 8 craft_village, 6 attraction, 5
+history, 4 nature, 4 experience, 2 event); đã mở xem 34/60 — chất lượng đồng loạt cao,
+0 lỗi chữ AI. Production đang dùng **0 ảnh entity** ngoài thumb for-you. Cảnh báo
+biên tập (hồ sơ chờ chủ): cho-vinh-long (mặt người AI + vẽ chợ nổi SAI chủ thể chợ
+phố — đề nghị loại), le-hoi-nghinh-ong (3 mặt AI), dua-sap-tra-vinh (ruột RỖNG — trái
+đặc tả dừa sáp, nhường dua-sap-cau-ke), vung-cam-sanh (chủ thể phụ); 3 ảnh mồ côi
+không có entity (ca-cao-thanh-dat, thanh-that-cao-dai-vinh-long, rach-ba-sach) —
+không gắn đâu cả, chờ chủ quyết tạo entity hay để kho. Sự kiện gần trắng ảnh: 2/67.
+
+#### 35.2 Bảng phán quyết 16 thành phần (câu trả lời trực tiếp)
+
+- **ĐỦ → giữ:** hero (kicker+h1+search) · thời tiết · mục lục (GIỮ CHỮ, nén 11→6) ·
+  cộng đồng (nén 6→3) · dành-cho-bạn · topbar+footer.
+- **THIẾU → sửa:** măng-sét (âm lịch TÍNH ĐỘNG — lunar_date=None trong data, bẫy §5c) ·
+  hero dossier (ảnh duy nhất của trang mà không được bảo đảm — 4/90 experience có ảnh;
+  nay cua-com + fallback tem v2 + nhãn canonical qua ImageDisclosure, validator
+  fail-closed sẽ LOẠI chuỗi nhãn tự chế) · tín hiệu trắng ảnh (luật tin dẫn 3 bậc:
+  event-có-ảnh → mùa-có-ảnh → tem v2; hôm nay mật ong rừng bần season 5–9 lên slot) ·
+  tin chính đặc sản (backend B1 TIÊN QUYẾT — grep product_lead trong public_api.py = 0) ·
+  sổ tay (thumb 56px phủ TRỌN 4/4 — thiếu ảnh thì tem cùng họ đất) · **«Ba vùng» —
+  thành phần VẮNG MẶT lớn nhất**: route /khu-vuc/[area] + 3 ảnh area + area_counts đều
+  sẵn mà production 0 lối vào vùng → mục MỚI 06b · lối «Đi lại & danh bạ» (23 facility
+  transport sẵn).
+- **DƯ THỪA → task dọn riêng (KHÔNG hồi sinh):** ≈490 dòng xác khối ảnh cũ
+  (StorySpread 207 dòng + EntityFeature 239 dòng + FEATURE_*/SPREAD/spot* + CSS mồ côi
+  + 4 test stub) — template không render cái nào.
+- **KHÔNG PHÙ HỢP → đổi:** kết nói với người-đã-có-điểm-bắt-đầu (đảo thành câu lần-đầu,
+  JourneyActionRail chỉ hiện khi có tín hiệu) · bài «Hé lô» 5 ký tự lọt trang chủ (bộ
+  lọc ≥80kt HOẶC có entity — index.vue:396 hiện chỉ chặn rỗng) · 5 chuỗi máy-đọc gọi
+  3 tỉnh cũ (index.vue:679, default.vue:97, nuxt.config.ts:85+87, gioi-thieu.vue:127 —
+  task §1.6 riêng, TRƯỚC khi mở index).
+
+#### 35.3 Trần ảnh mới — thay đếm bằng luật
+
+**13 khối luôn-hiện = 9 ảnh thật (bind đúng id) + 4 tem v2**; ~17 khi for-you có tín
+hiệu; 10 ảnh thật nếu duyệt hero B. Bốn luật cấu trúc (rút từ bản-27-hình gãy có ảnh
+chứng minh): (1) mỗi điểm dừng đúng 1 ảnh chủ; (2) KHÔNG ảnh cho khối điều hướng;
+(3) tem hồng/mint không cạnh nhau, không xuống thumb; (4) tối đa 1 dải ảnh tràn giữa
+hai điểm dừng. Kèm: derivative resize local là ĐIỀU KIỆN nghiệm thu (996KB→~400KB;
+3 file area gốc chiếm 59% cân nặng); GUARD DARK cho tem sinh
+(brightness .78 saturate .85 — tem 0,86 sáng cạnh ảnh thật đã ghìm 0,48 là đè ngược
+điểm dừng); mặt-người-AI/sai-chủ-thể có hồ sơ duyệt riêng.
+
+Thumb-điều-hướng bị bác LẦN 2 (lần này bằng ẢNH THẬT — pblo: 7 ô chuyên mục ảnh = kệ
+app-store, nhãn chìm) — nhưng vì chủ dự án tham chiếu svncoop, mockup 4.3 trình **phiếu
+khảm chuyên mục** (7 ảnh cat-* có sẵn) CẠNH bản chữ để chủ nhìn hai bản tự quyết.
+
+#### 35.4 svncoop.vn (XanhMap Quảng Trị — Khe Sanh, 104 địa điểm, Plan International)
+
+Cùng mô hình trực tiếp. Học: khảm ảnh danh mục + số đếm sống (nếu chủ chọn) · pin bản
+đồ theo icon danh mục + chú thích đếm (backlog ban-do.vue) · bảng "Thông tin chi tiết"
+icon-hàng + mini-map + "Địa điểm tương tự" + nút "Gọi ngay" hợp §1.4 (backlog trang chi
+tiết) · mobile mosaic 1-lớn+2-cột. KHÔNG chép: hiển thị giá + bộ lọc giá (mùi sàn —
+§1.4). Vị thế: họ 104 địa điểm/1 khu vực được tài trợ; mình 1.746 entity + tầng
+thời gian + hệ bản sắc — dữ kiện cho hồ sơ B2G của chủ (§4: tài liệu đối ngoại qua chủ).
+
+#### 35.5 Bản 4.3 (artifact `1b07f7f5`) + chờ chủ quyết
+
+Mockup: 11 mục (thêm 06b Ba vùng) · sổ tay 4/4 thumb · tin dẫn = ảnh mật ong · guard
+dark tem · cộng đồng lọc «Hé lô» · kết đảo giọng · phiếu khảm svncoop · bảng 16 thành
+phần in cuối trang. Cân nặng mockup 1,06MB (chỉ derivative; ảnh eager duy nhất cua-com
+46KB). **Chờ chủ:** phiếu hero A/B/C · 2 ảnh sổ vàng sinh mới (sau khi chốt 3 ID) ·
+hồ sơ 4 ảnh duyệt biên tập · 3 ảnh mồ côi · shortlist tin chính (sau B1) · chọn
+CHỮ hay KHẢM cho mục lục. Thi công thật: theo 12 bước §32.4 + amendment §33.4/§34.3 +
+các mục 7/14/15/16 của vòng này (B1 backend, registry R20.10, task §1.6, task dọn xác).
