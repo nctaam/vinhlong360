@@ -2575,3 +2575,93 @@ bàn riêng về việc đưa `EntityCard` lên trang chủ.
 
 Chạy `claude-cuu-ho.ps1 luu` trước khi mở, đóng tab ngay sau khi đo. Ứng dụng sống
 sót cả hai phiên đo site ngoài (§26 và §27).
+
+
+### 28. Quét 12 site cùng mô hình — bốn mục, ai có ai không (2026-08-25)
+
+Chủ dự án yêu cầu nghiên cứu 10+ site bằng trình duyệt. **Đo bằng trình duyệt thất bại**
+(xem 28.4); chuyển sang `WebFetch` — an toàn, đã dùng ở §22, không sập lần nào. Đổi lại
+mất số đo DOM, được **cấu trúc mục**.
+
+Hỏi mọi site cùng bốn câu, để so được.
+
+#### 28.1 Bảng đối chiếu
+
+| site | khách lần đầu | đặc sản/ẩm thực | tín hiệu "bây giờ" | cộng đồng |
+|---|---|---|---|---|
+| Emilia Romagna (Ý) | – | ✓ Food Valley | ✓ News có ngày | ✓ Instagram |
+| Visit Jeju (Hàn) | ✓ "First Time To Jeju?" | – | ✓ Lễ hội đang diễn ra | ~ |
+| Visit Wales | – | – | ✓ Nghỉ lễ tháng 8 | – |
+| Slovenia | ✓ "At a Glance" | ✓ Food & Wine | ✓ Lịch sự kiện | ✓ IG + hashtag |
+| Kerala (Ấn) | – | – | ✓ What's New | ✓ Connect with us |
+| Visit Norway | ✓ khuyên chọn 1–2 vùng | ✓ "Norway for foodies" | ✓ Thu / Đông | – |
+| vietnam.travel | – | ✓ ẩm thực + làng nghề | ✓ Lễ hội sắp tới | – |
+| Visit Finland | ✓ quiz + "Plan your trip" | ✓ chuỗi bài ẩm thực | ✓ Thu, thời tiết từng tháng | – |
+| Ireland | ✓ "need to know" | ✓ hero là ẩm thực | ✓ "What's on" | ✓ **diễn đàn riêng** |
+| Visit Portugal | ✓ "Portugal Identity Card" | ✓ gốm, thêu, rượu | ✓ sự kiện + **widget thời tiết** | ✓ "Travel Diaries" |
+| **vinhlong360** | **KHÔNG** (có mục ngược lại) | **mục con** | ✓ **mạnh nhất** | ✓ nội dung tự có |
+
+**Đếm trên 10 site có dữ liệu cấu trúc:**
+- tín hiệu "bây giờ": **10/10** — phổ quát, không site nào thiếu
+- đặc sản/ẩm thực có mục riêng: **7/10**
+- mục cho khách lần đầu: **6/10**
+- cộng đồng: **6/10**
+
+#### 28.2 vinhlong360 đứng ở đâu
+
+**Làm tốt hơn chuẩn ngành ở đúng chỗ phổ quát.** Tín hiệu "bây giờ" là thứ 10/10 site
+đều có, và vinhlong360 làm **mạnh nhất**: "Còn 22 ngày", "Tháng 8 · đang vào mùa",
+"4.9 điểm" là **câu trả lời có lý do**, không phải nhãn phân loại. Các site kia phần lớn
+chỉ liệt kê sự kiện theo ngày.
+
+**Cộng đồng cũng đúng chuẩn**, và bền hơn 4/6 site kia: họ nhúng feed Instagram/TikTok
+(phụ thuộc bên thứ ba, mất là mất), vinhlong360 dùng **nội dung tự có**. Chỉ Ireland có
+diễn đàn riêng như vậy.
+
+**Hai chỗ lệch chuẩn:**
+- **Không có mục cho khách lần đầu** trong khi **6/10** site có. Và tệ hơn: vinhlong360
+  có mục NGƯỢC LẠI — "Giữ mạch khám phá khi bạn ĐÃ CÓ một điểm bắt đầu" hiện cho MỌI
+  khách (§22.1). Đây là bằng chứng thứ hai cho T3.
+- **Đặc sản là mục con** trong khi **7/10** site cho nó mục riêng — kể cả những site mà
+  đặc sản KHÔNG nằm trong tên (Ireland đặt ẩm thực làm **hero**; tên site vinhlong360 thì
+  ghi thẳng "Du lịch & Sản phẩm địa phương").
+
+#### 28.3 Ba thứ đáng học, cả ba dự án ĐÃ CÓ hạ tầng
+
+- **Visit Portugal có widget thời tiết** ngay đầu trang — một dạng tín hiệu "bây giờ".
+  vinhlong360 **đã có API thời tiết** (`/weather?area=…`, thấy trong `utils/apiFetch.ts:22`)
+  nhưng không hiện trên trang chủ.
+- **Visit Finland có khối FAQ gập** ("A few common questions") — đúng định dạng hỏi–đáp
+  có cấu trúc mà §23.3 nói 64% đối thủ đang làm để được cỗ máy trả lời trích. vinhlong360
+  **đã có dữ liệu hỏi–đáp** (`post_type="question"` + `bestAnswerId`) nhưng chưa đánh dấu
+  schema và chưa đưa lên trang chủ.
+- **Visit Finland có quiz "pick your preferences"** dẫn khách lần đầu tới vùng phù hợp.
+  vinhlong360 **đã có** `HomeDecisionLedger` làm đúng việc đó — nhưng nhắm vào "hôm nay
+  bạn muốn bắt đầu thế nào", không nhắm vào "lần đầu tới Vĩnh Long".
+
+#### 28.4 Vì sao dừng đo bằng trình duyệt
+
+Quét bằng ô trình duyệt **sập ở site thứ hai** (`visitwales.com`, 03:03:06) — lần thứ TƯ
+gắn với site ngoài (20:49 sau visitjeju · 22:34 mở trình duyệt · 22:38 khôi phục tab ·
+03:03 visitwales). Lặp lại cách làm đang hỏng là vô trách nhiệm.
+
+**Kỷ luật ghi-sau-từng-site đã cứu dữ liệu:** kết quả VisitScotland ghi ra file trước khi
+sập nên còn nguyên. Bài học đi kèm bài học §20.3.
+
+Số đo DOM dừng ở **5 site**, và đủ để kết luận:
+
+| site | px mỗi đơn vị | ảnh/màn hình |
+|---|---|---|
+| **vinhlong360** | **75** | 0,2 |
+| Emilia Romagna | 133 | 1,3 |
+| Visit Jeju | 140 | 2,7 |
+| VisitScotland | **308** | **0,4** |
+| Atlas Obscura | **323** | 1,9 |
+
+**VisitScotland là điểm dữ liệu quan trọng nhất và suýt không có.** Nó cũng gần như toàn
+chữ — **0,4 ảnh/màn hình, còn ít hơn Emilia Romagna** — nhưng cho mỗi mục **308px**, gấp
+4 lần vinhlong360.
+
+**Kết luận đổi hướng ưu tiên: "toàn chữ" không phải vấn đề. "Toàn chữ mà chật" mới là.**
+Một cổng du lịch quốc gia cũng ít hình như vinhlong360 mà không ai thấy bí bách, vì nó
+cho mỗi thứ chỗ thở. Nên **T4 (nới 75px → 130px) đáng làm TRƯỚC** việc thêm bìa ảnh.
