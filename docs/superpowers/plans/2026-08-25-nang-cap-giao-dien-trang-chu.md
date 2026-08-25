@@ -168,3 +168,26 @@ Không tự làm. Đây là thay đổi lớn, đụng dữ liệu, và phải n
 
 Chạy `python -m pytest -q`, `npx vitest run`, `python scripts/checks/run_hard.py --all`,
 `python scripts/scorecard.py` (không được tụt điểm). Ghi plan-result. Cập nhật ROADMAP.
+
+---
+
+## KẾT QUẢ (cập nhật 2026-08-25, sau thẩm định đối kháng)
+
+- **Đợt 1 (T1, T2): XONG** — commit `794d7398`, `8800796e`; hai lỗi bắt được ở bước verify
+  đã ghi trong plan.
+- **T4: HUỶ** — tiền đề "75px mỗi đơn vị" sai do máy đo (ROADMAP §29); không sửa mã.
+- **Hướng bento cho mục Đặc sản (nối dài T6): BỊ BÁC sau thẩm định 14-agent** — ROADMAP
+  §31. Bốn lý do: mockup bản 2 rút gọn 7/8 tên (không phải bằng chứng); hình học vỡ ở
+  tầng cấu trúc (ô vừa trống 119,56px, đổi tỉ lệ không cứu); HAI dải viewport hỏng
+  [320–450) và [721–874); thuật toán xếp hạng không biết độ dài tên (11/12 tháng đẩy
+  entity-tổ-chức vào top). Luận cứ "67% SaaS dùng bento" truy về một blog duy nhất không
+  phương pháp — đã rút lại.
+- **Phương án sống sót, chờ chủ dự án chọn (ROADMAP §31.4):** D (nhịp sắc độ — làm trước,
+  điều kiện cần) + F (Đặc sản tin chính, tái dùng CatalogSpotlight — khuyến nghị) hoặc
+  E (sổ vàng OCOP 5 sao, star-band /ocop — đủ dữ liệu: 5 món sau khử trùng lặp).
+- **Ràng buộc thực thi đã dò sẵn cho người làm sau (chi tiết trong kết quả workflow):**
+  R30.8/R30.2 dư địa ratchet = 0 (dùng --radius-control/surface/sheet, icon từ
+  IconLine.vue); mục mới phải đăng ký surface ảnh (entity-image-renderers.json +
+  requiredBoundaries cùng commit); KHÔNG thêm dòng vào mảng css của nuxt.config.ts;
+  KHÔNG dùng nguồn `seasonal` cho mục Đặc sản; verify bằng `run_hard.py --all` (chế độ
+  --staged của hook đếm thiếu); scorecard.py chỉ chạy với `--no-append`.

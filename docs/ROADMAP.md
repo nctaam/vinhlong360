@@ -2750,7 +2750,7 @@ thiếu khoảng trắng — và nới khoảng trắng sẽ **không** chữa �
 
 #### 30.2 Ba nguyên lý thu được từ nghiên cứu
 
-**(a) Bento grid — ô không đều trên cùng một lưới.** Xu hướng chủ đạo 2026; **67% top
+**(a) Bento grid — ô không đều trên cùng một lưới.** *(Số 67% dưới đây ĐÃ BỊ RÚT LẠI — xem §31.2.)* Xu hướng chủ đạo 2026; **67% top
 100 site SaaS** đã dùng ở trang chủ hoặc trang tính năng. Khác lưới CSS thường ở chỗ nó
 **cố ý bất đối xứng**: nội dung quan trọng được ô lớn, phần còn lại lấp quanh. Nguyên lý
 cốt lõi, và đây là phần trả lời thẳng câu hỏi của chủ dự án:
@@ -2788,3 +2788,92 @@ nhẹ; nền các mục đổi sáng–tối để tạo **nhịp sắc độ** 
 - Mockup: `scratchpad/mockup-trang-chu.html` — dữ liệu thật từ `/api/homepage`, đúng
   thuật toán băm FNV của dự án nên bìa trong mockup **trùng** bìa bản thật.
 - **Chờ chủ dự án chọn** A / B / C trước khi đụng vào mã.
+
+---
+
+### 31. Thẩm định phương án C (bento): BỊ BÁC — giữ quyết định nội dung, đổi khuôn (2026-08-25)
+
+**Nguồn việc:** chủ dự án — *"phân tích và đánh giá phương án C, sau đó nâng cấp và tối ưu
+hơn nữa."* Cách làm: 14 agent độc lập (5 lăng kính: tích hợp mã / dữ liệu thật / hàng rào
+chuẩn / tiếp cận / phản biện; 8 phiên thẩm tra đối kháng; 1 tổng hợp). Mọi con số dưới đây
+đã qua thẩm tra — bên thẩm tra tự đo lại, không tin số cho sẵn.
+
+#### 31.1 Phán quyết
+
+**Tách hai chuyện đang bị gộp.** (1) *"Trang chủ cần mục Đặc sản riêng"* — **ĐÚNG, giữ**
+(§28.1: 7/10 site điểm đến làm vậy; tên site ghi thẳng "Sản phẩm địa phương"). (2) *"Mục đó
+là lưới bento 7 ô ba cỡ"* — **SAI, bỏ**. Bốn phát hiện giết nó, không cái nào bác được:
+
+1. **Mockup bản 2 không phải bằng chứng.** Đối chiếu 8 id với DB: 7/8 tên bị rút gọn
+   (29,75 → 14,1 ký tự, 2,11 lần), và mỗi ô ghép **bìa-của-A với tên-của-B** (id bản dài +
+   tên bản sao ngắn) — không ô nào tồn tại như một hàng DB. Rút tên cho vừa ô chính là thao
+   tác copywriting mà bento SaaS được phép làm còn dự án này thì không: **tên là dữ liệu,
+   không phải chữ do ta viết.**
+2. **Hình học hỏng ở tầng cấu trúc.** Đo Playwright @1280px: hàng lưới 245,81 / 226,31 /
+   250px — không bằng nhau; mỗi ô vừa trống 119,56px. Đổi tỉ lệ bìa không cứu: 16:9 vẫn
+   trống 102,7px, 2:1 còn 85,8px, phải xuống 5:1 mới cân. Gốc: ô lớn là thẻ dọc bìa+thân,
+   ô vừa là thẻ ngang một thân chữ ngắn — cộng `grid-row: span 2`.
+3. **HAI dải viewport vỡ** [320–450) và [721–874); đáy tuyệt đối vw=721 (khung chữ 173,5px
+   — hẹp hơn cả 375px); iPad dọc 768px vỡ mà media query ≤720px không chạm. Gốc: bìa
+   `width:132px` cố định cạnh cột co giãn.
+4. **Thuật toán chọn ô mù chữ.** `_homepage_score` (agent/public_api.py:2769) không có số
+   hạng nào biết độ dài tên; 11/12 tháng có ≥1 entity-tổ-chức trong top; T3/T4 ô LỚN là
+   "Hợp tác xã thủy sản Thạnh Lợi – Nghêu Thạnh Hải (OCOP)" — 54 ký tự.
+
+#### 31.2 Rút lại luận cứ "67% top-100 SaaS dùng bento" (§30.2a)
+
+Truy nguồn: **duy nhất** landdding.com — không phương pháp, không mẫu, không danh sách;
+tác giả là founder một gallery thiết kế (bên có lợi ích); "top 100 SaaS websites
+ProductHunt" không tồn tại như một bảng xếp hạng; nguồn thứ hai từng viện dẫn
+(syedaounraza.online) **không hề chứa con số này**. KHÔNG dùng số 67% làm luận cứ nữa.
+Phần còn lại của §30.2(a) — "phần tử lệch nhịp hút mắt" — vẫn đúng nhưng là nhận định
+định tính, và nó biện minh cho MỌI cách phá nhịp, không riêng bento.
+
+Cùng loạt đính chính: chú thích "0/1817 entity kèm ảnh thật" trong mockup bản 2 SAI —
+DB có 57 entity kèm images (product 19/218); và theo §1.5 đó là ảnh AI có nhãn. Số 0,7%
+(§25.2) cũng phải ngừng trích: đếm lại 2026-08-25 ra 3xl=22, 4xl=12, 5xl=7 lượt — khác
+số cũ, chưa phân xử được vì hai phép đếm khác phạm vi.
+
+#### 31.3 Số đo mới (đo trực tiếp DB worktree này, 1746 entity / 218 product)
+
+- **OCOP theo sao:** 5★ = 7 hàng → **5 món sau khử trùng lặp** (Vicosap ×2, Dừa sáp ×2);
+  4★ = 44; 3★ = 41; có khoá ocop nhưng không rút được sao = 44 (khoá không đồng nhất:
+  `ocop_star`/`ocop_stars`/`ocop`/`ocop_certified` — nợ chuẩn hoá dữ liệu, ghi backlog).
+- **Entity-tổ-chức đội lốt product:** 8 (HTX/công ty/cửa hàng/điểm trưng bày) — danh sách
+  loại trừ cho mọi mục đặc sản.
+- **Ứng viên CatalogSpotlight (summary ≥80kt, dài nhất):** "Cá phi sả ớt Thạnh Phước" —
+  tên 24kt, summary 362kt; pool đạt chuẩn 212/218 → khuôn F bền với dữ liệu.
+- **Nhịp sắc độ (đo trang đang chạy):** 6/6 mục cùng MỘT giá trị nền (rgb 249,247,241).
+  3 mục đã tràn lề sẵn (hero/quick-decisions/signals) — sơn nền là ăn, nội dung không
+  xê dịch. Token dải: `--bg-alt` lệch 1,11 (sáng) / 1,27 (tối) — dùng được cả hai chế độ;
+  `--color-surface` chỉ 1,04 ở chế độ sáng — KHÔNG dùng làm dải. Chữ thân bài trên mọi
+  token nền ≥12:1.
+
+#### 31.4 Phương án sống sót — chờ chủ dự án chọn
+
+- **D — nhịp sắc độ** (điều kiện cần, làm trước): luân phiên nền đặc–thở bằng token có
+  sẵn; 0 đơn vị nội dung mới; tấn công thẳng "cùng nền, cùng bề rộng" của chẩn đoán §30.1.
+- **F — Đặc sản làm tin chính** (khuyến nghị): tái dùng CatalogSpotlight (đang chạy 6
+  trang) — nó chọn entity theo ĐỘ GIÀU NỘI DUNG, đúng thứ `_homepage_score` thiếu. 1 bìa
+  lớn + summary đầy đủ + 6 món danh sách chữ (tên 60kt không vỡ).
+- **E — sổ vàng OCOP 5 sao** (thay F nếu muốn nhiều bìa): khuôn star-band của /ocop
+  ("Reuses EntityCard unchanged"), kích cỡ MANG NGHĨA (đậm = sao cao). Đủ dữ liệu (5 món).
+  Nhược: trùng câu chuyện với /ocop.
+- **C′ — nếu vẫn muốn bento:** 8 điều kiện tối thiểu (tên thật, token, chọn-theo-nội-dung
+  ô lớn ≤24kt, bỏ span hàng, bìa co giãn…) — làm đủ thì đích đến gần bằng E/F với chi phí
+  cao hơn hẳn.
+
+Mockup bản 3 (tên thật nguyên văn, C dựng lại cho thấy chỗ vỡ, F/E/D dựng cạnh nhau):
+artifact `1b07f7f5`. Chi tiết đầy đủ 5 lăng kính + 8 phiên thẩm tra: file kết quả workflow
+trong scratchpad phiên 2026-08-25.
+
+#### 31.5 Backlog phát sinh (không làm trong đợt giao diện)
+
+- Chuẩn hoá khoá sao OCOP (4 kiểu khoá → 1) + khử 2 cặp product trùng — cần backup B1.
+- 42 summary product còn chữ "huyện", 72 bản gọi Bến Tre/Trà Vinh như tỉnh hiện hành —
+  trái §1.6, sửa hàng loạt cần chỉ đạo + backup.
+- `ORDER BY updatedAt DESC` thiếu khoá phá hoà (agent/database.py:1649) — 4 entity đồng
+  điểm T1/T2/T12; và trần cứng `limit=5000` trong `_build_homepage_payload` là mìn hẹn giờ.
+- Tài liệu chuẩn lệch máy: 00-INDEX.md ghi R30.2=687/R30.3=307, baseline.json là 330/200.
+- Scorecard đang đỏ sẵn từ trước (backend 99→81, nợ R20.8=47) — chặn pre_merge bước 7,
+  KHÔNG liên quan đợt này.
