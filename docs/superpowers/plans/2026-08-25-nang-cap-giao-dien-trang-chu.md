@@ -98,13 +98,19 @@ Tôi không tự bật — đó là lựa chọn của đợt nocturne. Nhưng n
   phía trên**. Trang đang dành 181px cho nhóm chưa tồn tại (§22.1).
   **Verify:** test + xoá `localStorage` rồi tải lại, mục phải biến mất.
 
-- [ ] **T4 — Nới khoảng trống mỗi đơn vị nội dung.**
-  Hiện **75px** mỗi đơn vị bấm được; Emilia Romagna 133, Visit Jeju 140, Atlas Obscura
-  **323** (§26.1). Nới nhịp dọc trong mục và đệm thẻ, đích **~120–140px**.
-  **Vì sao:** 4 phép đo độc lập đều nói mật độ là vấn đề, không phải số lượng mục.
-  **Rủi ro:** trang dài ra. Chấp nhận được — Atlas Obscura để mobile dài **15,2 màn
-  hình** mà vẫn giữ 300px/đơn vị (§27.1).
-  **Verify:** đo lại px/đơn vị ở 1280 và 360; tràn ngang phải = 0.
+- [~] **T4 — HUỶ. Tiền đề sai (ROADMAP §29).**
+  Kế hoạch ban đầu: nới 75px → 130px mỗi đơn vị. **Chỉ số đó không dùng được.**
+  Phép đo cũ (a) đếm cả 21 đơn vị chrome header/footer, (b) chia cho số thẻ bất kể thẻ
+  nằm cạnh nhau trong lưới nhiều cột.
+  Đo lại theo HÀNG: hero 298px · "Hôm nay bạn muốn…" 133px · Tín hiệu 112px · Cộng đồng
+  112px · Giữ mạch 91px. **Trang chủ không chật** — nhịp bình thường.
+  Số của các site đối chiếu nhiễm cùng hai lỗi và **không đo lại được** (quét site ngoài
+  bằng trình duyệt đã sập 4 lần, §28.4).
+
+  **Thay bằng:** việc đúng cho phản hồi "giao diện chỉ toàn chữ" là **thêm hình**, không
+  phải nới khoảng trống. Bằng chứng còn đứng vững là **đếm ảnh**: vinhlong360 **1 ảnh**,
+  peers 4–19 — chỉ số này không có mẫu số nên không dính hai lỗi trên.
+  Xem mockup phương án A/B đã dựng; chờ chủ dự án chọn.
 
 ## ĐỢT 3 — GỐC RỄ, cần chủ dự án duyệt trước khi làm
 

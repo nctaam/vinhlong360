@@ -2665,3 +2665,67 @@ chữ — **0,4 ảnh/màn hình, còn ít hơn Emilia Romagna** — nhưng cho 
 **Kết luận đổi hướng ưu tiên: "toàn chữ" không phải vấn đề. "Toàn chữ mà chật" mới là.**
 Một cổng du lịch quốc gia cũng ít hình như vinhlong360 mà không ai thấy bí bách, vì nó
 cho mỗi thứ chỗ thở. Nên **T4 (nới 75px → 130px) đáng làm TRƯỚC** việc thêm bìa ảnh.
+
+
+### 29. ĐÍNH CHÍNH NẶNG: chỉ số "px mỗi đơn vị" ở §20/§26/§28 KHÔNG dùng được (2026-08-25)
+
+Chủ dự án bảo làm T4 (nới 75px → 130px). Trước khi sửa tôi đo lại để biết mật độ nằm ở
+mục nào — và phép đo mới **mâu thuẫn** với §20. Truy ra thì lỗi ở **phép đo cũ của tôi**,
+không phải ở trang.
+
+#### 29.1 Hai lỗi trong chỉ số
+
+**Lỗi 1 — đếm cả chrome.** Script §20 quét `document.querySelectorAll(...)` trên TOÀN
+tài liệu, nên gom cả liên kết header/footer vào "đơn vị nội dung". Đo lại ở 1280px:
+
+```
+quét toàn trang : 52 đơn vị → 73px mỗi đơn vị
+chỉ trong .home : 31 đơn vị → 123px mỗi đơn vị
+chênh 21 = 17 liên kết trong <nav> + skip-link + 2 router-link + 1 nút
+```
+
+**Lỗi 2 — chia cho số thẻ bất kể bố cục cột.** Mục "Từ cộng đồng" dùng `scroll-row`,
+mục "Hôm nay bạn muốn…" dùng lưới 2–4 cột. Thẻ **nằm cạnh nhau**, nên chia chiều cao
+mục cho số thẻ là hiểu sai — mỗi thẻ thực ra nhận cả chiều cao hàng.
+
+Đo lại theo HÀNG (gom các đơn vị cùng `top` ±12px):
+
+| mục | cao | đơn vị | hàng | cột TB | **px/hàng** | px/đơn vị (sai) |
+|---|---|---|---|---|---|---|
+| hero | 895 | 3 | 3 | 1 | 298 | 298 |
+| "Hôm nay bạn muốn…" | 797 | 11 | 6 | 1,8 | **133** | 72 |
+| Tín hiệu địa phương | 561 | 5 | 5 | 1 | **112** | 112 |
+| Từ cộng đồng | 560 | 9 | 5 | 1,8 | **112** | 62 |
+| Giữ mạch khám phá | 181 | 2 | 2 | 1 | 91 | 91 |
+
+**Trang chủ KHÔNG chật.** Mỗi hàng nhận 91–133px, hero 298px — nhịp bình thường.
+
+#### 29.2 Cái gì đổ theo, cái gì vẫn đứng
+
+**KHÔNG dùng được nữa** (cả hai lỗi trên áp lên mọi site vì dùng chung script):
+- mọi con số "px mỗi đơn vị" ở §20, §26, §28 — kể cả "vinhlong360 chật gấp 4 lần
+  Atlas Obscura" và "VisitScotland 308px". Số của peers cũng nhiễm cùng hai lỗi, và
+  **không đo lại được** vì quét site ngoài bằng trình duyệt đã sập 4 lần (§28.4).
+- **T4 trong kế hoạch — tiền đề chết, KHÔNG thực hiện.**
+
+**Vẫn đứng vững** (đo bằng cách khác, không dính hai lỗi):
+- **Đếm ảnh** — lọc theo `<img>`/background + giao khung nhìn, không chia cho gì cả.
+  vinhlong360 **1 ảnh**; peers 4–19. Đây mới là bằng chứng cho "giao diện chỉ toàn chữ",
+  và nó khớp với điều chủ dự án nhìn thấy.
+- **Số màn hình cuộn** — `scrollHeight / innerHeight`, không dính lỗi nào.
+- **Số họ màu có sắc** — đếm màu duy nhất, không dính lỗi nào.
+- **Toàn bộ so sánh CẤU TRÚC ở §22 và §28** — lấy bằng `WebFetch`, không dùng script này.
+  Bao gồm: tín hiệu "bây giờ" 10/10, đặc sản 7/10, khách lần đầu 6/10, cộng đồng 6/10.
+
+#### 29.3 Bài học
+
+Ba lần trong phiên này máy đo của tôi cho số sai và tôi bắt được: carousel ở §20.2
+(sai gấp 13 lần), ngưỡng `height > 60` ở §26.3 (ra 0 tiêu đề), và lần này. **Cả ba đều
+cùng một dạng: bộ lọc/mẫu số đặt cho tình huống này thì phá phép đo ở tình huống khác.**
+
+Lần này khác hai lần trước ở chỗ **tôi đã công bố con số sai và xây kết luận lên nó**,
+qua ba mục ROADMAP, và suýt sửa mã theo nó. Cách duy nhất bắt được là **đo lại bằng một
+đường khác trước khi hành động** — không phải đọc lại script cũ.
+
+Quy tắc rút ra: **chỉ số nào có mẫu số thì phải hỏi "mẫu số này đếm đúng thứ mình nghĩ
+không"** trước khi so sánh giữa các site.
