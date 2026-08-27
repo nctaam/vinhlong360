@@ -76,6 +76,31 @@ def test_call_tool_stats_returns_counts(kb_ctx):
     assert isinstance(out, dict)
 
 
+# ── §1.7: ngữ cảnh LLM KHÔNG được mang trường tên "verified" ──
+
+def test_search_card_khong_gui_truong_verified():
+    """`entity.verified` chỉ là cờ PUBLISH, không phải kiểm-chứng-thực-địa.
+
+    Nguồn kiểm-chứng duy nhất là attributes.verifiedAt (~0 entity có). Gửi một
+    trường tên "verified: true" phủ gần như toàn bộ entity là mời mô hình khẳng
+    định "đã xác minh" — đúng thứ CLAUDE.md §1.7 cấm. Tín hiệu độ-tin-cậy hợp lệ
+    là `needs_verification`, và nó CÓ hợp đồng trong tools.py.
+    """
+    card = server._search_result_card({
+        "id": "x", "type": "product", "name": "Thử",
+        "verified": True, "status": "published", "confidence": 0.9,
+    })
+    assert "verified" not in card, "§1.7: card gửi vào LLM không được mang trường 'verified'"
+    assert card["needs_verification"] is False
+
+
+def test_search_card_giu_needs_verification_khi_confidence_thap():
+    card = server._search_result_card({
+        "id": "y", "type": "product", "name": "Thử 2", "confidence": 0.5,
+    })
+    assert card["needs_verification"] is True
+
+
 # ── TC-10.7: _is_error_reply KHÔNG ghi đè câu trả lời đúng chứa "sự cố"/"lỗi" ──
 
 def test_valid_reply_with_su_co_not_clobbered(kb_ctx):

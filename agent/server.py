@@ -654,7 +654,12 @@ def _search_result_card(e: dict) -> dict:
         "place": place_label,
         "season": knowledge.season_text(e),
         "needs_verification": e.get("confidence", 1.0) < 0.7,
-        "verified": e.get("verified", True) is not False and e.get("status") != "provisional",
+        # §1.7: KHÔNG gửi trường tên "verified" vào ngữ cảnh LLM. `entity.verified`
+        # chỉ là cờ PUBLISH, không phải kiểm-chứng-thực-địa (nguồn duy nhất cho việc
+        # đó là attributes.verifiedAt, hiện ~0 entity có). Một trường tên "verified:
+        # true" phủ 1739/1746 entity là lời mời mô hình khẳng định "đã xác minh" —
+        # đúng thứ §1.7 cấm. Tín hiệu độ-tin-cậy hợp lệ đã nằm ở `needs_verification`,
+        # và nó CÓ hợp đồng trong tools.py:418,445 dạy mô hình dùng đúng cách.
     }
     # Include coords when available (powers map display)
     coords = e.get("coords") or e.get("coordinates")
