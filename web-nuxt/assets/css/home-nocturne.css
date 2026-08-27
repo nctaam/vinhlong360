@@ -717,3 +717,47 @@
     outline-color: Highlight;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   A1 — NHỊP DẢI NỀN (đặc · thở · đặc · thở)
+   ═══════════════════════════════════════════════════════════════════
+   Chẩn đoán gốc của "trang rối": 6/6 mục dùng CHUNG MỘT giá trị nền
+   (đo trên trình duyệt: rgb(249,247,241), soSacDoKhacNhau = 1). Không
+   có nhịp sắc độ nào, nên biên giữa các mục chỉ do hairline 1px gánh.
+
+   Vì sao sơn được mà nội dung không xê dịch một pixel: .home-quick-
+   decisions và .home-signals là <div> trần trong .home — chúng đã TRÀN
+   LỀ sẵn (đo: 1270px = trọn khung nhìn), còn nội dung bên trong đã bị
+   khung con ghim ở --maxw. Sơn nền lên vỏ ngoài cho ra dải sát mép,
+   khung chữ giữ nguyên.
+
+   .home-context-line KHÔNG nằm trong danh sách: nó có max-width:
+   var(--maxw) + margin-inline:auto (dòng 21) nên tự ghim 1140px — sơn
+   nó ra một mảng lơ lửng chứ không phải dải. Măng-sét A2 sẽ dựng lại
+   mục đó và xử luôn dải của nó.
+
+   Token: --bg-alt (KHÔNG dùng --color-surface — đo được chỉ lệch 1,044
+   so với canvas ở chế độ sáng, mắt không thấy). --bg-alt lệch 1,110 ở
+   sáng / 1,268 ở tối, và khai đủ ở cả :root lẫn .dark nên không có
+   trạng thái không-class nào bị hụt. Chữ thân bài trên nền này đo được
+   ≥15:1 — không đánh đổi tương phản.
+
+   Hai mục này KHÔNG mang class .reveal, nên không dính bẫy "cả dải
+   trượt khi cuộn" — mọi mục có .reveal về sau phải cho NỘI DUNG trồi,
+   không cho DẢI trượt. */
+
+[data-home-pilot="nocturne-b1"] :is(.home-quick-decisions, .home-signals) {
+  background: var(--bg-alt);
+  padding-block: var(--space-8);
+  border-block-end: 1px solid var(--color-border);
+}
+
+/* Quy ước thẻ-trên-dải: CHƯA áp. Bản nháp đầu sơn nền cho
+   :is(.ec-date, .event-mini, .home-season-row) ở chế độ tối đã phá một hợp
+   đồng có chủ đích — home-nocturne-page.test.ts:221 chốt `.event-mini` phải
+   TRONG SUỐT ("transparent canvas path") để màu chữ ngữ nghĩa luôn đọc trên
+   một nền đã biết. Phần tử trong suốt nằm trên dải thì hiện màu dải, đó là
+   hành vi đúng.
+   Nếu đo trên trang thật thấy thẻ NÀO tự sơn nền và chìm vào dải ở chế độ
+   tối (--bg-alt tối trùng trần --color-surface-raised) thì mới xử ĐÚNG thẻ
+   đó, không quét cả nhóm. */
