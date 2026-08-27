@@ -828,7 +828,15 @@ html.js .home .hero-feature { opacity: 0; transform: translateY(16px); animation
      the search + feature card below the mobile fold). Now ~47px→86px, wraps to ~3 lines on
      phones, capped identically at 5.4rem on desktop. */
   font-size: clamp(2.75rem, 1.6rem + 5.6vw, 5.4rem);
-  letter-spacing: -.02em; line-height: .98;
+  letter-spacing: -.02em;
+  /* line-height CỐ Ý KHÔNG đặt ở đây. Bản cũ khai `.98` nhưng nó KHÔNG BAO GIỜ
+     có hiệu lực: `[data-home-pilot="nocturne-b1"] .hero-main h1` trong
+     home-nocturne.css đặt `line-height: 1.12` với ĐỘ ĐẶC HIỆU NGANG NHAU
+     (0,2,1), nên thắng thua do thứ tự nạp file — và file kia nạp sau.
+     `data-home-pilot` là thuộc tính CỨNG ở đầu file này (không sau cờ nào),
+     nên nhánh 1.12 luôn chạy. Giữ một khai báo chết ở đây tệ hơn không có:
+     nó làm người đọc tin mình đang chỉnh được thứ mình không chỉnh được.
+     Muốn đổi nhịp dòng của h1 hero: sửa home-nocturne.css. */
   text-shadow: 0 2px 28px rgba(var(--black-rgb),.42);
   max-width: 15ch;
   text-wrap: balance;

@@ -659,7 +659,12 @@ describe('UserCP regressions', () => {
     expect(presentation).toContain('`/theo-mua?mua=${encodeURIComponent(String(month))}`')
     expect(categories).toContain('home-category-index__primary')
     expect(page).not.toContain('homeDecisionCards')
-    expect(page).toContain('letter-spacing: -.02em; line-height: .98;')
+    // Khoá letter-spacing theo `em` (không phải `-1.4px` tuyệt đối) — đó là điều
+    // cặp khẳng định này định bảo vệ. `line-height: .98` trước đây nằm CÙNG DÒNG
+    // nên bị gom vào chuỗi; nó đã được gỡ 2026-08-27 vì KHÔNG BAO GIỜ có hiệu lực
+    // (`[data-home-pilot] .hero-main h1` đặt 1.12 với độ đặc hiệu ngang nhau và nạp
+    // sau). Ghim nguyên văn cả dòng là ghim luôn một khai báo chết.
+    expect(page).toContain('letter-spacing: -.02em')
     expect(page).not.toContain('letter-spacing: -1.4px')
     expect(page).toContain('Dành cho bạn')
     expect(page).toContain('for-you-row')
