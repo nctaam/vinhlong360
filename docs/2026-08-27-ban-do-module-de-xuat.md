@@ -13,13 +13,24 @@ xé ra nhiều file.
 | miền | route | rải ở |
 |---|---|---|
 | `/entities` | 34 | 3 file |
-| `/posts` | 30 | 3 file |
+| `/posts` | 29 | 2 file |
 | `/me` | 21 | 4 file |
 | `/users` | 21 | 3 file |
-| `/search` | 5 | 4 file |
+| `/(root)` | 11 | 4 file |
 
-**404 route / 135 miền.** 116 miền đã gọn trong 1 file (220 route), nhưng **19
-miền bị rải và chúng nắm 46% tổng số route**.
+**403 route / 132 miền.** 114 miền đã gọn trong 1 file, **18 miền bị rải** và
+chúng nắm ~45% tổng số route.
+
+> **ĐÍNH CHÍNH 2026-08-27 (cùng ngày).** Bản đầu của tài liệu này ghi 404 route /
+> 135 miền / 19 miền rải, và nói `/posts` rải 3 file, `/search` rải 4 file. SAI:
+> bộ điều tra của tôi dùng SO CHUỖI nên đếm cả `@router.get(...)` trong DOCSTRING
+> của `auth_middleware.py` (5 ví dụ minh hoạ) thành route thật. Đo lại bằng AST
+> (chỉ decorator thật): 403 route, 18 miền rải; `/posts` 2 file, `/feed` 2 file,
+> `/search` không còn nằm trong nhóm rải.
+>
+> Đây là LẦN THỨ HAI trong ngày tôi mắc đúng lỗi này — bộ quét CSS chết sáng nay
+> cũng đếm nhầm nội dung trong chú thích. Bài học: công cụ đo bằng so-chuỗi phải
+> bỏ chú thích TRƯỚC, hoặc dùng AST.
 
 Hệ quả kép, và đây là câu trả lời cho "làm sao phát triển song song không đè
 nhau": người làm *entities* phải mở 3 file; người làm *admin* phải mở file dùng
