@@ -3630,8 +3630,7 @@ phải chạy `docker compose up postgres`, tạo phiên đăng nhập, rồi đ
 
 ### 44. LỖ HỔNG CỔNG: hook `--staged` không thể thực thi ratchet có baseline > 0 (2026-08-27)
 
-> STATUS: active — P1. Đã xác minh bằng mã, CHƯA vá: vá sẽ làm cổng nghiêm hơn
-> và chặn những commit trước đây lọt, nên cần chủ dự án chốt (§3.7).
+> STATUS: done (2026-08-27) — ĐÃ VÁ bằng "ratchet theo-file", xem §44.3.
 
 **Phát hiện thế nào:** tôi thêm `agent/ocop.py` với một hàm complexity 21. Hook
 pre-commit cho qua, in "✓ run_hard: sạch (hard=0, ratchet không tăng)". Chỉ khi
@@ -3652,10 +3651,17 @@ nhỏ hơn ⇒ **không bao giờ đỏ**.
 | R20.5, R20.7, R20.9, R30.1, R30.6, R30.7, R40.3, R60.1… | 0 | **CÓ** — mọi vi phạm đều > 0 |
 | R20.8 complexity | 47 | KHÔNG |
 | R30.2 emoji · R30.3 màu · R30.8 bo góc | 330 / 147 / 369 | KHÔNG |
-| R50.2 · R50.3 · R50.4 · R50.7 | 102 / 7 / 245 / 24 | KHÔNG |
+| R50.2 · R50.3 · R50.4 · R50.7 | 102 / 7 / 245 / 24 | **CÓ** — xem đính chính |
 
-Tức **cổng chỉ có răng ở đúng những rule đã sạch**. Ở những rule đang mang nợ —
-chính là chỗ cần ratchet nhất — nó là trang trí.
+> **ĐÍNH CHÍNH (cùng ngày).** Bản đầu xếp R50.* vào nhóm "không chặn được". SAI:
+> chúng khoá theo `web/data.json` (`check_thin_content:35`, `check_content_voice:93`,
+> `check_content_gates:54`) và khi file đó được staged thì quét TOÀN BỘ nó, nên
+> `count` đã là số toàn kho — so với baseline toàn kho là ĐÚNG. Lỗ hổng thật chỉ
+> có **BỐN** rule quét-theo-từng-file: R20.8, R30.2, R30.3, R30.8.
+
+Tức **cổng chỉ có răng ở đúng những rule đã sạch**, cộng nhóm quét-toàn-dữ-liệu.
+Ở bốn rule quét-theo-file đang mang nợ — chính là chỗ cần ratchet nhất — nó là
+trang trí.
 
 Điều này giải thích lại một chuyện: sổ ngoại lệ quy nợ complexity 3 → 47 cho
 "nhánh phát triển ngoài tầm cổng". Đúng một phần, nhưng chưa đủ — **commit đi
@@ -3670,3 +3676,31 @@ toàn kho.
 đây lọt — đổi hành vi thực thi trên toàn dự án. Đó là quyết định của chủ dự án.
 Trong lúc chờ: **chạy `python scripts/checks/run_hard.py --all` trước khi commit**
 nếu commit chạm `agent/`, `scripts/` hoặc `web-nuxt/` — hook một mình không đủ.
+
+#### 44.3 Đã vá — "ratchet theo-file"
+
+Không so tập con với tổng thể nữa. Với rule có baseline > 0, cổng dựng lại nội
+dung **HEAD của chính những file đang staged** vào thư mục tạm, chạy đúng bộ
+check trên đó, rồi so: *file này trước có bao nhiêu vi phạm, giờ có bao nhiêu?*
+Phép so ấy đúng bất kể baseline lớn cỡ nào.
+
+```
+✖ RATCHET R20.8 (complexity): 1 vi phạm trong file đang sửa,
+  bản HEAD của chính những file đó có 0 — RATCHET theo-file
+```
+
+Đã tái hiện đúng ca lọt sáng nay: thêm một hàm complexity cao rồi chạy hook →
+exit 1. Hook mất **1,00s** (ngân sách <5s).
+
+**Hai lần bản vá tự bắt lỗi của chính nó:**
+
+1. Test tôi viết phát hiện commit gồm **toàn file MỚI** vẫn lọt — vì không file
+   nào tồn tại ở HEAD thì hàm đếm thoát sớm. Mà đó ĐÚNG là đường `agent/ocop.py`
+   đã đi (file mới, complexity 21). Sửa: không có ở HEAD nghĩa là HEAD có 0 vi
+   phạm, vẫn phải so.
+2. Gộp phép so mới vào `run()` đẩy nó lên complexity 14 — **và cổng vừa vá chặn
+   đúng commit vá cổng**. Tách `_ratchet_phase()`, về 0 vi phạm.
+
+**Giới hạn còn lại:** phép so theo-file chỉ thấy file ĐANG staged. Nợ chuyển từ
+file A sang file B trong hai commit khác nhau vẫn lọt. `--all` ở pre-merge mới
+bắt được chuyện đó — hai lớp bổ sung nhau, không thay nhau.

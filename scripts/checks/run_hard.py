@@ -108,6 +108,106 @@ def _bind_checks_to_root(checks: list, root: Path) -> list:
     return bound
 
 
+def _head_counts(files: list[str], checks: list, root: Path) -> dict:
+    """Đếm vi phạm của CHÍNH những file đang staged, nhưng ở bản HEAD.
+
+    Dựng lại nội dung HEAD vào một thư mục tạm rồi chạy đúng bộ check trên đó.
+    File MỚI (chưa có ở HEAD) → `git show` lỗi → bỏ qua, tức HEAD coi như 0 vi
+    phạm cho file ấy; thêm file mới mang theo nợ VẪN bị tính là tăng.
+    """
+    import shutil
+    import subprocess
+    import tempfile
+
+    out: dict = {}
+    td = tempfile.mkdtemp(prefix="vl360-gate-")
+    try:
+        tmp = Path(td)
+        kept = []
+        for rel in files:
+            r = subprocess.run(["git", "show", f"HEAD:{rel}"], cwd=str(root),
+                               capture_output=True)
+            if r.returncode != 0:
+                continue
+            dst = tmp / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            dst.write_bytes(r.stdout)
+            kept.append(rel)
+        if not kept:
+            # KHÔNG thoát sớm. Không file nào tồn tại ở HEAD nghĩa là TẤT CẢ đều
+            # mới, tức HEAD có 0 vi phạm — và commit toàn-file-mới mang nợ vẫn
+            # phải bị chặn. Trả về rỗng ở đây là mở đúng cái lỗ vừa bịt: sáng
+            # 2026-08-27 `agent/ocop.py` (file MỚI, complexity 21) lọt qua hook
+            # chính vì con đường này.
+            return {c.rule: 0 for c in checks}
+        for c in _bind_checks_to_root(checks, tmp):
+            out[c.rule] = out.get(c.rule, 0) + c.run(kept)["count"]
+    finally:
+        shutil.rmtree(td, ignore_errors=True)
+    return out
+
+
+def _per_file_ratchet(files: list[str], checks: list, root: Path, baseline: dict,
+                      results: list[dict], skips: set, lvl: dict) -> tuple[bool, list[str]]:
+    """RATCHET THEO-FILE — bịt lỗ §44.
+
+    Ở chế độ `--staged`, `count` của mỗi check chỉ đếm trong FILE ĐANG STAGED,
+    nhưng `ratchet_violations` lại so nó với baseline TOÀN KHO. Với rule có
+    baseline > 0 (R20.8=47, R30.2=330, R30.3=147, R30.8=369) tập con gần như
+    luôn nhỏ hơn tổng, nên phép so ấy KHÔNG BAO GIỜ đỏ được — hook chỉ thực sự
+    canh được những rule có baseline = 0.
+
+    Đo được hậu quả: 2026-08-27 tôi thêm một hàm complexity 21 và commit qua hook
+    trót lọt; chỉ `--all` mới bắt (R20.8 48 > 47).
+
+    Cách bịt: so CÙNG NHỮNG FILE ẤY với chính chúng ở bản HEAD. Phép so này đúng
+    bất kể baseline bao nhiêu, và vẫn nhanh vì chỉ đụng vài file.
+
+    KHÔNG áp cho rule baseline = 0 (phép so cũ đã đủ và chính xác) lẫn cho các
+    rule quét-toàn-bộ như R50.* — chúng khoá theo `web/data.json` nên khi file đó
+    được staged thì `count` đã là số toàn kho, so với baseline toàn kho là đúng.
+    """
+    now = {r["rule"]: r["count"] for r in results}
+    watched = [c for c in checks
+               if getattr(c, "level", "").endswith("-ratchet")
+               and baseline.get(getattr(c, "rule", ""), 0) > 0]
+    if not watched:
+        return False, []
+    head = _head_counts(files, watched, root)
+    blocked, msgs = False, []
+    for c in watched:
+        n_now, n_head = now.get(c.rule, 0), head.get(c.rule, 0)
+        if n_now <= n_head:
+            continue
+        msg = (f'{c.rule} ({c.name}): {n_now} vi phạm trong file đang sửa, '
+               f'bản HEAD của chính những file đó có {n_head} '
+               f'— RATCHET theo-file: đừng thêm nợ vào file mình đang sửa.')
+        if c.rule in skips and lvl.get(c.rule, "").startswith("soft"):
+            msgs.append(f"⚠ SKIPPED (soft) {msg}")
+            continue
+        blocked = True
+        msgs.append(f"✖ RATCHET {msg}")
+    return blocked, msgs
+
+
+def _ratchet_phase(files, checks: list, root: Path, baseline: dict,
+                   results: list[dict], skips: set) -> tuple[bool, list[str], list[str]]:
+    """Gộp HAI phép so ratchet: theo TOÀN KHO và theo TỪNG FILE.
+
+    Tách khỏi `run()` vì gộp thẳng vào đó đẩy nó lên complexity 14 — và chính
+    cổng vừa vá đã chặn commit này. Bắt đúng thứ nó sinh ra để bắt.
+    """
+    lvl = {c.rule: c.level for c in checks}
+    blockers, suggestions = common.ratchet_violations(results, baseline)
+    blocked, msgs = _ratchet_messages(blockers, skips, lvl)
+    if files:   # §44 — xem _per_file_ratchet
+        d_blocked, d_msgs = _per_file_ratchet(files, checks, root, baseline,
+                                              results, skips, lvl)
+        msgs.extend(d_msgs)
+        blocked = blocked or d_blocked
+    return blocked, msgs, suggestions
+
+
 def run(files: list[str] | None, checks: list | None = None, root: Path | None = None,
         baseline: dict | None = None, skips: set[str] | None = None) -> tuple[int, list[str]]:
     """Trả (exit_code, messages). Tách tham số để test được."""
@@ -121,11 +221,10 @@ def run(files: list[str] | None, checks: list | None = None, root: Path | None =
     hard_blocked, hard_msgs = _hard_messages(results)
     messages.extend(hard_msgs)
     blocked = hard_blocked
-    blockers, suggestions = common.ratchet_violations(results, baseline)
-    lvl = {c.rule: c.level for c in checks}
-    ratchet_blocked, ratchet_msgs = _ratchet_messages(blockers, skips, lvl)
-    messages.extend(ratchet_msgs)
-    blocked = blocked or ratchet_blocked
+    r_blocked, r_msgs, suggestions = _ratchet_phase(files, checks, root, baseline,
+                                                    results, skips)
+    messages.extend(r_msgs)
+    blocked = blocked or r_blocked
     if files is None:  # suggestions chỉ có nghĩa khi đếm TOÀN repo (--all)
         for s in suggestions:
             messages.append(f"↓ {s}")

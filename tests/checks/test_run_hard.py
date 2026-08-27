@@ -91,3 +91,87 @@ def test_hook_budget_under_5s(tmp_path):
     t0 = time.time()
     run_hard.run([f"docs/f{i}.md" for i in range(20)], checks=checks, root=tmp_path, baseline={}, skips=set())
     assert time.time() - t0 < 5.0
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# §44 — RATCHET THEO-FILE ở chế độ --staged
+# ─────────────────────────────────────────────────────────────────────────
+# Lỗ hổng: `--staged` chỉ đếm trong FILE ĐANG STAGED nhưng so với baseline TOÀN
+# KHO. Với rule có baseline > 0 thì tập con gần như luôn nhỏ hơn tổng, nên phép
+# so ấy KHÔNG BAO GIỜ đỏ được — hook chỉ thực sự canh được rule baseline = 0.
+#
+# Đo được hậu quả 2026-08-27: một hàm complexity 21 commit qua hook trót lọt,
+# chỉ `--all` mới bắt (R20.8 48 > 47).
+
+import subprocess  # noqa: E402
+
+
+def _git(tmp_path, *args):
+    return subprocess.run(["git", *args], cwd=str(tmp_path), capture_output=True, text=True)
+
+
+def _repo(tmp_path, rel, noi_dung):
+    """Kho git tí hon với một commit gốc."""
+    _git(tmp_path, "init", "-q")
+    _git(tmp_path, "config", "user.email", "t@t.t")
+    _git(tmp_path, "config", "user.name", "t")
+    _mk(tmp_path, rel, noi_dung)
+    _git(tmp_path, "add", "-A")
+    _git(tmp_path, "commit", "-q", "-m", "goc")
+
+
+def test_theo_file_bat_duoc_no_moi_du_baseline_lon(tmp_path):
+    """Ca mà phép so cũ mù: thêm 1 vi phạm trong khi baseline toàn kho là 99."""
+    _repo(tmp_path, "docs/a.md", "MEH\n")
+    _mk(tmp_path, "docs/a.md", "MEH\nMEH\n")          # 1 -> 2 vi phạm
+    check = _soft_ratchet_check(tmp_path)
+    code, msgs = run_hard.run(["docs/a.md"], checks=[check], root=tmp_path,
+                              baseline={"RX.2": 99}, skips=set())
+    assert code == 1, "phải CHẶN: file này vừa tăng từ 1 lên 2 vi phạm"
+    assert any("theo-file" in m for m in msgs), msgs
+
+
+def test_theo_file_cho_qua_khi_no_GIAM(tmp_path):
+    _repo(tmp_path, "docs/a.md", "MEH\nMEH\nMEH\n")
+    _mk(tmp_path, "docs/a.md", "MEH\n")               # 3 -> 1
+    code, msgs = run_hard.run(["docs/a.md"], checks=[_soft_ratchet_check(tmp_path)],
+                              root=tmp_path, baseline={"RX.2": 99}, skips=set())
+    assert code == 0, msgs
+
+
+def test_theo_file_cho_qua_khi_KHONG_DOI(tmp_path):
+    _repo(tmp_path, "docs/a.md", "MEH\nxin chao\n")
+    _mk(tmp_path, "docs/a.md", "MEH\ntam biet\n")     # sửa nội dung, nợ giữ nguyên
+    code, msgs = run_hard.run(["docs/a.md"], checks=[_soft_ratchet_check(tmp_path)],
+                              root=tmp_path, baseline={"RX.2": 99}, skips=set())
+    assert code == 0, msgs
+
+
+def test_file_MOI_mang_no_van_bi_tinh_la_tang(tmp_path):
+    """File chưa có ở HEAD => HEAD coi như 0 vi phạm. Không có nhánh này thì chỉ
+    cần tạo file mới là nhét được nợ vào mà cổng im."""
+    _repo(tmp_path, "docs/a.md", "sach\n")
+    _mk(tmp_path, "docs/moi.md", "MEH\n")
+    code, msgs = run_hard.run(["docs/moi.md"], checks=[_soft_ratchet_check(tmp_path)],
+                              root=tmp_path, baseline={"RX.2": 99}, skips=set())
+    assert code == 1, "file mới mang nợ phải bị chặn"
+
+
+def test_theo_file_KHONG_ap_cho_rule_baseline_0(tmp_path):
+    """Baseline = 0 thì phép so cũ đã đủ và chính xác; chạy thêm là phí và có thể
+    nói hai lần cùng một chuyện."""
+    _repo(tmp_path, "docs/a.md", "sach\n")
+    _mk(tmp_path, "docs/a.md", "MEH\n")
+    code, msgs = run_hard.run(["docs/a.md"], checks=[_soft_ratchet_check(tmp_path)],
+                              root=tmp_path, baseline={"RX.2": 0}, skips=set())
+    assert code == 1
+    assert not any("theo-file" in m for m in msgs), "không được nhân đôi thông báo"
+
+
+def test_skip_soft_van_ap_duoc_cho_theo_file(tmp_path):
+    _repo(tmp_path, "docs/a.md", "MEH\n")
+    _mk(tmp_path, "docs/a.md", "MEH\nMEH\n")
+    code, msgs = run_hard.run(["docs/a.md"], checks=[_soft_ratchet_check(tmp_path)],
+                              root=tmp_path, baseline={"RX.2": 99}, skips={"RX.2"})
+    assert code == 0
+    assert any("SKIPPED" in m for m in msgs), msgs
