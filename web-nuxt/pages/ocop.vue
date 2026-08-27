@@ -294,7 +294,8 @@ const relatedCatalogs = computed(() => [
 // `parseInt(attributes.ocop)` cũ trả 0 cho gần như mọi sản phẩm: `ocop` là văn
 // xuôi ("OCOP 3 sao"), không phải số. Hậu quả đo được trên trang đang chạy: sổ
 // vinh danh 3 sản phẩm thay vì 77, dải "Bậc 5 sao" không render, triện son khai
-// ★4 dù dữ liệu có 5 sản phẩm 5 sao. Luật đầy đủ + bộ lọc §1.7: ~/utils/ocop.ts
+// hạng 4 dù dữ liệu có 5 sản phẩm 5 sao. Luật đầy đủ + bộ lọc §1.7:
+// ~/utils/ocop.ts
 function getStars(e: Entity): number {
   return ocopStars(e)
 }

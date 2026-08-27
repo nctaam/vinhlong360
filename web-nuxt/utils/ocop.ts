@@ -5,7 +5,8 @@
 // do). Trang /ocop trước đây chỉ đọc `parseInt(attributes.ocop)`, mà `ocop` là
 // câu chữ chứ không phải số — nên `parseInt('OCOP 3 sao')` = NaN → 0. Hậu quả đo
 // được trên trang đang chạy: sổ vinh danh hiện 3 sản phẩm thay vì 77, dải "Bậc 5
-// sao" KHÔNG render, triện son khai ★4 trong khi dữ liệu có 5 sản phẩm 5 sao.
+// sao" KHÔNG render, triện son khai hạng 4 trong khi dữ liệu có 5 sản phẩm
+// 5 sao.
 //
 // Chuẩn hoá DỮ LIỆU (gộp 4 khoá về 1) là task riêng cần backup B1 + chỉ đạo chủ
 // dự án. Ở đây chỉ sửa BÊN ĐỌC cho chịu được cả bốn kiểu — additive-first (B2),
