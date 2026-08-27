@@ -21,6 +21,11 @@ export const FEATURE_FLAGS: FeatureFlag[] = [
   { key: 'reviews', label: 'Đánh giá địa điểm', description: 'Khối đánh giá của người dùng ở trang chi tiết', default: true, group: 'Cộng đồng' },
   { key: 'nearby', label: 'Địa điểm lân cận', description: 'Khối gợi ý địa điểm gần đó ở trang chi tiết', default: true, group: 'Khám phá' },
   { key: 'onboarding', label: 'Hướng dẫn lần đầu', description: 'Bảng chào mừng hiện cho khách lần đầu truy cập', default: true, group: 'Khám phá' },
+  // default:false CÓ CHỦ ĐÍCH — mục mới phải được bật TAY từ AdminCP. Cờ chưa
+  // nằm trong ESTABLISHED nên resolveFeatureFlag bỏ qua `default` và trả false
+  // cho tới khi có override; đó là đường lùi 10 giây không cần deploy, quan
+  // trọng vì máy chủ KHÔNG giữ bản N-1 (installer xoá hẳn bản cũ).
+  { key: 'home_product_lead', label: 'Tin chính đặc sản', description: 'Mục điểm dừng đặc sản trên trang chủ (một sản phẩm dựng lớn theo tháng)', default: false, group: 'Khám phá' },
   { key: 'preference_ui_v1', label: 'Thiết lập khu vực & sở thích', description: 'Lớp thiết lập cá nhân hóa NP-1 trong onboarding và cài đặt', default: false, group: 'Cá nhân hóa' },
   { key: 'recommendation_explanations_v1', label: 'Giải thích đề xuất', description: 'Nút Vì sao gợi ý này và ngăn điều khiển đề xuất', default: false, group: 'Cá nhân hóa' },
   { key: 'trust_drawer_v1', label: 'Ngăn nguồn & độ tin cậy', description: 'Disclosure nguồn dữ liệu ở trang chi tiết địa điểm', default: false, group: 'Tin cậy' },

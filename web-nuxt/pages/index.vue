@@ -54,6 +54,19 @@
       />
     </div>
 
+    <HomeProductLead
+      v-if="showProductLead"
+      :scale-line="productLeadScale"
+      scale-note="Con số lấy từ dữ liệu, cập nhật theo kho"
+      eyebrow="Đề cử của ban biên tập"
+      :title="productLead.name"
+      :summary="productLead.summary"
+      :region="productLeadRegion"
+      :descriptor="productLeadDescriptor"
+      :disclosure-id="productLeadDisclosureId"
+      :detail-to="`/dia-diem/${productLead.id}`"
+    />
+
     <!-- Degraded/empty fallback -->
     <section v-if="homeFailed" class="block reveal" data-home-section="recovery">
       <EmptyState :tone="homeError ? 'error' : 'empty'" title="Đang cập nhật nội dung" :message="homeError ? 'Mạng chậm một chút rồi. Bạn thử tải lại giúp tụi mình nhé!' : 'Tụi mình đang bổ sung điểm đến và đặc sản cho khu vực này. Quay lại sau nhé!'">
@@ -291,6 +304,7 @@ import HomeCategoryIndex from '~/components/home/HomeCategoryIndex.vue'
 import HomeDecisionLedger from '~/components/home/HomeDecisionLedger.vue'
 import HomeFeatureDossier from '~/components/home/HomeFeatureDossier.vue'
 import HomeLocalBriefing from '~/components/home/HomeLocalBriefing.vue'
+import HomeProductLead from '~/components/home/HomeProductLead.vue'
 import ImageDisclosure from '~/components/ImageDisclosure.vue'
 import { describeEntityImages, describeEntityPlaceholder } from '~/utils/imageDescriptors'
 import { createHomeNocturnePresentation } from '~/utils/homeNocturnePresentation'
@@ -425,6 +439,39 @@ const heroFeatureReason = computed(() => {
 const masthead = computed(() => homeData.value?.masthead || null)
 const mastheadSolar = computed(() => masthead.value?.solar_label || '')
 const mastheadLunar = computed(() => masthead.value?.lunar_label || '')
+
+// ── Tin chính đặc sản (điểm dừng thị giác 2) ────────────────────────────
+// Cờ home_product_lead mặc định TẮT: mục mới phải bật tay từ AdminCP, và tắt
+// lại trong 10 giây nếu hỏng — máy chủ KHÔNG giữ bản N-1 nên đây là đường lùi
+// duy nhất không cần deploy.
+const productLead = computed<any>(() => homeData.value?.product_lead || null)
+const productsTotal = computed<number | null>(() => homeData.value?.products_total ?? null)
+
+// Descriptor tính Ở ĐÂY rồi truyền xuống component qua prop. Cổng R20.10 chỉ
+// đỏ khi mã tự đọc trường ảnh thô của entity; uỷ quyền cho describeEntityImages
+// thì sạch (đã kiểm bằng thực nghiệm: đọc thô = 2 finding, uỷ quyền = 0).
+// LƯU Ý cho người sửa sau: checker là bộ SO CHUỖI, nó bắt cả câu bình luận —
+// đừng viết tên trường đó ra đây, kể cả để giải thích cách tránh nó (§5c).
+const productLeadDescriptor = computed<ImageDescriptor>(() => {
+  const e = productLead.value
+  if (!e) return describeEntityPlaceholder({ name: 'Đặc sản' })
+  return describeEntityImages(e)[0] || describeEntityPlaceholder(e)
+})
+const productLeadDisclosureId = `home-product-lead-${useId().replace(/[^A-Za-z0-9_-]+/g, '-')}`
+const productLeadRegion = computed(() => {
+  const e = productLead.value
+  const a = e?.place?.name || e?.attributes?.ward || e?.attributes?.place_name
+  return a ? String(a) : ''
+})
+// Con số render TỪ PAYLOAD, không viết cứng — số xã/phường lấy từ chính
+// area_counts nếu có, không bịa hằng số.
+const productLeadScale = computed(() => {
+  const n = productsTotal.value
+  return n ? `${n} đặc sản Vĩnh Long` : 'Đặc sản Vĩnh Long'
+})
+// Mục chỉ hiện khi CÓ CỜ và CÓ DỮ LIỆU — thiếu một trong hai thì khuyết êm,
+// không để lại khung rỗng hay nhãn treo.
+const showProductLead = computed(() => ff('home_product_lead') && !!productLead.value)
 
 const areaCounts = computed<Record<string, number>>(() => homeData.value?.area_counts || {})
 

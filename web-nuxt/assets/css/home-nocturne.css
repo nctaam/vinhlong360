@@ -857,3 +857,203 @@
   color: var(--color-brand);
   font-weight: var(--weight-semibold);
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   B2 — TIN CHÍNH ĐẶC SẢN (điểm dừng thị giác 2)
+   ═══════════════════════════════════════════════════════════════════
+   Nằm giữa hai dải --bg-alt (mục lục và tín hiệu) và giữ NỀN CANVAS —
+   chính nó là thứ tách hai dải đó ra, biến "một dải dài" thành nhịp
+   đặc–thở thật. Đây là lý do A1 để lại ghi chú "nhịp chưa hoàn chỉnh".
+
+   Ảnh là mảng màu lớn duy nhất dưới fold. Đặt trên canvas chứ không
+   trên dải: gradient/ảnh sản phẩm cùng họ giấy kem, sống nhờ chênh
+   lệch sắc độ; đặt lên nền có tint là tự cắt mất một bậc tương phản.
+
+   CSS ở ĐÂY chứ không phải <style scoped> của component: (1) bộ ba
+   file ngân sách màu đã có tên home-nocturne.css nên không phải chạm
+   file nào trong đó; (2) installHomepageStyles chỉ nạp CSS toàn cục +
+   style của index.vue, nên scoped style sẽ VÔ HÌNH với test thị giác. */
+
+[data-home-pilot="nocturne-b1"] .home-product-lead {
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: var(--space-5);
+  padding-block: var(--space-10);
+}
+
+[data-home-pilot="nocturne-b1"] .home-product-lead__dept {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--color-action);
+}
+
+/* Con số quy mô: bậc 3xl, KHÔNG 4xl. h1 hero cap 64px, nên 4xl (56px) cho tỉ
+   lệ 1,14 — dưới ngưỡng phân bậc thị giác, hai giọng lớn nhất trang thành
+   "cùng cỡ mà lệch". 3xl (48px) cho 1,33, đúng bậc. */
+[data-home-pilot="nocturne-b1"] .home-product-lead__scale {
+  margin: 0;
+  font-family: var(--font-editorial);
+  font-size: var(--text-3xl);
+  line-height: var(--leading-snug);
+  text-wrap: balance;
+  position: relative;
+  padding-inline-start: var(--space-4);
+}
+
+[data-home-pilot="nocturne-b1"] .home-product-lead__scale::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block: .12em .12em;
+  inline-size: 5px;
+  border-radius: var(--radius-full);
+  background: var(--sediment-tick);
+}
+
+[data-home-pilot="nocturne-b1"] .home-product-lead__note {
+  margin: var(--space-1) 0 0 var(--space-4);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* Hai cột CHỈ từ 900px: dưới ngưỡng đó cột chữ hẹp tới mức tên sản phẩm và
+   summary đều gãy dòng xấu — đo được dải hỏng [768,900) nên không dùng mốc
+   768 quen thuộc. */
+[data-home-pilot="nocturne-b1"] .home-product-lead__body {
+  display: grid;
+  gap: var(--space-6);
+  margin-block-start: var(--space-6);
+}
+
+@media (min-width: 900px) {
+  [data-home-pilot="nocturne-b1"] .home-product-lead__body {
+    grid-template-columns: 1.5fr 1fr;
+    align-items: start;
+  }
+}
+
+/* Passe-partout: ảnh NGỒI TRONG tấm lót thay vì lơ lửng sau một viền 1px.
+   Đây là cách bản sáng học lại hiệu ứng "hộp đèn" mà bản tối vốn có sẵn. */
+[data-home-pilot="nocturne-b1"] .home-product-lead__matte {
+  margin: 0;
+  padding: var(--space-3) var(--space-3) var(--space-2);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-surface);
+}
+
+[data-home-pilot="nocturne-b1"] .home-product-lead__media {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+}
+
+[data-home-pilot="nocturne-b1"] .home-product-lead__media img {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;          /* BẮT BUỘC: thuộc tính height của <img> thắng
+                                aspect-ratio CSS nếu height không phải auto */
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+[data-home-pilot="nocturne-b1"] .home-product-lead__media--empty {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  background: var(--color-surface-raised);
+  color: var(--color-text-muted);
+}
+
+[data-home-pilot="nocturne-b1"] .home-product-lead__caption {
+  margin-block-start: var(--space-2);
+  font-size: var(--text-2xs);
+  color: var(--color-text-muted);
+}
+
+[data-home-pilot="nocturne-b1"] .home-product-lead__eyebrow {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--color-action);
+}
+
+[data-home-pilot="nocturne-b1"] .home-product-lead__name {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-editorial);
+  font-size: var(--text-2xl);
+  line-height: var(--leading-snug);   /* sàn 1.3: dấu chồng tiếng Việt cần
+                                         1,271em, thấp hơn là hai dòng chạm nhau */
+  text-wrap: balance;
+}
+
+[data-home-pilot="nocturne-b1"] .home-product-lead__rule {
+  display: block;
+  inline-size: 52px;
+  block-size: 3px;
+  margin-block-end: var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--sediment-tick);
+}
+
+/* Kẹp 2 dòng (3 dòng khi xếp dọc, vì cột rộng hơn nên mỗi dòng chứa ít ý hơn).
+   Chữ đầy đủ vẫn ở trong DOM cho trình đọc màn hình. */
+[data-home-pilot="nocturne-b1"] .home-product-lead__summary {
+  margin: 0 0 var(--space-3);
+  max-inline-size: var(--measure-read);
+  color: var(--color-text-muted);
+  line-height: var(--leading-relaxed);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (min-width: 900px) {
+  [data-home-pilot="nocturne-b1"] .home-product-lead__summary {
+    -webkit-line-clamp: 2;
+  }
+}
+
+[data-home-pilot="nocturne-b1"] .home-product-lead__region {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+[data-home-pilot="nocturne-b1"] .home-product-lead__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-block-size: var(--touch-min);
+  font-weight: var(--weight-bold);
+  color: var(--color-action);
+  text-decoration: none;
+}
+
+[data-home-pilot="nocturne-b1"] .home-product-lead__arrow {
+  display: inline-block;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-home-pilot="nocturne-b1"] .home-product-lead__arrow {
+    transition: transform 160ms var(--ease-out);
+  }
+  [data-home-pilot="nocturne-b1"] .home-product-lead__cta:hover .home-product-lead__arrow {
+    transform: translateX(3px);
+  }
+}
+
+/* Chế độ tối: ghìm ảnh thật để nó không thành đèn pha. Ảnh AI của dự án chụp
+   nền sáng, đặt trên canvas L*4,7 thì đo được 13–16,6:1 — sáng hơn mọi thứ
+   khác trên trang và cướp ngôi điểm dừng của hero. */
+.dark [data-home-pilot="nocturne-b1"] .home-product-lead__media img {
+  filter: brightness(.86);
+}
