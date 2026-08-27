@@ -473,38 +473,6 @@ _IS_PROD = os.environ.get("ENVIRONMENT", "development").strip().lower() == "prod
 # Xem docs/2026-08-27-ban-do-module-de-xuat.md.
 from http_errors import _error_response  # noqa: F401  (14 nơi trong file này dùng)
 
-# ── SHIM TUONG THICH sau khi boc chat (2026-08-27) ───────────────────
-# 27 ten duoi day server.py KHONG con dung — ma dung chung da sang
-# agent/chat/. Nhung bo test hien co va vao `server.<ten>` de cai ban gia,
-# nen go chung di lam 110 bai do bang AttributeError. Do la NO: dung cach la
-# di chuyen dich va cua test sang `chat.api`, roi go khoi nay.
-# Xem docs/ROADMAP.md muc "boc chat".
-import anyio  # noqa: F401
-import hashlib  # noqa: F401
-from contextvars import ContextVar  # noqa: F401
-from functools import wraps  # noqa: F401
-from fastapi.responses import StreamingResponse  # noqa: F401
-from agentic_rag import build_rag_context  # noqa: F401
-from chat_usage import UsageAccumulator  # noqa: F401
-from feedback_policy import issue_feedback_receipt  # noqa: F401
-from index_policy import is_publicly_eligible  # noqa: F401
-from itinerary_gen import generate_itinerary  # noqa: F401
-from memory import UnknownConversation  # noqa: F401
-from middleware import stream_limiter  # noqa: F401
-from ocop import is_ocop_certified, ocop_display_label, ocop_tier  # noqa: F401
-from owner_write_gate import owner_write_gate  # noqa: F401
-from privacy_boundary import (  # noqa: F401
-    PrivacyBoundaryBlocked,
-    PrivacyBoundaryUnavailable,
-    SafeText,
-    StreamingPIIRedactor,
-    prepare_chat_input,
-    prepare_chat_output,
-    redact_payload,
-    redact_text,
-)
-from proactive import get_proactive_context  # noqa: F401
-from tools import SYSTEM_PROMPT, TOOLS  # noqa: F401
 
 app = FastAPI(
     title="vinhlong360 Knowledge Agent",

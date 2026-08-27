@@ -103,7 +103,7 @@ def _configure_provider_chat(monkeypatch, tmp_path, prompt_cache_enabled, *, fai
     monkeypatch.setattr(chat_api, "resolve_chat_owner", resolve_owner, raising=False)
     monkeypatch.setattr(server, "resolve_chat_owner", resolve_owner, raising=False)
     monkeypatch.setattr(server.chat_limiter, "is_allowed", lambda _ip: (True, {}))
-    monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
+    monkeypatch.setattr(chat_api.stream_limiter, "is_allowed", lambda _ip: (True, {}))
     monkeypatch.setattr(chat_api, "HAS_GUARDRAILS", False)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", False)
     monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", False)

@@ -3704,3 +3704,95 @@ exit 1. Hook mất **1,00s** (ngân sách <5s).
 **Giới hạn còn lại:** phép so theo-file chỉ thấy file ĐANG staged. Nợ chuyển từ
 file A sang file B trong hai commit khác nhau vẫn lọt. `--all` ở pre-merge mới
 bắt được chuyện đó — hai lớp bổ sung nhau, không thay nhau.
+
+### 45. Bóc `agent/chat/` — chi phí thật của một lát cắt module (2026-08-27)
+
+> STATUS: done — `server.py` 5.507 → 2.615 dòng. Con số quan trọng nhất KHÔNG
+> phải số dòng dời, mà là **346 điểm vá trong bộ test**. Đọc §45.2 trước khi
+> quyết định làm module thứ hai.
+
+#### 45.1 Ranh giới được TÍNH, không đoán
+
+Bao đóng bắc cầu từ 5 hạt giống (`chat`, `chat_stream`, `_run_agent`,
+`ChatRequest`, `ChatResponse`): thêm dần mọi ký hiệu mà MỌI nơi gọi đều đã nằm
+trong tập.
+
+Lần một ra **58 ký hiệu** — SAI. Tôi chỉ coi hàm/lớp là nút của đồ thị, nên hàm
+chỉ được một **gán mức module** tham chiếu (`_TOOL_HANDLERS` là một dict) không
+bao giờ bị kéo vào. Tính cả gán mức module: **108 ký hiệu**, kiểm chéo 0 rò rỉ.
+
+Kèm hai module dùng chung, tách vì CẢ HAI bên đều đọc — không tách thì chat phải
+import ngược server, tức vòng:
+
+| module | nội dung | vì sao dùng chung |
+|---|---|---|
+| `agent/features.py` | 26 khối dò `HAS_*` (121 ký hiệu) | server và chat cùng đọc cờ |
+| `agent/http_errors.py` | `_error_response` | đo được **14** nơi ngoài chat gọi |
+
+#### 45.2 CHI PHÍ THẬT NẰM Ở TEST — đây là con số cần nhớ
+
+Dời 2.856 dòng mã là phần dễ. Phần đắt:
+
+> **346 điểm vá trên 40 tên, trong 9 file test.**
+
+`monkeypatch.setattr(server, "X")` chỉ ràng buộc lại tên trong namespace
+`server`; thân hàm đã dời tra cứu global trong namespace `chat.api`, nên bản giả
+KHÔNG ăn — test gọi LLM **thật**, mỗi lượt 6 phút, rồi đỏ. Đi qua tám vòng mới
+hội tụ: **83/119 → 172/30 → 198/4 → 202/0**.
+
+**Suy ra cho module tiếp theo:** ước lượng một lát cắt bằng "bao nhiêu dòng dời"
+là ước lượng sai đại lượng. Đại lượng đúng là **bao nhiêu điểm vá của test bám
+vào namespace cũ**. Đo nó TRƯỚC khi cam kết:
+
+```
+grep -rE 'setattr\(\s*server|patch\.object\(\s*server|patch\("server\.' agent/tests/
+```
+
+#### 45.3 Rào quét-mã-nguồn là loại nguy hiểm nhất
+
+Sáu bài ghim cứng `agent/server.py` để soi mã chat. Chúng đỏ **không phải vì mã
+sai** mà vì không còn soi vào đâu cả. Nếu chúng trả rỗng thay vì ném lỗi, chúng
+đã **XANH trong khi mất tác dụng hoàn toàn** — và tôi commit tưởng mọi thứ ổn.
+Lần thứ ba trong phiên gặp lớp lỗi này: *một rào bị tháo răng thì không kêu.*
+
+`_handler_source` nay tìm ở cả hai cây và **ném lỗi rõ ràng** khi không thấy.
+
+#### 45.4 Ba lỗi tôi tự gây trong lúc sửa
+
+1. Gỡ 27 import "thừa" theo lời ruff → **110 bài đỏ**. Chúng không chết: chúng là
+   BỀ MẶT VÁ của test. (Đã trả xong nợ này ngay sau đó — xem §45.6.)
+2. Script "vá cả hai" chèn vào giữa lời gọi NHIỀU DÒNG → hỏng cú pháp 6 file.
+3. Ba lần thay-thế-toàn-file rồi phải hoàn nguyên. Mẫu số chung: **thay theo
+   CHUỖI KHỚP thay vì theo PHẠM VI HÀM**. Lần nào thu hẹp về đúng hàm mới sạch.
+
+#### 45.5 Cú bóc phơi ra hai lỗ cổng — đã vá
+
+- **R20.5** xét TỪNG FILE, nên một route **DỜI** (xoá ở A, thêm y hệt ở B trong
+  cùng commit) bị đọc thành "đã xoá mà hợp đồng còn mô tả". Nay gộp diff cả
+  commit rồi trừ phần giao = DỜI. Cùng lớp lỗi với §44.
+- **R20.7** lấy `Path(...).stem`, nên `agent/chat/__init__.py` ra `__init__` và
+  **MỌI gói Python đều trượt** dù có test đầy đủ. `agent/cases/` cũng dính. Nay
+  lấy tên thư mục gói.
+
+#### 45.6 Nợ đã trả ngay trong ngày
+
+Khối shim 27 import trong `server.py` (tồn tại chỉ để test vá được) **đã gỡ**:
+chuyển nốt 24 tham chiếu còn lại sang `chat.api`. Trong đó một ca không phép
+thay-chuỗi nào chạm tới được — `getattr(server, limiter_name)` **tra cứu động
+theo tên tham số**. Giới hạn của việc viết lại tĩnh, ghi lại để lần sau tìm
+bằng tay.
+
+#### 45.7 Đo trước hai ứng viên tiếp theo — thứ tự ưu tiên ĐẢO so với đề xuất ban đầu
+
+Áp phép đo §45.2 (điểm vá của test vào namespace nguồn):
+
+| ứng viên | dòng dời (bao đóng) | điểm vá test | phán quyết |
+|---|---:|---:|---|
+| `llmops/` (42 handler `/system` `/checkpoints` `/vectors` `/freshness` `/analytics`) | 47 ký hiệu / 425 dòng, 0 rò rỉ | **2 điểm / 1 file** | **rẻ nhất — lát cắt tiếp theo nếu cần** |
+| `notifications.py` thành gói | đã một-file | **1 điểm** | gần miễn phí |
+| `seo.py` thành gói | đã một-file | 48 / 3 file | vừa |
+| `entities/` (public_api+admin) | chưa tính | 124+69 (cận trên) | đợi khi thật cần |
+| `identity/` (auth…) | chưa tính | **164 / 11 file** (cận trên) | ĐẮT NHẤT — từng bị tôi xếp ĐẦU vì đếm route |
+
+Bài học giữ nguyên: xếp ưu tiên theo SỐ ROUTE là sai thước đo — `identity/` nhiều
+route nhất (73) nhưng đắt nhất; `llmops/` 28 route mà gần như miễn phí.

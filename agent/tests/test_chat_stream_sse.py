@@ -254,7 +254,7 @@ def _configure_usage_stream(monkeypatch, create):
     monkeypatch.setattr(server, "_draining", False)
     monkeypatch.setattr(chat_api, "resolve_chat_owner", resolve_owner, raising=False)
     monkeypatch.setattr(server, "resolve_chat_owner", resolve_owner, raising=False)
-    monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
+    monkeypatch.setattr(chat_api.stream_limiter, "is_allowed", lambda _ip: (True, {}))
     monkeypatch.setattr(chat_api, "HAS_GUARDRAILS", True)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", True)
     monkeypatch.setattr(chat_api, "HAS_COST_TRACKER", True)

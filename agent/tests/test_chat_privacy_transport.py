@@ -122,7 +122,7 @@ def _capture_receipts(monkeypatch, token="test-feedback-receipt"):
 
     monkeypatch.setattr(chat_api, "issue_feedback_receipt", issue, raising=False)
 
-    monkeypatch.setattr(server, "issue_feedback_receipt", issue, raising=False)
+    monkeypatch.setattr(chat_api, "issue_feedback_receipt", issue, raising=False)
     return calls
 
 
@@ -151,7 +151,7 @@ def _configure_chat(monkeypatch, tmp_path):
     monkeypatch.setattr(chat_api, "resolve_chat_owner", resolve_owner, raising=False)
     monkeypatch.setattr(server, "resolve_chat_owner", resolve_owner, raising=False)
     monkeypatch.setattr(server.chat_limiter, "is_allowed", lambda _ip: (True, {}))
-    monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
+    monkeypatch.setattr(chat_api.stream_limiter, "is_allowed", lambda _ip: (True, {}))
     monkeypatch.setattr(chat_api, "HAS_GUARDRAILS", False)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", False)
     monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", False)
@@ -709,7 +709,7 @@ def test_feedback_receipt_helper_failure_is_best_effort_and_logs_stable_code(
 
     monkeypatch.setattr(chat_api, "issue_feedback_receipt", unavailable, raising=False)
 
-    monkeypatch.setattr(server, "issue_feedback_receipt", unavailable, raising=False)
+    monkeypatch.setattr(chat_api, "issue_feedback_receipt", unavailable, raising=False)
 
     with caplog.at_level("WARNING"):
         result = server._issue_delivered_feedback_receipt(
@@ -755,7 +755,7 @@ async def test_stream_redactor_error_emits_generic_error_and_writes_nothing(
 
     monkeypatch.setattr(chat_api, "StreamingPIIRedactor", ExplodingRedactor, raising=False)
 
-    monkeypatch.setattr(server, "StreamingPIIRedactor", ExplodingRedactor, raising=False)
+    monkeypatch.setattr(chat_api, "StreamingPIIRedactor", ExplodingRedactor, raising=False)
     monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", True)
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
     monkeypatch.setattr(chat_api, "semantic_get_async", semantic_miss)
@@ -864,7 +864,7 @@ def test_stream_cancellation_aborts_withheld_suffix_and_skips_sinks(
 
     monkeypatch.setattr(chat_api, "StreamingPIIRedactor", WithholdingRedactor, raising=False)
 
-    monkeypatch.setattr(server, "StreamingPIIRedactor", WithholdingRedactor, raising=False)
+    monkeypatch.setattr(chat_api, "StreamingPIIRedactor", WithholdingRedactor, raising=False)
     monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", True)
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
     monkeypatch.setattr(chat_api, "semantic_get_async", semantic_miss)
@@ -989,7 +989,7 @@ async def test_boundary_failure_stops_all_content_consumers(
 
     monkeypatch.setattr(chat_api, "prepare_chat_input", boundary_call)
 
-    monkeypatch.setattr(server, "prepare_chat_input", boundary_call)
+    monkeypatch.setattr(chat_api, "prepare_chat_input", boundary_call)
     monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", True)
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
     monkeypatch.setattr(chat_api, "semantic_get_async", forbidden)
@@ -1001,7 +1001,7 @@ async def test_boundary_failure_stops_all_content_consumers(
     monkeypatch.setattr(manager, "on_message", forbidden)
     monkeypatch.setattr(manager, "on_chat_complete", forbidden)
     monkeypatch.setattr(chat_api, "issue_feedback_receipt", receipt_issue, raising=False)
-    monkeypatch.setattr(server, "issue_feedback_receipt", receipt_issue, raising=False)
+    monkeypatch.setattr(chat_api, "issue_feedback_receipt", receipt_issue, raising=False)
     transport = httpx.ASGITransport(app=server.app)
 
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:

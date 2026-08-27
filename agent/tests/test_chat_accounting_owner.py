@@ -62,7 +62,7 @@ def test_post_admission_and_settlement_share_owner_across_conversation_rotation(
     admitted = []
     settled = []
     attributed = []
-    real_prepare = server.prepare_chat_input
+    real_prepare = chat_api.prepare_chat_input
 
     def prepare(message, history, *, owner_key):
         admitted.append(owner_key)
@@ -89,7 +89,7 @@ def test_stream_admission_and_settlement_share_owner_across_conversation_rotatio
     settled = []
     attributed = []
     history = [{"role": "user", "content": "prior"}]
-    real_prepare = server.prepare_chat_input
+    real_prepare = chat_api.prepare_chat_input
 
     def prepare(message, supplied_history, *, owner_key):
         admitted.append(owner_key)
