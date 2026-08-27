@@ -217,3 +217,100 @@ def test_mang_set_luon_du_hai_truong():
     m = _build_masthead(_vn(2026, 8, 27, 3, 0))
     assert set(m) == {"solar_label", "lunar_label"}
     assert all(isinstance(v, str) and v for v in m.values())
+
+
+# ── «Tin chính đặc sản»: luật chọn phải TẤT ĐỊNH và sạch §1.6 ───────────────
+# Mục này là điểm dừng thị giác thứ 2 của trang chủ. Nó phải đứng yên suốt
+# tháng (không lật theo lượt bấm) và không bao giờ đưa lên trần một entity gọi
+# tên tỉnh cũ như đang tồn tại.
+
+from public_api import (  # noqa: E402
+    _has_stale_geography,
+    _lead_rank_key,
+    _product_lead_eligible,
+    _select_product_lead,
+)
+
+
+def _sp(eid, name="Sản phẩm thử", summary=None, **kw):
+    """Product hợp lệ tối thiểu: có ảnh, summary trong khoảng, tên đủ ngắn."""
+    e = {
+        "id": eid, "type": "product", "name": name,
+        "summary": summary if summary is not None else ("x" * 150),
+        "images": ["/img/entities/" + eid + ".webp"],
+        "attributes": {},
+    }
+    e.update(kw)
+    return e
+
+
+def test_lead_loai_entity_to_chuc_bang_id():
+    """Blocklist khoá bằng ID: regex tên bắt hụt tên lai và giết oan tên hợp lệ."""
+    to_chuc = _sp("cua-hang-ocop-vung-liem", name="Cửa hàng OCOP Vũng Liêm")
+    assert _product_lead_eligible(to_chuc) is False
+    # Ngược lại: sản phẩm có nhắc HTX trong summary vẫn hợp lệ.
+    sp = _sp("ca-phi-thu", summary="Sản phẩm do HTX Thủy sản sinh thái sản xuất. " + "x" * 100)
+    assert _product_lead_eligible(sp) is True
+
+
+def test_lead_chan_dia_danh_cu_nhung_cho_qua_khi_ghi_ro_cu():
+    assert _has_stale_geography({"name": "A", "summary": "đặc sản huyện Cầu Kè"}) is True
+    assert _has_stale_geography({"name": "A", "summary": "sản xuất tại Bến Tre"}) is True
+    # "(cũ)" là cách viết ĐÚNG chuẩn §1.6 — không được giết oan.
+    assert _has_stale_geography({"name": "A", "summary": "tại tỉnh Trà Vinh (cũ)"}) is False
+
+
+def test_lead_tat_dinh_khong_phu_thuoc_thu_tu_dau_vao():
+    pool = [_sp(f"sp-{i}", name=f"Sản phẩm {i}") for i in range(6)]
+    goc = [_select_product_lead(pool, m, set())["id"] for m in range(1, 13)]
+    for seed in range(3):
+        xao = pool[:]
+        __import__("random").Random(seed).shuffle(xao)
+        assert [_select_product_lead(xao, m, set())["id"] for m in range(1, 13)] == goc
+
+
+def test_lead_xoay_vong_theo_thang_khong_dung_yen_mot_entity():
+    pool = [_sp(f"sp-{i}", name=f"Sản phẩm {i}") for i in range(4)]
+    chon = {_select_product_lead(pool, m, set())["id"] for m in range(1, 13)}
+    assert len(chon) == 4, "kho 4 ứng viên thì 12 tháng phải chạm cả 4, không đứng yên một cái"
+
+
+def test_lead_ton_trong_exclude_ids_va_tra_none_khi_het_ung_vien():
+    pool = [_sp("chi-mot")]
+    assert _select_product_lead(pool, 5, set())["id"] == "chi-mot"
+    assert _select_product_lead(pool, 5, {"chi-mot"}) is None
+    assert _select_product_lead([], 5, set()) is None
+
+
+def test_lead_khoa_xep_hang_uu_tien_sao_ocop_roi_moi_toi_do_dai():
+    cao = _sp("cao", attributes={"ocop_star": 5}, summary="x" * 130)
+    thap = _sp("thap", attributes={"ocop_star": 3}, summary="x" * 390)
+    assert _lead_rank_key(cao) < _lead_rank_key(thap), "5 sao phải đứng trước 3 sao dù summary ngắn hơn"
+
+
+def test_lead_loai_ten_qua_dai_va_summary_ngoai_khoang():
+    assert _product_lead_eligible(_sp("a", name="x" * 43)) is False
+    assert _product_lead_eligible(_sp("b", summary="x" * 119)) is False
+    assert _product_lead_eligible(_sp("c", summary="x" * 401)) is False
+    assert _product_lead_eligible({**_sp("d"), "images": []}) is False
+
+
+# ── Hợp đồng API: HomepageResponse mang được hai trường mới ─────────────────
+# Import cấp module (không lồng trong hàm) — R20.7 ghép test↔module bằng AST
+# import, lời gọi lúc chạy thì cây cú pháp không thấy.
+import api_schemas  # noqa: E402
+
+
+def test_homepage_response_mang_duoc_tin_chinh_dac_san():
+    r = api_schemas.HomepageResponse(
+        product_lead={"id": "x", "name": "Thử"}, products_total=218,
+    )
+    assert r.product_lead["id"] == "x"
+    assert r.products_total == 218
+
+
+def test_homepage_response_hai_truong_moi_deu_khuyet_duoc():
+    """Payload cũ (không có hai trường) vẫn hợp lệ — thêm trường là ADDITIVE."""
+    r = api_schemas.HomepageResponse()
+    assert r.product_lead is None
+    assert r.products_total is None

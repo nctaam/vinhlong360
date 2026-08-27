@@ -3041,6 +3041,139 @@ def _homepage_cache_hit(month: int) -> dict | None:
     return None
 
 
+
+# ── «Tin chính đặc sản»: chọn MỘT sản phẩm dựng lớn cho trang chủ ──────────
+# Luật TẤT ĐỊNH, chạy từ dữ liệu — thay cho giả định "chủ dự án chọn tay
+# shortlist": AdminCP không có màn nào để chọn, nên chọn-tay nghĩa là mỗi lần
+# đổi tin chính phải sửa mã + deploy.
+#
+# KHÔNG gọi smart_score/_homepage_score: hai hàm đó cộng popularity_score()
+# đọc agent/data/analytics.json (smart_rank.py:145), biến động theo lượt bấm
+# và tự nạp lại mỗi 300s — tin chính sẽ lật giữa tháng. Bug đó VÔ HÌNH ở local
+# (chỉ 3 entity có hit) nhưng bonus tới +3.0 trên prod, thừa sức đảo thứ tự.
+# Mục nhạy-với-độ-quan-tâm đã có sẵn và đúng vai: trending[].
+
+_PRODUCT_LEAD_BLOCKLIST = frozenset({
+    # type=product nhưng thực chất là TỔ CHỨC / ĐIỂM BÁN — gắn nhầm type, không
+    # phải kiểm duyệt nội dung. Khoá bằng ID chứ không regex tên: regex bắt hụt
+    # tên lai ("Kẹo dừa Mỏ Cày (cơ sở Tuyết Phụng)"), mà nới regex thì giết oan
+    # "Cá phi sả ớt Thạnh Phước" (summary có nhắc HTX sản xuất).
+    "htx-thuy-san-sinh-thai-thanh-phuoc",
+    "cua-hang-ocop-vung-liem",
+    "diem-trung-bay-va-ban-san-pham-ocop-vinh-long-tai-ben-cang",
+    "diem-trung-bay-va-gioi-thieu-san-pham-ocop-vinh-long",
+    "hop-tac-xa-thuy-san-thanh-loi-ngheu-thanh-hai-ocop",
+    "hop-tac-xa-cam-phuong-thuy",
+    "keo-dua-mo-cay-co-so-tuyet-phung",
+    "rau-thom-ocop-hop-tac-xa-phuoc-hau",
+    "banh-trang-ngot-le-hang-htx-banh-trang-cu-lao-may",
+})
+
+_LEAD_MIN_SUMMARY = 120     # ngắn hơn thì khối dựng lớn trống trải
+_LEAD_MAX_SUMMARY = 400     # dài hơn thì kẹp 2 dòng cắt giữa ý
+_LEAD_MAX_NAME = 42         # dài hơn thì vỡ dòng ở cỡ chữ tin chính
+
+_RE_STALE_LEVEL = re.compile(r"\bhuyen\b", re.IGNORECASE)
+_RE_STALE_PROVINCE = re.compile(r"(ben\s*tre|tra\s*vinh)", re.IGNORECASE)
+_RE_HISTORICAL_MARKER = re.compile(r"\b(cu|truoc)\b", re.IGNORECASE)
+
+
+def _fold_ascii(value: str) -> str:
+    """Bỏ dấu để so chuỗi. Tách riêng đ/Đ vì NFD KHÔNG tách được chữ này."""
+    value = value.replace("đ", "d").replace("Đ", "D")
+    return "".join(c for c in unicodedata.normalize("NFD", value)
+                   if unicodedata.category(c) != "Mn")
+
+
+def _has_stale_geography(entity: dict) -> bool:
+    """§1.6: cấp 'huyện' đã bỏ, và tên tỉnh cũ gọi như đang tồn tại.
+
+    Cửa sổ ±40 ký tự quanh tên tỉnh để tìm dấu 'cũ'/'trước' là BẮT BUỘC, không
+    phải trang trí: "tỉnh Trà Vinh (cũ)" là cách viết ĐÚNG chuẩn và sẽ bị giết
+    oan nếu chỉ chặn chuỗi trần.
+    """
+    flat = _fold_ascii(f"{entity.get('name', '')} {entity.get('summary') or ''}")
+    if _RE_STALE_LEVEL.search(flat):
+        return True
+    for match in _RE_STALE_PROVINCE.finditer(flat):
+        window = flat[max(0, match.start() - 40): match.end() + 40]
+        if not _RE_HISTORICAL_MARKER.search(window):
+            return True
+    return False
+
+
+def _lead_ocop_star(entity: dict) -> int:
+    attrs = entity.get("attributes") or {}
+    for key in ("ocop_star", "ocop_stars", "ocop_rating"):
+        raw = attrs.get(key)
+        if isinstance(raw, (int, float)):
+            return int(raw)
+        if isinstance(raw, str):
+            digit = re.search(r"\d", raw)
+            if digit:
+                return int(digit.group(0))
+    return 1 if (attrs.get("ocop_certified") or attrs.get("ocop")) else 0
+
+
+def _lead_rank_key(entity: dict) -> tuple:
+    """Sao OCOP giảm dần → summary dài dần → id (khoá phá hoà, giữ tất định)."""
+    return (-_lead_ocop_star(entity),
+            -len((entity.get("summary") or "").strip()),
+            entity["id"])
+
+
+def _lead_is_year_round(entity: dict) -> bool:
+    """Cùng quy ước với _entity_in_season: months >= 11 nghĩa là quanh năm."""
+    season = entity.get("season")
+    months = (season.get("months") or []) if isinstance(season, dict) else []
+    return len(months) >= 11 or not months
+
+
+def _product_lead_eligible(entity: dict) -> bool:
+    if entity.get("type") != "product":
+        return False
+    if entity["id"] in _PRODUCT_LEAD_BLOCKLIST:
+        return False
+    if not _public_entity_has_media(entity):
+        return False
+    if _has_stale_geography(entity):
+        return False
+    if len(entity.get("name") or "") > _LEAD_MAX_NAME:
+        return False
+    summary_len = len((entity.get("summary") or "").strip())
+    return _LEAD_MIN_SUMMARY <= summary_len <= _LEAD_MAX_SUMMARY
+
+
+def _select_product_lead(public: list[dict], month: int,
+                         exclude_ids: set[str]) -> dict | None:
+    """MỘT sản phẩm dựng lớn cho mục «Tin chính đặc sản», hoặc None.
+
+    Cùng snapshot dữ liệu + cùng tháng ⇒ cùng kết quả, không phụ thuộc lượt
+    bấm, giờ chạy, hay thứ tự hàng DB trả về.
+
+    Mùa KHÔNG dùng làm điều kiện lọc mà làm THỨ TỰ ƯU TIÊN giữa ba túi: lọc
+    theo mùa cho 3/12 tháng rỗng lead, vì _entity_in_season trả False cho hàng
+    quanh năm (months >= 11) kể cả khi `peak` khớp tháng.
+
+    Vòng xoay theo tháng là thứ thay cho "chọn tay": kho ứng viên nhỏ (đo local:
+    218 product → 19 có ảnh → 9 đủ điều kiện) nên mọi khoá thuần-điểm đều
+    degenerate về một entity duy nhất suốt 12 tháng.
+    """
+    pool = [e for e in public
+            if _product_lead_eligible(e) and e["id"] not in exclude_ids]
+    if not pool:
+        return None
+    in_season = sorted((e for e in pool if _entity_in_season(e, month)),
+                       key=_lead_rank_key)
+    year_round = sorted((e for e in pool if _lead_is_year_round(e)),
+                        key=_lead_rank_key)
+    relaxed = sorted(pool, key=_lead_rank_key)
+    for ring in (in_season, year_round, relaxed):
+        if ring:
+            return ring[(month - 1) % len(ring)]
+    return None
+
+
 def _finalize_homepage_sections(sections: list[list[dict]], upcoming_events: list[dict]) -> None:
     for section in sections:
         for e in section:
@@ -3155,6 +3288,11 @@ async def _build_homepage_payload(month: int) -> dict:
     # Trending: entities with highest chat/search hit counts
     trending = _build_homepage_trending(public)
 
+    # Tin chính đặc sản: loại trùng seasonal[] và upcoming_events[] để mục này
+    # không nói lại thứ vừa hiện ngay trên nó.
+    product_lead = _select_product_lead(public, month, exclude_ids=seasonal_ids | upcoming_ids)
+    products_total = sum(1 for e in public if e.get("type") == "product")
+
     (
         seasonal,
         experiences,
@@ -3184,6 +3322,10 @@ async def _build_homepage_payload(month: int) -> dict:
         "upcoming_events": upcoming_events,
         "seasonal_tagline": seasonal_tagline,
         "masthead": _build_masthead(_today_vietnam()),
+        "product_lead": _project_public_entity_media(
+            {k: v for k, v in product_lead.items() if k != "_score"}
+        ) if product_lead else None,
+        "products_total": products_total,
     }
 
 

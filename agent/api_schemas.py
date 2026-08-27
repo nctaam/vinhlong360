@@ -211,6 +211,8 @@ class HomepageResponse(ApiModel):
     area_counts: dict | None = None
     month: int | None = None
     seasonal_tagline: str | None = None
+    product_lead: dict | None = None
+    products_total: int | None = None
 
 
 class IndexPolicyDecisionResponse(BaseModel):
