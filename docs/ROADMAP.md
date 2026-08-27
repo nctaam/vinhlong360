@@ -3396,3 +3396,56 @@ lazy. Nên câu hỏi thật không phải "cắt ở đâu" mà là:
 dự án chốt (§3.7: thao tác diện-rộng cần giải trình trong cùng commit). Trong lúc
 chờ, ngoại lệ R30.7 đã ghi sổ `90-exceptions-log.md`, và CI nay chạy test TRƯỚC
 cổng bundle nên nợ này không còn bịt miệng được test (§38.3).
+
+### 40. Nợ P0 pháp lý + hai bài học đo lường (2026-08-27)
+
+> STATUS: active — phần KHẢ KIẾN đã làm; hai đường xử lý thực chất chờ chủ dự án.
+
+#### 40.1 "Hứa xoá vĩnh viễn" mà không xoá — nay không còn vô hình
+
+Backlog 2026-08-22 xếp P0 và ghi đây là mục DUY NHẤT không nằm sau cờ. Kiểm lại
+2026-08-27: **còn đúng từng chi tiết**. Người dùng bấm "Lên lịch xoá" được trả
+lời «Tài khoản sẽ bị xoá vĩnh viễn sau N ngày», nhưng `_effective_erasure_audit_only()`
+trả True nếu THIẾU một trong hai cờ, và `erase_due_accounts` đếm hồ sơ quá hạn
+rồi thoát TRƯỚC vòng xoá — 288 lần/ngày.
+
+Đã làm (KHÔNG bật xoá thật — §4, thao tác phá dữ liệu, phải có chủ dự án):
+
+- `.env.example` khai hai khoá `ERASURE_*` (trước đây **không có khoá nào**, nên
+  deploy theo file mẫu chắc chắn rơi vào chỉ-đếm mà không ai biết mình đã chọn).
+- `/health/ready` chiếu `overdue_count` — con số vốn đã nằm sẵn trong
+  `_ERASURE_STATUS` mà không được đưa ra — kèm `state`:
+  `ready` · `audit_only` · `audit_only_with_overdue`. `ok` giữ nguyên có chủ
+  đích: lật đỏ là chặn deploy của một cấu hình cố ý, quyết định đó thuộc chủ dự
+  án chứ không thuộc cổng.
+- Tách `_erasure_readiness()` ra mức module để kiểm được (bản cũ nằm trong
+  closure nên test duy nhất canh nó là test so-chuỗi trên mã nguồn).
+
+**Chủ dự án phải chọn MỘT:** (a) bật xoá thật — đặt cả hai khoá và kiểm trên môi
+trường có backup; hoặc (b) giữ chỉ-đếm nhưng **sửa câu trả lời cho người dùng**,
+đừng hứa "xoá vĩnh viễn". Giữ nguyên trạng là hứa một đằng làm một nẻo.
+
+#### 40.2 Bài học: "cây đứng yên" chưa đủ — MÁY phải đứng yên
+
+Một bản đo full-suite ra **112 failed / 132 errors** so với baseline 16/0. Không
+phải hồi quy: chạy riêng `test_location_resolver.py` cho 38/38 xanh. Nguyên nhân
+là tôi khởi động `agent/server.py` + Nuxt dev **giữa lúc suite đang chạy** (để đo
+một mục backlog UI), rồi cho trình duyệt gọi `/api/homepage` liên tục — backend
+đó dùng CHUNG DB SQLite với test.
+
+Ghi chú cũ trong bộ nhớ chỉ nói "đừng sửa file .py khi suite đang chạy". Hẹp hơn
+thực tế: **đừng chạy tiến trình nào dùng chung tài nguyên với suite**. Kèm một
+lỗi phụ đắt không kém — bản đo đó chạy `--tb=no` nên không lưu traceback nào,
+phải chẩn đoán lại từ đầu. Đo dài thì dùng `--tb=line`.
+
+#### 40.3 Bài học: toạ độ hộp KHÔNG chứng minh phần tử nhìn thấy được
+
+Mục backlog 2026-08-23 "ô tìm kiếm chính bị che ở 360×740" đo lại: ô tìm ở
+**375–429**, thừa trong màn 740 — tưởng đã tự khỏi sau đợt A. Nhưng
+`document.elementFromPoint(tâm ô tìm)` trả về `DIV.onboarding-overlay`: **bảng
+chào lần-đầu cao trọn 740px che kín hero trên di động**. Sau khi tắt bảng chào,
+chính ô tìm là phần tử trên cùng — hiện đủ, bấm được.
+
+Nguyên nhân KHÁC hẳn ghi chép cũ (ngân sách dọc). Bảng chào là quyết định thiết
+kế (cờ `onboarding` mặc định bật) nên không tự đổi — nhưng đáng để chủ dự án
+biết: khách vào lần đầu bằng điện thoại thấy bảng chào, không thấy site.
