@@ -3348,3 +3348,51 @@ luận chết — cặp song sinh của lỗi A0 mà tôi bỏ sót ở CHÍNH c
   vẫn nằm đó. Sửa dữ liệu cần backup B1 + chỉ đạo chủ dự án (§4).
 - **Bảng quyết định ngày âm/dương** chờ chủ dự án điền cột CHỐT — cho tới lúc đó
   trang chủ không in ngày âm theo sự kiện.
+
+### 39. Trả nợ kỹ thuật — 5 khoản đóng, 1 khoản chuyển thành câu hỏi cho chủ (2026-08-27)
+
+> STATUS: active — bốn khoản trong backlog §31.5 đã đóng; nợ gói JS đo lại và
+> KHÔNG có nhát cắt trong tầm kỹ thuật, chuyển thành quyết định của chủ dự án.
+
+#### 39.1 Đã đóng
+
+| Nợ (§31.5) | Thực tế nặng hơn ghi chép ở chỗ nào |
+|---|---|
+| `ORDER BY updatedAt DESC` thiếu khoá phá hoà | Không phải "4 entity đồng điểm" mà là **mọi nhánh sort** đều thiếu, trong khi truy vấn có `LIMIT/OFFSET` → phân trang mất tính phân hoạch. SQLite trả theo rowid nên tình cờ ổn định; Postgres thì không |
+| 5 chuỗi máy-đọc gọi 3 tỉnh cũ | Quét lại ra **9**, và hai bề mặt nặng nhất chưa từng được ghi: `manifest.json` và `llms.txt` — tài liệu viết riêng cho crawler AI |
+| 00-INDEX lệch baseline | Lệch **ba** số, trong đó R20.8 bảng ghi 17 mà thật là 47 — bảng nói THIẾU nợ, nguy hơn nói thừa |
+| (phát sinh) R20.10 vắng mặt trong bảng chuẩn | Rào mới bắt được: một luật **hard** không có dòng nào trong bảng, tức vô hình với người đọc. `95-ra-soat-cong.md:181` đã ghi nhận đúng lỗ này trước đó mà chưa ai vá |
+
+Bài học lặp lại lần thứ ba trong phiên: **cổng chuẩn là bộ SO CHUỖI và nó bắt cả
+bình luận**. Hai ký tự `★` tôi viết trong bình luận đẩy R30.2 lên 331 > baseline
+330; và câu đính chính §1.6 đúng nhất có thể ("Không còn tỉnh Bến Tre") bị chính
+R10.7 bắt vì nó chứa đúng cụm bị cấm.
+
+#### 39.2 Nợ gói JS: đã thử, đã đo, KHÔNG cắt được bằng kỹ thuật
+
+Số đo trên bản build 2026-08-27: **JS 803 kB gz / trần 800** (vượt 3 kB) ·
+CSS 166/190 · chunk lớn nhất 276/280.
+
+- **Không có mỡ thư viện bên thứ ba:** toàn bộ `dependencies` runtime chỉ có 4
+  gói — maplibre-gl, nuxt, vue, vue-router. maplibre đã `await import()` đúng
+  cách (`composables/useNDAMap.ts:80`), không phải sửa gì.
+- **Hai component chết (StorySpread, EntityFeature) KHÔNG nằm trong bundle JS** —
+  đã kiểm bằng grep trên `.output`. Task dọn xác §35.2 sẽ không trả được nợ này.
+- **Thí nghiệm gộp chunk vụn: PHẢN TÁC DỤNG.** 64/183 chunk dưới 1 kB nên
+  `experimentalMinChunkSize: 6kB` nghe rất hợp lý. Kết quả đo: 183 → 135 file
+  nhưng **803 → 813 kB** (+10). Rollup nhân bản module dùng chung khi gộp, và
+  chunk entry phình 91 → 98 kB. Đã hoàn nguyên. **Ghi lại để không ai thử lại.**
+
+#### 39.3 Câu hỏi cho chủ dự án (không tự quyết)
+
+`276/803 kB = 34%` của tổng là **maplibre, và nó lazy đúng — không bao giờ tải ở
+lần sơn đầu**. Trần `total_gz_kb: 800` đặt 2026-07-10 khi tổng là 790, đếm CẢ mã
+lazy. Nên câu hỏi thật không phải "cắt ở đâu" mà là:
+
+> Trần "tổng" có nên đếm chunk vendor tải-lười không, hay chỉ nên đếm phần vào
+> lần sơn đầu?
+
+Đây là đổi ĐỊNH NGHĨA thước đo, không phải nới trần cho dễ thở — nên phải có chủ
+dự án chốt (§3.7: thao tác diện-rộng cần giải trình trong cùng commit). Trong lúc
+chờ, ngoại lệ R30.7 đã ghi sổ `90-exceptions-log.md`, và CI nay chạy test TRƯỚC
+cổng bundle nên nợ này không còn bịt miệng được test (§38.3).
