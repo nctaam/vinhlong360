@@ -25,6 +25,61 @@ _OCOP_CLAIM_WINDOW = 40
 _OCOP_NUMERIC_KEYS = ("ocop_star", "ocop_stars", "ocop_rating")
 
 
+def _attrs(entity: dict[str, Any]) -> dict[str, Any]:
+    """`attributes` đã chuẩn hoá về dict.
+
+    Dữ liệu thật có entity mang `attributes` là LIST (dị dạng) — bản đầu nổ
+    AttributeError ở đó. Một test cũ của seo bơm đúng ca ấy và đã bắt được; giữ
+    chốt chặn ở tầng thấp nhất thay vì rải ở từng nơi gọi.
+    """
+    a = entity.get("attributes") or {}
+    return a if isinstance(a, dict) else {}
+
+
+def _tu_khoa_so(attrs: dict[str, Any]) -> int:
+    """Hạng từ ba khoá SỐ. `bool` bị loại tường minh: `True` là `1` trong Python
+    nên không chặn thì `ocop_star: true` thành "OCOP 1 sao"."""
+    for key in _OCOP_NUMERIC_KEYS:
+        raw = attrs.get(key)
+        if isinstance(raw, bool):
+            continue
+        if isinstance(raw, (int, float)):
+            return int(raw)
+        if isinstance(raw, str) and raw.strip().isdigit() and 1 <= int(raw.strip()) <= 5:
+            return int(raw.strip())
+    return 0
+
+
+def _tu_o_ocop(attrs: dict[str, Any]) -> int:
+    """Hạng từ ô `ocop` — văn xuôi tự do, nên NEO ĐẦU CHUỖI có chủ đích.
+
+    Nới thành "tìm N sao ở bất kỳ đâu" là tự phong 5 sao cho trái dừa bằng danh
+    mục sản phẩm của VICOSAP. Số nguyên thì rõ nghĩa nên nhận thẳng (bản TS cũng
+    nhận; dữ liệu thật hiện không có ca này nhưng nó là hình dạng hợp lệ).
+    """
+    text = attrs.get("ocop")
+    if isinstance(text, bool):
+        return 0
+    if isinstance(text, (int, float)):
+        return int(text)
+    if isinstance(text, str):
+        m = _RE_OCOP_SELF_TIER.match(text)
+        if m:
+            return int(m.group(1))
+    return 0
+
+
+def _claimed_tier(attrs: dict[str, Any]) -> int:
+    """Hạng GHI TRONG DỮ LIỆU, chưa qua bộ lọc §1.7. Khoá số thắng văn xuôi."""
+    return _tu_khoa_so(attrs) or _tu_o_ocop(attrs)
+
+
+def _co_dau_hieu_ocop(attrs: dict[str, Any]) -> bool:
+    if any(attrs.get(k) not in (None, "") for k in _OCOP_NUMERIC_KEYS):
+        return True
+    return bool(attrs.get("ocop") or attrs.get("ocop_certified"))
+
+
 def _ocop_tier_is_provisional(entity: dict[str, Any], tier: int) -> bool:
     """Hạng ghi trong dữ liệu có phải hạng ĐÃ ĐẠT, hay mới chỉ được đề nghị?
 
@@ -68,49 +123,13 @@ def ocop_display_label(entity: dict[str, Any]) -> str:
     ghi ROADMAP. Sửa luật ở đây thì PHẢI sửa cả bản kia; hai bộ test soi cùng
     một bộ chuỗi thật nên chúng sẽ cùng đỏ nếu lệch.
     """
-    attrs = entity.get("attributes") or {}
-    # Dữ liệu thật có entity mang `attributes` là LIST (dị dạng) — bản đầu của
-    # hàm này nổ AttributeError ở đó. Một test cũ của seo bơm đúng ca ấy và đã
-    # bắt được; giữ chốt chặn ở tầng thấp nhất thay vì ở từng nơi gọi.
-    if not isinstance(attrs, dict):
-        return ""
-    tier = 0
-    for key in _OCOP_NUMERIC_KEYS:
-        raw = attrs.get(key)
-        if isinstance(raw, bool):
-            continue
-        if isinstance(raw, (int, float)):
-            tier = int(raw)
-            break
-        if isinstance(raw, str) and raw.strip().isdigit() and 1 <= int(raw.strip()) <= 5:
-            tier = int(raw.strip())
-            break
-    if tier <= 0:
-        text = attrs.get("ocop")
-        # Số nguyên trong ô `ocop` là RÕ NGHĨA, khác hẳn văn xuôi — nhận thẳng.
-        # Dữ liệu thật hiện không có ca này (18 ca "…sao", 18 ca văn xuôi khác,
-        # 0 ca số trần) nhưng nó là hình dạng hợp lệ và bản TS cũng nhận.
-        if isinstance(text, bool):
-            pass
-        elif isinstance(text, (int, float)):
-            tier = int(text)
-        elif isinstance(text, str):
-            # NEO ĐẦU CHUỖI có chủ đích. Nới thành "tìm N sao ở bất kỳ đâu" là tự
-            # phong 5 sao cho trái dừa bằng danh mục sản phẩm của VICOSAP.
-            m = _RE_OCOP_SELF_TIER.match(text)
-            if m:
-                tier = int(m.group(1))
-
+    attrs = _attrs(entity)
+    tier = _claimed_tier(attrs)
     if tier > 0 and _ocop_tier_is_provisional(entity, tier):
         tier = 0   # §1.7 — hạng mới ĐỀ NGHỊ không phải hạng đã đạt
-
     if 1 <= tier <= 5:
         return f"OCOP {tier} sao"
-    if attrs.get("ocop") or attrs.get("ocop_certified") or any(
-        attrs.get(k) not in (None, "") for k in _OCOP_NUMERIC_KEYS
-    ):
-        return "OCOP"
-    return ""
+    return "OCOP" if _co_dau_hieu_ocop(attrs) else ""
 
 
 def ocop_tier(entity: dict[str, Any]) -> int:
@@ -133,9 +152,4 @@ def is_ocop_certified(entity: dict[str, Any]) -> bool:
     (đo 2026-08-27). Đó là cùng một lỗi đã vá ở trang /ocop, còn sống trong
     xếp hạng, đếm và bộ lọc tìm kiếm của backend.
     """
-    attrs = entity.get("attributes") or {}
-    if not isinstance(attrs, dict):   # dữ liệu thật có ca dị dạng — xem ocop_display_label
-        return False
-    if any(attrs.get(k) not in (None, "") for k in _OCOP_NUMERIC_KEYS):
-        return True
-    return bool(attrs.get("ocop") or attrs.get("ocop_certified"))
+    return _co_dau_hieu_ocop(_attrs(entity))

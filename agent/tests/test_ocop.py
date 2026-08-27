@@ -136,3 +136,39 @@ def test_khop_bo_ca_dung_chung():
         if got != want:
             sai.append(f"{c['ten']}: được {got}, cần {want}")
     assert not sai, "lệch bộ ca dùng chung:\n  " + "\n  ".join(sai)
+
+
+class TestRanhGioiCacHamTach:
+    """Khoá hợp đồng của các hàm con sau đợt tách (complexity 21 -> dưới 12).
+
+    Điểm dễ hỏng nhất khi tách: đặt bộ lọc §1.7 nhầm tầng. `_claimed_tier` phải
+    trả hạng GHI TRONG DỮ LIỆU, chưa lọc — nếu nó tự lọc thì `ocop_tier` và
+    `ocop_display_label` sẽ lọc HAI LẦN, và một ngày nào đó ai đó gọi thẳng
+    `_claimed_tier` sẽ nhận số khác với ý nghĩa cái tên.
+    """
+
+    def test_claimed_tier_KHONG_ap_bo_loc_17(self):
+        e = E({"ocop_star": 5}, summary="Được ĐỀ XUẤT đánh giá 5 sao OCOP.")
+        assert ocop._claimed_tier(e["attributes"]) == 5, "hạng ghi trong dữ liệu"
+        assert ocop.ocop_display_label(e) == "OCOP", "nhãn mới là nơi lọc §1.7"
+
+    def test_khoa_so_thang_van_xuoi(self):
+        attrs = {"ocop_star": 3, "ocop": "OCOP 5 sao"}
+        assert ocop._claimed_tier(attrs) == 3
+
+    def test_attrs_chuan_hoa_ca_di_dang(self):
+        assert ocop._attrs({"attributes": ["a"]}) == {}
+        assert ocop._attrs({"attributes": None}) == {}
+        assert ocop._attrs({}) == {}
+
+    def test_tu_o_ocop_neo_dau_chuoi(self):
+        assert ocop._tu_o_ocop({"ocop": "4 sao"}) == 4
+        assert ocop._tu_o_ocop({"ocop": "VICOSAP: 4 SP OCOP 5 sao"}) == 0
+        assert ocop._tu_o_ocop({"ocop": True}) == 0
+
+    def test_dau_hieu_ocop_doc_lap_voi_hang(self):
+        """Có chứng nhận mà không rút được hạng vẫn phải là True — nếu không,
+        73 sản phẩm chỉ có `ocop_star` lại biến mất như lỗi cũ."""
+        assert ocop._co_dau_hieu_ocop({"ocop_star": 9}) is True
+        assert ocop._co_dau_hieu_ocop({"ocop": "OCOP"}) is True
+        assert ocop._co_dau_hieu_ocop({"rating": 4}) is False
