@@ -25,6 +25,11 @@ const pageStubs = {
   NuxtImg: NuxtImgStub,
   EmptyState: EmptyStateStub,
   EntityCard: { props: ['entity'], template: '<article data-entity-card>{{ entity.name }}</article>' },
+  // Stub CỐ Ý cho component ĐÃ XOÁ (2026-08-27). Nghe vô lý nhưng đây chính là
+  // cái bẫy: stub Vue khớp theo TÊN component, nên nếu ai đó thêm lại
+  // <EntityFeature>/<StorySpread> vào template thì stub render dấu và khẳng định
+  // bên dưới ĐỎ. Gỡ stub đi là khẳng định 'không được render' trở thành vô nghĩa —
+  // dấu không bao giờ xuất hiện được nữa nên nó không bắt được gì.
   EntityFeature: { template: '<section data-existing-entity-feature />' },
   StorySpread: { template: '<section data-existing-story-spread />' },
   HeroIllustration: true,

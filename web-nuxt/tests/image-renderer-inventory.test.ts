@@ -37,8 +37,6 @@ const requiredBoundaries = [
   ['components/ImageLightbox.vue', 'image-lightbox', 'placeholder'],
   ['components/EntityCard.vue', 'entity-card', 'ai-generated'],
   ['components/EntityCard.vue', 'entity-card', 'placeholder'],
-  ['components/home/EntityFeature.vue', 'entity-feature', 'ai-generated'],
-  ['components/home/EntityFeature.vue', 'entity-feature', 'placeholder'],
   ['pages/index.vue', 'home-feature-dossier', 'ai-generated'],
   ['pages/index.vue', 'home-feature-dossier', 'placeholder'],
   ['pages/index.vue', 'home-community', 'user-uploaded'],

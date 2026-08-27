@@ -34,6 +34,11 @@ const commonStubs = {
 const homeStubs = {
   ...commonStubs,
   HeroIllustration: { template: '<div data-legacy-media-feature="hero-background" />' },
+  // Stub CỐ Ý cho component ĐÃ XOÁ (2026-08-27). Nghe vô lý nhưng đây chính là
+  // cái bẫy: stub Vue khớp theo TÊN component, nên nếu ai đó thêm lại
+  // <EntityFeature>/<StorySpread> vào template thì stub render dấu và khẳng định
+  // bên dưới ĐỎ. Gỡ stub đi là khẳng định 'không được render' trở thành vô nghĩa —
+  // dấu không bao giờ xuất hiện được nữa nên nó không bắt được gì.
   EntityFeature: { template: '<div data-legacy-media-feature="entity-feature" />' },
   StorySpread: { template: '<div data-legacy-media-feature="story-spread" />' },
   EntityCard: { props: ['entity'], template: '<article data-legacy-entity-card>{{ entity.name }}</article>' },

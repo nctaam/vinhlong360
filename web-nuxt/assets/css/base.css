@@ -1,12 +1,15 @@
 * { box-sizing: border-box; }
 :root { --a11y-text-scale: 1; --a11y-text-scale-percent: 100%; }
 html { scroll-behavior: smooth; scroll-padding-top: 72px; font-size: var(--a11y-text-scale-percent); }
-/* 100vw full-bleed sections (StorySpread: width:100vw + margin-inline:calc(50%-50vw)) overshoot
+/* 100vw full-bleed sections overshoot
    the content area by the scrollbar width → ~5px horizontal page-scroll on desktop. Clip it on
    <main>, which holds the page content but NOT the sticky topbar (a sibling) → topbar sticky is
    unaffected. NB: clipping on `html` DID break the topbar sticky — that's why this sits on main.
    overflow-x:clip with overflow-y:visible creates no scroll container, so in-page vertical
-   position:sticky still works. Verified live on prod: 5px→0, topbar sticky intact. */
+   position:sticky still works. Verified live on prod: 5px→0, topbar sticky intact.
+   NB 2026-08-27: ví dụ ban đầu (StorySpread) đã bị xoá vì không trang nào dùng,
+   nhưng quy tắc này GIỮ LẠI — còn 11 file khác dùng 100vw (lightbox, gallery,
+   drawer…). Gỡ nó là mời tràn ngang quay lại ở một chỗ khác. */
 #main-content { overflow-x: clip; }
 html, body { margin: 0; padding: 0; }
 body { font-family: var(--font-sans); color: var(--ink); background: var(--bg); line-height: var(--leading-normal); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-feature-settings: 'cv11' 1; text-rendering: optimizeLegibility; -webkit-tap-highlight-color: transparent; overflow-x: hidden; overflow-wrap: break-word; transition: background .35s var(--ease-out), color .35s var(--ease-out); }

@@ -4,7 +4,6 @@ import { resolve } from 'node:path'
 import { defineComponent, h } from 'vue'
 import { describe, expect, it } from 'vitest'
 import EntityCard from '../components/EntityCard.vue'
-import EntityFeature from '../components/home/EntityFeature.vue'
 import { aiDisclosure } from '../utils/aiDisclosure'
 import type { ImageDescriptor } from '../types/image'
 
@@ -194,29 +193,6 @@ describe('EntityCard image disclosure', () => {
   })
 })
 
-describe('EntityFeature image disclosure', () => {
-  it('uses a descriptor for its background and associates the full disclosure copy', async () => {
-    const descriptor = ai('/img/features/trai-nghiem.webp', 'Trải nghiệm miệt vườn — ảnh minh họa')
-    const wrapper = await mountSuspended(EntityFeature, {
-      props: {
-        image: descriptor,
-        kicker: 'Trải nghiệm',
-        title: 'Miệt vườn mở cửa đón bạn',
-        lede: 'Những ngày chậm rãi rất Nam Bộ.',
-        ctaText: 'Khám phá',
-        ctaTo: '/du-lich',
-      },
-      global: globals,
-    })
-
-    const background = wrapper.get('[data-background-image]')
-    const disclosure = wrapper.get('[data-full-disclosure]')
-    expect(background.attributes('role')).toBe('img')
-    expect(background.attributes('aria-label')).toBe(descriptor.alt)
-    expect(background.attributes('aria-describedby')).toBe(disclosure.attributes('id'))
-    expect(background.attributes('style')).toContain('trai-nghiem.webp')
-  })
-})
 
 describe('Task36 image boundaries', () => {
   it('keeps home feature, spotlight, for-you, and contextual recommendation sinks descriptor-based', () => {

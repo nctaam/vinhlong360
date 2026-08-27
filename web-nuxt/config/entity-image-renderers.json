@@ -156,28 +156,6 @@
       "test_file": "tests/entity-card-disclosure.test.ts"
     },
     {
-      "file": "components/home/EntityFeature.vue",
-      "surface": "entity-feature",
-      "access_path": "image",
-      "source_class": "ai-generated",
-      "descriptor_producer": "ImageDescriptor",
-      "render_policy": "render",
-      "presentation": "short",
-      "accessibility": "aria-describedby-full-copy",
-      "test_file": "tests/entity-card-disclosure.test.ts"
-    },
-    {
-      "file": "components/home/EntityFeature.vue",
-      "surface": "entity-feature",
-      "access_path": "image",
-      "source_class": "placeholder",
-      "descriptor_producer": "ImageDescriptor",
-      "render_policy": "render",
-      "presentation": "short",
-      "accessibility": "aria-describedby-full-copy",
-      "test_file": "tests/entity-card-disclosure.test.ts"
-    },
-    {
       "file": "pages/index.vue",
       "surface": "home-feature-dossier",
       "access_path": "entity.images|entity.image|entity.image_descriptor|entity.image_descriptors",
