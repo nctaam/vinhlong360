@@ -197,6 +197,16 @@ def _vn(*args):
 
 
 def test_bien_thang_utc_khong_keo_lui_thang_viet_nam():
+    """CHỈ chốt tiền đề của các test đồng hồ phía dưới — KHÔNG phải rào chống
+    hồi quy.
+
+    Bản đầu của test này được viết như thể nó canh lỗi múi giờ, nhưng nó chỉ
+    khẳng định số học `datetime.astimezone` của stdlib: hoàn nguyên mã sản phẩm
+    về UTC thì nó vẫn xanh. Rào THẬT nằm ở
+    `test_mang_set_va_dem_nguoc_dung_CHUNG_mot_dong_ho` và
+    `test_su_kien_da_qua_theo_gio_VN_thi_bi_loai` — hai test đó chạy thẳng
+    `_build_homepage_payload` với đồng hồ đóng băng và đã được kiểm là ĐỎ trên
+    mã cũ."""
     assert _vn(2026, 8, 31, 23, 0).month == 9, "23:00 UTC ngày 31/08 đã là 01/09 giờ VN"
     assert _vn(2026, 8, 31, 16, 0).month == 8, "16:00 UTC vẫn là 31/08 giờ VN"
 
@@ -316,40 +326,44 @@ def test_homepage_response_hai_truong_moi_deu_khuyet_duoc():
     assert r.products_total is None
 
 
-# ── Âm lịch của sự kiện: DERIVE từ date_start, không đọc lunar_date ─────────
-# Ngày của một entity nằm ở SÁU Ô (lunar_date, date_start, date_end, summary,
-# description, season). Sửa một ô làm năm ô kia nói ngược — mâu thuẫn công khai
-# còn tệ hơn trạng thái lệch ban đầu (CLAUDE.md §5c). Suy từ ngày dương lúc
-# dựng payload thì chỉ có MỘT nguồn sự thật, và nó là oracle Python.
+# ── Ngày âm của SỰ KIỆN: cố ý KHÔNG có trên payload trang chủ ───────────────
+# C1 từng suy nhãn đó từ attributes.date_start, lập luận "không đọc lunar_date
+# thì né được bẫy sáu-ô §5c". Lập luận sai vế: không ĐỌC thì tránh được việc
+# SỬA nó, nhưng không tránh được việc NÓI NGƯỢC nó — /le-hoi vẫn in ô lunar_date
+# cho cùng lễ hội, và đo lại thấy 24/36 sự kiện lệch, có ca lệch cả tháng âm.
+#
+# Bảng quyết định của dự án (docs/2026-08-07-bang-quyet-dinh-ngay-le-hoi-am-duong.md)
+# phân loại 67 event: 12 ca KHỚP mọi trường · 3 ca date_start CHÍNH LÀ ô sai ·
+# 14 ca tự mâu thuẫn, ghi rõ "KHÔNG giải được từ dữ liệu — phải có người chốt".
+# Suy từ date_start là khuếch đại đúng ô hỏng. Mở lại được khi chủ dự án chốt
+# bảng đó — không phải bằng cách viết lại luật suy.
 
-from public_api import _event_lunar_label, _lunar_phrase  # noqa: E402
-
-
-def test_am_lich_su_kien_suy_tu_ngay_duong():
-    assert _event_lunar_label({"attributes": {"date_start": "2026-09-15"}}) == "5 tháng 8 năm Bính Ngọ"
-    assert _event_lunar_label({"attributes": {"date_start": "2026-09-20"}}) == "10 tháng 8 năm Bính Ngọ"
-
-
-def test_am_lich_su_kien_bo_qua_lunar_date_co_san():
-    """Có sẵn lunar_date SAI trong dữ liệu cũng không được dùng — chỉ suy từ ngày dương."""
-    e = {"attributes": {"date_start": "2026-09-15", "lunar_date": "mồng 9 tháng 9"}}
-    assert _event_lunar_label(e) == "5 tháng 8 năm Bính Ngọ"
+from public_api import _finalize_homepage_sections, _lunar_phrase  # noqa: E402
 
 
-def test_am_lich_su_kien_khuyet_em_khi_ngay_hong():
-    for attrs in ({}, {"date_start": None}, {"date_start": "xxx"}, {"date_start": "2026-13-45"}):
-        assert _event_lunar_label({"attributes": attrs}) is None
-    assert _event_lunar_label({}) is None
+def test_payload_KHONG_gan_nhan_am_lich_cho_tung_su_kien():
+    """Rào chặn C1 quay lại bằng cửa sau.
+
+    Ghim ở tầng payload chứ không ở tầng hàm: hàm nào biến mất thì test kiểu
+    "hàm trả None" tự bốc hơi cùng nó, còn rào này vẫn đứng."""
+    events = [
+        {"id": "a", "_days_until": 3, "attributes": {"date_start": "2026-09-15"}},
+        {"id": "b", "_days_until": 0,
+         "attributes": {"date_start": "2026-11-22", "lunar_date": "Rằm tháng 10"}},
+    ]
+    _finalize_homepage_sections([], events)
+    for e in events:
+        assert "lunar_label" not in e, (
+            "sự kiện không được mang nhãn âm lịch riêng khi /le-hoi vẫn in "
+            "attributes.lunar_date — hai bề mặt sẽ nói hai ngày khác nhau"
+        )
+    assert [e["days_until"] for e in events] == [3, 0]
 
 
-def test_am_lich_ngoai_dai_oracle_thi_tra_none_chu_khong_doan():
-    """Oracle khai dải 1200–2199 (lunar_calendar.SUPPORTED_YEAR_*). Ngoài dải thì
-    trả None chứ KHÔNG ngoại suy — thà khuyết còn hơn in một ngày âm bịa."""
-    assert _event_lunar_label({"attributes": {"date_start": "1199-01-01"}}) is None
-    assert _event_lunar_label({"attributes": {"date_start": "2200-01-01"}}) is None
-    # Trong dải thì vẫn tính, kể cả năm xa — guard theo dải THẬT của oracle,
-    # không theo phỏng đoán.
-    assert _event_lunar_label({"attributes": {"date_start": "1500-01-01"}}) is not None
+def test_mang_set_VAN_in_ngay_am_cua_hom_nay():
+    """Rút lui đúng phạm vi: măng-sét không dính bẫy sáu-ô vì ngày âm của HÔM NAY
+    là ngày lịch, không phải dữ liệu entity — không có ô nào để nói ngược."""
+    assert _build_masthead(_vn(2026, 8, 27, 9, 0))["lunar_label"]
 
 
 def test_lunar_phrase_goi_dung_ten_thang_dac_biet():
@@ -420,3 +434,82 @@ def test_tin_dan_khuyet_em_khi_khong_ai_du_dieu_kien():
     seasonal = [_sig("b", "Ốc lác hấp lá gừng")]
     _mark_signal_lead(events, seasonal)
     assert _ok(events) + _ok(seasonal) == []
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# MỘT đồng hồ cho cả payload — giờ Việt Nam, không phải UTC
+# ─────────────────────────────────────────────────────────────────────────
+# Test cũ (`test_bien_thang_utc_khong_keo_lui_thang_viet_nam`) là test RỖNG: nó
+# khẳng định `datetime(...,utc).astimezone(_TZ_VIETNAM).month`, tức số học của
+# stdlib. Hoàn nguyên mã sản phẩm về UTC thì nó vẫn xanh. Vòng thẩm tra đối
+# kháng bắt được đúng chỗ đó, và đúng: B1a tuyên bố đóng lỗi 7 tiếng nhưng chỉ
+# đổi `month`, còn `today` của cửa sổ sự kiện và `_event_is_past` vẫn đọc UTC.
+#
+# Test dưới đây CHẠY THẲNG `_build_homepage_payload` với đồng hồ bị đóng băng,
+# nên nó đỏ nếu ai đó trả một dòng nào về UTC.
+import asyncio  # noqa: E402
+
+import public_api as _pa  # noqa: E402
+
+
+def _dung_dong_ho(monkeypatch, ngay_gio_vn):
+    monkeypatch.setattr(_pa, "_today_vietnam", lambda: ngay_gio_vn)
+
+
+def _kho_su_kien():
+    def ent(eid, **kw):
+        base = {"id": eid, "name": eid, "type": "event", "summary": "x" * 130,
+                "attributes": {}, "area": "vinh-long"}
+        base["attributes"].update(kw)
+        return base
+    return [
+        ent("hom-nay", date_start="2026-09-15", date_end="2026-09-15", month=9),
+        ent("hom-qua", date_start="2026-09-14", date_end="2026-09-14", month=9),
+        ent("tuan-sau", date_start="2026-09-22", date_end="2026-09-22", month=9),
+    ]
+
+
+def _chay_payload(monkeypatch, ngay_gio_vn, entities):
+    _dung_dong_ho(monkeypatch, ngay_gio_vn)
+    monkeypatch.setattr(_pa.db, "list_entities", lambda **kw: [dict(e) for e in entities])
+    monkeypatch.setattr(_pa.db, "list_itineraries", lambda *a, **kw: [])
+    monkeypatch.setattr(_pa.db, "stats", lambda *a, **kw: {})
+    monkeypatch.setattr(_pa, "_enrich_place", lambda *a, **kw: None)
+    return asyncio.run(_pa._build_homepage_payload(ngay_gio_vn.month))
+
+
+def test_mang_set_va_dem_nguoc_dung_CHUNG_mot_dong_ho(monkeypatch):
+    """01:00 sáng 15/09 giờ VN = 18:00Z ngày 14/09.
+
+    Trước khi vá: măng-sét in "Thứ Ba, 15/09/2026" (giờ VN) trong khi sự kiện
+    ngày 15/09 nhận days_until=1 → index.vue render "Ngày mai". Người dân mở
+    trang vào sáng ngày khai hội bị site bảo mai mới diễn ra. Khung hỏng lặp
+    lại 7 tiếng MỖI NGÀY (17:00–23:59Z).
+    """
+    payload = _chay_payload(monkeypatch, _vn(2026, 9, 15, 1, 0), _kho_su_kien())
+
+    assert payload["masthead"]["solar_label"] == "Thứ Ba, 15/09/2026"
+    hom_nay = [e for e in payload["upcoming_events"] if e["id"] == "hom-nay"]
+    assert hom_nay, "sự kiện của HÔM NAY (giờ VN) phải nằm trong cửa sổ sắp diễn ra"
+    assert hom_nay[0]["days_until"] == 0, (
+        "days_until phải tính theo cùng đồng hồ với măng-sét; =1 nghĩa là "
+        "cửa sổ sự kiện đã tụt về UTC"
+    )
+
+
+def test_su_kien_da_qua_theo_gio_VN_thi_bi_loai(monkeypatch):
+    """`_event_is_past` cũng phải dùng giờ VN.
+
+    Lúc 18:00Z 14/09 (= 01:00 15/09 VN) một lễ hội kết thúc 14/09 ĐÃ QUA theo
+    giờ Việt Nam, nhưng theo UTC thì vẫn là "hôm nay" nên không bị loại.
+    """
+    payload = _chay_payload(monkeypatch, _vn(2026, 9, 15, 1, 0), _kho_su_kien())
+    ids = {e["id"] for e in payload["upcoming_events"]}
+    assert "hom-qua" not in ids
+    assert "tuan-sau" in ids
+
+
+def test_dong_ho_UTC_va_VN_that_su_khac_ngay_o_khung_gio_nay():
+    """Chốt tiền đề của hai test trên — nếu không thì chúng vô nghĩa."""
+    utc = _dt(2026, 9, 14, 18, 0, tzinfo=_tz.utc)
+    assert utc.date() != utc.astimezone(_TZ_VIETNAM).date()

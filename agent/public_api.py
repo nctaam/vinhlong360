@@ -2769,7 +2769,10 @@ def _event_is_past(e: dict) -> bool:
     event_date = _parse_event_iso_date(attrs, "date_end_iso", "date_end", "date_start_iso", "date_start")
     if not event_date:
         return False
-    return event_date < datetime.now(timezone.utc).date()
+    # Giờ VN, không phải UTC: máy chủ chạy UTC nên từ 17:00Z tới nửa đêm, ngày
+    # dương ở Việt Nam đã sang hôm sau. Lấy UTC thì một lễ hội KẾT THÚC hôm qua
+    # (giờ VN) vẫn được tính là chưa qua, suốt 7 tiếng mỗi ngày.
+    return event_date < _today_vietnam().date()
 
 
 _GENERIC_NAMES = {"tắm sông", "đi ghe", "đi đò", "tham quan", "du lịch",
@@ -3211,9 +3214,16 @@ def _finalize_homepage_sections(sections: list[list[dict]], upcoming_events: lis
     for e in upcoming_events:
         e.pop("_score", None)
         e["days_until"] = e.pop("_days_until", None)
-        lunar = _event_lunar_label(e)
-        if lunar:
-            e["lunar_label"] = lunar
+        # KHÔNG gắn nhãn âm lịch theo-sự-kiện ở đây. C1 từng suy nhãn đó từ
+        # attributes.date_start; đo lại thấy nó NÓI NGƯỢC attributes.lunar_date
+        # mà /le-hoi đang in cho cùng lễ hội đó (24/36 sự kiện lệch, có ca lệch
+        # cả tháng âm). Bảng quyết định của dự án
+        # (docs/2026-08-07-bang-quyet-dinh-ngay-le-hoi-am-duong.md) phân loại
+        # 67 event: chỉ 12 ca KHỚP mọi trường, 3 ca date_start CHÍNH LÀ ô sai,
+        # 14 ca tự mâu thuẫn và ghi rõ "KHÔNG giải được từ dữ liệu — phải có
+        # người chốt". Suy từ date_start là khuếch đại đúng ô hỏng.
+        # Măng-sét vẫn in ngày âm của HÔM NAY — đó là ngày lịch, không phải dữ
+        # liệu entity, nên không có ô nào để nói ngược.
 
 
 def _project_public_entity_media_sections(
@@ -3252,27 +3262,6 @@ def _lunar_phrase(day: int, month: int, year: int) -> str:
     return f"{lunar.day} {thang}{nhuan} năm {lunar_calendar.can_chi_year(lunar.year)}"
 
 
-def _event_lunar_label(entity: dict) -> str | None:
-    """Nhãn âm lịch của một sự kiện, DERIVE từ date_start.
-
-    KHÔNG đọc attributes.lunar_date: ngày của một entity nằm ở SÁU Ô khác nhau
-    (lunar_date, date_start, date_end, summary, description, season) và sửa một
-    ô làm năm ô kia nói ngược — mâu thuẫn công khai còn tệ hơn trạng thái lệch
-    ban đầu (CLAUDE.md §5c). Suy từ ngày dương lúc dựng payload thì chỉ có MỘT
-    nguồn sự thật, và nó là oracle Python.
-    """
-    ds = (entity.get("attributes") or {}).get("date_start")
-    if not isinstance(ds, str):
-        return None
-    try:
-        d = datetime.strptime(ds, "%Y-%m-%d").date()
-    except (ValueError, TypeError):
-        return None
-    if not (lunar_calendar.SUPPORTED_YEAR_MIN <= d.year <= lunar_calendar.SUPPORTED_YEAR_MAX):
-        return None
-    return _lunar_phrase(d.day, d.month, d.year)
-
-
 def _build_masthead(now_vn: datetime) -> dict:
     """Dòng ngày âm–dương cho măng-sét trang chủ.
 
@@ -3309,8 +3298,10 @@ async def _build_homepage_payload(month: int) -> dict:
     # Upcoming events (next 30 days, sorted by date_start)
     # Only show events with reliable dates: must have lunar_date OR
     # consistent month field. Exclude cat=mua (seasonal, not event).
-    today = datetime.now(timezone.utc).date()
-    from datetime import timedelta
+    # MỘT đồng hồ cho cả payload. B1a đổi `month` và măng-sét sang giờ VN nhưng
+    # bỏ sót đúng dòng này, nên trang TỰ CÃI NHAU 7 tiếng mỗi ngày: măng-sét in
+    # "Thứ Ba, 15/09" trong khi thẻ sự kiện ngày 15/09 vẫn ghi "Ngày mai".
+    today = _today_vietnam().date()
     cutoff = today + timedelta(days=30)
     upcoming_events = _select_upcoming_events(public, today, cutoff)
 
@@ -3564,7 +3555,7 @@ async def list_events(
     theo limit.
     """
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
-    today = datetime.now(timezone.utc).date()
+    today = _today_vietnam().date()   # cùng đồng hồ với trang chủ (§B1a)
     all_ents = await asyncio.to_thread(db.list_entities, entity_type="event", limit=2000, offset=0, public_only=True)
     events = list(all_ents)
     _enrich_place(events)
