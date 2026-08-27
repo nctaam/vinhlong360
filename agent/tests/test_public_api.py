@@ -181,3 +181,39 @@ def test_canary_kho_su_kien_chua_het_han():
         f"KHO SỰ KIỆN SẮP HẾT HẠN: sự kiện xa nhất còn {con_lai} ngày "
         f"({xa_nhat.isoformat()}). Lên lịch cập nhật trước khi mục thời-vụ im lặng."
     )
+
+
+# ── Giờ Việt Nam ở backend + măng-sét ngày âm–dương ─────────────────────────
+# `datetime.now(timezone.utc).month` cho SAI tháng trong 7 tiếng mỗi lần sang
+# tháng: 31/08 23:00 UTC đã là 01/09 giờ VN, mà payload vẫn dựng mùa vụ tháng 8.
+
+from datetime import datetime as _dt, timezone as _tz  # noqa: E402
+
+from public_api import _TZ_VIETNAM, _build_masthead  # noqa: E402
+
+
+def _vn(*args):
+    return _dt(*args, tzinfo=_tz.utc).astimezone(_TZ_VIETNAM)
+
+
+def test_bien_thang_utc_khong_keo_lui_thang_viet_nam():
+    assert _vn(2026, 8, 31, 23, 0).month == 9, "23:00 UTC ngày 31/08 đã là 01/09 giờ VN"
+    assert _vn(2026, 8, 31, 16, 0).month == 8, "16:00 UTC vẫn là 31/08 giờ VN"
+
+
+def test_mang_set_khop_oracle_am_lich():
+    m = _build_masthead(_vn(2026, 8, 27, 3, 0))
+    assert m["solar_label"] == "Thứ Năm, 27/08/2026"
+    assert m["lunar_label"] == "15 tháng 7 năm Bính Ngọ"
+
+
+def test_mang_set_goi_dung_ten_thang_gieng_va_chap():
+    # 17/02/2026 là mồng 1 tháng Giêng Bính Ngọ (Tết); 06/02/2027 là 30 tháng Chạp.
+    assert "tháng Giêng" in _build_masthead(_vn(2026, 2, 17, 3, 0))["lunar_label"]
+    assert "tháng Chạp" in _build_masthead(_vn(2027, 2, 5, 3, 0))["lunar_label"]
+
+
+def test_mang_set_luon_du_hai_truong():
+    m = _build_masthead(_vn(2026, 8, 27, 3, 0))
+    assert set(m) == {"solar_label", "lunar_label"}
+    assert all(isinstance(v, str) and v for v in m.values())

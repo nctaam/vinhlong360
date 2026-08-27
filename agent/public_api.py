@@ -16,7 +16,7 @@ import math
 import re
 import unicodedata
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Annotated, Any, Literal, Optional
@@ -46,6 +46,7 @@ from api_schemas import (  # W6.3: response_model (extra="allow" — không stri
     GalleryResponse,
     TrendingResponse,
 )
+import lunar_calendar
 from config import settings
 from database import canonical_verified_at, db
 from data_quality import entity_quality
@@ -3058,6 +3059,44 @@ def _project_public_entity_media_sections(
     )
 
 
+_TZ_VIETNAM = timezone(timedelta(hours=lunar_calendar.TZ_VIETNAM))
+_WEEKDAY_VI = ("Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ nhật")
+
+
+def _today_vietnam() -> datetime:
+    """Hôm nay theo giờ Việt Nam.
+
+    `datetime.now(timezone.utc)` cho SAI tháng trong 7 tiếng mỗi lần sang tháng:
+    31/08 23:00 UTC đã là 01/09 giờ VN, mà payload vẫn dựng mùa vụ tháng 8. Cùng
+    lớp lỗi với măng-sét frontend — chốt một nguồn giờ cho cả hai đầu.
+    """
+    return datetime.now(_TZ_VIETNAM)
+
+
+def _build_masthead(now_vn: datetime) -> dict:
+    """Dòng ngày âm–dương cho măng-sét trang chủ.
+
+    Tính Ở BACKEND chứ không ở trình duyệt vì ba lẽ: (1) oracle âm lịch là Python
+    (agent/lunar_calendar.py) nên tính tại nguồn thì không có rủi ro lệch bản port;
+    (2) trang chủ khỏi phải nạp bản port JS chỉ để in một dòng chữ — bundle đang
+    vượt trần; (3) hết hẳn rủi ro SSR bất đồng client.
+    Câu chữ giữ đúng giọng đang dùng ở trang lịch vạn niên.
+    """
+    d, m, y = now_vn.day, now_vn.month, now_vn.year
+    lunar = lunar_calendar.solar_to_lunar(d, m, y)
+    if lunar.month == 1:
+        thang = "tháng Giêng"
+    elif lunar.month == 12:
+        thang = "tháng Chạp"
+    else:
+        thang = f"tháng {lunar.month}"
+    nhuan = " nhuận" if lunar.leap else ""
+    return {
+        "solar_label": f"{_WEEKDAY_VI[now_vn.weekday()]}, {d:02d}/{m:02d}/{y}",
+        "lunar_label": f"{lunar.day} {thang}{nhuan} năm {lunar_calendar.can_chi_year(lunar.year)}",
+    }
+
+
 async def _build_homepage_payload(month: int) -> dict:
     all_ents = await asyncio.to_thread(db.list_entities, limit=5000, offset=0, public_only=True)
     public = [e for e in all_ents if not _event_is_past(e)]
@@ -3144,6 +3183,7 @@ async def _build_homepage_payload(month: int) -> dict:
         "month": month,
         "upcoming_events": upcoming_events,
         "seasonal_tagline": seasonal_tagline,
+        "masthead": _build_masthead(_today_vietnam()),
     }
 
 
@@ -3153,7 +3193,7 @@ async def _build_homepage_payload(month: int) -> dict:
 async def homepage_curated(response: Response):
     """Curated homepage: smart-scored, type/area diverse, seasonal-aware, deduped."""
     response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
-    month = datetime.now(timezone.utc).month
+    month = _today_vietnam().month
 
     global _homepage_rebuilding
     hit = _homepage_cache_hit(month)
