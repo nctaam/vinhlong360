@@ -306,38 +306,7 @@ const { homepageDecisionActions } = useJourneyActions()
 
 // Editorial photo-led feature copy (EntityFeature block). Contact/discover CTA only —
 // never an order/price form, per project invariants.
-const FEATURE_EXPERIENCE = {
-  kicker: 'Trải nghiệm',
-  title: 'Miệt vườn mở cửa đón bạn',
-  lede: 'Chèo xuồng qua rạch dừa, hái trái tại vườn, nghe đờn ca giữa cù lao — những ngày chậm rãi rất Nam Bộ.',
-  ctaText: 'Khám phá trải nghiệm',
-  ctaTo: '/du-lich',
-}
-const FEATURE_EXPERIENCE_IMAGE = describeEntityImages({
-  name: FEATURE_EXPERIENCE.title,
-  image_descriptor: {
-    url: '/img/features/trai-nghiem.webp',
-    alt: 'Trải nghiệm miệt vườn — ảnh minh họa',
-    source_class: 'ai-generated',
-    source_kind: 'entity-editorial',
-    disclosure_key: 'entity-ai',
-    short_label: aiDisclosure.entity_ai.short_label,
-    full_disclosure: aiDisclosure.entity_ai.full_disclosure,
-    credit: null,
-    width: null,
-    height: null,
-  } satisfies ImageDescriptor,
-})[0]!
 
-// Full-bleed signature moment (StorySpread). Discover-only CTA — never an order/price
-// form, per project invariants.
-const SPREAD = {
-  kicker: 'Vĩnh Long',
-  title: 'Nơi vườn chạm sông',
-  subtitle: 'Nơi sông Cổ Chiên ôm 4 cù lao An Bình — gốm đỏ Mang Thít, bưởi Năm Roi, chợ nổi Trà Ôn họp lúc tinh mơ.',
-  ctaText: 'Khám phá vùng đất',
-  ctaTo: '/ban-do',
-}
 
 const { favorites } = useFavorites()
 
@@ -427,47 +396,6 @@ const spotlight = computed<any>(() => {
   })
 })
 const spotId = computed(() => spotlight.value?.id)
-const spotMeta = computed(() => spotlight.value ? (TYPE_META[spotlight.value.type] || { icon: 'pin', label: spotlight.value.type, cat: 'place' }) : null)
-// Real AI-photo backdrop keyed off the spotlight's category — robust to spotlight
-// rotation (no per-entity generation). Replaces the flat gradient + centered leaf icon.
-const SPOT_CAT_PHOTO: Record<string, string> = {
-  place: '/img/cat-du-lich.webp', experience: '/img/cat-du-lich.webp',
-  product: '/img/cat-ocop.webp', dish: '/img/cat-am-thuc.webp',
-  event: '/img/cat-le-hoi.webp', stay: '/img/cat-luu-tru.webp',
-}
-const spotDescriptor = computed<ImageDescriptor>(() => {
-  const entityDescriptor = spotlight.value ? describeEntityImages(spotlight.value)[0] : null
-  if (entityDescriptor) return entityDescriptor
-  const fallback = SPOT_CAT_PHOTO[spotMeta.value?.cat || ''] || '/img/cat-du-lich.webp'
-  const fallbackDescriptor = describeEntityImages({
-    id: `spotlight-${spotlight.value?.id || 'home'}`,
-    name: spotlight.value?.name || 'Nổi bật',
-    image_descriptor: {
-      url: fallback,
-      alt: `Ảnh minh họa danh mục ${spotMeta.value?.label || 'du lịch'} — ${spotlight.value?.name || 'Nổi bật'} chưa có ảnh riêng`,
-      source_class: 'ai-generated',
-      source_kind: 'entity-editorial',
-      disclosure_key: 'entity-ai',
-      short_label: aiDisclosure.entity_ai.short_label,
-      full_disclosure: aiDisclosure.entity_ai.full_disclosure,
-      credit: null,
-      width: null,
-      height: null,
-    } satisfies ImageDescriptor,
-  })[0]
-  return fallbackDescriptor || describeEntityPlaceholder(spotlight.value || { name: 'Nổi bật' })
-})
-const spotPhoto = computed(() => spotDescriptor.value.url || '')
-const spotBgCss = computed(() => spotlight.value
-  ? `linear-gradient(to top, rgba(18,20,24,.55) 0%, rgba(18,20,24,.10) 45%, rgba(18,20,24,.32) 100%), url(${spotPhoto.value})`
-  : '')
-const spotDisclosureId = `home-spotlight-${useId().replace(/[^A-Za-z0-9_-]+/g, '-')}`
-const spotRegion = computed(() => {
-  const a = spotlight.value?.area || spotlight.value?.attributes?.area || spotlight.value?.attributes?.province
-  if (!a) return ''
-  const meta = (AREA_META as Record<string, { name: string }>)[String(a)]
-  return meta ? meta.name : ''
-})
 
 const heroFeature = computed<any>(() => experiences.value.find((e: any) => e.id !== spotId.value) || spotlight.value || null)
 const hfMeta = computed(() => heroFeature.value ? (TYPE_META[heroFeature.value.type] || { icon: 'pin', label: heroFeature.value.type, cat: 'place' }) : null)
@@ -490,8 +418,6 @@ const heroFeatureReason = computed(() => {
 
 const areaCounts = computed<Record<string, number>>(() => homeData.value?.area_counts || {})
 
-const experienceThumbs = computed(() =>
-  experiences.value.filter((e: any) => e.id !== heroFeature.value?.id && e.id !== spotId.value).slice(0, 3))
 const homePresentation = computed(() => createHomeNocturnePresentation({
   currentMonth: currentMonth.value,
   heroId: heroFeature.value?.id,
@@ -511,7 +437,6 @@ const homePresentation = computed(() => createHomeNocturnePresentation({
 
 const upcomingEventList = computed(() => homePresentation.value.upcomingEventEntries)
 const seasonalList = computed(() => homePresentation.value.seasonalEntries)
-const topDishesList = computed(() => homePresentation.value.dishEntries)
 
 const homeJourneyActions = computed(() => homepageDecisionActions({
   isLoggedIn: isLoggedIn.value,
@@ -592,10 +517,6 @@ function eventFreshnessLabel(event: HomePresentationEntity): string {
   return formatFreshnessLabel(sourceUpdatedAt || entityUpdatedAt)
 }
 
-function formatRating(rating: number | string): string {
-  const n = Number(rating)
-  return n > 0 ? n.toFixed(1) : ''
-}
 
 function plannerAddPath(id: string | number) {
   return `/tao-lich-trinh?add=${encodeURIComponent(String(id))}`
@@ -954,75 +875,6 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .happening-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--home-color-amber-text); margin: var(--space-4) 0 var(--space-2); }
 .happening-section { margin-top: var(--space-1); }
 
-/* ═══════════════════════════════════════════════════
-   TINH HOA — spotlight magazine + quán ngon rating
-   ═══════════════════════════════════════════════════ */
-.tinh-hoa { display: flex; flex-direction: column; gap: var(--space-8); }
-
-/* Spotlight */
-.spotlight {
-  display: grid; grid-template-columns: 1.05fr 1fr; gap: var(--space-6); align-items: stretch;
-  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xl);
-  overflow: hidden; box-shadow: var(--shadow-sm); contain: layout style paint;
-}
-@media (max-width: 760px) { .spotlight { grid-template-columns: 1fr; } }
-.spot-visual {
-  position: relative; min-height: 300px;
-  background-size: cover; background-position: center;
-  display: block; overflow: hidden; text-decoration: none; isolation: isolate;
-  transition: transform .6s var(--ease-out-expo);
-}
-.spotlight:hover .spot-visual { transform: scale(1.03); }
-@media (max-width: 760px) { .spot-visual { min-height: 200px; } }
-.spot-region {
-  position: absolute; top: var(--space-4); left: var(--space-4);
-  padding: var(--space-1) var(--space-3); background: rgba(var(--black-rgb),.5);
-  color: var(--text-on-dark, var(--white)); border-radius: var(--radius-full);
-  font-size: var(--text-xs); font-weight: var(--weight-semibold);
-  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
-}
-.spot-body {
-  padding: var(--space-8) var(--space-8) var(--space-8) 0;
-  display: flex; flex-direction: column; justify-content: center; gap: var(--space-3); min-width: 0;
-}
-@media (max-width: 760px) { .spot-body { padding: var(--space-5); } }
-.spot-kicker { font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: .05em; color: var(--color-brand); }
-.spot-body .spot-name { margin: 0; font-size: clamp(1.5rem, 3.2vw, 2.1rem); line-height: var(--leading-snug); letter-spacing: -.01em; }
-.spot-sum { margin: 0; color: var(--text-muted); line-height: var(--leading-relaxed); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
-.spot-cta { align-self: flex-start; margin-top: var(--space-2); }
-
-/* Top dishes */
-.dishes-heading { font-size: var(--text-lg); font-weight: var(--weight-bold); margin: 0 0 var(--space-3); }
-/* Two columns from tablet up so the featured-eatery board fills the width instead of
-   a lonely stack of full-width rows — matters most when the spotlight beside/above it is
-   absent (no entity with a suitable image qualifies), which is the common live state. */
-.dishes-list { display: grid; grid-template-columns: 1fr; gap: var(--space-2); }
-@media (min-width: 640px) { .dishes-list { grid-template-columns: 1fr 1fr; } }
-.dish-item {
-  display: flex; align-items: center; gap: var(--space-3);
-  padding: var(--space-3) var(--space-4); min-height: 48px;
-  background: var(--card); border: .5px solid var(--line); border-radius: var(--radius);
-  text-decoration: none; color: var(--ink);
-  transition: border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle), box-shadow .25s var(--ease-out);
-}
-.dish-item:hover { border-color: var(--color-action-border); transform: translateX(4px); box-shadow: var(--shadow-sm); }
-.dish-item:active { transform: translateX(1px) scale(.98); transition-duration: .1s; }
-.dish-item:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.dish-rating-badge {
-  display: flex; align-items: center; gap: 3px; flex-shrink: 0;
-  padding: var(--space-1) var(--space-2);
-  background: color-mix(in srgb, var(--color-material-amber) 14%, transparent);
-  border-radius: var(--radius-sm); font-weight: var(--weight-extrabold);
-}
-.dish-star { color: var(--color-material-amber); font-size: var(--text-sm); }
-.dish-score { color: var(--color-text); font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
-.dish-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
-.dish-name { font-size: var(--text-sm); font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.dish-reviews { font-size: var(--text-xs); color: var(--muted); }
-.dish-arrow { color: var(--muted); font-size: var(--text-sm); flex-shrink: 0; transition: color .2s; }
-.dish-item:hover .dish-arrow { color: var(--color-action); }
-.dark .dish-item { background: var(--card); border-color: var(--line); }
-.dark .dish-item:hover { border-color: rgba(var(--white-rgb),.1); }
 
 /* ═══════════════════════════════════════════════════
    COMMUNITY — compact with trending tags
@@ -1113,8 +965,6 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   .event-mini:hover { transform: none; }
   .cm-card:hover, .cm-card:active { transform: none; }
   .sk-heading { animation: none; }
-  .spotlight:hover .spot-visual { transform: none; }
-  .dish-item:hover, .dish-item:active { transform: none; }
   .fy-chip:hover, .fy-chip:active { transform: none; }
 }
 
