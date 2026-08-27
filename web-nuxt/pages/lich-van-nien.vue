@@ -352,6 +352,8 @@ import {
   tietKhiIndex,
   tietKhiStartDatesOfYear,
   isSupportedLunarYear,
+  todayInVietnam,
+  lunarPhrase,
   LUNAR_CHI,
   LUNAR_YEAR_MIN,
   LUNAR_YEAR_MAX,
@@ -395,11 +397,6 @@ function isRealSolarDate(d: number, m: number, y: number): boolean {
 }
 
 /** "15 tháng 7 nhuận năm Ất Tỵ" — tháng Giêng/Chạp gọi tên vì hai tên đó không mơ hồ. */
-function lunarPhrase(l: LunarDate): string {
-  const name = l.month === 1 ? 'tháng Giêng' : l.month === 12 ? 'tháng Chạp' : `tháng ${l.month}`
-  return `${l.day} ${name}${l.leap ? ' nhuận' : ''} năm ${canChiYear(l.year)}`
-}
-
 /** Two-hour block of chi `i`: Tý is 23–01, so it starts at (23 + 2i) mod 24. */
 function chiHourRange(i: number): string {
   const start = (23 + 2 * i) % 24
@@ -407,8 +404,12 @@ function chiHourRange(i: number): string {
 }
 
 // --- Trạng thái ------------------------------------------------------------
+// Ngày lấy theo múi giờ VN, KHÔNG theo giờ máy chủ: production chạy UTC nên
+// `now.getDate()` in sai ngày trong khung 00:00–07:00 giờ VN (và làm SSR lệch
+// client). Giờ trong ngày vẫn đọc từ `now` vì khối giờ can-chi là của người
+// đang xem, không phải của máy chủ.
 const now = new Date()
-const today: SolarDate = { day: now.getDate(), month: now.getMonth() + 1, year: now.getFullYear() }
+const today: SolarDate = todayInVietnam(now)
 const nowChiIndex = hourToChiIndex(now.getHours())
 
 const viewMonth = ref(today.month)

@@ -34,6 +34,8 @@ import {
   LUNAR_YEAR_MAX,
   TIET_KHI,
   type SolarDate,
+  todayInVietnam,
+  lunarPhrase,
 } from '../composables/useLunar'
 
 type DailyRow = [iso: string, day: number, month: number, year: number, leap: boolean]
@@ -462,5 +464,37 @@ describe('useLunar: dải năm bản TS dám nhận', () => {
     expect(isSupportedLunarYear(2200)).toBe(false)
     expect(isSupportedLunarYear(2025.5)).toBe(false)
     expect(isSupportedLunarYear(Number.NaN)).toBe(false)
+  })
+})
+
+// --- Hôm nay theo giờ VN + câu chữ âm lịch ---------------------------------
+// Khoá đúng lỗi đã sinh ra hai hàm này: server production chạy UTC, nên
+// `new Date()` trần cho SAI NGÀY trong khung 17:00–23:59 UTC (tức 00:00–06:59
+// giờ VN hôm sau). Măng-sét trang chủ và trang lịch vạn niên đều đọc từ đây.
+
+describe('todayInVietnam + lunarPhrase', () => {
+  it('lấy đúng ngày VN khi máy chủ còn ở ngày hôm trước theo UTC', () => {
+    // 2026-08-26T18:30Z = 2026-08-27 01:30 giờ VN → phải ra 27, không phải 26.
+    const t = todayInVietnam(new Date('2026-08-26T18:30:00Z'))
+    expect(t).toEqual({ day: 27, month: 8, year: 2026 })
+  })
+
+  it('không nhảy ngày sớm khi UTC đã sang ngày mới mà VN chưa', () => {
+    // 2026-08-26T23:30Z = 2026-08-27 06:30 giờ VN → vẫn 27 (đã qua nửa đêm VN).
+    expect(todayInVietnam(new Date('2026-08-26T23:30:00Z')).day).toBe(27)
+    // 2026-08-26T16:30Z = 2026-08-26 23:30 giờ VN → còn 26.
+    expect(todayInVietnam(new Date('2026-08-26T16:30:00Z')).day).toBe(26)
+  })
+
+  it('đọc ra câu chữ âm lịch có can chi', () => {
+    const t = todayInVietnam(new Date('2026-08-25T05:00:00Z'))
+    const phrase = lunarPhrase(solarToLunar(t.day, t.month, t.year))
+    expect(phrase).toBe('13 tháng 7 năm Bính Ngọ')
+  })
+
+  it('gọi đúng tên tháng Giêng và tháng Chạp, và đánh dấu tháng nhuận', () => {
+    expect(lunarPhrase({ day: 1, month: 1, year: 2026, leap: false })).toContain('tháng Giêng')
+    expect(lunarPhrase({ day: 30, month: 12, year: 2026, leap: false })).toContain('tháng Chạp')
+    expect(lunarPhrase({ day: 5, month: 6, year: 2025, leap: true })).toContain('nhuận')
   })
 })

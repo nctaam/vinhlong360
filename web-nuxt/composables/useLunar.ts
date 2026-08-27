@@ -381,3 +381,27 @@ export function tietKhiStartDate(term: number | string, solarYear: number): Sola
   if (!hit) throw new Error(`tiết khí ${TIET_KHI[index]} không bắt đầu trong năm ${solarYear}`)
   return hit
 }
+
+// --- Hôm nay theo giờ Việt Nam + câu chữ âm lịch ---------------------------
+// Hai mảnh dùng chung cho mọi bề mặt hiển thị ngày âm: măng-sét trang chủ và
+// trang lịch vạn niên. Trước đây `lunarPhrase` sống cục bộ trong
+// pages/lich-van-nien.vue còn "hôm nay" lấy bằng `new Date()` trần — trên máy
+// dev (giờ VN) thì đúng, nhưng server production chạy UTC nên từ 00:00 đến
+// 07:00 giờ VN nó in SAI CẢ ngày dương lẫn ngày âm, và SSR/client bất đồng.
+// Không có Nuxt auto-import ở đây (xem quy tắc đầu khối port): chỉ Intl thuần.
+
+/** Ngày dương HÔM NAY theo múi giờ Việt Nam, không phụ thuộc giờ máy chủ. */
+export function todayInVietnam(at: Date = new Date()): { day: number; month: number; year: number } {
+  // 'en-CA' cho ra ISO yyyy-mm-dd, ổn định hơn là ghép từng phần.
+  const iso = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(at)
+  const [y, m, d] = iso.split('-').map(Number)
+  return { day: d!, month: m!, year: y! }
+}
+
+/** «13 tháng 7 năm Bính Ngọ» — giọng chữ đang dùng ở trang lịch vạn niên. */
+export function lunarPhrase(l: LunarDate): string {
+  const name = l.month === 1 ? 'tháng Giêng' : l.month === 12 ? 'tháng Chạp' : `tháng ${l.month}`
+  return `${l.day} ${name}${l.leap ? ' nhuận' : ''} năm ${canChiYear(l.year)}`
+}
