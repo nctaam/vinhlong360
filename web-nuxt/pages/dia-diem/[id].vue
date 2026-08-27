@@ -55,8 +55,8 @@
       <div class="dc-inner">
         <span class="dc-type-row">
           <span class="dc-type-chip"><IconLine :name="typeMeta.icon" class="dc-emoji" />{{ typeMeta.label }}</span>
-          <span v-if="entity.attributes?.ocop" class="dc-ocop-chip" :aria-label="`Sản phẩm OCOP ${entity.attributes.ocop}`">
-            <IconLine name="star" /> OCOP {{ entity.attributes.ocop }}
+          <span v-if="ocopBadge" class="dc-ocop-chip" :aria-label="`Sản phẩm ${ocopBadge}`">
+            <IconLine name="star" /> {{ ocopBadge }}
           </span>
         </span>
         <span v-if="heroDateline" class="dc-eyebrow">{{ heroDateline }}</span>
@@ -206,11 +206,16 @@
         </ActionDock>
 
         <!-- OCOP highlight -->
-        <div v-if="entity.attributes?.ocop" class="ocop-highlight">
+        <div v-if="ocopBadge" class="ocop-highlight">
           <div class="ocop-stars">
             <IconLine v-for="s in ocopStars" :key="s" class="ocop-star" name="star" aria-hidden="true" />
           </div>
-          <strong>{{ ss('labels.detail.ocop_product_prefix', 'Sản phẩm OCOP') }} {{ entity.attributes.ocop }}</strong>
+          <!-- GIỮ nguyên tiền tố CMS và chỉ nối HẠNG vào sau. Bản nháp đổi tiền
+               tố thành 'Sản phẩm' rồi nối `ocopBadge` (đã chứa chữ OCOP) — nhưng
+               `ss()` đọc site settings, nên nếu CMS ghi đè khoá này thành "Sản
+               phẩm OCOP" thì ra "Sản phẩm OCOP OCOP 4 sao": đúng lỗi nhân đôi
+               đang đi sửa. Nối hạng thì đúng ở CẢ hai trường hợp. -->
+          <strong>{{ ss('labels.detail.ocop_product_prefix', 'Sản phẩm OCOP') }}<span v-if="ocopStars"> {{ ocopStars }} sao</span></strong>
           <small>{{ ss('labels.detail.ocop_program', 'Chương trình Mỗi xã Một sản phẩm') }}</small>
         </div>
 
@@ -548,6 +553,7 @@
 </template>
 
 <script setup lang="ts">
+import { ocopBadgeLabel, ocopStars as ocopStarsOf } from '~/utils/ocop'
 import type { Entity } from '~/types'
 import type { ImageDescriptor } from '~/types/image'
 import type { DetailFetchResolution } from '~/utils/detailExperience'
@@ -1199,11 +1205,10 @@ const bylineText = computed(() => entityVerifiedAt.value
 
 // GĐ10.4: normalizeCoords gom vào composables/useCoords.ts (Nuxt auto-import).
 
-const ocopStars = computed(() => {
-  const ocop = entity.value?.attributes?.ocop || ''
-  const num = parseInt(String(ocop), 10) || 0
-  return Math.min(num, 5)
-})
+// Xem ~/utils/ocop.ts: `attributes.ocop` là văn xuôi, và bản parseInt cũ vừa
+// trả 0 cho gần như mọi sản phẩm vừa để chuỗi thô lọt lên giao diện.
+const ocopStars = computed(() => Math.min(ocopStarsOf(entity.value as any), 5))
+const ocopBadge = computed(() => ocopBadgeLabel(entity.value as any))
 
 const relationshipRows = ref<Record<string, any>[]>([])
 const relationshipTotal = ref(0)
@@ -1408,8 +1413,13 @@ const fallbackJsonLdScripts = computed(() => {
         url: entityUrl,
       }
     }
-    if (e.attributes?.ocop) {
-      ld.brand = { '@type': 'Brand', name: `OCOP ${e.attributes.ocop}` }
+    // KHÔNG đẩy `attributes.ocop` thô vào structured data. Đo 2026-08-27:
+    // dua-sap-cau-ke từng có brand.name = "OCOP VICOSAP: 4 SP OCOP 5 sao quốc
+    // gia + 7 SP OCOP 4 sao" — tức khai với Google rằng thương hiệu của trái
+    // dừa là danh mục chứng nhận của một công ty khác.
+    const ocopLabel = ocopBadgeLabel(e as any)
+    if (ocopLabel) {
+      ld.brand = { '@type': 'Brand', name: ocopLabel }
     }
   }
 

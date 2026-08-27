@@ -9,6 +9,7 @@ import json
 import logging
 import os
 import re
+from ocop import is_ocop_certified
 import threading
 import unicodedata
 from pathlib import Path
@@ -321,8 +322,7 @@ def _search_month_ok(e: dict, month: int) -> bool:
 
 def _search_ocop_ok(e: dict) -> bool:
     """GĐ: entity qua bộ lọc ocop_only (tách nguyên văn)."""
-    attrs = e.get("attributes", {})
-    return bool(attrs.get("ocop"))
+    return is_ocop_certified(e)
 
 
 def _search_matches_scalar_filters(e, entity_type, place_id):

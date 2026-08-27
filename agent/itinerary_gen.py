@@ -15,6 +15,7 @@ import logging
 import math
 from numbers import Real
 import re
+from ocop import ocop_display_label
 
 import knowledge
 from itinerary_multiday import (
@@ -1371,8 +1372,9 @@ def _gen_note(e: dict, month: int) -> str:
         if month in peak:
             notes.append("⭐ Đang vào mùa cao điểm!")
     attrs = e.get("attributes", {})
-    if attrs.get("ocop"):
-        notes.append(f"🏅 OCOP {attrs['ocop']}")
+    _ocop = ocop_display_label(e)
+    if _ocop:
+        notes.append(f"🏅 {_ocop}")
     fee = attrs.get("admission_fee") or attrs.get("gia")
     if fee:
         notes.append(f"💰 {fee}")

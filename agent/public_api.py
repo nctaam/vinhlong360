@@ -11,6 +11,7 @@ import asyncio
 from dataclasses import asdict
 import hashlib
 import json
+from ocop import is_ocop_certified, ocop_tier
 import logging
 import math
 import re
@@ -3183,16 +3184,19 @@ def _has_stale_geography(entity: dict) -> bool:
 
 
 def _lead_ocop_star(entity: dict) -> int:
-    attrs = entity.get("attributes") or {}
-    for key in ("ocop_star", "ocop_stars", "ocop_rating"):
-        raw = attrs.get(key)
-        if isinstance(raw, (int, float)):
-            return int(raw)
-        if isinstance(raw, str):
-            digit = re.search(r"\d", raw)
-            if digit:
-                return int(digit.group(0))
-    return 1 if (attrs.get("ocop_certified") or attrs.get("ocop")) else 0
+    """Điểm OCOP cho việc CHỌN MỒI trang chủ — không phải để lộ hạng ra ngoài.
+
+    Bản cũ là bản sao THỨ BA của luật rút hạng, kèm chính lỗi bắt chữ số đầu
+    tiên ở bất kỳ đâu trong chuỗi. Nay uỷ quyền cho `ocop.ocop_tier`.
+
+    Vẫn giữ nấc "có chứng nhận nhưng chưa rõ hạng = 1": đây là thiết bị XẾP
+    HẠNG (sản phẩm có chứng nhận phải đứng trên sản phẩm không có), không phải
+    lời khai hạng. Đổi nó thành 0 sẽ đổi cả cách chọn mồi trang chủ.
+    """
+    tier = ocop_tier(entity)
+    if tier:
+        return tier
+    return 1 if is_ocop_certified(entity) else 0
 
 
 def _lead_rank_key(entity: dict) -> tuple:

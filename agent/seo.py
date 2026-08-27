@@ -12,6 +12,7 @@ import html as _html
 import json
 import logging
 import re
+from ocop import ocop_display_label, ocop_tier
 import threading
 import time
 from dataclasses import asdict
@@ -656,7 +657,8 @@ def _jsonld_attraction(ld: dict[str, Any], attrs: dict[str, Any]) -> None:
         ld["touristType"] = attrs["tourist_type"]
 
 
-def _jsonld_product(ld: dict[str, Any], attrs: dict[str, Any], entity_id: str) -> None:
+def _jsonld_product(ld: dict[str, Any], attrs: dict[str, Any], entity_id: str,
+                    entity: dict[str, Any]) -> None:
     if attrs.get("price"):
         price_digits = re.sub(r"[^0-9]", "", str(attrs["price"]))
         price_value = price_digits if price_digits else str(attrs["price"])
@@ -668,8 +670,9 @@ def _jsonld_product(ld: dict[str, Any], attrs: dict[str, Any], entity_id: str) -
                 "availability": "https://schema.org/InStock",
                 "url": _entity_url(entity_id),
             }
-    if attrs.get("ocop"):
-        ld["brand"] = {"@type": "Brand", "name": f"OCOP {attrs['ocop']}"}
+    ocop_label = ocop_display_label(entity)
+    if ocop_label:
+        ld["brand"] = {"@type": "Brand", "name": ocop_label}
     if attrs.get("material"):
         ld["material"] = attrs["material"]
     ld["countryOfOrigin"] = {"@type": "Country", "name": "Việt Nam"}
@@ -747,12 +750,17 @@ def _jsonld_type_fields(ld: dict[str, Any], schema_type: str, entity: dict[str, 
                         attrs: dict[str, Any], entity_id: str,
                         place: dict[str, Any] | None, coordinates: Any) -> None:
     """Dispatcher trường JSON-LD đặc thù theo schema_type (tách từ build_entity_jsonld — R20.8)."""
-    if attrs.get("ocop"):
-        ld["identifier"] = {"@type": "PropertyValue", "propertyID": "OCOP", "value": str(attrs["ocop"])}
+    # `propertyID` đã nói "OCOP" rồi nên `value` chỉ mang HẠNG — lặp lại chữ OCOP
+    # trong value là thừa, và một test cũ đã ghim đúng dạng "N sao". Không rút được
+    # hạng thì KHÔNG phát identifier: thà thiếu còn hơn phát văn xuôi thô.
+    ocop_star = ocop_tier(entity)
+    if ocop_star:
+        ld["identifier"] = {"@type": "PropertyValue", "propertyID": "OCOP",
+                            "value": f"{ocop_star} sao"}
     if schema_type == "TouristAttraction":
         _jsonld_attraction(ld, attrs)
     elif schema_type == "Product":
-        _jsonld_product(ld, attrs, entity_id)
+        _jsonld_product(ld, attrs, entity_id, entity)
     elif schema_type in ("Recipe", "FoodEstablishment", "Restaurant", "CafeOrCoffeeShop"):
         _jsonld_food(ld, schema_type, attrs)
     elif schema_type == "LodgingBusiness":

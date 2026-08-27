@@ -1,9 +1,12 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 // Rút hạng sao OCOP — khoá bằng CHUỖI THẬT lấy từ dữ liệu đang chạy, không phải
 // chuỗi tự nghĩ ra. Mỗi ca dưới đây từng làm sai một bản luật trong lúc dựng.
 import { describe, expect, it } from 'vitest'
 
 import {
   isOcopCertified,
+  ocopBadgeLabel,
   ocopClaimedStars,
   ocopStarProvisional,
   ocopStars,
@@ -122,5 +125,75 @@ describe('isOcopCertified — cái lỗ làm 73 sản phẩm biến mất', () =
     expect(isOcopCertified(e({ ocop: '' }))).toBe(false)
     expect(isOcopCertified(null)).toBe(false)
     expect(isOcopCertified(undefined)).toBe(false)
+  })
+})
+
+describe('ocopBadgeLabel — không bao giờ in văn xuôi thô ra giao diện', () => {
+  it('rút gọn về đúng hạng', () => {
+    expect(ocopBadgeLabel(e({ ocop_star: 5 }))).toBe('OCOP 5 sao')
+    expect(ocopBadgeLabel(e({ ocop: 'OCOP 3 sao' }))).toBe('OCOP 3 sao')
+  })
+
+  it('có chứng nhận nhưng chưa rõ hạng thì chỉ ghi OCOP', () => {
+    expect(ocopBadgeLabel(e({ ocop: 'OCOP' }))).toBe('OCOP')
+    expect(ocopBadgeLabel(e({ ocop_certified: true }))).toBe('OCOP')
+  })
+
+  it('KHÔNG gán danh mục của công ty khác cho entity này', () => {
+    // dua-sap-cau-ke — trang thật từng in nguyên chuỗi 56 ký tự này lên huy
+    // hiệu (rộng 468px) VÀ vào JSON-LD brand.name.
+    const duaSap = e({ ocop: 'VICOSAP: 4 SP OCOP 5 sao quốc gia + 7 SP OCOP 4 sao' })
+    expect(ocopBadgeLabel(duaSap)).toBe('OCOP')
+    expect(ocopBadgeLabel(duaSap)).not.toContain('VICOSAP')
+  })
+
+  it('KHÔNG in số quyết định lên huy hiệu', () => {
+    const qd = e({ ocop: 'OCOP 4 sao (QĐ 114/QĐ-UBND, 15/1/2020)' })
+    expect(ocopBadgeLabel(qd)).toBe('OCOP 4 sao')
+    expect(ocopBadgeLabel(qd)).not.toContain('QĐ')
+  })
+
+  it('hạng mới ĐỀ XUẤT thì tụt về OCOP trần, không khai hạng (§1.7)', () => {
+    const binhTan = {
+      attributes: { ocop_star: 5 },
+      summary: 'được đề xuất lên Trung ương đánh giá 5 sao OCOP.',
+    }
+    expect(ocopBadgeLabel(binhTan)).toBe('OCOP')
+  })
+
+  it('không có dấu hiệu OCOP thì không có nhãn', () => {
+    expect(ocopBadgeLabel(e({ rating: 4 }))).toBe('')
+    expect(ocopBadgeLabel(null)).toBe('')
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────
+// BỘ CA DÙNG CHUNG với bản Python
+// ─────────────────────────────────────────────────────────────────────────
+// `tests/fixtures/ocop-twin-cases.json` (ở gốc repo) được CẢ HAI suite đọc —
+// bộ này và `agent/tests/test_ocop.py`. Viết test song song ở hai bên là CHƯA
+// ĐỦ: 2026-08-27 hai bản đã lệch ở việc kẹp thang 1..5 (Python trả 'OCOP' cho
+// hạng 9, TS trả 'OCOP 9 sao') mà cả hai bộ test vẫn xanh, vì mỗi bên chỉ soi
+// ca của riêng mình. File dùng chung biến lời hứa "hai bản khớp nhau" thành
+// một phép đo.
+describe('bộ ca dùng chung với bản Python', () => {
+  const twin = JSON.parse(
+    readFileSync(resolve(process.cwd(), '../tests/fixtures/ocop-twin-cases.json'), 'utf8'),
+  ) as { cases: Array<{ ten: string; entity: any; label: string; tier: number; certified: boolean }> }
+
+  it('bộ ca không bị teo', () => {
+    expect(twin.cases.length).toBeGreaterThanOrEqual(20)
+  })
+
+  it('khớp từng ca', () => {
+    const sai: string[] = []
+    for (const c of twin.cases) {
+      const got = [ocopBadgeLabel(c.entity), ocopStars(c.entity), isOcopCertified(c.entity)]
+      const want = [c.label, c.tier, c.certified]
+      if (JSON.stringify(got) !== JSON.stringify(want)) {
+        sai.push(`${c.ten}: được ${JSON.stringify(got)}, cần ${JSON.stringify(want)}`)
+      }
+    }
+    expect(sai, 'lệch bộ ca dùng chung:\n  ' + sai.join('\n  ')).toEqual([])
   })
 })

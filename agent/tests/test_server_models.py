@@ -184,3 +184,27 @@ def test_case_responses_are_classified_no_store():
     source = _server_source()
     no_store_block = source.split('"/api/notification-preferences",', 1)[1].split("))", 1)[0]
     assert '"/api/cases"' in no_store_block
+
+
+def test_the_chat_khong_mang_van_xuoi_ocop_tho():
+    """Thẻ chat từng gán `card["ocop"] = attrs["ocop"]` ở BỐN nơi, và bộ lọc
+    tìm kiếm rút hạng bằng chữ số đầu tiên gặp ở bất kỳ đâu."""
+    import server
+
+    card: dict = {}
+    e = {
+        "id": "dua-sap-cau-ke", "name": "Dua sap Cau Ke",
+        "attributes": {"ocop": "VICOSAP: 4 SP OCOP 5 sao quoc gia + 7 SP OCOP 4 sao"},
+    }
+    server._search_card_practical(card, e["attributes"], e)
+    assert card.get("ocop") == "OCOP"
+    assert "VICOSAP" not in str(card)
+
+
+def test_the_chat_neu_hang_khi_co_that():
+    import server
+
+    card: dict = {}
+    e = {"id": "x", "name": "X", "attributes": {"ocop_star": 4}}
+    server._search_card_practical(card, e["attributes"], e)
+    assert card.get("ocop") == "OCOP 4 sao"

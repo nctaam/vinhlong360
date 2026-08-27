@@ -77,3 +77,29 @@ def test_gia_thuc_te_luon_huu_han_va_khong_am():
     for raw in (0, 1, 12345, "0", "999999"):
         got = _candidate_fee_value(_item(fee_value=raw))
         assert got is not None and math.isfinite(got) and got >= 0
+
+
+def test_ghi_chu_lich_trinh_khong_in_van_xuoi_ocop_tho():
+    """Ghi chú lịch trình từng nối thẳng `f"OCOP {attrs['ocop']}"`.
+
+    Với `dua-sap-cau-ke` chuỗi đó là danh mục sản phẩm của một CÔNG TY KHÁC
+    (VICOSAP), dài 50 ký tự — nhét nguyên vào một dòng ghi chú của lịch trình.
+    """
+    import itinerary_gen
+
+    note = itinerary_gen._gen_note({
+        "id": "dua-sap-cau-ke", "name": "Dua sap Cau Ke", "type": "product",
+        "attributes": {"ocop": "VICOSAP: 4 SP OCOP 5 sao quoc gia + 7 SP OCOP 4 sao"},
+    }, month=1)
+    assert "VICOSAP" not in note
+    assert "OCOP" in note
+
+
+def test_ghi_chu_lich_trinh_neu_hang_khi_co_that():
+    import itinerary_gen
+
+    note = itinerary_gen._gen_note({
+        "id": "x", "name": "X", "type": "product",
+        "attributes": {"ocop_star": 4},
+    }, month=1)
+    assert "OCOP 4 sao" in note

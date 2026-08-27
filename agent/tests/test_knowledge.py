@@ -448,3 +448,14 @@ def test_the_module_names_the_file_it_actually_opens():
     assert dead_name not in source, (
         f"{dead_name} chỉ mở data.json — đổi tên cho khớp thứ nó thật sự đọc"
     )
+
+
+def test_loc_ocop_bat_ca_san_pham_chi_co_khoa_so():
+    """Bộ lọc `ocop_only` từng dùng `bool(attrs.get("ocop"))` — bỏ sót 73 sản
+    phẩm chỉ mang `ocop_star` (đo 2026-08-27). Cùng lỗi đã vá ở trang /ocop,
+    còn sống trong bộ lọc tìm kiếm của backend."""
+    import knowledge
+
+    assert knowledge._search_ocop_ok({"id": "a", "attributes": {"ocop_star": 3}}) is True
+    assert knowledge._search_ocop_ok({"id": "b", "attributes": {"ocop": "OCOP 4 sao"}}) is True
+    assert knowledge._search_ocop_ok({"id": "c", "attributes": {"rating": 4.5}}) is False

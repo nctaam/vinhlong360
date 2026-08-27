@@ -20,6 +20,7 @@ import hashlib
 import json
 import os
 import re
+from ocop import is_ocop_certified, ocop_display_label, ocop_tier
 import sys
 import time
 import traceback
@@ -566,7 +567,7 @@ def _area_matches(e: dict, attrs: dict, area) -> bool:
     return bool((place and place.get("area") == area) or prov == _PROV_NAMES.get(area, ""))
 
 
-def _search_card_practical(card: dict, attrs: dict) -> None:
+def _search_card_practical(card: dict, attrs: dict, e: dict) -> None:
     hours = attrs.get("hours") or attrs.get("open_hours")
     if hours:
         card["hours"] = hours
@@ -576,8 +577,9 @@ def _search_card_practical(card: dict, attrs: dict) -> None:
         card["best_time"] = attrs["best_time"]
     if attrs.get("key_facts"):
         card["key_facts"] = attrs["key_facts"]
-    if attrs.get("ocop"):
-        card["ocop"] = attrs["ocop"]
+    _ocop = ocop_display_label(e)
+    if _ocop:
+        card["ocop"] = _ocop
     if attrs.get("address"):
         card["address"] = attrs["address"]
     elif attrs.get("district"):
@@ -613,7 +615,7 @@ def _accom_filters_ok(e: dict, attrs: dict, acc_type: str, family: bool) -> bool
 def _ocop_card(e: dict, attrs: dict, star_num: int) -> dict:
     card = {
         "id": e["id"], "name": e["name"],
-        "ocop": attrs["ocop"],
+        "ocop": ocop_display_label(e),
         "summary": e.get("summary", "")[:120],
         "province": attrs.get("province_old", ""),
         "address": attrs.get("address", ""),
@@ -665,7 +667,7 @@ def _search_result_card(e: dict) -> dict:
     coords = e.get("coords") or e.get("coordinates")
     if coords:
         card["coords"] = coords
-    _search_card_practical(card, attrs)
+    _search_card_practical(card, attrs, e)
     return card
 
 
@@ -718,7 +720,8 @@ def _tool_seasonal_now(args: dict) -> str:
         if hours:                      card["hours"] = hours
         if attrs.get("admission_fee") or attrs.get("admission"): card["admission_fee"] = attrs.get("admission_fee") or attrs.get("admission")
         if attrs.get("best_time"):     card["best_time"] = attrs["best_time"]
-        if attrs.get("ocop"):          card["ocop"] = attrs["ocop"]
+        _ocop = ocop_display_label(e)
+        if _ocop:                      card["ocop"] = _ocop
         if e.get("coords"):            card["coords"] = e["coords"]
         return card
     return json.dumps([_seasonal_card(e) for e in result], ensure_ascii=False)
@@ -784,7 +787,8 @@ def _tool_nearby_entities(args: dict) -> str:
         hours = attrs.get("hours") or attrs.get("open_hours")
         if hours:                      card["hours"] = hours
         if attrs.get("admission_fee") or attrs.get("admission"): card["admission_fee"] = attrs.get("admission_fee") or attrs.get("admission")
-        if attrs.get("ocop"):          card["ocop"] = attrs["ocop"]
+        _ocop = ocop_display_label(e)
+        if _ocop:                      card["ocop"] = _ocop
         if e.get("coords"):            card["coords"] = e["coords"]
         enriched_nearby.append(card)
     return json.dumps(enriched_nearby, ensure_ascii=False)
@@ -798,13 +802,17 @@ def _tool_ocop_products(args: dict) -> str:
     results = []
     for e in knowledge._entities.values():
         attrs = e.get("attributes") or {}
-        if not attrs.get("ocop"):
+        # Loc bang `attributes.ocop` truthy bo sot 73 san pham chi mang
+        # `ocop_star` (do 2026-08-27) — cung loi da va o trang /ocop.
+        if not is_ocop_certified(e):
             continue
         if not _area_matches(e, attrs, area):
             continue
         # Star filter
-        m = re.search(r"(\d)", str(attrs["ocop"]))
-        star_num = int(m.group(1)) if m else 0
+        # Ban cu bat CHU SO DAU TIEN o bat ky dau: "VICOSAP: 4 SP OCOP 5 sao
+        # quoc gia..." cho ra 4, va mot chuoi co nam ban hanh cho ra chu so cua
+        # nam. `ocop_tier` neo dau chuoi va co bo loc §1.7.
+        star_num = ocop_tier(e)
         if star_num and star_num < min_stars:
             continue
         if not _ocop_category_ok(e, category):

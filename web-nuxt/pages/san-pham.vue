@@ -180,6 +180,7 @@
 </template>
 
 <script setup lang="ts">
+import { isOcopCertified } from '~/utils/ocop'
 import type { Entity } from '~/types'
 import { inSeason, relevanceScore } from '~/composables/useSeason'
 
@@ -225,7 +226,9 @@ const allEntities = computed(() => {
   return raw.entities || []
 })
 
-const ocopCount = computed(() => allEntities.value.filter((e: Entity) => e.attributes?.ocop).length)
+// Lọc bằng `attributes.ocop` truthy bỏ sót 73 sản phẩm chỉ mang `ocop_star`
+// (đo 2026-08-27: 26 lọt / 99 thật) — cùng lỗi đã vá ở /ocop.
+const ocopCount = computed(() => allEntities.value.filter((e: Entity) => isOcopCertified(e as any)).length)
 
 // declutter-2 A1: cross-links 3 card script-driven (bỏ OCOP — teaser-strip trên trang
 // đã là tham chiếu OCOP nổi bật hơn).
@@ -271,7 +274,7 @@ const filtered = computed(() => {
   }
 
   if (ocopOnly.value) {
-    list = list.filter((e: Entity) => e.attributes?.ocop)
+    list = list.filter((e: Entity) => isOcopCertified(e as any))
   }
 
   if (q.value.trim()) {

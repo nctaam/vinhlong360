@@ -247,3 +247,49 @@ class TestSingletons:
 
     def test_reranker_initialized(self):
         assert isinstance(reranker, LLMReranker)
+
+
+class TestOcopKhongLotVanXuoiThoVaoNguCanhLLM:
+    """Văn bản này được NẠP CHO MÔ HÌNH đọc, nên một lời khai sai ở đây sẽ được
+    mô hình nhắc lại với người dùng như thể là sự thật.
+
+    Bản cũ nối thẳng `f"OCOP {ocop} sao."`, mà `attributes.ocop` là văn xuôi tự
+    do. Với `dua-sap-cau-ke` nó cho ra một câu kết bằng "sao sao." và gán danh
+    mục chứng nhận của CÔNG TY KHÁC (VICOSAP) cho trái dừa.
+    """
+
+    def test_khong_gan_danh_muc_cua_cong_ty_khac(self):
+        cr = ContextualRetrieval()
+        text = cr.build_contextual_text({
+            "id": "dua-sap-cau-ke",
+            "name": "Dua sap Cau Ke",
+            "type": "product",
+            "summary": "",
+            "attributes": {"ocop": "VICOSAP: 4 SP OCOP 5 sao quoc gia + 7 SP OCOP 4 sao"},
+        }, relationships=[])
+        assert "VICOSAP" not in text, "danh muc cua cong ty khac lot vao ngu canh LLM"
+        assert "OCOP" in text
+        assert "sao sao" not in text
+
+    def test_hang_moi_de_nghi_khong_duoc_khai_thanh_da_dat(self):
+        """§1.7 — mô hình không được học rằng sản phẩm này đã đạt 5 sao."""
+        cr = ContextualRetrieval()
+        text = cr.build_contextual_text({
+            "id": "khoai-lang-say-binh-tan",
+            "name": "Khoai lang say Binh Tan",
+            "type": "product",
+            "summary": "San pham duoc ĐỀ XUẤT len Trung uong danh gia 5 sao OCOP.",
+            "attributes": {"ocop_star": 5},
+        }, relationships=[])
+        assert "OCOP 5 sao" not in text
+
+    def test_hang_da_dat_van_duoc_neu(self):
+        cr = ContextualRetrieval()
+        text = cr.build_contextual_text({
+            "id": "khoai-lang-say-dong-phat",
+            "name": "Khoai lang say Dong Phat",
+            "type": "product",
+            "summary": "ĐẠT OCOP 4 sao va duoc de xuat cong nhan 5 sao.",
+            "attributes": {"ocop_star": 4},
+        }, relationships=[])
+        assert "OCOP 4 sao" in text

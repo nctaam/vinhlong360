@@ -56,7 +56,7 @@
         <span v-if="isPeak" class="badge peak"><span class="peak-dot" aria-hidden="true"></span> Đang mùa {{ peakLabel }}</span>
         <span v-if="isYearRoundSeason" class="badge year">Quanh năm</span>
         <span v-else class="badge season">{{ seasonLabel }}</span>
-        <span v-if="entity.attributes?.ocop" :class="['badge', 'ocop', { 'ocop-5': ocopStars === 5, 'ocop-4': ocopStars === 4, 'ocop-3': ocopStars === 3 }]"><IconLine name="star" /> {{ entity.attributes.ocop }}</span>
+        <span v-if="ocopBadge" :class="['badge', 'ocop', { 'ocop-5': ocopTier === 5, 'ocop-4': ocopTier === 4, 'ocop-3': ocopTier === 3 }]"><IconLine name="star" /> {{ ocopBadge }}</span>
       </div>
     </NuxtLink>
   </article>
@@ -76,6 +76,7 @@ const AMENITY_ICONS: Record<string, { icon: string; label: string }> = {
 </script>
 
 <script setup lang="ts">
+import { ocopBadgeLabel, ocopStars } from '~/utils/ocop'
 import { TYPE_META } from '~/composables/useConstants'
 import { isYearRound, seasonText, relevanceScore } from '~/composables/useSeason'
 import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
@@ -152,7 +153,13 @@ const allAmenities = computed(() => {
 })
 const amenityIcons = computed(() => allAmenities.value.slice(0, 3))
 const amenityExtra = computed(() => Math.max(0, allAmenities.value.length - 3))
-const ocopStars = computed(() => parseInt(props.entity.attributes?.ocop) || 0)
+// `attributes.ocop` là VĂN XUÔI tự do, không phải số: parseInt cũ trả 0 cho gần
+// như mọi sản phẩm, và huy hiệu in nguyên chuỗi thô — có entity ra tận 56 ký tự
+// mang danh mục sản phẩm của công ty KHÁC. Luật đầy đủ + bộ lọc §1.7 ở
+// ~/utils/ocop.ts; huy hiệu này hiện trên mọi trang danh mục nên nó là bề mặt
+// rộng nhất của lỗi.
+const ocopTier = computed(() => ocopStars(props.entity as any))
+const ocopBadge = computed(() => ocopBadgeLabel(props.entity as any))
 const isNew = computed(() => {
   const u = props.entity.updatedAt
   if (!u) return false

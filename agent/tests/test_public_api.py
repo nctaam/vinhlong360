@@ -652,3 +652,21 @@ def test_tran_quet_la_hang_co_ten_khong_phai_so_roi_trong_ma():
     src = pathlib.Path(_pa.__file__).read_text(encoding="utf-8")
     assert "limit=5000" not in src, "còn số 5000 rời trong mã — dùng _FULL_SCAN_LIMIT"
     assert "limit=2000" not in src, "còn số 2000 rời trong mã — dùng _EVENT_SCAN_LIMIT"
+
+
+def test_lead_ocop_star_khong_bat_chu_so_lac():
+    """`_lead_ocop_star` từng là bản sao THỨ BA của luật rút hạng, rút bằng chữ
+    số đầu tiên gặp ở bất kỳ đâu trong chuỗi."""
+    from public_api import _lead_ocop_star
+
+    # Danh mục của công ty khác — không được đọc thành hạng 4.
+    assert _lead_ocop_star({
+        "id": "dua-sap-cau-ke",
+        "attributes": {"ocop": "VICOSAP: 4 SP OCOP 5 sao quoc gia + 7 SP OCOP 4 sao"},
+    }) == 1
+    # Năm ban hành không phải hạng.
+    assert _lead_ocop_star({"id": "x", "attributes": {"ocop": "Dat chuan nam 2020"}}) == 1
+    # Hạng thật vẫn ra đúng.
+    assert _lead_ocop_star({"id": "y", "attributes": {"ocop_star": 4}}) == 4
+    # Không có dấu hiệu OCOP nào.
+    assert _lead_ocop_star({"id": "z", "attributes": {"rating": 4.5}}) == 0

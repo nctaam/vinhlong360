@@ -50,6 +50,9 @@ export function ocopClaimedStars(e: OcopEntityLike | null | undefined): number {
     if (typeof raw === 'string' && /^\s*[1-5]\s*$/.test(raw)) return parseInt(raw, 10)
   }
   const text = a.ocop
+  // Số nguyên trong ô `ocop` là RÕ NGHĨA, khác hẳn văn xuôi — nhận thẳng. Bản
+  // Python (`agent/ocop.py`) nhận ca này; hai bản sinh đôi phải khớp nhau.
+  if (typeof text === 'number' && Number.isFinite(text)) return Math.trunc(text)
   if (typeof text === 'string') {
     const m = SELF_TIER.exec(text)
     if (m) return parseInt(m[1]!, 10)
@@ -104,9 +107,17 @@ export function ocopStarProvisional(e: OcopEntityLike | null | undefined): boole
   return sawProposal && !sawAwarded
 }
 
-/** Hạng DÙNG ĐƯỢC để xếp bậc và trưng ra. 0 = có chứng nhận nhưng chưa rõ hạng. */
+/** Hạng DÙNG ĐƯỢC để xếp bậc và trưng ra. 0 = có chứng nhận nhưng chưa rõ hạng.
+ *
+ * KẸP về thang 1..5 ở ĐÂY, không phải ở nơi hiển thị. Bản đầu chỉ kẹp trong
+ * `ocopBadgeLabel` nên `ocop_star: 9` vẫn ra tier 9 cho mọi nơi gọi khác — và
+ * bộ ca dùng chung với bản Python (`tests/fixtures/ocop-twin-cases.json`) bắt
+ * được ngay: Python trả 0, TS trả 9.
+ */
 export function ocopStars(e: OcopEntityLike | null | undefined): number {
-  return ocopStarProvisional(e) ? 0 : ocopClaimedStars(e)
+  if (ocopStarProvisional(e)) return 0
+  const n = ocopClaimedStars(e)
+  return n >= 1 && n <= 5 ? n : 0
 }
 
 /** Có dấu hiệu OCOP nào không — kể cả khi không rút được hạng. */
@@ -114,4 +125,21 @@ export function isOcopCertified(e: OcopEntityLike | null | undefined): boolean {
   const a = attrs(e)
   if (NUMERIC_KEYS.some(k => a[k] !== undefined && a[k] !== null && a[k] !== '')) return true
   return !!(a.ocop || a.ocop_certified)
+}
+
+/**
+ * Nhãn hiển thị cho huy hiệu OCOP — «OCOP 5 sao» · «OCOP» · '' (không có).
+ *
+ * TUYỆT ĐỐI không in `attributes.ocop` thô ra giao diện. Trường đó là văn xuôi
+ * tự do, và ít nhất một entity mang cả danh mục sản phẩm của công ty KHÁC:
+ *   dua-sap-cau-ke → "VICOSAP: 4 SP OCOP 5 sao quốc gia + 7 SP OCOP 4 sao"
+ * In thô ra thì trang gán chứng nhận của người khác cho trái dừa — đo được
+ * 2026-08-27: huy hiệu rộng 468px, và chuỗi đó còn lọt vào JSON-LD `brand.name`
+ * cho Google đọc. Một entity khác mang số quyết định:
+ *   "OCOP 4 sao (QĐ 114/QĐ-UBND, 15/1/2020)"
+ */
+export function ocopBadgeLabel(e: OcopEntityLike | null | undefined): string {
+  if (!isOcopCertified(e)) return ''
+  const tier = ocopStars(e)
+  return tier > 0 ? `OCOP ${tier} sao` : 'OCOP'
 }

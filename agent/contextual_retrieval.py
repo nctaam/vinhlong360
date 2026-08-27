@@ -24,6 +24,7 @@ import json
 import math
 import os
 import re
+from ocop import ocop_display_label
 import time
 import logging
 from collections import Counter
@@ -189,7 +190,6 @@ class ContextualRetrieval:
         summary = entity.get("summary", "")
         etype = entity.get("type", "")
         tags = entity.get("tags", [])
-        attrs = entity.get("attributes", {})
         season = entity.get("season")
         location = entity.get("location", {})
 
@@ -209,9 +209,14 @@ class ContextualRetrieval:
             parts.append("Tags: " + ", ".join(tags) + ".")
 
         # --- OCOP / special attributes ---
-        ocop = attrs.get("ocop")
-        if ocop:
-            parts.append(f"OCOP {ocop} sao.")
+        # Bản cũ nối thẳng văn xuôi: `f"OCOP {ocop} sao."` biến
+        # "VICOSAP: 4 SP OCOP 5 sao quốc gia + 7 SP OCOP 4 sao" thành một câu
+        # kết bằng "sao sao." rồi NẠP VÀO NGỮ CẢNH CHO LLM — tức dạy mô hình
+        # rằng trái dừa mang chứng nhận của một công ty khác, và nó sẽ nhắc lại
+        # với người dùng.
+        ocop_label = ocop_display_label(entity)
+        if ocop_label:
+            parts.append(ocop_label + ".")
 
         # --- season ---
         parts.extend(_season_parts(season))

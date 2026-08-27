@@ -8,6 +8,7 @@ Entities được hỏi nhiều → xếp hạng cao hơn.
 import json
 import logging
 import time
+from ocop import is_ocop_certified
 from pathlib import Path
 from threading import Lock
 
@@ -152,7 +153,7 @@ def smart_score(entity: dict, month: int = None, q_match_level: str = "exact") -
     score += _query_match_bonus(q_match_level)
 
     # 5. OCOP
-    if attrs.get("ocop"):
+    if is_ocop_certified(entity):
         score += 1.5
 
     # 6. Type bonus (popular types slightly higher)

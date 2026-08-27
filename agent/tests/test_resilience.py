@@ -2495,3 +2495,13 @@ class TestABTestingBounded:
                 bucket["user1"] = values[-100:]
 
         assert len(mgr._outcomes["test_exp"]["user1"]) <= 100
+
+
+def test_smart_rank_cong_diem_cho_san_pham_chi_co_khoa_so_ocop():
+    """`smart_score` từng cộng 1.5 khi `attrs.get("ocop")` truthy — nên 73 sản
+    phẩm chỉ mang `ocop_star` không bao giờ được cộng điểm OCOP."""
+    import smart_rank
+
+    chi_khoa_so = {"id": "a", "name": "A", "type": "product", "attributes": {"ocop_star": 4}}
+    khong_ocop = {"id": "b", "name": "B", "type": "product", "attributes": {}}
+    assert smart_rank.smart_score(chi_khoa_so) > smart_rank.smart_score(khong_ocop)
