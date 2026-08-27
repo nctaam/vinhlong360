@@ -600,3 +600,55 @@ def test_co_16_dau_lich_su_phai_THUOC_VE_ten_tinh():
     assert ban("Vùng biển Ba Động ở khu vực Trà Vinh cũ (nay thuộc Vĩnh Long).") is False
     # Mốc sáp nhập đặt TRƯỚC tên tỉnh cũng là lối viết hợp lệ.
     assert ban("Trước 7-2025 nơi này thuộc tỉnh Trà Vinh.") is False
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# Trần quét-toàn-kho: chạm trần phải NÓI RA
+# ─────────────────────────────────────────────────────────────────────────
+# Ba truy vấn (trang chủ, ghim bản đồ, lịch sự kiện) lấy một lát rồi tự xếp
+# hạng/lọc — không phân trang. Khi kho vượt trần, phần dôi biến mất LẶNG LẼ:
+# không lỗi, không log, chỉ là vài entity không bao giờ lên trang và không ai
+# biết để đi tìm. Backlog §31.5 gọi đây là "mìn hẹn giờ"; cái nguy hiểm không
+# phải con số trần mà là sự im lặng.
+
+import pathlib  # noqa: E402
+
+from public_api import (  # noqa: E402
+    _EVENT_SCAN_LIMIT,
+    _FULL_SCAN_LIMIT,
+    _warn_if_scan_truncated,
+)
+
+
+def test_tran_quet_chua_cham_thi_im_lang(caplog):
+    with caplog.at_level("WARNING"):
+        assert _warn_if_scan_truncated([1] * 10, 5000, "trang chủ") is False
+    assert caplog.records == []
+
+
+def test_tran_quet_cham_thi_canh_bao(caplog):
+    with caplog.at_level("WARNING"):
+        assert _warn_if_scan_truncated([1] * 5000, 5000, "trang chủ") is True
+    # KHÔNG chốt số bản ghi: log đi qua cả handler middleware của dự án nên
+    # cùng một cảnh báo xuất hiện hai lần. Cái cần khoá là NỘI DUNG.
+    msgs = [r.getMessage() for r in caplog.records]
+    assert any("trang chủ" in m and "5000" in m for m in msgs), msgs
+
+
+def test_tran_quet_dung_dau_bang_chu_khong_phai_lon_hon():
+    """Trả về ĐÚNG `limit` hàng thì không phân biệt được "vừa đủ" với "đã bị
+    cắt" — ở ranh giới đó phải coi như đã cắt, nếu không mìn nổ im lặng ở đúng
+    hàng đầu tiên vượt trần."""
+    assert _warn_if_scan_truncated([1] * 4999, 5000, "x") is False
+    assert _warn_if_scan_truncated([1] * 5000, 5000, "x") is True
+    assert _warn_if_scan_truncated([1] * 5001, 5000, "x") is True
+
+
+def test_tran_quet_la_hang_co_ten_khong_phai_so_roi_trong_ma():
+    """Số rời rạc trong thân hàm thì không ai sửa được đồng bộ, và không test
+    nào tham chiếu được tới nó."""
+    assert _FULL_SCAN_LIMIT == 5000
+    assert _EVENT_SCAN_LIMIT == 2000
+    src = pathlib.Path(_pa.__file__).read_text(encoding="utf-8")
+    assert "limit=5000" not in src, "còn số 5000 rời trong mã — dùng _FULL_SCAN_LIMIT"
+    assert "limit=2000" not in src, "còn số 2000 rời trong mã — dùng _EVENT_SCAN_LIMIT"

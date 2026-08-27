@@ -3072,6 +3072,35 @@ _PRODUCT_LEAD_BLOCKLIST = frozenset({
     "banh-trang-ngot-le-hang-htx-banh-trang-cu-lao-may",
 })
 
+# Trần cứng cho ba truy vấn QUÉT TOÀN KHO. Chúng không phân trang: hàm gọi lấy
+# một lát rồi tự xếp hạng/lọc, nên khi kho vượt trần thì phần dôi ra biến mất
+# LẶNG LẼ — không lỗi, không log, chỉ là vài entity không bao giờ lên trang, và
+# không ai biết để đi tìm.
+#
+# Đo 2026-08-27: 1746 entity, 67 event — còn dư ~2,9 lần. Nhưng "còn dư" là
+# trạng thái tạm thời, và cái nguy hiểm không phải con số mà là sự IM LẶNG.
+# Nâng trần không giải quyết gì: trần nào rồi cũng có ngày chạm, và lúc đó vẫn
+# im như cũ. Nên giữ trần (an toàn bộ nhớ) + nói ra khi chạm.
+_FULL_SCAN_LIMIT = 5000
+_EVENT_SCAN_LIMIT = 2000
+
+
+def _warn_if_scan_truncated(rows, limit: int, where: str) -> bool:
+    """True khi lát cắt đã CHẠM trần — tức có thể đã mất dữ liệu.
+
+    `>=` chứ không `>`: khi trả về đúng `limit` hàng thì không phân biệt được
+    "vừa đủ" với "đã bị cắt", và ở ranh giới đó phải coi như đã cắt.
+    """
+    if len(rows) < limit:
+        return False
+    logger.warning(
+        "%s: quét toàn kho CHẠM TRẦN %d hàng — dữ liệu vượt trần bị bỏ im lặng. "
+        "Nâng trần hoặc chuyển sang phân trang trước khi tin kết quả.",
+        where, limit,
+    )
+    return True
+
+
 _LEAD_MIN_SUMMARY = 120     # ngắn hơn thì khối dựng lớn trống trải
 _LEAD_MAX_SUMMARY = 400     # dài hơn thì kẹp 2 dòng cắt giữa ý
 _LEAD_MAX_NAME = 42         # dài hơn thì vỡ dòng ở cỡ chữ tin chính
@@ -3327,7 +3356,9 @@ def _build_masthead(now_vn: datetime) -> dict:
 
 
 async def _build_homepage_payload(month: int) -> dict:
-    all_ents = await asyncio.to_thread(db.list_entities, limit=5000, offset=0, public_only=True)
+    all_ents = await asyncio.to_thread(
+        db.list_entities, limit=_FULL_SCAN_LIMIT, offset=0, public_only=True)
+    _warn_if_scan_truncated(all_ents, _FULL_SCAN_LIMIT, "trang chủ")
     public = [e for e in all_ents if not _event_is_past(e)]
     await asyncio.to_thread(_enrich_place, public)
 
@@ -3543,7 +3574,9 @@ async def get_map_pins(
         type_filters = [t.strip() for t in type.split(",") if t.strip()]
 
     def _query():
-        all_ents = db.list_entities(limit=5000, offset=0, area=area, public_only=True, entity_types=type_filters)
+        all_ents = db.list_entities(limit=_FULL_SCAN_LIMIT, offset=0, area=area,
+                                    public_only=True, entity_types=type_filters)
+        _warn_if_scan_truncated(all_ents, _FULL_SCAN_LIMIT, "ghim bản đồ")
         pins = []
         for e in all_ents:
             pin = _build_map_pin(e)
@@ -3604,7 +3637,10 @@ async def list_events(
     """
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     today = _today_vietnam().date()   # cùng đồng hồ với trang chủ (§B1a)
-    all_ents = await asyncio.to_thread(db.list_entities, entity_type="event", limit=2000, offset=0, public_only=True)
+    all_ents = await asyncio.to_thread(
+        db.list_entities, entity_type="event", limit=_EVENT_SCAN_LIMIT, offset=0,
+        public_only=True)
+    _warn_if_scan_truncated(all_ents, _EVENT_SCAN_LIMIT, "lịch sự kiện")
     events = list(all_ents)
     _enrich_place(events)
 
@@ -4551,7 +4587,8 @@ async def entities_map_search(
     if north <= south:
         raise HTTPException(400, "Giá trị north phải lớn hơn south")
     def _query():
-        entities = db.list_entities(limit=5000, public_only=True)
+        entities = db.list_entities(limit=_FULL_SCAN_LIMIT, public_only=True)
+        _warn_if_scan_truncated(entities, _FULL_SCAN_LIMIT, "entity trong khung bản đồ")
         results = []
         for e in entities:
             coords = e.get("coordinates")
@@ -4809,7 +4846,8 @@ async def popular_entities(
                "Quá nhiều yêu cầu. Vui lòng thử lại sau.")
 
     def _query():
-        all_entities = db.list_entities(limit=5000, public_only=True)
+        all_entities = db.list_entities(limit=_FULL_SCAN_LIMIT, public_only=True)
+        _warn_if_scan_truncated(all_entities, _FULL_SCAN_LIMIT, "bảng phổ biến")
         all_entities = _filter_popular_entities(all_entities, entity_type, area)
         scored = [(_score_popular_entity(e), e) for e in all_entities]
         scored.sort(key=lambda x: -x[0])
