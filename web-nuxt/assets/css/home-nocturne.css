@@ -761,3 +761,69 @@
    Nếu đo trên trang thật thấy thẻ NÀO tự sơn nền và chìm vào dải ở chế độ
    tối (--bg-alt tối trùng trần --color-surface-raised) thì mới xử ĐÚNG thẻ
    đó, không quét cả nhóm. */
+
+/* ═══════════════════════════════════════════════════════════════════
+   A3 — NÉN THỊ GIÁC MỤC LỤC (11 đơn vị → ~6 nhìn thấy)
+   ═══════════════════════════════════════════════════════════════════
+   Mục lục hiện là 4 hàng sổ + 7 thẻ chuyên mục = 11 đơn vị, và 7 thẻ
+   đó dùng CHUNG một khuôn (padding space-5, viền lưới, hint hiển thị)
+   nên đọc thành 7 khối ngang hàng — không có thứ bậc.
+
+   Nén bằng THỊ GIÁC, không bớt nội dung: hợp đồng test khoá cứng ĐÚNG
+   7 link, đúng thứ tự, đúng 7 nhãn vật liệu (home-nocturne-components
+   .test.ts:167-183 dùng toEqual) — thêm/bớt/đảo một link là đỏ. Nên
+   chỉ đổi cách trình bày.
+
+   Chia đúng thứ bậc component đã khai sẵn: nhóm CHÍNH (4 link, thứ
+   khách tới để tìm) giữ khuôn thẻ; nhóm TIỆN ÍCH (3 link, hạ tầng
+   hành trình) hạ xuống dải chip một hàng. Kết quả: 1 khối sổ + 4 thẻ
+   + 1 dải chip = 6 đơn vị thị giác, mọi link vẫn ở nguyên trong DOM,
+   vẫn bấm được, vẫn crawl được. */
+
+[data-home-pilot="nocturne-b1"] .home-category-index__utility {
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+  margin-block-start: var(--space-5);
+}
+
+[data-home-pilot="nocturne-b1"] .home-category-index__utility nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  border-block-start: 0;
+  border-inline-start: 0;
+}
+
+[data-home-pilot="nocturne-b1"] .home-category-index__utility-link {
+  /* flex, KHÔNG grid: chip có ba phần tử (icon + nhãn + số đếm) nên lưới
+     2 cột đẩy số đếm xuống dòng hai — nhìn thấy ở chip "Bản đồ · 3 vùng",
+     nó cao hơn hai chip kia và lệch trục. */
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+/* Hint của nhóm tiện ích thu vào phục vụ trình đọc màn hình: nhãn ngắn
+   («Lưu trú», «Lịch trình», «Bản đồ») đã tự nói đủ ở cỡ chip, còn câu
+   mô tả thì thành nhiễu. KHÔNG display:none — chữ phải còn cho trình
+   đọc và cho crawler. */
+[data-home-pilot="nocturne-b1"] .home-category-index__utility-link small {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+[data-home-pilot="nocturne-b1"] .home-category-index__utility-link .home-category-index__count {
+  grid-column: auto;
+  align-self: center;
+  flex: 0 0 auto;
+}
