@@ -3449,3 +3449,43 @@ chính ô tìm là phần tử trên cùng — hiện đủ, bấm được.
 Nguyên nhân KHÁC hẳn ghi chép cũ (ngân sách dọc). Bảng chào là quyết định thiết
 kế (cờ `onboarding` mặc định bật) nên không tự đổi — nhưng đáng để chủ dự án
 biết: khách vào lần đầu bằng điện thoại thấy bảng chào, không thấy site.
+
+### 41. ĐÍNH CHÍNH phạm vi nợ §1.6 trên frontend — 99 lần / 30 file, không phải 9 (2026-08-27)
+
+> STATUS: active — commit `d580a386` chỉ đóng 6 bề mặt cấp SITE. Phần lớn nợ còn nguyên.
+
+**Tôi đã nói quá phạm vi việc mình làm.** Commit `d580a386` ghi «quét lại ra 9»,
+nhưng thực tế tôi chỉ quét **4 file mà backlog nêu tên** (nuxt.config, default.vue,
+index.vue, gioi-thieu.vue) rồi thêm hai file tự tìm ra. Đó đúng là cái sai đã làm
+con số của chính backlog (5) thấp hơn thực tế. Quét toàn bộ `web-nuxt/**/*.{vue,ts}`
+(trừ node_modules/.nuxt/.output/tests): **99 lần nhắc / 30 file**.
+
+Nặng nhất **`utils/pageManifest.ts` (20)** — manifest `seoTitle`/`seoDescription`/
+`ogDescription`/`heroSubtitle` của TỪNG trang danh mục. Nghĩa là tôi đã sửa meta cấp
+site mà để nguyên meta của ~8 trang con; `ban-do.vue` cũng còn meta + JSON-LD `name`.
+
+#### 41.1 Bốn lớp khác nhau, đừng gộp
+
+| Lớp | Ví dụ đã kiểm | Xử lý |
+|---|---|---|
+| **Máy đọc, cần sửa** | `pageManifest.ts` ×20 · `ban-do.vue` meta+JSON-LD · `legalContent.ts:102` seo_description | mechanical, nhưng vướng đánh đổi ở §41.2 |
+| **Taxonomy** | `useConstants.ts` AREA_META · `useRegionPref.ts` · `PersonalizeSetupSheet.vue` | khoá vùng + nhãn điều hướng, ~37 điểm gọi, CMS ghi đè được — **quyết định sản phẩm của chủ dự án** |
+| **ĐÚNG rồi, đừng đụng** | `useWeather.ts:33` (bình luận nói rõ đơn vị này KHÔNG CÒN TỒN TẠI) · `adminUnit.ts:152` (bình luận của chính hàm đi VÁ structured-data) · `legalContent.ts:103` («vùng Vĩnh Long mới — bao gồm…») | giữ nguyên |
+| **Tên riêng** | `routesContent.ts` «Chợ Bến Tre», «Vòng dừa Bến Tre» | tên của một CHỢ, một TUYẾN — không phải gọi tên tỉnh |
+
+#### 41.2 Đánh đổi phải để chủ dự án chốt
+
+Cụm tôi dùng ở cấp site — «tỉnh Vĩnh Long (hợp nhất từ Vĩnh Long, Bến Tre, Trà Vinh
+cũ)» — **không dùng lại được cho meta từng trang**: `seoDescription` có ngân sách
+~155 ký tự, thêm mệnh đề đó vào 8 trang là ăn hết chỗ của nội dung thật.
+
+Hai đường, và chúng đánh đổi thật:
+
+- **(a) Bỏ hẳn tên tỉnh cũ khỏi meta trang con**, chỉ ghi «tỉnh Vĩnh Long». Gọn, đúng
+  §1.6 tuyệt đối. **Mất** truy vấn tìm kiếm «du lịch Bến Tre», «OCOP Trà Vinh» — mà
+  người dân vẫn tìm bằng tên cũ nhiều năm nữa.
+- **(b) Giữ tên cũ kèm dấu lịch sử ngắn** («… Bến Tre, Trà Vinh cũ»). Giữ được truy
+  vấn, tốn ~12 ký tự mỗi mô tả.
+
+Đây là đánh đổi SEO/nội dung, không phải sửa kỹ thuật — không tự quyết. Ghi chú: site
+đang noindex nên chưa mất gì; việc này phải xong TRƯỚC khi mở index.
