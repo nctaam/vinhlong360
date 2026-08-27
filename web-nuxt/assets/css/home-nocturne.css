@@ -1057,3 +1057,21 @@
 .dark [data-home-pilot="nocturne-b1"] .home-product-lead__media img {
   filter: brightness(.86);
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   C1 — NGÀY ÂM TRÊN HÀNG SỰ KIỆN
+   ═══════════════════════════════════════════════════════════════════
+   Lớp lịch âm là kho 441 lượt của dự án mà trang chủ trước nay chỉ đại
+   diện ở măng-sét. Đưa xuống hàng sự kiện thì "tín hiệu địa phương" nói
+   được bằng đúng thứ lịch mà lễ hội thật chạy theo.
+
+   Màu thương hiệu để phân biệt với dòng đếm ngược (amber) ngay bên
+   dưới — hai tín hiệu thời gian khác loại thì không được cùng màu. */
+
+[data-home-pilot="nocturne-b1"] .ec-lunar {
+  display: block;
+  margin-block: var(--space-1) 0;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-brand);
+}

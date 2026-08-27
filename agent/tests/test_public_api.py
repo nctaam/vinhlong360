@@ -314,3 +314,44 @@ def test_homepage_response_hai_truong_moi_deu_khuyet_duoc():
     r = api_schemas.HomepageResponse()
     assert r.product_lead is None
     assert r.products_total is None
+
+
+# ── Âm lịch của sự kiện: DERIVE từ date_start, không đọc lunar_date ─────────
+# Ngày của một entity nằm ở SÁU Ô (lunar_date, date_start, date_end, summary,
+# description, season). Sửa một ô làm năm ô kia nói ngược — mâu thuẫn công khai
+# còn tệ hơn trạng thái lệch ban đầu (CLAUDE.md §5c). Suy từ ngày dương lúc
+# dựng payload thì chỉ có MỘT nguồn sự thật, và nó là oracle Python.
+
+from public_api import _event_lunar_label, _lunar_phrase  # noqa: E402
+
+
+def test_am_lich_su_kien_suy_tu_ngay_duong():
+    assert _event_lunar_label({"attributes": {"date_start": "2026-09-15"}}) == "5 tháng 8 năm Bính Ngọ"
+    assert _event_lunar_label({"attributes": {"date_start": "2026-09-20"}}) == "10 tháng 8 năm Bính Ngọ"
+
+
+def test_am_lich_su_kien_bo_qua_lunar_date_co_san():
+    """Có sẵn lunar_date SAI trong dữ liệu cũng không được dùng — chỉ suy từ ngày dương."""
+    e = {"attributes": {"date_start": "2026-09-15", "lunar_date": "mồng 9 tháng 9"}}
+    assert _event_lunar_label(e) == "5 tháng 8 năm Bính Ngọ"
+
+
+def test_am_lich_su_kien_khuyet_em_khi_ngay_hong():
+    for attrs in ({}, {"date_start": None}, {"date_start": "xxx"}, {"date_start": "2026-13-45"}):
+        assert _event_lunar_label({"attributes": attrs}) is None
+    assert _event_lunar_label({}) is None
+
+
+def test_am_lich_ngoai_dai_oracle_thi_tra_none_chu_khong_doan():
+    """Oracle khai dải 1200–2199 (lunar_calendar.SUPPORTED_YEAR_*). Ngoài dải thì
+    trả None chứ KHÔNG ngoại suy — thà khuyết còn hơn in một ngày âm bịa."""
+    assert _event_lunar_label({"attributes": {"date_start": "1199-01-01"}}) is None
+    assert _event_lunar_label({"attributes": {"date_start": "2200-01-01"}}) is None
+    # Trong dải thì vẫn tính, kể cả năm xa — guard theo dải THẬT của oracle,
+    # không theo phỏng đoán.
+    assert _event_lunar_label({"attributes": {"date_start": "1500-01-01"}}) is not None
+
+
+def test_lunar_phrase_goi_dung_ten_thang_dac_biet():
+    assert _lunar_phrase(6, 2, 2027).startswith("1 tháng Giêng")   # mồng một Tết Đinh Mùi
+    assert "năm Đinh Mùi" in _lunar_phrase(6, 2, 2027)

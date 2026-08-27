@@ -3181,6 +3181,9 @@ def _finalize_homepage_sections(sections: list[list[dict]], upcoming_events: lis
     for e in upcoming_events:
         e.pop("_score", None)
         e["days_until"] = e.pop("_days_until", None)
+        lunar = _event_lunar_label(e)
+        if lunar:
+            e["lunar_label"] = lunar
 
 
 def _project_public_entity_media_sections(
@@ -3206,6 +3209,40 @@ def _today_vietnam() -> datetime:
     return datetime.now(_TZ_VIETNAM)
 
 
+def _lunar_phrase(day: int, month: int, year: int) -> str:
+    """«15 tháng 7 năm Bính Ngọ» — giọng chữ dùng chung với trang lịch vạn niên."""
+    lunar = lunar_calendar.solar_to_lunar(day, month, year)
+    if lunar.month == 1:
+        thang = "tháng Giêng"
+    elif lunar.month == 12:
+        thang = "tháng Chạp"
+    else:
+        thang = f"tháng {lunar.month}"
+    nhuan = " nhuận" if lunar.leap else ""
+    return f"{lunar.day} {thang}{nhuan} năm {lunar_calendar.can_chi_year(lunar.year)}"
+
+
+def _event_lunar_label(entity: dict) -> str | None:
+    """Nhãn âm lịch của một sự kiện, DERIVE từ date_start.
+
+    KHÔNG đọc attributes.lunar_date: ngày của một entity nằm ở SÁU Ô khác nhau
+    (lunar_date, date_start, date_end, summary, description, season) và sửa một
+    ô làm năm ô kia nói ngược — mâu thuẫn công khai còn tệ hơn trạng thái lệch
+    ban đầu (CLAUDE.md §5c). Suy từ ngày dương lúc dựng payload thì chỉ có MỘT
+    nguồn sự thật, và nó là oracle Python.
+    """
+    ds = (entity.get("attributes") or {}).get("date_start")
+    if not isinstance(ds, str):
+        return None
+    try:
+        d = datetime.strptime(ds, "%Y-%m-%d").date()
+    except (ValueError, TypeError):
+        return None
+    if not (lunar_calendar.SUPPORTED_YEAR_MIN <= d.year <= lunar_calendar.SUPPORTED_YEAR_MAX):
+        return None
+    return _lunar_phrase(d.day, d.month, d.year)
+
+
 def _build_masthead(now_vn: datetime) -> dict:
     """Dòng ngày âm–dương cho măng-sét trang chủ.
 
@@ -3216,17 +3253,9 @@ def _build_masthead(now_vn: datetime) -> dict:
     Câu chữ giữ đúng giọng đang dùng ở trang lịch vạn niên.
     """
     d, m, y = now_vn.day, now_vn.month, now_vn.year
-    lunar = lunar_calendar.solar_to_lunar(d, m, y)
-    if lunar.month == 1:
-        thang = "tháng Giêng"
-    elif lunar.month == 12:
-        thang = "tháng Chạp"
-    else:
-        thang = f"tháng {lunar.month}"
-    nhuan = " nhuận" if lunar.leap else ""
     return {
         "solar_label": f"{_WEEKDAY_VI[now_vn.weekday()]}, {d:02d}/{m:02d}/{y}",
-        "lunar_label": f"{lunar.day} {thang}{nhuan} năm {lunar_calendar.can_chi_year(lunar.year)}",
+        "lunar_label": _lunar_phrase(d, m, y),
     }
 
 

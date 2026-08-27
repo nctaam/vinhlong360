@@ -108,6 +108,10 @@
             </div>
             <div class="ec-info">
               <h3>{{ ev.name }}</h3>
+              <!-- Ngày âm suy từ date_start ở backend bằng chính oracle Python,
+                   KHÔNG đọc attributes.lunar_date (bẫy sáu-ô §5c). Khuyết êm khi
+                   ngày hỏng hoặc ngoài dải oracle. -->
+              <span v-if="ev.lunar_label" class="ec-lunar">{{ ev.lunar_label }}</span>
               <span v-if="ev.days_until != null" class="ec-countdown" data-material-accent="amber" :class="{ 'ec-today': ev.days_until === 0 }">
                 {{ ev.days_until === 0 ? 'Hôm nay!' : ev.days_until === 1 ? 'Ngày mai' : `Còn ${ev.days_until} ngày` }}
               </span>
