@@ -3574,3 +3574,56 @@ mỗi hàm định dạng nhãn, và bộ ca dùng chung thành thừa.
 
 Chuẩn hoá DỮ LIỆU (gộp 4 khoá `ocop_star`/`ocop_stars`/`ocop_rating`/`ocop` về
 một) vẫn là task riêng cần backup B1 + chỉ đạo chủ dự án — xem §31.5.
+
+### 43. B3 — quét CSS chết bằng RENDER THẬT: phương pháp, và giới hạn của nó (2026-08-27)
+
+> STATUS: active — gỡ được 2 khối chắc chắn; ~22 lớp nhóm cộng đồng KHÔNG kết
+> luận được trên máy này, cần Postgres + phiên đã-đăng-nhập.
+
+Backlog 2026-08-23 ghi B3 "cần đo bằng render thật, KHÔNG bằng grep". Đây là
+lượt đo đó. **Phương pháp mới là phần đáng giữ**, con số chỉ là sản phẩm phụ.
+
+#### 43.1 Ba phép đo, vì một mình phép nào cũng nói dối
+
+| Phép đo | Bắt được gì | Nói dối ở đâu |
+|---|---|---|
+| Phân tích tĩnh | lớp không xuất hiện trong markup/script | **đếm cả token trong CHÚ THÍCH** — vừa đẻ ứng viên giả, vừa che giấu lớp chết |
+| Lọc dựng-động | `:class="'cat-area-' + area"` | không có nó thì 283 lớp SỐNG bị kết án oan |
+| Render thật | lớp không bao giờ khớp | **không chạm được trạng thái đã-đăng-nhập** |
+
+Bản đầu của công cụ tôi viết sai **cả hai chiều** vì không bỏ chú thích: nó đẻ ra
+ứng viên giả `.eh-` (từ dòng `/* .eh-* đã xoá */`) và đồng thời **giấu** những lớp
+chết chỉ còn được nhắc trong comment. Sửa xong: **36 → 63 ứng viên**. Con số đầu
+tiên tôi đưa ra là sai.
+
+Loại tiếp: 283 lớp dựng động · 4 lớp của maplibre (thư viện tự áp lúc chạy) · 10
+lớp Vue `<Transition>` tự sinh. Còn **55** ứng viên, render 9 trang: **0 khớp**,
+và **0 lần** trong `web/data.json` nên không có rủi ro `v-html`.
+
+#### 43.2 Giới hạn TỰ LỘ RA — và vì sao chỉ gỡ 2 khối chứ không phải 55 lớp
+
+`/cong-dong` render **0 bài viết** và có nút "Đăng nhập": local chạy SQLite nên
+UGC trả 503 (§1.3). Nghĩa là với ~22 lớp nhóm cộng đồng (`suggest-*`, `md-*`,
+`suc-*`, `reaction-btn`, `just-saved`, `bookmark-momentum`, `char-count`,
+`hide-undo`…) phép đo render **không kết luận được gì** — chúng có thể sống
+trong trạng thái mà máy này không chạm tới.
+
+**Đã gỡ (98 dòng, `editorial.css`):** khối `.cine-*` (hero điện ảnh) và
+`.story-block`, kèm quy tắc con mồ côi `.editorial-heading .cine-kicker` và một
+dòng `prefers-reduced-motion` cho lớp đã chết.
+
+**CHƯA gỡ, cần môi trường khác:** 22 lớp cộng đồng ở trên. Muốn kết luận thì
+phải chạy `docker compose up postgres`, tạo phiên đăng nhập, rồi đo lại.
+
+#### 43.3 Hai ghi chú phát sinh
+
+- **Giả thuyết của tôi sai, kiểm mới biết.** Tôi đoán `.story-block` là CSS của
+  `StorySpread` vừa xoá. Xem lại trong git: StorySpread dùng `.spread-*`,
+  EntityFeature dùng `.ef-*`, và **cả hai để CSS trong `<style scoped>`** nên đã
+  đi theo file. `.story-block` mồ côi từ một đợt gỡ KHÁC.
+- **`editorial.css` có thể còn chết nhiều hơn.** Hai trang được cho là dùng nó
+  (`/khu-vuc/[area]`, `/dia-diem/[id]`) render mà **không có** `.editorial-body`,
+  `.pull-quote`, `.drop-cap`, `.chapter-sticky` nào. Chưa truy tiếp — cần biết
+  trang nào thật sự dùng chúng trước khi động.
+- **`/xa-phuong/<slug-sai>` trả 500 trong khi API trả 404** — trang lỗi nói sai
+  loại lỗi. Không liên quan CSS; ghi để không quên.
