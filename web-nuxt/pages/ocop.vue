@@ -18,7 +18,6 @@
           <p>{{ pc('hero_subtitle') }}</p>
           <div class="hero-creds">
             <span class="hero-cred hero-cred-seal"><IconLine name="trophy" /> Chuẩn OCOP <em>Nhà nước</em></span>
-            <span class="hero-cred"><IconLine name="check" /> Kiểm chứng</span>
             <span v-if="allOcop.length" class="hero-cred"><IconLine name="chart" /> {{ allOcop.length }} sản phẩm</span>
           </div>
         </div>
@@ -217,6 +216,7 @@
 import type { Entity } from '~/types'
 import { AREA_META } from '~/composables/useConstants'
 import { inSeason, relevanceScore } from '~/composables/useSeason'
+import { isOcopCertified, ocopStars } from '~/utils/ocop'
 
 useReveal()
 const { f: pc } = usePageContent('ocop')
@@ -270,7 +270,9 @@ const { data, error: fetchError } = await useAsyncData('catalog-ocop', () =>
 const allOcop = computed(() => {
   const raw = data.value
   if (!raw) return []
-  return (raw.entities || []).filter((e: Entity) => e.attributes?.ocop)
+  // Trước đây lọc bằng `attributes.ocop` truthy — loại HẲN 73 sản phẩm chỉ có
+  // khoá `ocop_star`. Đo trên dữ liệu đang chạy: 26 lọt / 99 thật.
+  return (raw.entities || []).filter((e: Entity) => isOcopCertified(e))
 })
 
 // Total catalog size (san-pham.vue's full scope) minus the certified subset —
@@ -289,8 +291,12 @@ const relatedCatalogs = computed(() => [
   { to: '/kham-pha/am-thuc', icon: '🍲', label: 'Ẩm thực', desc: 'Món ngon Vĩnh Long' },
 ])
 
+// `parseInt(attributes.ocop)` cũ trả 0 cho gần như mọi sản phẩm: `ocop` là văn
+// xuôi ("OCOP 3 sao"), không phải số. Hậu quả đo được trên trang đang chạy: sổ
+// vinh danh 3 sản phẩm thay vì 77, dải "Bậc 5 sao" không render, triện son khai
+// ★4 dù dữ liệu có 5 sản phẩm 5 sao. Luật đầy đủ + bộ lọc §1.7: ~/utils/ocop.ts
 function getStars(e: Entity): number {
-  return parseInt(String(e.attributes?.ocop || ''), 10) || 0
+  return ocopStars(e)
 }
 
 const starStats = computed(() => {
