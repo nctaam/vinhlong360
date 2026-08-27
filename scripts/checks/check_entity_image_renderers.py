@@ -1057,8 +1057,18 @@ def _metadata_proof(text: str, entry: dict, root: Path) -> bool:
     )
 
 
+# Component NHẬN descriptor qua prop rồi tự lo nhãn công bố. Trang gọi nó là nơi
+# sinh descriptor, nên hàng registry khai ở TRANG với producer = tên component.
+# Trước đây danh sách này chép tay ở BA chỗ; gom về một hằng để chúng không lệch
+# nhau — thêm một component mà quên một chỗ là cổng nói dối theo kiểu khó thấy.
+DELEGATING_COMPONENTS = {
+    "EntityCard", "SavedEntityCard", "PostCard", "PhotoGallery", "ImageLightbox",
+    "HomeFeatureDossier", "HomeProductLead",
+}
+
+
 def _delegation_proof(text: str, producer: str) -> bool:
-    if producer in {"EntityCard", "SavedEntityCard", "PostCard", "PhotoGallery", "ImageLightbox", "HomeFeatureDossier"}:
+    if producer in DELEGATING_COMPONENTS:
         return re.search(rf"<{re.escape(producer)}\b", text) is not None
     return producer in text and not find_image_render_sinks(text, require_raw_source=True, raw_aliases=trace_raw_image_aliases(text))
 
@@ -1069,14 +1079,15 @@ def _is_metadata_entry(entry: dict) -> bool:
 
 
 def _is_component_delegation(entry: dict) -> bool:
-    return entry["descriptor_producer"] in {"EntityCard", "SavedEntityCard", "PostCard", "PhotoGallery", "ImageLightbox", "HomeFeatureDossier"}
+    return entry["descriptor_producer"] in DELEGATING_COMPONENTS
 
 
 def _has_delegated_presentation(text: str, presentation: str) -> bool:
     if presentation == "full":
         return bool(re.search(r"<(?:Lazy)?(?:PhotoGallery|ImageLightbox)\b", text))
     if presentation == "short":
-        return bool(re.search(r"<(?:EntityCard|SavedEntityCard|PostCard|HomeFeatureDossier)\b", text))
+        return bool(re.search(
+            r"<(?:EntityCard|SavedEntityCard|PostCard|HomeFeatureDossier|HomeProductLead)\b", text))
     return False
 
 

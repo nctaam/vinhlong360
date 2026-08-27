@@ -348,17 +348,28 @@ jobs:
       - name: Public accessibility gate
         run: npm run check:public-accessibility
 
+      # THỨ TỰ CÓ Ý NGHĨA: test chạy TRƯỚC cổng bundle.
+      #
+      # Trước đây cổng bundle đứng trên và không có continue-on-error, nên khi gói
+      # vượt trần (đang 803/800 kB gz — nợ có từ trước, ROADMAP §37.3) job dừng
+      # ngay và `npm test` KHÔNG BAO GIỜ chạy. Đó là cái lưới đã để lọt commit
+      # 77ab0e89 mang theo một test đỏ suốt 5 commit mà không ai thấy.
+      #
+      # Một cổng hiệu-năng che mất toàn bộ tín hiệu ĐÚNG-SAI là đổi nhầm thứ tự
+      # ưu tiên. Đảo lại thì cổng bundle vẫn còn nguyên răng (vẫn làm job đỏ),
+      # chỉ là nó không còn bịt miệng test được nữa.
+      - name: Run tests
+        run: npm test
+
       # R30.7 chỉ đo được khi ĐÃ có web-nuxt/.output. `run_hard.py --all` chạy ở
       # job Python — nơi frontend chưa từng build — nên ở đó cổng luôn graceful-skip
       # về 0 và không bao giờ chặn được gì. Đây là nơi duy nhất nó có răng.
       - name: Bundle budget gate (R30.7)
+        if: always()
         working-directory: .
         env:
           PYTHONPATH: scripts
         run: python3 -m checks.check_bundle
-
-      - name: Run tests
-        run: npm test
 
       # Capture a complete new candidate set on every CI run. The smoke runner
       # binds each PNG and its manifest to this exact checkout revision.

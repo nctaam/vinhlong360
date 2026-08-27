@@ -99,6 +99,15 @@ const requiredBoundaries = [
   ['pages/dia-diem/[id].vue', 'entity-metadata', 'ai-generated'],
   ['pages/xa-phuong/[id].vue', 'entity-metadata', 'ai-generated'],
   ['pages/khu-vuc/[area].vue', 'entity-metadata', 'ai-generated'],
+  // Hai bồn ảnh entity MỚI của đợt trang chủ. Cổng R20.10 KHÔNG tự đòi chúng —
+  // nó chỉ đỏ khi mã tự đọc trường ảnh thô, mà cả hai đều uỷ quyền cho
+  // describeEntityImages. Nhưng registry là BẢN KIỂM KÊ, không phải chỉ là cổng:
+  // tiền lệ `pages/index.vue | home-feature-dossier` cũng uỷ quyền mà vẫn khai.
+  // Không khai thì ai đó gỡ <ImageDisclosure> cho "gọn" sẽ không làm đỏ cổng nào,
+  // và ảnh AI mất nhãn minh-hoạ (§1.5 "ảnh AI không được giả làm ảnh thật").
+  ['pages/index.vue', 'home-product-lead', 'ai-generated'],
+  ['pages/index.vue', 'home-product-lead', 'placeholder'],
+  ['pages/index.vue', 'home-signal-lead', 'ai-generated'],
 ] as const
 
 const key = (row: Pick<Renderer, 'file' | 'surface' | 'source_class'>) => `${row.file}|${row.surface}|${row.source_class}`

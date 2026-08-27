@@ -237,7 +237,15 @@ describe('Task36 image boundaries', () => {
     // giữ nguyên hiệu lực. Nếu ảnh nền spotlight được dựng lại, nó phải đi qua
     // descriptor như mọi bồn ảnh khác và rào phủ định sẽ bắt nếu không.
     expect(source).not.toMatch(/SPOT_CAT_PHOTO/)
-    expect(source).toContain('EntityFeature')
+    // Cặp song sinh của khẳng định trên, và tôi đã bỏ sót nó ở chính commit đi
+    // vá cái kia. `toContain('EntityFeature')` chỉ còn được nuôi bằng MỘT DÒNG
+    // BÌNH LUẬN mồ côi trong index.vue — template không còn <EntityFeature> nào,
+    // và home-nocturne-page.test.ts:472 lại khẳng định NGƯỢC LẠI rằng khối đó
+    // KHÔNG được render. Hai test cùng repo đòi hai điều trái nhau; cái được
+    // nuôi bằng bình luận là cái sai. Dọn dòng bình luận chết đó — việc hoàn
+    // toàn vô hại — sẽ làm test này đỏ mà không có hồi quy sản phẩm nào.
+    // Nay đảo về phủ định để hai test nói cùng một thứ.
+    expect(source).not.toMatch(/EntityFeature/)
   })
 
   it('keeps nearby and recommendation surfaces delegated through EntityCard', () => {

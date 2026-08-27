@@ -371,10 +371,6 @@ const { get: ss } = useSiteSettings()
 
 const { homepageDecisionActions } = useJourneyActions()
 
-// Editorial photo-led feature copy (EntityFeature block). Contact/discover CTA only —
-// never an order/price form, per project invariants.
-
-
 const { favorites } = useFavorites()
 
 const { recentItems } = useRecentlyViewed()

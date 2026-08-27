@@ -836,6 +836,39 @@
       "presentation": "full",
       "accessibility": "visible-full-copy",
       "test_file": "tests/image-metadata-disclosure.test.ts"
+    },
+    {
+      "file": "pages/index.vue",
+      "surface": "home-signal-lead",
+      "access_path": "signalLeadDescriptor",
+      "source_class": "ai-generated",
+      "descriptor_producer": "describeEntityImages",
+      "render_policy": "render",
+      "presentation": "short",
+      "accessibility": "aria-describedby-full-copy",
+      "test_file": "tests/home-nocturne-page.test.ts"
+    },
+    {
+      "file": "pages/index.vue",
+      "surface": "home-product-lead",
+      "access_path": "entity.images|entity.image|entity.image_descriptor|entity.image_descriptors",
+      "source_class": "ai-generated",
+      "descriptor_producer": "HomeProductLead",
+      "render_policy": "render",
+      "presentation": "short",
+      "accessibility": "aria-describedby-full-copy",
+      "test_file": "tests/home-product-lead.test.ts"
+    },
+    {
+      "file": "pages/index.vue",
+      "surface": "home-product-lead",
+      "access_path": "entity.images|entity.image|entity.image_descriptor|entity.image_descriptors",
+      "source_class": "placeholder",
+      "descriptor_producer": "HomeProductLead",
+      "render_policy": "render",
+      "presentation": "short",
+      "accessibility": "aria-describedby-full-copy",
+      "test_file": "tests/home-product-lead.test.ts"
     }
   ]
 }
