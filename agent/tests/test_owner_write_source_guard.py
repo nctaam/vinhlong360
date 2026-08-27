@@ -91,8 +91,10 @@ SINKS = [
     ("agent/prompt_compiler.py", "record_demo", "_save(RAW_FILE, pool)"),
     ("agent/ab_testing.py", "ABTestManager.record_outcome", "self._save()"),
     ("agent/feedback_policy.py", "PostgresFeedbackStore.issue", "db._execute"),
-    ("agent/server.py", "chat", "cache.put"),
-    ("agent/server.py", "chat_stream", "cache.put"),
+    # chat/chat_stream da sang agent/chat/ (2026-08-27) — rao quet-nguon phai
+    # di theo MA, khong ghim theo file cu.
+    ("agent/chat/api.py", "chat", "cache.put"),
+    ("agent/chat/api.py", "chat_stream", "cache.put"),
 ]
 
 

@@ -1,5 +1,6 @@
 """Privacy-boundary coverage for tool output and personal sink persistence."""
 
+from chat import api as chat_api  # ky hieu chat da doi sang day (2026-08-27)
 import json
 import os
 import sys
@@ -69,27 +70,44 @@ def _configure_post_chat(
     async def resolve_owner(_request):
         return SimpleNamespace(owner_key="user:alice", cookie_value=None)
 
+    monkeypatch.setattr(chat_api, "memory_manager", manager)
+
     monkeypatch.setattr(server, "memory_manager", manager)
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", resolve_owner, raising=False)
     monkeypatch.setattr(server, "resolve_chat_owner", resolve_owner, raising=False)
     monkeypatch.setattr(server.chat_limiter, "is_allowed", lambda _ip: (True, {}))
+    monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", False)
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", False)
+    monkeypatch.setattr(chat_api, "HAS_AUTOCORRECT", False)
     monkeypatch.setattr(server, "HAS_AUTOCORRECT", False)
+    monkeypatch.setattr(chat_api, "HAS_TRACING", False)
     monkeypatch.setattr(server, "HAS_TRACING", False)
+    monkeypatch.setattr(chat_api, "HAS_DYNAMIC_AGENTS", False)
     monkeypatch.setattr(server, "HAS_DYNAMIC_AGENTS", False)
+    monkeypatch.setattr(chat_api, "HAS_ORCHESTRATOR", True)
     monkeypatch.setattr(server, "HAS_ORCHESTRATOR", True)
+    monkeypatch.setattr(chat_api, "HAS_OPTIMIZER", True)
     monkeypatch.setattr(server, "HAS_OPTIMIZER", True)
+    monkeypatch.setattr(chat_api, "HAS_MEMORY_GRAPH", True)
     monkeypatch.setattr(server, "HAS_MEMORY_GRAPH", True)
+    monkeypatch.setattr(chat_api, "HAS_EXPERIENCE", True)
     monkeypatch.setattr(server, "HAS_EXPERIENCE", True)
+    monkeypatch.setattr(chat_api, "HAS_FEWSHOT", True)
     monkeypatch.setattr(server, "HAS_FEWSHOT", True)
+    monkeypatch.setattr(chat_api, "HAS_LLM_JUDGE", False)
     monkeypatch.setattr(server, "HAS_LLM_JUDGE", False)
+    monkeypatch.setattr(chat_api, "HAS_AB_TESTING", True)
     monkeypatch.setattr(server, "HAS_AB_TESTING", True)
+    monkeypatch.setattr(chat_api, "HAS_METRICS", False)
     monkeypatch.setattr(server, "HAS_METRICS", False)
+    monkeypatch.setattr(chat_api, "HAS_COST_TRACKER", False)
     monkeypatch.setattr(server, "HAS_COST_TRACKER", False)
+    monkeypatch.setattr(chat_api, "HAS_GUARDRAILS", False)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", False)
     monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(server.cache, "put", _capture(writes, "cache"))
     monkeypatch.setattr(
-        server,
+        chat_api,
         "_build_messages",
         lambda message, *_args: (
             [
@@ -100,7 +118,7 @@ def _configure_post_chat(
         ),
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "_run_agent_orchestrated",
         lambda *_args, **_kwargs: (
             provider_reply,
@@ -108,7 +126,7 @@ def _configure_post_chat(
             provider_suggestions or [],
         ),
     )
-    monkeypatch.setattr(server.prompt_optimizer, "get_current_variant", lambda: {})
+    monkeypatch.setattr(chat_api.prompt_optimizer, "get_current_variant", lambda: {})
     monkeypatch.setattr(
         server.reflexion_engine,
         "evaluate_answer",
@@ -120,7 +138,7 @@ def _configure_post_chat(
     monkeypatch.setattr(server.memory_manager, "on_good_answer", _capture(writes, "memory_good"))
     monkeypatch.setattr(server.memory_graph, "on_chat_complete", _capture(writes, "graph"))
     monkeypatch.setattr(server.analytics, "track_query", _capture(writes, "analytics"))
-    monkeypatch.setattr(server, "record_outcome", _capture(writes, "optimizer"))
+    monkeypatch.setattr(chat_api, "record_outcome", _capture(writes, "optimizer"))
     monkeypatch.setattr(server.experience_memory, "record", _capture(writes, "experience"))
     monkeypatch.setattr(server.prompt_compiler, "record_demo", _capture(writes, "prompt_demo"))
     monkeypatch.setattr(server.ab_manager, "record_outcome", _capture(writes, "ab"))
@@ -228,7 +246,7 @@ def test_tool_redaction_failure_does_not_publish_contact_provenance(monkeypatch)
         },
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "redact_payload",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(
             PrivacyBoundaryUnavailable("TOOL_REDACTION_FAILED")
@@ -265,8 +283,12 @@ def test_parallel_tool_redaction_serializes_contact_provenance(monkeypatch, runn
             with state_lock:
                 state["active"] -= 1
 
+    monkeypatch.setattr(chat_api, "HAS_PARALLEL", True)
+
     monkeypatch.setattr(server, "HAS_PARALLEL", True)
+    monkeypatch.setattr(chat_api, "_safe_tool_result", redaction_probe)
     monkeypatch.setattr(server, "_safe_tool_result", redaction_probe)
+    monkeypatch.setattr(chat_api, "call_tool", lambda name, *_args: name)
     monkeypatch.setattr(server, "call_tool", lambda name, *_args: name)
 
     if runner == "orchestrated":
@@ -286,7 +308,7 @@ def test_parallel_tool_redaction_serializes_contact_provenance(monkeypatch, runn
                 )
                 return {"reply": "done", "tools_used": [], "suggestions": []}
 
-        monkeypatch.setattr(server, "_get_orchestrator", lambda: FakeOrchestrator())
+        monkeypatch.setattr(chat_api, "_get_orchestrator", lambda: FakeOrchestrator())
         server._run_agent_orchestrated("hello", [], "sid", "system")
     else:
         tool_calls = [
@@ -317,8 +339,11 @@ def test_parallel_tool_redaction_serializes_contact_provenance(monkeypatch, runn
         )
         completions = SimpleNamespace(create=lambda **_kwargs: next(responses))
         client = SimpleNamespace(chat=SimpleNamespace(completions=completions))
+        monkeypatch.setattr(chat_api, "HAS_CIRCUIT_BREAKER", False)
         monkeypatch.setattr(server, "HAS_CIRCUIT_BREAKER", False)
+        monkeypatch.setattr(chat_api, "get_client", lambda: client)
         monkeypatch.setattr(server, "get_client", lambda: client)
+        monkeypatch.setattr(chat_api, "get_model", lambda: "test-model")
         monkeypatch.setattr(server, "get_model", lambda: "test-model")
         server._run_agent([{"role": "user", "content": "hello"}], max_rounds=2)
 
@@ -360,15 +385,17 @@ def test_post_provider_suggestions_are_safe_before_response_and_cache(monkeypatc
 
 def test_output_boundary_failure_writes_nothing(monkeypatch, tmp_path):
     writes = _configure_post_chat(monkeypatch, tmp_path, "Provider reply long enough for processing.")
+    monkeypatch.setattr(chat_api, "HAS_GUARDRAILS", True)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", True)
+    monkeypatch.setattr(chat_api, "HAS_COST_TRACKER", True)
     monkeypatch.setattr(server, "HAS_COST_TRACKER", True)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "guardrail_budget",
         SimpleNamespace(record_usage=_capture(writes, "guardrail_budget")),
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "cost_attribution",
         SimpleNamespace(record=_capture(writes, "cost")),
     )
@@ -395,9 +422,11 @@ def test_output_boundary_failure_writes_nothing(monkeypatch, tmp_path):
         )
         return "Provider reply long enough for processing.", [], []
 
+    monkeypatch.setattr(chat_api, "_run_agent_orchestrated", provider_with_usage)
+
     monkeypatch.setattr(server, "_run_agent_orchestrated", provider_with_usage)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "prepare_chat_output",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(
             PrivacyBoundaryUnavailable("OUTPUT_REDACTION_FAILED")
@@ -409,7 +438,7 @@ def test_output_boundary_failure_writes_nothing(monkeypatch, tmp_path):
         response = client.post("/chat", json={"message": "hello"})
 
     assert response.status_code == 200
-    assert response.json()["reply"] == getattr(server, "SAFE_PRIVACY_FAILURE_REPLY", SAFE_FAILURE)
+    assert response.json()["reply"] == getattr(chat_api, "SAFE_PRIVACY_FAILURE_REPLY", SAFE_FAILURE)
     assert writes == []
 
 

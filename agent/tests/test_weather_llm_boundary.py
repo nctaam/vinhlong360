@@ -20,6 +20,7 @@ HTTP `GET /weather` vẫn phải giao nguyên `fallback: true` cho frontend.
 """
 
 from __future__ import annotations
+from chat import api as chat_api  # ma chat da sang day (2026-08-27)
 
 import copy
 import json
@@ -176,19 +177,25 @@ def test_realtime_context_keeps_real_measurement(monkeypatch):
     assert realtime.LLM_WEATHER_NO_MEASUREMENT_NOTICE not in ctx
 
 
-# ── Biên giới 2: tool `weather` của chat (agent/server.py) ───────────────────
+# ── Biên giới 2: tool `weather` của chat (agent/chat/api.py từ 2026-08-27) ──
 
 @pytest.fixture
 def server_module(monkeypatch):
     import server
 
+    monkeypatch.setattr(chat_api, "HAS_REALTIME", True)
+
     monkeypatch.setattr(server, "HAS_REALTIME", True)
     # Circuit breaker là singleton dùng chung cả suite — tắt nhánh đó để test
     # xác định. Việc _tool_weather PHẢI đi qua weather_breaker đã có test riêng
     # (agent/tests/test_resilience.py::test_weather_tool_uses_circuit_breaker).
+    monkeypatch.setattr(chat_api, "HAS_CIRCUIT_BREAKER", False)
     monkeypatch.setattr(server, "HAS_CIRCUIT_BREAKER", False)
+    monkeypatch.setattr(chat_api, "get_upcoming_events", lambda **kwargs: [])
     monkeypatch.setattr(server, "get_upcoming_events", lambda **kwargs: [])
-    return server
+    # Fixture tra ve module GIU tool weather. `_tool_weather` da sang chat.api
+    # cung dot boc chat; van va co HAS_* o CA HAI vi mot so route con o server.
+    return chat_api
 
 
 def test_chat_weather_tool_warns_llm_when_data_is_fallback(server_module, monkeypatch, fallback_payload):

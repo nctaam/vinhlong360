@@ -1,5 +1,6 @@
 """Security boundary tests for server-derived chat ownership."""
 
+from chat import api as chat_api  # ky hieu chat da doi sang day (2026-08-27)
 import asyncio
 import importlib
 import importlib.util
@@ -302,16 +303,17 @@ def test_authenticated_owner_uses_validated_user_id(monkeypatch):
 def test_post_chat_accepts_alice_conversation_and_rejects_bob(tmp_path, monkeypatch):
     manager = _manager(tmp_path)
     conversation = manager.create_session("user:alice")
-    monkeypatch.setattr(server, "memory_manager", manager)
+    monkeypatch.setattr(chat_api, "memory_manager", manager)
 
     async def resolve_owner(request):
         user = request.headers.get("x-test-user")
         return SimpleNamespace(owner_key=f"user:{user}", cookie_value=None)
 
-    monkeypatch.setattr(server, "resolve_chat_owner", resolve_owner, raising=False)
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", resolve_owner, raising=False)
+    monkeypatch.setattr(chat_api, "HAS_GUARDRAILS", True)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", True)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "prepare_chat_input",
         Mock(side_effect=PrivacyBoundaryBlocked("INPUT_BLOCKED")),
     )
@@ -336,7 +338,7 @@ def test_post_chat_accepts_alice_conversation_and_rejects_bob(tmp_path, monkeypa
 def test_post_mismatch_fails_before_state_cache_prompt_or_provider_access(tmp_path, monkeypatch):
     manager = _manager(tmp_path)
     conversation = manager.create_session("user:alice")
-    monkeypatch.setattr(server, "memory_manager", manager)
+    monkeypatch.setattr(chat_api, "memory_manager", manager)
     server.cache.put(
         "alice cached query",
         {"reply": "alice sentinel"},
@@ -350,14 +352,16 @@ def test_post_mismatch_fails_before_state_cache_prompt_or_provider_access(tmp_pa
     async def bob_owner(_request):
         return SimpleNamespace(owner_key="user:bob", cookie_value=None)
 
-    monkeypatch.setattr(server, "resolve_chat_owner", bob_owner, raising=False)
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", bob_owner, raising=False)
     forbidden = Mock(side_effect=AssertionError("must not be accessed for an ownership miss"))
     limiter = Mock(return_value=(True, {}))
     monkeypatch.setattr(manager, "on_message", forbidden)
     monkeypatch.setattr(server.chat_limiter, "is_allowed", limiter)
     monkeypatch.setattr(server.cache, "get", forbidden)
-    monkeypatch.setattr(server, "semantic_get_async", forbidden)
+    monkeypatch.setattr(chat_api, "semantic_get_async", forbidden)
+    monkeypatch.setattr(chat_api, "_build_messages", forbidden)
     monkeypatch.setattr(server, "_build_messages", forbidden)
+    monkeypatch.setattr(chat_api, "get_client", forbidden)
     monkeypatch.setattr(server, "get_client", forbidden)
     client = TestClient(server.app)
 
@@ -396,12 +400,14 @@ def test_owned_post_cache_reads_receive_owner_key(tmp_path, monkeypatch):
         calls.append(("exact", message, owner_key))
         return sentinel
 
-    monkeypatch.setattr(server, "memory_manager", manager)
-    monkeypatch.setattr(server, "resolve_chat_owner", alice_owner, raising=False)
+    monkeypatch.setattr(chat_api, "memory_manager", manager)
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", alice_owner, raising=False)
+    monkeypatch.setattr(chat_api, "HAS_GUARDRAILS", False)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", False)
+    monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", True)
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
     monkeypatch.setattr(server.chat_limiter, "is_allowed", lambda _ip: (True, {}))
-    monkeypatch.setattr(server, "semantic_get_async", semantic_read)
+    monkeypatch.setattr(chat_api, "semantic_get_async", semantic_read)
     monkeypatch.setattr(server.cache, "get", exact_read)
     client = TestClient(server.app)
 
@@ -420,8 +426,8 @@ def test_owned_post_cache_reads_receive_owner_key(tmp_path, monkeypatch):
 
 def test_rate_limited_post_does_not_create_or_evict_session(tmp_path, monkeypatch):
     manager, existing_key = _capacity_manager(tmp_path)
-    monkeypatch.setattr(server, "memory_manager", manager)
-    monkeypatch.setattr(server, "resolve_chat_owner", _new_anonymous_owner)
+    monkeypatch.setattr(chat_api, "memory_manager", manager)
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", _new_anonymous_owner)
     monkeypatch.setattr(server.chat_limiter, "is_allowed", lambda _ip: (False, {"retry_after": 30}))
     client = TestClient(server.app)
 
@@ -436,8 +442,9 @@ def test_rate_limited_post_does_not_create_or_evict_session(tmp_path, monkeypatc
 def test_guardrail_blocked_post_uses_owner_without_creating_session(tmp_path, monkeypatch):
     manager, existing_key = _capacity_manager(tmp_path)
     checked = []
-    monkeypatch.setattr(server, "memory_manager", manager)
-    monkeypatch.setattr(server, "resolve_chat_owner", _new_anonymous_owner)
+    monkeypatch.setattr(chat_api, "memory_manager", manager)
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", _new_anonymous_owner)
+    monkeypatch.setattr(chat_api, "HAS_GUARDRAILS", True)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", True)
 
     def block_input(message, _history, *, owner_key):
@@ -445,8 +452,9 @@ def test_guardrail_blocked_post_uses_owner_without_creating_session(tmp_path, mo
         raise PrivacyBoundaryBlocked("INPUT_BLOCKED")
 
     monkeypatch.setattr(
-        server,
+        chat_api,
         "prepare_chat_input",
+
         block_input,
     )
     client = TestClient(server.app)
@@ -463,8 +471,8 @@ def test_guardrail_blocked_post_uses_owner_without_creating_session(tmp_path, mo
 
 def test_empty_stream_does_not_create_or_evict_session(tmp_path, monkeypatch):
     manager, existing_key = _capacity_manager(tmp_path)
-    monkeypatch.setattr(server, "memory_manager", manager)
-    monkeypatch.setattr(server, "resolve_chat_owner", _new_anonymous_owner)
+    monkeypatch.setattr(chat_api, "memory_manager", manager)
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", _new_anonymous_owner)
     monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
     client = TestClient(server.app)
 
@@ -479,8 +487,9 @@ def test_empty_stream_does_not_create_or_evict_session(tmp_path, monkeypatch):
 def test_guardrail_blocked_stream_uses_owner_without_creating_session(tmp_path, monkeypatch):
     manager, existing_key = _capacity_manager(tmp_path)
     checked = []
-    monkeypatch.setattr(server, "memory_manager", manager)
-    monkeypatch.setattr(server, "resolve_chat_owner", _new_anonymous_owner)
+    monkeypatch.setattr(chat_api, "memory_manager", manager)
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", _new_anonymous_owner)
+    monkeypatch.setattr(chat_api, "HAS_GUARDRAILS", True)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", True)
 
     def block_input(message, _history, *, owner_key):
@@ -488,8 +497,9 @@ def test_guardrail_blocked_stream_uses_owner_without_creating_session(tmp_path, 
         raise PrivacyBoundaryBlocked("INPUT_BLOCKED")
 
     monkeypatch.setattr(
-        server,
+        chat_api,
         "prepare_chat_input",
+
         block_input,
     )
     client = TestClient(server.app)
@@ -506,15 +516,17 @@ def test_guardrail_blocked_stream_uses_owner_without_creating_session(tmp_path, 
 def test_stream_mismatch_fails_before_access_and_sets_anonymous_cookie(tmp_path, monkeypatch):
     manager = _manager(tmp_path)
     conversation = manager.create_session("user:alice")
-    monkeypatch.setattr(server, "memory_manager", manager)
-    monkeypatch.setattr(server, "resolve_chat_owner", _new_anonymous_owner)
+    monkeypatch.setattr(chat_api, "memory_manager", manager)
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", _new_anonymous_owner)
     forbidden = Mock(side_effect=AssertionError("must not be accessed for an ownership miss"))
     limiter = Mock(return_value=(True, {}))
     monkeypatch.setattr(manager, "on_message", forbidden)
     monkeypatch.setattr(server.stream_limiter, "is_allowed", limiter)
     monkeypatch.setattr(server.cache, "get", forbidden)
-    monkeypatch.setattr(server, "semantic_get_async", forbidden)
+    monkeypatch.setattr(chat_api, "semantic_get_async", forbidden)
+    monkeypatch.setattr(chat_api, "_build_messages", forbidden)
     monkeypatch.setattr(server, "_build_messages", forbidden)
+    monkeypatch.setattr(chat_api, "get_client", forbidden)
     monkeypatch.setattr(server, "get_client", forbidden)
     client = TestClient(server.app)
 
@@ -542,14 +554,16 @@ def test_rate_limited_invalid_selector_returns_429_before_lookup_or_mutation(
     manager = _manager(tmp_path)
     forbidden = Mock(side_effect=AssertionError("blocked request must not touch target state"))
     limiter = Mock(return_value=(False, {"retry_after": 30}))
-    monkeypatch.setattr(server, "memory_manager", manager)
-    monkeypatch.setattr(server, "resolve_chat_owner", _new_anonymous_owner)
+    monkeypatch.setattr(chat_api, "memory_manager", manager)
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", _new_anonymous_owner)
     monkeypatch.setattr(getattr(server, limiter_name), "is_allowed", limiter)
     monkeypatch.setattr(manager, "require_session", forbidden)
     monkeypatch.setattr(manager, "create_session", forbidden)
     monkeypatch.setattr(server.cache, "get", forbidden)
-    monkeypatch.setattr(server, "semantic_get_async", forbidden)
+    monkeypatch.setattr(chat_api, "semantic_get_async", forbidden)
+    monkeypatch.setattr(chat_api, "_build_messages", forbidden)
     monkeypatch.setattr(server, "_build_messages", forbidden)
+    monkeypatch.setattr(chat_api, "get_client", forbidden)
     monkeypatch.setattr(server, "get_client", forbidden)
     client = TestClient(server.app)
 
@@ -584,12 +598,14 @@ def test_owned_stream_cache_reads_receive_owner_key(tmp_path, monkeypatch):
         calls.append(("exact", message, owner_key))
         return sentinel
 
-    monkeypatch.setattr(server, "memory_manager", manager)
-    monkeypatch.setattr(server, "resolve_chat_owner", alice_owner, raising=False)
+    monkeypatch.setattr(chat_api, "memory_manager", manager)
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", alice_owner, raising=False)
+    monkeypatch.setattr(chat_api, "HAS_GUARDRAILS", False)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", False)
+    monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", True)
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
     monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
-    monkeypatch.setattr(server, "semantic_get_async", semantic_read)
+    monkeypatch.setattr(chat_api, "semantic_get_async", semantic_read)
     monkeypatch.setattr(server.cache, "get", exact_read)
     client = TestClient(server.app)
 
@@ -668,29 +684,33 @@ def test_exact_cache_hit_finalizes_captured_semantic_generation(
             dedup_key=dedup_key,
         )
 
-    monkeypatch.setattr(server, "memory_manager", manager)
-    monkeypatch.setattr(server, "resolve_chat_owner", alice_owner, raising=False)
+    monkeypatch.setattr(chat_api, "memory_manager", manager)
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", alice_owner, raising=False)
+    monkeypatch.setattr(chat_api, "HAS_GUARDRAILS", False)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", False)
+    monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", True)
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
     monkeypatch.setattr(server.chat_limiter, "is_allowed", lambda _ip: (True, {}))
     monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
-    monkeypatch.setattr(server, "semantic_get_async", semantic_cache_mod.semantic_get_async)
+    monkeypatch.setattr(chat_api, "semantic_get_async", semantic_cache_mod.semantic_get_async)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "semantic_take_dedup_lease",
         semantic_cache_mod.semantic_take_dedup_lease,
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "semantic_put",
         {
             False: semantic_cache_mod.semantic_put,
             True: fail_publication,
         }[publication_fails],
     )
-    monkeypatch.setattr(server, "semantic_abandon", record_abandon)
+    monkeypatch.setattr(chat_api, "semantic_abandon", record_abandon)
     monkeypatch.setattr(server.cache, "get", exact_read)
+    monkeypatch.setattr(chat_api, "_build_messages", forbidden)
     monkeypatch.setattr(server, "_build_messages", forbidden)
+    monkeypatch.setattr(chat_api, "get_client", forbidden)
     monkeypatch.setattr(server, "get_client", forbidden)
     monkeypatch.setattr(semantic_cache_mod, "multi_tier_cache", semantic_cache)
     monkeypatch.setattr(semantic_cache_mod, "deduplicator", deduplicator)
@@ -762,30 +782,43 @@ def test_stream_terminal_path_abandons_captured_semantic_lease(
     async def semantic_miss(*_args, **_kwargs):
         return None
 
-    monkeypatch.setattr(server, "memory_manager", manager)
+    monkeypatch.setattr(chat_api, "memory_manager", manager)
     monkeypatch.setattr(manager, "on_chat_complete", lambda *_args: None)
-    monkeypatch.setattr(server, "resolve_chat_owner", alice_owner, raising=False)
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", alice_owner, raising=False)
     monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
+    monkeypatch.setattr(chat_api, "HAS_GUARDRAILS", False)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", False)
+    monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", True)
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(chat_api, "HAS_AUTOCORRECT", False)
     monkeypatch.setattr(server, "HAS_AUTOCORRECT", False)
+    monkeypatch.setattr(chat_api, "HAS_CIRCUIT_BREAKER", False)
     monkeypatch.setattr(server, "HAS_CIRCUIT_BREAKER", False)
+    monkeypatch.setattr(chat_api, "HAS_DYNAMIC_AGENTS", False)
     monkeypatch.setattr(server, "HAS_DYNAMIC_AGENTS", False)
+    monkeypatch.setattr(chat_api, "HAS_OPTIMIZER", False)
     monkeypatch.setattr(server, "HAS_OPTIMIZER", False)
+    monkeypatch.setattr(chat_api, "HAS_COST_TRACKER", False)
     monkeypatch.setattr(server, "HAS_COST_TRACKER", False)
+    monkeypatch.setattr(chat_api, "HAS_MEMORY_GRAPH", False)
     monkeypatch.setattr(server, "HAS_MEMORY_GRAPH", False)
+    monkeypatch.setattr(chat_api, "HAS_EXPERIENCE", False)
     monkeypatch.setattr(server, "HAS_EXPERIENCE", False)
+    monkeypatch.setattr(chat_api, "HAS_FEWSHOT", False)
     monkeypatch.setattr(server, "HAS_FEWSHOT", False)
+    monkeypatch.setattr(chat_api, "HAS_LLM_JUDGE", False)
     monkeypatch.setattr(server, "HAS_LLM_JUDGE", False)
+    monkeypatch.setattr(chat_api, "HAS_AB_TESTING", False)
     monkeypatch.setattr(server, "HAS_AB_TESTING", False)
+    monkeypatch.setattr(chat_api, "HAS_METRICS", False)
     monkeypatch.setattr(server, "HAS_METRICS", False)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "_build_messages",
         lambda *_args: ([{"role": "system", "content": "test"}], {}),
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "get_client",
         lambda: SimpleNamespace(
             chat=SimpleNamespace(completions=StreamCompletions())
@@ -804,19 +837,19 @@ def test_stream_terminal_path_abandons_captured_semantic_lease(
     )
     monkeypatch.setattr(server.quality_tracker, "record", lambda *_args: None)
     monkeypatch.setattr(server.analytics, "track_query", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(server, "semantic_get_async", semantic_miss)
+    monkeypatch.setattr(chat_api, "semantic_get_async", semantic_miss)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "semantic_take_dedup_lease",
         lambda *_args, **_kwargs: dedup_key,
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "semantic_put",
         lambda *_args, **_kwargs: pytest.fail("terminal stream must not publish"),
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "semantic_abandon",
         lambda message, owner_key="", dedup_key=None: abandoned.append(
             (message, owner_key, dedup_key)
@@ -825,7 +858,7 @@ def test_stream_terminal_path_abandons_captured_semantic_lease(
     )
     if terminal_mode == "decision_error":
         monkeypatch.setattr(
-            server,
+            chat_api,
             "_call_stream_decision",
             lambda *_args: {"success": False, "message": "decision failed"},
         )
@@ -883,21 +916,24 @@ def test_stream_setup_exception_abandons_captured_semantic_lease(
     async def semantic_miss(*_args, **_kwargs):
         return None
 
-    monkeypatch.setattr(server, "memory_manager", manager)
-    monkeypatch.setattr(server, "resolve_chat_owner", alice_owner, raising=False)
+    monkeypatch.setattr(chat_api, "memory_manager", manager)
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", alice_owner, raising=False)
     monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
+    monkeypatch.setattr(chat_api, "HAS_GUARDRAILS", False)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", False)
+    monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", True)
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(chat_api, "HAS_AUTOCORRECT", False)
     monkeypatch.setattr(server, "HAS_AUTOCORRECT", False)
     monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(server, "semantic_get_async", semantic_miss)
+    monkeypatch.setattr(chat_api, "semantic_get_async", semantic_miss)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "semantic_take_dedup_lease",
         lambda *_args, **_kwargs: dedup_key,
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "semantic_abandon",
         lambda message, owner_key="", dedup_key=None: abandoned.append(
             (message, owner_key, dedup_key)
@@ -905,7 +941,7 @@ def test_stream_setup_exception_abandons_captured_semantic_lease(
         raising=False,
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "_build_messages",
         lambda *_args: (_ for _ in ()).throw(RuntimeError("stream setup failed")),
     )
@@ -947,24 +983,30 @@ def test_stream_response_start_failure_abandons_before_generator_iteration(
     async def semantic_miss(*_args, **_kwargs):
         return None
 
-    monkeypatch.setattr(server, "memory_manager", manager)
-    monkeypatch.setattr(server, "resolve_chat_owner", alice_owner, raising=False)
+    monkeypatch.setattr(chat_api, "memory_manager", manager)
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", alice_owner, raising=False)
     monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
+    monkeypatch.setattr(chat_api, "HAS_GUARDRAILS", False)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", False)
+    monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", True)
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(chat_api, "HAS_AUTOCORRECT", False)
     monkeypatch.setattr(server, "HAS_AUTOCORRECT", False)
+    monkeypatch.setattr(chat_api, "HAS_DYNAMIC_AGENTS", False)
     monkeypatch.setattr(server, "HAS_DYNAMIC_AGENTS", False)
+    monkeypatch.setattr(chat_api, "HAS_OPTIMIZER", False)
     monkeypatch.setattr(server, "HAS_OPTIMIZER", False)
+    monkeypatch.setattr(chat_api, "HAS_COST_TRACKER", False)
     monkeypatch.setattr(server, "HAS_COST_TRACKER", False)
     monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(server, "semantic_get_async", semantic_miss)
+    monkeypatch.setattr(chat_api, "semantic_get_async", semantic_miss)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "semantic_take_dedup_lease",
         lambda *_args, **_kwargs: dedup_key,
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "semantic_abandon",
         lambda message, owner_key="", dedup_key=None: abandoned.append(
             (message, owner_key, dedup_key)
@@ -972,12 +1014,12 @@ def test_stream_response_start_failure_abandons_before_generator_iteration(
         raising=False,
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "_build_messages",
         lambda *_args: ([{"role": "system", "content": "test"}], {}),
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "get_client",
         lambda: provider_called.append(True),
     )
@@ -1059,16 +1101,21 @@ def test_semantic_dedup_wait_keeps_async_handlers_responsive(
     def forbidden(*_args, **_kwargs):
         raise AssertionError("semantic dedup waiter must not start provider work")
 
-    monkeypatch.setattr(server, "memory_manager", manager)
+    monkeypatch.setattr(chat_api, "memory_manager", manager)
     monkeypatch.setattr(manager, "on_message", lambda *_args: None)
-    monkeypatch.setattr(server, "resolve_chat_owner", alice_owner, raising=False)
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", alice_owner, raising=False)
+    monkeypatch.setattr(chat_api, "HAS_GUARDRAILS", False)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", False)
+    monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", True)
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(chat_api, "HAS_METRICS", False)
     monkeypatch.setattr(server, "HAS_METRICS", False)
     monkeypatch.setattr(server.chat_limiter, "is_allowed", lambda _ip: (True, {}))
     monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
     monkeypatch.setattr(server.cache, "get", forbidden)
+    monkeypatch.setattr(chat_api, "UsageAccumulator", forbidden)
     monkeypatch.setattr(server, "UsageAccumulator", forbidden)
+    monkeypatch.setattr(chat_api, "_build_messages", forbidden)
     monkeypatch.setattr(server, "_build_messages", forbidden)
     monkeypatch.setattr(server.analytics, "track_query", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(semantic_cache_mod, "multi_tier_cache", semantic_cache)
@@ -1125,28 +1172,42 @@ def test_stream_semantic_lookup_error_rejects_missing_lease(tmp_path, monkeypatc
     fake_client = SimpleNamespace(
         chat=SimpleNamespace(completions=_SemanticErrorStreamCompletions())
     )
-    monkeypatch.setattr(server, "memory_manager", manager)
+    monkeypatch.setattr(chat_api, "memory_manager", manager)
     monkeypatch.setattr(manager, "on_chat_complete", lambda *_args: None)
-    monkeypatch.setattr(server, "resolve_chat_owner", alice_owner, raising=False)
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", alice_owner, raising=False)
     monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
+    monkeypatch.setattr(chat_api, "HAS_GUARDRAILS", False)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", False)
+    monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", True)
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(chat_api, "HAS_AUTOCORRECT", False)
     monkeypatch.setattr(server, "HAS_AUTOCORRECT", False)
+    monkeypatch.setattr(chat_api, "HAS_CIRCUIT_BREAKER", False)
     monkeypatch.setattr(server, "HAS_CIRCUIT_BREAKER", False)
+    monkeypatch.setattr(chat_api, "HAS_DYNAMIC_AGENTS", False)
     monkeypatch.setattr(server, "HAS_DYNAMIC_AGENTS", False)
+    monkeypatch.setattr(chat_api, "HAS_OPTIMIZER", False)
     monkeypatch.setattr(server, "HAS_OPTIMIZER", False)
+    monkeypatch.setattr(chat_api, "HAS_COST_TRACKER", False)
     monkeypatch.setattr(server, "HAS_COST_TRACKER", False)
+    monkeypatch.setattr(chat_api, "HAS_MEMORY_GRAPH", False)
     monkeypatch.setattr(server, "HAS_MEMORY_GRAPH", False)
+    monkeypatch.setattr(chat_api, "HAS_EXPERIENCE", False)
     monkeypatch.setattr(server, "HAS_EXPERIENCE", False)
+    monkeypatch.setattr(chat_api, "HAS_FEWSHOT", False)
     monkeypatch.setattr(server, "HAS_FEWSHOT", False)
+    monkeypatch.setattr(chat_api, "HAS_LLM_JUDGE", False)
     monkeypatch.setattr(server, "HAS_LLM_JUDGE", False)
+    monkeypatch.setattr(chat_api, "HAS_AB_TESTING", False)
     monkeypatch.setattr(server, "HAS_AB_TESTING", False)
+    monkeypatch.setattr(chat_api, "HAS_METRICS", False)
     monkeypatch.setattr(server, "HAS_METRICS", False)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "_build_messages",
         lambda *_args: ([{"role": "system", "content": "test"}], {}),
     )
+    monkeypatch.setattr(chat_api, "get_client", lambda: fake_client)
     monkeypatch.setattr(server, "get_client", lambda: fake_client)
     monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(
@@ -1161,9 +1222,9 @@ def test_stream_semantic_lookup_error_rejects_missing_lease(tmp_path, monkeypatc
     )
     monkeypatch.setattr(server.quality_tracker, "record", lambda *_args: None)
     monkeypatch.setattr(server.analytics, "track_query", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(server, "semantic_get_async", semantic_error)
-    monkeypatch.setattr(server, "semantic_take_dedup_lease", forbidden_take)
-    monkeypatch.setattr(server, "semantic_put", reject_missing_lease)
+    monkeypatch.setattr(chat_api, "semantic_get_async", semantic_error)
+    monkeypatch.setattr(chat_api, "semantic_take_dedup_lease", forbidden_take)
+    monkeypatch.setattr(chat_api, "semantic_put", reject_missing_lease)
 
     response = asyncio.run(server.chat_stream(
         server.ChatRequest.model_validate({
@@ -1278,32 +1339,46 @@ def test_autocorrected_stream_resolves_waiter_on_original_cache_query(tmp_path, 
             owner_key=owner_key,
         )
 
-    monkeypatch.setattr(server, "memory_manager", manager)
+    monkeypatch.setattr(chat_api, "memory_manager", manager)
     monkeypatch.setattr(manager, "on_chat_complete", lambda *_args: None)
-    monkeypatch.setattr(server, "resolve_chat_owner", alice_owner, raising=False)
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", alice_owner, raising=False)
     monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
+    monkeypatch.setattr(chat_api, "HAS_GUARDRAILS", False)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", False)
+    monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", True)
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(chat_api, "HAS_AUTOCORRECT", True)
     monkeypatch.setattr(server, "HAS_AUTOCORRECT", True)
+    monkeypatch.setattr(chat_api, "HAS_CIRCUIT_BREAKER", False)
     monkeypatch.setattr(server, "HAS_CIRCUIT_BREAKER", False)
+    monkeypatch.setattr(chat_api, "HAS_DYNAMIC_AGENTS", False)
     monkeypatch.setattr(server, "HAS_DYNAMIC_AGENTS", False)
+    monkeypatch.setattr(chat_api, "HAS_OPTIMIZER", False)
     monkeypatch.setattr(server, "HAS_OPTIMIZER", False)
+    monkeypatch.setattr(chat_api, "HAS_COST_TRACKER", False)
     monkeypatch.setattr(server, "HAS_COST_TRACKER", False)
+    monkeypatch.setattr(chat_api, "HAS_MEMORY_GRAPH", False)
     monkeypatch.setattr(server, "HAS_MEMORY_GRAPH", False)
+    monkeypatch.setattr(chat_api, "HAS_EXPERIENCE", False)
     monkeypatch.setattr(server, "HAS_EXPERIENCE", False)
+    monkeypatch.setattr(chat_api, "HAS_FEWSHOT", False)
     monkeypatch.setattr(server, "HAS_FEWSHOT", False)
+    monkeypatch.setattr(chat_api, "HAS_LLM_JUDGE", False)
     monkeypatch.setattr(server, "HAS_LLM_JUDGE", False)
+    monkeypatch.setattr(chat_api, "HAS_AB_TESTING", False)
     monkeypatch.setattr(server, "HAS_AB_TESTING", False)
+    monkeypatch.setattr(chat_api, "HAS_METRICS", False)
     monkeypatch.setattr(server, "HAS_METRICS", False)
-    monkeypatch.setattr(server, "autocorrect", lambda _query: {
+    monkeypatch.setattr(chat_api, "autocorrect", lambda _query: {
         "was_corrected": True,
         "corrected": corrected_query,
     })
     monkeypatch.setattr(
-        server,
+        chat_api,
         "_build_messages",
         lambda *_args: ([{"role": "system", "content": "test"}], {}),
     )
+    monkeypatch.setattr(chat_api, "get_client", lambda: fake_client)
     monkeypatch.setattr(server, "get_client", lambda: fake_client)
     monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(
@@ -1318,9 +1393,9 @@ def test_autocorrected_stream_resolves_waiter_on_original_cache_query(tmp_path, 
     )
     monkeypatch.setattr(server.quality_tracker, "record", lambda *_args: None)
     monkeypatch.setattr(server.analytics, "track_query", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(server, "semantic_get_async", read_semantic)
-    monkeypatch.setattr(server, "semantic_take_dedup_lease", take_semantic_lease)
-    monkeypatch.setattr(server, "semantic_put", publish_semantic)
+    monkeypatch.setattr(chat_api, "semantic_get_async", read_semantic)
+    monkeypatch.setattr(chat_api, "semantic_take_dedup_lease", take_semantic_lease)
+    monkeypatch.setattr(chat_api, "semantic_put", publish_semantic)
     monkeypatch.setattr(semantic_cache_mod, "multi_tier_cache", semantic_cache)
     monkeypatch.setattr(semantic_cache_mod, "deduplicator", deduplicator)
     client = TestClient(server.app)
@@ -1372,6 +1447,7 @@ def test_admin_semantic_query_invalidation_clears_all_owner_namespaces(monkeypat
         return None
 
     monkeypatch.setattr(admin, "require_admin", allow_admin)
+    monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", True)
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
     monkeypatch.setattr(server, "multi_tier_cache", semantic_cache)
 
@@ -1396,6 +1472,7 @@ def test_welcome_ignores_client_profile_selector(tmp_path, monkeypatch):
     target = manager.cold.get_profile("target-profile")
     target.interests = ["target-secret"]
     target.conversation_count = 1
+    monkeypatch.setattr(chat_api, "memory_manager", manager)
     monkeypatch.setattr(server, "memory_manager", manager)
 
     async def alice_owner(_request):
@@ -1407,6 +1484,9 @@ def test_welcome_ignores_client_profile_selector(tmp_path, monkeypatch):
         captured["preferences"] = preferences
         return {"greeting": "ok", "suggestions": []}
 
+    # /welcome VAN o server.py con chat o chat.api — hai module co hai binding
+    # rieng, nen va ca hai moi phu duoc ca hai duong.
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", alice_owner, raising=False)
     monkeypatch.setattr(server, "resolve_chat_owner", alice_owner, raising=False)
     monkeypatch.setattr(server, "generate_welcome_message", welcome)
     client = TestClient(server.app)
@@ -1420,8 +1500,8 @@ def test_welcome_ignores_client_profile_selector(tmp_path, monkeypatch):
 
 def test_welcome_does_not_create_absent_profile(tmp_path, monkeypatch):
     manager = _manager(tmp_path)
-    monkeypatch.setattr(server, "memory_manager", manager)
-    monkeypatch.setattr(server, "resolve_chat_owner", _new_anonymous_owner)
+    monkeypatch.setattr(chat_api, "memory_manager", manager)
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", _new_anonymous_owner)
     captured = []
     monkeypatch.setattr(
         server,

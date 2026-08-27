@@ -15,7 +15,7 @@ OWNER_GATE_FILES = {
     "hot_memory": "agent/memory.py",
     "cold_memory": "agent/memory.py",
     "memory_graph": "agent/memory_graph.py",
-    "exact_cache": "agent/server.py",
+    "exact_cache": "agent/chat/api.py",  # ma chat sang agent/chat/ 2026-08-27
     "semantic_cache": "agent/semantic_cache.py",
     "semantic_leases": "agent/semantic_cache.py",
     "pending_feedback_receipts": "agent/feedback_policy.py",

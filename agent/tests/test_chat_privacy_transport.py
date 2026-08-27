@@ -1,5 +1,6 @@
 """Real-transport coverage for mandatory chat privacy boundaries."""
 
+from chat import api as chat_api  # ky hieu chat da doi sang day (2026-08-27)
 import asyncio
 import inspect
 import json
@@ -119,6 +120,8 @@ def _capture_receipts(monkeypatch, token="test-feedback-receipt"):
         })
         return SimpleNamespace(token=token)
 
+    monkeypatch.setattr(chat_api, "issue_feedback_receipt", issue, raising=False)
+
     monkeypatch.setattr(server, "issue_feedback_receipt", issue, raising=False)
     return calls
 
@@ -143,28 +146,49 @@ def _configure_chat(monkeypatch, tmp_path):
     fake_client = SimpleNamespace(
         chat=SimpleNamespace(completions=SimpleNamespace(create=create)),
     )
+    monkeypatch.setattr(chat_api, "memory_manager", manager)
     monkeypatch.setattr(server, "memory_manager", manager)
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", resolve_owner, raising=False)
     monkeypatch.setattr(server, "resolve_chat_owner", resolve_owner, raising=False)
     monkeypatch.setattr(server.chat_limiter, "is_allowed", lambda _ip: (True, {}))
     monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
+    monkeypatch.setattr(chat_api, "HAS_GUARDRAILS", False)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", False)
+    monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", False)
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", False)
+    monkeypatch.setattr(chat_api, "HAS_AUTOCORRECT", False)
     monkeypatch.setattr(server, "HAS_AUTOCORRECT", False)
+    monkeypatch.setattr(chat_api, "HAS_TRACING", False)
     monkeypatch.setattr(server, "HAS_TRACING", False)
+    monkeypatch.setattr(chat_api, "HAS_DYNAMIC_AGENTS", False)
     monkeypatch.setattr(server, "HAS_DYNAMIC_AGENTS", False)
+    monkeypatch.setattr(chat_api, "HAS_OPTIMIZER", False)
     monkeypatch.setattr(server, "HAS_OPTIMIZER", False)
+    monkeypatch.setattr(chat_api, "HAS_MEMORY_GRAPH", False)
     monkeypatch.setattr(server, "HAS_MEMORY_GRAPH", False)
+    monkeypatch.setattr(chat_api, "HAS_EXPERIENCE", False)
     monkeypatch.setattr(server, "HAS_EXPERIENCE", False)
+    monkeypatch.setattr(chat_api, "HAS_FEWSHOT", False)
     monkeypatch.setattr(server, "HAS_FEWSHOT", False)
+    monkeypatch.setattr(chat_api, "HAS_LLM_JUDGE", False)
     monkeypatch.setattr(server, "HAS_LLM_JUDGE", False)
+    monkeypatch.setattr(chat_api, "HAS_AB_TESTING", False)
     monkeypatch.setattr(server, "HAS_AB_TESTING", False)
+    monkeypatch.setattr(chat_api, "HAS_METRICS", False)
     monkeypatch.setattr(server, "HAS_METRICS", False)
+    monkeypatch.setattr(chat_api, "HAS_COST_TRACKER", False)
     monkeypatch.setattr(server, "HAS_COST_TRACKER", False)
+    monkeypatch.setattr(chat_api, "HAS_CIRCUIT_BREAKER", False)
     monkeypatch.setattr(server, "HAS_CIRCUIT_BREAKER", False)
+    monkeypatch.setattr(chat_api, "HAS_ORCHESTRATOR", False)
     monkeypatch.setattr(server, "HAS_ORCHESTRATOR", False)
+    monkeypatch.setattr(chat_api, "HAS_PROMPT_CACHE", False)
     monkeypatch.setattr(server, "HAS_PROMPT_CACHE", False)
+    monkeypatch.setattr(chat_api, "get_client", lambda: fake_client)
     monkeypatch.setattr(server, "get_client", lambda: fake_client)
+    monkeypatch.setattr(chat_api, "get_model", lambda: "test-model")
     monkeypatch.setattr(server, "get_model", lambda: "test-model")
+    monkeypatch.setattr(chat_api, "get_model_mini", lambda: "test-model")
     monkeypatch.setattr(server, "get_model_mini", lambda: "test-model")
     monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(server.cache, "put", lambda *_args, **_kwargs: None)
@@ -176,10 +200,10 @@ def _configure_chat(monkeypatch, tmp_path):
         lambda *_args: {"score": 6, "issues": [], "good_points": []},
     )
     monkeypatch.setattr(server.quality_tracker, "record", lambda *_args: None)
-    monkeypatch.setattr(server, "_hybrid_rerank_search", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(chat_api, "_hybrid_rerank_search", lambda *_args, **_kwargs: [])
     monkeypatch.setattr(server.knowledge, "search_entities", lambda *_args, **_kwargs: [])
     monkeypatch.setattr(
-        server,
+        chat_api,
         "_gather_context_pieces",
         lambda *_args: {
             "proactive": "",
@@ -190,7 +214,7 @@ def _configure_chat(monkeypatch, tmp_path):
             "reflexion": "",
         },
     )
-    monkeypatch.setattr(server, "_resolve_base_prompt", lambda _sid: ("system", {}))
+    monkeypatch.setattr(chat_api, "_resolve_base_prompt", lambda _sid: ("system", {}))
     return manager, captured_messages
 
 
@@ -316,6 +340,7 @@ async def test_sse_redacts_email_across_every_provider_chunk_boundary(
     fake_client = SimpleNamespace(
         chat=SimpleNamespace(completions=SimpleNamespace(create=create)),
     )
+    monkeypatch.setattr(chat_api, "get_client", lambda: fake_client)
     monkeypatch.setattr(server, "get_client", lambda: fake_client)
     transport = httpx.ASGITransport(app=server.app)
 
@@ -359,12 +384,14 @@ async def test_sse_redacts_provider_tool_metadata_before_wire(
         return _completion("decision complete")
 
     monkeypatch.setattr(
-        server,
+        chat_api,
         "get_client",
+
         lambda: SimpleNamespace(
             chat=SimpleNamespace(completions=SimpleNamespace(create=create)),
         ),
     )
+    monkeypatch.setattr(chat_api, "call_tool", lambda *_args, **_kwargs: '{"ok": true}')
     monkeypatch.setattr(server, "call_tool", lambda *_args, **_kwargs: '{"ok": true}')
     transport = httpx.ASGITransport(app=server.app)
 
@@ -419,14 +446,15 @@ async def test_sse_preserves_only_current_verified_public_contact(
         return _completion("decision complete")
 
     monkeypatch.setattr(
-        server,
+        chat_api,
         "get_client",
+
         lambda: SimpleNamespace(
             chat=SimpleNamespace(completions=SimpleNamespace(create=create)),
         ),
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "call_tool",
         lambda *_args, **_kwargs: json.dumps({
             "id": "public-office",
@@ -479,22 +507,24 @@ async def test_legacy_cache_is_sanitized_before_delivery_sinks_and_refresh(
             raise AssertionError("semantic hit must not read exact cache")
         return legacy
 
+    monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", True)
+
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
-    monkeypatch.setattr(server, "semantic_get_async", semantic_read)
+    monkeypatch.setattr(chat_api, "semantic_get_async", semantic_read)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "semantic_take_dedup_lease",
         lambda *_args, **_kwargs: "legacy-cache-lease",
     )
-    monkeypatch.setattr(server, "semantic_abandon", lambda *_args, **_kwargs: True)
+    monkeypatch.setattr(chat_api, "semantic_abandon", lambda *_args, **_kwargs: True)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "semantic_put",
         lambda *args, **kwargs: refresh_writes.append((args, kwargs)),
     )
     monkeypatch.setattr(server.cache, "get", exact_read)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "get_client",
         Mock(side_effect=AssertionError("cache hit must not call provider")),
     )
@@ -553,8 +583,9 @@ async def test_post_kb_fallback_issues_receipt_for_delivered_safe_turn(
     }
 
     monkeypatch.setattr(
-        server,
+        chat_api,
         "get_client",
+
         lambda: SimpleNamespace(
             chat=SimpleNamespace(completions=SimpleNamespace(
                 create=lambda *_args, **_kwargs: _completion(
@@ -564,7 +595,7 @@ async def test_post_kb_fallback_issues_receipt_for_delivered_safe_turn(
         ),
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "_hybrid_rerank_search",
         lambda *_args, **_kwargs: [fallback_entity],
     )
@@ -595,14 +626,18 @@ async def test_post_receipt_uses_the_orchestrator_selected_mini_model(
     routed_agent = SimpleNamespace(use_mini=True)
     fake_orchestrator = SimpleNamespace(route=lambda _message: ("general", routed_agent))
 
+    monkeypatch.setattr(chat_api, "HAS_ORCHESTRATOR", True)
+
     monkeypatch.setattr(server, "HAS_ORCHESTRATOR", True)
-    monkeypatch.setattr(server, "_get_orchestrator", lambda: fake_orchestrator)
+    monkeypatch.setattr(chat_api, "_get_orchestrator", lambda: fake_orchestrator)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "_run_agent_orchestrated",
         lambda *_args, **_kwargs: (PROVIDER_REPLY, [], []),
     )
+    monkeypatch.setattr(chat_api, "get_model", lambda: "cx/gpt-5.5")
     monkeypatch.setattr(server, "get_model", lambda: "cx/gpt-5.5")
+    monkeypatch.setattr(chat_api, "get_model_mini", lambda: "cx/gpt-5.5-mini")
     monkeypatch.setattr(server, "get_model_mini", lambda: "cx/gpt-5.5-mini")
     transport = httpx.ASGITransport(app=server.app)
 
@@ -672,6 +707,8 @@ def test_feedback_receipt_helper_failure_is_best_effort_and_logs_stable_code(
     def unavailable(*_args, **_kwargs):
         raise RuntimeError("raw database detail secret@example.com")
 
+    monkeypatch.setattr(chat_api, "issue_feedback_receipt", unavailable, raising=False)
+
     monkeypatch.setattr(server, "issue_feedback_receipt", unavailable, raising=False)
 
     with caplog.at_level("WARNING"):
@@ -716,16 +753,19 @@ async def test_stream_redactor_error_emits_generic_error_and_writes_nothing(
     async def semantic_miss(*_args, **_kwargs):
         return None
 
+    monkeypatch.setattr(chat_api, "StreamingPIIRedactor", ExplodingRedactor, raising=False)
+
     monkeypatch.setattr(server, "StreamingPIIRedactor", ExplodingRedactor, raising=False)
+    monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", True)
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
-    monkeypatch.setattr(server, "semantic_get_async", semantic_miss)
+    monkeypatch.setattr(chat_api, "semantic_get_async", semantic_miss)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "semantic_take_dedup_lease",
         lambda *_args, **_kwargs: "redactor-error-lease",
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "semantic_abandon",
         lambda *args, **kwargs: abandoned.append((args, kwargs)) or True,
     )
@@ -736,7 +776,7 @@ async def test_stream_redactor_error_emits_generic_error_and_writes_nothing(
         lambda *args, **kwargs: writes.append(("cache", args, kwargs)),
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "semantic_put",
         lambda *args, **kwargs: writes.append(("semantic", args, kwargs)),
     )
@@ -757,6 +797,7 @@ async def test_stream_redactor_error_emits_generic_error_and_writes_nothing(
     fake_client = SimpleNamespace(
         chat=SimpleNamespace(completions=SimpleNamespace(create=create)),
     )
+    monkeypatch.setattr(chat_api, "get_client", lambda: fake_client)
     monkeypatch.setattr(server, "get_client", lambda: fake_client)
     transport = httpx.ASGITransport(app=server.app)
 
@@ -821,16 +862,19 @@ def test_stream_cancellation_aborts_withheld_suffix_and_skips_sinks(
     async def semantic_miss(*_args, **_kwargs):
         return None
 
+    monkeypatch.setattr(chat_api, "StreamingPIIRedactor", WithholdingRedactor, raising=False)
+
     monkeypatch.setattr(server, "StreamingPIIRedactor", WithholdingRedactor, raising=False)
+    monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", True)
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
-    monkeypatch.setattr(server, "semantic_get_async", semantic_miss)
+    monkeypatch.setattr(chat_api, "semantic_get_async", semantic_miss)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "semantic_take_dedup_lease",
         lambda *_args, **_kwargs: "cancelled-redactor-lease",
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "semantic_abandon",
         lambda *args, **kwargs: abandoned.append((args, kwargs)) or True,
     )
@@ -841,7 +885,7 @@ def test_stream_cancellation_aborts_withheld_suffix_and_skips_sinks(
         lambda *args, **kwargs: writes.append(("cache", args, kwargs)),
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "semantic_put",
         lambda *args, **kwargs: writes.append(("semantic", args, kwargs)),
     )
@@ -861,13 +905,13 @@ def test_stream_cancellation_aborts_withheld_suffix_and_skips_sinks(
         lambda *args, **kwargs: writes.append(("analytics", args, kwargs)),
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "issue_feedback_receipt",
         lambda *args, **kwargs: writes.append(("receipt", args, kwargs)),
         raising=False,
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "get_client",
         lambda: SimpleNamespace(
             chat=SimpleNamespace(completions=BlockingCompletions()),
@@ -943,15 +987,20 @@ async def test_boundary_failure_stops_all_content_consumers(
     forbidden = Mock(side_effect=AssertionError("content consumer must not run"))
     receipt_issue = Mock(side_effect=AssertionError("blocked turn must not issue receipt"))
 
+    monkeypatch.setattr(chat_api, "prepare_chat_input", boundary_call)
+
     monkeypatch.setattr(server, "prepare_chat_input", boundary_call)
+    monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", True)
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
-    monkeypatch.setattr(server, "semantic_get_async", forbidden)
+    monkeypatch.setattr(chat_api, "semantic_get_async", forbidden)
     monkeypatch.setattr(server.cache, "get", forbidden)
     monkeypatch.setattr(server.analytics, "track_query", forbidden)
+    monkeypatch.setattr(chat_api, "get_client", forbidden)
     monkeypatch.setattr(server, "get_client", forbidden)
     monkeypatch.setattr(manager, "create_session", forbidden)
     monkeypatch.setattr(manager, "on_message", forbidden)
     monkeypatch.setattr(manager, "on_chat_complete", forbidden)
+    monkeypatch.setattr(chat_api, "issue_feedback_receipt", receipt_issue, raising=False)
     monkeypatch.setattr(server, "issue_feedback_receipt", receipt_issue, raising=False)
     transport = httpx.ASGITransport(app=server.app)
 
@@ -985,8 +1034,8 @@ async def test_stream_fallback_boundary_failure_does_not_write_memory(
         raise RuntimeError("provider unavailable")
 
     forbidden = Mock(side_effect=AssertionError("fallback boundary failure must not write"))
-    monkeypatch.setattr(server, "_safe_delivered_reply", unavailable)
-    monkeypatch.setattr(server, "get_client", lambda: SimpleNamespace(
+    monkeypatch.setattr(chat_api, "_safe_delivered_reply", unavailable)
+    monkeypatch.setattr(chat_api, "get_client", lambda: SimpleNamespace(
         chat=SimpleNamespace(completions=SimpleNamespace(create=provider_failure)),
     ))
     monkeypatch.setattr(manager, "on_message", forbidden)
@@ -1012,20 +1061,23 @@ async def test_stream_output_boundary_failure_does_not_settle_personal_usage(
     cost_writes = []
     guardrail_writes = []
 
+    monkeypatch.setattr(chat_api, "HAS_COST_TRACKER", True)
+
     monkeypatch.setattr(server, "HAS_COST_TRACKER", True)
+    monkeypatch.setattr(chat_api, "HAS_GUARDRAILS", True)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", True)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "cost_attribution",
         SimpleNamespace(record=lambda *args, **kwargs: cost_writes.append((args, kwargs))),
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "guardrail_budget",
         SimpleNamespace(record_usage=lambda *args, **kwargs: guardrail_writes.append((args, kwargs))),
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "_safe_delivered_reply",
         Mock(side_effect=PrivacyBoundaryUnavailable("OUTPUT_REDACTION_FAILED")),
     )

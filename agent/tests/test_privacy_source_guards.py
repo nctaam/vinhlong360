@@ -6,9 +6,16 @@ from pathlib import Path
 import server
 
 
+# Ma chat da sang agent/chat/api.py (2026-08-27). Rao QUET NGUON phai di theo
+# MA chu khong ghim theo file cu — neu khong no van xanh trong khi khong con
+# soi vao dau ca.
+from chat import api as _chat_api
 SERVER_PATH = Path(server.__file__).resolve()
+CHAT_PATH = Path(_chat_api.__file__).resolve()   # ma chat da sang day
 SERVER_SOURCE = SERVER_PATH.read_text(encoding="utf-8")
 SERVER_TREE = ast.parse(SERVER_SOURCE)
+CHAT_SOURCE = CHAT_PATH.read_text(encoding="utf-8")
+CHAT_TREE = ast.parse(CHAT_SOURCE)
 
 USAGE_SINKS = (
     "settle_usage()",
@@ -59,14 +66,18 @@ SENSITIVE_LOG_NAMES = {
 
 
 def _handler_source(name: str) -> str:
-    node = next(
-        item
-        for item in SERVER_TREE.body
-        if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef))
-        and item.name == name
-    )
-    lines = SERVER_SOURCE.splitlines(keepends=True)
-    return "".join(lines[node.lineno - 1:node.end_lineno])
+    """Nguon cua mot handler — tim o CA HAI file.
+
+    Truoc 2026-08-27 moi handler deu o server.py. Nay `chat`/`chat_stream` sang
+    agent/chat/api.py, nen ham nay phai soi ca hai cay; neu chi soi server.py thi
+    `next()` nem StopIteration va rao im lang mat tac dung.
+    """
+    for tree, src in ((SERVER_TREE, SERVER_SOURCE), (CHAT_TREE, CHAT_SOURCE)):
+        for item in tree.body:
+            if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)) and item.name == name:
+                lines = src.splitlines(keepends=True)
+                return "".join(lines[item.lineno - 1:item.end_lineno])
+    raise AssertionError(f"khong tim thay handler {name!r} o server.py lan chat/api.py")
 
 
 def _call_name(node: ast.AST) -> str:

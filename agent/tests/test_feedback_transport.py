@@ -11,6 +11,7 @@ import metrics
 import server
 
 
+from chat import api as chat_api  # ma chat da sang day (2026-08-27)
 USER_OWNER = "user:00000000-0000-0000-0000-000000000001"
 ANON_OWNER = "anon:" + "a" * 64
 VALID_RECEIPT = "A" * 43
@@ -43,6 +44,8 @@ def _install_owner(monkeypatch, owner_key=USER_OWNER, cookie_value=None, events=
         if events is not None:
             events.append("owner")
         return SimpleNamespace(owner_key=owner_key, cookie_value=cookie_value)
+
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", resolve_owner)
 
     monkeypatch.setattr(server, "resolve_chat_owner", resolve_owner)
 
@@ -83,6 +86,7 @@ async def test_receipt_and_rating_succeed_without_personalization_writes(monkeyp
         return feedback_policy.FeedbackConsumeResult(rating=rating, idempotent=False)
 
     monkeypatch.setattr(server, "consume_feedback_receipt", consume, raising=False)
+    monkeypatch.setattr(chat_api, "HAS_METRICS", True)
     monkeypatch.setattr(server, "HAS_METRICS", True)
     monkeypatch.setattr(
         server,
@@ -170,6 +174,8 @@ async def test_ip_limit_rejects_before_owner_resolution(monkeypatch):
 
     async def forbidden_owner(_request):
         raise AssertionError("owner resolution must follow the IP limiter")
+
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", forbidden_owner)
 
     monkeypatch.setattr(server, "resolve_chat_owner", forbidden_owner)
     transport = httpx.ASGITransport(app=server.app)
@@ -312,8 +318,11 @@ async def test_authenticated_and_anonymous_feedback_keep_owner_kinds_separate(mo
         consumed.append((receipt, owner_key, rating))
         return feedback_policy.FeedbackConsumeResult(rating=rating, idempotent=False)
 
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", resolve_owner)
+
     monkeypatch.setattr(server, "resolve_chat_owner", resolve_owner)
     monkeypatch.setattr(server, "consume_feedback_receipt", consume, raising=False)
+    monkeypatch.setattr(chat_api, "HAS_METRICS", True)
     monkeypatch.setattr(server, "HAS_METRICS", True)
     monkeypatch.setattr(
         server,

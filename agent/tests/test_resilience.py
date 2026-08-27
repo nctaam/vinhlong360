@@ -110,7 +110,7 @@ class TestLLMTimeout:
     def test_generate_followups_has_timeout(self):
         """generate_followups() must pass timeout to LLM call."""
         # We test this by checking server.py source for timeout in generate_followups
-        server_path = AGENT_DIR / "server.py"
+        server_path = AGENT_DIR / "chat" / "api.py"  # ma chat sang day 2026-08-27
         source = server_path.read_text(encoding="utf-8")
         # Find generate_followups function and check it has timeout
         idx = source.find("def generate_followups")
@@ -227,7 +227,7 @@ class TestCircuitBreaker:
     def test_web_search_uses_circuit_breaker(self):
         """web_search() must use web_search_breaker for fault isolation."""
         # Verify the integration by checking source code
-        server_path = AGENT_DIR / "server.py"
+        server_path = AGENT_DIR / "chat" / "api.py"  # ma chat sang day 2026-08-27
         source = server_path.read_text(encoding="utf-8")
         idx = source.find("def web_search(")
         assert idx > 0
@@ -239,7 +239,7 @@ class TestCircuitBreaker:
         """Weather tool call path must use weather_breaker for fault isolation."""
         # Dispatch refactor: weather tool dời từ if/elif sang handler _tool_weather,
         # nối qua _TOOL_HANDLERS dict (extract-verbatim, CB giữ nguyên).
-        server_path = AGENT_DIR / "server.py"
+        server_path = AGENT_DIR / "chat" / "api.py"  # ma chat sang day 2026-08-27
         source = server_path.read_text(encoding="utf-8")
         # Wiring: weather phải được dispatch qua bảng handler
         assert '"weather": _tool_weather' in source, \
@@ -298,7 +298,7 @@ class TestGuardrailFallback:
 
     def test_guardrail_crash_returns_fallback_not_500(self):
         """If the privacy boundary crashes, server must fail closed."""
-        server_path = AGENT_DIR / "server.py"
+        server_path = AGENT_DIR / "chat" / "api.py"  # ma chat sang day 2026-08-27
         source = server_path.read_text(encoding="utf-8")
 
         idx = source.find("safe_input = prepare_chat_input(")
@@ -314,7 +314,7 @@ class TestGuardrailFallback:
 
     def test_guardrail_stream_fail_closed(self):
         """Stream endpoint privacy boundary must also fail closed."""
-        server_path = AGENT_DIR / "server.py"
+        server_path = AGENT_DIR / "chat" / "api.py"  # ma chat sang day 2026-08-27
         source = server_path.read_text(encoding="utf-8")
 
         stream_section = source[source.find("async def chat_stream"):]

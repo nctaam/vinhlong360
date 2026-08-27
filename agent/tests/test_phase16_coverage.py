@@ -1150,7 +1150,7 @@ class TestSecurityPosture:
 
     def test_streaming_uses_list_join(self):
         """Chat streaming must use list+join, not string concatenation."""
-        src = (Path(__file__).resolve().parent.parent / "server.py").read_text(encoding="utf-8")
+        src = (Path(__file__).resolve().parent.parent / "chat" / "api.py").read_text(encoding="utf-8")  # ma chat sang agent/chat/ 2026-08-27
         assert '_chunks: list[str]' in src or '_chunks = []' in src, \
             "Streaming must use list to collect chunks (not string concatenation)"
         assert '"".join(_chunks)' in src, "Streaming must join chunks at end"
@@ -1502,7 +1502,7 @@ class TestDeepScanBatch4:
 
     def test_stream_producer_cancellation(self):
         """Streaming producer must check cancellation flag to stop when client disconnects."""
-        src = (Path(__file__).resolve().parent.parent / "server.py").read_text(encoding="utf-8")
+        src = (Path(__file__).resolve().parent.parent / "chat" / "api.py").read_text(encoding="utf-8")  # ma chat sang agent/chat/ 2026-08-27
         idx = src.find("def _produce_stream():")
         assert idx > 0
         end = src.find("\n                producer =", idx)
@@ -1515,7 +1515,7 @@ class TestDeepScanBatch4:
 
     def test_stream_consumer_cancellation_handler(self):
         """Streaming consumer must handle CancelledError to signal producer."""
-        src = (Path(__file__).resolve().parent.parent / "server.py").read_text(encoding="utf-8")
+        src = (Path(__file__).resolve().parent.parent / "chat" / "api.py").read_text(encoding="utf-8")  # ma chat sang agent/chat/ 2026-08-27
         idx = src.find("_cancelled = threading.Event()")
         assert idx > 0
         block = src[idx:src.find('full_text = "".join(_chunks)', idx)]

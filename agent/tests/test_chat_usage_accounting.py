@@ -1,5 +1,6 @@
 """Provider-accurate chat usage accumulation and settlement tests."""
 
+from chat import api as chat_api  # ky hieu chat da doi sang day (2026-08-27)
 import asyncio
 import gc
 import json
@@ -27,6 +28,7 @@ from starlette.requests import Request  # noqa: E402
 from chat_usage import UsageAccumulator  # noqa: E402
 from cost_tracker import TokenCounter  # noqa: E402
 import server  # noqa: E402
+import features  # co tinh nang da roi sang day (2026-08-27)
 import orchestrator  # noqa: E402
 
 
@@ -474,10 +476,15 @@ def test_direct_agent_path_accumulates_every_provider_response(monkeypatch):
         )
     )
     accumulator = UsageAccumulator()
+    monkeypatch.setattr(chat_api, "HAS_CIRCUIT_BREAKER", False)
     monkeypatch.setattr(server, "HAS_CIRCUIT_BREAKER", False)
+    monkeypatch.setattr(chat_api, "HAS_PARALLEL", False)
     monkeypatch.setattr(server, "HAS_PARALLEL", False)
+    monkeypatch.setattr(chat_api, "get_client", lambda: fake_client)
     monkeypatch.setattr(server, "get_client", lambda: fake_client)
+    monkeypatch.setattr(chat_api, "get_model", lambda: "cx/gpt-5.4")
     monkeypatch.setattr(server, "get_model", lambda: "cx/gpt-5.4")
+    monkeypatch.setattr(chat_api, "call_tool", lambda *_args: "[]")
     monkeypatch.setattr(server, "call_tool", lambda *_args: "[]")
 
     reply, _tools, _suggestions = server._run_agent(
@@ -511,10 +518,15 @@ def test_direct_agent_counts_nested_followup_provider_response(monkeypatch):
         )
     )
     accumulator = UsageAccumulator()
+    monkeypatch.setattr(chat_api, "HAS_CIRCUIT_BREAKER", False)
     monkeypatch.setattr(server, "HAS_CIRCUIT_BREAKER", False)
+    monkeypatch.setattr(chat_api, "HAS_PARALLEL", False)
     monkeypatch.setattr(server, "HAS_PARALLEL", False)
+    monkeypatch.setattr(chat_api, "get_client", lambda: fake_client)
     monkeypatch.setattr(server, "get_client", lambda: fake_client)
+    monkeypatch.setattr(chat_api, "get_model", lambda: "cx/gpt-5.4")
     monkeypatch.setattr(server, "get_model", lambda: "cx/gpt-5.4")
+    monkeypatch.setattr(chat_api, "get_model_mini", lambda: "cx/gpt-5.4-mini")
     monkeypatch.setattr(server, "get_model_mini", lambda: "cx/gpt-5.4-mini")
 
     reply, _tools, suggestions = server._run_agent(
@@ -565,7 +577,7 @@ def test_orchestrated_agent_counts_nested_followup_provider_response(monkeypatch
             completions=SimpleNamespace(create=lambda **_kwargs: nested_response)
         )
     )
-    orch = server.Orchestrator(server.TOOLS)
+    orch = chat_api.Orchestrator(chat_api.TOOLS)
     monkeypatch.setattr(
         orch,
         "route",
@@ -575,14 +587,17 @@ def test_orchestrated_agent_counts_nested_followup_provider_response(monkeypatch
         ),
     )
     accumulator = UsageAccumulator()
+    monkeypatch.setattr(chat_api, "HAS_PARALLEL", False)
     monkeypatch.setattr(server, "HAS_PARALLEL", False)
-    monkeypatch.setattr(server, "_get_orchestrator", lambda: orch)
+    monkeypatch.setattr(chat_api, "_get_orchestrator", lambda: orch)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "_llm_call_fn_mini",
         lambda _messages, _tools, _temperature: next(outer_responses),
     )
+    monkeypatch.setattr(chat_api, "get_client", lambda: fake_client)
     monkeypatch.setattr(server, "get_client", lambda: fake_client)
+    monkeypatch.setattr(chat_api, "get_model_mini", lambda: "cx/gpt-5.4-mini")
     monkeypatch.setattr(server, "get_model_mini", lambda: "cx/gpt-5.4-mini")
 
     reply, _tools, suggestions = server._run_agent_orchestrated(
@@ -606,27 +621,44 @@ def _configure_post_chat(monkeypatch, guardrail, attribution):
     async def resolve_owner(_request):
         return SimpleNamespace(owner_key="user:alice", cookie_value=None)
 
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", resolve_owner, raising=False)
+
     monkeypatch.setattr(server, "resolve_chat_owner", resolve_owner, raising=False)
     monkeypatch.setattr(server.chat_limiter, "is_allowed", lambda _ip: (True, {}))
+    monkeypatch.setattr(chat_api, "HAS_GUARDRAILS", True)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", True)
+    monkeypatch.setattr(chat_api, "HAS_COST_TRACKER", True)
     monkeypatch.setattr(server, "HAS_COST_TRACKER", True)
+    monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", False)
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", False)
+    monkeypatch.setattr(chat_api, "HAS_AUTOCORRECT", False)
     monkeypatch.setattr(server, "HAS_AUTOCORRECT", False)
+    monkeypatch.setattr(chat_api, "HAS_TRACING", False)
     monkeypatch.setattr(server, "HAS_TRACING", False)
+    monkeypatch.setattr(chat_api, "HAS_DYNAMIC_AGENTS", False)
     monkeypatch.setattr(server, "HAS_DYNAMIC_AGENTS", False)
+    monkeypatch.setattr(chat_api, "HAS_OPTIMIZER", False)
     monkeypatch.setattr(server, "HAS_OPTIMIZER", False)
+    monkeypatch.setattr(chat_api, "HAS_MEMORY_GRAPH", False)
     monkeypatch.setattr(server, "HAS_MEMORY_GRAPH", False)
+    monkeypatch.setattr(chat_api, "HAS_EXPERIENCE", False)
     monkeypatch.setattr(server, "HAS_EXPERIENCE", False)
+    monkeypatch.setattr(chat_api, "HAS_FEWSHOT", False)
     monkeypatch.setattr(server, "HAS_FEWSHOT", False)
+    monkeypatch.setattr(chat_api, "HAS_LLM_JUDGE", False)
     monkeypatch.setattr(server, "HAS_LLM_JUDGE", False)
+    monkeypatch.setattr(chat_api, "HAS_AB_TESTING", False)
     monkeypatch.setattr(server, "HAS_AB_TESTING", False)
+    monkeypatch.setattr(chat_api, "HAS_METRICS", False)
     monkeypatch.setattr(server, "HAS_METRICS", False)
     monkeypatch.setattr(server, "check_input", lambda *_args: {"allowed": True})
-    monkeypatch.setattr(server, "check_output", lambda reply, *_args: {"cleaned_reply": reply})
+    monkeypatch.setattr(features, "check_output", lambda reply, *_args: {"cleaned_reply": reply})
+    monkeypatch.setattr(chat_api, "guardrail_budget", guardrail)
     monkeypatch.setattr(server, "guardrail_budget", guardrail)
+    monkeypatch.setattr(chat_api, "cost_attribution", attribution)
     monkeypatch.setattr(server, "cost_attribution", attribution)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "_build_messages",
         lambda *_args: ([{"role": "system", "content": "test"}], {}),
     )
@@ -666,7 +698,10 @@ def test_post_chat_settles_provider_totals_once_to_owner(monkeypatch):
         )
         return "provider final answer with enough content to avoid fallback", [], []
 
+    monkeypatch.setattr(chat_api, "HAS_ORCHESTRATOR", True)
+
     monkeypatch.setattr(server, "HAS_ORCHESTRATOR", True)
+    monkeypatch.setattr(chat_api, "_run_agent_orchestrated", fake_orchestrated)
     monkeypatch.setattr(server, "_run_agent_orchestrated", fake_orchestrated)
     with TestClient(server.app) as client:
         response = client.post(
@@ -701,6 +736,8 @@ def test_post_cache_hit_adds_no_usage(monkeypatch):
     )
     def forbidden(*_args, **_kwargs):
         raise AssertionError("provider must not be called on cache hit")
+
+    monkeypatch.setattr(chat_api, "_run_agent_orchestrated", forbidden)
 
     monkeypatch.setattr(server, "_run_agent_orchestrated", forbidden)
     with TestClient(server.app) as client:
@@ -738,13 +775,16 @@ def test_post_semantic_publication_uses_captured_generation_lease(monkeypatch):
             dedup_key=dedup_key,
         )
 
+    monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", True)
+
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(chat_api, "HAS_ORCHESTRATOR", True)
     monkeypatch.setattr(server, "HAS_ORCHESTRATOR", True)
     monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(server.cache, "put", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(server, "semantic_put", publish_semantic)
+    monkeypatch.setattr(chat_api, "semantic_put", publish_semantic)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "_run_agent_orchestrated",
         lambda *_args, **_kwargs: (
             "provider answer long enough to publish into semantic cache",
@@ -801,7 +841,10 @@ def test_post_semantic_lookup_error_rejects_missing_lease(monkeypatch):
         semantic_puts.append((query, owner_key, dedup_key))
         return False
 
+    monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", True)
+
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(chat_api, "HAS_ORCHESTRATOR", True)
     monkeypatch.setattr(server, "HAS_ORCHESTRATOR", True)
     monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(
@@ -809,11 +852,11 @@ def test_post_semantic_lookup_error_rejects_missing_lease(monkeypatch):
         "put",
         lambda query, *_args, **_kwargs: exact_puts.append(query),
     )
-    monkeypatch.setattr(server, "semantic_get_async", semantic_error)
-    monkeypatch.setattr(server, "semantic_take_dedup_lease", forbidden_take)
-    monkeypatch.setattr(server, "semantic_put", reject_missing_lease)
+    monkeypatch.setattr(chat_api, "semantic_get_async", semantic_error)
+    monkeypatch.setattr(chat_api, "semantic_take_dedup_lease", forbidden_take)
+    monkeypatch.setattr(chat_api, "semantic_put", reject_missing_lease)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "_run_agent_orchestrated",
         lambda *_args, **_kwargs: (
             "provider reply survives semantic lookup failure and remains usable",
@@ -875,7 +918,10 @@ def test_post_cancellation_settles_completed_worker_usage_once(monkeypatch):
         release.wait(timeout=2)
         return "unused after cancellation", [], []
 
+    monkeypatch.setattr(chat_api, "HAS_ORCHESTRATOR", True)
+
     monkeypatch.setattr(server, "HAS_ORCHESTRATOR", True)
+    monkeypatch.setattr(chat_api, "_run_agent_orchestrated", fake_orchestrated)
     monkeypatch.setattr(server, "_run_agent_orchestrated", fake_orchestrated)
     scope = {
         "type": "http",
@@ -933,23 +979,27 @@ def test_post_cancellation_abandons_captured_semantic_lease(monkeypatch):
         release.wait(timeout=2)
         return "unused after cancellation", [], []
 
+    monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", True)
+
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(chat_api, "HAS_ORCHESTRATOR", True)
     monkeypatch.setattr(server, "HAS_ORCHESTRATOR", True)
     monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(server, "semantic_get_async", semantic_miss)
+    monkeypatch.setattr(chat_api, "semantic_get_async", semantic_miss)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "semantic_take_dedup_lease",
         lambda *_args, **_kwargs: dedup_key,
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "semantic_abandon",
         lambda message, owner_key="", dedup_key=None: abandoned.append(
             (message, owner_key, dedup_key)
         ) or True,
         raising=False,
     )
+    monkeypatch.setattr(chat_api, "_run_agent_orchestrated", fake_orchestrated)
     monkeypatch.setattr(server, "_run_agent_orchestrated", fake_orchestrated)
     request = Request({
         "type": "http",
@@ -1008,7 +1058,10 @@ def test_post_non_publication_terminal_path_abandons_semantic_lease(
             raise provider_result
         return provider_result
 
+    monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", True)
+
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(chat_api, "HAS_ORCHESTRATOR", True)
     monkeypatch.setattr(server, "HAS_ORCHESTRATOR", True)
     monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(server.cache, "put", lambda *_args, **_kwargs: None)
@@ -1017,25 +1070,26 @@ def test_post_non_publication_terminal_path_abandons_semantic_lease(
         "evaluate_answer",
         lambda *_args: {"score": 4, "issues": [], "good_points": []},
     )
-    monkeypatch.setattr(server, "semantic_get_async", semantic_miss)
+    monkeypatch.setattr(chat_api, "semantic_get_async", semantic_miss)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "semantic_take_dedup_lease",
         lambda *_args, **_kwargs: dedup_key,
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "semantic_put",
         lambda *_args, **_kwargs: pytest.fail("non-cacheable result must not publish"),
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "semantic_abandon",
         lambda message, owner_key="", dedup_key=None: abandoned.append(
             (message, owner_key, dedup_key)
         ) or True,
         raising=False,
     )
+    monkeypatch.setattr(chat_api, "_run_agent_orchestrated", provider)
     monkeypatch.setattr(server, "_run_agent_orchestrated", provider)
 
     response = asyncio.run(server.chat(
@@ -1074,17 +1128,20 @@ def test_post_postprocessing_exception_abandons_semantic_lease(monkeypatch):
         if role == "assistant":
             raise RuntimeError("assistant memory write failed")
 
+    monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", True)
+
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(chat_api, "HAS_ORCHESTRATOR", True)
     monkeypatch.setattr(server, "HAS_ORCHESTRATOR", True)
     monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(server, "semantic_get_async", semantic_miss)
+    monkeypatch.setattr(chat_api, "semantic_get_async", semantic_miss)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "semantic_take_dedup_lease",
         lambda *_args, **_kwargs: dedup_key,
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "semantic_abandon",
         lambda message, owner_key="", dedup_key=None: abandoned.append(
             (message, owner_key, dedup_key)
@@ -1092,7 +1149,7 @@ def test_post_postprocessing_exception_abandons_semantic_lease(monkeypatch):
         raising=False,
     )
     monkeypatch.setattr(
-        server,
+        chat_api,
         "_run_agent_orchestrated",
         lambda *_args, **_kwargs: (
             "provider reply before postprocessing exception",
@@ -1149,7 +1206,10 @@ def test_post_double_cancellation_retrieves_worker_error(monkeypatch):
         worker_finished.set()
         raise RuntimeError("worker failed after cancellation")
 
+    monkeypatch.setattr(chat_api, "HAS_ORCHESTRATOR", True)
+
     monkeypatch.setattr(server, "HAS_ORCHESTRATOR", True)
+    monkeypatch.setattr(chat_api, "_run_agent_orchestrated", failing_orchestrated)
     monkeypatch.setattr(server, "_run_agent_orchestrated", failing_orchestrated)
     scope = {
         "type": "http",

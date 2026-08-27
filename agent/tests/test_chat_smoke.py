@@ -8,6 +8,7 @@ cho các refactor GĐ3 (DB-as-SoT) và GĐ4 (concurrency).
 Marked `integration` -> không chạy trong unit baseline mặc định, có chạy ở CI.
 """
 
+from chat import api as chat_api  # ma chat da sang day (2026-08-27)
 import os
 import sys
 from pathlib import Path
@@ -47,7 +48,7 @@ def client_mocked():
     # Patch server.get_client → client giả để cả circuit-breaker và orchestrated đều nhận mock.
     fake = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(
         create=lambda *a, **k: _fake_completion())))
-    with patch.object(server, "get_client", lambda: fake):
+    with patch.object(chat_api, "get_client", lambda: fake):
         with TestClient(server.app) as c:
             yield c
 
@@ -63,7 +64,7 @@ def test_chat_returns_200_and_reply(client_mocked):
 def test_chat_succeeds_when_receipt_issue_returns_none(client_mocked, monkeypatch):
     calls = []
     monkeypatch.setattr(
-        server,
+        chat_api,
         "issue_feedback_receipt",
         lambda *args, **kwargs: calls.append((args, kwargs)) or None,
         raising=False,

@@ -19,6 +19,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from fastapi.testclient import TestClient  # noqa: E402
 import server  # noqa: E402
+import features  # co tinh nang da roi sang day (2026-08-27)
+from chat import api as chat_api  # ma chat da sang day (2026-08-27)
 
 
 pytestmark = pytest.mark.integration
@@ -42,7 +44,7 @@ def _provider_create(*_args, **kwargs):
 @pytest.fixture
 def client_mocked():
     provider = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=_provider_create)))
-    with patch.object(server, "get_client", lambda: provider):
+    with patch.object(chat_api, "get_client", lambda: provider):
         with TestClient(server.app) as client:
             yield client
 
@@ -66,9 +68,9 @@ def test_post_admission_and_settlement_share_owner_across_conversation_rotation(
         admitted.append(owner_key)
         return real_prepare(message, history, owner_key=owner_key)
 
-    with patch.object(server, "HAS_GUARDRAILS", True), \
-         patch.object(server, "HAS_COST_TRACKER", True), \
-         patch.object(server, "prepare_chat_input", side_effect=prepare), \
+    with patch.object(chat_api, "HAS_GUARDRAILS", True), \
+         patch.object(chat_api, "HAS_COST_TRACKER", True), \
+         patch.object(chat_api, "prepare_chat_input", side_effect=prepare), \
          patch.object(server.guardrail_budget, "record_usage", side_effect=lambda key, _tokens: settled.append(key)), \
          patch.object(server.cost_attribution, "record", side_effect=lambda key, *_args, **_kwargs: attributed.append(key)):
         first = client_mocked.post("/chat", json={"message": "owner post one", "history": [{"role": "user", "content": "x"}]})
@@ -93,10 +95,10 @@ def test_stream_admission_and_settlement_share_owner_across_conversation_rotatio
         admitted.append(owner_key)
         return real_prepare(message, supplied_history, owner_key=owner_key)
 
-    with patch.object(server, "HAS_GUARDRAILS", True), \
-         patch.object(server, "HAS_COST_TRACKER", True), \
-         patch.object(server, "prepare_chat_input", side_effect=prepare), \
-         patch.object(server, "check_output", return_value={}), \
+    with patch.object(chat_api, "HAS_GUARDRAILS", True), \
+         patch.object(chat_api, "HAS_COST_TRACKER", True), \
+         patch.object(chat_api, "prepare_chat_input", side_effect=prepare), \
+         patch.object(features, "check_output", return_value={}), \
          patch.object(server.guardrail_budget, "record_usage", side_effect=lambda key, _tokens: settled.append(key)), \
          patch.object(server.cost_attribution, "record", side_effect=lambda key, *_args, **_kwargs: attributed.append(key)):
         first = client_mocked.post(

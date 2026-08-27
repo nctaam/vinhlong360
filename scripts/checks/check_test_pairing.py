@@ -81,6 +81,18 @@ class TestPairingCheck:
                     return True
         return False
 
+    @staticmethod
+    def _module_name(source: str) -> str:
+        """Ten module dung de ghep test.
+
+        Voi `agent/chat/__init__.py` thi `Path(...).stem` ra `__init__` — khong
+        test nao mang ten do, nen MOI GOI Python deu truot R20.7 du co test day
+        du. Lay ten THU MUC goi moi dung: `agent/chat/__init__.py` -> `chat`.
+        Gap khi boc `agent/chat/` (2026-08-27); `agent/cases/` cung dinh cung lo.
+        """
+        path = Path(source)
+        return path.parent.name if path.stem == "__init__" else path.stem
+
     def _test_pairs(self, module: str, test_path: str, tree: ast.Module) -> bool:
         return self._filename_pairs(module, test_path) or self._ast_pairs(module, tree)
 
@@ -115,7 +127,7 @@ class TestPairingCheck:
             unpaired = [
                 source for source in agent_py
                 if not any(
-                    self._test_pairs(Path(source).stem, test, tree)
+                    self._test_pairs(self._module_name(source), test, tree)
                     for test, tree in tests.items()
                 )
             ]

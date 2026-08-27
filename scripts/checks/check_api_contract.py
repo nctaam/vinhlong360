@@ -209,11 +209,47 @@ class ApiContractCheck:
         if files is None:
             return self._result(self._stale_contract_entries(contract))
 
-        violations = []
+        # Gộp diff của TẤT CẢ file staged trước khi phán xét. Xét từng file riêng
+        # lẻ thì một cú DỜI route (xoá ở A, thêm y hệt ở B trong cùng commit) bị
+        # đọc thành "route đã xoá mà hợp đồng còn mô tả" — sai. Gặp đúng ca đó
+        # khi bóc `agent/chat/` ra khỏi `server.py` (2026-08-27): POST /chat và
+        # POST /chat/stream rời server.py sang chat/api.py, đường đi không đổi
+        # một ký tự, mà cổng vẫn đỏ. Cùng lớp lỗi với §44 (ROADMAP): suy luận
+        # theo-file trên một sự thật ở tầm-commit.
+        added, removed = set(), set()
         for path in (f.replace("\\", "/") for f in files):
             if path.startswith("agent/") and path.endswith(".py"):
-                violations.extend(self._staged_violations(path, contract))
+                a, r = self._route_changes_for(path)
+                added |= a
+                removed |= r
+        moved = added & removed        # cùng method+path ở cả hai phía = DỜI
+        added -= moved
+        removed -= moved
+
+        violations = []
+        keys = sorted(k for k in added if k.split(" ", 1)[1] not in contract)
+        if keys:
+            violations.append({
+                "file": "agent/", "line": 0, "rule": self.rule,
+                "msg": f"{len(keys)} route thêm ({', '.join(keys)}) "
+                       f"nhưng {CONTRACT} không mô tả path đó"})
+        keys = sorted(k for k in removed if k.split(" ", 1)[1] in contract)
+        if keys:
+            violations.append({
+                "file": "agent/", "line": 0, "rule": self.rule,
+                "msg": f"{len(keys)} route bị xoá ({', '.join(keys)}) "
+                       f"nhưng {CONTRACT} vẫn còn mô tả"})
         return self._result(violations)
+
+    def _route_changes_for(self, path: str) -> tuple[set, set]:
+        # encoding tường minh: Windows text=True decode cp1252 → chết reader-thread
+        # trên diff UTF-8 tiếng Việt (stdout thành None)
+        diff = subprocess.run(
+            ["git", "diff", "--cached", "-U0", "--", path],
+            capture_output=True, encoding="utf-8", errors="replace", cwd=str(self.root),
+        ).stdout or ""
+        a, r = _route_changes(diff)
+        return set(a), set(r)
 
     def _result(self, violations: list) -> dict:
         return {"check": self.name, "level": self.level, "rule": self.rule,

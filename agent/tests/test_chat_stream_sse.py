@@ -2,6 +2,7 @@
 `data: {json}` frames có key 'type'. Trước không có test protocol → đổi schema frame
 vỡ chat UI mà zero signal. Test: empty→'error'; valid→kết thúc 'done'; mọi frame có 'type'.
 """
+from chat import api as chat_api  # ky hieu chat da doi sang day (2026-08-27)
 import json
 import asyncio
 import os
@@ -26,6 +27,7 @@ from fastapi.testclient import TestClient  # noqa: E402
 from pydantic import ValidationError  # noqa: E402
 from starlette.requests import Request  # noqa: E402
 import server  # noqa: E402
+import features  # co tinh nang da roi sang day (2026-08-27)
 
 
 def _completion(content="Vĩnh Long có Văn Thánh Miếu và làng gốm Mang Thít."):
@@ -48,7 +50,7 @@ def _fake_create(*a, stream=False, **k):
 @pytest.fixture
 def client_mocked():
     fake = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=_fake_create)))
-    with patch.object(server, "get_client", lambda: fake):
+    with patch.object(chat_api, "get_client", lambda: fake):
         with TestClient(server.app) as c:
             yield c
 
@@ -250,30 +252,49 @@ def _configure_usage_stream(monkeypatch, create):
     attribution = _UsageAttribution()
     fake = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
     monkeypatch.setattr(server, "_draining", False)
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", resolve_owner, raising=False)
     monkeypatch.setattr(server, "resolve_chat_owner", resolve_owner, raising=False)
     monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
+    monkeypatch.setattr(chat_api, "HAS_GUARDRAILS", True)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", True)
+    monkeypatch.setattr(chat_api, "HAS_COST_TRACKER", True)
     monkeypatch.setattr(server, "HAS_COST_TRACKER", True)
+    monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", False)
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", False)
+    monkeypatch.setattr(chat_api, "HAS_AUTOCORRECT", False)
     monkeypatch.setattr(server, "HAS_AUTOCORRECT", False)
+    monkeypatch.setattr(chat_api, "HAS_CIRCUIT_BREAKER", False)
     monkeypatch.setattr(server, "HAS_CIRCUIT_BREAKER", False)
+    monkeypatch.setattr(chat_api, "HAS_DYNAMIC_AGENTS", False)
     monkeypatch.setattr(server, "HAS_DYNAMIC_AGENTS", False)
+    monkeypatch.setattr(chat_api, "HAS_OPTIMIZER", False)
     monkeypatch.setattr(server, "HAS_OPTIMIZER", False)
+    monkeypatch.setattr(chat_api, "HAS_MEMORY_GRAPH", False)
     monkeypatch.setattr(server, "HAS_MEMORY_GRAPH", False)
+    monkeypatch.setattr(chat_api, "HAS_EXPERIENCE", False)
     monkeypatch.setattr(server, "HAS_EXPERIENCE", False)
+    monkeypatch.setattr(chat_api, "HAS_FEWSHOT", False)
     monkeypatch.setattr(server, "HAS_FEWSHOT", False)
+    monkeypatch.setattr(chat_api, "HAS_LLM_JUDGE", False)
     monkeypatch.setattr(server, "HAS_LLM_JUDGE", False)
+    monkeypatch.setattr(chat_api, "HAS_AB_TESTING", False)
     monkeypatch.setattr(server, "HAS_AB_TESTING", False)
+    monkeypatch.setattr(chat_api, "HAS_METRICS", False)
     monkeypatch.setattr(server, "HAS_METRICS", False)
     monkeypatch.setattr(server, "check_input", lambda *_args: {"allowed": True})
-    monkeypatch.setattr(server, "check_output", lambda reply, *_args: {"cleaned_reply": reply})
+    monkeypatch.setattr(features, "check_output", lambda reply, *_args: {"cleaned_reply": reply})
+    monkeypatch.setattr(chat_api, "guardrail_budget", guardrail)
     monkeypatch.setattr(server, "guardrail_budget", guardrail)
+    monkeypatch.setattr(chat_api, "cost_attribution", attribution)
     monkeypatch.setattr(server, "cost_attribution", attribution)
+    monkeypatch.setattr(chat_api, "get_client", lambda: fake)
     monkeypatch.setattr(server, "get_client", lambda: fake)
+    monkeypatch.setattr(chat_api, "get_model", lambda: "cx/gpt-5.4")
     monkeypatch.setattr(server, "get_model", lambda: "cx/gpt-5.4")
+    monkeypatch.setattr(chat_api, "get_model_mini", lambda: "cx/gpt-5.4")
     monkeypatch.setattr(server, "get_model_mini", lambda: "cx/gpt-5.4")
     monkeypatch.setattr(
-        server,
+        chat_api,
         "_build_messages",
         lambda *_args: ([{"role": "system", "content": "complete context"}], {}),
     )
@@ -414,7 +435,7 @@ class _NestedCancellationProbe:
         self.settlement_started.set()
 
 
-class _RecordingStreamAccumulator(server.UsageAccumulator):
+class _RecordingStreamAccumulator(chat_api.UsageAccumulator):
     def __init__(self, probe):
         super().__init__()
         self._probe = probe
@@ -451,7 +472,7 @@ class _DecisionCancellationProbe:
         return _completion_with_usage("decision", 15, 7)
 
 
-class _RecordingDecisionAccumulator(server.UsageAccumulator):
+class _RecordingDecisionAccumulator(chat_api.UsageAccumulator):
     def __init__(self, probe):
         super().__init__()
         self._probe = probe
@@ -726,20 +747,22 @@ def test_stream_round_exhaustion_synthesis_usage_is_included(monkeypatch):
         ])
 
     guardrail, attribution = _configure_usage_stream(monkeypatch, create)
+    monkeypatch.setattr(chat_api, "HAS_OPTIMIZER", True)
     monkeypatch.setattr(server, "HAS_OPTIMIZER", True)
     monkeypatch.setattr(
-        server.parameter_tuner,
+        chat_api.parameter_tuner,
         "get_optimal_params",
         lambda _category: {"max_rounds": 1},
     )
     monkeypatch.setattr(
-        server.prompt_optimizer,
+        chat_api.prompt_optimizer,
         "get_current_variant",
         lambda: {"prompt_addon": ""},
     )
+    monkeypatch.setattr(chat_api, "call_tool", lambda *_args: "[]")
     monkeypatch.setattr(server, "call_tool", lambda *_args: "[]")
     monkeypatch.setattr(
-        server,
+        chat_api,
         "issue_feedback_receipt",
         lambda *args, **kwargs: receipt_calls.append((args, kwargs))
         or SimpleNamespace(token="synthesis-receipt"),
@@ -833,7 +856,7 @@ def test_stream_decision_failure_attaches_receipt_to_safe_fallback(monkeypatch):
 
     _configure_usage_stream(monkeypatch, create)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "issue_feedback_receipt",
         lambda *args, **kwargs: receipt_calls.append((args, kwargs))
         or SimpleNamespace(token="fallback-receipt"),
@@ -871,17 +894,19 @@ def test_stream_synthesis_create_failure_does_not_invent_usage(monkeypatch):
         raise ConnectionError("synthesis create failed")
 
     guardrail, attribution = _configure_usage_stream(monkeypatch, create)
+    monkeypatch.setattr(chat_api, "HAS_OPTIMIZER", True)
     monkeypatch.setattr(server, "HAS_OPTIMIZER", True)
     monkeypatch.setattr(
-        server.parameter_tuner,
+        chat_api.parameter_tuner,
         "get_optimal_params",
         lambda _category: {"max_rounds": 1},
     )
     monkeypatch.setattr(
-        server.prompt_optimizer,
+        chat_api.prompt_optimizer,
         "get_current_variant",
         lambda: {"prompt_addon": ""},
     )
+    monkeypatch.setattr(chat_api, "call_tool", lambda *_args: "[]")
     monkeypatch.setattr(server, "call_tool", lambda *_args: "[]")
     client = TestClient(server.app)
 
@@ -950,7 +975,7 @@ def test_stream_cancellation_waits_for_nested_provider_before_settlement(monkeyp
     probe.original_record_usage = guardrail.record_usage
     monkeypatch.setattr(guardrail, "record_usage", probe.record_usage)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "UsageAccumulator",
         lambda: _RecordingStreamAccumulator(probe),
     )
@@ -968,7 +993,7 @@ async def test_anyio_repeated_cancellation_waits_for_nested_provider(monkeypatch
     probe.original_record_usage = guardrail.record_usage
     monkeypatch.setattr(guardrail, "record_usage", probe.record_usage)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "UsageAccumulator",
         lambda: _RecordingStreamAccumulator(probe),
     )
@@ -992,14 +1017,15 @@ async def test_anyio_cancellation_accounts_blocked_first_decision(
     probe = _DecisionCancellationProbe()
     guardrail, attribution = _configure_usage_stream(monkeypatch, probe.create)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "UsageAccumulator",
         lambda: _RecordingDecisionAccumulator(probe),
     )
+    monkeypatch.setattr(chat_api, "HAS_CIRCUIT_BREAKER", use_circuit_breaker)
     monkeypatch.setattr(server, "HAS_CIRCUIT_BREAKER", use_circuit_breaker)
     if use_circuit_breaker:
         monkeypatch.setattr(
-            server,
+            chat_api,
             "safe_llm_call",
             lambda *_args, **_kwargs: {
                 "success": True,
@@ -1023,7 +1049,7 @@ def test_double_native_cancellation_waits_for_nested_provider(monkeypatch):
     probe.original_record_usage = guardrail.record_usage
     monkeypatch.setattr(guardrail, "record_usage", probe.record_usage)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "UsageAccumulator",
         lambda: _RecordingStreamAccumulator(probe),
     )
@@ -1038,7 +1064,7 @@ def test_double_native_cancellation_accounts_first_decision(monkeypatch):
     probe = _DecisionCancellationProbe()
     guardrail, attribution = _configure_usage_stream(monkeypatch, probe.create)
     monkeypatch.setattr(
-        server,
+        chat_api,
         "UsageAccumulator",
         lambda: _RecordingDecisionAccumulator(probe),
     )

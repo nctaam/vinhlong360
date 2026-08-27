@@ -26,6 +26,7 @@ pytestmark = pytest.mark.integration
 
 from fastapi.testclient import TestClient  # noqa: E402
 import server  # noqa: E402
+from chat import api as chat_api  # ma chat da sang day (2026-08-27)
 
 
 def _completion(content):
@@ -43,7 +44,7 @@ def kb_ctx():
     """
     fake = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(
         create=lambda *a, **k: _completion("ok"))))
-    with patch.object(server, "get_client", lambda: fake):
+    with patch.object(chat_api, "get_client", lambda: fake):
         with TestClient(server.app) as c:
             yield c
 
@@ -134,7 +135,7 @@ def test_valid_reply_with_su_co_not_clobbered(kb_ctx):
     valid = "Sự cố giao thông ở Vĩnh Long thường xảy ra vào giờ cao điểm tại các ngã tư trung tâm thành phố và gần chợ."
     fake = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(
         create=lambda *a, **k: _completion(valid))))
-    with patch.object(server, "get_client", lambda: fake):
+    with patch.object(chat_api, "get_client", lambda: fake):
         r = kb_ctx.post("/chat", json={"message": "kể về giao thông"})
     assert r.status_code == 200, r.text
     reply = r.json().get("reply", "")
@@ -196,7 +197,7 @@ def test_execute_pending_calls_serial_runs_tool():
     messages, suggestions = [], []
     pending = [{"id": "t1", "name": "search", "args": {"query": "x"}}]
     fake_result = json.dumps([{"id": "e1"}])  # kết quả không rỗng → không kích self-correct
-    with patch.object(server, "call_tool", lambda name, args: fake_result):
+    with patch.object(chat_api, "call_tool", lambda name, args: fake_result):
         erc = server._execute_pending_calls(pending, None, messages, suggestions, 0, 0, 1)
     assert isinstance(erc, int)                              # trả về empty_results_count
     assert len(messages) == 1 and messages[0]["role"] == "tool"

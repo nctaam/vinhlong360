@@ -2983,7 +2983,7 @@ class TestAsyncCorrectnessFixes:
         assert "_PINNED_HTTP.get(" in fetch_src
 
     def test_round_exhaustion_uses_queue(self):
-        src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
+        src = (AGENT_DIR / "chat" / "api.py").read_text(encoding="utf-8")  # ma chat sang agent/chat/ 2026-08-27
         idx = src.index("Round-exhaustion")
         fn_src = src[idx:idx + 800]
         assert "asyncio.Queue" in fn_src or "run_in_executor" in fn_src
@@ -3002,7 +3002,7 @@ class TestAsyncCorrectnessFixes:
         assert "_html.escape" in src
 
     def test_round_exhaustion_thread_safe_queue(self):
-        src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
+        src = (AGENT_DIR / "chat" / "api.py").read_text(encoding="utf-8")  # ma chat sang agent/chat/ 2026-08-27
         idx = src.index("Round-exhaustion")
         fn_src = src[idx:idx + 1600]  # nới: helper #2 thêm _synth_cancelled đẩy call xuống
         assert "call_soon_threadsafe" in fn_src, \

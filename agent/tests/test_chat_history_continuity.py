@@ -1,5 +1,6 @@
 """Regression coverage for request history and hot-memory continuity."""
 
+from chat import api as chat_api  # ky hieu chat da doi sang day (2026-08-27)
 import json
 import os
 import sys
@@ -97,29 +98,51 @@ def _configure_provider_chat(monkeypatch, tmp_path, prompt_cache_enabled, *, fai
     fake_client = SimpleNamespace(
         chat=SimpleNamespace(completions=SimpleNamespace(create=create)),
     )
+    monkeypatch.setattr(chat_api, "memory_manager", manager)
     monkeypatch.setattr(server, "memory_manager", manager)
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", resolve_owner, raising=False)
     monkeypatch.setattr(server, "resolve_chat_owner", resolve_owner, raising=False)
     monkeypatch.setattr(server.chat_limiter, "is_allowed", lambda _ip: (True, {}))
     monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
+    monkeypatch.setattr(chat_api, "HAS_GUARDRAILS", False)
     monkeypatch.setattr(server, "HAS_GUARDRAILS", False)
+    monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", False)
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", False)
+    monkeypatch.setattr(chat_api, "HAS_AUTOCORRECT", False)
     monkeypatch.setattr(server, "HAS_AUTOCORRECT", False)
+    monkeypatch.setattr(chat_api, "HAS_TRACING", False)
     monkeypatch.setattr(server, "HAS_TRACING", False)
+    monkeypatch.setattr(chat_api, "HAS_DYNAMIC_AGENTS", False)
     monkeypatch.setattr(server, "HAS_DYNAMIC_AGENTS", False)
+    monkeypatch.setattr(chat_api, "HAS_OPTIMIZER", False)
     monkeypatch.setattr(server, "HAS_OPTIMIZER", False)
+    monkeypatch.setattr(chat_api, "HAS_MEMORY_GRAPH", False)
     monkeypatch.setattr(server, "HAS_MEMORY_GRAPH", False)
+    monkeypatch.setattr(chat_api, "HAS_EXPERIENCE", False)
     monkeypatch.setattr(server, "HAS_EXPERIENCE", False)
+    monkeypatch.setattr(chat_api, "HAS_FEWSHOT", False)
     monkeypatch.setattr(server, "HAS_FEWSHOT", False)
+    monkeypatch.setattr(chat_api, "HAS_LLM_JUDGE", False)
     monkeypatch.setattr(server, "HAS_LLM_JUDGE", False)
+    monkeypatch.setattr(chat_api, "HAS_AB_TESTING", False)
     monkeypatch.setattr(server, "HAS_AB_TESTING", False)
+    monkeypatch.setattr(chat_api, "HAS_METRICS", False)
     monkeypatch.setattr(server, "HAS_METRICS", False)
+    monkeypatch.setattr(chat_api, "HAS_COST_TRACKER", False)
     monkeypatch.setattr(server, "HAS_COST_TRACKER", False)
+    monkeypatch.setattr(chat_api, "HAS_CIRCUIT_BREAKER", False)
     monkeypatch.setattr(server, "HAS_CIRCUIT_BREAKER", False)
+    monkeypatch.setattr(chat_api, "HAS_ORCHESTRATOR", False)
     monkeypatch.setattr(server, "HAS_ORCHESTRATOR", False)
+    monkeypatch.setattr(chat_api, "HAS_PROMPT_CACHE", prompt_cache_enabled)
     monkeypatch.setattr(server, "HAS_PROMPT_CACHE", prompt_cache_enabled)
+    monkeypatch.setattr(chat_api, "prompt_cache", PromptCache())
     monkeypatch.setattr(server, "prompt_cache", PromptCache())
+    monkeypatch.setattr(chat_api, "get_client", lambda: fake_client)
     monkeypatch.setattr(server, "get_client", lambda: fake_client)
+    monkeypatch.setattr(chat_api, "get_model", lambda: "test-model")
     monkeypatch.setattr(server, "get_model", lambda: "test-model")
+    monkeypatch.setattr(chat_api, "get_model_mini", lambda: "test-model")
     monkeypatch.setattr(server, "get_model_mini", lambda: "test-model")
     monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(server.cache, "put", lambda *_args, **_kwargs: None)
@@ -131,10 +154,10 @@ def _configure_provider_chat(monkeypatch, tmp_path, prompt_cache_enabled, *, fai
         lambda *_args: {"score": 6, "issues": [], "good_points": []},
     )
     monkeypatch.setattr(server.quality_tracker, "record", lambda *_args: None)
-    monkeypatch.setattr(server, "_hybrid_rerank_search", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(chat_api, "_hybrid_rerank_search", lambda *_args, **_kwargs: [])
     monkeypatch.setattr(server.knowledge, "search_entities", lambda *_args, **_kwargs: [])
     monkeypatch.setattr(
-        server,
+        chat_api,
         "_gather_context_pieces",
         lambda *_args: {
             "proactive": "",
@@ -145,7 +168,7 @@ def _configure_provider_chat(monkeypatch, tmp_path, prompt_cache_enabled, *, fai
             "reflexion": "",
         },
     )
-    monkeypatch.setattr(server, "_resolve_base_prompt", lambda _sid: ("system", {}))
+    monkeypatch.setattr(chat_api, "_resolve_base_prompt", lambda _sid: ("system", {}))
     return manager, provider_messages
 
 
@@ -372,7 +395,10 @@ def test_post_orchestrator_receives_resolved_owned_history(
         captured_history.extend(history)
         return PROVIDER_REPLY, [], []
 
+    monkeypatch.setattr(chat_api, "HAS_ORCHESTRATOR", True)
+
     monkeypatch.setattr(server, "HAS_ORCHESTRATOR", True)
+    monkeypatch.setattr(chat_api, "_run_agent_orchestrated", orchestrate)
     monkeypatch.setattr(server, "_run_agent_orchestrated", orchestrate)
 
     with TestClient(server.app) as client:
@@ -453,15 +479,18 @@ def test_cache_hit_records_user_and_assistant_once_without_provider_usage(
     session = manager.create_session("user:alice")
     sentinel = {"reply": CACHED_REPLY, "tool_calls": [], "suggestions": []}
     provider = Mock(side_effect=AssertionError("cache hit must not call provider"))
+    monkeypatch.setattr(chat_api, "get_client", provider)
     monkeypatch.setattr(server, "get_client", provider)
     if cache_kind == "semantic":
         async def semantic_hit(_query, owner_key=""):
             assert owner_key == "user:alice"
             return sentinel
 
+        monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", True)
+
         monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
-        monkeypatch.setattr(server, "semantic_get_async", semantic_hit)
-        monkeypatch.setattr(server, "semantic_take_dedup_lease", lambda *_args, **_kwargs: None)
+        monkeypatch.setattr(chat_api, "semantic_get_async", semantic_hit)
+        monkeypatch.setattr(chat_api, "semantic_take_dedup_lease", lambda *_args, **_kwargs: None)
         monkeypatch.setattr(server.cache, "get", Mock(side_effect=AssertionError("semantic hit stops exact lookup")))
     else:
         monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: sentinel)

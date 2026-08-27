@@ -368,3 +368,21 @@ def test_net_route_changes_flags_real_add_and_method_change():
     # chiều nào là thêm, chiều nào là xoá để đối chiếu nội dung hợp đồng.
     added, removed = _route_changes('-@router.get("/x")\n+@router.post("/x")\n')
     assert added == {"POST /x"} and removed == {"GET /x"}
+
+
+def test_r207_ghep_goi_python_bang_ten_thu_muc():
+    """`agent/chat/__init__.py` co stem `__init__` — khong test nao mang ten do.
+
+    Khong sua thi MOI GOI Python deu truot R20.7 du da co test day du: cai gia
+    la hoac phai SKIP cong, hoac phai de mot file `test___init__.py` vo nghia.
+    Phat hien khi boc `agent/chat/` (2026-08-27); `agent/cases/` cung dinh.
+    """
+    from checks.check_test_pairing import CHECKS as pairing
+
+    chk = pairing[0]
+    assert chk._module_name("agent/chat/__init__.py") == "chat"
+    assert chk._module_name("agent/cases/__init__.py") == "cases"
+    assert chk._module_name("agent/server.py") == "server"
+    # va ghep duoc voi test dat ten theo goi
+    assert chk._filename_pairs("chat", "agent/tests/test_chat_smoke.py")
+    assert not chk._filename_pairs("chat", "agent/tests/test_server_models.py")
