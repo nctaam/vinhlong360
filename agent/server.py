@@ -4146,6 +4146,47 @@ async def health_internal(request: Request):
     return await _health_detail()
 
 
+def _erasure_readiness(erasure_status: dict, schema: dict) -> dict:
+    """Khối `erasure_scheduler` của /ready.
+
+    Tách ra mức module để KIỂM ĐƯỢC: bản cũ nằm trong closure `_probe()` của
+    route nên test duy nhất canh nó là test SO CHUỖI trên mã nguồn.
+
+    `ok` GIỮ NGUYÊN nghĩa cũ có chủ đích. Chế độ chỉ-đếm là mặc định AN TOÀN cho
+    giai đoạn chưa có người dùng thật; lật /ready đỏ vì nó là chặn deploy của một
+    cấu hình cố ý, và đó là quyết định của chủ dự án chứ không phải của cổng.
+
+    Cái thiếu không phải mức độ nghiêm mà là KHẢ KIẾN: `overdue_count` — số hồ sơ
+    ĐÃ QUÁ HẠN xoá mà chưa xoá — vốn có sẵn trong `_ERASURE_STATUS` nhưng không
+    được chiếu ra /ready. Người dùng được hứa "xoá vĩnh viễn sau N ngày"
+    (agent/auth.py), tác vụ chạy 288 lần/ngày và lần nào cũng thoát trước vòng
+    xoá, mà không dấu hiệu nào lộ ra ngoài. Nay con số đó nằm trên /ready, và
+    `state` gọi đúng tên trạng thái đáng lo:
+        ready                    — đang xoá thật
+        audit_only               — chỉ đếm, chưa hồ sơ nào quá hạn
+        audit_only_with_overdue  — chỉ đếm, VÀ đã có hồ sơ quá hạn lời hứa
+    """
+    audit_only = bool(erasure_status.get("audit_only", True))
+    try:
+        overdue = int(erasure_status.get("overdue_count") or 0)
+    except (TypeError, ValueError):
+        overdue = 0
+    if not audit_only:
+        state = "ready"
+    elif overdue > 0:
+        state = "audit_only_with_overdue"
+    else:
+        state = "audit_only"
+    return {
+        "ok": bool(schema.get("ok")) and "audit_only" in erasure_status,
+        "audit_only": audit_only,
+        "overdue_count": overdue,
+        "state": state,
+        "schema_version": schema.get("schema_version"),
+        "required_schema_version": schema.get("required_schema_version"),
+    }
+
+
 @app.get("/health/ready")
 async def readiness_probe():
     """Lightweight readiness probe for load balancers / orchestrators."""
@@ -4209,12 +4250,7 @@ async def readiness_probe():
             except Exception:
                 checks["case_policy"] = {"ok": False, "state": "blocked", "code": "case_policy_invalid"}
         erasure_status = scheduler_status().get("erasure", {})
-        checks["erasure_scheduler"] = {
-            "ok": bool(schema.get("ok")) and "audit_only" in erasure_status,
-            "audit_only": bool(erasure_status.get("audit_only", True)),
-            "schema_version": schema.get("schema_version"),
-            "required_schema_version": schema.get("required_schema_version"),
-        }
+        checks["erasure_scheduler"] = _erasure_readiness(erasure_status, schema)
         return checks
     checks = await asyncio.to_thread(_probe)
     ready = all(
