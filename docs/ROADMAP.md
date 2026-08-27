@@ -3627,3 +3627,46 @@ phải chạy `docker compose up postgres`, tạo phiên đăng nhập, rồi đ
   trang nào thật sự dùng chúng trước khi động.
 - **`/xa-phuong/<slug-sai>` trả 500 trong khi API trả 404** — trang lỗi nói sai
   loại lỗi. Không liên quan CSS; ghi để không quên.
+
+### 44. LỖ HỔNG CỔNG: hook `--staged` không thể thực thi ratchet có baseline > 0 (2026-08-27)
+
+> STATUS: active — P1. Đã xác minh bằng mã, CHƯA vá: vá sẽ làm cổng nghiêm hơn
+> và chặn những commit trước đây lọt, nên cần chủ dự án chốt (§3.7).
+
+**Phát hiện thế nào:** tôi thêm `agent/ocop.py` với một hàm complexity 21. Hook
+pre-commit cho qua, in "✓ run_hard: sạch (hard=0, ratchet không tăng)". Chỉ khi
+chạy `run_hard --all` mới lộ: **R20.8 = 48 > baseline 47**.
+
+**Cơ chế** (`scripts/checks/common.py:216` + `run_hard.py:144`):
+
+```
+--staged  →  files = staged_files()   →  check.run(files)  →  count CHỈ TRONG file staged
+ratchet_violations():  if count > baseline[rule]   # baseline là số TOÀN KHO
+```
+
+So một tập con với một tổng thể. Với rule có baseline > 0, tập con gần như luôn
+nhỏ hơn ⇒ **không bao giờ đỏ**.
+
+| Rule | baseline | hook staged có chặn được không |
+|---|---|---|
+| R20.5, R20.7, R20.9, R30.1, R30.6, R30.7, R40.3, R60.1… | 0 | **CÓ** — mọi vi phạm đều > 0 |
+| R20.8 complexity | 47 | KHÔNG |
+| R30.2 emoji · R30.3 màu · R30.8 bo góc | 330 / 147 / 369 | KHÔNG |
+| R50.2 · R50.3 · R50.4 · R50.7 | 102 / 7 / 245 / 24 | KHÔNG |
+
+Tức **cổng chỉ có răng ở đúng những rule đã sạch**. Ở những rule đang mang nợ —
+chính là chỗ cần ratchet nhất — nó là trang trí.
+
+Điều này giải thích lại một chuyện: sổ ngoại lệ quy nợ complexity 3 → 47 cho
+"nhánh phát triển ngoài tầm cổng". Đúng một phần, nhưng chưa đủ — **commit đi
+đúng cổng cũng thêm được nợ thoải mái**, và hôm nay tôi vừa làm đúng thế.
+
+**Cách vá đề xuất** (không tự làm): ở chế độ staged, với mỗi rule ratchet, so
+count trong file staged với count của **chính những file đó ở HEAD**. Tăng ⇒
+chặn. Vừa chính xác vừa nhanh, giữ được ngân sách <5s của hook; không cần quét
+toàn kho.
+
+**Vì sao không tự vá:** nó làm cổng nghiêm hơn hẳn và sẽ chặn những commit trước
+đây lọt — đổi hành vi thực thi trên toàn dự án. Đó là quyết định của chủ dự án.
+Trong lúc chờ: **chạy `python scripts/checks/run_hard.py --all` trước khi commit**
+nếu commit chạm `agent/`, `scripts/` hoặc `web-nuxt/` — hook một mình không đủ.
