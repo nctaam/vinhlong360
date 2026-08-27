@@ -3088,7 +3088,24 @@ _RE_STALE_PROVINCE = re.compile(r"(ben\s*tre|tra\s*vinh)", re.IGNORECASE)
 # KHÔNG, vì nó chính là cái lỗ. Văn bản viết không dấu sẽ bị coi là thiếu dấu
 # lịch sử — fail-CLOSED, đúng hướng an toàn của §1.6: thà loại oan một entity
 # lành còn hơn dựng lớn một cái tên gọi tỉnh cũ như đang tồn tại.
-_RE_HISTORICAL_MARKER = re.compile(r"\bcũ\b|\btrước\b|\btruoc\b", re.IGNORECASE)
+# Chữ "cũ" TRẦN chỉ được tính khi nó BÁM NGAY SAU tên tỉnh ("Trà Vinh (cũ)",
+# "Bến Tre cũ"). Cửa sổ ±40 rộng rãi để lọt ba ca thật, trong đó dấu thuộc về
+# một danh từ KHÁC:
+#   nem-nuong-thanh-binh-ben-tre  "bến phà Hàm Luông (cũ), TP. Bến Tre"
+#   sieu-thi-go-big-c-ben-tre     "chuỗi GO! (trước đây là Big C)"
+#   song-co-chien-vinh-long       "…và Trà Vinh trước khi đổ ra Biển Đông"
+# Cả ba đều gọi tỉnh cũ TRẦN mà vẫn qua cổng.
+_RE_MARKER_SAU_TINH = re.compile(r"^\W{0,3}cũ\b", re.IGNORECASE)
+
+# Cụm chỉ-đích-danh việc sáp nhập thì được tính ở BẤT KỲ đâu trong cửa sổ, vì
+# chúng không thể mang nghĩa nào khác — cho phép lối viết đặt mốc trước tên tỉnh
+# ("trước 7-2025 thuộc tỉnh Trà Vinh"). Chữ "trước" TRẦN thì KHÔNG: nó là từ
+# thường gặp bậc nhất ("phía trước", "trước khi", "trước đây").
+_RE_MOC_SAP_NHAP = re.compile(
+    r"trước\s+(?:7[-/. ]*2025|tháng\s*7|khi\s+sáp\s+nhập|sáp\s+nhập)"
+    r"|truoc\s+(?:7[-/. ]*2025|thang\s*7|khi\s+sap\s+nhap|sap\s+nhap)"
+    r"|(?:sau|từ)\s+(?:khi\s+)?sáp\s+nhập",
+    re.IGNORECASE)
 
 
 def _fold_ascii(value: str) -> str:
@@ -3127,10 +3144,11 @@ def _has_stale_geography(entity: dict) -> bool:
     if _RE_STALE_LEVEL.search(flat):
         return True
     for match in _RE_STALE_PROVINCE.finditer(flat):
-        lo, hi = max(0, match.start() - 40), match.end() + 40
         # Tìm TỈNH trên chuỗi bỏ dấu (bắt được cả "Ben Tre" viết không dấu),
         # nhưng tìm DẤU LỊCH SỬ trên chuỗi còn dấu (để "cù" không giả làm "cũ").
-        if not _RE_HISTORICAL_MARKER.search(raw[lo:hi]):
+        ngay_sau = raw[match.end(): match.end() + 16]
+        cua_so = raw[max(0, match.start() - 40): match.end() + 40]
+        if not (_RE_MARKER_SAU_TINH.search(ngay_sau) or _RE_MOC_SAP_NHAP.search(cua_so)):
             return True
     return False
 

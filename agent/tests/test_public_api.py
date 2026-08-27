@@ -574,3 +574,29 @@ def test_fold_ascii_bao_toan_do_dai():
               "Nguyễn Đình Chiểu", "Ốc lác hấp lá gừng"):
         assert len(_fold_ascii(t)) == len(t), t
     assert _fold_ascii("Đường") == "Duong"
+
+
+def test_co_16_dau_lich_su_phai_THUOC_VE_ten_tinh():
+    """Ba ca THẬT nơi dấu "cũ"/"trước" thuộc về một danh từ KHÁC.
+
+    Bản vá đầu (dò dấu trên chuỗi còn dấu) đã bịt lỗ "cù/Cứ/Trà Cú", nhưng cửa
+    sổ ±40 vẫn nhận dấu của bất kỳ danh từ nào lọt vào đó. Đo trên web/data.json:
+    3 entity gọi tỉnh cũ TRẦN mà vẫn qua cổng nhờ dấu của thứ khác.
+
+    Nay: chữ "cũ" trần chỉ tính khi BÁM NGAY SAU tên tỉnh; còn cụm chỉ đích danh
+    việc sáp nhập ("trước 7-2025", "trước khi sáp nhập") thì tính ở bất kỳ đâu
+    trong cửa sổ, vì chúng không mang nghĩa nào khác.
+    """
+    def ban(txt):
+        return _has_stale_geography({"name": "x", "summary": txt})
+
+    # Dấu thuộc về danh từ khác → vẫn là BẨN.
+    assert ban("Khu vực gần bến phà Hàm Luông (cũ), TP. Bến Tre.") is True
+    assert ban("Siêu thị thuộc chuỗi GO! (trước đây là Big C) Bến Tre.") is True
+    assert ban("Ranh giới giữa Vĩnh Long, Bến Tre và Trà Vinh trước khi đổ ra biển.") is True
+
+    # Dấu thuộc về TÊN TỈNH → sạch.
+    assert ban("Đạt OCOP 4 sao cấp tỉnh Trà Vinh (cũ), sản phẩm tiêu biểu.") is False
+    assert ban("Vùng biển Ba Động ở khu vực Trà Vinh cũ (nay thuộc Vĩnh Long).") is False
+    # Mốc sáp nhập đặt TRƯỚC tên tỉnh cũng là lối viết hợp lệ.
+    assert ban("Trước 7-2025 nơi này thuộc tỉnh Trà Vinh.") is False
