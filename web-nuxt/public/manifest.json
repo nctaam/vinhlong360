@@ -1,7 +1,7 @@
 {
   "name": "vinhlong360 — Du lịch & Sản phẩm địa phương",
   "short_name": "vinhlong360",
-  "description": "Cổng du lịch và sản phẩm địa phương Vĩnh Long, Bến Tre, Trà Vinh",
+  "description": "Cổng du lịch và sản phẩm địa phương tỉnh Vĩnh Long (hợp nhất từ Vĩnh Long, Bến Tre, Trà Vinh cũ)",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FAF5EB",

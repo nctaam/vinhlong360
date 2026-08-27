@@ -124,7 +124,7 @@ const aboutJsonLd = {
     name: 'vinhlong360',
     url: canonicalUrl('/'),
     logo: 'https://vinhlong360.vn/icons/icon-512.png',
-    areaServed: ['Vĩnh Long', 'Bến Tre', 'Trà Vinh'],
+    areaServed: ['Vĩnh Long'],   // §1.6 — một tỉnh sau sáp nhập 7-2025
   },
 }
 

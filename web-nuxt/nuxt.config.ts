@@ -82,9 +82,9 @@ export default defineNuxtConfig({
       viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
       title: 'vinhlong360 — Du lịch & Sản phẩm địa phương',
       meta: [
-        { name: 'description', content: 'Cổng du lịch và sản phẩm địa phương Vĩnh Long – Bến Tre – Trà Vinh: trải nghiệm miệt vườn, đặc sản theo mùa, OCOP, làng nghề và lịch trình gợi ý.' },
+        { name: 'description', content: 'Cổng du lịch và sản phẩm địa phương tỉnh Vĩnh Long (hợp nhất từ Vĩnh Long, Bến Tre, Trà Vinh cũ): miệt vườn, đặc sản theo mùa, OCOP, làng nghề, lịch trình gợi ý.' },
         { property: 'og:title', content: 'vinhlong360 — Du lịch & Sản phẩm địa phương' },
-        { property: 'og:description', content: 'Khám phá Vĩnh Long, Bến Tre, Trà Vinh: du lịch miệt vườn, đặc sản OCOP, làng nghề, lưu trú và lịch trình gợi ý.' },
+        { property: 'og:description', content: 'Khám phá tỉnh Vĩnh Long sau sáp nhập (gồm Bến Tre và Trà Vinh cũ): du lịch miệt vườn, đặc sản OCOP, làng nghề, lưu trú và lịch trình gợi ý.' },
         { name: 'theme-color', content: '#9C3D22', media: '(prefers-color-scheme: light)' },
         { name: 'theme-color', content: '#1a1a1a', media: '(prefers-color-scheme: dark)' },
         { name: 'color-scheme', content: 'light dark' },
@@ -136,9 +136,9 @@ export default defineNuxtConfig({
             '@context': 'https://schema.org',
             '@type': 'WebSite',
             'name': 'VinhLong360',
-            'alternateName': 'Khám phá Vĩnh Long – Bến Tre – Trà Vinh',
+            'alternateName': 'Khám phá tỉnh Vĩnh Long',
             'url': 'https://vinhlong360.vn',
-            'description': 'Nền tảng khám phá du lịch, OCOP và cộng đồng cho vùng Vĩnh Long – Bến Tre – Trà Vinh',
+            'description': 'Nền tảng khám phá du lịch, OCOP và cộng đồng cho tỉnh Vĩnh Long — tỉnh hợp nhất từ Vĩnh Long, Bến Tre và Trà Vinh cũ từ 7-2025',
             'potentialAction': {
               '@type': 'SearchAction',
               'target': {

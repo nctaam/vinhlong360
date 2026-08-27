@@ -726,7 +726,9 @@ useHead({
         logo: 'https://vinhlong360.vn/icons/icon-512.png',
         description: 'Cổng du lịch và sản phẩm địa phương Vĩnh Long.',
         inLanguage: 'vi-VN',
-        areaServed: { '@type': 'AdministrativeArea', name: 'Vĩnh Long, Bến Tre, Trà Vinh' },
+        // §1.6: MỘT đơn vị hành chính. Liệt kê ba tỉnh là khai với Google rằng ba
+        // tỉnh đó còn tồn tại — chúng đã hợp nhất từ 7-2025.
+        areaServed: { '@type': 'AdministrativeArea', name: 'Vĩnh Long' },
       }),
     },
     ...(eventListSchema.value ? [{ type: 'application/ld+json', innerHTML: eventListSchema.value }] : []),

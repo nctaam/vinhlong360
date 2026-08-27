@@ -1,12 +1,14 @@
 # vinhlong360.vn
 
-> Cổng du lịch & sản phẩm địa phương Vĩnh Long, Bến Tre, Trà Vinh — miền Tây Nam Bộ, Việt Nam.
+> Cổng du lịch & sản phẩm địa phương **tỉnh Vĩnh Long** — miền Tây Nam Bộ, Việt Nam.
 
 ## Giới thiệu
 
-vinhlong360.vn là nền tảng cộng đồng cung cấp thông tin du lịch, đặc sản theo mùa, sản phẩm OCOP, làng nghề truyền thống và lịch trình gợi ý cho vùng Vĩnh Long, Bến Tre và Trà Vinh. Nền tảng phục vụ du khách nội địa muốn khám phá miệt vườn sông nước theo cách của người bản địa.
+vinhlong360.vn là nền tảng cộng đồng cung cấp thông tin du lịch, đặc sản theo mùa, sản phẩm OCOP, làng nghề truyền thống và lịch trình gợi ý cho **tỉnh Vĩnh Long**.
 
-## Ba khu vực
+**Lưu ý địa giới hành chính (quan trọng, nhiều nguồn còn ghi sai):** từ tháng 7-2025, Vĩnh Long, Bến Tre và Trà Vinh đã HỢP NHẤT thành MỘT tỉnh duy nhất mang tên Vĩnh Long. Bến Tre và Trà Vinh KHÔNG còn là đơn vị cấp tỉnh, và cấp huyện cũng đã bỏ — tỉnh vận hành hành chính hai cấp với 124 xã/phường. Mọi tên gọi "Bến Tre", "Trà Vinh" trong tài liệu này chỉ để chỉ VÙNG ĐẤT theo địa giới tỉnh cũ trước 7-2025. Nền tảng phục vụ du khách nội địa muốn khám phá miệt vườn sông nước theo cách của người bản địa.
+
+## Ba vùng trong tỉnh (gọi theo địa giới tỉnh cũ, trước 7-2025)
 
 - **Vĩnh Long**: Miệt vườn cam sành, khoai lang, bưởi Năm Roi, làng gốm Mang Thít, cù lao An Bình.
 - **Bến Tre**: Xứ dừa — kẹo dừa, mật hoa dừa, bưởi da xanh, những rẫy dừa bạt ngàn.

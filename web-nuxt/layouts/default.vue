@@ -94,7 +94,7 @@
             <NuxtLink to="/" class="footer-logo">
               <span class="logo">{{ ss('branding.site_name', 'vinhlong360').replace('360', '') }}<span class="dot">360</span></span><span class="tld">{{ ss('branding.logo_suffix', '.vn') }}</span>
             </NuxtLink>
-            <p>{{ ss('footer.tagline', 'Khám phá Vĩnh Long, Bến Tre, Trà Vinh\ntheo cách của người bản địa.') }}</p>
+            <p>{{ ss('footer.tagline', 'Khám phá tỉnh Vĩnh Long\ntheo cách của người bản địa.') }}</p>
             <nav v-if="socialLinks.length" class="footer-social" aria-label="Mạng xã hội">
               <a v-for="s in socialLinks" :key="s.url" :href="s.url" target="_blank" rel="noopener noreferrer" :aria-label="s.label" :title="s.label">
                 <span class="fs-icon" aria-hidden="true">{{ s.icon }}</span>
