@@ -3284,3 +3284,64 @@ khẳng định phủ định; bốn rào phủ định thật của test đó g
 - **Cờ tính năng cần PostgreSQL** — `home_product_lead` không bật được ở local dev.
 - **Số liệu tin chính đặc sản đều đo ở local** — prod PG đã phân kỳ (§1.1), kho ứng
   viên có thể rỗng và mục khuyết êm. Phải đo lại trên prod trước khi tin.
+
+### 38. Vòng thẩm tra đối kháng đợt A/B/C — 13 phát hiện sống, 7 đã vá (2026-08-27)
+
+> STATUS: active — 7/13 đã đóng trong phiên. 6 phát hiện còn lại + 3 bị bác ghi ở §38.4.
+
+**Vì sao chạy vòng này:** đợt A/B/C đã lộ ra một lỗi tôi không tự bắt được (A0
+`77ab0e89` commit kèm một test đỏ, chỉ hiện ra 5 commit sau). Tự kiểm rõ ràng
+không đủ, nên soi lại toàn bộ 13 commit bằng 6 chiều độc lập, mỗi phát hiện phải
+qua một agent khác cố **bác bỏ** và tự tái hiện mới được tính. 22 agent, 16 phát
+hiện được thẩm tra, **13 sống / 3 bị bác**.
+
+#### 38.1 Bốn lỗi nặng — đều do tôi gây ra trong chính đợt này
+
+| | Lỗi | Vì sao tôi không tự thấy |
+|---|---|---|
+| **§1.6 fail-open** | `\b(cu\|truoc)\b` dò trên chuỗi ĐÃ BỎ DẤU → "cù lao", "Trà Cú", "Cứ" đều thành "cu" = dấu "cũ". Cổng §1.6 DUY NHẤT của cả tin chính lẫn tin dẫn. 8 entity gọi tỉnh cũ trần vẫn lọt | Tôi test bằng chuỗi TỰ NGHĨ RA, không chuỗi nào chứa âm "cu" |
+| **Nửa vá múi giờ** | B1a đổi `month` sang giờ VN nhưng bỏ `today` (:3312) và `_event_is_past` → măng-sét và đếm ngược cãi nhau 7 tiếng/ngày | Test tôi viết chỉ khẳng định số học `datetime.astimezone` của stdlib — hoàn nguyên mã về UTC nó vẫn xanh |
+| **Ngày âm nói ngược** | C1 suy ngày âm từ `date_start`, mâu thuẫn `attributes.lunar_date` mà /le-hoi đang in — 24/36 sự kiện lệch | Tôi tự tin vì commit ghi "né bẫy sáu-ô §5c". Né SAI VẾ |
+| **Rò `verified` cửa 2** | `_tool_entity_detail` vẫn bơm trường đó vào ngữ cảnh LLM; d2a1a99a mới bịt `_search_result_card` | Test kèm commit chỉ chấm một hàm |
+
+**Bài học chung:** cả bốn đều có test XANH đứng cạnh. Test xanh chứng minh điều
+nó khẳng định, không chứng minh điều tôi TƯỞNG nó khẳng định.
+
+#### 38.2 Không đọc ≠ không mâu thuẫn (ca C1, đáng ghi riêng)
+
+C1 lập luận: "không đọc `lunar_date` thì né được bẫy sáu-ô". Sai vế. Không ĐỌC
+thì tránh được việc **sửa** ô đó; nó không tránh được việc **nói ngược** ô đó khi
+một trang khác vẫn in ô đó. Bảng quyết định
+`docs/2026-08-07-bang-quyet-dinh-ngay-le-hoi-am-duong.md` (lập 2026-08-07) đã
+phân loại sẵn 67 event: **12 ca KHỚP · 3 ca `date_start` CHÍNH LÀ ô sai · 14 ca
+tự mâu thuẫn, "KHÔNG giải được từ dữ liệu — phải có người chốt"**. C1 suy từ đúng
+cái ô hỏng. Đã GỠ nhãn âm lịch theo-sự-kiện; măng-sét giữ nguyên vì ngày âm của
+HÔM NAY là ngày lịch, không phải dữ liệu entity.
+
+#### 38.3 Cái LƯỚI mới là gốc — CI chưa từng chạy test frontend
+
+Trong `ci.yml` job `frontend`, cổng bundle đứng TRƯỚC `Run tests` và không có
+`continue-on-error`. Gói JS 803/800 kB gz → job dừng ở đó → `npm test` **không
+bao giờ chạy**. Đó là lý do lỗi A0 sống được 5 commit: không phải lưới thưa, mà
+lưới chưa từng được thả xuống. Đã đảo thứ tự (test trước, cổng bundle sau +
+`if: always()`): cổng vẫn nguyên răng, chỉ là hết bịt miệng test.
+
+Kèm hai lỗ lưới nhỏ hơn: registry ảnh R20.10 thiếu hàng cho 2 bồn ảnh mới (khai
+xong mới lộ tôi khai SAI CHỖ — component nhận descriptor qua prop nên không chứa
+bằng chứng nào; nơi đúng là TRANG giao việc, đúng khuôn `home-feature-dossier`);
+và khẳng định `toContain('EntityFeature')` chỉ còn được nuôi bằng một dòng bình
+luận chết — cặp song sinh của lỗi A0 mà tôi bỏ sót ở CHÍNH commit đi vá nó.
+
+#### 38.4 Còn lại — chưa vá trong phiên
+
+- Ba phát hiện **BỊ BÁC** (ghi để khỏi đào lại): SYSTEM_PROMPT dạy trường
+  `verified` (hợp đồng KHÔNG mồ côi — `entity_detail` vẫn là hộ sản xuất sống);
+  quy kết `toContain('EntityFeature')` cho A0 (sai về lịch sử — khối biến mất
+  trước A0); 4 ảnh `cat-*.webp` mồ côi sau A0 (sự kiện đúng, tư cách "lỗi" sai).
+- **Nợ gói JS 803/800 kB gz** — nợ có trước đợt này, cần task hiệu năng riêng.
+  Đã ghi sổ ngoại lệ R30.7 (`docs/standards/90-exceptions-log.md`).
+- **Nợ nội dung §1.6** vẫn sống trên trang chủ: "Hội thi Đờn ca tài tử - cải
+  lương **huyện** Long Hồ". Cổng nay chặn không cho nó được dựng lớn, nhưng chữ
+  vẫn nằm đó. Sửa dữ liệu cần backup B1 + chỉ đạo chủ dự án (§4).
+- **Bảng quyết định ngày âm/dương** chờ chủ dự án điền cột CHỐT — cho tới lúc đó
+  trang chủ không in ngày âm theo sự kiện.
