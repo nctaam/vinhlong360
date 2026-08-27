@@ -78,3 +78,5 @@ phần: `store.rotate_receipt` 27 → tách 3 helper (commit này), còn lại 1
 (audit ×2, correction ×2, policy ×2, service ×1, outbox ×1, store ×1, ngoài-pilot ×2)
 ghi ở backlog tối ưu — giảm dần, KHÔNG được tăng tiếp từ 47. R30.2 507 và R30.3
 291 là ghi nhận tiến bộ (giảm), không phải nợ mới.
+
+- 2026-08-27T11:22:09 SKIP R30.7 — Nợ có TRƯỚC đợt D: JS 803/800 kB gz. Trần đặt 2026-07-10 khi đang 790 — biên bị ăn hết trước loạt commit này. Không có nhát cắt trong tầm: 276/803 kB là maplibre đã lazy đúng, 91 kB là entry, còn lại 181 mảnh nhỏ; đã kiểm hai component chết StorySpread/EntityFeature KHÔNG nằm trong bundle nên xoá cũng không cứu kB nào. Cần task hiệu năng riêng — ROADMAP §37.3.
