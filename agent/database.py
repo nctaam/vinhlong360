@@ -979,6 +979,37 @@ def _insert_entity_fts_terms(conn, entity: dict) -> None:
 #  DATABASE CLASS
 # ══════════════════════════════════════════════════
 
+# Khoá phá hoà cho MỌI nhánh sắp xếp của `list_entities`. `id` là khoá chính nên
+# nó biến thứ tự bộ phận thành thứ tự TOÀN PHẦN.
+#
+# Vì sao bắt buộc: truy vấn có `LIMIT ? OFFSET ?`, mà cả ba khoá sắp xếp đều đồng
+# điểm hàng loạt trong dữ liệu thật — `name` (Vicosap ×2, dừa sáp ×2), `rating`
+# (điểm thô), `updatedAt` (4 entity cùng mốc). SQL không hứa thứ tự nào giữa các
+# hàng đồng điểm, và Postgres được phép chọn kế hoạch KHÁC cho mỗi OFFSET. Khi đó
+# một entity hiện ở cả trang 1 lẫn trang 2, một entity khác không hiện ở trang nào.
+# SQLite hay trả theo rowid nên TÌNH CỜ ổn định — đó là lý do lỗi này sống lâu mà
+# test trên máy dev không bắt được.
+_ENTITY_TIEBREAK = "e.id ASC"
+
+
+def _entity_order_clause(sort: str | None, use_pg: bool) -> tuple[str, str]:
+    """(join, order) cho `list_entities`. Mọi nhánh KẾT bằng khoá duy nhất."""
+    updated_col = 'e."updatedAt"' if use_pg else "e.updatedAt"
+    join = ""
+    if sort == "name":
+        order = "e.name ASC"
+    elif sort == "rating":
+        # GĐ-C3: rating giờ sống ở cột CTI; COALESCE với JSONB legacy để chạy
+        # đúng mọi trạng thái (prod sau dọn, prod trước dọn, dev cột trống).
+        join = "LEFT JOIN entity_food_details fd ON fd.entity_id = e.id"
+        order = ("COALESCE(fd.rating, (e.attributes->>'rating')::float) DESC NULLS LAST"
+                 if use_pg else
+                 "COALESCE(fd.rating, json_extract(e.attributes, '$.rating')) DESC")
+    else:
+        order = f"{updated_col} DESC"
+    return join, f"{order}, {_ENTITY_TIEBREAK}"
+
+
 class Database:
     """Database with thread-safe connections. PostgreSQL or SQLite."""
 
@@ -1633,20 +1664,7 @@ class Database:
         where = " AND ".join(conditions)
         params.extend([limit, offset])
 
-        updated_col = 'e."updatedAt"' if self._use_pg else "e.updatedAt"
-        join = ""
-        if sort == "name":
-            order = "e.name ASC"
-        elif sort == "rating":
-            # GĐ-C3: rating giờ sống ở cột CTI; COALESCE với JSONB legacy để chạy
-            # đúng mọi trạng thái (prod sau dọn, prod trước dọn, dev cột trống).
-            join = "LEFT JOIN entity_food_details fd ON fd.entity_id = e.id"
-            if self._use_pg:
-                order = "COALESCE(fd.rating, (e.attributes->>'rating')::float) DESC NULLS LAST"
-            else:
-                order = "COALESCE(fd.rating, json_extract(e.attributes, '$.rating')) DESC"
-        else:
-            order = f"{updated_col} DESC"
+        join, order = _entity_order_clause(sort, self._use_pg)
 
         with self._conn() as conn:
             rows = self._fetchall(conn, f"""
@@ -2376,7 +2394,7 @@ class Database:
                 SELECT id, entity_id, field, old_value, new_value, actor, created_at
                 FROM entity_changes
                 WHERE entity_id = {ph}
-                ORDER BY created_at DESC
+                ORDER BY created_at DESC, id DESC
                 LIMIT {ph}
             """, (entity_id, limit))
         return [self._row_to_dict(r) for r in rows]

@@ -642,9 +642,18 @@ class TestOrderBySQLiRegression:
 
     def test_list_entities_sort_whitelist(self):
         import database
+        # 2026-08-27: các nhánh sort dời sang `_entity_order_clause` để mệnh đề
+        # ORDER BY kiểm được trực tiếp (khoá phá hoà — xem
+        # tests/test_database_order_stability.py). Ràng buộc Finding-024 KHÔNG
+        # đổi: `sort` là input người gọi, phải qua whitelist chứ không nội suy.
+        clause = inspect.getsource(database._entity_order_clause)
+        assert '"name"' in clause or "'name'" in clause
+        assert '"rating"' in clause or "'rating'" in clause
         src = inspect.getsource(database.Database.list_entities)
-        assert '"name"' in src or "'name'" in src
-        assert '"rating"' in src or "'rating'" in src
         assert "ORDER BY" in src
         assert "sort" not in src.split("ORDER BY")[1].split("LIMIT")[0], \
             "Raw sort param must not appear directly in ORDER BY clause"
+        # Mạnh hơn bản cũ: chạy THẬT với input độc thay vì chỉ so chuỗi nguồn.
+        for doc in ("name'; DROP TABLE entities;--", "1) UNION SELECT 1--", None):
+            _, order = database._entity_order_clause(doc, False)
+            assert "DROP" not in order.upper() and "UNION" not in order.upper()
