@@ -3489,3 +3489,88 @@ Hai đường, và chúng đánh đổi thật:
 
 Đây là đánh đổi SEO/nội dung, không phải sửa kỹ thuật — không tự quyết. Ghi chú: site
 đang noindex nên chưa mất gì; việc này phải xong TRƯỚC khi mở index.
+
+### 42. Hạng sao OCOP: một luật chép tay ở 12 nơi, và bài học "test song song không phải phép đo" (2026-08-27)
+
+> STATUS: active — đã gom về hai bản sinh đôi có bộ ca dùng chung; đường thoát
+> một-bản còn chờ (xem §42.4).
+
+#### 42.1 Lỗi đo được trên trang đang chạy
+
+`/dia-diem/dua-sap-cau-ke` — trang của **trái dừa sáp** — phát ra:
+
+| bề mặt | giá trị |
+|---|---|
+| huy hiệu | `OCOP VICOSAP: 4 SP OCOP 5 sao quốc gia + 7 SP OCOP 4 sao` (rộng 468px) |
+| JSON-LD `brand.name` | cùng chuỗi đó |
+| JSON-LD `identifier.value` | cùng chuỗi đó |
+
+Tức trang gán **danh mục chứng nhận của một công ty khác** cho trái dừa rồi đẩy
+vào structured data cho máy tìm kiếm đọc. Và `khoai-lang-say-binh-tan` được khai
+`brand.name = OCOP 5 sao` trong khi văn xuôi của nó nói hạng 5 mới chỉ **được đề
+nghị** — khai khống chứng nhận, đúng thứ §1.7 cấm.
+
+#### 42.2 Phạm vi thật: 12 nơi, không phải 1
+
+`attributes.ocop` là văn xuôi tự do. Luật rút hạng bị chép tay khắp nơi:
+
+**Frontend (5)** — `EntityCard.vue` (huy hiệu, hiện trên MỌI trang danh mục),
+`dia-diem/[id].vue` (chip hero, khối nổi bật, JSON-LD fallback), `san-pham.vue`
+(đếm + lọc, sót 73 sản phẩm chỉ có `ocop_star`).
+
+**Backend (7)** — `seo.py` (brand + identifier), `contextual_retrieval.py` (nối
+`"OCOP {ocop} sao."` vào **văn bản nạp cho LLM** → dạy mô hình một lời khai
+sai), `server.py` (4 thẻ chat + bộ lọc tìm kiếm rút hạng bằng **chữ số đầu tiên
+gặp ở bất kỳ đâu**), `itinerary_gen.py` (ghi chú lịch trình), `public_api.py`
+(`_lead_ocop_star` — bản sao THỨ BA của luật, cùng lỗi chữ-số-lạc),
+`smart_rank.py` + `knowledge.py` (lọc bằng truthiness → sót 73 sản phẩm).
+
+Đã gom về `agent/ocop.py` ↔ `web-nuxt/utils/ocop.ts`.
+
+#### 42.3 Bài học: test song song là LỜI HỨA, file dùng chung mới là PHÉP ĐO
+
+Ba lần bản vá bị bắt lỗi, **không lần nào do tôi tự thấy**:
+
+1. **Test cũ của `seo`** bơm `attributes` dạng LIST (dữ liệu dị dạng có thật) —
+   hàm mới nổ `AttributeError`. Tôi vá, nhưng chỉ vá MỘT trong hai hàm; test của
+   chính tôi bắt nốt hàm còn lại.
+2. **Test cũ ghim `identifier.value = "4 sao"`** trong khi tôi đặt
+   `"OCOP 4 sao"`. `propertyID` đã là `"OCOP"` nên lặp là thừa — **test cũ đúng
+   hơn tôi**, và suýt nữa tôi sửa test cho khớp bản vá.
+3. Tôi viết test song song ở CẢ HAI bên, **cả hai đều xanh** — trong khi hai bản
+   thực sự lệch nhau ở việc kẹp thang 1..5. Chỉ khi làm
+   `tests/fixtures/ocop-twin-cases.json` (21 ca, cả hai suite cùng đọc) thì lệch
+   mới lộ ra, **ngay lần chạy đầu tiên**, và lộ thêm một lệch thứ hai nữa.
+
+Nói cách khác: hai bộ test viết song song bởi cùng một người, cùng một lúc, vẫn
+mù chung một chỗ. Chúng chỉ chứng minh mỗi bản tự nhất quán, KHÔNG chứng minh
+hai bản khớp nhau. Muốn đo được thì input phải là MỘT file.
+**Dự án đã có sẵn kỷ luật này — tôi phát minh lại.** Cặp sinh đôi âm lịch
+(`agent/lunar_calendar.py` 490 dòng ↔ `web-nuxt/composables/useLunar.ts` 407
+dòng) từ trước đã có `web-nuxt/tests/lunar-oracle-parity.test.ts` đọc fixture
+`lunar-oracle.json`, kèm dòng dặn thẳng: *"Nếu oracle đổi, sinh lại fixture rồi
+chạy lại; KHÔNG nới assertion cho xanh."* Đáng lẽ phải tìm tiền lệ trước khi tự
+dựng. Ghi ở đây để lần sau ai gặp cặp sinh đôi thứ ba thì biết đã có hai tiền lệ.
+
+Một khác biệt CÓ CHỦ ĐÍCH: fixture âm lịch được **sinh ra** từ oracle Python,
+còn `ocop-twin-cases.json` **viết tay**. Vì bản chất khác nhau — âm lịch là phép
+tính thiên văn nên bản Python là chuẩn mực, sinh ra là đúng; còn kỳ vọng OCOP là
+QUYẾT ĐỊNH CHÍNH SÁCH (§1.7: VICOSAP thì chỉ "OCOP", mới đề nghị thì không khai
+hạng). Sinh từ mã sẽ đóng băng luôn cả lỗi nếu bản Python sai; viết tay thì bắt
+được cả trường hợp CẢ HAI bản cùng sai.
+
+Vị trí file cũng khác vì lý do đó: fixture âm lịch nằm trong `web-nuxt/tests/`
+(chỉ TS đọc), còn `ocop-twin-cases.json` nằm ở `tests/fixtures/` gốc repo — nơi
+đã có sẵn các corpus dùng chung mà Python đọc — vì nó được đọc từ CẢ HAI phía.
+
+
+#### 42.4 Nợ còn lại — đường thoát một-bản
+
+Hai bản là BẮT BUỘC hôm nay vì backend dựng JSON-LD / văn bản LLM / thẻ chat còn
+frontend dựng huy hiệu, và API **chưa phát ra trường hạng đã chuẩn hoá**. Đường
+thoát đúng: backend chiếu sẵn một trường hạng (ví dụ `attributes.ocop_tier` đã
+qua §1.7) để frontend khỏi tự rút. Khi đó `web-nuxt/utils/ocop.ts` teo lại còn
+mỗi hàm định dạng nhãn, và bộ ca dùng chung thành thừa.
+
+Chuẩn hoá DỮ LIỆU (gộp 4 khoá `ocop_star`/`ocop_stars`/`ocop_rating`/`ocop` về
+một) vẫn là task riêng cần backup B1 + chỉ đạo chủ dự án — xem §31.5.
