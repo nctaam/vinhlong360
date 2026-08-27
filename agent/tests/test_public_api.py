@@ -130,3 +130,54 @@ def test_confidence_khong_lat_duoc_khop_ten():
 def test_xep_hang_gan_nhan_nguon_de_truy_vet():
     ranked = _rank_search_entities([_e("a", "Dừa sáp")], "dừa sáp")
     assert ranked[0]["_search_meta"]["rank_source"] == "lexical"
+
+
+# ── Canary: dữ liệu sự kiện có HẠN DÙNG ──────────────────────────────────────
+# _select_upcoming_events lọc `today <= date_start <= cutoff`. Mã ĐÚNG, nhưng
+# toàn bộ 67 event trong kho đều ghim năm 2026 (đo 2026-08-27: 59/59 date_start
+# có năm = 2026). Từ 01/01/2027 pool rỗng VĨNH VIỄN và mục thời-vụ — trụ cột
+# "trang đang sống" — im lặng biến mất, không lỗi, không log, không ai biết.
+#
+# Không đẩy ngày sang năm sau: nguồn chỉ nói 2026, tự suy 2027 là bịa (§1.7),
+# và chỉ 2/67 event có cờ `frequency` nên không suy được cái nào thường niên.
+# Thay vào đó: canary này ĐỎ khi kho sắp hết hạn, biến sự cố-2027 thành việc
+# phải làm từ hôm nay. Sửa dữ liệu cần backup B1 + chỉ đạo chủ dự án (§4).
+
+def test_canary_kho_su_kien_chua_het_han():
+    import json
+    from datetime import date, datetime
+    from pathlib import Path
+
+    data_path = Path(__file__).resolve().parents[2] / "web" / "data.json"
+    if not data_path.exists():
+        import pytest
+        pytest.skip("web/data.json không có ở môi trường này")
+
+    raw = json.loads(data_path.read_text(encoding="utf-8"))
+    entities = raw.get("entities", raw) if isinstance(raw, dict) else raw
+    today = date.today()
+    tuong_lai = []
+    for e in entities:
+        if e.get("type") != "event":
+            continue
+        ds = (e.get("attributes") or {}).get("date_start")
+        if not ds:
+            continue
+        try:
+            d = datetime.strptime(ds, "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            continue
+        if d >= today:
+            tuong_lai.append((d, e.get("id")))
+
+    assert tuong_lai, (
+        "KHO SỰ KIỆN ĐÃ HẾT HẠN: không còn event nào có date_start >= hôm nay. "
+        "Mục thời-vụ của trang chủ sẽ rỗng vĩnh viễn. Cần đợt cập nhật lịch sự "
+        "kiện (task dữ liệu: backup B1 + chỉ đạo chủ dự án theo §4)."
+    )
+    xa_nhat = max(tuong_lai)[0]
+    con_lai = (xa_nhat - today).days
+    assert con_lai >= 60, (
+        f"KHO SỰ KIỆN SẮP HẾT HẠN: sự kiện xa nhất còn {con_lai} ngày "
+        f"({xa_nhat.isoformat()}). Lên lịch cập nhật trước khi mục thời-vụ im lặng."
+    )
