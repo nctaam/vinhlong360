@@ -37,7 +37,7 @@ MXH du lịch/OCOP/cộng đồng cho **tỉnh Vĩnh Long MỚI** (sáp nhập V
 1. **Thứ bậc nguồn việc:** (1) chỉ đạo trực tiếp của chủ dự án trong phiên → (2) spec/plan đã duyệt trong `docs/superpowers/` (flow brainstorm→spec→plan→execute cho việc lớn) → (3) `docs/ROADMAP.md` = sổ track dài hạn + backlog (KHÔNG còn là danh sách tuần tự bắt buộc; nhiều giai đoạn đã xong). Tài liệu trong `docs/archive/` là lịch sử — **KHÔNG làm theo**.
 2. Mỗi task: làm → chạy **lệnh verify** → đạt tiêu chí nghiệm thu mới commit (1 việc/commit, message rõ).
 3. Nếu một test **đang xanh bỗng đỏ** mà chưa rõ nguyên nhân → **DỪNG, báo người** (đừng "sửa cho xanh" bằng cách yếu assertion). Baseline hiện có **các fail đã biết** ghi ở ROADMAP mục "Backlog test-debt" — chỉ dừng khi xuất hiện fail MỚI ngoài danh sách đó.
-4. Mỗi phiên bắt đầu: `python -m pytest -q` để biết baseline, đối chiếu danh sách fail-đã-biết.
+4. Mỗi phiên bắt đầu: đo baseline bằng **đúng lệnh có `PYTEST_DEBUG_TEMPROOT`** (xem §5), đối chiếu **danh sách fail-đã-biết chuẩn ở `docs/ROADMAP.md` §"Fail-đã-biết"** (baseline **16 fail**: 12 đặc quyền Windows + 4 lệch kỳ vọng, 0 lỗi sản phẩm). **Chạy `python -m pytest -q` TRẦN cho ra ~1847 "lỗi" MA** — đo 2026-08-25: cùng một file, không temp-root = 5 passed/14 errors, có temp-root = 19 passed/0 errors. Thấy hàng nghìn error thì đó là môi trường, KHÔNG phải repo hỏng.
 5. Giữ phạm vi: việc đáng làm ngoài phạm vi → ghi "Backlog phát sinh" cuối ROADMAP.md, KHÔNG tự làm.
 6. **Quy tắc tài liệu:** tài liệu chỉ đạo (plan/blueprint/guide) phải có header `> STATUS:` (active / done / obsolete / superseded-by X). Gặp doc không STATUS và có mùi lỗi thời (nhắc huyện, 3 tỉnh, Wikimedia, booking...) → coi là nghi vấn, đối chiếu file này trước khi làm theo.
 7. **Tiêu chuẩn có răng (từ 2026-07-07):** bộ chuẩn sống ở `docs/standards/` (INDEX = bảng tổng rule). Pre-commit hook chặn lớp hard + ratchet (nợ chuẩn không được TĂNG — baseline.json committed); `pre_merge_check` chặn thêm scorecard-tụt-điểm + plan-result thiếu. KHÔNG skip lớp hard; SKIP soft cần `SKIP_CHECKS` + `SKIP_REASON` (tự ghi 90-exceptions-log.md). Thao tác diện-rộng có chủ đích → cập nhật baseline TRONG CÙNG COMMIT kèm giải trình.
@@ -57,7 +57,9 @@ MXH du lịch/OCOP/cộng đồng cho **tỉnh Vĩnh Long MỚI** (sáp nhập V
 ```
 # Backend smoke (không gọi LLM, không build index nặng)
 $env:BUILD_SEARCH_INDEXES='false'; $env:BACKGROUND_INDEX_BUILD='false'; $env:SCHEDULER_ENABLED='false'; python agent/server.py
-python -m pytest -q                      # test (đối chiếu fail-đã-biết ở ROADMAP)
+# TEST — PHẢI có temp-root NGẮN, nếu không ~1847 "lỗi" MA (MAX_PATH + ACL trên Windows).
+# Nhóm `case` cần thêm container PG: $env:VL360_TEST_DATABASE_URL='postgresql://vl360:vl360@127.0.0.1:5433/<db>'
+$env:PYTEST_DEBUG_TEMPROOT='C:\vlt'; python -m pytest -q --tb=no   # đối chiếu ROADMAP §"Fail-đã-biết" (16)
 python scripts/validate_data.py          # kiểm dữ liệu
 python scripts/backup_data.py            # BẮT BUỘC trước thao tác dữ liệu
 python scripts/install_hooks.py          # cài pre-commit tiêu chuẩn (1 lần/máy — docs/standards/)
