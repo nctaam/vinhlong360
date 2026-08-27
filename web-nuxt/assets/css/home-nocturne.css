@@ -827,3 +827,33 @@
   align-self: center;
   flex: 0 0 auto;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   A2 — MĂNG-SÉT NGÀY ÂM–DƯƠNG
+   ═══════════════════════════════════════════════════════════════════
+   Dải đầu tiên của trang, ngay mép trên. Đây là chỗ duy nhất trang chủ
+   nói bằng lịch âm — kho 441 lượt âm-lịch-first của dự án trước nay
+   không có đại diện nào ở cửa trước.
+
+   Mở tràn lề bằng padding thay vì bỏ max-width: giữ chữ đúng cột --maxw
+   như mọi mục khác, nhưng nền chạy hết bề ngang. Không đụng DOM, nên
+   không chạm hợp đồng test đang ghim data-home-section="context". */
+
+[data-home-pilot="nocturne-b1"] .home-context-line {
+  max-width: none;
+  padding-inline: max(var(--space-5), calc((100% - var(--maxw)) / 2));
+  background: var(--bg-alt);
+  border-block-end: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+
+[data-home-pilot="nocturne-b1"] .home-masthead__solar {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Ngày âm là thứ phân biệt măng-sét này với mọi dòng ngày khác — cho nó
+   màu thương hiệu để mắt bắt được, nhưng vẫn ở cỡ chữ phụ. */
+[data-home-pilot="nocturne-b1"] .home-masthead__lunar {
+  color: var(--color-brand);
+  font-weight: var(--weight-semibold);
+}

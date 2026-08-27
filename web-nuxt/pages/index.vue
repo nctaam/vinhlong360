@@ -10,7 +10,8 @@
       <div>
         <span class="home-context-line__label">Khu vực khám phá</span>
         <strong>Vĩnh Long</strong>
-        <span>Dữ liệu theo khu vực bạn đang chọn</span>
+        <span class="home-masthead__solar">{{ mastheadSolar }}</span>
+        <span v-if="mastheadLunar" class="home-masthead__lunar">{{ mastheadLunar }}</span>
       </div>
       <NuxtLink to="/ban-do" class="home-context-line__action">Đổi khu vực</NuxtLink>
     </section>
@@ -295,6 +296,7 @@ import { describeEntityImages, describeEntityPlaceholder } from '~/utils/imageDe
 import { createHomeNocturnePresentation } from '~/utils/homeNocturnePresentation'
 import type { HomePresentationEntity } from '~/utils/homeNocturnePresentation'
 import { resolveFreshnessStatus, resolveSourceTier } from '~/utils/regionalColor'
+import { todayInVietnam, solarToLunar, lunarPhrase, isSupportedLunarYear } from '~/composables/useLunar'
 import { aiDisclosure } from '~/utils/aiDisclosure'
 import type { ImageDescriptor } from '~/types/image'
 import { useId } from 'vue'
@@ -414,6 +416,26 @@ const heroFeatureReason = computed(() => {
   if (!heroFeature.value) return 'Gợi ý nổi bật'
   const label = hfMeta.value?.label || 'Điểm đến'
   return hfRegion.value ? `${label} tại ${hfRegion.value}` : `${label} nổi bật`
+})
+
+// Măng-sét ngày âm–dương. Ngày lấy theo GIỜ VN (todayInVietnam), không theo
+// giờ máy chủ: production chạy UTC nên `new Date()` trần in sai ngày trong
+// khung 00:00–07:00 giờ VN và làm SSR lệch client.
+// Câu chữ âm lịch DERIVE lúc render, KHÔNG đọc attributes.lunar_date — ngày
+// của một entity nằm ở sáu ô khác nhau và sửa một ô làm năm ô kia nói ngược
+// (bẫy sáu-ô, CLAUDE.md §5c).
+const mastheadToday = computed(() => todayInVietnam())
+const mastheadSolar = computed(() => {
+  const t = mastheadToday.value
+  const wd = ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy']
+  const dow = new Date(Date.UTC(t.year, t.month - 1, t.day)).getUTCDay()
+  const p2 = (n: number) => String(n).padStart(2, '0')
+  return `${wd[dow]}, ${p2(t.day)}/${p2(t.month)}/${t.year}`
+})
+const mastheadLunar = computed(() => {
+  const t = mastheadToday.value
+  if (!isSupportedLunarYear(t.year)) return ''
+  return lunarPhrase(solarToLunar(t.day, t.month, t.year))
 })
 
 const areaCounts = computed<Record<string, number>>(() => homeData.value?.area_counts || {})
