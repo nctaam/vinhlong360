@@ -3174,6 +3174,36 @@ def _select_product_lead(public: list[dict], month: int,
     return None
 
 
+def _mark_signal_lead(upcoming_events: list[dict], seasonal: list[dict]) -> None:
+    """Gắn `signal_lead_ok` cho MỌI hàng ĐƯỢC PHÉP dựng ảnh — không chọn ai.
+
+    Chia vai có chủ đích, vì mỗi tầng chỉ biết được một nửa:
+
+    * Backend biết ĐIỀU KIỆN: hàng có ảnh thật không, tên có còn mang địa danh
+      cũ trần không (§1.6). Dùng lại `_has_stale_geography` đã có test — hai
+      bản của cùng một luật thì chỉ một bản được sửa khi luật đổi.
+    * Frontend biết AI CÒN SỐNG: `homeNocturnePresentation` loại các entity đã
+      bị hero/spotlight/quick-decision tiêu thụ, nên hàng backend chấm có thể
+      không bao giờ hiện. Đã đo đúng bẫy này: `vuon-dua-sinh-thai-cau-ke-tra-vinh`
+      được chấm nhưng bị mục "Đang vào mùa" ăn mất, trang ra 0 tin dẫn.
+
+    Chạy SAU `_project_public_entity_media_sections` vì trước đó chưa có
+    `image_descriptors` để biết hàng nào thật sự có ảnh.
+
+    Bìa sinh KHÔNG bao giờ đủ điều kiện: nó là mảng bão hoà nhất mục mà mang 0
+    thông tin, và nó cướp trọng âm của hai điểm dừng thật. Không ảnh thì mục
+    giữ dạng chữ — đó là trạng thái ĐÚNG, không phải thiếu sót.
+    """
+    for section in (upcoming_events, seasonal):
+        for entity in section:
+            descriptors = entity.get("image_descriptors") or []
+            if not (descriptors and (descriptors[0] or {}).get("url")):
+                continue
+            if _has_stale_geography(entity):
+                continue
+            entity["signal_lead_ok"] = True
+
+
 def _finalize_homepage_sections(sections: list[list[dict]], upcoming_events: list[dict]) -> None:
     for section in sections:
         for e in section:
@@ -3337,6 +3367,7 @@ async def _build_homepage_payload(month: int) -> dict:
         trending,
         upcoming_events,
     )
+    _mark_signal_lead(upcoming_events, seasonal)
 
     return {
         "seasonal": seasonal,

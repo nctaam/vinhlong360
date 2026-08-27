@@ -100,6 +100,7 @@
             :key="ev.id"
             :to="entityPath(ev.id)"
             class="event-mini"
+            :class="{ 'is-signal-lead': ev.id === signalLeadId }"
             data-home-signal
           >
             <div class="ec-date ec-date-sm" data-material-accent="amber">
@@ -130,6 +131,24 @@
                 />
               </span>
             </div>
+            <span v-if="ev.id === signalLeadId && signalLeadDescriptor?.url" class="signal-lead-figure">
+              <img
+                class="signal-lead-media"
+                :src="signalLeadDescriptor.url"
+                :alt="signalLeadDescriptor.alt"
+                :aria-describedby="signalLeadDisclosureId"
+                width="800"
+                height="600"
+                loading="lazy"
+                decoding="async"
+              >
+              <ImageDisclosure
+                :id="signalLeadDisclosureId"
+                :descriptor="signalLeadDescriptor"
+                presentation="short"
+                class="signal-lead-disclosure"
+              />
+            </span>
           </NuxtLink>
         </div>
 
@@ -142,6 +161,7 @@
             <NuxtLink
               :to="entityPath(e.id)"
               class="home-season-row"
+              :class="{ 'is-signal-lead': e.id === signalLeadId }"
               data-home-signal
               data-home-seasonal-signal
             >
@@ -161,6 +181,24 @@
                     :updated-label="eventFreshnessLabel(e)"
                   />
                 </span>
+              </span>
+              <span v-if="e.id === signalLeadId && signalLeadDescriptor?.url" class="signal-lead-figure">
+                <img
+                  class="signal-lead-media"
+                  :src="signalLeadDescriptor.url"
+                  :alt="signalLeadDescriptor.alt"
+                  :aria-describedby="signalLeadDisclosureId"
+                  width="800"
+                  height="600"
+                  loading="lazy"
+                  decoding="async"
+                >
+                <ImageDisclosure
+                  :id="signalLeadDisclosureId"
+                  :descriptor="signalLeadDescriptor"
+                  presentation="short"
+                  class="signal-lead-disclosure"
+                />
               </span>
               <span class="home-season-row__action">Xem theo mùa</span>
             </NuxtLink>
@@ -443,6 +481,30 @@ const heroFeatureReason = computed(() => {
 const masthead = computed(() => homeData.value?.masthead || null)
 const mastheadSolar = computed(() => masthead.value?.solar_label || '')
 const mastheadLunar = computed(() => masthead.value?.lunar_label || '')
+
+// ── Tin dẫn tín hiệu: luật 3 bậc ────────────────────────────────────────
+// (1) sự kiện sắp tới đủ điều kiện → (2) hàng mùa đủ điều kiện → (3) không ai.
+//
+// Backend chấm ĐIỀU KIỆN (`signal_lead_ok`: có ảnh thật + tên sạch §1.6, dùng
+// lại `_has_stale_geography` đã có test). Frontend chọn NGƯỜI, vì chỉ nó biết
+// ai còn sống: `homePresentation` loại các entity đã bị hero/spotlight/
+// quick-decision tiêu thụ. Backend chọn hộ thì người được chọn có thể bị ăn
+// mất và trang ra 0 tin dẫn — đã đo đúng như vậy một lần.
+//
+// NÂNG CẤP TẠI CHỖ, không rút hàng ra thành khối riêng: rút thì số hàng đổi
+// mà test đang ghim seasonalRows toHaveLength(1); giữ hàng nguyên vẹn thì
+// SourceMark + FreshnessLine đi theo sẵn — hợp đồng "mọi [data-home-signal]
+// phải có bằng chứng" không phải dựng lại.
+const signalLead = computed<any>(() =>
+  upcomingEventList.value.find((x: any) => x?.signal_lead_ok)
+  || seasonalList.value.find((x: any) => x?.signal_lead_ok)
+  || null)
+const signalLeadId = computed(() => signalLead.value?.id || null)
+const signalLeadDescriptor = computed<ImageDescriptor | null>(() => {
+  const e = signalLead.value
+  return e ? (describeEntityImages(e)[0] || null) : null
+})
+const signalLeadDisclosureId = `home-signal-lead-${useId().replace(/[^A-Za-z0-9_-]+/g, '-')}`
 
 // ── Tin chính đặc sản (điểm dừng thị giác 2) ────────────────────────────
 // Cờ home_product_lead mặc định TẮT: mục mới phải bật tay từ AdminCP, và tắt

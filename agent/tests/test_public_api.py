@@ -355,3 +355,68 @@ def test_am_lich_ngoai_dai_oracle_thi_tra_none_chu_khong_doan():
 def test_lunar_phrase_goi_dung_ten_thang_dac_biet():
     assert _lunar_phrase(6, 2, 2027).startswith("1 tháng Giêng")   # mồng một Tết Đinh Mùi
     assert "năm Đinh Mùi" in _lunar_phrase(6, 2, 2027)
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# C2 — tin dẫn tín hiệu: backend chấm ĐIỀU KIỆN, không chọn người
+# ─────────────────────────────────────────────────────────────────────────
+from public_api import _mark_signal_lead  # noqa: E402
+
+
+def _sig(eid, name, url=None, summary=""):
+    e = {"id": eid, "name": name, "summary": summary}
+    if url:
+        e["image_descriptors"] = [{"url": url, "alt": name}]
+    return e
+
+
+def _ok(section):
+    return [e["id"] for e in section if e.get("signal_lead_ok")]
+
+
+def test_tin_dan_bo_qua_hang_khong_co_anh():
+    """Không ảnh thì không đủ điều kiện — bìa sinh không được làm bậc 3."""
+    events = [_sig("khong-anh", "Ngày hội Thanh Trà")]
+    seasonal = [_sig("co-anh", "Mật ong rừng", "/img/mua.webp")]
+    _mark_signal_lead(events, seasonal)
+    assert _ok(events) == []
+    assert _ok(seasonal) == ["co-anh"]
+
+
+def test_tin_dan_cham_MOI_ung_vien_chu_khong_chon_mot():
+    """Backend KHÔNG chọn: nó không biết frontend sẽ loại ai.
+
+    `homeNocturnePresentation.remaining()` bỏ các entity đã bị hero/spotlight/
+    quick-decision tiêu thụ. Chấm đúng một người thì người đó có thể bị ăn mất
+    và trang ra 0 tin dẫn — đã đo thấy đúng như vậy trước khi tách vai.
+    """
+    seasonal = [_sig(f"s{i}", f"Đặc sản {i}", f"/img/{i}.webp") for i in range(4)]
+    _mark_signal_lead([], seasonal)
+    assert _ok(seasonal) == ["s0", "s1", "s2", "s3"]
+
+
+def test_tin_dan_chan_dia_danh_cu_tran():
+    """§1.6: dựng lớn một cái tên còn mang địa danh cũ trần là khuếch đại
+    đúng thứ đang phải sửa."""
+    seasonal = [
+        _sig("cu", "Vườn dừa sinh thái Cầu Kè Trà Vinh", "/img/a.webp"),
+        _sig("huyen", "Hội thi đờn ca tài tử huyện Long Hồ", "/img/b.webp"),
+        _sig("sach", "Mật ong rừng Bản Mỹ Long Nam", "/img/c.webp"),
+    ]
+    _mark_signal_lead([], seasonal)
+    assert _ok(seasonal) == ["sach"]
+
+
+def test_tin_dan_van_nhan_cach_viet_lich_su_dung_chuan():
+    """'Trà Vinh (cũ)' là cách viết ĐÚNG §1.6 — không được giết oan."""
+    seasonal = [_sig("ok", "Bánh tét Trà Cuôn", "/img/a.webp",
+                     summary="Đặc sản vùng Trà Vinh (cũ), nay thuộc tỉnh Vĩnh Long.")]
+    _mark_signal_lead([], seasonal)
+    assert _ok(seasonal) == ["ok"]
+
+
+def test_tin_dan_khuyet_em_khi_khong_ai_du_dieu_kien():
+    events = [_sig("a", "Ngày hội Thanh Trà")]
+    seasonal = [_sig("b", "Ốc lác hấp lá gừng")]
+    _mark_signal_lead(events, seasonal)
+    assert _ok(events) + _ok(seasonal) == []

@@ -229,7 +229,14 @@ describe('Task36 image boundaries', () => {
     expect(source).toContain(':id="item.disclosureId"')
     expect(source).toMatch(/<\/span>\s*<ImageDisclosure class="fy-disclosure" :id="item\.disclosureId"/)
     expect(source).toContain('.fy-disclosure')
-    expect(source).toContain('SPOT_CAT_PHOTO')
+    // A0 (77ab0e89) xoá HẲN chuỗi ảnh nền spotlight (spotMeta → SPOT_CAT_PHOTO →
+    // spotDescriptor → spotPhoto → spotBgCss): mục spotlight nay chỉ còn chữ.
+    // Khẳng định `toContain('SPOT_CAT_PHOTO')` cũ vì thế đang canh một thứ không
+    // còn tồn tại. GỠ chứ không nới: RÀO thật của test này là bốn khẳng định PHỦ
+    // ĐỊNH ở trên — chúng chặn việc đọc thẳng trường ảnh thô quay lại — và chúng
+    // giữ nguyên hiệu lực. Nếu ảnh nền spotlight được dựng lại, nó phải đi qua
+    // descriptor như mọi bồn ảnh khác và rào phủ định sẽ bắt nếu không.
+    expect(source).not.toMatch(/SPOT_CAT_PHOTO/)
     expect(source).toContain('EntityFeature')
   })
 

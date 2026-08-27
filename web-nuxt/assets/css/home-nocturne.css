@@ -1075,3 +1075,75 @@
   font-weight: var(--weight-semibold);
   color: var(--color-brand);
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   C2 — TIN DẪN CÓ ẢNH (luật 3 bậc)
+   ═══════════════════════════════════════════════════════════════════
+   Nâng cấp TẠI CHỖ hàng đầu tiên có ảnh thật, không rút nó ra thành
+   khối riêng: rút thì số hàng đổi và test đang ghim số đó, còn giữ
+   nguyên hàng thì bằng chứng nguồn/độ-mới đi theo sẵn.
+
+   Ảnh cỡ vừa (200px) chứ không lớn: mục này là KHỐI THỞ, không phải
+   điểm dừng. Cho nó mảng màu ngang tin chính là có hai điểm dừng cạnh
+   nhau và cả hai cùng yếu đi.
+
+   KHÔNG dùng bìa sinh làm bậc 3: nó là mảng bão hoà nhất mục mà mang 0
+   thông tin. Không có ảnh thật thì mục giữ dạng chữ — đó là trạng thái
+   đúng, không phải thiếu sót. */
+
+[data-home-pilot="nocturne-b1"] .signal-lead-media {
+  grid-area: unset;
+  inline-size: 200px;
+  block-size: auto;              /* thuộc tính height của <img> thắng
+                                    aspect-ratio nếu không đặt auto */
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--color-border);
+}
+
+/* Hàng sự kiện là lưới; hàng mùa là flex — tin dẫn phải xếp được ở cả hai. */
+[data-home-pilot="nocturne-b1"] .event-mini.is-signal-lead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+[data-home-pilot="nocturne-b1"] .home-season-row.is-signal-lead {
+  align-items: center;
+  gap: var(--space-4);
+}
+
+/* Ảnh + nhãn là MỘT cột: nhãn minh-hoạ-AI (§1.5) phải đọc được cùng lúc với
+   ảnh, không nằm cách nó một danh sách.
+
+   `order: -1` là CÓ CHỦ ĐÍCH: trong DOM khối này nằm SAU phần chữ để trình đọc
+   màn hình nghe TÊN trước rồi mới tới nhãn công bố — đặt trước thì câu đầu tiên
+   người mù nghe được là "Ảnh minh họa do AI dựng", còn tên hàng thì mãi sau.
+   Lệch thứ tự đọc/thị giác thường là bẫy, nhưng bẫy đó nằm ở THỨ TỰ TIÊU ĐIỂM
+   bàn phím; khối này không chứa gì focus được nên không dính. */
+[data-home-pilot="nocturne-b1"] .signal-lead-figure {
+  order: -1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 0 0 auto;
+}
+
+[data-home-pilot="nocturne-b1"] .signal-lead-disclosure {
+  align-self: flex-start;
+  max-inline-size: 200px;
+}
+
+/* Ảnh AI của dự án chụp nền sáng; trên canvas tối chúng đo được 13–16,6:1 —
+   sáng hơn mọi thứ khác. Ghìm để không cướp trọng âm của hai điểm dừng. */
+.dark [data-home-pilot="nocturne-b1"] .signal-lead-media {
+  filter: brightness(.86);
+}
+
+/* Dưới 640px ảnh tin dẫn ẩn: hàng đã hẹp, thêm ô 200px thì tên sự kiện
+   còn chưa tới 150px và gãy 3 dòng. */
+@media (max-width: 640px) {
+  [data-home-pilot="nocturne-b1"] .signal-lead-figure { display: none; }
+}

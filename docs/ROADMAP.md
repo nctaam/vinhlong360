@@ -3234,3 +3234,53 @@ tuyển dụng — loại nốt.
 3. **Lớp thời-vụ mạnh nhất luôn là dữ liệu thật có ngày** (Okinawa cảnh báo có ngày,
    Jeju "right now", Đà Nẵng đếm ngược 1 sự kiện đinh) — không phải widget mùa tĩnh;
    đúng hướng tin dẫn 3 bậc + măng-sét âm–dương của 4.3.
+
+### 37. Thực hiện bản 4.3 — đợt A/B/C, 11 commit (2026-08-27)
+
+> STATUS: active — đợt A và B đã xong và nhìn thấy được trên site đang chạy; đợt C
+> làm xong C1 + C2. Đợt D (Sổ vàng OCOP) chưa bắt đầu, còn chờ chủ dự án duyệt.
+
+Ba việc dọn nền chạy trước (không đụng giao diện, nên không chồng chéo với việc UI):
+gỡ trường `verified` khỏi ngữ cảnh LLM (§1.7 — 1739/1746 entity đang được nói là "đã
+xác minh" trong khi nguồn thật `attributes.verifiedAt` gần như rỗng), nới pool tìm
+kiếm rồi mới cắt (ô tìm ở hero đang **mất kết quả đúng nhất** vì cắt trước khi xếp
+hạng), và canary cho mìn 2027 (kho sự kiện có hạn dùng — test sẽ đỏ ngày 2026-10-11,
+sớm 3 tháng, thay vì im lặng để trang chủ trống mục sự kiện).
+
+#### 37.1 Ba bài học kỹ thuật của đợt này
+
+1. **Đo bằng ảnh chụp, không chỉ bằng số.** Dải chip "Bản đồ · 3 vùng" đo ra "1 hàng,
+   7 liên kết" — nghe là đạt. Ảnh chụp mới lộ nó gãy hai dòng: lưới 2 cột không chứa
+   nổi 3 con. Số đo trả lời đúng câu hỏi tôi đặt ra, chỉ là tôi đặt sai câu hỏi.
+2. **`element.screenshot()` KHÔNG kích hoạt lazy-load.** Ảnh hiện ra trắng trơn dù
+   `naturalWidth=800`, `complete=true`, `decode()` thành công. Suýt "sửa" một thứ
+   không hỏng. Phải chụp CẢ KHUNG NHÌN sau `scrollIntoView`. Cùng họ: pane trình
+   duyệt bị ẩn thì trang ngừng dựng khung — `setTimeout`/`decode()` treo và số đọc ra
+   là số cũ.
+3. **Tầng nào biết gì thì giữ việc đó.** C2 lúc đầu cho backend CHỌN luôn hàng tin
+   dẫn. Chạy ra 0 tin dẫn: `homeNocturnePresentation.remaining()` loại các entity đã
+   bị hero/spotlight/quick-decision tiêu thụ, mà backend không thể biết. Tách lại —
+   backend chấm ĐIỀU KIỆN (`signal_lead_ok`: có ảnh thật + tên sạch §1.6, dùng lại
+   `_has_stale_geography` đã có test), frontend chọn NGƯỜI trong số còn sống. Không
+   nhân bản luật ra TypeScript: hai bản của cùng một luật thì chỉ một bản được sửa.
+
+#### 37.2 Một lỗi tự gây, ghi lại để không lặp
+
+A0 (`77ab0e89`) xoá chuỗi ảnh nền spotlight nhưng để lại `entity-card-disclosure.test.ts:232`
+đòi `SPOT_CAT_PHOTO` → **commit với một test đỏ**, phạm B5. Không lộ ra vì lúc đó tôi
+chỉ chạy các file test của riêng trang chủ. Bài học: đổi `pages/index.vue` thì chạy
+`npx vitest run` TRẦN, đừng lọc theo tên file — trang chủ bị soi bởi test nằm ở file
+mang tên khác. Vá ở C2: gỡ khẳng định đang canh một tính năng đã xoá và thay bằng
+khẳng định phủ định; bốn rào phủ định thật của test đó giữ nguyên hiệu lực.
+
+#### 37.3 Còn nợ, chưa làm
+
+- **Gói JS 802/800kB gz** — nợ có TRƯỚC đợt này (790kB lúc đặt trần 2026-07-10, biên
+  đã bị ăn hết). Không có nhát cắt sạch: 0 chunk trùng, top-3 = 388kB mà maplibre
+  chiếm 276kB và đã lazy đúng. Cần task hiệu năng riêng; đang chặn job frontend của CI.
+- **Nợ nội dung §1.6 đang sống trên trang chủ** — mục tín hiệu vẫn hiện "Hội thi Đờn ca
+  tài tử - cải lương **huyện** Long Hồ". C2 đã chặn không cho hàng như vậy được dựng
+  lớn, nhưng chữ vẫn nằm đó. Sửa dữ liệu cần backup B1 + chỉ đạo chủ dự án (§4).
+- **Cờ tính năng cần PostgreSQL** — `home_product_lead` không bật được ở local dev.
+- **Số liệu tin chính đặc sản đều đo ở local** — prod PG đã phân kỳ (§1.1), kho ứng
+  viên có thể rỗng và mục khuyết êm. Phải đo lại trên prod trước khi tin.
