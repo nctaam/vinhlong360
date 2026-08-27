@@ -2663,9 +2663,18 @@ async def search(
     check_rate(f"search:{get_client_ip(request)}", 30, 60, "Tìm kiếm quá nhanh. Vui lòng thử lại sau.")
     entity_limit = min(limit, 100)
     social_limit = min(max(3, limit // 3), 10)
-    results = await asyncio.to_thread(db.search_entities, q=q, entity_type=type, area=area, limit=entity_limit, public_only=True)
+    # Nới POOL rồi mới cắt — không cắt trước rồi mới xếp hạng.
+    # SQL sắp theo e.confidence (database.py:1596), KHÔNG theo độ khớp; mà confidence
+    # gần như hằng số (5 bậc phủ 96% dữ liệu), nên "top theo confidence" thực chất là
+    # một lát cắt tuỳ tiện. Xếp hạng lexical chạy SAU trên đúng lát cắt đó thì không
+    # cứu được thứ đã bị bỏ ngoài: đo trên 1.746 entity, gợi ý typeahead (limit=5)
+    # trùng xếp-hạng-lý-tưởng 1,76/5 và 15/45 truy vấn mất hẳn kết quả đúng nhất —
+    # gõ "dừa sáp" không ra chính sản phẩm tên "Dừa sáp".
+    # Chat đã làm đúng từ trước ở server.py:512 (`limit=max(limit*3, 30)`); chép sang.
+    pool_limit = min(max(entity_limit * 8, 80), 400)
+    results = await asyncio.to_thread(db.search_entities, q=q, entity_type=type, area=area, limit=pool_limit, public_only=True)
     await asyncio.to_thread(_enrich_place, results)
-    results = _rank_search_entities(results, q)
+    results = _rank_search_entities(results, q)[:entity_limit]
     results = [_project_public_entity_media(entity) for entity in results]
     total = await asyncio.to_thread(db.count_entities_filtered, entity_type=type, area=area, q=q, public_only=True)
     safe_q = re.sub(r"<[^>]+>", "", q)

@@ -92,3 +92,41 @@ def test_a_missing_or_unusable_revision_reads_as_the_first_one():
     # would compare equal to nothing and quietly pass.
     for entity in ({}, {"revision": None}, {"revision": "x"}, {"revision": 0}):
         assert _public_entity_revision(entity) == 1
+
+
+# ── Xếp hạng tìm kiếm: khớp tên phải thắng khớp summary ──────────────────────
+# `_rank_search_entities` trước đây có 0 test, trong khi nó là thứ quyết định
+# 5 dòng gợi ý ở ô tìm của trang chủ. Ba test dưới khoá đúng hành vi đã hỏng:
+# gõ "dừa sáp" mà entity tên đúng "Dừa sáp" không lên đầu.
+
+from public_api import _rank_search_entities  # noqa: E402
+
+
+def _e(eid: str, name: str, summary: str = "", confidence: float = 0.85) -> dict:
+    return {"id": eid, "name": name, "summary": summary, "confidence": confidence}
+
+
+def test_ten_trung_khop_thang_summary_trung_khop():
+    pool = [
+        _e("cho-ben-tre", "Chợ Bến Tre", "nơi bán dừa sáp và nhiều đặc sản"),
+        _e("festival", "Festival Dừa Sáp Cầu Kè", "lễ hội tôn vinh dừa sáp"),
+        _e("dua-sap", "Dừa sáp"),
+    ]
+    ranked = _rank_search_entities(pool, "dừa sáp")
+    assert ranked[0]["id"] == "dua-sap", (
+        "entity tên đúng phải đứng #1, không để entity chỉ nhắc trong summary chen lên"
+    )
+
+
+def test_confidence_khong_lat_duoc_khop_ten():
+    """confidence cao KHÔNG được kéo một kết quả lệch đề lên trên khớp tên chính xác."""
+    pool = [
+        _e("lac-de", "Chợ Bến Tre", "có bán dừa sáp", confidence=0.99),
+        _e("dua-sap", "Dừa sáp", confidence=0.60),
+    ]
+    assert _rank_search_entities(pool, "dừa sáp")[0]["id"] == "dua-sap"
+
+
+def test_xep_hang_gan_nhan_nguon_de_truy_vet():
+    ranked = _rank_search_entities([_e("a", "Dừa sáp")], "dừa sáp")
+    assert ranked[0]["_search_meta"]["rank_source"] == "lexical"
