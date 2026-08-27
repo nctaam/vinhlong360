@@ -101,6 +101,32 @@ def test_search_card_giu_needs_verification_khi_confidence_thap():
     assert card["needs_verification"] is True
 
 
+def test_entity_detail_khong_gui_truong_verified(monkeypatch):
+    """CỬA THỨ HAI của cùng một lỗ — d2a1a99a chỉ bịt `_search_result_card`.
+
+    `knowledge.entity_detail()` trả `{**e, ...}` nên nó giữ nguyên cột của
+    entity, và tool này bơm thẳng JSON đó vào ngữ cảnh LLM. Vòng thẩm tra đối
+    kháng bắt được: trường phủ 1746/1746 entity vẫn còn nguyên đường vào.
+    """
+    monkeypatch.setattr(server.knowledge, "entity_detail", lambda _id: {
+        "id": "x", "name": "Thử", "verified": 1, "confidence": 0.9,
+    })
+    monkeypatch.setattr(server.analytics, "track_entity_hit", lambda *a, **k: None)
+    out = json.loads(server.call_tool("entity_detail", {"entity_id": "x"}))
+    assert "verified" not in out, "§1.7: entity_detail không được mang trường 'verified'"
+    assert out["needs_verification"] is False
+
+
+def test_entity_detail_giu_needs_verification_khi_confidence_thap(monkeypatch):
+    monkeypatch.setattr(server.knowledge, "entity_detail", lambda _id: {
+        "id": "y", "name": "Thử 2", "verified": 1, "confidence": 0.4,
+    })
+    monkeypatch.setattr(server.analytics, "track_entity_hit", lambda *a, **k: None)
+    out = json.loads(server.call_tool("entity_detail", {"entity_id": "y"}))
+    assert out["needs_verification"] is True
+    assert "verified" not in out
+
+
 # ── TC-10.7: _is_error_reply KHÔNG ghi đè câu trả lời đúng chứa "sự cố"/"lỗi" ──
 
 def test_valid_reply_with_su_co_not_clobbered(kb_ctx):

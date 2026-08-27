@@ -3078,14 +3078,41 @@ _LEAD_MAX_NAME = 42         # dài hơn thì vỡ dòng ở cỡ chữ tin chín
 
 _RE_STALE_LEVEL = re.compile(r"\bhuyen\b", re.IGNORECASE)
 _RE_STALE_PROVINCE = re.compile(r"(ben\s*tre|tra\s*vinh)", re.IGNORECASE)
-_RE_HISTORICAL_MARKER = re.compile(r"\b(cu|truoc)\b", re.IGNORECASE)
+# Dấu lịch sử dò trên chuỗi CÒN DẤU, không dò trên chuỗi đã bỏ dấu. Bản đầu là
+# r"\b(cu|truoc)\b" chạy SAU khi bỏ dấu, nên mọi âm tiết cù/củ/cú/cứ/cụ/cư đều
+# thành token "cu" và được tính là đã ghi "cũ" — cổng §1.6 fail-OPEN. Đo trên
+# web/data.json: 8 entity gọi Bến Tre/Trà Vinh trần vẫn qua cổng, được cứu bởi
+# những chữ chẳng liên quan: "cù lao An Bình", "Trà Cú", "Cứ mười con còng".
+#
+# "truoc" không dấu vẫn nhận vì nó không đụng chữ nào khác; "cu" không dấu thì
+# KHÔNG, vì nó chính là cái lỗ. Văn bản viết không dấu sẽ bị coi là thiếu dấu
+# lịch sử — fail-CLOSED, đúng hướng an toàn của §1.6: thà loại oan một entity
+# lành còn hơn dựng lớn một cái tên gọi tỉnh cũ như đang tồn tại.
+_RE_HISTORICAL_MARKER = re.compile(r"\bcũ\b|\btrước\b|\btruoc\b", re.IGNORECASE)
 
 
 def _fold_ascii(value: str) -> str:
-    """Bỏ dấu để so chuỗi. Tách riêng đ/Đ vì NFD KHÔNG tách được chữ này."""
-    value = value.replace("đ", "d").replace("Đ", "D")
-    return "".join(c for c in unicodedata.normalize("NFD", value)
-                   if unicodedata.category(c) != "Mn")
+    """Bỏ dấu để so chuỗi, BẢO TOÀN ĐỘ DÀI 1:1 với chuỗi gốc.
+
+    Độ dài 1:1 không phải chi tiết trang trí: `_has_stale_geography` tìm tên
+    tỉnh trên chuỗi bỏ dấu rồi soi cửa sổ ±40 trên chuỗi GỐC ở CÙNG chỉ số.
+    Lệch một ký tự là cắt trượt cửa sổ.
+
+    Tách riêng đ/Đ vì NFD KHÔNG tách được chữ này.
+    """
+    out = []
+    for ch in unicodedata.normalize("NFC", value):
+        if ch == "đ":
+            out.append("d")
+            continue
+        if ch == "Đ":
+            out.append("D")
+            continue
+        base = "".join(c for c in unicodedata.normalize("NFD", ch)
+                       if unicodedata.category(c) != "Mn")
+        # Ký tự nào bỏ dấu ra khác 1 ký tự thì giữ nguyên, để không phá thế 1:1.
+        out.append(base if len(base) == 1 else ch)
+    return "".join(out)
 
 
 def _has_stale_geography(entity: dict) -> bool:
@@ -3095,12 +3122,15 @@ def _has_stale_geography(entity: dict) -> bool:
     phải trang trí: "tỉnh Trà Vinh (cũ)" là cách viết ĐÚNG chuẩn và sẽ bị giết
     oan nếu chỉ chặn chuỗi trần.
     """
-    flat = _fold_ascii(f"{entity.get('name', '')} {entity.get('summary') or ''}")
+    raw = f"{entity.get('name', '')} {entity.get('summary') or ''}"
+    flat = _fold_ascii(raw)   # cùng độ dài nên chỉ số dùng chung được
     if _RE_STALE_LEVEL.search(flat):
         return True
     for match in _RE_STALE_PROVINCE.finditer(flat):
-        window = flat[max(0, match.start() - 40): match.end() + 40]
-        if not _RE_HISTORICAL_MARKER.search(window):
+        lo, hi = max(0, match.start() - 40), match.end() + 40
+        # Tìm TỈNH trên chuỗi bỏ dấu (bắt được cả "Ben Tre" viết không dấu),
+        # nhưng tìm DẤU LỊCH SỬ trên chuỗi còn dấu (để "cù" không giả làm "cũ").
+        if not _RE_HISTORICAL_MARKER.search(raw[lo:hi]):
             return True
     return False
 

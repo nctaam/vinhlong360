@@ -689,6 +689,14 @@ def _tool_entity_detail(args: dict) -> str:
         return json.dumps({"error": "Không tìm thấy: " + args["entity_id"]})
     conf = detail.pop("confidence", 1.0)
     detail["needs_verification"] = (conf or 1.0) < 0.7
+    # §1.7 — cửa thứ HAI của cùng một lỗ. d2a1a99a gỡ trường này khỏi
+    # `_search_result_card` nhưng `knowledge.entity_detail()` trả `{**e, ...}`
+    # nên nó giữ nguyên cột của entity, và tool này bơm thẳng vào ngữ cảnh LLM.
+    # Trường đó phủ 1746/1746 entity và chỉ là cờ PUBLISH, không phải bằng chứng
+    # kiểm chứng thực địa — để nó lọt vào là mời mô hình phát biểu "đã xác minh".
+    # Nguồn thật duy nhất là attributes.verifiedAt, hiện gần như rỗng.
+    # `needs_verification` (suy từ confidence) mới là thứ prompt được phép đọc.
+    detail.pop("verified", None)
     return json.dumps(detail, ensure_ascii=False, default=str)
 
 

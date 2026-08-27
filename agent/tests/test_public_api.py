@@ -513,3 +513,64 @@ def test_dong_ho_UTC_va_VN_that_su_khac_ngay_o_khung_gio_nay():
     """Chốt tiền đề của hai test trên — nếu không thì chúng vô nghĩa."""
     utc = _dt(2026, 9, 14, 18, 0, tzinfo=_tz.utc)
     assert utc.date() != utc.astimezone(_TZ_VIETNAM).date()
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# Cổng §1.6 phải fail-CLOSED — mọi ca dưới đây là chuỗi THẬT trong dữ liệu
+# ─────────────────────────────────────────────────────────────────────────
+# Bản đầu dò dấu lịch sử bằng r"\b(cu|truoc)\b" SAU khi bỏ dấu, nên "cù", "Cứ",
+# "Trà Cú" đều cấp token "cu" và được tính là đã ghi "cũ". Vòng thẩm tra đối
+# kháng quét web/data.json bằng chính hàm này: 8 entity gọi tỉnh cũ trần vẫn qua
+# cổng. Đây là cổng §1.6 DUY NHẤT của cả _product_lead_eligible lẫn
+# _mark_signal_lead, nên nó fail-open là mở toang cả hai.
+
+from public_api import _fold_ascii  # noqa: E402  (_has_stale_geography đã import ở trên)
+
+
+def test_co_16_khong_nham_cu_lao_tra_cu_cu_lam_dau_chu_cu():
+    """Ba ca CỨU OAN thật — không ca nào có chữ «cũ» ở đâu cả."""
+    assert _has_stale_geography({
+        "name": "Nhãn xuồng cơm vàng",
+        "summary": "Trái ngọt, trồng nhiều ở Bến Tre và cù lao An Bình."}) is True
+    assert _has_stale_geography({
+        "name": "Mắm Còng Bến Tre",
+        "summary": "Cứ mười con còng thì làm được một hũ mắm."}) is True
+    assert _has_stale_geography({
+        "name": "Bánh tét",
+        "summary": "Món đặc sản của vùng Trà Cú - Trà Vinh, gói bằng lá chuối."}) is True
+
+
+def test_co_16_van_nhan_cach_viet_dung_chuan():
+    """Fail-closed KHÔNG được biến thành giết-oan."""
+    assert _has_stale_geography({
+        "name": "Kẹo dừa",
+        "summary": "Đặc sản vùng Bến Tre (cũ), nay thuộc tỉnh Vĩnh Long."}) is False
+    assert _has_stale_geography({
+        "name": "Vicosap",
+        "summary": "chiếm 4 trong 6 sản phẩm OCOP 5 sao của tỉnh Trà Vinh (cũ)."}) is False
+    assert _has_stale_geography({
+        "name": "Bánh tét",
+        "summary": "Vùng này TRƯỚC 7-2025 thuộc tỉnh Trà Vinh."}) is False
+
+
+def test_co_16_bat_ten_hien_thi_goi_tinh_cu_tran():
+    """Tên hiển thị cũng bị soi, không riêng summary — đây là ca đang SỐNG
+    trong dữ liệu và từng được `_mark_signal_lead` chấm đủ điều kiện."""
+    assert _has_stale_geography({
+        "name": "Mật hoa dừa và đường hoa dừa Trà Vinh (OCOP 5 sao)",
+        "summary": "Sản phẩm OCOP đạt 5 sao cấp quốc gia."}) is True
+
+
+def test_co_16_van_bat_cap_huyen():
+    assert _has_stale_geography({"name": "Hội thi đờn ca huyện Long Hồ", "summary": ""}) is True
+    assert _has_stale_geography({
+        "name": "Bưởi Năm Roi", "summary": "Trồng ở xã Mỹ Hoà, tỉnh Vĩnh Long."}) is False
+
+
+def test_fold_ascii_bao_toan_do_dai():
+    """Cửa sổ ±40 tìm chỉ số trên chuỗi bỏ dấu rồi cắt trên chuỗi GỐC. Lệch một
+    ký tự là cắt trượt cửa sổ, và cổng lại hỏng theo kiểu khác."""
+    for t in ("Đường hoa dừa Trà Vinh", "cù lao An Bình", "Bến Tre (cũ)",
+              "Nguyễn Đình Chiểu", "Ốc lác hấp lá gừng"):
+        assert len(_fold_ascii(t)) == len(t), t
+    assert _fold_ascii("Đường") == "Duong"
