@@ -3285,9 +3285,12 @@ khẳng định phủ định; bốn rào phủ định thật của test đó g
 - **Số liệu tin chính đặc sản đều đo ở local** — prod PG đã phân kỳ (§1.1), kho ứng
   viên có thể rỗng và mục khuyết êm. Phải đo lại trên prod trước khi tin.
 
-### 38. Vòng thẩm tra đối kháng đợt A/B/C — 13 phát hiện sống, 7 đã vá (2026-08-27)
+### 38. Vòng thẩm tra đối kháng đợt A/B/C — 13/13 phát hiện sống đã đóng (2026-08-27)
 
-> STATUS: active — 7/13 đã đóng trong phiên. 6 phát hiện còn lại + 3 bị bác ghi ở §38.4.
+> STATUS: done (phát hiện) — cả 13 phát hiện sống đã vá trong phiên; chúng gộp về
+> 7 NGUYÊN NHÂN GỐC (§1.6 ×3 · múi giờ ×3 · ngày âm ×3 · rò verified ×1 · CI ×1 ·
+> registry ×1 · khẳng định mồ côi ×1). Ba phát hiện bị bác + các việc chờ chủ dự
+> án ghi ở §38.4 — chúng KHÔNG phải phát hiện chưa vá.
 
 **Vì sao chạy vòng này:** đợt A/B/C đã lộ ra một lỗi tôi không tự bắt được (A0
 `77ab0e89` commit kèm một test đỏ, chỉ hiện ra 5 commit sau). Tự kiểm rõ ràng
