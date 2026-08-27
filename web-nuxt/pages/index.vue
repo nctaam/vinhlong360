@@ -208,6 +208,14 @@
       </section>
     </div>
 
+    <!-- 4b. Sổ vàng OCOP — ĐIỂM DỪNG THỊ GIÁC 3, kênh riêng là VIỀN DÀY (hero
+         giữ kênh "khối tối", tin chính đặc sản giữ kênh "mảng màu"). Nằm ở khe
+         giữa hai dải nên nền nó phải ĐẶC, không hoà vào dải.
+         Trạng thái E-lite: khung + định nghĩa + lối vào, KHÔNG nêu tên sản phẩm.
+         Không có prop, không có cờ — nó không phụ thuộc payload nào nên không có
+         đường hỏng. -->
+    <HomeOcopLedger />
+
     <!-- 5. Từ cộng đồng — compact + trending tags; else always-populated editorial story.
          ClientOnly: communityData is lazy → renders null at prerender but resolves into the
          payload, so SSR (v-else story) ≠ client (v-if feed) = hydration mismatch. Rendering
@@ -347,6 +355,7 @@ import HomeDecisionLedger from '~/components/home/HomeDecisionLedger.vue'
 import HomeFeatureDossier from '~/components/home/HomeFeatureDossier.vue'
 import HomeLocalBriefing from '~/components/home/HomeLocalBriefing.vue'
 import HomeProductLead from '~/components/home/HomeProductLead.vue'
+import HomeOcopLedger from '~/components/home/HomeOcopLedger.vue'
 import ImageDisclosure from '~/components/ImageDisclosure.vue'
 import { describeEntityImages, describeEntityPlaceholder } from '~/utils/imageDescriptors'
 import { createHomeNocturnePresentation } from '~/utils/homeNocturnePresentation'
