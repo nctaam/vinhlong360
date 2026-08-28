@@ -122,7 +122,6 @@ class TestImageURLValidation:
 
 
 def test_the_claims_list_masks_the_one_phone_it_used_to_leak():
-    import ast
     from pathlib import Path
 
     source = (Path(__file__).resolve().parents[1] / "admin.py").read_text("utf-8")
@@ -132,6 +131,11 @@ def test_the_claims_list_masks_the_one_phone_it_used_to_leak():
     # only place in the API that returned a registered user's raw number.
     assert '"claims": [_claim_row(r) for r in rows]' in source
     assert 'item["claimant_phone"] = _mask(str(item["claimant_phone"]))' in source
-    tree = ast.parse(source)
-    assert any(isinstance(node, ast.FunctionDef) and node.name == "_mask"
-               for node in ast.walk(tree)), "the masking helper vanished"
+    # `_mask` sang agent/admin_common.py (2026-08-28, bước 2a) vì cả miền
+    # entity-admin lẫn phần còn lại của admin đều dùng. Ý định của rào KHÔNG đổi:
+    # helper che số phải TỒN TẠI và handler claims phải GỌI nó (hai assert trên
+    # đã khoá chỗ gọi). Soi định nghĩa ở nhà mới; import-đứt thì bài này nổ
+    # ImportError chứ không im.
+    from admin_common import _mask as _mask_fn
+    assert callable(_mask_fn), "the masking helper vanished"
+    assert _mask_fn("0912345678") != "0912345678", "helper không còn che gì cả"

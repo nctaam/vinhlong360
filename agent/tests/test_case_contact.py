@@ -312,7 +312,8 @@ def test_a_takedown_clears_the_catalogue_the_chat_speaks_from():
     import ast
     from pathlib import Path
 
-    source = (Path(__file__).resolve().parents[1] / "admin.py").read_text("utf-8")
+    # `_sync_kb` sang agent/admin_common.py (2026-08-28, buoc 2a) — soi nha moi.
+    source = (Path(__file__).resolve().parents[1] / "admin_common.py").read_text("utf-8")
     tree = ast.parse(source)
     sync = next(node for node in ast.walk(tree)
                 if isinstance(node, ast.FunctionDef) and node.name == "_sync_kb")

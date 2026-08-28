@@ -1900,9 +1900,10 @@ class TestCacheInvalidationOnEntityCRUD:
     """B2: LLM cache must be invalidated when entities are modified via _sync_kb."""
 
     def test_sync_kb_invalidates_cache(self):
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
-        sync_fn = src[src.index("def _sync_kb():"):]
-        sync_fn = sync_fn[:sync_fn.index("\ndef _safe(")]
+        # `_sync_kb` sang agent/admin_common.py (2026-08-28, buoc 2a). Cat theo
+        # AST thay vi cua so "den def _safe(" — ham ke ben nha moi khac nha cu.
+        src = (Path(__file__).resolve().parent.parent / "admin_common.py").read_text(encoding="utf-8")
+        sync_fn = function_source(src, "_sync_kb")
         assert "cache.invalidate_all()" in sync_fn
 
     def test_update_entity_calls_sync_kb(self):

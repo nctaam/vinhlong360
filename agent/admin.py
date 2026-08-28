@@ -92,37 +92,10 @@ def _require_ai_only_entity_images(images: list[str] | None) -> None:
         _reject_non_ai_media()
 
 
-def _sync_kb():
-    """GĐ3.6: write-through — sau khi ghi DB, nạp lại knowledge để chat/tool thấy ngay.
-
-    Bọc try/except: lỗi reload không được làm hỏng thao tác admin đã commit.
-    Also invalidates LLM response cache to prevent stale chat answers.
-    """
-    try:
-        knowledge.reload()
-    except Exception:
-        logger.exception("Knowledge reload failed after admin write — chat may serve stale data")
-    try:
-        import cache
-        cache.invalidate_all()
-    except Exception:
-        logger.warning("LLM cache invalidation failed after KB sync")
-    try:
-        # The chat's KB catalogue, which has no TTL of its own. Without this a
-        # takedown removes the row while every later /chat still names the
-        # entity — the one guarantee the catalogue exists to provide.
-        import kb_context
-        kb_context.invalidate()
-    except Exception:
-        logger.warning("KB context invalidation failed after KB sync")
-    _invalidate_admin_caches()
 
 
 _admin_volatile_caches: list[dict] = []
 
-def _invalidate_admin_caches():
-    for c in _admin_volatile_caches:
-        c["data"] = None
 
 
 def _safe(fn, default):
@@ -529,6 +502,18 @@ def _admin_actor_label(request: Request | None) -> str:
     return f"user:{user.get('id')}" if user and user.get("id") else "admin-key"
 
 ROOT = Path(__file__).resolve().parent.parent
+
+# Ha tang admin dung chung — tach 2026-08-28 (buoc 2a cua lat entity-admin).
+# Ca mien entity-admin sap boc LAN phan con lai cua file nay deu goi; de
+# nguyen la mien moi phai import nguoc admin.py 5.900 dong. Tai xuat de bo
+# test hien co van va duoc qua `admin.<ten>`.
+from admin_common import (  # noqa: F401
+    _admin_volatile_caches,
+    _invalidate_admin_caches,
+    _log_mod_action,
+    _mask,
+    _sync_kb,
+)
 
 router = APIRouter(prefix="/admin", tags=["admin"], dependencies=[Depends(require_admin), Depends(require_csrf)])
 
@@ -5297,18 +5282,8 @@ def _mod_post(row: dict) -> dict:
     }
 
 
-def _mask(phone: str) -> str:
-    if not phone or len(phone) < 6:
-        return phone or ""
-    return phone[:3] + "****" + phone[-3:]
 
 
-def _log_mod_action(target_type, target_id, action, reason=None):
-    try:
-        from moderation import log_moderation
-        log_moderation(target_type, target_id, action, {"reason": reason} if reason else {}, auto=False)
-    except Exception:
-        logger.debug("Moderation log write failed", exc_info=True)
 
 
 # ══════════════════════════════════════════════════
