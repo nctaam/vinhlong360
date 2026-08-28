@@ -164,3 +164,28 @@ có nhu cầu thật.
 Bản đồ này dựng từ điều tra route (`@app|router.<verb>("...")` trên toàn
 `agent/`) và phân tích co-change trên `git log --since="6 months ago"
 --name-only`. Con số nào nghi ngờ thì đo lại, đừng tin bảng.
+
+## 8. KẾT LUẬN CHƯƠNG TRÌNH (2026-08-28) — mục tiêu đã đạt, hai lát cuối KHÔNG đáng cắt
+
+Mục tiêu gốc của tài liệu: *"phát triển từng module mà không chồng đè lên
+nhau"*. Sau bước 1–2, đo lại hai ứng viên còn lại bằng thước "độ tự chứa"
+(bao nhiêu ký hiệu bị module khác import):
+
+| file | dòng | ký hiệu | handler | bị ngoài import |
+|---|---:|---:|---:|---|
+| `social.py` (→ community/) | 4.556 | 198 | 71 | **3** (`_block_sql`, `_mute_sql`, `router`) |
+| `auth.py` (→ identity/) | 2.190 | 137 | 30 | **5** |
+
+Cả hai ĐÃ là miền-đơn, một-file, ghép nối tối thiểu — khác hẳn `public_api`/
+`admin`/`server` trước khi cắt (túi trộn 10–20 miền, 46% route rải). Đóng gói
+chúng chỉ là ĐỔI TÊN: trả 39–164 điểm vá test + 26–147 thuộc-tính + rủi ro
+trục-4 (sự cố B1 §46.2) để mua về ~0 cách ly mới. **Không cắt.**
+
+Nỗi đau THẬT còn lại của hai file này là NỢ TEST (B3), không phải cấu trúc —
+việc đó đo bằng độ phủ, xử bằng viết test, không xử bằng di chuyển mã.
+
+**Chương trình module KẾT THÚC tại đây**: 3 miền bóc (`chat/` `llmops/`
+`entities/` hai mặt), 4 tầng dùng chung tách (`features` `http_errors`
+`entity_read` `admin_common`), server.py −61%, public_api −27%, admin −23%,
+433 route nguyên vẹn, cổng R20.9 nhìn thấy mọi mount. Bài học vận hành nằm ở
+ROADMAP §45–46 (bốn trục chi phí, khuôn ba-phép-đo, sự cố B1).
