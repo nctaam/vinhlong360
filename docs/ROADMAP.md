@@ -4024,7 +4024,27 @@ LOCATION_REMEDIATION + ENTITY_STATUS + ACCOUNT_CONTROL_PLANE + SITEMAP_BUNDLE)
 
 #### 48.2 Số liệu trước/sau (điền từ lượt chốt sổ 9 cổng)
 
-<BANG_CHOT_SO>
+Lượt chốt sổ 9 cổng: 12.224 passed / 31 failed (= 16 fail-đã-biết + 15
+artifact trạng-thái-DB đã phân loại ở 48.4) / DB thật 1746/0.
+
+| module | trước chiến dịch | sau đợt A | CHỐT (đợt B, 9 cổng) |
+|---|---:|---:|---:|
+| `community/api.py` | 30% | 30% (bất động) | **97%** (72/2300 hụt) |
+| `identity/api.py` | 46% | 52%* | **91%** (118/1330) |
+| `database.py` | 88% | 91%* | **93%** |
+| `chat/api.py` | 69% | **84%** | 84% |
+| `auto_learn.py` | 26% | **96%** | 96% |
+| `crawler.py` | 39% | **97%** | 97% |
+| `discover_province.py` | 37% | **85%** | 85% |
+| `data_quality.py` | 75% | **84%** | 84% |
+| `learn_loop.py` | 34% | **69%** | 69% |
+| **TỔNG vùng mù B3** | **54%** | — | **90%** |
+
+(*) phần tăng của cột giữa ở identity/database là do MỞ ĐỦ CỔNG env, không
+phải test mới — bài học 48.4. Phần dư còn lại: chat 84% (glue stream/LLM),
+learn_loop 69% (đường ghi hàng loạt đã có test đối tác cũ), data_quality/
+discover 84–85% (nhánh CLI + LLM thật) — đều là phần "đắt hơn giá trị",
+ghi nhận ở đây thay vì đuổi 100%.
 
 #### 48.3 Cách thi công: workflow agent song song, ranh giới cứng trong đề bài
 
