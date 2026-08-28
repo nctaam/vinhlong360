@@ -98,3 +98,32 @@ def test_require_rollout_nem_404_khi_co_tat(monkeypatch):
     with pytest.raises(HTTPException) as exc:
         entity_read._require_rollout("CO_TAT")
     assert exc.value.status_code == 404
+
+
+def test_invalidate_place_cache_xoa_cache_va_phat_tin_hieu():
+    """Cú dời invalidator (2026-08-28): hàm chạm HAI tầng — place-cache (sống ở
+    đây) và homepage-cache (của public_api). Tách bằng LISTENER: đây xoá phần
+    của mình rồi phát tín hiệu; public_api đăng ký việc-của-nó lúc import. Khoá
+    cả hai vế để cú dời không âm thầm nuốt mất vế homepage."""
+    entity_read._place_cache["x"] = {"name": "X", "area": None}
+    goi = []
+    entity_read._place_invalidation_listeners.append(lambda: goi.append(1))
+    try:
+        entity_read.invalidate_place_cache()
+        assert "x" not in entity_read._place_cache, "place-cache chưa bị xoá"
+        assert goi == [1], "listener không được phát tín hiệu"
+    finally:
+        entity_read._place_invalidation_listeners.pop()
+
+
+def test_public_api_dang_ky_listener_homepage():
+    """Vế homepage: import public_api phải đăng ký ĐÚNG MỘT listener — mất đăng
+    ký là admin sửa place xong homepage vẫn phục vụ tên cũ (Perf-P0 cũ)."""
+    import public_api  # noqa: F401 — kích hoạt đăng ký lúc import
+
+    assert len(entity_read._place_invalidation_listeners) >= 1
+
+
+def test_invalidate_entity_cache_la_hook_tuong_thich():
+    entity_read.invalidate_entity_cache("bat-ky")  # không được ném
+    entity_read.invalidate_entity_cache(None)

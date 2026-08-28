@@ -160,6 +160,7 @@ from entity_read import (  # noqa: F401  (tái xuất: test vá qua public_api.<
 # hien co van va duoc qua `public_api.<ten>` — giu chung NGUYEN VAN chinh la
 # luoi kiem chung cua cu doi nay.
 from entity_read import _require_rollout, _rollout_enabled  # noqa: F401
+from entity_read import invalidate_entity_cache, invalidate_place_cache  # noqa: F401
 from entities.api import (  # noqa: F401
     DEFAULT_RELATIONSHIP_LIMIT,
     EntityClaimIn,
@@ -246,9 +247,7 @@ _HOMEPAGE_TTL = 120  # giây
 _homepage_rebuilding = False
 _homepage_lock = asyncio.Lock()
 
-def invalidate_entity_cache(entity_id: str | None = None):
-    """Compatibility hook retained after removing policy-bearing response memoization."""
-    del entity_id
+# invalidate_entity_cache: sang entity_read (2026-08-28) — tai xuat o khoi import.
 
 
 
@@ -321,12 +320,8 @@ def _itinerary_coverage_areas(itinerary: dict) -> set[str]:
 
 
 
-def invalidate_place_cache():
-    """Xoá cache tên/khu-vực xã/phường — gọi sau /reload để tránh phục vụ tên cũ
-    khi admin đổi/di chuyển place."""
-    with _place_cache_lock:
-        _place_cache.clear()
-    _homepage_cache.update(month=None, data=None, ts=0.0)  # Perf-P0: refresh homepage sau reload
+# invalidate_place_cache: sang entity_read (2026-08-28). Phan viec CUA FILE NAY
+# (refresh homepage-cache) dang ky qua listener — xem cuoi file.
 
 # GĐ13.6f: báo cáo thông tin sai / nội dung vi phạm — lưu JSONL nhẹ (free-tier),
 # admin xem qua /admin/reports để xử lý (takedown/sửa). KHÔNG dùng DB/dịch vụ trả phí.
@@ -3660,3 +3655,10 @@ from entities.api import router as _entities_router  # noqa: E402
 router.include_router(_entities_router)
 
 _fix_route_order()
+
+
+# Homepage-cache la trang thai cua FILE NAY; viec xoa no khi place-cache doi
+import entity_read as _entity_read
+_entity_read._place_invalidation_listeners.append(
+    lambda: _homepage_cache.update(month=None, data=None, ts=0.0)  # Perf-P0
+)

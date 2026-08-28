@@ -30,6 +30,20 @@ def _public_src() -> str:
             + (root / "entities" / "api.py").read_text(encoding="utf-8"))
 
 
+
+def _admin_src() -> str:
+    """Nguon MAT QUAN TRI — hop nhat admin.py + entities/admin_api.py.
+
+    Mien entity-admin sang agent/entities/ (2026-08-28, buoc 2b). Cac rao duoi
+    soi "mat quan tri co tinh chat X", bat ke handler song o file nao; ghim mot
+    duong dan la chung im lang mat tac dung khi ma doi nha.
+    """
+    from pathlib import Path as _P
+    root = _P(__file__).resolve().parent.parent
+    return ((root / "admin.py").read_text(encoding="utf-8") + chr(10)
+            + (root / "entities" / "admin_api.py").read_text(encoding="utf-8"))
+
+
 class TestReactionEnrichment:
     """_enrich_reactions() batch-fetches reaction counts for feed posts."""
 
@@ -944,28 +958,23 @@ class TestI18nAdmin:
         assert "Invalid admin credentials" not in src
 
     def test_no_english_site_settings(self):
-        from pathlib import Path
-        admin_src = Path(AGENT_DIR / "admin.py").read_text(encoding="utf-8")
+        admin_src = _admin_src()
         assert "Site settings require PostgreSQL" not in admin_src
 
     def test_no_english_post_not_found(self):
-        from pathlib import Path
-        admin_src = Path(AGENT_DIR / "admin.py").read_text(encoding="utf-8")
+        admin_src = _admin_src()
         assert '"Post not found"' not in admin_src
 
     def test_no_english_suggestion_not_found(self):
-        from pathlib import Path
-        admin_src = Path(AGENT_DIR / "admin.py").read_text(encoding="utf-8")
+        admin_src = _admin_src()
         assert '"Suggestion not found"' not in admin_src
 
     def test_no_english_relationship_not_found(self):
-        from pathlib import Path
-        admin_src = Path(AGENT_DIR / "admin.py").read_text(encoding="utf-8")
+        admin_src = _admin_src()
         assert '"Relationship not found"' not in admin_src
 
     def test_no_english_requires_postgresql(self):
-        from pathlib import Path
-        admin_src = Path(AGENT_DIR / "admin.py").read_text(encoding="utf-8")
+        admin_src = _admin_src()
         assert '"Requires PostgreSQL"' not in admin_src
 
 
@@ -976,8 +985,7 @@ class TestSiteSettingsValidation:
     """Admin site-settings endpoints must validate key/category params."""
 
     def test_setting_key_regex_exists(self):
-        from pathlib import Path
-        admin_src = Path(AGENT_DIR / "admin.py").read_text(encoding="utf-8")
+        admin_src = _admin_src()
         assert "_SETTING_KEY_RE" in admin_src
 
     def test_update_setting_validates_key(self):
@@ -2346,7 +2354,7 @@ class TestSecurityFixes:
         assert "file.read(MAX_IMAGE_SIZE" in fn_src
 
     def test_admin_image_bounded_read(self):
-        src = (AGENT_DIR / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "upload_entity_image")
@@ -2429,7 +2437,9 @@ class TestReliabilityFixes:
         assert "_place_cache_lock" in fn_src
 
     def test_invalidate_place_cache_thread_safe(self):
-        src = _public_src()
+        # `invalidate_place_cache` sang entity_read (2026-08-28, cú dời invalidator
+        # do boundary-test của gói entities/ ép) — soi nhà mới.
+        src = (AGENT_DIR / "entity_read.py").read_text(encoding="utf-8")
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "invalidate_place_cache")
@@ -2634,7 +2644,7 @@ class TestAdminAuditLogging:
     """Admin mutation endpoints must call _log_mod_action for audit trail."""
 
     def _get_fn(self, func_name, window=2000):
-        src = (AGENT_DIR / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         idx = src.index(f"async def {func_name}(")
         return src[idx:idx+window]
 
@@ -2961,7 +2971,7 @@ class TestAdminUserStatefix:
     """require_admin must set request.state.admin_user; endpoints use getattr."""
 
     def test_require_admin_sets_admin_user(self):
-        src = (AGENT_DIR / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "require_admin")
@@ -3003,7 +3013,7 @@ class TestAsyncCorrectnessFixes:
         assert "asyncio.Queue" in fn_src or "run_in_executor" in fn_src
 
     def test_system_health_uses_count_entities(self):
-        src = (AGENT_DIR / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         assert "count_entities()" in src
         assert "list_entities(limit=100000" not in src
 

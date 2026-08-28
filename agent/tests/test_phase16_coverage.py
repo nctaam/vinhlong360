@@ -31,6 +31,20 @@ def _public_src() -> str:
             + (root / "entities" / "api.py").read_text(encoding="utf-8"))
 
 
+
+def _admin_src() -> str:
+    """Nguon MAT QUAN TRI — hop nhat admin.py + entities/admin_api.py.
+
+    Mien entity-admin sang agent/entities/ (2026-08-28, buoc 2b). Cac rao duoi
+    soi "mat quan tri co tinh chat X", bat ke handler song o file nao; ghim mot
+    duong dan la chung im lang mat tac dung khi ma doi nha.
+    """
+    from pathlib import Path as _P
+    root = _P(__file__).resolve().parent.parent
+    return ((root / "admin.py").read_text(encoding="utf-8") + chr(10)
+            + (root / "entities" / "admin_api.py").read_text(encoding="utf-8"))
+
+
 class TestToolsSchema:
     """Validate that tools.py TOOLS list has correct OpenAI function-call format."""
 
@@ -683,7 +697,7 @@ class TestQueryParamConstraints:
         assert "max_length" in block
 
     def test_admin_reports_explicit_columns(self):
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         assert "SELECT r.*" not in src
 
     def test_social_no_select_star_posts(self):
@@ -708,7 +722,7 @@ class TestSecurityPosture:
     """Verify overall security hardening across the backend."""
 
     def test_no_user_input_in_admin_errors(self):
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         assert "f\"Entity '{entity_id}'" not in src
 
     def test_csrf_on_all_saved_mutations(self):
@@ -815,7 +829,7 @@ class TestSecurityPosture:
                 assert ", code)" not in line, "OTP code leaked in log"
 
     def test_list_fields_have_max_length(self):
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         assert "candidate_ids: list[str] | None = Field(None, max_length=" in src
         assert 'images: list[str] = Field(default=[], max_length=' in src
 
@@ -862,7 +876,7 @@ class TestSecurityPosture:
                     assert "le=" in line, f"{module}.py:{line_no} page without upper bound: {line.strip()}"
 
     def test_ssrf_protection_on_entity_image_url(self):
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         block = function_source(src, "add_entity_image_url")
@@ -903,7 +917,7 @@ class TestSecurityPosture:
 
     def test_admin_silent_passes_have_logging(self):
         """Dashboard/stats silent except blocks should log for debuggability."""
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         lines = src.split("\n")
         bare_passes = 0
         for i, line in enumerate(lines):
@@ -991,8 +1005,13 @@ class TestSecurityPosture:
 
     def test_creation_endpoints_return_201(self):
         """POST endpoints that create resources should return 201."""
+        # create_entity sang entities/admin_api.py (2026-08-28, buoc 2b) — mat quan
+        # tri doc qua _admin_src() (hop nhat hai cay), social giu nguyen.
         for module_name, fn_names in [("social", ["create_post", "create_comment"]), ("admin", ["create_entity", "create_itinerary"])]:
-            src = (Path(__file__).resolve().parent.parent / f"{module_name}.py").read_text(encoding="utf-8")
+            if module_name == "admin":
+                src = _admin_src()
+            else:
+                src = (Path(__file__).resolve().parent.parent / f"{module_name}.py").read_text(encoding="utf-8")
             for fn in fn_names:
                 pattern = f"async def {fn}("
                 idx = src.find(pattern)
@@ -1171,7 +1190,7 @@ class TestSecurityPosture:
 
     def test_entity_delete_invalidates_cache(self):
         """Entity delete must invalidate entity cache, not just place cache."""
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         block = function_source(src, "delete_entity")
@@ -1272,7 +1291,7 @@ class TestMediumFixesBatch2:
 
     def test_audit_log_thread_lock(self):
         """Audit log write+rotate must be protected by threading.Lock."""
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         assert "_audit_lock" in src, "admin.py must define _audit_lock"
         assert "threading.Lock()" in src, "Must use threading.Lock for audit log"
         idx = src.find("def _log_admin_audit(")
@@ -1567,7 +1586,7 @@ class TestDeepScanBatch4:
 
     def test_admin_rollback_no_exc_leak(self):
         """Admin rollback must not leak exception details in error response."""
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         idx = src.find("rollback_apply")
         assert idx > 0
         block = src[idx:idx+300]
@@ -1628,7 +1647,7 @@ class TestDeepScanBatch5:
 
     def test_audit_rotation_atomic_write(self):
         """Audit log rotation must use atomic temp-rename for main file."""
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         idx = src.find("def _maybe_rotate_audit")
         assert idx > 0
         # Window 1300: hàm dài ra hợp lệ (B5b — thêm OR-điều-kiện dung lượng >10MB,
@@ -1880,14 +1899,14 @@ class TestLLMConfig:
 
     def test_admin_llm_config_endpoints_exist(self):
         """admin.py must have GET/PUT /admin/llm-config and POST /admin/llm-config/reset."""
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         assert 'async def admin_get_llm_config(' in src
         assert 'async def admin_update_llm_config(' in src
         assert 'async def admin_reset_llm_config(' in src
 
     def test_no_server_import_client_in_admin(self):
         """admin.py must not import client from server (should use llm_config)."""
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         assert "from server import client" not in src
 
     def test_no_server_import_client_in_scheduler(self):
@@ -1907,19 +1926,19 @@ class TestCacheInvalidationOnEntityCRUD:
         assert "cache.invalidate_all()" in sync_fn
 
     def test_update_entity_calls_sync_kb(self):
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         update_fn = src[src.index("async def update_entity("):]
         update_fn = update_fn[:update_fn.index("\n@router.")]
         assert "_sync_kb()" in update_fn
 
     def test_delete_entity_calls_sync_kb(self):
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         delete_fn = src[src.index("async def delete_entity("):]
         delete_fn = delete_fn[:delete_fn.index("\n\n\nclass")]
         assert "_sync_kb()" in delete_fn
 
     def test_bulk_delete_calls_sync_kb(self):
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         bulk_fn = src[src.index("async def bulk_delete("):]
         bulk_fn = bulk_fn[:bulk_fn.index("\n@router.")]
         assert "_sync_kb()" in bulk_fn
@@ -1974,7 +1993,7 @@ class TestInfoReportsLockShared:
             "admin._info_reports_lock must be the SAME object as public_api._jsonl_lock"
 
     def test_info_report_action_uses_lock(self):
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         block = function_source(src, "info_report_action")
@@ -2002,7 +2021,7 @@ class TestModerationNotifications:
         assert hasattr(admin_mod, "create_notification")
 
     def test_approve_post_calls_notification(self):
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         block = function_source(src, "approve_post")
@@ -2012,7 +2031,7 @@ class TestModerationNotifications:
             "approve_post must fetch user_id via RETURNING to identify the author"
 
     def test_reject_post_calls_notification(self):
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         block = function_source(src, "reject_post")
@@ -2022,7 +2041,7 @@ class TestModerationNotifications:
             "reject_post must fetch user_id via RETURNING to identify the author"
 
     def test_reject_notification_includes_reason(self):
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         block = function_source(src, "reject_post")
@@ -2047,7 +2066,7 @@ class TestDeleteRowcountChecks:
     """DELETE endpoints must check rowcount to avoid silent 200 on missing resources."""
 
     def test_delete_itinerary_checks_rowcount(self):
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         block = function_source(src, "delete_itinerary")
@@ -2055,7 +2074,7 @@ class TestDeleteRowcountChecks:
             "delete_itinerary must check rowcount to return 404 on missing itinerary"
 
     def test_delete_relationship_checks_rowcount(self):
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         block = function_source(src, "delete_relationship")
@@ -2063,7 +2082,7 @@ class TestDeleteRowcountChecks:
             "delete_relationship must check rowcount to return 404 on missing relationship"
 
     def test_approve_post_checks_existence(self):
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         block = function_source(src, "approve_post")
@@ -2071,7 +2090,7 @@ class TestDeleteRowcountChecks:
             "approve_post must verify the post exists"
 
     def test_reject_post_checks_existence(self):
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         block = function_source(src, "reject_post")
@@ -2208,7 +2227,7 @@ class TestAdminBugFixes:
     """Verify admin.py bug fixes: row_to_dict, search pagination, image delete."""
 
     def test_stats_uses_row_to_dict_for_counts(self):
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         block = function_source(src, "admin_stats")
@@ -2220,7 +2239,7 @@ class TestAdminBugFixes:
         assert "_row_to_dict(itin_count)" in block or "row_to_dict(itin_count)" in block
 
     def test_moderation_queue_uses_row_to_dict(self):
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         block = function_source(src, "moderation_queue")
@@ -2240,7 +2259,7 @@ class TestAdminBugFixes:
             "search path should use all_matches for correct total"
 
     def test_remove_image_rejects_invalid_index(self):
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         block = function_source(src, "remove_entity_image")
@@ -2248,7 +2267,7 @@ class TestAdminBugFixes:
             "remove_entity_image must raise 400 on invalid index"
 
     def test_audit_cache_invalidated_on_write(self):
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         # Target the file-writing _log_admin_audit( — NOT _log_admin_audit_db (the DB
         # sink, which src.find("def _log_admin_audit") would match first). The cache
         # invalidation lives in the file writer, past a fixed 900-char window.
@@ -2260,7 +2279,7 @@ class TestAdminBugFixes:
             "_log_admin_audit must invalidate audit cache after write"
 
     def test_media_gallery_stats_computed_before_filter(self):
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         # media_gallery was refactored: the full-list count is computed in the module-
         # level helper _extract_media_items as total_images=len(media_items) (BEFORE any
         # filtering), cached, then read by media_gallery before the filter is applied.
@@ -2281,7 +2300,7 @@ class TestAdminBugFixes:
 
     def test_entity_list_pagination_uses_count(self):
         """Non-search entity list must use count_entities_filtered for total, not len(results)."""
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         idx = src.find("def list_entities")
         assert idx != -1
         # Window 4000: list_entities grew legitimately (GĐ-A kind branch) — assertion unchanged.
@@ -2291,7 +2310,7 @@ class TestAdminBugFixes:
 
     def test_include_places_queries_places_directly(self):
         """include_places must query places from DB, not list_entities (which excludes places)."""
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         # Truy vấn place sống trong helper mà list_entities gọi (tách ra hồi
@@ -2316,7 +2335,7 @@ class TestAdminBugFixes:
 
     def test_unban_user_uses_row_to_dict(self):
         """unban_user must use _row_to_dict before dict-style access."""
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         block = function_source(src, "unban_user")
@@ -2325,7 +2344,7 @@ class TestAdminBugFixes:
 
     def test_set_user_role_uses_row_to_dict(self):
         """set_user_role must use _row_to_dict before dict-style access."""
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        src = _admin_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         block = function_source(src, "set_user_role")

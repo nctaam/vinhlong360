@@ -45,11 +45,15 @@ def knowledge_state_snapshot():
 @pytest.fixture(autouse=True)
 def isolate_admin_database(isolated_sqlite_db, monkeypatch, knowledge_state_snapshot):
     import admin
+    from entities import admin_api as entities_admin
     import database
     import knowledge
 
     monkeypatch.setattr(database, "db", isolated_sqlite_db)
     monkeypatch.setattr(admin, "db", isolated_sqlite_db)
+    # handler entity-admin sang entities/admin_api.py (2026-08-28) voi binding
+    # rieng — thieu dong duoi la chung cham DB THAT (do duoc 409 + audit rong).
+    monkeypatch.setattr(entities_admin, "db", isolated_sqlite_db)
     try:
         # Keep reload from treating an emptied test DB as a fresh install and seeding real data.
         isolated_sqlite_db.upsert_entity({
@@ -187,8 +191,8 @@ def test_entity_image_url_rejects_non_ai_before_network_or_database_mutation(
     isolated_sqlite_db,
     monkeypatch,
 ):
-    import admin
 
+    from entities import admin_api as entities_admin
     isolated_sqlite_db.upsert_entity({
         "id": "test-mutation-image-url",
         "name": "Image URL",
@@ -196,7 +200,7 @@ def test_entity_image_url_rejects_non_ai_before_network_or_database_mutation(
         "images": [],
     })
     network_calls: list[str] = []
-    monkeypatch.setattr(admin, "_validate_public_image_url", network_calls.append)
+    monkeypatch.setattr(entities_admin, "_validate_public_image_url", network_calls.append)
 
     response = client.post(
         "/admin/entities/test-mutation-image-url/images",
@@ -247,6 +251,7 @@ def test_suggestion_approval_rejects_non_ai_before_network_storage_or_mutation(
     monkeypatch,
 ):
     import admin
+    from entities import admin_api as entities_admin
     import storage
 
     isolated_sqlite_db.upsert_entity({
@@ -273,7 +278,7 @@ def test_suggestion_approval_rejects_non_ai_before_network_storage_or_mutation(
         side_effects.append("fetch")
         return b"image"
 
-    monkeypatch.setattr(admin, "_approve_fetch_image_data", fetched)
+    monkeypatch.setattr(entities_admin, "_approve_fetch_image_data", fetched)
     monkeypatch.setattr(
         storage.storage,
         "upload_image_set",

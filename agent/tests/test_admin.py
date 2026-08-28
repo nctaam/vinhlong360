@@ -11,6 +11,20 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 
+
+def _admin_src() -> str:
+    """Nguon MAT QUAN TRI — hop nhat admin.py + entities/admin_api.py.
+
+    Mien entity-admin sang agent/entities/ (2026-08-28, buoc 2b). Cac rao duoi
+    soi "mat quan tri co tinh chat X", bat ke handler song o file nao; ghim mot
+    duong dan la chung im lang mat tac dung khi ma doi nha.
+    """
+    from pathlib import Path as _P
+    root = _P(__file__).resolve().parent.parent
+    return ((root / "admin.py").read_text(encoding="utf-8") + chr(10)
+            + (root / "entities" / "admin_api.py").read_text(encoding="utf-8"))
+
+
 class TestEntityCreateValidation:
     """Test EntityCreate Pydantic model."""
 
@@ -122,9 +136,8 @@ class TestImageURLValidation:
 
 
 def test_the_claims_list_masks_the_one_phone_it_used_to_leak():
-    from pathlib import Path
 
-    source = (Path(__file__).resolve().parents[1] / "admin.py").read_text("utf-8")
+    source = _admin_src()
 
     # GET /admin/claims joined users.phone and returned every row raw, while
     # every other endpoint masked and _mask sat ten lines above it. It is the

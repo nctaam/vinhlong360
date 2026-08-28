@@ -8,6 +8,10 @@ import pytest
 from fastapi import HTTPException
 
 import admin
+# handler entity-admin sang entities/admin_api.py (2026-08-28) voi binding rieng.
+# Va nham admin.* la va TRUOT: test approval tung ghi DB THAT + chay _sync_kb
+# THAT, dau doc knowledge cho 44 bai phia sau trong luot day du.
+from entities import admin_api as entities_admin
 import pinned_http as ph
 import storage
 
@@ -39,7 +43,7 @@ def test_admin_fetch_passes_dynamic_image_egress_policy(
         "get",
         lambda url, **kwargs: calls.append((url, kwargs)) or _response(),
     )
-    data = asyncio.run(admin._approve_fetch_image_data("https://cdn.example/a", _inline_threadpool, 12 * 1024 * 1024))
+    data = asyncio.run(entities_admin._approve_fetch_image_data("https://cdn.example/a", _inline_threadpool, 12 * 1024 * 1024))
     assert data == b"image"
     assert calls == [(
         "https://cdn.example/a",
@@ -64,7 +68,7 @@ def test_admin_real_blocked_literal_maps_to_400_and_logs_once(
     with caplog.at_level(logging.WARNING, logger="security.egress"):
         with pytest.raises(HTTPException) as caught:
             asyncio.run(
-                admin._approve_fetch_image_data(
+                entities_admin._approve_fetch_image_data(
                     "https://127.0.0.1/private?token=secret",
                     _inline_threadpool,
                     1024,
@@ -98,7 +102,7 @@ def test_admin_fetch_does_not_redecode_http_decoded_content(
         ),
     )
     result = asyncio.run(
-        admin._approve_fetch_image_data(
+        entities_admin._approve_fetch_image_data(
             "https://cdn.example/a",
             _inline_threadpool,
             1024,
@@ -121,16 +125,16 @@ def test_admin_fetch_maps_policy_failures_to_400(
     monkeypatch: pytest.MonkeyPatch,
     error: Exception,
 ) -> None:
-    monkeypatch.setattr(admin._PINNED_HTTP, "get", lambda *_args, **_kwargs: (_ for _ in ()).throw(error))
+    monkeypatch.setattr(entities_admin._PINNED_HTTP, "get", lambda *_args, **_kwargs: (_ for _ in ()).throw(error))
     with pytest.raises(HTTPException) as caught:
-        asyncio.run(admin._approve_fetch_image_data("https://cdn.example/a", _inline_threadpool, 1024))
+        asyncio.run(entities_admin._approve_fetch_image_data("https://cdn.example/a", _inline_threadpool, 1024))
     assert caught.value.status_code == 400
 
 
 def test_admin_fetch_maps_transport_and_status_failures_to_502(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(admin._PINNED_HTTP, "get", lambda *_args, **_kwargs: _response(status=404))
+    monkeypatch.setattr(entities_admin._PINNED_HTTP, "get", lambda *_args, **_kwargs: _response(status=404))
     with pytest.raises(HTTPException) as caught:
-        asyncio.run(admin._approve_fetch_image_data("https://cdn.example/a", _inline_threadpool, 1024))
+        asyncio.run(entities_admin._approve_fetch_image_data("https://cdn.example/a", _inline_threadpool, 1024))
     assert caught.value.status_code == 502
 
 
@@ -139,9 +143,9 @@ def test_admin_fetch_preserves_empty_and_size_rejection(
     monkeypatch: pytest.MonkeyPatch,
     content: bytes,
 ) -> None:
-    monkeypatch.setattr(admin._PINNED_HTTP, "get", lambda *_args, **_kwargs: _response(content=content))
+    monkeypatch.setattr(entities_admin._PINNED_HTTP, "get", lambda *_args, **_kwargs: _response(content=content))
     with pytest.raises(HTTPException) as caught:
-        asyncio.run(admin._approve_fetch_image_data("https://cdn.example/a", _inline_threadpool, 1024))
+        asyncio.run(entities_admin._approve_fetch_image_data("https://cdn.example/a", _inline_threadpool, 1024))
     assert caught.value.status_code == 400
 
 
@@ -177,9 +181,9 @@ def test_validate_public_image_url_preserves_localized_400(
     def fail(_url: str) -> None:
         raise error
 
-    monkeypatch.setattr(admin, "validate_public_url", fail)
+    monkeypatch.setattr(entities_admin, "validate_public_url", fail)
     with pytest.raises(HTTPException) as caught:
-        admin._validate_public_image_url("https://example.com/image.webp")
+        entities_admin._validate_public_image_url("https://example.com/image.webp")
     assert caught.value.status_code == 400
     assert caught.value.detail == detail
 
@@ -195,15 +199,15 @@ def test_add_entity_image_url_validates_without_fetching(
         "images": [],
     })
     validations: list[str] = []
-    monkeypatch.setattr(admin, "is_canonical_legacy_entity_image", lambda _url: True)
-    monkeypatch.setattr(admin, "_validate_public_image_url", validations.append)
+    monkeypatch.setattr(entities_admin, "is_canonical_legacy_entity_image", lambda _url: True)
+    monkeypatch.setattr(entities_admin, "_validate_public_image_url", validations.append)
     monkeypatch.setattr(
         admin._PINNED_HTTP,
         "get",
         lambda *_args, **_kwargs: pytest.fail("validation-only route fetched content"),
     )
-    monkeypatch.setattr(admin, "db", database)
-    monkeypatch.setattr(admin, "_sync_kb", lambda: None)
+    monkeypatch.setattr(entities_admin, "db", database)
+    monkeypatch.setattr(entities_admin, "_sync_kb", lambda: None)
 
     result = asyncio.run(
         admin.add_entity_image_url(
@@ -233,9 +237,9 @@ def test_admin_fetch_executes_pinned_get_inside_threadpool(
         finally:
             inside_threadpool = False
 
-    monkeypatch.setattr(admin._PINNED_HTTP, "get", get)
+    monkeypatch.setattr(entities_admin._PINNED_HTTP, "get", get)
     assert asyncio.run(
-        admin._approve_fetch_image_data(
+        entities_admin._approve_fetch_image_data(
             "https://example.com/image.webp",
             guarded_threadpool,
             1024,
@@ -301,16 +305,16 @@ def test_approval_fetch_failures_leave_all_state_untouched(
             raise outcome
         return outcome
 
-    monkeypatch.setattr(admin, "_reject_non_ai_media", lambda: None)
-    monkeypatch.setattr(admin, "db", database)
-    monkeypatch.setattr(admin._imgq, "get_suggestion", lambda _id: copy.deepcopy(suggestion))
+    monkeypatch.setattr(entities_admin, "_reject_non_ai_media", lambda: None)
+    monkeypatch.setattr(entities_admin, "db", database)
+    monkeypatch.setattr(entities_admin._imgq, "get_suggestion", lambda _id: copy.deepcopy(suggestion))
     monkeypatch.setattr(
-        admin._imgq,
+        entities_admin._imgq,
         "mark_status",
         lambda *args, **kwargs: status_changes.append((args, kwargs)),
     )
-    monkeypatch.setattr(admin, "_sync_kb", lambda: syncs.append(True))
-    monkeypatch.setattr(admin._PINNED_HTTP, "get", get)
+    monkeypatch.setattr(entities_admin, "_sync_kb", lambda: syncs.append(True))
+    monkeypatch.setattr(entities_admin._PINNED_HTTP, "get", get)
     monkeypatch.setattr(storage, "MAX_IMAGE_SIZE", 4)
     monkeypatch.setattr(
         storage.storage,
@@ -352,20 +356,20 @@ def test_approval_keeps_original_candidate_url_in_redirected_credit(
     })
     status_changes: list[tuple] = []
 
-    monkeypatch.setattr(admin, "_reject_non_ai_media", lambda: None)
+    monkeypatch.setattr(entities_admin, "_reject_non_ai_media", lambda: None)
     monkeypatch.setattr(
-        admin,
+        entities_admin,
         "_validate_public_image_url",
         lambda _url: pytest.fail("separate validation called before pinned fetch"),
     )
-    monkeypatch.setattr(admin, "db", database)
-    monkeypatch.setattr(admin._imgq, "get_suggestion", lambda _id: copy.deepcopy(suggestion))
+    monkeypatch.setattr(entities_admin, "db", database)
+    monkeypatch.setattr(entities_admin._imgq, "get_suggestion", lambda _id: copy.deepcopy(suggestion))
     monkeypatch.setattr(
-        admin._imgq,
+        entities_admin._imgq,
         "mark_status",
         lambda *args, **kwargs: status_changes.append((args, kwargs)),
     )
-    monkeypatch.setattr(admin, "_sync_kb", lambda: None)
+    monkeypatch.setattr(entities_admin, "_sync_kb", lambda: None)
     monkeypatch.setattr(
         admin._PINNED_HTTP,
         "get",

@@ -6,7 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MAPPED_FETCHERS = {
-    "agent/admin.py": {"_approve_fetch_image_data"},
+    "agent/entities/admin_api.py": {"_approve_fetch_image_data"},
     "agent/sms_provider.py": {"_pinned_post"},
     "agent/auto_learn.py": {"fetch_url"},
     "agent/crawler.py": {"fetch_page"},
@@ -15,7 +15,7 @@ MAPPED_FETCHERS = {
     "agent/realtime.py": {"get_weather"},
 }
 EXPECTED_AUDIT_CONTEXTS = {
-    ("agent/admin.py", "_approve_fetch_image_data"): "admin_image_review",
+    ("agent/entities/admin_api.py", "_approve_fetch_image_data"): "admin_image_review",
     ("agent/sms_provider.py", "_pinned_post"): "sms_provider",
     ("agent/auto_learn.py", "fetch_url"): "auto_learn",
     ("agent/crawler.py", "fetch_page"): "crawler",
@@ -61,7 +61,7 @@ def _module_pinned_http_imports(path: Path) -> set[str]:
 
 def test_mapped_fetcher_registry_scope_is_exact() -> None:
     assert MAPPED_FETCHERS == {
-        "agent/admin.py": {"_approve_fetch_image_data"},
+        "agent/entities/admin_api.py": {"_approve_fetch_image_data"},
         "agent/sms_provider.py": {"_pinned_post"},
         "agent/auto_learn.py": {"fetch_url"},
         "agent/crawler.py": {"fetch_page"},

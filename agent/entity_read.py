@@ -219,3 +219,26 @@ def _gallery_editorial_images(entity: dict) -> list[dict]:
         if is_renderable_entity_descriptor(serialized):
             images.append(serialized)
     return images
+
+
+def invalidate_entity_cache(entity_id: str | None = None):
+    """Compatibility hook retained after removing policy-bearing response memoization."""
+    del entity_id
+
+
+# Nghe-ngong khi place-cache bi xoa. `invalidate_place_cache` cham HAI tang:
+# place-cache (song o day) va homepage-cache (song o public_api). Doi ca khoi
+# sang day la keo nham tang; de nguyen ben public_api thi entity-admin phai
+# import facade cong khai chi de xoa cache — mui ranh gioi ma boundary-test
+# cua goi entities/ bat duoc. Listener giu dung hanh vi: public_api dang ky
+# viec-cua-no luc import; khi public_api chua duoc nap thi homepage-cache
+# cung chua ton tai nen khong co gi de xoa — van dung.
+_place_invalidation_listeners: list = []
+
+
+def invalidate_place_cache():
+    """Xoá cache tên/khu-vực xã/phường — gọi sau /reload hoặc admin sửa place."""
+    with _place_cache_lock:
+        _place_cache.clear()
+    for _fn in list(_place_invalidation_listeners):
+        _fn()
