@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 from fastapi import HTTPException, Response
+from community import api as community_api  # mien cong dong sang day 2026-08-28
 
 
 AGENT = Path(__file__).resolve().parent.parent
@@ -111,7 +112,7 @@ def test_social_non_ai_images_are_rejected_before_rate_or_database_mutation(
     def unexpected_side_effect(*_args, **_kwargs):
         pytest.fail("social mutation path ran before the AI-only media rejection")
 
-    monkeypatch.setattr(social, "check_rate", unexpected_side_effect)
+    monkeypatch.setattr(community_api, "check_rate", unexpected_side_effect)
     user = {"id": "00000000-0000-0000-0000-000000000001"}
 
     if operation == "post":
@@ -150,8 +151,8 @@ def test_social_upload_is_rejected_before_reading_or_storing_the_file(monkeypatc
         async def read(self, *_args, **_kwargs):
             pytest.fail("social upload read the file before the AI-only rejection")
 
-    monkeypatch.setattr(social, "check_rate", unexpected_side_effect)
-    monkeypatch.setattr(social.storage, "upload_image", unexpected_side_effect)
+    monkeypatch.setattr(community_api, "check_rate", unexpected_side_effect)
+    monkeypatch.setattr(community_api.storage, "upload_image", unexpected_side_effect)
 
     _assert_ai_only_error(
         lambda: social.upload_image(

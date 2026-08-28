@@ -35,7 +35,8 @@ def test_sort_param_whitelisted_by_pattern():
     # 380c394: sort param validate qua regex whitelist (không chỉ max_length).
     # Mien entity (mang route co tham so sort) sang agent/entities/ 2026-08-28.
     # Y dinh cua rao: MOI mat cong khai nhan `sort` phai whitelist bang regex.
-    for fn in ("entities/api.py", "social.py"):
+    # social.py nay la shim — mien cong dong sang community/api.py (2026-08-28)
+    for fn in ("entities/api.py", "community/api.py"):
         src = (_AGENT / fn).read_text(encoding="utf-8")
         assert 'pattern="^(newest' in src, f"{fn}: sort thiếu pattern whitelist"
 

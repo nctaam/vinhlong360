@@ -16,6 +16,7 @@ endpoints through dependency overrides (so we don't need a live OTP/session),
 and delete everything they insert.
 """
 
+from community import api as community_api  # mien cong dong sang day 2026-08-28
 import json
 import sys
 import uuid
@@ -219,7 +220,7 @@ def test_threaded_reply_nests_under_parent(pg_user, pg_entity, monkeypatch):
     async def _approve(content, **kwargs):
         return {"status": "approved", "score": 0.0, "reasons": []}
 
-    monkeypatch.setattr(social, "moderate_content_enhanced", _approve)
+    monkeypatch.setattr(community_api, "moderate_content_enhanced", _approve)
     ph = db._ph
     with db._conn() as conn:
         row = db._fetchone(conn, f"""

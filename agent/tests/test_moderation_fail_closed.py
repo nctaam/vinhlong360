@@ -7,6 +7,7 @@ from fastapi import HTTPException
 from starlette.requests import Request
 
 import moderation
+from community import api as community_api  # mien cong dong sang day 2026-08-28
 
 
 _VALID_TEXT_PROVIDER_PAYLOAD = {
@@ -425,9 +426,9 @@ def test_pending_moderation_never_creates_public_collection(monkeypatch, statuse
             "moderation_available": status == "approved",
         }
 
-    monkeypatch.setattr(social, "db", fake_db)
-    monkeypatch.setattr(social, "moderate_content", moderate)
-    monkeypatch.setattr(social, "check_rate", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(community_api, "db", fake_db)
+    monkeypatch.setattr(community_api, "moderate_content", moderate)
+    monkeypatch.setattr(community_api, "check_rate", lambda *_args, **_kwargs: None)
     body = social.CreateCollection(
         name="Bộ sưu tập mới",
         description="Mô tả mới" if len(statuses) > 1 else "",
@@ -449,9 +450,9 @@ def test_private_collection_remains_storable_when_provider_is_pending(monkeypatc
     async def pending_moderation(_content, _images=None):
         return {"status": "pending", "score": 0.0, "reasons": [], "moderation_available": False}
 
-    monkeypatch.setattr(social, "db", fake_db)
-    monkeypatch.setattr(social, "moderate_content", pending_moderation)
-    monkeypatch.setattr(social, "check_rate", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(community_api, "db", fake_db)
+    monkeypatch.setattr(community_api, "moderate_content", pending_moderation)
+    monkeypatch.setattr(community_api, "check_rate", lambda *_args, **_kwargs: None)
     body = social.CreateCollection(name="Bộ sưu tập riêng", is_public=False)
 
     result = asyncio.run(social.create_collection(body, user={"id": "user-1"}))
@@ -468,9 +469,9 @@ def test_approved_public_collection_behavior_is_preserved(monkeypatch):
     async def approved_moderation(_content, _images=None):
         return {"status": "approved", "score": 0.01, "reasons": [], "moderation_available": True}
 
-    monkeypatch.setattr(social, "db", fake_db)
-    monkeypatch.setattr(social, "moderate_content", approved_moderation)
-    monkeypatch.setattr(social, "check_rate", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(community_api, "db", fake_db)
+    monkeypatch.setattr(community_api, "moderate_content", approved_moderation)
+    monkeypatch.setattr(community_api, "check_rate", lambda *_args, **_kwargs: None)
     body = social.CreateCollection(name="Bộ sưu tập công khai", is_public=True)
 
     result = asyncio.run(social.create_collection(body, user={"id": "user-1"}))

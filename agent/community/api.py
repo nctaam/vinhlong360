@@ -1,0 +1,4556 @@
+# -*- coding: utf-8 -*-
+"""Miền CỘNG ĐỒNG (bài viết, bình luận, nháp, feed, hashtag, chặn/theo dõi).
+
+Chuyển NGUYÊN VĂN từ `social.py` (2026-08-28, lát thứ tư của chương trình
+module — theo chỉ đạo chủ dự án sau khi bản đồ đã khuyến nghị dừng). Khác ba
+lát trước, đây KHÔNG phải cắt-bao-đóng: đo độ tự chứa cho thấy social.py đã là
+miền-đơn (chỉ 3 ký hiệu bị ngoài import), nên lát này là ĐỔI NHÀ một-một —
+71 handler + 127 helper đi cùng nhau, không tách gì.
+
+`social.py` còn lại là shim tương thích: tái xuất router + 2 helper SQL cho
+nơi import cũ; 37 đích vá của test được chuyển sang namespace này (bài học
+lát chat: shim KHÔNG cứu được monkeypatch — handler đọc globals của module
+thật). Hồ sơ 4 trục + fixture-db: ROADMAP §46.3, dossier 2026-08-28.
+"""
+import asyncio
+import json
+import logging
+import re
+from datetime import datetime, timezone
+from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, UploadFile, File
+from pydantic import BaseModel, Field, field_validator
+
+from auth_middleware import get_current_user, require_user, validate_path_id, require_csrf, require_idempotency
+from database import db
+from moderation import moderate_content, moderate_content_enhanced, log_moderation
+from notifications import create_notification
+from storage import storage
+from ratelimit import check_rate, check_rate_ip
+from text_utils import normalize_name
+from media_policy import AI_ONLY_MEDIA_DETAIL
+from profile_access import (
+    can_view_profile_audience as _profile_can_view_full,
+    resolve_profile_access,
+)
+
+logger = logging.getLogger("social")
+
+from config import settings as _cfg
+
+RL_POST_LIMIT, RL_POST_WINDOW = _cfg.RL_POST_LIMIT, _cfg.RL_POST_WINDOW
+RL_COMMENT_LIMIT, RL_COMMENT_WINDOW = _cfg.RL_COMMENT_LIMIT, _cfg.RL_COMMENT_WINDOW
+RL_UPLOAD_LIMIT, RL_UPLOAD_WINDOW = 40, 600    # 40 ảnh / 10 phút
+RL_LIKE_LIMIT, RL_LIKE_WINDOW = _cfg.RL_LIKE_LIMIT, _cfg.RL_LIKE_WINDOW
+RL_DELETE_LIMIT, RL_DELETE_WINDOW = 10, 300     # 10 xóa / 5 phút
+
+
+from auth_middleware import require_pg as _require_pg
+from api_schemas_social import (
+    DraftsListResponse, ScheduledListResponse, PostResponse, EditHistoryResponse,
+    FeedResponse, FollowingFeedResponse, FriendReviewsResponse, FriendSavesResponse,
+    TrendingPostsResponse, ExploreFeedResponse, SearchPostsResponse, SearchUsersResponse,
+    CommunityStatsResponse, UserCountsResponse, UserStatsResponse, UserActivityResponse,
+    TrendingTagsResponse, HashtagsListResponse, HashtagPostsResponse, LeaderboardResponse,
+    FollowUsersResponse, SuggestedFollowsResponse, EntityFeedResponse, RelatedPostsResponse,
+    CommentsResponse, AppealStatusResponse, LikersResponse, ReactionsResponse,
+    BookmarksResponse, CollectionsListResponse, CollectionItemsResponse, HiddenPostsResponse,
+    BadgeProgressResponse, UserProfileResponse, UserPostsResponse, UserReviewsResponse,
+    UserTimelineResponse, ActivityHeatmapResponse,
+)
+
+_POST_COLS = ("p.id, p.user_id, p.content, p.mentions, p.hashtags, p.best_answer_id, "
+              "p.pinned_comment_id, "
+              "p.repost_of, p.repost_snapshot, p.post_type, p.rating, p.images, "
+              "p.like_count, p.comment_count, p.share_count, p.created_at, p.updated_at, "
+              "p.entity_id, p.moderation_status")
+_COMMENT_COLS = ("c.id, c.user_id, c.content, c.mentions, c.parent_id, c.created_at, "
+                 "c.moderation_status")
+
+router = APIRouter(prefix="/api", tags=["social"], dependencies=[Depends(_require_pg)])
+
+
+def _reject_non_ai_media() -> None:
+    raise HTTPException(status_code=400, detail=AI_ONLY_MEDIA_DETAIL)
+
+
+def _reject_social_images(images: list[str]) -> None:
+    if images:
+        _reject_non_ai_media()
+
+
+def _block_sql(user: dict | None, column: str = "u.id") -> tuple[str, list]:
+    """Return (AND … NOT IN …, [user_id]) to exclude blocked users in both directions."""
+    if not user:
+        return "", []
+    ph = db._ph
+    uid = str(user["id"])
+    return (
+        f"AND {column} NOT IN ("
+        f"SELECT blocked_id FROM blocks WHERE blocker_id = {ph}::uuid "
+        f"UNION SELECT blocker_id FROM blocks WHERE blocked_id = {ph}::uuid)",
+        [uid, uid],
+    )
+
+def _mute_sql(user: dict | None, column: str = "p.user_id") -> tuple[str, list]:
+    """Return (AND … NOT IN …, [user_id]) to exclude muted users (one-directional)."""
+    if not user:
+        return "", []
+    ph = db._ph
+    uid = str(user["id"])
+    return (
+        f"AND {column} NOT IN (SELECT muted_id FROM user_mutes WHERE user_id = {ph}::uuid)",
+        [uid],
+    )
+
+
+# ── Models ──
+
+_PROD_TEST_POST_PHRASES = (
+    "đây là test của admin",
+    "day la test cua admin",
+    "test admin",
+)
+
+def _prod_seed_post_filter(alias: str = "p") -> tuple[str, list]:
+    if not _cfg.is_production:
+        return "", []
+    ph = db._ph
+    clauses = []
+    params = []
+    for phrase in _PROD_TEST_POST_PHRASES:
+        clauses.append(
+            f"(lower(coalesce({alias}.content, '')) NOT LIKE {ph} "
+            f"AND lower(coalesce({alias}.repost_snapshot::text, '')) NOT LIKE {ph})"
+        )
+        pattern = f"%{phrase}%"
+        params.extend([pattern, pattern])
+    return " AND " + " AND ".join(clauses), params
+
+POST_TYPES = ("review", "share", "recommend", "question")
+ENTITY_LINK_REQUIRED = ("review",)  # These types must link to an entity
+
+
+def _enrich_user_status(posts: list[dict], user) -> list[dict]:
+    """Add is_liked + is_bookmarked to a list of posts for the given user."""
+    if not user or not posts:
+        return posts
+    ph = db._ph
+    post_ids = [p["id"] for p in posts]
+    uid = str(user["id"])
+    with db._conn() as conn:
+        liked = db._fetchall(conn, f"""
+            SELECT post_id::text as pid FROM likes
+            WHERE user_id = {ph}::uuid AND post_id::text = ANY({ph}::text[])
+        """, (uid, post_ids))
+        liked_set = {r["pid"] for r in liked}
+        bookmarked = db._fetchall(conn, f"""
+            SELECT post_id::text as pid FROM bookmarks
+            WHERE user_id = {ph}::uuid AND post_id::text = ANY({ph}::text[])
+        """, (uid, post_ids))
+        bm_set = {r["pid"] for r in bookmarked}
+    for p in posts:
+        p["is_liked"] = p["id"] in liked_set
+        p["is_bookmarked"] = p["id"] in bm_set
+    return posts
+
+
+def _enrich_reactions(posts: list[dict]) -> list[dict]:
+    """Batch-fetch reaction counts for a list of formatted posts."""
+    if not posts:
+        return posts
+    ph = db._ph
+    post_ids = [p["id"] for p in posts]
+    with db._conn() as conn:
+        rows = db._fetchall(conn, f"""
+            SELECT post_id::text AS pid, reaction_type, COUNT(*) AS c
+            FROM post_reactions
+            WHERE post_id::text = ANY({ph}::text[])
+            GROUP BY post_id, reaction_type
+        """, (post_ids,))
+    counts: dict[str, dict[str, int]] = {}
+    for r in rows:
+        d = db._row_to_dict(r)
+        counts.setdefault(d["pid"], {})[d["reaction_type"]] = int(d["c"])
+    for p in posts:
+        p["reactions"] = counts.get(p["id"], {})
+    return posts
+
+
+def _enrich_all(posts: list[dict], user) -> list[dict]:
+    """Combine user-status + reaction enrichment in a single thread call."""
+    _enrich_user_status(posts, user)
+    _enrich_reactions(posts)
+    return posts
+
+
+_HTML_TAG_RE = re.compile(r"<[^>]+>")
+
+def _strip_html_tags(s: str) -> str:
+    """Remove HTML tags from user content (defense-in-depth against stored XSS)."""
+    return _HTML_TAG_RE.sub("", s)
+
+
+def _extract_hashtags(content: str) -> list[str]:
+    """Trích #hashtag (Unicode, tiếng Việt OK) → lowercase, dedup, cap 10."""
+    seen, out = set(), []
+    for t in re.findall(r'#(\w{1,30})', content or '', re.UNICODE):
+        tl = t.lower()
+        if tl not in seen:
+            seen.add(tl)
+            out.append(tl)
+    return out[:10]
+
+
+def _clean_mentions(raw) -> list[dict]:
+    """Chuẩn hoá + giới hạn mentions: [{type:'user'|'entity', id, label}]. Bỏ mục sai."""
+    out = []
+    for m in (raw or [])[:20]:
+        if not isinstance(m, dict):
+            continue
+        t = m.get("type")
+        mid = str(m.get("id") or "").strip()
+        label = str(m.get("label") or "").strip()[:80]
+        if t in ("user", "entity") and mid and label:
+            out.append({"type": t, "id": mid[:64], "label": label})
+    return out
+
+
+def _notify_mentions(mentions: list[dict], author_id: str, author_name, post_id: str, content: str) -> None:
+    """Gửi thông báo cho người-dùng được @-nhắc (bỏ tự-nhắc + trùng)."""
+    preview = (content or "")[:80] + ("…" if len(content or "") > 80 else "")
+    seen = set()
+    for m in mentions:
+        if m.get("type") != "user":
+            continue
+        uid = m.get("id")
+        if not uid or uid == author_id or uid in seen:
+            continue
+        seen.add(uid)
+        try:
+            create_notification(uid, "mention", f"{author_name or 'Ai đó'} đã nhắc đến bạn",
+                                body=preview, ref_type="post", ref_id=post_id, actor_id=author_id)
+        except Exception:
+            logger.exception("Failed to notify mention for user %s on post %s", uid, post_id)
+
+
+def _notify_entity_followers(entity_id, author_id, author_name, post_id: str) -> None:
+    """Báo cho người THEO DÕI địa-điểm khi có bài mới về địa-điểm đó (batch insert)."""
+    if not entity_id:
+        return
+    ph = db._ph
+    try:
+        with db._conn() as conn:
+            rows = db._fetchall(conn,
+                f"SELECT follower_id FROM follows WHERE target_type='entity' AND target_id = {ph} LIMIT 500", (entity_id,))
+            follower_ids = [str(db._row_to_dict(r)["follower_id"]) for r in rows]
+            follower_ids = [fid for fid in follower_ids if fid != author_id]
+            if not follower_ids:
+                return
+            title = f"{author_name or 'Ai đó'} đã đăng về địa điểm bạn theo dõi"
+            for uid in follower_ids:
+                try:
+                    create_notification(uid, "entity_post", title, ref_type="post", ref_id=post_id, actor_id=author_id)
+                except Exception:
+                    logger.exception("Failed to notify entity follower %s on post %s", uid, post_id)
+    except Exception:
+        logger.exception("Failed to load entity followers for entity %s", entity_id)
+
+
+class CreatePost(BaseModel):
+    content: str = ""
+    entity_id: Optional[str] = Field(None, max_length=128)
+    post_type: str = Field("share", max_length=20)
+    rating: Optional[int] = None
+    images: list[str] = Field(default=[], max_length=20)
+    mentions: list[dict] = Field(default=[], max_length=50)
+    repost_of: Optional[str] = Field(None, max_length=128)
+
+    @field_validator("content")
+    @classmethod
+    def validate_content(cls, v):
+        v = _strip_html_tags((v or "").strip())
+        # Cho phép RỖNG (repost không kèm lời); 1-9 ký tự = quá ngắn → chặn. ≥10 OK.
+        if 0 < len(v) < 10:
+            raise ValueError("Nội dung cần ít nhất 10 ký tự")
+        if len(v) > 5000:
+            raise ValueError("Nội dung tối đa 5000 ký tự")
+        return v
+
+    @field_validator("post_type")
+    @classmethod
+    def validate_type(cls, v):
+        if v not in POST_TYPES:
+            raise ValueError(f"Loại bài viết: {', '.join(POST_TYPES)}")
+        return v
+
+    @field_validator("rating")
+    @classmethod
+    def validate_rating(cls, v):
+        if v is not None and (v < 1 or v > 5):
+            raise ValueError("Đánh giá từ 1 đến 5 sao")
+        return v
+
+    @field_validator("images")
+    @classmethod
+    def validate_images(cls, v):
+        if len(v) > 20:
+            raise ValueError("Tối đa 20 ảnh")
+        for url in v:
+            if len(url) > 2048:
+                raise ValueError("URL ảnh tối đa 2048 ký tự")
+        return v
+
+
+class CreateComment(BaseModel):
+    content: str
+    parent_id: Optional[str] = Field(None, max_length=128)
+    mentions: list[dict] = Field(default=[], max_length=50)
+
+    @field_validator("content")
+    @classmethod
+    def validate_content(cls, v):
+        v = _strip_html_tags(v.strip())
+        if len(v) < 1:
+            raise ValueError("Bình luận không được để trống")
+        if len(v) > 2000:
+            raise ValueError("Bình luận tối đa 2000 ký tự")
+        return v
+
+
+class UpdatePost(BaseModel):
+    content: Optional[str] = None
+    rating: Optional[int] = None
+
+    @field_validator("content")
+    @classmethod
+    def validate_content(cls, v):
+        if v is None:
+            return v
+        v = _strip_html_tags(v.strip())
+        if 0 < len(v) < 10:
+            raise ValueError("Nội dung cần ít nhất 10 ký tự")
+        if len(v) > 5000:
+            raise ValueError("Nội dung tối đa 5000 ký tự")
+        return v
+
+    @field_validator("rating")
+    @classmethod
+    def validate_rating(cls, v):
+        if v is not None and (v < 1 or v > 5):
+            raise ValueError("Đánh giá từ 1 đến 5 sao")
+        return v
+
+
+# ── Post label mapping (Vietnamese) ──
+
+POST_TYPE_LABELS = {
+    "review": "Đánh giá",
+    "share": "Chia sẻ trải nghiệm",
+    "recommend": "Giới thiệu",
+    "question": "Hỏi đáp",
+}
+
+
+# ── Posts ──
+
+RL_POST_DAILY_LIMIT = _cfg.RL_POST_DAILY_LIMIT
+RL_POST_DAILY_WINDOW = _cfg.RL_POST_DAILY_WINDOW
+
+def _validate_post_type(body):
+    """Guard theo post_type (entity-link + rating cho review) — extract-method thuần."""
+    if body.post_type in ENTITY_LINK_REQUIRED and not body.entity_id:
+        raise HTTPException(400, "Đánh giá phải gắn với một địa điểm hoặc sản phẩm")
+    if body.post_type == "review" and body.rating is None:
+        raise HTTPException(400, "Đánh giá cần có số sao (1-5)")
+
+
+def _post_dup_exists(ph, user_id, content):
+    """True nếu user vừa đăng nội dung trùng trong 1 giờ — extract-method thuần."""
+    with db._conn() as conn:
+        return db._fetchone(conn, f"""
+            SELECT 1 FROM posts
+            WHERE user_id = {ph}::uuid AND content = {ph}
+              AND created_at > NOW() - INTERVAL '1 hour'
+            LIMIT 1
+        """, (user_id, content))
+
+
+def _post_fetch_repost_orig(ph, repost_of):
+    """Lấy bài gốc để repost — extract-method thuần."""
+    with db._conn() as conn:
+        return db._fetchone(conn, f"""
+            SELECT p.id, p.content, p.user_id, p.created_at, p.repost_of, u.display_name
+            FROM posts p JOIN users u ON u.id = p.user_id
+            WHERE p.id::text = {ph} AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
+        """, (repost_of,))
+
+
+def _post_insert(ph, user, body, status, mentions, hashtags, repost_snapshot):
+    """INSERT bài mới, trả row — extract-method thuần."""
+    with db._conn() as conn:
+        return db._fetchone(conn, f"""
+            INSERT INTO posts (user_id, entity_id, content, images, post_type, rating, moderation_status, mentions, hashtags, repost_of, repost_snapshot)
+            VALUES ({ph}::uuid, {ph}, {ph}, {ph}::jsonb, {ph}, {ph}, {ph}, {ph}::jsonb, {ph}::jsonb, {ph}, {ph}::jsonb)
+            RETURNING *
+        """, (
+            str(user["id"]), body.entity_id, body.content,
+            json.dumps(body.images), body.post_type, body.rating, status,
+            json.dumps(mentions, ensure_ascii=False), json.dumps(hashtags, ensure_ascii=False),
+            body.repost_of,
+            json.dumps(repost_snapshot, ensure_ascii=False) if repost_snapshot else None,
+        ))
+
+
+def _moderation_notice(status):
+    """Ghi chú kiểm duyệt theo status (pending/held) — extract-method thuần."""
+    return (
+        "Bài viết đang chờ kiểm duyệt" if status == "pending"
+        else "Bài viết bị giữ lại để xem xét"
+    )
+
+
+def _process_repost(orig, user):
+    """Kiểm bài gốc + dựng snapshot repost — extract-method thuần. Trả (snapshot, orig_author_id)."""
+    if not orig:
+        raise HTTPException(404, "Bài gốc không tồn tại")
+    od = db._row_to_dict(orig)
+    if od.get("repost_of"):
+        raise HTTPException(400, "Không thể đăng lại một bài đã là repost")
+    orig_author_id = str(od["user_id"])
+    if orig_author_id == str(user["id"]):
+        raise HTTPException(400, "Không thể đăng lại bài viết của chính mình")
+    repost_snapshot = {
+        "id": str(od["id"]), "author": od.get("display_name") or "",
+        "content": (od.get("content") or "")[:280], "created_at": str(od.get("created_at") or ""),
+    }
+    return repost_snapshot, orig_author_id
+
+
+def _notify_new_post(mentions, user, post_id, content, entity_id, orig_author_id):
+    """Bắn thông báo cho bài mới đã duyệt — extract-method thuần."""
+    _notify_mentions(mentions, str(user["id"]), user.get("display_name"), post_id, content)
+    _notify_entity_followers(entity_id, str(user["id"]), user.get("display_name"), post_id)
+    if orig_author_id and orig_author_id != str(user["id"]):
+        try:
+            create_notification(orig_author_id, "repost",
+                                f"{user.get('display_name') or 'Ai đó'} đã đăng lại bài của bạn",
+                                ref_type="post", ref_id=post_id, actor_id=str(user["id"]))
+        except Exception:
+            logger.exception("Failed to notify repost to user %s", orig_author_id)
+
+
+@router.post("/posts", status_code=201,
+             summary="Create a post",
+             description="Create a community post (review, share, question, tip, or repost). Runs content moderation, extracts hashtags/mentions, and sends notifications to tagged users.")
+async def create_post(body: CreatePost, user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
+    _reject_social_images(body.images)
+    check_rate(f"post:{user['id']}", RL_POST_LIMIT, RL_POST_WINDOW,
+               "Bạn đăng bài quá nhanh. Vui lòng đợi ít phút rồi thử lại.")
+    check_rate(f"post-day:{user['id']}", RL_POST_DAILY_LIMIT, RL_POST_DAILY_WINDOW,
+               "Bạn đã đạt giới hạn đăng bài trong ngày. Vui lòng thử lại ngày mai.")
+
+    ph = db._ph
+    if body.content.strip() and not body.repost_of:
+        if await asyncio.to_thread(_post_dup_exists, ph, str(user["id"]), body.content.strip()):
+            raise HTTPException(409, "Bài viết trùng nội dung. Vui lòng chỉnh sửa trước khi đăng lại.")
+
+    _validate_post_type(body)
+
+    if body.entity_id:
+        entity = await asyncio.to_thread(db.get_entity, body.entity_id)
+        if not entity:
+            raise HTTPException(404, "Không tìm thấy địa điểm/sản phẩm")
+
+    # Repost rỗng được phép; bài thường cần ≥10 ký tự
+    if not body.repost_of and len(body.content.strip()) < 10:
+        raise HTTPException(400, "Nội dung cần ít nhất 10 ký tự")
+
+    repost_snapshot = None
+    orig_author_id = None
+    if body.repost_of:
+        orig = await asyncio.to_thread(_post_fetch_repost_orig, ph, body.repost_of)
+        repost_snapshot, orig_author_id = _process_repost(orig, user)
+
+    mod_result = await moderate_content_enhanced(body.content, user_id=str(user["id"]), image_urls=body.images)
+    status = mod_result["status"]
+    mentions = _clean_mentions(body.mentions)
+    hashtags = _extract_hashtags(body.content)
+
+    row = await asyncio.to_thread(_post_insert, ph, user, body, status, mentions, hashtags, repost_snapshot)
+    post = db._row_to_dict(row)
+    log_moderation("post", str(post["id"]), status, mod_result, auto=True)
+
+    if status == "approved":
+        await asyncio.to_thread(
+            _notify_new_post, mentions, user, str(post["id"]), body.content,
+            body.entity_id, orig_author_id,
+        )
+        asyncio.create_task(asyncio.to_thread(_check_achievements_bg, str(user["id"])))
+
+    _invalidate_social_caches()
+    result = _enrich_post(post, user)
+    if status != "approved":
+        result["moderation_notice"] = _moderation_notice(status)
+
+    return {"post": result}
+
+
+# ── Draft Posts ──
+
+class DraftPost(BaseModel):
+    content: str = Field("", max_length=5000)
+    post_type: str = Field("share", max_length=20)
+    entity_id: Optional[str] = Field(None, max_length=200)
+    rating: Optional[int] = None
+    images: list[str] = Field(default_factory=list, max_length=10)
+
+
+@router.post("/drafts", status_code=201,
+             summary="Save a draft",
+             description="Save a post as a draft for later editing or publishing. Each user can have up to 20 drafts.")
+async def save_draft(body: DraftPost, user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
+    _reject_social_images(body.images)
+    check_rate(f"draft:{user['id']}", 20, 300, "Lưu nháp quá nhanh. Vui lòng đợi.")
+    ph = db._ph
+    uid = str(user["id"])
+
+    def _query():
+        with db._conn() as conn:
+            count = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM posts
+                WHERE user_id = {ph}::uuid AND is_draft = TRUE
+            """, (uid,))
+            if count and db._row_to_dict(count)["c"] >= 20:
+                raise HTTPException(400, "Tối đa 20 bài nháp")
+            row = db._fetchone(conn, f"""
+                INSERT INTO posts (user_id, content, post_type, entity_id, rating, images,
+                                   moderation_status, is_draft, hashtags, mentions)
+                VALUES ({ph}::uuid, {ph}, {ph}, {ph}, {ph}, {ph}::jsonb, 'pending', TRUE, '[]'::jsonb, '[]'::jsonb)
+                RETURNING id, content, post_type, entity_id, rating, images, created_at
+            """, (uid, body.content, body.post_type, body.entity_id, body.rating,
+                  json.dumps(body.images)))
+            return db._row_to_dict(row)
+
+    draft = await asyncio.to_thread(_query)
+    draft["id"] = str(draft["id"])
+    return {"draft": draft}
+
+
+@router.get("/drafts", response_model=DraftsListResponse,
+            summary="List drafts",
+            description="List the authenticated user's draft posts with pagination. Returns drafts sorted by most recently updated.")
+async def list_drafts(
+    page: int = Query(1, ge=1, le=100),
+    limit: int = Query(20, ge=1, le=50),
+    user=Depends(require_user),
+):
+    ph = db._ph
+    uid = str(user["id"])
+    offset = (page - 1) * limit
+
+    def _query():
+        with db._conn() as conn:
+            total_row = db._fetchone(conn, f"SELECT COUNT(*) as c FROM posts WHERE user_id = {ph}::uuid AND is_draft = TRUE", (uid,))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            rows = db._fetchall(conn, f"""
+                SELECT id, content, post_type, entity_id, rating, images, created_at, updated_at
+                FROM posts
+                WHERE user_id = {ph}::uuid AND is_draft = TRUE
+                ORDER BY COALESCE(updated_at, created_at) DESC
+                LIMIT {ph} OFFSET {ph}
+            """, (uid, limit, offset))
+            return [db._row_to_dict(r) for r in rows], total
+
+    drafts, total = await asyncio.to_thread(_query)
+    for d in drafts:
+        d["id"] = str(d["id"])
+    return {"drafts": drafts, "total": total, "page": page, "has_more": offset + limit < total}
+
+
+@router.put("/drafts/{draft_id}",
+            summary="Update a draft",
+            description="Update the content, type, entity, rating, or images of an existing draft. Returns the updated draft.")
+async def update_draft(draft_id: str, body: DraftPost, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    _reject_social_images(body.images)
+    draft_id = validate_path_id(draft_id, "draft_id")
+    check_rate(f"draft:{user['id']}", 20, 300, "Lưu nháp quá nhanh. Vui lòng đợi.")
+    ph = db._ph
+    uid = str(user["id"])
+
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                UPDATE posts SET content = {ph}, post_type = {ph}, entity_id = {ph},
+                       rating = {ph}, images = {ph}::jsonb, updated_at = NOW()
+                WHERE id::text = {ph} AND user_id = {ph}::uuid AND is_draft = TRUE
+                RETURNING id, content, post_type, entity_id, rating, images, updated_at
+            """, (body.content, body.post_type, body.entity_id, body.rating,
+                  json.dumps(body.images), draft_id, uid))
+            if not row:
+                raise HTTPException(404, "Bài nháp không tồn tại")
+            return db._row_to_dict(row)
+
+    draft = await asyncio.to_thread(_query)
+    draft["id"] = str(draft["id"])
+    return {"draft": draft}
+
+
+@router.post("/drafts/{draft_id}/publish",
+             summary="Publish a draft",
+             description="Publish a draft post. Runs content moderation, extracts hashtags, and converts the draft into a visible post.")
+async def publish_draft(draft_id: str, user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
+    """Publish a draft — runs moderation and converts to a real post."""
+    draft_id = validate_path_id(draft_id, "draft_id")
+    check_rate(f"post:{user['id']}", RL_POST_LIMIT, RL_POST_WINDOW,
+               "Bạn đăng bài quá nhanh. Vui lòng đợi ít phút rồi thử lại.")
+    ph = db._ph
+    uid = str(user["id"])
+
+    def _get_draft():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                SELECT id, content, post_type, entity_id, rating, images
+                FROM posts
+                WHERE id::text = {ph} AND user_id = {ph}::uuid AND is_draft = TRUE
+            """, (draft_id, uid))
+            if not row:
+                raise HTTPException(404, "Bài nháp không tồn tại")
+            return db._row_to_dict(row)
+
+    draft = await asyncio.to_thread(_get_draft)
+    content = draft.get("content", "")
+    if len(content.strip()) < 10:
+        raise HTTPException(400, "Nội dung cần ít nhất 10 ký tự")
+
+    images = draft.get("images", [])
+    if isinstance(images, str):
+        try:
+            images = json.loads(images)
+        except (json.JSONDecodeError, ValueError):
+            images = []
+
+    mod_result = await moderate_content_enhanced(content, user_id=uid, image_urls=images)
+    hashtags = _extract_hashtags(content)
+
+    def _publish():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                UPDATE posts SET is_draft = FALSE, moderation_status = {ph},
+                       hashtags = {ph}::jsonb, updated_at = NOW()
+                WHERE id::text = {ph} AND user_id = {ph}::uuid AND is_draft = TRUE
+                RETURNING *
+            """, (mod_result["status"], json.dumps(hashtags, ensure_ascii=False),
+                  draft_id, uid))
+            if not row:
+                raise HTTPException(404, "Bài nháp không tồn tại")
+            return db._row_to_dict(row)
+
+    post = await asyncio.to_thread(_publish)
+    log_moderation("post", str(post["id"]), mod_result["status"], mod_result, auto=True)
+    if mod_result["status"] == "approved":
+        asyncio.create_task(asyncio.to_thread(_check_achievements_bg, str(user["id"])))
+    _invalidate_social_caches()
+    return {"post": _enrich_post(post, user)}
+
+
+@router.delete("/drafts/{draft_id}",
+               summary="Delete a draft",
+               description="Permanently delete a draft post. Only the draft owner can delete it.")
+async def delete_draft(draft_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    draft_id = validate_path_id(draft_id, "draft_id")
+    check_rate(f"draft-del:{user['id']}", RL_DELETE_LIMIT, RL_DELETE_WINDOW,
+               "Xóa nháp quá nhanh. Vui lòng đợi chút.")
+    ph = db._ph
+    uid = str(user["id"])
+
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                DELETE FROM posts
+                WHERE id::text = {ph} AND user_id = {ph}::uuid AND is_draft = TRUE
+                RETURNING id
+            """, (draft_id, uid))
+            if not row:
+                raise HTTPException(404, "Bài nháp không tồn tại")
+
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
+@router.post("/drafts/{draft_id}/schedule",
+             summary="Schedule a draft for publication",
+             description="Schedule a draft for future automatic publication at the specified ISO 8601 timestamp. The draft must have at least 10 characters.")
+async def schedule_draft(draft_id: str, scheduled_at: str = Query(..., max_length=30),
+                         user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
+    """Schedule a draft for future publication."""
+    draft_id = validate_path_id(draft_id, "draft_id")
+    check_rate(f"schedule:{user['id']}", 10, 300, "Đặt lịch quá nhanh. Vui lòng đợi.")
+    ph = db._ph
+    uid = str(user["id"])
+    try:
+        from datetime import datetime as _dt, timezone as _tz
+        publish_time = _dt.fromisoformat(scheduled_at.replace("Z", "+00:00"))
+        if publish_time.tzinfo is None:
+            publish_time = publish_time.replace(tzinfo=_tz.utc)
+        if publish_time <= _dt.now(_tz.utc):
+            raise HTTPException(400, "Thời gian đặt lịch phải trong tương lai")
+    except (ValueError, TypeError):
+        raise HTTPException(400, "Định dạng thời gian không hợp lệ (ISO 8601)")
+
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                SELECT id, content FROM posts
+                WHERE id::text = {ph} AND user_id = {ph}::uuid AND is_draft = TRUE
+            """, (draft_id, uid))
+            if not row:
+                raise HTTPException(404, "Bài nháp không tồn tại")
+            d = db._row_to_dict(row)
+            if len((d.get("content") or "").strip()) < 10:
+                raise HTTPException(400, "Nội dung cần ít nhất 10 ký tự")
+            db._execute(conn, f"""
+                UPDATE posts SET scheduled_at = {ph}::timestamptz, is_draft = FALSE
+                WHERE id::text = {ph} AND user_id = {ph}::uuid
+            """, (scheduled_at, draft_id, uid))
+            return True
+
+    await asyncio.to_thread(_query)
+    return {"success": True, "scheduled_at": scheduled_at}
+
+
+@router.get("/scheduled", response_model=ScheduledListResponse,
+            summary="List scheduled posts",
+            description="List the authenticated user's posts scheduled for future publication, sorted by publish time ascending.")
+async def list_scheduled(
+    page: int = Query(1, ge=1, le=100),
+    limit: int = Query(20, ge=1, le=50),
+    user=Depends(require_user),
+):
+    """List user's scheduled posts (not yet published)."""
+    ph = db._ph
+    uid = str(user["id"])
+    offset = (page - 1) * limit
+
+    def _query():
+        with db._conn() as conn:
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM posts
+                WHERE user_id = {ph}::uuid AND scheduled_at IS NOT NULL
+                  AND scheduled_at > NOW() AND is_draft = FALSE
+            """, (uid,))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            rows = db._fetchall(conn, f"""
+                SELECT id, content, post_type, entity_id, rating, images,
+                       scheduled_at, created_at
+                FROM posts
+                WHERE user_id = {ph}::uuid AND scheduled_at IS NOT NULL
+                  AND scheduled_at > NOW() AND is_draft = FALSE
+                ORDER BY scheduled_at ASC
+                LIMIT {ph} OFFSET {ph}
+            """, (uid, limit, offset))
+            return [db._row_to_dict(r) for r in rows], total
+
+    scheduled, total = await asyncio.to_thread(_query)
+    for s in scheduled:
+        s["id"] = str(s["id"])
+    return {"scheduled": scheduled, "total": total, "page": page, "has_more": offset + limit < total}
+
+
+@router.delete("/scheduled/{post_id}",
+               summary="Cancel a scheduled post",
+               description="Cancel a scheduled post and convert it back to a draft. Only works for posts not yet published.")
+async def cancel_scheduled(post_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    """Cancel a scheduled post (converts back to draft)."""
+    post_id = validate_path_id(post_id, "post_id")
+    check_rate(f"schedule-del:{user['id']}", RL_DELETE_LIMIT, RL_DELETE_WINDOW,
+               "Thao tác quá nhanh. Vui lòng đợi chút.")
+    ph = db._ph
+    uid = str(user["id"])
+
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                UPDATE posts SET scheduled_at = NULL, is_draft = TRUE
+                WHERE id::text = {ph} AND user_id = {ph}::uuid
+                  AND scheduled_at IS NOT NULL AND scheduled_at > NOW()
+                RETURNING id
+            """, (post_id, uid))
+            if not row:
+                raise HTTPException(404, "Bài đặt lịch không tồn tại")
+
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
+@router.get("/posts/{post_id}", response_model=PostResponse,
+            summary="Get a post",
+            description="Retrieve a single approved post by ID with author info, entity details, like/bookmark status, and reaction counts.")
+async def get_post(post_id: str, user=Depends(get_current_user)):
+    post_id = validate_path_id(post_id, "post_id")
+    ph = db._ph
+    uid = str(user["id"]) if user else None
+
+    def _get_post():
+        with db._conn() as conn:
+            bc, bc_params = _block_sql(user, "p.user_id")
+            row = db._fetchone(conn, f"""
+                SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
+                       e.name as entity_name, e.type as entity_type
+                FROM posts p
+                JOIN users u ON u.id = p.user_id
+                LEFT JOIN entities e ON e.id = p.entity_id
+                WHERE p.id::text = {ph} AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
+                {bc}
+            """, (post_id, *bc_params))
+            if not row:
+                return None
+            post = db._row_to_dict(row)
+            post["is_liked"] = False
+            post["is_bookmarked"] = False
+            if uid:
+                liked = db._fetchone(conn, f"""
+                    SELECT 1 FROM likes WHERE user_id = {ph}::uuid AND post_id = {ph}::uuid
+                """, (uid, post_id))
+                bookmarked = db._fetchone(conn, f"""
+                    SELECT 1 FROM bookmarks WHERE user_id = {ph}::uuid AND post_id = {ph}::uuid
+                """, (uid, post_id))
+                post["is_liked"] = liked is not None
+                post["is_bookmarked"] = bookmarked is not None
+            return post
+
+    post = await asyncio.to_thread(_get_post)
+    if not post:
+        raise HTTPException(404, "Bài viết không tồn tại")
+    await asyncio.to_thread(_enrich_reactions, [post])
+
+    return {"post": _format_post(post)}
+
+
+@router.delete("/posts/{post_id}",
+               summary="Delete a post",
+               description="Soft-delete a post. The post owner or admin/moderator can delete. Cleans up notifications and repost references.")
+async def delete_post(post_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    post_id = validate_path_id(post_id, "post_id")
+    check_rate(f"delete:{user['id']}", RL_DELETE_LIMIT, RL_DELETE_WINDOW,
+               "Bạn xóa quá nhanh. Vui lòng đợi ít phút.")
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph} AND deleted_at IS NULL", (post_id,))
+            if not row:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            rd = db._row_to_dict(row)
+            if str(rd["user_id"]) != str(user["id"]) and user.get("role") not in ("admin", "moderator"):
+                raise HTTPException(403, "Không có quyền xóa bài viết này")
+            db._execute(conn, f"DELETE FROM notifications WHERE ref_type = 'post' AND ref_id = {ph}", (post_id,))
+            db._execute(conn, f"UPDATE posts SET repost_of = NULL WHERE repost_of::text = {ph}", (post_id,))
+            db._execute(conn, f"UPDATE posts SET deleted_at = NOW() WHERE id::text = {ph}", (post_id,))
+    await asyncio.to_thread(_query)
+    _invalidate_social_caches()
+    return {"success": True}
+
+
+def _post_check_owner(ph, post_id, user):
+    """Kiểm tồn tại + quyền sở hữu bài — extract-method thuần. Trả dict {user_id, post_type}."""
+    with db._conn() as conn:
+        row = db._fetchone(conn, f"SELECT user_id, post_type FROM posts WHERE id::text = {ph} AND deleted_at IS NULL", (post_id,))
+        if not row:
+            raise HTTPException(404, "Bài viết không tồn tại")
+        d = db._row_to_dict(row)
+        if str(d["user_id"]) != str(user["id"]):
+            raise HTTPException(403, "Không có quyền sửa bài viết này")
+        return d
+
+
+def _validate_post_update(new_content, set_rating, body):
+    """Guard cho update bài (độ dài, sao, ít nhất 1 trường) — extract-method thuần."""
+    if new_content is not None:
+        if len(new_content) < 10:
+            raise HTTPException(400, "Nội dung cần ít nhất 10 ký tự")
+        if len(new_content) > 5000:
+            raise HTTPException(400, "Nội dung tối đa 5000 ký tự")
+    if set_rating and (body.rating < 1 or body.rating > 5):
+        raise HTTPException(400, "Đánh giá từ 1 đến 5 sao")
+    if new_content is None and not set_rating:
+        raise HTTPException(400, "Cần cung cấp nội dung hoặc đánh giá để cập nhật")
+
+
+def _post_do_update(ph, post_id, uid, new_content, set_rating, body, status, hashtags, hist_sql):
+    """Ghi lịch sử + UPDATE bài (3 nhánh) + trả row đã join — extract-method thuần."""
+    with db._conn() as conn:
+        old = db._fetchone(conn, f"SELECT content, rating FROM posts WHERE id::text = {ph}", (post_id,))
+        if old:
+            od = db._row_to_dict(old)
+            db._execute(conn, hist_sql, (post_id, uid, od["content"], od.get("rating")))
+        if new_content is not None and set_rating:
+            db._execute(conn, f"""UPDATE posts SET content={ph}, hashtags={ph}::jsonb,
+                          rating={ph}, moderation_status={ph}, updated_at=NOW() WHERE id::text={ph}""",
+                        (new_content, json.dumps(hashtags, ensure_ascii=False), body.rating, status, post_id))
+        elif new_content is not None:
+            db._execute(conn, f"""UPDATE posts SET content={ph}, hashtags={ph}::jsonb,
+                          moderation_status={ph}, updated_at=NOW() WHERE id::text={ph}""",
+                        (new_content, json.dumps(hashtags, ensure_ascii=False), status, post_id))
+        elif set_rating:
+            db._execute(conn, f"""UPDATE posts SET rating={ph}, updated_at=NOW() WHERE id::text={ph}""",
+                        (body.rating, post_id))
+        return db._fetchone(conn, f"""
+            SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
+                   e.name as entity_name, e.type as entity_type
+            FROM posts p JOIN users u ON u.id = p.user_id
+            LEFT JOIN entities e ON e.id = p.entity_id WHERE p.id::text = {ph}
+        """, (post_id,))
+
+
+@router.patch("/posts/{post_id}",
+              summary="Update a post",
+              description="Edit the content or rating of the user's own post. Re-runs moderation, re-extracts hashtags, and saves edit history.")
+async def update_post(post_id: str, body: UpdatePost, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    """Sửa bài của CHÍNH MÌNH (nội dung; review đổi sao). Kiểm duyệt + hashtag lại."""
+    check_rate(f"edit:{user['id']}", 20, 300, "Bạn sửa bài quá nhanh. Vui lòng thử lại sau.")
+    post_id = validate_path_id(post_id, "post_id")
+    ph = db._ph
+    d = await asyncio.to_thread(_post_check_owner, ph, post_id, user)
+
+    new_content = body.content.strip() if body.content is not None else None
+    set_rating = body.rating is not None and d["post_type"] == "review"
+    _validate_post_update(new_content, set_rating, body)
+
+    status = None
+    hashtags = []
+    if new_content is not None:
+        mod_result = await moderate_content_enhanced(new_content, user_id=str(user["id"]))
+        status = mod_result["status"]
+        hashtags = _extract_hashtags(new_content)
+
+    uid = str(user["id"])
+    _HIST_SQL = f"INSERT INTO post_edit_history(post_id,editor_id,old_content,old_rating) VALUES({ph}::uuid,{ph}::uuid,{ph},{ph})"
+
+    post = await asyncio.to_thread(
+        _post_do_update, ph, post_id, uid, new_content, set_rating, body, status, hashtags, _HIST_SQL,
+    )
+    _invalidate_social_caches()
+    return {"post": _format_post(db._row_to_dict(post)), "moderation_status": status}
+
+
+@router.get("/posts/{post_id}/edit-history", response_model=EditHistoryResponse,
+            summary="Get post edit history",
+            description="Retrieve the edit history of a post for transparency. Returns previous content and rating snapshots with timestamps.")
+async def get_post_edit_history(post_id: str, limit: int = Query(20, ge=1, le=100)):
+    """View edit history for a post (public — transparency)."""
+    post_id = validate_path_id(post_id, "post_id")
+    ph = db._ph
+
+    def _query():
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"SELECT id FROM posts WHERE id::text = {ph} AND moderation_status = 'approved' AND deleted_at IS NULL", (post_id,))
+            if not post:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            rows = db._fetchall(conn, f"""
+                SELECT h.id, h.old_content, h.old_rating, h.created_at,
+                       u.display_name, u.username
+                FROM post_edit_history h
+                JOIN users u ON u.id = h.editor_id
+                WHERE h.post_id = {ph}::uuid
+                ORDER BY h.created_at DESC LIMIT {ph}
+            """, (post_id, limit))
+            return [db._row_to_dict(r) for r in rows]
+
+    edits = await asyncio.to_thread(_query)
+    for e in edits:
+        e["id"] = str(e["id"])
+        e["created_at"] = str(e["created_at"])
+    return {"edits": edits, "total": len(edits)}
+
+
+# ── Feed ──
+
+def _feed_build_conditions(ph, post_type, entity_type, area, tag, user):
+    """Dựng danh sách WHERE + params cho feed cộng đồng — extract-method thuần.
+    Trả (conditions, params)."""
+    conditions = ["p.moderation_status = 'approved'", "p.deleted_at IS NULL"]
+    params = []
+
+    if post_type and post_type in POST_TYPES:
+        conditions.append(f"p.post_type = {ph}")
+        params.append(post_type)
+
+    if tag:
+        conditions.append(f"p.hashtags @> {ph}::jsonb")
+        params.append(json.dumps([tag.lower().lstrip("#")]))
+
+    if entity_type:
+        conditions.append(f"e.type = {ph}")
+        params.append(entity_type)
+
+    if area:
+        # FIX: place lưu vùng ở CỘT top-level `area`, KHÔNG ở attributes (trước dùng
+        # attributes->>'area' → subquery luôn rỗng → feed?area= rỗng). Khớp pattern
+        # database.list_entities/search_entities.
+        conditions.append(f"""
+            (e.area = {ph} OR e."placeId" IN (
+                SELECT id FROM entities WHERE type = 'place' AND area = {ph}
+            ))
+        """)
+        params.extend([area, area])
+
+    bc, bc_p = _block_sql(user, "p.user_id")
+    if bc:
+        conditions.append(bc.removeprefix("AND "))
+        params.extend(bc_p)
+
+    mc, mc_p = _mute_sql(user, "p.user_id")
+    if mc:
+        conditions.append(mc.removeprefix("AND "))
+        params.extend(mc_p)
+
+    uid = str(user["id"]) if user else None
+    if uid:
+        conditions.append(f"p.id NOT IN (SELECT post_id FROM user_hidden_posts WHERE user_id = {ph}::uuid)")
+        params.append(uid)
+
+    seed_filter, seed_params = _prod_seed_post_filter("p")
+    if seed_filter:
+        conditions.append(seed_filter.removeprefix(" AND "))
+        params.extend(seed_params)
+
+    return conditions, params
+
+
+@router.get("/feed", response_model=FeedResponse,
+            summary="Get community feed",
+            description="Main community feed with chronological + seasonal/quality boost ranking. Filterable by post type, entity type, area, and hashtag.")
+async def get_feed(
+    page: int = Query(1, ge=1, le=1000),
+    limit: int = Query(20, ge=1, le=50),
+    post_type: Optional[str] = Query(None, max_length=50),
+    entity_type: Optional[str] = Query(None, max_length=50),
+    area: Optional[str] = Query(None, max_length=50),
+    tag: Optional[str] = Query(None, max_length=100),
+    user=Depends(get_current_user),
+):
+    """
+    Feed cộng đồng: chronological + seasonal boost + quality boost.
+    Lọc theo loại bài, loại entity (du lịch, sản phẩm...), vùng miền.
+    """
+    ph = db._ph
+    offset = (page - 1) * limit
+    conditions, params = _feed_build_conditions(ph, post_type, entity_type, area, tag, user)
+
+    where = " AND ".join(conditions)
+    where_params = list(params)
+
+    month = datetime.now(timezone.utc).month
+    month_str = str(month)
+
+    query_params = where_params + [month_str, month_str, limit, offset]
+
+    feed_sql = f"""
+        SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
+               e.name as entity_name, e.type as entity_type, e.season as entity_season
+        FROM posts p
+        JOIN users u ON u.id = p.user_id
+        LEFT JOIN entities e ON e.id = p.entity_id
+        WHERE {where}
+        ORDER BY
+            CASE WHEN e.season IS NOT NULL
+                 AND (e.season->'peak' ? {ph} OR e.season->'months' ? {ph})
+                 THEN 1.5 ELSE 1.0 END
+            * (1.0 + LN(2 + p.like_count))
+            DESC,
+            p.created_at DESC
+        LIMIT {ph} OFFSET {ph}
+    """
+    count_sql = f"""
+        SELECT COUNT(*) as c FROM posts p
+        LEFT JOIN entities e ON e.id = p.entity_id
+        WHERE {where}
+    """
+
+    def _feed_query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, feed_sql, query_params)
+            total = db._fetchone(conn, count_sql, where_params)
+        return rows, total
+
+    rows, total = await asyncio.to_thread(_feed_query)
+
+    posts = [_format_post(db._row_to_dict(r)) for r in rows]
+
+    await asyncio.to_thread(_enrich_all, posts, user)
+
+    total_c = db._row_to_dict(total)["c"] if total else 0
+    return {
+        "posts": posts,
+        "page": page,
+        "total": total_c,
+        "has_more": offset + limit < total_c,
+    }
+
+
+@router.get("/feed/following", response_model=FollowingFeedResponse,
+            summary="Get following feed",
+            description="Feed of posts from users and entities the authenticated user follows, sorted by newest first.")
+async def get_following_feed(
+    page: int = Query(1, ge=1, le=1000),
+    limit: int = Query(20, ge=1, le=50),
+    user=Depends(require_user),
+):
+    """Feed các bài từ NGƯỜI + ĐỊA ĐIỂM mình theo dõi (mới nhất trước)."""
+    ph = db._ph
+    offset = (page - 1) * limit
+    uid = str(user["id"])
+    # điều kiện: tác giả là người mình follow HOẶC bài gắn địa-điểm mình follow
+    bc, bc_p = _block_sql(user, "p.user_id")
+    mc, mc_p = _mute_sql(user, "p.user_id")
+    hidden_cond = f"AND p.id NOT IN (SELECT post_id FROM user_hidden_posts WHERE user_id = {ph}::uuid)"
+    seed_filter, seed_params = _prod_seed_post_filter("p")
+    follow_cond = f"""
+        (p.user_id IN (SELECT target_id::uuid FROM follows
+                         WHERE follower_id = {ph}::uuid AND target_type='user')
+         OR p.entity_id IN (SELECT target_id FROM follows
+                              WHERE follower_id = {ph}::uuid AND target_type='entity'))
+    """
+    feed_sql = f"""
+        SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
+               e.name as entity_name, e.type as entity_type
+        FROM posts p
+        JOIN users u ON u.id = p.user_id
+        LEFT JOIN entities e ON e.id = p.entity_id
+        WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL AND {follow_cond}
+        {bc}{mc}
+        {hidden_cond}
+        {seed_filter}
+        ORDER BY p.created_at DESC
+        LIMIT {ph} OFFSET {ph}
+    """
+    count_sql = f"""
+        SELECT COUNT(*) as c FROM posts p
+        WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL AND {follow_cond}
+        {bc}{mc}
+        {hidden_cond}
+        {seed_filter}
+    """
+
+    def _following_query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, feed_sql, (uid, uid, *bc_p, *mc_p, uid, *seed_params, limit, offset))
+            total = db._fetchone(conn, count_sql, (uid, uid, *bc_p, *mc_p, uid, *seed_params))
+        return rows, total
+
+    rows, total = await asyncio.to_thread(_following_query)
+
+    posts = [_format_post(db._row_to_dict(r)) for r in rows]
+    await asyncio.to_thread(_enrich_all, posts, user)
+
+    total_c = total["c"] if total else 0
+    return {"posts": posts, "page": page, "total": total_c,
+            "has_more": offset + limit < total_c}
+
+
+@router.get("/feed/friend-reviews", response_model=FriendReviewsResponse,
+            summary="Recent reviews from followed users",
+            description="Returns the most recent reviews posted by users the caller follows, for the community 'Đang theo dõi' tab.")
+async def get_friend_reviews(
+    limit: int = Query(5, ge=1, le=20),
+    user=Depends(require_user),
+):
+    """Đánh giá gần đây từ những NGƯỜI mình theo dõi (không phải địa điểm)."""
+    uid = str(user["id"])
+    ph = db._ph
+    bc, bc_p = _block_sql(user, "p.user_id")
+    mc, mc_p = _mute_sql(user, "p.user_id")
+    # Đồng bộ với get_following_feed (dòng ~1024): loại bài viewer đã ẩn +
+    # bài seed/test admin trên prod — 2 filter này bị thiếu ở đây khiến review
+    # đã ẩn/bài seed lọt lại vào tab "Đang theo dõi".
+    hidden_cond = f"AND p.id NOT IN (SELECT post_id FROM user_hidden_posts WHERE user_id = {ph}::uuid)"
+    seed_filter, seed_params = _prod_seed_post_filter("p")
+
+    def _query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT p.id, LEFT(p.content, 150) AS content, p.rating, p.created_at,
+                       u.display_name, u.avatar_url, u.username,
+                       e.name AS entity_name, e.type AS entity_type
+                FROM posts p
+                JOIN users u ON u.id = p.user_id
+                LEFT JOIN entities e ON e.id = p.entity_id
+                WHERE p.post_type = 'review' AND p.moderation_status = 'approved'
+                  AND p.deleted_at IS NULL
+                  AND p.user_id IN (SELECT target_id::uuid FROM follows
+                                    WHERE follower_id = {ph}::uuid AND target_type='user')
+                  {bc} {mc}
+                  {hidden_cond}
+                  {seed_filter}
+                ORDER BY p.created_at DESC
+                LIMIT {ph}
+            """, (uid, *bc_p, *mc_p, uid, *seed_params, limit))
+            return rows
+    rows = await asyncio.to_thread(_query)
+    reviews = []
+    for r in rows:
+        d = db._row_to_dict(r)
+        reviews.append({
+            "id": str(d["id"]),
+            "content": d.get("content") or "",
+            "rating": d.get("rating"),
+            "created_at": str(d["created_at"]),
+            "user": {"display_name": d.get("display_name"), "avatar_url": d.get("avatar_url"), "username": d.get("username")},
+            "entity_name": d.get("entity_name"),
+            "entity_type": d.get("entity_type"),
+        })
+    return {"reviews": reviews}
+
+
+@router.get("/feed/friend-saves", response_model=FriendSavesResponse,
+            summary="Recent saves by followed users",
+            description="Returns entities recently saved (favorited) by users the caller follows, for the community 'Đang theo dõi' tab.")
+async def get_friend_saves(
+    limit: int = Query(5, ge=1, le=20),
+    user=Depends(require_user),
+):
+    """Địa điểm gần đây được LƯU (saved_entities) bởi những người mình theo dõi.
+
+    Dùng `saved_entities` (favorites đồng bộ tài khoản) chứ không phải
+    `bookmarks` (bookmark BÀI VIẾT) — bookmarks không có cột entity_id nên
+    không thể join thẳng sang entities.
+    """
+    uid = str(user["id"])
+    ph = db._ph
+    bc, bc_p = _block_sql(user, "s.user_id")
+
+    def _query():
+        with db._conn() as conn:
+            # DISTINCT ON (entity_id) chỉ khử-trùng-lặp entity (giữ save mới nhất
+            # /entity) — nó KHÔNG sắp toàn bộ kết quả theo created_at. Nếu LIMIT áp
+            # trực tiếp lên DISTINCT ON, thứ tự cắt sẽ theo entity_id (bảng chữ cái)
+            # chứ không theo "mới lưu gần đây" → phải bọc subquery rồi ORDER BY +
+            # LIMIT lại ở ngoài.
+            rows = db._fetchall(conn, f"""
+                SELECT entity_id, name, entity_type, display_name, avatar_url, created_at
+                FROM (
+                    SELECT DISTINCT ON (s.entity_id) s.entity_id, e.name, e.type AS entity_type,
+                           u.display_name, u.avatar_url, s.created_at
+                    FROM saved_entities s
+                    JOIN users u ON u.id = s.user_id
+                    JOIN entities e ON e.id = s.entity_id
+                    LEFT JOIN user_privacy save_privacy ON save_privacy.user_id = s.user_id
+                    WHERE s.user_id IN (SELECT target_id::uuid FROM follows
+                                        WHERE follower_id = {ph}::uuid AND target_type='user')
+                      AND s.user_id != {ph}::uuid
+                      AND COALESCE(save_privacy.show_saved, TRUE) = TRUE
+                      {bc}
+                    ORDER BY s.entity_id, s.created_at DESC
+                ) latest_per_entity
+                ORDER BY created_at DESC
+                LIMIT {ph}
+            """, (uid, uid, *bc_p, limit))
+            return rows
+    rows = await asyncio.to_thread(_query)
+    saves = []
+    for r in rows:
+        d = db._row_to_dict(r)
+        saves.append({
+            "entity_id": str(d["entity_id"]),
+            "entity_name": d.get("name"),
+            "entity_type": d.get("entity_type"),
+            "user": {"display_name": d.get("display_name"), "avatar_url": d.get("avatar_url")},
+            "created_at": str(d["created_at"]),
+        })
+    return {"saves": saves}
+
+
+_TRENDING_POSTS_WINDOWS = {"24h": 1, "7d": 7, "30d": 30}
+
+
+@router.get("/feed/trending", response_model=TrendingPostsResponse,
+            summary="Get trending posts",
+            description="Trending posts ranked by engagement (likes x2 + comments x3) within a configurable time window (24h, 7d, or 30d).")
+async def trending_posts(
+    window: str = Query("7d", max_length=10),
+    limit: int = Query(20, ge=1, le=50),
+    user=Depends(get_current_user),
+):
+    days = _TRENDING_POSTS_WINDOWS.get(window, 7)
+    ph = db._ph
+    bc, bc_p = _block_sql(user, "p.user_id")
+    mc, mc_p = _mute_sql(user, "p.user_id")
+    seed_filter, seed_params = _prod_seed_post_filter("p")
+    interval_param = f"{days} days"
+    def _query():
+        with db._conn() as conn:
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as cnt FROM posts p
+                WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
+                  AND p.created_at > NOW() - CAST({ph} AS INTERVAL)
+                  {bc} {mc} {seed_filter}
+            """, (interval_param, *bc_p, *mc_p, *seed_params))
+            total = db._row_to_dict(total_row).get("cnt", 0) if total_row else 0
+            rows = db._fetchall(conn, f"""
+                SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
+                       e.name as entity_name, e.type as entity_type
+                FROM posts p
+                JOIN users u ON u.id = p.user_id
+                LEFT JOIN entities e ON e.id = p.entity_id
+                WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
+                  AND p.created_at > NOW() - CAST({ph} AS INTERVAL)
+                  {bc} {mc} {seed_filter}
+                ORDER BY (p.like_count * 2 + p.comment_count * 3) DESC,
+                         p.created_at DESC
+                LIMIT {ph}
+            """, (interval_param, *bc_p, *mc_p, *seed_params, limit))
+            return total, rows
+    total, rows = await asyncio.to_thread(_query)
+    posts = [_format_post(db._row_to_dict(r)) for r in rows]
+    await asyncio.to_thread(_enrich_all, posts, user)
+    return {"posts": posts, "total": total, "has_more": total > len(posts), "window": window, "days": days}
+
+
+@router.get("/feed/explore", response_model=ExploreFeedResponse,
+            summary="Get explore feed",
+            description="Discover posts from users you don't follow yet, ranked by engagement and review quality. Excludes your own posts and those from followed users.")
+async def explore_feed(
+    page: int = Query(1, ge=1, le=1000), limit: int = Query(20, ge=1, le=50),
+    user=Depends(get_current_user),
+):
+    ph = db._ph
+    bc, bc_p = _block_sql(user, "p.user_id")
+    mc, mc_p = _mute_sql(user, "p.user_id")
+    seed_filter, seed_params = _prod_seed_post_filter("p")
+    offset = (page - 1) * limit
+    uid = str(user["id"]) if user else None
+    exclude_following = ""
+    exclude_params: list = []
+    if uid:
+        exclude_following = f"""
+            AND p.user_id NOT IN (
+                SELECT target_id::uuid FROM follows
+                WHERE follower_id = {ph}::uuid AND target_type = 'user'
+            )
+            AND p.user_id::text != {ph}
+        """
+        exclude_params = [uid, uid]
+    def _query():
+        with db._conn() as conn:
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM posts p
+                WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
+                  AND p.created_at > NOW() - INTERVAL '90 days'
+                  {exclude_following} {bc} {mc} {seed_filter}
+            """, (*exclude_params, *bc_p, *mc_p, *seed_params))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            rows = db._fetchall(conn, f"""
+                SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
+                       e.name as entity_name, e.type as entity_type
+                FROM posts p
+                JOIN users u ON u.id = p.user_id
+                LEFT JOIN entities e ON e.id = p.entity_id
+                WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
+                  AND p.created_at > NOW() - INTERVAL '90 days'
+                  {exclude_following}
+                  {bc} {mc} {seed_filter}
+                ORDER BY (p.like_count * 2 + p.comment_count * 3 +
+                          CASE WHEN p.post_type = 'review' AND p.rating >= 4 THEN 5 ELSE 0 END) DESC,
+                         p.created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, (*exclude_params, *bc_p, *mc_p, *seed_params, limit, offset))
+            return rows, total
+    rows, total = await asyncio.to_thread(_query)
+    posts = [_format_post(db._row_to_dict(r)) for r in rows]
+    await asyncio.to_thread(_enrich_all, posts, user)
+    return {"posts": posts, "total": total, "page": page, "has_more": offset + limit < total}
+
+
+@router.get("/search/posts", response_model=SearchPostsResponse,
+            summary="Search posts",
+            description="Full-text search across approved community posts using case-insensitive and accent-insensitive matching. Returns paginated results.")
+async def search_posts(
+    q: str = Query(..., min_length=2, max_length=100),
+    page: int = Query(1, ge=1, le=1000),
+    user=Depends(get_current_user),
+):
+    """Tìm bài viết cộng đồng theo nội dung (PG trigram `lower(content) LIKE`,
+    không phân biệt hoa-thường; chỉ bài ĐÃ DUYỆT). v1 phân-biệt-dấu."""
+    uid = user["id"] if user else "anon"
+    check_rate(f"search:{uid}", 30, 60, "Tìm kiếm quá nhanh. Vui lòng thử lại sau.")
+    stripped = q.strip()
+    if len(stripped) < 2:
+        return {"posts": [], "total": 0, "page": 1, "has_more": False}
+    ph = db._ph
+    limit = 20
+    offset = (page - 1) * limit
+    from database import escape_like
+    pattern = "%" + escape_like(stripped.lower()) + "%"
+    bc, bc_p = _block_sql(user, "p.user_id")
+    mc, mc_p = _mute_sql(user, "p.user_id")
+    seed_filter, seed_params = _prod_seed_post_filter("p")
+
+    def _query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
+                       e.name as entity_name, e.type as entity_type
+                FROM posts p
+                JOIN users u ON u.id = p.user_id
+                LEFT JOIN entities e ON e.id = p.entity_id
+                WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
+                  AND f_unaccent(lower(p.content)) LIKE f_unaccent({ph}) ESCAPE '\\'
+                {bc} {mc} {seed_filter}
+                ORDER BY p.created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, (pattern, *bc_p, *mc_p, *seed_params, limit, offset))
+            total = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM posts p
+                WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL AND f_unaccent(lower(p.content)) LIKE f_unaccent({ph}) ESCAPE '\\'
+                {bc} {mc} {seed_filter}
+            """, (pattern, *bc_p, *mc_p, *seed_params))
+        return rows, total
+    rows, total = await asyncio.to_thread(_query)
+
+    posts = [_format_post(db._row_to_dict(r)) for r in rows]
+    await asyncio.to_thread(_enrich_all, posts, user)
+
+    total_c = db._row_to_dict(total)["c"] if total else 0
+    return {"posts": posts, "q": _strip_html_tags(q), "page": page, "total": total_c,
+            "has_more": offset + limit < total_c}
+
+
+@router.get("/search/users", response_model=SearchUsersResponse,
+            summary="Search users",
+            description="Search users by display name with accent-insensitive matching. Returns public profile info and post count, sorted by activity.")
+async def search_users(
+    q: str = Query(..., min_length=2, max_length=50),
+    page: int = Query(1, ge=1, le=1000),
+    user=Depends(get_current_user),
+):
+    """Tìm người dùng theo tên hiển thị (không phân-biệt-dấu). Thông tin hồ-sơ công-khai."""
+    uid = user["id"] if user else "anon"
+    check_rate(f"search:{uid}", 30, 60, "Tìm kiếm quá nhanh. Vui lòng thử lại sau.")
+    stripped = q.strip()
+    if len(stripped) < 2:
+        return {"users": [], "total": 0, "page": 1, "has_more": False}
+    ph = db._ph
+    limit = 20
+    offset = (page - 1) * limit
+    from database import escape_like
+    pattern = "%" + escape_like(stripped.lower()) + "%"
+    bc, bc_p = _block_sql(user)
+    mc, mc_p = _mute_sql(user, "u.id")
+    params: list = [pattern] + bc_p + mc_p + [limit, offset]
+
+    count_params: list = [pattern] + bc_p + mc_p
+
+    def _query():
+        with db._conn() as conn:
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM users u
+                WHERE u.is_active = TRUE AND u.deleted_at IS NULL AND u.display_name IS NOT NULL
+                  AND f_unaccent(lower(u.display_name)) LIKE f_unaccent({ph}) ESCAPE '\\'
+                  {bc} {mc}
+            """, tuple(count_params))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            rows = db._fetchall(conn, f"""
+                SELECT u.id, u.display_name, u.avatar_url, u.username,
+                       COUNT(p.id) AS post_count
+                FROM users u
+                LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
+                WHERE u.is_active = TRUE AND u.deleted_at IS NULL
+                  AND f_unaccent(lower(u.display_name)) LIKE f_unaccent({ph}) ESCAPE '\\'
+                  {bc} {mc}
+                GROUP BY u.id, u.display_name, u.avatar_url, u.username
+                ORDER BY post_count DESC, u.display_name
+                LIMIT {ph} OFFSET {ph}
+            """, tuple(params))
+            return rows, total
+    rows, total = await asyncio.to_thread(_query)
+
+    users = []
+    for r in rows:
+        d = db._row_to_dict(r)
+        if d.get("display_name"):
+            users.append({
+                "id": str(d["id"]), "display_name": d["display_name"],
+                "avatar_url": d.get("avatar_url"), "username": d.get("username"),
+                "post_count": int(d.get("post_count") or 0),
+            })
+    return {"users": users, "q": _strip_html_tags(q), "page": page, "total": total, "has_more": offset + limit < total}
+
+
+@router.get("/community/stats", response_model=CommunityStatsResponse,
+            summary="Get community statistics",
+            description="Real-time community statistics: total approved posts, reviews, and active members. Cached for 60 seconds.")
+async def community_stats(response: Response):
+    """Số liệu THẬT của cộng đồng (không phải đếm 20 bài đã tải) cho sidebar /cong-dong."""
+    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
+    def _c(row):
+        return int(db._row_to_dict(row)["c"]) if row else 0
+    def _query():
+        seed_filter, seed_params = _prod_seed_post_filter("p")
+        with db._conn() as conn:
+            posts = db._fetchone(conn, f"SELECT COUNT(*) c FROM posts p WHERE moderation_status='approved' AND deleted_at IS NULL {seed_filter}", tuple(seed_params))
+            reviews = db._fetchone(conn, f"SELECT COUNT(*) c FROM posts p WHERE post_type='review' AND moderation_status='approved' AND deleted_at IS NULL {seed_filter}", tuple(seed_params))
+            members = db._fetchone(conn, "SELECT COUNT(*) c FROM users WHERE is_active=TRUE")
+        return {"posts": _c(posts), "reviews": _c(reviews), "members": _c(members)}
+    return await asyncio.to_thread(_query)
+
+
+@router.get("/me/counts", response_model=UserCountsResponse,
+            summary="Get current user's counts",
+            description="Quick counts for the authenticated user: unread notifications, posts, drafts, bookmarks, and visits. Used for sidebar badges.")
+async def user_counts(response: Response, user=Depends(require_user)):
+    response.headers["Cache-Control"] = "private, no-cache"
+    ph = db._ph
+    uid = str(user["id"])
+    def _query():
+        with db._conn() as conn:
+            notif = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM notifications
+                WHERE user_id = {ph}::uuid AND is_read = FALSE
+            """, (uid,))
+            posts = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM posts
+                WHERE user_id = {ph}::uuid AND moderation_status != 'rejected'
+                  AND (is_draft IS NOT TRUE) AND deleted_at IS NULL
+            """, (uid,))
+            drafts = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM posts
+                WHERE user_id = {ph}::uuid AND is_draft = TRUE
+            """, (uid,))
+            bookmarks = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM saved_entities
+                WHERE user_id = {ph}::uuid
+            """, (uid,))
+            visits = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM user_visits
+                WHERE user_id = {ph}::uuid
+            """, (uid,))
+        def _c(r):
+            return db._row_to_dict(r)["c"] if r else 0
+        return {
+            "unread_notifications": _c(notif),
+            "posts": _c(posts),
+            "drafts": _c(drafts),
+            "bookmarks": _c(bookmarks),
+            "visits": _c(visits),
+        }
+    return await asyncio.to_thread(_query)
+
+
+@router.get("/me/stats", response_model=UserStatsResponse,
+            summary="Get current user's extended stats",
+            description="Extended statistics for the user's profile dashboard: reviews, ratings, followers, following, likes received, reactions, entities reviewed, and collections.")
+async def user_stats(user=Depends(require_user)):
+    """Extended stats for the authenticated user's profile dashboard."""
+    ph = db._ph
+    uid = str(user["id"])
+    def _query():
+        with db._conn() as conn:
+            reviews = db._fetchone(conn, f"""
+                SELECT COUNT(*) AS c, COALESCE(AVG(rating), 0) AS avg
+                FROM posts WHERE user_id = {ph}::uuid AND post_type = 'review'
+                  AND moderation_status != 'rejected' AND rating IS NOT NULL
+            """, (uid,))
+            questions = db._fetchone(conn, f"""
+                SELECT COUNT(*) AS c FROM posts
+                WHERE user_id = {ph}::uuid AND post_type = 'question'
+                  AND moderation_status != 'rejected'
+            """, (uid,))
+            followers = db._fetchone(conn, f"""
+                SELECT COUNT(*) AS c FROM follows
+                WHERE target_type = 'user' AND target_id = {ph}
+            """, (uid,))
+            following = db._fetchone(conn, f"""
+                SELECT COUNT(*) AS c FROM follows
+                WHERE follower_id = {ph}::uuid AND target_type = 'user'
+            """, (uid,))
+            likes_received = db._fetchone(conn, f"""
+                SELECT COALESCE(SUM(like_count), 0) AS c FROM posts
+                WHERE user_id = {ph}::uuid AND moderation_status = 'approved' AND deleted_at IS NULL
+            """, (uid,))
+            entities_reviewed = db._fetchone(conn, f"""
+                SELECT COUNT(DISTINCT entity_id) AS c FROM posts
+                WHERE user_id = {ph}::uuid AND post_type = 'review'
+                  AND moderation_status = 'approved' AND deleted_at IS NULL AND entity_id IS NOT NULL
+            """, (uid,))
+            reactions_received = db._fetchone(conn, f"""
+                SELECT COUNT(*) AS c FROM post_reactions r
+                JOIN posts p ON p.id = r.post_id
+                WHERE p.user_id = {ph}::uuid
+            """, (uid,))
+            collections_count = db._fetchone(conn, f"""
+                SELECT COUNT(*) AS c FROM user_collections WHERE user_id = {ph}::uuid
+            """, (uid,))
+        def _c(r, col="c"):
+            return db._row_to_dict(r)[col] if r else 0
+        rd = db._row_to_dict(reviews) if reviews else {"c": 0, "avg": 0}
+        return {
+            "reviews": int(rd["c"]),
+            "avg_rating": round(float(rd["avg"]), 2),
+            "questions": _c(questions),
+            "followers": _c(followers),
+            "following": _c(following),
+            "likes_received": int(_c(likes_received)),
+            "reactions_received": int(_c(reactions_received)),
+            "entities_reviewed": _c(entities_reviewed),
+            "collections": int(_c(collections_count)),
+            "reputation": user.get("reputation", 0),
+        }
+    return await asyncio.to_thread(_query)
+
+
+@router.get("/me/activity", response_model=UserActivityResponse,
+            summary="Get current user's activity feed",
+            description="Unified activity feed showing the user's recent posts, comments, and likes in reverse chronological order.")
+async def user_activity(
+    limit: int = Query(30, ge=1, le=100),
+    offset: int = Query(0, ge=0, le=5000),
+    user=Depends(require_user),
+):
+    """Unified activity feed: user's recent posts, comments, likes.
+
+    Mỗi luồng phải lấy đủ `offset + limit` bản ghi rồi mới trộn — áp OFFSET
+    riêng cho từng luồng sẽ âm thầm đánh rơi bản ghi ở trang thứ hai trở đi,
+    vì thứ tự thời gian chỉ đúng sau khi đã trộn ba luồng.
+    """
+    ph = db._ph
+    uid = str(user["id"])
+    window = offset + limit
+
+    def _query():
+        with db._conn() as conn:
+            posts = db._fetchall(conn, f"""
+                SELECT 'post' as action, p.id as ref_id, p.content, p.post_type, p.created_at
+                FROM posts p WHERE p.user_id = {ph}::uuid AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
+                ORDER BY p.created_at DESC LIMIT {ph}
+            """, (uid, window))
+            comments = db._fetchall(conn, f"""
+                SELECT 'comment' as action, c.post_id as ref_id, c.content, 'comment' as post_type, c.created_at
+                FROM comments c WHERE c.user_id = {ph}::uuid AND c.deleted_at IS NULL
+                ORDER BY c.created_at DESC LIMIT {ph}
+            """, (uid, window))
+            likes = db._fetchall(conn, f"""
+                SELECT 'like' as action, l.post_id as ref_id, NULL as content, 'like' as post_type, l.created_at
+                FROM likes l WHERE l.user_id = {ph}::uuid
+                ORDER BY l.created_at DESC LIMIT {ph}
+            """, (uid, window))
+            return posts, comments, likes
+
+    posts, comments, likes = await asyncio.to_thread(_query)
+    activities = []
+    # ref_type cho biết ref_id trỏ tới loại tài nguyên nào; thiếu nó thì client
+    # không dựng được link và mọi dòng hoạt động thành chữ chết.
+    for row in posts:
+        d = db._row_to_dict(row)
+        activities.append({"action": "post", "ref_type": "post", "ref_id": str(d["ref_id"]),
+                          "content": (d.get("content") or "")[:200], "type": d.get("post_type"),
+                          "created_at": str(d["created_at"])})
+    for row in comments:
+        d = db._row_to_dict(row)
+        activities.append({"action": "comment", "ref_type": "post", "ref_id": str(d["ref_id"]),
+                          "content": (d.get("content") or "")[:200], "type": "comment",
+                          "created_at": str(d["created_at"])})
+    for row in likes:
+        d = db._row_to_dict(row)
+        activities.append({"action": "like", "ref_type": "post", "ref_id": str(d["ref_id"]),
+                          "content": None, "type": "like",
+                          "created_at": str(d["created_at"])})
+    activities.sort(key=lambda x: x["created_at"], reverse=True)
+    page_items = activities[offset:window]
+    return {"items": page_items, "has_more": len(activities) > window}
+
+
+_trending_cache: dict = {"ts": 0.0, "data": {}}
+_TRENDING_TTL = _cfg.TRENDING_CACHE_TTL
+_trending_lock = asyncio.Lock()
+_leaderboard_lock = asyncio.Lock()
+
+
+def _invalidate_social_caches():
+    _trending_cache["ts"] = 0.0
+    _leaderboard_cache.clear()
+
+_TRENDING_PERIOD_DAYS = {"7d": 7, "14d": 14, "30d": 30, "90d": 90}
+
+@router.get("/community/trending-tags", response_model=TrendingTagsResponse,
+            summary="Get trending hashtags",
+            description="Most-used hashtags from approved posts within a configurable period (7d/14d/30d/90d). Cached in memory with configurable TTL.")
+async def trending_tags(
+    response: Response,
+    limit: int = Query(10, ge=1, le=20),
+    period: str = Query("30d", pattern="^(7d|14d|30d|90d)$"),
+):
+    """Hashtag thịnh hành: đếm hashtag trên bài ĐÃ DUYỆT trong N ngày gần nhất."""
+    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
+    days = _TRENDING_PERIOD_DAYS.get(period, 30)
+    import time as _t
+    now = _t.time()
+    cache_key = f"tags:{limit}:{days}"
+    if now - _trending_cache["ts"] < _TRENDING_TTL and cache_key in _trending_cache.get("data", {}):
+        return _trending_cache["data"][cache_key]
+
+    async with _trending_lock:
+        now = _t.time()
+        if now - _trending_cache["ts"] < _TRENDING_TTL and cache_key in _trending_cache.get("data", {}):
+            return _trending_cache["data"][cache_key]
+
+        ph = db._ph
+        interval_param = f"{days} days"
+        def _query():
+            with db._conn() as conn:
+                return db._fetchall(conn, f"""
+                    SELECT tag, COUNT(*) AS c
+                    FROM posts p, jsonb_array_elements_text(p.hashtags) AS tag
+                    WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
+                      AND p.created_at > NOW() - CAST({ph} AS INTERVAL)
+                    GROUP BY tag
+                    ORDER BY c DESC, tag
+                    LIMIT {ph}
+                """, (interval_param, limit))
+        rows = await asyncio.to_thread(_query)
+        tags = [{"tag": (d := db._row_to_dict(r))["tag"], "count": int(d["c"])} for r in rows]
+        result = {"tags": tags, "period": period, "days": days}
+        _trending_cache["ts"] = now
+        _trending_cache.setdefault("data", {})[cache_key] = result
+        return result
+
+
+@router.get("/hashtags", response_model=HashtagsListResponse,
+            summary="List all hashtags",
+            description="Browse all hashtags with their post counts, paginated and optionally filtered by search query. Cached for 2 minutes.")
+async def list_hashtags(
+    response: Response,
+    limit: int = Query(50, ge=1, le=100),
+    page: int = Query(1, ge=1, le=100),
+    search: str = Query("", max_length=50),
+):
+    """All hashtags with post counts (approved posts only)."""
+    response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
+    ph = db._ph
+    offset = (page - 1) * limit
+    def _query():
+        with db._conn() as conn:
+            if search.strip():
+                from database import escape_like as _esc
+                pattern = f"%{_esc(search.lower().lstrip('#'))}%"
+                rows = db._fetchall(conn, f"""
+                    SELECT tag, COUNT(*) AS post_count
+                    FROM posts p, jsonb_array_elements_text(p.hashtags) AS tag
+                    WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL AND LOWER(tag) LIKE {ph}
+                    GROUP BY tag ORDER BY post_count DESC, tag
+                    LIMIT {ph} OFFSET {ph}
+                """, (pattern, limit, offset))
+                total_row = db._fetchone(conn, f"""
+                    SELECT COUNT(DISTINCT tag) AS c
+                    FROM posts p, jsonb_array_elements_text(p.hashtags) AS tag
+                    WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL AND LOWER(tag) LIKE {ph}
+                """, (pattern,))
+            else:
+                rows = db._fetchall(conn, f"""
+                    SELECT tag, COUNT(*) AS post_count
+                    FROM posts p, jsonb_array_elements_text(p.hashtags) AS tag
+                    WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
+                    GROUP BY tag ORDER BY post_count DESC, tag
+                    LIMIT {ph} OFFSET {ph}
+                """, (limit, offset))
+                total_row = db._fetchone(conn, """
+                    SELECT COUNT(DISTINCT tag) AS c
+                    FROM posts p, jsonb_array_elements_text(p.hashtags) AS tag
+                    WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
+                """, ())
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            return rows, total
+    rows, total = await asyncio.to_thread(_query)
+    tags = [{"tag": (d := db._row_to_dict(r))["tag"], "post_count": int(d["post_count"])} for r in rows]
+    return {"hashtags": tags, "total": total, "page": page, "has_more": page * limit < total}
+
+
+@router.get("/hashtags/{tag}/posts", response_model=HashtagPostsResponse,
+            summary="Get posts by hashtag",
+            description="Retrieve approved posts tagged with a specific hashtag. Sortable by newest or most popular.")
+async def hashtag_posts(
+    tag: str, request: Request,
+    page: int = Query(1, ge=1, le=1000), limit: int = Query(20, ge=1, le=50),
+    sort: str = Query("newest", pattern="^(newest|popular)$"),
+):
+    tag = tag.lower().lstrip("#")[:50]
+    if not tag:
+        raise HTTPException(400, "Tag không hợp lệ")
+    user = await get_current_user(request)
+    ph = db._ph
+    bc, bc_p = _block_sql(user, "p.user_id")
+    mc, mc_p = _mute_sql(user, "p.user_id")
+    offset = (page - 1) * limit
+    order = "p.like_count DESC, p.created_at DESC" if sort == "popular" else "p.created_at DESC"
+    def _query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
+                       e.name as entity_name, e.type as entity_type
+                FROM posts p
+                JOIN users u ON u.id = p.user_id
+                LEFT JOIN entities e ON e.id = p.entity_id
+                WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
+                  AND p.hashtags @> {ph}::jsonb
+                  {bc} {mc}
+                ORDER BY {order}
+                LIMIT {ph} OFFSET {ph}
+            """, (json.dumps([tag]), *bc_p, *mc_p, limit, offset))
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM posts p
+                WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL AND p.hashtags @> {ph}::jsonb
+                {bc} {mc}
+            """, (json.dumps([tag]), *bc_p, *mc_p))
+        total = db._row_to_dict(total_row)["c"] if total_row else 0
+        return rows, total
+    rows, total = await asyncio.to_thread(_query)
+    posts = [db._row_to_dict(r) for r in rows]
+    await asyncio.to_thread(_enrich_all, posts, user)
+    posts = [_format_post(p) for p in posts]
+    return {"tag": tag, "posts": posts, "total": total, "page": page, "has_more": offset + limit < total}
+
+_leaderboard_cache: dict = {}  # cache_key -> {"ts": float, "data": [...]}
+_LEADERBOARD_PERIOD_DAYS = {"7d": 7, "30d": 30}
+_LEADERBOARD_SORT_KEY = {"posts": "posts", "reviews": "reviews", "photos": "photos", "total": "points"}
+
+def _leaderboard_fresh(cache_key: str):
+    import time as _t
+    c = _leaderboard_cache.get(cache_key)
+    return c if c and _t.time() - c["ts"] < _cfg.TRENDING_CACHE_TTL else None
+
+def _leaderboard_period(ph, period):
+    """Trả (period_clause, period_p) cho khoảng thời gian leaderboard — extract-method thuần."""
+    pdays = _LEADERBOARD_PERIOD_DAYS.get(period)
+    period_clause = f"AND p.created_at > NOW() - CAST({ph} AS INTERVAL)" if pdays else ""
+    period_p = [f"{pdays} days"] if pdays else []
+    return period_clause, period_p
+
+
+def _leaderboard_query(ph, period_clause, period_p, bc, bc_p, mc, mc_p):
+    """Query gộp thống kê thành viên cho bảng xếp hạng — extract-method thuần."""
+    with db._conn() as conn:
+        return db._fetchall(conn, f"""
+            SELECT u.id, u.display_name, u.avatar_url, u.username,
+                   COUNT(p.id) FILTER (WHERE p.post_type='review') AS reviews,
+                   COUNT(p.id) AS posts,
+                   COUNT(p.id) FILTER (WHERE jsonb_typeof(p.images)='array'
+                                         AND jsonb_array_length(p.images) > 0) AS photos,
+                   COALESCE(fc.c, 0) AS followers,
+                   COUNT(DISTINCT p.entity_id) FILTER (WHERE p.entity_id IS NOT NULL) AS places,
+                   COALESCE(SUM(p.like_count), 0) AS likes
+            FROM users u
+            LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
+                                  {period_clause}
+            LEFT JOIN (SELECT f.target_id, COUNT(*) c FROM follows f
+                         JOIN users fu ON fu.id = f.follower_id
+                         WHERE f.target_type='user'
+                           AND fu.created_at < NOW() - INTERVAL '7 days'
+                         GROUP BY f.target_id) fc
+                   ON fc.target_id = u.id::text
+            WHERE u.is_active = TRUE AND u.deleted_at IS NULL AND u.display_name IS NOT NULL
+            {bc}{mc}
+            GROUP BY u.id, u.display_name, u.avatar_url, u.username, fc.c
+            HAVING COUNT(p.id) > 0
+            LIMIT 500
+        """, tuple([*period_p, *bc_p, *mc_p]))
+
+
+def _leaderboard_row(d):
+    """Chuyển 1 row thống kê thành entry leaderboard (hoặc None nếu 0 điểm) — extract-method thuần."""
+    reviews = int(d["reviews"] or 0)
+    posts = int(d["posts"] or 0)
+    photos = int(d["photos"] or 0)
+    followers = int(d["followers"] or 0)
+    places = int(d["places"] or 0)
+    likes = int(d["likes"] or 0)
+    points = _calc_points(reviews, posts, photos, followers, places, likes)
+    if points <= 0:
+        return None
+    level, label = _level_for(points)
+    return {
+        "id": str(d["id"]), "display_name": d["display_name"], "avatar_url": d.get("avatar_url"),
+        "username": d.get("username"),
+        "points": points, "level": level, "level_label": label,
+        "posts": posts, "reviews": reviews, "photos": photos,
+    }
+
+
+def _leaderboard_build(rows, category):
+    """Dựng + sắp xếp danh sách leaderboard từ rows — extract-method thuần."""
+    leaders = []
+    for r in rows:
+        entry = _leaderboard_row(db._row_to_dict(r))
+        if entry is not None:
+            leaders.append(entry)
+    sort_key = _LEADERBOARD_SORT_KEY.get(category, "points")
+    leaders.sort(key=lambda x: x.get(sort_key, x["points"]), reverse=True)
+    return leaders
+
+
+@router.get("/community/leaderboard", response_model=LeaderboardResponse,
+            summary="Get community leaderboard",
+            description="Ranked list of top contributors by reputation points. Anti-inflation scoring with diminishing returns. Supports period/category filters, search, self-rank.")
+async def community_leaderboard(limit: int = Query(10, ge=1, le=50), period: str = Query("all", pattern="^(7d|30d|all)$"), category: str = Query("total", pattern="^(posts|reviews|photos|total)$"), q: str = Query("", max_length=100), user=Depends(get_current_user)):
+    """Bảng xếp hạng: thành viên tích cực theo điểm danh-tiếng (1 query gộp)."""
+    ph = db._ph
+    bc, bc_p = _block_sql(user)
+    mc, mc_p = _mute_sql(user)
+    q = q.strip()
+    cache_key = f"{period}:{category}"
+    has_personal_filter = bool(bc or mc) or bool(q)
+    if not has_personal_filter and (c := _leaderboard_fresh(cache_key)):
+        return _self_ranked_result(c["data"], limit, user)
+
+    async with _leaderboard_lock:
+        if not has_personal_filter and (c := _leaderboard_fresh(cache_key)):
+            return _self_ranked_result(c["data"], limit, user)
+        import time as _t
+        period_clause, period_p = _leaderboard_period(ph, period)
+
+        rows = await asyncio.to_thread(_leaderboard_query, ph, period_clause, period_p, bc, bc_p, mc, mc_p)
+
+        leaders = _leaderboard_build(rows, category)
+        if not has_personal_filter:
+            _leaderboard_cache[cache_key] = {"ts": _t.time(), "data": leaders}
+
+        if q:
+            needle = normalize_name(q)
+            leaders = [ld for ld in leaders if needle in normalize_name(ld["display_name"] or "")]
+        return _self_ranked_result(leaders, limit, user)
+
+
+def _self_ranked_result(leaders: list, limit: int, user: dict | None) -> dict:
+    """Gán rank 1-based trên TOÀN BỘ danh-sách đã sort, rồi cắt top-N để hiển-thị
+    và tìm entry đầy-đủ của chính user (kể cả khi ngoài top-N) cho phần self."""
+    ranked = [{**ld, "rank": i + 1} for i, ld in enumerate(leaders)]
+    self_entry = None
+    if user:
+        uid = str(user["id"])
+        self_entry = next((ld for ld in ranked if ld["id"] == uid), None)
+    return {"leaders": ranked[:limit], "self": self_entry}
+
+
+@router.get("/users/{user_id}/following", response_model=FollowUsersResponse,
+            summary="List users a user follows",
+            description="Paginated list of users that the specified user is following. Returns public profile info for each followed user.")
+async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0, le=10000), user=Depends(get_current_user)):
+    """Danh sách NGƯỜI mà user này đang theo dõi (hồ-sơ công-khai)."""
+    user_id = validate_path_id(user_id, "user_id")
+    ph = db._ph
+    uid = await asyncio.to_thread(_resolve_user_id, user_id)
+    if not uid:
+        raise HTTPException(404, "Người dùng không tồn tại")
+    bc, bc_p = _block_sql(user)
+    def _query():
+        with db._conn() as conn:
+            access = resolve_profile_access(
+                conn, uid, str(user["id"]) if user else None, require_activity=False
+            )
+            if access.status != "ok":
+                return access, [], None
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM follows f JOIN users u ON u.id::text = f.target_id
+                WHERE f.follower_id = {ph}::uuid AND f.target_type = 'user' AND u.is_active = TRUE {bc}
+            """, (uid,) + tuple(bc_p))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            rows = db._fetchall(conn, f"""
+                SELECT u.id, u.display_name, u.avatar_url, u.username
+                FROM follows f JOIN users u ON u.id::text = f.target_id
+                WHERE f.follower_id = {ph}::uuid AND f.target_type = 'user' AND u.is_active = TRUE
+                {bc}
+                ORDER BY f.created_at DESC LIMIT {ph} OFFSET {ph}
+            """, (uid,) + tuple(bc_p) + (limit, offset))
+            return access, rows, total
+    access, rows, total = await asyncio.to_thread(_query)
+    if access.status == "not_found":
+        raise HTTPException(404, "Người dùng không tồn tại")
+    if access.status == "hidden":
+        return {"users": [], "total": 0, "offset": offset, "has_more": False}
+    users = []
+    for r in rows:
+        d = db._row_to_dict(r)
+        users.append({"id": str(d["id"]), "display_name": d["display_name"],
+                       "username": d.get("username"), "avatar_url": d.get("avatar_url")})
+    return {"users": users, "total": total, "offset": offset, "has_more": offset + limit < total}
+
+
+@router.get("/users/{user_id}/followers", response_model=FollowUsersResponse,
+            summary="List a user's followers",
+            description="Paginated list of users following the specified user. Returns public profile info for each follower.")
+async def list_followers(user_id: str, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0, le=10000), user=Depends(get_current_user)):
+    """Danh sách NGƯỜI đang theo dõi user này (hồ-sơ công-khai)."""
+    user_id = validate_path_id(user_id, "user_id")
+    ph = db._ph
+    uid = await asyncio.to_thread(_resolve_user_id, user_id)
+    if not uid:
+        raise HTTPException(404, "Người dùng không tồn tại")
+    bc, bc_p = _block_sql(user)
+    def _query():
+        with db._conn() as conn:
+            access = resolve_profile_access(
+                conn, uid, str(user["id"]) if user else None, require_activity=False
+            )
+            if access.status != "ok":
+                return access, [], None
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM follows f JOIN users u ON u.id = f.follower_id
+                WHERE f.target_type = 'user' AND f.target_id = {ph} AND u.is_active = TRUE {bc}
+            """, (uid,) + tuple(bc_p))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            rows = db._fetchall(conn, f"""
+                SELECT u.id, u.display_name, u.avatar_url, u.username
+                FROM follows f JOIN users u ON u.id = f.follower_id
+                WHERE f.target_type = 'user' AND f.target_id = {ph} AND u.is_active = TRUE
+                {bc}
+                ORDER BY f.created_at DESC LIMIT {ph} OFFSET {ph}
+            """, (uid,) + tuple(bc_p) + (limit, offset))
+            return access, rows, total
+    access, rows, total = await asyncio.to_thread(_query)
+    if access.status == "not_found":
+        raise HTTPException(404, "Người dùng không tồn tại")
+    if access.status == "hidden":
+        return {"users": [], "total": 0, "offset": offset, "has_more": False}
+    users = []
+    for r in rows:
+        d = db._row_to_dict(r)
+        users.append({"id": str(d["id"]), "display_name": d["display_name"],
+                       "username": d.get("username"), "avatar_url": d.get("avatar_url")})
+    return {"users": users, "total": total, "offset": offset, "has_more": offset + limit < total}
+
+
+@router.get("/community/suggested-follows", response_model=SuggestedFollowsResponse,
+            summary="Get suggested users to follow",
+            description="Suggest active contributors the user doesn't follow yet, ranked by reputation points. Excludes blocked/muted users.")
+async def suggested_follows(user=Depends(require_user), limit: int = Query(5, ge=1, le=20)):
+    """Gợi ý người để theo dõi: top contributor mình CHƯA theo dõi (loại chính mình)."""
+    ph = db._ph
+    me = str(user["id"])
+    bc, bc_p = _block_sql(user)
+    mc, mc_p = _mute_sql(user, "u.id")
+    def _query():
+        with db._conn() as conn:
+            return db._fetchall(conn, f"""
+                SELECT u.id, u.display_name, u.avatar_url, u.username,
+                       COUNT(p.id) FILTER (WHERE p.post_type='review') AS reviews,
+                       COUNT(p.id) AS posts,
+                       COUNT(p.id) FILTER (WHERE jsonb_typeof(p.images)='array'
+                                             AND jsonb_array_length(p.images) > 0) AS photos,
+                       COALESCE(fc.c, 0) AS followers,
+                       COUNT(DISTINCT p.entity_id) FILTER (WHERE p.entity_id IS NOT NULL) AS places,
+                       COALESCE(SUM(p.like_count), 0) AS likes
+                FROM users u
+                LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
+                LEFT JOIN (SELECT target_id, COUNT(*) c FROM follows
+                             WHERE target_type='user' GROUP BY target_id) fc ON fc.target_id = u.id::text
+                WHERE u.is_active = TRUE AND u.deleted_at IS NULL AND u.display_name IS NOT NULL
+                  AND u.id::text <> {ph}
+                  AND u.id::text NOT IN (SELECT target_id FROM follows
+                                           WHERE follower_id = {ph}::uuid AND target_type='user')
+                  {bc} {mc}
+                GROUP BY u.id, u.display_name, u.avatar_url, u.username, fc.c
+                HAVING COUNT(p.id) > 0
+                LIMIT 200
+            """, (me, me) + tuple(bc_p) + tuple(mc_p))
+    rows = await asyncio.to_thread(_query)
+    cands = []
+    for r in rows:
+        d = db._row_to_dict(r)
+        reviews = int(d["reviews"] or 0); posts = int(d["posts"] or 0)
+        photos = int(d["photos"] or 0); followers = int(d["followers"] or 0)
+        places = int(d["places"] or 0); likes = int(d["likes"] or 0)
+        points = _calc_points(reviews, posts, photos, followers, places, likes)
+        if points <= 0:
+            continue
+        cands.append({"id": str(d["id"]), "display_name": d["display_name"],
+                      "avatar_url": d.get("avatar_url"), "username": d.get("username"),
+                      "points": points, "posts": posts})
+    cands.sort(key=lambda x: x["points"], reverse=True)
+    return {"users": cands[:limit]}
+
+
+_ENTITY_FEED_SORT_OPTIONS = {"default", "newest", "helpful", "photo", "star", "unanswered"}
+_ENTITY_FEED_VALID_POST_TYPES = {"review", "question", "discussion", "event", "tip"}
+
+
+def _entity_feed_filters(ph, min_rating, has_photo, post_type, sort, params):
+    """Dựng mệnh đề WHERE bổ sung + append params — extract-method thuần.
+    Gọi cho cả feed_sql và count (mutates `params`)."""
+    extra_where = ""
+    if min_rating is not None:
+        extra_where += f" AND p.rating >= {ph}"
+        params.append(min_rating)
+    if has_photo is True:
+        extra_where += " AND jsonb_typeof(p.images)='array' AND jsonb_array_length(p.images) > 0"
+    if post_type and post_type in _ENTITY_FEED_VALID_POST_TYPES:
+        extra_where += f" AND p.post_type = {ph}"
+        params.append(post_type)
+    if sort == "unanswered":
+        extra_where += " AND p.post_type = 'question' AND p.best_answer_id IS NULL"
+    return extra_where
+
+
+def _entity_feed_order_clause(sort):
+    """ORDER BY theo sort đã whitelist — extract-method thuần."""
+    return {
+        "newest": "p.created_at DESC",
+        "helpful": "p.like_count DESC, p.created_at DESC",
+        "photo": """(CASE WHEN jsonb_typeof(p.images)='array' AND jsonb_array_length(p.images) > 0
+                     THEN 1 ELSE 0 END) DESC, p.created_at DESC""",
+        "star": "p.rating DESC NULLS LAST, p.created_at DESC",
+        "unanswered": "p.comment_count ASC, p.created_at DESC",
+    }.get(sort, """(CASE WHEN jsonb_typeof(p.images)='array' AND jsonb_array_length(p.images) > 0
+                       THEN 1 ELSE 0 END) DESC,
+                 p.like_count DESC,
+                 p.created_at DESC""")
+
+
+def _entity_feed_query(ph, feed_sql, feed_params, bc, mc, total_extra, total_params, entity_id):
+    """Chạy feed + count + rating trong 1 connection — extract-method thuần."""
+    with db._conn() as conn:
+        rows = db._fetchall(conn, feed_sql, feed_params)
+        total = db._fetchone(conn, f"""
+            SELECT COUNT(*) as c FROM posts p
+            WHERE p.entity_id = {ph} AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
+            {bc} {mc}{total_extra}
+        """, tuple(total_params))
+        rating_row = db._fetchone(conn, f"""
+            SELECT avg_rating, rating_count FROM entity_ratings
+            WHERE entity_id = {ph}
+        """, (entity_id,))
+    return rows, total, rating_row
+
+
+def _entity_feed_response(entity, posts, total, rating_row):
+    """Đóng gói response feed entity — extract-method thuần."""
+    total_d = db._row_to_dict(total) if total else {}
+    rating_d = db._row_to_dict(rating_row) if rating_row else {}
+    return {
+        "entity": {
+            "id": str(entity["id"]),
+            "name": entity["name"],
+            "type": entity["type"],
+            "summary": entity.get("summary", ""),
+        },
+        "rating": {
+            "avg": round(float(rating_d.get("avg_rating") or 0), 1) if rating_d else 0,
+            "count": rating_d.get("rating_count", 0),
+        },
+        "posts": posts,
+        "total": total_d.get("c", 0),
+    }
+
+
+@router.get("/entities/{entity_id}/feed", response_model=EntityFeedResponse,
+            summary="Get entity feed",
+            description="Feed of posts for a specific entity (place, product, etc.). Supports sorting (newest, helpful, photo, star, unanswered) and filtering by rating, photo, and post type.")
+async def get_entity_feed(
+    entity_id: str,
+    page: int = Query(1, ge=1, le=1000),
+    limit: int = Query(20, ge=1, le=50),
+    sort: str = Query("default", pattern="^(default|newest|helpful|photo|star|unanswered)$"),
+    min_rating: Optional[int] = Query(None, ge=1, le=5),
+    has_photo: Optional[bool] = Query(None),
+    post_type: Optional[str] = Query(None, max_length=20),
+    user=Depends(get_current_user),
+):
+    """Feed cho một entity cụ thể (điểm du lịch, sản phẩm...)."""
+    entity_id = validate_path_id(entity_id, "entity_id")
+    if sort not in _ENTITY_FEED_SORT_OPTIONS:
+        sort = "default"
+    entity = await asyncio.to_thread(db.get_entity, entity_id)
+    if not entity:
+        raise HTTPException(404, "Không tìm thấy")
+
+    ph = db._ph
+    offset = (page - 1) * limit
+    bc, bc_p = _block_sql(user)
+    mc, mc_p = _mute_sql(user, "p.user_id")
+
+    params: list = [entity_id] + bc_p + mc_p
+    extra_where = _entity_feed_filters(ph, min_rating, has_photo, post_type, sort, params)
+    order_clause = _entity_feed_order_clause(sort)
+    params += [limit, offset]
+    feed_sql = f"""
+        SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
+               e.name as entity_name, e.type as entity_type
+        FROM posts p
+        JOIN users u ON u.id = p.user_id
+        LEFT JOIN entities e ON e.id = p.entity_id
+        WHERE p.entity_id = {ph} AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
+        {bc} {mc}{extra_where}
+        ORDER BY COALESCE(p.is_featured, FALSE) DESC, {order_clause}
+        LIMIT {ph} OFFSET {ph}
+    """
+    feed_params = tuple(params)
+
+    total_params: list = [entity_id] + bc_p + mc_p
+    total_extra = _entity_feed_filters(ph, min_rating, has_photo, post_type, sort, total_params)
+
+    rows, total, rating_row = await asyncio.to_thread(
+        _entity_feed_query, ph, feed_sql, feed_params, bc, mc, total_extra, total_params, entity_id,
+    )
+
+    posts = [_format_post(db._row_to_dict(r)) for r in rows]
+    await asyncio.to_thread(_enrich_all, posts, user)
+
+    return _entity_feed_response(entity, posts, total, rating_row)
+
+
+def _related_by_tags(conn, ph, post_id, tags, limit, bc, bc_p, mc, mc_p, candidates):
+    """Bổ sung candidate cùng hashtag (khử trùng lặp) — extract-method thuần."""
+    seen = {post_id} | {str(db._row_to_dict(r)["id"]) for r in candidates}
+    tag_rows = db._fetchall(conn, f"""
+        SELECT {_POST_COLS}, u.display_name, u.avatar_url,
+               e.name as entity_name, e.type as entity_type
+        FROM posts p JOIN users u ON u.id = p.user_id
+        LEFT JOIN entities e ON e.id = p.entity_id
+        WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL AND p.id::text <> {ph}
+          AND p.hashtags && ARRAY[{','.join(ph for _ in tags)}]::text[]
+        {bc} {mc}
+        ORDER BY p.like_count DESC
+        LIMIT {ph}
+    """, (post_id, *tags) + tuple(bc_p) + tuple(mc_p) + (limit,))
+    for r in tag_rows:
+        rid = str(db._row_to_dict(r)["id"])
+        if rid not in seen:
+            candidates.append(r)
+            seen.add(rid)
+
+
+def _related_posts_query(ph, post_id, limit, bc, bc_p, mc, mc_p):
+    """Tìm bài liên quan (cùng entity → bù cùng hashtag) — extract-method thuần."""
+    with db._conn() as conn:
+        src = db._fetchone(conn, f"""
+            SELECT entity_id, hashtags FROM posts
+            WHERE id::text = {ph} AND moderation_status = 'approved' AND deleted_at IS NULL
+        """, (post_id,))
+        if not src:
+            return []
+        d = db._row_to_dict(src)
+        entity_id = d.get("entity_id")
+        tags = d.get("hashtags") or []
+
+        candidates = []
+        if entity_id:
+            rows = db._fetchall(conn, f"""
+                SELECT {_POST_COLS}, u.display_name, u.avatar_url,
+                       e.name as entity_name, e.type as entity_type
+                FROM posts p JOIN users u ON u.id = p.user_id
+                LEFT JOIN entities e ON e.id = p.entity_id
+                WHERE p.entity_id = {ph} AND p.id::text <> {ph}
+                  AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
+                {bc} {mc}
+                ORDER BY p.like_count DESC, p.created_at DESC
+                LIMIT {ph}
+            """, (entity_id, post_id) + tuple(bc_p) + tuple(mc_p) + (limit,))
+            candidates.extend(rows)
+
+        if len(candidates) < limit and tags:
+            _related_by_tags(conn, ph, post_id, tags, limit, bc, bc_p, mc, mc_p, candidates)
+        return candidates
+
+
+@router.get("/posts/{post_id}/related", response_model=RelatedPostsResponse,
+            summary="Get related posts",
+            description="Find posts related to a given post by shared entity or overlapping hashtags. Returns up to the specified limit.")
+async def related_posts(post_id: str, limit: int = Query(4, ge=1, le=10), user=Depends(get_current_user)):
+    """Bài viết liên quan: cùng entity hoặc cùng hashtag."""
+    post_id = validate_path_id(post_id, "post_id")
+    ph = db._ph
+    bc, bc_p = _block_sql(user, "p.user_id")
+    mc, mc_p = _mute_sql(user, "p.user_id")
+    candidates = await asyncio.to_thread(_related_posts_query, ph, post_id, limit, bc, bc_p, mc, mc_p)
+    posts = [db._row_to_dict(r) for r in candidates[:limit]]
+    await asyncio.to_thread(_enrich_all, posts, user)
+    return {"posts": [_format_post(p) for p in posts]}
+
+
+# ── Comments ──
+
+@router.get("/posts/{post_id}/comments", response_model=CommentsResponse,
+            summary="Get post comments",
+            description="Retrieve threaded comments for a post. Returns top-level comments with nested replies, excluding blocked/muted users.")
+async def get_comments(
+    post_id: str, request: Request,
+    limit: int = Query(100, ge=1, le=200),
+    offset: int = Query(0, ge=0, le=10000),
+    user=Depends(get_current_user),
+):
+    post_id = validate_path_id(post_id, "post_id")
+    ph = db._ph
+    bc, bc_p = _block_sql(user, "c.user_id")
+    mc, mc_p = _mute_sql(user, "c.user_id")
+
+    def _get_comments():
+        with db._conn() as conn:
+            top_rows = db._fetchall(conn, f"""
+                SELECT {_COMMENT_COLS}, u.display_name, u.avatar_url
+                FROM comments c
+                JOIN users u ON u.id = c.user_id
+                WHERE c.post_id::text = {ph} AND c.parent_id IS NULL
+                  AND c.moderation_status = 'approved' AND c.deleted_at IS NULL
+                {bc} {mc}
+                ORDER BY c.created_at ASC
+                LIMIT {ph} OFFSET {ph}
+            """, tuple([post_id] + bc_p + mc_p + [min(limit, 200), offset]))
+
+            if not top_rows:
+                return [], []
+
+            top_ids = [str(db._row_to_dict(r)["id"]) for r in top_rows]
+            id_placeholders = ",".join(ph for _ in top_ids)
+            reply_rows = db._fetchall(conn, f"""
+                SELECT {_COMMENT_COLS}, u.display_name, u.avatar_url
+                FROM comments c
+                JOIN users u ON u.id = c.user_id
+                WHERE c.post_id::text = {ph}
+                  AND c.parent_id::text IN ({id_placeholders})
+                  AND c.moderation_status = 'approved' AND c.deleted_at IS NULL
+                {bc} {mc}
+                ORDER BY c.created_at ASC
+                LIMIT 500
+            """, tuple([post_id] + list(top_ids) + bc_p + mc_p))
+            return top_rows, reply_rows
+
+    top_rows, reply_rows = await asyncio.to_thread(_get_comments)
+
+    top_level = [_format_comment(db._row_to_dict(r), user) for r in top_rows]
+    replies_by_parent: dict[str, list] = {}
+    for r in reply_rows:
+        c = _format_comment(db._row_to_dict(r), user)
+        replies_by_parent.setdefault(str(c.get("parent_id", "")), []).append(c)
+    for c in top_level:
+        c["replies"] = replies_by_parent.get(c["id"], [])
+
+    return {"comments": top_level}
+
+
+def _comment_guard(conn, ph, post_id, user, body, max_comments):
+    """Guard bình luận: tồn tại bài, block, giới hạn, parent hợp lệ — extract-method thuần.
+    Trả post_type_val của bài."""
+    post = db._fetchone(conn, f"SELECT id, user_id, post_type FROM posts WHERE id::text = {ph} AND deleted_at IS NULL", (post_id,))
+    if not post:
+        raise HTTPException(404, "Bài viết không tồn tại")
+    post_d = db._row_to_dict(post)
+    post_author = str(post_d["user_id"])
+    post_type_val = post_d.get("post_type")
+    me = str(user["id"])
+    if post_author != me:
+        is_blocked = db._fetchone(conn, f"""
+            SELECT 1 FROM blocks
+            WHERE (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+               OR (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+        """, (post_author, me, me, post_author))
+        if is_blocked:
+            raise HTTPException(403, "Không thể bình luận bài viết này")
+    db._fetchone(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (post_id,))
+    cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM comments WHERE post_id::text = {ph} AND deleted_at IS NULL", (post_id,))
+    if cnt and int(db._row_to_dict(cnt)["c"]) >= max_comments:
+        raise HTTPException(400, "Bài viết đã đạt giới hạn bình luận")
+    if body.parent_id:
+        parent_ok = db._fetchone(conn, f"""
+            SELECT 1 FROM comments
+            WHERE id::text = {ph}
+              AND post_id::text = {ph}
+              AND parent_id IS NULL
+              AND moderation_status = 'approved'
+              AND deleted_at IS NULL
+        """, (body.parent_id, post_id))
+        if not parent_ok:
+            raise HTTPException(400, "Bình luận gốc không thuộc bài viết này")
+    return post_type_val
+
+
+def _comment_insert(conn, ph, post_id, user, body, status, mentions):
+    """INSERT comment + tăng comment_count + lấy chủ bài & tác giả parent — extract-method thuần."""
+    row = db._fetchone(conn, f"""
+        INSERT INTO comments (post_id, user_id, parent_id, content, moderation_status, mentions)
+        VALUES ({ph}::uuid, {ph}::uuid, {ph}::uuid, {ph}, {ph}, {ph}::jsonb)
+        RETURNING *
+    """, (post_id, str(user["id"]),
+          body.parent_id if body.parent_id else None,
+          body.content, status, json.dumps(mentions, ensure_ascii=False)))
+    # comment_count do trigger trg_comment_count recount (migration 070) — KHÔNG tăng tay
+    # nữa (trước: trigger recount + '+1' tay = đếm dư mỗi bình luận).
+    post_owner = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph}", (post_id,))
+    parent_author = None
+    if body.parent_id:
+        pa = db._fetchone(conn, f"SELECT user_id FROM comments WHERE id::text = {ph}", (body.parent_id,))
+        if pa:
+            parent_author = str(db._row_to_dict(pa)["user_id"])
+    return row, post_owner, parent_author
+
+
+def _comment_query(ph, post_id, user, body, status, mentions, max_comments):
+    """Guard + insert comment trong 1 transaction — extract-method thuần."""
+    with db._conn() as conn:
+        post_type_val = _comment_guard(conn, ph, post_id, user, body, max_comments)
+        row, post_owner, parent_author = _comment_insert(conn, ph, post_id, user, body, status, mentions)
+    return row, post_owner, parent_author, post_type_val
+
+
+def _notify_owner_comment(owner_id, me, post_type_val, user, preview, post_id):
+    """Thông báo cho chủ bài (trả lời câu hỏi hoặc bình luận) — extract-method thuần."""
+    if post_type_val == "question":
+        create_notification(
+            owner_id, "question_answer",
+            f"{user.get('display_name', 'Ai đó')} đã trả lời câu hỏi của bạn",
+            body=preview, ref_type="post", ref_id=post_id, actor_id=me,
+        )
+    else:
+        create_notification(
+            owner_id, "comment",
+            f"{user.get('display_name', 'Ai đó')} đã bình luận bài viết của bạn",
+            body=preview, ref_type="post", ref_id=post_id, actor_id=me,
+        )
+
+
+def _notify_comment(user, post_owner, parent_author, post_type_val, body, mentions, post_id):
+    """Bắn thông báo cho comment đã duyệt — extract-method thuần."""
+    me = str(user["id"])
+    owner_id = str(db._row_to_dict(post_owner)["user_id"]) if post_owner else None
+    preview = body.content[:80] + ("..." if len(body.content) > 80 else "")
+    if owner_id and owner_id != me:
+        _notify_owner_comment(owner_id, me, post_type_val, user, preview, post_id)
+    if parent_author and parent_author != me and parent_author != owner_id:
+        create_notification(
+            parent_author, "comment_reply",
+            f"{user.get('display_name', 'Ai đó')} đã trả lời bình luận của bạn",
+            body=preview, ref_type="post", ref_id=post_id, actor_id=me,
+        )
+    _notify_mentions(mentions, str(user["id"]), user.get("display_name"), post_id, body.content)
+
+
+@router.post("/posts/{post_id}/comments", status_code=201,
+             summary="Create a comment",
+             description="Add a comment or reply to a post. Runs content moderation and sends notifications to the post author, parent comment author, and mentioned users.")
+async def create_comment(post_id: str, body: CreateComment, user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
+    post_id = validate_path_id(post_id, "post_id")
+    check_rate(f"comment:{user['id']}", RL_COMMENT_LIMIT, RL_COMMENT_WINDOW,
+               "Bạn bình luận quá nhanh. Vui lòng đợi chút rồi thử lại.")
+    mod_result = await moderate_content_enhanced(body.content, user_id=str(user["id"]))
+    status = mod_result["status"]
+    mentions = _clean_mentions(body.mentions)
+
+    MAX_COMMENTS_PER_POST = _cfg.MAX_COMMENTS_PER_POST
+    ph = db._ph
+    row, post_owner, parent_author, post_type_val = await asyncio.to_thread(
+        _comment_query, ph, post_id, user, body, status, mentions, MAX_COMMENTS_PER_POST,
+    )
+
+    log_moderation("comment", str(db._row_to_dict(row)["id"]), status, mod_result, auto=True)
+
+    if status == "approved":
+        await asyncio.to_thread(
+            _notify_comment, user, post_owner, parent_author, post_type_val, body, mentions, post_id,
+        )
+
+    return {"comment": _format_comment(db._row_to_dict(row), user)}
+
+
+class EditComment(BaseModel):
+    content: str
+
+    @field_validator("content")
+    @classmethod
+    def validate_content(cls, v):
+        v = _strip_html_tags((v or "").strip())
+        if len(v) < 2:
+            raise ValueError("Bình luận quá ngắn")
+        if len(v) > 2000:
+            raise ValueError("Bình luận tối đa 2000 ký tự")
+        return v
+
+
+@router.put("/comments/{comment_id}",
+            summary="Edit a comment",
+            description="Edit the user's own comment within the edit window (default 24 hours). Re-runs content moderation on the updated content.")
+async def edit_comment(comment_id: str, body: EditComment, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    check_rate(f"edit:{user['id']}", 20, 300, "Bạn sửa bình luận quá nhanh. Vui lòng thử lại sau.")
+    comment_id = validate_path_id(comment_id, "comment_id")
+    ph = db._ph
+    uid = str(user["id"])
+    COMMENT_EDIT_WINDOW_HOURS = _cfg.COMMENT_EDIT_WINDOW_HOURS
+    def _check():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"SELECT user_id, created_at FROM comments WHERE id::text = {ph} AND deleted_at IS NULL", (comment_id,))
+            if not row:
+                raise HTTPException(404, "Bình luận không tồn tại")
+            rd = db._row_to_dict(row)
+            if str(rd["user_id"]) != uid:
+                raise HTTPException(403, "Bạn chỉ có thể sửa bình luận của mình")
+            from datetime import datetime, timezone, timedelta
+            created = rd["created_at"]
+            if isinstance(created, str):
+                created = datetime.fromisoformat(created)
+            if created.tzinfo is None:
+                created = created.replace(tzinfo=timezone.utc)
+            if datetime.now(timezone.utc) - created > timedelta(hours=COMMENT_EDIT_WINDOW_HOURS):
+                raise HTTPException(400, "Chỉ có thể sửa bình luận trong 24 giờ đầu")
+    await asyncio.to_thread(_check)
+    mod_result = await moderate_content_enhanced(body.content, user_id=uid)
+    def _update():
+        with db._conn() as conn:
+            # KHÔNG set updated_at: bảng comments không có cột đó (init.sql:224;
+            # migration 008/034/068 là toàn bộ ADD COLUMN cho bảng này). Câu UPDATE
+            # cũ tham chiếu updated_at nên endpoint này 500 ngay khi được gọi thật —
+            # frontend chưa từng gọi nên bug nằm im. Muốn hiện nhãn "đã sửa" thì cần
+            # migration thêm cột, đó là quyết định riêng của chủ dự án.
+            db._execute(conn, f"""
+                UPDATE comments SET content = {ph}, moderation_status = {ph}
+                WHERE id::text = {ph} AND user_id = {ph}::uuid
+            """, (body.content, mod_result["status"], comment_id, uid))
+            return db._fetchone(conn, f"""
+                SELECT {_COMMENT_COLS}, u.display_name, u.avatar_url
+                FROM comments c JOIN users u ON u.id = c.user_id
+                WHERE c.id::text = {ph}
+            """, (comment_id,))
+    updated = await asyncio.to_thread(_update)
+    if not updated:
+        raise HTTPException(404, "Bình luận không tồn tại hoặc không có quyền sửa")
+    return {"comment": _format_comment(db._row_to_dict(updated), user)}
+
+
+@router.delete("/comments/{comment_id}",
+               summary="Delete a comment",
+               description="Delete a comment and its child replies. The comment owner or admin/moderator can delete. Updates the post's comment count.")
+async def delete_comment(comment_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    comment_id = validate_path_id(comment_id, "comment_id")
+    check_rate(f"del:{user['id']}", RL_DELETE_LIMIT, RL_DELETE_WINDOW,
+               "Bạn xóa quá nhanh. Vui lòng đợi chút.")
+    ph = db._ph
+    uid = str(user["id"])
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"SELECT user_id, post_id FROM comments WHERE id::text = {ph} AND deleted_at IS NULL", (comment_id,))
+            if not row:
+                raise HTTPException(404, "Bình luận không tồn tại")
+            rd = db._row_to_dict(row)
+            if str(rd["user_id"]) != uid and user.get("role") not in ("admin", "moderator"):
+                raise HTTPException(403, "Bạn chỉ có thể xóa bình luận của mình")
+            db._execute(conn, f"DELETE FROM notifications WHERE ref_type = 'comment' AND ref_id = {ph}", (comment_id,))
+            # Soft-delete: SP3 W6.1 — trước đây hard-DELETE xóa vĩnh viễn reply con
+            # của người khác. Nay UPDATE deleted_at (reply con giữ lại, recoverable).
+            db._execute(conn, f"UPDATE comments SET deleted_at = NOW() WHERE parent_id::text = {ph} AND deleted_at IS NULL", (comment_id,))
+            db._execute(conn, f"UPDATE comments SET deleted_at = NOW() WHERE id::text = {ph}", (comment_id,))
+            # comment_count do trigger trg_comment_count recount trên các UPDATE deleted_at
+            # ở trên (migration 070 fire ON UPDATE) — KHÔNG giảm tay nữa.
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
+# ── Report comment ──
+
+_COMMENT_REPORT_REASONS = {"spam", "harassment", "misinformation", "inappropriate", "other"}
+
+
+class ReportCommentBody(BaseModel):
+    reason: str = Field(..., min_length=1, max_length=30)
+    detail: str = Field("", max_length=1000)
+
+
+@router.post("/comments/{comment_id}/report",
+             summary="Report a comment",
+             description="Report a comment for moderation review (spam, harassment, misinformation, etc.). Logged to JSONL file with auto-rotation.")
+async def report_comment(comment_id: str, body: ReportCommentBody, request: Request, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    comment_id = validate_path_id(comment_id, "comment_id")
+    check_rate(f"report-comment:{user['id']}", 10, 600, "Bạn báo cáo quá nhanh. Vui lòng thử lại sau.")
+    ph = db._ph
+    uid = str(user["id"])
+    def _check():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"SELECT user_id FROM comments WHERE id::text = {ph} AND deleted_at IS NULL", (comment_id,))
+            if not row:
+                raise HTTPException(404, "Bình luận không tồn tại")
+            rd = db._row_to_dict(row)
+            if str(rd["user_id"]) == uid:
+                raise HTTPException(400, "Không thể báo cáo bình luận của chính mình")
+    await asyncio.to_thread(_check)
+    import json as _json
+    from pathlib import Path as _Path
+    import hashlib as _hashlib
+    from datetime import datetime as _dt, timezone as _tz
+    from middleware import get_client_ip
+    reports_file = _Path(__file__).resolve().parent / "data" / "reports.jsonl"  # noqa: ASYNC240 (dựng path rẻ; ghi file bọc asyncio.to_thread)
+    reason = body.reason.strip() if body.reason.strip() in _COMMENT_REPORT_REASONS else "other"
+    record = {
+        "ts": _dt.now(_tz.utc).isoformat(),
+        "target_id": comment_id,
+        "target_type": "comment",
+        "reason": reason,
+        "detail": body.detail.strip(),
+        "reporter_id": uid,
+        "ip_hash": _hashlib.sha256(get_client_ip(request).encode()).hexdigest()[:16],
+        "status": "open",
+    }
+    from public_api import _jsonl_lock, _maybe_rotate_jsonl
+    def _write():
+        with _jsonl_lock:
+            reports_file.parent.mkdir(exist_ok=True)
+            with open(reports_file, "a", encoding="utf-8") as f:
+                f.write(_json.dumps(record, ensure_ascii=False) + "\n")
+            _maybe_rotate_jsonl(reports_file)
+    try:
+        await asyncio.to_thread(_write)
+    except OSError:
+        logger.exception("Failed to write comment report")
+        raise HTTPException(500, "Lỗi lưu báo cáo")
+    return {"success": True, "message": "Đã ghi nhận báo cáo. Cảm ơn bạn!"}
+
+
+# ── Report post (FE-friendly shortcut → PG reports table) ──
+
+_POST_REPORT_REASONS = {"spam", "harassment", "misinformation", "inappropriate", "scam", "other"}
+
+
+class ReportPostBody(BaseModel):
+    reason: str = Field(..., min_length=1, max_length=30)
+    detail: str = Field("", max_length=1000)
+
+
+@router.post("/posts/{post_id}/report",
+             summary="Report a post",
+             description="Report a post for moderation review. Uses advisory locks to prevent duplicate reports. Stored in the PG reports table.")
+async def report_post(post_id: str, body: ReportPostBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    post_id = validate_path_id(post_id, "post_id")
+    check_rate(f"report-post:{user['id']}", 10, 600, "Bạn báo cáo quá nhanh. Vui lòng thử lại sau.")
+    ph = db._ph
+    uid = str(user["id"])
+
+    def _query():
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph} AND deleted_at IS NULL", (post_id,))
+            if not post:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            if str(db._row_to_dict(post)["user_id"]) == uid:
+                raise HTTPException(400, "Không thể báo cáo bài viết của chính mình")
+            db._execute(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (f"report:{uid}:{post_id}",))
+            existing = db._fetchone(conn, f"""
+                SELECT 1 FROM reports
+                WHERE reporter_id = {ph}::uuid AND target_type = 'post' AND target_id = {ph}
+                  AND status = 'pending'
+            """, (uid, post_id))
+            if existing:
+                raise HTTPException(400, "Bạn đã báo cáo bài viết này rồi")
+            reason = body.reason.strip() if body.reason.strip() in _POST_REPORT_REASONS else "other"
+            db._execute(conn, f"""
+                INSERT INTO reports (reporter_id, target_type, target_id, reason)
+                VALUES ({ph}::uuid, 'post', {ph}, {ph})
+            """, (uid, post_id, reason))
+
+    await asyncio.to_thread(_query)
+    return {"success": True, "message": "Đã ghi nhận báo cáo. Cảm ơn bạn!"}
+
+
+_USER_REPORT_REASONS = {"spam", "harassment", "impersonation", "inappropriate", "scam", "other"}
+
+
+class ReportUserBody(BaseModel):
+    reason: str = Field(..., min_length=1, max_length=30)
+    detail: str = Field("", max_length=1000)
+
+
+@router.post("/users/{user_id}/report",
+             summary="Report a user",
+             description="Report a user for moderation review (spam, harassment, impersonation, etc.). Uses advisory locks to prevent duplicate reports.")
+async def report_user(user_id: str, body: ReportUserBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    user_id = validate_path_id(user_id, "user_id")
+    check_rate(f"report-user:{user['id']}", 10, 600, "Bạn báo cáo quá nhanh. Vui lòng thử lại sau.")
+    ph = db._ph
+    uid = str(user["id"])
+    if user_id == uid:
+        raise HTTPException(400, "Không thể báo cáo chính mình")
+
+    def _query():
+        with db._conn() as conn:
+            target = db._fetchone(conn, f"SELECT id FROM users WHERE id::text = {ph} AND is_active = TRUE", (user_id,))
+            if not target:
+                raise HTTPException(404, "Người dùng không tồn tại")
+            db._execute(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (f"report:{uid}:{user_id}",))
+            existing = db._fetchone(conn, f"""
+                SELECT 1 FROM reports
+                WHERE reporter_id = {ph}::uuid AND target_type = 'user' AND target_id = {ph}
+                  AND status = 'pending'
+            """, (uid, user_id))
+            if existing:
+                raise HTTPException(400, "Bạn đã báo cáo người dùng này rồi")
+            reason = body.reason.strip() if body.reason.strip() in _USER_REPORT_REASONS else "other"
+            db._execute(conn, f"""
+                INSERT INTO reports (reporter_id, target_type, target_id, reason)
+                VALUES ({ph}::uuid, 'user', {ph}, {ph})
+            """, (uid, user_id, reason))
+
+    await asyncio.to_thread(_query)
+    return {"success": True, "message": "Đã ghi nhận báo cáo. Cảm ơn bạn!"}
+
+
+# ── Moderation appeal (NĐ147 compliance) ──
+
+class AppealBody(BaseModel):
+    reason: str = Field(..., min_length=10, max_length=2000)
+
+
+@router.post("/posts/{post_id}/appeal",
+             summary="Appeal a rejected post",
+             description="Submit a moderation appeal for a rejected post. Only the post author can appeal, and only once per post. Limited to 3 appeals per hour.")
+async def appeal_post(post_id: str, body: AppealBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    post_id = validate_path_id(post_id, "post_id")
+    check_rate(f"appeal:{user['id']}", 3, 3600, "Chỉ được khiếu nại 3 lần/giờ.")
+    ph = db._ph
+    uid = str(user["id"])
+    def _query():
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"""
+                SELECT user_id, moderation_status FROM posts WHERE id::text = {ph}
+            """, (post_id,))
+            if not post:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            pd = db._row_to_dict(post)
+            if str(pd["user_id"]) != uid:
+                raise HTTPException(403, "Chỉ tác giả mới được khiếu nại")
+            if pd["moderation_status"] != "rejected":
+                raise HTTPException(400, "Chỉ khiếu nại bài bị từ chối")
+            db._execute(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (f"appeal:{uid}:{post_id}",))
+            existing = db._fetchone(conn, f"""
+                SELECT id FROM moderation_appeals
+                WHERE post_id::text = {ph} AND user_id::text = {ph}
+            """, (post_id, uid))
+            if existing:
+                raise HTTPException(409, "Bạn đã khiếu nại bài này rồi")
+            db._execute(conn, f"""
+                INSERT INTO moderation_appeals (post_id, user_id, reason)
+                VALUES ({ph}::uuid, {ph}::uuid, {ph})
+            """, (post_id, uid, body.reason.strip()))
+    await asyncio.to_thread(_query)
+    return {"success": True, "message": "Khiếu nại đã được ghi nhận. Chúng tôi sẽ xem xét trong 7 ngày."}
+
+
+@router.get("/posts/{post_id}/appeal", response_model=AppealStatusResponse,
+            summary="Get appeal status",
+            description="Check the status of a moderation appeal for the user's post. Returns appeal details including reviewer notes if reviewed.")
+async def get_appeal_status(post_id: str, user=Depends(require_user)):
+    post_id = validate_path_id(post_id, "post_id")
+    ph = db._ph
+    uid = str(user["id"])
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                SELECT id, status, reviewer_note, reviewed_at, created_at
+                FROM moderation_appeals
+                WHERE post_id::text = {ph} AND user_id::text = {ph}
+            """, (post_id, uid))
+            if not row:
+                return None
+            return db._row_to_dict(row)
+    result = await asyncio.to_thread(_query)
+    if not result:
+        return {"appeal": None}
+    return {"appeal": {
+        "id": str(result["id"]),
+        "status": result["status"],
+        "reviewer_note": result.get("reviewer_note"),
+        "reviewed_at": str(result["reviewed_at"]) if result.get("reviewed_at") else None,
+        "created_at": str(result["created_at"]),
+    }}
+
+
+# ── Q&A: câu trả lời hay nhất (chủ bài hỏi chọn 1 bình luận) ──
+
+class BestAnswerBody(BaseModel):
+    comment_id: Optional[str] = Field(None, max_length=128)  # None = bỏ chọn
+
+
+@router.post("/posts/{post_id}/best-answer",
+             summary="Set or unset best answer",
+             description="Mark a comment as the best answer on a Q&A post, or unset it by passing null. Only the post author can select the best answer.")
+async def set_best_answer(post_id: str, body: BestAnswerBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    check_rate(f"best-answer:{user['id']}", 20, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
+    post_id = validate_path_id(post_id, "post_id")
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"SELECT user_id, post_type FROM posts WHERE id::text = {ph} AND deleted_at IS NULL", (post_id,))
+            if not post:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            d = db._row_to_dict(post)
+            if str(d["user_id"]) != str(user["id"]):
+                raise HTTPException(403, "Chỉ người hỏi mới chọn được câu trả lời hay")
+            if body.comment_id:
+                c = db._fetchone(conn, f"SELECT user_id FROM comments WHERE id::text = {ph} AND post_id::text = {ph} AND deleted_at IS NULL",
+                                 (body.comment_id, post_id))
+                if not c:
+                    raise HTTPException(400, "Bình luận không thuộc bài này")
+                db._execute(conn, f"UPDATE posts SET best_answer_id = {ph}::uuid WHERE id::text = {ph}", (body.comment_id, post_id))
+                return str(db._row_to_dict(c)["user_id"])
+            else:
+                db._execute(conn, f"UPDATE posts SET best_answer_id = NULL WHERE id::text = {ph}", (post_id,))
+                return None
+    comment_author_id = await asyncio.to_thread(_query)
+    if body.comment_id and comment_author_id:
+        # Người được cộng thành tích là tác giả bình luận (người trả lời hữu
+        # ích), KHÔNG phải user["id"] (chủ bài viết đang chọn câu trả lời).
+        asyncio.create_task(asyncio.to_thread(_check_achievements_bg, comment_author_id))
+    return {"best_answer_id": body.comment_id}
+
+
+# ── Likes ──
+
+def _like_check_self(ph, post_id, uid):
+    """Chặn tự-thích + thích khi bị block — extract-method thuần."""
+    with db._conn() as conn:
+        row = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph} AND deleted_at IS NULL", (post_id,))
+        if not row:
+            raise HTTPException(404, "Bài viết không tồn tại")
+        rd = db._row_to_dict(row)
+        post_owner_id = str(rd["user_id"])
+        if post_owner_id == uid:
+            raise HTTPException(400, "Không thể thích bài viết của chính mình")
+        blocked = db._fetchone(conn, f"""
+            SELECT 1 FROM blocks
+            WHERE (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+               OR (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+        """, (uid, post_owner_id, post_owner_id, uid))
+        if blocked:
+            raise HTTPException(403, "Không thể thao tác với người dùng đã chặn")
+
+
+def _like_toggle_query(ph, post_id, uid):
+    """Toggle like (xoá nếu có, thêm nếu chưa) trong 1 query — extract-method thuần."""
+    with db._conn() as conn:
+        return db._fetchone(conn, f"""
+            WITH removed AS (
+                DELETE FROM likes WHERE user_id = {ph}::uuid AND post_id = {ph}::uuid
+                RETURNING 1
+            ),
+            inserted AS (
+                INSERT INTO likes (user_id, post_id)
+                SELECT {ph}::uuid, {ph}::uuid
+                WHERE NOT EXISTS (SELECT 1 FROM removed)
+                ON CONFLICT DO NOTHING
+                RETURNING 1
+            )
+            SELECT
+                EXISTS (SELECT 1 FROM inserted) AS liked,
+                (SELECT like_count FROM posts WHERE id::text = {ph}) AS like_count,
+                (SELECT user_id FROM posts WHERE id::text = {ph}) AS post_owner
+        """, (uid, post_id, uid, post_id, post_id, post_id))
+
+
+def _notify_like(post_owner, user, post_id, uid):
+    """Thông báo thích bài cho chủ bài — extract-method thuần."""
+    create_notification(
+        post_owner, "like",
+        f"{user.get('display_name', 'Ai đó')} đã thích bài viết của bạn",
+        ref_type="post", ref_id=post_id, actor_id=uid,
+    )
+
+
+@router.post("/posts/{post_id}/like",
+             summary="Toggle post like",
+             description="Like or unlike a post (toggle). Cannot like own posts or posts from blocked users. Sends notification to the post author on like.")
+async def toggle_like(post_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    post_id = validate_path_id(post_id, "post_id")
+    check_rate(f"like:{user['id']}", RL_LIKE_LIMIT, RL_LIKE_WINDOW,
+               "Bạn thao tác quá nhanh. Vui lòng đợi chút.")
+    ph = db._ph
+    uid = str(user["id"])
+
+    await asyncio.to_thread(_like_check_self, ph, post_id, uid)
+
+    result = await asyncio.to_thread(_like_toggle_query, ph, post_id, uid)
+
+    liked = result["liked"] if result else False
+    like_count = result["like_count"] if result else 0
+    post_owner = str(result["post_owner"]) if result and result["post_owner"] else None
+
+    if liked and post_owner and post_owner != uid:
+        await asyncio.to_thread(_notify_like, post_owner, user, post_id, uid)
+
+    return {"liked": liked, "like_count": like_count}
+
+
+@router.get("/posts/{post_id}/likers", response_model=LikersResponse,
+            summary="List post likers",
+            description="List users who liked a specific post with their profile info and like timestamp. Excludes blocked users.")
+async def get_post_likers(post_id: str, request: Request, limit: int = Query(20, ge=1, le=100)):
+    """List users who liked a post."""
+    post_id = validate_path_id(post_id, "post_id")
+    user = await get_current_user(request)
+    ph = db._ph
+    bc, bc_p = _block_sql(user, "l.user_id")
+
+    def _query():
+        with db._conn() as conn:
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as cnt FROM likes l
+                WHERE l.post_id = {ph}::uuid {bc}
+            """, (post_id, *bc_p))
+            total = db._row_to_dict(total_row).get("cnt", 0) if total_row else 0
+            rows = db._fetchall(conn, f"""
+                SELECT u.id, u.display_name, u.avatar_url, u.username, l.created_at
+                FROM likes l JOIN users u ON u.id = l.user_id
+                WHERE l.post_id = {ph}::uuid
+                {bc}
+                ORDER BY l.created_at DESC LIMIT {ph}
+            """, (post_id, *bc_p, limit))
+            return total, rows
+
+    total, rows = await asyncio.to_thread(_query)
+    likers = []
+    for r in rows:
+        d = db._row_to_dict(r)
+        likers.append({"id": str(d["id"]), "display_name": d.get("display_name"),
+                        "avatar_url": d.get("avatar_url"), "username": d.get("username"),
+                        "liked_at": str(d.get("created_at", ""))})
+    return {"likers": likers, "total": total, "has_more": total > len(likers)}
+
+
+@router.post("/comments/{comment_id}/like",
+             summary="Toggle comment like",
+             description="Like or unlike a comment (toggle). Cannot like own comments or comments from blocked users. Returns updated like count.")
+async def toggle_comment_like(comment_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    comment_id = validate_path_id(comment_id, "comment_id")
+    check_rate(f"like:{user['id']}", RL_LIKE_LIMIT, RL_LIKE_WINDOW,
+               "Bạn thao tác quá nhanh. Vui lòng đợi chút.")
+    ph = db._ph
+    uid = str(user["id"])
+    def _query():
+        with db._conn() as conn:
+            c = db._fetchone(conn, f"SELECT user_id FROM comments WHERE id::text = {ph} AND deleted_at IS NULL", (comment_id,))
+            if not c:
+                raise HTTPException(404, "Bình luận không tồn tại")
+            cd = db._row_to_dict(c)
+            comment_owner = str(cd["user_id"])
+            if comment_owner == uid:
+                raise HTTPException(400, "Không thể thích bình luận của chính mình")
+            blocked = db._fetchone(conn, f"""
+                SELECT 1 FROM blocks
+                WHERE (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+                   OR (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+            """, (uid, comment_owner, comment_owner, uid))
+            if blocked:
+                raise HTTPException(403, "Không thể thao tác với người dùng đã chặn")
+            existing = db._fetchone(conn, f"""
+                SELECT 1 FROM comment_likes WHERE user_id = {ph}::uuid AND comment_id = {ph}::uuid
+            """, (uid, comment_id))
+            if existing:
+                cur = db._execute(conn, f"""
+                    DELETE FROM comment_likes WHERE user_id = {ph}::uuid AND comment_id = {ph}::uuid
+                """, (uid, comment_id))
+                if cur and cur.rowcount > 0:
+                    db._execute(conn, f"""
+                        UPDATE comments SET like_count = GREATEST(0, like_count - 1) WHERE id::text = {ph}
+                    """, (comment_id,))
+                liked = False
+            else:
+                cur = db._execute(conn, f"""
+                    INSERT INTO comment_likes (user_id, comment_id) VALUES ({ph}::uuid, {ph}::uuid)
+                    ON CONFLICT DO NOTHING
+                """, (uid, comment_id))
+                if cur and cur.rowcount > 0:
+                    db._execute(conn, f"""
+                        UPDATE comments SET like_count = like_count + 1 WHERE id::text = {ph}
+                    """, (comment_id,))
+                liked = bool(cur and cur.rowcount > 0)
+            row = db._fetchone(conn, f"SELECT like_count FROM comments WHERE id::text = {ph}", (comment_id,))
+            return liked, db._row_to_dict(row)["like_count"] if row else 0
+    liked, like_count = await asyncio.to_thread(_query)
+    return {"liked": liked, "like_count": like_count}
+
+
+# ── Reactions (emoji beyond likes) ──
+
+_VALID_REACTIONS = {"heart", "useful", "beautiful", "funny", "surprised"}
+
+
+@router.post("/posts/{post_id}/react",
+             summary="Toggle emoji reaction on a post",
+             description="Add or remove an emoji reaction (heart, useful, beautiful, funny, surprised) on a post. Sends notification to the post author.")
+async def toggle_reaction(post_id: str, reaction_type: str = Query(..., max_length=20),
+                           user=Depends(require_user), _csrf=Depends(require_csrf)):
+    """Toggle an emoji reaction on a post."""
+    post_id = validate_path_id(post_id, "post_id")
+    check_rate(f"react:{user['id']}", RL_LIKE_LIMIT, RL_LIKE_WINDOW, "Bạn thao tác quá nhanh. Vui lòng đợi chút.")
+    if reaction_type not in _VALID_REACTIONS:
+        raise HTTPException(400, f"Reaction không hợp lệ. Cho phép: {', '.join(sorted(_VALID_REACTIONS))}")
+    ph = db._ph
+    uid = str(user["id"])
+
+    _REACTION_LABELS = {"heart": "❤️", "useful": "👍", "beautiful": "😍", "funny": "😄", "surprised": "😮"}
+
+    def _query():
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph} AND moderation_status = 'approved' AND deleted_at IS NULL", (post_id,))
+            if not post:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            post_owner = str(db._row_to_dict(post)["user_id"])
+            blocked = db._fetchone(conn, f"""
+                SELECT 1 FROM blocks
+                WHERE (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+                   OR (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+            """, (uid, post_owner, post_owner, uid))
+            if blocked:
+                raise HTTPException(403, "Không thể thao tác với người dùng đã chặn")
+            existing = db._fetchone(conn, f"""
+                SELECT id FROM post_reactions
+                WHERE post_id = {ph}::uuid AND user_id = {ph}::uuid AND reaction_type = {ph}
+            """, (post_id, uid, reaction_type))
+            if existing:
+                db._execute(conn, f"""
+                    DELETE FROM post_reactions
+                    WHERE post_id = {ph}::uuid AND user_id = {ph}::uuid AND reaction_type = {ph}
+                """, (post_id, uid, reaction_type))
+                reacted = False
+            else:
+                cur = db._execute(conn, f"""
+                    INSERT INTO post_reactions (post_id, user_id, reaction_type)
+                    VALUES ({ph}::uuid, {ph}::uuid, {ph})
+                    ON CONFLICT DO NOTHING
+                """, (post_id, uid, reaction_type))
+                reacted = bool(cur and cur.rowcount > 0)
+            counts = db._fetchall(conn, f"""
+                SELECT reaction_type, COUNT(*) as c
+                FROM post_reactions WHERE post_id = {ph}::uuid
+                GROUP BY reaction_type
+            """, (post_id,))
+            reaction_counts = {db._row_to_dict(r)["reaction_type"]: int(db._row_to_dict(r)["c"]) for r in counts}
+            return reacted, reaction_counts, post_owner
+
+    reacted, counts, post_owner = await asyncio.to_thread(_query)
+    if reacted and post_owner != uid:
+        emoji = _REACTION_LABELS.get(reaction_type, reaction_type)
+        def _notify():
+            create_notification(
+                post_owner, "reaction",
+                f"{user.get('display_name', 'Ai đó')} đã {emoji} bài viết của bạn",
+                ref_type="post", ref_id=post_id, actor_id=uid,
+            )
+        await asyncio.to_thread(_notify)
+    return {"reacted": reacted, "reaction_type": reaction_type, "reactions": counts}
+
+
+@router.get("/posts/{post_id}/reactions", response_model=ReactionsResponse,
+            summary="Get post reaction counts",
+            description="Get reaction counts grouped by type (heart, useful, beautiful, funny, surprised) and total count for a post.")
+async def get_reactions(post_id: str):
+    """Get reaction counts and details for a post."""
+    post_id = validate_path_id(post_id, "post_id")
+    ph = db._ph
+
+    def _query():
+        with db._conn() as conn:
+            counts = db._fetchall(conn, f"""
+                SELECT reaction_type, COUNT(*) as c
+                FROM post_reactions WHERE post_id = {ph}::uuid
+                GROUP BY reaction_type
+            """, (post_id,))
+            total = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM post_reactions WHERE post_id = {ph}::uuid
+            """, (post_id,))
+            return (
+                {db._row_to_dict(r)["reaction_type"]: int(db._row_to_dict(r)["c"]) for r in counts},
+                db._row_to_dict(total)["c"] if total else 0,
+            )
+
+    counts, total = await asyncio.to_thread(_query)
+    return {"reactions": counts, "total": total}
+
+
+# ── Bookmarks ──
+
+@router.post("/posts/{post_id}/bookmark",
+             summary="Toggle post bookmark",
+             description="Save or unsave a post to the user's bookmarks (toggle). Returns the current bookmark state.")
+async def toggle_bookmark(post_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    post_id = validate_path_id(post_id, "post_id")
+    check_rate(f"bookmark:{user['id']}", RL_LIKE_LIMIT, RL_LIKE_WINDOW,
+               "Bạn thao tác quá nhanh. Vui lòng đợi chút.")
+    ph = db._ph
+    uid = str(user["id"])
+    def _query():
+        with db._conn() as conn:
+            deleted = db._fetchone(conn, f"""
+                DELETE FROM bookmarks WHERE user_id = {ph}::uuid AND post_id = {ph}::uuid
+                RETURNING 1
+            """, (uid, post_id))
+            if deleted:
+                return False
+            cur = db._execute(conn, f"""
+                INSERT INTO bookmarks (user_id, post_id) VALUES ({ph}::uuid, {ph}::uuid)
+                ON CONFLICT DO NOTHING
+            """, (uid, post_id))
+            return bool(cur and cur.rowcount > 0)
+    saved = await asyncio.to_thread(_query)
+    return {"bookmarked": saved}
+
+
+@router.get("/me/bookmarks", response_model=BookmarksResponse,
+            summary="List bookmarked posts",
+            description="Paginated list of the authenticated user's bookmarked posts with full post details and reactions, sorted by most recently bookmarked.")
+async def get_my_bookmarks(
+    page: int = Query(1, ge=1, le=1000), limit: int = Query(20, ge=1, le=50),
+    user=Depends(require_user),
+):
+    ph = db._ph
+    offset = (page - 1) * limit
+    uid = str(user["id"])
+    seed_filter, seed_params = _prod_seed_post_filter("p")
+    def _query():
+        with db._conn() as conn:
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM bookmarks b
+                JOIN posts p ON p.id = b.post_id
+                WHERE b.user_id = {ph}::uuid AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
+                {seed_filter}
+            """, (uid, *seed_params))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            rows = db._fetchall(conn, f"""
+                SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
+                       e.name as entity_name, e.type as entity_type
+                FROM bookmarks b
+                JOIN posts p ON p.id = b.post_id
+                JOIN users u ON u.id = p.user_id
+                LEFT JOIN entities e ON e.id = p.entity_id
+                WHERE b.user_id = {ph}::uuid AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
+                {seed_filter}
+                ORDER BY b.created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, (uid, *seed_params, limit, offset))
+            return rows, total
+    rows, total = await asyncio.to_thread(_query)
+    posts = [db._row_to_dict(r) for r in rows]
+    await asyncio.to_thread(_enrich_reactions, posts)
+    posts = [_format_post(p) for p in posts]
+    return {"posts": posts, "total": total, "page": page, "has_more": offset + limit < total}
+
+
+# ── User Collections (themed post lists) ──
+
+_MAX_COLLECTIONS_PER_USER = 20
+_MAX_ITEMS_PER_COLLECTION = 100
+
+
+class CreateCollection(BaseModel):
+    name: str = Field(..., min_length=1, max_length=100)
+    description: str = Field("", max_length=500)
+    is_public: bool = False
+
+
+def _require_collection_publishable(mod: dict, is_public: bool, flagged_detail: str) -> None:
+    status = mod.get("status")
+    if status == "flagged":
+        raise HTTPException(400, flagged_detail)
+    if not is_public or status == "approved":
+        return
+    if mod.get("moderation_available") is False:
+        raise HTTPException(503, "Hệ thống kiểm duyệt tạm thời không khả dụng. Vui lòng thử lại sau.")
+    raise HTTPException(400, "Nội dung danh sách chưa được phê duyệt để công khai")
+
+
+@router.post("/me/collections",
+             summary="Create a collection",
+             description="Create a themed post collection (public or private). Runs content moderation on the name and description. Max 20 collections per user.")
+async def create_collection(body: CreateCollection, user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
+    check_rate(f"coll:{user['id']}", 10, 300, "Tạo danh sách quá nhanh. Vui lòng đợi chút.")
+    mod = await moderate_content(body.name.strip())
+    _require_collection_publishable(
+        mod, body.is_public, "Tên danh sách chứa nội dung không phù hợp"
+    )
+    if body.description.strip():
+        mod_desc = await moderate_content(body.description.strip())
+        _require_collection_publishable(
+            mod_desc, body.is_public, "Mô tả danh sách chứa nội dung không phù hợp"
+        )
+    ph = db._ph
+    uid = str(user["id"])
+
+    def _query():
+        with db._conn() as conn:
+            db._fetchone(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (uid,))
+            cnt = db._fetchone(conn, f"SELECT COUNT(*) as c FROM user_collections WHERE user_id = {ph}::uuid", (uid,))
+            if cnt and db._row_to_dict(cnt)["c"] >= _MAX_COLLECTIONS_PER_USER:
+                raise HTTPException(400, f"Tối đa {_MAX_COLLECTIONS_PER_USER} danh sách")
+            row = db._fetchone(conn, f"""
+                INSERT INTO user_collections (user_id, name, description, is_public)
+                VALUES ({ph}::uuid, {ph}, {ph}, {ph}) RETURNING id, name, description, is_public, created_at
+            """, (uid, body.name.strip(), body.description.strip(), body.is_public))
+            return db._row_to_dict(row)
+
+    coll = await asyncio.to_thread(_query)
+    return {"collection": {"id": str(coll["id"]), "name": coll["name"],
+            "description": coll["description"], "is_public": coll["is_public"],
+            "created_at": str(coll["created_at"]), "item_count": 0}}
+
+
+@router.get("/me/collections", response_model=CollectionsListResponse,
+            summary="List my collections",
+            description="List all post collections owned by the authenticated user with item counts, sorted by most recently updated.")
+async def list_my_collections(user=Depends(require_user)):
+    ph = db._ph
+    uid = str(user["id"])
+
+    def _query():
+        with db._conn() as conn:
+            return db._fetchall(conn, f"""
+                SELECT uc.id, uc.name, uc.description, uc.is_public, uc.created_at,
+                       (SELECT COUNT(*) FROM collection_items ci WHERE ci.collection_id = uc.id) as item_count
+                FROM user_collections uc WHERE uc.user_id = {ph}::uuid
+                ORDER BY uc.updated_at DESC
+            """, (uid,))
+
+    rows = await asyncio.to_thread(_query)
+    result = []
+    for r in rows:
+        d = db._row_to_dict(r)
+        result.append({"id": str(d["id"]), "name": d["name"], "description": d.get("description", ""),
+                        "is_public": d.get("is_public", False), "item_count": d.get("item_count", 0),
+                        "created_at": str(d.get("created_at", ""))})
+    return {"collections": result}
+
+
+@router.delete("/me/collections/{collection_id}",
+               summary="Delete a collection",
+               description="Delete a post collection and all its items. Only the collection owner can delete it.")
+async def delete_collection(collection_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    collection_id = validate_path_id(collection_id, "collection_id")
+    check_rate(f"coll-del:{user['id']}", RL_DELETE_LIMIT, RL_DELETE_WINDOW, "Xóa quá nhanh.")
+    ph = db._ph
+    uid = str(user["id"])
+
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                DELETE FROM user_collections WHERE id = {ph}::uuid AND user_id = {ph}::uuid RETURNING 1
+            """, (collection_id, uid))
+            if not row:
+                raise HTTPException(404, "Danh sách không tồn tại")
+
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
+@router.post("/me/collections/{collection_id}/items",
+             summary="Add post to collection",
+             description="Add a post to a collection. Uses advisory locks to enforce the max items limit (100 per collection).")
+async def add_to_collection(collection_id: str, post_id: str = Query(..., max_length=100),
+                             user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
+    collection_id = validate_path_id(collection_id, "collection_id")
+    post_id = validate_path_id(post_id, "post_id")
+    check_rate(f"coll-add:{user['id']}", RL_LIKE_LIMIT, RL_LIKE_WINDOW, "Thao tác quá nhanh.")
+    ph = db._ph
+    uid = str(user["id"])
+
+    def _query():
+        with db._conn() as conn:
+            coll = db._fetchone(conn, f"SELECT id FROM user_collections WHERE id = {ph}::uuid AND user_id = {ph}::uuid", (collection_id, uid))
+            if not coll:
+                raise HTTPException(404, "Danh sách không tồn tại")
+            db._fetchone(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (collection_id,))
+            cnt = db._fetchone(conn, f"SELECT COUNT(*) as c FROM collection_items WHERE collection_id = {ph}::uuid", (collection_id,))
+            if cnt and db._row_to_dict(cnt)["c"] >= _MAX_ITEMS_PER_COLLECTION:
+                raise HTTPException(400, f"Tối đa {_MAX_ITEMS_PER_COLLECTION} bài trong danh sách")
+            db._execute(conn, f"""
+                INSERT INTO collection_items (collection_id, post_id) VALUES ({ph}::uuid, {ph}::uuid)
+                ON CONFLICT DO NOTHING
+            """, (collection_id, post_id))
+            db._execute(conn, f"UPDATE user_collections SET updated_at = NOW() WHERE id = {ph}::uuid", (collection_id,))
+
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
+@router.delete("/me/collections/{collection_id}/items/{post_id}",
+               summary="Remove post from collection",
+               description="Remove a specific post from a collection. Only the collection owner can remove items.")
+async def remove_from_collection(collection_id: str, post_id: str,
+                                  user=Depends(require_user), _csrf=Depends(require_csrf)):
+    collection_id = validate_path_id(collection_id, "collection_id")
+    post_id = validate_path_id(post_id, "post_id")
+    check_rate(f"coll-rm:{user['id']}", RL_DELETE_LIMIT, RL_DELETE_WINDOW, "Xóa quá nhanh.")
+    ph = db._ph
+    uid = str(user["id"])
+
+    def _query():
+        with db._conn() as conn:
+            coll = db._fetchone(conn, f"SELECT id FROM user_collections WHERE id = {ph}::uuid AND user_id = {ph}::uuid", (collection_id, uid))
+            if not coll:
+                raise HTTPException(404, "Danh sách không tồn tại")
+            db._execute(conn, f"DELETE FROM collection_items WHERE collection_id = {ph}::uuid AND post_id = {ph}::uuid", (collection_id, post_id))
+
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
+@router.get("/me/collections/{collection_id}/items", response_model=CollectionItemsResponse,
+            summary="Get collection items",
+            description="Paginated list of posts in a collection with full post details and reactions. Public collections are viewable by anyone; private ones only by the owner.")
+async def get_collection_items(collection_id: str, page: int = Query(1, ge=1, le=1000),
+                                limit: int = Query(20, ge=1, le=50), user=Depends(require_user)):
+    collection_id = validate_path_id(collection_id, "collection_id")
+    ph = db._ph
+    uid = str(user["id"])
+    offset = (page - 1) * limit
+
+    def _query():
+        with db._conn() as conn:
+            coll = db._fetchone(conn, f"SELECT id, is_public, user_id FROM user_collections WHERE id = {ph}::uuid", (collection_id,))
+            if not coll:
+                raise HTTPException(404, "Danh sách không tồn tại")
+            cd = db._row_to_dict(coll)
+            if str(cd["user_id"]) != uid and not cd.get("is_public"):
+                raise HTTPException(403, "Không có quyền xem danh sách này")
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM collection_items ci
+                JOIN posts p ON p.id = ci.post_id
+                WHERE ci.collection_id = {ph}::uuid AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
+            """, (collection_id,))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            rows = db._fetchall(conn, f"""
+                SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
+                       e.name as entity_name, e.type as entity_type
+                FROM collection_items ci
+                JOIN posts p ON p.id = ci.post_id
+                JOIN users u ON u.id = p.user_id
+                LEFT JOIN entities e ON e.id = p.entity_id
+                WHERE ci.collection_id = {ph}::uuid AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
+                ORDER BY ci.added_at DESC LIMIT {ph} OFFSET {ph}
+            """, (collection_id, limit, offset))
+            return rows, total
+
+    rows, total = await asyncio.to_thread(_query)
+    posts = [db._row_to_dict(r) for r in rows]
+    await asyncio.to_thread(_enrich_all, posts, user)
+    posts = [_format_post(p) for p in posts]
+    return {"posts": posts, "total": total, "page": page, "has_more": offset + limit < total}
+
+
+# ── Share Tracking ──
+
+@router.post("/posts/{post_id}/share",
+             summary="Track a post share",
+             description="Increment the share counter when a user shares a post (copy link, social media). Works for both authenticated and anonymous users.")
+async def track_share(post_id: str, request: Request, user=Depends(get_current_user), _csrf=Depends(require_csrf)):
+    """Track when a user shares a post (copy link, social media share)."""
+    post_id = validate_path_id(post_id, "post_id")
+    if user:
+        check_rate(f"share:{user['id']}", RL_LIKE_LIMIT, RL_LIKE_WINDOW,
+                   "Bạn thao tác quá nhanh. Vui lòng đợi chút.")
+    else:
+        from middleware import get_client_ip
+        check_rate_ip(get_client_ip(request), "share", 30, 300,
+                      "Quá nhiều yêu cầu. Vui lòng thử lại sau.")
+    ph = db._ph
+
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                UPDATE posts SET share_count = COALESCE(share_count, 0) + 1
+                WHERE id::text = {ph} AND moderation_status = 'approved' AND deleted_at IS NULL
+                RETURNING share_count
+            """, (post_id,))
+            if not row:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            return db._row_to_dict(row)["share_count"]
+
+    new_count = await asyncio.to_thread(_query)
+    return {"share_count": new_count}
+
+
+# ── Hide / Pin ──
+
+@router.post("/posts/{post_id}/hide",
+             summary="Hide a post from feed",
+             description="Hide a specific post from the authenticated user's feeds. The post remains visible to other users.")
+async def hide_post(post_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    post_id = validate_path_id(post_id, "post_id")
+    uid = str(user["id"])
+    check_rate(f"hide:{uid}", 30, 60, "Thao tác quá nhanh. Vui lòng thử lại sau.")
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"SELECT id FROM posts WHERE id::text = {ph} AND deleted_at IS NULL", (post_id,))
+            if not post:
+                raise HTTPException(404, "Không tìm thấy bài viết")
+            db._execute(conn, f"""
+                INSERT INTO user_hidden_posts (user_id, post_id)
+                VALUES ({ph}::uuid, {ph}::uuid)
+                ON CONFLICT DO NOTHING
+            """, (uid, post_id))
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
+@router.post("/posts/{post_id}/unhide",
+             summary="Unhide a post",
+             description="Remove a post from the authenticated user's hidden list so it appears in feeds again.")
+async def unhide_post(post_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    post_id = validate_path_id(post_id, "post_id")
+    uid = str(user["id"])
+    check_rate(f"hide:{uid}", 30, 60, "Thao tác quá nhanh. Vui lòng thử lại sau.")
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            db._execute(conn, f"""
+                DELETE FROM user_hidden_posts
+                WHERE user_id = {ph}::uuid AND post_id = {ph}::uuid
+            """, (uid, post_id))
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
+@router.get("/posts/hidden", response_model=HiddenPostsResponse,
+            summary="List hidden posts",
+            description="Paginated list of posts the authenticated user has hidden from their feeds, sorted by most recently hidden.")
+async def list_hidden_posts(
+    page: int = Query(1, ge=1, le=1000),
+    limit: int = Query(20, ge=1, le=50),
+    user=Depends(require_user),
+):
+    ph = db._ph
+    offset = (page - 1) * limit
+    uid = str(user["id"])
+    def _query():
+        with db._conn() as conn:
+            total_row = db._fetchone(conn, f"SELECT COUNT(*) as c FROM user_hidden_posts WHERE user_id = {ph}::uuid", (uid,))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            rows = db._fetchall(conn, f"""
+                SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
+                       e.name as entity_name, e.type as entity_type
+                FROM user_hidden_posts h
+                JOIN posts p ON p.id = h.post_id
+                JOIN users u ON u.id = p.user_id
+                LEFT JOIN entities e ON e.id = p.entity_id
+                WHERE h.user_id = {ph}::uuid
+                ORDER BY h.created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, (uid, limit, offset))
+            return rows, total
+    rows, total = await asyncio.to_thread(_query)
+    posts = [db._row_to_dict(r) for r in rows]
+    await asyncio.to_thread(_enrich_all, posts, user)
+    posts = [_format_post(p) for p in posts]
+    return {"posts": posts, "total": total, "page": page, "has_more": offset + limit < total}
+
+
+@router.post("/posts/{post_id}/pin-comment",
+             summary="Pin a comment",
+             description="Pin a comment to the top of a post's comment section. Only the post author can pin comments. One pinned comment per post.")
+async def pin_comment(post_id: str, comment_id: str = Query(..., max_length=100),
+                      user=Depends(require_user), _csrf=Depends(require_csrf)):
+    post_id = validate_path_id(post_id, "post_id")
+    comment_id = validate_path_id(comment_id, "comment_id")
+    uid = str(user["id"])
+    check_rate(f"pin:{uid}", 10, 60, "Thao tác quá nhanh. Vui lòng thử lại sau.")
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph} AND deleted_at IS NULL", (post_id,))
+            if not post:
+                raise HTTPException(404, "Không tìm thấy bài viết")
+            post_d = db._row_to_dict(post)
+            if str(post_d["user_id"]) != uid:
+                raise HTTPException(403, "Chỉ tác giả bài viết mới có thể ghim bình luận")
+            comment = db._fetchone(conn, f"""
+                SELECT id FROM comments WHERE id::text = {ph} AND post_id::text = {ph} AND deleted_at IS NULL
+            """, (comment_id, post_id))
+            if not comment:
+                raise HTTPException(404, "Không tìm thấy bình luận trong bài này")
+            db._execute(conn, f"""
+                UPDATE posts SET pinned_comment_id = {ph}::uuid WHERE id::text = {ph}
+            """, (comment_id, post_id))
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
+@router.delete("/posts/{post_id}/pin-comment",
+               summary="Unpin a comment",
+               description="Remove the pinned comment from a post. Only the post author can unpin comments.")
+async def unpin_comment(post_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    post_id = validate_path_id(post_id, "post_id")
+    uid = str(user["id"])
+    check_rate(f"pin:{uid}", 10, 60, "Thao tác quá nhanh. Vui lòng thử lại sau.")
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph} AND deleted_at IS NULL", (post_id,))
+            if not post:
+                raise HTTPException(404, "Không tìm thấy bài viết")
+            if str(db._row_to_dict(post)["user_id"]) != uid:
+                raise HTTPException(403, "Chỉ tác giả bài viết mới có thể gỡ ghim")
+            db._execute(conn, f"""
+                UPDATE posts SET pinned_comment_id = NULL WHERE id::text = {ph}
+            """, (post_id,))
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
+_MAX_PINNED_POSTS = 3
+
+
+@router.post("/posts/{post_id}/pin-to-profile",
+             summary="Toggle pin post to profile",
+             description="Pin or unpin a post on the user's profile (toggle). Only approved posts can be pinned. Maximum 3 pinned posts per user.")
+async def pin_post_to_profile(post_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    post_id = validate_path_id(post_id, "post_id")
+    uid = str(user["id"])
+    check_rate(f"pin:{uid}", 10, 60, "Thao tác quá nhanh. Vui lòng thử lại sau.")
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"""
+                SELECT user_id, is_pinned, moderation_status FROM posts WHERE id::text = {ph} AND deleted_at IS NULL
+            """, (post_id,))
+            if not post:
+                raise HTTPException(404, "Không tìm thấy bài viết")
+            rd = db._row_to_dict(post)
+            if str(rd["user_id"]) != uid:
+                raise HTTPException(403, "Chỉ tác giả bài viết mới có thể ghim")
+            if rd.get("moderation_status") != "approved":
+                raise HTTPException(400, "Chỉ ghim bài viết đã được duyệt")
+            if rd.get("is_pinned"):
+                db._execute(conn, f"UPDATE posts SET is_pinned = FALSE WHERE id::text = {ph}", (post_id,))
+                return False
+            db._execute(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (f"pin:{uid}",))
+            pinned_count = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM posts
+                WHERE user_id::text = {ph} AND is_pinned = TRUE
+            """, (uid,))
+            if pinned_count and db._row_to_dict(pinned_count)["c"] >= _MAX_PINNED_POSTS:
+                raise HTTPException(400, f"Tối đa {_MAX_PINNED_POSTS} bài ghim")
+            db._execute(conn, f"UPDATE posts SET is_pinned = TRUE WHERE id::text = {ph}", (post_id,))
+            return True
+    pinned = await asyncio.to_thread(_query)
+    return {"pinned": pinned}
+
+
+# ── Image upload ──
+
+@router.post("/upload/image",
+             summary="Upload an image",
+             description="Upload an image for use in posts. Validates file type via magic bytes (JPEG/PNG/GIF/WebP only), enforces 5MB limit. Returns the uploaded image URL.")
+async def upload_image(file: UploadFile = File(...), user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
+    _reject_non_ai_media()
+    check_rate(f"upload:{user['id']}", RL_UPLOAD_LIMIT, RL_UPLOAD_WINDOW,
+               "Bạn tải ảnh quá nhanh. Vui lòng đợi chút rồi thử lại.")
+    max_bytes = 5 * 1024 * 1024
+    data = await file.read(max_bytes + 1)
+    if len(data) > max_bytes:
+        raise HTTPException(400, "Ảnh tối đa 5MB")
+
+    # Không tin Content-Type client gửi — kiểm magic-byte thật (chặn SVG-script/polyglot).
+    sniffed = storage.sniff_image_type(data)
+    if not sniffed:
+        raise HTTPException(400, "File không phải ảnh hợp lệ (JPEG/PNG/GIF/WebP)")
+
+    try:
+        url = await storage.upload_image(data, folder="posts", content_type=sniffed)
+    except ValueError as e:
+        logger.warning("Image upload rejected: %s", e)
+        raise HTTPException(400, "File ảnh không hợp lệ hoặc quá lớn")
+    return {"url": url}
+
+
+# ── User profile + reputation (gamification, anti-inflation) ──
+
+def _diminish(count: int, tiers: list[tuple[int, int]]) -> int:
+    """Điểm giảm dần theo tier: [(số_lượng, điểm_mỗi_cái), ...]. Phần vượt tier cuối = 0."""
+    pts, remaining = 0, count
+    for tier_count, per_point in tiers:
+        take = min(remaining, tier_count)
+        pts += take * per_point
+        remaining -= take
+        if remaining <= 0:
+            break
+    return pts
+
+
+def _calc_points(reviews: int, posts: int, photos: int,
+                 followers: int, places: int, likes: int) -> int:
+    """Công thức điểm chống lạm phát — dùng chung profile/leaderboard/suggested."""
+    review_pts = _diminish(reviews, [(10, 5), (20, 3), (20, 1)])       # max 130
+    post_pts = _diminish(max(posts - reviews, 0), [(15, 2), (15, 1)])  # max 45
+    photo_pts = _diminish(photos, [(10, 3), (10, 1)])                  # max 40
+    follower_pts = _diminish(followers, [(20, 1)])                     # max 20
+    place_pts = _diminish(places, [(10, 2), (10, 1)])                  # max 30
+    like_pts = _diminish(likes, [(50, 1)])                             # max 50
+    return review_pts + post_pts + photo_pts + follower_pts + place_pts + like_pts
+    # Tổng tối đa lý thuyết: 315 — Đại sứ (200+) cần đa dạng, không spam 1 loại được
+
+
+def _level_for(points: int) -> tuple[int, str]:
+    """Cấp độ danh tiếng theo điểm (dùng chung profile + leaderboard)."""
+    if points >= 200: return 4, "Đại sứ"
+    if points >= 80:  return 3, "Đóng góp tích cực"
+    if points >= 20:  return 2, "Người đóng góp"
+    return 1, "Người mới"
+
+
+def _reputation_badges_contrib(reviews, photos, places, followers, likes):
+    """Badge từ đóng góp nội dung (extract-method thuần — nửa 1)."""
+    badges = []
+    if reviews >= 1:    badges.append({"id": "first_review", "label": "Đánh giá đầu tiên", "icon": "✍️"})
+    if reviews >= 25:   badges.append({"id": "review_master", "label": "Bậc thầy đánh giá", "icon": "⭐"})
+    if photos >= 10:    badges.append({"id": "photographer", "label": "Nhiếp ảnh cộng đồng", "icon": "📸"})
+    if places >= 10:    badges.append({"id": "explorer", "label": "Người khám phá", "icon": "🧭"})
+    if followers >= 20: badges.append({"id": "popular", "label": "Được yêu thích", "icon": "💛"})
+    if likes >= 50:     badges.append({"id": "quality", "label": "Nội dung chất lượng", "icon": "🏆"})
+    return badges
+
+
+def _reputation_badges_activity(reviews, photos, places, visits, areas_visited, account_age_days):
+    """Badge từ hoạt động/thâm niên (extract-method thuần — nửa 2)."""
+    badges = []
+    if places >= 3 and reviews >= 5 and photos >= 3:
+        badges.append({"id": "allrounder", "label": "Đa năng", "icon": "🌟"})
+    if visits >= 10:    badges.append({"id": "traveler", "label": "Lữ khách", "icon": "🎒"})
+    if areas_visited >= 3: badges.append({"id": "local", "label": "Người địa phương", "icon": "🏡"})
+    if account_age_days >= 180: badges.append({"id": "veteran", "label": "Thành viên kỳ cựu", "icon": "🎖️"})
+    return badges
+
+
+def _reputation_badges(reviews, photos, places, followers, likes, visits, areas_visited, account_age_days):
+    """Xây danh sách badge từ các chỉ số danh tiếng (extract-method thuần)."""
+    return (_reputation_badges_contrib(reviews, photos, places, followers, likes)
+            + _reputation_badges_activity(reviews, photos, places, visits, areas_visited, account_age_days))
+
+
+def _reputation(conn, user_id: str, posts: int, reviews: int) -> dict:
+    """Danh tiếng compute-on-fly từ đóng-góp ĐÃ-DUYỆT (§1.4-safe, 0 lưu trữ).
+    Gom thành 3 query thay vì 8 (N+1 fix)."""
+    ph = db._ph
+    def _v(row, col):
+        return int(row[col]) if row and row[col] else 0
+
+    agg = db._fetchone(conn, f"""
+        SELECT
+            COUNT(*) FILTER (WHERE (CASE WHEN jsonb_typeof(images)='array'
+                THEN jsonb_array_length(images) ELSE 0 END) > 0) AS photos,
+            COUNT(DISTINCT entity_id) FILTER (WHERE entity_id IS NOT NULL) AS places,
+            COALESCE(SUM(like_count), 0) AS total_likes
+        FROM posts WHERE user_id::text = {ph} AND moderation_status = 'approved' AND deleted_at IS NULL
+    """, (user_id,))
+    agg = db._row_to_dict(agg) if agg else {}
+    photos = _v(agg, "photos")
+    places = _v(agg, "places")
+    likes = _v(agg, "total_likes")
+
+    followers_row = db._fetchone(conn, f"""
+        SELECT COUNT(*) c FROM follows f
+        JOIN users fu ON fu.id = f.follower_id
+        WHERE f.target_type='user' AND f.target_id={ph}
+          AND fu.created_at < NOW() - INTERVAL '7 days'
+    """, (user_id,))
+    followers = _v(db._row_to_dict(followers_row) if followers_row else {}, "c")
+
+    visit_agg = db._fetchone(conn, f"""
+        SELECT COUNT(*) AS visit_count,
+               COUNT(DISTINCT e.area) FILTER (WHERE e.area IS NOT NULL) AS areas,
+               (SELECT EXTRACT(DAY FROM NOW() - created_at)::int FROM users WHERE id::text = {ph}) AS age_days
+        FROM user_visits uv LEFT JOIN entities e ON e.id = uv.entity_id
+        WHERE uv.user_id::text = {ph} AND uv.status = 'visited'
+    """, (user_id, user_id))
+    visit_agg = db._row_to_dict(visit_agg) if visit_agg else {}
+    visits = _v(visit_agg, "visit_count")
+    areas_visited = _v(visit_agg, "areas")
+    account_age_days = _v(visit_agg, "age_days")
+
+    points = _calc_points(reviews, posts, photos, followers, places, likes)
+    level, label = _level_for(points)
+    badges = _reputation_badges(reviews, photos, places, followers, likes, visits, areas_visited, account_age_days)
+    return {"points": points, "level": level, "level_label": label, "badges": badges,
+            "photos": photos, "followers": followers, "places": places, "likes": likes}
+
+
+def _badge_progress_stats(ph, uid):
+    """Gom thống kê tiến độ badge của user — extract-method thuần."""
+    with db._conn() as conn:
+        post_stats = db._fetchone(conn, f"""
+            SELECT COUNT(*) AS posts,
+                   COUNT(*) FILTER (WHERE post_type = 'review') AS reviews,
+                   COUNT(*) FILTER (WHERE (CASE WHEN jsonb_typeof(images)='array'
+                       THEN jsonb_array_length(images) ELSE 0 END) > 0) AS photos,
+                   COUNT(DISTINCT entity_id) FILTER (WHERE entity_id IS NOT NULL) AS places,
+                   COALESCE(SUM(like_count), 0) AS likes
+            FROM posts WHERE user_id::text = {ph}
+            AND moderation_status = 'approved' AND deleted_at IS NULL
+        """, (uid,))
+        ps = db._row_to_dict(post_stats) if post_stats else {}
+        reviews = int(ps.get("reviews") or 0)
+        photos = int(ps.get("photos") or 0)
+        places = int(ps.get("places") or 0)
+        likes = int(ps.get("likes") or 0)
+
+        follower_row = db._fetchone(conn, f"""
+            SELECT COUNT(*) c FROM follows
+            WHERE target_type='user' AND target_id={ph}
+        """, (uid,))
+        followers = int(db._row_to_dict(follower_row).get("c", 0)) if follower_row else 0
+
+        visit_row = db._fetchone(conn, f"""
+            SELECT COUNT(*) AS visits,
+                   COUNT(DISTINCT e.area) FILTER (WHERE e.area IS NOT NULL) AS areas,
+                   (SELECT EXTRACT(DAY FROM NOW() - created_at)::int FROM users WHERE id::text = {ph}) AS age_days
+            FROM user_visits uv LEFT JOIN entities e ON e.id = uv.entity_id
+            WHERE uv.user_id::text = {ph} AND uv.status = 'visited'
+        """, (uid, uid))
+        vd = db._row_to_dict(visit_row) if visit_row else {}
+        visits = int(vd.get("visits") or 0)
+        areas = int(vd.get("areas") or 0)
+        age_days = int(vd.get("age_days") or 0)
+
+        return reviews, photos, places, likes, followers, visits, areas, age_days
+
+
+@router.get("/me/badge-progress", response_model=BadgeProgressResponse,
+            summary="Badge progress for current user",
+            description="Returns all badges with current progress and target thresholds — earned ones flagged, unearned ones show current/target for a progress bar.")
+async def get_badge_progress(user=Depends(require_user)):
+    uid = str(user["id"])
+    ph = db._ph
+
+    reviews, photos, places, likes, followers, visits, areas, age_days = await asyncio.to_thread(_badge_progress_stats, ph, uid)
+
+    badge_defs = [
+        {"id": "first_review", "label": "Đánh giá đầu tiên", "icon": "✍️", "current": reviews, "target": 1},
+        {"id": "review_master", "label": "Bậc thầy đánh giá", "icon": "⭐", "current": reviews, "target": 25},
+        {"id": "photographer", "label": "Nhiếp ảnh cộng đồng", "icon": "📸", "current": photos, "target": 10},
+        {"id": "explorer", "label": "Người khám phá", "icon": "🧭", "current": places, "target": 10},
+        {"id": "popular", "label": "Được yêu thích", "icon": "💛", "current": followers, "target": 20},
+        {"id": "quality", "label": "Nội dung chất lượng", "icon": "🏆", "current": likes, "target": 50},
+        {"id": "allrounder", "label": "Đa năng", "icon": "🌟",
+         "current": min(places // 3, reviews // 5, photos // 3),
+         "target": 1,
+         "hint": f"Cần: {max(0, 3 - places)} nơi, {max(0, 5 - reviews)} đánh giá, {max(0, 3 - photos)} ảnh"},
+        {"id": "traveler", "label": "Lữ khách", "icon": "🎒", "current": visits, "target": 10},
+        {"id": "local", "label": "Người địa phương", "icon": "🏡", "current": areas, "target": 3},
+        {"id": "veteran", "label": "Thành viên kỳ cựu", "icon": "🎖️", "current": age_days, "target": 180},
+    ]
+
+    for b in badge_defs:
+        b["earned"] = b["current"] >= b["target"]
+
+    return {"badges": badge_defs}
+
+
+def _log_profile_view(conn, viewer_id: str, viewed_id: str):
+    """Ghi 1 lượt xem hồ sơ, dedup theo (viewer, viewed, ngày). Bỏ qua tự-xem.
+    `conn` do caller mở/đóng — hàm này KHÔNG tự quản connection để tái dùng
+    được trong cả request path lẫn fire-and-forget task riêng."""
+    if viewer_id == viewed_id:
+        return
+    ph = db._ph
+    db._execute(conn, f"""
+        INSERT INTO profile_views (viewer_id, viewed_id, viewed_date)
+        VALUES ({ph}::uuid, {ph}::uuid, CURRENT_DATE)
+        ON CONFLICT (viewer_id, viewed_id, viewed_date) DO NOTHING
+    """, (viewer_id, viewed_id))
+
+
+def _log_profile_view_threaded(viewer_id: str, viewed_id: str):
+    """Mở connection riêng + gọi _log_profile_view — chạy trong asyncio.to_thread
+    từ 1 task fire-and-forget, KHÔNG chặn request path chính của
+    get_user_profile. Swallow lỗi vì đây chỉ là số liệu phụ, không được phép
+    làm hỏng response profile chính."""
+    try:
+        with db._conn() as conn:
+            _log_profile_view(conn, viewer_id, viewed_id)
+    except Exception:
+        logger.warning("Failed to log profile view %s -> %s", viewer_id, viewed_id, exc_info=True)
+
+
+def _check_achievements_bg(user_id: str):
+    """Fire-and-forget achievement check với thông báo. Nuốt lỗi để không
+    chặn hành động chính (giống _log_profile_view_threaded). Dùng qua
+    asyncio.create_task(asyncio.to_thread(_check_achievements_bg, user_id))
+    sau các hành động tính vào chỉ số thành tích (đăng bài, follow, best
+    answer, ghé thăm, đăng nhập)."""
+    try:
+        from achievements import check_achievements
+        with db._conn() as conn:
+            check_achievements(conn, user_id, notify=True)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("achievement check failed for %s: %s", user_id, e)
+
+
+def _profile_blocked_response(profile):
+    """Response khi viewer bị block — extract-method thuần."""
+    return {
+        "user": {
+            "id": str(profile["id"]),
+            "username": profile.get("username"),
+            "display_name": profile["display_name"],
+            "avatar_url": profile.get("avatar_url"),
+            "is_blocked": True,
+        },
+    }
+
+
+def _profile_private_response(profile, follower_count):
+    """Response profile riêng tư (viewer không được xem) — extract-method thuần."""
+    return {
+        "user": {
+            "id": str(profile["id"]),
+            "username": profile.get("username"),
+            "display_name": profile["display_name"],
+            "avatar_url": profile.get("avatar_url"),
+            "cover_url": profile.get("cover_url"),
+            "bio": "",
+            "created_at": str(profile["created_at"]),
+            "stats": {"posts": 0, "reviews": 0, "followers": follower_count, "following": 0},
+            "reputation": None,
+            "is_private": True,
+        },
+    }
+
+
+def _profile_full_response(profile, posts_n, reviews_n, follower_count, following_row,
+                           reputation, privacy, view_count_7d, is_self,
+                           viewer_following, viewer_blocked, viewer_muted):
+    """Response profile đầy đủ — extract-method thuần từ get_user_profile."""
+    show_activity = privacy["show_activity"] if privacy else True
+    show_saved = privacy["show_saved"] if privacy else True
+    return {
+        "user": {
+            "id": str(profile["id"]),
+            "username": profile.get("username"),
+            "display_name": profile["display_name"],
+            "avatar_url": profile.get("avatar_url"),
+            "cover_url": profile.get("cover_url"),
+            "bio": profile.get("bio", ""),
+            "created_at": str(profile["created_at"]),
+            "stats": {
+                "posts": posts_n,
+                "reviews": reviews_n,
+                "followers": follower_count,
+                "following": db._row_to_dict(following_row)["c"] if following_row else 0,
+            },
+            "reputation": reputation,
+            "show_activity": show_activity,
+            "show_saved": show_saved,
+            "view_count_7d": view_count_7d,
+            "login_streak": int(profile.get("login_streak") or 0) if is_self else None,
+            "viewer_relationship": {
+                "is_following": viewer_following,
+                "is_blocked": viewer_blocked,
+                "is_muted": viewer_muted,
+                "is_self": is_self,
+            } if not is_self else {"is_self": True},
+        },
+    }
+
+
+def _profile_resolve(conn, ph, user_id, _is_uuid, viewer_id):
+    """Resolve profile theo uuid/username + check block — extract-method thuần.
+    Trả (profile_dict, resolved_id, is_self, is_blocked). Raise 404 nếu không thấy."""
+    if _is_uuid:
+        profile = db._fetchone(conn, f"""
+            SELECT id, display_name, avatar_url, cover_url, bio, username, created_at, login_streak
+            FROM users WHERE id::text = {ph} AND is_active = TRUE
+        """, (user_id,))
+    else:
+        profile = db._fetchone(conn, f"""
+            SELECT id, display_name, avatar_url, cover_url, bio, username, created_at, login_streak
+            FROM users WHERE lower(username) = {ph} AND is_active = TRUE
+        """, (user_id.lower(),))
+
+    if not profile:
+        raise HTTPException(404, "Người dùng không tồn tại")
+
+    profile = db._row_to_dict(profile)
+    resolved_id = str(profile["id"])
+    is_self = viewer_id == resolved_id
+
+    is_blocked = False
+    if not is_self and viewer_id:
+        is_blocked = db._fetchone(conn, f"""
+            SELECT 1 FROM blocks
+            WHERE (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+               OR (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+        """, (viewer_id, resolved_id, resolved_id, viewer_id)) is not None
+    return profile, resolved_id, is_self, is_blocked
+
+
+def _profile_is_follower(conn, ph, is_self, vis, viewer_id, resolved_id):
+    """Xác định viewer có follow profile khi profile không public — extract-method thuần."""
+    if not is_self and vis != "public" and viewer_id:
+        frow = db._fetchone(conn, f"""
+            SELECT 1 FROM follows
+            WHERE follower_id = {ph}::uuid AND target_type = 'user' AND target_id = {ph}
+        """, (viewer_id, resolved_id))
+        return frow is not None
+    return False
+
+
+_PROFILE_PRIVACY_LOAD_FAILED = object()
+_PROFILE_PRIVACY_LOAD_FAILED_VISIBILITY = "privacy_load_failed"
+
+
+def _profile_load_privacy(conn, ph, resolved_id):
+    """Nạp privacy settings cho profile (extract-method thuần từ get_user_profile._query)."""
+    try:
+        prow = db._fetchone(conn, f"SELECT user_id, profile_visibility, show_activity, show_saved FROM user_privacy WHERE user_id = {ph}::uuid", (resolved_id,))
+        if prow:
+            return db._row_to_dict(prow)
+    except Exception:
+        logger.warning(
+            "Failed to load privacy settings for user %s", resolved_id,
+            exc_info=True,
+        )
+        return _PROFILE_PRIVACY_LOAD_FAILED
+    return None
+
+
+def _profile_viewer_rel(conn, ph, viewer_id, resolved_id):
+    """Tính quan hệ viewer↔profile (following/blocked/muted) — extract-method thuần."""
+    fcheck = db._fetchone(conn, f"""
+        SELECT 1 FROM follows
+        WHERE follower_id = {ph}::uuid AND target_type = 'user' AND target_id = {ph}
+    """, (viewer_id, resolved_id))
+    viewer_following = fcheck is not None
+    bcheck = db._fetchone(conn, f"""
+        SELECT 1 FROM blocks WHERE blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid
+    """, (viewer_id, resolved_id))
+    viewer_blocked = bcheck is not None
+    mcheck = db._fetchone(conn, f"""
+        SELECT 1 FROM user_mutes WHERE user_id = {ph}::uuid AND muted_id = {ph}::uuid
+    """, (viewer_id, resolved_id))
+    viewer_muted = mcheck is not None
+    return viewer_following, viewer_blocked, viewer_muted
+
+
+def _profile_view_count_7d(ph, resolved_id):
+    """Đếm lượt xem profile 7 ngày (chạy trong thread) — extract-method thuần."""
+    with db._conn() as conn:
+        row = db._fetchone(conn, f"""
+            SELECT COUNT(DISTINCT viewer_id) AS c FROM profile_views
+            WHERE viewed_id = {ph}::uuid AND viewed_date >= CURRENT_DATE - INTERVAL '7 days'
+        """, (resolved_id,))
+        return db._row_to_dict(row)["c"] if row else 0
+
+
+def _profile_query(ph, user_id, _is_uuid, viewer_id):
+    """Query hồ sơ + privacy + quan hệ viewer (chạy trong thread) — extract-method thuần."""
+    with db._conn() as conn:
+        profile, resolved_id, is_self, is_blocked = _profile_resolve(conn, ph, user_id, _is_uuid, viewer_id)
+        if is_blocked:
+            return "blocked", profile, None, None, None, None, None, None, None, False, True, False
+
+        counts = db._fetchone(conn, f"""
+            SELECT COUNT(*) as total,
+                   COUNT(*) FILTER (WHERE post_type = 'review') as reviews
+            FROM posts
+            WHERE user_id::text = {ph} AND moderation_status = 'approved' AND deleted_at IS NULL
+        """, (resolved_id,))
+        counts_d = db._row_to_dict(counts) if counts else {}
+        posts_n = counts_d.get("total", 0)
+        reviews_n = counts_d.get("reviews", 0)
+
+        reputation = _reputation(conn, resolved_id, posts_n, reviews_n)
+        following_row = db._fetchone(conn, f"""
+            SELECT COUNT(*) as c FROM follows
+            WHERE follower_id::text = {ph} AND target_type = 'user'
+        """, (resolved_id,))
+
+        privacy_result = _profile_load_privacy(conn, ph, resolved_id)
+        if privacy_result is _PROFILE_PRIVACY_LOAD_FAILED:
+            privacy = None
+            vis = "public" if is_self else _PROFILE_PRIVACY_LOAD_FAILED_VISIBILITY
+            is_follower = False
+        else:
+            privacy = privacy_result
+            vis = privacy["profile_visibility"] if privacy else ("public" if is_self else "followers_only")
+            is_follower = _profile_is_follower(conn, ph, is_self, vis, viewer_id, resolved_id)
+
+        viewer_following = False
+        viewer_blocked = False
+        viewer_muted = False
+        if not is_self and viewer_id:
+            viewer_following, viewer_blocked, viewer_muted = _profile_viewer_rel(conn, ph, viewer_id, resolved_id)
+
+    return vis, profile, is_self, is_follower, reputation, following_row, posts_n, reviews_n, privacy, viewer_following, viewer_blocked, viewer_muted
+
+
+@router.get("/users/{user_id}", response_model=UserProfileResponse,
+            summary="Get user profile",
+            description="Retrieve a user's public profile by UUID or username. Includes stats, reputation, badges, privacy settings, and viewer relationship status (following/blocked/muted).")
+async def get_user_profile(user_id: str, user=Depends(get_current_user)):
+    # NOTE: user_id may be a UUID OR a username slug — do NOT validate_path_id here
+    # (guarded by test_qa_fixes::TestUserProfileSlug). Resolution is parameterized.
+    ph = db._ph
+    _is_uuid = len(user_id) == 36 and user_id.count("-") == 4
+    viewer_id = str(user["id"]) if user else None
+
+    result = await asyncio.to_thread(_profile_query, ph, user_id, _is_uuid, viewer_id)
+    vis, profile, is_self, is_follower, reputation, following_row, posts_n, reviews_n, privacy, viewer_following, viewer_blocked, viewer_muted = result
+
+    resolved_id = str(profile["id"])
+    if viewer_id and not is_self and vis != "blocked":
+        # Fire-and-forget: KHÔNG await trong request path — log lượt xem
+        # chạy song song, không làm chậm response profile chính.
+        asyncio.create_task(asyncio.to_thread(_log_profile_view_threaded, viewer_id, resolved_id))
+
+    if vis == "blocked":
+        return _profile_blocked_response(profile)
+
+    follower_count = reputation["followers"] if reputation else 0
+
+    if not _profile_can_view_full(vis, is_self, is_follower):
+        return _profile_private_response(profile, follower_count)
+
+    view_count_7d = None
+    if is_self:
+        view_count_7d = await asyncio.to_thread(_profile_view_count_7d, ph, resolved_id)
+
+    return _profile_full_response(
+        profile, posts_n, reviews_n, follower_count, following_row,
+        reputation, privacy, view_count_7d, is_self,
+        viewer_following, viewer_blocked, viewer_muted,
+    )
+
+
+@router.get("/users/{user_id}/posts", response_model=UserPostsResponse,
+            summary="Get a user's posts",
+            description="Paginated list of a user's approved posts. Respects privacy settings (show_activity). Pinned posts appear first.")
+async def get_user_posts(
+    user_id: str, request: Request,
+    page: int = Query(1, ge=1, le=1000), limit: int = Query(20, ge=1, le=50),
+):
+    user = await get_current_user(request)
+    # NOTE: user_id may be a UUID OR a username slug — do NOT validate_path_id here
+    # (guarded by test_qa_fixes::TestUserProfileSlug). Resolution is parameterized.
+    ph = db._ph
+    uid = await asyncio.to_thread(_resolve_user_id, user_id)
+    if not uid:
+        raise HTTPException(404, "Người dùng không tồn tại")
+    viewer_id = str(user["id"]) if user else None
+    bc, bc_p = _block_sql(user, "p.user_id")
+    seed_filter, seed_params = _prod_seed_post_filter("p")
+    offset = (page - 1) * limit
+    def _query():
+        with db._conn() as conn:
+            access = resolve_profile_access(
+                conn, uid, viewer_id, require_activity=True
+            )
+            if access.status != "ok":
+                return access, [], None
+            target_id = access.target_id or uid
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM posts p
+                WHERE p.user_id::text = {ph} AND p.moderation_status = 'approved' AND p.deleted_at IS NULL {bc} {seed_filter}
+            """, (target_id, *bc_p, *seed_params))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            rows = db._fetchall(conn, f"""
+                SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
+                       e.name as entity_name, e.type as entity_type
+                FROM posts p
+                JOIN users u ON u.id = p.user_id
+                LEFT JOIN entities e ON e.id = p.entity_id
+                WHERE p.user_id::text = {ph} AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
+                {bc} {seed_filter}
+                ORDER BY COALESCE(p.is_pinned, FALSE) DESC, p.created_at DESC
+                LIMIT {ph} OFFSET {ph}
+                """, (target_id, *bc_p, *seed_params, limit, offset))
+            return access, rows, total
+    access, rows, total = await asyncio.to_thread(_query)
+    if access.status == "not_found":
+        raise HTTPException(404, "Người dùng không tồn tại")
+    if access.status == "hidden":
+        return {"posts": [], "total": 0, "page": page, "has_more": False}
+    posts = [db._row_to_dict(r) for r in rows]
+    await asyncio.to_thread(_enrich_reactions, posts)
+    posts = [_format_post(p) for p in posts]
+    return {"posts": posts, "total": total, "page": page, "has_more": offset + limit < total}
+
+
+@router.get("/users/{user_id}/reviews", response_model=UserReviewsResponse,
+            summary="Get a user's reviews",
+            description="Paginated list of a user's approved review posts. Respects privacy settings (show_activity). Sorted by newest first.")
+async def get_user_reviews(
+    user_id: str, request: Request,
+    page: int = Query(1, ge=1, le=1000), limit: int = Query(20, ge=1, le=50),
+):
+    user = await get_current_user(request)
+    user_id = validate_path_id(user_id, "user_id")
+    ph = db._ph
+    uid = await asyncio.to_thread(_resolve_user_id, user_id)
+    if not uid:
+        raise HTTPException(404, "Người dùng không tồn tại")
+    viewer_id = str(user["id"]) if user else None
+    bc, bc_p = _block_sql(user, "p.user_id")
+    seed_filter, seed_params = _prod_seed_post_filter("p")
+    offset = (page - 1) * limit
+    def _query():
+        with db._conn() as conn:
+            access = resolve_profile_access(
+                conn, uid, viewer_id, require_activity=True
+            )
+            if access.status != "ok":
+                return access, [], None
+            target_id = access.target_id or uid
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM posts p
+                WHERE p.user_id::text = {ph} AND p.post_type = 'review'
+                  AND p.moderation_status = 'approved' AND p.deleted_at IS NULL {bc} {seed_filter}
+            """, (target_id, *bc_p, *seed_params))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            rows = db._fetchall(conn, f"""
+                SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
+                       e.name as entity_name, e.type as entity_type
+                FROM posts p
+                JOIN users u ON u.id = p.user_id
+                LEFT JOIN entities e ON e.id = p.entity_id
+                WHERE p.user_id::text = {ph} AND p.post_type = 'review'
+                  AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
+                {bc} {seed_filter}
+                ORDER BY p.created_at DESC
+                LIMIT {ph} OFFSET {ph}
+                """, (target_id, *bc_p, *seed_params, limit, offset))
+            return access, rows, total
+    access, rows, total = await asyncio.to_thread(_query)
+    if access.status == "not_found":
+        raise HTTPException(404, "Người dùng không tồn tại")
+    if access.status == "hidden":
+        return {"reviews": [], "total": 0, "page": page, "has_more": False}
+    posts = [db._row_to_dict(r) for r in rows]
+    await asyncio.to_thread(_enrich_reactions, posts)
+    posts = [_format_post(p) for p in posts]
+    return {"reviews": posts, "total": total, "page": page, "has_more": offset + limit < total}
+
+
+def _timeline_visibility_gate(conn, ph, user_id, viewer_id):
+    """Cổng kiểm hiển thị timeline — extract-method thuần từ get_user_timeline._query.
+    Trả (status, resolved_id): 'notfound' | 'hidden' | 'ok'."""
+    # The shared decision owns profile_visibility/is_private, follower, block,
+    # and show_activity policy; this adapter preserves the legacy status spelling.
+    decision = resolve_profile_access(
+        conn, user_id, viewer_id, require_activity=True
+    )
+    status = "notfound" if decision.status == "not_found" else decision.status
+    return status, decision.target_id
+
+
+def _timeline_fetch(conn, ph, user_id, user, limit, offset):
+    """Query UNION timeline (post/review/follow) + tổng — extract-method thuần."""
+    bc, bc_p = _block_sql(user, "p.user_id")
+    mc, mc_p = _mute_sql(user, "p.user_id")
+    # Đồng bộ với get_user_posts/get_user_reviews (dòng ~3684/3730):
+    # thiếu filter này khiến bài seed/test admin lọt vào tab timeline
+    # trên prod. Splice vào CẢ 2 nhánh post/review của UNION — nhánh
+    # follow không đụng bảng posts nên không cần.
+    seed_filter, seed_params = _prod_seed_post_filter("p")
+
+    timeline_sql = f"""
+        (SELECT 'post' AS type, p.created_at, p.id::text AS ref_id,
+                LEFT(p.content, 200) AS content, p.post_type,
+                e.name AS entity_name, NULL AS target_name,
+                p.like_count, NULL::int AS rating
+         FROM posts p
+         LEFT JOIN entities e ON e.id = p.entity_id
+         WHERE p.user_id::text = {ph} AND p.moderation_status = 'approved'
+               AND p.deleted_at IS NULL AND p.post_type != 'review' {bc} {mc} {seed_filter})
+        UNION ALL
+        (SELECT 'review' AS type, p.created_at, p.id::text AS ref_id,
+                LEFT(p.content, 200) AS content, p.post_type,
+                e.name AS entity_name, NULL AS target_name,
+                p.like_count, p.rating
+         FROM posts p
+         LEFT JOIN entities e ON e.id = p.entity_id
+         WHERE p.user_id::text = {ph} AND p.moderation_status = 'approved'
+               AND p.deleted_at IS NULL AND p.post_type = 'review' {bc} {mc} {seed_filter})
+        UNION ALL
+        (SELECT 'follow' AS type, f.created_at, f.target_id AS ref_id,
+                NULL AS content, NULL AS post_type,
+                NULL AS entity_name,
+                COALESCE(u2.display_name, u2.username, 'Người dùng') AS target_name,
+                NULL AS like_count, NULL::int AS rating
+         FROM follows f
+         LEFT JOIN users u2 ON u2.id::text = f.target_id
+         WHERE f.follower_id::text = {ph} AND f.target_type = 'user')
+        ORDER BY created_at DESC
+        LIMIT {ph} OFFSET {ph}
+    """
+    params = (
+        user_id, *bc_p, *mc_p, *seed_params,
+        user_id, *bc_p, *mc_p, *seed_params,
+        user_id, limit, offset,
+    )
+    rows = db._fetchall(conn, timeline_sql, params)
+
+    count_sql = f"""
+        SELECT (
+            (SELECT COUNT(*) FROM posts WHERE user_id::text = {ph}
+             AND moderation_status = 'approved' AND deleted_at IS NULL)
+            + (SELECT COUNT(*) FROM follows WHERE follower_id::text = {ph}
+               AND target_type = 'user')
+        ) AS c
+    """
+    total_row = db._fetchone(conn, count_sql, (user_id, user_id))
+    total = db._row_to_dict(total_row)["c"] if total_row else 0
+    return rows, total
+
+
+def _timeline_item(d):
+    """Chuẩn hoá 1 dòng timeline thành item response — extract-method thuần."""
+    item = {"type": d["type"], "created_at": str(d["created_at"])}
+    if d["type"] in ("post", "review"):
+        item["data"] = {
+            "id": str(d["ref_id"]),
+            "content": d.get("content") or "",
+            "post_type": d.get("post_type"),
+            "entity_name": d.get("entity_name"),
+            "like_count": d.get("like_count") or 0,
+        }
+        if d["type"] == "review":
+            item["data"]["rating"] = d.get("rating")
+    elif d["type"] == "follow":
+        item["data"] = {
+            "target_id": str(d["ref_id"]),
+            "target_name": d.get("target_name") or "Người dùng",
+        }
+    return item
+
+
+@router.get("/users/{user_id}/timeline", response_model=UserTimelineResponse,
+            summary="User activity timeline",
+            description="Chronological timeline of a user's posts, reviews, and follows.")
+async def get_user_timeline(
+    user_id: str,
+    page: int = Query(1, ge=1, le=1000),
+    limit: int = Query(20, ge=1, le=50),
+    user=Depends(get_current_user),
+):
+    user_id = validate_path_id(user_id, "user_id")
+    ph = db._ph
+    offset = (page - 1) * limit
+    viewer_id = str(user["id"]) if user else None
+
+    def _query():
+        with db._conn() as conn:
+            status, _resolved = _timeline_visibility_gate(conn, ph, user_id, viewer_id)
+            if status == "notfound":
+                return None, 0
+            if status == "hidden":
+                return [], 0
+            return _timeline_fetch(conn, ph, user_id, user, limit, offset)
+
+    result = await asyncio.to_thread(_query)
+    if result[0] is None:
+        raise HTTPException(status_code=404, detail="Người dùng không tồn tại")
+
+    rows, total = result
+    items = [_timeline_item(db._row_to_dict(r)) for r in rows]
+
+    return {"items": items, "total": total, "page": page, "has_more": offset + limit < total}
+
+
+@router.get("/users/{user_id}/activity-heatmap", response_model=ActivityHeatmapResponse,
+            summary="365-day activity heatmap",
+            description="Số đóng góp (bài đăng đã duyệt, gồm cả đánh giá) theo ngày trong 365 ngày qua (GitHub-style).")
+async def get_activity_heatmap(user_id: str, user=Depends(get_current_user)):
+    user_id = validate_path_id(user_id, "user_id")
+    ph = db._ph
+
+    def _query():
+        with db._conn() as conn:
+            access = resolve_profile_access(
+                conn, user_id, str(user["id"]) if user else None, require_activity=True
+            )
+            if access.status != "ok":
+                return access, []
+            rows = db._fetchall(conn, f"""
+                SELECT DATE(created_at) AS d, COUNT(*) AS c
+                FROM posts
+                WHERE user_id::text = {ph}
+                  AND moderation_status = 'approved' AND deleted_at IS NULL
+                  AND created_at > NOW() - INTERVAL '365 days'
+                GROUP BY DATE(created_at)
+                ORDER BY d
+            """, (user_id,))
+            return access, [db._row_to_dict(r) for r in rows]
+
+    access, rows = await asyncio.to_thread(_query)
+    if access.status == "not_found":
+        raise HTTPException(404, "Người dùng không tồn tại")
+    if access.status == "hidden":
+        return {"days": [], "total": 0, "max": 0}
+    days = [{"date": str(r["d"]), "count": int(r["c"])} for r in rows]
+    total = sum(d["count"] for d in days)
+    mx = max((d["count"] for d in days), default=0)
+    return {"days": days, "total": total, "max": mx}
+
+
+# ── Helpers for AI integration (called by tools.py) ──
+
+def get_community_reviews(entity_id: str, limit: int = 5) -> list[dict]:
+    """Get recent approved reviews for an entity — used by AI chatbot."""
+    ph = db._ph
+    with db._conn() as conn:
+        rows = db._fetchall(conn, f"""
+            SELECT p.content, p.rating, p.created_at, u.display_name
+            FROM posts p
+            JOIN users u ON u.id = p.user_id
+            WHERE p.entity_id = {ph} AND p.post_type = 'review'
+                AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
+            ORDER BY p.created_at DESC
+            LIMIT {ph}
+        """, (entity_id, limit))
+    return [db._row_to_dict(r) for r in rows]
+
+
+def get_trending_posts(limit: int = 10, entity_type: str = None) -> list[dict]:
+    """Get trending posts (high engagement) — used by AI chatbot."""
+    ph = db._ph
+    conditions = ["p.moderation_status = 'approved'", "p.deleted_at IS NULL"]
+    params = []
+    if entity_type:
+        conditions.append(f"e.type = {ph}")
+        params.append(entity_type)
+    where = " AND ".join(conditions)
+    params.append(limit)
+    with db._conn() as conn:
+        rows = db._fetchall(conn, f"""
+            SELECT p.content, p.post_type, p.like_count, p.comment_count,
+                   p.rating, p.created_at, u.display_name,
+                   e.name as entity_name, e.type as entity_type
+            FROM posts p
+            JOIN users u ON u.id = p.user_id
+            LEFT JOIN entities e ON e.id = p.entity_id
+            WHERE {where}
+            ORDER BY (p.like_count + p.comment_count * 2) DESC, p.created_at DESC
+            LIMIT {ph}
+        """, params)
+    return [db._row_to_dict(r) for r in rows]
+
+
+def _resolve_user_id(user_id: str) -> str | None:
+    """Resolve a user_id param (UUID or username) to actual UUID string."""
+    identifier = (user_id or "").strip()
+    if not identifier:
+        return None
+    ph = db._ph
+    with db._conn() as conn:
+        row = db._fetchone(conn,
+            f"""
+                SELECT id FROM users
+                WHERE is_active = TRUE AND deleted_at IS NULL
+                  AND (id::text = {ph} OR lower(username) = {ph})
+                LIMIT 1
+            """,
+            (identifier, identifier.lower()))
+    return str(db._row_to_dict(row)["id"]) if row else None
+
+
+_WORDS_PER_MINUTE_VI = 200
+
+
+def _reading_time_min(content: str) -> int:
+    """Estimate reading time in minutes for Vietnamese text."""
+    if not content:
+        return 0
+    word_count = len(content.split())
+    return max(1, round(word_count / _WORDS_PER_MINUTE_VI))
+
+
+def _format_post_jlist(val):
+    """Chuẩn hoá JSON-list (str→list, non-list→[]) — extract-method thuần từ _format_post."""
+    if isinstance(val, str):
+        try:
+            val = json.loads(val)
+        except (json.JSONDecodeError, ValueError, TypeError):
+            val = []
+    return val if isinstance(val, list) else []
+
+
+def _format_post_jobj(val):
+    """Chuẩn hoá JSON-object (str→dict, non-dict→None) — extract-method thuần từ _format_post."""
+    if isinstance(val, str):
+        try:
+            val = json.loads(val)
+        except (json.JSONDecodeError, ValueError, TypeError):
+            val = None
+    return val if isinstance(val, dict) else None
+
+
+_PUBLIC_MEDIA_KEYS = frozenset({"image", "images", "image_url", "image_urls"})
+
+
+def _strip_public_media(value):
+    """Copy nested public payloads while removing stored UGC media fields."""
+    if isinstance(value, dict):
+        return {
+            key: _strip_public_media(nested)
+            for key, nested in value.items()
+            if key not in _PUBLIC_MEDIA_KEYS
+        }
+    if isinstance(value, list):
+        return [_strip_public_media(item) for item in value]
+    return value
+
+
+def _format_post(row: dict) -> dict:
+    mentions = _format_post_jlist(row.get("mentions"))
+    hashtags = _format_post_jlist(row.get("hashtags"))
+    repost = _strip_public_media(_format_post_jobj(row.get("repost_snapshot")))
+
+    return {
+        "id": str(row["id"]),
+        "user_id": str(row.get("user_id", "")),
+        "content": row["content"],
+        "mentions": mentions,
+        "hashtags": hashtags,
+        "best_answer_id": str(row["best_answer_id"]) if row.get("best_answer_id") else None,
+        "pinned_comment_id": str(row["pinned_comment_id"]) if row.get("pinned_comment_id") else None,
+        "is_pinned": bool(row.get("is_pinned")),
+        "share_count": row.get("share_count", 0) or 0,
+        "repost_of": str(row["repost_of"]) if row.get("repost_of") else None,
+        "repost": repost,
+        "post_type": row.get("post_type", "share"),
+        "post_type_label": POST_TYPE_LABELS.get(row.get("post_type", "share"), "Chia sẻ"),
+        "rating": row.get("rating"),
+        "like_count": row.get("like_count", 0),
+        "likes": row.get("like_count", 0),
+        "comment_count": row.get("comment_count", 0),
+        "comments_count": row.get("comment_count", 0),
+        "is_liked": row.get("is_liked", False),
+        "user_liked": row.get("is_liked", False),
+        "is_bookmarked": row.get("is_bookmarked", False),
+        "user_bookmarked": row.get("is_bookmarked", False),
+        "created_at": str(row.get("created_at", "")),
+        "display_name": row.get("display_name", ""),
+        "username": row.get("username"),
+        "avatar": row.get("avatar_url"),
+        "entity_id": row.get("entity_id"),
+        "entity_name": row.get("entity_name"),
+        "entity_type": row.get("entity_type"),
+        "author": {
+            "id": str(row.get("user_id", "")),
+            "display_name": row.get("display_name", ""),
+            "username": row.get("username"),
+            "avatar_url": row.get("avatar_url"),
+        },
+        "entity": {
+            "id": row.get("entity_id"),
+            "name": row.get("entity_name"),
+            "type": row.get("entity_type"),
+        } if row.get("entity_id") else None,
+        "reading_time_min": _reading_time_min(row.get("content", "")),
+        "is_edited": bool(row.get("updated_at") and row.get("created_at") and str(row["updated_at"]) != str(row["created_at"])),
+        "is_featured": bool(row.get("is_featured")),
+        "reactions": row.get("reactions", {}),
+        "review_response": {
+            "content": row.get("response_content"),
+            "responder_name": row.get("responder_name"),
+            "created_at": str(row.get("response_created_at", "")),
+        } if row.get("response_content") else None,
+    }
+
+
+def _may_see_comment_moderation(row: dict, viewer: dict | None) -> bool:
+    """Ai được đọc `moderation_status` của một bình luận.
+
+    Trạng thái kiểm duyệt là chuyện riêng giữa tác giả bình luận và ban quản
+    trị: người lạ đọc được 'pending' của người khác tức là biết nội dung người
+    đó vừa bị gắn cờ. Nhánh quyền lấy đúng của delete_comment (social.py:2529):
+    chính chủ HOẶC admin/moderator. Không có người xem = ĐÓNG.
+    """
+    if not viewer:
+        return False
+    author_id = str(row.get("user_id") or "")
+    viewer_id = str(viewer.get("id") or "")
+    if author_id and author_id == viewer_id:
+        return True
+    return viewer.get("role") in ("admin", "moderator")
+
+
+def _format_comment(row: dict, viewer: dict | None = None) -> dict:
+    """Payload công khai của một bình luận.
+
+    `viewer` là người đang gọi API (None = khách). Nó quyết định DUY NHẤT một
+    việc: có kèm `moderation_status` hay không — xem `_may_see_comment_moderation`.
+    Mặc định None để mọi nơi gọi thiếu tham số đều rơi vào nhánh đóng, chứ không
+    phải nhánh lộ.
+    """
+    mentions = row.get("mentions", [])
+    if isinstance(mentions, str):
+        try:
+            mentions = json.loads(mentions)
+        except (json.JSONDecodeError, ValueError, TypeError):
+            mentions = []
+    out = {
+        "id": str(row["id"]),
+        "content": row["content"],
+        "mentions": mentions if isinstance(mentions, list) else [],
+        "parent_id": str(row["parent_id"]) if row.get("parent_id") else None,
+        "like_count": row.get("like_count", 0),
+        "created_at": str(row.get("created_at", "")),
+        "author": {
+            "id": str(row.get("user_id", "")),
+            "display_name": row.get("display_name", ""),
+            "avatar_url": row.get("avatar_url"),
+        },
+    }
+    if _may_see_comment_moderation(row, viewer):
+        # Chủ bình luận phải BIẾT bản vừa đăng/vừa sửa có bị hạ xuống chờ duyệt
+        # không. Bình luận chưa duyệt biến khỏi GET /comments, nên thiếu trường
+        # này thì frontend chỉ còn cách tải lại danh sách rồi suy ra từ việc nó
+        # còn hiện hay không.
+        out["moderation_status"] = row.get("moderation_status")
+    return out
+
+
+def _enrich_post(row: dict, user: dict) -> dict:
+    row["display_name"] = user.get("display_name")
+    row["avatar_url"] = user.get("avatar_url")
+    return _format_post(row)
+
+
+# ── Route ordering fix ───────────────────────────────────────────────────
+def _compute_shadowed_paths(routes):
+    """Tìm các path tĩnh bị route có param che khuất — extract-method thuần."""
+    param_bases = {}
+    shadowed = set()
+    for r in routes:
+        path = getattr(r, "path", "")
+        if "{" in path:
+            base = path.split("{")[0].rstrip("/")
+            if base not in param_bases:
+                param_bases[base] = True
+        else:
+            for base in param_bases:
+                if path.startswith(base + "/"):
+                    shadowed.add(path)
+    return shadowed
+
+
+def _reorder_shadowed(static_routes, other_routes):
+    """Chèn route tĩnh trước route param tương ứng — extract-method thuần."""
+    for s in reversed(static_routes):
+        spath = getattr(s, "path", "")
+        for i, r in enumerate(other_routes):
+            rpath = getattr(r, "path", "")
+            if "{" in rpath:
+                base = rpath.split("{")[0].rstrip("/")
+                if spath.startswith(base + "/"):
+                    other_routes.insert(i, s)
+                    break
+
+
+def _fix_social_route_order():
+    """Ensure /posts/hidden matches before /posts/{post_id}."""
+    shadowed = _compute_shadowed_paths(router.routes)
+    if not shadowed:
+        return
+    static_routes = []
+    other_routes = []
+    for r in router.routes:
+        path = getattr(r, "path", "")
+        if path in shadowed:
+            static_routes.append(r)
+        else:
+            other_routes.append(r)
+    _reorder_shadowed(static_routes, other_routes)
+    # Defensive: chỉ áp reorder khi bảo toàn đủ route (bỏ qua nếu reorder bỏ sót static).
+    if len(other_routes) == len(router.routes):
+        router.routes[:] = other_routes
+
+_fix_social_route_order()

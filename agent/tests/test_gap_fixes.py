@@ -10,11 +10,20 @@ from fastapi import Request
 from profile_access import ProfileAccessDecision, resolve_profile_access
 
 from _source_window import function_source
+from community import api as community_api  # mien cong dong sang day 2026-08-28
 
 AGENT_DIR = Path(__file__).resolve().parent.parent
 
 
 # ── Reaction counts in feed ──
+
+
+
+def _social_src() -> str:
+    """Nguon mien CONG DONG — chuyen nguyen van sang community/api.py
+    (2026-08-28); shim social.py chi con tai xuat nen doc shim la doc rong."""
+    from pathlib import Path as _P
+    return (_P(__file__).resolve().parent.parent / "community" / "api.py").read_text(encoding="utf-8")
 
 
 def _public_src() -> str:
@@ -320,18 +329,18 @@ class TestPrivacyShowActivityEnforcement:
             assert require_activity is True
             return ProfileAccessDecision("hidden", target_id)
 
-        monkeypatch.setattr(social, "_resolve_user_id", lambda _value: "11111111-1111-1111-1111-111111111111")
-        monkeypatch.setattr(social, "resolve_profile_access", resolve)
-        monkeypatch.setattr(social.db, "_conn", fake_conn)
+        monkeypatch.setattr(community_api, "_resolve_user_id", lambda _value: "11111111-1111-1111-1111-111111111111")
+        monkeypatch.setattr(community_api, "resolve_profile_access", resolve)
+        monkeypatch.setattr(community_api.db, "_conn", fake_conn)
         monkeypatch.setattr(
-            social.db,
+            community_api.db,
             "_fetchone",
             lambda *_args: (_ for _ in ()).throw(
                 AssertionError("queried posts after hidden decision")
             ),
         )
         monkeypatch.setattr(
-            social.db,
+            community_api.db,
             "_fetchall",
             lambda *_args: (_ for _ in ()).throw(
                 AssertionError("queried posts after hidden decision")
@@ -1046,8 +1055,7 @@ class TestPaginationAccuracy:
 
     def test_no_len_equals_limit_pattern(self):
         """No endpoint should use len(results) == limit for has_more."""
-        from pathlib import Path
-        src = Path(AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         occurrences = src.count('len(posts) == limit') + src.count('len(users) == limit') + \
                       src.count('len(drafts) == limit') + src.count('len(scheduled) == limit')
         assert occurrences == 0, f"Found {occurrences} inaccurate has_more patterns"
@@ -2202,28 +2210,28 @@ class TestCacheControlHeaders:
         assert 'private, max-age=30' in fn_src
 
     def test_community_stats_public_cache(self):
-        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "community_stats")
         assert "public, max-age=60" in fn_src
 
     def test_trending_tags_public_cache(self):
-        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "trending_tags")
         assert "public, max-age=60" in fn_src
 
     def test_me_counts_no_cache(self):
-        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "user_counts")
         assert "private, no-cache" in fn_src
 
     def test_hashtags_public_cache(self):
-        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "list_hashtags")
@@ -2410,7 +2418,7 @@ class TestSecurityFixes:
         assert "500" in fn_src
 
     def test_community_stats_filters_deleted(self):
-        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         idx = src.index("async def community_stats(")
         end = min((x for x in (src.find("\n@", idx+10), src.find("\nasync def ", idx+10), src.find("\ndef ", idx+10)) if x > 0), default=len(src))
         fn_src = src[idx:end]
@@ -2524,7 +2532,7 @@ class TestSoftDeleteEnforcement:
     """Write operations must check deleted_at IS NULL on posts."""
 
     def _get_fn(self, name: str, window: int = 800) -> str:
-        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         idx = src.index(name)
         return src[idx:idx+window]
 
@@ -2573,7 +2581,7 @@ class TestSoftDeleteEnforcement:
 
     def test_update_comment_none_check(self):
         """Update comment must handle None result from re-fetch."""
-        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn = function_source(src, "edit_comment")
@@ -2593,7 +2601,7 @@ class TestRaceConditionFixes:
 
     def test_pin_post_advisory_lock(self):
         """pin_post_to_profile must use advisory lock before count check."""
-        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn = function_source(src, "pin_post_to_profile")
@@ -2605,7 +2613,7 @@ class TestRaceConditionFixes:
 
     def test_report_post_advisory_lock(self):
         """report_post must use advisory lock to prevent duplicate reports."""
-        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn = function_source(src, "report_post")
@@ -2617,7 +2625,7 @@ class TestRaceConditionFixes:
 
     def test_report_user_advisory_lock(self):
         """report_user must use advisory lock to prevent duplicate reports."""
-        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn = function_source(src, "report_user")
@@ -2629,7 +2637,7 @@ class TestRaceConditionFixes:
 
     def test_appeal_post_advisory_lock(self):
         """appeal_post must use advisory lock to prevent duplicate appeals."""
-        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn = function_source(src, "appeal_post")
@@ -2773,7 +2781,7 @@ class TestCommentCountSync:
     def test_social_does_not_manually_bump_comment_count(self):
         # Chống regression: social.py KHÔNG còn UPDATE comment_count tay (trước +1/-N tay
         # chồng recount trigger → đếm dư mỗi bình luận + drift khi soft-delete).
-        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         assert "comment_count = comment_count + 1" not in src
         assert "comment_count = GREATEST(comment_count" not in src
 
@@ -2793,7 +2801,7 @@ class TestPerformanceOptimizations:
         assert result == []
 
     def test_comment_replies_have_limit(self):
-        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "get_comments")
@@ -3072,7 +3080,7 @@ class TestEnumPatternValidation:
             assert val in fn_src
 
     def test_trending_tags_period_has_pattern(self):
-        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "trending_tags")
@@ -3081,7 +3089,7 @@ class TestEnumPatternValidation:
             assert val in fn_src
 
     def test_entity_feed_sort_has_pattern(self):
-        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "get_entity_feed")

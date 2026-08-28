@@ -49,7 +49,15 @@ PG_GUARD = "require_pg"
 # Module phục vụ UGC/auth — theo CLAUDE.md §1.3 chúng là Postgres-only, chạy
 # SQLite phải trả 503 rõ ràng chứ không phải 500 vỡ bụng.
 UGC_MODULES = frozenset(
-    {"social", "notifications", "achievements", "plans", "saved", "visits", "auth"}
+    {
+        "social", "notifications", "achievements", "plans", "saved", "visits", "auth",
+        # Miền cộng đồng sang gói community/ (2026-08-28): handler dời mang
+        # __module__ == "community.api". Không thêm là selector đếm hụt và
+        # chính rào này tự đỏ với thông điệp "đừng tin màu xanh" — đúng thiết kế.
+        "community.api",
+        # identity/ (lát kế) — thêm sẵn cùng lý do.
+        "identity.api",
+    }
 )
 
 # Route SSE: bị loại khỏi phần gọi HTTP thật vì nếu guard biến mất thì response

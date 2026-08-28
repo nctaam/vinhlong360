@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 
 import public_api
 import social
+from community import api as community_api  # mien cong dong sang day 2026-08-28
 from auth_middleware import get_current_user, require_user
 from database import db
 from profile_access import (
@@ -80,6 +81,9 @@ def _stub_profile_decision(
     monkeypatch.setattr(module, "resolve_profile_access", _resolve, raising=False)
 
 
+# Cac helper nhan `module` lam THAM SO — kich ban A (thay setattr(social,...))
+# khong thay duoc dang gian tiep nay. Call-site phai truyen community_api:
+# handler doc globals cua module THAT, va shim chi la guong (2026-08-28).
 def _deny_data_queries(monkeypatch, module):
     monkeypatch.setattr(module.db, "_conn", _fake_conn)
     monkeypatch.setattr(module.db, "_fetchone", _unexpected_query)
@@ -130,21 +134,21 @@ def _stub_profile_query_dependencies(monkeypatch, *, is_self, privacy_outcome):
         follower_checks["count"] += 1
         return True
 
-    monkeypatch.setattr(social.db, "_conn", _fake_conn)
-    monkeypatch.setattr(social.db, "_fetchone", _fetchone)
-    monkeypatch.setattr(social.db, "_row_to_dict", _row_to_dict)
+    monkeypatch.setattr(community_api.db, "_conn", _fake_conn)
+    monkeypatch.setattr(community_api.db, "_fetchone", _fetchone)
+    monkeypatch.setattr(community_api.db, "_row_to_dict", _row_to_dict)
     monkeypatch.setattr(
-        social,
+        community_api,
         "_profile_resolve",
         lambda *_args: (profile, USER_ID, is_self, False),
     )
-    monkeypatch.setattr(social, "_reputation", lambda *_args: {"followers": 7})
-    monkeypatch.setattr(social, "_profile_is_follower", _is_follower)
+    monkeypatch.setattr(community_api, "_reputation", lambda *_args: {"followers": 7})
+    monkeypatch.setattr(community_api, "_profile_is_follower", _is_follower)
     monkeypatch.setattr(
-        social, "_profile_viewer_rel", lambda *_args: (True, False, False)
+        community_api, "_profile_viewer_rel", lambda *_args: (True, False, False)
     )
-    monkeypatch.setattr(social, "_profile_view_count_7d", lambda *_args: 0)
-    monkeypatch.setattr(social, "_log_profile_view_threaded", lambda *_args: None)
+    monkeypatch.setattr(community_api, "_profile_view_count_7d", lambda *_args: 0)
+    monkeypatch.setattr(community_api, "_log_profile_view_threaded", lambda *_args: None)
     return profile, follower_checks
 
 
@@ -389,15 +393,15 @@ def test_missing_privacy_defaults_to_follower_relationships_without_activity(
 
 
 def test_hidden_user_posts_returns_existing_empty_shape(monkeypatch):
-    monkeypatch.setattr(social, "_resolve_user_id", lambda _user_id: USER_ID)
+    monkeypatch.setattr(community_api, "_resolve_user_id", lambda _user_id: USER_ID)
     _stub_profile_decision(
         monkeypatch,
-        social,
+        community_api,
         ProfileAccessDecision("hidden", USER_ID),
         viewer_id=None,
         require_activity=True,
     )
-    _deny_data_queries(monkeypatch, social)
+    _deny_data_queries(monkeypatch, community_api)
 
     result = asyncio.run(
         social.get_user_posts(USER_ID, _request(None), page=2, limit=20)
@@ -407,15 +411,15 @@ def test_hidden_user_posts_returns_existing_empty_shape(monkeypatch):
 
 
 def test_hidden_user_reviews_returns_existing_empty_shape(monkeypatch):
-    monkeypatch.setattr(social, "_resolve_user_id", lambda _user_id: USER_ID)
+    monkeypatch.setattr(community_api, "_resolve_user_id", lambda _user_id: USER_ID)
     _stub_profile_decision(
         monkeypatch,
-        social,
+        community_api,
         ProfileAccessDecision("hidden", USER_ID),
         viewer_id=None,
         require_activity=True,
     )
-    _deny_data_queries(monkeypatch, social)
+    _deny_data_queries(monkeypatch, community_api)
 
     result = asyncio.run(
         social.get_user_reviews(USER_ID, _request(None), page=3, limit=20)
@@ -425,15 +429,15 @@ def test_hidden_user_reviews_returns_existing_empty_shape(monkeypatch):
 
 
 def test_hidden_following_returns_existing_empty_shape(monkeypatch):
-    monkeypatch.setattr(social, "_resolve_user_id", lambda _user_id: USER_ID)
+    monkeypatch.setattr(community_api, "_resolve_user_id", lambda _user_id: USER_ID)
     _stub_profile_decision(
         monkeypatch,
-        social,
+        community_api,
         ProfileAccessDecision("hidden", USER_ID),
         viewer_id=None,
         require_activity=False,
     )
-    _deny_data_queries(monkeypatch, social)
+    _deny_data_queries(monkeypatch, community_api)
 
     result = asyncio.run(
         social.list_following_users(USER_ID, limit=25, offset=50, user=None)
@@ -443,15 +447,15 @@ def test_hidden_following_returns_existing_empty_shape(monkeypatch):
 
 
 def test_hidden_followers_returns_existing_empty_shape(monkeypatch):
-    monkeypatch.setattr(social, "_resolve_user_id", lambda _user_id: USER_ID)
+    monkeypatch.setattr(community_api, "_resolve_user_id", lambda _user_id: USER_ID)
     _stub_profile_decision(
         monkeypatch,
-        social,
+        community_api,
         ProfileAccessDecision("hidden", USER_ID),
         viewer_id=None,
         require_activity=False,
     )
-    _deny_data_queries(monkeypatch, social)
+    _deny_data_queries(monkeypatch, community_api)
 
     result = asyncio.run(
         social.list_followers(USER_ID, limit=25, offset=75, user=None)
@@ -463,12 +467,12 @@ def test_hidden_followers_returns_existing_empty_shape(monkeypatch):
 def test_hidden_activity_heatmap_returns_existing_empty_shape(monkeypatch):
     _stub_profile_decision(
         monkeypatch,
-        social,
+        community_api,
         ProfileAccessDecision("hidden", USER_ID),
         viewer_id=None,
         require_activity=True,
     )
-    _deny_data_queries(monkeypatch, social)
+    _deny_data_queries(monkeypatch, community_api)
 
     result = asyncio.run(social.get_activity_heatmap(USER_ID, user=None))
 
@@ -622,7 +626,7 @@ def test_get_user_profile_restricts_followers_visibility_for_nonfollower(monkeyp
         False,
         False,
     )
-    monkeypatch.setattr(social, "_profile_query", lambda *_args: query_result)
+    monkeypatch.setattr(community_api, "_profile_query", lambda *_args: query_result)
 
     result = asyncio.run(social.get_user_profile(profile["id"], user=None))
 
@@ -714,9 +718,9 @@ def test_friend_saves_enforces_owner_visibility_in_sql(monkeypatch):
         captured["params"] = params
         return [row]
 
-    monkeypatch.setattr(social.db, "_conn", _fake_conn)
-    monkeypatch.setattr(social.db, "_fetchall", _fetchall)
-    monkeypatch.setattr(social.db, "_row_to_dict", lambda value: value)
+    monkeypatch.setattr(community_api.db, "_conn", _fake_conn)
+    monkeypatch.setattr(community_api.db, "_fetchall", _fetchall)
+    monkeypatch.setattr(community_api.db, "_row_to_dict", lambda value: value)
 
     result = asyncio.run(social.get_friend_saves(limit=5, user={"id": "viewer-1"}))
 

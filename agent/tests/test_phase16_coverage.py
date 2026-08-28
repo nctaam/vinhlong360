@@ -18,6 +18,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 # ═══════════════════════════════════════════════════════════════════════
 
 
+
+def _social_src() -> str:
+    """Nguon mien CONG DONG — chuyen nguyen van sang community/api.py
+    (2026-08-28); shim social.py chi con tai xuat nen doc shim la doc rong."""
+    from pathlib import Path as _P
+    return (_P(__file__).resolve().parent.parent / "community" / "api.py").read_text(encoding="utf-8")
+
+
 def _public_src() -> str:
     """Nguon MAT CONG KHAI — hop nhat public_api.py + entities/api.py.
 
@@ -683,7 +691,7 @@ class TestQueryParamConstraints:
         assert "max_length" in block
 
     def test_feed_params_constrained(self):
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         block = function_source(src, "get_feed")
@@ -701,15 +709,15 @@ class TestQueryParamConstraints:
         assert "SELECT r.*" not in src
 
     def test_social_no_select_star_posts(self):
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         assert "p.*" not in src
 
     def test_social_no_select_star_comments(self):
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         assert "c.*" not in src
 
     def test_social_uses_post_cols_constant(self):
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         assert "_POST_COLS" in src
         assert "_COMMENT_COLS" in src
 
@@ -748,8 +756,12 @@ class TestSecurityPosture:
             assert "require_csrf" in block, f"{fn} missing CSRF"
 
     def test_require_pg_on_ugc_routers(self):
+        # social.py la shim (community/api.py, 2026-08-28) — nhanh social doc nguon that.
         for module in ("saved", "visits", "plans", "notifications", "social"):
-            src = (Path(__file__).resolve().parent.parent / f"{module}.py").read_text(encoding="utf-8")
+            if module == "social":
+                src = _social_src()
+            else:
+                src = (Path(__file__).resolve().parent.parent / f"{module}.py").read_text(encoding="utf-8")
             assert "_require_pg" in src, f"{module}.py missing _require_pg"
 
     def test_validate_path_id_coverage(self):
@@ -885,7 +897,7 @@ class TestSecurityPosture:
 
     def test_social_cache_invalidation_on_mutations(self):
         """Post create/update/delete must invalidate trending + leaderboard caches."""
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         assert "def _invalidate_social_caches" in src
         for fn in ("create_post", "update_post", "delete_post"):
             idx = src.find(f"def {fn}")
@@ -1010,6 +1022,8 @@ class TestSecurityPosture:
         for module_name, fn_names in [("social", ["create_post", "create_comment"]), ("admin", ["create_entity", "create_itinerary"])]:
             if module_name == "admin":
                 src = _admin_src()
+            elif module_name == "social":
+                src = _social_src()
             else:
                 src = (Path(__file__).resolve().parent.parent / f"{module_name}.py").read_text(encoding="utf-8")
             for fn in fn_names:
@@ -1071,8 +1085,7 @@ class TestSecurityPosture:
 
     def test_comments_endpoint_has_offset(self):
         """Comments endpoint must support offset pagination."""
-        from pathlib import Path
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         func_block = function_source(src, "get_comments")
@@ -1137,7 +1150,7 @@ class TestSecurityPosture:
 
     def test_get_post_has_block_check(self):
         """get_post must filter blocked users when viewing by direct URL."""
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         block = function_source(src, "get_post")
@@ -1145,7 +1158,7 @@ class TestSecurityPosture:
 
     def test_delete_post_cleans_reposts(self):
         """delete_post must nullify repost_of references to prevent orphan data."""
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         block = function_source(src, "delete_post")
@@ -1281,7 +1294,7 @@ class TestMediumFixesBatch2:
         # Refactor: block check moved to helper _comment_guard (via _comment_query).
         import inspect
         import social
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         assert "_comment_query" in function_source(src, "create_comment")
@@ -1308,7 +1321,7 @@ class TestMediumFixesBatch2:
         # _post_do_update. update_post gọi cả hai (wiring). Giữ nguyên assertion.
         import inspect
         import social
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         umeta = function_source(src, "update_post")
@@ -1629,7 +1642,7 @@ class TestDeepScanBatch5:
 
     def test_entity_followers_notification_has_limit(self):
         """Entity follower notification query must have LIMIT to prevent unbounded fetch."""
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         idx = src.find("_notify_entity_followers")
         assert idx > 0
         block = src[idx:idx+600]
@@ -1824,7 +1837,7 @@ class TestEndpointAuthGuards:
 
     def test_suggested_follows_has_limit(self):
         """Suggested-follows SQL query must have LIMIT to prevent full table scan."""
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         block = function_source(src, "suggested_follows")
@@ -1964,14 +1977,14 @@ class TestPostDeletionCleanup:
     """B3: Post deletion uses soft delete (deleted_at), not hard DELETE."""
 
     def test_delete_post_uses_soft_delete(self):
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         delete_fn = src[src.index("async def delete_post("):]
         delete_fn = delete_fn[:delete_fn.index("\n@router.")]
         assert "SET deleted_at" in delete_fn
         assert "DELETE FROM posts" not in delete_fn
 
     def test_feeds_filter_deleted_posts(self):
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         assert src.count("deleted_at IS NULL") >= 30
 
     def test_public_api_filters_deleted_posts(self):
@@ -2001,7 +2014,7 @@ class TestInfoReportsLockShared:
             "info_report_action must use _info_reports_lock for thread safety"
 
     def test_trending_cache_has_asyncio_lock(self):
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         assert "_trending_lock = asyncio.Lock()" in src
         assert "_leaderboard_lock = asyncio.Lock()" in src
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
@@ -2105,7 +2118,7 @@ class TestCommentParentValidation:
         # Refactor: parent validation moved to helper _comment_guard.
         import inspect
         import social
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         assert "_comment_query" in function_source(src, "create_comment")
@@ -2365,7 +2378,7 @@ class TestAdminBugFixes:
 
     def test_social_search_strips_html_from_q(self):
         """Social search endpoints must strip HTML tags from returned q."""
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         for fn in ["async def search_posts", "async def search_users"]:
             idx = src.find(fn)
             assert idx != -1, f"{fn} not found"
@@ -2378,7 +2391,7 @@ class TestAdminBugFixes:
 
     def test_following_followers_block_enforcement(self):
         """following/followers endpoints must apply _block_sql filter."""
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         for fn in ["async def list_following_users", "async def list_followers"]:
             idx = src.find(fn)
             assert idx != -1, f"{fn} not found"
@@ -2389,7 +2402,7 @@ class TestAdminBugFixes:
 
     def test_related_posts_block_enforcement(self):
         """related_posts endpoint must apply _block_sql filter."""
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         idx = src.find("async def related_posts")
         assert idx != -1
         end_idx = src.find("\n@router.", idx + 1)

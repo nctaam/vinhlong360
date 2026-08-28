@@ -23,6 +23,19 @@ import auth
 import seo
 from database import db
 
+_SOCIAL_SRC_CACHE = None
+
+def _social_src() -> str:
+    """Nguon mien CONG DONG — community/api.py (2026-08-28). social.py la shim
+    tai xuat; doc shim la doc rong nen guard mat rang."""
+    global _SOCIAL_SRC_CACHE
+    if _SOCIAL_SRC_CACHE is None:
+        from community import api as _impl
+        _SOCIAL_SRC_CACHE = Path(_impl.__file__).read_text(encoding="utf-8")
+    return _SOCIAL_SRC_CACHE
+
+
+
 pg_only = pytest.mark.skipif(
     not db._use_pg,
     reason="UGC/auth is Postgres-only. Set DATABASE_URL=postgresql://… to run.",
@@ -1583,8 +1596,9 @@ class TestPhase10LikeEscape:
 
     def test_social_search_posts_uses_escape(self):
         """Social post search escapes LIKE wildcards."""
-        import social
-        src = Path(social.__file__).read_text(encoding="utf-8")
+        # social.py la shim (mien cong dong -> community/api.py, 2026-08-28) —
+        # doc file shim la doc rong. Dung helper doc nguon that.
+        src = _social_src()
         idx = src.find("def search_posts")
         block = src[idx:idx + 1500]
         assert "escape_like" in block
@@ -1592,8 +1606,9 @@ class TestPhase10LikeEscape:
 
     def test_social_search_users_uses_escape(self):
         """Social user search escapes LIKE wildcards."""
-        import social
-        src = Path(social.__file__).read_text(encoding="utf-8")
+        # social.py la shim (mien cong dong -> community/api.py, 2026-08-28) —
+        # doc file shim la doc rong. Dung helper doc nguon that.
+        src = _social_src()
         idx = src.find("def search_users")
         block = src[idx:idx + 1500]
         assert "escape_like" in block
@@ -1608,8 +1623,10 @@ class TestPhase10PaginationConsistency:
     @classmethod
     def _social_src(cls):
         if cls._src is None:
-            import social
-            cls._src = Path(social.__file__).read_text(encoding="utf-8")
+            # social.py nay la SHIM tai xuat (mien cong dong sang community/api.py,
+            # 2026-08-28) — doc shim la doc rong, moi guard duoi day thanh vo nghia.
+            from community import api as _impl
+            cls._src = Path(_impl.__file__).read_text(encoding="utf-8")
         return cls._src
 
     @staticmethod
@@ -1715,7 +1732,7 @@ class TestPhase11SelfRepost:
         """create_post rejects reposting own post."""
         # Refactor: repost guard moved to helper _process_repost (called from
         # create_post). Wiring-assert + giữ nguyên assertion trên block helper.
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         cp_idx = src.find("def create_post")
         assert "_process_repost" in src[cp_idx:cp_idx + 5000]
         idx = src.find("def _process_repost")
@@ -1776,7 +1793,7 @@ class TestPhase11CommentEditWindow:
 
     def test_edit_comment_has_time_check(self):
         """edit_comment rejects edits after 24 hours."""
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         idx = src.find("def edit_comment")
         end = src.find("\nasync def ", idx + 1)
         block = src[idx:end] if end != -1 else src[idx:idx + 3000]
@@ -1786,7 +1803,7 @@ class TestPhase11CommentEditWindow:
 
     def test_edit_comment_returns_400_after_window(self):
         """edit_comment raises 400 when window expired."""
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         idx = src.find("def edit_comment")
         end = src.find("\nasync def ", idx + 1)
         block = src[idx:end] if end != -1 else src[idx:idx + 3000]
@@ -1801,7 +1818,7 @@ class TestPhase11SelfLikePrevention:
         """toggle_like rejects liking own post."""
         # Refactor: self-like guard moved to helper _like_check_self (called from
         # toggle_like). Wiring-assert + giữ nguyên assertion trên block helper.
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         tl_idx = src.find("def toggle_like")
         tl_end = src.find("\n\n\n", tl_idx + 1)
         assert "_like_check_self" in src[tl_idx:tl_end if tl_end != -1 else tl_idx + 4000]
@@ -1812,7 +1829,7 @@ class TestPhase11SelfLikePrevention:
     def test_toggle_like_checks_post_exists(self):
         """toggle_like verifies post exists before like check."""
         # Refactor: post-exists check moved to helper _like_check_self.
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         tl_idx = src.find("def toggle_like")
         assert "_like_check_self" in src[tl_idx:tl_idx + 1500]
         gidx = src.find("def _like_check_self")
@@ -1950,7 +1967,7 @@ class TestPhase11CommentCap:
         # Refactor: cap check moved to helper _comment_guard (called via
         # _comment_query). MAX_COMMENTS_PER_POST vẫn ở create_comment; thông
         # điệp giới hạn ở helper. Wiring-assert + giữ nguyên assertion.
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         idx = src.find("def create_comment")
         end = src.find("\nasync def ", idx + 1)
         block = src[idx:end] if end != -1 else src[idx:idx + 4000]
@@ -1971,7 +1988,7 @@ class TestPhase11FollowingFeedBlockFilter:
 
     def test_following_feed_has_block_sql(self):
         """get_following_feed applies _block_sql to filter blocked users."""
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         idx = src.find("def get_following_feed")
         end = src.find("\nasync def ", idx + 1)
         block = src[idx:end] if end != -1 else src[idx:idx + 4000]
@@ -1980,7 +1997,7 @@ class TestPhase11FollowingFeedBlockFilter:
 
     def test_following_feed_block_in_both_queries(self):
         """Block filter applied to both feed and count SQL."""
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         idx = src.find("def get_following_feed")
         end = src.find("\nasync def ", idx + 1)
         block = src[idx:end] if end != -1 else src[idx:idx + 4000]
@@ -1992,7 +2009,7 @@ class TestPhase11DailyPostLimit:
 
     def test_create_post_has_daily_limit(self):
         """create_post enforces a daily rate limit in addition to per-minute."""
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         idx = src.find("def create_post")
         block = src[idx:idx + 1000]
         assert "post-day:" in block
@@ -2202,20 +2219,20 @@ class TestPhase13ConfigCentralization:
         assert settings.PBKDF2_ITERATIONS == 310_000
 
     def test_social_uses_config_for_daily_limit(self):
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         assert "_cfg.RL_POST_DAILY_LIMIT" in src
         assert "_cfg.RL_POST_DAILY_WINDOW" in src
 
     def test_social_uses_config_for_comment_cap(self):
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         assert "_cfg.MAX_COMMENTS_PER_POST" in src
 
     def test_social_uses_config_for_edit_window(self):
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         assert "_cfg.COMMENT_EDIT_WINDOW_HOURS" in src
 
     def test_social_uses_config_for_trending_ttl(self):
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         assert "_cfg.TRENDING_CACHE_TTL" in src
 
     def test_auth_uses_config_for_pbkdf2(self):
@@ -2233,7 +2250,7 @@ class TestPhase13ConfigCentralization:
 
     def test_no_hardcoded_daily_limit(self):
         """Ensure RL_POST_DAILY_LIMIT is not hardcoded to 50 in social.py."""
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         lines = [l for l in src.splitlines() if "RL_POST_DAILY_LIMIT" in l and "= 50" in l]
         assert not lines, f"Hardcoded daily limit found: {lines}"
 
@@ -2278,16 +2295,16 @@ class TestPhase14QueryOptimization:
     """Phase 14: Query optimization — caching and SELECT * removal."""
 
     def test_leaderboard_cache_exists(self):
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         assert "_leaderboard_cache" in src
 
     def test_no_select_star_in_privacy(self):
         """user_privacy queries must select explicit columns."""
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         assert "SELECT * FROM user_privacy" not in src
 
     def test_privacy_selects_explicit_columns(self):
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
+        src = _social_src()
         assert "profile_visibility, show_activity, show_saved FROM user_privacy" in src
 
 

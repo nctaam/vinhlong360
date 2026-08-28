@@ -16,6 +16,7 @@ from fastapi.testclient import TestClient  # noqa: E402
 import ratelimit  # noqa: E402
 from ratelimit import check_rate  # noqa: E402
 from database import db  # noqa: E402
+from community import api as community_api  # mien cong dong sang day 2026-08-28
 
 pg_only = pytest.mark.skipif(not db._use_pg, reason="UGC là Postgres-only (SQLite trả 503).")
 
@@ -67,7 +68,7 @@ def test_create_post_rate_limited(monkeypatch):
     from auth_middleware import require_user, get_current_user
 
     ratelimit._reset()
-    monkeypatch.setattr(social, "RL_POST_LIMIT", 2)  # hạ limit để test nhanh
+    monkeypatch.setattr(community_api, "RL_POST_LIMIT", 2)  # hạ limit để test nhanh
     user = db.create_user("09" + uuid.uuid4().hex[:8])
     app = FastAPI()
     app.include_router(social.router)

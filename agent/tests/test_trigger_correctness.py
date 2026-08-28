@@ -4,6 +4,7 @@ BUG 1: rating aggregate đếm cả review soft-deleted → sao không hồi ph�
 BUG 2: comment_count đếm dư (+1 tay chồng recount) + drift khi soft-delete.
 Test end-to-end qua API (social.router) → chứng minh trigger là nguồn-sự-thật.
 """
+from community import api as community_api  # mien cong dong sang day 2026-08-28
 import sys
 import uuid
 from pathlib import Path
@@ -34,7 +35,7 @@ def approve_moderation(monkeypatch):
     async def _approve(content, **kwargs):
         return {"status": "approved", "score": 0.0, "reasons": []}
 
-    monkeypatch.setattr(social, "moderate_content_enhanced", _approve)
+    monkeypatch.setattr(community_api, "moderate_content_enhanced", _approve)
 
 
 @pytest.fixture
