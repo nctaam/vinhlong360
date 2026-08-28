@@ -3989,3 +3989,11 @@ hai miền này vẫn là NỢ TEST B3 (đo bằng độ phủ), không phải c
   5. `agent/learn_loop.py:114` — `_detect_entity_type` keyword 'OCOP' viết hoa so với text đã lower → không bao giờ khớp.
   6. `agent/learn_loop.py:511` — `_find_best_snippet` khớp title nhưng body rỗng vẫn return '' thay vì thử result kế.
   7. `agent/crawler.py:132` — `make_slug` strip("-") TRƯỚC rồi mới cắt [:60] → tên dài có thể ra slug kết thúc bằng "-".
+
+- **[2026-08-28, đợt test B3-B] 6 nghi-bug sản phẩm từ 286 test PG-backed đầu tiên của community/identity — CHƯA sửa** (chi tiết + cách tái hiện trong docstring các file `*_pg.py`):
+  1. `agent/community/api.py:2218` — `_related_by_tags` dùng `p.hashtags && ARRAY[...]::text[]` nhưng `posts.hashtags` là JSONB: PG không có toán tử `jsonb && text[]` (probe trực tiếp xác nhận). Nhánh bù-theo-hashtag của GET /posts/{id}/related **500 từ khi sinh ra** mỗi khi bài nguồn có hashtag và bài cùng-entity ít hơn limit. Gợi ý: `?|` hoặc EXISTS trên `jsonb_array_elements_text`.
+  2. `agent/community/api.py:2827` — `toggle_like` SELECT `like_count` trong cùng statement với CTE INSERT/DELETE nên trả giá trị **trước** trigger AFTER cập nhật: like trả 0 khi DB là 1, unlike trả 1 khi DB là 0. Đã tái hiện trên PG.
+  3. `agent/community/api.py:2776` — `set_best_answer` SELECT `post_type` nhưng không kiểm (bài share/review vẫn chọn best answer); chỉ lọc `deleted_at`, bình luận `moderation_status` pending/rejected vẫn chọn được.
+  4. `agent/community/api.py:2541` — `delete_comment` xoá notifications `ref_type='comment'` nhưng thông báo do `create_comment` sinh mang `ref_type='post'` → thông báo mồ côi trỏ bình luận đã xoá.
+  5. `agent/community/api.py:73` — `_POST_COLS` thiếu `p.is_pinned` nên `get_user_posts`/`get_user_reviews` ORDER BY pin nhưng mọi item trả `is_pinned=False` — response tự mâu thuẫn với thứ tự của chính nó.
+  6. `agent/community/api.py:3538` — mô tả OpenAPI của `upload_image` ("Returns the uploaded image URL") nói ngược hành vi thật: cổng AI-only (§1.5) chặn vô điều kiện 400 `ai_only_media`.
