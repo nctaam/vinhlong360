@@ -3978,3 +3978,14 @@ mỗi miền có test boundary ghép R20.7. Hai lát cuối mua về ~0 cách ly
 như bản đồ §8 dự đoán — giá trị thật của chúng là ĐỒNG PHỤC HOÁ (mọi miền cùng
 một khuôn gói) và bộ hình-thái-mù trục 2/4 nay đã đo đủ. Nợ thật còn lại của
 hai miền này vẫn là NỢ TEST B3 (đo bằng độ phủ), không phải cấu trúc.
+
+### Backlog phát sinh — Đợt test B3-A (2026-08-28)
+
+- **[2026-08-28, đợt test B3-A] 7 nghi-bug sản phẩm do test đặc tả đào ra — CHƯA sửa, chưa khoá bằng assertion** (nguồn: workflow 6 agent, chi tiết từng cái trong docstring file test tương ứng):
+  1. `agent/chat/api.py:698,:712` — except-handler của `_tool_community_reviews`/`_tool_trending_posts` gọi `logger.warning("... %s", e)` kiểu %-style nhưng `middleware.StructuredLogger.warning(self, msg, **kw)` không nhận positional → chính câu log nổ TypeError, nhánh degrade (`"Không thể tải đánh giá/bài viết"`) là MÃ CHẾT; call_tool nuốt thành "Không thực hiện được công cụ..." sai ngữ cảnh. Đã tái hiện bằng fake social raise RuntimeError. NẶNG NHẤT đợt này.
+  2. `agent/chat/api.py:384` — `_area_matches` với area-slug lạ (không có trong `_PROV_NAMES`): entity không place/province_old cho `'' == ''` → mọi entity "trôi nổi" khớp bất kỳ area lạ.
+  3. `agent/chat/api.py:431` — `_accom_filters_ok`: `attrs.get('booking_note','')` trả None khi key tồn tại giá trị None → nối chuỗi nổ TypeError.
+  4. `agent/auto_learn.py` — 5 pattern chữ HOA trong `LEGAL_PATTERNS` ("UBND", "HĐND", "NQ-", "CT/TW", "QĐ-") không bao giờ match vì input đã `.lower()` → tên văn bản hành chính lọt bộ lọc.
+  5. `agent/learn_loop.py:114` — `_detect_entity_type` keyword 'OCOP' viết hoa so với text đã lower → không bao giờ khớp.
+  6. `agent/learn_loop.py:511` — `_find_best_snippet` khớp title nhưng body rỗng vẫn return '' thay vì thử result kế.
+  7. `agent/crawler.py:132` — `make_slug` strip("-") TRƯỚC rồi mới cắt [:60] → tên dài có thể ra slug kết thúc bằng "-".
