@@ -189,3 +189,19 @@ việc đó đo bằng độ phủ, xử bằng viết test, không xử bằng 
 `entity_read` `admin_common`), server.py −61%, public_api −27%, admin −23%,
 433 route nguyên vẹn, cổng R20.9 nhìn thấy mọi mount. Bài học vận hành nằm ở
 ROADMAP §45–46 (bốn trục chi phí, khuôn ba-phép-đo, sự cố B1).
+
+## 8b. HẬU BÚT (2026-08-28, cùng ngày) — chủ dự án chỉ đạo cắt nốt: 5/5
+
+Kết luận "không cắt" ở trên bị chỉ đạo trực tiếp của chủ dự án vượt qua ngay
+trong ngày ("tiếp tục tách module"). Hai lát cuối đã thi công dưới dạng
+**đổi-nhà-nguyên-văn + shim phản-chiếu-động** (đúng như §8 tiên lượng: không
+có gì để "tách", chỉ có nhà để dời): `community/` commit `aa4df523`,
+`identity/` commit `2e18cd1e` — cả hai nghiệm thu diff-đúng-từng-tên rỗng so
+16 fail-đã-biết, DB thật 1746/0 ở mọi mốc đo (trục 4 sạch, gồm cả vùng 23
+fixture của identity mà §8 xếp "đắt nhất").
+
+Phần ĐO của §8 vẫn đúng nguyên: hai lát mua về ~0 cách ly mới. Cái chúng mua
+được nằm ngoài thước đó — đồng-phục-hoá (5/5 miền cùng một khuôn gói, mỗi miền
+một test boundary R20.7) và bộ hình-thái-mù trục 2/4 nay đo đủ. Toàn bộ hồ sơ
+thi công + năm hình thái mù trục 2: ROADMAP §47. Nợ thật của hai miền vẫn là
+NỢ TEST B3 — kết luận đó không đổi.

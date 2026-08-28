@@ -3863,6 +3863,7 @@ dối": `\| tail -4` cắt mất danh sách FAILED (phải chạy lại 15 phút
 > Gói `agent/entities/` nay đủ HAI MẶT theo khuôn `cases/`: `api.py` (công khai)
 > + `admin_api.py` (quản trị). Còn lại của kế hoạch: `community/` và `identity/`
 > — CẢ HAI trong vùng mù B3, đọc §46.4 trước khi động.
+> CẬP NHẬT 2026-08-28: hai lát đó ĐÃ THI CÔNG theo chỉ đạo chủ dự án — xem §47.
 
 #### 46.1 Số liệu
 
@@ -3917,4 +3918,63 @@ TRƯỚC/SAU lượt đo đầu tiên.**
 - Giá đo sẵn: `identity/` 164 điểm vá + 147 thuộc-tính (đắt nhất);
   `community/` 39 + 26.
 - Cả hai chưa có nhu cầu ép buộc. Khuyến nghị của bản đồ giữ nguyên: **đo xem
-  còn đau không trước khi cắt tiếp.**
+  còn đau không trước khi cắt tiếp.** *(Khuyến nghị này đã bị chỉ đạo chủ dự án
+  vượt qua ngày 2026-08-28 — kết quả thi công ở §47.)*
+
+### 47. Hai lát cuối `community/` + `identity/` — đổi-nhà-nguyên-văn, khép chương trình 5/5 (2026-08-28)
+
+> STATUS: done — hai commit `aa4df523` (community) và `2e18cd1e` (identity).
+> Thi công theo chỉ đạo trực tiếp của chủ dự án, VƯỢT khuyến nghị "không cắt"
+> của bản đồ §8 (khuyến nghị đó vẫn đúng về mặt đo lường — xem 47.4).
+
+#### 47.1 Hình dạng lát: ĐỔI NHÀ, không cắt bao đóng
+
+Khác ba lát trước, `social.py` và `auth.py` đã là miền-đơn (3 và 5 ký hiệu bị
+ngoài import) nên mỗi lát là một cú dời nguyên văn + shim phản-chiếu-động:
+
+| lát | nhà thật | dòng | shim còn | fixture `db` (trục 4) | lượt đầy đủ |
+|---|---|---:|---:|---:|---|
+| community/ | `community/api.py` | 4.566 | `social.py` 19 | 3 | 16 fail / 11.249 pass |
+| identity/ | `identity/api.py` | 2.200 | `auth.py` 15 | **23** | 16 fail / 11.254 pass |
+
+Shim = `globals().update(vars(api))` bỏ dunder — vì (a) `import *` rụng 21 tên
+gạch-dưới đo được, (b) liệt kê tĩnh rụng truy cập thuộc tính (`social._enrich_post`,
+`inspect.getsource(auth)`); mọi ĐÍCH VÁ test chuyển thẳng sang nhà thật cùng
+commit (monkeypatch vào shim không ăn tới globals của handler — bài học §45).
+
+#### 47.2 Trục 4 "gấp tám" — checklist §46.3 lần đầu chạy đủ vòng, 0 sự cố
+
+`identity/` mang vùng fixture-vá-`db` lớn nhất chương trình (23). Chốt BA mốc
+đếm DB thật (sau battery, sau mỗi lượt đầy đủ): cả ba **1746/0**. Đối chứng
+với sự cố B1 của §46.2: cùng lớp rủi ro, khác kết cục — vì đích vá đổi CÙNG
+ĐỢT với cú dời và có mốc đếm chặn hai đầu.
+
+#### 47.3 Trục 2 vẫn còn dạng MÙ mới — bốn hình thái kịch bản quét không thấy
+
+Lượt đầy đủ identity lộ 5 rào đọc-nguồn `auth.py` (nay là shim 15 dòng) mà
+regex quét theo dòng không bắt nổi:
+
+1. đường dẫn đi qua **THAM SỐ helper**: `_function_source("agent/auth.py", ...)`;
+2. **tuple parametrize**: `("auth.py", "delete_account")`;
+3. đọc **`auth.__doc__`** — gương động chủ đích không chép dunder;
+4. rào nằm **NGOÀI `agent/tests/`** (`tests/test_release_quality_gates.py`
+   ghim `agent/auth.py` bằng `ROOT / ...`) — kịch bản chỉ quét `agent/tests/`.
+
+Cộng dạng thứ năm từ community (module truyền làm THAM SỐ hàm helper +
+lời gọi ĐA DÒNG): trục 2 nay có **năm hình thái mù đã biết** — lát cắt tương
+lai phải grep cả năm trước khi tin "kịch bản đã phủ".
+
+Rào `test_docstring_updated` còn bắt được một lỗi THẬT của chính cú dời:
+header mới THAY docstring gốc (danh mục endpoint + ghi chú NĐ147) thay vì
+giữ — "nguyên văn" bao gồm cả tài liệu. Đã khôi phục ở CẢ HAI nhà mới.
+
+#### 47.4 Sổ kết chương trình — 5/5 miền
+
+`chat/` (d3b3115f) → `llmops/` (1828fff6) → `entities/` hai mặt (c93c38e7…
+bec918b8) → `community/` (aa4df523) → `identity/` (2e18cd1e). Tầng dùng chung:
+`features` `http_errors` `entity_read` `admin_common`. server.py −61%,
+public_api −27%, admin −23%, 433 route nguyên vẹn, R20.9 thấy mọi mount,
+mỗi miền có test boundary ghép R20.7. Hai lát cuối mua về ~0 cách ly mới đúng
+như bản đồ §8 dự đoán — giá trị thật của chúng là ĐỒNG PHỤC HOÁ (mọi miền cùng
+một khuôn gói) và bộ hình-thái-mù trục 2/4 nay đã đo đủ. Nợ thật còn lại của
+hai miền này vẫn là NỢ TEST B3 (đo bằng độ phủ), không phải cấu trúc.
