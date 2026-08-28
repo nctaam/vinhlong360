@@ -16,6 +16,20 @@ AGENT_DIR = Path(__file__).resolve().parent.parent
 
 # ── Reaction counts in feed ──
 
+
+def _public_src() -> str:
+    """Nguon MAT CONG KHAI — hop nhat public_api.py + entities/api.py.
+
+    Mien entity sang agent/entities/ (2026-08-28). Cac rao duoi day soi
+    "mat cong khai co tinh chat X", bat ke handler song o file nao; ghim
+    mot duong dan la chung im lang mat tac dung khi ma doi nha.
+    """
+    from pathlib import Path as _P
+    root = _P(__file__).resolve().parent.parent
+    return ((root / "public_api.py").read_text(encoding="utf-8") + chr(10)
+            + (root / "entities" / "api.py").read_text(encoding="utf-8"))
+
+
 class TestReactionEnrichment:
     """_enrich_reactions() batch-fetches reaction counts for feed posts."""
 
@@ -1948,7 +1962,7 @@ class TestPolicyBearingEntityCacheContract:
     """Entity detail recomputes policy and delegates cache headers to middleware."""
 
     def _source(self):
-        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        src = _public_src()
         idx = src.index("async def get_entity(")
         end = min(
             (
@@ -2260,25 +2274,25 @@ class TestAsyncBlockingFixes:
         assert "asyncio.to_thread" in fn_src
 
     def test_map_search_async(self):
-        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        src = _public_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "entities_map_search")
         assert "asyncio.to_thread" in fn_src
 
     def test_public_stats_async(self):
-        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        src = _public_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "public_stats")
         assert "asyncio.to_thread" in fn_src
 
     def test_enrich_place_async(self):
-        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        src = _public_src()
         assert "await asyncio.to_thread(_enrich_place" in src
 
     def test_log_search_query_async(self):
-        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        src = _public_src()
         assert "await asyncio.to_thread(_log_search_query" in src
 
 
@@ -2381,7 +2395,7 @@ class TestSecurityFixes:
         assert "get_running_loop" in fn_src
 
     def test_review_stats_cache_bounded(self):
-        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        src = _public_src()
         assert "_REVIEW_STATS_CACHE" in src
         idx = src.index("_REVIEW_STATS_CACHE[entity_id]")
         fn_src = src[idx:idx+200]
@@ -2415,7 +2429,7 @@ class TestReliabilityFixes:
         assert "_place_cache_lock" in fn_src
 
     def test_invalidate_place_cache_thread_safe(self):
-        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        src = _public_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "invalidate_place_cache")
@@ -3009,13 +3023,13 @@ class TestAsyncCorrectnessFixes:
             "Round-exhaustion synthesis must use call_soon_threadsafe for asyncio.Queue"
 
     def test_map_entities_has_public_only(self):
-        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        src = _public_src()
         idx = src.index("def _query():\n        entities = db.list_entities(")
         fn_src = src[idx:idx + 200]
         assert "public_only=True" in fn_src
 
     def test_popular_entities_has_public_only(self):
-        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        src = _public_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "popular_entities")
@@ -3029,7 +3043,7 @@ class TestAsyncCorrectnessFixes:
         assert "pg_advisory_xact_lock" in fn_src
 
     def test_homepage_enrich_place_async(self):
-        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        src = _public_src()
         assert "asyncio.to_thread(_enrich_place" in src
 
 
@@ -3039,7 +3053,7 @@ class TestEnumPatternValidation:
     """Query params with known enum values must use pattern= to reject invalid input early."""
 
     def test_review_sort_has_pattern(self):
-        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        src = _public_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "get_entity_reviews")

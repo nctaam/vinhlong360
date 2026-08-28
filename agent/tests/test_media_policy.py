@@ -252,6 +252,8 @@ def test_entity_search_has_image_uses_public_media_presence(monkeypatch):
     )
     monkeypatch.setattr(ratelimit, "check_rate", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(public_api, "get_client_ip", lambda _request: "test")
+    from entities import api as entities_api
+    monkeypatch.setattr(entities_api, "get_client_ip", lambda _request: "test")  # mien entity sang agent/entities/ 2026-08-28: hai module hai namespace
 
     with_image = asyncio.run(public_api.entity_search(
         object(), Response(), q="", entity_type=None, area=None,

@@ -33,14 +33,17 @@ def test_admin_list_entities_limit_has_lower_bound():
 
 def test_sort_param_whitelisted_by_pattern():
     # 380c394: sort param validate qua regex whitelist (không chỉ max_length).
-    for fn in ("public_api.py", "social.py"):
+    # Mien entity (mang route co tham so sort) sang agent/entities/ 2026-08-28.
+    # Y dinh cua rao: MOI mat cong khai nhan `sort` phai whitelist bang regex.
+    for fn in ("entities/api.py", "social.py"):
         src = (_AGENT / fn).read_text(encoding="utf-8")
         assert 'pattern="^(newest' in src, f"{fn}: sort thiếu pattern whitelist"
 
 
 def test_review_stats_rating_null_safe():
     # 380c394: null-safe int (helper _int0) chống int(None) khi rating/cnt NULL trong review stats.
-    src = (_AGENT / "public_api.py").read_text(encoding="utf-8")
+    src = ((_AGENT / "public_api.py").read_text(encoding="utf-8") + chr(10)
+           + (_AGENT / "entities" / "api.py").read_text(encoding="utf-8"))  # mien entity sang agent/entities/ 2026-08-28: hai module hai namespace
     assert "def _int0(" in src, "thiếu helper _int0 null-safe"
     assert '_int0(r.get("rating"))' in src and '_int0(r.get("cnt"))' in src
 

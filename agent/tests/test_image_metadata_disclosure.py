@@ -7,6 +7,7 @@ import pytest
 from fastapi import Request, Response
 
 import public_api
+from entities import api as entities_api
 import seo
 import social
 from ai_disclosure import load_ai_disclosure
@@ -274,6 +275,7 @@ def test_unified_search_projects_entity_media_without_mutating_rank_input(monkey
     monkeypatch.setattr(public_api.db, "search_entities", lambda **_kwargs: [entity])
     monkeypatch.setattr(public_api.db, "count_entities_filtered", lambda **_kwargs: 1)
     monkeypatch.setattr(public_api, "_enrich_place", lambda _items: None)
+    monkeypatch.setattr(entities_api, "_enrich_place", lambda _items: None)  # mien entity sang agent/entities/ 2026-08-28: hai module hai namespace
     monkeypatch.setattr(public_api, "_search_posts_for_contract", lambda *_args: ([], 0))
     monkeypatch.setattr(public_api, "_search_users_for_contract", lambda *_args: ([], 0))
     monkeypatch.setattr(public_api, "_log_search_query", lambda *_args: None)
@@ -308,7 +310,9 @@ def test_place_overview_projects_grouped_entities_without_mutating_rows(monkeypa
     child = _entity(images=["/img/entities/ward-child.webp"])
     place = _entity(id="ward", type="place", images=[])
     monkeypatch.setattr(public_api, "_get_public_entity", lambda _entity_id: place)
+    monkeypatch.setattr(entities_api, "_get_public_entity", lambda _entity_id: place)
     monkeypatch.setattr(public_api, "_public_entities_by_place", lambda _place_id: [child])
+    monkeypatch.setattr(entities_api, "_public_entities_by_place", lambda _place_id: [child])
     monkeypatch.setattr(public_api, "_public_facilities_by_place", lambda _place_id: [])
 
     result = asyncio.run(public_api.place_overview("ward", Response()))

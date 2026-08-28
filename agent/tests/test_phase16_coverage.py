@@ -17,6 +17,20 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 #  tools.py — Schema validation
 # ═══════════════════════════════════════════════════════════════════════
 
+
+def _public_src() -> str:
+    """Nguon MAT CONG KHAI — hop nhat public_api.py + entities/api.py.
+
+    Mien entity sang agent/entities/ (2026-08-28). Cac rao duoi day soi
+    "mat cong khai co tinh chat X", bat ke handler song o file nao; ghim
+    mot duong dan la chung im lang mat tac dung khi ma doi nha.
+    """
+    from pathlib import Path as _P
+    root = _P(__file__).resolve().parent.parent
+    return ((root / "public_api.py").read_text(encoding="utf-8") + chr(10)
+            + (root / "entities" / "api.py").read_text(encoding="utf-8"))
+
+
 class TestToolsSchema:
     """Validate that tools.py TOOLS list has correct OpenAI function-call format."""
 
@@ -641,14 +655,14 @@ class TestQueryParamConstraints:
     """Query parameters must have max_length to prevent abuse."""
 
     def test_entities_list_params_constrained(self):
-        src = (Path(__file__).resolve().parent.parent / "public_api.py").read_text(encoding="utf-8")
+        src = _public_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         block = function_source(src, "list_entities")
         assert "max_length" in block
 
     def test_map_pins_params_constrained(self):
-        src = (Path(__file__).resolve().parent.parent / "public_api.py").read_text(encoding="utf-8")
+        src = _public_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         block = function_source(src, "get_map_pins")
@@ -1182,7 +1196,7 @@ class TestMediumFixesBatch2:
 
     def test_homepage_cache_has_lock(self):
         """Homepage cache rebuild must use asyncio.Lock to prevent stampede."""
-        src = (Path(__file__).resolve().parent.parent / "public_api.py").read_text(encoding="utf-8")
+        src = _public_src()
         assert "_homepage_lock" in src, "public_api must define _homepage_lock"
         assert "asyncio.Lock()" in src, "Must use asyncio.Lock for homepage cache"
 
@@ -1535,7 +1549,7 @@ class TestDeepScanBatch4:
 
     def test_review_stats_content_limit(self):
         """Review stats must LIMIT content rows to prevent unbounded fetch."""
-        src = (Path(__file__).resolve().parent.parent / "public_api.py").read_text(encoding="utf-8")
+        src = _public_src()
         block = function_source(src, "get_review_stats")
         parts = block.split("content_rows")
         assert len(parts) >= 2
@@ -1544,10 +1558,11 @@ class TestDeepScanBatch4:
 
     def test_list_places_has_limit(self):
         """Public list_places must have LIMIT to prevent unbounded results."""
-        src = (Path(__file__).resolve().parent.parent / "public_api.py").read_text(encoding="utf-8")
-        idx = src.find("list_places")
-        assert idx > 0
-        block = src[idx:idx+900]
+        # function_source: cắt theo ranh giới AST thay vì cửa sổ 900 ký tự. Bản cũ
+        # dùng `src.find("list_places")` nên sau khi miền entity sang gói riêng
+        # (2026-08-28), lần khớp ĐẦU TIÊN rơi vào danh sách import tái xuất chứ
+        # không phải thân hàm — rào đọc nhầm chỗ rồi báo đỏ oan.
+        block = function_source(_public_src(), "list_places")
         assert "LIMIT" in block, "list_places query must have LIMIT"
 
     def test_admin_rollback_no_exc_leak(self):
@@ -1624,7 +1639,7 @@ class TestDeepScanBatch5:
 
     def test_jsonl_rotation_atomic_write(self):
         """JSONL rotation must use atomic temp-rename for main file."""
-        src = (Path(__file__).resolve().parent.parent / "public_api.py").read_text(encoding="utf-8")
+        src = _public_src()
         idx = src.find("_maybe_rotate_jsonl")
         assert idx > 0
         block = src[idx:idx+600]
@@ -1940,8 +1955,12 @@ class TestPostDeletionCleanup:
         assert src.count("deleted_at IS NULL") >= 30
 
     def test_public_api_filters_deleted_posts(self):
-        src = (Path(__file__).resolve().parent.parent / "public_api.py").read_text(encoding="utf-8")
-        assert src.count("deleted_at IS NULL") >= 10
+        src = _public_src()
+        # Miền entity sang agent/entities/ (2026-08-28): 2 trong 10 chỗ lọc bài đã xoá
+        # đi theo. Ý định của rào là "API công khai LỌC bài đã xoá", bất kể handler
+        # sống ở file nào — nên đếm trên CẢ HAI cây, tổng vẫn phải >= 10.
+        src_ent = (Path(__file__).resolve().parent.parent / "entities" / "api.py").read_text(encoding="utf-8")
+        assert src.count("deleted_at IS NULL") + src_ent.count("deleted_at IS NULL") >= 10
 
 
 class TestInfoReportsLockShared:
@@ -2166,7 +2185,7 @@ class TestReportIpPseudonymization:
     """Verify report/contact-view logs pseudonymize IPs."""
 
     def test_report_uses_ip_hash(self):
-        src = (Path(__file__).resolve().parent.parent / "public_api.py").read_text(encoding="utf-8")
+        src = _public_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         block = function_source(src, "submit_report")
@@ -2176,7 +2195,7 @@ class TestReportIpPseudonymization:
             "submit_report must NOT store raw ip"
 
     def test_contact_view_uses_ip_hash(self):
-        src = (Path(__file__).resolve().parent.parent / "public_api.py").read_text(encoding="utf-8")
+        src = _public_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         block = function_source(src, "track_contact_view")
@@ -2314,7 +2333,7 @@ class TestAdminBugFixes:
 
     def test_search_api_strips_html_from_q(self):
         """Search API must strip HTML tags from returned q (XSS defense-in-depth)."""
-        src = (Path(__file__).resolve().parent.parent / "public_api.py").read_text(encoding="utf-8")
+        src = _public_src()
         idx = src.find("async def search(")
         assert idx != -1
         # Scan the whole endpoint body; the safe_q = re.sub(r"<[^>]+>", "", q) sanitizer

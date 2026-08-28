@@ -21,9 +21,11 @@ from collections import OrderedDict
 from dataclasses import asdict
 from typing import Optional
 
+from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 
 from data_quality import entity_quality
+from config import settings
 from database import db
 import logging
 
@@ -32,7 +34,34 @@ import logging
 # loai la TypeError luc chay. Test _warn_if_scan_truncated bat duoc ngay.
 logger = logging.getLogger(__name__)
 
-# Import KÉP như public_api.py:  được nạp cả dạng module phẳng lẫn
+
+# Doi tu public_api cung dot boc entities/ (2026-08-28): ca public_api LAN
+# entities/ deu doc co rollout, de nguyen mot ben la ben kia phai import
+# nguoc — vong.
+def _rollout_enabled(name: str) -> bool:
+    """Co rollout co bat khong — TRA CUU MUON, khong ghim namespace.
+
+    Ham nay gac MOI route co co (khong rieng mien entity), va bo test hien co va
+    co qua `public_api.settings` (10 cho / 4 file). Doc thang `settings` cua
+    module nay lam ban va do vo hieu — do duoc 70 bai do khi thu. Nen: uu tien
+    `public_api.settings` neu module do da nap, roi moi den ban cua chinh minh.
+
+    Import trong THAN ham chu khong o dau file: dau file la vong (public_api
+    import nguoc entity_read). Trong than thi den luc goi moi tra, luc do ca hai
+    module deu da nap xong.
+    """
+    import sys
+
+    mod = sys.modules.get("public_api")
+    nguon = getattr(mod, "settings", settings) if mod is not None else settings
+    return getattr(nguon, name, False) is True
+
+
+def _require_rollout(name: str) -> None:
+    if not _rollout_enabled(name):
+        raise HTTPException(404, "Not found")
+
+# Import KÉP như public_api.py: gói `agent` được nạp cả dạng phẳng lẫn
 # dạng gói tuỳ ngữ cảnh. Chỉ viết một lối là vỡ ở lối kia.
 if __package__:
     from .ai_disclosure import load_ai_disclosure

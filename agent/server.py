@@ -580,6 +580,9 @@ async def _global_exception_handler(request: Request, exc: Exception):
 app.include_router(admin_router)
 app.include_router(auth_router)
 app.include_router(public_router)
+# Mien ENTITY sang agent/entities/ (2026-08-28). KHONG include_router rieng o
+# day:  da GOP san route entity (xem cuoi public_api.py).
+# Gan ca hai la dang ky TRUNG — do duoc 455 route thay vi 433, 17 ban trung.
 # Flag-gated: every route answers 404 capability_unavailable while the case
 # flags are off, so mounting it is inert until rollout is explicit.
 # Chat: gói riêng từ 2026-08-27 (agent/chat/). Ranh giới TÍNH ĐƯỢC bằng bao

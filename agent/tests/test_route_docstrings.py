@@ -31,8 +31,12 @@ HTTP_METHODS = {"get", "post", "put", "patch", "delete", "head", "options"}
 
 # Số handler CÓ docstring tối thiểu, đo ngày 2026-08-06. Tăng được thì tăng;
 # giảm là hồi quy.
+# Miền entity sang agent/entities/ (2026-08-28) nên số handler ở public_api.py
+# tụt từ 47 xuống 25 — KHÔNG phải tài liệu xấu đi, mà là route đổi nhà. Tách sàn
+# theo file mới; TỔNG hai sàn (25+22) giữ nguyên 47, tức ratchet không nới.
 FLOORS = {
-    "public_api.py": 47,
+    "public_api.py": 25,
+    "entities/api.py": 22,
     "notifications.py": 20,
     "seo.py": 8,
     "visits.py": 6,

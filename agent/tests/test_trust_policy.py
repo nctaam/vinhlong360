@@ -502,8 +502,12 @@ def test_trust_drawer_flag_controls_entity_detail_enhancement(
             TRUST_DRAWER_V1=enabled,
         ),
     )
+    # `get_entity` sang agent/entities/ (2026-08-28) và nó `from entity_read import
+    # _get_public_entity` — binding RIÊNG. Vá ở public_api không còn ăn.
+    from entities import api as entities_api
+
     monkeypatch.setattr(
-        public_api,
+        entities_api,
         "_get_public_entity",
         lambda _entity_id: {
             "id": "place-1",
@@ -518,7 +522,11 @@ def test_trust_drawer_flag_controls_entity_detail_enhancement(
         "get_relationships",
         lambda *_args, **_kwargs: ([], 0),
     )
+    # `get_entity` sang agent/entities/ (2026-08-28) voi binding rieng, nen va o
+    # public_api KHONG con an — hai module hai namespace. Va ca hai.
+    from entities import api as entities_api
     monkeypatch.setattr(public_api, "_enrich_entity_place", lambda _entity: None)
+    monkeypatch.setattr(entities_api, "_enrich_entity_place", lambda _entity: None)
 
     entity = asyncio.run(public_api.get_entity("place-1"))
 

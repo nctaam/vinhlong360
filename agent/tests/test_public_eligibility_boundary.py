@@ -180,7 +180,11 @@ def test_day_plan_filters_hidden_children(monkeypatch):
 
 
 def test_collection_expansion_filters_hidden_entities(monkeypatch):
+    # `entities_trending` sang agent/entities/ 2026-08-28 — goi truc tiep nen
+    # phai va o namespace ham THAT song.
+    from entities import api as entities_api
     monkeypatch.setattr(public_api, "require_pg", lambda: None)
+    monkeypatch.setattr(entities_api, "require_pg", lambda: None)
     monkeypatch.setattr(public_api.db, "_conn", lambda: nullcontext(object()))
     monkeypatch.setattr(public_api.db, "_fetchone", lambda *_args, **_kwargs: {
         "id": "collection-1",
@@ -200,7 +204,11 @@ def test_collection_expansion_filters_hidden_entities(monkeypatch):
 
 
 def test_collection_list_filters_hidden_entity_ids(monkeypatch):
+    # `entities_trending` sang agent/entities/ 2026-08-28 — goi truc tiep nen
+    # phai va o namespace ham THAT song.
+    from entities import api as entities_api
     monkeypatch.setattr(public_api, "require_pg", lambda: None)
+    monkeypatch.setattr(entities_api, "require_pg", lambda: None)
     _patch_rows(monkeypatch, [{
         "id": "collection-1",
         "slug": "public-collection",
@@ -217,7 +225,11 @@ def test_collection_list_filters_hidden_entity_ids(monkeypatch):
 
 
 def test_empty_collection_preserves_existing_entities_shape(monkeypatch):
+    # `entities_trending` sang agent/entities/ 2026-08-28 — goi truc tiep nen
+    # phai va o namespace ham THAT song.
+    from entities import api as entities_api
     monkeypatch.setattr(public_api, "require_pg", lambda: None)
+    monkeypatch.setattr(entities_api, "require_pg", lambda: None)
     monkeypatch.setattr(public_api.db, "_conn", lambda: nullcontext(object()))
     monkeypatch.setattr(public_api.db, "_fetchone", lambda *_args, **_kwargs: {
         "id": "collection-1",
@@ -232,7 +244,11 @@ def test_empty_collection_preserves_existing_entities_shape(monkeypatch):
 
 
 def test_trending_filters_hidden_entities(monkeypatch):
+    # `entities_trending` sang agent/entities/ 2026-08-28 — goi truc tiep nen
+    # phai va o namespace ham THAT song.
+    from entities import api as entities_api
     monkeypatch.setattr(public_api, "require_pg", lambda: None)
+    monkeypatch.setattr(entities_api, "require_pg", lambda: None)
     _patch_rows(monkeypatch, [
         {"entity_id": "public", "activity_count": 3, "review_count": 1, "avg_rating": 4.5},
         {"entity_id": "hidden", "activity_count": 2, "review_count": 1, "avg_rating": 4.0},

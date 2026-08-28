@@ -62,3 +62,39 @@ def test_cache_place_co_khoa_va_co_tran():
     """Cache dùng chung giữa hai tiến trình đọc — mất khoá là mất tính đúng."""
     assert entity_read._PLACE_CACHE_MAX > 0
     assert hasattr(entity_read._place_cache_lock, "acquire")
+
+
+def test_rollout_enabled_ton_trong_ban_va_o_public_api(monkeypatch):
+    """`_rollout_enabled` TRA CỨU MUỘN — ưu tiên `public_api.settings`.
+
+    Bản đầu đọc thẳng `entity_read.settings` sau khi dời — làm 70 bài đỏ: 10 chỗ
+    trong bộ test vá `public_api.settings`, mà hàm này gác MỌI route có cờ
+    (không riêng miền entity), nên user_preferences / trust_policy /
+    location_resolver đổ theo. Và KHÔNG lượt đo nhắm nào thấy được — nó phá
+    những route NGOÀI miền đang bóc. Khoá lại ưu tiên đó.
+    """
+    import sys
+    from types import SimpleNamespace
+
+    import public_api  # noqa: F401 — bảo đảm module đã nạp trong sys.modules
+
+    monkeypatch.setattr(sys.modules["public_api"], "settings",
+                        SimpleNamespace(CO_THU_NGHIEM=True), raising=False)
+    assert entity_read._rollout_enabled("CO_THU_NGHIEM") is True
+    assert entity_read._rollout_enabled("CO_KHONG_TON_TAI") is False
+
+
+def test_require_rollout_nem_404_khi_co_tat(monkeypatch):
+    import sys
+    from types import SimpleNamespace
+
+    import pytest
+    from fastapi import HTTPException
+
+    import public_api  # noqa: F401
+
+    monkeypatch.setattr(sys.modules["public_api"], "settings",
+                        SimpleNamespace(), raising=False)
+    with pytest.raises(HTTPException) as exc:
+        entity_read._require_rollout("CO_TAT")
+    assert exc.value.status_code == 404
