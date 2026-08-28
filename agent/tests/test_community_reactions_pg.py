@@ -229,15 +229,15 @@ def test_toggle_like_both_directions_with_sql_readback(pg_db, side_effects):
     assert notify_args[0] == author
     assert notify_args[1] == "like"
     assert notify_kwargs["actor_id"] == liker
-    # LƯU Ý (không khoá bằng assertion): like_count trong response đọc trong
-    # CÙNG statement với CTE insert nên là giá trị TRƯỚC toggle (đo được 0 dù
-    # DB sau statement là 1) — nghi ngờ bug, ghi ở báo cáo, không đặc tả cứng.
-    assert "like_count" in res_on
+    # Bug 9 đã sửa: like_count đọc bằng statement RIÊNG sau khi trigger AFTER
+    # chạy — response phải khớp DB (trước đây trả giá trị TRƯỚC toggle).
+    assert res_on["like_count"] == 1
 
     res_off = asyncio.run(
         community_api.toggle_like(post_id, user=_user(liker, "Người thích"), _csrf=None)
     )
     assert res_off["liked"] is False
+    assert res_off["like_count"] == 0
     assert _count(
         pg_db,
         "SELECT COUNT(*) AS c FROM likes WHERE user_id = %s::uuid AND post_id = %s::uuid",

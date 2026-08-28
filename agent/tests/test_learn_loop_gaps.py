@@ -1,7 +1,9 @@
 """
 Characterization tests cho các hàm chưa phủ của learn_loop.py.
 
-Đặc tả HÀNH VI HIỆN TẠI (không sửa module đích):
+Đặc tả HÀNH VI HIỆN TẠI. Đợt fix 2026-08-28 sửa 2 bug trong module đích
+(keyword 'OCOP' hạ chữ thường; _find_best_snippet bỏ qua body rỗng) — các test
+tương ứng khoá hành vi ĐÚNG sau fix:
   - Nhóm heuristics thuần: _clean_entity_name, _slugify_entity_name,
     _detect_area, _detect_entity_type, _truncate_summary, _find_best_snippet.
   - Nhóm có I/O ngoài: _web_search_light (mock ddgs), _geocode_candidate /
@@ -119,6 +121,11 @@ class TestDetectEntityType:
     def test_keyword_match_is_case_insensitive(self):
         assert learn_loop._detect_entity_type("BÁNH xèo giòn rụm") == "dish"
 
+    def test_ocop_keyword_matches_after_lowercase_fix(self):
+        # Fix 2026-08-28: keyword 'OCOP' đã hạ thành 'ocop' — text bị .lower()
+        # trước khi so nên bản viết HOA trong bảng không bao giờ khớp được.
+        assert learn_loop._detect_entity_type("OCOP 4 sao tiêu biểu") == "product"
+
 
 class TestTruncateSummary:
     def test_short_snippet_only_stripped(self):
@@ -156,6 +163,15 @@ class TestFindBestSnippet:
     def test_no_match_returns_empty_string(self):
         results = [{"title": "Khách sạn", "body": "phòng đẹp"}]
         assert learn_loop._find_best_snippet(results, "Chùa Tiên Châu") == ""
+
+    def test_empty_body_match_skipped_tries_next_result(self):
+        # Fix 2026-08-28: title khớp nhưng body rỗng không còn return "" ngay —
+        # duyệt tiếp để lấy body có chữ của result kế; fallback cuối vẫn là "".
+        results = [
+            {"title": "Chùa Tiên Châu", "body": ""},
+            {"title": "Giới thiệu chùa Tiên Châu", "body": "Ngôi chùa cổ."},
+        ]
+        assert learn_loop._find_best_snippet(results, "Chùa Tiên Châu") == "Ngôi chùa cổ."
 
     def test_empty_results_returns_empty_string(self):
         assert learn_loop._find_best_snippet([], "Chùa Tiên Châu") == ""

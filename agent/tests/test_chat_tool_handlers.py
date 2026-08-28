@@ -126,6 +126,13 @@ def test_area_matches_fallback_province_old(kb):
     assert chat_api._area_matches(e, e["attributes"], "ben-tre") is False
 
 
+def test_area_matches_area_la_khong_khop_entity_troi_noi(kb):
+    """Defect cũ đã sửa: area-slug lạ từng khớp mọi entity có prov rỗng
+    (_PROV_NAMES.get(area, "") == ""). Nay area không tồn tại → không khớp gì."""
+    e = kb.entities["mua-trai-cay"]  # không placeId, không province_old
+    assert chat_api._area_matches(e, {}, "can-tho") is False
+
+
 # ── _ocop_category_ok ─────────────────────────────────────────────────────────
 
 def test_ocop_category_all_va_category_la(kb):
@@ -166,6 +173,15 @@ def test_accom_filters_family(kb):
     assert chat_api._accom_filters_ok(hotel, {}, "hotel", True) is False
     # nhưng booking_note có "gia đình" → qua
     assert chat_api._accom_filters_ok(hotel, {"booking_note": "ưu đãi gia đình"}, "hotel", True) is True
+
+
+def test_accom_filters_family_booking_note_none_khong_no():
+    """Defect cũ đã sửa: booking_note=None (key tồn tại, giá trị None) từng nổ
+    TypeError khi nối chuỗi. Nay coi như rỗng, filter chạy bình thường."""
+    hotel = {"name": "Khách sạn Trung tâm", "summary": "ngay trung tâm thành phố"}
+    assert chat_api._accom_filters_ok(hotel, {"booking_note": None}, "all", True) is False
+    hs = {"name": "Homestay Vườn Cau", "summary": "hợp gia đình"}
+    assert chat_api._accom_filters_ok(hs, {"booking_note": None}, "all", True) is True
 
 
 # ── Card builders ─────────────────────────────────────────────────────────────

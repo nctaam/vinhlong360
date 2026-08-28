@@ -68,8 +68,18 @@ class TestPairingCheck:
         return re.search(rf"(?:^|_){re.escape(module)}(?:_|$)", test_stem) is not None
 
     @staticmethod
-    def _ast_pairs(module: str, tree: ast.Module) -> bool:
+    def _ast_pairs(module: str, tree: ast.Module, dotted: str | None = None) -> bool:
+        # `dotted` phủ module GÓI CON: `agent/chat/api.py` → 'chat.api'. Thiếu nó,
+        # test import chuẩn `from chat import api` không được tính cặp và R20.7 đỏ
+        # oan — anh em với bài `__init__` ở _module_name (gặp 2026-08-28, đợt fix
+        # 13-bug: chat/api.py + community/api.py đều bị). Tín hiệu CHỈ thêm vào
+        # (import thật của đúng module), không nới rule cũ.
         import_names = {module, f"agent.{module}"}
+        from_parents = {"agent"}
+        if dotted and dotted != module:
+            import_names |= {dotted, f"agent.{dotted}"}
+            pkg = dotted.rsplit(".", 1)[0]
+            from_parents |= {pkg, f"agent.{pkg}"}
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
                 if any(alias.name in import_names for alias in node.names):
@@ -77,7 +87,7 @@ class TestPairingCheck:
             elif isinstance(node, ast.ImportFrom):
                 if node.module in import_names:
                     return True
-                if node.module == "agent" and any(alias.name == module for alias in node.names):
+                if node.module in from_parents and any(alias.name == module for alias in node.names):
                     return True
         return False
 
@@ -93,8 +103,22 @@ class TestPairingCheck:
         path = Path(source)
         return path.parent.name if path.stem == "__init__" else path.stem
 
-    def _test_pairs(self, module: str, test_path: str, tree: ast.Module) -> bool:
-        return self._filename_pairs(module, test_path) or self._ast_pairs(module, tree)
+    @staticmethod
+    def _dotted_name(source: str) -> str:
+        """Đường module chấm-đủ bên trong agent/: 'agent/chat/api.py' → 'chat.api'."""
+        path = Path(source.replace("\\", "/"))
+        parts = list(path.parts)
+        if parts and parts[0] == "agent":
+            parts = parts[1:]
+        if path.stem == "__init__":
+            parts = parts[:-1]
+        elif parts:
+            parts[-1] = path.stem
+        return ".".join(parts)
+
+    def _test_pairs(self, module: str, test_path: str, tree: ast.Module,
+                    dotted: str | None = None) -> bool:
+        return self._filename_pairs(module, test_path) or self._ast_pairs(module, tree, dotted)
 
     def _violation(self, path: str, msg: str) -> dict:
         return {"file": path, "line": 0, "rule": self.rule, "msg": msg}
@@ -127,7 +151,8 @@ class TestPairingCheck:
             unpaired = [
                 source for source in agent_py
                 if not any(
-                    self._test_pairs(self._module_name(source), test, tree)
+                    self._test_pairs(self._module_name(source), test, tree,
+                                     self._dotted_name(source))
                     for test, tree in tests.items()
                 )
             ]

@@ -237,3 +237,55 @@ def test_file_test_co_ham_test_that_van_qua(tmp_path: Path, body: str) -> None:
     )
 
     assert result["count"] == 0, result["violations"]
+
+
+# ── Gói con (2026-08-28): `agent/chat/api.py` phải ghép được qua import chuẩn ──
+# Anh em với bài `__init__` ở _module_name: checker sinh trước kỷ nguyên gói,
+# test import `from chat import api` từng KHÔNG được tính cặp → R20.7 đỏ oan
+# (gặp thật ở đợt fix 13-bug với chat/api.py + community/api.py).
+
+
+def test_package_submodule_pairs_via_from_package_import(tmp_path: Path) -> None:
+    _write(tmp_path, "tests/test_tool_contract.py",
+           f"from chat import api as chat_api\n{PLACEHOLDER}")
+
+    result = TestPairingCheck(root=tmp_path).run(
+        files=["agent/chat/api.py", "tests/test_tool_contract.py"]
+    )
+
+    assert result["count"] == 0
+
+
+def test_package_submodule_pairs_via_dotted_import(tmp_path: Path) -> None:
+    _write(tmp_path, "tests/test_tool_contract.py",
+           f"import chat.api\n{PLACEHOLDER}")
+
+    result = TestPairingCheck(root=tmp_path).run(
+        files=["agent/chat/api.py", "tests/test_tool_contract.py"]
+    )
+
+    assert result["count"] == 0
+
+
+def test_package_submodule_pairs_via_from_dotted_module(tmp_path: Path) -> None:
+    _write(tmp_path, "tests/test_tool_contract.py",
+           f"from chat.api import router\n{PLACEHOLDER}")
+
+    result = TestPairingCheck(root=tmp_path).run(
+        files=["agent/chat/api.py", "tests/test_tool_contract.py"]
+    )
+
+    assert result["count"] == 0
+
+
+def test_package_submodule_does_not_pair_via_sibling_import(tmp_path: Path) -> None:
+    """`from chat import khac` KHÔNG được tính cặp cho chat/api.py — tín hiệu
+    mới chỉ nhận import của ĐÚNG module, không nhận cả gói."""
+    _write(tmp_path, "tests/test_tool_contract.py",
+           f"from chat import khac\n{PLACEHOLDER}")
+
+    result = TestPairingCheck(root=tmp_path).run(
+        files=["agent/chat/api.py", "tests/test_tool_contract.py"]
+    )
+
+    assert result["count"] == 1

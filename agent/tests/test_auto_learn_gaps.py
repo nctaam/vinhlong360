@@ -10,6 +10,9 @@ learn_round, apply_learned, main.
 
 Mọi đường ra ngoài (DDGS, HTTP pinned, LLM, geocode/Nominatim) đều bị mock —
 không network, không chạm DB thật, không ghi vào agent/learned/ của repo.
+
+Đợt fix 2026-08-28: 5 pattern LEGAL_PATTERNS viết HOA (UBND/HĐND/NQ-/CT/TW/QĐ-)
+đã hạ về chữ thường cho khớp input name_lower — test tương ứng khoá hành vi ĐÚNG.
 """
 
 import json
@@ -204,6 +207,24 @@ def test_reject_legal():
         "văn bản/thương mại (số\\s+\\d+)",
     )
     assert auto_learn._reject_legal("chùa hạnh phúc") is None
+
+
+def test_reject_legal_pattern_hanh_chinh_da_ha_chu_thuong_bat_duoc():
+    """Fix 2026-08-28: các pattern hành chính từng viết HOA nay là chữ thường
+    ("đ" trong hđnd/qđ- là ký tự đúng của tên viết thường) — trước đây chúng
+    không bao giờ match vì input đã .lower() còn re.search phân biệt hoa-thường."""
+    assert auto_learn._reject_legal("ubnd tỉnh vĩnh long") == (
+        False,
+        "văn bản/thương mại (ubnd)",
+    )
+    assert auto_learn._reject_legal("hđnd phường thanh đức") == (
+        False,
+        "văn bản/thương mại (hđnd)",
+    )
+    # filter_entity loại tên viết HOA nhờ name.lower() + pattern chữ thường
+    assert auto_learn.filter_entity(
+        {"name": "UBND tỉnh Vĩnh Long", "summary": "x" * 20}, set()
+    ) == (False, "văn bản/thương mại (ubnd)")
 
 
 # ── filter_entity ──

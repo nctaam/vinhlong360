@@ -1001,8 +1001,8 @@ def test_related_posts_same_entity_branch(pg_db):
     author = _seed_user(pg_db)
     ent = _seed_entity(pg_db)
     other_ent = _seed_entity(pg_db)
-    # nguồn KHÔNG có hashtag để đi trọn nhánh cùng-entity (nhánh hashtag
-    # hiện đổ vỡ trên PG — xem suspected_bugs của phiên đo này)
+    # nguồn KHÔNG có hashtag: chỉ đi nhánh cùng-entity (nhánh cùng-hashtag
+    # có test riêng bên dưới — đã sửa jsonb ?| text[])
     source = _seed_post(pg_db, author, entity_id=ent)
     rel_hot = _seed_post(pg_db, author, entity_id=ent, like_count=9)
     rel_cold = _seed_post(pg_db, author, entity_id=ent, like_count=1)
@@ -1018,3 +1018,25 @@ def test_related_posts_same_entity_branch(pg_db):
         community_api.related_posts(str(uuid.uuid4()), limit=4, user=None)
     )
     assert missing == {"posts": []}
+
+
+def test_related_posts_hashtag_branch_fills_up_and_dedups(pg_db):
+    """Nhánh bù cùng-hashtag (jsonb ?| text[]) — trước đây 500 vì
+    `p.hashtags && text[]` không tồn tại trên JSONB (bug 8, đã sửa)."""
+    author = _seed_user(pg_db)
+    ent = _seed_entity(pg_db)
+    source = _seed_post(pg_db, author, entity_id=ent,
+                        hashtags=("xoai", "cho-noi"))
+    # cùng entity VÀ cùng hashtag → chỉ được xuất hiện một lần (khử trùng lặp)
+    same_entity = _seed_post(pg_db, author, entity_id=ent,
+                             hashtags=("xoai",), like_count=5)
+    tag_hot = _seed_post(pg_db, author, hashtags=("xoai",), like_count=9)
+    tag_cold = _seed_post(pg_db, author, hashtags=("cho-noi",), like_count=1)
+    _seed_post(pg_db, author, hashtags=("khac",))                     # tag khác
+    _seed_post(pg_db, author, hashtags=("xoai",), status="pending")   # chưa duyệt
+
+    result = asyncio.run(
+        community_api.related_posts(source, limit=4, user=None)
+    )
+    # cùng-entity đứng trước, rồi bù cùng-hashtag theo like_count giảm dần
+    assert [p["id"] for p in result["posts"]] == [same_entity, tag_hot, tag_cold]

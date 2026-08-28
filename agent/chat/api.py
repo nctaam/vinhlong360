@@ -386,7 +386,8 @@ def _area_matches(e: dict, attrs: dict, area) -> bool:
         return True
     place = knowledge.get_place(e["id"])
     prov = attrs.get("province_old", "")
-    return bool((place and place.get("area") == area) or prov == _PROV_NAMES.get(area, ""))
+    prov_name = _PROV_NAMES.get(area)
+    return bool((place and place.get("area") == area) or (prov_name is not None and prov == prov_name))
 
 
 def _search_card_practical(card: dict, attrs: dict, e: dict) -> None:
@@ -428,7 +429,7 @@ def _accom_filters_ok(e: dict, attrs: dict, acc_type: str, family: bool) -> bool
         if not any(kw in text for kw in kws):
             return False
     if family:
-        text = (e.get("name", "") + e.get("summary", "") + attrs.get("booking_note", "")).lower()
+        text = (e.get("name", "") + e.get("summary", "") + (attrs.get("booking_note") or "")).lower()
         if not any(kw in text for kw in _ACCOM_FAMILY_KW):
             return False
     return True
@@ -695,7 +696,7 @@ def _tool_community_reviews(args: dict) -> str:
             return json.dumps({"reviews": [], "note": f"Chưa có đánh giá cộng đồng cho '{entity_id}'"}, ensure_ascii=False)
         return json.dumps({"reviews": reviews, "count": len(reviews)}, ensure_ascii=False, default=str)
     except Exception as e:
-        logger.warning("community_reviews tool error: %s", e)
+        logger.warning("community_reviews tool error", error=str(e))
         return json.dumps({"reviews": [], "error": "Không thể tải đánh giá"})
 
 
@@ -709,7 +710,7 @@ def _tool_trending_posts(args: dict) -> str:
             return json.dumps({"posts": [], "note": "Chưa có bài viết nổi bật"}, ensure_ascii=False)
         return json.dumps({"posts": posts, "count": len(posts)}, ensure_ascii=False, default=str)
     except Exception as e:
-        logger.warning("trending_posts tool error: %s", e)
+        logger.warning("trending_posts tool error", error=str(e))
         return json.dumps({"posts": [], "error": "Không thể tải bài viết"})
 
 

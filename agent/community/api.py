@@ -71,7 +71,7 @@ from api_schemas_social import (
 )
 
 _POST_COLS = ("p.id, p.user_id, p.content, p.mentions, p.hashtags, p.best_answer_id, "
-              "p.pinned_comment_id, "
+              "p.pinned_comment_id, p.is_pinned, "
               "p.repost_of, p.repost_snapshot, p.post_type, p.rating, p.images, "
               "p.like_count, p.comment_count, p.share_count, p.created_at, p.updated_at, "
               "p.entity_id, p.moderation_status")
@@ -2215,7 +2215,7 @@ def _related_by_tags(conn, ph, post_id, tags, limit, bc, bc_p, mc, mc_p, candida
         FROM posts p JOIN users u ON u.id = p.user_id
         LEFT JOIN entities e ON e.id = p.entity_id
         WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL AND p.id::text <> {ph}
-          AND p.hashtags && ARRAY[{','.join(ph for _ in tags)}]::text[]
+          AND p.hashtags ?| ARRAY[{','.join(ph for _ in tags)}]::text[]
         {bc} {mc}
         ORDER BY p.like_count DESC
         LIMIT {ph}
@@ -2538,7 +2538,11 @@ async def delete_comment(comment_id: str, user=Depends(require_user), _csrf=Depe
             rd = db._row_to_dict(row)
             if str(rd["user_id"]) != uid and user.get("role") not in ("admin", "moderator"):
                 raise HTTPException(403, "Bạn chỉ có thể xóa bình luận của mình")
-            db._execute(conn, f"DELETE FROM notifications WHERE ref_type = 'comment' AND ref_id = {ph}", (comment_id,))
+            # KHÔNG dọn notifications ở đây: dòng DELETE ref_type='comment' cũ là
+            # mã chết — không nơi nào trong agent/ tạo notification với
+            # ref_type='comment' (thông báo bình luận mang ref_type='post' trỏ
+            # bài viết còn sống, không thể xoá theo comment_id). Dọn chính xác
+            # theo bình luận cần schema lưu comment_id — việc tương lai.
             # Soft-delete: SP3 W6.1 — trước đây hard-DELETE xóa vĩnh viễn reply con
             # của người khác. Nay UPDATE deleted_at (reply con giữ lại, recoverable).
             db._execute(conn, f"UPDATE comments SET deleted_at = NOW() WHERE parent_id::text = {ph} AND deleted_at IS NULL", (comment_id,))
@@ -2785,8 +2789,11 @@ async def set_best_answer(post_id: str, body: BestAnswerBody, user=Depends(requi
             d = db._row_to_dict(post)
             if str(d["user_id"]) != str(user["id"]):
                 raise HTTPException(403, "Chỉ người hỏi mới chọn được câu trả lời hay")
+            if d["post_type"] != "question":
+                raise HTTPException(400, "Chỉ bài hỏi-đáp mới chọn được câu trả lời hay")
             if body.comment_id:
-                c = db._fetchone(conn, f"SELECT user_id FROM comments WHERE id::text = {ph} AND post_id::text = {ph} AND deleted_at IS NULL",
+                c = db._fetchone(conn, f"SELECT user_id FROM comments WHERE id::text = {ph} AND post_id::text = {ph} "
+                                 f"AND moderation_status = 'approved' AND deleted_at IS NULL",
                                  (body.comment_id, post_id))
                 if not c:
                     raise HTTPException(400, "Bình luận không thuộc bài này")
@@ -2825,9 +2832,15 @@ def _like_check_self(ph, post_id, uid):
 
 
 def _like_toggle_query(ph, post_id, uid):
-    """Toggle like (xoá nếu có, thêm nếu chưa) trong 1 query — extract-method thuần."""
+    """Toggle like (xoá nếu có, thêm nếu chưa) — extract-method thuần.
+
+    HAI statement trong cùng conn, có chủ đích: SELECT like_count đặt chung
+    statement với CTE DELETE/INSERT sẽ đọc giá trị TRƯỚC khi trigger AFTER
+    (trg_like_count) chạy — like trả 0 khi DB là 1, unlike trả 1 khi DB là 0.
+    Statement 2 đọc lại posts SAU khi trigger của statement 1 đã cập nhật.
+    """
     with db._conn() as conn:
-        return db._fetchone(conn, f"""
+        toggled = db._fetchone(conn, f"""
             WITH removed AS (
                 DELETE FROM likes WHERE user_id = {ph}::uuid AND post_id = {ph}::uuid
                 RETURNING 1
@@ -2841,9 +2854,18 @@ def _like_toggle_query(ph, post_id, uid):
             )
             SELECT
                 EXISTS (SELECT 1 FROM inserted) AS liked,
-                (SELECT like_count FROM posts WHERE id::text = {ph}) AS like_count,
                 (SELECT user_id FROM posts WHERE id::text = {ph}) AS post_owner
-        """, (uid, post_id, uid, post_id, post_id, post_id))
+        """, (uid, post_id, uid, post_id, post_id))
+        if not toggled:
+            return None
+        count_row = db._fetchone(
+            conn, f"SELECT like_count FROM posts WHERE id::text = {ph}", (post_id,)
+        )
+        result = dict(db._row_to_dict(toggled))
+        result["like_count"] = (
+            db._row_to_dict(count_row)["like_count"] if count_row else 0
+        )
+        return result
 
 
 def _notify_like(post_owner, user, post_id, uid):
@@ -3536,8 +3558,8 @@ async def pin_post_to_profile(post_id: str, user=Depends(require_user), _csrf=De
 # ── Image upload ──
 
 @router.post("/upload/image",
-             summary="Upload an image",
-             description="Upload an image for use in posts. Validates file type via magic bytes (JPEG/PNG/GIF/WebP only), enforces 5MB limit. Returns the uploaded image URL.")
+             summary="Upload an image (rejected: AI-only media policy)",
+             description="User image uploads are unconditionally rejected under the AI-only media policy: every request returns 400 ai_only_media before any file is read. Site imagery is AI-generated out-of-band (scripts/gen_image.py).")
 async def upload_image(file: UploadFile = File(...), user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
     _reject_non_ai_media()
     check_rate(f"upload:{user['id']}", RL_UPLOAD_LIMIT, RL_UPLOAD_WINDOW,

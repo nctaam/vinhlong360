@@ -129,7 +129,8 @@ def make_slug(name: str) -> str:
     s = re.sub(r"[̀-ͯ]", "", s)
     s = s.replace("đ", "d").replace("Đ", "d")
     s = re.sub(r"[^a-z0-9]+", "-", s)
-    return s.strip("-")[:60]
+    # rstrip sau lát cắt: [:60] có thể rơi đúng dấu "-" (fix 2026-08-28)
+    return s.strip("-")[:60].rstrip("-")
 
 
 # ── Fetch & extract ──

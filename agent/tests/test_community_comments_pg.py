@@ -436,20 +436,24 @@ def test_edit_comment_outside_window_400(pg_db, stubs):
 
 # ── delete_comment ──
 
-def test_delete_comment_owner_soft_deletes_tree_and_notifications(pg_db, stubs):
+def test_delete_comment_owner_soft_deletes_tree_and_keeps_notifications(pg_db, stubs):
     owner = _seed_user(pg_db)
     replier = _seed_user(pg_db)
     post_id = _seed_post(pg_db, owner["id"])
     comment_id = _seed_comment(pg_db, post_id, owner["id"])
     reply_id = _seed_comment(pg_db, post_id, replier["id"], parent_id=comment_id)
+    # Thông báo bình luận THẬT mang ref_type='post' trỏ bài viết (đúng cách
+    # _notify_comment tạo) — bài còn sống nên xoá bình luận KHÔNG được xoá nó.
+    # Dòng DELETE ref_type='comment' cũ là mã chết (không nơi nào tạo
+    # ref_type='comment') — bug 11, đã gỡ khỏi delete_comment.
     with pg_db._conn() as conn:
         pg_db._execute(
             conn,
             """
             INSERT INTO notifications (user_id, type, title, ref_type, ref_id)
-            VALUES (%s::uuid, 'comment', 'Tiêu đề', 'comment', %s)
+            VALUES (%s::uuid, 'comment', 'Tiêu đề', 'post', %s)
             """,
-            (owner["id"], comment_id),
+            (owner["id"], post_id),
         )
 
     result = _run(community_api.delete_comment(comment_id, user=owner))
@@ -458,10 +462,11 @@ def test_delete_comment_owner_soft_deletes_tree_and_notifications(pg_db, stubs):
     assert _comment_row(pg_db, comment_id)["deleted_at"] is not None
     # Soft-delete cả reply con (SP3 W6.1) — hàng vẫn còn, chỉ gắn deleted_at
     assert _comment_row(pg_db, reply_id)["deleted_at"] is not None
-    assert not _fetch_one(
+    # Thông báo trỏ bài viết còn sống phải SỐNG SÓT qua việc xoá bình luận.
+    assert _fetch_one(
         pg_db,
-        "SELECT 1 FROM notifications WHERE ref_type = 'comment' AND ref_id = %s",
-        (comment_id,),
+        "SELECT 1 FROM notifications WHERE ref_type = 'post' AND ref_id = %s",
+        (post_id,),
     )
     # trigger recount về 0 sau khi cả cây bị soft-delete
     assert _post_row(pg_db, post_id)["comment_count"] == 0
@@ -768,3 +773,36 @@ def test_set_best_answer_permission_and_validation_branches(pg_db, stubs):
     with pytest.raises(HTTPException) as exc:
         _run(community_api.set_best_answer(str(uuid.uuid4()), body, user=asker))
     assert exc.value.status_code == 404
+
+
+def test_set_best_answer_rejects_non_question_post(pg_db, stubs):
+    """Bug 10a đã sửa: chỉ bài post_type='question' mới chọn được best answer."""
+    owner = _seed_user(pg_db)
+    answerer = _seed_user(pg_db)
+    post_id = _seed_post(pg_db, owner["id"], post_type="share")
+    comment_id = _seed_comment(pg_db, post_id, answerer["id"])
+    body = community_api.BestAnswerBody(comment_id=comment_id)
+
+    with pytest.raises(HTTPException) as exc:
+        _run(community_api.set_best_answer(post_id, body, user=owner))
+    assert exc.value.status_code == 400
+    assert exc.value.detail == "Chỉ bài hỏi-đáp mới chọn được câu trả lời hay"
+    assert _post_row(pg_db, post_id)["best_answer_id"] is None
+    assert stubs.achievements == []
+
+
+def test_set_best_answer_rejects_unapproved_comment(pg_db, stubs):
+    """Bug 10b đã sửa: bình luận pending/rejected không chọn được best answer."""
+    asker = _seed_user(pg_db)
+    answerer = _seed_user(pg_db)
+    post_id = _seed_post(pg_db, asker["id"], post_type="question")
+    pending_comment = _seed_comment(
+        pg_db, post_id, answerer["id"], moderation_status="pending"
+    )
+    body = community_api.BestAnswerBody(comment_id=pending_comment)
+
+    with pytest.raises(HTTPException) as exc:
+        _run(community_api.set_best_answer(post_id, body, user=asker))
+    assert exc.value.status_code == 400
+    assert _post_row(pg_db, post_id)["best_answer_id"] is None
+    assert stubs.achievements == []

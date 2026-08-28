@@ -111,7 +111,7 @@ def _detect_entity_type(text: str) -> str:
     """Đoán entity type từ keyword; mặc định 'attraction'."""
     type_keywords = {
         "dish": ["món", "ẩm thực", "bún", "phở", "bánh", "cơm", "lẩu", "nướng", "chè", "gỏi"],
-        "product": ["đặc sản", "OCOP", "nông sản", "trái cây", "dừa", "cam", "bưởi", "xoài", "sầu riêng"],
+        "product": ["đặc sản", "ocop", "nông sản", "trái cây", "dừa", "cam", "bưởi", "xoài", "sầu riêng"],
         "attraction": ["chùa", "đền", "miếu", "nhà thờ", "bảo tàng", "khu du lịch", "di tích", "cầu"],
         "experience": ["du lịch", "trải nghiệm", "tham quan", "chèo xuồng", "đạp xe", "homestay"],
         "event": ["lễ hội", "festival", "sự kiện", "mùa"],
@@ -509,12 +509,13 @@ def process_feedback_batch() -> dict:
 # ══════════════════════════════════════════════════
 
 def _find_best_snippet(results: list, name: str) -> str:
-    """Tìm snippet đầu tiên thực sự nói về entity `name`."""
+    """Tìm snippet đầu tiên CÓ NỘI DUNG thực sự nói về entity `name`."""
     for r in results:
         snippet = r.get("body", "")
         title = r.get("title", "")
         # Check if the snippet is actually about this entity
-        if name.lower()[:5] in (snippet + title).lower():
+        # (body rỗng thì duyệt tiếp result kế — fix 2026-08-28)
+        if name.lower()[:5] in (snippet + title).lower() and snippet.strip():
             return snippet
     return ""
 

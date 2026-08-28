@@ -3981,7 +3981,7 @@ hai miền này vẫn là NỢ TEST B3 (đo bằng độ phủ), không phải c
 
 ### Backlog phát sinh — Đợt test B3-A (2026-08-28)
 
-- **[2026-08-28, đợt test B3-A] 7 nghi-bug sản phẩm do test đặc tả đào ra — CHƯA sửa, chưa khoá bằng assertion** (nguồn: workflow 6 agent, chi tiết từng cái trong docstring file test tương ứng):
+- **[2026-08-28, đợt test B3-A] 7 nghi-bug sản phẩm do test đặc tả đào ra — ✅ ĐÃ SỬA TOÀN BỘ cùng ngày** (đợt fix 13-bug theo chỉ đạo chủ dự án; mỗi fix một test khoá hành vi đúng trong chính file test đợt A) (nguồn: workflow 6 agent, chi tiết từng cái trong docstring file test tương ứng):
   1. `agent/chat/api.py:698,:712` — except-handler của `_tool_community_reviews`/`_tool_trending_posts` gọi `logger.warning("... %s", e)` kiểu %-style nhưng `middleware.StructuredLogger.warning(self, msg, **kw)` không nhận positional → chính câu log nổ TypeError, nhánh degrade (`"Không thể tải đánh giá/bài viết"`) là MÃ CHẾT; call_tool nuốt thành "Không thực hiện được công cụ..." sai ngữ cảnh. Đã tái hiện bằng fake social raise RuntimeError. NẶNG NHẤT đợt này.
   2. `agent/chat/api.py:384` — `_area_matches` với area-slug lạ (không có trong `_PROV_NAMES`): entity không place/province_old cho `'' == ''` → mọi entity "trôi nổi" khớp bất kỳ area lạ.
   3. `agent/chat/api.py:431` — `_accom_filters_ok`: `attrs.get('booking_note','')` trả None khi key tồn tại giá trị None → nối chuỗi nổ TypeError.
@@ -3990,7 +3990,7 @@ hai miền này vẫn là NỢ TEST B3 (đo bằng độ phủ), không phải c
   6. `agent/learn_loop.py:511` — `_find_best_snippet` khớp title nhưng body rỗng vẫn return '' thay vì thử result kế.
   7. `agent/crawler.py:132` — `make_slug` strip("-") TRƯỚC rồi mới cắt [:60] → tên dài có thể ra slug kết thúc bằng "-".
 
-- **[2026-08-28, đợt test B3-B] 6 nghi-bug sản phẩm từ 286 test PG-backed đầu tiên của community/identity — CHƯA sửa** (chi tiết + cách tái hiện trong docstring các file `*_pg.py`):
+- **[2026-08-28, đợt test B3-B] 6 nghi-bug sản phẩm từ 286 test PG-backed đầu tiên của community/identity — ✅ ĐÃ XỬ TOÀN BỘ cùng ngày** (đợt fix 13-bug: mục 1-3+5 sửa mã, mục 4 điều tra ra dòng DELETE là MÃ CHẾT — không nơi nào tạo ref_type='comment' — nên gỡ kèm giải thích, mục 6 sửa mô tả OpenAPI; mỗi mục một test khoá) (chi tiết + cách tái hiện trong docstring các file `*_pg.py`):
   1. `agent/community/api.py:2218` — `_related_by_tags` dùng `p.hashtags && ARRAY[...]::text[]` nhưng `posts.hashtags` là JSONB: PG không có toán tử `jsonb && text[]` (probe trực tiếp xác nhận). Nhánh bù-theo-hashtag của GET /posts/{id}/related **500 từ khi sinh ra** mỗi khi bài nguồn có hashtag và bài cùng-entity ít hơn limit. Gợi ý: `?|` hoặc EXISTS trên `jsonb_array_elements_text`.
   2. `agent/community/api.py:2827` — `toggle_like` SELECT `like_count` trong cùng statement với CTE INSERT/DELETE nên trả giá trị **trước** trigger AFTER cập nhật: like trả 0 khi DB là 1, unlike trả 1 khi DB là 0. Đã tái hiện trên PG.
   3. `agent/community/api.py:2776` — `set_best_answer` SELECT `post_type` nhưng không kiểm (bài share/review vẫn chọn best answer); chỉ lọc `deleted_at`, bình luận `moderation_status` pending/rejected vẫn chọn được.

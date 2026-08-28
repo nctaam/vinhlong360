@@ -65,17 +65,21 @@ def _install_fake_ddgs(monkeypatch, rows=None, exc=None):
     return calls
 
 
-def _install_fake_social(monkeypatch, reviews=None, posts=None):
+def _install_fake_social(monkeypatch, reviews=None, posts=None, exc=None):
     """Thay module `social` — hai tool UGC import nó bên trong try nên fake ăn trọn."""
     seen = {}
     mod = types.ModuleType("social")
 
     def get_community_reviews(entity_id, limit):
         seen["reviews_args"] = (entity_id, limit)
+        if exc is not None:
+            raise exc
         return list(reviews or [])
 
     def get_trending_posts(limit, entity_type=None):
         seen["posts_args"] = (limit, entity_type)
+        if exc is not None:
+            raise exc
         return list(posts or [])
 
     mod.get_community_reviews = get_community_reviews
@@ -662,12 +666,21 @@ def test_tool_community_reviews_empty_returns_note(monkeypatch):
     assert out == {"reviews": [], "note": "Chưa có đánh giá cộng đồng cho 'con-chim'"}
 
 
-# LƯU Ý (không viết test cho nhánh except của 2 tool UGC): nhánh đó hiện có
-# defect thật — logger của chat/api.py là middleware.StructuredLogger, mà
-# warning(msg, **kw) KHÔNG nhận tham số %-style, nên chính câu
-# `logger.warning("... tool error: %s", e)` nổ TypeError trước khi kịp trả
-# thông điệp mềm "Không thể tải đánh giá"/"Không thể tải bài viết".
-# Khoá hành vi ấy bằng assertion là khoá cái sai → bỏ qua, ghi vào notes.
+# Nhánh except của 2 tool UGC: defect cũ (logger.warning %-style nổ TypeError
+# trong chính câu log vì StructuredLogger.warning chỉ nhận **kw) ĐÃ SỬA — nay
+# khoá hành vi ĐÚNG: social nổ → JSON degrade mềm, không propagate.
+
+
+def test_tool_community_reviews_social_error_degrades_to_json(monkeypatch):
+    _install_fake_social(monkeypatch, exc=RuntimeError("social hỏng"))
+    out = json.loads(chat_api._tool_community_reviews({"entity_id": "con-chim"}))
+    assert out == {"reviews": [], "error": "Không thể tải đánh giá"}
+
+
+def test_tool_trending_posts_social_error_degrades_to_json(monkeypatch):
+    _install_fake_social(monkeypatch, exc=RuntimeError("social hỏng"))
+    out = json.loads(chat_api._tool_trending_posts({}))
+    assert out == {"posts": [], "error": "Không thể tải bài viết"}
 
 
 def test_tool_trending_posts_returns_posts_and_count(monkeypatch):

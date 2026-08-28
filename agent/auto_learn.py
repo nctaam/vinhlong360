@@ -441,10 +441,11 @@ TOO_GENERIC = [
 ]
 
 # Pattern cho văn bản pháp luật / hành chính
+# (chữ thường toàn bộ: input của _reject_legal là name_lower — fix 2026-08-28)
 LEGAL_PATTERNS = [
     r"nghị quyết", r"chỉ thị", r"quyết định", r"thông tư",
-    r"luật\s", r"số\s+\d+", r"NQ-", r"CT/TW", r"QĐ-",
-    r"UBND", r"HĐND", r"vincom", r"plaza",
+    r"luật\s", r"số\s+\d+", r"nq-", r"ct/tw", r"qđ-",
+    r"ubnd", r"hđnd", r"vincom", r"plaza",
 ]
 
 # Từ tiếng Anh phổ biến → dấu hiệu tên English

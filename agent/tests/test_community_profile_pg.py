@@ -325,6 +325,19 @@ def test_upload_image_chan_moi_media_theo_chinh_sach_ai_only(monkeypatch):
     assert rate_calls == []
 
 
+def test_upload_image_openapi_mo_ta_dung_chinh_sach_ai_only():
+    """Bug 13 đã sửa: summary/description của route /upload/image phải nói đúng
+    hành vi thật (từ chối 400 ai_only_media), không hứa 'returns the URL'."""
+    route = next(
+        r for r in community_api.router.routes
+        if getattr(r, "path", "") == "/api/upload/image"
+    )
+    assert "AI-only" in route.summary
+    assert "ai_only_media" in route.description
+    assert "rejected" in route.description
+    assert "Returns the uploaded image URL" not in route.description
+
+
 def test_upload_image_sau_cong_luu_webp_vao_thu_muc_duoc_tro(monkeypatch, tmp_path):
     """Khi cổng AI-only được nới (stub), ảnh PNG hợp lệ được convert WebP và lưu local."""
     monkeypatch.setattr(community_api, "_reject_non_ai_media", lambda: None)
@@ -612,6 +625,10 @@ def test_get_user_posts_query_pinned_truoc_va_enrich_reactions(pg_db, monkeypatc
     assert resp["total"] == 2
     assert resp["has_more"] is False
     assert [p["id"] for p in resp["posts"]] == [p_pinned, p_new]
+    # Bug 12 đã sửa: p.is_pinned có trong _POST_COLS nên payload phản ánh
+    # đúng cột DB (trước đây _format_post luôn trả False vì thiếu cột).
+    assert resp["posts"][0]["is_pinned"] is True
+    assert resp["posts"][1]["is_pinned"] is False
     assert resp["posts"][0]["entity"] == {
         "id": ent, "name": "Cù lao An Bình", "type": "destination"}
     assert resp["posts"][0]["post_type_label"] == "Chia sẻ trải nghiệm"

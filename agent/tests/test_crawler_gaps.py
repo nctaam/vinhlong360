@@ -10,6 +10,9 @@ thật trong repo (crawl_one/crawl_all ghi file JSON ra đó).
 B6 (bất biến): crawler chỉ giữ trích đoạn + link nguồn, không re-host nguyên văn
 nội dung cào — các test to_entity/crawl_one khoá hành vi cắt summary 200 ký tự
 và lưu source.url.
+
+Đợt fix 2026-08-28: make_slug thêm .rstrip("-") sau lát cắt [:60] — test
+tương ứng khoá hành vi ĐÚNG (slug không kết thúc bằng '-').
 """
 
 import json
@@ -74,6 +77,15 @@ class TestMakeSlug:
 
     def test_chuoi_rong_ra_chuoi_rong(self):
         assert crawler.make_slug("") == ""
+
+    def test_lat_cat_60_roi_dung_dau_gach_khong_ket_thuc_bang_gach(self):
+        # Fix 2026-08-28: [:60] cắt SAU strip nên trước đây tên dài có thể ra
+        # slug kết thúc '-'. Chuỗi lặp "ab " → slug "ab-ab-..."; 60 ký tự đầu
+        # là đúng 20 nhóm "ab-" → ký tự thứ 60 rơi đúng dấu '-' → rstrip bỏ nốt.
+        slug = crawler.make_slug("ab " * 30)
+        assert slug == ("ab-" * 20).rstrip("-")
+        assert len(slug) == 59
+        assert not slug.endswith("-")
 
 
 # ── guess_entity_type ──
