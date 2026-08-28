@@ -3796,3 +3796,63 @@ bằng tay.
 
 Bài học giữ nguyên: xếp ưu tiên theo SỐ ROUTE là sai thước đo — `identity/` nhiều
 route nhất (73) nhưng đắt nhất; `llmops/` 28 route mà gần như miễn phí.
+
+#### 45.8 Lát thứ hai — `llmops/` — xác nhận giá trị của phép đo trước, và lộ trục chi phí thứ hai
+
+| | `chat/` (lát 1) | `llmops/` (lát 2) |
+|---|---|---|
+| dòng dời | 2.856 | 425 (47 ký hiệu, 0 rò rỉ) |
+| điểm vá test phải sửa | **346, tám vòng** | **0** — 2 điểm đo trước không cần đụng |
+| lỗi phát sinh | 110 bài đỏ, 6 file hỏng cú pháp | 6 tên thiếu import + 1 helper test |
+| thời gian hội tụ | ~2 giờ | ~15 phút |
+
+`server.py`: 5.507 → **2.159 dòng** (−61% trong một ngày, qua hai lát).
+
+**Phép đo §45.2 đoán đúng trục nó đo — và bỏ sót một trục:** bốn rào QUÉT-MÃ-NGUỒN
+(`TestEndpointAuthGuards`) đỏ vì handler dời chỗ, thứ phép đếm điểm-vá-namespace
+không nhìn thấy. May là chúng kêu rõ ("Function must exist") thay vì im — đúng
+chuẩn §45.3. Sửa bằng cách dạy `_server_src` hợp nhất CẢ BA cây route: chủ đích
+của rào là "mọi endpoint nội bộ có chốt admin", bất kể handler sống ở file nào;
+`function_source` cắt đúng MỘT hàm theo AST nên nối cây không làm yếu các bài
+chỉ soi một hàm.
+
+**Phép đo trước cho lát sau, nay đủ HAI trục:**
+
+```
+# trục 1 — điểm vá namespace:
+grep -rE 'setattr\(\s*<mod>|patch\.object\(\s*<mod>|patch\("<mod>\.' agent/tests/
+# trục 2 — rào quét-nguồn ghim đường dẫn file:
+grep -rl '<mod>.py' agent/tests/ | xargs grep -l 'read_text\|getsource'
+```
+
+#### 45.9 BA MỨC ỒN ÀO của một rào bị dời chỗ — xếp theo độ nguy hiểm NGƯỢC
+
+Lát `llmops/` làm hỏng ba thứ. Cả ba đều là "rào mất răng", nhưng chúng kêu to
+nhỏ khác nhau — và cái ÊM nhất mới nguy hiểm nhất:
+
+| # | hỏng gì | biểu hiện | tìm ra nhờ |
+|---|---|---|---|
+| 1 | 5 rào quét-nguồn ghim `server.py` | **ĐỎ rõ** — "Function must exist" | suite báo ngay |
+| 2 | 1 đích vá `semantic_cache_invalidate` | **ĐỎ**, nhưng nấp trong output tôi tự cắt bằng `\| tail -4` | chạy lại, giữ nguyên output |
+| 3 | 7 test model `try/except → pytest.skip` | **HOÀN TOÀN IM** — chỉ là `skipped 510 → 517` | hỏi "vì sao skipped tăng 7?" |
+
+Cái thứ ba không đỏ, không cảnh báo, chỉ một con số nhích lên trong dòng tổng
+kết mà hầu như ai cũng lướt qua. Bảy bài kiểm định Pydantic model đã TẮT LẶNG
+LẼ; nếu không truy con số đó, chúng đã đi vào commit ở trạng thái tắt.
+
+**Đã dựng rào:** `agent/tests/test_import_skip_traps.py` import THẲNG (không
+bọc) 6 ký hiệu đang bị `try/except → skip` bao. Ký hiệu nào dời chỗ thì nó ĐỎ
+ngay kèm tên. Nó phủ sẵn `admin.EntityCreate` và `admin._sanitize` — `admin.py`
+là nguồn của BA module trong bản đồ (`entities/` `moderation/` `siteops/`), nên
+bẫy đã có người canh trước khi ai đó tách nó.
+
+**Chưa làm, ghi lại:** quét thấy **45 chỗ / 24 file** dùng `except → pass/return`
+— biến thể còn êm hơn skip. Phần lớn có thể là dọn dẹp trong teardown chứ không
+nuốt logic kiểm định, nhưng chưa đọc từng chỗ nên KHÔNG kết luận.
+
+**Hai lỗi ở KÊNH QUAN SÁT, không phải ở mã** — cùng họ "khớp chuỗi lỏng thì nói
+dối": `\| tail -4` cắt mất danh sách FAILED (phải chạy lại 15 phút để nhìn thứ
+đáng lẽ đã có); chốt chờ `grep -qE "passed|failed"` khớp nhầm dòng
+`All checks passed!` của ruff nên báo "xong" khi pytest chưa chạy. Từ nay lệnh
+đo dài GHI NGUYÊN VẸN ra file, cắt sau; chốt chờ khớp đúng hình dạng sự kiện
+(`[0-9]+ passed`).

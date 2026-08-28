@@ -1,6 +1,7 @@
 """Security boundary tests for server-derived chat ownership."""
 
 from chat import api as chat_api  # ky hieu chat da doi sang day (2026-08-27)
+from llmops import api as llmops_api  # route /system sang day (2026-08-27)
 import asyncio
 import importlib
 import importlib.util
@@ -1450,12 +1451,16 @@ def test_admin_semantic_query_invalidation_clears_all_owner_namespaces(monkeypat
 
     monkeypatch.setattr(admin, "require_admin", allow_admin)
     monkeypatch.setattr(chat_api, "HAS_SEMANTIC_CACHE", True)
+    # route /system/semantic-cache/* sang agent/llmops/ 2026-08-27; cờ và
+    # cache phải vá ở CẢ HAI namespace vì hai module bind riêng.
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(llmops_api, "HAS_SEMANTIC_CACHE", True)
     monkeypatch.setattr(server, "multi_tier_cache", semantic_cache)
+    monkeypatch.setattr(llmops_api, "multi_tier_cache", semantic_cache)
 
     result = __import__("asyncio").run(
-        server.semantic_cache_invalidate(
-            server.SemanticCacheInvalidateRequest(query=query),
+        llmops_api.semantic_cache_invalidate(
+            llmops_api.SemanticCacheInvalidateRequest(query=query),
             SimpleNamespace(),
         )
     )

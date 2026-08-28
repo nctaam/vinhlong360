@@ -1664,7 +1664,16 @@ class TestEndpointAuthGuards:
     """Verify all internal endpoints have admin auth guards."""
 
     def _server_src(self):
-        return (Path(__file__).resolve().parent.parent / "server.py").read_text(encoding="utf-8")
+        # Hop nhat CA cac cay route: handler /system|/checkpoints|/analytics sang
+        # agent/llmops/ (2026-08-27), chat sang agent/chat/. Chu dich cua lop rao
+        # nay la "moi endpoint noi bo co chot admin" — bat ke handler song o file
+        # nao. function_source cat dung MOT ham theo AST nen viec noi cay khong
+        # lam yeu cac bai chi soi mot ham (vd health).
+        root = Path(__file__).resolve().parent.parent
+        parts = [(root / "server.py").read_text(encoding="utf-8")]
+        for extra in ("llmops/api.py", "chat/api.py"):
+            parts.append((root / extra).read_text(encoding="utf-8"))
+        return chr(10).join(parts)
 
     def test_health_public_is_minimal(self):
         """Public /health must NOT expose model, cache stats, or DB backend."""

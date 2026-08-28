@@ -2225,7 +2225,7 @@ class TestAsyncBlockingFixes:
         assert "asyncio.to_thread" in fn_src
 
     def test_vector_search_async(self):
-        src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
+        src = (AGENT_DIR / "llmops" / "api.py").read_text(encoding="utf-8")  # handler /vectors sang llmops 2026-08-27
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "vector_search_endpoint")

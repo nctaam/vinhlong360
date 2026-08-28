@@ -105,7 +105,8 @@ class TestGuardrailCheckRequest:
 
     def setup_method(self):
         try:
-            from server import GuardrailCheckRequest
+            # sang agent/llmops/ 2026-08-27 cùng các route /system
+            from llmops.api import GuardrailCheckRequest
             self.GuardrailCheckRequest = GuardrailCheckRequest
         except Exception:
             pytest.skip("Cannot import GuardrailCheckRequest")
@@ -129,7 +130,8 @@ class TestDynamicAgentCreateRequest:
 
     def setup_method(self):
         try:
-            from server import DynamicAgentCreateRequest
+            # sang agent/llmops/ 2026-08-27 cùng các route /system
+            from llmops.api import DynamicAgentCreateRequest
             self.DynamicAgentCreateRequest = DynamicAgentCreateRequest
         except Exception:
             pytest.skip("Cannot import DynamicAgentCreateRequest")
