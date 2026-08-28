@@ -1,6 +1,7 @@
 # Bản đồ module đề xuất — tách hệ thống theo MIỀN CHỨC NĂNG
 
-> STATUS: active — **HAI LÁT ĐÃ THỰC HIỆN** (`chat/`, `llmops/`), phần còn lại
+> STATUS: active — **BA MIỀN ĐÃ THỰC HIỆN** (`chat/`, `llmops/`, `entities/` đủ
+> hai mặt public+admin, 2026-08-28 — xem ROADMAP §46), phần còn lại
 > vẫn là đề xuất chờ chủ dự án. `server.py` 5.507 → 2.159 dòng (−61%).
 > Chi phí ĐO ĐƯỢC của hai lát đã làm ghi ở ROADMAP §45; nó ĐẢO thứ tự ưu tiên
 > ban đầu của tài liệu này — đọc §7 đã sửa bên dưới trước khi làm lát thứ ba.
@@ -130,8 +131,9 @@ lớn nhất dự án mà chạy trong vùng không phanh là đổi một nợ 
 |---|---:|---:|---|
 | ~~`llmops/`~~ | 425 | **0** | ĐÃ LÀM — ~15 phút |
 | ~~`chat/`~~ | 2.856 | **346** | ĐÃ LÀM — ~2 giờ, 8 vòng |
-| `entities/` | chưa tính | ~193 (cận trên) | public_api 124 + admin 69 |
-| `identity/` | chưa tính | **164** (cận trên) | ĐẮT NHẤT — bản đầu xếp ĐẦU vì 73 route |
+| ~~`entities/`~~ | 2.958 (4 bước) | thực đo: ~120 sửa | **ĐÃ LÀM** §46 — kèm SỰ CỐ B1, đọc §46.2-46.3 |
+| `identity/` | chưa tính | **164 + 147 thuộc-tính** | ĐẮT NHẤT, trong vùng mù B3 |
+| `community/` | chưa tính | 39 + 26 thuộc-tính | trong vùng mù B3 |
 
 Phép đo trước, hai trục (ROADMAP §45.8):
 
