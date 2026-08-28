@@ -3997,3 +3997,63 @@ hai miền này vẫn là NỢ TEST B3 (đo bằng độ phủ), không phải c
   4. `agent/community/api.py:2541` — `delete_comment` xoá notifications `ref_type='comment'` nhưng thông báo do `create_comment` sinh mang `ref_type='post'` → thông báo mồ côi trỏ bình luận đã xoá.
   5. `agent/community/api.py:73` — `_POST_COLS` thiếu `p.is_pinned` nên `get_user_posts`/`get_user_reviews` ORDER BY pin nhưng mọi item trả `is_pinned=False` — response tự mâu thuẫn với thứ tự của chính nó.
   6. `agent/community/api.py:3538` — mô tả OpenAPI của `upload_image` ("Returns the uploaded image URL") nói ngược hành vi thật: cổng AI-only (§1.5) chặn vô điều kiện 400 `ai_only_media`.
+
+### 48. Chiến dịch trả nợ test B3 — hai đợt, 580 test mới, phương-pháp-đo trước khi viết (2026-08-28)
+
+> STATUS: done — hai commit `d55128ac` (đợt A, 294 test local) và `8757e81a`
+> (đợt B, 286 test PG-backed). Nợ B3 của CLAUDE.md §2 lần đầu được ĐO thật
+> thay vì ước; 13 nghi-bug sản phẩm đào ra nằm ở hai mục Backlog phát sinh
+> cùng ngày.
+
+#### 48.1 Nguyên tắc: đo ba lượt trước khi viết một dòng test
+
+Coverage toàn-suite (lõi sysmon của coverage 7.15 trên Python 3.14 — không
+méo thời gian, 16 fail đúng baseline nên số đo tin được) chạy BA cấu hình:
+không-PG → PG một-cổng (`VL360_TEST_DATABASE_URL`) → PG bảy-cổng. Lý do phải
+ba lượt: repo có **8 cổng env per-domain** gate test Postgres (VL360 +
+TRUST_ERASURE + PERSONALIZATION_EVENTS + MIGRATION_APPLY +
+LOCATION_REMEDIATION + ENTITY_STATUS + ACCOUNT_CONTROL_PLANE + SITEMAP_BUNDLE)
+— đo thiếu cổng thì "nợ" lẫn "nợ-bị-che". Kết quả phân loại:
+
+- **Nợ thật, local**: tầng TOOL chat gần 0%, họ ETL agent-side 26–39% → đợt A.
+- **Nợ thật, cần PG**: community/api.py đứng im 30% qua CẢ BA lượt (không
+  test nào chạy handler UGC trên DB thật — toàn bộ lớp closure `._query` 0%);
+  identity/api.py 52% sau khi 7 cổng đã phủ hết phần của chúng → đợt B.
+- **Không phải nợ**: scripts một-lần 0% (phán quyết cũ giữ nguyên);
+  sitemap-bundle đòi hạ tầng riêng port 55432 — để nguyên skip.
+
+#### 48.2 Số liệu trước/sau (điền từ lượt chốt sổ 9 cổng)
+
+<BANG_CHOT_SO>
+
+#### 48.3 Cách thi công: workflow agent song song, ranh giới cứng trong đề bài
+
+Hai workflow (6 agent đợt A, 8 agent đợt B), mỗi agent MỘT file test mới +
+tự nghiệm thu file mình; cấm sửa file có sẵn; bug thật KHÔNG khoá bằng
+assertion (ghi suspected_bugs → Backlog). Đợt B: mỗi agent một DB PG riêng
+đã migrate đủ 81 (8 DB, tạo qua psycopg2 TCP vì docker CLI kẹt), khuôn
+harness thống nhất theo `test_account_control_plane_postgres.py` (adapter
+`Database()` `_use_pg` + monkeypatch `db` vào ĐÚNG module thực thi — gồm cả
+`profile_access` có `db` riêng, đúng bẫy trục-4 §46.3), side-effect ngoài
+miền (notifications/achievements/moderation/thread nền) bắt buộc stub vì
+`db` toàn cục trỏ SQLite THẬT; mỗi agent chốt bằng đếm SQLite `1746 0`.
+Hai cổng env mới cho CI tương lai: `UGC_SURFACE_TEST_DATABASE_URL` và
+`IDENTITY_SURFACE_TEST_DATABASE_URL` (validator tên-chứa-test + loopback,
+thiếu env → skip đúng chiều, 796 skipped ở baseline).
+
+#### 48.4 Những gì lượt đo dạy được (trả tiền một lần, đừng trả lại)
+
+- **Đo thiếu cổng env = kết luận sai.** identity 46%→52% chỉ nhờ set đủ cổng,
+  không viết thêm dòng test nào. Trước khi phán "module X thiếu test", grep
+  `_TEST_DATABASE_URL` đếm đủ cổng đã.
+- **Suite PG mở bằng DB pre-migrated có thể ĐỎ mà không phải bug**: 15 fail
+  artifact (location_remediation đòi DB đứng ở 072 để tự áp 073, readiness
+  đòi chuỗi fresh...) — coverage của chúng vẫn đóng góp đủ, nhưng đừng chữa
+  các fail đó như bug sản phẩm.
+- **docker CLI kẹt không có nghĩa PG chết**: exec/ps treo nhưng TCP 5433 sống
+  — mọi thao tác DB test đi qua psycopg2/DSN, đừng đi qua docker.
+- Đặc điểm schema thật mà test phải thuận theo: `post_reactions` CHECK 5 loại
+  (heart/useful/beautiful/funny/surprised), trigger `trg_posts_updated` ghi
+  đè updated_at khi UPDATE, `entity_ratings` do trigger đắp (không seed tay),
+  `trg_comment_count`/`trg_like_count` là AFTER statement (đọc trong cùng
+  statement ra giá trị CŨ — chính là nghi-bug toggle_like).
