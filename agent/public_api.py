@@ -87,8 +87,7 @@ from personalization_events import (
 )
 
 if __package__:
-    from .ai_disclosure import load_ai_disclosure
-    from .image_descriptor import describe_entity_images, describe_review_image
+    from .image_descriptor import describe_review_image
     from .itinerary_optimizer import (
         haversine_km,
         NoFeasibleRouteError,
@@ -107,11 +106,9 @@ if __package__:
         parse_time_range,
         schedule_stop_order,
     )
-    from .media_policy import is_renderable_entity_descriptor
     from .trust_policy import build_explanation, derive_freshness, derive_source_tier
 else:
-    from ai_disclosure import load_ai_disclosure
-    from image_descriptor import describe_entity_images, describe_review_image
+    from image_descriptor import describe_review_image
     from itinerary_optimizer import (
         haversine_km,
         NoFeasibleRouteError,
@@ -130,7 +127,6 @@ else:
         parse_time_range,
         schedule_stop_order,
     )
-    from media_policy import is_renderable_entity_descriptor
     from trust_policy import build_explanation, derive_freshness, derive_source_tier
 
 if __package__:
@@ -152,21 +148,37 @@ else:
     from launch_evidence import current_policy_evidence
     from profile_access import resolve_profile_access
 
+# Tầng đọc entity dùng chung — tách 2026-08-28 (bước 1a của lát entities/).
+# Cả gói entities/ sắp bóc LẪN file này đều gọi; để nguyên chỗ cũ là buộc
+# entities/ import ngược public_api — vòng. Xem agent/entity_read.py.
+from entity_read import (  # noqa: F401  (tái xuất: test vá qua public_api.<tên>)
+    _EVENT_SCAN_LIMIT,
+    _FULL_SCAN_LIMIT,
+    _GALLERY_DISCLOSURE,
+    _PLACE_CACHE_MAX,
+    _apply_cached_place,
+    _enrich_place,
+    _err,
+    _filter_public_entities,
+    _gallery_editorial_images,
+    _get_place,
+    _get_public_entities_batch,
+    _get_public_entity,
+    _is_public,
+    _place_cache,
+    _place_cache_lock,
+    _project_public_entity_media,
+    _public_entity_has_media,
+    _public_facilities_by_place,
+    _warn_if_scan_truncated,
+)
+
 router = APIRouter(prefix="/api", tags=["public"])
 
 # Load the release-owned disclosure artifact once so every gallery descriptor uses
 # the same canonical copy and revision.
-_GALLERY_DISCLOSURE = load_ai_disclosure()
 
 
-def _err(status_code: int, detail: str, **extra) -> JSONResponse:
-    """Error-shape chuẩn (SP3 W6.2): {detail, ...} — đồng nhất với
-    server._error_response và HTTPException handler. Trước đây public_api trả
-    {error: code} bypass handler; nay dùng detail (FE dựa HTTP status, không đọc
-    error-code — đã verify grep web-nuxt)."""
-    body: dict = {"detail": detail}
-    body.update(extra)
-    return JSONResponse(status_code=status_code, content=body)
 
 
 def _rollout_enabled(name: str) -> bool:
@@ -181,9 +193,6 @@ def _require_rollout(name: str) -> None:
 from collections import OrderedDict
 import threading as _threading
 
-_PLACE_CACHE_MAX = 500
-_place_cache: OrderedDict[str, dict] = OrderedDict()
-_place_cache_lock = _threading.Lock()
 DEFAULT_RELATIONSHIP_LIMIT = 24
 
 # Perf-P0: cache payload /homepage (endpoint nóng nhất) — trước đây scan toàn bảng entity
@@ -199,32 +208,12 @@ def invalidate_entity_cache(entity_id: str | None = None):
     del entity_id
 
 
-def _is_public(e: dict) -> bool:
-    """Entity được hiển thị công khai (listing/homepage): loại entity provisional /
-    chưa kiểm chứng (auto-learned). Quarantine cho public display — KB chat vẫn dùng,
-    nhưng trang công khai KHÔNG show nội dung tự-học chưa duyệt (tránh cảm giác nghiệp dư)."""
-    return e.get("status") != "provisional" and e.get("verified") not in (False, 0)
 
 
-def _get_public_entity(entity_id: str) -> Optional[dict]:
-    entity = db.get_entity(entity_id)
-    if not entity or not _is_public(entity):
-        return None
-    return entity
 
 
-def _filter_public_entities(entities: list[dict]) -> list[dict]:
-    """Keep only entities eligible for anonymous public projections."""
-    return [entity for entity in entities if _is_public(entity)]
 
 
-def _get_public_entities_batch(entity_ids: list[str]) -> dict[str, dict]:
-    """Batch lookup that cannot return provisional or explicitly unverified rows."""
-    return {
-        entity_id: entity
-        for entity_id, entity in db.get_entities_batch(entity_ids).items()
-        if _is_public(entity)
-    }
 
 
 def _public_entities_by_place(place_id: str) -> list[dict]:
@@ -249,11 +238,6 @@ def _entity_detail_index_policy(entity: dict) -> IndexPolicyDecision:
     return decide_entity(entity, evidence)
 
 
-def _public_facilities_by_place(place_id: str | None = None) -> list[dict]:
-    return [
-        _project_public_entity_media(entity)
-        for entity in _filter_public_entities(db.facilities_by_place(place_id))
-    ]
 
 
 def _itinerary_stop_entity_id(stop) -> str:
@@ -384,7 +368,6 @@ SEARCH_LOG_FILE = Path(__file__).resolve().parent / "data" / "search_queries.jso
 _VALID_TARGET_TYPES = {"facility", "entity", "post", "comment", "other"}
 
 _JSONL_MAX_LINES = 5000
-import threading as _threading
 _jsonl_lock = _threading.Lock()
 
 
@@ -1400,44 +1383,9 @@ async def get_site_settings(response: Response):
     response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
     return site_settings.get_all_public()
 
-def _get_place(place_id: str) -> dict | None:
-    with _place_cache_lock:
-        if place_id in _place_cache:
-            _place_cache.move_to_end(place_id)
-            return _place_cache[place_id]
-    place = db.get_entity(place_id)
-    if place:
-        with _place_cache_lock:
-            _place_cache[place_id] = {"name": place["name"], "area": place.get("area")}
-            if len(_place_cache) > _PLACE_CACHE_MAX:
-                _place_cache.popitem(last=False)
-    with _place_cache_lock:
-        return _place_cache.get(place_id)
-
-def _apply_cached_place(e: dict) -> None:
-    explicit_area = e.get("area")
-    pid = e.get("placeId")
-    if pid:
-        with _place_cache_lock:
-            p = _place_cache.get(pid)
-        if p:
-            e["place_name"] = p["name"]
-            e["place_area"] = explicit_area or p.get("area")
-    elif explicit_area:
-        e["place_area"] = explicit_area
-    e["quality"] = entity_quality(e)
 
 
-def _enrich_place(entities: list[dict]):
-    with _place_cache_lock:
-        uncached = {e["placeId"] for e in entities if e.get("placeId") and e["placeId"] not in _place_cache}
-    if uncached:
-        batch = db.get_entities_batch(list(uncached))
-        with _place_cache_lock:
-            for pid, place in batch.items():
-                _place_cache[pid] = {"name": place["name"], "area": place.get("area")}
-    for e in entities:
-        _apply_cached_place(e)
+
 
 def _enrich_entity_place(entity: dict):
     pid = entity.get("placeId")
@@ -1469,20 +1417,8 @@ def _public_entity_revision(entity: dict) -> int:
         return 1
 
 
-def _project_public_entity_media(entity: dict, *, limit: int | None = None) -> dict:
-    """Return an owned public projection with descriptor-only entity media."""
-    projected = dict(entity)
-    for key in ("image", "images", "image_url", "image_urls", "image_descriptor", "image_descriptors"):
-        projected.pop(key, None)
-    projected.pop("verifiedAt", None)
-    descriptors = _gallery_editorial_images(entity)
-    projected["image_descriptors"] = descriptors[:limit] if limit is not None else descriptors
-    return projected
 
 
-def _public_entity_has_media(entity: dict) -> bool:
-    """Return whether the public projection contains renderable entity media."""
-    return bool(_project_public_entity_media(entity, limit=1)["image_descriptors"])
 
 
 def _to_minimal(entity: dict) -> dict:
@@ -3082,24 +3018,8 @@ _PRODUCT_LEAD_BLOCKLIST = frozenset({
 # trạng thái tạm thời, và cái nguy hiểm không phải con số mà là sự IM LẶNG.
 # Nâng trần không giải quyết gì: trần nào rồi cũng có ngày chạm, và lúc đó vẫn
 # im như cũ. Nên giữ trần (an toàn bộ nhớ) + nói ra khi chạm.
-_FULL_SCAN_LIMIT = 5000
-_EVENT_SCAN_LIMIT = 2000
 
 
-def _warn_if_scan_truncated(rows, limit: int, where: str) -> bool:
-    """True khi lát cắt đã CHẠM trần — tức có thể đã mất dữ liệu.
-
-    `>=` chứ không `>`: khi trả về đúng `limit` hàng thì không phân biệt được
-    "vừa đủ" với "đã bị cắt", và ở ranh giới đó phải coi như đã cắt.
-    """
-    if len(rows) < limit:
-        return False
-    logger.warning(
-        "%s: quét toàn kho CHẠM TRẦN %d hàng — dữ liệu vượt trần bị bỏ im lặng. "
-        "Nâng trần hoặc chuyển sang phân trang trước khi tin kết quả.",
-        where, limit,
-    )
-    return True
 
 
 _LEAD_MIN_SUMMARY = 120     # ngắn hơn thì khối dựng lớn trống trải
@@ -3891,16 +3811,6 @@ async def report_stale_field(entity_id: str, payload: ReportStaleIn, request: Re
 
 # ── Entity gallery (entity images + review images) ───────────────────
 
-def _gallery_editorial_images(entity: dict) -> list[dict]:
-    images = []
-    for descriptor in describe_entity_images(
-        entity,
-        disclosure=_GALLERY_DISCLOSURE,
-    ):
-        serialized = asdict(descriptor)
-        if is_renderable_entity_descriptor(serialized):
-            images.append(serialized)
-    return images
 
 
 def _append_review_gallery_images(images: list[dict], review_rows: list[dict], entity_name: str) -> None:

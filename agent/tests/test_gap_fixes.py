@@ -2400,7 +2400,7 @@ class TestReliabilityFixes:
 
     def test_place_cache_thread_safe(self):
         """Place cache operations must be wrapped in _place_cache_lock."""
-        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        src = (AGENT_DIR / "entity_read.py").read_text(encoding="utf-8")  # tầng đọc entity tách 2026-08-28
         assert "_place_cache_lock" in src
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
@@ -2408,7 +2408,7 @@ class TestReliabilityFixes:
         assert "_place_cache_lock" in fn_src
 
     def test_enrich_place_thread_safe(self):
-        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        src = (AGENT_DIR / "entity_read.py").read_text(encoding="utf-8")  # tầng đọc entity tách 2026-08-28
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "_enrich_place")
