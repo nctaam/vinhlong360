@@ -5,6 +5,7 @@ a safety net for extracting that code, so these assertions must keep passing
 before and after the move — authentication OTP semantics do not change.
 """
 from __future__ import annotations
+from identity import api as identity_api  # mien dinh danh sang day 2026-08-28
 
 import asyncio
 import sys
@@ -74,19 +75,19 @@ def fake_sms(monkeypatch):
 
     monkeypatch.setattr(sms_provider, "_pinned_post", _fake_post)
     monkeypatch.setattr(sms_provider.time, "sleep", lambda _s: None)
-    monkeypatch.setattr(auth, "ESMS_API_KEY", "test-key")
-    monkeypatch.setattr(auth, "ESMS_SECRET", "test-secret")
-    monkeypatch.setattr(auth, "ESMS_BRANDNAME", "VL360")
+    monkeypatch.setattr(identity_api, "ESMS_API_KEY", "test-key")
+    monkeypatch.setattr(identity_api, "ESMS_SECRET", "test-secret")
+    monkeypatch.setattr(identity_api, "ESMS_BRANDNAME", "VL360")
     # A local shim, not a patch of the real asyncio module: patching the module
     # attribute in place makes the replacement call itself.
-    monkeypatch.setattr(auth, "asyncio", SimpleNamespace(sleep=_no_sleep))
+    monkeypatch.setattr(identity_api, "asyncio", SimpleNamespace(sleep=_no_sleep))
     return _FakeAsyncClient
 
 
 # ── Characterisation: today's behaviour, which the extraction must preserve ──
 
 def test_without_a_provider_key_the_send_is_a_dev_no_op(monkeypatch):
-    monkeypatch.setattr(auth, "ESMS_API_KEY", "")
+    monkeypatch.setattr(identity_api, "ESMS_API_KEY", "")
 
     assert asyncio.run(auth._send_sms("0901234567", "ma 123456")) is True
 

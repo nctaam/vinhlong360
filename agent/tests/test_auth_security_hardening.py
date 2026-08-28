@@ -18,6 +18,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from starlette.responses import Response
+from identity import api as identity_api  # mien dinh danh sang day 2026-08-28
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -542,10 +543,10 @@ class TestAccountPrivacyContracts:
         conn = MagicMock()
         conn.__enter__.return_value = conn
         conn.__exit__.return_value = False
-        monkeypatch.setattr(auth, "_get_current_user_or_none", AsyncMock(return_value={"id": "user-1"}))
-        monkeypatch.setattr(auth.db, "_conn", lambda: conn)
-        monkeypatch.setattr(auth.db, "_fetchall", lambda *_args, **_kwargs: [row])
-        monkeypatch.setattr(auth.db, "_row_to_dict", lambda value: value)
+        monkeypatch.setattr(identity_api, "_get_current_user_or_none", AsyncMock(return_value={"id": "user-1"}))
+        monkeypatch.setattr(identity_api.db, "_conn", lambda: conn)
+        monkeypatch.setattr(identity_api.db, "_fetchall", lambda *_args, **_kwargs: [row])
+        monkeypatch.setattr(identity_api.db, "_row_to_dict", lambda value: value)
 
         result = asyncio.run(auth.consent_history(MagicMock()))
 
@@ -582,15 +583,15 @@ class TestAccountPrivacyContracts:
         due = auth._utc_now() + timedelta(days=auth.ACCOUNT_DELETE_GRACE_DAYS)
         erasure_state = SimpleNamespace(erasure_due_at=due)
 
-        monkeypatch.setattr(auth, "_get_current_user_or_none", AsyncMock(return_value={"id": "user-1"}))
-        monkeypatch.setattr(auth, "_check_session_binding_safe", AsyncMock(return_value=True))
-        monkeypatch.setattr(auth, "_clear_session_cookie", lambda *_args: None)
-        monkeypatch.setattr(auth, "request_account_erasure", lambda _uid, now=None: erasure_state)
-        monkeypatch.setattr(auth, "quarantine_account", lambda _uid, now=None: SimpleNamespace(
+        monkeypatch.setattr(identity_api, "_get_current_user_or_none", AsyncMock(return_value={"id": "user-1"}))
+        monkeypatch.setattr(identity_api, "_check_session_binding_safe", AsyncMock(return_value=True))
+        monkeypatch.setattr(identity_api, "_clear_session_cookie", lambda *_args: None)
+        monkeypatch.setattr(identity_api, "request_account_erasure", lambda _uid, now=None: erasure_state)
+        monkeypatch.setattr(identity_api, "quarantine_account", lambda _uid, now=None: SimpleNamespace(
             success=True, status="quarantined", run_id="r1", error_code=None, failed_store_names=[]))
-        monkeypatch.setattr(auth.owner_write_gate, "block_owner", lambda *_a, **_k: None)
-        monkeypatch.setattr(auth.db, "_conn", lambda: conn)
-        monkeypatch.setattr(auth.db, "_execute", execute)
+        monkeypatch.setattr(identity_api.owner_write_gate, "block_owner", lambda *_a, **_k: None)
+        monkeypatch.setattr(identity_api.db, "_conn", lambda: conn)
+        monkeypatch.setattr(identity_api.db, "_execute", execute)
         monkeypatch.setattr(ratelimit, "check_rate", lambda *_args, **_kwargs: None)
 
         result = asyncio.run(auth.delete_account(MagicMock(), Response(), None))
@@ -625,12 +626,12 @@ class TestAccountPrivacyContracts:
             if "DELETE FROM user_sessions" in statement:
                 state["sessions"] = 0
 
-        monkeypatch.setattr(auth, "_get_current_user_or_none", AsyncMock(return_value={"id": "user-1"}))
-        monkeypatch.setattr(auth, "_check_session_binding_safe", AsyncMock(return_value=True))
-        monkeypatch.setattr(auth, "_clear_session_cookie", lambda *_args: None)
-        monkeypatch.setattr(auth.db, "update_user", update_user)
-        monkeypatch.setattr(auth.db, "_conn", lambda: conn)
-        monkeypatch.setattr(auth.db, "_execute", execute)
+        monkeypatch.setattr(identity_api, "_get_current_user_or_none", AsyncMock(return_value={"id": "user-1"}))
+        monkeypatch.setattr(identity_api, "_check_session_binding_safe", AsyncMock(return_value=True))
+        monkeypatch.setattr(identity_api, "_clear_session_cookie", lambda *_args: None)
+        monkeypatch.setattr(identity_api.db, "update_user", update_user)
+        monkeypatch.setattr(identity_api.db, "_conn", lambda: conn)
+        monkeypatch.setattr(identity_api.db, "_execute", execute)
         monkeypatch.setattr(ratelimit, "check_rate", lambda *_args, **_kwargs: None)
 
         result = asyncio.run(auth.deactivate_account(MagicMock(), Response(), None))
@@ -652,8 +653,8 @@ class TestAuthPasswordSecurity:
 
     def test_password_uses_pbkdf2_or_bcrypt(self):
         """Password hashing must use a proper KDF."""
-        import auth
-        src = inspect.getsource(auth)
+        from identity import api as _impl  # auth.py la shim guong (2026-08-28)
+        src = inspect.getsource(_impl)
         has_kdf = ("pbkdf2" in src.lower() or "bcrypt" in src.lower()
                    or "argon2" in src.lower() or "scrypt" in src.lower())
         assert has_kdf, "auth.py must use a proper password KDF (PBKDF2/bcrypt/argon2)"

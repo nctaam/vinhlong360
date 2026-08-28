@@ -9,6 +9,8 @@ import httpx
 import pytest
 
 import auth
+
+from identity import api as identity_api  # mien dinh danh sang day 2026-08-28
 import ratelimit
 import server
 from erasure_state import ErasureState
@@ -65,16 +67,16 @@ async def test_otp_recovery_commits_before_session_creation(monkeypatch):
         events.append("session_insert")
         return {"success": True, "token": "session"}
 
-    monkeypatch.setattr(auth, "db", FakeDB())
-    monkeypatch.setattr(auth, "_consume_verified_otp", lambda *_args: None)
-    monkeypatch.setattr(auth, "recover_account", recover)
-    monkeypatch.setattr(auth, "_finish_login", finish)
-    monkeypatch.setattr(auth, "_2fa_is_enabled", lambda *_args: False)
-    monkeypatch.setattr(auth, "_hash_otp", lambda code: code)
-    monkeypatch.setattr(auth, "_check_shared_auth_rate", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(auth, "_enforce_local_rate", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(auth, "_utc_now", lambda: NOW)
-    monkeypatch.setattr(auth, "_log_consent", lambda *_args: None)
+    monkeypatch.setattr(identity_api, "db", FakeDB())
+    monkeypatch.setattr(identity_api, "_consume_verified_otp", lambda *_args: None)
+    monkeypatch.setattr(identity_api, "recover_account", recover)
+    monkeypatch.setattr(identity_api, "_finish_login", finish)
+    monkeypatch.setattr(identity_api, "_2fa_is_enabled", lambda *_args: False)
+    monkeypatch.setattr(identity_api, "_hash_otp", lambda code: code)
+    monkeypatch.setattr(identity_api, "_check_shared_auth_rate", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(identity_api, "_enforce_local_rate", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(identity_api, "_utc_now", lambda: NOW)
+    monkeypatch.setattr(identity_api, "_log_consent", lambda *_args: None)
     monkeypatch.setattr(ratelimit, "check_rate", lambda *_args, **_kwargs: None)
     _override_pg_and_csrf()
 
@@ -118,19 +120,19 @@ async def test_otp_recovery_at_deadline_returns_generic_unavailable_without_sess
         finish_calls.append(True)
         return {"success": True}
 
-    monkeypatch.setattr(auth, "db", FakeDB())
-    monkeypatch.setattr(auth, "_consume_verified_otp", lambda *_args: None)
+    monkeypatch.setattr(identity_api, "db", FakeDB())
+    monkeypatch.setattr(identity_api, "_consume_verified_otp", lambda *_args: None)
     monkeypatch.setattr(
-        auth,
+        identity_api,
         "recover_account",
         lambda *_args, **_kwargs: RecoveryResult(recovered=False, user=None),
     )
-    monkeypatch.setattr(auth, "_finish_login", finish)
-    monkeypatch.setattr(auth, "_2fa_is_enabled", lambda *_args: False)
-    monkeypatch.setattr(auth, "_hash_otp", lambda code: code)
-    monkeypatch.setattr(auth, "_check_shared_auth_rate", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(auth, "_enforce_local_rate", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(auth, "_utc_now", lambda: DUE)
+    monkeypatch.setattr(identity_api, "_finish_login", finish)
+    monkeypatch.setattr(identity_api, "_2fa_is_enabled", lambda *_args: False)
+    monkeypatch.setattr(identity_api, "_hash_otp", lambda code: code)
+    monkeypatch.setattr(identity_api, "_check_shared_auth_rate", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(identity_api, "_enforce_local_rate", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(identity_api, "_utc_now", lambda: DUE)
     monkeypatch.setattr(ratelimit, "check_rate", lambda *_args, **_kwargs: None)
     _override_pg_and_csrf()
 
@@ -186,12 +188,12 @@ async def test_delete_transport_quarantines_only_after_durable_request_commit(
             status="failed",
         )
 
-    monkeypatch.setattr(auth, "_get_current_user_or_none", current_user)
-    monkeypatch.setattr(auth, "_check_session_binding_safe", binding_ok)
-    monkeypatch.setattr(auth, "_utc_now", lambda: NOW)
-    monkeypatch.setattr(auth, "request_account_erasure", request_erasure)
-    monkeypatch.setattr(auth, "owner_write_gate", Gate())
-    monkeypatch.setattr(auth, "quarantine_account", quarantine_account)
+    monkeypatch.setattr(identity_api, "_get_current_user_or_none", current_user)
+    monkeypatch.setattr(identity_api, "_check_session_binding_safe", binding_ok)
+    monkeypatch.setattr(identity_api, "_utc_now", lambda: NOW)
+    monkeypatch.setattr(identity_api, "request_account_erasure", request_erasure)
+    monkeypatch.setattr(identity_api, "owner_write_gate", Gate())
+    monkeypatch.setattr(identity_api, "quarantine_account", quarantine_account)
     monkeypatch.setattr(ratelimit, "check_rate", lambda *_args, **_kwargs: None)
     _override_pg_and_csrf()
 

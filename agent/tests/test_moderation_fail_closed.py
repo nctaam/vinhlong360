@@ -8,6 +8,7 @@ from starlette.requests import Request
 
 import moderation
 from community import api as community_api  # mien cong dong sang day 2026-08-28
+from identity import api as identity_api  # mien dinh danh sang day 2026-08-28
 
 
 _VALID_TEXT_PROVIDER_PAYLOAD = {
@@ -332,8 +333,8 @@ def test_pending_moderation_never_persists_public_profile_fields(monkeypatch, fi
         persisted.append(fields)
         return {**user, **fields}
 
-    monkeypatch.setattr(auth, "_get_current_user_or_none", current_user)
-    monkeypatch.setattr(auth, "_persist_profile_fields", persist)
+    monkeypatch.setattr(identity_api, "_get_current_user_or_none", current_user)
+    monkeypatch.setattr(identity_api, "_persist_profile_fields", persist)
     monkeypatch.setattr(moderation, "moderate_content", pending_moderation)
     monkeypatch.setattr(ratelimit, "check_rate", lambda *_args, **_kwargs: None)
 
@@ -361,8 +362,8 @@ def test_approved_profile_moderation_still_persists(monkeypatch):
         persisted.append(fields)
         return {**user, **fields}
 
-    monkeypatch.setattr(auth, "_get_current_user_or_none", current_user)
-    monkeypatch.setattr(auth, "_persist_profile_fields", persist)
+    monkeypatch.setattr(identity_api, "_get_current_user_or_none", current_user)
+    monkeypatch.setattr(identity_api, "_persist_profile_fields", persist)
     monkeypatch.setattr(moderation, "moderate_content", approved_moderation)
     monkeypatch.setattr(ratelimit, "check_rate", lambda *_args, **_kwargs: None)
 

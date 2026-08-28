@@ -11,6 +11,8 @@ import httpx
 import pytest
 
 import auth
+
+from identity import api as identity_api  # mien dinh danh sang day 2026-08-28
 import data_lifecycle
 import erasure
 import erasure_state
@@ -357,11 +359,11 @@ def _patch_lifecycle(monkeypatch, db, stores, gate, structured):
     monkeypatch.setattr(erasure_state, "db", db)
     monkeypatch.setattr(quarantine, "db", db)
     monkeypatch.setattr(erasure, "db", db)
-    monkeypatch.setattr(auth, "db", db)
+    monkeypatch.setattr(identity_api, "db", db)
     monkeypatch.setattr(quarantine, "lifecycle_registry", stores.registry)
     monkeypatch.setattr(erasure, "lifecycle_registry", stores.registry)
     monkeypatch.setattr(quarantine, "owner_write_gate", gate)
-    monkeypatch.setattr(auth, "owner_write_gate", gate)
+    monkeypatch.setattr(identity_api, "owner_write_gate", gate)
     monkeypatch.setattr(erasure, "validate_user_fk_actions", lambda _conn: ())
     monkeypatch.setattr(
         erasure,
@@ -426,9 +428,9 @@ async def test_request_quarantine_and_predeadline_recovery_keep_retained_data(
     async def binding_ok(_request, _user):
         return True
 
-    monkeypatch.setattr(auth, "_get_current_user_or_none", current_user)
-    monkeypatch.setattr(auth, "_check_session_binding_safe", binding_ok)
-    monkeypatch.setattr(auth, "_utc_now", lambda: REQUESTED_AT)
+    monkeypatch.setattr(identity_api, "_get_current_user_or_none", current_user)
+    monkeypatch.setattr(identity_api, "_check_session_binding_safe", binding_ok)
+    monkeypatch.setattr(identity_api, "_utc_now", lambda: REQUESTED_AT)
     monkeypatch.setattr(ratelimit, "check_rate", lambda *_args, **_kwargs: None)
     _override_auth_dependencies()
     try:
@@ -462,14 +464,14 @@ async def test_request_quarantine_and_predeadline_recovery_keep_retained_data(
     async def finish_login(*_args):
         return {"success": True, "token": "fresh-session"}
 
-    monkeypatch.setattr(auth, "_consume_verified_otp", lambda *_args: None)
-    monkeypatch.setattr(auth, "_finish_login", finish_login)
-    monkeypatch.setattr(auth, "_2fa_is_enabled", lambda *_args: False)
-    monkeypatch.setattr(auth, "_hash_otp", lambda code: code)
-    monkeypatch.setattr(auth, "_check_shared_auth_rate", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(auth, "_enforce_local_rate", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(auth, "_log_consent", lambda *_args: None)
-    monkeypatch.setattr(auth, "_utc_now", lambda: DUE_AT - timedelta(microseconds=1))
+    monkeypatch.setattr(identity_api, "_consume_verified_otp", lambda *_args: None)
+    monkeypatch.setattr(identity_api, "_finish_login", finish_login)
+    monkeypatch.setattr(identity_api, "_2fa_is_enabled", lambda *_args: False)
+    monkeypatch.setattr(identity_api, "_hash_otp", lambda code: code)
+    monkeypatch.setattr(identity_api, "_check_shared_auth_rate", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(identity_api, "_enforce_local_rate", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(identity_api, "_log_consent", lambda *_args: None)
+    monkeypatch.setattr(identity_api, "_utc_now", lambda: DUE_AT - timedelta(microseconds=1))
     _override_auth_dependencies()
     try:
         transport = httpx.ASGITransport(app=server.app)
@@ -509,13 +511,13 @@ async def test_recovery_at_or_after_exact_deadline_fails_closed(
     async def finish_login(*_args):
         raise AssertionError("session creation must not run at the deadline")
 
-    monkeypatch.setattr(auth, "_consume_verified_otp", lambda *_args: None)
-    monkeypatch.setattr(auth, "_finish_login", finish_login)
-    monkeypatch.setattr(auth, "_2fa_is_enabled", lambda *_args: False)
-    monkeypatch.setattr(auth, "_hash_otp", lambda code: code)
-    monkeypatch.setattr(auth, "_check_shared_auth_rate", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(auth, "_enforce_local_rate", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(auth, "_utc_now", lambda: recovery_time)
+    monkeypatch.setattr(identity_api, "_consume_verified_otp", lambda *_args: None)
+    monkeypatch.setattr(identity_api, "_finish_login", finish_login)
+    monkeypatch.setattr(identity_api, "_2fa_is_enabled", lambda *_args: False)
+    monkeypatch.setattr(identity_api, "_hash_otp", lambda code: code)
+    monkeypatch.setattr(identity_api, "_check_shared_auth_rate", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(identity_api, "_enforce_local_rate", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(identity_api, "_utc_now", lambda: recovery_time)
     monkeypatch.setattr(ratelimit, "check_rate", lambda *_args, **_kwargs: None)
     _override_auth_dependencies()
     try:

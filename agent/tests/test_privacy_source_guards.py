@@ -46,7 +46,7 @@ FORBIDDEN_FEEDBACK_TOKENS = (
 )
 LOG_METHODS = {"debug", "info", "warning", "error", "exception", "critical"}
 LIFECYCLE_LOG_SCOPES = (
-    ("auth.py", "delete_account"),
+    ("identity/api.py", "delete_account"),  # auth.py nay là shim (2026-08-28)
     ("erasure.py", "_observe_failure"),
     ("scheduler.py", "task_account_erasure"),
     ("scheduler.py", "task_quarantine_retry"),

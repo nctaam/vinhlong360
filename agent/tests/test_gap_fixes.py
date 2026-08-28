@@ -19,6 +19,14 @@ AGENT_DIR = Path(__file__).resolve().parent.parent
 
 
 
+
+def _auth_src() -> str:
+    """Nguon mien DINH DANH — chuyen nguyen van sang identity/api.py
+    (2026-08-28); shim auth.py chi con tai xuat nen doc shim la doc rong."""
+    from pathlib import Path as _P
+    return (_P(__file__).resolve().parent.parent / "identity" / "api.py").read_text(encoding="utf-8")
+
+
 def _social_src() -> str:
     """Nguon mien CONG DONG — chuyen nguyen van sang community/api.py
     (2026-08-28); shim social.py chi con tai xuat nen doc shim la doc rong."""
@@ -2129,7 +2137,7 @@ class TestDataRetentionCleanup:
         assert callable(cleanup_expired_data)
 
     def test_cleanup_covers_sessions(self):
-        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "cleanup_expired_data")
@@ -2137,14 +2145,14 @@ class TestDataRetentionCleanup:
         assert "expires_at < NOW()" in fn_src
 
     def test_cleanup_covers_otps(self):
-        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "cleanup_expired_data")
         assert "otp_sessions" in fn_src
 
     def test_cleanup_covers_login_history(self):
-        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "cleanup_expired_data")
@@ -2152,7 +2160,7 @@ class TestDataRetentionCleanup:
         assert "90 days" in fn_src
 
     def test_cleanup_covers_notifications(self):
-        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "cleanup_expired_data")
@@ -2160,7 +2168,7 @@ class TestDataRetentionCleanup:
         assert "60 days" in fn_src
 
     def test_cleanup_returns_dict(self):
-        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "cleanup_expired_data")
@@ -2340,7 +2348,7 @@ class TestSecurityFixes:
     """Security hardening: fail-closed session binding, bounded file reads, connection safety."""
 
     def test_session_binding_fails_closed(self):
-        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "_check_session_binding_safe")
@@ -2348,14 +2356,14 @@ class TestSecurityFixes:
         assert "return True" not in fn_src.split("return await")[0]
 
     def test_avatar_upload_bounded_read(self):
-        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "upload_avatar")
         assert "file.read(MAX_IMAGE_SIZE" in fn_src
 
     def test_cover_upload_bounded_read(self):
-        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "upload_cover")
@@ -2501,7 +2509,7 @@ class TestReliabilityFixes:
 
     def test_session_binding_blocks_password_change(self):
         """Session binding failure must raise 403 on set-password."""
-        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "set_password")
@@ -2510,7 +2518,7 @@ class TestReliabilityFixes:
         assert "raise HTTPException(403" in after_bind
 
     def test_session_binding_blocks_deactivate(self):
-        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "deactivate_account")
@@ -2519,7 +2527,7 @@ class TestReliabilityFixes:
         assert "raise HTTPException(403" in after_bind
 
     def test_session_binding_blocks_delete_account(self):
-        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "delete_account")
@@ -2593,7 +2601,7 @@ class TestRaceConditionFixes:
 
     def test_validate_path_id_imported_in_auth(self):
         """validate_path_id must be imported in auth.py (lazy to avoid circular)."""
-        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn = function_source(src, "revoke_session")
@@ -2749,14 +2757,14 @@ class TestPasswordRehash:
     """Legacy PBKDF2 passwords must be rehashed on login."""
 
     def test_verify_password_return_legacy_flag(self):
-        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn = function_source(src, "_verify_password")
         assert "_return_legacy" in fn
 
     def test_login_rehashes_legacy(self):
-        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn = function_source(src, "login_password")

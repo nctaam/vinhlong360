@@ -19,6 +19,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 
 
+
+def _auth_src() -> str:
+    """Nguon mien DINH DANH — chuyen nguyen van sang identity/api.py
+    (2026-08-28); shim auth.py chi con tai xuat nen doc shim la doc rong."""
+    from pathlib import Path as _P
+    return (_P(__file__).resolve().parent.parent / "identity" / "api.py").read_text(encoding="utf-8")
+
+
 def _social_src() -> str:
     """Nguon mien CONG DONG — chuyen nguyen van sang community/api.py
     (2026-08-28); shim social.py chi con tai xuat nen doc shim la doc rong."""
@@ -342,7 +350,7 @@ class TestPhase17SecurityChecks:
         assert "hmac.compare_digest" in src
 
     def test_password_hash_uses_pbkdf2(self):
-        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         assert "pbkdf2_hmac" in src
 
     def test_password_validation_min_length(self):
@@ -364,11 +372,11 @@ class TestPhase17SecurityChecks:
             SetPassword(password="12345678")
 
     def test_esms_uses_https(self):
-        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         assert "https://rest.esms.vn/" in src
 
     def test_token_hashing_uses_sha256(self):
-        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         assert "sha256" in src
 
     def test_session_cleanup_purges_expired(self):
@@ -520,11 +528,11 @@ class TestSelectStarRemoval:
     """Verify SELECT * is not used in UGC/auth Postgres queries."""
 
     def test_auth_no_select_star_otp(self):
-        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         assert "SELECT * FROM otp_sessions" not in src
 
     def test_auth_no_select_star_privacy(self):
-        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         assert "SELECT * FROM user_privacy" not in src
 
     def test_notifications_no_select_star(self):
@@ -626,7 +634,7 @@ class TestBareExceptFixes:
     """Bare except blocks should log errors instead of silently swallowing."""
 
     def test_session_binding_logs_on_error(self):
-        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         idx = src.find("_check_session_binding_safe")
         block = src[idx:idx+300]
         assert "exc_info=True" in block or "logging" in block
@@ -810,7 +818,7 @@ class TestSecurityPosture:
         assert not unvalidated, f"server.py has unvalidated limit params: {unvalidated}"
 
     def test_query_param_bounds_in_auth(self):
-        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         for line in src.split("\n"):
             if "limit: int = " in line and "def " in line:
                 assert "Query(" in line, f"auth.py unvalidated limit: {line.strip()}"
@@ -829,13 +837,13 @@ class TestSecurityPosture:
                     assert "le=" in line, f"{module}.py:{line_no} offset without upper bound"
 
     def test_phone_masking_in_auth_logs(self):
-        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         assert "def _mask_phone" in src
         assert "_mask_phone(phone)" in src
         assert "logger.error(" in src or "logger.warning(" in src
 
     def test_no_otp_code_in_logs(self):
-        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         for line in src.split("\n"):
             if "logger" in line and "OTP" in line:
                 assert ", code)" not in line, "OTP code leaked in log"
@@ -847,7 +855,7 @@ class TestSecurityPosture:
 
     def test_login_timing_oracle_protection(self):
         """Login must run PBKDF2 even when user not found (constant-time rejection)."""
-        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         assert "_DUMMY_HASH" in src, "Missing dummy hash for timing oracle protection"
         idx = src.find("def login_password")
         assert idx > 0
@@ -872,7 +880,7 @@ class TestSecurityPosture:
 
     def test_auth_mutations_rate_limited(self):
         """All auth mutation endpoints must have rate limiting."""
-        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         for endpoint in ("set_password", "deactivate_account", "delete_account", "update_profile"):
             idx = src.find(f"def {endpoint}")
             assert idx > 0, f"Missing endpoint {endpoint}"
@@ -1094,7 +1102,7 @@ class TestSecurityPosture:
 
     def test_rate_limit_gc_threshold(self):
         """Rate limit GC must trigger at a reasonable threshold, not wait for 2000+ keys."""
-        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         assert "_RATE_GC_THRESHOLD = 500" in src, "Rate limit GC threshold should be 500"
         assert "_RATE_MAX_KEYS" not in src, "Old _RATE_MAX_KEYS constant should be removed"
 
@@ -1175,7 +1183,7 @@ class TestSecurityPosture:
 
     def test_otp_verify_per_phone_rate_limit(self):
         """OTP verification must have per-phone rate limiting (not just per-IP)."""
-        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         assert "OTP_VERIFY_PHONE_LIMIT" in src, "Missing per-phone OTP rate limit"
         idx = src.find("async def verify_otp(")
         assert idx > 0

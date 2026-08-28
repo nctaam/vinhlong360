@@ -892,8 +892,11 @@ class TestUserDataExport:
         assert "asyncio.to_thread" in src
 
     def test_docstring_updated(self):
-        import auth
-        assert "export-data" in auth.__doc__
+        # auth.py nay là shim (docstring riêng tả shim); tài liệu endpoint sống
+        # ở nhà thật. Gương động không chép __doc__ — chủ đích, kẻo help(auth)
+        # giấu mất lời giải thích shim.
+        from identity import api as _impl
+        assert "export-data" in _impl.__doc__
 
 
 # ── Report comment ──

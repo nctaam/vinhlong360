@@ -73,7 +73,8 @@ def test_scheduler_contains_no_account_lifecycle_mutation_sql():
 
 
 def test_reactivate_user_delegates_without_direct_deletion_state_reset():
-    source = _function_source("agent/auth.py", "_reactivate_user")
+    # auth.py nay là shim — nhà thật của _reactivate_user: identity/api.py (2026-08-28)
+    source = _function_source("agent/identity/api.py", "_reactivate_user")
     assert "recover_account(" in source
     assert "deleted_at = NULL" not in source
     assert "erasure_due_at = NULL" not in source

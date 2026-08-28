@@ -60,6 +60,7 @@ from fastapi import FastAPI
 import auth
 
 
+from identity import api as identity_api  # mien dinh danh sang day 2026-08-28
 def _routes():
     app = FastAPI(); app.include_router(auth.router)
     pairs = set()
@@ -262,10 +263,10 @@ class TestTwoFactorKillSwitch:
         )
 
     def test_2fa_is_enabled_returns_false_when_flag_off(self, monkeypatch):
-        monkeypatch.setattr(auth._cfg, "TWO_FACTOR_ENABLED", False)
+        monkeypatch.setattr(identity_api._cfg, "TWO_FACTOR_ENABLED", False)
         # even if a row would otherwise say enabled, the flag must win first —
         # patch the row lookup to prove the short-circuit never reaches it.
-        monkeypatch.setattr(auth, "_get_2fa_row", lambda uid: {"enabled": True})
+        monkeypatch.setattr(identity_api, "_get_2fa_row", lambda uid: {"enabled": True})
         assert auth._2fa_is_enabled("any-user-id") is False
 
     def test_setup_checks_flag_and_403s(self):

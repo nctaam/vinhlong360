@@ -45,7 +45,8 @@ def test_shared_rate_limit_and_idempotency_contracts_exist():
     migration = (ROOT / "agent" / "migrations" / "056_shared_rate_idempotency.sql").read_text(encoding="utf-8")
     ratelimit = (ROOT / "agent" / "ratelimit.py").read_text(encoding="utf-8")
     auth_middleware = (ROOT / "agent" / "auth_middleware.py").read_text(encoding="utf-8")
-    auth = (ROOT / "agent" / "auth.py").read_text(encoding="utf-8")
+    # auth.py nay là shim — nguồn miền định danh: agent/identity/api.py (2026-08-28)
+    auth = (ROOT / "agent" / "identity" / "api.py").read_text(encoding="utf-8")
 
     assert "CREATE TABLE IF NOT EXISTS shared_rate_limits" in migration
     assert "CREATE TABLE IF NOT EXISTS request_idempotency_keys" in migration
@@ -66,7 +67,8 @@ def test_shared_rate_limit_and_idempotency_contracts_exist():
         assert key in auth
 
 def test_http_only_cookie_auth_migration_contracts():
-    auth = (ROOT / "agent" / "auth.py").read_text(encoding="utf-8")
+    # auth.py nay là shim — nguồn miền định danh: agent/identity/api.py (2026-08-28)
+    auth = (ROOT / "agent" / "identity" / "api.py").read_text(encoding="utf-8")
     auth_middleware = (ROOT / "agent" / "auth_middleware.py").read_text(encoding="utf-8")
     frontend_auth = (ROOT / "web-nuxt" / "composables" / "useAuth.ts").read_text(encoding="utf-8")
     auth_plugin = (ROOT / "web-nuxt" / "plugins" / "auth.ts").read_text(encoding="utf-8")

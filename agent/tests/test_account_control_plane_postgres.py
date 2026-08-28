@@ -15,6 +15,7 @@ from fastapi import HTTPException, Request, Response
 
 import admin
 import auth
+from identity import api as identity_api  # mien dinh danh sang day 2026-08-28
 import database as database_module
 import ratelimit
 from structured_references import validate_user_fk_actions
@@ -142,7 +143,7 @@ def pg_db(monkeypatch):
     adapter = database_module.Database()
     adapter._use_pg = True
     adapter._dsn = TEST_DATABASE_URL
-    monkeypatch.setattr(auth, "db", adapter)
+    monkeypatch.setattr(identity_api, "db", adapter)
     monkeypatch.setattr(admin, "db", adapter)
 
     with psycopg2.connect(TEST_DATABASE_URL) as conn:
@@ -293,7 +294,7 @@ def _assert_reset_first_rejects_stale_creation(pg_db, monkeypatch, kind: str) ->
     _seed_reset_otp(pg_db, phone)
     _seed_session(pg_db, user_id)
     _seed_pending(pg_db, user_id)
-    monkeypatch.setattr(auth, "_hash_password", lambda _password: "reset-hash")
+    monkeypatch.setattr(identity_api, "_hash_password", lambda _password: "reset-hash")
 
     reset_updated = threading.Event()
     allow_reset_commit = threading.Event()
@@ -375,7 +376,7 @@ def test_auth_first_session_and_challenge_are_revoked_by_reset_on_postgres(
 ):
     user_id, phone = _seed_user(pg_db)
     _seed_reset_otp(pg_db, phone)
-    monkeypatch.setattr(auth, "_hash_password", lambda _password: "reset-hash")
+    monkeypatch.setattr(identity_api, "_hash_password", lambda _password: "reset-hash")
 
     pending_inserted = threading.Event()
     allow_auth_commit = threading.Event()
@@ -441,10 +442,10 @@ def test_consumed_challenge_cannot_create_session_after_reset_on_postgres(
     challenge_id = auth._create_pending_2fa(
         user_id, "127.0.0.1", "pytest", "old-hash"
     )
-    monkeypatch.setattr(auth, "_hash_password", lambda _password: "reset-hash")
-    monkeypatch.setattr(auth, "_check_shared_auth_rate", lambda *_args: None)
-    monkeypatch.setattr(auth, "_enforce_local_rate", lambda *_args: None)
-    monkeypatch.setattr(auth, "_verify_2fa_code", lambda *_args: True)
+    monkeypatch.setattr(identity_api, "_hash_password", lambda _password: "reset-hash")
+    monkeypatch.setattr(identity_api, "_check_shared_auth_rate", lambda *_args: None)
+    monkeypatch.setattr(identity_api, "_enforce_local_rate", lambda *_args: None)
+    monkeypatch.setattr(identity_api, "_verify_2fa_code", lambda *_args: True)
 
     finish_entered = threading.Event()
     allow_finish = threading.Event()
@@ -457,7 +458,7 @@ def test_consumed_challenge_cannot_create_session_after_reset_on_postgres(
             raise AssertionError("timed out waiting for reset before session creation")
         return await original_finish_login(*args, **kwargs)
 
-    monkeypatch.setattr(auth, "_finish_login", finish_after_reset)
+    monkeypatch.setattr(identity_api, "_finish_login", finish_after_reset)
     body = auth._TwoFAVerify(challenge_id=challenge_id, code="123456")
 
     with ThreadPoolExecutor(max_workers=2) as executor:
@@ -489,7 +490,7 @@ def test_consumed_challenge_cannot_create_session_after_reset_on_postgres(
 def test_reset_wins_against_legacy_rehash_cas_on_postgres(pg_db, monkeypatch):
     user_id, phone = _seed_user(pg_db)
     _seed_reset_otp(pg_db, phone)
-    monkeypatch.setattr(auth, "_hash_password", lambda _password: "reset-hash")
+    monkeypatch.setattr(identity_api, "_hash_password", lambda _password: "reset-hash")
 
     reset_updated = threading.Event()
     allow_reset_commit = threading.Event()
@@ -609,7 +610,7 @@ def test_reset_rolls_back_real_partial_mutations_on_postgres(pg_db, monkeypatch)
     _seed_reset_otp(pg_db, phone)
     _seed_session(pg_db, user_id)
     _seed_pending(pg_db, user_id)
-    monkeypatch.setattr(auth, "_hash_password", lambda _password: "reset-hash")
+    monkeypatch.setattr(identity_api, "_hash_password", lambda _password: "reset-hash")
     original_execute = pg_db._execute
     pending_delete_executed = threading.Event()
 

@@ -6,6 +6,8 @@ import httpx
 import pytest
 
 import auth
+
+from identity import api as identity_api  # mien dinh danh sang day 2026-08-28
 import ratelimit
 import server
 from erasure_state import ErasureState
@@ -45,11 +47,11 @@ async def test_delete_account_returns_committed_exact_deadline(monkeypatch):
     async def no_dependency():
         return None
 
-    monkeypatch.setattr(auth, "_get_current_user_or_none", current_user)
-    monkeypatch.setattr(auth, "_check_session_binding_safe", binding_ok)
-    monkeypatch.setattr(auth, "_utc_now", lambda: REQUESTED_AT, raising=False)
+    monkeypatch.setattr(identity_api, "_get_current_user_or_none", current_user)
+    monkeypatch.setattr(identity_api, "_check_session_binding_safe", binding_ok)
+    monkeypatch.setattr(identity_api, "_utc_now", lambda: REQUESTED_AT, raising=False)
     monkeypatch.setattr(
-        auth, "request_account_erasure", request_erasure, raising=False
+        identity_api, "request_account_erasure", request_erasure, raising=False
     )
     monkeypatch.setattr(ratelimit, "check_rate", lambda *_args, **_kwargs: None)
     server.app.dependency_overrides[auth._require_pg] = no_dependency
@@ -92,8 +94,8 @@ async def test_delete_account_binding_failure_log_is_subject_free(
     async def no_dependency():
         return None
 
-    monkeypatch.setattr(auth, "_get_current_user_or_none", current_user)
-    monkeypatch.setattr(auth, "_check_session_binding_safe", binding_failed)
+    monkeypatch.setattr(identity_api, "_get_current_user_or_none", current_user)
+    monkeypatch.setattr(identity_api, "_check_session_binding_safe", binding_failed)
     monkeypatch.setattr(ratelimit, "check_rate", lambda *_args, **_kwargs: None)
     server.app.dependency_overrides[auth._require_pg] = no_dependency
     server.app.dependency_overrides[auth._require_csrf_lazy] = no_dependency

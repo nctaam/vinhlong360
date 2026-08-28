@@ -1,5 +1,15 @@
 # -*- coding: utf-8 -*-
-"""Miền CỘNG ĐỒNG (bài viết, bình luận, nháp, feed, hashtag, chặn/theo dõi).
+"""Miền CỘNG ĐỒNG — Social API for local tourism & community.
+
+MXH chuyên biệt: mọi bài viết/đánh giá gắn vào entity trong Knowledge Graph
+(điểm du lịch, sản phẩm OCOP, làng nghề, ẩm thực, trải nghiệm, địa điểm).
+UGC nuôi ngược lại graph → AI chatbot trích dẫn đánh giá cộng đồng.
+
+Post types:
+  - review    : Đánh giá (1-5 sao) địa điểm / sản phẩm / trải nghiệm
+  - share     : Chia sẻ trải nghiệm du lịch, câu chuyện cộng đồng
+  - recommend : Giới thiệu nông sản / sản phẩm địa phương
+  - question  : Hỏi đáp du lịch, kinh nghiệm
 
 Chuyển NGUYÊN VĂN từ `social.py` (2026-08-28, lát thứ tư của chương trình
 module — theo chỉ đạo chủ dự án sau khi bản đồ đã khuyến nghị dừng). Khác ba

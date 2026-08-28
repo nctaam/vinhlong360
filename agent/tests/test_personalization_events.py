@@ -22,6 +22,7 @@ from fastapi.testclient import TestClient
 
 import auth_middleware
 import auth
+from identity import api as identity_api  # mien dinh danh sang day 2026-08-28
 import database as database_module
 import personalization_events
 import public_api
@@ -291,7 +292,7 @@ def pg_db(monkeypatch):
     monkeypatch.setattr(personalization_events, "db", adapter)
     monkeypatch.setattr(user_preferences, "db", adapter)
     monkeypatch.setattr(database_module, "db", adapter)
-    monkeypatch.setattr(auth, "db", adapter)
+    monkeypatch.setattr(identity_api, "db", adapter)
     monkeypatch.setattr(scheduler, "db", adapter, raising=False)
     monkeypatch.setattr(auth_middleware, "db", adapter)
     monkeypatch.setattr(public_api, "db", adapter)
@@ -449,8 +450,8 @@ def auth_client(pg_db, users, monkeypatch):
     async def session_binding(_request, _user):
         return True
 
-    monkeypatch.setattr(auth, "_get_current_user_or_none", current_user)
-    monkeypatch.setattr(auth, "_check_session_binding_safe", session_binding)
+    monkeypatch.setattr(identity_api, "_get_current_user_or_none", current_user)
+    monkeypatch.setattr(identity_api, "_check_session_binding_safe", session_binding)
     monkeypatch.setattr(auth_middleware, "_get_current_user_or_none", current_user)
     app = FastAPI()
     app.include_router(auth.router)

@@ -25,6 +25,14 @@ from database import db
 
 _SOCIAL_SRC_CACHE = None
 
+
+def _auth_src() -> str:
+    """Nguon mien DINH DANH — chuyen nguyen van sang identity/api.py
+    (2026-08-28); shim auth.py chi con tai xuat nen doc shim la doc rong."""
+    from pathlib import Path as _P
+    return (_P(__file__).resolve().parent.parent / "identity" / "api.py").read_text(encoding="utf-8")
+
+
 def _social_src() -> str:
     """Nguon mien CONG DONG — community/api.py (2026-08-28). social.py la shim
     tai xuat; doc shim la doc rong nen guard mat rang."""
@@ -1532,7 +1540,7 @@ class TestPhase9TimingAndRace:
 
     def test_session_current_uses_hmac(self):
         """Session list uses hmac.compare_digest for is_current, not == ."""
-        auth_src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        auth_src = _auth_src()
         idx = auth_src.find("is_current")
         block = auth_src[max(0, idx - 20):idx + 100]
         assert "hmac.compare_digest" in block
@@ -1540,7 +1548,7 @@ class TestPhase9TimingAndRace:
 
     def test_otp_select_for_update(self):
         """OTP verification uses SELECT ... FOR UPDATE to prevent race conditions."""
-        auth_src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        auth_src = _auth_src()
         # Refactor: OTP-row verify (SELECT ... FOR UPDATE) dời sang _consume_verified_otp,
         # được reset_password_otp gọi (move-not-delete).
         assert "_consume_verified_otp" in auth_src  # wiring
@@ -1666,7 +1674,7 @@ class TestPhase10PaginationConsistency:
 
     def test_delete_account_has_success(self):
         """DELETE /account response includes success field for consistency."""
-        auth_src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        auth_src = _auth_src()
         block = self._func_block(auth_src, "delete_account")
         assert '"success"' in block
 
@@ -1686,7 +1694,7 @@ class TestPhase11SessionLimit:
 
     def test_verify_otp_enforces_session_limit(self):
         """verify_otp's success path reaches _create_session_atomic via _finish_login."""
-        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         assert "def _create_session_atomic" in src
         assert "MAX_CONCURRENT_SESSIONS" in src
         idx = src.find("def verify_otp")
@@ -1700,7 +1708,7 @@ class TestPhase11SessionLimit:
 
     def test_login_password_enforces_session_limit(self):
         """login_password's success path reaches _create_session_atomic via _finish_login."""
-        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         assert "def _create_session_atomic" in src
         idx = src.find("def login_password")
         end = src.find("\nasync def ", idx + 1)
@@ -2148,7 +2156,7 @@ class TestPhase12DependencySecurity:
 
     def test_esms_uses_https(self):
         """eSMS API must use HTTPS, not HTTP."""
-        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         assert "https://rest.esms.vn/" in src
         assert "http://rest.esms.vn/" not in src
 
@@ -2236,11 +2244,11 @@ class TestPhase13ConfigCentralization:
         assert "_cfg.TRENDING_CACHE_TTL" in src
 
     def test_auth_uses_config_for_pbkdf2(self):
-        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         assert "_cfg.PBKDF2_ITERATIONS" in src
 
     def test_auth_uses_config_for_delete_grace(self):
-        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         assert "_cfg.ACCOUNT_DELETE_GRACE_DAYS" in src
 
     def test_admin_uses_config_for_backup_cooldown(self):
@@ -2375,19 +2383,19 @@ class TestPhase13bAuthConfig:
         assert settings.OTP_EXPIRE_MINUTES == 5
 
     def test_auth_uses_config_session_expire(self):
-        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         assert "_cfg.SESSION_EXPIRE_DAYS" in src
 
     def test_auth_uses_config_otp_expire(self):
-        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         assert "_cfg.OTP_EXPIRE_MINUTES" in src
 
     def test_auth_uses_config_esms(self):
-        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         assert "_cfg.ESMS_API_KEY" in src
         assert "_cfg.ESMS_SECRET" in src
         assert "_cfg.ESMS_BRANDNAME" in src
 
     def test_no_os_getenv_in_auth(self):
-        src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
+        src = _auth_src()
         assert "os.getenv" not in src, "auth.py should use config.py, not os.getenv"

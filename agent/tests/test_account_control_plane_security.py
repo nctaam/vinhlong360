@@ -1,3 +1,4 @@
+from identity import api as identity_api  # mien dinh danh sang day 2026-08-28
 import ast
 import asyncio  # noqa: F401
 import inspect  # noqa: F401
@@ -226,12 +227,12 @@ def _is_user_password_snapshot(node):
 
 
 def _disable_login_rate_limits(monkeypatch):
-    monkeypatch.setattr(auth, "_check_shared_auth_rate", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(auth, "_enforce_local_rate", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(auth, "_login_ip_rate", {})
-    monkeypatch.setattr(auth, "_login_phone_fails", {})
-    monkeypatch.setattr(auth, "_otp_verify_ip_rate", {})
-    monkeypatch.setattr(auth, "_otp_verify_phone_rate", {})
+    monkeypatch.setattr(identity_api, "_check_shared_auth_rate", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(identity_api, "_enforce_local_rate", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(identity_api, "_login_ip_rate", {})
+    monkeypatch.setattr(identity_api, "_login_phone_fails", {})
+    monkeypatch.setattr(identity_api, "_otp_verify_ip_rate", {})
+    monkeypatch.setattr(identity_api, "_otp_verify_phone_rate", {})
 
 
 async def _run_trusted_login_path(path, response):
@@ -475,7 +476,7 @@ def test_pending_challenge_rejects_stale_password_snapshot(monkeypatch):
     fake = _AuthDB(
         {"id": USER_ID, "password_hash": "new-hash", "is_active": True, "deleted_at": None}
     )
-    monkeypatch.setattr(auth, "db", fake)
+    monkeypatch.setattr(identity_api, "db", fake)
 
     with pytest.raises(HTTPException) as exc:
         auth._create_pending_2fa(USER_ID, "127.0.0.1", "pytest", "old-hash")
@@ -489,7 +490,7 @@ def test_session_creation_rejects_stale_password_snapshot(monkeypatch):
     fake = _AuthDB(
         {"id": USER_ID, "password_hash": "new-hash", "is_active": True, "deleted_at": None}
     )
-    monkeypatch.setattr(auth, "db", fake)
+    monkeypatch.setattr(identity_api, "db", fake)
 
     with pytest.raises(HTTPException) as exc:
         auth._create_session_atomic(
@@ -510,7 +511,7 @@ def test_auth_state_matching_password_snapshot_allows_creation(monkeypatch, kind
     fake = _AuthDB(
         {"id": USER_ID, "password_hash": "same-hash", "is_active": True, "deleted_at": None}
     )
-    monkeypatch.setattr(auth, "db", fake)
+    monkeypatch.setattr(identity_api, "db", fake)
 
     _invoke_auth_snapshot_creation(kind, "same-hash")
 
@@ -524,7 +525,7 @@ def test_auth_state_none_snapshot_allows_none_password_account(monkeypatch, kind
     fake = _AuthDB(
         {"id": USER_ID, "password_hash": None, "is_active": True, "deleted_at": None}
     )
-    monkeypatch.setattr(auth, "db", fake)
+    monkeypatch.setattr(identity_api, "db", fake)
 
     _invoke_auth_snapshot_creation(kind, None)
 
@@ -548,7 +549,7 @@ def test_auth_state_null_direction_mismatch_rejects_creation(
             "deleted_at": None,
         }
     )
-    monkeypatch.setattr(auth, "db", fake)
+    monkeypatch.setattr(identity_api, "db", fake)
 
     with pytest.raises(HTTPException) as exc:
         _invoke_auth_snapshot_creation(kind, expected_password_hash)
@@ -570,7 +571,7 @@ def test_auth_state_invalid_account_rejects_creation(monkeypatch, kind, state):
     fake = _AuthDB(user)
     if state == "missing":
         fake.user = None
-    monkeypatch.setattr(auth, "db", fake)
+    monkeypatch.setattr(identity_api, "db", fake)
 
     with pytest.raises(HTTPException) as exc:
         _invoke_auth_snapshot_creation(kind, "same-hash")
@@ -587,7 +588,7 @@ def test_auth_state_non_null_snapshot_uses_constant_time_compare(monkeypatch):
         compared.append((expected, current))
         return True
 
-    monkeypatch.setattr(auth.hmac, "compare_digest", compare)
+    monkeypatch.setattr(identity_api.hmac, "compare_digest", compare)
 
     assert auth._password_snapshot_matches("expected-hash", "current-hash") is True
     assert compared == [("expected-hash", "current-hash")]
@@ -605,14 +606,14 @@ def test_reset_password_state_revokes_sessions_and_pending_challenges(monkeypatc
     )
     fake.sessions.append(("existing",))
     fake.pending.append(("existing",))
-    monkeypatch.setattr(auth, "db", fake)
+    monkeypatch.setattr(identity_api, "db", fake)
     consumed_connections = []
     def consume_otp(conn, *_args):
         consumed_connections.append(conn)
         _mark_reset_otp_verified(conn)
 
-    monkeypatch.setattr(auth, "_consume_verified_otp", consume_otp)
-    monkeypatch.setattr(auth, "_hash_password", lambda _password: "new-hash")
+    monkeypatch.setattr(identity_api, "_consume_verified_otp", consume_otp)
+    monkeypatch.setattr(identity_api, "_hash_password", lambda _password: "new-hash")
 
     user = auth._reset_password_state("0901234567", "otp-hash", "NewPass1")
 
@@ -671,9 +672,9 @@ def test_reset_then_old_snapshot_auth_creation_is_rejected(monkeypatch, kind):
             "deleted_at": None,
         }
     )
-    monkeypatch.setattr(auth, "db", fake)
-    monkeypatch.setattr(auth, "_consume_verified_otp", _mark_reset_otp_verified)
-    monkeypatch.setattr(auth, "_hash_password", lambda _password: "new-hash")
+    monkeypatch.setattr(identity_api, "db", fake)
+    monkeypatch.setattr(identity_api, "_consume_verified_otp", _mark_reset_otp_verified)
+    monkeypatch.setattr(identity_api, "_hash_password", lambda _password: "new-hash")
 
     auth._reset_password_state("0901234567", "otp-hash", "NewPass1")
 
@@ -695,9 +696,9 @@ def test_pre_reset_auth_creation_is_revoked(monkeypatch):
             "deleted_at": None,
         }
     )
-    monkeypatch.setattr(auth, "db", fake)
-    monkeypatch.setattr(auth, "_consume_verified_otp", _mark_reset_otp_verified)
-    monkeypatch.setattr(auth, "_hash_password", lambda _password: "new-hash")
+    monkeypatch.setattr(identity_api, "db", fake)
+    monkeypatch.setattr(identity_api, "_consume_verified_otp", _mark_reset_otp_verified)
+    monkeypatch.setattr(identity_api, "_hash_password", lambda _password: "new-hash")
 
     _invoke_auth_snapshot_creation("pending", "old-hash")
     _invoke_auth_snapshot_creation("session", "old-hash")
@@ -714,10 +715,10 @@ def test_reset_password_state_missing_user_does_not_commit_changes(monkeypatch):
     fake = _ResetAuthDB(None)
     fake.sessions.append(("existing",))
     fake.pending.append(("existing",))
-    monkeypatch.setattr(auth, "db", fake)
-    monkeypatch.setattr(auth, "_consume_verified_otp", _mark_reset_otp_verified)
+    monkeypatch.setattr(identity_api, "db", fake)
+    monkeypatch.setattr(identity_api, "_consume_verified_otp", _mark_reset_otp_verified)
     monkeypatch.setattr(
-        auth,
+        identity_api,
         "_hash_password",
         lambda _password: pytest.fail("missing users must not reach password hashing"),
     )
@@ -748,9 +749,9 @@ def test_reset_password_state_rolls_back_mid_sequence_failure(monkeypatch):
     fake.sessions.append(("existing-session",))
     fake.pending.append(("existing-challenge",))
     fake.fail_pending_delete = True
-    monkeypatch.setattr(auth, "db", fake)
-    monkeypatch.setattr(auth, "_consume_verified_otp", _mark_reset_otp_verified)
-    monkeypatch.setattr(auth, "_hash_password", lambda _password: "new-hash")
+    monkeypatch.setattr(identity_api, "db", fake)
+    monkeypatch.setattr(identity_api, "_consume_verified_otp", _mark_reset_otp_verified)
+    monkeypatch.setattr(identity_api, "_hash_password", lambda _password: "new-hash")
 
     with pytest.raises(
         RuntimeError, match="injected pending challenge deletion failure"
@@ -787,22 +788,22 @@ def test_reset_password_otp_delegates_and_retains_side_effects(monkeypatch):
         "deleted_at": None,
     }
 
-    monkeypatch.setattr(auth, "_hash_otp", lambda code: f"hashed:{code}")
+    monkeypatch.setattr(identity_api, "_hash_otp", lambda code: f"hashed:{code}")
 
     def reset_state(phone, hashed_code, new_password):
         helper_calls.append((phone, hashed_code, new_password))
         return dict(user)
 
-    monkeypatch.setattr(auth, "_reset_password_state", reset_state)
+    monkeypatch.setattr(identity_api, "_reset_password_state", reset_state)
     monkeypatch.setattr(
-        auth,
+        identity_api,
         "_log_login",
         lambda phone, method, success, req, uid: events.append(
             ("history", phone, method, success, req, uid)
         ),
     )
     monkeypatch.setattr(
-        auth,
+        identity_api,
         "_update_login_streak",
         lambda uid: events.append(("streak", uid)),
     )
@@ -812,9 +813,9 @@ def test_reset_password_otp_delegates_and_retains_side_effects(monkeypatch):
         coro.close()
         return SimpleNamespace()
 
-    monkeypatch.setattr(auth.asyncio, "create_task", schedule_achievement)
+    monkeypatch.setattr(identity_api.asyncio, "create_task", schedule_achievement)
     monkeypatch.setattr(
-        auth,
+        identity_api,
         "_clear_session_cookie",
         lambda resp, req: events.append(("cookie", resp, req)),
     )
@@ -893,13 +894,13 @@ def test_finish_login_stale_snapshot_has_no_side_effects(monkeypatch):
     fake = _AuthDB(
         {"id": USER_ID, "password_hash": "new-hash", "is_active": True, "deleted_at": None}
     )
-    monkeypatch.setattr(auth, "db", fake)
+    monkeypatch.setattr(identity_api, "db", fake)
     calls = []
-    monkeypatch.setattr(auth, "_check_suspicious_login", lambda *_args: calls.append("alert"))
-    monkeypatch.setattr(auth, "_log_login", lambda *_args: calls.append("history"))
-    monkeypatch.setattr(auth, "_update_login_streak", lambda *_args: calls.append("streak"))
-    monkeypatch.setattr(auth, "_set_session_cookie", lambda *_args: calls.append("cookie"))
-    monkeypatch.setattr(auth.asyncio, "create_task", lambda *_args: calls.append("achievement"))
+    monkeypatch.setattr(identity_api, "_check_suspicious_login", lambda *_args: calls.append("alert"))
+    monkeypatch.setattr(identity_api, "_log_login", lambda *_args: calls.append("history"))
+    monkeypatch.setattr(identity_api, "_update_login_streak", lambda *_args: calls.append("streak"))
+    monkeypatch.setattr(identity_api, "_set_session_cookie", lambda *_args: calls.append("cookie"))
+    monkeypatch.setattr(identity_api.asyncio, "create_task", lambda *_args: calls.append("achievement"))
     response = Response()
 
     with pytest.raises(HTTPException) as exc:
@@ -931,21 +932,21 @@ def test_legacy_rehash_cas_rejects_concurrent_reset_without_auth_creation(monkey
         "is_active": True,
         "deleted_at": None,
     }
-    monkeypatch.setattr(auth, "db", fake)
+    monkeypatch.setattr(identity_api, "db", fake)
     _disable_login_rate_limits(monkeypatch)
     monkeypatch.setattr(
-        auth,
+        identity_api,
         "_verify_password",
         lambda *_args, **_kwargs: (True, True),
     )
-    monkeypatch.setattr(auth, "_hash_password", lambda _password: "upgraded-hash")
+    monkeypatch.setattr(identity_api, "_hash_password", lambda _password: "upgraded-hash")
     reached = []
-    monkeypatch.setattr(auth, "_2fa_is_enabled", lambda *_args: reached.append("2fa"))
+    monkeypatch.setattr(identity_api, "_2fa_is_enabled", lambda *_args: reached.append("2fa"))
 
     async def finish(*_args):
         reached.append("finish")
 
-    monkeypatch.setattr(auth, "_finish_login", finish)
+    monkeypatch.setattr(identity_api, "_finish_login", finish)
 
     with pytest.raises(HTTPException) as exc:
         asyncio.run(
@@ -977,22 +978,22 @@ def test_legacy_rehash_cas_success_updates_local_snapshot(monkeypatch):
         {"id": USER_ID, "password_hash": "legacy-hash", "is_active": True, "deleted_at": None}
     )
     fake.login_user.update({"phone": "0901234567"})
-    monkeypatch.setattr(auth, "db", fake)
+    monkeypatch.setattr(identity_api, "db", fake)
     _disable_login_rate_limits(monkeypatch)
     monkeypatch.setattr(
-        auth,
+        identity_api,
         "_verify_password",
         lambda *_args, **_kwargs: (True, True),
     )
-    monkeypatch.setattr(auth, "_hash_password", lambda _password: "upgraded-hash")
-    monkeypatch.setattr(auth, "_2fa_is_enabled", lambda *_args: False)
+    monkeypatch.setattr(identity_api, "_hash_password", lambda _password: "upgraded-hash")
+    monkeypatch.setattr(identity_api, "_2fa_is_enabled", lambda *_args: False)
     snapshots = []
 
     async def finish(user, *_args):
         snapshots.append(user["password_hash"])
         return {"success": True}
 
-    monkeypatch.setattr(auth, "_finish_login", finish)
+    monkeypatch.setattr(identity_api, "_finish_login", finish)
 
     result = asyncio.run(
         auth.login_password(
@@ -1018,16 +1019,16 @@ def test_trusted_device_touch_occurs_after_successful_finish_login(monkeypatch, 
     }
     fake = _AuthDB(user)
     fake.trusted_device_id = "device-id"
-    monkeypatch.setattr(auth, "db", fake)
+    monkeypatch.setattr(identity_api, "db", fake)
     _disable_login_rate_limits(monkeypatch)
-    monkeypatch.setattr(auth, "_consume_verified_otp", lambda *_args: None)
-    monkeypatch.setattr(auth, "_get_or_create_user", lambda *_args: dict(user))
+    monkeypatch.setattr(identity_api, "_consume_verified_otp", lambda *_args: None)
+    monkeypatch.setattr(identity_api, "_get_or_create_user", lambda *_args: dict(user))
     monkeypatch.setattr(
-        auth,
+        identity_api,
         "_verify_password",
         lambda *_args, **_kwargs: (True, False),
     )
-    monkeypatch.setattr(auth, "_2fa_is_enabled", lambda *_args: True)
+    monkeypatch.setattr(identity_api, "_2fa_is_enabled", lambda *_args: True)
     events = []
     execute = fake._execute
 
@@ -1042,7 +1043,7 @@ def test_trusted_device_touch_occurs_after_successful_finish_login(monkeypatch, 
         events.append("finish")
         return {"success": True}
 
-    monkeypatch.setattr(auth, "_finish_login", finish)
+    monkeypatch.setattr(identity_api, "_finish_login", finish)
 
     result = asyncio.run(_run_trusted_login_path(path, Response()))
 
@@ -1061,16 +1062,16 @@ def test_trusted_device_touch_failure_is_best_effort(monkeypatch, path):
     }
     fake = _AuthDB(user)
     fake.trusted_device_id = "device-id"
-    monkeypatch.setattr(auth, "db", fake)
+    monkeypatch.setattr(identity_api, "db", fake)
     _disable_login_rate_limits(monkeypatch)
-    monkeypatch.setattr(auth, "_consume_verified_otp", lambda *_args: None)
-    monkeypatch.setattr(auth, "_get_or_create_user", lambda *_args: dict(user))
+    monkeypatch.setattr(identity_api, "_consume_verified_otp", lambda *_args: None)
+    monkeypatch.setattr(identity_api, "_get_or_create_user", lambda *_args: dict(user))
     monkeypatch.setattr(
-        auth,
+        identity_api,
         "_verify_password",
         lambda *_args, **_kwargs: (True, False),
     )
-    monkeypatch.setattr(auth, "_2fa_is_enabled", lambda *_args: True)
+    monkeypatch.setattr(identity_api, "_2fa_is_enabled", lambda *_args: True)
     finish_calls = []
     touch_attempts = []
 
@@ -1082,8 +1083,8 @@ def test_trusted_device_touch_failure_is_best_effort(monkeypatch, path):
         touch_attempts.append(device_id)
         raise RuntimeError("audit write failed")
 
-    monkeypatch.setattr(auth, "_finish_login", finish)
-    monkeypatch.setattr(auth, "_touch_trusted_device", failing_touch)
+    monkeypatch.setattr(identity_api, "_finish_login", finish)
+    monkeypatch.setattr(identity_api, "_touch_trusted_device", failing_touch)
 
     result = asyncio.run(_run_trusted_login_path(path, Response()))
 
@@ -1103,16 +1104,16 @@ def test_trusted_device_stale_finish_login_does_not_touch(monkeypatch, path):
     }
     fake = _AuthDB(user)
     fake.trusted_device_id = "device-id"
-    monkeypatch.setattr(auth, "db", fake)
+    monkeypatch.setattr(identity_api, "db", fake)
     _disable_login_rate_limits(monkeypatch)
-    monkeypatch.setattr(auth, "_consume_verified_otp", lambda *_args: None)
-    monkeypatch.setattr(auth, "_get_or_create_user", lambda *_args: dict(user))
+    monkeypatch.setattr(identity_api, "_consume_verified_otp", lambda *_args: None)
+    monkeypatch.setattr(identity_api, "_get_or_create_user", lambda *_args: dict(user))
     monkeypatch.setattr(
-        auth,
+        identity_api,
         "_verify_password",
         lambda *_args, **_kwargs: (True, False),
     )
-    monkeypatch.setattr(auth, "_2fa_is_enabled", lambda *_args: True)
+    monkeypatch.setattr(identity_api, "_2fa_is_enabled", lambda *_args: True)
     events = []
     execute = fake._execute
 
@@ -1127,7 +1128,7 @@ def test_trusted_device_stale_finish_login_does_not_touch(monkeypatch, path):
         events.append("finish")
         raise HTTPException(401, "stale")
 
-    monkeypatch.setattr(auth, "_finish_login", stale_finish)
+    monkeypatch.setattr(identity_api, "_finish_login", stale_finish)
 
     with pytest.raises(HTTPException) as exc:
         asyncio.run(_run_trusted_login_path(path, Response()))
