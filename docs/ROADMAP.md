@@ -3856,3 +3856,65 @@ dối": `\| tail -4` cắt mất danh sách FAILED (phải chạy lại 15 phút
 `All checks passed!` của ruff nên báo "xong" khi pytest chưa chạy. Từ nay lệnh
 đo dài GHI NGUYÊN VẸN ra file, cắt sau; chốt chờ khớp đúng hình dạng sự kiện
 (`[0-9]+ passed`).
+
+### 46. Gói miền ENTITY hoàn tất (bước 1a→2b) — và SỰ CỐ B1 đầu tiên của chương trình module (2026-08-28)
+
+> STATUS: done (bước 1–2) — bốn commit `c93c38e7` `30edeb92` `3f3a3ede` `bec918b8`.
+> Gói `agent/entities/` nay đủ HAI MẶT theo khuôn `cases/`: `api.py` (công khai)
+> + `admin_api.py` (quản trị). Còn lại của kế hoạch: `community/` và `identity/`
+> — CẢ HAI trong vùng mù B3, đọc §46.4 trước khi động.
+
+#### 46.1 Số liệu
+
+| file | trước | sau | phần dời đi đâu |
+|---|---:|---:|---|
+| `public_api.py` | 4.989 | 3.647 | `entities/api.py` (1.510) + `entity_read.py` (~210) |
+| `admin.py` | 5.911 | 4.535 | `entities/admin_api.py` (~1.700) + `admin_common.py` (68) |
+| `server.py` (hai lát trước) | 5.507 | 2.159 | `chat/` + `llmops/` + `features.py` |
+
+433 route giữ nguyên, 0 trùng path+method. Route entity-admin mount qua
+`admin.router.include_router(...)` và ĐO ĐƯỢC kế thừa `[require_admin,
+require_csrf]` từ cha — an ninh kiểm bằng `dependant.dependencies`, không tin
+trí nhớ API.
+
+#### 46.2 SỰ CỐ B1 — 8 hàng test ghi vào DB THẬT, đã xử
+
+Trong khung cửa sổ giữa "cắt closure" và "vá fixture cách ly", test mutation
+chạy với fixture vá `admin.db` trong khi handler đã dời đọc
+`entities.admin_api.db` — bản vá không ăn, handler chạm DB thật: **8 entity
+test + 3 hàng audit** ghi vào `agent/data/vinhlong360.db` (tài sản không tái
+tạo, §2 B1). Xử đúng trình tự: backup → xoá phẫu thuật đúng 11 hàng → về đúng
+1.746 entity.
+
+**Vì sao khó tìm:** triệu chứng (44 errors dây chuyền) CHỈ hiện ở lượt đầy đủ —
+cần một test khác hâm nóng knowledge từ đĩa thì rác mới lộ. Hai lần bisect đầu
+VÔ HIỆU: `-k` lọc nhầm cả file đích; chạy hai tiến trình thì ô nhiễm in-memory
+không lan sang nhau. Phải bisect bằng node-id, ~10 vòng.
+
+**Một bản-vá-sai đã viết rồi GỠ:** khối copy-container kèm bình luận quy kết
+"`_sync_kb` mutate tại chỗ". Đọc mã: `knowledge.reload()` REBIND chứ không
+mutate — fixture gốc đúng thiết kế. Giữ bản vá đó là gieo hiểu lầm cho người
+sau; gỡ trước khi tìm ra nguyên nhân thật.
+
+#### 46.3 BỐN trục chi phí của một lát cắt (trục 4 mới, giá đắt nhất)
+
+| trục | biểu hiện | lộ ra ở đâu |
+|---|---|---|
+| 1. vá namespace hàm | test gọi hàm thật thay bản giả | lượt nhắm |
+| 2. rào ghim đường dẫn | "không tìm thấy hàm X" — kêu rõ | lượt nhắm |
+| 3. vá thuộc tính module (settings/cờ) | 404 ở route NGOÀI miền đang bóc | chỉ lượt đầy đủ |
+| **4. fixture CÁCH LY vá namespace** | **không đỏ, không skip — GHI NHẦM CHỖ** | **chỉ khi soi DỮ LIỆU** |
+
+Trục 4 là lý do checklist lát cắt từ nay có thêm một dòng bắt buộc: **grep
+`setattr(<mod>, "db"` trong fixture TRƯỚC khi cắt, và `SELECT count(*)` DB thật
+TRƯỚC/SAU lượt đo đầu tiên.**
+
+#### 46.4 Trước khi động community/ hoặc identity/
+
+- `social.py` và `auth.py` đều trong danh sách vùng mù B3 (CLAUDE.md §2) —
+  "phải có test bao phủ TRƯỚC khi sửa". Số phủ từ lượt đo một phần KHÔNG dùng
+  được; cần đo đầy đủ.
+- Giá đo sẵn: `identity/` 164 điểm vá + 147 thuộc-tính (đắt nhất);
+  `community/` 39 + 26.
+- Cả hai chưa có nhu cầu ép buộc. Khuyến nghị của bản đồ giữ nguyên: **đo xem
+  còn đau không trước khi cắt tiếp.**
