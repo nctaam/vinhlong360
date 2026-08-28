@@ -13,6 +13,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from fastapi import HTTPException
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -285,11 +286,22 @@ class TestSQLiResilience:
                     f"Raw sort in ORDER BY: {line.strip()}"
 
     def test_validate_path_id_rejects_injection(self):
+        """Bản cũ KHÔNG THỂ ĐỎ: nó gọi hàm rồi `except Exception: pass`, không có
+        một khẳng định nào. Xanh cả khi hàm TỪ CHỐI payload (ném → nuốt) lẫn khi
+        hàm CHẤP NHẬN (không ném → qua) — tức nó vẫn xanh nếu ai đó thay
+        `validate_path_id` bằng `return value`. Một rào bảo mật không răng.
+
+        Hợp đồng thật (auth_middleware.py:273): ném HTTPException(400) khi input
+        không khớp `_PATH_ID_RE`. Khoá đúng điều đó."""
         for payload in SQLI_PAYLOADS:
-            try:
+            with pytest.raises(HTTPException) as exc:
                 auth_middleware.validate_path_id(payload, "test")
-            except Exception:
-                pass
+            assert exc.value.status_code == 400, payload
+
+    def test_validate_path_id_van_cho_id_hop_le_di_qua(self):
+        """Chiều ngược — nếu không có bài này thì `raise` vô điều kiện cũng xanh."""
+        for ok in ("dua-sap-cau-ke", "abc_123", "A" * 128):
+            assert auth_middleware.validate_path_id(ok, "test") == ok
 
 
 # ── Unicode boundary handling ──
