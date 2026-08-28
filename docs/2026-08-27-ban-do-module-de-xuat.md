@@ -1,6 +1,9 @@
 # Bản đồ module đề xuất — tách hệ thống theo MIỀN CHỨC NĂNG
 
-> STATUS: active (đề xuất, CHƯA thực hiện) — cần chủ dự án duyệt trước khi động.
+> STATUS: active — **HAI LÁT ĐÃ THỰC HIỆN** (`chat/`, `llmops/`), phần còn lại
+> vẫn là đề xuất chờ chủ dự án. `server.py` 5.507 → 2.159 dòng (−61%).
+> Chi phí ĐO ĐƯỢC của hai lát đã làm ghi ở ROADMAP §45; nó ĐẢO thứ tự ưu tiên
+> ban đầu của tài liệu này — đọc §7 đã sửa bên dưới trước khi làm lát thứ ba.
 > Đo 2026-08-27 trên `codex/correction-case-pilot`. Mọi con số dưới đây là ĐO,
 > không ước lượng; script tái lập ghi ở §6.
 
@@ -60,16 +63,16 @@ Cột "gom từ" = số file hiện đang chứa route của miền đó.
 | `identity/` | 73 | 5 file | auth, OTP, phiên, 2FA, hồ sơ, quyền riêng tư, thành tích |
 | `entities/` | 66 | 3 file | tri thức lõi + quan hệ + ảnh + chất lượng |
 | `community/` | 58 | 4 file | bài viết, bình luận, nháp, feed, hashtag, chặn/theo dõi |
-| `llmops/` | 41 | 2 file | `/system/*`, checkpoint, guardrail, eval, judge, cache ngữ nghĩa |
+| ~~`llmops/`~~ | 42 | — | **ĐÃ LÀM** `1828fff6` — 425 dòng, **0** điểm vá test, ~15 phút |
 | `siteops/` | 28 | 2 file | site-settings, thông báo, export, data-quality, backup |
 | `moderation/` | 19 | 1 file | đã gọn — chỉ cần dựng ranh giới |
 | `analytics/` | 17 | 5 file | thống kê, lượt xem, chi phí, nhật ký kiểm toán |
 | `planning/` | 16 | 4 file | lịch trình, bộ sưu tập, lưu, gộp |
-| `notifications/` | 13 | 2 file | thông báo + tuỳ chọn + huy hiệu đếm |
+| `notifications/` | 13 | 2 file | **ĐÃ CÓ router riêng sẵn** — gạch khỏi danh sách bóc |
 | `search/` | 8 | 4 file | tìm kiếm, vector, autocomplete |
-| `seo/` | 7 | 1 file | đã gọn |
+| `seo/` | 7 | 1 file | **ĐÃ CÓ router riêng sẵn** — gạch khỏi danh sách bóc |
 | `events/` | 6 | 3 file | sự kiện + thời tiết |
-| `chat/` | 2 | 1 file | **2 route nhưng 1.959 dòng** — xem §4 |
+| ~~`chat/`~~ | 2 | — | **ĐÃ LÀM** `d3b3115f` — 2.856 dòng, 346 điểm vá test, 8 vòng |
 | `cases/` | — | — | **đã xong**, làm khuôn mẫu |
 | lõi app | 7 | — | `/health`, gắn router, middleware |
 
@@ -118,7 +121,34 @@ trong *file staged* với baseline *toàn kho*, nên chỉ chặn được rule 
 baseline = 0. Với R20.8 (47), R30.2 (330), R30.3 (147) nó không thể đỏ. Refactor
 lớn nhất dự án mà chạy trong vùng không phanh là đổi một nợ lấy một nợ khác.
 
-## 7. Thứ tự đề xuất
+## 7. Thứ tự — ĐÃ SỬA theo số đo thật
+
+> Bản đầu xếp ưu tiên theo SỐ ROUTE. Sai thước đo. Sau hai lát có số thật:
+> **chi phí một lát nằm ở ĐIỂM VÁ CỦA TEST, không ở số dòng mã.**
+
+| ứng viên | dòng dời | điểm vá test | ghi chú |
+|---|---:|---:|---|
+| ~~`llmops/`~~ | 425 | **0** | ĐÃ LÀM — ~15 phút |
+| ~~`chat/`~~ | 2.856 | **346** | ĐÃ LÀM — ~2 giờ, 8 vòng |
+| `entities/` | chưa tính | ~193 (cận trên) | public_api 124 + admin 69 |
+| `identity/` | chưa tính | **164** (cận trên) | ĐẮT NHẤT — bản đầu xếp ĐẦU vì 73 route |
+
+Phép đo trước, hai trục (ROADMAP §45.8):
+
+```
+grep -rE 'setattr\(\s*<mod>|patch\.object\(\s*<mod>|patch\("<mod>\.' agent/tests/
+grep -rl '<mod>.py' agent/tests/ | xargs grep -l 'read_text\|getsource'
+```
+
+**`server.py` còn 27 route @app trực tiếp**, trong đó 9 đúng vai điểm-vào
+(`/health` ×6, `/reload`, `/metrics`, root). 18 route còn lại là ĐUÔI DÀI —
+`/weather` `/search` `/feedback` `/welcome` `/events` `/recommend` `/image`
+`/autocorrect` `/graph` `/confirm*` `/ab-testing` `/prompt-cache` — chúng
+KHÔNG hợp thành một miền. Bóc tiếp sẽ ra hoặc nhiều gói tí hon, hoặc một gói
+tạp nham đúng bằng server.py đổi tên. **Khuyến nghị: dừng ở đây** cho tới khi
+có nhu cầu thật.
+
+### Thứ tự cũ (giữ để đối chiếu)
 
 1. **Vá cổng §44** — để mọi bước sau có phanh.
 2. **`llmops/`** — 28 route `/system/*`, đã gọn sẵn, KHÔNG nằm trong vùng mù.
