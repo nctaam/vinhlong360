@@ -250,8 +250,7 @@ def classify_apply_policy(
     return "needs_review"
 
 
-def validate_candidate_record(record: dict[str, Any]) -> list[str]:
-    errors: list[str] = []
+def _append_identity_errors(record: dict[str, Any], errors: list[str]) -> None:
     for field in REQUIRED_CANDIDATE_FIELDS:
         if field not in record:
             errors.append(f"missing field: {field}")
@@ -259,6 +258,9 @@ def validate_candidate_record(record: dict[str, Any]) -> list[str]:
         errors.append("entity_id must be a non-empty string")
     if not isinstance(record.get("field"), str) or not record.get("field"):
         errors.append("field must be a non-empty string")
+
+
+def _append_confidence_errors(record: dict[str, Any], errors: list[str]) -> None:
     try:
         confidence = float(record.get("confidence"))
     except (TypeError, ValueError):
@@ -266,6 +268,9 @@ def validate_candidate_record(record: dict[str, Any]) -> list[str]:
     else:
         if confidence < 0 or confidence > 1:
             errors.append("confidence must be between 0 and 1")
+
+
+def _append_evidence_policy_errors(record: dict[str, Any], errors: list[str]) -> None:
     evidence_urls = record.get("evidence_urls")
     if not isinstance(evidence_urls, list):
         errors.append("evidence_urls must be a list")
@@ -276,6 +281,14 @@ def validate_candidate_record(record: dict[str, Any]) -> list[str]:
     if record.get("apply_policy") == "auto_apply" and record.get("field") == "source":
         if not any(is_valid_http_url(url) for url in record.get("evidence_urls") or []):
             errors.append("auto-apply source candidates require a valid evidence URL")
+
+
+def validate_candidate_record(record: dict[str, Any]) -> list[str]:
+    # Thứ tự append là hợp đồng — ba nhóm chạy đúng trình tự cũ.
+    errors: list[str] = []
+    _append_identity_errors(record, errors)
+    _append_confidence_errors(record, errors)
+    _append_evidence_policy_errors(record, errors)
     return errors
 
 
@@ -1177,21 +1190,33 @@ def run_eval_stream(data: dict[str, Any], llm: JsonLLMClient, config: BurstConfi
 
 
 
+def _demoted_auto_apply(out: dict[str, Any], field: Any) -> str | None:
+    """needs_review khi auto_apply thiếu bằng-chứng-máy; None = giữ nguyên."""
+    if field == "source":
+        if not out.get("url_verified") or not any(is_valid_http_url(url) for url in out.get("evidence_urls") or []):
+            return "needs_review"
+        return None
+    if field == "coordinates":
+        if not out.get("geocode_verified"):
+            return "needs_review"
+        return None
+    if field == "placeId":
+        return "needs_review"
+    return None
+
+
 def enforce_apply_policy(record: dict[str, Any]) -> dict[str, Any]:
     out = dict(record)
     confidence = as_confidence(out.get("confidence"), 0.0)
     out["confidence"] = confidence
     field = out.get("field")
+    # Thứ tự elif là hợp đồng: reject-vì-confidence thắng mọi nhánh sau.
     if confidence < 0.70:
         out["apply_policy"] = "reject"
-    elif out.get("apply_policy") == "auto_apply" and field == "source":
-        if not out.get("url_verified") or not any(is_valid_http_url(url) for url in out.get("evidence_urls") or []):
-            out["apply_policy"] = "needs_review"
-    elif out.get("apply_policy") == "auto_apply" and field == "coordinates":
-        if not out.get("geocode_verified"):
-            out["apply_policy"] = "needs_review"
-    elif out.get("apply_policy") == "auto_apply" and field == "placeId":
-        out["apply_policy"] = "needs_review"
+    elif out.get("apply_policy") == "auto_apply":
+        demoted = _demoted_auto_apply(out, field)
+        if demoted is not None:
+            out["apply_policy"] = demoted
     elif out.get("apply_policy") not in APPLY_POLICIES:
         out["apply_policy"] = "reject"
     return out

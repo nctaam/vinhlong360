@@ -413,3 +413,49 @@ def test_module_source_has_no_bom_and_is_parseable() -> None:
     assert not raw.startswith(b"\xef\xbb\xbf"), "UTF-8 BOM re-introduced"
     assert raw.startswith(b"#!"), "shebang must occupy the first bytes"
     ast.parse(raw.decode("utf-8"))
+
+
+def test_enforce_apply_policy_confidence_reject_wins_over_demotion() -> None:
+    # Ghim thứ tự elif (lát 10 R20.8): reject-vì-confidence thắng mọi nhánh
+    # hạ-cấp; auto_apply với field thường và đủ tin cậy thì GIỮ NGUYÊN.
+    low_conf_source = q.enforce_apply_policy({
+        "entity_id": "e1",
+        "field": "source",
+        "confidence": 0.5,
+        "evidence_urls": ["https://example.com"],
+        "url_verified": False,
+        "apply_policy": "auto_apply",
+    })
+    assert low_conf_source["apply_policy"] == "reject"
+
+    ordinary_field = q.enforce_apply_policy({
+        "entity_id": "e1",
+        "field": "summary",
+        "confidence": 0.95,
+        "apply_policy": "auto_apply",
+    })
+    assert ordinary_field["apply_policy"] == "auto_apply"
+
+    verified_source = q.enforce_apply_policy({
+        "entity_id": "e1",
+        "field": "source",
+        "confidence": 0.95,
+        "evidence_urls": ["https://example.com"],
+        "url_verified": True,
+        "apply_policy": "auto_apply",
+    })
+    assert verified_source["apply_policy"] == "auto_apply"
+
+
+def test_validate_candidate_record_error_order_is_stable() -> None:
+    errors = q.validate_candidate_record({
+        "entity_id": "",
+        "field": "",
+        "confidence": "khong-phai-so",
+        "evidence_urls": "khong-phai-list",
+        "apply_policy": "sai",
+    })
+    joined = " | ".join(errors)
+    assert joined.index("entity_id") < joined.index("confidence must be numeric")
+    assert joined.index("confidence must be numeric") < joined.index("evidence_urls must be a list")
+    assert joined.index("evidence_urls must be a list") < joined.index("apply_policy")
