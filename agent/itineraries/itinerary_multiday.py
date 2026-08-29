@@ -241,6 +241,61 @@ def _synthetic_origin_id(
     return origin_id
 
 
+def _require_complete_schedule(
+    schedule, expected_ids: tuple[str, ...], first_stop_id: str, current_end_id: str
+) -> None:
+    if schedule.skipped:
+        raise NoFeasibleScheduleError("Multi-day schedule skipped a required stop")
+    if schedule.overtime_minutes > 0:
+        raise NoFeasibleScheduleError("Multi-day schedule exceeds the day window")
+    if len(schedule.ordered_ids) != len(expected_ids) or set(
+        schedule.ordered_ids
+    ) != set(expected_ids):
+        raise NoFeasibleScheduleError("Multi-day schedule omitted an input stop")
+    if schedule.ordered_ids[0] != first_stop_id:
+        raise NoFeasibleScheduleError("Multi-day schedule changed the first stop")
+    if schedule.ordered_ids[-1] != current_end_id:
+        raise NoFeasibleScheduleError("Multi-day schedule changed the final stop")
+
+
+def _validate_schedule_day_inputs(
+    content_ids: tuple[str, ...],
+    first_content_id: str | None,
+    previous_end_id: str | None,
+    current_end_id: str,
+    remaining_seconds: float,
+) -> None:
+    if current_end_id not in content_ids:
+        raise NoFeasibleScheduleError("Current endpoint is absent from its day")
+    if first_content_id is not None and first_content_id not in content_ids:
+        raise NoFeasibleScheduleError("First content stop is absent from its day")
+    if (first_content_id is None) == (previous_end_id is None):
+        raise ValueError("A day needs exactly one first-stop source")
+    if not math.isfinite(remaining_seconds) or remaining_seconds <= 0:
+        raise NoFeasibleScheduleError("Multi-day scheduling deadline reached")
+
+
+def _first_stop_for_day(
+    day: MultiDayDayInput,
+    first_content_id: str | None,
+    previous_end_id: str | None,
+    current_end_id: str,
+    required_content: dict[str, ScheduleStop],
+    candidate_by_id: dict[str, SelectionCandidate],
+) -> tuple[ScheduleStop, set[str], str | None]:
+    if first_content_id is not None:
+        return required_content[first_content_id], {first_content_id, current_end_id}, None
+    assert previous_end_id is not None
+    synthetic_origin_id = _synthetic_origin_id(day, previous_end_id, candidate_by_id)
+    first_stop = ScheduleStop(
+        id=synthetic_origin_id,
+        coordinates=candidate_by_id[previous_end_id].stop.coordinates,
+        visit_minutes=0,
+        required=True,
+    )
+    return first_stop, {current_end_id}, synthetic_origin_id
+
+
 def _schedule_day(
     day: MultiDayDayInput,
     content_ids: tuple[str, ...],
@@ -251,14 +306,9 @@ def _schedule_day(
     remaining_seconds: float,
 ) -> MultiDayDayResult:
     """Schedule one fully required day with a fixed first/origin and end."""
-    if current_end_id not in content_ids:
-        raise NoFeasibleScheduleError("Current endpoint is absent from its day")
-    if first_content_id is not None and first_content_id not in content_ids:
-        raise NoFeasibleScheduleError("First content stop is absent from its day")
-    if (first_content_id is None) == (previous_end_id is None):
-        raise ValueError("A day needs exactly one first-stop source")
-    if not math.isfinite(remaining_seconds) or remaining_seconds <= 0:
-        raise NoFeasibleScheduleError("Multi-day scheduling deadline reached")
+    _validate_schedule_day_inputs(
+        content_ids, first_content_id, previous_end_id, current_end_id, remaining_seconds
+    )
     preparation_deadline = time.perf_counter() + remaining_seconds
 
     required_content = {
@@ -267,24 +317,10 @@ def _schedule_day(
     }
     required_fixed = tuple(replace(stop, required=True) for stop in day.fixed_stops)
 
-    synthetic_origin_id: str | None = None
-    if first_content_id is not None:
-        first_stop = required_content[first_content_id]
-        excluded_content = {first_content_id, current_end_id}
-    else:
-        assert previous_end_id is not None
-        synthetic_origin_id = _synthetic_origin_id(
-            day,
-            previous_end_id,
-            candidate_by_id,
-        )
-        first_stop = ScheduleStop(
-            id=synthetic_origin_id,
-            coordinates=candidate_by_id[previous_end_id].stop.coordinates,
-            visit_minutes=0,
-            required=True,
-        )
-        excluded_content = {current_end_id}
+    first_stop, excluded_content, synthetic_origin_id = _first_stop_for_day(
+        day, first_content_id, previous_end_id, current_end_id,
+        required_content, candidate_by_id,
+    )
 
     middle_stops = tuple(
         required_content[stop_id]
@@ -308,19 +344,9 @@ def _schedule_day(
         schedule_options,
     )
 
-    expected_ids = tuple(stop.id for stop in stops)
-    if schedule.skipped:
-        raise NoFeasibleScheduleError("Multi-day schedule skipped a required stop")
-    if schedule.overtime_minutes > 0:
-        raise NoFeasibleScheduleError("Multi-day schedule exceeds the day window")
-    if len(schedule.ordered_ids) != len(expected_ids) or set(
-        schedule.ordered_ids
-    ) != set(expected_ids):
-        raise NoFeasibleScheduleError("Multi-day schedule omitted an input stop")
-    if schedule.ordered_ids[0] != first_stop.id:
-        raise NoFeasibleScheduleError("Multi-day schedule changed the first stop")
-    if schedule.ordered_ids[-1] != current_end_id:
-        raise NoFeasibleScheduleError("Multi-day schedule changed the final stop")
+    _require_complete_schedule(
+        schedule, tuple(stop.id for stop in stops), first_stop.id, current_end_id
+    )
 
     load_minutes = (
         max(placement.finish_visit_minute for placement in schedule.placements)
@@ -887,6 +913,63 @@ def _move_diagnostics(
     return len(moved_ids), moved_in, moved_out
 
 
+def _baseline_maps(
+    allocation: Allocation,
+) -> tuple[tuple[int, ...], dict[str, int], dict[str, int]]:
+    baseline_counts = tuple(len(content_ids) for content_ids in allocation)
+    baseline_rank = {
+        stop_id: rank
+        for rank, stop_id in enumerate(
+            stop_id for content_ids in allocation for stop_id in content_ids
+        )
+    }
+    baseline_owner = {
+        stop_id: day_index
+        for day_index, content_ids in enumerate(allocation)
+        for stop_id in content_ids
+    }
+    return baseline_counts, baseline_rank, baseline_owner
+
+
+def _best_neighbor_step(
+    neighbors: tuple["_AllocationNeighbor", ...],
+    allocation_cache: dict[Allocation, tuple[MultiDayDayResult, ...] | None],
+    current_objective: tuple[object, ...],
+    deadline: float,
+    solve,
+    baseline_owner: dict[str, int],
+    candidate_by_id: dict[str, SelectionCandidate],
+) -> tuple[Allocation | None, tuple[MultiDayDayResult, ...] | None, tuple[object, ...] | None, bool]:
+    """Chọn láng giềng tốt nhất; phần tư thứ tư báo chạm deadline giữa chừng."""
+    best_allocation: Allocation | None = None
+    best_days: tuple[MultiDayDayResult, ...] | None = None
+    best_objective: tuple[object, ...] | None = None
+    for neighbor in neighbors:
+        if _local_search_deadline_reached(deadline):
+            return best_allocation, best_days, best_objective, True
+        if neighbor.allocation not in allocation_cache:
+            try:
+                allocation_cache[neighbor.allocation] = solve(neighbor.allocation)
+            except NoFeasibleScheduleError:
+                allocation_cache[neighbor.allocation] = None
+        neighbor_days = allocation_cache[neighbor.allocation]
+        if neighbor_days is None:
+            continue
+        neighbor_objective = _result_objective(
+            neighbor_days,
+            neighbor.allocation,
+            baseline_owner,
+            candidate_by_id,
+        )
+        if neighbor_objective >= current_objective:
+            continue
+        if best_objective is None or neighbor_objective < best_objective:
+            best_allocation = neighbor.allocation
+            best_days = neighbor_days
+            best_objective = neighbor_objective
+    return best_allocation, best_days, best_objective, False
+
+
 def optimize_multi_day_allocation(
     days: Sequence[MultiDayDayInput],
     global_start_id: str,
@@ -902,18 +985,7 @@ def optimize_multi_day_allocation(
         options,
     )
     allocation: Allocation = tuple(day.baseline_order for day in day_inputs)
-    baseline_counts = tuple(len(content_ids) for content_ids in allocation)
-    baseline_rank = {
-        stop_id: rank
-        for rank, stop_id in enumerate(
-            stop_id for content_ids in allocation for stop_id in content_ids
-        )
-    }
-    baseline_owner = {
-        stop_id: day_index
-        for day_index, content_ids in enumerate(allocation)
-        for stop_id in content_ids
-    }
+    baseline_counts, baseline_rank, baseline_owner = _baseline_maps(allocation)
     locked_ids = frozenset({global_start_id, global_end_id})
     deadline = time.perf_counter() + options.deadline_seconds
     cache: dict[tuple[object, ...], MultiDayDayResult | None] = {}
@@ -940,11 +1012,7 @@ def optimize_multi_day_allocation(
         if baseline_days is None:
             raise
         final_days = baseline_days
-    if baseline_days is not None and _result_days_objective(
-        baseline_days,
-        candidate_by_id,
-    ) < _result_days_objective(final_days, candidate_by_id):
-        final_days = baseline_days
+    final_days = _prefer_baseline(baseline_days, final_days, candidate_by_id)
     current_allocation = allocation
     current_days = final_days
     current_objective = _result_objective(
@@ -962,9 +1030,6 @@ def optimize_multi_day_allocation(
         if _local_search_deadline_reached(deadline):
             deadline_reached = True
             break
-        best_allocation: Allocation | None = None
-        best_days: tuple[MultiDayDayResult, ...] | None = None
-        best_objective: tuple[object, ...] | None = None
         neighbors = _generate_neighbors(
             allocation=current_allocation,
             baseline_counts=baseline_counts,
@@ -973,39 +1038,15 @@ def optimize_multi_day_allocation(
             current_day_results=current_days,
             options=options,
         )
-        for neighbor in neighbors:
-            if _local_search_deadline_reached(deadline):
-                deadline_reached = True
-                break
-            if neighbor.allocation not in allocation_cache:
-                try:
-                    allocation_cache[neighbor.allocation] = _solve_allocation(
-                        day_inputs,
-                        neighbor.allocation,
-                        candidate_by_id,
-                        global_start_id,
-                        global_end_id,
-                        options,
-                        deadline,
-                        cache,
-                    )
-                except NoFeasibleScheduleError:
-                    allocation_cache[neighbor.allocation] = None
-            neighbor_days = allocation_cache[neighbor.allocation]
-            if neighbor_days is None:
-                continue
-            neighbor_objective = _result_objective(
-                neighbor_days,
-                neighbor.allocation,
-                baseline_owner,
-                candidate_by_id,
-            )
-            if neighbor_objective >= current_objective:
-                continue
-            if best_objective is None or neighbor_objective < best_objective:
-                best_allocation = neighbor.allocation
-                best_days = neighbor_days
-                best_objective = neighbor_objective
+        best_allocation, best_days, best_objective, hit_deadline = _best_neighbor_step(
+            neighbors, allocation_cache, current_objective, deadline,
+            lambda alloc: _solve_allocation(
+                day_inputs, alloc, candidate_by_id, global_start_id,
+                global_end_id, options, deadline, cache,
+            ),
+            baseline_owner, candidate_by_id,
+        )
+        deadline_reached = deadline_reached or hit_deadline
         if best_allocation is None or best_days is None or best_objective is None:
             break
         current_allocation = best_allocation
@@ -1014,8 +1055,31 @@ def optimize_multi_day_allocation(
         if deadline_reached:
             break
 
-    final_days = current_days
-    final_allocation = current_allocation
+    return _final_multiday_result(
+        current_days, current_allocation, baseline_days, baseline_owner, deadline_reached
+    )
+
+
+def _prefer_baseline(
+    baseline_days: tuple[MultiDayDayResult, ...] | None,
+    final_days: tuple[MultiDayDayResult, ...],
+    candidate_by_id: dict[str, SelectionCandidate],
+) -> tuple[MultiDayDayResult, ...]:
+    if baseline_days is not None and _result_days_objective(
+        baseline_days,
+        candidate_by_id,
+    ) < _result_days_objective(final_days, candidate_by_id):
+        return baseline_days
+    return final_days
+
+
+def _final_multiday_result(
+    final_days: tuple[MultiDayDayResult, ...],
+    final_allocation: Allocation,
+    baseline_days: tuple[MultiDayDayResult, ...] | None,
+    baseline_owner: dict[str, int],
+    deadline_reached: bool,
+) -> MultiDayResult:
     final_loads = tuple(day.load_minutes for day in final_days)
     initial_loads = (
         tuple(day.load_minutes for day in baseline_days)

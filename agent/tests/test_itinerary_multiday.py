@@ -471,3 +471,18 @@ def test_neighbors_use_routed_boundaries_when_day_results_present():
     assert swap_with == multiday_module._canonical_allocation((("a", "c", "x"), ("b", "d")), rank)
     assert swap_without == multiday_module._canonical_allocation((("a", "b", "c"), ("x", "d")), rank)
     assert swap_with != swap_without
+
+
+def test_prefer_baseline_only_when_strictly_better():
+    # Lát 27: baseline chỉ thắng khi objective NHỎ HƠN HẲN (không phải bằng).
+    def result(load):
+        return multiday_module.MultiDayDayResult(
+            day_index=1, content_ids=("a",), ordered_ids=("a",),
+            schedule=SimpleNamespace(total_travel_minutes=load, backtrack_ratio=0.0),
+            synthetic_origin_id=None, load_minutes=load,
+        )
+
+    fast, slow = (result(10.0),), (result(99.0),)
+    assert multiday_module._prefer_baseline(fast, slow, {}) == fast
+    assert multiday_module._prefer_baseline(slow, fast, {}) == fast
+    assert multiday_module._prefer_baseline(None, slow, {}) == slow
