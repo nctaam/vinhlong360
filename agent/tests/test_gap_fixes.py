@@ -2290,7 +2290,7 @@ class TestAsyncBlockingFixes:
         assert "asyncio.to_thread" in fn_src
 
     def test_recommend_async(self):
-        src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
+        src = (AGENT_DIR / "entities" / "api.py").read_text(encoding="utf-8")  # handler /recommend sang entities (top_router) 2026-08-29
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "recommend_endpoint")
@@ -2304,7 +2304,7 @@ class TestAsyncBlockingFixes:
         assert "asyncio.to_thread" in fn_src
 
     def test_graph_async(self):
-        src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
+        src = (AGENT_DIR / "entities" / "api.py").read_text(encoding="utf-8")  # handler /graph sang entities (top_router) 2026-08-29
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "graph_endpoint")

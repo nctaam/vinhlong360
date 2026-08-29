@@ -29,6 +29,7 @@ from reflexion import quality_tracker, reflexion_engine
 from scheduler import scheduler_status
 
 from features import (
+    HAS_AB_TESTING,
     HAS_CHECKPOINTS,
     HAS_CIRCUIT_BREAKER,
     HAS_CONTEXTUAL,
@@ -37,24 +38,29 @@ from features import (
     HAS_EVAL,
     HAS_FRESHNESS,
     HAS_GUARDRAILS,
+    HAS_IMAGE_RECOGNITION,
     HAS_LLM_JUDGE,
     HAS_MEMORY_GRAPH,
     HAS_OPTIMIZER,
     HAS_ORCHESTRATOR,
+    HAS_PROMPT_CACHE,
     HAS_SEMANTIC_CACHE,
     HAS_TRACING,
     HAS_VECTOR,
+    ab_manager,
     agent_factory,
     all_breaker_stats,
     auto_refresh_candidates,
     check_freshness,
     check_input,
     checkpoint_manager,
+    confirmation_manager,
     cost_attribution,
     cost_budget,
     embedding_store,
     enhanced_hybrid_search,
     export_traces_json,
+    format_confirmation_prompt,
     freshness_report,
     get_agent_report,
     get_cost_report,
@@ -69,6 +75,9 @@ from features import (
     judge,
     memory_graph,
     multi_tier_cache,
+    process_upload,
+    prompt_cache,
+    recognize_image,
     semantic_cache_stats,
 )
 
@@ -631,3 +640,116 @@ async def dynamic_agents_create(req: DynamicAgentCreateRequest, request: Request
         tool_whitelist=req.tool_whitelist,
     )
     return {"status": "created", "agent": spec.to_dict()}
+
+
+# ── A/B Testing endpoints (server.py về nhà 2026-08-29, lát 9 — cùng họ
+#    42 route /system: mặt vận hành LLM admin-gated, module nguồn ab_testing.py) ──
+
+@router.get("/ab-testing/experiments", tags=["System"])
+async def ab_experiments(request: Request):
+    """List all A/B testing experiments. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
+    if not HAS_AB_TESTING:
+        raise HTTPException(503, detail="A/B testing not available")
+    return {"experiments": ab_manager.list_experiments()}
+
+@router.get("/ab-testing/results/{experiment_name}", tags=["System"])
+async def ab_results(experiment_name: str, request: Request):
+    """Get A/B test results with statistics. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
+    if not HAS_AB_TESTING:
+        raise HTTPException(503, detail="A/B testing not available")
+    results = ab_manager.get_results(experiment_name)
+    significance = ab_manager.is_significant(experiment_name)
+    return {"experiment": experiment_name, "results": results, "significance": significance}
+
+@router.get("/prompt-cache/stats", tags=["System"])
+async def prompt_cache_stats(request: Request):
+    """Get prompt cache statistics. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
+    if not HAS_PROMPT_CACHE:
+        return {"available": False}
+    return {"available": True, **prompt_cache.stats()}
+
+
+# ── Checkpoint / Confirmation endpoints (server.py về nhà 2026-08-29, lát 9 —
+#    anh em /checkpoints/* ngay trên, cùng module nguồn checkpoints.py) ──
+
+@router.get("/confirmations/{session_id}", tags=["System"])
+async def pending_confirmations(session_id: str, request: Request):
+    """List pending confirmations. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
+    if not HAS_CHECKPOINTS:
+        return {"available": False}
+    pending = confirmation_manager.get_pending(session_id)
+    return {"pending": [{"id": p.confirmation_id, "action_type": p.action_type,
+                         "description": p.description, "prompt": format_confirmation_prompt(p)}
+                        for p in pending]}
+
+
+@router.post("/confirm/{confirmation_id}", tags=["System"])
+async def confirm_action(confirmation_id: str, request: Request):
+    """Confirm a pending action. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
+    if not HAS_CHECKPOINTS:
+        return _error_response(501, "Checkpoints not available")
+    params = confirmation_manager.confirm(confirmation_id)
+    if params is None:
+        return _error_response(404, "Confirmation not found or expired")
+    return {"confirmed": True, "params": params}
+
+
+@router.post("/reject/{confirmation_id}", tags=["System"])
+async def reject_action(confirmation_id: str, request: Request):
+    """Reject a pending action. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
+    if not HAS_CHECKPOINTS:
+        return _error_response(501, "Checkpoints not available")
+    body = await request.json() if request.headers.get("content-type") == "application/json" else {}
+    reason = body.get("reason", "")
+    confirmation_manager.reject(confirmation_id, reason)
+    return {"rejected": True}
+
+
+# ── Image recognition endpoint (server.py về nhà 2026-08-29, lát 9 — một lượt
+#    LLM vision/call, require_admin_scope('ops.deploy') y hệt /vectors/build) ──
+
+@router.post("/image/recognize")
+async def image_recognize_endpoint(request: Request):
+    # GĐ4.2: mỗi call là 1 lượt LLM vision (tốn tiền) -> chỉ admin để chặn drain ví ẩn danh.
+    # (Frontend hiện không dùng. Mở cho user đã xác thực + rate-limit khi cần — Backlog.)
+    from admin import require_admin_scope
+    await require_admin_scope(request, "ops.deploy")
+    if not HAS_IMAGE_RECOGNITION:
+        return _error_response(501, "Image recognition not available")
+    content_type = request.headers.get("content-type", "")
+    if "multipart" in content_type:
+        form = await request.form()
+        file = form.get("file")
+        if not file:
+            return _error_response(400, "No file uploaded")
+        max_bytes = 10 * 1024 * 1024
+        file_bytes = await file.read(max_bytes + 1)
+        if len(file_bytes) > max_bytes:
+            return _error_response(413, "Image too large (max 10MB)")
+        filename = getattr(file, "filename", "image.jpg")
+        ct = getattr(file, "content_type", "image/jpeg")
+        result = process_upload(file_bytes, filename, ct)
+        return result
+    else:
+        body = await request.json()
+        image_b64 = body.get("image")
+        if not image_b64:
+            return _error_response(400, "No image data")
+        # Limit base64 image size to ~10MB (13.3M base64 chars)
+        if len(image_b64) > 13_400_000:
+            return _error_response(413, "Image too large (max 10MB)")
+        knowledge._ensure()
+        result = recognize_image(image_b64, knowledge._entities)
+        return result

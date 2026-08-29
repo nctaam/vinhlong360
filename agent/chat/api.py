@@ -25,14 +25,19 @@ from functools import wraps
 from typing import Literal
 
 import anyio
-from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from fastapi.responses import JSONResponse, StreamingResponse
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 from agentic_rag import build_rag_context
-from feedback_policy import issue_feedback_receipt
+from feedback_policy import (
+    FeedbackRejected,
+    FeedbackUnavailable,
+    consume_feedback_receipt,
+    issue_feedback_receipt,
+)
 from index_policy import is_publicly_eligible
 from privacy_boundary import SafeText, prepare_chat_output, redact_text
-from proactive import get_proactive_context
+from proactive import generate_welcome_message, get_proactive_context
 
 import asyncio
 import json
@@ -51,7 +56,15 @@ from chat_identity import resolve_chat_owner, set_chat_owner_cookie
 from chat_usage import UsageAccumulator
 from llm_config import get_client, get_model, get_model_mini
 from memory import UnknownConversation, memory_manager
-from middleware import chat_limiter, error_tracker, get_client_ip, logger, stream_limiter
+from middleware import (
+    chat_limiter,
+    error_tracker,
+    feedback_ip_limiter,
+    feedback_owner_limiter,
+    get_client_ip,
+    logger,
+    stream_limiter,
+)
 from privacy_boundary import (
     PrivacyBoundaryBlocked,
     PrivacyBoundaryUnavailable,
@@ -120,6 +133,7 @@ from features import (
     track_cache,
     track_chat_request,
     track_error,
+    track_feedback_attempt,
     weather_breaker,
     weather_for_llm,
     web_search_breaker,
@@ -3199,3 +3213,155 @@ async def chat_stream(req: ChatRequest, request: Request):
     response = _stream_response(event_stream(), semantic_lease=semantic_lease)
     _transfer_semantic_route_lease()
     return response
+
+
+# ── /feedback — mặt tiêu-thụ receipt (server.py về nhà 2026-08-29, lát 9).
+#    Receipt do issue_feedback_receipt của CHÍNH gói này phát; identity =
+#    resolve_chat_owner/set_chat_owner_cookie y hệt /chat. ──
+
+class FeedbackRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    receipt: str
+    rating: Literal[0, 1]
+
+    @field_validator("rating", mode="before")
+    @classmethod
+    def reject_boolean_rating(cls, value):
+        if type(value) is not int:
+            raise ValueError("rating must be integer 0 or 1")
+        return value
+
+
+def _feedback_response(
+    status_code: int,
+    content: dict,
+    *,
+    owner_context=None,
+    retry_after: int | None = None,
+) -> JSONResponse:
+    result = JSONResponse(status_code=status_code, content=content)
+    if retry_after is not None:
+        result.headers["Retry-After"] = str(max(1, retry_after))
+    if owner_context is not None:
+        set_chat_owner_cookie(result, owner_context)
+    return result
+
+
+def _feedback_owner_kind(owner_key: str) -> str:
+    if owner_key.startswith("user:"):
+        return "authenticated"
+    if owner_key.startswith("anon:"):
+        return "anonymous"
+    return "unknown"
+
+
+def _track_feedback_transport(
+    reason: str,
+    owner_kind: str,
+    rating: int | None = None,
+) -> None:
+    if HAS_METRICS:
+        track_feedback_attempt(
+            reason=reason,
+            owner_kind=owner_kind,
+            rating=rating,
+        )
+
+
+@router.post("/feedback")
+async def user_feedback(request: Request):
+    """Consume one owner-bound receipt into deidentified aggregate telemetry."""
+    client_ip = get_client_ip(request)
+    allowed, rate_info = feedback_ip_limiter.is_allowed(client_ip)
+    if not allowed:
+        _track_feedback_transport("ip_limit", "unknown")
+        return _feedback_response(
+            429,
+            {"detail": "Too many feedback requests"},
+            retry_after=rate_info["retry_after"],
+        )
+
+    owner_context = await resolve_chat_owner(request)
+    resolved_owner_kind = _feedback_owner_kind(owner_context.owner_key)
+    allowed, rate_info = feedback_owner_limiter.is_allowed(owner_context.owner_key)
+    if not allowed:
+        _track_feedback_transport("owner_limit", resolved_owner_kind)
+        return _feedback_response(
+            429,
+            {"detail": "Too many feedback requests"},
+            owner_context=owner_context,
+            retry_after=rate_info["retry_after"],
+        )
+
+    try:
+        payload = await request.json()
+        feedback = FeedbackRequest.model_validate(payload)
+    except (json.JSONDecodeError, UnicodeDecodeError, ValidationError, TypeError, ValueError):
+        _track_feedback_transport("invalid_request", resolved_owner_kind)
+        return _feedback_response(
+            422,
+            {"detail": "Invalid feedback request"},
+            owner_context=owner_context,
+        )
+
+    if re.fullmatch(r"[A-Za-z0-9_-]{43}", feedback.receipt) is None:
+        _track_feedback_transport("invalid_receipt", resolved_owner_kind, feedback.rating)
+        return _feedback_response(
+            503,
+            {"detail": "Feedback unavailable"},
+            owner_context=owner_context,
+        )
+
+    try:
+        consumed = consume_feedback_receipt(
+            feedback.receipt,
+            owner_context.owner_key,
+            feedback.rating,
+        )
+    except FeedbackUnavailable:
+        _track_feedback_transport(
+            "receipt_unavailable",
+            resolved_owner_kind,
+            feedback.rating,
+        )
+        return _feedback_response(
+            503,
+            {"detail": "Feedback unavailable"},
+            owner_context=owner_context,
+        )
+    except FeedbackRejected:
+        _track_feedback_transport(
+            "receipt_rejected",
+            resolved_owner_kind,
+            feedback.rating,
+        )
+        return _feedback_response(
+            503,
+            {"detail": "Feedback unavailable"},
+            owner_context=owner_context,
+        )
+
+    _track_feedback_transport(
+        "idempotent" if consumed.idempotent else "accepted",
+        resolved_owner_kind,
+        feedback.rating,
+    )
+    return _feedback_response(200, {"success": True}, owner_context=owner_context)
+
+
+# ── /welcome — identity + bộ nhớ chat (server.py về nhà 2026-08-29, lát 9) ──
+
+@router.get("/welcome")
+async def welcome_message(request: Request, response: Response):
+    """Welcome message cá nhân hóa."""
+    owner_context = await resolve_chat_owner(request)
+    set_chat_owner_cookie(response, owner_context)
+    preferences = None
+    profile = memory_manager.cold.find_profile(owner_context.owner_key)
+    if profile is not None and profile.conversation_count > 0:
+        preferences = {
+            "interests": profile.interests,
+            "preferred_areas": profile.preferred_areas,
+        }
+    return generate_welcome_message(preferences)

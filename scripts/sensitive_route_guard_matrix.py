@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Static guard matrix for internal/sensitive backend routes.
 
-This intentionally avoids importing the FastAPI app. It parses server.py and
-checks that the central gate middleware still covers every sensitive route
-that release smoke depends on.
+This intentionally avoids importing the FastAPI app. It parses server.py (the
+central gate middleware + gated-path tables live there) and llmops/api.py (the
+scope-guarded endpoint handlers moved home 2026-08-27..29 — /vectors/*, and
+/image/recognize from lát 9) and checks that every sensitive route release
+smoke depends on is still covered.
 """
 
 from __future__ import annotations
@@ -15,6 +17,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SERVER = ROOT / "agent" / "server.py"
+# Handler nhạy cảm có require_admin_scope đã VỀ NHÀ llmops (2026-08-27 dời
+# /vectors/*, 2026-08-29 lát 9 dời /image/recognize). Script này từng chỉ parse
+# server.py nên đã FAIL THẬT 2 endpoint suốt hai ngày — dạy nó nhà mới ở đây.
+LLMOPS = ROOT / "agent" / "llmops" / "api.py"
 
 
 @dataclass(frozen=True)
@@ -366,12 +372,12 @@ def _matches_gate_helper(function: ast.FunctionDef) -> bool:
     )
 
 
-def _matches_app_decorator(node: ast.AST, method: str, route: str) -> bool:
+def _matches_app_decorator(node: ast.AST, method: str, route: str, owner: str = "app") -> bool:
     return (
         isinstance(node, ast.Call)
         and isinstance(node.func, ast.Attribute)
         and node.func.attr == method
-        and _is_name(node.func.value, "app")
+        and _is_name(node.func.value, owner)
         and bool(node.args)
         and isinstance(node.args[0], ast.Constant)
         and node.args[0].value == route
@@ -578,14 +584,16 @@ def _has_dominating_endpoint_guard(body: list[ast.stmt], scope: str) -> bool:
     return False
 
 
-def _check_endpoint_guards(module: ast.Module, failures: list[str]) -> None:
+def _check_endpoint_guards(
+    module: ast.Module, failures: list[str], owner: str = "app"
+) -> None:
     for check in ENDPOINT_CHECKS:
         functions = _top_level_functions(module, check.function)
         function = functions[0] if len(functions) == 1 else None
         ok = (
             isinstance(function, ast.AsyncFunctionDef)
             and any(
-                _matches_app_decorator(decorator, check.method, check.route)
+                _matches_app_decorator(decorator, check.method, check.route, owner)
                 for decorator in function.decorator_list
             )
             and _has_dominating_endpoint_guard(function.body, check.scope)
@@ -593,7 +601,7 @@ def _check_endpoint_guards(module: ast.Module, failures: list[str]) -> None:
         print(f"{'OK' if ok else 'FAIL'} {check.route:20} {check.reason}")
         if not ok:
             failures.append(
-                f"{check.route} must be async, decorated with @{check.method}, "
+                f"{check.route} must be async, decorated with @{owner}.{check.method}, "
                 f"and await require_admin_scope(request, {check.scope!r})"
             )
 
@@ -607,21 +615,27 @@ def _report_failures(failures: list[str]) -> int:
     return 0
 
 
+def _parse_module(path: Path, label: str, failures: list[str]) -> ast.Module | None:
+    source = path.read_text(encoding="utf-8-sig", errors="replace")
+    try:
+        return ast.parse(source)
+    except SyntaxError as error:
+        failures.append(f"{label} syntax error at line {error.lineno}: {error.msg}")
+        return None
+
+
 def main() -> int:
-    source = SERVER.read_text(encoding="utf-8-sig", errors="replace")
     print("Sensitive route guard matrix")
     print("============================")
-    try:
-        module = ast.parse(source)
-    except SyntaxError as error:
-        return _report_failures(
-            [f"server.py syntax error at line {error.lineno}: {error.msg}"]
-        )
-
     failures: list[str] = []
-    _check_gate_integrity(module, failures)
-    _check_prefix_guards(module, failures)
-    _check_endpoint_guards(module, failures)
+    server_module = _parse_module(SERVER, "server.py", failures)
+    llmops_module = _parse_module(LLMOPS, "llmops/api.py", failures)
+    if server_module is not None:
+        _check_gate_integrity(server_module, failures)
+        _check_prefix_guards(server_module, failures)
+    if llmops_module is not None:
+        # Handler nhạy cảm sống trong gói llmops, đăng ký qua `@router.*`.
+        _check_endpoint_guards(llmops_module, failures, owner="router")
     return _report_failures(failures)
 
 

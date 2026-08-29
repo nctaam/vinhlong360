@@ -11,7 +11,9 @@ import metrics
 import server
 
 
-from chat import api as chat_api  # ma chat da sang day (2026-08-27)
+from chat import api as chat_api  # ma chat da sang day (2026-08-27); /feedback +
+# /welcome ve nha 2026-08-29 (lat 9) — binding THAT la chat_api.*, patch server.*
+# chi con la be mat tai xuat (dual-binding giu lam luoi tuong thich).
 USER_OWNER = "user:00000000-0000-0000-0000-000000000001"
 ANON_OWNER = "anon:" + "a" * 64
 VALID_RECEIPT = "A" * 43
@@ -53,6 +55,8 @@ def _install_owner(monkeypatch, owner_key=USER_OWNER, cookie_value=None, events=
 def _install_allowed_limits(monkeypatch, events=None):
     ip = RecordingLimiter("ip", events)
     owner = RecordingLimiter("owner-limit", events)
+    monkeypatch.setattr(chat_api, "feedback_ip_limiter", ip)
+    monkeypatch.setattr(chat_api, "feedback_owner_limiter", owner)
     monkeypatch.setattr(server, "feedback_ip_limiter", ip, raising=False)
     monkeypatch.setattr(server, "feedback_owner_limiter", owner, raising=False)
     return ip, owner
@@ -85,9 +89,15 @@ async def test_receipt_and_rating_succeed_without_personalization_writes(monkeyp
         consume_calls.append((receipt, owner_key, rating))
         return feedback_policy.FeedbackConsumeResult(rating=rating, idempotent=False)
 
+    monkeypatch.setattr(chat_api, "consume_feedback_receipt", consume)
     monkeypatch.setattr(server, "consume_feedback_receipt", consume, raising=False)
     monkeypatch.setattr(chat_api, "HAS_METRICS", True)
     monkeypatch.setattr(server, "HAS_METRICS", True)
+    monkeypatch.setattr(
+        chat_api,
+        "track_feedback_attempt",
+        lambda **kwargs: metric_calls.append(kwargs),
+    )
     monkeypatch.setattr(
         server,
         "track_feedback_attempt",
@@ -138,6 +148,11 @@ async def test_invalid_payloads_consume_ip_then_owner_before_bounded_422(
     ip_limiter, owner_limiter = _install_allowed_limits(monkeypatch, events=events)
     consume_calls = []
     monkeypatch.setattr(
+        chat_api,
+        "consume_feedback_receipt",
+        lambda *_args, **_kwargs: consume_calls.append(True),
+    )
+    monkeypatch.setattr(
         server,
         "consume_feedback_receipt",
         lambda *_args, **_kwargs: consume_calls.append(True),
@@ -170,6 +185,7 @@ async def test_ip_limit_rejects_before_owner_resolution(monkeypatch):
         "ip",
         result=(False, {"retry_after": 17}),
     )
+    monkeypatch.setattr(chat_api, "feedback_ip_limiter", ip_limiter)
     monkeypatch.setattr(server, "feedback_ip_limiter", ip_limiter, raising=False)
 
     async def forbidden_owner(_request):
@@ -193,6 +209,11 @@ async def test_ip_limit_rejects_before_owner_resolution(monkeypatch):
 async def test_owner_limit_returns_retry_after_and_rotated_cookie(monkeypatch):
     _install_owner(monkeypatch, cookie_value="rotated.signature")
     monkeypatch.setattr(
+        chat_api,
+        "feedback_ip_limiter",
+        RecordingLimiter("ip"),
+    )
+    monkeypatch.setattr(
         server,
         "feedback_ip_limiter",
         RecordingLimiter("ip"),
@@ -202,6 +223,7 @@ async def test_owner_limit_returns_retry_after_and_rotated_cookie(monkeypatch):
         "owner",
         result=(False, {"retry_after": 23}),
     )
+    monkeypatch.setattr(chat_api, "feedback_owner_limiter", owner_limiter)
     monkeypatch.setattr(server, "feedback_owner_limiter", owner_limiter, raising=False)
     transport = httpx.ASGITransport(app=server.app)
 
@@ -220,6 +242,11 @@ async def test_invalid_receipt_shape_uses_common_unavailable_response(monkeypatc
     _install_owner(monkeypatch)
     ip_limiter, owner_limiter = _install_allowed_limits(monkeypatch)
     consume_calls = []
+    monkeypatch.setattr(
+        chat_api,
+        "consume_feedback_receipt",
+        lambda *_args, **_kwargs: consume_calls.append(True),
+    )
     monkeypatch.setattr(
         server,
         "consume_feedback_receipt",
@@ -250,6 +277,7 @@ async def test_receipt_failures_share_one_public_response(monkeypatch, reason):
     def unavailable(*_args, **_kwargs):
         raise feedback_policy.FeedbackUnavailable(f"private-{reason}")
 
+    monkeypatch.setattr(chat_api, "consume_feedback_receipt", unavailable)
     monkeypatch.setattr(server, "consume_feedback_receipt", unavailable, raising=False)
     transport = httpx.ASGITransport(app=server.app)
 
@@ -278,6 +306,7 @@ async def test_same_rating_replay_is_idempotent_and_conflict_is_unavailable(monk
             return feedback_policy.FeedbackConsumeResult(rating=1, idempotent=True)
         raise feedback_policy.FeedbackRejected("CONFLICTING_FEEDBACK_REPLAY")
 
+    monkeypatch.setattr(chat_api, "consume_feedback_receipt", consume)
     monkeypatch.setattr(server, "consume_feedback_receipt", consume, raising=False)
     transport = httpx.ASGITransport(app=server.app)
 
@@ -321,9 +350,15 @@ async def test_authenticated_and_anonymous_feedback_keep_owner_kinds_separate(mo
     monkeypatch.setattr(chat_api, "resolve_chat_owner", resolve_owner)
 
     monkeypatch.setattr(server, "resolve_chat_owner", resolve_owner)
+    monkeypatch.setattr(chat_api, "consume_feedback_receipt", consume)
     monkeypatch.setattr(server, "consume_feedback_receipt", consume, raising=False)
     monkeypatch.setattr(chat_api, "HAS_METRICS", True)
     monkeypatch.setattr(server, "HAS_METRICS", True)
+    monkeypatch.setattr(
+        chat_api,
+        "track_feedback_attempt",
+        lambda **kwargs: metrics.append(kwargs),
+    )
     monkeypatch.setattr(
         server,
         "track_feedback_attempt",

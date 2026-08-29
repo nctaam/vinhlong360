@@ -386,6 +386,7 @@ def test_home_page(client):
 
 def test_feedback_endpoint(client, monkeypatch):
     import server
+    from chat import api as chat_api  # handler /feedback ve nha 2026-08-29 (lat 9)
 
     async def resolve_owner(_request):
         return SimpleNamespace(
@@ -393,7 +394,14 @@ def test_feedback_endpoint(client, monkeypatch):
             cookie_value=None,
         )
 
+    # Binding THAT la chat_api.*; patch server.* giu lam be mat tai xuat.
+    monkeypatch.setattr(chat_api, "resolve_chat_owner", resolve_owner)
     monkeypatch.setattr(server, "resolve_chat_owner", resolve_owner)
+    monkeypatch.setattr(
+        chat_api,
+        "consume_feedback_receipt",
+        lambda *_args: SimpleNamespace(idempotent=False),
+    )
     monkeypatch.setattr(
         server,
         "consume_feedback_receipt",

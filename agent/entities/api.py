@@ -44,8 +44,10 @@ from auth_middleware import (
     require_user,
     validate_path_id,
 )
+import knowledge
 from data_quality import entity_quality
 from database import canonical_verified_at, db
+from features import HAS_AUTOCORRECT, HAS_RECOMMENDER, autocorrect, recommend
 from middleware import get_client_ip
 
 from api_schemas import (
@@ -1591,3 +1593,56 @@ async def entity_search(
             "has_image": has_image, "sort": sort,
         },
     }
+
+
+# ── Mặt tri thức TOP-LEVEL (server.py về nhà 2026-08-29, lát 9) ──────────────
+# /recommend /autocorrect /graph: truy hồi/gợi ý trên knowledge — miền entities,
+# nhưng path là top-level (KHÔNG /api) nên KHÔNG được gộp vào `router` ở trên
+# (router đó GỘP vào public_router prefix /api — test_entities_api_boundary ép
+# mọi route của nó nằm dưới /api). Router PHỤ tên RIÊNG (mìn R20.9 tên-biến-
+# router 2026-08-18: hai biến cùng tên `router` làm resolver coi module cũ là
+# chưa mount), server.py mount 1 dòng: app.include_router(top_router).
+
+top_router = APIRouter()
+
+
+@top_router.get("/recommend")
+async def recommend_endpoint(
+    entity_id: str = Query(None, max_length=200), month: int = Query(None, ge=1, le=12),
+    weather: str = Query(None, max_length=50), time_of_day: str = Query(None, max_length=50),
+    limit: int = Query(10, ge=1, le=100),
+):
+    if not HAS_RECOMMENDER:
+        raise HTTPException(503, detail="Recommender not available")
+    def _rec():
+        knowledge._ensure()
+        ctx = {}
+        if entity_id:
+            ctx["entity_id"] = entity_id
+        if month:
+            ctx["month"] = month
+        else:
+            ctx["month"] = datetime.now(timezone.utc).month
+        if weather:
+            ctx["weather"] = weather
+        if time_of_day:
+            ctx["time_of_day"] = time_of_day
+        ctx["entities"] = knowledge._entities
+        ctx["relationships"] = knowledge._relationships if hasattr(knowledge, '_relationships') else []
+        ctx["limit"] = limit
+        return recommend(ctx)
+    return await asyncio.to_thread(_rec)
+
+
+@top_router.get("/autocorrect")
+async def autocorrect_endpoint(q: str):
+    if not HAS_AUTOCORRECT:
+        return {"original": q, "corrected": q, "was_corrected": False}
+    return await asyncio.to_thread(autocorrect, q)
+
+
+@top_router.get("/graph")
+async def graph_endpoint(entity_id: str, hops: int = 2, max_nodes: int = 30):
+    """Return subgraph data for knowledge graph visualization."""
+    from agentic_rag import graph_expand
+    return await asyncio.to_thread(lambda: graph_expand(entity_id, max_hops=min(hops, 4), max_nodes=min(max_nodes, 50)))

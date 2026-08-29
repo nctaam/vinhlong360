@@ -28,7 +28,9 @@ ENDPOINTS = (
 
 
 def _endpoint_source(route: str, method: str, function: str, mode: str) -> str:
-    decorator = f'@app.{method}("{route}")\n'
+    # Lát 9 (2026-08-29): handler nhạy cảm sống trong gói llmops, đăng ký qua
+    # `@router.*` — fixture đi theo nhà thật.
+    decorator = f'@router.{method}("{route}")\n'
     declaration = f"async def {function}(request):"
     guard = '    await require_admin_scope(request, "ops.deploy")'
     if mode == "sync":
@@ -118,7 +120,7 @@ def _endpoint_source(route: str, method: str, function: str, mode: str) -> str:
     elif mode == "missing-decorator":
         decorator = ""
     elif mode == "wrong-route":
-        decorator = f'@app.{method}("{route}-public")\n'
+        decorator = f'@router.{method}("{route}-public")\n'
     return f"{decorator}{declaration}\n{guard}\n"
 
 
@@ -267,6 +269,10 @@ def _run_matrix(monkeypatch, tmp_path: Path, source: str) -> tuple[int, str]:
     server = tmp_path / "server.py"
     server.write_text(source, encoding="utf-8")
     monkeypatch.setattr(matrix, "SERVER", server)
+    # Lát 9: script parse HAI file (gate ở server.py, endpoint guard ở
+    # llmops/api.py). Fixture tổng hợp vẫn là MỘT nguồn — trỏ cả hai đường
+    # dẫn vào nó để bộ chế-độ-hỏng sẵn có tiếp tục soi đúng analyzer.
+    monkeypatch.setattr(matrix, "LLMOPS", server)
     return matrix.main(), ""
 
 

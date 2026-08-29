@@ -17,13 +17,16 @@ from llmops import api as llmops_api  # noqa: E402
 SRC = Path(llmops_api.__file__).resolve()
 
 
-def test_router_phat_du_43_route_dung_mien():
-    # 42 route gốc + /search/enhanced về từ server.py (lát 4 đợt
-    # hoàn-thiện-sâu 2026-08-29 — cùng loài chẩn đoán truy hồi /vectors/search).
+def test_router_phat_du_50_route_dung_mien():
+    # 42 route gốc + /search/enhanced (lát 4) + 7 route đuôi-dài server.py về
+    # nhà (lát 9 đợt hoàn-thiện-sâu 2026-08-29): 2×/ab-testing,
+    # /prompt-cache/stats, /confirmations, /confirm, /reject, /image/recognize
+    # — toàn mặt vận-hành-LLM admin-gated, cùng module nguồn với 42 route cũ.
     paths = sorted(r.path for r in llmops_api.router.routes)
-    assert len(paths) == 43, len(paths)
+    assert len(paths) == 50, len(paths)
     mien = {"/system", "/checkpoints", "/vectors", "/freshness", "/analytics",
-            "/search/enhanced"}
+            "/search/enhanced", "/ab-testing", "/prompt-cache", "/confirmations",
+            "/confirm", "/reject", "/image"}
     for p in paths:
         assert any(p == m or p.startswith(m + "/") for m in mien), f"route lạc miền: {p}"
 
@@ -36,6 +39,32 @@ def test_search_enhanced_len_app_tu_llmops():
     matches = [r for r in server.app.routes if getattr(r, "path", None) == "/search/enhanced"]
     assert len(matches) == 1, f"kỳ vọng đúng 1 route /search/enhanced, có {len(matches)}"
     assert matches[0].endpoint.__module__ == "llmops.api", matches[0].endpoint.__module__
+
+
+def test_7_route_duoi_dai_len_app_tu_llmops():
+    """Lát 9: 7 route admin-gated về từ server.py — path y NGUYÊN TỪNG KÝ TỰ,
+    handler đổi nhà, và dependant runtime trên app phải trỏ llmops.api (mọc lại
+    bản sao ở server thì route trùng — smoke đếm-route đỏ trước)."""
+    import server
+
+    DOI_NHA = {
+        "/ab-testing/experiments",
+        "/ab-testing/results/{experiment_name}",
+        "/prompt-cache/stats",
+        "/confirmations/{session_id}",
+        "/confirm/{confirmation_id}",
+        "/reject/{confirmation_id}",
+        "/image/recognize",
+    }
+    thay = {}
+    for r in server.app.routes:
+        if getattr(r, "path", None) in DOI_NHA:
+            thay.setdefault(r.path, []).append(r)
+    assert set(thay) == DOI_NHA, f"thiếu route trên app: {DOI_NHA - set(thay)}"
+    for path, matches in thay.items():
+        assert len(matches) == 1, f"route {path} bị đăng ký {len(matches)} lần"
+        assert matches[0].endpoint.__module__ == "llmops.api", (
+            path, matches[0].endpoint.__module__)
 
 
 def test_KHONG_import_nguoc_server_va_chat():
@@ -60,6 +89,6 @@ def test_khong_con_route_llmops_o_server():
 
     src = Path(server.__file__).resolve().read_text(encoding="utf-8")
     con = re.findall(
-        r'@app\.(?:get|post|put|delete)\(\s*["\'](/(?:system|checkpoints|vectors|freshness|analytics|search/enhanced)[^"\']*)',
+        r'@app\.(?:get|post|put|delete)\(\s*["\'](/(?:system|checkpoints|vectors|freshness|analytics|search/enhanced|ab-testing|prompt-cache|confirmations|confirm/|reject/|image/)[^"\']*)',
         src)
     assert not con, f"server.py vẫn còn route llmops: {con}"

@@ -1491,11 +1491,12 @@ def test_welcome_ignores_client_profile_selector(tmp_path, monkeypatch):
         captured["preferences"] = preferences
         return {"greeting": "ok", "suggestions": []}
 
-    # /welcome VAN o server.py con chat o chat.api — hai module co hai binding
-    # rieng, nen va ca hai moi phu duoc ca hai duong.
+    # /welcome ve nha chat.api 2026-08-29 (lat 9) — binding THAT la chat_api.*;
+    # patch server.* giu lam be mat tai xuat (dual-binding).
     monkeypatch.setattr(chat_api, "resolve_chat_owner", alice_owner, raising=False)
     monkeypatch.setattr(server, "resolve_chat_owner", alice_owner, raising=False)
-    monkeypatch.setattr(server, "generate_welcome_message", welcome)
+    monkeypatch.setattr(chat_api, "generate_welcome_message", welcome)
+    monkeypatch.setattr(server, "generate_welcome_message", welcome, raising=False)
     client = TestClient(server.app)
 
     response = client.get("/welcome?session_id=target-profile")
@@ -1511,7 +1512,7 @@ def test_welcome_does_not_create_absent_profile(tmp_path, monkeypatch):
     monkeypatch.setattr(chat_api, "resolve_chat_owner", _new_anonymous_owner)
     captured = []
     monkeypatch.setattr(
-        server,
+        chat_api,
         "generate_welcome_message",
         lambda preferences: captured.append(preferences) or {"greeting": "ok", "suggestions": []},
     )

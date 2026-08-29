@@ -17,9 +17,23 @@ from chat import api as chat_api  # noqa: E402
 CHAT_SRC = Path(chat_api.__file__).resolve()
 
 
-def test_router_phat_dung_hai_route_chat():
+def test_router_phat_dung_bon_route_chat():
+    # Lát 9 (2026-08-29): /feedback (mặt tiêu-thụ receipt do chính gói này
+    # phát) + /welcome (identity + bộ nhớ chat) về nhà từ server.py.
     paths = {r.path for r in chat_api.router.routes}
-    assert paths == {"/chat", "/chat/stream"}, paths
+    assert paths == {"/chat", "/chat/stream", "/feedback", "/welcome"}, paths
+
+
+def test_feedback_welcome_len_app_tu_chat():
+    """Lát 9: hai route về nhà phải LÊN app đúng 1 lần, dependant runtime trỏ
+    chat.api — mọc lại bản sao ở server.py là hai nguồn sự thật."""
+    import server
+
+    for path in ("/feedback", "/welcome"):
+        matches = [r for r in server.app.routes if getattr(r, "path", None) == path]
+        assert len(matches) == 1, f"route {path}: {len(matches)} bản đăng ký"
+        assert matches[0].endpoint.__module__ == "chat.api", (
+            path, matches[0].endpoint.__module__)
 
 
 def test_KHONG_import_nguoc_server():
@@ -59,3 +73,10 @@ def test_khong_con_ma_chat_o_server():
     }
     assert "chat_stream" not in ten, "server.py vẫn còn định nghĩa chat_stream"
     assert "_event_stream_body" not in ten
+    # Lát 9: họ /feedback + /welcome cũng hết định nghĩa ở server (AST) —
+    # server.FeedbackRequest/user_feedback/welcome_message chỉ còn là tái xuất.
+    lop = {n.name for n in tree.body if isinstance(n, ast.ClassDef)}
+    assert "FeedbackRequest" not in lop, "server.py vẫn còn định nghĩa FeedbackRequest"
+    for f in ("user_feedback", "welcome_message", "_feedback_response",
+              "_feedback_owner_kind", "_track_feedback_transport"):
+        assert f not in ten, f"server.py vẫn còn định nghĩa {f}"

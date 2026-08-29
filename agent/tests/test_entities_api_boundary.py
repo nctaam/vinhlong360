@@ -77,3 +77,29 @@ def test_collections_public_len_app_va_public_api_het_dinh_nghia():
     for f in ("list_public_collections", "get_collection_by_slug"):
         assert f not in ten, f"public_api.py vẫn còn định nghĩa {f}"
     assert public_api.get_collection_by_slug.__module__ == entities_api.__name__
+
+
+def test_top_router_3_route_tri_thuc_len_app_top_level():
+    """Lát 9 (2026-08-29): /recommend /autocorrect /graph về nhà qua router PHỤ
+    `top_router` (tên RIÊNG — mìn R20.9 cấm biến `router` thứ hai), mount thẳng
+    lên app KHÔNG prefix vì path là top-level. Khoá bằng ĐO: (a) closed-set 3
+    path đúng từng ký tự; (b) lên app đúng 1 lần, KHÔNG /api; (c) dependant
+    runtime trỏ entities.api; (d) server.py hết định nghĩa (AST)."""
+    import server
+
+    paths = {r.path for r in entities_api.top_router.routes}
+    assert paths == {"/recommend", "/autocorrect", "/graph"}, paths
+    assert entities_api.top_router.prefix == ""
+
+    for path in sorted(paths):
+        matches = [r for r in server.app.routes if getattr(r, "path", None) == path]
+        assert len(matches) == 1, f"route {path}: {len(matches)} bản đăng ký"
+        assert matches[0].endpoint.__module__ == entities_api.__name__, (
+            path, matches[0].endpoint.__module__)
+        assert "/api" + path not in {r.path for r in server.app.routes}
+
+    server_tree = ast.parse(Path(server.__file__).resolve().read_text(encoding="utf-8"))
+    ten = {n.name for n in server_tree.body
+           if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))}
+    for f in ("recommend_endpoint", "autocorrect_endpoint", "graph_endpoint"):
+        assert f not in ten, f"server.py vẫn còn định nghĩa {f}"

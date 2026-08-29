@@ -1586,7 +1586,8 @@ class TestDeepScanBatch4:
 
     def test_image_upload_size_check(self):
         """Multipart image upload must check file size before processing."""
-        src = (Path(__file__).resolve().parent.parent / "server.py").read_text(encoding="utf-8")
+        # Handler /image/recognize sang agent/llmops/api.py (lát 9, 2026-08-29).
+        src = (Path(__file__).resolve().parent.parent / "llmops" / "api.py").read_text(encoding="utf-8")
         idx = src.find("image_recognize")
         assert idx > 0
         block = src[idx:idx+1200]

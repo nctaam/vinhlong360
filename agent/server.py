@@ -16,7 +16,6 @@ Chạy:
   python agent/server.py           # lắng nghe BIND_HOST:AGENT_PORT (mặc định 127.0.0.1:8360)
 """
 
-import json
 import os
 import re
 import sys
@@ -26,7 +25,6 @@ import asyncio
 import threading
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Literal
 
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 if sys.stdout.encoding != "utf-8":
@@ -36,7 +34,7 @@ if sys.stdout.encoding != "utf-8":
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Query, Request, Response
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -86,15 +84,15 @@ from features import (
     ab_manager,
     agent_factory,
     all_breaker_stats,
-    autocorrect,
+    autocorrect,  # noqa: F401  (be mat va cua test — entities/top_router nhan route 2026-08-29)
     bm25,
     check_input,  # noqa: F401  (be mat va cua test — llmops sang goi rieng 2026-08-27)
-    confirmation_manager,
+    confirmation_manager,  # noqa: F401  (be mat va cua test — llmops nhan route 2026-08-29)
     contextual,
     cost_attribution,  # noqa: F401  (be mat va cua test — llmops sang goi rieng 2026-08-27)
     embedding_store,
     experience_memory,
-    format_confirmation_prompt,
+    format_confirmation_prompt,  # noqa: F401  (be mat va cua test — llmops nhan route 2026-08-29)
     generate_metrics,
     get_all_weather,
     get_upcoming_events,
@@ -104,14 +102,14 @@ from features import (
     load_entity_names,
     memory_graph,  # noqa: F401  (be mat va cua test — llmops sang goi rieng 2026-08-27)
     multi_tier_cache,  # noqa: F401  (be mat va cua test — llmops sang goi rieng 2026-08-27)
-    process_upload,
+    process_upload,  # noqa: F401  (be mat va cua test — llmops nhan route 2026-08-29)
     prompt_cache,
     prompt_compiler,
-    recognize_image,
-    recommend,
+    recognize_image,  # noqa: F401  (be mat va cua test — llmops nhan route 2026-08-29)
+    recommend,  # noqa: F401  (be mat va cua test — entities/top_router nhan route 2026-08-29)
     semantic_cache_stats,
     set_gauge,
-    track_feedback_attempt,
+    track_feedback_attempt,  # noqa: F401  (be mat va cua test — chat nhan /feedback 2026-08-29)
     track_http_request,
 )
 
@@ -140,20 +138,20 @@ from launch_policy_api import router as launch_policy_router
 from launch_policy_api import validate_sitemap_bundle_on_startup
 from middleware import (
     logger, chat_limiter, report_limiter,
-    feedback_ip_limiter, feedback_owner_limiter,
+    feedback_ip_limiter, feedback_owner_limiter,  # noqa: F401  (be mat va cua test — chat nhan /feedback 2026-08-29)
     response_tracker, error_tracker, generate_request_id, get_client_ip,
 )
 from policy_http import PolicyHttpMiddleware
 from scheduler import start_scheduler, stop_scheduler, scheduler_status
-from chat_identity import resolve_chat_owner, set_chat_owner_cookie
-from feedback_policy import (
-    FeedbackRejected,
-    FeedbackUnavailable,
-    consume_feedback_receipt,
+from chat_identity import resolve_chat_owner, set_chat_owner_cookie  # noqa: F401  (be mat va cua test — chat nhan /feedback /welcome 2026-08-29)
+from feedback_policy import (  # noqa: F401  (be mat va cua test — chat nhan /feedback 2026-08-29)
+    FeedbackRejected,  # noqa: F401
+    FeedbackUnavailable,  # noqa: F401
+    consume_feedback_receipt,  # noqa: F401
 )
-from memory import memory_manager
+from memory import memory_manager  # noqa: F401  (be mat va cua test — chat nhan /welcome 2026-08-29)
 from reflexion import reflexion_engine, quality_tracker  # noqa: F401  (be mat va cua test — llmops sang goi rieng 2026-08-27)
-from proactive import generate_welcome_message
+from proactive import generate_welcome_message  # noqa: F401  (be mat va cua test — chat nhan /welcome 2026-08-29)
 
 
 
@@ -595,6 +593,7 @@ from chat.api import router as chat_router  # noqa: E402
 # khớp bản vá thì mất chỗ dựa để nói "hành vi không đổi".
 from chat.api import (  # noqa: E402,F401
     ChatRequest,
+    FeedbackRequest,
     _build_messages,
     _call_stream_decision,
     _execute_pending_calls,
@@ -609,10 +608,18 @@ from chat.api import (  # noqa: E402,F401
     call_tool,
     chat,
     chat_stream,
+    user_feedback,
+    welcome_message,
 )
+# Mặt tri thức top-level (/recommend /autocorrect /graph) về agent/entities/
+# (lát 9 đợt hoàn-thiện-sâu 2026-08-29). Router PHỤ tên RIÊNG top_router —
+# entities.router đã GỘP vào public_router (prefix /api), còn 3 path này là
+# top-level nên phải mount thẳng lên app, không prefix.
+from entities.api import top_router as entities_top_router  # noqa: E402
 
 app.include_router(chat_router)
 app.include_router(llmops_router)
+app.include_router(entities_top_router)
 
 app.include_router(case_public_router)
 app.include_router(case_admin_router)
@@ -842,7 +849,7 @@ async def track_response_time(request: Request, call_next):
 app.add_middleware(PolicyHttpMiddleware, route_resolver=app.router)
 
 
-from pydantic import ConfigDict, Field, ValidationError, field_validator
+from pydantic import Field, field_validator
 
 
 
@@ -859,19 +866,8 @@ from pydantic import ConfigDict, Field, ValidationError, field_validator
 
 
 # ── Pydantic models for validated POST endpoints ──
-
-class FeedbackRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid", strict=True)
-
-    receipt: str
-    rating: Literal[0, 1]
-
-    @field_validator("rating", mode="before")
-    @classmethod
-    def reject_boolean_rating(cls, value):
-        if type(value) is not int:
-            raise ValueError("rating must be integer 0 or 1")
-        return value
+# FeedbackRequest về agent/chat/api.py cùng handler /feedback (lát 9 đợt
+# hoàn-thiện-sâu 2026-08-29) — tái xuất qua khối chat.api phía trên.
 
 
 
@@ -1378,36 +1374,8 @@ async def metrics_endpoint(request: Request):
     return Response(content=generate_metrics(), media_type="text/plain; charset=utf-8")
 
 
-# ── A/B Testing endpoints ──
-
-@app.get("/ab-testing/experiments", tags=["System"])
-async def ab_experiments(request: Request):
-    """List all A/B testing experiments. Admin-only."""
-    from admin import require_admin
-    await require_admin(request)
-    if not HAS_AB_TESTING:
-        raise HTTPException(503, detail="A/B testing not available")
-    return {"experiments": ab_manager.list_experiments()}
-
-@app.get("/ab-testing/results/{experiment_name}", tags=["System"])
-async def ab_results(experiment_name: str, request: Request):
-    """Get A/B test results with statistics. Admin-only."""
-    from admin import require_admin
-    await require_admin(request)
-    if not HAS_AB_TESTING:
-        raise HTTPException(503, detail="A/B testing not available")
-    results = ab_manager.get_results(experiment_name)
-    significance = ab_manager.is_significant(experiment_name)
-    return {"experiment": experiment_name, "results": results, "significance": significance}
-
-@app.get("/prompt-cache/stats", tags=["System"])
-async def prompt_cache_stats(request: Request):
-    """Get prompt cache statistics. Admin-only."""
-    from admin import require_admin
-    await require_admin(request)
-    if not HAS_PROMPT_CACHE:
-        return {"available": False}
-    return {"available": True, **prompt_cache.stats()}
+# ── A/B Testing + prompt-cache endpoints: về agent/llmops/api.py
+#    (lát 9 đợt hoàn-thiện-sâu 2026-08-29 — cùng họ 42 route /system) ──
 
 
 # ── Analytics endpoints ──
@@ -1446,172 +1414,21 @@ async def prompt_cache_stats(request: Request):
 
 
 
-# ── Checkpoint / Confirmation endpoints ──
+# ── Checkpoint / Confirmation endpoints: /confirmations /confirm /reject về
+#    agent/llmops/api.py (lát 9 — anh em /checkpoints/*, nguồn checkpoints.py) ──
 
 
 
 
 
-
-
-@app.get("/confirmations/{session_id}", tags=["System"])
-async def pending_confirmations(session_id: str, request: Request):
-    """List pending confirmations. Admin-only."""
-    from admin import require_admin
-    await require_admin(request)
-    if not HAS_CHECKPOINTS:
-        return {"available": False}
-    pending = confirmation_manager.get_pending(session_id)
-    return {"pending": [{"id": p.confirmation_id, "action_type": p.action_type,
-                         "description": p.description, "prompt": format_confirmation_prompt(p)}
-                        for p in pending]}
-
-
-@app.post("/confirm/{confirmation_id}", tags=["System"])
-async def confirm_action(confirmation_id: str, request: Request):
-    """Confirm a pending action. Admin-only."""
-    from admin import require_admin
-    await require_admin(request)
-    if not HAS_CHECKPOINTS:
-        return _error_response(501, "Checkpoints not available")
-    params = confirmation_manager.confirm(confirmation_id)
-    if params is None:
-        return _error_response(404, "Confirmation not found or expired")
-    return {"confirmed": True, "params": params}
-
-
-@app.post("/reject/{confirmation_id}", tags=["System"])
-async def reject_action(confirmation_id: str, request: Request):
-    """Reject a pending action. Admin-only."""
-    from admin import require_admin
-    await require_admin(request)
-    if not HAS_CHECKPOINTS:
-        return _error_response(501, "Checkpoints not available")
-    body = await request.json() if request.headers.get("content-type") == "application/json" else {}
-    reason = body.get("reason", "")
-    confirmation_manager.reject(confirmation_id, reason)
-    return {"rejected": True}
 
 
 # ── Contextual retrieval endpoint: /search/enhanced về agent/llmops/api.py
 #    (lát 4 đợt hoàn-thiện-sâu 2026-08-29 — cùng loài /vectors/search) ──
 
-
-def _feedback_response(
-    status_code: int,
-    content: dict,
-    *,
-    owner_context=None,
-    retry_after: int | None = None,
-) -> JSONResponse:
-    result = JSONResponse(status_code=status_code, content=content)
-    if retry_after is not None:
-        result.headers["Retry-After"] = str(max(1, retry_after))
-    if owner_context is not None:
-        set_chat_owner_cookie(result, owner_context)
-    return result
-
-
-def _feedback_owner_kind(owner_key: str) -> str:
-    if owner_key.startswith("user:"):
-        return "authenticated"
-    if owner_key.startswith("anon:"):
-        return "anonymous"
-    return "unknown"
-
-
-def _track_feedback_transport(
-    reason: str,
-    owner_kind: str,
-    rating: int | None = None,
-) -> None:
-    if HAS_METRICS:
-        track_feedback_attempt(
-            reason=reason,
-            owner_kind=owner_kind,
-            rating=rating,
-        )
-
-
-@app.post("/feedback")
-async def user_feedback(request: Request):
-    """Consume one owner-bound receipt into deidentified aggregate telemetry."""
-    client_ip = get_client_ip(request)
-    allowed, rate_info = feedback_ip_limiter.is_allowed(client_ip)
-    if not allowed:
-        _track_feedback_transport("ip_limit", "unknown")
-        return _feedback_response(
-            429,
-            {"detail": "Too many feedback requests"},
-            retry_after=rate_info["retry_after"],
-        )
-
-    owner_context = await resolve_chat_owner(request)
-    resolved_owner_kind = _feedback_owner_kind(owner_context.owner_key)
-    allowed, rate_info = feedback_owner_limiter.is_allowed(owner_context.owner_key)
-    if not allowed:
-        _track_feedback_transport("owner_limit", resolved_owner_kind)
-        return _feedback_response(
-            429,
-            {"detail": "Too many feedback requests"},
-            owner_context=owner_context,
-            retry_after=rate_info["retry_after"],
-        )
-
-    try:
-        payload = await request.json()
-        feedback = FeedbackRequest.model_validate(payload)
-    except (json.JSONDecodeError, UnicodeDecodeError, ValidationError, TypeError, ValueError):
-        _track_feedback_transport("invalid_request", resolved_owner_kind)
-        return _feedback_response(
-            422,
-            {"detail": "Invalid feedback request"},
-            owner_context=owner_context,
-        )
-
-    if re.fullmatch(r"[A-Za-z0-9_-]{43}", feedback.receipt) is None:
-        _track_feedback_transport("invalid_receipt", resolved_owner_kind, feedback.rating)
-        return _feedback_response(
-            503,
-            {"detail": "Feedback unavailable"},
-            owner_context=owner_context,
-        )
-
-    try:
-        consumed = consume_feedback_receipt(
-            feedback.receipt,
-            owner_context.owner_key,
-            feedback.rating,
-        )
-    except FeedbackUnavailable:
-        _track_feedback_transport(
-            "receipt_unavailable",
-            resolved_owner_kind,
-            feedback.rating,
-        )
-        return _feedback_response(
-            503,
-            {"detail": "Feedback unavailable"},
-            owner_context=owner_context,
-        )
-    except FeedbackRejected:
-        _track_feedback_transport(
-            "receipt_rejected",
-            resolved_owner_kind,
-            feedback.rating,
-        )
-        return _feedback_response(
-            503,
-            {"detail": "Feedback unavailable"},
-            owner_context=owner_context,
-        )
-
-    _track_feedback_transport(
-        "idempotent" if consumed.idempotent else "accepted",
-        resolved_owner_kind,
-        feedback.rating,
-    )
-    return _feedback_response(200, {"success": True}, owner_context=owner_context)
+# ── /feedback (+ FeedbackRequest, _feedback_response, _feedback_owner_kind,
+#    _track_feedback_transport): về agent/chat/api.py (lát 9 — mặt tiêu-thụ
+#    receipt do chat phát; tái xuất qua khối chat.api phía trên) ──
 
 
 @app.post("/api/client-error")
@@ -1652,19 +1469,8 @@ async def client_error(req: ClientErrorRequest, request: Request):
 
 
 
-@app.get("/welcome")
-async def welcome_message(request: Request, response: Response):
-    """Welcome message cá nhân hóa."""
-    owner_context = await resolve_chat_owner(request)
-    set_chat_owner_cookie(response, owner_context)
-    preferences = None
-    profile = memory_manager.cold.find_profile(owner_context.owner_key)
-    if profile is not None and profile.conversation_count > 0:
-        preferences = {
-            "interests": profile.interests,
-            "preferred_areas": profile.preferred_areas,
-        }
-    return generate_welcome_message(preferences)
+# ── /welcome: về agent/chat/api.py (lát 9 — identity + bộ nhớ chat;
+#    tái xuất qua khối chat.api phía trên) ──
 
 
 # ── Vector search endpoints ──
@@ -1694,34 +1500,8 @@ async def events_endpoint(days: int = Query(30, ge=1, le=365), area: str = Query
     return {"events": await asyncio.to_thread(get_upcoming_events, days, area)}
 
 
-# ── Recommendation endpoints ──
-
-@app.get("/recommend")
-async def recommend_endpoint(
-    entity_id: str = Query(None, max_length=200), month: int = Query(None, ge=1, le=12),
-    weather: str = Query(None, max_length=50), time_of_day: str = Query(None, max_length=50),
-    limit: int = Query(10, ge=1, le=100),
-):
-    if not HAS_RECOMMENDER:
-        raise HTTPException(503, detail="Recommender not available")
-    def _rec():
-        knowledge._ensure()
-        ctx = {}
-        if entity_id:
-            ctx["entity_id"] = entity_id
-        if month:
-            ctx["month"] = month
-        else:
-            ctx["month"] = datetime.now(timezone.utc).month
-        if weather:
-            ctx["weather"] = weather
-        if time_of_day:
-            ctx["time_of_day"] = time_of_day
-        ctx["entities"] = knowledge._entities
-        ctx["relationships"] = knowledge._relationships if hasattr(knowledge, '_relationships') else []
-        ctx["limit"] = limit
-        return recommend(ctx)
-    return await asyncio.to_thread(_rec)
+# ── Recommendation endpoint: /recommend về agent/entities/api.py (top_router —
+#    lát 9; gợi ý trên knowledge = miền entities, path top-level giữ nguyên) ──
 
 
 # ── Freshness endpoints ──
@@ -1730,63 +1510,20 @@ async def recommend_endpoint(
 
 
 
-# ── Image recognition endpoint ──
-
-@app.post("/image/recognize")
-async def image_recognize_endpoint(request: Request):
-    # GĐ4.2: mỗi call là 1 lượt LLM vision (tốn tiền) -> chỉ admin để chặn drain ví ẩn danh.
-    # (Frontend hiện không dùng. Mở cho user đã xác thực + rate-limit khi cần — Backlog.)
-    from admin import require_admin_scope
-    await require_admin_scope(request, "ops.deploy")
-    if not HAS_IMAGE_RECOGNITION:
-        return _error_response(501, "Image recognition not available")
-    content_type = request.headers.get("content-type", "")
-    if "multipart" in content_type:
-        form = await request.form()
-        file = form.get("file")
-        if not file:
-            return _error_response(400, "No file uploaded")
-        max_bytes = 10 * 1024 * 1024
-        file_bytes = await file.read(max_bytes + 1)
-        if len(file_bytes) > max_bytes:
-            return _error_response(413, "Image too large (max 10MB)")
-        filename = getattr(file, "filename", "image.jpg")
-        ct = getattr(file, "content_type", "image/jpeg")
-        result = process_upload(file_bytes, filename, ct)
-        return result
-    else:
-        body = await request.json()
-        image_b64 = body.get("image")
-        if not image_b64:
-            return _error_response(400, "No image data")
-        # Limit base64 image size to ~10MB (13.3M base64 chars)
-        if len(image_b64) > 13_400_000:
-            return _error_response(413, "Image too large (max 10MB)")
-        knowledge._ensure()
-        result = recognize_image(image_b64, knowledge._entities)
-        return result
+# ── Image recognition endpoint: /image/recognize về agent/llmops/api.py
+#    (lát 9 — 1 lượt LLM vision đốt ví, admin-scope y hệt /vectors/build) ──
 
 
-# ── Autocorrect endpoint ──
-
-@app.get("/autocorrect")
-async def autocorrect_endpoint(q: str):
-    if not HAS_AUTOCORRECT:
-        return {"original": q, "corrected": q, "was_corrected": False}
-    return await asyncio.to_thread(autocorrect, q)
+# ── Autocorrect endpoint: /autocorrect về agent/entities/api.py (top_router —
+#    lát 9; tiện ích trên từ vựng entity của knowledge) ──
 
 
 # ── Circuit breaker stats ──
 
 
 
-# ── Knowledge graph data endpoint (for frontend visualization) ──
-
-@app.get("/graph")
-async def graph_endpoint(entity_id: str, hops: int = 2, max_nodes: int = 30):
-    """Return subgraph data for knowledge graph visualization."""
-    from agentic_rag import graph_expand
-    return await asyncio.to_thread(lambda: graph_expand(entity_id, max_hops=min(hops, 4), max_nodes=min(max_nodes, 50)))
+# ── Knowledge graph data endpoint: /graph về agent/entities/api.py (top_router —
+#    lát 9; subgraph tri thức cho visualization) ──
 
 
 # ════════════════════════════════════════════════════════════════

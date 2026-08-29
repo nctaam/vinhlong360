@@ -27,7 +27,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     ("mo_ta", "module", "ten"),
     [
         ("test_server_models.py bọc", "server", "ChatRequest"),
-        ("test_server_models.py bọc", "server", "FeedbackRequest"),
+        # FeedbackRequest về nhà thật chat.api 2026-08-29 (lát 9) — trỏ nhà
+        # thật để khỏi nói dối; server.FeedbackRequest chỉ còn là tái xuất.
+        ("test_server_models.py bọc", "chat.api", "FeedbackRequest"),
+        ("test_server_models.py bọc (tái xuất)", "server", "FeedbackRequest"),
         ("test_server_models.py bọc", "llmops.api", "GuardrailCheckRequest"),
         ("test_server_models.py bọc", "llmops.api", "DynamicAgentCreateRequest"),
         ("test_admin.py + test_entity_schemas.py bọc", "admin", "EntityCreate"),
