@@ -185,6 +185,13 @@ def test_explanation_omits_personal_signals_when_personalization_is_disabled():
         ("gps", "10°15′0″N, 105°58′12″E", None),
         ("gps", "Vĩnh Long", "Vĩnh Long"),
         ("ip", "Phường 1", "Phường 1"),
+        # Nhánh biên của bộ detector: cặp số NGOÀI dải toạ độ rơi qua vòng quét
+        # float và vẫn ngoài ±180 → được giữ; IP bọc ngoặc bị bóc dấu câu → chặn;
+        # cặp có vĩ độ âm trong dải → chặn; một float lẻ ngoài ±180 → được giữ.
+        ("gps", "200.5 to 300.5", "200.5 to 300.5"),
+        ("ip", "(203.0.113.10)", None),
+        ("gps", "khoang -10.25, 105.97", None),
+        ("gps", "alt 500.25 m", "alt 500.25 m"),
     ],
 )
 def test_explanation_rejects_raw_location_labels_but_keeps_coarse_regions(

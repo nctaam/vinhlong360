@@ -192,34 +192,38 @@ def _bounded_strings(value: object, *, limit: int, max_length: int) -> list[str]
     return result
 
 
-def _safe_region_label(value: str) -> bool:
-    """Reject raw IP/GPS-shaped labels at the final recommendation boundary."""
+def _contains_ip_address(value: str) -> bool:
     if _IPV4_LIKE_RE.search(value):
-        return False
+        return True
     for match in _IP_CANDIDATE_RE.finditer(value):
         candidate = match.group().strip(".,;()[]{}")
         try:
             ipaddress.ip_address(candidate)
         except ValueError:
             continue
-        return False
-    if _DMS_RE.search(value) or _HEMISPHERE_COORDINATE_RE.search(value):
-        return False
+        return True
+    return False
+
+
+def _coordinate_pair_unsafe(value: str) -> bool:
     pair = _COORDINATE_PAIR_RE.search(value)
-    if pair:
-        try:
-            first = float(pair.group("first"))
-            second = float(pair.group("second"))
-        except ValueError:
-            return False
-        if (
-            -90 <= first <= 90
-            and -180 <= second <= 180
-        ) or (
-            -90 <= second <= 90
-            and -180 <= first <= 180
-        ):
-            return False
+    if not pair:
+        return False
+    try:
+        first = float(pair.group("first"))
+        second = float(pair.group("second"))
+    except ValueError:
+        return True
+    return (
+        -90 <= first <= 90
+        and -180 <= second <= 180
+    ) or (
+        -90 <= second <= 90
+        and -180 <= first <= 180
+    )
+
+
+def _contains_geo_float(value: str) -> bool:
     for match in _NUMBER_RE.finditer(value):
         token = match.group()
         if not any(marker in token for marker in (".", "e", "E", "+", "-")):
@@ -229,8 +233,38 @@ def _safe_region_label(value: str) -> bool:
         except ValueError:
             continue
         if -180 <= candidate <= 180:
-            return False
+            return True
+    return False
+
+
+def _safe_region_label(value: str) -> bool:
+    """Reject raw IP/GPS-shaped labels at the final recommendation boundary."""
+    if _contains_ip_address(value):
+        return False
+    if _DMS_RE.search(value) or _HEMISPHERE_COORDINATE_RE.search(value):
+        return False
+    if _coordinate_pair_unsafe(value):
+        return False
+    if _contains_geo_float(value):
+        return False
     return True
+
+
+def _allowed_region_label(preferences: Mapping[str, object]) -> str | None:
+    source = preferences.get("location_source")
+    location_allowed = source == "manual" or (
+        source in {"gps", "ip"} and preferences.get("location_enabled") is True
+    )
+    region_label = preferences.get("region_label")
+    if location_allowed and isinstance(region_label, str):
+        normalized_region = region_label.strip()
+        if (
+            normalized_region
+            and len(normalized_region) <= 160
+            and _safe_region_label(normalized_region)
+        ):
+            return normalized_region
+    return None
 
 
 def build_explanation(
@@ -260,19 +294,9 @@ def build_explanation(
         "primary_reason": ordered_reasons[0],
         "reasons": ordered_reasons,
     }
-    source = preferences.get("location_source")
-    location_allowed = source == "manual" or (
-        source in {"gps", "ip"} and preferences.get("location_enabled") is True
-    )
-    region_label = preferences.get("region_label")
-    if location_allowed and isinstance(region_label, str):
-        normalized_region = region_label.strip()
-        if (
-            normalized_region
-            and len(normalized_region) <= 160
-            and _safe_region_label(normalized_region)
-        ):
-            explanation["region_label"] = normalized_region
+    allowed_region = _allowed_region_label(preferences)
+    if allowed_region is not None:
+        explanation["region_label"] = allowed_region
     if explicit_interests:
         explanation["explicit_interests"] = explicit_interests
     age_band = preferences.get("derived_age_band")
