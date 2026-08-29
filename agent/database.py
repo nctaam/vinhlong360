@@ -190,7 +190,8 @@ PG_CORE_REQUIRED_COLUMNS = {
 }
 
 # 80 adds the PostgreSQL-only Correction Case Kernel and entity revision guard.
-PG_REQUIRED_SCHEMA_VERSION = 81
+# 82 dạy vl360_region_text_is_safe nhận chữ số Unicode (§48.4) + quarantine tồn đọng.
+PG_REQUIRED_SCHEMA_VERSION = 82
 PG_CORE_REQUIRED_SCHEMA_VERSION = 79
 PG_REQUIRED_TRIGGERS = {
     "trg_entity_ratings": "posts",

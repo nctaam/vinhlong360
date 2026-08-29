@@ -4088,16 +4088,19 @@ thiếu env → skip đúng chiều, 796 skipped ở baseline).
 
 ### Backlog phát sinh — Điều tra 14 fail PG-gated (2026-08-28, sau §48)
 
-- **2 quyết định chờ chủ dự án** (điều tra xong, KHÔNG tự quyết):
-  1. **Contract smuggling `context`**: lớp làm-sạch của main ÉP context lạ về
-     `'home'` rồi nhận 202 (một event sạch được lưu — IP smuggled bị vứt,
-     riêng tư giữ nguyên); nhánh NP-1 cũ muốn 422 đồng nhất từ chối hẳn.
-     Test hiện khoá hành vi hiện tại (coercion). Muốn 422 đồng nhất = đổi
-     sản phẩm (`public_api.py:1266-1267`), chờ lệnh.
-  2. **CHECK `vl360_region_text_is_safe` (078) dùng regex `[0-9]` ASCII** —
-     không chặn được chữ số unicode ở tầng SQL (worker đã vá phía chọn-ứng-viên).
-     Nâng hàm SQL = migration additive mới (082), chờ lệnh; sau khi vá nên
-     chạy lại worker trên prod dọn row tồn đọng.
+- **2 quyết định — ĐÃ CHỐT 2026-08-29** theo uỷ quyền "máy này toàn quyền
+  thực hiện" của chủ dự án:
+  1. **Contract smuggling `context`: GIỮ coercion về `'home'` + 202.** Lý do:
+     đây là hành vi có chủ đích của lớp làm-sạch main (ghi trong docstring
+     handler), riêng tư giữ nguyên (IP smuggled bị vứt trước khi ghi), và
+     event gốc là hành vi thật của user — chỉ context là rác. Test đã khoá.
+     Muốn đổi sang 422 đồng nhất sau này = đổi sản phẩm có chủ đích.
+  2. **CHECK unicode-digit: ĐÃ LÀM — migration `082_unicode_digit_region_safety.sql`**
+     (hàm gấp-chữ-số `vl360_digit_fold` + thay `vl360_region_text_is_safe` +
+     quarantine tồn đọng đúng SET-list 078; PG_REQUIRED_SCHEMA_VERSION 81→82,
+     5 tripwire cập nhật cùng commit, test B4 trọn vòng trong suite locrem).
+     Prod khi deploy sẽ tự quarantine row tồn đọng ngay trong migration —
+     không cần chạy tay worker.
 - 1 fail ENV thật còn lại (`test_scoring_reset_...`): chỉ đỏ khi
   PERSONALIZATION_EVENTS gate trỏ DB dùng-chung của lượt đo đủ-cổng; DB
   disposable riêng thì xanh — khi đo đủ-cổng hãy cấp DB mới cho suite này.

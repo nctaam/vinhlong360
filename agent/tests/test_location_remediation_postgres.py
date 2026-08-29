@@ -957,3 +957,123 @@ def test_self_healing_worker_aligns_candidate_and_reason_text_boundaries(
     assert rows[users["safe_out_of_range_number"]]["revision"] == 7
 
     _restore_location_constraints()
+
+
+# ── Migration 082 (2026-08-29): CHECK vị-trí nhận chữ số Unicode ─────────────
+# B4: một thay đổi schema = một test. 082 thay vl360_region_text_is_safe bằng
+# bản gấp-chữ-số (translate → ASCII) rồi quarantine row tồn đọng — nửa còn lại
+# của fix worker 20f234f0 (§48.4).
+
+
+def _apply_versions_after_078(cursor, lo: int, hi: int) -> None:
+    for migration in migration_files(DEFAULT_MIGRATIONS):
+        if lo <= migration.version <= hi:
+            apply_sql_file(cursor, migration.path)
+            record_schema_version(cursor, migration.version, migration.path.name)
+
+
+def _insert_gps_resolver_row(cursor, user_id: str, region_label: str) -> None:
+    """Tuple gps chuẩn resolver-v2 — thoả CHECK tuple v2 ở trạng thái 081."""
+    cursor.execute(
+        """
+        INSERT INTO user_preferences (
+            user_id, region_id, region_label, region_scope, location_source,
+            location_accuracy, location_consent_state, location_enabled,
+            location_provenance_version, personalization_enabled,
+            explicit_interests, recommendation_reset_at, consent_version, revision
+        ) VALUES (
+            %s::uuid, %s, %s, 'ward', 'gps', 'ward', 'granted', TRUE,
+            'resolver-v2', TRUE, %s::jsonb, %s, 'privacy-v1', 7
+        )
+        """,
+        (
+            user_id,
+            "resolver-unicode-1",
+            region_label,
+            json.dumps(["food", "culture"]),
+            datetime(2026, 7, 1, 12, tzinfo=timezone.utc),
+        ),
+    )
+
+
+@pg_only
+def test_082_unicode_digit_check_and_quarantine(pre73_database):
+    unicode_label = "١٠.٥, ١٠٦.٢"  # cặp toạ độ viết bằng chữ số Ả-Rập-Ấn
+    apply_migration_073()  # = 078 (số cũ trước renumber)
+    with _connect_test_database() as conn:
+        with conn.cursor() as cursor:
+            _apply_versions_after_078(cursor, 79, 81)
+        conn.commit()
+
+    smuggled = str(uuid4())
+    untouched = str(uuid4())
+    spare = str(uuid4())
+    with _connect_test_database() as conn:
+        with conn.cursor() as cursor:
+            # DEFECT trước 082: tuple gps hợp lệ mang toạ độ unicode-digit
+            # LỌT CHECK v2 (hàm 078 chỉ biết [0-9] ASCII) — insert phải THÀNH
+            # CÔNG ở trạng thái 081, đó chính là lỗ hổng.
+            for uid in (smuggled, untouched, spare):
+                cursor.execute(
+                    "INSERT INTO users (id, phone) VALUES (%s::uuid, %s)",
+                    (uid, f"m082-{uuid4().hex}"),
+                )
+            # provenance phải vào CÙNG câu INSERT — CHECK tuple v2 đánh giá
+            # ngay trên row mới, UPDATE sau là muộn.
+            _insert_gps_resolver_row(cursor, smuggled, unicode_label)
+            _insert_preference(
+                cursor,
+                user_id=untouched,
+                region_id="province-vl",
+                region_label="Vĩnh Long",
+                region_scope="province",
+                source="manual",
+                accuracy="province",
+            )
+        conn.commit()
+
+    with _connect_test_database() as conn:
+        with conn.cursor() as cursor:
+            migration = DEFAULT_MIGRATIONS / "082_unicode_digit_region_safety.sql"
+            apply_sql_file(cursor, migration)
+            record_schema_version(cursor, 82, migration.name)
+        conn.commit()
+
+    with _connect_test_database() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            # Hàm mới: unicode-digit bị bắt, văn bản thường vẫn qua.
+            cursor.execute(
+                "SELECT vl360_region_text_is_safe(%s) AS bad, "
+                "vl360_region_text_is_safe('Vĩnh Long') AS good",
+                (unicode_label,),
+            )
+            row = cursor.fetchone()
+            assert row["bad"] is False
+            assert row["good"] is True
+
+            # Row tồn đọng bị quarantine đúng SET-list 078; row hợp lệ không bị vạ.
+            cursor.execute(
+                "SELECT region_id, region_label, location_source, "
+                "location_reconfirm_required, revision "
+                "FROM user_preferences WHERE user_id = %s::uuid",
+                (smuggled,),
+            )
+            q = cursor.fetchone()
+            assert q["region_id"] is None and q["region_label"] is None
+            assert q["location_source"] == "default"
+            assert q["location_reconfirm_required"] is True
+            assert q["revision"] == 8  # 7 + 1
+            cursor.execute(
+                "SELECT region_label, revision FROM user_preferences "
+                "WHERE user_id = %s::uuid",
+                (untouched,),
+            )
+            u = cursor.fetchone()
+            assert u["region_label"] == "Vĩnh Long" and u["revision"] == 7
+
+    # Ghi MỚI mang unicode-digit giờ vi phạm CHECK ngay tầng SQL.
+    with _connect_test_database() as conn:
+        with conn.cursor() as cursor:
+            with pytest.raises(psycopg2.errors.CheckViolation):
+                _insert_gps_resolver_row(cursor, spare, unicode_label)
+        conn.rollback()
