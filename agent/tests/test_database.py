@@ -124,7 +124,12 @@ def test_pg_schema_contract_tracks_latest_release_tables():
 
 
 def test_case_readiness_checks_exact_security_catalog_definitions():
-    source = inspect.getsource(database_module._pg_schema_snapshot)
+    # Lát 15 R20.8: khối catalog bảo mật tách sang _case_security_catalog_issues
+    # (SQL nguyên văn); hàm chính phải còn guard hasattr + lời gọi helper.
+    snapshot_source = inspect.getsource(database_module._pg_schema_snapshot)
+    assert 'not hasattr(cur, "tables")' in snapshot_source
+    assert "_case_security_catalog_issues(cur)" in snapshot_source
+    source = inspect.getsource(database_module._case_security_catalog_issues)
     for required in (
         "_case_catalog_issues",
         "pg_get_expr(con.conbin, con.conrelid, false)",

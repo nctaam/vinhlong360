@@ -580,6 +580,17 @@ def _pg_schema_snapshot(conn) -> dict[str, object]:
     # Lightweight readiness doubles expose a ``tables`` attribute; they only
     # model the legacy table/column/version contract, not PostgreSQL catalogs.
     if {"case_receipts", "case_access_sessions", "case_idempotency"} <= tables and not hasattr(cur, "tables"):
+        case_security_issues.extend(_case_security_catalog_issues(cur))
+    missing_triggers = _pg_missing_triggers(cur)
+    return _pg_snapshot_result(
+        cur, tables, missing_tables, missing_columns, missing_triggers,
+        case_missing_tables, case_missing_columns, case_security_issues,
+    )
+
+
+def _case_security_catalog_issues(cur) -> list[str]:
+        """Đối chiếu catalog bảo mật Case Kernel — SQL nguyên văn từ _pg_schema_snapshot."""
+        case_security_issues: list[str] = []
         cur.execute("""
             SELECT con.conname AS constraint_name,
                    con.contype::text AS constraint_type,
@@ -681,8 +692,13 @@ def _pg_schema_snapshot(conn) -> dict[str, object]:
         for table in CASE_KERNEL_REQUIRED_TABLES:
             if owners.get(table) != "vl360":
                 case_security_issues.append(f"table owner drift: {table}")
-    missing_triggers = _pg_missing_triggers(cur)
+        return case_security_issues
 
+
+def _pg_snapshot_result(
+    cur, tables, missing_tables, missing_columns, missing_triggers,
+    case_missing_tables, case_missing_columns, case_security_issues,
+) -> dict[str, object]:
     schema_version = 0
     if "schema_version" in tables:
         cur.execute(
