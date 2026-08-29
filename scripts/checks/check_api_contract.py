@@ -10,7 +10,11 @@ from pathlib import Path
 from .common import repo_root
 
 ROUTE_RE = re.compile(
-    r"""^([+-])\s*@(?:router|app)\.(get|post|put|delete|patch)\(\s*["']([^"']+)["']""")
+    r"""^([+-])\s*@(?:\w*router\w*|app)\.(get|post|put|delete|patch)\(\s*["']([^"']+)["']""")
+# \w*router\w* (2026-08-29, lát 5): các gói hai-mặt dùng biến `admin_router`
+# trong file có sẵn `router` (mìn R20.9 cấm hai biến cùng tên) — parser chỉ
+# biết `@router.` thì cú DỜI sang `@admin_router.` đọc thành "xoá route".
+# Cùng lớp lỗi §44 với bản vá added^removed ở _route_changes.
 CONTRACT = "docs/api-contract.md"
 
 

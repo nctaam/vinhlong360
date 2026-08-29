@@ -1008,3 +1008,37 @@ async def get_rsvp(entity_id: str, request: Request = None):
         return count, going
     count, going = await asyncio.to_thread(_query)
     return {"count": count, "going": going}
+
+# ── Mặt QUẢN TRỊ (lát 5 hoàn-thiện-sâu, 2026-08-29) ──────────────────────────
+# Một route duy nhất — dời nguyên văn từ admin.py. Router con KHÔNG prefix:
+# admin.py include vào router cha /admin nên kế thừa require_admin +
+# require_csrf ở constructor cha; _require_pg gắn tại đây (rào surface-contract
+# đòi mọi route UGC-module có chốt PG). Khối này phải nằm CUỐI file — rào
+# test_phat_hien_tu_doc_code cắt lát 'async def toggle_rsvp' → '@router.get'
+# kế tiếp, chèn vào giữa là vỡ lát cắt.
+admin_router = APIRouter(tags=["admin"], dependencies=[Depends(_require_pg)])
+
+
+@admin_router.post("/notifications/cleanup",
+                   summary="Clean up old notifications",
+                   description="Delete read notifications older than N days. Returns the count of deleted records.")
+async def admin_cleanup_notifications(days: int = Query(90, ge=7, le=365)):
+    """Delete read notifications older than N days.
+
+    Chốt require_admin + require_csrf kế thừa từ router cha /admin (admin.py
+    constructor); _require_pg gắn ở admin_router ngay trên — không cần
+    check_rate riêng vì mặt quản trị đã sau hai lớp chốt đó.
+    """
+    if not db._use_pg:
+        raise HTTPException(503, detail="Thông báo yêu cầu PostgreSQL")
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            cur = db._execute(conn, f"""
+                DELETE FROM notifications
+                WHERE is_read = TRUE
+                  AND created_at < NOW() - MAKE_INTERVAL(days => {ph})
+            """, (days,))
+            return cur.rowcount if cur else 0
+    deleted = await asyncio.to_thread(_query)
+    return {"success": True, "deleted": deleted, "days": days}

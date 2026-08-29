@@ -1807,24 +1807,7 @@ async def admin_reset_llm_config():
     return {"success": True, "config": result}
 
 
-@router.post("/notifications/cleanup",
-             summary="Clean up old notifications",
-             description="Delete read notifications older than N days. Returns the count of deleted records.")
-async def admin_cleanup_notifications(days: int = Query(90, ge=7, le=365)):
-    """Delete read notifications older than N days."""
-    if not db._use_pg:
-        raise HTTPException(503, detail="Thông báo yêu cầu PostgreSQL")
-    def _query():
-        ph = db._ph
-        with db._conn() as conn:
-            cur = db._execute(conn, f"""
-                DELETE FROM notifications
-                WHERE is_read = TRUE
-                  AND created_at < NOW() - MAKE_INTERVAL(days => {ph})
-            """, (days,))
-            return cur.rowcount if cur else 0
-    deleted = await asyncio.to_thread(_query)
-    return {"success": True, "deleted": deleted, "days": days}
+# admin_cleanup_notifications → notifications.py admin_router (lát 5, 2026-08-29)
 
 
 def _orphan_entity_ids(rows, valid_ids) -> list:
@@ -1958,5 +1941,9 @@ router.include_router(_itineraries_admin_router)
 from siteops.admin_api import router as _siteops_admin_router  # noqa: E402
 
 router.include_router(_siteops_admin_router)
+
+# Mặt admin của notifications (lát 5) — 1 route, kế thừa chốt từ router cha.
+from notifications import admin_router as _notifications_admin_router  # noqa: E402
+router.include_router(_notifications_admin_router)
 
 _fix_admin_route_order()
