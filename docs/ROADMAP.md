@@ -4025,7 +4025,8 @@ LOCATION_REMEDIATION + ENTITY_STATUS + ACCOUNT_CONTROL_PLANE + SITEMAP_BUNDLE)
 #### 48.2 Số liệu trước/sau (điền từ lượt chốt sổ 9 cổng)
 
 Lượt chốt sổ 9 cổng: 12.224 passed / 31 failed (= 16 fail-đã-biết + 15
-artifact trạng-thái-DB đã phân loại ở 48.4) / DB thật 1746/0.
+fail về sau XÁC MINH là drift/defect thật — xem đính chính ở 48.4; đã xử
+trọn trong commit 20f234f0) / DB thật 1746/0.
 
 | module | trước chiến dịch | sau đợt A | CHỐT (đợt B, 9 cổng) |
 |---|---:|---:|---:|

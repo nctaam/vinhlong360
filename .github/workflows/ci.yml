@@ -209,6 +209,23 @@ jobs:
       # green on a kernel it had never once exercised against a database — which
       # is how a query naming a column that does not exist reached a commit.
       VL360_TEST_DATABASE_URL: postgresql://vl360:vl360@localhost:5432/vinhlong360
+      # §48.4 ROADMAP (2026-08-28): drift tích tụ được CHÍNH VÌ các cổng
+      # per-domain dưới đây chưa từng chạy ở đâu định kỳ — test đóng băng hằng
+      # số qua 3 sự kiện đã duyệt (renumber b95a4897, migration 081, lớp làm
+      # sạch biên) mà không lượt chạy nào thấy. Cùng căn bệnh với chú thích
+      # VL360 ở trên, nhân thuốc cho đủ cổng. Mỗi cổng MỘT DB riêng (suite
+      # readiness DROP SCHEMA, suite khác TRUNCATE CASCADE — dùng chung là
+      # giẫm nhau; xem Backlog 2026-08-28 ca ENV test_scoring_reset). DB do
+      # step "Create per-gate databases" dựng. SITEMAP_BUNDLE cố ý VẮNG:
+      # suite đó đòi hạ tầng riêng port 55432, chưa provision.
+      TRUST_ERASURE_TEST_DATABASE_URL: postgresql://vl360:vl360@localhost:5432/vl360_test_trust_erasure
+      PERSONALIZATION_EVENTS_TEST_DATABASE_URL: postgresql://vl360:vl360@localhost:5432/vl360_test_personalization
+      MIGRATION_APPLY_TEST_DATABASE_URL: postgresql://vl360:vl360@localhost:5432/vl360_test_migration_apply
+      LOCATION_REMEDIATION_TEST_DATABASE_URL: postgresql://vl360:vl360@localhost:5432/vl360_test_location_rem
+      ENTITY_STATUS_TEST_DATABASE_URL: postgresql://vl360:vl360@localhost:5432/vl360_test_entity_status
+      ACCOUNT_CONTROL_PLANE_TEST_DATABASE_URL: postgresql://vl360:vl360@localhost:5432/vl360_test_account_control
+      UGC_SURFACE_TEST_DATABASE_URL: postgresql://vl360:vl360@localhost:5432/vl360_test_ugc_surface
+      IDENTITY_SURFACE_TEST_DATABASE_URL: postgresql://vl360:vl360@localhost:5432/vl360_test_identity_surface
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -254,6 +271,33 @@ jobs:
       # init.sql (baseline) + agent/migrations/*.sql lên Postgres CI trống.
       - name: Apply schema + migrations
         run: python scripts/apply_migrations.py --init-baseline
+
+      # DB cho từng cổng per-domain (env của job ở trên). Sáu suite per-domain
+      # TỰ dựng schema từ DB TRẮNG (verify xanh local trên DB trắng 2026-08-28);
+      # riêng hai DB *_surface phải MIGRATE SẴN — suite surface chỉ TRUNCATE,
+      # không tự dựng schema.
+      - name: Create per-gate databases
+        run: |
+          python - <<'PY'
+          import sys
+          import psycopg2
+          sys.path.insert(0, "scripts")
+          import apply_migrations
+          conn = psycopg2.connect("postgresql://vl360:vl360@localhost:5432/vinhlong360")
+          conn.autocommit = True
+          cur = conn.cursor()
+          for db in ["vl360_test_trust_erasure", "vl360_test_personalization",
+                     "vl360_test_migration_apply", "vl360_test_location_rem",
+                     "vl360_test_entity_status", "vl360_test_account_control",
+                     "vl360_test_ugc_surface", "vl360_test_identity_surface"]:
+              cur.execute(f"CREATE DATABASE {db}")
+          conn.close()
+          for db in ["vl360_test_ugc_surface", "vl360_test_identity_surface"]:
+              apply_migrations.run(
+                  f"postgresql://vl360:vl360@localhost:5432/{db}",
+                  init_baseline=True,
+              )
+          PY
 
       - name: Seed knowledge data in disposable Postgres
         env:
