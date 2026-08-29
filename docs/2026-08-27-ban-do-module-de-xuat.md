@@ -248,3 +248,16 @@ nguyên, KHÔNG thêm guard — câu hỏi require_admin ghi backlog chờ chủ
 
 Đảo các quyết định để-lại này cần chủ dự án + hồ sơ đo mới, không phải một
 lát dọn-dư.
+
+## 8e. Lát 7 (analytics/) — ĐO XONG, QUYẾT KHÔNG GÓI (2026-08-29)
+
+Lệnh hoàn-thiện-sâu cho phép cắt; hồ sơ đo (workflow dossier, agent
+lat7-analytics) nói KHÔNG đáng: 8 route ứng viên còn lại (sau khi lát 1 rút
+user-engagement/user-growth/content-stats về community-admin và lát 3 rút
+system-health/backup/ops về siteops) là **5 tiểu-miền rời** — content-stats 1,
+funnel 2, search/chat-analytics 2, audit-read 2, cost 1 — tiểu-miền lớn nhất
+chỉ 2 route; **0 ký hiệu bị module khác import** (thước §8: mua ~0 cách ly);
+giá ~72 điểm vá test/14 file + 2 mìn thật: tên gói đụng module sống
+`agent/analytics.py` (6 consumer), và cắt audit-read là CHẺ ĐÔI `_audit_cache`
+giữa writer `_log_admin_audit` với reader. Đóng-sổ-có-chủ-đích đúng khuôn
+§8c; mở lại chỉ khi tiểu-miền nào đó phình thành miền thật (luật-cắt §8c).
