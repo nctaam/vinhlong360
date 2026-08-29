@@ -355,25 +355,32 @@ class CaseService:
             raise _reject("too_many_correction_items", "Too many corrections in one request.")
         seen: set[tuple[str, str]] = set()
         for item in items:
-            if type(item) is not CorrectionItemInput:
-                raise _reject("invalid_correction_item", "A correction item is malformed.")
-            if item.field_path not in CORRECTABLE_FIELD_PATHS:
-                raise _reject("field_path_not_correctable", "That field cannot be corrected here.")
-            if type(item.entity_id) is not str or not item.entity_id.strip():
-                raise _reject("invalid_correction_entity", "A target entity is required.")
-            for value in (item.reported_value, item.proposed_value):
-                if type(value) is not str or not value.strip():
-                    raise _reject("invalid_correction_value", "Both values are required.")
-                if len(value) > MAX_CORRECTION_VALUE:
-                    raise _reject("correction_value_too_long", "That value is too long.")
-            if item.reported_value.strip() == item.proposed_value.strip():
-                raise _reject("correction_value_unchanged", "The proposed value is identical.")
-            if type(item.base_entity_revision) is not int or item.base_entity_revision < 1:
-                raise _reject("invalid_base_entity_revision", "A base revision is required.")
-            key = (item.entity_id, item.field_path)
-            if key in seen:
-                raise _reject("duplicate_correction_field", "That field appears twice.")
-            seen.add(key)
+            self._validate_one_item(item, seen)
+
+    def _validate_one_item(self, item: object, seen: set[tuple[str, str]]) -> None:
+        # Thứ tự reject giữ nguyên từng nấc — mã lỗi đầu tiên là hợp đồng.
+        if type(item) is not CorrectionItemInput:
+            raise _reject("invalid_correction_item", "A correction item is malformed.")
+        if item.field_path not in CORRECTABLE_FIELD_PATHS:
+            raise _reject("field_path_not_correctable", "That field cannot be corrected here.")
+        if type(item.entity_id) is not str or not item.entity_id.strip():
+            raise _reject("invalid_correction_entity", "A target entity is required.")
+        self._validate_item_values(item)
+        if type(item.base_entity_revision) is not int or item.base_entity_revision < 1:
+            raise _reject("invalid_base_entity_revision", "A base revision is required.")
+        key = (item.entity_id, item.field_path)
+        if key in seen:
+            raise _reject("duplicate_correction_field", "That field appears twice.")
+        seen.add(key)
+
+    def _validate_item_values(self, item: CorrectionItemInput) -> None:
+        for value in (item.reported_value, item.proposed_value):
+            if type(value) is not str or not value.strip():
+                raise _reject("invalid_correction_value", "Both values are required.")
+            if len(value) > MAX_CORRECTION_VALUE:
+                raise _reject("correction_value_too_long", "That value is too long.")
+        if item.reported_value.strip() == item.proposed_value.strip():
+            raise _reject("correction_value_unchanged", "The proposed value is identical.")
 
     def _route_safety(self, command: CreateCorrectionCommand) -> None:
         for item in command.items:

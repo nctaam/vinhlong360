@@ -184,6 +184,11 @@ def test_create_rejects_a_user_reference_that_contradicts_the_session():
         ((_item(proposed_value="0270 111 2222"),), "correction_value_unchanged"),
         ((_item(base_entity_revision=0),), "invalid_base_entity_revision"),
         ((_item(), _item()), "duplicate_correction_field"),
+        # Thứ tự reject là hợp đồng (lát 11 R20.8): field_path hỏng thắng
+        # entity_id hỏng; entity_id hỏng thắng value hỏng.
+        ((_item(field_path="verifiedAt", entity_id=""),), "field_path_not_correctable"),
+        ((_item(entity_id="", proposed_value=""),), "invalid_correction_entity"),
+        ((_item(proposed_value="", base_entity_revision=0),), "invalid_correction_value"),
     ],
 )
 def test_create_enforces_bounded_multi_item_fields(items, code):
