@@ -3039,3 +3039,26 @@ def test_scheduler_final_delete_purges_only_matching_legacy_rows(
     assert [str(row["id"]) for row in users_left] == [active]
     assert [str(row["user_id"]) for row in event_users] == [active]
     assert [row["user_id"] for row in read_all_legacy_events(path)] == [active]
+
+
+def test_partition_legacy_lines_keeps_malformed_and_foreign_rows_verbatim(
+    tmp_path, monkeypatch
+):
+    # Ghim máy-lọc tách từ purge_legacy_events (lát 14 R20.8): dòng JSON hỏng
+    # và dòng không-phải-dict được giữ NGUYÊN VĂN (kể cả thiếu newline cuối),
+    # chỉ dòng khớp bị đếm xoá.
+    monkeypatch.setattr(
+        personalization_events,
+        "_legacy_row_matches",
+        lambda row, owner, boundary: row.get("m") == 1,
+    )
+    path = tmp_path / "legacy.jsonl"
+    path.write_text(
+        '{"m": 1}\n' 'khong-phai-json\n' '["list"]\n' '{"m": 0}',
+        encoding="utf-8",
+    )
+
+    kept, removed = personalization_events._partition_legacy_lines(path, None, None)
+
+    assert removed == 1
+    assert kept == ['khong-phai-json\n', '["list"]\n', '{"m": 0}']

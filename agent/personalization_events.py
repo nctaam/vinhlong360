@@ -478,6 +478,27 @@ def _legacy_row_matches(
     return occurred_at is not None and occurred_at <= boundary
 
 
+def _partition_legacy_lines(
+    path: Path, owner: str | None, boundary: datetime | None
+) -> tuple[list[str], int]:
+    """Giữ dòng hỏng/không khớp nguyên văn; chỉ đếm dòng khớp để xoá."""
+    kept_lines: list[str] = []
+    removed = 0
+    for line in path.read_text(encoding="utf-8").splitlines(keepends=True):
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            kept_lines.append(line)
+            continue
+        if not isinstance(row, dict) or not _legacy_row_matches(
+            row, owner, boundary
+        ):
+            kept_lines.append(line)
+        else:
+            removed += 1
+    return kept_lines, removed
+
+
 def purge_legacy_events(
     user_id: str | None = None, before: datetime | str | None = None
 ) -> int:
@@ -493,20 +514,7 @@ def purge_legacy_events(
     with publication_lock(lock_path):
         if not path.exists():
             return 0
-        kept_lines: list[str] = []
-        removed = 0
-        for line in path.read_text(encoding="utf-8").splitlines(keepends=True):
-            try:
-                row = json.loads(line)
-            except json.JSONDecodeError:
-                kept_lines.append(line)
-                continue
-            if not isinstance(row, dict) or not _legacy_row_matches(
-                row, owner, boundary
-            ):
-                kept_lines.append(line)
-            else:
-                removed += 1
+        kept_lines, removed = _partition_legacy_lines(path, owner, boundary)
         if removed == 0:
             return 0
         path.parent.mkdir(parents=True, exist_ok=True)
