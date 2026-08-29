@@ -201,3 +201,70 @@ def test_the_backfill_writes_the_key_the_detail_page_reads():
     # And data.json is an export: the public pages read the database, so the
     # work has to land there too, like the two sibling paths in this file.
     assert "db.upsert_entity(entity)" in source
+
+
+def test_persist_backfilled_coords_writes_canonical_key_and_dual_writes(tmp_path, monkeypatch):
+    # Lát 21 (B3, test-only): geocode xong phải ghi khoá `coordinates` (trang
+    # chi tiết đọc), KHÔNG ghi `coords`; ghi kép sang DB; reload knowledge.
+    data_path = tmp_path / "data.json"
+    data_path.write_text(json.dumps({
+        "entities": [{"id": "e1", "name": "E1", "type": "place"}],
+        "relationships": [], "itineraries": [],
+    }), encoding="utf-8")
+    kb = {"entities": [{"id": "e1", "name": "E1", "type": "place", "coords": [10.1, 106.1]}]}
+    saved, reloads = [], []
+    monkeypatch.setattr(learn_loop, "DATA_JSON", data_path)
+    monkeypatch.setitem(sys.modules, "database", SimpleNamespace(
+        db=SimpleNamespace(upsert_entity=lambda e: saved.append(deepcopy(e)))))
+    monkeypatch.setitem(sys.modules, "knowledge", SimpleNamespace(reload=lambda: reloads.append(True)))
+
+    persisted = learn_loop._persist_backfilled_coords(kb, ["e1"])
+
+    on_disk = json.loads(data_path.read_text(encoding="utf-8"))
+    assert persisted == ["e1"]
+    assert on_disk["entities"][0]["coordinates"] == [10.1, 106.1]
+    assert "coords" not in on_disk["entities"][0]
+    assert [e["id"] for e in saved] == ["e1"]
+    assert reloads == [True]
+
+
+def test_persist_backfilled_coords_never_overwrites_concurrent_coordinates(tmp_path, monkeypatch):
+    # File đã có toạ độ (ghi đồng thời từ nơi khác) → không đè, không ghi DB.
+    data_path = tmp_path / "data.json"
+    data_path.write_text(json.dumps({
+        "entities": [{"id": "e1", "name": "E1", "type": "place", "coordinates": [9.0, 105.0]}],
+        "relationships": [], "itineraries": [],
+    }), encoding="utf-8")
+    kb = {"entities": [{"id": "e1", "name": "E1", "type": "place", "coords": [10.1, 106.1]}]}
+    saved = []
+    monkeypatch.setattr(learn_loop, "DATA_JSON", data_path)
+    monkeypatch.setitem(sys.modules, "database", SimpleNamespace(
+        db=SimpleNamespace(upsert_entity=lambda e: saved.append(e))))
+
+    persisted = learn_loop._persist_backfilled_coords(kb, ["e1"])
+
+    assert persisted == []
+    assert saved == []
+    assert json.loads(data_path.read_text(encoding="utf-8"))["entities"][0]["coordinates"] == [9.0, 105.0]
+
+
+def test_persist_backfilled_coords_survives_db_write_failure(tmp_path, monkeypatch):
+    # DB hỏng không được làm mất kết quả file — trả về danh sách đã ghi, không nổ.
+    data_path = tmp_path / "data.json"
+    data_path.write_text(json.dumps({
+        "entities": [{"id": "e1", "name": "E1", "type": "place"}],
+        "relationships": [], "itineraries": [],
+    }), encoding="utf-8")
+    kb = {"entities": [{"id": "e1", "name": "E1", "type": "place", "coordinates": [10.1, 106.1]}]}
+
+    def boom(_entity):
+        raise RuntimeError("db down")
+
+    monkeypatch.setattr(learn_loop, "DATA_JSON", data_path)
+    monkeypatch.setitem(sys.modules, "database", SimpleNamespace(db=SimpleNamespace(upsert_entity=boom)))
+    monkeypatch.setitem(sys.modules, "knowledge", SimpleNamespace(reload=lambda: None))
+
+    persisted = learn_loop._persist_backfilled_coords(kb, ["e1"])
+
+    assert persisted == ["e1"]
+    assert json.loads(data_path.read_text(encoding="utf-8"))["entities"][0]["coordinates"] == [10.1, 106.1]
