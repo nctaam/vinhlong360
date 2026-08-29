@@ -12,7 +12,7 @@ from checks.check_complexity import ComplexityCheck  # noqa: E402
 
 TARGET_FILES = (
     "agent/entity_details.py",
-    "agent/itinerary_optimizer.py",
+    "agent/itineraries/itinerary_optimizer.py",
     "scripts/check_entity_write_paths.py",
     "scripts/verify_entity_invariants.py",
 )

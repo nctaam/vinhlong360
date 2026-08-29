@@ -7,7 +7,7 @@ import math
 import time
 from typing import Sequence
 
-from itinerary_schedule import (
+from itineraries.itinerary_schedule import (
     NoFeasibleScheduleError,
     ScheduleOptions,
     ScheduleResult,
@@ -15,7 +15,7 @@ from itinerary_schedule import (
     build_fallback_matrix,
     schedule_stop_order,
 )
-from itinerary_selection import SelectionCandidate
+from itineraries.itinerary_selection import SelectionCandidate
 
 
 Allocation = tuple[tuple[str, ...], ...]

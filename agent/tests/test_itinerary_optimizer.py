@@ -2,7 +2,7 @@ import math
 
 import pytest
 
-from itinerary_optimizer import (
+from itineraries.itinerary_optimizer import (
     NoFeasibleRouteError,
     OptimizeOptions,
     RouteStop,

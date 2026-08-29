@@ -7,7 +7,7 @@ from itertools import combinations
 import time
 from typing import Sequence
 
-from itinerary_schedule import (
+from itineraries.itinerary_schedule import (
     _is_finite_nonneg,
     _is_finite_positive,
     _is_int_at_least,

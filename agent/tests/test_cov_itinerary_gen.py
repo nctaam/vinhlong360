@@ -19,7 +19,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-import itinerary_gen as ig
+from itineraries import itinerary_gen as ig
 import knowledge
 
 
@@ -579,8 +579,8 @@ class TestGenerateItinerary:
 # ── _ordered_kept_candidates — tách ra khi hạ complexity (2026-08-05) ────────
 
 def _sel_candidate(stop_id: str, reward: float = 1.0, visit: int = 30):
-    from itinerary_schedule import ScheduleStop
-    from itinerary_selection import SelectionCandidate
+    from itineraries.itinerary_schedule import ScheduleStop
+    from itineraries.itinerary_selection import SelectionCandidate
 
     return SelectionCandidate(
         stop=ScheduleStop(stop_id, (10.0 + len(stop_id) * 0.01, 106.0), visit),
@@ -717,8 +717,8 @@ def test_hop_dong_warnings_khac_nhau_giua_duong_legacy_va_duong_selection():
     Helper dùng chung mà tự đọc `schedule.warnings` bên trong sẽ âm thầm thêm
     warning lịch vào đường selection. Test này là cái chặn.
     """
-    from itinerary_schedule import ScheduleResult
-    from itinerary_selection import SelectionResult
+    from itineraries.itinerary_schedule import ScheduleResult
+    from itineraries.itinerary_selection import SelectionResult
 
     schedule = ScheduleResult(
         ordered_ids=(), placements=(), skipped=(), total_travel_minutes=0.0,

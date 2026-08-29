@@ -2,9 +2,9 @@ import math
 from dataclasses import FrozenInstanceError
 
 import pytest
-import itinerary_schedule
+from itineraries import itinerary_schedule
 
-from itinerary_schedule import (
+from itineraries.itinerary_schedule import (
     NoFeasibleScheduleError,
     ScheduleOptions,
     ScheduleStop,
@@ -502,7 +502,7 @@ def test_fallback_matrix_rejects_an_unknown_mode():
     ],
 )
 def test_is_int_at_least(value, minimum, expected):
-    from itinerary_schedule import _is_int_at_least
+    from itineraries.itinerary_schedule import _is_int_at_least
 
     assert _is_int_at_least(value, minimum) is expected
 
@@ -516,7 +516,7 @@ def test_is_int_at_least(value, minimum, expected):
     ],
 )
 def test_is_finite_nonneg(value, expected):
-    from itinerary_schedule import _is_finite_nonneg
+    from itineraries.itinerary_schedule import _is_finite_nonneg
 
     assert _is_finite_nonneg(value) is expected
 
@@ -526,14 +526,14 @@ def test_is_finite_nonneg(value, expected):
     [(0.1, True), (2, True), (0, False), (-1, False), (math.inf, False), (True, False)],
 )
 def test_is_finite_positive(value, expected):
-    from itinerary_schedule import _is_finite_positive
+    from itineraries.itinerary_schedule import _is_finite_positive
 
     assert _is_finite_positive(value) is expected
 
 
 def test_coerce_blocked_edges_giu_dung_do_long_leo_ve_khoang_trang():
     """Vị từ này CỐ Ý lỏng hơn _coerce_matrix_ids — xem comment trong code."""
-    from itinerary_schedule import _coerce_blocked_edges
+    from itineraries.itinerary_schedule import _coerce_blocked_edges
 
     assert _coerce_blocked_edges({(" ", "b")}) == frozenset({(" ", "b")})
     with pytest.raises(ValueError, match="Cạnh bị cấm phải là cặp ID điểm dừng"):
@@ -543,7 +543,7 @@ def test_coerce_blocked_edges_giu_dung_do_long_leo_ve_khoang_trang():
 
 
 def test_coerce_matrix_ids_bat_id_toan_khoang_trang():
-    from itinerary_schedule import _coerce_matrix_ids
+    from itineraries.itinerary_schedule import _coerce_matrix_ids
 
     assert _coerce_matrix_ids(["a", "b"]) == ("a", "b")
     with pytest.raises(ValueError, match="ID ma trận không được để trống"):
@@ -553,7 +553,7 @@ def test_coerce_matrix_ids_bat_id_toan_khoang_trang():
 
 
 def test_validate_matrix_cells_bat_duong_cheo_khac_khong():
-    from itinerary_schedule import _validate_matrix_cells
+    from itineraries.itinerary_schedule import _validate_matrix_cells
 
     _validate_matrix_cells(((0.0, 5.0), (5.0, 0.0)))
     with pytest.raises(ValueError, match="Đường chéo ma trận thời gian phải bằng 0"):

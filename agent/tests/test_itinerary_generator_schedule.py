@@ -7,9 +7,9 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-import itinerary_gen as ig
+from itineraries import itinerary_gen as ig
 import knowledge
-from itinerary_schedule import NoFeasibleScheduleError
+from itineraries.itinerary_schedule import NoFeasibleScheduleError
 
 
 def _place(place_id: str, coordinates=None) -> dict:

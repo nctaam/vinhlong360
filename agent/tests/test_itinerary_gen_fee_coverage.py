@@ -11,7 +11,7 @@ import math
 
 import pytest
 
-from itinerary_gen import _candidate_fee_value
+from itineraries.itinerary_gen import _candidate_fee_value
 
 
 def _item(**entity) -> dict:
@@ -85,7 +85,7 @@ def test_ghi_chu_lich_trinh_khong_in_van_xuoi_ocop_tho():
     Với `dua-sap-cau-ke` chuỗi đó là danh mục sản phẩm của một CÔNG TY KHÁC
     (VICOSAP), dài 50 ký tự — nhét nguyên vào một dòng ghi chú của lịch trình.
     """
-    import itinerary_gen
+    from itineraries import itinerary_gen
 
     note = itinerary_gen._gen_note({
         "id": "dua-sap-cau-ke", "name": "Dua sap Cau Ke", "type": "product",
@@ -96,7 +96,7 @@ def test_ghi_chu_lich_trinh_khong_in_van_xuoi_ocop_tho():
 
 
 def test_ghi_chu_lich_trinh_neu_hang_khi_co_that():
-    import itinerary_gen
+    from itineraries import itinerary_gen
 
     note = itinerary_gen._gen_note({
         "id": "x", "name": "X", "type": "product",

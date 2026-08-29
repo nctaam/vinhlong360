@@ -7,14 +7,14 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-import itinerary_selection as selection_module
-from itinerary_schedule import (
+from itineraries import itinerary_selection as selection_module
+from itineraries.itinerary_schedule import (
     ScheduleOptions,
     ScheduleStop,
     TimeWindow,
     build_fallback_matrix,
 )
-from itinerary_selection import (
+from itineraries.itinerary_selection import (
     DroppedCandidate,
     SelectionCandidate,
     SelectionOptions,
@@ -358,8 +358,8 @@ def test_repair_replaces_a_greedy_long_stop_to_restore_cardinality():
 
 import math  # noqa: E402
 
-from itinerary_schedule import ScheduleResult, TravelMatrix  # noqa: E402
-from itinerary_selection import SelectionResult  # noqa: E402
+from itineraries.itinerary_schedule import ScheduleResult, TravelMatrix  # noqa: E402
+from itineraries.itinerary_selection import SelectionResult  # noqa: E402
 
 
 @pytest.mark.parametrize(
@@ -484,7 +484,7 @@ def test_ghim_bat_nhat_whitespace_giua_travel_matrix_va_blocked_edges():
 )
 def test_is_filled_str(value, expected):
     """Bản của itinerary_selection CÓ .strip() — khác _coerce_blocked_edges."""
-    from itinerary_selection import _is_filled_str
+    from itineraries.itinerary_selection import _is_filled_str
 
     assert _is_filled_str(value) is expected
 

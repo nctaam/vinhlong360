@@ -6,19 +6,19 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-import itinerary_multiday as multiday_module
-from itinerary_multiday import (
+from itineraries import itinerary_multiday as multiday_module
+from itineraries.itinerary_multiday import (
     MultiDayDayInput,
     MultiDayOptions,
     optimize_multi_day_allocation,
 )
-from itinerary_schedule import (
+from itineraries.itinerary_schedule import (
     NoFeasibleScheduleError,
     ScheduleOptions,
     ScheduleStop,
     TimeWindow,
 )
-from itinerary_selection import SelectionCandidate
+from itineraries.itinerary_selection import SelectionCandidate
 
 
 def candidate(

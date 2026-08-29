@@ -70,7 +70,7 @@ from tools import SYSTEM_PROMPT
 
 # ── Optional module imports (mirror server.py pattern) ──
 try:
-    from itinerary_gen import generate_itinerary as _generate_itinerary
+    from itineraries.itinerary_gen import generate_itinerary as _generate_itinerary
     HAS_ITINERARY_GEN = True
 except ImportError:
     HAS_ITINERARY_GEN = False

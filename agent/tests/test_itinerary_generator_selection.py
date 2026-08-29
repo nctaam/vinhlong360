@@ -7,7 +7,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-import itinerary_gen
+from itineraries import itinerary_gen
 import knowledge
 
 

@@ -64,7 +64,7 @@ from tools import SYSTEM_PROMPT, TOOLS
 
 from features import _env_bool  # noqa: F401
 from http_errors import _error_response
-from itinerary_gen import generate_itinerary
+from itineraries.itinerary_gen import generate_itinerary
 from ocop import is_ocop_certified, ocop_display_label, ocop_tier
 
 from features import (

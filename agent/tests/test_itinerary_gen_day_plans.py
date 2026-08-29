@@ -19,8 +19,8 @@ import unicodedata
 
 import pytest
 
-import itinerary_gen as ig
-from itinerary_schedule import SchedulePlacement, ScheduleResult
+from itineraries import itinerary_gen as ig
+from itineraries.itinerary_schedule import SchedulePlacement, ScheduleResult
 
 
 # ─────────────────────────── helper dựng dữ liệu ───────────────────────────

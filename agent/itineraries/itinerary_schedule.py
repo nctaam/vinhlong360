@@ -8,7 +8,7 @@ import re
 import time
 from typing import Sequence
 
-from itinerary_optimizer import (
+from itineraries.itinerary_optimizer import (
     Coordinates,
     NoFeasibleRouteError,
     RouteStop,

@@ -123,10 +123,28 @@ def _head_counts(files: list[str], checks: list, root: Path) -> dict:
     td = tempfile.mkdtemp(prefix="vl360-gate-")
     try:
         tmp = Path(td)
+        # File RENAME: đường mới không tồn tại ở HEAD → nợ CŨ của file bị đọc
+        # thành nợ MỚI (gặp 2026-08-29 khi gom agent/itinerary_*.py về gói
+        # itineraries/ — 9 vi phạm complexity có sẵn bỗng "tăng"). Hỏi git map
+        # mới→cũ để lấy đúng bản HEAD của tổ tiên; file mới THẬT không có map
+        # → vẫn tính 0 ở HEAD và bị chặn nếu mang nợ (bài ocop.py giữ nguyên).
+        doi_ten: dict = {}
+        rn = subprocess.run(
+            ["git", "diff", "--cached", "-M", "--name-status", "--diff-filter=R"],
+            cwd=str(root), capture_output=True, encoding="utf-8", errors="replace")
+        for line in (rn.stdout or "").splitlines():
+            phan = line.split("\t")
+            if len(phan) == 3 and phan[0].startswith("R"):
+                doi_ten[phan[2].replace("\\", "/")] = phan[1].replace("\\", "/")
         kept = []
         for rel in files:
             r = subprocess.run(["git", "show", f"HEAD:{rel}"], cwd=str(root),
                                capture_output=True)
+            if r.returncode != 0:
+                cu = doi_ten.get(rel.replace("\\", "/"))
+                if cu:
+                    r = subprocess.run(["git", "show", f"HEAD:{cu}"],
+                                       cwd=str(root), capture_output=True)
             if r.returncode != 0:
                 continue
             dst = tmp / rel

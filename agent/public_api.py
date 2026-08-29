@@ -83,14 +83,14 @@ from personalization_events import (
 
 if __package__:
     from .image_descriptor import describe_review_image
-    from .itinerary_optimizer import (
+    from .itineraries.itinerary_optimizer import (
         haversine_km,
         NoFeasibleRouteError,
         OptimizeOptions,
         RouteStop,
         optimize_stop_order,
     )
-    from .itinerary_schedule import (
+    from .itineraries.itinerary_schedule import (
         NoFeasibleScheduleError,
         ScheduleOptions,
         ScheduleStop,
@@ -104,14 +104,14 @@ if __package__:
     from .trust_policy import build_explanation, derive_freshness, derive_source_tier
 else:
     from image_descriptor import describe_review_image
-    from itinerary_optimizer import (
+    from itineraries.itinerary_optimizer import (
         haversine_km,
         NoFeasibleRouteError,
         OptimizeOptions,
         RouteStop,
         optimize_stop_order,
     )
-    from itinerary_schedule import (
+    from itineraries.itinerary_schedule import (
         NoFeasibleScheduleError,
         ScheduleOptions,
         ScheduleStop,

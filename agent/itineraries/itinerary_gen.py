@@ -18,19 +18,19 @@ import re
 from ocop import ocop_display_label
 
 import knowledge
-from itinerary_multiday import (
+from itineraries.itinerary_multiday import (
     MultiDayDayInput,
     MultiDayOptions,
     MultiDayResult,
     optimize_multi_day_allocation,
 )
-from itinerary_selection import (
+from itineraries.itinerary_selection import (
     SelectionCandidate,
     SelectionOptions,
     prune_candidates,
     select_and_schedule_day,
 )
-from itinerary_schedule import (
+from itineraries.itinerary_schedule import (
     NoFeasibleScheduleError,
     ScheduleOptions,
     ScheduleStop,
