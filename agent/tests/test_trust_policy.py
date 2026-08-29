@@ -542,3 +542,23 @@ def test_trust_drawer_flag_controls_entity_detail_enhancement(
     assert ("source_freshness" in entity) is enabled
     if enabled:
         assert entity["source_freshness"]["source_tier"] == "official"
+
+
+def test_event_fallback_does_not_double_count_interest_keys():
+    # Rào chống-đếm-đôi: event rơi vào nhánh fallback (entity không public) phải
+    # xoá interest_keys trước khi _apply_event_fallback, để mỗi lần xuất hiện
+    # chỉ được cộng đúng MỘT lần ở vòng lặp trực tiếp (ghim khi tách helper, lát 6).
+    import public_api
+
+    acc = public_api._InterestAccumulator()
+    event = {
+        "event_type": "xem-thu",
+        "entity_id": "khong-ton-tai",
+        "interest_keys": ["food", "food", "garden"],
+        "context": "home",
+    }
+    public_api._apply_events_to_profile(acc, [event], {})
+
+    assert acc.interest_scores["food"] == 2.0
+    assert acc.interest_scores["garden"] == 1.0
+    assert acc.recent_intents[0]["interest_keys"] == ["food", "food", "garden"]

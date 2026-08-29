@@ -559,31 +559,39 @@ def _apply_event_fallback(acc: "_InterestAccumulator", event: dict, weight: floa
             acc.interest_scores[normalized] += weight
 
 
+def _score_event_interest_keys(acc: "_InterestAccumulator", event: dict, weight: float) -> None:
+    for key in event.get("interest_keys") or []:
+        normalized = _clean_short_text(key, 64)
+        if normalized:
+            acc.interest_scores[normalized] += weight
+
+
+def _apply_one_event(acc: "_InterestAccumulator", event: dict, event_entities: dict) -> None:
+    etype = str(event.get("event_type") or "")
+    weight = float(_EVENT_WEIGHTS.get(etype, 1.0))
+    if weight == 0:
+        return
+    _score_event_interest_keys(acc, event, weight)
+    entity_id = str(event.get("entity_id") or "")
+    entity = event_entities.get(entity_id) if entity_id else None
+    if entity and _is_public(entity):
+        _apply_event_entity(acc, entity, entity_id, weight)
+    else:
+        fallback = dict(event)
+        fallback["interest_keys"] = []
+        _apply_event_fallback(acc, fallback, weight)
+    if len(acc.recent_intents) < 8:
+        acc.recent_intents.append({
+            "event_type": etype,
+            "context": event.get("context"),
+            "entity_id": entity_id or None,
+            "interest_keys": list(event.get("interest_keys") or [])[:12],
+        })
+
+
 def _apply_events_to_profile(acc: "_InterestAccumulator", events: list[dict], event_entities: dict) -> None:
     for event in events:
-        etype = str(event.get("event_type") or "")
-        weight = float(_EVENT_WEIGHTS.get(etype, 1.0))
-        if weight == 0:
-            continue
-        for key in event.get("interest_keys") or []:
-            normalized = _clean_short_text(key, 64)
-            if normalized:
-                acc.interest_scores[normalized] += weight
-        entity_id = str(event.get("entity_id") or "")
-        entity = event_entities.get(entity_id) if entity_id else None
-        if entity and _is_public(entity):
-            _apply_event_entity(acc, entity, entity_id, weight)
-        else:
-            fallback = dict(event)
-            fallback["interest_keys"] = []
-            _apply_event_fallback(acc, fallback, weight)
-        if len(acc.recent_intents) < 8:
-            acc.recent_intents.append({
-                "event_type": etype,
-                "context": event.get("context"),
-                "entity_id": entity_id or None,
-                "interest_keys": list(event.get("interest_keys") or [])[:12],
-            })
+        _apply_one_event(acc, event, event_entities)
 
 
 def _apply_signals_to_profile(
@@ -787,11 +795,10 @@ def _candidate_card(
     return card
 
 
-def _score_interest_hits(entity: dict, profile: dict, reasons: list[str]) -> float:
+def _accumulate_interest_hits(
+    hits: dict, profile: dict, explicit_set: set[str]
+) -> tuple[float, set[str], bool]:
     score = 0.0
-    hits = _interest_hits_from_entity(entity)
-    explicit_keys = [str(key) for key in profile.get("explicit_interests") or []]
-    explicit_set = set(explicit_keys)
     matched_explicit: set[str] = set()
     inferred_match = False
     for key, hit_score in hits.items():
@@ -805,6 +812,15 @@ def _score_interest_hits(entity: dict, profile: dict, reasons: list[str]) -> flo
             else:
                 score += contribution
                 inferred_match = True
+    return score, matched_explicit, inferred_match
+
+
+def _score_interest_hits(entity: dict, profile: dict, reasons: list[str]) -> float:
+    hits = _interest_hits_from_entity(entity)
+    explicit_keys = [str(key) for key in profile.get("explicit_interests") or []]
+    score, matched_explicit, inferred_match = _accumulate_interest_hits(
+        hits, profile, set(explicit_keys)
+    )
     for key in reversed([key for key in explicit_keys if key in matched_explicit]):
         label = _label_for_interest(key)
         if label:
