@@ -693,3 +693,33 @@ def test_configured_location_providers_reject_plaintext_http_before_egress(
     assert str(error.value) == "Location provider unavailable"
     assert raw_value not in repr(error.value)
     assert calls == []
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        # Nhánh biên bộ detector (ghim khi tách helper, lát 2 trả nợ R20.8):
+        # cặp số NGOÀI dải toạ độ rơi qua vòng quét float và vẫn ngoài ±180 → cho qua.
+        ("200.5 to 300.5", False),
+        # IP bọc ngoặc phải được bóc dấu câu rồi mới thử parse → chặn.
+        ("(203.0.113.10)", True),
+        # Cặp có vĩ độ âm nằm trong dải → chặn.
+        ("khoang -10.25, 105.97", True),
+        # Token tràn thành inf: isfinite bỏ qua ở vòng float nhưng lớp khác vẫn chặn.
+        ("cao 1e999 m", True),
+        ("Vinh Long", False),
+    ],
+)
+def test_contains_raw_location_value_edge_branches(value, expected):
+    assert location_resolver.contains_raw_location_value(value) is expected
+
+
+def test_gps_echo_skips_dms_with_invalid_minutes():
+    resolution = location_resolver.LocationResolution(
+        region_id="x",
+        region_label="10°75′0″N",
+        region_scope="unknown",
+        location_source="gps",
+        location_accuracy="unknown",
+    )
+    assert location_resolver._contains_gps_echo(resolution, 11.25, 105.0) is False

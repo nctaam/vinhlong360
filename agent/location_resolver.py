@@ -141,10 +141,7 @@ def is_normalized_region_label(value: Any) -> bool:
     )
 
 
-def contains_raw_location_value(value: Any) -> bool:
-    """Reject IP/coordinate-shaped text at resolution and persistence boundaries."""
-    if not isinstance(value, str):
-        return False
+def _matches_ip_shape(value: str) -> bool:
     if _IPV4_LIKE_RE.search(value):
         return True
     for match in _IP_CANDIDATE_RE.finditer(value):
@@ -154,21 +151,26 @@ def contains_raw_location_value(value: Any) -> bool:
         except ValueError:
             continue
         return True
-    if _DMS_RE.search(value) or _HEMISPHERE_COORDINATE_RE.search(value):
-        return True
+    return False
+
+
+def _pair_looks_like_coordinates(value: str) -> bool:
     pair = _COORDINATE_PAIR_RE.search(value)
-    if pair:
-        try:
-            first = float(pair.group("first"))
-            second = float(pair.group("second"))
-        except ValueError:
-            return True
-        if (
-            -90 <= first <= 90 and -180 <= second <= 180
-        ) or (
-            -90 <= second <= 90 and -180 <= first <= 180
-        ):
-            return True
+    if not pair:
+        return False
+    try:
+        first = float(pair.group("first"))
+        second = float(pair.group("second"))
+    except ValueError:
+        return True
+    return (
+        -90 <= first <= 90 and -180 <= second <= 180
+    ) or (
+        -90 <= second <= 90 and -180 <= first <= 180
+    )
+
+
+def _has_coordinate_float(value: str) -> bool:
     for match in _NUMBER_RE.finditer(value):
         token = match.group()
         if not any(marker in token for marker in (".", "e", "E", "+", "-")):
@@ -179,6 +181,21 @@ def contains_raw_location_value(value: Any) -> bool:
             continue
         if math.isfinite(candidate) and -180 <= candidate <= 180:
             return True
+    return False
+
+
+def contains_raw_location_value(value: Any) -> bool:
+    """Reject IP/coordinate-shaped text at resolution and persistence boundaries."""
+    if not isinstance(value, str):
+        return False
+    if _matches_ip_shape(value):
+        return True
+    if _DMS_RE.search(value) or _HEMISPHERE_COORDINATE_RE.search(value):
+        return True
+    if _pair_looks_like_coordinates(value):
+        return True
+    if _has_coordinate_float(value):
+        return True
     return False
 
 
@@ -242,6 +259,45 @@ def _coordinate_value(value: Any, minimum: float, maximum: float) -> float:
     return float(value)
 
 
+def _text_has_pair_echo(text: str, coordinates: tuple[float, float]) -> bool:
+    for match in _COORDINATE_PAIR_RE.finditer(text):
+        first = float(match.group("first"))
+        second = float(match.group("second"))
+        if _matches_coordinate_pair(first, second, coordinates):
+            return True
+    return False
+
+
+def _text_has_dms_echo(text: str, coordinates: tuple[float, float]) -> bool:
+    for match in _DMS_RE.finditer(text):
+        degrees = float(match.group("degrees"))
+        minutes = float(match.group("minutes"))
+        seconds = float(match.group("seconds") or 0)
+        if minutes >= 60 or seconds >= 60:
+            continue
+        candidate = abs(degrees) + minutes / 60 + seconds / 3600
+        hemisphere = (match.group("hemisphere") or "").upper()
+        if degrees < 0 or hemisphere in {"S", "W"}:
+            candidate = -candidate
+        if _matches_coordinate(candidate, coordinates):
+            return True
+    return False
+
+
+def _text_has_float_echo(text: str, coordinates: tuple[float, float]) -> bool:
+    for match in _NUMBER_RE.finditer(text):
+        token = match.group()
+        if not any(marker in token for marker in (".", "e", "E", "+", "-")):
+            continue
+        try:
+            candidate = float(token)
+        except ValueError:
+            continue
+        if math.isfinite(candidate) and _matches_coordinate(candidate, coordinates):
+            return True
+    return False
+
+
 def _contains_gps_echo(
     resolution: LocationResolution,
     latitude: float,
@@ -249,33 +305,12 @@ def _contains_gps_echo(
 ) -> bool:
     coordinates = (latitude, longitude)
     for text in _returned_text(resolution):
-        for match in _COORDINATE_PAIR_RE.finditer(text):
-            first = float(match.group("first"))
-            second = float(match.group("second"))
-            if _matches_coordinate_pair(first, second, coordinates):
-                return True
-        for match in _DMS_RE.finditer(text):
-            degrees = float(match.group("degrees"))
-            minutes = float(match.group("minutes"))
-            seconds = float(match.group("seconds") or 0)
-            if minutes >= 60 or seconds >= 60:
-                continue
-            candidate = abs(degrees) + minutes / 60 + seconds / 3600
-            hemisphere = (match.group("hemisphere") or "").upper()
-            if degrees < 0 or hemisphere in {"S", "W"}:
-                candidate = -candidate
-            if _matches_coordinate(candidate, coordinates):
-                return True
-        for match in _NUMBER_RE.finditer(text):
-            token = match.group()
-            if not any(marker in token for marker in (".", "e", "E", "+", "-")):
-                continue
-            try:
-                candidate = float(token)
-            except ValueError:
-                continue
-            if math.isfinite(candidate) and _matches_coordinate(candidate, coordinates):
-                return True
+        if _text_has_pair_echo(text, coordinates):
+            return True
+        if _text_has_dms_echo(text, coordinates):
+            return True
+        if _text_has_float_echo(text, coordinates):
+            return True
     return False
 
 
