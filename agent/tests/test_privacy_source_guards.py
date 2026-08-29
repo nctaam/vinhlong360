@@ -206,6 +206,8 @@ def test_chat_route_tails_never_read_raw_request_content():
 # Lát 35 R20.8: đuôi-sink của chat() tách thành 4 helper module-level; rào đi
 # theo mã — mỗi helper phải tự đặt marker TRƯỚC sink và được quét như handler.
 CHAT_TAIL_SINK_HELPERS = (
+    "_semantic_cache_lookup",
+    "_exact_cache_lookup",
     "_deliver_cached_response",
     "_record_turn_memory",
     "_evaluate_and_record",

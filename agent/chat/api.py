@@ -21,6 +21,7 @@ import hashlib
 import os
 from contextvars import ContextVar
 from datetime import datetime, timezone
+from dataclasses import dataclass
 from functools import partial, wraps
 from typing import Literal
 
@@ -2526,6 +2527,583 @@ async def chat(req: ChatRequest, request: Request, response: Response):
     )
 
 
+@dataclass
+class _StreamContext:
+    """Trạng thái một lượt /chat/stream — thay bộ closure/nonlocal cũ."""
+
+    owner_key: str
+    message: str
+    sid: str
+    messages: list
+    cache_query: str
+    cache_eligible: bool
+    verified_public_contacts: set
+    usage_accumulator: object
+    semantic_dedup_key: object
+    stream_model: str
+    stream_temp: object
+    stream_rounds: int
+    settlement_blocked: bool = False
+
+
+async def _event_stream_body(ctx: "_StreamContext"):
+    # Send autocorrect info if corrected
+    if HAS_AUTOCORRECT and ctx.message != ctx.cache_query:
+        yield f"data: {json.dumps({'type': 'autocorrect', 'original': ctx.cache_query, 'corrected': ctx.message}, ensure_ascii=False)}\n\n"
+    tools_used = []
+    suggestions = []
+    max_rounds = ctx.stream_rounds
+
+    def prepare_stream_fallback(raw_reply) -> str | None:
+        try:
+            safe_fallback = _safe_delivered_reply(
+                raw_reply,
+                ctx.message,
+                (knowledge._entities or {}) if hasattr(knowledge, "_entities") else {},
+                ctx.verified_public_contacts,
+            )
+        except PrivacyBoundaryUnavailable as exc:
+            logger.warning(
+                "Privacy boundary unavailable for stream fallback",
+                code=exc.code,
+            )
+            ctx.settlement_blocked = True
+            return None
+        except Exception:
+            logger.warning(
+                "Privacy boundary unavailable for stream fallback",
+                code="UNEXPECTED_PRIVACY_OUTPUT_ERROR",
+            )
+            ctx.settlement_blocked = True
+            return None
+
+        return safe_fallback.text
+
+    def persist_stream_fallback(safe_text: str) -> None:
+        _privacy_output_boundary_marker = True
+        memory_manager.on_message(ctx.owner_key, ctx.sid, "user", ctx.cache_query)
+        memory_manager.on_message(ctx.owner_key, ctx.sid, "assistant", safe_text)
+
+    def prepare_tool_event(payload: dict) -> dict | None:
+        try:
+            return _safe_sse_event(payload, ctx.verified_public_contacts)
+        except PrivacyBoundaryUnavailable as exc:
+            code = exc.code
+        except Exception:
+            code = "UNEXPECTED_PRIVACY_TOOL_EVENT_ERROR"
+        logger.warning(
+            "Privacy boundary unavailable for stream tool event",
+            code=code,
+        )
+        ctx.settlement_blocked = True
+        return None
+
+    for round_num in range(max_rounds):
+        try:
+            _kw = {"model": ctx.stream_model, "ctx.messages": ctx.messages, "tools": TOOLS, "tool_choice": "auto", "timeout": LLM_TIMEOUT}
+            if ctx.stream_temp is not None:
+                _kw["temperature"] = ctx.stream_temp
+            # CONC-001: chạy LLM-call ĐỒNG-BỘ trong thread để KHÔNG chặn event loop
+            # (request /chat khác + /health vẫn xử lý được trong lúc chờ LLM).
+            # Route qua safe_llm_call (circuit breaker) như non-stream — fail-fast khi
+            # LLM sập thay vì chờ trọn LLM_TIMEOUT + ghi nhận vào llm_breaker chung.
+            decision = await _await_chat_worker(
+                _call_stream_decision,
+                _kw,
+                ctx.usage_accumulator,
+                ctx.stream_model,
+                ctx.messages,
+            )
+            if not decision["success"]:
+                fallback = prepare_stream_fallback(decision["message"])
+                fallback_ready = fallback is not None
+                if fallback is None:
+                    fallback = SAFE_PRIVACY_FAILURE_REPLY
+                yield f"data: {json.dumps({'type': 'text', 'content': fallback}, ensure_ascii=False)}\n\n"
+                if fallback_ready:
+                    persist_stream_fallback(fallback)
+                feedback_receipt = (
+                    _issue_delivered_feedback_receipt(
+                        ctx.owner_key,
+                        ctx.cache_query,
+                        fallback,
+                        ctx.stream_model,
+                        tools_used,
+                    )
+                    if fallback_ready
+                    else None
+                )
+                yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': [], 'session_id': ctx.sid, 'feedback_receipt': feedback_receipt}, ensure_ascii=False)}\n\n"
+                return
+            response = decision["response"]
+            msg = response.choices[0].message
+        except Exception as exc:
+            error_tracker.record_error("/chat/stream", str(exc), traceback.format_exc())
+            fallback = prepare_stream_fallback(
+                "Xin lỗi, đã xảy ra lỗi. Vui lòng thử lại."
+            )
+            fallback_ready = fallback is not None
+            if fallback is None:
+                fallback = SAFE_PRIVACY_FAILURE_REPLY
+            yield f"data: {json.dumps({'type': 'text', 'content': fallback}, ensure_ascii=False)}\n\n"
+            if fallback_ready:
+                persist_stream_fallback(fallback)
+            feedback_receipt = (
+                _issue_delivered_feedback_receipt(
+                    ctx.owner_key,
+                    ctx.cache_query,
+                    fallback,
+                    ctx.stream_model,
+                    tools_used,
+                )
+                if fallback_ready
+                else None
+            )
+            yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': [], 'session_id': ctx.sid, 'feedback_receipt': feedback_receipt}, ensure_ascii=False)}\n\n"
+            return
+
+        if msg.tool_calls:
+            ctx.messages.append(msg)
+            for tc in msg.tool_calls:
+                fn_name = tc.function.name
+                try:
+                    fn_args = json.loads(tc.function.arguments)
+                except (json.JSONDecodeError, TypeError):
+                    fn_args = {}  # EH-02: JSON args lỗi → {} thay vì crash stream
+                tools_used.append(fn_name)
+
+                # Tool-use Tracing: send start event with description
+                tool_desc = _tool_description(fn_name, fn_args)
+                tool_start_event = prepare_tool_event({
+                    "type": "tool_start",
+                    "name": fn_name,
+                    "description": tool_desc,
+                    "args": fn_args,
+                })
+                if tool_start_event is None:
+                    yield f"data: {json.dumps({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
+                    return
+                yield f"data: {json.dumps(tool_start_event, ensure_ascii=False)}\n\n"
+
+                t0 = time.time()
+                result = await _await_chat_worker(
+                    call_tool, fn_name, fn_args, ctx.usage_accumulator,
+                )  # CONC-001: tool I/O off event loop
+                result = _safe_tool_result(result, ctx.verified_public_contacts)
+                duration_ms = round((time.time() - t0) * 1000)
+                ctx.messages.append({"role": "tool", "tool_call_id": tc.id, "content": result})
+
+                # Tool-use Tracing: send done event with timing
+                result_preview = result[:200] if len(result) > 200 else result
+                tool_done_event = prepare_tool_event({
+                    "type": "tool_done",
+                    "name": fn_name,
+                    "duration_ms": duration_ms,
+                    "preview": result_preview,
+                })
+                if tool_done_event is None:
+                    yield f"data: {json.dumps({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
+                    return
+                yield f"data: {json.dumps(tool_done_event, ensure_ascii=False)}\n\n"
+
+                # Track entity discussions in memory
+                if fn_name in ("entity_detail", "nearby_entities") and "entity_id" in fn_args:
+                    memory_manager.on_entity_discussed(ctx.owner_key, ctx.sid, fn_args["entity_id"])
+
+                if fn_name == "suggest_followups":
+                    try:
+                        data = json.loads(result)
+                        suggestions = data.get("suggestions", [])
+                    except Exception:
+                        logger.debug("Failed to parse suggest_followups result", exc_info=True)
+        else:
+            # CONC-001: SDK streaming là iterator ĐỒNG-BỘ — lặp nó trong async gen sẽ
+            # chặn event loop từng token. Chạy create+iterate trong THREAD, đẩy từng
+            # chunk qua asyncio.Queue (thread-safe) để consumer async yield không chặn.
+            loop = asyncio.get_running_loop()
+            chunk_q: asyncio.Queue = asyncio.Queue()
+            _cancelled = threading.Event()
+            stream_returned = False
+
+            def _produce_stream():
+                nonlocal stream_returned
+                try:
+                    stream = get_client().chat.completions.create(
+                        model=ctx.stream_model, messages=ctx.messages, stream=True,
+                        stream_options={"include_usage": True},
+                        timeout=LLM_TIMEOUT,
+                    )
+                    stream_returned = True
+                    for chunk in stream:
+                        if _cancelled.is_set():
+                            break
+                        if getattr(chunk, "usage", None) is not None:
+                            loop.call_soon_threadsafe(chunk_q.put_nowait, chunk)
+                        if not getattr(chunk, "choices", None):
+                            continue
+                        delta = chunk.choices[0].delta
+                        if delta.content:
+                            loop.call_soon_threadsafe(chunk_q.put_nowait, delta.content)
+                except Exception as exc:
+                    if not _cancelled.is_set():
+                        loop.call_soon_threadsafe(chunk_q.put_nowait, exc)
+                finally:
+                    loop.call_soon_threadsafe(chunk_q.put_nowait, None)
+
+            producer = asyncio.create_task(asyncio.to_thread(_produce_stream))
+            _chunks: list[str] = []
+            terminal_chunk = None
+            redactor = StreamingPIIRedactor(
+                verified_public_contacts=tuple(ctx.verified_public_contacts),
+            )
+
+            async def _stream_text_chunks():
+                nonlocal terminal_chunk
+                while True:
+                    item = await chunk_q.get()
+                    if item is None:
+                        return
+                    if isinstance(item, Exception):
+                        raise item
+                    if getattr(item, "usage", None) is not None:
+                        terminal_chunk = item
+                        continue
+                    yield item
+
+            try:
+                async for safe_chunk in _safe_stream_text_events(
+                    _stream_text_chunks(),
+                    redactor,
+                ):
+                    _chunks.append(safe_chunk)
+                    yield f"data: {json.dumps({'type': 'text', 'content': safe_chunk}, ensure_ascii=False)}\n\n"
+            except (asyncio.CancelledError, GeneratorExit):
+                _cancelled.set()
+                redactor.abort()
+                return
+            except PrivacyBoundaryUnavailable as exc:
+                logger.warning(
+                    "Privacy boundary unavailable for stream redaction",
+                    code=exc.code,
+                )
+                ctx.settlement_blocked = True
+                redactor.abort()
+                yield f"data: {json.dumps({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
+                return
+            except Exception:
+                redactor.abort()
+                yield f"data: {json.dumps({'type': 'error', 'content': 'Xin lỗi, không thể hoàn tất câu trả lời. Vui lòng thử lại.'}, ensure_ascii=False)}\n\n"
+                return
+            finally:
+                _cancelled.set()
+                await producer
+                if stream_returned:
+                    ctx.usage_accumulator.add_response(
+                        terminal_chunk,
+                        model=ctx.stream_model,
+                        messages=ctx.messages,
+                        completion_text="".join(_chunks),
+                    )
+            full_text = "".join(_chunks)
+
+            try:
+                safe_reply = _safe_delivered_reply(
+                    full_text,
+                    ctx.message,
+                    (knowledge._entities or {}) if hasattr(knowledge, "_entities") else {},
+                    ctx.verified_public_contacts,
+                )
+            except PrivacyBoundaryUnavailable as exc:
+                logger.warning(
+                    "Privacy boundary unavailable for stream output",
+                    code=exc.code,
+                )
+                ctx.settlement_blocked = True
+                yield f"data: {json.dumps({'type': 'text', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
+                yield f"data: {json.dumps({'type': 'done', 'tools': [], 'suggestions': [], 'session_id': ctx.sid}, ensure_ascii=False)}\n\n"
+                return
+            except Exception:
+                logger.warning(
+                    "Privacy boundary unavailable for stream output",
+                    code="UNEXPECTED_PRIVACY_OUTPUT_ERROR",
+                )
+                ctx.settlement_blocked = True
+                yield f"data: {json.dumps({'type': 'text', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
+                yield f"data: {json.dumps({'type': 'done', 'tools': [], 'suggestions': [], 'session_id': ctx.sid}, ensure_ascii=False)}\n\n"
+                return
+
+            full_text = safe_reply.text
+            tools_used = redact_payload(tools_used, source="provider_output")
+            suggestions = redact_payload(suggestions, source="provider_output")
+            _privacy_output_boundary_marker = True
+            memory_manager.on_message(ctx.owner_key, ctx.sid, "user", ctx.cache_query)
+            memory_manager.on_message(ctx.owner_key, ctx.sid, "assistant", full_text)
+
+            # Memory graph: record entity interactions
+            if HAS_MEMORY_GRAPH:
+                try:
+                    memory_graph.on_chat_complete(ctx.owner_key, ctx.message, full_text, [])
+                except Exception:
+                    logger.debug("Memory graph record failed (stream)", exc_info=True)
+
+            # LLM memory extraction
+            try:
+                memory_manager.on_chat_complete(ctx.owner_key, ctx.sid, ctx.message, full_text)
+            except Exception:
+                logger.debug("LLM memory extraction failed (stream)", exc_info=True)
+
+            # Reflexion: evaluate quality
+            evaluation = reflexion_engine.evaluate_answer(ctx.message, full_text, tools_used)
+            quality_tracker.record(ctx.message, evaluation["score"], tools_used)
+            if evaluation["score"] < 5:
+                reflexion_engine.reflect_on_failure(ctx.message, full_text, evaluation)
+            elif evaluation["score"] >= 8:
+                memory_manager.on_good_answer(
+                    ctx.message[:100], tools_used,
+                    f"Score {evaluation['score']}",
+                    reflexion_engine._categorize_query(ctx.message),
+                )
+            if HAS_EXPERIENCE:
+                try:
+                    experience_memory.record(
+                        ctx.message,
+                        tools_used,
+                        evaluation["score"],
+                        full_text,
+                        owner_key=ctx.owner_key,
+                    )
+                except Exception:
+                    logger.debug("Experience memory record failed (stream)", exc_info=True)
+            if HAS_FEWSHOT:
+                try:
+                    prompt_compiler.record_demo(
+                        ctx.message,
+                        full_text,
+                        evaluation["score"],
+                        owner_key=ctx.owner_key,
+                    )
+                except Exception:
+                    logger.debug("Few-shot demo record failed (stream)", exc_info=True)
+
+            # ── Self optimizer: record outcome ──
+            if HAS_OPTIMIZER:
+                try:
+                    est_tok = token_counter.estimate_tokens(full_text) if HAS_COST_TRACKER else len(full_text) // 3
+                    record_outcome(
+                        ctx.sid,
+                        ctx.message,
+                        "stream",
+                        tools_used,
+                        evaluation["score"],
+                        0,
+                        est_tok,
+                        owner_key=ctx.owner_key,
+                    )
+                except Exception:
+                    logger.debug("Self-optimizer outcome failed (stream)", exc_info=True)
+
+            # ── LLM Judge: quality evaluation ──
+            if HAS_LLM_JUDGE and LLM_JUDGE_ENABLED and evaluation["score"] >= 3:
+                try:
+                    judge(ctx.message, full_text)
+                except Exception:
+                    logger.debug("LLM Judge failed (stream)", exc_info=True)
+
+            # A/B testing: record outcome
+            if HAS_AB_TESTING and ctx.sid:
+                try:
+                    ab_manager.record_outcome(
+                        "prompt_style",
+                        ctx.sid,
+                        evaluation["score"],
+                        owner_key=ctx.owner_key,
+                    )
+                except Exception:
+                    logger.debug("A/B outcome record failed (stream)", exc_info=True)
+
+            # Metrics tracking
+            if HAS_METRICS:
+                track_chat_request("ok", 0)  # duration not tracked in stream
+
+            # Track & cache
+            analytics.track_query(
+                ctx.message,
+                tools_used,
+                full_text,
+                ctx.sid,
+                owner_key=ctx.owner_key,
+            )
+            if ctx.cache_eligible and len(full_text) > 30 and evaluation["score"] >= 5:
+                cache_data = {"reply": full_text, "tool_calls": tools_used, "suggestions": suggestions}
+                # Lưu theo ctx.cache_query (khoá lúc cache.get) — không phải bản đã autocorrect,
+                # nếu không lần sau cùng câu gốc sẽ luôn MISS (đã sửa: stream cache key mismatch).
+                owner_write_gate.assert_writable(ctx.owner_key)
+                cache.put(ctx.cache_query, cache_data, owner_key=ctx.owner_key)
+                # ── Semantic cache: store ──
+                if HAS_SEMANTIC_CACHE:
+                    try:
+                        semantic_put(
+                            ctx.cache_query,
+                            cache_data,
+                            owner_key=ctx.owner_key,
+                            dedup_key=ctx.semantic_dedup_key,
+                        )
+                    except Exception:
+                        logger.debug("Semantic cache put failed", exc_info=True)
+
+            # Send quality score for UI feedback prompt
+            feedback_receipt = _issue_delivered_feedback_receipt(
+                ctx.owner_key,
+                ctx.cache_query,
+                full_text,
+                ctx.stream_model,
+                tools_used,
+            )
+            yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': suggestions, 'session_id': ctx.sid, 'quality': evaluation['score'], 'feedback_receipt': feedback_receipt}, ensure_ascii=False)}\n\n"
+            return
+
+    # ── Round-exhaustion: every round called tools without a final answer.
+    # Force ONE synthesis turn (no tools) so the user gets an answer built
+    # from gathered evidence instead of an empty response.
+    delivered_synth = ""
+    try:
+        ctx.messages.append({
+            "role": "system",
+            "content": ("[Hệ thống]: Đã đạt giới hạn số vòng. Hãy tổng hợp câu trả lời "
+                        "tốt nhất TỪ thông tin đã thu thập, KHÔNG gọi thêm tool, "
+                        "trả lời trực tiếp bằng tiếng Việt."),
+        })
+        synth_q: asyncio.Queue = asyncio.Queue()
+        loop = asyncio.get_event_loop()
+        _synth_cancelled = threading.Event()
+        synth_stream_returned = False
+        def _synth_produce():
+            nonlocal synth_stream_returned
+            try:
+                resp = get_client().chat.completions.create(
+                    model=ctx.stream_model,
+                    messages=ctx.messages,
+                    stream=True,
+                    stream_options={"include_usage": True},
+                    timeout=LLM_TIMEOUT,
+                )
+                synth_stream_returned = True
+                for chunk in resp:
+                    if _synth_cancelled.is_set():
+                        break  # consumer đã thoát (client disconnect) → dừng, không leak thread
+                    if getattr(chunk, "usage", None) is not None:
+                        loop.call_soon_threadsafe(synth_q.put_nowait, chunk)
+                    if not getattr(chunk, "choices", None):
+                        continue
+                    delta = chunk.choices[0].delta
+                    if delta.content:
+                        loop.call_soon_threadsafe(synth_q.put_nowait, delta.content)
+            except Exception as exc:
+                if not _synth_cancelled.is_set():
+                    loop.call_soon_threadsafe(synth_q.put_nowait, exc)
+            finally:
+                loop.call_soon_threadsafe(synth_q.put_nowait, None)
+        synth_producer = asyncio.create_task(asyncio.to_thread(_synth_produce))
+        synth_chunks: list[str] = []
+        synth_terminal_chunk = None
+        synth_redactor = StreamingPIIRedactor(
+            verified_public_contacts=tuple(ctx.verified_public_contacts),
+        )
+
+        async def _synth_text_chunks():
+            nonlocal synth_terminal_chunk
+            while True:
+                item = await synth_q.get()
+                if item is None:
+                    return
+                if isinstance(item, Exception):
+                    raise item
+                if getattr(item, "usage", None) is not None:
+                    synth_terminal_chunk = item
+                    continue
+                yield item
+
+        try:
+            async for safe_chunk in _safe_stream_text_events(
+                _synth_text_chunks(),
+                synth_redactor,
+            ):
+                synth_chunks.append(safe_chunk)
+                yield f"data: {json.dumps({'type': 'text', 'content': safe_chunk}, ensure_ascii=False)}\n\n"
+        except (asyncio.CancelledError, GeneratorExit):
+            synth_redactor.abort()
+            raise
+        except PrivacyBoundaryUnavailable as exc:
+            logger.warning(
+                "Privacy boundary unavailable for stream synthesis redaction",
+                code=exc.code,
+            )
+            ctx.settlement_blocked = True
+            synth_redactor.abort()
+            yield f"data: {json.dumps({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
+            return
+        finally:
+            _synth_cancelled.set()  # generator đóng (disconnect/hoàn tất) → báo thread produce dừng
+            await synth_producer
+            if synth_stream_returned:
+                ctx.usage_accumulator.add_response(
+                    synth_terminal_chunk,
+                    model=ctx.stream_model,
+                    messages=ctx.messages,
+                    completion_text="".join(synth_chunks),
+                )
+        synth_text = "".join(synth_chunks)
+        if synth_text:
+            try:
+                safe_synth = _safe_delivered_reply(
+                    synth_text,
+                    ctx.message,
+                    (knowledge._entities or {}) if hasattr(knowledge, "_entities") else {},
+                    ctx.verified_public_contacts,
+                )
+            except PrivacyBoundaryUnavailable as exc:
+                logger.warning(
+                    "Privacy boundary unavailable for stream synthesis",
+                    code=exc.code,
+                )
+                ctx.settlement_blocked = True
+                return
+            except Exception:
+                logger.warning(
+                    "Privacy boundary unavailable for stream synthesis",
+                    code="UNEXPECTED_PRIVACY_OUTPUT_ERROR",
+                )
+                ctx.settlement_blocked = True
+                return
+            synth_text = safe_synth.text
+            delivered_synth = synth_text
+            _privacy_output_boundary_marker = True
+            memory_manager.on_message(ctx.owner_key, ctx.sid, "user", ctx.cache_query)
+            memory_manager.on_message(ctx.owner_key, ctx.sid, "assistant", synth_text)
+            analytics.track_query(
+                ctx.message,
+                tools_used,
+                synth_text,
+                ctx.sid,
+                owner_key=ctx.owner_key,
+            )
+    except Exception:
+        logger.debug("Stream synthesis fallback failed", exc_info=True)
+
+    feedback_receipt = (
+        _issue_delivered_feedback_receipt(
+            ctx.owner_key,
+            ctx.cache_query,
+            delivered_synth,
+            ctx.stream_model,
+            tools_used,
+        )
+        if delivered_synth
+        else None
+    )
+    yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': suggestions, 'session_id': ctx.sid, 'feedback_receipt': feedback_receipt}, ensure_ascii=False)}\n\n"
+
+
 @router.post("/chat/stream")
 @_finalize_semantic_route_lease
 async def chat_stream(req: ChatRequest, request: Request):
@@ -2718,7 +3296,6 @@ async def chat_stream(req: ChatRequest, request: Request):
 
     usage_accumulator = UsageAccumulator()
     verified_public_contacts: set[str] = set()
-    stream_usage_settlement_blocked = False
 
     # Autocorrect
     if HAS_AUTOCORRECT:
@@ -2774,568 +3351,23 @@ async def chat_stream(req: ChatRequest, request: Request):
         except Exception:
             logger.debug("Stream tuned params failed", exc_info=True)
 
-    async def _event_stream_body():
-        nonlocal stream_usage_settlement_blocked
-        # Send autocorrect info if corrected
-        if HAS_AUTOCORRECT and message != cache_query:
-            yield f"data: {json.dumps({'type': 'autocorrect', 'original': cache_query, 'corrected': message}, ensure_ascii=False)}\n\n"
-        tools_used = []
-        suggestions = []
-        max_rounds = _stream_rounds
-
-        def prepare_stream_fallback(raw_reply) -> str | None:
-            nonlocal stream_usage_settlement_blocked
-            try:
-                safe_fallback = _safe_delivered_reply(
-                    raw_reply,
-                    message,
-                    (knowledge._entities or {}) if hasattr(knowledge, "_entities") else {},
-                    verified_public_contacts,
-                )
-            except PrivacyBoundaryUnavailable as exc:
-                logger.warning(
-                    "Privacy boundary unavailable for stream fallback",
-                    code=exc.code,
-                )
-                stream_usage_settlement_blocked = True
-                return None
-            except Exception:
-                logger.warning(
-                    "Privacy boundary unavailable for stream fallback",
-                    code="UNEXPECTED_PRIVACY_OUTPUT_ERROR",
-                )
-                stream_usage_settlement_blocked = True
-                return None
-
-            return safe_fallback.text
-
-        def persist_stream_fallback(safe_text: str) -> None:
-            _privacy_output_boundary_marker = True
-            memory_manager.on_message(owner_key, sid, "user", cache_query)
-            memory_manager.on_message(owner_key, sid, "assistant", safe_text)
-
-        def prepare_tool_event(payload: dict) -> dict | None:
-            nonlocal stream_usage_settlement_blocked
-            try:
-                return _safe_sse_event(payload, verified_public_contacts)
-            except PrivacyBoundaryUnavailable as exc:
-                code = exc.code
-            except Exception:
-                code = "UNEXPECTED_PRIVACY_TOOL_EVENT_ERROR"
-            logger.warning(
-                "Privacy boundary unavailable for stream tool event",
-                code=code,
-            )
-            stream_usage_settlement_blocked = True
-            return None
-
-        for round_num in range(max_rounds):
-            try:
-                _kw = {"model": _stream_model, "messages": messages, "tools": TOOLS, "tool_choice": "auto", "timeout": LLM_TIMEOUT}
-                if _stream_temp is not None:
-                    _kw["temperature"] = _stream_temp
-                # CONC-001: chạy LLM-call ĐỒNG-BỘ trong thread để KHÔNG chặn event loop
-                # (request /chat khác + /health vẫn xử lý được trong lúc chờ LLM).
-                # Route qua safe_llm_call (circuit breaker) như non-stream — fail-fast khi
-                # LLM sập thay vì chờ trọn LLM_TIMEOUT + ghi nhận vào llm_breaker chung.
-                decision = await _await_chat_worker(
-                    _call_stream_decision,
-                    _kw,
-                    usage_accumulator,
-                    _stream_model,
-                    messages,
-                )
-                if not decision["success"]:
-                    fallback = prepare_stream_fallback(decision["message"])
-                    fallback_ready = fallback is not None
-                    if fallback is None:
-                        fallback = SAFE_PRIVACY_FAILURE_REPLY
-                    yield f"data: {json.dumps({'type': 'text', 'content': fallback}, ensure_ascii=False)}\n\n"
-                    if fallback_ready:
-                        persist_stream_fallback(fallback)
-                    feedback_receipt = (
-                        _issue_delivered_feedback_receipt(
-                            owner_key,
-                            cache_query,
-                            fallback,
-                            _stream_model,
-                            tools_used,
-                        )
-                        if fallback_ready
-                        else None
-                    )
-                    yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': [], 'session_id': sid, 'feedback_receipt': feedback_receipt}, ensure_ascii=False)}\n\n"
-                    return
-                response = decision["response"]
-                msg = response.choices[0].message
-            except Exception as exc:
-                error_tracker.record_error("/chat/stream", str(exc), traceback.format_exc())
-                fallback = prepare_stream_fallback(
-                    "Xin lỗi, đã xảy ra lỗi. Vui lòng thử lại."
-                )
-                fallback_ready = fallback is not None
-                if fallback is None:
-                    fallback = SAFE_PRIVACY_FAILURE_REPLY
-                yield f"data: {json.dumps({'type': 'text', 'content': fallback}, ensure_ascii=False)}\n\n"
-                if fallback_ready:
-                    persist_stream_fallback(fallback)
-                feedback_receipt = (
-                    _issue_delivered_feedback_receipt(
-                        owner_key,
-                        cache_query,
-                        fallback,
-                        _stream_model,
-                        tools_used,
-                    )
-                    if fallback_ready
-                    else None
-                )
-                yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': [], 'session_id': sid, 'feedback_receipt': feedback_receipt}, ensure_ascii=False)}\n\n"
-                return
-
-            if msg.tool_calls:
-                messages.append(msg)
-                for tc in msg.tool_calls:
-                    fn_name = tc.function.name
-                    try:
-                        fn_args = json.loads(tc.function.arguments)
-                    except (json.JSONDecodeError, TypeError):
-                        fn_args = {}  # EH-02: JSON args lỗi → {} thay vì crash stream
-                    tools_used.append(fn_name)
-
-                    # Tool-use Tracing: send start event with description
-                    tool_desc = _tool_description(fn_name, fn_args)
-                    tool_start_event = prepare_tool_event({
-                        "type": "tool_start",
-                        "name": fn_name,
-                        "description": tool_desc,
-                        "args": fn_args,
-                    })
-                    if tool_start_event is None:
-                        yield f"data: {json.dumps({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
-                        return
-                    yield f"data: {json.dumps(tool_start_event, ensure_ascii=False)}\n\n"
-
-                    t0 = time.time()
-                    result = await _await_chat_worker(
-                        call_tool, fn_name, fn_args, usage_accumulator,
-                    )  # CONC-001: tool I/O off event loop
-                    result = _safe_tool_result(result, verified_public_contacts)
-                    duration_ms = round((time.time() - t0) * 1000)
-                    messages.append({"role": "tool", "tool_call_id": tc.id, "content": result})
-
-                    # Tool-use Tracing: send done event with timing
-                    result_preview = result[:200] if len(result) > 200 else result
-                    tool_done_event = prepare_tool_event({
-                        "type": "tool_done",
-                        "name": fn_name,
-                        "duration_ms": duration_ms,
-                        "preview": result_preview,
-                    })
-                    if tool_done_event is None:
-                        yield f"data: {json.dumps({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
-                        return
-                    yield f"data: {json.dumps(tool_done_event, ensure_ascii=False)}\n\n"
-
-                    # Track entity discussions in memory
-                    if fn_name in ("entity_detail", "nearby_entities") and "entity_id" in fn_args:
-                        memory_manager.on_entity_discussed(owner_key, sid, fn_args["entity_id"])
-
-                    if fn_name == "suggest_followups":
-                        try:
-                            data = json.loads(result)
-                            suggestions = data.get("suggestions", [])
-                        except Exception:
-                            logger.debug("Failed to parse suggest_followups result", exc_info=True)
-            else:
-                # CONC-001: SDK streaming là iterator ĐỒNG-BỘ — lặp nó trong async gen sẽ
-                # chặn event loop từng token. Chạy create+iterate trong THREAD, đẩy từng
-                # chunk qua asyncio.Queue (thread-safe) để consumer async yield không chặn.
-                loop = asyncio.get_running_loop()
-                chunk_q: asyncio.Queue = asyncio.Queue()
-                _cancelled = threading.Event()
-                stream_returned = False
-
-                def _produce_stream():
-                    nonlocal stream_returned
-                    try:
-                        stream = get_client().chat.completions.create(
-                            model=_stream_model, messages=messages, stream=True,
-                            stream_options={"include_usage": True},
-                            timeout=LLM_TIMEOUT,
-                        )
-                        stream_returned = True
-                        for chunk in stream:
-                            if _cancelled.is_set():
-                                break
-                            if getattr(chunk, "usage", None) is not None:
-                                loop.call_soon_threadsafe(chunk_q.put_nowait, chunk)
-                            if not getattr(chunk, "choices", None):
-                                continue
-                            delta = chunk.choices[0].delta
-                            if delta.content:
-                                loop.call_soon_threadsafe(chunk_q.put_nowait, delta.content)
-                    except Exception as exc:
-                        if not _cancelled.is_set():
-                            loop.call_soon_threadsafe(chunk_q.put_nowait, exc)
-                    finally:
-                        loop.call_soon_threadsafe(chunk_q.put_nowait, None)
-
-                producer = asyncio.create_task(asyncio.to_thread(_produce_stream))
-                _chunks: list[str] = []
-                terminal_chunk = None
-                redactor = StreamingPIIRedactor(
-                    verified_public_contacts=tuple(verified_public_contacts),
-                )
-
-                async def _stream_text_chunks():
-                    nonlocal terminal_chunk
-                    while True:
-                        item = await chunk_q.get()
-                        if item is None:
-                            return
-                        if isinstance(item, Exception):
-                            raise item
-                        if getattr(item, "usage", None) is not None:
-                            terminal_chunk = item
-                            continue
-                        yield item
-
-                try:
-                    async for safe_chunk in _safe_stream_text_events(
-                        _stream_text_chunks(),
-                        redactor,
-                    ):
-                        _chunks.append(safe_chunk)
-                        yield f"data: {json.dumps({'type': 'text', 'content': safe_chunk}, ensure_ascii=False)}\n\n"
-                except (asyncio.CancelledError, GeneratorExit):
-                    _cancelled.set()
-                    redactor.abort()
-                    return
-                except PrivacyBoundaryUnavailable as exc:
-                    logger.warning(
-                        "Privacy boundary unavailable for stream redaction",
-                        code=exc.code,
-                    )
-                    stream_usage_settlement_blocked = True
-                    redactor.abort()
-                    yield f"data: {json.dumps({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
-                    return
-                except Exception:
-                    redactor.abort()
-                    yield f"data: {json.dumps({'type': 'error', 'content': 'Xin lỗi, không thể hoàn tất câu trả lời. Vui lòng thử lại.'}, ensure_ascii=False)}\n\n"
-                    return
-                finally:
-                    _cancelled.set()
-                    await producer
-                    if stream_returned:
-                        usage_accumulator.add_response(
-                            terminal_chunk,
-                            model=_stream_model,
-                            messages=messages,
-                            completion_text="".join(_chunks),
-                        )
-                full_text = "".join(_chunks)
-
-                try:
-                    safe_reply = _safe_delivered_reply(
-                        full_text,
-                        message,
-                        (knowledge._entities or {}) if hasattr(knowledge, "_entities") else {},
-                        verified_public_contacts,
-                    )
-                except PrivacyBoundaryUnavailable as exc:
-                    logger.warning(
-                        "Privacy boundary unavailable for stream output",
-                        code=exc.code,
-                    )
-                    stream_usage_settlement_blocked = True
-                    yield f"data: {json.dumps({'type': 'text', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
-                    yield f"data: {json.dumps({'type': 'done', 'tools': [], 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
-                    return
-                except Exception:
-                    logger.warning(
-                        "Privacy boundary unavailable for stream output",
-                        code="UNEXPECTED_PRIVACY_OUTPUT_ERROR",
-                    )
-                    stream_usage_settlement_blocked = True
-                    yield f"data: {json.dumps({'type': 'text', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
-                    yield f"data: {json.dumps({'type': 'done', 'tools': [], 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
-                    return
-
-                full_text = safe_reply.text
-                tools_used = redact_payload(tools_used, source="provider_output")
-                suggestions = redact_payload(suggestions, source="provider_output")
-                _privacy_output_boundary_marker = True
-                memory_manager.on_message(owner_key, sid, "user", cache_query)
-                memory_manager.on_message(owner_key, sid, "assistant", full_text)
-
-                # Memory graph: record entity interactions
-                if HAS_MEMORY_GRAPH:
-                    try:
-                        memory_graph.on_chat_complete(owner_key, message, full_text, [])
-                    except Exception:
-                        logger.debug("Memory graph record failed (stream)", exc_info=True)
-
-                # LLM memory extraction
-                try:
-                    memory_manager.on_chat_complete(owner_key, sid, message, full_text)
-                except Exception:
-                    logger.debug("LLM memory extraction failed (stream)", exc_info=True)
-
-                # Reflexion: evaluate quality
-                evaluation = reflexion_engine.evaluate_answer(message, full_text, tools_used)
-                quality_tracker.record(message, evaluation["score"], tools_used)
-                if evaluation["score"] < 5:
-                    reflexion_engine.reflect_on_failure(message, full_text, evaluation)
-                elif evaluation["score"] >= 8:
-                    memory_manager.on_good_answer(
-                        message[:100], tools_used,
-                        f"Score {evaluation['score']}",
-                        reflexion_engine._categorize_query(message),
-                    )
-                if HAS_EXPERIENCE:
-                    try:
-                        experience_memory.record(
-                            message,
-                            tools_used,
-                            evaluation["score"],
-                            full_text,
-                            owner_key=owner_key,
-                        )
-                    except Exception:
-                        logger.debug("Experience memory record failed (stream)", exc_info=True)
-                if HAS_FEWSHOT:
-                    try:
-                        prompt_compiler.record_demo(
-                            message,
-                            full_text,
-                            evaluation["score"],
-                            owner_key=owner_key,
-                        )
-                    except Exception:
-                        logger.debug("Few-shot demo record failed (stream)", exc_info=True)
-
-                # ── Self optimizer: record outcome ──
-                if HAS_OPTIMIZER:
-                    try:
-                        est_tok = token_counter.estimate_tokens(full_text) if HAS_COST_TRACKER else len(full_text) // 3
-                        record_outcome(
-                            sid,
-                            message,
-                            "stream",
-                            tools_used,
-                            evaluation["score"],
-                            0,
-                            est_tok,
-                            owner_key=owner_key,
-                        )
-                    except Exception:
-                        logger.debug("Self-optimizer outcome failed (stream)", exc_info=True)
-
-                # ── LLM Judge: quality evaluation ──
-                if HAS_LLM_JUDGE and LLM_JUDGE_ENABLED and evaluation["score"] >= 3:
-                    try:
-                        judge(message, full_text)
-                    except Exception:
-                        logger.debug("LLM Judge failed (stream)", exc_info=True)
-
-                # A/B testing: record outcome
-                if HAS_AB_TESTING and sid:
-                    try:
-                        ab_manager.record_outcome(
-                            "prompt_style",
-                            sid,
-                            evaluation["score"],
-                            owner_key=owner_key,
-                        )
-                    except Exception:
-                        logger.debug("A/B outcome record failed (stream)", exc_info=True)
-
-                # Metrics tracking
-                if HAS_METRICS:
-                    track_chat_request("ok", 0)  # duration not tracked in stream
-
-                # Track & cache
-                analytics.track_query(
-                    message,
-                    tools_used,
-                    full_text,
-                    sid,
-                    owner_key=owner_key,
-                )
-                if cache_eligible and len(full_text) > 30 and evaluation["score"] >= 5:
-                    cache_data = {"reply": full_text, "tool_calls": tools_used, "suggestions": suggestions}
-                    # Lưu theo cache_query (khoá lúc cache.get) — không phải bản đã autocorrect,
-                    # nếu không lần sau cùng câu gốc sẽ luôn MISS (đã sửa: stream cache key mismatch).
-                    owner_write_gate.assert_writable(owner_key)
-                    cache.put(cache_query, cache_data, owner_key=owner_key)
-                    # ── Semantic cache: store ──
-                    if HAS_SEMANTIC_CACHE:
-                        try:
-                            semantic_put(
-                                cache_query,
-                                cache_data,
-                                owner_key=owner_key,
-                                dedup_key=semantic_dedup_key,
-                            )
-                        except Exception:
-                            logger.debug("Semantic cache put failed", exc_info=True)
-
-                # Send quality score for UI feedback prompt
-                feedback_receipt = _issue_delivered_feedback_receipt(
-                    owner_key,
-                    cache_query,
-                    full_text,
-                    _stream_model,
-                    tools_used,
-                )
-                yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': suggestions, 'session_id': sid, 'quality': evaluation['score'], 'feedback_receipt': feedback_receipt}, ensure_ascii=False)}\n\n"
-                return
-
-        # ── Round-exhaustion: every round called tools without a final answer.
-        # Force ONE synthesis turn (no tools) so the user gets an answer built
-        # from gathered evidence instead of an empty response.
-        delivered_synth = ""
-        try:
-            messages.append({
-                "role": "system",
-                "content": ("[Hệ thống]: Đã đạt giới hạn số vòng. Hãy tổng hợp câu trả lời "
-                            "tốt nhất TỪ thông tin đã thu thập, KHÔNG gọi thêm tool, "
-                            "trả lời trực tiếp bằng tiếng Việt."),
-            })
-            synth_q: asyncio.Queue = asyncio.Queue()
-            loop = asyncio.get_event_loop()
-            _synth_cancelled = threading.Event()
-            synth_stream_returned = False
-            def _synth_produce():
-                nonlocal synth_stream_returned
-                try:
-                    resp = get_client().chat.completions.create(
-                        model=_stream_model,
-                        messages=messages,
-                        stream=True,
-                        stream_options={"include_usage": True},
-                        timeout=LLM_TIMEOUT,
-                    )
-                    synth_stream_returned = True
-                    for chunk in resp:
-                        if _synth_cancelled.is_set():
-                            break  # consumer đã thoát (client disconnect) → dừng, không leak thread
-                        if getattr(chunk, "usage", None) is not None:
-                            loop.call_soon_threadsafe(synth_q.put_nowait, chunk)
-                        if not getattr(chunk, "choices", None):
-                            continue
-                        delta = chunk.choices[0].delta
-                        if delta.content:
-                            loop.call_soon_threadsafe(synth_q.put_nowait, delta.content)
-                except Exception as exc:
-                    if not _synth_cancelled.is_set():
-                        loop.call_soon_threadsafe(synth_q.put_nowait, exc)
-                finally:
-                    loop.call_soon_threadsafe(synth_q.put_nowait, None)
-            synth_producer = asyncio.create_task(asyncio.to_thread(_synth_produce))
-            synth_chunks: list[str] = []
-            synth_terminal_chunk = None
-            synth_redactor = StreamingPIIRedactor(
-                verified_public_contacts=tuple(verified_public_contacts),
-            )
-
-            async def _synth_text_chunks():
-                nonlocal synth_terminal_chunk
-                while True:
-                    item = await synth_q.get()
-                    if item is None:
-                        return
-                    if isinstance(item, Exception):
-                        raise item
-                    if getattr(item, "usage", None) is not None:
-                        synth_terminal_chunk = item
-                        continue
-                    yield item
-
-            try:
-                async for safe_chunk in _safe_stream_text_events(
-                    _synth_text_chunks(),
-                    synth_redactor,
-                ):
-                    synth_chunks.append(safe_chunk)
-                    yield f"data: {json.dumps({'type': 'text', 'content': safe_chunk}, ensure_ascii=False)}\n\n"
-            except (asyncio.CancelledError, GeneratorExit):
-                synth_redactor.abort()
-                raise
-            except PrivacyBoundaryUnavailable as exc:
-                logger.warning(
-                    "Privacy boundary unavailable for stream synthesis redaction",
-                    code=exc.code,
-                )
-                stream_usage_settlement_blocked = True
-                synth_redactor.abort()
-                yield f"data: {json.dumps({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
-                return
-            finally:
-                _synth_cancelled.set()  # generator đóng (disconnect/hoàn tất) → báo thread produce dừng
-                await synth_producer
-                if synth_stream_returned:
-                    usage_accumulator.add_response(
-                        synth_terminal_chunk,
-                        model=_stream_model,
-                        messages=messages,
-                        completion_text="".join(synth_chunks),
-                    )
-            synth_text = "".join(synth_chunks)
-            if synth_text:
-                try:
-                    safe_synth = _safe_delivered_reply(
-                        synth_text,
-                        message,
-                        (knowledge._entities or {}) if hasattr(knowledge, "_entities") else {},
-                        verified_public_contacts,
-                    )
-                except PrivacyBoundaryUnavailable as exc:
-                    logger.warning(
-                        "Privacy boundary unavailable for stream synthesis",
-                        code=exc.code,
-                    )
-                    stream_usage_settlement_blocked = True
-                    return
-                except Exception:
-                    logger.warning(
-                        "Privacy boundary unavailable for stream synthesis",
-                        code="UNEXPECTED_PRIVACY_OUTPUT_ERROR",
-                    )
-                    stream_usage_settlement_blocked = True
-                    return
-                synth_text = safe_synth.text
-                delivered_synth = synth_text
-                _privacy_output_boundary_marker = True
-                memory_manager.on_message(owner_key, sid, "user", cache_query)
-                memory_manager.on_message(owner_key, sid, "assistant", synth_text)
-                analytics.track_query(
-                    message,
-                    tools_used,
-                    synth_text,
-                    sid,
-                    owner_key=owner_key,
-                )
-        except Exception:
-            logger.debug("Stream synthesis fallback failed", exc_info=True)
-
-        feedback_receipt = (
-            _issue_delivered_feedback_receipt(
-                owner_key,
-                cache_query,
-                delivered_synth,
-                _stream_model,
-                tools_used,
-            )
-            if delivered_synth
-            else None
-        )
-        yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': suggestions, 'session_id': sid, 'feedback_receipt': feedback_receipt}, ensure_ascii=False)}\n\n"
+    ctx = _StreamContext(
+        owner_key=owner_key,
+        message=message,
+        sid=sid,
+        messages=messages,
+        cache_query=cache_query,
+        cache_eligible=cache_eligible,
+        verified_public_contacts=verified_public_contacts,
+        usage_accumulator=usage_accumulator,
+        semantic_dedup_key=semantic_dedup_key,
+        stream_model=_stream_model,
+        stream_temp=_stream_temp,
+        stream_rounds=_stream_rounds,
+    )
 
     async def event_stream():
-        body = _event_stream_body()
+        body = _event_stream_body(ctx)
         try:
             async for event in body:
                 yield event
@@ -3343,7 +3375,7 @@ async def chat_stream(req: ChatRequest, request: Request):
             try:
                 await body.aclose()
             finally:
-                if not stream_usage_settlement_blocked:
+                if not ctx.settlement_blocked:
                     try:
                         usage_accumulator.settle(
                             owner_key=owner_key,

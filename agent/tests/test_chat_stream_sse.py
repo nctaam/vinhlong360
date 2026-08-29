@@ -90,8 +90,10 @@ def test_stream_empty_message_yields_error_frame(client_mocked):
 def test_stream_tool_decision_routes_through_circuit_breaker():
     # Đợt 5 helper #1: stream tool-decision qua safe_llm_call (llm_breaker) như non-stream —
     # fail-fast khi LLM sập thay vì chờ trọn LLM_TIMEOUT. Guard chống regression về create-thẳng.
+    # Lát 36 R20.8: _event_stream_body ra module-level (StreamContext) — soi thân đó.
     import inspect
-    src = inspect.getsource(server.chat_stream) if hasattr(server, "chat_stream") else inspect.getsource(server)
+    from chat import api as _chat_api
+    src = inspect.getsource(_chat_api._event_stream_body)
     helper_src = inspect.getsource(server._call_stream_decision)
     assert "_call_stream_decision" in src
     assert "safe_llm_call(get_client(), **kwargs)" in helper_src
@@ -100,8 +102,10 @@ def test_stream_tool_decision_routes_through_circuit_breaker():
 def test_stream_synthesis_fallback_is_cancellable():
     # Đợt 5 helper #2: synthesis fallback (round-exhaustion) có cancel event → client
     # disconnect mid-synthesis không leak thread produce (giữ LLM conn). Guard regression.
+    # Lát 36 R20.8: đích soi theo _event_stream_body module-level.
     import inspect
-    src = inspect.getsource(server.chat_stream) if hasattr(server, "chat_stream") else inspect.getsource(server)
+    from chat import api as _chat_api
+    src = inspect.getsource(_chat_api._event_stream_body)
     assert "_synth_cancelled" in src and "_synth_cancelled.set()" in src
 
 
