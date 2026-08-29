@@ -21,7 +21,7 @@ import hashlib
 import os
 from contextvars import ContextVar
 from datetime import datetime, timezone
-from functools import wraps
+from functools import partial, wraps
 from typing import Literal
 
 import anyio
@@ -1984,17 +1984,8 @@ def _kb_fallback_reply(corrected_message: str) -> tuple[str | None, list, set, b
         return None, [], set(), True
 
 
-@router.post("/chat", response_model=ChatResponse)
-@_finalize_semantic_route_lease
-async def chat(req: ChatRequest, request: Request, response: Response):
-    owner_context = await resolve_chat_owner(request)
-    owner_key = owner_context.owner_key
-    session = None
-    requested_session_id = req.session_id or ""
-    session_id = requested_session_id
-    set_chat_owner_cookie(response, owner_context)
-
-    # Rate limiting
+def _open_chat_session(request: Request, owner_context, requested_session_id: str):
+    """(session, None) | (None, response-lỗi 429/404) — rate-limit + require-session."""
     client_ip = get_client_ip(request)
     allowed, rate_info = chat_limiter.is_allowed(client_ip)
     if not allowed:
@@ -2003,182 +1994,66 @@ async def chat(req: ChatRequest, request: Request, response: Response):
                                 retry_after=rate_info["retry_after"])
         _resp.headers["Retry-After"] = str(rate_info["retry_after"])
         set_chat_owner_cookie(_resp, owner_context)
-        return _resp
+        return None, _resp
 
+    session = None
     try:
         if requested_session_id:
-            session = memory_manager.require_session(owner_key, requested_session_id)
+            session = memory_manager.require_session(
+                owner_context.owner_key, requested_session_id
+            )
     except UnknownConversation:
         not_found = _error_response(404, "Không tìm thấy cuộc trò chuyện.", request)
         set_chat_owner_cookie(not_found, owner_context)
-        return not_found
+        return None, not_found
+    return session, None
 
-    try:
-        safe_input = prepare_chat_input(
-            req.message,
-            [item.model_dump() for item in req.history],
-            owner_key=owner_key,
-        )
-    except PrivacyBoundaryBlocked as exc:
-        logger.warning(
-            "Privacy boundary blocked input",
-            code=exc.code,
-            session_id=session_id,
-        )
-        return ChatResponse(
-            reply="Xin lỗi, tin nhắn này không thể xử lý vì lý do an toàn. Vui lòng diễn đạt lại.",
-            tool_calls=[], suggestions=[], session_id=session_id,
-        )
-    except PrivacyBoundaryUnavailable as exc:
-        logger.warning(
-            "Privacy boundary unavailable",
-            code=exc.code,
-            session_id=session_id,
-        )
-        return ChatResponse(
-            reply="Xin lỗi, hệ thống đang bận kiểm tra an toàn. Vui lòng thử lại sau ít phút.",
-            tool_calls=[], suggestions=[], session_id=session_id,
-        )
-    except Exception:
-        logger.warning(
-            "Privacy boundary unavailable",
-            code="UNEXPECTED_PRIVACY_BOUNDARY_ERROR",
-            session_id=session_id,
-        )
-        return ChatResponse(
-            reply="Xin lỗi, hệ thống đang bận kiểm tra an toàn. Vui lòng thử lại sau ít phút.",
-            tool_calls=[], suggestions=[], session_id=session_id,
-        )
 
-    _privacy_input_boundary_marker = True
-    message = safe_input.message
-    history = [
-        {"role": item.role, "content": item.content}
-        for item in safe_input.history
-    ]
-
-    if session is None:
-        session = memory_manager.create_session(owner_key)
-        session_id = session.session_id
-    _hydrate_empty_session(owner_key, session, history)
-    cache_eligible = not history and not session.get_context_messages()
-
-    # ── Semantic cache: embedding-based dedup (before regular cache) ──
-    semantic_dedup_key = None
-    if cache_eligible and HAS_SEMANTIC_CACHE:
-        try:
-            sem_cached = await semantic_get_async(message, owner_key=owner_key)
-            semantic_dedup_key = semantic_take_dedup_lease(
-                message,
-                owner_key=owner_key,
-            )
-            _hold_semantic_route_lease(
-                message,
-                owner_key,
-                semantic_dedup_key,
-            )
-            if sem_cached:
-                try:
-                    safe_cached = _safe_cached_payload(sem_cached)
-                except PrivacyBoundaryUnavailable as exc:
-                    logger.warning("Legacy cache privacy boundary unavailable", code=exc.code)
-                    return ChatResponse(
-                        reply=SAFE_PRIVACY_FAILURE_REPLY,
-                        tool_calls=[],
-                        suggestions=[],
-                        session_id=session_id,
-                    )
-                if HAS_METRICS:
-                    track_cache("hit")
-                _privacy_output_boundary_marker = True
-                _record_cached_exchange(owner_key, session_id, message, safe_cached)
-                feedback_receipt = _issue_delivered_feedback_receipt(
-                    owner_key,
-                    message,
-                    safe_cached.get("reply", ""),
-                    "cache",
-                    safe_cached.get("tool_calls", []),
-                )
-                return ChatResponse(
-                    **safe_cached,
-                    session_id=session_id,
-                    cached=True,
-                    feedback_receipt=feedback_receipt,
-                )
-        except Exception:
-            logger.debug("Semantic cache retrieval failed", exc_info=True)
-
-    # Check cache (only for new conversations without history)
-    if cache_eligible:
-        cached = cache.get(message, owner_key=owner_key)
-        if cached:
-            try:
-                safe_cached = _safe_cached_payload(cached)
-            except PrivacyBoundaryUnavailable as exc:
-                logger.warning("Legacy cache privacy boundary unavailable", code=exc.code)
-                return ChatResponse(
-                    reply=SAFE_PRIVACY_FAILURE_REPLY,
-                    tool_calls=[],
-                    suggestions=[],
-                    session_id=session_id,
-                )
-            if HAS_METRICS:
-                track_cache("hit")
-            _privacy_output_boundary_marker = True
-            if HAS_SEMANTIC_CACHE:
-                try:
-                    semantic_put(
-                        message,
-                        safe_cached,
-                        owner_key=owner_key,
-                        dedup_key=semantic_dedup_key,
-                    )
-                except Exception:
-                    logger.debug("Semantic cache exact-hit publication failed", exc_info=True)
-            _record_cached_exchange(owner_key, session_id, message, safe_cached)
-            feedback_receipt = _issue_delivered_feedback_receipt(
-                owner_key,
-                message,
-                safe_cached.get("reply", ""),
-                "cache",
-                safe_cached.get("tool_calls", []),
-            )
-            return ChatResponse(
-                **safe_cached,
-                session_id=session_id,
-                cached=True,
-                feedback_receipt=feedback_receipt,
-            )
-        elif HAS_METRICS:
-            track_cache("miss")
-
-    usage_accumulator = UsageAccumulator()
-    verified_public_contacts: set[str] = set()
-
-    def settle_usage() -> None:
-        try:
-            usage_accumulator.settle(
-                owner_key=owner_key,
-                query=corrected_message[:200],
-                agent_name="chat",
-                guardrail_budget=guardrail_budget if HAS_GUARDRAILS else None,
-                cost_attribution=cost_attribution if HAS_COST_TRACKER else None,
-            )
-        except Exception:
-            logger.debug("Cost tracking failed", exc_info=True)
-
-    # Autocorrect user input
+def _autocorrected(message: str) -> str:
     corrected_message = message
     if HAS_AUTOCORRECT:
         ac = autocorrect(message)
         if ac.get("was_corrected"):
             corrected_message = ac["corrected"]
+    return corrected_message
 
-    delivery_model = _pick_delivery_model(corrected_message)
 
-    t0 = time.time()
-    build_info = {}
+def _settle_chat_usage(usage_accumulator, owner_key: str, corrected_message: str) -> None:
+    try:
+        usage_accumulator.settle(
+            owner_key=owner_key,
+            query=corrected_message[:200],
+            agent_name="chat",
+            guardrail_budget=guardrail_budget if HAS_GUARDRAILS else None,
+            cost_attribution=cost_attribution if HAS_COST_TRACKER else None,
+        )
+    except Exception:
+        logger.debug("Cost tracking failed", exc_info=True)
+
+
+def _apply_kb_fallback(
+    reply, tools_used, suggestions, corrected_message, verified_public_contacts
+):
+    """Áp KB-fallback khi reply là lỗi; trả bộ (reply, tools_used, suggestions) mới."""
+    _error_reply = _is_error_reply(reply)
+    logger.info(f"KB fallback check | is_error={_error_reply} | reply_len={len(reply) if reply else 0}")
+    if _error_reply and corrected_message.strip():
+        fb_reply, fb_tools, fb_contacts, fb_errored = _kb_fallback_reply(corrected_message)
+        if fb_reply is not None:
+            verified_public_contacts.update(fb_contacts)
+            return fb_reply, fb_tools, []
+        if fb_errored and not reply:
+            return "Xin lỗi, đã xảy ra lỗi khi xử lý câu hỏi. Vui lòng thử lại.", tools_used, suggestions
+    return reply, tools_used, suggestions
+
+
+async def _run_chat_round(
+    corrected_message, history, session_id, owner_key,
+    usage_accumulator, verified_public_contacts, settle_usage,
+):
+    """Một vòng LLM đầy đủ (build → dispatch → trace) với xử lý lỗi nguyên trạng."""
     _trace_ctx = None
+    reply, tools_used, suggestions = "", [], []
     try:
         if HAS_TRACING:
             _trace_ctx = trace_chat_request(corrected_message, session_id, get_model())
@@ -2225,18 +2100,52 @@ async def chat(req: ChatRequest, request: Request, response: Response):
                 _trace_ctx.__exit__(None, None, None)
             except Exception:
                 logger.debug("Trace context exit failed", exc_info=True)
+    return reply, tools_used, suggestions
 
-    # ── Knowledge-only fallback: supplement with KB data when LLM fails ──
-    _error_reply = _is_error_reply(reply)
-    logger.info(f"KB fallback check | is_error={_error_reply} | reply_len={len(reply) if reply else 0}")
-    if _error_reply and corrected_message.strip():
-        fb_reply, fb_tools, fb_contacts, fb_errored = _kb_fallback_reply(corrected_message)
-        if fb_reply is not None:
-            reply, tools_used, suggestions = fb_reply, fb_tools, []
-            verified_public_contacts.update(fb_contacts)
-        elif fb_errored and not reply:
-            reply = "Xin lỗi, đã xảy ra lỗi khi xử lý câu hỏi. Vui lòng thử lại."
 
+def _prepared_chat_input(req: "ChatRequest", owner_key: str, session_id: str):
+    """(safe_input, None) hoặc (None, ChatResponse-từ-chối) — biên riêng tư đầu vào."""
+    try:
+        safe_input = prepare_chat_input(
+            req.message,
+            [item.model_dump() for item in req.history],
+            owner_key=owner_key,
+        )
+    except PrivacyBoundaryBlocked as exc:
+        logger.warning(
+            "Privacy boundary blocked input",
+            code=exc.code,
+            session_id=session_id,
+        )
+        return None, ChatResponse(
+            reply="Xin lỗi, tin nhắn này không thể xử lý vì lý do an toàn. Vui lòng diễn đạt lại.",
+            tool_calls=[], suggestions=[], session_id=session_id,
+        )
+    except PrivacyBoundaryUnavailable as exc:
+        logger.warning(
+            "Privacy boundary unavailable",
+            code=exc.code,
+            session_id=session_id,
+        )
+        return None, ChatResponse(
+            reply="Xin lỗi, hệ thống đang bận kiểm tra an toàn. Vui lòng thử lại sau ít phút.",
+            tool_calls=[], suggestions=[], session_id=session_id,
+        )
+    except Exception:
+        logger.warning(
+            "Privacy boundary unavailable",
+            code="UNEXPECTED_PRIVACY_BOUNDARY_ERROR",
+            session_id=session_id,
+        )
+        return None, ChatResponse(
+            reply="Xin lỗi, hệ thống đang bận kiểm tra an toàn. Vui lòng thử lại sau ít phút.",
+            tool_calls=[], suggestions=[], session_id=session_id,
+        )
+    return safe_input, None
+
+
+def _delivered_safe_reply_text(reply, message, verified_public_contacts, session_id):
+    """(safe_text, None) hoặc (None, ChatResponse-từ-chối) — biên riêng tư đầu ra."""
     try:
         safe_reply = _safe_delivered_reply(
             reply,
@@ -2244,33 +2153,116 @@ async def chat(req: ChatRequest, request: Request, response: Response):
             (knowledge._entities or {}) if hasattr(knowledge, "_entities") else {},
             verified_public_contacts,
         )
+        return safe_reply.text, None
     except PrivacyBoundaryUnavailable as exc:
         logger.warning("Privacy boundary unavailable for output", code=exc.code)
-        return ChatResponse(
-            reply=SAFE_PRIVACY_FAILURE_REPLY,
-            tool_calls=[],
-            suggestions=[],
-            session_id=session_id,
-        )
     except Exception:
         logger.warning(
             "Privacy boundary unavailable for output",
             code="UNEXPECTED_PRIVACY_OUTPUT_ERROR",
         )
+    return None, ChatResponse(
+        reply=SAFE_PRIVACY_FAILURE_REPLY,
+        tool_calls=[],
+        suggestions=[],
+        session_id=session_id,
+    )
+
+
+async def _semantic_cache_lookup(cache_eligible: bool, message: str, owner_key: str, session_id: str):
+    """(semantic_dedup_key, ChatResponse-cache-hit|None).
+
+    Chạy TRONG cùng task async của chat() — _hold_semantic_route_lease đặt
+    contextvar, đẩy sang thread/context khác là mất lease.
+    """
+    semantic_dedup_key = None
+    if not (cache_eligible and HAS_SEMANTIC_CACHE):
+        return None, None
+    try:
+        sem_cached = await semantic_get_async(message, owner_key=owner_key)
+        semantic_dedup_key = semantic_take_dedup_lease(
+            message,
+            owner_key=owner_key,
+        )
+        _hold_semantic_route_lease(
+            message,
+            owner_key,
+            semantic_dedup_key,
+        )
+        if sem_cached:
+            return semantic_dedup_key, _deliver_cached_response(
+                owner_key, session_id, message, sem_cached,
+                publish_semantic=False, semantic_dedup_key=None,
+            )
+    except Exception:
+        logger.debug("Semantic cache retrieval failed", exc_info=True)
+    return semantic_dedup_key, None
+
+
+def _exact_cache_lookup(message, owner_key, session_id, semantic_dedup_key):
+    """ChatResponse exact-cache-hit hoặc None (kèm đếm miss)."""
+    cached = cache.get(message, owner_key=owner_key)
+    if cached:
+        return _deliver_cached_response(
+            owner_key, session_id, message, cached,
+            publish_semantic=HAS_SEMANTIC_CACHE,
+            semantic_dedup_key=semantic_dedup_key,
+        )
+    if HAS_METRICS:
+        track_cache("miss")
+    return None
+
+
+def _deliver_cached_response(
+    owner_key, session_id, message, cached_payload, *,
+    publish_semantic, semantic_dedup_key,
+):
+    """ChatResponse cho một cache-hit (semantic hoặc exact) sau biên riêng tư.
+
+    publish_semantic: exact-hit công bố lại vào semantic cache; semantic-hit thì không.
+    """
+    try:
+        safe_cached = _safe_cached_payload(cached_payload)
+    except PrivacyBoundaryUnavailable as exc:
+        logger.warning("Legacy cache privacy boundary unavailable", code=exc.code)
         return ChatResponse(
             reply=SAFE_PRIVACY_FAILURE_REPLY,
             tool_calls=[],
             suggestions=[],
             session_id=session_id,
         )
-
-    reply = safe_reply.text
-    tools_used = redact_payload(tools_used, source="provider_output")
-    suggestions = redact_payload(suggestions, source="provider_output")
+    if HAS_METRICS:
+        track_cache("hit")
     _privacy_output_boundary_marker = True
-    settle_usage()
-    duration = time.time() - t0
+    if publish_semantic:
+        try:
+            semantic_put(
+                message,
+                safe_cached,
+                owner_key=owner_key,
+                dedup_key=semantic_dedup_key,
+            )
+        except Exception:
+            logger.debug("Semantic cache exact-hit publication failed", exc_info=True)
+    _record_cached_exchange(owner_key, session_id, message, safe_cached)
+    feedback_receipt = _issue_delivered_feedback_receipt(
+        owner_key,
+        message,
+        safe_cached.get("reply", ""),
+        "cache",
+        safe_cached.get("tool_calls", []),
+    )
+    return ChatResponse(
+        **safe_cached,
+        session_id=session_id,
+        cached=True,
+        feedback_receipt=feedback_receipt,
+    )
 
+
+def _record_turn_memory(owner_key, session_id, message, reply, corrected_message) -> None:
+    """Sink lịch-sử/bộ-nhớ — chỉ nhận text ĐÃ QUA biên riêng tư của chat()."""
+    _privacy_output_boundary_marker = True
     memory_manager.on_message(owner_key, session_id, "user", message)
     memory_manager.on_message(owner_key, session_id, "assistant", reply)
 
@@ -2287,7 +2279,10 @@ async def chat(req: ChatRequest, request: Request, response: Response):
     except Exception:
         logger.debug("LLM memory extraction failed", exc_info=True)
 
-    # Reflexion: evaluate answer quality
+
+def _evaluate_and_record(message, reply, tools_used, owner_key) -> dict:
+    """Reflexion + các kho học-tập — chỉ nhận text ĐÃ QUA biên riêng tư."""
+    _privacy_output_boundary_marker = True
     try:
         evaluation = reflexion_engine.evaluate_answer(message, reply, tools_used)
         quality_tracker.record(message, evaluation["score"], tools_used)
@@ -2329,7 +2324,14 @@ async def chat(req: ChatRequest, request: Request, response: Response):
     except Exception as eval_err:
         logger.warning("Reflexion evaluation error", error=str(eval_err))
         evaluation = {"score": 0, "issues": [], "good_points": []}
+    return evaluation
 
+
+def _record_optimizer_and_judge(
+    session_id, corrected_message, message, reply, tools_used,
+    evaluation, duration, owner_key,
+) -> None:
+    _privacy_output_boundary_marker = True
     # ── Self optimizer: record outcome for auto-tuning ──
     if HAS_OPTIMIZER:
         try:
@@ -2349,6 +2351,17 @@ async def chat(req: ChatRequest, request: Request, response: Response):
         except Exception:
             logger.debug("LLM Judge evaluation failed", exc_info=True)
 
+
+def _record_chat_telemetry(
+    session_id, corrected_message, message, reply, tools_used,
+    evaluation, duration, owner_key,
+) -> None:
+    """Optimizer/judge/AB/metrics/analytics — chỉ nhận text ĐÃ QUA biên riêng tư."""
+    _privacy_output_boundary_marker = True
+    _record_optimizer_and_judge(
+        session_id, corrected_message, message, reply, tools_used,
+        evaluation, duration, owner_key,
+    )
     # A/B testing: record outcome
     if HAS_AB_TESTING and session_id:
         try:
@@ -2377,24 +2390,125 @@ async def chat(req: ChatRequest, request: Request, response: Response):
     except Exception:
         logger.debug("Analytics tracking failed", exc_info=True)
 
-    # Cache response (only if good quality)
-    if cache_eligible and len(reply) > 30 and evaluation["score"] >= 5:
-        cache_data = {"reply": reply, "tool_calls": tools_used, "suggestions": suggestions}
-        owner_write_gate.assert_writable(owner_key)
-        cache.put(message, cache_data, owner_key=owner_key)
-        # ── Semantic cache: store for embedding-based dedup ──
-        if HAS_SEMANTIC_CACHE:
-            try:
-                semantic_put(
-                    message,
-                    cache_data,
-                    owner_key=owner_key,
-                    dedup_key=semantic_dedup_key,
-                )
-            except Exception:
-                pass
-        if HAS_METRICS:
-            track_cache("set")
+
+def _maybe_cache_reply(
+    cache_eligible, message, reply, tools_used, suggestions,
+    evaluation, owner_key, semantic_dedup_key,
+) -> None:
+    """Cache put (thường + semantic) khi đủ chất lượng — text ĐÃ QUA biên riêng tư."""
+    _privacy_output_boundary_marker = True
+    if not (cache_eligible and len(reply) > 30 and evaluation["score"] >= 5):
+        return
+    cache_data = {"reply": reply, "tool_calls": tools_used, "suggestions": suggestions}
+    owner_write_gate.assert_writable(owner_key)
+    cache.put(message, cache_data, owner_key=owner_key)
+    # ── Semantic cache: store for embedding-based dedup ──
+    if HAS_SEMANTIC_CACHE:
+        try:
+            semantic_put(
+                message,
+                cache_data,
+                owner_key=owner_key,
+                dedup_key=semantic_dedup_key,
+            )
+        except Exception:
+            pass
+    if HAS_METRICS:
+        track_cache("set")
+
+
+@router.post("/chat", response_model=ChatResponse)
+@_finalize_semantic_route_lease
+async def chat(req: ChatRequest, request: Request, response: Response):
+    owner_context = await resolve_chat_owner(request)
+    owner_key = owner_context.owner_key
+    session = None
+    requested_session_id = req.session_id or ""
+    session_id = requested_session_id
+    set_chat_owner_cookie(response, owner_context)
+
+    session, gate_response = _open_chat_session(
+        request, owner_context, requested_session_id
+    )
+    if gate_response is not None:
+        return gate_response
+
+    safe_input, refusal = _prepared_chat_input(req, owner_key, session_id)
+    if refusal is not None:
+        return refusal
+
+    _privacy_input_boundary_marker = True
+    message = safe_input.message
+    history = [
+        {"role": item.role, "content": item.content}
+        for item in safe_input.history
+    ]
+
+    if session is None:
+        session = memory_manager.create_session(owner_key)
+        session_id = session.session_id
+    _hydrate_empty_session(owner_key, session, history)
+    cache_eligible = not history and not session.get_context_messages()
+
+    # ── Semantic cache: embedding-based dedup (before regular cache) ──
+    semantic_dedup_key, cached_response = await _semantic_cache_lookup(
+        cache_eligible, message, owner_key, session_id
+    )
+    if cached_response is not None:
+        return cached_response
+
+    # Check cache (only for new conversations without history)
+    if cache_eligible:
+        exact_hit = _exact_cache_lookup(
+            message, owner_key, session_id, semantic_dedup_key
+        )
+        if exact_hit is not None:
+            return exact_hit
+
+    usage_accumulator = UsageAccumulator()
+    verified_public_contacts: set[str] = set()
+
+    corrected_message = _autocorrected(message)
+    settle_usage = partial(
+        _settle_chat_usage, usage_accumulator, owner_key, corrected_message
+    )
+    delivery_model = _pick_delivery_model(corrected_message)
+
+    t0 = time.time()
+    reply, tools_used, suggestions = await _run_chat_round(
+        corrected_message, history, session_id, owner_key,
+        usage_accumulator, verified_public_contacts, settle_usage,
+    )
+
+    # ── Knowledge-only fallback: supplement with KB data when LLM fails ──
+    reply, tools_used, suggestions = _apply_kb_fallback(
+        reply, tools_used, suggestions, corrected_message, verified_public_contacts
+    )
+
+    safe_text, refusal = _delivered_safe_reply_text(
+        reply, message, verified_public_contacts, session_id
+    )
+    if refusal is not None:
+        return refusal
+
+    reply = safe_text
+    tools_used = redact_payload(tools_used, source="provider_output")
+    suggestions = redact_payload(suggestions, source="provider_output")
+    _privacy_output_boundary_marker = True
+    settle_usage()
+    duration = time.time() - t0
+
+    _record_turn_memory(owner_key, session_id, message, reply, corrected_message)
+    evaluation = _evaluate_and_record(message, reply, tools_used, owner_key)
+
+    _record_chat_telemetry(
+        session_id, corrected_message, message, reply, tools_used,
+        evaluation, duration, owner_key,
+    )
+    _maybe_cache_reply(
+        cache_eligible, message, reply, tools_used, suggestions,
+        evaluation, owner_key, semantic_dedup_key,
+    )
 
     feedback_receipt = _issue_delivered_feedback_receipt(
         owner_key,

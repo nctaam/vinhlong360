@@ -203,6 +203,18 @@ def test_chat_route_tails_never_read_raw_request_content():
         assert "req.history" not in tail, route_name
 
 
+# Lát 35 R20.8: đuôi-sink của chat() tách thành 4 helper module-level; rào đi
+# theo mã — mỗi helper phải tự đặt marker TRƯỚC sink và được quét như handler.
+CHAT_TAIL_SINK_HELPERS = (
+    "_deliver_cached_response",
+    "_record_turn_memory",
+    "_evaluate_and_record",
+    "_record_optimizer_and_judge",
+    "_record_chat_telemetry",
+    "_maybe_cache_reply",
+)
+
+
 def test_chat_persistence_sinks_follow_an_output_boundary_marker():
     covered_sinks = set()
     for route_name in ("chat", "chat_stream"):
@@ -218,6 +230,20 @@ def test_chat_persistence_sinks_follow_an_output_boundary_marker():
             if sink_index >= 0:
                 assert input_marker < sink_index, route_name
         assert not _undominated_content_sinks(source), route_name
+    reachable_sources = _handler_source("chat") + "".join(
+        _handler_source(name) for name in CHAT_TAIL_SINK_HELPERS
+    )
+    for helper_name in CHAT_TAIL_SINK_HELPERS:
+        source = _handler_source(helper_name)
+        for sink in PERSISTENCE_SINKS:
+            if sink in source:
+                covered_sinks.add(sink)
+        assert not _undominated_content_sinks(source), helper_name
+        # Helper phải thật sự được gọi từ chat() hoặc một helper đuôi khác —
+        # sink không được "bốc hơi" khỏi đường chạy.
+        assert f"{helper_name}(" in reachable_sources.replace(
+            f"def {helper_name}(", ""
+        ), helper_name
     assert covered_sinks == set(PERSISTENCE_SINKS), (
         "source guard is not exercising sinks: "
         f"{sorted(set(PERSISTENCE_SINKS) - covered_sinks)}"
