@@ -1,9 +1,10 @@
 # Bản đồ module đề xuất — tách hệ thống theo MIỀN CHỨC NĂNG
 
-> STATUS: done — chương trình ĐÓNG SỔ 2026-08-29 (§8c): 9 gói miền, 0 shim,
-> phần dư admin/public_api/database đóng có chủ đích. Diễn tiến: 3 miền đầu
-> (§46) → 5/5 theo chỉ đạo (§8b) → gỡ shim + itineraries/ (§8c) → dọn
-> route-dư lát 4 (§8d). `server.py` 5.507 → 2.159 dòng (−61%).
+> STATUS: done — ĐÓNG SỔ LẦN HAI 2026-08-29 (§8f, đợt hoàn-thiện-sâu): mọi
+> route trong gói chính chủ trừ danh-sách-ở-lại-có-lý-do. Diễn tiến: 3 miền
+> (§46) → 5/5 (§8b) → gỡ shim + itineraries/ (§8c) → route-dư (§8d) →
+> analytics đo-không-gói (§8e) → 7 lát sâu (§8f). server.py 5.507 → 1.865
+> (−66%); admin.py 4.502 → ~1.833; 11 gói miền.
 > Chi phí ĐO ĐƯỢC của hai lát đã làm ghi ở ROADMAP §45; nó ĐẢO thứ tự ưu tiên
 > ban đầu của tài liệu này — đọc §7 đã sửa bên dưới trước khi làm lát thứ ba.
 > Đo 2026-08-27 trên `codex/correction-case-pilot`. Mọi con số dưới đây là ĐO,
@@ -261,3 +262,32 @@ giá ~72 điểm vá test/14 file + 2 mìn thật: tên gói đụng module số
 `agent/analytics.py` (6 consumer), và cắt audit-read là CHẺ ĐÔI `_audit_cache`
 giữa writer `_log_admin_audit` với reader. Đóng-sổ-có-chủ-đích đúng khuôn
 §8c; mở lại chỉ khi tiểu-miền nào đó phình thành miền thật (luật-cắt §8c).
+
+## 8f. ĐỢT HOÀN-THIỆN-SÂU KHÉP (2026-08-29) — mọi route trong gói chính chủ, trừ danh sách ở-lại-có-lý-do
+
+Lệnh chủ dự án "thực hiện hết nhóm 4-8 + làm sâu nhóm để-lại". Bảy lát trong
+một ngày, mỗi lát một commit đủ nghi thức (hồ sơ đo trước → thi công → battery
+so baseline → full-suite diff-16 rỗng → đếm DB thật):
+
+| Lát | Commit | Nội dung |
+|---|---|---|
+| 1 | `8a93bdc9` | community/admin_api.py — 42 route, admin.py 4.502→2.822 |
+| 2 | `93b20097` | itineraries/ hai mặt route (3 public + 5 admin) |
+| 3 | `2434da80` | siteops/ hai mặt (22 admin + 2 public), admin.py →1.962 |
+| 4 | `32b3e5af` | /search/enhanced→llmops, /feed/new-since→community (+503-SQLite có duyệt), đóng sổ §8d |
+| 5 | `70ff4da7` | notifications admin_router (1 route; R20.5 học \w*router\w*) |
+| 6 | `4b2fe0c7` | 6 route collections → entities/ (phán nhà bằng schema; 0 test hiện-có phải sửa) |
+| 7 | `50cbf3b6` | analytics: ĐO XONG, QUYẾT KHÔNG GÓI (§8e) |
+| 8 | `9d067ee0` | boundary moderation (dịch-vụ-lá) |
+| 9 | `146ac707` | đuôi-dài 12 route → llmops+7/chat+2/entities+3; server.py →1.865 |
+
+**Trạng thái cuối**: server.py 5.507→1.865 (−66%), @app còn 14 = 9 điểm-vào
++ 5 ở-lại-có-lý-do (/api/mentions aggregator, /api/client-error, /weather ×2
+nguồn realtime, /events nguồn-hằng); admin.py 4.502→~1.83x; public_api còn
+phần-dư-có-chủ-đích (§8d). 11 gói miền + 4 tầng dùng chung + moderation-lá
+có rào. FLOORS docstring tách sàn 4 lần, tổng bất biến. Sổ hình-thái-mù
+trục-2: **TÁM** (mới: hasattr — lát 1; src.find("tên-ngắn") — lát 9).
+
+Đường ranh còn lại là CHỦ ĐÍCH hết: /me (namespace, không phải miền),
+xương sống database/middleware (§5), analytics (§8e), 5 route đuôi (§8f).
+Luật-cắt §8c là la bàn duy nhất cho mai sau.
