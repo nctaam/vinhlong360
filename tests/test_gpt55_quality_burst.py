@@ -575,3 +575,11 @@ def test_entity_shard_seq_continues_across_calls_same_stream() -> None:
         "source-non_place_first-0000",
         "source-place_second-0001",
     ]
+
+
+def test_placeid_policy_matrix_after_split() -> None:
+    # Lát 19: auto_apply luôn bị hạ needs_review; không candidate thì
+    # ngưỡng 0.70 quyết reject/needs_review.
+    assert q._placeid_policy("p-1", 0.96, False) == "needs_review"
+    assert q._placeid_policy("", 0.69, False) == "reject"
+    assert q._placeid_policy("", 0.71, False) == "needs_review"

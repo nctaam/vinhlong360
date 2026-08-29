@@ -825,22 +825,27 @@ def run_source_stream(data: dict[str, Any], llm: JsonLLMClient, config: BurstCon
     return run_parallel(targets, config.item_workers, lambda entity: source_candidate_for_entity(entity, llm, config))
 
 
+def _place_match_score(place: dict[str, Any], area: Any, text: str) -> float:
+    place_area = place.get("area")
+    score = 0.0
+    if area and place_area == area:
+        score += 2.0
+    elif area and place_area and place_area != area:
+        score -= 3.0
+    place_name = norm_text(place.get("name"))
+    tokens = [token for token in place_name.split() if len(token) >= 3]
+    if place_name and place_name in text:
+        score += 4.0
+    score += sum(0.45 for token in tokens if token in text)
+    return score
+
+
 def candidate_places_for_entity(entity: dict[str, Any], places: list[dict[str, Any]], *, limit: int = 25) -> list[dict[str, Any]]:
     area = entity.get("area")
     text = norm_text(" ".join([str(entity.get("name") or ""), entity_address(entity), str(entity.get("summary") or "")]))
     scored: list[tuple[float, dict[str, Any]]] = []
     for place in places:
-        place_area = place.get("area")
-        score = 0.0
-        if area and place_area == area:
-            score += 2.0
-        elif area and place_area and place_area != area:
-            score -= 3.0
-        place_name = norm_text(place.get("name"))
-        tokens = [token for token in place_name.split() if len(token) >= 3]
-        if place_name and place_name in text:
-            score += 4.0
-        score += sum(0.45 for token in tokens if token in text)
+        score = _place_match_score(place, area, text)
         if score > 0:
             scored.append((score, place))
     scored.sort(key=lambda item: item[0], reverse=True)
@@ -850,6 +855,27 @@ def candidate_places_for_entity(entity: dict[str, Any], places: list[dict[str, A
         {"id": place.get("id"), "name": place.get("name"), "area": place.get("area"), "legacyArea": place.get("legacyArea")}
         for _score, place in scored[:limit]
     ]
+
+
+def _placeid_conflict(
+    entity: dict[str, Any], candidate_id: str, candidate_place: dict[str, Any] | None
+) -> tuple[bool, str]:
+    if candidate_id and candidate_place is None:
+        return True, "candidate placeId does not exist"
+    entity_area = entity.get("area")
+    place_area = candidate_place.get("area") if candidate_place else None
+    if candidate_place and entity_area and place_area and entity_area != place_area:
+        return True, f"area conflict: entity={entity_area}, place={place_area}"
+    return False, ""
+
+
+def _placeid_policy(candidate_id: str, confidence: float, conflict: bool) -> str:
+    policy = classify_apply_policy(confidence, [], conflict=conflict, verified=False)
+    if policy == "auto_apply":
+        policy = "needs_review"
+    if not candidate_id:
+        policy = "reject" if confidence < 0.70 else "needs_review"
+    return policy
 
 
 def placeid_candidate_from_decision(
@@ -864,21 +890,8 @@ def placeid_candidate_from_decision(
     confidence = as_confidence(decision.get("confidence"), 0.0)
     evidence = decision.get("evidence") or decision.get("reason") or ""
     candidate_place = place_by_id.get(candidate_id)
-    conflict = False
-    conflict_reason = ""
-    if candidate_id and candidate_place is None:
-        conflict = True
-        conflict_reason = "candidate placeId does not exist"
-    entity_area = entity.get("area")
-    place_area = candidate_place.get("area") if candidate_place else None
-    if candidate_place and entity_area and place_area and entity_area != place_area:
-        conflict = True
-        conflict_reason = f"area conflict: entity={entity_area}, place={place_area}"
-    policy = classify_apply_policy(confidence, [], conflict=conflict, verified=False)
-    if policy == "auto_apply":
-        policy = "needs_review"
-    if not candidate_id:
-        policy = "reject" if confidence < 0.70 else "needs_review"
+    conflict, conflict_reason = _placeid_conflict(entity, candidate_id, candidate_place)
+    policy = _placeid_policy(candidate_id, confidence, conflict)
     return make_candidate_record(
         entity_id=str(entity.get("id") or ""), field="placeId", current_value=entity.get("placeId"),
         suggested_value=candidate_id or None, confidence=confidence, evidence_urls=[],
