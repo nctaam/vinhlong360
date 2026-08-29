@@ -38,27 +38,37 @@ def _canonical_timestamp(value: object, *, optional: bool) -> str | None:
     return value
 
 
+def _validated_text_item(field: str, item: object) -> object:
+    if field in _ENUM_VALUES:
+        if type(item) is not str or item not in _ENUM_VALUES[field]:
+            raise ValueError("unsafe_case_audit_snapshot")
+        return item
+    if field in _REQUIRED_TEXT_FIELDS:
+        if type(item) is not str or not item:
+            raise ValueError("unsafe_case_audit_snapshot")
+        return item
+    if item is not None and (type(item) is not str or not item):
+        raise ValueError("unsafe_case_audit_snapshot")
+    return item
+
+
+def _validated_projection_item(field: str, item: object) -> object:
+    if field in _ENUM_VALUES or field in _REQUIRED_TEXT_FIELDS or field in _OPTIONAL_TEXT_FIELDS:
+        return _validated_text_item(field, item)
+    if field == "current_revision":
+        if type(item) is not int or item < 1:
+            raise ValueError("unsafe_case_audit_snapshot")
+        return item
+    return _canonical_timestamp(item, optional=field == "closed_at")
+
+
 def canonical_case_projection(value: Mapping[str, object]) -> Mapping[str, object]:
     """Validate the exact scalar audit schema and return an immutable copy."""
     if type(value) not in (dict, MappingProxyType) or not set(value) <= _SAFE_CASE_FIELDS:
         raise ValueError("unsafe_case_audit_snapshot")
     canonical: dict[str, object] = {}
     for field, item in value.items():
-        if field in _ENUM_VALUES:
-            if type(item) is not str or item not in _ENUM_VALUES[field]:
-                raise ValueError("unsafe_case_audit_snapshot")
-        elif field in _REQUIRED_TEXT_FIELDS:
-            if type(item) is not str or not item:
-                raise ValueError("unsafe_case_audit_snapshot")
-        elif field in _OPTIONAL_TEXT_FIELDS:
-            if item is not None and (type(item) is not str or not item):
-                raise ValueError("unsafe_case_audit_snapshot")
-        elif field == "current_revision":
-            if type(item) is not int or item < 1:
-                raise ValueError("unsafe_case_audit_snapshot")
-        else:
-            item = _canonical_timestamp(item, optional=field == "closed_at")
-        canonical[field] = item
+        canonical[field] = _validated_projection_item(field, item)
     return MappingProxyType(canonical)
 
 
@@ -107,8 +117,8 @@ class CaseAuditDraft:
     after_snapshot: Mapping[str, object] | None
     occurred_at: datetime
 
-    def __post_init__(self) -> None:
-        if (
+    def _identity_fields_valid(self) -> bool:
+        return not (
             type(self.case_id) is not str
             or not self.case_id
             or type(self.actor_ref) is not str
@@ -116,15 +126,27 @@ class CaseAuditDraft:
             or type(self.actor_scopes) is not tuple
             or tuple(sorted(set(self.actor_scopes))) != self.actor_scopes
             or not all(type(scope) is str and scope for scope in self.actor_scopes)
-            or type(self.channel) is not Channel
+        )
+
+    def _label_fields_valid(self) -> bool:
+        return not (
+            type(self.channel) is not Channel
             or type(self.reason_code) is not str
             or not self.reason_code
             or type(self.policy_revision) is not str
             or not self.policy_revision
             or type(self.correlation_id) is not str
             or not self.correlation_id
-            or type(self.occurred_at) is not datetime
-            or self.occurred_at.tzinfo is None
+        )
+
+    def _occurred_at_valid(self) -> bool:
+        return type(self.occurred_at) is datetime and self.occurred_at.tzinfo is not None
+
+    def __post_init__(self) -> None:
+        if (
+            not self._identity_fields_valid()
+            or not self._label_fields_valid()
+            or not self._occurred_at_valid()
         ):
             raise ValueError("invalid_case_audit")
         for name in ("before_snapshot", "after_snapshot"):
