@@ -583,3 +583,15 @@ def test_placeid_policy_matrix_after_split() -> None:
     assert q._placeid_policy("p-1", 0.96, False) == "needs_review"
     assert q._placeid_policy("", 0.69, False) == "reject"
     assert q._placeid_policy("", 0.71, False) == "needs_review"
+
+
+def test_eval_case_sections_share_one_picked_set() -> None:
+    # Lát 20: `picked` dùng chung xuyên các đoạn — entity đã vào lịch trình
+    # khu vực thì KHÔNG được xuất hiện lại ở đoạn dish phía sau.
+    cases = q.generate_heuristic_eval_cases(sample_data(), case_target=30)
+    seen: set[str] = set()
+    for case in cases:
+        for entity_id in case.get("expected_entities", []):
+            assert entity_id not in seen or case["category"] == "itinerary"
+        if case["category"] != "itinerary":
+            seen.update(case.get("expected_entities", []))

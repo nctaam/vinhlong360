@@ -989,7 +989,7 @@ def run_location_stream(data: dict[str, Any], llm: JsonLLMClient, config: BurstC
     return run_parallel(targets, config.item_workers, lambda entity: location_candidate_for_entity(entity, llm, config))
 
 
-def heuristic_quality_status(entity: dict[str, Any]) -> tuple[str, float, list[str]]:
+def _quality_flags(entity: dict[str, Any]) -> list[str]:
     flags: list[str] = []
     if not entity.get("name"):
         flags.append("missing_name")
@@ -1005,6 +1005,11 @@ def heuristic_quality_status(entity: dict[str, Any]) -> tuple[str, float, list[s
         flags.append("missing_area")
     if entity_coordinates(entity) is None:
         flags.append("missing_coordinates")
+    return flags
+
+
+def heuristic_quality_status(entity: dict[str, Any]) -> tuple[str, float, list[str]]:
+    flags = _quality_flags(entity)
     if not flags:
         return "verified", 0.80, []
     if any(flag in flags for flag in ("missing_name", "missing_type", "missing_area")):
@@ -1147,43 +1152,50 @@ def eval_case(query: str, entity_ids: list[str], keywords: list[str], category: 
     return {"query": query, "expected_entities": entity_ids, "expected_tools": ["search"] if category != "itinerary" else ["search", "entity_detail"], "expected_keywords": keywords, "category": category, "difficulty": difficulty, "max_score": 10.0}
 
 
-def generate_heuristic_eval_cases(data: dict[str, Any], *, case_target: int = 30) -> list[dict[str, Any]]:
+def _take_unpicked(pool: list[dict[str, Any]], count: int, picked: set[str]) -> list[dict[str, Any]]:
+    chosen = []
+    for entity in pool:
+        entity_id = str(entity.get("id") or "")
+        if not entity_id or entity_id in picked:
+            continue
+        picked.add(entity_id)
+        chosen.append(entity)
+        if len(chosen) >= count:
+            break
+    return chosen
+
+
+def _area_itinerary_cases(data: dict[str, Any], picked: set[str]) -> list[dict[str, Any]]:
     cases: list[dict[str, Any]] = []
-    picked: set[str] = set()
-
-    def take(pool: list[dict[str, Any]], count: int) -> list[dict[str, Any]]:
-        chosen = []
-        for entity in pool:
-            entity_id = str(entity.get("id") or "")
-            if not entity_id or entity_id in picked:
-                continue
-            picked.add(entity_id)
-            chosen.append(entity)
-            if len(chosen) >= count:
-                break
-        return chosen
-
-    for entity in take(select_entities(data, "attraction"), 5):
-        name = str(entity.get("name") or "")
-        cases.append(eval_case(f"Gioi thieu diem tham quan {name} va vi sao nen den?", [str(entity["id"])], [name], "factual", "easy"))
-    for entity in take(select_entities(data, "product"), 5):
-        name = str(entity.get("name") or "")
-        cases.append(eval_case(f"San pham OCOP hoac dac san {name} co gi noi bat?", [str(entity["id"])], [name], "recommendation"))
-    for entity in take(select_entities(data, "accommodation"), 4):
-        name = str(entity.get("name") or "")
-        cases.append(eval_case(f"Neu toi muon luu tru gan {name}, can biet dieu gi?", [str(entity["id"])], [name], "recommendation"))
-    khmer_pool = select_entities(data, area="tra-vinh", text="Khmer") or select_entities(data, "history", area="tra-vinh")
-    for entity in take(khmer_pool, 5):
-        name = str(entity.get("name") or "")
-        cases.append(eval_case(f"{name} lien quan gi den van hoa Khmer Tra Vinh?", [str(entity["id"])], [name, "Khmer", "Tra Vinh"], "factual"))
     for area in AREAS:
-        pool = take([e for e in data.get("entities", []) if isinstance(e, dict) and e.get("area") == area and e.get("type") in {"attraction", "history", "nature", "dish", "product"}], 3)
+        pool = _take_unpicked([e for e in data.get("entities", []) if isinstance(e, dict) and e.get("area") == area and e.get("type") in {"attraction", "history", "nature", "dish", "product"}], 3, picked)
         if pool:
             area_label = AREA_LABELS.get(area, area)
             ids = [str(e.get("id")) for e in pool if e.get("id")]
             names = [str(e.get("name")) for e in pool[:2] if e.get("name")]
             cases.append(eval_case(f"Lap lich trinh mot ngay o {area_label} cho an uong va tham quan.", ids, [area_label] + names, "itinerary", "hard"))
-    for entity in take(select_entities(data, "dish"), 5):
+    return cases
+
+
+def generate_heuristic_eval_cases(data: dict[str, Any], *, case_target: int = 30) -> list[dict[str, Any]]:
+    cases: list[dict[str, Any]] = []
+    picked: set[str] = set()
+
+    for entity in _take_unpicked(select_entities(data, "attraction"), 5, picked):
+        name = str(entity.get("name") or "")
+        cases.append(eval_case(f"Gioi thieu diem tham quan {name} va vi sao nen den?", [str(entity["id"])], [name], "factual", "easy"))
+    for entity in _take_unpicked(select_entities(data, "product"), 5, picked):
+        name = str(entity.get("name") or "")
+        cases.append(eval_case(f"San pham OCOP hoac dac san {name} co gi noi bat?", [str(entity["id"])], [name], "recommendation"))
+    for entity in _take_unpicked(select_entities(data, "accommodation"), 4, picked):
+        name = str(entity.get("name") or "")
+        cases.append(eval_case(f"Neu toi muon luu tru gan {name}, can biet dieu gi?", [str(entity["id"])], [name], "recommendation"))
+    khmer_pool = select_entities(data, area="tra-vinh", text="Khmer") or select_entities(data, "history", area="tra-vinh")
+    for entity in _take_unpicked(khmer_pool, 5, picked):
+        name = str(entity.get("name") or "")
+        cases.append(eval_case(f"{name} lien quan gi den van hoa Khmer Tra Vinh?", [str(entity["id"])], [name, "Khmer", "Tra Vinh"], "factual"))
+    cases.extend(_area_itinerary_cases(data, picked))
+    for entity in _take_unpicked(select_entities(data, "dish"), 5, picked):
         name = str(entity.get("name") or "")
         cases.append(eval_case(f"Mon {name} nen thu o dau va co dac diem gi?", [str(entity["id"])], [name], "factual"))
     return cases[:case_target]
