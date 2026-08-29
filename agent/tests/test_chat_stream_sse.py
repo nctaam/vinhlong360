@@ -1077,3 +1077,14 @@ def test_double_native_cancellation_accounts_first_decision(monkeypatch):
 
     _assert_double_native_cancellation_waited(probe, observed)
     _assert_decision_cancel_usage(probe, guardrail, attribution)
+
+
+def test_no_renamed_context_strings_leaked_into_literals():
+    # Hồi quy lát 36: regex đổi-tên từng phá dict-key '"messages"' thành
+    # '"ctx.messages"' (KeyError mọi stream-decision). Cấm vĩnh viễn mọi
+    # literal 'ctx.' trong nguồn chat/api.py.
+    import inspect
+    from chat import api as _chat_api
+
+    src = inspect.getsource(_chat_api)
+    assert '"ctx.' not in src and "'ctx." not in src

@@ -2600,7 +2600,7 @@ async def _event_stream_body(ctx: "_StreamContext"):
 
     for round_num in range(max_rounds):
         try:
-            _kw = {"model": ctx.stream_model, "ctx.messages": ctx.messages, "tools": TOOLS, "tool_choice": "auto", "timeout": LLM_TIMEOUT}
+            _kw = {"model": ctx.stream_model, "messages": ctx.messages, "tools": TOOLS, "tool_choice": "auto", "timeout": LLM_TIMEOUT}
             if ctx.stream_temp is not None:
                 _kw["temperature"] = ctx.stream_temp
             # CONC-001: chạy LLM-call ĐỒNG-BỘ trong thread để KHÔNG chặn event loop
