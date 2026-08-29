@@ -4138,3 +4138,16 @@ thiếu env → skip đúng chiều, 796 skipped ở baseline).
   guard (hoặc gate path) NHƯNG là behavior change công khai — cần chủ dự án
   quyết, KHÔNG tự thêm (quyết định điều phối khi thi công lát 4: bảo toàn
   hành vi).
+
+### Backlog phát sinh — Sự cố đĩa-đầy giữa đợt hoàn-thiện-sâu (2026-08-29)
+
+- **Đã xử theo lệnh "dọn rác dự án" + "nén Docker"**: ổ C: tràn 100% (49MB)
+  làm một lượt full-run chết I/O (DB kiểm ngay: nguyên vẹn, integrity ok —
+  lượt đo vô hiệu, chạy lại sạch). Dọn thuộc-quyền: pytest-temp, docker
+  build-cache 2GB + dangling 472MB, 20 DB PG dùng-một-lần, 7 container
+  vl360* chết, coverage artifacts, pip cache, log phiên, __pycache__ ×21,
+  git gc. **Nén vhdx Docker qua diskpart nâng-quyền: 32.7→24GB (+8.7GB)**
+  — tổng sau xử: ~10.8GB trống. Quy trình nén ghi memory máy.
+- **CÒN, chờ chủ quyết (dữ liệu ngoài dự án)**: Downloads 14GB; cây Users
+  ~150GB chưa soi chi tiết. Máy mấp mé đầy kinh niên — trước chiến dịch đo
+  dài nên kiểm ≥2GB trống.
