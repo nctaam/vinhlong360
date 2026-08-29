@@ -27,7 +27,7 @@ _CHAT_OWNER_SECRET = _secret.encode("utf-8")
 
 
 async def _get_current_user_or_none(request: Request) -> dict | None:
-    from auth import _get_current_user_or_none as get_current_user
+    from identity.api import _get_current_user_or_none as get_current_user
 
     return await get_current_user(request)
 

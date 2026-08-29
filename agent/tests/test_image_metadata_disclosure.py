@@ -9,7 +9,7 @@ from fastapi import Request, Response
 import public_api
 from entities import api as entities_api
 import seo
-import social
+from community import api as social
 from ai_disclosure import load_ai_disclosure
 from launch_evidence import INDEX_POLICY_REVISION, PolicyEvidence
 from route_manifest import EXPECTED_REVISION as ROUTE_MANIFEST_REVISION

@@ -332,7 +332,7 @@ async def notification_stream(request: Request, token: str = Query(None, max_len
     rỗng 30 giây thì gửi comment keepalive. Mỗi user giữ tối đa 5 hàng đợi, đăng ký thứ 6
     đẩy hàng đợi cũ nhất ra.
     """
-    from auth import _extract_token
+    from identity.api import _extract_token
     session_token = _extract_token(request)
     if not session_token and token and os.environ.get("ENVIRONMENT", "").lower() not in {"production", "prod", "prd"}:
         session_token = token
@@ -392,7 +392,7 @@ async def _register_sse_subscriber(uid: str, queue: "asyncio.Queue"):
 
 
 def _query_sse_session(session_token: str):
-    from auth import _hash_token
+    from identity.api import _hash_token
     with db._conn() as conn:
         return db._fetchone(conn, f"""
             SELECT u.id FROM user_sessions s

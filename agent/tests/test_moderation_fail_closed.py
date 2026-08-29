@@ -317,7 +317,7 @@ def _request(path: str) -> Request:
     ],
 )
 def test_pending_moderation_never_persists_public_profile_fields(monkeypatch, field, value):
-    import auth
+    from identity import api as auth
     import ratelimit
 
     user = {"id": "user-1", "phone": "0901234567", "display_name": "Tên cũ"}
@@ -346,7 +346,7 @@ def test_pending_moderation_never_persists_public_profile_fields(monkeypatch, fi
 
 
 def test_approved_profile_moderation_still_persists(monkeypatch):
-    import auth
+    from identity import api as auth
     import ratelimit
 
     user = {"id": "user-1", "phone": "0901234567", "display_name": "Tên cũ"}
@@ -413,7 +413,7 @@ class _CollectionDb:
 
 @pytest.mark.parametrize("statuses", [["pending"], ["approved", "pending"]])
 def test_pending_moderation_never_creates_public_collection(monkeypatch, statuses):
-    import social
+    from community import api as social
 
     fake_db = _CollectionDb()
     results = iter(statuses)
@@ -444,7 +444,7 @@ def test_pending_moderation_never_creates_public_collection(monkeypatch, statuse
 
 
 def test_private_collection_remains_storable_when_provider_is_pending(monkeypatch):
-    import social
+    from community import api as social
 
     fake_db = _CollectionDb()
 
@@ -463,7 +463,7 @@ def test_private_collection_remains_storable_when_provider_is_pending(monkeypatc
 
 
 def test_approved_public_collection_behavior_is_preserved(monkeypatch):
-    import social
+    from community import api as social
 
     fake_db = _CollectionDb()
 

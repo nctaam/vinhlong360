@@ -467,63 +467,63 @@ class TestAuthBypassAudit:
     """Verify that write endpoints in social.py and auth.py use auth dependencies."""
 
     def test_social_create_post_requires_auth(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.create_post)
         assert "require_user" in src or "_get_current_user_or_none" in src
 
     def test_social_delete_post_requires_auth(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.delete_post)
         assert "require_user" in src or "_get_current_user_or_none" in src
 
     def test_social_create_comment_requires_auth(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.create_comment)
         assert "require_user" in src or "_get_current_user_or_none" in src
 
     def test_social_like_requires_auth(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.toggle_like)
         assert "require_user" in src or "_get_current_user_or_none" in src
 
     def test_social_upload_requires_auth(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.upload_image)
         assert "require_user" in src or "_get_current_user_or_none" in src
 
     def test_social_create_post_has_rate_limit(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.create_post)
         assert "check_rate" in src
 
     def test_social_create_comment_has_rate_limit(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.create_comment)
         assert "check_rate" in src
 
     def test_social_upload_has_rate_limit(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.upload_image)
         assert "check_rate" in src
 
     def test_auth_set_password_requires_session(self):
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.set_password)
         assert "_get_current_user_or_none" in src or "require_user" in src
 
     def test_auth_logout_references_session(self):
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.logout)
         assert "session_token" in src or "_hash_token" in src
 
     def test_auth_profile_update_requires_session(self):
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.update_profile)
         assert "_get_current_user_or_none" in src or "require_user" in src
 
     def test_auth_profile_update_sanitizes_input(self):
         """Profile update must sanitize user input (XSS prevention)."""
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.update_profile)
         assert "html.escape" in src or "escape" in src or "sanitize" in src
 
@@ -532,7 +532,7 @@ class TestAccountPrivacyContracts:
     """Exercise account and consent handlers through their observable responses."""
 
     def test_consent_history_projects_only_id_version_and_created_at(self, monkeypatch):
-        import auth
+        from identity import api as auth
 
         row = {
             "id": "consent-1",
@@ -567,7 +567,7 @@ class TestAccountPrivacyContracts:
         Giữ nguyên điều đang được bảo vệ — không có câu lệnh nào chạm bảng
         personalization — chỉ đổi cách dựng cảnh cho khớp đường thật.
         """
-        import auth
+        from identity import api as auth
         import ratelimit
         from datetime import timedelta
 
@@ -606,7 +606,7 @@ class TestAccountPrivacyContracts:
             assert not any(table in stmt for stmt in statements),                 f"delete_account không được đụng {table}"
 
     def test_deactivate_remains_reactivation_semantics_not_deletion(self, monkeypatch):
-        import auth
+        from identity import api as auth
         import ratelimit
 
         state = {
@@ -661,7 +661,7 @@ class TestAuthPasswordSecurity:
 
     def test_set_password_checks_current_password(self):
         """set_password should verify the current password before allowing change."""
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.set_password)
         assert "current" in src.lower() or "old" in src.lower() or "verify" in src.lower()
 
@@ -774,7 +774,7 @@ class TestSessionFixationPrevention:
         helper (called from login_password's non-2FA success path) rather than
         inline in login_password itself.
         """
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.login_password)
         assert "_finish_login" in src, "login must reach the session-creation helper"
         assert "_generate_token" in inspect.getsource(auth._finish_login), \
@@ -787,7 +787,7 @@ class TestSessionFixationPrevention:
         helper (called from verify_otp's non-2FA success path) rather than
         inline in verify_otp itself.
         """
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.verify_otp)
         assert "_finish_login" in src, "verify_otp must reach the session-creation helper"
         assert "_generate_token" in inspect.getsource(auth._finish_login), \
@@ -795,7 +795,7 @@ class TestSessionFixationPrevention:
 
     def test_set_password_revokes_other_sessions(self):
         """Password change should revoke other sessions."""
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.set_password)
         assert "DELETE" in src.upper() or "delete" in src or "revoke" in src.lower()
 
@@ -808,18 +808,18 @@ class TestModerationCoverage:
     """Verify moderation coverage across UGC write paths."""
 
     def test_create_post_calls_moderation(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.create_post)
         assert "moderate_content" in src or "moderation" in src
 
     def test_update_post_calls_moderation(self):
         """Post updates with content changes should re-run moderation."""
-        import social
+        from community import api as social
         src = inspect.getsource(social.update_post)
         assert "moderate_content" in src or "moderation" in src
 
     def test_image_upload_has_size_limit(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.upload_image)
         assert "MAX_IMAGE" in src or "max_size" in src.lower() or "5 * 1024" in src or "5_000_000" in src or "5242880" in src
 
@@ -829,7 +829,7 @@ class TestModerationCoverage:
 def test_send_sms_still_answers_with_a_plain_boolean():
     import inspect
 
-    import auth
+    from identity import api as auth
 
     assert inspect.iscoroutinefunction(auth._send_sms)
     source = inspect.getsource(auth._send_sms)
@@ -839,13 +839,13 @@ def test_send_sms_still_answers_with_a_plain_boolean():
 
 
 def test_the_retry_bound_is_still_exposed_on_auth():
-    import auth
+    from identity import api as auth
 
     assert 2 <= auth._SMS_MAX_RETRIES <= 5
 
 
 def test_auth_no_longer_holds_its_own_http_client():
-    import auth
+    from identity import api as auth
 
     # A second copy of the transport is how the two paths drift apart.
     assert not hasattr(auth, "httpx")

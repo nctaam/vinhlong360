@@ -10,7 +10,7 @@ from threading import RLock
 import httpx
 import pytest
 
-import auth
+from identity import api as auth
 
 from identity import api as identity_api  # mien dinh danh sang day 2026-08-28
 import data_lifecycle

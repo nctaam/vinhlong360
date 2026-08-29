@@ -50,7 +50,9 @@ PG_GUARD = "require_pg"
 # SQLite phải trả 503 rõ ràng chứ không phải 500 vỡ bụng.
 UGC_MODULES = frozenset(
     {
-        "social", "notifications", "achievements", "plans", "saved", "visits", "auth",
+        "notifications", "achievements", "plans", "saved", "visits",
+        # "social"/"auth" đã GỠ 2026-08-29 cùng cú xoá shim — không endpoint nào
+        # còn mang __module__ hai tên đó; giữ entry chết là nói dối người đọc.
         # Miền cộng đồng sang gói community/ (2026-08-28): handler dời mang
         # __module__ == "community.api". Không thêm là selector đếm hụt và
         # chính rào này tự đỏ với thông điệp "đừng tin màu xanh" — đúng thiết kế.

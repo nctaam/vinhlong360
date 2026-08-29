@@ -17,7 +17,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "agent"))
 
-import auth  # noqa: E402
+from identity import api as auth  # noqa: E402
 
 
 class _Response:

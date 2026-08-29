@@ -278,37 +278,37 @@ class TestBlockEnforcementAudit:
     """Verify _block_sql() is applied in all user-facing query functions."""
 
     def _get_social_source(self):
-        import social
+        from community import api as social
         return inspect.getsource(social)
 
     def test_block_in_search_users(self):
-        src = inspect.getsource(__import__("social").search_users)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).search_users)
         assert "_block_sql" in src
 
     def test_block_in_entity_feed(self):
-        src = inspect.getsource(__import__("social").get_entity_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_entity_feed)
         assert "_block_sql" in src
 
     def test_block_in_suggested_follows(self):
-        src = inspect.getsource(__import__("social").suggested_follows)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).suggested_follows)
         assert "_block_sql" in src
 
     def test_block_in_comments(self):
-        src = inspect.getsource(__import__("social").get_comments)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_comments)
         assert "_block_sql" in src
 
     def test_block_in_following_feed(self):
-        src = inspect.getsource(__import__("social").get_following_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_following_feed)
         assert "_block_sql" in src
 
     def test_block_sql_is_bidirectional(self):
-        src = inspect.getsource(__import__("social")._block_sql)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._block_sql)
         assert "blocker_id" in src
         assert "blocked_id" in src
 
     def test_all_read_post_queries_have_block(self):
         """Every GET function that queries posts table should use _block_sql."""
-        import social
+        from community import api as social
         read_funcs = ["get_entity_feed", "get_following_feed", "search_users",
                       "suggested_follows", "get_comments"]
         for func_name in read_funcs:

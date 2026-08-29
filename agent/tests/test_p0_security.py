@@ -12,7 +12,7 @@ from fastapi import HTTPException
 # ── P0-6: session token hashing ──
 
 def test_hash_token_deterministic_and_not_plaintext():
-    from auth import _hash_token, _generate_token
+    from identity.api import _hash_token, _generate_token
     tok = _generate_token()
     h1 = _hash_token(tok)
     h2 = _hash_token(tok)
@@ -23,7 +23,7 @@ def test_hash_token_deterministic_and_not_plaintext():
 
 
 def test_hash_token_distinct_inputs_distinct_hash():
-    from auth import _hash_token, _generate_token
+    from identity.api import _hash_token, _generate_token
     assert _hash_token(_generate_token()) != _hash_token(_generate_token())
 
 

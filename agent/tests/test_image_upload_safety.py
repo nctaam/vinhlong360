@@ -81,7 +81,7 @@ def test_to_webp_processes_real_png_to_webp():
 def test_upload_endpoint_rejects_fake_image():
     from fastapi import FastAPI
     from fastapi.testclient import TestClient
-    import social
+    from community import api as social
     from auth_middleware import require_user
 
     app = FastAPI()

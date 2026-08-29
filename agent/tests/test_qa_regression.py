@@ -18,8 +18,8 @@ from fastapi import HTTPException
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import server
-import social
-import auth
+from community import api as social
+from identity import api as auth
 from identity import api as identity_api  # mien dinh danh sang day 2026-08-28
 import notifications
 import moderation

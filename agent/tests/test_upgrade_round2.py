@@ -11,46 +11,46 @@ class TestEntityFeedUnanswered:
     """Unanswered Q&A sort + post_type filter in entity feed."""
 
     def test_unanswered_in_sort_options(self):
-        from social import _ENTITY_FEED_SORT_OPTIONS
+        from community.api import _ENTITY_FEED_SORT_OPTIONS
         assert "unanswered" in _ENTITY_FEED_SORT_OPTIONS
 
     def test_feed_has_post_type_param(self):
-        src = inspect.getsource(__import__("social").get_entity_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_entity_feed)
         assert "post_type" in src
 
     def test_unanswered_filters_questions(self):
         # Refactor: filter SQL moved to helper _entity_feed_filters.
-        assert "_entity_feed_filters" in inspect.getsource(__import__("social").get_entity_feed)
-        src = inspect.getsource(__import__("social")._entity_feed_filters)
+        assert "_entity_feed_filters" in inspect.getsource(__import__("community.api", fromlist=["api"]).get_entity_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._entity_feed_filters)
         assert "post_type = 'question'" in src
         assert "best_answer_id IS NULL" in src
 
     def test_unanswered_sorts_by_comment_count(self):
         # Refactor: ORDER BY map moved to helper _entity_feed_order_clause.
-        assert "_entity_feed_order_clause" in inspect.getsource(__import__("social").get_entity_feed)
-        src = inspect.getsource(__import__("social")._entity_feed_order_clause)
+        assert "_entity_feed_order_clause" in inspect.getsource(__import__("community.api", fromlist=["api"]).get_entity_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._entity_feed_order_clause)
         assert "comment_count ASC" in src
 
     def test_post_type_filter_validates(self):
         # Refactor: post_type whitelist renamed _ENTITY_FEED_VALID_POST_TYPES,
         # dùng trong helper _entity_feed_filters.
-        assert "_entity_feed_filters" in inspect.getsource(__import__("social").get_entity_feed)
-        src = inspect.getsource(__import__("social")._entity_feed_filters)
+        assert "_entity_feed_filters" in inspect.getsource(__import__("community.api", fromlist=["api"]).get_entity_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._entity_feed_filters)
         assert "_ENTITY_FEED_VALID_POST_TYPES" in src
-        assert "review" in str(__import__("social")._ENTITY_FEED_VALID_POST_TYPES)
+        assert "review" in str(__import__("community.api", fromlist=["api"])._ENTITY_FEED_VALID_POST_TYPES)
 
     def test_post_type_filter_uses_parameterized(self):
         # Refactor: filter SQL moved to helper _entity_feed_filters.
-        assert "_entity_feed_filters" in inspect.getsource(__import__("social").get_entity_feed)
-        src = inspect.getsource(__import__("social")._entity_feed_filters)
+        assert "_entity_feed_filters" in inspect.getsource(__import__("community.api", fromlist=["api"]).get_entity_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._entity_feed_filters)
         assert "p.post_type = {ph}" in src
 
     def test_post_type_filter_in_total_count(self):
         # Refactor: _entity_feed_filters được gọi 2 lần trong get_entity_feed
         # (feed params + total_params) → áp cho cả feed lẫn count query.
-        parent = inspect.getsource(__import__("social").get_entity_feed)
+        parent = inspect.getsource(__import__("community.api", fromlist=["api"]).get_entity_feed)
         assert parent.count("_entity_feed_filters(") >= 2
-        assert "p.post_type = {ph}" in inspect.getsource(__import__("social")._entity_feed_filters)
+        assert "p.post_type = {ph}" in inspect.getsource(__import__("community.api", fromlist=["api"])._entity_feed_filters)
 
 
 class TestNotificationTypes:
@@ -78,18 +78,18 @@ class TestNotificationTypes:
 
     def test_create_comment_sends_reply_type(self):
         # Refactor: notify logic moved to helper _notify_comment.
-        assert "_notify_comment" in inspect.getsource(__import__("social").create_comment)
-        src = inspect.getsource(__import__("social")._notify_comment)
+        assert "_notify_comment" in inspect.getsource(__import__("community.api", fromlist=["api"]).create_comment)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._notify_comment)
         assert '"comment_reply"' in src
 
     def test_create_comment_sends_question_answer_type(self):
         # Refactor: owner-notify moved to helper _notify_owner_comment.
-        assert "_notify_comment" in inspect.getsource(__import__("social").create_comment)
-        src = inspect.getsource(__import__("social")._notify_owner_comment)
+        assert "_notify_comment" in inspect.getsource(__import__("community.api", fromlist=["api"]).create_comment)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._notify_owner_comment)
         assert '"question_answer"' in src
 
     def test_create_comment_fetches_post_type(self):
-        src = inspect.getsource(__import__("social").create_comment)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).create_comment)
         assert "post_type" in src
 
 
@@ -127,8 +127,8 @@ class TestUserProfileRelationship:
 
     def test_profile_returns_viewer_relationship(self):
         # Refactor: response dict moved to helper _profile_full_response.
-        assert "_profile_full_response" in inspect.getsource(__import__("social").get_user_profile)
-        src = inspect.getsource(__import__("social")._profile_full_response)
+        assert "_profile_full_response" in inspect.getsource(__import__("community.api", fromlist=["api"]).get_user_profile)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._profile_full_response)
         assert "viewer_relationship" in src
         assert "is_following" in src
         assert "is_blocked" in src
@@ -136,19 +136,19 @@ class TestUserProfileRelationship:
     def test_profile_checks_following(self):
         # Refactor: viewer var stays in get_user_profile; follows SQL in
         # helper _profile_viewer_rel.
-        assert "viewer_following" in inspect.getsource(__import__("social").get_user_profile)
-        assert "follows" in inspect.getsource(__import__("social")._profile_viewer_rel)
+        assert "viewer_following" in inspect.getsource(__import__("community.api", fromlist=["api"]).get_user_profile)
+        assert "follows" in inspect.getsource(__import__("community.api", fromlist=["api"])._profile_viewer_rel)
 
     def test_profile_checks_blocked(self):
         # Refactor: viewer var stays in get_user_profile; blocks SQL in
         # helper _profile_viewer_rel.
-        assert "viewer_blocked" in inspect.getsource(__import__("social").get_user_profile)
-        assert "blocks" in inspect.getsource(__import__("social")._profile_viewer_rel)
+        assert "viewer_blocked" in inspect.getsource(__import__("community.api", fromlist=["api"]).get_user_profile)
+        assert "blocks" in inspect.getsource(__import__("community.api", fromlist=["api"])._profile_viewer_rel)
 
     def test_profile_includes_is_self(self):
         # Refactor: response dict moved to helper _profile_full_response.
-        assert "_profile_full_response" in inspect.getsource(__import__("social").get_user_profile)
-        src = inspect.getsource(__import__("social")._profile_full_response)
+        assert "_profile_full_response" in inspect.getsource(__import__("community.api", fromlist=["api"]).get_user_profile)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._profile_full_response)
         assert '"is_self"' in src
 
 
@@ -181,22 +181,22 @@ class TestTrendingPeriod:
     """Trending tags period filter."""
 
     def test_period_param_exists(self):
-        src = inspect.getsource(__import__("social").trending_tags)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).trending_tags)
         assert "period" in src
 
     def test_period_options(self):
-        from social import _TRENDING_PERIOD_DAYS
+        from community.api import _TRENDING_PERIOD_DAYS
         assert "7d" in _TRENDING_PERIOD_DAYS
         assert "30d" in _TRENDING_PERIOD_DAYS
         assert "90d" in _TRENDING_PERIOD_DAYS
 
     def test_period_maps_to_days(self):
-        from social import _TRENDING_PERIOD_DAYS
+        from community.api import _TRENDING_PERIOD_DAYS
         assert _TRENDING_PERIOD_DAYS["7d"] == 7
         assert _TRENDING_PERIOD_DAYS["30d"] == 30
 
     def test_response_includes_period(self):
-        src = inspect.getsource(__import__("social").trending_tags)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).trending_tags)
         assert '"period"' in src
         assert '"days"' in src
 
@@ -205,37 +205,37 @@ class TestResetPasswordOTP:
     """Password reset via OTP — forgot password flow."""
 
     def test_endpoint_exists(self):
-        from auth import router
+        from identity.api import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]
         assert "/auth/reset-password-otp" in paths
 
     def test_model_validates_password_length(self):
-        from auth import ResetPasswordOTP
+        from identity.api import ResetPasswordOTP
         with pytest.raises(Exception):
             ResetPasswordOTP(phone="0901234567", code="123456", new_password="short")
 
     def test_model_validates_password_digit(self):
-        from auth import ResetPasswordOTP
+        from identity.api import ResetPasswordOTP
         with pytest.raises(Exception):
             ResetPasswordOTP(phone="0901234567", code="123456", new_password="NoDigitHere")
 
     def test_model_validates_password_letter(self):
-        from auth import ResetPasswordOTP
+        from identity.api import ResetPasswordOTP
         with pytest.raises(Exception):
             ResetPasswordOTP(phone="0901234567", code="123456", new_password="12345678")
 
     def test_model_accepts_valid(self):
-        from auth import ResetPasswordOTP
+        from identity.api import ResetPasswordOTP
         m = ResetPasswordOTP(phone="0901234567", code="123456", new_password="GoodPass1")
         assert m.new_password == "GoodPass1"
 
     def test_model_normalizes_phone(self):
-        from auth import ResetPasswordOTP
+        from identity.api import ResetPasswordOTP
         m = ResetPasswordOTP(phone="+84901234567", code="123456", new_password="GoodPass1")
         assert m.phone == "0901234567"
 
     def test_verifies_otp_before_reset(self):
-        import auth
+        from identity import api as auth
         endpoint_src = inspect.getsource(auth.reset_password_otp)
         reset_src = inspect.getsource(auth._reset_password_state)
         consume_src = inspect.getsource(auth._consume_verified_otp)
@@ -249,33 +249,33 @@ class TestResetPasswordOTP:
         assert "verified = TRUE" in consume_src
 
     def test_uses_parameterized_queries(self):
-        src = inspect.getsource(__import__("auth")._reset_password_state)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"])._reset_password_state)
         assert "db._ph" in src
         assert "f-string" not in src or "{db._ph}" in src
 
     def test_revokes_all_sessions(self):
-        src = inspect.getsource(__import__("auth")._reset_password_state)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"])._reset_password_state)
         assert "DELETE FROM user_sessions" in src
 
     def test_rate_limited_by_ip(self):
-        src = inspect.getsource(__import__("auth").reset_password_otp)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"]).reset_password_otp)
         assert "_otp_verify_ip_rate" in src
 
     def test_rate_limited_by_phone(self):
-        src = inspect.getsource(__import__("auth").reset_password_otp)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"]).reset_password_otp)
         assert "_otp_verify_phone_rate" in src
 
     def test_logs_password_reset(self):
-        src = inspect.getsource(__import__("auth").reset_password_otp)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"]).reset_password_otp)
         assert "_log_login" in src
         assert '"password_reset"' in src
 
     def test_requires_csrf(self):
-        src = inspect.getsource(__import__("auth").reset_password_otp)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"]).reset_password_otp)
         assert "_require_csrf_lazy" in src or "_csrf" in src
 
     def test_updates_password_hash(self):
-        src = inspect.getsource(__import__("auth")._reset_password_state)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"])._reset_password_state)
         assert "_hash_password" in src
         assert "password_hash" in src
 
@@ -360,45 +360,45 @@ class TestHidePostEndpoints:
     """Hide/unhide post + list hidden posts."""
 
     def test_hide_endpoint_exists(self):
-        from social import router
+        from community.api import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]
         assert "/api/posts/{post_id}/hide" in paths
 
     def test_unhide_endpoint_exists(self):
-        from social import router
+        from community.api import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]
         assert "/api/posts/{post_id}/unhide" in paths
 
     def test_hidden_list_endpoint_exists(self):
-        from social import router
+        from community.api import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]
         assert "/api/posts/hidden" in paths
 
     def test_hide_uses_parameterized(self):
-        src = inspect.getsource(__import__("social").hide_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).hide_post)
         assert "db._ph" in src
         assert "validate_path_id" in src
 
     def test_hide_requires_auth(self):
-        src = inspect.getsource(__import__("social").hide_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).hide_post)
         assert "require_user" in src
 
     def test_hide_uses_on_conflict(self):
-        src = inspect.getsource(__import__("social").hide_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).hide_post)
         assert "ON CONFLICT DO NOTHING" in src
 
     def test_unhide_uses_parameterized(self):
-        src = inspect.getsource(__import__("social").unhide_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).unhide_post)
         assert "db._ph" in src
 
     def test_feed_filters_hidden(self):
         # Refactor: WHERE conditions moved to helper _feed_build_conditions.
-        assert "_feed_build_conditions" in inspect.getsource(__import__("social").get_feed)
-        src = inspect.getsource(__import__("social")._feed_build_conditions)
+        assert "_feed_build_conditions" in inspect.getsource(__import__("community.api", fromlist=["api"]).get_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._feed_build_conditions)
         assert "user_hidden_posts" in src
 
     def test_following_feed_filters_hidden(self):
-        src = inspect.getsource(__import__("social").get_following_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_following_feed)
         assert "user_hidden_posts" in src
 
 
@@ -406,36 +406,36 @@ class TestPinComment:
     """Pin/unpin comment by post author."""
 
     def test_pin_endpoint_exists(self):
-        from social import router
+        from community.api import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]
         assert "/api/posts/{post_id}/pin-comment" in paths
 
     def test_pin_requires_auth(self):
-        src = inspect.getsource(__import__("social").pin_comment)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).pin_comment)
         assert "require_user" in src
 
     def test_pin_checks_post_author(self):
-        src = inspect.getsource(__import__("social").pin_comment)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).pin_comment)
         assert "user_id" in src
         assert "403" in src or "Chỉ tác giả" in src
 
     def test_pin_verifies_comment_belongs(self):
-        src = inspect.getsource(__import__("social").pin_comment)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).pin_comment)
         assert "post_id" in src
         assert "comments" in src
 
     def test_pin_uses_parameterized(self):
-        src = inspect.getsource(__import__("social").pin_comment)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).pin_comment)
         assert "db._ph" in src
         assert "validate_path_id" in src
 
     def test_unpin_checks_author(self):
-        src = inspect.getsource(__import__("social").unpin_comment)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).unpin_comment)
         assert "user_id" in src
         assert "403" in src or "Chỉ tác giả" in src
 
     def test_format_post_includes_pinned(self):
-        src = inspect.getsource(__import__("social")._format_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._format_post)
         assert "pinned_comment_id" in src
 
 
@@ -498,7 +498,7 @@ class TestUserActivity:
         import asyncio as _asyncio
         from unittest.mock import patch
 
-        import social
+        from community import api as social
 
         async def _fake_to_thread(fn, *a, **kw):
             return rows
@@ -508,7 +508,7 @@ class TestUserActivity:
             return _asyncio.run(social.user_activity(user={"id": "u1"}, **kwargs))
 
     def test_endpoint_exists(self):
-        from social import router
+        from community.api import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]
         assert "/api/me/activity" in paths
 
@@ -588,32 +588,32 @@ class TestTrendingPosts:
     """Trending posts feed endpoint."""
 
     def test_endpoint_exists(self):
-        from social import router
+        from community.api import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]
         assert "/api/feed/trending" in paths
 
     def test_window_options(self):
-        from social import _TRENDING_POSTS_WINDOWS
+        from community.api import _TRENDING_POSTS_WINDOWS
         assert "24h" in _TRENDING_POSTS_WINDOWS
         assert "7d" in _TRENDING_POSTS_WINDOWS
         assert "30d" in _TRENDING_POSTS_WINDOWS
 
     def test_engagement_weighted_sort(self):
-        src = inspect.getsource(__import__("social").trending_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).trending_posts)
         assert "like_count" in src
         assert "comment_count" in src
 
     def test_time_windowed(self):
-        src = inspect.getsource(__import__("social").trending_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).trending_posts)
         assert "INTERVAL" in src
         assert "days" in src
 
     def test_block_filter(self):
-        src = inspect.getsource(__import__("social").trending_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).trending_posts)
         assert "_block_sql" in src
 
     def test_response_includes_window(self):
-        src = inspect.getsource(__import__("social").trending_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).trending_posts)
         assert '"window"' in src
         assert '"days"' in src
 
@@ -622,34 +622,34 @@ class TestUserCounts:
     """User badge counts endpoint."""
 
     def test_endpoint_exists(self):
-        from social import router
+        from community.api import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]
         assert "/api/me/counts" in paths
 
     def test_requires_auth(self):
-        src = inspect.getsource(__import__("social").user_counts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).user_counts)
         assert "require_user" in src
 
     def test_returns_unread_notifications(self):
-        src = inspect.getsource(__import__("social").user_counts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).user_counts)
         assert '"unread_notifications"' in src
 
     def test_returns_posts_count(self):
-        src = inspect.getsource(__import__("social").user_counts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).user_counts)
         assert '"posts"' in src
 
     def test_returns_bookmarks_count(self):
-        src = inspect.getsource(__import__("social").user_counts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).user_counts)
         assert '"bookmarks"' in src
         assert "saved_entities" in src
 
     def test_returns_visits_count(self):
-        src = inspect.getsource(__import__("social").user_counts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).user_counts)
         assert '"visits"' in src
         assert "user_visits" in src
 
     def test_uses_parameterized(self):
-        src = inspect.getsource(__import__("social").user_counts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).user_counts)
         assert "db._ph" in src
 
 
@@ -657,7 +657,7 @@ class TestPostColsPinnedComment:
     """_POST_COLS includes pinned_comment_id."""
 
     def test_post_cols_has_pinned(self):
-        from social import _POST_COLS
+        from community.api import _POST_COLS
         assert "pinned_comment_id" in _POST_COLS
 
 
@@ -746,34 +746,34 @@ class TestCommentLikes:
         assert "ALTER TABLE comments" in sql
 
     def test_endpoint_exists(self):
-        from social import router
+        from community.api import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]
         assert "/api/comments/{comment_id}/like" in paths
 
     def test_requires_auth(self):
-        src = inspect.getsource(__import__("social").toggle_comment_like)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_comment_like)
         assert "require_user" in src
 
     def test_prevents_self_like(self):
-        src = inspect.getsource(__import__("social").toggle_comment_like)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_comment_like)
         assert "chính mình" in src
 
     def test_rate_limited(self):
-        src = inspect.getsource(__import__("social").toggle_comment_like)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_comment_like)
         assert "check_rate" in src
 
     def test_returns_liked_and_count(self):
-        src = inspect.getsource(__import__("social").toggle_comment_like)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_comment_like)
         assert '"liked"' in src
         assert '"like_count"' in src
 
     def test_uses_parameterized(self):
-        src = inspect.getsource(__import__("social").toggle_comment_like)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_comment_like)
         assert "db._ph" in src
         assert "validate_path_id" in src
 
     def test_format_comment_has_like_count(self):
-        src = inspect.getsource(__import__("social")._format_comment)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._format_comment)
         assert "like_count" in src
 
 
@@ -829,66 +829,66 @@ class TestUserDataExport:
     """GET /auth/export-data — user downloads all their data."""
 
     def test_endpoint_exists(self):
-        from auth import router
+        from identity.api import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]
         assert "/auth/export-data" in paths
 
     def test_method_is_get(self):
-        from auth import router
+        from identity.api import router
         for r in router.routes:
             if hasattr(r, "path") and r.path == "/auth/export-data":
                 assert "GET" in r.methods
 
     def test_requires_auth(self):
-        src = inspect.getsource(__import__("auth").export_user_data)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"]).export_user_data)
         assert "_get_current_user_or_none" in src
         assert "401" in src
 
     def test_rate_limited(self):
-        src = inspect.getsource(__import__("auth").export_user_data)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"]).export_user_data)
         assert "check_rate" in src
         assert "export-data" in src
 
     def test_queries_posts(self):
-        src = inspect.getsource(__import__("auth").export_user_data)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"]).export_user_data)
         assert "FROM posts p" in src
 
     def test_queries_comments(self):
-        src = inspect.getsource(__import__("auth").export_user_data)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"]).export_user_data)
         assert "FROM comments WHERE user_id" in src
 
     def test_queries_likes(self):
-        src = inspect.getsource(__import__("auth").export_user_data)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"]).export_user_data)
         assert "FROM likes WHERE user_id" in src
 
     def test_queries_bookmarks(self):
-        src = inspect.getsource(__import__("auth").export_user_data)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"]).export_user_data)
         assert "FROM saved_entities WHERE user_id" in src
 
     def test_queries_follows(self):
-        src = inspect.getsource(__import__("auth").export_user_data)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"]).export_user_data)
         assert "FROM follows WHERE follower_id" in src
 
     def test_queries_visits(self):
-        src = inspect.getsource(__import__("auth").export_user_data)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"]).export_user_data)
         assert "FROM user_visits WHERE user_id" in src
 
     def test_returns_profile(self):
-        src = inspect.getsource(__import__("auth").export_user_data)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"]).export_user_data)
         assert '"profile"' in src
         assert "_safe_user" in src
 
     def test_returns_exported_at(self):
-        src = inspect.getsource(__import__("auth").export_user_data)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"]).export_user_data)
         assert '"exported_at"' in src
 
     def test_parameterized_queries(self):
-        src = inspect.getsource(__import__("auth").export_user_data)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"]).export_user_data)
         assert "db._ph" in src
         assert "uid" in src
 
     def test_uses_asyncio_to_thread(self):
-        src = inspect.getsource(__import__("auth").export_user_data)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"]).export_user_data)
         assert "asyncio.to_thread" in src
 
     def test_docstring_updated(self):
@@ -905,61 +905,61 @@ class TestReportComment:
     """POST /api/comments/{comment_id}/report — report a comment."""
 
     def test_endpoint_exists(self):
-        from social import router
+        from community.api import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]
         assert "/api/comments/{comment_id}/report" in paths
 
     def test_method_is_post(self):
-        from social import router
+        from community.api import router
         for r in router.routes:
             if hasattr(r, "path") and r.path == "/api/comments/{comment_id}/report":
                 assert "POST" in r.methods
 
     def test_requires_auth(self):
-        src = inspect.getsource(__import__("social").report_comment)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_comment)
         assert "require_user" in src
 
     def test_has_csrf(self):
-        src = inspect.getsource(__import__("social").report_comment)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_comment)
         assert "require_csrf" in src
 
     def test_rate_limited(self):
-        src = inspect.getsource(__import__("social").report_comment)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_comment)
         assert "check_rate" in src
         assert "report-comment" in src
 
     def test_validates_comment_id(self):
-        src = inspect.getsource(__import__("social").report_comment)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_comment)
         assert "validate_path_id" in src
 
     def test_checks_comment_exists(self):
-        src = inspect.getsource(__import__("social").report_comment)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_comment)
         assert "FROM comments WHERE" in src
         assert "404" in src
 
     def test_prevents_self_report(self):
-        src = inspect.getsource(__import__("social").report_comment)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_comment)
         assert "uid" in src
         assert "400" in src
 
     def test_writes_to_reports_jsonl(self):
-        src = inspect.getsource(__import__("social").report_comment)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_comment)
         assert "reports.jsonl" in src
         assert '"target_type": "comment"' in src
 
     def test_report_reasons(self):
-        from social import _COMMENT_REPORT_REASONS
+        from community.api import _COMMENT_REPORT_REASONS
         assert "spam" in _COMMENT_REPORT_REASONS
         assert "harassment" in _COMMENT_REPORT_REASONS
         assert "inappropriate" in _COMMENT_REPORT_REASONS
 
     def test_model_validation(self):
-        from social import ReportCommentBody
+        from community.api import ReportCommentBody
         body = ReportCommentBody(reason="spam", detail="test")
         assert body.reason == "spam"
 
     def test_parameterized_query(self):
-        src = inspect.getsource(__import__("social").report_comment)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_comment)
         assert "db._ph" in src
 
 
@@ -996,51 +996,51 @@ class TestAppealPostEndpoint:
     """POST /api/posts/{post_id}/appeal — user appeals rejected post."""
 
     def test_endpoint_exists(self):
-        from social import router
+        from community.api import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]
         assert "/api/posts/{post_id}/appeal" in paths
 
     def test_requires_auth(self):
-        src = inspect.getsource(__import__("social").appeal_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).appeal_post)
         assert "require_user" in src
 
     def test_has_csrf(self):
-        src = inspect.getsource(__import__("social").appeal_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).appeal_post)
         assert "require_csrf" in src
 
     def test_rate_limited(self):
-        src = inspect.getsource(__import__("social").appeal_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).appeal_post)
         assert "check_rate" in src
 
     def test_validates_post_id(self):
-        src = inspect.getsource(__import__("social").appeal_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).appeal_post)
         assert "validate_path_id" in src
 
     def test_checks_post_ownership(self):
-        src = inspect.getsource(__import__("social").appeal_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).appeal_post)
         assert "403" in src
         assert "user_id" in src
 
     def test_requires_rejected_status(self):
-        src = inspect.getsource(__import__("social").appeal_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).appeal_post)
         assert '"rejected"' in src
         assert "400" in src
 
     def test_prevents_duplicate_appeal(self):
-        src = inspect.getsource(__import__("social").appeal_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).appeal_post)
         assert "409" in src
         assert "moderation_appeals" in src
 
     def test_inserts_appeal(self):
-        src = inspect.getsource(__import__("social").appeal_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).appeal_post)
         assert "INSERT INTO moderation_appeals" in src
 
     def test_parameterized(self):
-        src = inspect.getsource(__import__("social").appeal_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).appeal_post)
         assert "db._ph" in src
 
     def test_model_validation(self):
-        from social import AppealBody
+        from community.api import AppealBody
         body = AppealBody(reason="This is a valid appeal reason")
         assert len(body.reason) >= 10
 
@@ -1049,7 +1049,7 @@ class TestGetAppealStatus:
     """GET /api/posts/{post_id}/appeal — user checks appeal status."""
 
     def test_endpoint_exists(self):
-        from social import router
+        from community.api import router
         get_paths = []
         for r in router.routes:
             if hasattr(r, "path") and "GET" in getattr(r, "methods", set()):
@@ -1057,11 +1057,11 @@ class TestGetAppealStatus:
         assert "/api/posts/{post_id}/appeal" in get_paths
 
     def test_requires_auth(self):
-        src = inspect.getsource(__import__("social").get_appeal_status)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_appeal_status)
         assert "require_user" in src
 
     def test_returns_appeal_fields(self):
-        src = inspect.getsource(__import__("social").get_appeal_status)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_appeal_status)
         assert '"status"' in src
         assert '"reviewer_note"' in src
         assert '"created_at"' in src
@@ -1340,7 +1340,7 @@ class TestFormatPostReviewResponse:
     """_format_post includes review_response field."""
 
     def test_includes_review_response(self):
-        src = inspect.getsource(__import__("social")._format_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._format_post)
         assert '"review_response"' in src
         assert '"response_content"' in src
         assert '"responder_name"' in src
@@ -1495,60 +1495,60 @@ class TestPinnedPostsMigration:
 
 class TestPinPostToProfile:
     def test_endpoint_exists(self):
-        from social import router
+        from community.api import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]
         assert "/api/posts/{post_id}/pin-to-profile" in paths
 
     def test_endpoint_is_post(self):
-        from social import router
+        from community.api import router
         methods = {r.path: r.methods for r in router.routes if hasattr(r, "path")}
         assert "POST" in methods.get("/api/posts/{post_id}/pin-to-profile", set())
 
     def test_requires_auth(self):
-        src = inspect.getsource(__import__("social").pin_post_to_profile)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).pin_post_to_profile)
         assert "require_user" in src
 
     def test_requires_csrf(self):
-        src = inspect.getsource(__import__("social").pin_post_to_profile)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).pin_post_to_profile)
         assert "require_csrf" in src
 
     def test_validates_path_id(self):
-        src = inspect.getsource(__import__("social").pin_post_to_profile)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).pin_post_to_profile)
         assert "validate_path_id" in src
 
     def test_rate_limited(self):
-        src = inspect.getsource(__import__("social").pin_post_to_profile)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).pin_post_to_profile)
         assert "check_rate" in src
 
     def test_checks_ownership(self):
-        src = inspect.getsource(__import__("social").pin_post_to_profile)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).pin_post_to_profile)
         assert "403" in src
         assert "user_id" in src
 
     def test_checks_approved(self):
-        src = inspect.getsource(__import__("social").pin_post_to_profile)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).pin_post_to_profile)
         assert "approved" in src
         assert "400" in src
 
     def test_max_pinned_limit(self):
-        from social import _MAX_PINNED_POSTS
+        from community.api import _MAX_PINNED_POSTS
         assert _MAX_PINNED_POSTS == 3
 
     def test_toggle_unpin(self):
-        src = inspect.getsource(__import__("social").pin_post_to_profile)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).pin_post_to_profile)
         assert "is_pinned" in src
         assert "FALSE" in src
 
     def test_parameterized(self):
-        src = inspect.getsource(__import__("social").pin_post_to_profile)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).pin_post_to_profile)
         assert "db._ph" in src
 
     def test_is_pinned_in_format_post(self):
-        src = inspect.getsource(__import__("social")._format_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._format_post)
         assert '"is_pinned"' in src
 
     def test_user_posts_pinned_first(self):
-        src = inspect.getsource(__import__("social").get_user_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_user_posts)
         assert "is_pinned" in src
         assert "DESC" in src
 
@@ -1598,41 +1598,41 @@ class TestAdminUserGrowth:
 
 class TestHashtagPosts:
     def test_endpoint_exists(self):
-        from social import router
+        from community.api import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]
         assert "/api/hashtags/{tag}/posts" in paths
 
     def test_endpoint_is_get(self):
-        from social import router
+        from community.api import router
         methods = {r.path: r.methods for r in router.routes if hasattr(r, "path")}
         assert "GET" in methods.get("/api/hashtags/{tag}/posts", set())
 
     def test_filters_by_hashtag(self):
-        src = inspect.getsource(__import__("social").hashtag_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).hashtag_posts)
         assert "hashtags @>" in src
         assert "jsonb" in src
 
     def test_sort_options(self):
-        src = inspect.getsource(__import__("social").hashtag_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).hashtag_posts)
         assert "popular" in src
         assert "newest" in src
 
     def test_block_filter(self):
-        src = inspect.getsource(__import__("social").hashtag_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).hashtag_posts)
         assert "_block_sql" in src
 
     def test_pagination(self):
-        src = inspect.getsource(__import__("social").hashtag_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).hashtag_posts)
         assert "LIMIT" in src
         assert "OFFSET" in src
         assert '"total"' in src
 
     def test_returns_tag_name(self):
-        src = inspect.getsource(__import__("social").hashtag_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).hashtag_posts)
         assert '"tag"' in src
 
     def test_formats_posts(self):
-        src = inspect.getsource(__import__("social").hashtag_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).hashtag_posts)
         assert "_format_post" in src
 
 
@@ -1725,38 +1725,38 @@ class TestAdminContentStats:
 
 class TestUserReviews:
     def test_endpoint_exists(self):
-        from social import router
+        from community.api import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]
         assert "/api/users/{user_id}/reviews" in paths
 
     def test_endpoint_is_get(self):
-        from social import router
+        from community.api import router
         methods = {r.path: r.methods for r in router.routes if hasattr(r, "path")}
         assert "GET" in methods.get("/api/users/{user_id}/reviews", set())
 
     def test_filters_by_review(self):
-        src = inspect.getsource(__import__("social").get_user_reviews)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_user_reviews)
         assert "post_type = 'review'" in src
 
     def test_validates_path_id(self):
-        src = inspect.getsource(__import__("social").get_user_reviews)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_user_reviews)
         assert "validate_path_id" in src
 
     def test_block_filter(self):
-        src = inspect.getsource(__import__("social").get_user_reviews)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_user_reviews)
         assert "_block_sql" in src
 
     def test_pagination(self):
-        src = inspect.getsource(__import__("social").get_user_reviews)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_user_reviews)
         assert "LIMIT" in src
         assert "OFFSET" in src
 
     def test_formats_posts(self):
-        src = inspect.getsource(__import__("social").get_user_reviews)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_user_reviews)
         assert "_format_post" in src
 
     def test_resolves_user_id(self):
-        src = inspect.getsource(__import__("social").get_user_reviews)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_user_reviews)
         assert "_resolve_user_id" in src
 
 
@@ -1844,40 +1844,40 @@ class TestAreas:
 
 class TestExploreFeed:
     def test_endpoint_exists(self):
-        from social import router
+        from community.api import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]
         assert "/api/feed/explore" in paths
 
     def test_endpoint_is_get(self):
-        from social import router
+        from community.api import router
         methods = {r.path: r.methods for r in router.routes if hasattr(r, "path")}
         assert "GET" in methods.get("/api/feed/explore", set())
 
     def test_excludes_following(self):
-        src = inspect.getsource(__import__("social").explore_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).explore_feed)
         assert "NOT IN" in src
         assert "follows" in src
 
     def test_block_filter(self):
-        src = inspect.getsource(__import__("social").explore_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).explore_feed)
         assert "_block_sql" in src
 
     def test_ranking_algorithm(self):
-        src = inspect.getsource(__import__("social").explore_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).explore_feed)
         assert "like_count" in src
         assert "comment_count" in src
 
     def test_time_window(self):
-        src = inspect.getsource(__import__("social").explore_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).explore_feed)
         assert "90 days" in src
 
     def test_pagination(self):
-        src = inspect.getsource(__import__("social").explore_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).explore_feed)
         assert "LIMIT" in src
         assert "OFFSET" in src
 
     def test_formats_posts(self):
-        src = inspect.getsource(__import__("social").explore_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).explore_feed)
         assert "_format_post" in src
 
 
@@ -2561,34 +2561,34 @@ class TestShareTracking:
         assert "ALTER TABLE posts" in sql
 
     def test_endpoint_exists(self):
-        from social import router
+        from community.api import router
         methods_paths = [(list(r.methods)[0] if hasattr(r, "methods") else "", r.path)
                         for r in router.routes if hasattr(r, "path")]
         assert ("POST", "/api/posts/{post_id}/share") in methods_paths
 
     def test_validates_path_id(self):
-        src = inspect.getsource(__import__("social").track_share)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).track_share)
         assert "validate_path_id" in src
 
     def test_increments_count(self):
-        src = inspect.getsource(__import__("social").track_share)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).track_share)
         assert "share_count" in src
         assert "+ 1" in src or "+1" in src
 
     def test_returns_new_count(self):
-        src = inspect.getsource(__import__("social").track_share)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).track_share)
         assert '"share_count"' in src
 
     def test_only_approved_posts(self):
-        src = inspect.getsource(__import__("social").track_share)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).track_share)
         assert "approved" in src
 
     def test_format_post_includes_share_count(self):
-        src = inspect.getsource(__import__("social")._format_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._format_post)
         assert "share_count" in src
 
     def test_post_cols_includes_share_count(self):
-        from social import _POST_COLS
+        from community.api import _POST_COLS
         assert "share_count" in _POST_COLS
 
 
@@ -2658,50 +2658,50 @@ class TestAdminCommentList:
 
 class TestHashtagBrowse:
     def test_endpoint_exists(self):
-        from social import router
+        from community.api import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]
         assert "/api/hashtags" in paths
 
     def test_method_is_get(self):
-        from social import router
+        from community.api import router
         routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
                   for r in router.routes if hasattr(r, "path")}
         assert "GET" in routes.get("/api/hashtags", set())
 
     def test_has_pagination(self):
-        src = inspect.getsource(__import__("social").list_hashtags)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).list_hashtags)
         assert "page" in src
         assert "limit" in src
         assert "offset" in src
 
     def test_has_search_filter(self):
-        src = inspect.getsource(__import__("social").list_hashtags)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).list_hashtags)
         assert "search" in src
         assert "LIKE" in src
 
     def test_uses_escape_like(self):
-        src = inspect.getsource(__import__("social").list_hashtags)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).list_hashtags)
         assert "escape_like" in src
 
     def test_counts_approved_only(self):
-        src = inspect.getsource(__import__("social").list_hashtags)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).list_hashtags)
         assert "moderation_status = 'approved'" in src
 
     def test_returns_total(self):
-        src = inspect.getsource(__import__("social").list_hashtags)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).list_hashtags)
         assert '"total"' in src
         assert '"has_more"' in src
 
     def test_returns_post_count(self):
-        src = inspect.getsource(__import__("social").list_hashtags)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).list_hashtags)
         assert "post_count" in src
 
     def test_uses_jsonb_array_elements(self):
-        src = inspect.getsource(__import__("social").list_hashtags)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).list_hashtags)
         assert "jsonb_array_elements_text" in src
 
     def test_groups_by_tag(self):
-        src = inspect.getsource(__import__("social").list_hashtags)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).list_hashtags)
         assert "GROUP BY tag" in src
 
 
@@ -2711,47 +2711,47 @@ class TestHashtagBrowse:
 
 class TestUserSelfStats:
     def test_endpoint_exists(self):
-        from social import router
+        from community.api import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]
         assert "/api/me/stats" in paths
 
     def test_requires_auth(self):
-        src = inspect.getsource(__import__("social").user_stats)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).user_stats)
         assert "require_user" in src
 
     def test_returns_reviews(self):
-        src = inspect.getsource(__import__("social").user_stats)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).user_stats)
         assert '"reviews"' in src
         assert '"avg_rating"' in src
 
     def test_returns_questions(self):
-        src = inspect.getsource(__import__("social").user_stats)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).user_stats)
         assert '"questions"' in src
 
     def test_returns_followers_following(self):
-        src = inspect.getsource(__import__("social").user_stats)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).user_stats)
         assert '"followers"' in src
         assert '"following"' in src
 
     def test_returns_likes_received(self):
-        src = inspect.getsource(__import__("social").user_stats)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).user_stats)
         assert '"likes_received"' in src
 
     def test_returns_entities_reviewed(self):
-        src = inspect.getsource(__import__("social").user_stats)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).user_stats)
         assert '"entities_reviewed"' in src
 
     def test_returns_reputation(self):
-        src = inspect.getsource(__import__("social").user_stats)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).user_stats)
         assert '"reputation"' in src
 
     def test_uses_parameterized_queries(self):
-        src = inspect.getsource(__import__("social").user_stats)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).user_stats)
         assert "db._ph" in src or "_ph" in src
         assert "f-string" not in src or "{ph}" in src
 
     def test_uses_asyncio_thread(self):
-        src = inspect.getsource(__import__("social").user_stats)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).user_stats)
         assert "asyncio.to_thread" in src
 
 
@@ -2761,47 +2761,47 @@ class TestUserSelfStats:
 
 class TestPostReport:
     def test_endpoint_exists(self):
-        from social import router
+        from community.api import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]
         assert "/api/posts/{post_id}/report" in paths
 
     def test_method_is_post(self):
-        from social import router
+        from community.api import router
         routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
                   for r in router.routes if hasattr(r, "path")}
         assert "POST" in routes.get("/api/posts/{post_id}/report", set())
 
     def test_requires_auth(self):
-        src = inspect.getsource(__import__("social").report_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_post)
         assert "require_user" in src
 
     def test_validates_path_id(self):
-        src = inspect.getsource(__import__("social").report_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_post)
         assert "validate_path_id" in src
 
     def test_has_rate_limit(self):
-        src = inspect.getsource(__import__("social").report_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_post)
         assert "check_rate" in src
 
     def test_prevents_self_report(self):
-        src = inspect.getsource(__import__("social").report_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_post)
         assert "chính mình" in src or "self" in src.lower()
 
     def test_prevents_duplicate_report(self):
-        src = inspect.getsource(__import__("social").report_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_post)
         assert "pending" in src
 
     def test_inserts_to_pg_reports(self):
-        src = inspect.getsource(__import__("social").report_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_post)
         assert "INSERT INTO reports" in src
         assert "target_type" in src
 
     def test_uses_parameterized_queries(self):
-        src = inspect.getsource(__import__("social").report_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_post)
         assert "db._ph" in src or "_ph" in src
 
     def test_report_body_model(self):
-        from social import ReportPostBody
+        from community.api import ReportPostBody
         assert hasattr(ReportPostBody, "model_fields")
         fields = ReportPostBody.model_fields
         assert "reason" in fields
@@ -2932,7 +2932,7 @@ class TestAdminCSVExports:
 
 class TestRound4SecurityGuards:
     def test_all_new_social_write_endpoints_have_rate_limit(self):
-        src = inspect.getsource(__import__("social"))
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]))
         lines = src.split("\n")
         for i, line in enumerate(lines):
             if "async def report_post(" in line or "async def list_hashtags(" in line:
@@ -2945,7 +2945,7 @@ class TestRound4SecurityGuards:
         assert "check_rate" in src
 
     def test_post_report_uses_parameterized_queries(self):
-        src = inspect.getsource(__import__("social").report_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_post)
         assert "{ph}" in src
         assert "INSERT" in src
 
@@ -2956,7 +2956,7 @@ class TestRound4SecurityGuards:
         assert "/admin/export/posts" in admin_paths
 
     def test_hashtag_browse_no_auth_required(self):
-        src = inspect.getsource(__import__("social").list_hashtags)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).list_hashtags)
         assert "require_user" not in src
 
 
@@ -3092,71 +3092,71 @@ class TestDraftPostsMigration:
 
 class TestDraftPostsCRUD:
     def test_create_draft_endpoint(self):
-        from social import router
+        from community.api import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]
         assert "/api/drafts" in paths
 
     def test_list_drafts_endpoint(self):
-        from social import router
+        from community.api import router
         routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
                   for r in router.routes if hasattr(r, "path")}
         assert "GET" in routes.get("/api/drafts", set())
 
     def test_update_draft_endpoint(self):
-        from social import router
+        from community.api import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]
         assert "/api/drafts/{draft_id}" in paths
 
     def test_publish_draft_endpoint(self):
-        from social import router
+        from community.api import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]
         assert "/api/drafts/{draft_id}/publish" in paths
 
     def test_delete_draft_endpoint(self):
-        from social import router
+        from community.api import router
         routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
                   for r in router.routes if hasattr(r, "path")}
         assert "DELETE" in routes.get("/api/drafts/{draft_id}", set())
 
     def test_create_requires_auth(self):
-        src = inspect.getsource(__import__("social").save_draft)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).save_draft)
         assert "require_user" in src
 
     def test_create_has_rate_limit(self):
-        src = inspect.getsource(__import__("social").save_draft)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).save_draft)
         assert "check_rate" in src
 
     def test_create_enforces_draft_limit(self):
-        src = inspect.getsource(__import__("social").save_draft)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).save_draft)
         assert "20" in src
 
     def test_update_validates_path_id(self):
-        src = inspect.getsource(__import__("social").update_draft)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).update_draft)
         assert "validate_path_id" in src
 
     def test_publish_runs_moderation(self):
-        src = inspect.getsource(__import__("social").publish_draft)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).publish_draft)
         assert "moderate_content_enhanced" in src
 
     def test_publish_extracts_hashtags(self):
-        src = inspect.getsource(__import__("social").publish_draft)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).publish_draft)
         assert "_extract_hashtags" in src
 
     def test_publish_sets_not_draft(self):
-        src = inspect.getsource(__import__("social").publish_draft)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).publish_draft)
         assert "is_draft = FALSE" in src
 
     def test_delete_only_deletes_drafts(self):
-        src = inspect.getsource(__import__("social").delete_draft)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).delete_draft)
         assert "is_draft = TRUE" in src
 
     def test_list_has_pagination(self):
-        src = inspect.getsource(__import__("social").list_drafts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).list_drafts)
         assert "page" in src
         assert "limit" in src
 
     def test_draft_model_fields(self):
-        from social import DraftPost
+        from community.api import DraftPost
         fields = DraftPost.model_fields
         assert "content" in fields
         assert "post_type" in fields
@@ -3220,11 +3220,11 @@ class TestEnhancedSystemHealth:
 
 class TestMeCountsDrafts:
     def test_counts_include_drafts(self):
-        src = inspect.getsource(__import__("social").user_counts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).user_counts)
         assert '"drafts"' in src
 
     def test_counts_exclude_drafts_from_posts(self):
-        src = inspect.getsource(__import__("social").user_counts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).user_counts)
         assert "is_draft IS NOT TRUE" in src
 
 
@@ -3234,29 +3234,29 @@ class TestMeCountsDrafts:
 
 class TestReadingTime:
     def test_helper_function_exists(self):
-        from social import _reading_time_min
+        from community.api import _reading_time_min
         assert callable(_reading_time_min)
 
     def test_empty_content(self):
-        from social import _reading_time_min
+        from community.api import _reading_time_min
         assert _reading_time_min("") == 0
         assert _reading_time_min(None) == 0
 
     def test_short_content(self):
-        from social import _reading_time_min
+        from community.api import _reading_time_min
         assert _reading_time_min("Một hai ba bốn năm") == 1
 
     def test_long_content(self):
-        from social import _reading_time_min
+        from community.api import _reading_time_min
         content = " ".join(["word"] * 600)
         assert _reading_time_min(content) == 3
 
     def test_included_in_format_post(self):
-        src = inspect.getsource(__import__("social")._format_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._format_post)
         assert "reading_time_min" in src
 
     def test_uses_words_per_minute(self):
-        from social import _WORDS_PER_MINUTE_VI
+        from community.api import _WORDS_PER_MINUTE_VI
         assert _WORDS_PER_MINUTE_VI == 200
 
 
@@ -3283,55 +3283,55 @@ class TestPostSchedulingMigration:
 
 class TestPostSchedulingEndpoints:
     def test_schedule_endpoint_exists(self):
-        from social import router
+        from community.api import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]
         assert "/api/drafts/{draft_id}/schedule" in paths
 
     def test_scheduled_list_endpoint(self):
-        from social import router
+        from community.api import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]
         assert "/api/scheduled" in paths
 
     def test_cancel_scheduled_endpoint(self):
-        from social import router
+        from community.api import router
         routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
                   for r in router.routes if hasattr(r, "path")}
         assert "DELETE" in routes.get("/api/scheduled/{post_id}", set())
 
     def test_schedule_requires_auth(self):
-        src = inspect.getsource(__import__("social").schedule_draft)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).schedule_draft)
         assert "require_user" in src
 
     def test_schedule_has_rate_limit(self):
-        src = inspect.getsource(__import__("social").schedule_draft)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).schedule_draft)
         assert "check_rate" in src
 
     def test_schedule_validates_future_time(self):
-        src = inspect.getsource(__import__("social").schedule_draft)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).schedule_draft)
         assert "tương lai" in src or "future" in src.lower()
 
     def test_schedule_validates_iso_format(self):
-        src = inspect.getsource(__import__("social").schedule_draft)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).schedule_draft)
         assert "fromisoformat" in src
 
     def test_schedule_checks_content_length(self):
-        src = inspect.getsource(__import__("social").schedule_draft)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).schedule_draft)
         assert "10" in src
 
     def test_cancel_converts_back_to_draft(self):
-        src = inspect.getsource(__import__("social").cancel_scheduled)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).cancel_scheduled)
         assert "is_draft = TRUE" in src
 
     def test_cancel_has_rate_limit(self):
-        src = inspect.getsource(__import__("social").cancel_scheduled)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).cancel_scheduled)
         assert "check_rate" in src
 
     def test_list_scheduled_requires_auth(self):
-        src = inspect.getsource(__import__("social").list_scheduled)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).list_scheduled)
         assert "require_user" in src
 
     def test_list_scheduled_orders_by_time(self):
-        src = inspect.getsource(__import__("social").list_scheduled)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).list_scheduled)
         assert "scheduled_at ASC" in src
 
 
@@ -3373,87 +3373,87 @@ class TestReactionsEndpoints:
     """Test reaction toggle and get endpoints."""
 
     def test_toggle_reaction_endpoint_exists(self):
-        from social import router
+        from community.api import router
         routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
                   for r in router.routes if hasattr(r, "path")}
         assert "POST" in routes.get("/api/posts/{post_id}/react", set())
 
     def test_get_reactions_endpoint_exists(self):
-        from social import router
+        from community.api import router
         routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
                   for r in router.routes if hasattr(r, "path")}
         assert "GET" in routes.get("/api/posts/{post_id}/reactions", set())
 
     def test_toggle_requires_auth(self):
-        src = inspect.getsource(__import__("social").toggle_reaction)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_reaction)
         assert "require_user" in src
 
     def test_toggle_requires_csrf(self):
-        src = inspect.getsource(__import__("social").toggle_reaction)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_reaction)
         assert "require_csrf" in src
 
     def test_toggle_has_rate_limit(self):
-        src = inspect.getsource(__import__("social").toggle_reaction)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_reaction)
         assert "check_rate" in src
 
     def test_toggle_validates_path_id(self):
-        src = inspect.getsource(__import__("social").toggle_reaction)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_reaction)
         assert "validate_path_id" in src
 
     def test_toggle_validates_reaction_type(self):
-        src = inspect.getsource(__import__("social").toggle_reaction)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_reaction)
         assert "_VALID_REACTIONS" in src
 
     def test_toggle_checks_post_exists(self):
-        src = inspect.getsource(__import__("social").toggle_reaction)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_reaction)
         assert "404" in src
 
     def test_toggle_returns_reacted_flag(self):
-        src = inspect.getsource(__import__("social").toggle_reaction)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_reaction)
         assert '"reacted"' in src
 
     def test_toggle_returns_counts(self):
-        src = inspect.getsource(__import__("social").toggle_reaction)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_reaction)
         assert '"reactions"' in src
 
     def test_toggle_deletes_existing(self):
-        src = inspect.getsource(__import__("social").toggle_reaction)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_reaction)
         assert "DELETE FROM post_reactions" in src
 
     def test_toggle_inserts_new(self):
-        src = inspect.getsource(__import__("social").toggle_reaction)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_reaction)
         assert "INSERT INTO post_reactions" in src
 
     def test_get_reactions_validates_path_id(self):
-        src = inspect.getsource(__import__("social").get_reactions)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_reactions)
         assert "validate_path_id" in src
 
     def test_get_reactions_returns_total(self):
-        src = inspect.getsource(__import__("social").get_reactions)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_reactions)
         assert '"total"' in src
 
     def test_get_reactions_groups_by_type(self):
-        src = inspect.getsource(__import__("social").get_reactions)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_reactions)
         assert "GROUP BY reaction_type" in src
 
     def test_valid_reactions_constant(self):
-        from social import _VALID_REACTIONS
+        from community.api import _VALID_REACTIONS
         assert _VALID_REACTIONS == {"heart", "useful", "beautiful", "funny", "surprised"}
 
     def test_toggle_uses_async_thread(self):
-        src = inspect.getsource(__import__("social").toggle_reaction)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_reaction)
         assert "asyncio.to_thread" in src
 
     def test_get_uses_async_thread(self):
-        src = inspect.getsource(__import__("social").get_reactions)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_reactions)
         assert "asyncio.to_thread" in src
 
     def test_toggle_on_conflict(self):
-        src = inspect.getsource(__import__("social").toggle_reaction)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_reaction)
         assert "ON CONFLICT DO NOTHING" in src
 
     def test_toggle_only_approved_posts(self):
-        src = inspect.getsource(__import__("social").toggle_reaction)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_reaction)
         assert "moderation_status = 'approved'" in src
 
 
@@ -3494,47 +3494,47 @@ class TestPostEditHistoryEndpoints:
     """Test edit history tracking and retrieval."""
 
     def test_update_post_saves_history(self):
-        src = inspect.getsource(__import__("social").update_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).update_post)
         assert "INSERT INTO post_edit_history" in src
 
     def test_update_post_saves_old_content(self):
-        src = inspect.getsource(__import__("social").update_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).update_post)
         assert "old_content" in src
 
     def test_update_post_sets_updated_at(self):
         # Refactor: UPDATE statements moved to helper _post_do_update.
-        assert "_post_do_update" in inspect.getsource(__import__("social").update_post)
-        src = inspect.getsource(__import__("social")._post_do_update)
+        assert "_post_do_update" in inspect.getsource(__import__("community.api", fromlist=["api"]).update_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._post_do_update)
         assert "updated_at=NOW()" in src
 
     def test_edit_history_endpoint_exists(self):
-        from social import router
+        from community.api import router
         routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
                   for r in router.routes if hasattr(r, "path")}
         assert "GET" in routes.get("/api/posts/{post_id}/edit-history", set())
 
     def test_edit_history_validates_path_id(self):
-        src = inspect.getsource(__import__("social").get_post_edit_history)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_post_edit_history)
         assert "validate_path_id" in src
 
     def test_edit_history_checks_post_exists(self):
-        src = inspect.getsource(__import__("social").get_post_edit_history)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_post_edit_history)
         assert "404" in src
 
     def test_edit_history_orders_desc(self):
-        src = inspect.getsource(__import__("social").get_post_edit_history)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_post_edit_history)
         assert "created_at DESC" in src
 
     def test_edit_history_has_limit(self):
-        src = inspect.getsource(__import__("social").get_post_edit_history)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_post_edit_history)
         assert "LIMIT" in src
 
     def test_format_post_has_is_edited(self):
-        src = inspect.getsource(__import__("social")._format_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._format_post)
         assert '"is_edited"' in src
 
     def test_post_cols_has_updated_at(self):
-        from social import _POST_COLS
+        from community.api import _POST_COLS
         assert "updated_at" in _POST_COLS
 
 
@@ -3601,11 +3601,11 @@ class TestFeaturedPostsEndpoints:
         assert "_log_mod_action" in src
 
     def test_entity_feed_featured_first(self):
-        src = inspect.getsource(__import__("social").get_entity_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_entity_feed)
         assert "is_featured" in src
 
     def test_format_post_has_is_featured(self):
-        src = inspect.getsource(__import__("social")._format_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._format_post)
         assert '"is_featured"' in src
 
 
@@ -3683,25 +3683,25 @@ class TestUserMuteEndpoints:
         assert "INSERT INTO user_mutes" in src
 
     def test_mute_sql_helper_exists(self):
-        from social import _mute_sql
+        from community.api import _mute_sql
         clause, params = _mute_sql(None)
         assert clause == ""
         assert params == []
 
     def test_mute_sql_with_user(self):
-        from social import _mute_sql
+        from community.api import _mute_sql
         clause, params = _mute_sql({"id": "test-uid"})
         assert "user_mutes" in clause
         assert len(params) == 1
 
     def test_feed_uses_mute_filter(self):
         # Refactor: mute filter applied in helper _feed_build_conditions.
-        assert "_feed_build_conditions" in inspect.getsource(__import__("social").get_feed)
-        src = inspect.getsource(__import__("social")._feed_build_conditions)
+        assert "_feed_build_conditions" in inspect.getsource(__import__("community.api", fromlist=["api"]).get_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._feed_build_conditions)
         assert "_mute_sql" in src
 
     def test_following_feed_uses_mute_filter(self):
-        src = inspect.getsource(__import__("social").get_following_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_following_feed)
         assert "_mute_sql" in src
 
 
@@ -3742,72 +3742,72 @@ class TestUserCollectionEndpoints:
     """Test user collection CRUD endpoints."""
 
     def test_create_collection_endpoint(self):
-        from social import router
+        from community.api import router
         pairs = {(m, r.path) for r in router.routes if hasattr(r, "path") for m in (r.methods if hasattr(r, "methods") else set())}
         assert ("POST", "/api/me/collections") in pairs
 
     def test_list_collections_endpoint(self):
-        from social import router
+        from community.api import router
         pairs = {(m, r.path) for r in router.routes if hasattr(r, "path") for m in (r.methods if hasattr(r, "methods") else set())}
         assert ("GET", "/api/me/collections") in pairs
 
     def test_delete_collection_endpoint(self):
-        from social import router
+        from community.api import router
         routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
                   for r in router.routes if hasattr(r, "path")}
         assert "DELETE" in routes.get("/api/me/collections/{collection_id}", set())
 
     def test_add_item_endpoint(self):
-        from social import router
+        from community.api import router
         pairs = {(m, r.path) for r in router.routes if hasattr(r, "path") for m in (r.methods if hasattr(r, "methods") else set())}
         assert ("POST", "/api/me/collections/{collection_id}/items") in pairs
 
     def test_remove_item_endpoint(self):
-        from social import router
+        from community.api import router
         routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
                   for r in router.routes if hasattr(r, "path")}
         assert "DELETE" in routes.get("/api/me/collections/{collection_id}/items/{post_id}", set())
 
     def test_get_items_endpoint(self):
-        from social import router
+        from community.api import router
         routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
                   for r in router.routes if hasattr(r, "path")}
         assert "GET" in routes.get("/api/me/collections/{collection_id}/items", set())
 
     def test_create_requires_auth(self):
-        src = inspect.getsource(__import__("social").create_collection)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).create_collection)
         assert "require_user" in src
 
     def test_create_has_rate_limit(self):
-        src = inspect.getsource(__import__("social").create_collection)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).create_collection)
         assert "check_rate" in src
 
     def test_create_limits_per_user(self):
-        src = inspect.getsource(__import__("social").create_collection)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).create_collection)
         assert "_MAX_COLLECTIONS_PER_USER" in src
 
     def test_add_item_limits_per_collection(self):
-        src = inspect.getsource(__import__("social").add_to_collection)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).add_to_collection)
         assert "_MAX_ITEMS_PER_COLLECTION" in src
 
     def test_add_item_validates_ids(self):
-        src = inspect.getsource(__import__("social").add_to_collection)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).add_to_collection)
         assert "validate_path_id" in src
 
     def test_get_items_checks_access(self):
-        src = inspect.getsource(__import__("social").get_collection_items)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_collection_items)
         assert "is_public" in src
 
     def test_delete_checks_ownership(self):
-        src = inspect.getsource(__import__("social").delete_collection)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).delete_collection)
         assert "user_id" in src
 
     def test_max_collections_constant(self):
-        from social import _MAX_COLLECTIONS_PER_USER
+        from community.api import _MAX_COLLECTIONS_PER_USER
         assert _MAX_COLLECTIONS_PER_USER == 20
 
     def test_max_items_constant(self):
-        from social import _MAX_ITEMS_PER_COLLECTION
+        from community.api import _MAX_ITEMS_PER_COLLECTION
         assert _MAX_ITEMS_PER_COLLECTION == 100
 
 
@@ -3818,37 +3818,37 @@ class TestUserActivityFeed:
     """Test unified user activity endpoint."""
 
     def test_activity_endpoint_exists(self):
-        from social import router
+        from community.api import router
         routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
                   for r in router.routes if hasattr(r, "path")}
         assert "GET" in routes.get("/api/me/activity", set())
 
     def test_activity_requires_auth(self):
-        src = inspect.getsource(__import__("social").user_activity)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).user_activity)
         assert "require_user" in src
 
     def test_activity_queries_posts(self):
-        src = inspect.getsource(__import__("social").user_activity)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).user_activity)
         assert "'post' as action" in src
 
     def test_activity_queries_comments(self):
-        src = inspect.getsource(__import__("social").user_activity)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).user_activity)
         assert "'comment' as action" in src
 
     def test_activity_queries_likes(self):
-        src = inspect.getsource(__import__("social").user_activity)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).user_activity)
         assert "'like' as action" in src
 
     def test_activity_sorts_by_time(self):
-        src = inspect.getsource(__import__("social").user_activity)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).user_activity)
         assert "reverse=True" in src
 
     def test_activity_truncates_content(self):
-        src = inspect.getsource(__import__("social").user_activity)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).user_activity)
         assert "[:200]" in src
 
     def test_activity_uses_async_thread(self):
-        src = inspect.getsource(__import__("social").user_activity)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).user_activity)
         assert "asyncio.to_thread" in src
 
 
@@ -3859,30 +3859,30 @@ class TestPostLikers:
     """Test post likers list endpoint."""
 
     def test_likers_endpoint_exists(self):
-        from social import router
+        from community.api import router
         routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
                   for r in router.routes if hasattr(r, "path")}
         assert "GET" in routes.get("/api/posts/{post_id}/likers", set())
 
     def test_likers_validates_path_id(self):
-        src = inspect.getsource(__import__("social").get_post_likers)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_post_likers)
         assert "validate_path_id" in src
 
     def test_likers_returns_user_info(self):
-        src = inspect.getsource(__import__("social").get_post_likers)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_post_likers)
         assert "display_name" in src
         assert "avatar_url" in src
 
     def test_likers_orders_by_time(self):
-        src = inspect.getsource(__import__("social").get_post_likers)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_post_likers)
         assert "created_at DESC" in src
 
     def test_likers_has_limit(self):
-        src = inspect.getsource(__import__("social").get_post_likers)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_post_likers)
         assert "LIMIT" in src
 
     def test_likers_uses_async_thread(self):
-        src = inspect.getsource(__import__("social").get_post_likers)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_post_likers)
         assert "asyncio.to_thread" in src
 
 
@@ -3964,22 +3964,22 @@ class TestProfileModeration:
     """Profile bio/display_name must be moderated for offensive content."""
 
     def test_update_profile_calls_moderate_content(self):
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.update_profile)
         assert "moderate_content" in src
 
     def test_display_name_moderation_rejects_flagged(self):
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.update_profile)
         assert "Tên hiển thị chứa nội dung không phù hợp" in src
 
     def test_bio_moderation_rejects_flagged(self):
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.update_profile)
         assert "Tiểu sử chứa nội dung không phù hợp" in src
 
     def test_bio_moderation_skips_empty(self):
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.update_profile)
         assert "if bio_text:" in src
 
@@ -3990,22 +3990,22 @@ class TestCollectionModeration:
     """Collection name and description must be moderated."""
 
     def test_create_collection_calls_moderate_content(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.create_collection)
         assert "moderate_content" in src
 
     def test_collection_name_rejects_flagged(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.create_collection)
         assert "Tên danh sách chứa nội dung không phù hợp" in src
 
     def test_collection_description_rejects_flagged(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.create_collection)
         assert "Mô tả danh sách chứa nội dung không phù hợp" in src
 
     def test_collection_description_skips_empty(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.create_collection)
         assert "body.description.strip()" in src
 
@@ -4016,34 +4016,34 @@ class TestReactionNotification:
     """Reactions should send notification to post owner."""
 
     def test_toggle_reaction_sends_notification(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.toggle_reaction)
         assert "create_notification" in src
 
     def test_reaction_notification_skips_self(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.toggle_reaction)
         assert "post_owner != uid" in src
 
     def test_reaction_notification_only_on_add(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.toggle_reaction)
         assert "if reacted and" in src
 
     def test_reaction_notification_type(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.toggle_reaction)
         assert '"reaction"' in src
 
     def test_reaction_labels_defined(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.toggle_reaction)
         assert "_REACTION_LABELS" in src
         assert "heart" in src
         assert "useful" in src
 
     def test_reaction_returns_post_owner(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.toggle_reaction)
         assert "post_owner" in src
 
@@ -4109,40 +4109,40 @@ class TestDataExportCompleteness:
     """GDPR data export should include all user-generated data."""
 
     def test_export_includes_reactions(self):
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.export_user_data)
         assert "post_reactions" in src
 
     def test_export_includes_collections(self):
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.export_user_data)
         assert "user_collections" in src
 
     def test_export_includes_blocks(self):
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.export_user_data)
         assert "blocks" in src and "blocker_id" in src
 
     def test_export_includes_mutes(self):
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.export_user_data)
         assert "user_mutes" in src
 
     def test_export_follows_uses_correct_columns(self):
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.export_user_data)
         assert "follower_id" in src
         assert "target_type" in src
         assert "target_id" in src
 
     def test_export_follows_no_wrong_columns(self):
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.export_user_data)
         assert "target_user_id" not in src
         assert "target_entity_id" not in src
 
     def test_export_returns_all_sections(self):
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.export_user_data)
         for section in ("posts", "comments", "likes", "bookmarks", "follows",
                         "visits", "reactions", "collections", "blocks", "mutes"):
@@ -4155,49 +4155,49 @@ class TestReportUser:
     """Users should be able to report other users."""
 
     def test_report_user_endpoint_exists(self):
-        import social
+        from community import api as social
         routes = {r.path for r in social.router.routes if hasattr(r, "path")}
         assert "/api/users/{user_id}/report" in routes
 
     def test_report_user_validates_path_id(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.report_user)
         assert "validate_path_id" in src
 
     def test_report_user_has_rate_limit(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.report_user)
         first_lines = src[:900]
         assert "check_rate" in first_lines
 
     def test_report_user_prevents_self_report(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.report_user)
         assert "Không thể báo cáo chính mình" in src
 
     def test_report_user_prevents_duplicate(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.report_user)
         assert "đã báo cáo người dùng này rồi" in src
 
     def test_report_user_uses_target_type_user(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.report_user)
         assert "'user'" in src
 
     def test_report_user_reasons(self):
-        import social
+        from community import api as social
         assert "spam" in social._USER_REPORT_REASONS
         assert "harassment" in social._USER_REPORT_REASONS
         assert "impersonation" in social._USER_REPORT_REASONS
 
     def test_report_user_requires_auth(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.report_user)
         assert "require_user" in src
 
     def test_report_user_requires_csrf(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.report_user)
         assert "require_csrf" in src
 
@@ -4326,21 +4326,21 @@ class TestUserStatsEnriched:
     """User stats should include reactions received and collections count."""
 
     def test_includes_reactions_received(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.user_stats)
         assert "reactions_received" in src
 
     def test_includes_collections_count(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.user_stats)
         assert '"collections"' in src
 
     def test_queries_post_reactions(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.user_stats)
         assert "post_reactions" in src
 
     def test_queries_user_collections(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.user_stats)
         assert "user_collections" in src

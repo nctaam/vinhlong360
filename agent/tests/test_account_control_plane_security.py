@@ -10,7 +10,7 @@ import pytest
 from fastapi import HTTPException, Request, Response
 
 import admin
-import auth  # noqa: F401
+from identity import api as auth  # noqa: F401
 
 
 ADMIN_ID = "00000000-0000-0000-0000-000000000001"

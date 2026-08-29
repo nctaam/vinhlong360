@@ -71,7 +71,7 @@ def test_regular_user_has_no_admin_entry_scope():
 
 
 def test_safe_user_exposes_normalized_admin_scopes():
-    from auth import _safe_user
+    from identity.api import _safe_user
 
     payload = _safe_user({
         "id": "moderator-1",
@@ -83,7 +83,7 @@ def test_safe_user_exposes_normalized_admin_scopes():
 
 
 def test_safe_user_keeps_regular_user_scope_empty():
-    from auth import _safe_user
+    from identity.api import _safe_user
 
     payload = _safe_user({
         "id": "user-1",

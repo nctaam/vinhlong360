@@ -107,7 +107,7 @@ def test_social_non_ai_images_are_rejected_before_rate_or_database_mutation(
     monkeypatch,
     operation: str,
 ):
-    import social
+    from community import api as social
 
     def unexpected_side_effect(*_args, **_kwargs):
         pytest.fail("social mutation path ran before the AI-only media rejection")
@@ -142,7 +142,7 @@ def test_social_non_ai_images_are_rejected_before_rate_or_database_mutation(
 
 
 def test_social_upload_is_rejected_before_reading_or_storing_the_file(monkeypatch):
-    import social
+    from community import api as social
 
     def unexpected_side_effect(*_args, **_kwargs):
         pytest.fail("social upload side effect ran before the AI-only rejection")

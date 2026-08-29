@@ -47,7 +47,7 @@ logger = logging.getLogger(__name__)
 
 from fastapi import HTTPException, Request
 
-from auth import _get_current_user_or_none
+from identity.api import _get_current_user_or_none
 from database import db
 
 

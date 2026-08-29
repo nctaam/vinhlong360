@@ -21,7 +21,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 import auth_middleware
-import auth
+from identity import api as auth
 from identity import api as identity_api  # mien dinh danh sang day 2026-08-28
 import database as database_module
 import erasure

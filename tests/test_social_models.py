@@ -10,7 +10,7 @@ os.environ.setdefault("LLM_BASE_URL", "http://localhost:9999/v1")
 os.environ.setdefault("ADMIN_API_KEY", "test-admin-key")
 os.environ.setdefault("CORS_ORIGINS", "http://localhost:8360")
 
-from social import CreatePost, CreateComment, POST_TYPES, POST_TYPE_LABELS
+from community.api import CreatePost, CreateComment, POST_TYPES, POST_TYPE_LABELS
 
 
 class TestCreatePostModel:

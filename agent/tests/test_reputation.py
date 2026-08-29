@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from social import _diminish, _calc_points, _level_for  # noqa: E402
+from community.api import _diminish, _calc_points, _level_for  # noqa: E402
 
 
 class TestDiminish:

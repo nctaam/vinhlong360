@@ -38,9 +38,9 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-import auth
+from identity import api as auth
 import auth_middleware
-import social
+from community import api as social
 
 pytestmark = pytest.mark.integration
 

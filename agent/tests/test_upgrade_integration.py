@@ -33,7 +33,7 @@ class TestUpgradeIntegrationEndpoints:
 
     # U-04: Review sort/filter
     def test_u04_entity_feed_has_sort(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.get_entity_feed)
         assert "sort" in src
 
@@ -136,7 +136,7 @@ class TestUpgradeIntegrationEndpoints:
 
     # BE-5: Block enforcement
     def test_be5_block_in_feeds(self):
-        import social
+        from community import api as social
         for fn_name in ["get_entity_feed", "get_following_feed", "search_users", "suggested_follows", "get_comments"]:
             src = inspect.getsource(getattr(social, fn_name))
             assert "_block_sql" in src or "block" in src.lower(), f"Block missing in {fn_name}"

@@ -22,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import api_schemas_social as S  # noqa: E402
 from api_schemas import ApiModel  # noqa: E402
-import social  # noqa: E402
+from community import api as social  # noqa: E402
 
 
 # ── Payload mẫu (khớp return-statement; kèm field KHÔNG khai để test pass-through) ──

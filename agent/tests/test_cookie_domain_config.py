@@ -80,12 +80,12 @@ class TestDefaultIsVinhLong:
             assert params.get("domain") == ".vinhlong360.vn", host
 
     def test_request_is_production_on_vinhlong_host(self):
-        from auth import _request_is_production
+        from identity.api import _request_is_production
         assert _request_is_production(_fake_request("vinhlong360.vn")) is True
         assert _request_is_production(_fake_request("www.vinhlong360.vn")) is True
 
     def test_request_not_production_on_localhost(self):
-        from auth import _request_is_production
+        from identity.api import _request_is_production
         assert _request_is_production(_fake_request("localhost:3000")) is False
 
 
@@ -111,7 +111,7 @@ class TestCloneDomain:
         assert get_cookie_domain() == ".cantho360.vn"
 
     def test_clone_host_detected_as_production(self, monkeypatch):
-        from auth import _request_is_production
+        from identity.api import _request_is_production
         monkeypatch.setenv("COOKIE_DOMAIN", ".dongthap360.vn")
         assert _request_is_production(_fake_request("dongthap360.vn")) is True
         assert _request_is_production(_fake_request("www.dongthap360.vn")) is True
@@ -119,7 +119,7 @@ class TestCloneDomain:
         assert _request_is_production(_fake_request("vinhlong360.vn")) is False
 
     def test_clone_end_to_end_session_cookie(self, monkeypatch):
-        from auth import _cookie_params_for_request
+        from identity.api import _cookie_params_for_request
         monkeypatch.setenv("COOKIE_DOMAIN", ".dongthap360.vn")
         monkeypatch.setenv("ENVIRONMENT", "production")
         params = _cookie_params_for_request(_fake_request("dongthap360.vn", proto="https"))
@@ -128,7 +128,7 @@ class TestCloneDomain:
         assert params["max_age"] > 0
 
     def test_clone_end_to_end_trusted_device_cookie(self, monkeypatch):
-        from auth import _trusted_cookie_params
+        from identity.api import _trusted_cookie_params
         monkeypatch.setenv("COOKIE_DOMAIN", ".dongthap360.vn")
         monkeypatch.setenv("ENVIRONMENT", "production")
         params = _trusted_cookie_params(_fake_request("dongthap360.vn", proto="https"))
@@ -147,7 +147,7 @@ class TestHostOnlyCookies:
         assert params["secure"] is True  # vẫn giữ Secure khi là production
 
     def test_empty_env_disables_host_based_prod_detection(self, monkeypatch):
-        from auth import _request_is_production
+        from identity.api import _request_is_production
         monkeypatch.setenv("COOKIE_DOMAIN", "")
         assert _request_is_production(_fake_request("vinhlong360.vn")) is False
         # cờ env vẫn ép được production
@@ -155,20 +155,20 @@ class TestHostOnlyCookies:
         assert _request_is_production(_fake_request("vinhlong360.vn")) is True
 
     def test_localhost_dev_has_no_domain_no_secure(self):
-        from auth import _cookie_params_for_request
+        from identity.api import _cookie_params_for_request
         for host in ("localhost:3000", "127.0.0.1:8360", "::1"):
             params = _cookie_params_for_request(_fake_request(host))
             assert "domain" not in params, host
             assert "secure" not in params, host
 
     def test_localhost_dev_trusted_cookie_has_no_domain(self):
-        from auth import _trusted_cookie_params
+        from identity.api import _trusted_cookie_params
         params = _trusted_cookie_params(_fake_request("localhost:3000"))
         assert "domain" not in params
         assert "secure" not in params
 
     def test_request_without_host_header_does_not_crash(self):
-        from auth import _cookie_params_for_request
+        from identity.api import _cookie_params_for_request
         params = _cookie_params_for_request(_fake_request())
         assert params["httponly"] is True
 
@@ -194,7 +194,7 @@ class TestNeverSetMismatchedDomain:
     def test_end_to_end_environment_production_on_clone_host(self, monkeypatch):
         """Kịch bản hỏng thật: clone deploy với ENVIRONMENT=production nhưng QUÊN
         đặt COOKIE_DOMAIN → tuyệt đối không được đặt cookie cho .vinhlong360.vn."""
-        from auth import _cookie_params_for_request
+        from identity.api import _cookie_params_for_request
         monkeypatch.setenv("ENVIRONMENT", "production")
         params = _cookie_params_for_request(_fake_request("dongthap360.vn", proto="https"))
         assert params.get("domain") != ".vinhlong360.vn"
@@ -202,14 +202,14 @@ class TestNeverSetMismatchedDomain:
         assert params["secure"] is True  # cookie vẫn Secure → vẫn đăng nhập được
 
     def test_end_to_end_trusted_cookie_on_clone_host(self, monkeypatch):
-        from auth import _trusted_cookie_params
+        from identity.api import _trusted_cookie_params
         monkeypatch.setenv("ENVIRONMENT", "production")
         params = _trusted_cookie_params(_fake_request("dongthap360.vn", proto="https"))
         assert "domain" not in params
 
     def test_forwarded_host_wins_over_host_header(self, monkeypatch):
         """Sau nginx/CDN, host thật nằm ở X-Forwarded-Host."""
-        from auth import _cookie_params_for_request
+        from identity.api import _cookie_params_for_request
         monkeypatch.setenv("ENVIRONMENT", "production")
         req = _fake_request("internal-upstream:8360", forwarded_host="vinhlong360.vn", proto="https")
         assert _cookie_params_for_request(req)["domain"] == ".vinhlong360.vn"

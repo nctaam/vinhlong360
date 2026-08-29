@@ -18,35 +18,26 @@ from community import api as community_api  # noqa: E402
 SRC = Path(community_api.__file__).resolve()
 
 
-def test_shim_va_module_that_dung_CUNG_mot_router():
-    """72 chỗ test soi `social.router`; server mount qua social. Hai object
-    router khác nhau = hai bảng route trôi khác nhau."""
-    import social
+def test_duong_cu_social_da_chet_han():
+    """Gỡ shim 2026-08-29 (lệnh "làm luôn"): `import social` phẳng phải nổ —
+    không shim, không file rơi rớt, không bản-sao-globals nào còn tồn tại."""
+    import importlib
+    import sys
 
-    assert social.router is community_api.router
-
-
-def test_shim_chi_con_tai_xuat_khong_con_dinh_nghia():
-    import social
-
-    tree = ast.parse(Path(social.__file__).resolve().read_text(encoding="utf-8"))
-    ten = [n.name for n in tree.body
-           if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))]
-    assert ten == [], f"shim vẫn còn định nghĩa: {ten[:5]} — hai nguồn sự thật"
+    assert "social" not in sys.modules or sys.modules["social"].__name__ == "community.api"
+    try:
+        importlib.import_module("social")
+    except ModuleNotFoundError:
+        return
+    raise AssertionError("đường phẳng `import social` vẫn sống — còn file cũ/shim")
 
 
-def test_hai_helper_sql_van_import_duoc_qua_duong_cu():
-    """2 nơi ngoài import `_block_sql`/`_mute_sql` từ social — đường cũ phải sống."""
-    from social import _block_sql, _mute_sql  # noqa: F401
+def test_hai_helper_sql_import_duoc_tu_nha_that():
+    """2 nơi ngoài từng import `_block_sql`/`_mute_sql` — sau gỡ shim,
+    community.api là đường duy nhất và phải giữ hai ký hiệu này."""
+    from community.api import _block_sql, _mute_sql  # noqa: F401
 
-    assert callable(getattr(community_api, "_block_sql"))
-    assert social_is_same()
-
-
-def social_is_same():
-    import social
-
-    return social._block_sql is community_api._block_sql
+    assert callable(_block_sql) and callable(_mute_sql)
 
 
 def test_KHONG_import_nguoc():

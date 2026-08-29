@@ -1391,7 +1391,7 @@ def _search_posts_for_contract(q: str, user: dict | None, limit: int) -> tuple[l
     if not db._use_pg or len((q or "").strip()) < 2:
         return [], 0
     from database import escape_like
-    from social import (
+    from community.api import (
         _POST_COLS, _block_sql, _mute_sql, _prod_seed_post_filter,
         _format_post, _enrich_all,
     )
@@ -1432,7 +1432,7 @@ def _search_users_for_contract(q: str, user: dict | None, limit: int) -> tuple[l
     if not db._use_pg or len((q or "").strip()) < 2:
         return [], 0
     from database import escape_like
-    from social import _block_sql, _mute_sql
+    from community.api import _block_sql, _mute_sql
     stripped = q.strip()
     ph = db._ph
     pattern = "%" + escape_like(stripped.lower()) + "%"

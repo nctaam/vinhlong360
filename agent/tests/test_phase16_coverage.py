@@ -354,19 +354,19 @@ class TestPhase17SecurityChecks:
         assert "pbkdf2_hmac" in src
 
     def test_password_validation_min_length(self):
-        from auth import SetPassword
+        from identity.api import SetPassword
         import pytest as pt
         with pt.raises(Exception):
             SetPassword(password="short1")
 
     def test_password_validation_needs_digit(self):
-        from auth import SetPassword
+        from identity.api import SetPassword
         import pytest as pt
         with pt.raises(Exception):
             SetPassword(password="onlyletters")
 
     def test_password_validation_needs_letter(self):
-        from auth import SetPassword
+        from identity.api import SetPassword
         import pytest as pt
         with pt.raises(Exception):
             SetPassword(password="12345678")
@@ -394,8 +394,8 @@ class TestCrossModuleConsistency:
 
     def test_all_routers_importable(self):
         """All modules with routers should be importable without errors."""
-        import social
-        import auth
+        from community import api as social
+        from identity import api as auth
         import notifications
         import visits
         import saved
@@ -766,7 +766,7 @@ class TestSecurityPosture:
     def test_require_pg_on_ugc_routers(self):
         # social.py la shim (community/api.py, 2026-08-28) — nhanh social doc nguon that.
         for module in ("saved", "visits", "plans", "notifications", "social"):
-            if module == "social":
+            if module == "social":  # nhà thật community/api.py (gỡ shim 2026-08-29)
                 src = _social_src()
             else:
                 src = (Path(__file__).resolve().parent.parent / f"{module}.py").read_text(encoding="utf-8")
@@ -786,7 +786,8 @@ class TestSecurityPosture:
                 assert "validate_path_id" in block, f"{module}.{fn} missing validate_path_id"
 
     def test_no_select_star_in_ugc_files(self):
-        for module in ("social", "auth", "notifications"):
+        # social/auth đã gỡ shim (2026-08-29) — đọc nguồn nhà thật qua helper
+        for module, doc in (("community/api", None), ("identity/api", None), ("notifications", None)):
             src = (Path(__file__).resolve().parent.parent / f"{module}.py").read_text(encoding="utf-8")
             assert "SELECT *" not in src, f"{module}.py still has SELECT *"
 
@@ -830,7 +831,7 @@ class TestSecurityPosture:
                 assert "Query(" in line, f"plans.py unvalidated limit: {line.strip()}"
 
     def test_offset_params_have_upper_bound(self):
-        for module in ("admin", "notifications", "public_api", "social"):
+        for module in ("admin", "notifications", "public_api", "community/api"):
             src = (Path(__file__).resolve().parent.parent / f"{module}.py").read_text(encoding="utf-8")
             for line_no, line in enumerate(src.split("\n"), 1):
                 if "offset: int = Query(" in line:
@@ -889,7 +890,7 @@ class TestSecurityPosture:
 
     def test_page_params_have_upper_bound(self):
         """All page query params must have le= upper bound to prevent DoS via large OFFSET."""
-        for module in ("social", "admin"):
+        for module in ("community/api", "admin"):
             src = (Path(__file__).resolve().parent.parent / f"{module}.py").read_text(encoding="utf-8")
             for line_no, line in enumerate(src.split("\n"), 1):
                 if "page: int = Query(" in line:
@@ -919,7 +920,7 @@ class TestSecurityPosture:
     def test_validate_path_id_has_param_name(self):
         """All validate_path_id calls must include the param_name argument."""
         import re
-        for module in ("social", "admin", "notifications", "public_api", "saved", "visits", "plans"):
+        for module in ("community/api", "admin", "notifications", "public_api", "saved", "visits", "plans"):
             path = Path(__file__).resolve().parent.parent / f"{module}.py"
             if not path.exists():
                 continue
@@ -929,7 +930,7 @@ class TestSecurityPosture:
 
     def test_no_bare_404_without_detail(self):
         """All HTTPException(404) should include a detail message."""
-        for module in ("social", "admin", "notifications", "public_api"):
+        for module in ("community/api", "admin", "notifications", "public_api"):
             src = (Path(__file__).resolve().parent.parent / f"{module}.py").read_text(encoding="utf-8")
             for line_no, line in enumerate(src.split("\n"), 1):
                 if "raise HTTPException(404)" in line and "404," not in line:
@@ -951,8 +952,8 @@ class TestSecurityPosture:
         """All user-facing Pydantic str fields should have Field(max_length=...) to prevent oversized payloads."""
 
         # Models that accept user/admin string input
-        from auth import OTPRequest, OTPVerify, PasswordLogin, SetPassword, CheckPhone, ProfileUpdate, PrivacyUpdate
-        from social import CreatePost, CreateComment, BestAnswerBody
+        from identity.api import OTPRequest, OTPVerify, PasswordLogin, SetPassword, CheckPhone, ProfileUpdate, PrivacyUpdate
+        from community.api import CreatePost, CreateComment, BestAnswerBody
         from notifications import ReportRequest
         from admin import _EntityImageURL, RejectBody, BatchModerationBody
 
@@ -988,7 +989,7 @@ class TestSecurityPosture:
 
     def test_all_write_endpoints_have_rate_limits(self):
         """Every POST/PUT/PATCH/DELETE endpoint in social.py and notifications.py should have check_rate."""
-        for module_name in ("social", "notifications"):
+        for module_name in ("community/api", "notifications"):
             src = (Path(__file__).resolve().parent.parent / f"{module_name}.py").read_text(encoding="utf-8")
             # Quét theo AST thay vì cửa sổ 12 DÒNG sau decorator: docstring hợp
             # lệ đẩy check_rate ra ngoài khung và làm test đỏ hàng loạt dù không
@@ -1043,7 +1044,7 @@ class TestSecurityPosture:
 
     def test_privacy_visibility_enum_validation(self):
         """PrivacyUpdate model should validate profile_visibility enum at schema level."""
-        from auth import PrivacyUpdate
+        from identity.api import PrivacyUpdate
         import pytest as pt
         PrivacyUpdate(profile_visibility="public")
         PrivacyUpdate(profile_visibility="private")
@@ -1064,7 +1065,7 @@ class TestSecurityPosture:
         """All routers with POST/PUT/DELETE must have CSRF on individual endpoints or router-level."""
         from pathlib import Path
         import re
-        for module_name in ("social", "auth", "notifications"):
+        for module_name in ("community/api", "identity/api", "notifications"):
             src = (Path(__file__).resolve().parent.parent / f"{module_name}.py").read_text(encoding="utf-8")
             lines = src.split("\n")
             for i, line in enumerate(lines):
@@ -1078,7 +1079,7 @@ class TestSecurityPosture:
     def test_timezone_aware_datetime(self):
         """Production modules must use datetime.now(timezone.utc), not naive datetime.now()."""
         from pathlib import Path
-        critical_modules = ["admin", "auth", "middleware", "server", "database", "analytics", "cost_tracker", "social", "public_api", "proactive", "realtime", "mcp_server", "scheduler"]
+        critical_modules = ["admin", "identity/api", "middleware", "server", "database", "analytics", "cost_tracker", "community/api", "public_api", "proactive", "realtime", "mcp_server", "scheduler"]
         for mod in critical_modules:
             src = (Path(__file__).resolve().parent.parent / f"{mod}.py").read_text(encoding="utf-8")
             for line_no, line in enumerate(src.split("\n"), 1):
@@ -1301,7 +1302,7 @@ class TestMediumFixesBatch2:
         """create_comment must check blocks between commenter and post author."""
         # Refactor: block check moved to helper _comment_guard (via _comment_query).
         import inspect
-        import social
+        from community import api as social
         src = _social_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
@@ -1328,7 +1329,7 @@ class TestMediumFixesBatch2:
         # Refactor: validation moved to _validate_post_update, UPDATE branches to
         # _post_do_update. update_post gọi cả hai (wiring). Giữ nguyên assertion.
         import inspect
-        import social
+        from community import api as social
         src = _social_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
@@ -1660,7 +1661,7 @@ class TestDeepScanBatch5:
         """Community leaderboard SQL must have LIMIT to cap result set."""
         # Refactor: leaderboard SQL moved to helper _leaderboard_query.
         import inspect
-        import social
+        from community import api as social
         assert "_leaderboard_query" in inspect.getsource(social.community_leaderboard)
         block = inspect.getsource(social._leaderboard_query)
         assert "LIMIT 500" in block or "LIMIT 200" in block or "LIMIT 100" in block, \
@@ -1969,13 +1970,13 @@ class TestImageURLLengthValidation:
     """A3: Image URLs in CreatePost must have per-URL length limit."""
 
     def test_image_url_length_validated(self):
-        from social import CreatePost
+        from community.api import CreatePost
         # Valid short URLs should pass
         post = CreatePost(content="Test content for post", images=["https://example.com/img.jpg"])
         assert len(post.images) == 1
 
     def test_image_url_too_long_rejected(self):
-        from social import CreatePost
+        from community.api import CreatePost
         long_url = "https://example.com/" + "a" * 2100
         with pytest.raises(Exception):
             CreatePost(content="Test content for post", images=[long_url])
@@ -2125,7 +2126,7 @@ class TestCommentParentValidation:
     def test_create_comment_validates_parent_post(self):
         # Refactor: parent validation moved to helper _comment_guard.
         import inspect
-        import social
+        from community import api as social
         src = _social_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
@@ -2138,7 +2139,7 @@ class TestCommentParentValidation:
         # Refactor: parent check in _comment_guard, INSERT in _comment_insert.
         # _comment_query gọi guard TRƯỚC insert → thứ tự bảo toàn.
         import inspect
-        import social
+        from community import api as social
         qsrc = inspect.getsource(social._comment_query)
         guard_call = qsrc.find("_comment_guard")
         insert_call = qsrc.find("_comment_insert")

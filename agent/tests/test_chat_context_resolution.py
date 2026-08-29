@@ -66,9 +66,10 @@ def _install_fake_ddgs(monkeypatch, rows=None, exc=None):
 
 
 def _install_fake_social(monkeypatch, reviews=None, posts=None, exc=None):
-    """Thay module `social` — hai tool UGC import nó bên trong try nên fake ăn trọn."""
+    """Thay module `community.api` (nhà thật sau gỡ shim 2026-08-29) — hai tool
+    UGC import nó bên trong try lúc GỌI nên fake trong sys.modules ăn trọn."""
     seen = {}
-    mod = types.ModuleType("social")
+    mod = types.ModuleType("community.api")
 
     def get_community_reviews(entity_id, limit):
         seen["reviews_args"] = (entity_id, limit)
@@ -84,7 +85,7 @@ def _install_fake_social(monkeypatch, reviews=None, posts=None, exc=None):
 
     mod.get_community_reviews = get_community_reviews
     mod.get_trending_posts = get_trending_posts
-    monkeypatch.setitem(sys.modules, "social", mod)
+    monkeypatch.setitem(sys.modules, "community.api", mod)
     return seen
 
 

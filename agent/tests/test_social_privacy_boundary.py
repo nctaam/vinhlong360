@@ -7,7 +7,7 @@ from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.testclient import TestClient
 
 import public_api
-import social
+from community import api as social
 from community import api as community_api  # mien cong dong sang day 2026-08-28
 from auth_middleware import get_current_user, require_user
 from database import db

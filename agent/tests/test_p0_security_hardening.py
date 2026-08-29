@@ -31,28 +31,28 @@ class TestLoginRateLimitConfig:
     """Verify rate-limit configuration constants are sane."""
 
     def test_login_ip_limit_defined(self):
-        import auth
+        from identity import api as auth
         assert hasattr(auth, "LOGIN_IP_LIMIT")
         assert auth.LOGIN_IP_LIMIT > 0
         assert auth.LOGIN_IP_LIMIT <= 20  # reasonable upper bound
 
     def test_login_ip_window_defined(self):
-        import auth
+        from identity import api as auth
         assert hasattr(auth, "LOGIN_IP_WINDOW")
         assert auth.LOGIN_IP_WINDOW >= 60  # at least 1 minute
 
     def test_login_phone_limit_defined(self):
-        import auth
+        from identity import api as auth
         assert hasattr(auth, "LOGIN_PHONE_LIMIT")
         assert auth.LOGIN_PHONE_LIMIT == 5  # spec: 5 failures
 
     def test_login_phone_window_defined(self):
-        import auth
+        from identity import api as auth
         assert hasattr(auth, "LOGIN_PHONE_WINDOW")
         assert auth.LOGIN_PHONE_WINDOW == 900  # spec: 15 minutes
 
     def test_rate_dicts_exist(self):
-        import auth
+        from identity import api as auth
         assert isinstance(auth._login_ip_rate, dict)
         assert isinstance(auth._login_phone_fails, dict)
 
@@ -62,7 +62,7 @@ class TestLoginRateLimitIPLogic:
 
     def test_ip_rate_limit_blocks_after_threshold(self):
         """Flooding login from a single IP should be blocked."""
-        import auth
+        from identity import api as auth
         # Simulate LOGIN_IP_LIMIT hits from the same IP within the window
         ip = "10.99.99.1"
         now = time.time()
@@ -75,7 +75,7 @@ class TestLoginRateLimitIPLogic:
 
     def test_ip_rate_old_entries_expire(self):
         """Entries outside the window should not count toward the limit."""
-        import auth
+        from identity import api as auth
         ip = "10.99.99.2"
         now = time.time()
         # All entries are outside the window
@@ -90,7 +90,7 @@ class TestLoginRateLimitPhoneLogic:
 
     def test_phone_rate_limit_blocks_after_5_failures(self):
         """5 failed login attempts for the same phone should block further attempts."""
-        import auth
+        from identity import api as auth
         phone = "0909999888"
         now = time.time()
         # Simulate 5 failures
@@ -101,7 +101,7 @@ class TestLoginRateLimitPhoneLogic:
 
     def test_phone_rate_limit_resets_after_window(self):
         """After the 15-minute window, the phone should be unblocked."""
-        import auth
+        from identity import api as auth
         phone = "0909999777"
         now = time.time()
         # All failures are outside the window
@@ -114,7 +114,7 @@ class TestLoginRateLimitPhoneLogic:
     def test_successful_login_clears_phone_fails(self):
         """After successful login, the phone failure counter should be cleared.
         This is verified by checking the code path in auth.login_password (line 407)."""
-        import auth
+        from identity import api as auth
         phone = "0909999666"
         auth._login_phone_fails[phone] = [time.time()]
         # The actual code does: _login_phone_fails.pop(phone, None)
@@ -126,7 +126,7 @@ class TestGcRateDict:
     """Test the garbage collection helper for rate-limit dicts."""
 
     def test_gc_removes_stale_entries(self):
-        import auth
+        from identity import api as auth
         d = {}
         now = time.time()
         d["stale_key"] = [now - 1000]
@@ -137,13 +137,13 @@ class TestGcRateDict:
         assert "fresh_key" in d
 
     def test_gc_does_not_run_below_threshold(self):
-        import auth
+        from identity import api as auth
         d = {"key": [time.time() - 1000]}
         auth._gc_rate_dict(d, 500)
         assert "key" in d
 
     def test_gc_forced_eviction_over_4x_threshold(self):
-        import auth
+        from identity import api as auth
         d = {}
         now = time.time()
         for i in range(auth._RATE_GC_THRESHOLD * 5):
@@ -161,7 +161,7 @@ class TestSessionTokenHashing:
 
     def test_hash_token_is_sha256_hex(self):
         """Token hash must be a 64-char lowercase hex string (SHA-256)."""
-        from auth import _hash_token, _generate_token
+        from identity.api import _hash_token, _generate_token
         token = _generate_token()
         h = _hash_token(token)
         assert len(h) == 64
@@ -169,19 +169,19 @@ class TestSessionTokenHashing:
 
     def test_hash_token_deterministic(self):
         """Same token always produces the same hash (enables DB lookup)."""
-        from auth import _hash_token
+        from identity.api import _hash_token
         token = "test-token-abc123"
         assert _hash_token(token) == _hash_token(token)
 
     def test_hash_token_not_plaintext(self):
         """Hash output must differ from the input token."""
-        from auth import _hash_token, _generate_token
+        from identity.api import _hash_token, _generate_token
         token = _generate_token()
         assert _hash_token(token) != token
 
     def test_different_tokens_different_hashes(self):
         """Collision resistance: different tokens produce different hashes."""
-        from auth import _hash_token, _generate_token
+        from identity.api import _hash_token, _generate_token
         t1 = _generate_token()
         t2 = _generate_token()
         assert t1 != t2  # tokens themselves are distinct
@@ -189,14 +189,14 @@ class TestSessionTokenHashing:
 
     def test_token_entropy_sufficient(self):
         """Generated tokens must have sufficient entropy (at least 32 bytes of randomness)."""
-        from auth import _generate_token
+        from identity.api import _generate_token
         token = _generate_token()
         # token_urlsafe(48) produces ~64 chars of base64url
         assert len(token) >= 32
 
     def test_hash_token_docstring_mentions_sha256(self):
         """The _hash_token function should document the SHA-256 algorithm."""
-        from auth import _hash_token
+        from identity.api import _hash_token
         assert "sha-256" in (_hash_token.__doc__ or "").lower() or \
                "sha256" in (_hash_token.__doc__ or "").lower()
 
@@ -209,7 +209,7 @@ class TestSessionTokenHashing:
         login_password's non-2FA success path — not inline in either anymore.
         """
         import inspect
-        import auth
+        from identity import api as auth
         verify_src = inspect.getsource(auth.verify_otp)
         login_src = inspect.getsource(auth.login_password)
         assert "_finish_login" in verify_src, \
@@ -223,7 +223,7 @@ class TestSessionTokenHashing:
     def test_session_lookup_uses_hash(self):
         """Verify that _get_current_user_or_none looks up by hashed token."""
         import inspect
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth._get_current_user_or_none)
         assert "_hash_token" in src, \
             "_get_current_user_or_none must lookup by hash, not plaintext"
@@ -231,7 +231,7 @@ class TestSessionTokenHashing:
     def test_logout_uses_hash(self):
         """Verify that logout deletes session by hashed token."""
         import inspect
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.logout)
         assert "_hash_token" in src, \
             "logout must delete by hashed token"
@@ -239,7 +239,7 @@ class TestSessionTokenHashing:
     def test_set_password_session_revocation_uses_hash(self):
         """Verify that set_password compares current session by hash."""
         import inspect
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.set_password)
         assert "_hash_token" in src, \
             "set_password must compare session token by hash"
@@ -247,7 +247,7 @@ class TestSessionTokenHashing:
     def test_list_sessions_uses_hash_for_current(self):
         """Verify that list_sessions identifies current session by hash comparison."""
         import inspect
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.list_sessions)
         assert "_hash_token" in src, \
             "list_sessions must identify current session by hash"
@@ -456,7 +456,7 @@ class TestCommentModerationIntegration:
     def test_create_comment_calls_moderate_content(self):
         """The create_comment endpoint must call moderate_content."""
         import inspect
-        import social
+        from community import api as social
         src = inspect.getsource(social.create_comment)
         assert "moderate_content" in src, \
             "create_comment must call moderate_content (P0-7)"
@@ -464,7 +464,7 @@ class TestCommentModerationIntegration:
     def test_create_comment_uses_moderation_status(self):
         """The comment INSERT must use the moderation status from moderate_content."""
         import inspect
-        import social
+        from community import api as social
         # Refactor: INSERT moved to helper _comment_insert (via _comment_query),
         # create_comment gọi helper (wiring-assert). Giữ nguyên assertion.
         assert "_comment_query" in inspect.getsource(social.create_comment)
@@ -475,7 +475,7 @@ class TestCommentModerationIntegration:
 
     def test_format_comment_does_not_leak_phone(self):
         """_format_comment must NOT include phone (PII protection)."""
-        from social import _format_comment
+        from community.api import _format_comment
         row = {
             "id": "test-id",
             "content": "Test comment",
@@ -508,31 +508,31 @@ class TestCommentModerationIntegration:
         }
 
     def test_format_comment_gives_moderation_status_to_the_author(self):
-        from social import _format_comment
+        from community.api import _format_comment
         out = _format_comment(self._pending_row(), {"id": "author-1", "role": "user"})
         assert out["moderation_status"] == "pending"
 
     def test_format_comment_hides_moderation_status_from_strangers(self):
-        from social import _format_comment
+        from community.api import _format_comment
         out = _format_comment(self._pending_row(), {"id": "someone-else", "role": "user"})
         assert "moderation_status" not in out
         assert "pending" not in [v for v in _all_values(out) if isinstance(v, str)]
 
     def test_format_comment_hides_moderation_status_from_anonymous(self):
         """Không có người xem = không có quyền. Mặc định phải là ĐÓNG."""
-        from social import _format_comment
+        from community.api import _format_comment
         assert "moderation_status" not in _format_comment(self._pending_row())
         assert "moderation_status" not in _format_comment(self._pending_row(), None)
 
     def test_format_comment_gives_moderation_status_to_staff(self):
-        from social import _format_comment
+        from community.api import _format_comment
         for role in ("admin", "moderator"):
             out = _format_comment(self._pending_row(), {"id": "staff-1", "role": role})
             assert out["moderation_status"] == "pending", role
 
     def test_format_comment_blank_ids_do_not_match_each_other(self):
         """Hàng thiếu user_id + người xem thiếu id: "" == "" KHÔNG được tính là chính chủ."""
-        from social import _format_comment
+        from community.api import _format_comment
         row = self._pending_row()
         row["user_id"] = ""
         assert "moderation_status" not in _format_comment(row, {"id": "", "role": "user"})
@@ -548,7 +548,7 @@ class TestCommentModerationIntegration:
 
     def test_format_post_does_not_leak_phone(self):
         """_format_post must NOT include phone (P0-8)."""
-        from social import _format_post
+        from community.api import _format_post
         row = {
             "id": "test-id",
             "content": "Test post",
@@ -598,29 +598,29 @@ class TestSecurityConstants:
     """Verify that security-related constants have reasonable values."""
 
     def test_session_expire_days_reasonable(self):
-        import auth
+        from identity import api as auth
         assert 1 <= auth.SESSION_EXPIRE_DAYS <= 90
 
     def test_otp_max_attempts_reasonable(self):
-        import auth
+        from identity import api as auth
         assert 3 <= auth.OTP_MAX_ATTEMPTS <= 10
 
     def test_otp_expire_minutes_reasonable(self):
-        import auth
+        from identity import api as auth
         assert 2 <= auth.OTP_EXPIRE_MINUTES <= 15
 
     def test_otp_rate_limit_seconds_exists(self):
-        import auth
+        from identity import api as auth
         assert auth.OTP_RATE_LIMIT_SECONDS >= 30
 
     def test_login_phone_limit_spec_compliant(self):
         """Per the task spec: 5 failures per 15 min = temporary block."""
-        import auth
+        from identity import api as auth
         assert auth.LOGIN_PHONE_LIMIT == 5
         assert auth.LOGIN_PHONE_WINDOW == 900  # 15 * 60
 
     def test_comment_rate_limit_exists(self):
         """Social module should have comment rate limiting."""
-        import social
+        from community import api as social
         assert social.RL_COMMENT_LIMIT > 0
         assert social.RL_COMMENT_WINDOW > 0

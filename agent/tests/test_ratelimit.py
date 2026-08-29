@@ -64,7 +64,7 @@ def test_window_expiry(monkeypatch):
 # ── Endpoint: create_post bị chặn khi vượt limit ───────────────────────────
 @pg_only
 def test_create_post_rate_limited(monkeypatch):
-    import social
+    from community import api as social
     from auth_middleware import require_user, get_current_user
 
     ratelimit._reset()

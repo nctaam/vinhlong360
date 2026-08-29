@@ -65,47 +65,47 @@ class TestReactionEnrichment:
     """_enrich_reactions() batch-fetches reaction counts for feed posts."""
 
     def test_enrich_reactions_exists(self):
-        from social import _enrich_reactions
+        from community.api import _enrich_reactions
         assert callable(_enrich_reactions)
 
     def test_enrich_reactions_queries_post_reactions(self):
-        src = inspect.getsource(__import__("social")._enrich_reactions)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._enrich_reactions)
         assert "post_reactions" in src
         assert "reaction_type" in src
         assert "GROUP BY" in src
 
     def test_enrich_reactions_sets_empty_dict_default(self):
-        src = inspect.getsource(__import__("social")._enrich_reactions)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._enrich_reactions)
         assert "counts.get" in src
         assert "{}" in src
 
     def test_enrich_reactions_handles_empty_list(self):
-        from social import _enrich_reactions
+        from community.api import _enrich_reactions
         result = _enrich_reactions([])
         assert result == []
 
     def test_format_post_has_reactions_key(self):
-        src = inspect.getsource(__import__("social")._format_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._format_post)
         assert '"reactions"' in src
 
     def test_feed_calls_enrich_reactions(self):
-        src = inspect.getsource(__import__("social").get_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_feed)
         assert "_enrich_all" in src or "_enrich_reactions" in src
 
     def test_following_feed_calls_enrich_reactions(self):
-        src = inspect.getsource(__import__("social").get_following_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_following_feed)
         assert "_enrich_all" in src or "_enrich_reactions" in src
 
     def test_entity_feed_calls_enrich_reactions(self):
-        src = inspect.getsource(__import__("social").get_entity_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_entity_feed)
         assert "_enrich_all" in src or "_enrich_reactions" in src
 
     def test_search_posts_calls_enrich_reactions(self):
-        src = inspect.getsource(__import__("social").search_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).search_posts)
         assert "_enrich_all" in src or "_enrich_reactions" in src
 
     def test_enrich_reactions_batch_query(self):
-        src = inspect.getsource(__import__("social")._enrich_reactions)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._enrich_reactions)
         assert "ANY" in src
 
 
@@ -248,15 +248,15 @@ class TestCommentReportRotation:
     """Comment report endpoint uses shared lock and rotation."""
 
     def test_comment_report_uses_shared_lock(self):
-        src = inspect.getsource(__import__("social").report_comment)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_comment)
         assert "_jsonl_lock" in src
 
     def test_comment_report_calls_rotation(self):
-        src = inspect.getsource(__import__("social").report_comment)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_comment)
         assert "_maybe_rotate_jsonl" in src
 
     def test_imports_from_public_api(self):
-        src = inspect.getsource(__import__("social").report_comment)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_comment)
         assert "from public_api import" in src
 
 
@@ -289,17 +289,17 @@ class TestLeaderboardMuteFilter:
     """Leaderboard filters muted users alongside blocked users."""
 
     def test_leaderboard_uses_mute_sql(self):
-        src = inspect.getsource(__import__("social").community_leaderboard)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).community_leaderboard)
         assert "_mute_sql" in src
 
     def test_leaderboard_includes_mc_in_sql(self):
         # Refactor: leaderboard SQL moved to helper _leaderboard_query.
-        assert "_leaderboard_query" in inspect.getsource(__import__("social").community_leaderboard)
-        src = inspect.getsource(__import__("social")._leaderboard_query)
+        assert "_leaderboard_query" in inspect.getsource(__import__("community.api", fromlist=["api"]).community_leaderboard)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._leaderboard_query)
         assert "{mc}" in src or "mc}" in src
 
     def test_leaderboard_cache_checks_both_filters(self):
-        src = inspect.getsource(__import__("social").community_leaderboard)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).community_leaderboard)
         assert "has_personal_filter" in src
 
 
@@ -325,7 +325,7 @@ class TestPrivacyShowActivityEnforcement:
 
     @staticmethod
     def _hide_activity(monkeypatch):
-        import social
+        from community import api as social
 
         @contextmanager
         def fake_conn():
@@ -419,71 +419,71 @@ class TestMuteEnforcementComprehensive:
     """Every endpoint that has _block_sql on feed/list content must also apply _mute_sql."""
 
     def test_trending_posts_mute(self):
-        src = inspect.getsource(__import__("social").trending_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).trending_posts)
         assert "_mute_sql" in src
         assert "{mc}" in src or "mc}" in src
 
     def test_explore_feed_mute(self):
-        src = inspect.getsource(__import__("social").explore_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).explore_feed)
         assert "_mute_sql" in src
         assert "{mc}" in src or "mc}" in src
 
     def test_search_posts_mute(self):
-        src = inspect.getsource(__import__("social").search_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).search_posts)
         assert "_mute_sql" in src
         assert "{mc}" in src or "mc}" in src
 
     def test_search_users_mute(self):
-        src = inspect.getsource(__import__("social").search_users)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).search_users)
         assert "_mute_sql" in src
         assert "{mc}" in src or "mc}" in src
 
     def test_suggested_follows_mute(self):
-        src = inspect.getsource(__import__("social").suggested_follows)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).suggested_follows)
         assert "_mute_sql" in src
         assert "{mc}" in src or "mc}" in src
 
     def test_entity_feed_mute(self):
-        src = inspect.getsource(__import__("social").get_entity_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_entity_feed)
         assert "_mute_sql" in src
         assert "{mc}" in src or "mc}" in src
 
     def test_related_posts_mute(self):
         # Refactor: mute-filtered SQL moved to helpers _related_posts_query /
         # _related_by_tags; related_posts computes _mute_sql & wires helpers.
-        src = inspect.getsource(__import__("social").related_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).related_posts)
         assert "_mute_sql" in src
         assert "_related_posts_query" in src
-        helper_src = inspect.getsource(__import__("social")._related_posts_query) + \
-            inspect.getsource(__import__("social")._related_by_tags)
+        helper_src = inspect.getsource(__import__("community.api", fromlist=["api"])._related_posts_query) + \
+            inspect.getsource(__import__("community.api", fromlist=["api"])._related_by_tags)
         assert "{mc}" in helper_src or "mc}" in helper_src
 
     def test_comments_mute(self):
-        src = inspect.getsource(__import__("social").get_comments)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_comments)
         assert "_mute_sql" in src
         assert "{mc}" in src or "mc}" in src
 
     def test_hashtag_posts_mute(self):
-        src = inspect.getsource(__import__("social").hashtag_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).hashtag_posts)
         assert "_mute_sql" in src
         assert "{mc}" in src or "mc}" in src
 
     def test_entity_feed_count_query_has_mute(self):
         # Refactor: count query + mute clause moved to helper _entity_feed_query.
-        assert "_entity_feed_query" in inspect.getsource(__import__("social").get_entity_feed)
-        src = inspect.getsource(__import__("social")._entity_feed_query)
+        assert "_entity_feed_query" in inspect.getsource(__import__("community.api", fromlist=["api"]).get_entity_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._entity_feed_query)
         lines = src.split("\n")
         count_section = [l for l in lines if "COUNT(*)" in l or "mc}" in l]
         assert len(count_section) >= 2
 
     def test_search_posts_count_query_has_mute(self):
-        src = inspect.getsource(__import__("social").search_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).search_posts)
         lines = src.split("\n")
         mc_lines = [l for l in lines if "mc}" in l or "{mc}" in l]
         assert len(mc_lines) >= 2
 
     def test_hashtag_posts_count_query_has_mute(self):
-        src = inspect.getsource(__import__("social").hashtag_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).hashtag_posts)
         lines = src.split("\n")
         mc_lines = [l for l in lines if "mc}" in l or "{mc}" in l]
         assert len(mc_lines) >= 2
@@ -509,11 +509,11 @@ class TestAuthMeRateLimit:
     """GET /auth/me has rate limiting."""
 
     def test_get_me_has_rate_limit(self):
-        src = inspect.getsource(__import__("auth").get_me)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"]).get_me)
         assert "check_rate" in src
 
     def test_get_me_rate_limit_generous(self):
-        src = inspect.getsource(__import__("auth").get_me)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"]).get_me)
         assert "60" in src
 
 
@@ -600,35 +600,35 @@ class TestViewerMutedInProfile:
     def test_profile_queries_user_mutes(self):
         # Refactor: viewer-relationship SQL moved to helper _profile_viewer_rel
         # (called via _profile_query ← get_user_profile). Wiring + giữ assertion.
-        assert "_profile_query" in inspect.getsource(__import__("social").get_user_profile)
-        assert "_profile_viewer_rel" in inspect.getsource(__import__("social")._profile_query)
-        src = inspect.getsource(__import__("social")._profile_viewer_rel)
+        assert "_profile_query" in inspect.getsource(__import__("community.api", fromlist=["api"]).get_user_profile)
+        assert "_profile_viewer_rel" in inspect.getsource(__import__("community.api", fromlist=["api"])._profile_query)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._profile_viewer_rel)
         assert "user_mutes" in src
         assert "muted_id" in src
 
     def test_profile_has_viewer_muted_var(self):
-        src = inspect.getsource(__import__("social").get_user_profile)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_user_profile)
         assert "viewer_muted" in src
 
     def test_profile_returns_is_muted(self):
         # Refactor: response dict moved to helper _profile_full_response.
-        assert "_profile_full_response" in inspect.getsource(__import__("social").get_user_profile)
-        src = inspect.getsource(__import__("social")._profile_full_response)
+        assert "_profile_full_response" in inspect.getsource(__import__("community.api", fromlist=["api"]).get_user_profile)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._profile_full_response)
         assert '"is_muted"' in src
         assert "viewer_muted" in src
 
     def test_viewer_relationship_includes_muted(self):
         # Refactor: viewer_relationship dict moved to helper _profile_full_response.
-        assert "_profile_full_response" in inspect.getsource(__import__("social").get_user_profile)
-        src = inspect.getsource(__import__("social")._profile_full_response)
+        assert "_profile_full_response" in inspect.getsource(__import__("community.api", fromlist=["api"]).get_user_profile)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._profile_full_response)
         idx = src.find("viewer_relationship")
         block = src[idx:idx+200]
         assert "is_muted" in block
 
     def test_blocked_return_has_12_values(self):
         # Refactor: blocked early-return tuple moved to helper _profile_query.
-        assert "_profile_query" in inspect.getsource(__import__("social").get_user_profile)
-        src = inspect.getsource(__import__("social")._profile_query)
+        assert "_profile_query" in inspect.getsource(__import__("community.api", fromlist=["api"]).get_user_profile)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._profile_query)
         idx = src.find('"blocked"')
         block = src[idx:idx+200]
         assert "False" in block
@@ -673,13 +673,13 @@ class TestDeleteCommentAdminPermission:
     """Admin/moderator can delete any comment, not just own."""
 
     def test_admin_can_delete_comment(self):
-        src = inspect.getsource(__import__("social").delete_comment)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).delete_comment)
         assert 'role' in src
         assert 'admin' in src
         assert 'moderator' in src
 
     def test_child_replies_deleted(self):
-        src = inspect.getsource(__import__("social").delete_comment)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).delete_comment)
         assert "parent_id" in src
 
 
@@ -688,17 +688,18 @@ class TestCommentSoftDelete:
     vĩnh viễn reply con của người khác. Migration 068 thêm comments.deleted_at."""
 
     def test_delete_comment_uses_soft_delete(self):
-        src = inspect.getsource(__import__("social").delete_comment)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).delete_comment)
         assert "UPDATE comments SET deleted_at" in src
         assert "DELETE FROM comments" not in src  # hết hard-delete (mất-UGC)
 
     def test_comment_listing_filters_deleted(self):
-        src = inspect.getsource(__import__("social").get_comments)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_comments)
         assert "deleted_at IS NULL" in src
 
     def test_migration_068_adds_deleted_at(self):
         import os
-        p = os.path.join(os.path.dirname(inspect.getsourcefile(__import__("social"))),
+        # community.api nằm trong GÓI CON — lên một cấp mới ra agent/ (gỡ shim 2026-08-29)
+        p = os.path.join(os.path.dirname(os.path.dirname(inspect.getsourcefile(__import__("community.api", fromlist=["api"])))),
                          "migrations", "068_comments_deleted_at.sql")
         assert os.path.exists(p)
         sql = open(p, encoding="utf-8").read()
@@ -712,7 +713,8 @@ class TestErrorShapeStandardized:
 
     def test_no_error_key_bypass(self):
         import os
-        d = os.path.dirname(inspect.getsourcefile(__import__("social")))
+        # community.api nằm trong GÓI CON — lên một cấp mới ra agent/ (gỡ shim 2026-08-29)
+        d = os.path.dirname(os.path.dirname(inspect.getsourcefile(__import__("community.api", fromlist=["api"]))))
         for fn in ("public_api.py", "server.py"):
             src = open(os.path.join(d, fn), encoding="utf-8").read()
             assert 'content={"error"' not in src, f"{fn} còn JSONResponse({{error}}) bypass"
@@ -728,31 +730,31 @@ class TestReactionEnrichmentComprehensive:
     """All post-returning endpoints call _enrich_reactions."""
 
     def test_get_post_enriches_reactions(self):
-        src = inspect.getsource(__import__("social").get_post)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_post)
         assert "_enrich_all" in src or "_enrich_reactions" in src
 
     def test_hashtag_posts_enriches_reactions(self):
-        src = inspect.getsource(__import__("social").hashtag_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).hashtag_posts)
         assert "_enrich_all" in src or "_enrich_reactions" in src
 
     def test_related_posts_enriches_reactions(self):
-        src = inspect.getsource(__import__("social").related_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).related_posts)
         assert "_enrich_all" in src or "_enrich_reactions" in src
 
     def test_user_posts_enriches_reactions(self):
-        src = inspect.getsource(__import__("social").get_user_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_user_posts)
         assert "_enrich_all" in src or "_enrich_reactions" in src
 
     def test_user_reviews_enriches_reactions(self):
-        src = inspect.getsource(__import__("social").get_user_reviews)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_user_reviews)
         assert "_enrich_all" in src or "_enrich_reactions" in src
 
     def test_collection_items_enriches_reactions(self):
-        src = inspect.getsource(__import__("social").get_collection_items)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_collection_items)
         assert "_enrich_all" in src or "_enrich_reactions" in src
 
     def test_hashtag_posts_enriches_user_status(self):
-        src = inspect.getsource(__import__("social").hashtag_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).hashtag_posts)
         assert "_enrich_all" in src or "_enrich_user_status" in src
 
 
@@ -811,39 +813,39 @@ class TestBlockEnforcementOnInteractions:
 
     def test_toggle_like_checks_blocks(self):
         # Refactor: block check moved to helper _like_check_self.
-        assert "_like_check_self" in inspect.getsource(__import__("social").toggle_like)
-        src = inspect.getsource(__import__("social")._like_check_self)
+        assert "_like_check_self" in inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_like)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._like_check_self)
         assert "blocks" in src
         assert "blocker_id" in src
 
     def test_toggle_like_rejects_blocked(self):
         # Refactor: block rejection moved to helper _like_check_self.
-        assert "_like_check_self" in inspect.getsource(__import__("social").toggle_like)
-        src = inspect.getsource(__import__("social")._like_check_self)
+        assert "_like_check_self" in inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_like)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._like_check_self)
         assert "Không thể thao tác với người dùng đã chặn" in src
 
     def test_comment_like_checks_blocks(self):
-        src = inspect.getsource(__import__("social").toggle_comment_like)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_comment_like)
         assert "blocks" in src
         assert "blocker_id" in src
 
     def test_comment_like_rejects_blocked(self):
-        src = inspect.getsource(__import__("social").toggle_comment_like)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_comment_like)
         assert "Không thể thao tác với người dùng đã chặn" in src
 
     def test_reaction_checks_blocks(self):
-        src = inspect.getsource(__import__("social").toggle_reaction)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_reaction)
         assert "blocks" in src
         assert "blocker_id" in src
 
     def test_reaction_rejects_blocked(self):
-        src = inspect.getsource(__import__("social").toggle_reaction)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_reaction)
         assert "Không thể thao tác với người dùng đã chặn" in src
 
     def test_block_check_bidirectional(self):
         # Refactor: bidirectional block SQL moved to helper _like_check_self.
-        assert "_like_check_self" in inspect.getsource(__import__("social").toggle_like)
-        src = inspect.getsource(__import__("social")._like_check_self)
+        assert "_like_check_self" in inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_like)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._like_check_self)
         assert src.count("blocker_id") >= 2
         assert src.count("blocked_id") >= 2
 
@@ -852,16 +854,16 @@ class TestBookmarksTotalCount:
     """get_my_bookmarks returns total count and enriches reactions."""
 
     def test_bookmarks_has_total(self):
-        src = inspect.getsource(__import__("social").get_my_bookmarks)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_my_bookmarks)
         assert '"total"' in src
         assert "COUNT(*)" in src
 
     def test_bookmarks_enriches_reactions(self):
-        src = inspect.getsource(__import__("social").get_my_bookmarks)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_my_bookmarks)
         assert "_enrich_all" in src or "_enrich_reactions" in src
 
     def test_bookmarks_accurate_has_more(self):
-        src = inspect.getsource(__import__("social").get_my_bookmarks)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_my_bookmarks)
         assert "offset + limit < total" in src
 
 
@@ -869,12 +871,12 @@ class TestHiddenPostsTotalCount:
     """list_hidden_posts returns total count."""
 
     def test_hidden_posts_has_total(self):
-        src = inspect.getsource(__import__("social").list_hidden_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).list_hidden_posts)
         assert '"total"' in src
         assert "COUNT(*)" in src
 
     def test_hidden_posts_accurate_has_more(self):
-        src = inspect.getsource(__import__("social").list_hidden_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).list_hidden_posts)
         assert "offset + limit < total" in src
 
 
@@ -887,7 +889,7 @@ class TestLikesTableName:
         assert "FROM likes" in src
 
     def test_auth_export_uses_likes(self):
-        src = inspect.getsource(__import__("auth").export_user_data)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"]).export_user_data)
         assert "post_likes" not in src
         assert "FROM likes" in src
 
@@ -916,19 +918,19 @@ class TestPostLikersBlockFilter:
     """get_post_likers() must filter blocked users from likers list."""
 
     def test_likers_has_request_param(self):
-        src = inspect.getsource(__import__("social").get_post_likers)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_post_likers)
         assert "request: Request" in src
 
     def test_likers_calls_get_current_user(self):
-        src = inspect.getsource(__import__("social").get_post_likers)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_post_likers)
         assert "get_current_user(request)" in src
 
     def test_likers_applies_block_sql(self):
-        src = inspect.getsource(__import__("social").get_post_likers)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_post_likers)
         assert "_block_sql(user" in src
 
     def test_likers_block_clause_in_query(self):
-        src = inspect.getsource(__import__("social").get_post_likers)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_post_likers)
         assert "{bc}" in src
 
 
@@ -1025,40 +1027,40 @@ class TestPaginationAccuracy:
     """All paginated endpoints must use total COUNT for accurate has_more."""
 
     def test_user_posts_has_total(self):
-        src = inspect.getsource(__import__("social").get_user_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_user_posts)
         assert "offset + limit < total" in src
         assert '"total"' in src or "'total'" in src
 
     def test_user_reviews_has_total(self):
-        src = inspect.getsource(__import__("social").get_user_reviews)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_user_reviews)
         assert "offset + limit < total" in src
 
     def test_explore_feed_has_total(self):
-        src = inspect.getsource(__import__("social").explore_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).explore_feed)
         assert "offset + limit < total" in src
 
     def test_list_following_has_total(self):
-        src = inspect.getsource(__import__("social").list_following_users)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).list_following_users)
         assert "offset + limit < total" in src
 
     def test_list_followers_has_total(self):
-        src = inspect.getsource(__import__("social").list_followers)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).list_followers)
         assert "offset + limit < total" in src
 
     def test_search_users_has_total(self):
-        src = inspect.getsource(__import__("social").search_users)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).search_users)
         assert "offset + limit < total" in src
 
     def test_list_drafts_has_total(self):
-        src = inspect.getsource(__import__("social").list_drafts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).list_drafts)
         assert "offset + limit < total" in src
 
     def test_list_scheduled_has_total(self):
-        src = inspect.getsource(__import__("social").list_scheduled)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).list_scheduled)
         assert "offset + limit < total" in src
 
     def test_collection_items_has_total(self):
-        src = inspect.getsource(__import__("social").get_collection_items)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_collection_items)
         assert "offset + limit < total" in src
 
     def test_no_len_equals_limit_pattern(self):
@@ -1076,15 +1078,15 @@ class TestHashtagPostsHasMore:
     """hashtag_posts() must use total count for accurate has_more."""
 
     def test_has_total_count_query(self):
-        src = inspect.getsource(__import__("social").hashtag_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).hashtag_posts)
         assert "COUNT(*)" in src
 
     def test_uses_total_for_has_more(self):
-        src = inspect.getsource(__import__("social").hashtag_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).hashtag_posts)
         assert "offset + limit < total" in src
 
     def test_does_not_use_len_for_has_more(self):
-        src = inspect.getsource(__import__("social").hashtag_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).hashtag_posts)
         assert 'len(posts) == limit' not in src
 
 
@@ -1095,19 +1097,19 @@ class TestUserStatusEnrichment:
     """related_posts, collection_items, hidden_posts must enrich user status."""
 
     def test_related_posts_enriches_user_status(self):
-        src = inspect.getsource(__import__("social").related_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).related_posts)
         assert "_enrich_all" in src or "_enrich_user_status" in src
 
     def test_collection_items_enriches_user_status(self):
-        src = inspect.getsource(__import__("social").get_collection_items)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_collection_items)
         assert "_enrich_all" in src or "_enrich_user_status" in src
 
     def test_hidden_posts_enriches_user_status(self):
-        src = inspect.getsource(__import__("social").list_hidden_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).list_hidden_posts)
         assert "_enrich_all" in src or "_enrich_user_status" in src
 
     def test_hidden_posts_enriches_reactions(self):
-        src = inspect.getsource(__import__("social").list_hidden_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).list_hidden_posts)
         assert "_enrich_all" in src or "_enrich_reactions" in src
 
 
@@ -1228,29 +1230,29 @@ class TestPhoneValidationConsistency:
     """All auth models that accept phone must validate VN format, not just normalize."""
 
     def test_otp_verify_validates_phone(self):
-        src = inspect.getsource(__import__("auth").OTPVerify)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"]).OTPVerify)
         assert "VN_PHONE_RE" in src
 
     def test_password_login_validates_phone(self):
-        src = inspect.getsource(__import__("auth").PasswordLogin)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"]).PasswordLogin)
         assert "VN_PHONE_RE" in src
 
     def test_reset_password_otp_validates_phone(self):
-        src = inspect.getsource(__import__("auth").ResetPasswordOTP)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"]).ResetPasswordOTP)
         assert "VN_PHONE_RE" in src
 
     def test_otp_request_validates_phone(self):
-        src = inspect.getsource(__import__("auth").OTPRequest)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"]).OTPRequest)
         assert "VN_PHONE_RE" in src
 
     def test_otp_verify_rejects_invalid_phone(self):
-        from auth import OTPVerify
+        from identity.api import OTPVerify
         import pydantic
         with pytest.raises(pydantic.ValidationError):
             OTPVerify(phone="00000", code="123456")
 
     def test_password_login_rejects_invalid_phone(self):
-        from auth import PasswordLogin
+        from identity.api import PasswordLogin
         import pydantic
         with pytest.raises(pydantic.ValidationError):
             PasswordLogin(phone="invalid", password="Test1234")
@@ -1263,7 +1265,7 @@ class TestPathIdValidation:
     """All path params and entity IDs must go through validate_path_id."""
 
     def test_revoke_session_validates_id(self):
-        src = inspect.getsource(__import__("auth").revoke_session)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"]).revoke_session)
         assert "validate_path_id" in src
 
     def test_add_relationship_validates_ids(self):
@@ -1288,19 +1290,19 @@ class TestToggleRowcountGuard:
     """ON CONFLICT DO NOTHING toggles must check rowcount before updating counts or returning state."""
 
     def test_comment_like_checks_insert_rowcount(self):
-        src = inspect.getsource(__import__("social").toggle_comment_like)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_comment_like)
         assert "rowcount" in src
 
     def test_comment_like_checks_delete_rowcount(self):
-        src = inspect.getsource(__import__("social").toggle_comment_like)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_comment_like)
         assert "cur" in src and "rowcount" in src
 
     def test_reaction_checks_insert_rowcount(self):
-        src = inspect.getsource(__import__("social").toggle_reaction)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_reaction)
         assert "rowcount" in src
 
     def test_bookmark_checks_insert_rowcount(self):
-        src = inspect.getsource(__import__("social").toggle_bookmark)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).toggle_bookmark)
         assert "rowcount" in src
 
     def test_rsvp_checks_insert_rowcount(self):
@@ -1338,7 +1340,7 @@ class TestPrivacyRateLimit:
     """PUT /privacy must have rate limiting."""
 
     def test_update_privacy_has_rate_limit(self):
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.update_privacy)
         assert "check_rate" in src, "update_privacy missing rate limiting"
 
@@ -1383,7 +1385,7 @@ class TestWriteEndpointRateLimits:
         return missing
 
     def test_social_all_writes_have_ratelimit(self):
-        missing = self._check_module_ratelimit("social")
+        missing = self._check_module_ratelimit("community.api")
         assert not missing, f"social.py write endpoints missing check_rate: {missing}"
 
     def test_notifications_all_writes_have_ratelimit(self):
@@ -1391,14 +1393,14 @@ class TestWriteEndpointRateLimits:
         assert not missing, f"notifications.py write endpoints missing check_rate: {missing}"
 
     def test_auth_all_writes_have_ratelimit(self):
-        missing = self._check_module_ratelimit("auth")
+        missing = self._check_module_ratelimit("identity.api")
         assert not missing, f"auth.py write endpoints missing check_rate: {missing}"
 
 
 class TestPathIdValidationSweep:
     """All endpoints with path parameters containing '_id' must call validate_path_id."""
 
-    _MODULES = ["social", "public_api", "notifications"]
+    _MODULES = ["community.api", "public_api", "notifications"]
 
     def test_all_path_id_params_validated(self):
         import importlib
@@ -1439,7 +1441,7 @@ class TestIdempotencyCoverage:
     }
 
     def test_create_endpoints_have_idempotency(self):
-        import social
+        from community import api as social
         import fastapi
         missing = []
         for route in social.router.routes:
@@ -1460,22 +1462,22 @@ class TestHtmlTagStripping:
     """User-generated content models must strip HTML tags."""
 
     def test_create_post_strips_tags(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.CreatePost)
         assert "_strip_html_tags" in src
 
     def test_create_comment_strips_tags(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.CreateComment)
         assert "_strip_html_tags" in src
 
     def test_edit_comment_strips_tags(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.EditComment)
         assert "_strip_html_tags" in src
 
     def test_update_post_strips_tags(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.UpdatePost)
         assert "_strip_html_tags" in src
 
@@ -1510,27 +1512,27 @@ class TestPaginationMetadata:
     """All list endpoints must return proper pagination metadata (total, has_more)."""
 
     def test_likers_returns_total_from_db(self):
-        src = inspect.getsource(__import__("social").get_post_likers)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_post_likers)
         assert "COUNT(*)" in src, "likers must query actual total from DB"
 
     def test_likers_returns_has_more(self):
-        src = inspect.getsource(__import__("social").get_post_likers)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_post_likers)
         assert "has_more" in src, "likers must include has_more in response"
 
     def test_likers_total_not_len(self):
-        src = inspect.getsource(__import__("social").get_post_likers)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_post_likers)
         assert '"total": len(' not in src, "likers total must not use len(batch)"
 
     def test_trending_returns_total(self):
-        src = inspect.getsource(__import__("social").trending_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).trending_posts)
         assert "COUNT(*)" in src, "trending must query actual total from DB"
 
     def test_trending_returns_has_more(self):
-        src = inspect.getsource(__import__("social").trending_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).trending_posts)
         assert "has_more" in src, "trending must include has_more in response"
 
     def test_trending_preserves_window_and_days(self):
-        src = inspect.getsource(__import__("social").trending_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).trending_posts)
         assert '"window"' in src and '"days"' in src
 
 
@@ -1543,24 +1545,24 @@ class TestCountLimitAdvisoryLock:
     def test_create_comment_uses_advisory_lock(self):
         # Refactor: advisory lock + count check moved to helper _comment_guard
         # (called via _comment_query ← create_comment). Wiring + giữ assertion.
-        assert "_comment_query" in inspect.getsource(__import__("social").create_comment)
-        assert "_comment_guard" in inspect.getsource(__import__("social")._comment_query)
-        src = inspect.getsource(__import__("social")._comment_guard)
+        assert "_comment_query" in inspect.getsource(__import__("community.api", fromlist=["api"]).create_comment)
+        assert "_comment_guard" in inspect.getsource(__import__("community.api", fromlist=["api"])._comment_query)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._comment_guard)
         assert "pg_advisory_xact_lock" in src
 
     def test_create_collection_uses_advisory_lock(self):
-        src = inspect.getsource(__import__("social").create_collection)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).create_collection)
         assert "pg_advisory_xact_lock" in src
 
     def test_add_to_collection_uses_advisory_lock(self):
-        src = inspect.getsource(__import__("social").add_to_collection)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).add_to_collection)
         assert "pg_advisory_xact_lock" in src
 
     def test_advisory_lock_before_count_check(self):
         """Lock must come BEFORE the count query to prevent races."""
         # Refactor: both moved to helper _comment_guard; order preserved there.
-        assert "_comment_query" in inspect.getsource(__import__("social").create_comment)
-        src = inspect.getsource(__import__("social")._comment_guard)
+        assert "_comment_query" in inspect.getsource(__import__("community.api", fromlist=["api"]).create_comment)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._comment_guard)
         lock_pos = src.index("pg_advisory_xact_lock")
         count_pos = src.index("COUNT(*) c FROM comments")
         assert lock_pos < count_pos, "Advisory lock must come before count check"
@@ -1573,18 +1575,18 @@ class TestSafeUserDefensive:
     """_safe_user must not crash when phone is missing or None."""
 
     def test_safe_user_uses_get_for_phone(self):
-        src = inspect.getsource(__import__("auth")._safe_user)
+        src = inspect.getsource(__import__("identity.api", fromlist=["api"])._safe_user)
         assert 'user.get("phone")' in src, "_safe_user must use .get() for phone"
         assert 'user["phone"]' not in src, "_safe_user must not use direct dict access for phone"
 
     def test_safe_user_handles_none_phone(self):
-        from auth import _safe_user
+        from identity.api import _safe_user
         result = _safe_user({"id": "123", "phone": None, "display_name": "Test"})
         assert result is not None
         assert "phone" in result
 
     def test_safe_user_handles_missing_phone(self):
-        from auth import _safe_user
+        from identity.api import _safe_user
         result = _safe_user({"id": "456", "display_name": "Test"})
         assert result is not None
         assert "phone" in result
@@ -1640,7 +1642,7 @@ class TestEarlyReturnConsistency:
     """Early-return responses must include same fields as normal responses."""
 
     def test_privacy_hidden_posts_includes_total(self):
-        src = inspect.getsource(__import__("social").get_user_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_user_posts)
         lines = src.split("\n")
         for line in lines:
             if "privacy_hidden" in line or ("posts" in line and "[]" in line and "has_more" in line):
@@ -1654,7 +1656,7 @@ class TestEarlyReturnConsistency:
         pytest.fail("Could not find privacy_hidden early return")
 
     def test_search_short_query_includes_has_more(self):
-        src = inspect.getsource(__import__("social").search_posts)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).search_posts)
         lines = src.split("\n")
         for line in lines:
             if "len(stripped) < 2" in line or ("posts" in line and "[]" in line and "total" in line and "page" in line):
@@ -1710,17 +1712,17 @@ class TestEarlyReturnFieldSweep:
         return issues
 
     def test_search_users_early_return(self):
-        import social
+        from community import api as social
         issues = self._check_early_return_fields(social.search_users, ["has_more", "total"])
         assert not issues, f"search_users: {issues}"
 
     def test_search_posts_early_return(self):
-        import social
+        from community import api as social
         issues = self._check_early_return_fields(social.search_posts, ["has_more", "total"])
         assert not issues, f"search_posts: {issues}"
 
     def test_user_posts_privacy_early_return(self):
-        import social
+        from community import api as social
         issues = self._check_early_return_fields(social.get_user_posts, ["has_more", "total"])
         assert not issues, f"get_user_posts: {issues}"
 
@@ -1866,7 +1868,7 @@ class TestUnifiedErrorResponse:
         assert "await call_next(request)" in src
 
     def test_auth_accepts_nuxt_cookie_name(self):
-        import auth
+        from identity import api as auth
         import auth_middleware
         src = inspect.getsource(auth._extract_token)
         csrf_src = inspect.getsource(auth_middleware.require_csrf)
@@ -1894,39 +1896,39 @@ class TestTokenRotation:
     """POST /auth/refresh must rotate session token atomically."""
 
     def test_refresh_endpoint_exists(self):
-        import auth
+        from identity import api as auth
         assert hasattr(auth, "refresh_token")
 
     def test_refresh_generates_new_token(self):
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.refresh_token)
         assert "_generate_token()" in src
         assert "_hash_token" in src
 
     def test_refresh_updates_atomically(self):
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.refresh_token)
         assert "UPDATE user_sessions SET token" in src
         assert "RETURNING" in src
 
     def test_refresh_validates_old_token(self):
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.refresh_token)
         assert "expires_at > NOW()" in src
 
     def test_refresh_returns_new_token(self):
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.refresh_token)
         assert '"token": new_token' in src
         assert '"expires_at"' in src
 
     def test_refresh_rate_limited(self):
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.refresh_token)
         assert "check_rate" in src
 
     def test_refresh_requires_csrf(self):
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.refresh_token)
         assert "_csrf" in src or "csrf" in src.lower()
 
@@ -1944,13 +1946,13 @@ class TestSoftDeletePosts:
         assert "ALTER TABLE posts" in content
 
     def test_delete_endpoint_uses_soft_delete(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.delete_post)
         assert "UPDATE posts SET deleted_at" in src, "delete_post must SET deleted_at, not DELETE FROM"
         assert "DELETE FROM posts" not in src, "delete_post must not hard DELETE"
 
     def test_main_feed_filters_deleted(self):
-        import social
+        from community import api as social
         # Refactor: WHERE conditions moved to helper _feed_build_conditions,
         # get_feed gọi helper (wiring-assert). Giữ nguyên assertion.
         assert "_feed_build_conditions" in inspect.getsource(social.get_feed)
@@ -1958,18 +1960,18 @@ class TestSoftDeletePosts:
         assert "deleted_at IS NULL" in src
 
     def test_following_feed_filters_deleted(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.get_following_feed)
         assert "deleted_at IS NULL" in src
 
     def test_trending_filters_deleted(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.get_trending_posts)
         assert "deleted_at IS NULL" in src
 
     def _check_deleted_filter(self, func_name):
         """Check that a function's SQL queries filter out soft-deleted posts."""
-        import social
+        from community import api as social
         fn = getattr(social, func_name)
         src = inspect.getsource(fn)
         if "moderation_status" in src and "FROM posts" in src:
@@ -2133,7 +2135,7 @@ class TestDataRetentionCleanup:
     """Expired data cleanup function exists and covers key tables."""
 
     def test_cleanup_function_exists(self):
-        from auth import cleanup_expired_data
+        from identity.api import cleanup_expired_data
         assert callable(cleanup_expired_data)
 
     def test_cleanup_covers_sessions(self):
@@ -2463,7 +2465,7 @@ class TestReliabilityFixes:
 
     def test_privacy_fail_closed(self):
         """Privacy load failure must NOT default to public for non-self views."""
-        import social
+        from community import api as social
 
         def fail_fetch(*_args):
             raise RuntimeError("privacy unavailable")
@@ -2498,7 +2500,7 @@ class TestReliabilityFixes:
 
     def test_no_interval_interpolation(self):
         """SQL INTERVAL must use parameterized CAST, not f-string interpolation."""
-        for fname in ("admin.py", "social.py", "database.py", "server.py"):
+        for fname in ("admin.py", "community/api.py", "database.py", "server.py"):
             src = (AGENT_DIR / fname).read_text(encoding="utf-8")
             assert "INTERVAL '{days}" not in src, f"{fname} still has INTERVAL interpolation"
 
@@ -2550,20 +2552,20 @@ class TestSoftDeleteEnforcement:
 
     def test_update_post_checks_soft_delete(self):
         # Refactor: owner/existence check moved to helper _post_check_owner.
-        import social
+        from community import api as social
         assert "_post_check_owner" in self._get_fn("async def update_post(")
         assert "deleted_at IS NULL" in inspect.getsource(social._post_check_owner)
 
     def test_create_comment_checks_soft_delete(self):
         # Refactor: existence check moved to helper _comment_guard (via _comment_query).
-        import social
+        from community import api as social
         assert "_comment_query" in self._get_fn("async def create_comment(", 1200)
         assert "_comment_guard" in inspect.getsource(social._comment_query)
         assert "deleted_at IS NULL" in inspect.getsource(social._comment_guard)
 
     def test_toggle_like_checks_soft_delete(self):
         # Refactor: existence check moved to helper _like_check_self.
-        import social
+        from community import api as social
         assert "_like_check_self" in self._get_fn("async def toggle_like(")
         assert "deleted_at IS NULL" in inspect.getsource(social._like_check_self)
 
@@ -2798,13 +2800,13 @@ class TestPerformanceOptimizations:
     """Performance fixes: combined enrichment, missing indexes, bounded replies."""
 
     def test_enrich_all_combines_both(self):
-        from social import _enrich_all
+        from community.api import _enrich_all
         src = inspect.getsource(_enrich_all)
         assert "_enrich_user_status" in src
         assert "_enrich_reactions" in src
 
     def test_enrich_all_callable(self):
-        from social import _enrich_all
+        from community.api import _enrich_all
         result = _enrich_all([], None)
         assert result == []
 
@@ -2832,11 +2834,11 @@ class TestPerformanceOptimizations:
         assert "idx_relationships_from" in schema and "idx_relationships_to" in schema  # rel traversal
 
     def test_feed_uses_enrich_all(self):
-        src = inspect.getsource(__import__("social").get_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_feed)
         assert "_enrich_all" in src
 
     def test_following_feed_uses_enrich_all(self):
-        src = inspect.getsource(__import__("social").get_following_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_following_feed)
         assert "_enrich_all" in src
 
 
@@ -2847,25 +2849,25 @@ class TestTrackShareAnonymousRateLimit:
     """track_share must rate-limit anonymous callers by IP."""
 
     def test_track_share_has_request_param(self):
-        src = inspect.getsource(__import__("social").track_share)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).track_share)
         assert "request: Request" in src
 
     def test_track_share_anonymous_uses_ip_rate_limit(self):
-        src = inspect.getsource(__import__("social").track_share)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).track_share)
         assert "check_rate_ip" in src
         assert "get_client_ip" in src
 
     def test_track_share_auth_uses_user_rate_limit(self):
-        src = inspect.getsource(__import__("social").track_share)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).track_share)
         assert 'check_rate(f"share:{user' in src
 
     def test_track_share_branches_on_user(self):
-        src = inspect.getsource(__import__("social").track_share)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).track_share)
         assert "if user:" in src
         assert "else:" in src
 
     def test_check_rate_ip_imported(self):
-        import social
+        from community import api as social
         assert hasattr(social, "check_rate_ip") or "check_rate_ip" in dir(social)
         from ratelimit import check_rate_ip
         assert callable(check_rate_ip)
@@ -2936,7 +2938,7 @@ class TestSSEPayloadNoneHandling:
         assert 'str(md.get("created_at", ""))' not in helper_src
 
     def test_user_reviews_early_return_has_total(self):
-        src = inspect.getsource(__import__("social").get_user_reviews)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_user_reviews)
         lines = src.split("\n")
         for line in lines:
             if "privacy_hidden" in line or ("reviews" in line and "[]" in line):

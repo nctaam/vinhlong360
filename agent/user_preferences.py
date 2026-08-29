@@ -904,7 +904,7 @@ def _write_values(snapshot: PersistedPreferenceSnapshot) -> tuple[list[Any], str
 
 def _consent_policy_version() -> str:
     # Lazy import keeps the persistence module independent during auth startup.
-    from auth import CONSENT_VERSION
+    from identity.api import CONSENT_VERSION
 
     version = _bounded_optional_text(
         CONSENT_VERSION, "consent version", MAX_CONSENT_VERSION_LENGTH

@@ -14,10 +14,10 @@ import pytest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import public_api
-import auth
+from identity import api as auth
 import auth_middleware
 import server
-import social
+from community import api as social
 import moderation
 import admin
 import saved

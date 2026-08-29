@@ -196,7 +196,7 @@ class TestPracticalFacts:
 class TestEntityFeedSortFilter:
 
     def test_entity_feed_has_sort_param(self):
-        src = inspect.getsource(__import__("social").get_entity_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_entity_feed)
         assert "sort" in src
         assert "default" in src
         assert "newest" in src
@@ -206,20 +206,20 @@ class TestEntityFeedSortFilter:
 
     def test_entity_feed_has_min_rating_param(self):
         # Refactor: filter SQL moved to helper _entity_feed_filters.
-        src = inspect.getsource(__import__("social").get_entity_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_entity_feed)
         assert "min_rating" in src
         assert "_entity_feed_filters" in src
-        assert "p.rating >=" in inspect.getsource(__import__("social")._entity_feed_filters)
+        assert "p.rating >=" in inspect.getsource(__import__("community.api", fromlist=["api"])._entity_feed_filters)
 
     def test_entity_feed_has_photo_filter(self):
         # Refactor: filter SQL moved to helper _entity_feed_filters.
-        src = inspect.getsource(__import__("social").get_entity_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_entity_feed)
         assert "has_photo" in src
         assert "_entity_feed_filters" in src
-        assert "jsonb_array_length" in inspect.getsource(__import__("social")._entity_feed_filters)
+        assert "jsonb_array_length" in inspect.getsource(__import__("community.api", fromlist=["api"])._entity_feed_filters)
 
     def test_entity_feed_sort_options_defined(self):
-        from social import _ENTITY_FEED_SORT_OPTIONS
+        from community.api import _ENTITY_FEED_SORT_OPTIONS
         assert "default" in _ENTITY_FEED_SORT_OPTIONS
         assert "newest" in _ENTITY_FEED_SORT_OPTIONS
         assert "helpful" in _ENTITY_FEED_SORT_OPTIONS
@@ -228,22 +228,22 @@ class TestEntityFeedSortFilter:
 
     def test_entity_feed_sort_newest_order(self):
         # Refactor: ORDER BY map moved to helper _entity_feed_order_clause.
-        assert "_entity_feed_order_clause" in inspect.getsource(__import__("social").get_entity_feed)
-        src = inspect.getsource(__import__("social")._entity_feed_order_clause)
+        assert "_entity_feed_order_clause" in inspect.getsource(__import__("community.api", fromlist=["api"]).get_entity_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._entity_feed_order_clause)
         assert '"newest": "p.created_at DESC"' in src
 
     def test_entity_feed_sort_star_order(self):
         # Refactor: ORDER BY map moved to helper _entity_feed_order_clause.
-        assert "_entity_feed_order_clause" in inspect.getsource(__import__("social").get_entity_feed)
-        src = inspect.getsource(__import__("social")._entity_feed_order_clause)
+        assert "_entity_feed_order_clause" in inspect.getsource(__import__("community.api", fromlist=["api"]).get_entity_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"])._entity_feed_order_clause)
         assert "p.rating DESC NULLS LAST" in src
 
     def test_entity_feed_invalid_sort_defaults(self):
-        src = inspect.getsource(__import__("social").get_entity_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_entity_feed)
         assert 'sort not in _ENTITY_FEED_SORT_OPTIONS' in src
 
     def test_entity_feed_total_includes_filters(self):
-        src = inspect.getsource(__import__("social").get_entity_feed)
+        src = inspect.getsource(__import__("community.api", fromlist=["api"]).get_entity_feed)
         assert "total_extra" in src
 
 

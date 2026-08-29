@@ -30,7 +30,7 @@ from fastapi import FastAPI  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 from pydantic import ValidationError  # noqa: E402
 
-import social  # noqa: E402
+from community import api as social  # noqa: E402
 from auth_middleware import get_current_user, require_user  # noqa: E402
 from database import db  # noqa: E402
 

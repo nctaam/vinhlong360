@@ -6,7 +6,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import admin  # noqa: E402
-import auth  # noqa: E402
+from identity import api as auth  # noqa: E402
 
 
 def test_every_admin_route_has_scope_rule_or_scope_filtered_read():

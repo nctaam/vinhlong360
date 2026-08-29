@@ -19,7 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-import auth
+from identity import api as auth
 import seo
 from database import db
 
@@ -183,7 +183,7 @@ def test_social_blocked_users_pg_guard():
 # ── Entity feed block enforcement: endpoint exists ──────────────────────
 
 def test_entity_feed_endpoint_mounted():
-    import social
+    from community import api as social
     app = FastAPI()
     app.include_router(social.router)
     pairs = _route_pairs(app)
@@ -394,7 +394,7 @@ def test_log_login_no_crash_without_pg():
 # ── Comment edit/delete endpoints ──────────────────────────────────────
 
 def test_comment_edit_delete_endpoints_mounted():
-    import social
+    from community import api as social
     app = FastAPI()
     app.include_router(social.router)
     pairs = _route_pairs(app)
@@ -403,7 +403,7 @@ def test_comment_edit_delete_endpoints_mounted():
 
 
 def test_comment_edit_pg_guard():
-    import social
+    from community import api as social
     app = FastAPI()
     app.include_router(social.router)
     client = TestClient(app)
@@ -511,14 +511,14 @@ def test_shared_require_pg_exists():
 # ── DRY block clause helper ───────────────────────────────────────────
 
 def test_block_sql_helper_no_user():
-    from social import _block_sql
+    from community.api import _block_sql
     clause, params = _block_sql(None)
     assert clause == ""
     assert params == []
 
 
 def test_block_sql_helper_with_user():
-    from social import _block_sql
+    from community.api import _block_sql
     clause, params = _block_sql({"id": "abc-123"})
     assert "NOT IN" in clause
     assert "blocked_id" in clause
@@ -527,7 +527,7 @@ def test_block_sql_helper_with_user():
 
 
 def test_block_sql_helper_custom_column():
-    from social import _block_sql
+    from community.api import _block_sql
     clause, _ = _block_sql({"id": "x"}, "c.user_id")
     assert "c.user_id NOT IN" in clause
 
@@ -601,7 +601,7 @@ def test_admin_entity_validates_path_id():
 # ── Social path ID validation ────────────────────────────────────────
 
 def test_social_post_validates_path_id():
-    import social
+    from community import api as social
     app = FastAPI()
     app.include_router(social.router)
     client = TestClient(app)
@@ -612,7 +612,7 @@ def test_social_post_validates_path_id():
 
 
 def test_social_comment_validates_path_id():
-    import social
+    from community import api as social
     app = FastAPI()
     app.include_router(social.router)
     client = TestClient(app)
@@ -1248,7 +1248,7 @@ class TestPhase8BlockEnforcement:
 
     def test_enrich_post_no_phone(self):
         """_enrich_post must NOT leak phone to API response."""
-        import social
+        from community import api as social
         row = {"id": "test-id", "content": "hello", "user_id": "u1", "like_count": 0,
                "comment_count": 0, "created_at": "2025-01-01"}
         user = {"display_name": "TestUser", "avatar_url": None, "phone": "0909123456"}
@@ -1257,7 +1257,7 @@ class TestPhase8BlockEnforcement:
 
     def test_enrich_post_sets_display(self):
         """_enrich_post copies display_name and avatar from user."""
-        import social
+        from community import api as social
         row = {"id": "test-id", "content": "hello", "user_id": "u1", "like_count": 0,
                "comment_count": 0, "created_at": "2025-01-01"}
         user = {"display_name": "TestUser", "avatar_url": "http://img.test/a.webp", "phone": "090"}
@@ -1291,21 +1291,21 @@ class TestPhase8BlockEnforcement:
     def test_mention_notification_has_actor_id(self):
         """_notify_mentions passes actor_id for block check."""
         import inspect
-        import social
+        from community import api as social
         src = inspect.getsource(social._notify_mentions)
         assert "actor_id=" in src
 
     def test_entity_follower_notification_has_actor_id(self):
         """_notify_entity_followers passes actor_id for block check."""
         import inspect
-        import social
+        from community import api as social
         src = inspect.getsource(social._notify_entity_followers)
         assert "actor_id=" in src
 
     def test_comment_notification_has_actor_id(self):
         """Comment notification passes actor_id=me for block check."""
         import inspect
-        import social
+        from community import api as social
         # Refactor: notify logic moved to helper _notify_comment (+
         # _notify_owner_comment). Wiring-assert + giữ nguyên assertion.
         assert "_notify_comment" in inspect.getsource(social.create_comment)
@@ -1315,7 +1315,7 @@ class TestPhase8BlockEnforcement:
     def test_like_notification_has_actor_id(self):
         """Like notification passes actor_id for block check."""
         import inspect
-        import social
+        from community import api as social
         # Refactor: notify logic moved to helper _notify_like (called from
         # toggle_like). Wiring-assert + giữ nguyên assertion.
         assert "_notify_like" in inspect.getsource(social.toggle_like)
@@ -1343,7 +1343,7 @@ class TestPhase8BlockEnforcement:
     def test_repost_notification_has_actor_id(self):
         """Repost notification passes actor_id for block check."""
         import inspect
-        import social
+        from community import api as social
         # Refactor: notify logic moved to helper _notify_new_post, create_post
         # gọi helper (wiring-assert). Giữ nguyên assertion.
         assert "_notify_new_post" in inspect.getsource(social.create_post)
@@ -1385,7 +1385,7 @@ class TestPhase8SessionCleanup:
     def test_leaderboard_excludes_deleted(self):
         """Leaderboard query excludes soft-deleted users."""
         import inspect
-        import social
+        from community import api as social
         # Refactor: leaderboard SQL moved to helper _leaderboard_query.
         assert "_leaderboard_query" in inspect.getsource(social.community_leaderboard)
         src = inspect.getsource(social._leaderboard_query)
@@ -1394,14 +1394,14 @@ class TestPhase8SessionCleanup:
     def test_user_search_excludes_deleted(self):
         """User search query excludes soft-deleted users."""
         import inspect
-        import social
+        from community import api as social
         src = inspect.getsource(social.search_users)
         assert "deleted_at IS NULL" in src
 
     def test_suggested_follows_excludes_deleted(self):
         """Suggested follows excludes soft-deleted users."""
         import inspect
-        import social
+        from community import api as social
         src = inspect.getsource(social.suggested_follows)
         assert "deleted_at IS NULL" in src
 
@@ -1447,7 +1447,7 @@ class TestPhase8BanHardening:
 
     def test_phone_removed_from_social_queries(self):
         """No social.py query fetches u.phone (data minimization)."""
-        import social as _soc
+        from community import api as _soc
         src = Path(_soc.__file__).read_text(encoding="utf-8")
         assert "u.phone" not in src
 
@@ -1482,7 +1482,7 @@ class TestPhase9ErrorInfoLeaks:
     def test_image_upload_error_generic(self):
         """Image upload error returns generic message, not str(e)."""
         import inspect
-        import social
+        from community import api as social
         src = inspect.getsource(social.upload_image)
         assert "str(e)" not in src
 
@@ -1851,7 +1851,7 @@ class TestPhase11HtmlSanitization:
 
     def test_strip_html_tags_helper(self):
         """_strip_html_tags removes HTML tags."""
-        import social
+        from community import api as social
         assert social._strip_html_tags("<script>alert(1)</script>hello") == "alert(1)hello"
         assert social._strip_html_tags("no tags here") == "no tags here"
         assert social._strip_html_tags("<b>bold</b> <i>italic</i>") == "bold italic"
@@ -1859,28 +1859,28 @@ class TestPhase11HtmlSanitization:
 
     def test_create_post_validator_strips_html(self):
         """CreatePost.validate_content strips HTML tags."""
-        import social
+        from community import api as social
         p = social.CreatePost(content="<b>Hello world</b> this is a test post", post_type="share")
         assert "<b>" not in p.content
         assert "Hello world" in p.content
 
     def test_create_comment_validator_strips_html(self):
         """CreateComment.validate_content strips HTML tags."""
-        import social
+        from community import api as social
         c = social.CreateComment(content="<script>alert('xss')</script>bình luận hợp lệ")
         assert "<script>" not in c.content
         assert "bình luận hợp lệ" in c.content
 
     def test_edit_comment_validator_strips_html(self):
         """EditComment.validate_content strips HTML tags."""
-        import social
+        from community import api as social
         c = social.EditComment(content="<img src=x onerror=alert(1)>OK comment here")
         assert "<img" not in c.content
         assert "OK comment here" in c.content
 
     def test_update_post_strips_html(self):
         """UpdatePost.validate_content strips HTML tags."""
-        import social
+        from community import api as social
         p = social.UpdatePost(content="<div onclick='hack()'>Safe content here for testing</div>")
         assert "<div" not in p.content
         assert "Safe content" in p.content
@@ -2025,7 +2025,7 @@ class TestPhase11DailyPostLimit:
 
     def test_daily_limit_is_50(self):
         """Daily post limit is 50."""
-        import social
+        from community import api as social
         assert social.RL_POST_DAILY_LIMIT == 50
         assert social.RL_POST_DAILY_WINDOW == 86400
 
@@ -2048,34 +2048,34 @@ class TestPhase12CsrfCoverage:
         assert "_csrf" in param_names, f"{module_name}.{func_name} missing _csrf Depends"
 
     def test_social_create_post_csrf(self):
-        self._check_csrf("social", "create_post")
+        self._check_csrf("community.api", "create_post")
 
     def test_social_delete_post_csrf(self):
-        self._check_csrf("social", "delete_post")
+        self._check_csrf("community.api", "delete_post")
 
     def test_social_update_post_csrf(self):
-        self._check_csrf("social", "update_post")
+        self._check_csrf("community.api", "update_post")
 
     def test_social_create_comment_csrf(self):
-        self._check_csrf("social", "create_comment")
+        self._check_csrf("community.api", "create_comment")
 
     def test_social_edit_comment_csrf(self):
-        self._check_csrf("social", "edit_comment")
+        self._check_csrf("community.api", "edit_comment")
 
     def test_social_delete_comment_csrf(self):
-        self._check_csrf("social", "delete_comment")
+        self._check_csrf("community.api", "delete_comment")
 
     def test_social_set_best_answer_csrf(self):
-        self._check_csrf("social", "set_best_answer")
+        self._check_csrf("community.api", "set_best_answer")
 
     def test_social_toggle_like_csrf(self):
-        self._check_csrf("social", "toggle_like")
+        self._check_csrf("community.api", "toggle_like")
 
     def test_social_toggle_bookmark_csrf(self):
-        self._check_csrf("social", "toggle_bookmark")
+        self._check_csrf("community.api", "toggle_bookmark")
 
     def test_social_upload_image_csrf(self):
-        self._check_csrf("social", "upload_image")
+        self._check_csrf("community.api", "upload_image")
 
     def test_notifications_mark_all_read_csrf(self):
         self._check_csrf("notifications", "mark_all_read")
@@ -2099,22 +2099,22 @@ class TestPhase12CsrfCoverage:
         self._check_csrf("notifications", "toggle_rsvp")
 
     def test_auth_logout_csrf(self):
-        self._check_csrf("auth", "logout")
+        self._check_csrf("identity.api", "logout")
 
     def test_auth_revoke_session_csrf(self):
-        self._check_csrf("auth", "revoke_session")
+        self._check_csrf("identity.api", "revoke_session")
 
     def test_auth_update_profile_csrf(self):
-        self._check_csrf("auth", "update_profile")
+        self._check_csrf("identity.api", "update_profile")
 
     def test_auth_upload_avatar_csrf(self):
-        self._check_csrf("auth", "upload_avatar")
+        self._check_csrf("identity.api", "upload_avatar")
 
     def test_auth_upload_cover_csrf(self):
-        self._check_csrf("auth", "upload_cover")
+        self._check_csrf("identity.api", "upload_cover")
 
     def test_auth_update_privacy_csrf(self):
-        self._check_csrf("auth", "update_privacy")
+        self._check_csrf("identity.api", "update_privacy")
 
     def test_visits_set_visit_csrf(self):
         self._check_csrf("visits", "set_visit")
@@ -2330,13 +2330,13 @@ class TestPhase15Idempotency:
 
     def test_create_post_has_idempotency(self):
         import inspect
-        import social
+        from community import api as social
         sig = inspect.signature(social.create_post)
         assert "_idem" in sig.parameters
 
     def test_create_comment_has_idempotency(self):
         import inspect
-        import social
+        from community import api as social
         sig = inspect.signature(social.create_comment)
         assert "_idem" in sig.parameters
 

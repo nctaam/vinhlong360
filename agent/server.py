@@ -125,7 +125,7 @@ import analytics  # noqa: F401  (be mat va cua test — llmops sang goi rieng 20
 import cache
 import knowledge
 from admin import router as admin_router
-from auth import router as auth_router
+from identity.api import router as auth_router
 from notifications import router as community_router
 from public_api import router as public_router
 from cases.public_api import case_public_router
@@ -136,7 +136,7 @@ from plans import router as plans_router, public_router as plans_public_router
 from visits import router as visits_router
 from achievements import router as achievements_router
 from seo import router as seo_router
-from social import router as social_router
+from community.api import router as social_router
 from launch_policy_api import router as launch_policy_router
 from launch_policy_api import validate_sitemap_bundle_on_startup
 from middleware import (

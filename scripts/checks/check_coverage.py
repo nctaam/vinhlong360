@@ -25,10 +25,17 @@ CORE = ("database.py", "auth.py", "social.py", "server.py")
 def _pct(files: dict, suffix: str) -> float | None:
     """% covered cho core-module theo basename CHÍNH XÁC (agent/server.py).
     Phải khớp đúng tên file, KHÔNG endswith lỏng — nếu không `mcp_server.py`
-    (basename khác) sẽ che `server.py` và trả nhầm 0%."""
+    (basename khác) sẽ che `server.py` và trả nhầm 0%.
+
+    Key chứa '/' → khớp SUFFIX đường dẫn (2026-08-29, gỡ shim): repo nay có
+    4 file cùng basename `api.py` (chat/community/identity/entities) — floor
+    của community/identity phải ghi 'community/api.py' để không khớp mù."""
     for name, data in files.items():
         n = name.replace("\\", "/")
-        if n.rsplit("/", 1)[-1] == suffix:
+        if "/" in suffix:
+            if n == suffix or n.endswith("/" + suffix):
+                return (data.get("summary") or {}).get("percent_covered", 0.0)
+        elif n.rsplit("/", 1)[-1] == suffix:
             return (data.get("summary") or {}).get("percent_covered", 0.0)
     return None
 

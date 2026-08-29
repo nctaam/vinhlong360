@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import inspect
 
-import auth
+from identity import api as auth
 
 
 class TestLoginStreak:
@@ -124,18 +124,18 @@ class TestAchievementHooks:
     across social.py, notifications.py, visits.py, auth.py."""
 
     def test_bg_helper_swallows_errors(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social._check_achievements_bg)
         assert "check_achievements" in src
         assert "except" in src
 
     def test_create_post_hooks_achievements(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.create_post)
         assert "_check_achievements_bg" in src
 
     def test_publish_draft_hooks_achievements(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.publish_draft)
         assert "_check_achievements_bg" in src
 
@@ -152,7 +152,7 @@ class TestAchievementHooks:
         assert "target_id" in helper_src
 
     def test_set_best_answer_hooks_comment_author(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.set_best_answer)
         assert "check_achievements" in src
 
@@ -165,7 +165,7 @@ class TestAchievementHooks:
         # Wave 4 Task 3: the achievement check (_ach_bg background task) now lives
         # inside the shared _finish_login helper, called from both login paths'
         # non-2FA success branch — not inline in verify_otp/login_password anymore.
-        import auth
+        from identity import api as auth
         assert "_finish_login" in inspect.getsource(auth.verify_otp)
         assert "_finish_login" in inspect.getsource(auth.login_password)
         assert "check_achievements" in inspect.getsource(auth._finish_login)
@@ -173,7 +173,7 @@ class TestAchievementHooks:
     def test_reset_password_otp_updates_streak_and_achievements(self):
         # Task 1 review fix: password-reset success path should also credit
         # the login streak + achievement check, like the other two login paths.
-        import auth
+        from identity import api as auth
         src = inspect.getsource(auth.reset_password_otp)
         assert "_update_login_streak" in src
         assert "check_achievements" in src
@@ -191,7 +191,7 @@ class TestProfilePointsExposed:
         # wiring instead of a literal substring that will never appear here.
         # Refactor: response dict moved to helper _profile_full_response;
         # get_user_profile gọi helper (wiring-assert). Giữ nguyên assertion.
-        import social
+        from community import api as social
         assert "_profile_full_response" in inspect.getsource(social.get_user_profile)
         src = inspect.getsource(social._profile_full_response)
         assert '"reputation": reputation' in src
@@ -199,7 +199,7 @@ class TestProfilePointsExposed:
         assert '"points"' in rep_src
 
     def test_profile_exposes_login_streak(self):
-        import social
+        from community import api as social
         assert "_profile_full_response" in inspect.getsource(social.get_user_profile)
         src = inspect.getsource(social._profile_full_response)
         assert "login_streak" in src
@@ -209,7 +209,7 @@ class TestProfilePointsExposed:
         # otherwise profile["login_streak"] would KeyError.
         # Refactor: SELECT moved to helper _profile_resolve (called from
         # _profile_query ← get_user_profile). Wiring-assert + giữ assertion.
-        import social
+        from community import api as social
         assert "_profile_resolve" in inspect.getsource(social._profile_query)
         assert "_profile_query" in inspect.getsource(social.get_user_profile)
         src = inspect.getsource(social._profile_resolve)
@@ -219,7 +219,7 @@ class TestProfilePointsExposed:
     def test_profile_gates_login_streak_on_is_self(self):
         # Streak is self-only (privacy: don't leak another user's streak).
         # Refactor: gating moved to helper _profile_full_response.
-        import social
+        from community import api as social
         assert "_profile_full_response" in inspect.getsource(social.get_user_profile)
         src = inspect.getsource(social._profile_full_response)
         assert "if is_self else None" in src
@@ -230,29 +230,29 @@ class TestActivityHeatmap:
     activity counts (approved posts+reviews) for a GitHub-style grid."""
 
     def test_heatmap_endpoint_exists(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.get_activity_heatmap)
         assert "heatmap" in src.lower() or "activity" in src.lower()
 
     def test_heatmap_groups_by_date(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.get_activity_heatmap)
         assert "DATE(created_at)" in src or "DATE(p.created_at)" in src
         assert "GROUP BY" in src
 
     def test_heatmap_365_day_window(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.get_activity_heatmap)
         assert "365 days" in src
 
     def test_heatmap_only_approved(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.get_activity_heatmap)
         assert "moderation_status = 'approved'" in src
         assert "deleted_at IS NULL" in src
 
     def test_heatmap_validates_path_id(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.get_activity_heatmap)
         assert "validate_path_id" in src
 
@@ -262,22 +262,22 @@ class TestLeaderboardFilters:
     self-rank, and per-(period,category) cache key (was a single flat entry)."""
 
     def test_leaderboard_has_period_param(self):
-        import social
+        from community import api as social
         sig = inspect.signature(social.community_leaderboard)
         assert "period" in sig.parameters
 
     def test_leaderboard_has_category_param(self):
-        import social
+        from community import api as social
         sig = inspect.signature(social.community_leaderboard)
         assert "category" in sig.parameters
 
     def test_leaderboard_has_search_param(self):
-        import social
+        from community import api as social
         sig = inspect.signature(social.community_leaderboard)
         assert "q" in sig.parameters
 
     def test_leaderboard_period_filters_by_date(self):
-        import social
+        from community import api as social
         # Refactor: period clause moved to helper _leaderboard_period, và
         # SQL vào _leaderboard_query. Wiring-assert + giữ nguyên assertion.
         assert "_leaderboard_period" in inspect.getsource(social.community_leaderboard)
@@ -286,14 +286,14 @@ class TestLeaderboardFilters:
 
     def test_leaderboard_cache_key_includes_filters(self):
         # cache must not collide across period/category — key derived from params
-        import social
+        from community import api as social
         src = inspect.getsource(social.community_leaderboard)
         assert "period" in src and "category" in src
         # cache dict access keyed by a composite, not a single flat entry
         assert "cache_key" in src or "_leaderboard_cache" in src
 
     def test_leaderboard_returns_self_and_rank(self):
-        import social
+        from community import api as social
         src = inspect.getsource(social.community_leaderboard)
         assert "rank" in src
         assert "self" in src

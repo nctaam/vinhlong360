@@ -20,11 +20,11 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 import admin
-import auth
+from identity import api as auth
 import notifications
 import public_api
 import seo
-import social
+from community import api as social
 import saved
 import plans
 import visits

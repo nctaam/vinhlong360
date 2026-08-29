@@ -688,7 +688,7 @@ def _tool_generate_itinerary(args: dict) -> str:
 
 def _tool_community_reviews(args: dict) -> str:
     try:
-        from social import get_community_reviews
+        from community.api import get_community_reviews
         entity_id = args.get("entity_id", "")
         limit = args.get("limit", 5)
         reviews = get_community_reviews(entity_id, limit)
@@ -702,7 +702,7 @@ def _tool_community_reviews(args: dict) -> str:
 
 def _tool_trending_posts(args: dict) -> str:
     try:
-        from social import get_trending_posts
+        from community.api import get_trending_posts
         entity_type = args.get("entity_type")
         limit = args.get("limit", 10)
         posts = get_trending_posts(limit, entity_type)

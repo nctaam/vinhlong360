@@ -5,7 +5,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import public_api  # noqa: E402
-import social  # noqa: E402
+from community import api as social  # noqa: E402
 
 
 def test_score_one_itinerary_uses_dict_index():

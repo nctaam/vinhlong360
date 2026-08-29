@@ -20,37 +20,30 @@ from identity import api as identity_api  # noqa: E402
 SRC = Path(identity_api.__file__).resolve()
 
 
-def test_shim_va_module_that_dung_CUNG_mot_router():
-    """server mount qua `auth.router`; test cũ soi cùng tên. Hai object router
-    khác nhau = hai bảng route trôi khác nhau."""
-    import auth
+def test_duong_cu_auth_da_chet_han():
+    """Gỡ shim 2026-08-29 (lệnh "làm luôn"): `import auth` phẳng phải nổ —
+    không shim, không file rơi rớt, không bản-sao-globals nào còn tồn tại."""
+    import importlib
+    import sys
 
-    assert auth.router is identity_api.router
-
-
-def test_shim_chi_con_tai_xuat_khong_con_dinh_nghia():
-    import auth
-
-    tree = ast.parse(Path(auth.__file__).resolve().read_text(encoding="utf-8"))
-    ten = [n.name for n in tree.body
-           if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))]
-    assert ten == [], f"shim vẫn còn định nghĩa: {ten[:5]} — hai nguồn sự thật"
+    assert "auth" not in sys.modules or sys.modules["auth"].__name__ == "identity.api"
+    try:
+        importlib.import_module("auth")
+    except ModuleNotFoundError:
+        return
+    raise AssertionError("đường phẳng `import auth` vẫn sống — còn file cũ/shim")
 
 
 def test_nam_ky_hieu_duong_cu_van_song():
-    """5 nơi ngoài import từ `auth` (đo 2026-08-28): chat_identity, notifications
-    (2 chỗ), server, user_preferences. Đường cũ phải sống và CÙNG object."""
-    from auth import (  # noqa: F401
+    """5 ký hiệu công khai của miền (đo 2026-08-28) phải import được từ nhà
+    thật — sau khi gỡ shim, identity.api LÀ đường duy nhất."""
+    from identity.api import (  # noqa: F401
         CONSENT_VERSION,
         _extract_token,
         _get_current_user_or_none,
         _hash_token,
         router,
     )
-    import auth
-
-    for ten in ("_extract_token", "_get_current_user_or_none", "_hash_token"):
-        assert getattr(auth, ten) is getattr(identity_api, ten), ten
 
 
 def test_KHONG_import_nguoc():

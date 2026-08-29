@@ -25,7 +25,7 @@ from fastapi import FastAPI  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 from pydantic import ValidationError  # noqa: E402
 
-import auth  # noqa: E402
+from identity import api as auth  # noqa: E402
 from database import db  # noqa: E402
 
 pg_only = pytest.mark.skipif(

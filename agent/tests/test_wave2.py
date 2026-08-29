@@ -10,7 +10,7 @@ import pathlib
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-import social
+from community import api as social
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 
@@ -50,7 +50,7 @@ class TestProfileViewMigration:
 
 class TestProfileViewTracking:
     def test_log_profile_view_function_exists(self):
-        from social import _log_profile_view
+        from community.api import _log_profile_view
         assert callable(_log_profile_view)
 
     def test_log_profile_view_deduplicates_per_day(self):

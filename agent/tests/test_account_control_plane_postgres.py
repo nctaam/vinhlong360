@@ -14,7 +14,7 @@ import pytest
 from fastapi import HTTPException, Request, Response
 
 import admin
-import auth
+from identity import api as auth
 from identity import api as identity_api  # mien dinh danh sang day 2026-08-28
 import database as database_module
 import ratelimit

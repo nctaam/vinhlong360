@@ -13,7 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import admin  # noqa: E402
-import social  # noqa: E402
+from community import api as social  # noqa: E402
 
 
 def test_fix_admin_route_order_preserves_all_routes():

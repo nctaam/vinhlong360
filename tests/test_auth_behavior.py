@@ -38,7 +38,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-import auth
+from identity import api as auth
 import auth_middleware
 import twofactor
 from database import Database
