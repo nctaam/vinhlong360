@@ -49,7 +49,7 @@ def _public_src() -> str:
 
 
 def _admin_src() -> str:
-    """Nguon MAT QUAN TRI — hop nhat admin.py + entities/admin_api.py.
+    """Nguon MAT QUAN TRI — hop nhat admin.py + entities/ + community/admin_api.py.
 
     Mien entity-admin sang agent/entities/ (2026-08-28, buoc 2b). Cac rao duoi
     soi "mat quan tri co tinh chat X", bat ke handler song o file nao; ghim mot
@@ -58,7 +58,8 @@ def _admin_src() -> str:
     from pathlib import Path as _P
     root = _P(__file__).resolve().parent.parent
     return ((root / "admin.py").read_text(encoding="utf-8") + chr(10)
-            + (root / "entities" / "admin_api.py").read_text(encoding="utf-8"))
+            + (root / "entities" / "admin_api.py").read_text(encoding="utf-8") + chr(10)
+            + (root / "community" / "admin_api.py").read_text(encoding="utf-8"))
 
 
 class TestReactionEnrichment:
@@ -179,7 +180,9 @@ class TestModerationHistory:
     """Admin can view moderation action timeline for a specific post."""
 
     def test_endpoint_exists(self):
-        src = inspect.getsource(__import__("admin"))
+        # route moderation sang community/admin_api.py (2026-08-29) — soi nguon
+        # hop nhat, khong ghim mot file.
+        src = _admin_src()
         assert "moderation/{post_id}/history" in src
         assert "moderation_history" in src
 

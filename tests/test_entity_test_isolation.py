@@ -55,6 +55,12 @@ CRITICAL_DECLARATIONS = (
         'monkeypatch.setattr(admin, "db", isolated_sqlite_db)',
     ),
     (
+        # Handler community-admin sang community/admin_api.py (2026-08-29) voi
+        # binding db rieng — thieu dong nay la mutation test cham DB THAT (B1).
+        "agent/tests/test_admin_mutations.py",
+        'monkeypatch.setattr(community_admin, "db", isolated_sqlite_db)',
+    ),
+    (
         "agent/tests/test_admin_mutations.py",
         "for name, original in knowledge_state_snapshot.items():",
     ),

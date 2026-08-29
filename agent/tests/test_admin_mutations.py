@@ -45,6 +45,7 @@ def knowledge_state_snapshot():
 @pytest.fixture(autouse=True)
 def isolate_admin_database(isolated_sqlite_db, monkeypatch, knowledge_state_snapshot):
     import admin
+    from community import admin_api as community_admin
     from entities import admin_api as entities_admin
     import database
     import knowledge
@@ -54,6 +55,9 @@ def isolate_admin_database(isolated_sqlite_db, monkeypatch, knowledge_state_snap
     # handler entity-admin sang entities/admin_api.py (2026-08-28) voi binding
     # rieng — thieu dong duoi la chung cham DB THAT (do duoc 409 + audit rong).
     monkeypatch.setattr(entities_admin, "db", isolated_sqlite_db)
+    # handler community-admin sang community/admin_api.py (2026-08-29) — cung
+    # lop bay binding rieng nhu dong entities o tren (su co B1 cu).
+    monkeypatch.setattr(community_admin, "db", isolated_sqlite_db)
     try:
         # Keep reload from treating an emptied test DB as a fresh install and seeding real data.
         isolated_sqlite_db.upsert_entity({

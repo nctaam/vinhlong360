@@ -14,6 +14,7 @@ import pytest
 from fastapi import HTTPException, Request, Response
 
 import admin
+from community import admin_api as community_admin  # handler user-admin sang day 2026-08-29
 from identity import api as auth
 from identity import api as identity_api  # mien dinh danh sang day 2026-08-28
 import database as database_module
@@ -145,6 +146,9 @@ def pg_db(monkeypatch):
     adapter._dsn = TEST_DATABASE_URL
     monkeypatch.setattr(identity_api, "db", adapter)
     monkeypatch.setattr(admin, "db", adapter)
+    # handler user-admin (ban/unban/bulk) sang community/admin_api.py voi
+    # binding db rieng — thieu dong nay la handler cham db that (bay B1 cu).
+    monkeypatch.setattr(community_admin, "db", adapter)
 
     with psycopg2.connect(TEST_DATABASE_URL) as conn:
         with conn.cursor() as cursor:
@@ -543,8 +547,8 @@ def test_reversed_bulk_bans_lock_in_sorted_order_without_deadlock_on_postgres(
     second_id, _ = _seed_user(pg_db)
     _seed_session(pg_db, first_id)
     _seed_session(pg_db, second_id)
-    monkeypatch.setattr(admin, "require_pg", lambda: None)
-    monkeypatch.setattr(admin, "_log_mod_action", lambda *_args: None)
+    monkeypatch.setattr(community_admin, "require_pg", lambda: None)
+    monkeypatch.setattr(community_admin, "_log_mod_action", lambda *_args: None)
     monkeypatch.setattr(ratelimit, "check_rate", lambda *_args: None)
 
     first_lock_barrier = threading.Barrier(2)
@@ -647,8 +651,8 @@ def test_bulk_ban_rolls_back_real_partial_mutations_on_postgres(
     second_id, _ = _seed_user(pg_db)
     _seed_session(pg_db, first_id)
     _seed_session(pg_db, second_id)
-    monkeypatch.setattr(admin, "require_pg", lambda: None)
-    monkeypatch.setattr(admin, "_log_mod_action", lambda *_args: None)
+    monkeypatch.setattr(community_admin, "require_pg", lambda: None)
+    monkeypatch.setattr(community_admin, "_log_mod_action", lambda *_args: None)
     monkeypatch.setattr(ratelimit, "check_rate", lambda *_args: None)
     original_execute = pg_db._execute
     session_delete_executed = threading.Event()

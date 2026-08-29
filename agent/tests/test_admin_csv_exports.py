@@ -5,6 +5,7 @@ import io
 import pytest
 
 import admin
+from community import admin_api as community_admin  # 2 handler export sang day 2026-08-29
 
 
 @pytest.mark.parametrize("prefix", ["=", "+", "-", "@", "\t", "\r"])
@@ -74,8 +75,8 @@ class _FakeDb:
 
 
 def test_users_csv_preserves_schema_and_neutralizes_user_name(monkeypatch):
-    monkeypatch.setattr(admin, "require_pg", lambda: None)
-    monkeypatch.setattr(admin, "db", _FakeDb([{
+    monkeypatch.setattr(community_admin, "require_pg", lambda: None)
+    monkeypatch.setattr(community_admin, "db", _FakeDb([{
         "id": "user-1",
         "phone": "0901234567",
         "display_name": '=SUM(1,1) — Bình "An", Trà Vinh',
@@ -99,8 +100,8 @@ def test_users_csv_preserves_schema_and_neutralizes_user_name(monkeypatch):
 
 
 def test_posts_csv_preserves_schema_and_neutralizes_user_name(monkeypatch):
-    monkeypatch.setattr(admin, "require_pg", lambda: None)
-    monkeypatch.setattr(admin, "db", _FakeDb([{
+    monkeypatch.setattr(community_admin, "require_pg", lambda: None)
+    monkeypatch.setattr(community_admin, "db", _FakeDb([{
         "id": "post-1",
         "user_id": "user-1",
         "author_name": "@Nguyễn, \"An\"",

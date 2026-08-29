@@ -10,6 +10,7 @@ import pytest
 from fastapi import HTTPException, Request, Response
 
 import admin
+from community import admin_api as community_admin  # handler user-admin sang day 2026-08-29
 from identity import api as auth  # noqa: F401
 
 
@@ -246,8 +247,10 @@ async def _run_trusted_login_path(path, response):
 
 def _install_admin_db(monkeypatch, users):
     fake = _AdminDB(users)
-    monkeypatch.setattr(admin, "db", fake)
-    monkeypatch.setattr(admin, "require_pg", lambda: None)
+    # handler user-admin sang community/admin_api.py (2026-08-29) — va vao
+    # module moi, khong phai ten tai-xuat tren admin (patch admin.db la TRUOT).
+    monkeypatch.setattr(community_admin, "db", fake)
+    monkeypatch.setattr(community_admin, "require_pg", lambda: None)
     return fake
 
 
@@ -301,7 +304,7 @@ def test_single_ban_denies_peer_or_superior_without_side_effects(monkeypatch, ta
         {SUPER_ID: {"id": SUPER_ID, "role": target_role, "is_active": True}},
     )
     logs = []
-    monkeypatch.setattr(admin, "_log_mod_action", lambda *args: logs.append(args))
+    monkeypatch.setattr(community_admin, "_log_mod_action", lambda *args: logs.append(args))
 
     with pytest.raises(HTTPException) as exc:
         asyncio.run(admin.ban_user(SUPER_ID, _request({"id": ADMIN_ID, "role": "admin"})))
@@ -325,7 +328,7 @@ def test_single_ban_allows_superior_or_admin_key(monkeypatch, actor, target_role
         {SUPER_ID: {"id": SUPER_ID, "role": target_role, "is_active": True}},
     )
     logs = []
-    monkeypatch.setattr(admin, "_log_mod_action", lambda *args: logs.append(args))
+    monkeypatch.setattr(community_admin, "_log_mod_action", lambda *args: logs.append(args))
 
     result = asyncio.run(admin.ban_user(SUPER_ID, _request(actor)))
 
@@ -345,7 +348,7 @@ def test_single_ban_uses_request_scoped_actor_without_auth_lookup(monkeypatch):
         raise AssertionError("ban_user must use request.state.admin_user")
 
     monkeypatch.setattr(admin, "get_current_user", unexpected_auth_lookup)
-    monkeypatch.setattr(admin, "_log_mod_action", lambda *_args: None)
+    monkeypatch.setattr(community_admin, "_log_mod_action", lambda *_args: None)
 
     result = asyncio.run(
         admin.ban_user(SUPER_ID, _request({"id": ADMIN_ID, "role": "superadmin"}))
@@ -377,9 +380,9 @@ def test_bulk_ban_rejects_mixed_peer_or_superior_batch_without_any_write(
         fake.calls.append(("validate", admin_user, target_role))
         return assert_manage(admin_user, target_role)
 
-    monkeypatch.setattr(admin, "_assert_actor_can_manage_target", track_validation)
+    monkeypatch.setattr(community_admin, "_assert_actor_can_manage_target", track_validation)
     logs = []
-    monkeypatch.setattr(admin, "_log_mod_action", lambda *args: logs.append(args))
+    monkeypatch.setattr(community_admin, "_log_mod_action", lambda *args: logs.append(args))
 
     body = admin.BulkUserAction(user_ids=[USER_ID, SUPER_ID], reason="security")
     with pytest.raises(HTTPException) as exc:
@@ -421,9 +424,9 @@ def test_bulk_ban_deduplicates_skips_missing_and_preserves_response_order(monkey
         fake.calls.append(("validate", admin_user, target_role))
         return assert_manage(admin_user, target_role)
 
-    monkeypatch.setattr(admin, "_assert_actor_can_manage_target", track_validation)
+    monkeypatch.setattr(community_admin, "_assert_actor_can_manage_target", track_validation)
     logs = []
-    monkeypatch.setattr(admin, "_log_mod_action", lambda *args: logs.append(args))
+    monkeypatch.setattr(community_admin, "_log_mod_action", lambda *args: logs.append(args))
     missing = "00000000-0000-0000-0000-000000000099"
     body = admin.BulkUserAction(user_ids=[PEER_ID, missing, USER_ID, PEER_ID])
 
@@ -460,7 +463,7 @@ def test_bulk_ban_uses_request_scoped_actor_without_auth_lookup(monkeypatch):
         raise AssertionError("bulk_ban_users must use request.state.admin_user")
 
     monkeypatch.setattr(admin, "get_current_user", unexpected_auth_lookup)
-    monkeypatch.setattr(admin, "_log_mod_action", lambda *_args: None)
+    monkeypatch.setattr(community_admin, "_log_mod_action", lambda *_args: None)
 
     result = asyncio.run(
         admin.bulk_ban_users(

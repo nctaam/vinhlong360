@@ -1462,7 +1462,8 @@ class TestPhase9ErrorInfoLeaks:
     def _get_admin_src(cls):
         if cls._admin_src is None:
             cls._admin_src = ((Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8") + chr(10)
-            + (Path(__file__).resolve().parent.parent / "entities" / "admin_api.py").read_text(encoding="utf-8"))  # mien entity-admin sang goi rieng 2026-08-28
+            + (Path(__file__).resolve().parent.parent / "entities" / "admin_api.py").read_text(encoding="utf-8") + chr(10)  # mien entity-admin sang goi rieng 2026-08-28
+            + (Path(__file__).resolve().parent.parent / "community" / "admin_api.py").read_text(encoding="utf-8"))  # mien community-admin sang goi rieng 2026-08-29
         return cls._admin_src
 
     @classmethod
@@ -1585,7 +1586,8 @@ class TestPhase10LikeEscape:
     def test_admin_duplicate_check_uses_escape(self):
         """Admin duplicate check escapes LIKE wildcards."""
         admin_src = ((Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8") + chr(10)
-            + (Path(__file__).resolve().parent.parent / "entities" / "admin_api.py").read_text(encoding="utf-8"))  # mien entity-admin sang goi rieng 2026-08-28
+            + (Path(__file__).resolve().parent.parent / "entities" / "admin_api.py").read_text(encoding="utf-8") + chr(10)  # mien entity-admin sang goi rieng 2026-08-28
+            + (Path(__file__).resolve().parent.parent / "community" / "admin_api.py").read_text(encoding="utf-8"))  # mien community-admin sang goi rieng 2026-08-29
         idx = admin_src.find("def check_duplicate")
         # Window 900: hàm dài ra hợp lệ (fix dialect PG 2026-07-02) — assertion giữ nguyên.
         block = admin_src[idx:idx + 900]
@@ -1595,7 +1597,8 @@ class TestPhase10LikeEscape:
     def test_admin_unclassified_uses_escape(self):
         """Admin unclassified search escapes LIKE wildcards."""
         admin_src = ((Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8") + chr(10)
-            + (Path(__file__).resolve().parent.parent / "entities" / "admin_api.py").read_text(encoding="utf-8"))  # mien entity-admin sang goi rieng 2026-08-28
+            + (Path(__file__).resolve().parent.parent / "entities" / "admin_api.py").read_text(encoding="utf-8") + chr(10)  # mien entity-admin sang goi rieng 2026-08-28
+            + (Path(__file__).resolve().parent.parent / "community" / "admin_api.py").read_text(encoding="utf-8"))  # mien community-admin sang goi rieng 2026-08-29
         idx = admin_src.find("def list_unclassified")
         # Window 1200: hàm dài ra hợp lệ (fix dialect PG 2026-07-02) — assertion giữ nguyên.
         block = admin_src[idx:idx + 1200]
@@ -1921,7 +1924,8 @@ class TestPhase11AdminHardening:
     def test_ban_user_checks_target_exists(self):
         """ban_user verifies target user exists."""
         src = ((Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8") + chr(10)
-            + (Path(__file__).resolve().parent.parent / "entities" / "admin_api.py").read_text(encoding="utf-8"))  # mien entity-admin sang goi rieng 2026-08-28
+            + (Path(__file__).resolve().parent.parent / "entities" / "admin_api.py").read_text(encoding="utf-8") + chr(10)  # mien entity-admin sang goi rieng 2026-08-28
+            + (Path(__file__).resolve().parent.parent / "community" / "admin_api.py").read_text(encoding="utf-8"))  # mien community-admin sang goi rieng 2026-08-29
         idx = src.find("def ban_user")
         end = src.find("\nasync def ", idx + 1)
         block = src[idx:end] if end != -1 else src[idx:idx + 2000]
@@ -1931,7 +1935,8 @@ class TestPhase11AdminHardening:
     def test_unban_checks_ban_status(self):
         """unban_user rejects unbanning non-banned user."""
         src = ((Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8") + chr(10)
-            + (Path(__file__).resolve().parent.parent / "entities" / "admin_api.py").read_text(encoding="utf-8"))  # mien entity-admin sang goi rieng 2026-08-28
+            + (Path(__file__).resolve().parent.parent / "entities" / "admin_api.py").read_text(encoding="utf-8") + chr(10)  # mien entity-admin sang goi rieng 2026-08-28
+            + (Path(__file__).resolve().parent.parent / "community" / "admin_api.py").read_text(encoding="utf-8"))  # mien community-admin sang goi rieng 2026-08-29
         idx = src.find("def unban_user")
         end = src.find("\nasync def ", idx + 1)
         block = src[idx:end] if end != -1 else src[idx:idx + 2000]
@@ -1941,7 +1946,8 @@ class TestPhase11AdminHardening:
     def test_set_role_checks_user_exists(self):
         """set_user_role verifies target user exists."""
         src = ((Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8") + chr(10)
-            + (Path(__file__).resolve().parent.parent / "entities" / "admin_api.py").read_text(encoding="utf-8"))  # mien entity-admin sang goi rieng 2026-08-28
+            + (Path(__file__).resolve().parent.parent / "entities" / "admin_api.py").read_text(encoding="utf-8") + chr(10)  # mien entity-admin sang goi rieng 2026-08-28
+            + (Path(__file__).resolve().parent.parent / "community" / "admin_api.py").read_text(encoding="utf-8"))  # mien community-admin sang goi rieng 2026-08-29
         idx = src.find("def set_user_role")
         end = src.find("\nasync def ", idx + 1)
         block = src[idx:end] if end != -1 else src[idx:idx + 2000]
@@ -1951,7 +1957,8 @@ class TestPhase11AdminHardening:
     def test_set_role_rejects_banned_user(self):
         """set_user_role rejects assigning role to banned user."""
         src = ((Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8") + chr(10)
-            + (Path(__file__).resolve().parent.parent / "entities" / "admin_api.py").read_text(encoding="utf-8"))  # mien entity-admin sang goi rieng 2026-08-28
+            + (Path(__file__).resolve().parent.parent / "entities" / "admin_api.py").read_text(encoding="utf-8") + chr(10)  # mien entity-admin sang goi rieng 2026-08-28
+            + (Path(__file__).resolve().parent.parent / "community" / "admin_api.py").read_text(encoding="utf-8"))  # mien community-admin sang goi rieng 2026-08-29
         idx = src.find("def set_user_role")
         end = src.find("\nasync def ", idx + 1)
         block = src[idx:end] if end != -1 else src[idx:idx + 2000]
@@ -1960,7 +1967,8 @@ class TestPhase11AdminHardening:
     def test_backup_has_cooldown(self):
         """trigger_backup has a 5-minute cooldown."""
         src = ((Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8") + chr(10)
-            + (Path(__file__).resolve().parent.parent / "entities" / "admin_api.py").read_text(encoding="utf-8"))  # mien entity-admin sang goi rieng 2026-08-28
+            + (Path(__file__).resolve().parent.parent / "entities" / "admin_api.py").read_text(encoding="utf-8") + chr(10)  # mien entity-admin sang goi rieng 2026-08-28
+            + (Path(__file__).resolve().parent.parent / "community" / "admin_api.py").read_text(encoding="utf-8"))  # mien community-admin sang goi rieng 2026-08-29
         idx = src.find("def trigger_backup")
         block = src[max(0, idx - 200):idx + 1500]
         assert "_BACKUP_COOLDOWN" in block
@@ -2253,7 +2261,8 @@ class TestPhase13ConfigCentralization:
 
     def test_admin_uses_config_for_backup_cooldown(self):
         src = ((Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8") + chr(10)
-            + (Path(__file__).resolve().parent.parent / "entities" / "admin_api.py").read_text(encoding="utf-8"))  # mien entity-admin sang goi rieng 2026-08-28
+            + (Path(__file__).resolve().parent.parent / "entities" / "admin_api.py").read_text(encoding="utf-8") + chr(10)  # mien entity-admin sang goi rieng 2026-08-28
+            + (Path(__file__).resolve().parent.parent / "community" / "admin_api.py").read_text(encoding="utf-8"))  # mien community-admin sang goi rieng 2026-08-29
         assert "_cfg.BACKUP_COOLDOWN" in src
 
     def test_no_hardcoded_daily_limit(self):

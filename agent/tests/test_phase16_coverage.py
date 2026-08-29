@@ -49,7 +49,7 @@ def _public_src() -> str:
 
 
 def _admin_src() -> str:
-    """Nguon MAT QUAN TRI — hop nhat admin.py + entities/admin_api.py.
+    """Nguon MAT QUAN TRI — hop nhat admin.py + entities/ + community/admin_api.py.
 
     Mien entity-admin sang agent/entities/ (2026-08-28, buoc 2b). Cac rao duoi
     soi "mat quan tri co tinh chat X", bat ke handler song o file nao; ghim mot
@@ -58,7 +58,8 @@ def _admin_src() -> str:
     from pathlib import Path as _P
     root = _P(__file__).resolve().parent.parent
     return ((root / "admin.py").read_text(encoding="utf-8") + chr(10)
-            + (root / "entities" / "admin_api.py").read_text(encoding="utf-8"))
+            + (root / "entities" / "admin_api.py").read_text(encoding="utf-8") + chr(10)
+            + (root / "community" / "admin_api.py").read_text(encoding="utf-8"))
 
 
 class TestToolsSchema:
@@ -831,7 +832,7 @@ class TestSecurityPosture:
                 assert "Query(" in line, f"plans.py unvalidated limit: {line.strip()}"
 
     def test_offset_params_have_upper_bound(self):
-        for module in ("admin", "notifications", "public_api", "community/api"):
+        for module in ("admin", "notifications", "public_api", "community/api", "community/admin_api"):
             src = (Path(__file__).resolve().parent.parent / f"{module}.py").read_text(encoding="utf-8")
             for line_no, line in enumerate(src.split("\n"), 1):
                 if "offset: int = Query(" in line:
@@ -890,7 +891,7 @@ class TestSecurityPosture:
 
     def test_page_params_have_upper_bound(self):
         """All page query params must have le= upper bound to prevent DoS via large OFFSET."""
-        for module in ("community/api", "admin"):
+        for module in ("community/api", "community/admin_api", "admin"):
             src = (Path(__file__).resolve().parent.parent / f"{module}.py").read_text(encoding="utf-8")
             for line_no, line in enumerate(src.split("\n"), 1):
                 if "page: int = Query(" in line:
@@ -920,7 +921,7 @@ class TestSecurityPosture:
     def test_validate_path_id_has_param_name(self):
         """All validate_path_id calls must include the param_name argument."""
         import re
-        for module in ("community/api", "admin", "notifications", "public_api", "saved", "visits", "plans"):
+        for module in ("community/api", "community/admin_api", "admin", "notifications", "public_api", "saved", "visits", "plans"):
             path = Path(__file__).resolve().parent.parent / f"{module}.py"
             if not path.exists():
                 continue
@@ -930,7 +931,7 @@ class TestSecurityPosture:
 
     def test_no_bare_404_without_detail(self):
         """All HTTPException(404) should include a detail message."""
-        for module in ("community/api", "admin", "notifications", "public_api"):
+        for module in ("community/api", "community/admin_api", "admin", "notifications", "public_api"):
             src = (Path(__file__).resolve().parent.parent / f"{module}.py").read_text(encoding="utf-8")
             for line_no, line in enumerate(src.split("\n"), 1):
                 if "raise HTTPException(404)" in line and "404," not in line:
