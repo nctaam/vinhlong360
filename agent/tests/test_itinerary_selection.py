@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -523,3 +524,28 @@ def test_selection_bao_deadline_khi_het_gio_giua_chung(monkeypatch):
     )
 
     assert "selection-deadline-reached" in result.warnings
+
+
+def test_exact_dominance_guards_still_price_required_on_both_sides():
+    # Lát 30-32: hai guard mìn-pin-sẵn tách ra helper riêng — ghim hành vi
+    # (không ghim chuỗi): stop khi incumbent đã nhiều điểm hơn count; dominated
+    # khi cùng cỡ mà reward incumbent cao hơn.
+    incumbent = (None, frozenset({"a", "b"}))
+    assert selection_module._exact_can_stop(incumbent, 2, 1) is True
+    assert selection_module._exact_can_stop(incumbent, 2, 2) is False
+    assert selection_module._exact_can_stop(None, 2, 1) is False
+
+    search = selection_module._SelectionSearch(
+        items=[], required_ids=frozenset(), required=[], fixed=(),
+        optional_order=(), optional_by_id={
+            "a": SimpleNamespace(reward=5.0), "b": SimpleNamespace(reward=4.0),
+        },
+        matrix=None, matrix_indexes={}, schedule_options=None,
+        deadline=0.0, base_visit_minutes=0.0, available_minutes=0.0,
+    )
+    assert selection_module._exact_subset_dominated(
+        search, incumbent, 2, 2, 0.0, subset_reward=8.0
+    ) is True
+    assert selection_module._exact_subset_dominated(
+        search, incumbent, 2, 2, 0.0, subset_reward=10.0
+    ) is False
