@@ -65,6 +65,12 @@ def test_policy_keeps_operational_structures_and_validates_assisted_coverage():
     ('retention', {'case_days': 1, 'receipt_days': 1, 'extra': 1}),
     ('notification_channel', {'name': 'outbox'}),
     ('assisted_coverage', {'timezone': 'x', 'weekdays': [], 'hours': 'x', 'duty_roster': 'x', 'fallback_copy': 'x'}),
+    # Đắp thêm nhánh reject của coverage (lát 9 R20.8): timezone trắng,
+    # weekday sai kiểu/trắng, hours trắng.
+    ('assisted_coverage', {'timezone': '   ', 'weekdays': ['mon'], 'hours': 'x', 'duty_roster': 'x', 'fallback_copy': 'x'}),
+    ('assisted_coverage', {'timezone': 'x', 'weekdays': ['mon', 2], 'hours': 'x', 'duty_roster': 'x', 'fallback_copy': 'x'}),
+    ('assisted_coverage', {'timezone': 'x', 'weekdays': ['  '], 'hours': 'x', 'duty_roster': 'x', 'fallback_copy': 'x'}),
+    ('assisted_coverage', {'timezone': 'x', 'weekdays': ['mon'], 'hours': '', 'duty_roster': 'x', 'fallback_copy': 'x'}),
 ])
 def test_policy_rejects_malformed_nested_structure(tmp_path, field, value):
     from cases.policy import load_case_policy
