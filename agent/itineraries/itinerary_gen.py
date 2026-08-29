@@ -223,7 +223,7 @@ def _build_day_plans(
     return day_plans
 
 
-def _candidate_fee_value(item: dict) -> float | None:
+def _raw_fee_value(item: dict):
     entity = item.get("entity") or {}
     attributes = entity.get("attributes") or {}
     value = entity.get("fee_value")
@@ -231,10 +231,19 @@ def _candidate_fee_value(item: dict) -> float | None:
         value = attributes.get("admission_fee")
     if value is None:
         value = attributes.get("gia")
+    return value
+
+
+def _nonnegative_finite(parsed: float) -> float | None:
+    return parsed if math.isfinite(parsed) and parsed >= 0 else None
+
+
+def _candidate_fee_value(item: dict) -> float | None:
+    value = _raw_fee_value(item)
     if isinstance(value, bool):
         return None
     if isinstance(value, Real):
-        return float(value) if math.isfinite(float(value)) and value >= 0 else None
+        return _nonnegative_finite(float(value))
     if not isinstance(value, str):
         return None
     match = re.search(r"\d+(?:[.,]\d+)?", value)
@@ -244,7 +253,7 @@ def _candidate_fee_value(item: dict) -> float | None:
         parsed = float(match.group(0).replace(",", "."))
     except ValueError:
         return None
-    return parsed if math.isfinite(parsed) and parsed >= 0 else None
+    return _nonnegative_finite(parsed)
 
 
 def _ordered_kept_candidates(
@@ -644,22 +653,7 @@ def _multiday_schedule_diagnostics(
     return schedule
 
 
-def _build_joint_day_plans(
-    days: int,
-    stops_per_day: int,
-    selected: list,
-    candidates: list,
-    meal_candidates: list,
-    month: int,
-    meal_anchors: list[str],
-    rest_anchors: list[str],
-    areas: list[str],
-) -> list:
-    seed_days = [
-        selected[index * stops_per_day : (index + 1) * stops_per_day]
-        for index in range(days)
-    ]
-    raw_pools = _build_joint_candidate_pools(seed_days, candidates, areas)
+def _pool_states(raw_pools: list, seed_days: list) -> tuple[list, set[str]]:
     states = []
     reserved_content_ids: set[str] = set()
     for raw_pool, seed_day in zip(raw_pools, seed_days):
@@ -689,6 +683,113 @@ def _build_joint_day_plans(
                 candidate.stop.id for candidate in state["kept"]
             )
         states.append((state, required_ids, seed_day, raw_pool))
+    return states, reserved_content_ids
+
+
+def _fallback_day_plan(
+    seed_day: list, raw_pool: list, meal_candidates: list, month: int,
+    meal_anchors: list[str], rest_anchors: list[str], day_number: int,
+    fallback_used_ids: set[str],
+) -> dict:
+    day_stops, schedule = _build_day_schedule(
+        seed_day,
+        meal_candidates,
+        month,
+        meal_anchors,
+        rest_anchors,
+        day_number,
+        fallback_used_ids,
+    )
+    schedule = _fallback_selection_diagnostics(
+        schedule,
+        raw_pool,
+        day_stops,
+    )
+    schedule["warnings"] = list(schedule["warnings"])
+    if "selection-fallback" not in schedule["warnings"]:
+        schedule["warnings"].append("selection-fallback")
+    return {
+        "eligible": False,
+        "day_index": day_number,
+        "phase3_area_focus": _day_area(seed_day),
+        "day_stops": day_stops,
+        "schedule": schedule,
+    }
+
+
+def _selected_day_plan(
+    result, state: dict, seed_day: list, selection_items: list,
+    anchor_items: list, anchor_warnings: list, fixed_stops: list,
+    schedule_options, day_number: int,
+) -> dict:
+    selection_diagnostics = _selection_diagnostics(
+        result,
+        state,
+        anchor_warnings,
+    )
+    selected_id_set = set(result.selected_ids)
+    selected_candidates = tuple(
+        candidate
+        for candidate in selection_items
+        if candidate.stop.id in selected_id_set
+    )
+    raw_content_by_id = {
+        stop_id: state["kept_by_id"][stop_id]
+        for stop_id in result.selected_ids
+    }
+    baseline_order = tuple(
+        stop_id
+        for stop_id in result.schedule.ordered_ids
+        if stop_id in selected_id_set
+    )
+    return {
+        "eligible": True,
+        "day_index": day_number,
+        "phase3_area_focus": _day_area(seed_day),
+        "selection_result": result,
+        "selected_candidates": selected_candidates,
+        "raw_content_by_id": raw_content_by_id,
+        "anchor_items": anchor_items,
+        "anchor_warnings": anchor_warnings,
+        "fixed_stops": tuple(fixed_stops),
+        "baseline_order": baseline_order,
+        "schedule_options": schedule_options,
+        "selection_diagnostics": selection_diagnostics,
+    }
+
+
+def _mark_fallback_day_used(
+    day_plan: dict, used_content_ids: set[str], used_anchor_ids: set[str]
+) -> None:
+    used_content_ids.update(
+        stop["entity"]["id"]
+        for stop in day_plan["day_stops"]
+        if not stop.get("is_meal") and not stop.get("is_rest")
+    )
+    used_anchor_ids.update(
+        stop["entity"]["id"]
+        for stop in day_plan["day_stops"]
+        if stop.get("is_meal")
+    )
+
+
+def _build_joint_day_plans(
+    days: int,
+    stops_per_day: int,
+    selected: list,
+    candidates: list,
+    meal_candidates: list,
+    month: int,
+    meal_anchors: list[str],
+    rest_anchors: list[str],
+    areas: list[str],
+) -> list:
+    seed_days = [
+        selected[index * stops_per_day : (index + 1) * stops_per_day]
+        for index in range(days)
+    ]
+    raw_pools = _build_joint_candidate_pools(seed_days, candidates, areas)
+    states, reserved_content_ids = _pool_states(raw_pools, seed_days)
 
     used_content_ids: set[str] = set()
     used_anchor_ids: set[str] = set()
@@ -717,32 +818,10 @@ def _build_joint_day_plans(
             or state.get("required_missing")
             or state.get("preparation_error")
         ):
-            day_stops, schedule = _build_day_schedule(
-                seed_day,
-                meal_candidates,
-                month,
-                meal_anchors,
-                rest_anchors,
-                day_index + 1,
-                fallback_used_ids,
-            )
-            schedule = _fallback_selection_diagnostics(
-                schedule,
-                raw_pool,
-                day_stops,
-            )
-            schedule["warnings"] = list(schedule["warnings"])
-            if "selection-fallback" not in schedule["warnings"]:
-                schedule["warnings"].append("selection-fallback")
-            prepared_days.append(
-                {
-                    "eligible": False,
-                    "day_index": day_index + 1,
-                    "phase3_area_focus": _day_area(seed_day),
-                    "day_stops": day_stops,
-                    "schedule": schedule,
-                }
-            )
+            prepared_days.append(_fallback_day_plan(
+                seed_day, raw_pool, meal_candidates, month,
+                meal_anchors, rest_anchors, day_index + 1, fallback_used_ids,
+            ))
         else:
             selection_items = state["kept"]
             fixed_stops = _selection_anchor_stops(anchor_items)
@@ -768,83 +847,24 @@ def _build_joint_day_plans(
                     ),
                 )
             except (NoFeasibleScheduleError, ValueError):
-                day_stops, schedule = _build_day_schedule(
-                    seed_day,
-                    meal_candidates,
-                    month,
-                    meal_anchors,
-                    rest_anchors,
-                    day_index + 1,
-                    fallback_used_ids,
-                )
-                schedule = _fallback_selection_diagnostics(
-                    schedule,
-                    raw_pool,
-                    day_stops,
-                )
-                schedule["warnings"] = list(schedule["warnings"])
-                if "selection-fallback" not in schedule["warnings"]:
-                    schedule["warnings"].append("selection-fallback")
-                prepared_days.append(
-                    {
-                        "eligible": False,
-                        "day_index": day_index + 1,
-                        "phase3_area_focus": _day_area(seed_day),
-                        "day_stops": day_stops,
-                        "schedule": schedule,
-                    }
-                )
+                prepared_days.append(_fallback_day_plan(
+                    seed_day, raw_pool, meal_candidates, month,
+                    meal_anchors, rest_anchors, day_index + 1, fallback_used_ids,
+                ))
             else:
-                selection_diagnostics = _selection_diagnostics(
-                    result,
-                    state,
-                    anchor_warnings,
-                )
-                selected_id_set = set(result.selected_ids)
-                selected_candidates = tuple(
-                    candidate
-                    for candidate in selection_items
-                    if candidate.stop.id in selected_id_set
-                )
-                raw_content_by_id = {
-                    stop_id: state["kept_by_id"][stop_id]
-                    for stop_id in result.selected_ids
-                }
-                baseline_order = tuple(
-                    stop_id
-                    for stop_id in result.schedule.ordered_ids
-                    if stop_id in selected_id_set
-                )
-                prepared_days.append(
-                    {
-                        "eligible": True,
-                        "day_index": day_index + 1,
-                        "phase3_area_focus": _day_area(seed_day),
-                        "selection_result": result,
-                        "selected_candidates": selected_candidates,
-                        "raw_content_by_id": raw_content_by_id,
-                        "anchor_items": anchor_items,
-                        "anchor_warnings": anchor_warnings,
-                        "fixed_stops": tuple(fixed_stops),
-                        "baseline_order": baseline_order,
-                        "schedule_options": schedule_options,
-                        "selection_diagnostics": selection_diagnostics,
-                    }
-                )
+                prepared_days.append(_selected_day_plan(
+                    result, state, seed_day, selection_items, anchor_items,
+                    anchor_warnings, fixed_stops, schedule_options, day_index + 1,
+                ))
                 used_content_ids.update(result.selected_ids)
 
         if not prepared_days[-1]["eligible"]:
-            used_content_ids.update(
-                stop["entity"]["id"]
-                for stop in prepared_days[-1]["day_stops"]
-                if not stop.get("is_meal") and not stop.get("is_rest")
-            )
-            used_anchor_ids.update(
-                stop["entity"]["id"]
-                for stop in prepared_days[-1]["day_stops"]
-                if stop.get("is_meal")
-            )
+            _mark_fallback_day_used(prepared_days[-1], used_content_ids, used_anchor_ids)
 
+    return _combine_prepared_days(prepared_days, month, days)
+
+
+def _combine_prepared_days(prepared_days: list[dict], month: int, days: int) -> list:
     if days < 2:
         return _phase3_day_plans(
             prepared_days,

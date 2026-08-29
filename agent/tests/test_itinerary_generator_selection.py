@@ -193,3 +193,20 @@ def test_generator_uses_phase2b_fallback_when_required_endpoint_lacks_coordinate
     assert schedule["selection_solver"] == "phase2b-fallback"
     assert "coordinates-missing" in schedule["warnings"]
     assert "selection-fallback" in schedule["warnings"]
+
+
+@pytest.mark.parametrize(
+    ("entity", "expected"),
+    [
+        ({"fee_value": 20000}, 20000.0),
+        ({"fee_value": True}, None),                      # bool không phải tiền
+        ({"fee_value": -5}, None),                        # âm → loại
+        ({"attributes": {"admission_fee": "30.000 dong"}}, 30.0),
+        ({"attributes": {"gia": "khoang 15,5 nghin"}}, 15.5),
+        ({"attributes": {"gia": "mien phi"}}, None),
+        ({}, None),
+    ],
+)
+def test_candidate_fee_value_edge_branches(entity, expected):
+    # Lát 28 R20.8: ghim bảng biên của bộ đọc phí sau khi tách helper.
+    assert itinerary_gen._candidate_fee_value({"entity": entity}) == expected
