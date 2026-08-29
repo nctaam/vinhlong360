@@ -459,3 +459,106 @@ def test_validate_candidate_record_error_order_is_stable() -> None:
     assert joined.index("entity_id") < joined.index("confidence must be numeric")
     assert joined.index("confidence must be numeric") < joined.index("evidence_urls must be a list")
     assert joined.index("evidence_urls must be a list") < joined.index("apply_policy")
+
+
+# ── Lát 17 (B3, test-only): đặc-tả 4 hàm trước khi mổ ở lát 18-19 ──
+
+
+def _place_entity(**overrides):
+    base = {
+        "id": "e-1", "name": "Chua Vinh Trang", "type": "place",
+        "summary": "mot ngoi chua", "source": "https://example.com",
+        "coordinates": [10.1, 106.1],
+    }
+    base.update(overrides)
+    return base
+
+
+def test_relationship_targets_include_table() -> None:
+    ent_a = _place_entity(id="a", coordinates=[10.0, 106.0])
+    ent_b = _place_entity(id="b", name="Cho Noi", coordinates=[10.001, 106.001])
+    ent_far = _place_entity(id="far", coordinates=[12.0, 108.0])
+    data = {
+        "entities": [ent_a, ent_b, ent_far],
+        "relationships": [
+            {"source_id": "a", "target_id": "b", "type": "near"},      # gần thật → LOẠI
+            {"source_id": "a", "target_id": "far", "type": "near"},    # quá xa → GIỮ
+            {"source_id": "a", "target_id": "b", "type": "related"},   # non-near → GIỮ
+            {"source_id": "a", "target_id": "ma", "type": "related"},  # đích không tồn tại
+            {"source_id": "a", "type": "near"},                        # thiếu đích
+            "khong-phai-dict",                                          # bỏ qua
+        ],
+    }
+
+    targets = q.relationship_targets(data)
+    by_index = {t["index"]: t for t in targets}
+
+    assert 0 not in by_index
+    assert by_index[1]["heuristic_reasons"][0].startswith("near edge distance is ")
+    assert by_index[2]["heuristic_reasons"] == []
+    assert by_index[3]["heuristic_reasons"] == ["missing target entity"]
+    assert (
+        by_index[4]["heuristic_reasons"][0]
+        == "missing relationship source, target, or type"
+    )
+    assert set(by_index) == {1, 2, 3, 4}
+
+
+def test_candidate_places_scoring_order_and_fallback() -> None:
+    entity = _place_entity(name="Gan Cho Noi Cai Be", area="phuong-1", type="food")
+    places = [
+        {"id": "p-match", "name": "Cho Noi Cai Be", "area": "phuong-1"},
+        {"id": "p-cross", "name": "Cho Noi Cai Be", "area": "phuong-2"},
+        {"id": "p-area", "name": "Khong Lien Quan Xyz", "area": "phuong-1"},
+    ]
+
+    ranked = q.candidate_places_for_entity(entity, places)
+    assert [p["id"] for p in ranked][:2] == ["p-match", "p-cross"]
+    assert set(ranked[0]) == {"id", "name", "area", "legacyArea"}
+
+    # Không ai có điểm dương → fallback: mọi place cùng area, điểm 1.0
+    fallback = q.candidate_places_for_entity(
+        _place_entity(name="Zzz", summary="zzz", area="phuong-1", type="food"),
+        [{"id": "p-area", "name": "Khong Lien Quan Xyz", "area": "phuong-1"}],
+    )
+    assert [p["id"] for p in fallback] == ["p-area"]
+
+
+@pytest.mark.parametrize(
+    ("overrides", "expected_status", "expected_conf"),
+    [
+        ({}, "verified", 0.80),
+        ({"name": ""}, "needs_fix", 0.85),
+        ({"source": ""}, "needs_source", 0.82),
+        ({"type": "food", "area": "phuong-1", "placeId": ""}, "unverified", 0.74),
+    ],
+)
+def test_heuristic_quality_status_truth_table(
+    overrides, expected_status, expected_conf
+) -> None:
+    status, confidence, flags = q.heuristic_quality_status(_place_entity(**overrides))
+    assert (status, confidence) == (expected_status, expected_conf)
+    assert bool(flags) == (expected_status != "verified")
+
+
+def test_placeid_decision_conflicts_pin_reason_bytes() -> None:
+    entity = _place_entity(area="phuong-1")
+    place_by_id = {"p-2": {"id": "p-2", "name": "P2", "area": "phuong-2"}}
+
+    ghost = q.placeid_candidate_from_decision(
+        entity, {"candidate_place_id": "ma", "confidence": 0.9}, place_by_id
+    )
+    assert ghost["status"] == "conflicting"
+    assert "candidate placeId does not exist" in ghost["reason"]
+
+    crossed = q.placeid_candidate_from_decision(
+        entity, {"candidate_place_id": "p-2", "confidence": 0.9}, place_by_id
+    )
+    assert crossed["status"] == "conflicting"
+    assert "area conflict: entity=phuong-1, place=phuong-2" in crossed["reason"]
+
+    empty_low = q.placeid_candidate_from_decision(
+        entity, {"candidate_place_id": "", "confidence": 0.2}, place_by_id
+    )
+    assert empty_low["apply_policy"] == "reject"
+    assert empty_low["suggested_value"] is None
