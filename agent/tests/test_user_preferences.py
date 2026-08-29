@@ -1956,3 +1956,33 @@ def test_preferences_patch_rolls_back_snapshot_when_consent_insert_fails(
     with sqlite3.connect(preference_database.db_path) as conn:
         count = conn.execute("SELECT COUNT(*) FROM user_preference_consents").fetchone()[0]
     assert count == 0
+
+
+def test_region_authorization_error_messages_are_stable():
+    # Hợp đồng thông điệp của 3 nhánh từ chối (ghim khi tách helper, lát 5 R20.8).
+    from user_preferences import _authorize_region_patch
+
+    with pytest.raises(PreferenceValidationError, match="Invalid manual region selection"):
+        _authorize_region_patch(
+            {"location_source": "manual", "region_id": "khong-canonical"},
+            confirmed_location=None,
+        )
+    with pytest.raises(PreferenceValidationError, match="Invalid default region selection"):
+        _authorize_region_patch(
+            {"location_source": "default", "region_id": "x"},
+            confirmed_location=None,
+        )
+    with pytest.raises(
+        PreferenceValidationError, match="Resolver region confirmation is required"
+    ):
+        _authorize_region_patch(
+            {"location_source": "gps", "region_id": "province-vl"},
+            confirmed_location=None,
+        )
+
+
+def test_unknown_patch_fields_reported_sorted():
+    with pytest.raises(
+        PreferenceValidationError, match="Unknown preference fields: aaa, zzz"
+    ):
+        normalize_preference_patch({"zzz": 1, "aaa": 2})

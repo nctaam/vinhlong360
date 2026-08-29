@@ -254,6 +254,40 @@ def parse_utc_timestamp(value: Any) -> datetime:
     return parsed.astimezone(timezone.utc)
 
 
+_REGION_TEXT_LIMITS = {
+    "region_id": MAX_REGION_ID_LENGTH,
+    "region_label": MAX_REGION_LABEL_LENGTH,
+}
+_PATCH_ENUM_DOMAINS = {
+    "region_scope": REGION_SCOPES,
+    "location_source": LOCATION_SOURCES,
+    "location_accuracy": LOCATION_ACCURACIES,
+    "location_consent_state": LOCATION_CONSENT_STATES,
+}
+
+
+def _normalized_patch_value(field: str, value: Any) -> Any:
+    if field in _REGION_TEXT_LIMITS:
+        text = _bounded_optional_text(value, field, _REGION_TEXT_LIMITS[field])
+        if contains_raw_location_value(text):
+            raise PreferenceValidationError("Invalid region value")
+        return text
+    if field in _PATCH_ENUM_DOMAINS:
+        return _enum_value(value, field, _PATCH_ENUM_DOMAINS[field])
+    if field in {"location_enabled", "personalization_enabled"}:
+        return _boolean_value(value, field)
+    if field == "explicit_interests":
+        return _normalize_interests(value)
+    if field == "recommendation_reset_at":
+        return None if value is None else parse_utc_timestamp(value)
+    if field == "consent_version":
+        return _bounded_optional_text(value, field, MAX_CONSENT_VERSION_LENGTH)
+    if field == "revision":
+        return _revision_value(value)
+    # Không thể tới: mọi field lạ đã bị chặn ở normalize_preference_patch.
+    raise PreferenceValidationError(f"Unknown preference fields: {field}")
+
+
 def normalize_preference_patch(patch: Mapping[str, Any]) -> PreferencePatch:
     if not isinstance(patch, Mapping):
         raise PreferenceValidationError("Preference patch must be an object")
@@ -263,32 +297,7 @@ def normalize_preference_patch(patch: Mapping[str, Any]) -> PreferencePatch:
 
     normalized: PreferencePatch = {}
     for field, value in patch.items():
-        if field == "region_id":
-            normalized[field] = _bounded_optional_text(value, field, MAX_REGION_ID_LENGTH)
-            if contains_raw_location_value(normalized[field]):
-                raise PreferenceValidationError("Invalid region value")
-        elif field == "region_label":
-            normalized[field] = _bounded_optional_text(value, field, MAX_REGION_LABEL_LENGTH)
-            if contains_raw_location_value(normalized[field]):
-                raise PreferenceValidationError("Invalid region value")
-        elif field == "region_scope":
-            normalized[field] = _enum_value(value, field, REGION_SCOPES)
-        elif field == "location_source":
-            normalized[field] = _enum_value(value, field, LOCATION_SOURCES)
-        elif field == "location_accuracy":
-            normalized[field] = _enum_value(value, field, LOCATION_ACCURACIES)
-        elif field == "location_consent_state":
-            normalized[field] = _enum_value(value, field, LOCATION_CONSENT_STATES)
-        elif field in {"location_enabled", "personalization_enabled"}:
-            normalized[field] = _boolean_value(value, field)
-        elif field == "explicit_interests":
-            normalized[field] = _normalize_interests(value)
-        elif field == "recommendation_reset_at":
-            normalized[field] = None if value is None else parse_utc_timestamp(value)
-        elif field == "consent_version":
-            normalized[field] = _bounded_optional_text(value, field, MAX_CONSENT_VERSION_LENGTH)
-        elif field == "revision":
-            normalized[field] = _revision_value(value)
+        normalized[field] = _normalized_patch_value(field, value)
     return normalized
 
 
@@ -319,28 +328,39 @@ def _authorize_region_patch(
 
     source = authorized.get("location_source")
     if source == "manual":
-        canonical = _CANONICAL_MANUAL_REGIONS.get(authorized.get("region_id"))
-        if canonical is None or any(
-            field not in authorized or authorized[field] != value
-            for field, value in canonical.items()
-        ):
-            raise PreferenceValidationError("Invalid manual region selection")
+        _require_canonical_manual_region(authorized)
         return authorized
     if source == "default":
-        allowed = {
-            "region_id": None,
-            "region_label": None,
-            "region_scope": "unknown",
-            "location_source": "default",
-            "location_accuracy": "unknown",
-        }
-        if any(
-            field != "location_source" and authorized.get(field) != allowed[field]
-            for field in client_region_fields
-        ):
-            raise PreferenceValidationError("Invalid default region selection")
+        _require_cleared_default_region(authorized, client_region_fields)
         return authorized
     raise PreferenceValidationError("Resolver region confirmation is required")
+
+
+def _require_canonical_manual_region(authorized: Mapping[str, Any]) -> None:
+    canonical = _CANONICAL_MANUAL_REGIONS.get(authorized.get("region_id"))
+    if canonical is None or any(
+        field not in authorized or authorized[field] != value
+        for field, value in canonical.items()
+    ):
+        raise PreferenceValidationError("Invalid manual region selection")
+
+
+def _require_cleared_default_region(
+    authorized: Mapping[str, Any],
+    client_region_fields: set[str],
+) -> None:
+    allowed = {
+        "region_id": None,
+        "region_label": None,
+        "region_scope": "unknown",
+        "location_source": "default",
+        "location_accuracy": "unknown",
+    }
+    if any(
+        field != "location_source" and authorized.get(field) != allowed[field]
+        for field in client_region_fields
+    ):
+        raise PreferenceValidationError("Invalid default region selection")
 
 
 def _snapshot_from_mapping(value: Mapping[str, Any]) -> PersistedPreferenceSnapshot:
@@ -430,10 +450,23 @@ def invalid_region_reason(snapshot: Mapping[str, Any]) -> str | None:
     source = snapshot.get("location_source")
     if not isinstance(source, str):
         return "default_tuple"
+    reason = _source_tuple_reason(source, snapshot)
+    if reason is not None:
+        return reason
+
+    if snapshot.get("location_reconfirm_required") and not _quarantine_region_tuple(
+        snapshot
+    ):
+        return "state_mismatch"
+    return None
+
+
+def _source_tuple_reason(source: str, snapshot: Mapping[str, Any]) -> str | None:
     if source == "manual":
         if not _manual_region_tuple(snapshot):
             return "manual_tuple"
-    elif source in {"gps", "ip"}:
+        return None
+    if source in {"gps", "ip"}:
         if not _resolver_region_tuple(snapshot):
             return "resolver_tuple"
         if (
@@ -441,17 +474,12 @@ def invalid_region_reason(snapshot: Mapping[str, Any]) -> str | None:
             != LOCATION_PROVENANCE_RESOLVER_V2
         ):
             return "provenance"
-    elif source == "default":
+        return None
+    if source == "default":
         if not _default_region_tuple(snapshot):
             return "default_tuple"
-    else:
-        return "default_tuple"
-
-    if snapshot.get("location_reconfirm_required") and not _quarantine_region_tuple(
-        snapshot
-    ):
-        return "state_mismatch"
-    return None
+        return None
+    return "default_tuple"
 
 
 LOCATION_REMEDIATION_REASONS = frozenset(
