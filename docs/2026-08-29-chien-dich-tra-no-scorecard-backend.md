@@ -1,6 +1,6 @@
 # Chiến dịch trả nợ scorecard backend — 47 vi phạm R20.8 → ≤2
 
-> STATUS: active
+> STATUS: done — xem mục Khép chiến dịch cuối file
 > Ngày lập: 2026-08-29. Nguồn: hồ sơ đo-trước 10-agent (workflow backend-debt-dossier),
 > tổng hợp từ docs/2026-08-21-danh-gia-toan-du-an.md mục scorecard 99→81.
 > Lệnh chủ dự án "tiếp tục thực hiện dự án" 2026-08-29 = lệnh xếp lịch dự án trả nợ này.
@@ -92,4 +92,30 @@ Mọi helper tách **ra module-level trong chính `agent/chat/api.py`** (ast.wal
 
 1. Full suite: `$env:PYTEST_DEBUG_TEMPROOT='C:\vlt'; python -m pytest -q --tb=line` (máy đứng yên) — đối chiếu đúng **16 fail-đã-biết** ROADMAP, 0 fail mới.
 2. `python scripts/scorecard.py` — nợ R20.8 ≤ 2 (dự kiến: `_candidate_fee_value` nếu chủ chưa gật + 1 dự phòng).
-3. `pre_merge_check` xanh; cập nhật `baseline.json` ratchet xuống + giải trình **trong cùng commit**; cập nhật `docs/standards/90-exceptions-log.md` (gỡ DEFER 2, trạng thái DEFER 3, số cx mới).
+3. `pre_merge_check` xanh; cập nhật `baseline.json` ratchet xuống + giải trình **trong cùng commit**; cập nhật `docs/standards/90-exceptions-log.md` (gỡ DEFER 2, trạng thái DEFER 3, số cx mới).## Khép chiến dịch (2026-08-30)
+
+> STATUS: done — MỤC TIÊU ĐẠT: backend **81 → 99/100** (mức lịch sử), cổng
+> `pre_merge_check` bước 7 THÔNG. Nợ R20.8: **47 → 2** (chat_stream cx49,
+> _event_stream_body cx94 — cả hai đã teo từ 142/94-trong-cha, dưới ngưỡng-99;
+> mổ sâu tiếp là TUỲ CHỌN, rủi ro nesting async-gen quanh thứ tự cancellation
+> thiêng đã phân tích trong memory `chien-dich-tra-no-r20-8`).
+
+Bảng scorecard kết đợt (2026-08-30, ghi history có chủ đích khi kết đợt):
+
+| Chiều | Điểm | Nợ |
+|---|---|---|
+| data | 100 | 0 |
+| **backend** | **99** | **3** |
+| frontend | 64 | 846 |
+| ui-design | 100 | 0 |
+| content | 51 | 378 |
+| docs | 100 | 0 |
+| ops | 100 | 0 |
+
+Số đo thi công: 37 lát + 5 commit vá/rào trong ~1,5 ngày; ~120 test mới
+(đặc-tả B3 + pin nhánh-biên + pin hồi-quy); 3 hồi quy tự gieo đều bị lưới
+bắt và vá trong ngày (decorator trôi /health/ready, dict-key "ctx.messages",
+pin thiếu ordered_ids); full-suite chung cuộc diff-16 RỖNG; DB nguyên vẹn
+1746/12061/33 ở mọi mốc. Bài học cơ chế (checker đếm closure vào cha, bẫy
+pipe-exit-code, 3 lớp vỡ regex-rename, rào-đi-theo-mã) ghi ở memory máy.
+Frontend (64) và content (51) là hai chiến dịch KẾ TIẾP chờ chủ xếp lịch.
