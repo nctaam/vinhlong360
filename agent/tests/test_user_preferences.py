@@ -1986,3 +1986,12 @@ def test_unknown_patch_fields_reported_sorted():
         PreferenceValidationError, match="Unknown preference fields: aaa, zzz"
     ):
         normalize_preference_patch({"zzz": 1, "aaa": 2})
+
+
+def test_empty_patch_is_rejected_before_any_read():
+    # Ghim guard đầu của _patch_preferences_in_connection (lát 12 R20.8):
+    # patch rỗng chết ngay, không cần chạm DB (conn=None chứng minh điều đó).
+    from user_preferences import _patch_preferences_in_connection
+
+    with pytest.raises(PreferenceValidationError, match="must not be empty"):
+        _patch_preferences_in_connection(None, "user:x", {}, 0)

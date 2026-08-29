@@ -1005,29 +1005,37 @@ def _patch_preferences_in_connection(
         merged["consent_version"] = consent_version_fallback
     if invalid_region_reason(merged) is not None:
         raise PreferenceValidationError("Invalid location preference state")
-    values, value_placeholders = _write_values(merged)
     if persisted["revision"] == 0 and _select_preferences(conn, owner) is None:
-        inserted = db._fetchone(
-            conn,
-            f"INSERT INTO user_preferences (user_id, {_preference_columns()}) "
-            f"VALUES ({_user_param()}, {value_placeholders}) "
-            f"ON CONFLICT (user_id) DO NOTHING RETURNING {_preference_columns()}",
-            [owner, *values],
-        )
-        if inserted is None:
-            latest = _select_preferences(conn, owner)
-            current_revision = _row_snapshot(latest)["revision"] if latest else 0
-            raise PreferenceRevisionConflict(expected, current_revision)
-        return current, _row_snapshot(inserted)
+        return current, _insert_fresh_preferences(conn, owner, merged, expected)
 
     updated_snapshot = _update_persisted_snapshot_in_connection(
         conn, owner, merged, expected
     )
     if updated_snapshot is None:
-        latest = _select_preferences(conn, owner)
-        current_revision = _row_snapshot(latest)["revision"] if latest else 0
-        raise PreferenceRevisionConflict(expected, current_revision)
+        _raise_revision_conflict(conn, owner, expected)
     return current, updated_snapshot
+
+
+def _raise_revision_conflict(conn, owner: str, expected: int) -> None:
+    latest = _select_preferences(conn, owner)
+    current_revision = _row_snapshot(latest)["revision"] if latest else 0
+    raise PreferenceRevisionConflict(expected, current_revision)
+
+
+def _insert_fresh_preferences(
+    conn, owner: str, merged: PersistedPreferenceSnapshot, expected: int
+) -> PersistedPreferenceSnapshot:
+    values, value_placeholders = _write_values(merged)
+    inserted = db._fetchone(
+        conn,
+        f"INSERT INTO user_preferences (user_id, {_preference_columns()}) "
+        f"VALUES ({_user_param()}, {value_placeholders}) "
+        f"ON CONFLICT (user_id) DO NOTHING RETURNING {_preference_columns()}",
+        [owner, *values],
+    )
+    if inserted is None:
+        _raise_revision_conflict(conn, owner, expected)
+    return _row_snapshot(inserted)
 
 
 def patch_preferences(
