@@ -1,8 +1,8 @@
 # Bản đồ module đề xuất — tách hệ thống theo MIỀN CHỨC NĂNG
 
-> STATUS: active — **BA MIỀN ĐÃ THỰC HIỆN** (`chat/`, `llmops/`, `entities/` đủ
-> hai mặt public+admin, 2026-08-28 — xem ROADMAP §46), phần còn lại
-> vẫn là đề xuất chờ chủ dự án. `server.py` 5.507 → 2.159 dòng (−61%).
+> STATUS: done — chương trình ĐÓNG SỔ 2026-08-29 (§8c): 9 gói miền, 0 shim,
+> phần dư admin/public_api/database đóng có chủ đích. Diễn tiến: 3 miền đầu
+> (§46) → 5/5 theo chỉ đạo (§8b) → gỡ shim + itineraries/ (§8c). `server.py` 5.507 → 2.159 dòng (−61%).
 > Chi phí ĐO ĐƯỢC của hai lát đã làm ghi ở ROADMAP §45; nó ĐẢO thứ tự ưu tiên
 > ban đầu của tài liệu này — đọc §7 đã sửa bên dưới trước khi làm lát thứ ba.
 > Đo 2026-08-27 trên `codex/correction-case-pilot`. Mọi con số dưới đây là ĐO,
