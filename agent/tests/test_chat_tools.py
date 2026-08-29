@@ -239,3 +239,64 @@ def test_build_messages_helpers_wired():
     for helper in ("_gather_context_pieces(", "_resolve_base_prompt(",
                    "_fold_experience_fewshot(", "_assemble_manual_messages("):
         assert helper in src, f"thiếu wiring {helper}"
+
+
+# ── Lát 33 (B3, test-only): đặc-tả khối KB-fallback trước khi mổ chat() ──
+
+def _broken_llm():
+    def _boom(*a, **k):
+        raise RuntimeError("llm down")
+    return SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=_boom)))
+
+
+def test_kb_fallback_month_only_uses_seasonal_header(kb_ctx, monkeypatch):
+    import knowledge
+
+    monkeypatch.setattr(knowledge, "seasonal_now", lambda month: [
+        {"id": "le-hoi-x", "name": "Le Hoi X", "summary": "hay", "type": "event"},
+    ])
+    monkeypatch.setattr(knowledge, "get_place", lambda _id: None)
+    with patch.object(chat_api, "get_client", _broken_llm):
+        r = kb_ctx.post("/chat", json={"message": "tháng 7"})
+    assert r.status_code == 200, r.text
+    reply = r.json().get("reply", "")
+    assert "Thông tin tháng 7 từ cơ sở dữ liệu" in reply
+    assert "• **Le Hoi X** (event): hay" in reply
+
+
+def test_kb_fallback_abstains_when_nothing_relevant(kb_ctx, monkeypatch):
+    import knowledge
+
+    monkeypatch.setattr(chat_api, "_hybrid_rerank_search", lambda args: [
+        {"id": "x", "name": "X", "summary": "s", "type": "place"},
+    ])
+    monkeypatch.setattr(knowledge, "query_relevance", lambda q, item: False)
+    with patch.object(chat_api, "get_client", _broken_llm):
+        r = kb_ctx.post("/chat", json={"message": "chuyện không liên quan gì"})
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert "chưa tìm thấy thông tin" in body.get("reply", "")
+    assert "abstain (kb-fallback)" in body.get("tool_calls", [])
+
+
+def test_kb_fallback_progressive_bigram_hit(kb_ctx, monkeypatch):
+    import knowledge
+
+    calls = []
+
+    def fake_search(q=None, month=None, limit=10):
+        # Toàn-câu đã miss ở _hybrid_rerank_search (patch trả []); lần gọi
+        # progressive ĐẦU TIÊN (bigram của câu-đã-autocorrect) trúng.
+        calls.append(q)
+        return [{"id": "cho-noi", "name": "Cho Noi", "summary": "noi tieng", "type": "place"}]
+
+    monkeypatch.setattr(chat_api, "_hybrid_rerank_search", lambda args: [])
+    monkeypatch.setattr(knowledge, "search_entities", fake_search)
+    monkeypatch.setattr(knowledge, "query_relevance", lambda q, item: True)
+    monkeypatch.setattr(knowledge, "get_place", lambda _id: None)
+    with patch.object(chat_api, "get_client", _broken_llm):
+        r = kb_ctx.post("/chat", json={"message": "Cho Noi Cai Be"})
+    assert r.status_code == 200, r.text
+    reply = r.json().get("reply", "")
+    assert "• **Cho Noi** (place): noi tieng" in reply, f"reply={reply[:120]} calls={calls}"
+    assert len(calls) == 1 and len(calls[0].split()) == 2, calls  # đúng một bigram
