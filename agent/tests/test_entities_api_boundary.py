@@ -58,3 +58,22 @@ def test_khong_con_dinh_nghia_o_public_api():
     ten = {n.name for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))}
     for f in ("get_entity", "entities_map_search", "popular_entities", "entities_trending"):
         assert f not in ten, f"public_api.py vẫn còn định nghĩa {f}"
+
+
+def test_collections_public_len_app_va_public_api_het_dinh_nghia():
+    """Lát 6 (2026-08-29): 2 route collections công khai về entities/api.py
+    cạnh /featured. Khoá bằng ĐO: (a) route lên app dưới prefix /api;
+    (b) public_api.py HẾT định nghĩa (AST) — chỉ còn tái xuất trỏ nhà thật."""
+    import server
+    import public_api
+
+    app_paths = {r.path for r in server.app.routes}
+    for path in ("/api/collections", "/api/collections/{slug}"):
+        assert path in app_paths, f"route {path} không lên app"
+
+    tree = ast.parse(Path(public_api.__file__).resolve().read_text(encoding="utf-8"))
+    ten = {n.name for n in tree.body
+           if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))}
+    for f in ("list_public_collections", "get_collection_by_slug"):
+        assert f not in ten, f"public_api.py vẫn còn định nghĩa {f}"
+    assert public_api.get_collection_by_slug.__module__ == entities_api.__name__

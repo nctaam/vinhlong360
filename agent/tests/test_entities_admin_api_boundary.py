@@ -67,3 +67,37 @@ def test_khong_con_dinh_nghia_o_admin():
            if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))}
     for f in ("create_entity", "update_entity", "delete_entity", "admin_media"):
         assert f not in ten, f"admin.py vẫn còn định nghĩa {f}"
+
+
+def test_collections_len_app_du_chot_va_admin_het_dinh_nghia():
+    """Lát 6 (2026-08-29): 4 route collections quản trị về nhà entities/
+    cạnh cụm /featured. Khoá bằng ĐO: (a) từng route lên app dưới /admin với
+    chốt kế thừa require_admin + require_csrf trong dependant runtime;
+    (b) admin.py HẾT định nghĩa (AST) — chỉ còn tái xuất trỏ nhà thật."""
+    import server
+    import admin
+
+    app_routes = {}
+    for r in server.app.routes:
+        if hasattr(r, "dependant"):
+            for m in (r.methods or set()):
+                app_routes[(m, r.path)] = r
+    can = [
+        ("GET", "/admin/collections"),
+        ("POST", "/admin/collections"),
+        ("PUT", "/admin/collections/{collection_id}"),
+        ("DELETE", "/admin/collections/{collection_id}"),
+    ]
+    for key in can:
+        assert key in app_routes, f"route {key} không lên app"
+        deps = {getattr(d.call, "__name__", "?")
+                for d in app_routes[key].dependant.dependencies}
+        assert {"require_admin", "require_csrf"} <= deps, (key, sorted(deps))
+
+    tree = ast.parse(Path(admin.__file__).resolve().read_text(encoding="utf-8"))
+    ten = {n.name for n in tree.body
+           if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))}
+    for f in ("list_collections", "create_collection", "update_collection",
+              "delete_collection", "CollectionCreate", "CollectionUpdate"):
+        assert f not in ten, f"admin.py vẫn còn định nghĩa {f}"
+    assert admin.list_collections.__module__ == admin_api.__name__

@@ -49,6 +49,7 @@ from database import canonical_verified_at, db
 from middleware import get_client_ip
 
 from api_schemas import (
+    CollectionsResponse,
     CompareResponse,
     EntityDetailResponse,
     EntityListResponse,
@@ -398,6 +399,86 @@ async def get_featured_entities(response: Response):
                 })
         return {"featured": result}
     return await asyncio.to_thread(_query)
+
+
+# ── Collections (U-28, public read-only) — dời NGUYÊN VĂN từ public_api.py
+# (lát 6 đợt cắt module 2026-08-29): cùng khuôn biên-tập-chọn-entity với
+# /featured ngay trên. Decorator path giữ từng ký tự — cha public_api.router
+# mang prefix "/api" qua include_router.
+
+
+@router.get("/collections", response_model=CollectionsResponse,
+            summary="List public collections",
+            description="Returns published editorial collections sorted by display order. Each collection includes title, description, cover image, and entity IDs.")
+async def list_public_collections(response: Response, limit: int = Query(20, ge=1, le=100)):
+    """Trả các collection đã publish theo sort_order, entity_ids đã lọc còn entity công khai.
+
+    Cần Postgres (không có → 503).
+    """
+    require_pg()
+    response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT id, slug, title, description, cover_image, entity_ids, sort_order
+                FROM collections
+                WHERE is_published = TRUE
+                ORDER BY sort_order, created_at DESC
+                LIMIT {ph}
+            """, (limit,))
+        collections = [db._row_to_dict(r) for r in rows]
+        entity_ids = []
+        for collection in collections:
+            collection_ids = collection.get("entity_ids") or []
+            if isinstance(collection_ids, str):
+                collection_ids = json.loads(collection_ids)
+            collection["entity_ids"] = collection_ids
+            entity_ids.extend(collection_ids)
+        public_entities = _get_public_entities_batch(entity_ids) if entity_ids else {}
+        for collection in collections:
+            collection["entity_ids"] = [
+                entity_id for entity_id in collection["entity_ids"]
+                if entity_id in public_entities
+            ]
+        return {"collections": collections}
+    return await asyncio.to_thread(_query)
+
+
+@router.get("/collections/{slug}",
+            summary="Get collection by slug",
+            description="Returns a single published collection by its URL slug with entity IDs resolved to full entity summaries.")
+async def get_collection_by_slug(slug: str, response: Response):
+    """Trả một collection đã publish theo slug, kèm entities đã lọc theo quyền công khai.
+
+    Cần Postgres (không có → 503); slug không khớp collection đã publish → 404.
+    """
+    require_pg()
+    response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
+    validate_path_id(slug, "slug")
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                SELECT * FROM collections WHERE slug = {ph} AND is_published = TRUE
+            """, (slug,))
+        if not row:
+            return None
+        col = db._row_to_dict(row)
+        entity_ids = col.get("entity_ids") or []
+        if isinstance(entity_ids, str):
+            entity_ids = json.loads(entity_ids)
+        entities = _get_public_entities_batch(entity_ids) if entity_ids else {}
+        col["entities"] = [
+            _project_public_entity_media(entities[entity_id])
+            for entity_id in entity_ids
+            if entity_id in entities
+        ]
+        return col
+    result = await asyncio.to_thread(_query)
+    if not result:
+        return _err(404, "not_found")
+    return result
 
 
 @router.get("/entity-types", response_model=EntityTypesResponse,

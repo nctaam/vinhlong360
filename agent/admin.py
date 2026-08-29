@@ -45,7 +45,7 @@ try:
 except Exception:  # noqa: BLE001
     logger.warning("Cost tracker unavailable", exc_info=True)
     _HAS_COST = False
-from auth_middleware import get_current_user, validate_path_id, require_csrf  # require_pg sang siteops/admin_api.py cung announcements admin (lat 3)
+from auth_middleware import get_current_user, require_csrf  # require_pg sang siteops/admin_api.py cung announcements admin (lat 3); validate_path_id het nguoi dung truc tiep khi collections sang entities/ (lat 6)
 from middleware import admin_limiter, verify_admin_key, get_client_ip
 
 
@@ -430,6 +430,8 @@ from entities.admin_api import (  # noqa: F401
     BulkAssignPlaceRequest,
     BulkDeleteRequest,
     ClaimDecisionBody,
+    CollectionCreate,
+    CollectionUpdate,
     EntityCreate,
     EntityUpdate,
     ImageSuggestionBatch,
@@ -486,8 +488,10 @@ from entities.admin_api import (  # noqa: F401
     check_duplicate,
     completeness_details,
     completeness_overview,
+    create_collection,
     create_entity,
     create_image_suggestion_batch,
+    delete_collection,
     delete_entity,
     delete_relationship,
     entity_completeness,
@@ -497,6 +501,7 @@ from entities.admin_api import (  # noqa: F401
     get_entity_schema,
     get_image_suggestion,
     list_claims,
+    list_collections,
     list_entities,
     list_featured,
     list_image_suggestions,
@@ -511,6 +516,7 @@ from entities.admin_api import (  # noqa: F401
     stale_mark_reviewed,
     stale_queue,
     toggle_featured,
+    update_collection,
     update_entity,
     upload_entity_image,
 )
@@ -885,123 +891,10 @@ async def contact_funnel_export(days: int = Query(30, ge=1, le=365)):
                              headers={"Content-Disposition": "attachment; filename=contact_funnel.csv"})
 
 
-# ── Collections CRUD (U-28) ──
-
-
-class CollectionCreate(BaseModel):
-    slug: str = Field(..., min_length=2, max_length=100, pattern=r"^[a-z0-9\-]+$")
-    title: str = Field(..., min_length=1, max_length=200)
-    description: str = Field("", max_length=2000)
-    cover_image: str | None = None
-    entity_ids: list[str] = Field(default_factory=list, max_length=100)
-    sort_order: int = Field(0, ge=0)
-    is_published: bool = False
-
-
-class CollectionUpdate(BaseModel):
-    title: str | None = Field(None, min_length=1, max_length=200)
-    description: str | None = Field(None, max_length=2000)
-    cover_image: str | None = None
-    entity_ids: list[str] | None = Field(None, max_length=100)
-    sort_order: int | None = Field(None, ge=0)
-    is_published: bool | None = None
-
-
-@router.get("/collections",
-            summary="List curated collections",
-            description="Returns all curated entity collections ordered by sort_order. Supports pagination via limit and offset.")
-async def list_collections(limit: int = Query(50, ge=1, le=200), offset: int = Query(0, ge=0, le=10000)):
-    ph = db._ph
-    def _query():
-        with db._conn() as conn:
-            rows = db._fetchall(conn, f"""
-                SELECT * FROM collections ORDER BY sort_order, created_at DESC
-                LIMIT {ph} OFFSET {ph}
-            """, (limit, offset))
-            total_row = db._fetchone(conn, "SELECT COUNT(*) as c FROM collections", ())
-        return {
-            "collections": [db._row_to_dict(r) for r in rows],
-            "total": db._row_to_dict(total_row)["c"] if total_row else 0,
-        }
-    return await asyncio.to_thread(_query)
-
-
-@router.post("/collections", status_code=201,
-             summary="Create a curated collection",
-             description="Creates a new curated entity collection with a unique slug. Returns the created collection.")
-async def create_collection(body: CollectionCreate, request: Request):
-    ph = db._ph
-    user = request.state.user if hasattr(request.state, "user") else None
-    created_by = str(user["id"]) if user else None
-    def _query():
-        with db._conn() as conn:
-            existing = db._fetchone(conn, f"SELECT id FROM collections WHERE slug = {ph}", (body.slug,))
-            if existing:
-                raise HTTPException(409, "Slug đã tồn tại")
-            db._execute(conn, f"""
-                INSERT INTO collections (slug, title, description, cover_image, entity_ids, sort_order, is_published, created_by)
-                VALUES ({ph}, {ph}, {ph}, {ph}, {ph}::jsonb, {ph}, {ph}, {ph}::uuid)
-            """, (body.slug, body.title, body.description, body.cover_image,
-                  json.dumps(body.entity_ids), body.sort_order, body.is_published, created_by))
-            row = db._fetchone(conn, f"SELECT * FROM collections WHERE slug = {ph}", (body.slug,))
-        return db._row_to_dict(row)
-    return await asyncio.to_thread(_query)
-
-
-@router.put("/collections/{collection_id}",
-            summary="Update a collection",
-            description="Updates fields of an existing collection. Only provided fields are modified.")
-async def update_collection(collection_id: str, body: CollectionUpdate):
-    collection_id = validate_path_id(collection_id, "collection_id")
-    ph = db._ph
-    def _query():
-        sets = []
-        params: list = []
-        if body.title is not None:
-            sets.append(f"title = {ph}")
-            params.append(body.title)
-        if body.description is not None:
-            sets.append(f"description = {ph}")
-            params.append(body.description)
-        if body.cover_image is not None:
-            sets.append(f"cover_image = {ph}")
-            params.append(body.cover_image)
-        if body.entity_ids is not None:
-            sets.append(f"entity_ids = {ph}::jsonb")
-            params.append(json.dumps(body.entity_ids))
-        if body.sort_order is not None:
-            sets.append(f"sort_order = {ph}")
-            params.append(body.sort_order)
-        if body.is_published is not None:
-            sets.append(f"is_published = {ph}")
-            params.append(body.is_published)
-        if not sets:
-            raise HTTPException(400, "Không có trường nào để cập nhật")
-        sets.append("updated_at = NOW()")
-        params.append(collection_id)
-        with db._conn() as conn:
-            row = db._fetchone(conn, f"""
-                UPDATE collections SET {', '.join(sets)} WHERE id::text = {ph} RETURNING *
-            """, tuple(params))
-        if not row:
-            raise HTTPException(404, "Collection không tồn tại")
-        return db._row_to_dict(row)
-    return await asyncio.to_thread(_query)
-
-
-@router.delete("/collections/{collection_id}",
-               summary="Delete a collection",
-               description="Permanently deletes a curated collection by its ID.")
-async def delete_collection(collection_id: str):
-    collection_id = validate_path_id(collection_id, "collection_id")
-    ph = db._ph
-    def _query():
-        with db._conn() as conn:
-            row = db._fetchone(conn, f"DELETE FROM collections WHERE id::text = {ph} RETURNING id", (collection_id,))
-        if not row:
-            raise HTTPException(404, "Collection không tồn tại")
-        return {"ok": True, "deleted": collection_id}
-    return await asyncio.to_thread(_query)
+# ── Collections CRUD (U-28): sang entities/admin_api.py cạnh cụm /featured
+# (lát 6 đợt cắt module 2026-08-29). Ký hiệu tái xuất ở block
+# `from entities.admin_api import` đầu file; scope map "/admin/collections"
+# ở lại ADMIN_SCOPE_RULES vì khớp theo path.
 
 
 

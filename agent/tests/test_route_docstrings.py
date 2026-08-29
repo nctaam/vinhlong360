@@ -43,12 +43,15 @@ HTTP_METHODS = {"get", "post", "put", "patch", "delete", "head", "options"}
 # public_api 20→19, sàn mới community/api.py = 1 (chỉ phần dời vào ratchet;
 # 27 docstring sẵn có của gói cộng đồng chưa từng thuộc ratchet này).
 # TỔNG 20 giữ nguyên, ratchet không nới.
+# Lát 6 (cùng ngày): 2 route collections public (kèm docstring) sang
+# entities/api.py cạnh /featured — public_api 19→17, entities/api.py 22→24;
+# TỔNG hai sàn 41 giữ nguyên, ratchet không nới.
 FLOORS = {
-    "public_api.py": 19,
+    "public_api.py": 17,
     "community/api.py": 1,
     "itineraries/api.py": 3,
     "siteops/api.py": 2,
-    "entities/api.py": 22,
+    "entities/api.py": 24,
     "notifications.py": 20,
     "seo.py": 8,
     "visits.py": 6,
