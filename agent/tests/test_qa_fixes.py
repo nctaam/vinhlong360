@@ -661,3 +661,14 @@ class TestOrderBySQLiRegression:
         for doc in ("name'; DROP TABLE entities;--", "1) UNION SELECT 1--", None):
             _, order = database._entity_order_clause(doc, False)
             assert "DROP" not in order.upper() and "UNION" not in order.upper()
+
+
+def test_signal_row_parsing_filters_non_public(monkeypatch):
+    # Ghim helper parse tách từ _load_user_signal_entities (lát 13 R20.8):
+    # hàng parse hỏng (None) bị bỏ, hàng hợp lệ mang đúng nhãn nguồn.
+    parsed = {"a": {"id": "a"}, "b": None}
+    monkeypatch.setattr(public_api.db, "_parse_entity", lambda row: parsed[row["id"]])
+    monkeypatch.setattr(public_api, "_is_public", lambda ent: True)
+    signals = []
+    public_api._append_public_signals([{"id": "a"}, {"id": "b"}], "saved", signals)
+    assert signals == [({"id": "a"}, "saved")]

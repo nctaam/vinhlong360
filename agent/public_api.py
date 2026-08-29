@@ -501,17 +501,18 @@ def _load_user_signal_entities(
                 ORDER BY v.created_at DESC
                 LIMIT {ph}
             """, visit_params)
-        for row in saved_rows:
-            ent = db._parse_entity(row)
-            if ent and _is_public(ent):
-                signals.append((ent, "saved"))
-        for row in visit_rows:
-            ent = db._parse_entity(row)
-            if ent and _is_public(ent):
-                signals.append((ent, "visit"))
+        _append_public_signals(saved_rows, "saved", signals)
+        _append_public_signals(visit_rows, "visit", signals)
     except Exception:
         logger.debug("user signal entity query failed", exc_info=True)
     return signals
+
+
+def _append_public_signals(rows: list, source: str, signals: list[tuple[dict, str]]) -> None:
+    for row in rows:
+        ent = db._parse_entity(row)
+        if ent and _is_public(ent):
+            signals.append((ent, source))
 
 
 def _top_counter(counter: Counter, limit: int = 5, labels: dict[str, str] | None = None) -> list[dict]:
