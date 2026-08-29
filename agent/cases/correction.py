@@ -184,7 +184,8 @@ def requires_public_change(decision: DecisionOutcome) -> bool:
     return decision.outcome_code is CorrectionOutcome.CORRECTED
 
 
-def validate_decision(command: DecideItemCommand, *, now: datetime) -> DecisionOutcome:
+def _require_decision_basics(command: DecideItemCommand) -> str:
+    """Guard đầu vào theo ĐÚNG thứ tự reject cũ — mã lỗi đầu tiên là hợp đồng."""
     if command.outcome_code not in TERMINAL_OUTCOMES:
         raise _reject("unknown_correction_outcome", "That outcome is not offered.")
     scopes = set(getattr(command.actor, "scopes", ()) or ())
@@ -195,8 +196,10 @@ def validate_decision(command: DecideItemCommand, *, now: datetime) -> DecisionO
         raise _reject("decision_reason_required", "A bounded reason code is required.", status=400)
     if command.outcome_code is CorrectionOutcome.DUPLICATE_LINKED and not command.duplicate_of:
         raise _reject("duplicate_link_required", "Name the case this duplicates.", status=400)
+    return reason
 
-    maker = getattr(command.actor, "actor_ref", "unknown")
+
+def _require_decision_support(command: DecideItemCommand, maker: str) -> None:
     if command.outcome_code in _EVIDENCE_BEARING:
         if not command.evidence:
             raise _reject("evidence_lineage_required", "A decision needs its evidence.", status=400)
@@ -212,6 +215,12 @@ def validate_decision(command: DecideItemCommand, *, now: datetime) -> DecisionO
                           "The evidence does not carry this decision.")
     elif command.risk_class in MAKER_CHECKER_RISK and command.reviewer_ref == maker:
         raise _reject("maker_checker_required", "This risk class needs a second person.")
+
+
+def validate_decision(command: DecideItemCommand, *, now: datetime) -> DecisionOutcome:
+    reason = _require_decision_basics(command)
+    maker = getattr(command.actor, "actor_ref", "unknown")
+    _require_decision_support(command, maker)
 
     return DecisionOutcome(
         case_id=command.case_id,
@@ -290,6 +299,14 @@ def validate_change_set(
     ):
         raise _reject("maker_checker_required", "This risk class needs a second person.")
 
+    _require_coherent_changes(draft)
+
+    if all(change.before_value == change.after_value for change in draft.changes):
+        raise _reject("change_set_is_a_no_op", "This change set would change nothing.")
+    return draft
+
+
+def _require_coherent_changes(draft: ChangeSetDraft) -> None:
     seen: set[str] = set()
     for change in draft.changes:
         if change.entity_id != draft.entity_id:
@@ -299,10 +316,6 @@ def validate_change_set(
         if change.field_path in seen:
             raise _reject("duplicate_change_field", "That field appears twice.")
         seen.add(change.field_path)
-
-    if all(change.before_value == change.after_value for change in draft.changes):
-        raise _reject("change_set_is_a_no_op", "This change set would change nothing.")
-    return draft
 
 
 # ── Persistence ──

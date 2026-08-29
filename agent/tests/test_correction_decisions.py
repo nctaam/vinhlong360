@@ -314,3 +314,28 @@ def test_the_decide_guard_accepts_the_scope_an_editor_actually_holds():
     # to compare against the first name only, so it refused everyone.
     assert holds_authority(ADMIN_ROLE_SCOPES["admin"], DECIDE_SCOPE)
     assert not holds_authority({"service.operator"}, DECIDE_SCOPE)
+
+
+def test_reject_order_is_a_contract_outcome_before_scope_before_reason():
+    # Ghim THỨ TỰ reject khi tách guard (lát 8 R20.8): mã lỗi ĐẦU TIÊN thắng.
+    from cases.correction import validate_decision
+
+    # outcome lạ + thiếu scope → outcome thắng
+    with pytest.raises(Exception) as err:
+        validate_decision(
+            _command(outcome_code="khong-phai-outcome", actor=_actor(scopes=())),
+            now=NOW,
+        )
+    assert "unknown_correction_outcome" in str(err.value)
+
+    # outcome hợp lệ + thiếu scope + reason hỏng → scope thắng
+    with pytest.raises(Exception) as err:
+        validate_decision(
+            _command(actor=_actor(scopes=()), reason_code=""), now=NOW
+        )
+    assert "decide_scope_required" in str(err.value)
+
+    # đủ scope + reason hỏng + thiếu evidence → reason thắng
+    with pytest.raises(Exception) as err:
+        validate_decision(_command(reason_code="", evidence=()), now=NOW)
+    assert "decision_reason_required" in str(err.value)
