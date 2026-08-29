@@ -205,3 +205,23 @@ Phần ĐO của §8 vẫn đúng nguyên: hai lát mua về ~0 cách ly mới. 
 một test boundary R20.7) và bộ hình-thái-mù trục 2/4 nay đo đủ. Toàn bộ hồ sơ
 thi công + năm hình thái mù trục 2: ROADMAP §47. Nợ thật của hai miền vẫn là
 NỢ TEST B3 — kết luận đó không đổi.
+
+## 8c. ĐÓNG SỔ (2026-08-29) — 9 gói, 0 shim, phần dư đóng có chủ đích
+
+Sau câu hỏi "tách hết luôn có đáp ứng phát triển lâu dài không" và lệnh "làm
+luôn" của chủ dự án: gỡ hẳn 2 shim `social.py`/`auth.py` (commit `42192a01` —
+54 file import về nhà thật + 732 cú import-động; đường cũ nay CHẾT có rào) và
+gom họ `itinerary_*` thành gói thứ chín `itineraries/` (commit `6ee7f2e4`,
+không shim). Trạng thái cuối: **9 gói miền** (cases, chat, community,
+entities, identity, itineraries, llmops + learned, scripts) — mỗi gói một test
+boundary, cổng R20.9 thấy mọi mount, CI 9 cổng DB per-domain.
+
+**Phần dư `admin.py` (4.5k) / `public_api.py` (3.6k) / `database.py` (2.5k):
+ĐÓNG SỔ CÓ CHỦ ĐÍCH, không cắt.** Lý do đã trình và được chấp thuận: hai lát
+cuối chương trình đo được mua ~0 cách ly; phần dư là bề mặt route nhiều miền
+lặt vặt (băm = rừng gói siêu nhỏ nuôi mãi); database.py là hạt nhân dùng
+chung. **Luật cắt tương lai:** đo trước — chỉ cắt khi một miền đổi hàng tuần
+VÀ số đo cho thấy nó giẫm miền khác.
+
+Tính chất "phát triển từng module không chồng đè" nay đến từ RÀO, không từ số
+thư mục: boundary tests + R20.9 + per-domain CI gates + phủ test vùng mù 90%.
