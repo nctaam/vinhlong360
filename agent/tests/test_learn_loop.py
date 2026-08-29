@@ -188,19 +188,21 @@ def test_freshly_learned_entities_are_offered_first():
 
 
 def test_the_backfill_writes_the_key_the_detail_page_reads():
+    # Lát 22: hàm tách thành 3 helper — soi đúng helper mang bảo chứng;
+    # hành vi thật được ghim ở 3 test _persist_backfilled_coords_* phía dưới.
     import inspect
 
-    from learn_loop import _persist_backfilled_coords
+    from learn_loop import _apply_coords_to_current, _dual_write_coords
 
-    source = inspect.getsource(_persist_backfilled_coords)
+    apply_source = inspect.getsource(_apply_coords_to_current)
 
     # web-nuxt/pages/dia-diem/[id].vue reads entity.coordinates. Writing the
     # legacy `coords` key meant a successful geocode still left the map empty.
-    assert 'entity["coordinates"] = updates[entity["id"]]' in source
-    assert 'entity["coords"] = updates' not in source
+    assert 'entity["coordinates"] = updates[entity["id"]]' in apply_source
+    assert 'entity["coords"] = updates' not in apply_source
     # And data.json is an export: the public pages read the database, so the
     # work has to land there too, like the two sibling paths in this file.
-    assert "db.upsert_entity(entity)" in source
+    assert "db.upsert_entity(entity)" in inspect.getsource(_dual_write_coords)
 
 
 def test_persist_backfilled_coords_writes_canonical_key_and_dual_writes(tmp_path, monkeypatch):

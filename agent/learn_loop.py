@@ -763,29 +763,28 @@ def _coord_backfill_candidates(kb: dict) -> list[dict]:
     return candidates
 
 
-def _persist_backfilled_coords(kb: dict, geocoded: list):
-    """Lưu KB + reload knowledge sau khi backfill coords."""
-    updates = {
+def _coord_updates(kb: dict, geocoded: list) -> dict:
+    return {
         entity["id"]: copy.deepcopy(entity.get("coordinates") or entity.get("coords"))
         for entity in kb["entities"]
         if entity["id"] in geocoded and (entity.get("coordinates") or entity.get("coords"))
     }
 
-    def apply_current(current: dict) -> tuple[bool, list]:
-        applied = []
-        for entity in current["entities"]:
-            if entity["id"] not in updates or entity.get("coords") or entity.get("coordinates"):
-                continue
-            # `coordinates` là khoá trang chi tiết đọc (dia-diem/[id].vue:1061).
-            # Ghi `coords` như trước là ghi vào chỗ không ai đọc: geocode xong
-            # mà bản đồ vẫn trống.
-            entity["coordinates"] = updates[entity["id"]]
-            applied.append(entity["id"])
-        return bool(applied), applied
 
-    persisted = mutate_json(DATA_JSON, apply_current)
-    if not persisted:
-        return []
+def _apply_coords_to_current(current: dict, updates: dict) -> tuple[bool, list]:
+    applied = []
+    for entity in current["entities"]:
+        if entity["id"] not in updates or entity.get("coords") or entity.get("coordinates"):
+            continue
+        # `coordinates` là khoá trang chi tiết đọc (dia-diem/[id].vue:1061).
+        # Ghi `coords` như trước là ghi vào chỗ không ai đọc: geocode xong
+        # mà bản đồ vẫn trống.
+        entity["coordinates"] = updates[entity["id"]]
+        applied.append(entity["id"])
+    return bool(applied), applied
+
+
+def _dual_write_coords(kb: dict, persisted: list) -> None:
     # Ghi kép sang DB như hai đường anh em trong chính file này (:306, :446).
     # data.json là bản export; trang công khai đọc DB, nên chỉ ghi JSON thì
     # công sức geocode không bao giờ tới người dùng.
@@ -798,6 +797,17 @@ def _persist_backfilled_coords(kb: dict, geocoded: list):
                 db.upsert_entity(entity)
     except Exception as exc:  # noqa: BLE001
         _logger.error("learn_loop: ghi DB toa do that bai: %s", exc)
+
+
+def _persist_backfilled_coords(kb: dict, geocoded: list):
+    """Lưu KB + reload knowledge sau khi backfill coords."""
+    updates = _coord_updates(kb, geocoded)
+    persisted = mutate_json(
+        DATA_JSON, lambda current: _apply_coords_to_current(current, updates)
+    )
+    if not persisted:
+        return []
+    _dual_write_coords(kb, persisted)
     try:
         import knowledge
         knowledge.reload()
