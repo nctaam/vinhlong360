@@ -400,3 +400,43 @@ def test_schedule_day_deducts_preparation_time_from_shared_deadline(monkeypatch)
     )
 
     assert captured["deadline_seconds"] == pytest.approx(0.25)
+
+
+def test_multiday_options_pin_reject_messages():
+    # Lát 25 R20.8: ghim THÔNG ĐIỆP từng ngưỡng (trước chỉ ghim ValueError trần).
+    with pytest.raises(ValueError, match="Minimum content per day"):
+        MultiDayOptions(min_content_per_day=1)
+    with pytest.raises(ValueError, match="Maximum count delta"):
+        MultiDayOptions(max_count_delta=-1)
+    with pytest.raises(ValueError, match="Deadline must be a finite positive number"):
+        MultiDayOptions(deadline_seconds=float("inf"))
+    with pytest.raises(ValueError, match="Deadline must be a finite positive number"):
+        MultiDayOptions(deadline_seconds=True)
+    with pytest.raises(ValueError, match="Maximum labels per endpoint"):
+        MultiDayOptions(max_labels_per_endpoint=0)
+
+
+@pytest.mark.parametrize(
+    ("mutate", "message"),
+    [
+        (lambda d1, d2: ((), "start", "end"), "At least one itinerary day"),
+        (lambda d1, d2: ((d1, d2), "", "end"), "global start ID must not be empty"),
+        (lambda d1, d2: ((d1, d2), "start", "start"), "global start and end IDs must differ"),
+        (lambda d1, d2: ((d2, d1), "start", "end"), "Day indices must be positive, sequential"),
+        (lambda d1, d2: ((d1, d2), "day-1-end", "end"), "global start ID must be first in the baseline order"),
+        (lambda d1, d2: ((d1, d2), "start", "day-2-first"), "global end ID must be last in the baseline order"),
+        (lambda d1, d2: ((d1, d2), "ma", "end"), "global start ID must belong to day 1"),
+    ],
+)
+def test_validate_inputs_pin_reject_messages(mutate, message):
+    d1, d2 = simple_two_day_inputs()
+    days, start, end = mutate(d1, d2)
+    with pytest.raises(ValueError, match=message):
+        multiday_module._validate_inputs(days, start, end, MultiDayOptions())
+
+
+def test_validate_inputs_rejects_cross_day_duplicate_with_id_in_message():
+    d1, _ = simple_two_day_inputs()
+    dup = day_input(2, [candidate("day-1-end", 10.2), candidate("end", 10.3, visit=0)])
+    with pytest.raises(ValueError, match="duplicate content ID across days: day-1-end"):
+        multiday_module._validate_inputs((d1, dup), "start", "end", MultiDayOptions())

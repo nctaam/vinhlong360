@@ -56,12 +56,7 @@ class MultiDayOptions:
             raise ValueError("Maximum count delta must be non-negative")
         if not _is_int(self.max_iterations) or self.max_iterations < 0:
             raise ValueError("Maximum iterations must be non-negative")
-        if (
-            isinstance(self.deadline_seconds, bool)
-            or not isinstance(self.deadline_seconds, (int, float))
-            or not math.isfinite(self.deadline_seconds)
-            or self.deadline_seconds <= 0
-        ):
+        if not _is_finite_positive(self.deadline_seconds):
             raise ValueError("Deadline must be a finite positive number")
         if (
             not _is_int(self.max_labels_per_endpoint)
@@ -113,13 +108,21 @@ def _is_int(value: object) -> bool:
     return isinstance(value, int) and not isinstance(value, bool)
 
 
-def _validate_inputs(
+def _is_finite_positive(value) -> bool:
+    return (
+        not isinstance(value, bool)
+        and isinstance(value, (int, float))
+        and math.isfinite(value)
+        and value > 0
+    )
+
+
+def _validate_problem_shape(
     days: tuple[MultiDayDayInput, ...],
     global_start_id: str,
     global_end_id: str,
     options: MultiDayOptions,
-) -> dict[str, SelectionCandidate]:
-    """Return the unique global candidate map after validating the problem."""
+) -> None:
     if not isinstance(options, MultiDayOptions):
         raise ValueError("Multi-day options are invalid")
     if not days:
@@ -136,47 +139,77 @@ def _validate_inputs(
     if actual_indices != expected_indices:
         raise ValueError("Day indices must be positive, sequential, and start at 1")
 
+
+def _validate_day_shape(day: MultiDayDayInput) -> None:
+    if not isinstance(day, MultiDayDayInput):
+        raise ValueError("Every day must be a MultiDayDayInput")
+    if len(day.candidates) < 2:
+        raise ValueError("Each day must contain at least two content candidates")
+    if not isinstance(day.schedule_options, ScheduleOptions):
+        raise ValueError("Every day must contain valid schedule options")
+    if any(not isinstance(item, SelectionCandidate) for item in day.candidates):
+        raise ValueError("Day candidates must be SelectionCandidate values")
+    if any(not isinstance(stop, ScheduleStop) for stop in day.fixed_stops):
+        raise ValueError("Fixed stops must be ScheduleStop values")
+
+
+def _validate_day_ids(
+    day: MultiDayDayInput,
+    candidate_ids: tuple[str, ...],
+    fixed_ids: tuple[str, ...],
+) -> None:
+    if len(candidate_ids) != len(set(candidate_ids)):
+        raise ValueError("duplicate content ID within a day")
+    if len(fixed_ids) != len(set(fixed_ids)):
+        raise ValueError("duplicate fixed-stop ID within a day")
+    if set(candidate_ids) & set(fixed_ids):
+        raise ValueError("duplicate ID across content and fixed stops")
+    if len(day.baseline_order) != len(set(day.baseline_order)):
+        raise ValueError("Baseline order must not contain duplicate IDs")
+    if set(day.baseline_order) != set(candidate_ids):
+        raise ValueError("Baseline order must contain every content ID exactly once")
+    if set(day.baseline_order) & set(fixed_ids):
+        raise ValueError("Baseline order must not contain fixed-stop IDs")
+
+
+def _register_day(
+    day: MultiDayDayInput,
+    fixed_ids: tuple[str, ...],
+    candidate_by_id: "_CandidateMap",
+    all_fixed_ids: set[str],
+    owner_by_id: dict[str, int],
+) -> None:
+    for candidate in day.candidates:
+        stop_id = candidate.stop.id
+        if stop_id in candidate_by_id or stop_id in all_fixed_ids:
+            raise ValueError(f"duplicate content ID across days: {stop_id}")
+        candidate_by_id[stop_id] = candidate
+        owner_by_id[stop_id] = day.day_index
+    for stop_id in fixed_ids:
+        if stop_id in candidate_by_id or stop_id in all_fixed_ids:
+            raise ValueError(f"duplicate fixed-stop ID across days: {stop_id}")
+        all_fixed_ids.add(stop_id)
+
+
+def _validate_inputs(
+    days: tuple[MultiDayDayInput, ...],
+    global_start_id: str,
+    global_end_id: str,
+    options: MultiDayOptions,
+) -> dict[str, SelectionCandidate]:
+    """Return the unique global candidate map after validating the problem."""
+    _validate_problem_shape(days, global_start_id, global_end_id, options)
+
     candidate_by_id = _CandidateMap()
     all_fixed_ids: set[str] = set()
     owner_by_id: dict[str, int] = {}
 
     for day in days:
-        if not isinstance(day, MultiDayDayInput):
-            raise ValueError("Every day must be a MultiDayDayInput")
-        if len(day.candidates) < 2:
-            raise ValueError("Each day must contain at least two content candidates")
-        if not isinstance(day.schedule_options, ScheduleOptions):
-            raise ValueError("Every day must contain valid schedule options")
-        if any(not isinstance(item, SelectionCandidate) for item in day.candidates):
-            raise ValueError("Day candidates must be SelectionCandidate values")
-        if any(not isinstance(stop, ScheduleStop) for stop in day.fixed_stops):
-            raise ValueError("Fixed stops must be ScheduleStop values")
-
+        _validate_day_shape(day)
         candidate_ids = tuple(item.stop.id for item in day.candidates)
         fixed_ids = tuple(stop.id for stop in day.fixed_stops)
-        if len(candidate_ids) != len(set(candidate_ids)):
-            raise ValueError("duplicate content ID within a day")
-        if len(fixed_ids) != len(set(fixed_ids)):
-            raise ValueError("duplicate fixed-stop ID within a day")
-        if set(candidate_ids) & set(fixed_ids):
-            raise ValueError("duplicate ID across content and fixed stops")
-        if len(day.baseline_order) != len(set(day.baseline_order)):
-            raise ValueError("Baseline order must not contain duplicate IDs")
-        if set(day.baseline_order) != set(candidate_ids):
-            raise ValueError("Baseline order must contain every content ID exactly once")
-        if set(day.baseline_order) & set(fixed_ids):
-            raise ValueError("Baseline order must not contain fixed-stop IDs")
-
-        for candidate in day.candidates:
-            stop_id = candidate.stop.id
-            if stop_id in candidate_by_id or stop_id in all_fixed_ids:
-                raise ValueError(f"duplicate content ID across days: {stop_id}")
-            candidate_by_id[stop_id] = candidate
-            owner_by_id[stop_id] = day.day_index
-        for stop_id in fixed_ids:
-            if stop_id in candidate_by_id or stop_id in all_fixed_ids:
-                raise ValueError(f"duplicate fixed-stop ID across days: {stop_id}")
-            all_fixed_ids.add(stop_id)
+        _validate_day_ids(day, candidate_ids, fixed_ids)
+        _register_day(day, fixed_ids, candidate_by_id, all_fixed_ids, owner_by_id)
 
     if owner_by_id.get(global_start_id) != 1:
         raise ValueError("global start ID must belong to day 1")
