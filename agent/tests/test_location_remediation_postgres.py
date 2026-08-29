@@ -154,10 +154,12 @@ def test_database_url_guard_rejects_libpq_environment_target_defaults(
 @pytest.fixture
 def pre73_database(tmp_path):
     assert TEST_DATABASE_URL is not None
-    migrations_dir = tmp_path / "migrations-through-072"
+    # Merge b95a4897 đánh số lại NP-1 071-073 → 076-078; các tên "073"/"pre73"
+    # trong file này giữ số CŨ trước renumber, còn version thật là 078.
+    migrations_dir = tmp_path / "migrations-through-077"
     migrations_dir.mkdir()
     for migration in migration_files(DEFAULT_MIGRATIONS):
-        if migration.version <= 72:
+        if migration.version <= 77:
             shutil.copy2(migration.path, migrations_dir / migration.path.name)
 
     with _connect_test_database() as conn:
@@ -185,7 +187,7 @@ def apply_migration_073():
     with _connect_test_database() as conn:
         with conn.cursor() as cursor:
             apply_sql_file(cursor, migration)
-            record_schema_version(cursor, 73, migration.name)
+            record_schema_version(cursor, 78, migration.name)
         conn.commit()
 
 
@@ -712,7 +714,7 @@ def test_073_installs_schema_function_and_enforces_write_guards(pre73_database):
             cursor.execute(
                 "SELECT version FROM schema_version WHERE component = 'agent'"
             )
-            assert cursor.fetchone()[0] == 73
+            assert cursor.fetchone()[0] == 78
 
 
 @pg_only

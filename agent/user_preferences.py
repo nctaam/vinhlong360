@@ -503,12 +503,17 @@ def _worker_python_raw_text_sql(column: str) -> str:
     first_number = _worker_numeric_sql("pair_match[1]")
     second_number = _worker_numeric_sql("pair_match[7]")
     single_number = _worker_numeric_sql("number_match[1]")
+    # [[:digit:]] trên provider libc (prod alpine) KHÔNG khớp chữ số
+    # Ả-Rập-Ấn/fullwidth: dịch toàn cột về chữ số ASCII TRƯỚC khi so regex
+    # để hàng toạ-độ-thô unicode không thoát vòng tự-chữa (parity với
+    # contains_raw_location_value phía Python).
+    translated_column = _worker_numeric_sql(f"COALESCE({column}, '')")
     return f"""
         (
             EXISTS (
                 SELECT 1
                 FROM regexp_matches(
-                    COALESCE({column}, ''),
+                    {translated_column},
                     '{pair_pattern}',
                     'gi'
                 ) AS pair_match
@@ -531,7 +536,7 @@ def _worker_python_raw_text_sql(column: str) -> str:
             OR EXISTS (
                 SELECT 1
                 FROM regexp_matches(
-                    COALESCE({column}, ''),
+                    {translated_column},
                     '{number_pattern}',
                     'gi'
                 ) AS number_match
@@ -549,7 +554,7 @@ def _worker_python_raw_text_sql(column: str) -> str:
             OR EXISTS (
                 SELECT 1
                 FROM regexp_matches(
-                    COALESCE({column}, ''),
+                    {translated_column},
                     '{dms_pattern}',
                     'gi'
                 )
@@ -557,7 +562,7 @@ def _worker_python_raw_text_sql(column: str) -> str:
             OR EXISTS (
                 SELECT 1
                 FROM regexp_matches(
-                    COALESCE({column}, ''),
+                    {translated_column},
                     '{hemisphere_pattern}',
                     'gi'
                 )

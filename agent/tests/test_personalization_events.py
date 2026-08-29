@@ -24,8 +24,12 @@ import auth_middleware
 import auth
 from identity import api as identity_api  # mien dinh danh sang day 2026-08-28
 import database as database_module
+import erasure
+import erasure_state
+import owner_write_gate as owner_write_gate_module
 import personalization_events
 import public_api
+import quarantine
 import scheduler
 import user_preferences
 from auth_middleware import generate_csrf_token
@@ -88,6 +92,13 @@ CREATE TABLE IF NOT EXISTS users (
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     deleted_at TIMESTAMPTZ
 );
+
+-- Trạng thái erasure bền (đối chiếu agent/migrations/073_account_erasure_state.sql):
+-- erasure_state.request_account_erasure + erasure.erase_account đọc/ghi 4 cột này.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS erasure_due_at TIMESTAMPTZ;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS erasure_attempt_count INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS erasure_last_attempt_at TIMESTAMPTZ;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS erasure_last_error_code TEXT;
 
 CREATE TABLE IF NOT EXISTS user_preferences (
     user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
@@ -238,6 +249,18 @@ CREATE TABLE IF NOT EXISTS otp_sessions (
     id UUID PRIMARY KEY,
     expires_at TIMESTAMPTZ NOT NULL
 );
+ALTER TABLE otp_sessions ADD COLUMN IF NOT EXISTS phone TEXT;
+-- request_account_erasure thu hồi credential trên hai bảng này (DELETE thẳng, không FK).
+CREATE TABLE IF NOT EXISTS trusted_devices (
+    id UUID PRIMARY KEY,
+    user_id UUID,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS pending_2fa (
+    id UUID PRIMARY KEY,
+    user_id UUID,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
 CREATE TABLE IF NOT EXISTS login_history (
     id UUID PRIMARY KEY,
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -296,6 +319,12 @@ def pg_db(monkeypatch):
     monkeypatch.setattr(scheduler, "db", adapter, raising=False)
     monkeypatch.setattr(auth_middleware, "db", adapter)
     monkeypatch.setattr(public_api, "db", adapter)
+    # Đường erasure mới (DELETE /auth/account + task_account_erasure) đi qua bốn
+    # module có binding `db` cấp module riêng — thiếu patch là rơi về SQLite thật.
+    monkeypatch.setattr(erasure, "db", adapter)
+    monkeypatch.setattr(erasure_state, "db", adapter)
+    monkeypatch.setattr(quarantine, "db", adapter)
+    monkeypatch.setattr(owner_write_gate_module, "db", adapter)
     monkeypatch.setattr(
         public_api,
         "settings",
@@ -842,16 +871,29 @@ def test_direct_writer_rejects_sensitive_text_in_every_validated_carrier(
 
 
 @pytest.mark.parametrize(
-    ("carrier", "smuggled"),
+    ("carrier", "smuggled", "expected_status", "expected_detail"),
     (
-        ("event_type", "so dien thoai rieng tu"),
-        ("context", "203.0.113.8"),
-        ("entity_id", "2001:db8::1"),
-        ("interest_keys", "so dien thoai rieng tu"),
+        # event_type/entity_id bị lớp làm-sạch của main chặn ngay ranh giới HTTP
+        # (public_api.track_user_event): 400 + detail riêng, TRƯỚC khi chạm writer.
+        ("event_type", "so dien thoai rieng tu", 400, "event_type khong hop le"),
+        ("entity_id", "2001:db8::1", 400, "entity_id không hợp lệ"),
+        # interest_keys lọt qua lớp làm-sạch, bị writer từ chối: 422 chung.
+        (
+            "interest_keys",
+            "so dien thoai rieng tu",
+            422,
+            "Invalid personalization event",
+        ),
     ),
 )
 def test_event_route_rejects_smuggling_without_storage_export_or_scoring(
-    auth_client, pg_db, canonical_event_entities, carrier, smuggled
+    auth_client,
+    pg_db,
+    canonical_event_entities,
+    carrier,
+    smuggled,
+    expected_status,
+    expected_detail,
 ):
     _set_preferences(pg_db, auth_client.owner, personalization_enabled=True)
     payload = {
@@ -872,14 +914,51 @@ def test_event_route_rejects_smuggling_without_storage_export_or_scoring(
     )
     profile = public_api._build_user_interest_profile(auth_client.owner)
 
-    assert response.status_code == 422
-    assert response.json() == {"detail": "Invalid personalization event"}
+    assert response.status_code == expected_status
+    assert response.json() == {"detail": expected_detail}
     assert smuggled not in response.text
     assert exported.status_code == 200
     assert exported.json()["personalization"]["events"] == []
     assert profile["interests"] == []
     assert profile["areas"] == []
     assert profile["types"] == []
+
+
+def test_event_route_coerces_unknown_context_to_home_without_leaking_value(
+    auth_client, pg_db, canonical_event_entities
+):
+    """KHOÁ HÀNH VI HIỆN TẠI: context ngoài danh sách bị ép về 'home' (202), không 422.
+
+    Coercion nằm ở lớp làm-sạch của main (public_api.track_user_event). Chủ dự án
+    có thể chọn bỏ coercion để 422 đồng nhất với các carrier khác — đó là ĐỔI SẢN
+    PHẨM: ghi backlog trình chủ dự án, không sửa lén trong test này.
+    """
+    smuggled = "203.0.113.8"
+    _set_preferences(pg_db, auth_client.owner, personalization_enabled=True)
+    payload = {
+        "event_type": "entity_view",
+        "context": smuggled,
+        "entity_id": "entity-1",
+        "entity_type": "dish",
+        "area_id": "province-vl",
+        "interest_keys": ["food"],
+    }
+
+    response = auth_client.client.post(
+        "/api/me/events", json=payload, headers=auth_client.csrf_headers
+    )
+    exported = auth_client.client.get(
+        "/auth/export-data", headers=auth_client.headers
+    )
+    events = read_personalization_events(auth_client.owner, cutoff=None)
+
+    assert response.status_code == 202
+    assert smuggled not in response.text
+    assert len(events) == 1
+    assert events[0]["context"] == "home"
+    assert smuggled not in json.dumps(events, ensure_ascii=False, default=str)
+    assert exported.status_code == 200
+    assert smuggled not in exported.text
 
 
 @pytest.mark.parametrize(
@@ -1451,7 +1530,9 @@ def test_event_purge_targets_only_expired_or_matching_user(pg_db, users):
     assert len(read_personalization_events(other, cutoff=None)) == 1
 
 
-def test_migration_072_queue_contract_survives_schema_073_fixture(pg_db):
+def test_migration_077_queue_contract_survives_schema_078_fixture(pg_db):
+    # Renumber b95a4897: nhánh NP-1 đánh số 072/073, trunk đã dùng tới 075 nên
+    # merge đổi thành 077/078 và schema_version chốt ở 78.
     with pg_db._conn(commit_on_success=False) as conn:
         columns = pg_db._fetchall(
             conn,
@@ -1489,7 +1570,7 @@ def test_migration_072_queue_contract_survives_schema_073_fixture(pg_db):
         "personalization_legacy_purge_queue_pkey",
         "idx_personalization_legacy_purge_queue_due",
     } <= {row["indexname"] for row in indexes}
-    assert version["version"] == 73
+    assert version["version"] == 78
     assert version["migration"] == "078_location_preference_remediation.sql"
 
 
@@ -2701,6 +2782,37 @@ def test_cleanup_skips_account_locked_by_concurrent_reactivation(
     ]
 
 
+def _arm_live_erasure(monkeypatch):
+    """Chạy đường erasure MỚI thật trên schema tối giản của suite này.
+
+    Tắt audit-only qua settings (config.py ERASURE_AUDIT_ONLY + activation) và
+    thay các kiểm tra registry/scrub đòi schema prod đầy đủ bằng no-op — phần
+    được đo ở đây là finalize + producer purge JSONL, không phải store lifecycle.
+    """
+    monkeypatch.setattr(scheduler.settings, "ERASURE_AUDIT_ONLY", False, raising=False)
+    monkeypatch.setattr(
+        scheduler.settings, "ERASURE_ACTIVATION_ENABLED", True, raising=False
+    )
+    monkeypatch.setattr(erasure, "validate_lifecycle_registry", lambda _policies: ())
+    monkeypatch.setattr(erasure, "lifecycle_registry", SimpleNamespace(policies=()))
+    monkeypatch.setattr(
+        erasure, "scrub_user_references", lambda *_args, **_kwargs: None
+    )
+    monkeypatch.setattr(erasure, "_assert_structured_absent", lambda *_args: None)
+
+
+def _mark_due_for_erasure(pg_db, *user_ids):
+    """Seed trạng thái quá-hạn của đường erasure mới: deleted + erasure_due_at đã qua."""
+    with pg_db._conn() as conn:
+        pg_db._execute(
+            conn,
+            "UPDATE users SET deleted_at = NOW() - INTERVAL '31 days', "
+            "erasure_due_at = NOW() - INTERVAL '1 day', is_active = FALSE "
+            "WHERE id = ANY(%s::uuid[])",
+            (list(user_ids),),
+        )
+
+
 def test_legacy_purge_queue_preserves_committed_deletes_and_retries_failure(
     pg_db, users, tmp_path, monkeypatch
 ):
@@ -2712,12 +2824,7 @@ def test_legacy_purge_queue_preserves_committed_deletes_and_retries_failure(
             "INSERT INTO users (id, phone) VALUES (%s::uuid, %s)",
             (active, f"test-{active}"),
         )
-        pg_db._execute(
-            conn,
-            "UPDATE users SET deleted_at = NOW() - INTERVAL '31 days', "
-            "is_active = FALSE WHERE id IN (%s::uuid, %s::uuid)",
-            (stale_one, stale_two),
-        )
+    _mark_due_for_erasure(pg_db, stale_one, stale_two)
     for user_id in (stale_one, stale_two, active):
         _set_preferences(pg_db, user_id, personalization_enabled=True)
         with pg_db._conn() as conn:
@@ -2755,11 +2862,12 @@ def test_legacy_purge_queue_preserves_committed_deletes_and_retries_failure(
             raise OSError("legacy purge failed")
         return real_purge(**kwargs)
 
+    _arm_live_erasure(monkeypatch)
     with monkeypatch.context() as failure_patch:
         failure_patch.setattr(
             personalization_events, "purge_legacy_events", fail_second_purge
         )
-        scheduler.task_session_cleanup()
+        scheduler.task_account_erasure()
 
     assert len(purge_calls) == 2
     succeeded_user, failed_user = purge_calls
@@ -2850,7 +2958,7 @@ def test_scheduler_drains_existing_backlog_plus_max_enqueue_but_keeps_future_job
 
 
 def test_due_purge_jobs_run_when_hard_delete_transaction_fails(
-    pg_db, users, monkeypatch, caplog
+    pg_db, users, monkeypatch
 ):
     due_id = str(uuid4())
     future_id = str(uuid4())
@@ -2871,7 +2979,9 @@ def test_due_purge_jobs_run_when_hard_delete_transaction_fails(
     real_fetchall = pg_db._fetchall
 
     def fail_candidate_query(conn, sql, params=None):
-        if "SELECT id FROM users" in sql:
+        # Đường chọn-ứng-viên MỚI: erasure._select_due_ids đọc users theo
+        # erasure_due_at (erasure.py). Bơm lỗi đúng vào truy vấn đó.
+        if "FROM users" in sql and "erasure_due_at" in sql:
             raise RuntimeError("injected candidate query failure")
         return real_fetchall(conn, sql, params)
 
@@ -2882,12 +2992,13 @@ def test_due_purge_jobs_run_when_hard_delete_transaction_fails(
         "purge_legacy_events",
         lambda *, user_id: purge_calls.append(user_id),
     )
+    _arm_live_erasure(monkeypatch)
 
-    with caplog.at_level("ERROR", logger="scheduler"):
-        scheduler.task_session_cleanup()
+    erasure_payload = scheduler.task_account_erasure()
+    scheduler.task_session_cleanup()
 
     with pg_db._conn(commit_on_success=False) as conn:
-        remaining = pg_db._fetchall(
+        remaining = real_fetchall(
             conn,
             "SELECT user_id FROM personalization_legacy_purge_queue ORDER BY user_id",
         )
@@ -2895,20 +3006,17 @@ def test_due_purge_jobs_run_when_hard_delete_transaction_fails(
     assert purge_calls == [due_id]
     assert [str(row["user_id"]) for row in remaining] == [future_id]
     assert int(user_count["count"]) == 2
-    assert "injected candidate query failure" in caplog.text
+    # Tương đương caplog cũ trên khối đã gỡ: đường mới nuốt lỗi ứng-viên vào
+    # BatchErasureResult(error_code=DB_CONSTRAINT) thay vì log message bơm vào.
+    assert erasure_payload["error_code"] == "DB_CONSTRAINT"
+    assert erasure_payload["completed_count"] == 0
 
 
 def test_scheduler_final_delete_purges_only_matching_legacy_rows(
     pg_db, users, tmp_path, monkeypatch
 ):
     stale, active = users
-    with pg_db._conn() as conn:
-        pg_db._execute(
-            conn,
-            "UPDATE users SET deleted_at = NOW() - INTERVAL '31 days', "
-            "is_active = FALSE WHERE id = %s::uuid",
-            (stale,),
-        )
+    _mark_due_for_erasure(pg_db, stale)
     for user_id in (stale, active):
         _set_preferences(pg_db, user_id, personalization_enabled=True)
         write_personalization_event(
@@ -2919,8 +3027,9 @@ def test_scheduler_final_delete_purges_only_matching_legacy_rows(
     seed_legacy_events(path, [stale, active])
     monkeypatch.setattr(personalization_events, "LEGACY_EVENTS_PATH", path)
     monkeypatch.setattr(personalization_events, "LEGACY_EVENTS_LOCK_PATH", lock_path)
+    _arm_live_erasure(monkeypatch)
 
-    scheduler.task_session_cleanup()
+    scheduler.task_account_erasure()
 
     with pg_db._conn(commit_on_success=False) as conn:
         users_left = pg_db._fetchall(conn, "SELECT id FROM users ORDER BY id")

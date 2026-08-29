@@ -378,7 +378,11 @@ def test_real_postgres_migration_covers_full_registered_fk_catalog():
         } == {
             (policy.table, policy.column, policy.action) for policy in policies
         }
-        assert len(observed) == 45
+        # 45 → 48: commit 10d201e1 đăng ký 3 bảng NP-1 của migration 076 vào
+        # registry (cascade: user_preferences.user_id,
+        # user_preference_consents.user_id, user_personalization_events.user_id).
+        # Giữ literal làm tripwire tăng-trưởng — đừng đổi thành len(policies).
+        assert len(observed) == 48
         with conn.cursor() as cursor:
             cursor.execute(
                 "SELECT version, migration FROM schema_version WHERE component = 'agent'"

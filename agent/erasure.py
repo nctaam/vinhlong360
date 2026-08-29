@@ -268,6 +268,51 @@ def _finalize_database(user_id: str, now: datetime) -> str:
     return "completed"
 
 
+def _enqueue_legacy_purge_retry(user_id: str, error: str) -> None:
+    """Queue a durable retry with the exact contract _process_legacy_purge_queue reads."""
+    with db._conn() as conn:
+        db._execute(
+            conn,
+            """
+                INSERT INTO personalization_legacy_purge_queue
+                    (user_id, created_at, attempt_count, next_attempt_at, last_error)
+                VALUES (%s::uuid, NOW(), 1, NOW() + INTERVAL '60 seconds', %s)
+                ON CONFLICT (user_id) DO UPDATE
+                SET attempt_count = personalization_legacy_purge_queue.attempt_count + 1,
+                    next_attempt_at = EXCLUDED.next_attempt_at,
+                    last_error = EXCLUDED.last_error
+            """,
+            (str(user_id), error),
+        )
+
+
+def _purge_legacy_personalization(user_id: str, run_id: str) -> None:
+    """NP-1 producer ported onto the erasure orchestrator (merge b95a4897 dropped it).
+
+    After the account row is gone, the user's legacy JSONL behaviour rows must go
+    too; on failure the durable queue drained by scheduler._process_legacy_purge_queue
+    takes over. Errors here never demote an already-completed erasure.
+    """
+    try:
+        from personalization_events import purge_legacy_events
+
+        purge_legacy_events(user_id=str(user_id))
+        return
+    except Exception as exc:
+        error = f"{type(exc).__name__}: {exc}"[:500]
+    try:
+        _enqueue_legacy_purge_retry(str(user_id), error)
+        logger.warning(
+            "Legacy personalization purge failed; queued for retry: run_id=%s",
+            run_id,
+        )
+    except Exception:
+        logger.error(
+            "Legacy personalization purge failed and retry enqueue failed: run_id=%s",
+            run_id,
+        )
+
+
 def _failed_result(run_id: str, code: str, stores=()) -> ErasureResult:
     return ErasureResult(
         status="failed",
@@ -336,6 +381,7 @@ def erase_account(user_id, *, now: datetime, run_id: str | None = None) -> Erasu
         _record_failure(str(user_id), requested_at, _DB_ERROR)
         _observe_failure(stable_run_id, _DB_ERROR, stores)
         return _failed_result(stable_run_id, _DB_ERROR, stores)
+    _purge_legacy_personalization(str(user_id), stable_run_id)
     metrics.erasure_completed_total.inc()
     return ErasureResult(
         status="completed",

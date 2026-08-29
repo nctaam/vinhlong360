@@ -4066,10 +4066,17 @@ thiếu env → skip đúng chiều, 796 skipped ở baseline).
 - **Đo thiếu cổng env = kết luận sai.** identity 46%→52% chỉ nhờ set đủ cổng,
   không viết thêm dòng test nào. Trước khi phán "module X thiếu test", grep
   `_TEST_DATABASE_URL` đếm đủ cổng đã.
-- **Suite PG mở bằng DB pre-migrated có thể ĐỎ mà không phải bug**: 15 fail
-  artifact (location_remediation đòi DB đứng ở 072 để tự áp 073, readiness
-  đòi chuỗi fresh...) — coverage của chúng vẫn đóng góp đủ, nhưng đừng chữa
-  các fail đó như bug sản phẩm.
+- ~~Suite PG mở bằng DB pre-migrated có thể ĐỎ mà không phải bug: 15 fail
+  artifact...~~ **ĐÍNH CHÍNH (cùng ngày, sau kiểm chứng trên DB TRẮNG): phân
+  loại "artifact" SAI 14/15.** Chạy đúng trạng-thái-DB suite kỳ vọng thì 14
+  fail vẫn đỏ: 11 TEST_DRIFT (test đóng băng hằng số trước 3 sự kiện đã duyệt
+  — merge `b95a4897` renumber migration NP-1 071-073→076-078, migration 081,
+  lớp làm-sạch biên của main thắng contract 422 nhánh NP-1) + **3 PRODUCT_DEFECT
+  thật** (nặng nhất: merge đánh rơi producer purge legacy — `erase_account`
+  không gọi `purge_legacy_events`, JSONL hành vi của user đã xoá tồn tại vô
+  hạn; và `[[:digit:]]` trên PG libc không khớp chữ số unicode — row toạ-độ-thô
+  thoát vòng tự-chữa) + 1 ENV thật. Bài học thay thế: **"artifact môi trường"
+  là GIẢ THUYẾT phải kiểm trên DB trắng trước khi ghi sổ, không phải kết luận.**
 - **docker CLI kẹt không có nghĩa PG chết**: exec/ps treo nhưng TCP 5433 sống
   — mọi thao tác DB test đi qua psycopg2/DSN, đừng đi qua docker.
 - Đặc điểm schema thật mà test phải thuận theo: `post_reactions` CHECK 5 loại
@@ -4077,3 +4084,19 @@ thiếu env → skip đúng chiều, 796 skipped ở baseline).
   đè updated_at khi UPDATE, `entity_ratings` do trigger đắp (không seed tay),
   `trg_comment_count`/`trg_like_count` là AFTER statement (đọc trong cùng
   statement ra giá trị CŨ — chính là nghi-bug toggle_like).
+
+### Backlog phát sinh — Điều tra 14 fail PG-gated (2026-08-28, sau §48)
+
+- **2 quyết định chờ chủ dự án** (điều tra xong, KHÔNG tự quyết):
+  1. **Contract smuggling `context`**: lớp làm-sạch của main ÉP context lạ về
+     `'home'` rồi nhận 202 (một event sạch được lưu — IP smuggled bị vứt,
+     riêng tư giữ nguyên); nhánh NP-1 cũ muốn 422 đồng nhất từ chối hẳn.
+     Test hiện khoá hành vi hiện tại (coercion). Muốn 422 đồng nhất = đổi
+     sản phẩm (`public_api.py:1266-1267`), chờ lệnh.
+  2. **CHECK `vl360_region_text_is_safe` (078) dùng regex `[0-9]` ASCII** —
+     không chặn được chữ số unicode ở tầng SQL (worker đã vá phía chọn-ứng-viên).
+     Nâng hàm SQL = migration additive mới (082), chờ lệnh; sau khi vá nên
+     chạy lại worker trên prod dọn row tồn đọng.
+- 1 fail ENV thật còn lại (`test_scoring_reset_...`): chỉ đỏ khi
+  PERSONALIZATION_EVENTS gate trỏ DB dùng-chung của lượt đo đủ-cổng; DB
+  disposable riêng thì xanh — khi đo đủ-cổng hãy cấp DB mới cho suite này.
