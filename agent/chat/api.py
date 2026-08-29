@@ -1804,6 +1804,186 @@ def _post_tool_process(fn_name, fn_args, result, suggestions, messages, empty_re
     return empty_results_count
 
 
+def _pick_delivery_model(corrected_message: str) -> str:
+    delivery_model = get_model()
+    if HAS_ORCHESTRATOR:
+        try:
+            _feedback_category, _feedback_agent = _get_orchestrator().route(
+                corrected_message
+            )
+            if getattr(_feedback_agent, "use_mini", False):
+                delivery_model = get_model_mini()
+        except Exception:
+            logger.debug("Feedback model routing failed", exc_info=True)
+    return delivery_model
+
+
+def _dynamic_prompt_addon(corrected_message: str, session_id: str) -> str:
+    """Dynamic agents: check for specialist match before orchestrator."""
+    if not HAS_DYNAMIC_AGENTS:
+        return ""
+    try:
+        dyn_route = check_dynamic_route(corrected_message)
+        if dyn_route:
+            agent_factory.update_performance(dyn_route["agent_id"], 5.0)  # default, updated later
+            logger.info("Dynamic agent matched", agent=dyn_route.get("name", ""), session_id=session_id)
+            return dyn_route.get("system_prompt_addon", "")
+    except Exception:
+        logger.debug("Dynamic agent matching failed", exc_info=True)
+    return ""
+
+
+def _compose_enriched_system(messages: list, dyn_prompt_addon: str) -> str:
+    """Enriched system context (proactive + RAG + realtime + memory + reflexion
+    + graph) mà _build_messages vừa tính — messages[0] luôn là system message
+    hợp nhất; cộng thêm addon của dynamic-agent và biến thể self_optimizer."""
+    _enriched_system = SYSTEM_PROMPT
+    if messages and messages[0].get("role") == "system" and isinstance(messages[0].get("content"), str):
+        _enriched_system = messages[0]["content"]
+    if dyn_prompt_addon:
+        _enriched_system = _enriched_system + "\n\n" + dyn_prompt_addon
+    if HAS_OPTIMIZER:
+        try:
+            _variant = prompt_optimizer.get_current_variant()
+            _variant_addon = _variant.get("prompt_addon", "")
+            if _variant_addon:
+                _enriched_system = _enriched_system + "\n\n" + _variant_addon
+        except Exception:
+            logger.debug("Self-optimizer variant failed", exc_info=True)
+    return _enriched_system
+
+
+def _is_error_reply(reply: str) -> bool:
+    """P0/chat: chỉ coi là lỗi khi reply RỖNG, hoặc là fallback hệ-thống thật (mọi fallback
+    đều mở đầu "Xin lỗi/Rất tiếc/Hệ thống..." + chứa cụm sự-cố), hoặc reply rất ngắn báo lỗi.
+    Tránh false-positive: câu trả lời ĐÚNG có chứa "lỗi"/"sự cố" (vd "sự cố giao thông")
+    trước đây bị ghi đè bằng KB-fallback."""
+    _low = (reply or "").lower().lstrip()
+    _starts_apology = _low.startswith(("xin lỗi", "rất tiếc", "hệ thống ai đang", "hệ thống đang"))
+    _has_fail_word = any(w in _low for w in (
+        "sự cố", "đã xảy ra lỗi", "không thể trả lời", "đang bảo trì", "thử lại sau", "thử lại.",
+    ))
+    return (
+        not reply
+        or (_starts_apology and _has_fail_word)
+        or (len(reply) < 80 and _has_fail_word)
+    )
+
+
+def _kb_clean_query(corrected_message: str) -> str:
+    # Clean query: strip question words (both with and without Vietnamese diacritics)
+    _clean_q = re.sub(
+        r'\b(ở đâu|o dau|đâu|dau|là gì|la gi|gì|gi|như thế nào|nhu the nao'
+        r'|có gì|co gi|bao nhiêu|bao nhieu|khi nào|khi nao|tại sao|tai sao'
+        r'|thế nào|the nao|nào|nao|ở|o|là|la|có|co|nên|nen|được|duoc'
+        r'|không|khong|bao giờ|bao gio|mấy|may|sao|đi|di|nên đi|nen di)\b',
+        '', corrected_message, flags=re.IGNORECASE
+    ).strip().rstrip('?').strip()
+    # Remove extra whitespace from stripping
+    _clean_q = re.sub(r'\s+', ' ', _clean_q).strip()
+    if not _clean_q:
+        _clean_q = corrected_message
+    return _clean_q
+
+
+def _detect_search_month(corrected_message: str) -> int | None:
+    # Detect month numbers for seasonal queries
+    _month_match = re.search(r'(?:tháng|thang)\s*(\d{1,2})', corrected_message, re.IGNORECASE)
+    return int(_month_match.group(1)) if _month_match and 1 <= int(_month_match.group(1)) <= 12 else None
+
+
+def _kb_fallback_search(clean_q: str, search_month: int | None, is_month_only) -> list:
+    # Call knowledge.search_entities directly — avoid call_tool() which has
+    # analytics tracking that can crash on corrupt analytics files
+    if is_month_only:
+        # Pure seasonal query — get seasonal + attractions for that month
+        kb_data = knowledge.seasonal_now(search_month)
+        if not kb_data:
+            kb_data = knowledge.search_entities(month=search_month, limit=10)
+    else:
+        # Use hybrid rerank (BM25 + semantic) for better relevance when
+        # available; this is the degraded-mode path so quality matters.
+        kb_data = _hybrid_rerank_search({"q": clean_q, "month": search_month, "limit": 10})
+
+    # Progressive search: if full query returns nothing, try sub-phrases
+    if not kb_data:
+        words = clean_q.split()
+        # Try bigrams first (e.g. "Chợ nổi", "Cái Bè")
+        if len(words) >= 2:
+            for i in range(len(words) - 1):
+                bigram = f"{words[i]} {words[i+1]}"
+                kb_data = knowledge.search_entities(q=bigram, limit=10)
+                if kb_data:
+                    logger.info(f"KB fallback bigram hit | q={bigram} | count={len(kb_data)}")
+                    break
+        # Try individual words (skip short ones)
+        if not kb_data:
+            for w in sorted(words, key=len, reverse=True):
+                if len(w) >= 3:
+                    kb_data = knowledge.search_entities(q=w, limit=10)
+                    if kb_data:
+                        logger.info(f"KB fallback word hit | q={w} | count={len(kb_data)}")
+                        break
+    return kb_data
+
+
+def _format_kb_reply(kb_data: list, search_month: int | None) -> str:
+    if search_month:
+        lines = [f"Hệ thống AI đang bảo trì. Thông tin tháng {search_month} từ cơ sở dữ liệu:\n"]
+    else:
+        lines = ["Hệ thống AI đang bảo trì. Dưới đây là thông tin từ cơ sở dữ liệu:\n"]
+    for item in kb_data[:5]:
+        name = item.get("name", "")
+        summary = item.get("summary", "")
+        etype = item.get("type", "")
+        place = (knowledge.get_place(item["id"]) or {}).get("name", "")
+        if name and summary:
+            loc = f" — {place}" if place else ""
+            lines.append(f"• **{name}** ({etype}{loc}): {summary}")
+        elif name:
+            lines.append(f"• **{name}** ({etype})")
+    lines.append("\n*Khi hệ thống AI hoạt động trở lại, bạn sẽ nhận được câu trả lời chi tiết hơn.*")
+    return "\n".join(lines)
+
+
+def _kb_fallback_reply(corrected_message: str) -> tuple[str | None, list, set, bool]:
+    """(reply|None, tools_used, verified_contacts, errored) — None = giữ reply cũ."""
+    try:
+        _clean_q = _kb_clean_query(corrected_message)
+        _search_month = _detect_search_month(corrected_message)
+        logger.info(f"KB fallback search | query={_clean_q} | month={_search_month} | original={corrected_message[:80]}")
+        # Check if query is purely about a month (e.g. cleaned to "Tháng 6" or empty)
+        _is_month_only = _search_month and re.match(
+            r'^(tháng|thang)?\s*\d{1,2}\s*$', _clean_q, re.IGNORECASE
+        )
+        kb_data = _kb_fallback_search(_clean_q, _search_month, _is_month_only)
+
+        _kb_count = len(kb_data) if isinstance(kb_data, list) else 0
+        logger.info(f"KB fallback results | count={_kb_count}")
+        # Relevance gate: drop entities that don't plausibly match the query
+        # (weak token matches) so the degraded mode abstains honestly instead
+        # of presenting irrelevant/out-of-domain data as an answer.
+        if isinstance(kb_data, list) and kb_data and not _is_month_only:
+            _relevant = [it for it in kb_data if knowledge.query_relevance(corrected_message, it)]
+            if not _relevant:
+                logger.info("KB fallback: no relevant entity → abstaining")
+                reply = (
+                    "Xin lỗi, hệ thống AI đang bảo trì và mình chưa tìm thấy thông tin "
+                    "xác thực về câu hỏi này trong cơ sở dữ liệu Vĩnh Long 360. "
+                    "Bạn thử hỏi về điểm tham quan, ẩm thực, đặc sản, lễ hội hoặc lịch trình "
+                    "ở Vĩnh Long, Bến Tre, Trà Vinh nhé!"
+                )
+                return reply, ["abstain (kb-fallback)"], set(), False
+            kb_data = _relevant
+        if isinstance(kb_data, list) and kb_data:
+            contacts = set(_verified_public_contacts_from_payload(kb_data))
+            return _format_kb_reply(kb_data, _search_month), ["search (kb-fallback)"], contacts, False
+        return None, [], set(), False
+    except Exception as kb_err:
+        logger.warning("KB fallback error", error=str(kb_err))
+        return None, [], set(), True
+
+
 @router.post("/chat", response_model=ChatResponse)
 @_finalize_semantic_route_lease
 async def chat(req: ChatRequest, request: Request, response: Response):
@@ -1994,16 +2174,7 @@ async def chat(req: ChatRequest, request: Request, response: Response):
         if ac.get("was_corrected"):
             corrected_message = ac["corrected"]
 
-    delivery_model = get_model()
-    if HAS_ORCHESTRATOR:
-        try:
-            _feedback_category, _feedback_agent = _get_orchestrator().route(
-                corrected_message
-            )
-            if getattr(_feedback_agent, "use_mini", False):
-                delivery_model = get_model_mini()
-        except Exception:
-            logger.debug("Feedback model routing failed", exc_info=True)
+    delivery_model = _pick_delivery_model(corrected_message)
 
     t0 = time.time()
     build_info = {}
@@ -2014,39 +2185,9 @@ async def chat(req: ChatRequest, request: Request, response: Response):
             _trace_ctx.__enter__()
         messages, build_info = _build_messages(corrected_message, history, session_id, owner_key)
 
-        # ── Dynamic agents: check for specialist match before orchestrator ──
-        _dyn_prompt_addon = ""
-        if HAS_DYNAMIC_AGENTS:
-            try:
-                dyn_route = check_dynamic_route(corrected_message)
-                if dyn_route:
-                    _dyn_prompt_addon = dyn_route.get("system_prompt_addon", "")
-                    agent_factory.update_performance(dyn_route["agent_id"], 5.0)  # default, updated later
-                    logger.info("Dynamic agent matched", agent=dyn_route.get("name", ""), session_id=session_id)
-            except Exception:
-                logger.debug("Dynamic agent matching failed", exc_info=True)
-
-        # Extract the enriched system context (proactive + RAG + realtime + memory
-        # + reflexion + graph) that _build_messages just computed. Previously the
-        # orchestrated path received only the bare SYSTEM_PROMPT and discarded all
-        # of this — making the entire RAG/memory/reflexion pipeline dead weight on
-        # /chat. messages[0] is always the single consolidated system message.
-        _enriched_system = SYSTEM_PROMPT
-        if messages and messages[0].get("role") == "system" and isinstance(messages[0].get("content"), str):
-            _enriched_system = messages[0]["content"]
-        if _dyn_prompt_addon:
-            _enriched_system = _enriched_system + "\n\n" + _dyn_prompt_addon
-
-        # Inject the self_optimizer's active prompt variant (previously computed
-        # but never applied to the live prompt).
-        if HAS_OPTIMIZER:
-            try:
-                _variant = prompt_optimizer.get_current_variant()
-                _variant_addon = _variant.get("prompt_addon", "")
-                if _variant_addon:
-                    _enriched_system = _enriched_system + "\n\n" + _variant_addon
-            except Exception:
-                logger.debug("Self-optimizer variant failed", exc_info=True)
+        _enriched_system = _compose_enriched_system(
+            messages, _dynamic_prompt_addon(corrected_message, session_id)
+        )
 
         # Use orchestrator when available for specialist routing.
         # GĐ4.1: offload vòng lặp agent (OpenAI client ĐỒNG BỘ) sang thread để KHÔNG
@@ -2086,122 +2227,15 @@ async def chat(req: ChatRequest, request: Request, response: Response):
                 logger.debug("Trace context exit failed", exc_info=True)
 
     # ── Knowledge-only fallback: supplement with KB data when LLM fails ──
-    # P0/chat: chỉ coi là lỗi khi reply RỖNG, hoặc là fallback hệ-thống thật (mọi fallback
-    # đều mở đầu "Xin lỗi/Rất tiếc/Hệ thống..." + chứa cụm sự-cố), hoặc reply rất ngắn báo lỗi.
-    # Tránh false-positive: câu trả lời ĐÚNG có chứa "lỗi"/"sự cố" (vd "sự cố giao thông")
-    # trước đây bị ghi đè bằng KB-fallback.
-    _low = (reply or "").lower().lstrip()
-    _starts_apology = _low.startswith(("xin lỗi", "rất tiếc", "hệ thống ai đang", "hệ thống đang"))
-    _has_fail_word = any(w in _low for w in (
-        "sự cố", "đã xảy ra lỗi", "không thể trả lời", "đang bảo trì", "thử lại sau", "thử lại.",
-    ))
-    _is_error_reply = (
-        not reply
-        or (_starts_apology and _has_fail_word)
-        or (len(reply) < 80 and _has_fail_word)
-    )
-    logger.info(f"KB fallback check | is_error={_is_error_reply} | reply_len={len(reply) if reply else 0}")
-    if _is_error_reply and corrected_message.strip():
-        try:
-            # Clean query: strip question words (both with and without Vietnamese diacritics)
-            _clean_q = re.sub(
-                r'\b(ở đâu|o dau|đâu|dau|là gì|la gi|gì|gi|như thế nào|nhu the nao'
-                r'|có gì|co gi|bao nhiêu|bao nhieu|khi nào|khi nao|tại sao|tai sao'
-                r'|thế nào|the nao|nào|nao|ở|o|là|la|có|co|nên|nen|được|duoc'
-                r'|không|khong|bao giờ|bao gio|mấy|may|sao|đi|di|nên đi|nen di)\b',
-                '', corrected_message, flags=re.IGNORECASE
-            ).strip().rstrip('?').strip()
-            # Remove extra whitespace from stripping
-            _clean_q = re.sub(r'\s+', ' ', _clean_q).strip()
-            if not _clean_q:
-                _clean_q = corrected_message
-            # Detect month numbers for seasonal queries
-            _month_match = re.search(r'(?:tháng|thang)\s*(\d{1,2})', corrected_message, re.IGNORECASE)
-            _search_month = int(_month_match.group(1)) if _month_match and 1 <= int(_month_match.group(1)) <= 12 else None
-
-            logger.info(f"KB fallback search | query={_clean_q} | month={_search_month} | original={corrected_message[:80]}")
-            # Call knowledge.search_entities directly — avoid call_tool() which has
-            # analytics tracking that can crash on corrupt analytics files
-            # Check if query is purely about a month (e.g. cleaned to "Tháng 6" or empty)
-            _is_month_only = _search_month and re.match(
-                r'^(tháng|thang)?\s*\d{1,2}\s*$', _clean_q, re.IGNORECASE
-            )
-            if _is_month_only:
-                # Pure seasonal query — get seasonal + attractions for that month
-                kb_data = knowledge.seasonal_now(_search_month)
-                if not kb_data:
-                    kb_data = knowledge.search_entities(month=_search_month, limit=10)
-            else:
-                # Use hybrid rerank (BM25 + semantic) for better relevance when
-                # available; this is the degraded-mode path so quality matters.
-                kb_data = _hybrid_rerank_search({"q": _clean_q, "month": _search_month, "limit": 10})
-
-            # Progressive search: if full query returns nothing, try sub-phrases
-            if not kb_data:
-                words = _clean_q.split()
-                # Try bigrams first (e.g. "Chợ nổi", "Cái Bè")
-                if len(words) >= 2:
-                    for i in range(len(words) - 1):
-                        bigram = f"{words[i]} {words[i+1]}"
-                        kb_data = knowledge.search_entities(q=bigram, limit=10)
-                        if kb_data:
-                            logger.info(f"KB fallback bigram hit | q={bigram} | count={len(kb_data)}")
-                            break
-                # Try individual words (skip short ones)
-                if not kb_data:
-                    for w in sorted(words, key=len, reverse=True):
-                        if len(w) >= 3:
-                            kb_data = knowledge.search_entities(q=w, limit=10)
-                            if kb_data:
-                                logger.info(f"KB fallback word hit | q={w} | count={len(kb_data)}")
-                                break
-
-            _kb_count = len(kb_data) if isinstance(kb_data, list) else 0
-            logger.info(f"KB fallback results | count={_kb_count}")
-            # Relevance gate: drop entities that don't plausibly match the query
-            # (weak token matches) so the degraded mode abstains honestly instead
-            # of presenting irrelevant/out-of-domain data as an answer.
-            if isinstance(kb_data, list) and kb_data and not _is_month_only:
-                _relevant = [it for it in kb_data if knowledge.query_relevance(corrected_message, it)]
-                if not _relevant:
-                    logger.info("KB fallback: no relevant entity → abstaining")
-                    reply = (
-                        "Xin lỗi, hệ thống AI đang bảo trì và mình chưa tìm thấy thông tin "
-                        "xác thực về câu hỏi này trong cơ sở dữ liệu Vĩnh Long 360. "
-                        "Bạn thử hỏi về điểm tham quan, ẩm thực, đặc sản, lễ hội hoặc lịch trình "
-                        "ở Vĩnh Long, Bến Tre, Trà Vinh nhé!"
-                    )
-                    tools_used = ["abstain (kb-fallback)"]
-                    suggestions = []
-                    kb_data = []  # skip the listing block below
-                else:
-                    kb_data = _relevant
-            if isinstance(kb_data, list) and kb_data:
-                verified_public_contacts.update(
-                    _verified_public_contacts_from_payload(kb_data)
-                )
-                if _search_month:
-                    lines = [f"Hệ thống AI đang bảo trì. Thông tin tháng {_search_month} từ cơ sở dữ liệu:\n"]
-                else:
-                    lines = ["Hệ thống AI đang bảo trì. Dưới đây là thông tin từ cơ sở dữ liệu:\n"]
-                for item in kb_data[:5]:
-                    name = item.get("name", "")
-                    summary = item.get("summary", "")
-                    etype = item.get("type", "")
-                    place = (knowledge.get_place(item["id"]) or {}).get("name", "")
-                    if name and summary:
-                        loc = f" — {place}" if place else ""
-                        lines.append(f"• **{name}** ({etype}{loc}): {summary}")
-                    elif name:
-                        lines.append(f"• **{name}** ({etype})")
-                lines.append("\n*Khi hệ thống AI hoạt động trở lại, bạn sẽ nhận được câu trả lời chi tiết hơn.*")
-                reply = "\n".join(lines)
-                tools_used = ["search (kb-fallback)"]
-                suggestions = []
-        except Exception as kb_err:
-            logger.warning("KB fallback error", error=str(kb_err))
-            if not reply:
-                reply = "Xin lỗi, đã xảy ra lỗi khi xử lý câu hỏi. Vui lòng thử lại."
+    _error_reply = _is_error_reply(reply)
+    logger.info(f"KB fallback check | is_error={_error_reply} | reply_len={len(reply) if reply else 0}")
+    if _error_reply and corrected_message.strip():
+        fb_reply, fb_tools, fb_contacts, fb_errored = _kb_fallback_reply(corrected_message)
+        if fb_reply is not None:
+            reply, tools_used, suggestions = fb_reply, fb_tools, []
+            verified_public_contacts.update(fb_contacts)
+        elif fb_errored and not reply:
+            reply = "Xin lỗi, đã xảy ra lỗi khi xử lý câu hỏi. Vui lòng thử lại."
 
     try:
         safe_reply = _safe_delivered_reply(

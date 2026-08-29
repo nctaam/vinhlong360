@@ -300,3 +300,24 @@ def test_kb_fallback_progressive_bigram_hit(kb_ctx, monkeypatch):
     reply = r.json().get("reply", "")
     assert "• **Cho Noi** (place): noi tieng" in reply, f"reply={reply[:120]} calls={calls}"
     assert len(calls) == 1 and len(calls[0].split()) == 2, calls  # đúng một bigram
+
+
+def test_lat34_pure_helpers_direct_pins():
+    # Lát 34: pin trực tiếp các helper thuần vừa tách khỏi chat().
+    assert chat_api._is_error_reply("") is True
+    assert chat_api._is_error_reply("Xin lỗi, hệ thống AI đang bảo trì hôm nay") is True
+    assert chat_api._is_error_reply(
+        "Sự cố giao thông ở Vĩnh Long thường xảy ra vào giờ cao điểm tại các ngã tư trung tâm thành phố nhé bạn."
+    ) is False  # câu ĐÚNG chứa "sự cố" không bị coi là lỗi
+
+    assert chat_api._kb_clean_query("Chợ nổi ở đâu?") == "Chợ nổi"
+    assert chat_api._kb_clean_query("ở đâu?") == "ở đâu?"  # rỗng sau strip → giữ nguyên câu
+
+    assert chat_api._detect_search_month("tháng 7 có gì") == 7
+    assert chat_api._detect_search_month("thang 13") is None
+    assert chat_api._detect_search_month("không có tháng") is None
+
+    reply = chat_api._format_kb_reply(
+        [{"id": "x", "name": "X", "summary": "s", "type": "place"}], 7
+    )
+    assert "Thông tin tháng 7" in reply and "• **X** (place" in reply
