@@ -3253,3 +3253,16 @@ class TestCaseEnabledReadinessHelper:
         assert checks["case_owner"]["code"] == "case_owner_individual_required"
         # policy thật của repo là hợp lệ → ready
         assert checks["case_policy"]["code"] == "case_policy_ready"
+
+
+def test_health_ready_route_binds_to_readiness_probe():
+    # Hồi quy lát 16: decorator từng trôi sang helper _case_enabled_readiness
+    # khi extract-method — /health/ready phải trói đúng readiness_probe.
+    import server
+
+    routes = {
+        route.path: route.endpoint.__name__
+        for route in server.app.routes
+        if getattr(route, "path", None) == "/health/ready"
+    }
+    assert routes == {"/health/ready": "readiness_probe"}

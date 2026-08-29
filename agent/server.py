@@ -1250,7 +1250,6 @@ def _erasure_readiness(erasure_status: dict, schema: dict) -> dict:
     }
 
 
-@app.get("/health/ready")
 def _case_enabled_readiness(_settings) -> dict:
     """Ba khoá case khi flag bật — nguyên văn từ readiness_probe (lát 16 R20.8)."""
     from config import _is_individual_actor_ref
@@ -1280,6 +1279,7 @@ def _case_enabled_readiness(_settings) -> dict:
     return checks
 
 
+@app.get("/health/ready")
 async def readiness_probe():
     """Lightweight readiness probe for load balancers / orchestrators."""
     def _probe():
