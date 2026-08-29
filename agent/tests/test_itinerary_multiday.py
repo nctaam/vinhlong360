@@ -478,7 +478,9 @@ def test_prefer_baseline_only_when_strictly_better():
     def result(load):
         return multiday_module.MultiDayDayResult(
             day_index=1, content_ids=("a",), ordered_ids=("a",),
-            schedule=SimpleNamespace(total_travel_minutes=load, backtrack_ratio=0.0),
+            schedule=SimpleNamespace(
+                total_travel_minutes=load, backtrack_ratio=0.0, ordered_ids=("a",),
+            ),
             synthetic_origin_id=None, load_minutes=load,
         )
 
