@@ -440,3 +440,34 @@ def test_validate_inputs_rejects_cross_day_duplicate_with_id_in_message():
     dup = day_input(2, [candidate("day-1-end", 10.2), candidate("end", 10.3, visit=0)])
     with pytest.raises(ValueError, match="duplicate content ID across days: day-1-end"):
         multiday_module._validate_inputs((d1, dup), "start", "end", MultiDayOptions())
+
+
+def test_neighbors_use_routed_boundaries_when_day_results_present():
+    # Lát 26 (đặc-tả trước khi mổ): có day_results thì biên lấy theo THỨ TỰ
+    # ĐÃ ĐỊNH TUYẾN (routed), không phải thứ tự canonical của content_ids.
+    allocation = (("a", "b", "x"), ("c", "d"))
+    locked = frozenset({"a", "d"})
+    rank = {"a": 0, "b": 1, "x": 2, "c": 3, "d": 4}
+
+    def result(idx, ids, ordered):
+        return multiday_module.MultiDayDayResult(
+            day_index=idx, content_ids=ids, ordered_ids=ordered,
+            schedule=None, synthetic_origin_id=None, load_minutes=0.0,
+        )
+
+    routed = (
+        result(1, ("a", "b", "x"), ("a", "x", "b")),
+        result(2, ("c", "d"), ("c", "d")),
+    )
+
+    with_results = multiday_module._generate_neighbors(
+        allocation, (3, 2), locked, rank, routed, MultiDayOptions())
+    without_results = multiday_module._generate_neighbors(
+        allocation, (3, 2), locked, rank, (), MultiDayOptions())
+
+    swap_with = next(n.allocation for n in with_results if n.kind == "boundary-swap")
+    swap_without = next(n.allocation for n in without_results if n.kind == "boundary-swap")
+
+    assert swap_with == multiday_module._canonical_allocation((("a", "c", "x"), ("b", "d")), rank)
+    assert swap_without == multiday_module._canonical_allocation((("a", "b", "c"), ("x", "d")), rank)
+    assert swap_with != swap_without

@@ -489,6 +489,43 @@ def _prune_labels(
     return tuple(sorted(kept, key=_label_objective))
 
 
+def _extended_label(
+    previous_label: "_AllocationLabel | None",
+    day_result: MultiDayDayResult,
+    current_end_id: str,
+    candidate_by_id: dict[str, SelectionCandidate],
+) -> "_AllocationLabel":
+    day_results = (
+        (previous_label.day_results if previous_label is not None else ())
+        + (day_result,)
+    )
+    loads = (
+        (previous_label.loads if previous_label is not None else ())
+        + (day_result.load_minutes,)
+    )
+    return _AllocationLabel(
+        day_results=day_results,
+        current_end_id=current_end_id,
+        loads=loads,
+        total_travel_minutes=(
+            previous_label.total_travel_minutes
+            if previous_label is not None
+            else 0.0
+        )
+        + day_result.schedule.total_travel_minutes,
+        total_backtrack_ratio=(
+            previous_label.total_backtrack_ratio
+            if previous_label is not None
+            else 0.0
+        )
+        + day_result.schedule.backtrack_ratio,
+        area_switches=_area_switch_count(
+            day_results,
+            candidate_by_id,
+        ),
+    )
+
+
 def _solve_allocation(
     days: tuple[MultiDayDayInput, ...],
     allocation: Allocation,
@@ -532,37 +569,9 @@ def _solve_allocation(
                 )
                 if day_result is None:
                     continue
-                day_results = (
-                    (previous_label.day_results if previous_label is not None else ())
-                    + (day_result,)
-                )
-                loads = (
-                    (previous_label.loads if previous_label is not None else ())
-                    + (day_result.load_minutes,)
-                )
-                next_labels.append(
-                    _AllocationLabel(
-                        day_results=day_results,
-                        current_end_id=current_end_id,
-                        loads=loads,
-                        total_travel_minutes=(
-                            previous_label.total_travel_minutes
-                            if previous_label is not None
-                            else 0.0
-                        )
-                        + day_result.schedule.total_travel_minutes,
-                        total_backtrack_ratio=(
-                            previous_label.total_backtrack_ratio
-                            if previous_label is not None
-                            else 0.0
-                        )
-                        + day_result.schedule.backtrack_ratio,
-                        area_switches=_area_switch_count(
-                            day_results,
-                            candidate_by_id,
-                        ),
-                    )
-                )
+                next_labels.append(_extended_label(
+                    previous_label, day_result, current_end_id, candidate_by_id
+                ))
         if not next_labels:
             raise NoFeasibleScheduleError(
                 f"No feasible endpoint label for day {day_position + 1}"
@@ -674,6 +683,85 @@ def _canonical_boundary_id(
     )
 
 
+def _pair_boundary_ids(
+    pair_index: int,
+    left: tuple[str, ...],
+    right: tuple[str, ...],
+    current_day_results: tuple[MultiDayDayResult, ...],
+    locked_ids: frozenset[str],
+) -> tuple[str | None, str | None]:
+    if current_day_results:
+        return (
+            _routed_boundary_id(current_day_results[pair_index], left, locked_ids, reverse=True),
+            _routed_boundary_id(current_day_results[pair_index + 1], right, locked_ids, reverse=False),
+        )
+    return (
+        _canonical_boundary_id(left, locked_ids, reverse=True),
+        _canonical_boundary_id(right, locked_ids, reverse=False),
+    )
+
+
+def _pair_swap_proposals(
+    left: tuple[str, ...], right: tuple[str, ...], locked_ids: frozenset[str]
+) -> list[tuple[str, tuple[str, ...], tuple[str, ...]]]:
+    proposals = []
+    for left_id in left:
+        if left_id in locked_ids:
+            continue
+        for right_id in right:
+            if right_id in locked_ids:
+                continue
+            proposals.append((
+                "swap",
+                tuple(right_id if stop_id == left_id else stop_id for stop_id in left),
+                tuple(left_id if stop_id == right_id else stop_id for stop_id in right),
+            ))
+    return proposals
+
+
+def _pair_move_proposals(
+    left: tuple[str, ...],
+    right: tuple[str, ...],
+    left_boundary: str | None,
+    right_boundary: str | None,
+    locked_ids: frozenset[str],
+) -> list[tuple[str, tuple[str, ...], tuple[str, ...]]]:
+    """Thứ tự đề xuất giữ nguyên trình tự cũ: boundary-swap → relocate → swap."""
+    proposals = []
+    if left_boundary is not None and right_boundary is not None:
+        proposals.append((
+            "boundary-swap",
+            tuple(right_boundary if stop_id == left_boundary else stop_id for stop_id in left),
+            tuple(left_boundary if stop_id == right_boundary else stop_id for stop_id in right),
+        ))
+    proposals.extend(_pair_relocate_proposals(left, right, locked_ids))
+    proposals.extend(_pair_swap_proposals(left, right, locked_ids))
+    return proposals
+
+
+def _pair_relocate_proposals(
+    left: tuple[str, ...], right: tuple[str, ...], locked_ids: frozenset[str]
+) -> list[tuple[str, tuple[str, ...], tuple[str, ...]]]:
+    proposals = []
+    for stop_id in left:
+        if stop_id in locked_ids:
+            continue
+        proposals.append((
+            "relocate",
+            tuple(item for item in left if item != stop_id),
+            (*right, stop_id),
+        ))
+    for stop_id in right:
+        if stop_id in locked_ids:
+            continue
+        proposals.append((
+            "relocate",
+            (*left, stop_id),
+            tuple(item for item in right if item != stop_id),
+        ))
+    return proposals
+
+
 def _generate_neighbors(
     allocation: Allocation,
     baseline_counts: tuple[int, ...],
@@ -712,73 +800,13 @@ def _generate_neighbors(
     for pair_index in range(len(allocation) - 1):
         left = allocation[pair_index]
         right = allocation[pair_index + 1]
-        if current_day_results:
-            left_boundary = _routed_boundary_id(
-                current_day_results[pair_index],
-                left,
-                locked_ids,
-                reverse=True,
-            )
-            right_boundary = _routed_boundary_id(
-                current_day_results[pair_index + 1],
-                right,
-                locked_ids,
-                reverse=False,
-            )
-        else:
-            left_boundary = _canonical_boundary_id(left, locked_ids, reverse=True)
-            right_boundary = _canonical_boundary_id(right, locked_ids, reverse=False)
-        if left_boundary is not None and right_boundary is not None:
-            add_neighbor(
-                pair_index,
-                "boundary-swap",
-                tuple(
-                    right_boundary if stop_id == left_boundary else stop_id
-                    for stop_id in left
-                ),
-                tuple(
-                    left_boundary if stop_id == right_boundary else stop_id
-                    for stop_id in right
-                ),
-            )
-
-        for stop_id in left:
-            if stop_id in locked_ids:
-                continue
-            add_neighbor(
-                pair_index,
-                "relocate",
-                tuple(item for item in left if item != stop_id),
-                (*right, stop_id),
-            )
-        for stop_id in right:
-            if stop_id in locked_ids:
-                continue
-            add_neighbor(
-                pair_index,
-                "relocate",
-                (*left, stop_id),
-                tuple(item for item in right if item != stop_id),
-            )
-
-        for left_id in left:
-            if left_id in locked_ids:
-                continue
-            for right_id in right:
-                if right_id in locked_ids:
-                    continue
-                add_neighbor(
-                    pair_index,
-                    "swap",
-                    tuple(
-                        right_id if stop_id == left_id else stop_id
-                        for stop_id in left
-                    ),
-                    tuple(
-                        left_id if stop_id == right_id else stop_id
-                        for stop_id in right
-                    ),
-                )
+        left_boundary, right_boundary = _pair_boundary_ids(
+            pair_index, left, right, current_day_results, locked_ids
+        )
+        for kind, left_ids, right_ids in _pair_move_proposals(
+            left, right, left_boundary, right_boundary, locked_ids
+        ):
+            add_neighbor(pair_index, kind, left_ids, right_ids)
 
     return tuple(
         item[3]
