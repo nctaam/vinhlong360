@@ -93,7 +93,6 @@ from features import (
     contextual,
     cost_attribution,  # noqa: F401  (be mat va cua test — llmops sang goi rieng 2026-08-27)
     embedding_store,
-    enhanced_hybrid_search,
     experience_memory,
     format_confirmation_prompt,
     generate_metrics,
@@ -1494,41 +1493,8 @@ async def reject_action(confirmation_id: str, request: Request):
     return {"rejected": True}
 
 
-# ── Contextual retrieval endpoint ──
-
-@app.get("/search/enhanced", tags=["Search"])
-async def enhanced_search(q: str = Query(..., max_length=200), limit: int = Query(10, ge=1, le=100), rerank: bool = False):
-    """Enhanced hybrid search with BM25 + contextual embeddings."""
-    if not HAS_CONTEXTUAL:
-        raise HTTPException(503, detail="Contextual retrieval not available")
-    def _search():
-        knowledge._ensure()
-        keyword_results = knowledge.search_entities(q=q, limit=limit * 3)
-        relationships = knowledge._relationships if hasattr(knowledge, '_relationships') else []
-        results = enhanced_hybrid_search(
-            query=q,
-            keyword_results=keyword_results,
-            entities=knowledge._entities,
-            relationships=relationships,
-            rerank=rerank,
-            top_k=limit,
-        )
-        enriched = []
-        for r in results:
-            eid = r.get("entity_id", r.get("id", ""))
-            e = knowledge.get_entity(eid)
-            if e:
-                enriched.append({
-                    "entity_id": eid,
-                    "name": e["name"],
-                    "type": e["type"],
-                    "summary": e.get("summary", "")[:150],
-                    "score": r.get("score", r.get("combined_score", 0)),
-                })
-        return enriched
-    return {"results": await asyncio.to_thread(_search)}
-
-
+# ── Contextual retrieval endpoint: /search/enhanced về agent/llmops/api.py
+#    (lát 4 đợt hoàn-thiện-sâu 2026-08-29 — cùng loài /vectors/search) ──
 
 
 def _feedback_response(

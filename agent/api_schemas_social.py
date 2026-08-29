@@ -24,6 +24,14 @@ from api_schemas import ApiModel
 
 
 # ── Drafts / scheduled ───────────────────────────────────────────────
+class FeedNewSinceResponse(ApiModel):
+    """GET /feed/new-since — entities + posts mới từ mốc `since` (extra=allow)."""
+    entities: list = []
+    posts: list = []
+    counts: dict = {}
+    since: str = ""
+
+
 class DraftsListResponse(ApiModel):
     drafts: list = []
     total: int | None = None

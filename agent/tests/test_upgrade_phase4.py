@@ -129,7 +129,9 @@ class TestEventReminders:
 class TestWhatsNewFeed:
 
     def test_endpoint_exists(self):
-        from public_api import router
+        # Route về community/api.py cạnh cụm /feed* (lát 4 đợt hoàn-thiện-sâu
+        # 2026-08-29); public_api chỉ còn tái xuất handler cho getsource.
+        from community.api import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]
         assert "/api/feed/new-since" in paths
 

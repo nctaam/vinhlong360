@@ -2,7 +2,8 @@
 
 > STATUS: done — chương trình ĐÓNG SỔ 2026-08-29 (§8c): 9 gói miền, 0 shim,
 > phần dư admin/public_api/database đóng có chủ đích. Diễn tiến: 3 miền đầu
-> (§46) → 5/5 theo chỉ đạo (§8b) → gỡ shim + itineraries/ (§8c). `server.py` 5.507 → 2.159 dòng (−61%).
+> (§46) → 5/5 theo chỉ đạo (§8b) → gỡ shim + itineraries/ (§8c) → dọn
+> route-dư lát 4 (§8d). `server.py` 5.507 → 2.159 dòng (−61%).
 > Chi phí ĐO ĐƯỢC của hai lát đã làm ghi ở ROADMAP §45; nó ĐẢO thứ tự ưu tiên
 > ban đầu của tài liệu này — đọc §7 đã sửa bên dưới trước khi làm lát thứ ba.
 > Đo 2026-08-27 trên `codex/correction-case-pilot`. Mọi con số dưới đây là ĐO,
@@ -225,3 +226,25 @@ VÀ số đo cho thấy nó giẫm miền khác.
 
 Tính chất "phát triển từng module không chồng đè" nay đến từ RÀO, không từ số
 thư mục: boundary tests + R20.9 + per-domain CI gates + phủ test vùng mù 90%.
+
+## 8d. LÁT 4 ĐỢT HOÀN-THIỆN-SÂU (2026-08-29) — dọn route-dư theo hồ sơ đo
+
+Hai route-dư thật đã VỀ NHÀ: `GET /search/enhanced` `server.py` →
+`llmops/api.py` (cùng loài chẩn đoán truy hồi với `/vectors/search`; path giữ
+nguyên, KHÔNG thêm guard — câu hỏi require_admin ghi backlog chờ chủ) và
+`GET /api/feed/new-since` `public_api.py` → `community/api.py` cạnh cụm
+`/feed*` (behavior change CÓ DUYỆT: SQLite 200-degraded → 503 theo §1.3;
+0 caller FE đo được; public_api tái xuất handler cho getsource).
+
+**Phần còn lại Ở LẠI `public_api.py` CÓ CHỦ ĐÍCH — không phải route-dư:**
+
+- `report-stale` + `view-contact`: lát entities 2026-08-28 đã LOẠI có chủ đích
+  (ranh giới là NGƯỜI GỌI và DỮ LIỆU, không phải URL); bao đóng nuốt tầng
+  `REPORTS_FILE`/`_jsonl_lock` đang share 3 nơi (admin, community, submit_report)
+  và test khoá cứng `admin._info_reports_lock IS public_api._jsonl_lock`.
+- `/api/search` aggregator + `/api/autocomplete`: gộp 3 miền
+  (entity+post+user) trong MỘT contract `SearchResponse` — không chẻ được;
+  cùng loài `/homepage`, đúng nghĩa "bề mặt route nhiều miền" của §8c.
+
+Đảo các quyết định để-lại này cần chủ dự án + hồ sơ đo mới, không phải một
+lát dọn-dư.

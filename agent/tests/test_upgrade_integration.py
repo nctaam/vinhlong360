@@ -70,7 +70,10 @@ class TestUpgradeIntegrationEndpoints:
 
     # U-15: What's-new feed
     def test_u15_feed_new_since(self):
-        routes = self._get_all_routes()
+        # Route về community/api.py cạnh cụm /feed* (lát 4 đợt hoàn-thiện-sâu
+        # 2026-08-29) — soi router cộng đồng thay vì bộ ba pub/adm/vis.
+        from community.api import router
+        routes = {r.path: r.methods for r in router.routes if hasattr(r, "path")}
         assert "GET" in routes.get("/api/feed/new-since", set())
 
     # U-17: Stale queue

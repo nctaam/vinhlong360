@@ -2873,72 +2873,11 @@ async def track_contact_view(
 
 
 
-# ── What's-new feed (U-15) ────────────────────────────────────────────
-
-
-def _collect_new_entities(entities: dict, since_dt, limit: int) -> list[dict]:
-    new_entities = []
-    for eid, e in entities.items():
-        if e.get("type") == "place" or not _is_public(e):
-            continue
-        updated = e.get("updatedAt") or e.get("created_at")
-        if not updated:
-            continue
-        try:
-            dt = datetime.fromisoformat(str(updated).replace("Z", "+00:00"))
-        except (ValueError, TypeError):
-            continue
-        if dt >= since_dt:
-            new_entities.append({
-                "id": eid, "name": e.get("name"), "type": e.get("type"),
-                "area": e.get("area"), "updated_at": str(updated),
-            })
-    new_entities.sort(key=lambda x: x["updated_at"], reverse=True)
-    return new_entities[:limit]
-
-
-@router.get("/feed/new-since",
-            summary="Get new content since timestamp",
-            description="Returns entities and posts created or updated since a given ISO datetime. Useful for incremental feed updates.")
-async def feed_new_since(
-    response: Response,
-    since: str = Query(..., min_length=10, max_length=30),
-    limit: int = Query(50, ge=1, le=100),
-):
-    """Mới cập nhật/tạo từ `since` — entities + posts (public only)."""
-    from database import db as _db
-    ph = _db._ph
-    try:
-        since_dt = datetime.fromisoformat(since.replace("Z", "+00:00"))
-    except (ValueError, TypeError):
-        return _err(400, "since phải là ISO datetime")
-
-    def _query():
-        import knowledge
-        entities = knowledge._entities if hasattr(knowledge, "_entities") else {}
-        new_entities = _collect_new_entities(entities, since_dt, limit)
-        new_posts = []
-        if _db._use_pg:
-            with _db._conn() as conn:
-                rows = _db._fetchall(conn, f"""
-                    SELECT p.id, p.post_type, p.entity_id, p.created_at,
-                           u.display_name
-                    FROM posts p JOIN users u ON u.id = p.user_id
-                    WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
-                    AND p.created_at >= {ph}
-                    ORDER BY p.created_at DESC
-                    LIMIT {ph}
-                """, (since_dt.isoformat(), limit))
-                new_posts = [_db._row_to_dict(r) for r in rows]
-        return {
-            "entities": new_entities,
-            "posts": new_posts,
-            "counts": {"entities": len(new_entities), "posts": len(new_posts)},
-            "since": since,
-        }
-    result = await asyncio.to_thread(_query)
-    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
-    return result
+# ── What's-new feed (U-15): route về agent/community/api.py cạnh cụm /feed*
+# (lát 4 đợt hoàn-thiện-sâu 2026-08-29; trên SQLite nay trả 503 theo §1.3 —
+# behavior change có duyệt). Tái xuất 2 ký hiệu vì test soi nguồn qua
+# public_api.<tên> (inspect.getsource đi theo object nên vẫn đúng nhà thật).
+from community.api import _collect_new_entities, feed_new_since  # noqa: F401, E402
 
 
 # ── Collections (U-28, public read-only) ──────────────────────────────

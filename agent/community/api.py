@@ -57,8 +57,12 @@ RL_DELETE_LIMIT, RL_DELETE_WINDOW = 10, 300     # 10 xóa / 5 phút
 
 
 from auth_middleware import require_pg as _require_pg
+# Tầng đọc-entity dùng chung (đúng thiết kế): feed /feed/new-since về từ
+# public_api (lát 4 đợt hoàn-thiện-sâu 2026-08-29) cần 2 ký hiệu này.
+from entity_read import _err, _is_public
 from api_schemas_social import (
     DraftsListResponse, ScheduledListResponse, PostResponse, EditHistoryResponse,
+    FeedNewSinceResponse,
     FeedResponse, FollowingFeedResponse, FriendReviewsResponse, FriendSavesResponse,
     TrendingPostsResponse, ExploreFeedResponse, SearchPostsResponse, SearchUsersResponse,
     CommunityStatsResponse, UserCountsResponse, UserStatsResponse, UserActivityResponse,
@@ -1370,6 +1374,79 @@ async def explore_feed(
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
     await asyncio.to_thread(_enrich_all, posts, user)
     return {"posts": posts, "total": total, "page": page, "has_more": offset + limit < total}
+
+
+# ── What's-new feed (U-15) — về từ public_api.py, lát 4 đợt hoàn-thiện-sâu
+# 2026-08-29. Decorator giữ y chuỗi (prefix /api của router cộng đồng cho ra
+# đúng path cũ /api/feed/new-since). BEHAVIOR CHANGE CÓ DUYỆT: trên SQLite
+# route đổi 200-degraded → 503 vì Depends(_require_pg) ở constructor router —
+# đúng §1.3 CLAUDE.md; đo 0 caller frontend. Giữ lazy-import db/knowledge
+# TRONG thân handler: fixture pg_sql_recorder vá singleton db mới còn trúng.
+
+
+def _collect_new_entities(entities: dict, since_dt, limit: int) -> list[dict]:
+    new_entities = []
+    for eid, e in entities.items():
+        if e.get("type") == "place" or not _is_public(e):
+            continue
+        updated = e.get("updatedAt") or e.get("created_at")
+        if not updated:
+            continue
+        try:
+            dt = datetime.fromisoformat(str(updated).replace("Z", "+00:00"))
+        except (ValueError, TypeError):
+            continue
+        if dt >= since_dt:
+            new_entities.append({
+                "id": eid, "name": e.get("name"), "type": e.get("type"),
+                "area": e.get("area"), "updated_at": str(updated),
+            })
+    new_entities.sort(key=lambda x: x["updated_at"], reverse=True)
+    return new_entities[:limit]
+
+
+@router.get("/feed/new-since", response_model=FeedNewSinceResponse,
+            summary="Get new content since timestamp",
+            description="Returns entities and posts created or updated since a given ISO datetime. Useful for incremental feed updates.")
+async def feed_new_since(
+    response: Response,
+    since: str = Query(..., min_length=10, max_length=30),
+    limit: int = Query(50, ge=1, le=100),
+):
+    """Mới cập nhật/tạo từ `since` — entities + posts (public only)."""
+    from database import db as _db
+    ph = _db._ph
+    try:
+        since_dt = datetime.fromisoformat(since.replace("Z", "+00:00"))
+    except (ValueError, TypeError):
+        return _err(400, "since phải là ISO datetime")
+
+    def _query():
+        import knowledge
+        entities = knowledge._entities if hasattr(knowledge, "_entities") else {}
+        new_entities = _collect_new_entities(entities, since_dt, limit)
+        new_posts = []
+        if _db._use_pg:
+            with _db._conn() as conn:
+                rows = _db._fetchall(conn, f"""
+                    SELECT p.id, p.post_type, p.entity_id, p.created_at,
+                           u.display_name
+                    FROM posts p JOIN users u ON u.id = p.user_id
+                    WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
+                    AND p.created_at >= {ph}
+                    ORDER BY p.created_at DESC
+                    LIMIT {ph}
+                """, (since_dt.isoformat(), limit))
+                new_posts = [_db._row_to_dict(r) for r in rows]
+        return {
+            "entities": new_entities,
+            "posts": new_posts,
+            "counts": {"entities": len(new_entities), "posts": len(new_posts)},
+            "since": since,
+        }
+    result = await asyncio.to_thread(_query)
+    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
+    return result
 
 
 @router.get("/search/posts", response_model=SearchPostsResponse,

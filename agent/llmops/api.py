@@ -31,6 +31,7 @@ from scheduler import scheduler_status
 from features import (
     HAS_CHECKPOINTS,
     HAS_CIRCUIT_BREAKER,
+    HAS_CONTEXTUAL,
     HAS_COST_TRACKER,
     HAS_DYNAMIC_AGENTS,
     HAS_EVAL,
@@ -52,6 +53,7 @@ from features import (
     cost_attribution,
     cost_budget,
     embedding_store,
+    enhanced_hybrid_search,
     export_traces_json,
     freshness_report,
     get_agent_report,
@@ -392,6 +394,45 @@ async def vector_search_endpoint(request: Request, q: str = Query(..., max_lengt
                     "name": e["name"],
                     "type": e["type"],
                     "summary": e.get("summary", "")[:100],
+                })
+        return enriched
+    return {"results": await asyncio.to_thread(_search)}
+
+
+# ── Contextual retrieval endpoint ──
+# Về từ server.py (lát 4 đợt hoàn-thiện-sâu 2026-08-29) — cùng loài chẩn đoán
+# truy hồi với /vectors/search ngay trên. Chép NGUYÊN VĂN, path giữ nguyên
+# (router llmops không prefix); KHÔNG thêm guard — bảo toàn hành vi public,
+# câu hỏi require_admin ghi backlog chờ chủ dự án.
+
+@router.get("/search/enhanced", tags=["Search"])
+async def enhanced_search(q: str = Query(..., max_length=200), limit: int = Query(10, ge=1, le=100), rerank: bool = False):
+    """Enhanced hybrid search with BM25 + contextual embeddings."""
+    if not HAS_CONTEXTUAL:
+        raise HTTPException(503, detail="Contextual retrieval not available")
+    def _search():
+        knowledge._ensure()
+        keyword_results = knowledge.search_entities(q=q, limit=limit * 3)
+        relationships = knowledge._relationships if hasattr(knowledge, '_relationships') else []
+        results = enhanced_hybrid_search(
+            query=q,
+            keyword_results=keyword_results,
+            entities=knowledge._entities,
+            relationships=relationships,
+            rerank=rerank,
+            top_k=limit,
+        )
+        enriched = []
+        for r in results:
+            eid = r.get("entity_id", r.get("id", ""))
+            e = knowledge.get_entity(eid)
+            if e:
+                enriched.append({
+                    "entity_id": eid,
+                    "name": e["name"],
+                    "type": e["type"],
+                    "summary": e.get("summary", "")[:150],
+                    "score": r.get("score", r.get("combined_score", 0)),
                 })
         return enriched
     return {"results": await asyncio.to_thread(_search)}

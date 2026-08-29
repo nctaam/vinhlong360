@@ -4129,3 +4129,12 @@ thiếu env → skip đúng chiều, 796 skipped ở baseline).
   do TestClient ghi đường audit THẬT trong các lượt test 2026-08-28 — đã xoá.
   Việc: fixture admin test nên monkeypatch đường audit sang tmp_path (cùng lớp
   bài trục-4 nhưng là FILE thay vì DB).
+
+### Backlog phát sinh — Lát 4 đợt hoàn-thiện-sâu: dọn route-dư (2026-08-29)
+
+- **Câu hỏi guard cho `GET /search/enhanced`:** route đã về `llmops/api.py`
+  (lát 4) NGUYÊN VĂN — vẫn public, trong khi mọi hàng xóm llmops đều
+  `require_admin`/`require_admin_scope`. 0 caller FE đo được → ứng viên thêm
+  guard (hoặc gate path) NHƯNG là behavior change công khai — cần chủ dự án
+  quyết, KHÔNG tự thêm (quyết định điều phối khi thi công lát 4: bảo toàn
+  hành vi).

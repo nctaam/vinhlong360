@@ -63,3 +63,18 @@ def test_route_len_app_nguyen_ven():
     app_paths = {r.path for r in server.app.routes}
     thieu = [r.path for r in community_api.router.routes if r.path not in app_paths]
     assert not thieu, f"route cộng đồng không lên app: {thieu[:5]}"
+
+
+def test_feed_new_since_ve_nha_that_va_tai_xuat_cung_object():
+    """/feed/new-since về community/api.py (lát 4 đợt hoàn-thiện-sâu 2026-08-29).
+
+    public_api chỉ còn TÁI XUẤT — phải là CÙNG object, vì 5 chỗ test soi nguồn
+    qua inspect.getsource(public_api.<tên>) đi theo object; tái xuất đứt là
+    chúng soi một bản sao chết. Và handler phải mang __module__ community.api
+    để hợp đồng UGC (require_pg → 503-trên-SQLite, §1.3) phủ đúng route này."""
+    import public_api
+
+    assert public_api.feed_new_since is community_api.feed_new_since
+    assert public_api._collect_new_entities is community_api._collect_new_entities
+    assert community_api.feed_new_since.__module__ == "community.api"
+    assert "/api/feed/new-since" in {r.path for r in community_api.router.routes}

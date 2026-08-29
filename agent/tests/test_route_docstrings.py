@@ -39,8 +39,13 @@ HTTP_METHODS = {"get", "post", "put", "patch", "delete", "head", "options"}
 # Lặp lại lần nữa cùng ngày (lát 3): 2 route siteops (site-settings +
 # announcements, kèm docstring) sang siteops/api.py — public_api 22→20,
 # sàn mới 2; TỔNG 25 giữ nguyên, ratchet không nới.
+# Lát 4 (cùng ngày): /feed/new-since (kèm docstring) sang community/api.py —
+# public_api 20→19, sàn mới community/api.py = 1 (chỉ phần dời vào ratchet;
+# 27 docstring sẵn có của gói cộng đồng chưa từng thuộc ratchet này).
+# TỔNG 20 giữ nguyên, ratchet không nới.
 FLOORS = {
-    "public_api.py": 20,
+    "public_api.py": 19,
+    "community/api.py": 1,
     "itineraries/api.py": 3,
     "siteops/api.py": 2,
     "entities/api.py": 22,

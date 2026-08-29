@@ -149,3 +149,13 @@ def test_every_get_route_has_apimodel_response_model():
         assert rm is not None, f"{getattr(r, 'path', '?')} thiếu response_model"
         assert issubclass(rm, ApiModel), \
             f"{getattr(r, 'path', '?')} response_model phải kế ApiModel"
+
+
+def test_feed_new_since_model_khong_strip_field_moi():
+    """Model của route vừa đổi nhà (lát 4): extra=allow phải giữ nguyên field
+    ngoài khai báo — FE đọc thêm key mà backend bổ sung sau không bị strip."""
+    from api_schemas_social import FeedNewSinceResponse
+
+    m = FeedNewSinceResponse(entities=[], posts=[], counts={"entities": 0},
+                             since="2026-01-01T00:00:00Z", field_moi="giu-nguyen")
+    assert m.model_dump()["field_moi"] == "giu-nguyen"

@@ -2283,7 +2283,7 @@ class TestAsyncBlockingFixes:
         assert "asyncio.to_thread" in fn_src
 
     def test_enhanced_search_async(self):
-        src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
+        src = (AGENT_DIR / "llmops" / "api.py").read_text(encoding="utf-8")  # handler /search/enhanced sang llmops 2026-08-29
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "enhanced_search")

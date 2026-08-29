@@ -17,12 +17,25 @@ from llmops import api as llmops_api  # noqa: E402
 SRC = Path(llmops_api.__file__).resolve()
 
 
-def test_router_phat_du_42_route_dung_mien():
+def test_router_phat_du_43_route_dung_mien():
+    # 42 route gốc + /search/enhanced về từ server.py (lát 4 đợt
+    # hoàn-thiện-sâu 2026-08-29 — cùng loài chẩn đoán truy hồi /vectors/search).
     paths = sorted(r.path for r in llmops_api.router.routes)
-    assert len(paths) == 42, len(paths)
-    mien = {"/system", "/checkpoints", "/vectors", "/freshness", "/analytics"}
+    assert len(paths) == 43, len(paths)
+    mien = {"/system", "/checkpoints", "/vectors", "/freshness", "/analytics",
+            "/search/enhanced"}
     for p in paths:
         assert any(p == m or p.startswith(m + "/") for m in mien), f"route lạc miền: {p}"
+
+
+def test_search_enhanced_len_app_tu_llmops():
+    """/search/enhanced phải LÊN app và do llmops.api phục vụ — path y nguyên,
+    handler đổi nhà; nếu server.py mọc lại bản sao thì test uniqueness đỏ trước."""
+    import server
+
+    matches = [r for r in server.app.routes if getattr(r, "path", None) == "/search/enhanced"]
+    assert len(matches) == 1, f"kỳ vọng đúng 1 route /search/enhanced, có {len(matches)}"
+    assert matches[0].endpoint.__module__ == "llmops.api", matches[0].endpoint.__module__
 
 
 def test_KHONG_import_nguoc_server_va_chat():
@@ -47,6 +60,6 @@ def test_khong_con_route_llmops_o_server():
 
     src = Path(server.__file__).resolve().read_text(encoding="utf-8")
     con = re.findall(
-        r'@app\.(?:get|post|put|delete)\(\s*["\'](/(?:system|checkpoints|vectors|freshness|analytics)[^"\']*)',
+        r'@app\.(?:get|post|put|delete)\(\s*["\'](/(?:system|checkpoints|vectors|freshness|analytics|search/enhanced)[^"\']*)',
         src)
     assert not con, f"server.py vẫn còn route llmops: {con}"
