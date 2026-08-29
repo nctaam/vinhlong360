@@ -34,8 +34,11 @@ HTTP_METHODS = {"get", "post", "put", "patch", "delete", "head", "options"}
 # Miền entity sang agent/entities/ (2026-08-28) nên số handler ở public_api.py
 # tụt từ 47 xuống 25 — KHÔNG phải tài liệu xấu đi, mà là route đổi nhà. Tách sàn
 # theo file mới; TỔNG hai sàn (25+22) giữ nguyên 47, tức ratchet không nới.
+# Lặp lại đúng luật đó 2026-08-29: 3 route itinerary (kèm docstring) sang
+# itineraries/api.py — public_api 25→22, sàn mới 3; tổng 25 giữ nguyên.
 FLOORS = {
-    "public_api.py": 25,
+    "public_api.py": 22,
+    "itineraries/api.py": 3,
     "entities/api.py": 22,
     "notifications.py": 20,
     "seo.py": 8,

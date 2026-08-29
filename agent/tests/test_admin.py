@@ -23,7 +23,8 @@ def _admin_src() -> str:
     root = _P(__file__).resolve().parent.parent
     return ((root / "admin.py").read_text(encoding="utf-8") + chr(10)
             + (root / "entities" / "admin_api.py").read_text(encoding="utf-8") + chr(10)
-            + (root / "community" / "admin_api.py").read_text(encoding="utf-8"))
+            + (root / "community" / "admin_api.py").read_text(encoding="utf-8") + chr(10)
+            + (root / "itineraries" / "admin_api.py").read_text(encoding="utf-8"))
 
 
 class TestEntityCreateValidation:

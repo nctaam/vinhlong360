@@ -61,6 +61,13 @@ CRITICAL_DECLARATIONS = (
         'monkeypatch.setattr(community_admin, "db", isolated_sqlite_db)',
     ),
     (
+        # Handler itinerary-admin sang itineraries/admin_api.py (2026-08-29,
+        # lat 2) — cung lop bay binding rieng, thieu la itinerary CRUD test
+        # ghi/xoa tren DB THAT (B1).
+        "agent/tests/test_admin_mutations.py",
+        'monkeypatch.setattr(itineraries_admin, "db", isolated_sqlite_db)',
+    ),
+    (
         "agent/tests/test_admin_mutations.py",
         "for name, original in knowledge_state_snapshot.items():",
     ),

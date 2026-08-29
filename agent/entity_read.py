@@ -123,6 +123,45 @@ def _get_public_entities_batch(entity_ids: list[str]) -> dict[str, dict]:
     }
 
 
+# Dời từ public_api.py cùng đợt bóc itineraries/ (2026-08-29, bước 1a lát 2):
+# cả route itinerary (sang itineraries/api.py) LẪN homepage của public_api đều
+# gọi hai helper này — để nguyên chỗ cũ là gói mới phải import ngược public_api
+# (test_itineraries_boundary.py cấm). Nhà tự nhiên: chúng lọc stop theo
+# _get_public_entities_batch ngay trên đây.
+def _itinerary_stop_entity_id(stop) -> str:
+    if isinstance(stop, str):
+        return stop
+    if isinstance(stop, dict):
+        return str(stop.get("entityId") or stop.get("entity_id") or stop.get("id") or "")
+    return ""
+
+
+def _public_itinerary_stops(
+    stops: list, public_entities: dict[str, dict] | None = None, *, enrich: bool = False,
+) -> list:
+    stop_ids = [sid for sid in (_itinerary_stop_entity_id(stop) for stop in stops) if sid]
+    if public_entities is None:
+        public_entities = _get_public_entities_batch(stop_ids)
+    result = []
+    for stop in stops:
+        stop_id = _itinerary_stop_entity_id(stop)
+        if stop_id and stop_id not in public_entities:
+            continue
+        if enrich and isinstance(stop, dict):
+            entity = public_entities.get(stop_id)
+            if entity:
+                stop.setdefault("id", stop_id)
+                stop.setdefault("entityId", stop_id)
+                stop["name"] = entity["name"]
+                if not stop.get("summary"):
+                    stop["summary"] = entity.get("summary", "")
+                stop["type"] = entity["type"]
+                if entity.get("coordinates"):
+                    stop["coordinates"] = entity["coordinates"]
+        result.append(stop)
+    return result
+
+
 def _public_facilities_by_place(place_id: str | None = None) -> list[dict]:
     return [
         _project_public_entity_media(entity)

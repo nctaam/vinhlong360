@@ -8,6 +8,9 @@ from starlette.requests import Request
 
 import public_api
 import ratelimit
+# Route itinerary sang itineraries/api.py (2026-08-29, lat 2); patch db van qua
+# public_api.db — CUNG OBJECT `database.db` ma module moi bind.
+from itineraries import api as itineraries_api
 
 
 def _request(path: str = "/api/test") -> Request:
@@ -294,7 +297,7 @@ def test_itinerary_omits_hidden_referenced_stops(monkeypatch):
         "hidden": _entity("hidden", status="provisional"),
     })
 
-    result = asyncio.run(public_api.get_itinerary("itinerary-1", Response()))
+    result = asyncio.run(itineraries_api.get_itinerary("itinerary-1", Response()))
 
     assert [stop.get("entityId") for stop in result["stops"]] == ["public", None]
     assert result["stops"][0]["name"] == "Public"
@@ -315,7 +318,7 @@ def test_itinerary_list_filters_hidden_entity_stops(monkeypatch):
         "hidden-child": _entity("hidden-child", verified=0),
     })
 
-    result = asyncio.run(public_api.list_itineraries(
+    result = asyncio.run(itineraries_api.list_itineraries(
         Response(), area=None, limit=50, offset=0,
     ))
 

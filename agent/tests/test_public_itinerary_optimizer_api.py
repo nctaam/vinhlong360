@@ -2,7 +2,10 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-import public_api
+# Handler + service-binding o itineraries/api.py (2026-08-29, lat 2) — moi mat-va
+# (setattr/caplog) nham vao module do; router van la public_api.router de test
+# dung chuoi mount that /api -> itineraries.
+from itineraries import api as itineraries_api
 from public_api import router
 
 
@@ -91,13 +94,13 @@ def matrix_with_cell(row_index, column_index, value):
 
 def capture_route_optimizer_calls(monkeypatch):
     calls = []
-    original_optimize = public_api.optimize_stop_order
+    original_optimize = itineraries_api.optimize_stop_order
 
     def track_optimize(stops, options):
         calls.append((stops, options))
         return original_optimize(stops, options)
 
-    monkeypatch.setattr(public_api, "optimize_stop_order", track_optimize)
+    monkeypatch.setattr(itineraries_api, "optimize_stop_order", track_optimize)
     return calls
 
 
@@ -219,7 +222,7 @@ def test_schedule_envelope_returns_placements_and_uses_request_matrix(client):
 
 def test_without_schedule_keeps_existing_response_and_call_path(client, monkeypatch):
     optimize_calls = []
-    original_optimize = public_api.optimize_stop_order
+    original_optimize = itineraries_api.optimize_stop_order
 
     def track_optimize(stops, options):
         optimize_calls.append((stops, options))
@@ -228,15 +231,15 @@ def test_without_schedule_keeps_existing_response_and_call_path(client, monkeypa
     def fail_schedule_path(*args, **kwargs):
         raise AssertionError("order-only request entered the scheduling path")
 
-    monkeypatch.setattr(public_api, "optimize_stop_order", track_optimize)
+    monkeypatch.setattr(itineraries_api, "optimize_stop_order", track_optimize)
     monkeypatch.setattr(
-        public_api,
+        itineraries_api,
         "schedule_stop_order",
         fail_schedule_path,
         raising=False,
     )
     monkeypatch.setattr(
-        public_api,
+        itineraries_api,
         "build_fallback_matrix",
         fail_schedule_path,
         raising=False,
@@ -387,7 +390,7 @@ def test_schedule_maps_outer_coordinates_and_uses_schedule_id_matrix_order(
         [40, 30, 20, 0],
     ]
     captured = {}
-    original_schedule = getattr(public_api, "schedule_stop_order", None)
+    original_schedule = getattr(itineraries_api, "schedule_stop_order", None)
 
     def track_schedule(stops, matrix, options):
         captured["stops"] = stops
@@ -395,7 +398,7 @@ def test_schedule_maps_outer_coordinates_and_uses_schedule_id_matrix_order(
         return original_schedule(stops, matrix, options)
 
     monkeypatch.setattr(
-        public_api,
+        itineraries_api,
         "schedule_stop_order",
         track_schedule,
         raising=False,
@@ -427,14 +430,14 @@ def test_schedule_without_matrix_uses_local_fallback_for_selected_mode(
         stop.pop("opening_hours", None)
         stop["visit_minutes"] = 0
     captured_modes = []
-    original_builder = getattr(public_api, "build_fallback_matrix", None)
+    original_builder = getattr(itineraries_api, "build_fallback_matrix", None)
 
     def track_fallback(stops, mode):
         captured_modes.append(mode)
         return original_builder(stops, mode)
 
     monkeypatch.setattr(
-        public_api,
+        itineraries_api,
         "build_fallback_matrix",
         track_fallback,
         raising=False,
@@ -474,12 +477,12 @@ def test_matrix_builder_runtime_failure_falls_back_to_order_only(
         raise RuntimeError("matrix builder exploded")
 
     monkeypatch.setattr(
-        public_api,
+        itineraries_api,
         "build_fallback_matrix",
         fail_matrix,
     )
 
-    with caplog.at_level("ERROR", logger=public_api.logger.name):
+    with caplog.at_level("ERROR", logger=itineraries_api.logger.name):
         response = non_raising_client.post(
             "/api/itineraries/optimize-order",
             json=body,
@@ -487,7 +490,7 @@ def test_matrix_builder_runtime_failure_falls_back_to_order_only(
 
     assert_order_only_fallback(response, route_calls)
     assert any(
-        record.name == public_api.logger.name and record.exc_info
+        record.name == itineraries_api.logger.name and record.exc_info
         for record in caplog.records
     )
 
@@ -502,9 +505,9 @@ def test_scheduler_runtime_failure_falls_back_to_order_only(
     def fail_schedule(*args, **kwargs):
         raise RuntimeError("scheduler exploded")
 
-    monkeypatch.setattr(public_api, "schedule_stop_order", fail_schedule)
+    monkeypatch.setattr(itineraries_api, "schedule_stop_order", fail_schedule)
 
-    with caplog.at_level("ERROR", logger=public_api.logger.name):
+    with caplog.at_level("ERROR", logger=itineraries_api.logger.name):
         response = non_raising_client.post(
             "/api/itineraries/optimize-order",
             json=schedule_payload(),
@@ -512,7 +515,7 @@ def test_scheduler_runtime_failure_falls_back_to_order_only(
 
     assert_order_only_fallback(response, route_calls)
     assert any(
-        record.name == public_api.logger.name and record.exc_info
+        record.name == itineraries_api.logger.name and record.exc_info
         for record in caplog.records
     )
 
@@ -528,7 +531,7 @@ def test_schedule_fallback_preserves_legacy_no_route_409(
     def fail_schedule(*args, **kwargs):
         raise RuntimeError("scheduler exploded")
 
-    monkeypatch.setattr(public_api, "schedule_stop_order", fail_schedule)
+    monkeypatch.setattr(itineraries_api, "schedule_stop_order", fail_schedule)
 
     response = non_raising_client.post(
         "/api/itineraries/optimize-order",

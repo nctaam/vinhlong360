@@ -44,7 +44,8 @@ def _public_src() -> str:
     from pathlib import Path as _P
     root = _P(__file__).resolve().parent.parent
     return ((root / "public_api.py").read_text(encoding="utf-8") + chr(10)
-            + (root / "entities" / "api.py").read_text(encoding="utf-8"))
+            + (root / "entities" / "api.py").read_text(encoding="utf-8") + chr(10)
+            + (root / "itineraries" / "api.py").read_text(encoding="utf-8"))
 
 
 
@@ -59,7 +60,8 @@ def _admin_src() -> str:
     root = _P(__file__).resolve().parent.parent
     return ((root / "admin.py").read_text(encoding="utf-8") + chr(10)
             + (root / "entities" / "admin_api.py").read_text(encoding="utf-8") + chr(10)
-            + (root / "community" / "admin_api.py").read_text(encoding="utf-8"))
+            + (root / "community" / "admin_api.py").read_text(encoding="utf-8") + chr(10)
+            + (root / "itineraries" / "admin_api.py").read_text(encoding="utf-8"))
 
 
 class TestReactionEnrichment:
@@ -769,7 +771,11 @@ class TestAdminErrorMessagesVietnamese:
         assert '"Entity not found"' not in src
 
     def test_no_english_itinerary_not_found(self):
+        # Route itinerary sang goi itineraries/ (2026-08-29, lat 2) — khong quet
+        # nha moi la rao nay thanh rong lang le sau move.
         src = inspect.getsource(__import__("admin"))
+        src += inspect.getsource(__import__("itineraries.admin_api", fromlist=["admin_api"]))
+        src += inspect.getsource(__import__("itineraries.api", fromlist=["api"]))
         assert '"Itinerary not found"' not in src
 
     def test_no_english_requires_postgres(self):

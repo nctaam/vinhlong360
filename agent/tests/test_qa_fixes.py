@@ -22,6 +22,10 @@ import moderation
 import admin
 import saved
 import plans
+# Mien lich trinh sang goi itineraries/ (2026-08-29, lat 2): route public o
+# itineraries/api.py, CRUD quan tri o itineraries/admin_api.py.
+from itineraries import api as itineraries_api
+from itineraries import admin_api as itineraries_admin
 
 
 class TestPaginationBounds:
@@ -345,12 +349,12 @@ class TestItineraryPagination:
     """Finding-031: itinerary listing must have pagination."""
 
     def test_itinerary_endpoint_has_limit_param(self):
-        sig = inspect.signature(public_api.list_itineraries)
+        sig = inspect.signature(itineraries_api.list_itineraries)
         assert "limit" in sig.parameters
         assert "offset" in sig.parameters
 
     def test_itinerary_limit_has_bounds(self):
-        src = inspect.getsource(public_api.list_itineraries)
+        src = inspect.getsource(itineraries_api.list_itineraries)
         assert "ge=1" in src
 
     def test_itinerary_stop_entity_id_accepts_all_stop_key_shapes(self):
@@ -363,7 +367,7 @@ class TestItineraryPagination:
         # Refactor: homepage itinerary scoring/selection moved from
         # homepage_curated into module-level helpers (extract-method, behavior
         # identical). The stop-id + coverage helpers are now called there.
-        detail_src = inspect.getsource(public_api.get_itinerary)
+        detail_src = inspect.getsource(itineraries_api.get_itinerary)
         public_stops_src = inspect.getsource(public_api._public_itinerary_stops)
         home_src = inspect.getsource(public_api._score_one_itinerary)
         coverage_src = inspect.getsource(public_api._pick_diverse_itineraries)
@@ -373,14 +377,14 @@ class TestItineraryPagination:
         assert "_itinerary_coverage_areas" in coverage_src
 
     def test_admin_itinerary_update_merges_existing_payload(self):
-        src = inspect.getsource(admin.update_itinerary)
+        src = inspect.getsource(itineraries_admin.update_itinerary)
         assert "db.get_itinerary" in src
         assert "{**existing, **data}" in src
         assert "_normalize_itinerary_payload" in src
 
     def test_admin_itinerary_models_keep_editor_fields(self):
-        create_fields = admin.ItineraryCreate.model_fields
-        update_fields = admin.ItineraryUpdate.model_fields
+        create_fields = itineraries_admin.ItineraryCreate.model_fields
+        update_fields = itineraries_admin.ItineraryUpdate.model_fields
         for field in ("summary", "duration", "stops", "areas"):
             assert field in create_fields
             assert field in update_fields
