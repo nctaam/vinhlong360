@@ -148,16 +148,8 @@ def generate_user_bound_token(
     )
 
 
-def verify_user_bound_token(
-    token: str,
-    purpose: str,
-    user_id: str,
-    *,
-    now: int,
-) -> dict | None:
-    """Verify signature, purpose, owner and expiry without logging token content."""
-    if not isinstance(token, str) or len(token) > 2048 or token.count(".") != 1:
-        return None
+def _decode_signed_envelope(token: str) -> object | None:
+    """Decode + authenticate a `payload.signature` token; None on any mismatch."""
     encoded_text, signature_text = token.split(".", 1)
     try:
         encoded = encoded_text.encode("ascii")
@@ -173,9 +165,22 @@ def verify_user_bound_token(
         raw = base64.urlsafe_b64decode(
             encoded_text + "=" * (-len(encoded_text) % 4)
         )
-        envelope = json.loads(raw)
+        return json.loads(raw)
     except (UnicodeError, ValueError, TypeError, json.JSONDecodeError):
         return None
+
+
+def verify_user_bound_token(
+    token: str,
+    purpose: str,
+    user_id: str,
+    *,
+    now: int,
+) -> dict | None:
+    """Verify signature, purpose, owner and expiry without logging token content."""
+    if not isinstance(token, str) or len(token) > 2048 or token.count(".") != 1:
+        return None
+    envelope = _decode_signed_envelope(token)
     if not isinstance(envelope, dict):
         return None
     if envelope.get("purpose") != purpose or envelope.get("user_id") != user_id:
