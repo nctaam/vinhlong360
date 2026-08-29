@@ -4104,3 +4104,28 @@ thiếu env → skip đúng chiều, 796 skipped ở baseline).
 - 1 fail ENV thật còn lại (`test_scoring_reset_...`): chỉ đỏ khi
   PERSONALIZATION_EVENTS gate trỏ DB dùng-chung của lượt đo đủ-cổng; DB
   disposable riêng thì xanh — khi đo đủ-cổng hãy cấp DB mới cho suite này.
+
+### Backlog phát sinh — Data-op §1.6 lớp "tỉnh X hiện-tại-thức" (2026-08-29, uỷ quyền toàn-quyền-máy)
+
+- **ĐÃ LÀM (B1 snapshot trước khi chạm): 27 entity / 36 field** — chèn "(cũ)"
+  theo đúng khuôn nhà có sẵn (mẫu `xa-an-phu-tan`) cho mọi "tỉnh Bến Tre/Trà
+  Vinh" hiện-tại-thức trong summary/description/attributes; regex có VÙNG CẤM
+  tên-riêng (11 ca "Hội chợ/Giải/Liên hoan/Lễ hội/Bảo tàng/Trung tâm ... tỉnh X"
+  trong prose giữ nguyên — chèn vào giữa tên riêng là phá tên). Đo lại: 0 vi
+  phạm ngoài vùng cấm. DB 1746 entity nguyên số.
+- **Đo lại toàn cảnh §1.6 (2026-08-29, DB thật):** con số cũ "42+72" lỗi thời.
+  Thật: 3.409 hit — trong đó 989 địa-chỉ-kiểu-cũ "xã X, huyện Y" KHÔNG thể
+  viết lại trung thực khi chưa có **bảng ánh xạ xã-cũ→xã-mới** (sáp nhập có
+  gộp/đổi tên; bịa là phá E-E-A-T, đóng dấu "(cũ)" 989 chỗ là phá giọng văn).
+  Việc mới: DỰNG BẢNG ÁNH XẠ từ nguồn chính thức (NQ sáp nhập + GSO) — dự án
+  dữ liệu riêng, xong nó rồi mới xử lớp 989 + 543 "TP. Bến Tre"-kiểu-cũ.
+- **10 entity mang "tỉnh X" trong NAME** (cửa hàng OCOP, bảo tàng, hội chợ,
+  giải, liên hoan...) — tên riêng tổ chức/sự kiện, KHÔNG tự đổi; cần chủ dự án
+  quyết cách gọi mới (giữ tên lịch sử hay theo tên tổ chức sau sáp nhập).
+- **Defect dữ liệu:** `xa-hung-khanh-trung` summary/description CỤT giữa câu
+  ("huyện Chợ Lách + H، ... xã Hưng Khánh Trung B (H."). Cần re-author từ
+  nguồn — đã loại khỏi data-op, đừng vá mù.
+- **Test leak file:** 53 file `agent/data/admin_audit.2026*.jsonl` (gitignored)
+  do TestClient ghi đường audit THẬT trong các lượt test 2026-08-28 — đã xoá.
+  Việc: fixture admin test nên monkeypatch đường audit sang tmp_path (cùng lớp
+  bài trục-4 nhưng là FILE thay vì DB).
