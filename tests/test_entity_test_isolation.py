@@ -68,6 +68,13 @@ CRITICAL_DECLARATIONS = (
         'monkeypatch.setattr(itineraries_admin, "db", isolated_sqlite_db)',
     ),
     (
+        # Handler van-hanh-site sang siteops/admin_api.py (2026-08-29, lat 3)
+        # — data-quality/site-settings/ops-summary doc db qua binding rieng
+        # cua goi; thieu dong nay la mutation test cham DB THAT (B1).
+        "agent/tests/test_admin_mutations.py",
+        'monkeypatch.setattr(siteops_admin, "db", isolated_sqlite_db)',
+    ),
+    (
         "agent/tests/test_admin_mutations.py",
         "for name, original in knowledge_state_snapshot.items():",
     ),

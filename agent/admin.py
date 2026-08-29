@@ -25,14 +25,14 @@ from typing import Any, Optional
 
 from fastapi import APIRouter, HTTPException, Query, Request, Depends
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field  # field_validator sang siteops/admin_api.py cung models announcements (lat 3)
 
-import data_quality
+import data_quality  # noqa: F401  (nguoi dung cuoi la siteops/admin_api.py — giu additive-first B2, go o task rieng)
 import knowledge
 import analytics
 
 logger = logging.getLogger("admin")
-import site_settings
+import site_settings  # noqa: F401  (nguoi dung cuoi la siteops/admin_api.py — giu additive-first B2, go o task rieng)
 from database import db, escape_like as _escape_like
 
 
@@ -45,7 +45,7 @@ try:
 except Exception:  # noqa: BLE001
     logger.warning("Cost tracker unavailable", exc_info=True)
     _HAS_COST = False
-from auth_middleware import get_current_user, validate_path_id, require_csrf, require_pg
+from auth_middleware import get_current_user, validate_path_id, require_csrf  # require_pg sang siteops/admin_api.py cung announcements admin (lat 3)
 from middleware import admin_limiter, verify_admin_key, get_client_ip
 
 
@@ -58,13 +58,6 @@ from middleware import admin_limiter, verify_admin_key, get_client_ip
 _admin_volatile_caches: list[dict] = []
 
 
-
-def _safe(fn, default):
-    try:
-        return fn()
-    except Exception:
-        logger.debug("_safe(%s) failed, returning default", getattr(fn, "__name__", fn), exc_info=True)
-        return default
 
 
 # ── Auth dependency ──
@@ -407,11 +400,6 @@ async def require_admin_scope(request: Request, scope: str):
     """Verify admin auth and require an explicit RBAC scope for non-admin routes."""
     await require_admin(request, required_scope_override=scope)
 
-def _admin_actor_label(request: Request | None) -> str:
-    if request is None:
-        return "admin-key"
-    user = getattr(request.state, "admin_user", None) or getattr(request.state, "user", None)
-    return f"user:{user.get('id')}" if user and user.get("id") else "admin-key"
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -429,6 +417,7 @@ from admin_common import (  # noqa: F401
     _log_mod_action,
     _mask,
     _require_admin_actor_id,
+    _safe,
     _sync_kb,
 )
 
@@ -597,6 +586,62 @@ from community.admin_api import (  # noqa: F401
     user_growth,
 )
 
+# Mien VAN HANH SITE (data-quality / system-health / backup / ops-summary /
+# export toan-DB / site-settings / announcements admin) sang
+# agent/siteops/admin_api.py (2026-08-29, lat 3 dot cat module). Tai xuat de bo
+# test hien co van va duoc qua `admin.<ten>`; router con duoc include TRUOC
+# _fix_admin_route_order (cong R20.9 chi thay mount qua include_router).
+# KHONG tai xuat `_last_backup_time`: state module MUTABLE (global re-bind trong
+# trigger_backup) — alias float chi la snapshot, tro thanh so cu ngay lan backup
+# dau; ai can doc thi doc `siteops.admin_api._last_backup_time`.
+from siteops.admin_api import (  # noqa: F401
+    AnnouncementCreate,
+    AnnouncementUpdate,
+    BulkSettingUpdate,
+    DataQualityApplyRequest,
+    DataQualityDecisionRequest,
+    SettingUpdate,
+    _BACKUP_COOLDOWN,
+    _QUALITY_TREND_KEYS,
+    _SETTING_KEY_RE,
+    _admin_actor_label,
+    _data_quality_ops_snapshot,
+    _format_uptime,
+    _latest_backup_info,
+    _ops_audit_snapshot,
+    _ops_moderation_snapshot,
+    _quality_trend_budget_failure,
+    _quality_trend_fetch_rows,
+    _quality_trend_meta,
+    _quality_trend_ops_snapshot,
+    _quality_trend_process_latest,
+    _server_start_time,
+    _system_health_pg,
+    _system_health_server,
+    admin_bulk_update_settings,
+    admin_get_all_settings,
+    admin_get_settings_by_category,
+    admin_reset_category,
+    admin_site_settings_history,
+    admin_site_settings_rollback,
+    admin_update_setting,
+    backup_status,
+    create_announcement,
+    data_quality_apply,
+    data_quality_decision,
+    data_quality_history,
+    data_quality_review,
+    data_quality_rollback,
+    data_quality_summary,
+    delete_announcement,
+    export_data,
+    list_announcements,
+    ops_summary,
+    system_health,
+    trigger_backup,
+    update_announcement,
+)
+
 router = APIRouter(prefix="/admin", tags=["admin"], dependencies=[Depends(require_admin), Depends(require_csrf)])
 
 
@@ -614,15 +659,6 @@ router = APIRouter(prefix="/admin", tags=["admin"], dependencies=[Depends(requir
 
 # ── Entity CRUD ──
 
-class DataQualityApplyRequest(BaseModel):
-    candidate_ids: list[str] | None = Field(None, max_length=500)
-    dry_run: bool = True
-
-class DataQualityDecisionRequest(BaseModel):
-    candidate_ids: list[str] = Field(..., min_length=1, max_length=200)
-    decision: str = Field(..., pattern="^(approve|reject|defer)$")
-    note: str = Field("", max_length=1000)
-    apply: bool = False
 
 
 
@@ -695,100 +731,8 @@ class DataQualityDecisionRequest(BaseModel):
 
 # ── Bulk operations ──
 
-# Data quality review queue
-
-@router.get("/data-quality/summary",
-            summary="Get data quality summary",
-            description="Returns an overview of data quality metrics including candidate counts, stream counts, and sitemap expectations.")
-async def data_quality_summary(refresh: bool = Query(False)):
-    def _query():
-        data_summary = data_quality.summarize_data()
-        queue = data_quality.load_candidate_queue(refresh=refresh)
-        return {
-            "data": data_summary,
-            "candidates": queue.get("counts", {}),
-            "stream_counts": queue.get("stream_counts", {}),
-            "cache": queue.get("cache", {}),
-            "sitemap": {
-                "expected_public_detail_urls": data_summary["public_entities"],
-                "expected_itinerary_urls": data_summary["itineraries"],
-                "expected_public_content_urls": data_summary["public_entities"] + data_summary["itineraries"],
-            },
-            "policy": queue.get("policy", {}),
-        }
-    return await asyncio.to_thread(_query)
-
-@router.get("/data-quality/review",
-            summary="Review data quality candidates",
-            description="Returns filterable data quality improvement candidates. Supports filtering by kind, bucket, and pagination.")
-async def data_quality_review(
-    kind: Optional[str] = Query(None, pattern="^(source|location|placeid|accuracy|relationship)$"),
-    bucket: Optional[str] = Query(None, pattern="^(auto_apply|needs_review|reject)$"),
-    refresh: bool = Query(False),
-    limit: int = Query(100, ge=1, le=500),
-    offset: int = Query(0, ge=0, le=10000),
-):
-    def _query():
-        queue = data_quality.load_candidate_queue(refresh=refresh)
-        result = data_quality.filter_candidates(queue, kind=kind, bucket=bucket, limit=limit, offset=offset)
-        result["cache"] = queue.get("cache", {})
-        return result
-    return await asyncio.to_thread(_query)
-
-@router.post("/data-quality/apply",
-             summary="Apply data quality improvements",
-             description="Applies selected data quality candidates to entities. Supports dry-run mode for preview.")
-async def data_quality_apply(body: DataQualityApplyRequest):
-    def _query():
-        result = data_quality.apply_candidates(body.candidate_ids, dry_run=body.dry_run)
-        if result.get("applied_count") and not body.dry_run:
-            _sync_kb()
-        return result
-    return await asyncio.to_thread(_query)
-
-@router.get("/data-quality/history",
-            summary="Get data quality apply history",
-            description="Returns the history of applied data quality batches, ordered by most recent first.")
-async def data_quality_history(limit: int = Query(20, ge=1, le=200)):
-    result = await asyncio.to_thread(data_quality.load_apply_history, limit=limit)
-    decisions = await asyncio.to_thread(data_quality.load_decision_history, limit=limit)
-    result["decisions"] = decisions.get("decisions", [])
-    result["decision_total"] = decisions.get("total", 0)
-    return result
-
-@router.post("/data-quality/decision",
-             summary="Record data quality review decision",
-             description="Records approve, reject, or defer decisions for data-quality candidates. Approved candidates can optionally be applied immediately.")
-async def data_quality_decision(body: DataQualityDecisionRequest, request: Request):
-    reviewer = _require_admin_actor_id(request)
-    try:
-        result = await asyncio.to_thread(
-            data_quality.decide_candidates,
-            body.candidate_ids,
-            decision=body.decision,
-            note=body.note,
-            reviewer=reviewer,
-            apply=body.apply,
-        )
-    except ValueError as e:
-        raise HTTPException(400, str(e))
-    return result
-
-@router.post("/data-quality/rollback/{batch_id}",
-             summary="Rollback data quality batch",
-             description="Reverts all changes from a previously applied data quality batch by restoring original entity data.")
-async def data_quality_rollback(batch_id: str):
-    validate_path_id(batch_id, "batch_id")
-    def _query():
-        try:
-            result = data_quality.rollback_apply(batch_id)
-        except ValueError:
-            raise HTTPException(400, detail="Batch ID không hợp lệ")
-        except FileNotFoundError:
-            raise HTTPException(404, detail="Không tìm thấy batch")
-        _sync_kb()
-        return result
-    return await asyncio.to_thread(_query)
+# Data-quality review queue (6 route, co B7 apply/rollback): sang
+# siteops/admin_api.py (2026-08-29, lat 3).
 
 # ── Stale content queue (U-17) ──
 
@@ -1101,91 +1045,7 @@ import image_suggestions as _imgq
 
 # ── Data management ──
 
-_server_start_time = __import__("time").time()
-
-
-def _system_health_server(result, os, _t) -> None:
-    result["server"]["uptime_seconds"] = int(_t.time() - _server_start_time)
-    result["server"]["uptime_human"] = _format_uptime(int(_t.time() - _server_start_time))
-    result["server"]["pid"] = os.getpid()
-    try:
-        import psutil
-        proc = psutil.Process(os.getpid())
-        result["server"]["memory_mb"] = round(proc.memory_info().rss / 1024 / 1024, 1)
-    except (ImportError, Exception):
-        result["server"]["memory_mb"] = -1
-
-
-def _system_health_pg(result) -> None:
-    with db._conn() as conn:
-        tables = ["users", "posts", "comments", "likes", "follows",
-                   "notifications", "blocks", "sessions", "user_visits",
-                   "reports", "saved_entities", "announcements"]
-        pg_tables = {}
-        for t in tables:
-            try:
-                row = db._fetchone(conn, f"SELECT COUNT(*) as c FROM {t}", ())
-                pg_tables[t] = db._row_to_dict(row)["c"] if row else 0
-            except Exception:
-                pg_tables[t] = -1
-        result["postgres"]["tables"] = pg_tables
-        try:
-            size_row = db._fetchone(conn, """
-                SELECT pg_database_size(current_database()) as s
-            """, ())
-            result["postgres"]["size_mb"] = round(db._row_to_dict(size_row)["s"] / 1024 / 1024, 2) if size_row else 0
-        except Exception:
-            result["postgres"]["size_mb"] = -1
-        active_row = db._fetchone(conn, """
-            SELECT COUNT(*) as c FROM sessions WHERE expires_at > NOW()
-        """, ())
-        result["postgres"]["active_sessions"] = db._row_to_dict(active_row)["c"] if active_row else 0
-        pending_row = db._fetchone(conn, """
-            SELECT COUNT(*) as c FROM posts WHERE moderation_status = 'pending'
-        """, ())
-        result["postgres"]["pending_moderation"] = db._row_to_dict(pending_row)["c"] if pending_row else 0
-        open_reports = db._fetchone(conn, """
-            SELECT COUNT(*) as c FROM reports WHERE status = 'pending'
-        """, ())
-        result["postgres"]["open_reports"] = db._row_to_dict(open_reports)["c"] if open_reports else 0
-
-
-@router.get("/system-health",
-            summary="Get system health status",
-            description="Returns system health information including SQLite/Postgres status, server uptime, memory usage, and storage metrics.")
-async def system_health():
-    import os
-    import time as _t
-    def _query():
-        result = {"sqlite": {}, "postgres": {}, "server": {}}
-        _system_health_server(result, os, _t)
-        db_path = os.path.join(os.path.dirname(__file__), "data", "knowledge.db")
-        if os.path.exists(db_path):
-            result["sqlite"]["size_mb"] = round(os.path.getsize(db_path) / 1024 / 1024, 2)
-            result["sqlite"]["entities"] = sum(db.count_entities().values())
-        if db._use_pg:
-            _system_health_pg(result)
-        data_dir = Path(__file__).resolve().parent / "data"
-        jsonl_files = list(data_dir.glob("*.jsonl"))
-        result["storage"] = {
-            "jsonl_files": len(jsonl_files),
-            "jsonl_size_mb": round(sum(f.stat().st_size for f in jsonl_files) / 1024 / 1024, 2),
-        }
-        return result
-    return await asyncio.to_thread(_query)
-
-
-def _format_uptime(seconds: int) -> str:
-    days, remainder = divmod(seconds, 86400)
-    hours, remainder = divmod(remainder, 3600)
-    minutes, _ = divmod(remainder, 60)
-    parts = []
-    if days:
-        parts.append(f"{days}d")
-    if hours:
-        parts.append(f"{hours}h")
-    parts.append(f"{minutes}m")
-    return " ".join(parts)
+# System-health + uptime: sang siteops/admin_api.py (2026-08-29, lat 3).
 
 
 
@@ -1337,346 +1197,10 @@ def _admin_stats_backup_info():
     return backup_info
 
 
-def _latest_backup_info() -> dict:
-    backup_dir = ROOT / "scratch" / "backups"
-    if not backup_dir.exists():
-        return {"ready": False, "latest": None, "count": 0, "size_mb": 0}
-    dirs = sorted([p for p in backup_dir.iterdir() if p.is_dir()], key=lambda p: p.name, reverse=True)
-    if not dirs:
-        return {"ready": False, "latest": None, "count": 0, "size_mb": 0}
-    latest = dirs[0]
-    size_mb = round(sum(f.stat().st_size for f in latest.rglob("*") if f.is_file()) / 1048576, 1)
-    return {"ready": True, "latest": latest.name, "count": len(dirs), "size_mb": size_mb}
+# Backup-status + ops-summary + backup-trigger (B1) + cac snapshot van hanh:
+# sang siteops/admin_api.py (2026-08-29, lat 3).
 
 
-@router.get("/backup-status",
-            summary="Get latest backup status",
-            description="Returns a thin snapshot of the latest local backup (readiness, name, count, size) — same info already surfaced inside /admin/stats and /admin/ops-summary, exposed standalone for lightweight polling.")
-async def backup_status():
-    """B5c: route mỏng bọc _latest_backup_info() — không thêm logic mới."""
-    return {"backup": await asyncio.to_thread(_latest_backup_info)}
-
-
-def _data_quality_ops_snapshot() -> dict:
-    queue_path = data_quality.BURST_DIR / data_quality.QUEUE_FILE
-    counts = {"auto_apply": 0, "needs_review": 0, "reject": 0}
-    stream_counts = {}
-    cache = {"exists": queue_path.exists(), "path": str(queue_path)}
-    policy = {}
-    if queue_path.exists():
-        try:
-            queue = json.loads(queue_path.read_text(encoding="utf-8-sig"))
-            for bucket in counts:
-                counts[bucket] = len(queue.get(bucket, []) or [])
-            stream_counts = queue.get("stream_counts", {}) or {}
-            policy = queue.get("policy", {}) or {}
-            stat = queue_path.stat()
-            cache.update({
-                "size_bytes": stat.st_size,
-                "modified_at": datetime.fromtimestamp(stat.st_mtime, timezone.utc).isoformat(timespec="seconds"),
-            })
-        except Exception:
-            logger.debug("ops data-quality queue read failed", exc_info=True)
-            cache["error"] = "read_failed"
-    decisions = _safe(lambda: data_quality.load_decision_history(limit=20), {"total": 0, "decisions": []})
-    return {
-        "counts": counts,
-        "total": sum(counts.values()),
-        "stream_counts": stream_counts,
-        "cache": cache,
-        "policy": policy,
-        "decision_total": decisions.get("total", 0),
-        "recent_decisions": decisions.get("decisions", [])[:5],
-    }
-
-_QUALITY_TREND_KEYS = (
-    "quality_score_avg",
-    "image_coverage_pct",
-    "place_coords_coverage_pct",
-    "image_missing_credit",
-    "image_missing_license",
-    "image_missing_source",
-    "duplicate_source_urls",
-    "self_citation_pct",
-)
-
-def _quality_trend_meta(value):
-    if isinstance(value, dict):
-        return value
-    if isinstance(value, str):
-        try:
-            parsed = json.loads(value)
-            return parsed if isinstance(parsed, dict) else {}
-        except Exception:
-            return {}
-    return {}
-
-
-def _quality_trend_fetch_rows():
-    """Return (latest_rows, baseline_rows, count_row) or None on failure/no-pg."""
-    with db._conn() as conn:
-        latest_rows = db._fetchall(conn, """
-            SELECT DISTINCT ON (metric_key)
-                metric_key, metric_value, metric_unit, metadata, created_at
-            FROM quality_metric_snapshots
-            WHERE metric_key = ANY(%s)
-            ORDER BY metric_key, created_at DESC
-        """, (list(_QUALITY_TREND_KEYS),))
-        baseline_rows = db._fetchall(conn, """
-            SELECT DISTINCT ON (metric_key)
-                metric_key, metric_value, created_at
-            FROM quality_metric_snapshots
-            WHERE metric_key = ANY(%s)
-              AND created_at <= NOW() - INTERVAL '7 days'
-            ORDER BY metric_key, created_at DESC
-        """, (list(_QUALITY_TREND_KEYS),))
-        count_row = db._fetchone(conn, """
-            SELECT COUNT(*) AS c
-            FROM quality_metric_snapshots
-            WHERE created_at > NOW() - INTERVAL '30 days'
-        """, ())
-    return latest_rows, baseline_rows, count_row
-
-
-def _quality_trend_budget_failure(meta, key, value):
-    """Return a budget-failure dict for this metric, or None when the budget is met/absent."""
-    budget = meta.get("budget") if isinstance(meta, dict) else None
-    if isinstance(budget, dict) and budget.get("ok") is False:
-        return {
-            "metric_key": key,
-            "value": round(value, 2),
-            "expected": budget.get("expected"),
-            "op": budget.get("op"),
-            "severity": budget.get("severity") or "error",
-        }
-    return None
-
-
-def _quality_trend_process_latest(latest_rows):
-    """Return (latest, budget_failures, last_recorded_at) from the latest snapshot rows."""
-    latest: dict[str, dict] = {}
-    budget_failures: list[dict] = []
-    last_recorded_at = None
-    for row in latest_rows:
-        item = db._row_to_dict(row)
-        key = str(item.get("metric_key"))
-        value = float(item.get("metric_value") or 0)
-        created = item.get("created_at")
-        created_iso = created.isoformat(timespec="seconds") if hasattr(created, "isoformat") else str(created or "")
-        meta = _quality_trend_meta(item.get("metadata"))
-        latest[key] = {
-            "value": round(value, 2),
-            "unit": item.get("metric_unit") or "count",
-            "created_at": created_iso,
-        }
-        if created_iso and (not last_recorded_at or created_iso > last_recorded_at):
-            last_recorded_at = created_iso
-        failure = _quality_trend_budget_failure(meta, key, value)
-        if failure is not None:
-            budget_failures.append(failure)
-    return latest, budget_failures, last_recorded_at
-
-
-def _quality_trend_ops_snapshot() -> dict:
-    empty = {
-        "available": False,
-        "latest": {},
-        "delta_7d": {},
-        "budget_failures": [],
-        "sample_count": 0,
-        "last_recorded_at": None,
-    }
-    if not db._use_pg:
-        return empty
-
-    try:
-        latest_rows, baseline_rows, count_row = _quality_trend_fetch_rows()
-    except Exception:
-        logger.debug("ops quality trend read failed", exc_info=True)
-        return empty
-
-    latest, budget_failures, last_recorded_at = _quality_trend_process_latest(latest_rows)
-
-    baseline = {str(db._row_to_dict(row).get("metric_key")): float(db._row_to_dict(row).get("metric_value") or 0) for row in baseline_rows}
-    delta_7d = {
-        key: round(item["value"] - baseline[key], 2)
-        for key, item in latest.items()
-        if key in baseline
-    }
-    return {
-        "available": bool(latest),
-        "latest": latest,
-        "delta_7d": delta_7d,
-        "budget_failures": budget_failures,
-        "sample_count": int(db._row_to_dict(count_row).get("c") or 0) if count_row else 0,
-        "last_recorded_at": last_recorded_at,
-    }
-
-def _ops_moderation_snapshot() -> dict:
-    moderation = {"pending": 0, "flagged": 0, "reports": 0, "appeals": 0, "oldest_pending_hours": None}
-    if db._use_pg:
-        with db._conn() as conn:
-            pending = db._fetchone(conn, "SELECT COUNT(*) as c FROM posts WHERE moderation_status IN ('pending','review')", ())
-            flagged = db._fetchone(conn, "SELECT COUNT(*) as c FROM posts WHERE moderation_status = 'flagged'", ())
-            reports = db._fetchone(conn, "SELECT COUNT(*) as c FROM reports WHERE status = 'pending'", ())
-            appeals = db._fetchone(conn, "SELECT COUNT(*) as c FROM moderation_appeals WHERE status = 'pending'", ())
-            oldest = db._fetchone(conn, """
-                SELECT EXTRACT(EPOCH FROM (NOW() - MIN(created_at))) / 3600 as h
-                FROM posts WHERE moderation_status IN ('pending','review','flagged')
-            """, ())
-        moderation.update({
-            "pending": int(db._row_to_dict(pending)["c"] if pending else 0),
-            "flagged": int(db._row_to_dict(flagged)["c"] if flagged else 0),
-            "reports": int(db._row_to_dict(reports)["c"] if reports else 0),
-            "appeals": int(db._row_to_dict(appeals)["c"] if appeals else 0),
-            "oldest_pending_hours": round(float(db._row_to_dict(oldest).get("h") or 0), 1) if oldest else None,
-        })
-    return moderation
-
-
-def _ops_audit_snapshot() -> dict:
-    audit = {"jsonl_exists": _AUDIT_FILE.exists(), "db_available": False, "source": "jsonl", "recent_entries": 0, "last_ts": None}
-    db_audit = _query_admin_audit_db(100)
-    if db_audit is not None:
-        audit["db_available"] = True
-        audit["source"] = "db"
-        audit["recent_entries"] = min(int(db_audit.get("total") or 0), 100)
-        entries = db_audit.get("entries") or []
-        if entries:
-            audit["last_ts"] = entries[0].get("ts")
-    if _AUDIT_FILE.exists():
-        try:
-            lines = [l for l in _AUDIT_FILE.read_text(encoding="utf-8").splitlines() if l.strip()]
-            if not audit["db_available"]:
-                audit["recent_entries"] = min(len(lines), 100)
-                if lines:
-                    audit["last_ts"] = json.loads(lines[-1]).get("ts")
-        except Exception:
-            logger.debug("ops audit read failed", exc_info=True)
-    return audit
-
-
-@router.get("/ops-summary",
-            summary="Get AdminCP operations summary",
-            description="Returns release/deploy readiness, queue backlog, data-quality budgets, audit freshness, cost budget, and rollback readiness for the admin cockpit.")
-async def ops_summary():
-    """Ops cockpit snapshot: lightweight, read-only, no background jobs."""
-    def _query():
-        deploy_path = ROOT / "scripts" / "deploy.sh"
-        gate_path = ROOT / "scripts" / "release_gate.ps1"
-        deploy_text = deploy_path.read_text(encoding="utf-8", errors="ignore") if deploy_path.exists() else ""
-        gate_text = gate_path.read_text(encoding="utf-8", errors="ignore") if gate_path.exists() else ""
-        migrations = sorted((ROOT / "agent" / "migrations").glob("*.sql"))
-        backup = _latest_backup_info()
-        dq = _data_quality_ops_snapshot()
-        quality_trend = _quality_trend_ops_snapshot()
-
-        moderation = _ops_moderation_snapshot()
-        audit = _ops_audit_snapshot()
-
-        cost = _safe(lambda: _get_cost_report(), {}) if _HAS_COST else {}
-        schema_status = db.pg_schema_status()
-        shared_controls = {
-            "rate_limit_enabled": os.environ.get("VL360_SHARED_RATE_LIMIT", "true").strip().lower() not in {"0", "false", "no", "off"},
-            "idempotency_enabled": os.environ.get("VL360_SHARED_IDEMPOTENCY", "true").strip().lower() not in {"0", "false", "no", "off"},
-            "tables_ready": bool(schema_status.get("ok")),
-        }
-        deploy_ready = all([
-            "VL360_DEPLOY_HOST" in deploy_text,
-            "/health/ready" in deploy_text,
-            "exit 1" in deploy_text,
-        ])
-        gate_ready = all(token in gate_text for token in ("test_qa_fixes.py", "vue-tsc", "smoke_e2e_chrome.mjs", "check_migration_gate.py", "quality_budget.py"))
-        release_state = {
-            "gate_script": gate_path.exists(),
-            "gate_covers_backend_frontend_e2e": gate_ready,
-            "deploy_script": deploy_path.exists(),
-            "deploy_host_env_configured": bool(os.environ.get("VL360_DEPLOY_HOST")),
-            "deploy_health_blocking": deploy_ready,
-            "latest_migration": migrations[-1].name if migrations else None,
-            "migration_count": len(migrations),
-            "schema_ok": bool(schema_status.get("ok")),
-            "schema_version": schema_status.get("schema_version"),
-            "required_schema_version": schema_status.get("required_schema_version"),
-        }
-        queue_backlog = {
-            "moderation": moderation["pending"] + moderation["flagged"],
-            "reports": moderation["reports"],
-            "appeals": moderation["appeals"],
-            "data_quality": dq["total"],
-        }
-        rollback = {
-            "backup_ready": backup["ready"],
-            "latest_backup": backup["latest"],
-            "backup_count": backup["count"],
-            "backup_size_mb": backup["size_mb"],
-            "restore_drill_documented": (ROOT / "docs" / "deployment-guide.md").exists(),
-            "restore_drill_script": (ROOT / "scripts" / "restore_drill.py").exists(),
-        }
-        quality_budget_ok = not quality_trend.get("budget_failures")
-        status = "ok" if gate_ready and deploy_ready and backup["ready"] and schema_status.get("ok") and quality_budget_ok else "attention"
-        return {
-            "status": status,
-            "release": release_state,
-            "schema": schema_status,
-            "shared_controls": shared_controls,
-            "queues": queue_backlog,
-            "moderation_sla": moderation,
-            "data_quality": dq,
-            "quality_trend": quality_trend,
-            "audit": audit,
-            "cost": cost,
-            "rollback": rollback,
-        }
-    return await asyncio.to_thread(_query)
-
-
-
-_last_backup_time: float = 0
-_BACKUP_COOLDOWN = _cfg.BACKUP_COOLDOWN
-
-@router.post("/backup-trigger",
-             summary="Trigger data backup",
-             description="Initiates a manual backup of the database. Returns the backup file path, size, and status. Rate-limited by a cooldown period.")
-async def trigger_backup():
-    """B5c: trigger manual backup from admin UI."""
-    import time as _time
-    global _last_backup_time
-    now = _time.monotonic()
-    if now - _last_backup_time < _BACKUP_COOLDOWN:
-        remaining = int(_BACKUP_COOLDOWN - (now - _last_backup_time))
-        raise HTTPException(429, f"Backup đã chạy gần đây. Thử lại sau {remaining} giây.")
-    _last_backup_time = now
-    script = Path(__file__).resolve().parent.parent / "scripts" / "backup_data.py"  # noqa: ASYNC240 (dựng path rẻ; I/O thật bọc asyncio.to_thread bên dưới)
-    if not script.exists():
-        raise HTTPException(500, "Không tìm thấy script backup_data.py")
-    def _run():
-        try:
-            result = subprocess.run(
-                [sys.executable, str(script), "--label", "admin-manual"],
-                capture_output=True, text=True, timeout=30,
-            )
-            if result.returncode != 0:
-                logger.error("Backup script failed: %s", result.stderr)
-                raise HTTPException(500, "Backup thất bại. Kiểm tra log server.")
-            backup_dir = Path(__file__).resolve().parent.parent / "scratch" / "backups"
-            dirs = sorted(backup_dir.iterdir(), key=lambda p: p.name, reverse=True)
-            latest = dirs[0] if dirs else None
-            size_mb = round(sum(f.stat().st_size for f in latest.rglob("*") if f.is_file()) / 1048576, 1) if latest else 0
-            return {
-                "success": True,
-                "backup_name": latest.name if latest else None,
-                "size_mb": size_mb,
-                "output": result.stdout.strip(),
-            }
-        except subprocess.TimeoutExpired:
-            raise HTTPException(504, "Backup timed out")
-        except HTTPException:
-            raise
-        except Exception:
-            logger.exception("Backup failed")
-            raise HTTPException(500, "Backup thất bại. Kiểm tra log server.")
-    return await asyncio.to_thread(_run)
 
 
 
@@ -1892,37 +1416,7 @@ async def trigger_learn(category: Optional[str] = Query(None, max_length=50), to
 
 
 
-@router.post("/export",
-             summary="Export entity data",
-             description="Exports all entities, relationships, and itineraries as a streaming JSON file to avoid memory issues.")
-async def export_data():
-    """Export toàn bộ entities từ DB — streaming JSON để không OOM."""
-
-    def _generate():
-        yield '{"entities":['
-        entities = db.all_entities()
-        for i, e in enumerate(entities):
-            if i:
-                yield ","
-            yield json.dumps(e, ensure_ascii=False, default=str)
-        yield '],"relationships":['
-        with db._conn() as conn:
-            rels = db._fetchall(conn, "SELECT from_id, to_id, type FROM relationships", ())
-        for i, r in enumerate(rels):
-            if i:
-                yield ","
-            yield json.dumps(db._row_to_dict(r), ensure_ascii=False, default=str)
-        yield '],"itineraries":['
-        with db._conn() as conn:
-            itins = db._fetchall(conn, "SELECT * FROM itineraries", ())
-        for i, it in enumerate(itins):
-            if i:
-                yield ","
-            yield json.dumps(db._row_to_dict(it), ensure_ascii=False, default=str)  # default=str: TIMESTAMPTZ (datetime) trên PG
-        yield ']}'
-
-    return StreamingResponse(_generate(), media_type="application/json",
-                             headers={"Content-Disposition": "attachment; filename=vinhlong360-export.json"})
+# Export toan-DB (POST /export): sang siteops/admin_api.py (2026-08-29, lat 3).
 
 
 
@@ -2263,118 +1757,7 @@ async def ai_triage():
 
 
 
-# ══════════════════════════════════════════════════
-#  SITE SETTINGS — CMS admin endpoints
-# ══════════════════════════════════════════════════
-
-@router.get("/site-settings",
-            summary="Get all site settings",
-            description="Retrieve all site settings grouped by category for the admin overview panel.")
-async def admin_get_all_settings():
-    """All settings grouped by category (for admin overview)."""
-    if not db._use_pg:
-        raise HTTPException(503, detail="Cài đặt site yêu cầu PostgreSQL")
-    return await asyncio.to_thread(site_settings.get_all_grouped)
-
-
-_SETTING_KEY_RE = re.compile(r"^[a-zA-Z0-9_./:-]{1,200}$")
-
-@router.get("/site-settings/{category}",
-            summary="Get settings by category",
-            description="Retrieve all site settings for a specific category, for the admin editor page.")
-async def admin_get_settings_by_category(category: str):
-    """Settings for a specific category (for admin editor page)."""
-    if not _SETTING_KEY_RE.match(category):
-        raise HTTPException(400, detail="Tên danh mục không hợp lệ")
-    if not db._use_pg:
-        raise HTTPException(503, detail="Cài đặt site yêu cầu PostgreSQL")
-    def _query():
-        items = site_settings.get_by_category(category)
-        if not items:
-            raise HTTPException(404, detail=f"Không tìm thấy cài đặt cho danh mục '{category}'")
-        return {"category": category, "settings": items}
-    return await asyncio.to_thread(_query)
-
-
-class SettingUpdate(BaseModel):
-    value: object = Field(..., description="New value for the setting")
-
-
-@router.put("/site-settings/{key:path}",
-            summary="Update a site setting",
-            description="Update the value of a single site setting by its key path.")
-async def admin_update_setting(key: str, body: SettingUpdate, request: Request):
-    """Update a single setting value."""
-    if not _SETTING_KEY_RE.match(key):
-        raise HTTPException(400, detail="Tên cài đặt không hợp lệ")
-    if not db._use_pg:
-        raise HTTPException(503, detail="Cài đặt site yêu cầu PostgreSQL")
-    actor = _admin_actor_label(request)
-    def _query():
-        ok = site_settings.upsert(key, body.value, actor=actor)
-        if not ok:
-            raise HTTPException(404, detail="Không tìm thấy cài đặt")
-    await asyncio.to_thread(_query)
-    return {"success": True, "key": key}
-
-
-class BulkSettingUpdate(BaseModel):
-    updates: dict[str, object] = Field(..., description="Map of key→value to update")
-
-
-@router.post("/site-settings/bulk",
-             summary="Bulk update site settings",
-             description="Update multiple site settings at once. Accepts a map of key-value pairs.")
-async def admin_bulk_update_settings(body: BulkSettingUpdate, request: Request):
-    """Batch update multiple settings at once."""
-    if not db._use_pg:
-        raise HTTPException(503, detail="Cài đặt site yêu cầu PostgreSQL")
-    count = await asyncio.to_thread(site_settings.bulk_upsert, body.updates, actor=_admin_actor_label(request))
-    return {"success": True, "updated": count}
-
-
-@router.post("/site-settings/reset/{category}",
-             summary="Reset category settings to defaults",
-             description="Reset all site settings in a category back to their default values.")
-async def admin_reset_category(category: str, request: Request):
-    """Reset all settings in a category to their defaults."""
-    if not _SETTING_KEY_RE.match(category):
-        raise HTTPException(400, detail="Tên danh mục không hợp lệ")
-    if not db._use_pg:
-        raise HTTPException(503, detail="Cài đặt site yêu cầu PostgreSQL")
-    def _query():
-        from seed_site_settings import DEFAULTS
-        return site_settings.reset_category(category, DEFAULTS, actor=_admin_actor_label(request))
-    count = await asyncio.to_thread(_query)
-    return {"success": True, "reset": count}
-
-@router.get("/site-settings-history",
-            summary="Get site settings change history",
-            description="Returns recent setting changes, optionally filtered by category or key.")
-async def admin_site_settings_history(
-    category: Optional[str] = Query(None, max_length=100),
-    key: Optional[str] = Query(None, max_length=200),
-    limit: int = Query(50, ge=1, le=200),
-):
-    if category and not _SETTING_KEY_RE.match(category):
-        raise HTTPException(400, detail="Tên danh mục không hợp lệ")
-    if key and not _SETTING_KEY_RE.match(key):
-        raise HTTPException(400, detail="Tên cài đặt không hợp lệ")
-    if not db._use_pg:
-        raise HTTPException(503, detail="Cài đặt site yêu cầu PostgreSQL")
-    return await asyncio.to_thread(site_settings.load_history, category=category, key=key, limit=limit)
-
-@router.post("/site-settings-history/{history_id}/rollback",
-             summary="Rollback a site setting change",
-             description="Restores a setting value from a previous history snapshot.")
-async def admin_site_settings_rollback(history_id: str, request: Request):
-    history_id = validate_path_id(history_id, "history_id")
-    if not db._use_pg:
-        raise HTTPException(503, detail="Cài đặt site yêu cầu PostgreSQL")
-    ok = await asyncio.to_thread(site_settings.rollback_history, history_id, actor=_admin_actor_label(request))
-    if not ok:
-        raise HTTPException(404, detail="Không tìm thấy snapshot")
-    return {"success": True, "rolled_back": history_id}
+# ── Site-settings admin: sang siteops/admin_api.py (2026-08-29, lat 3) ──
 
 
 # ══════════════════════════════════════════════════
@@ -2496,182 +1879,7 @@ async def admin_cleanup_orphan_entity_refs():
 
 
 
-# ── Announcements (system notices for users) ────────────────────────────
-
-class AnnouncementCreate(BaseModel):
-    title: str = Field(..., min_length=1, max_length=200)
-    content: str = Field("", max_length=5000)
-    type: str = Field("info", max_length=20)
-    priority: int = Field(0, ge=0, le=100)
-    starts_at: Optional[str] = None
-    expires_at: Optional[str] = None
-
-    @field_validator("type")
-    @classmethod
-    def _validate_type(cls, v):
-        allowed = ("info", "warning", "maintenance", "update")
-        if v not in allowed:
-            raise ValueError(f"type must be one of {allowed}")
-        return v
-
-
-class AnnouncementUpdate(BaseModel):
-    title: Optional[str] = Field(None, min_length=1, max_length=200)
-    content: Optional[str] = Field(None, max_length=5000)
-    type: Optional[str] = Field(None, max_length=20)
-    is_active: Optional[bool] = None
-    priority: Optional[int] = Field(None, ge=0, le=100)
-    starts_at: Optional[str] = None
-    expires_at: Optional[str] = None
-
-    @field_validator("type")
-    @classmethod
-    def _validate_type(cls, v):
-        if v is None:
-            return v
-        allowed = ("info", "warning", "maintenance", "update")
-        if v not in allowed:
-            raise ValueError(f"type must be one of {allowed}")
-        return v
-
-
-@router.get("/announcements",
-            summary="List announcements",
-            description="List system announcements with optional active-status filter. Supports pagination.")
-async def list_announcements(
-    is_active: Optional[bool] = Query(None),
-    limit: int = Query(50, ge=1, le=200),
-    offset: int = Query(0, ge=0, le=10000),
-):
-    require_pg()
-    ph = db._ph
-
-    def _query():
-        where_clauses = []
-        params = []
-        if is_active is not None:
-            where_clauses.append(f"is_active = {ph}")
-            params.append(is_active)
-        where = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
-        with db._conn() as conn:
-            rows = db._fetchall(conn, f"""
-                SELECT id, title, content, type, is_active, priority,
-                       starts_at, expires_at, created_by, created_at, updated_at
-                FROM announcements
-                {where}
-                ORDER BY priority DESC, created_at DESC
-                LIMIT {ph} OFFSET {ph}
-            """, tuple(params + [limit, offset]))
-            total_row = db._fetchone(conn, f"SELECT COUNT(*) as cnt FROM announcements {where}", tuple(params))
-        total = db._row_to_dict(total_row)["cnt"] if total_row else 0
-        return {
-            "announcements": [db._row_to_dict(r) for r in rows],
-            "total": total,
-            "limit": limit,
-            "offset": offset,
-        }
-
-    return await asyncio.to_thread(_query)
-
-
-@router.post("/announcements", status_code=201,
-             summary="Create an announcement",
-             description="Create a new system announcement with title, content, type, priority, and optional schedule.")
-async def create_announcement(body: AnnouncementCreate, request: Request):
-    require_pg()
-    ph = db._ph
-    admin_user = getattr(request.state, "admin_user", None)
-
-    def _query():
-        created_by = str(admin_user["id"]) if admin_user else None
-        with db._conn() as conn:
-            row = db._fetchone(conn, f"""
-                INSERT INTO announcements (title, content, type, priority, starts_at, expires_at, created_by)
-                VALUES ({ph}, {ph}, {ph}, {ph},
-                        COALESCE({ph}::timestamptz, NOW()),
-                        {ph}::timestamptz,
-                        {ph}::uuid)
-                RETURNING id, title, type, is_active, priority, starts_at, expires_at, created_at
-            """, (
-                body.title.strip(), body.content.strip(), body.type,
-                body.priority, body.starts_at, body.expires_at,
-                created_by,
-            ))
-        return db._row_to_dict(row) if row else None
-
-    result = await asyncio.to_thread(_query)
-    return {"success": True, "announcement": result}
-
-
-@router.put("/announcements/{announcement_id}",
-            summary="Update an announcement",
-            description="Update fields of an existing announcement. Only provided fields are changed.")
-async def update_announcement(announcement_id: str, body: AnnouncementUpdate):
-    require_pg()
-    announcement_id = validate_path_id(announcement_id, "announcement_id")
-    ph = db._ph
-
-    def _query():
-        sets = []
-        params = []
-        if body.title is not None:
-            sets.append(f"title = {ph}")
-            params.append(body.title.strip())
-        if body.content is not None:
-            sets.append(f"content = {ph}")
-            params.append(body.content.strip())
-        if body.type is not None:
-            sets.append(f"type = {ph}")
-            params.append(body.type)
-        if body.is_active is not None:
-            sets.append(f"is_active = {ph}")
-            params.append(body.is_active)
-        if body.priority is not None:
-            sets.append(f"priority = {ph}")
-            params.append(body.priority)
-        if body.starts_at is not None:
-            sets.append(f"starts_at = {ph}::timestamptz")
-            params.append(body.starts_at)
-        if body.expires_at is not None:
-            sets.append(f"expires_at = {ph}::timestamptz")
-            params.append(body.expires_at)
-        if not sets:
-            raise HTTPException(400, "Không có thay đổi")
-        sets.append("updated_at = NOW()")
-        params.append(announcement_id)
-        with db._conn() as conn:
-            row = db._fetchone(conn, f"""
-                UPDATE announcements SET {", ".join(sets)}
-                WHERE id::text = {ph}
-                RETURNING id, title, content, type, is_active, priority, starts_at, expires_at, updated_at
-            """, tuple(params))
-        if not row:
-            raise HTTPException(404, "Thông báo không tồn tại")
-        return db._row_to_dict(row)
-
-    result = await asyncio.to_thread(_query)
-    return {"success": True, "announcement": result}
-
-
-@router.delete("/announcements/{announcement_id}",
-               summary="Delete an announcement",
-               description="Permanently delete an announcement by ID.")
-async def delete_announcement(announcement_id: str):
-    require_pg()
-    announcement_id = validate_path_id(announcement_id, "announcement_id")
-    ph = db._ph
-
-    def _query():
-        with db._conn() as conn:
-            row = db._fetchone(conn, f"""
-                DELETE FROM announcements WHERE id::text = {ph} RETURNING id
-            """, (announcement_id,))
-        if not row:
-            raise HTTPException(404, "Thông báo không tồn tại")
-        return True
-
-    await asyncio.to_thread(_query)
-    return {"success": True}
+# ── Announcements admin: sang siteops/admin_api.py (2026-08-29, lat 3) ──
 
 
 # ── Route ordering fix ───────────────────────────────────────────────────
@@ -2737,5 +1945,18 @@ router.include_router(_community_admin_router)
 from itineraries.admin_api import router as _itineraries_admin_router  # noqa: E402
 
 router.include_router(_itineraries_admin_router)
+
+# Mien VAN HANH SITE cung khuon (2026-08-29, lat 3): 22 route quan tri
+# (data-quality/system-health/backup/ops-summary/export/site-settings/
+# announcements) song o siteops/admin_api.py, mount long TRUOC
+# _fix_admin_route_order() — router con khong tu mang prefix/deps, ke thua
+# /admin + require_admin + require_csrf; reorder cha van phu static-truoc-param
+# cho /site-settings/bulk dung truoc /site-settings/{key:path} (do runtime:
+# index bulk < index {key:path}); /site-settings/reset/{category} mang tham so
+# nen khong thuoc dien reorder — y nguyen thu tu dinh nghia nhu truoc cu doi,
+# reachable nho match theo path+method (PUT vs POST).
+from siteops.admin_api import router as _siteops_admin_router  # noqa: E402
+
+router.include_router(_siteops_admin_router)
 
 _fix_admin_route_order()

@@ -38,7 +38,8 @@ from pydantic import (
 )
 from api_schemas import (  # W6.3: response_model (extra="allow" — không strip field FE)
     AreasResponse, AutocompleteResponse, CollectionsResponse, EntityDetailResponse, EntityListResponse, EntityMapResponse, EntityTypesResponse,  # noqa: F401  (be mat va cua test — mien entity sang goi rieng 2026-08-28)
-    EventsResponse, HomepageResponse, MapPin, SearchResponse, SiteSettingsResponse, StatsResponse, TransparencyResponse,
+    EventsResponse, HomepageResponse, MapPin, SearchResponse, StatsResponse, TransparencyResponse,
+    # SiteSettingsResponse sang siteops/api.py cung route cua no (2026-08-29, lat 3)
 )
 import lunar_calendar
 from config import settings  # noqa: F401  (be mat va cua test — mien entity sang goi rieng 2026-08-28)
@@ -1275,16 +1276,13 @@ async def contextual_recommendations(
     response.headers["Cache-Control"] = "private, max-age=30"
     return await asyncio.to_thread(_contextual_recommendations, str(user["id"]), context, entity_id, q, limit)
 
-import site_settings
+import site_settings  # van dung tai cho khac trong file (seasonal_taglines override)
 
-
-@router.get("/site-settings", response_model=SiteSettingsResponse,
-            summary="Get site settings",
-            description="Returns all public site settings as a flat key-value dict. Cached for 60 seconds.")
-async def get_site_settings(response: Response):
-    """Public flat {key: value} dict of all site settings (cached 60s)."""
-    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
-    return site_settings.get_all_public()
+# Mien VAN HANH SITE cong khai (GET /site-settings + GET /announcements) sang
+# agent/siteops/api.py (2026-08-29, lat 3 dot cat module). Tai xuat de bo test
+# hien co van va duoc qua `public_api.<ten>` (getsource qua function object);
+# router con mount o cuoi file, TRUOC _fix_route_order().
+from siteops.api import get_site_settings, list_active_announcements  # noqa: F401
 
 
 
@@ -3020,32 +3018,7 @@ async def get_collection_by_slug(slug: str, response: Response):
     return result
 
 
-# ── Public Announcements ─────────────────────────────────────────────────
-
-@router.get("/announcements",
-            summary="List active announcements",
-            description="Returns currently active announcements sorted by priority. Only shows announcements within their active date range. Requires Postgres.")
-async def list_active_announcements(response: Response, limit: int = Query(10, ge=1, le=50)):
-    """Active announcements for display to users."""
-    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
-    require_pg()
-    ph = db._ph
-
-    def _query():
-        with db._conn() as conn:
-            rows = db._fetchall(conn, f"""
-                SELECT id, title, content, type, priority, starts_at, expires_at, created_at
-                FROM announcements
-                WHERE is_active = TRUE
-                  AND starts_at <= NOW()
-                  AND (expires_at IS NULL OR expires_at > NOW())
-                ORDER BY priority DESC, created_at DESC
-                LIMIT {ph}
-            """, (limit,))
-        return [db._row_to_dict(r) for r in rows]
-
-    items = await asyncio.to_thread(_query)
-    return {"announcements": items, "total": len(items)}
+# ── Public Announcements: sang siteops/api.py (2026-08-29, lat 3) ────────
 
 
 # ── Entity Map Search (bounding box) ────────────────────────────────────
@@ -3248,6 +3221,14 @@ router.include_router(_entities_router)
 from itineraries.api import router as _itineraries_router  # noqa: E402
 
 router.include_router(_itineraries_router)
+
+# Mien VAN HANH SITE cung khuon (2026-08-29, lat 3): 2 route public doc
+# (/site-settings, /announcements) song o siteops/api.py, mount long vao router
+# nay TRUOC _fix_route_order() — cong R20.9 dung do thi tu cac loi goi
+# include_router.
+from siteops.api import router as _siteops_router  # noqa: E402
+
+router.include_router(_siteops_router)
 
 _fix_route_order()
 

@@ -18,6 +18,11 @@ GIỮA — cả miền community-admin sắp bóc lẫn phần ở lại của `
     _require_admin_actor_id                    lấy id admin cho hành động cần quy trách nhiệm
     _ensure_admin_scope                        chốt RBAC scope (require_admin ở lại cũng gọi)
 
+Bổ sung 2026-08-29 (bước dọn nền lát 3 — siteops): thêm một ký hiệu KẸT GIỮA:
+
+    _safe    bọc try/except trả default — analytics_overview Ở LẠI admin.py lẫn
+             ops_summary/_data_quality_ops_snapshot sang siteops/ đều gọi
+
 Logger giữ NGUYÊN kênh "admin" — đổi tên kênh là đổi nơi log được định tuyến.
 """
 from __future__ import annotations
@@ -32,6 +37,15 @@ from fastapi import HTTPException, Request
 import knowledge
 
 logger = logging.getLogger("admin")
+
+
+def _safe(fn, default):
+    try:
+        return fn()
+    except Exception:
+        logger.debug("_safe(%s) failed, returning default", getattr(fn, "__name__", fn), exc_info=True)
+        return default
+
 
 _admin_volatile_caches: list[dict] = []
 

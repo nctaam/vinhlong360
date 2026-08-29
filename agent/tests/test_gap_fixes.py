@@ -45,7 +45,8 @@ def _public_src() -> str:
     root = _P(__file__).resolve().parent.parent
     return ((root / "public_api.py").read_text(encoding="utf-8") + chr(10)
             + (root / "entities" / "api.py").read_text(encoding="utf-8") + chr(10)
-            + (root / "itineraries" / "api.py").read_text(encoding="utf-8"))
+            + (root / "itineraries" / "api.py").read_text(encoding="utf-8") + chr(10)
+            + (root / "siteops" / "api.py").read_text(encoding="utf-8"))  # mien van hanh site sang goi rieng 2026-08-29 (lat 3)
 
 
 
@@ -61,7 +62,8 @@ def _admin_src() -> str:
     return ((root / "admin.py").read_text(encoding="utf-8") + chr(10)
             + (root / "entities" / "admin_api.py").read_text(encoding="utf-8") + chr(10)
             + (root / "community" / "admin_api.py").read_text(encoding="utf-8") + chr(10)
-            + (root / "itineraries" / "admin_api.py").read_text(encoding="utf-8"))
+            + (root / "itineraries" / "admin_api.py").read_text(encoding="utf-8") + chr(10)
+            + (root / "siteops" / "admin_api.py").read_text(encoding="utf-8"))  # mien van hanh site sang goi rieng 2026-08-29 (lat 3)
 
 
 class TestReactionEnrichment:
@@ -720,7 +722,7 @@ class TestErrorShapeStandardized:
         import os
         # community.api nằm trong GÓI CON — lên một cấp mới ra agent/ (gỡ shim 2026-08-29)
         d = os.path.dirname(os.path.dirname(inspect.getsourcefile(__import__("community.api", fromlist=["api"]))))
-        for fn in ("public_api.py", "server.py"):
+        for fn in ("public_api.py", "server.py", "siteops/api.py"):  # +siteops (2026-08-29, lat 3): rao phu tiep text da doi nha
             src = open(os.path.join(d, fn), encoding="utf-8").read()
             assert 'content={"error"' not in src, f"{fn} còn JSONResponse({{error}}) bypass"
 
@@ -2509,7 +2511,7 @@ class TestReliabilityFixes:
 
     def test_no_interval_interpolation(self):
         """SQL INTERVAL must use parameterized CAST, not f-string interpolation."""
-        for fname in ("admin.py", "community/api.py", "database.py", "server.py"):
+        for fname in ("admin.py", "community/api.py", "database.py", "server.py", "siteops/admin_api.py"):  # +siteops (2026-08-29, lat 3): SQL quality-trend/announcements da doi nha
             src = (AGENT_DIR / fname).read_text(encoding="utf-8")
             assert "INTERVAL '{days}" not in src, f"{fname} still has INTERVAL interpolation"
 

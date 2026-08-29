@@ -45,7 +45,8 @@ def _public_src() -> str:
     root = _P(__file__).resolve().parent.parent
     return ((root / "public_api.py").read_text(encoding="utf-8") + chr(10)
             + (root / "entities" / "api.py").read_text(encoding="utf-8") + chr(10)
-            + (root / "itineraries" / "api.py").read_text(encoding="utf-8"))
+            + (root / "itineraries" / "api.py").read_text(encoding="utf-8") + chr(10)
+            + (root / "siteops" / "api.py").read_text(encoding="utf-8"))  # mien van hanh site sang goi rieng 2026-08-29 (lat 3)
 
 
 
@@ -61,7 +62,8 @@ def _admin_src() -> str:
     return ((root / "admin.py").read_text(encoding="utf-8") + chr(10)
             + (root / "entities" / "admin_api.py").read_text(encoding="utf-8") + chr(10)
             + (root / "community" / "admin_api.py").read_text(encoding="utf-8") + chr(10)
-            + (root / "itineraries" / "admin_api.py").read_text(encoding="utf-8"))
+            + (root / "itineraries" / "admin_api.py").read_text(encoding="utf-8") + chr(10)
+            + (root / "siteops" / "admin_api.py").read_text(encoding="utf-8"))  # mien van hanh site sang goi rieng 2026-08-29 (lat 3)
 
 
 class TestToolsSchema:

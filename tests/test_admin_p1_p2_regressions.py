@@ -70,8 +70,12 @@ def test_data_quality_review_candidates_include_latest_decision(monkeypatch):
 def test_admin_p1_p2_endpoints_are_mounted_in_source():
     # Mien entity-admin sang agent/entities/admin_api.py (2026-08-28, buoc 2b):
     # bulk-place la route entity nen soi nguon HOP NHAT hai module.
+    # Mien van hanh site (data-quality/ops-summary/site-settings-history) sang
+    # agent/siteops/admin_api.py (2026-08-29, lat 3) — hop nhat them mot module,
+    # cac assert decorator/class duoi day soi TEXT module nen phai doc nha moi.
     from entities import admin_api as entities_admin
-    src = inspect.getsource(admin) + inspect.getsource(entities_admin)
+    from siteops import admin_api as siteops_admin
+    src = inspect.getsource(admin) + inspect.getsource(entities_admin) + inspect.getsource(siteops_admin)
 
     assert 'class DataQualityDecisionRequest' in src
     assert '@router.post("/data-quality/decision"' in src

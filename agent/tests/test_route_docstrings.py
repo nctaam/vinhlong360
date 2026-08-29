@@ -36,9 +36,13 @@ HTTP_METHODS = {"get", "post", "put", "patch", "delete", "head", "options"}
 # theo file mới; TỔNG hai sàn (25+22) giữ nguyên 47, tức ratchet không nới.
 # Lặp lại đúng luật đó 2026-08-29: 3 route itinerary (kèm docstring) sang
 # itineraries/api.py — public_api 25→22, sàn mới 3; tổng 25 giữ nguyên.
+# Lặp lại lần nữa cùng ngày (lát 3): 2 route siteops (site-settings +
+# announcements, kèm docstring) sang siteops/api.py — public_api 22→20,
+# sàn mới 2; TỔNG 25 giữ nguyên, ratchet không nới.
 FLOORS = {
-    "public_api.py": 22,
+    "public_api.py": 20,
     "itineraries/api.py": 3,
+    "siteops/api.py": 2,
     "entities/api.py": 22,
     "notifications.py": 20,
     "seo.py": 8,

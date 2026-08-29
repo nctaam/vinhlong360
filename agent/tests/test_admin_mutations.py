@@ -48,6 +48,7 @@ def isolate_admin_database(isolated_sqlite_db, monkeypatch, knowledge_state_snap
     from community import admin_api as community_admin
     from entities import admin_api as entities_admin
     from itineraries import admin_api as itineraries_admin
+    from siteops import admin_api as siteops_admin
     import database
     import knowledge
 
@@ -63,6 +64,10 @@ def isolate_admin_database(isolated_sqlite_db, monkeypatch, knowledge_state_snap
     # — thieu dong nay la test_create_itinerary/test_delete_itinerary ghi/xoa
     # tren DB THAT agent/data/vinhlong360.db (dung kich ban B1 entities).
     monkeypatch.setattr(itineraries_admin, "db", isolated_sqlite_db)
+    # handler van-hanh-site sang siteops/admin_api.py (2026-08-29, lat 3) —
+    # data-quality/site-settings/ops-summary/system-health DOC db qua binding
+    # rieng cua goi; thieu dong nay la chung cham DB THAT (lop su co B1 cu).
+    monkeypatch.setattr(siteops_admin, "db", isolated_sqlite_db)
     try:
         # Keep reload from treating an emptied test DB as a fresh install and seeding real data.
         isolated_sqlite_db.upsert_entity({
