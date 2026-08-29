@@ -694,3 +694,13 @@ def test_audit_relationship_chunk_three_branches() -> None:
     assert mixed[0]["status"] == "conflicting"
     assert mixed[1]["status"] == "unverified"
     assert "omitted" in mixed[1]["reason"]
+
+
+def test_relationship_decision_index_lookup_still_raises_on_non_numeric() -> None:
+    # Mìn lát 24 giữ NGUYÊN: int(relationship_index) không-phải-số vẫn ném —
+    # không "sửa tiện tay" thành nuốt lỗi.
+    with pytest.raises((ValueError, TypeError)):
+        q.audit_relationship_chunk(
+            [{"index": 1, "source_id": "a", "target_id": "b", "rel_type": "near", "heuristic_reasons": []}],
+            _FakeLLM(result=[{"relationship_index": "khong-so", "status": "verified"}]),
+        )

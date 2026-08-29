@@ -765,26 +765,39 @@ def search_web(query: str, *, max_results: int = 5, disabled: bool = False) -> l
     return results[:max_results]
 
 
+def _source_record_without_llm(entity: dict[str, Any], query: str, search_results: list) -> dict[str, Any]:
+    if not search_results:
+        return make_candidate_record(
+            entity_id=str(entity.get("id") or ""), field="source", current_value=entity.get("source"),
+            suggested_value=None, confidence=0.0, evidence_urls=[],
+            reason="No LLM/search candidate available; source verification deferred.", apply_policy="reject",
+            stream="source", extra={"status": "needs_source", "query": query},
+        )
+    best = search_results[0]
+    return make_candidate_record(
+        entity_id=str(entity.get("id") or ""), field="source", current_value=entity.get("source"),
+        suggested_value={"title": best.get("title") or best["url"], "url": best["url"]}, confidence=0.55,
+        evidence_urls=[best["url"]], reason="Search result captured for later GPT review; not enough confidence to apply.",
+        apply_policy="reject", stream="source", extra={"status": "candidate_unverified", "query": query, "search_results": search_results[:3]},
+    )
+
+
+def _source_llm_error_record(entity: dict[str, Any], query: str, search_results: list, decision: Any) -> dict[str, Any]:
+    return make_candidate_record(
+        entity_id=str(entity.get("id") or ""), field="source", current_value=entity.get("source"),
+        suggested_value=None, confidence=0.0, evidence_urls=[],
+        reason=f"LLM source audit failed: {decision.get('_error') if isinstance(decision, dict) else 'invalid JSON'}",
+        apply_policy="reject", stream="source", extra={"status": "llm_error", "query": query, "search_results": search_results[:3]},
+    )
+
+
 def source_candidate_for_entity(entity: dict[str, Any], llm: JsonLLMClient, config: BurstConfig) -> dict[str, Any]:
     query = " ".join(
         part for part in [f'"{entity.get("name", "")}"', AREA_LABELS.get(str(entity.get("area")), ""), "Vinh Long tourism source"] if part
     )
     search_results = search_web(query, disabled=config.no_web)
     if not llm.available:
-        if not search_results:
-            return make_candidate_record(
-                entity_id=str(entity.get("id") or ""), field="source", current_value=entity.get("source"),
-                suggested_value=None, confidence=0.0, evidence_urls=[],
-                reason="No LLM/search candidate available; source verification deferred.", apply_policy="reject",
-                stream="source", extra={"status": "needs_source", "query": query},
-            )
-        best = search_results[0]
-        return make_candidate_record(
-            entity_id=str(entity.get("id") or ""), field="source", current_value=entity.get("source"),
-            suggested_value={"title": best.get("title") or best["url"], "url": best["url"]}, confidence=0.55,
-            evidence_urls=[best["url"]], reason="Search result captured for later GPT review; not enough confidence to apply.",
-            apply_policy="reject", stream="source", extra={"status": "candidate_unverified", "query": query, "search_results": search_results[:3]},
-        )
+        return _source_record_without_llm(entity, query, search_results)
 
     payload = {
         "task": "Choose the best source URL for this entity from search_results only.",
@@ -800,12 +813,11 @@ def source_candidate_for_entity(entity: dict[str, Any], llm: JsonLLMClient, conf
     }
     decision = llm.complete_json(system="You are a strict source verification auditor. Return JSON only.", payload=payload, max_tokens=900)
     if not isinstance(decision, dict) or decision.get("_error"):
-        return make_candidate_record(
-            entity_id=str(entity.get("id") or ""), field="source", current_value=entity.get("source"),
-            suggested_value=None, confidence=0.0, evidence_urls=[],
-            reason=f"LLM source audit failed: {decision.get('_error') if isinstance(decision, dict) else 'invalid JSON'}",
-            apply_policy="reject", stream="source", extra={"status": "llm_error", "query": query, "search_results": search_results[:3]},
-        )
+        return _source_llm_error_record(entity, query, search_results, decision)
+    return _source_record_from_decision(entity, query, decision, config)
+
+
+def _source_record_from_decision(entity: dict[str, Any], query: str, decision: dict[str, Any], config: BurstConfig) -> dict[str, Any]:
     url = str(decision.get("url") or "").strip()
     title = str(decision.get("title") or url).strip()
     confidence = as_confidence(decision.get("confidence"), 0.0)
@@ -1040,13 +1052,25 @@ def accuracy_record_from_status(
     )
 
 
+def _heuristic_accuracy_records(batch: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    records = []
+    for entity in batch:
+        status, confidence, flags = heuristic_quality_status(entity)
+        records.append(accuracy_record_from_status(entity, status, confidence, flags, "Deterministic contract audit; LLM disabled.", [entity_source_url(entity)] if entity_source_url(entity) else []))
+    return records
+
+
+def _accuracy_record_from_decision(entity: dict[str, Any], decision: dict[str, Any]) -> dict[str, Any]:
+    status = str(decision.get("status") or "unverified")
+    if status not in {"verified", "conflicting", "needs_source", "needs_fix", "unverified"}:
+        status = "unverified"
+    flags = [str(flag) for flag in (decision.get("conflicts") or decision.get("quality_flags") or [])]
+    return accuracy_record_from_status(entity, status, as_confidence(decision.get("confidence"), 0.0), flags, str(decision.get("reason") or "LLM audit decision."), url_list(decision.get("evidence_urls")), decision.get("suggested_fixes") or {})
+
+
 def audit_accuracy_chunk(batch: list[dict[str, Any]], llm: JsonLLMClient) -> list[dict[str, Any]]:
     if not llm.available:
-        records = []
-        for entity in batch:
-            status, confidence, flags = heuristic_quality_status(entity)
-            records.append(accuracy_record_from_status(entity, status, confidence, flags, "Deterministic contract audit; LLM disabled.", [entity_source_url(entity)] if entity_source_url(entity) else []))
-        return records
+        return _heuristic_accuracy_records(batch)
     payload = {
         "task": "Audit entity factual consistency and data quality.",
         "allowed_status": ["verified", "conflicting", "needs_source", "needs_fix", "unverified"],
@@ -1058,15 +1082,10 @@ def audit_accuracy_chunk(batch: list[dict[str, Any]], llm: JsonLLMClient) -> lis
     if not isinstance(decisions, list):
         return [accuracy_record_from_status(entity, "unverified", 0.0, ["llm_error"], f"LLM accuracy audit failed: {decisions.get('_error') if isinstance(decisions, dict) else 'invalid JSON'}") for entity in batch]
     by_id = {str(item.get("entity_id")): item for item in decisions if isinstance(item, dict)}
-    records = []
-    for entity in batch:
-        decision = by_id.get(str(entity.get("id")), {})
-        status = str(decision.get("status") or "unverified")
-        if status not in {"verified", "conflicting", "needs_source", "needs_fix", "unverified"}:
-            status = "unverified"
-        flags = [str(flag) for flag in (decision.get("conflicts") or decision.get("quality_flags") or [])]
-        records.append(accuracy_record_from_status(entity, status, as_confidence(decision.get("confidence"), 0.0), flags, str(decision.get("reason") or "LLM audit decision."), url_list(decision.get("evidence_urls")), decision.get("suggested_fixes") or {}))
-    return records
+    return [
+        _accuracy_record_from_decision(entity, by_id.get(str(entity.get("id")), {}))
+        for entity in batch
+    ]
 
 
 def run_accuracy_stream(data: dict[str, Any], llm: JsonLLMClient, config: BurstConfig) -> list[dict[str, Any]]:
@@ -1089,21 +1108,34 @@ def relationship_record_from_status(item: dict[str, Any], status: str, confidenc
     )
 
 
+def _heuristic_relationship_records(batch: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    records = []
+    for item in batch:
+        reasons = item.get("heuristic_reasons") or []
+        if reasons:
+            status = "needs_review" if item.get("rel_type") == "near" else "conflicting"
+            confidence = 0.86
+            reason = "; ".join(str(reason) for reason in reasons)
+        else:
+            status = "verified"
+            confidence = 0.75
+            reason = "Relationship included by rel_type audit; no deterministic conflict found."
+        records.append(relationship_record_from_status(item, status, confidence, reason))
+    return records
+
+
+def _relationship_record_from_decision(item: dict[str, Any], decision: dict[str, Any] | None) -> dict[str, Any]:
+    if not decision:
+        return relationship_record_from_status(item, "unverified", 0.0, "LLM omitted this relationship.")
+    status = str(decision.get("status") or "unverified")
+    if status not in {"verified", "needs_review", "conflicting", "unverified"}:
+        status = "unverified"
+    return relationship_record_from_status(item, status, as_confidence(decision.get("confidence"), 0.0), str(decision.get("reason") or "LLM relationship risk decision."))
+
+
 def audit_relationship_chunk(batch: list[dict[str, Any]], llm: JsonLLMClient) -> list[dict[str, Any]]:
     if not llm.available:
-        records = []
-        for item in batch:
-            reasons = item.get("heuristic_reasons") or []
-            if reasons:
-                status = "needs_review" if item.get("rel_type") == "near" else "conflicting"
-                confidence = 0.86
-                reason = "; ".join(str(reason) for reason in reasons)
-            else:
-                status = "verified"
-                confidence = 0.75
-                reason = "Relationship included by rel_type audit; no deterministic conflict found."
-            records.append(relationship_record_from_status(item, status, confidence, reason))
-        return records
+        return _heuristic_relationship_records(batch)
     payload = {
         "task": "Audit relationship risk. Do not delete anything.",
         "rules": ["Return one JSON object per relationship in a JSON array.", "Allowed status: verified, needs_review, conflicting, unverified.", "For near relationships, use distance and coordinate availability as primary evidence.", "Return: relationship_index, status, confidence, reason, risk."],
@@ -1113,17 +1145,10 @@ def audit_relationship_chunk(batch: list[dict[str, Any]], llm: JsonLLMClient) ->
     if not isinstance(decisions, list):
         return [relationship_record_from_status(item, "unverified", 0.0, f"LLM relationship audit failed: {decisions.get('_error') if isinstance(decisions, dict) else 'invalid JSON'}") for item in batch]
     by_index = {int(item.get("relationship_index")): item for item in decisions if isinstance(item, dict) and item.get("relationship_index") is not None}
-    records = []
-    for item in batch:
-        decision = by_index.get(int(item.get("index")))
-        if not decision:
-            records.append(relationship_record_from_status(item, "unverified", 0.0, "LLM omitted this relationship."))
-            continue
-        status = str(decision.get("status") or "unverified")
-        if status not in {"verified", "needs_review", "conflicting", "unverified"}:
-            status = "unverified"
-        records.append(relationship_record_from_status(item, status, as_confidence(decision.get("confidence"), 0.0), str(decision.get("reason") or "LLM relationship risk decision.")))
-    return records
+    return [
+        _relationship_record_from_decision(item, by_index.get(int(item.get("index"))))
+        for item in batch
+    ]
 
 
 def run_relationship_stream(data: dict[str, Any], llm: JsonLLMClient, config: BurstConfig) -> list[dict[str, Any]]:
