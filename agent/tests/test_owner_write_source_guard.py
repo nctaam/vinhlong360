@@ -92,9 +92,11 @@ SINKS = [
     ("agent/ab_testing.py", "ABTestManager.record_outcome", "self._save()"),
     ("agent/feedback_policy.py", "PostgresFeedbackStore.issue", "db._execute"),
     # chat/chat_stream da sang agent/chat/ (2026-08-27) — rao quet-nguon phai
-    # di theo MA, khong ghim theo file cu.
-    ("agent/chat/api.py", "chat", "cache.put"),
-    ("agent/chat/api.py", "chat_stream", "cache.put"),
+    # di theo MA, khong ghim theo file cu. Lat 35-36 R20.8 (2026-08-30):
+    # cache.put cua /chat song trong _maybe_cache_reply, cua /chat/stream song
+    # trong _event_stream_body (module-level, _StreamContext) — soi dung cho.
+    ("agent/chat/api.py", "_maybe_cache_reply", "cache.put"),
+    ("agent/chat/api.py", "_event_stream_body", "cache.put"),
 ]
 
 

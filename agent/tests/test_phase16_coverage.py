@@ -1565,7 +1565,9 @@ class TestDeepScanBatch4:
         src = (Path(__file__).resolve().parent.parent / "chat" / "api.py").read_text(encoding="utf-8")  # ma chat sang agent/chat/ 2026-08-27
         idx = src.find("def _produce_stream():")
         assert idx > 0
-        end = src.find("\n                producer =", idx)
+        # Lát 36 R20.8: _event_stream_body ra module-level nên indent đổi —
+        # neo cuối theo NỘI DUNG (create_task) thay vì đếm khoảng trắng.
+        end = src.find("producer = asyncio.create_task", idx)
         assert end > idx
         block = src[idx:end]
         assert "_cancelled" in block, \
