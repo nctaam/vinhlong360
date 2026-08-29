@@ -595,3 +595,102 @@ def test_eval_case_sections_share_one_picked_set() -> None:
             assert entity_id not in seen or case["category"] == "itinerary"
         if case["category"] != "itinerary":
             seen.update(case.get("expected_entities", []))
+
+
+# ── Lát 23 (B3, test-only): đặc-tả 3 hàm cao-rủi-ro trước khi mổ lát 24 ──
+
+
+class _FakeLLM:
+    def __init__(self, available=True, result=None):
+        self.available = available
+        self._result = result
+
+    def complete_json(self, **_kwargs):
+        return self._result
+
+
+def _burst_config(**overrides):
+    base = dict(data_path=Path("x"), output_dir=Path("y"), no_web=True)
+    base.update(overrides)
+    return q.BurstConfig(**base)
+
+
+def test_source_candidate_four_branches(monkeypatch) -> None:
+    entity = _place_entity(source=None)
+    cfg = _burst_config()
+
+    # 1) LLM tắt + không có search → reject, needs_source
+    monkeypatch.setattr(q, "search_web", lambda query, disabled=False: [])
+    off_dry = q.source_candidate_for_entity(entity, _FakeLLM(available=False), cfg)
+    assert (off_dry["apply_policy"], off_dry["status"]) == ("reject", "needs_source")
+
+    # 2) LLM tắt + có search → giữ ứng viên 0.55 nhưng vẫn reject
+    monkeypatch.setattr(
+        q, "search_web",
+        lambda query, disabled=False: [{"title": "T", "url": "https://ex.com"}],
+    )
+    off_hit = q.source_candidate_for_entity(entity, _FakeLLM(available=False), cfg)
+    assert (off_hit["apply_policy"], off_hit["status"]) == ("reject", "candidate_unverified")
+    assert off_hit["confidence"] == 0.55
+    assert off_hit["suggested_value"] == {"title": "T", "url": "https://ex.com"}
+
+    # 3) LLM lỗi → reject, llm_error
+    err = q.source_candidate_for_entity(entity, _FakeLLM(result={"_error": "boom"}), cfg)
+    assert (err["apply_policy"], err["status"]) == ("reject", "llm_error")
+    assert "boom" in err["reason"]
+
+    # 4) LLM tốt + URL verify được → url_verified, status verified
+    monkeypatch.setattr(q, "verify_source_url", lambda url, entity, no_web=False: (True, "match"))
+    good = q.source_candidate_for_entity(
+        entity,
+        _FakeLLM(result={"title": "Chinh chu", "url": "https://ex.com/a", "confidence": 0.95, "reason": "khop ten"}),
+        cfg,
+    )
+    assert good["status"] == "verified"
+    assert good["url_verified"] is True
+    assert good["evidence_urls"] == ["https://ex.com/a"]
+    assert "verification: match" in good["reason"]
+
+
+def test_audit_accuracy_chunk_three_branches() -> None:
+    complete = _place_entity()
+    # 1) LLM tắt → dùng heuristic: entity đủ → status verified, policy reject
+    off = q.audit_accuracy_chunk([complete], _FakeLLM(available=False))
+    assert off[0]["status"] == "verified"
+    assert off[0]["apply_policy"] == "reject"
+
+    # 2) LLM trả không-phải-list → mọi entity thành llm_error/unverified
+    err = q.audit_accuracy_chunk([complete], _FakeLLM(result={"_error": "hong"}))
+    assert err[0]["status"] == "unverified"
+    assert "hong" in err[0]["reason"]
+
+    # 3) LLM trả list: status lạ bị ép về unverified, status hợp lệ giữ nguyên
+    decisions = [
+        {"entity_id": complete["id"], "status": "tu-che", "confidence": 0.9, "reason": "x"},
+    ]
+    coerced = q.audit_accuracy_chunk([complete], _FakeLLM(result=decisions))
+    assert coerced[0]["status"] == "unverified"
+
+
+def test_audit_relationship_chunk_three_branches() -> None:
+    flagged = {"index": 1, "source_id": "a", "target_id": "b", "rel_type": "near",
+               "heuristic_reasons": ["near edge distance is 99.0 km"]}
+    clean = {"index": 2, "source_id": "a", "target_id": "c", "rel_type": "related",
+             "heuristic_reasons": []}
+
+    # 1) LLM tắt: near-có-lý-do → needs_review 0.86; sạch → verified 0.75
+    off = q.audit_relationship_chunk([flagged, clean], _FakeLLM(available=False))
+    assert (off[0]["status"], off[0]["confidence"]) == ("needs_review", 0.86)
+    assert (off[1]["status"], off[1]["confidence"]) == ("verified", 0.75)
+
+    # 2) LLM trả không-phải-list → unverified kèm lý do lỗi
+    err = q.audit_relationship_chunk([flagged], _FakeLLM(result={"_error": "gay"}))
+    assert err[0]["status"] == "unverified"
+    assert "gay" in err[0]["reason"]
+
+    # 3) LLM trả list: index khớp giữ status; index bị bỏ sót → unverified + lý do riêng
+    decisions = [{"relationship_index": 1, "status": "conflicting", "confidence": 0.9, "reason": "trung"}]
+    mixed = q.audit_relationship_chunk([flagged, clean], _FakeLLM(result=decisions))
+    assert mixed[0]["status"] == "conflicting"
+    assert mixed[1]["status"] == "unverified"
+    assert "omitted" in mixed[1]["reason"]
