@@ -512,6 +512,47 @@ def haversine_km(a: list[float] | None, b: list[float] | None) -> float | None:
     return 6371.0 * 2 * math.asin(math.sqrt(val))
 
 
+def _near_edge_reasons(src_coords, dst_coords, distance) -> list[str]:
+    if src_coords is None or dst_coords is None:
+        return ["near edge has missing endpoint coordinates"]
+    if distance is not None and distance > MAX_NEAR_DISTANCE_KM:
+        return [f"near edge distance is {distance:.1f} km"]
+    return []
+
+
+def _relationship_review_reasons(
+    src, dst, rel_kind, src_entity, dst_entity, src_coords, dst_coords, distance
+) -> list[str]:
+    reasons: list[str] = []
+    if not src or not dst or not rel_kind:
+        reasons.append("missing relationship source, target, or type")
+    if src and src_entity is None:
+        reasons.append("missing source entity")
+    if dst and dst_entity is None:
+        reasons.append("missing target entity")
+    if rel_kind == "near":
+        reasons.extend(_near_edge_reasons(src_coords, dst_coords, distance))
+    return reasons
+
+
+def _relationship_target_row(
+    index, rel, src, dst, rel_kind, src_entity, dst_entity, distance, reasons
+) -> dict[str, Any]:
+    return {
+        "index": index,
+        "source_id": src,
+        "target_id": dst,
+        "rel_type": rel_kind,
+        "source_name": (src_entity or {}).get("name"),
+        "target_name": (dst_entity or {}).get("name"),
+        "source_area": (src_entity or {}).get("area"),
+        "target_area": (dst_entity or {}).get("area"),
+        "distance_km": round(distance, 2) if distance is not None else None,
+        "heuristic_reasons": reasons,
+        "relationship": rel,
+    }
+
+
 def relationship_targets(data: dict[str, Any]) -> list[dict[str, Any]]:
     entities = {str(e.get("id")): e for e in data.get("entities", []) if isinstance(e, dict) and e.get("id")}
     targets: list[dict[str, Any]] = []
@@ -526,80 +567,46 @@ def relationship_targets(data: dict[str, Any]) -> list[dict[str, Any]]:
         src_coords = entity_coordinates(src_entity or {})
         dst_coords = entity_coordinates(dst_entity or {})
         distance = haversine_km(src_coords, dst_coords)
-        reasons: list[str] = []
-        include = rel_kind != "near"
-        if not src or not dst or not rel_kind:
-            include = True
-            reasons.append("missing relationship source, target, or type")
-        if src and src_entity is None:
-            include = True
-            reasons.append("missing source entity")
-        if dst and dst_entity is None:
-            include = True
-            reasons.append("missing target entity")
-        if rel_kind == "near":
-            if src_coords is None or dst_coords is None:
-                include = True
-                reasons.append("near edge has missing endpoint coordinates")
-            elif distance is not None and distance > MAX_NEAR_DISTANCE_KM:
-                include = True
-                reasons.append(f"near edge distance is {distance:.1f} km")
-        if include:
-            targets.append(
-                {
-                    "index": index,
-                    "source_id": src,
-                    "target_id": dst,
-                    "rel_type": rel_kind,
-                    "source_name": (src_entity or {}).get("name"),
-                    "target_name": (dst_entity or {}).get("name"),
-                    "source_area": (src_entity or {}).get("area"),
-                    "target_area": (dst_entity or {}).get("area"),
-                    "distance_km": round(distance, 2) if distance is not None else None,
-                    "heuristic_reasons": reasons,
-                    "relationship": rel,
-                }
-            )
+        reasons = _relationship_review_reasons(
+            src, dst, rel_kind, src_entity, dst_entity, src_coords, dst_coords, distance
+        )
+        if rel_kind != "near" or reasons:
+            targets.append(_relationship_target_row(
+                index, rel, src, dst, rel_kind, src_entity, dst_entity, distance, reasons
+            ))
     return targets
 
 
-def build_manifest(data: dict[str, Any], *, chunk_size: int = 25, relationship_chunk_size: int = 50) -> dict[str, Any]:
-    entities = [e for e in data.get("entities", []) if isinstance(e, dict)]
-    relationships = [r for r in data.get("relationships", []) if isinstance(r, dict)]
-    source_targets = source_missing_targets(entities)
-    place_targets = placeid_targets(entities)
-    geo_targets = location_targets(entities)
-    rel_targets = relationship_targets(data)
-    shards: dict[str, list[dict[str, Any]]] = {stream: [] for stream in STREAMS}
+def _add_entity_shards(
+    shards: dict[str, list[dict[str, Any]]], stream: str,
+    targets: list[dict[str, Any]], chunk_size: int, priority: str = "default",
+) -> None:
+    """Ghi tiếp vào shards[stream] — seq nối theo len hiện có, KHÔNG reset."""
+    grouped: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+    for entity in targets:
+        grouped[(str(entity.get("type") or "unknown"), str(entity.get("area") or "unknown"))].append(entity)
+    seq = len(shards[stream])
+    for (entity_type, area), group in sorted(grouped.items()):
+        for batch in chunks(group, chunk_size):
+            shards[stream].append(
+                {
+                    "id": f"{stream}-{priority}-{seq:04d}",
+                    "stream": stream,
+                    "priority": priority,
+                    "entity_type": entity_type,
+                    "area": area,
+                    "count": len(batch),
+                    "entity_ids": [str(e.get("id")) for e in batch],
+                }
+            )
+            seq += 1
 
-    def add_entity_shards(stream: str, targets: list[dict[str, Any]], priority: str = "default") -> None:
-        grouped: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
-        for entity in targets:
-            grouped[(str(entity.get("type") or "unknown"), str(entity.get("area") or "unknown"))].append(entity)
-        seq = len(shards[stream])
-        for (entity_type, area), group in sorted(grouped.items()):
-            for batch in chunks(group, chunk_size):
-                shards[stream].append(
-                    {
-                        "id": f"{stream}-{priority}-{seq:04d}",
-                        "stream": stream,
-                        "priority": priority,
-                        "entity_type": entity_type,
-                        "area": area,
-                        "count": len(batch),
-                        "entity_ids": [str(e.get("id")) for e in batch],
-                    }
-                )
-                seq += 1
 
-    non_place_source = [e for e in source_targets if e.get("type") != PLACE_TYPE]
-    place_source = [e for e in source_targets if e.get("type") == PLACE_TYPE]
-    add_entity_shards("source", non_place_source, priority="non_place_first")
-    add_entity_shards("source", place_source, priority="place_second")
-    add_entity_shards("placeid", place_targets)
-    add_entity_shards("location", geo_targets)
-    add_entity_shards("accuracy", entities)
-
+def _add_relationship_shards(
+    shards: dict[str, list[dict[str, Any]]],
+    rel_targets: list[dict[str, Any]],
+    relationship_chunk_size: int,
+) -> None:
     rel_grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for target in rel_targets:
         rel_grouped[str(target.get("rel_type") or "unknown")].append(target)
@@ -616,6 +623,25 @@ def build_manifest(data: dict[str, Any], *, chunk_size: int = 25, relationship_c
                 }
             )
             seq += 1
+
+
+def build_manifest(data: dict[str, Any], *, chunk_size: int = 25, relationship_chunk_size: int = 50) -> dict[str, Any]:
+    entities = [e for e in data.get("entities", []) if isinstance(e, dict)]
+    relationships = [r for r in data.get("relationships", []) if isinstance(r, dict)]
+    source_targets = source_missing_targets(entities)
+    place_targets = placeid_targets(entities)
+    geo_targets = location_targets(entities)
+    rel_targets = relationship_targets(data)
+    shards: dict[str, list[dict[str, Any]]] = {stream: [] for stream in STREAMS}
+
+    non_place_source = [e for e in source_targets if e.get("type") != PLACE_TYPE]
+    place_source = [e for e in source_targets if e.get("type") == PLACE_TYPE]
+    _add_entity_shards(shards, "source", non_place_source, chunk_size, priority="non_place_first")
+    _add_entity_shards(shards, "source", place_source, chunk_size, priority="place_second")
+    _add_entity_shards(shards, "placeid", place_targets, chunk_size)
+    _add_entity_shards(shards, "location", geo_targets, chunk_size)
+    _add_entity_shards(shards, "accuracy", entities, chunk_size)
+    _add_relationship_shards(shards, rel_targets, relationship_chunk_size)
 
     shards["eval"].append(
         {

@@ -562,3 +562,16 @@ def test_placeid_decision_conflicts_pin_reason_bytes() -> None:
     )
     assert empty_low["apply_policy"] == "reject"
     assert empty_low["suggested_value"] is None
+
+
+def test_entity_shard_seq_continues_across_calls_same_stream() -> None:
+    # Mìn lát 18: seq shard phải NỐI theo len(shards[stream]) hiện có —
+    # hai đợt add cùng stream không được đánh số lại từ 0.
+    shards = {"source": []}
+    q._add_entity_shards(shards, "source", [_place_entity(id="x1", type="food")], 25, priority="non_place_first")
+    q._add_entity_shards(shards, "source", [_place_entity(id="x2")], 25, priority="place_second")
+
+    assert [s["id"] for s in shards["source"]] == [
+        "source-non_place_first-0000",
+        "source-place_second-0001",
+    ]
