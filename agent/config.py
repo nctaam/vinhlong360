@@ -171,8 +171,7 @@ class Settings(BaseSettings):
     def ACCOUNT_DELETE_GRACE_DAYS(self) -> int:
         return self.ACCOUNT_ERASURE_DEADLINE_DAYS
 
-    @model_validator(mode="after")
-    def validate_production_keys(self):
+    def _validate_case_flags(self) -> None:
         case_flags = (
             self.CASE_KERNEL_ENABLED, self.CORRECTION_INTAKE_ENABLED,
             self.CORRECTION_ADMIN_ENABLED, self.CORRECTION_ASSISTED_ENABLED,
@@ -189,46 +188,57 @@ class Settings(BaseSettings):
                 raise ValueError("case_encryption_key_required")
             if not _is_individual_actor_ref(owner):
                 raise ValueError("case_owner_individual_required")
+
+    def _missing_production_settings(self) -> list[str]:
+        missing = []
+        if not self.LLM_API_KEY:
+            missing.append("LLM_API_KEY")
+        if not self.LLM_BASE_URL:
+            missing.append("LLM_BASE_URL")
+        if not self.ADMIN_API_KEY:
+            missing.append("ADMIN_API_KEY")
+        # JWT_SECRET: not yet used by any endpoint — skip until auth JWT is implemented
+        if not self.DATABASE_URL:
+            missing.append("DATABASE_URL")
+        elif not is_postgresql_url(self.DATABASE_URL):
+            missing.append("DATABASE_URL (PostgreSQL required)")
+        if not self.ENTITY_DETAILS_TABLES:
+            missing.append("ENTITY_DETAILS_TABLES=true")
+        return missing
+
+    def _mismatched_privacy_policy(self) -> list[str]:
+        policy_values = {
+            "ACCOUNT_ERASURE_DEADLINE_DAYS": (
+                self.ACCOUNT_ERASURE_DEADLINE_DAYS,
+                _PRIVACY_POLICY.account_erasure_deadline_days,
+            ),
+            "RECOVERY_ENABLED_DURING_GRACE_PERIOD": (
+                self.RECOVERY_ENABLED_DURING_GRACE_PERIOD,
+                _PRIVACY_POLICY.recovery_enabled_during_grace_period,
+            ),
+            "FEEDBACK_MODE": (self.FEEDBACK_MODE, _PRIVACY_POLICY.feedback_mode),
+            "FEEDBACK_RECEIPT_TTL_HOURS": (
+                self.FEEDBACK_RECEIPT_TTL_HOURS,
+                _PRIVACY_POLICY.feedback_receipt_ttl_hours,
+            ),
+            "RETAIN_DEIDENTIFIED_AGGREGATES": (
+                self.RETAIN_DEIDENTIFIED_AGGREGATES,
+                _PRIVACY_POLICY.retain_deidentified_aggregates,
+            ),
+        }
+        return [
+            name for name, (actual, expected) in policy_values.items()
+            if actual != expected
+        ]
+
+    @model_validator(mode="after")
+    def validate_production_keys(self):
+        self._validate_case_flags()
         if self.is_production:
-            missing = []
-            if not self.LLM_API_KEY:
-                missing.append("LLM_API_KEY")
-            if not self.LLM_BASE_URL:
-                missing.append("LLM_BASE_URL")
-            if not self.ADMIN_API_KEY:
-                missing.append("ADMIN_API_KEY")
-            # JWT_SECRET: not yet used by any endpoint — skip until auth JWT is implemented
-            if not self.DATABASE_URL:
-                missing.append("DATABASE_URL")
-            elif not is_postgresql_url(self.DATABASE_URL):
-                missing.append("DATABASE_URL (PostgreSQL required)")
-            if not self.ENTITY_DETAILS_TABLES:
-                missing.append("ENTITY_DETAILS_TABLES=true")
+            missing = self._missing_production_settings()
             if missing:
                 raise ValueError(f"Production requires: {', '.join(missing)}")
-            policy_values = {
-                "ACCOUNT_ERASURE_DEADLINE_DAYS": (
-                    self.ACCOUNT_ERASURE_DEADLINE_DAYS,
-                    _PRIVACY_POLICY.account_erasure_deadline_days,
-                ),
-                "RECOVERY_ENABLED_DURING_GRACE_PERIOD": (
-                    self.RECOVERY_ENABLED_DURING_GRACE_PERIOD,
-                    _PRIVACY_POLICY.recovery_enabled_during_grace_period,
-                ),
-                "FEEDBACK_MODE": (self.FEEDBACK_MODE, _PRIVACY_POLICY.feedback_mode),
-                "FEEDBACK_RECEIPT_TTL_HOURS": (
-                    self.FEEDBACK_RECEIPT_TTL_HOURS,
-                    _PRIVACY_POLICY.feedback_receipt_ttl_hours,
-                ),
-                "RETAIN_DEIDENTIFIED_AGGREGATES": (
-                    self.RETAIN_DEIDENTIFIED_AGGREGATES,
-                    _PRIVACY_POLICY.retain_deidentified_aggregates,
-                ),
-            }
-            mismatched = [
-                name for name, (actual, expected) in policy_values.items()
-                if actual != expected
-            ]
+            mismatched = self._mismatched_privacy_policy()
             if mismatched:
                 raise ValueError(
                     "Production privacy policy mismatch: " + ", ".join(mismatched)
