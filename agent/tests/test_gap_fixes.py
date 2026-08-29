@@ -3234,3 +3234,22 @@ class TestHttpRequestMetrics:
         track_http_request("GET", "/api/entities/123/reviews", 200, 0.1)
         output = http_request_duration_seconds.collect()
         assert "api" in output
+
+
+class TestCaseEnabledReadinessHelper:
+    """Ghim helper tách từ readiness_probe (lát 16 R20.8): flag bật + cấu hình
+    hỏng phải trả blocked codes; cấu hình cụt không được làm helper nổ."""
+
+    def test_bad_key_and_owner_report_blocked_codes(self):
+        import server
+        from types import SimpleNamespace
+
+        checks = server._case_enabled_readiness(SimpleNamespace(
+            CASE_KERNEL_ENCRYPTION_KEY="", CASE_SERVICE_OWNER_REF="",
+        ))
+
+        assert checks["case_kernel_key"]["code"] == "case_encryption_key_required"
+        assert checks["case_kernel_key"]["ok"] is False
+        assert checks["case_owner"]["code"] == "case_owner_individual_required"
+        # policy thật của repo là hợp lệ → ready
+        assert checks["case_policy"]["code"] == "case_policy_ready"

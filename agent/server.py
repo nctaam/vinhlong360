@@ -1251,14 +1251,42 @@ def _erasure_readiness(erasure_status: dict, schema: dict) -> dict:
 
 
 @app.get("/health/ready")
+def _case_enabled_readiness(_settings) -> dict:
+    """Ba khoá case khi flag bật — nguyên văn từ readiness_probe (lát 16 R20.8)."""
+    from config import _is_individual_actor_ref
+    from cases.policy import load_case_policy
+    from cases.security import validate_case_encryption_key
+    checks: dict[str, object] = {}
+    try:
+        validate_case_encryption_key(_settings.CASE_KERNEL_ENCRYPTION_KEY)
+        key_valid = True
+    except Exception:
+        key_valid = False
+    checks["case_kernel_key"] = (
+        {"ok": True, "state": "ready", "code": "case_kernel_key_ready"}
+        if key_valid
+        else {"ok": False, "state": "blocked", "code": "case_encryption_key_required"}
+    )
+    checks["case_owner"] = (
+        {"ok": True, "state": "ready", "code": "case_owner_ready"}
+        if _is_individual_actor_ref(_settings.CASE_SERVICE_OWNER_REF)
+        else {"ok": False, "state": "blocked", "code": "case_owner_individual_required"}
+    )
+    try:
+        load_case_policy()
+        checks["case_policy"] = {"ok": True, "state": "ready", "code": "case_policy_ready"}
+    except Exception:
+        checks["case_policy"] = {"ok": False, "state": "blocked", "code": "case_policy_invalid"}
+    return checks
+
+
 async def readiness_probe():
     """Lightweight readiness probe for load balancers / orchestrators."""
     def _probe():
-        from config import settings as _settings, _is_individual_actor_ref
+        from config import settings as _settings
         from data_lifecycle import lifecycle_registry_readiness
         from database import db as _db
         from privacy_policy import privacy_policy_readiness
-        from cases.policy import load_case_policy
         from database import case_kernel_schema_status
         data_source = getattr(knowledge, "_data_source", None) or "unknown"
         entity_count = len(getattr(knowledge, "_entities", None) or {})
@@ -1291,27 +1319,7 @@ async def readiness_probe():
             checks["case_kernel_key"] = {"ok": True, "state": "dormant", "code": "case_kernel_key_dormant"}
             checks["case_owner"] = {"ok": True, "state": "dormant", "code": "case_owner_dormant"}
         else:
-            from cases.security import validate_case_encryption_key
-            try:
-                validate_case_encryption_key(_settings.CASE_KERNEL_ENCRYPTION_KEY)
-                key_valid = True
-            except Exception:
-                key_valid = False
-            checks["case_kernel_key"] = (
-                {"ok": True, "state": "ready", "code": "case_kernel_key_ready"}
-                if key_valid
-                else {"ok": False, "state": "blocked", "code": "case_encryption_key_required"}
-            )
-            checks["case_owner"] = (
-                {"ok": True, "state": "ready", "code": "case_owner_ready"}
-                if _is_individual_actor_ref(_settings.CASE_SERVICE_OWNER_REF)
-                else {"ok": False, "state": "blocked", "code": "case_owner_individual_required"}
-            )
-            try:
-                load_case_policy()
-                checks["case_policy"] = {"ok": True, "state": "ready", "code": "case_policy_ready"}
-            except Exception:
-                checks["case_policy"] = {"ok": False, "state": "blocked", "code": "case_policy_invalid"}
+            checks.update(_case_enabled_readiness(_settings))
         erasure_status = scheduler_status().get("erasure", {})
         checks["erasure_scheduler"] = _erasure_readiness(erasure_status, schema)
         return checks
