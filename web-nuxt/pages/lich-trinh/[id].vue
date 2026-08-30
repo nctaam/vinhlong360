@@ -398,7 +398,7 @@ async function renderMap(result: RouteResult | null) {
         id: 'route-line',
         type: 'line',
         source: 'route',
-        paint: { 'line-color': '#2563eb', 'line-width': 4, 'line-opacity': 0.8 },
+        paint: { 'line-color': 'rgb(var(--blue-rgb))', 'line-width': 4, 'line-opacity': 0.8 },
       })
       const bounds = coords.reduce(
         (b: { extend: (c: number[]) => typeof b }, c: number[]) => b.extend(c),
@@ -760,11 +760,11 @@ if (itinerary.value && !itinerary.value.error) {
 }
 @media print {
   .itin-actions, .transport-mode-spaced, .route-map-section, .day-arc-hero { display: none; }
-  .step-card { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+  .step-card { box-shadow: none; border: 1px solid var(--line); break-inside: avoid; }
   .step-card:hover { transform: none; }
   .timeline { padding-left: var(--space-4); }
-  .timeline::before { background: #999; }
+  .timeline::before { background: var(--ink-tertiary); }
   .timeline-chapter { break-after: avoid; }
-  .step-note-callout { background: none; border-left: 2px solid #999; }
+  .step-note-callout { background: none; border-left: 2px solid var(--ink-tertiary); }
 }
 </style>

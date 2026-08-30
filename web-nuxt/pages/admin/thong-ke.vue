@@ -43,7 +43,7 @@
           <div class="stat-value">{{ data.summary?.total_queries ?? '—' }}</div>
           <div class="stat-label">Tổng truy vấn</div>
         </div>
-        <svg v-if="sparkPoints.length > 1" class="tk-spark" viewBox="0 0 80 24" preserveAspectRatio="none" role="img" aria-label="Xu hướng entity 30 ngày"><title>Trend</title><polyline :points="sparkPoints" fill="none" stroke="rgb(52,120,246)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        <svg v-if="sparkPoints.length > 1" class="tk-spark" viewBox="0 0 80 24" preserveAspectRatio="none" role="img" aria-label="Xu hướng entity 30 ngày"><title>Trend</title><polyline :points="sparkPoints" fill="none" stroke="rgb(var(--blue-rgb))" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
       </div>
       <div class="stat-card">
         <div class="stat-icon si-purple">&#128161;</div>
@@ -412,7 +412,7 @@ onMounted(fetchData)
 .dark .tk-panel:hover .tk-count-warn { background: rgba(var(--warning-rgb),.28); }
 .dark .stat-card .stat-value { color: var(--primary-light); }
 .dark .tk-cost-scope { background: rgba(var(--primary-rgb),.22); color: var(--primary-light); }
-.dark .stat-card.status-warn { background: rgba(240,160,80,.08); border-color: var(--warning); }
+.dark .stat-card.status-warn { background: rgba(var(--accent-rgb),.08); border-color: var(--warning); }
 .dark .tk-sk-card, .dark .tk-sk-panel { background: rgba(var(--white-rgb),.06); }
 
 /* ── Loading skeleton ── */

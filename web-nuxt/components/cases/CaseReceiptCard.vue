@@ -129,7 +129,7 @@ function confirmSaved() {
     display: none !important;
   }
   .receipt-card {
-    border: 1px solid #000;
+    border: 1px solid rgb(var(--black-rgb));
   }
 }
 </style>

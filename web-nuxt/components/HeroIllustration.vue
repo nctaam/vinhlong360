@@ -63,9 +63,9 @@ onMounted(() => {
         <stop offset="100%" stop-color="rgba(var(--accent-rgb),0)" />
       </radialGradient>
       <linearGradient id="hero-river-sheen" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stop-color="rgba(255,255,255,0)" />
-        <stop offset="50%" stop-color="rgba(255,255,255,.14)" />
-        <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+        <stop offset="0%" stop-color="rgba(var(--white-rgb), 0)" />
+        <stop offset="50%" stop-color="rgba(var(--white-rgb), .14)" />
+        <stop offset="100%" stop-color="rgba(var(--white-rgb), 0)" />
       </linearGradient>
     </defs>
 
@@ -74,47 +74,47 @@ onMounted(() => {
       <!-- Atmospheric sun glow — soft warm halo gives the scene depth/focal warmth -->
       <circle class="hero-glow" cx="530" cy="60" r="150" fill="url(#hero-sun-glow)" />
       <!-- River -->
-      <path d="M0 280 Q150 260 300 280 Q450 300 600 270 L600 400 L0 400Z" fill="rgba(255,255,255,.08)" />
-      <path d="M0 300 Q120 285 280 300 Q440 315 600 290 L600 400 L0 400Z" fill="rgba(255,255,255,.05)" />
+      <path d="M0 280 Q150 260 300 280 Q450 300 600 270 L600 400 L0 400Z" fill="rgba(var(--white-rgb), .08)" />
+      <path d="M0 300 Q120 285 280 300 Q440 315 600 290 L600 400 L0 400Z" fill="rgba(var(--white-rgb), .05)" />
       <!-- River sheen — a slow horizontal shimmer that travels across the water -->
       <path class="hero-sheen" d="M0 290 Q140 273 290 290 Q450 307 600 280 L600 320 Q450 347 290 330 Q140 313 0 330Z" fill="url(#hero-river-sheen)" />
       <!-- Palm trees -->
       <g opacity=".15">
-        <line x1="520" y1="280" x2="520" y2="160" stroke="#fff" stroke-width="4" />
-        <path d="M520 160 Q490 140 460 155" stroke="#fff" stroke-width="3" fill="none" />
-        <path d="M520 160 Q550 135 580 145" stroke="#fff" stroke-width="3" fill="none" />
-        <path d="M520 160 Q510 130 495 125" stroke="#fff" stroke-width="3" fill="none" />
-        <path d="M520 160 Q535 128 555 120" stroke="#fff" stroke-width="3" fill="none" />
-        <path d="M520 165 Q485 155 470 170" stroke="#fff" stroke-width="2.5" fill="none" />
-        <path d="M520 165 Q555 150 575 160" stroke="#fff" stroke-width="2.5" fill="none" />
+        <line x1="520" y1="280" x2="520" y2="160" stroke="var(--white)" stroke-width="4" />
+        <path d="M520 160 Q490 140 460 155" stroke="var(--white)" stroke-width="3" fill="none" />
+        <path d="M520 160 Q550 135 580 145" stroke="var(--white)" stroke-width="3" fill="none" />
+        <path d="M520 160 Q510 130 495 125" stroke="var(--white)" stroke-width="3" fill="none" />
+        <path d="M520 160 Q535 128 555 120" stroke="var(--white)" stroke-width="3" fill="none" />
+        <path d="M520 165 Q485 155 470 170" stroke="var(--white)" stroke-width="2.5" fill="none" />
+        <path d="M520 165 Q555 150 575 160" stroke="var(--white)" stroke-width="2.5" fill="none" />
       </g>
       <g opacity=".1" transform="translate(-80, 20)">
-        <line x1="520" y1="280" x2="520" y2="180" stroke="#fff" stroke-width="3.5" />
-        <path d="M520 180 Q495 162 468 175" stroke="#fff" stroke-width="2.5" fill="none" />
-        <path d="M520 180 Q545 158 572 165" stroke="#fff" stroke-width="2.5" fill="none" />
-        <path d="M520 180 Q512 152 498 148" stroke="#fff" stroke-width="2.5" fill="none" />
-        <path d="M520 180 Q532 150 550 144" stroke="#fff" stroke-width="2.5" fill="none" />
+        <line x1="520" y1="280" x2="520" y2="180" stroke="var(--white)" stroke-width="3.5" />
+        <path d="M520 180 Q495 162 468 175" stroke="var(--white)" stroke-width="2.5" fill="none" />
+        <path d="M520 180 Q545 158 572 165" stroke="var(--white)" stroke-width="2.5" fill="none" />
+        <path d="M520 180 Q512 152 498 148" stroke="var(--white)" stroke-width="2.5" fill="none" />
+        <path d="M520 180 Q532 150 550 144" stroke="var(--white)" stroke-width="2.5" fill="none" />
       </g>
       <!-- Boat -->
       <g opacity=".12" transform="translate(80, 240)">
-        <path d="M0 20 Q20 30 60 30 Q80 30 90 20 Q70 35 20 35Z" fill="#fff" />
-        <line x1="40" y1="20" x2="40" y2="-5" stroke="#fff" stroke-width="2" />
-        <path d="M42 -5 Q55 5 42 15" fill="rgba(255,255,255,.6)" />
+        <path d="M0 20 Q20 30 60 30 Q80 30 90 20 Q70 35 20 35Z" fill="var(--white)" />
+        <line x1="40" y1="20" x2="40" y2="-5" stroke="var(--white)" stroke-width="2" />
+        <path d="M42 -5 Q55 5 42 15" fill="rgba(var(--white-rgb), .6)" />
       </g>
       <!-- Fruits cluster -->
       <g opacity=".1" transform="translate(480, 60)">
         <circle cx="0" cy="0" r="12" fill="var(--accent)" />
         <circle cx="22" cy="5" r="10" fill="var(--accent)" />
         <circle cx="8" cy="20" r="11" fill="var(--accent)" />
-        <path d="M5 -14 Q8 -22 15 -18" stroke="#4BA97D" stroke-width="2" fill="none" />
+        <path d="M5 -14 Q8 -22 15 -18" stroke="rgb(var(--sys-green-rgb))" stroke-width="2" fill="none" />
       </g>
       <!-- Sun/moon -->
       <circle cx="530" cy="60" r="30" fill="rgba(var(--accent-rgb),.12)" />
       <circle cx="530" cy="60" r="22" fill="rgba(var(--accent-rgb),.08)" />
       <!-- Small waves -->
-      <path d="M50 310 Q70 305 90 310 Q110 315 130 310" stroke="rgba(255,255,255,.08)" stroke-width="2" fill="none" />
-      <path d="M200 320 Q220 315 240 320 Q260 325 280 320" stroke="rgba(255,255,255,.06)" stroke-width="2" fill="none" />
-      <path d="M350 305 Q370 300 390 305 Q410 310 430 305" stroke="rgba(255,255,255,.07)" stroke-width="2" fill="none" />
+      <path d="M50 310 Q70 305 90 310 Q110 315 130 310" stroke="rgba(var(--white-rgb), .08)" stroke-width="2" fill="none" />
+      <path d="M200 320 Q220 315 240 320 Q260 325 280 320" stroke="rgba(var(--white-rgb), .06)" stroke-width="2" fill="none" />
+      <path d="M350 305 Q370 300 390 305 Q410 310 430 305" stroke="rgba(var(--white-rgb), .07)" stroke-width="2" fill="none" />
     </template>
 
     <!-- ── WAVES motif (Mekong river) ── -->

@@ -80,3 +80,5 @@ ghi ở backlog tối ưu — giảm dần, KHÔNG được tăng tiếp từ 47
 291 là ghi nhận tiến bộ (giảm), không phải nợ mới.
 
 - 2026-08-27T11:22:09 SKIP R30.7 — Nợ có TRƯỚC đợt D: JS 803/800 kB gz. Trần đặt 2026-07-10 khi đang 790 — biên bị ăn hết trước loạt commit này. Không có nhát cắt trong tầm: 276/803 kB là maplibre đã lazy đúng, 91 kB là entry, còn lại 181 mảnh nhỏ; đã kiểm hai component chết StorySpread/EntityFeature KHÔNG nằm trong bundle nên xoá cũng không cứu kB nào. Cần task hiệu năng riêng — ROADMAP §37.3.
+
+- 2026-08-30T08:21:51 SKIP R30.7 — 803kB>800kB co nguyen trang truoc F1 (doi chung worktree 62a87c84 cung 803kB); F1 thuan CSS-token; bundle-diet xep lat rieng ke tiep

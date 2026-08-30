@@ -752,8 +752,8 @@ useHead({
 .home .hero-scrim {
   position: absolute; inset: 0; z-index: 0; pointer-events: none;
   background:
-    linear-gradient(to top, rgba(8,9,12,.80) 0%, rgba(8,9,12,.38) 24%, rgba(8,9,12,.06) 52%, transparent 74%),
-    linear-gradient(103deg, rgba(8,9,12,.48) 0%, rgba(8,9,12,.10) 46%, transparent 70%);
+    linear-gradient(to top, rgba(var(--nocturne-ink-rgb),.80) 0%, rgba(var(--nocturne-ink-rgb),.38) 24%, rgba(var(--nocturne-ink-rgb),.06) 52%, transparent 74%),
+    linear-gradient(103deg, rgba(var(--nocturne-ink-rgb),.48) 0%, rgba(var(--nocturne-ink-rgb),.10) 46%, transparent 70%);
 }
 /* Tactile grain over the image — the antidote to the flat "AI-gradient" look.
    Small tiled SVG the browser rasterises once; subtle overlay. */

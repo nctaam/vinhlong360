@@ -374,7 +374,7 @@ function actionLabel(a: ActivityItem) {
 .cp-status-row { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .6rem; }
 .cp-pill { display: inline-flex; align-items: center; min-height: 28px; padding: .2rem .65rem; border: 1px solid var(--line); border-radius: var(--radius-full); font-size: .78rem; color: var(--ink-700); background: var(--bg-alt); }
 .cp-pill.ok { color: var(--accent); border-color: color-mix(in oklab, var(--accent) 35%, var(--line)); }
-.cp-pill.warn { color: var(--danger); border-color: rgba(192,57,43,.25); }
+.cp-pill.warn { color: var(--danger); border-color: rgba(var(--danger-rgb), .25); }
 .cp-hero-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .85rem; }
 .cp-score { width: 92px; height: 92px; border-radius: 50%; display: grid; place-content: center; text-align: center; border: 8px solid color-mix(in oklab, var(--accent) 55%, var(--line)); background: var(--bg-alt); }
 .cp-score-value { font-size: 1.45rem; font-weight: 800; line-height: 1; }

@@ -550,7 +550,7 @@ useHead(() => ({
 .catalog-hero.cat-season {
   transition: background 550ms var(--ease-out-expo);
 }
-/* --sediment-teal-rgb: rgb() of --river-600 (var(--river-600)) — the sediment/water
+/* --sediment-teal-rgb: rgb-triplet of --river-600 (var(--river-600)) — the sediment/water
    teal used site-wide for the "nước" register (EntityHeroPlaceholder wash,
    sediment-tick top stop). NOT --river-rgb (that token is the unrelated
    indigo used for .cat-accommodation elsewhere — a pre-existing naming

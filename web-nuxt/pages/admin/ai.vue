@@ -69,7 +69,7 @@
           <svg class="ai-ring" viewBox="0 0 80 80" aria-hidden="true">
             <circle cx="40" cy="40" r="32" fill="none" stroke="var(--line)" stroke-width="8" opacity=".15" />
             <circle cx="40" cy="40" r="32" fill="none"
-              :stroke="hitRate >= 70 ? '#219653' : hitRate >= 40 ? '#e67e22' : 'var(--cat-dish-accent)'"
+              :stroke="hitRate >= 70 ? 'rgb(var(--success-rgb))' : hitRate >= 40 ? 'rgb(var(--accent-rgb))' : 'var(--cat-dish-accent)'"
               stroke-width="8" stroke-linecap="round"
               :stroke-dasharray="`${hitRate * 2.01} 201`"
               stroke-dashoffset="50.3"
@@ -273,12 +273,12 @@ const triggerResult = ref('')
 
 const statusColor = computed(() => {
   if (!health.value) return 'var(--muted)'
-  if (health.value.status === 'ok') return '#219653'
-  if (health.value.status === 'degraded') return '#e67e22'
+  if (health.value.status === 'ok') return 'rgb(var(--success-rgb))'
+  if (health.value.status === 'degraded') return 'rgb(var(--accent-rgb))'
   return 'var(--cat-dish-accent)'
 })
 const statusBg = computed(() => {
-  if (!health.value) return 'rgba(142,142,147,.1)'
+  if (!health.value) return 'rgba(var(--gray-rgb), .1)'
   if (health.value.status === 'ok') return 'rgba(var(--primary-rgb),.1)'
   if (health.value.status === 'degraded') return 'rgba(var(--warning-rgb),.1)'
   return 'rgba(var(--danger-rgb),.1)'

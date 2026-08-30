@@ -1718,7 +1718,7 @@ async function updateMap(result: RouteResult | null) {
       id: 'route-line',
       type: 'line',
       source: 'route',
-      paint: { 'line-color': '#2563eb', 'line-width': 4, 'line-opacity': 0.8 },
+      paint: { 'line-color': 'rgb(var(--blue-rgb))', 'line-width': 4, 'line-opacity': 0.8 },
     })
     fitMapToCoords(coords)
   } else {

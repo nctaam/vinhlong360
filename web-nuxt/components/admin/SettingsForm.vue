@@ -18,10 +18,10 @@
 
       <template v-else-if="field.input_type === 'color'">
         <div class="sf-color-row">
-          <input :id="`sf-${field.key}`" type="color" :value="localValues[field.key] || '#000000'"
+          <input :id="`sf-${field.key}`" type="color" :value="localValues[field.key] || 'rgb(var(--black-rgb))'"
             @input="localValues[field.key] = ($event.target as HTMLInputElement).value" class="sf-color-picker" />
           <input type="text" :value="localValues[field.key]" class="sf-color-hex"
-            placeholder="#000000" :aria-label="`${field.label} (mã hex)`" @input="localValues[field.key] = ($event.target as HTMLInputElement).value" />
+            placeholder="rgb(var(--black-rgb))" :aria-label="`${field.label} (mã hex)`" @input="localValues[field.key] = ($event.target as HTMLInputElement).value" />
           <button v-if="localValues[field.key]" type="button" class="sf-color-clear" @click="localValues[field.key] = ''" title="Xoá (dùng mặc định)" aria-label="Xoá màu (dùng mặc định)"><IconLine name="x" /></button>
         </div>
       </template>

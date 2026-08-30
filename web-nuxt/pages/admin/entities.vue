@@ -1359,16 +1359,16 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .type-badge[data-type="dish"] { background: rgba(var(--warning-rgb),.1); color: var(--warning); }
 .type-badge[data-type="product"] { background: rgba(var(--blue-rgb),.1); color: rgb(var(--blue-rgb)); }
 .type-badge[data-type="accommodation"] { background: rgba(var(--purple-rgb),.1); color: rgb(var(--purple-rgb)); }
-.type-badge[data-type="nature"] { background: rgba(52,199,89,.1); color: rgb(52,199,89); }
+.type-badge[data-type="nature"] { background: rgba(var(--sys-green-rgb), .1); color: rgb(var(--sys-green-rgb)); }
 .type-badge[data-type="experience"] { background: rgba(var(--warning-rgb),.1); color: var(--warning); }
-.type-badge[data-type="craft_village"] { background: rgba(162,132,94,.1); color: rgb(162,132,94); }
+.type-badge[data-type="craft_village"] { background: rgba(var(--sys-brown-rgb), .1); color: rgb(var(--sys-brown-rgb)); }
 .type-badge[data-type="event"] { background: rgba(var(--danger-rgb),.1); color: var(--error); }
 .type-badge[data-type="drink"] { background: rgba(var(--teal-rgb),.1); color: rgb(var(--teal-rgb)); }
 .type-badge[data-type="place"] { background: rgba(var(--gray-rgb),.1); color: var(--muted); }
-.dark .type-badge[data-type="accommodation"] { background: rgba(var(--purple-rgb),.15); color: #C084FC; }
-.dark .type-badge[data-type="nature"] { background: rgba(52,199,89,.15); color: #66BB6A; }
-.dark .type-badge[data-type="craft_village"] { background: rgba(162,132,94,.15); color: #D4A574; }
-.dark .type-badge[data-type="drink"] { background: rgba(var(--teal-rgb),.15); color: #5CE5DD; }
+.dark .type-badge[data-type="accommodation"] { background: rgba(var(--purple-rgb),.15); color: rgb(var(--purple-rgb)); }
+.dark .type-badge[data-type="nature"] { background: rgba(var(--sys-green-rgb), .15); color: rgb(var(--sys-green-rgb)); }
+.dark .type-badge[data-type="craft_village"] { background: rgba(var(--sys-brown-rgb), .15); color: rgb(var(--accent-rgb)); }
+.dark .type-badge[data-type="drink"] { background: rgba(var(--teal-rgb),.15); color: rgb(var(--blue-rgb)); }
 
 /* ── Selected row ── */
 .row-selected td { background: rgba(var(--blue-rgb),.04); transition: background .2s; }
@@ -1521,9 +1521,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .dark .type-badge[data-type="dish"] { background: rgba(var(--warning-rgb),.15); color: var(--warning); }
 .dark .type-badge[data-type="product"] { background: rgba(var(--blue-rgb),.15); }
 .dark .type-badge[data-type="accommodation"] { background: rgba(var(--purple-rgb),.15); }
-.dark .type-badge[data-type="nature"] { background: rgba(52,199,89,.15); }
+.dark .type-badge[data-type="nature"] { background: rgba(var(--sys-green-rgb), .15); }
 .dark .type-badge[data-type="experience"] { background: rgba(var(--warning-rgb),.15); color: var(--accent-text); }
-.dark .type-badge[data-type="craft_village"] { background: rgba(162,132,94,.15); }
+.dark .type-badge[data-type="craft_village"] { background: rgba(var(--sys-brown-rgb), .15); }
 .dark .type-badge[data-type="event"] { background: rgba(var(--danger-rgb),.15); color: rgb(var(--danger-rgb)); }
 .dark .type-badge[data-type="drink"] { background: rgba(var(--teal-rgb),.15); }
 .dark .type-badge[data-type="place"] { background: rgba(var(--gray-rgb),.18); color: var(--muted); }
@@ -1593,7 +1593,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   font-size: 9px; line-height: 1; color: var(--text-on-dark);
 }
 .ent-health-cell:hover .ent-dot { transform: scale(1.4); }
-.ent-health-cell:hover .dot-miss { box-shadow: 0 0 0 3px rgba(255,59,48,.15); }
+.ent-health-cell:hover .dot-miss { box-shadow: 0 0 0 3px rgba(var(--sys-red-rgb),.15); }
 .dot-ok { background: var(--success); }
 .dot-miss { background: var(--error); opacity: .45; }
 

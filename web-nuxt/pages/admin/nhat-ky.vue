@@ -147,7 +147,7 @@ onUnmounted(() => { if (searchTimer) clearTimeout(searchTimer) })
 .audit-date { max-width: 160px; }
 .audit-summary { font-size: var(--text-sm); color: var(--muted); margin-bottom: var(--space-2); }
 .audit-method { font-weight: 700; font-size: .7rem; padding: 1px 6px; border-radius: var(--radius-control); text-transform: uppercase; }
-.audit-method.post { background: rgba(52,199,89,.15); color: var(--success); }
+.audit-method.post { background: rgba(var(--sys-green-rgb), .15); color: var(--success); }
 .audit-method.put, .audit-method.patch { background: rgba(var(--warning-rgb),.15); color: var(--warning); }
 .audit-method.delete { background: rgba(var(--red-rgb),.15); color: var(--error); }
 .audit-ts { white-space: nowrap; font-size: .8rem; }
@@ -155,9 +155,9 @@ onUnmounted(() => { if (searchTimer) clearTimeout(searchTimer) })
 .audit-actor { font-weight: 500; }
 .audit-ip { font-size: .8rem; }
 
-.dark .audit-method.post { background: rgba(52,199,89,.2); }
+.dark .audit-method.post { background: rgba(var(--sys-green-rgb), .2); }
 .dark .audit-method.put, .dark .audit-method.patch { background: rgba(var(--warning-rgb),.2); }
-.dark .audit-method.delete { background: rgba(255,69,58,.2); }
+.dark .audit-method.delete { background: rgba(var(--sys-red-rgb),.2); }
 
 .audit-skeleton { display: flex; flex-direction: column; gap: var(--space-2); }
 .skel-row { display: flex; gap: var(--space-3); padding: var(--space-2) 0; }

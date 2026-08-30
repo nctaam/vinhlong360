@@ -574,7 +574,7 @@ useHead(() => ({
 <style src="~/assets/css/events.css"></style>
 
 <style>
-.catalog-hero.cat-event { background: linear-gradient(135deg, rgba(var(--accent-rgb), .08) 0%, rgba(183, 110, 60, .06) 100%); }
+.catalog-hero.cat-event { background: linear-gradient(135deg, rgba(var(--accent-rgb), .08) 0%, rgba(var(--accent-rgb), .06) 100%); }
 .dark .catalog-hero.cat-event { background: linear-gradient(135deg, rgba(var(--white-rgb),.03) 0%, rgba(var(--white-rgb),.01) 100%); }
 
 </style>

@@ -641,7 +641,7 @@ useHead({
   position: relative;
   background:
     radial-gradient(120% 90% at 12% 0%, rgba(var(--accent-rgb), .07) 0%, transparent 55%),
-    linear-gradient(135deg, rgba(var(--primary-rgb), .06) 0%, rgba(183, 110, 60, .08) 100%);
+    linear-gradient(135deg, rgba(var(--primary-rgb), .06) 0%, rgba(var(--accent-rgb), .08) 100%);
 }
 .dark .catalog-hero.cat-festival {
   background:

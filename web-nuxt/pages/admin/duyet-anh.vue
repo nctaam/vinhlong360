@@ -325,7 +325,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   padding: 2px 8px; border-radius: 100px; color: var(--text-on-dark); backdrop-filter: blur(4px);
 }
 .conf-high { background: rgba(var(--primary-rgb),.9); }
-.conf-mid { background: rgba(201,138,26,.9); }
+.conf-mid { background: rgba(var(--accent-rgb), .9); }
 .conf-low { background: rgba(var(--danger-rgb),.9); }
 
 .img-meta { padding: var(--space-3) var(--space-3) 0; display: flex; flex-direction: column; gap: 6px; }

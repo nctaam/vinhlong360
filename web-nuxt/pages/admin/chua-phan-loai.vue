@@ -183,13 +183,13 @@ const loadPct = computed(() => filtered.value.length ? Math.round((pageItems.val
 
 // Semantic type→color mapping for badges (fallback to neutral gray).
 const TYPE_COLORS: Record<string, string> = {
-  'Điểm đến': '#3478F6', 'Du lịch': '#3478F6',
-  'Dịch vụ': '#AF52DE',
-  'Ẩm thực': '#FF9F0A', 'Món ăn': '#FF9F0A', 'Đặc sản': '#FF9F0A',
-  'Sản phẩm': '#34C759', 'OCOP': '#34C759',
-  'Lưu trú': '#5AC8FA',
-  'Sự kiện': '#FF375F', 'Lễ hội': '#FF375F',
-  'Làng nghề': '#A2845E',
+  'Điểm đến': 'rgb(var(--blue-rgb))', 'Du lịch': 'rgb(var(--blue-rgb))',
+  'Dịch vụ': 'rgb(var(--purple-rgb))',
+  'Ẩm thực': 'rgb(var(--accent-rgb))', 'Món ăn': 'rgb(var(--accent-rgb))', 'Đặc sản': 'rgb(var(--accent-rgb))',
+  'Sản phẩm': 'rgb(var(--sys-green-rgb))', 'OCOP': 'rgb(var(--sys-green-rgb))',
+  'Lưu trú': 'rgb(var(--blue-rgb))',
+  'Sự kiện': 'rgb(var(--sys-pink-rgb))', 'Lễ hội': 'rgb(var(--sys-pink-rgb))',
+  'Làng nghề': 'rgb(var(--sys-brown-rgb))',
 }
 function typeBadgeStyle(type?: string) {
   const c = (type && TYPE_COLORS[type])
@@ -305,7 +305,7 @@ onMounted(load)
 .cpl-progress-pill {
   display: inline-flex; align-items: center; padding: 3px 11px;
   border-radius: 100px; font-size: .75rem; font-weight: 600;
-  background: rgba(120,120,128,.1); color: var(--muted);
+  background: rgba(var(--fill-gray-rgb), .1); color: var(--muted);
   white-space: nowrap;
 }
 
@@ -385,7 +385,7 @@ onMounted(load)
 }
 .cpl-loadmore-track {
   width: 100%; max-width: 360px; height: 4px; border-radius: 100px;
-  background: rgba(120,120,128,.16); overflow: hidden;
+  background: rgba(var(--fill-gray-rgb), .16); overflow: hidden;
 }
 .cpl-loadmore-fill {
   height: 100%; border-radius: 100px; background: var(--primary);

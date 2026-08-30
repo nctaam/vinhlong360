@@ -1647,7 +1647,7 @@ onUnmounted(() => {
 .recovery-list code { font-size: var(--text-sm); letter-spacing: 0.05em; }
 .rc-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 .qr-img { display: block; margin: var(--space-2) 0; border-radius: var(--radius-control); background: var(--white); padding: var(--space-2); }
-.settings-danger { border-color: rgba(192,57,43,.2); border-left: 3px solid var(--error); }
+.settings-danger { border-color: rgba(var(--danger-rgb), .2); border-left: 3px solid var(--error); }
 .danger-actions { display: flex; flex-direction: column; gap: .75rem; }
 .danger-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .danger-item p { margin: 0; }
@@ -1723,13 +1723,13 @@ onUnmounted(() => {
 .preference-reset { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--line); }
 .preference-reset p { margin: .2rem 0 0; max-width: 60ch; }
 .preference-reset .btn { min-height: 44px; flex-shrink: 0; }
-.delete-confirm { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-top: var(--space-3); padding: .9rem; border: 1px solid rgba(192,57,43,.28); border-radius: var(--radius-surface); background: color-mix(in oklab, var(--danger) 5%, var(--bg)); }
+.delete-confirm { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-top: var(--space-3); padding: .9rem; border: 1px solid rgba(var(--danger-rgb), .28); border-radius: var(--radius-surface); background: color-mix(in oklab, var(--danger) 5%, var(--bg)); }
 .delete-confirm p { margin: .2rem 0 0; color: var(--ink-700); font-size: var(--text-xs); }
 .delete-confirm-actions { display: flex; gap: var(--space-2); flex-shrink: 0; }
 .delete-confirm .btn { min-height: 44px; }
 .account-status { margin: var(--space-3) 0 0; padding: .75rem .85rem; border-left: 3px solid var(--primary); border-radius: var(--radius-control); background: var(--bg-alt); color: var(--ink-700); font-size: var(--text-sm); }
 
-.login-fail { border-color: rgba(192,57,43,.3) !important; }
+.login-fail { border-color: rgba(var(--danger-rgb), .3) !important; }
 .login-ok { color: var(--accent); font-weight: 600; font-size: var(--text-base); }
 .login-bad { color: var(--danger); font-weight: 600; font-size: var(--text-base); }
 
@@ -1749,7 +1749,7 @@ onUnmounted(() => {
 .dark .sf-input { background: var(--bg-alt); border-color: var(--line); color: var(--ink); }
 .dark .session-item { border-color: var(--line); background: var(--bg-alt); }
 .dark .session-item.current { border-color: var(--accent); background: color-mix(in oklab, var(--accent) 8%, var(--bg-alt)); }
-.dark .settings-danger { border-color: rgba(192,57,43,.3); }
+.dark .settings-danger { border-color: rgba(var(--danger-rgb), .3); }
 .dark .sf-avatar-preview { border-color: var(--line); }
 .dark .sf-username-row { border-color: var(--line); }
 .dark .sf-username-prefix { background: var(--bg-alt); border-color: var(--line); }

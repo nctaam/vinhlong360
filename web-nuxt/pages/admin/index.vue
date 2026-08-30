@@ -429,10 +429,10 @@ function activityLabel(a: { method: string; path: string }): string {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  attraction: '#219653', dish: '#FF9F0A', product: '#3478F6',
-  accommodation: '#AF52DE', nature: '#34C759', experience: '#FF9500',
-  craft_village: '#A6822A', event: '#FF3B30', drink: '#30B0C7',
-  facility: '#8E8E93',
+  attraction: 'rgb(var(--success-rgb))', dish: 'rgb(var(--accent-rgb))', product: 'rgb(var(--blue-rgb))',
+  accommodation: 'rgb(var(--purple-rgb))', nature: 'rgb(var(--sys-green-rgb))', experience: 'rgb(var(--accent-rgb))',
+  craft_village: 'rgb(var(--sys-brown-rgb))', event: 'rgb(var(--sys-red-rgb))', drink: 'rgb(var(--blue-rgb))',
+  facility: 'rgb(var(--gray-rgb))',
 }
 
 const completenessSegments = computed(() => {
@@ -453,7 +453,7 @@ const totalByType = computed(() => {
 
 const sortedBars = computed(() => {
   const bt = (stats.value.by_type || {}) as Record<string, number>
-  const items = Object.entries(bt).map(([type, count]) => ({ type, count, color: TYPE_COLORS[type] || '#8E8E93' }))
+  const items = Object.entries(bt).map(([type, count]) => ({ type, count, color: TYPE_COLORS[type] || 'rgb(var(--gray-rgb))' }))
   items.sort((a, b) => b.count - a.count)
   const max = items[0]?.count || 1
   return items.map(it => ({ ...it, pct: Math.round((it.count / max) * 100) }))
@@ -461,7 +461,7 @@ const sortedBars = computed(() => {
 
 const donutSegments = computed(() => {
   const bt = (stats.value.by_type || {}) as Record<string, number>
-  const items = Object.entries(bt).map(([type, count]) => ({ type, count, color: TYPE_COLORS[type] || '#8E8E93' }))
+  const items = Object.entries(bt).map(([type, count]) => ({ type, count, color: TYPE_COLORS[type] || 'rgb(var(--gray-rgb))' }))
   items.sort((a, b) => b.count - a.count)
   const total = totalByType.value || 1
   const circumference = 2 * Math.PI * 60 // ~377

@@ -379,10 +379,10 @@ useHead(() => ({
   border: .5px solid var(--line);
   /* dawn-blue register — deliberately cooler than the site's clay/amber warmth
      (lodging = rest/calm, per concept §2); no matching token exists yet, so
-     expressed as neutral rgb() rather than a hardcoded brand hex substitute. */
-  background: linear-gradient(160deg, rgb(28 42 61) 0%, rgb(42 63 86) 55%, rgb(217 199 163) 130%);
+     expressed as a neutral rgb-triplet token rather than a hardcoded brand hex substitute. */
+  background: linear-gradient(160deg, rgb(var(--wake-night-rgb)) 0%, rgb(var(--wake-dusk-rgb)) 55%, rgb(var(--wake-sand-rgb)) 130%);
 }
-.dark .wake-hero { background: linear-gradient(160deg, rgb(13 20 32) 0%, rgb(22 34 47) 55%, rgb(46 40 24) 130%); border-color: var(--line); }
+.dark .wake-hero { background: linear-gradient(160deg, rgb(var(--wake-deepnight-rgb)) 0%, rgb(var(--wake-predawn-rgb)) 55%, rgb(var(--wake-darksand-rgb)) 130%); border-color: var(--line); }
 
 /* Grain overlay — antidote to the flat gradient (anti-slop §7) */
 .wake-hero-grain {
@@ -398,10 +398,10 @@ useHead(() => ({
 .wake-hero-sweep {
   position: absolute; inset: 0; z-index: 0; pointer-events: none;
   background: linear-gradient(180deg,
-    rgba(28, 42, 61, .6) 0%,
-    rgba(51, 100, 110, .42) 38%,
+    rgba(var(--wake-night-rgb), .6) 0%,
+    rgba(var(--wake-teal-rgb), .42) 38%,
     rgba(var(--accent-rgb), .34) 66%,
-    rgba(217, 199, 163, .26) 100%);
+    rgba(var(--wake-sand-rgb), .26) 100%);
   animation: wake-sunrise 18s var(--ease-cinematic) 1 both;
 }
 /* Night-blue → dawn-amber → day-sand: the band's own colour temperature shifts
@@ -413,10 +413,10 @@ useHead(() => ({
 }
 .dark .wake-hero-sweep {
   background: linear-gradient(180deg,
-    rgba(8, 12, 20, .65) 0%,
-    rgba(51, 100, 110, .36) 38%,
-    rgba(200, 140, 50, .26) 66%,
-    rgba(160, 140, 100, .18) 100%);
+    rgba(var(--wake-abyss-rgb), .65) 0%,
+    rgba(var(--wake-teal-rgb), .36) 38%,
+    rgba(var(--wake-ember-rgb), .26) 66%,
+    rgba(var(--wake-dust-rgb), .18) 100%);
 }
 @media (prefers-reduced-motion: reduce) {
   .wake-hero-sweep { animation: none; opacity: .6; filter: none; }
