@@ -4383,3 +4383,64 @@ skipped**, đối chiếu tự động **HẾT-DIFF** — 15 nằm trọn trong 
 không phải trả nợ chuẩn): data/backend/ui-design/docs/ops 100 · content 99 ·
 frontend 86 · hard 0. `nuxt typecheck` sạch · vitest 129 file / 2.150 test xanh ·
 `npm run build` ✔ · DB 1746 entity / 12.061 quan hệ / 33 lịch trình, integrity ok.
+
+---
+
+## Đợt 2026-08-30 (3) — "việc chưa hoàn thành": 6 commit
+
+Làm tiếp từ danh sách ứng viên ĐÃ QUA PHẢN BIỆN của đợt (2) — không khảo sát lại.
+
+**BA THỨ VỠ MÀ KHÔNG NHÌN THẤY ĐƯỢC.**
+
+1. `0f066f97` — **ô chi tiết lỗi AdminCP mất nền.** `var(--surface-alt)`: chuỗi đó
+   xuất hiện ĐÚNG MỘT LẦN trong toàn frontend, và là lần DÙNG. Custom property
+   không khai + không dự phòng = invalid-at-computed-value-time, trình duyệt bỏ hẳn
+   dòng, im lặng, không test render nào thấy. Token đúng là `--bg-alt` (cùng file đã
+   dùng 4 chỗ). Rào mới `tests/css-token-treo.test.ts` quét toàn kho, có hai ngưỡng
+   sàn chống rào-rỗng.
+2. `b0c887be` — **một file integration đỏ, ba lớp chồng nhau.** (a)
+   `server.stream_limiter` đã dời nhà, 14 test khác đã repoint, đúng dòng này sót —
+   không ai thấy vì marker `integration` loại nó khỏi MỌI lượt đo local và CI chưa
+   từng chạy. (b) Vá xong lộ ra test đang **gọi LLM thật**: patch `server.get_client`
+   chỉ đổi bề mặt tái xuất, binding thật ở `chat.api` — đúng điều dòng 397 của chính
+   file đó đã ghi. (c) Chuỗi lỗi ấy **mở cầu dao ngắt mạch** (biến module-level, không
+   conftest nào reset) làm đỏ test khác với thông điệp chẳng liên quan. Kết quả:
+   1 đỏ/30 xanh → **31 xanh**; test kia 72s → 8s vì thôi gọi ra ngoài.
+3. `10b960a6` — **MÌN CI THỨ BA.** Hai conftest đặt `ADMIN_API_KEY` bằng `setdefault`
+   với hai giá trị khác nhau ⇒ ai load trước thì thắng. Chạy riêng `tests/` xanh;
+   chạy `agent/tests/ tests/` (ĐÚNG tổ hợp `ci.yml:124` dùng, chú thích ghi rõ "bao
+   gồm integration") thì **11 test đỏ toàn 404** trên /metrics · /system/* ·
+   /analytics/* — vì `gate_internal_endpoints` trả 404 khi sai khoá. Đọc log thì
+   tưởng endpoint bị gỡ. Vá: fixture đọc khoá từ ENV. Rào đặt ở file KHÔNG mang
+   marker nào, để nó chạy ở mọi lượt đo — chính chỗ mà lỗi này đã trốn được.
+   Sau khi vá: **206 passed / 4 skipped / 0 failed**.
+
+**MỘT CHỖ HỒ SƠ CỦA CHÍNH MÁY NÓI SAI.** `e15b2a0c` — hồ sơ §3 khẳng định cả 8 vi
+phạm R50.2 đều chính đáng, nhưng cách chia của nó ĐẾM TRÙNG 1 (`name` của trường đã
+nằm trong nhóm 3 chỗ của trường), nên tổng vẫn ra 8 và che mất một filler thật:
+"nắng miền Tây rất gắt từ 9h" trong `vinh-long-1-day-backpacker`. Sửa giữ nguyên nội
+dung khuyến cáo, thay nhãn vùng bằng chi tiết CÓ THẬT của chính lộ trình (phà, xe
+đạp, cù lao — đều trong bảng chi phí của nó). B1 backup → ghi kép data.json + DB
+(`entity_changes` 316 bản ghi) → siết baseline 8→7 cùng commit. **R50.2 nay = 7.**
+
+**Hai lần tự sai và tự bắt, ghi để lần sau không lặp:**
+- Bộ quét token mới bắt CHÍNH chú thích của file test — nơi viết `var(--surface-alt)`
+  làm ví dụ. Đúng bẫy §5c ("checker so chuỗi bắt luôn cái test đang cấm điều đó").
+- Sửa nội dung bằng `json.dumps(indent=2)` làm diff phình **166.761 dòng** cho một
+  câu sửa, vì `web/data.json` là JSON MỘT DÒNG NÉN. Hoàn nguyên bằng
+  `git checkout -- web/data.json`, làm lại bằng thay-chuỗi tại chỗ → diff đúng 1
+  dòng. **ĐỪNG BAO GIỜ round-trip file này.**
+
+Còn lại: `1b97bce5` gỡ thang bo góc cũ (bước cuối B2, sau khi R30.8 ghim 0 người
+dùng — 6 khai báo, 0 lần dùng, và chúng là 6 khai báo duy nhất trong kho) + sửa con
+số sai trong `pytest.ini` (marker `subprocess_heavy`: ghi 284, đếm lại 303).
+
+**GHI NHẬN MỘT NHƯỢC ĐIỂM CỦA CỔNG** (không tự sửa): R50.2 báo 8 dòng y hệt nhau,
+đều `web/data.json:0`, KHÔNG nói entity nào / trường nào. Muốn định vị phải tự dựng
+lại vòng lặp của checker — đó chính là lý do mục §3 bị chia sai cả một đợt.
+
+**Số chốt sổ** (cây đứng yên, đủ 4 biến PG): **15 failed / 12.366 passed / 138
+skipped**, **HẾT-DIFF** — 15 nằm trọn danh sách fail-đã-biết, 0 mới, 0 mất.
+Scorecard: data/backend/ui-design/docs/ops 100 · **content 99 (nợ 7, giảm từ 8)** ·
+frontend 86 · hard 0. vitest 130 file / 2.151 xanh · `nuxt typecheck` sạch ·
+`npm run build` ✔ · `validate_data.py` critical 0 · DB 1746/12.061/33, integrity ok.
