@@ -45,7 +45,7 @@ def _seed_entities():
          "area": "ben-tre", "parentId": "tinh-vinh-long"},
         {"id": "cho-noi", "type": "attraction", "name": "Chợ nổi Trà Ôn",
          "summary": CHO_NOI_SUMMARY, "placeId": "xa-an-binh",
-         "confidence": 0.9, "verified": True, "coords": [9.96, 105.94],
+         "confidence": 0.9, "verified": True, "coordinates": [9.96, 105.94],
          "season": {"months": [6, 7, 8], "peak": [7]},
          "attributes": {"hours": "05:00-09:00", "admission_fee": "miễn phí",
                         "best_time": "sáng sớm", "address": "Sông Trà Ôn",
@@ -55,7 +55,7 @@ def _seed_entities():
          "confidence": 0.5, "attributes": {}},
         {"id": "keo-dua", "type": "product", "name": "Kẹo dừa Mỏ Cày",
          "summary": "Kẹo dẻo vị dừa xiêm, đặc sản Mỏ Cày.", "placeId": "phuong-1",
-         "coords": [10.1, 106.3],
+         "coordinates": [10.1, 106.3],
          "season": {"months": [11, 12, 1], "peak": [12]},
          "attributes": {"ocop_star": 4, "province_old": "Bến Tre",
                         "address": "Ấp Phú Lợi", "phone": "0275 111 222",
@@ -66,7 +66,7 @@ def _seed_entities():
         {"id": "trai-cay-quanh-nam", "type": "experience", "name": "Đi miệt cây trái quanh năm",
          "summary": "", "season": {"months": list(range(1, 13)), "peak": list(range(1, 13))}},
         {"id": "homestay-vuon", "type": "accommodation", "name": "Homestay Vườn Dừa",
-         "summary": HOMESTAY_SUMMARY, "coords": [10.27, 105.99],
+         "summary": HOMESTAY_SUMMARY, "coordinates": [10.27, 105.99],
          "attributes": {"price_range": "500k-800k", "open_hours": "check-in 14:00",
                         "booking_note": "Phù hợp gia đình có trẻ em",
                         "phone": "0270 333 444", "province_old": "Vĩnh Long",
@@ -217,6 +217,55 @@ def test_accom_card_day_du_va_cat_summary(kb):
 def test_accom_card_toi_thieu():
     card = chat_api._accom_card({"id": "a1", "name": "Nhà nghỉ X"}, {})
     assert card == {"id": "a1", "name": "Nhà nghỉ X", "summary": "", "province": "", "address": ""}
+
+
+def test_bon_the_doc_dung_khoa_toa_do_ma_bo_nap_that_su_phat_ra():
+    """Thẻ phải lấy được toạ độ từ `coordinates` — hình THẬT của entity nạp từ DB.
+
+    Bốn hàm dựng thẻ (ocop / lưu trú / theo-mùa / quanh-đây) từng gác bằng
+    `if e.get("coords")`. Bảng `entities` chỉ có cột `coordinates` và
+    `Database._parse_entity` chỉ phát khoá đó, nên bốn chốt ấy VĨNH VIỄN False:
+    1.733/1.746 entity có toạ độ mà thẻ gửi cho mô hình chưa từng mang theo.
+
+    Lỗi sống được vì FIXTURE của chính file này dùng khoá `coords` — test xanh
+    trong khi nó đang đo một hình dữ liệu không tồn tại. Fixture nay đã đổi sang
+    `coordinates`; test này chốt cả hai chiều để không ai lặng lẽ đổi ngược.
+    """
+    that = {"id": "x", "type": "attraction", "name": "X", "coordinates": [10.0, 106.0]}
+    cu = {"id": "y", "type": "attraction", "name": "Y", "coords": [9.0, 105.0]}
+
+    assert chat_api._ocop_card(that, {}, 4)["coords"] == [10.0, 106.0]
+    assert chat_api._accom_card(that, {})["coords"] == [10.0, 106.0]
+
+    # Alias `coords` PHẢI còn nhận: ETL/auto-learn ghi khoá đó vào dict trong RAM
+    # (learn_loop, auto_learn); bỏ nó là làm mất toạ độ vừa geocode.
+    assert chat_api._ocop_card(cu, {}, 4)["coords"] == [9.0, 105.0]
+    assert chat_api._accom_card(cu, {})["coords"] == [9.0, 105.0]
+
+    # Không có toạ độ thì KHÔNG bịa khoá rỗng vào thẻ.
+    assert "coords" not in chat_api._accom_card({"id": "z", "name": "Z"}, {})
+
+
+def test_the_theo_mua_va_quanh_day_cung_mang_duoc_toa_do(monkeypatch):
+    """Hai thẻ còn lại nằm trong closure — phải đi qua đúng cửa vào của chúng.
+
+    `_seasonal_card` lồng trong `_tool_seasonal_now`, còn thẻ quanh-đây dựng
+    thẳng trong `_tool_nearby_entities`. Không gọi trực tiếp được, nên nếu chỉ
+    test hai hàm cấp module thì đúng hai trong bốn chốt chết vẫn không ai canh.
+    """
+    e = {"id": "x", "type": "attraction", "name": "X", "summary": "s",
+         "coordinates": [10.0, 106.0], "attributes": {}}
+
+    monkeypatch.setattr(chat_api.knowledge, "seasonal_now", lambda m: [e])
+    monkeypatch.setattr(chat_api.knowledge, "season_text", lambda _e: "tháng 7")
+    theo_mua = json.loads(chat_api._tool_seasonal_now({"month": 7}))
+    assert theo_mua[0]["coords"] == [10.0, 106.0]
+
+    monkeypatch.setattr(chat_api.knowledge, "nearby_entities",
+                        lambda eid, limit=8: [{"id": "x", "name": "X"}])
+    monkeypatch.setattr(chat_api.knowledge, "_entities", {"x": e})
+    quanh_day = json.loads(chat_api._tool_nearby_entities({"entity_id": "goc"}))
+    assert quanh_day[0]["coords"] == [10.0, 106.0]
 
 
 def test_search_result_card_day_du(kb):

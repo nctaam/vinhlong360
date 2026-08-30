@@ -450,6 +450,24 @@ def _accom_filters_ok(e: dict, attrs: dict, acc_type: str, family: bool) -> bool
     return True
 
 
+def _entity_coords(e: dict):
+    """Toạ độ của entity, đọc ĐÚNG khoá mà bộ nạp thật sự phát ra.
+
+    Bảng `entities` chỉ có cột `coordinates` (không có cột `coords`), và
+    `Database._parse_entity` giải JSON đúng cột đó. `knowledge._entities` giữ
+    nguyên dict ấy. Nghĩa là `e.get("coords")` KHÔNG BAO GIỜ đúng cho entity nạp
+    từ DB — bốn thẻ (ocop / lưu trú / theo-mùa / quanh-đây) gác bằng chính biểu
+    thức đó nên chưa từng gắn được toạ độ vào thẻ gửi cho mô hình, dù 1.733/1.746
+    entity có toạ độ. Chỉ `_search_result_card` thoát vì nó có sẵn `or
+    e.get("coordinates")`.
+
+    Giữ `coords` làm alias vì ETL/auto-learn còn ghi khoá đó vào dict trong RAM
+    (agent/learn_loop.py, agent/auto_learn.py) — bỏ nó là làm mất toạ độ vừa
+    geocode. Thứ tự: khoá THẬT trước, alias sau.
+    """
+    return e.get("coordinates") or e.get("coords")
+
+
 def _ocop_card(e: dict, attrs: dict, star_num: int) -> dict:
     card = {
         "id": e["id"], "name": e["name"],
@@ -460,7 +478,7 @@ def _ocop_card(e: dict, attrs: dict, star_num: int) -> dict:
     }
     if attrs.get("admission_fee") or attrs.get("admission"): card["price"] = attrs.get("admission_fee") or attrs.get("admission")
     if attrs.get("phone"):         card["phone"] = attrs["phone"]
-    if e.get("coords"):            card["coords"] = e["coords"]
+    if (_c := _entity_coords(e)):  card["coords"] = _c
     # Sort key: star desc
     card["_star"] = star_num
     return card
@@ -479,7 +497,7 @@ def _accom_card(e: dict, attrs: dict) -> dict:
     hours = attrs.get("hours") or attrs.get("open_hours")
     if hours:                      card["check_in"] = hours
     if attrs.get("booking_note"):  card["booking_note"] = attrs["booking_note"]
-    if e.get("coords"):            card["coords"] = e["coords"]
+    if (_c := _entity_coords(e)):  card["coords"] = _c
     return card
 
 
@@ -502,7 +520,7 @@ def _search_result_card(e: dict) -> dict:
         # và nó CÓ hợp đồng trong tools.py:418,445 dạy mô hình dùng đúng cách.
     }
     # Include coords when available (powers map display)
-    coords = e.get("coords") or e.get("coordinates")
+    coords = _entity_coords(e)
     if coords:
         card["coords"] = coords
     _search_card_practical(card, attrs, e)
@@ -560,7 +578,7 @@ def _tool_seasonal_now(args: dict) -> str:
         if attrs.get("best_time"):     card["best_time"] = attrs["best_time"]
         _ocop = ocop_display_label(e)
         if _ocop:                      card["ocop"] = _ocop
-        if e.get("coords"):            card["coords"] = e["coords"]
+        if (_c := _entity_coords(e)):  card["coords"] = _c
         return card
     return json.dumps([_seasonal_card(e) for e in result], ensure_ascii=False)
 
@@ -627,7 +645,7 @@ def _tool_nearby_entities(args: dict) -> str:
         if attrs.get("admission_fee") or attrs.get("admission"): card["admission_fee"] = attrs.get("admission_fee") or attrs.get("admission")
         _ocop = ocop_display_label(e)
         if _ocop:                      card["ocop"] = _ocop
-        if e.get("coords"):            card["coords"] = e["coords"]
+        if (_c := _entity_coords(e)):  card["coords"] = _c
         enriched_nearby.append(card)
     return json.dumps(enriched_nearby, ensure_ascii=False)
 
