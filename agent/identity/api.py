@@ -1288,12 +1288,29 @@ async def delete_account(request: Request, response: Response, _csrf=Depends(_re
     except Exception:
         logger.error("Immediate account quarantine failed after durable commit")
     _clear_session_cookie(response, request)
+    # Câu trả lời phải khớp việc hệ thống THẬT SỰ làm. Tới 2026-08-30 chỗ này hứa
+    # "xoá vĩnh viễn" VÔ ĐIỀU KIỆN, trong khi vòng xoá nền có thể đang ở chế độ
+    # chỉ-đếm — hứa một đằng làm một nẻo, và người dùng không có cách nào biết.
+    # Nay mặc định là xoá thật; nếu ai đó cố ý tắt (cầu dao), câu chữ tự đổi theo
+    # thay vì tiếp tục nói điều không đúng.
+    from config import erasure_is_audit_only
+
+    chi_dem = erasure_is_audit_only()
     return {
         "success": True,
         "status": "scheduled",
-        "message": f"Tài khoản sẽ bị xoá vĩnh viễn sau {ACCOUNT_DELETE_GRACE_DAYS} ngày. Đăng nhập lại bằng OTP để huỷ.",
+        "message": (
+            f"Yêu cầu xoá đã được ghi nhận, hạn {ACCOUNT_DELETE_GRACE_DAYS} ngày. "
+            "Việc xoá vĩnh viễn hiện đang tạm dừng — hãy liên hệ ban biên tập nếu "
+            "bạn cần xoá ngay. Đăng nhập lại bằng OTP để huỷ yêu cầu."
+            if chi_dem else
+            f"Tài khoản sẽ bị xoá vĩnh viễn sau {ACCOUNT_DELETE_GRACE_DAYS} ngày. "
+            "Đăng nhập lại bằng OTP để huỷ."
+        ),
         "grace_days": ACCOUNT_DELETE_GRACE_DAYS,
         "erasure_due_at": state.erasure_due_at.isoformat(),
+        # Máy đọc được: người tích hợp / vận hành biết ngay lời hứa nào đang hiệu lực.
+        "erasure_active": not chi_dem,
     }
 
 

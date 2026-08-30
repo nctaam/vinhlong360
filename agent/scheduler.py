@@ -135,9 +135,15 @@ def _iso_timestamp(value):
 
 
 def _effective_erasure_audit_only() -> bool:
-    return bool(settings.ERASURE_AUDIT_ONLY) or not bool(
-        settings.ERASURE_ACTIVATION_ENABLED
-    )
+    """Uỷ quyền cho `config.erasure_is_audit_only()` — MỘT nguồn sự thật.
+
+    Giữ tên hàm này vì 4 chỗ trong file gọi nó và test ngoài soi nó. Luật thật
+    nằm ở config để chỗ TRẢ LỜI NGƯỜI DÙNG (`identity/api.py`) hỏi được cùng một
+    câu — trước đây nó không hỏi được nên cứ hứa "xoá vĩnh viễn" bất kể cấu hình.
+    """
+    from config import erasure_is_audit_only
+
+    return erasure_is_audit_only()
 
 
 def _legacy_deadline_impact(now: datetime) -> dict:

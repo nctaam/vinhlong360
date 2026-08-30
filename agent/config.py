@@ -82,8 +82,21 @@ class Settings(BaseSettings):
     BUILD_SEARCH_INDEXES: bool = True
     BACKGROUND_INDEX_BUILD: bool = True
     SCHEDULER_ENABLED: bool = True
-    ERASURE_AUDIT_ONLY: bool = True
-    ERASURE_ACTIVATION_ENABLED: bool = False
+    # ĐẢO MẶC ĐỊNH 2026-08-30 theo chỉ đạo chủ dự án ("thực hiện theo Luật
+    # 91/2025"). Trước đó mặc định là chỉ-đếm, và mặc định đó ĐANG NÓI DỐI:
+    # `identity/api.py` trả lời người dùng «Tài khoản sẽ bị xoá vĩnh viễn sau N
+    # ngày» bất kể cấu hình, còn tác vụ nền thì đếm hồ sơ quá hạn rồi thoát,
+    # 288 lần/ngày. Luật 91/2025 cho người dùng QUYỀN được xoá; một mặc định
+    # "an toàn" bằng cách không xoá là an toàn cho hệ thống, không phải cho họ.
+    #
+    # Foot-gun được chặn ở tầng dưới, không phải ở đây: `erase_due_accounts`
+    # đòi PostgreSQL (`db._use_pg`) và trả DB_ERROR nếu không có — nên mọi máy
+    # dev chạy SQLite KHÔNG thể xoá gì, dù mặc định nay là bật.
+    #
+    # `ERASURE_ACTIVATION_ENABLED` giữ nguyên vai CẦU DAO: đặt False là dừng xoá
+    # ngay lập tức, không cần deploy lại.
+    ERASURE_AUDIT_ONLY: bool = False
+    ERASURE_ACTIVATION_ENABLED: bool = True
     LLM_JUDGE_ENABLED: bool = False
     DESTRUCTIVE_OPS_LOCKED: str = "1"
 
@@ -247,3 +260,19 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+
+def erasure_is_audit_only() -> bool:
+    """Vòng xoá tài khoản đang CHỈ ĐẾM, hay xoá thật?
+
+    MỘT nguồn sự thật cho câu hỏi này. Trước 2026-08-30 nó chỉ nằm trong
+    `scheduler._effective_erasure_audit_only`, nên chỗ TRẢ LỜI NGƯỜI DÙNG
+    (`identity/api.py`) không hỏi được và cứ hứa "xoá vĩnh viễn" bất kể cấu hình.
+    Đó chính là lỗ hổng P0: hứa một đằng làm một nẻo.
+
+    Vẫn là "hoặc": thiếu BẤT KỲ cờ nào cũng là chỉ-đếm. Cờ activation giữ vai
+    cầu dao — tắt nó là dừng xoá ngay, không cần deploy lại.
+    """
+    return bool(settings.ERASURE_AUDIT_ONLY) or not bool(
+        settings.ERASURE_ACTIVATION_ENABLED
+    )
