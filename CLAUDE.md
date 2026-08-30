@@ -59,13 +59,19 @@ MXH du lịch/OCOP/cộng đồng cho **tỉnh Vĩnh Long MỚI** (sáp nhập V
 $env:BUILD_SEARCH_INDEXES='false'; $env:BACKGROUND_INDEX_BUILD='false'; $env:SCHEDULER_ENABLED='false'; python agent/server.py
 # TEST — PHẢI có temp-root NGẮN, nếu không ~1847 "lỗi" MA (MAX_PATH + ACL trên Windows).
 # Nhóm `case` cần thêm container PG: $env:VL360_TEST_DATABASE_URL='postgresql://vl360:vl360@127.0.0.1:5433/<db>'
-$env:PYTEST_DEBUG_TEMPROOT='C:\vlt'; python -m pytest -q --tb=no   # đối chiếu ROADMAP §"Fail-đã-biết" (16)
+$env:PYTEST_DEBUG_TEMPROOT='C:\vlt'; python -m pytest -q --tb=no   # đối chiếu ROADMAP §"Fail-đã-biết" (15)
+# TỔ HỢP HAI THƯ MỤC — chạy CHUNG, đúng cách ci.yml chạy. Chạy riêng từng thư mục
+# KHÔNG tương đương: hai conftest tranh nhau đặt env bằng `setdefault`, và đã có lần
+# 11 test đỏ chỉ hiện ra ở tổ hợp này (2026-08-30). ~25-30 phút.
+$env:PYTEST_DEBUG_TEMPROOT='C:\vlt'; python -m pytest tests/ agent/tests/ -m "not slow" -q --tb=line
 python scripts/validate_data.py          # kiểm dữ liệu
 python scripts/backup_data.py            # BẮT BUỘC trước thao tác dữ liệu
 python scripts/install_hooks.py          # cài pre-commit tiêu chuẩn (1 lần/máy — docs/standards/)
 python scripts/scorecard.py              # đồng hồ world-class (điểm/chiều; không được tụt)
 cd web-nuxt; npm run dev                 # dev frontend (cổng 3000)
 cd web-nuxt; npm run build               # build frontend
+cd web-nuxt; npx vitest run              # 130 file / 2.151 test — KHÔNG bỏ qua (xem 5d)
+cd web-nuxt; npm run typecheck           # nuxt typecheck — KHÔNG bỏ qua (xem 5d)
 python scripts/gen_image.py --prompt "..." --out web-nuxt/public/img/x.webp   # ảnh AI (cần IMAGE_API_KEY)
 ```
 
@@ -120,6 +126,23 @@ python scripts/gen_image.py --prompt "..." --out web-nuxt/public/img/x.webp   # 
 - **R20.7 ghép test–module bằng TÊN FILE hoặc AST `import`** (`scripts/checks/check_test_pairing.py:66-82`).
   `pytest.importorskip("x")` là lời gọi lúc CHẠY, AST không thấy → bị tính là "sửa `agent/x.py` mà không có test".
   Cách vòng hợp lệ: thêm import cấp module bọc `try/except`.
+
+### 5d. BA CỔNG TỪNG NẰM NGOÀI §5 — cả ba đều đã có lúc đỏ mà không ai biết
+
+Chủ dự án chốt 2026-08-30: **bổ sung cả ba vào lệnh nghiệm thu**. Lý do là số đo,
+không phải cẩn thận thừa — trong MỘT ngày phát hiện cả ba đều đang đỏ:
+
+| Cổng | Đã đỏ bao lâu | Vì sao không ai thấy |
+|---|---|---|
+| `npx vitest run` | 3 ngày | Đợt F1 nghiệm thu bằng `npm run build` (xanh — ràng buộc nằm ở script kiểm riêng, không phải lỗi biên dịch) |
+| `npm run typecheck` | không rõ | Chưa từng nằm trong lệnh nghiệm thu nào |
+| `pytest tests/ agent/tests/` **chạy chung** | không rõ | Chạy riêng từng thư mục thì XANH; 11 test chỉ đỏ ở tổ hợp mà `ci.yml` dùng |
+
+Cái thứ ba là loại độc nhất: **chạy riêng xanh, chạy chung đỏ.** Hai thư mục test có
+`conftest.py` riêng, cùng đặt biến môi trường bằng `os.environ.setdefault` — ai load
+trước thì thắng. Đừng bao giờ kết luận "suite xanh" từ một lượt chạy hẹp.
+
+Cả ba nay đã xanh, nên thêm vào §5 KHÔNG tạo nợ mới — nó chỉ ngăn lần thứ tư.
 
 ## 6. Quy ước
 
