@@ -4444,3 +4444,102 @@ skipped**, **HẾT-DIFF** — 15 nằm trọn danh sách fail-đã-biết, 0 m�
 Scorecard: data/backend/ui-design/docs/ops 100 · **content 99 (nợ 7, giảm từ 8)** ·
 frontend 86 · hard 0. vitest 130 file / 2.151 xanh · `nuxt typecheck` sạch ·
 `npm run build` ✔ · `validate_data.py` critical 0 · DB 1746/12.061/33, integrity ok.
+
+---
+
+## Đợt 2026-08-30 (4) — bốn quyết định của chủ dự án, và một điều tra CHƯA XONG
+
+Chủ dự án chốt bốn khoản trong hồ sơ. Ba khoản làm xong; khoản thứ tư trả về một
+câu hỏi kèm số đo.
+
+**§0 — P0 lời hứa xoá** (`667b4267`). Chỉ đạo: *"thực hiện theo Luật 91/2025"* —
+hiểu là GIỮ ĐÚNG lời hứa, không hạ lời hứa xuống cho khớp việc đếm. Ba thay đổi:
+(1) một nguồn sự thật `config.erasure_is_audit_only()` — trước đây luật chỉ nằm
+trong `scheduler` nên chỗ TRẢ LỜI NGƯỜI DÙNG không hỏi được và cứ hứa bừa;
+(2) đảo mặc định sang xoá thật, cả `config.py` lẫn `.env.example`;
+(3) **lời hứa đi theo hành vi** — kéo cầu dao thì câu chữ tự đổi sang nói thật là
+việc xoá đang tạm dừng, kèm `erasure_active` cho máy đọc. Nửa (3) quan trọng nhất:
+kể cả sau này ai tắt xoá, hệ thống KHÔNG THỂ quay lại nói dối.
+Foot-gun chặn ở tầng dưới chứ không bằng mặc định: `erase_due_accounts` đòi
+PostgreSQL nên máy dev SQLite không xoá được gì. Đảo một test cố ý, ghi rõ trong
+`test_erasure_config.py` để không ai tưởng là nới rào lén. Bật trên môi trường
+thật vẫn là một lượt deploy riêng (§4).
+
+**§0b — mìn CI** (`146a2303`). Chuyển cổng coverage sang job `test-pg`, đúng khuôn
+`check_bundle` đã có: `run()` graceful-skip khi thiếu coverage.json, `main()` thì
+thiếu file là exit 2. Vì KHÔNG chạy được CI (chưa có remote) và §5b cấm vá CI bằng
+suy luận, rào là một test cắt `ci.yml` thành từng job rồi khẳng định cổng nằm ở job
+CÓ postgres và KHÔNG nằm ở job SQLite.
+
+**§5 — ba cổng** (`b9dbb1f6`). Bổ sung `vitest`, `typecheck`, và tổ hợp hai-thư-mục
+vào lệnh nghiệm thu, kèm bảng §5d ghi mỗi cổng đã trốn được bằng cách nào.
+
+**§1 — đợt giảm cân: GÓI KHÔNG CÓ MỠ** (`f831f5f6`). Mở đợt, đo, kết luận ngược
+với kỳ vọng nên ghi thẳng: 4 dependency duy nhất · 0 mã nhân bản · component chết
+và export chết đều đã bị tree-shaking loại (xoá = 0 byte) · gom chunk đã đo hai lần
+đều tệ hơn. Cổng cộng TỔNG nên dời mã giữa chunk không bao giờ giúp — chỉ xoá mã
+hoặc thu nhỏ thư viện. Mã ứng dụng đã sạch (4/333 export chết) ⇒ còn đúng một mục
+tiêu: **maplibre-gl 276 kB = 34% gói**. Ba đường tiếp đều ngoài quyền máy, đã trình
+hồ sơ §1 kèm số.
+
+### 🔍 ĐÃ TRUY XONG — 2 fail "mới" là NHIỄU ĐĨA CẠN, không phải hồi quy
+
+> **KẾT LUẬN (đọc trước phần điều tra bên dưới):** hai fail đó KHÔNG do mã. Bằng
+> chứng quyết định: chạy lại **cùng lệnh, cùng cây** cho ra tập lỗi HOÀN TOÀN KHÁC —
+> 30 failed + **88 errors**, và hai test chính sách kia lần này **XANH** — trong khi
+> dung lượng trống ổ C sụp từ 3,96 GB xuống **0,00 GB**. Tập lỗi nhảy loạn giữa hai
+> lượt giống hệt nhau là chữ ký của MÔI TRƯỜNG, không phải của mã.
+>
+> Sáu giả thuyết bị loại bên dưới vẫn đúng từng cái, nhưng **hướng truy thì sai**:
+> tôi đang tìm một rò trạng thái giữa các test trong khi vấn đề nằm ở đĩa. Ghi lại
+> nguyên vẹn vì đó là bài học đắt hơn kết quả — sáu phép đo đúng vẫn dẫn sai đường
+> khi giả định nền ("máy còn chỗ") không được kiểm.
+>
+> **Bài học thao tác:** trước mỗi lượt full-suite, ĐO DUNG LƯỢNG TRỐNG. Phiên
+> 2026-08-30 mở đầu bằng đúng sự cố này (`sqlite3 disk I/O error` giết một lượt đo
+> khi ổ C còn 49 MB), và nó tái diễn ở cuối phiên mà tôi không nghĩ tới ngay.
+>
+> **Ba bản vá của đợt này KHÔNG bị ảnh hưởng** — chúng được nghiệm thu bằng suite
+> riêng chạy lúc còn dung lượng: 79 test erasure · 504 test nhóm
+> erasure|identity|scheduler|config|account · 186 test cổng chuẩn. Cái không tin
+> được là CON SỐ FULL-SUITE, không phải các bản vá.
+>
+> DB kiểm ngay khi phát hiện đĩa đầy: **integrity ok, 1746/12.061/33** — nguyên vẹn.
+> Dung lượng do chủ dự án tự dọn (7,47 GB trống sau đó); máy KHÔNG đụng dữ liệu nào.
+
+Diễn biến điều tra, giữ nguyên để đối chiếu. Full-suite tại `f831f5f6` cho
+**17 failed / 12.369 passed**, trong đó 15 đúng danh sách và **2 MỚI**:
+
+    agent/tests/test_image_metadata_disclosure.py::test_media_sitemap_caption_matches_classified_descriptor_copy
+    agent/tests/test_index_policy.py::test_current_policy_evidence_matches_loaded_artifacts
+
+Cả hai **xanh khi chạy riêng**. Đã loại SÁU giả thuyết bằng số đo, không bằng suy luận:
+
+| Giả thuyết | Kết quả |
+|---|---|
+| Xáo thứ tự ngẫu nhiên | ✗ `pytest_randomly` KHÔNG cài — thứ tự tất định |
+| File artifact bị đổi | ✗ cả 4 file `config/*.json` giữ nguyên mtime 2026-08-18, sha không đổi |
+| Build ghi vào file tracked | ✗ `git status` sạch |
+| `agent/tests/` tự rò | ✗ chạy riêng: chỉ 3 fail known-fail |
+| `tests/checks/` gây ra | ✗ 315 passed cùng hai test đó |
+| `tests/launch_safety/` gây ra | ✗ 8 fail đều nhóm Windows; hai test đó XANH |
+| phần còn lại của `tests/` | ✗ 4 fail đều nhóm ACL Windows; hai test đó XANH |
+
+Tức ba bracket phủ hết `tests/` đều không tái hiện, và `agent/tests/` riêng cũng
+không. Lỗi CHỈ hiện ở tổ hợp đầy đủ — **và đó chính là manh mối tôi đọc sai**: tổ
+hợp đầy đủ cũng là lượt chạy TỐN ĐĨA NHẤT (12.400 test, thư mục tạm, coverage), nên
+"chỉ hiện ở tổ hợp đầy đủ" không có nghĩa "do tương tác giữa các test" mà có nghĩa
+"do thứ chỉ cạn kiệt ở quy mô đó".
+
+**Giả thuyết tôi đã treo và nay bác được:** commit P0 (`667b4267`) đảo mặc định sang
+xoá thật — tôi từ chối tuyên bố vô can khi chưa có số đo, và đúng là không nên, vì
+đó là thay đổi hành vi thật. Nay bác bằng chính lượt chạy lại: hai test đó XANH, còn
+30 fail khác xuất hiện ở vùng crawler/data_quality chẳng liên quan gì tới erasure.
+
+**Ghi nhận một mẫu hình vẫn còn giá trị:** trong ngày đã gặp BA lỗi thật mang chữ ký
+*chạy riêng xanh, chạy chung đỏ* — nhật ký kiểm toán rò (`296e1d04`), cầu dao ngắt
+mạch rò (`b0c887be`), hai conftest tranh nhau đặt env (`10b960a6`). Ba lần đều là
+state cấp module không ai dọn. Cái thứ tư hoá ra không cùng họ, nhưng ba cái kia đủ
+để đề nghị chủ dự án cân nhắc một đợt xử lý cô lập trạng thái cho bộ test — chính vì
+lớp bệnh đó làm mọi lượt đo hẹp trở nên khó tin, và nó đã khiến tôi truy nhầm hướng
+suốt một giờ ở đây.
