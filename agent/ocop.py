@@ -24,6 +24,10 @@ _RE_OCOP_AWARDED = re.compile(
 _OCOP_CLAIM_WINDOW = 40
 _OCOP_NUMERIC_KEYS = ("ocop_star", "ocop_stars", "ocop_rating")
 
+# Chương trình OCOP chỉ công nhận 3, 4 và 5 sao. KHÔNG có "OCOP 1 sao" hay
+# "OCOP 2 sao" — chúng không tồn tại, nên một ô số mang 1 hoặc 2 không phải hạng.
+_OCOP_MIN_GRADE = 3
+
 
 def _attrs(entity: dict[str, Any]) -> dict[str, Any]:
     """`attributes` đã chuẩn hoá về dict.
@@ -74,8 +78,68 @@ def _claimed_tier(attrs: dict[str, Any]) -> int:
     return _tu_khoa_so(attrs) or _tu_o_ocop(attrs)
 
 
-def _co_dau_hieu_ocop(attrs: dict[str, Any]) -> bool:
-    if any(attrs.get(k) not in (None, "") for k in _OCOP_NUMERIC_KEYS):
+def _van_xuoi_xac_nhan_hang(entity: dict[str, Any], tier: int) -> bool:
+    """Văn xuôi có XÁC NHẬN hạng này cho CHÍNH entity không?
+
+    Dùng lại đúng cửa sổ ±40 ký tự quanh "N sao" của luật §1.7 bên dưới, nên hai
+    chỗ không thể nói ngược nhau.
+    """
+    prose = f"{entity.get('summary') or ''} {entity.get('description') or ''}"
+    for m in re.finditer(rf"{tier}\s*sao", prose, re.IGNORECASE):
+        window = prose[max(0, m.start() - _OCOP_CLAIM_WINDOW):m.end() + _OCOP_CLAIM_WINDOW]
+        if _RE_OCOP_AWARDED.search(window):
+            return True
+    return False
+
+
+def _o_so_khong_phai_tin_hieu_ocop(entity: dict[str, Any], attrs: dict[str, Any]) -> bool:
+    """Con số trong ô OCOP là RÁC CHÉP NHẦM CỘT, không phải một chứng nhận.
+
+    Đo trên `web/data.json` 2026-08-30 — 13 cơ sở lưu trú mang `ocop_star`, và
+    CẢ 13 có `ocop_star` bằng đúng `star_rating` của chính nó (1=1, 2=2, 4=4,
+    5=5), `ocop_certified` rỗng. Đó là vân tay của một lượt nhập chép nhầm cột
+    hạng-sao-khách-sạn sang ô OCOP. Hậu quả: trang chi tiết in "Sản phẩm OCOP
+    1 sao — Chương trình Mỗi xã Một sản phẩm" cho một khách sạn. Khai khống một
+    chứng nhận NHÀ NƯỚC là đúng thứ CLAUDE.md §1.7 cấm.
+
+    HAI LUẬT, mỗi luật tự đứng được:
+
+    (A) Hạng dưới 3 — OCOP không có bậc đó. Bắt 12 entity (11 khách sạn +
+        `khu-du-lich-truong-an`); trong toàn kho KHÔNG có sản phẩm nào mang
+        hạng 1|2, nên luật này không đụng một sản phẩm thật nào.
+
+    (B) Số chỉ chép lại `star_rating` VÀ văn xuôi không xác nhận hạng đó. Bắt
+        nốt `homestay-sokfram` (5=5, văn xuôi chỉ nói nó BÀY BÁN sản phẩm OCOP
+        3–5 sao của địa phương — cùng bẫy "danh mục của người khác" mà
+        `dua-sap-cau-ke` đã dạy).
+
+    VÌ SAO luật (B) phải có vế văn xuôi: `somo-farm-cuu-long` cũng có 4=4 nhưng
+    văn xuôi ghi "Đạt chứng nhận OCOP 4 sao năm 2023 cho sản phẩm du lịch sinh
+    thái" — OCOP nhóm 6 (dịch vụ du lịch) là CÓ THẬT. Luật (B) thiếu vế đó sẽ
+    bóp mất một chứng nhận đúng. Đã đối chiếu từng ca trong cả 13.
+
+    Không đụng `ocop_star: 9` / `0` / `true`: chúng vẫn giữ hành vi cũ (không rút
+    được hạng nhưng vẫn tính là có dấu hiệu) vì đó là ý định ghi OCOP kèm lỗi gõ,
+    khác hẳn việc chép nhầm nguyên một cột khác.
+    """
+    n = _tu_khoa_so(attrs)
+    if n <= 0:
+        return False
+    if n < _OCOP_MIN_GRADE:
+        return True
+    sao_luu_tru = attrs.get("star_rating")
+    if sao_luu_tru in (None, ""):
+        return False
+    try:
+        cung_so = int(str(sao_luu_tru).strip()) == n
+    except (TypeError, ValueError):
+        return False
+    return cung_so and not _van_xuoi_xac_nhan_hang(entity, n)
+
+
+def _co_dau_hieu_ocop(entity: dict[str, Any], attrs: dict[str, Any]) -> bool:
+    if (any(attrs.get(k) not in (None, "") for k in _OCOP_NUMERIC_KEYS)
+            and not _o_so_khong_phai_tin_hieu_ocop(entity, attrs)):
         return True
     return bool(attrs.get("ocop") or attrs.get("ocop_certified"))
 
@@ -124,12 +188,16 @@ def ocop_display_label(entity: dict[str, Any]) -> str:
     một bộ chuỗi thật nên chúng sẽ cùng đỏ nếu lệch.
     """
     attrs = _attrs(entity)
-    tier = _claimed_tier(attrs)
+    if _o_so_khong_phai_tin_hieu_ocop(entity, attrs):
+        # Ô số là rác chép nhầm cột — bỏ nó, chỉ còn văn xuôi được nói.
+        tier = _tu_o_ocop(attrs)
+    else:
+        tier = _claimed_tier(attrs)
     if tier > 0 and _ocop_tier_is_provisional(entity, tier):
         tier = 0   # §1.7 — hạng mới ĐỀ NGHỊ không phải hạng đã đạt
     if 1 <= tier <= 5:
         return f"OCOP {tier} sao"
-    return "OCOP" if _co_dau_hieu_ocop(attrs) else ""
+    return "OCOP" if _co_dau_hieu_ocop(entity, attrs) else ""
 
 
 def ocop_tier(entity: dict[str, Any]) -> int:
@@ -152,4 +220,4 @@ def is_ocop_certified(entity: dict[str, Any]) -> bool:
     (đo 2026-08-27). Đó là cùng một lỗi đã vá ở trang /ocop, còn sống trong
     xếp hạng, đếm và bộ lọc tìm kiếm của backend.
     """
-    return _co_dau_hieu_ocop(_attrs(entity))
+    return _co_dau_hieu_ocop(entity, _attrs(entity))

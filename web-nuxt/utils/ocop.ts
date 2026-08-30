@@ -36,19 +36,29 @@ const PROPOSAL = /đề xuất|đề nghị|chờ\s+(?:công nhận|đánh giá|
 const AWARDED = /đạt|được công nhận|đã công nhận|chứng nhận|cấp quốc gia/i
 const CLAIM_WINDOW = 40
 
+// Chương trình OCOP chỉ công nhận 3, 4 và 5 sao. KHÔNG có "OCOP 1 sao" hay
+// "OCOP 2 sao" — chúng không tồn tại, nên ô số mang 1 hoặc 2 không phải hạng.
+const MIN_GRADE = 3
+
 function attrs(e: OcopEntityLike | null | undefined): Record<string, any> {
   return (e && e.attributes) || {}
 }
 
 /** Hạng sao GHI TRONG DỮ LIỆU, chưa qua bộ lọc §1.7. 0 = không rút được hạng. */
-export function ocopClaimedStars(e: OcopEntityLike | null | undefined): number {
-  const a = attrs(e)
+/** Hạng từ BA KHOÁ SỐ. Tách ra để luật "ô số là rác chép nhầm cột" soi được
+ *  riêng phần số, giống `_tu_khoa_so` bên bản Python. */
+function numericKeyTier(a: Record<string, any>): number {
   for (const key of NUMERIC_KEYS) {
     const raw = a[key]
     if (typeof raw === 'number' && Number.isFinite(raw)) return Math.trunc(raw)
     // Chuỗi thuần số ("4") vẫn là con số người ta định ghi.
     if (typeof raw === 'string' && /^\s*[1-5]\s*$/.test(raw)) return parseInt(raw, 10)
   }
+  return 0
+}
+
+/** Hạng từ Ô `ocop` (văn xuôi tự do), tách riêng như `_tu_o_ocop` bên Python. */
+function proseFieldTier(a: Record<string, any>): number {
   const text = a.ocop
   // Số nguyên trong ô `ocop` là RÕ NGHĨA, khác hẳn văn xuôi — nhận thẳng. Bản
   // Python (`agent/ocop.py`) nhận ca này; hai bản sinh đôi phải khớp nhau.
@@ -58,6 +68,63 @@ export function ocopClaimedStars(e: OcopEntityLike | null | undefined): number {
     if (m) return parseInt(m[1]!, 10)
   }
   return 0
+}
+
+export function ocopClaimedStars(e: OcopEntityLike | null | undefined): number {
+  const a = attrs(e)
+  return numericKeyTier(a) || proseFieldTier(a)
+}
+
+/** Văn xuôi có XÁC NHẬN hạng này cho CHÍNH entity không? Cùng cửa sổ ±40 với §1.7. */
+function proseAwardsTier(e: OcopEntityLike | null | undefined, tier: number): boolean {
+  const prose = `${e?.summary || ''} ${e?.description || ''}`
+  const needle = new RegExp(`${tier}\\s*sao`, 'gi')
+  let m: RegExpExecArray | null
+  while ((m = needle.exec(prose)) !== null) {
+    const window = prose.slice(Math.max(0, m.index - CLAIM_WINDOW), m.index + m[0].length + CLAIM_WINDOW)
+    if (AWARDED.test(window)) return true
+  }
+  return false
+}
+
+/**
+ * Con số trong ô OCOP là RÁC CHÉP NHẦM CỘT, không phải một chứng nhận.
+ *
+ * Đo trên `web/data.json` 2026-08-30: 13 cơ sở lưu trú mang `ocop_star`, và CẢ
+ * 13 có `ocop_star` bằng đúng `star_rating` của chính nó (1=1, 2=2, 4=4, 5=5),
+ * `ocop_certified` rỗng. Đó là vân tay của một lượt nhập chép nhầm cột
+ * hạng-sao-khách-sạn sang ô OCOP. Hậu quả trên trang: một khách sạn hiện
+ * «Sản phẩm OCOP 1 sao — Chương trình Mỗi xã Một sản phẩm». Khai khống một
+ * chứng nhận NHÀ NƯỚC là đúng thứ CLAUDE.md §1.7 cấm.
+ *
+ * HAI LUẬT, mỗi luật tự đứng được:
+ *  (A) Hạng dưới 3 — OCOP không có bậc đó. Bắt 12 entity (11 khách sạn +
+ *      `khu-du-lich-truong-an`). Toàn kho KHÔNG có sản phẩm nào mang hạng 1|2,
+ *      nên luật này không đụng một sản phẩm thật nào.
+ *  (B) Số chỉ chép lại `star_rating` VÀ văn xuôi không xác nhận hạng đó. Bắt nốt
+ *      `homestay-sokfram` (5=5; văn xuôi chỉ nói nó BÀY BÁN sản phẩm OCOP 3–5
+ *      sao của địa phương — cùng bẫy "danh mục của người khác" mà
+ *      `dua-sap-cau-ke` đã dạy).
+ *
+ * VÌ SAO (B) phải có vế văn xuôi: `somo-farm-cuu-long` cũng 4=4 nhưng ghi rõ
+ * "Đạt chứng nhận OCOP 4 sao năm 2023 cho sản phẩm du lịch sinh thái" — OCOP
+ * nhóm 6 (dịch vụ du lịch) là CÓ THẬT. Thiếu vế đó là bóp mất một chứng nhận
+ * đúng. Đã đối chiếu từng ca trong cả 13.
+ *
+ * KHÔNG đụng `ocop_star: 9|0|true` — chúng giữ hành vi cũ (không rút được hạng
+ * nhưng vẫn tính là có dấu hiệu): đó là ý định ghi OCOP kèm lỗi gõ, khác hẳn
+ * việc chép nhầm nguyên một cột khác.
+ */
+export function ocopNumberIsColumnBleed(e: OcopEntityLike | null | undefined): boolean {
+  const a = attrs(e)
+  const n = numericKeyTier(a)
+  if (n <= 0) return false
+  if (n < MIN_GRADE) return true
+  const lodgingStars = a.star_rating
+  if (lodgingStars === null || lodgingStars === undefined || lodgingStars === '') return false
+  const parsed = parseInt(String(lodgingStars).trim(), 10)
+  if (!Number.isFinite(parsed) || parsed !== n) return false
+  return !proseAwardsTier(e, n)
 }
 
 /**
@@ -77,7 +144,12 @@ export function ocopClaimedStars(e: OcopEntityLike | null | undefined): number {
  * `_has_stale_geography` bên backend — chuỗi trần giết oan cách viết đúng chuẩn.
  */
 export function ocopStarProvisional(e: OcopEntityLike | null | undefined): boolean {
-  const claimed = ocopClaimedStars(e)
+  return proseProposesTier(e, ocopClaimedStars(e))
+}
+
+/** Cùng luật, nhưng xét một hạng CHO TRƯỚC — cần vì `ocopStars` có thể đang xét
+ *  hạng lấy từ ô văn xuôi sau khi loại ô số rác. */
+function proseProposesTier(e: OcopEntityLike | null | undefined, claimed: number): boolean {
   if (claimed <= 0) return false
   const prose = `${e?.summary || ''} ${e?.description || ''}`
   if (!prose.trim()) return false
@@ -115,15 +187,20 @@ export function ocopStarProvisional(e: OcopEntityLike | null | undefined): boole
  * được ngay: Python trả 0, TS trả 9.
  */
 export function ocopStars(e: OcopEntityLike | null | undefined): number {
-  if (ocopStarProvisional(e)) return 0
-  const n = ocopClaimedStars(e)
+  // Ô số là rác chép nhầm cột → bỏ nó, chỉ còn ô văn xuôi được nói.
+  const n = ocopNumberIsColumnBleed(e) ? proseFieldTier(attrs(e)) : ocopClaimedStars(e)
+  if (n <= 0) return 0
+  if (proseProposesTier(e, n)) return 0
   return n >= 1 && n <= 5 ? n : 0
 }
 
 /** Có dấu hiệu OCOP nào không — kể cả khi không rút được hạng. */
 export function isOcopCertified(e: OcopEntityLike | null | undefined): boolean {
   const a = attrs(e)
-  if (NUMERIC_KEYS.some(k => a[k] !== undefined && a[k] !== null && a[k] !== '')) return true
+  const hasNumber = NUMERIC_KEYS.some(k => a[k] !== undefined && a[k] !== null && a[k] !== '')
+  // Ô số rác chép nhầm cột KHÔNG phải dấu hiệu OCOP — nếu tính, 12 khách sạn vẫn
+  // đeo huy hiệu «OCOP» trơn, vẫn lọt bộ lọc và sổ vinh danh.
+  if (hasNumber && !ocopNumberIsColumnBleed(e)) return true
   return !!(a.ocop || a.ocop_certified)
 }
 

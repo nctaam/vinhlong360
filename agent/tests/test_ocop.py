@@ -169,6 +169,8 @@ class TestRanhGioiCacHamTach:
     def test_dau_hieu_ocop_doc_lap_voi_hang(self):
         """Có chứng nhận mà không rút được hạng vẫn phải là True — nếu không,
         73 sản phẩm chỉ có `ocop_star` lại biến mất như lỗi cũ."""
-        assert ocop._co_dau_hieu_ocop({"ocop_star": 9}) is True
-        assert ocop._co_dau_hieu_ocop({"ocop": "OCOP"}) is True
-        assert ocop._co_dau_hieu_ocop({"rating": 4}) is False
+        assert ocop._co_dau_hieu_ocop({}, {"ocop_star": 9}) is True
+        assert ocop._co_dau_hieu_ocop({}, {"ocop": "OCOP"}) is True
+        assert ocop._co_dau_hieu_ocop({}, {"rating": 4}) is False
+        # Hạng 1|2 KHÔNG phải bậc OCOP nên ô số đó không còn là dấu hiệu.
+        assert ocop._co_dau_hieu_ocop({}, {"ocop_star": 2}) is False
