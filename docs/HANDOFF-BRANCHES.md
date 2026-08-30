@@ -3,6 +3,22 @@
 
 # Bản đồ nhánh & worktree — vinhlong360
 
+> **ĐÍNH CHÍNH 2026-08-30 — bản đồ này nay là LỊCH SỬ, đừng đi theo đường dẫn trong đó.**
+> Cả ba gốc worktree mà tài liệu mô tả (`C:\Code\vinhlong360\.worktrees\`,
+> `C:\Code\vl360-wt\`, `C:\Code\worktrees\`) **không còn tồn tại trên máy này** — đã
+> kiểm, ngay cả `C:\Code` cũng không có. Kho hiện ở
+> `C:\Users\NCTaam\Documents\vinhlong360-correction-case-pilot`, một checkout thường.
+>
+> **Không mất mã.** Mọi commit mà bảng dưới đánh dấu "Giữ — N commit chưa hợp"
+> (63 + 12 + 7 + 1) đã hợp về `main` ngày 2026-08-08 như chính header nói, và toàn
+> bộ lịch sử đó nằm trong nhánh đang làm việc: `aebf4afe` (tip `main` cũ) và
+> `b60ce900` đều là tổ tiên của HEAD, tổng 3.197 commit. Local nay chỉ còn ba nhãn
+> nhánh — `codex/correction-case-pilot`, `breaker-base`,
+> `claude/focused-nash-e88299` — và vẫn chưa có remote nào.
+>
+> Giữ bảng cũ vì nó ghi VÌ SAO từng nhánh tồn tại; chỉ đừng dùng nó làm chỉ dẫn
+> thao tác.
+
 ## 0. Trả lời trong 30 giây
 
 | Câu hỏi | Trả lời |

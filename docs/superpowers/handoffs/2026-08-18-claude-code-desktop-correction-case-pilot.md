@@ -6,11 +6,30 @@
 
 ## Open The Correct Checkout First
 
-- Worktree: `C:\Code\vinhlong360\.worktrees\correction-case-pilot`
+> **ĐÍNH CHÍNH ĐƯỜNG DẪN — 2026-08-30.** Toàn bộ cây `C:\Code\` mô tả bên dưới
+> **không còn tồn tại trên máy này** (đã kiểm: cả `C:\Code\vinhlong360` lẫn `C:\Code`
+> đều không có). Kho nay nằm ở **`C:\Users\NCTaam\Documents\vinhlong360-correction-case-pilot`**
+> và là một checkout thường, KHÔNG phải worktree phụ. Đây là đính chính đường dẫn,
+> KHÔNG phải mất mã: `9b265f45` (HEAD lúc bàn giao), `aebf4afe` (tip `main` cũ) và
+> `b60ce900` đều còn nguyên và đều là tổ tiên của HEAD hiện tại (3.197 commit).
+> Nhánh `main` không còn nhãn ở local — chỉ còn `codex/correction-case-pilot`,
+> `breaker-base`, `claude/focused-nash-e88299`. Vẫn CHƯA có remote nào.
+>
+> Câu lệnh xác nhận danh tính, bản dùng được:
+>
+> ```powershell
+> Set-Location 'C:\Users\NCTaam\Documents\vinhlong360-correction-case-pilot'
+> git status --short --branch
+> git rev-parse HEAD
+> git branch --show-current
+> git remote -v      # rỗng: chưa có remote, nên không thể push (CLAUDE.md §4)
+> ```
+
+- Worktree: `C:\Code\vinhlong360\.worktrees\correction-case-pilot` *(đường dẫn LỊCH SỬ — xem đính chính trên)*
 - Branch: `codex/correction-case-pilot`
 - Implementation HEAD at handoff: `9b265f451ff34090443a75c6214904a4cc1fb5f6`
 - This branch is local-only and has no configured upstream. Do not push or create an upstream without explicit owner authorization.
-- The main checkout at `C:\Code\vinhlong360` is dirty and user-owned. Do not edit, reset, clean, checkout, stash, or otherwise mutate it. Open the correction worktree above as the Claude Code Desktop workspace.
+- The main checkout at `C:\Code\vinhlong360` is dirty and user-owned. Do not edit, reset, clean, checkout, stash, or otherwise mutate it. Open the correction worktree above as the Claude Code Desktop workspace. *(Không còn áp dụng: cây đó đã không còn trên máy.)*
 - Preserve all existing diffs. Never use destructive reset/checkout commands to make the tree look clean.
 
 At the start of every session, confirm identity before doing any work:
