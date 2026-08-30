@@ -49,14 +49,14 @@ export function useNotifications() {
 
   async function markAllRead() {
     if (!isLoggedIn.value) return
-    const previous = notifications.value.map(n => ({ n, is_read: (n as any).is_read }))
+    const previous = notifications.value.map(n => ({ n, is_read: n.is_read }))
     const previousUnread = unreadCount.value
     try {
       await $fetch('/api/notifications/read-all', { method: 'POST', headers: authHeaders() })
       unreadCount.value = 0
-      notifications.value.forEach(n => (n as any).is_read = true)
+      notifications.value.forEach(n => n.is_read = true)
     } catch (e: unknown) {
-      previous.forEach(p => { (p.n as any).is_read = p.is_read })
+      previous.forEach(p => { p.n.is_read = p.is_read })
       unreadCount.value = previousUnread
       if (getStatusCode(e) === 401) handleSessionExpired()
     }
@@ -65,15 +65,15 @@ export function useNotifications() {
   async function markRead(id: string) {
     if (!isLoggedIn.value) return
     const n = notifications.value.find(x => x.id === id)
-    if (!n || (n as any).is_read) return
-    const previousRead = (n as any).is_read
+    if (!n || n.is_read) return
+    const previousRead = n.is_read
     const previousUnread = unreadCount.value
-    ;(n as any).is_read = true
+    ;n.is_read = true
     unreadCount.value = Math.max(0, unreadCount.value - 1)
     try {
       await $fetch(`/api/notifications/${encodePathId(id)}/read`, { method: 'POST', headers: authHeaders() })
     } catch (e: unknown) {
-      ;(n as any).is_read = previousRead
+      ;n.is_read = previousRead
       unreadCount.value = previousUnread
       if (getStatusCode(e) === 401) handleSessionExpired()
     }

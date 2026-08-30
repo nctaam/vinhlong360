@@ -283,8 +283,17 @@ export interface Notification {
   title?: string
   body?: string
   link?: string
-  read: boolean
-  is_read?: boolean
+  /**
+   * Tên trường ĐÚNG, và luôn có mặt: `agent/notifications.py:93` chọn `is_read`
+   * trong mọi truy vấn, `:936` luôn ghi `"is_read": row.get("is_read", False)`.
+   *
+   * Trước 2026-08-30 chỗ này còn một trường ma `read: boolean` khai BẮT BUỘC mà
+   * API không bao giờ trả và không một trang nào đọc (toàn site dùng `is_read`:
+   * thong-bao.vue, NotificationBell.vue). Vì `is_read` khi đó là optional, cả
+   * composable phải ép `(n as any).is_read` bảy lần để đi vòng — kiểu sai đẻ ra
+   * `any`, chứ không phải ngược lại.
+   */
+  is_read: boolean
   ref_type?: string
   ref_id?: string
   created_at: string
