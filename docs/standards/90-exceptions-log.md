@@ -86,3 +86,5 @@ ghi ở backlog tối ưu — giảm dần, KHÔNG được tăng tiếp từ 47
 - 2026-08-30T08:48:00 SKIP R30.7 — 803kB pre-exists (doi chung 62a87c84); F2 thuan mau-token khong doi JS; bundle-diet lat rieng ke tiep
 
 - 2026-08-30T09:52:13 SKIP R30.7 — Commit content-only, khong dung frontend. 803kB>800 la tang-truong that tu 790 (do 2026-07-10) qua 18 task pilot; da thu 2 phuong an gom-chunk (phan tac dung 810/811) va soi mo provider (duong-tinh-gia). Dua vao ho so chu: chon dieting rieng hoac nang budget.
+
+- 2026-08-30T09:57:44 SKIP R30.7 — Commit content-only, khong dung frontend; bundle 803 la task da xep ROADMAP 37.3
