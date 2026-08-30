@@ -366,17 +366,6 @@ def _same_as_values(entity: dict[str, Any]) -> list[str]:
     return values
 
 
-LICENSE_URL_ALIASES = {
-    "cc by 4.0": "https://creativecommons.org/licenses/by/4.0/",
-    "cc-by-4.0": "https://creativecommons.org/licenses/by/4.0/",
-    "cc by-sa 4.0": "https://creativecommons.org/licenses/by-sa/4.0/",
-    "cc-by-sa-4.0": "https://creativecommons.org/licenses/by-sa/4.0/",
-    "cc0": "https://creativecommons.org/publicdomain/zero/1.0/",
-    "cc0 1.0": "https://creativecommons.org/publicdomain/zero/1.0/",
-    "cc0-1.0": "https://creativecommons.org/publicdomain/zero/1.0/",
-    "public domain": "https://creativecommons.org/publicdomain/mark/1.0/",
-}
-
 def _image_url(value: Any) -> str | None:
     if isinstance(value, str) and value.startswith("http"):
         return value
@@ -386,55 +375,19 @@ def _image_url(value: Any) -> str | None:
             return url
     return None
 
-def _normalise_license_url(value: Any) -> str | None:
-    if not isinstance(value, str) or not value.strip():
-        return None
-    raw = value.strip()
-    if _is_valid_url(raw):
-        return raw
-    token = re.sub(r"\s+", " ", raw.replace("_", " ").strip().lower())
-    token = token.removeprefix("license:").strip()
-    return LICENSE_URL_ALIASES.get(token)
-
-def _image_credit_direct(raw_image: Any) -> dict[str, Any] | None:
-    if not isinstance(raw_image, dict):
-        return None
-    direct = {
-        "author": raw_image.get("author") or raw_image.get("credit"),
-        "credit": raw_image.get("credit"),
-        "license": raw_image.get("license"),
-        "source": raw_image.get("source"),
-        "source_url": raw_image.get("source_url") or raw_image.get("sourceUrl"),
-    }
-    if any(v for v in direct.values()):
-        return {k: v for k, v in direct.items() if v}
-    return None
-
-
-def _image_credit_for_url(attrs: dict[str, Any], img_url: str, raw_image: Any = None) -> dict[str, Any]:
-    direct = _image_credit_direct(raw_image)
-    if direct is not None:
-        return direct
-
-    credits = attrs.get("image_credits")
-    if isinstance(credits, list):
-        for item in credits:
-            if isinstance(item, dict) and str(item.get("url") or "") == img_url:
-                return item
-
-    return {
-        "author": attrs.get("image_author") or attrs.get("image_credit"),
-        "credit": attrs.get("image_credit"),
-        "license": attrs.get("image_license"),
-        "source": attrs.get("image_source"),
-        "source_url": attrs.get("image_source_url"),
-    }
-
-
 def _build_image_objects(
     images: Any, entity_name: str, attrs: dict[str, Any]
 ) -> list[dict[str, Any]]:
-    """Legacy raw media cannot establish AI provenance."""
+    """Legacy raw media cannot establish AI provenance.
+
+    Cụm ghi-công/cấp-phép ảnh từng sống dưới hàm này (LICENSE_URL_ALIASES,
+    _normalise_license_url, _image_credit_direct, _image_credit_for_url) đã gỡ
+    2026-08-30: hàm này là cửa vào DUY NHẤT của chúng và nó trả [] vô điều kiện
+    kể từ khi dự án chốt CHỈ dùng ảnh AI-gen (CLAUDE.md §1.5). Bảng alias CC-BY/
+    CC0 là di tích thời Wikimedia/stock — thứ chốt đó đã cấm. Đừng dựng lại: ảnh
+    AI không cần giấy phép nguồn, và giữ mã chết ở đây làm người đọc tưởng dự án
+    vẫn nhận ảnh ngoài.
+    """
     del images, entity_name, attrs
     return []
 

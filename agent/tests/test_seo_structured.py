@@ -187,6 +187,31 @@ def test_image_object_does_not_read_per_url_legacy_credits():
     assert "creditText" not in img
 
 
+def test_bo_may_ghi_cong_cap_phep_anh_khong_duoc_song_lai():
+    """Bốn ký hiệu ghi-công/cấp-phép ảnh đã gỡ 2026-08-30 — đừng dựng lại.
+
+    Chúng là di tích thời dự án còn nhận ảnh từ nguồn ngoài (kho ảnh cộng đồng,
+    ảnh kho bán sẵn — R10.6 cấm gọi tên chúng ở đây). CLAUDE.md §1.5 nay chốt
+    CHỈ ảnh AI-gen, nên `_build_image_objects` trả [] vô điều kiện và cả cụm
+    thành mã chết. Các test trên chỉ khẳng định ĐẦU RA không có author/license —
+    chúng vẫn xanh nếu ai đó dựng lại bảng alias CC-BY rồi để đó không gọi, và
+    người đọc sau sẽ tưởng dự án vẫn có đường nhận ảnh ngoài. Rào này chặn đúng
+    chỗ đó: cụm phải KHÔNG TỒN TẠI, không chỉ là không được gọi.
+    """
+    da_go = ("LICENSE_URL_ALIASES", "_normalise_license_url",
+             "_image_credit_direct", "_image_credit_for_url")
+    song_lai = [ten for ten in da_go if hasattr(seo, ten)]
+    assert not song_lai, (
+        "agent/seo.py dựng lại bộ máy cấp phép ảnh đã gỡ: " + ", ".join(song_lai)
+        + " — ảnh AI-gen không cần giấy phép nguồn (CLAUDE.md §1.5)."
+    )
+
+    # Đối chứng chống rào-rỗng: hai hàm LÁNG GIỀNG phải còn sống. Nếu ai xoá nhầm
+    # chúng lúc dọn, rào trên vẫn xanh mà sitemap/JSON-LD thì gãy.
+    assert hasattr(seo, "_image_url"), "_image_url còn dùng ở build_entity_jsonld"
+    assert hasattr(seo, "_is_valid_url"), "_is_valid_url còn dùng ở 4 chỗ + test riêng"
+
+
 # ── TYPE_SCHEMA coverage ────────────────────────────────────────────────────
 
 
