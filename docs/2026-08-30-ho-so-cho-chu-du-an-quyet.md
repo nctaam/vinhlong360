@@ -126,18 +126,36 @@ emoji-chức-năng MỚI. Không sửa cũng không ai vi phạm gì.
 
 ---
 
-## 3. R50.2 còn 8 — giữ nguyên (đề nghị đóng, không phải nợ)
+## 3. R50.2 còn 7 — giữ nguyên (đề nghị đóng, không phải nợ)
 
-8 chỗ chứa chữ "miền Tây" còn lại KHÔNG phải filler:
-- `Trường Xây dựng miền Tây` — **tên riêng** của trường (3 chỗ).
+> **ĐÍNH CHÍNH 2026-08-30: trước đây mục này ghi 8 và nói cả 8 đều chính đáng —
+> SAI ở hai điểm.** (a) Cách chia cũ ("3 chỗ trường + 3 ĐCTT + 1 lịch sử + 1 `name`
+> của chính entity trường") **đếm trùng 1**: cái `name` đã nằm trong nhóm 3 chỗ của
+> trường. (b) Vì đếm trùng nên nó **bỏ sót một hit thật sự là filler**:
+> `vinh-long-1-day-backpacker.attributes.content` viết *"nắng miền Tây rất gắt từ
+> 9h"* — đây là mẹo du lịch, "miền Tây" ở đúng nghĩa định-vị-generic mà §1.6 dẹp,
+> không phải tên riêng cũng không phải lịch sử. Đã sửa thành *"từ 9h nắng đã gắt,
+> mà đoạn qua phà và đường đạp xe trên cù lao gần như không có bóng cây"* — giữ
+> nguyên nội dung khuyến cáo, thay nhãn vùng bằng chi tiết có thật của chính lộ
+> trình đó. Ghi kép data.json + DB (B1 backup trước), R50.2 8→7, baseline siết
+> cùng commit.
+
+7 chỗ chứa chữ "miền Tây" còn lại KHÔNG phải filler:
+- `Trường Xây dựng miền Tây` — **tên riêng** của trường: `name`, `summary`,
+  `description` (3 chỗ).
 - `nhóm đờn ca tài tử miền Tây` — **thuật ngữ âm nhạc học**: trường phái miền Tây
-  (Trần Quang Quờn) đối với trường phái miền Đông (3 chỗ).
+  (Trần Quang Quờn) đối với trường phái miền Đông; `summary`, `attributes.role`,
+  `description` (3 chỗ).
 - `ba tỉnh miền Tây` 1867 (Phan Thanh Giản) — **sự kiện lịch sử** (1 chỗ).
-- 1 chỗ trong `name` của chính entity trường.
 
-Cổng là bộ so chuỗi nên không phân biệt được. **Đề nghị chủ duyệt** coi đây là mức
+Cổng là bộ so chuỗi nên không phân biệt được. **Đề nghị chủ duyệt** coi 7 là mức
 sàn đúng của R50.2 (giống whitelist của R10.7), hoặc cho phép thêm whitelist
 per-occurrence để cổng về 0 mà không phải viết sai lịch sử.
+
+*Ghi thêm cho người sửa sau:* checker R50.2 báo vi phạm nhưng **không nói ở entity
+nào, trường nào** — cả 8 dòng đều là `web/data.json:0` với cùng một thông điệp. Muốn
+định vị phải tự dựng lại vòng lặp của nó. Đó là lý do mục này bị chia sai suốt một
+đợt mà không ai phát hiện.
 
 ---
 
