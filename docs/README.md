@@ -64,6 +64,7 @@
 - **`research/corpus-van-hoa-du-lich-vl-2026-06.md`** — chỉ mục + tổng hợp 4 báo cáo (**cửa vào duy nhất**) + 16 CSV/GeoJSON. Toàn văn 4 báo cáo gốc đã chuyển `archive/`. **Header giới hạn:** viết thời 3-tỉnh; KHÔNG dùng khung định vị/đơn vị hành chính cũ/khuyến nghị bán tour từ đây.
 
 ### Quyết định đang chờ chủ dự án (đọc → chốt → mới mở task sửa)
+- 🔴 **`2026-08-30-ho-so-cho-chu-du-an-quyet.md`** — 10 quyết định còn lại sau đợt "giải quyết tất cả nợ". **Đọc §0 trước mọi thứ khác:** hệ thống đang trả lời người dùng "tài khoản sẽ bị xoá vĩnh viễn sau N ngày" trong khi cấu hình mặc định chỉ ĐẾM hồ sơ quá hạn rồi thoát — hứa một đằng làm một nẻo, chạm Luật 91/2025. §0b là mìn chờ push: cổng coverage chạy ở job CI dùng SQLite còn ngưỡng chỉ đạt được khi có PostgreSQL.
 - **`2026-08-07-bang-quyet-dinh-ngay-le-hoi-am-duong.md`** — 67 entity `type=event` lệch ngày âm–dương: 12 khớp · 3 lệch kỹ thuật · 14 tự mâu thuẫn · 7 có `lunar_date` nhưng `date_start` là văn xuôi · 31 chưa có `lunar_date`. **Tài liệu PHÂN TÍCH — chưa sửa một dòng dữ liệu nào.** ⚠️ Ngày của một sự kiện nằm ở SÁU ô cùng render một trang; sửa một ô thì năm ô kia nói ngược (CLAUDE.md §5c).
 - **`drafts/doi-chieu-ma-hanh-chinh.md`** — đối chiếu mã hành chính chính thức ↔ `web/data.json`: Ca A đã chốt 2026-08-07; Ca B (đổi tên) + Ca C (quy ước dấu) còn chờ.
 - `QUYET-DINH-DANG-CHO.md` — bản gom tổng (phiên 2026-08-07).

@@ -4,6 +4,12 @@
 > đó đã hợp vào `main` và bị xoá, xem `docs/HANDOFF-BRANCHES.md`).
 > **Đây là SỔ, không phải kế hoạch.** Mỗi mục chờ đúng MỘT câu trả lời của chủ dự án.
 > Không mục nào được tự quyết (CLAUDE.md §4). Điền cột **CHỐT** → lúc đó mới mở task.
+>
+> ⚠️ **Sổ này CHƯA gồm đợt 2026-08-30.** 10 khoản mới nằm ở
+> `2026-08-30-ho-so-cho-chu-du-an-quyet.md` — trong đó §0 (hứa "xoá vĩnh viễn"
+> nhưng hệ thống chỉ đếm) nặng hơn mọi mục trong sổ này. Chưa gộp hai nơi lại vì
+> gộp là biên tập lại cả hai, mà chính chủ dự án nên quyết giữ một sổ hay hai.
+> Đọc cả hai cho tới khi có quyết định đó.
 
 # Sổ quyết định đang chờ chủ dự án
 
