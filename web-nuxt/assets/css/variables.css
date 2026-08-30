@@ -523,13 +523,17 @@
   --sk-radius-line: var(--radius-control);
 
   /* ── Radius / motion / elevation / z-index (Apple HIG) ── */
-  --radius-none: 0px;
-  --radius-xs: 4px;
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
+  /* Thang bo góc CŨ (--radius-none/xs/sm/md/lg/xl) đã GỠ 2026-08-30 — bước cuối
+     của B2 (thêm đường mới → verify → mới xoá đường cũ). Phần verify do R30.8 làm
+     xong: đợt F1 di trú toàn bộ sang tầng MỤC ĐÍCH (md→surface, sm/xs→control,
+     lg/xl→sheet) và ratchet ghim ở 0. Đo lại trước khi xoá: grep
+     `var(--radius-(none|xs|sm|md|lg|xl))` trên assets/ pages/ components/ layouts/
+     composables/ utils/ plugins/ tests/ app.vue error.vue = 0 kết quả, và 6 khai
+     báo này là 6 khai báo DUY NHẤT trong kho.
+
+     Giữ hai cái dưới: `--radius` bị đánh ngữ nghĩa và đã trỏ sang tầng mục đích;
+     `--radius-full` (pill/tròn) dùng chung cho cả hai thang, không phải nợ. */
   --radius: var(--radius-sheet);
-  --radius-xl: 28px;
   --radius-full: 9999px;
   --maxw: 1140px;
 
