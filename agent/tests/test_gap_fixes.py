@@ -3055,11 +3055,16 @@ class TestAsyncCorrectnessFixes:
         assert "_html.escape" in src
 
     def test_round_exhaustion_thread_safe_queue(self):
-        src = (AGENT_DIR / "chat" / "api.py").read_text(encoding="utf-8")  # ma chat sang agent/chat/ 2026-08-27
-        idx = src.index("Round-exhaustion")
-        fn_src = src[idx:idx + 1600]  # nới: helper #2 thêm _synth_cancelled đẩy call xuống
+        # Lát 37 R20.8: producer hợp nhất thành _produce_stream(ctx, out_q, ...)
+        # dùng chung main+synth — bảo chứng call_soon_threadsafe soi thân đó,
+        # và synth phải thật sự dùng producer chung.
+        import inspect
+        from chat import api as _chat_api
+        fn_src = inspect.getsource(_chat_api._produce_stream)
         assert "call_soon_threadsafe" in fn_src, \
             "Round-exhaustion synthesis must use call_soon_threadsafe for asyncio.Queue"
+        synth_src = inspect.getsource(_chat_api._synthesize_after_rounds)
+        assert "_produce_stream, ctx, synth_q" in synth_src
 
     def test_map_entities_has_public_only(self):
         src = _public_src()

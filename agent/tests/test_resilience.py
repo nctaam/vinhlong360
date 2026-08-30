@@ -317,11 +317,17 @@ class TestGuardrailFallback:
         server_path = AGENT_DIR / "chat" / "api.py"  # ma chat sang day 2026-08-27
         source = server_path.read_text(encoding="utf-8")
 
+        # Lát 37 R20.8: biên đầu vào của stream tách sang _prepared_stream_input —
+        # soi thân helper + xác nhận chat_stream thật sự gọi nó và fail-closed.
+        boundary_section = source[source.find("def _prepared_stream_input"):]
+        assert "safe_input = prepare_chat_input(" in boundary_section
+        assert "PrivacyBoundaryBlocked" in boundary_section
+        assert "PrivacyBoundaryUnavailable" in boundary_section
+        assert "UNEXPECTED_PRIVACY_BOUNDARY_ERROR" in boundary_section
+
         stream_section = source[source.find("async def chat_stream"):]
-        assert "safe_input = prepare_chat_input(" in stream_section
-        assert "PrivacyBoundaryBlocked" in stream_section
-        assert "PrivacyBoundaryUnavailable" in stream_section
-        assert "UNEXPECTED_PRIVACY_BOUNDARY_ERROR" in stream_section
+        assert "_prepared_stream_input(req, owner_key, sid)" in stream_section
+        assert "if block_msg is not None:" in stream_section
 
     def test_privacy_boundary_readiness_fails_closed(self, monkeypatch):
         import privacy_boundary
