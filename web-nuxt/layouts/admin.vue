@@ -696,7 +696,12 @@ onUnmounted(() => {
 .admin-error-panel h2 { color: var(--danger); margin: 0 0 1rem; }
 .admin-error-detail {
   text-align: left; font-size: .8rem; max-height: 200px; overflow: auto;
-  background: var(--surface-alt); padding: .75rem; border-radius: var(--radius);
+  /* `--surface-alt` KHÔNG tồn tại: nó xuất hiện đúng một lần trong toàn frontend
+     và là lần DÙNG, không phải lần khai. Custom property không khai + không dự
+     phòng = invalid-at-computed-value-time, nên ô lỗi này mất hẳn nền. Token
+     đúng là `--bg-alt` — chính file này đã dùng nó 4 chỗ khác, và nó có giá trị
+     ở CẢ hai chế độ (sáng `--sand-200`, tối `--color-surface-raised`). */
+  background: var(--bg-alt); padding: .75rem; border-radius: var(--radius);
   margin-bottom: 1.5rem; white-space: pre-wrap; word-break: break-word;
 }
 .admin-error-actions { display: flex; gap: .75rem; justify-content: center; }
