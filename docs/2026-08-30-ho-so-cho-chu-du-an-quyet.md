@@ -107,6 +107,50 @@ Máy KHÔNG tự chọn: cả ba đều đổi/hạ một tiêu chuẩn của d�
 
 ---
 
+### ✅ CHỦ DỰ ÁN CHỐT 2026-08-30: **(b) giữ trần, mở đợt giảm cân**
+
+Đã mở đợt và **đo xong bước một — kết quả là gói KHÔNG CÓ MỠ ĐỂ CẮT.** Số đo trên
+build sạch (`npm run build`, không phải lượt `--analyze`):
+
+| Đo | Số | Trần | Nhận xét |
+|---|---:|---:|---|
+| JS tổng (gz) | **802 kB** | 800 | vượt đúng 2 kB |
+| Chunk lớn nhất | 276 kB | 280 | là `maplibre-gl`, **34% toàn bộ gói** |
+| CSS tổng (gz) | 165 kB | 190 | dưới trần, không phải vấn đề |
+
+Đã soi năm hướng, **không hướng nào ra mỡ**:
+- **Thư viện:** đúng **4 dependency** (`nuxt`, `vue`, `vue-router`, `maplibre-gl`).
+  Không có gói thừa để gỡ.
+- **Mã nhân bản:** quét chuỗi dài xuất hiện ở ≥8 chunk → **0**. Không chunk nào
+  đang chép lại chunk khác.
+- **Component chết:** `HeroIllustration`, `StorySpread` **KHÔNG có trong gói** —
+  tree-shaking đã loại. Xoá chúng tiết kiệm **0 byte** (vẫn nên xoá cho sạch mã,
+  nhưng đó là lý do khác, không phải giảm cân).
+- **Export chết:** 4/333 ký hiệu không ai dùng — và **cả 4 đều đã bị tree-shaking
+  loại**, cũng 0 byte.
+- **Gom chunk:** đã thử ở đợt trước, ra 811 rồi 810 — **tệ hơn**. Ngõ cụt đã đo
+  hai lần, đừng thử lần ba.
+
+**Kết luận đo được:** cổng cộng TỔNG mọi `*.js`, nên **dời mã giữa các chunk không
+bao giờ giúp** — chỉ XOÁ mã hoặc THU NHỎ thư viện mới hạ được con số. Mã ứng dụng
+đã sạch (4/333). Vậy đợt giảm cân chỉ còn **đúng một mục tiêu: maplibre-gl, 276 kB**.
+
+**Cần chủ dự án chốt tiếp — ba đường, và cả ba đều chạm thứ ngoài quyền máy:**
+- (a) **Thay maplibre bằng thư viện nhẹ hơn** — tiềm năng giảm 150–250 kB, nhưng
+  đổi cách bản đồ trông và hoạt động ⇒ quyết định THỊ GIÁC, phải trình mockup trước.
+- (b) **Tải maplibre từ CDN** — giảm đúng 276 kB khỏi gói ta phục vụ, nhưng thêm
+  một phụ thuộc bên thứ ba (riêng tư + rủi ro sập) và thành thật mà nói nó **lách
+  cổng** hơn là giảm cân.
+- (c) **Chấp nhận 802/800** như hiện trạng và để cổng skip-có-sổ tiếp — không mất
+  gì về kỹ thuật, nhưng mỗi commit vẫn phải `SKIP_CHECKS=R30.7`.
+
+*Ghi rõ một hướng KHÔNG ăn, để không ai đề xuất lại:* thay bản đồ tương tác bằng
+ảnh tĩnh ở 3 trang chỉ hiển thị vị trí (`xa-phuong/[id]`, `lich-trinh/[id]`,
+`tao-lich-trinh`) là cải thiện thật cho người dùng, nhưng **không hạ được con số**
+— chunk maplibre vẫn tồn tại cho `/ban-do`, mà cổng đếm tổng.
+
+---
+
 ## 2. Emoji chức năng 330 chỗ (R30.2) — đại tu bộ icon?
 
 **Sự thật.** 330 emoji trong 38 file: 157 ở trường `icon:`, 88 trong
