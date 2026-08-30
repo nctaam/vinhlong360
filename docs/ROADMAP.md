@@ -4236,3 +4236,71 @@ consents_new_and_filtered_legacy_events` ghim cứng `legacy_cutover_deadline =
 2026-08-30`, mà test đi qua HTTP nên dùng đồng hồ THẬT → tự đỏ đúng hôm nay. Nay
 neo theo `now + 1 ngày` (commit `64766e34`). Ba test cùng file không dính vì
 chúng truyền `now=` tường minh hoặc tự ghim `datetime.now`.
+
+#### Hậu kiểm 2026-08-30 — rà "còn gì chưa làm", 5 thứ lọt lưới + 1 hồi quy tự gieo
+
+Đợt trên tự tuyên bố "xong phần máy". Rà lại thì **năm thứ đã lọt**, và cái nặng nhất
+là thứ chính đợt đó tạo ra chứ không phải thứ nó bỏ sót.
+
+**1. Ratchet mất răng suốt cả đợt** (`ab2fab67`). `docs/standards/baseline.json` sửa
+lần cuối ở `7c4fc1e0` **2026-08-27** — TRƯỚC khi đợt bắt đầu (`4d46c3b9`, 2026-08-29).
+51 commit trả nợ mà baseline đứng yên: hook chỉ chặn TĂNG so với baseline, nên toàn
+bộ nợ vừa trả **được phép bò ngược về mà không kêu một tiếng**. Đo thực tế 339 /
+baseline 1271. Siết 7 rule (R20.8 47→0 · R30.3 147→0 · R30.8 369→0 · R50.4 245→0 ·
+R50.7 24→0 · R50.3 7→0 · R50.2 102→8). Giữ R30.2 = 330 (đại tu icon, hồ sơ §2) và
+**giữ R30.7 = 0, KHÔNG nâng lên 1** — nâng là chấp nhận vượt trần gói JS, quyết định
+của chủ dự án (hồ sơ §1); cứ để nó chặn và skip có ghi log.
+
+Chứng minh có răng thay vì tin số: gieo vi phạm tạm cho từng rule rồi xoá trong
+`finally` (R20.8 hàm cx>12 · R30.8 `var(--radius-md)` · R30.3 `#a1b2c3` · R50.4 một
+entity mỏng). Phép thử R50.4 chạy trên **bản sao `data.json` trong thư mục tạm**,
+`web/data.json` thật không bị đụng. Lượt đầu R50.4 báo "không cắn" là **lỗi harness
+của tôi** (gọi `mod.build_checks(root=…)` cho một checker chỉ có `CHECKS`, nên tham số
+root bị bỏ qua và phép đo rơi về kho thật) — đo lại đúng đường thì 0→1.
+
+**2. Một bản vá nằm quên 12 ngày ở nhánh khác** (`d2053e77`). `claude/focused-nash-e88299`
+(worktree trong `.claude/worktrees/`) có đúng một commit chưa bao giờ về nhánh chính:
+`462d53b5` (2026-08-18), vá `scripts/install_hooks.py` thoát 1 trên console cp1252 vì
+chữ "đ" (U+0111). Đo lại chứ không tin commit message: lỗi **vẫn còn sống** trên nhánh
+này. Đây là lệnh CLAUDE.md §5 bảo mọi người chạy để cài cổng tiêu chuẩn — hook ghi
+xong rồi mới crash ở khâu in, nên người cài thấy mã lỗi sẽ tưởng cổng chưa cài rồi
+commit tiếp mà không có cổng. Lấy nguyên văn commit gốc + thêm
+`tests/test_install_hooks.py` (3 nhánh in × 3 console + rào AST giữ `_utf8_output()`
+ở vị trí câu lệnh đầu tiên của `main()`). Commit gốc không có test — và đó chính là
+lý do nó biến mất cùng cái nhánh.
+
+**3. Fail-đã-biết cuối cùng còn "chưa ai quyết" — đóng, 16 → 15** (`123b4e75`).
+Xem §"Fail-đã-biết" ở trên. Ghi chú cũ đúng một nửa: chỉ 2/7 route đính chính là ẩn
+danh thật, 5 route kia đòi cookie phiên + CSRF + same-origin rồi xác minh token ở
+tầng service.
+
+**4. CLAUDE.md đang bảo mỗi phiên mở một thư mục không tồn tại** (`1772737c`).
+Handoff bắt buộc-đọc mở đầu bằng `Set-Location 'C:\Code\vinhlong360\.worktrees\
+correction-case-pilot'`; cả `C:\Code\vinhlong360` lẫn `C:\Code` **không còn tồn tại**.
+`docs/HANDOFF-BRANCHES.md` nặng hơn: bảng "Giữ — 63 commit chưa hợp" đọc hôm nay rất
+dễ kết luận đã mất 83 commit. Kiểm trước khi viết: `aebf4afe`, `b60ce900`, `9b265f45`
+đều còn và đều là tổ tiên HEAD (3.197 commit) — **mất nhãn nhánh và thư mục, KHÔNG
+mất mã**.
+
+**5. Hồ sơ chủ-quyết không được nhắc ở đâu cả** (`21fc8225`). Không có trong
+`docs/README.md` lẫn `docs/QUYET-DINH-DANG-CHO.md`. Mục §0 (hứa "xoá vĩnh viễn" nhưng
+hệ thống chỉ đếm) là khoản nặng nhất đang treo, mà nằm ngoài mọi lối đọc quy định thì
+không khác gì chưa viết.
+
+**6. Hồi quy TÔI GIEO ở mục 1, full-suite bắt được** (`69906fef`). Siết baseline mà
+quên bảng `00-INDEX.md` → `test_bang_00_index_khop_baseline_json` đỏ. Pre-commit không
+thấy vì hook chạy `run_hard --staged` (bộ checker), không chạy pytest — đúng lớp bẫy
+§5b. Sửa BẢNG cho khớp máy theo đúng chiều rào chỉ định, không đụng `baseline.json`.
+
+**Số chốt sổ hậu kiểm** (`PYTEST_DEBUG_TEMPROOT` + đủ 4 biến PG):
+**16 failed / 12.357 passed / 138 skipped**, đối chiếu tự động: 15 nằm trong danh sách
+fail-đã-biết, 0 "MẤT", và 1 "MỚI" chính là mục 6 — đã vá, `tests/checks/` 184 passed.
+*Lưu ý phương pháp:* lượt đo này có 3 commit docs-only xen vào lúc đang chạy, trái với
+kỷ luật "full-suite cần cây đứng yên"; fail duy nhất ngoài danh sách không liên quan
+tài liệu (nó so `00-INDEX.md` với `baseline.json`, cả hai đã đứng yên từ `ab2fab67`),
+nhưng lần sau vẫn phải để cây yên.
+
+**Còn lại sau hậu kiểm, KHÔNG tự làm:** worktree lạc
+`.claude/worktrees/focused-nash-e88299` + nhánh cùng tên nay đã hết giá trị (commit
+duy nhất đã lấy về) — xoá thư mục/nhánh là §4, chờ chủ dự án. Mười khoản trong hồ sơ
+chủ-quyết giữ nguyên.

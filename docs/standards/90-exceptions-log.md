@@ -110,3 +110,5 @@ ghi ở backlog tối ưu — giảm dần, KHÔNG được tăng tiếp từ 47
 - 2026-08-30T15:17:34 SKIP R30.7 — Goi JS 803/800 la muc 1 ho so chu-quyet; commit nay docs-only
 
 - 2026-08-30T15:19:14 SKIP R30.7 — Goi JS 803/800 la muc 1 ho so chu-quyet; commit nay docs-only
+
+- 2026-08-30T15:42:52 SKIP R30.7 — Goi JS 803/800 la muc 1 ho so chu-quyet; commit nay standards-docs
