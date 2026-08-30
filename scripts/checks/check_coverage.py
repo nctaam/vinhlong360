@@ -62,14 +62,16 @@ class CoverageCheck:
     def run(self, files: list[str] | None = None) -> dict:
         cov = self._load(COV_JSON)
         if cov is None:
-            if files is not None:
-                return self._result([])  # hook staged không chạy pytest
-            return self._result([{
-                "file": COV_JSON,
-                "line": 0,
-                "rule": self.rule,
-                "msg": "coverage.json missing or unreadable; generate a fresh JSON coverage report",
-            }])
+            # GRACEFUL-SKIP, cùng khuôn với R30.7 (`check_bundle`): rule này chỉ
+            # đo được ở nơi vừa chạy pytest có --cov. Ở `run_hard --all` nói
+            # chung — hook pre-commit, job CI không sinh coverage — nó im lặng,
+            # và bản NGHIÊM sống ở `main()` bên dưới, nơi CI gọi trực tiếp sau
+            # khi đã chạy suite với PostgreSQL.
+            #
+            # Vì sao phải tách: ngưỡng identity 85 / community 90 CHỈ đạt được
+            # khi có PG (đo 2026-08-30: không PG 46,2/29,2 · có PG 88,3/95,8).
+            # Để cổng ở job SQLite là thực thi một phép đo không đầy đủ.
+            return self._result([])
         thr = self._load(THRESHOLDS) or {"agent": 60, "core": {c: 80 for c in CORE}}
         cfiles = cov.get("files", {})
         violations = []
@@ -103,4 +105,37 @@ class CoverageCheck:
                 "count": len(violations), "violations": violations}
 
 
+def main() -> int:
+    """Chạy riêng R20.4 ở nơi phép đo HỢP LỆ — job CI có PostgreSQL.
+
+    `run_hard.py --all` chạy ở job `test`, nơi suite chạy trên SQLite. Hai module
+    lớn nhất chỉ đo được 46,2% và 29,2% ở đó, so với 88,3% và 95,8% khi có PG —
+    tức ngưỡng 85/90 KHÔNG THỂ đạt, và cổng sẽ chặn mọi lượt push vì một phép đo
+    thiếu, không phải vì độ phủ tụt.
+
+    Chủ dự án chốt 2026-08-30: chuyển cổng sang job `test-pg`. Entry này để job đó
+    gọi trực tiếp, đúng cách `check_bundle` đã làm cho R30.7:
+        PYTHONPATH=scripts python3 -m checks.check_coverage
+
+    Khác `run()`: ở đây THIẾU coverage.json là LỖI, không phải bỏ qua. Gọi entry
+    này nghĩa là bạn vừa chạy pytest có --cov; không có file tức là bước đó hỏng.
+    """
+    check = CHECKS[0]
+    if not (check.root / COV_JSON).exists():
+        print(f"✖ R20.4: không thấy {COV_JSON} — phải chạy SAU pytest với --cov-report=json")
+        return 2
+    result = check.run(None)
+    for violation in result["violations"]:
+        print(f"✖ R20.4 {violation['file']}: {violation['msg']}")
+    if result["count"]:
+        print(f"Độ phủ dưới sàn: {result['count']} vi phạm")
+        return 1
+    print("✓ R20.4 coverage: đạt")
+    return 0
+
+
 CHECKS = [CoverageCheck()]
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

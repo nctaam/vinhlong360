@@ -127,24 +127,29 @@ jobs:
             --tb=short \
             --cov=agent \
             --cov-report=term-missing \
-            --cov-report=xml:coverage.xml \
-            --cov-report=json:coverage.json
+            --cov-report=xml:coverage.xml
 
-      - name: Enforce standards and coverage ratchet
+      # KHÔNG sinh coverage.json ở đây, có chủ ý. Job này chạy SQLite, nơi
+      # identity/api.py và community/api.py chỉ đo được 46,2% và 29,2% (so với
+      # 88,3% và 95,8% khi có PG). Sinh file ở đây là mời cổng R20.4 thực thi một
+      # phép đo KHÔNG ĐẦY ĐỦ và chặn mọi lượt push. Thiếu file → R20.4 graceful-skip,
+      # đúng khuôn R30.7 vẫn skip ở job này vì chưa có `.output`.
+      # Cổng thật chạy ở job `test-pg`. Chủ dự án chốt 2026-08-30.
+      - name: Enforce standards ratchet (coverage gate sống ở job test-pg)
         run: python scripts/checks/run_hard.py --all
 
       - name: Validate data.json
         run: python scripts/validate_data.py
 
-      # Upload the coverage report as a build artifact
-      - name: Upload coverage report
+      # Upload the coverage report as a build artifact.
+      # Chỉ còn XML: bản JSON nay do job `test-pg` sinh (số đo có PostgreSQL,
+      # tức số ĐÚNG) và tải lên dưới tên `coverage-report-pg`.
+      - name: Upload coverage report (SQLite, tham khảo)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: |
-            coverage.xml
-            coverage.json
+          path: coverage.xml
           retention-days: 14
 
   # Task 45 unit/static contracts use Windows command stubs and must run
@@ -323,7 +328,27 @@ jobs:
           # chèn cwd vào sys.path nên 8 file launch_safety vỡ ở bước collect.
           python -m pytest tests/ agent/tests/ \
             -m "not slow" \
-            --tb=short
+            --tb=short \
+            --cov=agent \
+            --cov-report=json:coverage.json
+
+      # CỔNG COVERAGE SỐNG Ở ĐÂY, không ở job `test`. Ngưỡng identity 85 /
+      # community 90 chỉ đạt được khi có PostgreSQL — đo 2026-08-30: không PG
+      # 46,2%/29,2%, có PG 88,3%/95,8%. Đặt cổng ở job SQLite là thực thi một
+      # phép đo thiếu và chặn mọi lượt push.
+      # Cùng khuôn với `checks.check_bundle` chạy ở job frontend sau `npm run build`.
+      - name: Enforce coverage ratchet (R20.4)
+        env:
+          PYTHONPATH: scripts
+        run: python3 -m checks.check_coverage
+
+      - name: Upload coverage report (PostgreSQL — số đo dùng cho cổng)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-pg
+          path: coverage.json
+          retention-days: 14
 
   # ── 3. Data coverage (informational, non-blocking) ──────────
   # Prints the % of entities (overall + per type) carrying real photos,
