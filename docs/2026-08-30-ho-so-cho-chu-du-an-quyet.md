@@ -214,6 +214,37 @@ Hồ sơ câu hỏi đã soạn sẵn: `docs/2026-08-22-cau-hoi-cho-luat-su.md`.
 
 ---
 
+## 6b. BỐN KHOẢN MỚI — phát sinh từ đợt "hoàn thiện việc còn lại" (2026-08-30)
+
+Cả bốn đều đã được CHẶN ở phần máy tự làm được; phần còn lại đúng là quyền của chủ.
+
+**(a) 13 ô `ocop_star` rác vẫn nằm trong dữ liệu.** Huy hiệu giả đã tắt ở bên đọc
+(`434bdeb6`) nên trang không còn khai khống. Nhưng `web/data.json` + DB vẫn mang 13
+giá trị sai; xoá chúng là thao tác dữ liệu (B1 + §4). Riêng `homestay-sokfram` cần
+mắt người: văn xuôi của nó nói nó BÀY BÁN sản phẩm OCOP 3–5 sao của địa phương, tức
+`ocop_star=5` gần chắc là chép nhầm — nhưng "gần chắc" không đủ để máy xoá.
+
+**(b) 255 file nhật ký kiểm toán rác + phần rác đã lẫn vào nhật ký thật.** Test đã
+ngừng ghi vào đó (`296e1d04`), nhưng `agent/data/admin_audit.*.jsonl` còn 255 file và
+`admin_audit.jsonl` 1,3 MB là trộn lẫn thao tác thật với rác test. Xoá nhật ký kiểm
+toán thì càng không tự tiện — chờ chỉ đạo.
+
+**(c) `POST /admin/relationships` KHÔNG kiểm hai đầu có tồn tại.** Route trả 201 và
+ghi quan hệ treo đầu; `Database.add_relationship` chèn thẳng `INSERT OR IGNORE`.
+Hiện DB dev có đúng 1 hàng như vậy (di tích, rò đã bịt từ 2026-08-28). Vô hình với
+người dùng vì `get_relationships` JOIN hai đầu. **Câu hỏi:** có nên chặn ở tầng
+admin không? Chặn sẽ cấm luôn cách dùng "tạo quan hệ trước, tạo entity sau". Máy
+không tự đổi hành vi một API quản trị; đã viết lại test cho nó nói đúng lỗ hổng thay
+vì che (`6bbe508b`). Xoá hàng rác kia cũng là §4.
+
+**(d) Ba cổng nằm NGOÀI lệnh nghiệm thu §5, và cả ba đều từng đỏ mà không ai biết:**
+`npx vitest run` (đỏ 3 ngày), `npm run typecheck` (đỏ sẵn), và `node
+scripts/check-tri-region-contrast.mjs`. Cả ba nay xanh. **Đề nghị:** bổ sung chúng
+vào §5 của CLAUDE.md để lần sau không phải phát hiện bằng may mắn. Đây là sửa hiến
+pháp nên xin chủ chốt.
+
+---
+
 ## 7. Dung lượng máy (ngoài dự án)
 
 Đã dọn phần thuộc quyền trong đợt trước: Downloads 14 GB → 0,9 GB, vhdx Docker

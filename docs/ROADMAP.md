@@ -4315,3 +4315,71 @@ nhưng lần sau vẫn phải để cây yên.
 `.claude/worktrees/focused-nash-e88299` + nhánh cùng tên nay đã hết giá trị (commit
 duy nhất đã lấy về) — xoá thư mục/nhánh là §4, chờ chủ dự án. Mười khoản trong hồ sơ
 chủ-quyết giữ nguyên.
+
+---
+
+## Đợt 2026-08-30 (2) — "hoàn thiện việc còn lại": 12 commit
+
+Khảo sát bằng 39 tác tử (6 góc soi × vòng phản biện đối kháng; lượt đầu 4 tác tử
+chết vì grep trúng `.claude/worktrees/` — BẢN SAO TOÀN BỘ KHO — nên quét gấp đôi và
+treo; chạy lại có kỷ luật chống-treo thì 39/39 xong). Phản biện bác 9/19 ứng viên,
+trong đó 2 cái hoá ra ĐÃ LÀM RỒI và 7 cái thật sự bị chặn — đúng công dụng của vòng
+phản biện.
+
+**HAI LỖI SẢN PHẨM THẬT.**
+
+1. `303b15b9` — **nút "xin xét lại" hỏng 100% lượt kể từ khi có.** `_ReviewIn` đòi
+   `expectedRevision` bắt buộc, `GET /status` chưa từng phát con số đó ⇒ 422 mọi
+   lượt; rồi `neutralise` dịch 422 thành "kiểm tra lại mã tra cứu" nên người dân đi
+   sửa cái mã vốn không hỏng. Bằng chứng mạnh nhất nằm trong chính `api-contract.md`:
+   nó viết `POST /review` nhận `{reason, expectedRevision}` ngay dưới đoạn nói
+   `GET /status` trả về 10 trường không có revision — hợp đồng tự mâu thuẫn. Vá bằng
+   cách PHÁT RA `currentRevision` (6 chỗ ghim + doc), giữ nguyên chốt tương-tranh-lạc
+   quan; tách 409 khỏi nhóm lỗi-truy-cập CHỈ ở nút này, không đụng `neutralise` dùng
+   chung (test an ninh ghim `loadStatus()` cho cả 7 mã).
+2. `1c31e414` — **4 chốt toạ độ vĩnh viễn False.** `chat/api.py` gác
+   `if e.get("coords")` trong khi bảng `entities` chỉ có cột `coordinates` ⇒ thẻ
+   OCOP / lưu trú / theo-mùa / quanh-đây chưa từng mang toạ độ tới mô hình, dù
+   1.733/1.746 entity có toạ độ. **Sống lâu vì FIXTURE của chính test dùng khoá sai**
+   — bốn test "card có coords" xanh suốt trong khi đo một hình dữ liệu không tồn tại.
+
+**MỘT CHUYỆN KHAI KHỐNG RA CÔNG CHÚNG.** `434bdeb6` — 13 cơ sở lưu trú hiện
+«Sản phẩm OCOP 1 sao»; cả 13 có `ocop_star` bằng đúng `star_rating` (vân tay chép
+nhầm cột). Suýt vá sai: khảo sát đề xuất "loại mọi accommodation", đọc văn xuôi thì
+`somo-farm-cuu-long` có chứng nhận OCOP 4 sao THẬT. Luật cuối dùng hai vế (OCOP không
+có bậc 1–2; số chỉ chép lại `star_rating` mà văn xuôi không xác nhận) → gỡ 13 huy
+hiệu giả, **0/85 sản phẩm bị bóp nhầm**. Sửa CẢ HAI bản sinh đôi + 6 ca vào bộ ca
+dùng chung.
+
+**BA CỔNG ĐANG ĐỎ HOẶC MÙ MÀ KHÔNG AI BIẾT.**
+- `063c6e42` — allow-list tri-region đỏ **3 ngày**, do chính đợt F1 (`08a9ce0f`) di
+  trú thang bo góc mà không cập nhật danh sách. Lọt vì F1 nghiệm thu bằng
+  `npm run build`, không chạy `npx vitest run`.
+- `e2700313` — `nuxt typecheck` **vốn đã đỏ sẵn** (1 lỗi kiểu trong test), nay sạch.
+  Cổng thứ ba không nằm trong lệnh nghiệm thu §5.
+- `51715957` — cổng coverage **fail-OPEN**: sàn trỏ file đã đổi tên thì biến mất im
+  lặng. Nay fail-closed, kèm rào.
+
+**MỘT THỨ ĐANG ĂN MÒN.** `296e1d04` — test ghi thẳng vào **nhật ký kiểm toán THẬT**:
+đo được 1 lượt chạy bơm 69 byte + đẻ 6 file xoay vòng, đã tích **255 file rác**; nhật
+ký 1,3 MB nay là trộn lẫn thao tác thật với rác test. Chặn ở conftest (chỗ duy nhất
+không thể quên), đo lại: sha/byte/số file KHÔNG đổi.
+
+**Còn lại:** `695dc90f` mã chết cấp-phép ảnh trái §1.5 · `3b45bd23` câu gợi ý
+/luu-tru gọi ba tỉnh song song · `03e02e6d` trường ma `read` đẻ ra 7 chỗ `as any` ·
+`dff55977` cứu danh sách 167 entity khảo sát khỏi `C:\tmp` + đính chính "gắn cờ" →
+"phân loại" · `6bbe508b` test `..._validates` không thể đỏ, viết lại cho nói đúng lỗ
+hổng nó che.
+
+**HAI LẦN ĐO CỨU KHỎI VÁ SAI:** (a) tác tử báo "157 entity thật ra là 167, hồ sơ ghi
+sai" — kiểm ra 167 = 157 `can_bo_sung` + 10 `ten_rieng`, hai nhóm khác nhau, con số
+cũ VỐN ĐÚNG; sửa theo là làm hỏng tài liệu đang đúng. (b) định thêm một dòng
+monkeypatch để bịt rò quan hệ treo đầu, đo ra rò ĐÃ bịt từ 2026-08-28 và hàng rác là
+di tích — suýt vá một cái bóng.
+
+**Số chốt sổ** (cây đứng yên, đủ 4 biến PG): **15 failed / 12.364 passed / 138
+skipped**, đối chiếu tự động **HẾT-DIFF** — 15 nằm trọn trong danh sách fail-đã-biết,
+0 mới, 0 mất (+7 passed = test mới thêm). Scorecard không đổi (đây là sửa ĐÚNG-SAI,
+không phải trả nợ chuẩn): data/backend/ui-design/docs/ops 100 · content 99 ·
+frontend 86 · hard 0. `nuxt typecheck` sạch · vitest 129 file / 2.150 test xanh ·
+`npm run build` ✔ · DB 1746 entity / 12.061 quan hệ / 33 lịch trình, integrity ok.
