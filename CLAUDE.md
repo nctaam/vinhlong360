@@ -127,6 +127,21 @@ python scripts/gen_image.py --prompt "..." --out web-nuxt/public/img/x.webp   # 
   `pytest.importorskip("x")` là lời gọi lúc CHẠY, AST không thấy → bị tính là "sửa `agent/x.py` mà không có test".
   Cách vòng hợp lệ: thêm import cấp module bọc `try/except`.
 
+### 5c-bis. ĐO DUNG LƯỢNG TRỐNG TRƯỚC MỖI LƯỢT FULL-SUITE (học đắt 2026-08-30, dính HAI lần trong một phiên)
+
+`Get-PSDrive C` — dưới ~5 GB thì **đừng chạy**, kết quả sẽ không đọc được.
+
+Đầu phiên 2026-08-30: còn 49 MB → `sqlite3 disk I/O error` giết nguyên lượt đo. Cuối
+phiên: trống sụp 3,96 → **0,00 GB** → lượt đầu 17 fail (2 "mới"), lượt sau **cùng
+lệnh cùng cây** cho **30 fail + 88 errors** ở vùng khác hẳn, còn 2 "fail mới" kia lại
+xanh. Đã tiêu một giờ bisect sáu giả thuyết — mỗi phép đo đều ĐÚNG, hướng thì SAI, vì
+giả định nền "máy còn chỗ" không bao giờ được kiểm.
+
+**Dấu hiệu là môi trường chứ không phải mã:** tập fail **ĐỔI** giữa hai lượt giống hệt
+nhau, hoặc xuất hiện `errors` hàng loạt (khác `failed`). Hồi quy thật thì tất định và
+khu trú. Thủ phạm dung lượng KHÔNG nằm trong kho (build artifact chỉ ~0,02 GB) —
+`.codex`, `Downloads`, `AppData`. **Chủ dự án tự dọn; máy không đụng.**
+
 ### 5d. BA CỔNG TỪNG NẰM NGOÀI §5 — cả ba đều đã có lúc đỏ mà không ai biết
 
 Chủ dự án chốt 2026-08-30: **bổ sung cả ba vào lệnh nghiệm thu**. Lý do là số đo,
