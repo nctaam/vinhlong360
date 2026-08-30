@@ -2380,10 +2380,16 @@ def test_export_includes_safe_preferences_consents_new_and_filtered_legacy_event
         path = tmp_path / "legacy-events.jsonl"
         seed_legacy_events(path, [auth_client.owner, auth_client.owner])
         monkeypatch.setattr(personalization_events, "LEGACY_EVENTS_PATH", path)
+        # Cửa sổ cutover phải còn MỞ so với đồng hồ THẬT: test này đi qua HTTP
+        # nên không tiêm được `now`, mà `read_legacy_events_if_allowed` so
+        # `datetime.now() >= deadline`. Bản cũ ghim cứng 2026-08-30 nên tự nổ
+        # đúng ngày đó (đã nổ thật 2026-08-30) — neo theo hiện tại thay vì
+        # theo một ngày trên lịch.
+        open_deadline = datetime.now(timezone.utc) + timedelta(days=1)
         monkeypatch.setattr(
             personalization_events,
             "legacy_cutover_deadline",
-            lambda: datetime(2026, 8, 30, tzinfo=timezone.utc),
+            lambda: open_deadline,
         )
 
         response = auth_client.client.get(
