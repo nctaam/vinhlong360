@@ -1,0 +1,168 @@
+﻿entity_id,ly_do_ma,thieu_gi_can_khao_sat
+ks-nh-hung-vuong,can_bo_sung,"Chỉ có địa chỉ + điện thoại; cần bổ sung giá phòng, tiện nghi, giờ nhận/trả phòng."
+cho-cho-lach,can_bo_sung,Địa chỉ gốc chỉ ghi 'Huyện Chợ Lách' (đơn vị đã bỏ sau 7-2025); cần địa chỉ xã/đường cụ thể và giờ họp chợ. Câu 'lớn nhất ĐBSCL' giữ nguyên từ dữ liệu gốc.
+tiem-ba-khoang,can_bo_sung,"Thiếu giờ mở cửa, giá, món cụ thể; rating/review_count bị loại theo quy tắc nguồn không kiểm chứng."
+quan-71---am-thuc-chay-xoi-che,can_bo_sung,"Đã bỏ dòng 'Đánh giá 7.5/5' trong description cũ (rating nguồn không kiểm chứng, số còn sai thang điểm)."
+pho-tien,can_bo_sung,"Địa chỉ gốc ghi 'thị trấn Mỏ Cày' (đơn vị đã bỏ sau 7-2025) — đã chuyển thành 'khu Mỏ Cày' kèm ngữ cảnh lịch sử; cần tên xã mới, giờ bán, giá."
+khach-san-hai-duong-2,can_bo_sung,"Chỉ có địa chỉ + điện thoại; cần giá phòng, tiện nghi, giờ nhận/trả phòng."
+ct-quan---mon-nuong-coffee,can_bo_sung,
+choosa-damour---coffee-flowers,can_bo_sung,"Đã bỏ dòng 'Đánh giá 9.2/5' trong description cũ (rating nguồn không kiểm chứng, số sai thang điểm)."
+bun-bo-hue-19,can_bo_sung,"Đã bỏ 'Đánh giá 9.0/5' (rating nguồn không kiểm chứng); cần giờ bán, giá tô."
+jollibee---coopmart-tra-vinh,can_bo_sung,
+quan-tuyet---com-ca-ri-ga,can_bo_sung,"Thiếu số nhà, giờ bán, giá."
+khach-san-duc-dao,can_bo_sung,"Attribute ocop_star=1 khả nghi (trùng star_rating, khách sạn không phải sản phẩm OCOP) — không dùng; số điện thoại đầu 070 là mã vùng cũ, nên kiểm tra lại."
+snowy---kem-cafe,can_bo_sung,
+brownie-coffee-and-tea,can_bo_sung,
+cheo-xuong-rach-an-binh,can_bo_sung,Admission 'Miễn phí' cho hoạt động chèo xuồng khả nghi — cần xác minh chi phí thuê xuồng và đầu mối tổ chức.
+pho-nuong-bien-dong---pham-thai-buong,can_bo_sung,"Thiếu số nhà, giờ bán, giá."
+xom-nuong-que-nha,can_bo_sung,
+martini-cocktail-tea,can_bo_sung,
+khach-san-huynh-thao,can_bo_sung,"Chỉ có địa chỉ + SĐT; thiếu giá, tiện nghi, giờ nhận phòng. Địa chỉ nguồn còn ghi 'TP Bến Tre' theo hành chính cũ."
+hoa-su-coffee,can_bo_sung,"Thiếu giờ mở cửa, giá; không dùng rating/review_count theo quy tắc."
+pho-lu-hai,can_bo_sung,"Chỉ có địa chỉ + specialty; thiếu giờ bán, giá tô."
+ola-tea-house,can_bo_sung,"Thiếu giờ, giá; type đang là 'restaurant' nhưng specialty là trà/đồ uống."
+khach-san-thanh-binh-ii,can_bo_sung,Chỉ có địa chỉ + SĐT.
+ks-nha-co-cau-ke,can_bo_sung,Không có dữ kiện nào về ngôi nhà cổ ngoài tên gọi — không suy diễn thêm lịch sử.
+ohana-milktea-coffee,can_bo_sung,
+pho-xanh-garden-coffee,can_bo_sung,"Chưa có dữ kiện xác nhận không gian sân vườn — chỉ nhắc qua tên gọi, có chữ 'gợi'."
+banh-cuon-nong---tran-quoc-tuan,can_bo_sung,"Address nguồn ghi 'Trần Quốc Tuẩn' — nghi lỗi chính tả (tên entity ghi 'Trần Quốc Tuấn'). Mô tả cũ có 'Đánh giá: 8.8/5' là dữ liệu lỗi, đã bỏ."
+khuc-ban-chieu,can_bo_sung,
+duc-thanh-2---quan-lau-de,can_bo_sung,
+happy-family-guesthouse,can_bo_sung,Thiếu số nhà/tên đường — address chỉ ghi 'Thành phố Vĩnh Long'.
+coco-riverside-lodge,can_bo_sung,Không suy diễn cảnh quan bờ sông từ chữ 'Riverside' trong tên.
+khach-san-paris-vinh-long,can_bo_sung,Trường stars ghi 'nhà nghỉ' — dùng làm góc mở bài trung thực.
+panda-purple-cafe,can_bo_sung,"Mô tả cũ có 'Đánh giá: 7.5/5' là dữ liệu lỗi, đã bỏ."
+full-house-coffee,can_bo_sung,
+mai-la---quan-nuong-ngoi,can_bo_sung,
+mi-cay-vinh-long,can_bo_sung,Không gán nguồn gốc 'mì cay Hàn Quốc' vì dữ liệu không có.
+coco-happy-farm,can_bo_sung,"Address chỉ ghi 'Bến Tre', không có số nhà/xã, không có số điện thoại. Đã bỏ cụm 'kênh rạch sông nước Vĩnh Long' lạc vùng trong summary cũ."
+lemais---coffee-tea,can_bo_sung,Chỉ có address + specialty; rating/review_count không dùng theo quy tắc.
+nam-son,can_bo_sung,Chỉ có address + specialty chung chung.
+song-nuoc-mien-tay-restaurant---am-thuc-mien-tay,ten_rieng,"'Miền Tây' nằm trong tên riêng của quán nên giữ nguyên trong summary, không lặp lại ở phần mô tả. Ngoài ten_rieng, dữ liệu cũng thiếu giờ/giá (đáng bổ sung)."
+khach-san-thanh-binh-i,can_bo_sung,Tên gọi 'Khách sạn' nhưng accommodation_type là nhà nghỉ — viết theo attributes.
+farmstay-dat-cu-lao,can_bo_sung,Thiếu giá và tiện nghi; câu cảnh báo mùa lấy từ responsible_tips.
+he-thong-102-coffee-shop,can_bo_sung,"Address chỉ ghi '2 chi nhánh', không có địa chỉ thật. Description cũ ghi 'Đánh giá: 8.9/5' là dữ liệu lỗi — đã bỏ."
+tra-sua-huy,can_bo_sung,
+dimsum-quan-nhat---am-thuc-trung-hoa,can_bo_sung,
+chau-dong-quan---am-thuc-viet,can_bo_sung,
+khach-san-trung-tinh,can_bo_sung,"Bỏ ocop_star=1 (khách sạn không thể có sao OCOP — nghi lỗi ETL); số điện thoại 0703770566 là đầu số cố định cũ, giữ nguyên theo dữ liệu nhưng đáng kiểm tra lại."
+green-coffee---tran-dai-nghia,can_bo_sung,Address không có số nhà.
+tra-sua-tapi---trung-nu-vuong,can_bo_sung,
+hu-tieu---sui-cao,can_bo_sung,
+yogurt-garden,can_bo_sung,Address không có số nhà.
+quan-vteen---pham-hung,can_bo_sung,
+coconut-homestay,can_bo_sung,"Attributes chỉ có địa chỉ + SĐT; cần bổ sung giá, số phòng, tiện nghi."
+ba-ba---banh-flan,can_bo_sung,"Đã bỏ 'Đánh giá 8.5/5' (vô lý, nguồn không kiểm chứng). Thiếu giờ mở cửa, giá."
+ut-an---vuon-am-thuc,can_bo_sung,"Thiếu giờ mở cửa, khoảng giá, món cụ thể."
+lucid-dream---tea-cake,can_bo_sung,"Thiếu giờ mở cửa, khoảng giá."
+khach-san-bich-ngoan,can_bo_sung,Chỉ có địa chỉ + SĐT.
+hoan-my-homestay,can_bo_sung,Chỉ có địa chỉ + SĐT; cần giá và số phòng.
+cafe-de-paris---pham-ngu-lao,can_bo_sung,"Thiếu giờ mở cửa, khoảng giá."
+p-long-duc,can_bo_sung,"Cần bổ sung diện tích, dân số, điểm đến trực thuộc."
+xa-tap-son,can_bo_sung,"Cần bổ sung diện tích, dân số, điểm đến trực thuộc."
+tau-hu-ngon-lanh,can_bo_sung,"Thiếu giờ mở cửa, khoảng giá."
+khach-san-anh-hong-mang-thit,can_bo_sung,ocop_star=1 gắn cho khách sạn có vẻ là lỗi dữ liệu (trùng star_rating). Chỉ có địa chỉ + SĐT.
+khach-san-tan-thanh-2,can_bo_sung,ocop_star=1 gắn cho khách sạn nghi lỗi dữ liệu (trùng star_rating). Chỉ có địa chỉ + SĐT.
+zen-coffee,can_bo_sung,"Thiếu số nhà, giờ mở cửa, khoảng giá."
+dang-ga---cac-mon-ga-ta,can_bo_sung,Đã bỏ 'Đánh giá 7.1/5' (vô lý). sub_category 'seafood' lệch với tên quán gà — nghi lỗi phân loại. Thiếu giờ/giá.
+thanh-tra-binh-minh,can_bo_sung,"season_note 'tháng 5–8' mâu thuẫn với 'rộ sau Tết' trong summary cũ — giữ theo summary cũ, cần kiểm chứng mùa vụ. sub_category 'tea' cũng nghi sai (thanh trà là trái cây)."
+khoi---lau-nuong,can_bo_sung,"Thiếu giờ mở cửa, khoảng giá."
+hot-pot-72---quan-lau,can_bo_sung,"Thiếu giờ mở cửa, khoảng giá."
+khach-san-dai-an,can_bo_sung,"Dữ liệu chỉ có địa chỉ + điện thoại; cần bổ sung giá phòng, giờ nhận/trả. Tránh nhắc cấp 'TP Bến Tre' (đơn vị cũ), giữ phường Bến Tre."
+anns-coffee,can_bo_sung,"Không dùng rating/review_count theo rule; cần bổ sung giờ mở cửa, giá."
+hu-tieu-chay,can_bo_sung,
+neyu-tea---thi-tran-giong-trom,can_bo_sung,
+khach-san-hai-duong-i,can_bo_sung,"Địa chỉ gốc ghi 'phường Duyên Hải, TP Trà Vinh' — nghi lệch (Duyên Hải không thuộc TP Trà Vinh cũ); đã tránh nhắc cấp TP, cần kiểm chứng lại địa chỉ."
+suonsia-homestay,can_bo_sung,"Chi tiết 'vùng Khmer' lấy từ summary cũ của entity, không bịa thêm chùa/lễ hội."
+deja-vu-cafe,can_bo_sung,
+monkey-tea---tra-sua-coffee,can_bo_sung,
+com-ga-bong-viet,can_bo_sung,Đã bỏ dòng 'Đánh giá: 10.0/5' (thang điểm sai; rating/review_count không dùng theo rule).
+khu-du-lich-sinh-thai-deja-vu-huynh-kha,can_bo_sung,Deja Vu Cafe cùng batch có địa chỉ trùng tên khu — nghi cùng khuôn viên nhưng không liên kết chéo vì tránh suy diễn ngoài dữ liệu entity.
+ut-ngan-quan---dui-cuu-nuong,can_bo_sung,
+cocohut-homestay,can_bo_sung,Chi tiết 'nhà vườn' lấy từ summary cũ; cần bổ sung giá và tiện nghi.
+yolo-coffee,can_bo_sung,
+banh-bao-tai-co,can_bo_sung,"Đã bỏ dòng 'Đánh giá: 7.4/5' (thang sai, rating không dùng theo rule)."
+ngua-hoang-food-beer,can_bo_sung,
+co-dai---sinh-to-giai-khat,can_bo_sung,
+khach-san-binh-dai,can_bo_sung,"Attribute ocop_star=2 nghi trùng star_rating (khách sạn không phải sản phẩm OCOP) — không dùng. Thiếu giá phòng, tiện nghi, giờ nhận/trả phòng."
+the-hotpot---lau-1-nguoi,can_bo_sung,"Thiếu giờ mở cửa, giá, số điện thoại. Không dùng rating/review_count theo quy tắc."
+nha-hang-lang-chai,can_bo_sung,"Mô tả cũ chứa 'ẩm thực miền tây' (từ cấm, viết thường) — thay bằng 'ẩm thực Vĩnh Long' theo đúng attribute specialty."
+khach-san-ngoc-quy,can_bo_sung,"Chỉ có địa chỉ + số điện thoại; thiếu giá, tiện nghi, giờ nhận/trả phòng."
+khach-san-tuong-vy,can_bo_sung,"Bỏ 'TP Trà Vinh' trong bản cũ vì phường Duyên Hải không thuộc TP Trà Vinh cũ; chỉ giữ phường + vùng. Thiếu giá, tiện nghi."
+deja-huynh-kha-coffee,can_bo_sung,"Thiếu số nhà, giờ, giá."
+tra-sua-baam-cha,can_bo_sung,"Thiếu giờ, giá, điện thoại."
+banh-xeo-long-binh-2,can_bo_sung,"Thiếu giờ bán, giá; entity type=dish nhưng dữ liệu là quán ăn cụ thể."
+bun-rieu-cua-thao-my,can_bo_sung,"Thiếu giờ bán, giá."
+de-nhat-lau-ca-keo---quan-an-gia-dinh,can_bo_sung,"Thiếu giờ, giá, điện thoại."
+khach-san-chieu-hung,can_bo_sung,"Attribute ocop_star=1 nghi trùng star_rating — không dùng. Thiếu giá, tiện nghi."
+robusta-cafe---tran-dai-nghia,can_bo_sung,"Thiếu giờ, giá, điện thoại."
+bin-coffee,can_bo_sung,Attribute address ghi 'Phường 1' nhưng summary cũ ghi 'phường Long Châu' — giữ tên phường mới theo summary cũ; cần rà đối chiếu bảng mã phường.
+sup-khuyet-tat,can_bo_sung,Không suy diễn nguồn gốc tên quán (liên quan người khuyết tật hay không) vì JSON không có dữ kiện.
+lau-bo,can_bo_sung,"Thiếu số nhà, giờ, giá."
+lau-bo-bay-map,can_bo_sung,"Thiếu giờ, giá, điện thoại."
+khach-san-diamond-stars,can_bo_sung,Chỉ có địa chỉ + điện thoại; không độn thêm. Tên ghi 'Khách sạn' nhưng loại hình là nhà nghỉ — đã nói rõ.
+cua-hang-ocop-tinh-ben-tre-trung-tam-xuc-tien-dau-tu-ho-tro-doanh-nghiep-ben-tre,ten_rieng,"'Tỉnh Bến Tre' nằm trong TÊN RIÊNG cửa hàng (đơn vị đặt tên trước 7-2025) — giữ nguyên, đề nghị chủ dự án soát lại tên hiển thị. sub_category='lake' có vẻ sai dữ liệu."
+caffe-takeaway---tan-ke,can_bo_sung,Đã bỏ rating/review_count theo quy tắc nguồn không kiểm chứng.
+lang-be---am-thuc-du-lich-sinh-thai,can_bo_sung,Không suy diễn về bè cá/vị trí ven sông vì dữ liệu không có; đã bỏ rating.
+quan-chi-yen---trai-cay-dia,can_bo_sung,Đã bỏ rating/review_count.
+khach-san-sanh-phuc,can_bo_sung,Chỉ có địa chỉ + điện thoại.
+khach-san-hoan-my-2,can_bo_sung,
+mandi-cafe,can_bo_sung,Mô tả cũ ghi 'Đánh giá: 7.3/5' (vượt thang 5) — đã bỏ toàn bộ rating theo quy tắc.
+3-mien-tra-vinh---bun-dau-mam-tom,can_bo_sung,Đã bỏ dòng 'Đánh giá: 7.8/5' trong mô tả cũ.
+bun-nuoc-leo-huong-tra---pham-ngu-lao,can_bo_sung,Đã bỏ rating/review_count.
+khach-san-khoi-hoa,can_bo_sung,"Bỏ 'TX Bình Minh' (cấp huyện đã bãi bỏ), giữ phường Bình Minh. Trường ocop_star=2 nghi sai dữ liệu (khách sạn không phải sản phẩm OCOP)."
+henry-coffee,can_bo_sung,"Dữ liệu lệch tên phường (Phường 1 cũ / Long Châu mới) — ưu tiên tên mới, đã chú thích."
+pho-91,can_bo_sung,"'Lâu đời' và 'điểm ăn sáng' lấy từ summary cũ của chính entity, không bịa thêm năm."
+tau-hu-nong,can_bo_sung,Đã bỏ rating/review_count.
+kimchi-kimchi---mi-cay-han-quoc,can_bo_sung,"Specialty 'Mì, Ốc' + sub_category seafood_river hơi vênh nhau — chỉ viết đúng hai nhóm món có trong dữ liệu."
+meo-u-kitchen---mon-nhat,can_bo_sung,Đã bỏ rating/review_count.
+homestay-ut-trinh-con-tam-hiep,can_bo_sung,"Số điện thoại trong dữ liệu có 11 chữ số (09190020505), nghi sai định dạng — cần kiểm chứng trước khi hiển thị công khai."
+ixigo-coffee,can_bo_sung,"Đã bỏ dòng 'Đánh giá: 7.1/5 (8 đánh giá)' trong description cũ — rating/review_count là nguồn không kiểm chứng, và 7.1/5 vượt thang điểm."
+ben-dua-quan---lau-ga-noi,can_bo_sung,
+nha-hang-noi-ben-tre,can_bo_sung,"Mô tả cũ ghi 'ẩm thực miền Tây' (từ cấm) — viết lại theo attributes.specialty 'Ẩm thực Vĩnh Long, nhà hàng nổi', đúng định vị §1.6."
+khach-san-gia-hoa-ii,can_bo_sung,"Ý 'tiện đi chợ và trung tâm' lấy lại từ summary cũ, không bịa thêm."
+nh-ks-sy-dien,can_bo_sung,
+coc-cafe---pham-ngu-lao,can_bo_sung,
+tra-sua-rom-149,can_bo_sung,
+hu-tieu-xi-quach-a-linh---le-loi,can_bo_sung,
+rang-bien-2---quan-nhau-binh-dan,can_bo_sung,
+homestay-lang-be,can_bo_sung,Không suy diễn 'làng bè cá' từ tên quán vì dữ liệu không có — chỉ dùng địa chỉ và số điện thoại.
+catimo-coffee,can_bo_sung,
+chao-ech-tran-nam,can_bo_sung,"Đã bỏ dòng 'Đánh giá: 8.3/5 (11 đánh giá)' — rating không dùng, và 8.3/5 vượt thang điểm."
+ma-van-tai-quan---pham-thai-buong,can_bo_sung,
+chuoi-nuong-gia-truyen,can_bo_sung,"Tên quán 'Chuối Nướng' nhưng specialty ghi 'Nướng/BBQ' chung — mô tả bám cả hai, không suy rộng menu."
+banh-flan-14,can_bo_sung,Đã gỡ dòng 'Đánh giá 7.0/5 (11 đánh giá)' khỏi description cũ vì rating/review_count là nguồn không kiểm chứng.
+ninh-kieu-5---quoc-lo-60,can_bo_sung,Đã gỡ dòng 'Đánh giá 7.3/5 (14 đánh giá)' khỏi description cũ.
+am-thuc-chay-ta-on---duong-so-2,can_bo_sung,
+nha-khach-vinh-tra,can_bo_sung,"Bỏ 'TP Trà Vinh' của address cũ (không còn cấp huyện/TP thuộc tỉnh), chỉ giữ 'phường Trà Vinh'."
+le-ngan-homestay,can_bo_sung,Address ghi 'xã Tập Ngãi' nhưng entity p-tap-ngai trong cùng nhóm nói đơn vị này đã thành phường — viết trung tính 'vùng quê Tập Ngãi' để hai bài không đá nhau; cần đối chiếu lại cấp hành chính.
+1985-cafe,can_bo_sung,
+pizza-house---vanh-dai,can_bo_sung,
+khach-san-nghia-hiep,can_bo_sung,Attribute 'ocop_star: 1' nghi gắn nhầm — khách sạn không phải sản phẩm OCOP; không dùng trong bài.
+khoi-nguyen-coffee---hung-dao-vuong,can_bo_sung,
+xoi-man-69---hung-dao-vuong,can_bo_sung,Đã gỡ dòng 'Đánh giá 7.7/5 (7 đánh giá)' khỏi description cũ. Attribute sub_category 'seafood' nghi gắn nhầm cho quán xôi.
+son-hao---hai-san,can_bo_sung,
+lau-tai-co,can_bo_sung,
+com-tam-cay-sung,can_bo_sung,
+xa-thanh-hai,can_bo_sung,
+lau-3-con-tep,can_bo_sung,
+khach-san-an-khang,can_bo_sung,
+cat-tuong---the-coffee-house,can_bo_sung,specialty nguồn ghi 'Cá' — nghi lỗi crawl với một quán cà phê nên không đưa vào bài; rating/review bỏ theo quy tắc.
+gazebo-cafe,can_bo_sung,
+cua-song-cung-hau-ca-heo-cau-ngang-tra-vinh,can_bo_sung,"Summary/description cũ là mảnh crawl lạc đề (ranh mặn Bạc Liêu, đề ngày 7-5-2023) — thay toàn bộ; chỉ giữ dữ kiện từ name/address/admission."
+xa-tan-an,can_bo_sung,
+king-beer-garden,can_bo_sung,
+khach-san-hoang-khiem,can_bo_sung,
+coi-xua-cafe---pham-thai-buong,can_bo_sung,
+yogurt-dua---ba-muoi-thang-tu,can_bo_sung,sub_category 'seafood' lệch loại với quán yogurt/tráng miệng — nghi nhiễu dữ liệu; rating/review bỏ theo quy tắc.
+xa-quoi-thien,can_bo_sung,
+lu-lu---cake-drink,can_bo_sung,
+kafe-home,can_bo_sung,
+cau-lac-bo-don-ca-tai-tu-truong-xay-dung-mien-tay,ten_rieng,'miền Tây' nằm trong tên riêng của trường (Trường Xây dựng miền Tây) — giữ nguyên.
+cau-lac-bo-don-ca-tai-tu-truong-xay-dung-mien-tay,ten_rieng,'miền Tây' thuộc tên riêng của trường — giữ nguyên.
+cau-lac-bo-don-ca-tai-tu-truong-xay-dung-mien-tay,ten_rieng,'miền Tây' thuộc tên riêng của trường — giữ nguyên.
+tran-quang-quon,ten_rieng,'Nhóm miền Tây' là danh xưng lịch sử của trường phái đờn ca tài tử (đối trọng 'nhóm miền Đông' của Nguyễn Quang Đại) — đổi chữ là sai sử liệu. Giữ nguyên.
+tran-quang-quon,ten_rieng,"Danh xưng trường phái lịch sử, không phải filler định vị. Giữ nguyên."
+tran-quang-quon,ten_rieng,Chính văn bản đã tự chứng minh: 'đối trọng với nhóm miền Đông của Nguyễn Quang Đại' — cặp danh xưng lịch sử miền Tây/miền Đông của ĐCTT. Giữ nguyên.
+lang-mo-va-dinh-phan-thanh-gian,ten_rieng,"'3 tỉnh miền Tây Nam Kỳ' là danh xưng lịch sử chuẩn của sự kiện 1867 — GIỮ 'miền Tây', chỉ bổ sung 'Nam Kỳ' để văn cảnh lịch sử tường minh, đúng quy ước chỉ nhắc địa danh cũ trong ngữ cảnh lịch sử."
+vinh-long-1-day-backpacker,ten_rieng,"2 chỗ 'bến Miền Tây' là TÊN RIÊNG bến xe TP.HCM — giữ nguyên. Chỉ sửa 2 chỗ generic: bỏ superlative không nguồn 'nổi tiếng nhất miền Tây' (giữ dữ kiện lò gốm cổ hàng trăm năm), và 'nắng miền Tây' → 'nắng ở đây'."

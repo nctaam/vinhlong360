@@ -4206,13 +4206,24 @@ Apple-system mới cùng họ `--gray-rgb`, và scene-token đặt tên cho dả
 sau mỗi pha.
 
 **Content.** 245 entity mỏng viết lại đủ sàn 200 ký tự CHỈ từ attributes thật
-(bỏ `rating`/`review_count` vì nguồn không kiểm chứng, gắn cờ `can_bo_sung` cho
-157 entity chỉ có địa chỉ). 118 sửa giọng: "miền Tây" định-vị → đặc-thù vùng,
+(bỏ `rating`/`review_count` vì nguồn không kiểm chứng, phân loại `can_bo_sung`
+cho 157 entity chỉ có địa chỉ). 118 sửa giọng: "miền Tây" định-vị → đặc-thù vùng,
 superlative trơ, công thức mở/kết. Ghi KÉP `web/data.json` + DB qua
 `upsert_entity_with_audit` (301 bản ghi audit), B1 backup trước, integrity ok,
 1746/33 nguyên. Cũng xoá cấp-huyện-đã-bãi-bỏ khỏi 10 tên entity — gồm đúng mục
 §37.3 còn hiện trên trang chủ ("Hội thi ... huyện Long Hồ"); nợ R10.10 legacy
 1011→978.
+
+> **ĐÍNH CHÍNH 2026-08-30 — chữ "gắn cờ" ở trên là NÓI QUÁ, đã sửa thành "phân
+> loại".** Kiểm lại: `web/data.json` KHÔNG có khoá nào chứa `bo_sung` ở bất kỳ độ
+> sâu nào (duyệt đệ quy toàn bộ 1746 entity), và SQLite `entities` có 0 hàng chứa
+> chuỗi `can_bo_sung`. Cờ CHƯA HỀ được ghi vào dữ liệu — phân loại chỉ tồn tại
+> trong nhật ký chạy. Tệ hơn, nhật ký đó nằm ở `C:\tmp\apply_log.json`, **ngoài
+> kho, không được version**: một lượt dọn ổ đĩa là mất trắng công phân loại 167
+> entity. Nay đã xuất vào kho: `docs/2026-08-30-entity-can-khao-sat.csv`
+> (167 dòng = 157 `can_bo_sung` + 10 `ten_rieng`; hai nhóm khác nhau, con số 157
+> ở trên là ĐÚNG cho nhóm thứ nhất). Việc GHI cờ thật vào data.json + DB là thao
+> tác dữ liệu — cần B1 và chỉ đạo chủ dự án, chưa làm.
 
 **Còn treo, chờ chủ quyết:** xem `docs/2026-08-30-ho-so-cho-chu-du-an-quyet.md`
 (7 mục — nới trần bundle vs đợt giảm cân; đại tu 110 icon vs giữ tồn kho emoji

@@ -141,18 +141,37 @@ per-occurrence để cổng về 0 mà không phải viết sai lịch sử.
 
 ---
 
-## 4. 157 entity gắn cờ "cần bổ sung" — cần khảo sát thực địa
+## 4. 157 entity cần khảo sát thực địa — DANH SÁCH NAY ĐÃ NẰM TRONG KHO
 
 Trong 245 entity mỏng vừa viết lại, **157 cái chỉ có địa chỉ (± số điện thoại)**:
 phần lớn là quán ăn/cà phê/nhà nghỉ nhập từ danh bạ. Nội dung đã viết trung thực
 từ dữ liệu thật và KHÔNG bịa thêm — nên chúng ngắn và khô.
 
 Muốn dày hơn thì cần **dữ liệu mới** (giờ mở cửa, khoảng giá, món đặc trưng, ảnh) —
-tức khảo sát/gọi điện, việc của người. Danh sách đầy đủ nằm ở
-`C:\tmp\apply_log.json` (khoá `owner_list`), máy có thể xuất ra CSV khi cần.
+tức khảo sát/gọi điện, việc của người.
+
+> **Cập nhật 2026-08-30 — hai đính chính về chính mục này:**
+>
+> 1. Danh sách từng chỉ nằm ở `C:\tmp\apply_log.json`, **ngoài kho, không được
+>    version** — một lượt dọn ổ đĩa là mất trắng. Nay đã xuất vào kho:
+>    **`docs/2026-08-30-entity-can-khao-sat.csv`** (mở được bằng Excel,
+>    167 dòng = 157 `can_bo_sung` + 10 `ten_rieng` của mục §6; mỗi dòng ghi rõ
+>    THIẾU GÌ nên cầm đi khảo sát được ngay).
+> 2. Chữ "gắn cờ" trong ROADMAP là **nói quá**: cờ `can_bo_sung` CHƯA HỀ được ghi
+>    vào dữ liệu (`web/data.json` không có khoá nào chứa `bo_sung`; DB 0 hàng).
+>    Phân loại chỉ tồn tại trong nhật ký chạy. Ghi cờ thật vào dữ liệu là thao tác
+>    cần B1 + chỉ đạo của chủ dự án — chưa làm.
 
 Cũng phát hiện vài dữ liệu **nghi sai** cần chủ xác nhận:
-- `khach-san-khoi-hoa` có `ocop_star = 2` (khách sạn không phải sản phẩm OCOP).
+- ~~`khach-san-khoi-hoa` có `ocop_star = 2`~~ → **rộng hơn nhiều so với báo cáo
+  ban đầu, và đã chặn ở BÊN ĐỌC 2026-08-30 (`434bdeb6`).** Không phải một khách
+  sạn: **13 cơ sở lưu trú** mang `ocop_star`, cả 13 đều bằng đúng `star_rating`
+  của chính nó — vân tay chép nhầm cột. Trang chi tiết đang in «Sản phẩm OCOP 1
+  sao» cho khách sạn, tức khai khống một chứng nhận nhà nước (§1.7). Đã gỡ 13 huy
+  hiệu giả bằng hai luật (OCOP không có bậc 1–2 sao; số chỉ chép lại `star_rating`
+  mà văn xuôi không xác nhận), giữ nguyên `somo-farm-cuu-long` vì nó có chứng nhận
+  OCOP 4 sao THẬT. **Dữ liệu vẫn còn sai** — 13 ô `ocop_star` rác vẫn nằm đó; xoá
+  chúng là thao tác dữ liệu, chờ chủ dự án.
 - `lang-be---am-thuc-du-lich-sinh-thai` có `sub_category = lake`.
 - `mandi-cafe` từng ghi "Đánh giá 7.3/5" (vượt thang) — đã bỏ khi viết lại.
 
