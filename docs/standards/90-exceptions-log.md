@@ -98,3 +98,5 @@ ghi ở backlog tối ưu — giảm dần, KHÔNG được tăng tiếp từ 47
 - 2026-08-30T12:00:15 SKIP R30.7 — Commit test-only + thresholds
 
 - 2026-08-30T12:13:30 SKIP R30.7 — Commit docs-only
+
+- 2026-08-30T12:32:42 SKIP R30.7 — Ket dot: bundle 803 la muc 1 trong ho so chu-quyet
