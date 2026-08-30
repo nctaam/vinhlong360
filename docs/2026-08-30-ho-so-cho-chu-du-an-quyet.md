@@ -47,6 +47,36 @@ mức module để kiểm được). Chỉ còn đúng lựa chọn trên.
 
 ---
 
+## 0b. ⚠ MÌN CHỜ PUSH — cổng coverage R20.4 sẽ làm đỏ CI ngay lần push đầu
+
+**Đã đo, không phải suy đoán.** Nhánh này chưa từng push nên CI chưa thấy; nhưng
+cấu hình hiện tại không thể xanh:
+
+- Ngưỡng `docs/standards/coverage-thresholds.json` đặt `identity/api.py: 85` và
+  `community/api.py: 90`, ghi rõ là "đo thật 91/97" — con số **chỉ đạt được khi
+  CÓ PostgreSQL**.
+- Nhưng cổng `run_hard.py --all` (bước *Enforce standards and coverage ratchet*)
+  nằm ở job `test`, và job đó **chạy SQLite, không có service postgres**.
+- Đo tại chỗ hai môi trường: **không PG → identity 46,2% · community 29,2%**;
+  **có PG → identity 88,3% · community 95,8%**. Job `test-pg` có đủ biến PG và
+  chạy đúng các suite đó, nhưng **không chạy bước ratchet** nào.
+
+Nói gọn: cổng đang được thực thi ở nơi phép đo không đầy đủ.
+
+**Ba lối, đều là sửa hạ tầng CI nên cần chủ chốt (máy KHÔNG vá mù — bài học §5b:
+vá CI bằng suy luận sai 2/2 lần, đo trước trúng 4/4):**
+- (a) Thêm `--cov ... --cov-report=json` vào job `test-pg` rồi chuyển bước cổng
+  coverage sang đó — đúng tiền lệ `check_bundle.main()` (chạy R30.7 ở job có
+  `.output`). Cần thêm một `main()` cho `check_coverage.py`.
+- (b) Cấp service postgres + 4 biến `*_TEST_DATABASE_URL` cho job `test` — đổi lại
+  job "nhanh, ổn định" theo thiết kế hiện tại sẽ chậm đi.
+- (c) Hạ hai ngưỡng về mức SQLite đạt được — **trái luật ratchet "chỉ NÂNG"**, và
+  vứt bỏ độ phủ thật đã có.
+
+Đề nghị của máy: (a). Nhưng đây là đổi kết cấu CI, xin chủ chốt trước.
+
+---
+
 ## 1. Gói JS 803/800 kB — nới trần, đợt giảm cân, hay ĐỔI ĐỊNH NGHĨA thước đo?
 
 **Sự thật đo được.** Trần 800 đặt 2026-07-10 khi bundle đang 790 (biên 10 kB).

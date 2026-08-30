@@ -4197,3 +4197,21 @@ superlative trơ, công thức mở/kết. Ghi KÉP `web/data.json` + DB qua
 (7 mục — nới trần bundle vs đợt giảm cân; đại tu 110 icon vs giữ tồn kho emoji
 R30.2; whitelist R50.2 cho 8 tên riêng/thuật ngữ lịch sử; 157 entity cần khảo
 sát thực địa; Track-H pháp lý; nguồn dữ liệu xã; dung lượng máy).
+
+#### Bổ sung 2026-08-30 — R20.4 khép ở local, nhưng là MÌN CHỜ PUSH trên CI
+
+`coverage.json` sinh xong ⇒ R20.4 về **0** ở local, backend đạt **100/100 nợ 0**.
+Số thật (có đủ 4 biến PG + schema): agent **80,8%** (sàn 55) · identity/api
+**88,3%** (sàn 85) · community/api **95,8%** (sàn 90) · database **92,9%** (sàn 80).
+
+NHƯNG cổng ratchet chạy ở job `test` (SQLite, không service postgres), nơi hai
+module đó chỉ đo được **46,2% / 29,2%** — dưới sàn. Job `test-pg` có đủ biến và
+chạy đúng các suite, nhưng không có bước ratchet. Chi tiết + 3 lối xử lý ở
+`docs/2026-08-30-ho-so-cho-chu-du-an-quyet.md` §0b (đề nghị: chuyển cổng coverage
+sang job `test-pg` theo tiền lệ `check_bundle.main()`).
+
+Kèm một quả **bom-giờ đã nổ và đã gỡ**: `test_export_includes_safe_preferences_
+consents_new_and_filtered_legacy_events` ghim cứng `legacy_cutover_deadline =
+2026-08-30`, mà test đi qua HTTP nên dùng đồng hồ THẬT → tự đỏ đúng hôm nay. Nay
+neo theo `now + 1 ngày` (commit `64766e34`). Ba test cùng file không dính vì
+chúng truyền `now=` tường minh hoặc tự ghim `datetime.now`.
