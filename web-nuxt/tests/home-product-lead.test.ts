@@ -13,6 +13,7 @@ import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { afterEach, describe, expect, it } from 'vitest'
 
 import HomeProductLead from '../components/home/HomeProductLead.vue'
+import type { ImageDescriptor } from '../types/image'
 import { FEATURE_FLAGS, isEstablishedFeatureFlag, resolveFeatureFlag } from '../utils/featureFlags'
 
 const wrappers: Array<{ unmount: () => void }> = []
@@ -20,6 +21,10 @@ afterEach(() => {
   while (wrappers.length) wrappers.pop()!.unmount()
 })
 
+// `satisfies ImageDescriptor` chứ không phải `: ImageDescriptor`: vẫn giữ nguyên
+// kiểu hẹp của từng khoá cho test đọc, nhưng bắt TS kiểm literal ngay tại đây.
+// Thiếu nó, `source_class` bị suy ra là `string` và `nuxt typecheck` đỏ ở chính
+// dòng truyền vào props — lỗi có sẵn từ trước, lộ ra khi chạy cổng typecheck.
 const descriptor = {
   url: '/img/entities/ca-phi-sa-ot-thanh-phuoc.webp',
   alt: 'Cá phi sả ớt Thạnh Phước — ảnh minh họa',
@@ -31,7 +36,7 @@ const descriptor = {
   credit: null,
   width: null,
   height: null,
-}
+} satisfies ImageDescriptor
 
 async function mount(props: Record<string, unknown> = {}) {
   const wrapper = await mountSuspended(HomeProductLead, {
