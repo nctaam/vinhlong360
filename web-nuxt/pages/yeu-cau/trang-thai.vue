@@ -8,7 +8,7 @@ import { onMounted, ref } from 'vue'
 
 import CaseReceiptCard from '../../components/cases/CaseReceiptCard.vue'
 import CaseStatusTimeline from '../../components/cases/CaseStatusTimeline.vue'
-import { CaseAccessError, useCorrectionCases } from '../../composables/useCorrectionCases'
+import { CaseAccessError, CaseReviewConflictError, useCorrectionCases } from '../../composables/useCorrectionCases'
 import type { CaseReceipt } from '../../types/cases'
 
 const cases = useCorrectionCases()
@@ -39,7 +39,10 @@ async function requestReview() {
     reviewRequested.value = true
     await refresh()
   } catch (error) {
-    failure.value = error instanceof CaseAccessError
+    // CaseReviewConflictError mang lý do THẬT (hồ sơ chưa khép / vừa đổi) và
+    // người bấm nút này đã mở được hồ sơ nên mã của họ không hỏng — đừng gộp nó
+    // vào câu "kiểm tra lại mã tra cứu".
+    failure.value = error instanceof CaseAccessError || error instanceof CaseReviewConflictError
       ? error.message
       : 'Chưa gửi được yêu cầu xem xét lại. Vui lòng thử lại.'
   }

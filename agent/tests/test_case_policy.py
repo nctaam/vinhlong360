@@ -111,6 +111,12 @@ def test_case_dataclasses_expose_locked_projection_contract():
     assert {field.name for field in fields(PublicCaseStatus)} == {
         'public_reference', 'received_at', 'current_step', 'waiting_for', 'next_action',
         'next_update_at', 'promise_health', 'item_decisions', 'item_publication_states', 'review_path',
+        # Thêm 2026-08-30 — xem giải trình đầy đủ ở
+        # test_case_public_projection.py::test_projection_returns_only_the_locked_public_fields.
+        # Tóm tắt: hợp đồng vốn đã ĐÒI người báo gửi lại con số này ở
+        # `expectedRevision`, nhưng chưa từng phát nó ra, nên nút xin-xét-lại 422
+        # mọi lượt. Không phải từ vựng hậu trường.
+        'current_revision',
     }
     assert 'current_revision' in {field.name for field in fields(CaseSnapshot)}
     assert getattr(CaseProblem.__dataclass_params__, 'frozen')

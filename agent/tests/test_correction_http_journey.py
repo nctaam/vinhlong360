@@ -159,12 +159,69 @@ def test_the_capability_opens_the_status_page_it_was_issued_for(client):
     assert body["publicReference"] == receipt["publicReference"]
     # The shape web-nuxt/types/cases.ts is written against, field for field.
     for key in ("receivedAt", "currentStep", "nextAction", "nextUpdateAt",
-                "promiseHealth", "itemDecisions", "itemPublicationStates", "reviewPath"):
+                "promiseHealth", "itemDecisions", "itemPublicationStates", "reviewPath",
+                "currentRevision"):
         assert key in body, key
+    # Con số mà POST /review đòi lại ở `expectedRevision`. Đi qua HTTP thật nên
+    # đây là chỗ duy nhất chứng minh nó thoát khỏi tầng service tới được client.
+    assert isinstance(body["currentRevision"], int) and body["currentRevision"] >= 1
     # A case filed seconds ago is not late. The receipt clock is due five
     # seconds in and satisfied by construction; counting it said otherwise.
     assert body["promiseHealth"] == "on_track"
     assert body["itemDecisions"][0]["dispositionFamily"] == "undetermined"
+
+
+@pg_only
+def test_xin_xet_lai_dung_so_lay_tu_trang_thai_khong_con_bi_422(client):
+    """Nút "xin xét lại" dựng từ ĐÚNG payload trạng thái thì không còn 422.
+
+    Cùng một lớp lỗi với bug mở đầu file này, chỉ khác chỗ vỡ: `_ReviewIn` đòi
+    `expectedRevision` (bắt buộc, forbid extra) trong khi `GET /status` chưa từng
+    phát ra con số đó, nên client không thể điền và MỌI lượt bấm là 422 — rồi
+    `neutralise` phía FE dịch 422 thành "mã tra cứu sai", chỉ người báo đi sửa
+    cái mã vốn không hỏng.
+
+    Hồ sơ vừa nộp thì CHƯA khép, nên câu trả lời đúng ở đây là 409
+    `review_requires_a_closed_case` — và đó chính là bằng chứng: 409 nghĩa là
+    thân yêu cầu đã được CHẤP NHẬN và đi tới tầng nghiệp vụ. Chỉ 422 mới là
+    "gửi sai hình". Test này canh đúng ranh giới đó, không giả vờ đóng hồ sơ.
+    """
+    created = client.post("/api/cases/corrections", json=_body(), headers=_headers())
+    receipt = created.json()
+    client.post(
+        "/api/cases/access",
+        json={"publicReference": receipt["publicReference"],
+              "capability": receipt["capability"]},
+        headers={"Origin": ORIGIN, "Sec-Fetch-Site": "same-origin"},
+    )
+    status = client.get("/api/cases/status").json()
+
+    # Dựng thân yêu cầu ĐÚNG CÁCH composable dựng: lấy số từ payload trạng thái.
+    response = client.post(
+        "/api/cases/review",
+        json={"reason": "reporter_requested", "expectedRevision": status["currentRevision"]},
+        headers={**_headers(), "X-Case-CSRF": client.cookies.get("vl360_case_csrf") or ""},
+    )
+
+    assert response.status_code != 422, (
+        "gửi kèm currentRevision lấy từ /status mà vẫn 422 — hình thân yêu cầu "
+        f"lại lệch hợp đồng: {response.text}"
+    )
+    assert response.status_code == 409, response.text
+    assert response.json()["code"] == "review_requires_a_closed_case"
+
+    # Đối chứng: BỎ trường đi thì phải quay lại đúng lỗi cũ. Không có nửa này thì
+    # test trên vẫn xanh cả khi ai đó cho `expectedRevision` một giá trị mặc định
+    # — tức gỡ mất chốt tương-tranh-lạc-quan mà không ai hay.
+    thieu_truong = client.post(
+        "/api/cases/review",
+        json={"reason": "reporter_requested"},
+        headers={**_headers(), "X-Case-CSRF": client.cookies.get("vl360_case_csrf") or ""},
+    )
+    assert thieu_truong.status_code == 422, (
+        "expectedRevision phải còn BẮT BUỘC — nó là chốt để người báo phản đối "
+        "đúng bản họ đang đọc, không phải bản vừa đổi sau lưng"
+    )
 
 
 @pg_only

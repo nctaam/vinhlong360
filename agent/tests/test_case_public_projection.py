@@ -90,7 +90,17 @@ def test_projection_returns_only_the_locked_public_fields():
         "public_reference", "received_at", "current_step", "waiting_for", "next_action",
         "next_update_at", "promise_health", "item_decisions", "item_publication_states",
         "review_path",
+        # Thêm 2026-08-30. KHÔNG phải nới khoá: khoá này cấm từ vựng HẬU TRƯỜNG
+        # rò ra (case id, owner, severity, risk class, evidence, phase/activity
+        # thô, capability digest, audit) — mỗi cái đều có rào riêng ngay dưới.
+        # `current_revision` là số phiên bản hồ sơ CỦA CHÍNH NGƯỜI BÁO, và hợp
+        # đồng vốn ĐÃ đòi họ gửi lại đúng nó ở `expectedRevision` khi xin xét
+        # lại — chỉ là chưa từng phát ra, nên nút đó 422 mọi lượt.
+        "current_revision",
     }
+    # Rào chống nới nhầm: con số phải là số phiên bản THẬT của hồ sơ, không phải
+    # hằng trang trí ai đó nhét vào cho test xanh.
+    assert status.current_revision == _case().current_revision
 
 
 @pytest.mark.parametrize(

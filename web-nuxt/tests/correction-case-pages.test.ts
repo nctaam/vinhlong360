@@ -41,6 +41,8 @@ function statusWith(overrides: Partial<CaseStatus> = {}): CaseStatus {
       { itemId: 'i-1', state: 'not_required' },
     ],
     reviewPath: '/api/cases/review',
+    // Con số POST /api/cases/review đòi lại ở `expectedRevision`.
+    currentRevision: 3,
     ...overrides,
   }
 }

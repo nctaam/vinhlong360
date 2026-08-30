@@ -33,6 +33,27 @@ export class CaseAccessError extends Error {
   }
 }
 
+/**
+ * Xin xét lại bị từ chối vì TRẠNG THÁI hồ sơ, không vì mã tra cứu.
+ *
+ * Người bấm nút này đã mở được hồ sơ của họ — tức mã đã đúng. Nói với họ "kiểm
+ * tra lại mã tra cứu" là chỉ sai hướng và họ sẽ loay hoay với cái mã vốn không
+ * hỏng. Hai lý do máy chủ trả 409 đều KHÔNG bí mật với chính chủ hồ sơ: hồ sơ
+ * chưa khép, hoặc hồ sơ vừa đổi từ lúc họ mở trang. Lập luận "đừng lộ nửa nào
+ * đúng" ở CASE_ACCESS_RECOVERY_MESSAGE không áp vào đây.
+ */
+export const CASE_REVIEW_NOT_CLOSED_MESSAGE =
+  'Chỉ xin xem xét lại được sau khi yêu cầu đã khép. Hiện nó vẫn đang được xử lý.'
+export const CASE_REVIEW_STALE_MESSAGE =
+  'Yêu cầu vừa có cập nhật mới. Trang đã tải lại — xem qua rồi gửi lại giúp chúng tôi.'
+
+export class CaseReviewConflictError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'CaseReviewConflictError'
+  }
+}
+
 /** Read the non-secret double-submit token, at the moment it is needed. */
 export function readCaseCsrfToken(cookieSource?: string): string {
   const jar = typeof cookieSource === 'string'
@@ -195,7 +216,33 @@ export function useCorrectionCases(fetcher = apiFetch): CorrectionCasesApi {
   }
 
   async function requestReview(reason: string): Promise<void> {
-    await post<unknown>('/api/cases/review', { reason })
+    // `expectedRevision` là chốt tương-tranh-lạc-quan của máy chủ: người báo phản
+    // đối ĐÚNG bản họ đang đọc, chứ không phải bản vừa đổi sau lưng. Chỗ này từng
+    // chỉ gửi { reason }, mà _ReviewIn forbid extra và trường đó không có mặc
+    // định → 422 MỌI LƯỢT; rồi `neutralise` dịch 422 thành "mã tra cứu sai" nên
+    // người báo đi sửa cái mã vốn không hỏng. Con số nay do GET /status phát ra.
+    const known = status.value ?? await loadStatus()
+    try {
+      await fetcher<unknown>('/api/cases/review', {
+        method: 'POST',
+        body: { reason, expectedRevision: known.currentRevision },
+        headers: mutationHeaders(),
+        credentials: 'include',
+      })
+    } catch (error) {
+      const code = Number((error as { statusCode?: number, status?: number })?.statusCode
+        ?? (error as { status?: number })?.status ?? 0)
+      if (code !== 409) return neutralise(error)
+      // Chỉ 409 mới được nói thật lý do — xem chú thích ở CaseReviewConflictError.
+      const problem = String((error as { data?: { code?: string } })?.data?.code ?? '')
+      if (problem === 'case_revision_conflict') {
+        // Tải lại để lần bấm sau mang đúng số; nếu tải lại cũng hỏng thì lỗi đó
+        // mới là cái đáng báo, nên KHÔNG nuốt.
+        await loadStatus()
+        throw new CaseReviewConflictError(CASE_REVIEW_STALE_MESSAGE)
+      }
+      throw new CaseReviewConflictError(CASE_REVIEW_NOT_CLOSED_MESSAGE)
+    }
   }
 
   // Leaving the page takes the key with it.

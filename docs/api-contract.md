@@ -1012,9 +1012,12 @@ It answers `204` and sets `vl360_case_access` (HttpOnly, `SameSite=Lax`, path
 
 `GET /api/cases/status` requires the access cookie and returns only
 `publicReference`, `receivedAt`, `currentStep`, `waitingFor`, `nextAction`,
-`nextUpdateAt`, `promiseHealth`, `itemDecisions`, `itemPublicationStates` and
-`reviewPath`. Backstage vocabulary — case id, owner, severity, risk class,
-evidence, raw phase or activity, capability digest and audit — never appears.
+`nextUpdateAt`, `promiseHealth`, `itemDecisions`, `itemPublicationStates`,
+`reviewPath` and `currentRevision`. Backstage vocabulary — case id, owner,
+severity, risk class, evidence, raw phase or activity, capability digest and
+audit — never appears. `currentRevision` is the number `POST /api/cases/review`
+demands back as `expectedRevision`; until 2026-08-30 this contract required that
+field while publishing it nowhere, so every review request answered `422`.
 
 `POST /api/cases/receipts/rotate`, `DELETE /api/cases/access`,
 `POST /api/cases/review`, `POST /api/cases/contact/request` and

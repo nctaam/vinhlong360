@@ -1227,4 +1227,8 @@ def project_public_status(
             for item in items
         ),
         review_path=review_relation,
+        # Con số người báo phải gửi lại ở `expectedRevision` khi xin xét lại.
+        # Không phát ra đây thì chốt tương-tranh-lạc-quan của open_review thành
+        # cái bẫy: client không thể đoán, nên mọi lượt bấm đều 422.
+        current_revision=case.current_revision,
     )

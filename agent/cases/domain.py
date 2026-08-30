@@ -53,7 +53,11 @@ class CaseSnapshot:
     case_id: str; service_kind: ServiceKind; category: str; phase: CasePhase; activity: CaseActivity; disposition_family: DispositionFamily; domain_outcome: str | None; severity: str | None; reporter_privacy: str; owner_ref: str; current_revision: int; promise_policy_ref: str; created_at: datetime; updated_at: datetime; closed_at: datetime | None; promise_health: PromiseHealth = PromiseHealth.ON_TRACK; waiting: WaitingContext | None = None; promise_clocks: tuple['PromiseClock', ...] = ()
 @dataclass(frozen=True)
 class PublicCaseStatus:
-    public_reference: str; received_at: datetime; current_step: str; waiting_for: str | None; next_action: str; next_update_at: datetime; promise_health: PromiseHealth; item_decisions: tuple[PublicItemDecision, ...]; item_publication_states: tuple[PublicItemPublication, ...]; review_path: str
+    # `current_revision` là con số người báo phải gửi lại khi xin xét lại
+    # (`expectedRevision`). Nó vắng mặt ở đây suốt từ đầu, nên client không có
+    # cách nào biết giá trị — và nút "xin xét lại" 422 mọi lượt. Đây là số phiên
+    # bản hồ sơ CỦA CHÍNH NGƯỜI ĐÓ, không phải từ vựng hậu trường.
+    public_reference: str; received_at: datetime; current_step: str; waiting_for: str | None; next_action: str; next_update_at: datetime; promise_health: PromiseHealth; item_decisions: tuple[PublicItemDecision, ...]; item_publication_states: tuple[PublicItemPublication, ...]; review_path: str; current_revision: int
 @dataclass(frozen=True)
 class CaseProblem:
     code: str; detail: str; status: int = 400

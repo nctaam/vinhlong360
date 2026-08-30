@@ -75,6 +75,7 @@ class _ServiceDouble:
                 PublicItemPublication(item_id="item-1", state=PublicationState.NOT_REQUIRED),
             ),
             review_path="none",
+            current_revision=7,
         )
 
     def rotate_receipt(self, **kwargs):
@@ -277,8 +278,10 @@ def test_status_publishes_only_safe_fields(client):
     assert set(payload) == {
         "publicReference", "receivedAt", "currentStep", "waitingFor", "nextAction",
         "nextUpdateAt", "promiseHealth", "itemDecisions", "itemPublicationStates",
-        "reviewPath",
+        "reviewPath", "currentRevision",
     }
+    # Con số này KHÔNG phải trang trí: POST /review đòi đúng nó ở `expectedRevision`.
+    assert payload["currentRevision"] == 7
     rendered = response.text
     for forbidden in ("caseId", "ownerRef", "severity", "riskClass", "evidence",
                       "capabilityDigest", "auditEvent", "triage", "investigation"):

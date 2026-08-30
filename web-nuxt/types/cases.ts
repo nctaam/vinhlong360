@@ -54,6 +54,13 @@ export interface CaseStatus {
   itemDecisions: CaseItemDecision[]
   itemPublicationStates: CaseItemPublication[]
   reviewPath: string
+  /**
+   * Số phiên bản hồ sơ mà `POST /api/cases/review` đòi lại ở `expectedRevision`.
+   *
+   * Thiếu trường này thì client không có cách nào biết con số, và nút "xin xét
+   * lại" 422 mọi lượt — đúng chuyện đã xảy ra tới 2026-08-30.
+   */
+  currentRevision: number
 }
 
 /**

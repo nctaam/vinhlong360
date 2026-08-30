@@ -266,6 +266,11 @@ def status_payload(status: PublicCaseStatus) -> dict[str, object]:
             for entry in status.item_publication_states
         ],
         "reviewPath": status.review_path,
+        # POST /review đòi `expectedRevision` và model FORBID extra + không có
+        # default → thiếu là 422. Trước 2026-08-30 payload này không phát ra con
+        # số đó ở bất kỳ đâu, nên nút "xin xét lại" hỏng 100% lượt và người báo
+        # bị FE dịch thành "mã tra cứu sai".
+        "currentRevision": status.current_revision,
     }
 
 

@@ -10,7 +10,9 @@ import { describe, expect, it, vi } from 'vitest'
 
 import {
   CASE_ACCESS_RECOVERY_MESSAGE,
+  CASE_REVIEW_NOT_CLOSED_MESSAGE,
   CaseAccessError,
+  CaseReviewConflictError,
   newIdempotencyKey,
   readCaseCsrfToken,
   useCorrectionCases,
@@ -140,12 +142,19 @@ describe('cross-site request tokens', () => {
   it('travel as a header on mutations', async () => {
     const jar = 'vl360_case_csrf=token-abc'
     vi.spyOn(document, 'cookie', 'get').mockReturnValue(jar)
-    const { fetcher, call } = recordingFetcher()
+    const { fetcher, call, calls } = recordingFetcher()
     const cases = useCorrectionCases(fetcher as any)
 
     await cases.requestReview('the phone number is still wrong')
 
-    expect(call(0).options.headers['X-Case-CSRF']).toBe('token-abc')
+    // Neo theo LỜI GỌI GHI, không theo chỉ số. requestReview nay đọc /status
+    // trước để lấy `currentRevision` (chốt tương-tranh-lạc-quan của máy chủ),
+    // nên POST không còn là lời gọi thứ nhất; ghim index 0 sẽ soi nhầm sang
+    // lượt GET vốn không mang header CSRF.
+    const mutation = calls.find(entry => entry.options.method === 'POST')
+    expect(mutation, 'không có lời gọi POST nào để soi').toBeTruthy()
+    expect(mutation!.options.headers['X-Case-CSRF']).toBe('token-abc')
+    expect(call(0).url).toBe('/api/cases/status')
     vi.restoreAllMocks()
   })
 
@@ -208,6 +217,71 @@ describe('refusals', () => {
     // Telling somebody their code is wrong when our own service broke sends
     // them to re-enter a code that was fine.
     await expect(cases.loadStatus()).rejects.not.toBeInstanceOf(CaseAccessError)
+  })
+})
+
+describe('xin xét lại', () => {
+  const STATUS = {
+    publicReference: 'VL-COR-0000000000001',
+    receivedAt: '2026-08-19T09:00:00+00:00',
+    currentStep: 'closed',
+    waitingFor: null,
+    nextAction: 'Yêu cầu đã khép.',
+    nextUpdateAt: '2026-08-21T09:00:00+00:00',
+    promiseHealth: 'on_track',
+    itemDecisions: [],
+    itemPublicationStates: [],
+    reviewPath: '/api/cases/review',
+    currentRevision: 5,
+  }
+
+  it('gửi kèm expectedRevision lấy đúng từ bản trạng thái đang đọc', async () => {
+    // Bug tới 2026-08-30: chỗ này chỉ gửi { reason }, mà _ReviewIn khai
+    // `expectedRevision` bắt buộc + forbid extra → 422 MỌI LƯỢT, rồi neutralise
+    // dịch 422 thành "mã tra cứu sai" nên người báo đi sửa cái mã không hỏng.
+    const { fetcher, calls } = recordingFetcher(STATUS)
+    const cases = useCorrectionCases(fetcher as any)
+
+    await cases.requestReview('reporter_requested')
+
+    const mutation = calls.find(entry => entry.url === '/api/cases/review')
+    expect(mutation, 'không có lời gọi POST /api/cases/review').toBeTruthy()
+    expect(mutation!.options.body).toEqual({
+      reason: 'reporter_requested',
+      expectedRevision: 5,
+    })
+  })
+
+  it('không dịch 409 thành "mã tra cứu sai" — người bấm nút đã mở được hồ sơ', async () => {
+    // 409 nói về TRẠNG THÁI hồ sơ, không về mã. Gộp nó vào câu hướng dẫn kiểm
+    // tra mã là chỉ sai hướng, và người báo sẽ loay hoay với cái mã vẫn tốt.
+    let da_doc_trang_thai = false
+    const fetcher = vi.fn(async (url: string, options: Record<string, any> = {}) => {
+      if (options.method !== 'POST') { da_doc_trang_thai = true; return STATUS as any }
+      throw Object.assign(new Error('nope'), {
+        statusCode: 409, data: { code: 'review_requires_a_closed_case' },
+      })
+    })
+    const cases = useCorrectionCases(fetcher as any)
+
+    await expect(cases.requestReview('reporter_requested'))
+      .rejects.toBeInstanceOf(CaseReviewConflictError)
+    await expect(cases.requestReview('reporter_requested'))
+      .rejects.toThrow(CASE_REVIEW_NOT_CLOSED_MESSAGE)
+    expect(da_doc_trang_thai).toBe(true)
+  })
+
+  it('vẫn giấu như cũ với 401/403/404/410 — đó mới là chuyện của mã', async () => {
+    for (const statusCode of [401, 403, 404, 410]) {
+      const fetcher = vi.fn(async (_url: string, options: Record<string, any> = {}) => {
+        if (options.method !== 'POST') return STATUS as any
+        throw Object.assign(new Error('nope'), { statusCode })
+      })
+      const cases = useCorrectionCases(fetcher as any)
+
+      await expect(cases.requestReview('reporter_requested'))
+        .rejects.toBeInstanceOf(CaseAccessError)
+    }
   })
 })
 
