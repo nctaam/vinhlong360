@@ -208,7 +208,12 @@
   --danger: var(--error); /* alias: --danger was undefined; pages use var(--danger)/(--danger,#hex) */
   --error-bg: rgba(217, 79, 61, .08);
   --error-border: rgba(217, 79, 61, .25);
-  --save-red: #dc2626;
+  /* Trạng thái ĐÃ LƯU (tim/bookmark) — khác ngữ nghĩa với --error/--danger.
+     Spec §4.3 nêu đích danh #dc2626 phải resolve về token; giữ nguyên màu,
+     đưa về rgb-triplet đúng idiom của file (như --white-rgb/--gray-rgb) để
+     --save-red-bg/-border dùng chung một nguồn thay vì chép lại con số. */
+  --save-red-rgb: 220, 38, 38;
+  --save-red: rgb(var(--save-red-rgb));
   /* Huy chương xếp hạng: MỘT nguồn cho cả /bang-xep-hang lẫn sidebar
      /cong-dong. Trước đây mỗi trang tự khai một bộ (--rank-* và --lb-*),
      và bản chép đã trôi thật: đồng nâu chế độ tối lệch ΔE 2,07. */
@@ -227,8 +232,8 @@
      đều sáng ở cả sáng lẫn tối, nên chữ phải sẫm ở cả hai. Đo được:
      sáng 7,56/5,39/4,95 — tối 10,53/8,54/7,16 (vàng/bạc/đồng), đều đạt AA 4,5. */
   --medal-ink: var(--mekong-ink);
-  --save-red-bg: rgba(220, 38, 38, .08);
-  --save-red-border: rgba(220, 38, 38, .25);
+  --save-red-bg: rgba(var(--save-red-rgb), .08);
+  --save-red-border: rgba(var(--save-red-rgb), .25);
   /* State layer opacities (M3) */
   --state-hover-opacity: 0.08;
   --state-focus-opacity: 0.12;

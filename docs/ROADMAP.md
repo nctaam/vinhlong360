@@ -2120,7 +2120,14 @@ eyebrow hairline, rule tri-tỉnh river→amber→clay. Đã làm, không phải
   (dừng khi tải xong), 14 cái là spinner, chỉ còn ambient thật — và ambient thật lại
   nằm trong mã chết. Bài học: đếm `infinite` mà không phân loại thì vô nghĩa.
 
-#### 21.5 Còn nợ: 3 mã màu lạc chuẩn mà spec §4.3 nêu ĐÍCH DANH
+#### 21.5 ✅ ĐÃ ĐÓNG 2026-08-30 — 3 mã màu lạc chuẩn spec §4.3 nêu đích danh
+
+`#c0392b` và `#f5f5f5` xoá trong đợt F2 (R30.3 147→0); `#dc2626` (`--save-red`)
+resolve thành `--save-red-rgb: 220,38,38` + `--save-red: rgb(var(--save-red-rgb))`,
+và `--save-red-bg/-border` nay dùng chung nguồn đó thay vì chép lại con số. Màu
+giữ nguyên từng byte, build ✔. Nguyên văn mục cũ:
+
+#### 21.5 (cũ) Còn nợ: 3 mã màu lạc chuẩn mà spec §4.3 nêu ĐÍCH DANH
 
 Spec ghi rõ *"Không hex off-brand hardcode (`#c0392b`, `#dc2626`, `#f5f5f5` → resolve
 về token)"*. Cả ba **vẫn còn**:
@@ -4151,3 +4158,42 @@ thiếu env → skip đúng chiều, 796 skipped ở baseline).
 - **CÒN, chờ chủ quyết (dữ liệu ngoài dự án)**: Downloads 14GB; cây Users
   ~150GB chưa soi chi tiết. Máy mấp mé đầy kinh niên — trước chiến dịch đo
   dài nên kiểm ≥2GB trống.
+
+### Đợt 2026-08-30 — "giải quyết tất cả nợ" (XONG local, CHƯA push/deploy)
+
+Lệnh chủ dự án: *"giải quyết tất cả đang bị treo và nợ"*. Kết quả đo bằng
+`scripts/scorecard.py --no-append`:
+
+| Chiều | Trước | Sau |
+|---|---:|---:|
+| backend | 81 | **100** (R20.8 47→**0** toàn repo) |
+| content | 51 | **99** (nợ 378→8) |
+| frontend | 64 | **86** (R30.8 369→0, R30.3 147→0) |
+| data | 100 | **100** (giữ, sau khi vá 7 chỗ tự gieo) |
+
+**Backend — khép R20.8 = 0.** Lát 37 hạ nốt hai trùm cuối: `_event_stream_body`
+94→≤12 (nhánh trả-lời-cuối và synthesis thành async-gen lồng có `aclose` tường
+minh — thứ tự cancellation giữ nguyên từng dòng, 6 pin ghim vẫn xanh; producer
+thread và bộ đọc queue trùng lặp hợp nhất) và `chat_stream` 49→≤12 (11 helper).
+6 rào so-chuỗi/AST đi theo mã trong cùng các commit, không nới rào nào.
+
+**Frontend.** R30.8: di trú TRỌN thang bo góc cũ sang tầng mục đích (lg→sheet
+zero-visual theo đúng chỉ dẫn trong `variables.css`), gồm 2 alias `--radius` và
+`--sk-radius-line`. R30.3: 147→0 qua ba pha — 58 nhát pixel-safe, 6 primitive
+Apple-system mới cùng họ `--gray-rgb`, và scene-token đặt tên cho dải bình-minh
+`/luu-tru` (`--wake-*`) + nền `--nocturne-ink-rgb` trang chủ. `npm run build` ✔
+sau mỗi pha.
+
+**Content.** 245 entity mỏng viết lại đủ sàn 200 ký tự CHỈ từ attributes thật
+(bỏ `rating`/`review_count` vì nguồn không kiểm chứng, gắn cờ `can_bo_sung` cho
+157 entity chỉ có địa chỉ). 118 sửa giọng: "miền Tây" định-vị → đặc-thù vùng,
+superlative trơ, công thức mở/kết. Ghi KÉP `web/data.json` + DB qua
+`upsert_entity_with_audit` (301 bản ghi audit), B1 backup trước, integrity ok,
+1746/33 nguyên. Cũng xoá cấp-huyện-đã-bãi-bỏ khỏi 10 tên entity — gồm đúng mục
+§37.3 còn hiện trên trang chủ ("Hội thi ... huyện Long Hồ"); nợ R10.10 legacy
+1011→978.
+
+**Còn treo, chờ chủ quyết:** xem `docs/2026-08-30-ho-so-cho-chu-du-an-quyet.md`
+(7 mục — nới trần bundle vs đợt giảm cân; đại tu 110 icon vs giữ tồn kho emoji
+R30.2; whitelist R50.2 cho 8 tên riêng/thuật ngữ lịch sử; 157 entity cần khảo
+sát thực địa; Track-H pháp lý; nguồn dữ liệu xã; dung lượng máy).
