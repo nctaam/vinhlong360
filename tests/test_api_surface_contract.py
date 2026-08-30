@@ -76,6 +76,31 @@ PUBLIC_WRITE_ALLOWLIST: dict[tuple[str, str], str] = {
     ("POST", "/api/entities/{entity_id}/report-stale"): "Báo thông tin lỗi thời của điểm đến; rate-limit theo IP.",
     ("POST", "/api/entities/{entity_id}/view-contact"): "Đếm lượt bấm xem liên hệ (analytics CTA); rate-limit theo IP.",
     ("POST", "/api/posts/{post_id}/share"): "Đếm lượt chia sẻ, cố ý cho cả khách vãng lai; vẫn nằm sau require_pg + CSRF.",
+    # ── Kênh đính chính (agent/cases/public_api.py) ──────────────────────────
+    # KHÔNG cần tài khoản là CHỦ Ý của kênh này: người dân báo sai sót mà không
+    # phải đăng ký. Nhưng "không tài khoản" ≠ "không ai chặn" — hai nhóm dưới đây
+    # được bảo vệ bằng hai cơ chế KHÁC NHAU, nên khai riêng chứ không gộp một dòng.
+    #
+    # (1) Hai cửa vào thật sự ẩn danh, chặn bằng cờ tính năng + same-origin +
+    #     Content-Type + rate-limit theo IP (`_guard_public_post`).
+    ("POST", "/api/cases/corrections"): "Cửa nhận đính chính — phải mở cho người không có tài khoản; chặn bằng cờ CORRECTION_INTAKE_ENABLED + same-origin + Idempotency-Key + rate-limit theo IP.",
+    ("POST", "/api/cases/access"): "Đổi phiếu-năng-lực lấy phiên; người gọi phải CẦM phiếu hợp lệ mới qua, rate-limit theo IP.",
+    #
+    # (2) Năm route dưới đây KHÔNG ẩn danh. Chúng đòi cookie phiên vl360_case_access
+    #     (cấp sau khi đổi phiếu ở trên) + CSRF double-submit + same-origin
+    #     (`_guard_session_mutation`), rồi truyền chính token đó xuống service để
+    #     xác minh thật. Chúng nằm ở đây chỉ vì không dùng require_user — đính chính
+    #     cố ý không gắn với tài khoản. Ba mặt của cái khoá đó có test riêng giữ, để
+    #     dòng khai này không thành lời hứa suông:
+    #       không cookie   → test_cookie_mutations_refuse_a_caller_with_no_access_cookie
+    #       CSRF sai       → test_cookie_mutations_require_a_matching_csrf_header
+    #       khác origin    → test_cookie_mutations_require_a_same_origin_request
+    #     (cả ba ở agent/tests/test_case_public_api.py)
+    ("POST", "/api/cases/receipts/rotate"): "Đòi cookie phiên + CSRF (_guard_session_mutation), không phải tài khoản.",
+    ("DELETE", "/api/cases/access"): "Đòi cookie phiên + CSRF (_guard_session_mutation), không phải tài khoản.",
+    ("POST", "/api/cases/review"): "Đòi cookie phiên + CSRF (_guard_session_mutation), không phải tài khoản.",
+    ("POST", "/api/cases/contact/request"): "Đòi cookie phiên + CSRF (_guard_session_mutation), không phải tài khoản.",
+    ("POST", "/api/cases/contact/verify"): "Đòi cookie phiên + CSRF (_guard_session_mutation), không phải tài khoản.",
 }
 
 # Bốn tài liệu SEO gốc do Nuxt sở hữu. api-contract.md liệt kê chúng trong bảng

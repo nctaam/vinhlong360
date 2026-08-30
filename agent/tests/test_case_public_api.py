@@ -314,6 +314,25 @@ MUTATIONS = [
 
 
 @pytest.mark.parametrize(("method", "path", "body"), MUTATIONS)
+def test_cookie_mutations_refuse_a_caller_with_no_access_cookie(client, method, path, body):
+    """Không đổi phiếu lấy phiên thì năm route này phải từ chối ngay ở cửa.
+
+    Hai test dưới đã phủ "có phiên nhưng CSRF sai" và "có phiên nhưng khác origin";
+    trường hợp gốc — KHÔNG có phiên nào cả — thì chưa ai khẳng định. Nó là mắt xích
+    khiến `tests/test_api_surface_contract.py` nhìn năm route này như "ghi ẩn danh":
+    chúng không dùng `require_user` (đúng, vì đính chính không cần tài khoản) mà
+    dựa vào phiếu-năng-lực đổi ra cookie phiên. Ngoại lệ khai trong
+    PUBLIC_WRITE_ALLOWLIST nói đúng điều đó, và đây là chỗ chứng minh nó không rỗng.
+    """
+    response = client.request(method.upper(), path, headers=_headers(), json=body)
+
+    assert response.status_code == 401, (
+        f"{method.upper()} {path} nhận yêu cầu không có cookie phiên"
+    )
+    assert response.json()["code"] == "invalid_case_credential"
+
+
+@pytest.mark.parametrize(("method", "path", "body"), MUTATIONS)
 def test_cookie_mutations_require_a_matching_csrf_header(client, method, path, body):
     client.post(
         "/api/cases/access",

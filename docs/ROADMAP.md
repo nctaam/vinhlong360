@@ -530,7 +530,8 @@ Thứ tự cũ → mới. Không commit nào chạm prod; không commit nào ghi
 > truyền miệng, và đúng chuyện đó đã xảy ra: 5 fail cổng migration nằm trong rọ suốt
 > hai migration mà không ai ghi nhận (vá ở `8f5d5a23`). Danh sách phải sống ở đây.
 >
-> **Baseline hiện tại: 16 fail.** Lệnh đo (Windows, cần container PG cho nhóm case):
+> **Baseline hiện tại: 15 fail** (16 → 15 ngày 2026-08-30, xem nhóm (S)). Lệnh đo
+> (Windows, cần container PG cho nhóm case):
 > ```
 > # temp-root phải NGẮN (MAX_PATH) và ghi được; đặt bằng đường dẫn tuyệt đối của bạn
 > $env:PYTEST_DEBUG_TEMPROOT='<temp-root-ngan>'
@@ -549,11 +550,31 @@ chạy trên Linux — giả định "sẽ xanh" là kiểm được, không ph�
 - `tests/launch_safety/test_systemd_contract.py::test_probe_rejects_final_symlink_without_touching_victim`
 - `tests/test_secure_stage_b_artifacts.py` — 4 test ACL/normalize (`..._trailing_root_separator...`, `..._safe_inheritance...`, `..._nested_protected_parent`, `..._before_strict_acl_fails_without_evidence[NormalizeAndVerify]`)
 
-**(S) — 4 test kỳ vọng lệch, KHÔNG phải sản phẩm hỏng:**
+**(S) — 3 test kỳ vọng lệch, KHÔNG phải sản phẩm hỏng:**
 
 - `agent/tests/test_phase16_coverage.py::TestPhase17SecurityChecks::test_esms_uses_https` và `agent/tests/test_session_be.py::TestPhase12DependencySecurity::test_esms_uses_https` — cùng một assertion về endpoint eSMS.
 - `agent/tests/test_case_policy.py::test_valid_nonproduction_case_activation_has_structural_credentials`
-- `tests/test_api_surface_contract.py::test_write_routes_under_api_require_an_auth_guard` — **có chủ đích một nửa:** các route đính chính công khai CỐ Ý mở cho khách không tài khoản (người dân báo sai sót). Test chưa biết ngoại lệ đó. Cần khai vào `PUBLIC_WRITE_ALLOWLIST` kèm lý do, HOẶC chấp nhận có ghi chú — chưa ai quyết.
+
+**ĐÃ ĐÓNG khỏi nhóm (S) — 2026-08-30:**
+`tests/test_api_surface_contract.py::test_write_routes_under_api_require_an_auth_guard`.
+Ghi chú cũ ("các route đính chính CỐ Ý mở cho khách không tài khoản, cần khai vào
+`PUBLIC_WRITE_ALLOWLIST`") **đúng một nửa và nửa còn lại sai** — đọc mã mới thấy
+7 route chia làm HAI nhóm khác hẳn nhau, gộp một dòng khai là ghi một điều không
+đúng vào chính danh sách ngoại lệ:
+
+- 2 cửa vào thật sự ẩn danh — `POST /corrections`, `POST /access` — chặn bằng
+  `_guard_public_post` (cờ tính năng + same-origin + Content-Type + rate-limit IP).
+- 5 route còn lại KHÔNG ẩn danh: `_guard_session_mutation` đòi cookie phiên
+  `vl360_case_access` + CSRF double-submit + same-origin, rồi truyền chính token
+  đó xuống service để xác minh. Chúng lọt lưới chỉ vì không dùng `require_user` —
+  đính chính cố ý không gắn với tài khoản, đó là thiết kế chứ không phải lỗ hổng.
+
+Khai 7 dòng theo đúng hai nhóm, và **bịt mắt xích chưa ai khẳng định**: đã có test
+cho "CSRF sai" và "khác origin", nhưng KHÔNG có test nào cho "không có phiên nào cả".
+Thêm `test_cookie_mutations_refuse_a_caller_with_no_access_cookie`
+(`agent/tests/test_case_public_api.py`, 5 route × 401) để dòng khai không thành lời
+hứa suông. `test_public_write_allowlist_has_no_stale_entries` sẵn có canh ngoại lệ
+chết. Cả file: 10 passed.
 
 **(P) — lỗi sản phẩm thật: 0.** Đợt quét 2026-08-22 rà từng test một; không cái nào
 che một defect sản phẩm. 5 test cổng migration từng nằm trong nhóm (S) đã vá, không
