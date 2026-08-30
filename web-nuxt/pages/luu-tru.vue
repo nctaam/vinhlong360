@@ -126,7 +126,7 @@
       <div v-else-if="filtered.length" class="grid">
         <EntityCard v-for="e in filtered" :key="e.id" :entity="e" />
       </div>
-      <EmptyState v-else icon-name="home" title="Chưa thấy nơi ở phù hợp" message="Thử đổi khu vực hoặc từ khóa khác xem sao nhé." hint="Bạn có thể khám phá thêm các nơi ở ở Vĩnh Long, Bến Tre và Trà Vinh.">
+      <EmptyState v-else icon-name="home" title="Chưa thấy nơi ở phù hợp" message="Thử đổi khu vực hoặc từ khóa khác xem sao nhé." hint="Bỏ bộ lọc khu vực để xem nơi ở khắp tỉnh — từ cù lao ven sông Tiền tới các xã ven biển.">
         <template #actions>
           <button type="button" class="btn btn-outline" @click="areaFilter = 'all'; q = ''; scrollToGrid()">Xóa bộ lọc</button>
           <NuxtLink to="/du-lich" class="btn btn-outline">Khám phá du lịch</NuxtLink>
