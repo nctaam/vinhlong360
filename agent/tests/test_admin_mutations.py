@@ -445,13 +445,49 @@ def test_delete_itinerary_nonexistent():
 
 # ── Relationships ────────────────────────────────────────────────────────
 
-def test_relationship_create_validates():
+def test_relationship_create_KHONG_kiem_hai_dau_ton_tai(isolated_sqlite_db):
+    """Tên cũ là `..._validates` nhưng nó KHÔNG khẳng định được điều gì.
+
+    Bản cũ assert `status_code in (200, 201, 404, 422)` — tức xanh dù route có
+    kiểm tra hay không, dù tạo được hay bị từ chối. Một test không thể đỏ thì
+    không phải một test.
+
+    Sự thật đo được: `Database.add_relationship` chèn thẳng
+    `INSERT OR IGNORE INTO relationships` mà KHÔNG hề kiểm hai đầu có tồn tại,
+    nên route trả 201 và sinh một quan hệ treo đầu. Đúng cơ chế đã để lại
+    `('nonexistent-a','nonexistent-b','near')` trong DB dev thật — hàng treo đầu
+    DUY NHẤT trong 12.061 quan hệ, di tích từ trước khi `entities_admin` được
+    thêm vào fixture cách ly ở đầu file này (đo 2026-08-30: chạy lại file này
+    KHÔNG còn làm số hàng đổi, tức rò đã bịt).
+
+    Test này ghi ĐÚNG hành vi hiện tại, và ghi rõ đó là một LỖ HỔNG chứ không
+    phải thiết kế: có nên chặn quan hệ treo đầu ở tầng admin không, là quyết
+    định của chủ dự án (nó sẽ cấm cả cách dùng 'tạo quan hệ trước, tạo entity
+    sau'). Khi có quyết định thì SỬA test này cho khớp, đừng nới nó về dạng
+    'chấp nhận mọi mã trạng thái'.
+    """
     r = client.post("/admin/relationships", json={
         "from_id": "nonexistent-a",
         "to_id": "nonexistent-b",
         "type": "near",
     }, headers=H)
-    assert r.status_code in (200, 201, 404, 422)
+
+    assert r.status_code == 201, "route hiện KHÔNG kiểm hai đầu — nếu nay đã kiểm, sửa test cho khớp"
+
+    # Đọc THẲNG bảng, không qua get_relationships: hàm đó JOIN vào `entities` ở
+    # cả hai đầu, nên quan hệ treo đầu VÔ HÌNH với mọi đường đọc. Đó chính là lý
+    # do một hàng như vậy nằm im giữa 12.061 quan hệ mà không ai thấy — và cũng
+    # là lý do lỗ hổng này vô hại với người dùng nhưng vẫn làm bẩn dữ liệu.
+    import sqlite3
+    conn = sqlite3.connect(isolated_sqlite_db.db_path)
+    try:
+        n = conn.execute(
+            "SELECT count(*) FROM relationships WHERE from_id=? AND to_id=?",
+            ("nonexistent-a", "nonexistent-b"),
+        ).fetchone()[0]
+    finally:
+        conn.close()
+    assert n == 1, "route trả 201 thì phải có ghi thật — nếu 0, hành vi đã đổi, đọc lại docstring"
 
 
 # ── Moderation ───────────────────────────────────────────────────────────
