@@ -16,6 +16,42 @@ os.environ.setdefault("CORS_ORIGINS", "http://localhost:8360")
 # mọi test module) mới kịp. Chi tiết: agent/tests/test_scheduler_repo_isolation.py
 os.environ.setdefault("SCHEDULER_ENABLED", "false")
 
+@pytest.fixture(autouse=True)
+def _dong_lai_cau_dao_ngat_mach():
+    """Reset MỌI circuit breaker TRƯỚC mỗi test. Bản sinh đôi của fixture cùng
+    tên ở `agent/tests/conftest.py` — hai thư mục test có conftest RIÊNG, đặt một
+    bên là bên kia vẫn rò.
+
+    Ba breaker là biến module-level (`agent/circuit_breaker.py:394,404,412`) nên
+    trạng thái OPEN chảy từ test này sang test sau. Đo được trong chính thư mục
+    này: `tests/test_integration.py::test_chat_stream_concurrent_non_blocking`
+    chạy RIÊNG thì xanh, chạy CHUNG cả file thì đỏ — vì các test trước nó gọi LLM
+    thật, hỏng 5 lần, mở circuit 'llm_api', và request của nó bị chặn TRƯỚC KHI
+    tới client đã mock.
+
+    Chạy-riêng-xanh / chạy-chung-đỏ là triệu chứng kinh điển của state module-level
+    không được dọn. Đã đo với `-p no:randomly` nên là phụ thuộc thứ tự TẤT ĐỊNH;
+    CI không tắt pytest-randomly nên ở đó nó thành chớp-tắt.
+    """
+    try:
+        import circuit_breaker
+    except Exception:
+        yield
+        return
+
+    def _dong_het():
+        for ten in ("llm_breaker", "weather_breaker", "web_search_breaker"):
+            cb = getattr(circuit_breaker, ten, None)
+            if cb is not None and hasattr(cb, "reset"):
+                cb.reset()
+
+    _dong_het()
+    try:
+        yield
+    finally:
+        _dong_het()
+
+
 @pytest.fixture
 def admin_headers():
     return {"X-Admin-Key": "test-admin-key"}

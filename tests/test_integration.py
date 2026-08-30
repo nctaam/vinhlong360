@@ -502,13 +502,30 @@ def test_chat_stream_concurrent_non_blocking():
     slow.chat.completions.create = _slow_create
 
     async def _run():
+        # `stream_limiter` đã dời khỏi server.py sang agent/middleware.py:310 và
+        # được tái xuất ở agent/chat/api.py:67 (commit a1f1cc30, gỡ khối shim 27
+        # import). 14 test khác đã repoint sang `chat_api.stream_limiter`; đúng
+        # dòng này bị sót và file mang `pytestmark = pytest.mark.integration` nên
+        # pytest.ini loại nó khỏi MỌI lượt đo local — còn CI thì chưa từng chạy
+        # (kho không có remote). Đo lại 2026-08-30: 1 failed / 30 passed.
+        #
+        # Dùng `patch.object` chứ KHÔNG gán đè như bản cũ: bản cũ viết thẳng
+        # `server.stream_limiter.is_allowed = ...` và không bao giờ trả lại, tức
+        # mọi test chạy sau trong cùng tiến trình đều mất rate-limit của /chat/stream.
+        from chat import api as chat_api   # cùng cách dòng 389 trong file này làm
+
+        # Phải patch CẢ `chat.api.get_client`: handler /chat/stream nay sống ở
+        # agent/chat/api.py và nó `from llm_config import get_client` vào NAMESPACE
+        # RIÊNG của mình (chat/api.py:58). Patch mỗi `server.get_client` chỉ đổi bề
+        # mặt tái xuất — đúng điều dòng 397 của chính file này đã ghi. Thiếu dòng
+        # dưới thì test gọi LLM THẬT, ra APIConnectionError và mở circuit breaker.
         with patch("server.get_client", lambda: slow), \
+             patch("chat.api.get_client", lambda: slow), \
              patch("server.start_scheduler", MagicMock()), \
-             patch("server.stop_scheduler", MagicMock()):
+             patch("server.stop_scheduler", MagicMock()), \
+             patch.object(chat_api.stream_limiter, "is_allowed", lambda ip: (True, {})):
             import server
             from server import app
-            # bỏ rate-limit để 2 request đồng thời đều qua
-            server.stream_limiter.is_allowed = lambda ip: (True, {})
             async with app.router.lifespan_context(app):
                 transport = ASGITransport(app=app)
                 async with AsyncClient(transport=transport, base_url="http://test") as ac:

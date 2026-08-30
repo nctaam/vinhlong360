@@ -49,6 +49,42 @@ def isolated_sqlite_db(tmp_path, monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def _dong_lai_cau_dao_ngat_mach():
+    """Reset MỌI circuit breaker TRƯỚC mỗi test.
+
+    Ba breaker là biến module-level (`agent/circuit_breaker.py:394,404,412`) nên
+    trạng thái OPEN của test này chảy thẳng sang test sau. Đo được: một test gọi
+    LLM thật (không mock trúng binding) làm hỏng 5 lần liên tiếp → circuit 'llm_api'
+    mở → mọi request sau bị chặn TRƯỚC KHI tới client đã mock, và test đứng sau
+    đỏ với thông điệp chẳng liên quan gì tới nó ('LLM call rejected — circuit OPEN
+    (recovery in 20.6s)').
+
+    Triệu chứng kinh điển của lớp lỗi này: chạy RIÊNG thì xanh, chạy CHUNG thì đỏ.
+    Đã đo cả hai chiều với `-p no:randomly`, nên đây là phụ thuộc thứ tự TẤT ĐỊNH
+    — không phải nhiễu ngẫu nhiên. CI không tắt pytest-randomly nên ở đó nó sẽ
+    thành chớp-tắt, loại khó chịu nhất để truy.
+
+    Cùng họ với `_reset_rate_limiters` ngay dưới: state module-level phải được
+    trả về vạch xuất phát ở conftest, không thể trông vào từng test tự dọn.
+    """
+    try:
+        import circuit_breaker
+    except Exception:
+        yield
+        return
+    def _dong_het():
+        for ten in ("llm_breaker", "weather_breaker", "web_search_breaker"):
+            cb = getattr(circuit_breaker, ten, None)
+            if cb is not None and hasattr(cb, "reset"):
+                cb.reset()
+    _dong_het()
+    try:
+        yield
+    finally:
+        _dong_het()
+
+
+@pytest.fixture(autouse=True)
 def _chuyen_huong_nhat_ky_kiem_toan(tmp_path_factory):
     """Không test nào được ghi vào nhật ký kiểm toán THẬT.
 
