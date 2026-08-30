@@ -28,22 +28,22 @@ Cơ chế: **hard** = 0 vi phạm mọi lúc · **hard-ratchet/soft-ratchet** = 
 | R20.5b | route trong code phải được api-contract mô tả (chiều ngược) | hard-ratchet | check_api_contract | 0 | 20-backend.md |
 | R20.6 | B3 test trước refactor | quy-trình-ký | — | — | 20-backend.md |
 | R20.7 | agent đổi ⇒ test staged cùng | soft-ratchet | check_test_pairing | 0 | 20-backend.md |
-| R20.8 | complexity ≤12 | soft-ratchet | check_complexity | 47 | 20-backend.md |
+| R20.8 | complexity ≤12 | soft-ratchet | check_complexity | 0 | 20-backend.md |
 | R20.9 | policy HTTP route registry exact + mounted identity | hard | check_policy_http_registry | 0 | 20-backend.md |
 | R20.10 | registry bồn ảnh entity: validate registry JSON + quét nguồn FE tìm sink ảnh không qua descriptor (fail-closed) | hard | check_entity_image_renderers | 0 | 20-backend.md |
 | R30.1 | cấm Tailwind | hard | check_banned_claims | 0 | 30-frontend.md |
 | R30.2 | emoji chức năng → IconLine (đếm từng match) | soft-ratchet | check_fe_tokens | 330 | 30-frontend.md |
-| R30.3 | màu ngoài tokens (đếm từng match) | hard-ratchet | check_fe_tokens | 147 | 30-frontend.md |
+| R30.3 | màu ngoài tokens (đếm từng match) | hard-ratchet | check_fe_tokens | 0 | 30-frontend.md |
 | R30.4 | ClientOnly cho volatile | checklist-ký | — | — | 30-frontend.md |
 | R30.5 | tap-target ≥44 (ngoại lệ season-ring) | checklist-ký | — | — | 30-frontend.md |
 | R30.6 | axe 0 serious+ trên 14 trang sweep | hard-ratchet | check_axe — report sinh bởi `scripts/axe_scan.mjs` ở **job frontend** của CI (job Python không quét axe) | 0 | 30-frontend.md |
 | R30.7 | bundle budget (chunk-max gz + trần CSS + đích entry ≤200kB) | soft-ratchet | check_bundle — chạy ở **job frontend** của CI sau `npm run build` (job Python không có `.output`) | 0 | 30-frontend.md |
-| R30.8 | thang bo góc cũ `--radius-xs/sm/md/lg/xl` → tầng mục đích `--radius-control/surface/sheet` (đếm từng match) | hard-ratchet | check_fe_tokens | 369 | 30-frontend.md |
+| R30.8 | thang bo góc cũ `--radius-xs/sm/md/lg/xl` → tầng mục đích `--radius-control/surface/sheet` (đếm từng match) | hard-ratchet | check_fe_tokens | 0 | 30-frontend.md |
 | R40.3 | cấm claim đã-xác-minh | hard | check_banned_claims | 0 | 40-ui-design.md |
-| R50.2 | filler giọng cấm (field-aware, bỏ source) | soft-ratchet | check_content_voice | 102 | 50-content.md |
-| R50.3 | cấm công thức mở bài + kết sáo | soft-ratchet | check_content_gates | 7 | 50-content.md |
-| R50.4 | summary+desc ≥200 ký tự | soft-ratchet | check_thin_content | 245 | 50-content.md |
-| R50.7 | cấm superlative trơ (không số/năm/nguồn) | soft-ratchet | check_content_gates | 24 | 50-content.md |
+| R50.2 | filler giọng cấm (field-aware, bỏ source) | soft-ratchet | check_content_voice | 8 | 50-content.md |
+| R50.3 | cấm công thức mở bài + kết sáo | soft-ratchet | check_content_gates | 0 | 50-content.md |
+| R50.4 | summary+desc ≥200 ký tự | soft-ratchet | check_thin_content | 0 | 50-content.md |
+| R50.7 | cấm superlative trơ (không số/năm/nguồn) | soft-ratchet | check_content_gates | 0 | 50-content.md |
 | R60.1 | docs-active có STATUS (phải CÓ nội dung, không chỉ chữ "STATUS") | hard-ratchet | check_doc_status | 0 | 60-docs.md |
 | R60.4 | internal link sống | hard-ratchet | check_links | 0 | 60-docs.md |
 | R60.5 | plan-result trước merge | hard (pre-merge) | pre_merge_check#8 | — | 60-docs.md |
