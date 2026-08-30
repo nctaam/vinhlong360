@@ -100,3 +100,5 @@ ghi ở backlog tối ưu — giảm dần, KHÔNG được tăng tiếp từ 47
 - 2026-08-30T12:13:30 SKIP R30.7 — Commit docs-only
 
 - 2026-08-30T12:32:42 SKIP R30.7 — Ket dot: bundle 803 la muc 1 trong ho so chu-quyet
+
+- 2026-08-30T14:45:21 SKIP R30.7 — Goi JS 803/800 la muc 1 ho so chu-quyet; commit nay SIET ratchet, khong tang no

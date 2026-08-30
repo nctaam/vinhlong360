@@ -16,7 +16,20 @@ python scripts/checks/run_hard.py --staged || exit 1
 """
 
 
+def _utf8_output() -> None:
+    """Console Windows mặc định cp1252 → print tiếng Việt ném UnicodeEncodeError.
+
+    Hook ĐÃ ghi xong trước dòng print, nên crash chỉ ở khâu báo cáo nhưng exit≠0
+    khiến người cài tưởng cài hỏng rồi bỏ qua cổng tiêu chuẩn. Cùng cách xử lý
+    với scripts/checks/run_hard.py.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
+
+
 def main() -> int:
+    _utf8_output()
     root = Path(subprocess.run(["git", "rev-parse", "--show-toplevel"],
                                capture_output=True, text=True, check=True).stdout.strip())
     hook_path = root / ".git" / "hooks" / "pre-commit"
