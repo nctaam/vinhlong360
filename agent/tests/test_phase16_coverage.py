@@ -1563,17 +1563,20 @@ class TestDeepScanBatch4:
     def test_stream_producer_cancellation(self):
         """Streaming producer must check cancellation flag to stop when client disconnects."""
         src = (Path(__file__).resolve().parent.parent / "chat" / "api.py").read_text(encoding="utf-8")  # ma chat sang agent/chat/ 2026-08-27
-        idx = src.find("def _produce_stream():")
+        # Lát 37 R20.8: producer hợp nhất thành _produce_stream(ctx, out_q,
+        # cancelled, ...) module-level dùng chung main+synth — soi thân đó.
+        idx = src.find("def _produce_stream(ctx")
         assert idx > 0
-        # Lát 36 R20.8: _event_stream_body ra module-level nên indent đổi —
-        # neo cuối theo NỘI DUNG (create_task) thay vì đếm khoảng trắng.
-        end = src.find("producer = asyncio.create_task", idx)
+        end = src.find("\ndef ", idx + 1)
+        if end < 0:
+            end = src.find("\nasync def ", idx + 1)
         assert end > idx
         block = src[idx:end]
-        assert "_cancelled" in block, \
+        # Lát 37: cờ nhận qua tham số `cancelled` (Event) thay vì closure `_cancelled`.
+        assert "cancelled" in block, \
             "Producer must check cancellation flag between chunks"
-        assert "_cancelled.is_set()" in block, \
-            "Producer must call _cancelled.is_set() to detect client disconnect"
+        assert "cancelled.is_set()" in block, \
+            "Producer must call cancelled.is_set() to detect client disconnect"
 
     def test_stream_consumer_cancellation_handler(self):
         """Streaming consumer must handle CancelledError to signal producer."""

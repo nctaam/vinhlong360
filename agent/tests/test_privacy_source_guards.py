@@ -214,6 +214,22 @@ CHAT_TAIL_SINK_HELPERS = (
     "_record_optimizer_and_judge",
     "_record_chat_telemetry",
     "_maybe_cache_reply",
+    # Lát 37 R20.8: mổ sâu chat_stream/_event_stream_body — sink của stream
+    # sống trong các helper này, mỗi helper tự đặt marker trước sink.
+    "_settle_chat_usage",
+    "_stream_with_settlement",
+    "_stream_semantic_lookup",
+    "_stream_exact_lookup",
+    "_cached_stream_gen",
+    "_persist_stream_fallback",
+    "_stream_failure_frames",
+    "_run_stream_tool_round",
+    "_stream_final_answer",
+    "_persist_stream_success",
+    "_record_stream_telemetry",
+    "_cache_stream_reply",
+    "_synthesize_after_rounds",
+    "_event_stream_body",
 )
 
 
@@ -232,8 +248,10 @@ def test_chat_persistence_sinks_follow_an_output_boundary_marker():
             if sink_index >= 0:
                 assert input_marker < sink_index, route_name
         assert not _undominated_content_sinks(source), route_name
-    reachable_sources = _handler_source("chat") + "".join(
-        _handler_source(name) for name in CHAT_TAIL_SINK_HELPERS
+    reachable_sources = (
+        _handler_source("chat")
+        + _handler_source("chat_stream")
+        + "".join(_handler_source(name) for name in CHAT_TAIL_SINK_HELPERS)
     )
     for helper_name in CHAT_TAIL_SINK_HELPERS:
         source = _handler_source(helper_name)
@@ -241,10 +259,11 @@ def test_chat_persistence_sinks_follow_an_output_boundary_marker():
             if sink in source:
                 covered_sinks.add(sink)
         assert not _undominated_content_sinks(source), helper_name
-        # Helper phải thật sự được gọi từ chat() hoặc một helper đuôi khác —
-        # sink không được "bốc hơi" khỏi đường chạy.
-        assert f"{helper_name}(" in reachable_sources.replace(
-            f"def {helper_name}(", ""
+        # Helper phải thật sự được gọi (hoặc truyền qua partial) từ handler
+        # hay một helper đuôi khác — sink không được "bốc hơi" khỏi đường chạy.
+        without_def = reachable_sources.replace(f"def {helper_name}(", "")
+        assert (
+            f"{helper_name}(" in without_def or f"{helper_name}," in without_def
         ), helper_name
     assert covered_sinks == set(PERSISTENCE_SINKS), (
         "source guard is not exercising sinks: "

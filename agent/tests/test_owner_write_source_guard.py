@@ -96,7 +96,8 @@ SINKS = [
     # cache.put cua /chat song trong _maybe_cache_reply, cua /chat/stream song
     # trong _event_stream_body (module-level, _StreamContext) — soi dung cho.
     ("agent/chat/api.py", "_maybe_cache_reply", "cache.put"),
-    ("agent/chat/api.py", "_event_stream_body", "cache.put"),
+    # Lat 37 R20.8: cache.put cua stream doi sang _cache_stream_reply.
+    ("agent/chat/api.py", "_cache_stream_reply", "cache.put"),
 ]
 
 

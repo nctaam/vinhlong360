@@ -102,10 +102,10 @@ def test_stream_tool_decision_routes_through_circuit_breaker():
 def test_stream_synthesis_fallback_is_cancellable():
     # Đợt 5 helper #2: synthesis fallback (round-exhaustion) có cancel event → client
     # disconnect mid-synthesis không leak thread produce (giữ LLM conn). Guard regression.
-    # Lát 36 R20.8: đích soi theo _event_stream_body module-level.
+    # Lát 36-37 R20.8: synth tách tiếp sang _synthesize_after_rounds — soi thân đó.
     import inspect
     from chat import api as _chat_api
-    src = inspect.getsource(_chat_api._event_stream_body)
+    src = inspect.getsource(_chat_api._synthesize_after_rounds)
     assert "_synth_cancelled" in src and "_synth_cancelled.set()" in src
 
 
