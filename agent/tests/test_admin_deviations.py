@@ -94,6 +94,24 @@ class TestAdminDeviations:
         assert "_AUDIT_MAX_LINES" in src, "must KEEP the existing count cap (additive OR, not replace)"
         assert " or " in src.lower(), "must combine size+count with OR"
 
+    def test_nhat_ky_kiem_toan_that_khong_bao_gio_la_dich_ghi_trong_test(self):
+        """Trong mọi test, `_AUDIT_FILE` PHẢI đã bị chuyển hướng khỏi `agent/data/`.
+
+        Đo 2026-08-30 trước khi có fixture chặn ở conftest: một lượt
+        `pytest agent/tests/ -k admin` bơm 69 byte vào
+        `agent/data/admin_audit.jsonl` và đẻ thêm 6 file xoay vòng — đã tích 255
+        file rác, và nhật ký "thật" thành trộn lẫn thao tác thật với rác test,
+        tức không còn kiểm toán được gì.
+
+        Rào này canh cái fixture đó. Không có nó thì ai gỡ fixture sẽ không thấy
+        gì đỏ — rò rỉ im lặng đúng như đã im lặng suốt hai ngày.
+        """
+        that = pathlib.Path(admin.__file__).resolve().parent / "data" / "admin_audit.jsonl"
+        assert pathlib.Path(admin._AUDIT_FILE).resolve() != that, (
+            "test đang trỏ thẳng vào nhật ký kiểm toán THẬT — fixture "
+            "_chuyen_huong_nhat_ky_kiem_toan trong agent/tests/conftest.py còn không?"
+        )
+
     def test_rotation_still_trims_to_max_by_count(self, tmp_path, monkeypatch):
         """Existing count-based rotation behavior (BE-11) must be unaffected."""
         audit_file = tmp_path / "admin_audit.jsonl"

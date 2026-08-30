@@ -49,6 +49,44 @@ def isolated_sqlite_db(tmp_path, monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def _chuyen_huong_nhat_ky_kiem_toan(tmp_path_factory):
+    """Không test nào được ghi vào nhật ký kiểm toán THẬT.
+
+    ĐO ĐƯỢC, không phải phòng xa. Trước bản vá này, một lượt
+    `pytest agent/tests/ -k admin` (547 test) làm:
+        agent/data/admin_audit.jsonl   1.329.195 → 1.329.264 byte (sha đổi)
+        agent/data/admin_audit.*.jsonl         254 → 260 file
+    Tức mỗi lượt chạy vừa BƠM bản ghi giả vào nhật ký kiểm toán quản trị, vừa đẻ
+    ra 6 file xoay vòng nằm lại trong `agent/data/`. Tới 2026-08-30 đã tích 255
+    file rác, và bản thân nhật ký "thật" nay là một trộn lẫn giữa thao tác thật
+    và rác test — tức nó không còn dùng được để kiểm toán bất cứ điều gì.
+
+    `admin._AUDIT_FILE` là hằng module-level trỏ `agent/data/admin_audit.jsonl`
+    (`agent/admin.py:65`), và mọi route quản trị đi qua TestClient đều ghi vào đó.
+    Vài file test đã tự `monkeypatch.setattr(admin, "_AUDIT_FILE", tmp_path/...)`
+    — nhưng chỉ vài file, còn các suite đi qua HTTP thì không. Rào theo từng file
+    đã thua một lần rồi; chốt ở conftest là chỗ DUY NHẤT không thể quên.
+
+    An toàn: đã rà toàn bộ `agent/tests/` + `tests/` — mọi test chạm tới nhật ký
+    ĐỀU đã tự trỏ sang `tmp_path`, không test nào cần đường mặc định. Test nào
+    monkeypatch trong thân hàm vẫn thắng fixture này (chạy sau).
+    """
+    duong_tam = tmp_path_factory.mktemp("nhat-ky-kiem-toan") / "admin_audit.jsonl"
+    try:
+        import admin
+    except Exception:
+        yield
+        return
+    goc = getattr(admin, "_AUDIT_FILE", None)
+    admin._AUDIT_FILE = duong_tam
+    try:
+        yield
+    finally:
+        if goc is not None:
+            admin._AUDIT_FILE = goc
+
+
+@pytest.fixture(autouse=True)
 def _reset_rate_limiters():
     """Reset MỌI rate-limiter TRƯỚC mỗi test.
 
