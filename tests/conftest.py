@@ -54,4 +54,5 @@ def _dong_lai_cau_dao_ngat_mach():
 
 @pytest.fixture
 def admin_headers():
-    return {"X-Admin-Key": "test-admin-key"}
+    """Khoá LẤY TỪ MÔI TRƯỜNG, không ghim cứng — xem giải trình ở đầu hàm dưới."""
+    return {"X-Admin-Key": os.environ["ADMIN_API_KEY"]}

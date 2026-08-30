@@ -79,7 +79,29 @@ def client():
 
 @pytest.fixture
 def admin_headers():
-    return {"X-Admin-Key": "test-admin-key"}
+    """Khoá LẤY TỪ MÔI TRƯỜNG, không được ghim cứng.
+
+    Hai thư mục test đặt ADMIN_API_KEY bằng `setdefault` với HAI GIÁ TRỊ KHÁC NHAU:
+    `tests/conftest.py:12` → "test-admin-key", `agent/tests/conftest.py:26` →
+    "test-admin-key-12345". `setdefault` nghĩa là AI LOAD TRƯỚC THÌ THẮNG. Chạy
+    riêng `tests/` thì bản ngắn thắng và mọi thứ xanh; chạy CHUNG cả hai thư mục
+    thì `agent/tests` load trước, khoá thành bản dài, và header ghim cứng bản ngắn
+    không khớp nữa.
+
+    Hậu quả đo được (2026-08-30, `pytest agent/tests/ tests/ -m "integration and
+    not slow"`): 11 test đỏ, toàn 404 trên /metrics, /vectors/stats, /system/*,
+    /analytics/*, /ab-testing/* — vì `gate_internal_endpoints` (server.py:751) trả
+    404 khi `verify_admin_key` thất bại. Đọc log thì tưởng endpoint bị gỡ, thật ra
+    chỉ là sai khoá.
+
+    ĐÂY LÀ MÌN CI: `.github/workflows/ci.yml:124` chạy đúng tổ hợp đó
+    (`pytest tests/ agent/tests/ -m "not slow"` — chú thích ngay trên nó ghi rõ
+    "bao gồm integration"). Chạy riêng từng thư mục thì không bao giờ thấy.
+
+    Đọc từ env thì khoá nào thắng cũng khớp — không cần bắt 15 chỗ `setdefault`
+    phải đồng ý với nhau.
+    """
+    return {"X-Admin-Key": os.environ["ADMIN_API_KEY"]}
 
 
 # ── /health ──────────────────────────────────────────
