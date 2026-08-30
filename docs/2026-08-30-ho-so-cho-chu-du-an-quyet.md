@@ -21,7 +21,33 @@ Nợ R20.8 (complexity backend): **47 → 0 toàn repo**.
 
 ---
 
-## 1. Gói JS 803/800 kB — nới trần hay xếp đợt giảm cân?
+## 0. ⚠ P0 — hứa "xoá vĩnh viễn" nhưng hệ thống chỉ ĐẾM (mở từ 2026-08-22)
+
+**Nghiêm trọng nhất trong hồ sơ này.** Kiểm lại hôm nay: **vẫn còn đúng từng chi tiết**.
+
+- `agent/identity/api.py:1294` trả lời người dùng: *«Tài khoản sẽ bị xoá vĩnh viễn
+  sau N ngày»*.
+- `.env.example:161-162` mặc định `ERASURE_AUDIT_ONLY=true` +
+  `ERASURE_ACTIVATION_ENABLED=false` → `_effective_erasure_audit_only()`
+  (`agent/scheduler.py:137`) trả True, tác vụ nền **đếm hồ sơ quá hạn rồi thoát
+  trước vòng xoá**, 288 lần/ngày.
+- Deploy đúng theo file mẫu là rơi vào trạng thái này mà không ai biết mình đã chọn.
+
+Đây là hứa một đằng làm một nẻo, và nó chạm thẳng Luật 91/2025 (quyền xoá dữ liệu).
+
+**Chủ dự án phải chọn MỘT — máy KHÔNG được tự làm cả hai:**
+- (a) **Bật xoá thật**: đặt hai khoá và kiểm trên môi trường có backup. Đây là
+  thao tác phá dữ liệu → §4/B7, bắt buộc có chỉ đạo trực tiếp cho đúng việc đó.
+- (b) **Giữ chỉ-đếm nhưng sửa câu trả lời**, đừng hứa "vĩnh viễn". Đây là sửa
+  copy pháp-lý về quyền dữ liệu → Track-H, nên đi cùng luật sư ở §5.
+
+Phần khả kiến đã làm sẵn từ 2026-08-27 (khoá khai trong `.env.example`,
+`overdue_count` + `state` chiếu ra `/health/ready`, `_erasure_readiness` tách ra
+mức module để kiểm được). Chỉ còn đúng lựa chọn trên.
+
+---
+
+## 1. Gói JS 803/800 kB — nới trần, đợt giảm cân, hay ĐỔI ĐỊNH NGHĨA thước đo?
 
 **Sự thật đo được.** Trần 800 đặt 2026-07-10 khi bundle đang 790 (biên 10 kB).
 Nay 803: **tăng trưởng thật** của 18 task correction-case pilot, không phải rác.
@@ -36,13 +62,18 @@ Nay 803: **tăng trưởng thật** của 18 task correction-case pilot, không 
 - Phiên 2026-08-27 độc lập đã tới cùng kết luận (sổ `90-exceptions-log.md`), và
   việc này đã nằm ở **ROADMAP §37.3** như một task hiệu năng riêng.
 
-**Hai đường, chọn một:**
+**Ba đường, chọn một:**
 - (a) **Nới trần lên 820** kèm giải trình trong `bundle-budget.json` — mở lại cổng
   frontend của CI ngay, đổi lại hạ một nấc tiêu chuẩn.
 - (b) **Giữ trần, xếp đợt giảm cân** (thay maplibre bằng bản nhẹ hơn, hoặc tách
   route bản đồ khỏi build chính) — giữ tiêu chuẩn, đổi lại CI frontend còn đỏ.
+- (c) **Đổi định nghĩa thước đo** (câu hỏi ROADMAP §39 đã nêu): trần "tổng" có nên
+  đếm chunk vendor **tải-lười** không, hay chỉ đếm phần vào lần sơn đầu? Nếu chỉ
+  đếm phần sơn-đầu thì maplibre (276 kB, lazy đúng) ra khỏi phép cộng và con số
+  thật sự phản ánh cái người dùng phải tải. Đây là đổi ĐỊNH NGHĨA, không phải nới
+  trần cho dễ thở — nên cũng phải chủ chốt.
 
-Máy KHÔNG tự chọn: cả hai đều là hạ/giữ một tiêu chuẩn của dự án.
+Máy KHÔNG tự chọn: cả ba đều đổi/hạ một tiêu chuẩn của dự án.
 
 ---
 
@@ -94,6 +125,23 @@ Cũng phát hiện vài dữ liệu **nghi sai** cần chủ xác nhận:
 - `khach-san-khoi-hoa` có `ocop_star = 2` (khách sạn không phải sản phẩm OCOP).
 - `lang-be---am-thuc-du-lich-sinh-thai` có `sub_category = lake`.
 - `mandi-cafe` từng ghi "Đánh giá 7.3/5" (vượt thang) — đã bỏ khi viết lại.
+
+---
+
+## 4b. Meta SEO của 8 trang con còn tên tỉnh cũ (ROADMAP §41) — đánh đổi thật
+
+99 lần nhắc tỉnh cũ / 30 file FE, đã phân thành 4 lớp (máy-đọc cần sửa · taxonomy ·
+đúng-rồi-đừng-đụng · tên riêng). Lớp "cần sửa" nặng nhất là `utils/pageManifest.ts`
+(20 chỗ: `seoTitle`/`seoDescription`/`ogDescription`/`heroSubtitle` của từng trang
+danh mục) — và nó vướng đánh đổi:
+
+- (a) **Bỏ hẳn tên tỉnh cũ khỏi meta trang con** — đúng §1.6 tuyệt đối, nhưng **mất**
+  truy vấn «du lịch Bến Tre», «OCOP Trà Vinh» mà người dân còn tìm nhiều năm nữa.
+- (b) **Giữ tên cũ kèm dấu lịch sử ngắn** («… Bến Tre, Trà Vinh cũ») — giữ truy vấn,
+  tốn ~12 ký tự trong ngân sách 155 của mỗi mô tả.
+
+Đây là đánh đổi SEO/nội dung, không phải sửa kỹ thuật. Site đang noindex nên **chưa
+mất gì**, nhưng việc này phải xong TRƯỚC khi mở index.
 
 ---
 

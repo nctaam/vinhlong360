@@ -90,3 +90,5 @@ ghi ở backlog tối ưu — giảm dần, KHÔNG được tăng tiếp từ 47
 - 2026-08-30T09:57:44 SKIP R30.7 — Commit content-only, khong dung frontend; bundle 803 la task da xep ROADMAP 37.3
 
 - 2026-08-30T09:59:41 SKIP R30.7 — Commit docs-only; bundle 803 la task ROADMAP 37.3, dang trinh chu quyet trong chinh file nay
+
+- 2026-08-30T10:15:05 SKIP R30.7 — Bundle 803 la task ROADMAP 37.3 dang trinh chu quyet; commit nay khong them JS
