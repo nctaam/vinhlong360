@@ -81,7 +81,7 @@
   margin: 0 0 var(--space-6);
   padding: var(--space-4) var(--space-5);
   border: .5px solid var(--line);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-surface);
   background: var(--bg-alt);
 }
 .legal-toc-link {
@@ -90,7 +90,7 @@
   transition: text-decoration-color .3s var(--ease-out), color .3s var(--ease-out);
 }
 .legal-toc-link:hover { text-decoration-color: var(--primary-fg); }
-.legal-toc-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-sm); }
+.legal-toc-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-control); }
 .dark .legal-toc { background: var(--bg-alt); border-color: var(--line); }
 
 /* ── Section rhythm: number badge + content zone ──────────────────── */

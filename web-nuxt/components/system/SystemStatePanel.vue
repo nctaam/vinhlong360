@@ -75,7 +75,7 @@ const iconName = computed(() => STATE_META[props.kind].icon)
   padding: clamp(var(--space-6), 5vw, var(--space-10));
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sheet);
   background: var(--card);
 }
 
@@ -104,7 +104,7 @@ const iconName = computed(() => STATE_META[props.kind].icon)
   width: 48px;
   height: 48px;
   border: 1px solid var(--line);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-surface);
   color: var(--primary);
   background: var(--bg-alt);
   font-size: 1.5rem;

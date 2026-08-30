@@ -1164,7 +1164,7 @@
   padding: var(--space-6) var(--space-5);
   text-align: center;
   border: 2px solid var(--color-border-strong, var(--color-border));
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sheet);
   /* Halo — vòng thứ hai mảnh, cách ra một hơi. Đây là thứ làm "viền dày"
      đọc thành TỜ CHỨNG NHẬN chứ không phải cái hộp. */
   box-shadow: 0 0 0 1px var(--color-canvas), 0 0 0 4px var(--color-border);

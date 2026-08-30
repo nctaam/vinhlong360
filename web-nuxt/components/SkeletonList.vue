@@ -30,7 +30,7 @@ withDefaults(defineProps<{ count?: number }>(), { count: 5 })
 .skl-row {
   display: flex; gap: var(--space-3); align-items: flex-start;
   padding: var(--space-3);
-  background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg);
+  background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet);
   animation: sklFade .45s var(--ease-out-expo) both;
 }
 .skl-row:nth-child(1) { animation-delay: 0s; }
@@ -46,7 +46,7 @@ withDefaults(defineProps<{ count?: number }>(), { count: 5 })
 .skl-body { flex: 1; display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
 .skl-meta { display: flex; align-items: center; gap: var(--space-3); }
 .skl-line {
-  height: 12px; border-radius: var(--radius-sm);
+  height: 12px; border-radius: var(--radius-control);
   background: linear-gradient(90deg, var(--bg-warm) 25%, var(--line, var(--sand-300)) 50%, var(--bg-warm) 75%);
   background-size: 200% 100%; animation: shimmer 1.5s infinite;
 }
@@ -62,7 +62,7 @@ withDefaults(defineProps<{ count?: number }>(), { count: 5 })
 /* image-grid placeholder mirrors PostCard .thread-images */
 .skl-imgs { display: flex; gap: var(--space-2); margin-top: var(--space-1); }
 .skl-img {
-  flex: 1; aspect-ratio: 4 / 3; max-width: 33%; border-radius: var(--radius-md);
+  flex: 1; aspect-ratio: 4 / 3; max-width: 33%; border-radius: var(--radius-surface);
   background: linear-gradient(90deg, var(--bg-warm) 25%, var(--line, var(--sand-300)) 50%, var(--bg-warm) 75%);
   background-size: 200% 100%; animation: shimmer 1.5s infinite;
 }

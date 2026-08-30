@@ -364,7 +364,7 @@ function actionLabel(a: ActivityItem) {
 .cp-hero {
   display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 1rem;
   align-items: center; margin-bottom: 1rem; padding: 1.25rem;
-  border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--card);
+  border: 1px solid var(--line); border-radius: var(--radius-sheet); background: var(--card);
 }
 .cp-avatar-link { width: 80px; height: 80px; border-radius: 50%; overflow: hidden; display: block; }
 .cp-avatar, .cp-avatar-fallback { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; display: block; }
@@ -382,7 +382,7 @@ function actionLabel(a: ActivityItem) {
 .cp-alert {
   display: flex; align-items: center; justify-content: space-between; gap: .75rem;
   margin-bottom: 1rem; padding: .75rem .9rem; border: 1px solid rgba(var(--danger-rgb), .22);
-  border-radius: var(--radius-md); background: color-mix(in oklab, var(--error-container) 70%, var(--card));
+  border-radius: var(--radius-surface); background: color-mix(in oklab, var(--error-container) 70%, var(--card));
   color: var(--ink);
 }
 .cp-alert span { font-size: .86rem; line-height: 1.4; }
@@ -390,7 +390,7 @@ function actionLabel(a: ActivityItem) {
 .cp-summary-grid, .cp-main-grid { display: grid; gap: 1rem; }
 .cp-summary-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 1rem; }
 .cp-panel, .cp-section, .cp-side-panel {
-  border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--card);
+  border: 1px solid var(--line); border-radius: var(--radius-sheet); background: var(--card);
 }
 .cp-panel { padding: 1rem; }
 .cp-panel-head, .cp-section-head { display: flex; justify-content: space-between; gap: .75rem; align-items: flex-start; margin-bottom: .75rem; }
@@ -400,29 +400,29 @@ function actionLabel(a: ActivityItem) {
 .cp-progress { height: 8px; border-radius: var(--radius-full); overflow: hidden; background: var(--bg-alt); margin-bottom: .75rem; }
 .cp-progress span { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width .35s var(--ease-out); }
 .cp-checks, .cp-action-list, .cp-data-list { display: flex; flex-direction: column; gap: .45rem; }
-.cp-check { display: flex; align-items: center; gap: .45rem; color: var(--ink-700); font-size: .84rem; text-decoration: none; border-radius: var(--radius-sm); }
+.cp-check { display: flex; align-items: center; gap: .45rem; color: var(--ink-700); font-size: .84rem; text-decoration: none; border-radius: var(--radius-control); }
 .cp-check:hover { color: var(--ink); }
 .cp-check:focus-visible, .cp-mini-link:focus-visible, .cp-action-item:focus-visible, .cp-data-row:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .cp-check.done { color: var(--ink); }
 .cp-check.done span { color: var(--accent); font-weight: 800; }
-.cp-action-item, .cp-data-row { display: flex; align-items: center; justify-content: space-between; gap: .65rem; padding: .55rem .65rem; border-radius: var(--radius-md); text-decoration: none; color: var(--ink); background: var(--bg-alt); }
+.cp-action-item, .cp-data-row { display: flex; align-items: center; justify-content: space-between; gap: .65rem; padding: .55rem .65rem; border-radius: var(--radius-surface); text-decoration: none; color: var(--ink); background: var(--bg-alt); }
 .cp-action-item:hover, .cp-data-row:hover { background: color-mix(in oklab, var(--accent) 8%, var(--bg-alt)); }
 .cp-action-icon { font-size: 1rem; }
-.cp-done-state { padding: .75rem; border-radius: var(--radius-md); background: var(--bg-alt); color: var(--ink-700); font-size: .84rem; line-height: 1.45; }
+.cp-done-state { padding: .75rem; border-radius: var(--radius-surface); background: var(--bg-alt); color: var(--ink-700); font-size: .84rem; line-height: 1.45; }
 
 
 
 .cp-main-grid { grid-template-columns: minmax(0, 1fr) 280px; align-items: start; }
 .cp-section, .cp-side-panel { padding: 1rem; }
 .cp-activity-list { display: flex; flex-direction: column; gap: .55rem; }
-.cp-activity-item { display: flex; gap: .65rem; align-items: flex-start; padding: .7rem .8rem; border-radius: var(--radius-md); border: 1px solid var(--line); background: var(--bg-alt); color: inherit; text-decoration: none; }
+.cp-activity-item { display: flex; gap: .65rem; align-items: flex-start; padding: .7rem .8rem; border-radius: var(--radius-surface); border: 1px solid var(--line); background: var(--bg-alt); color: inherit; text-decoration: none; }
 .cp-activity-link:hover { border-color: var(--accent); background: color-mix(in oklab, var(--accent) 8%, var(--bg-alt)); }
 .cp-activity-icon { font-size: 1.05rem; flex-shrink: 0; }
 .cp-activity-body { min-width: 0; }
 .cp-activity-text { display: block; font-size: .88rem; line-height: 1.4; }
 .cp-activity-time { display: block; font-size: .76rem; color: var(--ink-700); margin-top: .1rem; }
 .cp-activity-loading { display: flex; flex-direction: column; gap: .5rem; }
-.cp-activity-skel { height: 50px; border-radius: var(--radius-md); }
+.cp-activity-skel { height: 50px; border-radius: var(--radius-surface); }
 .cp-load-more, .cp-wide-btn { width: 100%; margin-top: .75rem; }
 .cp-empty-state { text-align: center; padding: 1.5rem .75rem; color: var(--ink-700); }
 .cp-empty-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; margin-top: .75rem; }
@@ -437,7 +437,7 @@ function actionLabel(a: ActivityItem) {
 @media (max-width: 600px) {
   .cp-hero { grid-template-columns: auto 1fr; }
   .cp-hero-actions .btn { flex: 1 1 130px; justify-content: center; }
-  .cp-score { grid-column: 1 / -1; width: 100%; height: auto; border-radius: var(--radius-md); border-width: 1px; padding: .75rem; display: block; }
+  .cp-score { grid-column: 1 / -1; width: 100%; height: auto; border-radius: var(--radius-surface); border-width: 1px; padding: .75rem; display: block; }
   .cp-alert { flex-direction: column; align-items: stretch; }
 }
 @media (prefers-reduced-motion: reduce) {

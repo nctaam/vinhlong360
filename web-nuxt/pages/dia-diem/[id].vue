@@ -1536,7 +1536,7 @@ useHead({
 .fact-copy {
   display: inline-flex; align-items: center; justify-content: center;
   width: 28px; height: 28px; margin-left: var(--space-1); vertical-align: middle;
-  border: none; border-radius: var(--radius-sm); background: transparent;
+  border: none; border-radius: var(--radius-control); background: transparent;
   color: var(--muted); cursor: pointer; transition: color .2s, background .2s;
 }
 .fact-copy:hover { color: var(--color-action); background: var(--color-action-surface); }
@@ -1560,7 +1560,7 @@ useHead({
   margin: var(--space-4) 0;
   padding: var(--space-4);
   border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   background: var(--surface);
 }
 .trust-card-head {
@@ -1589,7 +1589,7 @@ useHead({
 .trust-status.unknown { color: var(--muted); background: var(--bg-warm); }
 .trust-source { display: flex; align-items: flex-start; gap: var(--space-2); margin: 0; color: var(--muted); font-size: var(--text-sm); line-height: var(--leading-snug); }
 .trust-source .line-icon { margin-top: .12rem; color: var(--color-action); }
-.trust-open { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); width: 100%; min-height: 44px; margin-top: var(--space-3); padding: 0 var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-sm); color: var(--color-action); background: var(--bg-warm); cursor: pointer; font: inherit; font-size: var(--text-sm); font-weight: var(--weight-semibold); text-align: left; }
+.trust-open { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); width: 100%; min-height: 44px; margin-top: var(--space-3); padding: 0 var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-control); color: var(--color-action); background: var(--bg-warm); cursor: pointer; font: inherit; font-size: var(--text-sm); font-weight: var(--weight-semibold); text-align: left; }
 .trust-open:hover { border-color: var(--color-action); background: var(--bg-alt); }
 .trust-open:focus-visible { outline: 2px solid var(--color-action); outline-offset: 2px; }
 
@@ -1633,7 +1633,7 @@ useHead({
   /* Cùng rủi ro với .dc-disclosure ở trên, và ghi chú này CHỈ hiện đúng lúc
      hero là gradient (entity không ảnh) — tức luôn ở đúng trường hợp nguy hiểm. */
   background: rgba(var(--black-rgb), .62);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   padding: 2px 6px;
   text-shadow: 0 1px 3px rgba(var(--black-rgb), .5); max-width: 58%; text-align: right; line-height: 1.3;
 }
@@ -1657,7 +1657,7 @@ useHead({
      vẫn còn 6.04 ở trường hợp xấu nhất tuyệt đối (nền trắng tinh).
      Cùng lối giải đã dùng sẵn cho nhãn thumbnail ở .dc-thumb-btn bên dưới. */
   background: rgba(var(--black-rgb), .62);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   padding: 2px 6px;
   text-shadow: 0 1px 3px rgba(var(--black-rgb), .45);
 }

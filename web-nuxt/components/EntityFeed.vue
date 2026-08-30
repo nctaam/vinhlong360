@@ -85,7 +85,7 @@ onMounted(async () => {
   justify-content: center;
   min-width: 1.4em;
   padding: 0 .3em;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   background: var(--bg-alt);
   font-size: .85em;
   line-height: 1.4;
@@ -96,7 +96,7 @@ onMounted(async () => {
 .ef-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
 .ef-link {
   display: flex; gap: var(--space-3); padding: var(--space-3);
-  background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg);
+  background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet);
   text-decoration: none; color: var(--ink);
   transition: border-color .25s var(--ease-out), transform .2s var(--ease-spring-gentle);
 }
@@ -110,14 +110,14 @@ onMounted(async () => {
 .ef-author { font-weight: var(--weight-semibold); font-size: var(--text-sm); }
 .ef-text { margin: 0; font-size: var(--text-sm); color: var(--ink-secondary, var(--ink)); line-height: var(--leading-relaxed); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .ef-meta { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-xs); color: var(--muted); flex-wrap: wrap; }
-.ef-more { display: block; text-align: center; padding: var(--space-3); font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--primary-fg); text-decoration: none; border: .5px solid var(--line); border-radius: var(--radius-lg); margin-top: var(--space-2); transition: background .2s; }
+.ef-more { display: block; text-align: center; padding: var(--space-3); font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--primary-fg); text-decoration: none; border: .5px solid var(--line); border-radius: var(--radius-sheet); margin-top: var(--space-2); transition: background .2s; }
 .ef-more:hover { background: rgba(var(--primary-rgb), .04); }
 
 .dark .ef-link { background: var(--bg-alt); }
 .dark .ef-more:hover { background: rgba(var(--white-rgb),.04); }
 
 .ef-skeleton { display: flex; flex-direction: column; gap: var(--space-2); }
-.ef-sk-item { display: flex; gap: var(--space-3); padding: var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg); }
+.ef-sk-item { display: flex; gap: var(--space-3); padding: var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); }
 .ef-sk-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--bg-alt); flex-shrink: 0; animation: skPulse 1.2s var(--ease-in-out) infinite; }
 .ef-sk-lines { flex: 1; display: flex; flex-direction: column; gap: 6px; padding-top: var(--space-1); }
 .ef-sk-line { height: 10px; border-radius: 4px; background: var(--bg-alt); animation: skPulse 1.2s var(--ease-in-out) infinite; }

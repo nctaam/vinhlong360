@@ -515,7 +515,7 @@ useHead(() => ({
   gap: var(--space-3);
   padding: var(--space-4) var(--space-5);
   border: .5px solid var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sheet);
   background: linear-gradient(90deg, rgba(var(--secondary-rgb), .06), transparent);
   text-decoration: none;
   color: var(--ink);

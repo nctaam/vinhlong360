@@ -52,7 +52,7 @@ const props = withDefaults(defineProps<{
   gap: var(--space-4);
   align-items: center;
   padding: var(--space-5) var(--space-6);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-sheet);
   border: .5px solid var(--line);
   background: linear-gradient(135deg, rgba(var(--catalog-legacy-primary-rgb), .04), transparent);
   margin: var(--space-4) 0;
@@ -114,7 +114,7 @@ const props = withDefaults(defineProps<{
   font-weight: var(--weight-semibold);
   color: var(--catalog-legacy-primary-fg);
   padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-surface);
   background: rgba(var(--catalog-legacy-primary-rgb), .06);
   transition: background .2s var(--ease-out), transform .2s var(--ease-out);
   min-height: 44px;

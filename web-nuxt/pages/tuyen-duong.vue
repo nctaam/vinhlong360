@@ -319,7 +319,7 @@ useHead(() => ({
 .rail-stop {
   position: relative; display: flex; align-items: baseline; gap: var(--space-3);
   padding: 2px var(--space-2) 2px 0; margin-bottom: var(--space-3); margin-left: calc(var(--space-2) * -1);
-  border-radius: var(--radius-sm); line-height: var(--leading-normal);
+  border-radius: var(--radius-control); line-height: var(--leading-normal);
   transition: transform .3s var(--ease-out), background .25s var(--ease-out);
   animation: railStopIn .4s var(--ease-out) both;
 }
@@ -349,7 +349,7 @@ useHead(() => ({
 .route-rail:has(.rail-stop:hover)::before { filter: saturate(1.3) brightness(1.08); }
 
 .route-tips {
-  background: var(--badge-season-bg); padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm);
+  background: var(--badge-season-bg); padding: var(--space-3) var(--space-4); border-radius: var(--radius-control);
   font-size: var(--text-sm); margin-bottom: var(--space-3); line-height: var(--leading-normal);
   border: .5px solid rgba(var(--primary-rgb), .15); box-shadow: 0 1px 2px rgba(var(--primary-rgb), .2);
   transition: box-shadow .3s var(--ease-out);

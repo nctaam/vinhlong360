@@ -422,7 +422,7 @@ useHead(() => ({
 .saved-row .card:active { transform: translateY(-1px) scale(.98); transition-duration: .08s; }
 
 .journey-stats { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-3); }
-.js-item { display: flex; align-items: center; gap: var(--space-1); padding: var(--space-2) var(--space-3); background: var(--bg-alt); border-radius: var(--radius-md); font-size: var(--text-sm); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
+.js-item { display: flex; align-items: center; gap: var(--space-1); padding: var(--space-2) var(--space-3); background: var(--bg-alt); border-radius: var(--radius-surface); font-size: var(--text-sm); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
 .js-item:hover { background: var(--card); transform: translateY(-2px); box-shadow: var(--shadow-xs); }
 .js-item:active { transform: scale(.97); transition-duration: .08s; }
 .js-emoji { font-size: var(--text-lg); }
@@ -431,7 +431,7 @@ useHead(() => ({
 .catalog-hero .stat-item {
   background: rgba(var(--secondary-rgb), .04);
   border-left: 3px solid var(--secondary);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle);
 }
 .catalog-hero .stat-item:hover {

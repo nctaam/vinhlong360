@@ -373,7 +373,7 @@ useHead(() => ({
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-sheet);
   padding: clamp(var(--space-8), 4vw + var(--space-6), 4.5rem) var(--space-6) var(--space-6);
   margin-bottom: var(--space-6);
   border: .5px solid var(--line);
@@ -447,7 +447,7 @@ useHead(() => ({
   display: flex; gap: var(--space-6); margin-top: var(--space-6); padding-top: var(--space-4);
   border-top: .5px solid rgba(var(--white-rgb),.22); flex-wrap: wrap;
 }
-.wake-hero-stats .stat-item { padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); }
+.wake-hero-stats .stat-item { padding: var(--space-2) var(--space-3); border-radius: var(--radius-control); }
 .wake-hero-stats .stat-item:hover { background: rgba(var(--white-rgb),.08); }
 .wake-hero-stats .stat-num { color: var(--text-on-dark, var(--white)); }
 .wake-hero-stats .stat-label { color: rgba(var(--white-rgb),.72); }
@@ -477,7 +477,7 @@ useHead(() => ({
   overflow: hidden;
   isolation: isolate;
   padding: var(--space-6) var(--space-5) var(--space-5);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sheet);
   background: var(--card);
   border: .5px solid var(--line);
   transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out-expo), border-color .2s var(--ease-out);
@@ -542,7 +542,7 @@ useHead(() => ({
   position: relative;
   display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1);
   text-align: left;
-  padding: var(--space-5); border-radius: var(--radius-lg);
+  padding: var(--space-5); border-radius: var(--radius-sheet);
   background: var(--card); border: .5px solid var(--line);
   cursor: pointer; min-height: 44px;
   transition: transform .3s var(--ease-spring-gentle), box-shadow .3s var(--ease-out-expo), border-color .2s var(--ease-out);

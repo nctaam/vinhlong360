@@ -60,7 +60,7 @@ function conflictText(conflict: DetailTrustConflict) {
   padding: var(--space-4);
   color: var(--color-text);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   background: var(--color-surface);
 }
 

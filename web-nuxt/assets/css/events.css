@@ -127,7 +127,7 @@
   max-width: 240px;
   background: var(--card);
   border: .5px solid var(--line);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-surface);
   box-shadow: var(--shadow-md);
   padding: var(--space-2) var(--space-3);
   font-size: var(--text-xs);
@@ -171,7 +171,7 @@
   padding: var(--space-3) var(--space-4);
   background: rgba(var(--secondary-rgb), .1);
   border: .5px solid rgba(var(--secondary-rgb), .3);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-surface);
   color: var(--ink);
   text-decoration: none;
   transition: box-shadow .25s var(--ease-out), transform .25s var(--ease-spring-gentle);
@@ -243,7 +243,7 @@
   padding: var(--space-3) var(--space-4);
   background: var(--card);
   border: .5px solid var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sheet);
   color: var(--ink);
   text-decoration: none;
   transition: var(--transition-card);
@@ -337,7 +337,7 @@
   padding: var(--space-4) var(--space-5);
   background: rgba(var(--secondary-rgb), .07);
   border-left: 3px solid rgba(var(--secondary-rgb), .4);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-surface);
 }
 .etiquette-box p { margin: 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); color: var(--ink-secondary); }
 .etiquette-box strong { color: var(--ink); }
@@ -393,7 +393,7 @@
 .quick-picks.blob-picks .quick-pick:nth-child(1) { border-radius: 42% 58% 61% 39% / 45% 42% 58% 55%; }
 .quick-picks.blob-picks .quick-pick:nth-child(2) { border-radius: 55% 45% 40% 60% / 38% 55% 45% 62%; }
 .quick-picks.blob-picks .quick-pick:nth-child(3) { border-radius: 48% 52% 55% 45% / 58% 40% 60% 42%; }
-.quick-picks.blob-picks .quick-pick:hover { border-radius: var(--radius-lg); }
+.quick-picks.blob-picks .quick-pick:hover { border-radius: var(--radius-sheet); }
 
 /* ── Register hue-shift (leaf = lễ hội/ancestral, amber = sự kiện/contemporary).
    le-hoi.vue and su-kien.vue are separate routes (not a single page with a live
@@ -431,7 +431,7 @@
   padding: var(--space-4);
   background: var(--card);
   border: .5px solid var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sheet);
   box-shadow: var(--shadow-xs);
   transition: var(--transition-card);
   color: var(--ink);
@@ -452,7 +452,7 @@
   text-align: center;
   background: var(--date-badge-bg);
   color: var(--date-badge-ink);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-surface);
   padding: var(--space-1) var(--space-2);
   line-height: 1.2;
   /* Depth treatment: soft inner border + bottom inset scrim so the badge reads as a folded date tab. */
@@ -520,7 +520,7 @@
   flex-shrink: 0;
   width: 80px;
   height: 60px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-surface);
   overflow: hidden;
 }
 .event-media {
@@ -561,7 +561,7 @@
   right: var(--space-2);
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   padding: var(--space-1) var(--space-2);
   cursor: pointer;
   font-size: var(--text-sm);
@@ -619,7 +619,7 @@
 .calendar {
   background: var(--card);
   border: .5px solid var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sheet);
   padding: var(--space-5);
   overflow-x: auto;
   overscroll-behavior-x: contain;
@@ -671,7 +671,7 @@
   min-height: 72px;
   padding: var(--space-1);
   border: .5px solid transparent;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   transition: background .3s var(--ease-out), border-color .3s var(--ease-out);
 }
 .cal-cell:not(.cal-empty):hover { background: rgba(var(--primary-rgb), .04); }
@@ -684,7 +684,7 @@
     repeating-linear-gradient(45deg, rgba(var(--primary-rgb), .03) 0 2px, transparent 2px 7px),
     rgba(var(--primary-rgb), .06);
 }
-.cal-cell:focus-visible { outline: 2px solid var(--primary-fg); outline-offset: -2px; border-radius: var(--radius-sm); }
+.cal-cell:focus-visible { outline: 2px solid var(--primary-fg); outline-offset: -2px; border-radius: var(--radius-control); }
 .cal-empty { visibility: hidden; }
 .cal-num {
   font-size: var(--text-xs);
@@ -820,8 +820,8 @@
      regular rounded-rect on both the outer track and each tab — a 9999px
      radius reads fine as a single pill but looks broken (lopsided lozenge)
      once it's two stacked rows of different-width tabs. */
-  .register-toggle { flex-wrap: wrap; border-radius: var(--radius-lg); }
-  .register-toggle-tab { flex: 1 1 100%; justify-content: center; border-radius: var(--radius-md); }
+  .register-toggle { flex-wrap: wrap; border-radius: var(--radius-sheet); }
+  .register-toggle-tab { flex: 1 1 100%; justify-content: center; border-radius: var(--radius-surface); }
   .event-row { flex-wrap: wrap; }
   .event-media { width: 100%; order: -1; }
   .event-thumb { width: 100%; height: 120px; }

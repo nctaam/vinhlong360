@@ -777,9 +777,9 @@ onMounted(fetchDashboard)
   .dash-legend-item { font-size: .65rem; }
 }
 .dash-activity { display: flex; flex-direction: column; gap: 2px; }
-.activity-row { display: flex; align-items: center; gap: .5rem; padding: .4rem .6rem; border-radius: var(--radius-sm); font-size: .8rem; }
+.activity-row { display: flex; align-items: center; gap: .5rem; padding: .4rem .6rem; border-radius: var(--radius-control); font-size: .8rem; }
 .activity-row:nth-child(odd) { background: var(--bg-alt); }
-.activity-method { font-weight: 700; font-size: .7rem; padding: 1px 6px; border-radius: var(--radius-sm); text-transform: uppercase; }
+.activity-method { font-weight: 700; font-size: .7rem; padding: 1px 6px; border-radius: var(--radius-control); text-transform: uppercase; }
 .activity-method.post { background: rgba(var(--secondary-rgb),.15); color: var(--secondary); }
 .activity-method.put, .activity-method.patch { background: rgba(var(--warning-rgb),.15); color: rgb(var(--warning-rgb)); }
 .activity-method.delete { background: rgba(var(--red-rgb),.15); color: rgb(var(--red-rgb)); }

@@ -939,7 +939,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 .sidebar-search { margin-bottom: var(--space-3); }
 .search-input {
   width: 100%; padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--line); border-radius: var(--radius-md);
+  border: 1px solid var(--line); border-radius: var(--radius-surface);
   font-size: var(--text-sm); background: var(--card); color: var(--ink);
   outline: none; transition: border-color .15s;
 }
@@ -948,7 +948,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 .snav-link {
   display: block; padding: var(--space-2) var(--space-3);
   font-size: var(--text-xs); color: var(--muted); text-decoration: none;
-  border-radius: var(--radius-sm); transition: background .15s, color .15s;
+  border-radius: var(--radius-control); transition: background .15s, color .15s;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .snav-link:hover { background: var(--bg-warm); color: var(--ink); }
@@ -969,7 +969,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
     var(--grain),
     linear-gradient(120deg, color-mix(in srgb, var(--river-600) 14%, transparent) 0%, var(--bg-warm) 55%, rgba(var(--primary-rgb), .14) 120%);
   background-blend-mode: overlay, normal;
-  border-radius: var(--radius-xl); border: .5px solid var(--line);
+  border-radius: var(--radius-sheet); border: .5px solid var(--line);
 }
 .bm-inner { flex: 1 1 auto; min-width: 0; max-width: var(--measure-read); }
 .bm-eyebrow {
@@ -991,7 +991,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 /* Quickstart */
 .quickstart-steps { list-style: none; padding: 0; margin: 0 0 var(--space-4); counter-reset: none; }
 .quickstart-steps > li + li { margin-top: var(--space-3); }
-.qs-step { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-4); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-xl); }
+.qs-step { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-4); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); }
 .qs-num {
   width: 2.2rem; height: 2.2rem; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
@@ -1015,7 +1015,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 /* Topics (collapsible) */
 .guide-topic {
   margin-bottom: var(--space-3); border: .5px solid var(--line);
-  border-radius: var(--radius-xl); background: var(--card); overflow: hidden;
+  border-radius: var(--radius-sheet); background: var(--card); overflow: hidden;
   scroll-margin-top: calc(var(--header-h) + 0.5rem);
 }
 .topic-summary {
@@ -1059,7 +1059,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
   padding: var(--space-3) var(--space-4);
   border-left: 3px solid var(--primary-fg);
   margin-bottom: var(--space-3); background: var(--bg-warm);
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  border-radius: 0 var(--radius-surface) var(--radius-surface) 0;
 }
 /* WCAG 1.3.1 fix: was h4, skipping h3 under the section's h2 — bumped to h3
    (font-size/weight/margin unchanged, so no visual difference from the level bump). */
@@ -1069,7 +1069,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 /* Tip, Warn, DYK, See-also */
 .tip-box, .warn-box, .dyk-box {
   margin-top: var(--space-3); padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-lg); font-size: var(--text-sm);
+  border-radius: var(--radius-sheet); font-size: var(--text-sm);
 }
 .tip-box { background: rgba(var(--primary-rgb), .06); border: .5px solid rgba(var(--primary-rgb), .15); }
 .warn-box { background: rgba(var(--warning-rgb), .06); border: .5px solid rgba(var(--warning-rgb), .2); }
@@ -1080,7 +1080,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 
 .see-also { margin-top: var(--space-3); display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; font-size: var(--text-xs); }
 .see-also-label { color: var(--muted); font-weight: var(--weight-semibold); }
-.see-also-link { color: var(--primary-fg); text-decoration: none; padding: 2px var(--space-2); background: rgba(var(--primary-rgb), .06); border-radius: var(--radius-sm); }
+.see-also-link { color: var(--primary-fg); text-decoration: none; padding: 2px var(--space-2); background: rgba(var(--primary-rgb), .06); border-radius: var(--radius-control); }
 .see-also-link:hover { text-decoration: underline; }
 
 .topic-link {
@@ -1098,7 +1098,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
   margin: 0 0 var(--space-3);
 }
 .faq-item {
-  border: .5px solid var(--line); border-radius: var(--radius-lg);
+  border: .5px solid var(--line); border-radius: var(--radius-sheet);
   margin-bottom: var(--space-2); overflow: hidden;
 }
 .faq-item > summary {
@@ -1165,7 +1165,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 @media (max-width: 900px) {
   .guide-sidebar { display: none; }
   .mobile-toc { display: block; margin-bottom: var(--space-4); }
-  .mobile-toc { border: .5px solid var(--line); border-radius: var(--radius-xl); }
+  .mobile-toc { border: .5px solid var(--line); border-radius: var(--radius-sheet); }
   .mobile-toc-toggle {
     padding: var(--space-3) var(--space-4); cursor: pointer; list-style: none;
     font-size: var(--text-sm); font-weight: var(--weight-semibold);
@@ -1178,7 +1178,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
   .mobile-toc-nav a {
     display: block; padding: var(--space-2) var(--space-3);
     font-size: var(--text-sm); color: var(--ink); text-decoration: none;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-control);
   }
   .mobile-toc-nav a:hover { background: var(--bg-warm); }
   .guide-layout { padding: var(--space-3); }
@@ -1186,7 +1186,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
   .guide-hero .bm-inner { max-width: none; }
   .bm-eyebrow { justify-content: center; }
   .qs-step { flex-direction: column; align-items: center; text-align: center; }
-  .guide-topic { border-radius: var(--radius-lg); }
+  .guide-topic { border-radius: var(--radius-sheet); }
   .topic-body { padding: 0 var(--space-3) var(--space-3); }
   .subtopic { padding: var(--space-2) var(--space-3); }
 }

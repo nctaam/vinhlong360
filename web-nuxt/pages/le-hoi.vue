@@ -685,7 +685,7 @@ useHead({
   font-size: var(--text-sm);
   color: var(--ink-tertiary, var(--muted));
   background: rgba(var(--accent-rgb), .08);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-surface);
   border-left: 3px solid rgba(var(--accent-rgb), .35);
 }
 

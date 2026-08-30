@@ -72,8 +72,8 @@ const dateline = computed(() => {
   display: flex; align-items: center; gap: .75rem; flex: 1; min-width: 0;
   text-decoration: none; color: var(--ink);
 }
-.saved-entity-cover { position: relative; display: block; flex-shrink: 0; width: 80px; height: 56px; border-radius: var(--radius-md); overflow: hidden; }
-.saved-entity-img { display: block; width: 80px; height: 56px; border-radius: var(--radius-md); object-fit: cover; flex-shrink: 0; }
+.saved-entity-cover { position: relative; display: block; flex-shrink: 0; width: 80px; height: 56px; border-radius: var(--radius-surface); overflow: hidden; }
+.saved-entity-img { display: block; width: 80px; height: 56px; border-radius: var(--radius-surface); object-fit: cover; flex-shrink: 0; }
 .saved-image-disclosure { position: absolute; inset: auto 2px 2px; display: flex; justify-content: flex-end; }
 .saved-image-disclosure :deep([data-image-disclosure]) { font-size: 9px; padding: 1px 4px; }
 .saved-entity-img-generated { position: relative; background: linear-gradient(160deg, rgba(var(--primary-rgb), .14) 0%, var(--bg-alt) 70%); }

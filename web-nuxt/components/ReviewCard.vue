@@ -88,7 +88,7 @@ const { timeAgo } = useTimeAgo()
 .ri-actions { margin-inline-start: auto; display: inline-flex; gap: var(--space-2); }
 .ri-action-btn {
   min-height: 44px; padding-inline: var(--space-2);
-  border: .5px solid var(--line); border-radius: var(--radius-sm);
+  border: .5px solid var(--line); border-radius: var(--radius-control);
   background: transparent; font-size: var(--text-xs); color: var(--muted); cursor: pointer;
   transition: color .15s var(--ease-soft), border-color .15s var(--ease-soft);
 }
@@ -101,7 +101,7 @@ const { timeAgo } = useTimeAgo()
   border-left: 3px solid transparent;
   border-image: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 55%, var(--clay-600) 100%) 1;
   background: rgba(var(--accent-rgb), .04);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-surface);
 }
 .dark .review-featured {
   border-image: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 55%, var(--clay-400) 100%) 1;

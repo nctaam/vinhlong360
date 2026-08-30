@@ -207,7 +207,7 @@ useHead({
   gap: var(--space-5);
   margin: var(--space-6) 0 0;
   padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sheet);
 }
 /* Odd/even background-tint alternation — scrolling reads as turning a page. */
 .about-section.tint-alt { background: var(--bg-warm); }
@@ -240,7 +240,7 @@ useHead({
 .highlight-badge {
   background: var(--bg-warm);
   border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sheet);
   padding: var(--space-6);
   margin-top: var(--space-5);
 }
@@ -296,7 +296,7 @@ useHead({
   padding: var(--space-5) var(--space-6);
   background: var(--bg-warm);
   border: .5px solid var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sheet);
 }
 .editors-infobox h2 {
   display: flex; align-items: center; gap: var(--space-2);

@@ -636,7 +636,7 @@ useHead({
 .person-name { font-size: var(--text-sm); font-weight: var(--weight-medium); }
 .person-meta { font-size: var(--text-xs); color: var(--muted); }
 .search-post-list { display: flex; flex-direction: column; gap: var(--space-2); }
-.search-post-item { display: block; padding: var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out); }
+.search-post-item { display: block; padding: var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out); }
 .search-post-item:hover { border-color: var(--color-action); }
 .spi-head { display: flex; align-items: center; gap: var(--space-2); margin-bottom: .2rem; }
 .spi-head strong { font-size: var(--text-sm); }
@@ -644,7 +644,7 @@ useHead({
 .spi-content { font-size: var(--text-sm); color: var(--ink-700); margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
 .quick-picks { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--space-3); }
-.quick-pick { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-4); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg); text-align: center; box-shadow: var(--shadow-xs); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
+.quick-pick { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-4); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); text-align: center; box-shadow: var(--shadow-xs); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
 .quick-pick:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--color-action); background: var(--color-action-surface); }
 .quick-pick:active { transform: scale(.97); transition-duration: .08s; }
 .quick-pick:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
@@ -653,7 +653,7 @@ useHead({
    are translucent-white, illegible without the saturated backdrop). Small size, rounded tile. */
 .quick-pick-icon {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 44px; height: 44px; border-radius: var(--radius-md);
+  width: 44px; height: 44px; border-radius: var(--radius-surface);
   background-size: cover; background-position: center;
   transition: transform .35s var(--ease-spring-gentle);
 }
@@ -677,12 +677,12 @@ useHead({
   position: absolute; top: 100%; left: 0; right: 0; z-index: var(--z-dropdown);
   margin: var(--space-1) 0 0; padding: var(--space-1); list-style: none;
   background: var(--card); border: .5px solid var(--line);
-  border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+  border-radius: var(--radius-sheet); box-shadow: var(--shadow-lg);
   max-height: 320px; overflow-y: auto;
 }
 .sug-item {
   display: flex; align-items: center; gap: var(--space-2);
-  padding: var(--space-2) var(--space-3); border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3); border-radius: var(--radius-surface);
   cursor: pointer; font-size: var(--text-sm); color: var(--ink);
   border-left: 3px solid transparent;
   transition: background .15s, border-color .15s;
@@ -834,14 +834,14 @@ useHead({
 .recent-card {
   display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
   padding: var(--space-3); background: var(--card); border: .5px solid var(--line);
-  border-radius: var(--radius-lg); text-decoration: none; color: var(--ink); text-align: center;
+  border-radius: var(--radius-sheet); text-decoration: none; color: var(--ink); text-align: center;
   transition: transform .3s var(--ease-spring-gentle), box-shadow .3s var(--ease-out), border-color .3s;
 }
 .recent-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--color-action); }
 .recent-card:active { transform: scale(.97); transition-duration: .08s; }
 .recent-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .recent-img {
-  width: 56px; height: 56px; border-radius: var(--radius-md); object-fit: cover;
+  width: 56px; height: 56px; border-radius: var(--radius-surface); object-fit: cover;
 }
 .recent-image-wrap { position: relative; display: block; width: 56px; height: 56px; }
 .recent-image-disclosure { position: absolute; inset: auto 1px 1px; display: flex; justify-content: flex-end; }

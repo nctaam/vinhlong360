@@ -1576,7 +1576,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .ent-sortable { white-space: nowrap; }
 .ent-sort-btn { background: none; border: none; padding: 0; font: inherit; color: inherit; cursor: pointer; user-select: none; }
 .ent-sort-btn:hover { color: var(--primary); }
-.ent-sort-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-xs); }
+.ent-sort-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-control); }
 .ent-sort-arrow { font-size: .65rem; opacity: .7; margin-left: 2px; }
 
 .ent-char-count { font-weight: 400; font-size: .78rem; color: var(--muted); transition: color .2s; }

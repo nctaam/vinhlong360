@@ -194,7 +194,7 @@ useHead({
 .contact-card {
   background: var(--card);
   border: .5px solid var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sheet);
   padding: var(--space-6);
   box-shadow: var(--shadow-xs);
   transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out);
@@ -226,7 +226,7 @@ useHead({
   width: 48px;
   height: 48px;
   padding: 7px;
-  border-radius: var(--radius-md) var(--radius-md) var(--radius-md) 4px;
+  border-radius: var(--radius-surface) var(--radius-surface) var(--radius-surface) 4px;
   border: .5px solid var(--line);
   background: var(--bg-warm);
   margin-bottom: var(--space-3);
@@ -298,7 +298,7 @@ useHead({
 }
 
 /* Focus & accessibility */
-.contact-card a:focus-visible, .card-action .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; border-radius: var(--radius-sm); }
+.contact-card a:focus-visible, .card-action .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; border-radius: var(--radius-control); }
 .card-action .btn { transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), background .3s var(--ease-out); }
 .card-action .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
 .card-action .btn:active { transform: scale(.96); transition-duration: .08s; }

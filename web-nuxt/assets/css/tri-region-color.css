@@ -176,7 +176,7 @@
 
 [data-color-system="tri-region-v1"][data-page-recipe="search"] [data-color-role="status-error"] {
   border: 1px solid var(--color-error);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sheet);
   background: rgba(var(--color-error-rgb), .08);
   color: var(--color-text);
 }

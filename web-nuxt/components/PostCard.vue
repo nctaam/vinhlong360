@@ -296,7 +296,7 @@ const { timeAgo } = useTimeAgo()
   justify-content: center;
   min-width: 1.4em;
   padding: 0 .15em;
-  border-radius: var(--radius-xs);
+  border-radius: var(--radius-control);
   background: var(--bg-alt);
   font-size: .9em;
   line-height: 1.4;

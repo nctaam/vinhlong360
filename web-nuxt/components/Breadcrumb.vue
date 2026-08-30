@@ -60,7 +60,7 @@ if (props.jsonLd) {
   transition: color .3s var(--ease-out), background .3s var(--ease-out);
   padding: var(--space-2) 6px;
   margin: calc(-1 * var(--space-2)) -6px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   min-height: 44px;
   display: inline-flex;
   align-items: center;

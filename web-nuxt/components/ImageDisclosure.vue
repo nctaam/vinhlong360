@@ -46,7 +46,7 @@ const disclosureVisible = computed(() => props.presentation === 'full' || props.
   font-size: var(--text-2xs);
   line-height: 1.3;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   background: var(--color-surface);
 }
 .image-disclosure-sr-only {

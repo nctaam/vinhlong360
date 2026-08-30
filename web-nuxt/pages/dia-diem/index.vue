@@ -323,7 +323,7 @@ useHead({
 .dd-type-card {
   display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
   padding: var(--space-4) var(--space-5);
-  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sheet);
   cursor: pointer; transition: border-color .2s, box-shadow .2s;
   min-width: 100px; flex-shrink: 0;
 }
@@ -417,7 +417,7 @@ useHead({
     90% 6px, 93% 0%, 96% 6px, 99% 0%, 100% 6px,
     100% 100%, 0% 100%
   );
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  border-radius: 0 0 var(--radius-sheet) var(--radius-sheet);
   transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out-expo), border-color .2s var(--ease-out);
   transform: rotate(-1deg);
 }
@@ -486,7 +486,7 @@ useHead({
   background: var(--surface-translucent); backdrop-filter: var(--glass);
   -webkit-backdrop-filter: var(--glass);
   border: .5px solid var(--line); border-top: 1px solid var(--line);
-  border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-sheet); box-shadow: var(--shadow-sm);
   padding: var(--space-3); margin-bottom: var(--space-4);
 }
 .dd-refine .dd-search { margin-bottom: 0; }

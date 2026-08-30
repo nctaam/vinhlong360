@@ -866,7 +866,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   background: rgba(var(--white-rgb),.14);
   backdrop-filter: saturate(180%) blur(10px); -webkit-backdrop-filter: saturate(180%) blur(10px);
   border: .5px solid rgba(var(--white-rgb),.30);
-  border-radius: calc(var(--radius-md) + var(--space-1));
+  border-radius: calc(var(--radius-surface) + var(--space-1));
   box-shadow: 0 8px 30px rgba(var(--black-rgb),.18), 0 2px 8px rgba(var(--black-rgb),.12);
   transition: box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out), transform .35s var(--ease-spring-gentle);
 }
@@ -984,7 +984,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
     -webkit-mask-image: linear-gradient(to right, transparent, var(--color-mask-opaque) var(--space-4), var(--color-mask-opaque) 88%, transparent);
   }
   .home .scroll-row::-webkit-scrollbar { display: none; }
-  .home .scroll-row:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-md); }
+  .home .scroll-row:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-surface); }
   .home .scroll-row:hover, .home .scroll-row:focus-within { mask-image: linear-gradient(to right, transparent, var(--color-mask-opaque) var(--space-4), var(--color-mask-opaque) 100%); -webkit-mask-image: linear-gradient(to right, transparent, var(--color-mask-opaque) var(--space-4), var(--color-mask-opaque) 100%); }
   .home .scroll-row > * { flex: 0 0 280px; scroll-snap-align: start; }
 }
@@ -998,7 +998,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .event-mini { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); min-height: 48px; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle); }
 .event-mini:hover { border-color: var(--color-action-border); transform: translateX(2px); }
 .ec-date-sm { min-width: 46px; padding: var(--space-2); }
-.ec-date { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 52px; padding: var(--space-2); background: var(--home-color-amber-surface); border-radius: var(--radius-sm); color: var(--home-color-amber-text); }
+.ec-date { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 52px; padding: var(--space-2); background: var(--home-color-amber-surface); border-radius: var(--radius-control); color: var(--home-color-amber-text); }
 .ec-day { font-size: var(--text-xl); font-weight: var(--weight-extrabold); line-height: 1; font-variant-numeric: tabular-nums; }
 .ec-month { font-size: var(--text-xs); font-weight: var(--weight-semibold); opacity: 1; }
 .ec-info { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
@@ -1068,7 +1068,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 /* ═══════════════════════════════════════════════════
    SKELETON + MISC
    ═══════════════════════════════════════════════════ */
-.sk-heading { height: 1.4rem; width: 180px; border-radius: var(--radius-sm); background: linear-gradient(90deg, var(--bg-alt) 25%, var(--line) 37%, var(--bg-alt) 63%); background-size: 400% 100%; animation: skShimmer 1.4s var(--ease-out) infinite; }
+.sk-heading { height: 1.4rem; width: 180px; border-radius: var(--radius-control); background: linear-gradient(90deg, var(--bg-alt) 25%, var(--line) 37%, var(--bg-alt) 63%); background-size: 400% 100%; animation: skShimmer 1.4s var(--ease-out) infinite; }
 @keyframes skShimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
 .home .grid .card, .home .scroll-row .card { transition: transform .18s var(--ease-out), box-shadow .25s var(--ease-out); }
 
@@ -1125,7 +1125,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .fy-media { flex: 0 0 60px; width: 60px; display: flex; flex-direction: column; gap: 2px; align-self: stretch; }
 .fy-thumb {
   flex: 0 0 60px; width: 60px; height: 60px;
-  border-radius: var(--radius-sm); overflow: hidden;
+  border-radius: var(--radius-control); overflow: hidden;
   display: flex; align-items: center; justify-content: center;
   background: var(--bg-alt);
 }

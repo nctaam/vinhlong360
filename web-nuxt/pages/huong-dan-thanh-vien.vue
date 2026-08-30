@@ -167,7 +167,7 @@ useHead({
   display: flex; align-items: center; gap: var(--space-4);
   padding: var(--space-6); margin-bottom: var(--space-8);
   background: linear-gradient(135deg, rgba(var(--secondary-rgb), .1) 0%, var(--bg-warm) 100%);
-  border-radius: var(--radius-xl); border: .5px solid var(--line);
+  border-radius: var(--radius-sheet); border: .5px solid var(--line);
 }
 .guide-hero-icon { font-size: 2.5rem; flex-shrink: 0; }
 /* Local page masthead eyebrow — small-caps dateline, matches the site's
@@ -194,7 +194,7 @@ useHead({
 .level-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-3); }
 .level-card {
   display: flex; align-items: center; gap: var(--space-3);
-  padding: var(--space-4); border-radius: var(--radius-lg);
+  padding: var(--space-4); border-radius: var(--radius-sheet);
   border: .5px solid var(--line); background: var(--card);
   transition: transform .25s var(--ease-spring-gentle), border-color .25s var(--ease-out);
 }
@@ -222,7 +222,7 @@ useHead({
 .points-table tfoot td { border-bottom: none; padding-top: var(--space-3); }
 
 .guide-note {
-  background: var(--bg-warm); border-radius: var(--radius-lg); padding: var(--space-4);
+  background: var(--bg-warm); border-radius: var(--radius-sheet); padding: var(--space-4);
   font-size: var(--text-sm); color: var(--ink-secondary, var(--ink)); line-height: var(--leading-relaxed);
   border: .5px solid var(--line);
 }
@@ -231,7 +231,7 @@ useHead({
 .badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-3); }
 .badge-card {
   display: flex; align-items: center; gap: var(--space-3);
-  padding: var(--space-3) var(--space-4); border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4); border-radius: var(--radius-sheet);
   border: .5px solid var(--line); background: var(--card);
   transition: transform .2s var(--ease-spring-gentle);
 }
@@ -245,7 +245,7 @@ useHead({
 .tips-list { display: flex; flex-direction: column; gap: var(--space-3); }
 .tip-item {
   display: flex; gap: var(--space-4); align-items: flex-start;
-  padding: var(--space-4); border-radius: var(--radius-lg);
+  padding: var(--space-4); border-radius: var(--radius-sheet);
   background: var(--card); border: .5px solid var(--line);
 }
 .tip-num {

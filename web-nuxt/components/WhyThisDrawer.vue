@@ -175,27 +175,27 @@ useModalA11y(openState, drawerEl, { onClose: () => emit('close') })
   min-height: 56px;
   padding: var(--space-3);
   border: .5px solid var(--line);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-surface);
   background: var(--bg-warm);
   font-size: var(--text-sm);
   line-height: var(--leading-snug);
 }
 .why-signal.primary { border-color: color-mix(in srgb, var(--primary-fg) 45%, var(--line)); background: color-mix(in srgb, var(--primary-fg) 8%, var(--bg-warm)); }
-.why-signal-icon { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--radius-sm); color: var(--primary-fg); background: var(--surface); }
+.why-signal-icon { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--radius-control); color: var(--primary-fg); background: var(--surface); }
 .disclosure-privacy { display: flex; align-items: flex-start; gap: var(--space-2); margin: 0; color: var(--muted); font-size: var(--text-xs); line-height: var(--leading-relaxed); }
 .disclosure-privacy .line-icon { margin-top: .15rem; color: var(--primary-fg); }
 .why-secondary-actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); margin-top: var(--space-5); }
-.why-secondary-actions button { min-height: 44px; padding: var(--space-2) var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-sm); color: var(--ink-700); background: transparent; cursor: pointer; font: inherit; font-size: var(--text-xs); font-weight: var(--weight-semibold); }
+.why-secondary-actions button { min-height: 44px; padding: var(--space-2) var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-control); color: var(--ink-700); background: transparent; cursor: pointer; font: inherit; font-size: var(--text-xs); font-weight: var(--weight-semibold); }
 .why-secondary-actions button:hover { border-color: var(--primary-fg); color: var(--primary-fg); background: var(--bg-warm); }
 .disclosure-primary-wrap { position: sticky; bottom: calc(-1 * var(--space-5)); margin: auto calc(-1 * var(--space-6)) calc(-1 * var(--space-5)); padding: var(--space-4) var(--space-6) var(--space-5); border-top: .5px solid var(--line); background: var(--surface); }
-.disclosure-primary { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: 48px; padding: 0 var(--space-4); border-radius: var(--radius-sm); color: var(--on-primary); background: var(--primary); font-size: var(--text-sm); font-weight: var(--weight-semibold); text-decoration: none; }
+.disclosure-primary { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: 48px; padding: 0 var(--space-4); border-radius: var(--radius-control); color: var(--on-primary); background: var(--primary); font-size: var(--text-sm); font-weight: var(--weight-semibold); text-decoration: none; }
 .disclosure-drawer-enter-active, .disclosure-drawer-leave-active { transition: opacity .2s var(--ease-out); }
 .disclosure-drawer-enter-active .disclosure-drawer, .disclosure-drawer-leave-active .disclosure-drawer { transition: transform .25s var(--ease-out); }
 .disclosure-drawer-enter-from, .disclosure-drawer-leave-to { opacity: 0; }
 .disclosure-drawer-enter-from .disclosure-drawer, .disclosure-drawer-leave-to .disclosure-drawer { transform: translateX(24px); }
 @media (max-width: 640px) {
   .disclosure-overlay { align-items: flex-end; }
-  .disclosure-drawer { width: 100%; height: auto; max-height: min(88vh, 760px); padding: var(--space-6) var(--space-4) var(--space-4); border: 0; border-radius: var(--radius-lg) var(--radius-lg) 0 0; box-shadow: 0 -18px 44px rgba(var(--black-rgb), .2); }
+  .disclosure-drawer { width: 100%; height: auto; max-height: min(88vh, 760px); padding: var(--space-6) var(--space-4) var(--space-4); border: 0; border-radius: var(--radius-sheet) var(--radius-sheet) 0 0; box-shadow: 0 -18px 44px rgba(var(--black-rgb), .2); }
   .why-secondary-actions { grid-template-columns: 1fr; }
   .disclosure-primary-wrap { bottom: calc(-1 * var(--space-4)); margin-right: calc(-1 * var(--space-4)); margin-bottom: calc(-1 * var(--space-4)); margin-left: calc(-1 * var(--space-4)); padding-right: var(--space-4); padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom)); padding-left: var(--space-4); }
   .disclosure-drawer-enter-from .disclosure-drawer, .disclosure-drawer-leave-to .disclosure-drawer { transform: translateY(24px); }

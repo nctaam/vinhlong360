@@ -439,14 +439,14 @@ async function removeItinerary(planId: string) {
 }
 .saved-overview-item {
   min-height: 88px; padding: .85rem 1rem; border: 1px solid var(--line);
-  border-radius: var(--radius-lg); background: var(--card); display: flex; flex-direction: column; justify-content: space-between;
+  border-radius: var(--radius-sheet); background: var(--card); display: flex; flex-direction: column; justify-content: space-between;
 }
 .saved-overview-item span { color: var(--ink-700); font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
 .saved-overview-item strong { font-size: 1.25rem; line-height: 1.1; }
 .saved-tools { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .75rem; align-items: center; margin-bottom: 1rem; }
 .saved-search input {
   width: 100%; min-height: 44px; padding: .65rem .85rem; border: 1px solid var(--border-input);
-  border-radius: var(--radius-md); background: var(--card); color: var(--ink); font: inherit;
+  border-radius: var(--radius-surface); background: var(--card); color: var(--ink); font: inherit;
 }
 .saved-search input:focus-visible { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .12); }
 
@@ -491,14 +491,14 @@ async function removeItinerary(planId: string) {
 .saved-post-meta { display: block; font-size: .78rem; color: var(--ink-700); margin-top: .2rem; }
 .saved-load-more { margin-top: .75rem; width: 100%; }
 .saved-inline-warning {
-  margin-bottom: .75rem; padding: .65rem .75rem; border-radius: var(--radius-md);
+  margin-bottom: .75rem; padding: .65rem .75rem; border-radius: var(--radius-surface);
   background: color-mix(in oklab, var(--accent-container) 72%, var(--card));
   color: var(--ink-700); font-size: .85rem; line-height: 1.4;
 }
 
 /* Skeletons & empty */
 .saved-skeletons { display: flex; flex-direction: column; gap: .5rem; }
-.saved-card-skel { height: 64px; border-radius: var(--radius-md); }
+.saved-card-skel { height: 64px; border-radius: var(--radius-surface); }
 .saved-empty { color: var(--ink-700); font-size: .9rem; text-align: center; padding: 2rem 1rem; display: flex; flex-direction: column; align-items: center; gap: .75rem; }
 .saved-empty p { margin: 0; }
 

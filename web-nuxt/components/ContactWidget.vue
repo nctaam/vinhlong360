@@ -101,7 +101,7 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
   z-index: var(--z-sticky);
   width: var(--contact-widget-width);
   background: var(--card);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-sheet);
   border: 1px solid var(--line);
   box-shadow: var(--shadow-md);
   padding: var(--space-5);
@@ -157,7 +157,7 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
   border: none;
   padding: var(--space-2);
   margin: calc(-1 * var(--space-2));
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-surface);
   cursor: pointer;
   transition: background .2s var(--ease-out);
   font: inherit;
@@ -258,7 +258,7 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
     right: 0;
     top: auto;
     width: 100%;
-    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
     box-shadow: var(--shadow-lg);
     padding: var(--space-3) var(--space-4);
     z-index: var(--z-sticky);

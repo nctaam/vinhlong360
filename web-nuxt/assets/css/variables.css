@@ -493,7 +493,7 @@
   --sk-highlight: var(--line);
   --sk-gradient: linear-gradient(90deg, var(--sk-base) 25%, var(--sk-highlight) 50%, var(--sk-base) 75%);
   --sk-duration: 1.5s;
-  --sk-radius-line: var(--radius-sm);
+  --sk-radius-line: var(--radius-control);
 
   /* ── Radius / motion / elevation / z-index (Apple HIG) ── */
   --radius-none: 0px;
@@ -501,7 +501,7 @@
   --radius-sm: 10px;
   --radius-md: 14px;
   --radius-lg: 20px;
-  --radius: var(--radius-lg);
+  --radius: var(--radius-sheet);
   --radius-xl: 28px;
   --radius-full: 9999px;
   --maxw: 1140px;

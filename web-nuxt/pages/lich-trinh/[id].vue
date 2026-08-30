@@ -571,7 +571,7 @@ if (itinerary.value && !itinerary.value.error) {
   padding: var(--space-3) var(--space-4);
   background: var(--bg-alt);
   border: .5px solid var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sheet);
   box-shadow: var(--shadow-xs);
   /* Reserve height so client-only mount doesn't shift layout (CLS) */
   min-height: 56px;
@@ -628,12 +628,12 @@ if (itinerary.value && !itinerary.value.error) {
   box-shadow: 0 0 0 3px var(--bg);
   z-index: 1;
 }
-.step-card { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-4); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-xs); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
+.step-card { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-4); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); box-shadow: var(--shadow-xs); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
 .step-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border); }
 .step-card:active { transform: scale(.97); transition-duration: .08s; }
 .step-emoji { font-size: 1.6rem; line-height: 1; transition: transform .35s var(--ease-spring-gentle); }
 .step-card:hover .step-emoji { transform: scale(1.1) rotate(-3deg); }
-.stop-link { color: var(--ink); font-weight: var(--weight-semibold); transition: color .3s var(--ease-out); border-radius: var(--radius-sm); }
+.stop-link { color: var(--ink); font-weight: var(--weight-semibold); transition: color .3s var(--ease-out); border-radius: var(--radius-control); }
 .stop-link:hover { color: var(--primary-fg); }
 .stop-link:active { opacity: .7; }
 .stop-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
@@ -658,7 +658,7 @@ if (itinerary.value && !itinerary.value.error) {
   margin: var(--space-2) 0 0; padding: var(--space-2) var(--space-3);
   background: color-mix(in srgb, var(--amber-600) 10%, transparent);
   border-left: 2px solid color-mix(in srgb, var(--amber-600) 55%, transparent);
-  border-radius: var(--radius-sm); font-size: var(--text-sm); line-height: var(--leading-normal);
+  border-radius: var(--radius-control); font-size: var(--text-sm); line-height: var(--leading-normal);
   color: var(--ink);
 }
 .tnc-glyph { flex-shrink: 0; color: var(--amber-600); font-size: var(--text-sm); line-height: 1.4; }
@@ -681,13 +681,13 @@ if (itinerary.value && !itinerary.value.error) {
   padding-left: var(--space-3);
   border-left: 3px solid var(--secondary);
 }
-.route-map { height: clamp(240px, 50vh, 400px); border-radius: var(--radius-lg); overflow: hidden; border: .5px solid var(--line); box-shadow: var(--shadow-sm); transition: box-shadow .35s var(--ease-out-expo); }
+.route-map { height: clamp(240px, 50vh, 400px); border-radius: var(--radius-sheet); overflow: hidden; border: .5px solid var(--line); box-shadow: var(--shadow-sm); transition: box-shadow .35s var(--ease-out-expo); }
 .route-map-wrap { position: relative; }
 /* Designed loading placeholder: shimmer surface + gentle pulse */
 .route-map-loading {
   position: absolute; inset: 0; z-index: 1;
   display: flex; align-items: center; justify-content: center; gap: var(--space-2);
-  color: var(--muted); border-radius: var(--radius-lg); font-size: var(--text-sm);
+  color: var(--muted); border-radius: var(--radius-sheet); font-size: var(--text-sm);
   background: linear-gradient(90deg, rgba(var(--primary-rgb),.06) 25%, rgba(var(--primary-rgb),.12) 50%, rgba(var(--primary-rgb),.06) 75%);
   background-size: 200% 100%;
   animation: routeMapShimmer 1.5s var(--ease-in-out) infinite;

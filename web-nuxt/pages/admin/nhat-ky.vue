@@ -146,7 +146,7 @@ onUnmounted(() => { if (searchTimer) clearTimeout(searchTimer) })
 .audit-select { max-width: 160px; }
 .audit-date { max-width: 160px; }
 .audit-summary { font-size: var(--text-sm); color: var(--muted); margin-bottom: var(--space-2); }
-.audit-method { font-weight: 700; font-size: .7rem; padding: 1px 6px; border-radius: var(--radius-sm); text-transform: uppercase; }
+.audit-method { font-weight: 700; font-size: .7rem; padding: 1px 6px; border-radius: var(--radius-control); text-transform: uppercase; }
 .audit-method.post { background: rgba(52,199,89,.15); color: var(--success); }
 .audit-method.put, .audit-method.patch { background: rgba(var(--warning-rgb),.15); color: var(--warning); }
 .audit-method.delete { background: rgba(var(--red-rgb),.15); color: var(--error); }

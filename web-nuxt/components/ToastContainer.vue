@@ -45,7 +45,7 @@ function iconFor(type?: string) {
   display: flex; align-items: center; gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
   padding-left: calc(var(--space-4) + 3px);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sheet);
   background: var(--card);
   border: .5px solid var(--line);
   border-left: 3px solid var(--toast-accent, var(--line));
@@ -85,7 +85,7 @@ function iconFor(type?: string) {
 
 .toast-progress {
   position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  border-radius: 0 0 var(--radius-sheet) var(--radius-sheet);
   background: currentColor; opacity: .2;
   transform-origin: left;
   animation: toastCountdown linear forwards;

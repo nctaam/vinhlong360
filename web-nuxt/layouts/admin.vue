@@ -354,7 +354,7 @@ onUnmounted(() => {
 .back-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 .dark-toggle {
   background: none; border: none; cursor: pointer; font-size: 1.1rem;
-  padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2); border-radius: var(--radius-control);
   transition: background .2s;
 }
 .dark-toggle:hover { background: rgba(var(--white-rgb),.1); }
@@ -518,7 +518,7 @@ onUnmounted(() => {
 .admin-refresh:disabled { opacity: var(--opacity-disabled); cursor: default; }
 .refresh-spin { display: inline-block; animation: admin-spin .6s linear infinite; }
 
-.admin-head-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-5); padding: var(--space-4) var(--space-5); background: linear-gradient(135deg, rgba(var(--primary-rgb), .04) 0%, rgba(var(--secondary-rgb), .04) 100%); border: .5px solid var(--line); border-radius: var(--radius-lg); }
+.admin-head-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-5); padding: var(--space-4) var(--space-5); background: linear-gradient(135deg, rgba(var(--primary-rgb), .04) 0%, rgba(var(--secondary-rgb), .04) 100%); border: .5px solid var(--line); border-radius: var(--radius-sheet); }
 .admin-head-row h1 { margin: 0; font-size: var(--text-xl); }
 .admin-head-row p { margin: var(--space-1) 0 0; color: var(--muted); font-size: var(--text-sm); }
 .dark .admin-head-row { background: linear-gradient(135deg, rgba(var(--primary-rgb), .06) 0%, rgba(var(--white-rgb),.02) 100%); }
@@ -658,7 +658,7 @@ onUnmounted(() => {
 .admin-toast {
   position: fixed; bottom: var(--space-4); right: var(--space-4);
   z-index: var(--z-toast); padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-sm); background: var(--bg, var(--white));
+  border-radius: var(--radius-control); background: var(--bg, var(--white));
   border: 1px solid var(--line); box-shadow: var(--shadow-lg);
   font-size: .88rem; color: var(--ink);
   animation: toastIn .25s var(--ease-out);
@@ -691,7 +691,7 @@ onUnmounted(() => {
 .admin-error-panel {
   max-width: 600px; margin: 3rem auto; padding: 2rem;
   background: var(--surface); border: 1px solid var(--danger);
-  border-radius: var(--radius-lg); text-align: center;
+  border-radius: var(--radius-sheet); text-align: center;
 }
 .admin-error-panel h2 { color: var(--danger); margin: 0 0 1rem; }
 .admin-error-detail {

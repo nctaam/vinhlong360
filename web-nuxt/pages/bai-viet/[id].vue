@@ -566,7 +566,7 @@ useHead({
 </script>
 
 <style scoped>
-.post-edit-form { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-4); margin-bottom: var(--space-3); }
+.post-edit-form { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); padding: var(--space-4); margin-bottom: var(--space-3); }
 .pef-title { font-size: var(--text-base); margin: 0 0 var(--space-3); }
 .post-edit-form .textarea { width: 100%; resize: vertical; }
 .pef-actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-3); }
@@ -583,7 +583,7 @@ useHead({
 .subreply-body { flex: 1; min-width: 0; }
 .subreply-body .comment-reply-btn { margin-top: .25rem; }
 .avatar-xs { width: 26px; height: 26px; font-size: var(--text-2xs); }
-.reply-context { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); font-size: var(--text-xs); color: var(--ink-700); background: var(--bg-alt); border-radius: var(--radius-sm); padding: .3rem .6rem; margin-bottom: var(--space-2); }
+.reply-context { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); font-size: var(--text-xs); color: var(--ink-700); background: var(--bg-alt); border-radius: var(--radius-control); padding: .3rem .6rem; margin-bottom: var(--space-2); }
 .reply-context-x { background: none; border: none; color: var(--muted); font-size: 1.1rem; line-height: 1; cursor: pointer; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
 .reply-context-x:hover { color: var(--ink); }
 .thread-detail-page { max-width: 680px; margin: 0 auto; }
@@ -641,7 +641,7 @@ useHead({
 .compose-send .spinner-sm { width: 14px; height: 14px; color: var(--primary-fg); }
 
 .thread-comment-guest { padding: var(--space-3) 0 var(--space-4); border-bottom: .5px solid var(--line); }
-.guest-reply-link { font-size: var(--text-sm); color: var(--primary-fg); text-decoration: none; font-weight: var(--weight-medium); border-radius: var(--radius-sm); }
+.guest-reply-link { font-size: var(--text-sm); color: var(--primary-fg); text-decoration: none; font-weight: var(--weight-medium); border-radius: var(--radius-control); }
 .guest-reply-link:hover { text-decoration: underline; }
 .guest-reply-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
@@ -653,7 +653,7 @@ useHead({
   display: flex; gap: var(--space-3); padding: var(--space-3) var(--space-2);
   border-bottom: .5px solid var(--line);
   animation: replyIn .3s var(--ease-out) both;
-  border-radius: var(--radius-sm); margin: 0 calc(var(--space-2) * -1);
+  border-radius: var(--radius-control); margin: 0 calc(var(--space-2) * -1);
   transition: background .3s var(--ease-out);
 }
 .thread-reply:hover { background: var(--overlay-subtle); }
@@ -671,7 +671,7 @@ useHead({
 .comment-empty {
   display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
   padding: var(--space-8) var(--space-4); text-align: center;
-  background: var(--bg-warm); border-radius: var(--radius-lg);
+  background: var(--bg-warm); border-radius: var(--radius-sheet);
 }
 .comment-empty-halo {
   display: inline-flex; align-items: center; justify-content: center;
@@ -703,7 +703,7 @@ useHead({
 /* ── Focus-visible & keyboard nav in replies ── */
 .thread-reply .thread-author:focus-visible,
 .thread-reply .thread-avatar-link:focus-visible {
-  outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-sm);
+  outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-control);
 }
 
 /* ── Related posts ── */
@@ -712,7 +712,7 @@ useHead({
 .related-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-3); }
 .related-card {
   display: flex; flex-direction: column; background: var(--card); border: .5px solid var(--line);
-  border-radius: var(--radius-lg); overflow: hidden; text-decoration: none; color: var(--ink);
+  border-radius: var(--radius-sheet); overflow: hidden; text-decoration: none; color: var(--ink);
   transition: border-color .2s, transform .2s var(--ease-spring-gentle);
 }
 .related-card:hover { border-color: var(--primary-fg); transform: translateY(-1px); }

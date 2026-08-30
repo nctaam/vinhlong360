@@ -229,7 +229,7 @@ useHead({
    interactive content per the HTML spec (see EntityCard's .card-save, which
    sits alongside its NuxtLink for the same reason), so pulling the dismiss
    button out avoids invalid nesting and any native-navigation ambiguity. */
-.tb-item { position: relative; display: flex; align-items: flex-start; gap: var(--space-3); width: 100%; padding: var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg); transition: background .2s var(--ease-out), border-color .2s var(--ease-out); }
+.tb-item { position: relative; display: flex; align-items: flex-start; gap: var(--space-3); width: 100%; padding: var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); transition: background .2s var(--ease-out), border-color .2s var(--ease-out); }
 .tb-item:hover { background: var(--bg-alt); }
 .tb-item.unread { border-color: var(--primary); background: rgba(var(--primary-rgb), .04); }
 /* Tri-province sediment tick — left-edge hairline echo of the site-wide
@@ -240,7 +240,7 @@ useHead({
   width: 3px; height: 22px; border-radius: var(--radius-full);
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
-.tb-item-link { display: flex; align-items: flex-start; gap: var(--space-3); flex: 1; min-width: 0; text-align: left; text-decoration: none; color: inherit; cursor: pointer; border-radius: var(--radius-sm); }
+.tb-item-link { display: flex; align-items: flex-start; gap: var(--space-3); flex: 1; min-width: 0; text-align: left; text-decoration: none; color: inherit; cursor: pointer; border-radius: var(--radius-control); }
 .tb-item-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .tb-icon-chip {
   display: flex; align-items: center; justify-content: center;

@@ -423,7 +423,7 @@ if (import.meta.client) {
   text-decoration: none; min-height: 44px; display: inline-flex; align-items: center;
 }
 .ac-empty-all:hover { text-decoration: underline; }
-.ac-empty-all:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-sm); }
+.ac-empty-all:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-control); }
 
 /* dark overrides for .ac-chip / .ac-empty-title in dark-overrides.css */
 

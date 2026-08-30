@@ -153,7 +153,7 @@ const hasContent = computed(() => amenities.value.length > 0 || goldenHours.valu
   padding: var(--space-5);
   background: var(--card, var(--bg));
   border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sheet);
   overflow: hidden;
 }
 .kbyg::before {
@@ -177,7 +177,7 @@ const hasContent = computed(() => amenities.value.length > 0 || goldenHours.valu
   justify-content: center;
   min-width: 1.4em;
   padding: 0 .15em;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   background: var(--bg-alt);
   font-size: .9em;
   line-height: 1.4;
@@ -207,7 +207,7 @@ const hasContent = computed(() => amenities.value.length > 0 || goldenHours.valu
 }
 .kbyg-golden-item {
   display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-1);
-  padding: 10px 14px; border-radius: var(--radius-md);
+  padding: 10px 14px; border-radius: var(--radius-surface);
   background: rgba(var(--accent-rgb), .08);
   flex: 1 1 160px; min-width: 160px;
 }
@@ -223,7 +223,7 @@ const hasContent = computed(() => amenities.value.length > 0 || goldenHours.valu
 }
 .kbyg-tip {
   display: flex; align-items: flex-start; gap: var(--space-2);
-  padding: var(--space-2) var(--space-3); border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3); border-radius: var(--radius-surface);
   background: rgba(var(--secondary-rgb), .06);
   font-size: .88rem; line-height: 1.45;
 }

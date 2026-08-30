@@ -405,7 +405,7 @@ if (areaMeta) {
 .area-stats .stat-item {
   background: rgba(var(--AREA-rgb), .06);
   border: .5px solid var(--line);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-surface);
 }
 .area-stats .stat-item:hover {
   background: rgba(var(--AREA-rgb), .1);

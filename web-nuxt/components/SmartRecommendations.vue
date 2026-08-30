@@ -244,7 +244,7 @@ async function disablePersonalization() {
   margin: .35rem 0 0;
   padding: 0 var(--space-2);
   border: 0;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   color: var(--ink-700);
   background: transparent;
   cursor: pointer;

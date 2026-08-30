@@ -173,7 +173,7 @@ function goToSlide(idx: number) {
   position: relative;
   aspect-ratio: var(--gallery-main-ratio);
   width: 100%;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sheet);
   overflow: hidden;
   background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.08), rgba(var(--secondary-rgb), 0.08));
   display: flex;
@@ -202,7 +202,7 @@ function goToSlide(idx: number) {
   border: none;
   background: none;
   cursor: pointer;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sheet);
   overflow: hidden;
 }
 .pg-img-btn:focus-visible {
@@ -223,7 +223,7 @@ function goToSlide(idx: number) {
   grid-template-columns: 3fr 2fr;
   grid-template-rows: 1fr 1fr;
   gap: var(--gallery-gap);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sheet);
   overflow: hidden;
 }
 
@@ -292,7 +292,7 @@ function goToSlide(idx: number) {
   flex-direction: column;
   gap: 2px;
   padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   color: var(--text-on-dark);
   background: rgba(var(--black-rgb), .7);
   font-size: var(--text-2xs);
@@ -339,7 +339,7 @@ function goToSlide(idx: number) {
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-sheet);
   }
   .pg-carousel::-webkit-scrollbar { display: none; }
 

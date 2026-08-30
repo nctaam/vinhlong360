@@ -624,7 +624,7 @@ useHead(() => ({
   text-align: center; padding: var(--space-6) var(--space-4);
   background: rgba(var(--secondary-rgb), .04);
   border: .5px dashed rgba(var(--secondary-rgb), .25);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sheet);
 }
 .empty-type-icon { display: block; font-size: 2rem; margin-bottom: var(--space-2); opacity: .85; }
 .empty-type-card strong { display: block; font-size: var(--text-sm); color: var(--ink); }
@@ -636,7 +636,7 @@ useHead(() => ({
   align-items: center; position: relative; overflow: hidden;
   background: linear-gradient(135deg, rgba(var(--secondary-rgb), .06), transparent);
   border: .5px solid rgba(var(--secondary-rgb), .2);
-  border-radius: var(--radius-lg); padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-sheet); padding: var(--space-4) var(--space-5);
   margin: var(--space-6) 0;
 }
 .b2b-callout::before {
@@ -648,7 +648,7 @@ useHead(() => ({
 .b2b-callout-text strong { color: var(--secondary-fg); }
 .b2b-callout-link {
   display: inline-flex; align-items: center; gap: var(--space-1);
-  padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3); border-radius: var(--radius-control);
   background: var(--secondary); color: var(--text-on-dark, var(--white));
   font-weight: var(--weight-semibold); font-size: var(--text-sm); white-space: nowrap;
   min-height: 44px; transition: background .3s var(--ease-out), transform .3s var(--ease-out);
@@ -675,7 +675,7 @@ useHead(() => ({
 .season-timeline { margin: var(--space-5) 0 var(--space-2); }
 .stl-track {
   display: grid; grid-template-columns: repeat(12, 1fr); gap: 3px;
-  border-radius: var(--radius-sm); overflow: hidden;
+  border-radius: var(--radius-control); overflow: hidden;
 }
 .stl-cell {
   position: relative; aspect-ratio: 1 / 1.15; border: none; cursor: pointer;
@@ -701,7 +701,7 @@ useHead(() => ({
    (axe đo 1.83–2.29). Riêng q-summer thì chữ trắng ĐẶC cũng chỉ đạt 2.16:1 —
    không màu chữ sáng nào cứu được. Cặp --card/--ink tự đảo theo theme nên
    đạt ngưỡng ở CẢ hai chế độ, và giữ nguyên 5 màu quý làm mã hoá ngữ nghĩa. */
-.stl-m { background: var(--card); color: var(--ink); border-radius: var(--radius-sm); padding: 0 var(--space-1); }
+.stl-m { background: var(--card); color: var(--ink); border-radius: var(--radius-control); padding: 0 var(--space-1); }
 .stl-cell.is-now .stl-m { font-weight: var(--weight-extrabold); }
 .stl-legend { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); margin-top: var(--space-3); }
 .stl-legend-item { display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--text-xs); color: var(--muted); }

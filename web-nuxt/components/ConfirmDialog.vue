@@ -54,7 +54,7 @@ watch(() => state.value.open, async (open) => {
   background: rgba(var(--ink-rgb), .45); padding: var(--space-4);
 }
 .confirm-box {
-  background: var(--bg); color: var(--ink-900); border-radius: var(--radius-lg);
+  background: var(--bg); color: var(--ink-900); border-radius: var(--radius-sheet);
   max-width: 400px; width: 100%; padding: 1.5rem; box-shadow: var(--shadow-lg, 0 10px 40px rgba(var(--ink-rgb),.25));
 }
 .confirm-title { margin: 0 0 .5rem; font-size: 1.15rem; }

@@ -68,7 +68,7 @@ withDefaults(defineProps<{
   min-height: 78px;
   padding: var(--space-3);
   border: 1px solid var(--line);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-surface);
   background: var(--card);
   color: var(--ink);
   text-decoration: none;
@@ -90,7 +90,7 @@ withDefaults(defineProps<{
   width: 36px;
   height: 36px;
   flex: 0 0 auto;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   background: var(--bg-warm);
 }
 .journey-action-copy {

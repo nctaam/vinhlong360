@@ -495,7 +495,7 @@ useHead(() => ({
   padding: var(--space-4);
   margin-bottom: var(--space-4);
   border-left: 3px solid var(--secondary);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   background: linear-gradient(90deg, rgba(var(--secondary-rgb), .08), transparent);
 }
 .honor-banner-icon { font-size: 1.25rem; }
@@ -671,7 +671,7 @@ useHead(() => ({
 /* Descending star-ledger bands — border weight + glow + numeral size decrease
    5→4→3, so trust hierarchy reads through layout weight before a word is
    read (signature moment, concept §10). Reuses EntityCard unchanged. */
-.ocop-band { border-radius: var(--radius-xl); padding: var(--space-6); margin-bottom: var(--space-6); }
+.ocop-band { border-radius: var(--radius-sheet); padding: var(--space-6); margin-bottom: var(--space-6); }
 .ocop-band--5 {
   border: 1px solid rgba(var(--accent-rgb), .35);
   background: linear-gradient(180deg, rgba(var(--accent-rgb), .07), transparent 65%);
@@ -706,7 +706,7 @@ useHead(() => ({
 
 /* Star-filter chip highlight-flash — closes the loop between "I clicked
    5-star" and "I see why the grid changed" (concept §5). */
-.star-filter-wrap { border-radius: var(--radius-lg); transition: box-shadow .3s var(--ease-out); }
+.star-filter-wrap { border-radius: var(--radius-sheet); transition: box-shadow .3s var(--ease-out); }
 .star-filter-flash { box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .35); animation: star-filter-glow .9s var(--ease-out) both; }
 @keyframes star-filter-glow {
   0% { box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .5); }
