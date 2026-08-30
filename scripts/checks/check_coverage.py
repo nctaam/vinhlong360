@@ -79,7 +79,21 @@ class CoverageCheck:
                                "msg": f"agent coverage {agent_total:.1f}% < {thr.get('agent', 60)}%"})
         for mod, floor in (thr.get("core") or {}).items():
             pct = _pct(cfiles, mod)
-            if pct is not None and pct < floor:
+            if pct is None:
+                # FAIL-CLOSED. Bản cũ chỉ ghi vi phạm khi `pct is not None`, nên
+                # một khoá sàn không khớp file nào sẽ BIẾN MẤT không một tiếng
+                # động: count vẫn 0, cổng vẫn xanh, và module đó tụt về 0% cũng
+                # không ai hay. Đổi tên file / dời module là làm được điều đó —
+                # đúng chuyện suýt xảy ra với `itinerary_gen.py`, nay đã dời sang
+                # `agent/itineraries/` và còn khớp CHỈ nhờ nhánh so basename.
+                # Sàn không đo được là một sàn hỏng, không phải một sàn đã đạt.
+                violations.append({"file": f"agent/{mod}", "line": 0, "rule": self.rule,
+                                   "msg": (f"{mod}: sàn {floor}% khai trong "
+                                           f"{THRESHOLDS} nhưng KHÔNG khớp file nào "
+                                           "trong coverage.json — module đã đổi tên/dời "
+                                           "chỗ, hoặc suite không còn chạm tới nó. Sửa "
+                                           "khoá cho khớp, đừng để sàn tự mất.")})
+            elif pct < floor:
                 violations.append({"file": f"agent/{mod}", "line": 0, "rule": self.rule,
                                    "msg": f"{mod} coverage {pct:.1f}% < {floor}%"})
         return self._result(violations)

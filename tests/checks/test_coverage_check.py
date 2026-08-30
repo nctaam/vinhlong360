@@ -74,6 +74,31 @@ def test_sibling_basename_does_not_shadow_core_module(tmp_path):
     assert CoverageCheck(root=tmp_path).run()["count"] == 0
 
 
+def test_san_khong_khop_file_nao_phai_DO_chu_khong_bien_mat(tmp_path):
+    """Sàn trỏ tới một module không còn tồn tại phải ĐỎ, không được im lặng.
+
+    Bản cũ chỉ ghi vi phạm khi `pct is not None`, nên một khoá sàn không khớp file
+    nào sẽ biến mất không tiếng động: count = 0, cổng xanh, và module đó tụt về 0%
+    cũng không ai hay. Đổi tên hoặc dời module là làm được đúng điều đó — và suýt
+    xảy ra thật với `itinerary_gen.py` sau khi nó dời sang `agent/itineraries/`.
+
+    Sàn KHÔNG ĐO ĐƯỢC là sàn hỏng, không phải sàn đã đạt.
+    """
+    cov = {
+        "totals": {"percent_covered": 90.0},
+        "files": {"agent/database.py": {"summary": {"percent_covered": 95.0}}},
+    }
+    thr = {"agent": 60, "core": {"database.py": 80, "module_da_doi_ten.py": 90}}
+    _write(tmp_path, cov, thr)
+
+    r = CoverageCheck(root=tmp_path).run()
+
+    assert r["count"] == 1, "khoá sàn mồ côi phải sinh đúng một vi phạm"
+    (v,) = r["violations"]
+    assert "module_da_doi_ten.py" in v["msg"]
+    assert "KHÔNG khớp file nào" in v["msg"], "thông điệp phải nói rõ vì sao, để sửa được ngay"
+
+
 def test_ci_generates_json_and_runs_full_gate():
     workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
     assert "--cov-report=json:coverage.json" in workflow
