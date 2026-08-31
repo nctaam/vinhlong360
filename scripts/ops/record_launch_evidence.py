@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from agent.control_plane.evidence import ParsedOutcome, classify_verdict, parse_pytest_output
+from agent.control_plane.evidence import ParsedOutcome, classify_verdict, parse_test_output
 
 
 Status = Literal["pass", "fail", "skip"]
@@ -608,7 +608,7 @@ def _record_payload(args: argparse.Namespace, outcomes: dict[str, Any] | None) -
     else:
         output_text = output
     if output is not None:
-        parsed = None if output_text is None else parse_pytest_output(output_text, args.exit_code)
+        parsed = None if output_text is None else parse_test_output(output_text, args.exit_code)
         if parsed is None or not parsed.summary_present:
             # Captured output without a pytest summary cannot support declared
             # counts, so discard them and preserve an explicit unclassified run.
@@ -664,10 +664,10 @@ def _handle_harness(args: argparse.Namespace) -> int:
             output = args.output_text.encode("utf-8")
         else:
             output = b""
-        from agent.control_plane.evidence import parse_pytest_output
+        from agent.control_plane.evidence import parse_test_output
 
         try:
-            parsed = parse_pytest_output(output.decode("utf-8"), result.exit_code)
+            parsed = parse_test_output(output.decode("utf-8"), result.exit_code)
         except UnicodeDecodeError as exc:
             raise ValueError("captured harness output is not valid UTF-8") from exc
         _outcomes = asdict(parsed) if parsed.summary_present else None

@@ -302,6 +302,21 @@ def test_cli_parses_real_output_into_errors_and_blocked_verdict(tmp_path: Path) 
     assert section["status"] == "fail"
 
 
+def test_cli_parses_vitest_output_as_pass(tmp_path: Path) -> None:
+    state_path = tmp_path / "vitest-state.json"
+    output = "Test Files  1 passed (1)\n     Tests  91 passed (91)\n"
+    assert main([
+        "record", "--section", "frontend-focused", "--status", "pass",
+        "--exit-code", "0", "--summary", "vitest", "--command", "npm test",
+        "--output-text", output, "--environment-json", '{"os":"test"}',
+        "--head-sha", "a" * 40, "--revision", "a" * 40, "--state", str(state_path),
+    ]) == 0
+    section = json.loads(state_path.read_text(encoding="utf-8"))["sections"]["frontend-focused"]
+    assert section["status"] == "pass"
+    assert section["verdict"] == "PASS"
+    assert section["outcomes"]["passed"] == 91
+
+
 def test_harness_result_parses_captured_output_instead_of_fabricating_counts(tmp_path: Path) -> None:
     state_path = tmp_path / "harness-state.json"
     output_path = tmp_path / "compose-output.txt"

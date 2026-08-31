@@ -11,6 +11,7 @@ from agent import launch_evidence
 from agent.control_plane.evidence import (
     classify_verdict,
     parse_pytest_output,
+    parse_test_output,
     verify_bundle,
 )
 from scripts.ops.record_launch_evidence import CommandEvidence, EvidenceDocument, REQUIRED_SECTIONS
@@ -56,6 +57,17 @@ def test_normal_collecting_progress_is_not_a_collection_error() -> None:
         return_code=0,
     )
     assert outcome.collection_errors == 0
+    assert classify_verdict(outcome, frozenset()) == "PASS"
+
+
+def test_vitest_summary_is_parsed_as_clean_test_evidence() -> None:
+    outcome = parse_test_output(
+        "Test Files  1 passed (1)\n     Tests  91 passed (91)\n",
+        return_code=0,
+    )
+    assert outcome.summary_present is True
+    assert outcome.passed == 91
+    assert outcome.failed == 0
     assert classify_verdict(outcome, frozenset()) == "PASS"
 
 

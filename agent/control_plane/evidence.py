@@ -17,6 +17,13 @@ _SUMMARY_TOKEN = re.compile(
     r"(?P<count>\d+)\s+(?P<label>failed|passed|errors?|skipped|xfailed|xpassed)\b",
     re.IGNORECASE,
 )
+_VITEST_SUMMARY = re.compile(
+    r"^\s*(?P<label>Test\s+Files|Tests)\s+(?P<counts>.+?)\s*\((?P<total>\d+)\)\s*$",
+    re.IGNORECASE,
+)
+_VITEST_COUNT = re.compile(
+    r"(?P<count>\d+)\s+(?P<label>passed|failed|skipped|todo|pending)", re.IGNORECASE
+)
 _FAILED_LINE = re.compile(r"^\s*FAILED\s+(?P<nodeid>\S+)", re.IGNORECASE)
 _FAILED_STATUS_LINE = re.compile(r"^\s*(?P<nodeid>\S+)\s+FAILED(?:\s|$)", re.IGNORECASE)
 _ERROR_LINE = re.compile(r"^\s*ERROR\s+(?P<nodeid>\S+?)(?:\s+-|\s*$)", re.IGNORECASE)
@@ -164,6 +171,43 @@ def parse_pytest_output(text: str, return_code: int) -> ParsedOutcome:
         failed_nodeids=failed_nodeids,
         error_nodeids=error_nodeids,
         summary_present=summary_present,
+    )
+
+
+def parse_test_output(text: str, return_code: int) -> ParsedOutcome:
+    """Parse pytest or Vitest terminal summaries into one evidence shape."""
+
+    pytest_outcome = parse_pytest_output(text, return_code)
+    if pytest_outcome.summary_present:
+        return pytest_outcome
+    counts: dict[str, int] = {}
+    saw_vitest = False
+    for line in text.splitlines():
+        match = _VITEST_SUMMARY.match(line)
+        if not match:
+            continue
+        saw_vitest = True
+        parsed = {
+            item.group("label").lower(): int(item.group("count"))
+            for item in _VITEST_COUNT.finditer(match.group("counts"))
+        }
+        if match.group("label").lower().startswith("tests") or not counts:
+            counts = parsed
+    if not saw_vitest:
+        return pytest_outcome
+    failed_nodeids, error_nodeids, collection_errors = _parse_nodes(text)
+    return ParsedOutcome(
+        passed=counts.get("passed", 0),
+        failed=counts.get("failed", 0),
+        errors=0,
+        skipped=counts.get("skipped", 0) + counts.get("todo", 0) + counts.get("pending", 0),
+        xfailed=0,
+        collection_errors=collection_errors,
+        interrupted=False,
+        return_code=int(return_code),
+        failed_nodeids=failed_nodeids,
+        error_nodeids=error_nodeids,
+        summary_present=True,
     )
 
 
@@ -384,7 +428,7 @@ def _compare_output_outcome(
         return False
     # The native return code is part of the stored declaration; parsing with it
     # prevents a clean-looking output from masking a failed process.
-    parsed = parse_pytest_output(text, outcome.return_code)
+    parsed = parse_test_output(text, outcome.return_code)
     if not parsed.summary_present:
         reasons.append("stored output has no pytest summary")
         return False

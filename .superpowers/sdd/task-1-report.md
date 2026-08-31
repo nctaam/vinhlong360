@@ -104,6 +104,14 @@ Status: DONE_WITH_CONCERNS
 - State validation now requires summary-present parsed outcomes and complete capture metadata for every functional section; output source paths reject dual/invalid sources.
 - Focused verification remains `89 passed`; `py_compile`, `ruff`, and `git diff --check` pass.
 
+## Reviewer Fix Wave V10
+
+Status: DONE_WITH_CONCERNS
+
+- Commit: pending (`fix: parse Vitest frontend evidence summaries`).
+- Shared evidence parsing now accepts Vitest `Test Files ...` / `Tests ...` summaries while preserving pytest parsing and verdict semantics.
+- Added frontend recorder and parser regressions; focused verification: `93 passed`; `py_compile`, `ruff`, and `git diff --check` passed.
+
 ## Reviewer Fix Wave V9
 
 Status: DONE_WITH_CONCERNS
