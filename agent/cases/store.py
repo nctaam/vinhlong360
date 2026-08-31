@@ -515,6 +515,24 @@ class CaseTransaction:
             raise ValueError("invalid_case_audit")
         before_snapshot = serialize_case_projection(draft.before_snapshot)
         after_snapshot = serialize_case_projection(draft.after_snapshot)
+        if draft.event_id is not None:
+            envelope = {
+                "event_id": draft.event_id,
+                "resource_id": draft.resource_id or draft.case_id,
+                "revision": draft.revision,
+                "generation": draft.generation,
+                "correlation_id": draft.correlation_id,
+            }
+            # The existing JSONB snapshot is the schema-compatible durable
+            # descriptor for audit metadata; no production migration is needed.
+            target = after_snapshot if after_snapshot is not None else before_snapshot
+            encoded = json.loads(target) if target is not None else {}
+            encoded["_audit_event"] = envelope
+            serialized = json.dumps(encoded, sort_keys=True, allow_nan=False)
+            if after_snapshot is not None:
+                after_snapshot = serialized
+            else:
+                before_snapshot = serialized
         self._db._execute(
             self._conn,
             """

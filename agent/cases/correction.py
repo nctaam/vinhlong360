@@ -19,11 +19,10 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from datetime import datetime
 
-from .audit import CaseAuditDraft, safe_case_projection
+from .audit import safe_case_projection
 from .domain import (
     CaseProblem,
     CasePhase,
-    Channel,
     CorrectionOutcome,
     EvidenceLevel,
     PromiseHealth,
@@ -32,7 +31,7 @@ from .domain import (
 )
 from .queue_policy import WorkItemDraft
 from .service import CORRECTABLE_FIELD_PATHS
-from .store import CorrectionEvidenceDraft, OutboxDraft
+from .store import CorrectionEvidenceDraft
 from .transitions import TransitionDraft
 
 DECIDE_SCOPE = "cases:decide"
@@ -242,14 +241,16 @@ def validate_decision(
     reason = _require_decision_basics(command)
     maker = getattr(command.actor, "actor_ref", "unknown")
     if command.outcome_code in _EVIDENCE_BEARING and command.evidence:
-        scope = required_scope or command.required_scope
-        if scope is None and command.evidence:
-            # Legacy callers did not carry an explicit scope; preserve their
-            # behavior while still applying the single usability gate.
-            scope = command.evidence[0].source_scope
+        scope = required_scope if required_scope is not None else command.required_scope
         if not scope:
             raise _reject("evidence_scope_required", "A decision needs an evidence scope.", status=400)
         usable = usable_evidence(tuple(command.evidence), now=now, required_scope=scope)
+        if not usable:
+            raise _reject(
+                "evidence_not_usable",
+                "No evidence matches the required scope and decision time window.",
+                status=409,
+            )
         command = replace(command, evidence=usable)
     _require_decision_support(command, maker)
 
@@ -465,29 +466,7 @@ def _moment(value) -> datetime | None:
 
 
 def add_evidence(command: AddEvidenceCommand, *, now: datetime) -> EvidenceRecord:
-    if type(command.level) is not EvidenceLevel:
-        raise _reject("invalid_evidence_level", "That evidence level is not offered.")
-    if type(command.source_scope) is not str or not command.source_scope.strip():
-        raise _reject("evidence_scope_required", "Evidence needs a source scope.", status=400)
-    if command.required_scope is not None and command.source_scope != command.required_scope:
-        raise _reject("evidence_scope_mismatch", "Evidence is outside the required scope.", status=400)
-    if (
-        type(command.observed_at) is not datetime
-        or type(command.effective_at) is not datetime
-        or command.observed_at.tzinfo is None
-        or command.effective_at.tzinfo is None
-        or any(value is not None and (type(value) is not datetime or value.tzinfo is None)
-               for value in (command.expires_at, now))
-    ):
-        raise _reject("evidence_timestamp_timezone_required", "Evidence timestamps need a timezone.", status=400)
-    if command.observed_at > now:
-        raise _reject("evidence_not_yet_observed", "Evidence cannot come from the future.")
-    if command.effective_at > now:
-        raise _reject("evidence_effective_at_future", "Evidence cannot become effective in the future.")
-    if command.expires_at is not None and command.expires_at < command.effective_at:
-        raise _reject("evidence_expiry_order_invalid", "Evidence expiry precedes effectiveness.", status=400)
-    if command.expires_at is not None and command.expires_at <= now:
-        raise _reject("evidence_expired", "Evidence has already expired.", status=400)
+    _validate_evidence_command(command, now)
 
     crypto = _crypto()
     store = _store()
@@ -746,3 +725,35 @@ def build_change_set(
         revision=updated.current_revision,
         outbox_event_id=event_id,
     )
+
+
+def _validate_evidence_command(command: AddEvidenceCommand, now: datetime) -> None:
+    if type(command.level) is not EvidenceLevel:
+        raise _reject("invalid_evidence_level", "That evidence level is not offered.")
+    if type(command.source_scope) is not str or not command.source_scope.strip():
+        raise _reject("evidence_scope_required", "Evidence needs a source scope.", status=400)
+    if command.required_scope is not None and command.source_scope != command.required_scope:
+        raise _reject("evidence_scope_mismatch", "Evidence is outside the required scope.", status=400)
+    _validate_evidence_time_bounds(command, now)
+
+
+def _evidence_timestamps_are_aware(command: AddEvidenceCommand, now: datetime) -> bool:
+    values = (command.observed_at, command.effective_at, command.expires_at, now)
+    return all(value is None or (type(value) is datetime and value.tzinfo is not None) for value in values)
+
+
+def _validate_evidence_time_bounds(command: AddEvidenceCommand, now: datetime) -> None:
+    if not _evidence_timestamps_are_aware(command, now):
+        raise _reject("evidence_timestamp_timezone_required", "Evidence timestamps need a timezone.", status=400)
+    if command.observed_at > now:
+        raise _reject("evidence_not_yet_observed", "Evidence cannot come from the future.")
+    if command.effective_at > now:
+        raise _reject("evidence_effective_at_future", "Evidence cannot become effective in the future.")
+    _validate_evidence_expiry(command, now)
+
+
+def _validate_evidence_expiry(command: AddEvidenceCommand, now: datetime) -> None:
+    if command.expires_at is not None and command.expires_at < command.effective_at:
+        raise _reject("evidence_expiry_order_invalid", "Evidence expiry precedes effectiveness.", status=400)
+    if command.expires_at is not None and command.expires_at <= now:
+        raise _reject("evidence_expired", "Evidence has already expired.", status=400)

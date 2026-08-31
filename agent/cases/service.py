@@ -61,6 +61,29 @@ CORRECTABLE_FIELD_PATHS: dict[str, RiskClass] = {
     "attributes.website": RiskClass.R1,
     "attributes.price_range": RiskClass.R0,
 }
+# Evidence authority follows the field being corrected. The decision command
+# may carry this value explicitly, but admin callers derive it from the stored
+# item rather than from caller-supplied evidence.
+EVIDENCE_SCOPE_BY_FIELD_PATH: dict[str, str] = {
+    "name": "place.identity",
+    "summary": "place.description",
+    "description": "place.description",
+    "attributes.phone": "place.contact",
+    "attributes.address": "place.address",
+    "attributes.opening_hours": "place.opening_hours",
+    "attributes.website": "place.website",
+    "attributes.price_range": "place.price_range",
+}
+
+
+def required_evidence_scope_for_field(field_path: str) -> str:
+    """Return the policy-owned evidence scope for one correctable field."""
+    try:
+        return EVIDENCE_SCOPE_BY_FIELD_PATH[field_path]
+    except (KeyError, TypeError):
+        raise ValueError("evidence_scope_policy_missing") from None
+
+
 REPORTER_PRIVACY_CHOICES = frozenset({"anonymous", "attributed"})
 MAX_CORRECTION_ITEMS = 10
 MAX_CORRECTION_VALUE = 2000

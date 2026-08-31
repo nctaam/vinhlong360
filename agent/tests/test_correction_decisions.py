@@ -44,6 +44,7 @@ def _command(**overrides) -> DecideItemCommand:
         case_id="c-1", item_id="i-1", outcome_code=CorrectionOutcome.CORRECTED,
         reason_code="source_confirms_change", evidence=(_evidence(),),
         risk_class=RiskClass.R1, actor=_actor(), reviewer_ref=None,
+        required_scope="place.contact",
     )
     base.update(overrides)
     return DecideItemCommand(**base)
@@ -260,6 +261,7 @@ def test_decide_item_records_lineage_and_the_deciding_pair(pg_database):
                           level=EvidenceLevel.E3, source_ref="https://a.example"),
             ),
             risk_class=RiskClass.R3, actor=_decider(), reviewer_ref="person:checker",
+            required_scope="place.contact",
         ),
         now=NOW,
     )
@@ -293,6 +295,7 @@ def test_a_refused_decision_writes_nothing(pg_database):
                 outcome_code=CorrectionOutcome.CORRECTED,
                 reason_code="no reviewer", evidence=(_evidence(),),
                 risk_class=RiskClass.R3, actor=_decider(), reviewer_ref=None,
+                required_scope="place.contact",
             ),
             now=NOW,
         )

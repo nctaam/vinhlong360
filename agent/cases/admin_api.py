@@ -702,6 +702,7 @@ class DecisionBody(BaseModel):
 async def decide_case_item(request: Request, body: DecisionBody):
     from .correction import DecideItemCommand, decide_item, load_evidence_records
     from .domain import CorrectionOutcome
+    from .service import required_evidence_scope_for_field
 
     try:
         # Read the evidence back out of storage rather than trusting the caller
@@ -723,6 +724,7 @@ async def decide_case_item(request: Request, body: DecisionBody):
                 reason_code=body.reason_code, evidence=evidence,
                 risk_class=stored.risk_class, actor=_actor(request),
                 reviewer_ref=body.reviewer_ref,
+                required_scope=required_evidence_scope_for_field(stored.field_path),
             ),
             now=_now(),
         )
@@ -803,4 +805,6 @@ async def verify_case_projection(request: Request, body: VerifyBody):
     return {"change_set_id": result.change_set_id, "verified": result.verified,
             "state": str(result.state), "mismatches": list(result.mismatches),
             "next_update_at": result.next_update_at.isoformat()
-            if result.next_update_at else None}
+            if result.next_update_at else None,
+            "revision": result.revision,
+            "outbox_event_id": result.outbox_event_id}

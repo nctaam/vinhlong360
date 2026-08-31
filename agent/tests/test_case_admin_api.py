@@ -99,6 +99,44 @@ def test_each_guard_says_which_command_it_belongs_to():
     assert "takeover" in guard.__name__
 
 
+def test_verification_route_returns_committed_revision_and_outbox_event_id(monkeypatch):
+    from cases.admin_api import VerifyBody, verify_case_projection
+
+    import cases.publication as publication
+
+    monkeypatch.setattr(admin_api, "_PROJECTION_FETCHER", lambda _entity_id: {"id": "p-1"})
+    monkeypatch.setattr(
+        publication,
+        "verify_public_projection",
+        lambda command, fetcher, now: SimpleNamespace(
+            change_set_id=command.change_set_id,
+            verified=True,
+            state="verified",
+            mismatches=(),
+            next_update_at=None,
+            revision=9,
+            outbox_event_id="event-verify-9",
+        ),
+    )
+    request = SimpleNamespace(
+        state=SimpleNamespace(
+            admin_user={"id": 7},
+            admin_scopes=("publication.verify",),
+            request_id="corr-verify",
+        )
+    )
+
+    payload = asyncio.run(
+        verify_case_projection(
+            request,
+            VerifyBody(case_id="case-1", change_set_id="change-1"),
+        )
+    )
+
+    assert payload["revision"] == 9
+    assert payload["outbox_event_id"] == "event-verify-9"
+
+
 def test_the_module_does_not_export_a_bare_router_symbol():
     # A second module-level name `router` makes the static route registry read
     # the earlier route module as unmounted; this package learned that once.
@@ -327,14 +365,17 @@ def test_a_ruling_is_judged_and_observed_at_the_stored_risk(monkeypatch):
 
     def fake_decide(command, now):
         seen["risk"] = command.risk_class
+        seen["scope"] = command.required_scope
         return SimpleNamespace(item_id=command.item_id, outcome_code="corrected",
-                               reason_code=command.reason_code)
+                               reason_code=command.reason_code,
+                               revision=None, outbox_event_id=None)
 
     monkeypatch.setattr("cases.correction.decide_item", fake_decide)
 
     class _Tx:
         def load_correction_items(self, case_id):
-            return (SimpleNamespace(item_id="i-1", risk_class=RiskClass.R2),)
+            return (SimpleNamespace(item_id="i-1", risk_class=RiskClass.R2,
+                                    field_path="attributes.phone"),)
 
     class _Store:
         @contextmanager
@@ -350,6 +391,7 @@ def test_a_ruling_is_judged_and_observed_at_the_stored_risk(monkeypatch):
     asyncio.run(decide_case_item(SimpleNamespace(state=SimpleNamespace()), body))
 
     assert seen["risk"] is RiskClass.R2
+    assert seen["scope"] == "place.contact"
     assert events == [("decided", "RiskClass.R2")] or events == [("decided", "R2")]
 
 

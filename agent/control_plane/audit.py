@@ -42,6 +42,7 @@ def _envelope(event: AuditEvent, payload: Mapping[str, object]) -> dict[str, obj
     result.update({
         "event_id": event.event_id,
         "case_id": event.resource_id,
+        "resource_id": event.resource_id,
         "revision": event.revision,
         "generation": event.generation or result.get("generation", str(event.revision)),
         "correlation_id": event.correlation_id,
@@ -58,59 +59,55 @@ def write_audit_and_outbox(transaction, event: AuditEvent, payload: Mapping[str,
         event = replace(event, generation=str(requested_generation))
     envelope = _envelope(event, payload)
 
+    _write_audit(transaction, event)
+    _write_outbox(transaction, event, envelope)
+
+
+def _write_audit(transaction, event: AuditEvent) -> None:
     if hasattr(transaction, "append_audit_event"):
         transaction.append_audit_event(event)
-    elif hasattr(transaction, "write_audit_event"):
+        return
+    if hasattr(transaction, "write_audit_event"):
         transaction.write_audit_event(event)
-    else:
-        try:
-            from cases.audit import CaseAuditDraft
-            from cases.domain import Channel
-        except ModuleNotFoundError:
-            from agent.cases.audit import CaseAuditDraft
-            from agent.cases.domain import Channel
+        return
+    try:
+        from cases.audit import CaseAuditDraft
+        from cases.domain import Channel
+    except ModuleNotFoundError:
+        from agent.cases.audit import CaseAuditDraft
+        from agent.cases.domain import Channel
+    transaction.append_audit(CaseAuditDraft(
+        case_id=event.resource_id, actor_ref=event.actor_id, actor_scopes=(),
+        channel=Channel.WEB, reason_code=event.action,
+        policy_revision="correction-pilot-v1", correlation_id=event.correlation_id,
+        before_snapshot=event.before, after_snapshot=event.after,
+        occurred_at=event.occurred_at, event_id=event.event_id,
+        resource_id=event.resource_id, revision=event.revision,
+        generation=event.generation,
+    ))
 
-        transaction.append_audit(
-            CaseAuditDraft(
-                case_id=event.resource_id,
-                actor_ref=event.actor_id,
-                actor_scopes=(),
-                channel=Channel.WEB,
-                reason_code=event.action,
-                policy_revision="correction-pilot-v1",
-                correlation_id=event.correlation_id,
-                before_snapshot=event.before,
-                after_snapshot=event.after,
-                occurred_at=event.occurred_at,
-            )
-        )
 
+def _write_outbox(transaction, event: AuditEvent, envelope: Mapping[str, object]) -> None:
     if hasattr(transaction, "enqueue_outbox_event"):
         transaction.enqueue_outbox_event(envelope)
-    elif hasattr(transaction, "write_outbox_event"):
+        return
+    if hasattr(transaction, "write_outbox_event"):
         transaction.write_outbox_event(envelope)
-    else:
-        try:
-            from cases.store import OutboxDraft
-        except ModuleNotFoundError:
-            from agent.cases.store import OutboxDraft
-
-        topic = str(envelope.get("topic") or event.action)
-        key = str(envelope.get("idempotency_key") or event.event_id)
-        available_at = envelope.get("available_at", event.occurred_at)
-        descriptor = dict(envelope)
-        descriptor.pop("topic", None)
-        descriptor.pop("idempotency_key", None)
-        descriptor.pop("available_at", None)
-        transaction.enqueue_outbox(
-            OutboxDraft(
-                case_id=event.resource_id,
-                idempotency_key=key,
-                topic=topic,
-                descriptor=descriptor,
-                available_at=available_at,
-            )
-        )
+        return
+    try:
+        from cases.store import OutboxDraft
+    except ModuleNotFoundError:
+        from agent.cases.store import OutboxDraft
+    topic = str(envelope.get("topic") or event.action)
+    key = str(envelope.get("idempotency_key") or event.event_id)
+    available_at = envelope.get("available_at", event.occurred_at)
+    descriptor = dict(envelope)
+    for key_name in ("topic", "idempotency_key", "available_at"):
+        descriptor.pop(key_name, None)
+    transaction.enqueue_outbox(OutboxDraft(
+        case_id=event.resource_id, idempotency_key=key, topic=topic,
+        descriptor=descriptor, available_at=available_at,
+    ))
 
 
 __all__ = ["AuditEvent", "write_audit_and_outbox"]

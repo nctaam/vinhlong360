@@ -116,6 +116,13 @@ class CaseAuditDraft:
     before_snapshot: Mapping[str, object] | None
     after_snapshot: Mapping[str, object] | None
     occurred_at: datetime
+    # Optional envelope fields are additive for legacy callers. Transactional
+    # correction events populate them so the audit row and outbox share one
+    # durable identity without requiring a schema migration.
+    event_id: str | None = None
+    resource_id: str | None = None
+    revision: int | None = None
+    generation: str | None = None
 
     def _identity_fields_valid(self) -> bool:
         return not (
@@ -143,18 +150,50 @@ class CaseAuditDraft:
         return type(self.occurred_at) is datetime and self.occurred_at.tzinfo is not None
 
     def __post_init__(self) -> None:
-        if (
-            not self._identity_fields_valid()
-            or not self._label_fields_valid()
-            or not self._occurred_at_valid()
-        ):
+        if not self._base_fields_valid():
             raise ValueError("invalid_case_audit")
+        self._normalize_event_fields()
         for name in ("before_snapshot", "after_snapshot"):
             value = getattr(self, name)
             if value is not None and not isinstance(value, Mapping):
                 raise ValueError("invalid_case_audit")
             if value is not None:
                 object.__setattr__(self, name, canonical_case_projection(value))
+
+    def _base_fields_valid(self) -> bool:
+        return self._identity_fields_valid() and self._label_fields_valid() and self._occurred_at_valid()
+
+    def _normalize_event_fields(self) -> None:
+        self._validate_event_identity()
+        if self.event_id is None:
+            return
+        object.__setattr__(self, "resource_id", self.resource_id or self.case_id)
+        revision = self._event_revision()
+        object.__setattr__(self, "revision", revision)
+        generation = self.generation or str(revision)
+        if type(generation) is not str or not generation:
+            raise ValueError("invalid_case_audit")
+        object.__setattr__(self, "generation", generation)
+
+    def _validate_event_identity(self) -> None:
+        if self.resource_id is not None and (
+            type(self.resource_id) is not str or not self.resource_id
+        ):
+            raise ValueError("invalid_case_audit")
+        if self.event_id is None:
+            if any(value is not None for value in (self.resource_id, self.revision, self.generation)):
+                raise ValueError("invalid_case_audit")
+            return
+        if type(self.event_id) is not str or not self.event_id:
+            raise ValueError("invalid_case_audit")
+
+    def _event_revision(self) -> int:
+        revision = self.revision
+        if revision is None and self.after_snapshot is not None:
+            revision = self.after_snapshot.get("current_revision")
+        if type(revision) is not int or revision < 1:
+            raise ValueError("invalid_case_audit")
+        return revision
 
     @classmethod
     def from_snapshots(

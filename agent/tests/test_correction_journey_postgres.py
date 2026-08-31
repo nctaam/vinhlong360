@@ -165,6 +165,7 @@ def _drive_to_verified(adapter, case_id: str) -> None:
             reason_code="source_confirms_change",
             evidence=load_evidence_records(case_id, item_id),
             risk_class=RiskClass.R1, actor=_Maker(),
+            required_scope="place.contact",
         ),
         now=NOW,
     )

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from contextlib import contextmanager
 from dataclasses import replace
 from datetime import datetime, timedelta, timezone
@@ -360,6 +361,56 @@ def test_append_audit_revalidates_and_serializes_before_business_sql():
             transaction.append_audit(draft)
 
     assert not any("case_audit_events" in sql for sql, _params in database.sql)
+
+
+def test_case_transaction_audit_fallback_persists_event_envelope_in_existing_json():
+    from control_plane.audit import AuditEvent, write_audit_and_outbox
+
+    database = _DatabaseDouble()
+    event = AuditEvent(
+        event_id="event-case-2",
+        actor_id="person:operator",
+        action="case.decided",
+        resource_type="case",
+        resource_id=CASE_ID,
+        reason="source_confirms_change",
+        before={"case_id": CASE_ID, "phase": "decision", "current_revision": 1},
+        after={"case_id": CASE_ID, "phase": "fulfillment", "current_revision": 2},
+        correlation_id="correlation-2",
+        revision=2,
+        generation="generation-2",
+        occurred_at=NOW,
+    )
+
+    with PostgresCaseStore(database).transaction() as transaction:
+        write_audit_and_outbox(transaction, event, {
+            "topic": "correction.updated",
+            "idempotency_key": event.event_id,
+            "available_at": NOW,
+        })
+
+    audit_sql, audit_params = next(
+        (sql, params) for sql, params in database.sql if "INSERT INTO case_audit_events" in sql
+    )
+    outbox_sql, outbox_params = next(
+        (sql, params) for sql, params in database.sql if "INSERT INTO case_outbox" in sql
+    )
+    assert "case_id" in audit_sql
+    audit_after = json.loads(audit_params[8])
+    assert audit_after["_audit_event"] == {
+        "event_id": "event-case-2",
+        "resource_id": CASE_ID,
+        "revision": 2,
+        "generation": "generation-2",
+        "correlation_id": "correlation-2",
+    }
+    outbox_descriptor = json.loads(outbox_params[3])
+    assert outbox_descriptor["event_id"] == "event-case-2"
+    assert outbox_descriptor["case_id"] == CASE_ID
+    assert outbox_descriptor["resource_id"] == CASE_ID
+    assert outbox_descriptor["revision"] == 2
+    assert outbox_descriptor["generation"] == "generation-2"
+    assert outbox_descriptor["correlation_id"] == "correlation-2"
 
 
 def test_repository_boundary_exposes_append_only_ledgers_without_mutation_methods():

@@ -14,6 +14,7 @@ sys.path.insert(0, str(ROOT / "agent"))
 from cases import wiring  # noqa: E402
 from cases.correction import (  # noqa: E402
     AddEvidenceCommand,
+    CorrectionRejected,
     DecideItemCommand,
     EvidenceRecord,
     add_evidence,
@@ -121,7 +122,7 @@ def test_add_evidence_rejects_unsafe_time_bounds_before_opening_transaction(fiel
         expires_at=NOW + timedelta(hours=1),
     )
     command = command.__class__(**{**command.__dict__, field: value})
-    with pytest.raises(Exception) as excinfo:
+    with pytest.raises(CorrectionRejected) as excinfo:
         add_evidence(command, now=NOW)
     assert getattr(excinfo.value, "problem", None).code == code
 
@@ -143,7 +144,42 @@ def test_validate_decision_uses_only_evidence_in_required_scope_and_time_window(
     assert decision.evidence_refs == ("e-1",)
 
 
-def test_audit_and_outbox_share_the_same_transactional_envelope():
+def test_validate_decision_never_infers_required_scope_from_the_first_record():
+    command = DecideItemCommand(
+        case_id="case-1",
+        item_id="item-1",
+        outcome_code=CorrectionOutcome.CORRECTED,
+        reason_code="source_confirms_change",
+        evidence=(_record(source_scope="place.opening_hours"),),
+        risk_class=RiskClass.R1,
+        actor=_actor(),
+    )
+
+    with pytest.raises(CorrectionRejected) as excinfo:
+        validate_decision(command, now=NOW)
+
+    assert excinfo.value.problem.code == "evidence_scope_required"
+
+
+def test_wrong_scope_evidence_is_rejected_as_not_usable():
+    command = DecideItemCommand(
+        case_id="case-1",
+        item_id="item-1",
+        outcome_code=CorrectionOutcome.CORRECTED,
+        reason_code="source_confirms_change",
+        evidence=(_record(source_scope="place.opening_hours"),),
+        risk_class=RiskClass.R1,
+        actor=_actor(),
+        required_scope="place.contact",
+    )
+
+    with pytest.raises(Exception) as excinfo:
+        validate_decision(command, now=NOW)
+
+    assert excinfo.value.problem.code == "evidence_not_usable"
+
+
+def test_audit_and_outbox_fallback_uses_case_transaction_compatible_methods():
     from control_plane.audit import AuditEvent, write_audit_and_outbox
 
     class Tx:
@@ -151,11 +187,11 @@ def test_audit_and_outbox_share_the_same_transactional_envelope():
             self.audit = None
             self.outbox = None
 
-        def append_audit_event(self, event):
-            self.audit = event
+        def append_audit(self, draft):
+            self.audit = draft
 
-        def enqueue_outbox_event(self, payload):
-            self.outbox = payload
+        def enqueue_outbox(self, draft):
+            self.outbox = draft
 
     tx = Tx()
     event = AuditEvent(
@@ -165,14 +201,15 @@ def test_audit_and_outbox_share_the_same_transactional_envelope():
         resource_type="case",
         resource_id="case-1",
         reason="source_confirms_change",
-        before={"revision": 1},
-        after={"revision": 2},
+        before={"case_id": "case-1", "current_revision": 1},
+        after={"case_id": "case-1", "current_revision": 2},
         correlation_id="corr-proof",
         revision=2,
         occurred_at=NOW,
     )
     write_audit_and_outbox(tx, event, {"topic": "correction.updated", "generation": "g-2"})
-    assert tx.audit.revision == tx.outbox["revision"] == 2
-    assert tx.audit.correlation_id == tx.outbox["correlation_id"] == "corr-proof"
-    assert tx.outbox["case_id"] == "case-1"
-    assert tx.outbox["generation"] == "g-2"
+    assert tx.audit.event_id == tx.outbox.descriptor["event_id"] == "event-1"
+    assert tx.audit.resource_id == tx.outbox.descriptor["resource_id"] == "case-1"
+    assert tx.audit.revision == tx.outbox.descriptor["revision"] == 2
+    assert tx.audit.generation == tx.outbox.descriptor["generation"] == "g-2"
+    assert tx.audit.correlation_id == tx.outbox.descriptor["correlation_id"] == "corr-proof"
