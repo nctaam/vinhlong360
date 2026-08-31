@@ -493,6 +493,10 @@ def _validate_functional_identity(name: str, evidence: CommandEvidence, revision
 
 
 def _validate_functional_outcomes(name: str, evidence: CommandEvidence, outcomes: dict[str, Any]) -> None:
+    if name == "rollback-local-rehearsal" and outcomes.get("evidence_kind") == "native-command":
+        if outcomes.get("summary_present") is not True or outcomes.get("return_code") != 0:
+            raise ValueError(f"functional section is missing valid native outcomes: {name}")
+        return
     required = (
         "passed", "failed", "errors", "skipped", "xfailed", "collection_errors",
         "interrupted", "return_code", "failed_nodeids", "error_nodeids", "summary_present",
@@ -502,6 +506,8 @@ def _validate_functional_outcomes(name: str, evidence: CommandEvidence, outcomes
 
 
 def _outcomes_verdict(outcomes: dict[str, Any]) -> str:
+    if outcomes.get("evidence_kind") == "native-command":
+        return "PASS" if outcomes.get("summary_present") is True and outcomes.get("return_code") == 0 else "BLOCKED"
     try:
         outcome = ParsedOutcome(
             passed=outcomes["passed"], failed=outcomes["failed"],
@@ -535,6 +541,7 @@ def _build_parser() -> argparse.ArgumentParser:
     output.add_argument("--output-file", type=Path)
     record.add_argument("--output-sha256", default="")
     record.add_argument("--verdict", choices=("PASS", "BLOCKED", "UNCLASSIFIED"))
+    record.add_argument("--native-command", action="store_true")
     record.add_argument("--state", type=Path, default=_default_state_path())
 
     harness = subparsers.add_parser("harness-result", help="record compose result")
@@ -593,43 +600,51 @@ def _outcomes_match(parsed: ParsedOutcome, declared: dict[str, Any]) -> bool:
 def _record_payload(args: argparse.Namespace, outcomes: dict[str, Any] | None) -> tuple[dict[str, Any] | None, str | bytes | None, str, str | None]:
     effective_status = args.status
     effective_verdict = args.verdict
-    output: str | bytes | None = args.output_text
-    if args.output_file is not None:
-        try:
-            output = args.output_file.read_bytes()
-        except OSError as exc:
-            raise ValueError(f"unable to read output file: {exc}") from exc
-    output_text: str | None
-    if isinstance(output, bytes):
-        try:
-            output_text = output.decode("utf-8")
-        except UnicodeDecodeError:
-            output_text = None
-    else:
-        output_text = output
+    output = _load_capture(args)
     if output is not None:
-        parsed = None if output_text is None else parse_test_output(output_text, args.exit_code)
-        if parsed is None or not parsed.summary_present:
-            # Captured output without a pytest summary cannot support declared
-            # counts, so discard them and preserve an explicit unclassified run.
-            outcomes = None
-            if args.exit_code:
-                effective_verdict = "BLOCKED"
-                effective_status = "fail"
-            else:
-                effective_verdict = "UNCLASSIFIED"
-                effective_status = "skip"
-        else:
-            if outcomes is not None and not _outcomes_match(parsed, outcomes):
-                # A mismatch is evidence of tampering or a stale declaration;
-                # record the parsed run as blocked instead of trusting metadata.
-                effective_verdict = "BLOCKED"
-                effective_status = "fail"
-            else:
-                effective_verdict = classify_verdict(parsed, frozenset())
-                effective_status = {"PASS": "pass", "BLOCKED": "fail", "UNCLASSIFIED": "skip"}[effective_verdict]
-            outcomes = asdict(parsed)
+        return _classify_capture(args, outcomes, output, effective_status, effective_verdict)
     return outcomes, output, effective_status, effective_verdict
+
+
+def _load_capture(args: argparse.Namespace) -> str | bytes | None:
+    if args.output_file is None:
+        return args.output_text
+    try:
+        return args.output_file.read_bytes()
+    except OSError as exc:
+        raise ValueError(f"unable to read output file: {exc}") from exc
+
+
+def _classify_capture(
+    args: argparse.Namespace, outcomes: dict[str, Any] | None, output: str | bytes,
+    status: str, verdict: str | None,
+) -> tuple[dict[str, Any] | None, str | bytes, str, str | None]:
+    text = _decode_capture(output)
+    if getattr(args, "native_command", False):
+        return _native_capture_result(args.exit_code, text, output)
+    if text is None:
+        return None, output, ("fail" if args.exit_code else "skip"), ("BLOCKED" if args.exit_code else "UNCLASSIFIED")
+    parsed = parse_test_output(text, args.exit_code)
+    if not parsed.summary_present:
+        return None, output, ("fail" if args.exit_code else "skip"), ("BLOCKED" if args.exit_code else "UNCLASSIFIED")
+    if outcomes is not None and not _outcomes_match(parsed, outcomes):
+        return asdict(parsed), output, "fail", "BLOCKED"
+    resolved = classify_verdict(parsed, frozenset())
+    return asdict(parsed), output, {"PASS": "pass", "BLOCKED": "fail", "UNCLASSIFIED": "skip"}[resolved], resolved
+
+
+def _decode_capture(output: str | bytes) -> str | None:
+    if isinstance(output, str):
+        return output
+    try:
+        return output.decode("utf-8")
+    except UnicodeDecodeError:
+        return None
+
+
+def _native_capture_result(code: int, text: str | None, output: str | bytes) -> tuple[dict[str, Any], str | bytes, str, str]:
+    valid = text is not None and code == 0
+    return {"evidence_kind": "native-command", "summary_present": text is not None, "return_code": code}, output, ("pass" if valid else "fail"), ("PASS" if valid else "BLOCKED")
 
 
 def _handle_record(args: argparse.Namespace) -> int:

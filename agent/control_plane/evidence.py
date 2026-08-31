@@ -180,35 +180,42 @@ def parse_test_output(text: str, return_code: int) -> ParsedOutcome:
     pytest_outcome = parse_pytest_output(text, return_code)
     if pytest_outcome.summary_present:
         return pytest_outcome
-    counts: dict[str, int] = {}
-    saw_vitest = False
-    for line in text.splitlines():
-        match = _VITEST_SUMMARY.match(line)
-        if not match:
-            continue
-        saw_vitest = True
-        parsed = {
-            item.group("label").lower(): int(item.group("count"))
-            for item in _VITEST_COUNT.finditer(match.group("counts"))
-        }
-        if match.group("label").lower().startswith("tests") or not counts:
-            counts = parsed
+    counts, saw_vitest, inconsistent = _parse_vitest_summaries(text)
     if not saw_vitest:
         return pytest_outcome
     failed_nodeids, error_nodeids, collection_errors = _parse_nodes(text)
     return ParsedOutcome(
         passed=counts.get("passed", 0),
         failed=counts.get("failed", 0),
-        errors=0,
+        errors=max(pytest_outcome.errors, len(error_nodeids), 1 if inconsistent else 0),
         skipped=counts.get("skipped", 0) + counts.get("todo", 0) + counts.get("pending", 0),
         xfailed=0,
         collection_errors=collection_errors,
-        interrupted=False,
+        interrupted=pytest_outcome.interrupted,
         return_code=int(return_code),
         failed_nodeids=failed_nodeids,
         error_nodeids=error_nodeids,
         summary_present=True,
     )
+
+
+def _parse_vitest_summaries(text: str) -> tuple[dict[str, int], bool, bool]:
+    counts: dict[str, int] = {}
+    totals: dict[str, int] = {}
+    inconsistent = False
+    for line in text.splitlines():
+        match = _VITEST_SUMMARY.match(line)
+        if not match:
+            continue
+        label = match.group("label").lower()
+        parsed = {item.group("label").lower(): int(item.group("count")) for item in _VITEST_COUNT.finditer(match.group("counts"))}
+        total = int(match.group("total"))
+        totals[label] = total
+        inconsistent = inconsistent or total == 0 or sum(parsed.values()) != total
+        if label.startswith("tests") or not counts:
+            counts = parsed
+    saw = bool(totals)
+    return counts, saw, inconsistent or set(totals) != {"test files", "tests"}
 
 
 def _unexpected_failures(outcome: ParsedOutcome, allowlist: frozenset[str]) -> set[str]:
@@ -491,26 +498,39 @@ def verify_bundle(path: Path) -> VerificationResult:
 def _validate_state_outcomes(name: str, outcomes: object, verdict: object) -> list[str]:
     if not isinstance(outcomes, dict):
         return [f"invalid section outcomes: {name}"]
-    fields = (
-        "passed", "failed", "errors", "skipped", "xfailed", "collection_errors",
-        "interrupted", "return_code", "summary_present",
-    )
-    if any(field not in outcomes for field in fields):
-        return [f"incomplete section outcomes: {name}"]
+    if outcomes.get("evidence_kind") == "native-command":
+        return _validate_native_state_outcomes(name, outcomes, verdict)
     try:
-        counts = {field: outcomes[field] for field in fields}
-        _validate_state_count_values(counts)
-        parsed = ParsedOutcome(
-            **{field: value for field, value in counts.items() if field != "summary_present"},
-            failed_nodeids=_validated_nodeids(outcomes.get("failed_nodeids", ()), "failed_nodeids"),
-            error_nodeids=_validated_nodeids(outcomes.get("error_nodeids", ()), "error_nodeids"),
-            summary_present=True,
-        )
+        parsed = _parse_state_outcomes(outcomes)
     except (KeyError, TypeError, ValueError) as exc:
         return [f"invalid section outcomes: {name}: {exc}"]
     if classify_verdict(parsed, frozenset()) != verdict:
         return [f"section outcomes/verdict mismatch: {name}"]
     return []
+
+
+def _validate_native_state_outcomes(name: str, outcomes: dict[str, object], verdict: object) -> list[str]:
+    if outcomes.get("summary_present") is not True or type(outcomes.get("return_code")) is not int:
+        return [f"invalid native section outcomes: {name}"]
+    expected = "PASS" if outcomes["return_code"] == 0 else "BLOCKED"
+    return [] if expected == verdict else [f"section outcomes/verdict mismatch: {name}"]
+
+
+def _parse_state_outcomes(outcomes: dict[str, object]) -> ParsedOutcome:
+    fields = (
+        "passed", "failed", "errors", "skipped", "xfailed", "collection_errors",
+        "interrupted", "return_code", "summary_present",
+    )
+    if any(field not in outcomes for field in fields):
+        raise ValueError("outcomes are incomplete")
+    counts = {field: outcomes[field] for field in fields}
+    _validate_state_count_values(counts)
+    return ParsedOutcome(
+        **{field: value for field, value in counts.items() if field != "summary_present"},
+        failed_nodeids=_validated_nodeids(outcomes.get("failed_nodeids", ()), "failed_nodeids"),
+        error_nodeids=_validated_nodeids(outcomes.get("error_nodeids", ()), "error_nodeids"),
+        summary_present=True,
+    )
 
 
 def _validate_state_count_values(counts: dict[str, object]) -> None:
@@ -528,9 +548,25 @@ def _validate_state_count_values(counts: dict[str, object]) -> None:
 def _validate_state_section(name: str, section: object, revision: str) -> list[str]:
     if not isinstance(section, dict):
         return [f"invalid section: {name}"]
+    reasons: list[str] = _validate_section_identity(name, section, revision)
+    outcomes = section.get("outcomes")
+    if outcomes is not None and outcomes != {}:
+        reasons.extend(_validate_state_outcomes(name, outcomes, section.get("verdict")))
+        reasons.extend(_validate_state_output_checksum(name, section))
+        if isinstance(outcomes, dict) and type(outcomes.get("return_code")) is int and outcomes.get("return_code") != section.get("exit_code"):
+            reasons.append(f"section exit code mismatch: {name}")
+    if section.get("status") == "fail" or section.get("verdict") == "BLOCKED":
+        reasons.append(f"blocked section: {name}")
+    return reasons
+
+
+def _validate_section_identity(name: str, section: dict[str, object], revision: str) -> list[str]:
     reasons: list[str] = []
     status = section.get("status")
     verdict = section.get("verdict")
+    exit_code = section.get("exit_code")
+    if type(exit_code) is not int:
+        reasons.append(f"invalid section exit code: {name}")
     if status not in {"pass", "fail", "skip"}:
         reasons.append(f"invalid section status: {name}")
     if verdict not in {"PASS", "BLOCKED", "UNCLASSIFIED"}:
@@ -541,12 +577,6 @@ def _validate_state_section(name: str, section: object, revision: str) -> list[s
     reasons.extend(_validate_state_section_metadata(name, section, revision))
     if name in _FUNCTIONAL_STATE_SECTIONS:
         reasons.extend(_validate_functional_state_section(name, section, revision))
-    outcomes = section.get("outcomes")
-    if outcomes is not None and outcomes != {}:
-        reasons.extend(_validate_state_outcomes(name, outcomes, verdict))
-        reasons.extend(_validate_state_output_checksum(name, section))
-    if status == "fail" or verdict == "BLOCKED":
-        reasons.append(f"blocked section: {name}")
     return reasons
 
 

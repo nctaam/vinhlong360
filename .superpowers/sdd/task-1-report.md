@@ -112,6 +112,15 @@ Status: DONE_WITH_CONCERNS
 - Shared evidence parsing now accepts Vitest `Test Files ...` / `Tests ...` summaries while preserving pytest parsing and verdict semantics.
 - Added frontend recorder and parser regressions; focused verification: `93 passed`; `py_compile`, `ruff`, and `git diff --check` passed.
 
+## Reviewer Fix Wave V11
+
+Status: DONE_WITH_CONCERNS
+
+- Commit: pending (`fix: fail close native and Vitest release evidence`).
+- Vitest parsing now requires both nonzero `Test Files` and `Tests` totals and carries interruption/error markers into the verdict.
+- Rollback and browser operational captures use explicit native-command evidence with output checksums, zero-exit PASS only, and invalid UTF-8 blocked; state validation binds section exit codes to outcomes.
+- Focused verification: `99 passed`; `py_compile`, `ruff`, and `git diff --check` passed; R20.8 staged check is clean.
+
 ## Reviewer Fix Wave V9
 
 Status: DONE_WITH_CONCERNS

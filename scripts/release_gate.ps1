@@ -155,6 +155,9 @@ function Invoke-LaunchSafetyRecord {
     "--environment-json", $environment,
     "--verdict", $(if ($Status -eq "pass") { "PASS" } elseif ($Status -eq "fail") { "BLOCKED" } else { "UNCLASSIFIED" })
   )
+  if ($Section -in @("rollback-local-rehearsal", "browser-opt-in")) {
+    $recordArgs += @("--native-command")
+  }
   if ($LaunchSafetyEvidenceState) {
     $recordArgs += @("--state", $LaunchSafetyEvidenceState)
   }

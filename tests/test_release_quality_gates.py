@@ -337,6 +337,7 @@ def test_release_gate_captures_real_output_and_records_metadata():
     assert '"--output-file", $outputPath' in gate
     assert 'WriteAllText($outputPath, $Output' in gate
     assert '"--output-text", $Output' not in gate
+    assert '$Section -in @("rollback-local-rehearsal", "browser-opt-in")' in gate
     assert 'ROOT = Path(__file__).resolve().parents[2]' in runner
     assert 'sys.path.insert(0, str(ROOT))' in runner
 

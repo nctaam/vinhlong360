@@ -317,6 +317,36 @@ def test_cli_parses_vitest_output_as_pass(tmp_path: Path) -> None:
     assert section["outcomes"]["passed"] == 91
 
 
+def test_cli_records_native_rollback_output_without_fabricating_counts(tmp_path: Path) -> None:
+    state_path = tmp_path / "rollback-state.json"
+    assert main([
+        "record", "--section", "rollback-local-rehearsal", "--status", "pass",
+        "--exit-code", "0", "--summary", "rollback ok", "--command", "bash rollback",
+        "--native-command", "--output-text", "rollback completed", "--environment-json", '{"os":"test"}',
+        "--head-sha", "a" * 40, "--revision", "a" * 40, "--state", str(state_path),
+    ]) == 0
+    section = json.loads(state_path.read_text(encoding="utf-8"))["sections"]["rollback-local-rehearsal"]
+    assert section["verdict"] == "PASS"
+    assert section["outcomes"] == {
+        "evidence_kind": "native-command", "summary_present": True, "return_code": 0,
+    }
+
+
+def test_cli_rejects_non_utf8_native_capture_as_blocked(tmp_path: Path) -> None:
+    output_path = tmp_path / "native.bin"
+    output_path.write_bytes(b"rollback\xff")
+    state_path = tmp_path / "native-invalid.json"
+    assert main([
+        "record", "--section", "rollback-local-rehearsal", "--status", "pass",
+        "--exit-code", "0", "--summary", "rollback", "--command", "bash rollback",
+        "--native-command", "--output-file", str(output_path), "--environment-json", '{"os":"test"}',
+        "--head-sha", "a" * 40, "--revision", "a" * 40, "--state", str(state_path),
+    ]) == 0
+    section = json.loads(state_path.read_text(encoding="utf-8"))["sections"]["rollback-local-rehearsal"]
+    assert section["status"] == "fail"
+    assert section["verdict"] == "BLOCKED"
+
+
 def test_harness_result_parses_captured_output_instead_of_fabricating_counts(tmp_path: Path) -> None:
     state_path = tmp_path / "harness-state.json"
     output_path = tmp_path / "compose-output.txt"

@@ -71,6 +71,33 @@ def test_vitest_summary_is_parsed_as_clean_test_evidence() -> None:
     assert classify_verdict(outcome, frozenset()) == "PASS"
 
 
+def test_vitest_summary_contradiction_is_blocked() -> None:
+    outcome = parse_test_output(
+        "Test Files  1 passed (1)\n     Tests  0 passed (1)\n",
+        return_code=0,
+    )
+    assert outcome.errors == 1
+    assert classify_verdict(outcome, frozenset()) == "BLOCKED"
+
+
+def test_vitest_zero_tests_is_blocked() -> None:
+    outcome = parse_test_output(
+        "Test Files  0 passed (0)\n     Tests  0 passed (0)\n",
+        return_code=0,
+    )
+    assert outcome.errors == 1
+    assert classify_verdict(outcome, frozenset()) == "BLOCKED"
+
+
+def test_vitest_keyboard_interrupt_is_blocked_even_with_zero_exit() -> None:
+    outcome = parse_test_output(
+        "KeyboardInterrupt\nTest Files  1 passed (1)\n     Tests  1 passed (1)\n",
+        return_code=0,
+    )
+    assert outcome.interrupted is True
+    assert classify_verdict(outcome, frozenset()) == "BLOCKED"
+
+
 def test_error_collecting_line_is_a_collection_error() -> None:
     outcome = parse_pytest_output(
         "ERROR collecting tests/a.py\n0 passed, 1 error in 0.1s\n",
@@ -263,6 +290,35 @@ def test_bundle_rejects_inline_output_with_secondary_output_path(tmp_path: Path)
     result = verify_bundle(path)
     assert result.verdict == "BLOCKED"
     assert any("both inline output" in reason for reason in result.reasons)
+
+
+def test_state_bundle_rejects_section_exit_code_mismatch(tmp_path: Path) -> None:
+    document = EvidenceDocument.empty(tmp_path / "state.json")
+    document.revision = "a" * 40
+    for section in REQUIRED_SECTIONS:
+        if section == "external-gates":
+            evidence = CommandEvidence(section, 0, "H1=blocked; H2=blocked; owner=not-authorized", "skip")
+        elif section in {"postgres-opt-in", "compose-nginx-opt-in", "browser-opt-in"}:
+            evidence = CommandEvidence(section, 0, "docker-cli-unavailable" if section != "browser-opt-in" else "chrome-unavailable", "skip")
+        else:
+            output = "1 passed in 0.1s\n"
+            evidence = CommandEvidence(section, 0, "passed", "pass", outcomes={
+                "passed": 1, "failed": 0, "errors": 0, "skipped": 0, "xfailed": 0,
+                "collection_errors": 0, "interrupted": False, "return_code": 0,
+                "failed_nodeids": [], "error_nodeids": [], "summary_present": True,
+            }, environment={"os": "test"}, head_sha="a" * 40,
+                output_sha256=sha256(output.encode()).hexdigest())
+        document.record(section, evidence)
+    bundle_path = tmp_path / "bundle.json"
+    document.write_bundle(bundle_path)
+    payload = json.loads(bundle_path.read_text(encoding="utf-8"))
+    payload["state"]["sections"]["backend-focused"]["exit_code"] = "evil"
+    payload["output"] = json.dumps(payload["state"], ensure_ascii=True, sort_keys=True, separators=(",", ":"))
+    digest = sha256(payload["output"].encode()).hexdigest()
+    payload["state_sha256"] = digest
+    payload["output_sha256"] = digest
+    bundle_path.write_text(json.dumps(payload), encoding="utf-8")
+    assert verify_bundle(bundle_path).verdict == "BLOCKED"
 
 
 def test_verify_bundle_reparses_stored_output_and_nodeids(tmp_path: Path) -> None:
