@@ -1,7 +1,7 @@
 """Transactional audit and outbox intent envelope for case mutations."""
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 from typing import Mapping
 
@@ -53,6 +53,9 @@ def write_audit_and_outbox(transaction, event: AuditEvent, payload: Mapping[str,
     """Write audit intent and outbox intent on the caller's open transaction."""
     if not isinstance(event, AuditEvent) or not isinstance(payload, Mapping):
         raise TypeError("invalid_audit_envelope")
+    requested_generation = payload.get("generation")
+    if requested_generation is not None and requested_generation != event.generation:
+        event = replace(event, generation=str(requested_generation))
     envelope = _envelope(event, payload)
 
     if hasattr(transaction, "append_audit_event"):
