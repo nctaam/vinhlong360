@@ -50,3 +50,5 @@ The pre-existing `docs/standards/90-exceptions-log.md` user change was not inclu
 
 Follow-up hardening commit: `c84897ab` adds strict registry validation for the
 known-current string and covers missing-value/missing-discriminator paths.
+Structured error code display is included in `96bb149b`; test typing and the
+latest green evidence are in `de356a1b`.
