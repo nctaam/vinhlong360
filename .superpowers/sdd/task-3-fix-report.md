@@ -35,6 +35,17 @@ npm run typecheck
 exit 0
 ```
 
+Post-review typing hardening (after the initial reviewer found test-only
+TypeScript errors):
+
+```text
+npm test -- --run tests/proof-first-correction.test.ts tests/correction-case-pages.test.ts tests/correction-case-security.test.ts
+3 files passed, 61 tests passed
+
+npm run typecheck
+exit 0
+```
+
 The pre-existing `docs/standards/90-exceptions-log.md` user change was not included in this commit.
 
 Follow-up hardening commit: `c84897ab` adds strict registry validation for the

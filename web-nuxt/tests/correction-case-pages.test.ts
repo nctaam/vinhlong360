@@ -334,10 +334,11 @@ describe('the three pages', () => {
       },
     })
 
+    expect(form.get('[data-role="server-error"]').text()).toContain('invalid_request')
     expect(form.get('[data-role="server-error"]').text()).toContain('reportedValueKnown')
     expect(form.get('[data-role="server-error"]').text()).toContain('corr-page-1')
     expect(form.get('[data-role="server-error"] a').attributes('href')).toBe('#item-0-reported')
-    expect(form.get('#item-0-field').exists()).toBe(true)
+    expect(form.find('#item-0-field').exists()).toBe(true)
   })
 
   it('reflows as a single column with no fixed page width', () => {

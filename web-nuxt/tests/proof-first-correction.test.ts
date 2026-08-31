@@ -48,11 +48,14 @@ describe('proof-first correction contract', () => {
   it('keeps legacy submissions headerless while canonical submissions carry a version', async () => {
     const fetcher = vi.fn(async () => receipt)
     const cases = useCorrectionCases(fetcher as any)
+    const { reportedValueKnown: _legacyDiscriminator, ...legacyItem } = submission.items[0]!
     await cases.createCorrection({
       ...submission,
-      items: [{ ...submission.items[0], reportedValueKnown: undefined }],
+      items: [legacyItem],
     })
-    const options = fetcher.mock.calls[0]![1] as { headers: Record<string, string> }
+    const call = fetcher.mock.calls[0] as unknown[] | undefined
+    if (!call) throw new Error('fetcher was not called')
+    const options = call[1] as { headers: Record<string, string> }
     expect(options.headers['X-Correction-Contract-Version']).toBeUndefined()
   })
 
