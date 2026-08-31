@@ -103,3 +103,12 @@ Status: DONE_WITH_CONCERNS
 - Commit: `ecd704f6` (`fix: close evidence verdict and bundle validation gaps`).
 - State validation now requires summary-present parsed outcomes and complete capture metadata for every functional section; output source paths reject dual/invalid sources.
 - Focused verification remains `89 passed`; `py_compile`, `ruff`, and `git diff --check` pass.
+
+## Reviewer Fix Wave V9
+
+Status: DONE_WITH_CONCERNS
+
+- Commit: pending (`fix: distinguish pytest collection progress from errors`).
+- The parser now treats only `ERROR collecting ...` as a collection error; normal `collecting ... collected N items` progress remains clean PASS evidence.
+- Added regressions for both normal progress and explicit collection-error output.
+- Focused verification: `91 passed`; `py_compile`, `ruff`, and `git diff --check` passed.

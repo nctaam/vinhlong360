@@ -50,6 +50,24 @@ def test_error_nodeid_blocks_when_summary_under_reports_zero_errors() -> None:
     assert classify_verdict(outcome, frozenset()) == "BLOCKED"
 
 
+def test_normal_collecting_progress_is_not_a_collection_error() -> None:
+    outcome = parse_pytest_output(
+        "collecting ... collected 2 items\n2 passed in 0.1s\n",
+        return_code=0,
+    )
+    assert outcome.collection_errors == 0
+    assert classify_verdict(outcome, frozenset()) == "PASS"
+
+
+def test_error_collecting_line_is_a_collection_error() -> None:
+    outcome = parse_pytest_output(
+        "ERROR collecting tests/a.py\n0 passed, 1 error in 0.1s\n",
+        return_code=1,
+    )
+    assert outcome.collection_errors == 1
+    assert classify_verdict(outcome, frozenset()) == "BLOCKED"
+
+
 def test_clean_allowlisted_failure_is_pass_but_collection_error_is_not() -> None:
     clean = parse_pytest_output("1 failed, 4 passed in 0.1s\n", return_code=1)
     assert classify_verdict(clean, frozenset({"tests/known.py::test_old"})) == "BLOCKED"

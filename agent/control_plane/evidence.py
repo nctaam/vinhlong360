@@ -21,7 +21,9 @@ _FAILED_LINE = re.compile(r"^\s*FAILED\s+(?P<nodeid>\S+)", re.IGNORECASE)
 _FAILED_STATUS_LINE = re.compile(r"^\s*(?P<nodeid>\S+)\s+FAILED(?:\s|$)", re.IGNORECASE)
 _ERROR_LINE = re.compile(r"^\s*ERROR\s+(?P<nodeid>\S+?)(?:\s+-|\s*$)", re.IGNORECASE)
 _ERROR_AT_LINE = re.compile(r"^\s*ERROR\s+at\s+setup\s+of\s+(?P<nodeid>\S+)", re.IGNORECASE)
-_COLLECTION_LINE = re.compile(r"^\s*(?:ERROR\s+)?collecting\s+(?P<nodeid>\S+)", re.IGNORECASE)
+# Normal pytest progress starts with ``collecting ...``; only the explicit
+# ``ERROR collecting`` form denotes a collection failure.
+_COLLECTION_LINE = re.compile(r"^\s*ERROR\s+collecting\s+(?P<nodeid>\S+)", re.IGNORECASE)
 _REQUIRED_STATE_SECTIONS = (
     "artifacts",
     "backend-focused",
