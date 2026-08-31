@@ -134,13 +134,33 @@ function Invoke-LaunchSafetyRecord {
     [Parameter(Mandatory = $true)][ValidateSet("pass", "fail", "skip")][string]$Status,
     [Parameter(Mandatory = $true)][int]$ExitCode,
     [Parameter(Mandatory = $true)][string]$Summary,
-    [string]$Command = "launch safety gate"
+    [string]$Command = "launch safety gate",
+    [string]$Output = ""
   )
   $recordArgs = @(
     "scripts/ops/record_launch_evidence.py", "record",
     "--section", $Section, "--status", $Status,
     "--exit-code", [string]$ExitCode, "--summary", $Summary,
     "--command", $Command
+  )
+  $outcomes = @{
+    passed = if ($ExitCode -eq 0) { 1 } else { 0 }
+    failed = if ($ExitCode -eq 0) { 0 } else { 1 }
+    errors = 0; skipped = if ($Status -eq "skip") { 1 } else { 0 }
+    xfailed = 0; collection_errors = 0; interrupted = $false; return_code = $ExitCode
+  } | ConvertTo-Json -Compress
+  $environment = @{
+    os = [string]$PSVersionTable.OS
+    powershell = [string]$PSVersionTable.PSVersion
+    python = $Python
+    database_target = "redacted"
+  } | ConvertTo-Json -Compress
+  $recordArgs += @(
+    "--head-sha", $Script:LaunchSafetyRevision,
+    "--outcomes-json", $outcomes,
+    "--environment-json", $environment,
+    "--output-text", $Output,
+    "--verdict", $(if ($Status -eq "pass") { "PASS" } elseif ($Status -eq "fail") { "BLOCKED" } else { "UNCLASSIFIED" })
   )
   if ($LaunchSafetyEvidenceState) {
     $recordArgs += @("--state", $LaunchSafetyEvidenceState)
@@ -172,9 +192,10 @@ function Invoke-RecordedLaunchSafetySection {
   Write-Step "RUN" "Launch Safety evidence: $Section"
   $exitCode = 0
   $summary = "passed"
+  $capturedOutput = ""
   try {
     Push-Location $Root
-    try { & $Body } finally { Pop-Location }
+    try { $capturedOutput = (& $Body 2>&1 | Out-String) } finally { Pop-Location }
     Write-Step "OK" "Launch Safety evidence: $Section"
   } catch {
     $exitCode = if ($_.Exception.Data.Contains("ExitCode")) {
@@ -186,7 +207,7 @@ function Invoke-RecordedLaunchSafetySection {
   }
   try {
     $status = if ($exitCode -eq 0) { "pass" } else { "fail" }
-    Invoke-LaunchSafetyRecord $Section $status $exitCode $summary $Command
+    Invoke-LaunchSafetyRecord $Section $status $exitCode $summary $Command $capturedOutput
   } catch {
     $Script:Failures++
     Write-Step "FAIL" "Launch Safety evidence recorder: $Section" $_.Exception.Message

@@ -139,6 +139,21 @@ def test_record_stores_versioned_outcomes_environment_head_and_output_checksum(
     assert section["verdict"] == "PASS"
 
 
+def test_record_rejects_status_verdict_contradiction(tmp_path: Path) -> None:
+    document = EvidenceDocument.empty(tmp_path / "state.json")
+    with pytest.raises(ValueError, match="status.*verdict|verdict.*status"):
+        document.record(
+            "artifacts",
+            CommandEvidence("pytest", 0, "passed", "pass", verdict="BLOCKED"),
+        )
+
+
+def test_command_evidence_does_not_silently_truncate_exact_command() -> None:
+    command = "pytest " + ("x" * 600)
+    with pytest.raises(ValueError, match="command"):
+        CommandEvidence(command, 0, "passed", "pass")
+
+
 def test_final_render_rejects_not_requested_opt_in_and_accepts_explicit_skip(tmp_path: Path) -> None:
     document = EvidenceDocument.empty(tmp_path / "state.json")
     document.revision = "a" * 40

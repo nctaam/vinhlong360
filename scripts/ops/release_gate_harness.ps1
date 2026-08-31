@@ -128,10 +128,12 @@ function Invoke-ReleaseEvidenceVerifier {
   [OutputType([int])]
   param(
     [Parameter(Mandatory = $true)][string]$Bundle,
-    [string]$Python = "python"
+    [string]$Python = "python",
+    [string]$Root = (Resolve-Path (Join-Path $PSScriptRoot "../..")).Path
   )
 
-  & $Python "scripts/ops/verify_release_bundle.py" --bundle $Bundle
+  $verifier = Join-Path $Root "scripts/ops/verify_release_bundle.py"
+  & $Python $verifier --bundle $Bundle
   return [int]$LASTEXITCODE
 }
 

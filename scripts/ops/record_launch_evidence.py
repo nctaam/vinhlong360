@@ -83,13 +83,38 @@ _SECRET_ASSIGNMENT = re.compile(
 _HEAD_SHA = re.compile(r"^[0-9a-f]{40}$")
 
 
+def _validate_command_evidence(status: str, exit_code: int, command: str) -> None:
+    if status not in {"pass", "fail", "skip"}:
+        raise ValueError(f"invalid evidence status: {status}")
+    if not isinstance(exit_code, int):
+        raise TypeError("exit_code must be an integer")
+    if len(str(command)) > MAX_TEXT:
+        raise ValueError("command exceeds maximum evidence length")
+    if status in {"pass", "skip"} and exit_code != 0:
+        raise ValueError(f"{status} evidence exit_code must be 0")
+
+
+def _validate_digests(head_sha: str, output_sha256: str) -> None:
+    if head_sha and _HEAD_SHA.fullmatch(head_sha) is None:
+        raise ValueError("head_sha must be a lowercase 40-hex revision")
+    if output_sha256 and re.fullmatch(r"[0-9a-f]{64}", output_sha256) is None:
+        raise ValueError("output_sha256 must be a lowercase SHA-256 digest")
+
+
+def _resolved_verdict(status: str, verdict: str | None) -> str:
+    expected = {"pass": "PASS", "fail": "BLOCKED", "skip": "UNCLASSIFIED"}[status]
+    if verdict is not None and verdict != expected:
+        raise ValueError("status and verdict contradict each other")
+    return verdict or expected
+
+
 def _redact(value: str) -> str:
     value = str(value)
     value = _URL_USERINFO.sub(r"\g<scheme>[redacted]@", value)
     value = _SECRET_QUERY.sub(r"\1[redacted]", value)
     value = _SECRET_ARG.sub(r"\g<prefix>[redacted]", value)
     value = _SECRET_ASSIGNMENT.sub(r"\1[redacted]", value)
-    return _NEWLINES.sub(r"\\n", value)[:MAX_TEXT]
+    return _NEWLINES.sub(r"\\n", value)
 
 
 def _markdown_escape(value: str) -> str:
@@ -124,26 +149,13 @@ class CommandEvidence:
     verdict: str | None = None
 
     def __post_init__(self) -> None:
-        if self.status not in {"pass", "fail", "skip"}:
-            raise ValueError(f"invalid evidence status: {self.status}")
-        if not isinstance(self.exit_code, int):
-            raise TypeError("exit_code must be an integer")
-        if self.status in {"pass", "skip"} and self.exit_code != 0:
-            raise ValueError(f"{self.status} evidence exit_code must be 0")
+        _validate_command_evidence(self.status, self.exit_code, self.command)
         object.__setattr__(self, "command", _redact(self.command))
         object.__setattr__(self, "summary", _redact(self.summary))
         object.__setattr__(self, "outcomes", dict(self.outcomes or {}))
         object.__setattr__(self, "environment", dict(self.environment or {}))
-        if self.head_sha and _HEAD_SHA.fullmatch(self.head_sha) is None:
-            raise ValueError("head_sha must be a lowercase 40-hex revision")
-        if self.output_sha256 and re.fullmatch(r"[0-9a-f]{64}", self.output_sha256) is None:
-            raise ValueError("output_sha256 must be a lowercase SHA-256 digest")
-        object.__setattr__(
-            self,
-            "verdict",
-            self.verdict
-            or {"pass": "PASS", "fail": "BLOCKED", "skip": "UNCLASSIFIED"}[self.status],
-        )
+        _validate_digests(self.head_sha, self.output_sha256)
+        object.__setattr__(self, "verdict", _resolved_verdict(self.status, self.verdict))
 
     @classmethod
     def from_mapping(cls, value: object) -> "CommandEvidence":
@@ -463,6 +475,14 @@ def main(argv: list[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
     if args.action == "record":
         outcomes, environment = _metadata_from_args(args)
+        if outcomes is None and args.output_text is not None:
+            try:
+                from agent.control_plane.evidence import parse_pytest_output
+                parsed = parse_pytest_output(args.output_text, args.exit_code)
+                if parsed.summary_present:
+                    outcomes = asdict(parsed)
+            except (ImportError, TypeError, ValueError):
+                outcomes = None
         record_section(
             args.section,
             CommandEvidence(args.command or args.section, args.exit_code, args.summary, args.status),

@@ -328,3 +328,13 @@ def test_chrome_smoke_redacts_sensitive_urls():
     assert "Bearer [redacted]" in smoke
     assert "net::ERR_FAILED" in smoke
     assert "redactSensitiveUrl(issue.url)" in smoke
+
+
+def test_release_gate_captures_real_output_and_records_metadata():
+    gate = (ROOT / "scripts" / "release_gate.ps1").read_text(encoding="utf-8")
+    runner = (ROOT / "scripts" / "ops" / "run_backend_regression.py").read_text(encoding="utf-8")
+    assert "$capturedOutput = (& $Body 2>&1 | Out-String)" in gate
+    assert '"--output-text", $Output' in gate
+    assert '"--outcomes-json", $outcomes' in gate
+    assert 'ROOT = Path(__file__).resolve().parents[2]' in runner
+    assert 'sys.path.insert(0, str(ROOT))' in runner

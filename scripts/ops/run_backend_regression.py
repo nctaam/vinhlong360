@@ -12,6 +12,10 @@ import subprocess
 import sys
 import time
 
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 try:
     from agent.control_plane.evidence import ParsedOutcome, parse_pytest_output
 except ImportError:  # pragma: no cover - direct script execution from any cwd
@@ -19,7 +23,6 @@ except ImportError:  # pragma: no cover - direct script execution from any cwd
     parse_pytest_output = None  # type: ignore[assignment]
 
 
-ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DEADLINE_SECONDS = 7000.0
 TIMEOUT_EXIT_CODE = 124
 CLEANUP_TIMEOUT_SECONDS = 5.0

@@ -140,7 +140,7 @@ def _unexpected_failures(outcome: ParsedOutcome, allowlist: frozenset[str]) -> s
     allowed = frozenset(str(item) for item in allowlist)
     return {
         nodeid for nodeid in outcome.failed_nodeids
-        if not any(nodeid == entry or nodeid.startswith(entry + "::") for entry in allowed)
+        if nodeid not in allowed
     }
 
 
@@ -175,6 +175,8 @@ def _load_bundle(path: Path) -> dict[str, object] | VerificationResult:
         payload = json.loads(Path(path).read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         return VerificationResult("BLOCKED", (f"unable to read bundle: {type(exc).__name__}",), "")
+    if not isinstance(payload, dict):
+        return VerificationResult("BLOCKED", ("bundle must be a JSON object",), "")
     return payload
 
 
@@ -209,18 +211,23 @@ def _validate_bundle(payload: dict[str, object]) -> list[str]:
 
 def _validate_scalars(payload: dict[str, object]) -> list[str]:
     reasons: list[str] = []
-    if payload.get("schema_version") != "1": reasons.append("unsupported schema_version")
-    if not isinstance(payload.get("artifact_id"), str) or not payload["artifact_id"].strip(): reasons.append(_reason_for_field("artifact_id"))
-    if not isinstance(payload.get("head_sha"), str) or not _HEAD_SHA.fullmatch(payload["head_sha"]): reasons.append(_reason_for_field("head_sha"))
-    if not isinstance(payload.get("branch"), str) or not payload["branch"].strip(): reasons.append(_reason_for_field("branch"))
-    if not isinstance(payload.get("command"), str) or not payload["command"].strip(): reasons.append(_reason_for_field("command"))
-    if payload.get("verdict") not in {"PASS", "BLOCKED", "UNCLASSIFIED"}: reasons.append(_reason_for_field("verdict"))
+    if payload.get("schema_version") != "1":
+        reasons.append("unsupported schema_version")
+    for name in ("artifact_id", "branch", "command", "started_at", "finished_at"):
+        value = payload.get(name)
+        if not isinstance(value, str) or not value.strip():
+            reasons.append(_reason_for_field(name))
+    head_sha = payload.get("head_sha")
+    if not isinstance(head_sha, str) or not _HEAD_SHA.fullmatch(head_sha):
+        reasons.append(_reason_for_field("head_sha"))
+    if payload.get("verdict") not in {"PASS", "BLOCKED", "UNCLASSIFIED"}:
+        reasons.append(_reason_for_field("verdict"))
     return reasons
 
 
 def _validate_collections(payload: dict[str, object]) -> list[str]:
     reasons: list[str] = []
-    if not isinstance(payload.get("environment"), dict): reasons.append(_reason_for_field("environment"))
+    if not isinstance(payload.get("environment"), dict) or not payload["environment"]: reasons.append(_reason_for_field("environment"))
     if not isinstance(payload.get("allowlist"), list) or not all(isinstance(v, str) for v in payload["allowlist"]): reasons.append(_reason_for_field("allowlist"))
     if not isinstance(payload.get("artifacts"), list): reasons.append(_reason_for_field("artifacts"))
     declared_digest = payload.get("output_sha256")

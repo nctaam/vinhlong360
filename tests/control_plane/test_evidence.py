@@ -124,3 +124,36 @@ def test_verifier_cli_maps_verdict_to_exit_code_and_prints_reasons(
     payload = json.loads(capsys.readouterr().out)
     assert payload["verdict"] == "BLOCKED"
     assert payload["reasons"]
+
+
+@pytest.mark.parametrize("raw", ["null", "1", "[]"])
+def test_non_object_json_bundle_is_blocked_without_traceback(tmp_path: Path, raw: str) -> None:
+    path = tmp_path / "invalid.json"
+    path.write_text(raw, encoding="utf-8")
+    result = verify_bundle(path)
+    assert result.verdict == "BLOCKED"
+    assert result.reasons
+
+
+def test_allowlist_requires_exact_nodeid_not_parent_prefix() -> None:
+    outcome = parse_pytest_output(
+        "tests/known.py::test_oldish FAILED\n1 failed in 0.1s\n", return_code=1
+    )
+    assert classify_verdict(outcome, frozenset({"tests/known.py::test_old"})) == "BLOCKED"
+
+
+def test_bundle_requires_nonempty_timestamps_and_metadata_types(tmp_path: Path) -> None:
+    output = "1 passed in 0.1s\n"
+    bundle = {
+        "schema_version": "1", "artifact_id": "run", "head_sha": "a" * 40,
+        "branch": "main", "started_at": "", "finished_at": "",
+        "command": "pytest", "environment": {}, "outcomes": {
+            "passed": 1, "failed": 0, "errors": 0, "skipped": 0,
+            "xfailed": 0, "collection_errors": 0, "interrupted": False, "return_code": 0,
+        }, "allowlist": [], "verdict": "PASS", "artifacts": [],
+        "output": output, "output_sha256": sha256(output.encode()).hexdigest(),
+    }
+    path = tmp_path / "bundle.json"
+    path.write_text(json.dumps(bundle), encoding="utf-8")
+    result = verify_bundle(path)
+    assert result.verdict == "BLOCKED"
