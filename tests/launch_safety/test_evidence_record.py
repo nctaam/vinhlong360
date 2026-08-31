@@ -353,6 +353,46 @@ def test_native_skip_preserves_unclassified_and_empty_native_pass_blocks(tmp_pat
     assert section["status"] == "fail" and section["verdict"] == "BLOCKED"
 
 
+@pytest.mark.parametrize(
+    ("requested_status", "requested_verdict"),
+    [("skip", None), ("fail", None), ("skip", "PASS"), ("fail", "PASS")],
+)
+def test_native_nonempty_capture_preserves_requested_nonpass_semantics(
+    tmp_path: Path, requested_status: str, requested_verdict: str | None,
+) -> None:
+    state_path = tmp_path / f"native-{requested_status}-{requested_verdict or 'none'}.json"
+    argv = [
+        "record", "--section", "browser-opt-in", "--status", requested_status,
+        "--exit-code", "0", "--summary", "native", "--command", "node probe",
+        "--native-command", "--output-text", "probe completed", "--environment-json", '{"os":"test"}',
+        "--head-sha", "a" * 40, "--revision", "a" * 40, "--state", str(state_path),
+    ]
+    if requested_verdict is not None:
+        argv.extend(["--verdict", requested_verdict])
+    assert main(argv) == 0
+    section = json.loads(state_path.read_text(encoding="utf-8"))["sections"]["browser-opt-in"]
+    expected_status = "skip" if requested_status == "skip" else "fail"
+    expected_verdict = "UNCLASSIFIED" if requested_status == "skip" else "BLOCKED"
+    assert section["status"] == expected_status
+    assert section["verdict"] == expected_verdict
+
+
+def test_browser_native_skip_with_empty_capture_remains_verifiable(tmp_path: Path) -> None:
+    document = _complete_document(tmp_path)
+    document.record(
+        "browser-opt-in",
+        CommandEvidence(
+            "node probe", 0, "chrome-unavailable", "skip",
+            outcomes={"evidence_kind": "native-command", "summary_present": False, "return_code": 0},
+            environment={"os": "test"},
+        ),
+    )
+    bundle_path = tmp_path / "browser-skip-bundle.json"
+    document.write_bundle(bundle_path)
+    from agent.control_plane.evidence import verify_bundle
+    assert verify_bundle(bundle_path).verdict == "PASS"
+
+
 def test_cli_rejects_non_utf8_native_capture_as_blocked(tmp_path: Path) -> None:
     output_path = tmp_path / "native.bin"
     output_path.write_bytes(b"rollback\xff")
@@ -427,6 +467,16 @@ def test_final_render_blocks_compose_pass_without_capture_metadata(tmp_path: Pat
         CommandEvidence("docker compose up", 0, "passed", "pass"),
     )
     with pytest.raises(ValueError, match="compose-nginx-opt-in.*metadata|metadata.*compose-nginx-opt-in"):
+        document.render(final=True)
+
+
+def test_final_render_blocks_browser_pass_without_capture_metadata(tmp_path: Path) -> None:
+    document = _complete_document(tmp_path)
+    document.record(
+        "browser-opt-in",
+        CommandEvidence("node probe", 0, "passed", "pass"),
+    )
+    with pytest.raises(ValueError, match="browser-opt-in.*metadata|metadata.*browser-opt-in"):
         document.render(final=True)
 
 

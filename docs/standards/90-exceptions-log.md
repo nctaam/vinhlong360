@@ -204,3 +204,13 @@ ghi ở backlog tối ưu — giảm dần, KHÔNG được tăng tiếp từ 47
 - 2026-08-31T16:00:25 SKIP R30.7 — pre-existing bundle output debt: 802kB gz exceeds 800kB baseline; unrelated to Task 1 evidence verifier
 
 - 2026-08-31T16:07:35 SKIP R30.7 — pre-existing bundle output debt: 802kB gz exceeds 800kB baseline; unrelated to Task 1 evidence verifier
+
+- 2026-08-31T16:22:33 SKIP R30.7 — pre-existing bundle output debt: 802kB gz exceeds 800kB baseline; unrelated to Task 1 evidence verifier
+
+- 2026-08-31T16:29:18 SKIP R30.7 — pre-existing bundle output debt: 802kB gz exceeds 800kB baseline; unrelated to Task 1 evidence verifier
+
+- 2026-08-31T16:46:50 SKIP R30.7 — pre-existing bundle output debt: 802kB gz exceeds 800kB baseline; unrelated to Task 1 evidence verifier
+
+- 2026-08-31T17:11:29 SKIP R30.7 — pre-existing bundle output debt: 802kB gz exceeds 800kB baseline; unrelated to Task 1 evidence verifier
+
+- 2026-08-31T17:12:30 SKIP R30.7 — pre-existing bundle output debt unrelated to Task 1

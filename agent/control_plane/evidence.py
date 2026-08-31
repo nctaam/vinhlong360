@@ -495,11 +495,13 @@ def verify_bundle(path: Path) -> VerificationResult:
     return _verify_standard_bundle(Path(path), payload_or_result)
 
 
-def _validate_state_outcomes(name: str, outcomes: object, verdict: object) -> list[str]:
+def _validate_state_outcomes(
+    name: str, outcomes: object, verdict: object, status: object = None,
+) -> list[str]:
     if not isinstance(outcomes, dict):
         return [f"invalid section outcomes: {name}"]
     if outcomes.get("evidence_kind") == "native-command":
-        return _validate_native_state_outcomes(name, outcomes, verdict)
+        return _validate_native_state_outcomes(name, outcomes, verdict, status)
     try:
         parsed = _parse_state_outcomes(outcomes)
     except (KeyError, TypeError, ValueError) as exc:
@@ -509,8 +511,18 @@ def _validate_state_outcomes(name: str, outcomes: object, verdict: object) -> li
     return []
 
 
-def _validate_native_state_outcomes(name: str, outcomes: dict[str, object], verdict: object) -> list[str]:
+def _validate_native_state_outcomes(
+    name: str, outcomes: dict[str, object], verdict: object, status: object = None,
+) -> list[str]:
     if outcomes.get("summary_present") is not True or type(outcomes.get("return_code")) is not int:
+        if (
+            name == "browser-opt-in"
+            and status == "skip"
+            and outcomes.get("summary_present") is False
+            and outcomes.get("return_code") == 0
+            and verdict == "UNCLASSIFIED"
+        ):
+            return []
         return [f"invalid native section outcomes: {name}"]
     expected = "PASS" if outcomes["return_code"] == 0 else "BLOCKED"
     return [] if expected == verdict else [f"section outcomes/verdict mismatch: {name}"]
@@ -551,13 +563,40 @@ def _validate_state_section(name: str, section: object, revision: str) -> list[s
     reasons: list[str] = _validate_section_identity(name, section, revision)
     outcomes = section.get("outcomes")
     if outcomes is not None and outcomes != {}:
-        reasons.extend(_validate_state_outcomes(name, outcomes, section.get("verdict")))
-        reasons.extend(_validate_state_output_checksum(name, section))
-        if isinstance(outcomes, dict) and type(outcomes.get("return_code")) is int and outcomes.get("return_code") != section.get("exit_code"):
-            reasons.append(f"section exit code mismatch: {name}")
+        reasons.extend(_validate_captured_state_outcomes(name, section, outcomes))
     if section.get("status") == "fail" or section.get("verdict") == "BLOCKED":
         reasons.append(f"blocked section: {name}")
     return reasons
+
+
+def _validate_captured_state_outcomes(
+    name: str, section: dict[str, object], outcomes: object,
+) -> list[str]:
+    reasons = _validate_state_outcomes(
+        name, outcomes, section.get("verdict"), section.get("status")
+    )
+    if not _is_approved_native_skip(name, section, outcomes):
+        reasons.extend(_validate_state_output_checksum(name, section))
+    if (
+        isinstance(outcomes, dict)
+        and type(outcomes.get("return_code")) is int
+        and outcomes.get("return_code") != section.get("exit_code")
+    ):
+        reasons.append(f"section exit code mismatch: {name}")
+    return reasons
+
+
+def _is_approved_native_skip(
+    name: str, section: dict[str, object], outcomes: object,
+) -> bool:
+    return (
+        name == "browser-opt-in"
+        and section.get("status") == "skip"
+        and isinstance(outcomes, dict)
+        and outcomes.get("evidence_kind") == "native-command"
+        and outcomes.get("summary_present") is False
+        and outcomes.get("return_code") == 0
+    )
 
 
 def _validate_section_identity(name: str, section: dict[str, object], revision: str) -> list[str]:
@@ -576,6 +615,8 @@ def _validate_section_identity(name: str, section: dict[str, object], revision: 
         reasons.append(f"section status/verdict mismatch: {name}")
     reasons.extend(_validate_state_section_metadata(name, section, revision))
     if name in _FUNCTIONAL_STATE_SECTIONS:
+        reasons.extend(_validate_functional_state_section(name, section, revision))
+    elif name == "browser-opt-in" and section.get("status") == "pass":
         reasons.extend(_validate_functional_state_section(name, section, revision))
     return reasons
 

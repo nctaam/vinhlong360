@@ -145,3 +145,11 @@ Status: DONE_WITH_CONCERNS
 - The parser now treats only `ERROR collecting ...` as a collection error; normal `collecting ... collected N items` progress remains clean PASS evidence.
 - Added regressions for both normal progress and explicit collection-error output.
 - Focused verification: `91 passed`; `py_compile`, `ruff`, and `git diff --check` passed.
+
+## Final Task 1 fixes
+
+Status: DONE_WITH_CONCERNS
+
+- Native capture recording now preserves requested `skip/UNCLASSIFIED` and `fail/BLOCKED` semantics; only an explicit, valid UTF-8, nonempty, zero-exit `pass/PASS` capture can pass.
+- Browser opt-in PASS evidence now requires command, environment, revision, outcomes, and output checksum metadata in both document finalization and state-bundle verification; approved empty native skips remain accepted.
+- Focused verification: `python -m pytest tests/control_plane/test_evidence.py tests/launch_safety/test_evidence_record.py tests/test_release_quality_gates.py -q` -> `107 passed`; backend runner suite -> `29 passed`; `py_compile`, `ruff`, and `git diff --check` passed.

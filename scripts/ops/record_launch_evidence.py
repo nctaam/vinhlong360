@@ -360,17 +360,8 @@ class EvidenceDocument:
                 raise ValueError(
                     f"opt-in section has invalid skip reason: {name}/{evidence.summary}"
                 )
-            if name == "compose-nginx-opt-in" and evidence.status == "pass":
-                if (
-                    not evidence.outcomes
-                    or not evidence.environment
-                    or not evidence.head_sha
-                    or not evidence.output_sha256
-                    or evidence.verdict != "PASS"
-                ):
-                    raise ValueError(
-                        "compose-nginx-opt-in pass evidence requires capture metadata"
-                    )
+            if name in {"compose-nginx-opt-in", "browser-opt-in"} and evidence.status == "pass":
+                _validate_opt_in_pass_evidence(name, evidence, self.revision)
 
     def _validate_external_section(self) -> None:
         external = self.sections["external-gates"]
@@ -493,7 +484,7 @@ def _validate_functional_identity(name: str, evidence: CommandEvidence, revision
 
 
 def _validate_functional_outcomes(name: str, evidence: CommandEvidence, outcomes: dict[str, Any]) -> None:
-    if name == "rollback-local-rehearsal" and outcomes.get("evidence_kind") == "native-command":
+    if name in {"rollback-local-rehearsal", "browser-opt-in"} and outcomes.get("evidence_kind") == "native-command":
         if outcomes.get("summary_present") is not True or outcomes.get("return_code") != 0:
             raise ValueError(f"functional section is missing valid native outcomes: {name}")
         return
@@ -503,6 +494,16 @@ def _validate_functional_outcomes(name: str, evidence: CommandEvidence, outcomes
     )
     if not outcomes or any(field not in outcomes for field in required) or outcomes.get("summary_present") is not True:
         raise ValueError(f"functional section is missing parsed outcomes: {name}")
+
+
+def _validate_opt_in_pass_evidence(name: str, evidence: CommandEvidence, revision: str) -> None:
+    try:
+        _validate_functional_identity(name, evidence, revision)
+        _validate_functional_outcomes(name, evidence, evidence.outcomes)
+    except ValueError as exc:
+        raise ValueError(f"{name} pass evidence requires capture metadata") from exc
+    if _SHA256.fullmatch(evidence.output_sha256) is None:
+        raise ValueError(f"{name} pass evidence requires capture metadata")
 
 
 def _outcomes_verdict(outcomes: dict[str, Any]) -> str:
@@ -625,7 +626,7 @@ def _classify_capture(
 ) -> tuple[dict[str, Any] | None, str | bytes, str, str | None]:
     text = _decode_capture(output)
     if getattr(args, "native_command", False):
-        return _native_capture_result(args.exit_code, text, output)
+        return _native_capture_result(args.exit_code, text, output, status, verdict)
     if text is None:
         return None, output, ("fail" if args.exit_code else "skip"), ("BLOCKED" if args.exit_code else "UNCLASSIFIED")
     parsed = parse_test_output(text, args.exit_code)
@@ -646,8 +647,19 @@ def _decode_capture(output: str | bytes) -> str | None:
         return None
 
 
-def _native_capture_result(code: int, text: str | None, output: str | bytes) -> tuple[dict[str, Any], str | bytes, str, str]:
-    return {"evidence_kind": "native-command", "summary_present": bool(text), "return_code": code}, output, ("pass" if code == 0 and text else "fail"), ("PASS" if code == 0 and text else "BLOCKED")
+def _native_capture_result(
+    code: int, text: str | None, output: str | bytes, status: str, verdict: str | None,
+) -> tuple[dict[str, Any], str | bytes, str, str]:
+    outcomes = {
+        "evidence_kind": "native-command", "summary_present": bool(text), "return_code": code,
+    }
+    if status == "skip":
+        return outcomes, output, "skip", "UNCLASSIFIED"
+    if status == "fail" or verdict == "BLOCKED":
+        return outcomes, output, "fail", "BLOCKED"
+    if status == "pass" and verdict in {None, "PASS"} and code == 0 and text:
+        return outcomes, output, "pass", "PASS"
+    return outcomes, output, "fail", "BLOCKED"
 
 
 def _handle_record(args: argparse.Namespace) -> int:

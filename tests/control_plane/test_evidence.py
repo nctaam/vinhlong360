@@ -437,3 +437,50 @@ def test_state_bundle_binds_top_level_revision_and_artifacts_to_state(tmp_path: 
     result = verify_bundle(bundle_path)
     assert result.verdict == "BLOCKED"
     assert any("head_sha" in reason for reason in result.reasons)
+
+
+def test_state_bundle_rejects_forged_browser_pass_without_capture_metadata(tmp_path: Path) -> None:
+    document = EvidenceDocument.empty(tmp_path / "state.json")
+    document.revision = "a" * 40
+    for section in REQUIRED_SECTIONS:
+        if section == "external-gates":
+            evidence = CommandEvidence(
+                section, 0, "H1=blocked; H2=blocked; owner=not-authorized", "skip"
+            )
+        elif section in {"postgres-opt-in", "compose-nginx-opt-in", "browser-opt-in"}:
+            evidence = CommandEvidence(
+                section, 0, "docker-cli-unavailable" if section != "browser-opt-in" else "chrome-unavailable", "skip"
+            )
+        else:
+            output = "1 passed in 0.1s\n"
+            evidence = CommandEvidence(
+                section, 0, "passed", "pass",
+                outcomes={
+                    "passed": 1, "failed": 0, "errors": 0, "skipped": 0,
+                    "xfailed": 0, "collection_errors": 0, "interrupted": False,
+                    "return_code": 0, "failed_nodeids": [], "error_nodeids": [],
+                    "summary_present": True,
+                },
+                environment={"os": "test"}, head_sha="a" * 40,
+                output_sha256=sha256(output.encode()).hexdigest(),
+            )
+        document.record(section, evidence)
+
+    bundle_path = tmp_path / "bundle.json"
+    document.write_bundle(bundle_path)
+    payload = json.loads(bundle_path.read_text(encoding="utf-8"))
+    payload["state"]["sections"]["browser-opt-in"] = {
+        "command": "node probe", "exit_code": 0, "summary": "passed",
+        "status": "pass", "verdict": "PASS", "outcomes": {},
+        "environment": {}, "head_sha": "", "output_sha256": "",
+    }
+    canonical = json.dumps(payload["state"], ensure_ascii=True, sort_keys=True, separators=(",", ":"))
+    digest = sha256(canonical.encode()).hexdigest()
+    payload["output"] = canonical
+    payload["state_sha256"] = digest
+    payload["output_sha256"] = digest
+    bundle_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    result = verify_bundle(bundle_path)
+    assert result.verdict == "BLOCKED"
+    assert any("browser-opt-in" in reason for reason in result.reasons)
