@@ -14,7 +14,14 @@ import uuid
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, Response
-from pydantic import AliasChoices, BaseModel, ConfigDict, Field, StrictBool, ValidationError, field_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, StrictBool, ValidationError
+
+if __package__ and __package__.startswith("agent."):
+    from ..api_schemas import CorrectionIntakeContract
+else:
+    # The service is deployed with `agent/` on sys.path, so this is the
+    # top-level spelling used by the production server and legacy adapter.
+    from api_schemas import CorrectionIntakeContract
 
 from .domain import PublicCaseStatus
 from .security import CaseCrypto
@@ -180,6 +187,31 @@ async def _model(request: Request, model: type[BaseModel]):
         return None, _problem(400, "invalid_request", "That request body is not readable.")
 
 
+def _validate_shared_correction_payload(
+    payload: dict[str, object],
+    *,
+    version: str,
+    validate_payload,
+    contract_violation,
+) -> None:
+    """Run the Pydantic contract, retaining registry error semantics."""
+    try:
+        # Keep the Pydantic contract in the production path. The registry
+        # remains the stable error-code adapter for the transport.
+        CorrectionIntakeContract.model_validate(payload)
+    except ValidationError as exc:
+        try:
+            validate_payload("correction-intake", payload, version=version)
+        except contract_violation as registry_exc:
+            raise registry_exc
+        error = exc.errors()[0] if exc.errors() else {}
+        raise contract_violation(
+            str(error.get("msg") or "correction intake contract is invalid"),
+            field="reported_value",
+        ) from exc
+    validate_payload("correction-intake", payload, version=version)
+
+
 def _validate_correction_contract(items, request: Request, *, version: str = "1") -> JSONResponse | None:
     """Validate each item against the shared registry before service mutation."""
     try:
@@ -212,13 +244,15 @@ def _validate_correction_contract(items, request: Request, *, version: str = "1"
                     "missing required contract field: reported_value",
                     field="reported_value",
                 )
-            validate_payload(
-                "correction-intake",
-                {
-                    "reported_value_known": item.reported_value_known,
-                    "reported_value": item.reported_value,
-                },
+            payload = {
+                "reported_value_known": item.reported_value_known,
+                "reported_value": item.reported_value,
+            }
+            _validate_shared_correction_payload(
+                payload,
                 version=version,
+                validate_payload=validate_payload,
+                contract_violation=ContractViolation,
             )
     except ContractViolation as exc:
         field_name = {
@@ -278,22 +312,6 @@ class _ItemIn(BaseModel):
     )
     proposed_value: str = Field(alias="proposedValue", min_length=1, max_length=2000)
     base_entity_revision: int = Field(alias="baseEntityRevision", ge=1)
-
-    @field_validator("reported_value")
-    @classmethod
-    def _validate_reported_value_contract(cls, value: object | None, info) -> object | None:
-        known = info.data.get("reported_value_known")
-        if known is False:
-            if value is not None:
-                raise ValueError("reported_value must be null when current value is unknown")
-            return value
-        if known is True and (
-            type(value) is not str
-            or not value.strip()
-            or len(value) > 2000
-        ):
-            raise ValueError("reported value must be a non-blank string")
-        return value
 
 
 class _CreateIn(BaseModel):

@@ -37,7 +37,7 @@ from pydantic import (
     ValidationError,
 )
 from api_schemas import (  # W6.3: response_model (extra="allow" — không strip field FE)
-    AreasResponse, AutocompleteResponse, CollectionsResponse, EntityDetailResponse, EntityListResponse, EntityMapResponse, EntityTypesResponse,  # noqa: F401  (be mat va cua test — mien entity sang goi rieng 2026-08-28)
+    AreasResponse, AutocompleteResponse, CollectionsResponse, CorrectionIntakeContract, EntityDetailResponse, EntityListResponse, EntityMapResponse, EntityTypesResponse,  # noqa: F401  (be mat va cua test — mien entity sang goi rieng 2026-08-28)
     EventsResponse, HomepageResponse, MapPin, SearchResponse, StatsResponse, TransparencyResponse,
     # SiteSettingsResponse sang siteops/api.py cung route cua no (2026-08-29, lat 3)
 )
@@ -2640,6 +2640,23 @@ def _file_legacy_correction(entity_id: str, field: str, detail: str, request: Re
         handoff_digest=None,
         handoff_confirmed=False,
     )
+    try:
+        # Legacy reports now cross the same discriminator boundary as the
+        # canonical route before the kernel can mutate any case state.
+        CorrectionIntakeContract.model_validate({
+            "reported_value_known": True,
+            "reported_value": payload.items[0].reported_value,
+        })
+    except ValidationError:
+        reported_value = payload.items[0].reported_value
+        if type(reported_value) is str and len(reported_value) > 2000:
+            code, message = "correction_value_too_long", "That value is too long."
+        else:
+            code, message = "invalid_correction_value", "Both values are required."
+        return JSONResponse(status_code=400, content={
+            "error": code,
+            "message": message,
+        })
     try:
         result = _case_service().create_correction_from_transport(
             payload,

@@ -131,6 +131,60 @@ def test_a_stale_field_report_files_a_kernel_case_and_returns_the_receipt(legacy
     assert _jsonl_lines(reports) == []
 
 
+def test_legacy_correction_invokes_the_shared_schema_before_service(legacy, monkeypatch):
+    import api_schemas
+
+    calls = []
+    original = api_schemas.CorrectionIntakeContract.model_validate
+
+    def spy(cls, value, *args, **kwargs):
+        calls.append(value)
+        return original(value, *args, **kwargs)
+
+    monkeypatch.setattr(
+        api_schemas.CorrectionIntakeContract,
+        "model_validate",
+        classmethod(spy),
+    )
+
+    kernel, reports = legacy
+    response = client.post(
+        "/api/entities/p-quan-com/report-stale",
+        json={"field": "phone", "detail": "0270 333 4444"},
+    )
+
+    assert response.status_code == 201
+    assert calls == [{
+        "reported_value_known": True,
+        "reported_value": "0270 111 2222",
+    }]
+    assert len(kernel.filed) == 1
+    assert _jsonl_lines(reports) == []
+
+
+def test_legacy_invalid_generated_current_value_is_rejected_before_service(legacy, monkeypatch):
+    kernel, reports = legacy
+    monkeypatch.setattr(
+        public_api,
+        "_get_public_entity",
+        lambda _entity_id: {
+            "id": "p-quan-com",
+            "revision": 7,
+            "attributes": {},
+        },
+    )
+
+    response = client.post(
+        "/api/entities/p-quan-com/report-stale",
+        json={"field": "phone", "detail": "0270 333 4444"},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["error"] == "invalid_correction_value"
+    assert kernel.filed == []
+    assert _jsonl_lines(reports) == []
+
+
 def test_the_reported_value_is_read_from_the_live_entry_not_from_the_reporter(legacy):
     kernel, _reports = legacy
 

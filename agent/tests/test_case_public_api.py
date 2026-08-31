@@ -328,6 +328,32 @@ def test_create_rejects_missing_current_value_with_contract_error(client):
     assert response.json()["field"] == "items.0.reportedValue"
 
 
+def test_create_invokes_the_shared_correction_schema_before_service(client, monkeypatch):
+    import api_schemas
+
+    calls = []
+    original = api_schemas.CorrectionIntakeContract.model_validate
+
+    def spy(cls, value, *args, **kwargs):
+        calls.append(value)
+        return original(value, *args, **kwargs)
+
+    monkeypatch.setattr(
+        api_schemas.CorrectionIntakeContract,
+        "model_validate",
+        classmethod(spy),
+    )
+
+    response = client.post("/api/cases/corrections", headers=_headers(), json=_body())
+
+    assert response.status_code == 201
+    assert calls == [{
+        "reported_value_known": True,
+        "reported_value": "0270 111 2222",
+    }]
+    assert len(client.service.created) == 1
+
+
 # ── Access, status, logout ──
 
 def test_access_sets_a_scoped_http_only_cookie_and_a_readable_csrf_cookie(client):
