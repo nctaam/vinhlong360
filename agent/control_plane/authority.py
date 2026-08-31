@@ -9,6 +9,8 @@ from pathlib import Path
 import re
 import subprocess
 from typing import Literal
+from urllib.parse import unquote
+import unicodedata
 
 
 AuthorityStatus = Literal["PASS", "STALE", "BLOCKED"]
@@ -16,10 +18,10 @@ _HEAD_SHA = re.compile(r"^[0-9a-fA-F]{40}$")
 _FINDING_ID = re.compile(r"F-(\d{2})")
 _RULE_ROW = re.compile(r"^\s*\|\s*(R[0-9][^|]*)\|", re.MULTILINE)
 _BASELINE_COUNT = re.compile(r"baseline(?:\s+hiện\s+tại|\s+current)?\s*[:=]\s*(\d+)\s+fail", re.IGNORECASE)
-_EXPECTED_P1 = frozenset(
-    {f"F-{index:02d}" for index in range(1, 18)}
-    | {"F-32", "F-34", "F-38", "F-40", "F-41", "F-42", "F-44", "F-47", "F-49", "F-53", "F-69"}
-)
+_MARKDOWN_HEADING = re.compile(r"^\s{0,3}(#{1,6})\s+(.+?)[^\S\r\n]*$", re.MULTILINE)
+_HTML_ANCHOR = re.compile(r"<a\b[^>]*\b(?:id|name)\s*=\s*['\"]([^'\"]+)['\"]", re.IGNORECASE)
+_AUDIT_P1_HEADING = re.compile(r"^\s{0,3}(#{1,6})\s+P1(?:\s|[-—:]|$)", re.IGNORECASE)
+_AUDIT_TABLE_ROW = re.compile(r"^\s*\|\s*(F-\d{2})\s*\|", re.IGNORECASE)
 
 
 @dataclass(frozen=True)
@@ -189,10 +191,43 @@ def _read(root: Path, path: str, mismatches: list[str], label: str) -> str:
         return ""
 
 
+def _github_slug(heading: str) -> str:
+    """Return the stable, accent-insensitive slug used by GitHub headings."""
+
+    # GitHub removes inline markup/punctuation and transliterates Vietnamese
+    # characters before collapsing separators. NFKD handles the combining
+    # accents; đ is not decomposed by Unicode and therefore needs a mapping.
+    text = re.sub(r"<[^>]*>", "", heading).replace("Đ", "D").replace("đ", "d")
+    text = unicodedata.normalize("NFKD", text)
+    text = "".join(character for character in text if not unicodedata.combining(character))
+    text = text.lower()
+    text = re.sub(r"[^\w\s-]", "", text, flags=re.UNICODE)
+    return re.sub(r"[-\s]+", "-", text).strip("-")
+
+
+def _markdown_anchors(markdown: str) -> set[str]:
+    anchors = {match.group(1).strip().lower() for match in _HTML_ANCHOR.finditer(markdown)}
+    seen: dict[str, int] = {}
+    for match in _MARKDOWN_HEADING.finditer(markdown):
+        heading = match.group(2).strip().rstrip("#").rstrip()
+        slug = _github_slug(heading)
+        if not slug:
+            continue
+        suffix = seen.get(slug, 0)
+        anchors.add(f"{slug}-{suffix}" if suffix else slug)
+        seen[slug] = suffix + 1
+    return anchors
+
+
 def _check_link(root: Path, reference: str, mismatches: list[str], label: str) -> None:
-    target = reference.split("#", 1)[0]
+    target, separator, fragment = reference.partition("#")
     if not target or not (root / target).is_file():
         mismatches.append(f"{label} link missing: {reference}")
+        return
+    if separator:
+        fragment = unquote(fragment).strip().lower()
+        if not fragment or fragment not in _markdown_anchors((root / target).read_text(encoding="utf-8")):
+            mismatches.append(f"{label} anchor missing: {reference}")
 
 
 def _normalize_now(now: datetime, mismatches: list[str]) -> datetime:
@@ -212,6 +247,22 @@ def _check_identity(root: Path, registry: AuthorityRegistry, head_sha: str, mism
         mismatches.append(f"head source mismatch: expected git:HEAD, got {registry.head_source}")
     if registry.head_sha not in (None, "git:HEAD") and registry.head_sha.lower() != head_sha.lower():
         mismatches.append("HEAD does not match registry head_sha")
+    _check_repository_head(root, registry, head_sha, mismatches)
+    _check_branch(root, registry, mismatches)
+
+
+def _check_repository_head(root: Path, registry: AuthorityRegistry, head_sha: str, mismatches: list[str]) -> None:
+    if registry.head_source != "git:HEAD":
+        return
+    code, repository_head = _git(root, "rev-parse", "HEAD")
+    if code != 0 or not _HEAD_SHA.fullmatch(repository_head):
+        mismatches.append("repository HEAD unavailable")
+        return
+    if _HEAD_SHA.fullmatch(head_sha) and repository_head.lower() != head_sha.lower():
+        mismatches.append("HEAD does not match repository HEAD")
+
+
+def _check_branch(root: Path, registry: AuthorityRegistry, mismatches: list[str]) -> None:
     code, branch = _git(root, "branch", "--show-current")
     if code != 0 or not branch:
         mismatches.append("git branch unavailable")
@@ -242,32 +293,91 @@ def _check_content(root: Path, registry: AuthorityRegistry, mismatches: list[str
     _check_link(root, registry.rule_index, mismatches, "rule index")
     _check_link(root, registry.audit_artifact, mismatches, "audit artifact")
     baseline_text = _read(root, registry.baseline_source.split("#", 1)[0], mismatches, "baseline")
-    counts = [int(match.group(1)) for match in _BASELINE_COUNT.finditer(baseline_text)]
-    if not counts or registry.baseline_count not in counts:
-        mismatches.append(f"baseline count mismatch: expected {registry.baseline_count}")
+    _check_baseline_count(baseline_text, registry.baseline_count, mismatches)
     rule_text = _read(root, registry.rule_index, mismatches, "rule index")
-    rule_ids = {match.group(1).strip() for match in _RULE_ROW.finditer(rule_text)}
-    if len(rule_ids) != registry.rule_count:
-        mismatches.append(f"rule count mismatch: expected {registry.rule_count}, got {len(rule_ids)}")
-    if set(registry.p1_findings) != _EXPECTED_P1:
-        mismatches.append("P1 finding roster mismatch")
+    _check_rule_count(rule_text, registry.rule_count, mismatches)
+    registry_p1 = _normalized_p1(registry.p1_findings, mismatches)
     audit_text = _read(root, registry.audit_artifact, mismatches, "audit")
-    finding_ids = {f"F-{int(match.group(1)):02d}" for match in _FINDING_ID.finditer(audit_text)}
-    expected_findings = {f"F-{index:02d}" for index in range(1, 74)}
-    if finding_ids != expected_findings:
-        missing = sorted(expected_findings - finding_ids)
-        extra = sorted(finding_ids - expected_findings)
-        detail = f"missing={','.join(missing)}" if missing else ""
-        if extra:
-            detail += f" extra={','.join(extra)}"
-        mismatches.append("audit finding IDs mismatch: " + detail.strip())
+    _check_audit_findings(audit_text, mismatches)
+    _check_p1_parity(audit_text, registry_p1, mismatches)
     return audit_text
+
+
+def _check_baseline_count(text: str, expected: int, mismatches: list[str]) -> None:
+    counts = [int(match.group(1)) for match in _BASELINE_COUNT.finditer(text)]
+    if not counts or expected not in counts:
+        mismatches.append(f"baseline count mismatch: expected {expected}")
+
+
+def _check_rule_count(text: str, expected: int, mismatches: list[str]) -> None:
+    rule_ids = {match.group(1).strip() for match in _RULE_ROW.finditer(text)}
+    if len(rule_ids) != expected:
+        mismatches.append(f"rule count mismatch: expected {expected}, got {len(rule_ids)}")
+
+
+def _normalized_p1(values: tuple[str, ...], mismatches: list[str]) -> set[str]:
+    normalized = {finding_id.upper() for finding_id in values}
+    if len(normalized) != len(values) or any(not _FINDING_ID.fullmatch(finding_id) for finding_id in values):
+        mismatches.append("P1 finding roster contains duplicate or invalid IDs")
+    return normalized
+
+
+def _check_audit_findings(text: str, mismatches: list[str]) -> None:
+    finding_ids = {f"F-{int(match.group(1)):02d}" for match in _FINDING_ID.finditer(text)}
+    expected = {f"F-{index:02d}" for index in range(1, 74)}
+    _append_set_mismatch("audit finding IDs mismatch", finding_ids, expected, mismatches)
+
+
+def _check_p1_parity(text: str, registry_p1: set[str], mismatches: list[str]) -> None:
+    audit_p1 = _audit_p1_ids(text)
+    _append_set_mismatch("P1 roster mismatch with audit", audit_p1, registry_p1, mismatches)
+
+
+def _append_set_mismatch(label: str, actual: set[str], expected: set[str], mismatches: list[str]) -> None:
+    if actual == expected:
+        return
+    missing = sorted(expected - actual)
+    extra = sorted(actual - expected)
+    detail = f"missing={','.join(missing)}" if missing else ""
+    if extra:
+        detail += f" extra={','.join(extra)}"
+    mismatches.append(f"{label}: {detail.strip()}")
+
+
+def _audit_p1_ids(audit_text: str) -> set[str]:
+    lines = audit_text.splitlines()
+    start: int | None = None
+    heading_level = 0
+    for index, line in enumerate(lines):
+        match = _AUDIT_P1_HEADING.match(line)
+        if match:
+            start = index + 1
+            heading_level = len(match.group(1))
+            break
+    if start is None:
+        return set()
+    finding_ids: set[str] = set()
+    for line in lines[start:]:
+        heading = _MARKDOWN_HEADING.match(line)
+        if heading and len(heading.group(1)) <= heading_level:
+            break
+        row = _AUDIT_TABLE_ROW.match(line)
+        if row:
+            finding_ids.add(row.group(1).upper())
+    return finding_ids
 
 
 def _check_documents(root: Path, registry: AuthorityRegistry, now: datetime, audit_text: str, mismatches: list[str]) -> list[str]:
     expired: list[str] = []
+    if registry.last_verified_at is not None:
+        if registry.last_verified_at > now:
+            mismatches.append("future verification timestamp: registry last_verified_at")
+        elif now - registry.last_verified_at > timedelta(hours=registry.max_age_hours):
+            expired.append("config/release-authority.json")
     for doc in registry.active_documents:
-        if now - doc.last_verified_at > timedelta(hours=registry.max_age_hours):
+        if doc.last_verified_at > now:
+            mismatches.append(f"future verification timestamp: {doc.path}")
+        elif now - doc.last_verified_at > timedelta(hours=registry.max_age_hours):
             expired.append(doc.path)
         text = _read(root, doc.path, mismatches, "active document")
         if "Authority: config/release-authority.json" not in text:
