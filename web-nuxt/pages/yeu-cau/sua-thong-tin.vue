@@ -121,6 +121,7 @@ useSeoMeta({
     <template v-else>
       <p v-if="failure" class="case-failure" role="alert">{{ failure }}</p>
       <div v-if="problem" class="case-problem" data-role="correction-problem" role="status">
+        <span>Mã lỗi: {{ problem.code }}</span>
         <span v-if="problem.field">Trường cần kiểm tra: {{ problem.field }}</span>
         <span v-if="problem.correlation_id">Mã đối soát: {{ problem.correlation_id }}</span>
       </div>

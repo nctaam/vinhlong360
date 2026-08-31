@@ -197,6 +197,7 @@ function submit() {
       data-role="server-error"
     >
       <h3>Máy chủ cần bạn kiểm tra lại</h3>
+      <p>Mã lỗi: {{ serverProblem.code }}</p>
       <p>{{ serverProblem.detail }}</p>
       <a v-if="serverErrorAnchor" :href="`#${serverErrorAnchor}`">
         Đi tới trường cần kiểm tra
