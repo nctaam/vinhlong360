@@ -67,3 +67,12 @@ Status: DONE_WITH_CONCERNS
 - Captured output without a pytest summary is recorded as `UNCLASSIFIED`; output-file transport rejects ambiguous dual sources and unsafe paths, while the Nginx opt-in captures real pytest output before recording.
 - Verification: focused Task 1/release/runner suites `109 passed`; `py_compile`, `ruff`, and `git diff --check` passed.
 - Pre-existing R30.7 bundle debt remains the only commit-hook concern (`802kB gz > 800kB`); commit uses the documented `SKIP_CHECKS=R30.7` / `SKIP_REASON` exception.
+
+## Finalization
+
+Status: DONE_WITH_CONCERNS
+
+- Commit: `5c5f3e08` (`fix: harden versioned evidence verifier`).
+- Focused verification: `python -m pytest tests/control_plane/test_evidence.py tests/launch_safety/test_evidence_record.py tests/test_release_quality_gates.py -q` -> `80 passed`.
+- `py_compile`, `ruff`, and `git diff --check` passed; staged R20.8 complexity is clean.
+- Commit hook used documented `SKIP_CHECKS=R30.7` / `SKIP_REASON`; R30.7 is pre-existing bundle debt only (`802kB gz > 800kB`).
