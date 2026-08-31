@@ -76,3 +76,13 @@ Status: DONE_WITH_CONCERNS
 - Focused verification: `python -m pytest tests/control_plane/test_evidence.py tests/launch_safety/test_evidence_record.py tests/test_release_quality_gates.py -q` -> `80 passed`.
 - `py_compile`, `ruff`, and `git diff --check` passed; staged R20.8 complexity is clean.
 - Commit hook used documented `SKIP_CHECKS=R30.7` / `SKIP_REASON`; R30.7 is pre-existing bundle debt only (`802kB gz > 800kB`).
+
+## Reviewer Fix Wave V6
+
+Status: DONE_WITH_CONCERNS
+
+- Commit: `526290e7` (`fix: bind recorded outcomes to captured output`).
+- Recorder now parses every supplied capture, rejects fabricated/mismatched outcome metadata by recording `UNCLASSIFIED`/`BLOCKED`, and prevents canonical final PASS.
+- Bundle output-path validation catches malformed, NUL, traversal, and read failures as `BLOCKED` without traceback.
+- Focused verification: `python -m pytest tests/control_plane/test_evidence.py tests/launch_safety/test_evidence_record.py tests/test_release_quality_gates.py -q` -> `84 passed`; `py_compile`, `ruff`, and `git diff --check` passed.
+- Commit hook used documented `SKIP_CHECKS=R30.7` / `SKIP_REASON`; only pre-existing 802kB bundle debt remains.
