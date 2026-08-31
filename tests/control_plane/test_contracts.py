@@ -24,6 +24,10 @@ def test_correction_contract_rejects_unknown_version_and_conflicting_value():
     with pytest.raises(ContractViolation):
         validate_payload("correction-intake", {"reported_value_known": True, "reported_value": None}, version="9")
 
+    with pytest.raises(ContractViolation) as missing_value:
+        validate_payload("correction-intake", {"reported_value_known": True, "reported_value": None})
+    assert missing_value.value.field == "reported_value"
+
 
 def test_problem_detail_keeps_field_and_correlation_id():
     # Keep the contract test paired with every Python transport consumer changed

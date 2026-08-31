@@ -285,6 +285,7 @@ def test_create_rejects_unsupported_contract_version(client):
 
 def test_create_requires_explicit_discriminator_when_version_header_is_present(client):
     body = _body()
+    del body["items"][0]["reportedValue"]
 
     response = client.post(
         "/api/cases/corrections",
@@ -295,6 +296,19 @@ def test_create_requires_explicit_discriminator_when_version_header_is_present(c
     assert response.status_code == 422
     assert response.json()["code"] == "CONTRACT_INVALID"
     assert response.json()["field"] == "items.0.reportedValueKnown"
+
+
+def test_create_rejects_missing_current_value_with_contract_error(client):
+    body = _body()
+    del body["items"][0]["reportedValue"]
+
+    response = client.post(
+        "/api/cases/corrections", headers=_headers(), json=body,
+    )
+
+    assert response.status_code == 422
+    assert response.json()["code"] == "CONTRACT_INVALID"
+    assert response.json()["field"] == "items.0.reportedValue"
 
 
 # ── Access, status, logout ──

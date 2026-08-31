@@ -75,6 +75,15 @@ def validate_payload(
                 "reported_value must be null when current value is unknown",
                 field="reported_value",
             )
+        if known and (
+            type(value) is not str
+            or not value.strip()
+            or len(value) > 2000
+        ):
+            raise ContractViolation(
+                "reported_value must be a non-blank string",
+                field="reported_value",
+            )
 
 
 def problem_detail(

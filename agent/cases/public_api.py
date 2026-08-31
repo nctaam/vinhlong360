@@ -206,11 +206,15 @@ def _validate_correction_contract(items, request: Request, *, version: str = "1"
                 version=version,
             )
     except ContractViolation as exc:
+        field_name = {
+            "reported_value": "reportedValue",
+            "reported_value_known": "reportedValueKnown",
+        }.get(exc.field or "", exc.field)
         return _problem(
             422,
             exc.code,
             exc.detail,
-            field=f"items.{index}.{exc.field}" if exc.field else f"items.{index}",
+            field=f"items.{index}.{field_name}" if field_name else f"items.{index}",
             correlation_id=request.headers.get("x-request-id"),
         )
     return None
@@ -255,7 +259,6 @@ class _ItemIn(BaseModel):
     )
     reported_value: object | None = Field(
         default=None,
-        validate_default=True,
         validation_alias=AliasChoices("reportedValue", "reported_value"),
     )
     proposed_value: str = Field(alias="proposedValue", min_length=1, max_length=2000)
